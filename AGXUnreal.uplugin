@@ -14,11 +14,18 @@
 	"IsBetaVersion": true,
 	"Installed": false,
 	"Modules": [
-		{
-			"Name": "AGXUnreal",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		},
+    {
+      "Name": "AGXUnreal",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "WhitelistPlatforms": [
+        "Win64",
+        "Win32"
+      ],
+      "BlacklistPlatforms ": [
+        "IOS"
+      ]
+    },
 		{
 			"Name": "AGXUnrealEditor",
 			"Type": "Editor",
