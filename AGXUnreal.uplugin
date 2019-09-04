@@ -1,0 +1,23 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "AGXUnreal",
+	"Description": "",
+	"Category": "Physics",
+	"CreatedBy": "Algoryx Simulation",
+	"CreatedByURL": "www.algoryx.se",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "AGXUnreal",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
