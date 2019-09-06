@@ -18,7 +18,7 @@ class AAGX_ConstraintFrame;
  * by searching from each referenced AAGX_ConstraintFrame for the hierarchically
  * closest rigid body ancestor (or the world if no rigid body ancestor exists).
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract, NotPlaceable,
+UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract,
 	meta = (BlueprintSpawnableComponent),
 	hidecategories = (Cooking, Collision, Input, LOD, Rendering, Replication))
 class AGXUNREAL_API AAGX_Constraint : public AActor
