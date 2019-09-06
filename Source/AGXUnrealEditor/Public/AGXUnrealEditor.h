@@ -11,4 +11,16 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
+private:
+
+	/**
+	 * Registers settings exposed in the Project Settings window.
+	 * This is typically the default simulation settings.
+	 */
+	void RegisterProjectSettings();
+
+	/**
+	 * Unregisters settings exposed in the Project Settings window.
+	 */
+	void UnregisterProjectSettings();
 };

@@ -22,10 +22,21 @@
  * over by Unreal Engine to the GameInstance specific UAGX_Simulation instance.
  *
  */
-UCLASS()
+UCLASS(config = Engine, defaultconfig)
 class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
+
+public:
+
+	/** Step length of the integrator, in seconds. 0.0167 by default. */
+	UPROPERTY(config, EditAnywhere, Category = "Solver", meta = (ClampMin = "0.001", UIMin = "0.001", ClampMax = "1.0", UIMax = "1.0"))
+	float TimeStep = 1.0 / 60.0;
+
+	/** Uniform default scene gravity, in cm/s^2. -980.665 by default. */
+	UPROPERTY(config, EditAnywhere, Category = "Scene Defaults")
+	FVector Gravity = FVector(0.0f, 0.0f, -980.665f);
+	
 
 public: // OVERRIDES
 
