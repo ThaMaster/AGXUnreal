@@ -1,13 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
-#include "CoreMinimal.h"
+#include "AGXDynamicsMockup.h"
 #include "Components/SceneComponent.h"
+#include "CoreMinimal.h"
+
 #include "AGX_RigidBodyComponent.generated.h"
 
-
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_RigidBodyComponent : public USceneComponent
 {
 	GENERATED_BODY()
@@ -16,17 +15,34 @@ public:
 	// Sets default values for this component's properties
 	UAGX_RigidBodyComponent();
 
+	/// The mass of the body.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Mass;
 
+	/// The three-component diagonal of the inertia tensor.
 	UPROPERTY(EditAnywhere, BluePrintReadOnly)
 	FVector InertiaTensorDiagonal;
+
+	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
+	agx::agx_RigidBody* GetOrCreateNative();
+
+	/// Return the native AGX Dynamics representation of this rigid body. May return nullptr.
+	agx::agx_RigidBody* GetNative();
+
+	/// Return true if the AGX Dynamics object has been created. False otherwise.
+	bool HasNative();
+
+public:
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+private:
+	void InitializeNative();
+
+private:
+	agx::agx_RigidBodyRef Native;
 };
