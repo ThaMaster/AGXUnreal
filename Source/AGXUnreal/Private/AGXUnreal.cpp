@@ -2,6 +2,8 @@
 
 #include "AGXUnreal.h"
 
+DEFINE_LOG_CATEGORY(LogAGX);
+
 #define LOCTEXT_NAMESPACE "FAGXUnrealModule"
 
 void FAGXUnrealModule::StartupModule()
