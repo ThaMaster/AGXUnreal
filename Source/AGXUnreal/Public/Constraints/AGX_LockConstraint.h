@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AGX_Constraint.h"
+#include "Constraints/AGX_Constraint.h"
 #include "AGX_LockConstraint.generated.h"
 
 

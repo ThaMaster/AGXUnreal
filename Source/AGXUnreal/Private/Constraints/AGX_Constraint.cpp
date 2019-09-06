@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AGX_Constraint.h"
+#include "Constraints/AGX_Constraint.h"
 
 
 AAGX_Constraint::AAGX_Constraint()
