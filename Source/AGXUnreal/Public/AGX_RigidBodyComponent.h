@@ -3,27 +3,30 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Components/SceneComponent.h"
 #include "AGX_RigidBodyComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class AGXUNREAL_API UAGX_RigidBodyComponent : public UActorComponent
+class AGXUNREAL_API UAGX_RigidBodyComponent : public USceneComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UAGX_RigidBodyComponent();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Mass;
+
+	UPROPERTY(EditAnywhere, BluePrintReadOnly)
+	FVector InertiaTensorDiagonal;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-		
-	
 };

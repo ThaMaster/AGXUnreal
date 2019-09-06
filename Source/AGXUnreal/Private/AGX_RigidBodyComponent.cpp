@@ -11,7 +11,11 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+	Mass = 10;
+	InertiaTensorDiagonal = FVector(1.f, 1.f, 1.f);
+
 	// ...
+	UE_LOG(LogTemp, Log, TEXT("RigidBody constructor called."))
 }
 
 
@@ -21,7 +25,10 @@ void UAGX_RigidBodyComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
+
+	UE_LOG(LogTemp, Log, TEXT("RigidBody with mass %f ready to simulate."), Mass)
+
+	UE_LOG(LogTemp, Log, TEXT("Searching for geometries."))
 }
 
 
