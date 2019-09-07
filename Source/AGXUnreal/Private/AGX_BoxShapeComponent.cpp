@@ -1,9 +1,12 @@
 #include "AGX_BoxShapeComponent.h"
 
+#include "AGX_LogCategory.h"
+
+
 UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	UE_LOG(LogTemp, Log, TEXT("BoxShape instance created."));
+	UE_LOG(LogAGX, Log, TEXT("BoxShape instance created."));
 }
 
 agx::agxCollide_Box* UAGX_BoxShapeComponent::getOrCreateNative()
@@ -34,7 +37,7 @@ void UAGX_BoxShapeComponent::BeginPlay()
 		InitializeNative();
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("BoxShape ready to simulate."));
+	UE_LOG(LogAGX, Log, TEXT("BoxShape ready to simulate."));
 }
 
 void UAGX_BoxShapeComponent::InitializeNative()

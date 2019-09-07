@@ -1,5 +1,8 @@
 #include "AGX_RigidBodyComponent.h"
 
+#include "AGX_LogCategory.h"
+
+
 // Sets default values for this component's properties
 UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 {
@@ -11,7 +14,7 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	InertiaTensorDiagonal = FVector(1.f, 1.f, 1.f);
 
 	// ...
-	UE_LOG(LogTemp, Log, TEXT("RigidBody constructor called."))
+	UE_LOG(LogAGX, Log, TEXT("RigidBody constructor called."))
 }
 
 agx::agx_RigidBody* UAGX_RigidBodyComponent::GetOrCreateNative()
@@ -44,9 +47,9 @@ void UAGX_RigidBodyComponent::BeginPlay()
 		InitializeNative();
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("RigidBody with mass %f ready to simulate."), Mass);
+	UE_LOG(LogAGX, Log, TEXT("RigidBody with mass %f ready to simulate."), Mass);
 
-	UE_LOG(LogTemp, Log, TEXT("Searching for geometries."));
+	UE_LOG(LogAGX, Log, TEXT("Searching for geometries."));
 }
 
 // Called every frame

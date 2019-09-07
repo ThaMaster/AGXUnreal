@@ -3,6 +3,8 @@
 
 #include "AGX_ShapeComponent.h"
 
+#include "AGX_LogCategory.h"
+
 
 // Sets default values for this component's properties
 UAGX_ShapeComponent::UAGX_ShapeComponent()
@@ -11,7 +13,7 @@ UAGX_ShapeComponent::UAGX_ShapeComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	UE_LOG(LogTemp, Log, TEXT("ShapeComponent instance crated."));
+	UE_LOG(LogAGX, Log, TEXT("ShapeComponent instance crated."));
 }
 
 
@@ -20,7 +22,7 @@ void UAGX_ShapeComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp, Log, TEXT("ShapeComponent ready to simulate"));
+	UE_LOG(LogAGX, Log, TEXT("ShapeComponent ready to simulate"));
 }
 
 

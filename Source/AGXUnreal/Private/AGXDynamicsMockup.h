@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Logging/LogMacros.h"
+#include "AGX_LogCategory.h"
+
 
 namespace agx
 {
@@ -15,7 +16,7 @@ namespace agx
 
 	inline void* allocate(const TCHAR* classname)
 	{
-		UE_LOG(LogTemp, Log, TEXT("AGX_CALL: Allocate %s"), classname);
+		UE_LOG(LogAGX, Log, TEXT("AGX_CALL: Allocate %s"), classname);
 		static intptr_t next = 0;
 		++next;
 		return reinterpret_cast<void*>(next);
@@ -23,6 +24,6 @@ namespace agx
 
 	inline void call(const TCHAR* call)
 	{
-		UE_LOG(LogTemp, Log, TEXT("AGX_CALL: %s"), call);
+		UE_LOG(LogAGX, Log, TEXT("AGX_CALL: %s"), call);
 	}
 }
