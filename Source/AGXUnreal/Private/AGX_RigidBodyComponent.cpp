@@ -1,6 +1,8 @@
 #include "AGX_RigidBodyComponent.h"
-
+#include "AGX_ShapeComponent.h"
 #include "AGX_LogCategory.h"
+
+#include "GameFramework/Actor.h"
 
 
 // Sets default values for this component's properties
@@ -14,7 +16,7 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	InertiaTensorDiagonal = FVector(1.f, 1.f, 1.f);
 
 	// ...
-	UE_LOG(LogAGX, Log, TEXT("RigidBody constructor called."))
+	UE_LOG(LogAGX, Log, TEXT("RigidBody instance created."))
 }
 
 agx::agx_RigidBody* UAGX_RigidBodyComponent::GetOrCreateNative()
@@ -49,7 +51,6 @@ void UAGX_RigidBodyComponent::BeginPlay()
 
 	UE_LOG(LogAGX, Log, TEXT("RigidBody with mass %f ready to simulate."), Mass);
 
-	UE_LOG(LogAGX, Log, TEXT("Searching for geometries."));
 }
 
 // Called every frame
@@ -74,4 +75,14 @@ void UAGX_RigidBodyComponent::InitializeNative()
 {
 	Native = agx::allocate(TEXT("agx::RigidBody"));
 	agx::call(TEXT("agx::setPosition, velocity, etc"));
+
+	UE_LOG(LogAGX, Log, TEXT("Searching for geometries."));
+	TArray<UActorComponent*> shapes = GetOwner()->GetComponentsByClass(UAGX_ShapeComponent::StaticClass());
+	for (UActorComponent* component : shapes)
+	{
+		UAGX_ShapeComponent* ShapeComponent = Cast<UAGX_ShapeComponent>(component);
+		agx::agxCollide_Shape* NativeShape = ShapeComponent->GetOrCreateNative();
+		agx::call(TEXT("Native->add(NativeShape);"));
+//		Native->add();
+	}
 }
