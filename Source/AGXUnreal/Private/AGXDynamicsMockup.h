@@ -5,6 +5,9 @@
 
 namespace agx
 {
+	using agxCollide_Shape = void;
+	using agxCollide_ShapeRef = void*;
+
 	using agxCollide_Box = void;
 	using agxCollide_BoxRef = void*;
 
