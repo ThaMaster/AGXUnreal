@@ -27,6 +27,9 @@ public:
 	/** Indicates whether this actor should participate in level bounds calculations. */
 	bool IsLevelBoundsRelevant() const override { return false; }
 
+	UPROPERTY(VisibleDefaultsOnly, Meta = (Category = "AGX"))
+	USceneComponent* Root;
+
 protected:
 
 	/** Called when the game starts or when spawned. */
