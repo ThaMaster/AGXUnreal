@@ -2,48 +2,37 @@
 
 #include "AGX_LogCategory.h"
 
-
 UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	UE_LOG(LogAGX, Log, TEXT("BoxShape instance created."));
 }
 
-agx::agxCollide_Box* UAGX_BoxShapeComponent::getOrCreateNative()
+agx::agxCollide_Box* UAGX_BoxShapeComponent::GetOrCreateBox()
 {
-	if (!HasNative())
+	if (Native == nullptr)
 	{
-		InitializeNative();
+		CreateNativeBox();
 	}
-
 	return Native;
 }
 
-agx::agxCollide_Box* UAGX_BoxShapeComponent::getNative()
+agx::agxCollide_Box* UAGX_BoxShapeComponent::GetBox()
 {
 	return Native;
 }
 
-bool UAGX_BoxShapeComponent::HasNative() const
+void UAGX_BoxShapeComponent::CreateNativeShapes(TArray<agx::agxCollide_ShapeRef>& OutNativeShapes)
 {
-	return Native != nullptr;
-}
-
-void UAGX_BoxShapeComponent::BeginPlay()
-{
-	Super::BeginPlay();
-	if (!HasNative())
+	if (Native == nullptr)
 	{
-		InitializeNative();
+		CreateNativeBox();
 	}
-
-	UE_LOG(LogAGX, Log, TEXT("BoxShape ready to simulate."));
+	check(Native != nullptr);
+	OutNativeShapes.Add(Native);
 }
 
-void UAGX_BoxShapeComponent::InitializeNative()
+void UAGX_BoxShapeComponent::CreateNativeBox()
 {
-	NativeGeometry = agx::allocate(TEXT("agxCollide::Geometry"));
 	Native = agx::allocate(TEXT("agxCollide::Box"));
-
-	agx::call(TEXT("NativeGeometry->add(Native);"));
 }
