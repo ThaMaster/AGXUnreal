@@ -16,7 +16,7 @@ struct FRigidBodyRef;
  * This class handles all translation between Unreal Engine types and
  * AGX Dynamics types, such as back and forth between FVector and agx::Vec3.
  */
-class FRigidBodyBarrier
+class AGXUNREALBARRIER_API FRigidBodyBarrier
 {
 public:
 	FRigidBodyBarrier();
