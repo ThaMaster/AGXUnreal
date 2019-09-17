@@ -13,29 +13,29 @@
 	"CanContainContent": true,
 	"IsBetaVersion": true,
 	"Installed": false,
-	"Modules": [
-		{
-			"Name": "AGXUnreal",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [
-				"Linux",
-				"Win64",
-				"Win32"
-			],
-			"BlacklistPlatforms ": [
-				"IOS"
-			]
-		},
-		{
-			"Name": "AGXUnrealEditor",
-			"Type": "Editor",
-			"LoadingPhase": "PostEngineInit"
-		},
-		{
-			"Name": "AGXUnrealBarrier",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		}
-	]
+  "Modules": [
+    {
+      "Name": "AGXUnrealBarrier",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "AGXUnreal",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "WhitelistPlatforms": [
+        "Linux",
+        "Win64",
+        "Win32"
+      ],
+      "BlacklistPlatforms ": [
+        "IOS"
+      ]
+    },
+    {
+      "Name": "AGXUnrealEditor",
+      "Type": "Editor",
+      "LoadingPhase": "PostEngineInit"
+    }
+  ]
 }
