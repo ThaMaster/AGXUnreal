@@ -1,6 +1,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_ShapeComponent.h"
 #include "AGX_LogCategory.h"
+#include "AGXDynamicsMockup.h"
 
 #include "GameFramework/Actor.h"
 
@@ -19,38 +20,34 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	UE_LOG(LogAGX, Log, TEXT("RigidBody instance created."))
 }
 
-agx::agx_RigidBody* UAGX_RigidBodyComponent::GetOrCreateNative()
+FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
 {
 	if (!HasNative())
 	{
 		InitializeNative();
 	}
-
-	return Native;
+	return &NativeBarrier;
 }
 
-agx::agx_RigidBody* UAGX_RigidBodyComponent::GetNative()
+FRigidBodyBarrier* UAGX_RigidBodyComponent::GetNative()
 {
-	return Native;
+	return &NativeBarrier;
 }
 
 bool UAGX_RigidBodyComponent::HasNative()
 {
-	return Native != nullptr;
+	return NativeBarrier.HasNative();
 }
 
 // Called when the game starts
 void UAGX_RigidBodyComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
 	if (!HasNative())
 	{
 		InitializeNative();
 	}
-
 	UE_LOG(LogAGX, Log, TEXT("RigidBody with mass %f ready to simulate."), Mass);
-
 }
 
 // Called every frame
@@ -73,16 +70,20 @@ void UAGX_RigidBodyComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
 void UAGX_RigidBodyComponent::InitializeNative()
 {
-	Native = agx::allocate(TEXT("agx::RigidBody"));
+	NativeBarrier.AllocateNative();
 	agx::call(TEXT("agx::setPosition, velocity, etc"));
 
 	UE_LOG(LogAGX, Log, TEXT("Searching for geometries."));
+	// TODO: Restore this shape creation loop.
+	#if 0
 	TArray<UActorComponent*> shapes = GetOwner()->GetComponentsByClass(UAGX_ShapeComponent::StaticClass());
+
 	for (UActorComponent* component : shapes)
 	{
-		UAGX_ShapeComponent* ShapeComponent = Cast<UAGX_ShapeComponent>(component);
+		UAGX_ShapeComponent* ShapeComponent = nullptr;  // Cast<UAGX_ShapeComponent>(component);
 		agx::agxCollide_Shape* NativeShape = ShapeComponent->GetOrCreateNative();
 		agx::call(TEXT("Native->add(NativeShape);"));
 //		Native->add();
 	}
+	#endif
 }

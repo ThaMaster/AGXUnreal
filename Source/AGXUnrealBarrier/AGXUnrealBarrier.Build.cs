@@ -1,23 +1,21 @@
 using UnrealBuildTool;
 
-public class AGXUnreal : ModuleRules
+public class AGXUnrealBarrier : ModuleRules
 {
-	public AGXUnreal(ReadOnlyTargetRules Target) : base(Target)
+	public AGXUnrealBarrier(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		PrecompileForTargets = PrecompileTargetsType.Any;
+		bUseRTTI = true;
 
 		// TODO: Determine which of these are really need and why.
 		PublicDependencyModuleNames.AddRange(new string[] {
 			"RHI", "RenderCore", "Core", "CoreUObject", "Engine", "InputCore"});
 
-
 		// TODO: Determine which of these are really needed and why.
 		// TODO: Why are some modules listed both here and in Public... above?
-		// TODO: These were included before. Don't know why or where they came from. Remove?
-		//       "CoreUObject", "Engine", "Slate", "SlateCore"
 		PrivateDependencyModuleNames.AddRange(new string[] {
-			"RHI", "RenderCore", "CustomMeshComponent", "Projects", "Json", "AGXUnrealBarrier", "Landscape"});
-
+			"RHI", "RenderCore", "CustomMeshComponent", "Projects", "Json",
+			"AGXUnrealLibrary", "Landscape"});
 	}
 }

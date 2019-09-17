@@ -4,16 +4,14 @@
 
 #include "AGX_LogCategory.h"
 
-
 #define LOCTEXT_NAMESPACE "FAGXUnrealModule"
 
 void FAGXUnrealModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-
 	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealModule::StartupModule()"));
 
-	UE_LOG(LogAGX, Log, TEXT("AGX_CALL: agx::init()"));
+	// TODO: We used to do agx::init here, but that is no longer allowed since
+	//       this isn't the AGXUnrealBarrier module.
 }
 
 void FAGXUnrealModule::ShutdownModule()
@@ -23,9 +21,10 @@ void FAGXUnrealModule::ShutdownModule()
 
 	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealModule::ShutdownModule()"));
 
-	UE_LOG(LogAGX, Log, TEXT("AGX_CALL: agx::shutdown()"));
+	// TODO: We used to do agx::shutdown here, but that is no longer allowed
+	//       since this isn't the AGXUnrealBarrierModule.
 }
 
 #undef LOCTEXT_NAMESPACE
-	
+
 IMPLEMENT_MODULE(FAGXUnrealModule, AGXUnreal)

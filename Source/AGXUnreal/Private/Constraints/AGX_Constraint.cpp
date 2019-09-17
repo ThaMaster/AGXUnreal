@@ -1,3 +1,4 @@
+#if 0
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
@@ -12,6 +13,7 @@ AAGX_Constraint::AAGX_Constraint()
 
 void AAGX_Constraint::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
 }
 
+#endif

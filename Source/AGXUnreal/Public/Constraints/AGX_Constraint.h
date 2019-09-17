@@ -1,3 +1,4 @@
+#if 0
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
@@ -44,8 +45,8 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint")
 	AAGX_ConstraintFrame *ConstraintFrame2;
-	
-public:	
+
+public:
 
 	/** Sets default values for this actor's properties. */
 	AAGX_Constraint();
@@ -59,3 +60,4 @@ protected:
 	virtual void BeginPlay() override;
 
 };
+#endif

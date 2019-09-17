@@ -1,3 +1,5 @@
+#if 0
+
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "AGX_ShapeComponent.h"
@@ -65,3 +67,4 @@ void UAGX_ShapeComponent::BeginPlay()
 
 	UE_LOG(LogAGX, Log, TEXT("ShapeComponent ready to simulate"));
 }
+#endif

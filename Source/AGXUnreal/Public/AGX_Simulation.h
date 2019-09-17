@@ -8,14 +8,14 @@
 
 /**
  * Manages an AGX simulation instance.
- * 
+ *
  * When an instance of this class exists, native AGX objects relating to the simulation
  * can be created (RigidBody, Constraint, ContactMaterial, etc). When this instance
  * is destroyed, all those native objects must be destroyed.
  *
  * Lifetime is bound to a GameInstance. Therefore, each playing GameInstance will have
  * exactly one UAGX_Simulation instance.
- * 
+ *
  * When not playing, the CDO (class default object) can be modified through the Editor UI.
  * This is useful for setting simulation properties like time step and contact materials.
  * When a GameInstance is started, the properties of the CDO will automatically be copied
@@ -36,12 +36,12 @@ public:
 	/** Uniform default scene gravity, in cm/s^2. -980.665 by default. */
 	UPROPERTY(config, EditAnywhere, Category = "Scene Defaults")
 	FVector Gravity = FVector(0.0f, 0.0f, -980.665f);
-	
+
 
 public: // OVERRIDES
 
 	void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	void Deinitialize() override;
-	
+
 };

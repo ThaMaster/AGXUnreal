@@ -1,3 +1,4 @@
+#if 0
 #include "AGX_BoxShapeComponent.h"
 
 #include "AGX_LogCategory.h"
@@ -36,3 +37,4 @@ void UAGX_BoxShapeComponent::CreateNativeBox()
 {
 	Native = agx::allocate(TEXT("agxCollide::Box"));
 }
+#endif

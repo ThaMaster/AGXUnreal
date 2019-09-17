@@ -5,6 +5,7 @@
 
 namespace agx
 {
+#if 0
 	using agxCollide_Shape = void;
 	using agxCollide_ShapeRef = void*;
 
@@ -16,6 +17,7 @@ namespace agx
 
 	using agx_RigidBody = void;
 	using agx_RigidBodyRef = void*;
+#endif
 
 	inline void* allocate(const TCHAR* classname)
 	{

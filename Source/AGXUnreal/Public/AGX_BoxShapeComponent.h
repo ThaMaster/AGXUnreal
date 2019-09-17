@@ -1,3 +1,5 @@
+#if 0
+
 #pragma once
 
 #include "AGX_ShapeComponent.h"
@@ -37,3 +39,5 @@ private:
 private:
 	agx::agxCollide_BoxRef Native;
 };
+
+#endif

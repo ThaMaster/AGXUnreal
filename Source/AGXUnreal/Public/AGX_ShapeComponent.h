@@ -1,3 +1,4 @@
+#if 0
 #pragma once
 
 #include "AGXDynamicsMockup.h"
@@ -32,3 +33,4 @@ private:
 	agx::agxCollide_GeometryRef NativeGeometry;
 	TArray<agx::agxCollide_ShapeRef> NativeShapes;
 };
+#endif

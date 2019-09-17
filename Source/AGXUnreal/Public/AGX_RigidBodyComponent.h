@@ -1,8 +1,9 @@
 #pragma once
 
-#include "AGXDynamicsMockup.h"
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
+
+#include "RigidBodyBarrier.h"
 
 #include "AGX_RigidBodyComponent.generated.h"
 
@@ -24,10 +25,10 @@ public:
 	FVector InertiaTensorDiagonal;
 
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
-	agx::agx_RigidBody* GetOrCreateNative();
+	FRigidBodyBarrier* GetOrCreateNative();
 
 	/// Return the native AGX Dynamics representation of this rigid body. May return nullptr.
-	agx::agx_RigidBody* GetNative();
+	FRigidBodyBarrier* GetNative();
 
 	/// Return true if the AGX Dynamics object has been created. False otherwise.
 	bool HasNative();
@@ -44,5 +45,5 @@ private:
 	void InitializeNative();
 
 private:
-	agx::agx_RigidBodyRef Native;
+	FRigidBodyBarrier NativeBarrier;
 };

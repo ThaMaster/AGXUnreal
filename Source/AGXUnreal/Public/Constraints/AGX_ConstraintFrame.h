@@ -1,3 +1,4 @@
+#if 0
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
@@ -18,8 +19,8 @@ UCLASS(ClassGroup = "AGX", Category = "AGX",
 class AGXUNREAL_API AAGX_ConstraintFrame : public AActor
 {
 	GENERATED_BODY()
-		
-public:	
+
+public:
 
 	/** Sets default values for this actor's properties. */
 	AAGX_ConstraintFrame();
@@ -36,3 +37,4 @@ protected:
 	virtual void BeginPlay() override;
 
 };
+#endif
