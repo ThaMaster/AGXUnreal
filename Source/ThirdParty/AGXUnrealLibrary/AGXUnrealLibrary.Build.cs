@@ -24,10 +24,19 @@ public class AGXUnrealLibrary : ModuleRules
 		bEnableExceptions = true;
 
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxPhysics"));
-		// TODO: Do we need to list more libraries here, or will transitive
-		// dependencies be enough?.
+        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxCable"));
+        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxCore"));
+        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxHydraulics"));
+        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxModel"));
+        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxPhysics"));
+        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxSabre"));
+        //PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxTerrain"));
+        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxVehicle"));
 
-		RuntimeDependencies.Add(CurrentPlatform.RuntimeLibraryPath("agxPhysics"));
+        // TODO: Do we need to list more libraries here, or will transitive
+        // dependencies be enough?.
+
+        RuntimeDependencies.Add(CurrentPlatform.RuntimeLibraryPath("agxPhysics"));
 		// TODO: Do we need to list more libraries here, or will transitive
 		//       dependencies be enough?
 		// TODO: Do we need to add to RuntimeDependencies at all?
@@ -107,8 +116,8 @@ public class AGXUnrealLibrary : ModuleRules
 			// TODO: Detect if AGD Dynamics is in local build or installed mode.
 			//       Currently assuming local build for Linux and installed for Windows.
 			string AGXDir = Environment.GetEnvironmentVariable("AGX_DIR");
-			string AGXBuildDir = Environment.GetEnvironmentVariable("AGX_BUILD_DIR");
-			string AGXDependenciesDir = Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR");
+			string AGXBuildDir = Environment.GetEnvironmentVariable("AGX_BUILD_DIR") ?? AGXDir;
+			string AGXDependenciesDir = Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR") ?? AGXDir;
 			if (AGXDir == null || AGXBuildDir == null || AGXDependenciesDir == null)
 			{
 				System.Console.WriteLine("Did not find AGX Dynamics installation folder.");
