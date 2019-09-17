@@ -30,6 +30,9 @@ public:
 
 	bool HasNative() const;
 	void AllocateNative();
+
+	void DebugSimulate();
+
 private:
 	FRigidBodyBarrier(const FRigidBodyBarrier&) = delete;
 	void operator=(const FRigidBodyBarrier&) = delete;

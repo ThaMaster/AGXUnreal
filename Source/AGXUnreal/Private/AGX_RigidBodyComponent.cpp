@@ -49,6 +49,9 @@ void UAGX_RigidBodyComponent::BeginPlay()
 	}
 	NativeBarrier.SetMass(Mass);
 	UE_LOG(LogAGX, Log, TEXT("RigidBody with mass %f supposedly ready to simulate."), Mass);
+
+	// TODO: Remove.
+	NativeBarrier.DebugSimulate();
 }
 
 // Called every frame

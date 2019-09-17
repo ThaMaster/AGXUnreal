@@ -2,6 +2,11 @@
 
 #include "AGXRefs.h"
 
+// TODO: Remove.
+#include "BeginAGXIncludes.h"
+#include <agxSDK/Simulation.h>
+#include "EndAGXIncludes.h"
+
 
 // TODO: Move these conversion helpers somewhere the entire Barrier module can
 //       access them.
@@ -31,16 +36,13 @@ namespace
 FRigidBodyBarrier::FRigidBodyBarrier()
 	: NativeRef{new FRigidBodyRef}
 {
+	// TODO: This is debug code. Remove.
 	static bool IsAGXInitialized = false;
 	if (!IsAGXInitialized)
 	{
 		agx::init();
 		IsAGXInitialized = true;
 	}
-
-	// TODO: This is test code and should be removed.
-	NativeRef->Native = new agx::RigidBody();
-	std::cout << NativeRef->Native->getVelocity() << '\n';
 }
 
 FRigidBodyBarrier::~FRigidBodyBarrier()
@@ -104,4 +106,16 @@ void FRigidBodyBarrier::AllocateNative()
 {
 	check(!HasNative());
 	NativeRef->Native = new agx::RigidBody();
+}
+
+// TODO: This is test code and should be removed.
+void FRigidBodyBarrier::DebugSimulate()
+{
+	agxSDK::SimulationRef simulation = new agxSDK::Simulation();
+	simulation->add(NativeRef->Native);
+	for (int I = 0; I < 10; ++I)
+	{
+		simulation->stepForward();
+		std::cout << "At time step " << I << ": velocity is " << NativeRef->Native->getVelocity() << " m/s\n";
+	}
 }
