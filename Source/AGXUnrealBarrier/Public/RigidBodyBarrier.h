@@ -22,8 +22,11 @@ public:
 	FRigidBodyBarrier();
 	~FRigidBodyBarrier();
 
-	FVector getPosition() const;
-	void setPosition(FVector NewPosition);
+	void SetPosition(FVector NewPosition);
+	FVector GetPosition() const;
+
+	void SetMass(float NewMass);
+	float GetMass();
 
 	bool HasNative() const;
 	void AllocateNative();

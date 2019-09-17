@@ -50,7 +50,18 @@ FRigidBodyBarrier::~FRigidBodyBarrier()
 	// not just the forward declaration, of FRigidBodyRef.
 }
 
-FVector FRigidBodyBarrier::getPosition() const
+void FRigidBodyBarrier::SetPosition(FVector PositionUnreal)
+{
+	if (NativeRef->Native == nullptr)
+	{
+		return;
+	}
+
+	agx::Vec3 PositionAGX = convert(PositionUnreal);
+	NativeRef->Native->setPosition(PositionAGX);
+}
+
+FVector FRigidBodyBarrier::GetPosition() const
 {
 	if (NativeRef->Native == nullptr)
 	{
@@ -62,15 +73,26 @@ FVector FRigidBodyBarrier::getPosition() const
 	return PositionUnreal;
 }
 
-void FRigidBodyBarrier::setPosition(FVector PositionUnreal)
+void FRigidBodyBarrier::SetMass(float MassUnreal)
 {
-	if (NativeRef->Native == nullptr)
+	if (NativeRef->Native != nullptr)
 	{
 		return;
 	}
+	agx::Real MassAGX = convert(MassUnreal);
+	NativeRef->Native->getMassProperties()->setMass(MassAGX);
+}
 
-	agx::Vec3 PositionAGX = convert(PositionUnreal);
-	NativeRef->Native->setPosition(PositionAGX);
+
+float FRigidBodyBarrier::GetMass()
+{
+	if (NativeRef->Native != nullptr)
+	{
+		return float();
+	}
+	agx::Real MassAGX = NativeRef->Native->getMassProperties()->getMass();
+	float MassUnreal = convert(MassAGX);
+	return MassUnreal;
 }
 
 bool FRigidBodyBarrier::HasNative() const

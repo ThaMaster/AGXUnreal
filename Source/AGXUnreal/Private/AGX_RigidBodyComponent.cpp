@@ -47,7 +47,8 @@ void UAGX_RigidBodyComponent::BeginPlay()
 	{
 		InitializeNative();
 	}
-	UE_LOG(LogAGX, Log, TEXT("RigidBody with mass %f ready to simulate."), Mass);
+	NativeBarrier.SetMass(Mass);
+	UE_LOG(LogAGX, Log, TEXT("RigidBody with mass %f supposedly ready to simulate."), Mass);
 }
 
 // Called every frame
