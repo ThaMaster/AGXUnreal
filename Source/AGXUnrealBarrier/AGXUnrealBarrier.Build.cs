@@ -15,7 +15,7 @@ public class AGXUnrealBarrier : ModuleRules
 		// TODO: Determine which of these are really needed and why.
 		// TODO: Why are some modules listed both here and in Public... above?
 		PrivateDependencyModuleNames.AddRange(new string[] {
-			"RHI", "RenderCore", "CustomMeshComponent", "Projects", "Json",
+			"RHI", "RenderCore", "Projects", "Json",
 			"AGXUnrealLibrary", "Landscape"});
 	}
 }
