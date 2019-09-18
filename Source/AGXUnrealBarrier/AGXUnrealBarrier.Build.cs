@@ -7,6 +7,7 @@ public class AGXUnrealBarrier : ModuleRules
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		PrecompileForTargets = PrecompileTargetsType.Any;
 		bUseRTTI = true;
+		bEnableExceptions = true;
 
 		// TODO: Determine which of these are really need and why.
 		PublicDependencyModuleNames.AddRange(new string[] {
