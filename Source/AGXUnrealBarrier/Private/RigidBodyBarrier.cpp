@@ -1,37 +1,12 @@
 #include "RigidBodyBarrier.h"
 
 #include "AGXRefs.h"
+#include "TypeConversions.h"
 
 // TODO: Remove.
 #include "BeginAGXIncludes.h"
 #include <agxSDK/Simulation.h>
 #include "EndAGXIncludes.h"
-
-
-// TODO: Move these conversion helpers somewhere the entire Barrier module can
-//       access them.
-namespace
-{
-	float convert(agx::Real v)
-	{
-		return static_cast<float>(v);
-	}
-
-	agx::Real convert(float v)
-	{
-		return static_cast<agx::Real>(v);
-	}
-
-	FVector convert(agx::Vec3 v)
-	{
-		return FVector(convert(v.x()), convert(v.y()), convert(v.z()));
-	}
-
-	agx::Vec3 convert(FVector v)
-	{
-		return agx::Vec3(convert(v.X), convert(v.Y), convert(v.Z));
-	}
-}
 
 FRigidBodyBarrier::FRigidBodyBarrier()
 	: NativeRef{new FRigidBodyRef}
@@ -59,7 +34,7 @@ void FRigidBodyBarrier::SetPosition(FVector PositionUnreal)
 		return;
 	}
 
-	agx::Vec3 PositionAGX = convert(PositionUnreal);
+	agx::Vec3 PositionAGX = Convert(PositionUnreal);
 	NativeRef->Native->setPosition(PositionAGX);
 }
 
@@ -71,7 +46,7 @@ FVector FRigidBodyBarrier::GetPosition() const
 	}
 
 	agx::Vec3 PositionAGX = NativeRef->Native->getPosition();
-	FVector PositionUnreal = convert(PositionAGX);
+	FVector PositionUnreal = Convert(PositionAGX);
 	return PositionUnreal;
 }
 
@@ -81,10 +56,9 @@ void FRigidBodyBarrier::SetMass(float MassUnreal)
 	{
 		return;
 	}
-	agx::Real MassAGX = convert(MassUnreal);
+	agx::Real MassAGX = Convert(MassUnreal);
 	NativeRef->Native->getMassProperties()->setMass(MassAGX);
 }
-
 
 float FRigidBodyBarrier::GetMass()
 {
@@ -93,7 +67,7 @@ float FRigidBodyBarrier::GetMass()
 		return float();
 	}
 	agx::Real MassAGX = NativeRef->Native->getMassProperties()->getMass();
-	float MassUnreal = convert(MassAGX);
+	float MassUnreal = Convert(MassAGX);
 	return MassUnreal;
 }
 
@@ -106,6 +80,12 @@ void FRigidBodyBarrier::AllocateNative()
 {
 	check(!HasNative());
 	NativeRef->Native = new agx::RigidBody();
+}
+
+FRigidBodyRef* FRigidBodyBarrier::GetNative()
+{
+	check(HasNative());
+	return NativeRef.get();
 }
 
 // TODO: This is test code and should be removed.
