@@ -26,7 +26,7 @@ void FShapeBarrier::AllocateNative()
 {
 	check(!HasNative());
 	NativeGeometryRef->Native = new agxCollide::Geometry();
-	NativeShapeRef->Native = AllocateNativeShape()->Native;
+	AllocateNativeShape();
 	NativeGeometryRef->Native->add(NativeShapeRef->Native);
 }
 

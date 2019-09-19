@@ -2,6 +2,7 @@
 #include <agx/RigidBody.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
+#include <agxCollide/Box.h>
 #include "EndAGXIncludes.h"
 
 struct FRigidBodyRef
@@ -17,4 +18,9 @@ struct FGeometryRef
 struct FShapeRef
 {
 	agxCollide::ShapeRef Native;
+};
+
+struct FBoxShapeRef
+{
+	agxCollide::BoxRef Native;
 };
