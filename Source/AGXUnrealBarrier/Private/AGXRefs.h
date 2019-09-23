@@ -1,3 +1,5 @@
+#pragma once
+
 #include "BeginAGXIncludes.h"
 #include <agx/RigidBody.h>
 #include <agxCollide/Geometry.h>
