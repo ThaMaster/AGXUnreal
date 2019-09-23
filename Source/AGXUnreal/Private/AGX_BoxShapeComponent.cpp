@@ -1,4 +1,3 @@
-#if 0
 #include "AGX_BoxShapeComponent.h"
 
 #include "AGX_LogCategory.h"
@@ -9,32 +8,56 @@ UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 	UE_LOG(LogAGX, Log, TEXT("BoxShape instance created."));
 }
 
-agx::agxCollide_Box* UAGX_BoxShapeComponent::GetOrCreateBox()
+FShapeBarrier* UAGX_BoxShapeComponent::GetNative()
 {
-	if (Native == nullptr)
+	if (!NativeBarrier.HasNative())
 	{
-		CreateNativeBox();
+		// Cannot use HasNative in the test above because it is implemented
+		// in terms of GetNative, i.e., this function. Asking the barrier instead.
+		return nullptr;
 	}
-	return Native;
+	return &NativeBarrier;
 }
 
-agx::agxCollide_Box* UAGX_BoxShapeComponent::GetBox()
+const FShapeBarrier* UAGX_BoxShapeComponent::GetNative() const
 {
-	return Native;
-}
-
-void UAGX_BoxShapeComponent::CreateNativeShapes(TArray<agx::agxCollide_ShapeRef>& OutNativeShapes)
-{
-	if (Native == nullptr)
+	if (!NativeBarrier.HasNative())
 	{
-		CreateNativeBox();
+		// Cannot use HasNative in the test above because it is implemented
+		// in terms of GetNative, i.e., this function. Asking the barrier instead.
+		return nullptr;
 	}
-	check(Native != nullptr);
-	OutNativeShapes.Add(Native);
+	return &NativeBarrier;
 }
 
-void UAGX_BoxShapeComponent::CreateNativeBox()
+FShapeBarrier* UAGX_BoxShapeComponent::GetOrCreateNative()
 {
-	Native = agx::allocate(TEXT("agxCollide::Box"));
+	if (!HasNative())
+	{
+		CreateNative();
+	}
+	return &NativeBarrier;
 }
-#endif
+
+FBoxShapeBarrier* UAGX_BoxShapeComponent::GetNativeBox()
+{
+	if (!HasNative())
+	{
+		return nullptr;
+	}
+	return &NativeBarrier;
+}
+
+void UAGX_BoxShapeComponent::CreateNative()
+{
+	UE_LOG(LogAGX, Log, TEXT("Allocating native object for BoxShapeComponent."));
+	check(!HasNative());
+	NativeBarrier.AllocateNative();
+}
+
+void UAGX_BoxShapeComponent::ReleaseNative()
+{
+	UE_LOG(LogAGX, Log, TEXT("Releasing native object for BoxShapeComponent."));
+	check(HasNative());
+	NativeBarrier.ReleaseNative();
+}

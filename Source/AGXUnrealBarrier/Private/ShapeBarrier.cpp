@@ -30,6 +30,14 @@ void FShapeBarrier::AllocateNative()
 	NativeGeometryRef->Native->add(NativeShapeRef->Native);
 }
 
+void FShapeBarrier::ReleaseNative()
+{
+	check(HasNative());
+	NativeGeometryRef->Native->remove(NativeShapeRef->Native);
+	ReleaseNativeShape();
+	NativeGeometryRef->Native = nullptr;
+}
+
 FGeometryRef* FShapeBarrier::GetNativeGeometry()
 {
 	return NativeGeometryRef.get();

@@ -1,10 +1,9 @@
-#if 0
-
 #pragma once
 
 #include "AGX_ShapeComponent.h"
 #include "CoreMinimal.h"
 
+#include "BoxShapeBarrier.h"
 
 #include "AGX_BoxShapeComponent.generated.h"
 
@@ -23,21 +22,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FVector HalfExtent;
 
-
-	/// Get the native AGX Dynamics representation of this Box. Create it if necessary.
-	agx::agxCollide_Box* GetOrCreateBox();
+	FShapeBarrier* GetNative() override;
+	const FShapeBarrier* GetNative() const override;
+	FShapeBarrier* GetOrCreateNative() override;
 
 	/// Get the native AGX Dynamics representation of this Box. May return nullptr.
-	agx::agxCollide_Box* GetBox();
+	FBoxShapeBarrier* GetNativeBox();
 
 private:
-	/// Called when the AGX Dynamics object is to be created.
-	virtual void CreateNativeShapes(TArray<agx::agxCollide_ShapeRef>& OutNativeShapes) override;
+	/// Create the AGX Dynamics objects owned by the FBoxShapeBarrier.
+	void CreateNative();
 
-	void CreateNativeBox();
+	// Tell the Barrier object to release its references to the AGX Dynamics objects.
+	virtual void ReleaseNative() override;
+
+	// BeginPlay/EndPlay is handled by the base class UAGX_ShapeComponent.
 
 private:
-	agx::agxCollide_BoxRef Native;
+	FBoxShapeBarrier NativeBarrier;
 };
-
-#endif

@@ -20,9 +20,11 @@ public:
 	FVector GetHalfExtents() const;
 
 	FBoxShapeRef* GetNative();
+	const FBoxShapeRef* GetNative() const;
 
 private:
-	void AllocateNativeShape() override;
+	virtual void AllocateNativeShape() override;
+	virtual void ReleaseNativeShape() override;
 
 private:
 	FBoxShapeBarrier(const FBoxShapeBarrier&) = delete;

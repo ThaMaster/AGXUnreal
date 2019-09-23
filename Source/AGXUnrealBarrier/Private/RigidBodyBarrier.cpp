@@ -1,4 +1,5 @@
 #include "RigidBodyBarrier.h"
+#include "ShapeBarrier.h"
 
 #include "AGXRefs.h"
 #include "TypeConversions.h"
@@ -11,7 +12,7 @@
 FRigidBodyBarrier::FRigidBodyBarrier()
 	: NativeRef{new FRigidBodyRef}
 {
-	// TODO: This is debug code. Remove.
+	/// \todo This is debug code. Remove.
 	static bool IsAGXInitialized = false;
 	if (!IsAGXInitialized)
 	{
@@ -29,22 +30,14 @@ FRigidBodyBarrier::~FRigidBodyBarrier()
 
 void FRigidBodyBarrier::SetPosition(FVector PositionUnreal)
 {
-	if (NativeRef->Native == nullptr)
-	{
-		return;
-	}
-
+	check(HasNative())
 	agx::Vec3 PositionAGX = Convert(PositionUnreal);
 	NativeRef->Native->setPosition(PositionAGX);
 }
 
 FVector FRigidBodyBarrier::GetPosition() const
 {
-	if (NativeRef->Native == nullptr)
-	{
-		return FVector();
-	}
-
+	check(HasNative())
 	agx::Vec3 PositionAGX = NativeRef->Native->getPosition();
 	FVector PositionUnreal = Convert(PositionAGX);
 	return PositionUnreal;
@@ -52,23 +45,23 @@ FVector FRigidBodyBarrier::GetPosition() const
 
 void FRigidBodyBarrier::SetMass(float MassUnreal)
 {
-	if (NativeRef->Native != nullptr)
-	{
-		return;
-	}
+	check(HasNative());
 	agx::Real MassAGX = Convert(MassUnreal);
 	NativeRef->Native->getMassProperties()->setMass(MassAGX);
 }
 
 float FRigidBodyBarrier::GetMass()
 {
-	if (NativeRef->Native != nullptr)
-	{
-		return float();
-	}
+	check(HasNative());
 	agx::Real MassAGX = NativeRef->Native->getMassProperties()->getMass();
 	float MassUnreal = Convert(MassAGX);
 	return MassUnreal;
+}
+
+void FRigidBodyBarrier::AddShape(FShapeBarrier* Shape)
+{
+	check(HasNative());
+	NativeRef->Native->add(Shape->GetNativeGeometry()->Native);
 }
 
 bool FRigidBodyBarrier::HasNative() const
@@ -88,7 +81,12 @@ FRigidBodyRef* FRigidBodyBarrier::GetNative()
 	return NativeRef.get();
 }
 
-// TODO: This is test code and should be removed.
+void FRigidBodyBarrier::ReleaseNative()
+{
+	NativeRef->Native = nullptr;
+}
+
+/// \todo This is test code and should be removed.
 void FRigidBodyBarrier::DebugSimulate()
 {
 	agxSDK::SimulationRef simulation = new agxSDK::Simulation();

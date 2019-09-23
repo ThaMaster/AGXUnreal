@@ -13,6 +13,7 @@ public:
 
 	bool HasNative() const;
 	void AllocateNative();
+	void ReleaseNative();
 	FGeometryRef* GetNativeGeometry();
 	FShapeRef* GetNativeShape();
 
@@ -34,9 +35,12 @@ private:
 	\return The FShapeRef the subclass decide the actual type of.
 	*/
 	virtual void AllocateNativeShape() = 0;
+	virtual void ReleaseNativeShape() = 0;
 
 protected:
 	std::unique_ptr<FGeometryRef> NativeGeometryRef;
 	std::unique_ptr<FShapeRef> NativeShapeRef;
-	// NativeRef is owned by the subclasses of FShapeBarrier, e.g., FBoxBarrier.
+	// NativeRef is held by the subclasses of FShapeBarrier, e.g., FBoxBarrier.
+	// The NativeRef and the NativeShapeRef should always point to the same
+	// object.
 };

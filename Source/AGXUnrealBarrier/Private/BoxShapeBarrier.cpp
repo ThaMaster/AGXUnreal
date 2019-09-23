@@ -43,3 +43,10 @@ void FBoxShapeBarrier::AllocateNativeShape()
 	NativeRef->Native = new agxCollide::Box(agx::Vec3());
 	NativeShapeRef->Native = NativeRef->Native;
 }
+
+void FBoxShapeBarrier::ReleaseNativeShape()
+{
+	check(HasNative());
+	NativeRef->Native = nullptr;
+	NativeShapeRef->Native = nullptr;
+}

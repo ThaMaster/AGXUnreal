@@ -1,9 +1,9 @@
-#if 0
 #pragma once
 
-#include "AGXDynamicsMockup.h"
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
+
+#include "ShapeBarrier.h"
 
 #include "AGX_ShapeComponent.generated.h"
 
@@ -15,22 +15,24 @@ class AGXUNREAL_API UAGX_ShapeComponent : public USceneComponent
 public:
 	UAGX_ShapeComponent();
 
-	agx::agxCollide_Geometry* GetNative();
-	agx::agxCollide_Geometry* GetOrCreateNative();
+	virtual FShapeBarrier* GetNative() PURE_VIRTUAL(UAGX_ShapeComponent::GetNative, return nullptr;);
+	virtual const FShapeBarrier* GetNative() const PURE_VIRTUAL(UAGX_ShapeComponent::GetNative, return nullptr;);
+	virtual FShapeBarrier* GetOrCreateNative() PURE_VIRTUAL(UAGX_ShapeComponent::GetOrCreateNative, return nullptr;);
 	bool HasNative() const;
 
 public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(
+		float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+
+	virtual void ReleaseNative() PURE_VIRTUAL(UAGX_ShapeComponent::ReleaseNative,);
 
 private:
-	void CreateNative();
-	virtual void CreateNativeShapes(TArray<agx::agxCollide_ShapeRef>& OutNativeShapes);
-
-private:
-	agx::agxCollide_GeometryRef NativeGeometry;
-	TArray<agx::agxCollide_ShapeRef> NativeShapes;
+	// UAGX_ShapeComponent does not own the Barrier object because it cannot
+	// name its type. It is instead owned by the typed subclass, such as
+	// UAGX_BoxShapeComponent. Access to it is provided using virtual Get
+	// functions.
 };
-#endif

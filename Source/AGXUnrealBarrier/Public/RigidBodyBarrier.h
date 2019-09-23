@@ -4,8 +4,8 @@
 
 #include <memory>
 
-
 struct FRigidBodyRef;
+class FShapeBarrier;
 
 /**
  * Barrier between UAGX_RigidBody and agx::RigidBody. UAGX_RigidBody holds an
@@ -28,9 +28,12 @@ public:
 	void SetMass(float NewMass);
 	float GetMass();
 
+	void AddShape(FShapeBarrier* Shape);
+
 	bool HasNative() const;
 	void AllocateNative();
 	FRigidBodyRef* GetNative();
+	void ReleaseNative();
 
 	void DebugSimulate();
 
@@ -41,4 +44,3 @@ private:
 private:
 	std::unique_ptr<FRigidBodyRef> NativeRef;
 };
-

@@ -5,19 +5,13 @@
 
 #include "GameFramework/Actor.h"
 
-
 // Sets default values for this component's properties
 UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
+	UE_LOG(LogAGX, Log, TEXT("RigidBody instance created."));
 	PrimaryComponentTick.bCanEverTick = true;
-
 	Mass = 10;
 	InertiaTensorDiagonal = FVector(1.f, 1.f, 1.f);
-
-	// ...
-	UE_LOG(LogAGX, Log, TEXT("RigidBody instance created."))
 }
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
@@ -31,12 +25,39 @@ FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetNative()
 {
+	if (!HasNative())
+	{
+		/// \todo Should we return nullptr here, or should we return a pointer
+		///       to the existing but empty Barrier object?
+		///       Update function documentation in .h if changed.
+		return nullptr;
+	}
 	return &NativeBarrier;
 }
 
 bool UAGX_RigidBodyComponent::HasNative()
 {
 	return NativeBarrier.HasNative();
+}
+
+// Called every frame
+void UAGX_RigidBodyComponent::TickComponent(
+	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// Only printing tick output once to avoid excessive spam in the output window.
+	static bool HavePrinted = false;
+	if (!HavePrinted)
+	{
+		HavePrinted = true;
+		agx::call(TEXT("TickComponent for RigidBody."));
+		/// \todo Figure out how to do this in the pre-physics callback.
+//		agx::call(TEXT("agx::RigidBody::setPosition, velocity, etc"));
+
+		/// \todo Figure out how to do this in the pos-physics callback.
+//		agx::call(TEXT("agx::RigidBody::getPosition, velocity, etc"));
+	}
 }
 
 // Called when the game starts
@@ -48,28 +69,17 @@ void UAGX_RigidBodyComponent::BeginPlay()
 		InitializeNative();
 	}
 	NativeBarrier.SetMass(Mass);
-	UE_LOG(LogAGX, Log, TEXT("RigidBody with mass %f supposedly ready to simulate."), Mass);
+	UE_LOG(LogAGX, Log, TEXT("BeginPlay for RigidBody with mass %f."), Mass);
 
 	// TODO: Remove.
 	NativeBarrier.DebugSimulate();
 }
 
-// Called every frame
-void UAGX_RigidBodyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// Only printing tick output once to avoid excessive spam in the output window.
-	static bool HavePrinted = false;
-	if (!HavePrinted)
-	{
-		HavePrinted = true;
-		/// \todo Figure out how to do this in the pre-physics callback.
-		agx::call(TEXT("agx::RigidBody::setPosition, velocity, etc"));
-
-		/// \todo Figure out how to do this in the pos-physics callback.
-		agx::call(TEXT("agx::RigidBody::getPosition, velocity, etc"));
-	}
+	Super::EndPlay(Reason);
+	NativeBarrier.ReleaseNative();
+	UE_LOG(LogAGX, Log, TEXT("EndPlay for RigidBody with mass %f."), Mass);
 }
 
 void UAGX_RigidBodyComponent::InitializeNative()
@@ -77,17 +87,13 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	NativeBarrier.AllocateNative();
 	agx::call(TEXT("agx::setPosition, velocity, etc"));
 
-	UE_LOG(LogAGX, Log, TEXT("Searching for geometries."));
-	// TODO: Restore this shape creation loop.
-	#if 0
-	TArray<UActorComponent*> shapes = GetOwner()->GetComponentsByClass(UAGX_ShapeComponent::StaticClass());
-
-	for (UActorComponent* component : shapes)
+	TArray<UActorComponent*> Shapes = GetOwner()->GetComponentsByClass(UAGX_ShapeComponent::StaticClass());
+	for (UActorComponent* Component : Shapes)
 	{
-		UAGX_ShapeComponent* ShapeComponent = nullptr;  // Cast<UAGX_ShapeComponent>(component);
-		agx::agxCollide_Shape* NativeShape = ShapeComponent->GetOrCreateNative();
-		agx::call(TEXT("Native->add(NativeShape);"));
-//		Native->add();
+		UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Component);
+		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
+		NativeBarrier.AddShape(NativeShape);
+		UE_LOG(LogAGX, Log, TEXT("Shape added to native object for RigidBody with mass %f."), Mass);
 	}
-	#endif
+	UE_LOG(LogAGX, Log, TEXT("Native object created for RigidBody with mass %f."), Mass);
 }
