@@ -16,7 +16,7 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	UE_LOG(LogAGX, Log, TEXT("AGX_CALL: new agxSDK::Simulation"));
 	NativeBarrier.AllocateNative();
 	GetWorld()->SpawnActor(AAGX_Stepper::StaticClass());
-	/// \todo Instead of creating an Actor for Step triggerng, one may use
+	/// \todo Instead of creating an Actor for Step triggering, one may use
 	///       FTickableObjectBase or FTickFunction. It's not clear to me how to
 	///       use these other classes.
 }
