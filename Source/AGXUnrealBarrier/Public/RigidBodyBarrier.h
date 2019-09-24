@@ -33,6 +33,7 @@ public:
 	bool HasNative() const;
 	void AllocateNative();
 	FRigidBodyRef* GetNative();
+	const FRigidBodyRef* GetNative() const;
 	void ReleaseNative();
 
 	void DebugSimulate();

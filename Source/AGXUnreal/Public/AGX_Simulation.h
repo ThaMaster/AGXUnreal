@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+
+#include "SimulationBarrier.h"
+
 #include "AGX_Simulation.generated.h"
 
 /**
@@ -42,4 +45,7 @@ public:	// OVERRIDES
 	void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	void Deinitialize() override;
+
+private:
+	FSimulationBarrier NativeBarrier;
 };

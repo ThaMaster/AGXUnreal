@@ -12,13 +12,6 @@
 FRigidBodyBarrier::FRigidBodyBarrier()
 	: NativeRef{new FRigidBodyRef}
 {
-	/// \todo This is debug code. Remove.
-	static bool IsAGXInitialized = false;
-	if (!IsAGXInitialized)
-	{
-		agx::init();
-		IsAGXInitialized = true;
-	}
 }
 
 FRigidBodyBarrier::~FRigidBodyBarrier()
@@ -76,6 +69,12 @@ void FRigidBodyBarrier::AllocateNative()
 }
 
 FRigidBodyRef* FRigidBodyBarrier::GetNative()
+{
+	check(HasNative());
+	return NativeRef.get();
+}
+
+const FRigidBodyRef* FRigidBodyBarrier::GetNative() const
 {
 	check(HasNative());
 	return NativeRef.get();
