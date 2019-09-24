@@ -13,9 +13,10 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 {
 	UE_LOG(LogAGX, Log, TEXT("RigidBody instance created."));
 	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.TickGroup = TG_PostPhysics;
 	Mass = 10;
 	InertiaTensorDiagonal = FVector(1.f, 1.f, 1.f);
-	UE_LOG(LogAGX, Log, TEXT("RigidBodyComponent is being ticked at %d."), (int)PrimaryComponentTick.TickGroup);
+	UE_LOG(LogAGX, Log, TEXT("RigidBodyComponent is being ticked at %d."), (int) PrimaryComponentTick.TickGroup);
 }
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
@@ -44,27 +45,32 @@ bool UAGX_RigidBodyComponent::HasNative()
 	return NativeBarrier.HasNative();
 }
 
-// Called every frame
+/// \todo Split the UAGX_RigidBodyComponent::TickComponent callback into two
+///       parts. One in PrePhysics that reads the Unreal state to AGX Dynamics
+///       and one in PostPhysics that read the AGX Dynamics state to Unreal.
+///       Read about tick splitting under Advanced Ticking Functionality at
+///       https://docs.unrealengine.com/en-US/Programming/UnrealArchitecture/Actors/Ticking/index.html
+///
+///      Take care to synchronize this with the actual AGX Dynamics stepping
+///      done by UAGX_Simulation.
 void UAGX_RigidBodyComponent::TickComponent(
 	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// Only printing tick output once to avoid excessive spam in the output window.
-	static bool HavePrinted = false;
-	if (!HavePrinted)
-	{
-		HavePrinted = true;
-		agx::call(TEXT("TickComponent for RigidBody."));
-		/// \todo Figure out how to do this in the pre-physics callback.
-//		agx::call(TEXT("agx::RigidBody::setPosition, velocity, etc"));
+#if 0
+	/// \todo Figure out how to do this in the pre-physics callback, but not at
+	///       the same time as the stepping done in UAGX_Simulation.
+	agx::call(TEXT("agx::RigidBody::setPosition, velocity, etc"));
+#endif
 
-		/// \todo Figure out how to do this in the pos-physics callback.
-//		agx::call(TEXT("agx::RigidBody::getPosition, velocity, etc"));
-	}
+	/// \todo Figure out how to do this in the pos-physics callback.
+	agx::call(TEXT("agx::RigidBody::getPosition, velocity, etc"));
+	FVector NewLocation = NativeBarrier.GetPosition();
+	GetOwner()->SetActorLocation(NewLocation);
+
 	UE_LOG(LogAGX, Log, TEXT("Tick for body. New height: %f"), NativeBarrier.GetPosition().Z);
 }
-
 
 // Called when the game starts
 void UAGX_RigidBodyComponent::BeginPlay()
