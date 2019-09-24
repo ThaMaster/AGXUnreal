@@ -103,6 +103,7 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	agx::call(TEXT("agx::setPosition, velocity, etc"));
 	NativeBarrier.SetMass(Mass);
 	NativeBarrier.SetMotionControl(MotionControl);
+	NativeBarrier.SetPosition(GetOwner()->GetActorLocation());
 
 	TArray<UActorComponent*> Shapes = GetOwner()->GetComponentsByClass(UAGX_ShapeComponent::StaticClass());
 	for (UActorComponent* Component : Shapes)
