@@ -3,6 +3,7 @@
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
 
+#include "AGX_MotionControl.h"
 #include "RigidBodyBarrier.h"
 
 #include "AGX_RigidBodyComponent.generated.h"
@@ -17,12 +18,15 @@ public:
 	UAGX_RigidBodyComponent();
 
 	/// The mass of the body.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
 	float Mass;
 
 	/// The three-component diagonal of the inertia tensor.
-	UPROPERTY(EditAnywhere, BluePrintReadOnly)
+	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
 	FVector InertiaTensorDiagonal;
+
+	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
+	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FRigidBodyBarrier* GetOrCreateNative();
@@ -34,7 +38,8 @@ public:
 	bool HasNative();
 
 public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(
+		float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
 	virtual void BeginPlay() override;

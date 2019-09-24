@@ -14,8 +14,11 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	UE_LOG(LogAGX, Log, TEXT("RigidBody instance created."));
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.TickGroup = TG_PostPhysics;
+
 	Mass = 10;
 	InertiaTensorDiagonal = FVector(1.f, 1.f, 1.f);
+	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
+
 	UE_LOG(LogAGX, Log, TEXT("RigidBodyComponent is being ticked at %d."), (int) PrimaryComponentTick.TickGroup);
 }
 
@@ -72,7 +75,6 @@ void UAGX_RigidBodyComponent::TickComponent(
 	UE_LOG(LogAGX, Log, TEXT("Tick for body. New height: %f"), NativeBarrier.GetPosition().Z);
 }
 
-// Called when the game starts
 void UAGX_RigidBodyComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -99,6 +101,8 @@ void UAGX_RigidBodyComponent::InitializeNative()
 {
 	NativeBarrier.AllocateNative();
 	agx::call(TEXT("agx::setPosition, velocity, etc"));
+	NativeBarrier.SetMass(Mass);
+	NativeBarrier.SetMotionControl(MotionControl);
 
 	TArray<UActorComponent*> Shapes = GetOwner()->GetComponentsByClass(UAGX_ShapeComponent::StaticClass());
 	for (UActorComponent* Component : Shapes)

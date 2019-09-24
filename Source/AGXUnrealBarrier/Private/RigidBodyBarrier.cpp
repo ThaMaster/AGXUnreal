@@ -46,6 +46,21 @@ float FRigidBodyBarrier::GetMass()
 	return MassUnreal;
 }
 
+void FRigidBodyBarrier::SetMotionControl(EAGX_MotionControl MotionControlUnreal)
+{
+	check(HasNative());
+	agx::RigidBody::MotionControl MotionControlAGX = Convert(MotionControlUnreal);
+	NativeRef->Native->setMotionControl(MotionControlAGX);
+}
+
+EAGX_MotionControl FRigidBodyBarrier::GetMotionControl() const
+{
+	check(HasNative());
+	agx::RigidBody::MotionControl MotionControlAGX = NativeRef->Native->getMotionControl();
+	EAGX_MotionControl MotionControlUnreal = Convert(MotionControlAGX);
+	return MotionControlUnreal;
+}
+
 void FRigidBodyBarrier::AddShape(FShapeBarrier* Shape)
 {
 	check(HasNative());

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AGX_MotionControl.h"
+
 #include <Math/Vector.h>
 
 #include <memory>
@@ -27,6 +29,9 @@ public:
 
 	void SetMass(float NewMass);
 	float GetMass();
+
+	void SetMotionControl(EAGX_MotionControl MotionControl);
+	EAGX_MotionControl GetMotionControl() const;
 
 	void AddShape(FShapeBarrier* Shape);
 
