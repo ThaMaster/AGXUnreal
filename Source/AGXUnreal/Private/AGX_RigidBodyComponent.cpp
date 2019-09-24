@@ -1,9 +1,12 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_ShapeComponent.h"
+#include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
 #include "AGXDynamicsMockup.h"
 
 #include "GameFramework/Actor.h"
+
+#include "Engine/GameInstance.h"
 
 // Sets default values for this component's properties
 UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
@@ -12,6 +15,7 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	Mass = 10;
 	InertiaTensorDiagonal = FVector(1.f, 1.f, 1.f);
+	UE_LOG(LogAGX, Log, TEXT("RigidBodyComponent is being ticked at %d."), (int)PrimaryComponentTick.TickGroup);
 }
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
@@ -58,7 +62,9 @@ void UAGX_RigidBodyComponent::TickComponent(
 		/// \todo Figure out how to do this in the pos-physics callback.
 //		agx::call(TEXT("agx::RigidBody::getPosition, velocity, etc"));
 	}
+	UE_LOG(LogAGX, Log, TEXT("Tick for body. New height: %f"), NativeBarrier.GetPosition().Z);
 }
+
 
 // Called when the game starts
 void UAGX_RigidBodyComponent::BeginPlay()
@@ -71,8 +77,9 @@ void UAGX_RigidBodyComponent::BeginPlay()
 	NativeBarrier.SetMass(Mass);
 	UE_LOG(LogAGX, Log, TEXT("BeginPlay for RigidBody with mass %f."), Mass);
 
-	// TODO: Remove.
-	NativeBarrier.DebugSimulate();
+	UGameInstance* Game = GetOwner()->GetGameInstance();
+	UAGX_Simulation* Simulation = Game->GetSubsystem<UAGX_Simulation>();
+	Simulation->AddRigidBody(this);
 }
 
 void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)

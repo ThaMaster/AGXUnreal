@@ -9,6 +9,8 @@
 
 #include "AGX_Simulation.generated.h"
 
+class UAGX_RigidBodyComponent;
+
 /**
  * Manages an AGX simulation instance.
  *
@@ -41,11 +43,20 @@ public:
 	UPROPERTY(config, EditAnywhere, Category = "Scene Defaults")
 	FVector Gravity = FVector(0.0f, 0.0f, -980.665f);
 
-public:	// OVERRIDES
+	void AddRigidBody(UAGX_RigidBodyComponent* body);
+
+	void Step(float DeltaTime);
+
+public:
 	void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	void Deinitialize() override;
 
 private:
 	FSimulationBarrier NativeBarrier;
+
+	/// Time that we couldn't step because DeltaTime was not an even multiple
+	/// of the AGX Dynamics step size. That fraction of a time step is carried
+	/// over to the next call to Step.
+	float LeftoverTime;
 };

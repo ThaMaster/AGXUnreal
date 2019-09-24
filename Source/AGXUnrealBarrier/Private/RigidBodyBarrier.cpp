@@ -4,11 +4,6 @@
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 
-// TODO: Remove.
-#include "BeginAGXIncludes.h"
-#include <agxSDK/Simulation.h>
-#include "EndAGXIncludes.h"
-
 FRigidBodyBarrier::FRigidBodyBarrier()
 	: NativeRef{new FRigidBodyRef}
 {
@@ -23,14 +18,14 @@ FRigidBodyBarrier::~FRigidBodyBarrier()
 
 void FRigidBodyBarrier::SetPosition(FVector PositionUnreal)
 {
-	check(HasNative())
+	check(HasNative());
 	agx::Vec3 PositionAGX = Convert(PositionUnreal);
 	NativeRef->Native->setPosition(PositionAGX);
 }
 
 FVector FRigidBodyBarrier::GetPosition() const
 {
-	check(HasNative())
+	check(HasNative());
 	agx::Vec3 PositionAGX = NativeRef->Native->getPosition();
 	FVector PositionUnreal = Convert(PositionAGX);
 	return PositionUnreal;
@@ -83,16 +78,4 @@ const FRigidBodyRef* FRigidBodyBarrier::GetNative() const
 void FRigidBodyBarrier::ReleaseNative()
 {
 	NativeRef->Native = nullptr;
-}
-
-/// \todo This is test code and should be removed.
-void FRigidBodyBarrier::DebugSimulate()
-{
-	agxSDK::SimulationRef simulation = new agxSDK::Simulation();
-	simulation->add(NativeRef->Native);
-	for (int I = 0; I < 10; ++I)
-	{
-		simulation->stepForward();
-		std::cout << "At time step " << I << ": velocity is " << NativeRef->Native->getVelocity() << " m/s\n";
-	}
 }

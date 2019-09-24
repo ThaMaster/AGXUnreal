@@ -4,11 +4,16 @@
 
 struct FSimulationRef;
 
+class FRigidBodyBarrier;
+
 class AGXUNREALBARRIER_API FSimulationBarrier
 {
 public:
 	FSimulationBarrier();
 	~FSimulationBarrier();
+
+	void AddRigidBody(FRigidBodyBarrier* body);
+	void Step();
 
 	bool HasNative() const;
 	void AllocateNative();
