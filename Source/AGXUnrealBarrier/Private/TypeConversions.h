@@ -64,7 +64,8 @@ inline FVector Convert(agx::Vec3 V)
 
 inline FVector ConvertDistance(agx::Vec3 V, UWorld* World)
 {
-	return FVector(ConvertDistance(V.x(), World), ConvertDistance(V.y(), World), ConvertDistance(V.z(), World));
+	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
+	return FVector(ConvertDistance(V.x(), World), -ConvertDistance(V.y(), World), ConvertDistance(V.z(), World));
 }
 
 inline agx::Vec3 Convert(FVector V)
@@ -74,7 +75,8 @@ inline agx::Vec3 Convert(FVector V)
 
 inline agx::Vec3 ConvertDistance(FVector V, UWorld* World)
 {
-	return agx::Vec3(ConvertDistance(V.X, World), ConvertDistance(V.Y, World), ConvertDistance(V.Z, World));
+	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
+	return agx::Vec3(ConvertDistance(V.X, World), -ConvertDistance(V.Y, World), ConvertDistance(V.Z, World));
 }
 
 inline agx::RigidBody::MotionControl Convert(EAGX_MotionControl V)
