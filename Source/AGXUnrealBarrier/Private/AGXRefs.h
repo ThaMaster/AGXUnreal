@@ -8,7 +8,6 @@
 #include <agxCollide/Box.h>
 #include "EndAGXIncludes.h"
 
-
 struct FSimulationRef
 {
 	agxSDK::SimulationRef Native;
@@ -32,4 +31,9 @@ struct FShapeRef
 struct FBoxShapeRef
 {
 	agxCollide::BoxRef Native;
+};
+
+struct FSphereShapeRef
+{
+	agxCollide::SphereRef Native;
 };
