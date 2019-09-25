@@ -10,6 +10,8 @@
 struct FShapeRef;
 struct FBoxShapeRef;
 
+class UWorld;
+
 class AGXUNREALBARRIER_API FBoxShapeBarrier : public FShapeBarrier
 {
 public:
