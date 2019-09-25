@@ -54,7 +54,7 @@ void UAGX_BoxShapeComponent::CreateNative()
 	UE_LOG(LogAGX, Log, TEXT("Allocating native object for BoxShapeComponent."));
 	check(!HasNative());
 	NativeBarrier.AllocateNative();
-	NativeBarrier.SetHalfExtents(HalfExtent);
+	NativeBarrier.SetHalfExtents(HalfExtent, GetWorld());
 }
 
 void UAGX_BoxShapeComponent::ReleaseNative()

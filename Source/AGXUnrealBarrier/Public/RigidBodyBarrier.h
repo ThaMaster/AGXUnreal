@@ -24,8 +24,8 @@ public:
 	FRigidBodyBarrier();
 	~FRigidBodyBarrier();
 
-	void SetPosition(FVector NewPosition);
-	FVector GetPosition() const;
+	void SetPosition(FVector NewPosition, UWorld* World);
+	FVector GetPosition(UWorld* World) const;
 
 	void SetMass(float NewMass);
 	float GetMass();

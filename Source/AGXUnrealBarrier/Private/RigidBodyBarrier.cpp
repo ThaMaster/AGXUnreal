@@ -16,18 +16,18 @@ FRigidBodyBarrier::~FRigidBodyBarrier()
 	// not just the forward declaration, of FRigidBodyRef.
 }
 
-void FRigidBodyBarrier::SetPosition(FVector PositionUnreal)
+void FRigidBodyBarrier::SetPosition(FVector PositionUnreal, UWorld* World)
 {
 	check(HasNative());
-	agx::Vec3 PositionAGX = Convert(PositionUnreal);
+	agx::Vec3 PositionAGX = ConvertDistance(PositionUnreal, World);
 	NativeRef->Native->setPosition(PositionAGX);
 }
 
-FVector FRigidBodyBarrier::GetPosition() const
+FVector FRigidBodyBarrier::GetPosition(UWorld* World) const
 {
 	check(HasNative());
 	agx::Vec3 PositionAGX = NativeRef->Native->getPosition();
-	FVector PositionUnreal = Convert(PositionAGX);
+	FVector PositionUnreal = ConvertDistance(PositionAGX, World);
 	return PositionUnreal;
 }
 

@@ -6,13 +6,45 @@
 #include "AGX_MotionControl.h"
 
 #include <Math/Vector.h>
+#include <Engine/World.h>
+#include <GameFramework/WorldSettings.h>
 
 #include <agx/Vec3.h>
 #include <agx/RigidBody.h>
 
+/// \note These functions assume that agx::Real and float are different types.
+
+/// \return The number of meters in the AGX Dynamics simulation an Unreal
+///         distance of 1 corresponds to. Unreal distances are often in
+///         centimeters and in that case UnrealDistanceToAGXDistance would
+///         return 0.01.
+///         Note that this is the inverse of Unreal's WorldToMeters.
+inline float UnrealDistanceToAGXDistance(UWorld* World)
+{
+	/// \todo WorldToMeters was 'static' for a while, for performance reasons,
+	///       but this leads to bugs when the world scale is changed between
+	///       simulations. I expect the cost of getting the scale to be small,
+	///       until the opposite has been proven. But this function is
+	///       potentially called many times during BeginPlay which is and
+	///       operation that we really want to be as fast as possible.
+	float WorldToMeters = World->GetWorldSettings()->WorldToMeters;
+	return 1.0f / WorldToMeters;
+}
+
+inline float AGXDistanceToUnrealDistance(UWorld* World)
+{
+	float WorldToMeters = World->GetWorldSettings()->WorldToMeters;
+	return WorldToMeters;
+}
+
 inline float Convert(agx::Real V)
 {
 	return static_cast<float>(V);
+}
+
+inline float ConvertDistance(agx::Real V, UWorld* World)
+{
+	return static_cast<float>(V) * AGXDistanceToUnrealDistance(World);
 }
 
 inline agx::Real Convert(float V)
@@ -20,14 +52,29 @@ inline agx::Real Convert(float V)
 	return static_cast<agx::Real>(V);
 }
 
+inline agx::Real ConvertDistance(float V, UWorld* World)
+{
+	return static_cast<agx::Real>(V * UnrealDistanceToAGXDistance(World));
+}
+
 inline FVector Convert(agx::Vec3 V)
 {
 	return FVector(Convert(V.x()), Convert(V.y()), Convert(V.z()));
 }
 
+inline FVector ConvertDistance(agx::Vec3 V, UWorld* World)
+{
+	return FVector(ConvertDistance(V.x(), World), ConvertDistance(V.y(), World), ConvertDistance(V.z(), World));
+}
+
 inline agx::Vec3 Convert(FVector V)
 {
 	return agx::Vec3(Convert(V.X), Convert(V.Y), Convert(V.Z));
+}
+
+inline agx::Vec3 ConvertDistance(FVector V, UWorld* World)
+{
+	return agx::Vec3(ConvertDistance(V.X, World), ConvertDistance(V.Y, World), ConvertDistance(V.Z, World));
 }
 
 inline agx::RigidBody::MotionControl Convert(EAGX_MotionControl V)

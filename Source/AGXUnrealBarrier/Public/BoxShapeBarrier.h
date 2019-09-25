@@ -16,8 +16,8 @@ public:
 	FBoxShapeBarrier();
 	~FBoxShapeBarrier() override;
 
-	void SetHalfExtents(FVector NewHalfExtents);
-	FVector GetHalfExtents() const;
+	void SetHalfExtents(FVector NewHalfExtents, UWorld* World);
+	FVector GetHalfExtents(UWorld* World) const;
 
 	FBoxShapeRef* GetNative();
 	const FBoxShapeRef* GetNative() const;
