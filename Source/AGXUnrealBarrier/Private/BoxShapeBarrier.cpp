@@ -37,6 +37,12 @@ FBoxShapeRef* FBoxShapeBarrier::GetNative()
 	return NativeRef.get();
 }
 
+const FBoxShapeRef* FBoxShapeBarrier::GetNative() const
+{
+	check(HasNative());
+	return NativeRef.get();
+}
+
 void FBoxShapeBarrier::AllocateNativeShape()
 {
 	check(!HasNative());
