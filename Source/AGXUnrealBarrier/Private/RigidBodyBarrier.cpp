@@ -4,6 +4,9 @@
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 
+#include <agx/Vec3.h>
+#include <agx/Quat.h>
+
 FRigidBodyBarrier::FRigidBodyBarrier()
 	: NativeRef{new FRigidBodyRef}
 {
@@ -29,6 +32,21 @@ FVector FRigidBodyBarrier::GetPosition(UWorld* World) const
 	agx::Vec3 PositionAGX = NativeRef->Native->getPosition();
 	FVector PositionUnreal = ConvertDistance(PositionAGX, World);
 	return PositionUnreal;
+}
+
+void FRigidBodyBarrier::SetRotation(FQuat RotationUnreal)
+{
+	check(HasNative());
+	agx::Quat RotationAGX = Convert(RotationUnreal);
+	NativeRef->Native->setRotation(RotationAGX);
+}
+
+FQuat FRigidBodyBarrier::GetRotation() const
+{
+	check(HasNative());
+	agx::Quat RotationAGX = NativeRef->Native->getRotation();
+	FQuat RotationUnreal = Convert(RotationAGX);
+	return RotationUnreal;
 }
 
 void FRigidBodyBarrier::SetMass(float MassUnreal)

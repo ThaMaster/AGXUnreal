@@ -6,10 +6,12 @@
 #include "AGX_MotionControl.h"
 
 #include <Math/Vector.h>
+#include <Math/Quat.h>
 #include <Engine/World.h>
 #include <GameFramework/WorldSettings.h>
 
 #include <agx/Vec3.h>
+#include <agx/Quat.h>
 #include <agx/RigidBody.h>
 
 /// \note These functions assume that agx::Real and float are different types.
@@ -77,6 +79,16 @@ inline agx::Vec3 ConvertDistance(FVector V, UWorld* World)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3(ConvertDistance(V.X, World), -ConvertDistance(V.Y, World), ConvertDistance(V.Z, World));
+}
+
+inline FQuat Convert(agx::Quat V)
+{
+	return FQuat(Convert(V.x()), -Convert(V.y()), Convert(V.z()), -Convert(V.w()));
+}
+
+inline agx::Quat Convert(FQuat V)
+{
+	return agx::Quat(Convert(V.X), -Convert(V.Y), Convert(V.Z), -Convert(V.W));
 }
 
 inline agx::RigidBody::MotionControl Convert(EAGX_MotionControl V)

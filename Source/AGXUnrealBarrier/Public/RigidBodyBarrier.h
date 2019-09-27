@@ -3,6 +3,7 @@
 #include "AGX_MotionControl.h"
 
 #include <Math/Vector.h>
+#include <Math/Quat.h>
 
 #include <memory>
 
@@ -26,6 +27,9 @@ public:
 
 	void SetPosition(FVector NewPosition, UWorld* World);
 	FVector GetPosition(UWorld* World) const;
+
+	void SetRotation(FQuat NewRotation);
+	FQuat GetRotation() const;
 
 	void SetMass(float NewMass);
 	float GetMass();

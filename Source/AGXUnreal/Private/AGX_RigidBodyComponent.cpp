@@ -67,12 +67,13 @@ void UAGX_RigidBodyComponent::TickComponent(
 	agx::call(TEXT("agx::RigidBody::setPosition, velocity, etc"));
 #endif
 
-	/// \todo Figure out how to do this in the pos-physics callback.
-	agx::call(TEXT("agx::RigidBody::getPosition, velocity, etc"));
+	/// \todo Figure out how to do this in the post-physics callback.
 	FVector NewLocation = NativeBarrier.GetPosition(GetWorld());
 	GetOwner()->SetActorLocation(NewLocation);
+	FQuat NewRotation = NativeBarrier.GetRotation();
+	GetOwner()->SetActorRotation(NewRotation);
 
-	UE_LOG(LogAGX, Log, TEXT("Tick for body. New height: %f"), NativeBarrier.GetPosition(GetWorld()).Z);
+	UE_LOG(LogAGX, Log, TEXT("Body placement updated."));
 }
 
 void UAGX_RigidBodyComponent::BeginPlay()
@@ -104,6 +105,7 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	NativeBarrier.SetMass(Mass);
 	NativeBarrier.SetMotionControl(MotionControl);
 	NativeBarrier.SetPosition(GetOwner()->GetActorLocation(), GetWorld());
+	NativeBarrier.SetRotation(GetOwner()->GetActorQuat());
 
 	TArray<UActorComponent*> Shapes = GetOwner()->GetComponentsByClass(UAGX_ShapeComponent::StaticClass());
 	for (UActorComponent* Component : Shapes)
