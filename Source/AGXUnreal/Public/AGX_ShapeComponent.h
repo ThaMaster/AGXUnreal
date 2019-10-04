@@ -32,9 +32,31 @@ protected:
 
 	virtual void ReleaseNative() PURE_VIRTUAL(UAGX_ShapeComponent::ReleaseNative,);
 
+	/**
+	 * Updates the local transform of the native geometry to match this component's
+	 * transform relative to the actor. Must be called from each subclass immediately
+	 * after initializing the native geometry.
+	 */
+	template<typename TNative>
+	void UpdateNativeTransform(TNative &Native);
+	// TODO: Would be easier if Native was owned by ShapeComponent, with polymorphic pointer (e.g. TUniquePtr).
+
 private:
 	// UAGX_ShapeComponent does not own the Barrier object because it cannot
 	// name its type. It is instead owned by the typed subclass, such as
 	// UAGX_BoxShapeComponent. Access to it is provided using virtual Get
 	// functions.
 };
+
+
+template<typename TNative>
+void UAGX_ShapeComponent::UpdateNativeTransform(TNative &Native)
+{
+	FTransform RigiBodyTransform = GetOwner()->GetActorTransform();
+
+	FVector LocalPosition = RigiBodyTransform.InverseTransformPosition(GetComponentLocation());
+	FQuat LocalOrientation = RigiBodyTransform.InverseTransformRotation(GetComponentQuat());	
+
+	Native.SetLocalPosition(LocalPosition, GetWorld());
+	Native.SetLocalRotation(LocalOrientation);
+}

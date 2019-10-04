@@ -17,6 +17,9 @@ public:
 	FGeometryRef* GetNativeGeometry();
 	FShapeRef* GetNativeShape();
 
+	void SetLocalPosition(const FVector &Position, UWorld* World);
+	void SetLocalRotation(const FQuat &Rotation);
+
 private:
 	FShapeBarrier(const FShapeBarrier&) = delete;
 	void operator=(const FShapeBarrier&) = delete;
