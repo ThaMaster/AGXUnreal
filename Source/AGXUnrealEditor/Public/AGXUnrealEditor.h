@@ -23,4 +23,15 @@ private:
 	 * Unregisters settings exposed in the Project Settings window.
 	 */
 	void UnregisterProjectSettings();
+
+	/**
+	 * Registers property type customizations (IPropertyTypeCustomization),
+	 * and class detail customizations (IDetailCustomization).
+	 */
+	void RegisterCustomizations();
+
+	/**
+	 * Unrrgisters property type customizations and class detail customizations.
+	 */
+	void UnregisterCustomizations();
 };

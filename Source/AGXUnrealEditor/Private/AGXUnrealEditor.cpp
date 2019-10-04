@@ -4,6 +4,7 @@
 #include "Modules/ModuleManager.h"
 
 #include "AGX_Simulation.h"
+#include "Constraints/AGX_Constraint.h"
 
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
@@ -11,11 +12,13 @@
 void FAGXUnrealEditorModule::StartupModule()
 {
 	RegisterProjectSettings();
+	RegisterCustomizations();
 }
 
 void FAGXUnrealEditorModule::ShutdownModule()
 {
 	UnregisterProjectSettings();
+	UnregisterCustomizations();
 }
 
 void FAGXUnrealEditorModule::RegisterProjectSettings()
@@ -37,6 +40,28 @@ void FAGXUnrealEditorModule::UnregisterProjectSettings()
 		SettingsModule->UnregisterSettings("Project", "Plugins", "UAGX_Simulation");
 	}
 }
+
+void FAGXUnrealEditorModule::RegisterCustomizations()
+{
+	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
+	
+	PropertyModule.NotifyCustomizationModuleChanged();
+}
+
+void FAGXUnrealEditorModule::UnregisterCustomizations()
+{
+	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
+
+	PropertyModule.NotifyCustomizationModuleChanged();
+}
+
 
 #undef LOCTEXT_NAMESPACE
 

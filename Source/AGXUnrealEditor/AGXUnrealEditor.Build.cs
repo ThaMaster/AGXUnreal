@@ -13,6 +13,6 @@ public class AGXUnrealEditor : ModuleRules
 
 		// TODO: The prototype plugin has more here.
 		PrivateDependencyModuleNames.AddRange(new string[] {
-				"CoreUObject", "Engine", "Slate", "SlateCore", "AGXUnrealBarrier"});
+			"CoreUObject", "Engine", "UnrealEd", "Slate", "SlateCore", "PropertyEditor", "EditorStyle", "AGXUnrealBarrier"});
 	}
 }
