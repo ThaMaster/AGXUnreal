@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
-#include "ConstraintBarrier.h" // TODO: Shouldn't be necessary here!
+#include "Constraints/ConstraintBarrier.h" // TODO: Shouldn't be necessary here!
 
 #include "AGX_Constraint.generated.h"
 
@@ -55,7 +55,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	/** Frame rotation relative to Rigid Body Actor, or from Frame Defining Actor if set. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
 	FRotator LocalFrameRotation;
-
+	
 	/**
 	 * Calculates and returns the frame location relative to Rigid Body Actor
 	 * (or in world space if not set). I.e. if Frame Defining Actor is set, the

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ConstraintBarrier.h"
+#include "Constraints/ConstraintBarrier.h"
 
 class FRigidBodyBarrier;
 

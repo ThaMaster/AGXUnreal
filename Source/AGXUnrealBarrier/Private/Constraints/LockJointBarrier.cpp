@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "LockJointBarrier.h"
+#include "Constraints/LockJointBarrier.h"
 
 #include "AGXRefs.h"
 #include "RigidBodyBarrier.h"

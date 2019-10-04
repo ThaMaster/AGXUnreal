@@ -1,4 +1,4 @@
-#include "ConstraintBarrier.h"
+#include "Constraints/ConstraintBarrier.h"
 
 #include "AGXRefs.h"
 

@@ -3,8 +3,8 @@
 
 #include "Constraints/AGX_LockConstraint.h"
 
-#include "ConstraintBarrier.h"
-#include "LockJointBarrier.h"
+#include "Constraints/ConstraintBarrier.h"
+#include "Constraints/LockJointBarrier.h"
 
 class FRigidBodyBarrier;
 

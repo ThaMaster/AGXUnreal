@@ -6,7 +6,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 
-#include "ConstraintBarrier.h"
+#include "Constraints/ConstraintBarrier.h"
 
 
 FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocation() const
