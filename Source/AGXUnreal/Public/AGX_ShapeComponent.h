@@ -7,7 +7,9 @@
 
 #include "AGX_ShapeComponent.generated.h"
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract, NotPlaceable,
+	Meta = (BlueprintSpawnableComponent),
+	Hidecategories = (Cooking, Collision, Input, LOD, Physics, Replication))
 class AGXUNREAL_API UAGX_ShapeComponent : public USceneComponent
 {
 	GENERATED_BODY()
