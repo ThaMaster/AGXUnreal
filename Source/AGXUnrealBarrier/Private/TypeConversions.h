@@ -14,6 +14,9 @@
 #include <agx/Quat.h>
 #include <agx/RigidBody.h>
 
+#include "RigidBodyBarrier.h"
+
+
 /// \note These functions assume that agx::Real and float are different types.
 
 /// \return The number of meters in the AGX Dynamics simulation an Unreal
@@ -119,4 +122,63 @@ inline EAGX_MotionControl Convert(agx::RigidBody::MotionControl V)
 	}
 	/// \todo Add UE_LOG(LogAGX, ...) here.
 	return MC_KINEMATICS;
+}
+
+/**
+ * Given a Barrier, returns the final AGX native object.
+ */
+template<typename TNative, typename TBarrier>
+TNative* GetNativeFromBarrier(const TBarrier* Barrier)
+{
+	if (Barrier && Barrier->HasNative())
+		return Barrier->GetNative()->Native.get();
+	else
+		return nullptr;
+}
+
+agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& FrameRotation, const UWorld* World)
+{
+	return new agx::Frame(
+		agx::AffineMatrix4x4(
+			Convert(FrameRotation),
+			ConvertDistance(FramePosition, World)));
+}
+
+void
+ConvertConstraintBodiesAndFrames(
+	const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
+	const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2,
+	const UWorld* World,
+	agx::RigidBody*& NativeRigidBody1, agx::FrameRef& NativeFrame1,
+	agx::RigidBody*& NativeRigidBody2, agx::FrameRef& NativeFrame2)
+{
+	// Convert first Rigid Body and Frame to natives
+	{
+		check(RigidBody1);
+		check(FramePosition1);
+		check(FrameRotation1);
+
+		NativeRigidBody1 = GetNativeFromBarrier<agx::RigidBody>(RigidBody1);
+		check(NativeRigidBody1);
+
+		NativeFrame1 = ConvertFrame(*FramePosition1, *FrameRotation1, World);
+		NativeRigidBody1->addAttachment(NativeFrame1, "ConstraintAttachment");
+	}
+
+	// Convert second Rigid Body and Frame to natives
+	{
+		NativeRigidBody2 = GetNativeFromBarrier<agx::RigidBody>(RigidBody2);
+		if (NativeRigidBody2)
+		{
+			check(FramePosition2);
+			check(FrameRotation2);
+
+			NativeFrame2 = ConvertFrame(*FramePosition2, *FrameRotation2, World);
+			NativeRigidBody2->addAttachment(NativeFrame2, "ConstraintAttachment");
+		}
+		else
+		{
+			NativeFrame2 = nullptr;
+		}
+	}
 }

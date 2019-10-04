@@ -28,7 +28,11 @@ public:
 	FConstraintRef* GetNative();
 	const FConstraintRef* GetNative() const;
 
-	void AllocateNative(const FRigidBodyBarrier *Rb1, const FRigidBodyBarrier *Rb2);
+	void AllocateNative(
+		const FRigidBodyBarrier *RigidBody1, const FVector *FramePosition1, const FQuat *FrameRotation1,
+		const FRigidBodyBarrier *RigidBody2, const FVector *FramePosition2, const FQuat *FrameRotation2,
+		const UWorld *World);
+
 	void ReleaseNative();
 
 	void SetCompliance(double Compliance);
@@ -52,9 +56,11 @@ private:
 	 *
 	 * The derived class should not store a reference to the native object!
 	 */
-	virtual void AllocateNativeImpl(const FRigidBodyBarrier *Rb1, const FRigidBodyBarrier *Rb2) = 0;
-	//virtual void ReleaseNativeImpl() = 0;
-
+	virtual void AllocateNativeImpl(
+		const FRigidBodyBarrier *RigidBody1, const FVector *FramePosition1, const FQuat *FrameRotation1,
+		const FRigidBodyBarrier *RigidBody2, const FVector *FramePosition2, const FQuat *FrameRotation2,
+		const UWorld *World) = 0;
+	
 protected:
 	std::unique_ptr<FConstraintRef> NativeRef;
 	// NativeRef is created by the lowermost subclass, and NativeRef->Native should be

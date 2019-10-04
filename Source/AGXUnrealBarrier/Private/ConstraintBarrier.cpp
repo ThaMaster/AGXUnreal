@@ -28,10 +28,17 @@ const FConstraintRef* FConstraintBarrier::GetNative() const
 	return NativeRef.get();
 }
 
-void FConstraintBarrier::AllocateNative(const FRigidBodyBarrier *Rb1, const FRigidBodyBarrier *Rb2)
+void FConstraintBarrier::AllocateNative(
+	const FRigidBodyBarrier *RigidBody1, const FVector *FramePosition1, const FQuat *FrameRotation1,
+	const FRigidBodyBarrier *RigidBody2, const FVector *FramePosition2, const FQuat *FrameRotation2,
+	const UWorld *World)
 {
 	check(!HasNative());
-	AllocateNativeImpl(Rb1, Rb2);
+
+	AllocateNativeImpl(
+		RigidBody1, FramePosition1, FrameRotation1,
+		RigidBody2, FramePosition2, FrameRotation2,
+		World);
 }
 
 void FConstraintBarrier::ReleaseNative()
