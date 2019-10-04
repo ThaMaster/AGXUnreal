@@ -15,7 +15,7 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.TickGroup = TG_PostPhysics;
 
-	Mass = 10;
+	Mass = 1.0f;
 	InertiaTensorDiagonal = FVector(1.f, 1.f, 1.f);
 	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
 
@@ -68,7 +68,8 @@ void UAGX_RigidBodyComponent::TickComponent(
 #endif
 
 	/// \todo Figure out how to do this in the post-physics callback.
-	UpdateActorTransformsFromNative();
+	if(MotionControl != MC_STATIC)
+		UpdateActorTransformsFromNative();
 
 	UE_LOG(LogAGX, Log, TEXT("Body placement updated."));
 }
