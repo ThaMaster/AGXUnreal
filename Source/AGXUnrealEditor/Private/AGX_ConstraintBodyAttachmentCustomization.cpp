@@ -134,6 +134,16 @@ FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 		{
 			// Add default visualization.
 			IDetailPropertyRow& DefaultPropertyRow = StructBuilder.AddProperty(ChildHandle.ToSharedRef());
+
+			// Frame properties only visible if Rigid Body Actor has been set.
+			if (!PropertyEquals(ChildHandle, RigidBodyProperty))
+			{
+				TAttribute<EVisibility> IsVisibleDelegate = TAttribute<EVisibility>::Create(
+					TAttribute<EVisibility>::FGetter::CreateLambda(
+						[this] { return HasRigidBodyActor() ? EVisibility::Visible : EVisibility::Collapsed; }));
+
+				DefaultPropertyRow.Visibility(IsVisibleDelegate);
+			}
 			
 			// Add "Create New" option to context menu for the Frame Defining Actor.
 			if (PropertyEquals(ChildHandle, FrameDefiningActorProperty))
@@ -149,7 +159,7 @@ FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 				FAGX_SlateUtilities::RemoveChildWidgetByType(DefaultValueWidget, "SResetToDefaultPropertyEditor");
 				
 				FDetailWidgetRow &CustomPropertyRow = DefaultPropertyRow.CustomWidget(/*bShowChildren*/ true);
-
+				
 				CustomPropertyRow.AddCustomContextMenuAction(
 					FUIAction(
 						FExecuteAction::CreateSP(this, &FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor),
@@ -199,6 +209,13 @@ FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyName() const
 	}
 
 	return FText::FromString(RigidBodyName);
+}
+
+
+bool
+FAGX_ConstraintBodyAttachmentCustomization::HasRigidBodyActor() const
+{
+	return GetObjectFromPropertyHandle(RigidBodyProperty);
 }
 
 

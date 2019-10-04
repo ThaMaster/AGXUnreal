@@ -26,6 +26,8 @@ public:
 
 	FText GetRigidBodyName() const;
 
+	bool HasRigidBodyActor() const;
+
 	bool HasFrameDefiningActor() const;
 
 	void CreateAndSetFrameDefiningActor();
