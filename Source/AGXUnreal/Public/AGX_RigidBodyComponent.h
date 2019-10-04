@@ -51,6 +51,9 @@ protected:
 private:
 	void InitializeNative();
 
+	// Set native's MotionControl and ensure Unreal has corresponding mobility.
+	void InitializeMotionControl();
+
 	void UpdateActorTransformsFromNative();
 	void UpdateNativeTransformsFromActor();
 
