@@ -76,6 +76,14 @@ void UAGX_RigidBodyComponent::TickComponent(
 	UE_LOG(LogAGX, Log, TEXT("Body placement updated."));
 }
 
+UAGX_RigidBodyComponent* UAGX_RigidBodyComponent::GetFromActor(const AActor* Actor)
+{
+	if (!Actor)
+		return nullptr;
+
+	return Actor->FindComponentByClass<UAGX_RigidBodyComponent>();
+}
+
 void UAGX_RigidBodyComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -83,12 +91,7 @@ void UAGX_RigidBodyComponent::BeginPlay()
 	{
 		InitializeNative();
 	}
-	NativeBarrier.SetMass(Mass);
 	UE_LOG(LogAGX, Log, TEXT("BeginPlay for RigidBody with mass %f."), Mass);
-
-	UGameInstance* Game = GetOwner()->GetGameInstance();
-	UAGX_Simulation* Simulation = Game->GetSubsystem<UAGX_Simulation>();
-	Simulation->AddRigidBody(this);
 }
 
 void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
@@ -115,5 +118,9 @@ void UAGX_RigidBodyComponent::InitializeNative()
 		NativeBarrier.AddShape(NativeShape);
 		UE_LOG(LogAGX, Log, TEXT("Shape added to native object for RigidBody with mass %f."), Mass);
 	}
+
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(GetOwner());
+	Simulation->AddRigidBody(this);
+
 	UE_LOG(LogAGX, Log, TEXT("Native object created for RigidBody with mass %f."), Mass);
 }
