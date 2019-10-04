@@ -68,10 +68,7 @@ void UAGX_RigidBodyComponent::TickComponent(
 #endif
 
 	/// \todo Figure out how to do this in the post-physics callback.
-	FVector NewLocation = NativeBarrier.GetPosition(GetWorld());
-	GetOwner()->SetActorLocation(NewLocation);
-	FQuat NewRotation = NativeBarrier.GetRotation();
-	GetOwner()->SetActorRotation(NewRotation);
+	UpdateActorTransformsFromNative();
 
 	UE_LOG(LogAGX, Log, TEXT("Body placement updated."));
 }
@@ -107,14 +104,14 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	agx::call(TEXT("agx::setPosition, velocity, etc"));
 	NativeBarrier.SetMass(Mass);
 	NativeBarrier.SetMotionControl(MotionControl);
-	NativeBarrier.SetPosition(GetOwner()->GetActorLocation(), GetWorld());
-	NativeBarrier.SetRotation(GetOwner()->GetActorQuat());
+	UpdateNativeTransformsFromActor();
 
 	TArray<UActorComponent*> Shapes = GetOwner()->GetComponentsByClass(UAGX_ShapeComponent::StaticClass());
 	for (UActorComponent* Component : Shapes)
 	{
 		UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Component);
 		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
+		check(NativeShape && NativeShape->HasNative());
 		NativeBarrier.AddShape(NativeShape);
 		UE_LOG(LogAGX, Log, TEXT("Shape added to native object for RigidBody with mass %f."), Mass);
 	}
@@ -123,4 +120,24 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	Simulation->AddRigidBody(this);
 
 	UE_LOG(LogAGX, Log, TEXT("Native object created for RigidBody with mass %f."), Mass);
+}
+
+
+void UAGX_RigidBodyComponent::UpdateActorTransformsFromNative()
+{
+	check(HasNative());
+	check(GetOwner());
+
+	FVector NewLocation = NativeBarrier.GetPosition(GetWorld());
+	GetOwner()->SetActorLocation(NewLocation);
+
+	FQuat NewRotation = NativeBarrier.GetRotation();
+	GetOwner()->SetActorRotation(NewRotation);
+}
+
+void UAGX_RigidBodyComponent::UpdateNativeTransformsFromActor()
+{
+	check(HasNative());
+	NativeBarrier.SetPosition(GetOwner()->GetActorLocation(), GetWorld());
+	NativeBarrier.SetRotation(GetOwner()->GetActorQuat());
 }

@@ -51,6 +51,9 @@ protected:
 private:
 	void InitializeNative();
 
+	void UpdateActorTransformsFromNative();
+	void UpdateNativeTransformsFromActor();
+
 private:
 	FRigidBodyBarrier NativeBarrier;
 };
