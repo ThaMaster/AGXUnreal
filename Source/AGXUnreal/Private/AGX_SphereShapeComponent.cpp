@@ -5,7 +5,7 @@
 UAGX_SphereShapeComponent::UAGX_SphereShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	Radius = 1.0f;
+	Radius = 50.0f;
 	UE_LOG(LogAGX, Log, TEXT("SphereShape instance created."));
 }
 
