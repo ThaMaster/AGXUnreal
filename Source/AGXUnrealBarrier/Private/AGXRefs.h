@@ -2,7 +2,8 @@
 
 #include "BeginAGXIncludes.h"
 #include <agx/Constraint.h>
-#include "agx/LockJoint.h"
+#include <agx/LockJoint.h>
+#include <agx/Hinge.h>
 #include <agx/RigidBody.h>
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
