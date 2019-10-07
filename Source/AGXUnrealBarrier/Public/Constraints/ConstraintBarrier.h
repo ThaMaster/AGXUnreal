@@ -35,11 +35,14 @@ public:
 
 	void ReleaseNative();
 
-	void SetCompliance(double Compliance);
-	double GetCompliance() const;
+	void SetElasticity(double Elasticity, int32 Dof);
+	double GetElasticity(int32 Dof) const;
 
-	void SetDamping(double Damping);
-	double GetDamping() const;
+	void SetCompliance(double Compliance, int32 Dof);
+	double GetCompliance(int32 Dof) const;
+
+	void SetDamping(double Damping, int32 Dof);
+	double GetDamping(int32 Dof) const;
 
 private:
 	FConstraintBarrier(const FConstraintBarrier&) = delete;

@@ -10,6 +10,15 @@ class FRigidBodyBarrier;
 
 
 AAGX_LockConstraint::AAGX_LockConstraint()
+	: AAGX_Constraint(
+		{
+			EDofFlag::DOF_FLAG_TRANSLATIONAL_1,
+			EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
+			EDofFlag::DOF_FLAG_TRANSLATIONAL_3,
+			EDofFlag::DOF_FLAG_ROTATIONAL_1,
+			EDofFlag::DOF_FLAG_ROTATIONAL_2,
+			EDofFlag::DOF_FLAG_ROTATIONAL_3
+		})
 {
 }
 

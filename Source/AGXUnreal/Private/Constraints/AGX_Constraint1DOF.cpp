@@ -9,6 +9,13 @@ AAGX_Constraint1DOF::AAGX_Constraint1DOF()
 }
 
 
+AAGX_Constraint1DOF::AAGX_Constraint1DOF(const TArray<EDofFlag> &LockedDofsOrdered)
+	: AAGX_Constraint(LockedDofsOrdered)
+{
+
+}
+
+
 AAGX_Constraint1DOF::~AAGX_Constraint1DOF()
 {
 

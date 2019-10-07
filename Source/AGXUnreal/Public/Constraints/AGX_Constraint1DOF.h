@@ -18,5 +18,8 @@ class AGXUNREAL_API AAGX_Constraint1DOF : public AAGX_Constraint
 public:
 
 	AAGX_Constraint1DOF();
+
+	AAGX_Constraint1DOF(const TArray<EDofFlag> &LockedDofsOrdered);
+
 	virtual ~AAGX_Constraint1DOF();
 };

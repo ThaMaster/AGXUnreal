@@ -47,26 +47,39 @@ void FConstraintBarrier::ReleaseNative()
 	NativeRef = nullptr;
 }
 
-void FConstraintBarrier::SetCompliance(double Compliance)
+
+void FConstraintBarrier::SetElasticity(double Elasticity, int32 Dof)
 {
 	check(HasNative());
-	NativeRef->Native->setCompliance(Compliance);
+	NativeRef->Native->setElasticity(Elasticity, Dof);
 }
 
-double FConstraintBarrier::GetCompliance() const
+double FConstraintBarrier::GetElasticity(int32 Dof) const
 {
 	check(HasNative());
-	return NativeRef->Native->getCompliance(0); // TODO: Support for multiple DOF!
+	return NativeRef->Native->getElasticity(Dof);
 }
 
-void FConstraintBarrier::SetDamping(double Damping)
+void FConstraintBarrier::SetCompliance(double Compliance, int32 Dof)
 {
 	check(HasNative());
-	NativeRef->Native->setDamping(Damping);
+	NativeRef->Native->setCompliance(Compliance, Dof);
 }
 
-double FConstraintBarrier::GetDamping() const
+double FConstraintBarrier::GetCompliance(int32 Dof) const
 {
 	check(HasNative());
-	return NativeRef->Native->getDamping(0); // TODO: Support for multiple DOF!
+	return NativeRef->Native->getCompliance(Dof);
+}
+
+void FConstraintBarrier::SetDamping(double Damping, int32 Dof)
+{
+	check(HasNative());
+	NativeRef->Native->setDamping(Damping, Dof);
+}
+
+double FConstraintBarrier::GetDamping(int32 Dof) const
+{
+	check(HasNative());
+	return NativeRef->Native->getDamping(Dof);
 }
