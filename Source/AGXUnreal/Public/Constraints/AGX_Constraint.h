@@ -165,6 +165,9 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * the simulation will nevertheless be calculated and stored relative to the
 	 * rigid body when the simulation is starting.
 	 *
+	 * Note that both rigid bodies can use the same frame defining actor, or one rigid body
+	 * can use the other rigid body as frame defining actor, etc.
+	 *
 	 * If used, it is recommended to use an AGX Constraint Frame Actor.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
