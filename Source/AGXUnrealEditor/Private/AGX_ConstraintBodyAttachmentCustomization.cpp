@@ -105,7 +105,7 @@ FAGX_ConstraintBodyAttachmentCustomization::CustomizeHeader(
 		.MaxDesiredWidth(0)
 		[
 			SNew(STextBlock)
-			.Text(this, &FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyName)
+			.Text(this, &FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel)
 			.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
 			.MinDesiredWidth(250)
 		];
@@ -200,12 +200,12 @@ FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 
 
 FText
-FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyName() const
+FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 {
 	FString RigidBodyName;
-	if (const UObject* RigidBody = GetObjectFromPropertyHandle(RigidBodyProperty))
+	if (const AActor* RigidBody = Cast<AActor>(GetObjectFromPropertyHandle(RigidBodyProperty)))
 	{
-		RigidBodyName = "(" + RigidBody->GetName() + ")";
+		RigidBodyName = "(" + RigidBody->GetActorLabel() + ")";
 	}
 
 	return FText::FromString(RigidBodyName);

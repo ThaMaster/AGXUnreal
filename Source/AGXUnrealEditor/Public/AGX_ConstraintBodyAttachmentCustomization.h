@@ -24,7 +24,7 @@ public:
 		class IDetailChildrenBuilder& StructBuilder,
 		IPropertyTypeCustomizationUtils& StructCustomizationUtils) override;
 
-	FText GetRigidBodyName() const;
+	FText GetRigidBodyLabel() const;
 
 	bool HasRigidBodyActor() const;
 
