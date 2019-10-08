@@ -3,6 +3,7 @@
 #include "BeginAGXIncludes.h"
 #include <agx/Constraint.h>
 #include <agx/CylindricalJoint.h>
+#include <agx/DistanceJoint.h>
 #include <agx/LockJoint.h>
 #include <agx/Hinge.h>
 #include <agx/Prismatic.h>
