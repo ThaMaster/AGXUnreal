@@ -5,6 +5,7 @@
 #include <agx/CylindricalJoint.h>
 #include <agx/LockJoint.h>
 #include <agx/Hinge.h>
+#include <agx/Prismatic.h>
 #include <agx/RigidBody.h>
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
