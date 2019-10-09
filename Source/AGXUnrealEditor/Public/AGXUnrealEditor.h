@@ -11,6 +11,8 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
+	const TSharedPtr<class FAGX_TopMenu>& GetAgxTopMenu() const;
+
 private:
 
 	/**
@@ -34,4 +36,6 @@ private:
 	 * Unrrgisters property type customizations and class detail customizations.
 	 */
 	void UnregisterCustomizations();
+
+	TSharedPtr<class FAGX_TopMenu> AgxTopMenu;
 };

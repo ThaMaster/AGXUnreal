@@ -6,19 +6,31 @@
 #include "AGX_Simulation.h"
 #include "Constraints/AGX_Constraint.h"
 
+#include "AGX_TopMenu.h"
+
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
+
 
 void FAGXUnrealEditorModule::StartupModule()
 {
 	RegisterProjectSettings();
 	RegisterCustomizations();
+
+	AgxTopMenu = MakeShareable(new FAGX_TopMenu());
 }
 
 void FAGXUnrealEditorModule::ShutdownModule()
 {
 	UnregisterProjectSettings();
 	UnregisterCustomizations();
+
+	AgxTopMenu = nullptr;
+}
+
+const TSharedPtr<FAGX_TopMenu>& FAGXUnrealEditorModule::GetAgxTopMenu() const
+{
+	return AgxTopMenu;
 }
 
 void FAGXUnrealEditorModule::RegisterProjectSettings()
