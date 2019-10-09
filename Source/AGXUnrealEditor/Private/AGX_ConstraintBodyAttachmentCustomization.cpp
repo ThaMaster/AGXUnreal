@@ -286,8 +286,8 @@ FAGX_ConstraintBodyAttachmentCustomization::CreateFrameDefiningActor(
 	}
 
 	// Select the new actor.
-	GEditor->GetSelectedActors()->DeselectAll();
-	GEditor->GetSelectedActors()->Select(NewActor);
+	GEditor->SelectNone(/*bNoteSelectionChange*/ false, /*bDeselectBSPSurfs*/ true, /*WarnAboutManyActors*/ false);
+	GEditor->SelectActor(NewActor, /*bInSelected*/ true, /*bNotify*/ false);
 	GEditor->NoteSelectionChange();
 
 	// Show a notification.
