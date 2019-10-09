@@ -11,7 +11,7 @@
  * 
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API AAGX_CylindricalConstraint : public AAGX_Constraint1DOF
+class AGXUNREAL_API AAGX_CylindricalConstraint : public AAGX_Constraint2DOF
 {
 	GENERATED_BODY()
 

@@ -9,7 +9,7 @@ class FRigidBodyBarrier;
 
 
 AAGX_CylindricalConstraint::AAGX_CylindricalConstraint()
-	: AAGX_Constraint1DOF(
+	: AAGX_Constraint2DOF(
 		{
 			EDofFlag::DOF_FLAG_ROTATIONAL_1,
 			EDofFlag::DOF_FLAG_ROTATIONAL_2,

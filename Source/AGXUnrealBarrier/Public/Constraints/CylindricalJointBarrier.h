@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "Constraints/Constraint1DOFBarrier.h"
+#include "Constraints/Constraint2DOFBarrier.h"
 
 class FRigidBodyBarrier;
 
-class AGXUNREALBARRIER_API FCylindricalJointBarrier : public FConstraint1DOFBarrier
+class AGXUNREALBARRIER_API FCylindricalJointBarrier : public FConstraint2DOFBarrier
 {
 public:
 	FCylindricalJointBarrier();

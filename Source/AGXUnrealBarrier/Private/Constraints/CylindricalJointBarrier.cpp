@@ -9,7 +9,7 @@
 
 
 FCylindricalJointBarrier::FCylindricalJointBarrier()
-	: FConstraint1DOFBarrier()
+	: FConstraint2DOFBarrier()
 {
 }
 
