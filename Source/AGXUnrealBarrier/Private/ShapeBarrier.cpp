@@ -1,8 +1,9 @@
 #include "ShapeBarrier.h"
 
 #include "AGXRefs.h"
+#include "TypeConversions.h"
 
-#include <Misc/AssertionMacros.h>
+#include "Misc/AssertionMacros.h"
 
 FShapeBarrier::FShapeBarrier()
 	: NativeRef{new FGeometryAndShapeRef}
@@ -61,11 +62,11 @@ const FGeometryAndShapeRef* FShapeBarrier::GetNative() const
 void FShapeBarrier::SetLocalPosition(const FVector &Position, UWorld* World)
 {
 	check(HasNative());
-	NativeGeometryRef->Native->setLocalPosition(ConvertDistance(Position, World));
+	NativeRef->NativeGeometry->setLocalPosition(ConvertDistance(Position, World));
 }
 
 void FShapeBarrier::SetLocalRotation(const FQuat &Rotation)
 {
 	check(HasNative());
-	NativeGeometryRef->Native->setLocalRotation(Convert(Rotation));
+	NativeRef->NativeGeometry->setLocalRotation(Convert(Rotation));
 }
