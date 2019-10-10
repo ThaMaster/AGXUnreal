@@ -31,9 +31,7 @@ public:
 	bool HasFrameDefiningActor() const;
 
 	void CreateAndSetFrameDefiningActor();
-
-	static AActor* CreateFrameDefiningActor(class AAGX_Constraint* Constraint, class AActor* RigidBody);
-
+	
 private:
 
 	TSharedPtr<class IPropertyHandle> BodyAttachmentProperty = nullptr;

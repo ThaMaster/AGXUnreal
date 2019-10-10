@@ -7,7 +7,6 @@
 #include "PropertyEditorModule.h"
 
 #include "AGX_LogCategory.h"
-#include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_CylindricalConstraint.h"
 #include "Constraints/AGX_DistanceConstraint.h"
 #include "Constraints/AGX_HingeConstraint.h"
@@ -15,7 +14,7 @@
 #include "Constraints/AGX_PrismaticConstraint.h"
 
 #include "AGXUnrealEditor.h"
-
+#include "AGX_EditorUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TopMenu"
 
@@ -188,90 +187,14 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 	ADD_CREATE_CONSTRAINT_MENU_ENTRY(AAGX_PrismaticConstraint, "Prismatic Constraint");
 }
 
-// Finds the first two found actors that has a UAGX_RigidBodyComponent in the current selection.
-void GetRigidBodyActorsFromSelection(AActor** OutActor1, AActor** OutActor2)
-{
-	USelection* SelectedActors = GEditor->GetSelectedActors();
-
-	if (!SelectedActors)
-		return;
-
-	if (OutActor1)
-		*OutActor1 = nullptr;
-
-	if (OutActor2)
-		*OutActor2 = nullptr;
-
-	for(int32 i = 0; i < SelectedActors->Num(); ++i)
-	{
-		AActor* CandidateActor = Cast<AActor>(SelectedActors->GetSelectedObject(i));
-
-		if (!CandidateActor)
-			continue;
-
-		if (UAGX_RigidBodyComponent::GetFromActor(CandidateActor) == nullptr)
-			continue;
-
-		// Have a match. Assign it to next free OutActor!
-		if (OutActor1 && *OutActor1 == nullptr)
-		{
-			*OutActor1 = CandidateActor;
-		}
-		else if (OutActor2 && *OutActor2 == nullptr)
-		{
-			*OutActor2 = CandidateActor;
-		}
-		else
-		{
-			return; // All OutActors have been assigned. Return!
-		}
-	}
-}
-
 
 void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 {
-	UWorld* World = GEditor->GetEditorWorldContext().World();
-
-	check(ConstraintClass->IsChildOf<AAGX_Constraint>());
-	check(World);
-
-	// Create the new Constraint Actor.
-	AAGX_Constraint* NewActor = World->SpawnActorDeferred<AAGX_Constraint>(
+	FAGX_EditorUtilities::CreateConstraint(
 		ConstraintClass,
-		FTransform::Identity);
-
-	check(NewActor);
-	
-	// Set Rigid Body actors from current selection, if available.
-	GetRigidBodyActorsFromSelection(
-		&NewActor->BodyAttachment1.RigidBodyActor,
-		&NewActor->BodyAttachment2.RigidBodyActor);
-	
-	NewActor->FinishSpawning(FTransform::Identity, true);
-
-	// Select the new actor.
-	GEditor->SelectNone(/*bNoteSelectionChange*/ false, /*bDeselectBSPSurfs*/ true, /*WarnAboutManyActors*/ false);
-	GEditor->SelectActor(NewActor, /*bInSelected*/ true, /*bNotify*/ false);
-	GEditor->NoteSelectionChange();	
-
-	// Show a notification.
-	{
-		FNotificationInfo Info(LOCTEXT("CreateConstraintSucceeded", "Constraint Created"));
-		Info.Image = FEditorStyle::GetBrush(TEXT("LevelEditor.RecompileGameCode"));
-		Info.FadeInDuration = 0.1f;
-		Info.FadeOutDuration = 0.5f;
-		Info.ExpireDuration = 1.5f;
-		Info.bUseThrobber = false;
-		Info.bUseSuccessFailIcons = true;
-		Info.bUseLargeFont = true;
-		Info.bFireAndForget = false;
-		Info.bAllowThrottleWhenFrameRateIsLow = false;
-		auto NotificationItem = FSlateNotificationManager::Get().AddNotification(Info);
-		NotificationItem->SetCompletionState(SNotificationItem::CS_Success);
-		NotificationItem->ExpireAndFadeout();
-		//GEditor->PlayEditorSound(CompileSuccessSound);
-	}
+		/*Select*/ true,
+		/*ShowNotification*/ true,
+		/*InPlayingWorldIfAvailable*/ true);
 }
 
 

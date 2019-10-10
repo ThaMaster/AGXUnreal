@@ -1,9 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "AGX_ConstraintBodyAttachmentCustomization.h"
-
-#include "Classes/Editor/EditorEngine.h"
-#include "Classes/Engine/Selection.h"
 #include "DetailCategoryBuilder.h"
 #include "DetailWidgetRow.h"
 #include "DetailLayoutBuilder.h"
@@ -13,6 +10,7 @@
 
 #include "AGX_Constraint.h"
 #include "AGX_ConstraintFrameActor.h"
+#include "AGX_EditorUtilities.h"
 #include "Constraints/AGX_Constraint.h"
 #include "Utilities/AGX_SlateUtilities.h"
 
@@ -249,7 +247,11 @@ FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor()
 		GetObjectFromPropertyHandle(RigidBodyProperty)); // optional
 
 	// Create the new Constraint Frame Actor.
-	AActor* NewActor = CreateFrameDefiningActor(Constraint, RigidBody);
+	AActor* NewActor = FAGX_EditorUtilities::CreateConstraintFrameActor(
+		RigidBody,
+		/*Select*/ true,
+		/*ShowNotification*/ true,
+		/*InPlayingWorldIfAvailable*/ true);
 
 	// Set the new actor to our property.
 		
@@ -266,50 +268,5 @@ FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor()
 	BodyAttachment->OnFrameDefiningActorChanged(Constraint);
 #endif
 }
-
-
-AActor* 
-FAGX_ConstraintBodyAttachmentCustomization::CreateFrameDefiningActor(
-	AAGX_Constraint* Constraint,
-	AActor* RigidBody)
-{
-	check(Constraint);
-
-	// Create the new Constraint Frame Actor.
-	AAGX_ConstraintFrameActor* NewActor = Constraint->GetWorld()->SpawnActor<AAGX_ConstraintFrameActor>();
-	check(NewActor);
-
-	// Set the new actor as child to the Rigid Body.
-	if (RigidBody)
-	{
-		NewActor->AttachToActor(RigidBody, FAttachmentTransformRules::KeepRelativeTransform);
-	}
-
-	// Select the new actor.
-	GEditor->SelectNone(/*bNoteSelectionChange*/ false, /*bDeselectBSPSurfs*/ true, /*WarnAboutManyActors*/ false);
-	GEditor->SelectActor(NewActor, /*bInSelected*/ true, /*bNotify*/ false);
-	GEditor->NoteSelectionChange();
-
-	// Show a notification.
-	{
-		FNotificationInfo Info(LOCTEXT("CreateFrameDefiningActorSucceded", "Constraint Frame Actor Created"));
-		Info.Image = FEditorStyle::GetBrush(TEXT("LevelEditor.RecompileGameCode"));
-		Info.FadeInDuration = 0.1f;
-		Info.FadeOutDuration = 0.5f;
-		Info.ExpireDuration = 1.5f;
-		Info.bUseThrobber = false;
-		Info.bUseSuccessFailIcons = true;
-		Info.bUseLargeFont = true;
-		Info.bFireAndForget = false;
-		Info.bAllowThrottleWhenFrameRateIsLow = false;
-		auto NotificationItem = FSlateNotificationManager::Get().AddNotification(Info);
-		NotificationItem->SetCompletionState(SNotificationItem::CS_Success);
-		NotificationItem->ExpireAndFadeout();
-		//GEditor->PlayEditorSound(CompileSuccessSound);
-	}
-
-	return NewActor;
-}
-
 
 #undef LOCTEXT_NAMESPACE
