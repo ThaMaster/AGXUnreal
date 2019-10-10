@@ -1,9 +1,11 @@
 #pragma once
 
 #include "Components/SceneComponent.h"
+#include "GameFramework/Actor.h"
 #include "CoreMinimal.h"
 
 #include "ShapeBarrier.h"
+
 
 #include "AGX_ShapeComponent.generated.h"
 
@@ -50,12 +52,12 @@ private:
 
 
 template<typename TNative>
-void UAGX_ShapeComponent::UpdateNativeTransform(TNative &Native)
+void UAGX_ShapeComponent::UpdateNativeTransform(TNative& Native)
 {
 	FTransform RigiBodyTransform = GetOwner()->GetActorTransform();
 
 	FVector LocalPosition = RigiBodyTransform.InverseTransformPosition(GetComponentLocation());
-	FQuat LocalOrientation = RigiBodyTransform.InverseTransformRotation(GetComponentQuat());	
+	FQuat LocalOrientation = RigiBodyTransform.InverseTransformRotation(GetComponentQuat());
 
 	Native.SetLocalPosition(LocalPosition, GetWorld());
 	Native.SetLocalRotation(LocalOrientation);
