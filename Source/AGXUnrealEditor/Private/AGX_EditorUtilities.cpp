@@ -7,6 +7,7 @@
 #include "Editor.h"
 
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_Constraint.h"
 
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
@@ -30,7 +31,7 @@ FAGX_EditorUtilities::CreateConstraint(
 	AAGX_Constraint* NewActor = World->SpawnActorDeferred<AAGX_Constraint>(
 		ConstraintType,
 		FTransform::Identity);
-	
+
 	check(NewActor);
 
 	NewActor->BodyAttachment1.RigidBodyActor = RigidBody1;
@@ -61,7 +62,7 @@ FAGX_EditorUtilities::CreateConstraintFrameActor(
 {
 	UWorld* World = bInPlayingWorldIfAvailable ? GetCurrentWorld() : GetEditorWorld();
 	check(World);
-		
+
 	// Create the new Constraint Frame Actor.
 	AAGX_ConstraintFrameActor* NewActor = World->SpawnActor<AAGX_ConstraintFrameActor>();
 	check(NewActor);
