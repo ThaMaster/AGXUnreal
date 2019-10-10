@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include "Math/Vector.h"
+#include "Math/Quat.h"
 
 struct FGeometryAndShapeRef;
 
@@ -17,11 +19,11 @@ public:
 	FGeometryAndShapeRef* GetNative();
 	const FGeometryAndShapeRef* GetNative() const;
 
-protected:
-	FShapeBarrier(FShapeBarrier&& Other);
-
 	void SetLocalPosition(const FVector &Position, UWorld* World);
 	void SetLocalRotation(const FQuat &Rotation);
+
+protected:
+	FShapeBarrier(FShapeBarrier&& Other);
 
 private:
 	FShapeBarrier(const FShapeBarrier&) = delete;
