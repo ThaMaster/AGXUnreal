@@ -190,8 +190,14 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 
 void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 {
+	AActor* Actor1 = nullptr;
+	AActor* Actor2 = nullptr;
+	FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(&Actor1, &Actor2);
+
 	FAGX_EditorUtilities::CreateConstraint(
 		ConstraintClass,
+		Actor1,
+		Actor2,
 		/*Select*/ true,
 		/*ShowNotification*/ true,
 		/*InPlayingWorldIfAvailable*/ true);

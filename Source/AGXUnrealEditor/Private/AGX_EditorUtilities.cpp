@@ -15,6 +15,8 @@
 AAGX_Constraint*
 FAGX_EditorUtilities::CreateConstraint(
 	UClass* ConstraintType,
+	AActor* RigidBody1,
+	AActor* RigidBody2,
 	bool bInPlayingWorldIfAvailable,
 	bool bSelect,
 	bool bShowNotification)
@@ -31,10 +33,8 @@ FAGX_EditorUtilities::CreateConstraint(
 	
 	check(NewActor);
 
-	// Set Rigid Body actors from current selection, if available.
-	GetRigidBodyActorsFromSelection(
-		&NewActor->BodyAttachment1.RigidBodyActor,
-		&NewActor->BodyAttachment2.RigidBodyActor);
+	NewActor->BodyAttachment1.RigidBodyActor = RigidBody1;
+	NewActor->BodyAttachment2.RigidBodyActor = RigidBody2;
 
 	NewActor->FinishSpawning(FTransform::Identity, true);
 
