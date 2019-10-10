@@ -232,15 +232,14 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 
 	FRigidBodyBarrier* GetRigidBodyBarrier(bool CreateIfNeeded);
 
-#if 1
-	// WITH_EDITOR
-
+#if WITH_EDITOR
 	/**
 	 * Should be invoked whenever Frame Defining Actor changes, to trigger the removal
 	 * of the constraint from the previous Frame Defining Actor's list of constraint usages,
 	 * and adding to the new one's (if they are AAGX_ConstraintFrameActor actor types).
 	 */
 	void OnFrameDefiningActorChanged(AAGX_Constraint* Owner);
+#endif
 
 private:
 	/**
@@ -249,6 +248,4 @@ private:
 	 */
 	UPROPERTY()
 	mutable AActor* RecentFrameDefiningActor;
-#endif
-
 };
