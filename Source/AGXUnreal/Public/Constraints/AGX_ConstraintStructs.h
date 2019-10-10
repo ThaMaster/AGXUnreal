@@ -60,7 +60,7 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 		check(Index >= 0 && Index < 6);
 		return (&Translational_1)[Index];
 	}
-	
+
 private:
 
 	UPROPERTY(Transient, VisibleDefaultsOnly)
@@ -113,12 +113,12 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 
 	FAGX_ConstraintRangePropertyPerDof(float DefaultMinValue = 0.0f, float DefaultMaxValue = 0.0f, EDofFlag EditableDofs = EDofFlag::DOF_FLAG_ALL)
 		:
-		Translational_1({ DefaultMinValue, DefaultMaxValue }),
-		Translational_2({ DefaultMinValue, DefaultMaxValue }),
-		Translational_3({ DefaultMinValue, DefaultMaxValue }),
-		Rotational_1({ DefaultMinValue, DefaultMaxValue }),
-		Rotational_2({ DefaultMinValue, DefaultMaxValue }),
-		Rotational_3({ DefaultMinValue, DefaultMaxValue }),
+		Translational_1(DefaultMinValue, DefaultMaxValue),
+		Translational_2(DefaultMinValue, DefaultMaxValue),
+		Translational_3(DefaultMinValue, DefaultMaxValue),
+		Rotational_1(DefaultMinValue, DefaultMaxValue),
+		Rotational_2(DefaultMinValue, DefaultMaxValue),
+		Rotational_3(DefaultMinValue, DefaultMaxValue),
 		Translational_1_IsEditable((uint8)EditableDofs & (uint8)EDofFlag::DOF_FLAG_TRANSLATIONAL_1),
 		Translational_2_IsEditable((uint8)EditableDofs & (uint8)EDofFlag::DOF_FLAG_TRANSLATIONAL_2),
 		Translational_3_IsEditable((uint8)EditableDofs & (uint8)EDofFlag::DOF_FLAG_TRANSLATIONAL_3),
@@ -232,7 +232,8 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 
 	FRigidBodyBarrier* GetRigidBodyBarrier(bool CreateIfNeeded);
 
-#if WITH_EDITOR
+#if 1
+	// WITH_EDITOR
 
 	/**
 	 * Should be invoked whenever Frame Defining Actor changes, to trigger the removal
