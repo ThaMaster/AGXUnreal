@@ -5,7 +5,7 @@
 UAGX_SphereShapeComponent::UAGX_SphereShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	Radius = 1.0f;
+	Radius = 50.0f;
 	UE_LOG(LogAGX, Log, TEXT("SphereShape instance created."));
 }
 
@@ -51,6 +51,7 @@ void UAGX_SphereShapeComponent::CreateNative()
 	UE_LOG(LogAGX, Log, TEXT("Allocating native object for SphereShapeComponent."));
 	check(!HasNative());
 	NativeBarrier.AllocateNative();
+	UpdateNativeTransform(NativeBarrier);
 	NativeBarrier.SetRadius(Radius, GetWorld());
 }
 

@@ -1,6 +1,12 @@
 #pragma once
 
 #include "BeginAGXIncludes.h"
+#include <agx/Constraint.h>
+#include <agx/CylindricalJoint.h>
+#include <agx/DistanceJoint.h>
+#include <agx/LockJoint.h>
+#include <agx/Hinge.h>
+#include <agx/Prismatic.h>
 #include <agx/RigidBody.h>
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
@@ -47,3 +53,8 @@ struct FSphereShapeRef
 	agxCollide::SphereRef Native;
 };
 #endif
+
+struct FConstraintRef
+{
+	agx::ConstraintRef Native;
+};

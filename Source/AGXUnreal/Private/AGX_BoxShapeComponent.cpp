@@ -5,7 +5,7 @@
 UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	HalfExtent = FVector(1.0f, 1.0f, 1.0f);
+	HalfExtent = FVector(50.0f, 50.0f, 50.0f);
 	UE_LOG(LogAGX, Log, TEXT("BoxShape instance created."));
 }
 
@@ -54,6 +54,7 @@ void UAGX_BoxShapeComponent::CreateNative()
 	UE_LOG(LogAGX, Log, TEXT("Allocating native object for BoxShapeComponent."));
 	check(!HasNative());
 	NativeBarrier.AllocateNative();
+	UpdateNativeTransform(NativeBarrier);
 	NativeBarrier.SetHalfExtents(HalfExtent, GetWorld());
 }
 

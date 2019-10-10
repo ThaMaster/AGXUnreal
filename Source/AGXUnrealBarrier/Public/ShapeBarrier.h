@@ -20,6 +20,9 @@ public:
 protected:
 	FShapeBarrier(FShapeBarrier&& Other);
 
+	void SetLocalPosition(const FVector &Position, UWorld* World);
+	void SetLocalRotation(const FQuat &Rotation);
+
 private:
 	FShapeBarrier(const FShapeBarrier&) = delete;
 	void operator=(const FShapeBarrier&) = delete;

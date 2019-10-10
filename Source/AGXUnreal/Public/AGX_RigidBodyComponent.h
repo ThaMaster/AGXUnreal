@@ -8,7 +8,8 @@
 
 #include "AGX_RigidBodyComponent.generated.h"
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
+	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
 class AGXUNREAL_API UAGX_RigidBodyComponent : public USceneComponent
 {
 	GENERATED_BODY()
@@ -37,6 +38,8 @@ public:
 	/// Return true if the AGX Dynamics object has been created. False otherwise.
 	bool HasNative();
 
+	static UAGX_RigidBodyComponent* GetFromActor(const AActor* Actor);
+
 public:
 	virtual void TickComponent(
 		float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -47,6 +50,12 @@ protected:
 
 private:
 	void InitializeNative();
+
+	// Set native's MotionControl and ensure Unreal has corresponding mobility.
+	void InitializeMotionControl();
+
+	void UpdateActorTransformsFromNative();
+	void UpdateNativeTransformsFromActor();
 
 private:
 	FRigidBodyBarrier NativeBarrier;

@@ -5,6 +5,7 @@
 struct FSimulationRef;
 
 class FRigidBodyBarrier;
+class FConstraintBarrier;
 
 class AGXUNREALBARRIER_API FSimulationBarrier
 {
@@ -13,6 +14,8 @@ public:
 	~FSimulationBarrier();
 
 	void AddRigidBody(FRigidBodyBarrier* body);
+	void AddConstraint(FConstraintBarrier* Constraint);
+
 	void Step();
 
 	bool HasNative() const;

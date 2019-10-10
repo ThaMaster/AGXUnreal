@@ -3,6 +3,7 @@
 #include "AGX_Stepper.h"
 #include "AGX_LogCategory.h"
 
+#include "Engine/GameInstance.h"
 #include "Engine/World.h"
 
 void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* body)
@@ -28,6 +29,20 @@ void UAGX_Simulation::Deinitialize()
 	NativeBarrier.ReleaseNative();
 }
 
+FSimulationBarrier* UAGX_Simulation::GetNative() 
+{
+	check(NativeBarrier.HasNative()); // Invalid to call this function before starting game!
+
+	return &NativeBarrier;
+}
+
+const FSimulationBarrier* UAGX_Simulation::GetNative() const
+{
+	check(NativeBarrier.HasNative()); // Invalid to call this function before starting game!
+
+	return &NativeBarrier;
+}
+
 void UAGX_Simulation::Step(float DeltaTime)
 {
 	DeltaTime += LeftoverTime;
@@ -40,4 +55,16 @@ void UAGX_Simulation::Step(float DeltaTime)
 		DeltaTime -= TimeStep;
 	}
 	LeftoverTime = DeltaTime;
+}
+
+
+UAGX_Simulation* UAGX_Simulation::GetFrom(const AActor* Actor)
+{
+	if (!Actor)
+		return nullptr;
+
+	UGameInstance* GameInstance = Actor->GetGameInstance();
+	check(GameInstance);
+
+	return GameInstance->GetSubsystem<UAGX_Simulation>();
 }

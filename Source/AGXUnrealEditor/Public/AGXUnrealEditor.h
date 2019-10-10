@@ -17,6 +17,8 @@ public:
 	/// \todo I think we can rename this to whatever we want.
 	void PluginButtonClicked();
 
+	const TSharedPtr<class FAGX_TopMenu>& GetAgxTopMenu() const;
+
 private:
 	void AddToolbarExtension(FToolBarBuilder& Builder);
 	void AddMenuExtension(FMenuBuilder& Builder);
@@ -35,6 +37,20 @@ private:
 	void RegisterCommands();
 	void UnregisterCommands();
 
+	/**
+	 * Registers property type customizations (IPropertyTypeCustomization),
+	 * and class detail customizations (IDetailCustomization).
+	 */
+	void RegisterCustomizations();
+
+	/**
+	 * Unrrgisters property type customizations and class detail customizations.
+	 */
+	void UnregisterCustomizations();
+
+
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;
+	TSharedPtr<class FAGX_TopMenu> AgxTopMenu;
 };
+

@@ -1,23 +1,36 @@
-#if 0
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
+#include "Constraints/AGX_ConstraintEnums.h"
+#include "Constraints/AGX_ConstraintStructs.h"
+#include "Constraints/ConstraintBarrier.h" // TODO: Shouldn't be necessary here!
+
 #include "AGX_Constraint.generated.h"
 
-class AAGX_ConstraintFrame;
+
+class FConstraintBarrier;
 
 
 /**
  * Abstract base class for all AGX constraint types.
  *
- * Does not have a its own world space transform, but has references to two
- * AAGX_ConstraintFrame that each has a transform. Will automatically find the
- * two AActors with a UAGX_RigidBodyComponent to apply the constraint to
- * by searching from each referenced AAGX_ConstraintFrame for the hierarchically
- * closest rigid body ancestor (or the world if no rigid body ancestor exists).
+ * Does not have a its own world space transform, but has references to the two
+ * Rigid Body Actors to constrain to each other, and their attachment frames
+ * (which defines how the rigid bodies should locally be jointed to one another).
+ * 
+ * At least the first Rigid Body Actor must be chosen. If there is no second Rigid Body Actor,
+ * then the first one will be constrained to the static World instead.
+ *
+ * Each non-abstract subclass must:
+ *   1. Implement CreateNativeImpl (see method comment).
+ *   2. In the constructor pass the constraint type specific array of locked DOFs to the
+ *       overloaded AAGX_Constraint constructor. The array items and their indexes must exactly
+ *       match the enum in the header of the native AGX constraint (without ALL_DOF and NUM_DOF).
+ *
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract,
 	meta = (BlueprintSpawnableComponent),
@@ -29,35 +42,76 @@ class AGXUNREAL_API AAGX_Constraint : public AActor
 public:
 
 	/**
-	 * The constraint attachment frame of the first Rigid Body bound by this constraint.
-	 *
-	 * The Rigid Body is the hierarchically closest Rigid Body ancestor of the frame,
-	 * or the world if no Rigid Body ancestor exists.
+	 * The first Rigid Body bound by this constraint, and its Attachment Frame definition.
+	 * Rigid Body Actor must be set.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint")
-	AAGX_ConstraintFrame *ConstraintFrame1;
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies", Meta=(EditCondition = "hej"))
+	FAGX_ConstraintBodyAttachment BodyAttachment1;
 
 	/**
-	 * The constraint attachment frame of the second Rigid Body bound by this constraint.
-	 *
-	 * The Rigid Body is the hierarchically closest Rigid Body ancestor of the frame,
-	 * or the world if no Rigid Body ancestor exists.
+	 * The second Rigid Body bound by this constraint, and its Attachment Frame definition.
+	 * If second Rigid Body is null, the first Rigid Body will be constrained to the World.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint")
-	AAGX_ConstraintFrame *ConstraintFrame2;
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies")
+	FAGX_ConstraintBodyAttachment BodyAttachment2;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
+	FAGX_ConstraintDoublePropertyPerDof Elasticity;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
+	FAGX_ConstraintDoublePropertyPerDof Damping;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
+	FAGX_ConstraintRangePropertyPerDof ForceRange;
 
 public:
 
-	/** Sets default values for this actor's properties. */
-	AAGX_Constraint();
+	AAGX_Constraint() { }
+
+	AAGX_Constraint(const TArray<EDofFlag> &LockedDofsOrdered);
+
+	virtual ~AAGX_Constraint();
 
 	/** Indicates whether this actor should participate in level bounds calculations. */
 	bool IsLevelBoundsRelevant() const override { return false; }
 
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
+	/** Get the native AGX Dynamics representation of this constraint. Create it if necessary. */
+	FConstraintBarrier* GetOrCreateNative();
+
+	/** Get the native AGX Dynamics representation of this constraint. May return nullptr. */
+	FConstraintBarrier* GetNative();
+
+	/** Return true if the AGX Dynamics object has been created. False otherwise. */
+	bool HasNative() const;
+
+	void UpdateNativeProperties();
+
 protected:
 
-	/** Called when the game starts or when spawned. */
 	virtual void BeginPlay() override;
 
+	bool ToNativeDof(EGenericDofIndex GenericDof, int32 &NativeDof);
+
+	/** Must be overriden by derived class, and create a NativeBarrier with allocated native. Nothing more.*/
+	virtual void CreateNativeImpl() PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl,);
+
+	TUniquePtr<FConstraintBarrier> NativeBarrier;
+
+	// The Degrees of Freedom (DOF) that are locked by the specific constraint type,
+	// ordered the way they are indexed by in the native AGX api (except for ALL_DOF and NUM_DOF).
+	const TArray<EDofFlag> LockedDofs;
+
+	// Mapping from EGenericDofIndex to native AGX constraint specific DOF index.
+	// This list can change with each constraint type, and should exactly reflect
+	// the DOF enum in the native header for each constraint.
+	const TMap<EGenericDofIndex, int32> NativeDofIndexMap;
+
+private:
+
+	/** Invokes CreateNativeImpl, then adds the native to the simulation. */
+	void CreateNative();
 };
-#endif

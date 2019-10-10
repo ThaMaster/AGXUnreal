@@ -17,21 +17,36 @@
 #include "AGXArchiveReader.h"
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
+#include "Constraints/AGX_Constraint.h"
+
+#include "AGX_TopMenu.h"
 
 #include "RigidBodyBarrier.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
+
 void FAGXUnrealEditorModule::StartupModule()
 {
 	RegisterProjectSettings();
 	RegisterCommands();
+	RegisterCustomizations();
+
+	AgxTopMenu = MakeShareable(new FAGX_TopMenu());
 }
 
 void FAGXUnrealEditorModule::ShutdownModule()
 {
 	UnregisterCommands();
 	UnregisterProjectSettings();
+	UnregisterCustomizations();
+
+	AgxTopMenu = nullptr;
+}
+
+const TSharedPtr<FAGX_TopMenu>& FAGXUnrealEditorModule::GetAgxTopMenu() const
+{
+	return AgxTopMenu;
 }
 
 void FAGXUnrealEditorModule::RegisterProjectSettings()
@@ -138,6 +153,27 @@ void FAGXUnrealEditorModule::AddMenuExtension(FMenuBuilder& Builder)
 void FAGXUnrealEditorModule::AddToolbarExtension(FToolBarBuilder& Builder)
 {
 	Builder.AddToolBarButton(FImportAGXArchiveCommands::Get().PluginAction);
+}
+
+void FAGXUnrealEditorModule::RegisterCustomizations()
+{
+	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
+	
+	PropertyModule.NotifyCustomizationModuleChanged();
+}
+
+void FAGXUnrealEditorModule::UnregisterCustomizations()
+{
+	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
+
+	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -1,11 +1,12 @@
-#if 0
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Constraints/AGX_ConstraintFrame.h"
+#include "Constraints/AGX_ConstraintFrameActor.h"
+
+#include "EngineUtils.h"
 
 
-AAGX_ConstraintFrame::AAGX_ConstraintFrame()
+AAGX_ConstraintFrameActor::AAGX_ConstraintFrameActor()
 {
 	// Create a root SceneComponent so that this Actor has a transform
 	// which can be modified in the Editor.
@@ -25,8 +26,15 @@ AAGX_ConstraintFrame::AAGX_ConstraintFrame()
 }
 
 
-void AAGX_ConstraintFrame::BeginPlay()
+void AAGX_ConstraintFrameActor::AddConstraintUsage(AAGX_Constraint* Constraint)
 {
-	Super::BeginPlay();
+	UsedByConstraints.Add(Constraint);
 }
-#endif
+
+
+void AAGX_ConstraintFrameActor::RemoveConstraintUsage(AAGX_Constraint* Constraint)
+{
+	// Only remove first occurance, because it is actually valid for a constraint
+	// to use the same Constraint Frame Actor twice.
+	UsedByConstraints.RemoveSingle(Constraint);
+}

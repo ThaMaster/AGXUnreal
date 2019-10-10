@@ -1,37 +1,30 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Constraints/AGX_LockConstraint.h"
+#include "Constraints/AGX_DistanceConstraint.h"
 
-#include "Constraints/ConstraintBarrier.h"
-#include "Constraints/LockJointBarrier.h"
+#include "Constraints/DistanceJointBarrier.h"
 
 class FRigidBodyBarrier;
 
 
-AAGX_LockConstraint::AAGX_LockConstraint()
-	: AAGX_Constraint(
+AAGX_DistanceConstraint::AAGX_DistanceConstraint()
+	: AAGX_Constraint1DOF( TArray<EDofFlag>
 		{
-			EDofFlag::DOF_FLAG_TRANSLATIONAL_1,
-			EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
-			EDofFlag::DOF_FLAG_TRANSLATIONAL_3,
-			EDofFlag::DOF_FLAG_ROTATIONAL_1,
-			EDofFlag::DOF_FLAG_ROTATIONAL_2,
-			EDofFlag::DOF_FLAG_ROTATIONAL_3
 		})
 {
 }
 
 
-AAGX_LockConstraint::~AAGX_LockConstraint()
+AAGX_DistanceConstraint::~AAGX_DistanceConstraint()
 {
 
 }
 
 
-void AAGX_LockConstraint::CreateNativeImpl()
+void AAGX_DistanceConstraint::CreateNativeImpl()
 {
-	NativeBarrier.Reset(new FLockJointBarrier());
+	NativeBarrier.Reset(new FDistanceJointBarrier());
 
 	FRigidBodyBarrier* RigidBody1 = BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 	FRigidBodyBarrier* RigidBody2 = BodyAttachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);

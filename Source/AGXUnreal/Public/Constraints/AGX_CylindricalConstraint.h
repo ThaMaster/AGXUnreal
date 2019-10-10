@@ -3,22 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Constraints/AGX_Constraint.h"
-#include "AGX_LockConstraint.generated.h"
+#include "Constraints/AGX_Constraint2DOF.h"
+#include "AGX_CylindricalConstraint.generated.h"
 
 
 /**
- * A constraint that locks all six relative degrees of freedom between two Rigid Bodies.
+ * 
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API AAGX_LockConstraint : public AAGX_Constraint
+class AGXUNREAL_API AAGX_CylindricalConstraint : public AAGX_Constraint2DOF
 {
 	GENERATED_BODY()
 
 public:
 
-	AAGX_LockConstraint();
-	virtual ~AAGX_LockConstraint();
+	AAGX_CylindricalConstraint();
+	virtual ~AAGX_CylindricalConstraint();
 
 protected:
 

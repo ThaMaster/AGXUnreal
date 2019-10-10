@@ -28,7 +28,7 @@ class UAGX_RigidBodyComponent;
  * specific UAGX_Simulation instance.
  *
  */
-UCLASS(config = Engine, defaultconfig)
+UCLASS(ClassGroup = "AGX", Category = "AGX", config = Engine, defaultconfig)
 class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
@@ -45,7 +45,13 @@ public:
 
 	void AddRigidBody(UAGX_RigidBodyComponent* body);
 
+	FSimulationBarrier* GetNative();
+
+	const FSimulationBarrier* GetNative() const;
+
 	void Step(float DeltaTime);
+
+	static UAGX_Simulation* GetFrom(const AActor* Actor);
 
 public:
 	void Initialize(FSubsystemCollectionBase& Collection) override;
