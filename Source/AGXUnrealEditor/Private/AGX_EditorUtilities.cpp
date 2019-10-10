@@ -7,7 +7,8 @@
 #include "Editor.h"
 
 #include "AGX_RigidBodyComponent.h"
-#include "AGX_Constraint.h"
+#include "Constraints/AGX_Constraint.h"
+#include "Constraints/AGX_ConstraintFrameActor.h"
 
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
