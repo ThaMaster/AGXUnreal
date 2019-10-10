@@ -3,16 +3,41 @@
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 
+#include "Misc/AssertionMacros.h"
+
+namespace
+{
+	agxCollide::Sphere* NativeSphere(FSphereShapeBarrier* Barrier)
+	{
+		return Barrier->GetNative()->NativeShape->as<agxCollide::Sphere>();
+	}
+
+	const agxCollide::Sphere* NativeSphere(const FSphereShapeBarrier* Barrier)
+	{
+		return Barrier->GetNative()->NativeShape->as<agxCollide::Sphere>();
+	}
+}
+
 FSphereShapeBarrier::FSphereShapeBarrier()
 	: FShapeBarrier()
-	, NativeRef{new FSphereShapeRef}
+{
+}
+
+FSphereShapeBarrier::FSphereShapeBarrier(std::unique_ptr<FGeometryAndShapeRef> Native)
+	: FShapeBarrier(std::move(Native))
+{
+	check(GetNative()->NativeShape->is<agxCollide::Sphere>());
+}
+
+FSphereShapeBarrier::FSphereShapeBarrier(FSphereShapeBarrier&& Other)
+	: FShapeBarrier(std::move(Other))
 {
 }
 
 FSphereShapeBarrier::~FSphereShapeBarrier()
 {
 	// Must provide a destructor implementation in the .cpp file because the
-	// std::uniqe_ptr NativeRef's destructor must be able to see the definition,
+	// std::unique_ptr NativeRef's destructor must be able to see the definition,
 	// not just the forward declaration, of FSphereShapeRef.
 }
 
@@ -20,39 +45,25 @@ void FSphereShapeBarrier::SetRadius(float RadiusUnreal, UWorld* World)
 {
 	check(HasNative());
 	agx::Real RadiusAGX = ConvertDistance(RadiusUnreal, World);
-	NativeRef->Native->setRadius(RadiusAGX);
+	NativeSphere(this)->setRadius(RadiusAGX);
 }
 
 float FSphereShapeBarrier::GetRadius(UWorld* World) const
 {
 	check(HasNative());
-	agx::Real RadiusAGX = NativeRef->Native->getRadius();
+	agx::Real RadiusAGX = NativeSphere(this)->getRadius();
 	float RadiusUnreal = ConvertDistance(RadiusAGX, World);
 	return RadiusUnreal;
-}
-
-FSphereShapeRef* FSphereShapeBarrier::GetNative()
-{
-	check(HasNative());
-	return NativeRef.get();
-}
-
-const FSphereShapeRef* FSphereShapeBarrier::GetNative() const
-{
-	check(HasNative());
-	return NativeRef.get();
 }
 
 void FSphereShapeBarrier::AllocateNativeShape()
 {
 	check(!HasNative());
-	NativeRef->Native = new agxCollide::Sphere(agx::Real());
-	NativeShapeRef->Native = NativeRef->Native;
+	NativeRef->NativeShape = new agxCollide::Sphere(agx::Real());
 }
 
 void FSphereShapeBarrier::ReleaseNativeShape()
 {
 	check(HasNative());
-	NativeRef->Native = nullptr;
-	NativeShapeRef->Native = nullptr;
+	NativeRef->NativeShape = nullptr;
 }

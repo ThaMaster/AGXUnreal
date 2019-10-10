@@ -28,6 +28,15 @@ struct FShapeRef
 	agxCollide::ShapeRef Native;
 };
 
+struct FGeometryAndShapeRef
+{
+	agxCollide::GeometryRef NativeGeometry;
+	agxCollide::ShapeRef NativeShape;
+};
+
+/// \todo These may not be needed, if we use the FGeometryAndShapeRef approach
+/// and down-casts everywhere.
+#if 0
 struct FBoxShapeRef
 {
 	agxCollide::BoxRef Native;
@@ -37,3 +46,4 @@ struct FSphereShapeRef
 {
 	agxCollide::SphereRef Native;
 };
+#endif

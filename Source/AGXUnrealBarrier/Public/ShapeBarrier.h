@@ -2,20 +2,23 @@
 
 #include <memory>
 
-struct FGeometryRef;
-struct FShapeRef;
+struct FGeometryAndShapeRef;
 
 class AGXUNREALBARRIER_API FShapeBarrier
 {
 public:
 	FShapeBarrier();
+	FShapeBarrier(std::unique_ptr<FGeometryAndShapeRef> Native);
 	virtual ~FShapeBarrier();
 
 	bool HasNative() const;
 	void AllocateNative();
 	void ReleaseNative();
-	FGeometryRef* GetNativeGeometry();
-	FShapeRef* GetNativeShape();
+	FGeometryAndShapeRef* GetNative();
+	const FGeometryAndShapeRef* GetNative() const;
+
+protected:
+	FShapeBarrier(FShapeBarrier&& Other);
 
 private:
 	FShapeBarrier(const FShapeBarrier&) = delete;
@@ -28,19 +31,13 @@ private:
 
 	/**
 	Called from AllocateNative. The subclass is responsible for creating the
-	agxCollide::Shape instance, which is stored in NativeShapeRef. FShapeBarrier
+	agxCollide::Shape instance, which is stored in NativeRef. FShapeBarrier
 	creates the agxCollide::Geometry, in AllocateNative, and adds the
 	agxCollide::Shape to it.
-
-	\return The FShapeRef the subclass decide the actual type of.
 	*/
 	virtual void AllocateNativeShape() = 0;
 	virtual void ReleaseNativeShape() = 0;
 
 protected:
-	std::unique_ptr<FGeometryRef> NativeGeometryRef;
-	std::unique_ptr<FShapeRef> NativeShapeRef;
-	// NativeRef is held by the subclasses of FShapeBarrier, e.g., FBoxBarrier.
-	// The NativeRef and the NativeShapeRef should always point to the same
-	// object.
+	std::unique_ptr<FGeometryAndShapeRef> NativeRef;
 };

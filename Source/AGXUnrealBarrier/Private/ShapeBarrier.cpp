@@ -5,45 +5,55 @@
 #include <Misc/AssertionMacros.h>
 
 FShapeBarrier::FShapeBarrier()
-	: NativeGeometryRef{new FGeometryRef}
-	, NativeShapeRef{new FShapeRef}
+	: NativeRef{new FGeometryAndShapeRef}
+{
+}
+
+FShapeBarrier::FShapeBarrier(std::unique_ptr<FGeometryAndShapeRef> Native)
+	: NativeRef{std::move(Native)}
+{
+}
+
+FShapeBarrier::FShapeBarrier(FShapeBarrier&& Other)
+	: NativeRef(std::move(Other.NativeRef))
+
 {
 }
 
 FShapeBarrier::~FShapeBarrier()
 {
 	// Must provide a destructor implementation in the .cpp file because the
-	// std::uniue_ptr NativeRef's destructor must be able to see the definition,
-	// not just the forward declaration, of FShapeRef.
+	// std::unique_ptr NativeRef's destructor must be able to see the definition,
+	// not just the forward declaration, of FGeometryAndShapeRef.
 }
 
 bool FShapeBarrier::HasNative() const
 {
-	return NativeGeometryRef->Native != nullptr && NativeShapeRef->Native != nullptr;
+	return NativeRef->NativeGeometry != nullptr && NativeRef->NativeShape != nullptr;
 }
 
 void FShapeBarrier::AllocateNative()
 {
 	check(!HasNative());
-	NativeGeometryRef->Native = new agxCollide::Geometry();
+	NativeRef->NativeGeometry = new agxCollide::Geometry();
 	AllocateNativeShape();
-	NativeGeometryRef->Native->add(NativeShapeRef->Native);
+	NativeRef->NativeGeometry->add(NativeRef->NativeShape);
 }
 
 void FShapeBarrier::ReleaseNative()
 {
 	check(HasNative());
-	NativeGeometryRef->Native->remove(NativeShapeRef->Native);
+	NativeRef->NativeGeometry->remove(NativeRef->NativeShape);
 	ReleaseNativeShape();
-	NativeGeometryRef->Native = nullptr;
+	NativeRef->NativeGeometry = nullptr;
 }
 
-FGeometryRef* FShapeBarrier::GetNativeGeometry()
+FGeometryAndShapeRef* FShapeBarrier::GetNative()
 {
-	return NativeGeometryRef.get();
+	return NativeRef.get();
 }
 
-FShapeRef* FShapeBarrier::GetNativeShape()
+const FGeometryAndShapeRef* FShapeBarrier::GetNative() const
 {
-	return NativeShapeRef.get();
+	return NativeRef.get();
 }
