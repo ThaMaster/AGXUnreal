@@ -10,6 +10,7 @@
 struct FRigidBodyRef;
 class FShapeBarrier;
 
+
 /**
  * Barrier between UAGX_RigidBody and agx::RigidBody. UAGX_RigidBody holds an
  * instance of RigidBodyBarrier and hidden behind the RigidBodyBarrier is a
@@ -23,6 +24,8 @@ class AGXUNREALBARRIER_API FRigidBodyBarrier
 {
 public:
 	FRigidBodyBarrier();
+	FRigidBodyBarrier(std::unique_ptr<FRigidBodyRef> Native);
+	FRigidBodyBarrier(FRigidBodyBarrier&& other);
 	~FRigidBodyBarrier();
 
 	void SetPosition(FVector NewPosition, UWorld* World);
@@ -44,8 +47,6 @@ public:
 	FRigidBodyRef* GetNative();
 	const FRigidBodyRef* GetNative() const;
 	void ReleaseNative();
-
-	void DebugSimulate();
 
 private:
 	FRigidBodyBarrier(const FRigidBodyBarrier&) = delete;

@@ -12,6 +12,16 @@ FRigidBodyBarrier::FRigidBodyBarrier()
 {
 }
 
+FRigidBodyBarrier::FRigidBodyBarrier(std::unique_ptr<FRigidBodyRef> Native)
+	: NativeRef(std::move(Native))
+{
+}
+
+FRigidBodyBarrier::FRigidBodyBarrier(FRigidBodyBarrier&& other)
+	: NativeRef{std::move(other.NativeRef)}
+{
+}
+
 FRigidBodyBarrier::~FRigidBodyBarrier()
 {
 	// Must provide a destructor implementation in the .cpp file because the
@@ -82,7 +92,7 @@ EAGX_MotionControl FRigidBodyBarrier::GetMotionControl() const
 void FRigidBodyBarrier::AddShape(FShapeBarrier* Shape)
 {
 	check(HasNative());
-	NativeRef->Native->add(Shape->GetNativeGeometry()->Native);
+	NativeRef->Native->add(Shape->GetNative()->NativeGeometry);
 }
 
 bool FRigidBodyBarrier::HasNative() const
