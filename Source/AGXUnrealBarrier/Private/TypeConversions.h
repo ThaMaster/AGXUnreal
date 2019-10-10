@@ -136,7 +136,7 @@ TNative* GetNativeFromBarrier(const TBarrier* Barrier)
 		return nullptr;
 }
 
-agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& FrameRotation, const UWorld* World)
+inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& FrameRotation, const UWorld* World)
 {
 	return new agx::Frame(
 		agx::AffineMatrix4x4(
@@ -144,8 +144,8 @@ agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& FrameRotat
 			ConvertDistance(FramePosition, World)));
 }
 
-void
-ConvertConstraintBodiesAndFrames(
+/// \todo Consider moving this to the .cpp file.
+inline void ConvertConstraintBodiesAndFrames(
 	const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
 	const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2,
 	const UWorld* World,
