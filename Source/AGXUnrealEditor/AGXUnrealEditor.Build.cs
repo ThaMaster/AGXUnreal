@@ -7,12 +7,16 @@ public class AGXUnrealEditor : ModuleRules
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		PrecompileForTargets = PrecompileTargetsType.Any;
 
-		// TODO: The prototype plugin has more here.
-		PublicDependencyModuleNames.AddRange(new string[] {
-			"Core", "AGXUnreal" });
+		/// \todo Copied from the prototype plugin. Not sure if all of these are
+		///       required.
+		PublicDependencyModuleNames.AddRange(new string[]{
+			"AGXUnreal", "ComponentVisualizers", "Core", "CoreUObject", "Engine", "InputCore", "RHI", "RenderCore"});
 
-		// TODO: The prototype plugin has more here.
-		PrivateDependencyModuleNames.AddRange(new string[] {
-				"CoreUObject", "Engine", "Slate", "SlateCore", "AGXUnrealBarrier"});
+		/// \todo Copied from the prototype plugin. Not sure if all of these are
+		///       required.
+		PrivateDependencyModuleNames.AddRange(new string[]{"AGXUnrealBarrier", "AGXUnrealLibrary", "AssetTools",
+			"CoreUObject", "CustomMeshComponent", "DesktopPlatform", "EditorStyle", "Engine", "InputCore", "Json",
+			"LevelEditor", "PlacementMode", "Projects", "PropertyEditor", "RawMesh", "RenderCore", "RHI", "Slate",
+			"SlateCore", "SlateCore", "UnrealEd"});
 	}
 }
