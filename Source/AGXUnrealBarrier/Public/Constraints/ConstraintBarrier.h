@@ -44,6 +44,9 @@ public:
 	void SetDamping(double Damping, int32 Dof);
 	double GetDamping(int32 Dof) const;
 
+	void SetForceRange(double Min, double Max, int32 Dof);
+	void GetForceRange(double* Min, double* Max, int32 Dof) const;
+
 private:
 	FConstraintBarrier(const FConstraintBarrier&) = delete;
 	void operator=(const FConstraintBarrier&) = delete;

@@ -83,3 +83,23 @@ double FConstraintBarrier::GetDamping(int32 Dof) const
 	check(HasNative());
 	return NativeRef->Native->getDamping(Dof);
 }
+
+
+void FConstraintBarrier::SetForceRange(double Min, double Max, int32 Dof)
+{
+	check(HasNative());
+	return NativeRef->Native->setForceRange(agx::RangeReal(Min, Max), Dof);
+}
+
+
+void FConstraintBarrier::GetForceRange(double* Min, double* Max, int32 Dof) const
+{
+	check(HasNative());
+	agx::RangeReal Range = NativeRef->Native->getForceRange(Dof);
+
+	if (Min)
+		*Min = Range.lower();
+
+	if (Max)
+		*Max = Range.upper();
+}

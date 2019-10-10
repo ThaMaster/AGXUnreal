@@ -169,6 +169,7 @@ AAGX_Constraint::AAGX_Constraint(const TArray<EDofFlag> &LockedDofsOrdered)
 	:
 Elasticity(1.0 / 1.0E-8, ConvertDofsArrayToBitmask(LockedDofsOrdered)),
 Damping(2.0 / 60.0, ConvertDofsArrayToBitmask(LockedDofsOrdered)),
+ForceRange(TNumericLimits<float>::Lowest(), TNumericLimits<float>::Max(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
 LockedDofs(LockedDofsOrdered),
 NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 {
@@ -263,6 +264,14 @@ bool AAGX_Constraint::HasNative() const
 } \
 
 
+#define TRY_SET_DOF_RANGE_VALUE(SourceStruct, GenericDof, Func) \
+{ \
+	int32 Dof; \
+	if(ToNativeDof(GenericDof, Dof) && 0 <= Dof && Dof <= 5) \
+		Func(SourceStruct[(int32)GenericDof].Min, SourceStruct[(int32)GenericDof].Max, Dof); \
+} \
+
+
 void AAGX_Constraint::UpdateNativeProperties()
 {
 	if (HasNative())
@@ -282,6 +291,13 @@ void AAGX_Constraint::UpdateNativeProperties()
 		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::ROTATIONAL_1, NativeBarrier->SetDamping);
 		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::ROTATIONAL_2, NativeBarrier->SetDamping);
 		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::ROTATIONAL_3, NativeBarrier->SetDamping);
+
+		TRY_SET_DOF_RANGE_VALUE(ForceRange, EGenericDofIndex::TRANSLATIONAL_1, NativeBarrier->SetForceRange);
+		TRY_SET_DOF_RANGE_VALUE(ForceRange, EGenericDofIndex::TRANSLATIONAL_2, NativeBarrier->SetForceRange);
+		TRY_SET_DOF_RANGE_VALUE(ForceRange, EGenericDofIndex::TRANSLATIONAL_3, NativeBarrier->SetForceRange);
+		TRY_SET_DOF_RANGE_VALUE(ForceRange, EGenericDofIndex::ROTATIONAL_1, NativeBarrier->SetForceRange);
+		TRY_SET_DOF_RANGE_VALUE(ForceRange, EGenericDofIndex::ROTATIONAL_2, NativeBarrier->SetForceRange);
+		TRY_SET_DOF_RANGE_VALUE(ForceRange, EGenericDofIndex::ROTATIONAL_3, NativeBarrier->SetForceRange);
 	}
 }
 
