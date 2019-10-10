@@ -8,7 +8,7 @@
 /**
  * Provides helper functions for working with Slate.
  */
-static class AGXUNREAL_API FAGX_SlateUtilities
+class AGXUNREAL_API FAGX_SlateUtilities
 {
 public:
 

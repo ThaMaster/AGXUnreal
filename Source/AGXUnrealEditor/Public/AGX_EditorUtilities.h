@@ -9,10 +9,10 @@ class FText;
 class UClass;
 class UWorld;
 
-static class FAGX_EditorUtilities
+class FAGX_EditorUtilities
 {
 public:
-	
+
 	/**
 	 * Create a new constraint of the specified type.
 	 */
@@ -37,7 +37,7 @@ public:
 	 * Return the Editor world, i.e. not the one that is potentially currently playing.
 	 */
 	static UWorld* GetEditorWorld();
-	
+
 	/**
 	 * Return the currently playing world, or null if game is not playing.
 	 *
