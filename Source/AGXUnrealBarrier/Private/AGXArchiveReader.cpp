@@ -118,7 +118,7 @@ FAGXArchiveReader::FAGXArchiveReader(const FString& Filename)
 #endif
 
 	agx::RigidBodyRefVector& Bodies = Simulation->getRigidBodies();
-	if (Bodies.size() > size_t{std::numeric_limits<int32>::max()})
+	if (Bodies.size() > size_t(std::numeric_limits<int32>::max()))
 	{
 		UE_LOG(LogTemp, Log, TEXT(".agx file %s contains too many bodies."), *Filename);
 		return;
