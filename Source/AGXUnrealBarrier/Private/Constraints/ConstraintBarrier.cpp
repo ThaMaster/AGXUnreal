@@ -44,7 +44,7 @@ void FConstraintBarrier::AllocateNative(
 void FConstraintBarrier::ReleaseNative()
 {
 	check(HasNative());
-	NativeRef = nullptr;
+	NativeRef->Native = nullptr;
 }
 
 
