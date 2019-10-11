@@ -4,7 +4,10 @@
 #include "Classes/Engine/GameEngine.h"
 #include "Classes/Engine/Selection.h"
 #include "Classes/GameFramework/PlayerController.h"
+#include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Notifications/SNotificationList.h"
 #include "Editor.h"
+#include "EditorStyleSet.h"
 
 #include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_Constraint.h"

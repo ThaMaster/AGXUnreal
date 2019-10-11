@@ -8,6 +8,7 @@
 
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "LevelEditor.h"
+#include "PropertyEditorModule.h"
 
 // These includes are for what the buttom actually does.
 #include "Engine/StaticMeshActor.h"
@@ -17,6 +18,7 @@
 #include "AGXArchiveReader.h"
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
+#include "AGX_ConstraintBodyAttachmentCustomization.h"
 #include "Constraints/AGX_Constraint.h"
 
 #include "AGX_TopMenu.h"
@@ -162,7 +164,7 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
-	
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
