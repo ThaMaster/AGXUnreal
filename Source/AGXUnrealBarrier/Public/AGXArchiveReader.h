@@ -12,19 +12,19 @@ class FSphereShapeBarrier;
 /// \todo These structs doesn't scale to bodies with multiple shapes, which is
 /// supported by AGXUnreal. Find a better way.
 
-struct FBoxBody
+struct AGXUNREALBARRIER_API FBoxBody
 {
 	FRigidBodyBarrier* Body;
 	FBoxShapeBarrier* Box;
 };
 
-struct FSphereBody
+struct AGXUNREALBARRIER_API FSphereBody
 {
 	FRigidBodyBarrier* Body;
 	FSphereShapeBarrier* Sphere;
 };
 
-class FAGXArchiveReader
+class AGXUNREALBARRIER_API FAGXArchiveReader
 {
 public:
 	FAGXArchiveReader(const FString& Filename);
