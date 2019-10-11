@@ -68,7 +68,11 @@ private:
 		const UWorld *World) = 0;
 	
 protected:
+
+	// NativeRef has the same lifetime as this object.
+	// NativeRef->Native can be null.
+	// NativeRef->Native is created by the lowermost subclass when AllocateNative is invoked,
+	// and released when ReleaseNative is invoked.
+	// NativeRef->Native should be type-casted whenever a subclass needs the derived interface (e.g. to agx::LockJoint).
 	std::unique_ptr<FConstraintRef> NativeRef;
-	// NativeRef is created by the lowermost subclass, and NativeRef->Native should be
-	// type-casted whenever a subclass needs the derived interface (e.g. to agx::LockJoint).
 };

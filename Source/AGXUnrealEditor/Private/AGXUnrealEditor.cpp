@@ -121,13 +121,13 @@ void FAGXUnrealEditorModule::PluginButtonClicked()
 
 	if (!FileSelected || Filenames.Num() == 0)
 	{
-		UE_LOG(LogAGX, Log, TEXT("No .agx file selected. Doing nothing"));
+		UE_LOG(LogTemp, Log, TEXT("No .agx file selected. Doing nothing"));
 		return;
 	}
 
 	if (Filenames.Num() > 1)
 	{
-		UE_LOG(LogAGX, Log, TEXT("Multiple file selected but we only support single files for now. Doing nothing"));
+		UE_LOG(LogTemp, Log, TEXT("Multiple file selected but we only support single files for now. Doing nothing"));
 		return;
 	}
 
@@ -137,13 +137,13 @@ void FAGXUnrealEditorModule::PluginButtonClicked()
 	for (auto& BoxBody : Archive.GetBoxBodies())
 	{
 		/// \todo This is where the Unread Editor objects should be created.
-		UE_LOG(LogAGX, Log, TEXT("Loaded AGX box body at %f."), BoxBody.Body->GetPosition(World).X);
+		UE_LOG(LogTemp, Log, TEXT("Loaded AGX box body at %f."), BoxBody.Body->GetPosition(World).X);
 	}
 
 	for (auto& SphereBody : Archive.GetSphereBodies())
 	{
 		/// \todo This is where the Unreal Editor objects should be created.
-		UE_LOG(LogAGX, Log, TEXT("Loaded AGX sphere body at %f."), SphereBody.Body->GetPosition(World).X);
+		UE_LOG(LogTemp, Log, TEXT("Loaded AGX sphere body at %f."), SphereBody.Body->GetPosition(World).X);
 	}
 }
 
