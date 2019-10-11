@@ -239,7 +239,6 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * and adding to the new one's (if they are AAGX_ConstraintFrameActor actor types).
 	 */
 	void OnFrameDefiningActorChanged(AAGX_Constraint* Owner);
-#endif
 
 private:
 	/**
@@ -248,4 +247,5 @@ private:
 	 */
 	UPROPERTY()
 	mutable AActor* RecentFrameDefiningActor;
+#endif
 };
