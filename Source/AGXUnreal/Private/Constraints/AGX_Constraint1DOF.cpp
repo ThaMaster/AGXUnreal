@@ -51,6 +51,13 @@ void AAGX_Constraint1DOF::UpdateNativeProperties()
 			NativeBarrierCasted->SetFrictionController(ControllerBarrier, GetWorld());
 		}
 
+		// Lock Controller
+		{
+			FLockControllerBarrier ControllerBarrier;
+			LockController.ToBarrier(&ControllerBarrier);
+			NativeBarrierCasted->SetLockController(ControllerBarrier, GetWorld());
+		}
+
 		// Range Controller
 		{
 			FRangeControllerBarrier ControllerBarrier;

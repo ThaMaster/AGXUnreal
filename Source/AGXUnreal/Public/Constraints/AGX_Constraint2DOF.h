@@ -33,6 +33,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
 	FAGX_ConstraintFrictionController FrictionController2;
 
+	/** Lock controller for first secondary constraint (on one of the 2 free DOFs, usually). */
+	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
+	FAGX_ConstraintLockController LockController1;
+
+	/** Lock controller for second secondary constraint (on one of the 2 free DOFs, usually). */
+	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
+	FAGX_ConstraintLockController LockController2;
+
 	/** Range controller for first secondary constraint (on one of the 2 free DOFs, usually). */
 	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
 	FAGX_ConstraintRangeController RangeController1;

@@ -5,6 +5,7 @@ namespace agx
 {
 	class ElectricMotorController;
 	class FrictionController;
+	class LockController;
 	class RangeController;
 	class TargetSpeedController;
 }
@@ -52,6 +53,28 @@ struct FFrictionControllerBarrier
 	bool bEnableNonLinearDirectSolveUpdate;
 
 	void ToNative(agx::FrictionController* Native, UWorld* World) const;
+};
+
+
+/**
+ * Used to transfer Lock Controller data between Unreal and AGX natives,
+ * instead of having functions with many variables. Also handles
+ * unit conversions in one common place.
+ */
+struct FLockControllerBarrier
+{
+	bool bEnable;
+	double Elasticity;
+	double Damping;
+	double ForceRangeMin;
+	double ForceRangeMax;
+
+	// Whether the controller is on a Rotational or Translational DOF.
+	bool bRotational;
+
+	double Position;
+
+	void ToNative(agx::LockController* Native, UWorld* World) const;
 };
 
 

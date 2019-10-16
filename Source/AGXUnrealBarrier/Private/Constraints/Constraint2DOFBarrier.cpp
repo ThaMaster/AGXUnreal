@@ -50,6 +50,20 @@ void FConstraint2DOFBarrier::SetFrictionController(
 }
 
 
+void FConstraint2DOFBarrier::SetLockController(
+	const FLockControllerBarrier &ControllerBarrier,
+	int32 SecondaryConstraintIndex,
+	UWorld* World)
+{
+	check(HasNative());
+
+	agx::LockController* NativeController = NATIVE_CASTED->getLock1D(
+		(agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
+
+	ControllerBarrier.ToNative(NativeController, World);
+}
+
+
 void FConstraint2DOFBarrier::SetRangeController(
 	const FRangeControllerBarrier &ControllerBarrier,
 	int32 SecondaryConstraintIndex,

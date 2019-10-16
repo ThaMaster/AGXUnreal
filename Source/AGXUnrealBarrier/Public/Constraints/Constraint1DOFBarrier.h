@@ -6,6 +6,7 @@
 
 struct FElectricMotorControllerBarrier;
 struct FFrictionControllerBarrier;
+struct FLockControllerBarrier;
 struct FRangeControllerBarrier;
 struct FTargetSpeedControllerBarrier;
 
@@ -18,6 +19,8 @@ public:
 	void SetElectricMotorController(const FElectricMotorControllerBarrier &Controller, UWorld* World);
 
 	void SetFrictionController(const FFrictionControllerBarrier &Controller, UWorld* World);
+
+	void SetLockController(const FLockControllerBarrier &Controller, UWorld* World);
 	
 	void SetRangeController(const FRangeControllerBarrier &Controller, UWorld* World);
 

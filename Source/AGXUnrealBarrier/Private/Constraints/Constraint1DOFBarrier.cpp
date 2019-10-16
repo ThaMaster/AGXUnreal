@@ -39,6 +39,15 @@ void FConstraint1DOFBarrier::SetFrictionController(const FFrictionControllerBarr
 	ControllerBarrier.ToNative(NativeController, World);
 }
 
+void FConstraint1DOFBarrier::SetLockController(const FLockControllerBarrier &ControllerBarrier, UWorld* World)
+{
+	check(HasNative());
+
+	agx::LockController* NativeController = NATIVE_CASTED->getLock1D();
+
+	ControllerBarrier.ToNative(NativeController, World);
+}
+
 void FConstraint1DOFBarrier::SetRangeController(const FRangeControllerBarrier &ControllerBarrier, UWorld* World)
 {
 	check(HasNative());

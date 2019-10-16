@@ -32,6 +32,19 @@ void FFrictionControllerBarrier::ToNative(agx::FrictionController* Native, UWorl
 }
 
 
+void FLockControllerBarrier::ToNative(agx::LockController* Native, UWorld* World) const
+{
+	// Common controller variables.
+	Native->setEnable(bEnable);
+	Native->setElasticity(Elasticity);
+	Native->setDamping(Damping);
+	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
+
+	// Special controller variables.
+	Native->setPosition(bRotational ? Position : ConvertDistanceToAgx(Position, World));
+}
+
+
 void FRangeControllerBarrier::ToNative(agx::RangeController* Native, UWorld* World) const
 {
 	// Common controller variables.

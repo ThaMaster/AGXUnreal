@@ -66,6 +66,20 @@ void AAGX_Constraint2DOF::UpdateNativeProperties()
 			NativeBarrierCasted->SetFrictionController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 1, GetWorld());
 		}
 
+		// Lock Controller 1
+		{
+			FLockControllerBarrier ControllerBarrier;
+			LockController1.ToBarrier(&ControllerBarrier);
+			NativeBarrierCasted->SetLockController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 0, GetWorld());
+		}
+
+		// Lock Controller 2
+		{
+			FLockControllerBarrier ControllerBarrier;
+			LockController2.ToBarrier(&ControllerBarrier);
+			NativeBarrierCasted->SetLockController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 1, GetWorld());
+		}
+
 		// Range Controller 1
 		{
 			FRangeControllerBarrier ControllerBarrier;

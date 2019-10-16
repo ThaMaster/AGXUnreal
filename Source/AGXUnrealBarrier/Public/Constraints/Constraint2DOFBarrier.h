@@ -4,6 +4,9 @@
 
 #include "Constraints/ConstraintBarrier.h"
 
+struct FElectricMotorControllerBarrier;
+struct FFrictionControllerBarrier;
+struct FLockControllerBarrier;
 struct FRangeControllerBarrier;
 struct FTargetSpeedControllerBarrier;
 
@@ -16,6 +19,8 @@ public:
 	void SetElectricMotorController(const FElectricMotorControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
 
 	void SetFrictionController(const FFrictionControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
+
+	void SetLockController(const FLockControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
 
 	void SetRangeController(const FRangeControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
 
