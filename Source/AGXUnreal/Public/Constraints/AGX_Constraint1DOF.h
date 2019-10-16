@@ -17,6 +17,10 @@ class AGXUNREAL_API AAGX_Constraint1DOF : public AAGX_Constraint
 
 public:
 
+	/** Friction controller for the secondary constraint (on the free DOF, usually). */
+	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraint")
+	FAGX_ConstraintFrictionController FrictionController;
+
 	/** Range controller for the secondary constraint (on the free DOF, usually). */
 	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraint")
 	FAGX_ConstraintRangeController RangeController;

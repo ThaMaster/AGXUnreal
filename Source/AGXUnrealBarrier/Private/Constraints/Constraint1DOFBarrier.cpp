@@ -21,6 +21,15 @@ FConstraint1DOFBarrier::~FConstraint1DOFBarrier()
 {
 }
 
+void FConstraint1DOFBarrier::SetFrictionController(const FFrictionControllerBarrier &ControllerBarrier, UWorld* World)
+{
+	check(HasNative());
+
+	agx::FrictionController* NativeController = NATIVE_CASTED->getFrictionController();
+
+	ControllerBarrier.ToNative(NativeController, World);
+}
+
 void FConstraint1DOFBarrier::SetRangeController(const FRangeControllerBarrier &ControllerBarrier, UWorld* World)
 {
 	check(HasNative());

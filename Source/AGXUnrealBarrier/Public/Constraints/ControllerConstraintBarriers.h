@@ -3,9 +3,35 @@
 
 namespace agx
 {
+	class FrictionController;
 	class RangeController;
 	class TargetSpeedController;
 }
+
+
+/**
+ * Used to transfer Friction Controller data between Unreal and AGX natives,
+ * instead of having functions with many variables. Also handles
+ * unit conversions in one common place.
+ */
+struct FFrictionControllerBarrier
+{
+	bool bEnable;
+	double Elasticity;
+	double Damping;
+	double ForceRangeMin;
+	double ForceRangeMax;
+
+	// Whether the controller is on a Rotational or Translational DOF.
+	bool bRotational;
+
+	double FrictionCoefficient;
+
+	bool bEnableNonLinearDirectSolveUpdate;
+
+	void ToNative(agx::FrictionController* Native, UWorld* World) const;
+};
+
 
 /**
  * Used to transfer Range Controller data between Unreal and AGX natives,

@@ -5,6 +5,20 @@
 #include "EndAGXIncludes.h"
 
 
+void FFrictionControllerBarrier::ToNative(agx::FrictionController* Native, UWorld* World) const
+{
+	// Common controller variables.
+	Native->setEnable(bEnable);
+	Native->setElasticity(Elasticity);
+	Native->setDamping(Damping);
+	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
+
+	// Special controller variables.
+	Native->setFrictionCoefficient(FrictionCoefficient);
+	Native->setEnableNonLinearDirectSolveUpdate(bEnableNonLinearDirectSolveUpdate);
+}
+
+
 void FRangeControllerBarrier::ToNative(agx::RangeController* Native, UWorld* World) const
 {
 	// Common controller variables.

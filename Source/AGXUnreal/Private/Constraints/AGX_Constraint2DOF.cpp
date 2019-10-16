@@ -38,6 +38,20 @@ void AAGX_Constraint2DOF::UpdateNativeProperties()
 
 	if(FConstraint2DOFBarrier* NativeBarrierCasted = GetNativeBarrierCasted())
 	{
+		// Friction Controller 1
+		{
+			FFrictionControllerBarrier ControllerBarrier;
+			FrictionController1.ToBarrier(&ControllerBarrier);
+			NativeBarrierCasted->SetFrictionController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 0, GetWorld());
+		}
+
+		// Friction Controller 2
+		{
+			FFrictionControllerBarrier ControllerBarrier;
+			FrictionController1.ToBarrier(&ControllerBarrier);
+			NativeBarrierCasted->SetFrictionController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 1, GetWorld());
+		}
+
 		// Range Controller 1
 		{
 			FRangeControllerBarrier ControllerBarrier;

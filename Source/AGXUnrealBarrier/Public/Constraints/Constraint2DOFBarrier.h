@@ -13,6 +13,8 @@ public:
 	FConstraint2DOFBarrier();
 	virtual ~FConstraint2DOFBarrier();
 
+	void SetFrictionController(const FFrictionControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
+
 	void SetRangeController(const FRangeControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
 
 	void SetTargetSpeedController(const FTargetSpeedControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
