@@ -240,12 +240,14 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 */
 	void OnFrameDefiningActorChanged(AAGX_Constraint* Owner);
 
+	void OnDestroy(AAGX_Constraint* Owner);
+
 private:
 	/**
 	 * Used only to be able to call some cleanup functions on previous Frame Defining Actor
 	 * whenever Frame Defining Actor is set to another actor.
 	 */
-	UPROPERTY()
+	UPROPERTY(Transient)
 	mutable AActor* RecentFrameDefiningActor;
 #endif
 };

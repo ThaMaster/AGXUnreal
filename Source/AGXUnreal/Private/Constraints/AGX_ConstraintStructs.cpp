@@ -109,4 +109,12 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(AAGX_Constraint*
 		*GetNameSafe(ConstraintFrame));
 }
 
+void FAGX_ConstraintBodyAttachment::OnDestroy(AAGX_Constraint* Owner)
+{
+	AAGX_ConstraintFrameActor* ConstraintFrame = Cast<AAGX_ConstraintFrameActor>(FrameDefiningActor);
+
+	if (ConstraintFrame)
+		ConstraintFrame->RemoveConstraintUsage(Owner);
+}
+
 #endif

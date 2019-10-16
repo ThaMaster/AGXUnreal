@@ -195,6 +195,49 @@ void AAGX_Constraint::UpdateNativeProperties()
 }
 
 
+#if WITH_EDITOR
+
+void AAGX_Constraint::PostLoad()
+{
+	Super::PostLoad();
+	BodyAttachment1.OnFrameDefiningActorChanged(this);
+	BodyAttachment2.OnFrameDefiningActorChanged(this);
+}
+
+
+void AAGX_Constraint::PostDuplicate(bool bDuplicateForPIE)
+{
+	Super::PostDuplicate(bDuplicateForPIE);	
+	BodyAttachment1.OnFrameDefiningActorChanged(this);
+	BodyAttachment2.OnFrameDefiningActorChanged(this);
+}
+
+
+void AAGX_Constraint::OnConstruction(const FTransform& Transform)
+{
+	Super::PostActorConstruction();
+	BodyAttachment1.OnFrameDefiningActorChanged(this);
+	BodyAttachment2.OnFrameDefiningActorChanged(this);
+}
+
+
+void AAGX_Constraint::BeginDestroy()
+{
+	Super::BeginDestroy();
+	BodyAttachment1.OnDestroy(this);
+	BodyAttachment2.OnDestroy(this);
+}
+
+
+void AAGX_Constraint::Destroyed()
+{
+	Super::Destroyed();
+	BodyAttachment1.OnDestroy(this);
+	BodyAttachment2.OnDestroy(this);
+}
+#endif
+
+
 void AAGX_Constraint::BeginPlay()
 {
 	Super::BeginPlay();

@@ -37,7 +37,7 @@ private:
 	 * 
 	 * Used for convenience only, to be able to quickly access the constraint(s).
 	 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Transient)
 	TArray<class AAGX_Constraint*> UsedByConstraints;
 
 public:

@@ -92,6 +92,14 @@ public:
 
 protected:
 
+#if WITH_EDITOR
+	virtual void PostLoad() override; // When loaded in Editor/Game
+	virtual void PostDuplicate(bool bDuplicateForPIE) override; // When copied in Editor
+	virtual void OnConstruction(const FTransform& Transform) override; // When Loaded or Spawned in Editor, or Spawned in Game
+	virtual void BeginDestroy() override; // When destroyed in Game
+	virtual void Destroyed() override; // When destroyed in Editor
+#endif
+
 	virtual void BeginPlay() override;
 
 	bool ToNativeDof(EGenericDofIndex GenericDof, int32 &NativeDof);
