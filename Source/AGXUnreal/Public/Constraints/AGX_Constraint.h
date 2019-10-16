@@ -5,9 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
+#include "Constraints/AGX_ConstraintBodyAttachment.h"
 #include "Constraints/AGX_ConstraintEnums.h"
 #include "Constraints/AGX_ConstraintPropertyPerDof.h"
-#include "Constraints/AGX_ConstraintStructs.h"
 #include "Constraints/ConstraintBarrier.h" // TODO: Shouldn't be necessary here!
 
 #include "AGX_Constraint.generated.h"

@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
-#include "AGX_ConstraintStructs.generated.h"
+#include "AGX_ConstraintBodyAttachment.generated.h"
 
 
 class AAGX_Constraint;
