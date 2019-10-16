@@ -37,9 +37,19 @@ void AAGX_Constraint1DOF::UpdateNativeProperties()
 
 	if (FConstraint1DOFBarrier* NativeBarrierCasted = GetNativeBarrierCasted())
 	{
-		FRangeControllerBarrier ControllerBarrier;		
-		RangeController.ToBarrier(&ControllerBarrier);
-		NativeBarrierCasted->SetRangeController(ControllerBarrier, GetWorld());
+		// Range Controller
+		{
+			FRangeControllerBarrier ControllerBarrier;
+			RangeController.ToBarrier(&ControllerBarrier);
+			NativeBarrierCasted->SetRangeController(ControllerBarrier, GetWorld());
+		}
+
+		// Target Speed Controller
+		{
+			FTargetSpeedControllerBarrier ControllerBarrier;
+			TargetSpeedController.ToBarrier(&ControllerBarrier);
+			NativeBarrierCasted->SetTargetSpeedController(ControllerBarrier, GetWorld());
+		}
 	}
 }
 

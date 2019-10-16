@@ -25,6 +25,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
 	FAGX_ConstraintRangeController RangeController2;
 
+	/** Target speed controller for first secondary constraint (on one of the 2 free DOFs, usually). */
+	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
+	FAGX_ConstraintTargetSpeedController TargetSpeedController1;
+
+	/** Target speed controller for second secondary constraint (on one of the 2 free DOFs, usually). */
+	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
+	FAGX_ConstraintTargetSpeedController TargetSpeedController2;
+
 	AAGX_Constraint2DOF();
 
 	AAGX_Constraint2DOF(const TArray<EDofFlag> &LockedDofsOrdered, bool bIsSecondaryConstraint1Rotational, bool bIsSecondaryConstraint2Rotational);

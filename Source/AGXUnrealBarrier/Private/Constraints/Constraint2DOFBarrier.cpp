@@ -23,7 +23,7 @@ FConstraint2DOFBarrier::~FConstraint2DOFBarrier()
 
 
 void FConstraint2DOFBarrier::SetRangeController(
-	const FRangeControllerBarrier &RangeController,
+	const FRangeControllerBarrier &ControllerBarrier,
 	int32 SecondaryConstraintIndex,
 	UWorld* World)
 {
@@ -32,5 +32,19 @@ void FConstraint2DOFBarrier::SetRangeController(
 	agx::RangeController* NativeController = NATIVE_CASTED->getRange1D(
 		(agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
 
-	RangeController.ToNative(NativeController, World);
+	ControllerBarrier.ToNative(NativeController, World);
+}
+
+
+void FConstraint2DOFBarrier::SetTargetSpeedController(
+	const FTargetSpeedControllerBarrier &ControllerBarrier,
+	int32 SecondaryConstraintIndex,
+	UWorld* World)
+{
+	check(HasNative());
+
+	agx::TargetSpeedController* NativeController = NATIVE_CASTED->getMotor1D(
+		(agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
+
+	ControllerBarrier.ToNative(NativeController, World);
 }

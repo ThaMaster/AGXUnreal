@@ -21,11 +21,20 @@ FConstraint1DOFBarrier::~FConstraint1DOFBarrier()
 {
 }
 
-void FConstraint1DOFBarrier::SetRangeController(const FRangeControllerBarrier &RangeController, UWorld* World)
+void FConstraint1DOFBarrier::SetRangeController(const FRangeControllerBarrier &ControllerBarrier, UWorld* World)
 {
 	check(HasNative());
 
 	agx::RangeController* NativeController = NATIVE_CASTED->getRange1D();
 
-	RangeController.ToNative(NativeController, World);
+	ControllerBarrier.ToNative(NativeController, World);
+}
+
+void FConstraint1DOFBarrier::SetTargetSpeedController(const FTargetSpeedControllerBarrier &ControllerBarrier, UWorld* World)
+{
+	check(HasNative());
+
+	agx::TargetSpeedController* NativeController = NATIVE_CASTED->getMotor1D();
+
+	ControllerBarrier.ToNative(NativeController, World);
 }
