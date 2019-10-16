@@ -26,7 +26,7 @@ public:
 	FAGX_ConstraintFrictionController FrictionController;
 
 	/** Lock controller for the secondary constraint (on the free DOF, usually). */
-	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraint")
+	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraint", Meta = (EditCondition = "bIsLockControllerEditable"))
 	FAGX_ConstraintLockController LockController;
 
 	/** Range controller for the secondary constraint (on the free DOF, usually). */
@@ -39,7 +39,7 @@ public:
 
 	AAGX_Constraint1DOF();
 
-	AAGX_Constraint1DOF(const TArray<EDofFlag> &LockedDofsOrdered, bool bIsSecondaryConstraintRotational);
+	AAGX_Constraint1DOF(const TArray<EDofFlag> &LockedDofsOrdered, bool bIsSecondaryConstraintRotational, bool bIsLockControllerEditable = true);
 
 	virtual ~AAGX_Constraint1DOF();
 
@@ -48,4 +48,7 @@ public:
 private:
 
 	class FConstraint1DOFBarrier* GetNativeBarrierCasted() const;
+	
+	UPROPERTY(Transient, VisibleDefaultsOnly)
+	bool bIsLockControllerEditable;
 };

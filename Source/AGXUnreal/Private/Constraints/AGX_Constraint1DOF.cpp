@@ -12,10 +12,11 @@ AAGX_Constraint1DOF::AAGX_Constraint1DOF()
 }
 
 
-AAGX_Constraint1DOF::AAGX_Constraint1DOF(const TArray<EDofFlag> &LockedDofsOrdered, bool bIsSecondaryConstraintRotational)
+AAGX_Constraint1DOF::AAGX_Constraint1DOF(const TArray<EDofFlag> &LockedDofsOrdered, bool bIsSecondaryConstraintRotational, bool bIsLockControllerEditable_)
 	:
 	AAGX_Constraint(LockedDofsOrdered),
-	RangeController(bIsSecondaryConstraintRotational)
+	RangeController(bIsSecondaryConstraintRotational),
+	bIsLockControllerEditable(bIsLockControllerEditable_)
 {
 
 }
@@ -52,6 +53,7 @@ void AAGX_Constraint1DOF::UpdateNativeProperties()
 		}
 
 		// Lock Controller
+		if(bIsLockControllerEditable)
 		{
 			FLockControllerBarrier ControllerBarrier;
 			LockController.ToBarrier(&ControllerBarrier);

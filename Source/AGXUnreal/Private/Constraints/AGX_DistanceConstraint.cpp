@@ -14,7 +14,8 @@ AAGX_DistanceConstraint::AAGX_DistanceConstraint()
 		{
 			// All common DOFs are free.
 		},
-		/*bIsSecondaryConstraintRotational*/ false)
+		/*bIsSecondaryConstraintRotational*/ false,
+		/*bIsLockControllerEditable*/ false) // disable because the native impl uses Lock Controller implicitly!
 {
 }
 
