@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 
 #include "Constraints/AGX_ConstraintEnums.h"
+#include "Constraints/AGX_ConstraintPropertyPerDof.h"
 #include "Constraints/AGX_ConstraintStructs.h"
 #include "Constraints/ConstraintBarrier.h" // TODO: Shouldn't be necessary here!
 
