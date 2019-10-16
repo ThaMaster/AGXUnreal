@@ -8,9 +8,14 @@
 
 
 /**
- * Defines one of the two attachment frames and rigid bodies for a AAGX_Constraint.
- * The attachment frame is the transform of this actor, and the rigid body is the
- * hierarchically closest rigid body ancestor (or the world if no rigid body ancestor exists).
+ * Actor helper that can be used to define the location and rotation of
+ * a Constraint Attachment Frame in a controlled way.
+ *
+ * Reference this object from an AGX Constraint.
+ *
+ * It can be referenced by both Rigid Bodies of the same AGX Constraint,
+ * which makes it easy to position the constraint frame anywhere in the world.
+ *
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX",
 	meta = (BlueprintSpawnableComponent),
