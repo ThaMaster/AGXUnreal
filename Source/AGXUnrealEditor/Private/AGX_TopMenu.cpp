@@ -7,6 +7,7 @@
 #include "PropertyEditorModule.h"
 
 #include "AGX_LogCategory.h"
+#include "Constraints/AGX_BallConstraint.h"
 #include "Constraints/AGX_CylindricalConstraint.h"
 #include "Constraints/AGX_DistanceConstraint.h"
 #include "Constraints/AGX_HingeConstraint.h"
@@ -180,6 +181,7 @@ FAGX_TopMenu::~FAGX_TopMenu()
 
 void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 {
+	ADD_CREATE_CONSTRAINT_MENU_ENTRY(AAGX_BallConstraint, "Ball Constraint");
 	ADD_CREATE_CONSTRAINT_MENU_ENTRY(AAGX_CylindricalConstraint, "Cylindrical Constraint");
 	ADD_CREATE_CONSTRAINT_MENU_ENTRY(AAGX_DistanceConstraint, "Distance Constraint");
 	ADD_CREATE_CONSTRAINT_MENU_ENTRY(AAGX_HingeConstraint, "Hinge Constraint");
