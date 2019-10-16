@@ -57,6 +57,19 @@ public:
 	FAGX_ConstraintBodyAttachment BodyAttachment2;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Primary Constraint")
+	bool bEnable;
+
+	/**
+     * Solve type for this constraint. Valid is DIRECT (default for non-iterative solvers),
+	 * ITERATIVE or DIRECT_AND_ITERATIVE where DIRECT_AND_ITERATIVE means that this constraint
+	 * will be solved both direct and iterative.
+	 *
+	 * Note that solve type is ignored by iterative solvers.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Primary Constraint")
+	TEnumAsByte<enum EAGX_SolveType> SolveType;	
+
+	UPROPERTY(EditAnywhere, Category = "AGX Primary Constraint")
 	FAGX_ConstraintDoublePropertyPerDof Elasticity;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Primary Constraint")

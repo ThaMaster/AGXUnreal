@@ -48,6 +48,34 @@ void FConstraintBarrier::ReleaseNative()
 }
 
 
+void FConstraintBarrier::SetEnable(bool Enable)
+{
+	check(HasNative());
+	NativeRef->Native->setEnable(Enable);
+}
+
+
+bool FConstraintBarrier::GetEnable() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnable();
+}
+
+
+void FConstraintBarrier::SetSolveType(int32 SolveType)
+{
+	check(HasNative());
+	NativeRef->Native->setSolveType(agx::Constraint::SolveType(SolveType));
+}
+
+
+int32 FConstraintBarrier::GetSolveType() const
+{
+	check(HasNative());
+	return int32(NativeRef->Native->getSolveType());
+}
+
+
 void FConstraintBarrier::SetElasticity(double Elasticity, int32 Dof)
 {
 	check(HasNative());

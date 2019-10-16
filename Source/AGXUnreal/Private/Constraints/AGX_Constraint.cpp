@@ -61,6 +61,8 @@ TMap<EGenericDofIndex, int32> BuildNativeDofIndexMap(const TArray<EDofFlag> &Loc
 
 AAGX_Constraint::AAGX_Constraint(const TArray<EDofFlag> &LockedDofsOrdered)
 	:
+bEnable(true),
+SolveType(EAGX_SolveType::ST_DIRECT),
 Elasticity(ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
 Damping(ConstraintConstants::DefaultDamping(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
 ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
@@ -170,6 +172,9 @@ void AAGX_Constraint::UpdateNativeProperties()
 {
 	if (HasNative())
 	{
+		NativeBarrier->SetEnable(bEnable);
+		NativeBarrier->SetSolveType(SolveType);
+
 		// TODO: Could just loop NativeDofIndexMap instead!!
 
 		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::TRANSLATIONAL_1, NativeBarrier->SetElasticity);

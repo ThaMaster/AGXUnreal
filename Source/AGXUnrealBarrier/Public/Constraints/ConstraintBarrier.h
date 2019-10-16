@@ -35,6 +35,12 @@ public:
 
 	void ReleaseNative();
 
+	void SetEnable(bool Enable);
+	bool GetEnable() const;
+
+	void SetSolveType(int32 SolveType);
+	int32 GetSolveType() const;
+
 	void SetElasticity(double Elasticity, int32 Dof);
 	double GetElasticity(int32 Dof) const;
 

@@ -3,6 +3,21 @@
 #include "CoreMinimal.h"
 
 
+/** Specifies in what solvers the constraint will be solved. */
+UENUM()
+enum EAGX_SolveType
+{
+	/** Solved only in the DIRECT solver. */
+	ST_DIRECT = 1											UMETA(DisplayName = "Direct"),
+	
+	/** Solved only in the ITERATIVE solver. */
+	ST_ITERATIVE = (1 << 2)									UMETA(DisplayName = "Iterative"),
+
+	/** Solved both in the ITERATIVE and the DIRECT solver. */
+	ST_DIRECT_AND_ITERATIVE = (ST_DIRECT | ST_ITERATIVE)	UMETA(DisplayName = "Direct & Iterative")
+};
+
+
 /**
  * Constraint type independent index of Degree of Freedom(DOF).Does never change
  * index order layout, even in derived constraints, contrary to the AGX's native
