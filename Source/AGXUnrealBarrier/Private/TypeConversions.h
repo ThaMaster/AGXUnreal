@@ -52,6 +52,16 @@ inline float ConvertDistance(agx::Real V, const UWorld* World)
 	return static_cast<float>(V) * AGXDistanceToUnrealDistance(World);
 }
 
+inline double ConvertDistanceToUnreal(agx::Real V, const UWorld* World)
+{
+	return static_cast<double>(V) * double(AGXDistanceToUnrealDistance(World));
+}
+
+inline float ConvertDistanceToUnrealF(agx::Real V, const UWorld* World)
+{
+	return static_cast<float>(V) * float(AGXDistanceToUnrealDistance(World));
+}
+
 inline agx::Real Convert(float V)
 {
 	return static_cast<agx::Real>(V);
@@ -60,6 +70,16 @@ inline agx::Real Convert(float V)
 inline agx::Real ConvertDistance(float V, const UWorld* World)
 {
 	return static_cast<agx::Real>(V * UnrealDistanceToAGXDistance(World));
+}
+
+inline agx::Real ConvertDistanceToAgx(double V, const UWorld* World)
+{
+	return static_cast<agx::Real>(V * double(UnrealDistanceToAGXDistance(World)));
+}
+
+inline agx::Real ConvertDistanceToAgx(float V, const UWorld* World)
+{
+	return static_cast<agx::Real>(V * float(UnrealDistanceToAGXDistance(World)));
 }
 
 inline FVector Convert(agx::Vec3 V)
