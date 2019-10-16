@@ -7,6 +7,10 @@
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
 
+#include "BeginAGXIncludes.h"
+#include <agx/DistanceJoint.h>
+#include "EndAGXIncludes.h"
+
 
 FDistanceJointBarrier::FDistanceJointBarrier()
 	: FConstraint1DOFBarrier()

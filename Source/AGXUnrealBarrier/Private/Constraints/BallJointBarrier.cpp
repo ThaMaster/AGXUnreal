@@ -7,7 +7,9 @@
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
 
+#include "BeginAGXIncludes.h"
 #include <agx/BallJoint.h>
+#include "EndAGXIncludes.h"
 
 
 FBallJointBarrier::FBallJointBarrier()

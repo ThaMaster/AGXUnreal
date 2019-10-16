@@ -7,6 +7,10 @@
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
 
+#include "BeginAGXIncludes.h"
+#include <agx/Prismatic.h>
+#include "EndAGXIncludes.h"
+
 
 FPrismaticBarrier::FPrismaticBarrier()
 	: FConstraint1DOFBarrier()

@@ -7,6 +7,10 @@
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
 
+#include "BeginAGXIncludes.h"
+#include <agx/CylindricalJoint.h>
+#include "EndAGXIncludes.h"
+
 
 FCylindricalJointBarrier::FCylindricalJointBarrier()
 	: FConstraint2DOFBarrier()

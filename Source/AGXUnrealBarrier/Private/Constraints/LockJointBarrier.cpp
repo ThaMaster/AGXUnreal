@@ -7,6 +7,10 @@
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
 
+#include "BeginAGXIncludes.h"
+#include <agx/LockJoint.h>
+#include "EndAGXIncludes.h"
+
 
 FLockJointBarrier::FLockJointBarrier()
 	: FConstraintBarrier()

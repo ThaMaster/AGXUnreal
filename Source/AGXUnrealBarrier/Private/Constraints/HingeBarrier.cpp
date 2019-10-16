@@ -7,6 +7,10 @@
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
 
+#include "BeginAGXIncludes.h"
+#include <agx/Hinge.h>
+#include "EndAGXIncludes.h"
+
 
 FHingeBarrier::FHingeBarrier()
 	: FConstraint1DOFBarrier()
