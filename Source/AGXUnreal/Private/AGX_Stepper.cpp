@@ -24,7 +24,9 @@ AAGX_Stepper::~AAGX_Stepper()
 
 void AAGX_Stepper::Tick(float DeltaTime)
 {
+#if 0
 	UE_LOG(LogAGX, Log, TEXT("Stepper ticking"));
+#endif
 	Super::Tick(DeltaTime);
 	UGameInstance* Game = GetGameInstance();
 	UAGX_Simulation* Simulation = Game->GetSubsystem<UAGX_Simulation>();

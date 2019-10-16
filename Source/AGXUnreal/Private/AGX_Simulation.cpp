@@ -50,7 +50,9 @@ void UAGX_Simulation::Step(float DeltaTime)
 
 	while (DeltaTime >= TimeStep)
 	{
+#if 0
 		UE_LOG(LogAGX, Log, TEXT("AGX_CALL: agxSDK::Simulation::stepForward"));
+#endif
 		NativeBarrier.Step();
 		DeltaTime -= TimeStep;
 	}

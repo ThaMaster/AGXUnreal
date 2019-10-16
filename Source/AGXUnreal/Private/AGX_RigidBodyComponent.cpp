@@ -71,7 +71,9 @@ void UAGX_RigidBodyComponent::TickComponent(
 	if(MotionControl != MC_STATIC)
 		UpdateActorTransformsFromNative();
 
+#if 0
 	UE_LOG(LogAGX, Log, TEXT("Body placement updated."));
+#endif
 }
 
 UAGX_RigidBodyComponent* UAGX_RigidBodyComponent::GetFromActor(const AActor* Actor)
