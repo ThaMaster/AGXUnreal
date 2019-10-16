@@ -46,7 +46,7 @@ public:
 	 * The first Rigid Body bound by this constraint, and its Attachment Frame definition.
 	 * Rigid Body Actor must be set.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies", Meta=(EditCondition = "hej"))
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies")
 	FAGX_ConstraintBodyAttachment BodyAttachment1;
 
 	/**
@@ -56,7 +56,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies")
 	FAGX_ConstraintBodyAttachment BodyAttachment2;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Primary Constraint")
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	bool bEnable;
 
 	/**
@@ -66,16 +66,16 @@ public:
 	 *
 	 * Note that solve type is ignored by iterative solvers.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Primary Constraint")
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	TEnumAsByte<enum EAGX_SolveType> SolveType;	
 
-	UPROPERTY(EditAnywhere, Category = "AGX Primary Constraint")
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintDoublePropertyPerDof Elasticity;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Primary Constraint")
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintDoublePropertyPerDof Damping;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Primary Constraint")
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintRangePropertyPerDof ForceRange;
 
 public:
