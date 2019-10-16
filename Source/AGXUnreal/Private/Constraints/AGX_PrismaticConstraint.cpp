@@ -16,7 +16,8 @@ AAGX_PrismaticConstraint::AAGX_PrismaticConstraint()
 			EDofFlag::DOF_FLAG_ROTATIONAL_3,
 			EDofFlag::DOF_FLAG_TRANSLATIONAL_1,
 			EDofFlag::DOF_FLAG_TRANSLATIONAL_2
-		})
+		},
+		/*bIsSecondaryConstraintRotational*/ false)
 {
 }
 

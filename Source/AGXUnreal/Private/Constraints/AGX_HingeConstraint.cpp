@@ -16,7 +16,8 @@ AAGX_HingeConstraint::AAGX_HingeConstraint()
 			EDofFlag::DOF_FLAG_TRANSLATIONAL_3,
 			EDofFlag::DOF_FLAG_ROTATIONAL_1,
 			EDofFlag::DOF_FLAG_ROTATIONAL_2
-		})
+		},
+		/*bbIsSecondaryConstraintRotational*/ true)
 {
 }
 

@@ -9,9 +9,12 @@ class FRigidBodyBarrier;
 
 
 AAGX_DistanceConstraint::AAGX_DistanceConstraint()
-	: AAGX_Constraint1DOF( TArray<EDofFlag>
+	: AAGX_Constraint1DOF(
+		TArray<EDofFlag>
 		{
-		})
+			// All common DOFs are free.
+		},
+		/*bIsSecondaryConstraintRotational*/ false)
 {
 }
 

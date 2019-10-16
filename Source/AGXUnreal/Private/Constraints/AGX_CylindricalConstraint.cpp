@@ -15,7 +15,9 @@ AAGX_CylindricalConstraint::AAGX_CylindricalConstraint()
 			EDofFlag::DOF_FLAG_ROTATIONAL_2,
 			EDofFlag::DOF_FLAG_TRANSLATIONAL_1,
 			EDofFlag::DOF_FLAG_TRANSLATIONAL_2
-		})
+		},
+		/*bIsSecondaryConstraint1Rotational*/ false,
+		/*bIsSecondaryConstraint2Rotational*/ true)
 {
 }
 

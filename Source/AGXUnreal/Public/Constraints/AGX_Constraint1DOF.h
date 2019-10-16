@@ -17,9 +17,19 @@ class AGXUNREAL_API AAGX_Constraint1DOF : public AAGX_Constraint
 
 public:
 
+	/** Range controller for the secondary constraint (on the free DOF, usually). */
+	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraint")
+	FAGX_ConstraintRangeController RangeController;
+
 	AAGX_Constraint1DOF();
 
-	AAGX_Constraint1DOF(const TArray<EDofFlag> &LockedDofsOrdered);
+	AAGX_Constraint1DOF(const TArray<EDofFlag> &LockedDofsOrdered, bool bIsSecondaryConstraintRotational);
 
 	virtual ~AAGX_Constraint1DOF();
+
+	virtual void UpdateNativeProperties() override;
+
+private:
+
+	class FConstraint1DOFBarrier* GetNativeBarrierCasted() const;
 };

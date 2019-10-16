@@ -55,13 +55,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies")
 	FAGX_ConstraintBodyAttachment BodyAttachment2;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
+	UPROPERTY(EditAnywhere, Category = "AGX Primary Constraint")
 	FAGX_ConstraintDoublePropertyPerDof Elasticity;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
+	UPROPERTY(EditAnywhere, Category = "AGX Primary Constraint")
 	FAGX_ConstraintDoublePropertyPerDof Damping;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
+	UPROPERTY(EditAnywhere, Category = "AGX Primary Constraint")
 	FAGX_ConstraintRangePropertyPerDof ForceRange;
 
 public:
@@ -88,7 +88,8 @@ public:
 	/** Return true if the AGX Dynamics object has been created. False otherwise. */
 	bool HasNative() const;
 
-	void UpdateNativeProperties();
+	/** Subclasses that overrides this MUST invoke the parents version! */
+	virtual void UpdateNativeProperties();
 
 protected:
 

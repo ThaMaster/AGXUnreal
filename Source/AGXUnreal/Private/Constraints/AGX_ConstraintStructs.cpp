@@ -118,3 +118,40 @@ void FAGX_ConstraintBodyAttachment::OnDestroy(AAGX_Constraint* Owner)
 }
 
 #endif
+
+#define DEFAULT_SECONDARY_COMPLIANCE 1.0e-10
+#define DEFAULT_SECONDARY_ELASTICITY (1.0 / DEFAULT_SECONDARY_COMPLIANCE)
+#define DEFAULT_SECONDARY_DAMPING (2.0 / 60.0)
+#define RANGE_LOWEST_FLOAT TNumericLimits<float>::Lowest()
+#define RANGE_HIGHEST_FLOAT TNumericLimits<float>::Max()
+
+
+FAGX_ConstraintRangeController::FAGX_ConstraintRangeController(bool bRotational_)
+	:
+	bEnable(false),
+	Range({ RANGE_LOWEST_FLOAT, RANGE_HIGHEST_FLOAT }),
+	Elasticity(DEFAULT_SECONDARY_ELASTICITY),
+	Damping(DEFAULT_SECONDARY_DAMPING),
+	ForceRange({ 0.0, RANGE_HIGHEST_FLOAT }),
+	bRotational(bRotational_)
+{
+
+}
+
+
+void FAGX_ConstraintRangeController::ToBarrier(FRangeControllerBarrier* Barrier) const
+{
+	if (!Barrier)
+		return;
+
+	Barrier->bEnable = bEnable;
+	Barrier->Elasticity = Elasticity;
+	Barrier->Damping = Damping;
+	Barrier->ForceRangeMin = ForceRange.Min;
+	Barrier->ForceRangeMax = ForceRange.Max;
+
+	Barrier->bRotational = bRotational;
+
+	Barrier->RangeMin = bRotational ? FMath::DegreesToRadians(Range.Min) : Range.Min;
+	Barrier->RangeMax = bRotational ? FMath::DegreesToRadians(Range.Max) : Range.Max;
+}

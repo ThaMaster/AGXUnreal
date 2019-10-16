@@ -4,13 +4,15 @@
 
 #include "Constraints/ConstraintBarrier.h"
 
-class FRigidBodyBarrier;
+struct FRangeControllerBarrier;
 
 class AGXUNREALBARRIER_API FConstraint2DOFBarrier : public FConstraintBarrier
 {
 public:
 	FConstraint2DOFBarrier();
 	virtual ~FConstraint2DOFBarrier();
+
+	void SetRangeController(const FRangeControllerBarrier &RangeController, int32 SecondaryConstraintIndex, UWorld* World);
 	
 private:
 	FConstraint2DOFBarrier(const FConstraint2DOFBarrier&) = delete;

@@ -4,8 +4,12 @@
 #include "Constraints/Constraint2DOFBarrier.h"
 
 #include "AGXRefs.h"
+#include "Constraints/ControllerConstraintBarriers.h"
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
+
+
+#define NATIVE_CASTED static_cast<agx::Constraint2DOF*>(NativeRef->Native.get())
 
 
 FConstraint2DOFBarrier::FConstraint2DOFBarrier()
@@ -15,4 +19,18 @@ FConstraint2DOFBarrier::FConstraint2DOFBarrier()
 
 FConstraint2DOFBarrier::~FConstraint2DOFBarrier()
 {
+}
+
+
+void FConstraint2DOFBarrier::SetRangeController(
+	const FRangeControllerBarrier &RangeController,
+	int32 SecondaryConstraintIndex,
+	UWorld* World)
+{
+	check(HasNative());
+
+	agx::RangeController* NativeController = NATIVE_CASTED->getRange1D(
+		(agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
+
+	RangeController.ToNative(NativeController, World);
 }
