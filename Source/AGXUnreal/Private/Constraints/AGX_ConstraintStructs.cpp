@@ -128,6 +128,36 @@ void FAGX_ConstraintBodyAttachment::OnDestroy(AAGX_Constraint* Owner)
 #define RANGE_HIGHEST_FLOAT TNumericLimits<float>::Max()
 
 
+FAGX_ConstraintElectricMotorController::FAGX_ConstraintElectricMotorController(bool bRotational_)
+	:
+	bEnable(false),
+	Voltage(24.0),
+	ArmatureResistance(1.0),
+	TorqueConstant(1.0),
+	ForceRange({ RANGE_LOWEST_FLOAT, RANGE_HIGHEST_FLOAT }),
+	bRotational(bRotational_)
+{
+
+}
+
+
+void FAGX_ConstraintElectricMotorController::ToBarrier(FElectricMotorControllerBarrier* Barrier) const
+{
+	if (!Barrier)
+		return;
+
+	Barrier->bEnable = bEnable;
+	Barrier->ForceRangeMin = ForceRange.Min;
+	Barrier->ForceRangeMax = ForceRange.Max;
+
+	Barrier->bRotational = bRotational;
+
+	Barrier->Voltage = Voltage;
+	Barrier->ArmatureResistance = ArmatureResistance;
+	Barrier->TorqueConstant = TorqueConstant;
+}
+
+
 FAGX_ConstraintFrictionController::FAGX_ConstraintFrictionController(bool bRotational_)
 	:
 	bEnable(false),

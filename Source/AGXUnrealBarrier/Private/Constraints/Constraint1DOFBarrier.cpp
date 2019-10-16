@@ -21,6 +21,15 @@ FConstraint1DOFBarrier::~FConstraint1DOFBarrier()
 {
 }
 
+void FConstraint1DOFBarrier::SetElectricMotorController(const FElectricMotorControllerBarrier &ControllerBarrier, UWorld* World)
+{
+	check(HasNative());
+
+	agx::ElectricMotorController* NativeController = NATIVE_CASTED->getElectricMotorController();
+
+	ControllerBarrier.ToNative(NativeController, World);
+}
+
 void FConstraint1DOFBarrier::SetFrictionController(const FFrictionControllerBarrier &ControllerBarrier, UWorld* World)
 {
 	check(HasNative());

@@ -4,6 +4,7 @@
 
 #include "Constraints/ConstraintBarrier.h"
 
+struct FElectricMotorControllerBarrier;
 struct FFrictionControllerBarrier;
 struct FRangeControllerBarrier;
 struct FTargetSpeedControllerBarrier;
@@ -13,6 +14,8 @@ class AGXUNREALBARRIER_API FConstraint1DOFBarrier : public FConstraintBarrier
 public:
 	FConstraint1DOFBarrier();
 	virtual ~FConstraint1DOFBarrier();
+
+	void SetElectricMotorController(const FElectricMotorControllerBarrier &Controller, UWorld* World);
 
 	void SetFrictionController(const FFrictionControllerBarrier &Controller, UWorld* World);
 	

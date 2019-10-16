@@ -3,10 +3,33 @@
 
 namespace agx
 {
+	class ElectricMotorController;
 	class FrictionController;
 	class RangeController;
 	class TargetSpeedController;
 }
+
+
+/**
+ * Used to transfer Electric Motor Controller data between Unreal and AGX natives,
+ * instead of having functions with many variables. Also handles
+ * unit conversions in one common place.
+ */
+struct FElectricMotorControllerBarrier
+{
+	bool bEnable;
+	double ForceRangeMin;
+	double ForceRangeMax;
+
+	// Whether the controller is on a Rotational or Translational DOF.
+	bool bRotational;
+
+	double Voltage;
+	double ArmatureResistance;
+	double TorqueConstant;
+
+	void ToNative(agx::ElectricMotorController* Native, UWorld* World) const;
+};
 
 
 /**
@@ -26,7 +49,6 @@ struct FFrictionControllerBarrier
 	bool bRotational;
 
 	double FrictionCoefficient;
-
 	bool bEnableNonLinearDirectSolveUpdate;
 
 	void ToNative(agx::FrictionController* Native, UWorld* World) const;
@@ -75,7 +97,6 @@ struct FTargetSpeedControllerBarrier
 
 	// Radians per sec if bRotational is true, else Centimeters per sec.
 	double Speed;
-
 	bool bLockedAtZeroSpeed;
 
 	void ToNative(agx::TargetSpeedController* Native, UWorld* World) const;

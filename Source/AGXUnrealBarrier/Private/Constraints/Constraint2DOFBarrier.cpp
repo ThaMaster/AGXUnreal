@@ -22,6 +22,20 @@ FConstraint2DOFBarrier::~FConstraint2DOFBarrier()
 }
 
 
+void FConstraint2DOFBarrier::SetElectricMotorController(
+	const FElectricMotorControllerBarrier &ControllerBarrier,
+	int32 SecondaryConstraintIndex,
+	UWorld* World)
+{
+	check(HasNative());
+
+	agx::ElectricMotorController* NativeController = NATIVE_CASTED->getElectricMotorController(
+		(agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
+
+	ControllerBarrier.ToNative(NativeController, World);
+}
+
+
 void FConstraint2DOFBarrier::SetFrictionController(
 	const FFrictionControllerBarrier &ControllerBarrier,
 	int32 SecondaryConstraintIndex,

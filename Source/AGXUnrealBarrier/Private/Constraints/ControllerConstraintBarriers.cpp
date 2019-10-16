@@ -5,6 +5,19 @@
 #include "EndAGXIncludes.h"
 
 
+void FElectricMotorControllerBarrier::ToNative(agx::ElectricMotorController* Native, UWorld* World) const
+{
+	// Common controller variables.
+	Native->setEnable(bEnable);
+	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
+
+	// Special controller variables.
+	Native->setVoltage(Voltage);
+	Native->setArmatureResistance(ArmatureResistance);
+	Native->setTorqueConstant(TorqueConstant);
+}
+
+
 void FFrictionControllerBarrier::ToNative(agx::FrictionController* Native, UWorld* World) const
 {
 	// Common controller variables.

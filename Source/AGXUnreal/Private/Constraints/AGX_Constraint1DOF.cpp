@@ -37,6 +37,13 @@ void AAGX_Constraint1DOF::UpdateNativeProperties()
 
 	if (FConstraint1DOFBarrier* NativeBarrierCasted = GetNativeBarrierCasted())
 	{
+		// Electric Motor Controller
+		{
+			FElectricMotorControllerBarrier ControllerBarrier;
+			ElectricMotorController.ToBarrier(&ControllerBarrier);
+			NativeBarrierCasted->SetElectricMotorController(ControllerBarrier, GetWorld());
+		}
+
 		// Friction Controller
 		{
 			FFrictionControllerBarrier ControllerBarrier;

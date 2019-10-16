@@ -38,6 +38,20 @@ void AAGX_Constraint2DOF::UpdateNativeProperties()
 
 	if(FConstraint2DOFBarrier* NativeBarrierCasted = GetNativeBarrierCasted())
 	{
+		// Electric Motor Controller 1
+		{
+			FElectricMotorControllerBarrier ControllerBarrier;
+			ElectricMotorController1.ToBarrier(&ControllerBarrier);
+			NativeBarrierCasted->SetElectricMotorController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 0, GetWorld());
+		}
+
+		// Electric Motor Controller 2
+		{
+			FElectricMotorControllerBarrier ControllerBarrier;
+			ElectricMotorController2.ToBarrier(&ControllerBarrier);
+			NativeBarrierCasted->SetElectricMotorController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 1, GetWorld());
+		}
+
 		// Friction Controller 1
 		{
 			FFrictionControllerBarrier ControllerBarrier;
@@ -48,7 +62,7 @@ void AAGX_Constraint2DOF::UpdateNativeProperties()
 		// Friction Controller 2
 		{
 			FFrictionControllerBarrier ControllerBarrier;
-			FrictionController1.ToBarrier(&ControllerBarrier);
+			FrictionController2.ToBarrier(&ControllerBarrier);
 			NativeBarrierCasted->SetFrictionController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 1, GetWorld());
 		}
 

@@ -17,6 +17,14 @@ class AGXUNREAL_API AAGX_Constraint2DOF : public AAGX_Constraint
 
 public:
 
+	/** Electric motor controller for first secondary constraint (on one of the 2 free DOFs, usually). */
+	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
+	FAGX_ConstraintElectricMotorController ElectricMotorController1;
+
+	/** Electric motor controller for second secondary constraint (on one of the 2 free DOFs, usually). */
+	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
+	FAGX_ConstraintElectricMotorController ElectricMotorController2;
+
 	/** Friction controller for first secondary constraint (on one of the 2 free DOFs, usually). */
 	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
 	FAGX_ConstraintFrictionController FrictionController1;
