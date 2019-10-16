@@ -4,6 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Constraints/AGX_Constraint.h"
+#include "Constraints/Controllers/AGX_ElectricMotorController.h"
+#include "Constraints/Controllers/AGX_FrictionController.h"
+#include "Constraints/Controllers/AGX_LockController.h"
+#include "Constraints/Controllers/AGX_RangeController.h"
+#include "Constraints/Controllers/AGX_TargetSpeedController.h"
 #include "AGX_Constraint2DOF.generated.h"
 
 
