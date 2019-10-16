@@ -107,6 +107,13 @@ void AAGX_Constraint2DOF::UpdateNativeProperties()
 			TargetSpeedController2.ToBarrier(&ControllerBarrier);
 			NativeBarrierCasted->SetTargetSpeedController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 1, GetWorld());
 		}
+
+		// Screw Controller
+		{
+			FScrewControllerBarrier ControllerBarrier;
+			ScrewController.ToBarrier(&ControllerBarrier);
+			NativeBarrierCasted->SetScrewController(ControllerBarrier, GetWorld());
+		}
 	}
 }
 

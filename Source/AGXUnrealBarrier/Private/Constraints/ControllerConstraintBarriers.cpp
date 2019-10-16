@@ -60,6 +60,19 @@ void FRangeControllerBarrier::ToNative(agx::RangeController* Native, UWorld* Wor
 }
 
 
+void FScrewControllerBarrier::ToNative(agx::ScrewController* Native, UWorld* World) const
+{
+	// Common controller variables.
+	Native->setEnable(bEnable);
+	Native->setElasticity(Elasticity);
+	Native->setDamping(Damping);
+	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
+
+	// Special controller variables.
+	Native->setLead(ConvertDistanceToAgx(Lead, World));
+}
+
+
 void FTargetSpeedControllerBarrier::ToNative(agx::TargetSpeedController* Native, UWorld* World) const
 {
 	// Common controller variables.

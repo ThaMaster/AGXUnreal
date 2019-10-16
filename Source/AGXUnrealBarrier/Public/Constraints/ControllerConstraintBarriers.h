@@ -7,6 +7,7 @@ namespace agx
 	class FrictionController;
 	class LockController;
 	class RangeController;
+	class ScrewController;
 	class TargetSpeedController;
 }
 
@@ -99,6 +100,25 @@ struct FRangeControllerBarrier
 	double RangeMax;
 
 	void ToNative(agx::RangeController* Native, UWorld* World) const;
+};
+
+
+/**
+ * Used to transfer Screw Controller data between Unreal and AGX natives,
+ * instead of having functions with many variables. Also handles
+ * unit conversions in one common place.
+ */
+struct FScrewControllerBarrier
+{
+	bool bEnable;
+	double Elasticity;
+	double Damping;
+	double ForceRangeMin;
+	double ForceRangeMax;
+
+	double Lead;
+
+	void ToNative(agx::ScrewController* Native, UWorld* World) const;
 };
 
 

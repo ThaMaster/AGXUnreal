@@ -90,3 +90,15 @@ void FConstraint2DOFBarrier::SetTargetSpeedController(
 
 	ControllerBarrier.ToNative(NativeController, World);
 }
+
+
+void FConstraint2DOFBarrier::SetScrewController(
+	const FScrewControllerBarrier &ControllerBarrier,
+	UWorld* World)
+{
+	check(HasNative());
+
+	agx::ScrewController* NativeController = NATIVE_CASTED->getScrew1D();
+
+	ControllerBarrier.ToNative(NativeController, World);
+}

@@ -8,6 +8,7 @@ struct FElectricMotorControllerBarrier;
 struct FFrictionControllerBarrier;
 struct FLockControllerBarrier;
 struct FRangeControllerBarrier;
+struct FScrewControllerBarrier;
 struct FTargetSpeedControllerBarrier;
 
 class AGXUNREALBARRIER_API FConstraint2DOFBarrier : public FConstraintBarrier
@@ -25,6 +26,8 @@ public:
 	void SetRangeController(const FRangeControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
 
 	void SetTargetSpeedController(const FTargetSpeedControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
+
+	void SetScrewController(const FScrewControllerBarrier &Controller, UWorld* World);
 	
 private:
 	FConstraint2DOFBarrier(const FConstraint2DOFBarrier&) = delete;

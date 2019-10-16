@@ -8,6 +8,7 @@
 #include "Constraints/Controllers/AGX_FrictionController.h"
 #include "Constraints/Controllers/AGX_LockController.h"
 #include "Constraints/Controllers/AGX_RangeController.h"
+#include "Constraints/Controllers/AGX_ScrewController.h"
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
 #include "AGX_Constraint2DOF.generated.h"
 
@@ -61,6 +62,10 @@ public:
 	/** Target speed controller for second secondary constraint (on one of the 2 free DOFs, usually). */
 	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
 	FAGX_ConstraintTargetSpeedController TargetSpeedController2;
+
+	/** Screw controller that puts a relationship between the two free DOFs. */
+	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
+	FAGX_ConstraintScrewController ScrewController;
 
 	AAGX_Constraint2DOF();
 
