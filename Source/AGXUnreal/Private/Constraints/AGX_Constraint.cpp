@@ -4,6 +4,7 @@
 #include "Constraints/AGX_Constraint.h"
 
 #include "AGX_RigidBodyComponent.h"
+#include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 
 #include "Constraints/ConstraintBarrier.h"
@@ -60,9 +61,9 @@ TMap<EGenericDofIndex, int32> BuildNativeDofIndexMap(const TArray<EDofFlag> &Loc
 
 AAGX_Constraint::AAGX_Constraint(const TArray<EDofFlag> &LockedDofsOrdered)
 	:
-Elasticity(1.0 / 1.0E-8, ConvertDofsArrayToBitmask(LockedDofsOrdered)),
-Damping(2.0 / 60.0, ConvertDofsArrayToBitmask(LockedDofsOrdered)),
-ForceRange(TNumericLimits<float>::Lowest(), TNumericLimits<float>::Max(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
+Elasticity(ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
+Damping(ConstraintConstants::DefaultDamping(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
+ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
 LockedDofs(LockedDofsOrdered),
 NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 {

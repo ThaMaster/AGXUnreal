@@ -9,9 +9,9 @@ FAGX_ConstraintTargetSpeedController::FAGX_ConstraintTargetSpeedController(bool 
 	bEnable(false),
 	Speed(0.0),
 	bLockedAtZeroSpeed(false),
-	Elasticity(1.0e8),
-	Damping(DEFAULT_SECONDARY_DAMPING),
-	ForceRange({ RANGE_LOWEST_FLOAT, RANGE_HIGHEST_FLOAT }),
+	Elasticity(ConstraintConstants::DefaultElasticity()),
+	Damping(ConstraintConstants::DefaultDamping()),
+	ForceRange({ ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax() }),
 	bRotational(bRotational_)
 {
 
