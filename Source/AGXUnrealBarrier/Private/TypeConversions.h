@@ -52,7 +52,7 @@ inline float ConvertDistance(agx::Real V, const UWorld* World)
 	return static_cast<float>(V) * AGXDistanceToUnrealDistance(World);
 }
 
-inline double ConvertDistanceToUnreal(agx::Real V, const UWorld* World)
+inline double ConvertDistanceToUnrealD(agx::Real V, const UWorld* World)
 {
 	return static_cast<double>(V) * double(AGXDistanceToUnrealDistance(World));
 }
