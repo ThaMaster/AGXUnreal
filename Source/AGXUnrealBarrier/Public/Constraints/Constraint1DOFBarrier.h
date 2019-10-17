@@ -10,6 +10,8 @@ struct FLockControllerBarrier;
 struct FRangeControllerBarrier;
 struct FTargetSpeedControllerBarrier;
 
+namespace agx { class Constraint1DOF; }
+
 class AGXUNREALBARRIER_API FConstraint1DOFBarrier : public FConstraintBarrier
 {
 public:
@@ -29,4 +31,6 @@ public:
 private:
 	FConstraint1DOFBarrier(const FConstraint1DOFBarrier&) = delete;
 	void operator=(const FConstraint1DOFBarrier&) = delete;
+
+	agx::Constraint1DOF* GetNativeCasted() const;
 };

@@ -9,9 +9,6 @@
 #include "TypeConversions.h"
 
 
-#define NATIVE_CASTED static_cast<agx::Constraint1DOF*>(NativeRef->Native.get())
-
-
 FConstraint1DOFBarrier::FConstraint1DOFBarrier()
 	: FConstraintBarrier()
 {
@@ -23,45 +20,59 @@ FConstraint1DOFBarrier::~FConstraint1DOFBarrier()
 
 void FConstraint1DOFBarrier::SetElectricMotorController(const FElectricMotorControllerBarrier &ControllerBarrier, UWorld* World)
 {
-	check(HasNative());
+	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
+	{
+		agx::ElectricMotorController* NativeController = NativeCasted->getElectricMotorController();
 
-	agx::ElectricMotorController* NativeController = NATIVE_CASTED->getElectricMotorController();
-
-	ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController, World);
+	}
 }
 
 void FConstraint1DOFBarrier::SetFrictionController(const FFrictionControllerBarrier &ControllerBarrier, UWorld* World)
 {
-	check(HasNative());
+	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
+	{
+		agx::FrictionController* NativeController = NativeCasted->getFrictionController();
 
-	agx::FrictionController* NativeController = NATIVE_CASTED->getFrictionController();
-
-	ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController, World);
+	}
 }
 
 void FConstraint1DOFBarrier::SetLockController(const FLockControllerBarrier &ControllerBarrier, UWorld* World)
 {
-	check(HasNative());
+	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
+	{
+		agx::LockController* NativeController = NativeCasted->getLock1D();
 
-	agx::LockController* NativeController = NATIVE_CASTED->getLock1D();
-
-	ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController, World);
+	}
 }
 
 void FConstraint1DOFBarrier::SetRangeController(const FRangeControllerBarrier &ControllerBarrier, UWorld* World)
 {
-	check(HasNative());
+	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
+	{
+		agx::RangeController* NativeController = NativeCasted->getRange1D();
 
-	agx::RangeController* NativeController = NATIVE_CASTED->getRange1D();
-
-	ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController, World);
+	}
 }
 
 void FConstraint1DOFBarrier::SetTargetSpeedController(const FTargetSpeedControllerBarrier &ControllerBarrier, UWorld* World)
 {
-	check(HasNative());
+	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
+	{
+		agx::TargetSpeedController* NativeController = NativeCasted->getMotor1D();
 
-	agx::TargetSpeedController* NativeController = NATIVE_CASTED->getMotor1D();
+		ControllerBarrier.ToNative(NativeController, World);
+	}
+}
 
-	ControllerBarrier.ToNative(NativeController, World);
+
+agx::Constraint1DOF* FConstraint1DOFBarrier::GetNativeCasted() const
+{
+	if (HasNative())
+		return static_cast<agx::Constraint1DOF*>(NativeRef->Native.get());
+	else
+		return nullptr;
 }

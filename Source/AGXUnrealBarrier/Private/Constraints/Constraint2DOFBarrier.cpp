@@ -9,9 +9,6 @@
 #include "TypeConversions.h"
 
 
-#define NATIVE_CASTED static_cast<agx::Constraint2DOF*>(NativeRef->Native.get())
-
-
 FConstraint2DOFBarrier::FConstraint2DOFBarrier()
 	: FConstraintBarrier()
 {
@@ -27,12 +24,13 @@ void FConstraint2DOFBarrier::SetElectricMotorController(
 	int32 SecondaryConstraintIndex,
 	UWorld* World)
 {
-	check(HasNative());
+	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
+	{
+		agx::ElectricMotorController* NativeController =
+			NativeCasted->getElectricMotorController((agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
 
-	agx::ElectricMotorController* NativeController = NATIVE_CASTED->getElectricMotorController(
-		(agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
-
-	ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController, World);
+	}
 }
 
 
@@ -41,12 +39,13 @@ void FConstraint2DOFBarrier::SetFrictionController(
 	int32 SecondaryConstraintIndex,
 	UWorld* World)
 {
-	check(HasNative());
+	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
+	{
+		agx::FrictionController* NativeController =
+			NativeCasted->getFrictionController((agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
 
-	agx::FrictionController* NativeController = NATIVE_CASTED->getFrictionController(
-		(agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
-
-	ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController, World);
+	}
 }
 
 
@@ -55,12 +54,13 @@ void FConstraint2DOFBarrier::SetLockController(
 	int32 SecondaryConstraintIndex,
 	UWorld* World)
 {
-	check(HasNative());
+	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
+	{
+		agx::LockController* NativeController =
+			NativeCasted->getLock1D((agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
 
-	agx::LockController* NativeController = NATIVE_CASTED->getLock1D(
-		(agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
-
-	ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController, World);
+	}
 }
 
 
@@ -69,12 +69,13 @@ void FConstraint2DOFBarrier::SetRangeController(
 	int32 SecondaryConstraintIndex,
 	UWorld* World)
 {
-	check(HasNative());
+	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
+	{
+		agx::RangeController* NativeController =
+			NativeCasted->getRange1D((agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
 
-	agx::RangeController* NativeController = NATIVE_CASTED->getRange1D(
-		(agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
-
-	ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController, World);
+	}
 }
 
 
@@ -83,12 +84,13 @@ void FConstraint2DOFBarrier::SetTargetSpeedController(
 	int32 SecondaryConstraintIndex,
 	UWorld* World)
 {
-	check(HasNative());
+	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
+	{
+		agx::TargetSpeedController* NativeController =
+			NativeCasted->getMotor1D((agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
 
-	agx::TargetSpeedController* NativeController = NATIVE_CASTED->getMotor1D(
-		(agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
-
-	ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController, World);
+	}
 }
 
 
@@ -96,9 +98,19 @@ void FConstraint2DOFBarrier::SetScrewController(
 	const FScrewControllerBarrier &ControllerBarrier,
 	UWorld* World)
 {
-	check(HasNative());
+	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
+	{
+		agx::ScrewController* NativeController = NativeCasted->getScrew1D();
 
-	agx::ScrewController* NativeController = NATIVE_CASTED->getScrew1D();
+		ControllerBarrier.ToNative(NativeController, World);
+	}
+}
 
-	ControllerBarrier.ToNative(NativeController, World);
+
+agx::Constraint2DOF* FConstraint2DOFBarrier::GetNativeCasted() const
+{
+	if (HasNative())
+		return static_cast<agx::Constraint2DOF*>(NativeRef->Native.get());
+	else
+		return nullptr;
 }
