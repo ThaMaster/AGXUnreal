@@ -76,6 +76,15 @@ void UAGX_RigidBodyComponent::TickComponent(
 #endif
 }
 
+void UAGX_RigidBodyComponent::UpdateNativeProperties()
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetMass(Mass);
+		InitializeMotionControl();
+	}
+}
+
 UAGX_RigidBodyComponent* UAGX_RigidBodyComponent::GetFromActor(const AActor* Actor)
 {
 	if (!Actor)
@@ -105,8 +114,7 @@ void UAGX_RigidBodyComponent::InitializeNative()
 {
 	NativeBarrier.AllocateNative();
 	agx::call(TEXT("agx::setPosition, velocity, etc"));
-	NativeBarrier.SetMass(Mass);
-	InitializeMotionControl();
+	UpdateNativeProperties();
 	UpdateNativeTransformsFromActor();
 
 	TArray<UActorComponent*> Shapes = GetOwner()->GetComponentsByClass(UAGX_ShapeComponent::StaticClass());

@@ -38,6 +38,12 @@ public:
 	/// Return true if the AGX Dynamics object has been created. False otherwise.
 	bool HasNative();
 
+	/**
+	 * Should be called whenever properties (excluding transform and shapes) need to be pushed
+	 * onto the native in runtime.
+	 */
+	void UpdateNativeProperties();
+
 	static UAGX_RigidBodyComponent* GetFromActor(const AActor* Actor);
 
 public:
