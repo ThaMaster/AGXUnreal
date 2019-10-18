@@ -45,6 +45,18 @@ FSphereShapeBarrier* UAGX_SphereShapeComponent::GetNativeSphere()
 	return &NativeBarrier;
 }
 
+void UAGX_SphereShapeComponent::UpdateNativeProperties()
+{
+	if (!HasNative())
+		return;
+
+	Super::UpdateNativeProperties();
+
+	UpdateNativeTransform(NativeBarrier);
+
+	NativeBarrier.SetRadius(Radius * GetComponentScale().X, GetWorld());
+}
+
 void UAGX_SphereShapeComponent::CreateVisualMesh(TArray<FAGX_SimpleMeshTriangle> &Triangles)
 {
 	AGX_MeshUtilities::MakeSphere(Triangles, Radius, 32);
@@ -66,8 +78,7 @@ void UAGX_SphereShapeComponent::CreateNative()
 	UE_LOG(LogAGX, Log, TEXT("Allocating native object for SphereShapeComponent."));
 	check(!HasNative());
 	NativeBarrier.AllocateNative();
-	UpdateNativeTransform(NativeBarrier);
-	NativeBarrier.SetRadius(Radius * GetComponentScale().X, GetWorld());
+	UpdateNativeProperties();
 }
 
 void UAGX_SphereShapeComponent::ReleaseNative()

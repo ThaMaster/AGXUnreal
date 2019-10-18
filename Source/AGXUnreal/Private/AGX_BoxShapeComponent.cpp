@@ -51,6 +51,18 @@ FBoxShapeBarrier* UAGX_BoxShapeComponent::GetNativeBox()
 	return &NativeBarrier;
 }
 
+void UAGX_BoxShapeComponent::UpdateNativeProperties()
+{
+	if (!HasNative())
+		return;
+
+	Super::UpdateNativeProperties();
+	
+	UpdateNativeTransform(NativeBarrier);
+
+	NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale(), GetWorld());
+}
+
 void UAGX_BoxShapeComponent::CreateVisualMesh(TArray<FAGX_SimpleMeshTriangle> &Triangles)
 {
 	AGX_MeshUtilities::MakeCube(Triangles, HalfExtent);
@@ -72,8 +84,7 @@ void UAGX_BoxShapeComponent::CreateNative()
 	UE_LOG(LogAGX, Log, TEXT("Allocating native object for BoxShapeComponent."));
 	check(!HasNative());
 	NativeBarrier.AllocateNative();
-	UpdateNativeTransform(NativeBarrier);
-	NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale(), GetWorld());
+	UpdateNativeProperties();
 }
 
 void UAGX_BoxShapeComponent::ReleaseNative()

@@ -29,6 +29,8 @@ public:
 	/// Get the native AGX Dynamics representation of this Box. May return nullptr.
 	FBoxShapeBarrier* GetNativeBox();
 
+	virtual void UpdateNativeProperties() override;
+	
 protected:
 
 	void CreateVisualMesh(TArray<FAGX_SimpleMeshTriangle> &Triangles) override;

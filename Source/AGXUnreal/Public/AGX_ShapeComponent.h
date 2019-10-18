@@ -37,6 +37,9 @@ public:
 	 */
 	bool ShouldCreateVisualMesh() const;
 
+	/** Subclasses that overrides this MUST invoke the parents version! */
+	virtual void UpdateNativeProperties() { }
+
 public:
 	virtual void TickComponent(
 		float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

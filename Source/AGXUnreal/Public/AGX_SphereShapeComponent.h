@@ -24,6 +24,8 @@ public:
 
 	FSphereShapeBarrier* GetNativeSphere();
 
+	virtual void UpdateNativeProperties() override;
+
 protected:
 
 	void CreateVisualMesh(TArray<FAGX_SimpleMeshTriangle> &Triangles) override;
