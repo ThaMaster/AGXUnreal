@@ -1,6 +1,8 @@
 #include "AGX_BoxShapeComponent.h"
 
 #include "AGX_LogCategory.h"
+#include "AGX_MeshUtilities.h"
+
 
 UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 {
@@ -48,6 +50,22 @@ FBoxShapeBarrier* UAGX_BoxShapeComponent::GetNativeBox()
 	}
 	return &NativeBarrier;
 }
+
+void UAGX_BoxShapeComponent::CreateVisualMesh(TArray<FAGX_SimpleMeshTriangle> &Triangles)
+{
+	AGX_MeshUtilities::MakeCube(Triangles, HalfExtent);
+}
+
+#if WITH_EDITOR
+
+bool UAGX_BoxShapeComponent::DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const
+{
+	return 
+		Super::DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName) ||
+		MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_BoxShapeComponent, HalfExtent);
+}
+
+#endif
 
 void UAGX_BoxShapeComponent::CreateNative()
 {

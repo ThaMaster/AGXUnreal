@@ -1,6 +1,8 @@
 #include "AGX_ShapeComponent.h"
 
 #include "AGX_LogCategory.h"
+#include "AGX_StringUtilities.h"
+
 
 // Sets default values for this component's properties
 UAGX_ShapeComponent::UAGX_ShapeComponent()
@@ -15,14 +17,64 @@ bool UAGX_ShapeComponent::HasNative() const
 	return GetNative() != nullptr;
 }
 
+void UAGX_ShapeComponent::UpdateVisualMesh()
+{
+	UE_LOG(LogAGX, Log, TEXT("Updating visual mesh of %s (%s)"), *GetName(), *GetClass()->GetName());
+
+	TArray<FAGX_SimpleMeshTriangle> Triangles;
+	
+	if (ShouldCreateVisualMesh())
+	{
+		CreateVisualMesh(Triangles);
+	}
+
+	SetMeshTriangles(Triangles);
+}
+
+bool UAGX_ShapeComponent::ShouldCreateVisualMesh() const
+{
+	return bVisible; // TODO: add && !(bHiddenInGame && IsGamePlaying), but how to get IsGamePlaying?
+}
+
 void UAGX_ShapeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	/// \todo Do we need TickComponent on UAGX_ShapeComponent?
 
-	UE_LOG(LogAGX, Log, TEXT("TickComponent for ShapeComponent."));
+	UE_LOG(LogAGX, Log, TEXT("TickComponent for ShapeComponent.")); // Haven't seen this in the log ??
 }
+
+#if WITH_EDITOR
+
+bool UAGX_ShapeComponent::DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const
+{
+	return
+		PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bVisible) ||
+		PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, RelativeScale3D);
+}
+
+void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	
+	FName PropertyName = GetFNameSafe(PropertyChangedEvent.Property);
+	FName MemberPropertyName = GetFNameSafe(PropertyChangedEvent.MemberProperty);
+
+	if (DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName))
+	{
+		UpdateVisualMesh();
+	}
+}
+
+void UAGX_ShapeComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	UpdateVisualMesh();
+}
+
+#endif
 
 // Called when the game starts
 void UAGX_ShapeComponent::BeginPlay()
@@ -30,6 +82,7 @@ void UAGX_ShapeComponent::BeginPlay()
 	UE_LOG(LogAGX, Log, TEXT("BeginPlay for ShapeComponent"));
 	Super::BeginPlay();
 	GetOrCreateNative();
+	UpdateVisualMesh();
 }
 
 void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)

@@ -24,6 +24,14 @@ public:
 
 	FSphereShapeBarrier* GetNativeSphere();
 
+protected:
+
+	void CreateVisualMesh(TArray<FAGX_SimpleMeshTriangle> &Triangles) override;
+
+#if WITH_EDITOR
+	virtual bool DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const;
+#endif
+
 private:
 	void CreateNative();
 

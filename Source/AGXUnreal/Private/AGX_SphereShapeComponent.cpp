@@ -45,6 +45,21 @@ FSphereShapeBarrier* UAGX_SphereShapeComponent::GetNativeSphere()
 	return &NativeBarrier;
 }
 
+void UAGX_SphereShapeComponent::CreateVisualMesh(TArray<FAGX_SimpleMeshTriangle> &Triangles)
+{
+	AGX_MeshUtilities::MakeSphere(Triangles, Radius, 32);
+}
+
+#if WITH_EDITOR
+
+bool UAGX_SphereShapeComponent::DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const
+{
+	return
+		Super::DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName) ||
+		PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_SphereShapeComponent, Radius);
+}
+
+#endif
 
 void UAGX_SphereShapeComponent::CreateNative()
 {
