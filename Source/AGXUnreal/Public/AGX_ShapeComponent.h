@@ -77,7 +77,7 @@ protected:
 	 * after initializing the native geometry.
 	 */
 	template<typename TNative>
-	void UpdateNativeTransform(TNative &Native);
+	void UpdateNativeLocalTransform(TNative &Native);
 	// TODO: Would be easier if Native was owned by ShapeComponent, with polymorphic pointer (e.g. TUniquePtr).
 
 	/**
@@ -98,7 +98,7 @@ private:
 
 
 template<typename TNative>
-void UAGX_ShapeComponent::UpdateNativeTransform(TNative& Native)
+void UAGX_ShapeComponent::UpdateNativeLocalTransform(TNative& Native)
 {
 	FTransform RigiBodyTransform = GetOwner()->GetActorTransform();
 

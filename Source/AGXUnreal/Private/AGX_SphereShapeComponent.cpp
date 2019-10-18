@@ -52,7 +52,7 @@ void UAGX_SphereShapeComponent::UpdateNativeProperties()
 
 	Super::UpdateNativeProperties();
 
-	UpdateNativeTransform(NativeBarrier);
+	UpdateNativeLocalTransform(NativeBarrier);
 
 	NativeBarrier.SetRadius(Radius * GetComponentScale().X, GetWorld());
 }

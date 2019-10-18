@@ -58,7 +58,7 @@ void UAGX_BoxShapeComponent::UpdateNativeProperties()
 
 	Super::UpdateNativeProperties();
 	
-	UpdateNativeTransform(NativeBarrier);
+	UpdateNativeLocalTransform(NativeBarrier);
 
 	NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale(), GetWorld());
 }
