@@ -73,7 +73,7 @@ void UAGX_BoxShapeComponent::CreateNative()
 	check(!HasNative());
 	NativeBarrier.AllocateNative();
 	UpdateNativeTransform(NativeBarrier);
-	NativeBarrier.SetHalfExtents(HalfExtent, GetWorld());
+	NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale(), GetWorld());
 }
 
 void UAGX_BoxShapeComponent::ReleaseNative()

@@ -67,7 +67,7 @@ void UAGX_SphereShapeComponent::CreateNative()
 	check(!HasNative());
 	NativeBarrier.AllocateNative();
 	UpdateNativeTransform(NativeBarrier);
-	NativeBarrier.SetRadius(Radius, GetWorld());
+	NativeBarrier.SetRadius(Radius * GetComponentScale().X, GetWorld());
 }
 
 void UAGX_SphereShapeComponent::ReleaseNative()
