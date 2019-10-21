@@ -22,6 +22,18 @@ struct AGXUNREAL_API FAGX_SimpleMeshTriangle
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Triangle)
 	FVector Vertex2;
+
+	FORCEINLINE const FVector& operator[](int32 Index) const
+	{
+		check(Index >= 0 && Index < 3);
+		switch (Index)
+		{
+		case 0: return Vertex0;
+		case 1: return Vertex1;
+		case 2: return Vertex2;
+		default: check(!"FAGX_SimpleMeshTriangle::operator[] invalid index parameter") return FVector::ZeroVector;
+		}
+	}
 };
 
 /** Component that allows you to specify custom triangle mesh geometry */

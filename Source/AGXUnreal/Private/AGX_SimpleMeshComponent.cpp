@@ -32,49 +32,84 @@ public:
 		, MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel()))
 	{
 		const FColor VertexColor(255,255,255);
-
-		TArray<FDynamicMeshVertex> Vertices;
 		const int32 NumTris = Component->MeshTris.Num();
-		Vertices.AddUninitialized(NumTris * 3);
-		IndexBuffer.Indices.AddUninitialized(NumTris * 3);
-		// Add each triangle to the vertex/index buffer
-		for(int32 TriIdx = 0; TriIdx < NumTris; TriIdx++)
+		const int32 NumVertices = NumTris * 3;
+		uint32 NumTexCoords = 1;
+		uint32 LightMapIndex = 0;
+
+		IndexBuffer.Indices.AddUninitialized(NumVertices);
+
+		check(NumTexCoords < MAX_STATIC_TEXCOORDS && NumTexCoords > 0);
+		check(LightMapIndex < NumTexCoords);
+
+		if (NumTris)
 		{
-			FAGX_SimpleMeshTriangle& Tri = Component->MeshTris[TriIdx];
+			VertexBuffers.PositionVertexBuffer.Init(NumVertices);
+			VertexBuffers.StaticMeshVertexBuffer.Init(NumVertices, NumTexCoords);
+			VertexBuffers.ColorVertexBuffer.Init(NumVertices);
 
-			const FVector Edge01 = (Tri.Vertex1 - Tri.Vertex0);
-			const FVector Edge02 = (Tri.Vertex2 - Tri.Vertex0);
+			for (int32 TriIndex = 0; TriIndex < NumTris; ++TriIndex)
+			{
+				FAGX_SimpleMeshTriangle& Tri = Component->MeshTris[TriIndex];
 
-			const FVector TangentX = Edge01.GetSafeNormal();
-			const FVector TangentZ = (Edge02 ^ Edge01).GetSafeNormal();
-			const FVector TangentY = (TangentX ^ TangentZ).GetSafeNormal();
+				const FVector Edge01 = (Tri.Vertex1 - Tri.Vertex0);
+				const FVector Edge02 = (Tri.Vertex2 - Tri.Vertex0);
 
-			FDynamicMeshVertex Vert;
-			
-			Vert.Color = VertexColor;
-			Vert.SetTangents(TangentX, TangentY, TangentZ);
+				const FVector TangentX = Edge01.GetSafeNormal();
+				const FVector TangentZ = (Edge02 ^ Edge01).GetSafeNormal();
+				const FVector TangentY = (TangentX ^ TangentZ).GetSafeNormal();
 
-			Vert.Position = Tri.Vertex0;
-			Vertices[TriIdx * 3 + 0] = Vert;
-			IndexBuffer.Indices[TriIdx * 3 + 0] = TriIdx * 3 + 0;
+				for (int32 TriVertIndex = 0; TriVertIndex < 3; ++TriVertIndex)
+				{
+					uint32 VertexIndex = TriIndex * 3 + TriVertIndex;
 
-			Vert.Position = Tri.Vertex1;
-			Vertices[TriIdx * 3 + 1] = Vert;
-			IndexBuffer.Indices[TriIdx * 3 + 1] = TriIdx * 3 + 1;
+					VertexBuffers.PositionVertexBuffer.VertexPosition(VertexIndex) = Tri[TriVertIndex];
+					VertexBuffers.ColorVertexBuffer.VertexColor(VertexIndex) = VertexColor;
+					VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(VertexIndex, TangentX, TangentY, TangentZ);
 
-			Vert.Position = Tri.Vertex2;
-			Vertices[TriIdx * 3 + 2] = Vert;
-			IndexBuffer.Indices[TriIdx * 3 + 2] = TriIdx * 3 + 2;
+					for (uint32 TexCoordIndex = 0; TexCoordIndex < NumTexCoords; ++TexCoordIndex)
+					{
+						VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(VertexIndex, TexCoordIndex, FVector2D::ZeroVector);
+					}
+
+					IndexBuffer.Indices[VertexIndex] = VertexIndex;
+				}
+			}
+		}
+		else
+		{
+			VertexBuffers.PositionVertexBuffer.Init(1);
+			VertexBuffers.StaticMeshVertexBuffer.Init(1, 1);
+			VertexBuffers.ColorVertexBuffer.Init(1);
+
+			VertexBuffers.PositionVertexBuffer.VertexPosition(0) = FVector::ZeroVector;
+			VertexBuffers.ColorVertexBuffer.VertexColor(0) = FColor(1, 1, 1, 1);
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(0, FVector::ForwardVector, FVector::RightVector, FVector::UpVector);
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(0, 0, FVector2D::ZeroVector);
+
+			NumTexCoords = 1;
+			LightMapIndex = 0;
 		}
 
-		VertexBuffers.InitFromDynamicVertex(&VertexFactory, Vertices);
-
 		// Enqueue initialization of render resource
-		BeginInitResource(&VertexBuffers.PositionVertexBuffer);
-		BeginInitResource(&VertexBuffers.StaticMeshVertexBuffer);
-		BeginInitResource(&VertexBuffers.ColorVertexBuffer);
-		BeginInitResource(&IndexBuffer);
-		BeginInitResource(&VertexFactory);
+		ENQUEUE_RENDER_COMMAND(FAGX_SimpleMeshSceneProxyVertexBuffersInit)(
+			[this, LightMapIndex](FRHICommandListImmediate& RHICmdList)
+		{
+			VertexBuffers.PositionVertexBuffer.InitResource();
+			VertexBuffers.StaticMeshVertexBuffer.InitResource();
+			VertexBuffers.ColorVertexBuffer.InitResource();
+
+			FLocalVertexFactory::FDataType Data;
+			VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(&VertexFactory, Data);
+			VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(&VertexFactory, Data);
+			VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(&VertexFactory, Data);
+			VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(&VertexFactory, Data, LightMapIndex);
+			VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(&VertexFactory, Data);
+			VertexFactory.SetData(Data);
+
+			VertexFactory.InitResource();
+			IndexBuffer.InitResource();
+		});
 
 		// Grab material
 		Material = Component->GetMaterial(0);
