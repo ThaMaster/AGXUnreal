@@ -14,8 +14,8 @@ class AGXUNREAL_API AGX_MeshUtilities
 {
 public:
 
-	static void MakeCube(TArray<FAGX_SimpleMeshTriangle>& Triangles, FVector HalfSize);
+	static void MakeCube(TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices, const FVector& HalfSize);
 
-	static void MakeSphere(TArray<FAGX_SimpleMeshTriangle>& Triangles, float Radius, uint32 NumSegments);
+	static void MakeSphere(TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices, float Radius, uint32 NumSegments);
 
 };

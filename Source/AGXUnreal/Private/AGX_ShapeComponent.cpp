@@ -21,14 +21,16 @@ void UAGX_ShapeComponent::UpdateVisualMesh()
 {
 	UE_LOG(LogAGX, Log, TEXT("Updating visual mesh of %s (%s)"), *GetName(), *GetClass()->GetName());
 
-	TArray<FAGX_SimpleMeshTriangle> Triangles;
-	
+	ClearMeshData();
+
+	TSharedPtr<FAGX_SimpleMeshData> Data(new FAGX_SimpleMeshData());
+
 	if (ShouldCreateVisualMesh())
 	{
-		CreateVisualMesh(Triangles);
+		CreateVisualMesh(*Data.Get());
 	}
 
-	SetMeshTriangles(Triangles);
+	SetMeshData(Data);
 }
 
 bool UAGX_ShapeComponent::ShouldCreateVisualMesh() const

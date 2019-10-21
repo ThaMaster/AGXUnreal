@@ -7,61 +7,82 @@
 #include "UnrealMathUtility.h"
 
 
-void AGX_MeshUtilities::MakeCube(TArray<FAGX_SimpleMeshTriangle>& Triangles, FVector HalfSize)
+void AGX_MeshUtilities::MakeCube(TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices, const FVector& HalfSize)
 {
-	TArray<FVector> Vertices;
-	Vertices.Add(FVector(-HalfSize.X, -HalfSize.Y, -HalfSize.Z));
-	Vertices.Add(FVector( HalfSize.X, -HalfSize.Y, -HalfSize.Z));
-	Vertices.Add(FVector( HalfSize.X,  HalfSize.Y, -HalfSize.Z));
-	Vertices.Add(FVector(-HalfSize.X,  HalfSize.Y, -HalfSize.Z));
+	// 8 Corners,
+	// 6 Quads,
+	// 12 Triangles,
+	// 36 Indices,
+	// 24 Vertices (6*4)
+	// 24 Normals (6*4)
 
-	Vertices.Add(FVector(-HalfSize.X,  -HalfSize.Y,  HalfSize.Z));
-	Vertices.Add(FVector( HalfSize.X, -HalfSize.Y,  HalfSize.Z));
-	Vertices.Add(FVector( HalfSize.X,  HalfSize.Y,	HalfSize.Z));
-	Vertices.Add(FVector(-HalfSize.X,  HalfSize.Y,	HalfSize.Z));
-	
-	int VertexIndicesPerTriangle[12][3] =
+	static const TArray<FVector> StaticPositions =
 	{
-		{0,1,2}, {0,2,3},
-		{0,4,5}, {0,5,1},
-		{1,5,6}, {1,6,2},
-		{3,2,7}, {7,2,6},
-		{0,3,4}, {4,3,7},
-		{5,4,6}, {6,4,7}
+		FVector(-1.0, -1.0, 1.0),	FVector(1.0, -1.0, 1.0),	FVector(1.0, 1.0, 1.0),		FVector(-1.0, 1.0, 1.0),	// Up
+		FVector(1.0, 1.0, 1.0),		FVector(1.0, 1.0, -1.0),	FVector(1.0, -1.0, -1.0),	FVector(1.0, -1.0, 1.0),	// Forward
+		FVector(-1.0, -1.0, -1.0),	FVector(1.0, -1.0, -1.0),	FVector(1.0, 1.0, -1.0),	FVector(-1.0, 1.0, -1.0),	// Down
+		FVector(-1.0, -1.0, -1.0),	FVector(-1.0, -1.0, 1.0),	FVector(-1.0, 1.0, 1.0),	FVector(-1.0, 1.0, -1.0),	// Backward
+		FVector(1.0, 1.0, 1.0),		FVector(-1.0, 1.0, 1.0),	FVector(-1.0, 1.0, -1.0),	FVector(1.0, 1.0, -1.0),	// Right
+		FVector(-1.0, -1.0, -1.0),	FVector(1.0, -1.0, -1.0),	FVector(1.0, -1.0, 1.0),	FVector(-1.0, -1.0, 1.0)	// Left
 	};
 
-	for (auto &TriangleVertexIndices : VertexIndicesPerTriangle)
+	static const TArray<FVector> StaticNormals =
 	{
-		FAGX_SimpleMeshTriangle Triangle;
-		Triangle.Vertex0 = Vertices[TriangleVertexIndices[0]];
-		Triangle.Vertex1 = Vertices[TriangleVertexIndices[1]];
-		Triangle.Vertex2 = Vertices[TriangleVertexIndices[2]];
-		Triangles.Add(Triangle);
+		FVector(0.0, 0.0, 1.0),		FVector(0.0, 0.0, 1.0),		FVector(0.0, 0.0, 1.0),		FVector(0.0, 0.0, 1.0),		// Up
+		FVector(1.0, 0.0, 0.0),		FVector(1.0, 0.0, 0.0),		FVector(1.0, 0.0, 0.0),		FVector(1.0, 0.0, 0.0),		// Forward
+		FVector(0.0, 0.0, -1.0),	FVector(0.0, 0.0, -1.0),	FVector(0.0, 0.0, -1.0),	FVector(0.0, 0.0, -1.0),	// Down
+		FVector(-1.0, 0.0, 0.0),	FVector(-1.0, 0.0, 0.0),	FVector(-1.0, 0.0, 0.0),	FVector(-1.0, 0.0, 0.0),	// Backward
+		FVector(0.0, 1.0, 0.0),		FVector(0.0, 1.0, 0.0),		FVector(0.0, 1.0, 0.0),		FVector(0.0, 1.0, 0.0),		// Right
+		FVector(0.0, -1.0, 0.0),	FVector(0.0, -1.0, 0.0),	FVector(0.0, -1.0, 0.0),	FVector(0.0, -1.0, 0.0)		// Left
+	};
+
+	static const TArray<uint32> StaticIndices =
+	{
+		0, 2, 1, 0, 3, 2,		// Up
+		4, 5, 6, 4, 6, 7,		// Forward
+		8, 9, 10, 8, 10, 11,	// Down
+		12, 14, 13, 12, 15, 14,	// Backward
+		16, 17, 18, 16, 18, 19,	// Right
+		20, 22, 21, 20, 23, 22	// Left
+	};
+
+	Positions = StaticPositions;
+	Normals = StaticNormals;
+	Indices = StaticIndices;
+
+	for (FVector &Position : Positions)
+	{
+		Position *= HalfSize;
 	}
+
+
+	check(Indices.Num() == 36);
+	check(Positions.Num() == 24);
+	check(Normals.Num() == 24);
 }
 
 
-void AGX_MeshUtilities::MakeSphere(TArray<FAGX_SimpleMeshTriangle>& Triangles, float Radius, uint32 NumSegments)
+void AGX_MeshUtilities::MakeSphere(TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices, float Radius, uint32 NumSegments)
 {
 	if (NumSegments < 4 || Radius < 1.0e-6)
 		return;
 
 	const int32 NumStacks = NumSegments;
 	const int32 NumSectors = NumStacks;
+	const int32 NumVertices = (NumStacks + 1) * (NumSectors + 1);
+	const int32 NumIndices = NumSectors * (6 * NumStacks - 6);
 
 	const float SectorStep = 2.0 * PI / NumSectors;
 	const float StackStep = PI / NumStacks;
 
-	TArray<FVector> Vertices;
-#ifdef WITH_NORMALS_AND_TEXCOORDS
-	TArray<FVector> Normals;
-	TArray<FVector2> TexCoords;
-#endif
+	Positions.Empty(NumVertices);
+	Normals.Empty(NumVertices);
+	Indices.Empty(NumIndices);
 
-	float X, Y, Z;									// vertex position
-#ifdef WITH_NORMALS_AND_TEXCOORDS
-	float Nx, Ny, Nz, LengthInv = 1.0f / Radius;    // vertex normal
-	float U, V;                                     // vertex texture coordinate
+	float X, Y, Z; // vertex position
+	const float RadiusInv = 1.0f / Radius;
+#ifdef WITH_TEXCOORDS
+	float U, V; // vertex texture coordinate
 #endif
 	float SectorAngle;
 	float StackAngle, StackRadius, StackHeight;
@@ -80,34 +101,28 @@ void AGX_MeshUtilities::MakeSphere(TArray<FAGX_SimpleMeshTriangle>& Triangles, f
 		{
 			SectorAngle = SectorIndex * SectorStep; // starting from 0 to 2pi
 
-			// vertex position (x, y, z)
 			X = StackRadius * FMath::Cos(SectorAngle);
 			Y = StackRadius * FMath::Sin(SectorAngle);
 			Z = StackHeight;
-			Vertices.Add(FVector(X, Y, Z));
 
-#ifdef WITH_NORMALS_AND_TEXCOORDS
-			// normalized vertex normal (nx, ny, nz)
-			Nx = X * LengthInv;
-			Ny = Y * LengthInv;
-			Nz = Z * LengthInv;
-			Normals.push_back(Nx);
-			Normals.push_back(Ny);
-			Normals.push_back(Nz);
+			Positions.Add(FVector(X, Y, Z));
+			
+			Normals.Add(FVector(
+				X * RadiusInv,
+				Y * RadiusInv,
+				Z * RadiusInv));
 
+#ifdef WITH_TEXCOORDS
 			// vertex tex coord (u, v) range between [0, 1]
 			U = (float)SectorIndex / SectorCount;
 			V = (float)StackIndex / StackCount;
-			TexCoords.push_back(U);
-			TexCoords.push_back(V);
+			TexCoords.Add(U);
+			TexCoords.Add(V);
 #endif
 		}
 	}
 
-#ifdef WITH_INDEX_BUFFER
-	// Generate CW index list of sphere triangles
-	std::vector<int> Indices;
-#endif
+	// Generate index list of sphere triangles
 	int K1, K2;
 	for (int StackIndex = 0; StackIndex < NumStacks; ++StackIndex)
 	{
@@ -120,35 +135,22 @@ void AGX_MeshUtilities::MakeSphere(TArray<FAGX_SimpleMeshTriangle>& Triangles, f
 			// K1 => K2 => K1+1
 			if (StackIndex != 0)
 			{
-#ifdef WITH_INDEX_BUFFER
-				Indices.push_back(K1);
-				Indices.push_back(K1 + 1);
-				Indices.push_back(K2);
-#else
-				FAGX_SimpleMeshTriangle Triangle;
-				Triangle.Vertex0 = Vertices[K1];
-				Triangle.Vertex1 = Vertices[K1 + 1];
-				Triangle.Vertex2 = Vertices[K2];
-				Triangles.Add(Triangle);
-#endif
+				Indices.Add(K1);
+				Indices.Add(K1 + 1);
+				Indices.Add(K2);
 			}
 
 			// K1+1 => K2 => K2+1
 			if (StackIndex != (NumStacks - 1))
 			{
-#ifdef WITH_INDEX_BUFFER
-				Indices.push_back(K1 + 1);
-				Indices.push_back(K2 + 1);
-				Indices.push_back(K2);
-#else
-
-				FAGX_SimpleMeshTriangle Triangle;
-				Triangle.Vertex0 = Vertices[K1 + 1];
-				Triangle.Vertex1 = Vertices[K2 + 1];
-				Triangle.Vertex2 = Vertices[K2];
-				Triangles.Add(Triangle);
-#endif
+				Indices.Add(K1 + 1);
+				Indices.Add(K2 + 1);
+				Indices.Add(K2);
 			}
 		}
 	}
+
+	check(Indices.Num() == NumIndices);
+	check(Positions.Num() == NumVertices);
+	check(Normals.Num() == NumVertices);
 }

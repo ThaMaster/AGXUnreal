@@ -3,56 +3,38 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Templates\SharedPointer.h"
 #include "UObject/ObjectMacros.h"
 #include "Components/MeshComponent.h"
 #include "AGX_SimpleMeshComponent.generated.h"
 
 class FPrimitiveSceneProxy;
 
-USTRUCT(BlueprintType)
-struct AGXUNREAL_API FAGX_SimpleMeshTriangle
+
+struct AGXUNREAL_API FAGX_SimpleMeshData
 {
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Triangle)
-	FVector Vertex0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Triangle)
-	FVector Vertex1;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Triangle)
-	FVector Vertex2;
-
-	FORCEINLINE const FVector& operator[](int32 Index) const
-	{
-		check(Index >= 0 && Index < 3);
-		switch (Index)
-		{
-		case 0: return Vertex0;
-		case 1: return Vertex1;
-		case 2: return Vertex2;
-		default: check(!"FAGX_SimpleMeshTriangle::operator[] invalid index parameter") return FVector::ZeroVector;
-		}
-	}
+	TArray<FVector> Vertices; // mandatory
+	TArray<FVector2D> TexCoords;
+	TArray<FVector> Normals; // mandatory
+	TArray<FVector> Tangents;
+	TArray<uint32> Indices;
 };
 
+
 /** Component that allows you to specify custom triangle mesh geometry */
-UCLASS(hidecategories=(Object,LOD, Physics, Collision), editinlinenew, meta=(BlueprintSpawnableComponent), ClassGroup=Rendering)
+UCLASS(hidecategories=(Object,LOD, Physics, Collision), NotPlaceable, editinlinenew, meta=(BlueprintSpawnableComponent), ClassGroup=Rendering)
 class AGXUNREAL_API UAGX_SimpleMeshComponent : public UMeshComponent
 {
 	GENERATED_UCLASS_BODY()
 
-	/** Set the geometry to use on this triangle mesh */
-	UFUNCTION(BlueprintCallable, Category="Components|CustomMesh")
-	bool SetMeshTriangles(const TArray<FAGX_SimpleMeshTriangle>& Triangles);
+	/**
+	 * Set the geometry to use on this triangle mesh.
+	 * Vertex positions and normals are mandatory!
+	 */
+	bool SetMeshData(const TSharedPtr<FAGX_SimpleMeshData>& Data);
 
-	/** Add to the geometry to use on this triangle mesh.  This may cause an allocation.  Use SetMeshTriangles() instead when possible to reduce allocations. */
-	UFUNCTION(BlueprintCallable, Category = "Components|CustomMesh")
-	void AddMeshTriangles(const TArray<FAGX_SimpleMeshTriangle>& Triangles);
-
-	/** Removes all geometry from this triangle mesh.  Does not deallocate memory, allowing new geometry to reuse the existing allocation. */
-	UFUNCTION(BlueprintCallable, Category = "Components|CustomMesh")
-	void ClearMeshTriangles();
+	/** Removes all geometry from this triangle mesh. */
+	void ClearMeshData();
 
 private:
 
@@ -67,9 +49,8 @@ private:
 	//~ Begin USceneComponent Interface.
 	virtual FBoxSphereBounds CalcBounds(const FTransform& LocalToWorld) const override;
 	//~ Begin USceneComponent Interface.
-
-	/** */
-	TArray<FAGX_SimpleMeshTriangle> MeshTris;
+	
+	TSharedPtr<FAGX_SimpleMeshData> MeshData;
 
 	friend class FAGX_SimpleMeshSceneProxy;
 };

@@ -57,9 +57,9 @@ void UAGX_SphereShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetRadius(Radius * GetComponentScale().X, GetWorld());
 }
 
-void UAGX_SphereShapeComponent::CreateVisualMesh(TArray<FAGX_SimpleMeshTriangle> &Triangles)
+void UAGX_SphereShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& MeshData)
 {
-	AGX_MeshUtilities::MakeSphere(Triangles, Radius, 32);
+	AGX_MeshUtilities::MakeSphere(MeshData.Vertices, MeshData.Normals, MeshData.Indices, Radius, 32);
 }
 
 #if WITH_EDITOR

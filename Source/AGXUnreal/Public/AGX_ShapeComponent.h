@@ -87,7 +87,7 @@ protected:
 	 * such that any inherited component transform (be aware of scale) that is
 	 * applied after results in a rendered mesh that is correctly placed.
 	 */
-	virtual void CreateVisualMesh(TArray<FAGX_SimpleMeshTriangle> &triangles) {}//PURE_VIRTUAL(UAGX_ShapeComponent::CreateVisualMesh, );
+	virtual void CreateVisualMesh(FAGX_SimpleMeshData& MeshData) {}//PURE_VIRTUAL(UAGX_ShapeComponent::CreateVisualMesh, );
 
 private:
 	// UAGX_ShapeComponent does not own the Barrier object because it cannot

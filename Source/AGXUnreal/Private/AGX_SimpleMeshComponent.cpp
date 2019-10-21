@@ -31,64 +31,121 @@ public:
 		, VertexFactory(GetScene().GetFeatureLevel(), "FAGX_SimpleMeshSceneProxy")
 		, MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel()))
 	{
+		check(Component->MeshData);
+
+		const FAGX_SimpleMeshData& MeshData = *Component->MeshData.Get();
+
+		const bool HasTexCoords = MeshData.TexCoords.Num() > 0;
+		const bool HasTangents = MeshData.Tangents.Num() > 0;
+		const bool HasIndexBuffer = MeshData.Indices.Num() > 0;
+
+		check(MeshData.Vertices.Num() >= 3);
+		check(MeshData.Normals.Num() == MeshData.Vertices.Num());
+		check(!HasTexCoords || (MeshData.TexCoords.Num() == MeshData.Vertices.Num()));
+		check(HasIndexBuffer || (MeshData.Vertices.Num() % 3 == 0));
+		check(!HasIndexBuffer || (MeshData.Indices.Num() % 3 == 0));
+		check(!HasIndexBuffer || (MeshData.Indices.Num() >= 3));
+
 		const FColor VertexColor(255,255,255);
-		const int32 NumTris = Component->MeshTris.Num();
-		const int32 NumVertices = NumTris * 3;
+		const int32 NumVertices(MeshData.Vertices.Num());
+		const int32 NumIndices((HasIndexBuffer ? MeshData.Indices.Num() : MeshData.Vertices.Num()));
+		const int32 NumTriangles = NumIndices / 3;
 		uint32 NumTexCoords = 1;
 		uint32 LightMapIndex = 0;
-
-		IndexBuffer.Indices.AddUninitialized(NumVertices);
-
+		
 		check(NumTexCoords < MAX_STATIC_TEXCOORDS && NumTexCoords > 0);
 		check(LightMapIndex < NumTexCoords);
 
-		if (NumTris)
+		VertexBuffers.PositionVertexBuffer.Init(NumVertices);
+		VertexBuffers.StaticMeshVertexBuffer.Init(NumVertices, NumTexCoords);
+		VertexBuffers.ColorVertexBuffer.Init(NumVertices);
+		IndexBuffer.Indices.AddUninitialized(NumIndices);
+
+		// Populate Vertex Buffer Resources
+		for (int32 VertexIndex = 0; VertexIndex < NumVertices; ++VertexIndex)
 		{
-			VertexBuffers.PositionVertexBuffer.Init(NumVertices);
-			VertexBuffers.StaticMeshVertexBuffer.Init(NumVertices, NumTexCoords);
-			VertexBuffers.ColorVertexBuffer.Init(NumVertices);
+			const FVector VertexPosition = MeshData.Vertices[VertexIndex];
+			const FVector2D VertexTexCoord = HasTexCoords ? MeshData.TexCoords[VertexIndex] : FVector2D::ZeroVector;
 
-			for (int32 TriIndex = 0; TriIndex < NumTris; ++TriIndex)
+			const FVector TangentX = HasTangents ? MeshData.Tangents[VertexIndex] : FVector::ZeroVector;
+			const FVector TangentZ = MeshData.Normals[VertexIndex];
+			const FVector TangentY = HasTangents ? (TangentZ ^ TangentX).GetSafeNormal() : FVector::ZeroVector;
+
+			VertexBuffers.PositionVertexBuffer.VertexPosition(VertexIndex) = VertexPosition;
+			VertexBuffers.ColorVertexBuffer.VertexColor(VertexIndex) = VertexColor;
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(VertexIndex, 0, VertexTexCoord);
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(VertexIndex, TangentX, TangentY, TangentZ);
+
+			// Populate Index Buffer Resource
+			if (!HasIndexBuffer)
 			{
-				FAGX_SimpleMeshTriangle& Tri = Component->MeshTris[TriIndex];
-
-				const FVector Edge01 = (Tri.Vertex1 - Tri.Vertex0);
-				const FVector Edge02 = (Tri.Vertex2 - Tri.Vertex0);
-
-				const FVector TangentX = Edge01.GetSafeNormal();
-				const FVector TangentZ = (Edge02 ^ Edge01).GetSafeNormal();
-				const FVector TangentY = (TangentX ^ TangentZ).GetSafeNormal();
-
-				for (int32 TriVertIndex = 0; TriVertIndex < 3; ++TriVertIndex)
-				{
-					uint32 VertexIndex = TriIndex * 3 + TriVertIndex;
-
-					VertexBuffers.PositionVertexBuffer.VertexPosition(VertexIndex) = Tri[TriVertIndex];
-					VertexBuffers.ColorVertexBuffer.VertexColor(VertexIndex) = VertexColor;
-					VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(VertexIndex, TangentX, TangentY, TangentZ);
-
-					for (uint32 TexCoordIndex = 0; TexCoordIndex < NumTexCoords; ++TexCoordIndex)
-					{
-						VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(VertexIndex, TexCoordIndex, FVector2D::ZeroVector);
-					}
-
-					IndexBuffer.Indices[VertexIndex] = VertexIndex;
-				}
+				IndexBuffer.Indices[VertexIndex] = VertexIndex;
 			}
 		}
-		else
+		
+		// Populate Index Buffer Resource
+		if (HasIndexBuffer)
 		{
-			VertexBuffers.PositionVertexBuffer.Init(1);
-			VertexBuffers.StaticMeshVertexBuffer.Init(1, 1);
-			VertexBuffers.ColorVertexBuffer.Init(1);
+			for (int32 Index = 0; Index < NumIndices; ++Index)
+			{
+				IndexBuffer.Indices[Index] = MeshData.Indices[Index];
+			}
+		}
 
-			VertexBuffers.PositionVertexBuffer.VertexPosition(0) = FVector::ZeroVector;
-			VertexBuffers.ColorVertexBuffer.VertexColor(0) = FColor(1, 1, 1, 1);
-			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(0, FVector::ForwardVector, FVector::RightVector, FVector::UpVector);
-			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(0, 0, FVector2D::ZeroVector);
+		// Generate Tangents and Binormals
+		if (!HasTangents)
+		{
+			for (int32 TriangleIndex = 0; TriangleIndex < NumTriangles; ++TriangleIndex)
+			{
+				// Compute Triangle Tangent.
 
-			NumTexCoords = 1;
-			LightMapIndex = 0;
+				const uint32 &VertexIndex0 = IndexBuffer.Indices[TriangleIndex * 3 + 0];
+				const uint32 &VertexIndex1 = IndexBuffer.Indices[TriangleIndex * 3 + 1];
+				const uint32 &VertexIndex2 = IndexBuffer.Indices[TriangleIndex * 3 + 2];
+
+				const FVector& Position0 = MeshData.Vertices[VertexIndex0];
+				const FVector& Position1 = MeshData.Vertices[VertexIndex1];
+				const FVector& Position2 = MeshData.Vertices[VertexIndex2];
+
+				const FVector P0toP1 = Position1 - Position0;
+				const FVector P0toP2 = Position2 - Position0;
+
+				FVector TriangleTangent;
+
+				if (HasTexCoords)
+				{
+					const FVector2D& TexCoord0 = MeshData.TexCoords[VertexIndex0];
+					const FVector2D& TexCoord1 = MeshData.TexCoords[VertexIndex1];
+					const FVector2D& TexCoord2 = MeshData.TexCoords[VertexIndex2];
+					
+					const float U0toU1 = TexCoord1.X - TexCoord0.X;
+					const float U0toU2 = TexCoord2.X - TexCoord0.X;
+
+					const float V0toV1 = TexCoord1.Y - TexCoord0.Y;
+					const float V0toV2 = TexCoord2.Y - TexCoord0.Y;
+
+					TriangleTangent = FVector(
+						V0toV2 * P0toP1.X - V0toV1 * P0toP2.X,
+						V0toV2 * P0toP1.Y - V0toV1 * P0toP2.Y,
+						V0toV2 * P0toP1.Z - V0toV1 * P0toP2.Z);
+				}
+				else
+				{
+					TriangleTangent = P0toP1;
+				}
+
+				// Compute Tangent and Binormal for each vertex of the triangle, so that
+				// potentially smoothed normals produces smooth Tangents and Binormals.
+				for (uint32 VertexIndexInTriangle = 0; VertexIndexInTriangle < 3; ++VertexIndexInTriangle)
+				{
+					const uint32& VertexIndex = IndexBuffer.Indices[TriangleIndex * 3 + VertexIndexInTriangle];
+					const FVector& VertexNormal = MeshData.Normals[VertexIndex];
+					const FVector VertexBinormal = (VertexNormal ^ TriangleTangent).GetSafeNormal();
+					const FVector VertexTangent = (VertexBinormal ^ VertexNormal).GetSafeNormal();
+
+					VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(VertexIndex, VertexTangent, VertexBinormal, VertexNormal);
+				}
+			}
 		}
 
 		// Enqueue initialization of render resource
@@ -230,9 +287,9 @@ UAGX_SimpleMeshComponent::UAGX_SimpleMeshComponent( const FObjectInitializer& Ob
 	SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
 }
 
-bool UAGX_SimpleMeshComponent::SetMeshTriangles(const TArray<FAGX_SimpleMeshTriangle>& Triangles)
+bool UAGX_SimpleMeshComponent::SetMeshData(const TSharedPtr<FAGX_SimpleMeshData> &Data)
 {
-	MeshTris = Triangles;
+	MeshData = Data;
 
 	// Need to recreate scene proxy to send it over
 	MarkRenderStateDirty();
@@ -241,18 +298,9 @@ bool UAGX_SimpleMeshComponent::SetMeshTriangles(const TArray<FAGX_SimpleMeshTria
 	return true;
 }
 
-void UAGX_SimpleMeshComponent::AddMeshTriangles(const TArray<FAGX_SimpleMeshTriangle>& Triangles)
+void  UAGX_SimpleMeshComponent::ClearMeshData()
 {
-	MeshTris.Append(Triangles);
-
-	// Need to recreate scene proxy to send it over
-	MarkRenderStateDirty();
-	UpdateBounds();
-}
-
-void  UAGX_SimpleMeshComponent::ClearMeshTriangles()
-{
-	MeshTris.Reset();
+	MeshData.Reset();
 
 	// Need to recreate scene proxy to send it over
 	MarkRenderStateDirty();
@@ -263,7 +311,7 @@ void  UAGX_SimpleMeshComponent::ClearMeshTriangles()
 FPrimitiveSceneProxy* UAGX_SimpleMeshComponent::CreateSceneProxy()
 {
 	FPrimitiveSceneProxy* Proxy = NULL;
-	if(MeshTris.Num() > 0)
+	if(MeshData && MeshData->Vertices.Num() > 0 /*&& MeshData->IsValid()*/)
 	{
 		Proxy = new FAGX_SimpleMeshSceneProxy(this);
 	}
@@ -281,11 +329,12 @@ FBoxSphereBounds UAGX_SimpleMeshComponent::CalcBounds(const FTransform& LocalToW
 	FBox BoundingBox(ForceInit);
 
 	// Bounds are tighter if the box is generated from pre-transformed vertices.
-	for (int32 Index = 0; Index < MeshTris.Num(); ++Index)
+	if (MeshData /*&& MeshData->IsValid()*/)
 	{
-		BoundingBox += LocalToWorld.TransformPosition(MeshTris[Index].Vertex0);
-		BoundingBox += LocalToWorld.TransformPosition(MeshTris[Index].Vertex1);
-		BoundingBox += LocalToWorld.TransformPosition(MeshTris[Index].Vertex2);
+		for (int32 Index = 0; Index < MeshData->Vertices.Num(); ++Index)
+		{
+			BoundingBox += LocalToWorld.TransformPosition(MeshData->Vertices[Index]);
+		}
 	}
 
 	FBoxSphereBounds NewBounds;

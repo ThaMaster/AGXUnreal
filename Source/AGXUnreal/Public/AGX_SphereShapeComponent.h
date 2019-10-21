@@ -28,7 +28,7 @@ public:
 
 protected:
 
-	void CreateVisualMesh(TArray<FAGX_SimpleMeshTriangle> &Triangles) override;
+	void CreateVisualMesh(FAGX_SimpleMeshData& MeshData) override;
 
 #if WITH_EDITOR
 	virtual bool DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const;
