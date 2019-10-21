@@ -61,7 +61,7 @@ public:
 
 	void PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent) override;
 
-	virtual void PostInitProperties() override; // When loaded in Editor or Game (how about spawned?)
+	virtual void PostLoad() override; // When loaded in Editor or Game
 
 #endif
 

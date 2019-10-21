@@ -19,7 +19,7 @@ bool UAGX_ShapeComponent::HasNative() const
 
 void UAGX_ShapeComponent::UpdateVisualMesh()
 {
-	UE_LOG(LogAGX, Log, TEXT("Updating visual mesh of %s (%s)"), *GetName(), *GetClass()->GetName());
+	UE_LOG(LogAGX, Log, TEXT("Updating visual mesh of %s (of actor %s)"), *GetName(), *GetNameSafe(GetOwner()));
 
 	ClearMeshData();
 
@@ -69,9 +69,9 @@ void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& Property
 	}
 }
 
-void UAGX_ShapeComponent::PostInitProperties()
+void UAGX_ShapeComponent::PostLoad()
 {
-	Super::PostInitProperties();
+	Super::PostLoad();
 
 	UpdateVisualMesh();
 }
