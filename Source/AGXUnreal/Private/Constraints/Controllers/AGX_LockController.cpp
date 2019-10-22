@@ -10,7 +10,7 @@ FAGX_ConstraintLockController::FAGX_ConstraintLockController(bool bRotational_)
 	Position(0.0),
 	Elasticity(ConstraintConstants::DefaultElasticity()),
 	Damping(ConstraintConstants::DefaultDamping()),
-	ForceRange({ ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax() }),
+	ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax()),
 	bRotational(bRotational_)
 {
 

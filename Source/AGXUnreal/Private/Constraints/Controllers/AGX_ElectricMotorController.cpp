@@ -10,7 +10,7 @@ FAGX_ConstraintElectricMotorController::FAGX_ConstraintElectricMotorController(b
 	Voltage(24.0),
 	ArmatureResistance(1.0),
 	TorqueConstant(1.0),
-	ForceRange({ ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax() }),
+	ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax()),
 	bRotational(bRotational_)
 {
 

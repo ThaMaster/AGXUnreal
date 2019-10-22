@@ -7,10 +7,10 @@
 FAGX_ConstraintRangeController::FAGX_ConstraintRangeController(bool bRotational_)
 	:
 	bEnable(false),
-	Range({ ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax() }),
+	Range(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax()),
 	Elasticity(ConstraintConstants::StrongElasticity()),
 	Damping(ConstraintConstants::DefaultDamping()),
-	ForceRange({ 0.0, ConstraintConstants::FloatRangeMax() }),
+	ForceRange(0.0f, ConstraintConstants::FloatRangeMax()),
 	bRotational(bRotational_)
 {
 

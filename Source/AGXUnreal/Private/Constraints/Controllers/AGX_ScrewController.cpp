@@ -10,7 +10,7 @@ FAGX_ConstraintScrewController::FAGX_ConstraintScrewController(bool bRotational_
 	Lead(0.0),
 	Elasticity(ConstraintConstants::DefaultElasticity()),
 	Damping(ConstraintConstants::DefaultDamping()),
-	ForceRange({ ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax() })
+	ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
 {
 
 }

@@ -11,7 +11,7 @@ FAGX_ConstraintFrictionController::FAGX_ConstraintFrictionController(bool bRotat
 	bEnableNonLinearDirectSolveUpdate(false),
 	Elasticity(ConstraintConstants::DefaultElasticity()),
 	Damping(ConstraintConstants::DefaultDamping()),
-	ForceRange({ ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax() }),
+	ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax()),
 	bRotational(bRotational_)
 {
 
