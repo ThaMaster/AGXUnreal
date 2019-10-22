@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Templates\SharedPointer.h"
+#include "Templates/SharedPointer.h"
 #include "UObject/ObjectMacros.h"
 #include "Components/MeshComponent.h"
 #include "AGX_SimpleMeshComponent.generated.h"
@@ -49,7 +49,7 @@ private:
 	//~ Begin USceneComponent Interface.
 	virtual FBoxSphereBounds CalcBounds(const FTransform& LocalToWorld) const override;
 	//~ Begin USceneComponent Interface.
-	
+
 	TSharedPtr<FAGX_SimpleMeshData> MeshData;
 
 	friend class FAGX_SimpleMeshSceneProxy;
