@@ -63,6 +63,8 @@ public:
 
 	virtual void PostLoad() override; // When loaded in Editor or Game
 
+	virtual void PostInitProperties() override;
+
 #endif
 
 protected:

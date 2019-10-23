@@ -76,6 +76,13 @@ void UAGX_ShapeComponent::PostLoad()
 	UpdateVisualMesh();
 }
 
+void UAGX_ShapeComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	UpdateVisualMesh();
+}
+
 #endif
 
 // Called when the game starts
