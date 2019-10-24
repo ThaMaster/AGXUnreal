@@ -10,7 +10,7 @@
 
 #include "AGX_Constraint.h"
 #include "AGX_ConstraintFrameActor.h"
-#include "AGX_EditorUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Constraints/AGX_Constraint.h"
 #include "Utilities/AGX_SlateUtilities.h"
 

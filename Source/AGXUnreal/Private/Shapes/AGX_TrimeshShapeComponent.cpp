@@ -1,7 +1,7 @@
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 
 #include "AGX_LogCategory.h"
-#include "AGX_MeshUtilities.h"
+#include "Utilities/AGX_MeshUtilities.h"
 
 
 UAGX_TrimeshShapeComponent::UAGX_TrimeshShapeComponent()

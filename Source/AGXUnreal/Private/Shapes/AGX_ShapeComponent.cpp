@@ -1,7 +1,7 @@
 #include "Shapes/AGX_ShapeComponent.h"
 
 #include "AGX_LogCategory.h"
-#include "AGX_StringUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 
 // Sets default values for this component's properties

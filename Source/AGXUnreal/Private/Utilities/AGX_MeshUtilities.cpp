@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AGX_MeshUtilities.h"
+#include "Utilities/AGX_MeshUtilities.h"
 
 #include "AGX_SimpleMeshComponent.h"
 #include "UnrealMathUtility.h"
