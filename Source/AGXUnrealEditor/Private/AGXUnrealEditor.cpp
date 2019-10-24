@@ -16,14 +16,16 @@
 #include "DesktopPlatformModule.h"
 
 #include "AGXArchiveReader.h"
-#include "AGX_Simulation.h"
-#include "AGX_LogCategory.h"
+#include "AGX_Constraint.h"
+#include "AGX_ConstraintBodyAttachment.h"
 #include "AGX_ConstraintBodyAttachmentCustomization.h"
-#include "Constraints/AGX_Constraint.h"
-
+#include "AGX_ConstraintCustomization.h"
+#include "AGX_LogCategory.h"
+#include "AGX_Simulation.h"
 #include "AGX_TopMenu.h"
-
+#include "Constraints/AGX_Constraint.h"
 #include "RigidBodyBarrier.h"
+
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -165,6 +167,10 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(
+		AAGX_Constraint::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_ConstraintCustomization::MakeInstance));
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -174,6 +180,9 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
+
+	PropertyModule.UnregisterCustomClassLayout(
+		AAGX_Constraint::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
