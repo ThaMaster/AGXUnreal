@@ -18,4 +18,6 @@ public:
 
 	static void MakeSphere(TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices, float Radius, uint32 NumSegments);
 
+	/** Creates a cylinder extending uniformly along the Y-Axis, centered at origin. */
+	static void MakeCylinder(TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices, float Radius, float Height, uint32 NumCircleSegments, uint32 NumHeightSegments);
 };
