@@ -1,4 +1,4 @@
-#include "CylinderShapeBarrier.h"
+#include "Shapes/CylinderShapeBarrier.h"
 
 #include "AGXRefs.h"
 

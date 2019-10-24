@@ -1,4 +1,4 @@
-#include "AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_SphereShapeComponent.h"
 
 #include "AGX_LogCategory.h"
 

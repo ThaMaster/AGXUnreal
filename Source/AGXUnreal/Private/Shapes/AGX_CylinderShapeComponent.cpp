@@ -1,4 +1,4 @@
-#include "AGX_CylinderShapeComponent.h"
+#include "Shapes/AGX_CylinderShapeComponent.h"
 
 #include "AGX_LogCategory.h"
 #include "AGX_MeshUtilities.h"

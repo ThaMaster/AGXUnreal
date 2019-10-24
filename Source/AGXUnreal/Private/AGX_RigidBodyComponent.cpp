@@ -1,5 +1,5 @@
 #include "AGX_RigidBodyComponent.h"
-#include "AGX_ShapeComponent.h"
+#include "Shapes/AGX_ShapeComponent.h"
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
 #include "AGXDynamicsMockup.h"

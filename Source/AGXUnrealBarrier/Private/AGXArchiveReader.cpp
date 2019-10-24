@@ -1,8 +1,8 @@
 #include "AGXArchiveReader.h"
 
 #include "RigidBodyBarrier.h"
-#include "BoxShapeBarrier.h"
-#include "SphereShapeBarrier.h"
+#include "Shapes/BoxShapeBarrier.h"
+#include "Shapes/SphereShapeBarrier.h"
 
 #include "AGXBarrierFactories.h"
 

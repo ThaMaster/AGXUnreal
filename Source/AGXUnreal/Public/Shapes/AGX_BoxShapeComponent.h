@@ -1,35 +1,33 @@
 #pragma once
 
-#include "AGX_ShapeComponent.h"
+#include "Shapes/AGX_ShapeComponent.h"
 #include "CoreMinimal.h"
 
-#include "CylinderShapeBarrier.h"
+#include "Shapes/BoxShapeBarrier.h"
 
-#include "AGX_CylinderShapeComponent.generated.h"
+#include "AGX_BoxShapeComponent.generated.h"
 
 /**
  *
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_CylinderShapeComponent : public UAGX_ShapeComponent
+class AGXUNREAL_API UAGX_BoxShapeComponent : public UAGX_ShapeComponent
 {
 	GENERATED_BODY()
 
 public:
-	UAGX_CylinderShapeComponent();
+	UAGX_BoxShapeComponent();
 
-	UPROPERTY(EditAnywhere, Category = "AGX Shape Component")
-	double Height;
-
-	UPROPERTY(EditAnywhere, Category = "AGX Shape Component")
-	double Radius;
+	/// The distance from the center of the box to it's surface along the three cardinal axes.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FVector HalfExtent;
 
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;
 	FShapeBarrier* GetOrCreateNative() override;
 
-	/// Get the native AGX Dynamics representation of this Cylinder. May return nullptr.
-	FCylinderShapeBarrier* GetNativeCylinder();
+	/// Get the native AGX Dynamics representation of this Box. May return nullptr.
+	FBoxShapeBarrier* GetNativeBox();
 
 	virtual void UpdateNativeProperties() override;
 	
@@ -42,7 +40,7 @@ protected:
 #endif
 
 private:
-	/// Create the AGX Dynamics objects owned by the FCylinderShapeBarrier.
+	/// Create the AGX Dynamics objects owned by the FBoxShapeBarrier.
 	void CreateNative();
 
 	// Tell the Barrier object to release its references to the AGX Dynamics objects.
@@ -51,5 +49,5 @@ private:
 	// BeginPlay/EndPlay is handled by the base class UAGX_ShapeComponent.
 
 private:
-	FCylinderShapeBarrier NativeBarrier;
+	FBoxShapeBarrier NativeBarrier;
 };

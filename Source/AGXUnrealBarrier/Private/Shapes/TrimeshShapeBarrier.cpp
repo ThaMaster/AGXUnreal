@@ -1,4 +1,4 @@
-#include "TrimeshShapeBarrier.h"
+#include "Shapes/TrimeshShapeBarrier.h"
 
 #include "AGXRefs.h"
 

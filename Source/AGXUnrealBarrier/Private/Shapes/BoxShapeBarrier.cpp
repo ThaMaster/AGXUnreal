@@ -1,4 +1,4 @@
-#include "BoxShapeBarrier.h"
+#include "Shapes/BoxShapeBarrier.h"
 
 #include "AGXRefs.h"
 #include "TypeConversions.h"

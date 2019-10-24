@@ -1,9 +1,9 @@
 #pragma once
 
-#include "AGX_ShapeComponent.h"
+#include "Shapes/AGX_ShapeComponent.h"
 #include "CoreMinimal.h"
 
-#include "TrimeshShapeBarrier.h"
+#include "Shapes/TrimeshShapeBarrier.h"
 
 #include "AGX_TrimeshShapeComponent.generated.h"
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "AGX_ShapeComponent.h"
+#include "Shapes/AGX_ShapeComponent.h"
 
 #include "CoreMinimal.h"
 
-#include "SphereShapeBarrier.h"
+#include "Shapes/SphereShapeBarrier.h"
 
 #include "AGX_SphereShapeComponent.generated.h"
 

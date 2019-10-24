@@ -1,4 +1,4 @@
-#include "AGX_TrimeshShapeComponent.h"
+#include "Shapes/AGX_TrimeshShapeComponent.h"
 
 #include "AGX_LogCategory.h"
 #include "AGX_MeshUtilities.h"
