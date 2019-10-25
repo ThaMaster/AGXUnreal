@@ -6,6 +6,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
+#include "Constraints/AGX_ConstraintComponent.h"
 
 #include "Constraints/ConstraintBarrier.h"
 
@@ -69,6 +70,10 @@ ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRange
 LockedDofs(LockedDofsOrdered),
 NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 {
+	ConstraintComponent = CreateDefaultSubobject<UAGX_ConstraintComponent>(
+		TEXT("ConstraintComponent"));
+
+	ConstraintComponent->SetFlags(ConstraintComponent->GetFlags() | RF_Transactional);
 }
 
 

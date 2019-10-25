@@ -78,6 +78,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintRangePropertyPerDof ForceRange;
 
+private:
+
+	UPROPERTY()
+	class UAGX_ConstraintComponent* ConstraintComponent;
+
 public:
 
 	AAGX_Constraint() { }

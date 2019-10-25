@@ -5,6 +5,7 @@
 #include "Modules/ModuleManager.h"
 #include "UnrealEd.h"
 
+class FComponentVisualizer;
 class FToolBarBuilder;
 class FMenuBuilder;
 
@@ -48,6 +49,13 @@ private:
 	 */
 	void UnregisterCustomizations();
 
+	void RegisterComponentVisualizers();
+
+	void UnregisterComponentVisualizers();
+
+	void RegisterComponentVisualizer(const FName& ComponentClassName, TSharedPtr<FComponentVisualizer> Visualizer);
+	
+	void UnregisterComponentVisualizer(const FName& ComponentClassName);
 
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;

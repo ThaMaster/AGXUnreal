@@ -105,6 +105,7 @@ FAGX_ConstraintBodyAttachmentCustomization::CustomizeHeader(
 			SNew(STextBlock)
 			.Text(this, &FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel)
 			.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
+			.ColorAndOpacity(FLinearColor(1.0f, 0.45f, 0, 1.0f))
 			.MinDesiredWidth(250)
 		];
 }
