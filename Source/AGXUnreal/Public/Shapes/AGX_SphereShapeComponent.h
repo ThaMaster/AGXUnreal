@@ -28,7 +28,7 @@ public:
 
 protected:
 
-	void CreateVisualMesh(FAGX_SimpleMeshData& MeshData) override;
+	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 
 #if WITH_EDITOR
 	virtual bool DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const;

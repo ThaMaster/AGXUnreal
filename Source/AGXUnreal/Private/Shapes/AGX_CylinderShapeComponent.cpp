@@ -65,12 +65,12 @@ void UAGX_CylinderShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetRadius(Radius * GetComponentScale().X, GetWorld());
 }
 
-void UAGX_CylinderShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& MeshData)
+void UAGX_CylinderShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 {
 	const uint32 NumCircleSegments = 32;
 	const uint32 NumHeightSegments = 1;
 
-	AGX_MeshUtilities::MakeCylinder(MeshData.Vertices, MeshData.Normals, MeshData.Indices, Radius, Height, NumCircleSegments, NumHeightSegments);
+	AGX_MeshUtilities::MakeCylinder(OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, Radius, Height, NumCircleSegments, NumHeightSegments);
 }
 
 #if WITH_EDITOR

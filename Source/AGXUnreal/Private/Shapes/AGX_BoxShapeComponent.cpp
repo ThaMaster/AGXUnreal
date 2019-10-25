@@ -63,9 +63,9 @@ void UAGX_BoxShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale(), GetWorld());
 }
 
-void UAGX_BoxShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& MeshData)
+void UAGX_BoxShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 {
-	AGX_MeshUtilities::MakeCube(MeshData.Vertices, MeshData.Normals, MeshData.Indices, HalfExtent);
+	AGX_MeshUtilities::MakeCube(OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, HalfExtent);
 }
 
 #if WITH_EDITOR

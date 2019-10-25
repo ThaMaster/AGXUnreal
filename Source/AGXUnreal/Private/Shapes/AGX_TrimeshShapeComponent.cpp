@@ -71,7 +71,7 @@ void UAGX_TrimeshShapeComponent::UpdateNativeProperties()
 }
 
 
-void UAGX_TrimeshShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& MeshData)
+void UAGX_TrimeshShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 {
 	// Visualized by the Static Mesh.. But maybe we should visualize the
 	// internal triangle data anyway, for debug purposes? Especially since
