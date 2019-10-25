@@ -16,14 +16,13 @@
 #include "DesktopPlatformModule.h"
 
 #include "AGXArchiveReader.h"
-#include "AGX_Constraint.h"
-#include "AGX_ConstraintBodyAttachment.h"
-#include "AGX_ConstraintBodyAttachmentCustomization.h"
-#include "AGX_ConstraintCustomization.h"
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "AGX_TopMenu.h"
 #include "Constraints/AGX_Constraint.h"
+#include "Constraints/AGX_ConstraintBodyAttachment.h"
+#include "Constraints/AGX_ConstraintBodyAttachmentCustomization.h"
+#include "Constraints/AGX_ConstraintCustomization.h"
 #include "RigidBodyBarrier.h"
 
 

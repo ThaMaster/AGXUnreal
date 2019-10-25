@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AGX_ConstraintBodyAttachmentCustomization.h"
+#include "Constraints/AGX_ConstraintBodyAttachmentCustomization.h"
+
 #include "DetailCategoryBuilder.h"
 #include "DetailWidgetRow.h"
 #include "DetailLayoutBuilder.h"
@@ -8,10 +9,9 @@
 #include "NotificationManager.h"
 #include "SNotificationList.h"
 
-#include "AGX_Constraint.h"
-#include "AGX_ConstraintFrameActor.h"
-#include "Utilities/AGX_EditorUtilities.h"
 #include "Constraints/AGX_Constraint.h"
+#include "Constraints/AGX_ConstraintFrameActor.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_SlateUtilities.h"
 
 
