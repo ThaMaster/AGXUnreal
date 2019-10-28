@@ -5,23 +5,25 @@
 
 #include "EngineUtils.h"
 
+#include "Constraints/AGX_ConstraintFrameComponent.h"
+
 
 AAGX_ConstraintFrameActor::AAGX_ConstraintFrameActor()
 {
 	// Create a root SceneComponent so that this Actor has a transform
 	// which can be modified in the Editor.
 	{
-		Root = CreateDefaultSubobject<USceneComponent>(
+		ConstraintFrameComponent = CreateDefaultSubobject<UAGX_ConstraintFrameComponent>(
 			USceneComponent::GetDefaultSceneRootVariableName());
 
-		Root->Mobility = EComponentMobility::Movable;
-		Root->SetFlags(Root->GetFlags() | RF_Transactional);
+		ConstraintFrameComponent->Mobility = EComponentMobility::Movable;
+		ConstraintFrameComponent->SetFlags(ConstraintFrameComponent->GetFlags() | RF_Transactional);
 
 #if WITH_EDITORONLY_DATA
-		Root->bVisualizeComponent = true;
+		ConstraintFrameComponent->bVisualizeComponent = true;
 #endif
 
-		SetRootComponent(Root);
+		SetRootComponent(ConstraintFrameComponent);
 	}
 }
 
@@ -37,4 +39,10 @@ void AAGX_ConstraintFrameActor::RemoveConstraintUsage(AAGX_Constraint* Constrain
 	// Only remove first occurance, because it is actually valid for a constraint
 	// to use the same Constraint Frame Actor twice.
 	UsedByConstraints.RemoveSingle(Constraint);
+}
+
+
+const TArray<class AAGX_Constraint*>& AAGX_ConstraintFrameActor::GetConstraintUsage() const
+{
+	return UsedByConstraints;
 }

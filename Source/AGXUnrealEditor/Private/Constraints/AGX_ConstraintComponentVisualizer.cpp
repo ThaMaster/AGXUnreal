@@ -12,10 +12,13 @@
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintComponentVisualizer"
 
 
-static const FColor	RigidBodyHighlightColor(243, 139, 0);
-static const float RigidBodyHighlightThickness(3.0f);
-static const float FrameGizmoScale(70.0f);
-static const float FrameGizmoThickness(5.0f);
+namespace
+{
+	const FColor RigidBodyHighlightColor(243, 139, 0);
+	const float RigidBodyHighlightThickness(3.0f);
+	const float FrameGizmoScale(70.0f);
+	const float FrameGizmoThickness(5.0f);
+}
 
 
 void FAGX_ConstraintComponentVisualizer::DrawVisualization(const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI)

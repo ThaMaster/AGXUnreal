@@ -25,6 +25,8 @@
 #include "Constraints/AGX_ConstraintCustomization.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintComponentVisualizer.h"
+#include "Constraints/AGX_ConstraintFrameComponent.h"
+#include "Constraints/AGX_ConstraintFrameComponentVisualizer.h"
 #include "RigidBodyBarrier.h"
 
 
@@ -193,11 +195,13 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 {
 	RegisterComponentVisualizer(UAGX_ConstraintComponent::StaticClass()->GetFName(), MakeShareable(new FAGX_ConstraintComponentVisualizer));
+	RegisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName(), MakeShareable(new FAGX_ConstraintFrameComponentVisualizer));
 }
 
 void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
 {
 	UnregisterComponentVisualizer(UAGX_ConstraintComponent::StaticClass()->GetFName());
+	UnregisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName());
 }
 
 void FAGXUnrealEditorModule::RegisterComponentVisualizer(const FName& ComponentClassName, TSharedPtr<FComponentVisualizer> Visualizer)
