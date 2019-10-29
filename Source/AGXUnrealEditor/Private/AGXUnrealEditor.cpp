@@ -63,7 +63,7 @@ void FAGXUnrealEditorModule::RegisterProjectSettings()
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
 		SettingsModule->RegisterSettings("Project", "Plugins", "UAGX_Simulation",
-			LOCTEXT("UAGX_Simulation_ProjectSettingsName", "AGX Physics"),
+			LOCTEXT("UAGX_Simulation_ProjectSettingsName", "AGX Dynamics"),
 			LOCTEXT(
 				"UAGX_Simulation_ProjectSettingsDesc", "Configure the simulation settings of the AGX Unreal plugin."),
 			GetMutableDefault<UAGX_Simulation>());
