@@ -5,23 +5,44 @@
 class AActor;
 class AAGX_Constraint;
 class AAGX_ConstraintFrameActor;
+class UAGX_RigidBodyComponent;
+class UAGX_SphereShapeComponent;
+class UAGX_BoxShapeComponent;
 class FText;
 class UClass;
 class UWorld;
+class USceneComponent;
 
 class FAGX_EditorUtilities
 {
 public:
+	/**
+	 * Create a new AGX Rigid Body Component as a child of the given Actor.
+	 */
+	static UAGX_RigidBodyComponent* CreateRigidBody(AActor* Owner);
+
+	/**
+	 * Create a new AGX Sphere Shape as child of the given Actor.
+	 */
+	static UAGX_SphereShapeComponent* CreateSphereShape(AActor* Owner, USceneComponent* Root);
+
+	/**
+	 * Create a new AGX Box Shape as child of the given Actor.
+	 * The shape will be attached to the RootComponent.
+	 */
+	static UAGX_BoxShapeComponent* CreateBoxShape(AActor* Owner, USceneComponent* Root);
 
 	/**
 	 * Create a new constraint of the specified type.
 	 */
-	static AAGX_Constraint* CreateConstraint(UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bSelect, bool bShowNotification, bool bInPlayingWorldIfAvailable);
+	static AAGX_Constraint* CreateConstraint(UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2,
+		bool bSelect, bool bShowNotification, bool bInPlayingWorldIfAvailable);
 
 	/**
-	 * Create a new AGX Constraint Frame Actor. Set as child to specified Rigid  Body, if available.
+	 * Create a new AGX Constraint Frame Actor. Set as child to specified Rigid Body, if available.
 	 */
-	static AAGX_ConstraintFrameActor* CreateConstraintFrameActor(AActor* ParentRigidBody, bool bSelect, bool bShowNotification, bool bInPlayingWorldIfAvailable);
+	static AAGX_ConstraintFrameActor* CreateConstraintFrameActor(
+		AActor* ParentRigidBody, bool bSelect, bool bShowNotification, bool bInPlayingWorldIfAvailable);
 
 	/**
 	 * Change current selection to the specific actor.
@@ -30,8 +51,8 @@ public:
 
 	/**
 	 * Display a temporary notification popup in the lower right corner of the Editor.
-	*/
-	static void ShowNotification(const FText &Text);
+	 */
+	static void ShowNotification(const FText& Text);
 
 	/**
 	 * Return the Editor world, i.e. not the one that is potentially currently playing.
