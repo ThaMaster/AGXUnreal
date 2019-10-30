@@ -3,6 +3,7 @@
 #include "RigidBodyBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
+#include "TypeConversions.h"
 
 #include "AGXBarrierFactories.h"
 
@@ -29,12 +30,6 @@ struct FAGXArchiveContents
 
 namespace
 {
-	agx::String Convert(const FString& FilenameUnreal)
-	{
-		agx::String FilenameAGX(TCHAR_TO_UTF8(*FilenameUnreal));
-		return FilenameAGX;
-	}
-
 	template <typename TCollection, typename TElement>
 	bool Contains(TCollection const& Collection, TElement const& Element)
 	{
