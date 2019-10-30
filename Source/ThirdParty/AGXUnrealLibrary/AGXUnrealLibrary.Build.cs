@@ -24,19 +24,19 @@ public class AGXUnrealLibrary : ModuleRules
 		bEnableExceptions = true;
 
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxPhysics"));
-        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxCable"));
-        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxCore"));
-        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxHydraulics"));
-        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxModel"));
-        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxPhysics"));
-        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxSabre"));
-        //PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxTerrain"));
-        PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxVehicle"));
+		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxCable"));
+		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxCore"));
+		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxHydraulics"));
+		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxModel"));
+		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxPhysics"));
+		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxSabre"));
+		//PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxTerrain"));
+		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxVehicle"));
 
-        // TODO: Do we need to list more libraries here, or will transitive
-        // dependencies be enough?.
+		// TODO: Do we need to list more libraries here, or will transitive
+		// dependencies be enough?.
 
-        RuntimeDependencies.Add(CurrentPlatform.RuntimeLibraryPath("agxPhysics"));
+		RuntimeDependencies.Add(CurrentPlatform.RuntimeLibraryPath("agxPhysics"));
 		// TODO: Do we need to list more libraries here, or will transitive
 		//       dependencies be enough?
 		// TODO: Do we need to add to RuntimeDependencies at all?
@@ -75,7 +75,6 @@ public class AGXUnrealLibrary : ModuleRules
 
 	private class PlatformInfo
 	{
-
 		public string LinkLibraryPostfix;
 		public string LinkLibraryPrefix;
 		public string RuntimeLibraryPrefix;
@@ -155,9 +154,14 @@ public class AGXUnrealLibrary : ModuleRules
 
 			if (Target.Configuration == UnrealTargetConfiguration.Debug)
 			{
-				string DebugSuffix = "d";
-				LinkLibraryPostfix = DebugSuffix + LinkLibraryPostfix;
-				RuntimeLibraryPostfix = DebugSuffix + RuntimeLibraryPostfix;
+				// Always building against the release AGX Dynamics on Linux for
+				// now. Only because it is difficult to switch between release
+				// and debug on Linux.
+				if (Target.Platform != UnrealTargetPlatform.Linux) {
+					string DebugSuffix = "d";
+					LinkLibraryPostfix = DebugSuffix + LinkLibraryPostfix;
+					RuntimeLibraryPostfix = DebugSuffix + RuntimeLibraryPostfix;
+				}
 			}
 		}
 	}
