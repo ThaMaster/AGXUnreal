@@ -10,9 +10,11 @@
 #include <Engine/World.h>
 #include <GameFramework/WorldSettings.h>
 
+#include "BeginAGXIncludes.h"
 #include <agx/Vec3.h>
 #include <agx/Quat.h>
 #include <agx/RigidBody.h>
+#include "EndAGXIncludes.h"
 
 #include "RigidBodyBarrier.h"
 
@@ -151,7 +153,7 @@ inline FString Convert(const agx::String& StringAGX)
 
 inline agx::String Convert(const FString& StringUnreal)
 {
-	return agx::String(TCHAR_TO_UTF8(StringUnreal.GetCharArray().GetData()));
+	return agx::String(TCHAR_TO_UTF8(*StringUnreal));
 }
 
 /**
