@@ -66,12 +66,27 @@ void FRigidBodyBarrier::SetMass(float MassUnreal)
 	NativeRef->Native->getMassProperties()->setMass(MassAGX);
 }
 
-float FRigidBodyBarrier::GetMass()
+float FRigidBodyBarrier::GetMass() const
 {
 	check(HasNative());
 	agx::Real MassAGX = NativeRef->Native->getMassProperties()->getMass();
 	float MassUnreal = Convert(MassAGX);
 	return MassUnreal;
+}
+
+void FRigidBodyBarrier::SetName(const FString& NameUnreal)
+{
+	check(HasNative());
+	agx::String NameAGX = Convert(NameUnreal);
+	NativeRef->Native->setName(NameAGX);
+}
+
+FString FRigidBodyBarrier::GetName() const
+{
+	check(HasNative());
+	agx::String NameAGX = NativeRef->Native->getName();
+	FString NameUnreal = Convert(NameAGX);
+	return NameUnreal;
 }
 
 void FRigidBodyBarrier::SetMotionControl(EAGX_MotionControl MotionControlUnreal)

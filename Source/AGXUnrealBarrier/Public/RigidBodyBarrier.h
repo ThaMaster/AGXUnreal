@@ -35,7 +35,10 @@ public:
 	FQuat GetRotation() const;
 
 	void SetMass(float NewMass);
-	float GetMass();
+	float GetMass() const;
+
+	void SetName(const FString& name);
+	FString GetName() const;
 
 	void SetMotionControl(EAGX_MotionControl MotionControl);
 	EAGX_MotionControl GetMotionControl() const;
