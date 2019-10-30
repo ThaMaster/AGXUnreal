@@ -14,7 +14,6 @@
 #include "DesktopPlatformModule.h"
 
 #include "AGXArchiveReader.h"
-#include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
 #include "AGX_ConstraintBodyAttachmentCustomization.h"
 #include "AGX_RigidBodyComponent.h"
@@ -22,10 +21,18 @@
 #include "AGX_BoxShapeComponent.h"
 #include "Constraints/AGX_Constraint.h"
 #include "AGX_EditorUtilities.h"
-
+#include "AGX_Simulation.h"
 #include "AGX_TopMenu.h"
-
+#include "Constraints/AGX_Constraint.h"
+#include "Constraints/AGX_ConstraintBodyAttachment.h"
+#include "Constraints/AGX_ConstraintBodyAttachmentCustomization.h"
+#include "Constraints/AGX_ConstraintCustomization.h"
+#include "Constraints/AGX_ConstraintComponent.h"
+#include "Constraints/AGX_ConstraintComponentVisualizer.h"
+#include "Constraints/AGX_ConstraintFrameComponent.h"
+#include "Constraints/AGX_ConstraintFrameComponentVisualizer.h"
 #include "RigidBodyBarrier.h"
+
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -34,6 +41,7 @@ void FAGXUnrealEditorModule::StartupModule()
 	RegisterProjectSettings();
 	RegisterCommands();
 	RegisterCustomizations();
+	RegisterComponentVisualizers();
 
 	AgxTopMenu = MakeShareable(new FAGX_TopMenu());
 }
@@ -43,6 +51,7 @@ void FAGXUnrealEditorModule::ShutdownModule()
 	UnregisterCommands();
 	UnregisterProjectSettings();
 	UnregisterCustomizations();
+	UnregisterComponentVisualizers();
 
 	AgxTopMenu = nullptr;
 }
@@ -57,7 +66,7 @@ void FAGXUnrealEditorModule::RegisterProjectSettings()
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
 		SettingsModule->RegisterSettings("Project", "Plugins", "UAGX_Simulation",
-			LOCTEXT("UAGX_Simulation_ProjectSettingsName", "AGX Physics"),
+			LOCTEXT("UAGX_Simulation_ProjectSettingsName", "AGX Dynamics"),
 			LOCTEXT(
 				"UAGX_Simulation_ProjectSettingsDesc", "Configure the simulation settings of the AGX Unreal plugin."),
 			GetMutableDefault<UAGX_Simulation>());
@@ -235,6 +244,10 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(
+		AAGX_Constraint::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_ConstraintCustomization::MakeInstance));
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -244,7 +257,43 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
 
+	PropertyModule.UnregisterCustomClassLayout(
+		AAGX_Constraint::StaticClass()->GetFName());
+
 	PropertyModule.NotifyCustomizationModuleChanged();
+}
+
+void FAGXUnrealEditorModule::RegisterComponentVisualizers()
+{
+	RegisterComponentVisualizer(UAGX_ConstraintComponent::StaticClass()->GetFName(), MakeShareable(new FAGX_ConstraintComponentVisualizer));
+	RegisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName(), MakeShareable(new FAGX_ConstraintFrameComponentVisualizer));
+}
+
+void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
+{
+	UnregisterComponentVisualizer(UAGX_ConstraintComponent::StaticClass()->GetFName());
+	UnregisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName());
+}
+
+void FAGXUnrealEditorModule::RegisterComponentVisualizer(const FName& ComponentClassName, TSharedPtr<FComponentVisualizer> Visualizer)
+{
+	if (GUnrealEd != nullptr)
+	{
+		GUnrealEd->RegisterComponentVisualizer(ComponentClassName, Visualizer);
+	}
+
+	if (Visualizer.IsValid())
+	{
+		Visualizer->OnRegister();
+	}
+}
+
+void FAGXUnrealEditorModule::UnregisterComponentVisualizer(const FName& ComponentClassName)
+{
+	if (GUnrealEd != nullptr)
+	{
+		GUnrealEd->UnregisterComponentVisualizer(ComponentClassName);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

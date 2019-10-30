@@ -1,4 +1,4 @@
-#include "SphereShapeBarrier.h"
+#include "Shapes/SphereShapeBarrier.h"
 
 #include "AGXRefs.h"
 #include "TypeConversions.h"

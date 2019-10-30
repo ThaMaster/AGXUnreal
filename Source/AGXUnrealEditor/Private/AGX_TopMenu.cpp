@@ -15,7 +15,7 @@
 #include "Constraints/AGX_PrismaticConstraint.h"
 
 #include "AGXUnrealEditor.h"
-#include "AGX_EditorUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TopMenu"
 

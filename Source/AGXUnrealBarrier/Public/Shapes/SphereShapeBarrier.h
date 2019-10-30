@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ShapeBarrier.h"
+#include "Shapes/ShapeBarrier.h"
 
 #include <memory>
 

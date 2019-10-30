@@ -3,7 +3,7 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "AGXUnreal",
-	"Description": "",
+	"Description": "Integration of AGX Dynamics, a professional multi-purpose physics engine for simulators, Virtual Reality (VR), engineering, large scale granular simulations and more. ",
 	"Category": "Physics",
 	"CreatedBy": "Algoryx Simulation",
 	"CreatedByURL": "www.algoryx.se",

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "AGX_ShapeComponent.h"
+#include "Shapes/AGX_ShapeComponent.h"
 
 #include "CoreMinimal.h"
 
-#include "SphereShapeBarrier.h"
+#include "Shapes/SphereShapeBarrier.h"
 
 #include "AGX_SphereShapeComponent.generated.h"
 
@@ -28,7 +28,7 @@ public:
 
 protected:
 
-	void CreateVisualMesh(FAGX_SimpleMeshData& MeshData) override;
+	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 
 #if WITH_EDITOR
 	virtual bool DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const;

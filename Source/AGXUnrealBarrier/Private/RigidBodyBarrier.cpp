@@ -1,5 +1,5 @@
 #include "RigidBodyBarrier.h"
-#include "ShapeBarrier.h"
+#include "Shapes/ShapeBarrier.h"
 
 #include "AGXRefs.h"
 #include "TypeConversions.h"

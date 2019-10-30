@@ -32,10 +32,10 @@ public:
 	/** Indicates whether this actor should participate in level bounds calculations. */
 	bool IsLevelBoundsRelevant() const override { return false; }
 
-	UPROPERTY(VisibleDefaultsOnly, Meta = (Category = "AGX"))
-	USceneComponent* Root;
-
 private:
+
+	UPROPERTY()
+	class UAGX_ConstraintFrameComponent* ConstraintFrameComponent;
 
 	/**
 	 * The constraint(s) that are referencing this frame.
@@ -50,5 +50,7 @@ public:
 	void AddConstraintUsage(AAGX_Constraint* Constraint);
 
 	void RemoveConstraintUsage(AAGX_Constraint* Constraint);
+
+	const TArray<class AAGX_Constraint*>& GetConstraintUsage() const;
 
 };
