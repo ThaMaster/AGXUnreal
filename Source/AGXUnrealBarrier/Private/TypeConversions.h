@@ -144,6 +144,16 @@ inline EAGX_MotionControl Convert(agx::RigidBody::MotionControl V)
 	return MC_KINEMATICS;
 }
 
+inline FString Convert(const agx::String& StringAGX)
+{
+	return FString(UTF8_TO_TCHAR(StringAGX.c_str()));
+}
+
+inline agx::String Convert(const FString& StringUnreal)
+{
+	return agx::String(TCHAR_TO_UTF8(StringUnreal.GetCharArray().GetData()));
+}
+
 /**
  * Given a Barrier, returns the final AGX native object.
  */
