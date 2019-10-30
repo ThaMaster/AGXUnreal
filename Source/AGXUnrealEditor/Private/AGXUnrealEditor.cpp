@@ -10,23 +10,24 @@
 #include "LevelEditor.h"
 #include "PropertyEditorModule.h"
 
-// These includes are for what the buttom actually does.
 #include "Engine/StaticMeshActor.h"
-#include "Misc/MessageDialog.h"
 #include "DesktopPlatformModule.h"
 
 #include "AGXArchiveReader.h"
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
 #include "AGX_ConstraintBodyAttachmentCustomization.h"
+#include "AGX_RigidBodyComponent.h"
+#include "AGX_SphereShapeComponent.h"
+#include "AGX_BoxShapeComponent.h"
 #include "Constraints/AGX_Constraint.h"
+#include "AGX_EditorUtilities.h"
 
 #include "AGX_TopMenu.h"
 
 #include "RigidBodyBarrier.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
-
 
 void FAGXUnrealEditorModule::StartupModule()
 {
@@ -104,20 +105,12 @@ void FAGXUnrealEditorModule::UnregisterCommands()
 /// \todo Move Unreal Editor object creation from .agx to a dedicated class.
 void FAGXUnrealEditorModule::PluginButtonClicked()
 {
-	FText DialogText = FText::Format(LOCTEXT("PluginButtonDialogText", "This is my new message: {0}."), FText::FromString(TEXT("MESSAGE")));
-	FMessageDialog::Open(EAppMsgType::Ok, DialogText);
-
+	/// \todo See
+	/// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html?sort=oldest
+	/// for a discussion on window handles.
 	TArray<FString> Filenames;
-	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog
-	(
-		nullptr, //const void * ParentWindowHandle,          /// \todo See https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html?sort=oldest
-		TEXT("DialogTitle"), //const FString & DialogTitle,  ///       for a discussion
-		TEXT("DefaultPath"), //const FString & DefaultPath,  ///       on window handles.
-		TEXT("DefaultFile"), //const FString & DefaultFile,
-		TEXT("AGX Dynamics Archive|*.agx"), //const FString & FileTypes,
-		EFileDialogFlags::None,
-		Filenames //TArray< FString > & OutFilenames
-	);
+	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(nullptr, TEXT("DialogTitle"), TEXT("DefaultPath"),
+		TEXT("DefaultFile"), TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None, Filenames);
 
 	if (!FileSelected || Filenames.Num() == 0)
 	{
@@ -128,22 +121,99 @@ void FAGXUnrealEditorModule::PluginButtonClicked()
 	if (Filenames.Num() > 1)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Multiple file selected but we only support single files for now. Doing nothing"));
+		FAGX_EditorUtilities::ShowNotification(
+			LOCTEXT("Multiple .agx", "Multiple file selected but we only support single files for now. Doing nothing"));
 		return;
 	}
 
-	UWorld* World = GEditor->GetEditorWorldContext().World();
-	const FString& Filename = Filenames[0];
-	FAGXArchiveReader Archive(Filename);
+	UClass* ActorClass = AActor::StaticClass();
+	FName RootName = USceneComponent::GetDefaultSceneRootVariableName();
+	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
+	check(World);
+
+	FAGXArchiveReader Archive(Filenames[0]);
+	/// \todo Proper error handling.
+	if (Archive.GetBoxBodies().Num() == 0 && Archive.GetSphereBodies().Num() == 0)
+	{
+		FAGX_EditorUtilities::ShowNotification(
+			LOCTEXT("No bodies", "No bodies found in .agx archive. Perhaps read failure."));
+		return;
+	}
 	for (auto& BoxBody : Archive.GetBoxBodies())
 	{
-		/// \todo This is where the Unread Editor objects should be created.
-		UE_LOG(LogTemp, Log, TEXT("Loaded AGX box body at %f."), BoxBody.Body->GetPosition(World).X);
+		UE_LOG(LogTemp, Log, TEXT("Loaded AGX box body with name %s at %f."), *BoxBody.Body->GetName(),
+			BoxBody.Body->GetPosition(World).X);
+
+		const FRigidBodyBarrier* Body = BoxBody.Body;
+		const FBoxShapeBarrier* Box = BoxBody.Box;
+
+		/// \todo Consider using the state synchronization functions we already
+		/// have, the ones used between time steps.
+
+		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
+		AActor* NewActor = World->SpawnActor<AActor>(ActorClass, Transform);
+		if (NewActor == nullptr)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s."), *Body->GetName());
+			continue;
+		}
+		NewActor->SetActorLabel(Body->GetName());
+
+		/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
+		/// Related to undo/redo, I think.
+		USceneComponent* Root = NewObject<USceneComponent>(NewActor, RootName /*, RF_Transactional*/);
+		NewActor->SetRootComponent(Root);
+		NewActor->AddInstanceComponent(Root);
+		Root->RegisterComponent();
+
+		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
+		if (NewBody == nullptr)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Could not create AGX RigidBody for %s."), *Body->GetName());
+			continue;
+		}
+		NewBody->Rename(TEXT("UAGX_RigidBody"));
+		NewBody->Mass = Body->GetMass();
+		NewBody->MotionControl = Body->GetMotionControl();
+
+		UAGX_BoxShapeComponent* NewBox = FAGX_EditorUtilities::CreateBoxShape(NewActor, Root);
+		NewBox->HalfExtent = Box->GetHalfExtents(World);
 	}
 
 	for (auto& SphereBody : Archive.GetSphereBodies())
 	{
-		/// \todo This is where the Unreal Editor objects should be created.
-		UE_LOG(LogTemp, Log, TEXT("Loaded AGX sphere body at %f."), SphereBody.Body->GetPosition(World).X);
+		UE_LOG(LogTemp, Log, TEXT("Loaded AGX sphere body with name %s at %f."), *SphereBody.Body->GetName(),
+			SphereBody.Body->GetPosition(World).X);
+
+		const FRigidBodyBarrier* Body = SphereBody.Body;
+		const FSphereShapeBarrier* Sphere = SphereBody.Sphere;
+
+		/// \todo Consider using the state synchronization functions we already
+		/// have, the ones used between time steps.
+
+		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
+		AActor* NewActor = World->SpawnActor<AActor>(ActorClass, Transform);
+		if (NewActor == nullptr)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s'."), *Body->GetName());
+			continue;
+		}
+		NewActor->SetActorLabel(Body->GetName());
+
+		/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
+		/// Related to undo/redo, I think.
+		USceneComponent* Root = NewObject<USceneComponent>(NewActor, RootName /*, RF_Transactional*/);
+		NewActor->SetRootComponent(Root);
+		NewActor->AddInstanceComponent(Root);
+		Root->RegisterComponent();
+
+		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
+		NewBody->Rename(TEXT("AGX_RigidBody"));
+		NewBody->Mass = Body->GetMass();
+		NewBody->MotionControl = Body->GetMotionControl();
+
+		UAGX_SphereShapeComponent* NewSphere = FAGX_EditorUtilities::CreateSphereShape(NewActor, Root);
+		NewSphere->Radius = Sphere->GetRadius(World);
 	}
 }
 
@@ -161,9 +231,9 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 {
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
-	PropertyModule.RegisterCustomPropertyTypeLayout(
-		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName(),
-		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
+	PropertyModule.RegisterCustomPropertyTypeLayout(FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
+			&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
@@ -172,8 +242,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 {
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
+	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
