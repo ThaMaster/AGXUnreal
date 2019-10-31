@@ -105,7 +105,9 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 	}
 
 	/// \todo Consider placing the ImportedRoot at the center of the imported bodies.
-	AActor* ImportRoot = World->SpawnActor<AActor>(AActor::StaticClass(), FTransform::Identity);
+	AActor* ImportRoot;
+	USceneComponent* Root;
+	std::tie(ImportRoot, Root) = ::SpawnEmptyActor(FTransform::Identity, World); // World->SpawnActor<AActor>(AActor::StaticClass(), FTransform::Identity);
 
 	for (auto& BoxBody : Archive.GetBoxBodies())
 	{
