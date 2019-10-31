@@ -119,6 +119,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			::InstantiateBody(BoxBody.Body, World, [&BoxBody, World](AActor* NewActor, USceneComponent* Root) {
 				UAGX_BoxShapeComponent* NewBox = FAGX_EditorUtilities::CreateBoxShape(NewActor, Root);
 				NewBox->HalfExtent = BoxBody.Box->GetHalfExtents(World);
+				NewBox->UpdateVisualMesh();
 			});
 
 		NewActor->AttachToActor(ImportRoot, FAttachmentTransformRules::KeepWorldTransform);
@@ -131,6 +132,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 				const FSphereShapeBarrier* Sphere = SphereBody.Sphere;
 				UAGX_SphereShapeComponent* NewSphere = FAGX_EditorUtilities::CreateSphereShape(NewActor, Root);
 				NewSphere->Radius = Sphere->GetRadius(World);
+				NewSphere->UpdateVisualMesh();
 			});
 
 		NewActor->AttachToActor(ImportRoot, FAttachmentTransformRules::KeepWorldTransform);
