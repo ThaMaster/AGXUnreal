@@ -17,6 +17,7 @@
 #include "EndAGXIncludes.h"
 
 #include "RigidBodyBarrier.h"
+#include "AGXRefs.h"
 
 
 /// \note These functions assume that agx::Real and float are different types.
@@ -91,6 +92,11 @@ inline FVector Convert(agx::Vec3 V)
 
 inline FVector ConvertDistance(const agx::Vec3 &V, const UWorld* World)
 {
+	return FVector(ConvertDistance(V.x(), World), ConvertDistance(V.y(), World), ConvertDistance(V.z(), World));
+}
+
+inline FVector ConvertVector(const agx::Vec3& V, const UWorld* World)
+{
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return FVector(ConvertDistance(V.x(), World), -ConvertDistance(V.y(), World), ConvertDistance(V.z(), World));
 }
@@ -101,6 +107,11 @@ inline agx::Vec3 Convert(const FVector &V)
 }
 
 inline agx::Vec3 ConvertDistance(const FVector &V, const UWorld* World)
+{
+	return agx::Vec3(ConvertDistance(V.X, World), ConvertDistance(V.Y, World), ConvertDistance(V.Z, World));
+}
+
+inline agx::Vec3 ConvertVector(const FVector& V, const UWorld* World)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3(ConvertDistance(V.X, World), -ConvertDistance(V.Y, World), ConvertDistance(V.Z, World));
@@ -173,7 +184,7 @@ inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& Fra
 	return new agx::Frame(
 		agx::AffineMatrix4x4(
 			Convert(FrameRotation),
-			ConvertDistance(FramePosition, World)));
+			ConvertVector(FramePosition, World)));
 }
 
 /// \todo Consider moving this to the .cpp file.
