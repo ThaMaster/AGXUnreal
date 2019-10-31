@@ -50,8 +50,6 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 
 		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
 		AActor* NewActor = World->SpawnActor<AActor>(ActorClass, Transform);
-		FVector Pos = Body->GetPosition(World);
-		UE_LOG(LogTemp, Log, TEXT("Created Actor at %f, %f, %f."), Pos.X, Pos.Y, Pos.Z);
 		if (NewActor == nullptr)
 		{
 			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s."), *Body->GetName());
@@ -65,6 +63,12 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		NewActor->SetRootComponent(Root);
 		NewActor->AddInstanceComponent(Root);
 		Root->RegisterComponent();
+
+		/// \todo For some reason the actor location must be set again after
+		/// creating the root SceneComponent, or else the Actor remain at the
+		/// origin. I'm assuming we must set rotation as well, but haven't
+		/// tested yet.
+		NewActor->SetActorLocation(Body->GetPosition(World));
 
 		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
 		if (NewBody == nullptr)
@@ -106,6 +110,12 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		NewActor->SetRootComponent(Root);
 		NewActor->AddInstanceComponent(Root);
 		Root->RegisterComponent();
+
+		/// \todo For some reason the actor location must be set again after
+		/// creating the root SceneComponent, or else the Actor remain at the
+		/// origin. I'm assuming we must set rotation as well, but haven't
+		/// tested yet.
+		NewActor->SetActorLocation(Body->GetPosition(World));
 
 		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
 		NewBody->Rename(TEXT("AGX_RigidBody"));
