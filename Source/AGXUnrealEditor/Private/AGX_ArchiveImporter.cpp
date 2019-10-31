@@ -18,24 +18,15 @@
 
 namespace
 {
-	template <typename TShapeFactory>
-	AActor* InstantiateBody(const FRigidBodyBarrier* Body, UWorld* World, TShapeFactory ShapeFactory)
+	/// \todo Investigate if we can use ActorFactoryEmptyActor here.
+	std::tuple<AActor*, USceneComponent*> SpawnEmptyActor(const FTransform& Transform, UWorld* World)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Loaded AGX sphere body with name '%s'."), *Body->GetName());
-
-		/// \todo Consider using the state synchronization functions we already
-		/// have, the ones used between time steps.
-
-		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
 		AActor* NewActor = World->SpawnActor<AActor>(AActor::StaticClass(), Transform);
 		if (NewActor == nullptr)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s'."), *Body->GetName());
 			/// \todo Do we need to destroy the Actor here?
-			return nullptr;
+			return {nullptr, nullptr};
 		}
-
-		NewActor->SetActorLabel(Body->GetName());
 
 		/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
 		/// Related to undo/redo, I think.
@@ -44,6 +35,34 @@ namespace
 		NewActor->SetRootComponent(Root);
 		NewActor->AddInstanceComponent(Root);
 		Root->RegisterComponent();
+
+		return {NewActor, Root};
+	}
+
+	template <typename TShapeFactory>
+	AActor* InstantiateBody(const FRigidBodyBarrier* Body, UWorld* World, TShapeFactory ShapeFactory)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Loaded AGX sphere body with name '%s'."), *Body->GetName());
+
+		/// \todo Consider using the state synchronization functions we already
+		/// have, the ones used between time steps.
+
+		AActor* NewActor;
+		USceneComponent* Root;
+		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
+		std::tie(NewActor, Root) = SpawnEmptyActor(Transform, World);
+		if (NewActor == nullptr)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s'."), *Body->GetName());
+			return nullptr;
+		}
+		if (Root == nullptr)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Could not create SceneComponent for body '%s'."), *Body->GetName());
+			return nullptr;
+		}
+
+		NewActor->SetActorLabel(Body->GetName());
 
 		/// \todo For some reason the actor location must be set again after
 		/// creating the root SceneComponent, or else the Actor remain at the
@@ -95,7 +114,8 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 				UAGX_BoxShapeComponent* NewBox = FAGX_EditorUtilities::CreateBoxShape(NewActor, Root);
 				NewBox->HalfExtent = BoxBody.Box->GetHalfExtents(World);
 			});
-		/// \todo Add NewActor to ImportRoot;
+
+		NewActor->AttachToActor(ImportRoot, FAttachmentTransformRules::KeepWorldTransform);
 	}
 
 	for (auto& SphereBody : Archive.GetSphereBodies())
@@ -107,7 +127,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 				NewSphere->Radius = Sphere->GetRadius(World);
 			});
 
-		/// \todo Add NewActor to ImportRoot;
+		NewActor->AttachToActor(ImportRoot, FAttachmentTransformRules::KeepWorldTransform);
 	}
 
 	return ImportRoot;
