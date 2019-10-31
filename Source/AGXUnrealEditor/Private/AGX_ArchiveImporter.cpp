@@ -16,10 +16,61 @@
 
 #include <iostream>
 
+namespace
+{
+	template <typename TShapeFactory>
+	AActor* InstantiateBody(const FRigidBodyBarrier* Body, UWorld* World, TShapeFactory ShapeFactory)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Loaded AGX sphere body with name '%s'."), *Body->GetName());
+
+		/// \todo Consider using the state synchronization functions we already
+		/// have, the ones used between time steps.
+
+		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
+		AActor* NewActor = World->SpawnActor<AActor>(AActor::StaticClass(), Transform);
+		if (NewActor == nullptr)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s'."), *Body->GetName());
+			/// \todo Do we need to destroy the Actor here?
+			return nullptr;
+		}
+
+		NewActor->SetActorLabel(Body->GetName());
+
+		/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
+		/// Related to undo/redo, I think.
+		USceneComponent* Root = NewObject<USceneComponent>(
+			NewActor, USceneComponent::GetDefaultSceneRootVariableName() /*, RF_Transactional*/);
+		NewActor->SetRootComponent(Root);
+		NewActor->AddInstanceComponent(Root);
+		Root->RegisterComponent();
+
+		/// \todo For some reason the actor location must be set again after
+		/// creating the root SceneComponent, or else the Actor remain at the
+		/// origin. I'm assuming we must set rotation as well, but haven't
+		/// tested yet.
+		NewActor->SetActorLocation(Body->GetPosition(World));
+
+		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
+		if (NewBody == nullptr)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Could not create AGX RigidBodyComponent for body '%s'."), *Body->GetName());
+			/// \todo Do we need to destroy the Actor and the RigidBodyComopnent here?
+			return nullptr;
+		}
+
+		NewBody->Rename(TEXT("AGX_RigidBodyComponent"));
+		NewBody->Mass = Body->GetMass();
+		NewBody->MotionControl = Body->GetMotionControl();
+
+		ShapeFactory(NewActor, Root);
+
+		return NewActor;
+	}
+}
+
 AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 {
-	UClass* ActorClass = AActor::StaticClass();
-	FName RootName = USceneComponent::GetDefaultSceneRootVariableName();
 	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
 	check(World);
 
@@ -35,95 +86,28 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 	}
 
 	/// \todo Consider placing the ImportedRoot at the center of the imported bodies.
-	AActor* ImportRoot = World->SpawnActor<AActor>(ActorClass, FTransform::Identity);
+	AActor* ImportRoot = World->SpawnActor<AActor>(AActor::StaticClass(), FTransform::Identity);
 
 	for (auto& BoxBody : Archive.GetBoxBodies())
 	{
-		UE_LOG(LogTemp, Log, TEXT("Loaded AGX box body with name %s at %f."), *BoxBody.Body->GetName(),
-			BoxBody.Body->GetPosition(World).X);
-
-		const FRigidBodyBarrier* Body = BoxBody.Body;
-		const FBoxShapeBarrier* Box = BoxBody.Box;
-
-		/// \todo Consider using the state synchronization functions we already
-		/// have, the ones used between time steps.
-
-		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
-		AActor* NewActor = World->SpawnActor<AActor>(ActorClass, Transform);
-		if (NewActor == nullptr)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s."), *Body->GetName());
-			continue;
-		}
-		NewActor->SetActorLabel(Body->GetName());
-
-		/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
-		/// Related to undo/redo, I think.
-		USceneComponent* Root = NewObject<USceneComponent>(NewActor, RootName /*, RF_Transactional*/);
-		NewActor->SetRootComponent(Root);
-		NewActor->AddInstanceComponent(Root);
-		Root->RegisterComponent();
-
-		/// \todo For some reason the actor location must be set again after
-		/// creating the root SceneComponent, or else the Actor remain at the
-		/// origin. I'm assuming we must set rotation as well, but haven't
-		/// tested yet.
-		NewActor->SetActorLocation(Body->GetPosition(World));
-
-		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
-		if (NewBody == nullptr)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Could not create AGX RigidBody for %s."), *Body->GetName());
-			continue;
-		}
-		NewBody->Rename(TEXT("UAGX_RigidBody"));
-		NewBody->Mass = Body->GetMass();
-		NewBody->MotionControl = Body->GetMotionControl();
-
-		UAGX_BoxShapeComponent* NewBox = FAGX_EditorUtilities::CreateBoxShape(NewActor, Root);
-		NewBox->HalfExtent = Box->GetHalfExtents(World);
+		AActor* NewActor =
+			::InstantiateBody(BoxBody.Body, World, [&BoxBody, World](AActor* NewActor, USceneComponent* Root) {
+				UAGX_BoxShapeComponent* NewBox = FAGX_EditorUtilities::CreateBoxShape(NewActor, Root);
+				NewBox->HalfExtent = BoxBody.Box->GetHalfExtents(World);
+			});
+		/// \todo Add NewActor to ImportRoot;
 	}
 
 	for (auto& SphereBody : Archive.GetSphereBodies())
 	{
-		UE_LOG(LogTemp, Log, TEXT("Loaded AGX sphere body with name %s at %f."), *SphereBody.Body->GetName(),
-			SphereBody.Body->GetPosition(World).X);
+		AActor* NewActor =
+			::InstantiateBody(SphereBody.Body, World, [&SphereBody, World](AActor* NewActor, USceneComponent* Root) {
+				const FSphereShapeBarrier* Sphere = SphereBody.Sphere;
+				UAGX_SphereShapeComponent* NewSphere = FAGX_EditorUtilities::CreateSphereShape(NewActor, Root);
+				NewSphere->Radius = Sphere->GetRadius(World);
+			});
 
-		const FRigidBodyBarrier* Body = SphereBody.Body;
-		const FSphereShapeBarrier* Sphere = SphereBody.Sphere;
-
-		/// \todo Consider using the state synchronization functions we already
-		/// have, the ones used between time steps.
-
-		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
-		AActor* NewActor = World->SpawnActor<AActor>(ActorClass, Transform);
-		if (NewActor == nullptr)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s'."), *Body->GetName());
-			continue;
-		}
-		NewActor->SetActorLabel(Body->GetName());
-
-		/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
-		/// Related to undo/redo, I think.
-		USceneComponent* Root = NewObject<USceneComponent>(NewActor, RootName /*, RF_Transactional*/);
-		NewActor->SetRootComponent(Root);
-		NewActor->AddInstanceComponent(Root);
-		Root->RegisterComponent();
-
-		/// \todo For some reason the actor location must be set again after
-		/// creating the root SceneComponent, or else the Actor remain at the
-		/// origin. I'm assuming we must set rotation as well, but haven't
-		/// tested yet.
-		NewActor->SetActorLocation(Body->GetPosition(World));
-
-		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
-		NewBody->Rename(TEXT("AGX_RigidBody"));
-		NewBody->Mass = Body->GetMass();
-		NewBody->MotionControl = Body->GetMotionControl();
-
-		UAGX_SphereShapeComponent* NewSphere = FAGX_EditorUtilities::CreateSphereShape(NewActor, Root);
-		NewSphere->Radius = Sphere->GetRadius(World);
+		/// \todo Add NewActor to ImportRoot;
 	}
 
 	return ImportRoot;
