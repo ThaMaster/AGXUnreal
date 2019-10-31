@@ -118,3 +118,5 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 
 	return ImportRoot;
 }
+
+#undef LOCTEXT_NAMESPACE
