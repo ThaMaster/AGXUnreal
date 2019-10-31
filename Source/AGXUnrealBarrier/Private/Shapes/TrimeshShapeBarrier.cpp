@@ -78,7 +78,7 @@ void FTrimeshShapeBarrier::AllocateNativeShape()
 
 	std::shared_ptr<AllocationParameters> Params = TemporaryAllocationParameters.lock();
 	check(Params != nullptr);
-	
+
 	// Transfer to native buffers.
 
 	agx::Vec3Vector NativeVertices;
@@ -86,7 +86,7 @@ void FTrimeshShapeBarrier::AllocateNativeShape()
 
 	for (const FVector& Vertex : *Params->Vertices)
 	{
-		NativeVertices.push_back(ConvertDistance(Vertex, Params->World));
+		NativeVertices.push_back(ConvertVector(Vertex, Params->World));
 	}
 
 	agx::UInt32Vector NativeIndices;

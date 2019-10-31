@@ -62,7 +62,7 @@ const FGeometryAndShapeRef* FShapeBarrier::GetNative() const
 void FShapeBarrier::SetLocalPosition(const FVector &Position, UWorld* World)
 {
 	check(HasNative());
-	NativeRef->NativeGeometry->setLocalPosition(ConvertDistance(Position, World));
+	NativeRef->NativeGeometry->setLocalPosition(ConvertVector(Position, World));
 }
 
 void FShapeBarrier::SetLocalRotation(const FQuat &Rotation)
