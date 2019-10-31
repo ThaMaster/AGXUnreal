@@ -13,7 +13,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "DesktopPlatformModule.h"
 
-#include "AGXArchiveReader.h"
+#include "AGX_ArchiveImporter.h"
 #include "AGX_LogCategory.h"
 #include "AGX_ConstraintBodyAttachmentCustomization.h"
 #include "AGX_RigidBodyComponent.h"
@@ -33,7 +33,6 @@
 #include "Constraints/AGX_ConstraintFrameComponentVisualizer.h"
 #include "RigidBodyBarrier.h"
 
-
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
 void FAGXUnrealEditorModule::StartupModule()
@@ -44,6 +43,12 @@ void FAGXUnrealEditorModule::StartupModule()
 	RegisterComponentVisualizers();
 
 	AgxTopMenu = MakeShareable(new FAGX_TopMenu());
+#define STRIFY2(x) #x
+#define STRIFY(x) STRIFY2(x)
+	FAGX_EditorUtilities::ShowDialogBox(
+		FText::Format(LOCTEXT("PluginButtonDialogText", "{0} was recompiled with C++ {1} at {2}.\n{3}"),
+			FText::FromString(TEXT(__FILE__)), FText::FromString(TEXT(STRIFY(__cplusplus))),
+			FText::FromString(TEXT(__TIME__)), FText::FromString(TEXT("Create body before root component."))));
 }
 
 void FAGXUnrealEditorModule::ShutdownModule()
@@ -135,95 +140,8 @@ void FAGXUnrealEditorModule::PluginButtonClicked()
 		return;
 	}
 
-	UClass* ActorClass = AActor::StaticClass();
-	FName RootName = USceneComponent::GetDefaultSceneRootVariableName();
-	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
-	check(World);
-
-	FAGXArchiveReader Archive(Filenames[0]);
-	/// \todo Proper error handling.
-	if (Archive.GetBoxBodies().Num() == 0 && Archive.GetSphereBodies().Num() == 0)
-	{
-		FAGX_EditorUtilities::ShowNotification(
-			LOCTEXT("No bodies", "No bodies found in .agx archive. Perhaps read failure."));
-		return;
-	}
-	for (auto& BoxBody : Archive.GetBoxBodies())
-	{
-		UE_LOG(LogTemp, Log, TEXT("Loaded AGX box body with name %s at %f."), *BoxBody.Body->GetName(),
-			BoxBody.Body->GetPosition(World).X);
-
-		const FRigidBodyBarrier* Body = BoxBody.Body;
-		const FBoxShapeBarrier* Box = BoxBody.Box;
-
-		/// \todo Consider using the state synchronization functions we already
-		/// have, the ones used between time steps.
-
-		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
-		AActor* NewActor = World->SpawnActor<AActor>(ActorClass, Transform);
-		if (NewActor == nullptr)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s."), *Body->GetName());
-			continue;
-		}
-		NewActor->SetActorLabel(Body->GetName());
-
-		/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
-		/// Related to undo/redo, I think.
-		USceneComponent* Root = NewObject<USceneComponent>(NewActor, RootName /*, RF_Transactional*/);
-		NewActor->SetRootComponent(Root);
-		NewActor->AddInstanceComponent(Root);
-		Root->RegisterComponent();
-
-		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
-		if (NewBody == nullptr)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Could not create AGX RigidBody for %s."), *Body->GetName());
-			continue;
-		}
-		NewBody->Rename(TEXT("UAGX_RigidBody"));
-		NewBody->Mass = Body->GetMass();
-		NewBody->MotionControl = Body->GetMotionControl();
-
-		UAGX_BoxShapeComponent* NewBox = FAGX_EditorUtilities::CreateBoxShape(NewActor, Root);
-		NewBox->HalfExtent = Box->GetHalfExtents(World);
-	}
-
-	for (auto& SphereBody : Archive.GetSphereBodies())
-	{
-		UE_LOG(LogTemp, Log, TEXT("Loaded AGX sphere body with name %s at %f."), *SphereBody.Body->GetName(),
-			SphereBody.Body->GetPosition(World).X);
-
-		const FRigidBodyBarrier* Body = SphereBody.Body;
-		const FSphereShapeBarrier* Sphere = SphereBody.Sphere;
-
-		/// \todo Consider using the state synchronization functions we already
-		/// have, the ones used between time steps.
-
-		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
-		AActor* NewActor = World->SpawnActor<AActor>(ActorClass, Transform);
-		if (NewActor == nullptr)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s'."), *Body->GetName());
-			continue;
-		}
-		NewActor->SetActorLabel(Body->GetName());
-
-		/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
-		/// Related to undo/redo, I think.
-		USceneComponent* Root = NewObject<USceneComponent>(NewActor, RootName /*, RF_Transactional*/);
-		NewActor->SetRootComponent(Root);
-		NewActor->AddInstanceComponent(Root);
-		Root->RegisterComponent();
-
-		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
-		NewBody->Rename(TEXT("AGX_RigidBody"));
-		NewBody->Mass = Body->GetMass();
-		NewBody->MotionControl = Body->GetMotionControl();
-
-		UAGX_SphereShapeComponent* NewSphere = FAGX_EditorUtilities::CreateSphereShape(NewActor, Root);
-		NewSphere->Radius = Sphere->GetRadius(World);
-	}
+	FString Filename = Filenames[0];
+	AGX_ArchiveImporter::ImportAGXArchive(Filename);
 }
 
 void FAGXUnrealEditorModule::AddMenuExtension(FMenuBuilder& Builder)
@@ -244,8 +162,7 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
 
-	PropertyModule.RegisterCustomClassLayout(
-		AAGX_Constraint::StaticClass()->GetFName(),
+	PropertyModule.RegisterCustomClassLayout(AAGX_Constraint::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_ConstraintCustomization::MakeInstance));
 
 	PropertyModule.NotifyCustomizationModuleChanged();
@@ -257,16 +174,17 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(
-		AAGX_Constraint::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(AAGX_Constraint::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
 void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 {
-	RegisterComponentVisualizer(UAGX_ConstraintComponent::StaticClass()->GetFName(), MakeShareable(new FAGX_ConstraintComponentVisualizer));
-	RegisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName(), MakeShareable(new FAGX_ConstraintFrameComponentVisualizer));
+	RegisterComponentVisualizer(
+		UAGX_ConstraintComponent::StaticClass()->GetFName(), MakeShareable(new FAGX_ConstraintComponentVisualizer));
+	RegisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_ConstraintFrameComponentVisualizer));
 }
 
 void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
@@ -275,7 +193,8 @@ void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
 	UnregisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName());
 }
 
-void FAGXUnrealEditorModule::RegisterComponentVisualizer(const FName& ComponentClassName, TSharedPtr<FComponentVisualizer> Visualizer)
+void FAGXUnrealEditorModule::RegisterComponentVisualizer(
+	const FName& ComponentClassName, TSharedPtr<FComponentVisualizer> Visualizer)
 {
 	if (GUnrealEd != nullptr)
 	{
