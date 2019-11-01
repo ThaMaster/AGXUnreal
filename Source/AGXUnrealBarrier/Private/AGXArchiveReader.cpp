@@ -15,15 +15,8 @@
 #include <agxCollide/Box.h>
 #include "EndAGXIncludes.h"
 
+
 #if AGX_IMPORT == AGX_IMPORT_INSTANTIATOR
-FAGXArchiveInstantiator::~FAGXArchiveInstantiator()
-{
-}
-
-FAGXArchiveBody::~FAGXArchiveBody()
-{
-}
-
 
 namespace
 {
@@ -36,13 +29,13 @@ namespace
 				case agxCollide::Shape::SPHERE:
 				{
 					agxCollide::Sphere* Sphere {Shape->as<agxCollide::Sphere>()};
-					ArchiveBody.CreateSphere(CreateSphereShapeBarrier(Sphere));
+					ArchiveBody.InstantiateSphere(CreateSphereShapeBarrier(Sphere));
 					break;
 				}
 				case agxCollide::Shape::BOX:
 				{
 					agxCollide::Box* Box {Shape->as<agxCollide::Box>()};
-					ArchiveBody.CreateBox(CreateBoxShapeBarrier(Box));
+					ArchiveBody.InstantiateBox(CreateBoxShapeBarrier(Box));
 					break;
 				}
 				case agxCollide::Shape::GROUP:

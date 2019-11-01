@@ -19,17 +19,19 @@ class FAGXArchiveBody;
 class AGXUNREALBARRIER_API FAGXArchiveInstantiator
 {
 public:
-	virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& Barrier) = 0;
-	virtual ~FAGXArchiveInstantiator();
+	virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& RigidBody) = 0;
+
+	virtual ~FAGXArchiveInstantiator() = default;
 };
 
 
 class AGXUNREALBARRIER_API FAGXArchiveBody
 {
 public:
-	virtual void CreateSphere(const FSphereShapeBarrier& Sphere) = 0;
-	virtual void CreateBox(const FBoxShapeBarrier& Box) = 0;
-	virtual ~FAGXArchiveBody();
+	virtual void InstantiateSphere(const FSphereShapeBarrier& Sphere) = 0;
+	virtual void InstantiateBox(const FBoxShapeBarrier& Box) = 0;
+
+	virtual ~FAGXArchiveBody() = default;
 };
 
 namespace FAGXArchiveReader

@@ -142,14 +142,14 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		{
 		}
 
-		virtual void CreateSphere(const FSphereShapeBarrier& Sphere) override
+		virtual void InstantiateSphere(const FSphereShapeBarrier& Sphere) override
 		{
 			UAGX_SphereShapeComponent* NewSphere = FAGX_EditorUtilities::CreateSphereShape(&Actor, &Root);
 			NewSphere->Radius = Sphere.GetRadius(&World);
 			NewSphere->UpdateVisualMesh();
 		}
 
-		virtual void CreateBox(const FBoxShapeBarrier& Box) override
+		virtual void InstantiateBox(const FBoxShapeBarrier& Box) override
 		{
 			UAGX_BoxShapeComponent* NewBox = FAGX_EditorUtilities::CreateBoxShape(&Actor, &Root);
 			NewBox->HalfExtent = Box.GetHalfExtents(&World);
