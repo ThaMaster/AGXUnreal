@@ -5,7 +5,8 @@ class AActor;
 namespace AGX_ArchiveImporter
 {
 	/**
-	 * Read simulation objects from the .agx archive pointed to by 'ArchivePath'.
+	 * Read simulation objects from the .agx archive pointed to by 'ArchivePath'
+	 * and populate Unreal Editor with corresponding AGXUnreal objects.
 	 *
 	 * AGXUnreal objects are created in the editor from AGX Dynamics objects found
 	 * in the archive. The AGX Dynamics objects are not retained, but re-created
