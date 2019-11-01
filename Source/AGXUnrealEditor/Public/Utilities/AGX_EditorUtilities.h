@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 
+#include <tuple>
+
 class AActor;
 class AAGX_Constraint;
 class AAGX_ConstraintFrameActor;
@@ -16,6 +18,11 @@ class USceneComponent;
 class FAGX_EditorUtilities
 {
 public:
+	/**
+	 * Create a new Actor with an empty USceneComponent as its RootComponent.
+	 */
+	static std::tuple<AActor*, USceneComponent*> CreateEmptyActor(const FTransform& Transform, UWorld* World);
+
 	/**
 	 * Create a new AGX Rigid Body Component as a child of the given Actor.
 	 */

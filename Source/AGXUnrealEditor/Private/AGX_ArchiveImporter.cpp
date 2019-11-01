@@ -16,36 +16,16 @@
 
 #include <iostream>
 
+
 namespace
 {
-	/// \todo Investigate if we can use ActorFactoryEmptyActor here.
-	std::tuple<AActor*, USceneComponent*> SpawnEmptyActor(const FTransform& Transform, UWorld* World)
-	{
-		AActor* NewActor = World->SpawnActor<AActor>(AActor::StaticClass(), Transform);
-		if (NewActor == nullptr)
-		{
-			/// \todo Do we need to destroy the Actor here?
-			return {nullptr, nullptr};
-		}
-
-		/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
-		/// Related to undo/redo, I think.
-		USceneComponent* Root = NewObject<USceneComponent>(
-			NewActor, USceneComponent::GetDefaultSceneRootVariableName() /*, RF_Transactional*/);
-		NewActor->SetRootComponent(Root);
-		NewActor->AddInstanceComponent(Root);
-		Root->RegisterComponent();
-
-		return {NewActor, Root};
-	}
-
 	std::tuple<AActor*, USceneComponent*> InstantiateBody(const FRigidBodyBarrier& Body, UWorld& World)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Loaded AGX body with name '%s'."), *Body.GetName());
 		AActor* NewActor;
 		USceneComponent* Root;
 		FTransform Transform(Body.GetRotation(), Body.GetPosition(&World));
-		std::tie(NewActor, Root) = ::SpawnEmptyActor(Transform, &World);
+		std::tie(NewActor, Root) = FAGX_EditorUtilities::CreateEmptyActor(Transform, &World);
 		if (NewActor == nullptr)
 		{
 			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s'."), *Body.GetName());
@@ -92,7 +72,7 @@ namespace
 		AActor* NewActor;
 		USceneComponent* Root;
 		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
-		std::tie(NewActor, Root) = SpawnEmptyActor(Transform, World);
+		std::tie(NewActor, Root) = FAGX_EditorUtilities::CreateEmptyActor(Transform, World);
 		if (NewActor == nullptr)
 		{
 			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s'."), *Body->GetName());
@@ -144,7 +124,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 	AActor* ImportGroup;
 	USceneComponent* ImportRoot;
 	/// \todo Consider placing ImportedRoot at the center if the imported bodies.
-	std::tie(ImportGroup, ImportRoot) = ::SpawnEmptyActor(FTransform::Identity, World);
+	std::tie(ImportGroup, ImportRoot) = FAGX_EditorUtilities::CreateEmptyActor(FTransform::Identity, World);
 	if (ImportGroup == nullptr || ImportRoot == nullptr)
 	{
 		return nullptr;
@@ -236,7 +216,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 	/// \todo Consider placing the ImportedRoot at the center of the imported bodies.
 	AActor* ImportRoot;
 	USceneComponent* Root;
-	std::tie(ImportRoot, Root) = ::SpawnEmptyActor(FTransform::Identity, World);
+	std::tie(ImportRoot, Root) = FAGX_EditorUtilities::CreateEmptyActor(FTransform::Identity, World);
 
 	FString Filename;
 	ArchivePath.Split(TEXT("/"), nullptr, &Filename, ESearchCase::IgnoreCase,  ESearchDir::FromEnd);
