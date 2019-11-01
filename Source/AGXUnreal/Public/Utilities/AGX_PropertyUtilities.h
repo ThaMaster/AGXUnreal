@@ -27,7 +27,7 @@ public:
 
 
 template<typename TStruct, typename TOwningClass>
-static TStruct* FAGX_PropertyUtilities::GetStructFromHandle(const TSharedPtr<IPropertyHandle> &PropertyHandle, TOwningClass *OwningClass)
+TStruct* FAGX_PropertyUtilities::GetStructFromHandle(const TSharedPtr<IPropertyHandle> &PropertyHandle, TOwningClass *OwningClass)
 {
 	if (PropertyHandle->IsValidHandle())
 		return PropertyHandle->GetProperty()->ContainerPtrToValuePtr<TStruct>(OwningClass);
