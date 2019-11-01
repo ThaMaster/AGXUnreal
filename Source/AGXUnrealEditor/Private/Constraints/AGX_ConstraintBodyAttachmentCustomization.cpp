@@ -12,65 +12,11 @@
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_PropertyUtilities.h"
 #include "Utilities/AGX_SlateUtilities.h"
 
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintBodyAttachmentCustomization"
-
-
-UObject*
-GetObjectFromPropertyHandle(
-	const TSharedPtr<IPropertyHandle> &PropertyHandle)
-{
-	if (PropertyHandle && 
-		PropertyHandle->IsValidHandle() &&
-		PropertyHandle->GetProperty() &&
-		PropertyHandle->GetProperty()->IsA(UObjectProperty::StaticClass()))
-	{
-		UObject* Object = nullptr;
-		if (PropertyHandle->GetValue(Object) != FPropertyAccess::Result::Fail)
-		{
-			return Object;
-		}
-	}
-	return nullptr;
-}
-
-/**
- * Given a IPropertyHandle to a struct property (value-type) in a class,
- * returns a pointer to the actual struct data.
- */
-template<typename TStruct, typename TOwningClass>
-TStruct* GetStructFromHandle(const TSharedPtr<IPropertyHandle> &PropertyHandle, TOwningClass *OwningClass)
-{
-	if (PropertyHandle->IsValidHandle())
-		return PropertyHandle->GetProperty()->ContainerPtrToValuePtr<TStruct>(OwningClass);
-	else
-		return nullptr;
-}
-
-
-bool
-PropertyEquals(
-	const TSharedPtr<IPropertyHandle> &First,
-	const TSharedPtr<IPropertyHandle> &Second)
-{
-	return
-		First->IsValidHandle() &&
-		Second->IsValidHandle() &&
-		First->GetProperty() == Second->GetProperty();
-}
-
-
-UObject*
-GetParentObjectOfStruct(
-	const TSharedPtr<IPropertyHandle> &StructPropertyHandle)
-{
-	TArray<UObject*> OuterObjects;
-	StructPropertyHandle->GetOuterObjects(OuterObjects);
-
-	return OuterObjects.Num() > 0 ? OuterObjects[0] : nullptr;
-}
 
 
 TSharedRef<IPropertyTypeCustomization>
@@ -120,7 +66,7 @@ FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 	FrameDefiningActorProperty = StructPropertyHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningActor));
 
-	const UObject* FrameDefiningActor = GetObjectFromPropertyHandle(FrameDefiningActorProperty);
+	const UObject* FrameDefiningActor = FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty);
 
 
 	uint32 NumChildren = 0;
@@ -135,7 +81,7 @@ FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 			IDetailPropertyRow& DefaultPropertyRow = StructBuilder.AddProperty(ChildHandle.ToSharedRef());
 
 			// Frame properties only visible if Rigid Body Actor has been set.
-			if (!PropertyEquals(ChildHandle, RigidBodyProperty))
+			if (!FAGX_PropertyUtilities::PropertyEquals(ChildHandle, RigidBodyProperty))
 			{
 				TAttribute<EVisibility> IsVisibleDelegate = TAttribute<EVisibility>::Create(
 					TAttribute<EVisibility>::FGetter::CreateLambda(
@@ -145,7 +91,7 @@ FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 			}
 			
 			// Add "Create New" option to context menu for the Frame Defining Actor.
-			if (PropertyEquals(ChildHandle, FrameDefiningActorProperty))
+			if (FAGX_PropertyUtilities::PropertyEquals(ChildHandle, FrameDefiningActorProperty))
 			{
 				// To do this, the default widgets need to be extracted, and the row needs
 				// to be built up again using them, removing the additional Reset button,
@@ -202,7 +148,7 @@ FText
 FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 {
 	FString RigidBodyName;
-	if (const AActor* RigidBody = Cast<AActor>(GetObjectFromPropertyHandle(RigidBodyProperty)))
+	if (const AActor* RigidBody = Cast<AActor>(FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty)))
 	{
 		RigidBodyName = "(" + RigidBody->GetActorLabel() + ")";
 	}
@@ -214,14 +160,14 @@ FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 bool
 FAGX_ConstraintBodyAttachmentCustomization::HasRigidBodyActor() const
 {
-	return GetObjectFromPropertyHandle(RigidBodyProperty);
+	return FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty);
 }
 
 
 bool
 FAGX_ConstraintBodyAttachmentCustomization::HasFrameDefiningActor() const
 {
-	return GetObjectFromPropertyHandle(FrameDefiningActorProperty);
+	return FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty);
 }
 
 
@@ -236,16 +182,16 @@ FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor()
 {
 	check(BodyAttachmentProperty);
 
-	if (GetObjectFromPropertyHandle(FrameDefiningActorProperty))
+	if (FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty))
 		return; // already exists
 	
 	AAGX_Constraint* Constraint = Cast<AAGX_Constraint>(
-		GetParentObjectOfStruct(BodyAttachmentProperty));
+		FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyAttachmentProperty));
 
 	check(Constraint);
 
 	AActor* RigidBody = Cast<AActor>(
-		GetObjectFromPropertyHandle(RigidBodyProperty)); // optional
+		FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty)); // optional
 
 	// Create the new Constraint Frame Actor.
 	AActor* NewActor = FAGX_EditorUtilities::CreateConstraintFrameActor(
@@ -261,7 +207,7 @@ FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor()
 	check(Result == FPropertyAccess::Success);
 #else
 	FAGX_ConstraintBodyAttachment* BodyAttachment =
-		GetStructFromHandle<FAGX_ConstraintBodyAttachment>(
+		FAGX_PropertyUtilities::GetStructFromHandle<FAGX_ConstraintBodyAttachment>(
 			BodyAttachmentProperty, Constraint);
 
 	BodyAttachment->FrameDefiningActor = NewActor;
