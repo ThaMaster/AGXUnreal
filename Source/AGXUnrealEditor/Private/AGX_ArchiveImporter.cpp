@@ -121,6 +121,8 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		return nullptr;
 	}
 
+	// The ImportGroup AActor will contain all objects created while reading
+	// the AGX Dynamics archive.
 	AActor* ImportGroup;
 	USceneComponent* ImportRoot;
 	/// \todo Consider placing ImportedRoot at the center if the imported bodies.
@@ -131,9 +133,12 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 	}
 
 	FString Filename;
+	/// \todo What about platforms that don't use / as a path separator?
 	ArchivePath.Split(TEXT("/"), nullptr, &Filename, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
 	ImportGroup->SetActorLabel(Filename);
 
+	// Archive instantiator that creates sub-objects under RigidBody. Knows how
+	// to create various subclasses of AGX_ShapesComponent in Unreal Editor.
 	class EditorBody final : public FAGXArchiveBody
 	{
 	public:
@@ -161,7 +166,9 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		UWorld& World;
 	};
 
-	class EditorInstantiator : public FAGXArchiveInstantiator
+	// Archive instantiator that creates top-level objects. Knows how to create
+	// UAGX_RigidBodyComponent in Unreal Editor.
+	class EditorInstantiator final : public FAGXArchiveInstantiator
 	{
 	public:
 		EditorInstantiator(AActor& InImportedRoot, UWorld& InWorld)
