@@ -5,6 +5,8 @@
 
 #include "Misc/AssertionMacros.h"
 
+#include <agxCollide/Box.h>
+
 namespace
 {
 	agxCollide::Box* NativeBox(FBoxShapeBarrier* Barrier)

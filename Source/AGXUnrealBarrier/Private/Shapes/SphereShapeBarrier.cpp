@@ -5,6 +5,8 @@
 
 #include "Misc/AssertionMacros.h"
 
+#include <agxCollide/Sphere.h>
+
 namespace
 {
 	agxCollide::Sphere* NativeSphere(FSphereShapeBarrier* Barrier)
