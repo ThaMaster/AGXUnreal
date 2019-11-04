@@ -15,6 +15,7 @@ class AActor;
 class FText;
 class UClass;
 class USceneComponent;
+class UStaticMeshComponent;
 class UWorld;
 
 class FAGX_EditorUtilities
@@ -50,6 +51,13 @@ public:
 	 */
 	static UAGX_TrimeshShapeComponent* CreateTrimeshShape(AActor* Owner, USceneComponent* Outer);
 
+	/**
+	 * Create a new UStaticMeshComponent, along with the underlying StaticMesh
+	 * asset, from the given mesh data. The UStaticMeshComponent will be added
+	 * as a child to the given UAGX_TrimeshShapeComponent.
+	 */
+	static UStaticMeshComponent* CreateStaticMesh(
+		UAGX_TrimeshShapeComponent* Outer, const TArray<FVector>& VertexPositions);
 
 	/**
 	 * Create a new constraint of the specified type.

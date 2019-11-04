@@ -95,6 +95,13 @@ UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(AActor* Own
 {
 	return ::CreateShapeComponent<UAGX_TrimeshShapeComponent>(Owner, Outer);
 }
+
+UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
+	UAGX_TrimeshShapeComponent* Outer, const TArray<FVector>& VertexPositions)
+{
+	UClass* Class = UStaticMeshComponent::StaticClass();
+	UStaticMeshComponent* StaticMeshComponent = NewObject<UStaticMeshComponent>(Outer, Class);
+	return StaticMeshComponent;
 }
 
 AAGX_Constraint* FAGX_EditorUtilities::CreateConstraint(UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2,
