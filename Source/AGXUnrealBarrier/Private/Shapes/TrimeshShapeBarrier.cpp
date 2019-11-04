@@ -10,7 +10,6 @@
 
 #include "Misc/AssertionMacros.h"
 
-
 namespace
 {
 	agxCollide::Trimesh* NativeTrimesh(FTrimeshShapeBarrier* Barrier)
@@ -40,14 +39,12 @@ FTrimeshShapeBarrier::FTrimeshShapeBarrier(FTrimeshShapeBarrier&& Other)
 {
 }
 
-
 FTrimeshShapeBarrier::~FTrimeshShapeBarrier()
 {
 	// Must provide a destructor implementation in the .cpp file because the
 	// std::unique_ptr NativeRef's destructor must be able to see the definition,
 	// not just the forward declaration, of FTrimeshShapeRef.
 }
-
 
 void FTrimeshShapeBarrier::AllocateNative(
 	const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise, UWorld* World)
@@ -63,12 +60,10 @@ void FTrimeshShapeBarrier::AllocateNative(
 
 		TemporaryAllocationParameters = Params;
 
-		FShapeBarrier::AllocateNative(); // Will implicitly invoke AllocateNativeShape(). See below.
-
+		FShapeBarrier::AllocateNative();	// Will implicitly invoke AllocateNativeShape(). See below.
 	}
 	// Temporary allocation parameters structure destroyed by smart pointer.
 }
-
 
 void FTrimeshShapeBarrier::AllocateNativeShape()
 {
@@ -103,14 +98,14 @@ void FTrimeshShapeBarrier::AllocateNativeShape()
 		NativeIndices.push_back(static_cast<uint32>(Index.v2));
 	}
 
-	agxCollide::Trimesh::TrimeshOptionsFlags OptionsMask = Params->bClockwise ?
-		agxCollide::Trimesh::TrimeshOptionsFlags::CLOCKWISE_ORIENTATION :
-		static_cast<agxCollide::Trimesh::TrimeshOptionsFlags>(0);
+	agxCollide::Trimesh::TrimeshOptionsFlags OptionsMask =
+		Params->bClockwise ? agxCollide::Trimesh::TrimeshOptionsFlags::CLOCKWISE_ORIENTATION
+						   : static_cast<agxCollide::Trimesh::TrimeshOptionsFlags>(0);
 
 	// Create the native object.
 
-	NativeRef->NativeShape = new agxCollide::Trimesh(
-		&NativeVertices, &NativeIndices, "FTrimeshShapeBarrier", OptionsMask);
+	NativeRef->NativeShape =
+		new agxCollide::Trimesh(&NativeVertices, &NativeIndices, "FTrimeshShapeBarrier", OptionsMask);
 }
 
 void FTrimeshShapeBarrier::ReleaseNativeShape()
