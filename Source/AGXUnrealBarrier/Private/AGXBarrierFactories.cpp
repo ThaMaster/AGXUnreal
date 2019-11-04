@@ -1,20 +1,31 @@
 #include "AGXBarrierFactories.h"
 
+#include <agx/RigidBody.h>
+
+#include "BeginAGXIncludes.h"
+#include <agxCollide/Sphere.h>
+#include <agxCollide/Box.h>
+#include <agxCollide/Trimesh.h>
+#include <EndAGXIncludes.h>
+
+#include <memory>
+
 FRigidBodyBarrier CreateRigidBodyBarrier(agx::RigidBody* Body)
 {
-	FRigidBodyBarrier Barrier(std::unique_ptr<FRigidBodyRef>{new FRigidBodyRef{Body}});
-	return Barrier;
-}
-
-FBoxShapeBarrier CreateBoxShapeBarrier(agxCollide::Box* Box)
-{
-	FBoxShapeBarrier Barrier(std::unique_ptr<FGeometryAndShapeRef>{new FGeometryAndShapeRef{Box->getGeometry(), Box}});
-	return Barrier;
+	return {std::make_unique<FRigidBodyRef>(Body)};
 }
 
 FSphereShapeBarrier CreateSphereShapeBarrier(agxCollide::Sphere* Sphere)
 {
-	FSphereShapeBarrier Barrier(
-		std::unique_ptr<FGeometryAndShapeRef>{new FGeometryAndShapeRef{Sphere->getGeometry(), Sphere}});
-	return Barrier;
+	return {std::make_unique<FGeometryAndShapeRef>(Sphere->getGeometry(), Sphere)};
+}
+
+FBoxShapeBarrier CreateBoxShapeBarrier(agxCollide::Box* Box)
+{
+	return {std::make_unique<FGeometryAndShapeRef>(Box->getGeometry(), Box)};
+}
+
+FTrimeshShapeBarrier CreateTrimeshShapeBarrier(agxCollide::Trimesh* Trimesh)
+{
+	return {std::make_unique<FGeometryAndShapeRef>(Trimesh->getGeometry(), Trimesh)};
 }
