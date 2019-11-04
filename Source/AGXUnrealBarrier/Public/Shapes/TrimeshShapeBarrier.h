@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "Shapes/ShapeBarrier.h"
 
 #include <Math/Vector.h>
@@ -17,8 +16,9 @@ public:
 	FTrimeshShapeBarrier(std::unique_ptr<FGeometryAndShapeRef> Native);
 	FTrimeshShapeBarrier(FTrimeshShapeBarrier&& Other);
 	virtual ~FTrimeshShapeBarrier() override;
-	
-	void AllocateNative(const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise, UWorld* World);
+
+	void AllocateNative(
+		const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise, UWorld* World);
 
 private:
 	virtual void AllocateNativeShape() override;
