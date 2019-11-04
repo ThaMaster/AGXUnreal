@@ -4,7 +4,7 @@
 
 void FImportAGXArchiveCommands::RegisterCommands()
 {
-	UI_COMMAND(PluginAction, "ImportAGXArchive", "Execute ImportAGXArchive action", EUserInterfaceActionType::Button, FInputGesture());
+	UI_COMMAND(PluginAction, "ImportAGXArchive", "Execute ImportAGXArchive action", EUserInterfaceActionType::Button, FInputChord());
 }
 
 #undef LOCTEXT_NAMESPACE
