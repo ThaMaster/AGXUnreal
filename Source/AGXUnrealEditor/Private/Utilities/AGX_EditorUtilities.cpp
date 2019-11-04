@@ -15,6 +15,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
 #include "AGX_BoxShapeComponent.h"
+#include "AGX_TrimeshShapeComponent.h"
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 
@@ -88,6 +89,11 @@ UAGX_SphereShapeComponent* FAGX_EditorUtilities::CreateSphereShape(AActor* Owner
 UAGX_BoxShapeComponent* FAGX_EditorUtilities::CreateBoxShape(AActor* Owner, USceneComponent* Outer)
 {
 	return ::CreateShapeComponent<UAGX_BoxShapeComponent>(Owner, Outer);
+}
+
+UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(AActor* Owner, USceneComponent* Outer)
+{
+	return ::CreateShapeComponent<UAGX_TrimeshShapeComponent>(Owner, Outer);
 }
 }
 

@@ -9,6 +9,7 @@ class AAGX_ConstraintFrameActor;
 class UAGX_RigidBodyComponent;
 class UAGX_SphereShapeComponent;
 class UAGX_BoxShapeComponent;
+class UAGX_TrimeshShapeComponent;
 
 class AActor;
 class FText;
@@ -40,6 +41,14 @@ public:
 	 * The shape will be attached to the given USceneComponent.
 	 */
 	static UAGX_BoxShapeComponent* CreateBoxShape(AActor* Owner, USceneComponent* Outer);
+
+	/**
+	 * Create a new AGX Trimesh Shape as a child of the given actor.
+	 * The shape will be attached to the given USceneComponent.
+	 * A StaticMeshComponent is neither selected nor created.
+	 * @see CreateStaticMesh.
+	 */
+	static UAGX_TrimeshShapeComponent* CreateTrimeshShape(AActor* Owner, USceneComponent* Outer);
 
 
 	/**
