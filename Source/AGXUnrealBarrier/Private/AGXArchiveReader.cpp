@@ -13,6 +13,7 @@
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Box.h>
+#include <agxCollide/Trimesh.h>
 #include "EndAGXIncludes.h"
 
 
@@ -36,6 +37,12 @@ namespace
 				{
 					agxCollide::Box* Box {Shape->as<agxCollide::Box>()};
 					ArchiveBody.InstantiateBox(CreateBoxShapeBarrier(Box));
+					break;
+				}
+				case agxCollide::Shape::TRIMESH:
+				{
+					agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
+					ArchiveBody.InstantiateTrimesh(CreateTrimeshShapeBarrier(Trimesh));
 					break;
 				}
 				case agxCollide::Shape::GROUP:

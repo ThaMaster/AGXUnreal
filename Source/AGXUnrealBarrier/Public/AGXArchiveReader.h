@@ -8,6 +8,7 @@
 class FRigidBodyBarrier;
 class FBoxShapeBarrier;
 class FSphereShapeBarrier;
+class FTrimeshShapeBarrier;
 
 #define AGX_IMPORT_INSTANTIATOR 1
 #define AGX_IMPORT_COLLECTION 2
@@ -75,6 +76,8 @@ public:
 	 * @param Box The box for which a persisten representation should be created.
 	 */
 	virtual void InstantiateBox(const FBoxShapeBarrier& Box) = 0;
+
+	virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) = 0;
 
 	virtual ~FAGXArchiveBody() = default;
 };

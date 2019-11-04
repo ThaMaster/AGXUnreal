@@ -115,6 +115,11 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			NewBox->UpdateVisualMesh();
 		}
 
+		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) override
+		{
+			FAGX_EditorUtilities::ShowDialogBox(FText::FromString(FString(TEXT("Should create Trimesh UAsset now."))));
+		}
+
 		AActor& Actor;
 		USceneComponent& Root;
 		UWorld& World;
