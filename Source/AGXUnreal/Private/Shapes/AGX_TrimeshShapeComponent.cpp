@@ -3,6 +3,10 @@
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
+#include "Engine/StaticMesh.h"
+#include "Components/StaticMeshComponent.h"
+#include "Rendering/PositionVertexBuffer.h"
+
 UAGX_TrimeshShapeComponent::UAGX_TrimeshShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -64,7 +68,7 @@ void UAGX_TrimeshShapeComponent::UpdateNativeProperties()
 	UpdateNativeLocalTransform(NativeBarrier);
 }
 
-void UAGX_TrimeshShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
+void UAGX_TrimeshShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& /*OutMeshData*/)
 {
 	// Visualized by the Static Mesh.. But maybe we should visualize the
 	// internal triangle data anyway, for debug purposes? Especially since
