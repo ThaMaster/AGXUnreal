@@ -61,53 +61,7 @@ namespace
 		return {NewActor, Root};
 	}
 
-	template <typename TShapeFactory>
-	AActor* InstantiateBody(const FRigidBodyBarrier* Body, UWorld* World, TShapeFactory ShapeFactory)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Loaded AGX sphere body with name '%s'."), *Body->GetName());
 
-		/// \todo Consider using the state synchronization functions we already
-		/// have, the ones used between time steps.
-
-		AActor* NewActor;
-		USceneComponent* Root;
-		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
-		std::tie(NewActor, Root) = FAGX_EditorUtilities::CreateEmptyActor(Transform, World);
-		if (NewActor == nullptr)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s'."), *Body->GetName());
-			return nullptr;
-		}
-		if (Root == nullptr)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Could not create SceneComponent for body '%s'."), *Body->GetName());
-			return nullptr;
-		}
-
-		NewActor->SetActorLabel(Body->GetName());
-
-		/// \todo For some reason the actor location must be set again after
-		/// creating the root SceneComponent, or else the Actor remain at the
-		/// origin. I'm assuming we must set rotation as well, but haven't
-		/// tested yet.
-		NewActor->SetActorLocation(Body->GetPosition(World));
-
-		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
-		if (NewBody == nullptr)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Could not create AGX RigidBodyComponent for body '%s'."), *Body->GetName());
-			/// \todo Do we need to destroy the Actor and the RigidBodyComopnent here?
-			return nullptr;
-		}
-
-		NewBody->Rename(TEXT("AGX_RigidBodyComponent"));
-		NewBody->Mass = Body->GetMass();
-		NewBody->MotionControl = Body->GetMotionControl();
-
-		ShapeFactory(NewActor, Root);
-
-		return NewActor;
-	}
 }
 
 
@@ -205,6 +159,58 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 
 
 #if AGX_IMPORT == AGX_IMPORT_COLLECTION
+
+
+namespace
+{
+	template <typename TShapeFactory>
+	AActor* InstantiateBody(const FRigidBodyBarrier* Body, UWorld* World, TShapeFactory ShapeFactory)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Loaded AGX sphere body with name '%s'."), *Body->GetName());
+
+		/// \todo Consider using the state synchronization functions we already
+		/// have, the ones used between time steps.
+
+		AActor* NewActor;
+		USceneComponent* Root;
+		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
+		std::tie(NewActor, Root) = FAGX_EditorUtilities::CreateEmptyActor(Transform, World);
+		if (NewActor == nullptr)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s'."), *Body->GetName());
+			return nullptr;
+		}
+		if (Root == nullptr)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Could not create SceneComponent for body '%s'."), *Body->GetName());
+			return nullptr;
+		}
+
+		NewActor->SetActorLabel(Body->GetName());
+
+		/// \todo For some reason the actor location must be set again after
+		/// creating the root SceneComponent, or else the Actor remain at the
+		/// origin. I'm assuming we must set rotation as well, but haven't
+		/// tested yet.
+		NewActor->SetActorLocation(Body->GetPosition(World));
+
+		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
+		if (NewBody == nullptr)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Could not create AGX RigidBodyComponent for body '%s'."), *Body->GetName());
+			/// \todo Do we need to destroy the Actor and the RigidBodyComopnent here?
+			return nullptr;
+		}
+
+		NewBody->Rename(TEXT("AGX_RigidBodyComponent"));
+		NewBody->Mass = Body->GetMass();
+		NewBody->MotionControl = Body->GetMotionControl();
+
+		ShapeFactory(NewActor, Root);
+
+		return NewActor;
+	}
+}
 
 AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 {
