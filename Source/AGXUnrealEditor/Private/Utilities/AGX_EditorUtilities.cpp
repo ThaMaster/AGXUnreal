@@ -20,10 +20,8 @@
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
-
 std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(const FTransform& Transform, UWorld* World)
 {
-
 	/// \todo The intention is to mimmic draggin in an "Empty Actor" from the
 	/// Place mode. Investigate if we can use ActorFactoryEmptyActor instead.
 
@@ -36,8 +34,8 @@ std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(con
 
 	/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
 	/// Related to undo/redo, I think.
-	USceneComponent* Root = NewObject<USceneComponent>(
-		NewActor, USceneComponent::GetDefaultSceneRootVariableName() /*, RF_Transactional*/);
+	USceneComponent* Root =
+		NewObject<USceneComponent>(NewActor, USceneComponent::GetDefaultSceneRootVariableName() /*, RF_Transactional*/);
 	NewActor->SetRootComponent(Root);
 	NewActor->AddInstanceComponent(Root);
 	Root->RegisterComponent();
@@ -63,14 +61,15 @@ namespace
 	}
 
 	template <typename TShapeComponent>
-	TShapeComponent* CreateShapeComponent(AActor* Owner, USceneComponent* Root)
+	TShapeComponent* CreateShapeComponent(AActor* Owner, USceneComponent* Outer)
 	{
+		/// \todo Is the Owner pointless here since we do `AttachToComponent`
+		/// immediately afterwards?
 		UClass* Class = TShapeComponent::StaticClass();
 		TShapeComponent* Shape = NewObject<TShapeComponent>(Owner, Class);
 		Owner->AddInstanceComponent(Shape);
-		// Shape->SetupAttachment(Owner);
 		Shape->RegisterComponent();
-		const bool Attached = Shape->AttachToComponent(Root, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		const bool Attached = Shape->AttachToComponent(Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		check(Attached);
 		return Shape;
 	}
@@ -81,14 +80,15 @@ UAGX_RigidBodyComponent* FAGX_EditorUtilities::CreateRigidBody(AActor* Owner)
 	return ::CreateComponent<UAGX_RigidBodyComponent>(Owner);
 }
 
-UAGX_SphereShapeComponent* FAGX_EditorUtilities::CreateSphereShape(AActor* Owner, USceneComponent* Root)
+UAGX_SphereShapeComponent* FAGX_EditorUtilities::CreateSphereShape(AActor* Owner, USceneComponent* Outer)
 {
-	return ::CreateShapeComponent<UAGX_SphereShapeComponent>(Owner, Root);
+	return ::CreateShapeComponent<UAGX_SphereShapeComponent>(Owner, Outer);
 }
 
-UAGX_BoxShapeComponent* FAGX_EditorUtilities::CreateBoxShape(AActor* Owner, USceneComponent* Root)
+UAGX_BoxShapeComponent* FAGX_EditorUtilities::CreateBoxShape(AActor* Owner, USceneComponent* Outer)
 {
-	return ::CreateShapeComponent<UAGX_BoxShapeComponent>(Owner, Root);
+	return ::CreateShapeComponent<UAGX_BoxShapeComponent>(Owner, Outer);
+}
 }
 
 AAGX_Constraint* FAGX_EditorUtilities::CreateConstraint(UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2,
@@ -197,7 +197,6 @@ void FAGX_EditorUtilities::ShowNotification(const FText& Text)
 	NotificationItem->ExpireAndFadeout();
 	// GEditor->PlayEditorSound(CompileSuccessSound);
 }
-
 
 void FAGX_EditorUtilities::ShowDialogBox(const FText& Text)
 {

@@ -4,16 +4,17 @@
 
 #include <tuple>
 
-class AActor;
 class AAGX_Constraint;
 class AAGX_ConstraintFrameActor;
 class UAGX_RigidBodyComponent;
 class UAGX_SphereShapeComponent;
 class UAGX_BoxShapeComponent;
+
+class AActor;
 class FText;
 class UClass;
-class UWorld;
 class USceneComponent;
+class UWorld;
 
 class FAGX_EditorUtilities
 {
@@ -30,14 +31,16 @@ public:
 
 	/**
 	 * Create a new AGX Sphere Shape as child of the given Actor.
+	 * The shape will be attached to the given USceneComponent.
 	 */
-	static UAGX_SphereShapeComponent* CreateSphereShape(AActor* Owner, USceneComponent* Root);
+	static UAGX_SphereShapeComponent* CreateSphereShape(AActor* Owner, USceneComponent* Outer);
 
 	/**
 	 * Create a new AGX Box Shape as child of the given Actor.
-	 * The shape will be attached to the RootComponent.
+	 * The shape will be attached to the given USceneComponent.
 	 */
-	static UAGX_BoxShapeComponent* CreateBoxShape(AActor* Owner, USceneComponent* Root);
+	static UAGX_BoxShapeComponent* CreateBoxShape(AActor* Owner, USceneComponent* Outer);
+
 
 	/**
 	 * Create a new constraint of the specified type.
