@@ -6,6 +6,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
 #include "AGX_BoxShapeComponent.h"
+#include "AGX_TrimeshShapeComponent.h"
 
 #include "Math/Transform.h"
 #include "GameFramework/Actor.h"
@@ -117,7 +118,9 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 
 		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) override
 		{
-			FAGX_EditorUtilities::ShowDialogBox(FText::FromString(FString(TEXT("Should create Trimesh UAsset now."))));
+			UAGX_TrimeshShapeComponent* NewTrimesh = FAGX_EditorUtilities::CreateTrimeshShape(&Actor, &Root);
+			NewTrimesh->MeshSourceLocation = EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
+			FAGX_EditorUtilities::CreateStaticMesh(NewTrimesh, TArray<FVector>());
 		}
 
 		AActor& Actor;
