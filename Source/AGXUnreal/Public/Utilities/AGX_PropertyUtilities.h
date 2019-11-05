@@ -21,6 +21,16 @@ public:
 
 	template <typename TStruct, typename TOwningClass>
 	static TStruct* GetStructFromHandle(const TSharedPtr<IPropertyHandle>& PropertyHandle, TOwningClass* OwningClass);
+
+	/**
+	 * Returns the Display Name metadata if such exists, or else the name converted to
+	 * display format (e.g. adding spacing between words, etc). Does not do localization yet!
+	 *
+	 * Note that this functions takes UField as input. The reason for that is because most
+	 * metadata classes (UProperty, UClass, UStruct) inherit from UField.
+	 */
+	static FString GetActualDisplayName(const UField* Field, bool bRemoveAgxPrefix);
+
 };
 
 template <typename TStruct, typename TOwningClass>
