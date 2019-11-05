@@ -5,6 +5,7 @@
 
 #include "AGX_MotionControl.h"
 
+#include <Containers/UnrealString.h>
 #include <Math/Vector.h>
 #include <Math/Quat.h>
 #include <Engine/World.h>
