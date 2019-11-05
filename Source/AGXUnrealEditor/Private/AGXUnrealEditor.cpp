@@ -14,13 +14,12 @@
 #include "DesktopPlatformModule.h"
 
 #include "AGX_ArchiveImporter.h"
+#include "AGX_BoxShapeComponent.h"
+#include "AGX_EditorStyle.h"
+#include "AGX_EditorUtilities.h"
 #include "AGX_LogCategory.h"
-#include "AGX_ConstraintBodyAttachmentCustomization.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
-#include "AGX_BoxShapeComponent.h"
-#include "Constraints/AGX_Constraint.h"
-#include "AGX_EditorUtilities.h"
 #include "AGX_Simulation.h"
 #include "AGX_TopMenu.h"
 #include "Constraints/AGX_Constraint.h"
@@ -37,6 +36,9 @@
 
 void FAGXUnrealEditorModule::StartupModule()
 {
+	FAGX_EditorStyle::Initialize();
+	FAGX_EditorStyle::ReloadTextures();
+
 	RegisterProjectSettings();
 	RegisterCommands();
 	RegisterCustomizations();
@@ -53,6 +55,8 @@ void FAGXUnrealEditorModule::StartupModule()
 
 void FAGXUnrealEditorModule::ShutdownModule()
 {
+	FAGX_EditorStyle::Shutdown();
+
 	UnregisterCommands();
 	UnregisterProjectSettings();
 	UnregisterCustomizations();
