@@ -18,8 +18,32 @@
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 
-
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
+
+
+std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(const FTransform& Transform, UWorld* World)
+{
+
+	/// \todo The intention is to mimmic draggin in an "Empty Actor" from the
+	/// Place mode. Investigate if we can use ActorFactoryEmptyActor instead.
+
+	AActor* NewActor = World->SpawnActor<AActor>(AActor::StaticClass(), Transform);
+	if (NewActor == nullptr)
+	{
+		/// \todo Do we need to destroy the Actor here?
+		return {nullptr, nullptr};
+	}
+
+	/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
+	/// Related to undo/redo, I think.
+	USceneComponent* Root = NewObject<USceneComponent>(
+		NewActor, USceneComponent::GetDefaultSceneRootVariableName() /*, RF_Transactional*/);
+	NewActor->SetRootComponent(Root);
+	NewActor->AddInstanceComponent(Root);
+	Root->RegisterComponent();
+
+	return {NewActor, Root};
+}
 
 namespace
 {

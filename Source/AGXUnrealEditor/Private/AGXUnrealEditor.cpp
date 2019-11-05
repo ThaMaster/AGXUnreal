@@ -48,7 +48,7 @@ void FAGXUnrealEditorModule::StartupModule()
 	FAGX_EditorUtilities::ShowDialogBox(
 		FText::Format(LOCTEXT("PluginButtonDialogText", "{0} was recompiled with C++ {1} at {2}.\n{3}"),
 			FText::FromString(TEXT(__FILE__)), FText::FromString(TEXT(STRIFY(__cplusplus))),
-			FText::FromString(TEXT(__TIME__)), FText::FromString(TEXT("Create body before root component."))));
+			FText::FromString(TEXT(__TIME__)), FText::FromString(TEXT("SetLocation after Root creation."))));
 }
 
 void FAGXUnrealEditorModule::ShutdownModule()
@@ -116,7 +116,6 @@ void FAGXUnrealEditorModule::UnregisterCommands()
 	FImportAGXArchiveCommands::Unregister();
 }
 
-/// \todo Move Unreal Editor object creation from .agx to a dedicated class.
 void FAGXUnrealEditorModule::PluginButtonClicked()
 {
 	/// \todo See

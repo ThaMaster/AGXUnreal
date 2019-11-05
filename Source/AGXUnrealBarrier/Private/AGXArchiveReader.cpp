@@ -15,6 +15,71 @@
 #include <agxCollide/Box.h>
 #include "EndAGXIncludes.h"
 
+
+#if AGX_IMPORT == AGX_IMPORT_INSTANTIATOR
+
+namespace
+{
+	void InstantiateShapes(const agxCollide::ShapeRefVector& Shapes, FAGXArchiveBody& ArchiveBody)
+	{
+		for (const agxCollide::ShapeRef& Shape : Shapes)
+		{
+			switch(Shape->getType())
+			{
+				case agxCollide::Shape::SPHERE:
+				{
+					agxCollide::Sphere* Sphere {Shape->as<agxCollide::Sphere>()};
+					ArchiveBody.InstantiateSphere(CreateSphereShapeBarrier(Sphere));
+					break;
+				}
+				case agxCollide::Shape::BOX:
+				{
+					agxCollide::Box* Box {Shape->as<agxCollide::Box>()};
+					ArchiveBody.InstantiateBox(CreateBoxShapeBarrier(Box));
+					break;
+				}
+				case agxCollide::Shape::GROUP:
+				{
+					agxCollide::ShapeGroup* Group {Shape->as<agxCollide::ShapeGroup>()};
+					InstantiateShapes(Group->getChildren(), ArchiveBody);
+					break;
+				}
+			}
+		}
+	}
+}
+
+void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& Instantiator)
+{
+	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
+	size_t NumRead {Simulation->read(Convert(Filename))};
+	if (NumRead == 0)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Could not read .agx filel %s."), *Filename);
+		return;
+	}
+
+	agx::RigidBodyRefVector& Bodies {Simulation->getRigidBodies()};
+	if (Bodies.size() > size_t(std::numeric_limits<int32>::max()))
+	{
+		UE_LOG(LogTemp, Log, TEXT(".agx file %s contains too many bodies."), *Filename);
+		return;
+	}
+
+	for (agx::RigidBodyRef& Body : Bodies)
+	{
+		FRigidBodyBarrier BodyBarrier {CreateRigidBodyBarrier(Body)};
+		std::unique_ptr<FAGXArchiveBody> ArchiveBody {Instantiator.InstantiateBody(BodyBarrier)};
+		const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
+		for (const agxCollide::GeometryRef& Geometry : Geometries)
+		{
+			::InstantiateShapes(Geometry->getShapes(), *ArchiveBody);
+		}
+	}
+}
+#endif
+
+#if AGX_IMPORT == AGX_IMPORT_COLLECTION
 struct FAGXArchiveContents
 {
 	// These store the AGX Dynamics objects restored from the archive.
@@ -92,6 +157,11 @@ namespace
 FAGXArchiveReader::FAGXArchiveReader(const FString& Filename)
 	: Contents{new FAGXArchiveContents}
 {
+	/// \todo It seems inherently unsafe to have the SimulationRef here. We will
+	/// return from this scope before the caller has had a change to read the
+	/// restored data. Data that will be lost once this SimulationRef goes out
+	/// of scope. Or maybe not. Maybe bodies will be held in the default
+	/// storages when the Simulation is destroyed.
 	agxSDK::SimulationRef Simulation = new agxSDK::Simulation();
 #if 0
 	{
@@ -172,3 +242,4 @@ const TArray<FSphereBody>& FAGXArchiveReader::GetSphereBodies() const
 {
 	return Contents->SphereBodies;
 }
+#endif

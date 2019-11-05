@@ -16,25 +16,47 @@
 
 #include <iostream>
 
+
 namespace
 {
-	/// \todo Investigate if we can use ActorFactoryEmptyActor here.
-	std::tuple<AActor*, USceneComponent*> SpawnEmptyActor(const FTransform& Transform, UWorld* World)
+	std::tuple<AActor*, USceneComponent*> InstantiateBody(const FRigidBodyBarrier& Body, UWorld& World)
 	{
-		AActor* NewActor = World->SpawnActor<AActor>(AActor::StaticClass(), Transform);
+		UE_LOG(LogTemp, Log, TEXT("Loaded AGX body with name '%s'."), *Body.GetName());
+		AActor* NewActor;
+		USceneComponent* Root;
+		FTransform Transform(Body.GetRotation(), Body.GetPosition(&World));
+		std::tie(NewActor, Root) = FAGX_EditorUtilities::CreateEmptyActor(Transform, &World);
 		if (NewActor == nullptr)
 		{
+			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s'."), *Body.GetName());
+			return {nullptr, nullptr};
+		}
+		if (Root == nullptr)
+		{
 			/// \todo Do we need to destroy the Actor here?
+			UE_LOG(LogTemp, Log, TEXT("Could not create SceneComponent for body '%s'."), *Body.GetName());
 			return {nullptr, nullptr};
 		}
 
-		/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
-		/// Related to undo/redo, I think.
-		USceneComponent* Root = NewObject<USceneComponent>(
-			NewActor, USceneComponent::GetDefaultSceneRootVariableName() /*, RF_Transactional*/);
-		NewActor->SetRootComponent(Root);
-		NewActor->AddInstanceComponent(Root);
-		Root->RegisterComponent();
+		NewActor->SetActorLabel(Body.GetName());
+
+		/// \todo For some reason the actor location must be set again after
+		/// creating the root SceneComponent, or else the Actor remain at the
+		/// origin. I'm assuming we must set rotation as well, but haven't
+		/// tested yet.
+		NewActor->SetActorLocation(Body.GetPosition(&World));
+
+		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
+		if (NewBody == nullptr)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Could not create AGX RigidBodyComponenet for body '%s'."), *Body.GetName());
+			/// \todo Do we need to destroy the Actor and the RigidBodyComponent here?
+			return {nullptr, nullptr};
+		}
+
+		NewBody->Rename(TEXT("AGX_RigidBodyComponent"));
+		NewBody->Mass = Body.GetMass();
+		NewBody->MotionControl = Body.GetMotionControl();
 
 		return {NewActor, Root};
 	}
@@ -50,7 +72,7 @@ namespace
 		AActor* NewActor;
 		USceneComponent* Root;
 		FTransform Transform(Body->GetRotation(), Body->GetPosition(World));
-		std::tie(NewActor, Root) = SpawnEmptyActor(Transform, World);
+		std::tie(NewActor, Root) = FAGX_EditorUtilities::CreateEmptyActor(Transform, World);
 		if (NewActor == nullptr)
 		{
 			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s'."), *Body->GetName());
@@ -88,12 +110,106 @@ namespace
 	}
 }
 
+
+#if AGX_IMPORT == AGX_IMPORT_INSTANTIATOR
+
+AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
+{
+	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
+	if (World == nullptr)
+	{
+		return nullptr;
+	}
+
+	// The ImportGroup AActor will contain all objects created while reading
+	// the AGX Dynamics archive.
+	AActor* ImportGroup;
+	USceneComponent* ImportRoot;
+	/// \todo Consider placing ImportedRoot at the center if the imported bodies.
+	std::tie(ImportGroup, ImportRoot) = FAGX_EditorUtilities::CreateEmptyActor(FTransform::Identity, World);
+	if (ImportGroup == nullptr || ImportRoot == nullptr)
+	{
+		return nullptr;
+	}
+
+	FString Filename;
+	/// \todo What about platforms that don't use / as a path separator?
+	ArchivePath.Split(TEXT("/"), nullptr, &Filename, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+	ImportGroup->SetActorLabel(Filename);
+
+	// Archive instantiator that creates sub-objects under RigidBody. Knows how
+	// to create various subclasses of AGX_ShapesComponent in Unreal Editor.
+	class EditorBody final : public FAGXArchiveBody
+	{
+	public:
+		EditorBody(AActor& InActor, USceneComponent& InRoot, UWorld& InWorld)
+			: Actor(InActor), Root(InRoot), World(InWorld)
+		{
+		}
+
+		virtual void InstantiateSphere(const FSphereShapeBarrier& Sphere) override
+		{
+			UAGX_SphereShapeComponent* NewSphere = FAGX_EditorUtilities::CreateSphereShape(&Actor, &Root);
+			NewSphere->Radius = Sphere.GetRadius(&World);
+			NewSphere->UpdateVisualMesh();
+		}
+
+		virtual void InstantiateBox(const FBoxShapeBarrier& Box) override
+		{
+			UAGX_BoxShapeComponent* NewBox = FAGX_EditorUtilities::CreateBoxShape(&Actor, &Root);
+			NewBox->HalfExtent = Box.GetHalfExtents(&World);
+			NewBox->UpdateVisualMesh();
+		}
+
+		AActor& Actor;
+		USceneComponent& Root;
+		UWorld& World;
+	};
+
+	// Archive instantiator that creates top-level objects. Knows how to create
+	// UAGX_RigidBodyComponent in Unreal Editor.
+	class EditorInstantiator final : public FAGXArchiveInstantiator
+	{
+	public:
+		EditorInstantiator(AActor& InImportedRoot, UWorld& InWorld)
+			: ImportedRoot(InImportedRoot), World(InWorld)
+		{
+		}
+
+		virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
+		{
+			AActor* NewActor;
+			USceneComponent* ActorRoot;
+			std::tie(NewActor, ActorRoot) = ::InstantiateBody(Barrier, World);
+			if (NewActor == nullptr || ActorRoot == nullptr)
+			{
+				return nullptr;
+			}
+			NewActor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
+			return new EditorBody(*NewActor, *ActorRoot, World);
+		}
+	private:
+		AActor& ImportedRoot;
+		UWorld& World;
+	};
+
+
+	EditorInstantiator Instantiator(*ImportGroup, *World);
+	FAGXArchiveReader::Read(ArchivePath, Instantiator);
+
+	return ImportGroup;
+}
+
+#endif
+
+
+
+#if AGX_IMPORT == AGX_IMPORT_COLLECTION
+
 AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 {
 	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
 	check(World);
-
-	std::cout << "C++ version: " << __cplusplus << '\n';
 
 	FAGXArchiveReader Archive(ArchivePath);
 	if (Archive.GetBoxBodies().Num() == 0 && Archive.GetSphereBodies().Num() == 0)
@@ -107,7 +223,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 	/// \todo Consider placing the ImportedRoot at the center of the imported bodies.
 	AActor* ImportRoot;
 	USceneComponent* Root;
-	std::tie(ImportRoot, Root) = ::SpawnEmptyActor(FTransform::Identity, World);
+	std::tie(ImportRoot, Root) = FAGX_EditorUtilities::CreateEmptyActor(FTransform::Identity, World);
 
 	FString Filename;
 	ArchivePath.Split(TEXT("/"), nullptr, &Filename, ESearchCase::IgnoreCase,  ESearchDir::FromEnd);
@@ -140,5 +256,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 
 	return ImportRoot;
 }
+
+#endif
 
 #undef LOCTEXT_NAMESPACE
