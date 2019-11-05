@@ -10,6 +10,11 @@
  */
 class AGXUNREALEDITOR_API FAGX_EditorStyle
 {
+public: // Names of common resources
+
+	static const FName AgxIcon;
+	static const FName AgxIconSmall;
+
 public:
 
 	static void Initialize();

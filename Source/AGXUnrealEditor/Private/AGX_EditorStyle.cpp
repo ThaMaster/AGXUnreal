@@ -10,6 +10,8 @@
 
 
 TSharedPtr<FSlateStyleSet> FAGX_EditorStyle::StyleInstance = nullptr;
+const FName FAGX_EditorStyle::AgxIcon("AgxIcon");
+const FName FAGX_EditorStyle::AgxIconSmall("AgxIcon.Small");
 
 void FAGX_EditorStyle::Initialize()
 {
@@ -68,6 +70,9 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("AGXUnreal")->GetContentDir() / TEXT("Editor"));
 
 	// Define icons and stuff here.
+	
+	Style->Set(AgxIcon, new IMAGE_BRUSH("Icons/T_AgxIcon47", IconSize40));
+	Style->Set(AgxIconSmall, new IMAGE_BRUSH("Icons/T_AgxIcon47", IconSize16));
 
 	return Style;
 };
