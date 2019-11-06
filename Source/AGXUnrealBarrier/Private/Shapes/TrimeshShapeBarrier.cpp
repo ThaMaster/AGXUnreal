@@ -10,6 +10,8 @@
 
 #include "Misc/AssertionMacros.h"
 
+#include "Engine/World.h"
+
 namespace
 {
 	agxCollide::Trimesh* NativeTrimesh(FTrimeshShapeBarrier* Barrier)
@@ -44,6 +46,43 @@ FTrimeshShapeBarrier::~FTrimeshShapeBarrier()
 	// Must provide a destructor implementation in the .cpp file because the
 	// std::unique_ptr NativeRef's destructor must be able to see the definition,
 	// not just the forward declaration, of FTrimeshShapeRef.
+}
+
+TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions(const UWorld* World) const
+{
+	TArray<FVector> VertexPositions;
+
+	if (!HasNative())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Cannot fetch positions from Trimesh barrier without a native Trimesh."));
+		return VertexPositions;
+	}
+
+	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
+	if (Trimesh == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Native shape is not a Trimesh."));
+		return VertexPositions;
+	}
+
+	size_t NumVerticesAGX = Trimesh->getNumVertices();
+	if (NumVerticesAGX > static_cast<size_t>(std::numeric_limits<int32>::max()))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Native trimesh contains more vertices than Unreal can handle."));
+		return VertexPositions;
+	}
+
+	int32 NumVertices = static_cast<int32>(NumVerticesAGX);
+	VertexPositions.Reserve(NumVertices);
+
+	const agxCollide::CollisionMeshData* MeshData = Trimesh->getMeshData();
+	const agx::Vec3Vector& Positions = MeshData->getVertices();
+	for (const agx::Vec3& Position : Positions)
+	{
+		VertexPositions.Add(ConvertVector(Position, World));
+	}
+
+	return VertexPositions;
 }
 
 void FTrimeshShapeBarrier::AllocateNative(

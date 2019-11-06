@@ -17,6 +17,12 @@ public:
 	FTrimeshShapeBarrier(FTrimeshShapeBarrier&& Other);
 	virtual ~FTrimeshShapeBarrier() override;
 
+	/**
+	 * One FVector per vertex location. Vertex positions can be shared between
+	 * triangles.
+	 */
+	TArray<FVector> GetVertexPositions(const UWorld* World) const;
+
 	void AllocateNative(
 		const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise, UWorld* World);
 
