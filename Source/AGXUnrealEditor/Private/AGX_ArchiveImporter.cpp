@@ -121,6 +121,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			UAGX_TrimeshShapeComponent* NewTrimesh = FAGX_EditorUtilities::CreateTrimeshShape(&Actor, &Root);
 			NewTrimesh->MeshSourceLocation = EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 			FAGX_EditorUtilities::CreateStaticMesh(NewTrimesh, TArray<FVector>());
+			ShapeComponent->UpdateVisualMesh();
 		}
 
 		AActor& Actor;
