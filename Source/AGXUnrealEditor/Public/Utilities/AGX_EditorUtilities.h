@@ -11,6 +11,8 @@ class UAGX_SphereShapeComponent;
 class UAGX_BoxShapeComponent;
 class UAGX_TrimeshShapeComponent;
 
+class FTrimeshShapeBarrier;
+
 class AActor;
 class FText;
 class UClass;
@@ -57,7 +59,7 @@ public:
 	 * as a child to the given UAGX_TrimeshShapeComponent.
 	 */
 	static UStaticMeshComponent* CreateStaticMesh(
-		UAGX_TrimeshShapeComponent* Outer, const TArray<FVector>& VertexPositions);
+		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh, const UWorld* World);
 
 	/**
 	 * Create a new constraint of the specified type.

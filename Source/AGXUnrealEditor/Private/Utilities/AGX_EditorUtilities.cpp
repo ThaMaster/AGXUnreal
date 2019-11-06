@@ -1,16 +1,18 @@
 #include "Utilities/AGX_EditorUtilities.h"
 
-#include "Classes/Editor/EditorEngine.h"
-#include "Classes/Engine/GameEngine.h"
-#include "Classes/Engine/Selection.h"
-#include "Classes/GameFramework/PlayerController.h"
+#include "Editor/EditorEngine.h"
+#include "Engine/GameEngine.h"
+#include "Engine/Selection.h"
+#include "Engine/StaticMesh.h"
 #include "Framework/Notifications/NotificationManager.h"
-#include "UObject/UObjectGlobals.h"
+#include "GameFramework/PlayerController.h"
 #include "Misc/MessageDialog.h"
+#include "UObject/UObjectGlobals.h"
 
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Editor.h"
 #include "EditorStyleSet.h"
+#include "RawMesh.h"
 
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
@@ -97,10 +99,94 @@ UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(AActor* Own
 }
 
 UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
-	UAGX_TrimeshShapeComponent* Outer, const TArray<FVector>& VertexPositions)
+	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh, const UWorld* World)
 {
+	FRawMesh RawMesh;
+
+	RawMesh.VertexPositions = Trimesh.GetVertexPositions(World);
+	RawMesh.WedgeIndices = Trimesh.GetVertexIndices();
+	TArray<FVector> TriangleNormals = Trimesh.GetTriangleNormals(World);
+
+	const int32 NumFaces = TriangleNormals.Num();
+	const int32 NumWedges = RawMesh.WedgeIndices.Num();
+	check(NumWedges == 3 * NumFaces);
+
+	RawMesh.FaceMaterialIndices.Reserve(NumFaces);
+	RawMesh.FaceSmoothingMasks.Reserve(NumFaces);
+	for (int32 FaceIndex = 0; FaceIndex < NumFaces; ++FaceIndex)
+	{
+		RawMesh.FaceMaterialIndices.Add(0);
+		RawMesh.FaceSmoothingMasks.Add(0xFFFFFFFF);
+	}
+
+	RawMesh.WedgeTangentX.Reserve(NumWedges);
+	RawMesh.WedgeTangentY.Reserve(NumWedges);
+	RawMesh.WedgeTangentZ.Reserve(NumWedges);
+	RawMesh.WedgeColors.Reserve(NumWedges);
+	for (int32 UVIndex = 0; UVIndex < MAX_MESH_TEXTURE_COORDS; ++UVIndex)
+	{
+		RawMesh.WedgeTexCoords[UVIndex].Reserve(NumWedges);
+	}
+
+	for (int32 i = 0; i < NumWedges; ++i)
+	{
+		RawMesh.WedgeTangentX.Add(FVector(0.0f, 0.0f, 0.0f));
+		RawMesh.WedgeTangentY.Add(FVector(0.0f, 0.0f, 0.0f));
+		RawMesh.WedgeColors.Add(FColor(255, 255, 255));
+		for (int32 UVIndex = 0; UVIndex < MAX_MESH_TEXTURE_COORDS; ++UVIndex)
+		{
+			RawMesh.WedgeTexCoords[UVIndex].Add(FVector2D(0.0f, 0.0f));
+		}
+	}
+
+	for (const FVector& TriangleNormal : TriangleNormals)
+	{
+		// The native trimesh store normals per triangle and not per vertex as
+		// Unreal want it. Duplicating the normals here, but if we want smooth
+		// shading then we should try to let Unreal compute the normals for us.
+		RawMesh.WedgeTangentZ.Add(TriangleNormal);
+		RawMesh.WedgeTangentZ.Add(TriangleNormal);
+		RawMesh.WedgeTangentZ.Add(TriangleNormal);
+	}
+
+	/// \todo I don't understand the Package stuff yet.
+	FString PackagePath{TEXT("/ImportedMeshes")};
+	FString AbsolutePackagePath = FPaths::ProjectContentDir() + TEXT("/ImportedMeshes");
+	FPackageName::RegisterMountPoint(*PackagePath, *AbsolutePackagePath);
+	UPackage* Package = CreatePackage(nullptr, *PackagePath);
+
+	FName MeshName{*Outer->GetName()};
+	FName StaticMeshName = MakeUniqueObjectName(Package, UStaticMesh::StaticClass(), MeshName);
+	UStaticMesh* StaticMesh = NewObject<UStaticMesh>(Package, StaticMeshName, RF_Public | RF_Standalone);
+	StaticMesh->SourceModels.Emplace();
+	StaticMesh->StaticMaterials.Add(FStaticMaterial());
+	FStaticMeshSourceModel& SourceModel = StaticMesh->SourceModels.Last();
+	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
+	FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
+	BuildSettings.bRecomputeNormals = true;
+	BuildSettings.bRecomputeTangents = true;
+	BuildSettings.bUseMikkTSpace = false;	/// \todo Why not true?
+	BuildSettings.bGenerateLightmapUVs = true;
+	BuildSettings.bBuildAdjacencyBuffer = false;
+	BuildSettings.bBuildReversedIndexBuffer = false;
+	BuildSettings.bUseFullPrecisionUVs = false;
+	BuildSettings.bUseHighPrecisionTangentBasis = false;
+
+	/// \todo I don't know what any of this does.
+	StaticMesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
+	StaticMesh->CreateBodySetup();
+	StaticMesh->SetLightingGuid();
+	StaticMesh->PostEditChange();
+	Package->MarkPackageDirty();
+
 	UClass* Class = UStaticMeshComponent::StaticClass();
 	UStaticMeshComponent* StaticMeshComponent = NewObject<UStaticMeshComponent>(Outer, Class);
+	StaticMeshComponent->SetStaticMesh(StaticMesh);
+	Owner->AddInstanceComponent(StaticMeshComponent);
+	StaticMeshComponent->RegisterComponent();
+	const bool Attached =
+		StaticMeshComponent->AttachToComponent(Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	check(Attached);
 	return StaticMeshComponent;
 }
 
