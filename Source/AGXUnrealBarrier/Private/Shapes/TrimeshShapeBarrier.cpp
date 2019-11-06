@@ -122,6 +122,41 @@ TArray<uint32> FTrimeshShapeBarrier::GetVertexIndices() const
 	return VertexIndices;
 }
 
+TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals(const UWorld* World) const
+{
+	TArray<FVector> TriangleNormals;
+
+	if (!HasNative())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Cannot fetch triangle normals from Trimesh barrier without a native Trimesh."));
+		return TriangleNormals;
+	}
+
+	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
+	if (Trimesh == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("NativeShape is not a Trimesh."));
+		return TriangleNormals;
+	}
+
+	const size_t NumTrianglesAGX = Trimesh->getNumTriangles();
+	if (NumTrianglesAGX > static_cast<size_t>(std::numeric_limits<int32>::max()))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Native trimesh contains more triangles than Unreal can handle"));
+		return TriangleNormals;
+	}
+
+	const int32 NumTriangles = static_cast<int32>(NumTrianglesAGX);
+	TriangleNormals.Reserve(NumTriangles);
+	const agx::Vec3Vector& Normals = Trimesh->getMeshData()->getNormals();
+	for (const agx::Vec3& Normal : Normals)
+	{
+		TriangleNormals.Add(ConvertVector(Normal, World));
+	}
+
+	return TriangleNormals;
+}
+
 void FTrimeshShapeBarrier::AllocateNative(
 	const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise, UWorld* World)
 {

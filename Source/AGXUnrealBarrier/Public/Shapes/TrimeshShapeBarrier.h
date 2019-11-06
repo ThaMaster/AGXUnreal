@@ -30,6 +30,11 @@ public:
 	 */
 	TArray<uint32> GetVertexIndices() const;
 
+	/**
+	 * Per-triangle normal.
+	 */
+	TArray<FVector> GetTriangleNormals(const UWorld* World) const;
+
 	void AllocateNative(
 		const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise, UWorld* World);
 
