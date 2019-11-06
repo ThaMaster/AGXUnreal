@@ -23,6 +23,13 @@ public:
 	 */
 	TArray<FVector> GetVertexPositions(const UWorld* World) const;
 
+	/**
+	 * Mapping from triangles to vertex positions. Each three consecutive
+	 * indices for a triangle between the three pointed-to vertex positions.
+	 * Several triangles may reference the same vertex position.
+	 */
+	TArray<uint32> GetVertexIndices() const;
+
 	void AllocateNative(
 		const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise, UWorld* World);
 

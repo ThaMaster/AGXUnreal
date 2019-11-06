@@ -85,6 +85,43 @@ TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions(const UWorld* World) co
 	return VertexPositions;
 }
 
+TArray<uint32> FTrimeshShapeBarrier::GetVertexIndices() const
+{
+	TArray<uint32> VertexIndices;
+
+	if (!HasNative())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Cannot fetch vertex indices from Trimesh barrier without a native Trimesh."));
+		return VertexIndices;
+	}
+
+	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
+	if (Trimesh == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Native shape is not a Trimesh."));
+		return VertexIndices;
+	}
+
+	size_t NumTriangles = Trimesh->getNumTriangles();
+	if (NumTriangles * 3 > static_cast<size_t>(std::numeric_limits<int32>::max()))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Native trimesh contains more triangles than Unreal can handle"));
+		return VertexIndices;
+	}
+
+	const int32 NumIndices = static_cast<int32>(3 * NumTriangles);
+	VertexIndices.Reserve(NumIndices);
+	const agxCollide::CollisionMeshData* MeshData = Trimesh->getMeshData();
+	const agx::UInt32Vector& Indices = MeshData->getIndices();
+	for (agx::UInt32 Index : Indices)
+	{
+		// Assuming agx::UInt32 to uint32 conversion is always safe.
+		VertexIndices.Add(static_cast<uint32>(Index));
+	}
+
+	return VertexIndices;
+}
+
 void FTrimeshShapeBarrier::AllocateNative(
 	const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise, UWorld* World)
 {
