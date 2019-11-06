@@ -104,23 +104,23 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 
 		virtual void InstantiateSphere(const FSphereShapeBarrier& Sphere) override
 		{
-			UAGX_SphereShapeComponent* NewSphere = FAGX_EditorUtilities::CreateSphereShape(&Actor, &Root);
-			NewSphere->Radius = Sphere.GetRadius(&World);
-			NewSphere->UpdateVisualMesh();
+			UAGX_SphereShapeComponent* ShapeComponent = FAGX_EditorUtilities::CreateSphereShape(&Actor, &Root);
+			ShapeComponent->Radius = Sphere.GetRadius(&World);
+			ShapeComponent->UpdateVisualMesh();
 		}
 
 		virtual void InstantiateBox(const FBoxShapeBarrier& Box) override
 		{
-			UAGX_BoxShapeComponent* NewBox = FAGX_EditorUtilities::CreateBoxShape(&Actor, &Root);
-			NewBox->HalfExtent = Box.GetHalfExtents(&World);
-			NewBox->UpdateVisualMesh();
+			UAGX_BoxShapeComponent* ShapeComponent = FAGX_EditorUtilities::CreateBoxShape(&Actor, &Root);
+			ShapeComponent->HalfExtent = Box.GetHalfExtents(&World);
+			ShapeComponent->UpdateVisualMesh();
 		}
 
 		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) override
 		{
-			UAGX_TrimeshShapeComponent* NewTrimesh = FAGX_EditorUtilities::CreateTrimeshShape(&Actor, &Root);
-			NewTrimesh->MeshSourceLocation = EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
-			FAGX_EditorUtilities::CreateStaticMesh(NewTrimesh, TArray<FVector>());
+			UAGX_TrimeshShapeComponent* ShapeComponent = FAGX_EditorUtilities::CreateTrimeshShape(&Actor, &Root);
+			ShapeComponent->MeshSourceLocation = EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
+			FAGX_EditorUtilities::CreateStaticMesh(&Actor, ShapeComponent, Trimesh, &World);
 			ShapeComponent->UpdateVisualMesh();
 		}
 
