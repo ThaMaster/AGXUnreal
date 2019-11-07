@@ -7,9 +7,11 @@
 #include "Framework/Notifications/NotificationManager.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/MessageDialog.h"
+#include "Misc/Char.h"
 #include "UObject/UObjectGlobals.h"
-
 #include "Widgets/Notifications/SNotificationList.h"
+
+#include "AssetRegistryModule.h"
 #include "Editor.h"
 #include "EditorStyleSet.h"
 #include "RawMesh.h"
@@ -98,6 +100,23 @@ UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(AActor* Own
 	return ::CreateShapeComponent<UAGX_TrimeshShapeComponent>(Owner, Outer);
 }
 
+namespace
+{
+	FString SanitizeName(const FString& Name)
+	{
+		FString Sanitized;
+		Sanitized.Reserve(Name.Len());
+		for (TCHAR C : Name)
+		{
+			if (TChar<TCHAR>::IsAlnum(C))
+			{
+				Sanitized.AppendChar(C);
+			}
+		}
+		return Sanitized;
+	}
+}
+
 UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh, const UWorld* World)
 {
@@ -149,21 +168,26 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 		RawMesh.WedgeTangentZ.Add(TriangleNormal);
 	}
 
-	/// \todo I don't understand the Package stuff yet.
-	FString PackagePath{TEXT("/ImportedMeshes")};
-	FString AbsolutePackagePath = FPaths::ProjectContentDir() + TEXT("/ImportedMeshes");
-	FPackageName::RegisterMountPoint(*PackagePath, *AbsolutePackagePath);
-	UPackage* Package = CreatePackage(nullptr, *PackagePath);
+	FString TrimeshName{SanitizeName(Trimesh.GetSourceName())};
+	if (TrimeshName.IsEmpty())
+	{
+		TrimeshName = TEXT("ImportedAGXMesh");
+	}
 
-	FName MeshName{*Outer->GetName()};
-	FName StaticMeshName = MakeUniqueObjectName(Package, UStaticMesh::StaticClass(), MeshName);
-	UStaticMesh* StaticMesh = NewObject<UStaticMesh>(Package, StaticMeshName, RF_Public | RF_Standalone);
+	/// \todo I don't understand the Package stuff yet.
+	FString PackagePath{TEXT("/Game/ImportedAGXMeshes")};
+	UPackage* Package = CreatePackage(nullptr, *PackagePath);
+	Package->FullyLoad();
+
+	FName UniqueMeshName = MakeUniqueObjectName(Package, UStaticMesh::StaticClass(), *TrimeshName);
+	UStaticMesh* StaticMesh =
+		NewObject<UStaticMesh>(Package, UniqueMeshName, RF_Public | RF_Standalone | RF_MarkAsRootSet);
 	StaticMesh->SourceModels.Emplace();
 	StaticMesh->StaticMaterials.Add(FStaticMaterial());
 	FStaticMeshSourceModel& SourceModel = StaticMesh->SourceModels.Last();
 	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
 	FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
-	BuildSettings.bRecomputeNormals = true;
+	BuildSettings.bRecomputeNormals = false;
 	BuildSettings.bRecomputeTangents = true;
 	BuildSettings.bUseMikkTSpace = false;	/// \todo Why not true?
 	BuildSettings.bGenerateLightmapUVs = true;
@@ -172,15 +196,30 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 	BuildSettings.bUseFullPrecisionUVs = false;
 	BuildSettings.bUseHighPrecisionTangentBasis = false;
 
-	/// \todo I don't know what any of this does.
 	StaticMesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
 	StaticMesh->CreateBodySetup();
 	StaticMesh->SetLightingGuid();
 	StaticMesh->PostEditChange();
 	Package->MarkPackageDirty();
+	FAssetRegistryModule::AssetCreated(StaticMesh);
+	FString PackageFileName = FPackageName::LongPackageNameToFilename(
+		PackagePath + "/" + UniqueMeshName.ToString(), FPackageName::GetAssetPackageExtension());
+	if (PackageFileName.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Package path '%s' produced empty long package name."), *PackagePath);
+		PackageFileName = "FallbackFilename.uasset";
+	}
+	bool bSaved = UPackage::SavePackage(Package, StaticMesh, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone,
+		*PackageFileName, GError, nullptr, true, true, SAVE_NoError);
+	if (!bSaved)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Save of imported StaticMesh asset failed."));
+		// No return intentional. We want to create a UStaticMeshComponent for
+		// the StaticMesh even if it couldn't be saved to disk.
+	}
 
 	UClass* Class = UStaticMeshComponent::StaticClass();
-	UStaticMeshComponent* StaticMeshComponent = NewObject<UStaticMeshComponent>(Outer, Class);
+	UStaticMeshComponent* StaticMeshComponent = NewObject<UStaticMeshComponent>(Outer, Class, UniqueMeshName);
 	StaticMeshComponent->SetStaticMesh(StaticMesh);
 	Owner->AddInstanceComponent(StaticMeshComponent);
 	StaticMeshComponent->RegisterComponent();
