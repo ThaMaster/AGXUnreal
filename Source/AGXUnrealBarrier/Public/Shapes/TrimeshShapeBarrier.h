@@ -35,6 +35,14 @@ public:
 	 */
 	TArray<FVector> GetTriangleNormals(const UWorld* World) const;
 
+	/**
+	 * The source name is a user-provided string that is stored with the trimesh.
+	 * it can be the name of a file on disk from which the mesh data was read,
+	 * or some other form of description. May be the empty string.
+	 * @return The source name that has been stored with the trimesh.
+	 */
+	FString GetSourceName() const;
+
 	void AllocateNative(
 		const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise, UWorld* World);
 

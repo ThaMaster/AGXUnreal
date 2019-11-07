@@ -157,6 +157,20 @@ TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals(const UWorld* World) co
 	return TriangleNormals;
 }
 
+FString FTrimeshShapeBarrier::GetSourceName() const
+{
+	FString SourceName;
+	if (!HasNative())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cannot fetch triangle soure name from Trimesh barrier without a native Trimesh"));
+		return SourceName;
+	}
+
+	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
+	SourceName = Convert(Trimesh->getSourceName());
+	return SourceName;
+}
+
 void FTrimeshShapeBarrier::AllocateNative(
 	const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise, UWorld* World)
 {
