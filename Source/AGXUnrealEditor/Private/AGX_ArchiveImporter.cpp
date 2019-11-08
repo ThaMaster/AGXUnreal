@@ -103,14 +103,14 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		{
 			UAGX_SphereShapeComponent* ShapeComponent = FAGX_EditorUtilities::CreateSphereShape(&Actor, &Root);
 			ShapeComponent->Radius = Sphere.GetRadius(&World);
-			ShapeComponent->UpdateVisualMesh();
+			FinalizeShape(ShapeComponent, Sphere);
 		}
 
 		virtual void InstantiateBox(const FBoxShapeBarrier& Box) override
 		{
 			UAGX_BoxShapeComponent* ShapeComponent = FAGX_EditorUtilities::CreateBoxShape(&Actor, &Root);
 			ShapeComponent->HalfExtent = Box.GetHalfExtents(&World);
-			ShapeComponent->UpdateVisualMesh();
+			FinalizeShape(ShapeComponent, Box);
 		}
 
 		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) override
@@ -118,7 +118,17 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			UAGX_TrimeshShapeComponent* ShapeComponent = FAGX_EditorUtilities::CreateTrimeshShape(&Actor, &Root);
 			ShapeComponent->MeshSourceLocation = EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 			FAGX_EditorUtilities::CreateStaticMesh(&Actor, ShapeComponent, Trimesh, &World);
-			ShapeComponent->UpdateVisualMesh();
+			FinalizeShape(ShapeComponent, Trimesh);
+		}
+
+	private:
+		void FinalizeShape(UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier)
+		{
+			FVector Location;
+			FQuat Rotation;
+			std::tie(Location, Rotation) = Barrier.GetLocalPositionAndRotation(&World);
+			Component->SetRelativeLocationAndRotation(Location, Rotation);
+			Component->UpdateVisualMesh();
 		}
 
 		AActor& Actor;
