@@ -122,28 +122,28 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 {
 	FRawMesh RawMesh = Trimesh.GetRawMesh(World);
 
-	FString TrimeshName{SanitizeName(Trimesh.GetSourceName())};
+	FString TrimeshName = SanitizeName(Trimesh.GetSourceName());
 	if (TrimeshName.IsEmpty())
 	{
 		TrimeshName = TEXT("ImportedAGXMesh");
 	}
 
-	/// \todo I don't understand the Package stuff yet.
-	FString PackagePath{TEXT("/Game/ImportedAGXMeshes")};
+	FString PackagePath = TEXT("/Game/ImportedAGXMeshes");
 	UPackage* Package = CreatePackage(nullptr, *PackagePath);
 	Package->FullyLoad();
 
 	FName UniqueMeshName = MakeUniqueObjectName(Package, UStaticMesh::StaticClass(), *TrimeshName);
 	UStaticMesh* StaticMesh =
 		NewObject<UStaticMesh>(Package, UniqueMeshName, RF_Public | RF_Standalone | RF_MarkAsRootSet);
-	StaticMesh->SourceModels.Emplace();
 	StaticMesh->StaticMaterials.Add(FStaticMaterial());
+	StaticMesh->SourceModels.Emplace();
 	FStaticMeshSourceModel& SourceModel = StaticMesh->SourceModels.Last();
 	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
 	FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
+	// Somewhat unclear what all these should be.
 	BuildSettings.bRecomputeNormals = true;
 	BuildSettings.bRecomputeTangents = true;
-	BuildSettings.bUseMikkTSpace = false;	/// \todo Why not true?
+	BuildSettings.bUseMikkTSpace = false;
 	BuildSettings.bGenerateLightmapUVs = true;
 	BuildSettings.bBuildAdjacencyBuffer = false;
 	BuildSettings.bBuildReversedIndexBuffer = false;
