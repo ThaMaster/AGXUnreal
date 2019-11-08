@@ -141,7 +141,7 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 	FStaticMeshSourceModel& SourceModel = StaticMesh->SourceModels.Last();
 	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
 	FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
-	BuildSettings.bRecomputeNormals = false;
+	BuildSettings.bRecomputeNormals = true;
 	BuildSettings.bRecomputeTangents = true;
 	BuildSettings.bUseMikkTSpace = false;	/// \todo Why not true?
 	BuildSettings.bGenerateLightmapUVs = true;
