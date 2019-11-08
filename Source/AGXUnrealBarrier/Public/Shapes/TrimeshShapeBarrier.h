@@ -2,7 +2,8 @@
 
 #include "Shapes/ShapeBarrier.h"
 
-#include <Math/Vector.h>
+#include "RawMesh.h"
+#include "Math/Vector.h"
 
 #include <memory>
 
@@ -16,6 +17,8 @@ public:
 	FTrimeshShapeBarrier(std::unique_ptr<FGeometryAndShapeRef> Native);
 	FTrimeshShapeBarrier(FTrimeshShapeBarrier&& Other);
 	virtual ~FTrimeshShapeBarrier() override;
+
+	FRawMesh GetRawMesh(const UWorld* World) const;
 
 	/**
 	 * One FVector per vertex location. Vertex positions can be shared between
