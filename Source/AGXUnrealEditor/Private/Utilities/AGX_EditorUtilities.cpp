@@ -156,15 +156,16 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 	StaticMesh->PostEditChange();
 	Package->MarkPackageDirty();
 	FAssetRegistryModule::AssetCreated(StaticMesh);
-	FString PackageFileName = FPackageName::LongPackageNameToFilename(
+	FString AssetFileName = FPackageName::LongPackageNameToFilename(
 		PackagePath + "/" + UniqueMeshName.ToString(), FPackageName::GetAssetPackageExtension());
-	if (PackageFileName.IsEmpty())
+	if (AssetFileName.IsEmpty())
 	{
+		AssetFileName = FPaths::ProjectContentDir() + "/FallbackFilename.uasset";
 		UE_LOG(LogTemp, Warning, TEXT("Package path '%s' produced empty long package name."), *PackagePath);
-		PackageFileName = "FallbackFilename.uasset";
+		UE_LOG(LogTemp, Warning, TEXT("Using fallback name '%s'."), *AssetFileName);
 	}
 	bool bSaved = UPackage::SavePackage(Package, StaticMesh, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone,
-		*PackageFileName, GError, nullptr, true, true, SAVE_NoError);
+		*AssetFileName, GError, nullptr, true, true, SAVE_NoError);
 	if (!bSaved)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Save of imported StaticMesh asset failed."));
