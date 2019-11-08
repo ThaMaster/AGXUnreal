@@ -120,53 +120,7 @@ namespace
 UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh, const UWorld* World)
 {
-	FRawMesh RawMesh;
-
-	RawMesh.VertexPositions = Trimesh.GetVertexPositions(World);
-	RawMesh.WedgeIndices = Trimesh.GetVertexIndices();
-	TArray<FVector> TriangleNormals = Trimesh.GetTriangleNormals(World);
-
-	const int32 NumFaces = TriangleNormals.Num();
-	const int32 NumWedges = RawMesh.WedgeIndices.Num();
-	check(NumWedges == 3 * NumFaces);
-
-	RawMesh.FaceMaterialIndices.Reserve(NumFaces);
-	RawMesh.FaceSmoothingMasks.Reserve(NumFaces);
-	for (int32 FaceIndex = 0; FaceIndex < NumFaces; ++FaceIndex)
-	{
-		RawMesh.FaceMaterialIndices.Add(0);
-		RawMesh.FaceSmoothingMasks.Add(0xFFFFFFFF);
-	}
-
-	RawMesh.WedgeTangentX.Reserve(NumWedges);
-	RawMesh.WedgeTangentY.Reserve(NumWedges);
-	RawMesh.WedgeTangentZ.Reserve(NumWedges);
-	RawMesh.WedgeColors.Reserve(NumWedges);
-	for (int32 UVIndex = 0; UVIndex < MAX_MESH_TEXTURE_COORDS; ++UVIndex)
-	{
-		RawMesh.WedgeTexCoords[UVIndex].Reserve(NumWedges);
-	}
-
-	for (int32 i = 0; i < NumWedges; ++i)
-	{
-		RawMesh.WedgeTangentX.Add(FVector(0.0f, 0.0f, 0.0f));
-		RawMesh.WedgeTangentY.Add(FVector(0.0f, 0.0f, 0.0f));
-		RawMesh.WedgeColors.Add(FColor(255, 255, 255));
-		for (int32 UVIndex = 0; UVIndex < MAX_MESH_TEXTURE_COORDS; ++UVIndex)
-		{
-			RawMesh.WedgeTexCoords[UVIndex].Add(FVector2D(0.0f, 0.0f));
-		}
-	}
-
-	for (const FVector& TriangleNormal : TriangleNormals)
-	{
-		// The native trimesh store normals per triangle and not per vertex as
-		// Unreal want it. Duplicating the normals here, but if we want smooth
-		// shading then we should try to let Unreal compute the normals for us.
-		RawMesh.WedgeTangentZ.Add(TriangleNormal);
-		RawMesh.WedgeTangentZ.Add(TriangleNormal);
-		RawMesh.WedgeTangentZ.Add(TriangleNormal);
-	}
+	FRawMesh RawMesh = Trimesh.GetRawMesh(World);
 
 	FString TrimeshName{SanitizeName(Trimesh.GetSourceName())};
 	if (TrimeshName.IsEmpty())
