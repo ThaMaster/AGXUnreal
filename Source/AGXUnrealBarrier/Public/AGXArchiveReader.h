@@ -10,12 +10,6 @@ class FBoxShapeBarrier;
 class FSphereShapeBarrier;
 class FTrimeshShapeBarrier;
 
-#define AGX_IMPORT_INSTANTIATOR 1
-#define AGX_IMPORT_COLLECTION 2
-#define AGX_IMPORT AGX_IMPORT_INSTANTIATOR
-
-#if AGX_IMPORT == AGX_IMPORT_INSTANTIATOR
-
 /*
 The separation between the Unreal part and the AGX Dynamics part of the plugin
 makes reading .agx archives a bit complicated. The reader consists of two
@@ -93,36 +87,3 @@ namespace FAGXArchiveReader
 	 */
 	AGXUNREALBARRIER_API void Read(const FString& Filename, FAGXArchiveInstantiator& Instantiator);
 };
-#endif
-
-
-#if AGX_IMPORT == AGX_IMPORT_COLLECTION
-
-/// \todo These structs doesn't scale to bodies with multiple shapes, which is
-/// supported by AGXUnreal. Find a better way.
-
-struct AGXUNREALBARRIER_API FBoxBody
-{
-	FRigidBodyBarrier* Body;
-	FBoxShapeBarrier* Box;
-};
-
-struct AGXUNREALBARRIER_API FSphereBody
-{
-	FRigidBodyBarrier* Body;
-	FSphereShapeBarrier* Sphere;
-};
-
-class AGXUNREALBARRIER_API FAGXArchiveReader
-{
-public:
-	FAGXArchiveReader(const FString& Filename);
-	~FAGXArchiveReader();
-
-	const TArray<FBoxBody>& GetBoxBodies() const;
-	const TArray<FSphereBody>& GetSphereBodies() const;
-private:
-	std::unique_ptr<struct FAGXArchiveContents> Contents;
-};
-
-#endif
