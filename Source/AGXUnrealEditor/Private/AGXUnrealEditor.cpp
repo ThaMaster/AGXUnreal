@@ -45,12 +45,6 @@ void FAGXUnrealEditorModule::StartupModule()
 	RegisterComponentVisualizers();
 
 	AgxTopMenu = MakeShareable(new FAGX_TopMenu());
-#define STRIFY2(x) #x
-#define STRIFY(x) STRIFY2(x)
-	FAGX_EditorUtilities::ShowDialogBox(
-		FText::Format(LOCTEXT("PluginButtonDialogText", "{0} was recompiled with C++ {1} at {2}.\n{3}"),
-			FText::FromString(TEXT(__FILE__)), FText::FromString(TEXT(STRIFY(__cplusplus))),
-			FText::FromString(TEXT(__TIME__)), FText::FromString(TEXT("SetLocation after Root creation."))));
 }
 
 void FAGXUnrealEditorModule::ShutdownModule()
