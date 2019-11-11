@@ -1,9 +1,15 @@
 #pragma once
 
+#include "CoreTypes.h"
+
 #include <memory>
 
 struct FConstraintRef;
 class FRigidBodyBarrier;
+
+struct FVector;
+struct FQuat;
+class UWorld;
 
 /**
  * Acts as an interface to a native AGX constraint, and encapsulates it so that
@@ -28,10 +34,9 @@ public:
 	FConstraintRef* GetNative();
 	const FConstraintRef* GetNative() const;
 
-	void AllocateNative(
-		const FRigidBodyBarrier *RigidBody1, const FVector *FramePosition1, const FQuat *FrameRotation1,
-		const FRigidBodyBarrier *RigidBody2, const FVector *FramePosition2, const FQuat *FrameRotation2,
-		const UWorld *World);
+	void AllocateNative(const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
+		const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2,
+		const UWorld* World);
 
 	void ReleaseNative();
 
@@ -58,23 +63,20 @@ private:
 	void operator=(const FConstraintBarrier&) = delete;
 
 private:
-
 	/**
 	 * Called from AllocateNative. Each subclass msut override this function and within
 	 * it create the correct agx::Constraint object, and assign it to NativeRef->Native.
 	 *
 	 * The override should not call the override of the parent class, to avoid multiple
-	 * objects being created in a deeper inheritance tree! 
+	 * objects being created in a deeper inheritance tree!
 	 *
 	 * The derived class should not store a reference to the native object!
 	 */
-	virtual void AllocateNativeImpl(
-		const FRigidBodyBarrier *RigidBody1, const FVector *FramePosition1, const FQuat *FrameRotation1,
-		const FRigidBodyBarrier *RigidBody2, const FVector *FramePosition2, const FQuat *FrameRotation2,
-		const UWorld *World) = 0;
-	
-protected:
+	virtual void AllocateNativeImpl(const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1,
+		const FQuat* FrameRotation1, const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2,
+		const FQuat* FrameRotation2, const UWorld* World) = 0;
 
+protected:
 	// NativeRef has the same lifetime as this object.
 	// NativeRef->Native can be null.
 	// NativeRef->Native is created by the lowermost subclass when AllocateNative is invoked,
