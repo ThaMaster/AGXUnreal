@@ -3,13 +3,26 @@
 #include "RigidBodyBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
+#include "Shapes/TrimeshShapeBarrier.h"
 
 #include "AGXRefs.h"
 
-#include <agx/RigidBody.h>
+namespace agx
+{
+	class RigidBody;
+}
+
+namespace agxCollide
+{
+	class Sphere;
+	class Box;
+	class Trimesh;
+}
 
 FRigidBodyBarrier CreateRigidBodyBarrier(agx::RigidBody* Body);
 
+FSphereShapeBarrier CreateSphereShapeBarrier(agxCollide::Sphere* Sphere);
+
 FBoxShapeBarrier CreateBoxShapeBarrier(agxCollide::Box* Box);
 
-FSphereShapeBarrier CreateSphereShapeBarrier(agxCollide::Sphere* Sphere);
+FTrimeshShapeBarrier CreateTrimeshShapeBarrier(agxCollide::Trimesh* Trimesh);

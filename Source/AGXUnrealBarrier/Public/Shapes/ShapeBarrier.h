@@ -22,6 +22,10 @@ public:
 	void SetLocalPosition(const FVector &Position, UWorld* World);
 	void SetLocalRotation(const FQuat &Rotation);
 
+	FVector GetLocalPosition(UWorld* World) const;
+	FQuat GetLocalRotation(UWorld* World) const;
+	std::tuple<FVector, FQuat> GetLocalPositionAndRotation(UWorld* World) const;
+
 protected:
 	FShapeBarrier(FShapeBarrier&& Other);
 

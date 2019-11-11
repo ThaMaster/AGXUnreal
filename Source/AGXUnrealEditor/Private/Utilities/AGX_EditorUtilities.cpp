@@ -1,29 +1,32 @@
 #include "Utilities/AGX_EditorUtilities.h"
 
-#include "Classes/Editor/EditorEngine.h"
-#include "Classes/Engine/GameEngine.h"
-#include "Classes/Engine/Selection.h"
-#include "Classes/GameFramework/PlayerController.h"
+#include "Editor/EditorEngine.h"
+#include "Engine/GameEngine.h"
+#include "Engine/Selection.h"
+#include "Engine/StaticMesh.h"
 #include "Framework/Notifications/NotificationManager.h"
-#include "UObject/UObjectGlobals.h"
+#include "GameFramework/PlayerController.h"
 #include "Misc/MessageDialog.h"
-
+#include "Misc/Char.h"
+#include "UObject/UObjectGlobals.h"
 #include "Widgets/Notifications/SNotificationList.h"
+
+#include "AssetRegistryModule.h"
 #include "Editor.h"
 #include "EditorStyleSet.h"
+#include "RawMesh.h"
 
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
 #include "AGX_BoxShapeComponent.h"
+#include "AGX_TrimeshShapeComponent.h"
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
-
 std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(const FTransform& Transform, UWorld* World)
 {
-
 	/// \todo The intention is to mimmic draggin in an "Empty Actor" from the
 	/// Place mode. Investigate if we can use ActorFactoryEmptyActor instead.
 
@@ -36,8 +39,8 @@ std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(con
 
 	/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
 	/// Related to undo/redo, I think.
-	USceneComponent* Root = NewObject<USceneComponent>(
-		NewActor, USceneComponent::GetDefaultSceneRootVariableName() /*, RF_Transactional*/);
+	USceneComponent* Root =
+		NewObject<USceneComponent>(NewActor, USceneComponent::GetDefaultSceneRootVariableName() /*, RF_Transactional*/);
 	NewActor->SetRootComponent(Root);
 	NewActor->AddInstanceComponent(Root);
 	Root->RegisterComponent();
@@ -63,14 +66,15 @@ namespace
 	}
 
 	template <typename TShapeComponent>
-	TShapeComponent* CreateShapeComponent(AActor* Owner, USceneComponent* Root)
+	TShapeComponent* CreateShapeComponent(AActor* Owner, USceneComponent* Outer)
 	{
+		/// \todo Is the Owner pointless here since we do `AttachToComponent`
+		/// immediately afterwards?
 		UClass* Class = TShapeComponent::StaticClass();
 		TShapeComponent* Shape = NewObject<TShapeComponent>(Owner, Class);
 		Owner->AddInstanceComponent(Shape);
-		// Shape->SetupAttachment(Owner);
 		Shape->RegisterComponent();
-		const bool Attached = Shape->AttachToComponent(Root, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		const bool Attached = Shape->AttachToComponent(Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		check(Attached);
 		return Shape;
 	}
@@ -81,14 +85,103 @@ UAGX_RigidBodyComponent* FAGX_EditorUtilities::CreateRigidBody(AActor* Owner)
 	return ::CreateComponent<UAGX_RigidBodyComponent>(Owner);
 }
 
-UAGX_SphereShapeComponent* FAGX_EditorUtilities::CreateSphereShape(AActor* Owner, USceneComponent* Root)
+UAGX_SphereShapeComponent* FAGX_EditorUtilities::CreateSphereShape(AActor* Owner, USceneComponent* Outer)
 {
-	return ::CreateShapeComponent<UAGX_SphereShapeComponent>(Owner, Root);
+	return ::CreateShapeComponent<UAGX_SphereShapeComponent>(Owner, Outer);
 }
 
-UAGX_BoxShapeComponent* FAGX_EditorUtilities::CreateBoxShape(AActor* Owner, USceneComponent* Root)
+UAGX_BoxShapeComponent* FAGX_EditorUtilities::CreateBoxShape(AActor* Owner, USceneComponent* Outer)
 {
-	return ::CreateShapeComponent<UAGX_BoxShapeComponent>(Owner, Root);
+	return ::CreateShapeComponent<UAGX_BoxShapeComponent>(Owner, Outer);
+}
+
+UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(AActor* Owner, USceneComponent* Outer)
+{
+	return ::CreateShapeComponent<UAGX_TrimeshShapeComponent>(Owner, Outer);
+}
+
+namespace
+{
+	FString SanitizeName(const FString& Name)
+	{
+		FString Sanitized;
+		Sanitized.Reserve(Name.Len());
+		for (TCHAR C : Name)
+		{
+			if (TChar<TCHAR>::IsAlnum(C))
+			{
+				Sanitized.AppendChar(C);
+			}
+		}
+		return Sanitized;
+	}
+}
+
+UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
+	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh, const UWorld* World)
+{
+	FRawMesh RawMesh = Trimesh.GetRawMesh(World);
+
+	FString TrimeshName = SanitizeName(Trimesh.GetSourceName());
+	if (TrimeshName.IsEmpty())
+	{
+		TrimeshName = TEXT("ImportedAGXMesh");
+	}
+
+	FString PackagePath = TEXT("/Game/ImportedAGXMeshes");
+	UPackage* Package = CreatePackage(nullptr, *PackagePath);
+	Package->FullyLoad();
+
+	FName UniqueMeshName = MakeUniqueObjectName(Package, UStaticMesh::StaticClass(), *TrimeshName);
+	UStaticMesh* StaticMesh =
+		NewObject<UStaticMesh>(Package, UniqueMeshName, RF_Public | RF_Standalone | RF_MarkAsRootSet);
+	StaticMesh->StaticMaterials.Add(FStaticMaterial());
+	StaticMesh->SourceModels.Emplace();
+	FStaticMeshSourceModel& SourceModel = StaticMesh->SourceModels.Last();
+	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
+	FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
+	// Somewhat unclear what all these should be.
+	BuildSettings.bRecomputeNormals = true;
+	BuildSettings.bRecomputeTangents = true;
+	BuildSettings.bUseMikkTSpace = false;
+	BuildSettings.bGenerateLightmapUVs = true;
+	BuildSettings.bBuildAdjacencyBuffer = false;
+	BuildSettings.bBuildReversedIndexBuffer = false;
+	BuildSettings.bUseFullPrecisionUVs = false;
+	BuildSettings.bUseHighPrecisionTangentBasis = false;
+
+	StaticMesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
+	StaticMesh->CreateBodySetup();
+	StaticMesh->SetLightingGuid();
+	StaticMesh->PostEditChange();
+	Package->MarkPackageDirty();
+	FAssetRegistryModule::AssetCreated(StaticMesh);
+	FString AssetFileName = FPackageName::LongPackageNameToFilename(
+		PackagePath + "/" + UniqueMeshName.ToString(), FPackageName::GetAssetPackageExtension());
+	if (AssetFileName.IsEmpty())
+	{
+		AssetFileName = FPaths::ProjectContentDir() + "/FallbackFilename.uasset";
+		UE_LOG(LogTemp, Warning, TEXT("Package path '%s' produced empty long package name."), *PackagePath);
+		UE_LOG(LogTemp, Warning, TEXT("Using fallback name '%s'."), *AssetFileName);
+	}
+	bool bSaved = UPackage::SavePackage(Package, StaticMesh, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone,
+		*AssetFileName, GError, nullptr, true, true, SAVE_NoError);
+	if (!bSaved)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Save of imported StaticMesh asset failed."));
+		// No return intentional. We want to create a UStaticMeshComponent for
+		// the StaticMesh even if it couldn't be saved to disk.
+	}
+
+	UClass* Class = UStaticMeshComponent::StaticClass();
+	UStaticMeshComponent* StaticMeshComponent = NewObject<UStaticMeshComponent>(Outer, Class, UniqueMeshName);
+	StaticMeshComponent->SetStaticMesh(StaticMesh);
+	Owner->AddInstanceComponent(StaticMeshComponent);
+	StaticMeshComponent->RegisterComponent();
+	const bool Attached =
+		StaticMeshComponent->AttachToComponent(Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	check(Attached);
+	return StaticMeshComponent;
 }
 
 AAGX_Constraint* FAGX_EditorUtilities::CreateConstraint(UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2,
@@ -197,7 +290,6 @@ void FAGX_EditorUtilities::ShowNotification(const FText& Text)
 	NotificationItem->ExpireAndFadeout();
 	// GEditor->PlayEditorSound(CompileSuccessSound);
 }
-
 
 void FAGX_EditorUtilities::ShowDialogBox(const FText& Text)
 {

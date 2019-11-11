@@ -4,16 +4,21 @@
 
 #include <tuple>
 
-class AActor;
 class AAGX_Constraint;
 class AAGX_ConstraintFrameActor;
 class UAGX_RigidBodyComponent;
 class UAGX_SphereShapeComponent;
 class UAGX_BoxShapeComponent;
+class UAGX_TrimeshShapeComponent;
+
+class FTrimeshShapeBarrier;
+
+class AActor;
 class FText;
 class UClass;
-class UWorld;
 class USceneComponent;
+class UStaticMeshComponent;
+class UWorld;
 
 class FAGX_EditorUtilities
 {
@@ -30,14 +35,31 @@ public:
 
 	/**
 	 * Create a new AGX Sphere Shape as child of the given Actor.
+	 * The shape will be attached to the given USceneComponent.
 	 */
-	static UAGX_SphereShapeComponent* CreateSphereShape(AActor* Owner, USceneComponent* Root);
+	static UAGX_SphereShapeComponent* CreateSphereShape(AActor* Owner, USceneComponent* Outer);
 
 	/**
 	 * Create a new AGX Box Shape as child of the given Actor.
-	 * The shape will be attached to the RootComponent.
+	 * The shape will be attached to the given USceneComponent.
 	 */
-	static UAGX_BoxShapeComponent* CreateBoxShape(AActor* Owner, USceneComponent* Root);
+	static UAGX_BoxShapeComponent* CreateBoxShape(AActor* Owner, USceneComponent* Outer);
+
+	/**
+	 * Create a new AGX Trimesh Shape as a child of the given actor.
+	 * The shape will be attached to the given USceneComponent.
+	 * A StaticMeshComponent is neither selected nor created.
+	 * @see CreateStaticMesh.
+	 */
+	static UAGX_TrimeshShapeComponent* CreateTrimeshShape(AActor* Owner, USceneComponent* Outer);
+
+	/**
+	 * Create a new UStaticMeshComponent, along with the underlying StaticMesh
+	 * asset, from the given mesh data. The UStaticMeshComponent will be added
+	 * as a child to the given UAGX_TrimeshShapeComponent.
+	 */
+	static UStaticMeshComponent* CreateStaticMesh(
+		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh, const UWorld* World);
 
 	/**
 	 * Create a new constraint of the specified type.
