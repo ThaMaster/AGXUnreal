@@ -39,28 +39,28 @@ public:
 	/**
 	 * Specifies from where should the Static Mesh triangle data be read.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shape Component")
+	UPROPERTY(EditAnywhere, Category = "AGX Shape")
 	TEnumAsByte<EAGX_TrimeshSourceLocation> MeshSourceLocation;
 
 	/**
 	 * Only used if Mesh Source Location is set to Static Mesh Asset. Specifies
 	 * which Static Mesh Asset to use.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shape Component")
+	UPROPERTY(EditAnywhere, Category = "AGX Shape")
 	UStaticMesh* MeshSourceAsset;
 
 	/**
 	 * Whether to explicitly set LOD Level to read triangle data from here
 	 * or to use the setting that already exists on the Static Mesh source.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shape Component", AdvancedDisplay)
+	UPROPERTY(EditAnywhere, Category = "AGX Shape", AdvancedDisplay)
 	bool bOverrideMeshSourceLodIndex;
 
 	/**
 	 * Only used if Override Mesh Source LOD Index is enabled. Specifies which LOD Level
 	 * of the Static Mesh source to read triangle data from. Zero is the most detailed level.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shape Component", AdvancedDisplay,
+	UPROPERTY(EditAnywhere, Category = "AGX Shape", AdvancedDisplay,
 		Meta = (EditCondition = "bOverrideMeshSourceLodIndex"))
 	uint32 MeshSourceLodIndex;
 

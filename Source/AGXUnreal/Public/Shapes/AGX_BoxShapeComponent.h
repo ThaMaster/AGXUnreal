@@ -19,7 +19,7 @@ public:
 	UAGX_BoxShapeComponent();
 
 	/// The distance from the center of the box to it's surface along the three cardinal axes.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
 	FVector HalfExtent;
 
 	FShapeBarrier* GetNative() override;
