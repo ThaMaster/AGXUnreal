@@ -1,6 +1,5 @@
 #pragma once
 
-class UWorld;
 
 namespace agx
 {
@@ -31,7 +30,7 @@ struct FElectricMotorControllerBarrier
 	double ArmatureResistance;
 	double TorqueConstant;
 
-	void ToNative(agx::ElectricMotorController* Native, UWorld* World) const;
+	void ToNative(agx::ElectricMotorController* Native) const;
 };
 
 
@@ -54,7 +53,7 @@ struct FFrictionControllerBarrier
 	double FrictionCoefficient;
 	bool bEnableNonLinearDirectSolveUpdate;
 
-	void ToNative(agx::FrictionController* Native, UWorld* World) const;
+	void ToNative(agx::FrictionController* Native) const;
 };
 
 
@@ -76,7 +75,7 @@ struct FLockControllerBarrier
 
 	double Position;
 
-	void ToNative(agx::LockController* Native, UWorld* World) const;
+	void ToNative(agx::LockController* Native) const;
 };
 
 
@@ -100,7 +99,7 @@ struct FRangeControllerBarrier
 	double RangeMin;
 	double RangeMax;
 
-	void ToNative(agx::RangeController* Native, UWorld* World) const;
+	void ToNative(agx::RangeController* Native) const;
 };
 
 
@@ -119,7 +118,7 @@ struct FScrewControllerBarrier
 
 	double Lead;
 
-	void ToNative(agx::ScrewController* Native, UWorld* World) const;
+	void ToNative(agx::ScrewController* Native) const;
 };
 
 
@@ -143,5 +142,5 @@ struct FTargetSpeedControllerBarrier
 	double Speed;
 	bool bLockedAtZeroSpeed;
 
-	void ToNative(agx::TargetSpeedController* Native, UWorld* World) const;
+	void ToNative(agx::TargetSpeedController* Native) const;
 };

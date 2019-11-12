@@ -20,12 +20,12 @@ public:
 	FGeometryAndShapeRef* GetNative();
 	const FGeometryAndShapeRef* GetNative() const;
 
-	void SetLocalPosition(const FVector &Position, UWorld* World);
+	void SetLocalPosition(const FVector &Position);
 	void SetLocalRotation(const FQuat &Rotation);
 
-	FVector GetLocalPosition(UWorld* World) const;
-	FQuat GetLocalRotation(UWorld* World) const;
-	std::tuple<FVector, FQuat> GetLocalPositionAndRotation(UWorld* World) const;
+	FVector GetLocalPosition() const;
+	FQuat GetLocalRotation() const;
+	std::tuple<FVector, FQuat> GetLocalPositionAndRotation() const;
 
 	void SetMaterial(const FMaterialBarrier& Material);
 	/// \todo Should GetMaterial() create a new FMaterialBarrier, or get an existing somehow? If it creates a new

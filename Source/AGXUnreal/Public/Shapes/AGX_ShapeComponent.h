@@ -121,6 +121,6 @@ void UAGX_ShapeComponent::UpdateNativeLocalTransform(TNative& Native)
 	FVector LocalPosition = RigiBodyTransform.InverseTransformPositionNoScale(GetComponentLocation());
 	FQuat LocalOrientation = RigiBodyTransform.InverseTransformRotation(GetComponentQuat());
 
-	Native.SetLocalPosition(LocalPosition, GetWorld());
+	Native.SetLocalPosition(LocalPosition);
 	Native.SetLocalRotation(LocalOrientation);
 }

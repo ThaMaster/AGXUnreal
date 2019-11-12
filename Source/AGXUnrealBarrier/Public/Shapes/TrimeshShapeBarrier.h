@@ -8,7 +8,6 @@
 #include <memory>
 
 struct FTriIndices;
-class UWorld;
 
 class AGXUNREALBARRIER_API FTrimeshShapeBarrier : public FShapeBarrier
 {
@@ -18,13 +17,13 @@ public:
 	FTrimeshShapeBarrier(FTrimeshShapeBarrier&& Other);
 	virtual ~FTrimeshShapeBarrier() override;
 
-	FRawMesh GetRawMesh(const UWorld* World) const;
+	FRawMesh GetRawMesh() const;
 
 	/**
 	 * One FVector per vertex location. Vertex positions can be shared between
 	 * triangles.
 	 */
-	TArray<FVector> GetVertexPositions(const UWorld* World) const;
+	TArray<FVector> GetVertexPositions() const;
 
 	/**
 	 * Mapping from triangles to vertex positions. Each three consecutive
@@ -36,7 +35,7 @@ public:
 	/**
 	 * Per-triangle normal.
 	 */
-	TArray<FVector> GetTriangleNormals(const UWorld* World) const;
+	TArray<FVector> GetTriangleNormals() const;
 
 	/**
 	 * The source name is a user-provided string that is stored with the trimesh.
@@ -47,7 +46,7 @@ public:
 	FString GetSourceName() const;
 
 	void AllocateNative(
-		const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise, UWorld* World);
+		const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise);
 
 private:
 	virtual void AllocateNativeShape() override;
@@ -62,7 +61,6 @@ private:
 		const TArray<FVector>* Vertices;
 		const TArray<FTriIndices>* TriIndices;
 		bool bClockwise;
-		UWorld* World;
 	};
 
 	std::weak_ptr<AllocationParameters> TemporaryAllocationParameters;

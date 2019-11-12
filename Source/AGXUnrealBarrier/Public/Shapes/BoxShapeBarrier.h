@@ -7,8 +7,6 @@
 
 #include <memory>
 
-class UWorld;
-
 class AGXUNREALBARRIER_API FBoxShapeBarrier : public FShapeBarrier
 {
 public:
@@ -17,8 +15,8 @@ public:
 	FBoxShapeBarrier(FBoxShapeBarrier&& Other);
 	virtual ~FBoxShapeBarrier() override;
 
-	void SetHalfExtents(FVector NewHalfExtents, UWorld* World);
-	FVector GetHalfExtents(UWorld* World) const;
+	void SetHalfExtents(FVector NewHalfExtents);
+	FVector GetHalfExtents() const;
 
 private:
 	virtual void AllocateNativeShape() override;

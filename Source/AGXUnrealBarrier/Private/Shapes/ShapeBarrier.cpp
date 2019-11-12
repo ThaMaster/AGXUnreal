@@ -59,10 +59,10 @@ const FGeometryAndShapeRef* FShapeBarrier::GetNative() const
 	return NativeRef.get();
 }
 
-void FShapeBarrier::SetLocalPosition(const FVector& Position, UWorld* World)
+void FShapeBarrier::SetLocalPosition(const FVector& Position)
 {
 	check(HasNative());
-	NativeRef->NativeGeometry->setLocalPosition(ConvertVector(Position, World));
+	NativeRef->NativeGeometry->setLocalPosition(ConvertVector(Position));
 }
 
 void FShapeBarrier::SetLocalRotation(const FQuat& Rotation)
@@ -71,14 +71,14 @@ void FShapeBarrier::SetLocalRotation(const FQuat& Rotation)
 	NativeRef->NativeGeometry->setLocalRotation(Convert(Rotation));
 }
 
-FVector FShapeBarrier::GetLocalPosition(UWorld* World) const
+FVector FShapeBarrier::GetLocalPosition() const
 {
-	return std::get<0>(GetLocalPositionAndRotation(World));
+	return std::get<0>(GetLocalPositionAndRotation());
 }
 
-FQuat FShapeBarrier::GetLocalRotation(UWorld* World) const
+FQuat FShapeBarrier::GetLocalRotation() const
 {
-	return std::get<1>(GetLocalPositionAndRotation(World));
+	return std::get<1>(GetLocalPositionAndRotation());
 }
 
 void FShapeBarrier::SetMaterial(const FMaterialBarrier& Material)
@@ -106,7 +106,7 @@ namespace
 	}
 }
 
-std::tuple<FVector, FQuat> FShapeBarrier::GetLocalPositionAndRotation(UWorld* World) const
+std::tuple<FVector, FQuat> FShapeBarrier::GetLocalPositionAndRotation() const
 {
 	check(HasNative());
 	agxCollide::ShapeIterator Iterator = FindShape(NativeRef->NativeGeometry, NativeRef->NativeShape);
@@ -122,5 +122,5 @@ std::tuple<FVector, FQuat> FShapeBarrier::GetLocalPositionAndRotation(UWorld* Wo
 	const agx::AffineMatrix4x4& GeometryTransform = NativeRef->NativeGeometry->getLocalTransform();
 	const agx::AffineMatrix4x4& ShapeTransform = Iterator.getLocalTransform();
 	const agx::AffineMatrix4x4 ShapeRelativeBody = ShapeTransform * GeometryTransform;
-	return {ConvertVector(ShapeRelativeBody.getTranslate(), World), Convert(ShapeRelativeBody.getRotate())};
+	return {ConvertVector(ShapeRelativeBody.getTranslate()), Convert(ShapeRelativeBody.getRotate())};
 }

@@ -1,6 +1,7 @@
 #include "Shapes/AGX_SphereShapeComponent.h"
 
 #include "AGX_LogCategory.h"
+#include "AGX_MeshUtilities.h"
 
 UAGX_SphereShapeComponent::UAGX_SphereShapeComponent()
 {
@@ -54,7 +55,7 @@ void UAGX_SphereShapeComponent::UpdateNativeProperties()
 
 	UpdateNativeLocalTransform(NativeBarrier);
 
-	NativeBarrier.SetRadius(Radius * GetComponentScale().X, GetWorld());
+	NativeBarrier.SetRadius(Radius * GetComponentScale().X);
 }
 
 void UAGX_SphereShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)

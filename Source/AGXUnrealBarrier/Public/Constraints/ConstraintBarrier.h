@@ -9,7 +9,6 @@ class FRigidBodyBarrier;
 
 struct FVector;
 struct FQuat;
-class UWorld;
 
 /**
  * Acts as an interface to a native AGX constraint, and encapsulates it so that
@@ -34,9 +33,9 @@ public:
 	FConstraintRef* GetNative();
 	const FConstraintRef* GetNative() const;
 
-	void AllocateNative(const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
-		const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2,
-		const UWorld* World);
+	void AllocateNative(
+		const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
+		const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2);
 
 	void ReleaseNative();
 
@@ -72,9 +71,9 @@ private:
 	 *
 	 * The derived class should not store a reference to the native object!
 	 */
-	virtual void AllocateNativeImpl(const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1,
-		const FQuat* FrameRotation1, const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2,
-		const FQuat* FrameRotation2, const UWorld* World) = 0;
+	virtual void AllocateNativeImpl(
+		const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
+		const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2) = 0;
 
 protected:
 	// NativeRef has the same lifetime as this object.

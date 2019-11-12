@@ -44,18 +44,18 @@ FBoxShapeBarrier::~FBoxShapeBarrier()
 	// not just the forward declaration, of FBoxShapeRef.
 }
 
-void FBoxShapeBarrier::SetHalfExtents(FVector HalfExtentsUnreal, UWorld* World)
+void FBoxShapeBarrier::SetHalfExtents(FVector HalfExtentsUnreal)
 {
 	check(HasNative());
-	agx::Vec3 HalfExtentsAGX = ConvertDistance(HalfExtentsUnreal, World);
+	agx::Vec3 HalfExtentsAGX = ConvertDistance(HalfExtentsUnreal);
 	NativeBox(this)->setHalfExtents(HalfExtentsAGX);
 }
 
-FVector FBoxShapeBarrier::GetHalfExtents(UWorld* World) const
+FVector FBoxShapeBarrier::GetHalfExtents() const
 {
 	check(HasNative());
 	agx::Vec3 HalfExtentsAGX = NativeBox(this)->getHalfExtents();
-	FVector HalfExtentsUnreal = ConvertDistance(HalfExtentsAGX, World);
+	FVector HalfExtentsUnreal = ConvertDistance(HalfExtentsAGX);
 	return HalfExtentsUnreal;
 }
 

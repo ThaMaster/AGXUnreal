@@ -43,18 +43,18 @@ FSphereShapeBarrier::~FSphereShapeBarrier()
 	// not just the forward declaration, of FSphereShapeRef.
 }
 
-void FSphereShapeBarrier::SetRadius(float RadiusUnreal, UWorld* World)
+void FSphereShapeBarrier::SetRadius(float RadiusUnreal)
 {
 	check(HasNative());
-	agx::Real RadiusAGX = ConvertDistance(RadiusUnreal, World);
+	agx::Real RadiusAGX = ConvertDistance(RadiusUnreal);
 	NativeSphere(this)->setRadius(RadiusAGX);
 }
 
-float FSphereShapeBarrier::GetRadius(UWorld* World) const
+float FSphereShapeBarrier::GetRadius() const
 {
 	check(HasNative());
 	agx::Real RadiusAGX = NativeSphere(this)->getRadius();
-	float RadiusUnreal = ConvertDistance(RadiusAGX, World);
+	float RadiusUnreal = ConvertDistance(RadiusAGX);
 	return RadiusUnreal;
 }
 

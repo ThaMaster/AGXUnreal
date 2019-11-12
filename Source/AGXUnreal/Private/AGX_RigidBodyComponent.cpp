@@ -166,7 +166,7 @@ void UAGX_RigidBodyComponent::UpdateActorTransformsFromNative()
 	check(HasNative());
 	check(GetOwner());
 
-	FVector NewLocation = NativeBarrier.GetPosition(GetWorld());
+	FVector NewLocation = NativeBarrier.GetPosition();
 	GetOwner()->SetActorLocation(NewLocation);
 
 	FQuat NewRotation = NativeBarrier.GetRotation();
@@ -176,6 +176,6 @@ void UAGX_RigidBodyComponent::UpdateActorTransformsFromNative()
 void UAGX_RigidBodyComponent::UpdateNativeTransformsFromActor()
 {
 	check(HasNative());
-	NativeBarrier.SetPosition(GetOwner()->GetActorLocation(), GetWorld());
+	NativeBarrier.SetPosition(GetOwner()->GetActorLocation());
 	NativeBarrier.SetRotation(GetOwner()->GetActorQuat());
 }

@@ -37,7 +37,7 @@ void AAGX_PrismaticConstraint::CreateNativeImpl()
 
 	// TODO: Change checks below to more gentle user errors instead of crashes!
 	check(RigidBody1); // Must be set!
-	check(!(BodyAttachment2.RigidBodyActor && !RigidBody2)); // Actor has no Rigid Body! 
+	check(!(BodyAttachment2.RigidBodyActor && !RigidBody2)); // Actor has no Rigid Body!
 
 	FVector FrameLocation1 = BodyAttachment1.GetLocalFrameLocation();
 	FVector FrameLocation2 = BodyAttachment2.GetLocalFrameLocation();
@@ -47,6 +47,5 @@ void AAGX_PrismaticConstraint::CreateNativeImpl()
 
 	NativeBarrier->AllocateNative(
 		RigidBody1, &FrameLocation1, &FrameRotation1,
-		RigidBody2, &FrameLocation2, &FrameRotation2,  // ok if second is nullptr
-		GetWorld());
+		RigidBody2, &FrameLocation2, &FrameRotation2);  // ok if second is nullptr
 }

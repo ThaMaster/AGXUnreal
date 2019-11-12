@@ -7,8 +7,6 @@
 
 #include <memory>
 
-class UWorld;
-
 class AGXUNREALBARRIER_API FCylinderShapeBarrier : public FShapeBarrier
 {
 public:
@@ -17,11 +15,11 @@ public:
 	FCylinderShapeBarrier(FCylinderShapeBarrier&& Other);
 	virtual ~FCylinderShapeBarrier() override;
 
-	void SetHeight(double Height, UWorld* World);
-	double GetHeight(UWorld* World) const;
+	void SetHeight(double Height);
+	double GetHeight() const;
 
-	void SetRadius(double Height, UWorld* World);
-	double GetRadius(UWorld* World) const;
+	void SetRadius(double Height);
+	double GetRadius() const;
 
 private:
 	virtual void AllocateNativeShape() override;
