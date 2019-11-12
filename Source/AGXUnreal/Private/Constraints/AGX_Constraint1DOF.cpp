@@ -42,14 +42,14 @@ void AAGX_Constraint1DOF::UpdateNativeProperties()
 		{
 			FElectricMotorControllerBarrier ControllerBarrier;
 			ElectricMotorController.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetElectricMotorController(ControllerBarrier, GetWorld());
+			NativeBarrierCasted->SetElectricMotorController(ControllerBarrier);
 		}
 
 		// Friction Controller
 		{
 			FFrictionControllerBarrier ControllerBarrier;
 			FrictionController.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetFrictionController(ControllerBarrier, GetWorld());
+			NativeBarrierCasted->SetFrictionController(ControllerBarrier);
 		}
 
 		// Lock Controller
@@ -57,21 +57,21 @@ void AAGX_Constraint1DOF::UpdateNativeProperties()
 		{
 			FLockControllerBarrier ControllerBarrier;
 			LockController.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetLockController(ControllerBarrier, GetWorld());
+			NativeBarrierCasted->SetLockController(ControllerBarrier);
 		}
 
 		// Range Controller
 		{
 			FRangeControllerBarrier ControllerBarrier;
 			RangeController.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetRangeController(ControllerBarrier, GetWorld());
+			NativeBarrierCasted->SetRangeController(ControllerBarrier);
 		}
 
 		// Target Speed Controller
 		{
 			FTargetSpeedControllerBarrier ControllerBarrier;
 			TargetSpeedController.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetTargetSpeedController(ControllerBarrier, GetWorld());
+			NativeBarrierCasted->SetTargetSpeedController(ControllerBarrier);
 		}
 	}
 }

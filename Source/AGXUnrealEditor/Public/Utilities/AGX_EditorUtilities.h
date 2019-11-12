@@ -59,7 +59,7 @@ public:
 	 * as a child to the given UAGX_TrimeshShapeComponent.
 	 */
 	static UStaticMeshComponent* CreateStaticMesh(
-		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh, const UWorld* World);
+		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh);
 
 	/**
 	 * Create a new constraint of the specified type.

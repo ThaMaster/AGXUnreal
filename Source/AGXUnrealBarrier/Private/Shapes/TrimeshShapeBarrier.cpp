@@ -10,7 +10,6 @@
 
 #include "Misc/AssertionMacros.h"
 
-#include "Engine/World.h"
 
 namespace
 {
@@ -48,13 +47,13 @@ FTrimeshShapeBarrier::~FTrimeshShapeBarrier()
 	// not just the forward declaration, of FTrimeshShapeRef.
 }
 
-FRawMesh FTrimeshShapeBarrier::GetRawMesh(const UWorld* World) const
+FRawMesh FTrimeshShapeBarrier::GetRawMesh() const
 {
 	FRawMesh RawMesh;
 
-	RawMesh.VertexPositions = GetVertexPositions(World);
+	RawMesh.VertexPositions = GetVertexPositions();
 	RawMesh.WedgeIndices = GetVertexIndices();
-	TArray<FVector> TriangleNormals = GetTriangleNormals(World);
+	TArray<FVector> TriangleNormals = GetTriangleNormals();
 
 	const int32 NumFaces = TriangleNormals.Num();
 	const int32 NumWedges = RawMesh.WedgeIndices.Num();
@@ -101,7 +100,7 @@ FRawMesh FTrimeshShapeBarrier::GetRawMesh(const UWorld* World) const
 	return RawMesh;
 }
 
-TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions(const UWorld* World) const
+TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions() const
 {
 	TArray<FVector> VertexPositions;
 
@@ -132,7 +131,7 @@ TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions(const UWorld* World) co
 	const agx::Vec3Vector& Positions = MeshData->getVertices();
 	for (const agx::Vec3& Position : Positions)
 	{
-		VertexPositions.Add(ConvertVector(Position, World));
+		VertexPositions.Add(ConvertVector(Position));
 	}
 
 	return VertexPositions;
@@ -175,7 +174,7 @@ TArray<uint32> FTrimeshShapeBarrier::GetVertexIndices() const
 	return VertexIndices;
 }
 
-TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals(const UWorld* World) const
+TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals() const
 {
 	TArray<FVector> TriangleNormals;
 
@@ -204,7 +203,7 @@ TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals(const UWorld* World) co
 	const agx::Vec3Vector& Normals = Trimesh->getMeshData()->getNormals();
 	for (const agx::Vec3& Normal : Normals)
 	{
-		TriangleNormals.Add(ConvertVector(Normal, World));
+		TriangleNormals.Add(ConvertVector(Normal));
 	}
 
 	return TriangleNormals;
@@ -225,7 +224,7 @@ FString FTrimeshShapeBarrier::GetSourceName() const
 }
 
 void FTrimeshShapeBarrier::AllocateNative(
-	const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise, UWorld* World)
+	const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise)
 {
 	{
 		// Create temporary allocation parameters structure for AllocateNativeShape() to use.
@@ -234,7 +233,6 @@ void FTrimeshShapeBarrier::AllocateNative(
 		Params->Vertices = &Vertices;
 		Params->TriIndices = &TriIndices;
 		Params->bClockwise = bClockwise;
-		Params->World = World;
 
 		TemporaryAllocationParameters = Params;
 
@@ -259,7 +257,7 @@ void FTrimeshShapeBarrier::AllocateNativeShape()
 
 	for (const FVector& Vertex : *Params->Vertices)
 	{
-		NativeVertices.push_back(ConvertVector(Vertex, Params->World));
+		NativeVertices.push_back(ConvertVector(Vertex));
 	}
 
 	agx::UInt32Vector NativeIndices;

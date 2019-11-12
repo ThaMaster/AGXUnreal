@@ -118,9 +118,9 @@ namespace
 }
 
 UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
-	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh, const UWorld* World)
+	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh)
 {
-	FRawMesh RawMesh = Trimesh.GetRawMesh(World);
+	FRawMesh RawMesh = Trimesh.GetRawMesh();
 
 	FString TrimeshName = SanitizeName(Trimesh.GetSourceName());
 	if (TrimeshName.IsEmpty())

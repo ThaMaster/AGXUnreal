@@ -1,11 +1,13 @@
 #include "ControllerConstraintBarriers.h"
 
+#include "TypeConversions.h"
+
 #include "BeginAGXIncludes.h"
 #include <agx/Constraint.h>
 #include "EndAGXIncludes.h"
 
 
-void FElectricMotorControllerBarrier::ToNative(agx::ElectricMotorController* Native, UWorld* World) const
+void FElectricMotorControllerBarrier::ToNative(agx::ElectricMotorController* Native) const
 {
 	// Common controller variables.
 	Native->setEnable(bEnable);
@@ -18,7 +20,7 @@ void FElectricMotorControllerBarrier::ToNative(agx::ElectricMotorController* Nat
 }
 
 
-void FFrictionControllerBarrier::ToNative(agx::FrictionController* Native, UWorld* World) const
+void FFrictionControllerBarrier::ToNative(agx::FrictionController* Native) const
 {
 	// Common controller variables.
 	Native->setEnable(bEnable);
@@ -32,7 +34,7 @@ void FFrictionControllerBarrier::ToNative(agx::FrictionController* Native, UWorl
 }
 
 
-void FLockControllerBarrier::ToNative(agx::LockController* Native, UWorld* World) const
+void FLockControllerBarrier::ToNative(agx::LockController* Native) const
 {
 	// Common controller variables.
 	Native->setEnable(bEnable);
@@ -41,11 +43,11 @@ void FLockControllerBarrier::ToNative(agx::LockController* Native, UWorld* World
 	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
 
 	// Special controller variables.
-	Native->setPosition(bRotational ? Position : ConvertDistanceToAgx(Position, World));
+	Native->setPosition(bRotational ? Position : ConvertDistanceToAgx(Position));
 }
 
 
-void FRangeControllerBarrier::ToNative(agx::RangeController* Native, UWorld* World) const
+void FRangeControllerBarrier::ToNative(agx::RangeController* Native) const
 {
 	// Common controller variables.
 	Native->setEnable(bEnable);
@@ -55,12 +57,12 @@ void FRangeControllerBarrier::ToNative(agx::RangeController* Native, UWorld* Wor
 
 	// Special controller variables.
 	Native->setRange(agx::RangeReal(
-		bRotational ? RangeMin : ConvertDistanceToAgx(RangeMin, World),
-		bRotational ? RangeMax : ConvertDistanceToAgx(RangeMax, World)));
+		bRotational ? RangeMin : ConvertDistanceToAgx(RangeMin),
+		bRotational ? RangeMax : ConvertDistanceToAgx(RangeMax)));
 }
 
 
-void FScrewControllerBarrier::ToNative(agx::ScrewController* Native, UWorld* World) const
+void FScrewControllerBarrier::ToNative(agx::ScrewController* Native) const
 {
 	// Common controller variables.
 	Native->setEnable(bEnable);
@@ -69,11 +71,11 @@ void FScrewControllerBarrier::ToNative(agx::ScrewController* Native, UWorld* Wor
 	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
 
 	// Special controller variables.
-	Native->setLead(ConvertDistanceToAgx(Lead, World));
+	Native->setLead(ConvertDistanceToAgx(Lead));
 }
 
 
-void FTargetSpeedControllerBarrier::ToNative(agx::TargetSpeedController* Native, UWorld* World) const
+void FTargetSpeedControllerBarrier::ToNative(agx::TargetSpeedController* Native) const
 {
 	// Common controller variables.
 	Native->setEnable(bEnable);
@@ -82,6 +84,6 @@ void FTargetSpeedControllerBarrier::ToNative(agx::TargetSpeedController* Native,
 	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
 
 	// Special controller variables.
-	Native->setSpeed(bRotational ? Speed : ConvertDistanceToAgx(Speed, World));
+	Native->setSpeed(bRotational ? Speed : ConvertDistanceToAgx(Speed));
 	Native->setLockedAtZeroSpeed(bLockedAtZeroSpeed);
 }
