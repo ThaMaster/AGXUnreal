@@ -1,0 +1,62 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
+#include "AGX_MaterialBulkProperties.generated.h"
+
+/**
+ * Physical properties for the bulk of Shapes using the AGX Material.
+ */
+USTRUCT()
+struct AGXUNREAL_API FAGX_MaterialBulkProperties
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+
+	/**
+     * Density of Shapes using the material, in kg/m². The density can be used
+	 * for automatic calculation of total mass and inertia of the Rigid Body
+	 * (see mass options of Rigid Body Component).
+	 */
+	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	double Density;
+
+	/**
+	 * Young's modulus of the material. Same as spring coefficient k.
+	 */
+	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	double YoungsModulus;
+
+	/**
+	 * Bulk viscosity coefficient of the material (1.0 - restitution coefficient).
+	 */
+	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	double Viscosity;
+
+	/**
+	 * Damping factor used by the contact constraint. The value is the time the
+	 * contact constraint has to fulfill its violation.
+	 */
+	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	double Damping;
+
+	/**
+	 * 
+	 */
+	UPROPERTY(EditAnywhere)
+	double MinElasticRestLength;
+
+	/**
+	 *
+	 */
+	UPROPERTY(EditAnywhere)
+	double MaxElasticRestLength;
+
+public:
+
+	FAGX_MaterialBulkProperties();
+
+};

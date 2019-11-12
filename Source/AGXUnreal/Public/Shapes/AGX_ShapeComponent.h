@@ -11,6 +11,9 @@
 #include "AGX_ShapeComponent.generated.h"
 
 
+class UAGX_MaterialBase;
+
+
 UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract, NotPlaceable,
 	Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, Input, LOD, Physics, Replication))
@@ -19,6 +22,17 @@ class AGXUNREAL_API UAGX_ShapeComponent : public UAGX_SimpleMeshComponent
 	GENERATED_BODY()
 
 public:
+
+	/**
+	 * Defines physical properties of both the surface and the bulk of this shape.
+	 * 
+	 * Surface properties do for example greatly affect frictional forces.
+	 *
+	 * Bulk properties have impact on collision forces but also on Rigid Body mass.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shape")
+	UAGX_MaterialBase* PhysicalMaterial;
+
 	UAGX_ShapeComponent();
 
 	virtual FShapeBarrier* GetNative() PURE_VIRTUAL(UAGX_ShapeComponent::GetNative, return nullptr;);
@@ -38,7 +52,7 @@ public:
 	bool ShouldCreateVisualMesh() const;
 
 	/** Subclasses that overrides this MUST invoke the parents version! */
-	virtual void UpdateNativeProperties() { }
+	virtual void UpdateNativeProperties();
 
 public:
 	virtual void TickComponent(

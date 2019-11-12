@@ -81,6 +81,13 @@ FQuat FShapeBarrier::GetLocalRotation(UWorld* World) const
 	return std::get<1>(GetLocalPositionAndRotation(World));
 }
 
+void FShapeBarrier::SetMaterial(const FMaterialBarrier& Material)
+{
+	check(HasNative());
+	check(Material.HasNative());
+	NativeRef->NativeGeometry->setMaterial(Material.GetNative()->Native);
+}
+
 namespace
 {
 	agxCollide::ShapeIterator FindShape(agxCollide::Geometry* Geometry, agxCollide::Shape* Shape)

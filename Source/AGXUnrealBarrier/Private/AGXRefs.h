@@ -2,6 +2,7 @@
 
 #include "BeginAGXIncludes.h"
 #include <agx/Constraint.h>
+#include <agx/Material.h>
 #include <agx/RigidBody.h>
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
@@ -71,6 +72,17 @@ struct FConstraintRef
 
 	FConstraintRef() = default;
 	FConstraintRef(agx::Constraint* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FMaterialRef
+{
+	agx::MaterialRef Native;
+
+	FMaterialRef() = default;
+	FMaterialRef(agx::Material* InNative)
 		: Native(InNative)
 	{
 	}

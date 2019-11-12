@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Containers/Array.h"
 #include "Modules/ModuleInterface.h"
 #include "Modules/ModuleManager.h"
 #include "UnrealEd.h"
@@ -8,6 +9,8 @@
 class FComponentVisualizer;
 class FToolBarBuilder;
 class FMenuBuilder;
+class IAssetTools;
+class IAssetTypeActions;
 
 class FAGXUnrealEditorModule : public IModuleInterface
 {
@@ -38,6 +41,11 @@ private:
 	void RegisterCommands();
 	void UnregisterCommands();
 
+	void RegisterAssetTypeActions();
+	void UnregisterAssetTypeActions();
+
+	void RegisterAssetTypeAction(IAssetTools& AssetTools, const TSharedPtr<IAssetTypeActions>& Action);
+
 	/**
 	 * Registers property type customizations (IPropertyTypeCustomization),
 	 * and class detail customizations (IDetailCustomization).
@@ -58,7 +66,10 @@ private:
 	void UnregisterComponentVisualizer(const FName& ComponentClassName);
 
 private:
+
 	TSharedPtr<class FUICommandList> PluginCommands;
 	TSharedPtr<class FAGX_TopMenu> AgxTopMenu;
+
+	TArray<TSharedPtr<IAssetTypeActions>> RegisteredAssetTypeActions;
 };
 

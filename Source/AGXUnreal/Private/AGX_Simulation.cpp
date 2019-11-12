@@ -68,5 +68,28 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const AActor* Actor)
 	UGameInstance* GameInstance = Actor->GetGameInstance();
 	check(GameInstance);
 
+	return GetFrom(GameInstance);
+}
+
+UAGX_Simulation* UAGX_Simulation::GetFrom(const UWorld* World)
+{
+	if (!World)
+		return nullptr;
+
+	if (World->IsGameWorld())
+	{
+		return GetFrom(World->GetGameInstance());
+	}
+	else
+	{
+		return GetMutableDefault<UAGX_Simulation>();
+	}
+}
+
+UAGX_Simulation* UAGX_Simulation::GetFrom(const UGameInstance* GameInstance)
+{
+	if (!GameInstance)
+		return nullptr;
+	
 	return GameInstance->GetSubsystem<UAGX_Simulation>();
 }

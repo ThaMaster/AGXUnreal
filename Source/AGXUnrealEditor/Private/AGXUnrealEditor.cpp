@@ -1,5 +1,9 @@
 #include "AGXUnrealEditor.h"
 
+#include "AssetToolsModule.h"
+#include "AssetTypeCategories.h"
+#include "IAssetTools.h"
+#include "IAssetTypeActions.h"
 #include "ISettingsModule.h"
 #include "Modules/ModuleManager.h"
 
@@ -30,6 +34,7 @@
 #include "Constraints/AGX_ConstraintComponentVisualizer.h"
 #include "Constraints/AGX_ConstraintFrameComponent.h"
 #include "Constraints/AGX_ConstraintFrameComponentVisualizer.h"
+#include "Materials/AGX_MaterialAssetTypeActions.h"
 #include "RigidBodyBarrier.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
@@ -41,6 +46,7 @@ void FAGXUnrealEditorModule::StartupModule()
 
 	RegisterProjectSettings();
 	RegisterCommands();
+	RegisterAssetTypeActions();
 	RegisterCustomizations();
 	RegisterComponentVisualizers();
 
@@ -53,6 +59,7 @@ void FAGXUnrealEditorModule::ShutdownModule()
 
 	UnregisterCommands();
 	UnregisterProjectSettings();
+	UnregisterAssetTypeActions();
 	UnregisterCustomizations();
 	UnregisterComponentVisualizers();
 
@@ -112,6 +119,35 @@ void FAGXUnrealEditorModule::UnregisterCommands()
 {
 	FImportAGXArchiveStyle::Shutdown();
 	FImportAGXArchiveCommands::Unregister();
+}
+
+void FAGXUnrealEditorModule::RegisterAssetTypeActions()
+{
+	IAssetTools &AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+
+	EAssetTypeCategories::Type AgxAssetCategoryBit = AssetTools.RegisterAdvancedAssetCategory(
+		FName(TEXT("AgxUnreal")), LOCTEXT("AgxAssetCategory", "AGX"));
+
+	RegisterAssetTypeAction(AssetTools, MakeShareable(new FAGX_MaterialAssetTypeActions(AgxAssetCategoryBit)));
+}
+
+void FAGXUnrealEditorModule::UnregisterAssetTypeActions()
+{
+	if (!FModuleManager::Get().IsModuleLoaded("AssetTools"))
+		return;
+
+	IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get();
+
+	for (const TSharedPtr<IAssetTypeActions>& AssetTypeAction : RegisteredAssetTypeActions)
+	{
+		AssetTools.UnregisterAssetTypeActions(AssetTypeAction.ToSharedRef());
+	}
+}
+
+void FAGXUnrealEditorModule::RegisterAssetTypeAction(IAssetTools& AssetTools, const TSharedPtr<IAssetTypeActions>& Action)
+{
+	AssetTools.RegisterAssetTypeActions(Action.ToSharedRef());
+	RegisteredAssetTypeActions.Add(Action);
 }
 
 void FAGXUnrealEditorModule::PluginButtonClicked()

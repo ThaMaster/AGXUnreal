@@ -6,6 +6,7 @@ struct FSimulationRef;
 
 class FRigidBodyBarrier;
 class FConstraintBarrier;
+class FMaterialBarrier;
 
 class AGXUNREALBARRIER_API FSimulationBarrier
 {
@@ -15,6 +16,9 @@ public:
 
 	void AddRigidBody(FRigidBodyBarrier* body);
 	void AddConstraint(FConstraintBarrier* Constraint);
+
+	void AddMaterial(FMaterialBarrier* Material);
+	void RemoveMaterial(FMaterialBarrier* Material);
 
 	void Step();
 
