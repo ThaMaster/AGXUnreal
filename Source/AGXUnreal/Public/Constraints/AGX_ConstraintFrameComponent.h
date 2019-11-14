@@ -15,7 +15,7 @@
  * @see FAGX_ConstraintFrameComponentVisualizer
  *
  */
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(Category = "AGX", ClassGroup = "AGX", NotPlaceable)
 class AGXUNREAL_API UAGX_ConstraintFrameComponent : public USceneComponent
 {
 	GENERATED_BODY()

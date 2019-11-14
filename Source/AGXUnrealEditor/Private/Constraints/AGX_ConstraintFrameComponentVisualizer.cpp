@@ -3,10 +3,14 @@
 
 #include "Constraints/AGX_ConstraintFrameComponentVisualizer.h"
 
+#include "Classes/Editor/UnrealEdEngine.h"
 #include "SceneManagement.h"
+#include "UnrealEdGlobals.h"
 
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintComponent.h"
+#include "Constraints/AGX_ConstraintComponentVisualizer.h"
+#include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintFrameComponent.h"
 
 

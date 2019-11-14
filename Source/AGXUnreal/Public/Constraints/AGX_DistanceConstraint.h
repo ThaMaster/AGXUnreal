@@ -8,7 +8,7 @@
 
 
 /**
- * 
+ * Locks the initial relative distance between the bodies.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API AAGX_DistanceConstraint : public AAGX_Constraint1DOF

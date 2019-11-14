@@ -18,10 +18,10 @@ class AGXUNREAL_API UAGX_CylinderShapeComponent : public UAGX_ShapeComponent
 public:
 	UAGX_CylinderShapeComponent();
 
-	UPROPERTY(EditAnywhere, Category = "AGX Shape Component")
+	UPROPERTY(EditAnywhere, Category = "AGX Shape")
 	double Height;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Shape Component")
+	UPROPERTY(EditAnywhere, Category = "AGX Shape")
 	double Radius;
 
 	FShapeBarrier* GetNative() override;

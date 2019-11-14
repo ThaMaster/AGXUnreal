@@ -4,7 +4,6 @@
 
 #include <memory>
 
-class UWorld;
 
 class AGXUNREALBARRIER_API FSphereShapeBarrier : public FShapeBarrier
 {
@@ -14,8 +13,8 @@ public:
 	FSphereShapeBarrier(FSphereShapeBarrier&& Other);
 	virtual ~FSphereShapeBarrier() override;
 
-	void SetRadius(float Radius, UWorld* World);
-	float GetRadius(UWorld* World) const;
+	void SetRadius(float Radius);
+	float GetRadius() const;
 
 private:
 	virtual void AllocateNativeShape() override;

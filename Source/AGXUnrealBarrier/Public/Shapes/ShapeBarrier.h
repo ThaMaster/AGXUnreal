@@ -4,6 +4,7 @@
 #include "Math/Vector.h"
 #include "Math/Quat.h"
 
+class FMaterialBarrier;
 struct FGeometryAndShapeRef;
 
 class AGXUNREALBARRIER_API FShapeBarrier
@@ -19,12 +20,17 @@ public:
 	FGeometryAndShapeRef* GetNative();
 	const FGeometryAndShapeRef* GetNative() const;
 
-	void SetLocalPosition(const FVector &Position, UWorld* World);
+	void SetLocalPosition(const FVector &Position);
 	void SetLocalRotation(const FQuat &Rotation);
 
-	FVector GetLocalPosition(UWorld* World) const;
-	FQuat GetLocalRotation(UWorld* World) const;
-	std::tuple<FVector, FQuat> GetLocalPositionAndRotation(UWorld* World) const;
+	FVector GetLocalPosition() const;
+	FQuat GetLocalRotation() const;
+	std::tuple<FVector, FQuat> GetLocalPositionAndRotation() const;
+
+	void SetMaterial(const FMaterialBarrier& Material);
+	/// \todo Should GetMaterial() create a new FMaterialBarrier, or get an existing somehow? If it creates a new
+	/// FMaterialBarrier we should implement comparison operators etc since multiple FMaterialBarrier that points
+	/// to the same native object should be logically seen as same object (similar to smart pointers).
 
 protected:
 	FShapeBarrier(FShapeBarrier&& Other);

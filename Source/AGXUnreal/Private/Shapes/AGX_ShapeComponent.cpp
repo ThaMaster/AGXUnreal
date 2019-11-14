@@ -1,6 +1,9 @@
 #include "Shapes/AGX_ShapeComponent.h"
 
 #include "AGX_LogCategory.h"
+#include "Materials/AGX_MaterialBase.h"
+#include "Materials/AGX_MaterialInstance.h"
+#include "Materials/MaterialBarrier.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 
@@ -36,6 +39,26 @@ void UAGX_ShapeComponent::UpdateVisualMesh()
 bool UAGX_ShapeComponent::ShouldCreateVisualMesh() const
 {
 	return bVisible; // TODO: add && !(bHiddenInGame && IsGamePlaying), but how to get IsGamePlaying?
+}
+
+void UAGX_ShapeComponent::UpdateNativeProperties()
+{
+	if (!HasNative())
+		return;
+
+	if (PhysicalMaterial)
+	{
+		UAGX_MaterialInstance* MaterialInstance = UAGX_MaterialBase::GetOrCreateInstance(GetWorld(), PhysicalMaterial);
+		check(MaterialInstance);
+
+		FMaterialBarrier* MaterialBarrier = MaterialInstance->GetOrCreateNative(GetWorld());
+		check(MaterialBarrier);
+
+		UE_LOG(LogAGX, Log, TEXT("UAGX_ShapeComponent::UpdateNativeProperties is setting native material \"%s\" on shape "
+			"\"%s\" of rigid body \"%s\"."), *MaterialInstance->GetName(), *GetName(), *GetNameSafe(GetOwner()));
+
+		GetNative()->SetMaterial(*MaterialBarrier);
+	}
 }
 
 void UAGX_ShapeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

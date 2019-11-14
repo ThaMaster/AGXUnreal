@@ -4,6 +4,7 @@
 #include "Constraints/AGX_Constraint.h"
 
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
@@ -70,10 +71,20 @@ ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRange
 LockedDofs(LockedDofsOrdered),
 NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 {
+	BodyAttachment1.FrameDefiningActor = this;
+	BodyAttachment2.FrameDefiningActor = this;
+
 	ConstraintComponent = CreateDefaultSubobject<UAGX_ConstraintComponent>(
 		TEXT("ConstraintComponent"));
 
 	ConstraintComponent->SetFlags(ConstraintComponent->GetFlags() | RF_Transactional);
+	ConstraintComponent->Mobility = EComponentMobility::Movable;
+
+#if WITH_EDITORONLY_DATA
+	ConstraintComponent->bVisualizeComponent = true;
+#endif
+
+	SetRootComponent(ConstraintComponent);
 }
 
 

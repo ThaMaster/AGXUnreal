@@ -57,10 +57,10 @@ void UAGX_BoxShapeComponent::UpdateNativeProperties()
 		return;
 
 	Super::UpdateNativeProperties();
-	
+
 	UpdateNativeLocalTransform(NativeBarrier);
 
-	NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale(), GetWorld());
+	NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale());
 }
 
 void UAGX_BoxShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
@@ -72,7 +72,7 @@ void UAGX_BoxShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 
 bool UAGX_BoxShapeComponent::DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const
 {
-	return 
+	return
 		Super::DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName) ||
 		MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_BoxShapeComponent, HalfExtent);
 }

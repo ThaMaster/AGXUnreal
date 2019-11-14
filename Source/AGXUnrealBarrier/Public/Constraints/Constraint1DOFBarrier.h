@@ -18,16 +18,16 @@ public:
 	FConstraint1DOFBarrier();
 	virtual ~FConstraint1DOFBarrier();
 
-	void SetElectricMotorController(const FElectricMotorControllerBarrier &Controller, UWorld* World);
+	void SetElectricMotorController(const FElectricMotorControllerBarrier &Controller);
 
-	void SetFrictionController(const FFrictionControllerBarrier &Controller, UWorld* World);
+	void SetFrictionController(const FFrictionControllerBarrier &Controller);
 
-	void SetLockController(const FLockControllerBarrier &Controller, UWorld* World);
-	
-	void SetRangeController(const FRangeControllerBarrier &Controller, UWorld* World);
+	void SetLockController(const FLockControllerBarrier &Controller);
 
-	void SetTargetSpeedController(const FTargetSpeedControllerBarrier &Controller, UWorld* World);
-	
+	void SetRangeController(const FRangeControllerBarrier &Controller);
+
+	void SetTargetSpeedController(const FTargetSpeedControllerBarrier &Controller);
+
 private:
 	FConstraint1DOFBarrier(const FConstraint1DOFBarrier&) = delete;
 	void operator=(const FConstraint1DOFBarrier&) = delete;

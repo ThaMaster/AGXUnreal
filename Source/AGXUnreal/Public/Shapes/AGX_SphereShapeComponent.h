@@ -15,7 +15,7 @@ class AGXUNREAL_API UAGX_SphereShapeComponent : public UAGX_ShapeComponent
 public:
 	UAGX_SphereShapeComponent();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
 	float Radius;
 
 	FShapeBarrier* GetNative() override;

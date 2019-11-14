@@ -19,18 +19,18 @@ public:
 	FConstraint2DOFBarrier();
 	virtual ~FConstraint2DOFBarrier();
 
-	void SetElectricMotorController(const FElectricMotorControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
+	void SetElectricMotorController(const FElectricMotorControllerBarrier &Controller, int32 SecondaryConstraintIndex);
 
-	void SetFrictionController(const FFrictionControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
+	void SetFrictionController(const FFrictionControllerBarrier &Controller, int32 SecondaryConstraintIndex);
 
-	void SetLockController(const FLockControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
+	void SetLockController(const FLockControllerBarrier &Controller, int32 SecondaryConstraintIndex);
 
-	void SetRangeController(const FRangeControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
+	void SetRangeController(const FRangeControllerBarrier &Controller, int32 SecondaryConstraintIndex);
 
-	void SetTargetSpeedController(const FTargetSpeedControllerBarrier &Controller, int32 SecondaryConstraintIndex, UWorld* World);
+	void SetTargetSpeedController(const FTargetSpeedControllerBarrier &Controller, int32 SecondaryConstraintIndex);
 
-	void SetScrewController(const FScrewControllerBarrier &Controller, UWorld* World);
-	
+	void SetScrewController(const FScrewControllerBarrier &Controller);
+
 private:
 	FConstraint2DOFBarrier(const FConstraint2DOFBarrier&) = delete;
 	void operator=(const FConstraint2DOFBarrier&) = delete;

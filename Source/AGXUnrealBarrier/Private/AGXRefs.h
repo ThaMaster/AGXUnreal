@@ -2,6 +2,8 @@
 
 #include "BeginAGXIncludes.h"
 #include <agx/Constraint.h>
+#include <agx/FrictionModel.h>
+#include <agx/Material.h>
 #include <agx/RigidBody.h>
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
@@ -77,6 +79,28 @@ struct FConstraintRef
 	}
 };
 
+struct FMaterialRef
+{
+	agx::MaterialRef Native;
+
+	FMaterialRef() = default;
+	FMaterialRef(agx::Material* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FContactMaterialRef
+{
+	agx::ContactMaterialRef Native;
+
+	FContactMaterialRef() = default;
+	FContactMaterialRef(agx::ContactMaterial* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
 struct FTerrainRef
 {
 	agxTerrain::TerrainRef Native;
@@ -86,4 +110,4 @@ struct FTerrainRef
 		: Native(InNative)
 	{
 	}
-};
+}

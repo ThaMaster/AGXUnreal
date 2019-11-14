@@ -21,88 +21,82 @@ FConstraint2DOFBarrier::~FConstraint2DOFBarrier()
 
 void FConstraint2DOFBarrier::SetElectricMotorController(
 	const FElectricMotorControllerBarrier &ControllerBarrier,
-	int32 SecondaryConstraintIndex,
-	UWorld* World)
+	int32 SecondaryConstraintIndex)
 {
 	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
 	{
 		agx::ElectricMotorController* NativeController =
 			NativeCasted->getElectricMotorController((agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
 
-		ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController);
 	}
 }
 
 
 void FConstraint2DOFBarrier::SetFrictionController(
 	const FFrictionControllerBarrier &ControllerBarrier,
-	int32 SecondaryConstraintIndex,
-	UWorld* World)
+	int32 SecondaryConstraintIndex)
 {
 	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
 	{
 		agx::FrictionController* NativeController =
 			NativeCasted->getFrictionController((agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
 
-		ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController);
 	}
 }
 
 
 void FConstraint2DOFBarrier::SetLockController(
 	const FLockControllerBarrier &ControllerBarrier,
-	int32 SecondaryConstraintIndex,
-	UWorld* World)
+	int32 SecondaryConstraintIndex)
 {
 	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
 	{
 		agx::LockController* NativeController =
 			NativeCasted->getLock1D((agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
 
-		ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController);
 	}
 }
 
 
 void FConstraint2DOFBarrier::SetRangeController(
 	const FRangeControllerBarrier &ControllerBarrier,
-	int32 SecondaryConstraintIndex,
-	UWorld* World)
+	int32 SecondaryConstraintIndex)
 {
 	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
 	{
 		agx::RangeController* NativeController =
 			NativeCasted->getRange1D((agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
 
-		ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController);
 	}
 }
 
 
 void FConstraint2DOFBarrier::SetTargetSpeedController(
 	const FTargetSpeedControllerBarrier &ControllerBarrier,
-	int32 SecondaryConstraintIndex,
-	UWorld* World)
+	int32 SecondaryConstraintIndex)
 {
 	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
 	{
 		agx::TargetSpeedController* NativeController =
 			NativeCasted->getMotor1D((agx::Constraint2DOF::DOF)SecondaryConstraintIndex);
 
-		ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController);
 	}
 }
 
 
 void FConstraint2DOFBarrier::SetScrewController(
-	const FScrewControllerBarrier &ControllerBarrier,
-	UWorld* World)
+	const FScrewControllerBarrier &ControllerBarrier)
 {
 	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
 	{
 		agx::ScrewController* NativeController = NativeCasted->getScrew1D();
 
-		ControllerBarrier.ToNative(NativeController, World);
+		ControllerBarrier.ToNative(NativeController);
 	}
 }
 

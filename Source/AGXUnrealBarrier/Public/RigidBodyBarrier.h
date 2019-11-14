@@ -28,8 +28,8 @@ public:
 	FRigidBodyBarrier(FRigidBodyBarrier&& other);
 	~FRigidBodyBarrier();
 
-	void SetPosition(FVector NewPosition, UWorld* World);
-	FVector GetPosition(UWorld* World) const;
+	void SetPosition(FVector NewPosition);
+	FVector GetPosition() const;
 
 	void SetRotation(FQuat NewRotation);
 	FQuat GetRotation() const;

@@ -4,7 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
+#include "ComponentVisualizer.h"
 
+class AAGX_Constraint;
+class FPrimitiveDrawInterface;
+class FSceneView;
+class UActorComponent;
 
 /**
  * Component Visualizer of UAGX_ConstraintFrameComponent, which does the following:

@@ -8,7 +8,7 @@
 
 
 /**
- * A constraint that locks all six relative degrees of freedom between two Rigid Bodies.
+ * Locks all degrees of freedom.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API AAGX_LockConstraint : public AAGX_Constraint

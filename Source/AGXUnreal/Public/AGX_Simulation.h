@@ -10,7 +10,9 @@
 #include "AGX_Simulation.generated.h"
 
 class UAGX_RigidBodyComponent;
+class UAGX_MaterialBase;
 class AAGX_Terrain;
+
 
 /**
  * Manages an AGX simulation instance.
@@ -54,6 +56,10 @@ public:
 	void Step(float DeltaTime);
 
 	static UAGX_Simulation* GetFrom(const AActor* Actor);
+	
+	static UAGX_Simulation* GetFrom(const UWorld* World);
+
+	static UAGX_Simulation* GetFrom(const UGameInstance* GameInstance);
 
 public:
 	void Initialize(FSubsystemCollectionBase& Collection) override;

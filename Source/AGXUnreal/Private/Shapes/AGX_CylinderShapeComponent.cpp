@@ -58,11 +58,11 @@ void UAGX_CylinderShapeComponent::UpdateNativeProperties()
 		return;
 
 	Super::UpdateNativeProperties();
-	
+
 	UpdateNativeLocalTransform(NativeBarrier);
 
-	NativeBarrier.SetHeight(Height * GetComponentScale().Y, GetWorld());
-	NativeBarrier.SetRadius(Radius * GetComponentScale().X, GetWorld());
+	NativeBarrier.SetHeight(Height * GetComponentScale().Y);
+	NativeBarrier.SetRadius(Radius * GetComponentScale().X);
 }
 
 void UAGX_CylinderShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
@@ -70,14 +70,15 @@ void UAGX_CylinderShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshD
 	const uint32 NumCircleSegments = 32;
 	const uint32 NumHeightSegments = 1;
 
-	AGX_MeshUtilities::MakeCylinder(OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, Radius, Height, NumCircleSegments, NumHeightSegments);
+	AGX_MeshUtilities::MakeCylinder(OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices,
+		AGX_MeshUtilities::CylinderConstructionData(Radius, Height, NumCircleSegments, NumHeightSegments));
 }
 
 #if WITH_EDITOR
 
 bool UAGX_CylinderShapeComponent::DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const
 {
-	return 
+	return
 		Super::DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName) ||
 		MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_CylinderShapeComponent, Height) ||
 		MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_CylinderShapeComponent, Radius);

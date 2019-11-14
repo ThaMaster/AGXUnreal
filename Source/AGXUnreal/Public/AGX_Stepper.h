@@ -4,7 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "AGX_Stepper.generated.h"
 
-UCLASS(ClassGroup = "AGX", Category = "AGX")
+UCLASS(ClassGroup = "AGX", Category = "AGX", NotPlaceable)
 class AGXUNREAL_API AAGX_Stepper : public AActor
 {
 	GENERATED_BODY()

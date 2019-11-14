@@ -1,0 +1,364 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "AgxEdMode/AGX_AgxEdModeConstraintsCustomization.h"
+
+#include "DetailCategoryBuilder.h"
+#include "DetailLayoutBuilder.h"
+#include "DetailWidgetRow.h"
+#include "IDetailPropertyRow.h"
+#include "MetaData.h"
+#include "SceneOutlinerModule.h"
+#include "SceneOutlinerPublicTypes.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SCheckBox.h"
+#include "Widgets/Input/SComboBox.h"
+#include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SScrollBox.h"
+#include "Widgets/Layout/SExpandableArea.h"
+#include "Widgets/Text/STextBlock.h"
+
+
+#include "AgxEdMode/AGX_AgxEdModeConstraints.h"
+#include "Constraints/AGX_Constraint.h"
+#include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_PropertyUtilities.h"
+
+#define LOCTEXT_NAMESPACE "FAGX_AgxEdModeConstraintsCustomization"
+
+
+TSharedRef<IDetailCustomization> FAGX_AgxEdModeConstraintsCustomization::MakeInstance()
+{
+	return MakeShareable(new FAGX_AgxEdModeConstraintsCustomization);
+}
+
+FAGX_AgxEdModeConstraintsCustomization::FAGX_AgxEdModeConstraintsCustomization()
+{
+	// Find all spawnable constraint classes so that they can be presented by combo box.
+	FAGX_EditorUtilities::GetAllClassesOfType(ConstraintClasses, AAGX_Constraint::StaticClass(),
+		/*bIncludeAbstract*/ false);
+
+	UClass* Class = StaticClass<AAGX_Constraint>();
+}
+
+template <typename T>
+T* GetSingleObjectBeingCustomized(IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true)
+{
+	static_assert(std::is_base_of<UObject, T>::value, "T must inherit from UObject");
+
+	TArray<TWeakObjectPtr<UObject>> Objects;
+	DetailBuilder.GetObjectsBeingCustomized(Objects);
+
+	if (Objects.Num() == 1 || (!FailIfMultiple && Objects.Num() > 1))
+		return Cast<T>(Objects[0].Get());
+	else
+		return nullptr;
+}
+
+void FAGX_AgxEdModeConstraintsCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
+{
+	UAGX_AgxEdModeConstraints* ConstraintsSubMode =
+		GetSingleObjectBeingCustomized<UAGX_AgxEdModeConstraints>(DetailBuilder);
+
+	if (!ConstraintsSubMode)
+		return;
+
+	CreateConstraintCreatorCategory(DetailBuilder, ConstraintsSubMode);
+
+	CreateConstraintBrowserCategory(DetailBuilder, ConstraintsSubMode);
+}
+
+void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintCreatorCategory(IDetailLayoutBuilder& DetailBuilder,
+	UAGX_AgxEdModeConstraints* ConstraintsSubMode)
+{
+	check(ConstraintsSubMode);
+
+	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder.EditCategory("Constraint Creator");
+
+	CategoryBuilder.InitiallyCollapsed(true);
+
+	/** Constraint Type - Combo Box */
+	CreateConstraintTypeComboBox(CategoryBuilder, ConstraintsSubMode);
+
+	/** Rigid Body 1 - Picker */
+	CategoryBuilder.AddProperty(DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints,
+		RigidBodyActor1)));
+
+	/** Rigid Body 2 - Picker */
+	CategoryBuilder.AddProperty(DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints,
+		RigidBodyActor2)));
+
+	/** Find Actors From Selection - Button */
+	CreateGetFromSelectedActorsButton(CategoryBuilder, ConstraintsSubMode);
+
+	/** Constraint Parent - Combo Box */
+	CategoryBuilder.AddProperty(DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints,
+		ConstraintParent)));
+
+	/** Frame Source - Radio Buttons */
+	CreateFrameSourceRadioButtons(CategoryBuilder, ConstraintsSubMode);
+	
+	/** Create Constraint Button */
+	CategoryBuilder.AddCustomRow(FText::GetEmpty())
+	[
+		SNew(SHorizontalBox)
+		+SHorizontalBox::Slot()
+		.FillWidth(1)
+
+		+SHorizontalBox::Slot()
+		.AutoWidth()
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("CreateButtonText", "Create"))
+			.OnClicked_Lambda([ConstraintsSubMode]()
+			{
+				if (ConstraintsSubMode)
+					ConstraintsSubMode->CreateConstraint();
+				return FReply::Handled();
+			})
+		]
+	];
+}
+#include "Attribute.h"
+void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintTypeComboBox(IDetailCategoryBuilder& CategoryBuilder,
+	UAGX_AgxEdModeConstraints* ConstraintsSubMode)
+{
+	// Set initial selection, if necessary.
+	if (ConstraintsSubMode->ConstraintType == nullptr && ConstraintClasses.Num() > 0)
+	{
+		ConstraintsSubMode->ConstraintType = ConstraintClasses[0];
+	}
+
+	// Function for getting a shorter display name per constraint type
+	auto GetShortName = [](UClass* ConstraintClass) -> FText
+	{
+		if (!ConstraintClass)
+		{
+			return FText::GetEmpty();
+		}
+
+		FString DisplayName = FAGX_PropertyUtilities::GetActualDisplayName(ConstraintClass, /*bRemoveAgxPrefix*/ true);
+		DisplayName.RemoveFromEnd(" Constraint", ESearchCase::CaseSensitive);
+		return FText::FromString(DisplayName);
+	};
+
+	auto GetToolTip = [](UClass* ConstraintClass) -> FText
+	{
+		if (!ConstraintClass)
+		{
+			return  FText::GetEmpty();
+		}
+		
+		return ConstraintClass->GetToolTipText(/*bShortTooltip*/ true);
+	};
+	
+	CategoryBuilder.AddCustomRow(FText::GetEmpty())
+	.NameContent()
+	[
+		SNew(STextBlock)
+		.Text(LOCTEXT("ConstraintType", "Constraint Type"))
+		.Font(IDetailLayoutBuilder::GetDetailFont())
+	]
+	.ValueContent()
+	[
+		SNew(SComboBox<UClass*>)
+		.ContentPadding(2)
+		.OptionsSource(&ConstraintClasses)
+		.OnGenerateWidget_Lambda([=](UClass* Item) // content for each item in combo box
+		{
+			return SNew(STextBlock)
+				.Text(GetShortName(Item))
+				.ToolTipText(GetToolTip(Item)); 
+		})
+		.OnSelectionChanged(this, &FAGX_AgxEdModeConstraintsCustomization::OnConstraintTypeComboBoxChanged, ConstraintsSubMode)
+		.ToolTipText_Lambda([=]() { return GetToolTip(ConstraintsSubMode->ConstraintType); }) // header tooltip
+		.Content() // header content (i.e. showing selected item, even while combo box is closed)
+		[
+			SNew(STextBlock)
+			.Text_Lambda([=]() { return GetShortName(ConstraintsSubMode->ConstraintType); })
+			.Font(IDetailLayoutBuilder::GetDetailFont())
+		]
+	];
+}
+
+void FAGX_AgxEdModeConstraintsCustomization::CreateGetFromSelectedActorsButton(IDetailCategoryBuilder& CategoryBuilder,
+	UAGX_AgxEdModeConstraints* ConstraintsSubMode)
+{	
+	CategoryBuilder.AddCustomRow(FText::GetEmpty())
+	.ValueContent()
+	[
+		SNew(SHorizontalBox)
+		+SHorizontalBox::Slot()
+		.AutoWidth()
+		.HAlign(HAlign_Left)
+		//.Padding(5, 0)
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("FindActorsFromSelectionButtonText", "Get Actors From Selection"))
+			.ToolTipText(LOCTEXT("FindActorsFromSelectionButtonTooltip", "Searches selected actors for two Actors "
+				"with a Rigid Body Component.\n\nAlso searches the subtree and parent chain of each selected actor "
+				"if a direct match was not found."))
+			.OnClicked_Lambda([ConstraintsSubMode]()
+			{
+				AActor* Actor1;
+				AActor* Actor2;
+				FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(&Actor1, &Actor2,
+					/*bSearchSubtrees*/ true, /*bSearchAncestors*/ true);
+				
+				ConstraintsSubMode->RigidBodyActor1 = Actor1;
+				ConstraintsSubMode->RigidBodyActor2 = Actor2;
+
+				return FReply::Handled();
+			})
+		]
+	];
+}
+
+void FAGX_AgxEdModeConstraintsCustomization::CreateFrameSourceRadioButtons(IDetailCategoryBuilder& CategoryBuilder,
+	UAGX_AgxEdModeConstraints* ConstraintsSubMode)
+{
+	check(ConstraintsSubMode);
+	
+	const TSharedRef<IPropertyHandle> PropertyHandle =
+		CategoryBuilder.GetParentLayout().GetProperty(
+			GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, AttachmentFrameSource));
+	
+	UEnum* FrameSourceEnum = StaticEnum<EAGX_ConstraintFrameSource>();
+	check(FrameSourceEnum);
+	
+	IDetailPropertyRow& PropertyRow = CategoryBuilder.AddProperty(PropertyHandle);
+
+	TSharedPtr<SWidget> DefaultNameWidget;
+	TSharedPtr<SWidget> DefaultValueWidget;
+	PropertyRow.GetDefaultWidgets(DefaultNameWidget, DefaultValueWidget, /*bAddWidgetDecoration*/ true);
+
+	const TSharedRef<SVerticalBox> RadioButtonsBox = SNew(SVerticalBox);
+
+	PropertyRow.CustomWidget(/*bShowChildren*/ true)
+	[
+		SNew(SVerticalBox)
+
+		/** Label for property name */
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.HAlign(HAlign_Left)
+		[
+			DefaultNameWidget.ToSharedRef()
+		]
+	
+		/** Area for the radio buttons */
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.HAlign(HAlign_Center)
+		.Padding(FMargin(5.0f, 0.0f))
+		[
+			RadioButtonsBox
+		]
+	];
+	
+	// Fill with one radio button for each enum value
+	const int32 NumEnums = FrameSourceEnum->NumEnums() - 1;  // minus one because Unreal adds a "MAX" item on the end
+	for (int32 EnumIndex = 0; EnumIndex < NumEnums; ++EnumIndex)
+	{
+		const EAGX_ConstraintFrameSource EnumValue = static_cast<EAGX_ConstraintFrameSource>(
+			FrameSourceEnum->GetValueByIndex(EnumIndex));
+
+		RadioButtonsBox->AddSlot()
+		.Padding(FMargin(0.0f, 1.0f))
+		[
+			SNew(SCheckBox)
+			.Style(FEditorStyle::Get(), "RadioButton")
+			.Padding(FMargin(4.0f, 0.0f))
+			.ToolTipText(FrameSourceEnum->GetToolTipTextByIndex(EnumIndex))
+			.IsChecked_Lambda([ConstraintsSubMode, EnumValue]()
+			{
+				return ConstraintsSubMode->AttachmentFrameSource == EnumValue ?
+					ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+			})
+			.OnCheckStateChanged(this,
+				&FAGX_AgxEdModeConstraintsCustomization::OnFrameSourceRadioButtonChanged,
+				EnumValue, ConstraintsSubMode)
+			[
+				SNew(STextBlock)
+				.Text(FrameSourceEnum->GetDisplayNameTextByIndex(EnumIndex))
+				.Font(IDetailLayoutBuilder::GetDetailFont())
+			]
+		];
+	}
+}
+
+
+void FAGX_AgxEdModeConstraintsCustomization::OnConstraintTypeComboBoxChanged(UClass* NewSelectedItem,
+	ESelectInfo::Type InSeletionInfo, UAGX_AgxEdModeConstraints* ConstraintsSubMode)
+{
+	if (ConstraintsSubMode)
+	{
+		ConstraintsSubMode->ConstraintType = NewSelectedItem;
+	}
+}
+
+void FAGX_AgxEdModeConstraintsCustomization::OnFrameSourceRadioButtonChanged(ECheckBoxState NewCheckedState,
+	EAGX_ConstraintFrameSource RadioButton, UAGX_AgxEdModeConstraints* ConstraintsSubMode)
+{
+	if (ConstraintsSubMode && NewCheckedState == ECheckBoxState::Checked)
+	{
+		ConstraintsSubMode->AttachmentFrameSource = RadioButton;
+	}
+}
+
+void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserCategory(IDetailLayoutBuilder& DetailBuilder,
+	UAGX_AgxEdModeConstraints* ConstraintsSubMode)
+{
+	check(ConstraintsSubMode);
+
+	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder.EditCategory("Constraint Browser");
+
+	CategoryBuilder.InitiallyCollapsed(false);
+
+	CreateConstraintBrowserListView(CategoryBuilder, ConstraintsSubMode);
+}
+
+void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(IDetailCategoryBuilder& CategoryBuilder,
+	UAGX_AgxEdModeConstraints* ConstraintsSubMode)
+{
+	using namespace SceneOutliner;
+
+	FSceneOutlinerModule& SceneOutlinerModule = FModuleManager::LoadModuleChecked<FSceneOutlinerModule>("SceneOutliner");
+
+	FActorFilterPredicate ActorFilter = FActorFilterPredicate::CreateLambda(
+		[](const AActor* const Actor)
+		{
+			return Actor->IsA(AAGX_Constraint::StaticClass());  // only show constraints
+		});
+
+	FCustomSceneOutlinerDeleteDelegate DeleteAction = FCustomSceneOutlinerDeleteDelegate::CreateLambda(
+		[](const TArray<TWeakObjectPtr<AActor>>& Actors) { }); // no delete
+
+	FInitializationOptions Options;
+	Options.Mode = ESceneOutlinerMode::ActorBrowsing;
+	Options.bShowHeaderRow = true;
+	Options.bShowParentTree = false;
+	Options.bShowSearchBox = false;
+	Options.bFocusSearchBoxWhenOpened = false;
+	Options.bShowTransient = true;
+	Options.bShowCreateNewFolder = false;
+	Options.ColumnMap.Add(FBuiltInColumnTypes::Label(), FColumnInfo(EColumnVisibility::Visible, 0));
+	Options.ColumnMap.Add(FBuiltInColumnTypes::ActorInfo(), FColumnInfo(EColumnVisibility::Visible, 10));
+	Options.CustomDelete = DeleteAction;
+	Options.Filters->AddFilterPredicate(ActorFilter); 
+		
+	TSharedRef<SWidget> SceneOutliner = SceneOutlinerModule.CreateSceneOutliner(Options, FOnActorPicked());
+
+	CategoryBuilder.AddCustomRow(FText::GetEmpty())
+	.WholeRowContent()
+	[
+		SNew(SScrollBox)
+		+ SScrollBox::Slot()
+		.Padding(0)
+		[
+				SceneOutliner
+		]
+	];
+}
+
+#undef LOCTEXT_NAMESPACE

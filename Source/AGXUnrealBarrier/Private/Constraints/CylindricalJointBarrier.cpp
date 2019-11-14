@@ -23,8 +23,7 @@ FCylindricalJointBarrier::~FCylindricalJointBarrier()
 
 void FCylindricalJointBarrier::AllocateNativeImpl(
 	const FRigidBodyBarrier *RigidBody1, const FVector *FramePosition1, const FQuat *FrameRotation1,
-	const FRigidBodyBarrier *RigidBody2, const FVector *FramePosition2, const FQuat *FrameRotation2,
-	const UWorld *World)
+	const FRigidBodyBarrier *RigidBody2, const FVector *FramePosition2, const FQuat *FrameRotation2)
 {
 	check(!HasNative());
 
@@ -36,7 +35,6 @@ void FCylindricalJointBarrier::AllocateNativeImpl(
 	ConvertConstraintBodiesAndFrames(
 		RigidBody1, FramePosition1, FrameRotation1,
 		RigidBody2, FramePosition2, FrameRotation2,
-		World,
 		NativeRigidBody1, NativeFrame1,
 		NativeRigidBody2, NativeFrame2);
 

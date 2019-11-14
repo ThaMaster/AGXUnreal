@@ -47,28 +47,28 @@ FCylinderShapeBarrier::~FCylinderShapeBarrier()
 	// not just the forward declaration, of FCylinderShapeRef.
 }
 
-void FCylinderShapeBarrier::SetHeight(double Height, UWorld* World)
+void FCylinderShapeBarrier::SetHeight(double Height)
 {
 	check(HasNative());
-	NativeCylinder(this)->setHeight(ConvertDistanceToAgx(Height, World));
+	NativeCylinder(this)->setHeight(ConvertDistanceToAgx(Height));
 }
 
-double FCylinderShapeBarrier::GetHeight(UWorld* World) const
+double FCylinderShapeBarrier::GetHeight() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnrealD(NativeCylinder(this)->getHeight(), World);
+	return ConvertDistanceToUnreal<double>(NativeCylinder(this)->getHeight());
 }
 
-void FCylinderShapeBarrier::SetRadius(double Radius, UWorld* World)
+void FCylinderShapeBarrier::SetRadius(double Radius)
 {
 	check(HasNative());
-	NativeCylinder(this)->setRadius(ConvertDistanceToAgx(Radius, World));
+	NativeCylinder(this)->setRadius(ConvertDistanceToAgx(Radius));
 }
 
-double FCylinderShapeBarrier::GetRadius(UWorld* World) const
+double FCylinderShapeBarrier::GetRadius() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnrealD(NativeCylinder(this)->getRadius(), World);
+	return ConvertDistanceToUnreal<double>(NativeCylinder(this)->getRadius());
 }
 
 void FCylinderShapeBarrier::AllocateNativeShape()

@@ -8,9 +8,6 @@
 #include <Containers/UnrealString.h>
 #include <Math/Vector.h>
 #include <Math/Quat.h>
-#include <Engine/World.h>
-#include <GameFramework/WorldSettings.h>
-
 #include "BeginAGXIncludes.h"
 #include <agx/Vec3.h>
 #include <agx/Quat.h>
@@ -20,30 +17,16 @@
 #include "RigidBodyBarrier.h"
 #include "AGXRefs.h"
 
-
 /// \note These functions assume that agx::Real and float are different types.
+/// They also assume that agx::Real has higher (or equal) precision than float.
 
-/// \return The number of meters in the AGX Dynamics simulation an Unreal
-///         distance of 1 corresponds to. Unreal distances are often in
-///         centimeters and in that case UnrealDistanceToAGXDistance would
-///         return 0.01.
-///         Note that this is the inverse of Unreal's WorldToMeters.
-inline float UnrealDistanceToAGXDistance(const UWorld* World)
+namespace
 {
-	/// \todo WorldToMeters was 'static' for a while, for performance reasons,
-	///       but this leads to bugs when the world scale is changed between
-	///       simulations. I expect the cost of getting the scale to be small,
-	///       until the opposite has been proven. But this function is
-	///       potentially called many times during BeginPlay which is and
-	///       operation that we really want to be as fast as possible.
-	float WorldToMeters = World->GetWorldSettings()->WorldToMeters;
-	return 1.0f / WorldToMeters;
-}
+	template<typename T>
+	constexpr T AGX_TO_UNREAL_DISTANCE_FACTOR = T(100.0);
 
-inline float AGXDistanceToUnrealDistance(const UWorld* World)
-{
-	float WorldToMeters = World->GetWorldSettings()->WorldToMeters;
-	return WorldToMeters;
+	template<typename T>
+	constexpr T UNREAL_TO_AGX_DISTANCE_FACTOR = T(0.01);
 }
 
 inline float Convert(agx::Real V)
@@ -51,19 +34,15 @@ inline float Convert(agx::Real V)
 	return static_cast<float>(V);
 }
 
-inline float ConvertDistance(agx::Real V, const UWorld* World)
+inline float ConvertDistance(agx::Real V)
 {
-	return static_cast<float>(V) * AGXDistanceToUnrealDistance(World);
+	return static_cast<float>(V * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
 }
 
-inline double ConvertDistanceToUnrealD(agx::Real V, const UWorld* World)
+template<typename T>
+inline T ConvertDistanceToUnreal(agx::Real V)
 {
-	return static_cast<double>(V) * double(AGXDistanceToUnrealDistance(World));
-}
-
-inline float ConvertDistanceToUnrealF(agx::Real V, const UWorld* World)
-{
-	return static_cast<float>(V) * float(AGXDistanceToUnrealDistance(World));
+	return static_cast<T>(V * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
 }
 
 inline agx::Real Convert(float V)
@@ -71,19 +50,15 @@ inline agx::Real Convert(float V)
 	return static_cast<agx::Real>(V);
 }
 
-inline agx::Real ConvertDistance(float V, const UWorld* World)
+inline agx::Real ConvertDistance(float V)
 {
-	return static_cast<agx::Real>(V * UnrealDistanceToAGXDistance(World));
+	return static_cast<agx::Real>(V) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
 }
 
-inline agx::Real ConvertDistanceToAgx(double V, const UWorld* World)
+template<typename T>
+inline agx::Real ConvertDistanceToAgx(T V)
 {
-	return static_cast<agx::Real>(V * double(UnrealDistanceToAGXDistance(World)));
-}
-
-inline agx::Real ConvertDistanceToAgx(float V, const UWorld* World)
-{
-	return static_cast<agx::Real>(V * float(UnrealDistanceToAGXDistance(World)));
+	return static_cast<agx::Real>(V) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
 }
 
 inline FVector Convert(agx::Vec3 V)
@@ -91,39 +66,39 @@ inline FVector Convert(agx::Vec3 V)
 	return FVector(Convert(V.x()), Convert(V.y()), Convert(V.z()));
 }
 
-inline FVector ConvertDistance(const agx::Vec3 &V, const UWorld* World)
+inline FVector ConvertDistance(const agx::Vec3& V)
 {
-	return FVector(ConvertDistance(V.x(), World), ConvertDistance(V.y(), World), ConvertDistance(V.z(), World));
+	return FVector(ConvertDistance(V.x()), ConvertDistance(V.y()), ConvertDistance(V.z()));
 }
 
-inline FVector ConvertVector(const agx::Vec3& V, const UWorld* World)
+inline FVector ConvertVector(const agx::Vec3& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
-	return FVector(ConvertDistance(V.x(), World), -ConvertDistance(V.y(), World), ConvertDistance(V.z(), World));
+	return FVector(ConvertDistance(V.x()), -ConvertDistance(V.y()), ConvertDistance(V.z()));
 }
 
-inline agx::Vec3 Convert(const FVector &V)
+inline agx::Vec3 Convert(const FVector& V)
 {
 	return agx::Vec3(Convert(V.X), Convert(V.Y), Convert(V.Z));
 }
 
-inline agx::Vec3 ConvertDistance(const FVector &V, const UWorld* World)
+inline agx::Vec3 ConvertDistance(const FVector& V)
 {
-	return agx::Vec3(ConvertDistance(V.X, World), ConvertDistance(V.Y, World), ConvertDistance(V.Z, World));
+	return agx::Vec3(ConvertDistance(V.X), ConvertDistance(V.Y), ConvertDistance(V.Z));
 }
 
-inline agx::Vec3 ConvertVector(const FVector& V, const UWorld* World)
+inline agx::Vec3 ConvertVector(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
-	return agx::Vec3(ConvertDistance(V.X, World), -ConvertDistance(V.Y, World), ConvertDistance(V.Z, World));
+	return agx::Vec3(ConvertDistance(V.X), -ConvertDistance(V.Y), ConvertDistance(V.Z));
 }
 
-inline FQuat Convert(const agx::Quat &V)
+inline FQuat Convert(const agx::Quat& V)
 {
 	return FQuat(Convert(V.x()), -Convert(V.y()), Convert(V.z()), -Convert(V.w()));
 }
 
-inline agx::Quat Convert(const FQuat &V)
+inline agx::Quat Convert(const FQuat& V)
 {
 	return agx::Quat(Convert(V.X), -Convert(V.Y), Convert(V.Z), -Convert(V.W));
 }
@@ -180,19 +155,18 @@ TNative* GetNativeFromBarrier(const TBarrier* Barrier)
 		return nullptr;
 }
 
-inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& FrameRotation, const UWorld* World)
+inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& FrameRotation)
 {
 	return new agx::Frame(
 		agx::AffineMatrix4x4(
 			Convert(FrameRotation),
-			ConvertVector(FramePosition, World)));
+			ConvertVector(FramePosition)));
 }
 
 /// \todo Consider moving this to the .cpp file.
 inline void ConvertConstraintBodiesAndFrames(
 	const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
 	const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2,
-	const UWorld* World,
 	agx::RigidBody*& NativeRigidBody1, agx::FrameRef& NativeFrame1,
 	agx::RigidBody*& NativeRigidBody2, agx::FrameRef& NativeFrame2)
 {
@@ -205,7 +179,7 @@ inline void ConvertConstraintBodiesAndFrames(
 		NativeRigidBody1 = GetNativeFromBarrier<agx::RigidBody>(RigidBody1);
 		check(NativeRigidBody1);
 
-		NativeFrame1 = ConvertFrame(*FramePosition1, *FrameRotation1, World);
+		NativeFrame1 = ConvertFrame(*FramePosition1, *FrameRotation1);
 		NativeRigidBody1->addAttachment(NativeFrame1, "ConstraintAttachment");
 	}
 
@@ -217,7 +191,7 @@ inline void ConvertConstraintBodiesAndFrames(
 			check(FramePosition2);
 			check(FrameRotation2);
 
-			NativeFrame2 = ConvertFrame(*FramePosition2, *FrameRotation2, World);
+			NativeFrame2 = ConvertFrame(*FramePosition2, *FrameRotation2);
 			NativeRigidBody2->addAttachment(NativeFrame2, "ConstraintAttachment");
 		}
 		else
