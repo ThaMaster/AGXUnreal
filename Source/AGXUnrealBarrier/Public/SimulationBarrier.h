@@ -14,7 +14,7 @@ public:
 	FSimulationBarrier();
 	~FSimulationBarrier();
 
-	void AddRigidBody(FRigidBodyBarrier* body);
+	void AddRigidBody(FRigidBodyBarrier* Body);
 	void AddConstraint(FConstraintBarrier* Constraint);
 	void AddTerrain(FTerrainBarrier* Terrain);
 

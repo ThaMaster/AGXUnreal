@@ -24,11 +24,11 @@ FSimulationBarrier::~FSimulationBarrier()
 	// not just the forward declaration, of FSimulationRef.
 }
 
-void FSimulationBarrier::AddRigidBody(FRigidBodyBarrier* body)
+void FSimulationBarrier::AddRigidBody(FRigidBodyBarrier* Body)
 {
 	check(HasNative());
-	check(body->HasNative());
-	NativeRef->Native->add(body->GetNative()->Native);
+	check(Body->HasNative());
+	NativeRef->Native->add(Body->GetNative()->Native);
 }
 
 void FSimulationBarrier::AddConstraint(FConstraintBarrier* Constraint)

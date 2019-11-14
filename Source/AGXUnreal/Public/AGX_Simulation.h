@@ -44,7 +44,7 @@ public:
 	UPROPERTY(config, EditAnywhere, Category = "Scene Defaults")
 	FVector Gravity = FVector(0.0f, 0.0f, -980.665f);
 
-	void AddRigidBody(UAGX_RigidBodyComponent* body);
+	void AddRigidBody(UAGX_RigidBodyComponent* Body);
 	void AddTerrain(AAGX_Terrain* Terrain);
 
 	FSimulationBarrier* GetNative();

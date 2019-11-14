@@ -7,9 +7,9 @@
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 
-void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* body)
+void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
 {
-	NativeBarrier.AddRigidBody(body->GetNative());
+	NativeBarrier.AddRigidBody(Body->GetNative());
 }
 
 void UAGX_Simulation::AddTerrain(AAGX_Terrain* Terrain)
@@ -35,7 +35,7 @@ void UAGX_Simulation::Deinitialize()
 	NativeBarrier.ReleaseNative();
 }
 
-FSimulationBarrier* UAGX_Simulation::GetNative() 
+FSimulationBarrier* UAGX_Simulation::GetNative()
 {
 	check(NativeBarrier.HasNative()); // Invalid to call this function before starting game!
 
