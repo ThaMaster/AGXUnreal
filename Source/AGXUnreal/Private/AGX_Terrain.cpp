@@ -103,7 +103,6 @@ namespace
 			for (int32 X = 0; X < NumVerticesPerSide; ++X)
 			{
 				const float Height = ComponentData.GetWorldVertex(X, Y).Z;
-				UE_LOG(LogTemp, Log, TEXT("Writing height index %d from (%d, %d)."), BaseIndex+X, X, Y);
 				Heights[BaseIndex + X] = Height;
 			}
 		};
