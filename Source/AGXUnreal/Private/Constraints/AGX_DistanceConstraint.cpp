@@ -17,6 +17,8 @@ AAGX_DistanceConstraint::AAGX_DistanceConstraint()
 		/*bIsSecondaryConstraintRotational*/ false,
 		/*bIsLockControllerEditable*/ false) // disable because the native impl uses Lock Controller implicitly!
 {
+	BodyAttachment1.FrameDefiningActor = nullptr;
+	BodyAttachment2.FrameDefiningActor = nullptr;
 }
 
 

@@ -71,6 +71,9 @@ ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRange
 LockedDofs(LockedDofsOrdered),
 NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 {
+	BodyAttachment1.FrameDefiningActor = this;
+	BodyAttachment2.FrameDefiningActor = this;
+
 	ConstraintComponent = CreateDefaultSubobject<UAGX_ConstraintComponent>(
 		TEXT("ConstraintComponent"));
 
