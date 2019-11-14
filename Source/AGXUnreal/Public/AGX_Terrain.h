@@ -152,6 +152,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")
 	bool bEnableActiveZoneRendering = false;
 
+
+	FTerrainBarrier* GetNative();
+	const FTerrainBarrier* GetNative() const;
+
 protected:
 	virtual void BeginPlay() override;
 

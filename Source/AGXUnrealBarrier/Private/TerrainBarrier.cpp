@@ -42,3 +42,20 @@ void FTerrainBarrier::AllocateNative(FHeightFieldShapeBarrier& SourceHeightField
 
 	NativeRef->Native = agxTerrain::Terrain::createFromHeightField(HeightField, agx::Real(10));
 }
+
+FTerrainRef* FTerrainBarrier::GetNative()
+{
+	check(HasNative());
+	return NativeRef.get();
+}
+
+const FTerrainRef* FTerrainBarrier::GetNative() const
+{
+	check(HasNative());
+	return NativeRef.get();
+}
+
+void FTerrainBarrier::ReleaseNative()
+{
+	NativeRef->Native = nullptr;
+}

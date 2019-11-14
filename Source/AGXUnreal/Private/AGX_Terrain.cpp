@@ -163,6 +163,26 @@ namespace
 
 #undef MY_LOG
 
+FTerrainBarrier* AAGX_Terrain::GetNative()
+{
+	if (!NativeBarrier.HasNative())
+	{
+		return nullptr;
+	}
+
+	return &NativeBarrier;
+}
+
+const FTerrainBarrier* AAGX_Terrain::GetNative() const
+{
+	if (!NativeBarrier.HasNative())
+	{
+		return nullptr;
+	}
+
+	return &NativeBarrier;
+}
+
 void AAGX_Terrain::BeginPlay()
 {
 	Super::BeginPlay();
@@ -170,6 +190,11 @@ void AAGX_Terrain::BeginPlay()
 	if (SourceLandscape == nullptr)
 	{
 		UE_LOG(LogAGX, Error, TEXT("No source landscape selected for terrain %s %s."), *GetActorLabel(), *GetName());
+		return;
+	}
+
+	if (NativeBarrier.HasNative())
+	{
 		return;
 	}
 
