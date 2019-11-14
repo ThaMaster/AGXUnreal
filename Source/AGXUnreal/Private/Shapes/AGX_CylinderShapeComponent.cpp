@@ -70,7 +70,8 @@ void UAGX_CylinderShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshD
 	const uint32 NumCircleSegments = 32;
 	const uint32 NumHeightSegments = 1;
 
-	AGX_MeshUtilities::MakeCylinder(OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, Radius, Height, NumCircleSegments, NumHeightSegments);
+	AGX_MeshUtilities::MakeCylinder(OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices,
+		AGX_MeshUtilities::CylinderConstructionData(Radius, Height, NumCircleSegments, NumHeightSegments));
 }
 
 #if WITH_EDITOR
