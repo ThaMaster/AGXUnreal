@@ -19,7 +19,9 @@ public:
 	virtual void ShutdownModule() override;
 
 	/// \todo I think we can rename this to whatever we want.
+	/// \todo Can these be private?
 	void PluginButtonClicked();
+	void OnExportAGXArchive();
 
 	const TSharedPtr<class FAGX_TopMenu>& GetAgxTopMenu() const;
 

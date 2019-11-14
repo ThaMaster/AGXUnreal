@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Containers/UnrealString.h"
+
 #include <memory>
 
 struct FSimulationRef;
@@ -23,6 +25,8 @@ public:
 
 	void AddContactMaterial(FContactMaterialBarrier* ContactMaterial);
 	void RemoveContactMaterial(FContactMaterialBarrier* ContactMaterial);
+
+	bool WriteAGXArchive(const FString& Filename) const;
 
 	void Step();
 

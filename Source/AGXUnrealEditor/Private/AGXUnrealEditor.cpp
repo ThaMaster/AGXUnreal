@@ -19,6 +19,7 @@
 #include "DesktopPlatformModule.h"
 
 #include "AGX_ArchiveImporter.h"
+#include "AGX_ArchiveExporter.h"
 #include "AgxEdMode/AGX_AgxEdMode.h"
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 #include "AgxEdMode/AGX_AgxEdModeConstraintsCustomization.h"
@@ -113,10 +114,16 @@ void FAGXUnrealEditorModule::RegisterCommands()
 	/// \todo Move the ImportAGXArchive button/menu entry somewhere AGXUnreal centric.
 	FImportAGXArchiveStyle::Initialize();
 	FImportAGXArchiveStyle::ReloadTextures();
+
 	FImportAGXArchiveCommands::Register();
 	PluginCommands = MakeShareable(new FUICommandList);
-	PluginCommands->MapAction(FImportAGXArchiveCommands::Get().PluginAction,
+	PluginCommands->MapAction(
+		FImportAGXArchiveCommands::Get().PluginAction,
 		FExecuteAction::CreateRaw(this, &FAGXUnrealEditorModule::PluginButtonClicked), FCanExecuteAction());
+	PluginCommands->MapAction(
+		FImportAGXArchiveCommands::Get().ExportAction,
+		FExecuteAction::CreateRaw(this, &FAGXUnrealEditorModule::OnExportAGXArchive), FCanExecuteAction());
+
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
 	{
 		TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender());
@@ -185,9 +192,9 @@ void FAGXUnrealEditorModule::PluginButtonClicked()
 
 	if (Filenames.Num() > 1)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Multiple file selected but we only support single files for now. Doing nothing"));
+		UE_LOG(LogTemp, Log, TEXT("Multiple files selected but we only support single files for now. Doing nothing."));
 		FAGX_EditorUtilities::ShowNotification(
-			LOCTEXT("Multiple .agx", "Multiple file selected but we only support single files for now. Doing nothing"));
+			LOCTEXT("Multiple .agx", "Multiple file selected but we only support single files for now. Doing nothing."));
 		return;
 	}
 
@@ -195,14 +202,53 @@ void FAGXUnrealEditorModule::PluginButtonClicked()
 	AGX_ArchiveImporter::ImportAGXArchive(Filename);
 }
 
+void FAGXUnrealEditorModule::OnExportAGXArchive()
+{
+	TArray<FString> Filenames;
+	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
+		nullptr, TEXT("Select export file."), TEXT(""), TEXT("unreal.agx"), TEXT("AGX Dynamics Archive|*.agx"),
+		EFileDialogFlags::None, Filenames);
+	if (!FileSelected || Filenames.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No .agx file selected, Doing nothing."));
+		return;
+	}
+
+	if (Filenames.Num() > 1)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Multiple files selected but we only support exporting to one. Doing nothing."));
+		FAGX_EditorUtilities::ShowNotification(
+			LOCTEXT("Multiple .agx export", "Multiple files selected but we only support exporting to one. Doing nothing."));
+		return;
+	}
+
+	FString Filename = Filenames[0];
+	if (Filename.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cannot store AGX Dynamics archive to an empty file name. Doing nothing."));
+		FAGX_EditorUtilities::ShowNotification(
+			LOCTEXT("Empty .agx name export", "Cannot store AGX Dynamics archive to an empty file name. Doing nothing."));
+		return;
+	}
+
+	bool Exported = AGX_ArchiveExporter::ExportAGXArchive(Filename);
+	if (!Exported)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AGX Dynamics archive could not be saved to %s."), *Filename);
+	}
+	UE_LOG(LogTemp, Log, TEXT("AGX Dynamics archive saved to %s."), *Filename);
+}
+
 void FAGXUnrealEditorModule::AddMenuExtension(FMenuBuilder& Builder)
 {
 	Builder.AddMenuEntry(FImportAGXArchiveCommands::Get().PluginAction);
+	Builder.AddMenuEntry(FImportAGXArchiveCommands::Get().ExportAction);
 }
 
 void FAGXUnrealEditorModule::AddToolbarExtension(FToolBarBuilder& Builder)
 {
 	Builder.AddToolBarButton(FImportAGXArchiveCommands::Get().PluginAction);
+	Builder.AddToolBarButton(FImportAGXArchiveCommands::Get().ExportAction);
 }
 
 void FAGXUnrealEditorModule::RegisterCustomizations()
