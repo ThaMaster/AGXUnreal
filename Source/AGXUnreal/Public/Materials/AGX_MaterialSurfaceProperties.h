@@ -39,15 +39,17 @@ public:
 	double Viscosity;
 
 	/**
-	 * The attractive force between two colliding objects.
+	 * The attractive force between two colliding objects, in Newtons.
 	 */
 	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double AdhesiveForce;
 
 	/**
-	 * Allowed overlap (length >= 0) from surface for resting contact. At this overlap,
-	 * no adhesive force is applied. At lower overlap, the adhesion force will work,
-	 * at higher overlap, the (usual) contact force.
+	 * Allowed overlap from surface for resting contact, in meters.
+	 *
+	 * At lower overlap, the adhesion force will take effect.
+	 * At this overlap, no adhesive force is applied.
+	 * At higher overlap, the (usual) contact force is applied.
 	 */
 	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double AdhesiveOverlap;

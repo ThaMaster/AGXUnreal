@@ -34,7 +34,7 @@ public:
 	bool bUseContactAreaApproach;
 
 	/**
-	 * Minimum elastic rest length of the contact material.
+	 * Minimum elastic rest length of the contact material, in meters.
 	 * 
      * This is only used if the contact area approach is used if the property 'Use Contact Area Approach' is enabled.
 	 */
@@ -42,7 +42,7 @@ public:
 	double MinElasticRestLength;
 
 	/**
-	 * Maximum elastic rest length of the contact material.
+	 * Maximum elastic rest length of the contact material, in meters.
 	 * 
      * This is only used if the contact area approach is used if the property 'Use Contact Area Approach' is enabled.
 	 */

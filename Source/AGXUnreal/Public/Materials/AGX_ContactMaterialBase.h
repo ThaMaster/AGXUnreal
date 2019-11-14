@@ -12,8 +12,8 @@ class UAGX_ContactMaterialAsset;
 class UAGX_ContactMaterialInstance;
 
 /**
- * Defines physical material properties for contacts between AGX Shapes with specific AGX Materials. This will override
-*  many of their individual material properties (does for example not override mass-affecting ones, such as density).
+ * Defines material properties for contacts between AGX Shapes with specific AGX Materials. This will override many
+ * of their individual material properties (does for example not override ones effecting mass, such as density).
  *
  * ContactMaterials are created by the user in-Editor by creating a UAGX_ContactMaterialAsset. In-Editor they are 
  * treated as assets and can be referenced by the Material Manager..
@@ -140,7 +140,9 @@ public:
 	bool bUseSecondarySurfaceViscosity;
 
 	/**
-	 * Material restitution, i.e. how "bouncy" the normal forces are.
+	 * Material restitution, i.e. how "bouncy" the normal collisions are.
+	 *
+	 * A value of 1.0 means that the body does not lose energy during normal-collisions.
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double Restitution;
@@ -167,9 +169,7 @@ public:
 	 * Allowed overlap from surface for resting contact, in meters.
 	 *
 	 * At lower overlap, the adhesion force will take effect.
-	 *
 	 * At this overlap, no adhesive force is applied.
-	 * 
 	 * At higher overlap, the (usual) contact force is applied.
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
