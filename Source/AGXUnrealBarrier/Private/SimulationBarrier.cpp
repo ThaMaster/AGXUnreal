@@ -1,6 +1,7 @@
 #include "SimulationBarrier.h"
 
 #include "RigidBodyBarrier.h"
+#include "TerrainBarrier.h"
 #include "Constraints/ConstraintBarrier.h"
 
 #include "AGXRefs.h"
@@ -35,6 +36,13 @@ void FSimulationBarrier::AddConstraint(FConstraintBarrier* Constraint)
 	check(HasNative());
 	check(Constraint->HasNative());
 	NativeRef->Native->add(Constraint->GetNative()->Native);
+}
+
+void FSimulationBarrier::AddTerrain(FTerrainBarrier* Terrain)
+{
+	check(HasNative());
+	check(Terrain->HasNative());
+	NativeRef->Native->add(Terrain->GetNative()->Native);
 }
 
 void FSimulationBarrier::Step()

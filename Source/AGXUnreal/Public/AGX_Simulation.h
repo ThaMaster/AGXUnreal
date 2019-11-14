@@ -10,6 +10,7 @@
 #include "AGX_Simulation.generated.h"
 
 class UAGX_RigidBodyComponent;
+class AAGX_Terrain;
 
 /**
  * Manages an AGX simulation instance.
@@ -44,6 +45,7 @@ public:
 	FVector Gravity = FVector(0.0f, 0.0f, -980.665f);
 
 	void AddRigidBody(UAGX_RigidBodyComponent* body);
+	void AddTerrain(AAGX_Terrain* Terrain);
 
 	FSimulationBarrier* GetNative();
 

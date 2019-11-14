@@ -1,6 +1,7 @@
 #include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Stepper.h"
+#include "AGX_Terrain.h"
 #include "AGX_LogCategory.h"
 
 #include "Engine/GameInstance.h"
@@ -9,6 +10,11 @@
 void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* body)
 {
 	NativeBarrier.AddRigidBody(body->GetNative());
+}
+
+void UAGX_Simulation::AddTerrain(AAGX_Terrain* Terrain)
+{
+	NativeBarrier.AddTerrain(Terrain->GetNative());
 }
 
 void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
