@@ -66,6 +66,9 @@ private:
 	void RegisterModes();
 	void UnregisterModes();
 
+	void RegisterPlacementCategory();
+	void UnregisterPlacementCategory();
+
 private:
 
 	TSharedPtr<class FUICommandList> PluginCommands;

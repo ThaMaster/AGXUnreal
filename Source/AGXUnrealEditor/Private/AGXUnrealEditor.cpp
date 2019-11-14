@@ -4,6 +4,7 @@
 #include "AssetTypeCategories.h"
 #include "IAssetTools.h"
 #include "IAssetTypeActions.h"
+#include "IPlacementModeModule.h"
 #include "ISettingsModule.h"
 #include "Modules/ModuleManager.h"
 
@@ -25,18 +26,26 @@
 #include "AGX_EditorStyle.h"
 #include "AGX_EditorUtilities.h"
 #include "AGX_LogCategory.h"
+#include "AGX_MaterialManager.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
 #include "AGX_Simulation.h"
 #include "AGX_TopMenu.h"
+#include "Constraints/AGX_BallConstraint.h"
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
 #include "Constraints/AGX_ConstraintBodyAttachmentCustomization.h"
 #include "Constraints/AGX_ConstraintCustomization.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintComponentVisualizer.h"
+#include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintFrameComponent.h"
 #include "Constraints/AGX_ConstraintFrameComponentVisualizer.h"
+#include "Constraints/AGX_CylindricalConstraint.h"
+#include "Constraints/AGX_DistanceConstraint.h"
+#include "Constraints/AGX_HingeConstraint.h"
+#include "Constraints/AGX_LockConstraint.h"
+#include "Constraints/AGX_PrismaticConstraint.h"
 #include "Materials/AGX_ContactMaterialAssetTypeActions.h"
 #include "Materials/AGX_MaterialAssetTypeActions.h"
 #include "RigidBodyBarrier.h"
@@ -54,6 +63,7 @@ void FAGXUnrealEditorModule::StartupModule()
 	RegisterCustomizations();
 	RegisterComponentVisualizers();
 	RegisterModes();
+	RegisterPlacementCategory();
 
 	AgxTopMenu = MakeShareable(new FAGX_TopMenu());
 }
@@ -68,6 +78,7 @@ void FAGXUnrealEditorModule::ShutdownModule()
 	UnregisterCustomizations();
 	UnregisterComponentVisualizers();
 	UnregisterModes();
+	UnregisterPlacementCategory();
 
 	AgxTopMenu = nullptr;
 }
@@ -272,6 +283,35 @@ void FAGXUnrealEditorModule::RegisterModes()
 void FAGXUnrealEditorModule::UnregisterModes()
 {
 	FEditorModeRegistry::Get().UnregisterMode(FAGX_AgxEdMode::EM_AGX_AgxEdModeId);
+}
+
+void FAGXUnrealEditorModule::RegisterPlacementCategory()
+{
+	FPlacementCategoryInfo PlacementCategory(LOCTEXT("DisplayName", "AGX"), "AGX", TEXT("PMAGX"));
+	IPlacementModeModule::Get().RegisterPlacementCategory(PlacementCategory);
+
+	auto RegisterPlaceableItem = [&](UClass* Class)
+	{
+		IPlacementModeModule::Get().RegisterPlaceableItem(PlacementCategory.UniqueHandle, MakeShareable(
+			new FPlaceableItem(nullptr, FAssetData(Class))));
+	};
+
+	RegisterPlaceableItem(AAGX_MaterialManager::StaticClass());
+	RegisterPlaceableItem(AAGX_ConstraintFrameActor::StaticClass());
+	RegisterPlaceableItem(AAGX_BallConstraint::StaticClass());
+	RegisterPlaceableItem(AAGX_CylindricalConstraint::StaticClass());
+	RegisterPlaceableItem(AAGX_DistanceConstraint::StaticClass());
+	RegisterPlaceableItem(AAGX_HingeConstraint::StaticClass());
+	RegisterPlaceableItem(AAGX_LockConstraint::StaticClass());
+	RegisterPlaceableItem(AAGX_PrismaticConstraint::StaticClass());
+}
+
+void FAGXUnrealEditorModule::UnregisterPlacementCategory()
+{
+	if (IPlacementModeModule::IsAvailable())
+	{
+		IPlacementModeModule::Get().UnregisterPlacementCategory("AGX");
+	}
 }
 
 #undef LOCTEXT_NAMESPACE
