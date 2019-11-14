@@ -87,8 +87,7 @@ namespace
 			WorldPoint0.Y, WorldPoint0.Z, LocalPoint0.X, LocalPoint0.Y, LocalPoint0.Z);
 		UE_LOG(LogTemp, Log, TEXT("Position world1: (%f, %f, %f), Position local: (%f, %f, %f)"), WorldPoint1.X,
 			WorldPoint1.Y, WorldPoint1.Z, LocalPoint1.X, LocalPoint1.Y, LocalPoint1.Z);
-
-		auto GlobalAGXFromLocalUnreal = [NumQuadsPerComponentSide, NumVerticesPerLandscapeSide, BaseQuadX, BaseQuadY](
+		auto GlobalAGXFromLocalUnreal = [NumVerticesPerLandscapeSide, BaseQuadX, BaseQuadY](
 											int32 LocalVertexX, int32 LocalVertexY)
 		{
 			const int32 GlobalVertexX = BaseQuadX + LocalVertexX;
@@ -98,16 +97,23 @@ namespace
 			return (NumVerticesPerLandscapeSide * AGXGlobalVertexY) + AGXGlobalVertexX;
 		};
 
-		for (int32 X = 0; X < NumVerticesPerSide; ++X)
+		auto WriteComponentRow = [&Heights, &GlobalAGXFromLocalUnreal, &ComponentData, NumVerticesPerSide](const int32 Y)
 		{
-			for (int32 Y = 0; Y < NumVerticesPerSide; ++Y)
+			const int32 BaseIndex = GlobalAGXFromLocalUnreal(0, Y);
+			for (int32 X = 0; X < NumVerticesPerSide; ++X)
 			{
-				/// \todo Do we really want WorldVertex here? The height field expect local height.
 				const float Height = ComponentData.GetWorldVertex(X, Y).Z;
-				const int32 GlobalIndex = GlobalAGXFromLocalUnreal(X, Y);
-				UE_LOG(LogTemp, Log, TEXT("Writing height index %d from (%d, %d)."), GlobalIndex, X, Y);
-				Heights[GlobalIndex] = Height;
+				UE_LOG(LogTemp, Log, TEXT("Writing height index %d from (%d, %d)."), BaseIndex+X, X, Y);
+				Heights[BaseIndex + X] = Height;
 			}
+		};
+
+		for (int32 Y = 0; Y < NumVerticesPerSide; ++Y)
+		{
+			// This implementation will write shared verices twice, once at the
+			// end of one component row and once again at the beginning of the
+			// neighboring component row.
+			WriteComponentRow(Y);
 		}
 	}
 
