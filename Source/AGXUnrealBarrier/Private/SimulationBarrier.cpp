@@ -2,6 +2,8 @@
 
 #include "RigidBodyBarrier.h"
 #include "Constraints/ConstraintBarrier.h"
+#include "Materials/ContactMaterialBarrier.h"
+#include "Materials/MaterialBarrier.h"
 
 #include "AGXRefs.h"
 
@@ -49,6 +51,20 @@ void FSimulationBarrier::RemoveMaterial(FMaterialBarrier* Material)
 	check(HasNative());
 	check(Material->HasNative());
 	NativeRef->Native->remove(Material->GetNative()->Native);
+}
+
+void FSimulationBarrier::AddContactMaterial(FContactMaterialBarrier* ContactMaterial)
+{
+	check(HasNative());
+	check(ContactMaterial->HasNative());
+	NativeRef->Native->add(ContactMaterial->GetNative()->Native);
+}
+
+void FSimulationBarrier::RemoveContactMaterial(FContactMaterialBarrier* ContactMaterial)
+{
+	check(HasNative());
+	check(ContactMaterial->HasNative());
+	NativeRef->Native->remove(ContactMaterial->GetNative()->Native);
 }
 
 void FSimulationBarrier::Step()

@@ -13,5 +13,5 @@ Damping(4.5 / 60.0),
 MinElasticRestLength(0.0005),
 MaxElasticRestLength(0.05)
 {
-
+	// See agx\src\agx\Material.cpp for default values
 }

@@ -34,6 +34,7 @@
 #include "Constraints/AGX_ConstraintComponentVisualizer.h"
 #include "Constraints/AGX_ConstraintFrameComponent.h"
 #include "Constraints/AGX_ConstraintFrameComponentVisualizer.h"
+#include "Materials/AGX_ContactMaterialAssetTypeActions.h"
 #include "Materials/AGX_MaterialAssetTypeActions.h"
 #include "RigidBodyBarrier.h"
 
@@ -128,6 +129,7 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 	EAssetTypeCategories::Type AgxAssetCategoryBit = AssetTools.RegisterAdvancedAssetCategory(
 		FName(TEXT("AgxUnreal")), LOCTEXT("AgxAssetCategory", "AGX"));
 
+	RegisterAssetTypeAction(AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(AssetTools, MakeShareable(new FAGX_MaterialAssetTypeActions(AgxAssetCategoryBit)));
 }
 

@@ -5,7 +5,7 @@
 
 #include "Materials/AGX_MaterialAsset.h"
 
-#define LOCTEXT_NAMESPACE "FAGX_TerrainMaterialAssetActions"
+#define LOCTEXT_NAMESPACE "FAGX_MaterialAssetTypeActions"
 
 
 FAGX_MaterialAssetTypeActions::FAGX_MaterialAssetTypeActions(EAssetTypeCategories::Type InAssetCategory)
@@ -17,7 +17,7 @@ AssetCategory(InAssetCategory)
 
 FText FAGX_MaterialAssetTypeActions::GetName() const
 {
-	return LOCTEXT("AssetName", "AGX Material Asset");
+	return LOCTEXT("AssetName", "AGX Material");
 }
 
 uint32 FAGX_MaterialAssetTypeActions::GetCategories()
