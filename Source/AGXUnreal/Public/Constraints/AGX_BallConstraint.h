@@ -8,7 +8,7 @@
 
 
 /**
- * A constraint that locks the three tranlsations degrees of freedom between two Rigid Bodies.
+ * Locks all translational degrees of freedom, but rotation is free.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API AAGX_BallConstraint : public AAGX_Constraint

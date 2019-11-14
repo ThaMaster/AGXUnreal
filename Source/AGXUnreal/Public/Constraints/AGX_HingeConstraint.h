@@ -8,7 +8,7 @@
 
 
 /**
- * 
+ * Locks all degrees of freedom except for rotation around the Z-axis.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API AAGX_HingeConstraint : public AAGX_Constraint1DOF

@@ -8,7 +8,7 @@
 
 
 /**
- * 
+ * Locks all degrees of freedom except for translation along the Z-axis.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API AAGX_PrismaticConstraint : public AAGX_Constraint1DOF

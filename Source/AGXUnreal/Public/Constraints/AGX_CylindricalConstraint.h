@@ -8,7 +8,7 @@
 
 
 /**
- * 
+ * Locks all degrees of freedom except for translation and rotation along/around the Z-axis.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API AAGX_CylindricalConstraint : public AAGX_Constraint2DOF
