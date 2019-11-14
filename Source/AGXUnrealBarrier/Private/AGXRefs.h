@@ -110,4 +110,4 @@ struct FTerrainRef
 		: Native(InNative)
 	{
 	}
-}
+};
