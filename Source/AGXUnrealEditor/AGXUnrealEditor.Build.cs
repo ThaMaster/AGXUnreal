@@ -17,6 +17,6 @@ public class AGXUnrealEditor : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[]{"AGXUnrealBarrier", "AGXUnrealLibrary", "AssetTools",
 			"CoreUObject", "DesktopPlatform", "EditorStyle", "Engine", "InputCore", "Json",
 			"LevelEditor", "PlacementMode", "Projects", "PropertyEditor", "RawMesh", "RenderCore", "RHI", "Slate",
-			"SlateCore", "SlateCore", "UnrealEd"});
-	}
+			"SlateCore", "SlateCore", "UnrealEd", "SceneOutliner"});
+    }
 }

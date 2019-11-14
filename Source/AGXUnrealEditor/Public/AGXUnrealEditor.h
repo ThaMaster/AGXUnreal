@@ -53,17 +53,18 @@ private:
 	void RegisterCustomizations();
 
 	/**
-	 * Unrrgisters property type customizations and class detail customizations.
+	 * Unregisters property type customizations and class detail customizations.
 	 */
 	void UnregisterCustomizations();
 
 	void RegisterComponentVisualizers();
-
 	void UnregisterComponentVisualizers();
 
 	void RegisterComponentVisualizer(const FName& ComponentClassName, TSharedPtr<FComponentVisualizer> Visualizer);
-	
 	void UnregisterComponentVisualizer(const FName& ComponentClassName);
+
+	void RegisterModes();
+	void UnregisterModes();
 
 private:
 
@@ -72,4 +73,3 @@ private:
 
 	TArray<TSharedPtr<IAssetTypeActions>> RegisteredAssetTypeActions;
 };
-

@@ -18,6 +18,9 @@
 #include "DesktopPlatformModule.h"
 
 #include "AGX_ArchiveImporter.h"
+#include "AgxEdMode/AGX_AgxEdMode.h"
+#include "AgxEdMode/AGX_AgxEdModeConstraints.h"
+#include "AgxEdMode/AGX_AgxEdModeConstraintsCustomization.h"
 #include "AGX_BoxShapeComponent.h"
 #include "AGX_EditorStyle.h"
 #include "AGX_EditorUtilities.h"
@@ -50,6 +53,7 @@ void FAGXUnrealEditorModule::StartupModule()
 	RegisterAssetTypeActions();
 	RegisterCustomizations();
 	RegisterComponentVisualizers();
+	RegisterModes();
 
 	AgxTopMenu = MakeShareable(new FAGX_TopMenu());
 }
@@ -63,6 +67,7 @@ void FAGXUnrealEditorModule::ShutdownModule()
 	UnregisterAssetTypeActions();
 	UnregisterCustomizations();
 	UnregisterComponentVisualizers();
+	UnregisterModes();
 
 	AgxTopMenu = nullptr;
 }
@@ -200,6 +205,9 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 	PropertyModule.RegisterCustomClassLayout(AAGX_Constraint::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_ConstraintCustomization::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(UAGX_AgxEdModeConstraints::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_AgxEdModeConstraintsCustomization::MakeInstance));
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -210,6 +218,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(AAGX_Constraint::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeConstraints::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
@@ -248,6 +258,20 @@ void FAGXUnrealEditorModule::UnregisterComponentVisualizer(const FName& Componen
 	{
 		GUnrealEd->UnregisterComponentVisualizer(ComponentClassName);
 	}
+}
+
+void FAGXUnrealEditorModule::RegisterModes()
+{
+	FEditorModeRegistry::Get().RegisterMode<FAGX_AgxEdMode>(
+		FAGX_AgxEdMode::EM_AGX_AgxEdModeId,
+		LOCTEXT("AGX_AgxEdModeDisplayName", "AGX Dynamics Tools"),
+		FSlateIcon(FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIcon, FAGX_EditorStyle::AgxIconSmall),
+		/*bVisisble*/ true);
+}
+
+void FAGXUnrealEditorModule::UnregisterModes()
+{
+	FEditorModeRegistry::Get().UnregisterMode(FAGX_AgxEdMode::EM_AGX_AgxEdModeId);
 }
 
 #undef LOCTEXT_NAMESPACE
