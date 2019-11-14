@@ -337,7 +337,8 @@ UWorld* FAGX_EditorUtilities::GetCurrentWorld()
 	}
 }
 
-void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(AActor** OutActor1, AActor** OutActor2)
+void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(AActor** OutActor1, AActor** OutActor2,
+	bool bSearchSubtrees, bool bSearchAncestors)
 {
 	USelection* SelectedActors = GEditor->GetSelectedActors();
 
@@ -350,29 +351,142 @@ void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(AActor** OutActor1, A
 	if (OutActor2)
 		*OutActor2 = nullptr;
 
-	// Iterate through selection list finding matching actors.
-	for (int32 i = 0; i < SelectedActors->Num(); ++i)
+	// Assigns to first available of OutActor1 and OutActor2, and returns whether
+	// at least one of them is afterwards still available for assignment.
+	auto AssignOutActors = [OutActor1, OutActor2](AActor *RigidBodyActor)
 	{
-		AActor* CandidateActor = Cast<AActor>(SelectedActors->GetSelectedObject(i));
-
-		if (!CandidateActor)
-			continue;
-
-		if (UAGX_RigidBodyComponent::GetFromActor(CandidateActor) == nullptr)
-			continue;
-
-		// Have a match. Assign it to next free OutActor!
 		if (OutActor1 && *OutActor1 == nullptr)
 		{
-			*OutActor1 = CandidateActor;
+			*OutActor1 = RigidBodyActor;
 		}
-		else if (OutActor2 && *OutActor2 == nullptr)
+		// Making sure same actor is not used for both OutActors.
+		else if (OutActor2 && *OutActor2 == nullptr && (!OutActor1 || *OutActor1 != RigidBodyActor))
 		{
-			*OutActor2 = CandidateActor;
+			*OutActor2 = RigidBodyActor;
+		}
+
+		return (OutActor1 && *OutActor1 == nullptr) || (OutActor2 && *OutActor2 == nullptr);
+	};
+
+	// Search the selected actors fpr matching actors. Doing this step completely before
+	// start searching in subtrees, in case selected actors are in each others subtrees.
+	for (int32 i = 0; i < SelectedActors->Num(); ++i)
+	{
+		if (AActor* SelectedActor = Cast<AActor>(SelectedActors->GetSelectedObject(i)))
+		{
+			if (UAGX_RigidBodyComponent::GetFromActor(SelectedActor))
+			{
+				// Found one. Assign it to next available OutActor!
+				if (!AssignOutActors(SelectedActor))
+				{
+					return; // return if no more available OutActors
+				}
+			}
+		}
+	}
+
+	// Search each selected actor's subtree for matching actors. Only one matching actor
+	// allowed per selected actor subtree.
+	if (bSearchSubtrees)
+	{
+		for (int32 i = 0; i < SelectedActors->Num(); ++i)
+		{
+			if (AActor* SelectedActor = Cast<AActor>(SelectedActors->GetSelectedObject(i)))
+			{
+				AActor* RigidBodyActor = GetRigidBodyActorFromSubtree(SelectedActor,
+					(OutActor1 ? *OutActor1 : nullptr));
+
+				// Found one. Assign it to next available OutActor!
+				if (!AssignOutActors(RigidBodyActor))
+				{
+					return; // return if no more available OutActors
+				}
+			}
+		}
+	}
+
+	// Search each selected actor's ancestor chain for matching actors. Only one matching actor
+	// allowed per selected actor ancestor chain.
+	if (bSearchAncestors)
+	{
+		for (int32 i = 0; i < SelectedActors->Num(); ++i)
+		{
+			if (AActor* SelectedActor = Cast<AActor>(SelectedActors->GetSelectedObject(i)))
+			{
+				AActor* RigidBodyActor = GetRigidBodyActorFromAncestors(SelectedActor,
+					(OutActor1 ? *OutActor1 : nullptr));
+
+				// Found one. Assign it to next available OutActor!
+				if (!AssignOutActors(RigidBodyActor))
+				{
+					return; // return if no more available OutActors
+				}
+			}
+		}
+	}
+}
+
+AActor* FAGX_EditorUtilities::GetRigidBodyActorFromSubtree(AActor* SubtreeRoot, const AActor* IgnoreActor)
+{
+	AActor* RigidBodyActor = nullptr;
+
+	if (SubtreeRoot)
+	{
+		if (SubtreeRoot != IgnoreActor && UAGX_RigidBodyComponent::GetFromActor(SubtreeRoot))
+		{
+			RigidBodyActor = SubtreeRoot; // found it
 		}
 		else
 		{
-			return;	// All OutActors have been assigned. Return!
+			TArray<AActor*> AttachedActors;
+			SubtreeRoot->GetAttachedActors(AttachedActors);
+
+			for (AActor* AttachedActor : AttachedActors)
+			{
+				RigidBodyActor = GetRigidBodyActorFromSubtree(AttachedActor, IgnoreActor);
+
+				if (RigidBodyActor)
+				{
+					break; // found it
+				}
+			}
+		}
+	}
+
+	return RigidBodyActor;
+}
+
+AActor* FAGX_EditorUtilities::GetRigidBodyActorFromAncestors(AActor* Actor, const AActor* IgnoreActor)
+{
+	AActor* RigidBodyActor = nullptr;
+
+	if (Actor)
+	{
+		if (Actor != IgnoreActor && UAGX_RigidBodyComponent::GetFromActor(Actor))
+		{
+			RigidBodyActor = Actor;
+		}
+		else
+		{
+			RigidBodyActor = GetRigidBodyActorFromAncestors(Actor->GetAttachParentActor(), IgnoreActor);
+		}
+	}
+
+	return RigidBodyActor;
+}
+
+void FAGX_EditorUtilities::GetAllClassesOfType(TArray<UClass*>& OutMatches, UClass* BaseClass, bool bIncludeAbstract)
+{
+	for (TObjectIterator<UClass> ClassItr; ClassItr; ++ClassItr)
+	{
+		UClass* Class = *ClassItr;
+
+		if (Class && Class->IsChildOf(BaseClass))
+		{
+			if (bIncludeAbstract || !Class->HasAnyClassFlags(CLASS_Abstract))
+			{
+				OutMatches.Add(Class);
+			}
 		}
 	}
 }

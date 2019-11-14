@@ -112,7 +112,23 @@ public:
 	static UWorld* GetCurrentWorld();
 
 	/**
-	 * Find the first two found actors that has a UAGX_RigidBodyComponent in the current selection.
+	 * Find the first two found actors that has a UAGX_RigidBodyComponent in the current selection,
+	 * with options to search children and parents in case the user has selected a graphics-only actor
+	 * instead of the actual rigid body actor.
+	 *
+	 * @param bSearchSubtrees If true, each selected actor's subtree will also be searched. But, once a
+	 * Rigid Body is found, the search of the corresponding selected actor's subtree will be finished,
+	 * such that only one Rigid Body actor may be found per selected actor.
+	 *
+	 * @param bSearchAncestors If true, all ancestors of each selected actor's subtree will also be searched.
+	 *
 	 */
-	static void GetRigidBodyActorsFromSelection(AActor** OutActor1, AActor** OutActor2);
+	static void GetRigidBodyActorsFromSelection(AActor** OutActor1, AActor** OutActor2, bool bSearchSubtrees,
+		bool bSearchAncestors);
+
+	static AActor* GetRigidBodyActorFromSubtree(AActor* SubtreeRoot, const AActor* IgnoreActor);
+
+	static AActor* GetRigidBodyActorFromAncestors(AActor* Actor, const AActor* IgnoreActor);
+
+	static void GetAllClassesOfType(TArray<UClass*>& OutMatches, UClass* BaseClass, bool bIncludeAbstract);
 };
