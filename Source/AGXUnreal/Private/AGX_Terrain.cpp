@@ -2,6 +2,7 @@
 
 #include "AGX_Terrain.h"
 #include "AGX_LogCategory.h"
+#include "AGX_Simulation.h"
 
 #include "HeightFieldShapeBarrier.h"
 
@@ -200,6 +201,8 @@ void AAGX_Terrain::BeginPlay()
 
 	FHeightFieldShapeBarrier HeightField = CreateHeightField(*SourceLandscape);
 	NativeBarrier.AllocateNative(HeightField);
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	Simulation->AddTerrain(this);
 }
 
 // Called every frame
