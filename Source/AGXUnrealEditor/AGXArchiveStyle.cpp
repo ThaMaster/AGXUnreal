@@ -25,7 +25,7 @@ void FAGXArchiveStyle::Shutdown()
 
 FName FAGXArchiveStyle::GetStyleSetName()
 {
-	static FName StyleSetName(TEXT("ImportAGXArchiveStyle"));
+	static FName StyleSetName(TEXT("AGXArchiveStyle"));
 	return StyleSetName;
 }
 
@@ -41,9 +41,10 @@ const FVector2D Icon40x40(40.f, 40.f);
 
 TSharedRef<FSlateStyleSet> FAGXArchiveStyle::Create()
 {
-	TSharedRef<FSlateStyleSet> Style = MakeShareable(new FSlateStyleSet("ImportAGXArchiveStyle"));
+	TSharedRef<FSlateStyleSet> Style = MakeShareable(new FSlateStyleSet("AGXArchiveStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("AGXUnreal")->GetBaseDir() / TEXT("Resources"));
-	Style->Set("ImportAGXArchive.PluignAction", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
+	Style->Set("AGXArchive.ImportAction", new IMAGE_BRUSH(TEXT("AGXImport_40x"), Icon40x40));
+	Style->Set("AGXArchive.ExportAction", new IMAGE_BRUSH(TEXT("AGXExport_40x"), Icon40x40));
 	return Style;
 }
 
