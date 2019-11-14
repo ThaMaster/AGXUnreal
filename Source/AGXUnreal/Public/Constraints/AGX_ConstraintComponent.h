@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Components/SceneComponent.h"
 #include "AGX_ConstraintComponent.generated.h"
 
 
@@ -15,8 +15,8 @@
  * @see FAGX_ConstraintComponentVisualizer
  *
  */
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class AGXUNREAL_API UAGX_ConstraintComponent : public UActorComponent
+UCLASS(Category = "AGX", ClassGroup= "AGX", NotPlaceable)
+class AGXUNREAL_API UAGX_ConstraintComponent : public USceneComponent
 {
 	GENERATED_BODY()
 

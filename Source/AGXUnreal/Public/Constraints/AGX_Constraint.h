@@ -34,7 +34,7 @@ class FConstraintBarrier;
  *
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract,
-	meta = (BlueprintSpawnableComponent),
+	NotBlueprintable, meta = (BlueprintSpawnableComponent),
 	hidecategories = (Cooking, Collision, Input, LOD, Rendering, Replication))
 class AGXUNREAL_API AAGX_Constraint : public AActor
 {

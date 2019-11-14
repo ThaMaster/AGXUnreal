@@ -4,6 +4,7 @@
 #include "Constraints/AGX_Constraint.h"
 
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
@@ -74,6 +75,13 @@ NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 		TEXT("ConstraintComponent"));
 
 	ConstraintComponent->SetFlags(ConstraintComponent->GetFlags() | RF_Transactional);
+	ConstraintComponent->Mobility = EComponentMobility::Movable;
+
+#if WITH_EDITORONLY_DATA
+	ConstraintComponent->bVisualizeComponent = true;
+#endif
+
+	SetRootComponent(ConstraintComponent);
 }
 
 
