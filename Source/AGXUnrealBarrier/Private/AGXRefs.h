@@ -6,6 +6,7 @@
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
+#include <agxTerrain/Terrain.h>
 #include "EndAGXIncludes.h"
 
 struct FSimulationRef
@@ -71,6 +72,17 @@ struct FConstraintRef
 
 	FConstraintRef() = default;
 	FConstraintRef(agx::Constraint* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FTerrainRef
+{
+	agxTerrain::TerrainRef Native;
+
+	FTerrainRef() = default;
+	FTerrainRef(agxTerrain::Terrain* InNative)
 		: Native(InNative)
 	{
 	}
