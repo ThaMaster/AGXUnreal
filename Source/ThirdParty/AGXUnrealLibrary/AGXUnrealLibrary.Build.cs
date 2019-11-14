@@ -30,7 +30,7 @@ public class AGXUnrealLibrary : ModuleRules
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxModel"));
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxPhysics"));
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxSabre"));
-		//PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxTerrain"));
+		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxTerrain"));
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxVehicle"));
 
 		// TODO: Do we need to list more libraries here, or will transitive
