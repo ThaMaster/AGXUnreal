@@ -29,6 +29,9 @@ public:
 protected:
 	FShapeBarrier(FShapeBarrier&& Other);
 
+	template<typename TFunc, typename... TPack>
+	void AllocateNative(TFunc Factory, TPack... Params);
+
 private:
 	FShapeBarrier(const FShapeBarrier&) = delete;
 	void operator=(const FShapeBarrier&) = delete;
@@ -50,3 +53,4 @@ private:
 protected:
 	std::unique_ptr<FGeometryAndShapeRef> NativeRef;
 };
+
