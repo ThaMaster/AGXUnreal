@@ -8,8 +8,7 @@
 #include "ISettingsModule.h"
 #include "Modules/ModuleManager.h"
 
-#include "ImportAGXArchiveCommands.h"
-#include "ImportAGXArchiveStyle.h"
+#include "AGXArchiveCommands.h"
 
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "LevelEditor.h"
@@ -112,16 +111,16 @@ void FAGXUnrealEditorModule::UnregisterProjectSettings()
 void FAGXUnrealEditorModule::RegisterCommands()
 {
 	/// \todo Move the ImportAGXArchive button/menu entry somewhere AGXUnreal centric.
-	FImportAGXArchiveStyle::Initialize();
-	FImportAGXArchiveStyle::ReloadTextures();
+	FAGXArchiveStyle::Initialize();
+	FAGXArchiveStyle::ReloadTextures();
 
-	FImportAGXArchiveCommands::Register();
+	FAGXArchiveCommands::Register();
 	PluginCommands = MakeShareable(new FUICommandList);
 	PluginCommands->MapAction(
-		FImportAGXArchiveCommands::Get().PluginAction,
-		FExecuteAction::CreateRaw(this, &FAGXUnrealEditorModule::PluginButtonClicked), FCanExecuteAction());
+		FAGXArchiveCommands::Get().ImportAction,
+		FExecuteAction::CreateRaw(this, &FAGXUnrealEditorModule::OnImportAGXArchive), FCanExecuteAction());
 	PluginCommands->MapAction(
-		FImportAGXArchiveCommands::Get().ExportAction,
+		FAGXArchiveCommands::Get().ExportAction,
 		FExecuteAction::CreateRaw(this, &FAGXUnrealEditorModule::OnExportAGXArchive), FCanExecuteAction());
 
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
@@ -141,8 +140,8 @@ void FAGXUnrealEditorModule::RegisterCommands()
 
 void FAGXUnrealEditorModule::UnregisterCommands()
 {
-	FImportAGXArchiveStyle::Shutdown();
-	FImportAGXArchiveCommands::Unregister();
+	FAGXArchiveStyle::Shutdown();
+	FAGXArchiveCommands::Unregister();
 }
 
 void FAGXUnrealEditorModule::RegisterAssetTypeActions()
@@ -175,7 +174,7 @@ void FAGXUnrealEditorModule::RegisterAssetTypeAction(IAssetTools& AssetTools, co
 	RegisteredAssetTypeActions.Add(Action);
 }
 
-void FAGXUnrealEditorModule::PluginButtonClicked()
+void FAGXUnrealEditorModule::OnImportAGXArchive()
 {
 	/// \todo See
 	/// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html?sort=oldest
@@ -241,14 +240,14 @@ void FAGXUnrealEditorModule::OnExportAGXArchive()
 
 void FAGXUnrealEditorModule::AddMenuExtension(FMenuBuilder& Builder)
 {
-	Builder.AddMenuEntry(FImportAGXArchiveCommands::Get().PluginAction);
-	Builder.AddMenuEntry(FImportAGXArchiveCommands::Get().ExportAction);
+	Builder.AddMenuEntry(FAGXArchiveCommands::Get().ImportAction);
+	Builder.AddMenuEntry(FAGXArchiveCommands::Get().ExportAction);
 }
 
 void FAGXUnrealEditorModule::AddToolbarExtension(FToolBarBuilder& Builder)
 {
-	Builder.AddToolBarButton(FImportAGXArchiveCommands::Get().PluginAction);
-	Builder.AddToolBarButton(FImportAGXArchiveCommands::Get().ExportAction);
+	Builder.AddToolBarButton(FAGXArchiveCommands::Get().ImportAction);
+	Builder.AddToolBarButton(FAGXArchiveCommands::Get().ExportAction);
 }
 
 void FAGXUnrealEditorModule::RegisterCustomizations()
