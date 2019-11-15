@@ -99,6 +99,19 @@ public:
 	/** Indicates whether this actor should participate in level bounds calculations. */
 	bool IsLevelBoundsRelevant() const override { return false; }
 
+	/**
+	 * Returns true if for any of the locked DOFs both the global attachment frame transforms do no match.
+	 *
+	 * This function should never be used after the constraint has begun play.*
+	 *
+	 * Can be overriden for specialized constraint checks.
+	 */
+	virtual bool AreFramesInViolatedState(float Tolerance = KINDA_SMALL_NUMBER) const;
+
+	EDofFlag GetLockedDofsBitmask() const;
+
+	bool IsDofLocked(EDofFlag Dof) const;
+
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
@@ -114,8 +127,6 @@ public:
 
 	/** Subclasses that overrides this MUST invoke the parents version! */
 	virtual void UpdateNativeProperties();
-
-	EDofFlag GetLockedDofsBitmask() const { return LockedDofsBitmask; }
 
 protected:
 

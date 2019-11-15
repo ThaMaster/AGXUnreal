@@ -108,6 +108,87 @@ AAGX_Constraint::~AAGX_Constraint()
 }
 
 
+bool AAGX_Constraint::AreFramesInViolatedState(float Tolerance) const
+{
+	if (!BodyAttachment1.RigidBodyActor || !BodyAttachment2.RigidBodyActor)
+	{
+		return false;
+	}
+
+	FVector Location1 = BodyAttachment1.GetGlobalFrameLocation();
+	FQuat Rotation1 = BodyAttachment1.GetGlobalFrameRotation();
+
+	FVector Location2 = BodyAttachment2.GetGlobalFrameLocation();
+	FQuat Rotation2 = BodyAttachment2.GetGlobalFrameRotation();
+
+	FVector Location2InLocal1 = Rotation1.Inverse().RotateVector(Location2 - Location1);
+	FQuat Rotation2InLocal1 = Rotation1.Inverse() * Rotation2;
+
+	if (IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_1))
+	{
+		if (FMath::Abs(Location2InLocal1.X) > Tolerance)
+		{
+			return true;
+		}
+	}
+
+	if (IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_2))
+	{
+		if (FMath::Abs(Location2InLocal1.Y) > Tolerance)
+		{
+			return true;
+		}
+	}
+
+	if (IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_3))
+	{
+		if (FMath::Abs(Location2InLocal1.Z) > Tolerance)
+		{
+			return true;
+		}
+	}
+
+	/// \todo Checks below might not be correct for ALL scenarios. What if there is for example a 90 degrees rotation
+	/// around one axis and then a rotation around another..
+
+	if (IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1))
+	{
+		if (FMath::Abs(Rotation2InLocal1.GetAxisY().Z) > Tolerance)
+		{
+			return true;
+		}
+	}
+
+	if (IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_2))
+	{
+		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Z) > Tolerance)
+		{
+			return true;
+		}
+	}
+
+	if (IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_3))
+	{
+		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Y) > Tolerance)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+EDofFlag AAGX_Constraint::GetLockedDofsBitmask() const
+{
+	return LockedDofsBitmask;
+}
+
+
+bool AAGX_Constraint::IsDofLocked(EDofFlag Dof) const
+{
+	return static_cast<uint8>(LockedDofsBitmask) & static_cast<uint8>(Dof);
+}
+
 #if WITH_EDITOR
 
 void AAGX_Constraint::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)

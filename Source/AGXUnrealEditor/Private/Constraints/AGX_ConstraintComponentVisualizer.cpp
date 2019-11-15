@@ -3,6 +3,7 @@
 
 #include "Constraints/AGX_ConstraintComponentVisualizer.h"
 
+#include "CanvasItem.h"
 #include "SceneManagement.h"
 
 #include "Constraints/AGX_Constraint.h"
@@ -40,6 +41,11 @@ namespace
 		PDI->DrawLine(AxisLoc, AxisLoc + Y * Scale, FLinearColor::Green, DepthPriority, Thickness, DepthBias, bScreenSpace);
 		PDI->DrawLine(AxisLoc, AxisLoc + Z * Scale, FLinearColor::Blue, DepthPriority, Thickness, DepthBias, bScreenSpace);
 	}
+
+	static FVector2D operator*(const FVector& NormalizedCoordinates, const FIntPoint& ViewSize)
+	{
+		return FVector2D(NormalizedCoordinates.X * ViewSize.X, NormalizedCoordinates.Y * ViewSize.Y);
+	}
 }
 
 
@@ -61,6 +67,19 @@ void FAGX_ConstraintComponentVisualizer::DrawVisualization(const UActorComponent
 		/// \todo Might be a better way to do this?
 		DofGraphics->OnBecameSelected();
 	}
+}
+
+void FAGX_ConstraintComponentVisualizer::DrawVisualizationHUD(const UActorComponent* Component,
+	const FViewport* Viewport, const FSceneView* View, FCanvas* Canvas)
+{
+	const AAGX_Constraint* Constraint = Cast<const AAGX_Constraint>(Component->GetOwner());
+
+	if (!Constraint)
+	{
+		return;
+	}
+
+	DrawConstraintHUD(Constraint, Viewport, View, Canvas);
 }
 
 float GetScreenToWorldFactor(float FOV, float WorldDistance)
@@ -152,6 +171,22 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(const AAGX_Constraint* C
 			DrawDashedLine(PDI, Location1, Location2, HighlightColor, HighlightThickness,
 				SDPG_Foreground, /*DepthBias*/ 0.0f);
 		}
+	}
+}
+
+void FAGX_ConstraintComponentVisualizer::DrawConstraintHUD(const AAGX_Constraint* Constraint,
+	const FViewport* Viewport, const FSceneView* View, FCanvas* Canvas)
+{
+	if (Constraint->AreFramesInViolatedState())
+	{
+		FVector2D Position(0.45f, 0.35f);
+		FText Text = FText::FromString("Constraint Frames In Violated State!");
+		UFont* Font = GEngine->GetSubtitleFont();
+		FCanvasTextItem CanvasText(Position * Canvas->GetViewRect().Size(), Text, Font, FColor::Red);
+
+		Canvas->DrawItem(CanvasText);
+
+		//GEngine->AddOnScreenDebugMessage(45456, 5.f, FColor::Red, TEXT("Constraint Frames In Violated State!"));
 	}
 }
 
