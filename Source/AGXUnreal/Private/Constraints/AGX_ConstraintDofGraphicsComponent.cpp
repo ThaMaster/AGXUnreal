@@ -450,13 +450,13 @@ private:
 					BatchElement.MinVertexIndex = Section->GetMinVertexIndex();
 					BatchElement.MaxVertexIndex = Section->GetMaxVertexIndex();
 
-					FMatrix LocalToWorld = GetLocalToWorld().GetMatrixWithoutScale();
-					//FMatrix LocalToWorld = FrameTransform1; // setting render matrix instead (see GetRenderMatrix())
+					FMatrix WorldMatrix = GetLocalToWorld().GetMatrixWithoutScale();
+					//FMatrix WorldMatrix = FrameTransform1; // setting render matrix instead (see GetRenderMatrix())
 
 					FMatrix ScreenScale = GetScreenSpaceScale(0.56f, 150.0f, 500.0f, 100.0f,
 						FrameTransform1.GetOrigin(), View);
 					
-					FMatrix EffectiveLocalToWorld = Section->LocalTransform * ScreenScale * LocalToWorld;
+					FMatrix EffectiveLocalToWorld = Section->LocalTransform * ScreenScale * WorldMatrix;
 
 					FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer =
 						Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
