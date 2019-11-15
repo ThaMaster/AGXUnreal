@@ -83,6 +83,9 @@ private:
 	UPROPERTY()
 	class UAGX_ConstraintComponent* ConstraintComponent;
 
+	UPROPERTY(Transient)
+	class UAGX_ConstraintDofGraphicsComponent* DofGraphicsComponent;
+
 public:
 
 	AAGX_Constraint() { }
@@ -90,6 +93,8 @@ public:
 	AAGX_Constraint(const TArray<EDofFlag> &LockedDofsOrdered);
 
 	virtual ~AAGX_Constraint();
+
+	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics() const { return DofGraphicsComponent; }
 
 	/** Indicates whether this actor should participate in level bounds calculations. */
 	bool IsLevelBoundsRelevant() const override { return false; }
@@ -110,6 +115,8 @@ public:
 	/** Subclasses that overrides this MUST invoke the parents version! */
 	virtual void UpdateNativeProperties();
 
+	EDofFlag GetLockedDofsBitmask() const { return LockedDofsBitmask; }
+
 protected:
 
 #if WITH_EDITOR
@@ -128,6 +135,8 @@ protected:
 	virtual void CreateNativeImpl() PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl,);
 
 	TUniquePtr<FConstraintBarrier> NativeBarrier;
+
+	const EDofFlag LockedDofsBitmask = static_cast<EDofFlag>(0);
 
 	// The Degrees of Freedom (DOF) that are locked by the specific constraint type,
 	// ordered the way they are indexed by in the native AGX api (except for ALL_DOF and NUM_DOF).

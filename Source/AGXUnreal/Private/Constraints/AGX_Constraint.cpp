@@ -6,6 +6,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintConstants.h"
+#include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 
@@ -68,23 +69,36 @@ SolveType(EAGX_SolveType::ST_DIRECT),
 Elasticity(ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
 Damping(ConstraintConstants::DefaultDamping(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
 ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
+LockedDofsBitmask(ConvertDofsArrayToBitmask(LockedDofsOrdered)),
 LockedDofs(LockedDofsOrdered),
 NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 {
 	BodyAttachment1.FrameDefiningActor = this;
 	BodyAttachment2.FrameDefiningActor = this;
 
-	ConstraintComponent = CreateDefaultSubobject<UAGX_ConstraintComponent>(
-		TEXT("ConstraintComponent"));
+	// Create UAGX_ConstraintComponent as root component.
+	{
+		ConstraintComponent = CreateDefaultSubobject<UAGX_ConstraintComponent>(
+			TEXT("ConstraintComponent"));
 
-	ConstraintComponent->SetFlags(ConstraintComponent->GetFlags() | RF_Transactional);
-	ConstraintComponent->Mobility = EComponentMobility::Movable;
+		ConstraintComponent->SetFlags(ConstraintComponent->GetFlags() | RF_Transactional);
+		ConstraintComponent->Mobility = EComponentMobility::Movable;
 
 #if WITH_EDITORONLY_DATA
-	ConstraintComponent->bVisualizeComponent = true;
+		ConstraintComponent->bVisualizeComponent = true;
 #endif
 
-	SetRootComponent(ConstraintComponent);
+		SetRootComponent(ConstraintComponent);
+	}
+
+	// Create UAGX_ConstraintDofGraphicsComponent as child component.
+	{
+		DofGraphicsComponent = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
+			TEXT("DofGraphicsComponent"));
+
+		DofGraphicsComponent->Constraint = this;
+		DofGraphicsComponent->SetupAttachment(ConstraintComponent);
+	}
 }
 
 

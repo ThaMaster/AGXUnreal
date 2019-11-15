@@ -82,6 +82,8 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 */
 	FQuat GetGlobalFrameRotation() const;
 
+	FMatrix GetGlobalFrameMatrix() const;
+
 	FRigidBodyBarrier* GetRigidBodyBarrier(bool CreateIfNeeded);
 
 #if WITH_EDITOR
