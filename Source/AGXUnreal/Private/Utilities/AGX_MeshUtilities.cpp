@@ -67,6 +67,23 @@ void AGX_MeshUtilities::MakeCube(TArray<FVector>& Positions, TArray<FVector>& No
 	check(Normals.Num() == 24);
 }
 
+AGX_MeshUtilities::SphereConstructionData::SphereConstructionData(float InRadius, uint32 InNumSegments)
+	:
+Radius(InRadius),
+Segments(InNumSegments),
+Stacks(InNumSegments),
+Sectors(InNumSegments),
+Vertices((Stacks + 1) * (Sectors + 1)),
+Indices(Sectors * (6 * Stacks - 6))
+{
+}
+
+void AGX_MeshUtilities::SphereConstructionData::AppendBufferSizes(uint32& InOutNumVertices, uint32& InOutNumIndices) const
+{
+	InOutNumVertices += Vertices;
+	InOutNumIndices += Indices;
+}
+
 void AGX_MeshUtilities::MakeSphere(TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices, float Radius, uint32 NumSegments)
 {
 	if (NumSegments < 4 || Radius < 1.0e-6)
@@ -160,13 +177,115 @@ void AGX_MeshUtilities::MakeSphere(TArray<FVector>& Positions, TArray<FVector>& 
 	check(Normals.Num() == NumVertices);
 }
 
+void AGX_MeshUtilities::MakeSphere(FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer,
+	uint32& NextFreeVertex, uint32& NextFreeIndex, const SphereConstructionData& Data)
+{
+	check(Data.Segments >= 4);
+	check(Data.Segments <= uint32(TNumericLimits<uint16>::Max()));
+	check(Data.Radius >= 1.0e-6);
+
+	check(NextFreeVertex + Data.Vertices <= VertexBuffers.PositionVertexBuffer.GetNumVertices());
+	check(NextFreeVertex + Data.Vertices <= VertexBuffers.StaticMeshVertexBuffer.GetNumVertices());
+	check(NextFreeVertex + Data.Vertices <= VertexBuffers.ColorVertexBuffer.GetNumVertices());
+	check(NextFreeIndex + Data.Indices <= static_cast<uint32>(IndexBuffer.Indices.Num()));
+
+	const uint32 FirstVertex = NextFreeVertex;
+	const uint32 FirstIndex = NextFreeIndex;
+	
+	const float SectorStep = 2.0 * PI / Data.Sectors;
+	const float StackStep = PI / Data.Stacks;
+	const float RadiusInv = 1.0f / Data.Radius;
+
+	FVector Position, TangentX, TangentY, TangentZ;
+	FColor Color = FColor::White; /// \todo Make configurable!
+	FVector2D TexCoord;
+
+	float SectorAngle;
+	float StackAngle, StackRadius, StackHeight;
+
+	// TODO: Change terminology from stack to vertical slice, and numbers accordingly!
+
+	for (uint32 StackIndex = 0; StackIndex <= Data.Stacks; ++StackIndex) // stack = vertical segment
+	{
+		StackAngle = PI / 2.0 - StackIndex * StackStep; // starting from pi/2 to -pi/2
+		StackRadius = Data.Radius * FMath::Cos(StackAngle);
+		StackHeight = Data.Radius * FMath::Sin(StackAngle);
+
+		// Add (NumSectors + 1) vertices per stack. The first and last vertex
+		// have same position and normal, but different tex coords.
+		for (uint32 SectorIndex = 0; SectorIndex <= Data.Sectors; ++SectorIndex) // sector = horizontal segment
+		{
+			SectorAngle = SectorIndex * SectorStep; // starting from 0 to 2pi
+
+			Position.X = StackRadius * FMath::Cos(SectorAngle);
+			Position.Y = StackRadius * FMath::Sin(SectorAngle);
+			Position.Z = StackHeight;
+			
+			TangentZ = FVector(
+				Position.X * RadiusInv,
+				Position.Y * RadiusInv,
+				Position.Z * RadiusInv);
+
+			// vertex tex coord (u, v) range between [0, 1]
+			TexCoord.X = (float)SectorIndex / Data.Sectors;
+			TexCoord.Y = (float)StackIndex / Data.Stacks;
+			
+			/// \todo Compute correctly based on texcoords!
+			TangentX = FVector::ZeroVector;
+			TangentY = FVector::ZeroVector;
+
+			// Fill actual buffers
+			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
+			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color;
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(NextFreeVertex, TangentX, TangentY, TangentZ);
+
+			NextFreeVertex++;
+		}
+	}
+
+	// Generate index list of sphere triangles
+	int K1, K2;
+	for (uint32 StackIndex = 0; StackIndex < Data.Stacks; ++StackIndex)
+	{
+		K1 = FirstVertex + StackIndex * (Data.Sectors + 1); // beginning of current stack
+		K2 = K1 + Data.Sectors + 1; // beginning of next stack
+
+		for (uint32 SectorIndex = 0; SectorIndex < Data.Sectors; ++SectorIndex, ++K1, ++K2)
+		{
+			// 2 triangles per sector excluding first and last stacks
+			// K1 => K2 => K1+1
+			if (StackIndex != 0)
+			{
+				IndexBuffer.Indices[NextFreeIndex++] = K1;
+				IndexBuffer.Indices[NextFreeIndex++] = K1 + 1;
+				IndexBuffer.Indices[NextFreeIndex++] = K2;
+			}
+
+			// K1+1 => K2 => K2+1
+			if (StackIndex != (Data.Stacks - 1))
+			{
+				IndexBuffer.Indices[NextFreeIndex++] = K1 + 1;
+				IndexBuffer.Indices[NextFreeIndex++] = K2 + 1;
+				IndexBuffer.Indices[NextFreeIndex++] = K2;
+			}
+		}
+	}
+
+	check(NextFreeVertex - FirstVertex == Data.Vertices);
+	check(NextFreeIndex - FirstIndex == Data.Indices);
+}
+
 AGX_MeshUtilities::CylinderConstructionData::CylinderConstructionData(float InRadius, float InHeight,
-	uint32 InNumCircleSegments, uint32 InNumHeightSegments)
+	uint32 InNumCircleSegments, uint32 InNumHeightSegments, const FLinearColor& InMiddleColor,
+	const FLinearColor& InOuterColor)
 	:
 Radius(InRadius),
 Height(InHeight),
 CircleSegments(InNumCircleSegments),
 HeightSegments(InNumHeightSegments),
+MiddleColor(InMiddleColor),
+OuterColor(InOuterColor),
 VertexRows(HeightSegments + 1),
 VertexColumns(CircleSegments + 1),
 Caps(2),
@@ -326,7 +445,7 @@ void AGX_MeshUtilities::MakeCylinder(FStaticMeshVertexBuffers& VertexBuffers, FD
 	const float RadiusInv = 1.0f / Data.Radius;
 
 	FVector Position, TangentX, TangentY, TangentZ;
-	FColor Color; /// \todo Set vertex color to something.
+	FLinearColor Color; /// \todo Set vertex color to something.
 	FVector2D TexCoord;
 
 	// Generate vertex attributes.
@@ -342,6 +461,9 @@ void AGX_MeshUtilities::MakeCylinder(FStaticMeshVertexBuffers& VertexBuffers, FD
 		const uint32 RowIndex = FMath::Clamp<int32>(CapsAndRowIndex - 1, 0, Data.VertexRows - 1);
 		const float RowHeight = Data.Height * RowIndex / (Data.VertexRows - 1) - Data.Height * 0.5f;
 
+		Color = FMath::Lerp(Data.MiddleColor, Data.OuterColor, FMath::Abs(
+			(static_cast<float>(RowIndex) / Data.HeightSegments) - 0.5f) * 2.0f);
+
 		// Add Data.VertexColumns num vertices in a circle per vertex row. The first and last vertex in the same row
 		// have same position and normal, but different tex coords.
 		for (uint32 ColumnIndex = 0; ColumnIndex < Data.VertexColumns; ++ColumnIndex)
@@ -355,7 +477,7 @@ void AGX_MeshUtilities::MakeCylinder(FStaticMeshVertexBuffers& VertexBuffers, FD
 
 			// Vertex Texture Coordinates, range between [0, 1]
 			TexCoord.X = IsCap ? Position.X : ((float)ColumnIndex / Data.CircleSegments);
-			TexCoord.Y = IsCap ? Position.Z : ((float)RowIndex / (Data.VertexRows - 1));
+			TexCoord.Y = IsCap ? Position.Y : ((float)RowIndex / (Data.VertexRows - 1));
 
 			// Vertex Normal, Tangent, and Binormal
 			switch (CapIndex)
@@ -374,7 +496,7 @@ void AGX_MeshUtilities::MakeCylinder(FStaticMeshVertexBuffers& VertexBuffers, FD
 
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
-			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color;
+			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -809,4 +931,145 @@ void AGX_MeshUtilities::PrintMeshToLog(const FStaticMeshVertexBuffers& VertexBuf
 	}
 
 	UE_LOG(LogAGX, Log, TEXT("AGX_MeshUtilities::PrintMeshToLog() : Finished printing mesh data."))
+}
+
+AGX_MeshUtilities::DiskArrayConstructionData::DiskArrayConstructionData(float InRadius, uint32 InNumCircleSegments,
+	float InSpacing, uint32 InDisks, bool bInTwoSided, const FLinearColor InMiddleDiskColor,
+	const FLinearColor InOuterDiskColor, TArray<FTransform> InSpacingsOverride)
+	:
+Radius(InRadius),
+CircleSegments(InNumCircleSegments),
+Spacing(InSpacing),
+Disks(InDisks),
+bTwoSided(bInTwoSided),
+MiddleDiskColor(InMiddleDiskColor),
+OuterDiskColor(InOuterDiskColor),
+SpacingsOverride(InSpacingsOverride),
+SidesPerDisk(bInTwoSided ? 2 : 1),
+VerticesPerSide(CircleSegments),
+VerticesPerDisk(VerticesPerSide * SidesPerDisk),
+Vertices(Disks * VerticesPerDisk),
+Indices(Disks * 3 * (CircleSegments - 2) * SidesPerDisk)
+{
+}
+
+void AGX_MeshUtilities::DiskArrayConstructionData::AppendBufferSizes(uint32& InOutNumVertices, uint32& InOutNumIndices) const
+{
+	InOutNumVertices += Vertices;
+	InOutNumIndices += Indices;
+}
+
+void AGX_MeshUtilities::MakeDiskArray(FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer,
+	uint32& NextFreeVertex, uint32& NextFreeIndex, const DiskArrayConstructionData& Data)
+{
+	check(Data.CircleSegments >= 4);
+	check(Data.CircleSegments <= uint32(TNumericLimits<uint16>::Max()));
+	check(Data.Disks >= 1);
+	check(Data.Disks <= uint32(TNumericLimits<uint16>::Max()));
+	check(Data.Radius >= 1.0e-6);
+
+	check(NextFreeVertex + Data.Vertices <= VertexBuffers.PositionVertexBuffer.GetNumVertices());
+	check(NextFreeVertex + Data.Vertices <= VertexBuffers.StaticMeshVertexBuffer.GetNumVertices());
+	check(NextFreeVertex + Data.Vertices <= VertexBuffers.ColorVertexBuffer.GetNumVertices());
+	check(NextFreeIndex + Data.Indices <= static_cast<uint32>(IndexBuffer.Indices.Num()));
+
+	const uint32 FirstVertex = NextFreeVertex;
+	const uint32 FirstIndex = NextFreeIndex;
+
+	const float SegmentSize = 2.0 * PI / Data.CircleSegments;
+	const float RadiusInv = 1.0f / Data.Radius;
+	const float TotalHeight = Data.Spacing * Data.Disks;
+
+	FVector Position, TangentX, TangentY, TangentZ;
+	FLinearColor Color; /// \todo Set vertex color to something.
+	FVector2D TexCoord;
+
+	// Generate vertex attributes.
+	for (uint32 DiskIndex = 0; DiskIndex < Data.Disks; ++DiskIndex)
+	{
+		const float NormalizedDiskIndex = DiskIndex / static_cast<float>(Data.Disks > 1 ? Data.Disks - 1 : 1);
+		const float DiskHeight = TotalHeight * 0.5f - NormalizedDiskIndex * TotalHeight;
+
+		Color = FMath::Lerp(Data.MiddleDiskColor, Data.OuterDiskColor, FMath::Abs(NormalizedDiskIndex - 0.5f) * 2.0f);
+		
+		for (uint32 SideIndex = 0; SideIndex < Data.SidesPerDisk; ++SideIndex)
+		{
+			for (uint32 CircleVertexIndex = 0; CircleVertexIndex < Data.CircleSegments; ++CircleVertexIndex)
+			{
+				float CircleVertexAngle = CircleVertexIndex * SegmentSize;
+
+				// Vertex Position
+				Position.X = Data.Radius * FMath::Cos(CircleVertexAngle);
+				Position.Y = Data.Radius * FMath::Sin(CircleVertexAngle);
+				Position.Z = DiskHeight;
+
+				// Vertex Texture Coordinates, range between [0, 1]
+				TexCoord.X = Position.X;
+				TexCoord.Y = Position.Y;
+
+				// Vertex Normal, Tangent, and Binormal
+				switch (SideIndex)
+				{
+				case 0: // up side
+					TangentZ = FVector(0.0f, 0.0f, 1.0f); break;
+				case 1: // down cap
+				default:
+					TangentZ = FVector(0.0f, 0.0f, -1.0f); break;
+				}
+
+				if (DiskIndex < static_cast<uint32>(Data.SpacingsOverride.Num()))
+				{
+					// Remove spacing and use the spacing defined in the array instead. May include rotation as well.
+					Position.Z = 0.0f;
+					Position = Data.SpacingsOverride[DiskIndex].TransformPosition(Position);
+					TangentZ = Data.SpacingsOverride[DiskIndex].TransformVector(TangentZ);
+				}
+
+				/// \todo Compute correctly based on texcoords!
+				TangentX = FVector::ZeroVector;
+				TangentY = FVector::ZeroVector;
+
+				// Fill actual buffers
+				VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
+				VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
+				VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+				VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(NextFreeVertex, TangentX, TangentY, TangentZ);
+
+				NextFreeVertex++;
+			}
+		}
+	}
+
+	// Generate triangle indexes for each disk (and each side), with triangle fan pattern.
+	uint32 V0, V1, V2;
+	for (uint32 DiskIndex = 0; DiskIndex < Data.Disks; ++DiskIndex)
+	{
+		for (uint32 SideIndex = 0; SideIndex < Data.SidesPerDisk; ++SideIndex)
+		{
+			V0 = FirstVertex + SideIndex * Data.VerticesPerSide + DiskIndex * Data.VerticesPerDisk;
+
+			// 1 triangle per segment except for first and last.
+			for (uint32 CircleSegmentIndex = 1; CircleSegmentIndex < Data.CircleSegments - 1; ++CircleSegmentIndex)
+			{
+				V1 = V0 + CircleSegmentIndex;
+				V2 = V0 + ((CircleSegmentIndex + 1) % Data.CircleSegments);
+
+				if (SideIndex == 0)
+				{
+					IndexBuffer.Indices[NextFreeIndex++] = V2;
+					IndexBuffer.Indices[NextFreeIndex++] = V1;
+					IndexBuffer.Indices[NextFreeIndex++] = V0;
+				}
+				else
+				{
+					IndexBuffer.Indices[NextFreeIndex++] = V0;
+					IndexBuffer.Indices[NextFreeIndex++] = V1;
+					IndexBuffer.Indices[NextFreeIndex++] = V2;
+				}
+			}
+		}
+	}
+
+	check(NextFreeVertex - FirstVertex == Data.Vertices);
+	check(NextFreeIndex - FirstIndex == Data.Indices);
 }
