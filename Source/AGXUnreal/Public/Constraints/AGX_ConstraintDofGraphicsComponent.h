@@ -13,8 +13,7 @@ class FPrimitiveSceneProxy;
 /**
  * A component that visualizes the constraint's degrees of freedom directly in the viewport.
  */
-UCLASS(Category = "AGX", ClassGroup = "AGX", NotPlaceable, meta = (BlueprintSpawnableComponent), 
-	HideCategories = (Object,LOD, Physics, Collision))
+UCLASS(Category = "AGX", ClassGroup = "AGX", NotPlaceable)
 class AGXUNREAL_API UAGX_ConstraintDofGraphicsComponent : public UMeshComponent
 {
 	GENERATED_UCLASS_BODY()
