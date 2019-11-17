@@ -86,6 +86,9 @@ private:
 	UPROPERTY(Transient)
 	class UAGX_ConstraintDofGraphicsComponent* DofGraphicsComponent;
 
+	UPROPERTY(Transient)
+	class UAGX_ConstraintIconGraphicsComponent* IconGraphicsComponent;
+
 public:
 
 	AAGX_Constraint() { }

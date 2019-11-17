@@ -5,10 +5,11 @@
 
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
-#include "Constraints/AGX_ConstraintComponent.h"
+#include "Constraints/AGX_ConstraintIconGraphicsComponent.h"
 
 #include "Constraints/ConstraintBarrier.h"
 
@@ -85,7 +86,7 @@ NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 		ConstraintComponent->Mobility = EComponentMobility::Movable;
 
 #if WITH_EDITORONLY_DATA
-		ConstraintComponent->bVisualizeComponent = true;
+		ConstraintComponent->bVisualizeComponent = false; // disables the root SceneComponents's white blob 
 #endif
 
 		SetRootComponent(ConstraintComponent);
@@ -98,6 +99,17 @@ NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 
 		DofGraphicsComponent->Constraint = this;
 		DofGraphicsComponent->SetupAttachment(ConstraintComponent);
+		DofGraphicsComponent->bHiddenInGame = true;
+	}
+
+	// Create UAGX_ConstraintIconGraphicsComponent as child component.
+	{
+		IconGraphicsComponent = CreateDefaultSubobject<UAGX_ConstraintIconGraphicsComponent>(
+			TEXT("IconGraphicsComponent"));
+
+		IconGraphicsComponent->Constraint = this;
+		IconGraphicsComponent->SetupAttachment(ConstraintComponent);
+		IconGraphicsComponent->bHiddenInGame = true;
 	}
 }
 
