@@ -29,7 +29,25 @@ void UAGX_Simulation::Deinitialize()
 	NativeBarrier.ReleaseNative();
 }
 
-FSimulationBarrier* UAGX_Simulation::GetNative() 
+bool UAGX_Simulation::WriteAGXArchive(const FString& Filename) const
+{
+	if (!HasNative())
+	{
+		/// \todo Can we create a temporary Simulation, instantiate all the AGX
+		/// Dynamics objects there, store, and then throw everything away?
+		UE_LOG(LogAGX, Error, TEXT("No simulation available, cannot store AGX Dynamics archive."));
+		return false;
+	}
+
+	return NativeBarrier.WriteAGXArchive(Filename);
+}
+
+bool UAGX_Simulation::HasNative() const
+{
+	return NativeBarrier.HasNative();
+}
+
+FSimulationBarrier* UAGX_Simulation::GetNative()
 {
 	check(NativeBarrier.HasNative()); // Invalid to call this function before starting game!
 
@@ -90,6 +108,6 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const UGameInstance* GameInstance)
 {
 	if (!GameInstance)
 		return nullptr;
-	
+
 	return GameInstance->GetSubsystem<UAGX_Simulation>();
 }

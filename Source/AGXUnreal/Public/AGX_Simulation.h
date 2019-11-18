@@ -46,6 +46,10 @@ public:
 
 	void AddRigidBody(UAGX_RigidBodyComponent* body);
 
+	bool WriteAGXArchive(const FString& Filename) const;
+
+	bool HasNative() const;
+
 	FSimulationBarrier* GetNative();
 
 	const FSimulationBarrier* GetNative() const;
@@ -53,7 +57,7 @@ public:
 	void Step(float DeltaTime);
 
 	static UAGX_Simulation* GetFrom(const AActor* Actor);
-	
+
 	static UAGX_Simulation* GetFrom(const UWorld* World);
 
 	static UAGX_Simulation* GetFrom(const UGameInstance* GameInstance);

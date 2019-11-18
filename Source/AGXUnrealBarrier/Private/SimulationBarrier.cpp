@@ -1,6 +1,7 @@
 #include "SimulationBarrier.h"
 
 #include "RigidBodyBarrier.h"
+#include "TypeConversions.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/MaterialBarrier.h"
@@ -65,6 +66,19 @@ void FSimulationBarrier::RemoveContactMaterial(FContactMaterialBarrier* ContactM
 	check(HasNative());
 	check(ContactMaterial->HasNative());
 	NativeRef->Native->remove(ContactMaterial->GetNative()->Native);
+}
+
+bool FSimulationBarrier::WriteAGXArchive(const FString& Filename) const
+{
+	check(HasNative());
+	size_t NumObjectsWritten = NativeRef->Native->write(Convert(Filename));
+	if (NumObjectsWritten == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Native simulation reported zero written objects."));
+		return false;
+	}
+
+	return true; /// \todo How do we determine if all objects were successfully written?
 }
 
 void FSimulationBarrier::Step()
