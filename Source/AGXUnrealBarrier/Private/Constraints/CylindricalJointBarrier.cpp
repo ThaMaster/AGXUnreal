@@ -17,6 +17,11 @@ FCylindricalJointBarrier::FCylindricalJointBarrier()
 {
 }
 
+FCylindricalJointBarrier::FCylindricalJointBarrier(std::unique_ptr<FConstraintRef> Native)
+	: FConstraint2DOFBarrier(std::move(Native))
+{
+}
+
 FCylindricalJointBarrier::~FCylindricalJointBarrier()
 {
 }

@@ -6,6 +6,7 @@
 #include <agx/Hinge.h>
 #include <agx/Prismatic.h>
 #include <agx/BallJoint.h>
+#include <agx/CylindricalJoint.h>
 #include <agxCollide/Sphere.h>
 #include <agxCollide/Box.h>
 #include <agxCollide/Trimesh.h>
@@ -46,4 +47,9 @@ FPrismaticBarrier CreatePrismaticBarrier(agx::Prismatic* Prismatic)
 FBallJointBarrier CreateBallJointBarrier(agx::BallJoint* BallJoint)
 {
 	return {std::make_unique<FConstraintRef>(BallJoint)};
+}
+
+FCylindricalJointBarrier CreateCylindricalJointBarrier(agx::CylindricalJoint* CylindricalJoint)
+{
+	return {std::make_unique<FConstraintRef>(CylindricalJoint)};
 }

@@ -5,6 +5,7 @@
 #include "HingeBarrier.h"
 #include "PrismaticBarrier.h"
 #include "BallJointBarrier.h"
+#include "CylindricalJointBarrier.h"
 
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
@@ -14,6 +15,7 @@
 #include "Constraints/AGX_HingeConstraint.h"
 #include "Constraints/AGX_PrismaticConstraint.h"
 #include "Constraints/AGX_BallConstraint.h"
+#include "Constraints/AGX_CylindricalConstraint.h"
 
 #include "Math/Transform.h"
 #include "GameFramework/Actor.h"
@@ -180,6 +182,11 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) override
 		{
 			CreateConstraint(BallJoint, AAGX_BallConstraint::StaticClass());
+		}
+
+		virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& CylindricalJoint) override
+		{
+			CreateConstraint(CylindricalJoint, AAGX_CylindricalConstraint::StaticClass());
 		}
 
 	private:

@@ -10,6 +10,8 @@ class AGXUNREALBARRIER_API FCylindricalJointBarrier : public FConstraint2DOFBarr
 {
 public:
 	FCylindricalJointBarrier();
+	FCylindricalJointBarrier(FCylindricalJointBarrier&& Other) = default;
+	FCylindricalJointBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FCylindricalJointBarrier();
 
 private:

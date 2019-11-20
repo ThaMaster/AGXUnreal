@@ -7,6 +7,7 @@
 #include "Constraints/HingeBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
 #include "Constraints/BallJointBarrier.h"
+#include "Constraints/CylindricalJointBarrier.h"
 
 #include "AGXRefs.h"
 
@@ -16,6 +17,7 @@ namespace agx
 	class Hinge;
 	class Prismatic;
 	class BallJoint;
+	class CylindricalJoint;
 }
 
 namespace agxCollide
@@ -38,3 +40,5 @@ FHingeBarrier CreateHingeBarrier(agx::Hinge* Hinge);
 FPrismaticBarrier CreatePrismaticBarrier(agx::Prismatic* Prismatic);
 
 FBallJointBarrier CreateBallJointBarrier(agx::BallJoint* BallJoint);
+
+FCylindricalJointBarrier CreateCylindricalJointBarrier(agx::CylindricalJoint* CylindricalJoint);

@@ -12,6 +12,7 @@ class FTrimeshShapeBarrier;
 class FHingeBarrier;
 class FPrismaticBarrier;
 class FBallJointBarrier;
+class FCylindricalJointBarrier;
 
 /*
 The separation between the Unreal part and the AGX Dynamics part of the plugin
@@ -56,6 +57,8 @@ public:
 	virtual void InstantiatePrismatic(const FPrismaticBarrier& Prismatic) = 0;
 
 	virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) = 0;
+
+	virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& CylindricalJoint) = 0;
 
 	virtual ~FAGXArchiveInstantiator() = default;
 };

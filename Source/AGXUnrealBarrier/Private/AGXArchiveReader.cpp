@@ -13,6 +13,7 @@
 #include <agx/Hinge.h>
 #include <agx/Prismatic.h>
 #include <agx/BallJoint.h>
+#include <agx/CylindricalJoint.h>
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Box.h>
@@ -105,6 +106,10 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 		else if (agx::BallJoint* BallJoint = Constraint->asSafe<agx::BallJoint>())
 		{
 			Instantiator.InstantiateBallJoint(CreateBallJointBarrier(BallJoint));
+		}
+		else if (agx::CylindricalJoint* CylindricalJoint = Constraint->asSafe<agx::CylindricalJoint>())
+		{
+			Instantiator.InstantiateCylindricalJoint(CreateCylindricalJointBarrier(CylindricalJoint));
 		}
 		else
 		{
