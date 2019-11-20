@@ -6,6 +6,7 @@
 #include "Shapes/TrimeshShapeBarrier.h"
 #include "Constraints/HingeBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
+#include "Constraints/BallJointBarrier.h"
 
 #include "AGXRefs.h"
 
@@ -13,6 +14,8 @@ namespace agx
 {
 	class RigidBody;
 	class Hinge;
+	class Prismatic;
+	class BallJoint;
 }
 
 namespace agxCollide
@@ -33,3 +36,5 @@ FTrimeshShapeBarrier CreateTrimeshShapeBarrier(agxCollide::Trimesh* Trimesh);
 FHingeBarrier CreateHingeBarrier(agx::Hinge* Hinge);
 
 FPrismaticBarrier CreatePrismaticBarrier(agx::Prismatic* Prismatic);
+
+FBallJointBarrier CreateBallJointBarrier(agx::BallJoint* BallJoint);

@@ -17,6 +17,11 @@ FBallJointBarrier::FBallJointBarrier()
 {
 }
 
+FBallJointBarrier::FBallJointBarrier(std::unique_ptr<FConstraintRef> Native)
+	: FConstraintBarrier(std::move(Native))
+{
+}
+
 FBallJointBarrier::~FBallJointBarrier()
 {
 }

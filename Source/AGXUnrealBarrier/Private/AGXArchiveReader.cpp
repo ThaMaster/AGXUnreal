@@ -12,6 +12,7 @@
 #include <agx/Encoding.h>
 #include <agx/Hinge.h>
 #include <agx/Prismatic.h>
+#include <agx/BallJoint.h>
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Box.h>
@@ -100,6 +101,10 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 		else if (agx::Prismatic* Prismatic = Constraint->asSafe<agx::Prismatic>())
 		{
 			Instantiator.InstantiatePrismatic(CreatePrismaticBarrier(Prismatic));
+		}
+		else if (agx::BallJoint* BallJoint = Constraint->asSafe<agx::BallJoint>())
+		{
+			Instantiator.InstantiateBallJoint(CreateBallJointBarrier(BallJoint));
 		}
 		else
 		{

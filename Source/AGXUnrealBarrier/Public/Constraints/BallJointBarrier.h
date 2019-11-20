@@ -10,6 +10,8 @@ class AGXUNREALBARRIER_API FBallJointBarrier : public FConstraintBarrier
 {
 public:
 	FBallJointBarrier();
+	FBallJointBarrier(FBallJointBarrier&& Other) = default;
+	FBallJointBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FBallJointBarrier();
 
 private:

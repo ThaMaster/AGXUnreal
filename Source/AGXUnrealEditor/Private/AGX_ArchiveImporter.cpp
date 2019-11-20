@@ -4,6 +4,7 @@
 #include "RigidBodyBarrier.h"
 #include "HingeBarrier.h"
 #include "PrismaticBarrier.h"
+#include "BallJointBarrier.h"
 
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
@@ -12,6 +13,7 @@
 
 #include "Constraints/AGX_HingeConstraint.h"
 #include "Constraints/AGX_PrismaticConstraint.h"
+#include "Constraints/AGX_BallConstraint.h"
 
 #include "Math/Transform.h"
 #include "GameFramework/Actor.h"
@@ -165,7 +167,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			return new EditorBody(*NewActor, *ActorRoot, World);
 		}
 
-		virtual void InstantiateHinge(const FHingeBarrier& Hinge)
+		virtual void InstantiateHinge(const FHingeBarrier& Hinge) override
 		{
 			CreateConstraint(Hinge, AAGX_HingeConstraint::StaticClass());
 		}
@@ -173,6 +175,11 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		virtual void InstantiatePrismatic(const FPrismaticBarrier& Prismatic) override
 		{
 			CreateConstraint(Prismatic, AAGX_PrismaticConstraint::StaticClass());
+		}
+
+		virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) override
+		{
+			CreateConstraint(BallJoint, AAGX_BallConstraint::StaticClass());
 		}
 
 	private:

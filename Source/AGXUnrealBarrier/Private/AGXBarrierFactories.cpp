@@ -5,6 +5,7 @@
 #include <agx/RigidBody.h>
 #include <agx/Hinge.h>
 #include <agx/Prismatic.h>
+#include <agx/BallJoint.h>
 #include <agxCollide/Sphere.h>
 #include <agxCollide/Box.h>
 #include <agxCollide/Trimesh.h>
@@ -40,4 +41,9 @@ FHingeBarrier CreateHingeBarrier(agx::Hinge* Hinge)
 FPrismaticBarrier CreatePrismaticBarrier(agx::Prismatic* Prismatic)
 {
 	return {std::make_unique<FConstraintRef>(Prismatic)};
+}
+
+FBallJointBarrier CreateBallJointBarrier(agx::BallJoint* BallJoint)
+{
+	return {std::make_unique<FConstraintRef>(BallJoint)};
 }
