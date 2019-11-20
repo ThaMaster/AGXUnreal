@@ -157,6 +157,18 @@ void FConstraintBarrier::GetForceRange(double* Min, double* Max, int32 Dof) cons
 		*Max = Range.upper();
 }
 
+bool FConstraintBarrier::HasFirstBody() const
+{
+	check(HasNative());
+	return NativeRef->Native->getNumBodies() >= 1;
+}
+
+bool FConstraintBarrier::HasSecondBody() const
+{
+	check(HasNative());
+	return NativeRef->Native->getNumBodies() >= 2;
+}
+
 namespace
 {
 	FRigidBodyBarrier GetBodyAsBarrier(agx::Constraint* Constraint, agx::UInt Index)

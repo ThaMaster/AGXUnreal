@@ -207,6 +207,14 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		void CreateConstraint(const FConstraintBarrier& Barrier, UClass* ConstraintType)
 		{
 			std::pair<AActor*, AActor*> Actors = GetActors(Barrier);
+			if (Actors.first == nullptr)
+			{
+				// Not having a second body is fine. Means that the first body
+				// is constrainted to the world.
+				UE_LOG(LogTemp, Log, TEXT("Constraint %s doesn't have a first body. Ignoring."), *Barrier.GetName());
+				return;
+			}
+
 			AAGX_Constraint* Constraint = FAGX_EditorUtilities::CreateConstraint(
 				ConstraintType, Actors.first, Actors.second,
 				/*bSelect*/false, /*bShwNotification*/false, /*bInPlayingWorld*/false);
@@ -221,14 +229,21 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		AActor* GetActor(const FRigidBodyBarrier& Body)
 		{
 			FGuid Guid = Body.GetGuid();
-			AActor** It = Bodies.Find(Guid);
-			check(It != nullptr);
-			return *It;
+			AActor* Actor = Bodies.FindRef(Guid);
+			if (Actor == nullptr)
+			{
+				UE_LOG(LogTemp, Log, TEXT("Found a constraint to body '%s', but that body isn't known."), *Body.GetName());
+				return nullptr;
+			}
+			return Actor;
 		}
 
 		std::pair<AActor*, AActor*> GetActors(const FConstraintBarrier& Barrier)
 		{
-			return {GetActor(Barrier.GetFirstBody()), GetActor(Barrier.GetSecondBody())};
+			std::pair<AActor*, AActor*> Actors;
+			Actors.first = Barrier.HasFirstBody() ? GetActor(Barrier.GetFirstBody()) : nullptr;
+			Actors.second = Barrier.HasSecondBody() ? GetActor(Barrier.GetSecondBody()) : nullptr;
+			return Actors;
 		}
 
 		void StoreFrame(const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment, int32 BodyIndex)

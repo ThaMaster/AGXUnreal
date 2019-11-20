@@ -64,6 +64,9 @@ public:
 	void SetForceRange(double Min, double Max, int32 Dof);
 	void GetForceRange(double* Min, double* Max, int32 Dof) const;
 
+	bool HasFirstBody() const;
+	bool HasSecondBody() const;
+
 	FRigidBodyBarrier GetFirstBody() const;
 	FRigidBodyBarrier GetSecondBody() const;
 
