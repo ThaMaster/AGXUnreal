@@ -10,6 +10,8 @@ class AGXUNREALBARRIER_API FDistanceJointBarrier : public FConstraint1DOFBarrier
 {
 public:
 	FDistanceJointBarrier();
+	FDistanceJointBarrier(FDistanceJointBarrier&& Other) = default;
+	FDistanceJointBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FDistanceJointBarrier();
 
 private:

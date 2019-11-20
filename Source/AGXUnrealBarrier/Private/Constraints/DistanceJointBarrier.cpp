@@ -17,6 +17,12 @@ FDistanceJointBarrier::FDistanceJointBarrier()
 {
 }
 
+FDistanceJointBarrier::FDistanceJointBarrier(std::unique_ptr<FConstraintRef> Native)
+	: FConstraint1DOFBarrier(std::move(Native))
+{
+	check(NativeRef->Native->is<agx::DistanceJoint>());
+}
+
 FDistanceJointBarrier::~FDistanceJointBarrier()
 {
 }
