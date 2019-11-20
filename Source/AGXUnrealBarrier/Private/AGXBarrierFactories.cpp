@@ -1,8 +1,9 @@
 #include "AGXBarrierFactories.h"
 
-#include <agx/RigidBody.h>
 
 #include "BeginAGXIncludes.h"
+#include <agx/RigidBody.h>
+#include <agx/Hinge.h>
 #include <agxCollide/Sphere.h>
 #include <agxCollide/Box.h>
 #include <agxCollide/Trimesh.h>
@@ -28,4 +29,9 @@ FBoxShapeBarrier CreateBoxShapeBarrier(agxCollide::Box* Box)
 FTrimeshShapeBarrier CreateTrimeshShapeBarrier(agxCollide::Trimesh* Trimesh)
 {
 	return {std::make_unique<FGeometryAndShapeRef>(Trimesh->getGeometry(), Trimesh)};
+}
+
+FHingeBarrier CreateHingeBarrier(agx::Hinge* Hinge)
+{
+	return {std::make_unique<FConstraintRef>(Hinge)};
 }

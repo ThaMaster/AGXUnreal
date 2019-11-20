@@ -2,11 +2,14 @@
 #include "AGXArchiveReader.h"
 #include "AGX_EditorUtilities.h"
 #include "RigidBodyBarrier.h"
+#include "HingeBarrier.h"
 
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
 #include "AGX_BoxShapeComponent.h"
 #include "AGX_TrimeshShapeComponent.h"
+
+#include "Constraints/AGX_HingeConstraint.h"
 
 #include "Math/Transform.h"
 #include "GameFramework/Actor.h"
@@ -156,11 +159,47 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 				return nullptr;
 			}
 			NewActor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
+			Bodies.Add(Barrier.GetGuid(), NewActor);
 			return new EditorBody(*NewActor, *ActorRoot, World);
 		}
+
+		virtual void InstantiateHinge(const FHingeBarrier& Hinge)
+		{
+			auto GetActor = [this](const FRigidBodyBarrier& Body)
+			{
+				check(Bodies.Contains(Body.GetGuid()));
+				return Bodies[Body.GetGuid()];
+			};
+
+			AActor* FirstActor = GetActor(Hinge.GetFirstBody());
+			AActor* SecondActor = GetActor(Hinge.GetSecondBody());
+
+			AAGX_Constraint* Constraint = FAGX_EditorUtilities::CreateConstraint(
+				AAGX_HingeConstraint::StaticClass(), FirstActor, SecondActor,
+				/*bSelect*/false, /*bShowNotification*/false, /*bInPlayingWorld*/false);
+
+			auto StoreFrame = [&Hinge](FAGX_ConstraintBodyAttachment& Attachment, int32 BodyIndex)
+			{
+				Attachment.FrameDefiningActor = nullptr;
+				Attachment.LocalFrameLocation = Hinge.GetLocalLocation(BodyIndex);
+				Attachment.LocalFrameRotation = Hinge.GetLocalRotation(BodyIndex);
+			};
+
+			StoreFrame(Constraint->BodyAttachment1, 0);
+			StoreFrame(Constraint->BodyAttachment2, 1);
+
+			/// \todo Is there a correct transform here? Does it matter?
+			Constraint->SetActorTransform(FirstActor->GetActorTransform());
+			Constraint->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
+		}
+
 	private:
 		AActor& ImportedRoot;
 		UWorld& World;
+
+		// Map from Guid/Uuid of the AGX Dynamics body provided by the FAGXArchiveReader to the
+		// AActor that we created for that body.
+		TMap<FGuid, AActor*> Bodies;
 	};
 
 

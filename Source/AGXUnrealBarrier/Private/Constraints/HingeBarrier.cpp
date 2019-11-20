@@ -17,6 +17,18 @@ FHingeBarrier::FHingeBarrier()
 {
 }
 
+FHingeBarrier::FHingeBarrier(std::unique_ptr<FConstraintRef> Native)
+	: FConstraint1DOFBarrier(std::move(Native))
+{
+	/// \todo Should we allow nullptr hinge here?
+	check(NativeRef->Native->is<agx::Hinge>());
+}
+
+FHingeBarrier::FHingeBarrier(FHingeBarrier&& Other)
+	: FConstraint1DOFBarrier(std::move(Other))
+{
+}
+
 FHingeBarrier::~FHingeBarrier()
 {
 }

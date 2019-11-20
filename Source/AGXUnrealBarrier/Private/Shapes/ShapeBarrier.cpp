@@ -2,6 +2,7 @@
 
 #include "AGXRefs.h"
 #include "TypeConversions.h"
+#include "MaterialBarrier.h"
 
 #include "Misc/AssertionMacros.h"
 
@@ -17,7 +18,6 @@ FShapeBarrier::FShapeBarrier(std::unique_ptr<FGeometryAndShapeRef> Native)
 
 FShapeBarrier::FShapeBarrier(FShapeBarrier&& Other)
 	: NativeRef(std::move(Other.NativeRef))
-
 {
 }
 

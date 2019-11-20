@@ -28,6 +28,7 @@ FBoxShapeBarrier::FBoxShapeBarrier()
 FBoxShapeBarrier::FBoxShapeBarrier(std::unique_ptr<FGeometryAndShapeRef> Native)
 	: FShapeBarrier(std::move(Native))
 {
+	/// \todo Should we allow nullptr shapes here?
 	check(NativeRef->NativeShape->is<agxCollide::Box>());
 }
 

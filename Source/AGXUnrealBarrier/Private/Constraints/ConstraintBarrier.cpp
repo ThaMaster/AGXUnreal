@@ -1,11 +1,23 @@
 #include "Constraints/ConstraintBarrier.h"
 
 #include "AGXRefs.h"
+#include "AGXBarrierFactories.h"
+#include "TypeConversions.h"
 
 #include <Misc/AssertionMacros.h>
 
 FConstraintBarrier::FConstraintBarrier()
-	: NativeRef{ new FConstraintRef }
+	: NativeRef {new FConstraintRef}
+{
+}
+
+FConstraintBarrier::FConstraintBarrier(FConstraintBarrier&& Other)
+	: NativeRef {std::move(Other.NativeRef)}
+{
+}
+
+FConstraintBarrier::FConstraintBarrier(std::unique_ptr<FConstraintRef> Native)
+	: NativeRef(std::move(Native))
 {
 }
 
@@ -128,4 +140,51 @@ void FConstraintBarrier::GetForceRange(double* Min, double* Max, int32 Dof) cons
 
 	if (Max)
 		*Max = Range.upper();
+}
+
+namespace
+{
+	FRigidBodyBarrier GetBodyAsBarrier(agx::Constraint* Constraint, agx::UInt Index)
+	{
+		check(Index < Constraint->getNumBodies());
+		return CreateRigidBodyBarrier(Constraint->getBodyAt(Index));
+	}
+}
+
+FRigidBodyBarrier FConstraintBarrier::GetFirstBody() const
+{
+	check(HasNative());
+	return GetBodyAsBarrier(NativeRef->Native, agx::UInt(0));
+}
+
+FRigidBodyBarrier FConstraintBarrier::GetSecondBody() const
+{
+	check(HasNative());
+	return GetBodyAsBarrier(NativeRef->Native, agx::UInt(1));
+}
+
+namespace
+{
+	agx::Frame* GetFrame(const agx::Constraint& Native, int32 IndexUnreal)
+	{
+		check(IndexUnreal >= 0 && IndexUnreal < 2);
+		agx::UInt IndexAGX = static_cast<agx::UInt>(IndexUnreal);
+		return Native.getAttachment(IndexAGX)->getFrame();
+	}
+}
+
+FVector FConstraintBarrier::GetLocalLocation(int32 Index) const
+{
+	check(HasNative());
+	agx::Vec3 TranslateAGX = GetFrame(*NativeRef->Native, Index)->getLocalTranslate();
+	FVector TranslateUnreal = ConvertVector(TranslateAGX);
+	return TranslateUnreal;
+}
+
+FRotator FConstraintBarrier::GetLocalRotation(int32 Index) const
+{
+	check(HasNative());
+	agx::Quat RotateAGX = GetFrame(*NativeRef->Native, Index)->getLocalRotate();
+	FQuat RotateUnreal = Convert(RotateAGX);
+	return FRotator(RotateUnreal);
 }
