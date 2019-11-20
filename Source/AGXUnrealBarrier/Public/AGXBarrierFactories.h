@@ -9,6 +9,7 @@
 #include "Constraints/BallJointBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Constraints/DistanceJointBarrier.h"
+#include "Constraints/LockJointBarrier.h"
 
 #include "AGXRefs.h"
 
@@ -46,3 +47,5 @@ FBallJointBarrier CreateBallJointBarrier(agx::BallJoint* BallJoint);
 FCylindricalJointBarrier CreateCylindricalJointBarrier(agx::CylindricalJoint* CylindricalJoint);
 
 FDistanceJointBarrier CreateDistanceJointBarrier(agx::DistanceJoint* DistanceJoint);
+
+FLockJointBarrier CreateLockJointBarrier(agx::LockJoint* LockJoint);

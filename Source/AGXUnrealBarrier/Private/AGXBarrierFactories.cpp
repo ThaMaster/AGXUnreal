@@ -8,6 +8,7 @@
 #include <agx/BallJoint.h>
 #include <agx/CylindricalJoint.h>
 #include <agx/DistanceJoint.h>
+#include <agx/LockJoint.h>
 #include <agxCollide/Sphere.h>
 #include <agxCollide/Box.h>
 #include <agxCollide/Trimesh.h>
@@ -58,4 +59,9 @@ FCylindricalJointBarrier CreateCylindricalJointBarrier(agx::CylindricalJoint* Cy
 FDistanceJointBarrier CreateDistanceJointBarrier(agx::DistanceJoint* DistanceJoint)
 {
 	return {std::make_unique<FConstraintRef>(DistanceJoint)};
+}
+
+FLockJointBarrier CreateLockJointBarrier(agx::LockJoint* LockJoint)
+{
+	return {std::make_unique<FConstraintRef>(LockJoint)};
 }

@@ -14,6 +14,7 @@ class FPrismaticBarrier;
 class FBallJointBarrier;
 class FCylindricalJointBarrier;
 class FDistanceJointBarrier;
+class FLockJointBarrier;
 
 /*
 The separation between the Unreal part and the AGX Dynamics part of the plugin
@@ -62,6 +63,8 @@ public:
 	virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& CylindricalJoint) = 0;
 
 	virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& DistanceJoint) = 0;
+
+	virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) = 0;
 
 	virtual ~FAGXArchiveInstantiator() = default;
 };
