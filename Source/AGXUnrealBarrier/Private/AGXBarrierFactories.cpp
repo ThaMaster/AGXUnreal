@@ -4,6 +4,7 @@
 #include "BeginAGXIncludes.h"
 #include <agx/RigidBody.h>
 #include <agx/Hinge.h>
+#include <agx/Prismatic.h>
 #include <agxCollide/Sphere.h>
 #include <agxCollide/Box.h>
 #include <agxCollide/Trimesh.h>
@@ -34,4 +35,9 @@ FTrimeshShapeBarrier CreateTrimeshShapeBarrier(agxCollide::Trimesh* Trimesh)
 FHingeBarrier CreateHingeBarrier(agx::Hinge* Hinge)
 {
 	return {std::make_unique<FConstraintRef>(Hinge)};
+}
+
+FPrismaticBarrier CreatePrismaticBarrier(agx::Prismatic* Prismatic)
+{
+	return {std::make_unique<FConstraintRef>(Prismatic)};
 }

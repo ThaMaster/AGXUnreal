@@ -11,6 +11,7 @@
 #include <agx/RigidBody.h>
 #include <agx/Encoding.h>
 #include <agx/Hinge.h>
+#include <agx/Prismatic.h>
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Box.h>
@@ -95,6 +96,10 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 		if (agx::Hinge* Hinge = Constraint->asSafe<agx::Hinge>())
 		{
 			Instantiator.InstantiateHinge(CreateHingeBarrier(Hinge));
+		}
+		else if (agx::Prismatic* Prismatic = Constraint->asSafe<agx::Prismatic>())
+		{
+			Instantiator.InstantiatePrismatic(CreatePrismaticBarrier(Prismatic));
 		}
 		else
 		{

@@ -10,6 +10,7 @@ class FBoxShapeBarrier;
 class FSphereShapeBarrier;
 class FTrimeshShapeBarrier;
 class FHingeBarrier;
+class FPrismaticBarrier;
 
 /*
 The separation between the Unreal part and the AGX Dynamics part of the plugin
@@ -50,6 +51,8 @@ public:
 	virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& RigidBody) = 0;
 
 	virtual void InstantiateHinge(const FHingeBarrier& Hinge) = 0;
+
+	virtual void InstantiatePrismatic(const FPrismaticBarrier& Prismatic) = 0;
 
 	virtual ~FAGXArchiveInstantiator() = default;
 };

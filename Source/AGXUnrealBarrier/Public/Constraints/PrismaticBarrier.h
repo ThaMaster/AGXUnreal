@@ -10,6 +10,8 @@ class AGXUNREALBARRIER_API FPrismaticBarrier : public FConstraint1DOFBarrier
 {
 public:
 	FPrismaticBarrier();
+	FPrismaticBarrier(FPrismaticBarrier&& Other) = default;
+	FPrismaticBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FPrismaticBarrier();
 
 private:

@@ -3,6 +3,7 @@
 #include "AGX_EditorUtilities.h"
 #include "RigidBodyBarrier.h"
 #include "HingeBarrier.h"
+#include "PrismaticBarrier.h"
 
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
@@ -10,6 +11,7 @@
 #include "AGX_TrimeshShapeComponent.h"
 
 #include "Constraints/AGX_HingeConstraint.h"
+#include "Constraints/AGX_PrismaticConstraint.h"
 
 #include "Math/Transform.h"
 #include "GameFramework/Actor.h"
@@ -165,32 +167,53 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 
 		virtual void InstantiateHinge(const FHingeBarrier& Hinge)
 		{
-			auto GetActor = [this](const FRigidBodyBarrier& Body)
-			{
-				check(Bodies.Contains(Body.GetGuid()));
-				return Bodies[Body.GetGuid()];
-			};
+			CreateConstraint(Hinge, AAGX_HingeConstraint::StaticClass());
+		}
 
-			AActor* FirstActor = GetActor(Hinge.GetFirstBody());
-			AActor* SecondActor = GetActor(Hinge.GetSecondBody());
+		virtual void InstantiatePrismatic(const FPrismaticBarrier& Prismatic) override
+		{
+			CreateConstraint(Prismatic, AAGX_PrismaticConstraint::StaticClass());
+		}
 
+	private:
+		void CreateConstraint(const FConstraintBarrier& Barrier, UClass* ConstraintType)
+		{
+			std::pair<AActor*, AActor*> Actors = GetActors(Barrier);
 			AAGX_Constraint* Constraint = FAGX_EditorUtilities::CreateConstraint(
-				AAGX_HingeConstraint::StaticClass(), FirstActor, SecondActor,
-				/*bSelect*/false, /*bShowNotification*/false, /*bInPlayingWorld*/false);
+				ConstraintType, Actors.first, Actors.second,
+				/*bSelect*/false, /*bShwNotification*/false, /*bInPlayingWorld*/false);
 
-			auto StoreFrame = [&Hinge](FAGX_ConstraintBodyAttachment& Attachment, int32 BodyIndex)
-			{
-				Attachment.FrameDefiningActor = nullptr;
-				Attachment.LocalFrameLocation = Hinge.GetLocalLocation(BodyIndex);
-				Attachment.LocalFrameRotation = Hinge.GetLocalRotation(BodyIndex);
-			};
-
-			StoreFrame(Constraint->BodyAttachment1, 0);
-			StoreFrame(Constraint->BodyAttachment2, 1);
+			StoreFrames(Barrier, Constraint);
 
 			/// \todo Is there a correct transform here? Does it matter?
-			Constraint->SetActorTransform(FirstActor->GetActorTransform());
+			Constraint->SetActorTransform(Actors.first->GetActorTransform());
 			Constraint->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
+		}
+
+		AActor* GetActor(const FRigidBodyBarrier& Body)
+		{
+			FGuid Guid = Body.GetGuid();
+			AActor** It = Bodies.Find(Guid);
+			check(It != nullptr);
+			return *It;
+		}
+
+		std::pair<AActor*, AActor*> GetActors(const FConstraintBarrier& Barrier)
+		{
+			return {GetActor(Barrier.GetFirstBody()), GetActor(Barrier.GetSecondBody())};
+		}
+
+		void StoreFrame(const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment, int32 BodyIndex)
+		{
+			Attachment.FrameDefiningActor = nullptr;
+			Attachment.LocalFrameLocation = Barrier.GetLocalLocation(BodyIndex);
+			Attachment.LocalFrameRotation = Barrier.GetLocalRotation(BodyIndex);
+		}
+
+		void StoreFrames(const FConstraintBarrier& Barrier, AAGX_Constraint* Constraint)
+		{
+			StoreFrame(Barrier, Constraint->BodyAttachment1, 0);
+			StoreFrame(Barrier, Constraint->BodyAttachment2, 1);
 		}
 
 	private:

@@ -5,6 +5,7 @@
 #include "Shapes/SphereShapeBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
 #include "Constraints/HingeBarrier.h"
+#include "Constraints/PrismaticBarrier.h"
 
 #include "AGXRefs.h"
 
@@ -30,3 +31,5 @@ FBoxShapeBarrier CreateBoxShapeBarrier(agxCollide::Box* Box);
 FTrimeshShapeBarrier CreateTrimeshShapeBarrier(agxCollide::Trimesh* Trimesh);
 
 FHingeBarrier CreateHingeBarrier(agx::Hinge* Hinge);
+
+FPrismaticBarrier CreatePrismaticBarrier(agx::Prismatic* Prismatic);
