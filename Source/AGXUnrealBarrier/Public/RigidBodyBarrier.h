@@ -2,8 +2,9 @@
 
 #include "AGX_MotionControl.h"
 
-#include <Math/Vector.h>
-#include <Math/Quat.h>
+#include "Math/Vector.h"
+#include "Math/Quat.h"
+#include "Containers/UnrealString.h"
 
 #include <memory>
 
@@ -37,7 +38,7 @@ public:
 	void SetMass(float NewMass);
 	float GetMass() const;
 
-	void SetName(const FString& name);
+	void SetName(const FString& NewName);
 	FString GetName() const;
 
 	FGuid GetGuid() const;

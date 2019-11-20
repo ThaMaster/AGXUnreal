@@ -3,6 +3,7 @@
 #include "RigidBodyBarrier.h"
 
 #include "CoreTypes.h"
+#include "Containers/UnrealString.h"
 
 #include <memory>
 
@@ -44,6 +45,9 @@ public:
 
 	void SetEnable(bool Enable);
 	bool GetEnable() const;
+
+	void SetName(const FString& Name);
+	FString GetName() const;
 
 	void SetSolveType(int32 SolveType);
 	int32 GetSolveType() const;

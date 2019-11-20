@@ -57,6 +57,21 @@ void FConstraintBarrier::ReleaseNative()
 	NativeRef->Native = nullptr;
 }
 
+void FConstraintBarrier::SetName(const FString& NameUnreal)
+{
+	check(HasNative());
+	agx::String NameAGX = Convert(NameUnreal);
+	NativeRef->Native->setName(NameAGX);
+}
+
+FString FConstraintBarrier::GetName() const
+{
+	check(HasNative());
+	agx::String NameAGX = NativeRef->Native->getName();
+	FString NameUnreal = Convert(NameAGX);
+	return NameUnreal;
+}
+
 
 void FConstraintBarrier::SetEnable(bool Enable)
 {
