@@ -245,10 +245,10 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 
 		std::pair<AActor*, AActor*> GetActors(const FConstraintBarrier& Barrier)
 		{
-			std::pair<AActor*, AActor*> Actors;
-			Actors.first = GetActor(Barrier.GetFirstBody());
-			Actors.second = GetActor(Barrier.GetSecondBody());
-			return Actors;
+			return {
+				GetActor(Barrier.GetFirstBody()),
+				GetActor(Barrier.GetSecondBody())
+			};
 		}
 
 		void StoreFrame(const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment, int32 BodyIndex)
