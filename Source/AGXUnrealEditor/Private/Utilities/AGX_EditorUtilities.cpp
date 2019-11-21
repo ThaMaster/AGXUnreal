@@ -15,6 +15,7 @@
 #include "Editor.h"
 #include "EditorStyleSet.h"
 #include "RawMesh.h"
+#include "Engine/EngineTypes.h"
 
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
@@ -27,10 +28,10 @@
 
 std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(const FTransform& Transform, UWorld* World)
 {
-	/// \todo The intention is to mimmic draggin in an "Empty Actor" from the
+	/// \todo The intention is to mimmic dragging in an "Empty Actor" from the
 	/// Place mode. Investigate if we can use ActorFactoryEmptyActor instead.
 
-	AActor* NewActor = World->SpawnActor<AActor>(AActor::StaticClass(), Transform);
+	AActor* NewActor = World->SpawnActor<AActor>(AActor::StaticClass());
 	if (NewActor == nullptr)
 	{
 		/// \todo Do we need to destroy the Actor here?
@@ -44,6 +45,7 @@ std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(con
 	NewActor->SetRootComponent(Root);
 	NewActor->AddInstanceComponent(Root);
 	Root->RegisterComponent();
+	NewActor->SetActorTransform(Transform, false);
 
 	return {NewActor, Root};
 }
@@ -82,7 +84,11 @@ namespace
 
 UAGX_RigidBodyComponent* FAGX_EditorUtilities::CreateRigidBody(AActor* Owner)
 {
-	return ::CreateComponent<UAGX_RigidBodyComponent>(Owner);
+	UAGX_RigidBodyComponent* Body = ::CreateComponent<UAGX_RigidBodyComponent>(Owner);
+	Body->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false));
+	Body->RelativeLocation = FVector(0.0f, 0.0f, 0.0f);
+	Body->RelativeRotation = FRotator(0.0f, 0.0f, 0.0f);
+	return Body;
 }
 
 UAGX_SphereShapeComponent* FAGX_EditorUtilities::CreateSphereShape(AActor* Owner, USceneComponent* Outer)

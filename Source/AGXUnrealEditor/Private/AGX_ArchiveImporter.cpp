@@ -54,12 +54,6 @@ namespace
 
 		NewActor->SetActorLabel(Body.GetName());
 
-		/// \todo For some reason the actor location must be set again after
-		/// creating the root SceneComponent, or else the Actor remain at the
-		/// origin. I'm assuming we must set rotation as well, but haven't
-		/// tested yet.
-		NewActor->SetActorLocation(Body.GetPosition());
-
 		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
 		if (NewBody == nullptr)
 		{
