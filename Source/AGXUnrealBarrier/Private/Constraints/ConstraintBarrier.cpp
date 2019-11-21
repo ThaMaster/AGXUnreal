@@ -168,7 +168,10 @@ namespace
 {
 	FRigidBodyBarrier GetBodyAsBarrier(agx::Constraint* Constraint, agx::UInt Index)
 	{
-		check(Index < Constraint->getNumBodies());
+		if (Index >= Constraint->getNumBodies())
+		{
+			return FRigidBodyBarrier();
+		}
 		return CreateRigidBodyBarrier(Constraint->getBodyAt(Index));
 	}
 }
