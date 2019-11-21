@@ -29,7 +29,7 @@ class AGXUNREALBARRIER_API FConstraintBarrier
 {
 public:
 	FConstraintBarrier();
-	FConstraintBarrier(FConstraintBarrier&& Other);
+	FConstraintBarrier(FConstraintBarrier&& Other) = default;
 	FConstraintBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FConstraintBarrier();
 

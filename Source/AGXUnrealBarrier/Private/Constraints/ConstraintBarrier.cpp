@@ -11,11 +11,6 @@ FConstraintBarrier::FConstraintBarrier()
 {
 }
 
-FConstraintBarrier::FConstraintBarrier(FConstraintBarrier&& Other)
-	: NativeRef {std::move(Other.NativeRef)}
-{
-}
-
 FConstraintBarrier::FConstraintBarrier(std::unique_ptr<FConstraintRef> Native)
 	: NativeRef(std::move(Native))
 {
