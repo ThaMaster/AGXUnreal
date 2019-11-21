@@ -14,11 +14,6 @@ FConstraint1DOFBarrier::FConstraint1DOFBarrier()
 {
 }
 
-FConstraint1DOFBarrier::FConstraint1DOFBarrier(FConstraint1DOFBarrier&& Other)
-	: FConstraintBarrier(std::move(Other))
-{
-}
-
 FConstraint1DOFBarrier::FConstraint1DOFBarrier(std::unique_ptr<FConstraintRef> Native)
 	: FConstraintBarrier(std::move(Native))
 {
