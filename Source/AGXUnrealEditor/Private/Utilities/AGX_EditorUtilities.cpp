@@ -15,6 +15,7 @@
 #include "Editor.h"
 #include "EditorStyleSet.h"
 #include "RawMesh.h"
+#include "Engine/EngineTypes.h"
 
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
@@ -83,7 +84,11 @@ namespace
 
 UAGX_RigidBodyComponent* FAGX_EditorUtilities::CreateRigidBody(AActor* Owner)
 {
-	return ::CreateComponent<UAGX_RigidBodyComponent>(Owner);
+	UAGX_RigidBodyComponent* Body = ::CreateComponent<UAGX_RigidBodyComponent>(Owner);
+	Body->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false));
+	Body->RelativeLocation = FVector(0.0f, 0.0f, 0.0f);
+	Body->RelativeRotation = FRotator(0.0f, 0.0f, 0.0f);
+	return Body;
 }
 
 UAGX_SphereShapeComponent* FAGX_EditorUtilities::CreateSphereShape(AActor* Owner, USceneComponent* Outer)
