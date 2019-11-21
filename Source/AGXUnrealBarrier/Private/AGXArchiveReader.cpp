@@ -93,6 +93,8 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 	{
 		UE_LOG(LogTemp, Log, TEXT(".agx file %s contains too many constraints."), *Filename);
 		return; /// \todo Should we bail, or restore as many constraints as we can?
+		/// \todo Should we do as much error checking as possible first, before
+		/// creating any Editor instances?
 	}
 
 	for (agx::ConstraintRef& Constraint : Constraints)
