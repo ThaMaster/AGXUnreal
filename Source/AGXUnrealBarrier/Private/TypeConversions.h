@@ -145,7 +145,7 @@ inline agx::String Convert(const FString& StringUnreal)
 
 inline FGuid Convert(const agx::Uuid& Uuid)
 {
-	// Would like to use Uuid::size here, size that is the size of the data
+	// Would like to use Uuid::size here, since that is the size of the data
 	// pointed to by Uuid::data, but it's not constexpr.
 	static_assert(sizeof(Uuid) == 4 * sizeof(uint32), "Unreal Guid and AGX Dynamics Uuid must be the same size.");
 	uint32 Abcd[4];
