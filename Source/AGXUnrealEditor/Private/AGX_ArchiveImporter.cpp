@@ -210,7 +210,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			if (Actors.first == nullptr)
 			{
 				// Not having a second body is fine. Means that the first body
-				// is constrainted to the world.
+				// is constrainted to the world. Not having a first body is bad.
 				UE_LOG(LogTemp, Log, TEXT("Constraint %s doesn't have a first body. Ignoring."), *Barrier.GetName());
 				return;
 			}
@@ -228,6 +228,11 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 
 		AActor* GetActor(const FRigidBodyBarrier& Body)
 		{
+			if (!Body.HasNative())
+			{
+				// No log since not an error. Means constrainted with world.
+				return nullptr;
+			}
 			FGuid Guid = Body.GetGuid();
 			AActor* Actor = Bodies.FindRef(Guid);
 			if (Actor == nullptr)
@@ -241,8 +246,8 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		std::pair<AActor*, AActor*> GetActors(const FConstraintBarrier& Barrier)
 		{
 			std::pair<AActor*, AActor*> Actors;
-			Actors.first = Barrier.HasFirstBody() ? GetActor(Barrier.GetFirstBody()) : nullptr;
-			Actors.second = Barrier.HasSecondBody() ? GetActor(Barrier.GetSecondBody()) : nullptr;
+			Actors.first = GetActor(Barrier.GetFirstBody());
+			Actors.second = GetActor(Barrier.GetSecondBody());
 			return Actors;
 		}
 
