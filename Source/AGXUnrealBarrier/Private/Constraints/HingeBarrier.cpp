@@ -24,11 +24,6 @@ FHingeBarrier::FHingeBarrier(std::unique_ptr<FConstraintRef> Native)
 	check(NativeRef->Native->is<agx::Hinge>());
 }
 
-FHingeBarrier::FHingeBarrier(FHingeBarrier&& Other)
-	: FConstraint1DOFBarrier(std::move(Other))
-{
-}
-
 FHingeBarrier::~FHingeBarrier()
 {
 }

@@ -8,8 +8,8 @@ class AGXUNREALBARRIER_API FHingeBarrier : public FConstraint1DOFBarrier
 {
 public:
 	FHingeBarrier();
+	FHingeBarrier(FHingeBarrier&& Other) = default;
 	FHingeBarrier(std::unique_ptr<FConstraintRef> Native);
-	FHingeBarrier(FHingeBarrier&& Other);
 	virtual ~FHingeBarrier();
 
 private:
