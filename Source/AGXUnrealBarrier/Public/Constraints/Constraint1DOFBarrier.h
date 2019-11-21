@@ -10,12 +10,16 @@ struct FLockControllerBarrier;
 struct FRangeControllerBarrier;
 struct FTargetSpeedControllerBarrier;
 
-namespace agx { class Constraint1DOF; }
+namespace agx {
+	class Constraint1DOF;
+}
 
 class AGXUNREALBARRIER_API FConstraint1DOFBarrier : public FConstraintBarrier
 {
 public:
 	FConstraint1DOFBarrier();
+	FConstraint1DOFBarrier(FConstraint1DOFBarrier&& Other) = default;
+	FConstraint1DOFBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FConstraint1DOFBarrier();
 
 	void SetElectricMotorController(const FElectricMotorControllerBarrier &Controller);

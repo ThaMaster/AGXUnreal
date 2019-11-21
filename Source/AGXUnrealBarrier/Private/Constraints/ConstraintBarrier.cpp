@@ -1,11 +1,18 @@
 #include "Constraints/ConstraintBarrier.h"
 
 #include "AGXRefs.h"
+#include "AGXBarrierFactories.h"
+#include "TypeConversions.h"
 
 #include <Misc/AssertionMacros.h>
 
 FConstraintBarrier::FConstraintBarrier()
-	: NativeRef{ new FConstraintRef }
+	: NativeRef {new FConstraintRef}
+{
+}
+
+FConstraintBarrier::FConstraintBarrier(std::unique_ptr<FConstraintRef> Native)
+	: NativeRef(std::move(Native))
 {
 }
 
@@ -43,6 +50,21 @@ void FConstraintBarrier::ReleaseNative()
 {
 	check(HasNative());
 	NativeRef->Native = nullptr;
+}
+
+void FConstraintBarrier::SetName(const FString& NameUnreal)
+{
+	check(HasNative());
+	agx::String NameAGX = Convert(NameUnreal);
+	NativeRef->Native->setName(NameAGX);
+}
+
+FString FConstraintBarrier::GetName() const
+{
+	check(HasNative());
+	agx::String NameAGX = NativeRef->Native->getName();
+	FString NameUnreal = Convert(NameAGX);
+	return NameUnreal;
 }
 
 
@@ -128,4 +150,66 @@ void FConstraintBarrier::GetForceRange(double* Min, double* Max, int32 Dof) cons
 
 	if (Max)
 		*Max = Range.upper();
+}
+
+bool FConstraintBarrier::HasFirstBody() const
+{
+	check(HasNative());
+	return NativeRef->Native->getNumBodies() >= 1;
+}
+
+bool FConstraintBarrier::HasSecondBody() const
+{
+	check(HasNative());
+	return NativeRef->Native->getNumBodies() >= 2;
+}
+
+namespace
+{
+	FRigidBodyBarrier GetBodyAsBarrier(agx::Constraint* Constraint, agx::UInt Index)
+	{
+		if (Index >= Constraint->getNumBodies())
+		{
+			return FRigidBodyBarrier();
+		}
+		return CreateRigidBodyBarrier(Constraint->getBodyAt(Index));
+	}
+}
+
+FRigidBodyBarrier FConstraintBarrier::GetFirstBody() const
+{
+	check(HasNative());
+	return GetBodyAsBarrier(NativeRef->Native, agx::UInt(0));
+}
+
+FRigidBodyBarrier FConstraintBarrier::GetSecondBody() const
+{
+	check(HasNative());
+	return GetBodyAsBarrier(NativeRef->Native, agx::UInt(1));
+}
+
+namespace
+{
+	agx::Frame* GetFrame(const agx::Constraint& Native, int32 IndexUnreal)
+	{
+		check(IndexUnreal >= 0 && IndexUnreal < 2);
+		agx::UInt IndexAGX = static_cast<agx::UInt>(IndexUnreal);
+		return Native.getAttachment(IndexAGX)->getFrame();
+	}
+}
+
+FVector FConstraintBarrier::GetLocalLocation(int32 Index) const
+{
+	check(HasNative());
+	agx::Vec3 TranslateAGX = GetFrame(*NativeRef->Native, Index)->getLocalTranslate();
+	FVector TranslateUnreal = ConvertVector(TranslateAGX);
+	return TranslateUnreal;
+}
+
+FRotator FConstraintBarrier::GetLocalRotation(int32 Index) const
+{
+	check(HasNative());
+	agx::Quat RotateAGX = GetFrame(*NativeRef->Native, Index)->getLocalRotate();
+	FQuat RotateUnreal = Convert(RotateAGX);
+	return FRotator(RotateUnreal);
 }

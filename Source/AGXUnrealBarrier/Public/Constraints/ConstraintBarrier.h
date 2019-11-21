@@ -1,11 +1,13 @@
 #pragma once
 
+#include "RigidBodyBarrier.h"
+
 #include "CoreTypes.h"
+#include "Containers/UnrealString.h"
 
 #include <memory>
 
 struct FConstraintRef;
-class FRigidBodyBarrier;
 
 struct FVector;
 struct FQuat;
@@ -27,6 +29,8 @@ class AGXUNREALBARRIER_API FConstraintBarrier
 {
 public:
 	FConstraintBarrier();
+	FConstraintBarrier(FConstraintBarrier&& Other) = default;
+	FConstraintBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FConstraintBarrier();
 
 	bool HasNative() const;
@@ -42,6 +46,9 @@ public:
 	void SetEnable(bool Enable);
 	bool GetEnable() const;
 
+	void SetName(const FString& Name);
+	FString GetName() const;
+
 	void SetSolveType(int32 SolveType);
 	int32 GetSolveType() const;
 
@@ -56,6 +63,16 @@ public:
 
 	void SetForceRange(double Min, double Max, int32 Dof);
 	void GetForceRange(double* Min, double* Max, int32 Dof) const;
+
+	bool HasFirstBody() const;
+	bool HasSecondBody() const;
+
+	FRigidBodyBarrier GetFirstBody() const;
+	FRigidBodyBarrier GetSecondBody() const;
+
+	/// \todo Consider creating a Barrier for agx::Attachment.
+	FVector GetLocalLocation(int32 BodyIndex) const;
+	FRotator GetLocalRotation(int32 BodyIndex) const;
 
 private:
 	FConstraintBarrier(const FConstraintBarrier&) = delete;

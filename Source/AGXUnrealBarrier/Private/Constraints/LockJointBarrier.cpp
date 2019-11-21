@@ -17,6 +17,12 @@ FLockJointBarrier::FLockJointBarrier()
 {
 }
 
+FLockJointBarrier::FLockJointBarrier(std::unique_ptr<FConstraintRef> Native)
+	: FConstraintBarrier(std::move(Native))
+{
+	check(NativeRef->Native->is<agx::LockJoint>());
+}
+
 FLockJointBarrier::~FLockJointBarrier()
 {
 }

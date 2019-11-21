@@ -89,6 +89,13 @@ FString FRigidBodyBarrier::GetName() const
 	return NameUnreal;
 }
 
+FGuid FRigidBodyBarrier::GetGuid() const
+{
+	check(HasNative());
+	FGuid Guid = Convert(NativeRef->Native->getUuid());
+	return Guid;
+}
+
 void FRigidBodyBarrier::SetMotionControl(EAGX_MotionControl MotionControlUnreal)
 {
 	check(HasNative());

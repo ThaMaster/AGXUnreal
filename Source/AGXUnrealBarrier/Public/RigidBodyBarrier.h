@@ -2,8 +2,9 @@
 
 #include "AGX_MotionControl.h"
 
-#include <Math/Vector.h>
-#include <Math/Quat.h>
+#include "Math/Vector.h"
+#include "Math/Quat.h"
+#include "Containers/UnrealString.h"
 
 #include <memory>
 
@@ -14,7 +15,7 @@ class FShapeBarrier;
 /**
  * Barrier between UAGX_RigidBody and agx::RigidBody. UAGX_RigidBody holds an
  * instance of RigidBodyBarrier and hidden behind the RigidBodyBarrier is a
- * agx::RigidBodyRef. This allows UAGX_RigidBody to interacti with
+ * agx::RigidBodyRef. This allows UAGX_RigidBody to interact with
  * agx::RigidBody without including agx/RigidBody.h.
  *
  * This class handles all translation between Unreal Engine types and
@@ -37,8 +38,10 @@ public:
 	void SetMass(float NewMass);
 	float GetMass() const;
 
-	void SetName(const FString& name);
+	void SetName(const FString& NewName);
 	FString GetName() const;
+
+	FGuid GetGuid() const;
 
 	void SetMotionControl(EAGX_MotionControl MotionControl);
 	EAGX_MotionControl GetMotionControl() const;

@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "Constraints/Constraint1DOFBarrier.h"
@@ -10,6 +8,8 @@ class AGXUNREALBARRIER_API FHingeBarrier : public FConstraint1DOFBarrier
 {
 public:
 	FHingeBarrier();
+	FHingeBarrier(FHingeBarrier&& Other) = default;
+	FHingeBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FHingeBarrier();
 
 private:

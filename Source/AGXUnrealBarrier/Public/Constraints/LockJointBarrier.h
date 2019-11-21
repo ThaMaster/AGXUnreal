@@ -10,6 +10,8 @@ class AGXUNREALBARRIER_API FLockJointBarrier : public FConstraintBarrier
 {
 public:
 	FLockJointBarrier();
+	FLockJointBarrier(FLockJointBarrier&& Other) = default;
+	FLockJointBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FLockJointBarrier();
 
 private:
