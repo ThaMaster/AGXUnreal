@@ -83,6 +83,12 @@ private:
 	UPROPERTY()
 	class UAGX_ConstraintComponent* ConstraintComponent;
 
+	UPROPERTY(Transient)
+	class UAGX_ConstraintDofGraphicsComponent* DofGraphicsComponent;
+
+	UPROPERTY(Transient)
+	class UAGX_ConstraintIconGraphicsComponent* IconGraphicsComponent;
+
 public:
 
 	AAGX_Constraint() { }
@@ -91,8 +97,23 @@ public:
 
 	virtual ~AAGX_Constraint();
 
+	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics() const { return DofGraphicsComponent; }
+
 	/** Indicates whether this actor should participate in level bounds calculations. */
 	bool IsLevelBoundsRelevant() const override { return false; }
+
+	/**
+	 * Returns true if for any of the locked DOFs both the global attachment frame transforms do no match.
+	 *
+	 * This function should never be used after the constraint has begun play.*
+	 *
+	 * Can be overriden for specialized constraint checks.
+	 */
+	virtual bool AreFramesInViolatedState(float Tolerance = KINDA_SMALL_NUMBER) const;
+
+	EDofFlag GetLockedDofsBitmask() const;
+
+	bool IsDofLocked(EDofFlag Dof) const;
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
@@ -128,6 +149,8 @@ protected:
 	virtual void CreateNativeImpl() PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl,);
 
 	TUniquePtr<FConstraintBarrier> NativeBarrier;
+
+	const EDofFlag LockedDofsBitmask = static_cast<EDofFlag>(0);
 
 	// The Degrees of Freedom (DOF) that are locked by the specific constraint type,
 	// ordered the way they are indexed by in the native AGX api (except for ALL_DOF and NUM_DOF).

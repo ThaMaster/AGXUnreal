@@ -5,6 +5,10 @@
 #include "Containers/UnrealString.h"
 
 struct FContactMaterialRef;
+class FMaterialBarrier;
+
+
+class FMaterialBarrier;
 
 /**
  * Acts as an interface to a native AGX Contact Material, and encapsulates it so that it is completely hidden from code

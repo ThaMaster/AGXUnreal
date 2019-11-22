@@ -14,6 +14,11 @@ FConstraint2DOFBarrier::FConstraint2DOFBarrier()
 {
 }
 
+FConstraint2DOFBarrier::FConstraint2DOFBarrier(std::unique_ptr<FConstraintRef> Native)
+	: FConstraintBarrier(std::move(Native))
+{
+}
+
 FConstraint2DOFBarrier::~FConstraint2DOFBarrier()
 {
 }

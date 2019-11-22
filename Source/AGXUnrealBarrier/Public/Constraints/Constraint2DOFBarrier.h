@@ -17,6 +17,8 @@ class AGXUNREALBARRIER_API FConstraint2DOFBarrier : public FConstraintBarrier
 {
 public:
 	FConstraint2DOFBarrier();
+	FConstraint2DOFBarrier(FConstraint2DOFBarrier&& Other) = default;
+	FConstraint2DOFBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FConstraint2DOFBarrier();
 
 	void SetElectricMotorController(const FElectricMotorControllerBarrier &Controller, int32 SecondaryConstraintIndex);

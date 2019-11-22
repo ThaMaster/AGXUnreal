@@ -1,13 +1,13 @@
-#include "ImportAGXArchiveStyle.h"
+#include "AGXArchiveStyle.h"
 #include "AGXUnrealEditor.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Styling/SlateStyleRegistry.h"
 #include "Slate/SlateGameResources.h"
 #include "Interfaces/IPluginManager.h"
 
-TSharedPtr<FSlateStyleSet> FImportAGXArchiveStyle::StyleInstance = NULL;
+TSharedPtr<FSlateStyleSet> FAGXArchiveStyle::StyleInstance = NULL;
 
-void FImportAGXArchiveStyle::Initialize()
+void FAGXArchiveStyle::Initialize()
 {
 	if (!StyleInstance.IsValid())
 	{
@@ -16,16 +16,16 @@ void FImportAGXArchiveStyle::Initialize()
 	}
 }
 
-void FImportAGXArchiveStyle::Shutdown()
+void FAGXArchiveStyle::Shutdown()
 {
 	FSlateStyleRegistry::UnRegisterSlateStyle(*StyleInstance);
 	ensure(StyleInstance.IsUnique());
 	StyleInstance.Reset();
 }
 
-FName FImportAGXArchiveStyle::GetStyleSetName()
+FName FAGXArchiveStyle::GetStyleSetName()
 {
-	static FName StyleSetName(TEXT("ImportAGXArchiveStyle"));
+	static FName StyleSetName(TEXT("AGXArchiveStyle"));
 	return StyleSetName;
 }
 
@@ -39,11 +39,12 @@ const FVector2D Icon16x16(16.f, 16.f);
 const FVector2D Icon20x20(20.f, 20.f);
 const FVector2D Icon40x40(40.f, 40.f);
 
-TSharedRef<FSlateStyleSet> FImportAGXArchiveStyle::Create()
+TSharedRef<FSlateStyleSet> FAGXArchiveStyle::Create()
 {
-	TSharedRef<FSlateStyleSet> Style = MakeShareable(new FSlateStyleSet("ImportAGXArchiveStyle"));
+	TSharedRef<FSlateStyleSet> Style = MakeShareable(new FSlateStyleSet("AGXArchiveStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("AGXUnreal")->GetBaseDir() / TEXT("Resources"));
-	Style->Set("ImportAGXArchive.PluignAction", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
+	Style->Set("AGXArchive.ImportAction", new IMAGE_BRUSH(TEXT("AGXImport_40x"), Icon40x40));
+	Style->Set("AGXArchive.ExportAction", new IMAGE_BRUSH(TEXT("AGXExport_40x"), Icon40x40));
 	return Style;
 }
 
@@ -53,7 +54,7 @@ TSharedRef<FSlateStyleSet> FImportAGXArchiveStyle::Create()
 #undef TTF_FONT
 #undef OTF_FONT
 
-void FImportAGXArchiveStyle::ReloadTextures()
+void FAGXArchiveStyle::ReloadTextures()
 {
 	if (!FSlateApplication::IsInitialized())
 	{
@@ -61,7 +62,7 @@ void FImportAGXArchiveStyle::ReloadTextures()
 	}
 }
 
-const ISlateStyle& FImportAGXArchiveStyle::Get()
+const ISlateStyle& FAGXArchiveStyle::Get()
 {
 	return *StyleInstance;
 }

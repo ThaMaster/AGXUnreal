@@ -59,6 +59,8 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 
 		GetNative()->SetMaterial(*MaterialBarrier);
 	}
+
+	GetNative()->SetEnableCollisions(bCanCollide);
 }
 
 void UAGX_ShapeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -82,7 +84,7 @@ bool UAGX_ShapeComponent::DoesPropertyAffectVisualMesh(const FName& PropertyName
 void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	
+
 	FName PropertyName = GetFNameSafe(PropertyChangedEvent.Property);
 	FName MemberPropertyName = GetFNameSafe(PropertyChangedEvent.MemberProperty);
 

@@ -9,6 +9,12 @@ class FRigidBodyBarrier;
 class FBoxShapeBarrier;
 class FSphereShapeBarrier;
 class FTrimeshShapeBarrier;
+class FHingeBarrier;
+class FPrismaticBarrier;
+class FBallJointBarrier;
+class FCylindricalJointBarrier;
+class FDistanceJointBarrier;
+class FLockJointBarrier;
 
 /*
 The separation between the Unreal part and the AGX Dynamics part of the plugin
@@ -47,6 +53,18 @@ public:
 	 * @return A handle to the persistent object through which shapes can be added.
 	 */
 	virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& RigidBody) = 0;
+
+	virtual void InstantiateHinge(const FHingeBarrier& Hinge) = 0;
+
+	virtual void InstantiatePrismatic(const FPrismaticBarrier& Prismatic) = 0;
+
+	virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) = 0;
+
+	virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& CylindricalJoint) = 0;
+
+	virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& DistanceJoint) = 0;
+
+	virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) = 0;
 
 	virtual ~FAGXArchiveInstantiator() = default;
 };

@@ -17,6 +17,13 @@ FPrismaticBarrier::FPrismaticBarrier()
 {
 }
 
+FPrismaticBarrier::FPrismaticBarrier(std::unique_ptr<FConstraintRef> Native)
+	: FConstraint1DOFBarrier(std::move(Native))
+{
+	/// \todo Should we allow nullptr prismatic?
+	check(NativeRef->Native->is<agx::Prismatic>());
+}
+
 FPrismaticBarrier::~FPrismaticBarrier()
 {
 }

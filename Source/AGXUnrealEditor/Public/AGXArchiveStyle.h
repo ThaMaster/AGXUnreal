@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Styling/SlateStyle.h"
 
-class FImportAGXArchiveStyle
+class FAGXArchiveStyle
 {
 public:
 	static void Initialize();

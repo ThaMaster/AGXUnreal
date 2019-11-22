@@ -70,6 +70,14 @@ FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 }
 
 
+FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix() const
+{
+	FQuat Rotation = GetGlobalFrameRotation();
+	FVector Location = GetGlobalFrameLocation();
+	return FMatrix(Rotation.GetAxisX(), Rotation.GetAxisY(), Rotation.GetAxisZ(), Location);
+}
+
+
 FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool CreateIfNeeded)
 {
 	if (!RigidBodyActor)

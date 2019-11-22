@@ -24,7 +24,9 @@ public:
 
 	//~ Begin FComponentVisualizer Interface
 	virtual void DrawVisualization(const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI) override;
+	virtual void DrawVisualizationHUD(const UActorComponent* Component, const FViewport* Viewport, const FSceneView* View, FCanvas* Canvas) override;
 	//~ End FComponentVisualizer Interface
 	
 	static void DrawConstraint(const AAGX_Constraint* Constraint, const FSceneView* View, FPrimitiveDrawInterface* PDI);
+	static void DrawConstraintHUD(const AAGX_Constraint* Constraint, const FViewport* Viewport, const FSceneView* View, FCanvas* Canvas);
 };

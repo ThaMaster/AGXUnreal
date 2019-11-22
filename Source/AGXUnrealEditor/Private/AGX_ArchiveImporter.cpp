@@ -2,11 +2,24 @@
 #include "AGXArchiveReader.h"
 #include "AGX_EditorUtilities.h"
 #include "RigidBodyBarrier.h"
+#include "HingeBarrier.h"
+#include "PrismaticBarrier.h"
+#include "BallJointBarrier.h"
+#include "CylindricalJointBarrier.h"
+#include "DistanceJointBarrier.h"
+#include "LockJointBarrier.h"
 
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
 #include "AGX_BoxShapeComponent.h"
 #include "AGX_TrimeshShapeComponent.h"
+
+#include "Constraints/AGX_HingeConstraint.h"
+#include "Constraints/AGX_PrismaticConstraint.h"
+#include "Constraints/AGX_BallConstraint.h"
+#include "Constraints/AGX_CylindricalConstraint.h"
+#include "Constraints/AGX_DistanceConstraint.h"
+#include "Constraints/AGX_LockConstraint.h"
 
 #include "Math/Transform.h"
 #include "GameFramework/Actor.h"
@@ -40,12 +53,6 @@ namespace
 		}
 
 		NewActor->SetActorLabel(Body.GetName());
-
-		/// \todo For some reason the actor location must be set again after
-		/// creating the root SceneComponent, or else the Actor remain at the
-		/// origin. I'm assuming we must set rotation as well, but haven't
-		/// tested yet.
-		NewActor->SetActorLocation(Body.GetPosition());
 
 		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
 		if (NewBody == nullptr)
@@ -124,6 +131,8 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 	private:
 		void FinalizeShape(UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier)
 		{
+			Component->bCanCollide = Barrier.GetEnableCollisions();
+
 			FVector Location;
 			FQuat Rotation;
 			std::tie(Location, Rotation) = Barrier.GetLocalPositionAndRotation();
@@ -156,11 +165,108 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 				return nullptr;
 			}
 			NewActor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
+			Bodies.Add(Barrier.GetGuid(), NewActor);
 			return new EditorBody(*NewActor, *ActorRoot, World);
 		}
+
+		virtual void InstantiateHinge(const FHingeBarrier& Hinge) override
+		{
+			CreateConstraint(Hinge, AAGX_HingeConstraint::StaticClass());
+		}
+
+		virtual void InstantiatePrismatic(const FPrismaticBarrier& Prismatic) override
+		{
+			CreateConstraint(Prismatic, AAGX_PrismaticConstraint::StaticClass());
+		}
+
+		virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) override
+		{
+			CreateConstraint(BallJoint, AAGX_BallConstraint::StaticClass());
+		}
+
+		virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& CylindricalJoint) override
+		{
+			CreateConstraint(CylindricalJoint, AAGX_CylindricalConstraint::StaticClass());
+		}
+
+		virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& DistanceJoint) override
+		{
+			CreateConstraint(DistanceJoint, AAGX_DistanceConstraint::StaticClass());
+		}
+
+		virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) override
+		{
+			CreateConstraint(LockJoint, AAGX_LockConstraint::StaticClass());
+		}
+
+	private:
+		void CreateConstraint(const FConstraintBarrier& Barrier, UClass* ConstraintType)
+		{
+			std::pair<AActor*, AActor*> Actors = GetActors(Barrier);
+			if (Actors.first == nullptr)
+			{
+				// Not having a second body is fine. Means that the first body
+				// is constrainted to the world. Not having a first body is bad.
+				UE_LOG(LogTemp, Log, TEXT("Constraint %s doesn't have a first body. Ignoring."), *Barrier.GetName());
+				return;
+			}
+
+			AAGX_Constraint* Constraint = FAGX_EditorUtilities::CreateConstraint(
+				ConstraintType, Actors.first, Actors.second,
+				/*bSelect*/false, /*bShwNotification*/false, /*bInPlayingWorld*/false);
+
+			StoreFrames(Barrier, Constraint);
+
+			/// \todo Is there a correct transform here? Does it matter?
+			Constraint->SetActorTransform(Actors.first->GetActorTransform());
+			Constraint->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
+		}
+
+		AActor* GetActor(const FRigidBodyBarrier& Body)
+		{
+			if (!Body.HasNative())
+			{
+				// No log since not an error. Means constrainted with world.
+				return nullptr;
+			}
+			FGuid Guid = Body.GetGuid();
+			AActor* Actor = Bodies.FindRef(Guid);
+			if (Actor == nullptr)
+			{
+				UE_LOG(LogTemp, Log, TEXT("Found a constraint to body '%s', but that body isn't known."), *Body.GetName());
+				return nullptr;
+			}
+			return Actor;
+		}
+
+		std::pair<AActor*, AActor*> GetActors(const FConstraintBarrier& Barrier)
+		{
+			return {
+				GetActor(Barrier.GetFirstBody()),
+				GetActor(Barrier.GetSecondBody())
+			};
+		}
+
+		void StoreFrame(const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment, int32 BodyIndex)
+		{
+			Attachment.FrameDefiningActor = nullptr;
+			Attachment.LocalFrameLocation = Barrier.GetLocalLocation(BodyIndex);
+			Attachment.LocalFrameRotation = Barrier.GetLocalRotation(BodyIndex);
+		}
+
+		void StoreFrames(const FConstraintBarrier& Barrier, AAGX_Constraint* Constraint)
+		{
+			StoreFrame(Barrier, Constraint->BodyAttachment1, 0);
+			StoreFrame(Barrier, Constraint->BodyAttachment2, 1);
+		}
+
 	private:
 		AActor& ImportedRoot;
 		UWorld& World;
+
+		// Map from Guid/Uuid of the AGX Dynamics body provided by the FAGXArchiveReader to the
+		// AActor that we created for that body.
+		TMap<FGuid, AActor*> Bodies;
 	};
 
 

@@ -2,6 +2,7 @@
 
 #include "AGXRefs.h"
 #include "TypeConversions.h"
+#include "MaterialBarrier.h"
 
 #include "Misc/AssertionMacros.h"
 
@@ -17,7 +18,6 @@ FShapeBarrier::FShapeBarrier(std::unique_ptr<FGeometryAndShapeRef> Native)
 
 FShapeBarrier::FShapeBarrier(FShapeBarrier&& Other)
 	: NativeRef(std::move(Other.NativeRef))
-
 {
 }
 
@@ -86,6 +86,18 @@ void FShapeBarrier::SetMaterial(const FMaterialBarrier& Material)
 	check(HasNative());
 	check(Material.HasNative());
 	NativeRef->NativeGeometry->setMaterial(Material.GetNative()->Native);
+}
+
+void FShapeBarrier::SetEnableCollisions(bool CanCollide)
+{
+	check(HasNative());
+	NativeRef->NativeGeometry->setEnableCollisions(CanCollide);
+}
+
+bool FShapeBarrier::GetEnableCollisions() const
+{
+	check(HasNative());
+	return NativeRef->NativeGeometry->getEnableCollisions();
 }
 
 namespace

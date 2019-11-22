@@ -10,6 +10,12 @@
 #include "BeginAGXIncludes.h"
 #include <agx/RigidBody.h>
 #include <agx/Encoding.h>
+#include <agx/Hinge.h>
+#include <agx/Prismatic.h>
+#include <agx/BallJoint.h>
+#include <agx/CylindricalJoint.h>
+#include <agx/DistanceJoint.h>
+#include <agx/LockJoint.h>
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Box.h>
@@ -68,7 +74,7 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 	if (Bodies.size() > size_t(std::numeric_limits<int32>::max()))
 	{
 		UE_LOG(LogTemp, Log, TEXT(".agx file %s contains too many bodies."), *Filename);
-		return;
+		return; /// \todo Should be bail, or restore as many bodies as we can?
 	}
 
 	for (agx::RigidBodyRef& Body : Bodies)
@@ -79,6 +85,47 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 		for (const agxCollide::GeometryRef& Geometry : Geometries)
 		{
 			::InstantiateShapes(Geometry->getShapes(), *ArchiveBody);
+		}
+	}
+
+	agx::ConstraintRefSetVector& Constraints = Simulation->getConstraints();
+	if (Constraints.size() > size_t(std::numeric_limits<int32>::max()))
+	{
+		UE_LOG(LogTemp, Log, TEXT(".agx file %s contains too many constraints."), *Filename);
+		return; /// \todo Should we bail, or restore as many constraints as we can?
+		/// \todo Should we do as much error checking as possible first, before
+		/// creating any Editor instances?
+	}
+
+	for (agx::ConstraintRef& Constraint : Constraints)
+	{
+		if (agx::Hinge* Hinge = Constraint->asSafe<agx::Hinge>())
+		{
+			Instantiator.InstantiateHinge(CreateHingeBarrier(Hinge));
+		}
+		else if (agx::Prismatic* Prismatic = Constraint->asSafe<agx::Prismatic>())
+		{
+			Instantiator.InstantiatePrismatic(CreatePrismaticBarrier(Prismatic));
+		}
+		else if (agx::BallJoint* BallJoint = Constraint->asSafe<agx::BallJoint>())
+		{
+			Instantiator.InstantiateBallJoint(CreateBallJointBarrier(BallJoint));
+		}
+		else if (agx::CylindricalJoint* CylindricalJoint = Constraint->asSafe<agx::CylindricalJoint>())
+		{
+			Instantiator.InstantiateCylindricalJoint(CreateCylindricalJointBarrier(CylindricalJoint));
+		}
+		else if (agx::DistanceJoint* DistanceJoint = Constraint->asSafe<agx::DistanceJoint>())
+		{
+			Instantiator.InstantiateDistanceJoint(CreateDistanceJointBarrier(DistanceJoint));
+		}
+		else if (agx::LockJoint* LockJoint = Constraint->asSafe<agx::LockJoint>())
+		{
+			Instantiator.InstantiateLockJoint(CreateLockJointBarrier(LockJoint));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("Constraint '%s' has unupported type."), *Convert(Constraint->getName()));
 		}
 	}
 }

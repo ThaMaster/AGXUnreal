@@ -5,9 +5,11 @@
 
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
-#include "Constraints/AGX_ConstraintConstants.h"
-#include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
+#include "Constraints/AGX_ConstraintConstants.h"
+#include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
+#include "Constraints/AGX_ConstraintFrameActor.h"
+#include "Constraints/AGX_ConstraintIconGraphicsComponent.h"
 
 #include "Constraints/ConstraintBarrier.h"
 
@@ -68,23 +70,47 @@ SolveType(EAGX_SolveType::ST_DIRECT),
 Elasticity(ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
 Damping(ConstraintConstants::DefaultDamping(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
 ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax(), ConvertDofsArrayToBitmask(LockedDofsOrdered)),
+LockedDofsBitmask(ConvertDofsArrayToBitmask(LockedDofsOrdered)),
 LockedDofs(LockedDofsOrdered),
 NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 {
 	BodyAttachment1.FrameDefiningActor = this;
 	BodyAttachment2.FrameDefiningActor = this;
 
-	ConstraintComponent = CreateDefaultSubobject<UAGX_ConstraintComponent>(
-		TEXT("ConstraintComponent"));
+	// Create UAGX_ConstraintComponent as root component.
+	{
+		ConstraintComponent = CreateDefaultSubobject<UAGX_ConstraintComponent>(
+			TEXT("ConstraintComponent"));
 
-	ConstraintComponent->SetFlags(ConstraintComponent->GetFlags() | RF_Transactional);
-	ConstraintComponent->Mobility = EComponentMobility::Movable;
+		ConstraintComponent->SetFlags(ConstraintComponent->GetFlags() | RF_Transactional);
+		ConstraintComponent->Mobility = EComponentMobility::Movable;
 
 #if WITH_EDITORONLY_DATA
-	ConstraintComponent->bVisualizeComponent = true;
+		ConstraintComponent->bVisualizeComponent = false; // disables the root SceneComponents's white blob 
 #endif
 
-	SetRootComponent(ConstraintComponent);
+		SetRootComponent(ConstraintComponent);
+	}
+
+	// Create UAGX_ConstraintDofGraphicsComponent as child component.
+	{
+		DofGraphicsComponent = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
+			TEXT("DofGraphicsComponent"));
+
+		DofGraphicsComponent->Constraint = this;
+		DofGraphicsComponent->SetupAttachment(ConstraintComponent);
+		DofGraphicsComponent->bHiddenInGame = true;
+	}
+
+	// Create UAGX_ConstraintIconGraphicsComponent as child component.
+	{
+		IconGraphicsComponent = CreateDefaultSubobject<UAGX_ConstraintIconGraphicsComponent>(
+			TEXT("IconGraphicsComponent"));
+
+		IconGraphicsComponent->Constraint = this;
+		IconGraphicsComponent->SetupAttachment(ConstraintComponent);
+		IconGraphicsComponent->bHiddenInGame = true;
+	}
 }
 
 
@@ -93,6 +119,87 @@ AAGX_Constraint::~AAGX_Constraint()
 
 }
 
+
+bool AAGX_Constraint::AreFramesInViolatedState(float Tolerance) const
+{
+	if (!BodyAttachment1.RigidBodyActor || !BodyAttachment2.RigidBodyActor)
+	{
+		return false;
+	}
+
+	FVector Location1 = BodyAttachment1.GetGlobalFrameLocation();
+	FQuat Rotation1 = BodyAttachment1.GetGlobalFrameRotation();
+
+	FVector Location2 = BodyAttachment2.GetGlobalFrameLocation();
+	FQuat Rotation2 = BodyAttachment2.GetGlobalFrameRotation();
+
+	FVector Location2InLocal1 = Rotation1.Inverse().RotateVector(Location2 - Location1);
+	FQuat Rotation2InLocal1 = Rotation1.Inverse() * Rotation2;
+
+	if (IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_1))
+	{
+		if (FMath::Abs(Location2InLocal1.X) > Tolerance)
+		{
+			return true;
+		}
+	}
+
+	if (IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_2))
+	{
+		if (FMath::Abs(Location2InLocal1.Y) > Tolerance)
+		{
+			return true;
+		}
+	}
+
+	if (IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_3))
+	{
+		if (FMath::Abs(Location2InLocal1.Z) > Tolerance)
+		{
+			return true;
+		}
+	}
+
+	/// \todo Checks below might not be correct for ALL scenarios. What if there is for example a 90 degrees rotation
+	/// around one axis and then a rotation around another..
+
+	if (IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1))
+	{
+		if (FMath::Abs(Rotation2InLocal1.GetAxisY().Z) > Tolerance)
+		{
+			return true;
+		}
+	}
+
+	if (IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_2))
+	{
+		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Z) > Tolerance)
+		{
+			return true;
+		}
+	}
+
+	if (IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_3))
+	{
+		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Y) > Tolerance)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+EDofFlag AAGX_Constraint::GetLockedDofsBitmask() const
+{
+	return LockedDofsBitmask;
+}
+
+
+bool AAGX_Constraint::IsDofLocked(EDofFlag Dof) const
+{
+	return static_cast<uint8>(LockedDofsBitmask) & static_cast<uint8>(Dof);
+}
 
 #if WITH_EDITOR
 

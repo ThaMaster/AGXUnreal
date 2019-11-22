@@ -143,6 +143,29 @@ inline agx::String Convert(const FString& StringUnreal)
 	return agx::String(TCHAR_TO_UTF8(*StringUnreal));
 }
 
+inline FGuid Convert(const agx::Uuid& Uuid)
+{
+	// Would like to use Uuid::size here, since that is the size of the data
+	// pointed to by Uuid::data, but it's not constexpr.
+	static_assert(sizeof(Uuid) == 4 * sizeof(uint32), "Unreal Guid and AGX Dynamics Uuid must be the same size.");
+	uint32 Abcd[4];
+	memcpy(Abcd, Uuid.data(), sizeof(Abcd));
+	return FGuid(Abcd[0], Abcd[1], Abcd[2], Abcd[3]);
+}
+
+inline agx::Uuid Convert(const FGuid& Guid)
+{
+	uint32 Abcd[4];
+	for (int i = 0; i < 4; ++i)
+	{
+		Abcd[i] = Guid[i];
+	}
+	agx::Uuid Uuid;
+	memcpy(Uuid.data(), Abcd, Uuid.size());
+	return Uuid;
+}
+
+
 /**
  * Given a Barrier, returns the final AGX native object.
  */
