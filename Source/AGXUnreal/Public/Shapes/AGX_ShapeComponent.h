@@ -25,13 +25,19 @@ public:
 
 	/**
 	 * Defines physical properties of both the surface and the bulk of this shape.
-	 * 
+	 *
 	 * Surface properties do for example greatly affect frictional forces.
 	 *
 	 * Bulk properties have impact on collision forces but also on Rigid Body mass.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shape")
 	UAGX_MaterialBase* PhysicalMaterial;
+
+	/**
+	 * Toggle to enable or disable collision generation against this shape.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shape")
+	bool bCanCollide = true;
 
 	UAGX_ShapeComponent();
 

@@ -32,6 +32,9 @@ public:
 	/// FMaterialBarrier we should implement comparison operators etc since multiple FMaterialBarrier that points
 	/// to the same native object should be logically seen as same object (similar to smart pointers).
 
+	void SetEnableCollisions(bool CanCollide);
+	bool GetEnableCollisions() const;
+
 protected:
 	FShapeBarrier(FShapeBarrier&& Other);
 

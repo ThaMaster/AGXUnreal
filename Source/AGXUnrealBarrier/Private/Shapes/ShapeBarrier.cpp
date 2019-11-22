@@ -88,6 +88,18 @@ void FShapeBarrier::SetMaterial(const FMaterialBarrier& Material)
 	NativeRef->NativeGeometry->setMaterial(Material.GetNative()->Native);
 }
 
+void FShapeBarrier::SetEnableCollisions(bool CanCollide)
+{
+	check(HasNative());
+	NativeRef->NativeGeometry->setEnableCollisions(CanCollide);
+}
+
+bool FShapeBarrier::GetEnableCollisions() const
+{
+	check(HasNative());
+	return NativeRef->NativeGeometry->getEnableCollisions();
+}
+
 namespace
 {
 	agxCollide::ShapeIterator FindShape(agxCollide::Geometry* Geometry, agxCollide::Shape* Shape)

@@ -131,6 +131,8 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 	private:
 		void FinalizeShape(UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier)
 		{
+			Component->bCanCollide = Barrier.GetEnableCollisions();
+
 			FVector Location;
 			FQuat Rotation;
 			std::tie(Location, Rotation) = Barrier.GetLocalPositionAndRotation();
