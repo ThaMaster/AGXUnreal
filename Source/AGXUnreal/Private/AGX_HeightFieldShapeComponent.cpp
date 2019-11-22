@@ -1,6 +1,8 @@
 #include "AGX_HeightFieldShapeComponent.h"
 
+#include "AGX_HeightFieldUtilities.h"
 
+#include "AGX_LogCategory.h"
 
 UAGX_HeightFieldShapeComponent::UAGX_HeightFieldShapeComponent()
 {
@@ -76,12 +78,18 @@ bool UAGX_HeightFieldShapeComponent::DoesPropertyAffectVisualMesh(const FName& /
 void UAGX_HeightFieldShapeComponent::CreateNative()
 {
 	check(!HasNative());
-	TArray<float> Heights;
-	Heights.AddZeroed(NumVerticesX * NumVerticesY);
-	NativeBarrier.AllocateNative(NumVerticesX, NumVerticesY, SizeX, SizeY, Heights);
+	if (SourceLandscape == nullptr)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("HeightFieldComponent hasn't been given a source Landscape. Will not be included in the simulation."));
+		return;
+	}
+
+	NativeBarrier = AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
+	UpdateNativeProperties();
 }
 
 void UAGX_HeightFieldShapeComponent::ReleaseNative()
 {
-
+	check(HasNative());
+	NativeBarrier.ReleaseNative();
 }

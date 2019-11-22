@@ -7,6 +7,8 @@
 
 #include "AGX_HeightFieldShapeComponent.generated.h"
 
+class ALandscape;
+
 /**
  *
  */
@@ -18,6 +20,10 @@ class AGXUNREAL_API UAGX_HeightFieldShapeComponent : public UAGX_ShapeComponent
 public:
 	UAGX_HeightFieldShapeComponent();
 
+#if 1
+	UPROPERTY(EditAnywhere, Category = "AGX Shape")
+	ALandscape* SourceLandscape;
+#else
 	UPROPERTY()
 	int32 NumVerticesX;
 
@@ -29,12 +35,13 @@ public:
 
 	UPROPERTY()
 	float SizeY;
+#endif
 
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;
 	FShapeBarrier* GetOrCreateNative() override;
 
-	/// Get the native AGX Dynamics representation of this Trimesh. May return nullptr.
+	/// Get the native AGX Dynamics representation of this HeightField. May return nullptr.
 	FHeightFieldShapeBarrier* GetNativeHeightField();
 
 	virtual void UpdateNativeProperties() override;
