@@ -1,5 +1,3 @@
-// Copyright 1998-2019 Epic Games, Inc. All Rights Reserved. 
-
 /// \todo Reduce includes!
 #include "AGX_ConstraintDofGraphicsComponent.h"
 #include "RenderingThread.h"
@@ -71,12 +69,12 @@ struct FAGX_ConstraintDofGraphicsSection
 	bool bShowSelectionOutline;
 	FMatrix LocalTransform = FMatrix::Identity;
 	ESceneDepthPriorityGroup DepthPriority;
-	
+
 
 	FAGX_ConstraintDofGraphicsSection(const TSharedPtr<FAGX_ConstraintDofGraphicsGeometry>& InGeometry,
 		UMaterialInterface* InMaterial, bool bInShowSelectionOutline, FMatrix InLocalTransform,
 		ESceneDepthPriorityGroup InDepthPriority)
-		: 
+		:
 	Geometry(InGeometry),
 	BeginIndex(0),
 	EndIndex(InGeometry ? static_cast<uint32>(InGeometry->IndexBuffer.Indices.Num()) : 0),
@@ -233,7 +231,7 @@ private:
 		const float ArrowLength = 100.0f;
 		TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry = CreateTranslationalArrowGeometry(GetScene(), ArrowLength);
 		Geometries.Add(Geometry);
-		
+
 		// Create sections using the geometry.
 
 		const float TranslationOffset = 7.0f;
@@ -285,7 +283,7 @@ private:
 
 		AGX_MeshUtilities::CylindricalArrowConstructionData ConstructionData(CylinderRadius, CylinderHeight, ConeRadius,
 			ConeHeight, bBottomCap, NumSegments, Transparent, Opaque);
-		
+
 		// Allocate buffer sizes.
 
 		uint32 NumVertices = 0;
@@ -431,7 +429,7 @@ private:
 				if (VisibilityMap & (1 << ViewIndex))
 				{
 					const FSceneView* View = Views[ViewIndex];
-					
+
 					FMeshBatch& Mesh = Collector.AllocateMesh();
 					Mesh.bWireframe = bWireframe;
 					Mesh.MaterialRenderProxy = MaterialProxy;
@@ -454,8 +452,8 @@ private:
 					//FMatrix WorldMatrix = FrameTransform1; // setting render matrix instead (see GetRenderMatrix())
 
 					FMatrix ScreenScale = GetScreenSpaceScale(0.56f, 150.0f, 500.0f, 100.0f,
-						FrameTransform1.GetOrigin(), View);
-					
+						WorldMatrix.GetOrigin(), View);
+
 					FMatrix EffectiveLocalToWorld = Section->LocalTransform * ScreenScale * WorldMatrix;
 
 					FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer =
@@ -511,7 +509,7 @@ private:
 		Result.bRenderCustomDepth = ShouldRenderCustomDepth();
 		Result.bTranslucentSelfShadow = bCastVolumetricTranslucentShadow;
 		Result.bVelocityRelevance = IsMovable() && Result.bOpaqueRelevance && Result.bRenderInMainPass;
-		
+
 		MaterialRelevance.SetPrimitiveViewRelevance(Result);
 
 		return Result;
@@ -631,7 +629,7 @@ FPrimitiveSceneProxy* UAGX_ConstraintDofGraphicsComponent::CreateSceneProxy()
 	{
 		return nullptr;
 	}
-
+	MarkRenderDynamicDataDirty();
 	return new FAGX_ConstraintDofGraphicsProxy(this);
 }
 

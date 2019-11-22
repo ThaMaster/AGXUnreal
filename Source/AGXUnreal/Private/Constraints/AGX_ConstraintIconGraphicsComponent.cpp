@@ -1,5 +1,3 @@
-// Copyright 1998-2019 Epic Games, Inc. All Rights Reserved. 
-
 /// \todo Reduce includes!
 #include "AGX_ConstraintIconGraphicsComponent.h"
 
@@ -80,12 +78,12 @@ struct FAGX_ConstraintIconGraphicsSection
 	bool bShowSelectionOutline;
 	FMatrix LocalTransform = FMatrix::Identity;
 	ESceneDepthPriorityGroup DepthPriority;
-	
+
 
 	FAGX_ConstraintIconGraphicsSection(const TSharedPtr<FAGX_ConstraintIconGraphicsGeometry>& InGeometry,
 		UMaterialInterface* InMaterial, bool bInShowSelectionOutline, FMatrix InLocalTransform,
 		ESceneDepthPriorityGroup InDepthPriority, uint32 InBeginIndex = 0, int32 InEndIndex = -1)
-		: 
+		:
 	Geometry(InGeometry),
 	BeginIndex(InBeginIndex),
 	EndIndex(InEndIndex >= 0 ? InEndIndex : (InGeometry ? static_cast<uint32>(InGeometry->IndexBuffer.Indices.Num()) : 0)),
@@ -364,7 +362,7 @@ private:
 				if (VisibilityMap & (1 << ViewIndex))
 				{
 					const FSceneView* View = Views[ViewIndex];
-					
+
 					FMeshBatch& Mesh = Collector.AllocateMesh();
 					Mesh.bWireframe = bWireframe;
 					Mesh.MaterialRenderProxy = MaterialProxy;
@@ -387,10 +385,10 @@ private:
 					//FMatrix WorldMatrix = FrameTransform1; // setting render matrix instead (see GetRenderMatrix())
 
 					FMatrix ScreenScale = GetScreenSpaceScale(0.2f, 30.0f, 100.0f, 100.0f,
-						FrameTransform1.GetOrigin(), View);
+						WorldMatrix.GetOrigin(), View);
 
 					/// todo ScreenScale does not seem to have effect in-game. Must have missed something...
-					
+
 					FMatrix EffectiveLocalToWorld = Section->LocalTransform * ScreenScale * WorldMatrix;
 
 					FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer =
@@ -446,7 +444,7 @@ private:
 		Result.bRenderCustomDepth = ShouldRenderCustomDepth();
 		Result.bTranslucentSelfShadow = bCastVolumetricTranslucentShadow;
 		Result.bVelocityRelevance = IsMovable() && Result.bOpaqueRelevance && Result.bRenderInMainPass;
-		
+
 		MaterialRelevance.SetPrimitiveViewRelevance(Result);
 
 		return Result;
@@ -559,7 +557,7 @@ FPrimitiveSceneProxy* UAGX_ConstraintIconGraphicsComponent::CreateSceneProxy()
 	{
 		return nullptr;
 	}
-
+	MarkRenderDynamicDataDirty();
 	return new FAGX_ConstraintIconGraphicsProxy(this);
 }
 
