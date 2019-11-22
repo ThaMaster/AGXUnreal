@@ -1,0 +1,63 @@
+#include "AGX_HeightFieldUtilities.h"
+
+#include "Landscape.h"
+#include "LandscapeDataAccess.h"
+#include "LandscapeComponent.h"
+
+FHeightFieldShapeBarrier CreateHeightField(ALandscape& Landscape)
+{
+	const int32 NumComponents = Landscape.LandscapeComponents.Num();
+
+	// This assumes a square and uniform grid of components.
+	/// \todo Figure out how to get the size/sides of the component grid.
+	const int32 NumComponentsSide = FMath::RoundToInt(FMath::Sqrt(static_cast<float>(NumComponents)));
+	check(NumComponentsSide * NumComponentsSide == NumComponents);
+
+	const int32 NumQuadsPerComponentSide = Landscape.ComponentSizeQuads;
+	const int32 NumQuadsPerSide = NumComponentsSide * NumQuadsPerComponentSide;
+
+	const int32 NumVerticesPerSide = NumQuadsPerSide + 1;
+	const int32 NumVertices = NumVerticesPerSide * NumVerticesPerSide;
+
+	const float QuadSideSize = Landscape.GetActorScale().X;
+	const float SideSize = NumQuadsPerSide * QuadSideSize;
+
+	TArray<float> Heights;
+	Heights.AddUninitialized(NumVertices);
+
+	auto WriteComponent = [&Heights, NumVerticesPerSide](ULandscapeComponent& Component)
+	{
+		const int32 BaseQuadX = Component.SectionBaseX;
+		const int32 BaseQuadY = Component.SectionBaseY;
+
+		FLandscapeComponentDataInterface ComponentData(&Component);
+
+		auto GlobalAGXFromLocalUnreal = [NumVerticesPerSide, BaseQuadX, BaseQuadY](int32 LocalVertexX, int32 LocalVertexY)
+		{
+			const int32 GlobalVertexX = BaseQuadX + LocalVertexX;
+			const int32 GlobalVertexY = BaseQuadY + LocalVertexY;
+			const int32 AGXGlobalVertexX = GlobalVertexX;
+			const int32 AGXGlobalVertexY = (NumVerticesPerSide - 1) - GlobalVertexY;
+			return (NumVerticesPerSide * AGXGlobalVertexY) + AGXGlobalVertexX;
+		};
+
+		for (int32 Y = 0; Y < NumVerticesPerSide; ++Y)
+		{
+			const int32 BaseIndex = GlobalAGXFromLocalUnreal(0, Y);
+			for (int32 X = 0; X < NumVerticesPerSide; ++X)
+			{
+				const float Height = ComponentData.GetWorldVertex(X, Y).Z;
+				Heights[BaseIndex + X] = Height;
+			}
+		}
+	};
+
+	for (ULandscapeComponent* Component : Landscape.LandscapeComponents)
+	{
+		WriteComponent(*Component);
+	}
+
+	FHeightFieldShapeBarrier HeightField;
+	HeightField.AllocateNative(NumVerticesPerSide, NumVerticesPerSide, SideSize, SideSize, Heights);
+	return HeightField;
+}
