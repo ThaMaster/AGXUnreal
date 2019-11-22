@@ -15,11 +15,6 @@ FHeightFieldShapeBarrier::FHeightFieldShapeBarrier(std::unique_ptr<FGeometryAndS
 	check(NativeRef->NativeShape->is<agxCollide::HeightField>());
 }
 
-FHeightFieldShapeBarrier::FHeightFieldShapeBarrier(FHeightFieldShapeBarrier&& Other)
-	: FShapeBarrier(std::move(Other))
-{
-}
-
 FHeightFieldShapeBarrier::~FHeightFieldShapeBarrier()
 {
 	// Must provide a destructor implementation in the .cpp file because the

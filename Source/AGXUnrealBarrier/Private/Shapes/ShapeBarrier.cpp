@@ -11,13 +11,13 @@ FShapeBarrier::FShapeBarrier()
 {
 }
 
-FShapeBarrier::FShapeBarrier(std::unique_ptr<FGeometryAndShapeRef> Native)
-	: NativeRef {std::move(Native)}
+FShapeBarrier::FShapeBarrier(FShapeBarrier&& Other) noexcept
+	: NativeRef {std::move(Other.NativeRef)}
 {
 }
 
-FShapeBarrier::FShapeBarrier(FShapeBarrier&& Other)
-	: NativeRef(std::move(Other.NativeRef))
+FShapeBarrier::FShapeBarrier(std::unique_ptr<FGeometryAndShapeRef> Native)
+	: NativeRef {std::move(Native)}
 {
 }
 
@@ -26,6 +26,12 @@ FShapeBarrier::~FShapeBarrier()
 	// Must provide a destructor implementation in the .cpp file because the
 	// std::unique_ptr NativeRef's destructor must be able to see the definition,
 	// not just the forward declaration, of FGeometryAndShapeRef.
+}
+
+FShapeBarrier& FShapeBarrier::operator=(FShapeBarrier&& Other) noexcept
+{
+	NativeRef = std::move(Other.NativeRef);
+	return *this;
 }
 
 bool FShapeBarrier::HasNative() const
