@@ -6,5 +6,5 @@ class ALandscape;
 
 namespace AGX_HeightFieldUtilities
 {
-	FHeightFieldShapeBarrier CreateHeightField(ALandscape& Landscape);
+	AGXUNREAL_API FHeightFieldShapeBarrier CreateHeightField(ALandscape& Landscape);
 }
