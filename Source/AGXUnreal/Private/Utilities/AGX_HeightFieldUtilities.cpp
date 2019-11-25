@@ -4,7 +4,7 @@
 #include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
 
-FHeightFieldShapeBarrier CreateHeightField(ALandscape& Landscape)
+FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape& Landscape)
 {
 	const int32 NumComponents = Landscape.LandscapeComponents.Num();
 
@@ -30,6 +30,9 @@ FHeightFieldShapeBarrier CreateHeightField(ALandscape& Landscape)
 		const int32 BaseQuadX = Component.SectionBaseX;
 		const int32 BaseQuadY = Component.SectionBaseY;
 
+		const int32 NumQuadsPerComponentSide = Component.ComponentSizeQuads;
+		const int32 NumVerticesPerComponentSide = NumQuadsPerComponentSide + 1;
+
 		FLandscapeComponentDataInterface ComponentData(&Component);
 
 		auto GlobalAGXFromLocalUnreal = [NumVerticesPerSide, BaseQuadX, BaseQuadY](int32 LocalVertexX, int32 LocalVertexY)
@@ -41,10 +44,10 @@ FHeightFieldShapeBarrier CreateHeightField(ALandscape& Landscape)
 			return (NumVerticesPerSide * AGXGlobalVertexY) + AGXGlobalVertexX;
 		};
 
-		for (int32 Y = 0; Y < NumVerticesPerSide; ++Y)
+		for (int32 Y = 0; Y < NumVerticesPerComponentSide; ++Y)
 		{
 			const int32 BaseIndex = GlobalAGXFromLocalUnreal(0, Y);
-			for (int32 X = 0; X < NumVerticesPerSide; ++X)
+			for (int32 X = 0; X < NumVerticesPerComponentSide; ++X)
 			{
 				const float Height = ComponentData.GetWorldVertex(X, Y).Z;
 				Heights[BaseIndex + X] = Height;
