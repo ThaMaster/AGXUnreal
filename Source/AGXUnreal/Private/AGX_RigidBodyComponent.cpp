@@ -122,7 +122,7 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	{
 		UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Component);
 		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
-		check(NativeShape && NativeShape->HasNative());
+		check(NativeShape && NativeShape->HasNative());  /// \todo Should not crash on this. HeightField easy to get wrong.
 		NativeBarrier.AddShape(NativeShape);
 		UE_LOG(LogAGX, Log, TEXT("Shape added to native object for RigidBody with mass %f."), Mass);
 	}
