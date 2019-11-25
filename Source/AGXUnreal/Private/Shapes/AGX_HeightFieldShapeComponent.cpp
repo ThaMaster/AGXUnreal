@@ -3,12 +3,14 @@
 #include "AGX_HeightFieldUtilities.h"
 
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_MeshUtilities.h"
+
 
 UAGX_HeightFieldShapeComponent::UAGX_HeightFieldShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	UE_LOG(LogAGX, Log, TEXT("BoxShape instance created."));
 }
-
 
 FShapeBarrier* UAGX_HeightFieldShapeComponent::GetNative()
 {
@@ -30,8 +32,7 @@ const FShapeBarrier* UAGX_HeightFieldShapeComponent::GetNative() const
 		return nullptr;
 	}
 	return &NativeBarrier;
-
-};
+}
 
 FShapeBarrier* UAGX_HeightFieldShapeComponent::GetOrCreateNative()
 {
@@ -40,7 +41,7 @@ FShapeBarrier* UAGX_HeightFieldShapeComponent::GetOrCreateNative()
 		CreateNative();
 	}
 	return &NativeBarrier;
-};
+}
 
 FHeightFieldShapeBarrier* UAGX_HeightFieldShapeComponent::GetNativeHeightField()
 {
@@ -57,26 +58,34 @@ void UAGX_HeightFieldShapeComponent::UpdateNativeProperties()
 		return;
 
 	Super::UpdateNativeProperties();
-	/// \todo More may be needed here.
+
+	UpdateNativeLocalTransform(NativeBarrier);
+
+	/// \todo What is the height field equivalent of this?
+	// NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale());
 }
 
-
-void UAGX_HeightFieldShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& /*OutMeshData*/)
+void UAGX_HeightFieldShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 {
-	/// \todo Not sure how to best handle this. The HeightField is, so far, only
-	/// used for ULandscape/UAGX_Terrain.
+	/// \todo What is the height field equivalent of this?
+	//AGX_MeshUtilities::MakeCube(OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, HalfExtent);
 }
 
 #if WITH_EDITOR
-bool UAGX_HeightFieldShapeComponent::DoesPropertyAffectVisualMesh(const FName& /*PropertyName*/, const FName& /*MemberPropertyName*/) const
+
+bool UAGX_HeightFieldShapeComponent::DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const
 {
-	/// \todo More may be needed here in the future.
 	return false;
+	// return
+	//		Super::DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName) ||
+	//		MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_HeightFieldShapeComponent, HalfExtent);
 }
+
 #endif
 
 void UAGX_HeightFieldShapeComponent::CreateNative()
 {
+	UE_LOG(LogAGX, Log, TEXT("Allocating native object for HeightFieldShapeComponent."));
 	check(!HasNative());
 	if (SourceLandscape == nullptr)
 	{
@@ -90,6 +99,9 @@ void UAGX_HeightFieldShapeComponent::CreateNative()
 
 void UAGX_HeightFieldShapeComponent::ReleaseNative()
 {
+	UE_LOG(LogAGX, Log, TEXT("Releasing native object for HeightFieldShapeComponent."));
 	check(HasNative());
 	NativeBarrier.ReleaseNative();
 }
+
+
