@@ -33,8 +33,11 @@ void FHeightFieldShapeBarrier::AllocateNativeHeightField(
 	int32 NumVerticesX, int32 NumVerticesY, float SizeX, float SizeY, const TArray<float>& Heights)
 {
 	check(!HasNative());
+	agx::Real SizeXAGX = ConvertDistance(SizeX);
+	agx::Real SizeYAGX = ConvertDistance(SizeY);
+
 	NativeRef->NativeShape = new agxCollide::HeightField(
-		static_cast<size_t>(NumVerticesX), static_cast<size_t>(NumVerticesY), Convert(SizeX), Convert(SizeY));
+		static_cast<size_t>(NumVerticesX), static_cast<size_t>(NumVerticesY), SizeXAGX, SizeYAGX);
 }
 
 void FHeightFieldShapeBarrier::AllocateNativeShape()
