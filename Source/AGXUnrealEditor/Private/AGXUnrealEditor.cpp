@@ -230,6 +230,12 @@ void FAGXUnrealEditorModule::OnExportAGXArchive()
 		return;
 	}
 
+	FString Extension = FPaths::GetExtension(Filename);
+	if (Extension != "agx" && Extension != "agx")
+	{
+		Filename += ".agx";
+	}
+
 	bool Exported = AGX_ArchiveExporter::ExportAGXArchive(Filename);
 	if (!Exported)
 	{
