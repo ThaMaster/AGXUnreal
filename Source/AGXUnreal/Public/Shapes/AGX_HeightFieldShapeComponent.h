@@ -9,6 +9,7 @@
 #include "AGX_HeightFieldShapeComponent.generated.h"
 
 class ALandscape;
+
 /**
  *
  */
@@ -18,6 +19,7 @@ class AGXUNREAL_API UAGX_HeightFieldShapeComponent : public UAGX_ShapeComponent
 	GENERATED_BODY()
 public:
 	UAGX_HeightFieldShapeComponent();
+	virtual ~UAGX_HeightFieldShapeComponent();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
 	ALandscape* SourceLandscape = nullptr;
@@ -30,6 +32,10 @@ public:
 	FHeightFieldShapeBarrier* GetNativeHeightField();
 
 	virtual void UpdateNativeProperties() override;
+
+#if WITH_EDITOR
+	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent & PropertyChangedEvent);
+#endif
 
 protected:
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
@@ -45,11 +51,16 @@ private:
 	// Tell the Barrier object to release its references to the AGX Dynamics objects.
 	virtual void ReleaseNative() override;
 
+	void OnSourceLandscapeChanged(UObject *, struct FPropertyChangedEvent &);
+
+	void RecenterActorOnLandscape();
+
 	// BeginPlay/EndPlay is handled by the base class UAGX_ShapeComponent.
 
 private:
 	FHeightFieldShapeBarrier NativeBarrier;
 
-
+	FCoreUObjectDelegates::FOnObjectPropertyChanged::FDelegate OnPropertyChangedHandle;
+	FDelegateHandle OnPropertyChangedHandleDelegateHandle;
 
 };
