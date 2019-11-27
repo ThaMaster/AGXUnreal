@@ -15,6 +15,7 @@
 #include "EngineGlobals.h"
 #include "Engine/Engine.h"
 #include "StaticMeshResources.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 /** Scene proxy */
 class FAGX_SimpleMeshSceneProxy final : public FPrimitiveSceneProxy
@@ -224,10 +225,26 @@ public:
 				bool bHasPrecomputedVolumetricLightmap;
 				FMatrix PreviousLocalToWorld;
 				int32 SingleCaptureIndex;
-				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, SingleCaptureIndex);
+#if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 23)
+				/// \todo Replace Unknown with proper name or use some getter function to get a proper value.
+				bool Unknown = false;
+				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(
+					GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, 
+					SingleCaptureIndex, Unknown);
+#else
+				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(
+					GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, SingleCaptureIndex);
+#endif
 
-				FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer = Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
-				DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), GetLocalBounds(), true, bHasPrecomputedVolumetricLightmap, UseEditorDepthTest());
+				FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer = 
+					Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
+#if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 23)
+				DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), 
+					GetLocalBounds(), true, bHasPrecomputedVolumetricLightmap, DrawsVelocity(), Unknown);
+#else
+				DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), 
+					GetLocalBounds(), true, bHasPrecomputedVolumetricLightmap, UseEditorDepthTest());
+#endif
 				BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
 
 				BatchElement.FirstIndex = 0;
