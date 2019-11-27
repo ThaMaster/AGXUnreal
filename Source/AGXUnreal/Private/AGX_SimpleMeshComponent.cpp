@@ -226,7 +226,7 @@ public:
 				FMatrix PreviousLocalToWorld;
 				int32 SingleCaptureIndex;
 #if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 23)
-				bool Unknown =  false;
+				bool Unknown = false;
 				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(
 					GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, 
 					SingleCaptureIndex, Unknown);
