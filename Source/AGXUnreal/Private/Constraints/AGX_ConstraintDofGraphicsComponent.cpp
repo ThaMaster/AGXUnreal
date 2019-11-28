@@ -144,8 +144,6 @@ public:
 				Geometry->VertexFactory.InitResource();
 				Geometry->IndexBuffer.InitResource();
 			});
-
-			//AGX_MeshUtilities::PrintMeshToLog(Geometry->VertexBuffers, Geometry->IndexBuffer);
 		};
 	}
 
@@ -467,7 +465,7 @@ private:
 					DynamicPrimitiveUniformBuffer.Set(EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(),
 						GetLocalBounds(), true, false, UseEditorDepthTest());
 #endif
-					
+
 
 					BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
 
