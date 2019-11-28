@@ -177,9 +177,6 @@ public:
 				Geometry->VertexFactory.InitResource();
 				Geometry->IndexBuffer.InitResource();
 			});
-
-			// UE_LOG(LogTemp, Log, TEXT("FAGX_ConstraintIconGraphicsProxy for \"%s\""), *GetNameSafe(Component->GetOwner()));
-			// AGX_MeshUtilities::PrintMeshToLog(Geometry->VertexBuffers, Geometry->IndexBuffer);
 		}
 	}
 
