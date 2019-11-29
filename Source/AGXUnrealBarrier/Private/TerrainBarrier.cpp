@@ -1,11 +1,30 @@
-#include "TerrainBarrier.h"
 
+// AGXUnrealBarrier includes.
+#include "TerrainBarrier.h"
+#include "HeightFieldShapeBarrier.h"
 #include "AGXRefs.h"
 #include "TypeConversions.h"
+#include "Shapes/ShapeBarrierImpl.h"
 
+// AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agxCollide/HeightField.h>
 #include "EndAGXIncludes.h"
+
+
+#include <agx/PushDisableWarnings.h>
+#include <openvdb/openvdb.h>
+namespace
+{
+	struct FForceInitializeOpenVDB
+	{
+		FForceInitializeOpenVDB()
+		{
+			openvdb::initialize();
+		}
+	} ForceInitializeOpenVDB;
+}
+#include <agx/PopDisableWarnings.h>
 
 FTerrainBarrier::FTerrainBarrier()
 	: NativeRef {new FTerrainRef}
@@ -37,10 +56,10 @@ bool FTerrainBarrier::HasNative() const
 void FTerrainBarrier::AllocateNative(FHeightFieldShapeBarrier& SourceHeightField)
 {
 	check(!HasNative());
-
-	agxCollide::HeightFieldRef HeightField = new agxCollide::HeightField(size_t(10), size_t(10), agx::Real(50.0), agx::Real(50.0));
-
-	NativeRef->Native = agxTerrain::Terrain::createFromHeightField(HeightField, agx::Real(10));
+	agx::Real MaximumDepth {10.0};
+	agxCollide::HeightField* HeightFieldAGX = SourceHeightField.GetNativeShape<agxCollide::HeightField>();
+	NativeRef->Native = agxTerrain::Terrain::createFromHeightField(HeightFieldAGX, MaximumDepth);
+	UE_LOG(LogTemp, Log, TEXT("Native terrain allocated."));
 }
 
 FTerrainRef* FTerrainBarrier::GetNative()
