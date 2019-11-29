@@ -32,6 +32,7 @@ public class AGXUnrealLibrary : ModuleRules
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxSabre"));
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxTerrain"));
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxVehicle"));
+		PublicAdditionalLibraries.Add(CurrentPlatform.LinkTerrainDependencyLibraryPath("openvdb"));
 
 		// TODO: Do we need to list more libraries here, or will transitive
 		// dependencies be enough?.
@@ -43,10 +44,12 @@ public class AGXUnrealLibrary : ModuleRules
 		//       Experimentation in the prototype plugin indicate not.
 
 		PublicRuntimeLibraryPaths.Add(CurrentPlatform.RuntimeLibrariesDirectory);
+		PublicRuntimeLibraryPaths.Add(CurrentPlatform.TerrainDependenciesRuntimeLibrariesDirectory);
 
 		PublicIncludePaths.Add(CurrentPlatform.LibraryIncludePath);
 		PublicIncludePaths.Add(CurrentPlatform.ComponentsIncludePath);
 		PublicIncludePaths.Add(CurrentPlatform.DependenciesIncludePath);
+		PublicIncludePaths.Add(CurrentPlatform.TerrainDependenciesIncludePath);
 		PublicIncludePaths.Add(CurrentPlatform.ConfigIncludePath);
 	}
 
@@ -82,12 +85,15 @@ public class AGXUnrealLibrary : ModuleRules
 
 		public string LinkLibrariesDirectory;
 		public string RuntimeLibrariesDirectory;
+		public string TerrainDependenciesLinkLibrariesDirectory;
+		public string TerrainDependenciesRuntimeLibrariesDirectory;
 		// TODO: May need dependencies here as well.
 
 		// TODO: Consider making these an array instead.
 		public string LibraryIncludePath;
 		public string ComponentsIncludePath;
 		public string DependenciesIncludePath;
+		public string TerrainDependenciesIncludePath;
 		public string ConfigIncludePath;
 
 		public string LinkLibraryFileName(string LibraryName)
@@ -105,9 +111,19 @@ public class AGXUnrealLibrary : ModuleRules
 			return Path.Combine(LinkLibrariesDirectory, LinkLibraryFileName(LibraryName));
 		}
 
+		public string LinkTerrainDependencyLibraryPath(string LibraryName)
+		{
+		    return Path.Combine(TerrainDependenciesLinkLibrariesDirectory, LinkLibraryFileName(LibraryName));
+		}
+
 		public string RuntimeLibraryPath(string LibraryName)
 		{
 			return Path.Combine(RuntimeLibrariesDirectory, RuntimeLibraryFileName(LibraryName));
+		}
+
+		public string RuntimeTerrainDependencyLibraryPath(string LibraryName)
+		{
+		    return Path.Combine(TerrainDependenciesRuntimeLibrariesDirectory);
 		}
 
 		public PlatformInfo(ReadOnlyTargetRules Target)
@@ -117,7 +133,8 @@ public class AGXUnrealLibrary : ModuleRules
 			string AGXDir = Environment.GetEnvironmentVariable("AGX_DIR");
 			string AGXBuildDir = Environment.GetEnvironmentVariable("AGX_BUILD_DIR") ?? AGXDir;
 			string AGXDependenciesDir = Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR") ?? AGXDir;
-			if (AGXDir == null || AGXBuildDir == null || AGXDependenciesDir == null)
+			string AGXTerrainDependenciesDir = Environment.GetEnvironmentVariable("AGXTERRAIN_DEPENDENCIES_DIR") ?? AGXDir;
+			if (AGXDir == null || AGXBuildDir == null || AGXDependenciesDir == null || AGXTerrainDependenciesDir == null)
 			{
 				System.Console.WriteLine("Did not find AGX Dynamics installation folder.");
 				System.Console.WriteLine("Have you run setup_env?");
@@ -136,6 +153,9 @@ public class AGXUnrealLibrary : ModuleRules
 					LibraryIncludePath = Path.Combine(AGXDir, "include");
 					ComponentsIncludePath = Path.Combine(AGXDir, "Components");
 					DependenciesIncludePath = Path.Combine(AGXDependenciesDir, "include");
+					TerrainDependenciesIncludePath = Path.Combine(AGXTerrainDependenciesDir, "include");
+					TerrainDependenciesLinkLibrariesDirectory = Path.Combine(AGXTerrainDependenciesDir, "lib");
+					TerrainDependenciesRuntimeLibrariesDirectory = Path.Combine(AGXTerrainDependenciesDir, "lib");
 					ConfigIncludePath = Path.Combine(AGXBuildDir, "include");
 					break;
 				case UnrealTargetPlatform.Win64:
@@ -148,6 +168,9 @@ public class AGXUnrealLibrary : ModuleRules
 					LibraryIncludePath = Path.Combine(AGXDir, "include");
 					ComponentsIncludePath = Path.Combine(AGXDir, "include");
 					DependenciesIncludePath = Path.Combine(AGXDir, "include");
+					TerrainDependenciesIncludePath = Path.Combine(AGXDir, "include");
+					TerrainDependenciesLinkLibrariesDirectory = Path.Combine(AGXDir, "lib", "x64");
+					TerrainDependenciesRuntimeLibrariesDirectory = Path.Combine(AGXDir, "bin", "x64");
 					ConfigIncludePath = Path.Combine(AGXDir, "include");
 					break;
 			}
