@@ -1,4 +1,10 @@
 
+// This header file should only be included from source files built as part of AGXUnrealBarrier.
+
+#pragma once
+
+
+
 #include "ShapeBarrier.h"
 
 #include "AGXRefs.h"
@@ -14,4 +20,20 @@ void FShapeBarrier::AllocateNative(TFunc Factory, TPack... Params)
 	NativeRef->NativeGeometry = new agxCollide::Geometry();
 	Factory(std::forward<TPack>(Params)...);
 	NativeRef->NativeGeometry->add(NativeRef->NativeShape);
+}
+
+template<typename T>
+T* FShapeBarrier::GetNativeShape()
+{
+	check(HasNative());
+	check(NativeRef->NativeShape->is<T>());
+	return NativeRef->NativeShape->asSafe<T>();
+}
+
+template<typename T>
+const T* FShapeBarrier::GetNativeShape() const
+{
+	check(HasNative());
+	check(NativeRef->NativeShape->is<T>());
+	return NativeRef->NativeShape->asSafe<T>();
 }

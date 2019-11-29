@@ -23,6 +23,12 @@ public:
 	FGeometryAndShapeRef* GetNative();
 	const FGeometryAndShapeRef* GetNative() const;
 
+	template<typename T>
+	T* GetNativeShape();
+
+	template<typename T>
+	const T* GetNativeShape() const;
+
 	void SetLocalPosition(const FVector &Position);
 	void SetLocalRotation(const FQuat &Rotation);
 
@@ -37,6 +43,8 @@ public:
 
 	void SetEnableCollisions(bool CanCollide);
 	bool GetEnableCollisions() const;
+
+
 
 protected:
 	template<typename TFunc, typename... TPack>
