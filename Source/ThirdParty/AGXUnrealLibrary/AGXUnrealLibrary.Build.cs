@@ -141,38 +141,37 @@ public class AGXUnrealLibrary : ModuleRules
 				return;
 			}
 
-			switch(Target.Platform)
+			if (Target.Platform == UnrealTargetPlatform.Linux)
 			{
-				case UnrealTargetPlatform.Linux:
-					LinkLibraryPrefix = "lib";
-					LinkLibraryPostfix = ".so";
-					RuntimeLibraryPrefix = "lib";
-					RuntimeLibraryPostfix = ".so";
-					LinkLibrariesDirectory = Path.Combine(AGXBuildDir, "lib");
-					RuntimeLibrariesDirectory = Path.Combine(AGXBuildDir, "lib");
-					LibraryIncludePath = Path.Combine(AGXDir, "include");
-					ComponentsIncludePath = Path.Combine(AGXDir, "Components");
-					DependenciesIncludePath = Path.Combine(AGXDependenciesDir, "include");
-					TerrainDependenciesIncludePath = Path.Combine(AGXTerrainDependenciesDir, "include");
-					TerrainDependenciesLinkLibrariesDirectory = Path.Combine(AGXTerrainDependenciesDir, "lib");
-					TerrainDependenciesRuntimeLibrariesDirectory = Path.Combine(AGXTerrainDependenciesDir, "lib");
-					ConfigIncludePath = Path.Combine(AGXBuildDir, "include");
-					break;
-				case UnrealTargetPlatform.Win64:
-					LinkLibraryPrefix = "";
-					LinkLibraryPostfix = ".lib";
-					RuntimeLibraryPrefix = "";
-					RuntimeLibraryPostfix = ".dll";
-					LinkLibrariesDirectory = Path.Combine(AGXDir, "lib", "x64");
-					RuntimeLibrariesDirectory = Path.Combine(AGXDir, "bin", "x64");
-					LibraryIncludePath = Path.Combine(AGXDir, "include");
-					ComponentsIncludePath = Path.Combine(AGXDir, "include");
-					DependenciesIncludePath = Path.Combine(AGXDir, "include");
-					TerrainDependenciesIncludePath = Path.Combine(AGXDir, "include");
-					TerrainDependenciesLinkLibrariesDirectory = Path.Combine(AGXDir, "lib", "x64");
-					TerrainDependenciesRuntimeLibrariesDirectory = Path.Combine(AGXDir, "bin", "x64");
-					ConfigIncludePath = Path.Combine(AGXDir, "include");
-					break;
+				LinkLibraryPrefix = "lib";
+				LinkLibraryPostfix = ".so";
+				RuntimeLibraryPrefix = "lib";
+				RuntimeLibraryPostfix = ".so";
+				LinkLibrariesDirectory = Path.Combine(AGXBuildDir, "lib");
+				RuntimeLibrariesDirectory = Path.Combine(AGXBuildDir, "lib");
+				LibraryIncludePath = Path.Combine(AGXDir, "include");
+				ComponentsIncludePath = Path.Combine(AGXDir, "Components");
+				DependenciesIncludePath = Path.Combine(AGXDependenciesDir, "include");
+				TerrainDependenciesIncludePath = Path.Combine(AGXTerrainDependenciesDir, "include");
+				TerrainDependenciesLinkLibrariesDirectory = Path.Combine(AGXTerrainDependenciesDir, "lib");
+				TerrainDependenciesRuntimeLibrariesDirectory = Path.Combine(AGXTerrainDependenciesDir, "lib");
+				ConfigIncludePath = Path.Combine(AGXBuildDir, "include");
+			}
+			else if(Target.Platform == UnrealTargetPlatform.Win64)
+			{
+				LinkLibraryPrefix = "";
+				LinkLibraryPostfix = ".lib";
+				RuntimeLibraryPrefix = "";
+				RuntimeLibraryPostfix = ".dll";
+				LinkLibrariesDirectory = Path.Combine(AGXDir, "lib", "x64");
+				RuntimeLibrariesDirectory = Path.Combine(AGXDir, "bin", "x64");
+				LibraryIncludePath = Path.Combine(AGXDir, "include");
+				ComponentsIncludePath = Path.Combine(AGXDir, "include");
+				DependenciesIncludePath = Path.Combine(AGXDir, "include");
+				TerrainDependenciesIncludePath = Path.Combine(AGXDir, "include");
+				TerrainDependenciesLinkLibrariesDirectory = Path.Combine(AGXDir, "lib", "x64");
+				TerrainDependenciesRuntimeLibrariesDirectory = Path.Combine(AGXDir, "bin", "x64");
+				ConfigIncludePath = Path.Combine(AGXDir, "include");
 			}
 
 			if (Target.Configuration == UnrealTargetConfiguration.Debug)

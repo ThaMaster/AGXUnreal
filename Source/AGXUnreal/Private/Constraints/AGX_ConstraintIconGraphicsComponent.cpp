@@ -177,10 +177,7 @@ public:
 				Geometry->VertexFactory.InitResource();
 				Geometry->IndexBuffer.InitResource();
 			});
-
-			UE_LOG(LogTemp, Log, TEXT("FAGX_ConstraintIconGraphicsProxy for \"%s\""), *GetNameSafe(Component->GetOwner()));
-			AGX_MeshUtilities::PrintMeshToLog(Geometry->VertexBuffers, Geometry->IndexBuffer);
-		};
+		}
 	}
 
 	virtual ~FAGX_ConstraintIconGraphicsProxy()
@@ -394,8 +391,15 @@ private:
 					FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer =
 						Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
 
+#if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 23)
+					/// \todo Replace Unknown with proper name or use some getter function to get a proper value.
+					bool Unknown = false;
+					DynamicPrimitiveUniformBuffer.Set(EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(),
+						GetLocalBounds(), true, false, DrawsVelocity(), Unknown);
+#else
 					DynamicPrimitiveUniformBuffer.Set(EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(),
 						GetLocalBounds(), true, false, UseEditorDepthTest());
+#endif
 
 					BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
 
