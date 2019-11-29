@@ -159,7 +159,7 @@ void UAGX_HeightFieldShapeComponent::RecenterActorOnLandscape()
 	const FVector Location = SourceLandscape->GetActorLocation();
 	const FVector Middle = Location + FVector(LandscapeSideSize / 2.0f, LandscapeSideSize / 2.0f, Location.Z);
 	GetOwner()->SetActorLocation(Middle);
-	MarkRenderStateDirty();
+	MarkRenderStateDirty(); /// \todo Not sure if this is actually required or not.
 }
 
 #if WITH_EDITOR
