@@ -32,7 +32,6 @@ public class AGXUnrealLibrary : ModuleRules
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxSabre"));
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxTerrain"));
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxVehicle"));
-		PublicAdditionalLibraries.Add(CurrentPlatform.LinkTerrainDependencyLibraryPath("openvdb"));
 
 		// TODO: Do we need to list more libraries here, or will transitive
 		// dependencies be enough?.
