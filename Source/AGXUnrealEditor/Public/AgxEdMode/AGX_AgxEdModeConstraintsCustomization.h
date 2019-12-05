@@ -24,7 +24,6 @@ public:
 
 	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
 
-
 private: // Constraint Creator
 
 	void CreateConstraintCreatorCategory(IDetailLayoutBuilder& DetailBuilder, 
@@ -48,7 +47,7 @@ private: // Constraint Creator
 	TArray<UClass*> ConstraintClasses;
 
 
-private: // Constration Browser
+private: // Constraint Browser
 
 	void CreateConstraintBrowserCategory(IDetailLayoutBuilder& DetailBuilder,
 		UAGX_AgxEdModeConstraints* ConstraintsSubMode);

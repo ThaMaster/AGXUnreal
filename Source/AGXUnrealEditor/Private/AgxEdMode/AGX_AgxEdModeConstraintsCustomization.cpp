@@ -41,24 +41,11 @@ FAGX_AgxEdModeConstraintsCustomization::FAGX_AgxEdModeConstraintsCustomization()
 	UClass* Class = StaticClass<AAGX_Constraint>();
 }
 
-template <typename T>
-T* GetSingleObjectBeingCustomized(IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true)
-{
-	static_assert(std::is_base_of<UObject, T>::value, "T must inherit from UObject");
-
-	TArray<TWeakObjectPtr<UObject>> Objects;
-	DetailBuilder.GetObjectsBeingCustomized(Objects);
-
-	if (Objects.Num() == 1 || (!FailIfMultiple && Objects.Num() > 1))
-		return Cast<T>(Objects[0].Get());
-	else
-		return nullptr;
-}
 
 void FAGX_AgxEdModeConstraintsCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	UAGX_AgxEdModeConstraints* ConstraintsSubMode =
-		GetSingleObjectBeingCustomized<UAGX_AgxEdModeConstraints>(DetailBuilder);
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_AgxEdModeConstraints>(DetailBuilder);
 
 	if (!ConstraintsSubMode)
 		return;
