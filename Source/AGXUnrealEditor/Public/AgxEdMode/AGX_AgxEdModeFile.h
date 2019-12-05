@@ -15,22 +15,13 @@ class AGXUNREALEDITOR_API UAGX_AgxEdModeFile : public UAGX_AgxEdModeSubMode
 	GENERATED_BODY()
 
 public:
-
 	static UAGX_AgxEdModeFile* GetInstance();
 
 public:
-
 	virtual FText GetDisplayName() const override;
 	virtual FText GetTooltip() const override;
 
-public: // AGX File Importer
-
-	UPROPERTY(EditAnywhere, Category = "AGX File Importer")
-	int DummyPlaceholder; /// \todo Replace with actual properties.
-
-public: // AGX File Exporter
-
-	UPROPERTY(EditAnywhere, Category = "AGX File Exporter")
-	int DummyPlaceholder2; /// \todo Replace with actual properties.
-
+public:
+	static void ImportAGXArchive();
+	static void ExportAGXArchive();
 };

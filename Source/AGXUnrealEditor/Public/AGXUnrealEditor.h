@@ -18,16 +18,9 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
-	/// \todo I think we can rename this to whatever we want.
-	/// \todo Can these be private?
-	void OnImportAGXArchive();
-	void OnExportAGXArchive();
-
 	const TSharedPtr<class FAGX_TopMenu>& GetAgxTopMenu() const;
 
 private:
-	void AddToolbarExtension(FToolBarBuilder& Builder);
-	void AddMenuExtension(FMenuBuilder& Builder);
 
 	/**
 	 * Registers settings exposed in the Project Settings window.

@@ -8,8 +8,6 @@
 #include "ISettingsModule.h"
 #include "Modules/ModuleManager.h"
 
-#include "AGXArchiveCommands.h"
-
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "LevelEditor.h"
 #include "PropertyEditorModule.h"
@@ -22,6 +20,8 @@
 #include "AgxEdMode/AGX_AgxEdMode.h"
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 #include "AgxEdMode/AGX_AgxEdModeConstraintsCustomization.h"
+#include "AgxEdMode/AGX_AgxEdModeFile.h"
+#include "AgxEdMode/AGX_AgxEdModeFileCustomization.h"
 #include "AGX_BoxShapeComponent.h"
 #include "AGX_EditorStyle.h"
 #include "AGX_EditorUtilities.h"
@@ -110,38 +110,12 @@ void FAGXUnrealEditorModule::UnregisterProjectSettings()
 
 void FAGXUnrealEditorModule::RegisterCommands()
 {
-	/// \todo Move the ImportAGXArchive button/menu entry somewhere AGXUnreal centric.
-	FAGXArchiveStyle::Initialize();
-	FAGXArchiveStyle::ReloadTextures();
-
-	FAGXArchiveCommands::Register();
-	PluginCommands = MakeShareable(new FUICommandList);
-	PluginCommands->MapAction(
-		FAGXArchiveCommands::Get().ImportAction,
-		FExecuteAction::CreateRaw(this, &FAGXUnrealEditorModule::OnImportAGXArchive), FCanExecuteAction());
-	PluginCommands->MapAction(
-		FAGXArchiveCommands::Get().ExportAction,
-		FExecuteAction::CreateRaw(this, &FAGXUnrealEditorModule::OnExportAGXArchive), FCanExecuteAction());
-
-	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
-	{
-		TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender());
-		MenuExtender->AddMenuExtension("WindowLayout", EExtensionHook::After, PluginCommands,
-			FMenuExtensionDelegate::CreateRaw(this, &FAGXUnrealEditorModule::AddMenuExtension));
-		LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
-	}
-	{
-		TSharedPtr<FExtender> ToolbarExtender = MakeShareable(new FExtender);
-		ToolbarExtender->AddToolBarExtension("Settings", EExtensionHook::After, PluginCommands,
-			FToolBarExtensionDelegate::CreateRaw(this, &FAGXUnrealEditorModule::AddToolbarExtension));
-		LevelEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
-	}
+	// Nothing here yet.
 }
 
 void FAGXUnrealEditorModule::UnregisterCommands()
 {
-	FAGXArchiveStyle::Shutdown();
-	FAGXArchiveCommands::Unregister();
+	// Nothing here yet.
 }
 
 void FAGXUnrealEditorModule::RegisterAssetTypeActions()
@@ -174,87 +148,6 @@ void FAGXUnrealEditorModule::RegisterAssetTypeAction(IAssetTools& AssetTools, co
 	RegisteredAssetTypeActions.Add(Action);
 }
 
-void FAGXUnrealEditorModule::OnImportAGXArchive()
-{
-	/// \todo See
-	/// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html?sort=oldest
-	/// for a discussion on window handles.
-	TArray<FString> Filenames;
-	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(nullptr, TEXT("DialogTitle"), TEXT("DefaultPath"),
-		TEXT("DefaultFile"), TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None, Filenames);
-
-	if (!FileSelected || Filenames.Num() == 0)
-	{
-		UE_LOG(LogTemp, Log, TEXT("No .agx file selected. Doing nothing"));
-		return;
-	}
-
-	if (Filenames.Num() > 1)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Multiple files selected but we only support single files for now. Doing nothing."));
-		FAGX_EditorUtilities::ShowNotification(
-			LOCTEXT("Multiple .agx", "Multiple file selected but we only support single files for now. Doing nothing."));
-		return;
-	}
-
-	FString Filename = Filenames[0];
-	AGX_ArchiveImporter::ImportAGXArchive(Filename);
-}
-
-void FAGXUnrealEditorModule::OnExportAGXArchive()
-{
-	TArray<FString> Filenames;
-	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
-		nullptr, TEXT("Select export file."), TEXT(""), TEXT("unreal.agx"), TEXT("AGX Dynamics Archive|*.agx"),
-		EFileDialogFlags::None, Filenames);
-	if (!FileSelected || Filenames.Num() == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No .agx file selected, Doing nothing."));
-		return;
-	}
-
-	if (Filenames.Num() > 1)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Multiple files selected but we only support exporting to one. Doing nothing."));
-		FAGX_EditorUtilities::ShowNotification(
-			LOCTEXT("Multiple .agx export", "Multiple files selected but we only support exporting to one. Doing nothing."));
-		return;
-	}
-
-	FString Filename = Filenames[0];
-	if (Filename.IsEmpty())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Cannot store AGX Dynamics archive to an empty file name. Doing nothing."));
-		FAGX_EditorUtilities::ShowNotification(
-			LOCTEXT("Empty .agx name export", "Cannot store AGX Dynamics archive to an empty file name. Doing nothing."));
-		return;
-	}
-
-	FString Extension = FPaths::GetExtension(Filename);
-	if (Extension != "agx" && Extension != "agx")
-	{
-		Filename += ".agx";
-	}
-
-	bool Exported = AGX_ArchiveExporter::ExportAGXArchive(Filename);
-	if (!Exported)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("AGX Dynamics archive could not be saved to %s."), *Filename);
-	}
-	UE_LOG(LogTemp, Log, TEXT("AGX Dynamics archive saved to %s."), *Filename);
-}
-
-void FAGXUnrealEditorModule::AddMenuExtension(FMenuBuilder& Builder)
-{
-	Builder.AddMenuEntry(FAGXArchiveCommands::Get().ImportAction);
-	Builder.AddMenuEntry(FAGXArchiveCommands::Get().ExportAction);
-}
-
-void FAGXUnrealEditorModule::AddToolbarExtension(FToolBarBuilder& Builder)
-{
-	Builder.AddToolBarButton(FAGXArchiveCommands::Get().ImportAction);
-	Builder.AddToolBarButton(FAGXArchiveCommands::Get().ExportAction);
-}
 
 void FAGXUnrealEditorModule::RegisterCustomizations()
 {
@@ -270,6 +163,9 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 	PropertyModule.RegisterCustomClassLayout(UAGX_AgxEdModeConstraints::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_AgxEdModeConstraintsCustomization::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(UAGX_AgxEdModeFile::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_AgxEdModeFileCustomization::MakeInstance));
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -282,6 +178,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomClassLayout(AAGX_Constraint::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeConstraints::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeFile::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
