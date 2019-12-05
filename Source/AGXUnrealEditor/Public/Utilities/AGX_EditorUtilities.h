@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DetailLayoutBuilder.h"
 
 #include <tuple>
 
@@ -145,7 +146,7 @@ public:
 };
 
 template <typename T>
-T* FAGX_EditorUtilities::GetSingleObjectBeingCustomized(IDetailLayoutBuilder& DetailBuilder, 
+T* FAGX_EditorUtilities::GetSingleObjectBeingCustomized(IDetailLayoutBuilder& DetailBuilder,
 	bool FailIfMultiple)
 {
 	static_assert(std::is_base_of<UObject, T>::value, "T must inherit from UObject");
