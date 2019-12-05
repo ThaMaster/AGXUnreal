@@ -1,8 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 
+#include "Utilities/AGX_EditorUtilities.h"
+#include "AGX_ArchiveImporter.h"
+#include "AGX_ArchiveExporter.h"
+
 #include "DesktopPlatformModule.h"
+#include "Misc/Paths.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_AgxEdModeFile"
 
@@ -81,7 +84,7 @@ void UAGX_AgxEdModeFile::ExportAGXArchive()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AGX Dynamics archive could not be saved to %s."), *Filename);
 	}
-	
+
 }
 
 FText UAGX_AgxEdModeFile::GetDisplayName() const
