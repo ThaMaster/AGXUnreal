@@ -76,6 +76,12 @@ void UAGX_AgxEdModeFile::ExportAGXArchive()
 		return;
 	}
 
+	FString Extension = FPaths::GetExtension(Filename);
+	if (Extension != "agx" && Extension != "aagx")
+	{
+		Filename += ".agx";
+	}
+
 	if (AGX_ArchiveExporter::ExportAGXArchive(Filename))
 	{
 		UE_LOG(LogTemp, Log, TEXT("AGX Dynamics archive saved to %s."), *Filename);
