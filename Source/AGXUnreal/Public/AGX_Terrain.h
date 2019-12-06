@@ -140,6 +140,7 @@ public:
 			UIMax = "4096"))
 	int32 MaxNumRenderParticles = 2048;
 
+	/// \todo Add UNiagaraSystem once we get particle reading from AGX Dynamics in place.
 //	UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition = "bEnableParticleRendering"))
 //	UNiagaraSystem* ParticleSystemAsset;
 
@@ -178,6 +179,7 @@ private:
 	TArray<FFloat32> TerrainParticlesData;
 	TArray<FUpdateTextureRegion2D> ParticlesDataMapRegions;	// TODO: Remove!
 	bool ParticleSystemIsInitialized = false;
+	/// \todo Add UNiagaraComponent once we get particle reading from AGX Dynamics in place.
 //	UNiagaraComponent* ParticleSystemComponent = nullptr;
 	const int32 NumPixelsPerParticle = 2;
 };
