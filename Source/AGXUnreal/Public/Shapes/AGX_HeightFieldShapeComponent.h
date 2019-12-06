@@ -34,14 +34,15 @@ public:
 	virtual void UpdateNativeProperties() override;
 
 #if WITH_EDITOR
-	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent & PropertyChangedEvent);
+	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent);
 #endif
 
 protected:
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 
 #if WITH_EDITOR
-	virtual bool DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const override;
+	virtual bool DoesPropertyAffectVisualMesh(
+		const FName& PropertyName, const FName& MemberPropertyName) const override;
 #endif
 
 private:
@@ -51,7 +52,7 @@ private:
 	// Tell the Barrier object to release its references to the AGX Dynamics objects.
 	virtual void ReleaseNative() override;
 
-	void OnSourceLandscapeChanged(UObject *, struct FPropertyChangedEvent &);
+	void OnSourceLandscapeChanged(UObject*, struct FPropertyChangedEvent&);
 
 	void RecenterActorOnLandscape();
 
@@ -62,5 +63,4 @@ private:
 
 	FCoreUObjectDelegates::FOnObjectPropertyChanged::FDelegate OnPropertyChangedHandle;
 	FDelegateHandle OnPropertyChangedHandleDelegateHandle;
-
 };
