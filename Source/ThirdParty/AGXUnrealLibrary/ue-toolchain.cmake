@@ -21,7 +21,7 @@ endif()
 # Disable linking with the system standard library and setup linker directoeies to the Unreal Engine paths instead.
 set(UE_LINKER_FLAGS "-nodefaultlibs -L$ENV{UE_THIRD_PARTY_DIR}/Linux/LibCxx/lib/Linux/x86_64-unknown-linux-gnu/")
 if (NOT CMAKE_EXE_LINKER_FLAGS MATCHES "-nodefaultlibs")
-  set(CMAKE_CXX_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${UE_LINKER_FLAGS}" CACHE INTERNAL "")
+  set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${UE_LINKER_FLAGS}" CACHE INTERNAL "")
 endif()
 if (NOT CMAKE_MODULE_LINKER_FLAGS MATCHES "-nodefaultlibs")
   set(CMAKE_MODULE_LINKER_FLAGS  "${CMAKE_MODULE_LINKER_FLAGS} ${UE_LINKER_FLAGS}" CACHE INTERNAL "")
