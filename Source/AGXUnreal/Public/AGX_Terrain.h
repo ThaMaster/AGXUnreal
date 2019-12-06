@@ -18,6 +18,8 @@
 //#include "NiagaraFunctionLibrary.h"
 //#include "NiagaraSystemInstance.h"
 
+#include "Engine/TextureRenderTarget2D.h"
+
 #include "AGX_Terrain.generated.h"
 
 
