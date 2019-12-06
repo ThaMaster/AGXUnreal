@@ -1,7 +1,6 @@
 #include "AGX_HeightFieldShapeComponent.h"
 
 #include "AGX_HeightFieldUtilities.h"
-
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
@@ -12,7 +11,6 @@ UAGX_HeightFieldShapeComponent::UAGX_HeightFieldShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	UE_LOG(LogAGX, Log, TEXT("BoxShape instance created."));
-
 
 	// HeightFields are tightly coupled to a source landscape. The Actor owning
 	// this HeightField should always be positioned so that heights in the
