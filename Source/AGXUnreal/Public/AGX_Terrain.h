@@ -22,10 +22,9 @@
 
 #include "AGX_Terrain.generated.h"
 
-
 class ALandscape;
-//class UComponent;
-//class UNiagaraSystem;
+// class UComponent;
+// class UNiagaraSystem;
 
 UCLASS(ClassGroup = "AGX", Category = "AGX")
 class AGXUNREAL_API AAGX_Terrain : public AActor
@@ -89,7 +88,6 @@ public:
 	UAGX_Material* SurfaceMaterial;
 #endif
 
-
 /// \todo Add Shovels.
 #if 0
 	/**
@@ -143,8 +141,8 @@ public:
 	int32 MaxNumRenderParticles = 2048;
 
 	/// \todo Add UNiagaraSystem once we get particle reading from AGX Dynamics in place.
-//	UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition = "bEnableParticleRendering"))
-//	UNiagaraSystem* ParticleSystemAsset;
+	// UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition = "bEnableParticleRendering"))
+	// UNiagaraSystem* ParticleSystemAsset;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition = "bEnableParticleRendering"))
 	UTextureRenderTarget2D* TerrainParticlesDataMap;	// TODO: Should try find or create this automatically!
@@ -152,7 +150,6 @@ public:
 	/** Whether soil particles should be rendered or not. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")
 	bool bEnableActiveZoneRendering = false;
-
 
 	FTerrainBarrier* GetNative();
 	const FTerrainBarrier* GetNative() const;
@@ -182,6 +179,6 @@ private:
 	TArray<FUpdateTextureRegion2D> ParticlesDataMapRegions;	// TODO: Remove!
 	bool ParticleSystemIsInitialized = false;
 	/// \todo Add UNiagaraComponent once we get particle reading from AGX Dynamics in place.
-//	UNiagaraComponent* ParticleSystemComponent = nullptr;
+	// UNiagaraComponent* ParticleSystemComponent = nullptr;
 	const int32 NumPixelsPerParticle = 2;
 };
