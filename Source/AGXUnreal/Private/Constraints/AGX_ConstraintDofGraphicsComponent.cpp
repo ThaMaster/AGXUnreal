@@ -634,7 +634,21 @@ FPrimitiveSceneProxy* UAGX_ConstraintDofGraphicsComponent::CreateSceneProxy()
 	{
 		return nullptr;
 	}
-	MarkRenderDynamicDataDirty();
+
+	if(GetWorld()->bPostTickComponentUpdate)
+	{
+		// Based on
+		// https://github.com/kestrelm/Creature_UE4/blob/master/CreatureEditorAndPlugin/CreaturePlugin/Source/CreaturePlugin/Private/CreatureMeshComponent.cpp
+		//
+		// Not sure that SendRenderDynamicData_Concurrent is what we really want
+		// to do in this case, but I know that MarkRenderDynamicDataDirty isn't
+		// it because it does check(!bPostTickComponentUpdate).
+		SendRenderDynamicData_Concurrent();
+	}
+	else
+	{
+		MarkRenderDynamicDataDirty();
+	}
 	return new FAGX_ConstraintDofGraphicsProxy(this);
 }
 
