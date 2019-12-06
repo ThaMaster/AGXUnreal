@@ -167,7 +167,7 @@ public:
 private:
 	FTerrainBarrier NativeBarrier;
 
-	// Height Field Related Variables.
+	// Height field related variables.
 	TArray<FFloat16> DisplacementData;
 	TArray<FUpdateTextureRegion2D> DisplacementMapRegions;	// TODO: Remove!
 	bool DisplacmentMapIsInitialized = false;
@@ -177,7 +177,7 @@ private:
 	agxCollide::HeightFieldRef InitialTerrainHeights = nullptr;
 #endif
 
-	// Particle related Variables.
+	// Particle related variables.
 	TArray<FFloat32> TerrainParticlesData;
 	TArray<FUpdateTextureRegion2D> ParticlesDataMapRegions;	// TODO: Remove!
 	bool ParticleSystemIsInitialized = false;
