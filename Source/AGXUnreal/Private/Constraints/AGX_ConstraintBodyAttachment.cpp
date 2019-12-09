@@ -2,6 +2,7 @@
 
 #include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
+#include "AGX_LogCategory.h"
 
 FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocation() const
 {
@@ -97,7 +98,7 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(AAGX_Constraint*
 	if (ConstraintFrame)
 		ConstraintFrame->AddConstraintUsage(Owner);
 
-	UE_LOG(LogTemp, Log, TEXT("OnFrameDefiningActorChanged: FrameDefiningActor = %s, ConstraintFrame = %s"),
+	UE_LOG(LogAGX, Log, TEXT("OnFrameDefiningActorChanged: FrameDefiningActor = %s, ConstraintFrame = %s"),
 		*GetNameSafe(FrameDefiningActor), *GetNameSafe(ConstraintFrame));
 }
 

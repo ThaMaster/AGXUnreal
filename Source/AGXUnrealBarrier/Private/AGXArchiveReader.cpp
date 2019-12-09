@@ -6,6 +6,7 @@
 #include "TypeConversions.h"
 
 #include "AGXBarrierFactories.h"
+#include "AGX_LogCategory.h"
 
 #include "BeginAGXIncludes.h"
 #include <agx/RigidBody.h>
@@ -65,14 +66,14 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 	size_t NumRead {Simulation->read(Convert(Filename))};
 	if (NumRead == 0)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Could not read .agx filel %s."), *Filename);
+		UE_LOG(LogAGX, Log, TEXT("Could not read .agx filel %s."), *Filename);
 		return;
 	}
 
 	agx::RigidBodyRefVector& Bodies {Simulation->getRigidBodies()};
 	if (Bodies.size() > size_t(std::numeric_limits<int32>::max()))
 	{
-		UE_LOG(LogTemp, Log, TEXT(".agx file %s contains too many bodies."), *Filename);
+		UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many bodies."), *Filename);
 		return; /// \todo Should be bail, or restore as many bodies as we can?
 	}
 
@@ -90,7 +91,7 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 	agx::ConstraintRefSetVector& Constraints = Simulation->getConstraints();
 	if (Constraints.size() > size_t(std::numeric_limits<int32>::max()))
 	{
-		UE_LOG(LogTemp, Log, TEXT(".agx file %s contains too many constraints."), *Filename);
+		UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many constraints."), *Filename);
 		return; /// \todo Should we bail, or restore as many constraints as we can?
 		/// \todo Should we do as much error checking as possible first, before
 		/// creating any Editor instances?
@@ -124,7 +125,7 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 		}
 		else
 		{
-			UE_LOG(LogTemp, Log, TEXT("Constraint '%s' has unupported type."), *Convert(Constraint->getName()));
+			UE_LOG(LogAGX, Log, TEXT("Constraint '%s' has unupported type."), *Convert(Constraint->getName()));
 		}
 	}
 }
