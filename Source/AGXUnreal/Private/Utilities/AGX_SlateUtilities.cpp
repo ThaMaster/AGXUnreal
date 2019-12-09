@@ -1,5 +1,7 @@
 #include "Utilities/AGX_SlateUtilities.h"
 
+#include "AGX_LogCategory.h"
+
 #include "SBoxPanel.h"
 #include "SWidget.h"
 
@@ -45,7 +47,7 @@ void FAGX_SlateUtilities::LogChildWidgets(const TSharedPtr<SWidget>& Parent, boo
 	{
 		TSharedRef<SWidget> Child = Children->GetChildAt(ChildIndex);
 
-		UE_LOG(LogTemp, Log, TEXT("%s%s"), *Prefix, *Child->GetTypeAsString());
+		UE_LOG(LogAGX, Log, TEXT("%s%s"), *Prefix, *Child->GetTypeAsString());
 
 		if (Recursive)
 			LogChildWidgets(Child, Recursive, Prefix + "  ");

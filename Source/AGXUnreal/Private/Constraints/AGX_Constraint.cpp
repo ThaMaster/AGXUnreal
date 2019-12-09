@@ -4,6 +4,7 @@
 
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "AGX_LogCategory.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
@@ -229,7 +230,7 @@ void AAGX_Constraint::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 	}
 
 	UE_LOG(
-		LogTemp, Log, TEXT("PostEditChangeProperty: PropertyName = %s, MemberPropertyName = %s"),
+		LogAGX, Log, TEXT("PostEditChangeProperty: PropertyName = %s, MemberPropertyName = %s"),
 		*PropertyName.ToString(), *MemberPropertyName.ToString());
 }
 
