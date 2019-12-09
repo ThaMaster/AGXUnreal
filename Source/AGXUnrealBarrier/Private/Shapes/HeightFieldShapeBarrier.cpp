@@ -56,8 +56,12 @@ void FHeightFieldShapeBarrier::AllocateNativeHeightField(
 
 	agx::VectorPOD<agx::Real> HeightsAGX;
 	HeightsAGX.reserve(static_cast<size_t>(Heights.Num()));
-	auto ConvertHeight = static_cast<agx::Real(*)(float)>(ConvertDistance);
-	std::transform(Heights.begin(), Heights.end(), std::back_inserter(HeightsAGX), ConvertHeight);
+
+	for (auto& Height : Heights)
+	{
+		HeightsAGX.push_back(ConvertDistance(Height));
+	}
+
 	NativeHeightField(this)->setHeights(HeightsAGX);
 }
 
