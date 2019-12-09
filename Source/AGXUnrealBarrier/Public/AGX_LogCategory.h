@@ -13,4 +13,4 @@
  *
  * Compile time verbosity is set to 'All'.
  */
-AGXUNREAL_API DECLARE_LOG_CATEGORY_EXTERN(LogAGX, Log, All);
+AGXUNREALBARRIER_API DECLARE_LOG_CATEGORY_EXTERN(LogAGX, Log, All);
