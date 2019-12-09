@@ -19,6 +19,7 @@
 #include "AGX_MeshUtilities.h"
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintEnums.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 /**
  * Holds vertex and index buffers for rendering.
