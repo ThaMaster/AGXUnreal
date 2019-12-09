@@ -28,6 +28,7 @@
 #include "Constraints/AGX_HingeConstraint.h"
 #include "Constraints/AGX_LockConstraint.h"
 #include "Constraints/AGX_PrismaticConstraint.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 /**
  * Holds vertex and index buffers for rendering.
