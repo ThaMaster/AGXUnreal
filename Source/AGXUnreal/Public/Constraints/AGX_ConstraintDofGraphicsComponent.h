@@ -1,5 +1,3 @@
-// Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -22,7 +20,7 @@ public:
 
 	UPROPERTY()
 	AAGX_Constraint* Constraint;
-	
+
 	UMaterialInterface* GetFreeTranslationMaterial() const;
 	UMaterialInterface* GetFreeRotationMaterial() const;
 	UMaterialInterface* GetLockedTranslationMaterial() const;
