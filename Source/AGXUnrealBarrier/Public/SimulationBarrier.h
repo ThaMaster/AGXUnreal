@@ -10,6 +10,7 @@ class FRigidBodyBarrier;
 class FConstraintBarrier;
 class FContactMaterialBarrier;
 class FMaterialBarrier;
+class FTerrainBarrier;
 
 class AGXUNREALBARRIER_API FSimulationBarrier
 {
@@ -17,7 +18,7 @@ public:
 	FSimulationBarrier();
 	~FSimulationBarrier();
 
-	void AddRigidBody(FRigidBodyBarrier* body);
+	void AddRigidBody(FRigidBodyBarrier* Body);
 	void AddConstraint(FConstraintBarrier* Constraint);
 
 	void AddMaterial(FMaterialBarrier* Material);
@@ -25,6 +26,8 @@ public:
 
 	void AddContactMaterial(FContactMaterialBarrier* ContactMaterial);
 	void RemoveContactMaterial(FContactMaterialBarrier* ContactMaterial);
+
+	void AddTerrain(FTerrainBarrier* Terrain);
 
 	bool WriteAGXArchive(const FString& Filename) const;
 

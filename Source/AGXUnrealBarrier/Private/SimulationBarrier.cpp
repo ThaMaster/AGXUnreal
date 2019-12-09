@@ -1,6 +1,7 @@
 #include "SimulationBarrier.h"
 
 #include "RigidBodyBarrier.h"
+#include "TerrainBarrier.h"
 #include "TypeConversions.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
@@ -26,11 +27,11 @@ FSimulationBarrier::~FSimulationBarrier()
 	// not just the forward declaration, of FSimulationRef.
 }
 
-void FSimulationBarrier::AddRigidBody(FRigidBodyBarrier* body)
+void FSimulationBarrier::AddRigidBody(FRigidBodyBarrier* Body)
 {
 	check(HasNative());
-	check(body->HasNative());
-	NativeRef->Native->add(body->GetNative()->Native);
+	check(Body->HasNative());
+	NativeRef->Native->add(Body->GetNative()->Native);
 }
 
 void FSimulationBarrier::AddConstraint(FConstraintBarrier* Constraint)
@@ -66,6 +67,13 @@ void FSimulationBarrier::RemoveContactMaterial(FContactMaterialBarrier* ContactM
 	check(HasNative());
 	check(ContactMaterial->HasNative());
 	NativeRef->Native->remove(ContactMaterial->GetNative()->Native);
+}
+
+void FSimulationBarrier::AddTerrain(FTerrainBarrier* Terrain)
+{
+	check(HasNative());
+	check(Terrain->HasNative());
+	NativeRef->Native->add(Terrain->GetNative()->Native);
 }
 
 bool FSimulationBarrier::WriteAGXArchive(const FString& Filename) const

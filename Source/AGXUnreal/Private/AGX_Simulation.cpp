@@ -1,14 +1,20 @@
 #include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Stepper.h"
+#include "AGX_Terrain.h"
 #include "AGX_LogCategory.h"
 
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 
-void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* body)
+void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
 {
-	NativeBarrier.AddRigidBody(body->GetNative());
+	NativeBarrier.AddRigidBody(Body->GetNative());
+}
+
+void UAGX_Simulation::AddTerrain(AAGX_Terrain* Terrain)
+{
+	NativeBarrier.AddTerrain(Terrain->GetNative());
 }
 
 void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)

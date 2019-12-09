@@ -11,6 +11,8 @@
 
 class UAGX_RigidBodyComponent;
 class UAGX_MaterialBase;
+class AAGX_Terrain;
+
 
 /**
  * Manages an AGX simulation instance.
@@ -44,7 +46,8 @@ public:
 	UPROPERTY(config, EditAnywhere, Category = "Scene Defaults")
 	FVector Gravity = FVector(0.0f, 0.0f, -980.665f);
 
-	void AddRigidBody(UAGX_RigidBodyComponent* body);
+	void AddRigidBody(UAGX_RigidBodyComponent* Body);
+	void AddTerrain(AAGX_Terrain* Terrain);
 
 	bool WriteAGXArchive(const FString& Filename) const;
 

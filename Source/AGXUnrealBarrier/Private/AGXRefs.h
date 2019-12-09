@@ -8,6 +8,7 @@
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
+#include <agxTerrain/Terrain.h>
 #include "EndAGXIncludes.h"
 
 struct FSimulationRef
@@ -95,6 +96,17 @@ struct FContactMaterialRef
 
 	FContactMaterialRef() = default;
 	FContactMaterialRef(agx::ContactMaterial* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FTerrainRef
+{
+	agxTerrain::TerrainRef Native;
+
+	FTerrainRef() = default;
+	FTerrainRef(agxTerrain::Terrain* InNative)
 		: Native(InNative)
 	{
 	}

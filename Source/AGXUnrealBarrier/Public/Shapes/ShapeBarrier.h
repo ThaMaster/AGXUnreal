@@ -11,14 +11,23 @@ class AGXUNREALBARRIER_API FShapeBarrier
 {
 public:
 	FShapeBarrier();
+	FShapeBarrier(FShapeBarrier&& Other) noexcept;
 	FShapeBarrier(std::unique_ptr<FGeometryAndShapeRef> Native);
 	virtual ~FShapeBarrier();
+
+	FShapeBarrier& operator=(FShapeBarrier&& Other) noexcept;
 
 	bool HasNative() const;
 	void AllocateNative();
 	void ReleaseNative();
 	FGeometryAndShapeRef* GetNative();
 	const FGeometryAndShapeRef* GetNative() const;
+
+	template<typename T>
+	T* GetNativeShape();
+
+	template<typename T>
+	const T* GetNativeShape() const;
 
 	void SetLocalPosition(const FVector &Position);
 	void SetLocalRotation(const FQuat &Rotation);
@@ -35,8 +44,11 @@ public:
 	void SetEnableCollisions(bool CanCollide);
 	bool GetEnableCollisions() const;
 
+
+
 protected:
-	FShapeBarrier(FShapeBarrier&& Other);
+	template<typename TFunc, typename... TPack>
+	void AllocateNative(TFunc Factory, TPack... Params);
 
 private:
 	FShapeBarrier(const FShapeBarrier&) = delete;
@@ -59,3 +71,4 @@ private:
 protected:
 	std::unique_ptr<FGeometryAndShapeRef> NativeRef;
 };
+

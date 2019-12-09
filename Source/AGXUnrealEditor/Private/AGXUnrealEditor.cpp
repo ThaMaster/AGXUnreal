@@ -148,6 +148,7 @@ void FAGXUnrealEditorModule::RegisterAssetTypeAction(IAssetTools& AssetTools, co
 	RegisteredAssetTypeActions.Add(Action);
 }
 
+
 void FAGXUnrealEditorModule::RegisterCustomizations()
 {
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
