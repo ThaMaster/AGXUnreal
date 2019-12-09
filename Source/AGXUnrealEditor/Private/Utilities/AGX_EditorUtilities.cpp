@@ -24,6 +24,8 @@
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 
+#include "Runtime/Launch/Resources/Version.h"
+
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
 std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(const FTransform& Transform, UWorld* World)
@@ -143,7 +145,7 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 		NewObject<UStaticMesh>(Package, UniqueMeshName, RF_Public | RF_Standalone | RF_MarkAsRootSet);
 	StaticMesh->StaticMaterials.Add(FStaticMaterial());
 
-#if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 23) 
+#if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 23)
 	StaticMesh->GetSourceModels().Emplace();
 	FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModels().Last();
 #else
