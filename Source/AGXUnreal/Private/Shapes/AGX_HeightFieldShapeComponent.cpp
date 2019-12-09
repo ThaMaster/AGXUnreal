@@ -168,10 +168,8 @@ void UAGX_HeightFieldShapeComponent::RecenterActorOnLandscape()
 bool UAGX_HeightFieldShapeComponent::DoesPropertyAffectVisualMesh(
 	const FName& PropertyName, const FName& MemberPropertyName) const
 {
+	// Height fields does not have a visual mesh, so there there is nothing to affect.
 	return false;
-	// return
-	//		Super::DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName) ||
-	//		MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_HeightFieldShapeComponent, HalfExtent);
 }
 
 #endif
