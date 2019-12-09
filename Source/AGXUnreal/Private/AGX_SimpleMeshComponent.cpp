@@ -1,5 +1,3 @@
-// Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
-
 #include "AGX_SimpleMeshComponent.h"
 #include "RenderingThread.h"
 #include "RenderResource.h"
