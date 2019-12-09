@@ -10,6 +10,7 @@
 
 class UAGX_ContactMaterialAsset;
 class UAGX_ContactMaterialInstance;
+class UAGX_MaterialBase;
 
 /**
  * Defines material properties for contacts between AGX Shapes with specific AGX Materials. This will override many
@@ -99,7 +100,8 @@ public:
 	/*
 	 * Friction in the secondary direction, if enabled.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Friction",
+	UPROPERTY(
+		EditAnywhere, Category = "Friction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondaryFrictionCoefficient"))
 	double SecondaryFrictionCoefficient;
 
@@ -126,7 +128,8 @@ public:
 	/**
 	 * Surface viscosity in the secondary direction, if enabled.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Friction",
+	UPROPERTY(
+		EditAnywhere, Category = "Friction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondarySurfaceViscosity"))
 	double SecondarySurfaceViscosity;
 

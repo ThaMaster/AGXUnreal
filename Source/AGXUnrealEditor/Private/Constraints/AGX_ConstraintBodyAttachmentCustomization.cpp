@@ -22,8 +22,9 @@ TSharedRef<IPropertyTypeCustomization> FAGX_ConstraintBodyAttachmentCustomizatio
 	return MakeShareable(new FAGX_ConstraintBodyAttachmentCustomization());
 }
 
-void FAGX_ConstraintBodyAttachmentCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> StructPropertyHandle,
-	FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
+void FAGX_ConstraintBodyAttachmentCustomization::CustomizeHeader(
+	TSharedRef<IPropertyHandle> StructPropertyHandle, FDetailWidgetRow& HeaderRow,
+	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
 	BodyAttachmentProperty = StructPropertyHandle;
 
@@ -43,8 +44,9 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeHeader(TSharedRef<IPro
 								.MinDesiredWidth(250)];
 }
 
-void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(TSharedRef<IPropertyHandle> StructPropertyHandle,
-	IDetailChildrenBuilder& StructBuilder, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
+void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
+	TSharedRef<IPropertyHandle> StructPropertyHandle, IDetailChildrenBuilder& StructBuilder,
+	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
 	FrameDefiningActorProperty = StructPropertyHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningActor));
@@ -88,8 +90,9 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(TSharedRef<IP
 				FDetailWidgetRow& CustomPropertyRow = DefaultPropertyRow.CustomWidget(/*bShowChildren*/ true);
 
 				CustomPropertyRow.AddCustomContextMenuAction(
-					FUIAction(FExecuteAction::CreateSP(
-								  this, &FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor),
+					FUIAction(
+						FExecuteAction::CreateSP(
+							this, &FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor),
 						FCanExecuteAction::CreateLambda([this] { return !HasFrameDefiningActor(); })),
 					LOCTEXT("CreateFrameDefiningActorContextMenuItem", "Create New"));
 
@@ -97,15 +100,15 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(TSharedRef<IP
 
 				CustomPropertyRow.ValueContent()
 					.MinDesiredWidth(250.0f) // from SPropertyEditorAsset::GetDesiredWidth
-					.MaxDesiredWidth(
-						0)[SNew(SBox)
-							   .VAlign(VAlign_Center)
-							   .Padding(FMargin(0, 0, 0,
-								   0)) // Line up with the other properties due to having no reset to default button
-								   [SNew(SVerticalBox) +
-									   SVerticalBox::Slot()
-										   .AutoHeight()[SNew(SHorizontalBox) +
-														 SHorizontalBox::Slot()[DefaultValueWidget.ToSharedRef()]]]];
+					.MaxDesiredWidth(0)
+						[SNew(SBox)
+							 .VAlign(VAlign_Center)
+							 .Padding(FMargin(
+								 0, 0, 0,
+								 0)) // Line up with the other properties due to having no reset to default button
+								 [SNew(SVerticalBox) + SVerticalBox::Slot().AutoHeight()
+														   [SNew(SHorizontalBox) +
+															SHorizontalBox::Slot()[DefaultValueWidget.ToSharedRef()]]]];
 			}
 		}
 	}
@@ -155,7 +158,8 @@ void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor(
 	AActor* RigidBody = Cast<AActor>(FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty)); // optional
 
 	// Create the new Constraint Frame Actor.
-	AActor* NewActor = FAGX_EditorUtilities::CreateConstraintFrameActor(RigidBody,
+	AActor* NewActor = FAGX_EditorUtilities::CreateConstraintFrameActor(
+		RigidBody,
 		/*Select*/ true,
 		/*ShowNotification*/ true,
 		/*InPlayingWorldIfAvailable*/ true);

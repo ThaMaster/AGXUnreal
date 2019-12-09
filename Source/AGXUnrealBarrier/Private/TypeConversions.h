@@ -183,10 +183,11 @@ inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& Fra
 }
 
 /// \todo Consider moving this to the .cpp file.
-inline void ConvertConstraintBodiesAndFrames(const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1,
-	const FQuat* FrameRotation1, const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2,
-	const FQuat* FrameRotation2, agx::RigidBody*& NativeRigidBody1, agx::FrameRef& NativeFrame1,
-	agx::RigidBody*& NativeRigidBody2, agx::FrameRef& NativeFrame2)
+inline void ConvertConstraintBodiesAndFrames(
+	const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
+	const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2,
+	agx::RigidBody*& NativeRigidBody1, agx::FrameRef& NativeFrame1, agx::RigidBody*& NativeRigidBody2,
+	agx::FrameRef& NativeFrame2)
 {
 	// Convert first Rigid Body and Frame to natives
 	{

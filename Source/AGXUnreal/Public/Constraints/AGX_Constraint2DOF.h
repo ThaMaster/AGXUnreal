@@ -67,7 +67,8 @@ public:
 
 	AAGX_Constraint2DOF();
 
-	AAGX_Constraint2DOF(const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraint1Rotational,
+	AAGX_Constraint2DOF(
+		const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraint1Rotational,
 		bool bIsSecondaryConstraint2Rotational);
 
 	virtual ~AAGX_Constraint2DOF();

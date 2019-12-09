@@ -13,9 +13,9 @@ public:
 	virtual ~FHingeBarrier();
 
 private:
-	virtual void AllocateNativeImpl(const FRigidBodyBarrier* Rb1, const FVector* FramePosition1,
-		const FQuat* FrameRotation1, const FRigidBodyBarrier* Rb2, const FVector* FramePosition2,
-		const FQuat* FrameRotation2) override;
+	virtual void AllocateNativeImpl(
+		const FRigidBodyBarrier* Rb1, const FVector* FramePosition1, const FQuat* FrameRotation1,
+		const FRigidBodyBarrier* Rb2, const FVector* FramePosition2, const FQuat* FrameRotation2) override;
 
 private:
 	FHingeBarrier(const FHingeBarrier&) = delete;

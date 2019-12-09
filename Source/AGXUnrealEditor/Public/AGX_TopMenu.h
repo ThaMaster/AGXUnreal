@@ -32,6 +32,7 @@ template <typename Function>
 void FAGX_TopMenu::AddFileMenuEntry(
 	FMenuBuilder& Builder, const FText& Label, const FText& Tooltip, Function MenuItemClickCallbackFunction)
 {
-	Builder.AddMenuEntry(Label, Tooltip, FSlateIcon(), FExecuteAction::CreateLambda(MenuItemClickCallbackFunction),
-		NAME_None, EUserInterfaceActionType::Button);
+	Builder.AddMenuEntry(
+		Label, Tooltip, FSlateIcon(), FExecuteAction::CreateLambda(MenuItemClickCallbackFunction), NAME_None,
+		EUserInterfaceActionType::Button);
 }

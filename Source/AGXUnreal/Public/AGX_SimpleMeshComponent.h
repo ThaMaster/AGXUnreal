@@ -18,7 +18,8 @@ struct AGXUNREAL_API FAGX_SimpleMeshData
 };
 
 /** Component that allows you to specify custom triangle mesh geometry */
-UCLASS(hidecategories = (Object, LOD, Physics, Collision), NotPlaceable, editinlinenew,
+UCLASS(
+	hidecategories = (Object, LOD, Physics, Collision), NotPlaceable, editinlinenew,
 	meta = (BlueprintSpawnableComponent), ClassGroup = Rendering)
 class AGXUNREAL_API UAGX_SimpleMeshComponent : public UMeshComponent
 {

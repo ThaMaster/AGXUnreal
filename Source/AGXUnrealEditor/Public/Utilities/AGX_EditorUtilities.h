@@ -66,8 +66,9 @@ public:
 	/**
 	 * Create a new constraint of the specified type.
 	 */
-	static AAGX_Constraint* CreateConstraint(UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2,
-		bool bSelect, bool bShowNotification, bool bInPlayingWorldIfAvailable);
+	static AAGX_Constraint* CreateConstraint(
+		UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bSelect, bool bShowNotification,
+		bool bInPlayingWorldIfAvailable);
 
 	/**
 	 * Create a new AGX Constraint Frame Actor. Set as child to specified Rigid Body, if available.

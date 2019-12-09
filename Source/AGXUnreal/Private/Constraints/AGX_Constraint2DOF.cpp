@@ -9,8 +9,9 @@ AAGX_Constraint2DOF::AAGX_Constraint2DOF()
 {
 }
 
-AAGX_Constraint2DOF::AAGX_Constraint2DOF(const TArray<EDofFlag>& LockedDofsOrdered,
-	bool bIsSecondaryConstraint1Rotational, bool bIsSecondaryConstraint2Rotational)
+AAGX_Constraint2DOF::AAGX_Constraint2DOF(
+	const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraint1Rotational,
+	bool bIsSecondaryConstraint2Rotational)
 	: AAGX_Constraint(LockedDofsOrdered)
 	, RangeController1(bIsSecondaryConstraint1Rotational)
 	, RangeController2(bIsSecondaryConstraint2Rotational)

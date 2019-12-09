@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
+#include "DetailCategoryBuilder.h"
+#include "DetailWidgetRow.h"
+#include "Widgets/Input/SButton.h"
 
 class IDetailLayoutBuilder;
 
@@ -33,8 +36,8 @@ void FAGX_AgxEdModeFileCustomization::AddCustomButton(
 	IDetailCategoryBuilder& CategoryBuilder, const FText& ButtonText, Function ButtonClickCallbackFunction)
 {
 	/** Create custom button */
-	CategoryBuilder.AddCustomRow(
-		FText::GetEmpty())[SNew(SHorizontalBox) + SHorizontalBox::Slot().AutoWidth() +
-						   SHorizontalBox::Slot().AutoWidth()
-							   [SNew(SButton).Text(ButtonText).OnClicked_Lambda(ButtonClickCallbackFunction)]];
+	CategoryBuilder.AddCustomRow(FText::GetEmpty())
+		[SNew(SHorizontalBox) + SHorizontalBox::Slot().AutoWidth() +
+		 SHorizontalBox::Slot()
+			 .AutoWidth()[SNew(SButton).Text(ButtonText).OnClicked_Lambda(ButtonClickCallbackFunction)]];
 }

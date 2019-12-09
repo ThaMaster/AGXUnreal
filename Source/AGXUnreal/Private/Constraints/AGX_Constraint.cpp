@@ -63,7 +63,8 @@ AAGX_Constraint::AAGX_Constraint(const TArray<EDofFlag>& LockedDofsOrdered)
 	, SolveType(EAGX_SolveType::ST_DIRECT)
 	, Elasticity(ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, Damping(ConstraintConstants::DefaultDamping(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
-	, ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax(),
+	, ForceRange(
+		  ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax(),
 		  ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, LockedDofsBitmask(ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, LockedDofs(LockedDofsOrdered)
@@ -227,7 +228,8 @@ void AAGX_Constraint::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 		}
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("PostEditChangeProperty: PropertyName = %s, MemberPropertyName = %s"),
+	UE_LOG(
+		LogTemp, Log, TEXT("PostEditChangeProperty: PropertyName = %s, MemberPropertyName = %s"),
 		*PropertyName.ToString(), *MemberPropertyName.ToString());
 }
 

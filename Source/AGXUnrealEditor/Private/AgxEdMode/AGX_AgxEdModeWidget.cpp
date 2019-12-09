@@ -34,28 +34,28 @@ void SAGX_AgxEdModeWidget::Construct(const FArguments& InArgs, FAGX_AgxEdMode* I
 		return SubMode ? SubMode->GetDisplayName() : FText::GetEmpty();
 	};
 
-	ChildSlot[SNew(SScrollBox) +
-			  SScrollBox::Slot().Padding(
-				  0.0f)[SNew(SVerticalBox)
+	ChildSlot
+		[SNew(SScrollBox) +
+		 SScrollBox::Slot().Padding(0.0f)
+			 [SNew(SVerticalBox)
 
-						/** Toolbar buttons for switching between sub-modes */
-						+ SVerticalBox::Slot()
-							  .AutoHeight()[SNew(SBorder)
-												.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
-												.HAlign(HAlign_Center)[CreateSubModesToolbar()]]
+			  /** Toolbar buttons for switching between sub-modes */
+			  + SVerticalBox::Slot().AutoHeight()[SNew(SBorder)
+													  .BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+													  .HAlign(HAlign_Center)[CreateSubModesToolbar()]]
 
-						/** Header for the current sub-mode */
-						+ SVerticalBox::Slot()
-							  .AutoHeight()
-							  .Padding(FMargin(5.0f, 10.0f))
-							  .HAlign(HAlign_Fill)
-							  .VAlign(VAlign_Fill)[SNew(
-								  SHeader)[SNew(STextBlock)
-											   .Text_Lambda(GetCurrentSubModeName)
-											   .TextStyle(FEditorStyle::Get(), "ContentBrowser.TopBar.Font")]]
+			  /** Header for the current sub-mode */
+			  +
+			  SVerticalBox::Slot()
+				  .AutoHeight()
+				  .Padding(FMargin(5.0f, 10.0f))
+				  .HAlign(HAlign_Fill)
+				  .VAlign(VAlign_Fill)[SNew(SHeader)[SNew(STextBlock)
+														 .Text_Lambda(GetCurrentSubModeName)
+														 .TextStyle(FEditorStyle::Get(), "ContentBrowser.TopBar.Font")]]
 
-						/** DetailsView for the current sub-mode */
-						+ SVerticalBox::Slot().AutoHeight()[CreateSubModeDetailsView()]]];
+			  /** DetailsView for the current sub-mode */
+			  + SVerticalBox::Slot().AutoHeight()[CreateSubModeDetailsView()]]];
 }
 
 void SAGX_AgxEdModeWidget::OnSubModeChanged()
@@ -106,7 +106,8 @@ TSharedRef<SWidget> SAGX_AgxEdModeWidget::CreateSubModesToolbar()
 		for (UAGX_AgxEdModeSubMode* SubMode : SubModes)
 		{
 			ToolBar.AddToolBarButton(
-				FUIAction(FExecuteAction::CreateRaw(AgxEdMode, &FAGX_AgxEdMode::SetCurrentSubMode, SubMode),
+				FUIAction(
+					FExecuteAction::CreateRaw(AgxEdMode, &FAGX_AgxEdMode::SetCurrentSubMode, SubMode),
 					FCanExecuteAction(), FIsActionChecked::CreateLambda([AgxEdMode = AgxEdMode, SubMode]() {
 						return AgxEdMode->GetCurrentSubMode() == SubMode;
 					})),

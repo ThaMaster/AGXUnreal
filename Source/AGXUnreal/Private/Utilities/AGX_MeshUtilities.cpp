@@ -176,8 +176,9 @@ void AGX_MeshUtilities::MakeSphere(
 	check(Normals.Num() == NumVertices);
 }
 
-void AGX_MeshUtilities::MakeSphere(FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer,
-	uint32& NextFreeVertex, uint32& NextFreeIndex, const SphereConstructionData& Data)
+void AGX_MeshUtilities::MakeSphere(
+	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer, uint32& NextFreeVertex,
+	uint32& NextFreeIndex, const SphereConstructionData& Data)
 {
 	check(Data.Segments >= 4);
 	check(Data.Segments <= uint32(TNumericLimits<uint16>::Max()));
@@ -272,9 +273,9 @@ void AGX_MeshUtilities::MakeSphere(FStaticMeshVertexBuffers& VertexBuffers, FDyn
 	check(NextFreeIndex - FirstIndex == Data.Indices);
 }
 
-AGX_MeshUtilities::CylinderConstructionData::CylinderConstructionData(float InRadius, float InHeight,
-	uint32 InNumCircleSegments, uint32 InNumHeightSegments, const FLinearColor& InMiddleColor,
-	const FLinearColor& InOuterColor)
+AGX_MeshUtilities::CylinderConstructionData::CylinderConstructionData(
+	float InRadius, float InHeight, uint32 InNumCircleSegments, uint32 InNumHeightSegments,
+	const FLinearColor& InMiddleColor, const FLinearColor& InOuterColor)
 	: Radius(InRadius)
 	, Height(InHeight)
 	, CircleSegments(InNumCircleSegments)
@@ -425,8 +426,9 @@ void AGX_MeshUtilities::MakeCylinder(
 	check(Normals.Num() == Data.Vertices);
 }
 
-void AGX_MeshUtilities::MakeCylinder(FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer,
-	uint32& NextFreeVertex, uint32& NextFreeIndex, const CylinderConstructionData& Data)
+void AGX_MeshUtilities::MakeCylinder(
+	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer, uint32& NextFreeVertex,
+	uint32& NextFreeIndex, const CylinderConstructionData& Data)
 {
 	check(Data.CircleSegments >= 4);
 	check(Data.CircleSegments <= uint32(TNumericLimits<uint16>::Max()));
@@ -463,7 +465,8 @@ void AGX_MeshUtilities::MakeCylinder(FStaticMeshVertexBuffers& VertexBuffers, FD
 		const uint32 RowIndex = FMath::Clamp<int32>(CapsAndRowIndex - 1, 0, Data.VertexRows - 1);
 		const float RowHeight = Data.Height * RowIndex / (Data.VertexRows - 1) - Data.Height * 0.5f;
 
-		Color = FMath::Lerp(Data.MiddleColor, Data.OuterColor,
+		Color = FMath::Lerp(
+			Data.MiddleColor, Data.OuterColor,
 			FMath::Abs((static_cast<float>(RowIndex) / Data.HeightSegments) - 0.5f) * 2.0f);
 
 		// Add Data.VertexColumns num vertices in a circle per vertex row. The first and last vertex in the same row
@@ -564,9 +567,9 @@ void AGX_MeshUtilities::MakeCylinder(FStaticMeshVertexBuffers& VertexBuffers, FD
 	check(NextFreeIndex - FirstIndex == Data.Indices);
 }
 
-AGX_MeshUtilities::CylindricalArrowConstructionData::CylindricalArrowConstructionData(float InCylinderRadius,
-	float InCylinderHeight, float InConeRadius, float InConeHeight, bool bInBottomCap, uint32 InNumCircleSegments,
-	const FLinearColor& InBaseColor, const FLinearColor& InTopColor)
+AGX_MeshUtilities::CylindricalArrowConstructionData::CylindricalArrowConstructionData(
+	float InCylinderRadius, float InCylinderHeight, float InConeRadius, float InConeHeight, bool bInBottomCap,
+	uint32 InNumCircleSegments, const FLinearColor& InBaseColor, const FLinearColor& InTopColor)
 	: CylinderRadius(InCylinderRadius)
 	, CylinderHeight(InCylinderHeight)
 	, ConeRadius(InConeRadius)
@@ -594,9 +597,9 @@ void AGX_MeshUtilities::CylindricalArrowConstructionData::AppendBufferSizes(
 	InOutNumIndices += Indices;
 };
 
-void AGX_MeshUtilities::MakeCylindricalArrow(FStaticMeshVertexBuffers& VertexBuffers,
-	FDynamicMeshIndexBuffer32& IndexBuffer, uint32& NextFreeVertex, uint32& NextFreeIndex,
-	const CylindricalArrowConstructionData& Data)
+void AGX_MeshUtilities::MakeCylindricalArrow(
+	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer, uint32& NextFreeVertex,
+	uint32& NextFreeIndex, const CylindricalArrowConstructionData& Data)
 {
 	check(Data.CircleSegments >= 4);
 	check(Data.CircleSegments <= uint32(TNumericLimits<uint16>::Max()));
@@ -716,7 +719,8 @@ void AGX_MeshUtilities::MakeCylindricalArrow(FStaticMeshVertexBuffers& VertexBuf
 						TangentZ = FVector(0.0f, 0.0f, 1.0f);
 					else
 #endif
-						TangentZ = FVector(FMath::Cos(ColumnAngle) * ConeFlankLengthOverHeight,
+						TangentZ = FVector(
+							FMath::Cos(ColumnAngle) * ConeFlankLengthOverHeight,
 							FMath::Sin(ColumnAngle) * ConeFlankLengthOverHeight, ConeRadiusOverFlankLength);
 					break;
 					TangentZ.Normalize(); /// \todo Should not be needed. But normal is a bit too long without it.
@@ -795,9 +799,9 @@ void AGX_MeshUtilities::MakeCylindricalArrow(FStaticMeshVertexBuffers& VertexBuf
 
 #undef CONE_SINGULARITY
 
-AGX_MeshUtilities::BendableArrowConstructionData::BendableArrowConstructionData(float InRectangleWidth,
-	float InRectangleLength, float InTriangleWidth, float InTriangleLength, float InBendAngle, uint32 InNumSegments,
-	const FLinearColor& InBaseColor, const FLinearColor& InTopColor)
+AGX_MeshUtilities::BendableArrowConstructionData::BendableArrowConstructionData(
+	float InRectangleWidth, float InRectangleLength, float InTriangleWidth, float InTriangleLength, float InBendAngle,
+	uint32 InNumSegments, const FLinearColor& InBaseColor, const FLinearColor& InTopColor)
 	: RectangleWidth(InRectangleWidth)
 	, RectangleLength(InRectangleLength)
 	, TriangleWidth(InTriangleWidth)
@@ -807,7 +811,8 @@ AGX_MeshUtilities::BendableArrowConstructionData::BendableArrowConstructionData(
 	, BaseColor(InBaseColor)
 	, TopColor(InTopColor)
 	, RectangleSegments(std::max<uint32>(
-		  1, std::min<uint32>(InNumSegments - 1,
+		  1, std::min<uint32>(
+				 InNumSegments - 1,
 				 InNumSegments * InRectangleLength / static_cast<float>(InRectangleLength + InTriangleLength))))
 	, TriangleSegments(std::max<uint32>(1, InNumSegments - RectangleSegments))
 	, RectangleVertexRows(RectangleSegments + 1)
@@ -824,9 +829,9 @@ void AGX_MeshUtilities::BendableArrowConstructionData::AppendBufferSizes(
 	InOutNumIndices += Indices;
 }
 
-void AGX_MeshUtilities::MakeBendableArrow(FStaticMeshVertexBuffers& VertexBuffers,
-	FDynamicMeshIndexBuffer32& IndexBuffer, uint32& NextFreeVertex, uint32& NextFreeIndex,
-	const BendableArrowConstructionData& Data)
+void AGX_MeshUtilities::MakeBendableArrow(
+	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer, uint32& NextFreeVertex,
+	uint32& NextFreeIndex, const BendableArrowConstructionData& Data)
 {
 	check(Data.Segments >= 2);
 	check(Data.RectangleSegments >= 1);
@@ -872,7 +877,8 @@ void AGX_MeshUtilities::MakeBendableArrow(FStaticMeshVertexBuffers& VertexBuffer
 
 		const float CurrentWidth = IsRectangle
 									   ? Data.RectangleWidth
-									   : FMath::Lerp(Data.TriangleWidth, 0.01f,
+									   : FMath::Lerp(
+											 Data.TriangleWidth, 0.01f,
 											 TriangleRowIndexClamped / static_cast<float>(Data.TriangleVertexRows - 1));
 
 		Color = FMath::Lerp(Data.BaseColor, Data.TopColor, RowNormalizedDistance);
@@ -948,7 +954,8 @@ void AGX_MeshUtilities::PrintMeshToLog(
 	UE_LOG(LogAGX, Log, TEXT("      ----- Vertex Buffer -----"));
 	for (uint32 VertexIndex = 0; VertexIndex < NumVertices; ++VertexIndex)
 	{
-		UE_LOG(LogAGX, Log, TEXT("  Vertex[%d] Position = <%s>, Normal = <%s>"), VertexIndex,
+		UE_LOG(
+			LogAGX, Log, TEXT("  Vertex[%d] Position = <%s>, Normal = <%s>"), VertexIndex,
 			*VertexBuffers.PositionVertexBuffer.VertexPosition(VertexIndex).ToString(),
 			*VertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(VertexIndex).ToString());
 	}
@@ -956,8 +963,8 @@ void AGX_MeshUtilities::PrintMeshToLog(
 	UE_LOG(LogAGX, Log, TEXT("      ----- Index Buffer -----"));
 	for (uint32 Index = 0; Index < NumIndices; ++Index)
 	{
-		UE_LOG(LogAGX, Log, TEXT("  Index[%d] = %d \t(Position = <%s>, Normal = <%s>)"), Index,
-			IndexBuffer.Indices[Index],
+		UE_LOG(
+			LogAGX, Log, TEXT("  Index[%d] = %d \t(Position = <%s>, Normal = <%s>)"), Index, IndexBuffer.Indices[Index],
 			*VertexBuffers.PositionVertexBuffer.VertexPosition(IndexBuffer.Indices[Index]).ToString(),
 			*VertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(IndexBuffer.Indices[Index]).ToString());
 	}
@@ -965,9 +972,9 @@ void AGX_MeshUtilities::PrintMeshToLog(
 	UE_LOG(LogAGX, Log, TEXT("AGX_MeshUtilities::PrintMeshToLog() : Finished printing mesh data."))
 }
 
-AGX_MeshUtilities::DiskArrayConstructionData::DiskArrayConstructionData(float InRadius, uint32 InNumCircleSegments,
-	float InSpacing, uint32 InDisks, bool bInTwoSided, const FLinearColor InMiddleDiskColor,
-	const FLinearColor InOuterDiskColor, TArray<FTransform> InSpacingsOverride)
+AGX_MeshUtilities::DiskArrayConstructionData::DiskArrayConstructionData(
+	float InRadius, uint32 InNumCircleSegments, float InSpacing, uint32 InDisks, bool bInTwoSided,
+	const FLinearColor InMiddleDiskColor, const FLinearColor InOuterDiskColor, TArray<FTransform> InSpacingsOverride)
 	: Radius(InRadius)
 	, CircleSegments(InNumCircleSegments)
 	, Spacing(InSpacing)
@@ -991,8 +998,9 @@ void AGX_MeshUtilities::DiskArrayConstructionData::AppendBufferSizes(
 	InOutNumIndices += Indices;
 }
 
-void AGX_MeshUtilities::MakeDiskArray(FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer,
-	uint32& NextFreeVertex, uint32& NextFreeIndex, const DiskArrayConstructionData& Data)
+void AGX_MeshUtilities::MakeDiskArray(
+	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer, uint32& NextFreeVertex,
+	uint32& NextFreeIndex, const DiskArrayConstructionData& Data)
 {
 	check(Data.CircleSegments >= 4);
 	check(Data.CircleSegments <= uint32(TNumericLimits<uint16>::Max()));
