@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "Shapes/ShapeBarrier.h"
 
 #include <Math/Vector.h>

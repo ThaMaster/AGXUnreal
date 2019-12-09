@@ -15,22 +15,17 @@ class AGXUNREALEDITOR_API UAGX_AgxEdModeDebug : public UAGX_AgxEdModeSubMode
 	GENERATED_BODY()
 
 public:
-
 	static UAGX_AgxEdModeDebug* GetInstance();
 
 public:
-
 	virtual FText GetDisplayName() const override;
 	virtual FText GetTooltip() const override;
 
 public: // Debug Visualizer
-
 	UPROPERTY(EditAnywhere, Category = "Debug Visualizer")
 	int DummyPlaceholder; /// \todo Replace with actual properties.
 
 public: // Logger
-
 	UPROPERTY(EditAnywhere, Category = "Logger")
 	int DummyPlaceholder2; /// \todo Replace with actual properties.
-
 };

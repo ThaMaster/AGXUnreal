@@ -4,7 +4,6 @@
 
 #include <memory>
 
-
 class AGXUNREALBARRIER_API FSphereShapeBarrier : public FShapeBarrier
 {
 public:

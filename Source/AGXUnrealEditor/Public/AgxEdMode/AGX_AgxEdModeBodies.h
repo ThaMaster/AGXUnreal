@@ -15,22 +15,17 @@ class AGXUNREALEDITOR_API UAGX_AgxEdModeBodies : public UAGX_AgxEdModeSubMode
 	GENERATED_BODY()
 
 public:
-	
 	static UAGX_AgxEdModeBodies* GetInstance();
 
 public:
-
 	virtual FText GetDisplayName() const override;
 	virtual FText GetTooltip() const override;
 
 public: // Rigid Body Creator
-
 	UPROPERTY(EditAnywhere, Category = "Rigid Body Creator")
 	int DummyPlaceholder; /// \todo Replace with actual properties.
 
 public: // Rigid Body Browser
-
 	UPROPERTY(EditAnywhere, Category = "Rigid Body Browser")
 	int DummyPlaceholder2; /// \todo Replace with actual properties.
-
 };

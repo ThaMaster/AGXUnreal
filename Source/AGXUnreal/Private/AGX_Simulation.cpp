@@ -83,7 +83,6 @@ void UAGX_Simulation::Step(float DeltaTime)
 	LeftoverTime = DeltaTime;
 }
 
-
 UAGX_Simulation* UAGX_Simulation::GetFrom(const AActor* Actor)
 {
 	if (!Actor)

@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-
 class FAGXUnrealModule : public IModuleInterface
 {
 public:

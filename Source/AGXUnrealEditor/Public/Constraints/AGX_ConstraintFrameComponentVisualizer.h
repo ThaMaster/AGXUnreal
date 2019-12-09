@@ -20,9 +20,8 @@ class UActorComponent;
 class AGXUNREALEDITOR_API FAGX_ConstraintFrameComponentVisualizer : public FComponentVisualizer
 {
 public:
-
 	//~ Begin FComponentVisualizer Interface
-	virtual void DrawVisualization(const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI) override;
+	virtual void DrawVisualization(
+		const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI) override;
 	//~ End FComponentVisualizer Interface
-
 };

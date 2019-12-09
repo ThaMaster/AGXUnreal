@@ -1,6 +1,5 @@
 #pragma once
 
-
 namespace agx
 {
 	class ElectricMotorController;
@@ -10,7 +9,6 @@ namespace agx
 	class ScrewController;
 	class TargetSpeedController;
 }
-
 
 /**
  * Used to transfer Electric Motor Controller data between Unreal and AGX natives,
@@ -32,7 +30,6 @@ struct FElectricMotorControllerBarrier
 
 	void ToNative(agx::ElectricMotorController* Native) const;
 };
-
 
 /**
  * Used to transfer Friction Controller data between Unreal and AGX natives,
@@ -56,7 +53,6 @@ struct FFrictionControllerBarrier
 	void ToNative(agx::FrictionController* Native) const;
 };
 
-
 /**
  * Used to transfer Lock Controller data between Unreal and AGX natives,
  * instead of having functions with many variables. Also handles
@@ -77,7 +73,6 @@ struct FLockControllerBarrier
 
 	void ToNative(agx::LockController* Native) const;
 };
-
 
 /**
  * Used to transfer Range Controller data between Unreal and AGX natives,
@@ -102,7 +97,6 @@ struct FRangeControllerBarrier
 	void ToNative(agx::RangeController* Native) const;
 };
 
-
 /**
  * Used to transfer Screw Controller data between Unreal and AGX natives,
  * instead of having functions with many variables. Also handles
@@ -120,7 +114,6 @@ struct FScrewControllerBarrier
 
 	void ToNative(agx::ScrewController* Native) const;
 };
-
 
 /**
  * Used to transfer Target Speed Controller data between Unreal and AGX natives,

@@ -7,7 +7,6 @@
 struct FContactMaterialRef;
 class FMaterialBarrier;
 
-
 class FMaterialBarrier;
 
 /**

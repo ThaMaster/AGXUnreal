@@ -42,6 +42,7 @@ public:
 private:
 	FSimulationBarrier(const FSimulationBarrier&) = delete;
 	void operator=(const FSimulationBarrier&) = delete;
+
 private:
 	std::unique_ptr<FSimulationRef> NativeRef;
 };

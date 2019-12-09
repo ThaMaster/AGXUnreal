@@ -30,7 +30,6 @@ public:
 	 * metadata classes (UProperty, UClass, UStruct) inherit from UField.
 	 */
 	static FString GetActualDisplayName(const UField* Field, bool bRemoveAgxPrefix);
-
 };
 
 template <typename TStruct, typename TOwningClass>

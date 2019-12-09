@@ -3,7 +3,6 @@
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
-
 UAGX_CylinderShapeComponent::UAGX_CylinderShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -76,12 +75,12 @@ void UAGX_CylinderShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshD
 
 #if WITH_EDITOR
 
-bool UAGX_CylinderShapeComponent::DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const
+bool UAGX_CylinderShapeComponent::DoesPropertyAffectVisualMesh(
+	const FName& PropertyName, const FName& MemberPropertyName) const
 {
-	return
-		Super::DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName) ||
-		MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_CylinderShapeComponent, Height) ||
-		MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_CylinderShapeComponent, Radius);
+	return Super::DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName) ||
+		   MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_CylinderShapeComponent, Height) ||
+		   MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_CylinderShapeComponent, Radius);
 }
 
 #endif

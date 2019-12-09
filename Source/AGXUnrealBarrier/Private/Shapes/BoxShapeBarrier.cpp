@@ -37,7 +37,6 @@ FBoxShapeBarrier::FBoxShapeBarrier(FBoxShapeBarrier&& Other)
 {
 }
 
-
 FBoxShapeBarrier::~FBoxShapeBarrier()
 {
 	// Must provide a destructor implementation in the .cpp file because the

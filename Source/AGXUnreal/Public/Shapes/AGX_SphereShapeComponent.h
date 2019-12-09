@@ -27,7 +27,6 @@ public:
 	virtual void UpdateNativeProperties() override;
 
 protected:
-
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 
 #if WITH_EDITOR

@@ -120,10 +120,10 @@ void FAGXUnrealEditorModule::UnregisterCommands()
 
 void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 {
-	IAssetTools &AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
 
-	EAssetTypeCategories::Type AgxAssetCategoryBit = AssetTools.RegisterAdvancedAssetCategory(
-		FName(TEXT("AgxUnreal")), LOCTEXT("AgxAssetCategory", "AGX"));
+	EAssetTypeCategories::Type AgxAssetCategoryBit =
+		AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("AgxUnreal")), LOCTEXT("AgxAssetCategory", "AGX"));
 
 	RegisterAssetTypeAction(AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(AssetTools, MakeShareable(new FAGX_MaterialAssetTypeActions(AgxAssetCategoryBit)));
@@ -142,12 +142,12 @@ void FAGXUnrealEditorModule::UnregisterAssetTypeActions()
 	}
 }
 
-void FAGXUnrealEditorModule::RegisterAssetTypeAction(IAssetTools& AssetTools, const TSharedPtr<IAssetTypeActions>& Action)
+void FAGXUnrealEditorModule::RegisterAssetTypeAction(
+	IAssetTools& AssetTools, const TSharedPtr<IAssetTypeActions>& Action)
 {
 	AssetTools.RegisterAssetTypeActions(Action.ToSharedRef());
 	RegisteredAssetTypeActions.Add(Action);
 }
-
 
 void FAGXUnrealEditorModule::RegisterCustomizations()
 {
@@ -222,8 +222,7 @@ void FAGXUnrealEditorModule::UnregisterComponentVisualizer(const FName& Componen
 
 void FAGXUnrealEditorModule::RegisterModes()
 {
-	FEditorModeRegistry::Get().RegisterMode<FAGX_AgxEdMode>(
-		FAGX_AgxEdMode::EM_AGX_AgxEdModeId,
+	FEditorModeRegistry::Get().RegisterMode<FAGX_AgxEdMode>(FAGX_AgxEdMode::EM_AGX_AgxEdModeId,
 		LOCTEXT("AGX_AgxEdModeDisplayName", "AGX Dynamics Tools"),
 		FSlateIcon(FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIcon, FAGX_EditorStyle::AgxIconSmall),
 		/*bVisisble*/ true);
@@ -239,10 +238,9 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 	FPlacementCategoryInfo PlacementCategory(LOCTEXT("DisplayName", "AGX"), "AGX", TEXT("PMAGX"));
 	IPlacementModeModule::Get().RegisterPlacementCategory(PlacementCategory);
 
-	auto RegisterPlaceableItem = [&](UClass* Class)
-	{
-		IPlacementModeModule::Get().RegisterPlaceableItem(PlacementCategory.UniqueHandle, MakeShareable(
-			new FPlaceableItem(nullptr, FAssetData(Class))));
+	auto RegisterPlaceableItem = [&](UClass* Class) {
+		IPlacementModeModule::Get().RegisterPlaceableItem(
+			PlacementCategory.UniqueHandle, MakeShareable(new FPlaceableItem(nullptr, FAssetData(Class))));
 	};
 
 	RegisterPlaceableItem(AAGX_MaterialManager::StaticClass());

@@ -5,11 +5,9 @@
 
 #include "AGX_ConstraintBodyAttachment.generated.h"
 
-
 class AAGX_Constraint;
 class AAGX_ConstraintFrameActor;
 class FRigidBodyBarrier;
-
 
 /**
  * Defines the Rigid Body to be bound by a Constraint and its Local Frame Location

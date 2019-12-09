@@ -30,7 +30,6 @@
 
 #include <iostream>
 
-
 namespace
 {
 	std::tuple<AActor*, USceneComponent*> InstantiateBody(const FRigidBodyBarrier& Body, UWorld& World)
@@ -69,7 +68,6 @@ namespace
 		return {NewActor, Root};
 	}
 
-
 }
 
 AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
@@ -102,7 +100,9 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 	{
 	public:
 		EditorBody(AActor& InActor, USceneComponent& InRoot, UWorld& InWorld)
-			: Actor(InActor), Root(InRoot), World(InWorld)
+			: Actor(InActor)
+			, Root(InRoot)
+			, World(InWorld)
 		{
 		}
 
@@ -151,7 +151,8 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 	{
 	public:
 		EditorInstantiator(AActor& InImportedRoot, UWorld& InWorld)
-			: ImportedRoot(InImportedRoot), World(InWorld)
+			: ImportedRoot(InImportedRoot)
+			, World(InWorld)
 		{
 		}
 
@@ -211,9 +212,9 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 				return;
 			}
 
-			AAGX_Constraint* Constraint = FAGX_EditorUtilities::CreateConstraint(
-				ConstraintType, Actors.first, Actors.second,
-				/*bSelect*/false, /*bShwNotification*/false, /*bInPlayingWorld*/false);
+			AAGX_Constraint* Constraint =
+				FAGX_EditorUtilities::CreateConstraint(ConstraintType, Actors.first, Actors.second,
+					/*bSelect*/ false, /*bShwNotification*/ false, /*bInPlayingWorld*/ false);
 
 			StoreFrames(Barrier, Constraint);
 
@@ -233,7 +234,8 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			AActor* Actor = Bodies.FindRef(Guid);
 			if (Actor == nullptr)
 			{
-				UE_LOG(LogTemp, Log, TEXT("Found a constraint to body '%s', but that body isn't known."), *Body.GetName());
+				UE_LOG(
+					LogTemp, Log, TEXT("Found a constraint to body '%s', but that body isn't known."), *Body.GetName());
 				return nullptr;
 			}
 			return Actor;
@@ -241,10 +243,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 
 		std::pair<AActor*, AActor*> GetActors(const FConstraintBarrier& Barrier)
 		{
-			return {
-				GetActor(Barrier.GetFirstBody()),
-				GetActor(Barrier.GetSecondBody())
-			};
+			return {GetActor(Barrier.GetFirstBody()), GetActor(Barrier.GetSecondBody())};
 		}
 
 		void StoreFrame(const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment, int32 BodyIndex)
@@ -268,7 +267,6 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		// AActor that we created for that body.
 		TMap<FGuid, AActor*> Bodies;
 	};
-
 
 	EditorInstantiator Instantiator(*ImportGroup, *World);
 	FAGXArchiveReader::Read(ArchivePath, Instantiator);

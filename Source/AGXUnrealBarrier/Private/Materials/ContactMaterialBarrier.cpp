@@ -15,19 +15,19 @@ namespace
 	agx::FrictionModelRef ConvertFrictionModelToAgx(int32 FrictionModelType)
 	{
 		// Input value refers to EAGX_FrictionModel in AGX_ContactMaterialEnums.h
-		switch(FrictionModelType)
+		switch (FrictionModelType)
 		{
-		case 0:
-			return nullptr; // "not defined"
-		case 1:
-			return new agx::BoxFrictionModel();
-		case 2:
-			return new agx::ScaleBoxFrictionModel();
-		case 3:
-			return new agx::IterativeProjectedConeFriction();
-		default:
-			check(!"ConvertFrictionModelToAgx received unsupported value");
-			return nullptr;
+			case 0:
+				return nullptr; // "not defined"
+			case 1:
+				return new agx::BoxFrictionModel();
+			case 2:
+				return new agx::ScaleBoxFrictionModel();
+			case 3:
+				return new agx::IterativeProjectedConeFriction();
+			default:
+				check(!"ConvertFrictionModelToAgx received unsupported value");
+				return nullptr;
 		}
 	}
 
@@ -100,7 +100,7 @@ namespace
 }
 
 FContactMaterialBarrier::FContactMaterialBarrier()
-	: NativeRef{ new FContactMaterialRef }
+	: NativeRef {new FContactMaterialRef}
 {
 }
 
@@ -129,7 +129,7 @@ const FContactMaterialRef* FContactMaterialBarrier::GetNative() const
 void FContactMaterialBarrier::AllocateNative(const FMaterialBarrier* Material1, const FMaterialBarrier* Material2)
 {
 	check(!HasNative());
-	
+
 	/// \note AGX seems OK with native materials being null. Falls back on internal default material.
 
 	agx::MaterialRef NativeMaterial1 = Material1 && Material1->HasNative() ? Material1->GetNative()->Native : nullptr;
@@ -150,13 +150,13 @@ void FContactMaterialBarrier::SetFrictionSolveType(int32 SolveType)
 
 	agx::FrictionModel* NativeFrictionModel = NativeRef->Native->getFrictionModel();
 
-	if (!NativeFrictionModel)  // seems friction model can be null
+	if (!NativeFrictionModel) // seems friction model can be null
 	{
 		// Need a friction model to set solve type. Create the default friction model.
 		NativeFrictionModel = new agx::IterativeProjectedConeFriction();
 		NativeRef->Native->setFrictionModel(NativeFrictionModel);
 	}
-	
+
 	NativeFrictionModel->setSolveType(ConvertSolveTypeToAgx(SolveType));
 }
 
@@ -223,31 +223,36 @@ bool FContactMaterialBarrier::GetSurfaceFrictionEnabled() const
 	return NativeRef->Native->getSurfaceFrictionEnabled();
 }
 
-void FContactMaterialBarrier::SetFrictionCoefficient(double Coefficient, bool bPrimaryDirection, bool bSecondaryDirection)
+void FContactMaterialBarrier::SetFrictionCoefficient(
+	double Coefficient, bool bPrimaryDirection, bool bSecondaryDirection)
 {
 	check(HasNative());
-	agx::ContactMaterial::FrictionDirection NativeDirection = ConvertDirectionToAgx(bPrimaryDirection, bSecondaryDirection);
+	agx::ContactMaterial::FrictionDirection NativeDirection =
+		ConvertDirectionToAgx(bPrimaryDirection, bSecondaryDirection);
 	NativeRef->Native->setFrictionCoefficient(Coefficient, NativeDirection);
 }
 
 double FContactMaterialBarrier::GetFrictionCoefficient(bool bPrimaryDirection, bool bSecondaryDirection) const
 {
 	check(HasNative());
-	agx::ContactMaterial::FrictionDirection NativeDirection = ConvertDirectionToAgx(bPrimaryDirection, bSecondaryDirection);
+	agx::ContactMaterial::FrictionDirection NativeDirection =
+		ConvertDirectionToAgx(bPrimaryDirection, bSecondaryDirection);
 	return NativeRef->Native->getFrictionCoefficient(NativeDirection);
 }
 
 void FContactMaterialBarrier::SetSurfaceViscosity(double Viscosity, bool bPrimaryDirection, bool bSecondaryDirection)
 {
 	check(HasNative());
-	agx::ContactMaterial::FrictionDirection NativeDirection = ConvertDirectionToAgx(bPrimaryDirection, bSecondaryDirection);
+	agx::ContactMaterial::FrictionDirection NativeDirection =
+		ConvertDirectionToAgx(bPrimaryDirection, bSecondaryDirection);
 	NativeRef->Native->setSurfaceViscosity(Viscosity, NativeDirection);
 }
 
 double FContactMaterialBarrier::GetSurfaceViscosity(bool bPrimaryDirection, bool bSecondaryDirection) const
 {
 	check(HasNative());
-	agx::ContactMaterial::FrictionDirection NativeDirection = ConvertDirectionToAgx(bPrimaryDirection, bSecondaryDirection);
+	agx::ContactMaterial::FrictionDirection NativeDirection =
+		ConvertDirectionToAgx(bPrimaryDirection, bSecondaryDirection);
 	return NativeRef->Native->getSurfaceViscosity(NativeDirection);
 }
 

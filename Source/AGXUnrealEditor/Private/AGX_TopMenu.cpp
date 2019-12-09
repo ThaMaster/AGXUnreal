@@ -41,9 +41,9 @@ FAGX_TopMenu::FAGX_TopMenu()
 		FMenuBarExtensionDelegate::CreateStatic(&FAGX_TopMenu::CreateTopMenu);
 
 	UnrealMenuBarExtension = Extender->AddMenuBarExtension("Help", EExtensionHook::Before,
-		nullptr,	// Using inline FActions instead of FUICommands, for less hot reloading problems!
-		UnrealMenuBarExtensionDelegate);	// Delegate is only invoked during Editor startup (i.e. when Unreal Main
-											// Menu Bar is built).
+		nullptr, // Using inline FActions instead of FUICommands, for less hot reloading problems!
+		UnrealMenuBarExtensionDelegate); // Delegate is only invoked during Editor startup (i.e. when Unreal Main
+										 // Menu Bar is built).
 
 	ExtensibilityManager->AddExtender(Extender);
 }
@@ -131,8 +131,8 @@ FAGX_TopMenu::~FAGX_TopMenu()
 	});
 
 	Builder.AddPullDownMenu(LOCTEXT("TopMenuLabel", "AGX"), LOCTEXT("TopMenuToolTip", "Open the AGX top menu"),
-		NewMenuDelegate);	 // Delegate is invoked when AGX menu is clicked (but same delegate regardless of reloading
-							 // this module).
+		NewMenuDelegate); // Delegate is invoked when AGX menu is clicked (but same delegate regardless of reloading
+						  // this module).
 }
 
 /*virtual*/ void FAGX_TopMenu::FillTopMenu(FMenuBuilder& Builder)
@@ -158,7 +158,7 @@ FAGX_TopMenu::~FAGX_TopMenu()
 void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 {
 	AddFileMenuEntry(Builder, LOCTEXT("CreateBallConstraintLabel", "Create Ball Constraint"),
-		LOCTEXT("CreateBallConstraintTooltip", 
+		LOCTEXT("CreateBallConstraintTooltip",
 			"Create Ball Constraint. \n\nInitially setup using currently selected Rigid Body Actors, or empty."),
 		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_BallConstraint::StaticClass()); });
 

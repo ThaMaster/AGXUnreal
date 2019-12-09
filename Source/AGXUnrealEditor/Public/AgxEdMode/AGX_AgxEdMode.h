@@ -21,11 +21,9 @@ class UAGX_AgxEdModeSubMode;
 class AGXUNREALEDITOR_API FAGX_AgxEdMode : public FEdMode
 {
 public:
-
 	const static FEditorModeID EM_AGX_AgxEdModeId;
 
 public:
-
 	FAGX_AgxEdMode();
 	virtual ~FAGX_AgxEdMode();
 
@@ -42,7 +40,6 @@ public:
 	void SetCurrentSubMode(UAGX_AgxEdModeSubMode* SubMode);
 
 private:
-
 	TArray<UAGX_AgxEdModeSubMode*> SubModes;
 
 	UAGX_AgxEdModeSubMode* CurrentSubMode = nullptr;

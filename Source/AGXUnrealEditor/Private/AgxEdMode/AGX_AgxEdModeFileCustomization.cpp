@@ -17,8 +17,7 @@ void FAGX_AgxEdModeFileCustomization::CustomizeDetails(IDetailLayoutBuilder& Det
 	CustomizeFileExporterCategory(DetailBuilder);
 }
 
-void FAGX_AgxEdModeFileCustomization::CustomizeFileImporterCategory(
-	IDetailLayoutBuilder& DetailBuilder)
+void FAGX_AgxEdModeFileCustomization::CustomizeFileImporterCategory(IDetailLayoutBuilder& DetailBuilder)
 {
 	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder.EditCategory("AGX File Importer");
 
@@ -31,8 +30,7 @@ void FAGX_AgxEdModeFileCustomization::CustomizeFileImporterCategory(
 	});
 }
 
-void FAGX_AgxEdModeFileCustomization::CustomizeFileExporterCategory(
-	IDetailLayoutBuilder& DetailBuilder)
+void FAGX_AgxEdModeFileCustomization::CustomizeFileExporterCategory(IDetailLayoutBuilder& DetailBuilder)
 {
 	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder.EditCategory("Export AGX Archive");
 

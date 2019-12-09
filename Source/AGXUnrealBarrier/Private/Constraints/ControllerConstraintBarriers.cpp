@@ -6,7 +6,6 @@
 #include <agx/Constraint.h>
 #include "EndAGXIncludes.h"
 
-
 void FElectricMotorControllerBarrier::ToNative(agx::ElectricMotorController* Native) const
 {
 	// Common controller variables.
@@ -18,7 +17,6 @@ void FElectricMotorControllerBarrier::ToNative(agx::ElectricMotorController* Nat
 	Native->setArmatureResistance(ArmatureResistance);
 	Native->setTorqueConstant(TorqueConstant);
 }
-
 
 void FFrictionControllerBarrier::ToNative(agx::FrictionController* Native) const
 {
@@ -33,7 +31,6 @@ void FFrictionControllerBarrier::ToNative(agx::FrictionController* Native) const
 	Native->setEnableNonLinearDirectSolveUpdate(bEnableNonLinearDirectSolveUpdate);
 }
 
-
 void FLockControllerBarrier::ToNative(agx::LockController* Native) const
 {
 	// Common controller variables.
@@ -46,7 +43,6 @@ void FLockControllerBarrier::ToNative(agx::LockController* Native) const
 	Native->setPosition(bRotational ? Position : ConvertDistanceToAgx(Position));
 }
 
-
 void FRangeControllerBarrier::ToNative(agx::RangeController* Native) const
 {
 	// Common controller variables.
@@ -56,11 +52,9 @@ void FRangeControllerBarrier::ToNative(agx::RangeController* Native) const
 	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
 
 	// Special controller variables.
-	Native->setRange(agx::RangeReal(
-		bRotational ? RangeMin : ConvertDistanceToAgx(RangeMin),
+	Native->setRange(agx::RangeReal(bRotational ? RangeMin : ConvertDistanceToAgx(RangeMin),
 		bRotational ? RangeMax : ConvertDistanceToAgx(RangeMax)));
 }
-
 
 void FScrewControllerBarrier::ToNative(agx::ScrewController* Native) const
 {
@@ -73,7 +67,6 @@ void FScrewControllerBarrier::ToNative(agx::ScrewController* Native) const
 	// Special controller variables.
 	Native->setLead(ConvertDistanceToAgx(Lead));
 }
-
 
 void FTargetSpeedControllerBarrier::ToNative(agx::TargetSpeedController* Native) const
 {

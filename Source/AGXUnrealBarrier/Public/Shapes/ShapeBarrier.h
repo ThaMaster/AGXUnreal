@@ -23,14 +23,14 @@ public:
 	FGeometryAndShapeRef* GetNative();
 	const FGeometryAndShapeRef* GetNative() const;
 
-	template<typename T>
+	template <typename T>
 	T* GetNativeShape();
 
-	template<typename T>
+	template <typename T>
 	const T* GetNativeShape() const;
 
-	void SetLocalPosition(const FVector &Position);
-	void SetLocalRotation(const FQuat &Rotation);
+	void SetLocalPosition(const FVector& Position);
+	void SetLocalRotation(const FQuat& Rotation);
 
 	FVector GetLocalPosition() const;
 	FQuat GetLocalRotation() const;
@@ -44,10 +44,8 @@ public:
 	void SetEnableCollisions(bool CanCollide);
 	bool GetEnableCollisions() const;
 
-
-
 protected:
-	template<typename TFunc, typename... TPack>
+	template <typename TFunc, typename... TPack>
 	void AllocateNative(TFunc Factory, TPack... Params);
 
 private:
@@ -71,4 +69,3 @@ private:
 protected:
 	std::unique_ptr<FGeometryAndShapeRef> NativeRef;
 };
-

@@ -4,7 +4,6 @@
 
 #include "AGX_FrictionController.generated.h"
 
-
 /**
  * Friction controller for secondary constraints (usually on one of the DOFs
  * that has not been primarily constrained by the AGX Constraint).
@@ -33,7 +32,7 @@ struct AGXUNREAL_API FAGX_ConstraintFrictionController
 	 * feature is similar to scale box friction models with solve type DIRECT.
 	 *
 	 * Note that this feature only supports constraint solve types DIRECT and
-	 * DIRECT_AND_ITERATIVE - meaning, if the constraint has solve 
+	 * DIRECT_AND_ITERATIVE - meaning, if the constraint has solve
 	 * type ITERATIVE, this feature is ignored.
 	 */
 	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
@@ -49,13 +48,11 @@ struct AGXUNREAL_API FAGX_ConstraintFrictionController
 	FFloatInterval ForceRange;
 
 public:
-
 	FAGX_ConstraintFrictionController(bool bRotational = false);
 
 	void ToBarrier(struct FFrictionControllerBarrier* Barrier) const;
 
 private:
-
 	// Whether the controller is on a Rotational or Translational DOF.
 	bool bRotational;
 };

@@ -68,7 +68,7 @@ void UAGX_RigidBodyComponent::TickComponent(
 #endif
 
 	/// \todo Figure out how to do this in the post-physics callback.
-	if(MotionControl != MC_STATIC)
+	if (MotionControl != MC_STATIC)
 		UpdateActorTransformsFromNative();
 
 #if 0
@@ -122,7 +122,8 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	{
 		UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Component);
 		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
-		check(NativeShape && NativeShape->HasNative());  /// \todo Should not crash on this. HeightField easy to get wrong.
+		check(
+			NativeShape && NativeShape->HasNative()); /// \todo Should not crash on this. HeightField easy to get wrong.
 		NativeBarrier.AddShape(NativeShape);
 		UE_LOG(LogAGX, Log, TEXT("Shape added to native object for RigidBody with mass %f."), Mass);
 	}
@@ -137,29 +138,30 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 {
 	NativeBarrier.SetMotionControl(MotionControl);
 
-	if (USceneComponent *RootComponent = GetOwner()->GetRootComponent())
+	if (USceneComponent* RootComponent = GetOwner()->GetRootComponent())
 	{
 		if (MotionControl == MC_STATIC && !GetOwner()->IsRootComponentStatic())
 		{
-			UE_LOG(LogAGX, Warning, TEXT(
-				"The Actor \"%s\" has a RigidBody with Static AGX MotionControl but Non-Static Unreal Mobility. "
-				"Unreal Mobility will automatically be changed to Static this game session, but should also be "
-				"changed manually in the Editor to ensure best performance!"), *GetOwner()->GetName());
+			UE_LOG(LogAGX, Warning,
+				TEXT("The Actor \"%s\" has a RigidBody with Static AGX MotionControl but Non-Static Unreal Mobility. "
+					 "Unreal Mobility will automatically be changed to Static this game session, but should also be "
+					 "changed manually in the Editor to ensure best performance!"),
+				*GetOwner()->GetName());
 
 			RootComponent->SetMobility(EComponentMobility::Type::Static);
 		}
 		else if (MotionControl == MC_DYNAMICS && !GetOwner()->IsRootComponentMovable())
 		{
-			UE_LOG(LogAGX, Warning, TEXT(
-				"The Actor \"%s\" has a RigidBody with Dynamic AGX MotionControl but Non-Movable Unreal Mobility. "
-				"Unreal Mobility will automatically be changed to Movable this game session, but should also be "
-				"changed manually in the Editor to avoid future problems!"), *GetOwner()->GetName());
+			UE_LOG(LogAGX, Warning,
+				TEXT("The Actor \"%s\" has a RigidBody with Dynamic AGX MotionControl but Non-Movable Unreal Mobility. "
+					 "Unreal Mobility will automatically be changed to Movable this game session, but should also be "
+					 "changed manually in the Editor to avoid future problems!"),
+				*GetOwner()->GetName());
 
 			RootComponent->SetMobility(EComponentMobility::Type::Movable);
 		}
 	}
 }
-
 
 void UAGX_RigidBodyComponent::UpdateActorTransformsFromNative()
 {

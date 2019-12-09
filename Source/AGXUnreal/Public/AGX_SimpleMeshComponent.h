@@ -8,7 +8,6 @@
 
 class FPrimitiveSceneProxy;
 
-
 struct AGXUNREAL_API FAGX_SimpleMeshData
 {
 	TArray<FVector> Vertices; // mandatory
@@ -18,9 +17,9 @@ struct AGXUNREAL_API FAGX_SimpleMeshData
 	TArray<uint32> Indices;
 };
 
-
 /** Component that allows you to specify custom triangle mesh geometry */
-UCLASS(hidecategories=(Object,LOD, Physics, Collision), NotPlaceable, editinlinenew, meta=(BlueprintSpawnableComponent), ClassGroup=Rendering)
+UCLASS(hidecategories = (Object, LOD, Physics, Collision), NotPlaceable, editinlinenew,
+	meta = (BlueprintSpawnableComponent), ClassGroup = Rendering)
 class AGXUNREAL_API UAGX_SimpleMeshComponent : public UMeshComponent
 {
 	GENERATED_UCLASS_BODY()
@@ -35,7 +34,6 @@ class AGXUNREAL_API UAGX_SimpleMeshComponent : public UMeshComponent
 	void ClearMeshData();
 
 private:
-
 	//~ Begin UPrimitiveComponent Interface.
 	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
 	//~ End UPrimitiveComponent Interface.
@@ -52,5 +50,3 @@ private:
 
 	friend class FAGX_SimpleMeshSceneProxy;
 };
-
-

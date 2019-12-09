@@ -27,15 +27,13 @@ class AGXUNREAL_API UAGX_ContactMaterialAsset : public UAGX_ContactMaterialBase
 	// UAGX_ContactMaterialInstance handles all interaction with the actual native AGX Contact Material.Therefore,
 	// all in - game objects with Uproperty Contact Material pointers need to swap their pointers to in - game
 	// UAGX_ContactMaterialInstances using the static function UAGX_ContactMaterialBase::GetOrCreateInstance.
-	
+
 	GENERATED_BODY()
 
 public:
-
 	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld) override;
-		
-private:
 
+private:
 	virtual UAGX_ContactMaterialAsset* GetAsset() override;
 
 	TWeakObjectPtr<UAGX_ContactMaterialInstance> Instance;

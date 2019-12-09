@@ -6,7 +6,6 @@
 #include "Materials/MaterialBarrier.h"
 #include "Utilities/AGX_StringUtilities.h"
 
-
 // Sets default values for this component's properties
 UAGX_ShapeComponent::UAGX_ShapeComponent()
 {
@@ -54,8 +53,10 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 		FMaterialBarrier* MaterialBarrier = MaterialInstance->GetOrCreateNative(GetWorld());
 		check(MaterialBarrier);
 
-		UE_LOG(LogAGX, Log, TEXT("UAGX_ShapeComponent::UpdateNativeProperties is setting native material \"%s\" on shape "
-			"\"%s\" of rigid body \"%s\"."), *MaterialInstance->GetName(), *GetName(), *GetNameSafe(GetOwner()));
+		UE_LOG(LogAGX, Log,
+			TEXT("UAGX_ShapeComponent::UpdateNativeProperties is setting native material \"%s\" on shape "
+				 "\"%s\" of rigid body \"%s\"."),
+			*MaterialInstance->GetName(), *GetName(), *GetNameSafe(GetOwner()));
 
 		GetNative()->SetMaterial(*MaterialBarrier);
 	}
@@ -63,7 +64,8 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	GetNative()->SetEnableCollisions(bCanCollide);
 }
 
-void UAGX_ShapeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UAGX_ShapeComponent::TickComponent(
+	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -76,9 +78,8 @@ void UAGX_ShapeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 bool UAGX_ShapeComponent::DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const
 {
-	return
-		PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bVisible) ||
-		PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, RelativeScale3D);
+	return PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bVisible) ||
+		   PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, RelativeScale3D);
 }
 
 void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)

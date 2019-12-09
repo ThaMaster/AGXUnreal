@@ -25,7 +25,7 @@ enum class EAGX_ContactSolver
 	Split,
 
 	/** Normal and friction equation calculated both in the ITERATIVE and the DIRECT solver. */
-	DirectAndIterative	UMETA(DisplayName = "Direct & Iterative")
+	DirectAndIterative UMETA(DisplayName = "Direct & Iterative")
 };
 
 /**
@@ -65,4 +65,3 @@ enum class EAGX_FrictionModel
 	 */
 	IterativeProjectedConeFriction
 };
-

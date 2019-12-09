@@ -15,7 +15,6 @@ struct AGXUNREAL_API FAGX_MaterialSurfaceProperties
 	GENERATED_USTRUCT_BODY()
 
 public:
-
 	/**
 	 * Specify if the friction should be used when solving contacts for this Material.
 	 * If this is set to false, the solver will NOT calculate any friction when this material
@@ -55,7 +54,5 @@ public:
 	double AdhesiveOverlap;
 
 public:
-
 	FAGX_MaterialSurfaceProperties();
-
 };

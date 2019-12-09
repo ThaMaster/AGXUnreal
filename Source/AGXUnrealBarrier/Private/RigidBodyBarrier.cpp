@@ -8,7 +8,7 @@
 #include <agx/Quat.h>
 
 FRigidBodyBarrier::FRigidBodyBarrier()
-	: NativeRef{new FRigidBodyRef}
+	: NativeRef {new FRigidBodyRef}
 {
 }
 
@@ -18,7 +18,7 @@ FRigidBodyBarrier::FRigidBodyBarrier(std::unique_ptr<FRigidBodyRef> Native)
 }
 
 FRigidBodyBarrier::FRigidBodyBarrier(FRigidBodyBarrier&& other)
-	: NativeRef{std::move(other.NativeRef)}
+	: NativeRef {std::move(other.NativeRef)}
 {
 }
 

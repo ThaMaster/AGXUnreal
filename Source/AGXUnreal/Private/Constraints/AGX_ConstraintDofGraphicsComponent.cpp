@@ -32,9 +32,12 @@ struct FAGX_ConstraintDofGraphicsGeometry
 	FLocalVertexFactory VertexFactory;
 	FDynamicMeshIndexBuffer32 IndexBuffer;
 
-	FAGX_ConstraintDofGraphicsGeometry(EPrimitiveType InType, ERHIFeatureLevel::Type FeatureLevel, const char* BuffersDebugName)
-		: Type(InType), VertexFactory(FeatureLevel, BuffersDebugName)
-	{ }
+	FAGX_ConstraintDofGraphicsGeometry(
+		EPrimitiveType InType, ERHIFeatureLevel::Type FeatureLevel, const char* BuffersDebugName)
+		: Type(InType)
+		, VertexFactory(FeatureLevel, BuffersDebugName)
+	{
+	}
 
 	uint32 NumIndexesPerPrimitive() const
 	{
@@ -45,13 +48,13 @@ struct FAGX_ConstraintDofGraphicsGeometry
 	{
 		switch (Type)
 		{
-		case PT_TriangleList:
-			return 3;
-		case PT_LineList:
-			return 2;
-		default:
-			check(!"FAGX_ConstraintDofGraphicsGeometry does not support this primitive type!");
-			return 1;
+			case PT_TriangleList:
+				return 3;
+			case PT_LineList:
+				return 2;
+			default:
+				check(!"FAGX_ConstraintDofGraphicsGeometry does not support this primitive type!");
+				return 1;
 		}
 	}
 };
@@ -71,19 +74,18 @@ struct FAGX_ConstraintDofGraphicsSection
 	FMatrix LocalTransform = FMatrix::Identity;
 	ESceneDepthPriorityGroup DepthPriority;
 
-
 	FAGX_ConstraintDofGraphicsSection(const TSharedPtr<FAGX_ConstraintDofGraphicsGeometry>& InGeometry,
 		UMaterialInterface* InMaterial, bool bInShowSelectionOutline, FMatrix InLocalTransform,
 		ESceneDepthPriorityGroup InDepthPriority)
-		:
-	Geometry(InGeometry),
-	BeginIndex(0),
-	EndIndex(InGeometry ? static_cast<uint32>(InGeometry->IndexBuffer.Indices.Num()) : 0),
-	Material(InMaterial),
-	bShowSelectionOutline(bInShowSelectionOutline),
-	LocalTransform(InLocalTransform),
-	DepthPriority(InDepthPriority)
-	{ }
+		: Geometry(InGeometry)
+		, BeginIndex(0)
+		, EndIndex(InGeometry ? static_cast<uint32>(InGeometry->IndexBuffer.Indices.Num()) : 0)
+		, Material(InMaterial)
+		, bShowSelectionOutline(bInShowSelectionOutline)
+		, LocalTransform(InLocalTransform)
+		, DepthPriority(InDepthPriority)
+	{
+	}
 
 	uint32 GetNumPrimitives() const
 	{
@@ -115,11 +117,11 @@ public:
 
 	FAGX_ConstraintDofGraphicsProxy(UAGX_ConstraintDofGraphicsComponent* Component)
 		: FPrimitiveSceneProxy(Component)
-		, MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel())),
-		bDrawOnlyIfSelected(true),
-		LockedDofs(Component->Constraint->GetLockedDofsBitmask()),
-		FrameTransform1(Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix()),
-		FrameTransform2(Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix())
+		, MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel()))
+		, bDrawOnlyIfSelected(true)
+		, LockedDofs(Component->Constraint->GetLockedDofsBitmask())
+		, FrameTransform1(Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix())
+		, FrameTransform2(Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix())
 	{
 		CreateTranslationalArrows(Component);
 		CreateRotationalArrows(Component);
@@ -127,9 +129,8 @@ public:
 		// Enqueue initialization of render resource
 		for (const TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry : Geometries)
 		{
-			ENQUEUE_RENDER_COMMAND(FAGX_ConstraintDofGraphicsVertexBuffersInit)(
-				[Geometry = Geometry.Get()](FRHICommandListImmediate& RHICmdList)
-			{
+			ENQUEUE_RENDER_COMMAND(FAGX_ConstraintDofGraphicsVertexBuffersInit)
+			([Geometry = Geometry.Get()](FRHICommandListImmediate& RHICmdList) {
 				Geometry->VertexBuffers.PositionVertexBuffer.InitResource();
 				Geometry->VertexBuffers.StaticMeshVertexBuffer.InitResource();
 				Geometry->VertexBuffers.ColorVertexBuffer.InitResource();
@@ -137,8 +138,10 @@ public:
 				FLocalVertexFactory::FDataType Data;
 				Geometry->VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(&Geometry->VertexFactory, Data);
 				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(&Geometry->VertexFactory, Data);
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(&Geometry->VertexFactory, Data);
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(&Geometry->VertexFactory, Data, /*LightMapIndex*/ 0);
+				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
+					&Geometry->VertexFactory, Data);
+				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
+					&Geometry->VertexFactory, Data, /*LightMapIndex*/ 0);
 				Geometry->VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(&Geometry->VertexFactory, Data);
 				Geometry->VertexFactory.SetData(Data);
 
@@ -167,7 +170,6 @@ public:
 	}
 
 private:
-
 	bool IsDofLocked(EDofFlag Dof)
 	{
 		return static_cast<uint8>(LockedDofs) & static_cast<uint8>(Dof);
@@ -212,13 +214,13 @@ private:
 	bool GetShowSelectionOutline(EDofFlag Dof)
 	{
 		return false; // looks best without it
-		//return !IsDofLocked(Dof);
+		// return !IsDofLocked(Dof);
 	}
 
 	ESceneDepthPriorityGroup GetDepthPriority()
 	{
 		return SDPG_Foreground;
-		//return SDPG_World;
+		// return SDPG_World;
 	}
 
 	/// Creates one Geometry for a cylindrical arrow mesh, and three sections using it, one per axis (x, y, z),
@@ -228,7 +230,8 @@ private:
 		// Create the geometry.
 
 		const float ArrowLength = 100.0f;
-		TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry = CreateTranslationalArrowGeometry(GetScene(), ArrowLength);
+		TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry =
+			CreateTranslationalArrowGeometry(GetScene(), ArrowLength);
 		Geometries.Add(Geometry);
 
 		// Create sections using the geometry.
@@ -238,32 +241,33 @@ private:
 		// X-Axis
 		Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(Geometry,
 			GetTranslationMaterial(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_1),
-			false, //GetShowSelectionOutline(EDofFlag::DOF_FLAG_TRANSLATIONAL_1),
+			false, // GetShowSelectionOutline(EDofFlag::DOF_FLAG_TRANSLATIONAL_1),
 			GetScaleMatrix(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_1) *
-			FRotationMatrix(FRotator(-90.0f, 0.0f, 0.0f)) *
-			FTranslationMatrix(FVector(TranslationOffset, 0.0f, 0.0f)),
+				FRotationMatrix(FRotator(-90.0f, 0.0f, 0.0f)) *
+				FTranslationMatrix(FVector(TranslationOffset, 0.0f, 0.0f)),
 			GetDepthPriority()));
 
 		// Y-Axis
 		Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(Geometry,
 			GetTranslationMaterial(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_2),
-			false, //GetShowSelectionOutline(EDofFlag::DOF_FLAG_TRANSLATIONAL_2),
+			false, // GetShowSelectionOutline(EDofFlag::DOF_FLAG_TRANSLATIONAL_2),
 			GetScaleMatrix(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_2) *
-			FRotationMatrix(FRotator(0.0f, 0.0f, 90.0f)) *
-			FTranslationMatrix(FVector(0.0f, TranslationOffset, 0.0f)),
+				FRotationMatrix(FRotator(0.0f, 0.0f, 90.0f)) *
+				FTranslationMatrix(FVector(0.0f, TranslationOffset, 0.0f)),
 			GetDepthPriority()));
 
 		// Z-Axis
 		Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(Geometry,
 			GetTranslationMaterial(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_3),
-			false, //GetShowSelectionOutline(EDofFlag::DOF_FLAG_TRANSLATIONAL_3),
+			false, // GetShowSelectionOutline(EDofFlag::DOF_FLAG_TRANSLATIONAL_3),
 			GetScaleMatrix(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_3) *
-			FRotationMatrix(FRotator(0.0f, 0.0f, 0.0f)) *
-			FTranslationMatrix(FVector(0.0f, 0.0f, TranslationOffset)),
+				FRotationMatrix(FRotator(0.0f, 0.0f, 0.0f)) *
+				FTranslationMatrix(FVector(0.0f, 0.0f, TranslationOffset)),
 			GetDepthPriority()));
 	}
 
-	static TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> CreateTranslationalArrowGeometry(FSceneInterface& Scene, float Length)
+	static TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> CreateTranslationalArrowGeometry(
+		FSceneInterface& Scene, float Length)
 	{
 		TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry = MakeShared<FAGX_ConstraintDofGraphicsGeometry>(
 			PT_TriangleList, Scene.GetFeatureLevel(), "FAGX_ConstraintDofGraphicsGeometry");
@@ -280,8 +284,8 @@ private:
 		const FLinearColor Transparent(1, 1, 1, 0);
 		const FLinearColor Opaque(1, 1, 1, 1);
 
-		AGX_MeshUtilities::CylindricalArrowConstructionData ConstructionData(CylinderRadius, CylinderHeight, ConeRadius,
-			ConeHeight, bBottomCap, NumSegments, Transparent, Opaque);
+		AGX_MeshUtilities::CylindricalArrowConstructionData ConstructionData(
+			CylinderRadius, CylinderHeight, ConeRadius, ConeHeight, bBottomCap, NumSegments, Transparent, Opaque);
 
 		// Allocate buffer sizes.
 
@@ -300,8 +304,8 @@ private:
 		uint32 NumAddedVertices = 0;
 		uint32 NumAddedIndices = 0;
 
-		AGX_MeshUtilities::MakeCylindricalArrow(Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices,
-			NumAddedIndices, ConstructionData);
+		AGX_MeshUtilities::MakeCylindricalArrow(
+			Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, ConstructionData);
 
 		return Geometry;
 	}
@@ -315,15 +319,15 @@ private:
 		const float Width = 7.0f;
 		const float Radius = 13.0f;
 		const float SegmentAngle = FMath::DegreesToRadians(260.0);
-		TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry = CreateRotationalArrowGeometry(GetScene(), Width, Radius, SegmentAngle);
+		TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry =
+			CreateRotationalArrowGeometry(GetScene(), Width, Radius, SegmentAngle);
 		Geometries.Add(Geometry);
 
 		// Create sections using the geometry.
 
-		const int32 NumLockedDofs =
-			(IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1) ? 1 : 0) +
-			(IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_2) ? 1 : 0) +
-			(IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_3) ? 1 : 0);
+		const int32 NumLockedDofs = (IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1) ? 1 : 0) +
+									(IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_2) ? 1 : 0) +
+									(IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_3) ? 1 : 0);
 
 		const bool ShowLockedRotationalDofs = false;
 		const bool MultipleVisible = ShowLockedRotationalDofs || NumLockedDofs > 1;
@@ -337,7 +341,7 @@ private:
 				GetRotationMaterial(Component, EDofFlag::DOF_FLAG_ROTATIONAL_1),
 				GetShowSelectionOutline(EDofFlag::DOF_FLAG_ROTATIONAL_1),
 				FRotationMatrix(FRotator(-140.0f, -90.0f, 0.0f)) *
-				FTranslationMatrix(FVector(TranslationOffset, 0.0f, 0.0f)),
+					FTranslationMatrix(FVector(TranslationOffset, 0.0f, 0.0f)),
 				GetDepthPriority()));
 		}
 
@@ -348,7 +352,7 @@ private:
 				GetRotationMaterial(Component, EDofFlag::DOF_FLAG_ROTATIONAL_2),
 				GetShowSelectionOutline(EDofFlag::DOF_FLAG_ROTATIONAL_2),
 				FRotationMatrix(FRotator(-140.0f, 0.0f, 0.0f)) *
-				FTranslationMatrix(FVector(0.0f, TranslationOffset, 0.0f)),
+					FTranslationMatrix(FVector(0.0f, TranslationOffset, 0.0f)),
 				GetDepthPriority()));
 		}
 
@@ -359,13 +363,13 @@ private:
 				GetRotationMaterial(Component, EDofFlag::DOF_FLAG_ROTATIONAL_3),
 				GetShowSelectionOutline(EDofFlag::DOF_FLAG_ROTATIONAL_3),
 				FRotationMatrix(FRotator(0.0f, -60.0f, -90.0f)) *
-				FTranslationMatrix(FVector(0.0f, 0.0f, TranslationOffset)),
+					FTranslationMatrix(FVector(0.0f, 0.0f, TranslationOffset)),
 				GetDepthPriority()));
 		}
 	}
 
-	static TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> CreateRotationalArrowGeometry(FSceneInterface& Scene,
-		float Width, float Radius, float SegmentAngle)
+	static TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> CreateRotationalArrowGeometry(
+		FSceneInterface& Scene, float Width, float Radius, float SegmentAngle)
 	{
 		TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry = MakeShared<FAGX_ConstraintDofGraphicsGeometry>(
 			PT_TriangleList, Scene.GetFeatureLevel(), "FAGX_ConstraintDofGraphicsGeometry");
@@ -401,13 +405,14 @@ private:
 		uint32 NumAddedVertices = 0;
 		uint32 NumAddedIndices = 0;
 
-		AGX_MeshUtilities::MakeBendableArrow(Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices,
-			NumAddedIndices, ConstructionData);
+		AGX_MeshUtilities::MakeBendableArrow(
+			Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, ConstructionData);
 
 		return Geometry;
 	}
 
-	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap, FMeshElementCollector& Collector) const override
+	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily,
+		uint32 VisibilityMap, FMeshElementCollector& Collector) const override
 	{
 		QUICK_SCOPE_CYCLE_COUNTER(STAT_AGX_ConstraintDofGraphics_GetDynamicMeshElements);
 
@@ -421,7 +426,8 @@ private:
 
 		for (const TSharedPtr<FAGX_ConstraintDofGraphicsSection> Section : Sections)
 		{
-			FMaterialRenderProxy* MaterialProxy = bWireframe ? WireframeMaterialInstance : Section->Material->GetRenderProxy();
+			FMaterialRenderProxy* MaterialProxy =
+				bWireframe ? WireframeMaterialInstance : Section->Material->GetRenderProxy();
 
 			for (int32 ViewIndex = 0; ViewIndex < Views.Num(); ViewIndex++)
 			{
@@ -448,10 +454,10 @@ private:
 					BatchElement.MaxVertexIndex = Section->GetMaxVertexIndex();
 
 					FMatrix WorldMatrix = GetLocalToWorld().GetMatrixWithoutScale();
-					//FMatrix WorldMatrix = FrameTransform1; // setting render matrix instead (see GetRenderMatrix())
+					// FMatrix WorldMatrix = FrameTransform1; // setting render matrix instead (see GetRenderMatrix())
 
-					FMatrix ScreenScale = GetScreenSpaceScale(0.56f, 150.0f, 500.0f, 100.0f,
-						WorldMatrix.GetOrigin(), View);
+					FMatrix ScreenScale =
+						GetScreenSpaceScale(0.56f, 150.0f, 500.0f, 100.0f, WorldMatrix.GetOrigin(), View);
 
 					FMatrix EffectiveLocalToWorld = Section->LocalTransform * ScreenScale * WorldMatrix;
 
@@ -478,7 +484,7 @@ private:
 	/// 'NormalizedScreenSpaceSize' fraction of the screen horizontally, but limiting it within MinWorldSize and
 	/// MaxWorldSize. Result is not 100% correct, but it's consistent when moving around, so just tweak input!
 	static FMatrix GetScreenSpaceScale(float NormalizedScreenSpaceSize, float MinWorldSize, float MaxWorldSize,
-		float OriginalWorldSize, const FVector& WorldLocation, const FSceneView *View)
+		float OriginalWorldSize, const FVector& WorldLocation, const FSceneView* View)
 	{
 		float Distance = (WorldLocation - View->ViewLocation).Size();
 		float NormalizedScreenToWorld = 2.0f * Distance * FMath::Atan(FMath::DegreesToRadians(View->FOV) / 2.0f);
@@ -529,12 +535,17 @@ private:
 		return MaterialRelevance.bUsesDistanceCullFade;
 	}
 
-	virtual uint32 GetMemoryFootprint(void) const override { return(sizeof(*this) + GetAllocatedSize()); }
+	virtual uint32 GetMemoryFootprint(void) const override
+	{
+		return (sizeof(*this) + GetAllocatedSize());
+	}
 
-	uint32 GetAllocatedSize(void) const { return(FPrimitiveSceneProxy::GetAllocatedSize()); }
+	uint32 GetAllocatedSize(void) const
+	{
+		return (FPrimitiveSceneProxy::GetAllocatedSize());
+	}
 
 private:
-
 	TArray<TSharedPtr<FAGX_ConstraintDofGraphicsGeometry>> Geometries;
 	TArray<TSharedPtr<FAGX_ConstraintDofGraphicsSection>> Sections;
 	FMaterialRelevance MaterialRelevance;
@@ -545,12 +556,11 @@ private:
 };
 
 UAGX_ConstraintDofGraphicsComponent::UAGX_ConstraintDofGraphicsComponent(const FObjectInitializer& ObjectInitializer)
-	:
-Super(ObjectInitializer),
-FreeTranslationMaterialIndex(-1),
-FreeRotationMaterialIndex(-1),
-LockedTranslationMaterialIndex(-1),
-LockedRotationMaterialIndex(-1)
+	: Super(ObjectInitializer)
+	, FreeTranslationMaterialIndex(-1)
+	, FreeRotationMaterialIndex(-1)
+	, LockedTranslationMaterialIndex(-1)
+	, LockedRotationMaterialIndex(-1)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
@@ -575,17 +585,22 @@ LockedRotationMaterialIndex(-1)
 
 		UMaterialInterface* FallbackMaterial = UMaterial::GetDefaultMaterial(MD_Surface);
 
-		UMaterialInterface* FreeTranslationMaterial = FreeTranslationMaterialFinder.Succeeded() ?
-			Cast<UMaterialInterface>(FreeTranslationMaterialFinder.Object) : FallbackMaterial;
+		UMaterialInterface* FreeTranslationMaterial =
+			FreeTranslationMaterialFinder.Succeeded() ? Cast<UMaterialInterface>(FreeTranslationMaterialFinder.Object)
+													  : FallbackMaterial;
 
-		UMaterialInterface* FreeRotationMaterial = FreeRotationMaterialFinder.Succeeded() ?
-			Cast<UMaterialInterface>(FreeRotationMaterialFinder.Object) : FallbackMaterial;
+		UMaterialInterface* FreeRotationMaterial = FreeRotationMaterialFinder.Succeeded()
+													   ? Cast<UMaterialInterface>(FreeRotationMaterialFinder.Object)
+													   : FallbackMaterial;
 
-		UMaterialInterface* LockedTranslationMaterial = LockedTranslationMaterialFinder.Succeeded() ?
-			Cast<UMaterialInterface>(LockedTranslationMaterialFinder.Object) : FallbackMaterial;
+		UMaterialInterface* LockedTranslationMaterial =
+			LockedTranslationMaterialFinder.Succeeded()
+				? Cast<UMaterialInterface>(LockedTranslationMaterialFinder.Object)
+				: FallbackMaterial;
 
-		UMaterialInterface* LockedRotationMaterial = LockedRotationMaterialFinder.Succeeded() ?
-			Cast<UMaterialInterface>(LockedRotationMaterialFinder.Object) : FallbackMaterial;
+		UMaterialInterface* LockedRotationMaterial = LockedRotationMaterialFinder.Succeeded()
+														 ? Cast<UMaterialInterface>(LockedRotationMaterialFinder.Object)
+														 : FallbackMaterial;
 
 		FreeTranslationMaterialIndex = GetNumMaterials();
 		SetMaterial(FreeTranslationMaterialIndex, FreeTranslationMaterial);
@@ -629,12 +644,12 @@ void UAGX_ConstraintDofGraphicsComponent::OnBecameSelected()
 
 FPrimitiveSceneProxy* UAGX_ConstraintDofGraphicsComponent::CreateSceneProxy()
 {
-	if(!Constraint)
+	if (!Constraint)
 	{
 		return nullptr;
 	}
 
-	if(GetWorld()->bPostTickComponentUpdate)
+	if (GetWorld()->bPostTickComponentUpdate)
 	{
 		// Based on
 		// https://github.com/kestrelm/Creature_UE4/blob/master/CreatureEditorAndPlugin/CreaturePlugin/Source/CreaturePlugin/Private/CreatureMeshComponent.cpp
@@ -661,7 +676,8 @@ UMaterialInterface* UAGX_ConstraintDofGraphicsComponent::GetMaterial(int32 Eleme
 	return Super::GetMaterial(ElementIndex);
 }
 
-void UAGX_ConstraintDofGraphicsComponent::GetUsedMaterials(TArray<UMaterialInterface*>& OutMaterials, bool bGetDebugMaterials) const
+void UAGX_ConstraintDofGraphicsComponent::GetUsedMaterials(
+	TArray<UMaterialInterface*>& OutMaterials, bool bGetDebugMaterials) const
 {
 	return Super::GetUsedMaterials(OutMaterials, bGetDebugMaterials);
 }
@@ -691,11 +707,9 @@ void UAGX_ConstraintDofGraphicsComponent::SendRenderDynamicData_Concurrent()
 		FMatrix Frame2 = Constraint->BodyAttachment2.GetGlobalFrameMatrix();
 
 		FAGX_ConstraintDofGraphicsProxy* CastProxy = static_cast<FAGX_ConstraintDofGraphicsProxy*>(SceneProxy);
-		ENQUEUE_RENDER_COMMAND(FSendConstraintDofGraphicsDynamicData)(
-			[CastProxy, Frame1, Frame2](FRHICommandListImmediate& RHICmdList)
-			{
-				CastProxy->SetAttachmentFrameTransforms(Frame1, Frame2);
-			});
+		ENQUEUE_RENDER_COMMAND(FSendConstraintDofGraphicsDynamicData)
+		([CastProxy, Frame1, Frame2](
+			 FRHICommandListImmediate& RHICmdList) { CastProxy->SetAttachmentFrameTransforms(Frame1, Frame2); });
 	}
 }
 

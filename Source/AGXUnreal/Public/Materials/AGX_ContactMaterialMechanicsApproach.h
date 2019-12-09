@@ -16,7 +16,6 @@ struct AGXUNREAL_API FAGX_ContactMaterialMechanicsApproach
 	GENERATED_USTRUCT_BODY()
 
 public:
-		
 	/**
 	 * Whether contacts using this contact material use the new area-based approach for processing contacts, instead
 	 * of the default point-based approach.
@@ -35,22 +34,20 @@ public:
 
 	/**
 	 * Minimum elastic rest length of the contact material, in meters.
-	 * 
-     * This is only used if the contact area approach is used if the property 'Use Contact Area Approach' is enabled.
+	 *
+	 * This is only used if the contact area approach is used if the property 'Use Contact Area Approach' is enabled.
 	 */
 	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0", UIMin = "0", EditCondition = "bUseContactAreaApproach"))
 	double MinElasticRestLength;
 
 	/**
 	 * Maximum elastic rest length of the contact material, in meters.
-	 * 
-     * This is only used if the contact area approach is used if the property 'Use Contact Area Approach' is enabled.
+	 *
+	 * This is only used if the contact area approach is used if the property 'Use Contact Area Approach' is enabled.
 	 */
 	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0", UIMin = "0", EditCondition = "bUseContactAreaApproach"))
 	double MaxElasticRestLength;
 
 public:
-
 	FAGX_ContactMaterialMechanicsApproach();
-
 };

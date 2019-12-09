@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Constraints/AGX_BallConstraint.h"
 
 #include "Constraints/ConstraintBarrier.h"
@@ -8,23 +7,15 @@
 
 class FRigidBodyBarrier;
 
-
 AAGX_BallConstraint::AAGX_BallConstraint()
 	: AAGX_Constraint(
-		{
-			EDofFlag::DOF_FLAG_TRANSLATIONAL_1,
-			EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
-			EDofFlag::DOF_FLAG_TRANSLATIONAL_3
-		})
+		  {EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2, EDofFlag::DOF_FLAG_TRANSLATIONAL_3})
 {
 }
-
 
 AAGX_BallConstraint::~AAGX_BallConstraint()
 {
-
 }
-
 
 void AAGX_BallConstraint::CreateNativeImpl()
 {
@@ -43,7 +34,6 @@ void AAGX_BallConstraint::CreateNativeImpl()
 	FQuat FrameRotation1 = BodyAttachment1.GetLocalFrameRotation();
 	FQuat FrameRotation2 = BodyAttachment2.GetLocalFrameRotation();
 
-	NativeBarrier->AllocateNative(
-		RigidBody1, &FrameLocation1, &FrameRotation1,
-		RigidBody2, &FrameLocation2, &FrameRotation2);  // ok if second is nullptr
+	NativeBarrier->AllocateNative(RigidBody1, &FrameLocation1, &FrameRotation1, RigidBody2, &FrameLocation2,
+		&FrameRotation2); // ok if second is nullptr
 }

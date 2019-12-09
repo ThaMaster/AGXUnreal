@@ -3,19 +3,15 @@
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
-
 FAGX_ConstraintElectricMotorController::FAGX_ConstraintElectricMotorController(bool bRotational_)
-	:
-	bEnable(false),
-	Voltage(24.0),
-	ArmatureResistance(1.0),
-	TorqueConstant(1.0),
-	ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax()),
-	bRotational(bRotational_)
+	: bEnable(false)
+	, Voltage(24.0)
+	, ArmatureResistance(1.0)
+	, TorqueConstant(1.0)
+	, ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
+	, bRotational(bRotational_)
 {
-
 }
-
 
 void FAGX_ConstraintElectricMotorController::ToBarrier(FElectricMotorControllerBarrier* Barrier) const
 {

@@ -35,15 +35,13 @@ const FConstraintRef* FConstraintBarrier::GetNative() const
 	return NativeRef.get();
 }
 
-void FConstraintBarrier::AllocateNative(
-	const FRigidBodyBarrier *RigidBody1, const FVector *FramePosition1, const FQuat *FrameRotation1,
-	const FRigidBodyBarrier *RigidBody2, const FVector *FramePosition2, const FQuat *FrameRotation2)
+void FConstraintBarrier::AllocateNative(const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1,
+	const FQuat* FrameRotation1, const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2,
+	const FQuat* FrameRotation2)
 {
 	check(!HasNative());
 
-	AllocateNativeImpl(
-		RigidBody1, FramePosition1, FrameRotation1,
-		RigidBody2, FramePosition2, FrameRotation2);
+	AllocateNativeImpl(RigidBody1, FramePosition1, FrameRotation1, RigidBody2, FramePosition2, FrameRotation2);
 }
 
 void FConstraintBarrier::ReleaseNative()
@@ -67,13 +65,11 @@ FString FConstraintBarrier::GetName() const
 	return NameUnreal;
 }
 
-
 void FConstraintBarrier::SetEnable(bool Enable)
 {
 	check(HasNative());
 	NativeRef->Native->setEnable(Enable);
 }
-
 
 bool FConstraintBarrier::GetEnable() const
 {
@@ -81,20 +77,17 @@ bool FConstraintBarrier::GetEnable() const
 	return NativeRef->Native->getEnable();
 }
 
-
 void FConstraintBarrier::SetSolveType(int32 SolveType)
 {
 	check(HasNative());
 	NativeRef->Native->setSolveType(agx::Constraint::SolveType(SolveType));
 }
 
-
 int32 FConstraintBarrier::GetSolveType() const
 {
 	check(HasNative());
 	return int32(NativeRef->Native->getSolveType());
 }
-
 
 void FConstraintBarrier::SetElasticity(double Elasticity, int32 Dof)
 {
@@ -132,13 +125,11 @@ double FConstraintBarrier::GetDamping(int32 Dof) const
 	return NativeRef->Native->getDamping(Dof);
 }
 
-
 void FConstraintBarrier::SetForceRange(double Min, double Max, int32 Dof)
 {
 	check(HasNative());
 	return NativeRef->Native->setForceRange(agx::RangeReal(Min, Max), Dof);
 }
-
 
 void FConstraintBarrier::GetForceRange(double* Min, double* Max, int32 Dof) const
 {

@@ -30,11 +30,10 @@ public:
 	FBoxShapeBarrier* GetNativeBox();
 
 	virtual void UpdateNativeProperties() override;
-	
-protected:
 
+protected:
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
-	
+
 #if WITH_EDITOR
 	virtual bool DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const;
 #endif

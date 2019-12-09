@@ -41,9 +41,12 @@ struct FAGX_ConstraintIconGraphicsGeometry
 	FLocalVertexFactory VertexFactory;
 	FDynamicMeshIndexBuffer32 IndexBuffer;
 
-	FAGX_ConstraintIconGraphicsGeometry(EPrimitiveType InType, ERHIFeatureLevel::Type FeatureLevel, const char* BuffersDebugName)
-		: Type(InType), VertexFactory(FeatureLevel, BuffersDebugName)
-	{ }
+	FAGX_ConstraintIconGraphicsGeometry(
+		EPrimitiveType InType, ERHIFeatureLevel::Type FeatureLevel, const char* BuffersDebugName)
+		: Type(InType)
+		, VertexFactory(FeatureLevel, BuffersDebugName)
+	{
+	}
 
 	uint32 NumIndexesPerPrimitive() const
 	{
@@ -54,13 +57,13 @@ struct FAGX_ConstraintIconGraphicsGeometry
 	{
 		switch (Type)
 		{
-		case PT_TriangleList:
-			return 3;
-		case PT_LineList:
-			return 2;
-		default:
-			check(!"FAGX_ConstraintIconGraphicsGeometry does not support this primitive type!");
-			return 1;
+			case PT_TriangleList:
+				return 3;
+			case PT_LineList:
+				return 2;
+			default:
+				check(!"FAGX_ConstraintIconGraphicsGeometry does not support this primitive type!");
+				return 1;
 		}
 	}
 };
@@ -80,19 +83,19 @@ struct FAGX_ConstraintIconGraphicsSection
 	FMatrix LocalTransform = FMatrix::Identity;
 	ESceneDepthPriorityGroup DepthPriority;
 
-
 	FAGX_ConstraintIconGraphicsSection(const TSharedPtr<FAGX_ConstraintIconGraphicsGeometry>& InGeometry,
 		UMaterialInterface* InMaterial, bool bInShowSelectionOutline, FMatrix InLocalTransform,
 		ESceneDepthPriorityGroup InDepthPriority, uint32 InBeginIndex = 0, int32 InEndIndex = -1)
-		:
-	Geometry(InGeometry),
-	BeginIndex(InBeginIndex),
-	EndIndex(InEndIndex >= 0 ? InEndIndex : (InGeometry ? static_cast<uint32>(InGeometry->IndexBuffer.Indices.Num()) : 0)),
-	Material(InMaterial),
-	bShowSelectionOutline(bInShowSelectionOutline),
-	LocalTransform(InLocalTransform),
-	DepthPriority(InDepthPriority)
-	{ }
+		: Geometry(InGeometry)
+		, BeginIndex(InBeginIndex)
+		, EndIndex(InEndIndex >= 0 ? InEndIndex
+								   : (InGeometry ? static_cast<uint32>(InGeometry->IndexBuffer.Indices.Num()) : 0))
+		, Material(InMaterial)
+		, bShowSelectionOutline(bInShowSelectionOutline)
+		, LocalTransform(InLocalTransform)
+		, DepthPriority(InDepthPriority)
+	{
+	}
 
 	uint32 GetNumPrimitives() const
 	{
@@ -124,11 +127,11 @@ public:
 
 	FAGX_ConstraintIconGraphicsProxy(UAGX_ConstraintIconGraphicsComponent* Component)
 		: FPrimitiveSceneProxy(Component)
-		, MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel())),
-		bDrawOnlyIfUnselected(true),
-		LockedDofs(Component->Constraint->GetLockedDofsBitmask()),
-		FrameTransform1(Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix()),
-		FrameTransform2(Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix())
+		, MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel()))
+		, bDrawOnlyIfUnselected(true)
+		, LockedDofs(Component->Constraint->GetLockedDofsBitmask())
+		, FrameTransform1(Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix())
+		, FrameTransform2(Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix())
 	{
 		/// \todo Use inheritance instead of this branching below.
 		/// \todo IsA() should probably not be used if future constraints will derive these spawnable constraints.
@@ -160,9 +163,8 @@ public:
 		// Enqueue initialization of render resource
 		for (const TSharedPtr<FAGX_ConstraintIconGraphicsGeometry> Geometry : Geometries)
 		{
-			ENQUEUE_RENDER_COMMAND(FAGX_ConstraintIconGraphicsVertexBuffersInit)(
-				[Geometry = Geometry.Get()](FRHICommandListImmediate& RHICmdList)
-			{
+			ENQUEUE_RENDER_COMMAND(FAGX_ConstraintIconGraphicsVertexBuffersInit)
+			([Geometry = Geometry.Get()](FRHICommandListImmediate& RHICmdList) {
 				Geometry->VertexBuffers.PositionVertexBuffer.InitResource();
 				Geometry->VertexBuffers.StaticMeshVertexBuffer.InitResource();
 				Geometry->VertexBuffers.ColorVertexBuffer.InitResource();
@@ -170,8 +172,10 @@ public:
 				FLocalVertexFactory::FDataType Data;
 				Geometry->VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(&Geometry->VertexFactory, Data);
 				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(&Geometry->VertexFactory, Data);
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(&Geometry->VertexFactory, Data);
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(&Geometry->VertexFactory, Data, /*LightMapIndex*/ 0);
+				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
+					&Geometry->VertexFactory, Data);
+				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
+					&Geometry->VertexFactory, Data, /*LightMapIndex*/ 0);
 				Geometry->VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(&Geometry->VertexFactory, Data);
 				Geometry->VertexFactory.SetData(Data);
 
@@ -200,7 +204,6 @@ public:
 	}
 
 private:
-
 	bool IsDofLocked(EDofFlag Dof)
 	{
 		return static_cast<uint8>(LockedDofs) & static_cast<uint8>(Dof);
@@ -209,13 +212,13 @@ private:
 	bool GetShowSelectionOutline(EDofFlag Dof)
 	{
 		return false; // looks best without it
-		//return !IsDofLocked(Dof);
+		// return !IsDofLocked(Dof);
 	}
 
 	ESceneDepthPriorityGroup GetDepthPriority()
 	{
 		return SDPG_Foreground;
-		//return SDPG_World; /// \note Also need to turn off "Disable Depth Test" on material for it to be cullable.
+		// return SDPG_World; /// \note Also need to turn off "Disable Depth Test" on material for it to be cullable.
 	}
 
 	void CreateBallConstraint(UAGX_ConstraintIconGraphicsComponent* Component)
@@ -233,8 +236,9 @@ private:
 		const FLinearColor Opaque(1, 1, 1, 1);
 		const FLinearColor SemiTransparent(1, 1, 1, 0.5);
 
-		AGX_MeshUtilities::DiskArrayConstructionData DiskArrayData(Radius, NumSegments, 0.0f, 3, true, SemiTransparent, SemiTransparent,
-			{ FTransform(FRotator(90, 0, 0)), FTransform(FRotator(0, 90, 0)), FTransform(FRotator(0, 0, 90)) });
+		AGX_MeshUtilities::DiskArrayConstructionData DiskArrayData(Radius, NumSegments, 0.0f, 3, true, SemiTransparent,
+			SemiTransparent,
+			{FTransform(FRotator(90, 0, 0)), FTransform(FRotator(0, 90, 0)), FTransform(FRotator(0, 0, 90))});
 
 		AGX_MeshUtilities::SphereConstructionData SphereData(Radius, NumSegments);
 
@@ -260,16 +264,16 @@ private:
 			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(Geometry, Component->GetOuterShellMaterial(),
 				true, FMatrix::Identity, GetDepthPriority(), NumAddedIndices, NumAddedIndices + DiskArrayData.Indices));
 
-			AGX_MeshUtilities::MakeDiskArray(Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices,
-				NumAddedIndices, DiskArrayData);
+			AGX_MeshUtilities::MakeDiskArray(
+				Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, DiskArrayData);
 		}
 
 		{
 			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(Geometry, Component->GetInnerShellMaterial(),
 				true, FMatrix::Identity, GetDepthPriority(), NumAddedIndices, NumAddedIndices + SphereData.Indices));
 
-			AGX_MeshUtilities::MakeSphere(Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices,
-				NumAddedIndices, SphereData);
+			AGX_MeshUtilities::MakeSphere(
+				Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, SphereData);
 		}
 
 		Geometries.Add(Geometry);
@@ -289,9 +293,12 @@ private:
 		const FLinearColor Opaque(1, 1, 1, 1);
 		const FLinearColor Transparent(1, 1, 1, 0);
 
-		AGX_MeshUtilities::DiskArrayConstructionData DiskArrayData(InnerRadius, NumSegments, 5.0f, 18, true, Opaque, Transparent);
-		AGX_MeshUtilities::CylinderConstructionData InnerCylinderData(InnerRadius, 110.0f, NumSegments, 2, Opaque, Transparent);
-		AGX_MeshUtilities::CylinderConstructionData OuterCylinderData(OuterRadius, 50.0f, NumSegments, 1, Opaque, Opaque);
+		AGX_MeshUtilities::DiskArrayConstructionData DiskArrayData(
+			InnerRadius, NumSegments, 5.0f, 18, true, Opaque, Transparent);
+		AGX_MeshUtilities::CylinderConstructionData InnerCylinderData(
+			InnerRadius, 110.0f, NumSegments, 2, Opaque, Transparent);
+		AGX_MeshUtilities::CylinderConstructionData OuterCylinderData(
+			OuterRadius, 50.0f, NumSegments, 1, Opaque, Opaque);
 
 		// Allocate buffer sizes.
 
@@ -316,30 +323,33 @@ private:
 			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(Geometry, Component->GetInnerDisksMaterial(),
 				true, FMatrix::Identity, GetDepthPriority(), NumAddedIndices, NumAddedIndices + DiskArrayData.Indices));
 
-			AGX_MeshUtilities::MakeDiskArray(Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices,
-				NumAddedIndices, DiskArrayData);
+			AGX_MeshUtilities::MakeDiskArray(
+				Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, DiskArrayData);
 		}
 
 		{
 			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(Geometry, Component->GetInnerShellMaterial(),
-				true, FMatrix::Identity, GetDepthPriority(), NumAddedIndices, NumAddedIndices + InnerCylinderData.Indices));
+				true, FMatrix::Identity, GetDepthPriority(), NumAddedIndices,
+				NumAddedIndices + InnerCylinderData.Indices));
 
-			AGX_MeshUtilities::MakeCylinder(Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices,
-				NumAddedIndices, InnerCylinderData);
+			AGX_MeshUtilities::MakeCylinder(
+				Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, InnerCylinderData);
 		}
 
 		{
 			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(Geometry, Component->GetOuterShellMaterial(),
-				true, FMatrix::Identity, GetDepthPriority(), NumAddedIndices, NumAddedIndices + OuterCylinderData.Indices));
+				true, FMatrix::Identity, GetDepthPriority(), NumAddedIndices,
+				NumAddedIndices + OuterCylinderData.Indices));
 
-			AGX_MeshUtilities::MakeCylinder(Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices,
-				NumAddedIndices, OuterCylinderData);
+			AGX_MeshUtilities::MakeCylinder(
+				Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, OuterCylinderData);
 		}
 
 		Geometries.Add(Geometry);
 	}
 
-	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap, FMeshElementCollector& Collector) const override
+	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily,
+		uint32 VisibilityMap, FMeshElementCollector& Collector) const override
 	{
 		QUICK_SCOPE_CYCLE_COUNTER(STAT_AGX_ConstraintIconGraphics_GetDynamicMeshElements);
 
@@ -353,7 +363,8 @@ private:
 
 		for (const TSharedPtr<FAGX_ConstraintIconGraphicsSection> Section : Sections)
 		{
-			FMaterialRenderProxy* MaterialProxy = bWireframe ? WireframeMaterialInstance : Section->Material->GetRenderProxy();
+			FMaterialRenderProxy* MaterialProxy =
+				bWireframe ? WireframeMaterialInstance : Section->Material->GetRenderProxy();
 
 			for (int32 ViewIndex = 0; ViewIndex < Views.Num(); ViewIndex++)
 			{
@@ -380,10 +391,10 @@ private:
 					BatchElement.MaxVertexIndex = Section->GetMaxVertexIndex();
 
 					FMatrix WorldMatrix = GetLocalToWorld().GetMatrixWithoutScale();
-					//FMatrix WorldMatrix = FrameTransform1; // setting render matrix instead (see GetRenderMatrix())
+					// FMatrix WorldMatrix = FrameTransform1; // setting render matrix instead (see GetRenderMatrix())
 
-					FMatrix ScreenScale = GetScreenSpaceScale(0.2f, 30.0f, 100.0f, 100.0f,
-						WorldMatrix.GetOrigin(), View);
+					FMatrix ScreenScale =
+						GetScreenSpaceScale(0.2f, 30.0f, 100.0f, 100.0f, WorldMatrix.GetOrigin(), View);
 
 					/// todo ScreenScale does not seem to have effect in-game. Must have missed something...
 
@@ -413,7 +424,7 @@ private:
 	/// 'NormalizedScreenSpaceSize' fraction of the screen horizontally, but limiting it within MinWorldSize and
 	/// MaxWorldSize. Result is not 100% correct, but it's consistent when moving around, so just tweak input!
 	static FMatrix GetScreenSpaceScale(float NormalizedScreenSpaceSize, float MinWorldSize, float MaxWorldSize,
-		float OriginalWorldSize, const FVector& WorldLocation, const FSceneView *View)
+		float OriginalWorldSize, const FVector& WorldLocation, const FSceneView* View)
 	{
 		float Distance = (WorldLocation - View->ViewLocation).Size();
 		float NormalizedScreenToWorld = 2.0f * Distance * FMath::Atan(FMath::DegreesToRadians(View->FOV) / 2.0f);
@@ -464,12 +475,17 @@ private:
 		return MaterialRelevance.bUsesDistanceCullFade;
 	}
 
-	virtual uint32 GetMemoryFootprint(void) const override { return(sizeof(*this) + GetAllocatedSize()); }
+	virtual uint32 GetMemoryFootprint(void) const override
+	{
+		return (sizeof(*this) + GetAllocatedSize());
+	}
 
-	uint32 GetAllocatedSize(void) const { return(FPrimitiveSceneProxy::GetAllocatedSize()); }
+	uint32 GetAllocatedSize(void) const
+	{
+		return (FPrimitiveSceneProxy::GetAllocatedSize());
+	}
 
 private:
-
 	TArray<TSharedPtr<FAGX_ConstraintIconGraphicsGeometry>> Geometries;
 	TArray<TSharedPtr<FAGX_ConstraintIconGraphicsSection>> Sections;
 	FMaterialRelevance MaterialRelevance;
@@ -480,11 +496,10 @@ private:
 };
 
 UAGX_ConstraintIconGraphicsComponent::UAGX_ConstraintIconGraphicsComponent(const FObjectInitializer& ObjectInitializer)
-	:
-Super(ObjectInitializer),
-OuterShellMaterialIndex(-1),
-InnerShellMaterialIndex(-1),
-InnerDisksMaterialIndex(-1)
+	: Super(ObjectInitializer)
+	, OuterShellMaterialIndex(-1)
+	, InnerShellMaterialIndex(-1)
+	, InnerDisksMaterialIndex(-1)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
@@ -497,9 +512,9 @@ InnerDisksMaterialIndex(-1)
 		// Enabling the SceneComponents's white blob for constraint types with no visualization yet.
 		/// \todo Set bVisualizeComponent to false when these constraints' graphics are implemented by in the proxy.
 		bVisualizeComponent = Owner->IsA(AAGX_DistanceConstraint::StaticClass()) ||
-			Owner->IsA(AAGX_HingeConstraint::StaticClass()) || Owner->IsA(AAGX_LockConstraint::StaticClass());
+							  Owner->IsA(AAGX_HingeConstraint::StaticClass()) ||
+							  Owner->IsA(AAGX_LockConstraint::StaticClass());
 	}
-
 
 	// Find materials.
 	{
@@ -514,14 +529,17 @@ InnerDisksMaterialIndex(-1)
 
 		UMaterialInterface* FallbackMaterial = UMaterial::GetDefaultMaterial(MD_Surface);
 
-		UMaterialInterface* OuterShellMaterial = OuterShellMaterialFinder.Succeeded() ?
-			Cast<UMaterialInterface>(OuterShellMaterialFinder.Object) : FallbackMaterial;
+		UMaterialInterface* OuterShellMaterial = OuterShellMaterialFinder.Succeeded()
+													 ? Cast<UMaterialInterface>(OuterShellMaterialFinder.Object)
+													 : FallbackMaterial;
 
-		UMaterialInterface* InnerShellMaterial = InnerShellMaterialFinder.Succeeded() ?
-			Cast<UMaterialInterface>(InnerShellMaterialFinder.Object) : FallbackMaterial;
+		UMaterialInterface* InnerShellMaterial = InnerShellMaterialFinder.Succeeded()
+													 ? Cast<UMaterialInterface>(InnerShellMaterialFinder.Object)
+													 : FallbackMaterial;
 
-		UMaterialInterface* InnerDisksMaterial = InnerDisksMaterialFinder.Succeeded() ?
-			Cast<UMaterialInterface>(InnerDisksMaterialFinder.Object) : FallbackMaterial;
+		UMaterialInterface* InnerDisksMaterial = InnerDisksMaterialFinder.Succeeded()
+													 ? Cast<UMaterialInterface>(InnerDisksMaterialFinder.Object)
+													 : FallbackMaterial;
 
 		OuterShellMaterialIndex = GetNumMaterials();
 		SetMaterial(OuterShellMaterialIndex, OuterShellMaterial);
@@ -557,12 +575,12 @@ void UAGX_ConstraintIconGraphicsComponent::OnBecameSelected()
 
 FPrimitiveSceneProxy* UAGX_ConstraintIconGraphicsComponent::CreateSceneProxy()
 {
-	if(!Constraint)
+	if (!Constraint)
 	{
 		return nullptr;
 	}
 
-	if(GetWorld()->bPostTickComponentUpdate)
+	if (GetWorld()->bPostTickComponentUpdate)
 	{
 		// Based on
 		// https://github.com/kestrelm/Creature_UE4/blob/master/CreatureEditorAndPlugin/CreaturePlugin/Source/CreaturePlugin/Private/CreatureMeshComponent.cpp
@@ -589,7 +607,8 @@ UMaterialInterface* UAGX_ConstraintIconGraphicsComponent::GetMaterial(int32 Elem
 	return Super::GetMaterial(ElementIndex);
 }
 
-void UAGX_ConstraintIconGraphicsComponent::GetUsedMaterials(TArray<UMaterialInterface*>& OutMaterials, bool bGetDebugMaterials) const
+void UAGX_ConstraintIconGraphicsComponent::GetUsedMaterials(
+	TArray<UMaterialInterface*>& OutMaterials, bool bGetDebugMaterials) const
 {
 	return Super::GetUsedMaterials(OutMaterials, bGetDebugMaterials);
 }
@@ -619,11 +638,9 @@ void UAGX_ConstraintIconGraphicsComponent::SendRenderDynamicData_Concurrent()
 		FMatrix Frame2 = Constraint->BodyAttachment2.GetGlobalFrameMatrix();
 
 		FAGX_ConstraintIconGraphicsProxy* CastProxy = static_cast<FAGX_ConstraintIconGraphicsProxy*>(SceneProxy);
-		ENQUEUE_RENDER_COMMAND(FSendConstraintIconGraphicsDynamicData)(
-			[CastProxy, Frame1, Frame2](FRHICommandListImmediate& RHICmdList)
-			{
-				CastProxy->SetAttachmentFrameTransforms(Frame1, Frame2);
-			});
+		ENQUEUE_RENDER_COMMAND(FSendConstraintIconGraphicsDynamicData)
+		([CastProxy, Frame1, Frame2](
+			 FRHICommandListImmediate& RHICmdList) { CastProxy->SetAttachmentFrameTransforms(Frame1, Frame2); });
 	}
 }
 

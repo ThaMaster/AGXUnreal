@@ -9,7 +9,8 @@
 class UAGX_MaterialInstance;
 
 /**
- * Defines contacts properties between AGX Shapes as well as properties affecting the mass distribution of AGX Rigid Bodies.
+ * Defines contacts properties between AGX Shapes as well as properties affecting the mass distribution of AGX Rigid
+ * Bodies.
  *
  * Since a contact involves two AGX Shapes, the final parameters used as input to the force equations are a fusion
  * of the two shape's AGX Materials. Though, the way the two material's properties are combined might not be desirable
@@ -34,11 +35,9 @@ class AGXUNREAL_API UAGX_MaterialAsset : public UAGX_MaterialBase
 	GENERATED_BODY()
 
 public:
-
 	virtual UAGX_MaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld) override;
-		
-private:
 
+private:
 	virtual UAGX_MaterialAsset* GetAsset() override;
 
 	TWeakObjectPtr<UAGX_MaterialInstance> Instance;

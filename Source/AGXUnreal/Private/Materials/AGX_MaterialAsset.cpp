@@ -1,12 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Materials/AGX_MaterialAsset.h"
 
 #include "Classes/Engine/World.h"
 
 #include "Materials/AGX_MaterialInstance.h"
-
 
 UAGX_MaterialInstance* UAGX_MaterialAsset::GetOrCreateInstance(UWorld* PlayingWorld)
 {

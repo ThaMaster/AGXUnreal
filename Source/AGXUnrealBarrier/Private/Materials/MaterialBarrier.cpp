@@ -5,7 +5,7 @@
 #include <Misc/AssertionMacros.h>
 
 FMaterialBarrier::FMaterialBarrier()
-	: NativeRef{ new FMaterialRef }
+	: NativeRef {new FMaterialRef}
 {
 }
 

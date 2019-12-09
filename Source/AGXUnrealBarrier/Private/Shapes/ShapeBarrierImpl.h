@@ -3,15 +3,13 @@
 
 #pragma once
 
-
-
 #include "ShapeBarrier.h"
 
 #include "AGXRefs.h"
 
 #include <utility>
 
-template<typename TFunc, typename... TPack>
+template <typename TFunc, typename... TPack>
 void FShapeBarrier::AllocateNative(TFunc Factory, TPack... Params)
 {
 	/// \todo This almost copy/paste from the non-templated version. Find a way to
@@ -22,7 +20,7 @@ void FShapeBarrier::AllocateNative(TFunc Factory, TPack... Params)
 	NativeRef->NativeGeometry->add(NativeRef->NativeShape);
 }
 
-template<typename T>
+template <typename T>
 T* FShapeBarrier::GetNativeShape()
 {
 	check(HasNative());
@@ -30,7 +28,7 @@ T* FShapeBarrier::GetNativeShape()
 	return NativeRef->NativeShape->asSafe<T>();
 }
 
-template<typename T>
+template <typename T>
 const T* FShapeBarrier::GetNativeShape() const
 {
 	check(HasNative());

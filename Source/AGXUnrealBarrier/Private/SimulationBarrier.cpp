@@ -16,7 +16,7 @@
 #include "Misc/AssertionMacros.h"
 
 FSimulationBarrier::FSimulationBarrier()
-	: NativeRef{new FSimulationRef}
+	: NativeRef {new FSimulationRef}
 {
 }
 

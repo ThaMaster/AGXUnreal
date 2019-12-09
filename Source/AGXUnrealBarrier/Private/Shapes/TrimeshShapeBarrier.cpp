@@ -10,7 +10,6 @@
 
 #include "Misc/AssertionMacros.h"
 
-
 namespace
 {
 	agxCollide::Trimesh* NativeTrimesh(FTrimeshShapeBarrier* Barrier)
@@ -214,7 +213,8 @@ FString FTrimeshShapeBarrier::GetSourceName() const
 	FString SourceName;
 	if (!HasNative())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Cannot fetch triangle soure name from Trimesh barrier without a native Trimesh"));
+		UE_LOG(
+			LogTemp, Warning, TEXT("Cannot fetch triangle soure name from Trimesh barrier without a native Trimesh"));
 		return SourceName;
 	}
 
@@ -236,7 +236,7 @@ void FTrimeshShapeBarrier::AllocateNative(
 
 		TemporaryAllocationParameters = Params;
 
-		FShapeBarrier::AllocateNative();	// Will implicitly invoke AllocateNativeShape(). See below.
+		FShapeBarrier::AllocateNative(); // Will implicitly invoke AllocateNativeShape(). See below.
 	}
 	// Temporary allocation parameters structure destroyed by smart pointer.
 }

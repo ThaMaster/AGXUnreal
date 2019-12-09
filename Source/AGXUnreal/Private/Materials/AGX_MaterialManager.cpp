@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "AGX_MaterialManager.h"
 
 #include "Components/BillboardComponent.h"
@@ -10,9 +9,7 @@
 #include "Materials/AGX_ContactMaterialBase.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
 
-
 #define LOCTEXT_NAMESPACE "AAGX_MaterialManager"
-
 
 AAGX_MaterialManager::AAGX_MaterialManager(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -46,7 +43,6 @@ AAGX_MaterialManager::AAGX_MaterialManager(const FObjectInitializer& ObjectIniti
 #endif // WITH_EDITORONLY_DATA
 }
 
-
 void AAGX_MaterialManager::BeginPlay()
 {
 	// Convert all contact material pointers to point to initialized contact material instances.
@@ -59,12 +55,11 @@ void AAGX_MaterialManager::BeginPlay()
 
 		// This will create the UAGX_ContactMaterialInstance if it did not already exist, initialize its AGX native,
 		// and add it to the simulation.
-		
+
 		// It will also replace the passed in UAGX_ContactMaterialBase pointer with the new instance, and return it.
 
-		UAGX_ContactMaterialInstance* Instance = UAGX_ContactMaterialBase::GetOrCreateInstance(GetWorld(),
-			ContactMaterial);
-
+		UAGX_ContactMaterialInstance* Instance =
+			UAGX_ContactMaterialBase::GetOrCreateInstance(GetWorld(), ContactMaterial);
 	}
 }
 

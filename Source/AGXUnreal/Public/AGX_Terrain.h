@@ -145,7 +145,7 @@ public:
 	// UNiagaraSystem* ParticleSystemAsset;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition = "bEnableParticleRendering"))
-	UTextureRenderTarget2D* TerrainParticlesDataMap;	// TODO: Should try find or create this automatically!
+	UTextureRenderTarget2D* TerrainParticlesDataMap; // TODO: Should try find or create this automatically!
 
 	/** Whether soil particles should be rendered or not. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")
@@ -166,7 +166,7 @@ private:
 
 	// Height field related variables.
 	TArray<FFloat16> DisplacementData;
-	TArray<FUpdateTextureRegion2D> DisplacementMapRegions;	// TODO: Remove!
+	TArray<FUpdateTextureRegion2D> DisplacementMapRegions; // TODO: Remove!
 	bool DisplacmentMapIsInitialized = false;
 
 /// \todo Cannot use AGX Dynamics types in the AGXUnreal module. Must live in the Barrier.
@@ -176,7 +176,7 @@ private:
 
 	// Particle related variables.
 	TArray<FFloat32> TerrainParticlesData;
-	TArray<FUpdateTextureRegion2D> ParticlesDataMapRegions;	// TODO: Remove!
+	TArray<FUpdateTextureRegion2D> ParticlesDataMapRegions; // TODO: Remove!
 	bool ParticleSystemIsInitialized = false;
 	/// \todo Add UNiagaraComponent once we get particle reading from AGX Dynamics in place.
 	// UNiagaraComponent* ParticleSystemComponent = nullptr;

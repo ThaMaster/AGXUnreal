@@ -1,32 +1,25 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "AGX_Constraint2DOF.h"
 
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "Constraints/Constraint2DOFBarrier.h"
 
-
 AAGX_Constraint2DOF::AAGX_Constraint2DOF()
 {
 }
 
-
-AAGX_Constraint2DOF::AAGX_Constraint2DOF(const TArray<EDofFlag> &LockedDofsOrdered, bool bIsSecondaryConstraint1Rotational, bool bIsSecondaryConstraint2Rotational)
-	:
-	AAGX_Constraint(LockedDofsOrdered),
-	RangeController1(bIsSecondaryConstraint1Rotational),
-	RangeController2(bIsSecondaryConstraint2Rotational)
+AAGX_Constraint2DOF::AAGX_Constraint2DOF(const TArray<EDofFlag>& LockedDofsOrdered,
+	bool bIsSecondaryConstraint1Rotational, bool bIsSecondaryConstraint2Rotational)
+	: AAGX_Constraint(LockedDofsOrdered)
+	, RangeController1(bIsSecondaryConstraint1Rotational)
+	, RangeController2(bIsSecondaryConstraint2Rotational)
 {
-
 }
-
 
 AAGX_Constraint2DOF::~AAGX_Constraint2DOF()
 {
-
 }
-
 
 void AAGX_Constraint2DOF::UpdateNativeProperties()
 {
@@ -36,7 +29,7 @@ void AAGX_Constraint2DOF::UpdateNativeProperties()
 	// everytime native data needs to be synced, consider letting the Unreal Controller
 	// instead have a lifetime-bound dynamically created instance of the controller barrier.
 
-	if(FConstraint2DOFBarrier* NativeBarrierCasted = GetNativeBarrierCasted())
+	if (FConstraint2DOFBarrier* NativeBarrierCasted = GetNativeBarrierCasted())
 	{
 		// Electric Motor Controller 1
 		{
@@ -116,7 +109,6 @@ void AAGX_Constraint2DOF::UpdateNativeProperties()
 		}
 	}
 }
-
 
 FConstraint2DOFBarrier* AAGX_Constraint2DOF::GetNativeBarrierCasted() const
 {

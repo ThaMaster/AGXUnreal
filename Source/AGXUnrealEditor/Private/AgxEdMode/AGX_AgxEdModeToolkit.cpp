@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "AgxEdMode/AGX_AgxEdModeToolkit.h"
 
 #include "Engine/Selection.h"
@@ -11,7 +10,6 @@
 #include "AgxEdMode/AGX_AgxEdModeWidget.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_AgxEdModeToolkit"
-
 
 FAGX_AgxEdModeToolkit::FAGX_AgxEdModeToolkit()
 {

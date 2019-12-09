@@ -7,7 +7,6 @@
 class AAGX_Constraint;
 class FPrimitiveSceneProxy;
 
-
 /**
  * A component that shows a dynamic constraint-specific selectable 'icon' in the level editor viewport.
  */
@@ -17,7 +16,6 @@ class AGXUNREAL_API UAGX_ConstraintIconGraphicsComponent : public UMeshComponent
 	GENERATED_UCLASS_BODY()
 
 public:
-
 	UPROPERTY()
 	AAGX_Constraint* Constraint;
 
@@ -31,7 +29,8 @@ public:
 	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
 	virtual int32 GetNumMaterials() const override;
 	virtual UMaterialInterface* GetMaterial(int32 ElementIndex) const override;
-	virtual void GetUsedMaterials(TArray<UMaterialInterface*>& OutMaterials, bool bGetDebugMaterials = false) const override;
+	virtual void GetUsedMaterials(
+		TArray<UMaterialInterface*>& OutMaterials, bool bGetDebugMaterials = false) const override;
 	FMatrix GetRenderMatrix() const;
 	//~ End UPrimitiveComponent Interface.
 
@@ -41,15 +40,14 @@ public:
 
 	//~ Begin UActorComponent Interface.
 	virtual void SendRenderDynamicData_Concurrent() override;
-	virtual bool ShouldCollideWhenPlacing() const { return true; }
+	virtual bool ShouldCollideWhenPlacing() const
+	{
+		return true;
+	}
 	//~ End UActorComponent Interface.
 
 private:
-
 	int32 OuterShellMaterialIndex;
 	int32 InnerShellMaterialIndex;
 	int32 InnerDisksMaterialIndex;
-
 };
-
-

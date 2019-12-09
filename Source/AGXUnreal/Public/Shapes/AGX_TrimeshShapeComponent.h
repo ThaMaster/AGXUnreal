@@ -60,8 +60,8 @@ public:
 	 * Only used if Override Mesh Source LOD Index is enabled. Specifies which LOD Level
 	 * of the Static Mesh source to read triangle data from. Zero is the most detailed level.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shape", AdvancedDisplay,
-		Meta = (EditCondition = "bOverrideMeshSourceLodIndex"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Shape", AdvancedDisplay, Meta = (EditCondition = "bOverrideMeshSourceLodIndex"))
 	uint32 MeshSourceLodIndex;
 
 	FShapeBarrier* GetNative() override;
