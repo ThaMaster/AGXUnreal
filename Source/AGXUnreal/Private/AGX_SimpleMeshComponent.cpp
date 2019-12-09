@@ -1,5 +1,3 @@
-// Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
-
 #include "AGX_SimpleMeshComponent.h"
 #include "RenderingThread.h"
 #include "RenderResource.h"
@@ -15,7 +13,7 @@
 #include "EngineGlobals.h"
 #include "Engine/Engine.h"
 #include "StaticMeshResources.h"
-#include "Runtime/Launch/Resources/Version.h"
+#include "Misc/EngineVersionComparison.h"
 
 /** Scene proxy */
 class FAGX_SimpleMeshSceneProxy final : public FPrimitiveSceneProxy
@@ -223,24 +221,23 @@ public:
 				bool bHasPrecomputedVolumetricLightmap;
 				FMatrix PreviousLocalToWorld;
 				int32 SingleCaptureIndex;
-#if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 23)
+#if UE_VERSION_OLDER_THAN(4, 23, 0)
+				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(GetPrimitiveSceneInfo(),
+					bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, SingleCaptureIndex);
+#else
 				/// \todo Replace Unknown with proper name or use some getter function to get a proper value.
 				bool Unknown = false;
 				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(GetPrimitiveSceneInfo(),
 					bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, SingleCaptureIndex, Unknown);
-#else
-				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(GetPrimitiveSceneInfo(),
-					bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, SingleCaptureIndex);
 #endif
-
 				FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer =
 					Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
-#if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 23)
-				DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(),
-					GetLocalBounds(), true, bHasPrecomputedVolumetricLightmap, DrawsVelocity(), Unknown);
-#else
+#if UE_VERSION_OLDER_THAN(4, 23, 0)
 				DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(),
 					GetLocalBounds(), true, bHasPrecomputedVolumetricLightmap, UseEditorDepthTest());
+#else
+				DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(),
+					GetLocalBounds(), true, bHasPrecomputedVolumetricLightmap, DrawsVelocity(), Unknown);
 #endif
 				BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
 

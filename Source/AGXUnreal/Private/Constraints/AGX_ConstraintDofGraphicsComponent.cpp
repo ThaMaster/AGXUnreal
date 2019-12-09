@@ -19,7 +19,7 @@
 #include "AGX_MeshUtilities.h"
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintEnums.h"
-#include "Runtime/Launch/Resources/Version.h"
+#include "Misc/EngineVersionComparison.h"
 
 /**
  * Holds vertex and index buffers for rendering.
@@ -463,16 +463,15 @@ private:
 
 					FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer =
 						Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
-#if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 23)
+#if UE_VERSION_OLDER_THAN(4, 23, 0)
+					DynamicPrimitiveUniformBuffer.Set(EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(),
+						GetLocalBounds(), true, false, UseEditorDepthTest());
+#else
 					/// \todo Replace Unknown with proper name or use some getter function to get a proper value.
 					bool Unknown = false;
 					DynamicPrimitiveUniformBuffer.Set(EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(),
 						GetLocalBounds(), true, false, DrawsVelocity(), Unknown);
-#else
-					DynamicPrimitiveUniformBuffer.Set(EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(),
-						GetLocalBounds(), true, false, UseEditorDepthTest());
 #endif
-
 					BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
 
 					Collector.AddMesh(ViewIndex, Mesh);

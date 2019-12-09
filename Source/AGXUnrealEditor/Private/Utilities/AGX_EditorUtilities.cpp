@@ -24,7 +24,7 @@
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 
-#include "Runtime/Launch/Resources/Version.h"
+#include "Misc/EngineVersionComparison.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
@@ -144,15 +144,13 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 	UStaticMesh* StaticMesh =
 		NewObject<UStaticMesh>(Package, UniqueMeshName, RF_Public | RF_Standalone | RF_MarkAsRootSet);
 	StaticMesh->StaticMaterials.Add(FStaticMaterial());
-
-#if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 23)
-	StaticMesh->GetSourceModels().Emplace();
-	FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModels().Last();
-#else
+#if UE_VERSION_OLDER_THAN(4, 23, 0)
 	StaticMesh->SourceModels.Emplace();
 	FStaticMeshSourceModel& SourceModel = StaticMesh->SourceModels.Last();
+#else
+	StaticMesh->GetSourceModels().Emplace();
+	FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModels().Last();
 #endif
-
 	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
 	FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
 	// Somewhat unclear what all these should be.
