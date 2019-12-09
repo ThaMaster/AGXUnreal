@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Constraints/DistanceJointBarrier.h"
 
 #include "AGXRefs.h"
@@ -10,7 +9,6 @@
 #include "BeginAGXIncludes.h"
 #include <agx/DistanceJoint.h>
 #include "EndAGXIncludes.h"
-
 
 FDistanceJointBarrier::FDistanceJointBarrier()
 	: FConstraint1DOFBarrier()
@@ -27,9 +25,9 @@ FDistanceJointBarrier::~FDistanceJointBarrier()
 {
 }
 
-void FDistanceJointBarrier::AllocateNativeImpl(
-	const FRigidBodyBarrier *RigidBody1, const FVector *FramePosition1, const FQuat *FrameRotation1,
-	const FRigidBodyBarrier *RigidBody2, const FVector *FramePosition2, const FQuat *FrameRotation2)
+void FDistanceJointBarrier::AllocateNativeImpl(const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1,
+	const FQuat* FrameRotation1, const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2,
+	const FQuat* FrameRotation2)
 {
 	check(!HasNative());
 
@@ -38,13 +36,9 @@ void FDistanceJointBarrier::AllocateNativeImpl(
 	agx::FrameRef NativeFrame1 = nullptr;
 	agx::FrameRef NativeFrame2 = nullptr;
 
-	ConvertConstraintBodiesAndFrames(
-		RigidBody1, FramePosition1, FrameRotation1,
-		RigidBody2, FramePosition2, FrameRotation2,
-		NativeRigidBody1, NativeFrame1,
-		NativeRigidBody2, NativeFrame2);
+	ConvertConstraintBodiesAndFrames(RigidBody1, FramePosition1, FrameRotation1, RigidBody2, FramePosition2,
+		FrameRotation2, NativeRigidBody1, NativeFrame1, NativeRigidBody2, NativeFrame2);
 
-	NativeRef->Native = new agx::DistanceJoint(
-		NativeRigidBody1, NativeFrame1.get(),
-		NativeRigidBody2, NativeFrame2.get());
+	NativeRef->Native =
+		new agx::DistanceJoint(NativeRigidBody1, NativeFrame1.get(), NativeRigidBody2, NativeFrame2.get());
 }

@@ -22,10 +22,10 @@
 
 namespace
 {
-	template<typename T>
+	template <typename T>
 	constexpr T AGX_TO_UNREAL_DISTANCE_FACTOR = T(100.0);
 
-	template<typename T>
+	template <typename T>
 	constexpr T UNREAL_TO_AGX_DISTANCE_FACTOR = T(0.01);
 }
 
@@ -39,7 +39,7 @@ inline float ConvertDistance(agx::Real V)
 	return static_cast<float>(V * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
 }
 
-template<typename T>
+template <typename T>
 inline T ConvertDistanceToUnreal(agx::Real V)
 {
 	return static_cast<T>(V * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
@@ -55,7 +55,7 @@ inline agx::Real ConvertDistance(float V)
 	return static_cast<agx::Real>(V) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
 }
 
-template<typename T>
+template <typename T>
 inline agx::Real ConvertDistanceToAgx(T V)
 {
 	return static_cast<agx::Real>(V) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
@@ -165,11 +165,10 @@ inline agx::Uuid Convert(const FGuid& Guid)
 	return Uuid;
 }
 
-
 /**
  * Given a Barrier, returns the final AGX native object.
  */
-template<typename TNative, typename TBarrier>
+template <typename TNative, typename TBarrier>
 TNative* GetNativeFromBarrier(const TBarrier* Barrier)
 {
 	if (Barrier && Barrier->HasNative())
@@ -180,17 +179,13 @@ TNative* GetNativeFromBarrier(const TBarrier* Barrier)
 
 inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& FrameRotation)
 {
-	return new agx::Frame(
-		agx::AffineMatrix4x4(
-			Convert(FrameRotation),
-			ConvertVector(FramePosition)));
+	return new agx::Frame(agx::AffineMatrix4x4(Convert(FrameRotation), ConvertVector(FramePosition)));
 }
 
 /// \todo Consider moving this to the .cpp file.
-inline void ConvertConstraintBodiesAndFrames(
-	const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
-	const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2,
-	agx::RigidBody*& NativeRigidBody1, agx::FrameRef& NativeFrame1,
+inline void ConvertConstraintBodiesAndFrames(const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1,
+	const FQuat* FrameRotation1, const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2,
+	const FQuat* FrameRotation2, agx::RigidBody*& NativeRigidBody1, agx::FrameRef& NativeFrame1,
 	agx::RigidBody*& NativeRigidBody2, agx::FrameRef& NativeFrame2)
 {
 	// Convert first Rigid Body and Frame to natives

@@ -6,7 +6,6 @@
 #include "Constraints/AGX_Constraint1DOF.h"
 #include "AGX_DistanceConstraint.generated.h"
 
-
 /**
  * Locks the initial relative distance between the bodies.
  */
@@ -16,11 +15,9 @@ class AGXUNREAL_API AAGX_DistanceConstraint : public AAGX_Constraint1DOF
 	GENERATED_BODY()
 
 public:
-
 	AAGX_DistanceConstraint();
 	virtual ~AAGX_DistanceConstraint();
 
 protected:
-
 	virtual void CreateNativeImpl() override;
 };

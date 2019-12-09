@@ -12,9 +12,8 @@
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
 #include "AGX_Constraint2DOF.generated.h"
 
-
 /**
- * 
+ *
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract, meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API AAGX_Constraint2DOF : public AAGX_Constraint
@@ -22,7 +21,6 @@ class AGXUNREAL_API AAGX_Constraint2DOF : public AAGX_Constraint
 	GENERATED_BODY()
 
 public:
-
 	/** Electric motor controller for first secondary constraint (on one of the 2 free DOFs, usually). */
 	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
 	FAGX_ConstraintElectricMotorController ElectricMotorController1;
@@ -69,13 +67,13 @@ public:
 
 	AAGX_Constraint2DOF();
 
-	AAGX_Constraint2DOF(const TArray<EDofFlag> &LockedDofsOrdered, bool bIsSecondaryConstraint1Rotational, bool bIsSecondaryConstraint2Rotational);
+	AAGX_Constraint2DOF(const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraint1Rotational,
+		bool bIsSecondaryConstraint2Rotational);
 
 	virtual ~AAGX_Constraint2DOF();
 
 	virtual void UpdateNativeProperties() override;
 
 private:
-
 	class FConstraint2DOFBarrier* GetNativeBarrierCasted() const;
 };

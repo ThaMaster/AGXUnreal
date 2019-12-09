@@ -154,13 +154,12 @@ void UAGX_HeightFieldShapeComponent::RecenterActorOnLandscape()
 	const int32 NumComponentsSide = FMath::RoundToInt(FMath::Sqrt(static_cast<float>(NumComponents)));
 	const int32 NumQuadsPerComponentSide = SourceLandscape->ComponentSizeQuads;
 	const int32 NumQuadsPerSide = NumComponentsSide * NumQuadsPerComponentSide;
-	const float QuadSideSize =
-		SourceLandscape->GetActorScale().X;	// The Actor scale is the size of the quads, in cm.
+	const float QuadSideSize = SourceLandscape->GetActorScale().X; // The Actor scale is the size of the quads, in cm.
 	const float LandscapeSideSize = QuadSideSize * NumQuadsPerSide;
 	const FVector Location = SourceLandscape->GetActorLocation();
 	const FVector Middle = Location + FVector(LandscapeSideSize / 2.0f, LandscapeSideSize / 2.0f, Location.Z);
 	GetOwner()->SetActorLocation(Middle);
-	MarkRenderStateDirty();	/// \todo Not sure if this is actually required or not.
+	MarkRenderStateDirty(); /// \todo Not sure if this is actually required or not.
 }
 
 #if WITH_EDITOR

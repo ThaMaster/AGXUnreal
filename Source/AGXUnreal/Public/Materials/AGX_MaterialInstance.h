@@ -12,7 +12,7 @@ class UAGX_MaterialAsset;
 
 /**
  * Represents a native AGX material in-game. Should never exist when not playing.
- * 
+ *
  * Should only ever be created using the static function CreateFromAsset, copying data from its
  * sibling class UAGX_MaterialAsset.
  *
@@ -21,13 +21,11 @@ UCLASS(ClassGroup = "AGX", Category = "AGX", Transient, NotPlaceable)
 class AGXUNREAL_API UAGX_MaterialInstance : public UAGX_MaterialBase
 {
 	GENERATED_BODY()
-	
-public:
 
+public:
 	static UAGX_MaterialInstance* CreateFromAsset(UWorld* PlayingWorld, UAGX_MaterialAsset* Source);
 
 public:
-
 	virtual ~UAGX_MaterialInstance();
 
 	virtual UAGX_MaterialAsset* GetAsset() override;
@@ -37,11 +35,10 @@ public:
 	FMaterialBarrier* GetNative();
 
 	bool HasNative() const;
-	
+
 	void UpdateNativeProperties();
 
 private:
-
 	virtual UAGX_MaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld) override;
 
 	// Creates the native AGX material and adds it to the simulation.

@@ -3,12 +3,8 @@
 #include "SBoxPanel.h"
 #include "SWidget.h"
 
-
-bool
-FAGX_SlateUtilities::RemoveChildWidgetByType(
-	const TSharedPtr<SWidget>& Parent,
-	const FString &TypeNameToRemove,
-	bool Recursive)
+bool FAGX_SlateUtilities::RemoveChildWidgetByType(
+	const TSharedPtr<SWidget>& Parent, const FString& TypeNameToRemove, bool Recursive)
 {
 	if (!Parent)
 		return false;
@@ -38,21 +34,17 @@ FAGX_SlateUtilities::RemoveChildWidgetByType(
 	return false;
 }
 
-
-void FAGX_SlateUtilities::LogChildWidgets(
-	const TSharedPtr<SWidget>& Parent,
-	bool Recursive,
-	const FString &Prefix)
+void FAGX_SlateUtilities::LogChildWidgets(const TSharedPtr<SWidget>& Parent, bool Recursive, const FString& Prefix)
 {
 	if (!Parent)
 		return;
-	
+
 	FChildren* Children = Parent->GetChildren();
 
 	for (int32 ChildIndex = 0; ChildIndex < Children->Num(); ++ChildIndex)
 	{
 		TSharedRef<SWidget> Child = Children->GetChildAt(ChildIndex);
-		
+
 		UE_LOG(LogTemp, Log, TEXT("%s%s"), *Prefix, *Child->GetTypeAsString());
 
 		if (Recursive)

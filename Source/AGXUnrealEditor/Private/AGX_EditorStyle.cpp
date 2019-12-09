@@ -8,7 +8,6 @@
 #include "Runtime/SlateCore/Public/Styling/SlateTypes.h"
 #include "SlateOptMacros.h"
 
-
 TSharedPtr<FSlateStyleSet> FAGX_EditorStyle::StyleInstance = nullptr;
 const FName FAGX_EditorStyle::AgxIcon("AgxIcon");
 const FName FAGX_EditorStyle::AgxIconSmall("AgxIcon.Small");
@@ -51,9 +50,11 @@ FName FAGX_EditorStyle::GetStyleSetName()
 	return StyleSetName;
 }
 
-#define IMAGE_BRUSH(RelativePath, ...) FSlateImageBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
+#define IMAGE_BRUSH(RelativePath, ...) \
+	FSlateImageBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
 #define BOX_BRUSH(RelativePath, ...) FSlateBoxBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
-#define BORDER_BRUSH(RelativePath, ...) FSlateBorderBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
+#define BORDER_BRUSH(RelativePath, ...) \
+	FSlateBorderBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
 #define TTF_FONT(RelateivePath, ...) FSlateFontInfo(Style->RootToContentDi(RelateivePath, TEXT(".ttf")), __VA_ARGS__)
 #define OTF_FONT(RelateivePath, ...) FSlateFontInfo(Style->RootToContentDir(RelateivePath, TEXT(".otf")), __VA_ARGS__)
 
@@ -70,7 +71,7 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("AGXUnreal")->GetContentDir() / TEXT("Editor"));
 
 	// Define icons and stuff here.
-	
+
 	Style->Set(AgxIcon, new IMAGE_BRUSH("Icons/T_AgxIcon47", IconSize40));
 	Style->Set(AgxIconSmall, new IMAGE_BRUSH("Icons/T_AgxIcon47", IconSize16));
 

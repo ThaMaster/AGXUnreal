@@ -6,7 +6,6 @@
 #include "Constraints/AGX_Constraint1DOF.h"
 #include "AGX_PrismaticConstraint.generated.h"
 
-
 /**
  * Locks all degrees of freedom except for translation along the Z-axis.
  */
@@ -16,11 +15,9 @@ class AGXUNREAL_API AAGX_PrismaticConstraint : public AAGX_Constraint1DOF
 	GENERATED_BODY()
 
 public:
-
 	AAGX_PrismaticConstraint();
 	virtual ~AAGX_PrismaticConstraint();
 
 protected:
-
 	virtual void CreateNativeImpl() override;
 };

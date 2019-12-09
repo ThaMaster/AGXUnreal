@@ -6,7 +6,6 @@
 #include "Constraints/AGX_Constraint.h"
 #include "AGX_BallConstraint.generated.h"
 
-
 /**
  * Locks all translational degrees of freedom, but rotation is free.
  */
@@ -16,11 +15,9 @@ class AGXUNREAL_API AAGX_BallConstraint : public AAGX_Constraint
 	GENERATED_BODY()
 
 public:
-
 	AAGX_BallConstraint();
 	virtual ~AAGX_BallConstraint();
 
 protected:
-
 	virtual void CreateNativeImpl() override;
 };

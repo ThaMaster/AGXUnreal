@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 
 #include "AGX_EditorUtilities.h"
@@ -8,7 +7,6 @@
 #include "Constraints/AGX_ConstraintFrameActor.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_AgxEdModeConstraints"
-
 
 UAGX_AgxEdModeConstraints* UAGX_AgxEdModeConstraints::GetInstance()
 {
@@ -41,9 +39,9 @@ AAGX_Constraint* UAGX_AgxEdModeConstraints::CreateConstraint() const
 		return nullptr;
 	}
 
-	AAGX_Constraint* Constraint = FAGX_EditorUtilities::CreateConstraint(
-		ConstraintType,	RigidBodyActor1.Get(), RigidBodyActor2.Get(),
-		/*Select*/ false, /*ShowNotification*/ true,/*InPlayingWorldIfAvailable*/ true);
+	AAGX_Constraint* Constraint =
+		FAGX_EditorUtilities::CreateConstraint(ConstraintType, RigidBodyActor1.Get(), RigidBodyActor2.Get(),
+			/*Select*/ false, /*ShowNotification*/ true, /*InPlayingWorldIfAvailable*/ true);
 
 	if (Constraint)
 	{
@@ -53,7 +51,7 @@ AAGX_Constraint* UAGX_AgxEdModeConstraints::CreateConstraint() const
 			case EAGX_ConstraintActorParent::RigidBodyActor1:
 			{
 				Constraint->AttachToActor(RigidBodyActor1.Get(), FAttachmentTransformRules::KeepRelativeTransform);
-				// Transform is implicitly same as RigidBodyActor1, because of no relative transform. 
+				// Transform is implicitly same as RigidBodyActor1, because of no relative transform.
 				break;
 			}
 			case EAGX_ConstraintActorParent::RigidBodyActor2:
@@ -92,14 +90,18 @@ AAGX_Constraint* UAGX_AgxEdModeConstraints::CreateConstraint() const
 			}
 			case EAGX_ConstraintFrameSource::OneSharedFrameActor:
 			{
-				FrameActor1 = FrameActor2 = FAGX_EditorUtilities::CreateConstraintFrameActor(nullptr, false, true, true);
-				FrameActor1->SetActorTransform(RigidBodyActor1.Get()->GetActorTransform()); // usually a good starting point
+				FrameActor1 = FrameActor2 =
+					FAGX_EditorUtilities::CreateConstraintFrameActor(nullptr, false, true, true);
+				FrameActor1->SetActorTransform(
+					RigidBodyActor1.Get()->GetActorTransform()); // usually a good starting point
 				break;
 			}
 			case EAGX_ConstraintFrameSource::TwoFrameActors:
 			{
-				FrameActor1 = FAGX_EditorUtilities::CreateConstraintFrameActor(RigidBodyActor1.Get(), false, true, true);
-				FrameActor2 = FAGX_EditorUtilities::CreateConstraintFrameActor(RigidBodyActor2.Get(), false, true, true);
+				FrameActor1 =
+					FAGX_EditorUtilities::CreateConstraintFrameActor(RigidBodyActor1.Get(), false, true, true);
+				FrameActor2 =
+					FAGX_EditorUtilities::CreateConstraintFrameActor(RigidBodyActor2.Get(), false, true, true);
 				break;
 			}
 			case EAGX_ConstraintFrameSource::RigidBodyActor1:

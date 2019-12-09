@@ -1,6 +1,5 @@
 #include "AGXBarrierFactories.h"
 
-
 #include "BeginAGXIncludes.h"
 #include <agx/RigidBody.h>
 #include <agx/Hinge.h>

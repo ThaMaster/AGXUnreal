@@ -45,8 +45,7 @@ public:
 	 */
 	FString GetSourceName() const;
 
-	void AllocateNative(
-		const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise);
+	void AllocateNative(const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise);
 
 private:
 	virtual void AllocateNativeShape() override;

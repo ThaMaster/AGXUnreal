@@ -352,8 +352,8 @@ UWorld* FAGX_EditorUtilities::GetCurrentWorld()
 	}
 }
 
-void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(AActor** OutActor1, AActor** OutActor2,
-	bool bSearchSubtrees, bool bSearchAncestors)
+void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
+	AActor** OutActor1, AActor** OutActor2, bool bSearchSubtrees, bool bSearchAncestors)
 {
 	USelection* SelectedActors = GEditor->GetSelectedActors();
 
@@ -368,8 +368,7 @@ void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(AActor** OutActor1, A
 
 	// Assigns to first available of OutActor1 and OutActor2, and returns whether
 	// at least one of them is afterwards still available for assignment.
-	auto AssignOutActors = [OutActor1, OutActor2](AActor *RigidBodyActor)
-	{
+	auto AssignOutActors = [OutActor1, OutActor2](AActor* RigidBodyActor) {
 		if (OutActor1 && *OutActor1 == nullptr)
 		{
 			*OutActor1 = RigidBodyActor;
@@ -408,8 +407,8 @@ void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(AActor** OutActor1, A
 		{
 			if (AActor* SelectedActor = Cast<AActor>(SelectedActors->GetSelectedObject(i)))
 			{
-				AActor* RigidBodyActor = GetRigidBodyActorFromSubtree(SelectedActor,
-					(OutActor1 ? *OutActor1 : nullptr));
+				AActor* RigidBodyActor =
+					GetRigidBodyActorFromSubtree(SelectedActor, (OutActor1 ? *OutActor1 : nullptr));
 
 				// Found one. Assign it to next available OutActor!
 				if (!AssignOutActors(RigidBodyActor))
@@ -428,8 +427,8 @@ void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(AActor** OutActor1, A
 		{
 			if (AActor* SelectedActor = Cast<AActor>(SelectedActors->GetSelectedObject(i)))
 			{
-				AActor* RigidBodyActor = GetRigidBodyActorFromAncestors(SelectedActor,
-					(OutActor1 ? *OutActor1 : nullptr));
+				AActor* RigidBodyActor =
+					GetRigidBodyActorFromAncestors(SelectedActor, (OutActor1 ? *OutActor1 : nullptr));
 
 				// Found one. Assign it to next available OutActor!
 				if (!AssignOutActors(RigidBodyActor))

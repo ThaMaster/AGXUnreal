@@ -1,12 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Materials/AGX_ContactMaterialAsset.h"
 
 #include "Classes/Engine/World.h"
 
 #include "Materials/AGX_ContactMaterialInstance.h"
-
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialAsset::GetOrCreateInstance(UWorld* PlayingWorld)
 {

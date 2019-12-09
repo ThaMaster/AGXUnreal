@@ -4,7 +4,6 @@
 
 #include "AGX_LockController.generated.h"
 
-
 /**
  * Lock controller for secondary constraints (usually on one of the DOFs
  * that has not been primarily constrained by the AGX Constraint).
@@ -34,13 +33,11 @@ struct AGXUNREAL_API FAGX_ConstraintLockController
 	FFloatInterval ForceRange;
 
 public:
-
 	FAGX_ConstraintLockController(bool bRotational = false);
 
 	void ToBarrier(struct FLockControllerBarrier* Barrier) const;
 
 private:
-
 	// Whether the controller is on a Rotational or Translational DOF.
 	bool bRotational;
 };

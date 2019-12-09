@@ -12,7 +12,6 @@
 class AGXUNREALEDITOR_API FAGX_ContactMaterialAssetTypeActions : public FAssetTypeActions_Base
 {
 public:
-
 	FAGX_ContactMaterialAssetTypeActions(EAssetTypeCategories::Type InAssetCategory);
 
 	FText GetName() const override;
@@ -21,11 +20,10 @@ public:
 
 	FColor GetTypeColor() const override;
 
-	FText GetAssetDescription(const FAssetData &AssetData) const override;
+	FText GetAssetDescription(const FAssetData& AssetData) const override;
 
 	UClass* GetSupportedClass() const override;
 
 private:
-
 	EAssetTypeCategories::Type AssetCategory;
 };

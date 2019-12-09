@@ -11,7 +11,10 @@ struct FRangeControllerBarrier;
 struct FScrewControllerBarrier;
 struct FTargetSpeedControllerBarrier;
 
-namespace agx { class Constraint2DOF; }
+namespace agx
+{
+	class Constraint2DOF;
+}
 
 class AGXUNREALBARRIER_API FConstraint2DOFBarrier : public FConstraintBarrier
 {
@@ -21,17 +24,17 @@ public:
 	FConstraint2DOFBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FConstraint2DOFBarrier();
 
-	void SetElectricMotorController(const FElectricMotorControllerBarrier &Controller, int32 SecondaryConstraintIndex);
+	void SetElectricMotorController(const FElectricMotorControllerBarrier& Controller, int32 SecondaryConstraintIndex);
 
-	void SetFrictionController(const FFrictionControllerBarrier &Controller, int32 SecondaryConstraintIndex);
+	void SetFrictionController(const FFrictionControllerBarrier& Controller, int32 SecondaryConstraintIndex);
 
-	void SetLockController(const FLockControllerBarrier &Controller, int32 SecondaryConstraintIndex);
+	void SetLockController(const FLockControllerBarrier& Controller, int32 SecondaryConstraintIndex);
 
-	void SetRangeController(const FRangeControllerBarrier &Controller, int32 SecondaryConstraintIndex);
+	void SetRangeController(const FRangeControllerBarrier& Controller, int32 SecondaryConstraintIndex);
 
-	void SetTargetSpeedController(const FTargetSpeedControllerBarrier &Controller, int32 SecondaryConstraintIndex);
+	void SetTargetSpeedController(const FTargetSpeedControllerBarrier& Controller, int32 SecondaryConstraintIndex);
 
-	void SetScrewController(const FScrewControllerBarrier &Controller);
+	void SetScrewController(const FScrewControllerBarrier& Controller);
 
 private:
 	FConstraint2DOFBarrier(const FConstraint2DOFBarrier&) = delete;

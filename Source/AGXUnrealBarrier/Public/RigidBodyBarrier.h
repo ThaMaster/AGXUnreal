@@ -11,7 +11,6 @@
 struct FRigidBodyRef;
 class FShapeBarrier;
 
-
 /**
  * Barrier between UAGX_RigidBody and agx::RigidBody. UAGX_RigidBody holds an
  * instance of RigidBodyBarrier and hidden behind the RigidBodyBarrier is a

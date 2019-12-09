@@ -15,9 +15,8 @@ struct AGXUNREAL_API FAGX_MaterialBulkProperties
 	GENERATED_USTRUCT_BODY()
 
 public:
-
 	/**
-     * Density of Shapes using the material, in kg/m². The density can be used
+	 * Density of Shapes using the material, in kg/m². The density can be used
 	 * for automatic calculation of total mass and inertia of the Rigid Body
 	 * (see mass options of Rigid Body Component).
 	 */
@@ -45,22 +44,20 @@ public:
 
 	/**
 	 * Minimum elastic rest length of the contact material, in meters.
-	 * 
-     * This is only used if the contact area approach is used if the 'Use Contact Area Approach' is enabled.
+	 *
+	 * This is only used if the contact area approach is used if the 'Use Contact Area Approach' is enabled.
 	 */
 	UPROPERTY(EditAnywhere)
 	double MinElasticRestLength;
 
 	/**
 	 * Maximum elastic rest length of the contact material, in meters.
-	 * 
-     * This is only used if the contact area approach is used if the 'Use Contact Area Approach' is enabled.
+	 *
+	 * This is only used if the contact area approach is used if the 'Use Contact Area Approach' is enabled.
 	 */
 	UPROPERTY(EditAnywhere)
 	double MaxElasticRestLength;
 
 public:
-
 	FAGX_MaterialBulkProperties();
-
 };

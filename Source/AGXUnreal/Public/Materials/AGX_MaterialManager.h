@@ -18,9 +18,8 @@ UCLASS(ClassGroup = "AGX", Category = "AGX", HideCategories = (Cooking, LOD, Rep
 class AGXUNREAL_API AAGX_MaterialManager : public AInfo
 {
 	GENERATED_UCLASS_BODY()
-	
-public:
 
+public:
 	/**
 	 * User defined AGX Contact Materials to use in this level.
 	 *
@@ -30,5 +29,4 @@ public:
 	TArray<UAGX_ContactMaterialBase*> ContactMaterials;
 
 	virtual void BeginPlay() override;
-
 };

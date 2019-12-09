@@ -12,7 +12,7 @@ public:
 private:
 	static void CreateTopMenu(FMenuBarBuilder& Builder);
 	virtual void FillTopMenu(
-		FMenuBuilder& Builder);	   // Must be virtual because of dirty hack (see comment in CreateTopMenu)!
+		FMenuBuilder& Builder); // Must be virtual because of dirty hack (see comment in CreateTopMenu)!
 	void FillConstraintMenu(FMenuBuilder& Builder);
 
 	void FillFileMenu(FMenuBuilder& Builder);

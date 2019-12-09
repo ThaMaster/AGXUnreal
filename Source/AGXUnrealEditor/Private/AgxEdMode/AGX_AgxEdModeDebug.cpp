@@ -1,10 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "AgxEdMode/AGX_AgxEdModeDebug.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_AgxEdModeDebug"
-
 
 UAGX_AgxEdModeDebug* UAGX_AgxEdModeDebug::GetInstance()
 {

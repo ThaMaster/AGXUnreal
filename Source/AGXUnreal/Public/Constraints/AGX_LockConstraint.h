@@ -6,7 +6,6 @@
 #include "Constraints/AGX_Constraint.h"
 #include "AGX_LockConstraint.generated.h"
 
-
 /**
  * Locks all degrees of freedom.
  */
@@ -16,11 +15,9 @@ class AGXUNREAL_API AAGX_LockConstraint : public AAGX_Constraint
 	GENERATED_BODY()
 
 public:
-
 	AAGX_LockConstraint();
 	virtual ~AAGX_LockConstraint();
 
 protected:
-
 	virtual void CreateNativeImpl() override;
 };

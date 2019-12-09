@@ -4,7 +4,6 @@
 
 #include "AGX_RangeController.generated.h"
 
-
 /**
  * Range controller for secondary constraints (usually on one of the DOFs
  * that has not been primarily constrained by the AGX Constraint).
@@ -32,13 +31,11 @@ struct AGXUNREAL_API FAGX_ConstraintRangeController
 	FFloatInterval ForceRange;
 
 public:
-
 	FAGX_ConstraintRangeController(bool bRotational = false);
 
 	void ToBarrier(struct FRangeControllerBarrier* Barrier) const;
 
 private:
-
 	// Whether the controller is on a Rotational or Translational DOF.
 	bool bRotational;
 };

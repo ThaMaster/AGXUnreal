@@ -6,7 +6,6 @@
 #include "Components/SceneComponent.h"
 #include "AGX_ConstraintComponent.generated.h"
 
-
 /**
  * Component owned by every Constraint Actor so that component features can be used.
  * For example, enables the usage of a Component Visualizer, so that helpful graphics
@@ -15,13 +14,11 @@
  * @see FAGX_ConstraintComponentVisualizer
  *
  */
-UCLASS(Category = "AGX", ClassGroup= "AGX", NotPlaceable)
+UCLASS(Category = "AGX", ClassGroup = "AGX", NotPlaceable)
 class AGXUNREAL_API UAGX_ConstraintComponent : public USceneComponent
 {
 	GENERATED_BODY()
 
-public:	
-	
+public:
 	UAGX_ConstraintComponent();
-		
 };

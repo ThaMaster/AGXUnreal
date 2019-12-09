@@ -13,22 +13,22 @@ UENUM()
 enum class EAGX_ConstraintFrameSource
 {
 	/** Both Attachment Frames share the Constraint Actor's transform. */
-	ConstraintTransform		UMETA(DisplayName = "Constraint Actor Transform (recommended)"),
+	ConstraintTransform UMETA(DisplayName = "Constraint Actor Transform (recommended)"),
 
 	/** Both Attachment Frames share the transform of an auto-created Constraint Frame Actor. */
-	OneSharedFrameActor		UMETA(DisplayName = "Shared Frame Actor"),
+	OneSharedFrameActor UMETA(DisplayName = "Shared Frame Actor"),
 
 	/** Each Attachment Frame uses the transform of a uniquely created Constraint Frame Actor. */
-	TwoFrameActors			UMETA(DisplayName = "Individual Frame Actors"),
+	TwoFrameActors UMETA(DisplayName = "Individual Frame Actors"),
 
 	/** Both Attachment Frames share the transform of the first Rigid Body Actor. */
-	RigidBodyActor1			UMETA(DisplayName = "Rigid Body Actor 1"),
+	RigidBodyActor1 UMETA(DisplayName = "Rigid Body Actor 1"),
 
 	/** Both Attachment Frames share the transform of the second Rigid Body Actor. */
-	RigidBodyActor2			UMETA(DisplayName = "Rigid Body Actor 2"),
+	RigidBodyActor2 UMETA(DisplayName = "Rigid Body Actor 2"),
 
 	/** Each Attachment Frame uses the transform of its Rigid Body Actor owner, with configurable offsets. */
-	LocalOnly				UMETA(DisplayName = "Local Transforms Only")
+	LocalOnly UMETA(DisplayName = "Local Transforms Only")
 };
 
 /**
@@ -56,19 +56,16 @@ class AGXUNREALEDITOR_API UAGX_AgxEdModeConstraints : public UAGX_AgxEdModeSubMo
 	GENERATED_BODY()
 
 public:
-
 	static UAGX_AgxEdModeConstraints* GetInstance();
 
 public:
-
 	virtual FText GetDisplayName() const override;
 	virtual FText GetTooltip() const override;
 
 public: // Constraint Creator
-
 	UPROPERTY()
 	UClass* ConstraintType;
-	
+
 	UPROPERTY(Transient, EditAnywhere, Category = "Constraint Creator")
 	TLazyObjectPtr<AActor> RigidBodyActor1;
 
@@ -101,5 +98,4 @@ public: // Constraint Creator
 	class AAGX_Constraint* CreateConstraint() const;
 
 public: // Constraint Browser
-
 };

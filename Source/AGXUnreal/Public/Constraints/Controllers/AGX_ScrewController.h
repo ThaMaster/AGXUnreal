@@ -4,7 +4,6 @@
 
 #include "AGX_ScrewController.generated.h"
 
-
 /**
  * Screw controller that puts a relationship between two free DOFs of a constraint,
  * given that one free DOF is translational and the other free DOF is rotational.
@@ -35,7 +34,6 @@ struct AGXUNREAL_API FAGX_ConstraintScrewController
 	FFloatInterval ForceRange;
 
 public:
-
 	FAGX_ConstraintScrewController(bool bRotational = false);
 
 	void ToBarrier(struct FScrewControllerBarrier* Barrier) const;

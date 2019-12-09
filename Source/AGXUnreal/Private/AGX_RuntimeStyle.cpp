@@ -8,7 +8,6 @@
 #include "Runtime/SlateCore/Public/Styling/SlateTypes.h"
 #include "SlateOptMacros.h"
 
-
 TSharedPtr<FSlateStyleSet> FAGX_RuntimeStyle::StyleInstance = nullptr;
 
 void FAGX_RuntimeStyle::Initialize()
@@ -49,9 +48,11 @@ FName FAGX_RuntimeStyle::GetStyleSetName()
 	return StyleSetName;
 }
 
-#define IMAGE_BRUSH(RelativePath, ...) FSlateImageBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
+#define IMAGE_BRUSH(RelativePath, ...) \
+	FSlateImageBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
 #define BOX_BRUSH(RelativePath, ...) FSlateBoxBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
-#define BORDER_BRUSH(RelativePath, ...) FSlateBorderBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
+#define BORDER_BRUSH(RelativePath, ...) \
+	FSlateBorderBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
 #define TTF_FONT(RelateivePath, ...) FSlateFontInfo(Style->RootToContentDi(RelateivePath, TEXT(".ttf")), __VA_ARGS__)
 #define OTF_FONT(RelateivePath, ...) FSlateFontInfo(Style->RootToContentDir(RelateivePath, TEXT(".otf")), __VA_ARGS__)
 
@@ -68,10 +69,9 @@ TSharedRef<class FSlateStyleSet> FAGX_RuntimeStyle::Create()
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("AGXUnreal")->GetContentDir() / TEXT("Runtime"));
 
 	// Define icons and stuff here.
-	
+
 	return Style;
 };
-
 
 #undef IMAGE_BRUSH
 #undef BOX_BRUSH

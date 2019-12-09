@@ -15,13 +15,15 @@ class AGXUNREALEDITOR_API UAGX_ContactMaterialAssetFactory : public UFactory
 	GENERATED_BODY()
 
 public:
-	UAGX_ContactMaterialAssetFactory(const class FObjectInitializer &OBJ);
+	UAGX_ContactMaterialAssetFactory(const class FObjectInitializer& OBJ);
 
 protected:
-	virtual bool IsMacroFactory() const { return false; }
+	virtual bool IsMacroFactory() const
+	{
+		return false;
+	}
 
 public:
 	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags,
 		UObject* Context, FFeedbackContext* Warn) override;
-	
 };

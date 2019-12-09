@@ -21,7 +21,6 @@ public:
 	const TSharedPtr<class FAGX_TopMenu>& GetAgxTopMenu() const;
 
 private:
-
 	/**
 	 * Registers settings exposed in the Project Settings window.
 	 * This is typically the default simulation settings.
@@ -65,7 +64,6 @@ private:
 	void UnregisterPlacementCategory();
 
 private:
-
 	TSharedPtr<class FUICommandList> PluginCommands;
 	TSharedPtr<class FAGX_TopMenu> AgxTopMenu;
 

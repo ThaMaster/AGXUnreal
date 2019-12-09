@@ -15,12 +15,10 @@ AAGX_Stepper::AAGX_Stepper()
 	UE_LOG(LogAGX, Log, TEXT("Stepper created"));
 }
 
-
 AAGX_Stepper::~AAGX_Stepper()
 {
 	UE_LOG(LogAGX, Log, TEXT("Stepper destroyed."));
 }
-
 
 void AAGX_Stepper::Tick(float DeltaTime)
 {

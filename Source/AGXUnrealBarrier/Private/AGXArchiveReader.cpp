@@ -22,14 +22,13 @@
 #include <agxCollide/Trimesh.h>
 #include "EndAGXIncludes.h"
 
-
 namespace
 {
 	void InstantiateShapes(const agxCollide::ShapeRefVector& Shapes, FAGXArchiveBody& ArchiveBody)
 	{
 		for (const agxCollide::ShapeRef& Shape : Shapes)
 		{
-			switch(Shape->getType())
+			switch (Shape->getType())
 			{
 				case agxCollide::Shape::SPHERE:
 				{

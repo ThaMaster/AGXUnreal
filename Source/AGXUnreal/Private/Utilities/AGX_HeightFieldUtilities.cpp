@@ -25,8 +25,7 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 	TArray<float> Heights;
 	Heights.AddUninitialized(NumVertices);
 
-	auto WriteComponent = [&Heights, NumVerticesPerSide](ULandscapeComponent& Component)
-	{
+	auto WriteComponent = [&Heights, NumVerticesPerSide](ULandscapeComponent& Component) {
 		const int32 BaseQuadX = Component.SectionBaseX;
 		const int32 BaseQuadY = Component.SectionBaseY;
 
@@ -35,8 +34,8 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 
 		FLandscapeComponentDataInterface ComponentData(&Component);
 
-		auto GlobalAGXFromLocalUnreal = [NumVerticesPerSide, BaseQuadX, BaseQuadY](int32 LocalVertexX, int32 LocalVertexY)
-		{
+		auto GlobalAGXFromLocalUnreal = [NumVerticesPerSide, BaseQuadX, BaseQuadY](
+											int32 LocalVertexX, int32 LocalVertexY) {
 			const int32 GlobalVertexX = BaseQuadX + LocalVertexX;
 			const int32 GlobalVertexY = BaseQuadY + LocalVertexY;
 			const int32 AGXGlobalVertexX = GlobalVertexX;

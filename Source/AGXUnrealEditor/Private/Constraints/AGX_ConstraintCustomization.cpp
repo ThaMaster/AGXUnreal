@@ -1,17 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Constraints/AGX_ConstraintCustomization.h"
 
-
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintCustomization"
-
 
 TSharedRef<IDetailCustomization> FAGX_ConstraintCustomization::MakeInstance()
 {
 	return MakeShareable(new FAGX_ConstraintCustomization);
 }
-
 
 void FAGX_ConstraintCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {

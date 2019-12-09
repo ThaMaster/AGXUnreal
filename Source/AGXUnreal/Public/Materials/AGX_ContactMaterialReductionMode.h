@@ -32,7 +32,6 @@ struct AGXUNREAL_API FAGX_ContactMaterialReductionMode
 	GENERATED_USTRUCT_BODY()
 
 public:
-
 	/**
 	 * Whether contact reduction should be enabled and to what extent.
 	 *
@@ -52,9 +51,8 @@ public:
 	 * Not used if the 'Contact Reduction Mode' property is set to 'None'.
 	 */
 	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0", UIMin = "0", ClampMax = "10", UIMax = "10"))
-	uint8 BinResolution;  /// \todo Disable if Mode is set to 'None'.
+	uint8 BinResolution; /// \todo Disable if Mode is set to 'None'.
 
 public:
-
 	FAGX_ContactMaterialReductionMode();
 };

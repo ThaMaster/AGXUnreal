@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Constraints/AGX_ConstraintFrameComponentVisualizer.h"
 
 #include "Classes/Editor/UnrealEdEngine.h"
@@ -13,18 +12,19 @@
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintFrameComponent.h"
 
-
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintFrameComponentVisualizer"
 
-
-void FAGX_ConstraintFrameComponentVisualizer::DrawVisualization(const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI)
+void FAGX_ConstraintFrameComponentVisualizer::DrawVisualization(
+	const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI)
 {
-	const UAGX_ConstraintFrameComponent* ConstraintFrameComponent = Cast<const UAGX_ConstraintFrameComponent>(Component);
+	const UAGX_ConstraintFrameComponent* ConstraintFrameComponent =
+		Cast<const UAGX_ConstraintFrameComponent>(Component);
 
 	if (ConstraintFrameComponent == nullptr)
 		return;
 
-	const AAGX_ConstraintFrameActor* ConstraintFrameActor = Cast<const AAGX_ConstraintFrameActor>(ConstraintFrameComponent->GetOwner());
+	const AAGX_ConstraintFrameActor* ConstraintFrameActor =
+		Cast<const AAGX_ConstraintFrameActor>(ConstraintFrameComponent->GetOwner());
 
 	if (!ConstraintFrameActor)
 		return;

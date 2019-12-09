@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "AgxEdMode/AGX_AgxEdMode.h"
 
 #include "AgxEdMode/AGX_AgxEdModeBodies.h"
@@ -11,11 +10,9 @@
 #include "Toolkits/ToolkitManager.h"
 #include "EditorModeManager.h"
 
-
 #define LOCTEXT_NAMESPACE "FAGX_AgxEdMode"
 
 const FEditorModeID FAGX_AgxEdMode::EM_AGX_AgxEdModeId = TEXT("EM_AGX_AgxEdMode");
-
 
 FAGX_AgxEdMode::FAGX_AgxEdMode()
 {
@@ -59,7 +56,6 @@ bool FAGX_AgxEdMode::UsesToolkits() const
 	return true;
 }
 
-
 const TArray<UAGX_AgxEdModeSubMode*>& FAGX_AgxEdMode::GetSubModes() const
 {
 	return SubModes;
@@ -69,7 +65,6 @@ UAGX_AgxEdModeSubMode* FAGX_AgxEdMode::GetCurrentSubMode() const
 {
 	return CurrentSubMode;
 }
-
 
 void FAGX_AgxEdMode::SetCurrentSubMode(UAGX_AgxEdModeSubMode* SubMode)
 {

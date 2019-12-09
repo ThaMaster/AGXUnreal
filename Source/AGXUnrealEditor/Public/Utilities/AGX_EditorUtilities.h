@@ -125,8 +125,8 @@ public:
 	 * @param bSearchAncestors If true, all ancestors of each selected actor's subtree will also be searched.
 	 *
 	 */
-	static void GetRigidBodyActorsFromSelection(AActor** OutActor1, AActor** OutActor2, bool bSearchSubtrees,
-		bool bSearchAncestors);
+	static void GetRigidBodyActorsFromSelection(
+		AActor** OutActor1, AActor** OutActor2, bool bSearchSubtrees, bool bSearchAncestors);
 
 	static AActor* GetRigidBodyActorFromSubtree(AActor* SubtreeRoot, const AActor* IgnoreActor);
 
@@ -139,15 +139,13 @@ public:
 	 *
 	 * @param FailIfMultiple If true, nullptr is returned if multiple objects are found.
 	 * If False, the first found object is returned, even if multiple objects are found.
-	*/
+	 */
 	template <typename T>
-	static T* GetSingleObjectBeingCustomized(IDetailLayoutBuilder& DetailBuilder,
-		bool FailIfMultiple = true);
+	static T* GetSingleObjectBeingCustomized(IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true);
 };
 
 template <typename T>
-T* FAGX_EditorUtilities::GetSingleObjectBeingCustomized(IDetailLayoutBuilder& DetailBuilder,
-	bool FailIfMultiple)
+T* FAGX_EditorUtilities::GetSingleObjectBeingCustomized(IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple)
 {
 	static_assert(std::is_base_of<UObject, T>::value, "T must inherit from UObject");
 

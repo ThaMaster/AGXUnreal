@@ -4,7 +4,6 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-
 class FAGXUnrealBarrierModule : public IModuleInterface
 {
 public:

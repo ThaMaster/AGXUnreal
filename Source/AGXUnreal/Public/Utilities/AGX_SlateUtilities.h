@@ -4,14 +4,12 @@
 
 #include "CoreMinimal.h"
 
-
 /**
  * Provides helper functions for working with Slate.
  */
 class AGXUNREAL_API FAGX_SlateUtilities
 {
 public:
-
 	/**
 	 * Removes the first found child of the specified type, if possible.
 	 * The search order is undefined.
@@ -22,7 +20,9 @@ public:
 	 * Note that this function can only remove the widget if its parent is a
 	 * SHorizontalBox, SVerticalBox, or SBoxPanel.
 	 */
-	static bool RemoveChildWidgetByType(const TSharedPtr<class SWidget>& Parent, const class FString &TypeNameToRemove, bool Recursive = true);
+	static bool RemoveChildWidgetByType(
+		const TSharedPtr<class SWidget>& Parent, const class FString& TypeNameToRemove, bool Recursive = true);
 
-	static void LogChildWidgets(const TSharedPtr<class SWidget>& Parent, bool Recursive = true, const FString &Prefix = "");
+	static void LogChildWidgets(
+		const TSharedPtr<class SWidget>& Parent, bool Recursive = true, const FString& Prefix = "");
 };

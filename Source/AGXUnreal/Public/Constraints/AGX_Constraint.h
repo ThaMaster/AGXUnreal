@@ -12,9 +12,7 @@
 
 #include "AGX_Constraint.generated.h"
 
-
 class FConstraintBarrier;
-
 
 /**
  * Abstract base class for all AGX constraint types.
@@ -22,7 +20,7 @@ class FConstraintBarrier;
  * Does not have a its own world space transform, but has references to the two
  * Rigid Body Actors to constrain to each other, and their attachment frames
  * (which defines how the rigid bodies should locally be jointed to one another).
- * 
+ *
  * At least the first Rigid Body Actor must be chosen. If there is no second Rigid Body Actor,
  * then the first one will be constrained to the static World instead.
  *
@@ -33,15 +31,13 @@ class FConstraintBarrier;
  *       match the enum in the header of the native AGX constraint (without ALL_DOF and NUM_DOF).
  *
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract,
-	NotBlueprintable, meta = (BlueprintSpawnableComponent),
+UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract, NotBlueprintable, meta = (BlueprintSpawnableComponent),
 	hidecategories = (Cooking, Collision, Input, LOD, Rendering, Replication))
 class AGXUNREAL_API AAGX_Constraint : public AActor
 {
 	GENERATED_BODY()
 
 public:
-
 	/**
 	 * The first Rigid Body bound by this constraint, and its Attachment Frame definition.
 	 * Rigid Body Actor must be set.
@@ -60,14 +56,14 @@ public:
 	bool bEnable;
 
 	/**
-     * Solve type for this constraint. Valid is DIRECT (default for non-iterative solvers),
+	 * Solve type for this constraint. Valid is DIRECT (default for non-iterative solvers),
 	 * ITERATIVE or DIRECT_AND_ITERATIVE where DIRECT_AND_ITERATIVE means that this constraint
 	 * will be solved both direct and iterative.
 	 *
 	 * Note that solve type is ignored by iterative solvers.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
-	TEnumAsByte<enum EAGX_SolveType> SolveType;	
+	TEnumAsByte<enum EAGX_SolveType> SolveType;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintDoublePropertyPerDof Elasticity;
@@ -79,7 +75,6 @@ public:
 	FAGX_ConstraintRangePropertyPerDof ForceRange;
 
 private:
-
 	UPROPERTY()
 	class UAGX_ConstraintComponent* ConstraintComponent;
 
@@ -90,17 +85,24 @@ private:
 	class UAGX_ConstraintIconGraphicsComponent* IconGraphicsComponent;
 
 public:
+	AAGX_Constraint()
+	{
+	}
 
-	AAGX_Constraint() { }
-
-	AAGX_Constraint(const TArray<EDofFlag> &LockedDofsOrdered);
+	AAGX_Constraint(const TArray<EDofFlag>& LockedDofsOrdered);
 
 	virtual ~AAGX_Constraint();
 
-	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics() const { return DofGraphicsComponent; }
+	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics() const
+	{
+		return DofGraphicsComponent;
+	}
 
 	/** Indicates whether this actor should participate in level bounds calculations. */
-	bool IsLevelBoundsRelevant() const override { return false; }
+	bool IsLevelBoundsRelevant() const override
+	{
+		return false;
+	}
 
 	/**
 	 * Returns true if for any of the locked DOFs both the global attachment frame transforms do no match.
@@ -132,21 +134,21 @@ public:
 	virtual void UpdateNativeProperties();
 
 protected:
-
 #if WITH_EDITOR
 	virtual void PostLoad() override; // When loaded in Editor/Game
 	virtual void PostDuplicate(bool bDuplicateForPIE) override; // When copied in Editor
-	virtual void OnConstruction(const FTransform& Transform) override; // When Loaded or Spawned in Editor, or Spawned in Game
+	virtual void OnConstruction(
+		const FTransform& Transform) override; // When Loaded or Spawned in Editor, or Spawned in Game
 	virtual void BeginDestroy() override; // When destroyed in Game
 	virtual void Destroyed() override; // When destroyed in Editor
 #endif
 
 	virtual void BeginPlay() override;
 
-	bool ToNativeDof(EGenericDofIndex GenericDof, int32 &NativeDof);
+	bool ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof);
 
 	/** Must be overriden by derived class, and create a NativeBarrier with allocated native. Nothing more.*/
-	virtual void CreateNativeImpl() PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl,);
+	virtual void CreateNativeImpl() PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl, );
 
 	TUniquePtr<FConstraintBarrier> NativeBarrier;
 
@@ -162,7 +164,6 @@ protected:
 	const TMap<EGenericDofIndex, int32> NativeDofIndexMap;
 
 private:
-
 	/** Invokes CreateNativeImpl, then adds the native to the simulation. */
 	void CreateNative();
 };

@@ -13,7 +13,6 @@ class UAGX_RigidBodyComponent;
 class UAGX_MaterialBase;
 class AAGX_Terrain;
 
-
 /**
  * Manages an AGX simulation instance.
  *

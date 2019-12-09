@@ -15,12 +15,12 @@ class UAGX_ContactMaterialInstance;
  * Defines material properties for contacts between AGX Shapes with specific AGX Materials. This will override many
  * of their individual material properties (does for example not override ones effecting mass, such as density).
  *
- * ContactMaterials are created by the user in-Editor by creating a UAGX_ContactMaterialAsset. In-Editor they are 
+ * ContactMaterials are created by the user in-Editor by creating a UAGX_ContactMaterialAsset. In-Editor they are
  * treated as assets and can be referenced by the Material Manager..
  *
  * When game begins playing, one UAGX_ContactMaterialInstance will be created for each UAGX_ContactMaterialAsset that
  * is referenced by the Material Manager. The UAGX_ContactMaterialInstance will create the actual native
- * AGX ContactMaterial and add it to the simulation. The in-game Material Manager that referenced the 
+ * AGX ContactMaterial and add it to the simulation. The in-game Material Manager that referenced the
  * UAGX_ContactMaterialAsset will swap its reference to the in-game created UAGX_ContactMaterialInstance instead. This
  * means that ultimately only UAGX_ContactMaterialInstances will be referenced in-game. When play stops the in-Editor
  * state will be returned.
@@ -36,7 +36,6 @@ class AGXUNREAL_API UAGX_ContactMaterialBase : public UObject
 	GENERATED_BODY()
 
 public:
-
 	/**
 	 * First material.
 	 */
@@ -54,7 +53,7 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "Contacts Processing")
 	EAGX_ContactSolver ContactSolver;
-	
+
 	/**
 	 * Whether contact reduction should be enabled and to what extent.
 	 *
@@ -67,8 +66,8 @@ public:
 	/**
 	 * AGX use by default a contact point based method for calculating the corresponding response between two
 	 * overlapping geometries.
-	 * 
-	 * There is also a different method available which is named area contact approach. This method will try to 
+	 *
+	 * There is also a different method available which is named area contact approach. This method will try to
 	 * calculate the spanning area between the overlapping contact point. This can result in a better approximation
 	 * of the actual overlapping volume and the stiffness in the response (contact constraint).
 	 *
@@ -100,7 +99,8 @@ public:
 	/*
 	 * Friction in the secondary direction, if enabled.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondaryFrictionCoefficient"))
+	UPROPERTY(EditAnywhere, Category = "Friction",
+		Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondaryFrictionCoefficient"))
 	double SecondaryFrictionCoefficient;
 
 	/**
@@ -117,7 +117,8 @@ public:
 	/**
 	 * Surface viscosity, telling how 'wet' the friction is between the colliding materials.
 	 *
-	 * Represents all surface directions if 'Secondary Surface Viscosity' is disable, else only in the primary direction.
+	 * Represents all surface directions if 'Secondary Surface Viscosity' is disable, else only in the primary
+	 * direction.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double SurfaceViscosity;
@@ -125,7 +126,8 @@ public:
 	/**
 	 * Surface viscosity in the secondary direction, if enabled.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondarySurfaceViscosity"))
+	UPROPERTY(EditAnywhere, Category = "Friction",
+		Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondarySurfaceViscosity"))
 	double SecondarySurfaceViscosity;
 
 	/**
@@ -158,13 +160,13 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double Damping;
-	
+
 	/**
 	 * The attractive force between two colliding objects, in Netwon.
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double AdhesiveForce;
-	
+
 	/**
 	 * Allowed overlap from surface for resting contact, in meters.
 	 *
@@ -176,7 +178,6 @@ public:
 	double AdhesiveOverlap;
 
 public:
-
 	/**
 	 * Invokes the member function GetOrCreateInstance() on ContactMaterial pointed to by Property, assigns the return
 	 * value to Property, and then returns it. Returns null and does nothing if PlayingWorld is not an in-game world.
@@ -184,7 +185,6 @@ public:
 	static UAGX_ContactMaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld, UAGX_ContactMaterialBase*& Property);
 
 public:
-
 	UAGX_ContactMaterialBase();
 
 	virtual ~UAGX_ContactMaterialBase();

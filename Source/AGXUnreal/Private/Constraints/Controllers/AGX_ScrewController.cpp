@@ -3,18 +3,14 @@
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
-
 FAGX_ConstraintScrewController::FAGX_ConstraintScrewController(bool bRotational_)
-	:
-	bEnable(false),
-	Lead(0.0),
-	Elasticity(ConstraintConstants::DefaultElasticity()),
-	Damping(ConstraintConstants::DefaultDamping()),
-	ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
+	: bEnable(false)
+	, Lead(0.0)
+	, Elasticity(ConstraintConstants::DefaultElasticity())
+	, Damping(ConstraintConstants::DefaultDamping())
+	, ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
 {
-
 }
-
 
 void FAGX_ConstraintScrewController::ToBarrier(FScrewControllerBarrier* Barrier) const
 {

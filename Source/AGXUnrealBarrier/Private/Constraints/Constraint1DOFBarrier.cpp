@@ -1,13 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Constraints/Constraint1DOFBarrier.h"
 
 #include "AGXRefs.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
-
 
 FConstraint1DOFBarrier::FConstraint1DOFBarrier()
 	: FConstraintBarrier()
@@ -23,7 +21,7 @@ FConstraint1DOFBarrier::~FConstraint1DOFBarrier()
 {
 }
 
-void FConstraint1DOFBarrier::SetElectricMotorController(const FElectricMotorControllerBarrier &ControllerBarrier)
+void FConstraint1DOFBarrier::SetElectricMotorController(const FElectricMotorControllerBarrier& ControllerBarrier)
 {
 	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
 	{
@@ -33,7 +31,7 @@ void FConstraint1DOFBarrier::SetElectricMotorController(const FElectricMotorCont
 	}
 }
 
-void FConstraint1DOFBarrier::SetFrictionController(const FFrictionControllerBarrier &ControllerBarrier)
+void FConstraint1DOFBarrier::SetFrictionController(const FFrictionControllerBarrier& ControllerBarrier)
 {
 	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
 	{
@@ -43,7 +41,7 @@ void FConstraint1DOFBarrier::SetFrictionController(const FFrictionControllerBarr
 	}
 }
 
-void FConstraint1DOFBarrier::SetLockController(const FLockControllerBarrier &ControllerBarrier)
+void FConstraint1DOFBarrier::SetLockController(const FLockControllerBarrier& ControllerBarrier)
 {
 	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
 	{
@@ -53,7 +51,7 @@ void FConstraint1DOFBarrier::SetLockController(const FLockControllerBarrier &Con
 	}
 }
 
-void FConstraint1DOFBarrier::SetRangeController(const FRangeControllerBarrier &ControllerBarrier)
+void FConstraint1DOFBarrier::SetRangeController(const FRangeControllerBarrier& ControllerBarrier)
 {
 	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
 	{
@@ -63,7 +61,7 @@ void FConstraint1DOFBarrier::SetRangeController(const FRangeControllerBarrier &C
 	}
 }
 
-void FConstraint1DOFBarrier::SetTargetSpeedController(const FTargetSpeedControllerBarrier &ControllerBarrier)
+void FConstraint1DOFBarrier::SetTargetSpeedController(const FTargetSpeedControllerBarrier& ControllerBarrier)
 {
 	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
 	{
@@ -72,7 +70,6 @@ void FConstraint1DOFBarrier::SetTargetSpeedController(const FTargetSpeedControll
 		ControllerBarrier.ToNative(NativeController);
 	}
 }
-
 
 agx::Constraint1DOF* FConstraint1DOFBarrier::GetNativeCasted() const
 {

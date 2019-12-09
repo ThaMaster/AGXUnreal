@@ -12,7 +12,8 @@ bool AGX_ArchiveExporter::ExportAGXArchive(const FString& ArchivePath)
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(World);
 	if (Simulation == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("The current world does not have a simulation. Cannot store AGX Dynamics archive."));
+		UE_LOG(
+			LogTemp, Warning, TEXT("The current world does not have a simulation. Cannot store AGX Dynamics archive."));
 		return false;
 	}
 	return Simulation->WriteAGXArchive(ArchivePath);

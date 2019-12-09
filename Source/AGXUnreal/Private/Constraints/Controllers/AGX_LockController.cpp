@@ -3,19 +3,15 @@
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
-
 FAGX_ConstraintLockController::FAGX_ConstraintLockController(bool bRotational_)
-	:
-	bEnable(false),
-	Position(0.0),
-	Elasticity(ConstraintConstants::DefaultElasticity()),
-	Damping(ConstraintConstants::DefaultDamping()),
-	ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax()),
-	bRotational(bRotational_)
+	: bEnable(false)
+	, Position(0.0)
+	, Elasticity(ConstraintConstants::DefaultElasticity())
+	, Damping(ConstraintConstants::DefaultDamping())
+	, ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
+	, bRotational(bRotational_)
 {
-
 }
-
 
 void FAGX_ConstraintLockController::ToBarrier(FLockControllerBarrier* Barrier) const
 {

@@ -6,12 +6,11 @@
 #include "Toolkits/BaseToolkit.h"
 
 /**
- * 
+ *
  */
 class AGXUNREALEDITOR_API FAGX_AgxEdModeToolkit : public FModeToolkit
 {
 public:
-
 	FAGX_AgxEdModeToolkit();
 
 	// FModeToolkit interface
@@ -28,7 +27,5 @@ public:
 	void OnSubModeChanged();
 
 private:
-
 	TSharedPtr<class SAGX_AgxEdModeWidget> ToolkitWidget;
-
 };

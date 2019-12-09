@@ -39,7 +39,6 @@ FCylinderShapeBarrier::FCylinderShapeBarrier(FCylinderShapeBarrier&& Other)
 {
 }
 
-
 FCylinderShapeBarrier::~FCylinderShapeBarrier()
 {
 	// Must provide a destructor implementation in the .cpp file because the

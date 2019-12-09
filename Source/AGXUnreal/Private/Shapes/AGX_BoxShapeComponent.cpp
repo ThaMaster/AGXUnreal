@@ -3,7 +3,6 @@
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
-
 UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -70,11 +69,11 @@ void UAGX_BoxShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 
 #if WITH_EDITOR
 
-bool UAGX_BoxShapeComponent::DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const
+bool UAGX_BoxShapeComponent::DoesPropertyAffectVisualMesh(
+	const FName& PropertyName, const FName& MemberPropertyName) const
 {
-	return
-		Super::DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName) ||
-		MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_BoxShapeComponent, HalfExtent);
+	return Super::DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName) ||
+		   MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_BoxShapeComponent, HalfExtent);
 }
 
 #endif

@@ -1,4 +1,4 @@
-// Copyright 1998-2019 Epic Games, Inc. All Rights Reserved. 
+// Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #include "AGX_SimpleMeshComponent.h"
 #include "RenderingThread.h"
@@ -47,13 +47,13 @@ public:
 		check(!HasIndexBuffer || (MeshData.Indices.Num() % 3 == 0));
 		check(!HasIndexBuffer || (MeshData.Indices.Num() >= 3));
 
-		const FColor VertexColor(255,255,255);
+		const FColor VertexColor(255, 255, 255);
 		const int32 NumVertices(MeshData.Vertices.Num());
 		const int32 NumIndices((HasIndexBuffer ? MeshData.Indices.Num() : MeshData.Vertices.Num()));
 		const int32 NumTriangles = NumIndices / 3;
 		uint32 NumTexCoords = 1;
 		uint32 LightMapIndex = 0;
-		
+
 		check(NumTexCoords < MAX_STATIC_TEXCOORDS && NumTexCoords > 0);
 		check(LightMapIndex < NumTexCoords);
 
@@ -83,7 +83,7 @@ public:
 				IndexBuffer.Indices[VertexIndex] = VertexIndex;
 			}
 		}
-		
+
 		// Populate Index Buffer Resource
 		if (HasIndexBuffer)
 		{
@@ -100,9 +100,9 @@ public:
 			{
 				// Compute Triangle Tangent.
 
-				const uint32 &VertexIndex0 = IndexBuffer.Indices[TriangleIndex * 3 + 0];
-				const uint32 &VertexIndex1 = IndexBuffer.Indices[TriangleIndex * 3 + 1];
-				const uint32 &VertexIndex2 = IndexBuffer.Indices[TriangleIndex * 3 + 2];
+				const uint32& VertexIndex0 = IndexBuffer.Indices[TriangleIndex * 3 + 0];
+				const uint32& VertexIndex1 = IndexBuffer.Indices[TriangleIndex * 3 + 1];
+				const uint32& VertexIndex2 = IndexBuffer.Indices[TriangleIndex * 3 + 2];
 
 				const FVector& Position0 = MeshData.Vertices[VertexIndex0];
 				const FVector& Position1 = MeshData.Vertices[VertexIndex1];
@@ -118,17 +118,15 @@ public:
 					const FVector2D& TexCoord0 = MeshData.TexCoords[VertexIndex0];
 					const FVector2D& TexCoord1 = MeshData.TexCoords[VertexIndex1];
 					const FVector2D& TexCoord2 = MeshData.TexCoords[VertexIndex2];
-					
+
 					const float U0toU1 = TexCoord1.X - TexCoord0.X;
 					const float U0toU2 = TexCoord2.X - TexCoord0.X;
 
 					const float V0toV1 = TexCoord1.Y - TexCoord0.Y;
 					const float V0toV2 = TexCoord2.Y - TexCoord0.Y;
 
-					TriangleTangent = FVector(
-						V0toV2 * P0toP1.X - V0toV1 * P0toP2.X,
-						V0toV2 * P0toP1.Y - V0toV1 * P0toP2.Y,
-						V0toV2 * P0toP1.Z - V0toV1 * P0toP2.Z);
+					TriangleTangent = FVector(V0toV2 * P0toP1.X - V0toV1 * P0toP2.X,
+						V0toV2 * P0toP1.Y - V0toV1 * P0toP2.Y, V0toV2 * P0toP1.Z - V0toV1 * P0toP2.Z);
 				}
 				else
 				{
@@ -144,15 +142,15 @@ public:
 					const FVector VertexBinormal = (VertexNormal ^ TriangleTangent).GetSafeNormal();
 					const FVector VertexTangent = (VertexBinormal ^ VertexNormal).GetSafeNormal();
 
-					VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(VertexIndex, VertexTangent, VertexBinormal, VertexNormal);
+					VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
+						VertexIndex, VertexTangent, VertexBinormal, VertexNormal);
 				}
 			}
 		}
 
 		// Enqueue initialization of render resource
-		ENQUEUE_RENDER_COMMAND(FAGX_SimpleMeshSceneProxyVertexBuffersInit)(
-			[this, LightMapIndex](FRHICommandListImmediate& RHICmdList)
-		{
+		ENQUEUE_RENDER_COMMAND(FAGX_SimpleMeshSceneProxyVertexBuffersInit)
+		([this, LightMapIndex](FRHICommandListImmediate& RHICmdList) {
 			VertexBuffers.PositionVertexBuffer.InitResource();
 			VertexBuffers.StaticMeshVertexBuffer.InitResource();
 			VertexBuffers.ColorVertexBuffer.InitResource();
@@ -171,7 +169,7 @@ public:
 
 		// Grab material
 		Material = Component->GetMaterial(0);
-		if(Material == NULL)
+		if (Material == NULL)
 		{
 			Material = UMaterial::GetDefaultMaterial(MD_Surface);
 		}
@@ -186,21 +184,21 @@ public:
 		VertexFactory.ReleaseResource();
 	}
 
-	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap, FMeshElementCollector& Collector) const override
+	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily,
+		uint32 VisibilityMap, FMeshElementCollector& Collector) const override
 	{
-		QUICK_SCOPE_CYCLE_COUNTER( STAT_AGX_SimpleMeshSceneProxy_GetDynamicMeshElements );
+		QUICK_SCOPE_CYCLE_COUNTER(STAT_AGX_SimpleMeshSceneProxy_GetDynamicMeshElements);
 
 		const bool bWireframe = AllowDebugViewmodes() && ViewFamily.EngineShowFlags.Wireframe;
 
 		auto WireframeMaterialInstance = new FColoredMaterialRenderProxy(
 			GEngine->WireframeMaterial ? GEngine->WireframeMaterial->GetRenderProxy() : NULL,
-			FLinearColor(0, 0.5f, 1.f)
-			);
+			FLinearColor(0, 0.5f, 1.f));
 
 		Collector.RegisterOneFrameMaterialProxy(WireframeMaterialInstance);
 
 		FMaterialRenderProxy* MaterialProxy = NULL;
-		if(bWireframe)
+		if (bWireframe)
 		{
 			MaterialProxy = WireframeMaterialInstance;
 		}
@@ -228,21 +226,20 @@ public:
 #if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 23)
 				/// \todo Replace Unknown with proper name or use some getter function to get a proper value.
 				bool Unknown = false;
-				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(
-					GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, 
-					SingleCaptureIndex, Unknown);
+				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(GetPrimitiveSceneInfo(),
+					bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, SingleCaptureIndex, Unknown);
 #else
-				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(
-					GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, SingleCaptureIndex);
+				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(GetPrimitiveSceneInfo(),
+					bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, SingleCaptureIndex);
 #endif
 
-				FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer = 
+				FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer =
 					Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
 #if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 23)
-				DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), 
+				DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(),
 					GetLocalBounds(), true, bHasPrecomputedVolumetricLightmap, DrawsVelocity(), Unknown);
 #else
-				DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), 
+				DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(),
 					GetLocalBounds(), true, bHasPrecomputedVolumetricLightmap, UseEditorDepthTest());
 #endif
 				BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
@@ -280,12 +277,17 @@ public:
 		return !MaterialRelevance.bDisableDepthTest;
 	}
 
-	virtual uint32 GetMemoryFootprint( void ) const override { return( sizeof( *this ) + GetAllocatedSize() ); }
+	virtual uint32 GetMemoryFootprint(void) const override
+	{
+		return (sizeof(*this) + GetAllocatedSize());
+	}
 
-	uint32 GetAllocatedSize( void ) const { return( FPrimitiveSceneProxy::GetAllocatedSize() ); }
+	uint32 GetAllocatedSize(void) const
+	{
+		return (FPrimitiveSceneProxy::GetAllocatedSize());
+	}
 
 private:
-
 	UMaterialInterface* Material;
 	FStaticMeshVertexBuffers VertexBuffers;
 	FDynamicMeshIndexBuffer32 IndexBuffer;
@@ -296,15 +298,15 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 
-UAGX_SimpleMeshComponent::UAGX_SimpleMeshComponent( const FObjectInitializer& ObjectInitializer )
-	: Super( ObjectInitializer )
+UAGX_SimpleMeshComponent::UAGX_SimpleMeshComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
 	SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
 }
 
-bool UAGX_SimpleMeshComponent::SetMeshData(const TSharedPtr<FAGX_SimpleMeshData> &Data)
+bool UAGX_SimpleMeshComponent::SetMeshData(const TSharedPtr<FAGX_SimpleMeshData>& Data)
 {
 	MeshData = Data;
 
@@ -315,7 +317,7 @@ bool UAGX_SimpleMeshComponent::SetMeshData(const TSharedPtr<FAGX_SimpleMeshData>
 	return true;
 }
 
-void  UAGX_SimpleMeshComponent::ClearMeshData()
+void UAGX_SimpleMeshComponent::ClearMeshData()
 {
 	MeshData.Reset();
 
@@ -324,11 +326,10 @@ void  UAGX_SimpleMeshComponent::ClearMeshData()
 	UpdateBounds();
 }
 
-
 FPrimitiveSceneProxy* UAGX_SimpleMeshComponent::CreateSceneProxy()
 {
 	FPrimitiveSceneProxy* Proxy = NULL;
-	if(MeshData && MeshData->Vertices.Num() > 0 /*&& MeshData->IsValid()*/)
+	if (MeshData && MeshData->Vertices.Num() > 0 /*&& MeshData->IsValid()*/)
 	{
 		Proxy = new FAGX_SimpleMeshSceneProxy(this);
 	}
@@ -339,7 +340,6 @@ int32 UAGX_SimpleMeshComponent::GetNumMaterials() const
 {
 	return 1;
 }
-
 
 FBoxSphereBounds UAGX_SimpleMeshComponent::CalcBounds(const FTransform& LocalToWorld) const
 {
@@ -361,4 +361,3 @@ FBoxSphereBounds UAGX_SimpleMeshComponent::CalcBounds(const FTransform& LocalToW
 
 	return NewBounds;
 }
-

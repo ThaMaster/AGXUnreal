@@ -2,7 +2,6 @@
 
 #include "AGX_LogCategory.h"
 
-
 namespace agx
 {
 #if 0
