@@ -6,6 +6,7 @@
 #include "Constraints/ConstraintBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/MaterialBarrier.h"
+#include "AGX_LogCategory.h"
 
 #include "AGXRefs.h"
 
@@ -82,7 +83,7 @@ bool FSimulationBarrier::WriteAGXArchive(const FString& Filename) const
 	size_t NumObjectsWritten = NativeRef->Native->write(Convert(Filename));
 	if (NumObjectsWritten == 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Native simulation reported zero written objects."));
+		UE_LOG(LogAGX, Warning, TEXT("Native simulation reported zero written objects."));
 		return false;
 	}
 

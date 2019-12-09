@@ -5,6 +5,7 @@
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 #include "Shapes/ShapeBarrierImpl.h"
+#include "AGX_LogCategory.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -44,7 +45,7 @@ void FTerrainBarrier::AllocateNative(FHeightFieldShapeBarrier& SourceHeightField
 	agx::Real MaximumDepth {10.0};
 	agxCollide::HeightField* HeightFieldAGX = SourceHeightField.GetNativeShape<agxCollide::HeightField>();
 	NativeRef->Native = agxTerrain::Terrain::createFromHeightField(HeightFieldAGX, MaximumDepth);
-	UE_LOG(LogTemp, Log, TEXT("Native terrain allocated."));
+	UE_LOG(LogAGX, Log, TEXT("Native terrain allocated."));
 }
 
 FTerrainRef* FTerrainBarrier::GetNative()
