@@ -142,8 +142,15 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 	UStaticMesh* StaticMesh =
 		NewObject<UStaticMesh>(Package, UniqueMeshName, RF_Public | RF_Standalone | RF_MarkAsRootSet);
 	StaticMesh->StaticMaterials.Add(FStaticMaterial());
+
+#if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 23) 
+	StaticMesh->GetSourceModels().Emplace();
+	FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModels().Last();
+#else
 	StaticMesh->SourceModels.Emplace();
 	FStaticMeshSourceModel& SourceModel = StaticMesh->SourceModels.Last();
+#endif
+
 	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
 	FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
 	// Somewhat unclear what all these should be.
