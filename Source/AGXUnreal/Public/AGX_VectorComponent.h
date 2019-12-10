@@ -1,9 +1,8 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/PrimitiveComponent.h"
+#include "Math/Color.h"
 #include "AGX_VectorComponent.generated.h"
 
 /**
@@ -13,12 +12,38 @@
  *
  * This class is heavily influenced by the Unreal Engine ArrowComponent.
  */
-UCLASS(ClassGroup="AGX", Category="AGX")
+UCLASS(ClassGroup = "AGX", Category = "AGX")
 class AGXUNREAL_API UAGX_VectorComponent : public UPrimitiveComponent
 {
 	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Vector")
+	float ArrowSize;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Vector")
+	FColor ArrowColor;
 
+	/**
+	 * Returns the world-space direction (i.e. x-axis) of this component,
+	 * scaled by the size and transform scale.
+	 */
+	FVector GetVectorDirection() const;
 
+	/**
+	 * Returns the normalized world-space direction (i.e. x-axis) of this component.
+	 */
+	FVector GetVectorDirectionNormalized() const;
 
+	/**
+	 * Returns the world-space position.
+	 */
+	FVector GetVectorOrigin() const;
+
+	/**
+	 * Returns sum of world-space position and world space direction.
+	 */
+	FVector GetVectorTarget() const;
+
+	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
+	virtual FBoxSphereBounds CalcBounds(const FTransform& LocalToWorld) const override;
 };
