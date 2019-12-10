@@ -18,7 +18,7 @@ class AGXUNREAL_API UAGX_VectorComponent : public UPrimitiveComponent
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Vector")
-	float ArrowSize;
+	float ArrowSize = 100.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Vector")
 	FColor ArrowColor;
