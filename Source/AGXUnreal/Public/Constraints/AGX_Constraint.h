@@ -31,7 +31,8 @@ class FConstraintBarrier;
  *       match the enum in the header of the native AGX constraint (without ALL_DOF and NUM_DOF).
  *
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract, NotBlueprintable, meta = (BlueprintSpawnableComponent),
+UCLASS(
+	ClassGroup = "AGX", Category = "AGX", Abstract, NotBlueprintable, meta = (BlueprintSpawnableComponent),
 	hidecategories = (Cooking, Collision, Input, LOD, Rendering, Replication))
 class AGXUNREAL_API AAGX_Constraint : public AActor
 {

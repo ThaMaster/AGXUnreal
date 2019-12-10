@@ -37,7 +37,8 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 
 public:
 	/** Step length of the integrator, in seconds. 0.0167 by default. */
-	UPROPERTY(config, EditAnywhere, Category = "Solver",
+	UPROPERTY(
+		config, EditAnywhere, Category = "Solver",
 		meta = (ClampMin = "0.001", UIMin = "0.001", ClampMax = "1.0", UIMax = "1.0"))
 	float TimeStep = 1.0f / 60.0f;
 

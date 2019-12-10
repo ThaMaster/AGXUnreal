@@ -142,7 +142,8 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 	{
 		if (MotionControl == MC_STATIC && !GetOwner()->IsRootComponentStatic())
 		{
-			UE_LOG(LogAGX, Warning,
+			UE_LOG(
+				LogAGX, Warning,
 				TEXT("The Actor \"%s\" has a RigidBody with Static AGX MotionControl but Non-Static Unreal Mobility. "
 					 "Unreal Mobility will automatically be changed to Static this game session, but should also be "
 					 "changed manually in the Editor to ensure best performance!"),
@@ -152,7 +153,8 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 		}
 		else if (MotionControl == MC_DYNAMICS && !GetOwner()->IsRootComponentMovable())
 		{
-			UE_LOG(LogAGX, Warning,
+			UE_LOG(
+				LogAGX, Warning,
 				TEXT("The Actor \"%s\" has a RigidBody with Dynamic AGX MotionControl but Non-Movable Unreal Mobility. "
 					 "Unreal Mobility will automatically be changed to Movable this game session, but should also be "
 					 "changed manually in the Editor to avoid future problems!"),

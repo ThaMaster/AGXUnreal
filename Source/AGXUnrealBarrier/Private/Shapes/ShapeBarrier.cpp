@@ -3,6 +3,7 @@
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 #include "MaterialBarrier.h"
+#include "AGX_LogCategory.h"
 
 #include "Misc/AssertionMacros.h"
 
@@ -117,7 +118,8 @@ namespace
 		}
 		if (!Iterator.isValid())
 		{
-			UE_LOG(LogTemp, Error,
+			UE_LOG(
+				LogAGX, Error,
 				TEXT("Found invalid FShapeBarrier. The native Geometry does not contain the native Shape."));
 		}
 		return Iterator;

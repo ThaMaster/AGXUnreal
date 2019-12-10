@@ -53,7 +53,8 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 		FMaterialBarrier* MaterialBarrier = MaterialInstance->GetOrCreateNative(GetWorld());
 		check(MaterialBarrier);
 
-		UE_LOG(LogAGX, Log,
+		UE_LOG(
+			LogAGX, Log,
 			TEXT("UAGX_ShapeComponent::UpdateNativeProperties is setting native material \"%s\" on shape "
 				 "\"%s\" of rigid body \"%s\"."),
 			*MaterialInstance->GetName(), *GetName(), *GetNameSafe(GetOwner()));

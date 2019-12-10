@@ -25,7 +25,7 @@ FAGX_TopMenu::FAGX_TopMenu()
 	: Extender(nullptr)
 	, UnrealMenuBarExtension(nullptr)
 {
-	UE_LOG(LogTemp, Log, TEXT("FAGX_TopMenu::FAGX_TopMenu()"));
+	UE_LOG(LogAGX, Log, TEXT("FAGX_TopMenu::FAGX_TopMenu()"));
 
 	// Get Prerequisites.
 
@@ -40,7 +40,8 @@ FAGX_TopMenu::FAGX_TopMenu()
 	FMenuBarExtensionDelegate UnrealMenuBarExtensionDelegate =
 		FMenuBarExtensionDelegate::CreateStatic(&FAGX_TopMenu::CreateTopMenu);
 
-	UnrealMenuBarExtension = Extender->AddMenuBarExtension("Help", EExtensionHook::Before,
+	UnrealMenuBarExtension = Extender->AddMenuBarExtension(
+		"Help", EExtensionHook::Before,
 		nullptr, // Using inline FActions instead of FUICommands, for less hot reloading problems!
 		UnrealMenuBarExtensionDelegate); // Delegate is only invoked during Editor startup (i.e. when Unreal Main
 										 // Menu Bar is built).
@@ -50,7 +51,7 @@ FAGX_TopMenu::FAGX_TopMenu()
 
 FAGX_TopMenu::~FAGX_TopMenu()
 {
-	UE_LOG(LogTemp, Log, TEXT("FAGX_TopMenu::~FAGX_TopMenu()"));
+	UE_LOG(LogAGX, Log, TEXT("FAGX_TopMenu::~FAGX_TopMenu()"));
 
 	// Get prerequisites.
 
@@ -116,40 +117,43 @@ FAGX_TopMenu::~FAGX_TopMenu()
 	//
 
 	FNewMenuDelegate NewMenuDelegate = FNewMenuDelegate::CreateLambda([](FMenuBuilder& Builder) {
-		UE_LOG(LogTemp, Log, TEXT("NewMenuDelegate"));
+		UE_LOG(LogAGX, Log, TEXT("NewMenuDelegate"));
 
 		if (FAGXUnrealEditorModule* AGXUnrealEditorModule =
 				FModuleManager::GetModulePtr<FAGXUnrealEditorModule>("AGXUnrealEditor"))
 		{
 			if (TSharedPtr<FAGX_TopMenu> AgxTopMenu = AGXUnrealEditorModule->GetAgxTopMenu())
 			{
-				UE_LOG(LogTemp, Log, TEXT("&AgxTopMenu = %p"), AgxTopMenu.Get());
+				UE_LOG(LogAGX, Log, TEXT("&AgxTopMenu = %p"), AgxTopMenu.Get());
 
 				AgxTopMenu->FillTopMenu(Builder);
 			}
 		}
 	});
 
-	Builder.AddPullDownMenu(LOCTEXT("TopMenuLabel", "AGX"), LOCTEXT("TopMenuToolTip", "Open the AGX top menu"),
+	Builder.AddPullDownMenu(
+		LOCTEXT("TopMenuLabel", "AGX"), LOCTEXT("TopMenuToolTip", "Open the AGX top menu"),
 		NewMenuDelegate); // Delegate is invoked when AGX menu is clicked (but same delegate regardless of reloading
 						  // this module).
 }
 
 /*virtual*/ void FAGX_TopMenu::FillTopMenu(FMenuBuilder& Builder)
 {
-	Builder.AddSubMenu(LOCTEXT("FileMenuLabel", "File"),
+	Builder.AddSubMenu(
+		LOCTEXT("FileMenuLabel", "File"),
 		LOCTEXT("FileMenuTooltip", "Interoperability with external file formats, such AGX simulation files (.agx)."),
 		FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillFileMenu));
 
 	Builder.AddMenuSeparator();
 
-	Builder.AddSubMenu(LOCTEXT("ConstraintMenuLabel", "Constraints"),
-		LOCTEXT("ConstraintMenuTooltip", "Create a constraint."),
+	Builder.AddSubMenu(
+		LOCTEXT("ConstraintMenuLabel", "Constraints"), LOCTEXT("ConstraintMenuTooltip", "Create a constraint."),
 		FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillConstraintMenu));
 
 	Builder.AddMenuSeparator();
 
-	Builder.AddMenuEntry(LOCTEXT("AboutAgxDialogLabel", "About AGX Unreal..."),
+	Builder.AddMenuEntry(
+		LOCTEXT("AboutAgxDialogLabel", "About AGX Unreal..."),
 		LOCTEXT("AboutAgxDialogToolTip", "Open the About AGX Window."), FSlateIcon(),
 		FExecuteAction::CreateRaw(this, &FAGX_TopMenu::OnOpenAboutDialogClicked), NAME_None,
 		EUserInterfaceActionType::Button);
@@ -157,33 +161,45 @@ FAGX_TopMenu::~FAGX_TopMenu()
 
 void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 {
-	AddFileMenuEntry(Builder, LOCTEXT("CreateBallConstraintLabel", "Create Ball Constraint"),
-		LOCTEXT("CreateBallConstraintTooltip",
+	AddFileMenuEntry(
+		Builder, LOCTEXT("CreateBallConstraintLabel", "Create Ball Constraint"),
+		LOCTEXT(
+			"CreateBallConstraintTooltip",
 			"Create Ball Constraint. \n\nInitially setup using currently selected Rigid Body Actors, or empty."),
 		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_BallConstraint::StaticClass()); });
 
-	AddFileMenuEntry(Builder, LOCTEXT("CreateCylindricalConstraintLabel", "Create Cylindrical Constraint"),
-		LOCTEXT("CreateCylindricalConstraintTooltip",
+	AddFileMenuEntry(
+		Builder, LOCTEXT("CreateCylindricalConstraintLabel", "Create Cylindrical Constraint"),
+		LOCTEXT(
+			"CreateCylindricalConstraintTooltip",
 			"Create Cylindrical Constraint. \n\nInitially setup using currently selected Rigid Body Actors, or empty."),
 		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_CylindricalConstraint::StaticClass()); });
 
-	AddFileMenuEntry(Builder, LOCTEXT("CreateDistanceConstraintLabel", "Create Distance Constraint"),
-		LOCTEXT("CreateDistanceConstraintTooltip",
+	AddFileMenuEntry(
+		Builder, LOCTEXT("CreateDistanceConstraintLabel", "Create Distance Constraint"),
+		LOCTEXT(
+			"CreateDistanceConstraintTooltip",
 			"Create Distance Constraint. \n\nInitially setup using currently selected Rigid Body Actors, or empty."),
 		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_DistanceConstraint::StaticClass()); });
 
-	AddFileMenuEntry(Builder, LOCTEXT("CreateHingeConstraintLabel", "Create Hinge Constraint"),
-		LOCTEXT("CreateHingeConstraintTooltip",
+	AddFileMenuEntry(
+		Builder, LOCTEXT("CreateHingeConstraintLabel", "Create Hinge Constraint"),
+		LOCTEXT(
+			"CreateHingeConstraintTooltip",
 			"Create Hinge Constraint. \n\nInitially setup using currently selected Rigid Body Actors, or empty."),
 		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_HingeConstraint::StaticClass()); });
 
-	AddFileMenuEntry(Builder, LOCTEXT("CreateLockConstraintLabel", "Create Lock Constraint"),
-		LOCTEXT("CreateLockConstraintTooltip",
+	AddFileMenuEntry(
+		Builder, LOCTEXT("CreateLockConstraintLabel", "Create Lock Constraint"),
+		LOCTEXT(
+			"CreateLockConstraintTooltip",
 			"Create Lock Constraint. \n\nInitially setup using currently selected Rigid Body Actors, or empty."),
 		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_LockConstraint::StaticClass()); });
 
-	AddFileMenuEntry(Builder, LOCTEXT("CreatePrismaticConstraintLabel", "Create Prismatic Constraint"),
-		LOCTEXT("CreatePrismaticConstraintTooltip",
+	AddFileMenuEntry(
+		Builder, LOCTEXT("CreatePrismaticConstraintLabel", "Create Prismatic Constraint"),
+		LOCTEXT(
+			"CreatePrismaticConstraintTooltip",
 			"Create Prismatic Constraint. \n\nInitially setup using currently selected Rigid Body Actors, or empty."),
 		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_PrismaticConstraint::StaticClass()); });
 }
@@ -191,12 +207,14 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 {
 	// Import AGX Archive menu item
-	AddFileMenuEntry(Builder, LOCTEXT("FileMenuEntryLabelIm", "Import AGX Archive..."),
+	AddFileMenuEntry(
+		Builder, LOCTEXT("FileMenuEntryLabelIm", "Import AGX Archive..."),
 		LOCTEXT("FileMenuEntryToolTipIm", "Import an AGX Archive into the Editor."),
 		[]() { UAGX_AgxEdModeFile::ImportAGXArchive(); });
 
 	// Export AGX Archive menu item
-	AddFileMenuEntry(Builder, LOCTEXT("FileMenuEntryLabelEx", "Export AGX Archive..."),
+	AddFileMenuEntry(
+		Builder, LOCTEXT("FileMenuEntryLabelEx", "Export AGX Archive..."),
 		LOCTEXT("FileMenuEntryToolTipEx", "Export an AGX Archive from the Editor."),
 		[]() { UAGX_AgxEdModeFile::ExportAGXArchive(); });
 }
@@ -205,10 +223,12 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 {
 	AActor* Actor1 = nullptr;
 	AActor* Actor2 = nullptr;
-	FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(&Actor1, &Actor2,
+	FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
+		&Actor1, &Actor2,
 		/*bSearchSubtrees*/ true, /*bSearchAncestors*/ true);
 
-	FAGX_EditorUtilities::CreateConstraint(ConstraintClass, Actor1, Actor2,
+	FAGX_EditorUtilities::CreateConstraint(
+		ConstraintClass, Actor1, Actor2,
 		/*Select*/ true,
 		/*ShowNotification*/ true,
 		/*InPlayingWorldIfAvailable*/ true);
@@ -218,7 +238,8 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 {
 	FText Title = LOCTEXT("AboutDialogTitle", "About AGX Unreal");
 
-	FText Message = LOCTEXT("AboutDialogMessage",
+	FText Message = LOCTEXT(
+		"AboutDialogMessage",
 		"\n"
 		"Copyright: Algoryx Simulation AB\n"
 		"\n"

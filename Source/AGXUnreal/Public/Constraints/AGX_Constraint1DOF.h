@@ -42,7 +42,8 @@ public:
 
 	AAGX_Constraint1DOF();
 
-	AAGX_Constraint1DOF(const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraintRotational,
+	AAGX_Constraint1DOF(
+		const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraintRotational,
 		bool bIsLockControllerEditable = true);
 
 	virtual ~AAGX_Constraint1DOF();

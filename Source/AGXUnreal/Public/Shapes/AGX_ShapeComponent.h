@@ -12,7 +12,8 @@
 
 class UAGX_MaterialBase;
 
-UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract, NotPlaceable, Meta = (BlueprintSpawnableComponent),
+UCLASS(
+	ClassGroup = "AGX", Category = "AGX", Abstract, NotPlaceable, Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, Input, LOD, Physics, Replication))
 class AGXUNREAL_API UAGX_ShapeComponent : public UAGX_SimpleMeshComponent
 {

@@ -2,9 +2,11 @@
 
 #include "Materials/AGX_MaterialBase.h"
 
-#include "Classes/Engine/World.h"
 
 #include "AGX_LogCategory.h"
+#include "AGX_MaterialInstance.h"
+
+#include "Classes/Engine/World.h"
 
 UAGX_MaterialInstance* UAGX_MaterialBase::GetOrCreateInstance(UWorld* PlayingWorld, UAGX_MaterialBase*& Property)
 {
@@ -17,8 +19,8 @@ UAGX_MaterialInstance* UAGX_MaterialBase::GetOrCreateInstance(UWorld* PlayingWor
 
 	if (Instance != Property)
 	{
-		UE_LOG(LogAGX, Log,
-			TEXT("UAGX_MaterialBase::GetOrCreateInstance is swapping a property (to \"%s\" from \"%s\")."),
+		UE_LOG(
+			LogAGX, Log, TEXT("UAGX_MaterialBase::GetOrCreateInstance is swapping a property (to \"%s\" from \"%s\")."),
 			*GetNameSafe(Instance), *GetNameSafe(Property));
 
 		Property = Instance;

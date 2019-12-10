@@ -38,7 +38,8 @@ private: // Constraint Creator
 	void OnConstraintTypeComboBoxChanged(
 		UClass* NewSelectedItem, ESelectInfo::Type InSeletionInfo, UAGX_AgxEdModeConstraints* ConstraintsSubMode);
 
-	void OnFrameSourceRadioButtonChanged(ECheckBoxState NewCheckedState, EAGX_ConstraintFrameSource RadioButton,
+	void OnFrameSourceRadioButtonChanged(
+		ECheckBoxState NewCheckedState, EAGX_ConstraintFrameSource RadioButton,
 		UAGX_AgxEdModeConstraints* ConstraintsSubMode);
 
 	TArray<UClass*> ConstraintClasses;

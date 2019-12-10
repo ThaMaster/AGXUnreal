@@ -3,6 +3,7 @@
 #include "Utilities/AGX_EditorUtilities.h"
 #include "AGX_ArchiveImporter.h"
 #include "AGX_ArchiveExporter.h"
+#include "AGX_LogCategory.h"
 
 #include "DesktopPlatformModule.h"
 #include "Misc/Paths.h"
@@ -27,19 +28,19 @@ void UAGX_AgxEdModeFile::ImportAGXArchive()
 	/// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html?sort=oldest
 	/// for a discussion on window handles.
 	TArray<FString> Filenames;
-	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(nullptr, TEXT("Select an AGX Archive to import"),
-		TEXT("DefaultPath"), TEXT("DefaultFile"), TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None,
-		Filenames);
+	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
+		nullptr, TEXT("Select an AGX Archive to import"), TEXT("DefaultPath"), TEXT("DefaultFile"),
+		TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None, Filenames);
 
 	if (!FileSelected || Filenames.Num() == 0)
 	{
-		UE_LOG(LogTemp, Log, TEXT("No .agx file selected. Doing nothing"));
+		UE_LOG(LogAGX, Log, TEXT("No .agx file selected. Doing nothing"));
 		return;
 	}
 
 	if (Filenames.Num() > 1)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Multiple files selected but we only support single files for now. Doing nothing."));
+		UE_LOG(LogAGX, Log, TEXT("Multiple files selected but we only support single files for now. Doing nothing."));
 		FAGX_EditorUtilities::ShowNotification(LOCTEXT(
 			"Multiple .agx", "Multiple file selected but we only support single files for now. Doing nothing."));
 		return;
@@ -52,17 +53,18 @@ void UAGX_AgxEdModeFile::ImportAGXArchive()
 void UAGX_AgxEdModeFile::ExportAGXArchive()
 {
 	TArray<FString> Filenames;
-	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(nullptr, TEXT("Select an AGX Archive to export"),
-		TEXT(""), TEXT("unreal.agx"), TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None, Filenames);
+	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
+		nullptr, TEXT("Select an AGX Archive to export"), TEXT(""), TEXT("unreal.agx"),
+		TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None, Filenames);
 	if (!FileSelected || Filenames.Num() == 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No .agx file selected, Doing nothing."));
+		UE_LOG(LogAGX, Warning, TEXT("No .agx file selected, Doing nothing."));
 		return;
 	}
 
 	if (Filenames.Num() > 1)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Multiple files selected but we only support exporting to one. Doing nothing."));
+		UE_LOG(LogAGX, Warning, TEXT("Multiple files selected but we only support exporting to one. Doing nothing."));
 		FAGX_EditorUtilities::ShowNotification(LOCTEXT(
 			"Multiple .agx export", "Multiple files selected but we only support exporting to one. Doing nothing."));
 		return;
@@ -71,7 +73,7 @@ void UAGX_AgxEdModeFile::ExportAGXArchive()
 	FString Filename = Filenames[0];
 	if (Filename.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Cannot store AGX Dynamics archive to an empty file name. Doing nothing."));
+		UE_LOG(LogAGX, Warning, TEXT("Cannot store AGX Dynamics archive to an empty file name. Doing nothing."));
 		FAGX_EditorUtilities::ShowNotification(LOCTEXT(
 			"Empty .agx name export", "Cannot store AGX Dynamics archive to an empty file name. Doing nothing."));
 		return;
@@ -85,11 +87,11 @@ void UAGX_AgxEdModeFile::ExportAGXArchive()
 
 	if (AGX_ArchiveExporter::ExportAGXArchive(Filename))
 	{
-		UE_LOG(LogTemp, Log, TEXT("AGX Dynamics archive saved to %s."), *Filename);
+		UE_LOG(LogAGX, Log, TEXT("AGX Dynamics archive saved to %s."), *Filename);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AGX Dynamics archive could not be saved to %s."), *Filename);
+		UE_LOG(LogAGX, Warning, TEXT("AGX Dynamics archive could not be saved to %s."), *Filename);
 	}
 }
 

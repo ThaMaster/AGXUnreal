@@ -16,7 +16,8 @@
  * which makes it easy to position the constraint frame anywhere in the world.
  *
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent),
+UCLASS(
+	ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent),
 	hidecategories = (Cooking, Collision, Input, LOD, Rendering, Replication))
 class AGXUNREAL_API AAGX_ConstraintFrameActor : public AActor
 {

@@ -13,6 +13,7 @@
 #include "AGX_SphereShapeComponent.h"
 #include "AGX_BoxShapeComponent.h"
 #include "AGX_TrimeshShapeComponent.h"
+#include "AGX_LogCategory.h"
 
 #include "Constraints/AGX_HingeConstraint.h"
 #include "Constraints/AGX_PrismaticConstraint.h"
@@ -34,20 +35,20 @@ namespace
 {
 	std::tuple<AActor*, USceneComponent*> InstantiateBody(const FRigidBodyBarrier& Body, UWorld& World)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Loaded AGX body with name '%s'."), *Body.GetName());
+		UE_LOG(LogAGX, Log, TEXT("Loaded AGX body with name '%s'."), *Body.GetName());
 		AActor* NewActor;
 		USceneComponent* Root;
 		FTransform Transform(Body.GetRotation(), Body.GetPosition());
 		std::tie(NewActor, Root) = FAGX_EditorUtilities::CreateEmptyActor(Transform, &World);
 		if (NewActor == nullptr)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Could not create Actor for body '%s'."), *Body.GetName());
+			UE_LOG(LogAGX, Log, TEXT("Could not create Actor for body '%s'."), *Body.GetName());
 			return {nullptr, nullptr};
 		}
 		if (Root == nullptr)
 		{
 			/// \todo Do we need to destroy the Actor here?
-			UE_LOG(LogTemp, Log, TEXT("Could not create SceneComponent for body '%s'."), *Body.GetName());
+			UE_LOG(LogAGX, Log, TEXT("Could not create SceneComponent for body '%s'."), *Body.GetName());
 			return {nullptr, nullptr};
 		}
 
@@ -56,7 +57,7 @@ namespace
 		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
 		if (NewBody == nullptr)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Could not create AGX RigidBodyComponenet for body '%s'."), *Body.GetName());
+			UE_LOG(LogAGX, Log, TEXT("Could not create AGX RigidBodyComponenet for body '%s'."), *Body.GetName());
 			/// \todo Do we need to destroy the Actor and the RigidBodyComponent here?
 			return {nullptr, nullptr};
 		}
@@ -208,13 +209,13 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			{
 				// Not having a second body is fine. Means that the first body
 				// is constrainted to the world. Not having a first body is bad.
-				UE_LOG(LogTemp, Log, TEXT("Constraint %s doesn't have a first body. Ignoring."), *Barrier.GetName());
+				UE_LOG(LogAGX, Log, TEXT("Constraint %s doesn't have a first body. Ignoring."), *Barrier.GetName());
 				return;
 			}
 
-			AAGX_Constraint* Constraint =
-				FAGX_EditorUtilities::CreateConstraint(ConstraintType, Actors.first, Actors.second,
-					/*bSelect*/ false, /*bShwNotification*/ false, /*bInPlayingWorld*/ false);
+			AAGX_Constraint* Constraint = FAGX_EditorUtilities::CreateConstraint(
+				ConstraintType, Actors.first, Actors.second,
+				/*bSelect*/ false, /*bShwNotification*/ false, /*bInPlayingWorld*/ false);
 
 			StoreFrames(Barrier, Constraint);
 
@@ -235,7 +236,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			if (Actor == nullptr)
 			{
 				UE_LOG(
-					LogTemp, Log, TEXT("Found a constraint to body '%s', but that body isn't known."), *Body.GetName());
+					LogAGX, Log, TEXT("Found a constraint to body '%s', but that body isn't known."), *Body.GetName());
 				return nullptr;
 			}
 			return Actor;

@@ -5,8 +5,10 @@
 #include "Classes/Engine/World.h"
 
 #include "AGX_LogCategory.h"
+#include "AGX_Simulation.h"
 #include "Materials/AGX_MaterialInstance.h"
 #include "Materials/ContactMaterialBarrier.h"
+#include "Materials/AGX_ContactMaterialAsset.h"
 #include "Materials/MaterialBarrier.h"
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::CreateFromAsset(
@@ -21,7 +23,8 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::CreateFromAsset(
 
 	FString InstanceName = Source->GetName() + "_Instance";
 
-	UE_LOG(LogAGX, Log,
+	UE_LOG(
+		LogAGX, Log,
 		TEXT("UAGX_ContactMaterialBase::CreateFromAsset is creating an instance named \"%s\" (from asset \"%s\")."),
 		*InstanceName, *Source->GetName());
 
@@ -135,7 +138,8 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 	FMaterialBarrier* MaterialBarrier1 = MaterialInstance1 ? MaterialInstance1->GetOrCreateNative(GetWorld()) : nullptr;
 	FMaterialBarrier* MaterialBarrier2 = MaterialInstance2 ? MaterialInstance2->GetOrCreateNative(GetWorld()) : nullptr;
 
-	UE_LOG(LogAGX, Log,
+	UE_LOG(
+		LogAGX, Log,
 		TEXT("UAGX_ContactMaterialInstance::CreateNative is creating native contact material \"%s\" "
 			 "using materials \"%s\" and \"%s\"."),
 		*GetName(), *GetNameSafe(MaterialInstance1), *GetNameSafe(MaterialInstance2));

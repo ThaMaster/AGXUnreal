@@ -1,5 +1,7 @@
 #include "AGXUnrealBarrier.h"
 
+#include "AGX_LogCategory.h"
+
 #include "BeginAGXIncludes.h"
 #include <agx/agx.h>
 #include "EndAGXIncludes.h"
@@ -8,13 +10,13 @@
 
 void FAGXUnrealBarrierModule::StartupModule()
 {
-	UE_LOG(LogTemp, Log, TEXT("FAGXUnrealBarrierModule::StartupModule(). Calling agx::init."));
+	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::StartupModule(). Calling agx::init."));
 	agx::init();
 }
 
 void FAGXUnrealBarrierModule::ShutdownModule()
 {
-	UE_LOG(LogTemp, Log, TEXT("FAGXUnrealBarrierModule::ShutdownModule(). Calling agx::shutdown"));
+	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::ShutdownModule(). Calling agx::shutdown"));
 	agx::shutdown();
 }
 
