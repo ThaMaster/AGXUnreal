@@ -3,6 +3,7 @@
 #include "Constraints/AGX_ConstraintComponentVisualizer.h"
 
 #include "CanvasItem.h"
+#include "CanvasTypes.h"
 #include "SceneManagement.h"
 
 #include "Constraints/AGX_Constraint.h"
@@ -26,8 +27,9 @@ namespace
 
 	const bool bDrawLineBetweenActors = true;
 
-	void DrawCoordinateSystemAxes(FPrimitiveDrawInterface* PDI, FVector const& AxisLoc, FRotator const& AxisRot,
-		float Scale, uint8 DepthPriority, float Thickness, float DepthBias, bool bScreenSpace)
+	void DrawCoordinateSystemAxes(
+		FPrimitiveDrawInterface* PDI, FVector const& AxisLoc, FRotator const& AxisRot, float Scale, uint8 DepthPriority,
+		float Thickness, float DepthBias, bool bScreenSpace)
 	{
 		FRotationMatrix R(AxisRot);
 		FVector const X = R.GetScaledAxis(EAxis::X);
@@ -116,7 +118,8 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 			{
 				FBox LocalAABB = RigidBodyActor->CalculateComponentsBoundingBoxInLocalSpace(/*bNonColliding*/ true);
 
-				DrawOrientedWireBox(PDI, RigidBodyActor->GetActorLocation(), RigidBodyActor->GetActorForwardVector(),
+				DrawOrientedWireBox(
+					PDI, RigidBodyActor->GetActorLocation(), RigidBodyActor->GetActorForwardVector(),
 					RigidBodyActor->GetActorRightVector(), RigidBodyActor->GetActorUpVector(), LocalAABB.GetExtent(),
 					HighlightColor, SDPG_World, HighlightThickness, /*DepthBias*/ 0.0f,
 					/*bScreenSpace*/ true);
@@ -128,7 +131,8 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 				FVector Location = View->ViewLocation + Direction * Distance;
 				float Radius = GetWorldSizeFromScreenFactor(0.08f, FMath::DegreesToRadians(View->FOV), Distance);
 
-				DrawCircle(PDI, Location, View->GetViewRight(), View->GetViewUp(), HighlightColor, Radius,
+				DrawCircle(
+					PDI, Location, View->GetViewRight(), View->GetViewUp(), HighlightColor, Radius,
 					/*Sides*/ 32, SDPG_Foreground, HighlightThickness, /*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
 			}
 
@@ -144,9 +148,9 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 				// camera is ouside of the mesh, there are difficulties	selecting the transform gizmo (even if
 				// HitProxy, depth bias, etc are used).
 
-				DrawCoordinateSystemAxes(PDI, BodyAttachment.GetGlobalFrameLocation(),
-					BodyAttachment.GetGlobalFrameRotation().Rotator(), FrameGizmoScale, SDPG_Foreground,
-					FrameGizmoThickness, /*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
+				DrawCoordinateSystemAxes(
+					PDI, BodyAttachment.GetGlobalFrameLocation(), BodyAttachment.GetGlobalFrameRotation().Rotator(),
+					FrameGizmoScale, SDPG_Foreground, FrameGizmoThickness, /*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
 			}
 		}
 	}

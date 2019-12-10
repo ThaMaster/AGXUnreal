@@ -123,8 +123,9 @@ public:
 					const float V0toV1 = TexCoord1.Y - TexCoord0.Y;
 					const float V0toV2 = TexCoord2.Y - TexCoord0.Y;
 
-					TriangleTangent = FVector(V0toV2 * P0toP1.X - V0toV1 * P0toP2.X,
-						V0toV2 * P0toP1.Y - V0toV1 * P0toP2.Y, V0toV2 * P0toP1.Z - V0toV1 * P0toP2.Z);
+					TriangleTangent = FVector(
+						V0toV2 * P0toP1.X - V0toV1 * P0toP2.X, V0toV2 * P0toP1.Y - V0toV1 * P0toP2.Y,
+						V0toV2 * P0toP1.Z - V0toV1 * P0toP2.Z);
 				}
 				else
 				{
@@ -182,8 +183,9 @@ public:
 		VertexFactory.ReleaseResource();
 	}
 
-	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily,
-		uint32 VisibilityMap, FMeshElementCollector& Collector) const override
+	virtual void GetDynamicMeshElements(
+		const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap,
+		FMeshElementCollector& Collector) const override
 	{
 		QUICK_SCOPE_CYCLE_COUNTER(STAT_AGX_SimpleMeshSceneProxy_GetDynamicMeshElements);
 
@@ -222,22 +224,26 @@ public:
 				FMatrix PreviousLocalToWorld;
 				int32 SingleCaptureIndex;
 #if UE_VERSION_OLDER_THAN(4, 23, 0)
-				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(GetPrimitiveSceneInfo(),
-					bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, SingleCaptureIndex);
+				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(
+					GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld,
+					SingleCaptureIndex);
 #else
 				/// \todo Replace Unknown with proper name or use some getter function to get a proper value.
 				bool Unknown = false;
-				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(GetPrimitiveSceneInfo(),
-					bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, SingleCaptureIndex, Unknown);
+				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(
+					GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld,
+					SingleCaptureIndex, Unknown);
 #endif
 				FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer =
 					Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
 #if UE_VERSION_OLDER_THAN(4, 23, 0)
-				DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(),
-					GetLocalBounds(), true, bHasPrecomputedVolumetricLightmap, UseEditorDepthTest());
+				DynamicPrimitiveUniformBuffer.Set(
+					GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), GetLocalBounds(), true,
+					bHasPrecomputedVolumetricLightmap, UseEditorDepthTest());
 #else
-				DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(),
-					GetLocalBounds(), true, bHasPrecomputedVolumetricLightmap, DrawsVelocity(), Unknown);
+				DynamicPrimitiveUniformBuffer.Set(
+					GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), GetLocalBounds(), true,
+					bHasPrecomputedVolumetricLightmap, DrawsVelocity(), Unknown);
 #endif
 				BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
 

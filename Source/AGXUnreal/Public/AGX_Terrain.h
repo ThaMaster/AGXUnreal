@@ -135,9 +135,11 @@ public:
 	 * or some particles might not be rendered! Used internally to allocate large enough rendering data
 	 * buffers. The actual buffer sizes might have slightly larger capacity though due to data layout.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering",
-		meta = (EditCondition = "bEnableParticleRendering", ClampMin = "1", UIMin = "1", ClampMax = "4096",
-			UIMax = "4096"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain Rendering",
+		meta =
+			(EditCondition = "bEnableParticleRendering", ClampMin = "1", UIMin = "1", ClampMax = "4096",
+			 UIMax = "4096"))
 	int32 MaxNumRenderParticles = 2048;
 
 	/// \todo Add UNiagaraSystem once we get particle reading from AGX Dynamics in place.

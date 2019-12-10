@@ -179,7 +179,8 @@ void UAGX_HeightFieldShapeComponent::CreateNative()
 	check(!HasNative());
 	if (SourceLandscape == nullptr)
 	{
-		UE_LOG(LogAGX, Warning,
+		UE_LOG(
+			LogAGX, Warning,
 			TEXT("HeightFieldComponent hasn't been given a source Landscape. Will not be included in the simulation."));
 		return;
 	}

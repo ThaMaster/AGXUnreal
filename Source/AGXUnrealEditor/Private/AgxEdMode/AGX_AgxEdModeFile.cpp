@@ -28,9 +28,9 @@ void UAGX_AgxEdModeFile::ImportAGXArchive()
 	/// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html?sort=oldest
 	/// for a discussion on window handles.
 	TArray<FString> Filenames;
-	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(nullptr, TEXT("Select an AGX Archive to import"),
-		TEXT("DefaultPath"), TEXT("DefaultFile"), TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None,
-		Filenames);
+	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
+		nullptr, TEXT("Select an AGX Archive to import"), TEXT("DefaultPath"), TEXT("DefaultFile"),
+		TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None, Filenames);
 
 	if (!FileSelected || Filenames.Num() == 0)
 	{
@@ -53,8 +53,9 @@ void UAGX_AgxEdModeFile::ImportAGXArchive()
 void UAGX_AgxEdModeFile::ExportAGXArchive()
 {
 	TArray<FString> Filenames;
-	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(nullptr, TEXT("Select an AGX Archive to export"),
-		TEXT(""), TEXT("unreal.agx"), TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None, Filenames);
+	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
+		nullptr, TEXT("Select an AGX Archive to export"), TEXT(""), TEXT("unreal.agx"),
+		TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None, Filenames);
 	if (!FileSelected || Filenames.Num() == 0)
 	{
 		UE_LOG(LogAGX, Warning, TEXT("No .agx file selected, Doing nothing."));

@@ -8,9 +8,9 @@
 class FRigidBodyBarrier;
 
 AAGX_LockConstraint::AAGX_LockConstraint()
-	: AAGX_Constraint(
-		  {EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2, EDofFlag::DOF_FLAG_TRANSLATIONAL_3,
-			  EDofFlag::DOF_FLAG_ROTATIONAL_1, EDofFlag::DOF_FLAG_ROTATIONAL_2, EDofFlag::DOF_FLAG_ROTATIONAL_3})
+	: AAGX_Constraint({EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
+					   EDofFlag::DOF_FLAG_TRANSLATIONAL_3, EDofFlag::DOF_FLAG_ROTATIONAL_1,
+					   EDofFlag::DOF_FLAG_ROTATIONAL_2, EDofFlag::DOF_FLAG_ROTATIONAL_3})
 {
 }
 
@@ -35,6 +35,7 @@ void AAGX_LockConstraint::CreateNativeImpl()
 	FQuat FrameRotation1 = BodyAttachment1.GetLocalFrameRotation();
 	FQuat FrameRotation2 = BodyAttachment2.GetLocalFrameRotation();
 
-	NativeBarrier->AllocateNative(RigidBody1, &FrameLocation1, &FrameRotation1, RigidBody2, &FrameLocation2,
+	NativeBarrier->AllocateNative(
+		RigidBody1, &FrameLocation1, &FrameRotation1, RigidBody2, &FrameLocation2,
 		&FrameRotation2); // ok if second is nullptr
 }

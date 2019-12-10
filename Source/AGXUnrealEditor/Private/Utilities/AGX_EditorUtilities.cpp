@@ -178,8 +178,9 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 		UE_LOG(LogAGX, Warning, TEXT("Package path '%s' produced empty long package name."), *PackagePath);
 		UE_LOG(LogAGX, Warning, TEXT("Using fallback name '%s'."), *AssetFileName);
 	}
-	bool bSaved = UPackage::SavePackage(Package, StaticMesh, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone,
-		*AssetFileName, GError, nullptr, true, true, SAVE_NoError);
+	bool bSaved = UPackage::SavePackage(
+		Package, StaticMesh, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *AssetFileName, GError, nullptr,
+		true, true, SAVE_NoError);
 	if (!bSaved)
 	{
 		UE_LOG(LogAGX, Error, TEXT("Save of imported StaticMesh asset failed."));
@@ -198,8 +199,9 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 	return StaticMeshComponent;
 }
 
-AAGX_Constraint* FAGX_EditorUtilities::CreateConstraint(UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2,
-	bool bInPlayingWorldIfAvailable, bool bSelect, bool bShowNotification)
+AAGX_Constraint* FAGX_EditorUtilities::CreateConstraint(
+	UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bInPlayingWorldIfAvailable, bool bSelect,
+	bool bShowNotification)
 {
 	UWorld* World = bInPlayingWorldIfAvailable ? GetCurrentWorld() : GetEditorWorld();
 
@@ -248,7 +250,8 @@ AAGX_ConstraintFrameActor* FAGX_EditorUtilities::CreateConstraintFrameActor(
 		}
 		else
 		{
-			UE_LOG(LogAGX, Log,
+			UE_LOG(
+				LogAGX, Log,
 				TEXT("Failed to attach the new AGX Constraint Frame Actor to the specified "
 					 "Parent Rigid Body Actor, because it is in another World."));
 		}
@@ -279,7 +282,8 @@ void FAGX_EditorUtilities::SelectActor(AActor* Actor, bool bDeselectPrevious)
 
 	if (Actor)
 	{
-		GEditor->SelectActor(Actor,
+		GEditor->SelectActor(
+			Actor,
 			/*bInSelected*/ true,
 			/*bNotify*/ false);
 	}

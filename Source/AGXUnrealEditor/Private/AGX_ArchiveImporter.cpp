@@ -213,9 +213,9 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 				return;
 			}
 
-			AAGX_Constraint* Constraint =
-				FAGX_EditorUtilities::CreateConstraint(ConstraintType, Actors.first, Actors.second,
-					/*bSelect*/ false, /*bShwNotification*/ false, /*bInPlayingWorld*/ false);
+			AAGX_Constraint* Constraint = FAGX_EditorUtilities::CreateConstraint(
+				ConstraintType, Actors.first, Actors.second,
+				/*bSelect*/ false, /*bShwNotification*/ false, /*bInPlayingWorld*/ false);
 
 			StoreFrames(Barrier, Constraint);
 

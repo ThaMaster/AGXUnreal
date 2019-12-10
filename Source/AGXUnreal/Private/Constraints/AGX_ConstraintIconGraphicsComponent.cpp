@@ -83,13 +83,15 @@ struct FAGX_ConstraintIconGraphicsSection
 	FMatrix LocalTransform = FMatrix::Identity;
 	ESceneDepthPriorityGroup DepthPriority;
 
-	FAGX_ConstraintIconGraphicsSection(const TSharedPtr<FAGX_ConstraintIconGraphicsGeometry>& InGeometry,
-		UMaterialInterface* InMaterial, bool bInShowSelectionOutline, FMatrix InLocalTransform,
-		ESceneDepthPriorityGroup InDepthPriority, uint32 InBeginIndex = 0, int32 InEndIndex = -1)
+	FAGX_ConstraintIconGraphicsSection(
+		const TSharedPtr<FAGX_ConstraintIconGraphicsGeometry>& InGeometry, UMaterialInterface* InMaterial,
+		bool bInShowSelectionOutline, FMatrix InLocalTransform, ESceneDepthPriorityGroup InDepthPriority,
+		uint32 InBeginIndex = 0, int32 InEndIndex = -1)
 		: Geometry(InGeometry)
 		, BeginIndex(InBeginIndex)
-		, EndIndex(InEndIndex >= 0 ? InEndIndex
-								   : (InGeometry ? static_cast<uint32>(InGeometry->IndexBuffer.Indices.Num()) : 0))
+		, EndIndex(
+			  InEndIndex >= 0 ? InEndIndex
+							  : (InGeometry ? static_cast<uint32>(InGeometry->IndexBuffer.Indices.Num()) : 0))
 		, Material(InMaterial)
 		, bShowSelectionOutline(bInShowSelectionOutline)
 		, LocalTransform(InLocalTransform)
@@ -236,8 +238,8 @@ private:
 		const FLinearColor Opaque(1, 1, 1, 1);
 		const FLinearColor SemiTransparent(1, 1, 1, 0.5);
 
-		AGX_MeshUtilities::DiskArrayConstructionData DiskArrayData(Radius, NumSegments, 0.0f, 3, true, SemiTransparent,
-			SemiTransparent,
+		AGX_MeshUtilities::DiskArrayConstructionData DiskArrayData(
+			Radius, NumSegments, 0.0f, 3, true, SemiTransparent, SemiTransparent,
 			{FTransform(FRotator(90, 0, 0)), FTransform(FRotator(0, 90, 0)), FTransform(FRotator(0, 0, 90))});
 
 		AGX_MeshUtilities::SphereConstructionData SphereData(Radius, NumSegments);
@@ -261,16 +263,18 @@ private:
 		uint32 NumAddedIndices = 0;
 
 		{
-			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(Geometry, Component->GetOuterShellMaterial(),
-				true, FMatrix::Identity, GetDepthPriority(), NumAddedIndices, NumAddedIndices + DiskArrayData.Indices));
+			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(
+				Geometry, Component->GetOuterShellMaterial(), true, FMatrix::Identity, GetDepthPriority(),
+				NumAddedIndices, NumAddedIndices + DiskArrayData.Indices));
 
 			AGX_MeshUtilities::MakeDiskArray(
 				Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, DiskArrayData);
 		}
 
 		{
-			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(Geometry, Component->GetInnerShellMaterial(),
-				true, FMatrix::Identity, GetDepthPriority(), NumAddedIndices, NumAddedIndices + SphereData.Indices));
+			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(
+				Geometry, Component->GetInnerShellMaterial(), true, FMatrix::Identity, GetDepthPriority(),
+				NumAddedIndices, NumAddedIndices + SphereData.Indices));
 
 			AGX_MeshUtilities::MakeSphere(
 				Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, SphereData);
@@ -320,26 +324,27 @@ private:
 		uint32 NumAddedIndices = 0;
 
 		{
-			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(Geometry, Component->GetInnerDisksMaterial(),
-				true, FMatrix::Identity, GetDepthPriority(), NumAddedIndices, NumAddedIndices + DiskArrayData.Indices));
+			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(
+				Geometry, Component->GetInnerDisksMaterial(), true, FMatrix::Identity, GetDepthPriority(),
+				NumAddedIndices, NumAddedIndices + DiskArrayData.Indices));
 
 			AGX_MeshUtilities::MakeDiskArray(
 				Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, DiskArrayData);
 		}
 
 		{
-			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(Geometry, Component->GetInnerShellMaterial(),
-				true, FMatrix::Identity, GetDepthPriority(), NumAddedIndices,
-				NumAddedIndices + InnerCylinderData.Indices));
+			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(
+				Geometry, Component->GetInnerShellMaterial(), true, FMatrix::Identity, GetDepthPriority(),
+				NumAddedIndices, NumAddedIndices + InnerCylinderData.Indices));
 
 			AGX_MeshUtilities::MakeCylinder(
 				Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, InnerCylinderData);
 		}
 
 		{
-			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(Geometry, Component->GetOuterShellMaterial(),
-				true, FMatrix::Identity, GetDepthPriority(), NumAddedIndices,
-				NumAddedIndices + OuterCylinderData.Indices));
+			Sections.Add(MakeShared<FAGX_ConstraintIconGraphicsSection>(
+				Geometry, Component->GetOuterShellMaterial(), true, FMatrix::Identity, GetDepthPriority(),
+				NumAddedIndices, NumAddedIndices + OuterCylinderData.Indices));
 
 			AGX_MeshUtilities::MakeCylinder(
 				Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, OuterCylinderData);
@@ -348,8 +353,9 @@ private:
 		Geometries.Add(Geometry);
 	}
 
-	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily,
-		uint32 VisibilityMap, FMeshElementCollector& Collector) const override
+	virtual void GetDynamicMeshElements(
+		const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap,
+		FMeshElementCollector& Collector) const override
 	{
 		QUICK_SCOPE_CYCLE_COUNTER(STAT_AGX_ConstraintIconGraphics_GetDynamicMeshElements);
 
@@ -404,13 +410,15 @@ private:
 						Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
 
 #if UE_VERSION_OLDER_THAN(4, 23, 0)
-					DynamicPrimitiveUniformBuffer.Set(EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(),
-						GetLocalBounds(), true, false, UseEditorDepthTest());
+					DynamicPrimitiveUniformBuffer.Set(
+						EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(), GetLocalBounds(), true, false,
+						UseEditorDepthTest());
 #else
 					/// \todo Replace Unknown with proper name or use some getter function to get a proper value.
 					bool Unknown = false;
-					DynamicPrimitiveUniformBuffer.Set(EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(),
-						GetLocalBounds(), true, false, DrawsVelocity(), Unknown);
+					DynamicPrimitiveUniformBuffer.Set(
+						EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(), GetLocalBounds(), true, false,
+						DrawsVelocity(), Unknown);
 #endif
 					BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
 
@@ -423,8 +431,9 @@ private:
 	/// Will create a matrix that scales an object of original size 'OriginalWorldSize' to occupy the desired
 	/// 'NormalizedScreenSpaceSize' fraction of the screen horizontally, but limiting it within MinWorldSize and
 	/// MaxWorldSize. Result is not 100% correct, but it's consistent when moving around, so just tweak input!
-	static FMatrix GetScreenSpaceScale(float NormalizedScreenSpaceSize, float MinWorldSize, float MaxWorldSize,
-		float OriginalWorldSize, const FVector& WorldLocation, const FSceneView* View)
+	static FMatrix GetScreenSpaceScale(
+		float NormalizedScreenSpaceSize, float MinWorldSize, float MaxWorldSize, float OriginalWorldSize,
+		const FVector& WorldLocation, const FSceneView* View)
 	{
 		float Distance = (WorldLocation - View->ViewLocation).Size();
 		float NormalizedScreenToWorld = 2.0f * Distance * FMath::Atan(FMath::DegreesToRadians(View->FOV) / 2.0f);
@@ -639,8 +648,9 @@ void UAGX_ConstraintIconGraphicsComponent::SendRenderDynamicData_Concurrent()
 
 		FAGX_ConstraintIconGraphicsProxy* CastProxy = static_cast<FAGX_ConstraintIconGraphicsProxy*>(SceneProxy);
 		ENQUEUE_RENDER_COMMAND(FSendConstraintIconGraphicsDynamicData)
-		([CastProxy, Frame1, Frame2](
-			 FRHICommandListImmediate& RHICmdList) { CastProxy->SetAttachmentFrameTransforms(Frame1, Frame2); });
+		([CastProxy, Frame1, Frame2](FRHICommandListImmediate& RHICmdList) {
+			CastProxy->SetAttachmentFrameTransforms(Frame1, Frame2);
+		});
 	}
 }
 

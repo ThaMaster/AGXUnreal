@@ -98,7 +98,8 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(AAGX_Constraint*
 	if (ConstraintFrame)
 		ConstraintFrame->AddConstraintUsage(Owner);
 
-	UE_LOG(LogAGX, Log, TEXT("OnFrameDefiningActorChanged: FrameDefiningActor = %s, ConstraintFrame = %s"),
+	UE_LOG(
+		LogAGX, Log, TEXT("OnFrameDefiningActorChanged: FrameDefiningActor = %s, ConstraintFrame = %s"),
 		*GetNameSafe(FrameDefiningActor), *GetNameSafe(ConstraintFrame));
 }
 

@@ -74,9 +74,9 @@ struct FAGX_ConstraintDofGraphicsSection
 	FMatrix LocalTransform = FMatrix::Identity;
 	ESceneDepthPriorityGroup DepthPriority;
 
-	FAGX_ConstraintDofGraphicsSection(const TSharedPtr<FAGX_ConstraintDofGraphicsGeometry>& InGeometry,
-		UMaterialInterface* InMaterial, bool bInShowSelectionOutline, FMatrix InLocalTransform,
-		ESceneDepthPriorityGroup InDepthPriority)
+	FAGX_ConstraintDofGraphicsSection(
+		const TSharedPtr<FAGX_ConstraintDofGraphicsGeometry>& InGeometry, UMaterialInterface* InMaterial,
+		bool bInShowSelectionOutline, FMatrix InLocalTransform, ESceneDepthPriorityGroup InDepthPriority)
 		: Geometry(InGeometry)
 		, BeginIndex(0)
 		, EndIndex(InGeometry ? static_cast<uint32>(InGeometry->IndexBuffer.Indices.Num()) : 0)
@@ -239,8 +239,8 @@ private:
 		const float TranslationOffset = 7.0f;
 
 		// X-Axis
-		Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(Geometry,
-			GetTranslationMaterial(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_1),
+		Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(
+			Geometry, GetTranslationMaterial(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_1),
 			false, // GetShowSelectionOutline(EDofFlag::DOF_FLAG_TRANSLATIONAL_1),
 			GetScaleMatrix(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_1) *
 				FRotationMatrix(FRotator(-90.0f, 0.0f, 0.0f)) *
@@ -248,8 +248,8 @@ private:
 			GetDepthPriority()));
 
 		// Y-Axis
-		Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(Geometry,
-			GetTranslationMaterial(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_2),
+		Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(
+			Geometry, GetTranslationMaterial(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_2),
 			false, // GetShowSelectionOutline(EDofFlag::DOF_FLAG_TRANSLATIONAL_2),
 			GetScaleMatrix(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_2) *
 				FRotationMatrix(FRotator(0.0f, 0.0f, 90.0f)) *
@@ -257,8 +257,8 @@ private:
 			GetDepthPriority()));
 
 		// Z-Axis
-		Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(Geometry,
-			GetTranslationMaterial(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_3),
+		Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(
+			Geometry, GetTranslationMaterial(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_3),
 			false, // GetShowSelectionOutline(EDofFlag::DOF_FLAG_TRANSLATIONAL_3),
 			GetScaleMatrix(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_3) *
 				FRotationMatrix(FRotator(0.0f, 0.0f, 0.0f)) *
@@ -337,8 +337,8 @@ private:
 		// X-Axis
 		if (!IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1) || ShowLockedRotationalDofs)
 		{
-			Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(Geometry,
-				GetRotationMaterial(Component, EDofFlag::DOF_FLAG_ROTATIONAL_1),
+			Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(
+				Geometry, GetRotationMaterial(Component, EDofFlag::DOF_FLAG_ROTATIONAL_1),
 				GetShowSelectionOutline(EDofFlag::DOF_FLAG_ROTATIONAL_1),
 				FRotationMatrix(FRotator(-140.0f, -90.0f, 0.0f)) *
 					FTranslationMatrix(FVector(TranslationOffset, 0.0f, 0.0f)),
@@ -348,8 +348,8 @@ private:
 		// Y-Axis
 		if (!IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_2) || ShowLockedRotationalDofs)
 		{
-			Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(Geometry,
-				GetRotationMaterial(Component, EDofFlag::DOF_FLAG_ROTATIONAL_2),
+			Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(
+				Geometry, GetRotationMaterial(Component, EDofFlag::DOF_FLAG_ROTATIONAL_2),
 				GetShowSelectionOutline(EDofFlag::DOF_FLAG_ROTATIONAL_2),
 				FRotationMatrix(FRotator(-140.0f, 0.0f, 0.0f)) *
 					FTranslationMatrix(FVector(0.0f, TranslationOffset, 0.0f)),
@@ -359,8 +359,8 @@ private:
 		// Z-Axis
 		if (!IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_3) || ShowLockedRotationalDofs)
 		{
-			Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(Geometry,
-				GetRotationMaterial(Component, EDofFlag::DOF_FLAG_ROTATIONAL_3),
+			Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(
+				Geometry, GetRotationMaterial(Component, EDofFlag::DOF_FLAG_ROTATIONAL_3),
 				GetShowSelectionOutline(EDofFlag::DOF_FLAG_ROTATIONAL_3),
 				FRotationMatrix(FRotator(0.0f, -60.0f, -90.0f)) *
 					FTranslationMatrix(FVector(0.0f, 0.0f, TranslationOffset)),
@@ -385,8 +385,9 @@ private:
 		const FLinearColor Transparent(1, 1, 1, 0);
 		const FLinearColor Opaque(1, 1, 1, 1);
 
-		AGX_MeshUtilities::BendableArrowConstructionData ConstructionData(RectangleWidth, RectangleLength,
-			TriangleWidth, TriangleLength, BendAngle, NumSegments, Transparent, Opaque);
+		AGX_MeshUtilities::BendableArrowConstructionData ConstructionData(
+			RectangleWidth, RectangleLength, TriangleWidth, TriangleLength, BendAngle, NumSegments, Transparent,
+			Opaque);
 
 		// Allocate buffer sizes.
 
@@ -411,8 +412,9 @@ private:
 		return Geometry;
 	}
 
-	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily,
-		uint32 VisibilityMap, FMeshElementCollector& Collector) const override
+	virtual void GetDynamicMeshElements(
+		const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap,
+		FMeshElementCollector& Collector) const override
 	{
 		QUICK_SCOPE_CYCLE_COUNTER(STAT_AGX_ConstraintDofGraphics_GetDynamicMeshElements);
 
@@ -464,13 +466,15 @@ private:
 					FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer =
 						Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
 #if UE_VERSION_OLDER_THAN(4, 23, 0)
-					DynamicPrimitiveUniformBuffer.Set(EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(),
-						GetLocalBounds(), true, false, UseEditorDepthTest());
+					DynamicPrimitiveUniformBuffer.Set(
+						EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(), GetLocalBounds(), true, false,
+						UseEditorDepthTest());
 #else
 					/// \todo Replace Unknown with proper name or use some getter function to get a proper value.
 					bool Unknown = false;
-					DynamicPrimitiveUniformBuffer.Set(EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(),
-						GetLocalBounds(), true, false, DrawsVelocity(), Unknown);
+					DynamicPrimitiveUniformBuffer.Set(
+						EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(), GetLocalBounds(), true, false,
+						DrawsVelocity(), Unknown);
 #endif
 					BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
 
@@ -483,8 +487,9 @@ private:
 	/// Will create a matrix that scales an object of original size 'OriginalWorldSize' to occupy the desired
 	/// 'NormalizedScreenSpaceSize' fraction of the screen horizontally, but limiting it within MinWorldSize and
 	/// MaxWorldSize. Result is not 100% correct, but it's consistent when moving around, so just tweak input!
-	static FMatrix GetScreenSpaceScale(float NormalizedScreenSpaceSize, float MinWorldSize, float MaxWorldSize,
-		float OriginalWorldSize, const FVector& WorldLocation, const FSceneView* View)
+	static FMatrix GetScreenSpaceScale(
+		float NormalizedScreenSpaceSize, float MinWorldSize, float MaxWorldSize, float OriginalWorldSize,
+		const FVector& WorldLocation, const FSceneView* View)
 	{
 		float Distance = (WorldLocation - View->ViewLocation).Size();
 		float NormalizedScreenToWorld = 2.0f * Distance * FMath::Atan(FMath::DegreesToRadians(View->FOV) / 2.0f);
@@ -708,8 +713,9 @@ void UAGX_ConstraintDofGraphicsComponent::SendRenderDynamicData_Concurrent()
 
 		FAGX_ConstraintDofGraphicsProxy* CastProxy = static_cast<FAGX_ConstraintDofGraphicsProxy*>(SceneProxy);
 		ENQUEUE_RENDER_COMMAND(FSendConstraintDofGraphicsDynamicData)
-		([CastProxy, Frame1, Frame2](
-			 FRHICommandListImmediate& RHICmdList) { CastProxy->SetAttachmentFrameTransforms(Frame1, Frame2); });
+		([CastProxy, Frame1, Frame2](FRHICommandListImmediate& RHICmdList) {
+			CastProxy->SetAttachmentFrameTransforms(Frame1, Frame2);
+		});
 	}
 }
 

@@ -8,7 +8,8 @@
 
 #include "AGX_RigidBodyComponent.generated.h"
 
-UCLASS(ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
+UCLASS(
+	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
 class AGXUNREAL_API UAGX_RigidBodyComponent : public USceneComponent
 {

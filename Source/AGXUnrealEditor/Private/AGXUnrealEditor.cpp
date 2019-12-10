@@ -92,8 +92,8 @@ void FAGXUnrealEditorModule::RegisterProjectSettings()
 {
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
-		SettingsModule->RegisterSettings("Project", "Plugins", "UAGX_Simulation",
-			LOCTEXT("UAGX_Simulation_ProjectSettingsName", "AGX Dynamics"),
+		SettingsModule->RegisterSettings(
+			"Project", "Plugins", "UAGX_Simulation", LOCTEXT("UAGX_Simulation_ProjectSettingsName", "AGX Dynamics"),
 			LOCTEXT(
 				"UAGX_Simulation_ProjectSettingsDesc", "Configure the simulation settings of the AGX Unreal plugin."),
 			GetMutableDefault<UAGX_Simulation>());
@@ -153,17 +153,21 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 {
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
-	PropertyModule.RegisterCustomPropertyTypeLayout(FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName(),
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
 
-	PropertyModule.RegisterCustomClassLayout(AAGX_Constraint::StaticClass()->GetFName(),
+	PropertyModule.RegisterCustomClassLayout(
+		AAGX_Constraint::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_ConstraintCustomization::MakeInstance));
 
-	PropertyModule.RegisterCustomClassLayout(UAGX_AgxEdModeConstraints::StaticClass()->GetFName(),
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_AgxEdModeConstraints::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_AgxEdModeConstraintsCustomization::MakeInstance));
 
-	PropertyModule.RegisterCustomClassLayout(UAGX_AgxEdModeFile::StaticClass()->GetFName(),
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_AgxEdModeFile::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_AgxEdModeFileCustomization::MakeInstance));
 
 	PropertyModule.NotifyCustomizationModuleChanged();
@@ -188,7 +192,8 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 {
 	RegisterComponentVisualizer(
 		UAGX_ConstraintComponent::StaticClass()->GetFName(), MakeShareable(new FAGX_ConstraintComponentVisualizer));
-	RegisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName(),
+	RegisterComponentVisualizer(
+		UAGX_ConstraintFrameComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_ConstraintFrameComponentVisualizer));
 }
 
@@ -222,8 +227,8 @@ void FAGXUnrealEditorModule::UnregisterComponentVisualizer(const FName& Componen
 
 void FAGXUnrealEditorModule::RegisterModes()
 {
-	FEditorModeRegistry::Get().RegisterMode<FAGX_AgxEdMode>(FAGX_AgxEdMode::EM_AGX_AgxEdModeId,
-		LOCTEXT("AGX_AgxEdModeDisplayName", "AGX Dynamics Tools"),
+	FEditorModeRegistry::Get().RegisterMode<FAGX_AgxEdMode>(
+		FAGX_AgxEdMode::EM_AGX_AgxEdModeId, LOCTEXT("AGX_AgxEdModeDisplayName", "AGX Dynamics Tools"),
 		FSlateIcon(FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIcon, FAGX_EditorStyle::AgxIconSmall),
 		/*bVisisble*/ true);
 }

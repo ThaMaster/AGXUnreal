@@ -1,10 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Materials/AGX_ContactMaterialBase.h"
 
 #include "Classes/Engine/World.h"
 
 #include "AGX_LogCategory.h"
+#include "AGX_ContactMaterialInstance.h"
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialBase::GetOrCreateInstance(
 	UWorld* PlayingWorld, UAGX_ContactMaterialBase*& Property)
@@ -18,7 +17,8 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialBase::GetOrCreateInstance(
 
 	if (Instance != Property)
 	{
-		UE_LOG(LogAGX, Log,
+		UE_LOG(
+			LogAGX, Log,
 			TEXT("UAGX_ContactMaterialBase::GetOrCreateInstance is swapping a property (to \"%s\" from \"%s\")."),
 			*GetNameSafe(Instance), *GetNameSafe(Property));
 

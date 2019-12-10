@@ -118,7 +118,8 @@ namespace
 		}
 		if (!Iterator.isValid())
 		{
-			UE_LOG(LogAGX, Error,
+			UE_LOG(
+				LogAGX, Error,
 				TEXT("Found invalid FShapeBarrier. The native Geometry does not contain the native Shape."));
 		}
 		return Iterator;

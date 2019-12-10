@@ -34,14 +34,15 @@ AAGX_Constraint* UAGX_AgxEdModeConstraints::CreateConstraint() const
 {
 	if (!RigidBodyActor1.IsValid())
 	{
-		FAGX_EditorUtilities::ShowDialogBox(LOCTEXT("CreateConstraintFailedNoActorOne",
+		FAGX_EditorUtilities::ShowDialogBox(LOCTEXT(
+			"CreateConstraintFailedNoActorOne",
 			"Cannot create constraint. At least the first Rigid Body Actor must be chosen!"));
 		return nullptr;
 	}
 
-	AAGX_Constraint* Constraint =
-		FAGX_EditorUtilities::CreateConstraint(ConstraintType, RigidBodyActor1.Get(), RigidBodyActor2.Get(),
-			/*Select*/ false, /*ShowNotification*/ true, /*InPlayingWorldIfAvailable*/ true);
+	AAGX_Constraint* Constraint = FAGX_EditorUtilities::CreateConstraint(
+		ConstraintType, RigidBodyActor1.Get(), RigidBodyActor2.Get(),
+		/*Select*/ false, /*ShowNotification*/ true, /*InPlayingWorldIfAvailable*/ true);
 
 	if (Constraint)
 	{

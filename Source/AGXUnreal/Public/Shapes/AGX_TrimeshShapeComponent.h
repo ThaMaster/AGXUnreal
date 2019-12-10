@@ -27,7 +27,8 @@ enum EAGX_TrimeshSourceLocation
  * The Static Mesh source can be either the parent or child Static Mesh Component,
  * or a specific Static Mesh Asset.
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent),
+UCLASS(
+	ClassGroup = "AGX", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent),
 	HideCategories = (HLOD, Lighting, LOD, Materials, MaterialParameters, Rendering))
 class AGXUNREAL_API UAGX_TrimeshShapeComponent : public UAGX_ShapeComponent
 {

@@ -52,7 +52,8 @@ void FRangeControllerBarrier::ToNative(agx::RangeController* Native) const
 	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
 
 	// Special controller variables.
-	Native->setRange(agx::RangeReal(bRotational ? RangeMin : ConvertDistanceToAgx(RangeMin),
+	Native->setRange(agx::RangeReal(
+		bRotational ? RangeMin : ConvertDistanceToAgx(RangeMin),
 		bRotational ? RangeMax : ConvertDistanceToAgx(RangeMax)));
 }
 

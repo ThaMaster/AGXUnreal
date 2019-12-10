@@ -34,6 +34,7 @@ void AAGX_BallConstraint::CreateNativeImpl()
 	FQuat FrameRotation1 = BodyAttachment1.GetLocalFrameRotation();
 	FQuat FrameRotation2 = BodyAttachment2.GetLocalFrameRotation();
 
-	NativeBarrier->AllocateNative(RigidBody1, &FrameLocation1, &FrameRotation1, RigidBody2, &FrameLocation2,
+	NativeBarrier->AllocateNative(
+		RigidBody1, &FrameLocation1, &FrameRotation1, RigidBody2, &FrameLocation2,
 		&FrameRotation2); // ok if second is nullptr
 }
