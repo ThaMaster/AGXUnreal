@@ -7,6 +7,7 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Containers/Array.h"
 
 /// \todo Would like to not include this header, and only forward declare
 /// UNiagaraSystem instead. Currently gives
