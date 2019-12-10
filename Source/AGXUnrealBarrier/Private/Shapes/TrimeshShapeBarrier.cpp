@@ -214,8 +214,7 @@ FString FTrimeshShapeBarrier::GetSourceName() const
 	FString SourceName;
 	if (!HasNative())
 	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("Cannot fetch triangle soure name from Trimesh barrier without a native Trimesh"));
+		UE_LOG(LogAGX, Warning, TEXT("Cannot fetch triangle soure name from Trimesh barrier without a native Trimesh"));
 		return SourceName;
 	}
 

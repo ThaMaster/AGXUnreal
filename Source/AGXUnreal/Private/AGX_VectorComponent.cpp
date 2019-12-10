@@ -68,8 +68,9 @@ namespace
 			VertexFactory.ReleaseResource();
 		}
 
-		virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily,
-			uint32 VisibilityMap, FMeshElementCollector& Collector) const override
+		virtual void GetDynamicMeshElements(
+			const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap,
+			FMeshElementCollector& Collector) const override
 		{
 			FMatrix EffectiveLocalToWorld = GetLocalToWorld();
 
@@ -98,7 +99,8 @@ namespace
 
 					FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer =
 						Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
-					DynamicPrimitiveUniformBuffer.Set(FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
+					DynamicPrimitiveUniformBuffer.Set(
+						FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(), GetLocalBounds(), true, false,
 						UseEditorDepthTest());
 					BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
