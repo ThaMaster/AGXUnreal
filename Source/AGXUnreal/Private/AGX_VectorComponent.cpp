@@ -4,9 +4,10 @@
 #include "AGX_MeshUtilities.h"
 
 // Unreal Engine includes.
-#include "EngineGlobals.h"
 #include "DynamicMeshBuilder.h"
+#include "Engine/Engine.h"
 #include "LocalVertexFactory.h"
+#include "Materials/Material.h"
 #include "PrimitiveSceneProxy.h"
 #include "StaticMeshResources.h"
 
