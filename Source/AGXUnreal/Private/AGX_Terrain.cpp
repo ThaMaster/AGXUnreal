@@ -66,3 +66,6 @@ void AAGX_Terrain::Tick(float DeltaTime)
 
 	/// \todo Add vertex offset and particle update here.
 }
+void AAGX_Terrain::CreateNativeShovels()
+{
+}
