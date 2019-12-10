@@ -45,8 +45,6 @@ namespace
 			const float ShaftLength = (TotalLength - HeadLength) * 1.1f; // 10% overlap between shaft and head
 			const FVector ShaftCenter = FVector(0.5f * ShaftLength, 0, 0);
 
-// Still unclear how to create the scene proxy mesh.
-#if 0
 			TArray<FDynamicMeshVertex> OutVerts;
 			AGX_MeshUtilities::MakeCone(
 				HeadAngle, HeadAngle, -HeadLength, TotalLength, 32, OutVerts, IndexBuffer.Indices);
@@ -54,7 +52,6 @@ namespace
 				ShaftRadius, 0.5f * ShaftLength, 16, OutVerts, IndexBuffer.Indices);
 
 			VertexBuffers.InitFromDynamicVertex(&VertexFactory, OutVerts);
-#endif
 
 			// Enqueue initialization of render resource
 			BeginInitResource(&IndexBuffer);
