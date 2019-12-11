@@ -111,3 +111,14 @@ struct FTerrainRef
 	{
 	}
 };
+
+struct FShovelRef
+{
+	agxTerrain::ShovelRef Native;
+
+	FShovelRef() = default;
+	FShovelRef(agxTerrain::Shovel* InNative)
+		: Native(InNative)
+	{
+	}
+};

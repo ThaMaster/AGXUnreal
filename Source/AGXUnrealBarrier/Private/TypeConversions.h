@@ -3,19 +3,24 @@
 /// \todo This may become a header file with lots of includes, which will make
 ///       it a compile time hog. Consider splitting it  up.
 
+// AGXUnrealBarrierIncludes.
 #include "AGX_MotionControl.h"
-
-#include <Containers/UnrealString.h>
-#include <Math/Vector.h>
-#include <Math/Quat.h>
-#include "BeginAGXIncludes.h"
-#include <agx/Vec3.h>
-#include <agx/Quat.h>
-#include <agx/RigidBody.h>
-#include "EndAGXIncludes.h"
-
-#include "RigidBodyBarrier.h"
 #include "AGXRefs.h"
+#include "RigidBodyBarrier.h"
+
+// Unreal Engine includes.
+#include "Containers/UnrealString.h"
+#include "Math/Vector.h"
+#include "Math/Quat.h"
+#include "Math/TwoVectors.h"
+
+// AGX Dynamics includes
+#include "BeginAGXIncludes.h"
+#include <agx/Line.h>
+#include <agx/RigidBody.h>
+#include <agx/Quat.h>
+#include <agx/Vec3.h>
+#include "EndAGXIncludes.h"
 
 /// \note These functions assume that agx::Real and float are different types.
 /// They also assume that agx::Real has higher (or equal) precision than float.
@@ -91,6 +96,21 @@ inline agx::Vec3 ConvertVector(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3(ConvertDistance(V.X), -ConvertDistance(V.Y), ConvertDistance(V.Z));
+}
+
+inline agx::Line Convert(const FTwoVectors& Vs)
+{
+	return {Convert(Vs.v1), Convert(Vs.v2)};
+}
+
+inline agx::Line ConvertDistance(const FTwoVectors& Vs)
+{
+	return {ConvertDistance(Vs.v1), Convert(Vs.v2)};
+}
+
+inline agx::Line ConvertVector(const FTwoVectors& Vs)
+{
+	return {ConvertVector(Vs.v1), Convert(Vs.v2)};
 }
 
 inline FQuat Convert(const agx::Quat& V)
