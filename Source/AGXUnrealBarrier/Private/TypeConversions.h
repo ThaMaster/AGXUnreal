@@ -242,7 +242,10 @@ inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type Log
 		case ELogVerbosity::Fatal:
 			return agx::Notify::NOTIFY_ERROR;
 		default:
-			UE_LOG(LogAGX, Error, TEXT("AGXNotify::StartAgxNotify, unknown verbosity level: %d"), LogVerbosity);
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("ConvertLogLevelVerbosity: unknown verbosity level: %d. Verbosity level 'NOTIFY_INFO' will be used instead."),
+				LogVerbosity);
 
 			// Use NOTIFY_INFO as default, if unknown log verbosity is given
 			return agx::Notify::NOTIFY_INFO;

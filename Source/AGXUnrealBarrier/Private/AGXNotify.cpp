@@ -38,9 +38,12 @@ void FAGXNotify::message(const agx::String& msg, int notifyLevel)
 			UE_LOG(LogAGX, Error, TEXT("%s"), *Convert(msg));
 			break;
 		default:
-			UE_LOG(LogAGX, Error, TEXT("AGXNotify::message, unknown notify level: %d"), notifyLevel);
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("AGXNotify::message: unknown notify level: %d. Using verbosity level 'Log' for the next log entry:"),
+				notifyLevel);
 
 			// Use verbosity level 'Log' by default if unknown notifyLevel is given
-			UE_LOG(LogAGX, Log, TEXT("AGXNotify::message, unknown notify level."));
+			UE_LOG(LogAGX, Log, TEXT("%s"), *Convert(msg));
 	}
 }
