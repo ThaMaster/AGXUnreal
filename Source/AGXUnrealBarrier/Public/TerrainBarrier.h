@@ -7,6 +7,7 @@
 struct FTerrainRef;
 
 class FHeightFieldShapeBarrier;
+class FShovelBarrier;
 
 /**
  *
@@ -15,7 +16,7 @@ class AGXUNREALBARRIER_API FTerrainBarrier
 {
 public:
 	FTerrainBarrier();
-	FTerrainBarrier(std::unique_ptr<FTerrainRef> Native);
+	FTerrainBarrier(std::unique_ptr<FTerrainRef> InNativeRef);
 	FTerrainBarrier(FTerrainBarrier&& Other);
 	~FTerrainBarrier();
 
@@ -24,6 +25,8 @@ public:
 	FTerrainRef* GetNative();
 	const FTerrainRef* GetNative() const;
 	void ReleaseNative();
+
+	void AddShovel(FShovelBarrier& Shovel);
 
 private:
 	FTerrainBarrier(const FTerrainBarrier&) = delete;

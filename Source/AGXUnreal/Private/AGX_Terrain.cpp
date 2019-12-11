@@ -12,9 +12,10 @@
 // AGXUnrealBarrier includes.
 #include "TerrainBarrier.h"
 #include "HeightFieldShapeBarrier.h"
+#include "Terrain/ShovelBarrier.h"
 
 // Unreal Engine includes.
-//#include "NiagaraSystemInstance.h"
+//#include "NiagaraSystemInstance.h" /// \todo This will be needed once we do particles.
 #include "Landscape.h"
 #include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
@@ -125,5 +126,15 @@ void AAGX_Terrain::CreateNativeShovels()
 		{
 			continue;
 		}
+
+		/// \todo May need some transformation shere.
+		FRigidBodyBarrier* BodyBarrier = Body->GetOrCreateNative();
+		FTwoVectors TopEdgeLine {TopEdge->GetVectorOrigin(), TopEdge->GetVectorTarget()};
+		FTwoVectors CuttingEdgeLine {CuttingEdge->GetVectorOrigin(), TopEdge->GetVectorTarget()};
+		FVector CuttingDirectionVector = CuttingDirection->GetVectorDirectionNormalized();
+
+		FShovelBarrier ShovelBarrier;
+		ShovelBarrier.AllocateNative(*BodyBarrier, TopEdgeLine, CuttingEdgeLine, CuttingDirectionVector);
+		NativeBarrier.AddShovel(ShovelBarrier);
 	}
 }

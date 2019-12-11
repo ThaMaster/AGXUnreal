@@ -1,11 +1,12 @@
+#include "TerrainBarrier.h"
 
 // AGXUnrealBarrier includes.
-#include "TerrainBarrier.h"
-#include "HeightFieldShapeBarrier.h"
+#include "AGX_LogCategory.h"
 #include "AGXRefs.h"
+#include "HeightFieldShapeBarrier.h"
 #include "TypeConversions.h"
 #include "Shapes/ShapeBarrierImpl.h"
-#include "AGX_LogCategory.h"
+#include "Terrain/ShovelBarrier.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -30,7 +31,7 @@ FTerrainBarrier::FTerrainBarrier(FTerrainBarrier&& Other)
 FTerrainBarrier::~FTerrainBarrier()
 {
 	// Must provide a destructor implementation in the .cpp file because the
-	// std::uniue_ptr NativeRef's destructor must be able to see the definition,
+	// std::unique_ptr NativeRef's destructor must be able to see the definition,
 	// not just the forward declaration, of FTerrainRef.
 }
 
@@ -62,5 +63,13 @@ const FTerrainRef* FTerrainBarrier::GetNative() const
 
 void FTerrainBarrier::ReleaseNative()
 {
+	check(HasNative());
 	NativeRef->Native = nullptr;
+}
+
+void FTerrainBarrier::AddShovel(FShovelBarrier& Shovel)
+{
+	check(HasNative());
+	check(Shovel.HasNative());
+	NativeRef->Native->add(Shovel.GetNative()->Native);
 }
