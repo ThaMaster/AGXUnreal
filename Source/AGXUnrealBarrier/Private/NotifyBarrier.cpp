@@ -48,10 +48,10 @@ const FNotifyRef* FNotifyBarrier::GetNative() const
 
 void FNotifyBarrier::StartAgxNotify(ELogVerbosity::Type LogVerbosity)
 {
-	// Note: not allowed to call StartAgxNotify twice in a row
+	// Note: not allowed to call StartAgxNotify twice in a row.
 	check(!HasNative());
 
-	// Allocate native
+	// Allocate native.
 	NativeRef->Native = agx::ref_ptr<FAGXNotify>(new FAGXNotify());
 	UE_LOG(LogAGX, Log, TEXT("Native AGXNotify allocated."));
 
@@ -63,6 +63,6 @@ void FNotifyBarrier::StopAgxNotify()
 	check(HasNative());
 	NativeRef->Native->StopAgxNotify();
 
-	// Release native
+	// Release native.
 	NativeRef->Native = nullptr;
 }
