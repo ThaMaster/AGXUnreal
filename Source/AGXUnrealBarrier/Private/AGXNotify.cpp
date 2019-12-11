@@ -18,6 +18,11 @@ void FAGXNotify::message(const agx::String& msg, int notifyLevel)
 	// Convert log level verbosity from AGX to Unreal.
 	// A convert function is not possible to use due to the
 	// implementation of the UE_LOG macro.
+	//
+	// Note: Avoid setting Unreal verbosity level 'Fatal'
+	// since this will shut down the editor. AGX's verbosity
+	// level 'NOTIFY_ERROR' throws an exception internally
+	// and is therefore recoverable.
 	switch (notifyLevel)
 	{
 		case agx::Notify::NOTIFY_DEBUG:
