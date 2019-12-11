@@ -26,7 +26,7 @@ public:
 	const FTerrainRef* GetNative() const;
 	void ReleaseNative();
 
-	void AddShovel(FShovelBarrier& Shovel);
+	bool AddShovel(FShovelBarrier& Shovel);
 
 private:
 	FTerrainBarrier(const FTerrainBarrier&) = delete;

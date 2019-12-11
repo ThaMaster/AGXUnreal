@@ -67,9 +67,9 @@ void FTerrainBarrier::ReleaseNative()
 	NativeRef->Native = nullptr;
 }
 
-void FTerrainBarrier::AddShovel(FShovelBarrier& Shovel)
+bool FTerrainBarrier::AddShovel(FShovelBarrier& Shovel)
 {
 	check(HasNative());
 	check(Shovel.HasNative());
-	NativeRef->Native->add(Shovel.GetNative()->Native);
+	return NativeRef->Native->add(Shovel.GetNative()->Native);
 }
