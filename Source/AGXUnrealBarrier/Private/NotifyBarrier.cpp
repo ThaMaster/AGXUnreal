@@ -1,7 +1,7 @@
 #include "NotifyBarrier.h"
 
 #include "BeginAGXIncludes.h"
-#include <agx/referenced.h>
+#include <agx/Referenced.h>
 #include "EndAGXIncludes.h"
 
 #include "AGX_LogCategory.h"
