@@ -120,6 +120,10 @@ struct FShovelRef
 
 	FShovelRef() = default;
 	FShovelRef(agxTerrain::Shovel* InNative)
+		: Native(InNative)
+	{
+	}
+}
 
 struct FNotifyRef
 {
