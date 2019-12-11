@@ -124,17 +124,32 @@ void AAGX_Terrain::CreateNativeShovels()
 
 		if (Body == nullptr || TopEdge == nullptr || CuttingEdge == nullptr || CuttingDirection == nullptr)
 		{
+			// GetShovelComponent is responsible for printing and error message,
+			// if needed.
 			continue;
 		}
 
-		/// \todo May need some transformation shere.
-		FRigidBodyBarrier* BodyBarrier = Body->GetOrCreateNative();
-		FTwoVectors TopEdgeLine {TopEdge->GetVectorOrigin(), TopEdge->GetVectorTarget()};
-		FTwoVectors CuttingEdgeLine {CuttingEdge->GetVectorOrigin(), TopEdge->GetVectorTarget()};
-		FVector CuttingDirectionVector = CuttingDirection->GetVectorDirectionNormalized();
+		FTransform WorldToBody = Body->GetComponentTransform().Inverse();
+
+		auto ArrowToLine = [&WorldToBody](UAGX_VectorComponent* Arrow) -> FTwoVectors {
+			return {WorldToBody.TransformPosition(Arrow->GetVectorOrigin()),
+					WorldToBody.TransformPosition(Arrow->GetVectorTarget())};
+		};
+
 
 		FShovelBarrier ShovelBarrier;
+		FRigidBodyBarrier* BodyBarrier = Body->GetOrCreateNative();
+		FTwoVectors TopEdgeLine = ArrowToLine(TopEdge);
+		FTwoVectors CuttingEdgeLine = ArrowToLine(CuttingEdge);
+		FVector CuttingDirectionVector = WorldToBody.TransformVector(CuttingDirection->GetVectorDirectionNormalized());
 		ShovelBarrier.AllocateNative(*BodyBarrier, TopEdgeLine, CuttingEdgeLine, CuttingDirectionVector);
-		NativeBarrier.AddShovel(ShovelBarrier);
+		bool Added = NativeBarrier.AddShovel(ShovelBarrier);
+		if (!Added)
+		{
+			UE_LOG(LogAGX, Error, TEXT("Terrain '%s' rejected shovel."), *GetName(), *Actor->GetName());
+			continue;
+		}
+
+		UE_LOG(LogAGX, Log, TEXT("Created shovel '%s' for terrain '%s'."), *Actor->GetName(), *GetName());
 	}
 }
