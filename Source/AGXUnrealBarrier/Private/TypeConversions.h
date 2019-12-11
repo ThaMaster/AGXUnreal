@@ -6,10 +6,12 @@
 // AGXUnrealBarrierIncludes.
 #include "AGX_MotionControl.h"
 #include "AGXRefs.h"
+#include "AGX_LogCategory.h"
 #include "RigidBodyBarrier.h"
 
 // Unreal Engine includes.
 #include "Containers/UnrealString.h"
+#include <LogVerbosity.h>
 #include "Math/Vector.h"
 #include "Math/Quat.h"
 #include "Math/TwoVectors.h"
@@ -17,11 +19,11 @@
 // AGX Dynamics includes
 #include "BeginAGXIncludes.h"
 #include <agx/Line.h>
+#include <agx/Notify.h>
 #include <agx/RigidBody.h>
 #include <agx/Quat.h>
 #include <agx/Vec3.h>
 #include "EndAGXIncludes.h"
-
 /// \note These functions assume that agx::Real and float are different types.
 /// They also assume that agx::Real has higher (or equal) precision than float.
 
@@ -237,5 +239,34 @@ inline void ConvertConstraintBodiesAndFrames(
 		{
 			NativeFrame2 = nullptr;
 		}
+	}
+}
+
+inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type LogVerbosity)
+{
+	switch (LogVerbosity)
+	{
+		case ELogVerbosity::VeryVerbose:
+			return agx::Notify::NOTIFY_DEBUG;
+		case ELogVerbosity::Verbose:
+			return agx::Notify::NOTIFY_DEBUG;
+		case ELogVerbosity::Log:
+			return agx::Notify::NOTIFY_INFO;
+		case ELogVerbosity::Display:
+			return agx::Notify::NOTIFY_WARNING;
+		case ELogVerbosity::Warning:
+			return agx::Notify::NOTIFY_WARNING;
+		case ELogVerbosity::Error:
+			return agx::Notify::NOTIFY_ERROR;
+		case ELogVerbosity::Fatal:
+			return agx::Notify::NOTIFY_ERROR;
+		default:
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("ConvertLogLevelVerbosity: unknown verbosity level: %d. Verbosity level 'NOTIFY_INFO' will be used instead."),
+				LogVerbosity);
+
+			// Use NOTIFY_INFO as default, if unknown log verbosity is given
+			return agx::Notify::NOTIFY_INFO;
 	}
 }

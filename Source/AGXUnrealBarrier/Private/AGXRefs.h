@@ -11,6 +11,8 @@
 #include <agxTerrain/Terrain.h>
 #include "EndAGXIncludes.h"
 
+#include "AGXNotify.h"
+
 struct FSimulationRef
 {
 	agxSDK::SimulationRef Native;
@@ -118,6 +120,13 @@ struct FShovelRef
 
 	FShovelRef() = default;
 	FShovelRef(agxTerrain::Shovel* InNative)
+
+struct FNotifyRef
+{
+	agx::ref_ptr<FAGXNotify> Native;
+
+	FNotifyRef() = default;
+	FNotifyRef(FAGXNotify* InNative)
 		: Native(InNative)
 	{
 	}

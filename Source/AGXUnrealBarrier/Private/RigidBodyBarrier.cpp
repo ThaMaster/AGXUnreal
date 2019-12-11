@@ -25,7 +25,7 @@ FRigidBodyBarrier::FRigidBodyBarrier(FRigidBodyBarrier&& other)
 FRigidBodyBarrier::~FRigidBodyBarrier()
 {
 	// Must provide a destructor implementation in the .cpp file because the
-	// std::uniue_ptr NativeRef's destructor must be able to see the definition,
+	// std::unique_ptr NativeRef's destructor must be able to see the definition,
 	// not just the forward declaration, of FRigidBodyRef.
 }
 
