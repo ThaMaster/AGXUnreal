@@ -1,8 +1,13 @@
-// AGXUnreal includes.
 #include "AGX_Terrain.h"
+
+// AGXUnreal includes.
+#include "AGX_CuttingDirectionComponent.h"
+#include "AGX_CuttingEdgeComponent.h"
 #include "AGX_LogCategory.h"
-#include "AGX_Simulation.h"
 #include "AGX_HeightFieldUtilities.h"
+#include "AGX_RigidBodyComponent.h"
+#include "AGX_Simulation.h"
+#include "AGX_TopEdgeComponent.h"
 
 // AGXUnrealBarrier includes.
 #include "TerrainBarrier.h"
@@ -57,6 +62,8 @@ void AAGX_Terrain::BeginPlay()
 	NativeBarrier.AllocateNative(HeightField);
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	Simulation->AddTerrain(this);
+
+	CreateNativeShovels();
 }
 
 // Called every frame
@@ -66,6 +73,57 @@ void AAGX_Terrain::Tick(float DeltaTime)
 
 	/// \todo Add vertex offset and particle update here.
 }
+
+namespace
+{
+	template <typename T>
+	T* GetShovelComponent(AActor* Owner, const TCHAR* TerrainName)
+	{
+		TArray<T*> Components;
+		Owner->GetComponents<T>(Components);
+		if (Components.Num() != 1)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("A shovel in the AGX Terrain '%s' is invalid because the Actor '%s' doesn't have an '%s'"),
+				TerrainName, *Owner->GetName(), *T::StaticClass()->GetName());
+			return nullptr;
+		}
+		return Components[0];
+	}
+}
+
 void AAGX_Terrain::CreateNativeShovels()
 {
+	if (!NativeBarrier.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("CreateNativeShovels called on Terrain '%s', '%s' which doesn't have a native representation."),
+			*GetActorLabel(), *GetName());
+	}
+
+	for (FAGX_Shovel& Shovel : Shovels)
+	{
+		if (Shovel.RigidBodyActor == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("A shovel in the AGX Terrain '%s' is invalid because it does not reference any Actor."),
+				*GetName());
+			continue;
+		}
+
+		AActor* Actor = Shovel.RigidBodyActor;
+		UAGX_RigidBodyComponent* Body = GetShovelComponent<UAGX_RigidBodyComponent>(Actor, *GetName());
+		UAGX_TopEdgeComponent* TopEdge = GetShovelComponent<UAGX_TopEdgeComponent>(Actor, *GetName());
+		UAGX_CuttingEdgeComponent* CuttingEdge = GetShovelComponent<UAGX_CuttingEdgeComponent>(Actor, *GetName());
+		UAGX_CuttingDirectionComponent* CuttingDirection =
+			GetShovelComponent<UAGX_CuttingDirectionComponent>(Actor, *GetName());
+
+		if (Body == nullptr || TopEdge == nullptr || CuttingEdge == nullptr || CuttingDirection == nullptr)
+		{
+			continue;
+		}
+	}
 }
