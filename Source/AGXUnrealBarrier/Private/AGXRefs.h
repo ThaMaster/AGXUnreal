@@ -123,7 +123,7 @@ struct FShovelRef
 		: Native(InNative)
 	{
 	}
-}
+};
 
 struct FNotifyRef
 {
