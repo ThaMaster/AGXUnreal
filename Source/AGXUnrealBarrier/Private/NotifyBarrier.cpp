@@ -34,13 +34,6 @@ bool FNotifyBarrier::HasNative() const
 	return NativeRef->Native != nullptr;
 }
 
-void FNotifyBarrier::AllocateNative()
-{
-	check(!HasNative());
-	NativeRef->Native = agx::ref_ptr<FAGXNotify>(new FAGXNotify());
-	UE_LOG(LogAGX, Log, TEXT("Native AGXNotify allocated."));
-}
-
 FNotifyRef* FNotifyBarrier::GetNative()
 {
 	check(HasNative());
@@ -55,7 +48,13 @@ const FNotifyRef* FNotifyBarrier::GetNative() const
 
 void FNotifyBarrier::StartAgxNotify(ELogVerbosity::Type LogVerbosity)
 {
-	check(HasNative());
+	// Allocate native if not already allocated
+	if (!HasNative())
+	{
+		NativeRef->Native = agx::ref_ptr<FAGXNotify>(new FAGXNotify());
+		UE_LOG(LogAGX, Log, TEXT("Native AGXNotify allocated."));
+	}
+
 	NativeRef->Native->StartAgxNotify(LogVerbosity);
 }
 
@@ -63,4 +62,7 @@ void FNotifyBarrier::StopAgxNotify()
 {
 	check(HasNative());
 	NativeRef->Native->StopAgxNotify();
+
+	// Release native
+	NativeRef->Native = nullptr;
 }

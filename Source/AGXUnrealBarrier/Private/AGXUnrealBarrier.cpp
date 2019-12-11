@@ -14,7 +14,6 @@ void FAGXUnrealBarrierModule::StartupModule()
 	agx::init();
 
 	// Start AGX logging
-	NotifyBarrier.AllocateNative();
 	NotifyBarrier.StartAgxNotify(ELogVerbosity::Log);
 }
 
