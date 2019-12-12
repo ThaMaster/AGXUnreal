@@ -142,8 +142,7 @@ void AAGX_Terrain::CreateNativeShovels()
 
 		if (Body == nullptr || TopEdge == nullptr || CuttingEdge == nullptr || CuttingDirection == nullptr)
 		{
-			// GetShovelComponent is responsible for printing and error message,
-			// if needed.
+			// GetShovelComponent is responsible for printing the error message.
 			continue;
 		}
 
