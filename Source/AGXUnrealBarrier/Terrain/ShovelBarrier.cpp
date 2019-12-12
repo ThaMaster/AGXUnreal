@@ -45,9 +45,9 @@ void FShovelBarrier::AllocateNative(
 {
 	check(!HasNative());
 	agx::RigidBody* BodyAGX = Body.GetNative()->Native;
-	agx::Line TopEdgeAGX = ConvertDistance(TopEdge);
-	agx::Line CuttingEdgeAGX = ConvertDistance(CuttingEdge);
-	agx::Vec3 CuttingDirectionAGX = ConvertDistance(CuttingDirection);
+	agx::Line TopEdgeAGX = ConvertVector(TopEdge);
+	agx::Line CuttingEdgeAGX = ConvertVector(CuttingEdge);
+	agx::Vec3 CuttingDirectionAGX = ConvertVector(CuttingDirection);
 	NativeRef->Native = new agxTerrain::Shovel(BodyAGX, TopEdgeAGX, CuttingEdgeAGX, CuttingDirectionAGX);
 }
 
