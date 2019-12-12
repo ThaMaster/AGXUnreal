@@ -30,7 +30,8 @@ protected:
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 
 #if WITH_EDITOR
-	virtual bool DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const;
+	virtual bool DoesPropertyAffectVisualMesh(
+		const FName& PropertyName, const FName& MemberPropertyName) const;
 #endif
 
 private:

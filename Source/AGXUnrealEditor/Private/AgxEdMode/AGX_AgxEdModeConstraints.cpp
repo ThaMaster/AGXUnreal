@@ -51,16 +51,20 @@ AAGX_Constraint* UAGX_AgxEdModeConstraints::CreateConstraint() const
 		{
 			case EAGX_ConstraintActorParent::RigidBodyActor1:
 			{
-				Constraint->AttachToActor(RigidBodyActor1.Get(), FAttachmentTransformRules::KeepRelativeTransform);
-				// Transform is implicitly same as RigidBodyActor1, because of no relative transform.
+				Constraint->AttachToActor(
+					RigidBodyActor1.Get(), FAttachmentTransformRules::KeepRelativeTransform);
+				// Transform is implicitly same as RigidBodyActor1, because of no relative
+				// transform.
 				break;
 			}
 			case EAGX_ConstraintActorParent::RigidBodyActor2:
 			{
 				if (RigidBodyActor2.IsValid())
 				{
-					Constraint->AttachToActor(RigidBodyActor2.Get(), FAttachmentTransformRules::KeepRelativeTransform);
-					// Transform is implicitly same as RigidBodyActor2, because of no relative transform.
+					Constraint->AttachToActor(
+						RigidBodyActor2.Get(), FAttachmentTransformRules::KeepRelativeTransform);
+					// Transform is implicitly same as RigidBodyActor2, because of no relative
+					// transform.
 				}
 				else
 				{
@@ -99,10 +103,10 @@ AAGX_Constraint* UAGX_AgxEdModeConstraints::CreateConstraint() const
 			}
 			case EAGX_ConstraintFrameSource::TwoFrameActors:
 			{
-				FrameActor1 =
-					FAGX_EditorUtilities::CreateConstraintFrameActor(RigidBodyActor1.Get(), false, true, true);
-				FrameActor2 =
-					FAGX_EditorUtilities::CreateConstraintFrameActor(RigidBodyActor2.Get(), false, true, true);
+				FrameActor1 = FAGX_EditorUtilities::CreateConstraintFrameActor(
+					RigidBodyActor1.Get(), false, true, true);
+				FrameActor2 = FAGX_EditorUtilities::CreateConstraintFrameActor(
+					RigidBodyActor2.Get(), false, true, true);
 				break;
 			}
 			case EAGX_ConstraintFrameSource::RigidBodyActor1:
@@ -128,8 +132,8 @@ AAGX_Constraint* UAGX_AgxEdModeConstraints::CreateConstraint() const
 		Constraint->BodyAttachment1.OnFrameDefiningActorChanged(Constraint);
 		Constraint->BodyAttachment2.OnFrameDefiningActorChanged(Constraint);
 
-		/// \todo If in-game, we need to create the constraint in a deferred way so that frame actors are set before
-		/// the constraint has been finished!
+		/// \todo If in-game, we need to create the constraint in a deferred way so that frame
+		/// actors are set before the constraint has been finished!
 	}
 
 	FAGX_EditorUtilities::SelectActor(Constraint);

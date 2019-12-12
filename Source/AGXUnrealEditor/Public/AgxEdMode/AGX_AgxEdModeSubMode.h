@@ -18,7 +18,9 @@ class AGXUNREALEDITOR_API UAGX_AgxEdModeSubMode : public UObject
 	GENERATED_BODY()
 
 public:
-	virtual FText GetDisplayName() const PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl, return FText(););
+	virtual FText GetDisplayName() const
+		PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl, return FText(););
 
-	virtual FText GetTooltip() const PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl, return FText(););
+	virtual FText GetTooltip() const
+		PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl, return FText(););
 };

@@ -26,8 +26,8 @@ void FConstraint2DOFBarrier::SetElectricMotorController(
 {
 	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
 	{
-		agx::ElectricMotorController* NativeController =
-			NativeCasted->getElectricMotorController((agx::Constraint2DOF::DOF) SecondaryConstraintIndex);
+		agx::ElectricMotorController* NativeController = NativeCasted->getElectricMotorController(
+			(agx::Constraint2DOF::DOF) SecondaryConstraintIndex);
 
 		ControllerBarrier.ToNative(NativeController);
 	}
@@ -38,8 +38,8 @@ void FConstraint2DOFBarrier::SetFrictionController(
 {
 	if (agx::Constraint2DOF* NativeCasted = GetNativeCasted())
 	{
-		agx::FrictionController* NativeController =
-			NativeCasted->getFrictionController((agx::Constraint2DOF::DOF) SecondaryConstraintIndex);
+		agx::FrictionController* NativeController = NativeCasted->getFrictionController(
+			(agx::Constraint2DOF::DOF) SecondaryConstraintIndex);
 
 		ControllerBarrier.ToNative(NativeController);
 	}

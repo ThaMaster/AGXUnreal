@@ -8,7 +8,8 @@ FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocation() const
 {
 	if (RigidBodyActor && FrameDefiningActor)
 	{
-		return RigidBodyActor->GetActorTransform().InverseTransformPositionNoScale(GetGlobalFrameLocation());
+		return RigidBodyActor->GetActorTransform().InverseTransformPositionNoScale(
+			GetGlobalFrameLocation());
 	}
 	else
 	{
@@ -20,7 +21,8 @@ FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotation() const
 {
 	if (RigidBodyActor && FrameDefiningActor)
 	{
-		return RigidBodyActor->GetActorTransform().InverseTransformRotation(GetGlobalFrameRotation());
+		return RigidBodyActor->GetActorTransform().InverseTransformRotation(
+			GetGlobalFrameRotation());
 	}
 	else
 	{
@@ -48,11 +50,13 @@ FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 {
 	if (FrameDefiningActor)
 	{
-		return FrameDefiningActor->GetActorTransform().TransformRotation(LocalFrameRotation.Quaternion());
+		return FrameDefiningActor->GetActorTransform().TransformRotation(
+			LocalFrameRotation.Quaternion());
 	}
 	else if (RigidBodyActor)
 	{
-		return RigidBodyActor->GetActorTransform().TransformRotation(LocalFrameRotation.Quaternion());
+		return RigidBodyActor->GetActorTransform().TransformRotation(
+			LocalFrameRotation.Quaternion());
 	}
 	else
 	{
@@ -72,7 +76,8 @@ FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool Creat
 	if (!RigidBodyActor)
 		return nullptr;
 
-	UAGX_RigidBodyComponent* RigidBodyComponent = UAGX_RigidBodyComponent::GetFromActor(RigidBodyActor);
+	UAGX_RigidBodyComponent* RigidBodyComponent =
+		UAGX_RigidBodyComponent::GetFromActor(RigidBodyActor);
 
 	if (!RigidBodyComponent)
 		return nullptr;
@@ -87,8 +92,10 @@ FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool Creat
 
 void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(AAGX_Constraint* Owner)
 {
-	AAGX_ConstraintFrameActor* RecentConstraintFrame = Cast<AAGX_ConstraintFrameActor>(RecentFrameDefiningActor);
-	AAGX_ConstraintFrameActor* ConstraintFrame = Cast<AAGX_ConstraintFrameActor>(FrameDefiningActor);
+	AAGX_ConstraintFrameActor* RecentConstraintFrame =
+		Cast<AAGX_ConstraintFrameActor>(RecentFrameDefiningActor);
+	AAGX_ConstraintFrameActor* ConstraintFrame =
+		Cast<AAGX_ConstraintFrameActor>(FrameDefiningActor);
 
 	RecentFrameDefiningActor = FrameDefiningActor;
 
@@ -99,13 +106,15 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(AAGX_Constraint*
 		ConstraintFrame->AddConstraintUsage(Owner);
 
 	UE_LOG(
-		LogAGX, Log, TEXT("OnFrameDefiningActorChanged: FrameDefiningActor = %s, ConstraintFrame = %s"),
+		LogAGX, Log,
+		TEXT("OnFrameDefiningActorChanged: FrameDefiningActor = %s, ConstraintFrame = %s"),
 		*GetNameSafe(FrameDefiningActor), *GetNameSafe(ConstraintFrame));
 }
 
 void FAGX_ConstraintBodyAttachment::OnDestroy(AAGX_Constraint* Owner)
 {
-	AAGX_ConstraintFrameActor* ConstraintFrame = Cast<AAGX_ConstraintFrameActor>(FrameDefiningActor);
+	AAGX_ConstraintFrameActor* ConstraintFrame =
+		Cast<AAGX_ConstraintFrameActor>(FrameDefiningActor);
 
 	if (ConstraintFrame)
 		ConstraintFrame->RemoveConstraintUsage(Owner);

@@ -40,19 +40,20 @@ void SAGX_AgxEdModeWidget::Construct(const FArguments& InArgs, FAGX_AgxEdMode* I
 			 [SNew(SVerticalBox)
 
 			  /** Toolbar buttons for switching between sub-modes */
-			  + SVerticalBox::Slot().AutoHeight()[SNew(SBorder)
-													  .BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
-													  .HAlign(HAlign_Center)[CreateSubModesToolbar()]]
+			  + SVerticalBox::Slot()
+					.AutoHeight()[SNew(SBorder)
+									  .BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+									  .HAlign(HAlign_Center)[CreateSubModesToolbar()]]
 
 			  /** Header for the current sub-mode */
-			  +
-			  SVerticalBox::Slot()
-				  .AutoHeight()
-				  .Padding(FMargin(5.0f, 10.0f))
-				  .HAlign(HAlign_Fill)
-				  .VAlign(VAlign_Fill)[SNew(SHeader)[SNew(STextBlock)
-														 .Text_Lambda(GetCurrentSubModeName)
-														 .TextStyle(FEditorStyle::Get(), "ContentBrowser.TopBar.Font")]]
+			  + SVerticalBox::Slot()
+					.AutoHeight()
+					.Padding(FMargin(5.0f, 10.0f))
+					.HAlign(HAlign_Fill)
+					.VAlign(VAlign_Fill)[SNew(
+						SHeader)[SNew(STextBlock)
+									 .Text_Lambda(GetCurrentSubModeName)
+									 .TextStyle(FEditorStyle::Get(), "ContentBrowser.TopBar.Font")]]
 
 			  /** DetailsView for the current sub-mode */
 			  + SVerticalBox::Slot().AutoHeight()[CreateSubModeDetailsView()]]];
@@ -84,7 +85,8 @@ TSharedRef<IDetailsView> SAGX_AgxEdModeWidget::CreateSubModeDetailsView()
 	Args.bShowActorLabel = false;
 	Args.NameAreaSettings = FDetailsViewArgs::HideNameArea;
 
-	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+	FPropertyEditorModule& PropertyModule =
+		FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
 	SubModeDetailsView = PropertyModule.CreateDetailView(Args);
 
@@ -107,12 +109,14 @@ TSharedRef<SWidget> SAGX_AgxEdModeWidget::CreateSubModesToolbar()
 		{
 			ToolBar.AddToolBarButton(
 				FUIAction(
-					FExecuteAction::CreateRaw(AgxEdMode, &FAGX_AgxEdMode::SetCurrentSubMode, SubMode),
-					FCanExecuteAction(), FIsActionChecked::CreateLambda([AgxEdMode = AgxEdMode, SubMode]() {
+					FExecuteAction::CreateRaw(
+						AgxEdMode, &FAGX_AgxEdMode::SetCurrentSubMode, SubMode),
+					FCanExecuteAction(),
+					FIsActionChecked::CreateLambda([AgxEdMode = AgxEdMode, SubMode]() {
 						return AgxEdMode->GetCurrentSubMode() == SubMode;
 					})),
-				NAME_None, SubMode->GetDisplayName(), SubMode->GetTooltip(), TAttribute<FSlateIcon>(),
-				EUserInterfaceActionType::RadioButton,
+				NAME_None, SubMode->GetDisplayName(), SubMode->GetTooltip(),
+				TAttribute<FSlateIcon>(), EUserInterfaceActionType::RadioButton,
 				/*InTutorialHighlightName*/ NAME_None);
 		}
 	}

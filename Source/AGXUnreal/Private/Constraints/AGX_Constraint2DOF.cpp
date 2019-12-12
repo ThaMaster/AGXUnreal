@@ -36,70 +36,80 @@ void AAGX_Constraint2DOF::UpdateNativeProperties()
 		{
 			FElectricMotorControllerBarrier ControllerBarrier;
 			ElectricMotorController1.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetElectricMotorController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
+			NativeBarrierCasted->SetElectricMotorController(
+				ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
 		}
 
 		// Electric Motor Controller 2
 		{
 			FElectricMotorControllerBarrier ControllerBarrier;
 			ElectricMotorController2.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetElectricMotorController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
+			NativeBarrierCasted->SetElectricMotorController(
+				ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
 		}
 
 		// Friction Controller 1
 		{
 			FFrictionControllerBarrier ControllerBarrier;
 			FrictionController1.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetFrictionController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
+			NativeBarrierCasted->SetFrictionController(
+				ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
 		}
 
 		// Friction Controller 2
 		{
 			FFrictionControllerBarrier ControllerBarrier;
 			FrictionController2.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetFrictionController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
+			NativeBarrierCasted->SetFrictionController(
+				ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
 		}
 
 		// Lock Controller 1
 		{
 			FLockControllerBarrier ControllerBarrier;
 			LockController1.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetLockController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
+			NativeBarrierCasted->SetLockController(
+				ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
 		}
 
 		// Lock Controller 2
 		{
 			FLockControllerBarrier ControllerBarrier;
 			LockController2.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetLockController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
+			NativeBarrierCasted->SetLockController(
+				ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
 		}
 
 		// Range Controller 1
 		{
 			FRangeControllerBarrier ControllerBarrier;
 			RangeController1.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetRangeController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
+			NativeBarrierCasted->SetRangeController(
+				ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
 		}
 
 		// Range Controller 2
 		{
 			FRangeControllerBarrier ControllerBarrier;
 			RangeController2.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetRangeController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
+			NativeBarrierCasted->SetRangeController(
+				ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
 		}
 
 		// Target Speed Controller 1
 		{
 			FTargetSpeedControllerBarrier ControllerBarrier;
 			TargetSpeedController1.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetTargetSpeedController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
+			NativeBarrierCasted->SetTargetSpeedController(
+				ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
 		}
 
 		// Target Speed Controller 2
 		{
 			FTargetSpeedControllerBarrier ControllerBarrier;
 			TargetSpeedController2.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetTargetSpeedController(ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
+			NativeBarrierCasted->SetTargetSpeedController(
+				ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
 		}
 
 		// Screw Controller

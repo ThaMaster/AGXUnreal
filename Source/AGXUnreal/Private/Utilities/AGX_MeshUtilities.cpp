@@ -13,7 +13,8 @@
 #define CONE_SINGULARITY
 
 void AGX_MeshUtilities::MakeCube(
-	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices, const FVector& HalfSize)
+	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
+	const FVector& HalfSize)
 {
 	// 8 Corners,
 	// 6 Quads,
@@ -68,7 +69,8 @@ void AGX_MeshUtilities::MakeCube(
 	check(Normals.Num() == 24);
 }
 
-AGX_MeshUtilities::SphereConstructionData::SphereConstructionData(float InRadius, uint32 InNumSegments)
+AGX_MeshUtilities::SphereConstructionData::SphereConstructionData(
+	float InRadius, uint32 InNumSegments)
 	: Radius(InRadius)
 	, Segments(InNumSegments)
 	, Stacks(InNumSegments)
@@ -86,7 +88,8 @@ void AGX_MeshUtilities::SphereConstructionData::AppendBufferSizes(
 }
 
 void AGX_MeshUtilities::MakeSphere(
-	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices, float Radius, uint32 NumSegments)
+	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices, float Radius,
+	uint32 NumSegments)
 {
 	if (NumSegments < 4 || Radius < 1.0e-6)
 		return;
@@ -121,7 +124,8 @@ void AGX_MeshUtilities::MakeSphere(
 
 		// Add (NumSectors + 1) vertices per stack. The first and last vertex
 		// have same position and normal, but different tex coords.
-		for (int SectorIndex = 0; SectorIndex <= NumSectors; ++SectorIndex) // sector = horizontal segment
+		for (int SectorIndex = 0; SectorIndex <= NumSectors;
+			 ++SectorIndex) // sector = horizontal segment
 		{
 			SectorAngle = SectorIndex * SectorStep; // starting from 0 to 2pi
 
@@ -177,8 +181,8 @@ void AGX_MeshUtilities::MakeSphere(
 }
 
 void AGX_MeshUtilities::MakeSphere(
-	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer, uint32& NextFreeVertex,
-	uint32& NextFreeIndex, const SphereConstructionData& Data)
+	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer,
+	uint32& NextFreeVertex, uint32& NextFreeIndex, const SphereConstructionData& Data)
 {
 	check(Data.Segments >= 4);
 	check(Data.Segments <= uint32(TNumericLimits<uint16>::Max()));
@@ -213,7 +217,8 @@ void AGX_MeshUtilities::MakeSphere(
 
 		// Add (NumSectors + 1) vertices per stack. The first and last vertex
 		// have same position and normal, but different tex coords.
-		for (uint32 SectorIndex = 0; SectorIndex <= Data.Sectors; ++SectorIndex) // sector = horizontal segment
+		for (uint32 SectorIndex = 0; SectorIndex <= Data.Sectors;
+			 ++SectorIndex) // sector = horizontal segment
 		{
 			SectorAngle = SectorIndex * SectorStep; // starting from 0 to 2pi
 
@@ -221,7 +226,8 @@ void AGX_MeshUtilities::MakeSphere(
 			Position.Y = StackRadius * FMath::Sin(SectorAngle);
 			Position.Z = StackHeight;
 
-			TangentZ = FVector(Position.X * RadiusInv, Position.Y * RadiusInv, Position.Z * RadiusInv);
+			TangentZ =
+				FVector(Position.X * RadiusInv, Position.Y * RadiusInv, Position.Z * RadiusInv);
 
 			// vertex tex coord (u, v) range between [0, 1]
 			TexCoord.X = (float) SectorIndex / Data.Sectors;
@@ -235,7 +241,8 @@ void AGX_MeshUtilities::MakeSphere(
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color;
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
-			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(NextFreeVertex, TangentX, TangentY, TangentZ);
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
+				NextFreeVertex, TangentX, TangentY, TangentZ);
 
 			NextFreeVertex++;
 		}
@@ -299,7 +306,8 @@ void AGX_MeshUtilities::CylinderConstructionData::AppendBufferSizes(
 }
 
 void AGX_MeshUtilities::MakeCylinder(
-	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices, const CylinderConstructionData& Data)
+	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
+	const CylinderConstructionData& Data)
 {
 	if (Data.CircleSegments < 4 || Data.CircleSegments > uint32(TNumericLimits<uint16>::Max()) ||
 		Data.HeightSegments < 1 || Data.HeightSegments > uint32(TNumericLimits<uint16>::Max()) ||
@@ -326,13 +334,14 @@ void AGX_MeshUtilities::MakeCylinder(
 	// Bottom Cap, Bottom Row, Bottom Row + 1, ..., Top Row - 1, Top Row, Top Cap
 	for (uint32 CapsAndRowIndex = 0; CapsAndRowIndex < Data.VertexRowsAndCaps; ++CapsAndRowIndex)
 	{
-		const int CapIndex = CapsAndRowIndex == 0 ? 0 : (CapsAndRowIndex == Data.VertexRows + 1 ? 1 : -1);
+		const int CapIndex =
+			CapsAndRowIndex == 0 ? 0 : (CapsAndRowIndex == Data.VertexRows + 1 ? 1 : -1);
 		const bool IsCap = CapIndex != -1;
 		const uint32 RowIndex = FMath::Clamp<int32>(CapsAndRowIndex - 1, 0, Data.VertexRows - 1);
 		const float RowHeight = Data.Height * RowIndex / (Data.VertexRows - 1) - Data.Height * 0.5f;
 
-		// Add Data.VertexColumns num vertices in a circle per vertex row. The first and last vertex in the same row
-		// have same position and normal, but different tex coords.
+		// Add Data.VertexColumns num vertices in a circle per vertex row. The first and last vertex
+		// in the same row have same position and normal, but different tex coords.
 		for (uint32 ColumnIndex = 0; ColumnIndex < Data.VertexColumns; ++ColumnIndex)
 		{
 			float ColumnAngle = ColumnIndex * SegmentSize;
@@ -368,14 +377,16 @@ void AGX_MeshUtilities::MakeCylinder(
 
 	// Generate triangle indexes for the side segments of the capsule.
 	uint32 K0, K1;
-	for (uint32 HeightSegmentIndex = 0; HeightSegmentIndex < Data.HeightSegments; ++HeightSegmentIndex)
+	for (uint32 HeightSegmentIndex = 0; HeightSegmentIndex < Data.HeightSegments;
+		 ++HeightSegmentIndex)
 	{
 		K0 = Data.VertexColumns +
-			 HeightSegmentIndex *
-				 Data.VertexColumns; // first vertex in bottom vertex row of height segment (offset by cap)
+			 HeightSegmentIndex * Data.VertexColumns; // first vertex in bottom vertex row of height
+													  // segment (offset by cap)
 		K1 = K0 + Data.VertexColumns; // first vertex in next row
 
-		for (uint32 CircleSegmentIndex = 0; CircleSegmentIndex < Data.CircleSegments; ++CircleSegmentIndex, ++K0, ++K1)
+		for (uint32 CircleSegmentIndex = 0; CircleSegmentIndex < Data.CircleSegments;
+			 ++CircleSegmentIndex, ++K0, ++K1)
 		{
 			// 2 triangles per segment (i.e. quad)
 
@@ -395,7 +406,8 @@ void AGX_MeshUtilities::MakeCylinder(
 	uint32 K2;
 	for (uint32 CapIndex = 0; CapIndex < Data.Caps; ++CapIndex)
 	{
-		K0 = CapIndex * (Data.VertexRowsAndCaps - 1) * Data.VertexColumns; // first vertex in cap row
+		K0 =
+			CapIndex * (Data.VertexRowsAndCaps - 1) * Data.VertexColumns; // first vertex in cap row
 		K1 = K0 + 1; // second vertex in cap row
 		K2 = K1 + 1; // third vertex in cap row
 
@@ -427,8 +439,8 @@ void AGX_MeshUtilities::MakeCylinder(
 }
 
 void AGX_MeshUtilities::MakeCylinder(
-	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer, uint32& NextFreeVertex,
-	uint32& NextFreeIndex, const CylinderConstructionData& Data)
+	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer,
+	uint32& NextFreeVertex, uint32& NextFreeIndex, const CylinderConstructionData& Data)
 {
 	check(Data.CircleSegments >= 4);
 	check(Data.CircleSegments <= uint32(TNumericLimits<uint16>::Max()));
@@ -460,7 +472,8 @@ void AGX_MeshUtilities::MakeCylinder(
 	// Bottom Cap, Bottom Row, Bottom Row + 1, ..., Top Row - 1, Top Row, Top Cap
 	for (uint32 CapsAndRowIndex = 0; CapsAndRowIndex < Data.VertexRowsAndCaps; ++CapsAndRowIndex)
 	{
-		const int32 CapIndex = CapsAndRowIndex == 0 ? 0 : (CapsAndRowIndex == Data.VertexRows + 1 ? 1 : -1);
+		const int32 CapIndex =
+			CapsAndRowIndex == 0 ? 0 : (CapsAndRowIndex == Data.VertexRows + 1 ? 1 : -1);
 		const bool IsCap = CapIndex != -1;
 		const uint32 RowIndex = FMath::Clamp<int32>(CapsAndRowIndex - 1, 0, Data.VertexRows - 1);
 		const float RowHeight = Data.Height * RowIndex / (Data.VertexRows - 1) - Data.Height * 0.5f;
@@ -469,8 +482,8 @@ void AGX_MeshUtilities::MakeCylinder(
 			Data.MiddleColor, Data.OuterColor,
 			FMath::Abs((static_cast<float>(RowIndex) / Data.HeightSegments) - 0.5f) * 2.0f);
 
-		// Add Data.VertexColumns num vertices in a circle per vertex row. The first and last vertex in the same row
-		// have same position and normal, but different tex coords.
+		// Add Data.VertexColumns num vertices in a circle per vertex row. The first and last vertex
+		// in the same row have same position and normal, but different tex coords.
 		for (uint32 ColumnIndex = 0; ColumnIndex < Data.VertexColumns; ++ColumnIndex)
 		{
 			float ColumnAngle = ColumnIndex * SegmentSize;
@@ -506,7 +519,8 @@ void AGX_MeshUtilities::MakeCylinder(
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
-			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(NextFreeVertex, TangentX, TangentY, TangentZ);
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
+				NextFreeVertex, TangentX, TangentY, TangentZ);
 
 			NextFreeVertex++;
 		}
@@ -514,14 +528,16 @@ void AGX_MeshUtilities::MakeCylinder(
 
 	// Generate triangle indexes for the side segments of the capsule.
 	uint32 K0, K1;
-	for (uint32 HeightSegmentIndex = 0; HeightSegmentIndex < Data.HeightSegments; ++HeightSegmentIndex)
+	for (uint32 HeightSegmentIndex = 0; HeightSegmentIndex < Data.HeightSegments;
+		 ++HeightSegmentIndex)
 	{
 		K0 = FirstVertex + Data.VertexColumns +
-			 HeightSegmentIndex *
-				 Data.VertexColumns; // first vertex in bottom vertex row of height segment (offset by cap)
+			 HeightSegmentIndex * Data.VertexColumns; // first vertex in bottom vertex row of height
+													  // segment (offset by cap)
 		K1 = K0 + Data.VertexColumns; // first vertex in next row
 
-		for (uint32 CircleSegmentIndex = 0; CircleSegmentIndex < Data.CircleSegments; ++CircleSegmentIndex, ++K0, ++K1)
+		for (uint32 CircleSegmentIndex = 0; CircleSegmentIndex < Data.CircleSegments;
+			 ++CircleSegmentIndex, ++K0, ++K1)
 		{
 			// 2 triangles per segment (i.e. quad)
 
@@ -539,7 +555,8 @@ void AGX_MeshUtilities::MakeCylinder(
 	uint32 K2;
 	for (uint32 CapIndex = 0; CapIndex < Data.Caps; ++CapIndex)
 	{
-		K0 = FirstVertex + CapIndex * (Data.VertexRowsAndCaps - 1) * Data.VertexColumns; // first vertex in cap row
+		K0 = FirstVertex + CapIndex * (Data.VertexRowsAndCaps - 1) *
+							   Data.VertexColumns; // first vertex in cap row
 		K1 = K0 + 1; // second vertex in cap row
 		K2 = K1 + 1; // third vertex in cap row
 
@@ -568,8 +585,9 @@ void AGX_MeshUtilities::MakeCylinder(
 }
 
 AGX_MeshUtilities::CylindricalArrowConstructionData::CylindricalArrowConstructionData(
-	float InCylinderRadius, float InCylinderHeight, float InConeRadius, float InConeHeight, bool bInBottomCap,
-	uint32 InNumCircleSegments, const FLinearColor& InBaseColor, const FLinearColor& InTopColor)
+	float InCylinderRadius, float InCylinderHeight, float InConeRadius, float InConeHeight,
+	bool bInBottomCap, uint32 InNumCircleSegments, const FLinearColor& InBaseColor,
+	const FLinearColor& InTopColor)
 	: CylinderRadius(InCylinderRadius)
 	, CylinderHeight(InCylinderHeight)
 	, ConeRadius(InConeRadius)
@@ -598,8 +616,8 @@ void AGX_MeshUtilities::CylindricalArrowConstructionData::AppendBufferSizes(
 };
 
 void AGX_MeshUtilities::MakeCylindricalArrow(
-	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer, uint32& NextFreeVertex,
-	uint32& NextFreeIndex, const CylindricalArrowConstructionData& Data)
+	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer,
+	uint32& NextFreeVertex, uint32& NextFreeIndex, const CylindricalArrowConstructionData& Data)
 {
 	check(Data.CircleSegments >= 4);
 	check(Data.CircleSegments <= uint32(TNumericLimits<uint16>::Max()));
@@ -619,7 +637,8 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 	const float SegmentSize = 2.0f * PI / Data.CircleSegments;
 	const float CylinderRadiusInv = 1.0f / Data.CylinderRadius;
 	const float ConeRadiusInv = 1.0f / Data.ConeRadius;
-	const float ConeFlankLength = FMath::Sqrt(Data.ConeRadius * Data.ConeRadius + Data.ConeHeight * Data.ConeHeight);
+	const float ConeFlankLength =
+		FMath::Sqrt(Data.ConeRadius * Data.ConeRadius + Data.ConeHeight * Data.ConeHeight);
 	const float ConeFlankLengthOverHeight = ConeFlankLength / Data.ConeHeight;
 	const float ConeRadiusOverFlankLength = Data.ConeRadius / ConeFlankLength;
 	// const float ConeHeightOverRadius = Data.ConeHeight / Data.ConeRadius;
@@ -640,8 +659,8 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 	//
 	// At height == cylinder height:
 	//   1 vertex row for top of cylinder
-	//   1 vertex row for inner base ring of cone (i.e. for a hole where cone intersects top of cylinder)
-	//   1 vertex row for outer base ring of cone
+	//   1 vertex row for inner base ring of cone (i.e. for a hole where cone intersects top of
+	//   cylinder) 1 vertex row for outer base ring of cone
 	//
 	// At height == cylinder height + cone height:
 	//   1 vertex row for outer base ring of cone
@@ -653,39 +672,53 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 		const bool IsTopRow = RowIndex + 1 == Data.VertexRows;
 
 		const uint32 HeightIndex =
-			static_cast<uint32>(RowIndex >= static_cast<uint32>(Data.bBottomCap ? 2 : 1)) + // at or above cylinder top?
-			static_cast<uint32>(RowIndex >= static_cast<uint32>(Data.bBottomCap ? 6 : 5)); // at cone top?
+			static_cast<uint32>(
+				RowIndex >=
+				static_cast<uint32>(Data.bBottomCap ? 2 : 1)) + // at or above cylinder top?
+			static_cast<uint32>(
+				RowIndex >= static_cast<uint32>(Data.bBottomCap ? 6 : 5)); // at cone top?
 
 		const uint32 NormalIndex =
 			static_cast<uint32>(
 				RowIndex >=
-				static_cast<uint32>(Data.bBottomCap ? 1 : 0)) + // at or above cylinder shell (pointing out)?
+				static_cast<uint32>(
+					Data.bBottomCap ? 1 : 0)) + // at or above cylinder shell (pointing out)?
 			static_cast<uint32>(
-				RowIndex >= static_cast<uint32>(Data.bBottomCap ? 3 : 2)) + // at or above cone base (pointing down)?
+				RowIndex >=
+				static_cast<uint32>(
+					Data.bBottomCap ? 3 : 2)) + // at or above cone base (pointing down)?
 			static_cast<uint32>(
-				RowIndex >= static_cast<uint32>(Data.bBottomCap ? 5 : 4)); // at cone shell (pointing upwards-out)?
+				RowIndex >= static_cast<uint32>(
+								Data.bBottomCap ? 5 : 4)); // at cone shell (pointing upwards-out)?
 
 		const uint32 RadiusIndex =
 			static_cast<uint32>(
-				RowIndex >= static_cast<uint32>(Data.bBottomCap ? 4 : 3)) + // at or above cone outer base ring?
-			static_cast<uint32>(RowIndex >= static_cast<uint32>(Data.bBottomCap ? 6 : 5)); // at cone top?
+				RowIndex >=
+				static_cast<uint32>(Data.bBottomCap ? 4 : 3)) + // at or above cone outer base ring?
+			static_cast<uint32>(
+				RowIndex >= static_cast<uint32>(Data.bBottomCap ? 6 : 5)); // at cone top?
 
 		const float RowHeight =
-			(HeightIndex == 1 ? Data.CylinderHeight : (HeightIndex == 2 ? TotalHeight : 0.0f)) - 0.5f * TotalHeight;
+			(HeightIndex == 1 ? Data.CylinderHeight : (HeightIndex == 2 ? TotalHeight : 0.0f)) -
+			0.5f * TotalHeight;
 #ifdef CONE_SINGULARITY
-		const float RowRadius = RadiusIndex == 0 ? Data.CylinderRadius : (RadiusIndex == 1 ? Data.ConeRadius : 0.0f);
+		const float RowRadius =
+			RadiusIndex == 0 ? Data.CylinderRadius : (RadiusIndex == 1 ? Data.ConeRadius : 0.0f);
 #else
-		const float RowRadius = RadiusIndex == 0 ? Data.CylinderRadius : (RadiusIndex == 1 ? Data.ConeRadius : 0.01f);
+		const float RowRadius =
+			RadiusIndex == 0 ? Data.CylinderRadius : (RadiusIndex == 1 ? Data.ConeRadius : 0.01f);
 #endif
 
-		Color = FMath::Lerp(Data.BaseColor, Data.TopColor, (float) RowIndex / (Data.VertexRows - 1));
+		Color =
+			FMath::Lerp(Data.BaseColor, Data.TopColor, (float) RowIndex / (Data.VertexRows - 1));
 
-		// Add Data.VertexColumns num vertices in a circle per vertex row. The first and last vertex in the same row
-		// have same position and normal, but different tex coords.
+		// Add Data.VertexColumns num vertices in a circle per vertex row. The first and last vertex
+		// in the same row have same position and normal, but different tex coords.
 		for (uint32 ColumnIndex = 0; ColumnIndex < Data.VertexColumns; ++ColumnIndex)
 		{
 #ifdef CONE_SINGULARITY
-			const float ColumnAngle = float(ColumnIndex) * SegmentSize + (IsTopRow ? SegmentSize * 0.5f : 0.0f);
+			const float ColumnAngle =
+				float(ColumnIndex) * SegmentSize + (IsTopRow ? SegmentSize * 0.5f : 0.0f);
 #else
 			const float ColumnAngle = ColumnIndex * SegmentSize;
 #endif
@@ -698,7 +731,8 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 			TexCoord.X = IsCap ? Position.X : ((float) ColumnIndex / Data.CircleSegments);
 			TexCoord.Y = IsCap ? Position.Y : ((float) RowIndex / (Data.VertexRows - 1));
 
-			/// \todo Normals and TexCoords needs to be fixed for top ring!! Because Quads becomes Triangles!?
+			/// \todo Normals and TexCoords needs to be fixed for top ring!! Because Quads becomes
+			/// Triangles!?
 
 			// Vertex Normal, Tangent, and Binormal
 			switch (NormalIndex)
@@ -707,13 +741,15 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 					TangentZ = FVector(0.0f, 0.0f, -1.0f);
 					break;
 				case 1: // cylinder shell
-					TangentZ = FVector(Position.X * CylinderRadiusInv, Position.Y * CylinderRadiusInv, 0.0f);
+					TangentZ = FVector(
+						Position.X * CylinderRadiusInv, Position.Y * CylinderRadiusInv, 0.0f);
 					break;
 				case 2: // cone base
 					TangentZ = FVector(0.0f, 0.0f, -1.0f);
 					break;
 				case 3: // cone shell
-						/// \todo This normal is not perfect! Fix for fact that quads becomes triangles on cone!
+						/// \todo This normal is not perfect! Fix for fact that quads becomes
+						/// triangles on cone!
 #ifdef CONE_SINGULARITY
 					if (IsTopRow)
 						TangentZ = FVector(0.0f, 0.0f, 1.0f);
@@ -721,11 +757,13 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 #endif
 						TangentZ = FVector(
 							FMath::Cos(ColumnAngle) * ConeFlankLengthOverHeight,
-							FMath::Sin(ColumnAngle) * ConeFlankLengthOverHeight, ConeRadiusOverFlankLength);
+							FMath::Sin(ColumnAngle) * ConeFlankLengthOverHeight,
+							ConeRadiusOverFlankLength);
 					break;
-					TangentZ.Normalize(); /// \todo Should not be needed. But normal is a bit too long without it.
-										  /// Investigate!
-					// TangentZ = FVector(Position.X * ConeRadiusInv * ConeHeightOverRadius, Position.Y * ConeRadiusInv
+					TangentZ.Normalize(); /// \todo Should not be needed. But normal is a bit too
+										  /// long without it. Investigate!
+					// TangentZ = FVector(Position.X * ConeRadiusInv * ConeHeightOverRadius,
+					// Position.Y * ConeRadiusInv
 					// * ConeHeightOverRadius, ConeRadiusOverHeight); break;
 				default:
 					check(!"AGX_MeshUtilities::MakeCylindricalArrow reached invalid NormalIndex");
@@ -740,7 +778,8 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
-			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(NextFreeVertex, TangentX, TangentY, TangentZ);
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
+				NextFreeVertex, TangentX, TangentY, TangentZ);
 
 			NextFreeVertex++;
 		}
@@ -765,8 +804,8 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 		}
 	}
 
-	// Generate triangle indexes for the side segments of the arrow (can be thought of a cylinder with many segments,
-	// where each segment has its own unique vertices)
+	// Generate triangle indexes for the side segments of the arrow (can be thought of a cylinder
+	// with many segments, where each segment has its own unique vertices)
 	const uint32 OffsetByCapVertices = Data.bBottomCap ? Data.VertexColumns : 0;
 	const uint32 NumHeightSegments = 3;
 	for (uint32 HeightSegmentIndex = 0; HeightSegmentIndex < 3; ++HeightSegmentIndex)
@@ -774,9 +813,11 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 		K0 = FirstVertex + OffsetByCapVertices + HeightSegmentIndex * 2 * Data.VertexColumns;
 		K1 = K0 + Data.VertexColumns; // first vertex in next row
 
-		for (uint32 CircleSegmentIndex = 0; CircleSegmentIndex < Data.CircleSegments; ++CircleSegmentIndex, ++K0, ++K1)
+		for (uint32 CircleSegmentIndex = 0; CircleSegmentIndex < Data.CircleSegments;
+			 ++CircleSegmentIndex, ++K0, ++K1)
 		{
-			// 2 triangles per segment (i.e. quad), except for at top of cone (because quads turns to triangles at top)
+			// 2 triangles per segment (i.e. quad), except for at top of cone (because quads turns
+			// to triangles at top)
 
 			IndexBuffer.Indices[NextFreeIndex++] = K0 + 1;
 			IndexBuffer.Indices[NextFreeIndex++] = K0;
@@ -800,8 +841,9 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 #undef CONE_SINGULARITY
 
 AGX_MeshUtilities::BendableArrowConstructionData::BendableArrowConstructionData(
-	float InRectangleWidth, float InRectangleLength, float InTriangleWidth, float InTriangleLength, float InBendAngle,
-	uint32 InNumSegments, const FLinearColor& InBaseColor, const FLinearColor& InTopColor)
+	float InRectangleWidth, float InRectangleLength, float InTriangleWidth, float InTriangleLength,
+	float InBendAngle, uint32 InNumSegments, const FLinearColor& InBaseColor,
+	const FLinearColor& InTopColor)
 	: RectangleWidth(InRectangleWidth)
 	, RectangleLength(InRectangleLength)
 	, TriangleWidth(InTriangleWidth)
@@ -812,8 +854,8 @@ AGX_MeshUtilities::BendableArrowConstructionData::BendableArrowConstructionData(
 	, TopColor(InTopColor)
 	, RectangleSegments(std::max<uint32>(
 		  1, std::min<uint32>(
-				 InNumSegments - 1,
-				 InNumSegments * InRectangleLength / static_cast<float>(InRectangleLength + InTriangleLength))))
+				 InNumSegments - 1, InNumSegments * InRectangleLength /
+										static_cast<float>(InRectangleLength + InTriangleLength))))
 	, TriangleSegments(std::max<uint32>(1, InNumSegments - RectangleSegments))
 	, RectangleVertexRows(RectangleSegments + 1)
 	, TriangleVertexRows(TriangleSegments + 1)
@@ -830,8 +872,8 @@ void AGX_MeshUtilities::BendableArrowConstructionData::AppendBufferSizes(
 }
 
 void AGX_MeshUtilities::MakeBendableArrow(
-	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer, uint32& NextFreeVertex,
-	uint32& NextFreeIndex, const BendableArrowConstructionData& Data)
+	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer,
+	uint32& NextFreeVertex, uint32& NextFreeIndex, const BendableArrowConstructionData& Data)
 {
 	check(Data.Segments >= 2);
 	check(Data.RectangleSegments >= 1);
@@ -865,21 +907,24 @@ void AGX_MeshUtilities::MakeBendableArrow(
 	for (uint32 RowIndex = 0; RowIndex < NumTotalRows; ++RowIndex)
 	{
 		const bool IsRectangle = RowIndex < Data.RectangleVertexRows;
-		const uint32 RectangleRowIndexClamped = FMath::Clamp<int32>(RowIndex, 0, Data.RectangleVertexRows - 1);
-		const uint32 TriangleRowIndexClamped =
-			FMath::Clamp<int32>(RowIndex - Data.RectangleVertexRows, 0, Data.TriangleVertexRows - 1);
+		const uint32 RectangleRowIndexClamped =
+			FMath::Clamp<int32>(RowIndex, 0, Data.RectangleVertexRows - 1);
+		const uint32 TriangleRowIndexClamped = FMath::Clamp<int32>(
+			RowIndex - Data.RectangleVertexRows, 0, Data.TriangleVertexRows - 1);
 
-		const float RowDistance = Data.RectangleLength * RectangleRowIndexClamped / Data.RectangleSegments +
-								  Data.TriangleLength * TriangleRowIndexClamped / Data.TriangleSegments;
+		const float RowDistance =
+			Data.RectangleLength * RectangleRowIndexClamped / Data.RectangleSegments +
+			Data.TriangleLength * TriangleRowIndexClamped / Data.TriangleSegments;
 
 		const float RowNormalizedDistance = RowDistance / TotalLength;
 		const float RowAngularDistance = IsBending ? RowNormalizedDistance * Data.BendAngle : 0.0f;
 
-		const float CurrentWidth = IsRectangle
-									   ? Data.RectangleWidth
-									   : FMath::Lerp(
-											 Data.TriangleWidth, 0.01f,
-											 TriangleRowIndexClamped / static_cast<float>(Data.TriangleVertexRows - 1));
+		const float CurrentWidth =
+			IsRectangle
+				? Data.RectangleWidth
+				: FMath::Lerp(
+					  Data.TriangleWidth, 0.01f,
+					  TriangleRowIndexClamped / static_cast<float>(Data.TriangleVertexRows - 1));
 
 		Color = FMath::Lerp(Data.BaseColor, Data.TopColor, RowNormalizedDistance);
 
@@ -914,18 +959,21 @@ void AGX_MeshUtilities::MakeBendableArrow(
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
-			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(NextFreeVertex, TangentX, TangentY, TangentZ);
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
+				NextFreeVertex, TangentX, TangentY, TangentZ);
 
 			NextFreeVertex++;
 		}
 	}
 
 	// Generate triangle indexes.
-	for (uint32 SegmentIndex = 0, V0 = FirstVertex; SegmentIndex < NumTotalSegments; ++SegmentIndex, V0 += 2)
+	for (uint32 SegmentIndex = 0, V0 = FirstVertex; SegmentIndex < NumTotalSegments;
+		 ++SegmentIndex, V0 += 2)
 	{
 		if (SegmentIndex == Data.RectangleSegments)
 		{
-			V0 += 2; // Do not use last row of arrow's rectangle part for first quad in the arrow's triangle part.
+			V0 += 2; // Do not use last row of arrow's rectangle part for first quad in the arrow's
+					 // triangle part.
 		}
 
 		// 2 triangles per segment (i.e. quad)
@@ -964,9 +1012,12 @@ void AGX_MeshUtilities::PrintMeshToLog(
 	for (uint32 Index = 0; Index < NumIndices; ++Index)
 	{
 		UE_LOG(
-			LogAGX, Log, TEXT("  Index[%d] = %d \t(Position = <%s>, Normal = <%s>)"), Index, IndexBuffer.Indices[Index],
-			*VertexBuffers.PositionVertexBuffer.VertexPosition(IndexBuffer.Indices[Index]).ToString(),
-			*VertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(IndexBuffer.Indices[Index]).ToString());
+			LogAGX, Log, TEXT("  Index[%d] = %d \t(Position = <%s>, Normal = <%s>)"), Index,
+			IndexBuffer.Indices[Index],
+			*VertexBuffers.PositionVertexBuffer.VertexPosition(IndexBuffer.Indices[Index])
+				 .ToString(),
+			*VertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(IndexBuffer.Indices[Index])
+				 .ToString());
 	}
 
 	UE_LOG(LogAGX, Log, TEXT("AGX_MeshUtilities::PrintMeshToLog() : Finished printing mesh data."))
@@ -974,7 +1025,8 @@ void AGX_MeshUtilities::PrintMeshToLog(
 
 AGX_MeshUtilities::DiskArrayConstructionData::DiskArrayConstructionData(
 	float InRadius, uint32 InNumCircleSegments, float InSpacing, uint32 InDisks, bool bInTwoSided,
-	const FLinearColor InMiddleDiskColor, const FLinearColor InOuterDiskColor, TArray<FTransform> InSpacingsOverride)
+	const FLinearColor InMiddleDiskColor, const FLinearColor InOuterDiskColor,
+	TArray<FTransform> InSpacingsOverride)
 	: Radius(InRadius)
 	, CircleSegments(InNumCircleSegments)
 	, Spacing(InSpacing)
@@ -999,8 +1051,8 @@ void AGX_MeshUtilities::DiskArrayConstructionData::AppendBufferSizes(
 }
 
 void AGX_MeshUtilities::MakeDiskArray(
-	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer, uint32& NextFreeVertex,
-	uint32& NextFreeIndex, const DiskArrayConstructionData& Data)
+	FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer,
+	uint32& NextFreeVertex, uint32& NextFreeIndex, const DiskArrayConstructionData& Data)
 {
 	check(Data.CircleSegments >= 4);
 	check(Data.CircleSegments <= uint32(TNumericLimits<uint16>::Max()));
@@ -1027,14 +1079,18 @@ void AGX_MeshUtilities::MakeDiskArray(
 	// Generate vertex attributes.
 	for (uint32 DiskIndex = 0; DiskIndex < Data.Disks; ++DiskIndex)
 	{
-		const float NormalizedDiskIndex = DiskIndex / static_cast<float>(Data.Disks > 1 ? Data.Disks - 1 : 1);
+		const float NormalizedDiskIndex =
+			DiskIndex / static_cast<float>(Data.Disks > 1 ? Data.Disks - 1 : 1);
 		const float DiskHeight = TotalHeight * 0.5f - NormalizedDiskIndex * TotalHeight;
 
-		Color = FMath::Lerp(Data.MiddleDiskColor, Data.OuterDiskColor, FMath::Abs(NormalizedDiskIndex - 0.5f) * 2.0f);
+		Color = FMath::Lerp(
+			Data.MiddleDiskColor, Data.OuterDiskColor,
+			FMath::Abs(NormalizedDiskIndex - 0.5f) * 2.0f);
 
 		for (uint32 SideIndex = 0; SideIndex < Data.SidesPerDisk; ++SideIndex)
 		{
-			for (uint32 CircleVertexIndex = 0; CircleVertexIndex < Data.CircleSegments; ++CircleVertexIndex)
+			for (uint32 CircleVertexIndex = 0; CircleVertexIndex < Data.CircleSegments;
+				 ++CircleVertexIndex)
 			{
 				float CircleVertexAngle = CircleVertexIndex * SegmentSize;
 
@@ -1061,7 +1117,8 @@ void AGX_MeshUtilities::MakeDiskArray(
 
 				if (DiskIndex < static_cast<uint32>(Data.SpacingsOverride.Num()))
 				{
-					// Remove spacing and use the spacing defined in the array instead. May include rotation as well.
+					// Remove spacing and use the spacing defined in the array instead. May include
+					// rotation as well.
 					Position.Z = 0.0f;
 					Position = Data.SpacingsOverride[DiskIndex].TransformPosition(Position);
 					TangentZ = Data.SpacingsOverride[DiskIndex].TransformVector(TangentZ);
@@ -1075,7 +1132,8 @@ void AGX_MeshUtilities::MakeDiskArray(
 				VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 				VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
 				VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
-				VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(NextFreeVertex, TangentX, TangentY, TangentZ);
+				VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
+					NextFreeVertex, TangentX, TangentY, TangentZ);
 
 				NextFreeVertex++;
 			}
@@ -1091,7 +1149,8 @@ void AGX_MeshUtilities::MakeDiskArray(
 			V0 = FirstVertex + SideIndex * Data.VerticesPerSide + DiskIndex * Data.VerticesPerDisk;
 
 			// 1 triangle per segment except for first and last.
-			for (uint32 CircleSegmentIndex = 1; CircleSegmentIndex < Data.CircleSegments - 1; ++CircleSegmentIndex)
+			for (uint32 CircleSegmentIndex = 1; CircleSegmentIndex < Data.CircleSegments - 1;
+				 ++CircleSegmentIndex)
 			{
 				V1 = V0 + CircleSegmentIndex;
 				V2 = V0 + ((CircleSegmentIndex + 1) % Data.CircleSegments);

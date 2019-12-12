@@ -6,7 +6,8 @@
 
 #define LOCTEXT_NAMESPACE "FAGX_ContactMaterialAssetTypeActions"
 
-FAGX_ContactMaterialAssetTypeActions::FAGX_ContactMaterialAssetTypeActions(EAssetTypeCategories::Type InAssetCategory)
+FAGX_ContactMaterialAssetTypeActions::FAGX_ContactMaterialAssetTypeActions(
+	EAssetTypeCategories::Type InAssetCategory)
 	: AssetCategory(InAssetCategory)
 {
 }
@@ -28,7 +29,8 @@ FColor FAGX_ContactMaterialAssetTypeActions::GetTypeColor() const
 
 FText FAGX_ContactMaterialAssetTypeActions::GetAssetDescription(const FAssetData& AssetData) const
 {
-	return LOCTEXT("AssetDescription", "Defines detailed material properties for material pair contacts.");
+	return LOCTEXT(
+		"AssetDescription", "Defines detailed material properties for material pair contacts.");
 }
 
 UClass* FAGX_ContactMaterialAssetTypeActions::GetSupportedClass() const

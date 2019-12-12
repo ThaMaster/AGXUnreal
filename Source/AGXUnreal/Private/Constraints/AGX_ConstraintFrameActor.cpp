@@ -11,8 +11,8 @@ AAGX_ConstraintFrameActor::AAGX_ConstraintFrameActor()
 	// Create a root SceneComponent so that this Actor has a transform
 	// which can be modified in the Editor.
 	{
-		ConstraintFrameComponent =
-			CreateDefaultSubobject<UAGX_ConstraintFrameComponent>(USceneComponent::GetDefaultSceneRootVariableName());
+		ConstraintFrameComponent = CreateDefaultSubobject<UAGX_ConstraintFrameComponent>(
+			USceneComponent::GetDefaultSceneRootVariableName());
 
 		ConstraintFrameComponent->Mobility = EComponentMobility::Movable;
 		ConstraintFrameComponent->SetFlags(ConstraintFrameComponent->GetFlags() | RF_Transactional);

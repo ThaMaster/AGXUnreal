@@ -35,16 +35,16 @@ public:
 	/**
 	 * Whether contact reduction should be enabled and to what extent.
 	 *
-	 * By using contact reduction, the number of contact points later submitted to the solver as contact constraint
-	 * can be heavily reduced, hence improving performance.
+	 * By using contact reduction, the number of contact points later submitted to the solver as
+	 * contact constraint can be heavily reduced, hence improving performance.
 	 */
 	UPROPERTY(EditAnywhere)
 	EAGX_ContactReductionMode Mode;
 
 	/**
-	 * The resolution used when evaluating contacts for reduction between geometry contacts. A high value will keep
-	 * more contacts, lower will result in more aggressive reduction the default. Commonly a value of 2 or 3 will
-	 * give good result.
+	 * The resolution used when evaluating contacts for reduction between geometry contacts. A high
+	 * value will keep more contacts, lower will result in more aggressive reduction the default.
+	 * Commonly a value of 2 or 3 will give good result.
 	 *
 	 * Zero means that the value will be overridden by the general AGX Space setting.
 	 *

@@ -53,10 +53,11 @@ void AAGX_MaterialManager::BeginPlay()
 			continue;
 		}
 
-		// This will create the UAGX_ContactMaterialInstance if it did not already exist, initialize its AGX native,
-		// and add it to the simulation.
+		// This will create the UAGX_ContactMaterialInstance if it did not already exist, initialize
+		// its AGX native, and add it to the simulation.
 
-		// It will also replace the passed in UAGX_ContactMaterialBase pointer with the new instance, and return it.
+		// It will also replace the passed in UAGX_ContactMaterialBase pointer with the new
+		// instance, and return it.
 
 		UAGX_ContactMaterialInstance* Instance =
 			UAGX_ContactMaterialBase::GetOrCreateInstance(GetWorld(), ContactMaterial);

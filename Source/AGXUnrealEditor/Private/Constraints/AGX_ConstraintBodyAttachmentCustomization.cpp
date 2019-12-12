@@ -28,8 +28,8 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeHeader(
 {
 	BodyAttachmentProperty = StructPropertyHandle;
 
-	RigidBodyProperty =
-		StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, RigidBodyActor));
+	RigidBodyProperty = StructPropertyHandle->GetChildHandle(
+		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, RigidBodyActor));
 
 	// Use default visualization in the name column (left side).
 	HeaderRow.NameContent()[StructPropertyHandle->CreatePropertyNameWidget()];
@@ -37,11 +37,12 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeHeader(
 	// Show the name of chosen rigid body in the value column (right side).
 	HeaderRow.ValueContent()
 		.MinDesiredWidth(250.0f) // from SPropertyEditorAsset::GetDesiredWidth
-		.MaxDesiredWidth(0)[SNew(STextBlock)
-								.Text(this, &FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel)
-								.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
-								.ColorAndOpacity(FLinearColor(1.0f, 0.45f, 0, 1.0f))
-								.MinDesiredWidth(250)];
+		.MaxDesiredWidth(
+			0)[SNew(STextBlock)
+				   .Text(this, &FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel)
+				   .Font(IPropertyTypeCustomizationUtils::GetRegularFont())
+				   .ColorAndOpacity(FLinearColor(1.0f, 0.45f, 0, 1.0f))
+				   .MinDesiredWidth(250)];
 }
 
 void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
@@ -51,7 +52,8 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 	FrameDefiningActorProperty = StructPropertyHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningActor));
 
-	const UObject* FrameDefiningActor = FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty);
+	const UObject* FrameDefiningActor =
+		FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty);
 
 	uint32 NumChildren = 0;
 	StructPropertyHandle->GetNumChildren(NumChildren);
@@ -59,17 +61,20 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 	// Use default visualization for most of the structs properties.
 	for (uint32 ChildIndex = 0; ChildIndex < NumChildren; ++ChildIndex)
 	{
-		if (TSharedPtr<IPropertyHandle> ChildHandle = StructPropertyHandle->GetChildHandle(ChildIndex))
+		if (TSharedPtr<IPropertyHandle> ChildHandle =
+				StructPropertyHandle->GetChildHandle(ChildIndex))
 		{
 			// Add default visualization.
-			IDetailPropertyRow& DefaultPropertyRow = StructBuilder.AddProperty(ChildHandle.ToSharedRef());
+			IDetailPropertyRow& DefaultPropertyRow =
+				StructBuilder.AddProperty(ChildHandle.ToSharedRef());
 
 			// Frame properties only visible if Rigid Body Actor has been set.
 			if (!FAGX_PropertyUtilities::PropertyEquals(ChildHandle, RigidBodyProperty))
 			{
-				TAttribute<EVisibility> IsVisibleDelegate =
-					TAttribute<EVisibility>::Create(TAttribute<EVisibility>::FGetter::CreateLambda(
-						[this] { return HasRigidBodyActor() ? EVisibility::Visible : EVisibility::Collapsed; }));
+				TAttribute<EVisibility> IsVisibleDelegate = TAttribute<EVisibility>::Create(
+					TAttribute<EVisibility>::FGetter::CreateLambda([this] {
+						return HasRigidBodyActor() ? EVisibility::Visible : EVisibility::Collapsed;
+					}));
 
 				DefaultPropertyRow.Visibility(IsVisibleDelegate);
 			}
@@ -85,30 +90,37 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 				TSharedPtr<SWidget> DefaultValueWidget;
 				DefaultPropertyRow.GetDefaultWidgets(DefaultNameWidget, DefaultValueWidget, true);
 
-				FAGX_SlateUtilities::RemoveChildWidgetByType(DefaultValueWidget, "SResetToDefaultPropertyEditor");
+				FAGX_SlateUtilities::RemoveChildWidgetByType(
+					DefaultValueWidget, "SResetToDefaultPropertyEditor");
 
-				FDetailWidgetRow& CustomPropertyRow = DefaultPropertyRow.CustomWidget(/*bShowChildren*/ true);
+				FDetailWidgetRow& CustomPropertyRow =
+					DefaultPropertyRow.CustomWidget(/*bShowChildren*/ true);
 
 				CustomPropertyRow.AddCustomContextMenuAction(
 					FUIAction(
 						FExecuteAction::CreateSP(
-							this, &FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor),
-						FCanExecuteAction::CreateLambda([this] { return !HasFrameDefiningActor(); })),
+							this, &FAGX_ConstraintBodyAttachmentCustomization::
+									  CreateAndSetFrameDefiningActor),
+						FCanExecuteAction::CreateLambda(
+							[this] { return !HasFrameDefiningActor(); })),
 					LOCTEXT("CreateFrameDefiningActorContextMenuItem", "Create New"));
 
 				CustomPropertyRow.NameContent()[DefaultNameWidget.ToSharedRef()];
 
 				CustomPropertyRow.ValueContent()
 					.MinDesiredWidth(250.0f) // from SPropertyEditorAsset::GetDesiredWidth
-					.MaxDesiredWidth(0)
-						[SNew(SBox)
-							 .VAlign(VAlign_Center)
-							 .Padding(FMargin(
-								 0, 0, 0,
-								 0)) // Line up with the other properties due to having no reset to default button
-								 [SNew(SVerticalBox) + SVerticalBox::Slot().AutoHeight()
-														   [SNew(SHorizontalBox) +
-															SHorizontalBox::Slot()[DefaultValueWidget.ToSharedRef()]]]];
+					.MaxDesiredWidth(
+						0)[SNew(SBox)
+							   .VAlign(VAlign_Center)
+							   .Padding(FMargin(
+								   0, 0, 0,
+								   0)) // Line up with the other properties due to having no reset
+									   // to default button
+										   [SNew(SVerticalBox) +
+											SVerticalBox::Slot().AutoHeight()
+												[SNew(SHorizontalBox) +
+												 SHorizontalBox::Slot()[DefaultValueWidget
+																			.ToSharedRef()]]]];
 			}
 		}
 	}
@@ -119,7 +131,8 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 {
 	FString RigidBodyName;
-	if (const AActor* RigidBody = Cast<AActor>(FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty)))
+	if (const AActor* RigidBody =
+			Cast<AActor>(FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty)))
 	{
 		RigidBodyName = "(" + RigidBody->GetActorLabel() + ")";
 	}
@@ -150,12 +163,13 @@ void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor(
 	if (FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty))
 		return; // already exists
 
-	AAGX_Constraint* Constraint =
-		Cast<AAGX_Constraint>(FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyAttachmentProperty));
+	AAGX_Constraint* Constraint = Cast<AAGX_Constraint>(
+		FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyAttachmentProperty));
 
 	check(Constraint);
 
-	AActor* RigidBody = Cast<AActor>(FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty)); // optional
+	AActor* RigidBody =
+		Cast<AActor>(FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty)); // optional
 
 	// Create the new Constraint Frame Actor.
 	AActor* NewActor = FAGX_EditorUtilities::CreateConstraintFrameActor(
@@ -171,7 +185,8 @@ void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor(
 	check(Result == FPropertyAccess::Success);
 #else
 	FAGX_ConstraintBodyAttachment* BodyAttachment =
-		FAGX_PropertyUtilities::GetStructFromHandle<FAGX_ConstraintBodyAttachment>(BodyAttachmentProperty, Constraint);
+		FAGX_PropertyUtilities::GetStructFromHandle<FAGX_ConstraintBodyAttachment>(
+			BodyAttachmentProperty, Constraint);
 
 	BodyAttachment->FrameDefiningActor = NewActor;
 

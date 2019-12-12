@@ -10,7 +10,8 @@ AAGX_Constraint1DOF::AAGX_Constraint1DOF()
 }
 
 AAGX_Constraint1DOF::AAGX_Constraint1DOF(
-	const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraintRotational, bool bIsLockControllerEditable_)
+	const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraintRotational,
+	bool bIsLockControllerEditable_)
 	: AAGX_Constraint(LockedDofsOrdered)
 	, RangeController(bIsSecondaryConstraintRotational)
 	, bIsLockControllerEditable(bIsLockControllerEditable_)

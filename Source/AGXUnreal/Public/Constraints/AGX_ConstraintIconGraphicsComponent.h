@@ -8,7 +8,8 @@ class AAGX_Constraint;
 class FPrimitiveSceneProxy;
 
 /**
- * A component that shows a dynamic constraint-specific selectable 'icon' in the level editor viewport.
+ * A component that shows a dynamic constraint-specific selectable 'icon' in the level editor
+ * viewport.
  */
 UCLASS(Category = "AGX", ClassGroup = "AGX", NotPlaceable)
 class AGXUNREAL_API UAGX_ConstraintIconGraphicsComponent : public UMeshComponent

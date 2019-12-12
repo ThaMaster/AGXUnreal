@@ -13,7 +13,8 @@ FAGX_ConstraintElectricMotorController::FAGX_ConstraintElectricMotorController(b
 {
 }
 
-void FAGX_ConstraintElectricMotorController::ToBarrier(FElectricMotorControllerBarrier* Barrier) const
+void FAGX_ConstraintElectricMotorController::ToBarrier(
+	FElectricMotorControllerBarrier* Barrier) const
 {
 	if (!Barrier)
 		return;

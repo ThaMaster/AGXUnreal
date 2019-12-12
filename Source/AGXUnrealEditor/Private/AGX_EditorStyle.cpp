@@ -52,11 +52,14 @@ FName FAGX_EditorStyle::GetStyleSetName()
 
 #define IMAGE_BRUSH(RelativePath, ...) \
 	FSlateImageBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
-#define BOX_BRUSH(RelativePath, ...) FSlateBoxBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
+#define BOX_BRUSH(RelativePath, ...) \
+	FSlateBoxBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
 #define BORDER_BRUSH(RelativePath, ...) \
 	FSlateBorderBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
-#define TTF_FONT(RelateivePath, ...) FSlateFontInfo(Style->RootToContentDi(RelateivePath, TEXT(".ttf")), __VA_ARGS__)
-#define OTF_FONT(RelateivePath, ...) FSlateFontInfo(Style->RootToContentDir(RelateivePath, TEXT(".otf")), __VA_ARGS__)
+#define TTF_FONT(RelateivePath, ...) \
+	FSlateFontInfo(Style->RootToContentDi(RelateivePath, TEXT(".ttf")), __VA_ARGS__)
+#define OTF_FONT(RelateivePath, ...) \
+	FSlateFontInfo(Style->RootToContentDir(RelateivePath, TEXT(".otf")), __VA_ARGS__)
 
 namespace
 {
@@ -68,7 +71,8 @@ namespace
 TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 {
 	TSharedRef<FSlateStyleSet> Style = MakeShareable(new FSlateStyleSet(GetStyleSetName()));
-	Style->SetContentRoot(IPluginManager::Get().FindPlugin("AGXUnreal")->GetContentDir() / TEXT("Editor"));
+	Style->SetContentRoot(
+		IPluginManager::Get().FindPlugin("AGXUnreal")->GetContentDir() / TEXT("Editor"));
 
 	// Define icons and stuff here.
 

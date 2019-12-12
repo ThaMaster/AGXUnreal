@@ -17,7 +17,8 @@ public:
 private:
 	virtual void AllocateNativeImpl(
 		const FRigidBodyBarrier* Rb1, const FVector* FramePosition1, const FQuat* FrameRotation1,
-		const FRigidBodyBarrier* Rb2, const FVector* FramePosition2, const FQuat* FrameRotation2) override;
+		const FRigidBodyBarrier* Rb2, const FVector* FramePosition2,
+		const FQuat* FrameRotation2) override;
 
 private:
 	FBallJointBarrier(const FBallJointBarrier&) = delete;

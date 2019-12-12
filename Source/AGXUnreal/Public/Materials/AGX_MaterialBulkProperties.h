@@ -45,7 +45,8 @@ public:
 	/**
 	 * Minimum elastic rest length of the contact material, in meters.
 	 *
-	 * This is only used if the contact area approach is used if the 'Use Contact Area Approach' is enabled.
+	 * This is only used if the contact area approach is used if the 'Use Contact Area Approach' is
+	 * enabled.
 	 */
 	UPROPERTY(EditAnywhere)
 	double MinElasticRestLength;
@@ -53,7 +54,8 @@ public:
 	/**
 	 * Maximum elastic rest length of the contact material, in meters.
 	 *
-	 * This is only used if the contact area approach is used if the 'Use Contact Area Approach' is enabled.
+	 * This is only used if the contact area approach is used if the 'Use Contact Area Approach' is
+	 * enabled.
 	 */
 	UPROPERTY(EditAnywhere)
 	double MaxElasticRestLength;

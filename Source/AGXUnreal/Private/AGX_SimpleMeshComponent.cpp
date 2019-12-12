@@ -64,16 +64,20 @@ public:
 		for (int32 VertexIndex = 0; VertexIndex < NumVertices; ++VertexIndex)
 		{
 			const FVector VertexPosition = MeshData.Vertices[VertexIndex];
-			const FVector2D VertexTexCoord = HasTexCoords ? MeshData.TexCoords[VertexIndex] : FVector2D::ZeroVector;
+			const FVector2D VertexTexCoord =
+				HasTexCoords ? MeshData.TexCoords[VertexIndex] : FVector2D::ZeroVector;
 
-			const FVector TangentX = HasTangents ? MeshData.Tangents[VertexIndex] : FVector::ZeroVector;
+			const FVector TangentX =
+				HasTangents ? MeshData.Tangents[VertexIndex] : FVector::ZeroVector;
 			const FVector TangentZ = MeshData.Normals[VertexIndex];
-			const FVector TangentY = HasTangents ? (TangentZ ^ TangentX).GetSafeNormal() : FVector::ZeroVector;
+			const FVector TangentY =
+				HasTangents ? (TangentZ ^ TangentX).GetSafeNormal() : FVector::ZeroVector;
 
 			VertexBuffers.PositionVertexBuffer.VertexPosition(VertexIndex) = VertexPosition;
 			VertexBuffers.ColorVertexBuffer.VertexColor(VertexIndex) = VertexColor;
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(VertexIndex, 0, VertexTexCoord);
-			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(VertexIndex, TangentX, TangentY, TangentZ);
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
+				VertexIndex, TangentX, TangentY, TangentZ);
 
 			// Populate Index Buffer Resource
 			if (!HasIndexBuffer)
@@ -124,7 +128,8 @@ public:
 					const float V0toV2 = TexCoord2.Y - TexCoord0.Y;
 
 					TriangleTangent = FVector(
-						V0toV2 * P0toP1.X - V0toV1 * P0toP2.X, V0toV2 * P0toP1.Y - V0toV1 * P0toP2.Y,
+						V0toV2 * P0toP1.X - V0toV1 * P0toP2.X,
+						V0toV2 * P0toP1.Y - V0toV1 * P0toP2.Y,
 						V0toV2 * P0toP1.Z - V0toV1 * P0toP2.Z);
 				}
 				else
@@ -134,9 +139,11 @@ public:
 
 				// Compute Tangent and Binormal for each vertex of the triangle, so that
 				// potentially smoothed normals produces smooth Tangents and Binormals.
-				for (uint32 VertexIndexInTriangle = 0; VertexIndexInTriangle < 3; ++VertexIndexInTriangle)
+				for (uint32 VertexIndexInTriangle = 0; VertexIndexInTriangle < 3;
+					 ++VertexIndexInTriangle)
 				{
-					const uint32& VertexIndex = IndexBuffer.Indices[TriangleIndex * 3 + VertexIndexInTriangle];
+					const uint32& VertexIndex =
+						IndexBuffer.Indices[TriangleIndex * 3 + VertexIndexInTriangle];
 					const FVector& VertexNormal = MeshData.Normals[VertexIndex];
 					const FVector VertexBinormal = (VertexNormal ^ TriangleTangent).GetSafeNormal();
 					const FVector VertexTangent = (VertexBinormal ^ VertexNormal).GetSafeNormal();
@@ -157,8 +164,10 @@ public:
 			FLocalVertexFactory::FDataType Data;
 			VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(&VertexFactory, Data);
 			VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(&VertexFactory, Data);
-			VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(&VertexFactory, Data);
-			VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(&VertexFactory, Data, LightMapIndex);
+			VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
+				&VertexFactory, Data);
+			VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
+				&VertexFactory, Data, LightMapIndex);
 			VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(&VertexFactory, Data);
 			VertexFactory.SetData(Data);
 
@@ -184,8 +193,8 @@ public:
 	}
 
 	virtual void GetDynamicMeshElements(
-		const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap,
-		FMeshElementCollector& Collector) const override
+		const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily,
+		uint32 VisibilityMap, FMeshElementCollector& Collector) const override
 	{
 		QUICK_SCOPE_CYCLE_COUNTER(STAT_AGX_SimpleMeshSceneProxy_GetDynamicMeshElements);
 
@@ -225,14 +234,15 @@ public:
 				int32 SingleCaptureIndex;
 #if UE_VERSION_OLDER_THAN(4, 23, 0)
 				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(
-					GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld,
-					SingleCaptureIndex);
+					GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap,
+					PreviousLocalToWorld, SingleCaptureIndex);
 #else
-				/// \todo Replace Unknown with proper name or use some getter function to get a proper value.
+				/// \todo Replace Unknown with proper name or use some getter function to get a
+				/// proper value.
 				bool Unknown = false;
 				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(
-					GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld,
-					SingleCaptureIndex, Unknown);
+					GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap,
+					PreviousLocalToWorld, SingleCaptureIndex, Unknown);
 #endif
 				FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer =
 					Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
@@ -245,12 +255,14 @@ public:
 					GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), GetLocalBounds(), true,
 					bHasPrecomputedVolumetricLightmap, DrawsVelocity(), Unknown);
 #endif
-				BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
+				BatchElement.PrimitiveUniformBufferResource =
+					&DynamicPrimitiveUniformBuffer.UniformBuffer;
 
 				BatchElement.FirstIndex = 0;
 				BatchElement.NumPrimitives = IndexBuffer.Indices.Num() / 3;
 				BatchElement.MinVertexIndex = 0;
-				BatchElement.MaxVertexIndex = VertexBuffers.PositionVertexBuffer.GetNumVertices() - 1;
+				BatchElement.MaxVertexIndex =
+					VertexBuffers.PositionVertexBuffer.GetNumVertices() - 1;
 				Mesh.ReverseCulling = IsLocalToWorldDeterminantNegative();
 				Mesh.Type = PT_TriangleList;
 				Mesh.DepthPriorityGroup = SDPG_World;
@@ -271,7 +283,8 @@ public:
 		Result.bRenderCustomDepth = ShouldRenderCustomDepth();
 		Result.bTranslucentSelfShadow = bCastVolumetricTranslucentShadow;
 		MaterialRelevance.SetPrimitiveViewRelevance(Result);
-		Result.bVelocityRelevance = IsMovable() && Result.bOpaqueRelevance && Result.bRenderInMainPass;
+		Result.bVelocityRelevance =
+			IsMovable() && Result.bOpaqueRelevance && Result.bRenderInMainPass;
 		return Result;
 	}
 

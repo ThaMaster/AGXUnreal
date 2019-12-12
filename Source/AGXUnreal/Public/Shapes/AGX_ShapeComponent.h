@@ -13,7 +13,8 @@
 class UAGX_MaterialBase;
 
 UCLASS(
-	ClassGroup = "AGX", Category = "AGX", Abstract, NotPlaceable, Meta = (BlueprintSpawnableComponent),
+	ClassGroup = "AGX", Category = "AGX", Abstract, NotPlaceable,
+	Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, Input, LOD, Physics, Replication))
 class AGXUNREAL_API UAGX_ShapeComponent : public UAGX_SimpleMeshComponent
 {
@@ -38,9 +39,12 @@ public:
 
 	UAGX_ShapeComponent();
 
-	virtual FShapeBarrier* GetNative() PURE_VIRTUAL(UAGX_ShapeComponent::GetNative, return nullptr;);
-	virtual const FShapeBarrier* GetNative() const PURE_VIRTUAL(UAGX_ShapeComponent::GetNative, return nullptr;);
-	virtual FShapeBarrier* GetOrCreateNative() PURE_VIRTUAL(UAGX_ShapeComponent::GetOrCreateNative, return nullptr;);
+	virtual FShapeBarrier* GetNative()
+		PURE_VIRTUAL(UAGX_ShapeComponent::GetNative, return nullptr;);
+	virtual const FShapeBarrier* GetNative() const
+		PURE_VIRTUAL(UAGX_ShapeComponent::GetNative, return nullptr;);
+	virtual FShapeBarrier* GetOrCreateNative()
+		PURE_VIRTUAL(UAGX_ShapeComponent::GetOrCreateNative, return nullptr;);
 	bool HasNative() const;
 
 	/**
@@ -59,7 +63,8 @@ public:
 
 public:
 	virtual void TickComponent(
-		float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+		float DeltaTime, ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction) override;
 
 #if WITH_EDITOR
 
@@ -74,7 +79,8 @@ public:
 	 * Subclass must invoke the Super class's implementation and use its result
 	 * with a logical OR!
 	 */
-	virtual bool DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const;
+	virtual bool DoesPropertyAffectVisualMesh(
+		const FName& PropertyName, const FName& MemberPropertyName) const;
 
 	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
@@ -97,7 +103,8 @@ protected:
 	 */
 	template <typename TNative>
 	void UpdateNativeLocalTransform(TNative& Native);
-	// TODO: Would be easier if Native was owned by ShapeComponent, with polymorphic pointer (e.g. TUniquePtr).
+	// TODO: Would be easier if Native was owned by ShapeComponent, with polymorphic pointer (e.g.
+	// TUniquePtr).
 
 	/**
 	 * Defines triangles for a visual mesh to render in Unreal Engine. Whether
@@ -122,7 +129,8 @@ void UAGX_ShapeComponent::UpdateNativeLocalTransform(TNative& Native)
 {
 	FTransform RigiBodyTransform = GetOwner()->GetActorTransform();
 
-	FVector LocalPosition = RigiBodyTransform.InverseTransformPositionNoScale(GetComponentLocation());
+	FVector LocalPosition =
+		RigiBodyTransform.InverseTransformPositionNoScale(GetComponentLocation());
 	FQuat LocalOrientation = RigiBodyTransform.InverseTransformRotation(GetComponentQuat());
 
 	Native.SetLocalPosition(LocalPosition);

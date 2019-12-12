@@ -10,7 +10,8 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 
 	// This assumes a square and uniform grid of components.
 	/// \todo Figure out how to get the size/sides of the component grid.
-	const int32 NumComponentsSide = FMath::RoundToInt(FMath::Sqrt(static_cast<float>(NumComponents)));
+	const int32 NumComponentsSide =
+		FMath::RoundToInt(FMath::Sqrt(static_cast<float>(NumComponents)));
 	check(NumComponentsSide * NumComponentsSide == NumComponents);
 
 	const int32 NumQuadsPerComponentSide = Landscape.ComponentSizeQuads;

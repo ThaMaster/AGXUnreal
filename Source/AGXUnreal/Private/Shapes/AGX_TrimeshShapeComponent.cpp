@@ -81,13 +81,16 @@ bool UAGX_TrimeshShapeComponent::DoesPropertyAffectVisualMesh(
 	const FName& PropertyName, const FName& MemberPropertyName) const
 {
 	return Super::DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName) ||
-		   MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceLocation) ||
-		   MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceAsset);
+		   MemberPropertyName ==
+			   GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceLocation) ||
+		   MemberPropertyName ==
+			   GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceAsset);
 }
 
 bool UAGX_TrimeshShapeComponent::CanEditChange(const UProperty* InProperty) const
 {
-	if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceAsset))
+	if (InProperty->GetFName() ==
+		GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceAsset))
 	{
 		return MeshSourceLocation == TSL_STATIC_MESH_ASSET;
 	}
@@ -125,7 +128,8 @@ void UAGX_TrimeshShapeComponent::ReleaseNative()
 	NativeBarrier.ReleaseNative();
 }
 
-bool UAGX_TrimeshShapeComponent::FindStaticMeshSource(UStaticMesh*& StaticMesh, FTransform* WorldTransform) const
+bool UAGX_TrimeshShapeComponent::FindStaticMeshSource(
+	UStaticMesh*& StaticMesh, FTransform* WorldTransform) const
 {
 	if (MeshSourceLocation == TSL_CHILD_STATIC_MESH_COMPONENT)
 	{
@@ -180,8 +184,9 @@ bool UAGX_TrimeshShapeComponent::FindStaticMeshSource(UStaticMesh*& StaticMesh, 
 }
 
 static int32 AddCollisionVertex(
-	const int32 MeshVertexIndex, const FPositionVertexBuffer& MeshVertices, const FTransform& Transform,
-	TArray<FVector>& CollisionVertices, TMap<int32, int32>& MeshToCollisionVertexIndices)
+	const int32 MeshVertexIndex, const FPositionVertexBuffer& MeshVertices,
+	const FTransform& Transform, TArray<FVector>& CollisionVertices,
+	TMap<int32, int32>& MeshToCollisionVertexIndices)
 {
 	if (int32* CollisionVertexIndexPtr = MeshToCollisionVertexIndices.Find(MeshVertexIndex))
 	{
@@ -191,8 +196,8 @@ static int32 AddCollisionVertex(
 	else
 	{
 		// Copy position
-		int32 CollisionVertexIndex =
-			CollisionVertices.Add(Transform.TransformPosition(MeshVertices.VertexPosition(MeshVertexIndex)));
+		int32 CollisionVertexIndex = CollisionVertices.Add(
+			Transform.TransformPosition(MeshVertices.VertexPosition(MeshVertexIndex)));
 
 		// Add index to map.
 		MeshToCollisionVertexIndices.Add(MeshVertexIndex, CollisionVertexIndex);
@@ -213,12 +218,14 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 	if (!FindStaticMeshSource(StaticMesh, &MeshWorldTransform))
 		return false;
 
-	const FTransform ComponentTransformNoScale = FTransform(GetComponentRotation(), GetComponentLocation());
+	const FTransform ComponentTransformNoScale =
+		FTransform(GetComponentRotation(), GetComponentLocation());
 
 	// Final vertex positions need to be relative to this Agx Geometry,
 	// and any scale needs to be baked into the positions, because AGX
 	// does not support scale.
-	const FTransform RelativeTransform = MeshWorldTransform.GetRelativeTransform(ComponentTransformNoScale);
+	const FTransform RelativeTransform =
+		MeshWorldTransform.GetRelativeTransform(ComponentTransformNoScale);
 
 	const uint32 LodIndex = FMath::Clamp<int32>(
 		bOverrideMeshSourceLodIndex ? MeshSourceLodIndex : StaticMesh->LODForCollision, 0,
@@ -240,14 +247,14 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 		{
 			FTriIndices Triangle;
 			Triangle.v0 = AddCollisionVertex(
-				MeshIndices[Index + 0], Mesh.VertexBuffers.PositionVertexBuffer, RelativeTransform, Vertices,
-				MeshToCollisionVertexIndices);
+				MeshIndices[Index + 0], Mesh.VertexBuffers.PositionVertexBuffer, RelativeTransform,
+				Vertices, MeshToCollisionVertexIndices);
 			Triangle.v1 = AddCollisionVertex(
-				MeshIndices[Index + 1], Mesh.VertexBuffers.PositionVertexBuffer, RelativeTransform, Vertices,
-				MeshToCollisionVertexIndices);
+				MeshIndices[Index + 1], Mesh.VertexBuffers.PositionVertexBuffer, RelativeTransform,
+				Vertices, MeshToCollisionVertexIndices);
 			Triangle.v2 = AddCollisionVertex(
-				MeshIndices[Index + 2], Mesh.VertexBuffers.PositionVertexBuffer, RelativeTransform, Vertices,
-				MeshToCollisionVertexIndices);
+				MeshIndices[Index + 2], Mesh.VertexBuffers.PositionVertexBuffer, RelativeTransform,
+				Vertices, MeshToCollisionVertexIndices);
 
 			Indices.Add(Triangle);
 		}
