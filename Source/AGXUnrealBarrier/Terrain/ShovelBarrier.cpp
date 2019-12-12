@@ -34,6 +34,20 @@ FShovelBarrier::~FShovelBarrier()
 	// definition, not just the forward declaration, of FShovelRef.
 }
 
+void FShovelBarrier::SetTopEdge(const FTwoVectors& TopEdgeUnreal)
+{
+	check(HasNative());
+	agx::Line TopEdgeAGX = ConvertVector(TopEdgeUnreal);
+	NativeRef->Native->setTopEdge(TopEdgeAGX);
+}
+
+void FShovelBarrier::SetCuttingEdge(const FTwoVectors& CuttingEdge)
+{
+	check(HasNative());
+	agx::Line CuttingEdgeAGX = ConvertVector(CuttingEdge);
+	NativeRef->Native->setCuttingEdge(CuttingEdgeAGX);
+}
+
 bool FShovelBarrier::HasNative() const
 {
 	return NativeRef->Native != nullptr;

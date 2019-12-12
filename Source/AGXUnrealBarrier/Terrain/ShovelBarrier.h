@@ -1,6 +1,8 @@
 #pragma once
 
 // AGXUnreal includes.
+#include "Math/Vector.h"
+#include "Math/TwoVectors.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -32,6 +34,9 @@ public:
 	FShovelBarrier(std::unique_ptr<FShovelRef> Native);
 	FShovelBarrier(FShovelBarrier&& Other);
 	~FShovelBarrier();
+
+	void SetTopEdge(const FTwoVectors& TopEdge);
+	void SetCuttingEdge(const FTwoVectors& CuttingEdge);
 
 	bool HasNative() const;
 	void AllocateNative(
