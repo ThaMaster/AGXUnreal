@@ -13,10 +13,10 @@
 #include <agxCollide/HeightField.h>
 #include "EndAGXIncludes.h"
 
-
 /// \todo This block of code is for linker debugging only. Should be removed
 /// before the first public release. There is a related piece of code in
-/// AGXUnrealLibary.Build.cs, where vdbgrid and openvdb are linked against.
+/// AGXUnrealLibary.Build.cs, where AGXUnrealLibrary is linked against vdbgrid
+/// and openvdb.
 #define FORCE_INITIALIZE_OPEN_VDB 1
 #if FORCE_INITIALIZE_OPEN_VDB
 #define FORCE_DLOPEN_VDB_GRID 0

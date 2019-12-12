@@ -6,7 +6,7 @@
 #include "AGX_VectorComponent.generated.h"
 
 /**
- * A VectorComponent is used to represent a direction or an edge in the world
+ * A VectorComponent is used to represent a direction or an edge in the world.
  * It is used by the terrain shovel to specify cutting edges and such. It comes
  * with editor integration for easier setup.
  *
