@@ -156,6 +156,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")
 	bool bEnableActiveZoneRendering = false;
 
+	/// Return true if the AGX Dynamics object has been created. False otherwise.
+	bool HasNative();
+
 	FTerrainBarrier* GetNative();
 	const FTerrainBarrier* GetNative() const;
 
@@ -167,6 +170,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	void InitializeNative();
+	void CreateNativeTerrain();
 	void CreateNativeShovels();
 
 private:

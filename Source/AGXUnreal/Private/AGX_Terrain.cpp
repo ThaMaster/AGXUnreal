@@ -24,6 +24,11 @@ AAGX_Terrain::AAGX_Terrain()
 {
 }
 
+bool AAGX_Terrain::HasNative()
+{
+	return NativeBarrier.HasNative();
+}
+
 FTerrainBarrier* AAGX_Terrain::GetNative()
 {
 	if (!NativeBarrier.HasNative())
@@ -47,24 +52,10 @@ const FTerrainBarrier* AAGX_Terrain::GetNative() const
 void AAGX_Terrain::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (SourceLandscape == nullptr)
+	if (!HasNative())
 	{
-		UE_LOG(LogAGX, Error, TEXT("No source landscape selected for terrain %s %s."), *GetActorLabel(), *GetName());
-		return;
+		InitializeNative();
 	}
-
-	if (NativeBarrier.HasNative())
-	{
-		return;
-	}
-
-	FHeightFieldShapeBarrier HeightField = AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
-	NativeBarrier.AllocateNative(HeightField);
-	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	Simulation->AddTerrain(this);
-
-	CreateNativeShovels();
 }
 
 // Called every frame
@@ -92,6 +83,32 @@ namespace
 		}
 		return Components[0];
 	}
+}
+
+void AAGX_Terrain::InitializeNative()
+{
+	if (SourceLandscape == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("No source landscape selected for terrain %s %s."), *GetActorLabel(), *GetName());
+		return;
+	}
+
+	if (NativeBarrier.HasNative())
+	{
+		UE_LOG(LogAGX, Error, TEXT("BeginPlay called on a Terrain that has already been initialized.	"));
+		return;
+	}
+
+	CreateNativeTerrain();
+	CreateNativeShovels();
+}
+
+void AAGX_Terrain::CreateNativeTerrain()
+{
+	FHeightFieldShapeBarrier HeightField = AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
+	NativeBarrier.AllocateNative(HeightField);
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	Simulation->AddTerrain(this);
 }
 
 void AAGX_Terrain::CreateNativeShovels()
