@@ -19,7 +19,7 @@ public:
 	FNotifyRef* GetNative();
 	const FNotifyRef* GetNative() const;
 
-	// Note: not allowed to call StartAgxNotify twice in a row
+	// Note: not allowed to call StartAgxNotify twice in a row.
 	void StartAgxNotify(ELogVerbosity::Type LogVerbosity);
 	void StopAgxNotify();
 
