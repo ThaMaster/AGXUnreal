@@ -136,18 +136,29 @@ void AAGX_Terrain::CreateNativeShovels()
 					WorldToBody.TransformPosition(Arrow->GetVectorTarget())};
 		};
 
-
 		FShovelBarrier ShovelBarrier;
 		FRigidBodyBarrier* BodyBarrier = Body->GetOrCreateNative();
 		FTwoVectors TopEdgeLine = ArrowToLine(TopEdge);
 		FTwoVectors CuttingEdgeLine = ArrowToLine(CuttingEdge);
 		FVector CuttingDirectionVector = WorldToBody.TransformVector(CuttingDirection->GetVectorDirectionNormalized());
 		ShovelBarrier.AllocateNative(*BodyBarrier, TopEdgeLine, CuttingEdgeLine, CuttingDirectionVector);
+
 		bool Added = NativeBarrier.AddShovel(ShovelBarrier);
 		if (!Added)
 		{
-			UE_LOG(LogAGX, Error, TEXT("Terrain '%s' rejected shovel."), *GetName(), *Actor->GetName());
-			continue;
+			UE_LOG(LogAGX, Warning, TEXT("Terrain '%s' rejected shovel '%s'."), *GetName(), *Actor->GetName());
+			UE_LOG(LogAGX, Warning, TEXT("  Reversing edges"));
+			std::swap(TopEdgeLine.v1, TopEdgeLine.v2);
+			std::swap(CuttingEdgeLine.v1, CuttingEdgeLine.v2);
+			ShovelBarrier.SetTopEdge(TopEdgeLine);
+			ShovelBarrier.SetCuttingEdge(CuttingEdgeLine);
+			Added = NativeBarrier.AddShovel(ShovelBarrier);
+			if (!Added)
+			{
+				UE_LOG(LogAGX, Error, TEXT("Terrain '%s' rejected shovel '%s'."), *GetName(), *Actor->GetName());
+				UE_LOG(LogAGX, Error, TEXT("  Abandoning shovel."));
+				continue;
+			}
 		}
 
 		UE_LOG(LogAGX, Log, TEXT("Created shovel '%s' for terrain '%s'."), *Actor->GetName(), *GetName());
