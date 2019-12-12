@@ -17,8 +17,10 @@
 /// \todo This block of code is for linker debugging only. Should be removed
 /// before the first public release. There is a related piece of code in
 /// AGXUnrealLibary.Build.cs, where vdbgrid and openvdb are linked against.
-#define FORCE_INITIALIZE_OPEN_VDB 0
+#define FORCE_INITIALIZE_OPEN_VDB 1
 #if FORCE_INITIALIZE_OPEN_VDB
+#define FORCE_DLOPEN_VDB_GRID 0
+#define FORCE_DLOPEN_OPEN_VDB 0
 #include <iostream>
 #include <agx/PushDisableWarnings.h>
 #include <openvdb/openvdb.h>
@@ -29,11 +31,15 @@ namespace
 		void DoForceInitializeOpenVDB()
 		{
 			std::cout << "Using std::cout" << std::endl;
-			//dlopen("/media/s2000/agx/master/unreal_dependencies/lib/libvdbgrid.so.2.28.0.0", RTLD_NOW | RTLD_GLOBAL);
-			//dlopen(
-			//	"/media/s2000/agx/master/unreal_dependencies/dependencies/"
-			//	"agxTerrain_dependencies_20191204_ubuntu_18.04_64_unreal/lib/libopenvdb.so",
-			//	RTLD_NOW | RTLD_GLOBAL);
+#if FORCE_DLOPEN_OPEN_VDB
+			dlopen("/media/s2000/agx/master/unreal_dependencies/lib/libvdbgrid.so.2.28.0.0", RTLD_NOW | RTLD_GLOBAL);
+#endif
+#if FORCE_DLOPEN_VDB_GRID
+			dlopen(
+				"/media/s2000/agx/master/unreal_dependencies/dependencies/"
+				"agxTerrain_dependencies_20191204_ubuntu_18.04_64_unreal/lib/libopenvdb.so",
+				RTLD_NOW | RTLD_GLOBAL);
+#endif
 			openvdb::initialize();
 		}
 	} ForceInitializeOpenVDB;

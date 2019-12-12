@@ -37,8 +37,8 @@ public class AGXUnrealLibrary : ModuleRules
 		/// removed before the first public release. There is a related
 		/// piece of code in TerrainBarrier.cpp, where vdbgrid and
 		/// openvdb are explicitly dlopen'd.
-		// PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("vdbgrid"));
-		// PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("openvdb"));
+		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("vdbgrid"));
+		PublicAdditionalLibraries.Add(CurrentPlatform.LinkTerrainDependencyLibraryPath("openvdb"));
 
 		// TODO: Do we need to list more libraries here, or will transitive
 		// dependencies be enough?.
