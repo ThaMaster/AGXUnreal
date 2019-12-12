@@ -107,12 +107,12 @@ inline agx::Line Convert(const FTwoVectors& Vs)
 
 inline agx::Line ConvertDistance(const FTwoVectors& Vs)
 {
-	return {ConvertDistance(Vs.v1), Convert(Vs.v2)};
+	return {ConvertDistance(Vs.v1), ConvertDistance(Vs.v2)};
 }
 
 inline agx::Line ConvertVector(const FTwoVectors& Vs)
 {
-	return {ConvertVector(Vs.v1), Convert(Vs.v2)};
+	return {ConvertVector(Vs.v1), ConvertVector(Vs.v2)};
 }
 
 inline FQuat Convert(const agx::Quat& V)
