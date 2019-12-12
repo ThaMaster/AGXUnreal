@@ -159,6 +159,7 @@ void AAGX_Terrain::CreateNativeShovels()
 				UE_LOG(LogAGX, Error, TEXT("  Abandoning shovel."));
 				continue;
 			}
+			UE_LOG(LogAGX, Warning, TEXT("Shovel with reversed edges added successfully. Consider flipping the edges in the editor."));
 		}
 
 		UE_LOG(LogAGX, Log, TEXT("Created shovel '%s' for terrain '%s'."), *Actor->GetName(), *GetName());
