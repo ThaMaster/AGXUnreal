@@ -34,3 +34,6 @@ endif()
 # Enable usage of the Unreal Engine standard libraries.
 set(CMAKE_C_STANDARD_LIBRARIES  "-lm -lc -lgcc_s -lgcc -lpthread" CACHE INTERNAL "")
 set(CMAKE_CXX_STANDARD_LIBRARIES  "$ENV{UE_THIRD_PARTY_DIR}/Linux/LibCxx/lib/Linux/x86_64-unknown-linux-gnu/libc++.a  $ENV{UE_THIRD_PARTY_DIR}/Linux/LibCxx/lib/Linux/x86_64-unknown-linux-gnu/libc++abi.a  -lm -lc -lgcc_s -lgcc -lpthread" CACHE INTERNAL "")
+
+# CMake fails to detect CMAKE_SIZEOF_VOID_P and it ends up being the empty string.
+set(CMAKE_SIZEOF_VOID_P 8 CACHE INTERNAL "")
