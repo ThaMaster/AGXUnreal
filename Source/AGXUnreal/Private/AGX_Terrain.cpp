@@ -172,8 +172,10 @@ void AAGX_Terrain::CreateNativeShovels()
 			Added = NativeBarrier.AddShovel(ShovelBarrier);
 			if (!Added)
 			{
-				UE_LOG(LogAGX, Error, TEXT("Terrain '%s' rejected shovel '%s'."), *GetName(), *Actor->GetName());
-				UE_LOG(LogAGX, Error, TEXT("  Abandoning shovel."));
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("Terrain '%s' rejected shovel '%s' after edge direction flip. Abandoning shovel."), *GetName(),
+					*Actor->GetName());
 				continue;
 			}
 			UE_LOG(
