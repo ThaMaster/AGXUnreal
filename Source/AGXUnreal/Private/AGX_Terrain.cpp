@@ -68,17 +68,18 @@ void AAGX_Terrain::Tick(float DeltaTime)
 
 namespace
 {
-	template <typename T>
-	T* GetShovelComponent(AActor* Owner, const TCHAR* TerrainName)
+	template <typename TPtr>
+	TPtr GetShovelComponent(AActor* Owner, const TCHAR* TerrainName)
 	{
-		TArray<T*> Components;
-		Owner->GetComponents<T>(Components);
+		using TType = typename std::remove_pointer<TPtr>::type;
+		TArray<TPtr> Components;
+		Owner->GetComponents<TType>(Components);
 		if (Components.Num() != 1)
 		{
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("A shovel in the AGX Terrain '%s' is invalid because the Actor '%s' doesn't have an '%s'"),
-				TerrainName, *Owner->GetName(), *T::StaticClass()->GetName());
+				TerrainName, *Owner->GetName(), *TType::StaticClass()->GetName());
 			return nullptr;
 		}
 		return Components[0];
@@ -133,11 +134,11 @@ void AAGX_Terrain::CreateNativeShovels()
 		}
 
 		AActor* Actor = Shovel.RigidBodyActor;
-		UAGX_RigidBodyComponent* Body = GetShovelComponent<UAGX_RigidBodyComponent>(Actor, *GetName());
-		UAGX_TopEdgeComponent* TopEdge = GetShovelComponent<UAGX_TopEdgeComponent>(Actor, *GetName());
-		UAGX_CuttingEdgeComponent* CuttingEdge = GetShovelComponent<UAGX_CuttingEdgeComponent>(Actor, *GetName());
+		UAGX_RigidBodyComponent* Body = GetShovelComponent<decltype(Body)>(Actor, *GetName());
+		UAGX_TopEdgeComponent* TopEdge = GetShovelComponent<decltype(TopEdge)>(Actor, *GetName());
+		UAGX_CuttingEdgeComponent* CuttingEdge = GetShovelComponent<decltype(CuttingEdge)>(Actor, *GetName());
 		UAGX_CuttingDirectionComponent* CuttingDirection =
-			GetShovelComponent<UAGX_CuttingDirectionComponent>(Actor, *GetName());
+			GetShovelComponent<decltype(CuttingDirection)>(Actor, *GetName());
 
 		if (Body == nullptr || TopEdge == nullptr || CuttingEdge == nullptr || CuttingDirection == nullptr)
 		{
@@ -176,7 +177,9 @@ void AAGX_Terrain::CreateNativeShovels()
 				UE_LOG(LogAGX, Error, TEXT("  Abandoning shovel."));
 				continue;
 			}
-			UE_LOG(LogAGX, Warning, TEXT("Shovel with reversed edges added successfully. Consider flipping the edges in the editor."));
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Shovel with reversed edges added successfully. Consider flipping the edges in the editor."));
 		}
 
 		UE_LOG(LogAGX, Log, TEXT("Created shovel '%s' for terrain '%s'."), *Actor->GetName(), *GetName());
