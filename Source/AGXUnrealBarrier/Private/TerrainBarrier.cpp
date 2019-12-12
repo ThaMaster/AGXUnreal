@@ -13,6 +13,34 @@
 #include <agxCollide/HeightField.h>
 #include "EndAGXIncludes.h"
 
+
+/// \todo This block of code is for linker debugging only. Should be removed
+/// before the first public release. There is a related piece of code in
+/// AGXUnrealLibary.Build.cs, where vdbgrid and openvdb are linked against.
+#define FORCE_INITIALIZE_OPEN_VDB 0
+#if FORCE_INITIALIZE_OPEN_VDB
+#include <iostream>
+#include <agx/PushDisableWarnings.h>
+#include <openvdb/openvdb.h>
+namespace
+{
+	struct FForceInitializeOpenVDB
+	{
+		void DoForceInitializeOpenVDB()
+		{
+			std::cout << "Using std::cout" << std::endl;
+			//dlopen("/media/s2000/agx/master/unreal_dependencies/lib/libvdbgrid.so.2.28.0.0", RTLD_NOW | RTLD_GLOBAL);
+			//dlopen(
+			//	"/media/s2000/agx/master/unreal_dependencies/dependencies/"
+			//	"agxTerrain_dependencies_20191204_ubuntu_18.04_64_unreal/lib/libopenvdb.so",
+			//	RTLD_NOW | RTLD_GLOBAL);
+			openvdb::initialize();
+		}
+	} ForceInitializeOpenVDB;
+}
+#include <agx/PopDisableWarnings.h>
+#endif
+
 FTerrainBarrier::FTerrainBarrier()
 	: NativeRef {new FTerrainRef}
 {
@@ -42,6 +70,10 @@ bool FTerrainBarrier::HasNative() const
 
 void FTerrainBarrier::AllocateNative(FHeightFieldShapeBarrier& SourceHeightField)
 {
+#if FORCE_INITIALIZE_OPEN_VDB
+	ForceInitializeOpenVDB.DoForceInitializeOpenVDB();
+#endif
+
 	check(!HasNative());
 	agx::Real MaximumDepth {10.0};
 	agxCollide::HeightField* HeightFieldAGX = SourceHeightField.GetNativeShape<agxCollide::HeightField>();
