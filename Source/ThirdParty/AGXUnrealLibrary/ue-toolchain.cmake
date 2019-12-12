@@ -10,8 +10,8 @@
 # Unreal Engine 4.22 uses clang-7. We only name the compiler, instead of giving a full path to the binaires downloaded
 # by the Unreal Engine Setup.sh script. This makes it use the system binaries. We may want to try using the Unreal
 # Engine specific binaries at some point.
-set(CMAKE_C_COMPILER "clang-7" CACHE)
-set(CMAKE_CXX_COMPILER "clang++-7" CACHE)
+set(CMAKE_C_COMPILER "clang-7" CACHE STRING "The C compiler to use.")
+set(CMAKE_CXX_COMPILER "clang++-7" CACHE STRING "The C++ compiler to use.")
 
 # Disable system include paths and add the Unreal Engine paths instead.
 if(NOT CMAKE_CXX_FLAGS MATCHES "Linux/LibCxx/include")
