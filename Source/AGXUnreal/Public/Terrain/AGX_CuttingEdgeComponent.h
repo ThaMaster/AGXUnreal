@@ -10,7 +10,7 @@
  * Remember to also add the rigid body actor to the list of shovels on the
  * AGX Terrain's details panel!
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX_Terrain", Category = "AGX", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_CuttingEdgeComponent : public UAGX_VectorComponent
 {
 	GENERATED_BODY()
