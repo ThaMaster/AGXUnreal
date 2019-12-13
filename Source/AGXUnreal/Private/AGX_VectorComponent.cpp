@@ -10,6 +10,7 @@
 #include "Materials/Material.h"
 #include "PrimitiveSceneProxy.h"
 #include "StaticMeshResources.h"
+#include "Misc/EngineVersionComparison.h"
 
 namespace
 {
@@ -100,10 +101,19 @@ namespace
 
 					FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer =
 						Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
+
+#if UE_VERSION_OLDER_THAN(4, 23, 0)
 					DynamicPrimitiveUniformBuffer.Set(
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(), GetLocalBounds(), true, false,
 						UseEditorDepthTest());
+#else
+					DynamicPrimitiveUniformBuffer.Set(
+						FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
+						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(), GetLocalBounds(), true, false,
+						DrawsVelocity(), LpvBiasMultiplier);
+#endif
+
 					BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
 
 					BatchElement.FirstIndex = 0;

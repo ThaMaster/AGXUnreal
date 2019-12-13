@@ -17,7 +17,11 @@
 /// before the first public release. There is a related piece of code in
 /// AGXUnrealLibary.Build.cs, where AGXUnrealLibrary is linked against vdbgrid
 /// and openvdb.
+#if defined(__linux__)
 #define FORCE_INITIALIZE_OPEN_VDB 1
+#else
+#define FORCE_INITIALIZE_OPEN_VDB 0
+#endif
 #if FORCE_INITIALIZE_OPEN_VDB
 #define FORCE_DLOPEN_VDB_GRID 0
 #define FORCE_DLOPEN_OPEN_VDB 0
