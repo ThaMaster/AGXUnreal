@@ -46,10 +46,13 @@ namespace
 			const FVector ShaftCenter = FVector(0.5f * ShaftLength, 0, 0);
 
 			TArray<FDynamicMeshVertex> OutVerts;
+			const uint32 NumConeSides {32u};
+			const uint32 NumCylinderSides {16u};
 			AGX_MeshUtilities::MakeCone(
-				HeadAngle, HeadAngle, -HeadLength, TotalLength, 32, OutVerts, IndexBuffer.Indices);
-			AGX_MeshUtilities::MakeCylinder(ShaftCenter, FVector(0, 0, 1), FVector(0, 1, 0), FVector(1, 0, 0),
-				ShaftRadius, 0.5f * ShaftLength, 16, OutVerts, IndexBuffer.Indices);
+				HeadAngle, HeadAngle, -HeadLength, TotalLength, NumConeSides, OutVerts, IndexBuffer.Indices);
+			AGX_MeshUtilities::MakeCylinder(
+				ShaftCenter, FVector(0, 0, 1), FVector(0, 1, 0), FVector(1, 0, 0), ShaftRadius, 0.5f * ShaftLength,
+				NumCylinderSides, OutVerts, IndexBuffer.Indices);
 
 			VertexBuffers.InitFromDynamicVertex(&VertexFactory, OutVerts);
 
