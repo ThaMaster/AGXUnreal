@@ -40,9 +40,13 @@ void UAGX_AgxEdModeFile::ImportAGXArchive()
 
 	if (Filenames.Num() > 1)
 	{
-		UE_LOG(LogAGX, Log, TEXT("Multiple files selected but we only support single files for now. Doing nothing."));
+		UE_LOG(
+			LogAGX, Log,
+			TEXT("Multiple files selected but we only support single files for now. Doing "
+				 "nothing."));
 		FAGX_EditorUtilities::ShowNotification(LOCTEXT(
-			"Multiple .agx", "Multiple file selected but we only support single files for now. Doing nothing."));
+			"Multiple .agx",
+			"Multiple file selected but we only support single files for now. Doing nothing."));
 		return;
 	}
 
@@ -64,18 +68,24 @@ void UAGX_AgxEdModeFile::ExportAGXArchive()
 
 	if (Filenames.Num() > 1)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Multiple files selected but we only support exporting to one. Doing nothing."));
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Multiple files selected but we only support exporting to one. Doing nothing."));
 		FAGX_EditorUtilities::ShowNotification(LOCTEXT(
-			"Multiple .agx export", "Multiple files selected but we only support exporting to one. Doing nothing."));
+			"Multiple .agx export",
+			"Multiple files selected but we only support exporting to one. Doing nothing."));
 		return;
 	}
 
 	FString Filename = Filenames[0];
 	if (Filename.IsEmpty())
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Cannot store AGX Dynamics archive to an empty file name. Doing nothing."));
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot store AGX Dynamics archive to an empty file name. Doing nothing."));
 		FAGX_EditorUtilities::ShowNotification(LOCTEXT(
-			"Empty .agx name export", "Cannot store AGX Dynamics archive to an empty file name. Doing nothing."));
+			"Empty .agx name export",
+			"Cannot store AGX Dynamics archive to an empty file name. Doing nothing."));
 		return;
 	}
 
@@ -102,7 +112,8 @@ FText UAGX_AgxEdModeFile::GetDisplayName() const
 
 FText UAGX_AgxEdModeFile::GetTooltip() const
 {
-	return LOCTEXT("Tooltip", "Interoperability with external file formats, such AGX simulation files (.agx)");
+	return LOCTEXT(
+		"Tooltip", "Interoperability with external file formats, such AGX simulation files (.agx)");
 }
 
 #undef LOCTEXT_NAMESPACE

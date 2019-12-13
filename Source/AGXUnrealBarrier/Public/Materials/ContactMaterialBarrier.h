@@ -10,8 +10,8 @@ class FMaterialBarrier;
 class FMaterialBarrier;
 
 /**
- * Acts as an interface to a native AGX Contact Material, and encapsulates it so that it is completely hidden from code
- * that includes this file.
+ * Acts as an interface to a native AGX Contact Material, and encapsulates it so that it is
+ * completely hidden from code that includes this file.
  */
 class AGXUNREALBARRIER_API FContactMaterialBarrier
 {
@@ -38,7 +38,8 @@ public:
 	void SetSurfaceFrictionEnabled(bool bEnabled);
 	bool GetSurfaceFrictionEnabled() const;
 
-	void SetFrictionCoefficient(double Coefficient, bool bPrimaryDirection, bool bSecondaryDirection);
+	void SetFrictionCoefficient(
+		double Coefficient, bool bPrimaryDirection, bool bSecondaryDirection);
 	double GetFrictionCoefficient(bool bPrimaryDirection, bool bSecondaryDirection) const;
 
 	void SetSurfaceViscosity(double Viscosity, bool bPrimaryDirection, bool bSecondaryDirection);
@@ -72,6 +73,7 @@ private:
 	void operator=(const FContactMaterialBarrier&) = delete;
 
 	// NativeRef has the same lifetime as this object, so it should never be null.
-	// NativeRef->Native is created by AllocateNative(), released by ReleaseNative(), and can be null.
+	// NativeRef->Native is created by AllocateNative(), released by ReleaseNative(), and can be
+	// null.
 	std::unique_ptr<FContactMaterialRef> NativeRef;
 };

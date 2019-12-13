@@ -44,7 +44,9 @@ void AAGX_Terrain::BeginPlay()
 
 	if (SourceLandscape == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("No source landscape selected for terrain %s %s."), *GetActorLabel(), *GetName());
+		UE_LOG(
+			LogAGX, Error, TEXT("No source landscape selected for terrain %s %s."),
+			*GetActorLabel(), *GetName());
 		return;
 	}
 
@@ -53,7 +55,8 @@ void AAGX_Terrain::BeginPlay()
 		return;
 	}
 
-	FHeightFieldShapeBarrier HeightField = AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
+	FHeightFieldShapeBarrier HeightField =
+		AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
 	NativeBarrier.AllocateNative(HeightField);
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	Simulation->AddTerrain(this);

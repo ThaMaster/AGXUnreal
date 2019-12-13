@@ -61,8 +61,9 @@ struct FAGX_ConstraintDofGraphicsGeometry
 
 /**
  * Defines rendering of a section of a geometry, with a specific material and transformation.
- * Sections can be used to for example render different parts of the geometry with different materials,
- * or to render the same geometry multiple times with different transformations and materials.
+ * Sections can be used to for example render different parts of the geometry with different
+ * materials, or to render the same geometry multiple times with different transformations and
+ * materials.
  */
 struct FAGX_ConstraintDofGraphicsSection
 {
@@ -75,8 +76,9 @@ struct FAGX_ConstraintDofGraphicsSection
 	ESceneDepthPriorityGroup DepthPriority;
 
 	FAGX_ConstraintDofGraphicsSection(
-		const TSharedPtr<FAGX_ConstraintDofGraphicsGeometry>& InGeometry, UMaterialInterface* InMaterial,
-		bool bInShowSelectionOutline, FMatrix InLocalTransform, ESceneDepthPriorityGroup InDepthPriority)
+		const TSharedPtr<FAGX_ConstraintDofGraphicsGeometry>& InGeometry,
+		UMaterialInterface* InMaterial, bool bInShowSelectionOutline, FMatrix InLocalTransform,
+		ESceneDepthPriorityGroup InDepthPriority)
 		: Geometry(InGeometry)
 		, BeginIndex(0)
 		, EndIndex(InGeometry ? static_cast<uint32>(InGeometry->IndexBuffer.Indices.Num()) : 0)
@@ -104,7 +106,8 @@ struct FAGX_ConstraintDofGraphicsSection
 };
 
 /**
- * Render proxy for FAGX_ConstraintDofGraphics. Handles render resources. Accessed by both game and render thread.
+ * Render proxy for FAGX_ConstraintDofGraphics. Handles render resources. Accessed by both game and
+ * render thread.
  */
 class FAGX_ConstraintDofGraphicsProxy final : public FPrimitiveSceneProxy
 {
@@ -136,13 +139,16 @@ public:
 				Geometry->VertexBuffers.ColorVertexBuffer.InitResource();
 
 				FLocalVertexFactory::FDataType Data;
-				Geometry->VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(&Geometry->VertexFactory, Data);
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(&Geometry->VertexFactory, Data);
+				Geometry->VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(
+					&Geometry->VertexFactory, Data);
+				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(
+					&Geometry->VertexFactory, Data);
 				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
 					&Geometry->VertexFactory, Data);
 				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
 					&Geometry->VertexFactory, Data, /*LightMapIndex*/ 0);
-				Geometry->VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(&Geometry->VertexFactory, Data);
+				Geometry->VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(
+					&Geometry->VertexFactory, Data);
 				Geometry->VertexFactory.SetData(Data);
 
 				Geometry->VertexFactory.InitResource();
@@ -163,7 +169,8 @@ public:
 		}
 	}
 
-	void SetAttachmentFrameTransforms(const FMatrix& InFrameTransform1, const FMatrix& InFrameTransform2)
+	void SetAttachmentFrameTransforms(
+		const FMatrix& InFrameTransform1, const FMatrix& InFrameTransform2)
 	{
 		FrameTransform1 = InFrameTransform1;
 		FrameTransform2 = InFrameTransform2;
@@ -175,7 +182,8 @@ private:
 		return static_cast<uint8>(LockedDofs) & static_cast<uint8>(Dof);
 	}
 
-	UMaterialInterface* GetTranslationMaterial(UAGX_ConstraintDofGraphicsComponent* Component, EDofFlag Dof)
+	UMaterialInterface* GetTranslationMaterial(
+		UAGX_ConstraintDofGraphicsComponent* Component, EDofFlag Dof)
 	{
 		if (IsDofLocked(Dof))
 		{
@@ -187,7 +195,8 @@ private:
 		}
 	}
 
-	UMaterialInterface* GetRotationMaterial(UAGX_ConstraintDofGraphicsComponent* Component, EDofFlag Dof)
+	UMaterialInterface* GetRotationMaterial(
+		UAGX_ConstraintDofGraphicsComponent* Component, EDofFlag Dof)
 	{
 		if (IsDofLocked(Dof))
 		{
@@ -223,7 +232,8 @@ private:
 		// return SDPG_World;
 	}
 
-	/// Creates one Geometry for a cylindrical arrow mesh, and three sections using it, one per axis (x, y, z),
+	/// Creates one Geometry for a cylindrical arrow mesh, and three sections using it, one per axis
+	/// (x, y, z),
 	// such that each arrow can chose material depending on the DOF being free or locked.
 	void CreateTranslationalArrows(UAGX_ConstraintDofGraphicsComponent* Component)
 	{
@@ -269,8 +279,9 @@ private:
 	static TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> CreateTranslationalArrowGeometry(
 		FSceneInterface& Scene, float Length)
 	{
-		TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry = MakeShared<FAGX_ConstraintDofGraphicsGeometry>(
-			PT_TriangleList, Scene.GetFeatureLevel(), "FAGX_ConstraintDofGraphicsGeometry");
+		TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry =
+			MakeShared<FAGX_ConstraintDofGraphicsGeometry>(
+				PT_TriangleList, Scene.GetFeatureLevel(), "FAGX_ConstraintDofGraphicsGeometry");
 
 		// Create geometry definition.
 
@@ -285,7 +296,8 @@ private:
 		const FLinearColor Opaque(1, 1, 1, 1);
 
 		AGX_MeshUtilities::CylindricalArrowConstructionData ConstructionData(
-			CylinderRadius, CylinderHeight, ConeRadius, ConeHeight, bBottomCap, NumSegments, Transparent, Opaque);
+			CylinderRadius, CylinderHeight, ConeRadius, ConeHeight, bBottomCap, NumSegments,
+			Transparent, Opaque);
 
 		// Allocate buffer sizes.
 
@@ -295,7 +307,8 @@ private:
 		ConstructionData.AppendBufferSizes(NumVertices, NumIndices);
 
 		Geometry->VertexBuffers.PositionVertexBuffer.Init(NumVertices);
-		Geometry->VertexBuffers.StaticMeshVertexBuffer.Init(NumVertices, /*NumTexCoordsPerVertex*/ 1);
+		Geometry->VertexBuffers.StaticMeshVertexBuffer.Init(
+			NumVertices, /*NumTexCoordsPerVertex*/ 1);
 		Geometry->VertexBuffers.ColorVertexBuffer.Init(NumVertices);
 		Geometry->IndexBuffer.Indices.AddUninitialized(NumIndices);
 
@@ -305,12 +318,14 @@ private:
 		uint32 NumAddedIndices = 0;
 
 		AGX_MeshUtilities::MakeCylindricalArrow(
-			Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, ConstructionData);
+			Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices,
+			ConstructionData);
 
 		return Geometry;
 	}
 
-	/// Creates one Geometry for a bent arrow mesh, and three sections using it, one per axis (x, y, z),
+	/// Creates one Geometry for a bent arrow mesh, and three sections using it, one per axis (x, y,
+	/// z),
 	// such that each arrow can chose material depending on the DOF being free or locked.
 	void CreateRotationalArrows(UAGX_ConstraintDofGraphicsComponent* Component)
 	{
@@ -331,7 +346,8 @@ private:
 
 		const bool ShowLockedRotationalDofs = false;
 		const bool MultipleVisible = ShowLockedRotationalDofs || NumLockedDofs > 1;
-		const float TranslationOffset = MultipleVisible ? 10.0f : 27.0f; // more spacing for multiple visible arrows
+		const float TranslationOffset =
+			MultipleVisible ? 10.0f : 27.0f; // more spacing for multiple visible arrows
 		const float RotationOffset = -140.0f;
 
 		// X-Axis
@@ -371,8 +387,9 @@ private:
 	static TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> CreateRotationalArrowGeometry(
 		FSceneInterface& Scene, float Width, float Radius, float SegmentAngle)
 	{
-		TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry = MakeShared<FAGX_ConstraintDofGraphicsGeometry>(
-			PT_TriangleList, Scene.GetFeatureLevel(), "FAGX_ConstraintDofGraphicsGeometry");
+		TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry =
+			MakeShared<FAGX_ConstraintDofGraphicsGeometry>(
+				PT_TriangleList, Scene.GetFeatureLevel(), "FAGX_ConstraintDofGraphicsGeometry");
 
 		// Create geometry definition.
 
@@ -386,8 +403,8 @@ private:
 		const FLinearColor Opaque(1, 1, 1, 1);
 
 		AGX_MeshUtilities::BendableArrowConstructionData ConstructionData(
-			RectangleWidth, RectangleLength, TriangleWidth, TriangleLength, BendAngle, NumSegments, Transparent,
-			Opaque);
+			RectangleWidth, RectangleLength, TriangleWidth, TriangleLength, BendAngle, NumSegments,
+			Transparent, Opaque);
 
 		// Allocate buffer sizes.
 
@@ -397,7 +414,8 @@ private:
 		ConstructionData.AppendBufferSizes(NumVertices, NumIndices);
 
 		Geometry->VertexBuffers.PositionVertexBuffer.Init(NumVertices);
-		Geometry->VertexBuffers.StaticMeshVertexBuffer.Init(NumVertices, /*NumTexCoordsPerVertex*/ 1);
+		Geometry->VertexBuffers.StaticMeshVertexBuffer.Init(
+			NumVertices, /*NumTexCoordsPerVertex*/ 1);
 		Geometry->VertexBuffers.ColorVertexBuffer.Init(NumVertices);
 		Geometry->IndexBuffer.Indices.AddUninitialized(NumIndices);
 
@@ -407,14 +425,15 @@ private:
 		uint32 NumAddedIndices = 0;
 
 		AGX_MeshUtilities::MakeBendableArrow(
-			Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices, ConstructionData);
+			Geometry->VertexBuffers, Geometry->IndexBuffer, NumAddedVertices, NumAddedIndices,
+			ConstructionData);
 
 		return Geometry;
 	}
 
 	virtual void GetDynamicMeshElements(
-		const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap,
-		FMeshElementCollector& Collector) const override
+		const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily,
+		uint32 VisibilityMap, FMeshElementCollector& Collector) const override
 	{
 		QUICK_SCOPE_CYCLE_COUNTER(STAT_AGX_ConstraintDofGraphics_GetDynamicMeshElements);
 
@@ -456,27 +475,31 @@ private:
 					BatchElement.MaxVertexIndex = Section->GetMaxVertexIndex();
 
 					FMatrix WorldMatrix = GetLocalToWorld().GetMatrixWithoutScale();
-					// FMatrix WorldMatrix = FrameTransform1; // setting render matrix instead (see GetRenderMatrix())
+					// FMatrix WorldMatrix = FrameTransform1; // setting render matrix instead (see
+					// GetRenderMatrix())
 
-					FMatrix ScreenScale =
-						GetScreenSpaceScale(0.56f, 150.0f, 500.0f, 100.0f, WorldMatrix.GetOrigin(), View);
+					FMatrix ScreenScale = GetScreenSpaceScale(
+						0.56f, 150.0f, 500.0f, 100.0f, WorldMatrix.GetOrigin(), View);
 
-					FMatrix EffectiveLocalToWorld = Section->LocalTransform * ScreenScale * WorldMatrix;
+					FMatrix EffectiveLocalToWorld =
+						Section->LocalTransform * ScreenScale * WorldMatrix;
 
 					FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer =
 						Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
 #if UE_VERSION_OLDER_THAN(4, 23, 0)
 					DynamicPrimitiveUniformBuffer.Set(
-						EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(), GetLocalBounds(), true, false,
-						UseEditorDepthTest());
+						EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(), GetLocalBounds(),
+						true, false, UseEditorDepthTest());
 #else
-					/// \todo Replace Unknown with proper name or use some getter function to get a proper value.
+					/// \todo Replace Unknown with proper name or use some getter function to get a
+					/// proper value.
 					bool Unknown = false;
 					DynamicPrimitiveUniformBuffer.Set(
-						EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(), GetLocalBounds(), true, false,
-						DrawsVelocity(), Unknown);
+						EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(), GetLocalBounds(),
+						true, false, DrawsVelocity(), Unknown);
 #endif
-					BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
+					BatchElement.PrimitiveUniformBufferResource =
+						&DynamicPrimitiveUniformBuffer.UniformBuffer;
 
 					Collector.AddMesh(ViewIndex, Mesh);
 				}
@@ -484,22 +507,26 @@ private:
 		}
 	}
 
-	/// Will create a matrix that scales an object of original size 'OriginalWorldSize' to occupy the desired
-	/// 'NormalizedScreenSpaceSize' fraction of the screen horizontally, but limiting it within MinWorldSize and
-	/// MaxWorldSize. Result is not 100% correct, but it's consistent when moving around, so just tweak input!
+	/// Will create a matrix that scales an object of original size 'OriginalWorldSize' to occupy
+	/// the desired 'NormalizedScreenSpaceSize' fraction of the screen horizontally, but limiting it
+	/// within MinWorldSize and MaxWorldSize. Result is not 100% correct, but it's consistent when
+	/// moving around, so just tweak input!
 	static FMatrix GetScreenSpaceScale(
-		float NormalizedScreenSpaceSize, float MinWorldSize, float MaxWorldSize, float OriginalWorldSize,
-		const FVector& WorldLocation, const FSceneView* View)
+		float NormalizedScreenSpaceSize, float MinWorldSize, float MaxWorldSize,
+		float OriginalWorldSize, const FVector& WorldLocation, const FSceneView* View)
 	{
 		float Distance = (WorldLocation - View->ViewLocation).Size();
-		float NormalizedScreenToWorld = 2.0f * Distance * FMath::Atan(FMath::DegreesToRadians(View->FOV) / 2.0f);
-		float WorldSize = FMath::Clamp(NormalizedScreenSpaceSize * NormalizedScreenToWorld, MinWorldSize, MaxWorldSize);
+		float NormalizedScreenToWorld =
+			2.0f * Distance * FMath::Atan(FMath::DegreesToRadians(View->FOV) / 2.0f);
+		float WorldSize = FMath::Clamp(
+			NormalizedScreenSpaceSize * NormalizedScreenToWorld, MinWorldSize, MaxWorldSize);
 		float Scale = WorldSize / OriginalWorldSize;
 
 		return FScaleMatrix(Scale);
 	}
 
-	UMaterialInterface* GetSectionMaterial(UAGX_ConstraintDofGraphicsComponent* Component, uint32 SectionIndex)
+	UMaterialInterface* GetSectionMaterial(
+		UAGX_ConstraintDofGraphicsComponent* Component, uint32 SectionIndex)
 	{
 		if (UMaterialInterface* Material = Component->GetMaterial(SectionIndex))
 		{
@@ -523,7 +550,8 @@ private:
 		Result.bUsesLightingChannels = GetLightingChannelMask() != GetDefaultLightingChannelMask();
 		Result.bRenderCustomDepth = ShouldRenderCustomDepth();
 		Result.bTranslucentSelfShadow = bCastVolumetricTranslucentShadow;
-		Result.bVelocityRelevance = IsMovable() && Result.bOpaqueRelevance && Result.bRenderInMainPass;
+		Result.bVelocityRelevance =
+			IsMovable() && Result.bOpaqueRelevance && Result.bRenderInMainPass;
 
 		MaterialRelevance.SetPrimitiveViewRelevance(Result);
 
@@ -560,7 +588,8 @@ private:
 	FMatrix FrameTransform2;
 };
 
-UAGX_ConstraintDofGraphicsComponent::UAGX_ConstraintDofGraphicsComponent(const FObjectInitializer& ObjectInitializer)
+UAGX_ConstraintDofGraphicsComponent::UAGX_ConstraintDofGraphicsComponent(
+	const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 	, FreeTranslationMaterialIndex(-1)
 	, FreeRotationMaterialIndex(-1)
@@ -582,8 +611,9 @@ UAGX_ConstraintDofGraphicsComponent::UAGX_ConstraintDofGraphicsComponent(const F
 		static ConstructorHelpers::FObjectFinder<UMaterialInterface> FreeRotationMaterialFinder(
 			TEXT("/AGXUnreal/Runtime/Materials/M_ConstraintDofGraphicsRot_Free"));
 
-		static ConstructorHelpers::FObjectFinder<UMaterialInterface> LockedTranslationMaterialFinder(
-			TEXT("/AGXUnreal/Runtime/Materials/M_ConstraintDofGraphics_Locked"));
+		static ConstructorHelpers::FObjectFinder<UMaterialInterface>
+			LockedTranslationMaterialFinder(
+				TEXT("/AGXUnreal/Runtime/Materials/M_ConstraintDofGraphics_Locked"));
 
 		static ConstructorHelpers::FObjectFinder<UMaterialInterface> LockedRotationMaterialFinder(
 			TEXT("/AGXUnreal/Runtime/Materials/M_ConstraintDofGraphicsRot_Locked"));
@@ -591,21 +621,24 @@ UAGX_ConstraintDofGraphicsComponent::UAGX_ConstraintDofGraphicsComponent(const F
 		UMaterialInterface* FallbackMaterial = UMaterial::GetDefaultMaterial(MD_Surface);
 
 		UMaterialInterface* FreeTranslationMaterial =
-			FreeTranslationMaterialFinder.Succeeded() ? Cast<UMaterialInterface>(FreeTranslationMaterialFinder.Object)
-													  : FallbackMaterial;
+			FreeTranslationMaterialFinder.Succeeded()
+				? Cast<UMaterialInterface>(FreeTranslationMaterialFinder.Object)
+				: FallbackMaterial;
 
-		UMaterialInterface* FreeRotationMaterial = FreeRotationMaterialFinder.Succeeded()
-													   ? Cast<UMaterialInterface>(FreeRotationMaterialFinder.Object)
-													   : FallbackMaterial;
+		UMaterialInterface* FreeRotationMaterial =
+			FreeRotationMaterialFinder.Succeeded()
+				? Cast<UMaterialInterface>(FreeRotationMaterialFinder.Object)
+				: FallbackMaterial;
 
 		UMaterialInterface* LockedTranslationMaterial =
 			LockedTranslationMaterialFinder.Succeeded()
 				? Cast<UMaterialInterface>(LockedTranslationMaterialFinder.Object)
 				: FallbackMaterial;
 
-		UMaterialInterface* LockedRotationMaterial = LockedRotationMaterialFinder.Succeeded()
-														 ? Cast<UMaterialInterface>(LockedRotationMaterialFinder.Object)
-														 : FallbackMaterial;
+		UMaterialInterface* LockedRotationMaterial =
+			LockedRotationMaterialFinder.Succeeded()
+				? Cast<UMaterialInterface>(LockedRotationMaterialFinder.Object)
+				: FallbackMaterial;
 
 		FreeTranslationMaterialIndex = GetNumMaterials();
 		SetMaterial(FreeTranslationMaterialIndex, FreeTranslationMaterial);
@@ -687,7 +720,8 @@ void UAGX_ConstraintDofGraphicsComponent::GetUsedMaterials(
 	return Super::GetUsedMaterials(OutMaterials, bGetDebugMaterials);
 }
 
-FBoxSphereBounds UAGX_ConstraintDofGraphicsComponent::CalcBounds(const FTransform& LocalToWorld) const
+FBoxSphereBounds UAGX_ConstraintDofGraphicsComponent::CalcBounds(
+	const FTransform& LocalToWorld) const
 {
 	/// \todo Make more precise!
 
@@ -703,7 +737,8 @@ void UAGX_ConstraintDofGraphicsComponent::SendRenderDynamicData_Concurrent()
 {
 	Super::SendRenderDynamicData_Concurrent();
 
-	/// \note Not using this data anymore. Instead we set render matrix directly using the frame (see GetRenderMatrix).
+	/// \note Not using this data anymore. Instead we set render matrix directly using the frame
+	/// (see GetRenderMatrix).
 
 	// Update transform of the proxy to match the constraint attachment frame, if out-of-date!
 	if (SceneProxy && Constraint && IsOwnerSelected())
@@ -711,7 +746,8 @@ void UAGX_ConstraintDofGraphicsComponent::SendRenderDynamicData_Concurrent()
 		FMatrix Frame1 = Constraint->BodyAttachment1.GetGlobalFrameMatrix();
 		FMatrix Frame2 = Constraint->BodyAttachment2.GetGlobalFrameMatrix();
 
-		FAGX_ConstraintDofGraphicsProxy* CastProxy = static_cast<FAGX_ConstraintDofGraphicsProxy*>(SceneProxy);
+		FAGX_ConstraintDofGraphicsProxy* CastProxy =
+			static_cast<FAGX_ConstraintDofGraphicsProxy*>(SceneProxy);
 		ENQUEUE_RENDER_COMMAND(FSendConstraintDofGraphicsDynamicData)
 		([CastProxy, Frame1, Frame2](FRHICommandListImmediate& RHICmdList) {
 			CastProxy->SetAttachmentFrameTransforms(Frame1, Frame2);

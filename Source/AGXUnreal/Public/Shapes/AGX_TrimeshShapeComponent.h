@@ -62,7 +62,8 @@ public:
 	 * of the Static Mesh source to read triangle data from. Zero is the most detailed level.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Shape", AdvancedDisplay, Meta = (EditCondition = "bOverrideMeshSourceLodIndex"))
+		EditAnywhere, Category = "AGX Shape", AdvancedDisplay,
+		Meta = (EditCondition = "bOverrideMeshSourceLodIndex"))
 	uint32 MeshSourceLodIndex;
 
 	FShapeBarrier* GetNative() override;
@@ -78,7 +79,8 @@ protected:
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 
 #if WITH_EDITOR
-	virtual bool DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const;
+	virtual bool DoesPropertyAffectVisualMesh(
+		const FName& PropertyName, const FName& MemberPropertyName) const;
 
 	virtual bool CanEditChange(const UProperty* InProperty) const override;
 #endif

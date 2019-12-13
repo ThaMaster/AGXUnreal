@@ -33,7 +33,8 @@
 
 namespace
 {
-	std::tuple<AActor*, USceneComponent*> InstantiateBody(const FRigidBodyBarrier& Body, UWorld& World)
+	std::tuple<AActor*, USceneComponent*> InstantiateBody(
+		const FRigidBodyBarrier& Body, UWorld& World)
 	{
 		UE_LOG(LogAGX, Log, TEXT("Loaded AGX body with name '%s'."), *Body.GetName());
 		AActor* NewActor;
@@ -48,7 +49,9 @@ namespace
 		if (Root == nullptr)
 		{
 			/// \todo Do we need to destroy the Actor here?
-			UE_LOG(LogAGX, Log, TEXT("Could not create SceneComponent for body '%s'."), *Body.GetName());
+			UE_LOG(
+				LogAGX, Log, TEXT("Could not create SceneComponent for body '%s'."),
+				*Body.GetName());
 			return {nullptr, nullptr};
 		}
 
@@ -57,7 +60,9 @@ namespace
 		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
 		if (NewBody == nullptr)
 		{
-			UE_LOG(LogAGX, Log, TEXT("Could not create AGX RigidBodyComponenet for body '%s'."), *Body.GetName());
+			UE_LOG(
+				LogAGX, Log, TEXT("Could not create AGX RigidBodyComponenet for body '%s'."),
+				*Body.GetName());
 			/// \todo Do we need to destroy the Actor and the RigidBodyComponent here?
 			return {nullptr, nullptr};
 		}
@@ -84,7 +89,8 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 	AActor* ImportGroup;
 	USceneComponent* ImportRoot;
 	/// \todo Consider placing ImportedRoot at the center if the imported bodies.
-	std::tie(ImportGroup, ImportRoot) = FAGX_EditorUtilities::CreateEmptyActor(FTransform::Identity, World);
+	std::tie(ImportGroup, ImportRoot) =
+		FAGX_EditorUtilities::CreateEmptyActor(FTransform::Identity, World);
 	if (ImportGroup == nullptr || ImportRoot == nullptr)
 	{
 		return nullptr;
@@ -109,22 +115,26 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 
 		virtual void InstantiateSphere(const FSphereShapeBarrier& Sphere) override
 		{
-			UAGX_SphereShapeComponent* ShapeComponent = FAGX_EditorUtilities::CreateSphereShape(&Actor, &Root);
+			UAGX_SphereShapeComponent* ShapeComponent =
+				FAGX_EditorUtilities::CreateSphereShape(&Actor, &Root);
 			ShapeComponent->Radius = Sphere.GetRadius();
 			FinalizeShape(ShapeComponent, Sphere);
 		}
 
 		virtual void InstantiateBox(const FBoxShapeBarrier& Box) override
 		{
-			UAGX_BoxShapeComponent* ShapeComponent = FAGX_EditorUtilities::CreateBoxShape(&Actor, &Root);
+			UAGX_BoxShapeComponent* ShapeComponent =
+				FAGX_EditorUtilities::CreateBoxShape(&Actor, &Root);
 			ShapeComponent->HalfExtent = Box.GetHalfExtents();
 			FinalizeShape(ShapeComponent, Box);
 		}
 
 		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) override
 		{
-			UAGX_TrimeshShapeComponent* ShapeComponent = FAGX_EditorUtilities::CreateTrimeshShape(&Actor, &Root);
-			ShapeComponent->MeshSourceLocation = EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
+			UAGX_TrimeshShapeComponent* ShapeComponent =
+				FAGX_EditorUtilities::CreateTrimeshShape(&Actor, &Root);
+			ShapeComponent->MeshSourceLocation =
+				EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 			FAGX_EditorUtilities::CreateStaticMesh(&Actor, ShapeComponent, Trimesh);
 			FinalizeShape(ShapeComponent, Trimesh);
 		}
@@ -186,7 +196,8 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			CreateConstraint(BallJoint, AAGX_BallConstraint::StaticClass());
 		}
 
-		virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& CylindricalJoint) override
+		virtual void InstantiateCylindricalJoint(
+			const FCylindricalJointBarrier& CylindricalJoint) override
 		{
 			CreateConstraint(CylindricalJoint, AAGX_CylindricalConstraint::StaticClass());
 		}
@@ -209,7 +220,9 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			{
 				// Not having a second body is fine. Means that the first body
 				// is constrainted to the world. Not having a first body is bad.
-				UE_LOG(LogAGX, Log, TEXT("Constraint %s doesn't have a first body. Ignoring."), *Barrier.GetName());
+				UE_LOG(
+					LogAGX, Log, TEXT("Constraint %s doesn't have a first body. Ignoring."),
+					*Barrier.GetName());
 				return;
 			}
 
@@ -236,7 +249,9 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			if (Actor == nullptr)
 			{
 				UE_LOG(
-					LogAGX, Log, TEXT("Found a constraint to body '%s', but that body isn't known."), *Body.GetName());
+					LogAGX, Log,
+					TEXT("Found a constraint to body '%s', but that body isn't known."),
+					*Body.GetName());
 				return nullptr;
 			}
 			return Actor;
@@ -247,7 +262,9 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			return {GetActor(Barrier.GetFirstBody()), GetActor(Barrier.GetSecondBody())};
 		}
 
-		void StoreFrame(const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment, int32 BodyIndex)
+		void StoreFrame(
+			const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment,
+			int32 BodyIndex)
 		{
 			Attachment.FrameDefiningActor = nullptr;
 			Attachment.LocalFrameLocation = Barrier.GetLocalLocation(BodyIndex);

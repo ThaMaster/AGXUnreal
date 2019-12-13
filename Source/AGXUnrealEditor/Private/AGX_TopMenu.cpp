@@ -29,9 +29,11 @@ FAGX_TopMenu::FAGX_TopMenu()
 
 	// Get Prerequisites.
 
-	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+	FLevelEditorModule& LevelEditorModule =
+		FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
 
-	TSharedPtr<FExtensibilityManager> ExtensibilityManager = LevelEditorModule.GetMenuExtensibilityManager();
+	TSharedPtr<FExtensibilityManager> ExtensibilityManager =
+		LevelEditorModule.GetMenuExtensibilityManager();
 
 	// Create our Unreal Main Menu extender, and its callback delegate.
 
@@ -43,8 +45,8 @@ FAGX_TopMenu::FAGX_TopMenu()
 	UnrealMenuBarExtension = Extender->AddMenuBarExtension(
 		"Help", EExtensionHook::Before,
 		nullptr, // Using inline FActions instead of FUICommands, for less hot reloading problems!
-		UnrealMenuBarExtensionDelegate); // Delegate is only invoked during Editor startup (i.e. when Unreal Main
-										 // Menu Bar is built).
+		UnrealMenuBarExtensionDelegate); // Delegate is only invoked during Editor startup (i.e.
+										 // when Unreal Main Menu Bar is built).
 
 	ExtensibilityManager->AddExtender(Extender);
 }
@@ -55,9 +57,11 @@ FAGX_TopMenu::~FAGX_TopMenu()
 
 	// Get prerequisites.
 
-	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+	FLevelEditorModule& LevelEditorModule =
+		FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
 
-	TSharedPtr<FExtensibilityManager> ExtensibilityManager = LevelEditorModule.GetMenuExtensibilityManager();
+	TSharedPtr<FExtensibilityManager> ExtensibilityManager =
+		LevelEditorModule.GetMenuExtensibilityManager();
 
 	// Cleanup.
 
@@ -103,12 +107,12 @@ FAGX_TopMenu::~FAGX_TopMenu()
 	//
 	// Hacky solution:
 	//
-	// 1. Is solved by fetching the new correct instance of FAGX_TopMenu from FAGXUnrealEditorModule,
-	// and invoke our target function (FillTopMenu) on that instance.
+	// 1. Is solved by fetching the new correct instance of FAGX_TopMenu from
+	// FAGXUnrealEditorModule, and invoke our target function (FillTopMenu) on that instance.
 	//
 	// 2. Is solved by making our target function (FillTopMenu) virtual so that the v-table picks
-	// the implementation of the function that exists in the new dll module, and therefore is exectued
-	// in the next dll module context.
+	// the implementation of the function that exists in the new dll module, and therefore is
+	// exectued in the next dll module context.
 	//
 	// Limitations:
 	//
@@ -133,21 +137,24 @@ FAGX_TopMenu::~FAGX_TopMenu()
 
 	Builder.AddPullDownMenu(
 		LOCTEXT("TopMenuLabel", "AGX"), LOCTEXT("TopMenuToolTip", "Open the AGX top menu"),
-		NewMenuDelegate); // Delegate is invoked when AGX menu is clicked (but same delegate regardless of reloading
-						  // this module).
+		NewMenuDelegate); // Delegate is invoked when AGX menu is clicked (but same delegate
+						  // regardless of reloading this module).
 }
 
 /*virtual*/ void FAGX_TopMenu::FillTopMenu(FMenuBuilder& Builder)
 {
 	Builder.AddSubMenu(
 		LOCTEXT("FileMenuLabel", "File"),
-		LOCTEXT("FileMenuTooltip", "Interoperability with external file formats, such AGX simulation files (.agx)."),
+		LOCTEXT(
+			"FileMenuTooltip",
+			"Interoperability with external file formats, such AGX simulation files (.agx)."),
 		FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillFileMenu));
 
 	Builder.AddMenuSeparator();
 
 	Builder.AddSubMenu(
-		LOCTEXT("ConstraintMenuLabel", "Constraints"), LOCTEXT("ConstraintMenuTooltip", "Create a constraint."),
+		LOCTEXT("ConstraintMenuLabel", "Constraints"),
+		LOCTEXT("ConstraintMenuTooltip", "Create a constraint."),
 		FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillConstraintMenu));
 
 	Builder.AddMenuSeparator();
@@ -165,43 +172,53 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 		Builder, LOCTEXT("CreateBallConstraintLabel", "Create Ball Constraint"),
 		LOCTEXT(
 			"CreateBallConstraintTooltip",
-			"Create Ball Constraint. \n\nInitially setup using currently selected Rigid Body Actors, or empty."),
+			"Create Ball Constraint. \n\nInitially setup using currently selected Rigid Body "
+			"Actors, or empty."),
 		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_BallConstraint::StaticClass()); });
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("CreateCylindricalConstraintLabel", "Create Cylindrical Constraint"),
 		LOCTEXT(
 			"CreateCylindricalConstraintTooltip",
-			"Create Cylindrical Constraint. \n\nInitially setup using currently selected Rigid Body Actors, or empty."),
-		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_CylindricalConstraint::StaticClass()); });
+			"Create Cylindrical Constraint. \n\nInitially setup using currently selected Rigid "
+			"Body Actors, or empty."),
+		[&]() {
+			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_CylindricalConstraint::StaticClass());
+		});
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("CreateDistanceConstraintLabel", "Create Distance Constraint"),
 		LOCTEXT(
 			"CreateDistanceConstraintTooltip",
-			"Create Distance Constraint. \n\nInitially setup using currently selected Rigid Body Actors, or empty."),
+			"Create Distance Constraint. \n\nInitially setup using currently selected Rigid Body "
+			"Actors, or empty."),
 		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_DistanceConstraint::StaticClass()); });
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("CreateHingeConstraintLabel", "Create Hinge Constraint"),
 		LOCTEXT(
 			"CreateHingeConstraintTooltip",
-			"Create Hinge Constraint. \n\nInitially setup using currently selected Rigid Body Actors, or empty."),
+			"Create Hinge Constraint. \n\nInitially setup using currently selected Rigid Body "
+			"Actors, or empty."),
 		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_HingeConstraint::StaticClass()); });
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("CreateLockConstraintLabel", "Create Lock Constraint"),
 		LOCTEXT(
 			"CreateLockConstraintTooltip",
-			"Create Lock Constraint. \n\nInitially setup using currently selected Rigid Body Actors, or empty."),
+			"Create Lock Constraint. \n\nInitially setup using currently selected Rigid Body "
+			"Actors, or empty."),
 		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_LockConstraint::StaticClass()); });
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("CreatePrismaticConstraintLabel", "Create Prismatic Constraint"),
 		LOCTEXT(
 			"CreatePrismaticConstraintTooltip",
-			"Create Prismatic Constraint. \n\nInitially setup using currently selected Rigid Body Actors, or empty."),
-		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_PrismaticConstraint::StaticClass()); });
+			"Create Prismatic Constraint. \n\nInitially setup using currently selected Rigid Body "
+			"Actors, or empty."),
+		[&]() {
+			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_PrismaticConstraint::StaticClass());
+		});
 }
 
 void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)

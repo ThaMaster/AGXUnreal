@@ -7,7 +7,8 @@
 #include "AGX_ContactMaterialAssetFactory.generated.h"
 
 /**
- * Asset Factory for UAGX_ContactMaterialAsset, making it possible to create asset objects in the Editor.
+ * Asset Factory for UAGX_ContactMaterialAsset, making it possible to create asset objects in the
+ * Editor.
  */
 UCLASS()
 class AGXUNREALEDITOR_API UAGX_ContactMaterialAssetFactory : public UFactory

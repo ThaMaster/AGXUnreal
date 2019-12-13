@@ -11,15 +11,16 @@ public:
 
 private:
 	static void CreateTopMenu(FMenuBarBuilder& Builder);
-	virtual void FillTopMenu(
-		FMenuBuilder& Builder); // Must be virtual because of dirty hack (see comment in CreateTopMenu)!
+	virtual void FillTopMenu(FMenuBuilder& Builder); // Must be virtual because of dirty hack (see
+													 // comment in CreateTopMenu)!
 	void FillConstraintMenu(FMenuBuilder& Builder);
 
 	void FillFileMenu(FMenuBuilder& Builder);
 
 	template <typename Function>
 	void AddFileMenuEntry(
-		FMenuBuilder& Builder, const FText& Label, const FText& Tooltip, Function MenuItemClickCallbackFunction);
+		FMenuBuilder& Builder, const FText& Label, const FText& Tooltip,
+		Function MenuItemClickCallbackFunction);
 
 	void OnCreateConstraintClicked(UClass* ConstraintClass);
 	void OnOpenAboutDialogClicked();
@@ -30,9 +31,10 @@ private:
 
 template <typename Function>
 void FAGX_TopMenu::AddFileMenuEntry(
-	FMenuBuilder& Builder, const FText& Label, const FText& Tooltip, Function MenuItemClickCallbackFunction)
+	FMenuBuilder& Builder, const FText& Label, const FText& Tooltip,
+	Function MenuItemClickCallbackFunction)
 {
 	Builder.AddMenuEntry(
-		Label, Tooltip, FSlateIcon(), FExecuteAction::CreateLambda(MenuItemClickCallbackFunction), NAME_None,
-		EUserInterfaceActionType::Button);
+		Label, Tooltip, FSlateIcon(), FExecuteAction::CreateLambda(MenuItemClickCallbackFunction),
+		NAME_None, EUserInterfaceActionType::Button);
 }

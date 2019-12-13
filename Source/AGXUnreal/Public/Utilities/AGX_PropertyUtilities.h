@@ -13,14 +13,17 @@
 class AGXUNREAL_API FAGX_PropertyUtilities
 {
 public:
-	static bool PropertyEquals(const TSharedPtr<IPropertyHandle>& First, const TSharedPtr<IPropertyHandle>& Second);
+	static bool PropertyEquals(
+		const TSharedPtr<IPropertyHandle>& First, const TSharedPtr<IPropertyHandle>& Second);
 
-	static UObject* GetParentObjectOfStruct(const TSharedPtr<IPropertyHandle>& StructPropertyHandle);
+	static UObject* GetParentObjectOfStruct(
+		const TSharedPtr<IPropertyHandle>& StructPropertyHandle);
 
 	static UObject* GetObjectFromHandle(const TSharedPtr<IPropertyHandle>& PropertyHandle);
 
 	template <typename TStruct, typename TOwningClass>
-	static TStruct* GetStructFromHandle(const TSharedPtr<IPropertyHandle>& PropertyHandle, TOwningClass* OwningClass);
+	static TStruct* GetStructFromHandle(
+		const TSharedPtr<IPropertyHandle>& PropertyHandle, TOwningClass* OwningClass);
 
 	/**
 	 * Returns the Display Name metadata if such exists, or else the name converted to

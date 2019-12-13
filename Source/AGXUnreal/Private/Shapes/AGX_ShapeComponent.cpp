@@ -21,7 +21,9 @@ bool UAGX_ShapeComponent::HasNative() const
 
 void UAGX_ShapeComponent::UpdateVisualMesh()
 {
-	UE_LOG(LogAGX, Log, TEXT("Updating visual mesh of %s (of actor %s)"), *GetName(), *GetNameSafe(GetOwner()));
+	UE_LOG(
+		LogAGX, Log, TEXT("Updating visual mesh of %s (of actor %s)"), *GetName(),
+		*GetNameSafe(GetOwner()));
 
 	ClearMeshData();
 
@@ -37,7 +39,8 @@ void UAGX_ShapeComponent::UpdateVisualMesh()
 
 bool UAGX_ShapeComponent::ShouldCreateVisualMesh() const
 {
-	return bVisible; // TODO: add && !(bHiddenInGame && IsGamePlaying), but how to get IsGamePlaying?
+	return bVisible; // TODO: add && !(bHiddenInGame && IsGamePlaying), but how to get
+					 // IsGamePlaying?
 }
 
 void UAGX_ShapeComponent::UpdateNativeProperties()
@@ -47,7 +50,8 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 
 	if (PhysicalMaterial)
 	{
-		UAGX_MaterialInstance* MaterialInstance = UAGX_MaterialBase::GetOrCreateInstance(GetWorld(), PhysicalMaterial);
+		UAGX_MaterialInstance* MaterialInstance =
+			UAGX_MaterialBase::GetOrCreateInstance(GetWorld(), PhysicalMaterial);
 		check(MaterialInstance);
 
 		FMaterialBarrier* MaterialBarrier = MaterialInstance->GetOrCreateNative(GetWorld());
@@ -55,7 +59,8 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 
 		UE_LOG(
 			LogAGX, Log,
-			TEXT("UAGX_ShapeComponent::UpdateNativeProperties is setting native material \"%s\" on shape "
+			TEXT("UAGX_ShapeComponent::UpdateNativeProperties is setting native material \"%s\" on "
+				 "shape "
 				 "\"%s\" of rigid body \"%s\"."),
 			*MaterialInstance->GetName(), *GetName(), *GetNameSafe(GetOwner()));
 
@@ -72,12 +77,14 @@ void UAGX_ShapeComponent::TickComponent(
 
 	/// \todo Do we need TickComponent on UAGX_ShapeComponent?
 
-	UE_LOG(LogAGX, Log, TEXT("TickComponent for ShapeComponent.")); // Haven't seen this in the log ??
+	UE_LOG(
+		LogAGX, Log, TEXT("TickComponent for ShapeComponent.")); // Haven't seen this in the log ??
 }
 
 #if WITH_EDITOR
 
-bool UAGX_ShapeComponent::DoesPropertyAffectVisualMesh(const FName& PropertyName, const FName& MemberPropertyName) const
+bool UAGX_ShapeComponent::DoesPropertyAffectVisualMesh(
+	const FName& PropertyName, const FName& MemberPropertyName) const
 {
 	return PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bVisible) ||
 		   PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, RelativeScale3D);

@@ -62,7 +62,8 @@ TMap<EGenericDofIndex, int32> BuildNativeDofIndexMap(const TArray<EDofFlag>& Loc
 AAGX_Constraint::AAGX_Constraint(const TArray<EDofFlag>& LockedDofsOrdered)
 	: bEnable(true)
 	, SolveType(EAGX_SolveType::ST_DIRECT)
-	, Elasticity(ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
+	, Elasticity(
+		  ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, Damping(ConstraintConstants::DefaultDamping(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, ForceRange(
 		  ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax(),
@@ -76,13 +77,15 @@ AAGX_Constraint::AAGX_Constraint(const TArray<EDofFlag>& LockedDofsOrdered)
 
 	// Create UAGX_ConstraintComponent as root component.
 	{
-		ConstraintComponent = CreateDefaultSubobject<UAGX_ConstraintComponent>(TEXT("ConstraintComponent"));
+		ConstraintComponent =
+			CreateDefaultSubobject<UAGX_ConstraintComponent>(TEXT("ConstraintComponent"));
 
 		ConstraintComponent->SetFlags(ConstraintComponent->GetFlags() | RF_Transactional);
 		ConstraintComponent->Mobility = EComponentMobility::Movable;
 
 #if WITH_EDITORONLY_DATA
-		ConstraintComponent->bVisualizeComponent = false; // disables the root SceneComponents's white blob
+		ConstraintComponent->bVisualizeComponent =
+			false; // disables the root SceneComponents's white blob
 #endif
 
 		SetRootComponent(ConstraintComponent);
@@ -90,8 +93,8 @@ AAGX_Constraint::AAGX_Constraint(const TArray<EDofFlag>& LockedDofsOrdered)
 
 	// Create UAGX_ConstraintDofGraphicsComponent as child component.
 	{
-		DofGraphicsComponent =
-			CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(TEXT("DofGraphicsComponent"));
+		DofGraphicsComponent = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
+			TEXT("DofGraphicsComponent"));
 
 		DofGraphicsComponent->Constraint = this;
 		DofGraphicsComponent->SetupAttachment(ConstraintComponent);
@@ -100,8 +103,8 @@ AAGX_Constraint::AAGX_Constraint(const TArray<EDofFlag>& LockedDofsOrdered)
 
 	// Create UAGX_ConstraintIconGraphicsComponent as child component.
 	{
-		IconGraphicsComponent =
-			CreateDefaultSubobject<UAGX_ConstraintIconGraphicsComponent>(TEXT("IconGraphicsComponent"));
+		IconGraphicsComponent = CreateDefaultSubobject<UAGX_ConstraintIconGraphicsComponent>(
+			TEXT("IconGraphicsComponent"));
 
 		IconGraphicsComponent->Constraint = this;
 		IconGraphicsComponent->SetupAttachment(ConstraintComponent);
@@ -153,8 +156,8 @@ bool AAGX_Constraint::AreFramesInViolatedState(float Tolerance) const
 		}
 	}
 
-	/// \todo Checks below might not be correct for ALL scenarios. What if there is for example a 90 degrees rotation
-	/// around one axis and then a rotation around another..
+	/// \todo Checks below might not be correct for ALL scenarios. What if there is for example a 90
+	/// degrees rotation around one axis and then a rotation around another..
 
 	if (IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1))
 	{
@@ -198,11 +201,13 @@ void AAGX_Constraint::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-	FName PropertyName =
-		(PropertyChangedEvent.Property != NULL) ? PropertyChangedEvent.Property->GetFName() : NAME_None;
+	FName PropertyName = (PropertyChangedEvent.Property != NULL)
+							 ? PropertyChangedEvent.Property->GetFName()
+							 : NAME_None;
 
-	FName MemberPropertyName =
-		(PropertyChangedEvent.MemberProperty != NULL) ? PropertyChangedEvent.MemberProperty->GetFName() : NAME_None;
+	FName MemberPropertyName = (PropertyChangedEvent.MemberProperty != NULL)
+								   ? PropertyChangedEvent.MemberProperty->GetFName()
+								   : NAME_None;
 
 	if (MemberPropertyName == PropertyName) // Property of this class changed
 	{
@@ -212,12 +217,14 @@ void AAGX_Constraint::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 		FAGX_ConstraintBodyAttachment* ModifiedBodyAttachment =
 			(MemberPropertyName == GET_MEMBER_NAME_CHECKED(AAGX_Constraint, BodyAttachment1))
 				? &BodyAttachment1
-				: ((MemberPropertyName == GET_MEMBER_NAME_CHECKED(AAGX_Constraint, BodyAttachment2)) ? &BodyAttachment2
-																									 : nullptr);
+				: ((MemberPropertyName == GET_MEMBER_NAME_CHECKED(AAGX_Constraint, BodyAttachment2))
+					   ? &BodyAttachment2
+					   : nullptr);
 
 		if (ModifiedBodyAttachment)
 		{
-			if (PropertyName == GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningActor))
+			if (PropertyName ==
+				GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningActor))
 			{
 				// TODO: Code below needs to be triggered also when modified through code!
 				// Editor-only probably OK though, since it is just for Editor convenience.
@@ -285,9 +292,12 @@ void AAGX_Constraint::UpdateNativeProperties()
 
 		// TODO: Could just loop NativeDofIndexMap instead!!
 
-		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::TRANSLATIONAL_1, NativeBarrier->SetElasticity);
-		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::TRANSLATIONAL_2, NativeBarrier->SetElasticity);
-		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::TRANSLATIONAL_3, NativeBarrier->SetElasticity);
+		TRY_SET_DOF_VALUE(
+			Elasticity, EGenericDofIndex::TRANSLATIONAL_1, NativeBarrier->SetElasticity);
+		TRY_SET_DOF_VALUE(
+			Elasticity, EGenericDofIndex::TRANSLATIONAL_2, NativeBarrier->SetElasticity);
+		TRY_SET_DOF_VALUE(
+			Elasticity, EGenericDofIndex::TRANSLATIONAL_3, NativeBarrier->SetElasticity);
 		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::ROTATIONAL_1, NativeBarrier->SetElasticity);
 		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::ROTATIONAL_2, NativeBarrier->SetElasticity);
 		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::ROTATIONAL_3, NativeBarrier->SetElasticity);
@@ -299,12 +309,18 @@ void AAGX_Constraint::UpdateNativeProperties()
 		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::ROTATIONAL_2, NativeBarrier->SetDamping);
 		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::ROTATIONAL_3, NativeBarrier->SetDamping);
 
-		TRY_SET_DOF_RANGE_VALUE(ForceRange, EGenericDofIndex::TRANSLATIONAL_1, NativeBarrier->SetForceRange);
-		TRY_SET_DOF_RANGE_VALUE(ForceRange, EGenericDofIndex::TRANSLATIONAL_2, NativeBarrier->SetForceRange);
-		TRY_SET_DOF_RANGE_VALUE(ForceRange, EGenericDofIndex::TRANSLATIONAL_3, NativeBarrier->SetForceRange);
-		TRY_SET_DOF_RANGE_VALUE(ForceRange, EGenericDofIndex::ROTATIONAL_1, NativeBarrier->SetForceRange);
-		TRY_SET_DOF_RANGE_VALUE(ForceRange, EGenericDofIndex::ROTATIONAL_2, NativeBarrier->SetForceRange);
-		TRY_SET_DOF_RANGE_VALUE(ForceRange, EGenericDofIndex::ROTATIONAL_3, NativeBarrier->SetForceRange);
+		TRY_SET_DOF_RANGE_VALUE(
+			ForceRange, EGenericDofIndex::TRANSLATIONAL_1, NativeBarrier->SetForceRange);
+		TRY_SET_DOF_RANGE_VALUE(
+			ForceRange, EGenericDofIndex::TRANSLATIONAL_2, NativeBarrier->SetForceRange);
+		TRY_SET_DOF_RANGE_VALUE(
+			ForceRange, EGenericDofIndex::TRANSLATIONAL_3, NativeBarrier->SetForceRange);
+		TRY_SET_DOF_RANGE_VALUE(
+			ForceRange, EGenericDofIndex::ROTATIONAL_1, NativeBarrier->SetForceRange);
+		TRY_SET_DOF_RANGE_VALUE(
+			ForceRange, EGenericDofIndex::ROTATIONAL_2, NativeBarrier->SetForceRange);
+		TRY_SET_DOF_RANGE_VALUE(
+			ForceRange, EGenericDofIndex::ROTATIONAL_3, NativeBarrier->SetForceRange);
 	}
 }
 
@@ -377,9 +393,10 @@ void AAGX_Constraint::CreateNative()
 
 	CreateNativeImpl();
 
-	// TODO: Shouldn't it be OK to continue if failed to initialize native (e.g. by lacking user setup)?
-	// At least output a user error instead of crashing the program, since it is a user mistake
-	// and not a code mistake to for example forgetting to assign a rigid body to the constraint!
+	// TODO: Shouldn't it be OK to continue if failed to initialize native (e.g. by lacking user
+	// setup)? At least output a user error instead of crashing the program, since it is a user
+	// mistake and not a code mistake to for example forgetting to assign a rigid body to the
+	// constraint!
 	check(HasNative());
 
 	UpdateNativeProperties();

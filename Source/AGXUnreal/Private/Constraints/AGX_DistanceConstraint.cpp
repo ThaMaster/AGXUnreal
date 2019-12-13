@@ -12,7 +12,8 @@ AAGX_DistanceConstraint::AAGX_DistanceConstraint()
 			  // All common DOFs are free.
 		  },
 		  /*bIsSecondaryConstraintRotational*/ false,
-		  /*bIsLockControllerEditable*/ false) // disable because the native impl uses Lock Controller implicitly!
+		  /*bIsLockControllerEditable*/ false) // disable because the native impl uses Lock
+											   // Controller implicitly!
 {
 	BodyAttachment1.FrameDefiningActor = nullptr;
 	BodyAttachment2.FrameDefiningActor = nullptr;

@@ -13,8 +13,8 @@ class UAGX_ContactMaterialAsset;
 /**
  * Represents a native AGX Contact Material in-game. Should never exist when not playing.
  *
- * Should only be created using the static function CreateFromAsset, which copyies data from its sibling class
- * UAGX_ContactMaterialAsset.
+ * Should only be created using the static function CreateFromAsset, which copyies data from its
+ * sibling class UAGX_ContactMaterialAsset.
  *
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Transient, NotPlaceable)
@@ -23,7 +23,8 @@ class AGXUNREAL_API UAGX_ContactMaterialInstance : public UAGX_ContactMaterialBa
 	GENERATED_BODY()
 
 public:
-	static UAGX_ContactMaterialInstance* CreateFromAsset(UWorld* PlayingWorld, UAGX_ContactMaterialAsset* Source);
+	static UAGX_ContactMaterialInstance* CreateFromAsset(
+		UWorld* PlayingWorld, UAGX_ContactMaterialAsset* Source);
 
 public:
 	virtual ~UAGX_ContactMaterialInstance();

@@ -38,8 +38,9 @@ public:
 	const FConstraintRef* GetNative() const;
 
 	void AllocateNative(
-		const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
-		const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2);
+		const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1,
+		const FQuat* FrameRotation1, const FRigidBodyBarrier* RigidBody2,
+		const FVector* FramePosition2, const FQuat* FrameRotation2);
 
 	void ReleaseNative();
 
@@ -89,14 +90,16 @@ private:
 	 * The derived class should not store a reference to the native object!
 	 */
 	virtual void AllocateNativeImpl(
-		const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
-		const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2) = 0;
+		const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1,
+		const FQuat* FrameRotation1, const FRigidBodyBarrier* RigidBody2,
+		const FVector* FramePosition2, const FQuat* FrameRotation2) = 0;
 
 protected:
 	// NativeRef has the same lifetime as this object.
 	// NativeRef->Native can be null.
 	// NativeRef->Native is created by the lowermost subclass when AllocateNative is invoked,
 	// and released when ReleaseNative is invoked.
-	// NativeRef->Native should be type-casted whenever a subclass needs the derived interface (e.g. to agx::LockJoint).
+	// NativeRef->Native should be type-casted whenever a subclass needs the derived interface (e.g.
+	// to agx::LockJoint).
 	std::unique_ptr<FConstraintRef> NativeRef;
 };

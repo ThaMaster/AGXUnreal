@@ -29,7 +29,9 @@ public:
 	FAGX_ConstraintFrictionController FrictionController;
 
 	/** Lock controller for the secondary constraint (on the free DOF, usually). */
-	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraint", Meta = (EditCondition = "bIsLockControllerEditable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Secondary Constraint",
+		Meta = (EditCondition = "bIsLockControllerEditable"))
 	FAGX_ConstraintLockController LockController;
 
 	/** Range controller for the secondary constraint (on the free DOF, usually). */

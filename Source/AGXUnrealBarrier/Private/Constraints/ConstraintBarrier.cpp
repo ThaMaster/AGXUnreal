@@ -41,7 +41,8 @@ void FConstraintBarrier::AllocateNative(
 {
 	check(!HasNative());
 
-	AllocateNativeImpl(RigidBody1, FramePosition1, FrameRotation1, RigidBody2, FramePosition2, FrameRotation2);
+	AllocateNativeImpl(
+		RigidBody1, FramePosition1, FrameRotation1, RigidBody2, FramePosition2, FrameRotation2);
 }
 
 void FConstraintBarrier::ReleaseNative()

@@ -34,7 +34,8 @@ public:
 	virtual void UpdateNativeProperties() override;
 
 #if WITH_EDITOR
-	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent);
+	virtual void PostEditChangeChainProperty(
+		struct FPropertyChangedChainEvent& PropertyChangedEvent);
 #endif
 
 protected:

@@ -18,15 +18,16 @@ class UAGX_ContactMaterialInstance;
 UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable)
 class AGXUNREAL_API UAGX_ContactMaterialAsset : public UAGX_ContactMaterialBase
 {
-	/// \note Class comment above is used as tooltip in Content Browser etc, so trying to keep it simple and
-	/// user-centered, while providing a more programmer-aimed comment below.
+	/// \note Class comment above is used as tooltip in Content Browser etc, so trying to keep it
+	/// simple and user-centered, while providing a more programmer-aimed comment below.
 
 	// Represents Contact Material properties as an in-Editor asset that can be serialized to disk.
 	//
 	// Has no connection with the actual native AGX Contact Material.Instead, its sibling class
-	// UAGX_ContactMaterialInstance handles all interaction with the actual native AGX Contact Material.Therefore,
-	// all in - game objects with Uproperty Contact Material pointers need to swap their pointers to in - game
-	// UAGX_ContactMaterialInstances using the static function UAGX_ContactMaterialBase::GetOrCreateInstance.
+	// UAGX_ContactMaterialInstance handles all interaction with the actual native AGX Contact
+	// Material.Therefore, all in - game objects with Uproperty Contact Material pointers need to
+	// swap their pointers to in - game UAGX_ContactMaterialInstances using the static function
+	// UAGX_ContactMaterialBase::GetOrCreateInstance.
 
 	GENERATED_BODY()
 

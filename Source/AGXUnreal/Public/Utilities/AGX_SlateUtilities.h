@@ -21,7 +21,8 @@ public:
 	 * SHorizontalBox, SVerticalBox, or SBoxPanel.
 	 */
 	static bool RemoveChildWidgetByType(
-		const TSharedPtr<class SWidget>& Parent, const class FString& TypeNameToRemove, bool Recursive = true);
+		const TSharedPtr<class SWidget>& Parent, const class FString& TypeNameToRemove,
+		bool Recursive = true);
 
 	static void LogChildWidgets(
 		const TSharedPtr<class SWidget>& Parent, bool Recursive = true, const FString& Prefix = "");

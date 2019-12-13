@@ -27,7 +27,8 @@ enum class EAGX_ConstraintFrameSource
 	/** Both Attachment Frames share the transform of the second Rigid Body Actor. */
 	RigidBodyActor2 UMETA(DisplayName = "Rigid Body Actor 2"),
 
-	/** Each Attachment Frame uses the transform of its Rigid Body Actor owner, with configurable offsets. */
+	/** Each Attachment Frame uses the transform of its Rigid Body Actor owner, with configurable
+	   offsets. */
 	LocalOnly UMETA(DisplayName = "Local Transforms Only")
 };
 

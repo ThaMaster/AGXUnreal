@@ -28,7 +28,8 @@ public:
 	/**
 	 * Create a new Actor with an empty USceneComponent as its RootComponent.
 	 */
-	static std::tuple<AActor*, USceneComponent*> CreateEmptyActor(const FTransform& Transform, UWorld* World);
+	static std::tuple<AActor*, USceneComponent*> CreateEmptyActor(
+		const FTransform& Transform, UWorld* World);
 
 	/**
 	 * Create a new AGX Rigid Body Component as a child of the given Actor.
@@ -67,14 +68,15 @@ public:
 	 * Create a new constraint of the specified type.
 	 */
 	static AAGX_Constraint* CreateConstraint(
-		UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bSelect, bool bShowNotification,
-		bool bInPlayingWorldIfAvailable);
+		UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bSelect,
+		bool bShowNotification, bool bInPlayingWorldIfAvailable);
 
 	/**
 	 * Create a new AGX Constraint Frame Actor. Set as child to specified Rigid Body, if available.
 	 */
 	static AAGX_ConstraintFrameActor* CreateConstraintFrameActor(
-		AActor* ParentRigidBody, bool bSelect, bool bShowNotification, bool bInPlayingWorldIfAvailable);
+		AActor* ParentRigidBody, bool bSelect, bool bShowNotification,
+		bool bInPlayingWorldIfAvailable);
 
 	/**
 	 * Change current selection to the specific actor.
@@ -116,14 +118,15 @@ public:
 
 	/**
 	 * Find the first two found actors that has a UAGX_RigidBodyComponent in the current selection,
-	 * with options to search children and parents in case the user has selected a graphics-only actor
-	 * instead of the actual rigid body actor.
+	 * with options to search children and parents in case the user has selected a graphics-only
+	 * actor instead of the actual rigid body actor.
 	 *
-	 * @param bSearchSubtrees If true, each selected actor's subtree will also be searched. But, once a
-	 * Rigid Body is found, the search of the corresponding selected actor's subtree will be finished,
-	 * such that only one Rigid Body actor may be found per selected actor.
+	 * @param bSearchSubtrees If true, each selected actor's subtree will also be searched. But,
+	 * once a Rigid Body is found, the search of the corresponding selected actor's subtree will be
+	 * finished, such that only one Rigid Body actor may be found per selected actor.
 	 *
-	 * @param bSearchAncestors If true, all ancestors of each selected actor's subtree will also be searched.
+	 * @param bSearchAncestors If true, all ancestors of each selected actor's subtree will also be
+	 * searched.
 	 *
 	 */
 	static void GetRigidBodyActorsFromSelection(
@@ -133,7 +136,8 @@ public:
 
 	static AActor* GetRigidBodyActorFromAncestors(AActor* Actor, const AActor* IgnoreActor);
 
-	static void GetAllClassesOfType(TArray<UClass*>& OutMatches, UClass* BaseClass, bool bIncludeAbstract);
+	static void GetAllClassesOfType(
+		TArray<UClass*>& OutMatches, UClass* BaseClass, bool bIncludeAbstract);
 
 	/**
 	 * Returns single object being customized from DetailBuilder if found.
@@ -142,11 +146,13 @@ public:
 	 * If False, the first found object is returned, even if multiple objects are found.
 	 */
 	template <typename T>
-	static T* GetSingleObjectBeingCustomized(IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true);
+	static T* GetSingleObjectBeingCustomized(
+		IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true);
 };
 
 template <typename T>
-T* FAGX_EditorUtilities::GetSingleObjectBeingCustomized(IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple)
+T* FAGX_EditorUtilities::GetSingleObjectBeingCustomized(
+	IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple)
 {
 	static_assert(std::is_base_of<UObject, T>::value, "T must inherit from UObject");
 
