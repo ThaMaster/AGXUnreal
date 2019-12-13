@@ -78,8 +78,8 @@ namespace
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("A shovel in the AGX Terrain '%s' is invalid because the Actor '%s' doesn't have an '%s'"),
-				TerrainName, *Owner->GetName(), *TType::StaticClass()->GetName());
+				TEXT("The shovel '%s' in the AGX Terrain '%s' is invalid because it doesn't have exactly one '%s'"),
+				*Owner->GetName(), TerrainName, *TType::StaticClass()->GetName());
 			return nullptr;
 		}
 		return Components[0];
