@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DynamicMeshBuilder.h"
 
 class FDynamicMeshIndexBuffer32;
 struct FStaticMeshVertexBuffers;
@@ -115,6 +116,14 @@ public:
 		FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer,
 		uint32& NextFreeVertex, uint32& NextFreeIndex,
 		const CylinderConstructionData& ConstructionData);
+
+	static void MakeCylinder(
+		const FVector& Base, const FVector& XAxis, const FVector& YAxis, const FVector& ZAxis, float Radius,
+		float HalfHeight, uint32 Sides, TArray<FDynamicMeshVertex>& OutVerts, TArray<uint32>& OutIndices);
+
+	static void MakeCone(
+		float Angle1, float Angle2, float Scale, float XOffset, uint32 NumSides, TArray<FDynamicMeshVertex>& OutVerts,
+		TArray<uint32>& OutIndices);
 
 	/**
 	 * Used to define the geometry of a mesh arrow, and also to know the number of vertices and

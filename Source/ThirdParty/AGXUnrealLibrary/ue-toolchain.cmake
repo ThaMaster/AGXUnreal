@@ -10,8 +10,8 @@
 # Unreal Engine 4.22 uses clang-7. We only name the compiler, instead of giving a full path to the binaires downloaded
 # by the Unreal Engine Setup.sh script. This makes it use the system binaries. We may want to try using the Unreal
 # Engine specific binaries at some point.
-set(CMAKE_C_COMPILER "clang-7" CACHE)
-set(CMAKE_CXX_COMPILER "clang++-7" CACHE)
+set(CMAKE_C_COMPILER "clang-7" CACHE STRING "The C compiler to use.")
+set(CMAKE_CXX_COMPILER "clang++-7" CACHE STRING "The C++ compiler to use.")
 
 # Disable system include paths and add the Unreal Engine paths instead.
 if(NOT CMAKE_CXX_FLAGS MATCHES "Linux/LibCxx/include")
@@ -32,4 +32,8 @@ endif()
 # todo Should CMAKE_STATIC_LINKER_FLAGS be added here as well?
 
 # Enable usage of the Unreal Engine standard libraries.
+set(CMAKE_C_STANDARD_LIBRARIES  "-lm -lc -lgcc_s -lgcc -lpthread" CACHE INTERNAL "")
 set(CMAKE_CXX_STANDARD_LIBRARIES  "$ENV{UE_THIRD_PARTY_DIR}/Linux/LibCxx/lib/Linux/x86_64-unknown-linux-gnu/libc++.a  $ENV{UE_THIRD_PARTY_DIR}/Linux/LibCxx/lib/Linux/x86_64-unknown-linux-gnu/libc++abi.a  -lm -lc -lgcc_s -lgcc -lpthread" CACHE INTERNAL "")
+
+# CMake fails to detect CMAKE_SIZEOF_VOID_P and it ends up being the empty string.
+set(CMAKE_SIZEOF_VOID_P 8 CACHE INTERNAL "")

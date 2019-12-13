@@ -33,6 +33,13 @@ public class AGXUnrealLibrary : ModuleRules
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxTerrain"));
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("agxVehicle"));
 
+		/// TODO: These lines are for linker debugging only. Should be
+		/// removed before the first public release. There is a related
+		/// piece of code in TerrainBarrier.cpp, where vdbgrid and
+		/// openvdb are explicitly dlopen'd.
+		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath("vdbgrid"));
+		PublicAdditionalLibraries.Add(CurrentPlatform.LinkTerrainDependencyLibraryPath("openvdb"));
+
 		// TODO: Do we need to list more libraries here, or will transitive
 		// dependencies be enough?.
 

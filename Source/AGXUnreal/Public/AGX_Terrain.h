@@ -1,8 +1,13 @@
 #pragma once
 
+// AGXUnreal includes.
+#include "TerrainBarrier.h"
+#include "Terrain/AGX_Shovel.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "TerrainBarrier.h"
+#include "Containers/Array.h"
 
 /// \todo Would like to not include this header, and only forward declare
 /// UNiagaraSystem instead. Currently gives
@@ -92,7 +97,6 @@ public:
 #endif
 
 /// \todo Add Shovels.
-#if 0
 	/**
 	 * A list of the rigid body actors that should be used as terrain shovels.
 	 *
@@ -105,8 +109,7 @@ public:
 	 * in addition to the usual Rigid Body and Shape components.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
-	TArray<FTerrainShovel> Shovels;
-#endif
+	TArray<FAGX_Shovel> Shovels;
 
 	/** Whether the height field rendering should be updated with deformation data. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering")
@@ -163,6 +166,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")
 	bool bEnableActiveZoneRendering = false;
 
+	/// Return true if the AGX Dynamics object has been created. False otherwise.
+	bool HasNative();
+
 	FTerrainBarrier* GetNative();
 	const FTerrainBarrier* GetNative() const;
 
@@ -172,6 +178,11 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+private:
+	void InitializeNative();
+	void CreateNativeTerrain();
+	void CreateNativeShovels();
 
 private:
 	FTerrainBarrier NativeBarrier;

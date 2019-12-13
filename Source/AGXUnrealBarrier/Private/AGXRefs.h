@@ -114,6 +114,17 @@ struct FTerrainRef
 	}
 };
 
+struct FShovelRef
+{
+	agxTerrain::ShovelRef Native;
+
+	FShovelRef() = default;
+	FShovelRef(agxTerrain::Shovel* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
 struct FNotifyRef
 {
 	agx::ref_ptr<FAGXNotify> Native;
