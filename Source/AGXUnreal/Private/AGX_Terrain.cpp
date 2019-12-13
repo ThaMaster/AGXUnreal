@@ -96,7 +96,7 @@ void AAGX_Terrain::InitializeNative()
 
 	if (NativeBarrier.HasNative())
 	{
-		UE_LOG(LogAGX, Error, TEXT("BeginPlay called on a Terrain that has already been initialized.	"));
+		UE_LOG(LogAGX, Error, TEXT("BeginPlay called on a Terrain that has already been initialized."));
 		return;
 	}
 
