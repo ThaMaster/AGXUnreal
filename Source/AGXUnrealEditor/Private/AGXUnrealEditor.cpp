@@ -30,6 +30,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
 #include "AGX_Simulation.h"
+#include "AGX_Terrain.h"
 #include "AGX_TopMenu.h"
 #include "Constraints/AGX_BallConstraint.h"
 #include "Constraints/AGX_Constraint.h"
@@ -274,6 +275,7 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 	RegisterPlaceableItem(AAGX_HingeConstraint::StaticClass());
 	RegisterPlaceableItem(AAGX_LockConstraint::StaticClass());
 	RegisterPlaceableItem(AAGX_PrismaticConstraint::StaticClass());
+	RegisterPlaceableItem(AAGX_Terrain::StaticClass());
 }
 
 void FAGXUnrealEditorModule::UnregisterPlacementCategory()
