@@ -149,11 +149,10 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintTypeComboBox(
 				 }) // header tooltip
 				 .Content() // header content (i.e. showing selected item, even while combo box is
 							// closed)
-								[SNew(STextBlock)
-									 .Text_Lambda([=]() {
-										 return GetShortName(ConstraintsSubMode->ConstraintType);
-									 })
-									 .Font(IDetailLayoutBuilder::GetDetailFont())]];
+					 [SNew(STextBlock)
+						  .Text_Lambda(
+							  [=]() { return GetShortName(ConstraintsSubMode->ConstraintType); })
+						  .Font(IDetailLayoutBuilder::GetDetailFont())]];
 }
 
 void FAGX_AgxEdModeConstraintsCustomization::CreateGetFromSelectedActorsButton(

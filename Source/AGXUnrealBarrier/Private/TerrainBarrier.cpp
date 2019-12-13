@@ -36,7 +36,9 @@ namespace
 		{
 			std::cout << "Using std::cout" << std::endl;
 #if FORCE_DLOPEN_OPEN_VDB
-			dlopen("/media/s2000/agx/master/unreal_dependencies/lib/libvdbgrid.so.2.28.0.0", RTLD_NOW | RTLD_GLOBAL);
+			dlopen(
+				"/media/s2000/agx/master/unreal_dependencies/lib/libvdbgrid.so.2.28.0.0",
+				RTLD_NOW | RTLD_GLOBAL);
 #endif
 #if FORCE_DLOPEN_VDB_GRID
 			dlopen(

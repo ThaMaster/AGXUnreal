@@ -96,7 +96,7 @@ public:
 	UAGX_Material* SurfaceMaterial;
 #endif
 
-/// \todo Add Shovels.
+	/// \todo Add Shovels.
 	/**
 	 * A list of the rigid body actors that should be used as terrain shovels.
 	 *

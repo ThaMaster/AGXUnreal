@@ -109,18 +109,17 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 
 				CustomPropertyRow.ValueContent()
 					.MinDesiredWidth(250.0f) // from SPropertyEditorAsset::GetDesiredWidth
-					.MaxDesiredWidth(
-						0)[SNew(SBox)
-							   .VAlign(VAlign_Center)
-							   .Padding(FMargin(
-								   0, 0, 0,
-								   0)) // Line up with the other properties due to having no reset
-									   // to default button
-										   [SNew(SVerticalBox) +
-											SVerticalBox::Slot().AutoHeight()
-												[SNew(SHorizontalBox) +
-												 SHorizontalBox::Slot()[DefaultValueWidget
-																			.ToSharedRef()]]]];
+					.MaxDesiredWidth(0)
+						[SNew(SBox)
+							 .VAlign(VAlign_Center)
+							 .Padding(FMargin(
+								 0, 0, 0,
+								 0)) // Line up with the other properties due to having no reset
+									 // to default button
+								 [SNew(SVerticalBox) +
+								  SVerticalBox::Slot().AutoHeight()
+									  [SNew(SHorizontalBox) +
+									   SHorizontalBox::Slot()[DefaultValueWidget.ToSharedRef()]]]];
 			}
 		}
 	}
