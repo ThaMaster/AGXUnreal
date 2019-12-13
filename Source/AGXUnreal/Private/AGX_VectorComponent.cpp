@@ -175,6 +175,13 @@ FVector UAGX_VectorComponent::GetVectorTarget() const
 	return GetVectorOrigin() + GetVectorDirection();
 }
 
+FTwoVectors UAGX_VectorComponent::GetInLocal(FTransform const& WorldToLocal) const
+{
+	FVector LocalOrigin = WorldToLocal.TransformPosition(GetVectorOrigin());
+	FVector LocalTarget = WorldToLocal.TransformPosition(GetVectorTarget());
+	return {LocalOrigin, LocalTarget};
+}
+
 FPrimitiveSceneProxy* UAGX_VectorComponent::CreateSceneProxy()
 {
 	return new FArrowSceneProxy(this);

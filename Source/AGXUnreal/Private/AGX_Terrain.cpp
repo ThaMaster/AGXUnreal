@@ -146,17 +146,11 @@ void AAGX_Terrain::CreateNativeShovels()
 			continue;
 		}
 
-		FTransform WorldToBody = Body->GetComponentTransform().Inverse();
-
-		auto ArrowToLine = [&WorldToBody](UAGX_VectorComponent* Arrow) -> FTwoVectors {
-			return {WorldToBody.TransformPosition(Arrow->GetVectorOrigin()),
-					WorldToBody.TransformPosition(Arrow->GetVectorTarget())};
-		};
-
 		FShovelBarrier ShovelBarrier;
 		FRigidBodyBarrier* BodyBarrier = Body->GetOrCreateNative();
-		FTwoVectors TopEdgeLine = ArrowToLine(TopEdge);
-		FTwoVectors CuttingEdgeLine = ArrowToLine(CuttingEdge);
+		FTransform const WorldToBody = Body->GetComponentTransform().Inverse();
+		FTwoVectors TopEdgeLine = TopEdge->GetInLocal(WorldToBody);
+		FTwoVectors CuttingEdgeLine = CuttingEdge->GetInLocal(WorldToBody);
 		FVector CuttingDirectionVector = WorldToBody.TransformVector(CuttingDirection->GetVectorDirectionNormalized());
 		ShovelBarrier.AllocateNative(*BodyBarrier, TopEdgeLine, CuttingEdgeLine, CuttingDirectionVector);
 

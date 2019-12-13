@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "Components/PrimitiveComponent.h"
 #include "Math/Color.h"
+#include "Math/TwoVectors.h"
+
 #include "AGX_VectorComponent.generated.h"
 
 /**
@@ -43,6 +45,12 @@ public:
 	 * Returns sum of world-space position and world space direction.
 	 */
 	FVector GetVectorTarget() const;
+
+	/**
+	 * Convert the world-space origin and target positions to two positions in
+	 * the local space defined by the WorldToLocal transformation.
+	 */
+	FTwoVectors GetInLocal(FTransform const& WorldToLocal) const;
 
 	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
 	virtual FBoxSphereBounds CalcBounds(const FTransform& LocalToWorld) const override;
