@@ -102,18 +102,14 @@ void AAGX_Terrain::InitializeNative()
 		return;
 	}
 
-<<<<<<< AGXUnrealDev/Plugins/AGXUnreal/Source/AGXUnreal/Private/AGX_Terrain.cpp
 	CreateNativeTerrain();
 	CreateNativeShovels();
 }
 
 void AAGX_Terrain::CreateNativeTerrain()
 {
-	FHeightFieldShapeBarrier HeightField = AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
-=======
 	FHeightFieldShapeBarrier HeightField =
 		AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
->>>>>>> AGXUnrealDev/Plugins/AGXUnreal/Source/AGXUnreal/Private/AGX_Terrain.cpp
 	NativeBarrier.AllocateNative(HeightField);
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	Simulation->AddTerrain(this);
