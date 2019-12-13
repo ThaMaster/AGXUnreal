@@ -157,8 +157,9 @@ void AAGX_Terrain::CreateNativeShovels()
 		bool Added = NativeBarrier.AddShovel(ShovelBarrier);
 		if (!Added)
 		{
-			UE_LOG(LogAGX, Warning, TEXT("Terrain '%s' rejected shovel '%s'."), *GetName(), *Actor->GetName());
-			UE_LOG(LogAGX, Warning, TEXT("  Reversing edges"));
+			UE_LOG(
+				LogAGX, Warning, TEXT("Terrain '%s' rejected shovel '%s'. Reversing edge directions and trying again."),
+				*GetName(), *Actor->GetName());
 			std::swap(TopEdgeLine.v1, TopEdgeLine.v2);
 			std::swap(CuttingEdgeLine.v1, CuttingEdgeLine.v2);
 			ShovelBarrier.SetTopEdge(TopEdgeLine);
