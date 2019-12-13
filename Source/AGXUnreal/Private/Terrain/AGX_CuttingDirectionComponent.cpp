@@ -4,5 +4,3 @@ UAGX_CuttingDirectionComponent::UAGX_CuttingDirectionComponent()
 {
 	ArrowColor = FColor::Yellow;
 }
-
-

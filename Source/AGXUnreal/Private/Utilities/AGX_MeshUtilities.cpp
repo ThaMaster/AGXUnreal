@@ -585,8 +585,9 @@ void AGX_MeshUtilities::MakeCylinder(
 }
 
 void AGX_MeshUtilities::MakeCylinder(
-	const FVector& Base, const FVector& XAxis, const FVector& YAxis, const FVector& ZAxis, float Radius,
-	float HalfHeight, uint32 Sides, TArray<FDynamicMeshVertex>& OutVerts, TArray<uint32>& OutIndices)
+	const FVector& Base, const FVector& XAxis, const FVector& YAxis, const FVector& ZAxis,
+	float Radius, float HalfHeight, uint32 Sides, TArray<FDynamicMeshVertex>& OutVerts,
+	TArray<uint32>& OutIndices)
 {
 	const float AngleDelta = 2.0f * PI / Sides;
 	FVector LastVertex = Base + XAxis * Radius;
@@ -646,8 +647,8 @@ void AGX_MeshUtilities::MakeCylinder(
 	}
 
 	// Add top/bottom triangles, in the style of a fan.
-	// Note if we wanted nice rendering of the caps then we need to duplicate the vertices and modify
-	// texture/tangent coordinates.
+	// Note if we wanted nice rendering of the caps then we need to duplicate the vertices and
+	// modify texture/tangent coordinates.
 	for (uint32 SideIndex = 1; SideIndex < Sides; SideIndex++)
 	{
 		int32 V0 = BaseVertIndex;
@@ -700,7 +701,8 @@ namespace
 		float tanX_2 = FMath::Tan(0.5f * ang1);
 		float tanY_2 = FMath::Tan(0.5f * ang2);
 
-		float phi = FMath::Atan2(FMath::Sin(AzimuthAngle) * sinY_2, FMath::Cos(AzimuthAngle) * sinX_2);
+		float phi =
+			FMath::Atan2(FMath::Sin(AzimuthAngle) * sinY_2, FMath::Cos(AzimuthAngle) * sinX_2);
 		float sinPhi = FMath::Sin(phi);
 		float cosPhi = FMath::Cos(phi);
 		float sinSqPhi = sinPhi * sinPhi;
@@ -725,8 +727,8 @@ namespace
 }
 
 void AGX_MeshUtilities::MakeCone(
-	float Angle1, float Angle2, float Scale, float XOffset, uint32 NumSides, TArray<FDynamicMeshVertex>& OutVerts,
-	TArray<uint32>& OutIndices)
+	float Angle1, float Angle2, float Scale, float XOffset, uint32 NumSides,
+	TArray<FDynamicMeshVertex>& OutVerts, TArray<uint32>& OutIndices)
 {
 	TArray<FVector> ConeVerts;
 	ConeVerts.AddUninitialized(NumSides);
@@ -757,16 +759,17 @@ void AGX_MeshUtilities::MakeCone(
 		V1.TextureCoordinate[0].X = 1.0f;
 		V1.TextureCoordinate[0].Y = (float) i / NumSides;
 		FVector TriTangentZPrev =
-			ConeVerts[i] ^
-			ConeVerts[i == 0 ? NumSides - 1 : i - 1]; // Normal of the previous face connected to this face
+			ConeVerts[i] ^ ConeVerts[i == 0 ? NumSides - 1 : i - 1]; // Normal of the previous face
+																	 // connected to this face
 		V1.SetTangents(TriTangentX, TriTangentY, (TriTangentZPrev + TriTangentZ).GetSafeNormal());
 		int32 I1 = OutVerts.Add(V1);
 
 		V2.Position = ConeVerts[(i + 1) % NumSides];
 		V2.TextureCoordinate[0].X = 1.0f;
 		V2.TextureCoordinate[0].Y = (float) ((i + 1) % NumSides) / NumSides;
-		FVector TriTangentZNext = ConeVerts[(i + 2) % NumSides] ^
-								  ConeVerts[(i + 1) % NumSides]; // Normal of the next face connected to this face
+		FVector TriTangentZNext =
+			ConeVerts[(i + 2) % NumSides] ^
+			ConeVerts[(i + 1) % NumSides]; // Normal of the next face connected to this face
 		V2.SetTangents(TriTangentX, TriTangentY, (TriTangentZNext + TriTangentZ).GetSafeNormal());
 		int32 I2 = OutVerts.Add(V2);
 

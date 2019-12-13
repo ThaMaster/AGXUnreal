@@ -33,7 +33,7 @@ struct FAGX_Shovel
 	float VerticalBladeSoilMergeDistance = 40.0f;
 
 	/**
-     * Extension outside the shovel bounding box where soil particle merging
+	 * Extension outside the shovel bounding box where soil particle merging
 	 * is forbidden, in centimeters.
 	 */
 	UPROPERTY(EditAnywhere)

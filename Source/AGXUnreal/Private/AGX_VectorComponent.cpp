@@ -43,17 +43,19 @@ namespace
 			const float TotalLength = ArrowSize;
 			const float HeadLength = TotalLength * ARROW_HEAD_FACTOR;
 			const float ShaftRadius = TotalLength * ARROW_RADIUS_FACTOR;
-			const float ShaftLength = (TotalLength - HeadLength) * 1.1f; // 10% overlap between shaft and head
+			const float ShaftLength =
+				(TotalLength - HeadLength) * 1.1f; // 10% overlap between shaft and head
 			const FVector ShaftCenter = FVector(0.5f * ShaftLength, 0, 0);
 
 			TArray<FDynamicMeshVertex> OutVerts;
 			const uint32 NumConeSides {32u};
 			const uint32 NumCylinderSides {16u};
 			AGX_MeshUtilities::MakeCone(
-				HeadAngle, HeadAngle, -HeadLength, TotalLength, NumConeSides, OutVerts, IndexBuffer.Indices);
+				HeadAngle, HeadAngle, -HeadLength, TotalLength, NumConeSides, OutVerts,
+				IndexBuffer.Indices);
 			AGX_MeshUtilities::MakeCylinder(
-				ShaftCenter, FVector(0, 0, 1), FVector(0, 1, 0), FVector(1, 0, 0), ShaftRadius, 0.5f * ShaftLength,
-				NumCylinderSides, OutVerts, IndexBuffer.Indices);
+				ShaftCenter, FVector(0, 0, 1), FVector(0, 1, 0), FVector(1, 0, 0), ShaftRadius,
+				0.5f * ShaftLength, NumCylinderSides, OutVerts, IndexBuffer.Indices);
 
 			VertexBuffers.InitFromDynamicVertex(&VertexFactory, OutVerts);
 
@@ -71,13 +73,13 @@ namespace
 		}
 
 		virtual void GetDynamicMeshElements(
-			const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap,
-			FMeshElementCollector& Collector) const override
+			const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily,
+			uint32 VisibilityMap, FMeshElementCollector& Collector) const override
 		{
 			FMatrix EffectiveLocalToWorld = GetLocalToWorld();
 
-			auto ArrowMaterialRenderProxy =
-				new FColoredMaterialRenderProxy(GEngine->ArrowMaterial->GetRenderProxy(), ArrowColor, "GizmoColor");
+			auto ArrowMaterialRenderProxy = new FColoredMaterialRenderProxy(
+				GEngine->ArrowMaterial->GetRenderProxy(), ArrowColor, "GizmoColor");
 
 			Collector.RegisterOneFrameMaterialProxy(ArrowMaterialRenderProxy);
 
@@ -105,21 +107,23 @@ namespace
 #if UE_VERSION_OLDER_THAN(4, 23, 0)
 					DynamicPrimitiveUniformBuffer.Set(
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
-						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(), GetLocalBounds(), true, false,
-						UseEditorDepthTest());
+						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(),
+						GetLocalBounds(), true, false, UseEditorDepthTest());
 #else
 					DynamicPrimitiveUniformBuffer.Set(
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
-						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(), GetLocalBounds(), true, false,
-						DrawsVelocity(), LpvBiasMultiplier);
+						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(),
+						GetLocalBounds(), true, false, DrawsVelocity(), LpvBiasMultiplier);
 #endif
 
-					BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
+					BatchElement.PrimitiveUniformBufferResource =
+						&DynamicPrimitiveUniformBuffer.UniformBuffer;
 
 					BatchElement.FirstIndex = 0;
 					BatchElement.NumPrimitives = IndexBuffer.Indices.Num() / 3;
 					BatchElement.MinVertexIndex = 0;
-					BatchElement.MaxVertexIndex = VertexBuffers.PositionVertexBuffer.GetNumVertices() - 1;
+					BatchElement.MaxVertexIndex =
+						VertexBuffers.PositionVertexBuffer.GetNumVertices() - 1;
 					Mesh.ReverseCulling = IsLocalToWorldDeterminantNegative();
 					Mesh.Type = PT_TriangleList;
 					Mesh.DepthPriorityGroup = SDPG_World;
@@ -132,11 +136,13 @@ namespace
 		virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View) const override
 		{
 			FPrimitiveViewRelevance Result;
-			Result.bDrawRelevance = IsShown(View) && (View->Family->EngineShowFlags.BillboardSprites);
+			Result.bDrawRelevance =
+				IsShown(View) && (View->Family->EngineShowFlags.BillboardSprites);
 			Result.bDynamicRelevance = true;
 			Result.bShadowRelevance = IsShadowCast(View);
 			Result.bEditorPrimitiveRelevance = UseEditorCompositing(View);
-			Result.bVelocityRelevance = IsMovable() && Result.bOpaqueRelevance && Result.bRenderInMainPass;
+			Result.bVelocityRelevance =
+				IsMovable() && Result.bOpaqueRelevance && Result.bRenderInMainPass;
 			return Result;
 		}
 
@@ -203,6 +209,7 @@ FPrimitiveSceneProxy* UAGX_VectorComponent::CreateSceneProxy()
 FBoxSphereBounds UAGX_VectorComponent::CalcBounds(const FTransform& LocalToWorld) const
 {
 	float Radius = ArrowSize * ARROW_RADIUS_FACTOR;
-	return FBoxSphereBounds(FBox(FVector(0.0f, -Radius, -Radius), FVector(ArrowSize, Radius, Radius)))
+	return FBoxSphereBounds(
+			   FBox(FVector(0.0f, -Radius, -Radius), FVector(ArrowSize, Radius, Radius)))
 		.TransformBy(LocalToWorld);
 }
