@@ -21,7 +21,8 @@ FConstraint1DOFBarrier::~FConstraint1DOFBarrier()
 {
 }
 
-void FConstraint1DOFBarrier::SetElectricMotorController(const FElectricMotorControllerBarrier& ControllerBarrier)
+void FConstraint1DOFBarrier::SetElectricMotorController(
+	const FElectricMotorControllerBarrier& ControllerBarrier)
 {
 	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
 	{
@@ -31,7 +32,8 @@ void FConstraint1DOFBarrier::SetElectricMotorController(const FElectricMotorCont
 	}
 }
 
-void FConstraint1DOFBarrier::SetFrictionController(const FFrictionControllerBarrier& ControllerBarrier)
+void FConstraint1DOFBarrier::SetFrictionController(
+	const FFrictionControllerBarrier& ControllerBarrier)
 {
 	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
 	{
@@ -61,7 +63,8 @@ void FConstraint1DOFBarrier::SetRangeController(const FRangeControllerBarrier& C
 	}
 }
 
-void FConstraint1DOFBarrier::SetTargetSpeedController(const FTargetSpeedControllerBarrier& ControllerBarrier)
+void FConstraint1DOFBarrier::SetTargetSpeedController(
+	const FTargetSpeedControllerBarrier& ControllerBarrier)
 {
 	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
 	{

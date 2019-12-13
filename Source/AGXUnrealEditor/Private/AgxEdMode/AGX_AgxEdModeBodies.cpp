@@ -23,7 +23,8 @@ FText UAGX_AgxEdModeBodies::GetDisplayName() const
 
 FText UAGX_AgxEdModeBodies::GetTooltip() const
 {
-	return LOCTEXT("Tooltip", "Contains tools to quickly create and manage AGX Rigid Bodies and Shapes");
+	return LOCTEXT(
+		"Tooltip", "Contains tools to quickly create and manage AGX Rigid Bodies and Shapes");
 }
 
 #undef LOCTEXT_NAMESPACE

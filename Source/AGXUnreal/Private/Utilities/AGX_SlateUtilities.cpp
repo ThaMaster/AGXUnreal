@@ -20,7 +20,8 @@ bool FAGX_SlateUtilities::RemoveChildWidgetByType(
 		if (Child->GetTypeAsString() == TypeNameToRemove)
 		{
 			const FString ParentType = Parent->GetTypeAsString();
-			if (ParentType == "SHorizontalBox" || ParentType == "SVerticalBox" || ParentType == "SBoxPanel")
+			if (ParentType == "SHorizontalBox" || ParentType == "SVerticalBox" ||
+				ParentType == "SBoxPanel")
 			{
 				SBoxPanel* BoxPanel = static_cast<SBoxPanel*>(Parent.Get());
 
@@ -36,7 +37,8 @@ bool FAGX_SlateUtilities::RemoveChildWidgetByType(
 	return false;
 }
 
-void FAGX_SlateUtilities::LogChildWidgets(const TSharedPtr<SWidget>& Parent, bool Recursive, const FString& Prefix)
+void FAGX_SlateUtilities::LogChildWidgets(
+	const TSharedPtr<SWidget>& Parent, bool Recursive, const FString& Prefix)
 {
 	if (!Parent)
 		return;

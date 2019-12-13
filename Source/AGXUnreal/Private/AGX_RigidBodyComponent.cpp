@@ -19,7 +19,9 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	InertiaTensorDiagonal = FVector(1.f, 1.f, 1.f);
 	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
 
-	UE_LOG(LogAGX, Log, TEXT("RigidBodyComponent is being ticked at %d."), (int) PrimaryComponentTick.TickGroup);
+	UE_LOG(
+		LogAGX, Log, TEXT("RigidBodyComponent is being ticked at %d."),
+		(int) PrimaryComponentTick.TickGroup);
 }
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
@@ -117,13 +119,19 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	UpdateNativeProperties();
 	UpdateNativeTransformsFromActor();
 
-	TArray<UActorComponent*> Shapes = GetOwner()->GetComponentsByClass(UAGX_ShapeComponent::StaticClass());
+	TArray<UActorComponent*> Shapes =
+		GetOwner()->GetComponentsByClass(UAGX_ShapeComponent::StaticClass());
 	for (UActorComponent* Component : Shapes)
 	{
 		UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Component);
 		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
+<<<<<<< AGXUnrealDev/Plugins/AGXUnreal/Source/AGXUnreal/Private/AGX_RigidBodyComponent.cpp
 		/// \todo Should not crash on this. HeightField easy to get wrong.
 		check(NativeShape && NativeShape->HasNative());
+=======
+		check(NativeShape && NativeShape->HasNative()); /// \todo Should not crash on this.
+														/// HeightField easy to get wrong.
+>>>>>>> AGXUnrealDev/Plugins/AGXUnreal/Source/AGXUnreal/Private/AGX_RigidBodyComponent.cpp
 		NativeBarrier.AddShape(NativeShape);
 		UE_LOG(LogAGX, Log, TEXT("Shape added to native object for RigidBody with mass %f."), Mass);
 	}
@@ -144,8 +152,10 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("The Actor \"%s\" has a RigidBody with Static AGX MotionControl but Non-Static Unreal Mobility. "
-					 "Unreal Mobility will automatically be changed to Static this game session, but should also be "
+				TEXT("The Actor \"%s\" has a RigidBody with Static AGX MotionControl but "
+					 "Non-Static Unreal Mobility. "
+					 "Unreal Mobility will automatically be changed to Static this game session, "
+					 "but should also be "
 					 "changed manually in the Editor to ensure best performance!"),
 				*GetOwner()->GetName());
 
@@ -155,8 +165,10 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("The Actor \"%s\" has a RigidBody with Dynamic AGX MotionControl but Non-Movable Unreal Mobility. "
-					 "Unreal Mobility will automatically be changed to Movable this game session, but should also be "
+				TEXT("The Actor \"%s\" has a RigidBody with Dynamic AGX MotionControl but "
+					 "Non-Movable Unreal Mobility. "
+					 "Unreal Mobility will automatically be changed to Movable this game session, "
+					 "but should also be "
 					 "changed manually in the Editor to avoid future problems!"),
 				*GetOwner()->GetName());
 

@@ -32,16 +32,20 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Rotational_3_IsEditable"))
 	double Rotational_3;
 
-	FAGX_ConstraintDoublePropertyPerDof(double DefaultValue = 0.0, EDofFlag EditableDofs = EDofFlag::DOF_FLAG_ALL)
+	FAGX_ConstraintDoublePropertyPerDof(
+		double DefaultValue = 0.0, EDofFlag EditableDofs = EDofFlag::DOF_FLAG_ALL)
 		: Translational_1(DefaultValue)
 		, Translational_2(DefaultValue)
 		, Translational_3(DefaultValue)
 		, Rotational_1(DefaultValue)
 		, Rotational_2(DefaultValue)
 		, Rotational_3(DefaultValue)
-		, Translational_1_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_TRANSLATIONAL_1)
-		, Translational_2_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_TRANSLATIONAL_2)
-		, Translational_3_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_TRANSLATIONAL_3)
+		, Translational_1_IsEditable(
+			  (uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_TRANSLATIONAL_1)
+		, Translational_2_IsEditable(
+			  (uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_TRANSLATIONAL_2)
+		, Translational_3_IsEditable(
+			  (uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_TRANSLATIONAL_3)
 		, Rotational_1_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_ROTATIONAL_1)
 		, Rotational_2_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_ROTATIONAL_2)
 		, Rotational_3_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_ROTATIONAL_3)
@@ -102,16 +106,20 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 	FFloatInterval Rotational_3;
 
 	FAGX_ConstraintRangePropertyPerDof(
-		float DefaultMinValue = 0.0f, float DefaultMaxValue = 0.0f, EDofFlag EditableDofs = EDofFlag::DOF_FLAG_ALL)
+		float DefaultMinValue = 0.0f, float DefaultMaxValue = 0.0f,
+		EDofFlag EditableDofs = EDofFlag::DOF_FLAG_ALL)
 		: Translational_1(DefaultMinValue, DefaultMaxValue)
 		, Translational_2(DefaultMinValue, DefaultMaxValue)
 		, Translational_3(DefaultMinValue, DefaultMaxValue)
 		, Rotational_1(DefaultMinValue, DefaultMaxValue)
 		, Rotational_2(DefaultMinValue, DefaultMaxValue)
 		, Rotational_3(DefaultMinValue, DefaultMaxValue)
-		, Translational_1_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_TRANSLATIONAL_1)
-		, Translational_2_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_TRANSLATIONAL_2)
-		, Translational_3_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_TRANSLATIONAL_3)
+		, Translational_1_IsEditable(
+			  (uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_TRANSLATIONAL_1)
+		, Translational_2_IsEditable(
+			  (uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_TRANSLATIONAL_2)
+		, Translational_3_IsEditable(
+			  (uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_TRANSLATIONAL_3)
 		, Rotational_1_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_ROTATIONAL_1)
 		, Rotational_2_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_ROTATIONAL_2)
 		, Rotational_3_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DOF_FLAG_ROTATIONAL_3)

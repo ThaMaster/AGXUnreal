@@ -8,9 +8,10 @@
 
 namespace
 {
-	/// \note Doing conversion with integers instead of the Unreal enums to avoid having to define the enums in the
-	/// AGXUnrealBarrier module, and therefore also having to include AGXUnrealBarrier files in AGXUnreal headers,
-	/// which is good to avoid for future minimal distribution to clients.
+	/// \note Doing conversion with integers instead of the Unreal enums to avoid having to define
+	/// the enums in the AGXUnrealBarrier module, and therefore also having to include
+	/// AGXUnrealBarrier files in AGXUnreal headers, which is good to avoid for future minimal
+	/// distribution to clients.
 
 	agx::FrictionModelRef ConvertFrictionModelToAgx(int32 FrictionModelType)
 	{
@@ -77,7 +78,8 @@ namespace
 		return static_cast<int32>(ReductionMode);
 	}
 
-	agx::ContactMaterial::FrictionDirection ConvertDirectionToAgx(bool bPrimaryDirection, bool bSecondaryDirection)
+	agx::ContactMaterial::FrictionDirection ConvertDirectionToAgx(
+		bool bPrimaryDirection, bool bSecondaryDirection)
 	{
 		if (bPrimaryDirection && bSecondaryDirection)
 		{
@@ -126,14 +128,18 @@ const FContactMaterialRef* FContactMaterialBarrier::GetNative() const
 	return NativeRef.get();
 }
 
-void FContactMaterialBarrier::AllocateNative(const FMaterialBarrier* Material1, const FMaterialBarrier* Material2)
+void FContactMaterialBarrier::AllocateNative(
+	const FMaterialBarrier* Material1, const FMaterialBarrier* Material2)
 {
 	check(!HasNative());
 
-	/// \note AGX seems OK with native materials being null. Falls back on internal default material.
+	/// \note AGX seems OK with native materials being null. Falls back on internal default
+	/// material.
 
-	agx::MaterialRef NativeMaterial1 = Material1 && Material1->HasNative() ? Material1->GetNative()->Native : nullptr;
-	agx::MaterialRef NativeMaterial2 = Material2 && Material2->HasNative() ? Material2->GetNative()->Native : nullptr;
+	agx::MaterialRef NativeMaterial1 =
+		Material1 && Material1->HasNative() ? Material1->GetNative()->Native : nullptr;
+	agx::MaterialRef NativeMaterial2 =
+		Material2 && Material2->HasNative() ? Material2->GetNative()->Native : nullptr;
 
 	NativeRef->Native = new agx::ContactMaterial(NativeMaterial1, NativeMaterial2);
 }
@@ -232,7 +238,8 @@ void FContactMaterialBarrier::SetFrictionCoefficient(
 	NativeRef->Native->setFrictionCoefficient(Coefficient, NativeDirection);
 }
 
-double FContactMaterialBarrier::GetFrictionCoefficient(bool bPrimaryDirection, bool bSecondaryDirection) const
+double FContactMaterialBarrier::GetFrictionCoefficient(
+	bool bPrimaryDirection, bool bSecondaryDirection) const
 {
 	check(HasNative());
 	agx::ContactMaterial::FrictionDirection NativeDirection =
@@ -240,7 +247,8 @@ double FContactMaterialBarrier::GetFrictionCoefficient(bool bPrimaryDirection, b
 	return NativeRef->Native->getFrictionCoefficient(NativeDirection);
 }
 
-void FContactMaterialBarrier::SetSurfaceViscosity(double Viscosity, bool bPrimaryDirection, bool bSecondaryDirection)
+void FContactMaterialBarrier::SetSurfaceViscosity(
+	double Viscosity, bool bPrimaryDirection, bool bSecondaryDirection)
 {
 	check(HasNative());
 	agx::ContactMaterial::FrictionDirection NativeDirection =
@@ -248,7 +256,8 @@ void FContactMaterialBarrier::SetSurfaceViscosity(double Viscosity, bool bPrimar
 	NativeRef->Native->setSurfaceViscosity(Viscosity, NativeDirection);
 }
 
-double FContactMaterialBarrier::GetSurfaceViscosity(bool bPrimaryDirection, bool bSecondaryDirection) const
+double FContactMaterialBarrier::GetSurfaceViscosity(
+	bool bPrimaryDirection, bool bSecondaryDirection) const
 {
 	check(HasNative());
 	agx::ContactMaterial::FrictionDirection NativeDirection =
@@ -298,7 +307,8 @@ double FContactMaterialBarrier::GetDamping() const
 	return NativeRef->Native->getDamping();
 }
 
-void FContactMaterialBarrier::SetMinMaxElasticRestLength(double MinElasticRestLength, double MaxElasticRestLength)
+void FContactMaterialBarrier::SetMinMaxElasticRestLength(
+	double MinElasticRestLength, double MaxElasticRestLength)
 {
 	check(HasNative());
 	NativeRef->Native->setMinMaxElasticRestLength(MinElasticRestLength, MaxElasticRestLength);
@@ -319,14 +329,16 @@ double FContactMaterialBarrier::GetMaxElasticRestLength() const
 void FContactMaterialBarrier::SetContactReductionMode(int32 ReductionMode)
 {
 	check(HasNative());
-	agx::ContactMaterial::ContactReductionMode NativeMode = ConvertReductionModeToAgx(ReductionMode);
+	agx::ContactMaterial::ContactReductionMode NativeMode =
+		ConvertReductionModeToAgx(ReductionMode);
 	NativeRef->Native->setContactReductionMode(NativeMode);
 }
 
 int32 FContactMaterialBarrier::GetContactReductionMode() const
 {
 	check(HasNative());
-	agx::ContactMaterial::ContactReductionMode NativeMode = NativeRef->Native->getContactReductionMode();
+	agx::ContactMaterial::ContactReductionMode NativeMode =
+		NativeRef->Native->getContactReductionMode();
 	return ConvertReductionModeToUnreal(NativeMode);
 }
 

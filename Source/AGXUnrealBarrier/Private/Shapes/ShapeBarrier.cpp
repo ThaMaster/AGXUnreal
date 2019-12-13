@@ -120,7 +120,8 @@ namespace
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Found invalid FShapeBarrier. The native Geometry does not contain the native Shape."));
+				TEXT("Found invalid FShapeBarrier. The native Geometry does not contain the native "
+					 "Shape."));
 		}
 		return Iterator;
 	}
@@ -129,7 +130,8 @@ namespace
 std::tuple<FVector, FQuat> FShapeBarrier::GetLocalPositionAndRotation() const
 {
 	check(HasNative());
-	agxCollide::ShapeIterator Iterator = FindShape(NativeRef->NativeGeometry, NativeRef->NativeShape);
+	agxCollide::ShapeIterator Iterator =
+		FindShape(NativeRef->NativeGeometry, NativeRef->NativeShape);
 	if (!Iterator.isValid())
 	{
 		return {FVector::ZeroVector, FQuat::Identity};
@@ -142,5 +144,6 @@ std::tuple<FVector, FQuat> FShapeBarrier::GetLocalPositionAndRotation() const
 	const agx::AffineMatrix4x4& GeometryTransform = NativeRef->NativeGeometry->getLocalTransform();
 	const agx::AffineMatrix4x4& ShapeTransform = Iterator.getLocalTransform();
 	const agx::AffineMatrix4x4 ShapeRelativeBody = ShapeTransform * GeometryTransform;
-	return {ConvertVector(ShapeRelativeBody.getTranslate()), Convert(ShapeRelativeBody.getRotate())};
+	return {ConvertVector(ShapeRelativeBody.getTranslate()),
+			Convert(ShapeRelativeBody.getRotate())};
 }

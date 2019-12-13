@@ -29,7 +29,8 @@
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
-std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(const FTransform& Transform, UWorld* World)
+std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(
+	const FTransform& Transform, UWorld* World)
 {
 	/// \todo The intention is to mimmic dragging in an "Empty Actor" from the
 	/// Place mode. Investigate if we can use ActorFactoryEmptyActor instead.
@@ -43,8 +44,8 @@ std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(con
 
 	/// \todo I don't know what RF_Transactional means. Taken from UActorFactoryEmptyActor.
 	/// Related to undo/redo, I think.
-	USceneComponent* Root =
-		NewObject<USceneComponent>(NewActor, USceneComponent::GetDefaultSceneRootVariableName() /*, RF_Transactional*/);
+	USceneComponent* Root = NewObject<USceneComponent>(
+		NewActor, USceneComponent::GetDefaultSceneRootVariableName() /*, RF_Transactional*/);
 	NewActor->SetRootComponent(Root);
 	NewActor->AddInstanceComponent(Root);
 	Root->RegisterComponent();
@@ -79,7 +80,8 @@ namespace
 		TShapeComponent* Shape = NewObject<TShapeComponent>(Owner, Class);
 		Owner->AddInstanceComponent(Shape);
 		Shape->RegisterComponent();
-		const bool Attached = Shape->AttachToComponent(Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		const bool Attached = Shape->AttachToComponent(
+			Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		check(Attached);
 		return Shape;
 	}
@@ -88,13 +90,15 @@ namespace
 UAGX_RigidBodyComponent* FAGX_EditorUtilities::CreateRigidBody(AActor* Owner)
 {
 	UAGX_RigidBodyComponent* Body = ::CreateComponent<UAGX_RigidBodyComponent>(Owner);
-	Body->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false));
+	Body->AttachToComponent(
+		Owner->GetRootComponent(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false));
 	Body->RelativeLocation = FVector(0.0f, 0.0f, 0.0f);
 	Body->RelativeRotation = FRotator(0.0f, 0.0f, 0.0f);
 	return Body;
 }
 
-UAGX_SphereShapeComponent* FAGX_EditorUtilities::CreateSphereShape(AActor* Owner, USceneComponent* Outer)
+UAGX_SphereShapeComponent* FAGX_EditorUtilities::CreateSphereShape(
+	AActor* Owner, USceneComponent* Outer)
 {
 	return ::CreateShapeComponent<UAGX_SphereShapeComponent>(Owner, Outer);
 }
@@ -104,7 +108,8 @@ UAGX_BoxShapeComponent* FAGX_EditorUtilities::CreateBoxShape(AActor* Owner, USce
 	return ::CreateShapeComponent<UAGX_BoxShapeComponent>(Owner, Outer);
 }
 
-UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(AActor* Owner, USceneComponent* Outer)
+UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(
+	AActor* Owner, USceneComponent* Outer)
 {
 	return ::CreateShapeComponent<UAGX_TrimeshShapeComponent>(Owner, Outer);
 }
@@ -142,8 +147,8 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 	Package->FullyLoad();
 
 	FName UniqueMeshName = MakeUniqueObjectName(Package, UStaticMesh::StaticClass(), *TrimeshName);
-	UStaticMesh* StaticMesh =
-		NewObject<UStaticMesh>(Package, UniqueMeshName, RF_Public | RF_Standalone | RF_MarkAsRootSet);
+	UStaticMesh* StaticMesh = NewObject<UStaticMesh>(
+		Package, UniqueMeshName, RF_Public | RF_Standalone | RF_MarkAsRootSet);
 	StaticMesh->StaticMaterials.Add(FStaticMaterial());
 #if UE_VERSION_OLDER_THAN(4, 23, 0)
 	StaticMesh->SourceModels.Emplace();
@@ -175,12 +180,14 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 	if (AssetFileName.IsEmpty())
 	{
 		AssetFileName = FPaths::ProjectContentDir() + "/FallbackFilename.uasset";
-		UE_LOG(LogAGX, Warning, TEXT("Package path '%s' produced empty long package name."), *PackagePath);
+		UE_LOG(
+			LogAGX, Warning, TEXT("Package path '%s' produced empty long package name."),
+			*PackagePath);
 		UE_LOG(LogAGX, Warning, TEXT("Using fallback name '%s'."), *AssetFileName);
 	}
 	bool bSaved = UPackage::SavePackage(
-		Package, StaticMesh, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *AssetFileName, GError, nullptr,
-		true, true, SAVE_NoError);
+		Package, StaticMesh, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *AssetFileName,
+		GError, nullptr, true, true, SAVE_NoError);
 	if (!bSaved)
 	{
 		UE_LOG(LogAGX, Error, TEXT("Save of imported StaticMesh asset failed."));
@@ -189,19 +196,20 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 	}
 
 	UClass* Class = UStaticMeshComponent::StaticClass();
-	UStaticMeshComponent* StaticMeshComponent = NewObject<UStaticMeshComponent>(Outer, Class, UniqueMeshName);
+	UStaticMeshComponent* StaticMeshComponent =
+		NewObject<UStaticMeshComponent>(Outer, Class, UniqueMeshName);
 	StaticMeshComponent->SetStaticMesh(StaticMesh);
 	Owner->AddInstanceComponent(StaticMeshComponent);
 	StaticMeshComponent->RegisterComponent();
-	const bool Attached =
-		StaticMeshComponent->AttachToComponent(Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	const bool Attached = StaticMeshComponent->AttachToComponent(
+		Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 	check(Attached);
 	return StaticMeshComponent;
 }
 
 AAGX_Constraint* FAGX_EditorUtilities::CreateConstraint(
-	UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bInPlayingWorldIfAvailable, bool bSelect,
-	bool bShowNotification)
+	UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bInPlayingWorldIfAvailable,
+	bool bSelect, bool bShowNotification)
 {
 	UWorld* World = bInPlayingWorldIfAvailable ? GetCurrentWorld() : GetEditorWorld();
 
@@ -209,7 +217,8 @@ AAGX_Constraint* FAGX_EditorUtilities::CreateConstraint(
 	check(ConstraintType->IsChildOf<AAGX_Constraint>());
 
 	// Create the new Constraint Actor.
-	AAGX_Constraint* NewActor = World->SpawnActorDeferred<AAGX_Constraint>(ConstraintType, FTransform::Identity);
+	AAGX_Constraint* NewActor =
+		World->SpawnActorDeferred<AAGX_Constraint>(ConstraintType, FTransform::Identity);
 
 	check(NewActor);
 
@@ -246,7 +255,8 @@ AAGX_ConstraintFrameActor* FAGX_EditorUtilities::CreateConstraintFrameActor(
 	{
 		if (ParentRigidBody->GetWorld() == World)
 		{
-			NewActor->AttachToActor(ParentRigidBody, FAttachmentTransformRules::KeepRelativeTransform);
+			NewActor->AttachToActor(
+				ParentRigidBody, FAttachmentTransformRules::KeepRelativeTransform);
 		}
 		else
 		{
@@ -264,7 +274,8 @@ AAGX_ConstraintFrameActor* FAGX_EditorUtilities::CreateConstraintFrameActor(
 
 	if (bShowNotification)
 	{
-		ShowNotification(LOCTEXT("CreateConstraintFrameActorSucceded", "AGX Constraint Frame Actor Created"));
+		ShowNotification(
+			LOCTEXT("CreateConstraintFrameActorSucceded", "AGX Constraint Frame Actor Created"));
 	}
 
 	return NewActor;
@@ -430,8 +441,8 @@ void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
 		{
 			if (AActor* SelectedActor = Cast<AActor>(SelectedActors->GetSelectedObject(i)))
 			{
-				AActor* RigidBodyActor =
-					GetRigidBodyActorFromAncestors(SelectedActor, (OutActor1 ? *OutActor1 : nullptr));
+				AActor* RigidBodyActor = GetRigidBodyActorFromAncestors(
+					SelectedActor, (OutActor1 ? *OutActor1 : nullptr));
 
 				// Found one. Assign it to next available OutActor!
 				if (!AssignOutActors(RigidBodyActor))
@@ -443,7 +454,8 @@ void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
 	}
 }
 
-AActor* FAGX_EditorUtilities::GetRigidBodyActorFromSubtree(AActor* SubtreeRoot, const AActor* IgnoreActor)
+AActor* FAGX_EditorUtilities::GetRigidBodyActorFromSubtree(
+	AActor* SubtreeRoot, const AActor* IgnoreActor)
 {
 	AActor* RigidBodyActor = nullptr;
 
@@ -473,7 +485,8 @@ AActor* FAGX_EditorUtilities::GetRigidBodyActorFromSubtree(AActor* SubtreeRoot, 
 	return RigidBodyActor;
 }
 
-AActor* FAGX_EditorUtilities::GetRigidBodyActorFromAncestors(AActor* Actor, const AActor* IgnoreActor)
+AActor* FAGX_EditorUtilities::GetRigidBodyActorFromAncestors(
+	AActor* Actor, const AActor* IgnoreActor)
 {
 	AActor* RigidBodyActor = nullptr;
 
@@ -485,14 +498,16 @@ AActor* FAGX_EditorUtilities::GetRigidBodyActorFromAncestors(AActor* Actor, cons
 		}
 		else
 		{
-			RigidBodyActor = GetRigidBodyActorFromAncestors(Actor->GetAttachParentActor(), IgnoreActor);
+			RigidBodyActor =
+				GetRigidBodyActorFromAncestors(Actor->GetAttachParentActor(), IgnoreActor);
 		}
 	}
 
 	return RigidBodyActor;
 }
 
-void FAGX_EditorUtilities::GetAllClassesOfType(TArray<UClass*>& OutMatches, UClass* BaseClass, bool bIncludeAbstract)
+void FAGX_EditorUtilities::GetAllClassesOfType(
+	TArray<UClass*>& OutMatches, UClass* BaseClass, bool bIncludeAbstract)
 {
 	for (TObjectIterator<UClass> ClassItr; ClassItr; ++ClassItr)
 	{

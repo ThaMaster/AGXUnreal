@@ -6,7 +6,8 @@
 
 #define LOCTEXT_NAMESPACE "FAGX_MaterialAssetTypeActions"
 
-FAGX_MaterialAssetTypeActions::FAGX_MaterialAssetTypeActions(EAssetTypeCategories::Type InAssetCategory)
+FAGX_MaterialAssetTypeActions::FAGX_MaterialAssetTypeActions(
+	EAssetTypeCategories::Type InAssetCategory)
 	: AssetCategory(InAssetCategory)
 {
 }

@@ -32,7 +32,8 @@ class FConstraintBarrier;
  *
  */
 UCLASS(
-	ClassGroup = "AGX", Category = "AGX", Abstract, NotBlueprintable, meta = (BlueprintSpawnableComponent),
+	ClassGroup = "AGX", Category = "AGX", Abstract, NotBlueprintable,
+	meta = (BlueprintSpawnableComponent),
 	hidecategories = (Cooking, Collision, Input, LOD, Rendering, Replication))
 class AGXUNREAL_API AAGX_Constraint : public AActor
 {
@@ -106,7 +107,8 @@ public:
 	}
 
 	/**
-	 * Returns true if for any of the locked DOFs both the global attachment frame transforms do no match.
+	 * Returns true if for any of the locked DOFs both the global attachment frame transforms do no
+	 * match.
 	 *
 	 * This function should never be used after the constraint has begun play.*
 	 *
@@ -138,8 +140,8 @@ protected:
 #if WITH_EDITOR
 	virtual void PostLoad() override; // When loaded in Editor/Game
 	virtual void PostDuplicate(bool bDuplicateForPIE) override; // When copied in Editor
-	virtual void OnConstruction(
-		const FTransform& Transform) override; // When Loaded or Spawned in Editor, or Spawned in Game
+	virtual void OnConstruction(const FTransform& Transform)
+		override; // When Loaded or Spawned in Editor, or Spawned in Game
 	virtual void BeginDestroy() override; // When destroyed in Game
 	virtual void Destroyed() override; // When destroyed in Editor
 #endif
@@ -148,7 +150,8 @@ protected:
 
 	bool ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof);
 
-	/** Must be overriden by derived class, and create a NativeBarrier with allocated native. Nothing more.*/
+	/** Must be overriden by derived class, and create a NativeBarrier with allocated native.
+	 * Nothing more.*/
 	virtual void CreateNativeImpl() PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl, );
 
 	TUniquePtr<FConstraintBarrier> NativeBarrier;

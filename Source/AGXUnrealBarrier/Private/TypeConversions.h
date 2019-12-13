@@ -169,7 +169,9 @@ inline FGuid Convert(const agx::Uuid& Uuid)
 {
 	// Would like to use Uuid::size here, since that is the size of the data
 	// pointed to by Uuid::data, but it's not constexpr.
-	static_assert(sizeof(Uuid) == 4 * sizeof(uint32), "Unreal Guid and AGX Dynamics Uuid must be the same size.");
+	static_assert(
+		sizeof(Uuid) == 4 * sizeof(uint32),
+		"Unreal Guid and AGX Dynamics Uuid must be the same size.");
 	uint32 Abcd[4];
 	memcpy(Abcd, Uuid.data(), sizeof(Abcd));
 	return FGuid(Abcd[0], Abcd[1], Abcd[2], Abcd[3]);
@@ -201,15 +203,16 @@ TNative* GetNativeFromBarrier(const TBarrier* Barrier)
 
 inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& FrameRotation)
 {
-	return new agx::Frame(agx::AffineMatrix4x4(Convert(FrameRotation), ConvertVector(FramePosition)));
+	return new agx::Frame(
+		agx::AffineMatrix4x4(Convert(FrameRotation), ConvertVector(FramePosition)));
 }
 
 /// \todo Consider moving this to the .cpp file.
 inline void ConvertConstraintBodiesAndFrames(
 	const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
 	const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2,
-	agx::RigidBody*& NativeRigidBody1, agx::FrameRef& NativeFrame1, agx::RigidBody*& NativeRigidBody2,
-	agx::FrameRef& NativeFrame2)
+	agx::RigidBody*& NativeRigidBody1, agx::FrameRef& NativeFrame1,
+	agx::RigidBody*& NativeRigidBody2, agx::FrameRef& NativeFrame2)
 {
 	// Convert first Rigid Body and Frame to natives
 	{
@@ -263,7 +266,8 @@ inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type Log
 		default:
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("ConvertLogLevelVerbosity: unknown verbosity level: %d. Verbosity level 'NOTIFY_INFO' will be used instead."),
+				TEXT("ConvertLogLevelVerbosity: unknown verbosity level: %d. Verbosity level "
+					 "'NOTIFY_INFO' will be used instead."),
 				LogVerbosity);
 
 			// Use NOTIFY_INFO as default, if unknown log verbosity is given

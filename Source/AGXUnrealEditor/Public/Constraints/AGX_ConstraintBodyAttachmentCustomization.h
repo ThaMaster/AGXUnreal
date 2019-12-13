@@ -17,7 +17,8 @@ public:
 		IPropertyTypeCustomizationUtils& StructCustomizationUtils) override;
 
 	virtual void CustomizeChildren(
-		TSharedRef<class IPropertyHandle> StructPropertyHandle, class IDetailChildrenBuilder& StructBuilder,
+		TSharedRef<class IPropertyHandle> StructPropertyHandle,
+		class IDetailChildrenBuilder& StructBuilder,
 		IPropertyTypeCustomizationUtils& StructCustomizationUtils) override;
 
 	FText GetRigidBodyLabel() const;

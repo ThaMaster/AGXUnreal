@@ -4,7 +4,8 @@
 
 #include "Materials/AGX_ContactMaterialAsset.h"
 
-UAGX_ContactMaterialAssetFactory::UAGX_ContactMaterialAssetFactory(const class FObjectInitializer& OBJ)
+UAGX_ContactMaterialAssetFactory::UAGX_ContactMaterialAssetFactory(
+	const class FObjectInitializer& OBJ)
 	: Super(OBJ)
 {
 	SupportedClass = UAGX_ContactMaterialAsset::StaticClass();
@@ -13,8 +14,10 @@ UAGX_ContactMaterialAssetFactory::UAGX_ContactMaterialAssetFactory(const class F
 }
 
 UObject* UAGX_ContactMaterialAssetFactory::FactoryCreateNew(
-	UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
+	UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context,
+	FFeedbackContext* Warn)
 {
 	check(Class->IsChildOf(UAGX_ContactMaterialAsset::StaticClass()));
-	return NewObject<UAGX_ContactMaterialAsset>(InParent, Class, Name, Flags | RF_Transactional, Context);
+	return NewObject<UAGX_ContactMaterialAsset>(
+		InParent, Class, Name, Flags | RF_Transactional, Context);
 }

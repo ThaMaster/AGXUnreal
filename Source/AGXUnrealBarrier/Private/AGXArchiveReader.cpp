@@ -111,9 +111,11 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 		{
 			Instantiator.InstantiateBallJoint(CreateBallJointBarrier(BallJoint));
 		}
-		else if (agx::CylindricalJoint* CylindricalJoint = Constraint->asSafe<agx::CylindricalJoint>())
+		else if (
+			agx::CylindricalJoint* CylindricalJoint = Constraint->asSafe<agx::CylindricalJoint>())
 		{
-			Instantiator.InstantiateCylindricalJoint(CreateCylindricalJointBarrier(CylindricalJoint));
+			Instantiator.InstantiateCylindricalJoint(
+				CreateCylindricalJointBarrier(CylindricalJoint));
 		}
 		else if (agx::DistanceJoint* DistanceJoint = Constraint->asSafe<agx::DistanceJoint>())
 		{
@@ -125,7 +127,9 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 		}
 		else
 		{
-			UE_LOG(LogAGX, Log, TEXT("Constraint '%s' has unupported type."), *Convert(Constraint->getName()));
+			UE_LOG(
+				LogAGX, Log, TEXT("Constraint '%s' has unupported type."),
+				*Convert(Constraint->getName()));
 		}
 	}
 }

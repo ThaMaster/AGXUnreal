@@ -16,8 +16,8 @@
 ///
 /// on
 ///
-/// UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition = "bEnableParticleRendering"))
-/// UNiagaraSystem* ParticleSystemAsset;
+/// UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition =
+/// "bEnableParticleRendering")) UNiagaraSystem* ParticleSystemAsset;
 //#include "NiagaraComponent.h"
 //#include "NiagaraEmitterInstance.h"
 //#include "NiagaraFunctionLibrary.h"
@@ -50,7 +50,8 @@ public:
 	 * 2. Uniform resolution of LandscapeComponents.
 	 * 3. Only one Section per LandscapeComponent.
 	 * 4. Uniform resolution of Quads per LandscapeComponent.
-	 * 5. The Landscape Actor and AGX Terrain Actor must be centered at World Origin and have no rotation.
+	 * 5. The Landscape Actor and AGX Terrain Actor must be centered at World Origin and have no
+	 * rotation.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	ALandscape* SourceLandscape;
@@ -59,7 +60,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	bool bCreateParticles = true;
 
-	/** Whether the native terrain simulation should auto-delete particles that are out of bounds. */
+	/** Whether the native terrain simulation should auto-delete particles that are out of bounds.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	bool bDeleteParticlesOutsideBounds = true;
 
@@ -76,7 +78,8 @@ public:
 	 * direction of the inverted Z-axis, which means that usually positive values are used.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain", meta = (ClampMin = "0", UIMin = "0", ClampMax = "1000", UIMax = "1000"))
+		EditAnywhere, Category = "AGX Terrain",
+		meta = (ClampMin = "0", UIMin = "0", ClampMax = "1000", UIMax = "1000"))
 	float MaxDepth = 200.0f;
 
 /// \todo Add UAGX_TerrainMaterial.
@@ -120,13 +123,16 @@ public:
 	 *
 	 * 1. Used as Displacement Map for the AGX Landscape Material.
 	 * 2. Render Target Format must be "R16f".
-	 * 3. SizeX and SizeY must equal number of Landscape Vertices in respective dimension (Quads + 1).
+	 * 3. SizeX and SizeY must equal number of Landscape Vertices in respective dimension (Quads +
+	 * 1).
 	 * 4. Texture Address Mode should be Clamp.
 	 * 5. No Mip Maps.
 	 * 6. Texture Group should preferrably be either "RenderTarget" for smooth results,
 	 *    or "2D Pixels (unfiltered)" for more precise results.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition = "bEnableDisplacementRendering"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain Rendering",
+		meta = (EditCondition = "bEnableDisplacementRendering"))
 	UTextureRenderTarget2D* LandscapeDisplacementMap;
 
 	/** Whether soil particles should be rendered or not. */
@@ -135,22 +141,26 @@ public:
 
 	/**
 	 * Rough estimation of number of particles that will exist at once. Should not be too low,
-	 * or some particles might not be rendered! Used internally to allocate large enough rendering data
-	 * buffers. The actual buffer sizes might have slightly larger capacity though due to data layout.
+	 * or some particles might not be rendered! Used internally to allocate large enough rendering
+	 * data buffers. The actual buffer sizes might have slightly larger capacity though due to data
+	 * layout.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Rendering",
 		meta =
-			(EditCondition = "bEnableParticleRendering", ClampMin = "1", UIMin = "1", ClampMax = "4096",
-			 UIMax = "4096"))
+			(EditCondition = "bEnableParticleRendering", ClampMin = "1", UIMin = "1",
+			 ClampMax = "4096", UIMax = "4096"))
 	int32 MaxNumRenderParticles = 2048;
 
 	/// \todo Add UNiagaraSystem once we get particle reading from AGX Dynamics in place.
-	// UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition = "bEnableParticleRendering"))
-	// UNiagaraSystem* ParticleSystemAsset;
+	// UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition =
+	// "bEnableParticleRendering")) UNiagaraSystem* ParticleSystemAsset;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition = "bEnableParticleRendering"))
-	UTextureRenderTarget2D* TerrainParticlesDataMap; // TODO: Should try find or create this automatically!
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain Rendering",
+		meta = (EditCondition = "bEnableParticleRendering"))
+	UTextureRenderTarget2D*
+		TerrainParticlesDataMap; // TODO: Should try find or create this automatically!
 
 	/** Whether soil particles should be rendered or not. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")

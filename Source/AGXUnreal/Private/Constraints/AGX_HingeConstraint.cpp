@@ -8,8 +8,9 @@ class FRigidBodyBarrier;
 
 AAGX_HingeConstraint::AAGX_HingeConstraint()
 	: AAGX_Constraint1DOF(
-		  {EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2, EDofFlag::DOF_FLAG_TRANSLATIONAL_3,
-		   EDofFlag::DOF_FLAG_ROTATIONAL_1, EDofFlag::DOF_FLAG_ROTATIONAL_2},
+		  {EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
+		   EDofFlag::DOF_FLAG_TRANSLATIONAL_3, EDofFlag::DOF_FLAG_ROTATIONAL_1,
+		   EDofFlag::DOF_FLAG_ROTATIONAL_2},
 		  /*bbIsSecondaryConstraintRotational*/ true)
 {
 }

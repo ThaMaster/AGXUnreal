@@ -93,9 +93,11 @@ void FAGXUnrealEditorModule::RegisterProjectSettings()
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
 		SettingsModule->RegisterSettings(
-			"Project", "Plugins", "UAGX_Simulation", LOCTEXT("UAGX_Simulation_ProjectSettingsName", "AGX Dynamics"),
+			"Project", "Plugins", "UAGX_Simulation",
+			LOCTEXT("UAGX_Simulation_ProjectSettingsName", "AGX Dynamics"),
 			LOCTEXT(
-				"UAGX_Simulation_ProjectSettingsDesc", "Configure the simulation settings of the AGX Unreal plugin."),
+				"UAGX_Simulation_ProjectSettingsDesc",
+				"Configure the simulation settings of the AGX Unreal plugin."),
 			GetMutableDefault<UAGX_Simulation>());
 	}
 }
@@ -120,13 +122,16 @@ void FAGXUnrealEditorModule::UnregisterCommands()
 
 void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 {
-	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	IAssetTools& AssetTools =
+		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
 
-	EAssetTypeCategories::Type AgxAssetCategoryBit =
-		AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("AgxUnreal")), LOCTEXT("AgxAssetCategory", "AGX"));
+	EAssetTypeCategories::Type AgxAssetCategoryBit = AssetTools.RegisterAdvancedAssetCategory(
+		FName(TEXT("AgxUnreal")), LOCTEXT("AgxAssetCategory", "AGX"));
 
-	RegisterAssetTypeAction(AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
-	RegisterAssetTypeAction(AssetTools, MakeShareable(new FAGX_MaterialAssetTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_MaterialAssetTypeActions(AgxAssetCategoryBit)));
 }
 
 void FAGXUnrealEditorModule::UnregisterAssetTypeActions()
@@ -134,7 +139,8 @@ void FAGXUnrealEditorModule::UnregisterAssetTypeActions()
 	if (!FModuleManager::Get().IsModuleLoaded("AssetTools"))
 		return;
 
-	IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	IAssetTools& AssetTools =
+		FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get();
 
 	for (const TSharedPtr<IAssetTypeActions>& AssetTypeAction : RegisteredAssetTypeActions)
 	{
@@ -151,7 +157,8 @@ void FAGXUnrealEditorModule::RegisterAssetTypeAction(
 
 void FAGXUnrealEditorModule::RegisterCustomizations()
 {
-	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+	FPropertyEditorModule& PropertyModule =
+		FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
 	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName(),
@@ -160,28 +167,34 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 
 	PropertyModule.RegisterCustomClassLayout(
 		AAGX_Constraint::StaticClass()->GetFName(),
-		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_ConstraintCustomization::MakeInstance));
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_ConstraintCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_AgxEdModeConstraints::StaticClass()->GetFName(),
-		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_AgxEdModeConstraintsCustomization::MakeInstance));
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_AgxEdModeConstraintsCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_AgxEdModeFile::StaticClass()->GetFName(),
-		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_AgxEdModeFileCustomization::MakeInstance));
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_AgxEdModeFileCustomization::MakeInstance));
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
 void FAGXUnrealEditorModule::UnregisterCustomizations()
 {
-	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+	FPropertyEditorModule& PropertyModule =
+		FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
-	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(AAGX_Constraint::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeConstraints::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(
+		UAGX_AgxEdModeConstraints::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeFile::StaticClass()->GetFName());
 
@@ -191,7 +204,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 {
 	RegisterComponentVisualizer(
-		UAGX_ConstraintComponent::StaticClass()->GetFName(), MakeShareable(new FAGX_ConstraintComponentVisualizer));
+		UAGX_ConstraintComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_ConstraintComponentVisualizer));
 	RegisterComponentVisualizer(
 		UAGX_ConstraintFrameComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_ConstraintFrameComponentVisualizer));
@@ -228,8 +242,11 @@ void FAGXUnrealEditorModule::UnregisterComponentVisualizer(const FName& Componen
 void FAGXUnrealEditorModule::RegisterModes()
 {
 	FEditorModeRegistry::Get().RegisterMode<FAGX_AgxEdMode>(
-		FAGX_AgxEdMode::EM_AGX_AgxEdModeId, LOCTEXT("AGX_AgxEdModeDisplayName", "AGX Dynamics Tools"),
-		FSlateIcon(FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIcon, FAGX_EditorStyle::AgxIconSmall),
+		FAGX_AgxEdMode::EM_AGX_AgxEdModeId,
+		LOCTEXT("AGX_AgxEdModeDisplayName", "AGX Dynamics Tools"),
+		FSlateIcon(
+			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIcon,
+			FAGX_EditorStyle::AgxIconSmall),
 		/*bVisisble*/ true);
 }
 
@@ -245,7 +262,8 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 
 	auto RegisterPlaceableItem = [&](UClass* Class) {
 		IPlacementModeModule::Get().RegisterPlaceableItem(
-			PlacementCategory.UniqueHandle, MakeShareable(new FPlaceableItem(nullptr, FAssetData(Class))));
+			PlacementCategory.UniqueHandle,
+			MakeShareable(new FPlaceableItem(nullptr, FAssetData(Class))));
 	};
 
 	RegisterPlaceableItem(AAGX_MaterialManager::StaticClass());

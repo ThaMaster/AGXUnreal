@@ -25,7 +25,8 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::CreateFromAsset(
 
 	UE_LOG(
 		LogAGX, Log,
-		TEXT("UAGX_ContactMaterialBase::CreateFromAsset is creating an instance named \"%s\" (from asset \"%s\")."),
+		TEXT("UAGX_ContactMaterialBase::CreateFromAsset is creating an instance named \"%s\" (from "
+			 "asset \"%s\")."),
 		*InstanceName, *Source->GetName());
 
 	UAGX_ContactMaterialInstance* NewInstance = NewObject<UAGX_ContactMaterialInstance>(
@@ -80,12 +81,14 @@ void UAGX_ContactMaterialInstance::UpdateNativeProperties()
 	{
 		// Friction related properties
 		{
-			/// \note Setting Friction Model before Solve Type, because Solve Type is part of the Friction Model object.
+			/// \note Setting Friction Model before Solve Type, because Solve Type is part of the
+			/// Friction Model object.
 			NativeBarrier->SetFrictionModel(static_cast<uint32>(FrictionModel));
 			NativeBarrier->SetSurfaceFrictionEnabled(bSurfaceFrictionEnabled);
 
 			NativeBarrier->SetFrictionCoefficient(
-				FrictionCoefficient, /*bPrimaryDir*/ true, /*bSecondaryDir*/ !bUseSecondaryFrictionCoefficient);
+				FrictionCoefficient, /*bPrimaryDir*/ true,
+				/*bSecondaryDir*/ !bUseSecondaryFrictionCoefficient);
 			if (bUseSecondaryFrictionCoefficient)
 			{
 				NativeBarrier->SetSurfaceViscosity(
@@ -93,7 +96,8 @@ void UAGX_ContactMaterialInstance::UpdateNativeProperties()
 			}
 
 			NativeBarrier->SetSurfaceViscosity(
-				SurfaceViscosity, /*bPrimaryDir*/ true, /*bSecondaryDir*/ !bUseSecondarySurfaceViscosity);
+				SurfaceViscosity, /*bPrimaryDir*/ true,
+				/*bSecondaryDir*/ !bUseSecondarySurfaceViscosity);
 			if (bUseSecondarySurfaceViscosity)
 			{
 				NativeBarrier->SetSurfaceViscosity(
@@ -121,7 +125,8 @@ void UAGX_ContactMaterialInstance::UpdateNativeProperties()
 	}
 }
 
-UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::GetOrCreateInstance(UWorld* PlayingWorld)
+UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::GetOrCreateInstance(
+	UWorld* PlayingWorld)
 {
 	return this;
 };
@@ -130,21 +135,28 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 {
 	NativeBarrier.Reset(new FContactMaterialBarrier());
 
-	/// \note AGX seems OK with referenced materials being null. Falls back on native default material.
+	/// \note AGX seems OK with referenced materials being null. Falls back on native default
+	/// material.
 
-	UAGX_MaterialInstance* MaterialInstance1 = UAGX_MaterialBase::GetOrCreateInstance(GetWorld(), Material1);
-	UAGX_MaterialInstance* MaterialInstance2 = UAGX_MaterialBase::GetOrCreateInstance(GetWorld(), Material2);
+	UAGX_MaterialInstance* MaterialInstance1 =
+		UAGX_MaterialBase::GetOrCreateInstance(GetWorld(), Material1);
+	UAGX_MaterialInstance* MaterialInstance2 =
+		UAGX_MaterialBase::GetOrCreateInstance(GetWorld(), Material2);
 
-	FMaterialBarrier* MaterialBarrier1 = MaterialInstance1 ? MaterialInstance1->GetOrCreateNative(GetWorld()) : nullptr;
-	FMaterialBarrier* MaterialBarrier2 = MaterialInstance2 ? MaterialInstance2->GetOrCreateNative(GetWorld()) : nullptr;
+	FMaterialBarrier* MaterialBarrier1 =
+		MaterialInstance1 ? MaterialInstance1->GetOrCreateNative(GetWorld()) : nullptr;
+	FMaterialBarrier* MaterialBarrier2 =
+		MaterialInstance2 ? MaterialInstance2->GetOrCreateNative(GetWorld()) : nullptr;
 
 	UE_LOG(
 		LogAGX, Log,
-		TEXT("UAGX_ContactMaterialInstance::CreateNative is creating native contact material \"%s\" "
-			 "using materials \"%s\" and \"%s\"."),
+		TEXT(
+			"UAGX_ContactMaterialInstance::CreateNative is creating native contact material \"%s\" "
+			"using materials \"%s\" and \"%s\"."),
 		*GetName(), *GetNameSafe(MaterialInstance1), *GetNameSafe(MaterialInstance2));
 
-	NativeBarrier->AllocateNative(MaterialBarrier1, MaterialBarrier2); // materials can only be set on construction
+	NativeBarrier->AllocateNative(
+		MaterialBarrier1, MaterialBarrier2); // materials can only be set on construction
 	check(HasNative());
 
 	UpdateNativeProperties();

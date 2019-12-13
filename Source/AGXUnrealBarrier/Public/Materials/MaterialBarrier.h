@@ -7,8 +7,8 @@
 struct FMaterialRef;
 
 /**
- * Acts as an interface to a native AGX Material, and encapsulates it so that it is completely hidden from code that
- * includes this file.
+ * Acts as an interface to a native AGX Material, and encapsulates it so that it is completely
+ * hidden from code that includes this file.
  */
 class AGXUNREALBARRIER_API FMaterialBarrier
 {
@@ -60,6 +60,7 @@ private:
 	void operator=(const FMaterialBarrier&) = delete;
 
 	// NativeRef has the same lifetime as this object, so it should never be null.
-	// NativeRef->Native is created by AllocateNative(), released by ReleaseNative(), and can be null.
+	// NativeRef->Native is created by AllocateNative(), released by ReleaseNative(), and can be
+	// null.
 	std::unique_ptr<FMaterialRef> NativeRef;
 };

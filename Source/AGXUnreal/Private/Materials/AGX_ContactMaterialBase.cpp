@@ -19,7 +19,8 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialBase::GetOrCreateInstance(
 	{
 		UE_LOG(
 			LogAGX, Log,
-			TEXT("UAGX_ContactMaterialBase::GetOrCreateInstance is swapping a property (to \"%s\" from \"%s\")."),
+			TEXT("UAGX_ContactMaterialBase::GetOrCreateInstance is swapping a property (to \"%s\" "
+				 "from \"%s\")."),
 			*GetNameSafe(Instance), *GetNameSafe(Property));
 
 		Property = Instance;
@@ -64,7 +65,8 @@ void UAGX_ContactMaterialBase::CopyProperties(const UAGX_ContactMaterialBase* So
 {
 	if (Source)
 	{
-		/// \todo Is there a way to make this in a more implicit way? Easy to forget these when adding properties.
+		/// \todo Is there a way to make this in a more implicit way? Easy to forget these when
+		/// adding properties.
 		COPY_MAT_PROPERTY(Source, Material1);
 		COPY_MAT_PROPERTY(Source, Material2);
 

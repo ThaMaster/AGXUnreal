@@ -13,25 +13,37 @@ class UAGX_ContactMaterialInstance;
 class UAGX_MaterialBase;
 
 /**
- * Defines material properties for contacts between AGX Shapes with specific AGX Materials. This will override many
- * of their individual material properties (does for example not override ones effecting mass, such as density).
+ * Defines material properties for contacts between AGX Shapes with specific AGX Materials. This
+ will override many
+ * of their individual material properties (does for example not override ones effecting mass, such
+ as density).
  *
- * ContactMaterials are created by the user in-Editor by creating a UAGX_ContactMaterialAsset. In-Editor they are
+ * ContactMaterials are created by the user in-Editor by creating a UAGX_ContactMaterialAsset.
+ In-Editor they are
  * treated as assets and can be referenced by the Material Manager..
  *
- * When game begins playing, one UAGX_ContactMaterialInstance will be created for each UAGX_ContactMaterialAsset that
- * is referenced by the Material Manager. The UAGX_ContactMaterialInstance will create the actual native
- * AGX ContactMaterial and add it to the simulation. The in-game Material Manager that referenced the
- * UAGX_ContactMaterialAsset will swap its reference to the in-game created UAGX_ContactMaterialInstance instead. This
- * means that ultimately only UAGX_ContactMaterialInstances will be referenced in-game. When play stops the in-Editor
+ * When game begins playing, one UAGX_ContactMaterialInstance will be created for each
+ UAGX_ContactMaterialAsset that
+ * is referenced by the Material Manager. The UAGX_ContactMaterialInstance will create the actual
+ native
+ * AGX ContactMaterial and add it to the simulation. The in-game Material Manager that referenced
+ the
+ * UAGX_ContactMaterialAsset will swap its reference to the in-game created
+ UAGX_ContactMaterialInstance instead. This
+ * means that ultimately only UAGX_ContactMaterialInstances will be referenced in-game. When play
+ stops the in-Editor
  * state will be returned.
  *
- * Note that this means that UAGX_ContactMaterialAssets that are not referenced the Material Manager will be inactive.
+ * Note that this means that UAGX_ContactMaterialAssets that are not referenced the Material Manager
+ will be inactive.
 
- * Note also that it is not allowed to replace the Materials properties after instance has been created.
+ * Note also that it is not allowed to replace the Materials properties after instance has been
+ created.
  *
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", abstract, AutoExpandCategories = ("ContactMaterial Properties"))
+UCLASS(
+	ClassGroup = "AGX", Category = "AGX", abstract,
+	AutoExpandCategories = ("ContactMaterial Properties"))
 class AGXUNREAL_API UAGX_ContactMaterialBase : public UObject
 {
 	GENERATED_BODY()
@@ -50,7 +62,8 @@ public:
 	UAGX_MaterialBase* Material2;
 
 	/**
-	 * Solvers to use to calculate the normal and friction equations when objects with this contact material collide.
+	 * Solvers to use to calculate the normal and friction equations when objects with this contact
+	 * material collide.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Contacts Processing")
 	EAGX_ContactSolver ContactSolver;
@@ -58,23 +71,24 @@ public:
 	/**
 	 * Whether contact reduction should be enabled and to what extent.
 	 *
-	 * By using contact reduction, the number of contact points later submitted to the solver as contact constraint
-	 * can be heavily reduced, hence improving performance.
+	 * By using contact reduction, the number of contact points later submitted to the solver as
+	 * contact constraint can be heavily reduced, hence improving performance.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Contacts Processing")
 	FAGX_ContactMaterialReductionMode ContactReduction;
 
 	/**
-	 * AGX use by default a contact point based method for calculating the corresponding response between two
-	 * overlapping geometries.
+	 * AGX use by default a contact point based method for calculating the corresponding response
+	 * between two overlapping geometries.
 	 *
-	 * There is also a different method available which is named area contact approach. This method will try to
-	 * calculate the spanning area between the overlapping contact point. This can result in a better approximation
-	 * of the actual overlapping volume and the stiffness in the response (contact constraint).
+	 * There is also a different method available which is named area contact approach. This method
+	 * will try to calculate the spanning area between the overlapping contact point. This can
+	 * result in a better approximation of the actual overlapping volume and the stiffness in the
+	 * response (contact constraint).
 	 *
-	 * In general, this will lead to slightly less stiff, more realistic contacts and therefore the Young’s modulus
-	 * value usually has to be increased to get a similar simulation results as running the simulation without the
-	 * contact area approach.
+	 * In general, this will lead to slightly less stiff, more realistic contacts and therefore the
+	 * Young’s modulus value usually has to be increased to get a similar simulation results as
+	 * running the simulation without the contact area approach.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Contacts Processing")
 	FAGX_ContactMaterialMechanicsApproach MechanicsApproach;
@@ -92,7 +106,8 @@ public:
 	bool bSurfaceFrictionEnabled;
 
 	/**
-	 * Friction in all directions if 'Secondary Friction Coefficient' is disable, else only in the primary direction.
+	 * Friction in all directions if 'Secondary Friction Coefficient' is disable, else only in the
+	 * primary direction.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double FrictionCoefficient;
@@ -102,16 +117,19 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Friction",
-		Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondaryFrictionCoefficient"))
+		Meta =
+			(ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondaryFrictionCoefficient"))
 	double SecondaryFrictionCoefficient;
 
 	/**
-	 * Whether it should be possible to define friction coefficient per each of the two perpendicular surface direction.
+	 * Whether it should be possible to define friction coefficient per each of the two
+	 * perpendicular surface direction.
 	 *
-	 * If enabled, 'Friction Coefficient' represents the primary direction and 'Secondary Friction Coefficient'
-	 * represents the secondary direction.
+	 * If enabled, 'Friction Coefficient' represents the primary direction and 'Secondary Friction
+	 * Coefficient' represents the secondary direction.
 	 *
-	 * If disable, 'Friction Coefficient' represents all directions and 'Secondary Friction Coefficient' is not used.
+	 * If disable, 'Friction Coefficient' represents all directions and 'Secondary Friction
+	 * Coefficient' is not used.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (InlineEditConditionToggle))
 	bool bUseSecondaryFrictionCoefficient;
@@ -119,8 +137,8 @@ public:
 	/**
 	 * Surface viscosity, telling how 'wet' the friction is between the colliding materials.
 	 *
-	 * Represents all surface directions if 'Secondary Surface Viscosity' is disable, else only in the primary
-	 * direction.
+	 * Represents all surface directions if 'Secondary Surface Viscosity' is disable, else only in
+	 * the primary direction.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double SurfaceViscosity;
@@ -134,12 +152,14 @@ public:
 	double SecondarySurfaceViscosity;
 
 	/**
-	 * Whether it should be possible to define surface viscosity per each of the two perpendicular surface direction.
+	 * Whether it should be possible to define surface viscosity per each of the two perpendicular
+	 * surface direction.
 	 *
-	 * If enabled, 'Surface Viscosity' represents the primary direction and 'Secondary Surface Viscosity' represents
-	 * the secondary direction.
+	 * If enabled, 'Surface Viscosity' represents the primary direction and 'Secondary Surface
+	 * Viscosity' represents the secondary direction.
 	 *
-	 * If disable, 'Surface Viscosity' represents all directions and 'Secondary Surface Viscosity' is not used.
+	 * If disable, 'Surface Viscosity' represents all directions and 'Secondary Surface Viscosity'
+	 * is not used.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (InlineEditConditionToggle))
 	bool bUseSecondarySurfaceViscosity;
@@ -182,10 +202,12 @@ public:
 
 public:
 	/**
-	 * Invokes the member function GetOrCreateInstance() on ContactMaterial pointed to by Property, assigns the return
-	 * value to Property, and then returns it. Returns null and does nothing if PlayingWorld is not an in-game world.
+	 * Invokes the member function GetOrCreateInstance() on ContactMaterial pointed to by Property,
+	 * assigns the return value to Property, and then returns it. Returns null and does nothing if
+	 * PlayingWorld is not an in-game world.
 	 */
-	static UAGX_ContactMaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld, UAGX_ContactMaterialBase*& Property);
+	static UAGX_ContactMaterialInstance* GetOrCreateInstance(
+		UWorld* PlayingWorld, UAGX_ContactMaterialBase*& Property);
 
 public:
 	UAGX_ContactMaterialBase();
@@ -193,16 +215,17 @@ public:
 	virtual ~UAGX_ContactMaterialBase();
 
 	/**
-	 * If PlayingWorld is an in-game World and this ContactMaterial is a UAGX_ContactMaterialAsset, returns a
-	 * UAGX_ContactMaterialInstance representing the ContactMaterial asset throughout the lifetime of the GameInstance.
-	 * If this is already a UAGX_ContactMaterialInstance it returns itself. Returns null if not in-game (invalid call).
+	 * If PlayingWorld is an in-game World and this ContactMaterial is a UAGX_ContactMaterialAsset,
+	 * returns a UAGX_ContactMaterialInstance representing the ContactMaterial asset throughout the
+	 * lifetime of the GameInstance. If this is already a UAGX_ContactMaterialInstance it returns
+	 * itself. Returns null if not in-game (invalid call).
 	 */
 	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld)
 		PURE_VIRTUAL(UAGX_ContactMaterialBase::GetOrCreateInstance, return nullptr;);
 
 	/**
-	 * If this ContactMaterial is a UAGX_ContactMaterialInstance, returns the UAGX_ContactMaterialAsset it was created
-	 * from (if it still exists). Else returns null.
+	 * If this ContactMaterial is a UAGX_ContactMaterialInstance, returns the
+	 * UAGX_ContactMaterialAsset it was created from (if it still exists). Else returns null.
 	 */
 	virtual UAGX_ContactMaterialAsset* GetAsset()
 		PURE_VIRTUAL(UAGX_ContactMaterialBase::GetOrCreateInstance, return nullptr;);

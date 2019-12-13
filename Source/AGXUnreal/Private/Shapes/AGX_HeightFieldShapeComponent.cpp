@@ -19,9 +19,11 @@ UAGX_HeightFieldShapeComponent::UAGX_HeightFieldShapeComponent()
 	//
 	/// \todo This setup will call the callback for changes in ALL properties on
 	/// ALL objects. That seems a bit wasteful. Find a way to bind narrower.
-	OnPropertyChangedHandle = FCoreUObjectDelegates::FOnObjectPropertyChanged::FDelegate::CreateUObject(
-		this, &UAGX_HeightFieldShapeComponent::OnSourceLandscapeChanged);
-	OnPropertyChangedHandleDelegateHandle = FCoreUObjectDelegates::OnObjectPropertyChanged.Add(OnPropertyChangedHandle);
+	OnPropertyChangedHandle =
+		FCoreUObjectDelegates::FOnObjectPropertyChanged::FDelegate::CreateUObject(
+			this, &UAGX_HeightFieldShapeComponent::OnSourceLandscapeChanged);
+	OnPropertyChangedHandleDelegateHandle =
+		FCoreUObjectDelegates::OnObjectPropertyChanged.Add(OnPropertyChangedHandle);
 }
 
 UAGX_HeightFieldShapeComponent::~UAGX_HeightFieldShapeComponent()
@@ -85,7 +87,8 @@ void UAGX_HeightFieldShapeComponent::UpdateNativeProperties()
 void UAGX_HeightFieldShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 {
 	/// \todo What is the height field equivalent of this?
-	// AGX_MeshUtilities::MakeCube(OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, HalfExtent);
+	// AGX_MeshUtilities::MakeCube(OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices,
+	// HalfExtent);
 }
 
 #if WITH_EDITOR
@@ -151,13 +154,16 @@ void UAGX_HeightFieldShapeComponent::RecenterActorOnLandscape()
 	// AGX Dynamics height fields have their model origin at the center of the
 	// height field.
 	const int32 NumComponents = SourceLandscape->LandscapeComponents.Num();
-	const int32 NumComponentsSide = FMath::RoundToInt(FMath::Sqrt(static_cast<float>(NumComponents)));
+	const int32 NumComponentsSide =
+		FMath::RoundToInt(FMath::Sqrt(static_cast<float>(NumComponents)));
 	const int32 NumQuadsPerComponentSide = SourceLandscape->ComponentSizeQuads;
 	const int32 NumQuadsPerSide = NumComponentsSide * NumQuadsPerComponentSide;
-	const float QuadSideSize = SourceLandscape->GetActorScale().X; // The Actor scale is the size of the quads, in cm.
+	const float QuadSideSize =
+		SourceLandscape->GetActorScale().X; // The Actor scale is the size of the quads, in cm.
 	const float LandscapeSideSize = QuadSideSize * NumQuadsPerSide;
 	const FVector Location = SourceLandscape->GetActorLocation();
-	const FVector Middle = Location + FVector(LandscapeSideSize / 2.0f, LandscapeSideSize / 2.0f, Location.Z);
+	const FVector Middle =
+		Location + FVector(LandscapeSideSize / 2.0f, LandscapeSideSize / 2.0f, Location.Z);
 	GetOwner()->SetActorLocation(Middle);
 	MarkRenderStateDirty(); /// \todo Not sure if this is actually required or not.
 }
@@ -181,7 +187,8 @@ void UAGX_HeightFieldShapeComponent::CreateNative()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("HeightFieldComponent hasn't been given a source Landscape. Will not be included in the simulation."));
+			TEXT("HeightFieldComponent hasn't been given a source Landscape. Will not be included "
+				 "in the simulation."));
 		return;
 	}
 

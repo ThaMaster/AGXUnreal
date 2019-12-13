@@ -17,7 +17,8 @@ struct AGXUNREAL_API FAGX_ConstraintRangeController
 	UPROPERTY(EditAnywhere)
 	bool bEnable;
 
-	/** Range in Degrees if controller is on a Rotational Degree-Of-Freedom,  else in Centimeters. */
+	/** Range in Degrees if controller is on a Rotational Degree-Of-Freedom,  else in Centimeters.
+	 */
 	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
 	FFloatInterval Range;
 

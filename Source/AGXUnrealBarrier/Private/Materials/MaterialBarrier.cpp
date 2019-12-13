@@ -103,10 +103,12 @@ double FMaterialBarrier::GetDamping() const
 	return NativeRef->Native->getBulkMaterial()->getDamping();
 }
 
-void FMaterialBarrier::SetMinMaxElasticRestLength(double MinElasticRestLength, double MaxElasticRestLength)
+void FMaterialBarrier::SetMinMaxElasticRestLength(
+	double MinElasticRestLength, double MaxElasticRestLength)
 {
 	check(HasNative());
-	NativeRef->Native->getBulkMaterial()->setMinMaxElasticRestLength(MinElasticRestLength, MaxElasticRestLength);
+	NativeRef->Native->getBulkMaterial()->setMinMaxElasticRestLength(
+		MinElasticRestLength, MaxElasticRestLength);
 }
 
 double FMaterialBarrier::GetMinElasticRestLength() const

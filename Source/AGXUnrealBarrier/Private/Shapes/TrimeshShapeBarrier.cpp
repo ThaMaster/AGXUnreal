@@ -106,7 +106,9 @@ TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions() const
 
 	if (!HasNative())
 	{
-		UE_LOG(LogAGX, Error, TEXT("Cannot fetch positions from Trimesh barrier without a native Trimesh."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch positions from Trimesh barrier without a native Trimesh."));
 		return VertexPositions;
 	}
 
@@ -120,7 +122,8 @@ TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions() const
 	size_t NumVerticesAGX = Trimesh->getNumVertices();
 	if (NumVerticesAGX > static_cast<size_t>(std::numeric_limits<int32>::max()))
 	{
-		UE_LOG(LogAGX, Error, TEXT("Native trimesh contains more vertices than Unreal can handle."));
+		UE_LOG(
+			LogAGX, Error, TEXT("Native trimesh contains more vertices than Unreal can handle."));
 		return VertexPositions;
 	}
 
@@ -143,7 +146,9 @@ TArray<uint32> FTrimeshShapeBarrier::GetVertexIndices() const
 
 	if (!HasNative())
 	{
-		UE_LOG(LogAGX, Error, TEXT("Cannot fetch vertex indices from Trimesh barrier without a native Trimesh."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch vertex indices from Trimesh barrier without a native Trimesh."));
 		return VertexIndices;
 	}
 
@@ -157,7 +162,8 @@ TArray<uint32> FTrimeshShapeBarrier::GetVertexIndices() const
 	size_t NumTriangles = Trimesh->getNumTriangles();
 	if (NumTriangles * 3 > static_cast<size_t>(std::numeric_limits<int32>::max()))
 	{
-		UE_LOG(LogAGX, Error, TEXT("Native trimesh contains more triangles than Unreal can handle"));
+		UE_LOG(
+			LogAGX, Error, TEXT("Native trimesh contains more triangles than Unreal can handle"));
 		return VertexIndices;
 	}
 
@@ -180,7 +186,9 @@ TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals() const
 
 	if (!HasNative())
 	{
-		UE_LOG(LogAGX, Error, TEXT("Cannot fetch triangle normals from Trimesh barrier without a native Trimesh."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch triangle normals from Trimesh barrier without a native Trimesh."));
 		return TriangleNormals;
 	}
 
@@ -194,7 +202,8 @@ TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals() const
 	const size_t NumTrianglesAGX = Trimesh->getNumTriangles();
 	if (NumTrianglesAGX > static_cast<size_t>(std::numeric_limits<int32>::max()))
 	{
-		UE_LOG(LogAGX, Error, TEXT("Native trimesh contains more triangles than Unreal can handle"));
+		UE_LOG(
+			LogAGX, Error, TEXT("Native trimesh contains more triangles than Unreal can handle"));
 		return TriangleNormals;
 	}
 
@@ -214,7 +223,9 @@ FString FTrimeshShapeBarrier::GetSourceName() const
 	FString SourceName;
 	if (!HasNative())
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Cannot fetch triangle soure name from Trimesh barrier without a native Trimesh"));
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot fetch triangle soure name from Trimesh barrier without a native Trimesh"));
 		return SourceName;
 	}
 
@@ -280,8 +291,8 @@ void FTrimeshShapeBarrier::AllocateNativeShape()
 
 	// Create the native object.
 
-	NativeRef->NativeShape =
-		new agxCollide::Trimesh(&NativeVertices, &NativeIndices, "FTrimeshShapeBarrier", OptionsMask);
+	NativeRef->NativeShape = new agxCollide::Trimesh(
+		&NativeVertices, &NativeIndices, "FTrimeshShapeBarrier", OptionsMask);
 }
 
 void FTrimeshShapeBarrier::ReleaseNativeShape()

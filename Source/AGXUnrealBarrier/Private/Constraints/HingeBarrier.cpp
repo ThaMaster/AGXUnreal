@@ -38,8 +38,9 @@ void FHingeBarrier::AllocateNativeImpl(
 	agx::FrameRef NativeFrame2 = nullptr;
 
 	ConvertConstraintBodiesAndFrames(
-		RigidBody1, FramePosition1, FrameRotation1, RigidBody2, FramePosition2, FrameRotation2, NativeRigidBody1,
-		NativeFrame1, NativeRigidBody2, NativeFrame2);
+		RigidBody1, FramePosition1, FrameRotation1, RigidBody2, FramePosition2, FrameRotation2,
+		NativeRigidBody1, NativeFrame1, NativeRigidBody2, NativeFrame2);
 
-	NativeRef->Native = new agx::Hinge(NativeRigidBody1, NativeFrame1.get(), NativeRigidBody2, NativeFrame2.get());
+	NativeRef->Native =
+		new agx::Hinge(NativeRigidBody1, NativeFrame1.get(), NativeRigidBody2, NativeFrame2.get());
 }

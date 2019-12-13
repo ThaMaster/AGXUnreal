@@ -9,7 +9,8 @@
 #include "AGX_Simulation.h"
 #include "Materials/MaterialBarrier.h"
 
-UAGX_MaterialInstance* UAGX_MaterialInstance::CreateFromAsset(UWorld* PlayingWorld, UAGX_MaterialAsset* Source)
+UAGX_MaterialInstance* UAGX_MaterialInstance::CreateFromAsset(
+	UWorld* PlayingWorld, UAGX_MaterialAsset* Source)
 {
 	check(Source);
 	check(PlayingWorld);
@@ -22,11 +23,12 @@ UAGX_MaterialInstance* UAGX_MaterialInstance::CreateFromAsset(UWorld* PlayingWor
 
 	UE_LOG(
 		LogAGX, Log,
-		TEXT("UAGX_MaterialBase::CreateFromAsset is creating an instance named \"%s\" (from asset \"%s\")."),
+		TEXT("UAGX_MaterialBase::CreateFromAsset is creating an instance named \"%s\" (from asset "
+			 "\"%s\")."),
 		*InstanceName, *Source->GetName());
 
-	UAGX_MaterialInstance* NewInstance =
-		NewObject<UAGX_MaterialInstance>(Outer, UAGX_MaterialInstance::StaticClass(), *InstanceName, RF_Transient);
+	UAGX_MaterialInstance* NewInstance = NewObject<UAGX_MaterialInstance>(
+		Outer, UAGX_MaterialInstance::StaticClass(), *InstanceName, RF_Transient);
 
 	NewInstance->CopyProperties(Source);
 	NewInstance->SourceAsset = Source;
@@ -81,7 +83,8 @@ void UAGX_MaterialInstance::UpdateNativeProperties()
 		NativeBarrier->SetYoungsModulus(Bulk.YoungsModulus);
 		NativeBarrier->SetBulkViscosity(Bulk.Viscosity);
 		NativeBarrier->SetDamping(Bulk.Damping);
-		NativeBarrier->SetMinMaxElasticRestLength(Bulk.MinElasticRestLength, Bulk.MaxElasticRestLength);
+		NativeBarrier->SetMinMaxElasticRestLength(
+			Bulk.MinElasticRestLength, Bulk.MaxElasticRestLength);
 
 		NativeBarrier->SetFrictionEnabled(Surface.bFrictionEnabled);
 		NativeBarrier->SetRoughness(Surface.Roughness);

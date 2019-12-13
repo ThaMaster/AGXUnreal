@@ -13,7 +13,8 @@ UAGX_MaterialAssetFactory::UAGX_MaterialAssetFactory(const class FObjectInitiali
 }
 
 UObject* UAGX_MaterialAssetFactory::FactoryCreateNew(
-	UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
+	UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context,
+	FFeedbackContext* Warn)
 {
 	check(Class->IsChildOf(UAGX_MaterialAsset::StaticClass()));
 	return NewObject<UAGX_MaterialAsset>(InParent, Class, Name, Flags | RF_Transactional, Context);

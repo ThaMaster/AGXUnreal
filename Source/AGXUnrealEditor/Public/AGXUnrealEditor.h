@@ -38,7 +38,8 @@ private:
 	void RegisterAssetTypeActions();
 	void UnregisterAssetTypeActions();
 
-	void RegisterAssetTypeAction(IAssetTools& AssetTools, const TSharedPtr<IAssetTypeActions>& Action);
+	void RegisterAssetTypeAction(
+		IAssetTools& AssetTools, const TSharedPtr<IAssetTypeActions>& Action);
 
 	/**
 	 * Registers property type customizations (IPropertyTypeCustomization),
@@ -54,7 +55,8 @@ private:
 	void RegisterComponentVisualizers();
 	void UnregisterComponentVisualizers();
 
-	void RegisterComponentVisualizer(const FName& ComponentClassName, TSharedPtr<FComponentVisualizer> Visualizer);
+	void RegisterComponentVisualizer(
+		const FName& ComponentClassName, TSharedPtr<FComponentVisualizer> Visualizer);
 	void UnregisterComponentVisualizer(const FName& ComponentClassName);
 
 	void RegisterModes();

@@ -8,8 +8,8 @@
 class FRigidBodyBarrier;
 
 AAGX_BallConstraint::AAGX_BallConstraint()
-	: AAGX_Constraint(
-		  {EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2, EDofFlag::DOF_FLAG_TRANSLATIONAL_3})
+	: AAGX_Constraint({EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
+					   EDofFlag::DOF_FLAG_TRANSLATIONAL_3})
 {
 }
 
