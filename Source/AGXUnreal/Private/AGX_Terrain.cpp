@@ -21,6 +21,7 @@
 #include "Landscape.h"
 #include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
+#include "Misc/AssertionMacros.h"
 
 AAGX_Terrain::AAGX_Terrain()
 {
