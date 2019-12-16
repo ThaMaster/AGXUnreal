@@ -229,6 +229,13 @@ void AAGX_Terrain::CreateNativeShovels()
 			*GetName());
 	}
 }
+
+void AAGX_Terrain::InitializeRendering()
+{
+	InitializeDisplacementMap();
+	/// \todo Add call to particle system inialization here.
+}
+
 void AAGX_Terrain::InitializeDisplacementMap()
 {
 	if (LandscapeDisplacementMap == nullptr)
