@@ -191,10 +191,12 @@ private:
 
 	void InitializeRendering();
 	void InitializeDisplacementMap();
+	void UpdateDisplacementMap();
 private:
 	FTerrainBarrier NativeBarrier;
 
 	// Height field related variables.
+	TArray<float> OriginalHeights;
 	TArray<FFloat16> DisplacementData;
 	TArray<FUpdateTextureRegion2D> DisplacementMapRegions; // TODO: Remove!
 	bool DisplacementMapInitialized = false;

@@ -8,6 +8,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "AGX_TopEdgeComponent.h"
+#include "Utilities/AGX_TextureUtilities.h"
 
 // AGXUnrealBarrier includes.
 #include "TerrainBarrier.h"
@@ -16,12 +17,15 @@
 
 // Unreal Engine includes.
 //#include "NiagaraSystemInstance.h" /// \todo This will be needed once we do particles.
+#include "Engine/TextureRenderTarget2D.h"
 #include "Landscape.h"
 #include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
 
 AAGX_Terrain::AAGX_Terrain()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.TickGroup = TG_PostPhysics;
 }
 
 bool AAGX_Terrain::HasNative()
@@ -85,8 +89,9 @@ void AAGX_Terrain::BeginPlay()
 void AAGX_Terrain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	/// \todo Add vertex offset and particle update here.
+	UpdateDisplacementMap();
+	UE_LOG(LogAGX, Display, TEXT("Updating terrain displacement map."));
+	/// \todo Add particle update here.
 }
 
 namespace
@@ -138,6 +143,7 @@ void AAGX_Terrain::CreateNativeTerrain()
 	FHeightFieldShapeBarrier HeightField =
 		AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
 	NativeBarrier.AllocateNative(HeightField);
+	OriginalHeights = NativeBarrier.GetHeights();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	Simulation->AddTerrain(this);
 }
@@ -264,3 +270,50 @@ void AAGX_Terrain::InitializeDisplacementMap()
 
 	DisplacementMapInitialized = true;
 }
+
+void AAGX_Terrain::UpdateDisplacementMap()
+{
+	if (!DisplacementMapInitialized)
+	{
+		return;
+	}
+	if (LandscapeDisplacementMap == nullptr)
+	{
+		return;
+	}
+	if (!NativeBarrier.HasNative())
+	{
+		return;
+	}
+
+	const int32 NumVerticesX = NativeBarrier.GetGridSizeX();
+	const int32 NumVerticesY = NativeBarrier.GetGridSizeY();
+	const int32 NumPixels = NumVerticesX * NumVerticesY;
+	if (DisplacementData.Num() != NumPixels)
+	{
+		// This is expected to only happen once. Terrain don't resize during simulation.
+		DisplacementData.SetNum(NumPixels);
+	}
+
+	if (DisplacementMapRegions.Num() == 0)
+	{
+		DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, NumVerticesX, NumVerticesY));
+	}
+
+	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
+	FFloat16* DisplacementTarget = DisplacementData.GetData();
+	for (int32 PixelIndex = 0; PixelIndex < NumPixels; ++PixelIndex)
+	{
+		const float OriginalHeight = OriginalHeights[PixelIndex];
+		const float CurrentHeight = CurrentHeights[PixelIndex];
+		const float HeightChange = OriginalHeight - CurrentHeight;
+		DisplacementData[PixelIndex] = static_cast<FFloat16>(HeightChange);
+	}
+
+	uint32 BytesPerPixel = sizeof(FFloat16);
+	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
+	AGX_TextureUtilities::UpdateRenderTextureRegions(
+		*LandscapeDisplacementMap, 0, 1, DisplacementMapRegions.GetData(),
+		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
+}
+
