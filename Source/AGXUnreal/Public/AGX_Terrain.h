@@ -189,13 +189,15 @@ private:
 	void CreateNativeTerrain();
 	void CreateNativeShovels();
 
+	void InitializeRendering();
+	void InitializeDisplacementMap();
 private:
 	FTerrainBarrier NativeBarrier;
 
 	// Height field related variables.
 	TArray<FFloat16> DisplacementData;
 	TArray<FUpdateTextureRegion2D> DisplacementMapRegions; // TODO: Remove!
-	bool DisplacmentMapIsInitialized = false;
+	bool DisplacementMapInitialized = false;
 
 /// \todo Cannot use AGX Dynamics types in the AGXUnreal module. Must live in the Barrier.
 #if 0

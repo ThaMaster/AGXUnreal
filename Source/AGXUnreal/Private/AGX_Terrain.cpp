@@ -130,6 +130,7 @@ void AAGX_Terrain::InitializeNative()
 
 	CreateNativeTerrain();
 	CreateNativeShovels();
+	InitializeRendering();
 }
 
 void AAGX_Terrain::CreateNativeTerrain()
@@ -221,4 +222,45 @@ void AAGX_Terrain::CreateNativeShovels()
 			LogAGX, Log, TEXT("Created shovel '%s' for terrain '%s'."), *Actor->GetName(),
 			*GetName());
 	}
+}
+void AAGX_Terrain::InitializeDisplacementMap()
+{
+	if (LandscapeDisplacementMap == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("No landscape displacement map configured for terrain '%s'. Landscape rendering "
+				 "will not include height updates."));
+		return;
+	}
+
+	if (LandscapeDisplacementMap->GetFormat() != EPixelFormat::PF_R16F)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("The displacement map pixel format for the terrain '%s' must be R16F."),
+			*GetName());
+		return;
+	}
+
+	int32 GridSizeX = NativeBarrier.GetGridSizeX();
+	int32 GridSizeY = NativeBarrier.GetGridSizeY();
+	if (LandscapeDisplacementMap->SizeX != GridSizeX ||
+		LandscapeDisplacementMap->SizeY != GridSizeY)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("The size of the Displacement Map render target for "
+				 "AGX Terrain '%s' does not match the vertices in the terrain. The displacement "
+				 "map will be resized."),
+			*GetName());
+
+		LandscapeDisplacementMap->ResizeTarget(GridSizeX, GridSizeY);
+	}
+
+	/// \todo I'm not sure why we need this. Does the texture sampler "fudge the
+	/// values" when using non-linear gamma?
+	LandscapeDisplacementMap->bForceLinearGamma = true;
+
+	DisplacementMapInitialized = true;
 }
