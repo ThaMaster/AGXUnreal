@@ -31,7 +31,7 @@ class ALandscape;
 // class UComponent;
 // class UNiagaraSystem;
 
-UCLASS(ClassGroup = "AGX", Category = "AGX")
+UCLASS(ClassGroup = "AGX Terrain", Category = "AGX")
 class AGXUNREAL_API AAGX_Terrain : public AActor
 {
 	GENERATED_BODY()

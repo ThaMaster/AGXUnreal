@@ -10,7 +10,7 @@
 /**
  *
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_CylinderShapeComponent : public UAGX_ShapeComponent
 {
 	GENERATED_BODY()
