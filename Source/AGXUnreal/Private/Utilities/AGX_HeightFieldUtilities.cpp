@@ -4,6 +4,31 @@
 #include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
 
+namespace
+{
+	// A version of the square root that only allows roots that is an integer.
+	int32 SqrtInt32(int32 Value)
+	{
+		const float ValueFloat = static_cast<float>(Value);
+		const float RootFloat = FMath::Sqrt(ValueFloat);
+		const int32 Root = FMath::RoundToInt(RootFloat);
+		check(Root * Root == Value); /// \todo This should be an Error, not a crash.
+		return Root;
+	}
+}
+
+int32 AGX_HeightFieldUtilities::GetLandscapeSideSizeInQuads(ALandscape& Landscape)
+{
+
+	// This assumes a square and uniform grid of components.
+	/// \todo Figure out how to get the size/sides of the component grid.
+	const int32 NumComponents = Landscape.LandscapeComponents.Num();
+	const int32 NumComponentsSide = SqrtInt32(NumComponents);
+	const int32 NumQuadsPerComponentSide = Landscape.ComponentSizeQuads;
+	const int32 NumQuadsPerSide = NumComponentsSide * NumQuadsPerComponentSide;
+	return NumQuadsPerSide;
+}
+
 FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape& Landscape)
 {
 	const int32 NumComponents = Landscape.LandscapeComponents.Num();
