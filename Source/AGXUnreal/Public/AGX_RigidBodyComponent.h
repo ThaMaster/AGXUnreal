@@ -27,6 +27,12 @@ public:
 	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
 	FVector InertiaTensorDiagonal;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
+	FVector Velocity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
+	FVector AngularVelocity;
+
 	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 

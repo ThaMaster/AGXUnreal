@@ -28,11 +28,17 @@ public:
 	FRigidBodyBarrier(FRigidBodyBarrier&& other);
 	~FRigidBodyBarrier();
 
-	void SetPosition(FVector NewPosition);
+	void SetPosition(FVector Position);
 	FVector GetPosition() const;
 
-	void SetRotation(FQuat NewRotation);
+	void SetRotation(FQuat Rotation);
 	FQuat GetRotation() const;
+
+	void SetVelocity(FVector Velocity);
+	FVector GetVelocity() const;
+
+	void SetAngularVelocity(FVector AngularVelocity);
+	FVector GetAngularVelocity() const;
 
 	void SetMass(float NewMass);
 	float GetMass() const;
