@@ -49,6 +49,29 @@ const FTerrainBarrier* AAGX_Terrain::GetNative() const
 	return &NativeBarrier;
 }
 
+#if WITH_EDITOR
+void AAGX_Terrain::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	FName PropertyName = (PropertyChangedEvent.Property != nullptr)
+							 ? PropertyChangedEvent.Property->GetFName()
+							 : NAME_None;
+	if ((PropertyName == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, SourceLandscape)))
+	{
+		if (SourceLandscape == nullptr)
+		{
+			return;
+		}
+		int32 NumQuadsSide =
+			AGX_HeightFieldUtilities::GetLandscapeSideSizeInQuads(*SourceLandscape);
+		UE_LOG(
+			LogAGX, Display, TEXT("Selected Landscape with %d x %d quads."), NumQuadsSide,
+			NumQuadsSide);
+	}
+}
+#endif
+
 void AAGX_Terrain::BeginPlay()
 {
 	Super::BeginPlay();
