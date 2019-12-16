@@ -28,6 +28,14 @@ public:
 
 	bool AddShovel(FShovelBarrier& Shovel);
 
+	int32 GetGridSizeX() const;
+	int32 GetGridSizeY() const;
+
+	// Get an array with all the heights in the height field, stored in X major
+	// order, meaning that heights with increasing the X coordinates are next to
+	// each other in memory.
+	TArray<float> GetHeights() const;
+
 private:
 	FTerrainBarrier(const FTerrainBarrier&) = delete;
 	void operator=(const FTerrainBarrier&) = delete;

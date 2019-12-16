@@ -118,3 +118,37 @@ bool FTerrainBarrier::AddShovel(FShovelBarrier& Shovel)
 	check(Shovel.HasNative());
 	return NativeRef->Native->add(Shovel.GetNative()->Native);
 }
+
+int32 FTerrainBarrier::GetGridSizeX() const
+{
+	check(HasNative());
+	size_t GridSize = NativeRef->Native->getResolutionX();
+	check(GridSize < static_cast<size_t>(std::numeric_limits<int32>::max()));
+	return static_cast<int32>(GridSize);
+}
+
+int32 FTerrainBarrier::GetGridSizeY() const
+{
+	check(HasNative());
+	size_t GridSize = NativeRef->Native->getResolutionY();
+	check(GridSize < static_cast<size_t>(std::numeric_limits<int32>::max()));
+	return static_cast<int32>(GridSize);
+}
+
+TArray<float> FTerrainBarrier::GetHeights() const
+{
+	check(HasNative());
+	const agxCollide::HeightField* HeightField = NativeRef->Native->getHeightField();
+	const size_t SizeX = HeightField->getResolutionX();
+	const size_t SizeY = HeightField->getResolutionY();
+	TArray<float> Heights;
+	Heights.Reserve(SizeX * SizeY);
+	for (int32 Y = 0; Y < SizeX; ++Y)
+	{
+		for (int32 X = 0; X < SizeX; ++X)
+		{
+			Heights.Add(ConvertDistance(HeightField->getHeight(X, Y)));
+		}
+	}
+	return Heights;
+}
