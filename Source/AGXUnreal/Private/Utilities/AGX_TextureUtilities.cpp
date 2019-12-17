@@ -9,58 +9,34 @@
 #include "RHICommandList.h"
 
 bool AGX_TextureUtilities::UpdateRenderTextureRegions(
-	UTextureRenderTarget2D& RenderTarget, int32 MipIndex, uint32 NumRegions,
-	FUpdateTextureRegion2D* Regions, uint32 SourcePitch, uint32 SourceBitsPerPixel,
-	uint8* SourceData, bool bFreeData)
+	UTextureRenderTarget2D& RenderTarget, uint32 NumRegions, FUpdateTextureRegion2D* Regions,
+	uint32 SourcePitch, uint32 SourceBitsPerPixel, uint8* SourceData, bool bFreeData)
 {
-	if (RenderTarget.Resource == nullptr)
+	FTextureRenderTarget2DResource* Resource =
+		(FTextureRenderTarget2DResource*) (RenderTarget.Resource);
+	if (Resource == nullptr)
 	{
 		UE_LOG(LogAGX, Error, TEXT("TextureRenderTarget doesn't have a resource."));
 		return false;
 	}
 
-	/// \todo Get rid of this pixel, I don't think we need it. Extend lambda
-	/// capture list instead.
-	struct FUpdateTextureRegionsDescription
-	{
-		FTextureRenderTarget2DResource* Texture2DResource;
-		int32 MipIndex;
-		uint32 NumRegions;
-		FUpdateTextureRegion2D* Regions;
-		uint32 SourcePitch;
-		uint32 SourceBitsPerPixel;
-		uint8* SourceData;
-	};
-
-	/// \todo Why can't Cast<> be used here?
-	FUpdateTextureRegionsDescription* RegionsDescription = new FUpdateTextureRegionsDescription;
-	RegionsDescription->Texture2DResource = (FTextureRenderTarget2DResource*)(RenderTarget.Resource);
-	RegionsDescription->MipIndex = MipIndex;
-	RegionsDescription->NumRegions = NumRegions;
-	RegionsDescription->Regions = Regions;
-	RegionsDescription->SourcePitch = SourcePitch;
-	RegionsDescription->SourceBitsPerPixel = SourceBitsPerPixel;
-	RegionsDescription->SourceData = SourceData;
-
-	ENQUEUE_RENDER_COMMAND(UpdateRenderTextureRegionsData)
-	([RegionsDescription, bFreeData](FRHICommandListImmediate& RHICmdList) {
-		FRHITexture2D* Texture = RegionsDescription->Texture2DResource->GetTextureRHI();
-		uint32 Pitch = RegionsDescription->SourcePitch;
-		uint32 BitsPerPixel = RegionsDescription->SourceBitsPerPixel;
-		uint8* SourceData = RegionsDescription->SourceData;
-		for (uint32 RegionIndex = 0; RegionIndex < RegionsDescription->NumRegions; ++RegionIndex)
+	auto WriteTexture = [Resource, NumRegions, Regions, SourcePitch, SourceBitsPerPixel, SourceData,
+						 bFreeData](FRHICommandListImmediate& RHICmdList) {
+		FRHITexture2D* Texture = Resource->GetTextureRHI();
+		for (uint32 RegionIndex = 0; RegionIndex < NumRegions; ++RegionIndex)
 		{
-			FUpdateTextureRegion2D& Region = RegionsDescription->Regions[RegionIndex];
-			uint8* Bits = SourceData + Region.SrcY * Pitch + Region.SrcX * BitsPerPixel;
-			RHIUpdateTexture2D(Texture, /*MipIndex*/ 0, Region, Pitch, Bits);
+			FUpdateTextureRegion2D& Region = Regions[RegionIndex];
+			uint8* Bits = SourceData + Region.SrcY * SourcePitch + Region.SrcX * SourceBitsPerPixel;
+			RHIUpdateTexture2D(Texture, /*MipIndex*/ 0, Region, SourcePitch, Bits);
 		}
 		if (bFreeData)
 		{
-			FMemory::Free(RegionsDescription->Regions);
-			FMemory::Free(RegionsDescription->SourceData);
+			FMemory::Free(Regions);
+			FMemory::Free(SourceData);
 		}
-		delete RegionsDescription;
-	});
+	};
+
+	ENQUEUE_RENDER_COMMAND(UpdateRenderTextureRegionsData)(std::move(WriteTexture));
 
 	return true;
 }

@@ -338,7 +338,7 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	uint32 BytesPerPixel = sizeof(FFloat16);
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
 	AGX_TextureUtilities::UpdateRenderTextureRegions(
-		*LandscapeDisplacementMap, 0, 1, DisplacementMapRegions.GetData(),
+		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
 		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
 
@@ -369,6 +369,6 @@ void AAGX_Terrain::ClearDisplacementMap()
 	}
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
 	AGX_TextureUtilities::UpdateRenderTextureRegions(
-		*LandscapeDisplacementMap, 0, 1, DisplacementMapRegions.GetData(),
+		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
 		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
