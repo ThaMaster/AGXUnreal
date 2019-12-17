@@ -28,7 +28,7 @@ enum EAGX_TrimeshSourceLocation
  * or a specific Static Mesh Asset.
  */
 UCLASS(
-	ClassGroup = "AGX", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent),
+	ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent),
 	HideCategories = (HLOD, Lighting, LOD, Materials, MaterialParameters, Rendering))
 class AGXUNREAL_API UAGX_TrimeshShapeComponent : public UAGX_ShapeComponent
 {

@@ -14,7 +14,7 @@
  * Remember to also add the Actor to the list of shovels in the AGX Terrain's
  * details panel.
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX_Terrain", Category = "AGX", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_CuttingDirectionComponent : public UAGX_VectorComponent
 {
 	GENERATED_BODY()
