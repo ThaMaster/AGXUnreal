@@ -272,10 +272,10 @@ void AAGX_Terrain::InitializeDisplacementMap()
 		LandscapeDisplacementMap->SizeY != GridSizeY)
 	{
 		UE_LOG(
-			LogAGX, Warning,
+			LogAGX, Verbose,
 			TEXT("The size of the Displacement Map render target (%dx%d) for "
 				 "AGX Terrain '%s' does not match the vertices in the terrain (%dx%d). "
-				 "The displacement map will be resized."),
+				 "Resizing the displacement map."),
 			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetName(), GridSizeX,
 			GridSizeY);
 
