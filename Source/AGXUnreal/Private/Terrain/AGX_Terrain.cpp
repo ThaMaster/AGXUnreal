@@ -70,9 +70,11 @@ void AAGX_Terrain::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 		}
 		int32 NumQuadsSide =
 			AGX_HeightFieldUtilities::GetLandscapeSideSizeInQuads(*SourceLandscape);
+		float QuadSize = SourceLandscape->GetActorScale().X;
+		float Size = QuadSize * NumQuadsSide;
 		UE_LOG(
-			LogAGX, Display, TEXT("Selected Landscape with %d x %d quads."), NumQuadsSide,
-			NumQuadsSide);
+			LogAGX, Display, TEXT("Selected %fcm x %fcm Landscape containing %d x %d quads."),
+			Size, Size, NumQuadsSide, NumQuadsSide);
 	}
 }
 #endif
