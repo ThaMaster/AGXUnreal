@@ -266,6 +266,9 @@ void AAGX_Terrain::InitializeDisplacementMap()
 		return;
 	}
 
+	// "Grid" in the Terrain is what the Landscape calls "vertices". There is
+	// one more "grid" element than there is "quads" per side. There is one
+	// displacement map texel per vertex.
 	int32 GridSizeX = NativeBarrier.GetGridSizeX();
 	int32 GridSizeY = NativeBarrier.GetGridSizeY();
 	if (LandscapeDisplacementMap->SizeX != GridSizeX ||
@@ -290,6 +293,9 @@ void AAGX_Terrain::InitializeDisplacementMap()
 				 "(%dx%d). There may be rendering issues."),
 			*GetName(), LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY);
 	}
+
+	DisplacementData.SetNum(GridSizeX * GridSizeY);
+	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, GridSizeX, GridSizeY));
 
 	/// \todo I'm not sure why we need this. Does the texture sampler "fudge the
 	/// values" when using non-linear gamma?
@@ -316,16 +322,9 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	const int32 NumVerticesX = NativeBarrier.GetGridSizeX();
 	const int32 NumVerticesY = NativeBarrier.GetGridSizeY();
 	const int32 NumPixels = NumVerticesX * NumVerticesY;
-	if (DisplacementData.Num() != NumPixels)
-	{
-		// This is expected to only happen once. Terrain don't resize during simulation.
-		DisplacementData.SetNum(NumPixels);
-	}
+	check(DisplacementData.Num() == NumPixels);
+	check(DisplacementMapRegions.Num() == 1);
 
-	if (DisplacementMapRegions.Num() == 0)
-	{
-		DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, NumVerticesX, NumVerticesY));
-	}
 
 	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
 	for (int32 PixelIndex = 0; PixelIndex < NumPixels; ++PixelIndex)
