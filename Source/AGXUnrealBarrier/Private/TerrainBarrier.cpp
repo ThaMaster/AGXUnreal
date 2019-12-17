@@ -139,11 +139,57 @@ TArray<float> FTerrainBarrier::GetHeights() const
 {
 	check(HasNative());
 	const agxCollide::HeightField* HeightField = NativeRef->Native->getHeightField();
-	const size_t SizeX = HeightField->getResolutionX();
-	const size_t SizeY = HeightField->getResolutionY();
+	const size_t SizeXAGX = HeightField->getResolutionX();
+	const size_t SizeYAGX = HeightField->getResolutionY();
+
 	TArray<float> Heights;
+	if (SizeXAGX == 0 || SizeYAGX == 0)
+	{
+		/// \todo Unclear if this really should be a warning or not. When would
+		/// zero-sized terrains be used?
+		UE_LOG(LogAGX, Warning, TEXT("Cannot get heights from terrain with zero size."));
+		return Heights;
+	}
+	if (SizeXAGX * SizeYAGX > static_cast<size_t>(std::numeric_limits<int32>::max()))
+	{
+		UE_LOG(LogAGX, Error, TEXT("Cannot get heights, terrain has too many vertices."));
+		return Heights;
+	}
+
+	int32 SizeX = static_cast<int32>(SizeXAGX);
+	int32 SizeY = static_cast<int32>(SizeYAGX);
+
 	Heights.Reserve(SizeX * SizeY);
-	for (int32 Y = 0; Y < SizeX; ++Y)
+
+	// AGX Dynamics and Unreal have different coordinate systems, so we must
+	// flip the Y axis for the vertex locations.
+	//
+	// AGX Dynamics has [0,0] in the bottom left:
+	//
+	// [0,n-1] [1,n-1] ...      This is
+	// ...                      what we
+	// [0,2] [1,2] [3,2] ...    read from.
+	// [0,1] [1,1] [2,1] ...
+	// [0,0] [1,0] [2,0] ...
+	//
+	//
+	// Unreal has [0,0] in the top left:
+	//
+	// [0,0] [1,0] [2,0] ...    This is
+	// [0,1] [1,1] [2,1] ...    what we
+	// [0,2] [1,2] [2,2] ...    write to.
+	// ...
+	// [0,n-1] [1,n-1] ...
+	//
+	// When looking at the Landscape in Unreal Editor, the user sees the axis
+	// widget aligned with the Unreal section above, with the red/green/blue
+	// lines at the [0,0] vertex.
+	//
+	// We want the ordering of the returned array to be row major according to
+	// the Unreal figure above. Thus, we start by reading the last/top row of
+	// increasing X coordinates, i.e., the row with Y=n-1, from AGX Dynamics'
+	// point of view.
+	for (int32 Y = SizeY - 1; Y >= 0; Y--)
 	{
 		for (int32 X = 0; X < SizeX; ++X)
 		{
