@@ -97,7 +97,7 @@ void AAGX_Terrain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	UpdateDisplacementMap();
-	UE_LOG(LogAGX, Display, TEXT("Updating terrain displacement map."));
+
 	/// \todo Add particle update here.
 }
 
@@ -250,7 +250,8 @@ void AAGX_Terrain::InitializeDisplacementMap()
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("No landscape displacement map configured for terrain '%s'. Landscape rendering "
-				 "will not include height updates."));
+				 "will not include height updates."),
+			*GetName());
 		return;
 	}
 
@@ -270,12 +271,22 @@ void AAGX_Terrain::InitializeDisplacementMap()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("The size of the Displacement Map render target for "
-				 "AGX Terrain '%s' does not match the vertices in the terrain. The displacement "
-				 "map will be resized."),
-			*GetName());
+			TEXT("The size of the Displacement Map render target (%dx%d) for "
+				 "AGX Terrain '%s' does not match the vertices in the terrain (%dx%d). "
+				 "The displacement map will be resized."),
+			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetName(), GridSizeX,
+			GridSizeY);
 
 		LandscapeDisplacementMap->ResizeTarget(GridSizeX, GridSizeY);
+	}
+	if (LandscapeDisplacementMap->SizeX != GridSizeX ||
+		LandscapeDisplacementMap->SizeY != GridSizeY)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Landscape displacement map for terrain '%s' could not be resized. Remain at "
+				 "(%dx%d). There may be rendering issues."),
+			*GetName(), LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY);
 	}
 
 	/// \todo I'm not sure why we need this. Does the texture sampler "fudge the
@@ -315,12 +326,11 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	}
 
 	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
-	FFloat16* DisplacementTarget = DisplacementData.GetData();
 	for (int32 PixelIndex = 0; PixelIndex < NumPixels; ++PixelIndex)
 	{
 		const float OriginalHeight = OriginalHeights[PixelIndex];
 		const float CurrentHeight = CurrentHeights[PixelIndex];
-		const float HeightChange = OriginalHeight - CurrentHeight;
+		const float HeightChange = CurrentHeight - OriginalHeight;
 		DisplacementData[PixelIndex] = static_cast<FFloat16>(HeightChange);
 	}
 
