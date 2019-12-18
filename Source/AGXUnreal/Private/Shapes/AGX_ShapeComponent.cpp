@@ -68,6 +68,11 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	}
 
 	GetNative()->SetEnableCollisions(bCanCollide);
+
+	for (const FName& collisionGroup : CollisionGroups)
+	{
+		GetNative()->AddCollisionGroup(collisionGroup);
+	}
 }
 
 void UAGX_ShapeComponent::TickComponent(

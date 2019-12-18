@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 
 #include "Misc/AssertionMacros.h"
+#include "..\..\Public\Shapes\ShapeBarrier.h"
 
 FShapeBarrier::FShapeBarrier()
 	: NativeRef {new FGeometryAndShapeRef}
@@ -105,6 +106,12 @@ bool FShapeBarrier::GetEnableCollisions() const
 {
 	check(HasNative());
 	return NativeRef->NativeGeometry->getEnableCollisions();
+}
+
+void FShapeBarrier::AddCollisionGroup(const FName & GroupName)
+{
+	check(HasNative());
+	NativeRef->NativeGeometry->addGroup(Convert(GroupName));
 }
 
 namespace

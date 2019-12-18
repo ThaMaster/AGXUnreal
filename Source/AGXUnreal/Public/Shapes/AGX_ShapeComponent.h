@@ -37,6 +37,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Shape")
 	bool bCanCollide = true;
 
+	/**
+	 * List of collision groups that this shape component is part of.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shape")
+	TArray<FName> CollisionGroups;
+
 	UAGX_ShapeComponent();
 
 	virtual FShapeBarrier* GetNative()

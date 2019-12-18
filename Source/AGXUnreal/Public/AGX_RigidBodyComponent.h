@@ -30,9 +30,6 @@ public:
 	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX RigidBody")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 
-	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX RigidBody")
-	TArray<FString> CollisionGroups;
-
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FRigidBodyBarrier* GetOrCreateNative();
 

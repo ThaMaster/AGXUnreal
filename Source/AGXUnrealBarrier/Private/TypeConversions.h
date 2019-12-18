@@ -165,6 +165,11 @@ inline agx::String Convert(const FString& StringUnreal)
 	return agx::String(TCHAR_TO_UTF8(*StringUnreal));
 }
 
+inline agx::Name Convert(const FName& NameUnreal)
+{
+	return agx::Name(TCHAR_TO_UTF8(*(NameUnreal.ToString())));
+}
+
 inline FGuid Convert(const agx::Uuid& Uuid)
 {
 	// Would like to use Uuid::size here, since that is the size of the data

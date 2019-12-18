@@ -77,6 +77,15 @@ void FSimulationBarrier::AddTerrain(FTerrainBarrier* Terrain)
 	NativeRef->Native->add(Terrain->GetNative()->Native);
 }
 
+void FSimulationBarrier::SetDisableCollisionGroupPair(const FName & Group1, const FName & Group2)
+{
+	check(HasNative());
+
+	// In AGXUnreal, adding a collision group pair always mean "disable collision between these
+	// groups". Therefore, the collision enable flag is always set to false.
+	NativeRef->Native->getSpace()->setEnablePair(Convert(Group1), Convert(Group2), false);
+}
+
 bool FSimulationBarrier::WriteAGXArchive(const FString& Filename) const
 {
 	check(HasNative());
