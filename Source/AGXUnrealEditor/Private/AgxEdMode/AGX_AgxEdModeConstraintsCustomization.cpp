@@ -19,7 +19,8 @@
 
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 #include "Constraints/AGX_Constraint.h"
-#include "Utilities/AGX_EditorUtilities.h"
+#include "AGX_ObjectUtilities.h"
+#include "AGX_EditorUtilities.h"
 #include "Utilities/AGX_PropertyUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_AgxEdModeConstraintsCustomization"
@@ -42,7 +43,7 @@ FAGX_AgxEdModeConstraintsCustomization::FAGX_AgxEdModeConstraintsCustomization()
 void FAGX_AgxEdModeConstraintsCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	UAGX_AgxEdModeConstraints* ConstraintsSubMode =
-		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_AgxEdModeConstraints>(
+		FAGX_ObjectUtilities::GetSingleObjectBeingCustomized<UAGX_AgxEdModeConstraints>(
 			DetailBuilder);
 
 	if (!ConstraintsSubMode)
