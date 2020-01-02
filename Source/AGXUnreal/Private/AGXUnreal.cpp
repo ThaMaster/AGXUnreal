@@ -4,6 +4,8 @@
 #include "AGX_RuntimeStyle.h"
 #include "AGX_CollisionGroupManager.h"
 #include "AGX_CollisionGroupManagerCustomize.h"
+#include "AGX_CollisionGroups.h"
+#include "AGX_CollisionGroupsCustomization.h"
 
 #include "PropertyEditorModule.h"
 
@@ -37,6 +39,11 @@ void FAGXUnrealModule::RegisterCustomizations()
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_CollisionGroupManagerCustomize::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_CollisionGroups::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_CollisionGroupsCustomization::MakeInstance));
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -47,6 +54,9 @@ void FAGXUnrealModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		AAGX_CollisionGroupManager::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		UAGX_CollisionGroups::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
