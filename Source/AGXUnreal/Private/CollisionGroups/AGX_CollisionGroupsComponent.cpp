@@ -3,6 +3,7 @@
 #include "AGX_ShapeComponent.h"
 #include "AGX_ObjectUtilities.h"
 #include "AGX_LogCategory.h"
+#include "..\..\Public\CollisionGroups\AGX_CollisionGroupsComponent.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_CollisionGroupsComponent"
 
@@ -38,7 +39,8 @@ void UAGX_CollisionGroupsComponent::ForceRefreshChildShapes()
 	}
 }
 
-void UAGX_CollisionGroupsComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+void UAGX_CollisionGroupsComponent::PostEditChangeProperty(
+	FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
@@ -58,7 +60,8 @@ void UAGX_CollisionGroupsComponent::Serialize(FArchive& Ar)
 	CollisionGroupsLastChange = CollisionGroups;
 }
 
-void UAGX_CollisionGroupsComponent::ApplyCollisionGroupChanges(FPropertyChangedEvent& PropertyChangedEvent)
+void UAGX_CollisionGroupsComponent::ApplyCollisionGroupChanges(
+	FPropertyChangedEvent& PropertyChangedEvent)
 {
 	FName PropertyName = GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupsComponent, CollisionGroups);
 	int32 ChangedArrayIndex = PropertyChangedEvent.GetArrayIndex(PropertyName.ToString());
@@ -78,42 +81,46 @@ void UAGX_CollisionGroupsComponent::ApplyCollisionGroupChanges(FPropertyChangedE
 
 		for (UAGX_ShapeComponent* ShapeComponent : ChildrenShapeComponents)
 		{
-			switch (ChangeType)
-			{
-				case EPropertyChangeType::ArrayAdd:
-					ShapeComponent->AddCollisionGroup(CollisionGroups[ChangedArrayIndex]);
-					break;
-				case EPropertyChangeType::ArrayRemove:
-					ShapeComponent->TryRemoveCollisionGroup(
-						CollisionGroupsLastChange[ChangedArrayIndex]);
-					break;
-				case EPropertyChangeType::ArrayClear:
-				{
-					for (int i = 0; i < CollisionGroupsLastChange.Num(); i++)
-					{
-						ShapeComponent->TryRemoveCollisionGroup(CollisionGroupsLastChange[i]);
-					}
-
-					break;
-				}
-				case EPropertyChangeType::ValueSet: // Value changed.
-				{
-					// Remove old collision group and add new collision group.
-					ShapeComponent->TryRemoveCollisionGroup(
-						CollisionGroupsLastChange[ChangedArrayIndex]);
-
-					ShapeComponent->AddCollisionGroup(CollisionGroups[ChangedArrayIndex]);
-
-					break;
-				}
-				default:
-					// Non implemented change type, do nothing.
-					break;
-			}
+			ApplyChangesToChildShapes(ShapeComponent, ChangeType, ChangedArrayIndex);
 		}
 	}
 
 	CollisionGroupsLastChange = CollisionGroups;
+}
+
+void UAGX_CollisionGroupsComponent::ApplyChangesToChildShapes(
+	UAGX_ShapeComponent* ShapeComponent, EPropertyChangeType::Type ChangeType, int32 ChangeIndex)
+{
+	switch (ChangeType)
+	{
+		case EPropertyChangeType::ArrayAdd:
+			ShapeComponent->AddCollisionGroup(CollisionGroups[ChangeIndex]);
+			break;
+		case EPropertyChangeType::ArrayRemove:
+			ShapeComponent->TryRemoveCollisionGroup(CollisionGroupsLastChange[ChangeIndex]);
+			break;
+		case EPropertyChangeType::ArrayClear:
+		{
+			for (int i = 0; i < CollisionGroupsLastChange.Num(); i++)
+			{
+				ShapeComponent->TryRemoveCollisionGroup(CollisionGroupsLastChange[i]);
+			}
+
+			break;
+		}
+		case EPropertyChangeType::ValueSet: // Value changed.
+		{
+			// Remove old collision group and add new collision group.
+			ShapeComponent->TryRemoveCollisionGroup(CollisionGroupsLastChange[ChangeIndex]);
+
+			ShapeComponent->AddCollisionGroup(CollisionGroups[ChangeIndex]);
+
+			break;
+		}
+		default:
+			// Non implemented change type, do nothing.
+			break;
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -8,6 +8,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_CollisionGroupsComponent.generated.h"
 
+class UAGX_ShapeComponent;
 
 UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_CollisionGroupsComponent : public UActorComponent
@@ -41,6 +42,10 @@ public:
 
 private:
 	void ApplyCollisionGroupChanges(FPropertyChangedEvent& PropertyChangedEvent);
+
+	void ApplyChangesToChildShapes(
+		UAGX_ShapeComponent* ShapeComponent, EPropertyChangeType::Type ChangeType,
+		int32 ChangeIndex);
 
 private:
 	TArray<FName> CollisionGroupsLastChange;
