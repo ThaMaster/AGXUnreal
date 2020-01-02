@@ -67,6 +67,10 @@ public:
 	/** Subclasses that overrides this MUST invoke the parents version! */
 	virtual void UpdateNativeProperties();
 
+	void AddCollisionGroup(const FName& GroupName);
+
+	void TryRemoveCollisionGroup(const FName& GroupName);
+
 public:
 	virtual void TickComponent(
 		float DeltaTime, ELevelTick TickType,
