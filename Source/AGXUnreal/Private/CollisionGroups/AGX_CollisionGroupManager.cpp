@@ -144,6 +144,8 @@ TArray<FName> AAGX_CollisionGroupManager::GetAllAvailableCollisionGroupsFromWorl
 bool AAGX_CollisionGroupManager::CollisionGroupPairDisabled(
 	FName CollisionGroup1, FName CollisionGroup2, int& OutIndex)
 {
+	OutIndex = -1;
+
 	// Check all disabled collision group pairs, and check all
 	// permutations (i.e. here [A,B] == [B,A])
 	for (int i = 0; i < DisabledCollisionGroups.Num(); i++)
@@ -158,7 +160,6 @@ bool AAGX_CollisionGroupManager::CollisionGroupPairDisabled(
 		}
 	}
 
-	OutIndex = -1;
 	return false;
 }
 
