@@ -3,7 +3,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RuntimeStyle.h"
 #include "AGX_CollisionGroupManager.h"
-#include "AGX_CollisionGroupManagerCustomize.h"
+#include "AGX_CollisionGroupManagerCustomization.h"
 #include "AGX_CollisionGroupsComponent.h"
 #include "AGX_CollisionGroupsComponentCustomization.h"
 
@@ -37,7 +37,7 @@ void FAGXUnrealModule::RegisterCustomizations()
 	PropertyModule.RegisterCustomClassLayout(
 		AAGX_CollisionGroupManager::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_CollisionGroupManagerCustomize::MakeInstance));
+			&FAGX_CollisionGroupManagerCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_CollisionGroupsComponent::StaticClass()->GetFName(),

@@ -1,4 +1,4 @@
-#include "AGX_CollisionGroupManagerCustomize.h"
+#include "AGX_CollisionGroupManagerCustomization.h"
 
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
@@ -12,14 +12,14 @@
 #include "AGX_CollisionGroupManager.h"
 #include "AGX_ShapeComponent.h"
 
-#define LOCTEXT_NAMESPACE "FAGX_CollisionGroupManagerCustomize"
+#define LOCTEXT_NAMESPACE "FAGX_CollisionGroupManagerCustomization"
 
-TSharedRef<IDetailCustomization> FAGX_CollisionGroupManagerCustomize::MakeInstance()
+TSharedRef<IDetailCustomization> FAGX_CollisionGroupManagerCustomization::MakeInstance()
 {
-	return MakeShareable(new FAGX_CollisionGroupManagerCustomize);
+	return MakeShareable(new FAGX_CollisionGroupManagerCustomization);
 }
 
-void FAGX_CollisionGroupManagerCustomize::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
+void FAGX_CollisionGroupManagerCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	AAGX_CollisionGroupManager* CollisionGroupManager =
 		FAGX_ObjectUtilities::GetSingleObjectBeingCustomized<AAGX_CollisionGroupManager>(
@@ -48,7 +48,7 @@ void FAGX_CollisionGroupManagerCustomize::CustomizeDetails(IDetailLayoutBuilder&
 						 .ToolTipText(FText::GetEmpty());
 				 })
 				 .OnSelectionChanged(
-					 this, &FAGX_CollisionGroupManagerCustomize::OnConstraintTypeComboBoxChanged,
+					 this, &FAGX_CollisionGroupManagerCustomization::OnConstraintTypeComboBoxChanged,
 					 CollisionGroupManager, &CollisionGroupManager->GetSelectedGroup1())
 				 .Content() // header content (i.e. showing selected item, even while combo box is
 							// closed)
@@ -70,7 +70,7 @@ void FAGX_CollisionGroupManagerCustomize::CustomizeDetails(IDetailLayoutBuilder&
 						 .ToolTipText(FText::GetEmpty());
 				 })
 				 .OnSelectionChanged(
-					 this, &FAGX_CollisionGroupManagerCustomize::OnConstraintTypeComboBoxChanged,
+					 this, &FAGX_CollisionGroupManagerCustomization::OnConstraintTypeComboBoxChanged,
 					 CollisionGroupManager, &CollisionGroupManager->GetSelectedGroup2())
 				 .Content() // header content (i.e. showing selected item, even while combo box is
 							// closed)
@@ -114,7 +114,7 @@ void FAGX_CollisionGroupManagerCustomize::CustomizeDetails(IDetailLayoutBuilder&
 		GET_MEMBER_NAME_CHECKED(AAGX_CollisionGroupManager, DisabledCollisionGroups)));
 }
 
-void FAGX_CollisionGroupManagerCustomize::OnConstraintTypeComboBoxChanged(
+void FAGX_CollisionGroupManagerCustomization::OnConstraintTypeComboBoxChanged(
 	TSharedPtr<FName> NewSelectedItem, ESelectInfo::Type InSeletionInfo,
 	AAGX_CollisionGroupManager* CollisionGroupManager, FName* SelectedGroup)
 {

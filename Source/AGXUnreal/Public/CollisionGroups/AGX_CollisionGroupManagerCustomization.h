@@ -8,7 +8,7 @@
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
 
-class AGXUNREAL_API FAGX_CollisionGroupManagerCustomize : public IDetailCustomization
+class AGXUNREAL_API FAGX_CollisionGroupManagerCustomization : public IDetailCustomization
 {
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();
