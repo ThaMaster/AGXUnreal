@@ -8,6 +8,9 @@
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
 
+/**
+ * Defines the design of the Collision Group Manager object in the Editor.
+ */
 class AGXUNREAL_API FAGX_CollisionGroupManagerCustomization : public IDetailCustomization
 {
 public:

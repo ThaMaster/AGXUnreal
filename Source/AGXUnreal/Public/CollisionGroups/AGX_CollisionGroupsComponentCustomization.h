@@ -8,6 +8,9 @@ class UAGX_CollisionGroupsComponent;
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
 
+/**
+ * Defines the design of the Collision Group component in the Editor.
+ */
 class AGXUNREAL_API FAGX_CollisionGroupsComponentCustomization : public IDetailCustomization
 {
 public:

@@ -10,6 +10,10 @@
 
 class UAGX_ShapeComponent;
 
+/**
+ * Defines the Collision Groups component used to add/remove collision groups
+ * on all child shape components
+ */
 UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_CollisionGroupsComponent : public UActorComponent
 {
