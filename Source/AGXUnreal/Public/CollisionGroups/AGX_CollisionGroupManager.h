@@ -24,7 +24,7 @@ public:
 
 	void UpdateAvailableCollisionGroups();
 
-	TArray<TSharedPtr<FName>>& GetAvailableCollisionGroups() { return AvailableCollisionGroups; }
+	TArray<FName> GetAvailableCollisionGroups() const { return AvailableCollisionGroups; }
 
 	FName& GetSelectedGroup1() { return SelectedGroup1; }
 
@@ -36,7 +36,7 @@ protected:
 private:
 	void AddCollisionGroupPairsToSimulation();
 
-	TArray<TSharedPtr<FName>> GetAllAvailableCollisionGroupsFromWorld();
+	TArray<FName> GetAllAvailableCollisionGroupsFromWorld();
 
 	bool CollisionGroupPairDisabled(
 		FName CollisionGroup1, FName CollisionGroup2, int& OutIndex);
@@ -44,7 +44,7 @@ private:
 	void RemoveDeprecatedCollisionGroups();
 
 private:
-	TArray<TSharedPtr<FName>> AvailableCollisionGroups;
+	TArray<FName> AvailableCollisionGroups;
 	FName SelectedGroup1;
 	FName SelectedGroup2;
 };

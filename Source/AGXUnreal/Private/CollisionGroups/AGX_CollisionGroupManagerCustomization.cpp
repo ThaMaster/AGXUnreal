@@ -34,13 +34,15 @@ void FAGX_CollisionGroupManagerCustomization::CustomizeDetails(IDetailLayoutBuil
 	// group list. This list will be visualized in the comboboxes.
 	CollisionGroupManager->UpdateAvailableCollisionGroups();
 
+	UpdateAvailableCollisionGroups(CollisionGroupManager);
+
 	// Add first combobox
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
 		.NameContent()[SNew(STextBlock).Text(LOCTEXT("CollisionGroup1Name", "Collision Group 1"))]
 		.ValueContent()
 			[SNew(SComboBox<TSharedPtr<FName>>)
 				 .ContentPadding(2)
-				 .OptionsSource(&CollisionGroupManager->GetAvailableCollisionGroups())
+				 .OptionsSource(&AvailableCollisionGroups)
 				 .OnGenerateWidget_Lambda([=](TSharedPtr<FName> Item) {
 					 // content for each item in combo box
 					 return SNew(STextBlock)
@@ -48,7 +50,7 @@ void FAGX_CollisionGroupManagerCustomization::CustomizeDetails(IDetailLayoutBuil
 						 .ToolTipText(FText::GetEmpty());
 				 })
 				 .OnSelectionChanged(
-					 this, &FAGX_CollisionGroupManagerCustomization::OnConstraintTypeComboBoxChanged,
+					 this, &FAGX_CollisionGroupManagerCustomization::OnComboBoxChanged,
 					 CollisionGroupManager, &CollisionGroupManager->GetSelectedGroup1())
 				 .Content() // header content (i.e. showing selected item, even while combo box is
 							// closed)
@@ -62,7 +64,7 @@ void FAGX_CollisionGroupManagerCustomization::CustomizeDetails(IDetailLayoutBuil
 		.ValueContent()
 			[SNew(SComboBox<TSharedPtr<FName>>)
 				 .ContentPadding(2)
-				 .OptionsSource(&CollisionGroupManager->GetAvailableCollisionGroups())
+				 .OptionsSource(&AvailableCollisionGroups)
 				 .OnGenerateWidget_Lambda([=](TSharedPtr<FName> Item) {
 					 // content for each item in combo box
 					 return SNew(STextBlock)
@@ -70,7 +72,7 @@ void FAGX_CollisionGroupManagerCustomization::CustomizeDetails(IDetailLayoutBuil
 						 .ToolTipText(FText::GetEmpty());
 				 })
 				 .OnSelectionChanged(
-					 this, &FAGX_CollisionGroupManagerCustomization::OnConstraintTypeComboBoxChanged,
+					 this, &FAGX_CollisionGroupManagerCustomization::OnComboBoxChanged,
 					 CollisionGroupManager, &CollisionGroupManager->GetSelectedGroup2())
 				 .Content() // header content (i.e. showing selected item, even while combo box is
 							// closed)
@@ -114,7 +116,7 @@ void FAGX_CollisionGroupManagerCustomization::CustomizeDetails(IDetailLayoutBuil
 		GET_MEMBER_NAME_CHECKED(AAGX_CollisionGroupManager, DisabledCollisionGroups)));
 }
 
-void FAGX_CollisionGroupManagerCustomization::OnConstraintTypeComboBoxChanged(
+void FAGX_CollisionGroupManagerCustomization::OnComboBoxChanged(
 	TSharedPtr<FName> NewSelectedItem, ESelectInfo::Type InSeletionInfo,
 	AAGX_CollisionGroupManager* CollisionGroupManager, FName* SelectedGroup)
 {
@@ -122,6 +124,14 @@ void FAGX_CollisionGroupManagerCustomization::OnConstraintTypeComboBoxChanged(
 	{
 		*SelectedGroup = *NewSelectedItem;
 	}
+}
+
+void FAGX_CollisionGroupManagerCustomization::UpdateAvailableCollisionGroups(const AAGX_CollisionGroupManager* CollisionGroupManager)
+{
+	AvailableCollisionGroups.Empty();
+
+	for (FName CollisionGroups : CollisionGroupManager->GetAvailableCollisionGroups())
+		AvailableCollisionGroups.Add(MakeShareable(new FName(CollisionGroups)));
 }
 
 #undef LOCTEXT_NAMESPACE

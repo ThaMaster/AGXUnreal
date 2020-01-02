@@ -7,6 +7,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "AGX_ShapeComponent.h"
+#include "..\..\Public\CollisionGroups\AGX_CollisionGroupManager.h"
 
 #define LOCTEXT_NAMESPACE "AAGX_CollisionGroupManager"
 
@@ -123,9 +124,9 @@ void AAGX_CollisionGroupManager::AddCollisionGroupPairsToSimulation()
 	}
 }
 
-TArray<TSharedPtr<FName>> AAGX_CollisionGroupManager::GetAllAvailableCollisionGroupsFromWorld()
+TArray<FName> AAGX_CollisionGroupManager::GetAllAvailableCollisionGroupsFromWorld()
 {
-	TArray<TSharedPtr<FName>> FoundCollisionGroups;
+	TArray<FName> FoundCollisionGroups;
 
 	// Find all shape class objects and get all collision groups
 	for (TObjectIterator<UAGX_ShapeComponent> ClassIt; ClassIt; ++ClassIt)
@@ -134,7 +135,7 @@ TArray<TSharedPtr<FName>> AAGX_CollisionGroupManager::GetAllAvailableCollisionGr
 
 		for (const auto& CollisionGroup : Class->CollisionGroups)
 		{
-			FoundCollisionGroups.AddUnique(MakeShareable(new FName(CollisionGroup)));
+			FoundCollisionGroups.AddUnique(CollisionGroup);
 		}
 	}
 
@@ -166,23 +167,11 @@ void AAGX_CollisionGroupManager::RemoveDeprecatedCollisionGroups()
 {
 	for (int i = 0; i < DisabledCollisionGroups.Num(); i++)
 	{
-		bool Group1Exists = false;
-		bool Group2Exists = false;
-
-		for (TSharedPtr<FName> CollisionGroup : AvailableCollisionGroups)
+		if (AvailableCollisionGroups.IndexOfByKey(DisabledCollisionGroups[i].Group1) == INDEX_NONE ||
+			AvailableCollisionGroups.IndexOfByKey(DisabledCollisionGroups[i].Group2) == INDEX_NONE)
 		{
-			if (DisabledCollisionGroups[i].Group1.IsEqual(*CollisionGroup))
-				Group1Exists = true;
-
-			if (DisabledCollisionGroups[i].Group2.IsEqual(*CollisionGroup))
-				Group2Exists = true;
-
-			if (Group1Exists && Group2Exists)
-				break;
-		}
-
-		if (!(Group1Exists && Group2Exists))
 			DisabledCollisionGroups.RemoveAt(i);
+		}
 	}
 }
 

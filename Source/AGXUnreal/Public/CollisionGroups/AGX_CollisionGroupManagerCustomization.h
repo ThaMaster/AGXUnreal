@@ -16,7 +16,12 @@ public:
 	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
 
 private:
-	void OnConstraintTypeComboBoxChanged(
+	void OnComboBoxChanged(
 		TSharedPtr<FName> NewSelectedItem, ESelectInfo::Type InSeletionInfo,
 		AAGX_CollisionGroupManager* CollisionGroupManager, FName* SelectedGroup);
+
+	void UpdateAvailableCollisionGroups(const AAGX_CollisionGroupManager* CollisionGroupManager);
+
+private:
+	TArray<TSharedPtr<FName>> AvailableCollisionGroups;
 };
