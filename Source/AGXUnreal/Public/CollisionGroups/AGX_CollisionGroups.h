@@ -19,6 +19,12 @@ public:
 	// Sets default values for this component's properties
 	UAGX_CollisionGroups();
 
+	// Adds all collision groups to all child shape components. Useful
+	// when e.g. adding a new shape to a rigid body.
+	void ForceRefreshChildShapes();
+
+	void Serialize(FArchive& Ar) override;
+
 #if WITH_EDITOR
 
 	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

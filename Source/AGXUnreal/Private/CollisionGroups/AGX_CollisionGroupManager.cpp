@@ -48,8 +48,8 @@ void AAGX_CollisionGroupManager::DisableSelectedCollisionGroupPairs()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT(
-				"A selected collision group may not be 'None'. Please select valid collision groups."));
+			TEXT("A selected collision group may not be 'None'. Please select valid collision "
+				 "groups."));
 		return;
 	}
 
@@ -62,7 +62,7 @@ void AAGX_CollisionGroupManager::DisableSelectedCollisionGroupPairs()
 		return;
 	}
 
-	FAGX_CollisionGroupPair NewPair{ SelectedGroup1, SelectedGroup2 };
+	FAGX_CollisionGroupPair NewPair {SelectedGroup1, SelectedGroup2};
 	DisabledCollisionGroups.Add(NewPair);
 }
 

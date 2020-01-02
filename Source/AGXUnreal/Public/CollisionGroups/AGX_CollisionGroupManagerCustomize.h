@@ -8,9 +8,6 @@
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
 
-/**
- *
- */
 class AGXUNREAL_API FAGX_CollisionGroupManagerCustomize : public IDetailCustomization
 {
 public:

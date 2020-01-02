@@ -1,20 +1,59 @@
 #include "AGX_CollisionGroups.h"
+
 #include "AGX_ShapeComponent.h"
 #include "AGX_ObjectUtilities.h"
+#include "AGX_LogCategory.h"
 
 UAGX_CollisionGroups::UAGX_CollisionGroups()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	CollisionGroupsLastChange = CollisionGroups;
+}
+
+void UAGX_CollisionGroups::ForceRefreshChildShapes()
+{
+	UE_LOG(LogAGX, Log, TEXT("Force refresh shapes called."));
+
+	AActor* Parent = GetOwner();
+	TArray<AActor*> AllActors;
+	FAGX_ObjectUtilities::GetChildActorsOfActor(Parent, AllActors);
+
+	// The Parent must be processed as well.
+	AllActors.Add(Parent);
+
+	for (AActor* Actor : AllActors)
+	{
+		TArray<UAGX_ShapeComponent*> ChildrenShapeComponents;
+		Actor->GetComponents(ChildrenShapeComponents, true);
+
+		for (UAGX_ShapeComponent* ShapeComponent : ChildrenShapeComponents)
+		{
+			for (FName CollisionGroup : CollisionGroups)
+			{
+				// Note: duplicates will be ignored.
+				ShapeComponent->AddCollisionGroup(CollisionGroup);
+			}
+		}
+	}
 }
 
 void UAGX_CollisionGroups::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
 	if (PropertyChangedEvent.GetPropertyName().IsEqual(
 			GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroups, CollisionGroups)))
 	{
 		ApplyCollisionGroupChanges(PropertyChangedEvent);
 	}
+}
+
+void UAGX_CollisionGroups::Serialize(FArchive& Ar)
+{
+	Super::Serialize(Ar);
+
+	// This cannot be done in the constructor since the UPROPERTIES
+	// has not yet been initialized at that point.
+	CollisionGroupsLastChange = CollisionGroups;
 }
 
 void UAGX_CollisionGroups::ApplyCollisionGroupChanges(FPropertyChangedEvent& PropertyChangedEvent)

@@ -22,12 +22,13 @@ TSharedRef<IDetailCustomization> FAGX_CollisionGroupManagerCustomize::MakeInstan
 void FAGX_CollisionGroupManagerCustomize::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	AAGX_CollisionGroupManager* CollisionGroupManager =
-		FAGX_ObjectUtilities::GetSingleObjectBeingCustomized<AAGX_CollisionGroupManager>(DetailBuilder);
+		FAGX_ObjectUtilities::GetSingleObjectBeingCustomized<AAGX_CollisionGroupManager>(
+			DetailBuilder);
 
 	if (!CollisionGroupManager)
 		return;
 
-	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder.EditCategory("AGX Collision Groups");
+	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder.EditCategory("AGX Collision Group Manager");
 
 	// Tell the CollisionGroupManager to update the collision
 	// group list. This list will be visualized in the comboboxes.
@@ -40,13 +41,12 @@ void FAGX_CollisionGroupManagerCustomize::CustomizeDetails(IDetailLayoutBuilder&
 			[SNew(SComboBox<TSharedPtr<FName>>)
 				 .ContentPadding(2)
 				 .OptionsSource(&CollisionGroupManager->GetAvailableCollisionGroups())
-				 .OnGenerateWidget_Lambda([=](TSharedPtr<FName> Item)
-					 {
-						// content for each item in combo box
-						 return SNew(STextBlock)
-							 .Text(FText::FromName(*Item))
-							 .ToolTipText(FText::GetEmpty());
-					 })
+				 .OnGenerateWidget_Lambda([=](TSharedPtr<FName> Item) {
+					 // content for each item in combo box
+					 return SNew(STextBlock)
+						 .Text(FText::FromName(*Item))
+						 .ToolTipText(FText::GetEmpty());
+				 })
 				 .OnSelectionChanged(
 					 this, &FAGX_CollisionGroupManagerCustomize::OnConstraintTypeComboBoxChanged,
 					 CollisionGroupManager, &CollisionGroupManager->GetSelectedGroup1())
@@ -84,7 +84,10 @@ void FAGX_CollisionGroupManagerCustomize::CustomizeDetails(IDetailLayoutBuilder&
 		 SHorizontalBox::Slot().AutoWidth()[SNew(SButton)
 												.Text(LOCTEXT(
 													"CreateCollisionDisGroupButtonText",
-													"Disable collision between selected groups"))
+													"Disable collision"))
+												.ToolTipText(LOCTEXT(
+													"CreateCollisionDisGroupButtonTooltip",
+													"Disable collision between selected groups."))
 												.OnClicked_Lambda([CollisionGroupManager]() {
 													CollisionGroupManager
 														->DisableSelectedCollisionGroupPairs();
@@ -97,7 +100,10 @@ void FAGX_CollisionGroupManagerCustomize::CustomizeDetails(IDetailLayoutBuilder&
 		 SHorizontalBox::Slot().AutoWidth()[SNew(SButton)
 												.Text(LOCTEXT(
 													"CreateCollisionEnaGroupButtonText",
-													"Re-enable collision between selected groups"))
+													"Re-enable collision"))
+												.ToolTipText(LOCTEXT(
+													"CreateCollisionEnaGroupButtonTooltip",
+													"Re-enable collision between selected groups."))
 												.OnClicked_Lambda([CollisionGroupManager]() {
 													CollisionGroupManager
 														->ReenableSelectedCollisionGroupPairs();
