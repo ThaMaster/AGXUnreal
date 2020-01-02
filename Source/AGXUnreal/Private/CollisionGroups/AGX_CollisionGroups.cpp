@@ -1,5 +1,6 @@
 #include "AGX_CollisionGroups.h"
 #include "AGX_ShapeComponent.h"
+#include "AGX_ObjectUtilities.h"
 
 UAGX_CollisionGroups::UAGX_CollisionGroups()
 {
@@ -7,31 +8,29 @@ UAGX_CollisionGroups::UAGX_CollisionGroups()
 	CollisionGroupsLastChange = CollisionGroups;
 }
 
-void UAGX_CollisionGroups::PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent)
+void UAGX_CollisionGroups::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	if (PropertyChangedEvent.GetPropertyName().IsEqual(
 			GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroups, CollisionGroups)))
 	{
-		ApplyCollisionGroupChangesToAllChildren(PropertyChangedEvent);
+		ApplyCollisionGroupChanges(PropertyChangedEvent);
 	}
 }
 
-void UAGX_CollisionGroups::ApplyCollisionGroupChangesToAllChildren(FPropertyChangedEvent & PropertyChangedEvent)
+void UAGX_CollisionGroups::ApplyCollisionGroupChanges(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	FName PropertyName = GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroups, CollisionGroups);
 	int32 ChangedArrayIndex = PropertyChangedEvent.GetArrayIndex(PropertyName.ToString());
 	EPropertyChangeType::Type ChangeType = PropertyChangedEvent.ChangeType;
 
 	AActor* Parent = GetOwner();
-	TArray<AActor*> ActorComponentsTree;
-	TArray<AActor*> CurrentLevel;
+	TArray<AActor*> AllActors;
+	FAGX_ObjectUtilities::GetChildActorsOfActor(Parent, AllActors);
 
-	// Set Parent as root node of the tree
-	CurrentLevel.Add(Parent);
+	// The Parent must be processed as well.
+	AllActors.Add(Parent);
 
-	GetActorsTree(CurrentLevel, ActorComponentsTree);
-
-	for (AActor* Actor : ActorComponentsTree)
+	for (AActor* Actor : AllActors)
 	{
 		TArray<UAGX_ShapeComponent*> ChildrenShapeComponents;
 		Actor->GetComponents(ChildrenShapeComponents, true);
@@ -74,17 +73,4 @@ void UAGX_CollisionGroups::ApplyCollisionGroupChangesToAllChildren(FPropertyChan
 	}
 
 	CollisionGroupsLastChange = CollisionGroups;
-}
-
-void UAGX_CollisionGroups::GetActorsTree(
-	TArray<AActor*> CurrentLevel, TArray<AActor*>& ActorTree)
-{
-	for (AActor* Actor : CurrentLevel)
-	{
-		ActorTree.Add(Actor);
-
-		TArray<AActor*> NextLevel;
-		Actor->GetAttachedActors(NextLevel);
-		GetActorsTree(NextLevel, ActorTree);
-	}
 }

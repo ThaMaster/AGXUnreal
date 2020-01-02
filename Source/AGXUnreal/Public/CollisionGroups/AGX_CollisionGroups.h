@@ -34,10 +34,7 @@ public:
 	TArray<FName> CollisionGroups;
 
 private:
-	void ApplyCollisionGroupChangesToAllChildren(FPropertyChangedEvent& PropertyChangedEvent);
-
-	// Get all actors attached to actors in CurrentLevel, recursively.
-	void GetActorsTree(TArray<AActor*> CurrentLevel, TArray<AActor*>& ActorTree);
+	void ApplyCollisionGroupChanges(FPropertyChangedEvent& PropertyChangedEvent);
 
 private:
 	TArray<FName> CollisionGroupsLastChange;

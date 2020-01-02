@@ -7,6 +7,14 @@ class IDetailLayoutBuilder;
 class FAGX_ObjectUtilities
 {
 public:
+
+	/**
+	* Returns array containing all child actors (and all their child actors)
+	* recursively, attached to the Parent actor passed as input argument.
+	* The parent itself is not included in the set.
+	*/
+	static void GetChildActorsOfActor(AActor* Parent, TArray<AActor*>& ChildActors);
+
 	/**
 	 * Returns single object being customized from DetailBuilder if found.
 	 *
@@ -16,6 +24,9 @@ public:
 	template <typename T>
 	static T* GetSingleObjectBeingCustomized(
 		IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true);
+
+private:
+	static void GetActorsTree(TArray<AActor*> CurrentLevel, TArray<AActor*>& ChildActors);
 };
 
 template <typename T>
