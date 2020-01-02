@@ -3,12 +3,12 @@
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
 
-class UAGX_CollisionGroups;
+class UAGX_CollisionGroupsComponent;
 
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
 
-class AGXUNREAL_API FAGX_CollisionGroupsCustomization : public IDetailCustomization
+class AGXUNREAL_API FAGX_CollisionGroupsComponentCustomization : public IDetailCustomization
 {
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();

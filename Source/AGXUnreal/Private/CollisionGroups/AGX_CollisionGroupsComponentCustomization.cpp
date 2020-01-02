@@ -1,6 +1,6 @@
-#include "AGX_CollisionGroupsCustomization.h"
+#include "AGX_CollisionGroupsComponentCustomization.h"
 
-#include "AGX_CollisionGroups.h"
+#include "AGX_CollisionGroupsComponent.h"
 #include "AGX_ObjectUtilities.h"
 
 #include "DetailCategoryBuilder.h"
@@ -8,17 +8,17 @@
 #include "DetailWidgetRow.h"
 #include "Widgets/Input/SButton.h"
 
-#define LOCTEXT_NAMESPACE "FAGX_CollisionGroupsCustomization"
+#define LOCTEXT_NAMESPACE "FAGX_CollisionGroupsComponentCustomization"
 
-TSharedRef<IDetailCustomization> FAGX_CollisionGroupsCustomization::MakeInstance()
+TSharedRef<IDetailCustomization> FAGX_CollisionGroupsComponentCustomization::MakeInstance()
 {
-	return MakeShareable(new FAGX_CollisionGroupsCustomization);
+	return MakeShareable(new FAGX_CollisionGroupsComponentCustomization);
 }
 
-void FAGX_CollisionGroupsCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
+void FAGX_CollisionGroupsComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
-	UAGX_CollisionGroups* CollisionGroupComponent =
-		FAGX_ObjectUtilities::GetSingleObjectBeingCustomized<UAGX_CollisionGroups>(DetailBuilder);
+	UAGX_CollisionGroupsComponent* CollisionGroupComponent =
+		FAGX_ObjectUtilities::GetSingleObjectBeingCustomized<UAGX_CollisionGroupsComponent>(DetailBuilder);
 
 	if (!CollisionGroupComponent)
 		return;
@@ -26,7 +26,7 @@ void FAGX_CollisionGroupsCustomization::CustomizeDetails(IDetailLayoutBuilder& D
 	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder.EditCategory("AGX Collision Groups");
 
 	CategoryBuilder.AddProperty(DetailBuilder.GetProperty(
-		GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroups, CollisionGroups)));
+		GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupsComponent, CollisionGroups)));
 
 	// Add button for forcing a refresh of all child shape
 	// components according to collision groups list

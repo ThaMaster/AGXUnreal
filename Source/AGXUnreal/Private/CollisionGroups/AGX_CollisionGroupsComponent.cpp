@@ -1,15 +1,17 @@
-#include "AGX_CollisionGroups.h"
+#include "AGX_CollisionGroupsComponent.h"
 
 #include "AGX_ShapeComponent.h"
 #include "AGX_ObjectUtilities.h"
 #include "AGX_LogCategory.h"
 
-UAGX_CollisionGroups::UAGX_CollisionGroups()
+#define LOCTEXT_NAMESPACE "UAGX_CollisionGroupsComponent"
+
+UAGX_CollisionGroupsComponent::UAGX_CollisionGroupsComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-void UAGX_CollisionGroups::ForceRefreshChildShapes()
+void UAGX_CollisionGroupsComponent::ForceRefreshChildShapes()
 {
 	UE_LOG(LogAGX, Log, TEXT("Force refresh shapes called."));
 
@@ -36,18 +38,18 @@ void UAGX_CollisionGroups::ForceRefreshChildShapes()
 	}
 }
 
-void UAGX_CollisionGroups::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+void UAGX_CollisionGroupsComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
 	if (PropertyChangedEvent.GetPropertyName().IsEqual(
-			GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroups, CollisionGroups)))
+			GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupsComponent, CollisionGroups)))
 	{
 		ApplyCollisionGroupChanges(PropertyChangedEvent);
 	}
 }
 
-void UAGX_CollisionGroups::Serialize(FArchive& Ar)
+void UAGX_CollisionGroupsComponent::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
 
@@ -56,9 +58,9 @@ void UAGX_CollisionGroups::Serialize(FArchive& Ar)
 	CollisionGroupsLastChange = CollisionGroups;
 }
 
-void UAGX_CollisionGroups::ApplyCollisionGroupChanges(FPropertyChangedEvent& PropertyChangedEvent)
+void UAGX_CollisionGroupsComponent::ApplyCollisionGroupChanges(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	FName PropertyName = GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroups, CollisionGroups);
+	FName PropertyName = GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupsComponent, CollisionGroups);
 	int32 ChangedArrayIndex = PropertyChangedEvent.GetArrayIndex(PropertyName.ToString());
 	EPropertyChangeType::Type ChangeType = PropertyChangedEvent.ChangeType;
 
@@ -113,3 +115,5 @@ void UAGX_CollisionGroups::ApplyCollisionGroupChanges(FPropertyChangedEvent& Pro
 
 	CollisionGroupsLastChange = CollisionGroups;
 }
+
+#undef LOCTEXT_NAMESPACE

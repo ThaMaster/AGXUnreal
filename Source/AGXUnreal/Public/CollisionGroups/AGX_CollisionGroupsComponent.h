@@ -6,18 +6,18 @@
 #include "Components/ActorComponent.h"
 
 #include "AGX_LogCategory.h"
-#include "AGX_CollisionGroups.generated.h"
+#include "AGX_CollisionGroupsComponent.generated.h"
 
 
 UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_CollisionGroups : public UActorComponent
+class AGXUNREAL_API UAGX_CollisionGroupsComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
 
 	// Sets default values for this component's properties
-	UAGX_CollisionGroups();
+	UAGX_CollisionGroupsComponent();
 
 	// Adds all collision groups to all child shape components. Useful
 	// when e.g. adding a new shape to a rigid body.
