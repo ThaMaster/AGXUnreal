@@ -63,8 +63,7 @@ void AAGX_CollisionGroupManager::DisableSelectedCollisionGroupPairs()
 		return;
 	}
 
-	FAGX_CollisionGroupPair NewPair {SelectedGroup1, SelectedGroup2};
-	DisabledCollisionGroups.Add(NewPair);
+	DisabledCollisionGroups.Add(FAGX_CollisionGroupPair { SelectedGroup1, SelectedGroup2 });
 }
 
 void AAGX_CollisionGroupManager::ReenableSelectedCollisionGroupPairs()
