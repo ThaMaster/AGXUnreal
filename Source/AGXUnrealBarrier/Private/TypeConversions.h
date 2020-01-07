@@ -279,3 +279,18 @@ inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type Log
 			return agx::Notify::NOTIFY_INFO;
 	}
 }
+
+inline uint32 StringTo32BitFnvHash(const FString& StringUnreal)
+{
+	auto bytes = StringUnreal.GetCharArray();
+
+	uint32 hash = 2166136261U;
+
+	for (auto& singleByte : bytes)
+	{
+		hash ^= singleByte;
+		hash *= 16777619U;
+	}
+
+	return hash;
+}
