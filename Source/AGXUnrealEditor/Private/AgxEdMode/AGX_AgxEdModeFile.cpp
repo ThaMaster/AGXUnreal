@@ -57,7 +57,7 @@ void UAGX_AgxEdModeFile::ImportAGXArchive()
 void UAGX_AgxEdModeFile::ExportAGXArchive()
 {
 	TArray<FString> Filenames;
-	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
+	bool FileSelected = FDesktopPlatformModule::Get()->SaveFileDialog(
 		nullptr, TEXT("Select an AGX Archive to export"), TEXT(""), TEXT("unreal.agx"),
 		TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None, Filenames);
 	if (!FileSelected || Filenames.Num() == 0)
