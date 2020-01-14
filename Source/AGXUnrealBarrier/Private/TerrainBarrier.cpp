@@ -11,6 +11,7 @@
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agxCollide/HeightField.h>
+#include <agx/Physics/GranularBodySystem.h>
 #include "EndAGXIncludes.h"
 
 /// \todo This block of code is for linker debugging only. Should be removed
@@ -197,4 +198,75 @@ TArray<float> FTerrainBarrier::GetHeights() const
 		}
 	}
 	return Heights;
+}
+
+namespace
+{
+	const agx::Physics::GranularBodyPtrArray GetParticles(const agxTerrain::Terrain& Terrain)
+	{
+		return Terrain.getSoilSimulationInterface()->getGranularBodySystem()->getParticles();
+	}
+
+	template <typename T>
+	TArray<T> CreateAndUninitializeParticleArray(const agx::Physics::GranularBodyPtrArray& GranularParticles)
+	{
+		TArray<T> Array;
+		const size_t NumParticlesAGX = FMath::Clamp(
+			GranularParticles.size(), size_t {0},
+			static_cast<size_t>(std::numeric_limits<int32>::max()));
+
+		if (NumParticlesAGX == 0)
+		{
+			return Array;
+		}
+
+		const int32 NumParticles = static_cast<int32>(NumParticlesAGX);
+		Array.AddUninitialized(NumParticles);
+		return Array;
+	}
+}
+
+TArray<FVector> FTerrainBarrier::GetParticlePositions() const
+{
+	/// \todo Compare performance of this implementation with loop over
+	/// granularBodySystem->getParticleStorage()->getBuffer("position")->getArray<Vec3>()
+	check(HasNative());
+	const agx::Physics::GranularBodyPtrArray GranularParticles = GetParticles(*NativeRef->Native);
+	TArray<FVector> Positions = CreateAndUninitializeParticleArray<FVector>(GranularParticles);
+	for (int32 i = 0; i < Positions.Num(); ++i)
+	{
+		const agx::Vec3 PositionAGX = GranularParticles[i].position();
+		const FVector Position = ConvertVector(PositionAGX);
+		Positions[i] = Position;
+	}
+
+	return Positions;
+}
+
+TArray<float> FTerrainBarrier::GetParticleRadii() const
+{
+	check(HasNative());
+	const agx::Physics::GranularBodyPtrArray GranularParticles = GetParticles(*NativeRef->Native);
+	TArray<float> Radii = CreateAndUninitializeParticleArray<float>(GranularParticles);
+	for (int32 i = 0; i < Radii.Num(); ++i)
+	{
+		const agx::Real RadiusAGX = GranularParticles[i].radius();
+		const float Radius = ConvertDistance(RadiusAGX);
+		Radii[i] = Radius;
+	}
+	return Radii;
+}
+
+TArray<FQuat> FTerrainBarrier::GetParticleRotations() const
+{
+	check(HasNative());
+	const agx::Physics::GranularBodyPtrArray GranularParticles = GetParticles(*NativeRef->Native);
+	TArray<FQuat> Rotations = CreateAndUninitializeParticleArray<FQuat>(GranularParticles);
+	for (int32 i = 0; i < Rotations.Num(); ++i)
+	{
+		const agx::Quat RotationAGX = GranularParticles[i].rotation();
+		const FQuat Rotation = Convert(RotationAGX);
+		Rotations[i] = Rotation;
+	}
+	return Rotations;
 }
