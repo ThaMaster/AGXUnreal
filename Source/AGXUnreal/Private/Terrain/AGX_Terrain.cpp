@@ -16,17 +16,34 @@
 #include "Terrain/ShovelBarrier.h"
 
 // Unreal Engine includes.
-//#include "NiagaraSystemInstance.h" /// \todo This will be needed once we do particles.
-#include "Engine/TextureRenderTarget2D.h"
 #include "Landscape.h"
 #include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
 #include "Misc/AssertionMacros.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+
 
 AAGX_Terrain::AAGX_Terrain()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PostPhysics;
+
+	// Create a root SceneComponent so that this Actor has a transform
+	// which can be modified in the Editor.
+	{
+		USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(
+			USceneComponent::GetDefaultSceneRootVariableName());
+
+		Root->Mobility = EComponentMobility::Static;
+		Root->SetFlags(Root->GetFlags() | RF_Transactional); /// \todo What does this mean?
+
+#if WITH_EDITORONLY_DATA
+		Root->bVisualizeComponent = true;
+#endif
+
+		SetRootComponent(Root);
+	}
 }
 
 bool AAGX_Terrain::HasNative()
@@ -73,8 +90,8 @@ void AAGX_Terrain::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 		float QuadSize = SourceLandscape->GetActorScale().X;
 		float Size = QuadSize * NumQuadsSide;
 		UE_LOG(
-			LogAGX, Display, TEXT("Selected %fcm x %fcm Landscape containing %d x %d quads."),
-			Size, Size, NumQuadsSide, NumQuadsSide);
+			LogAGX, Display, TEXT("Selected %fcm x %fcm Landscape containing %d x %d quads."), Size,
+			Size, NumQuadsSide, NumQuadsSide);
 	}
 }
 #endif
@@ -92,6 +109,7 @@ void AAGX_Terrain::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 	ClearDisplacementMap();
+	ClearParticlesMap();
 }
 
 // Called every frame
@@ -99,8 +117,7 @@ void AAGX_Terrain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	UpdateDisplacementMap();
-
-	/// \todo Add particle update here.
+	UpdateParticlesMap();
 }
 
 namespace
@@ -242,7 +259,8 @@ void AAGX_Terrain::CreateNativeShovels()
 void AAGX_Terrain::InitializeRendering()
 {
 	InitializeDisplacementMap();
-	/// \todo Add call to particle system inialization here.
+	InitializeParticleSystem();
+	InitializeParticlesMap();
 }
 
 void AAGX_Terrain::InitializeDisplacementMap()
@@ -251,7 +269,7 @@ void AAGX_Terrain::InitializeDisplacementMap()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("No landscape displacement map configured for terrain '%s'. Landscape rendering "
+			TEXT("No landscape displacement map configured for terrain '%s'. Terrain rendering "
 				 "will not include height updates."),
 			*GetName());
 		return;
@@ -325,7 +343,6 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	check(DisplacementData.Num() == NumPixels);
 	check(DisplacementMapRegions.Num() == 1);
 
-
 	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
 	for (int32 PixelIndex = 0; PixelIndex < NumPixels; ++PixelIndex)
 	{
@@ -371,4 +388,189 @@ void AAGX_Terrain::ClearDisplacementMap()
 	AGX_TextureUtilities::UpdateRenderTextureRegions(
 		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
 		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
+}
+
+namespace
+{
+	/**
+	Calculates and returns the smallest base size of a square sized texture,
+	such that the base size is evenly divisible by pixelsPerItem and has a square
+	that is at least minNumItems x pixelsPerItem.
+	*/
+	int32 CalculateTextureBaseSize(int32 minNumItems, int32 PixelsPerItem)
+	{
+		const int32 maxSize = 8192;
+		for (int32 base = FMath::Sqrt(minNumItems * PixelsPerItem); base <= maxSize; ++base)
+		{
+			if ((base % PixelsPerItem == 0) && (base * base >= minNumItems * PixelsPerItem))
+				return base;
+		}
+		check(!"CalculateTextureBaseSize failed");
+		return 0;
+	}
+}
+
+void AAGX_Terrain::InitializeParticleSystem()
+{
+	if (!ParticleSystemAsset)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Terrain '%s' does not have a particle system, cannot render particles"),
+			*GetName());
+		return;
+	}
+
+	ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+		ParticleSystemAsset, RootComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
+		FVector::OneVector, EAttachLocation::Type::KeepWorldPosition, false, EPSCPoolMethod::None);
+#if WITH_EDITORONLY_DATA
+	ParticleSystemComponent->bVisualizeComponent = true;
+#endif
+}
+
+void AAGX_Terrain::InitializeParticlesMap()
+{
+	if (TerrainParticlesDataMap == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("No particles data map configured for terrain '%s'. Terrain rendering will not "
+				 "include particle."),
+			*GetName());
+		return;
+	}
+
+	if (TerrainParticlesDataMap->GetFormat() != EPixelFormat::PF_A32B32G32R32F)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("The particle data map pixel format for the terrain '%s' must be RGBA32F."),
+			*GetName());
+		return;
+	}
+
+	// Finds the closest fitting base size of a square sized texture such that it has room for all
+	// particles data and such that the base size is a multiple of number of pixels per particle
+	// (because we do not want a row-break in the middle of a particle element, since that increases
+	// complexity of the Niagara Module Script).
+	const int32 TextureBaseSize =
+		CalculateTextureBaseSize(MaxNumRenderParticles, NumPixelsPerParticle);
+	check(TextureBaseSize % NumPixelsPerParticle == 0);
+	check(TextureBaseSize * TextureBaseSize >= MaxNumRenderParticles * NumPixelsPerParticle);
+
+	if (TerrainParticlesDataMap->SizeX != TextureBaseSize ||
+		TerrainParticlesDataMap->SizeY != TextureBaseSize)
+	{
+		UE_LOG(
+			LogAGX, Verbose,
+			TEXT("The size of the particle data render target (%dx%d) for "
+				 "AGX Terrain '%s' does not match the amount data required to hold the terrain "
+				 "particle data. Resizing the displacement map."),
+			TerrainParticlesDataMap->SizeX, TerrainParticlesDataMap->SizeY, *GetName());
+
+		TerrainParticlesDataMap->ResizeTarget(TextureBaseSize, TextureBaseSize);
+	}
+
+	ParticleSystemInitialized = true;
+}
+
+void AAGX_Terrain::UpdateParticlesMap()
+{
+	if (!ParticleSystemInitialized)
+	{
+		return;
+	}
+
+	const int32 ResolutionX = TerrainParticlesDataMap->SizeX;
+	const int32 ResolutionY = TerrainParticlesDataMap->SizeY;
+	const int32 NumPixels = ResolutionX * ResolutionY;
+	const int32 NumComponentsPerPixel = 4;
+	const int32 NumBytesPerPixel = NumComponentsPerPixel * sizeof(FFloat32);
+	const int32 NumComponentsPerParticle = NumComponentsPerPixel * NumPixelsPerParticle;
+	const int32 NumBytes = NumPixels * NumBytesPerPixel;
+	const int32 MaxNumParticles = NumPixels / NumPixelsPerParticle;
+
+	if (TerrainParticlesData.Num() == 0)
+	{
+		TerrainParticlesData.SetNum(NumComponentsPerPixel * NumPixels);
+	}
+
+	if (ParticlesDataMapRegions.Num() == 0)
+	{
+		ParticlesDataMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, ResolutionX, ResolutionY));
+	}
+
+	TArray<FVector> Positions = NativeBarrier.GetParticlePositions();
+	TArray<float> Radii = NativeBarrier.GetParticleRadii();
+	TArray<FQuat> Rotations = NativeBarrier.GetParticleRotations();
+
+	check(Positions.Num() == Radii.Num());
+	check(Positions.Num() == Rotations.Num());
+
+	int32 NumParticles = FMath::Min(Positions.Num(), MaxNumParticles);
+
+	ParticleSystemComponent->SetNiagaraVariableInt("User.TargetParticleCount", NumParticles);
+	for (int32 ParticleIndex = 0, PixelIndex = 0; ParticleIndex < NumParticles;
+		 ++ParticleIndex, PixelIndex += NumComponentsPerParticle)
+	{
+		// Multiply position by 0.01 because it seems we need to pack floats to
+		// smaller range. The position floats are unpacked in the
+		// `GetTerrainParticleData` Niagara Module Script.
+		/// \todo Investigate!
+		const float PackingScale = 0.01f;
+		TerrainParticlesData[PixelIndex + 0] = Positions[ParticleIndex].X * PackingScale;
+		TerrainParticlesData[PixelIndex + 1] = Positions[ParticleIndex].Y * PackingScale;
+		TerrainParticlesData[PixelIndex + 2] = Positions[ParticleIndex].Z * PackingScale;
+
+		// The particle size slot in the render target is a scale, not the
+		// actual size. The scale is relative to a SI unit cube, meaning that a
+		// scale of 1.0 should render a particle that is 1x1x1 m large, or
+		// 100x100x100 Unreal units. We multiply by 2.0 to convert from radius
+		// to full width.
+		float UnitCubeScale = (Radii[ParticleIndex] * 2.0f) / 100.0f;
+		TerrainParticlesData[PixelIndex + 3] = UnitCubeScale;
+
+		TerrainParticlesData[PixelIndex + 4] = Rotations[ParticleIndex].X;
+		TerrainParticlesData[PixelIndex + 5] = Rotations[ParticleIndex].Y;
+		TerrainParticlesData[PixelIndex + 6] = Rotations[ParticleIndex].Z;
+		TerrainParticlesData[PixelIndex + 7] = Rotations[ParticleIndex].W;
+	}
+
+	uint8* PixelData = reinterpret_cast<uint8*>(TerrainParticlesData.GetData());
+	AGX_TextureUtilities::UpdateRenderTextureRegions(
+		*TerrainParticlesDataMap, 1, ParticlesDataMapRegions.GetData(),
+		ResolutionX * NumBytesPerPixel, NumBytesPerPixel, PixelData, false);
+}
+
+void AAGX_Terrain::ClearParticlesMap()
+{
+	if (!ParticleSystemInitialized)
+	{
+		return;
+	}
+	if (TerrainParticlesDataMap == nullptr)
+	{
+		return;
+	}
+	if (!NativeBarrier.HasNative())
+	{
+		return;
+	}
+	if (ParticlesDataMapRegions.Num() == 0)
+	{
+		return;
+	}
+
+	const int32 ResolutionX = TerrainParticlesDataMap->SizeX;
+	const int32 NumComponentsPerPixel = 4;
+	const int32 NumBytesPerPixel = NumComponentsPerPixel * sizeof(FFloat32);
+	for (FFloat32& Pixel : TerrainParticlesData)
+	{
+		Pixel = FFloat32();
+	}
+	uint8* PixelData = reinterpret_cast<uint8*>(TerrainParticlesData.GetData());
+	AGX_TextureUtilities::UpdateRenderTextureRegions(
+		*TerrainParticlesDataMap, 1, ParticlesDataMapRegions.GetData(),
+		ResolutionX * NumBytesPerPixel, NumBytesPerPixel, PixelData, false);
 }
