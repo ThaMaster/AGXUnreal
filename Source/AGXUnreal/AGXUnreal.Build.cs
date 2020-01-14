@@ -9,7 +9,7 @@ public class AGXUnreal : ModuleRules
 
 		// TODO: Determine which of these are really need and why.
 		PublicDependencyModuleNames.AddRange(new string[] {
-			"RHI", "RenderCore", "Core", "CoreUObject", "Engine", "InputCore"});
+			"RHI", "RenderCore", "Core", "CoreUObject", "Engine", "InputCore", "Niagara"});
 
 
 		// TODO: Determine which of these are really needed and why.
