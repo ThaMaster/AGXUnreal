@@ -328,9 +328,7 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
 	for (int32 PixelIndex = 0; PixelIndex < NumPixels; ++PixelIndex)
 	{
-		const float OriginalHeight = OriginalHeights[PixelIndex];
-		const float CurrentHeight = CurrentHeights[PixelIndex];
-		const float HeightChange = CurrentHeight - OriginalHeight;
+		const float HeightChange = CurrentHeights[PixelIndex] - OriginalHeights[PixelIndex];
 		DisplacementData[PixelIndex] = static_cast<FFloat16>(HeightChange);
 	}
 
