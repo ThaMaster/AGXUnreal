@@ -73,8 +73,8 @@ void AAGX_Terrain::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 		float QuadSize = SourceLandscape->GetActorScale().X;
 		float Size = QuadSize * NumQuadsSide;
 		UE_LOG(
-			LogAGX, Display, TEXT("Selected %fcm x %fcm Landscape containing %d x %d quads."),
-			Size, Size, NumQuadsSide, NumQuadsSide);
+			LogAGX, Display, TEXT("Selected %fcm x %fcm Landscape containing %d x %d quads."), Size,
+			Size, NumQuadsSide, NumQuadsSide);
 	}
 }
 #endif
@@ -289,8 +289,8 @@ void AAGX_Terrain::InitializeDisplacementMap()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Landscape displacement map for terrain '%s' could not be resized. Remain at "
-				 "(%dx%d). There may be rendering issues."),
+			TEXT("Landscape displacement map for terrain '%s' could not be resized. "
+				 "There may be rendering issues."),
 			*GetName(), LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY);
 	}
 
@@ -324,7 +324,6 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	const int32 NumPixels = NumVerticesX * NumVerticesY;
 	check(DisplacementData.Num() == NumPixels);
 	check(DisplacementMapRegions.Num() == 1);
-
 
 	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
 	for (int32 PixelIndex = 0; PixelIndex < NumPixels; ++PixelIndex)
