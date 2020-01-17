@@ -31,7 +31,7 @@ class ALandscape;
 // class UComponent;
 // class UNiagaraSystem;
 
-UCLASS(ClassGroup = "AGX Terrain", Category = "AGX")
+UCLASS(ClassGroup = "AGX_Terrain", Category = "AGX")
 class AGXUNREAL_API AAGX_Terrain : public AActor
 {
 	GENERATED_BODY()
@@ -172,8 +172,14 @@ public:
 	FTerrainBarrier* GetNative();
 	const FTerrainBarrier* GetNative() const;
 
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
+
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 	// Called every frame
@@ -184,13 +190,19 @@ private:
 	void CreateNativeTerrain();
 	void CreateNativeShovels();
 
+	void InitializeRendering();
+	void InitializeDisplacementMap();
+	void UpdateDisplacementMap();
+	void ClearDisplacementMap();
+
 private:
 	FTerrainBarrier NativeBarrier;
 
 	// Height field related variables.
+	TArray<float> OriginalHeights;
 	TArray<FFloat16> DisplacementData;
 	TArray<FUpdateTextureRegion2D> DisplacementMapRegions; // TODO: Remove!
-	bool DisplacmentMapIsInitialized = false;
+	bool DisplacementMapInitialized = false;
 
 /// \todo Cannot use AGX Dynamics types in the AGXUnreal module. Must live in the Barrier.
 #if 0

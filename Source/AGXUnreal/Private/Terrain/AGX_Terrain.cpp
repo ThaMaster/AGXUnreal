@@ -8,6 +8,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "AGX_TopEdgeComponent.h"
+#include "Utilities/AGX_TextureUtilities.h"
 
 // AGXUnrealBarrier includes.
 #include "TerrainBarrier.h"
@@ -16,12 +17,16 @@
 
 // Unreal Engine includes.
 //#include "NiagaraSystemInstance.h" /// \todo This will be needed once we do particles.
+#include "Engine/TextureRenderTarget2D.h"
 #include "Landscape.h"
 #include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
+#include "Misc/AssertionMacros.h"
 
 AAGX_Terrain::AAGX_Terrain()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.TickGroup = TG_PostPhysics;
 }
 
 bool AAGX_Terrain::HasNative()
@@ -49,6 +54,31 @@ const FTerrainBarrier* AAGX_Terrain::GetNative() const
 	return &NativeBarrier;
 }
 
+#if WITH_EDITOR
+void AAGX_Terrain::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	FName PropertyName = (PropertyChangedEvent.Property != nullptr)
+							 ? PropertyChangedEvent.Property->GetFName()
+							 : NAME_None;
+	if ((PropertyName == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, SourceLandscape)))
+	{
+		if (SourceLandscape == nullptr)
+		{
+			return;
+		}
+		int32 NumQuadsSide =
+			AGX_HeightFieldUtilities::GetLandscapeSideSizeInQuads(*SourceLandscape);
+		float QuadSize = SourceLandscape->GetActorScale().X;
+		float Size = QuadSize * NumQuadsSide;
+		UE_LOG(
+			LogAGX, Display, TEXT("Selected %fcm x %fcm Landscape containing %d x %d quads."), Size,
+			Size, NumQuadsSide, NumQuadsSide);
+	}
+}
+#endif
+
 void AAGX_Terrain::BeginPlay()
 {
 	Super::BeginPlay();
@@ -58,12 +88,19 @@ void AAGX_Terrain::BeginPlay()
 	}
 }
 
+void AAGX_Terrain::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	ClearDisplacementMap();
+}
+
 // Called every frame
 void AAGX_Terrain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	UpdateDisplacementMap();
 
-	/// \todo Add vertex offset and particle update here.
+	/// \todo Add particle update here.
 }
 
 namespace
@@ -107,6 +144,7 @@ void AAGX_Terrain::InitializeNative()
 
 	CreateNativeTerrain();
 	CreateNativeShovels();
+	InitializeRendering();
 }
 
 void AAGX_Terrain::CreateNativeTerrain()
@@ -114,6 +152,7 @@ void AAGX_Terrain::CreateNativeTerrain()
 	FHeightFieldShapeBarrier HeightField =
 		AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
 	NativeBarrier.AllocateNative(HeightField);
+	OriginalHeights = NativeBarrier.GetHeights();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	Simulation->AddTerrain(this);
 }
@@ -198,4 +237,135 @@ void AAGX_Terrain::CreateNativeShovels()
 			LogAGX, Log, TEXT("Created shovel '%s' for terrain '%s'."), *Actor->GetName(),
 			*GetName());
 	}
+}
+
+void AAGX_Terrain::InitializeRendering()
+{
+	InitializeDisplacementMap();
+	/// \todo Add call to particle system inialization here.
+}
+
+void AAGX_Terrain::InitializeDisplacementMap()
+{
+	if (LandscapeDisplacementMap == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("No landscape displacement map configured for terrain '%s'. Landscape rendering "
+				 "will not include height updates."),
+			*GetName());
+		return;
+	}
+
+	if (LandscapeDisplacementMap->GetFormat() != EPixelFormat::PF_R16F)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("The displacement map pixel format for the terrain '%s' must be R16F."),
+			*GetName());
+		return;
+	}
+
+	// "Grid" in the Terrain is what the Landscape calls "vertices". There is
+	// one more "grid" element than there is "quads" per side. There is one
+	// displacement map texel per vertex.
+	int32 GridSizeX = NativeBarrier.GetGridSizeX();
+	int32 GridSizeY = NativeBarrier.GetGridSizeY();
+	if (LandscapeDisplacementMap->SizeX != GridSizeX ||
+		LandscapeDisplacementMap->SizeY != GridSizeY)
+	{
+		UE_LOG(
+			LogAGX, Verbose,
+			TEXT("The size of the Displacement Map render target (%dx%d) for "
+				 "AGX Terrain '%s' does not match the vertices in the terrain (%dx%d). "
+				 "Resizing the displacement map."),
+			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetName(), GridSizeX,
+			GridSizeY);
+
+		LandscapeDisplacementMap->ResizeTarget(GridSizeX, GridSizeY);
+	}
+	if (LandscapeDisplacementMap->SizeX != GridSizeX ||
+		LandscapeDisplacementMap->SizeY != GridSizeY)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Landscape displacement map for terrain '%s' could not be resized. "
+				 "There may be rendering issues."),
+			*GetName(), LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY);
+	}
+
+	DisplacementData.SetNum(GridSizeX * GridSizeY);
+	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, GridSizeX, GridSizeY));
+
+	/// \todo I'm not sure why we need this. Does the texture sampler "fudge the
+	/// values" when using non-linear gamma?
+	LandscapeDisplacementMap->bForceLinearGamma = true;
+
+	DisplacementMapInitialized = true;
+}
+
+void AAGX_Terrain::UpdateDisplacementMap()
+{
+	if (!DisplacementMapInitialized)
+	{
+		return;
+	}
+	if (LandscapeDisplacementMap == nullptr)
+	{
+		return;
+	}
+	if (!NativeBarrier.HasNative())
+	{
+		return;
+	}
+
+	const int32 NumVerticesX = NativeBarrier.GetGridSizeX();
+	const int32 NumVerticesY = NativeBarrier.GetGridSizeY();
+	const int32 NumPixels = NumVerticesX * NumVerticesY;
+	check(DisplacementData.Num() == NumPixels);
+	check(DisplacementMapRegions.Num() == 1);
+
+	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
+	for (int32 PixelIndex = 0; PixelIndex < NumPixels; ++PixelIndex)
+	{
+		const float HeightChange = CurrentHeights[PixelIndex] - OriginalHeights[PixelIndex];
+		DisplacementData[PixelIndex] = static_cast<FFloat16>(HeightChange);
+	}
+
+	uint32 BytesPerPixel = sizeof(FFloat16);
+	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
+	AGX_TextureUtilities::UpdateRenderTextureRegions(
+		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
+		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
+}
+
+void AAGX_Terrain::ClearDisplacementMap()
+{
+	if (!DisplacementMapInitialized)
+	{
+		return;
+	}
+	if (LandscapeDisplacementMap == nullptr)
+	{
+		return;
+	}
+	if (!NativeBarrier.HasNative())
+	{
+		return;
+	}
+	if (DisplacementMapRegions.Num() == 0)
+	{
+		return;
+	}
+
+	const int32 NumVerticesX = NativeBarrier.GetGridSizeX();
+	const uint32 BytesPerPixel = sizeof(FFloat16);
+	for (FFloat16& Displacement : DisplacementData)
+	{
+		Displacement = FFloat16();
+	}
+	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
+	AGX_TextureUtilities::UpdateRenderTextureRegions(
+		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
+		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
