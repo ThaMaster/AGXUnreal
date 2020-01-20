@@ -37,5 +37,11 @@
       "Type": "Editor",
       "LoadingPhase": "PostEngineInit"
     }
+  ],
+  "Plugins": [
+    {
+      "Name": "Niagara",
+      "Enabled": true
+    }
   ]
 }

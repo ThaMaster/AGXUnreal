@@ -28,8 +28,8 @@
 #include "AGX_Terrain.generated.h"
 
 class ALandscape;
-// class UComponent;
-// class UNiagaraSystem;
+class UNiagaraComponent;
+class UNiagaraSystem;
 
 UCLASS(ClassGroup = "AGX_Terrain", Category = "AGX")
 class AGXUNREAL_API AAGX_Terrain : public AActor
@@ -152,17 +152,18 @@ public:
 			 ClampMax = "4096", UIMax = "4096"))
 	int32 MaxNumRenderParticles = 2048;
 
-	/// \todo Add UNiagaraSystem once we get particle reading from AGX Dynamics in place.
-	// UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition =
-	// "bEnableParticleRendering")) UNiagaraSystem* ParticleSystemAsset;
-
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Rendering",
 		meta = (EditCondition = "bEnableParticleRendering"))
-	UTextureRenderTarget2D*
-		TerrainParticlesDataMap; // TODO: Should try find or create this automatically!
+	UNiagaraSystem* ParticleSystemAsset;
 
-	/** Whether soil particles should be rendered or not. */
+	// \todo Should try to find or create this automatically!
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain Rendering",
+		meta = (EditCondition = "bEnableParticleRendering"))
+	UTextureRenderTarget2D* TerrainParticlesDataMap;
+
+	/** Whether shovel active zone should be rendered or not. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")
 	bool bEnableActiveZoneRendering = false;
 
@@ -175,7 +176,6 @@ public:
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
-
 
 protected:
 	virtual void BeginPlay() override;
@@ -194,6 +194,10 @@ private:
 	void InitializeDisplacementMap();
 	void UpdateDisplacementMap();
 	void ClearDisplacementMap();
+	void InitializeParticleSystem();
+	void InitializeParticlesMap();
+	void UpdateParticlesMap();
+	void ClearParticlesMap();
 
 private:
 	FTerrainBarrier NativeBarrier;
@@ -212,8 +216,7 @@ private:
 	// Particle related variables.
 	TArray<FFloat32> TerrainParticlesData;
 	TArray<FUpdateTextureRegion2D> ParticlesDataMapRegions; // TODO: Remove!
-	bool ParticleSystemIsInitialized = false;
-	/// \todo Add UNiagaraComponent once we get particle reading from AGX Dynamics in place.
-	// UNiagaraComponent* ParticleSystemComponent = nullptr;
+	bool ParticleSystemInitialized = false;
+	UNiagaraComponent* ParticleSystemComponent = nullptr;
 	const int32 NumPixelsPerParticle = 2;
 };

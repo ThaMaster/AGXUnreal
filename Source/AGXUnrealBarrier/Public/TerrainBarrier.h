@@ -1,6 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Math/Vector.h"
+#include "Math/Quat.h"
 
 #include <memory>
 
@@ -31,10 +33,27 @@ public:
 	int32 GetGridSizeX() const;
 	int32 GetGridSizeY() const;
 
-	// Get an array with all the heights in the height field, stored in X major
-	// order, meaning that heights with increasing the X coordinates are next to
-	// each other in memory.
+	/**
+	 * Get an array with all the heights in the height field, stored in X major
+	 * order, meaning that heights with increasing the X coordinates are next to
+	 * each other in memory.
+	 */
 	TArray<float> GetHeights() const;
+
+	/**
+	 * Get an array with the positions of the currently existing particles.
+	 */
+	TArray<FVector> GetParticlePositions() const;
+
+	/**
+	 * Get an array with the radii of the currently existing particles.
+	 */
+	TArray<float> GetParticleRadii() const;
+
+	/**
+	 * Get an array with the rotations of the currently existing particles.
+	 */
+	TArray<FQuat> GetParticleRotations() const;
 
 private:
 	FTerrainBarrier(const FTerrainBarrier&) = delete;
