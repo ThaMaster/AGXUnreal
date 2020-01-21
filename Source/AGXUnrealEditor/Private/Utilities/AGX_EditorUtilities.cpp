@@ -205,8 +205,7 @@ namespace
 				*PackagePath);
 			return FAssetId();
 		}
-		bool bSaved = UPackage::SavePackage(
-			Package, StaticMesh, RF_Public | RF_Standalone | RF_MarkAsRootSet, *PackageFilename);
+		bool bSaved = UPackage::SavePackage(Package, StaticMesh, RF_NoFlags, *PackageFilename);
 		if (!bSaved)
 		{
 			UE_LOG(
