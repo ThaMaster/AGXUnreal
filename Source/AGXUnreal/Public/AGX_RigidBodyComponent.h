@@ -20,14 +20,20 @@ public:
 	UAGX_RigidBodyComponent();
 
 	/// The mass of the body.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX RigidBody")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
 	float Mass;
 
 	/// The three-component diagonal of the inertia tensor.
-	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX RigidBody")
+	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
 	FVector InertiaTensorDiagonal;
 
-	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX RigidBody")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
+	FVector Velocity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
+	FVector AngularVelocity;
+
+	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.

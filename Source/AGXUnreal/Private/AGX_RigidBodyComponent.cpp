@@ -83,6 +83,8 @@ void UAGX_RigidBodyComponent::UpdateNativeProperties()
 	if (HasNative())
 	{
 		NativeBarrier.SetMass(Mass);
+		NativeBarrier.SetVelocity(Velocity);
+		NativeBarrier.SetAngularVelocity(AngularVelocity);
 		InitializeMotionControl();
 	}
 }
