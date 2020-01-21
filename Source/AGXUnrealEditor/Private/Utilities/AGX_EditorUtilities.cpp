@@ -199,7 +199,6 @@ namespace
 			PackagePath, FPackageName::GetAssetPackageExtension());
 		if (PackageFilename.IsEmpty())
 		{
-			/// \todo What should we do here, other than log and bail?
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Unreal Engine unable to provide package filename for package path '%s'."),
@@ -216,10 +215,6 @@ namespace
 			return FAssetId();
 		}
 
-		/// \todo What should be returned here? What does ConstructorHelpers::FObjectFinder expect?
-		/// Should it be the `PackagePath`, i.e. '/Game/ImportedAGXMeshes/mesh1', or a full
-		/// reference, i.e., '/Game/ImportedAGXMeshes/mesh1.mesh1', created as 'PackagePath + . +
-		/// AssetName'?
 		return {PackagePath, AssetName};
 	}
 
