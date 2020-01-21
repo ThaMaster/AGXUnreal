@@ -87,13 +87,13 @@ void UAGX_CollisionGroupsComponent::ApplyChangesToChildShapes(
 			ShapeComponent->AddCollisionGroup(CollisionGroups[ChangeIndex]);
 			break;
 		case EPropertyChangeType::ArrayRemove:
-			ShapeComponent->TryRemoveCollisionGroup(CollisionGroupsLastChange[ChangeIndex]);
+			ShapeComponent->RemoveCollisionGroupIfExists(CollisionGroupsLastChange[ChangeIndex]);
 			break;
 		case EPropertyChangeType::ArrayClear:
 		{
 			for (int i = 0; i < CollisionGroupsLastChange.Num(); i++)
 			{
-				ShapeComponent->TryRemoveCollisionGroup(CollisionGroupsLastChange[i]);
+				ShapeComponent->RemoveCollisionGroupIfExists(CollisionGroupsLastChange[i]);
 			}
 
 			break;
@@ -101,7 +101,7 @@ void UAGX_CollisionGroupsComponent::ApplyChangesToChildShapes(
 		case EPropertyChangeType::ValueSet: // Value changed.
 		{
 			// Remove old collision group and add new collision group.
-			ShapeComponent->TryRemoveCollisionGroup(CollisionGroupsLastChange[ChangeIndex]);
+			ShapeComponent->RemoveCollisionGroupIfExists(CollisionGroupsLastChange[ChangeIndex]);
 
 			ShapeComponent->AddCollisionGroup(CollisionGroups[ChangeIndex]);
 

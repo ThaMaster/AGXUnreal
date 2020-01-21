@@ -69,7 +69,7 @@ public:
 
 	void AddCollisionGroup(const FName& GroupName);
 
-	void TryRemoveCollisionGroup(const FName& GroupName);
+	void RemoveCollisionGroupIfExists(const FName& GroupName);
 
 public:
 	virtual void TickComponent(

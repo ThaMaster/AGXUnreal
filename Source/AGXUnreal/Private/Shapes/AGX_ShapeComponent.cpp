@@ -146,7 +146,7 @@ void UAGX_ShapeComponent::AddCollisionGroup(const FName & GroupName)
 		CollisionGroups.AddUnique(GroupName);
 }
 
-void UAGX_ShapeComponent::TryRemoveCollisionGroup(const FName & GroupName)
+void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName & GroupName)
 {
 	if (!GroupName.IsNone())
 	{
