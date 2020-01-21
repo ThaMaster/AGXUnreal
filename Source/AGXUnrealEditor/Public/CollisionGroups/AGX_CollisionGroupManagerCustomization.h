@@ -25,6 +25,10 @@ private:
 
 	void UpdateAvailableCollisionGroups(const AAGX_CollisionGroupManager* CollisionGroupManager);
 
+	void AddComboBox(
+		IDetailCategoryBuilder& CategoryBuilder, AAGX_CollisionGroupManager* CollisionGroupManager,
+		FText Name, FName* SelectedGroup);
+
 private:
 	TArray<TSharedPtr<FName>> AvailableCollisionGroups;
 };
