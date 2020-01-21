@@ -118,6 +118,16 @@ UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(
 
 namespace
 {
+	/**
+	 * Remove characters that are unsafe to use in object names, content
+	 * references or filenames. Unsupported characters are dropped, so check the
+	 * returned string for emptyness and have a fallback.
+	 *
+	 * May remove more characters than necessary.
+	 *
+	 * @param Name The name to sanitize.
+	 * @return The name with all dangerous characters removed.
+	 */
 	FString SanitizeName(const FString& Name)
 	{
 		FString Sanitized;
@@ -132,6 +142,12 @@ namespace
 		return Sanitized;
 	}
 
+	/**
+	 * Apply the RawMesh data to the StaticMesh.
+	 *
+	 * @param RawMesh - The RawMesh holding the mesh data.
+	 * @param StaticMesh - The StaticMesh that should receive the mesh data.
+	 */
 	void AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh* StaticMesh)
 	{
 		StaticMesh->StaticMaterials.Add(FStaticMaterial());
@@ -156,6 +172,14 @@ namespace
 		BuildSettings.bUseHighPrecisionTangentBasis = false;
 	}
 
+	/**
+	 * A way to identify an asset within the project content.
+	 *
+	 * Contains the full package path to the asset as well as the asset name.
+	 * ex:
+	 * 	PackagePath: "/Game/ImportedAGXMeshes/ImportedAGXMesh4"
+	 * 	AssetName: "ImportedAGXMesh4"
+	 */
 	struct FAssetId
 	{
 		FString PackagePath;
@@ -167,15 +191,28 @@ namespace
 		}
 	};
 
+	/**
+	 * Convert a raw mesh into a StaticMesh asset on disk.
+	 *
+	 * The mesh asset is stored to the /Game/ImportedAGXMeshes/ folder. The
+	 * given MeshName will only be used as-is if it doesn't collide with an
+	 * already existing asset. The final name and the full asset path is
+	 * returned.
+	 *
+	 * @param RawMesh The mesh to store as an asset.
+	 * @param MeshName The name the mesh
+	 * @return The path to the created package and the final name of the asset.
+	 */
 	FAssetId CreateTrimeshAsset(FRawMesh& RawMesh, const FString& MeshName)
 	{
+		// Find actual package path and a unique asset name.
 		FString PackagePath = FString(TEXT("/Game/ImportedAGXMeshes/"));
 		FString AssetName = MeshName;
-
 		IAssetTools& AssetTools =
 			FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
 		AssetTools.CreateUniqueAssetName(PackagePath, AssetName, PackagePath, AssetName);
 
+		// Create the package that will hold our mesh asset.
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
 #if 0
 		// Unclear if this is needed or not. Leaving it out for now but test
@@ -188,6 +225,7 @@ namespace
 			NewObject<UStaticMesh>(Package, FName(*AssetName), RF_Public | RF_Standalone);
 		AddRawMeshToStaticMesh(RawMesh, StaticMesh);
 
+		// Package is now complete. Trigger all the "engine stuff" to finalize it.
 		StaticMesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
 		FAssetRegistryModule::AssetCreated(StaticMesh);
 		StaticMesh->MarkPackageDirty();
@@ -195,13 +233,14 @@ namespace
 		StaticMesh->AddToRoot();
 		Package->SetDirtyFlag(true);
 
+		// Store our new package to disk.
 		FString PackageFilename = FPackageName::LongPackageNameToFilename(
 			PackagePath, FPackageName::GetAssetPackageExtension());
 		if (PackageFilename.IsEmpty())
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Unreal Engine unable to provide package filename for package path '%s'."),
+				TEXT("Unreal Engine unable to provide a package filename for package path '%s'."),
 				*PackagePath);
 			return FAssetId();
 		}

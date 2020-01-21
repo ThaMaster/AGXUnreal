@@ -59,7 +59,13 @@ public:
 	/**
 	 * Create a new UStaticMeshComponent, along with the underlying StaticMesh
 	 * asset, from the given mesh data. The UStaticMeshComponent will be added
-	 * as a child to the given UAGX_TrimeshShapeComponent.
+	 * as a child to the given UAGX_TrimeshShapeComponent. The underlying
+	 * StaticMesh asset is saved to /Game/ImportedAGXMeshes/ with the source
+	 * name that the native agxCollide::Trimesh has.
+	 *
+	 * @param Owner - The Actor to which the StaticMeshComponent should be added.
+	 * @param Outer - The TrimeshShapeComponent that should use the mesh data.
+	 * @param Trimesh - AGX Dynamics trimesh data to convert to a StaticMesh.
 	 */
 	static UStaticMeshComponent* CreateStaticMesh(
 		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh);
