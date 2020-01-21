@@ -15,7 +15,7 @@ void FAGX_ObjectUtilities::GetChildActorsOfActor(
 }
 
 void FAGX_ObjectUtilities::GetActorsTree(
-	TArray<AActor*> CurrentLevel, TArray<AActor*>& ChildActors)
+	const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors)
 {
 	for (AActor* Actor : CurrentLevel)
 	{

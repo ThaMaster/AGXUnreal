@@ -26,7 +26,7 @@ public:
 		IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true);
 
 private:
-	static void GetActorsTree(TArray<AActor*> CurrentLevel, TArray<AActor*>& ChildActors);
+	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);
 };
 
 template <typename T>
