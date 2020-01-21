@@ -148,7 +148,7 @@ namespace
 		// Somewhat unclear what all these should be.
 		BuildSettings.bRecomputeNormals = true;
 		BuildSettings.bRecomputeTangents = true;
-		BuildSettings.bUseMikkTSpace = false; /// \todo Why not? MikkTSpace seems to be a standard.
+		BuildSettings.bUseMikkTSpace = true;
 		BuildSettings.bGenerateLightmapUVs = true;
 		BuildSettings.bBuildAdjacencyBuffer = false;
 		BuildSettings.bBuildReversedIndexBuffer = false;
