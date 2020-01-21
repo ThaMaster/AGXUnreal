@@ -189,9 +189,6 @@ namespace
 		AddRawMeshToStaticMesh(RawMesh, StaticMesh);
 
 		StaticMesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
-		StaticMesh->CreateBodySetup(); /// \todo Not sure what these two
-		StaticMesh->SetLightingGuid(); /// does, or if they are needed.
-
 		FAssetRegistryModule::AssetCreated(StaticMesh);
 		StaticMesh->MarkPackageDirty();
 		StaticMesh->PostEditChange();
