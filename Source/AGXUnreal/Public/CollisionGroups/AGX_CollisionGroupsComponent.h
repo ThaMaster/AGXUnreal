@@ -28,8 +28,6 @@ public:
 	// when e.g. adding a new shape to a rigid body.
 	void ForceRefreshChildShapes();
 
-	void Serialize(FArchive& Ar) override;
-
 #if WITH_EDITOR
 
 	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
@@ -44,6 +42,9 @@ public:
 	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Collision Groups")
 	TArray<FName> CollisionGroups;
 
+	UPROPERTY(VisibleAnywhere, BluePrintReadOnly, Category = "AGX Collision Groups")
+	TArray<FName> CollisionGroupsLastChange;
+
 private:
 	void ApplyCollisionGroupChanges(FPropertyChangedEvent& PropertyChangedEvent);
 
@@ -52,5 +53,5 @@ private:
 		int32 ChangeIndex);
 
 private:
-	TArray<FName> CollisionGroupsLastChange;
+	//TArray<FName> CollisionGroupsLastChange;
 };

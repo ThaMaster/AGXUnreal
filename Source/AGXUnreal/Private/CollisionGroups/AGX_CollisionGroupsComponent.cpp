@@ -50,15 +50,6 @@ void UAGX_CollisionGroupsComponent::PostEditChangeProperty(
 	}
 }
 
-void UAGX_CollisionGroupsComponent::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-
-	// This cannot be done in the constructor since the UPROPERTIES
-	// has not yet been initialized at that point.
-	CollisionGroupsLastChange = CollisionGroups;
-}
-
 void UAGX_CollisionGroupsComponent::ApplyCollisionGroupChanges(
 	FPropertyChangedEvent& PropertyChangedEvent)
 {

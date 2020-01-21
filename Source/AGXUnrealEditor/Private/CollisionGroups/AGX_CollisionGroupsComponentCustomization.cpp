@@ -15,10 +15,12 @@ TSharedRef<IDetailCustomization> FAGX_CollisionGroupsComponentCustomization::Mak
 	return MakeShareable(new FAGX_CollisionGroupsComponentCustomization);
 }
 
-void FAGX_CollisionGroupsComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
+void FAGX_CollisionGroupsComponentCustomization::CustomizeDetails(
+	IDetailLayoutBuilder& DetailBuilder)
 {
 	UAGX_CollisionGroupsComponent* CollisionGroupComponent =
-		FAGX_ObjectUtilities::GetSingleObjectBeingCustomized<UAGX_CollisionGroupsComponent>(DetailBuilder);
+		FAGX_ObjectUtilities::GetSingleObjectBeingCustomized<UAGX_CollisionGroupsComponent>(
+			DetailBuilder);
 
 	if (!CollisionGroupComponent)
 		return;
@@ -45,6 +47,10 @@ void FAGX_CollisionGroupsComponentCustomization::CustomizeDetails(IDetailLayoutB
 														->ForceRefreshChildShapes();
 													return FReply::Handled();
 												})]];
+
+	// Hide CollisionGroupsLastChange from the Editor view
+	DetailBuilder.HideProperty(DetailBuilder.GetProperty(
+		GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupsComponent, CollisionGroupsLastChange)));
 }
 
 #undef LOCTEXT_NAMESPACE
