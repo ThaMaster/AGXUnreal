@@ -117,10 +117,10 @@ void AAGX_CollisionGroupManager::AddCollisionGroupPairsToSimulation()
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(GetWorld());
 
-	for (auto& CollisionGroupPair : DisabledCollisionGroups)
+	for (auto& Pair : DisabledCollisionGroups)
 	{
 		Simulation->SetDisableCollisionGroupPair(
-			CollisionGroupPair.Group1, CollisionGroupPair.Group2);
+			Pair.Group1, Pair.Group2);
 	}
 }
 
