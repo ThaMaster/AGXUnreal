@@ -128,12 +128,12 @@ TArray<FName> AAGX_CollisionGroupManager::GetAllAvailableCollisionGroupsFromWorl
 {
 	TArray<FName> FoundCollisionGroups;
 
-	// Find all shape class objects and get all collision groups
-	for (TObjectIterator<UAGX_ShapeComponent> ClassIt; ClassIt; ++ClassIt)
+	// Find all ShapeComponent objects and get all collision groups
+	for (TObjectIterator<UAGX_ShapeComponent> ObjectIt; ObjectIt; ++ObjectIt)
 	{
-		UAGX_ShapeComponent* Class = *ClassIt;
+		UAGX_ShapeComponent* Shape = *ObjectIt;
 
-		for (const auto& CollisionGroup : Class->CollisionGroups)
+		for (const auto& CollisionGroup : Shape->CollisionGroups)
 		{
 			FoundCollisionGroups.AddUnique(CollisionGroup);
 		}
