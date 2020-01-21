@@ -77,7 +77,7 @@ void FSimulationBarrier::AddTerrain(FTerrainBarrier* Terrain)
 	NativeRef->Native->add(Terrain->GetNative()->Native);
 }
 
-void FSimulationBarrier::SetDisableCollisionGroupPair(const FName & Group1, const FName & Group2)
+void FSimulationBarrier::SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2)
 {
 	check(HasNative());
 
