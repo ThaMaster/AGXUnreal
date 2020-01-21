@@ -3,7 +3,6 @@
 #include "AGX_ShapeComponent.h"
 #include "AGX_ObjectUtilities.h"
 #include "AGX_LogCategory.h"
-#include "..\..\Public\CollisionGroups\AGX_CollisionGroupsComponent.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_CollisionGroupsComponent"
 

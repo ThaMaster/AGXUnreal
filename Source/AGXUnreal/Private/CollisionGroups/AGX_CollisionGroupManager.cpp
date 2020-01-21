@@ -7,7 +7,6 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "AGX_ShapeComponent.h"
-#include "..\..\Public\CollisionGroups\AGX_CollisionGroupManager.h"
 
 #define LOCTEXT_NAMESPACE "AAGX_CollisionGroupManager"
 
