@@ -69,9 +69,9 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 
 	GetNative()->SetEnableCollisions(bCanCollide);
 
-	for (const FName& collisionGroup : CollisionGroups)
+	for (const FName& Group : CollisionGroups)
 	{
-		GetNative()->AddCollisionGroup(collisionGroup);
+		GetNative()->AddCollisionGroup(Group);
 	}
 }
 
