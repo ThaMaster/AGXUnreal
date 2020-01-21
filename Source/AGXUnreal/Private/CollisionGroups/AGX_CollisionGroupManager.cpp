@@ -110,15 +110,17 @@ void AAGX_CollisionGroupManager::BeginPlay()
 
 void AAGX_CollisionGroupManager::AddCollisionGroupPairsToSimulation()
 {
-	if (DisabledCollisionGroups.Num() > 0)
+	if (DisabledCollisionGroups.Num() <= 0)
 	{
-		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(GetWorld());
+		return;
+	}
 
-		for (auto& collisionGroupPair : DisabledCollisionGroups)
-		{
-			Simulation->SetDisableCollisionGroupPair(
-				collisionGroupPair.Group1, collisionGroupPair.Group2);
-		}
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(GetWorld());
+
+	for (auto& collisionGroupPair : DisabledCollisionGroups)
+	{
+		Simulation->SetDisableCollisionGroupPair(
+			collisionGroupPair.Group1, collisionGroupPair.Group2);
 	}
 }
 
