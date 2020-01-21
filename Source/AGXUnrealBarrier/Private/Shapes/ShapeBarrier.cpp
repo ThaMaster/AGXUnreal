@@ -6,7 +6,6 @@
 #include "AGX_LogCategory.h"
 
 #include "Misc/AssertionMacros.h"
-#include "..\..\Public\Shapes\ShapeBarrier.h"
 
 FShapeBarrier::FShapeBarrier()
 	: NativeRef {new FGeometryAndShapeRef}
