@@ -177,12 +177,15 @@ namespace
 		AssetTools.CreateUniqueAssetName(PackagePath, AssetName, PackagePath, AssetName);
 
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
-		UPackage* OuterPackage = Package->GetOutermost(); /// \todo Why do we need this?
-		Package->FullyLoad(); /// \todo Is this required or not?
-		OuterPackage->FullyLoad(); /// \todo If required, on which package?
-		UStaticMesh* StaticMesh = /// \todo What RF_ flags should be used?
-			NewObject<UStaticMesh>(OuterPackage, FName(*AssetName), RF_Standalone | RF_Public);
+#if 0
+		// Unclear if this is needed or not. Leaving it out for now but test
+		// with it restored if there are problems.
+		Package->FullyLoad();
+#endif
 
+		// Create the actual mesh object and fill it with our mesh data.
+		UStaticMesh* StaticMesh =
+			NewObject<UStaticMesh>(Package, FName(*AssetName), RF_Public | RF_Standalone);
 		AddRawMeshToStaticMesh(RawMesh, StaticMesh);
 
 		StaticMesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
