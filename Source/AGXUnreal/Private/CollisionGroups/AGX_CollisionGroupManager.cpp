@@ -166,12 +166,17 @@ bool AAGX_CollisionGroupManager::CollisionGroupPairDisabled(
 
 void AAGX_CollisionGroupManager::RemoveDeprecatedCollisionGroups()
 {
-	for (int i = 0; i < DisabledCollisionGroups.Num(); i++)
+	for (int i = 0; i < DisabledCollisionGroups.Num();)
 	{
-		if (AvailableCollisionGroups.IndexOfByKey(DisabledCollisionGroups[i].Group1) == INDEX_NONE ||
+		if (AvailableCollisionGroups.IndexOfByKey(DisabledCollisionGroups[i].Group1) ==
+				INDEX_NONE ||
 			AvailableCollisionGroups.IndexOfByKey(DisabledCollisionGroups[i].Group2) == INDEX_NONE)
 		{
 			DisabledCollisionGroups.RemoveAt(i);
+		}
+		else
+		{
+			++i;
 		}
 	}
 }
