@@ -1,10 +1,15 @@
 #include "Shapes/ShapeBarrier.h"
 
+// AGXUnreal includes.
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 #include "MaterialBarrier.h"
 #include "AGX_LogCategory.h"
 
+// AGX Dynamics includes.
+#include "agxCollide/CollisionGroupManager.h"
+
+// Unreal Engine includes.
 #include "Misc/AssertionMacros.h"
 
 FShapeBarrier::FShapeBarrier()
@@ -110,9 +115,24 @@ bool FShapeBarrier::GetEnableCollisions() const
 void FShapeBarrier::AddCollisionGroup(const FName & GroupName)
 {
 	check(HasNative());
-
 	// Add collision group as (hashed) unsigned int.
 	NativeRef->NativeGeometry->addGroup(StringTo32BitFnvHash(GroupName.ToString()));
+}
+
+TArray<FName> FShapeBarrier::GetCollisionGroups() const
+{
+	check(HasNative());
+	TArray<FName> Result;
+	agxCollide::GroupIdCollection Groups = NativeRef->NativeGeometry->findGroupIdCollection();
+	for (const agx::Name& Name : Groups.getNames())
+	{
+		Result.Add(FName(*Convert(Name)));
+	}
+	for (const agx::UInt32 Id : Groups.getIds())
+	{
+		Result.Add(FName(*FString::FromInt(Id)));
+	}
+	return Result;
 }
 
 namespace
