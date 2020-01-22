@@ -282,6 +282,9 @@ inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type Log
 
 inline uint32 StringTo32BitFnvHash(const FString& StringUnreal)
 {
+	/// \todo Verify that we get the same hash as AGX Dynamics for Unity.
+	/// I worry that `TCHAR`, which is 16 bit, will give a different result
+	/// compared to the C# `byte` type.
 	auto bytes = StringUnreal.GetCharArray();
 
 	uint32 hash = 2166136261U;
