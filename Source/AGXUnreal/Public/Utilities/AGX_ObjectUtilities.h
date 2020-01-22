@@ -1,8 +1,10 @@
 #pragma once
 
+#include "DetailLayoutBuilder.h"
+#include "Containers/Array.h"
 #include "CoreMinimal.h"
 
-class IDetailLayoutBuilder;
+class AActor;
 
 class FAGX_ObjectUtilities
 {
