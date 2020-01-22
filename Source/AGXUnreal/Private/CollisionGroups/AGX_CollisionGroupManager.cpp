@@ -106,6 +106,17 @@ void AAGX_CollisionGroupManager::UpdateAvailableCollisionGroups()
 	RemoveDeprecatedCollisionGroups();
 }
 
+void AAGX_CollisionGroupManager::DisableCollisionGroupPair(const FName& Group1, const FName& Group2)
+{
+	int CurrentIndex;
+	if (CollisionGroupPairDisabled(Group1, Group2, CurrentIndex))
+	{
+		return;
+	}
+
+	DisabledCollisionGroups.Add(FAGX_CollisionGroupPair {Group1, Group2});
+}
+
 AAGX_CollisionGroupManager* AAGX_CollisionGroupManager::GetFrom(UWorld* World)
 {
 	TActorIterator<AAGX_CollisionGroupManager> It(World);

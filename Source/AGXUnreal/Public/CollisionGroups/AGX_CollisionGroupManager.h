@@ -25,6 +25,8 @@ public:
 
 	void UpdateAvailableCollisionGroups();
 
+	void DisableCollisionGroupPair(const FName& Group1, const FName& Group2);
+
 	TArray<FName> GetAvailableCollisionGroups() const { return AvailableCollisionGroups; }
 
 	FName& GetSelectedGroup1() { return SelectedGroup1; }
