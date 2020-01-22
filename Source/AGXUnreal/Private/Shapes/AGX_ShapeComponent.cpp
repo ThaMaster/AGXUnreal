@@ -68,6 +68,11 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	}
 
 	GetNative()->SetEnableCollisions(bCanCollide);
+
+	for (const FName& Group : CollisionGroups)
+	{
+		GetNative()->AddCollisionGroup(Group);
+	}
 }
 
 void UAGX_ShapeComponent::TickComponent(
@@ -133,4 +138,23 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 	UE_LOG(LogAGX, Log, TEXT("EndPlay for ShapeComponent"));
 	Super::EndPlay(Reason);
 	ReleaseNative();
+}
+
+void UAGX_ShapeComponent::AddCollisionGroup(const FName & GroupName)
+{
+	if (!GroupName.IsNone())
+		CollisionGroups.AddUnique(GroupName);
+}
+
+void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName & GroupName)
+{
+	if (!GroupName.IsNone())
+	{
+		auto Index = CollisionGroups.IndexOfByKey(GroupName);
+
+		if (Index != INDEX_NONE)
+		{
+			CollisionGroups.RemoveAt(Index);
+		}
+	}
 }

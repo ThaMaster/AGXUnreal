@@ -45,6 +45,8 @@ public:
 	void SetEnableCollisions(bool CanCollide);
 	bool GetEnableCollisions() const;
 
+	void AddCollisionGroup(const FName& GroupName);
+
 protected:
 	template <typename TFunc, typename... TPack>
 	void AllocateNative(TFunc Factory, TPack... Params);

@@ -107,6 +107,14 @@ bool FShapeBarrier::GetEnableCollisions() const
 	return NativeRef->NativeGeometry->getEnableCollisions();
 }
 
+void FShapeBarrier::AddCollisionGroup(const FName & GroupName)
+{
+	check(HasNative());
+
+	// Add collision group as (hashed) unsigned int.
+	NativeRef->NativeGeometry->addGroup(StringTo32BitFnvHash(GroupName.ToString()));
+}
+
 namespace
 {
 	agxCollide::ShapeIterator FindShape(agxCollide::Geometry* Geometry, agxCollide::Shape* Shape)

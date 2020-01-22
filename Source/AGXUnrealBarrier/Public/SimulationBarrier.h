@@ -29,6 +29,8 @@ public:
 
 	void AddTerrain(FTerrainBarrier* Terrain);
 
+	void SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2);
+
 	bool WriteAGXArchive(const FString& Filename) const;
 
 	void Step();
