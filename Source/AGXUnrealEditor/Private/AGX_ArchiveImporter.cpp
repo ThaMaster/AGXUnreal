@@ -219,6 +219,15 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			CreateConstraint(LockJoint, AAGX_LockConstraint::StaticClass());
 		}
 
+		virtual void DisabledCollisionGroups(const TArray<std::pair<FString, FString>>& DisabledGroups) override
+		{
+			UE_LOG(LogAGX, Log, TEXT("Got disabled groups callback."));
+			for (auto& Pair : DisabledGroups)
+			{
+				UE_LOG(LogAGX, Log, TEXT("  '%s' vs '%s'"), *Pair.first, *Pair.second);
+			}
+		}
+
 	private:
 		void CreateConstraint(const FConstraintBarrier& Barrier, UClass* ConstraintType)
 		{

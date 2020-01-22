@@ -66,6 +66,8 @@ public:
 
 	virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) = 0;
 
+	virtual void DisabledCollisionGroups(const TArray<std::pair<FString, FString>>& DisabledGroups) = 0;
+
 	virtual ~FAGXArchiveInstantiator() = default;
 };
 
