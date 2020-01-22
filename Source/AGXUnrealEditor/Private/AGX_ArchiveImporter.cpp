@@ -11,6 +11,7 @@
 #include "DistanceJointBarrier.h"
 #include "LockJointBarrier.h"
 
+#include "AGX_CollisionGroupManager.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SphereShapeComponent.h"
 #include "AGX_BoxShapeComponent.h"
@@ -219,12 +220,36 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			CreateConstraint(LockJoint, AAGX_LockConstraint::StaticClass());
 		}
 
-		virtual void DisabledCollisionGroups(const TArray<std::pair<FString, FString>>& DisabledGroups) override
+		virtual void DisabledCollisionGroups(
+			const TArray<std::pair<FString, FString>>& DisabledGroups) override
 		{
-			UE_LOG(LogAGX, Log, TEXT("Got disabled groups callback."));
+			if (DisabledGroups.Num() == 0)
+			{
+				// Do not force a CollisionGroupManager if there are no disabled groups.
+				return;
+			}
+
+			// Make sure we have a CollisionGroupManager.
+			AAGX_CollisionGroupManager* Manager = AAGX_CollisionGroupManager::GetFrom(&World);
+			if (Manager == nullptr)
+			{
+				Manager = World.SpawnActor<AAGX_CollisionGroupManager>();
+			}
+			if (Manager == nullptr)
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("Cannot import disabled collision group pairs because there is no "
+						 "CollisionGroupManager in the level."));
+				return;
+			}
+
+			// Apply the disabled group pairs to the CollisionGroupManager.
 			for (auto& Pair : DisabledGroups)
 			{
-				UE_LOG(LogAGX, Log, TEXT("  '%s' vs '%s'"), *Pair.first, *Pair.second);
+				FName Group1 = *Pair.first;
+				FName Group2 = *Pair.second;
+				Manager->DisableCollisionGroupPair(Group1, Group2);
 			}
 		}
 
