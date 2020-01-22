@@ -4,6 +4,7 @@
 #include "GameFramework/Info.h"
 
 #include "AGX_CollisionGroupPair.h"
+
 #include "AGX_CollisionGroupManager.generated.h"
 
 /**
@@ -29,6 +30,8 @@ public:
 	FName& GetSelectedGroup1() { return SelectedGroup1; }
 
 	FName& GetSelectedGroup2() { return SelectedGroup2; }
+
+	static AAGX_CollisionGroupManager* GetFrom(UWorld* World);
 
 protected:
 	virtual void BeginPlay() override;

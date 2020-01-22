@@ -1,12 +1,15 @@
 #include "AGX_CollisionGroupManager.h"
 
-#include "Components/BillboardComponent.h"
-#include "Engine/Texture2D.h"
-#include "UObject/ConstructorHelpers.h"
-
+// AGXUnreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "AGX_ShapeComponent.h"
+
+// Unreal Engine includes.
+#include "Components/BillboardComponent.h"
+#include "EngineUtils.h"
+#include "Engine/Texture2D.h"
+#include "UObject/ConstructorHelpers.h"
 
 #define LOCTEXT_NAMESPACE "AAGX_CollisionGroupManager"
 
@@ -101,6 +104,17 @@ void AAGX_CollisionGroupManager::UpdateAvailableCollisionGroups()
 	// Remove any disabled collision group pair that contains a collision
 	// group not yet present in the world.
 	RemoveDeprecatedCollisionGroups();
+}
+
+AAGX_CollisionGroupManager* AAGX_CollisionGroupManager::GetFrom(UWorld* World)
+{
+	TActorIterator<AAGX_CollisionGroupManager> It(World);
+	if (!It)
+	{
+		return nullptr;
+	}
+
+	return *It;
 }
 
 void AAGX_CollisionGroupManager::BeginPlay()
