@@ -1,4 +1,6 @@
 #include "AGX_ArchiveImporter.h"
+
+// AGXUnreal includes.
 #include "AGXArchiveReader.h"
 #include "AGX_EditorUtilities.h"
 #include "RigidBodyBarrier.h"
@@ -22,10 +24,11 @@
 #include "Constraints/AGX_DistanceConstraint.h"
 #include "Constraints/AGX_LockConstraint.h"
 
-#include "Math/Transform.h"
-#include "GameFramework/Actor.h"
+// Unreal Engine includes.
 #include "Engine/World.h"
+#include "GameFramework/Actor.h"
 #include "Internationalization/Text.h"
+#include "Math/Transform.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -143,6 +146,10 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		void FinalizeShape(UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier)
 		{
 			Component->bCanCollide = Barrier.GetEnableCollisions();
+			for (const FName& Group : Barrier.GetCollisionGroups())
+			{
+				Component->AddCollisionGroup(Group);
+			}
 
 			FVector Location;
 			FQuat Rotation;
