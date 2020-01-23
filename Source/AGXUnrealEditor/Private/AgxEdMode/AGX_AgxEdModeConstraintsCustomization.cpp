@@ -16,6 +16,7 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SExpandableArea.h"
 #include "Widgets/Text/STextBlock.h"
+#include "Misc/Attribute.h"
 
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 #include "Constraints/AGX_Constraint.h"
@@ -96,7 +97,7 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintCreatorCategory(
 													  return FReply::Handled();
 												  })]];
 }
-#include "Attribute.h"
+
 void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintTypeComboBox(
 	IDetailCategoryBuilder& CategoryBuilder, UAGX_AgxEdModeConstraints* ConstraintsSubMode)
 {

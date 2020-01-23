@@ -1,4 +1,4 @@
-#include "AGX_CollisionGroupsComponentCustomization.h"
+#include "CollisionGroups/AGX_CollisionGroupsComponentCustomization.h"
 
 #include "CollisionGroups/AGX_CollisionGroupsComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"

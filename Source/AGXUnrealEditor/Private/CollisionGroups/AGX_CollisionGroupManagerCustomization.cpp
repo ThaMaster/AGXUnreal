@@ -1,4 +1,4 @@
-#include "AGX_CollisionGroupManagerCustomization.h"
+#include "CollisionGroups/AGX_CollisionGroupManagerCustomization.h"
 
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"

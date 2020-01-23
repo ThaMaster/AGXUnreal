@@ -1,7 +1,7 @@
 #include "Utilities/AGX_PropertyUtilities.h"
 
 #include "UObject/MetaData.h"
-#include "Package.h"
+#include "UObject/Package.h"
 
 bool FAGX_PropertyUtilities::PropertyEquals(
 	const TSharedPtr<IPropertyHandle>& First, const TSharedPtr<IPropertyHandle>& Second)

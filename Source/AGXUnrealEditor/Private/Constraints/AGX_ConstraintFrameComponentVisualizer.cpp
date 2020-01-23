@@ -2,7 +2,7 @@
 
 #include "Constraints/AGX_ConstraintFrameComponentVisualizer.h"
 
-#include "Classes/Editor/UnrealEdEngine.h"
+#include "Editor/UnrealEdEngine.h"
 #include "SceneManagement.h"
 #include "UnrealEdGlobals.h"
 

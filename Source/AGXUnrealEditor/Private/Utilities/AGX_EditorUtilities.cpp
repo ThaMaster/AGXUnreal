@@ -18,9 +18,9 @@
 #include "Engine/EngineTypes.h"
 
 #include "AGX_RigidBodyComponent.h"
-#include "AGX_SphereShapeComponent.h"
-#include "AGX_BoxShapeComponent.h"
-#include "AGX_TrimeshShapeComponent.h"
+#include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_BoxShapeComponent.h"
+#include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "AGX_LogCategory.h"
