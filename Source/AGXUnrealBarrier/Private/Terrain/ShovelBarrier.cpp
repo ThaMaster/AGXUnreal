@@ -1,4 +1,4 @@
-#include "ShovelBarrier.h"
+#include "Terrain/ShovelBarrier.h"
 
 // AGXUnrealBarrier includes.
 #include "AGXRefs.h"

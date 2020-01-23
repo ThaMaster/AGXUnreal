@@ -1,7 +1,7 @@
 #pragma once
 
 // AGXUnreal includes.
-#include "TerrainBarrier.h"
+#include "Terrain/TerrainBarrier.h"
 #include "Terrain/AGX_Shovel.h"
 
 // Unreal Engine includes.

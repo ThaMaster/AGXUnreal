@@ -1,4 +1,4 @@
-#include "TerrainBarrier.h"
+#include "Terrain/TerrainBarrier.h"
 
 // AGXUnrealBarrier includes.
 #include "AGX_LogCategory.h"

@@ -11,7 +11,7 @@
 #include "Utilities/AGX_TextureUtilities.h"
 
 // AGXUnrealBarrier includes.
-#include "TerrainBarrier.h"
+#include "Terrain/TerrainBarrier.h"
 #include "Shapes/HeightFieldShapeBarrier.h"
 #include "Terrain/ShovelBarrier.h"
 
