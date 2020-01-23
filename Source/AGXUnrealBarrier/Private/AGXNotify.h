@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LogVerbosity.h"
+#include "Logging/LogVerbosity.h"
 
 #include "BeginAGXIncludes.h"
 #include <agx/Notify.h>

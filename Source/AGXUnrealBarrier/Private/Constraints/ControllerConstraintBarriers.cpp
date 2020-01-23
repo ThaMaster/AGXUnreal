@@ -1,4 +1,4 @@
-#include "ControllerConstraintBarriers.h"
+#include "Constraints/ControllerConstraintBarriers.h"
 
 #include "TypeConversions.h"
 

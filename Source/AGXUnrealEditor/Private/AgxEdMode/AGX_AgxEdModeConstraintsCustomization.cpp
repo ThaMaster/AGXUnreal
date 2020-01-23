@@ -6,7 +6,7 @@
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "IDetailPropertyRow.h"
-#include "MetaData.h"
+#include "UObject/MetaData.h"
 #include "SceneOutlinerModule.h"
 #include "SceneOutlinerPublicTypes.h"
 #include "Widgets/Input/SButton.h"
@@ -19,8 +19,8 @@
 
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 #include "Constraints/AGX_Constraint.h"
-#include "AGX_ObjectUtilities.h"
-#include "AGX_EditorUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_PropertyUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_AgxEdModeConstraintsCustomization"

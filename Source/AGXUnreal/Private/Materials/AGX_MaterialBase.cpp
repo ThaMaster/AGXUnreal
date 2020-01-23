@@ -3,9 +3,9 @@
 #include "Materials/AGX_MaterialBase.h"
 
 #include "AGX_LogCategory.h"
-#include "AGX_MaterialInstance.h"
+#include "Materials/AGX_MaterialInstance.h"
 
-#include "Classes/Engine/World.h"
+#include "Engine/World.h"
 
 UAGX_MaterialInstance* UAGX_MaterialBase::GetOrCreateInstance(
 	UWorld* PlayingWorld, UAGX_MaterialBase*& Property)

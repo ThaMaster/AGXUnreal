@@ -2,10 +2,10 @@
 
 #include "AGX_Simulation.h"
 
-#include "Classes/Engine/World.h"
+#include "Engine/World.h"
 
 #include "AGX_LogCategory.h"
-#include "AGX_MaterialAsset.h"
+#include "Materials/AGX_MaterialAsset.h"
 #include "AGX_Simulation.h"
 #include "Materials/MaterialBarrier.h"
 

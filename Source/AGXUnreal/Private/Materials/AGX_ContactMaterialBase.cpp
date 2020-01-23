@@ -1,9 +1,9 @@
 #include "Materials/AGX_ContactMaterialBase.h"
 
-#include "Classes/Engine/World.h"
+#include "Engine/World.h"
 
 #include "AGX_LogCategory.h"
-#include "AGX_ContactMaterialInstance.h"
+#include "Materials/AGX_ContactMaterialInstance.h"
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialBase::GetOrCreateInstance(
 	UWorld* PlayingWorld, UAGX_ContactMaterialBase*& Property)

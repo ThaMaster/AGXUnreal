@@ -1,7 +1,7 @@
-#include "AGX_CollisionGroupsComponent.h"
+#include "CollisionGroups/AGX_CollisionGroupsComponent.h"
 
-#include "AGX_ShapeComponent.h"
-#include "AGX_ObjectUtilities.h"
+#include "Shapes/AGX_ShapeComponent.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "AGX_LogCategory.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_CollisionGroupsComponent"

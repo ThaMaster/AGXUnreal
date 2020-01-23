@@ -1,6 +1,6 @@
 #include "Utilities/AGX_PropertyUtilities.h"
 
-#include "MetaData.h"
+#include "UObject/MetaData.h"
 #include "Package.h"
 
 bool FAGX_PropertyUtilities::PropertyEquals(

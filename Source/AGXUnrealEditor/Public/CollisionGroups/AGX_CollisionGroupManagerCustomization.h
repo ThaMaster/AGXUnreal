@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
 
-#include "AGX_CollisionGroupManager.h"
+#include "CollisionGroups/AGX_CollisionGroupManager.h"
 
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;

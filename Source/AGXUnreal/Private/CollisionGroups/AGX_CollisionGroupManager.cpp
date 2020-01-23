@@ -1,4 +1,4 @@
-#include "AGX_CollisionGroupManager.h"
+#include "CollisionGroups/AGX_CollisionGroupManager.h"
 
 #include "Components/BillboardComponent.h"
 #include "Engine/Texture2D.h"
@@ -6,7 +6,7 @@
 
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
-#include "AGX_ShapeComponent.h"
+#include "Shapes/AGX_ShapeComponent.h"
 
 #define LOCTEXT_NAMESPACE "AAGX_CollisionGroupManager"
 

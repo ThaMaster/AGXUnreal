@@ -1,4 +1,4 @@
-#include "AGX_ConstraintBodyAttachment.h"
+#include "Constraints/AGX_ConstraintBodyAttachment.h"
 
 #include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"

@@ -1,6 +1,6 @@
-#include "AGX_HeightFieldShapeComponent.h"
+#include "Shapes/AGX_HeightFieldShapeComponent.h"
 
-#include "AGX_HeightFieldUtilities.h"
+#include "Utilities/AGX_HeightFieldUtilities.h"
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_MeshUtilities.h"
 

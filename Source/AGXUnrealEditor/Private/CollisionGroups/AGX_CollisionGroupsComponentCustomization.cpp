@@ -1,7 +1,7 @@
 #include "AGX_CollisionGroupsComponentCustomization.h"
 
-#include "AGX_CollisionGroupsComponent.h"
-#include "AGX_ObjectUtilities.h"
+#include "CollisionGroups/AGX_CollisionGroupsComponent.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"

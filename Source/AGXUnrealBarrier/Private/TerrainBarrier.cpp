@@ -3,7 +3,7 @@
 // AGXUnrealBarrier includes.
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
-#include "HeightFieldShapeBarrier.h"
+#include "Shapes/HeightFieldShapeBarrier.h"
 #include "TypeConversions.h"
 #include "Shapes/ShapeBarrierImpl.h"
 #include "Terrain/ShovelBarrier.h"

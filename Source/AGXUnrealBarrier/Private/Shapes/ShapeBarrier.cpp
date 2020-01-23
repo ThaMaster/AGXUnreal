@@ -2,7 +2,7 @@
 
 #include "AGXRefs.h"
 #include "TypeConversions.h"
-#include "MaterialBarrier.h"
+#include "Materials/MaterialBarrier.h"
 #include "AGX_LogCategory.h"
 
 #include "Misc/AssertionMacros.h"

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include <LogVerbosity.h>
+#include <Logging/LogVerbosity.h>
 
 #include <memory>
 

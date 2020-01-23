@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AGX_PrismaticConstraint.h"
+#include "Constraints/AGX_PrismaticConstraint.h"
 
 #include "Constraints/PrismaticBarrier.h"
 
