@@ -111,11 +111,11 @@ void UAGX_TrimeshShapeComponent::CreateNative()
 	TArray<FTriIndices> Indices;
 	if (GetStaticMeshCollisionData(Vertices, Indices))
 	{
-		NativeBarrier.AllocateNative(Vertices, Indices, /*bClockwise*/ false);
+		NativeBarrier.AllocateNative(Vertices, Indices, /*bClockwise*/ false, GetName());
 	}
 	else
 	{
-		NativeBarrier.AllocateNative({}, {}, /*bClockwise*/ false);
+		NativeBarrier.AllocateNative({}, {}, /*bClockwise*/ false, GetName());
 	}
 
 	UpdateNativeProperties();

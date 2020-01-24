@@ -235,12 +235,13 @@ FString FTrimeshShapeBarrier::GetSourceName() const
 }
 
 void FTrimeshShapeBarrier::AllocateNative(
-	const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise)
+	const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise,
+	const FString& SourceName)
 {
 	{
 		// Create temporary allocation parameters structure for AllocateNativeShape() to use.
 
-		std::shared_ptr<AllocationParameters> Params = std::make_shared<AllocationParameters>();
+		std::shared_ptr<AllocationParameters> Params = std::make_shared<AllocationParameters>(SourceName);
 		Params->Vertices = &Vertices;
 		Params->TriIndices = &TriIndices;
 		Params->bClockwise = bClockwise;
@@ -292,7 +293,7 @@ void FTrimeshShapeBarrier::AllocateNativeShape()
 	// Create the native object.
 
 	NativeRef->NativeShape = new agxCollide::Trimesh(
-		&NativeVertices, &NativeIndices, "FTrimeshShapeBarrier", OptionsMask);
+		&NativeVertices, &NativeIndices, Convert(Params->SourceName).c_str(), OptionsMask);
 }
 
 void FTrimeshShapeBarrier::ReleaseNativeShape()

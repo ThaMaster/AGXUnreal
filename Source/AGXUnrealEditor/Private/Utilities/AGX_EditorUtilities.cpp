@@ -1,31 +1,33 @@
 #include "Utilities/AGX_EditorUtilities.h"
 
+// Unreal Engine includes.
+#include "AssetRegistryModule.h"
+#include "AssetToolsModule.h"
+#include "Editor.h"
+#include "EditorStyleSet.h"
 #include "Editor/EditorEngine.h"
+#include "Engine/EngineTypes.h"
 #include "Engine/GameEngine.h"
 #include "Engine/Selection.h"
 #include "Engine/StaticMesh.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "GameFramework/PlayerController.h"
-#include "Misc/MessageDialog.h"
 #include "Misc/Char.h"
+#include "Misc/MessageDialog.h"
+#include "Misc/EngineVersionComparison.h"
+#include "RawMesh.h"
+#include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectGlobals.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
-#include "AssetRegistryModule.h"
-#include "Editor.h"
-#include "EditorStyleSet.h"
-#include "RawMesh.h"
-#include "Engine/EngineTypes.h"
-
+// AGXUnreal includes.
+#include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
-#include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Shapes/AGX_BoxShapeComponent.h"
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
-#include "AGX_LogCategory.h"
-
-#include "Misc/EngineVersionComparison.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
@@ -116,6 +118,16 @@ UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(
 
 namespace
 {
+	/**
+	 * Remove characters that are unsafe to use in object names, content
+	 * references or filenames. Unsupported characters are dropped, so check the
+	 * returned string for emptyness and have a fallback.
+	 *
+	 * May remove more characters than necessary.
+	 *
+	 * @param Name The name to sanitize.
+	 * @return The name with all dangerous characters removed.
+	 */
 	FString SanitizeName(const FString& Name)
 	{
 		FString Sanitized;
@@ -129,81 +141,171 @@ namespace
 		}
 		return Sanitized;
 	}
+
+	/**
+	 * Apply the RawMesh data to the StaticMesh.
+	 *
+	 * @param RawMesh - The RawMesh holding the mesh data.
+	 * @param StaticMesh - The StaticMesh that should receive the mesh data.
+	 */
+	void AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh* StaticMesh)
+	{
+		StaticMesh->StaticMaterials.Add(FStaticMaterial());
+#if UE_VERSION_OLDER_THAN(4, 23, 0)
+		StaticMesh->SourceModels.Emplace();
+		FStaticMeshSourceModel& SourceModel = StaticMesh->SourceModels.Last();
+#else
+		StaticMesh->GetSourceModels().Emplace();
+		FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModels().Last();
+#endif
+		SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
+		FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
+
+		// Somewhat unclear what all these should be.
+		BuildSettings.bRecomputeNormals = true;
+		BuildSettings.bRecomputeTangents = true;
+		BuildSettings.bUseMikkTSpace = true;
+		BuildSettings.bGenerateLightmapUVs = true;
+		BuildSettings.bBuildAdjacencyBuffer = false;
+		BuildSettings.bBuildReversedIndexBuffer = false;
+		BuildSettings.bUseFullPrecisionUVs = false;
+		BuildSettings.bUseHighPrecisionTangentBasis = false;
+	}
+
+	/**
+	 * A way to identify an asset within the project content.
+	 *
+	 * Contains the full package path to the asset as well as the asset name.
+	 * ex:
+	 * 	PackagePath: "/Game/ImportedAGXMeshes/ImportedAGXMesh4"
+	 * 	AssetName: "ImportedAGXMesh4"
+	 */
+	struct FAssetId
+	{
+		FString PackagePath;
+		FString AssetName;
+
+		bool IsValid() const
+		{
+			return !PackagePath.IsEmpty() && !AssetName.IsEmpty();
+		}
+	};
+
+	/**
+	 * Convert a raw mesh into a StaticMesh asset on disk.
+	 *
+	 * The mesh asset is stored to the /Game/ImportedAGXMeshes/ folder. The
+	 * given MeshName will only be used as-is if it doesn't collide with an
+	 * already existing asset. The final name and the full asset path is
+	 * returned.
+	 *
+	 * @param RawMesh The mesh to store as an asset.
+	 * @param MeshName The name the mesh
+	 * @return The path to the created package and the final name of the asset.
+	 */
+	FAssetId CreateTrimeshAsset(FRawMesh& RawMesh, const FString& MeshName)
+	{
+		// Find actual package path and a unique asset name.
+		FString PackagePath = FString(TEXT("/Game/ImportedAGXMeshes/"));
+		FString AssetName = MeshName;
+		IAssetTools& AssetTools =
+			FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+		AssetTools.CreateUniqueAssetName(PackagePath, AssetName, PackagePath, AssetName);
+
+		// Create the package that will hold our mesh asset.
+		UPackage* Package = CreatePackage(nullptr, *PackagePath);
+#if 0
+		/// \todo Unclear if this is needed or not. Leaving it out for now but
+		/// test with it restored if there are problems.
+		Package->FullyLoad();
+#endif
+
+		// Create the actual mesh object and fill it with our mesh data.
+		UStaticMesh* StaticMesh =
+			NewObject<UStaticMesh>(Package, FName(*AssetName), RF_Public | RF_Standalone);
+		AddRawMeshToStaticMesh(RawMesh, StaticMesh);
+
+		// Package is now complete. Trigger all the "engine stuff" to finalize it.
+		StaticMesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
+		FAssetRegistryModule::AssetCreated(StaticMesh);
+		StaticMesh->MarkPackageDirty();
+		StaticMesh->PostEditChange();
+		StaticMesh->AddToRoot();
+		Package->SetDirtyFlag(true);
+
+		// Store our new package to disk.
+		FString PackageFilename = FPackageName::LongPackageNameToFilename(
+			PackagePath, FPackageName::GetAssetPackageExtension());
+		if (PackageFilename.IsEmpty())
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unreal Engine unable to provide a package filename for package path '%s'."),
+				*PackagePath);
+			return FAssetId();
+		}
+		bool bSaved = UPackage::SavePackage(Package, StaticMesh, RF_NoFlags, *PackageFilename);
+		if (!bSaved)
+		{
+			UE_LOG(
+				LogAGX, Error, TEXT("Unreal Engine unable to save package '%s' to file '%s'."),
+				*PackagePath, *PackageFilename);
+			return FAssetId();
+		}
+
+		return {PackagePath, AssetName};
+	}
+
 }
 
 UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh)
 {
 	FRawMesh RawMesh = Trimesh.GetRawMesh();
-
 	FString TrimeshName = SanitizeName(Trimesh.GetSourceName());
 	if (TrimeshName.IsEmpty())
 	{
 		TrimeshName = TEXT("ImportedAGXMesh");
 	}
 
-	FString PackagePath = TEXT("/Game/ImportedAGXMeshes");
-	UPackage* Package = CreatePackage(nullptr, *PackagePath);
-	Package->FullyLoad();
-
-	FName UniqueMeshName = MakeUniqueObjectName(Package, UStaticMesh::StaticClass(), *TrimeshName);
-	UStaticMesh* StaticMesh = NewObject<UStaticMesh>(
-		Package, UniqueMeshName, RF_Public | RF_Standalone | RF_MarkAsRootSet);
-	StaticMesh->StaticMaterials.Add(FStaticMaterial());
-#if UE_VERSION_OLDER_THAN(4, 23, 0)
-	StaticMesh->SourceModels.Emplace();
-	FStaticMeshSourceModel& SourceModel = StaticMesh->SourceModels.Last();
-#else
-	StaticMesh->GetSourceModels().Emplace();
-	FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModels().Last();
-#endif
-	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
-	FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
-	// Somewhat unclear what all these should be.
-	BuildSettings.bRecomputeNormals = true;
-	BuildSettings.bRecomputeTangents = true;
-	BuildSettings.bUseMikkTSpace = false;
-	BuildSettings.bGenerateLightmapUVs = true;
-	BuildSettings.bBuildAdjacencyBuffer = false;
-	BuildSettings.bBuildReversedIndexBuffer = false;
-	BuildSettings.bUseFullPrecisionUVs = false;
-	BuildSettings.bUseHighPrecisionTangentBasis = false;
-
-	StaticMesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
-	StaticMesh->CreateBodySetup();
-	StaticMesh->SetLightingGuid();
-	StaticMesh->PostEditChange();
-	Package->MarkPackageDirty();
-	FAssetRegistryModule::AssetCreated(StaticMesh);
-	FString AssetFileName = FPackageName::LongPackageNameToFilename(
-		PackagePath + "/" + UniqueMeshName.ToString(), FPackageName::GetAssetPackageExtension());
-	if (AssetFileName.IsEmpty())
+	FAssetId AssetId = CreateTrimeshAsset(RawMesh, TrimeshName);
+	if (!AssetId.IsValid())
 	{
-		AssetFileName = FPaths::ProjectContentDir() + "/FallbackFilename.uasset";
-		UE_LOG(
-			LogAGX, Warning, TEXT("Package path '%s' produced empty long package name."),
-			*PackagePath);
-		UE_LOG(LogAGX, Warning, TEXT("Using fallback name '%s'."), *AssetFileName);
-	}
-	bool bSaved = UPackage::SavePackage(
-		Package, StaticMesh, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *AssetFileName,
-		GError, nullptr, true, true, SAVE_NoError);
-	if (!bSaved)
-	{
-		UE_LOG(LogAGX, Error, TEXT("Save of imported StaticMesh asset failed."));
-		// No return intentional. We want to create a UStaticMeshComponent for
-		// the StaticMesh even if it couldn't be saved to disk.
+		/// \todo What should we do here, other than giving up?
+		// No need to log, should have been done by CreateTrimeshAsset.
+		return nullptr; /// \todo Don't return nullptr, return an empty UStaticMeshComponent.
 	}
 
-	UClass* Class = UStaticMeshComponent::StaticClass();
+	UE_LOG(
+		LogAGX, Log, TEXT("Trimesh '%s' successfully stored to package '%s', asset '%s'"),
+		*Trimesh.GetSourceName(), *AssetId.PackagePath, *AssetId.AssetName);
+
+	FString MeshAssetPath =
+		FString::Printf(TEXT("%s.%s"), *AssetId.PackagePath, *AssetId.AssetName);
+	UE_LOG(LogAGX, Log, TEXT("Loading imported mesh asset from '%s'."), *MeshAssetPath);
+	UStaticMesh* MeshAsset = LoadObject<UStaticMesh>(NULL, *MeshAssetPath, NULL, LOAD_None, NULL);
+	if (MeshAsset == nullptr)
+	{
+		/// \todo What should we do here, other than printing a message and giving up?
+		UE_LOG(LogAGX, Error, TEXT("Failed to load imported mesh asset '%s'"), *MeshAssetPath);
+		return nullptr; /// \todo Don't reeturn nullptr, return an empty UStaticMeshComponent.
+	}
+
+    /// \todo Which EObjectFlags should be passed to NewObject?
 	UStaticMeshComponent* StaticMeshComponent =
-		NewObject<UStaticMeshComponent>(Outer, Class, UniqueMeshName);
-	StaticMeshComponent->SetStaticMesh(StaticMesh);
+		NewObject<UStaticMeshComponent>(Outer, FName(*AssetId.AssetName));
+	StaticMeshComponent->SetStaticMesh(MeshAsset);
 	Owner->AddInstanceComponent(StaticMeshComponent);
 	StaticMeshComponent->RegisterComponent();
 	const bool Attached = StaticMeshComponent->AttachToComponent(
 		Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-	check(Attached);
+	if (!Attached)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Failed to attach imported StaticMeshComponent '%s' to Actor '%s'."), *TrimeshName,
+			*Owner->GetName());
+	}
 	return StaticMeshComponent;
 }
 
