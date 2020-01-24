@@ -46,7 +46,8 @@ public:
 	FString GetSourceName() const;
 
 	void AllocateNative(
-		const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise);
+		const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise,
+		const FString& SourceName);
 
 private:
 	virtual void AllocateNativeShape() override;
@@ -61,6 +62,12 @@ private:
 		const TArray<FVector>* Vertices;
 		const TArray<FTriIndices>* TriIndices;
 		bool bClockwise;
+		const FString& SourceName;
+
+		AllocationParameters(const FString& InSourceName)
+			: SourceName(InSourceName)
+		{
+		}
 	};
 
 	std::weak_ptr<AllocationParameters> TemporaryAllocationParameters;
