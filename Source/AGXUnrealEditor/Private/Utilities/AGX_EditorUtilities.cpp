@@ -215,8 +215,8 @@ namespace
 		// Create the package that will hold our mesh asset.
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
 #if 0
-		// Unclear if this is needed or not. Leaving it out for now but test
-		// with it restored if there are problems.
+		/// \todo Unclear if this is needed or not. Leaving it out for now but 
+		/// test with it restored if there are problems.
 		Package->FullyLoad();
 #endif
 
