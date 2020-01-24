@@ -291,8 +291,9 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 		return nullptr; /// \todo Don't reeturn nullptr, return an empty UStaticMeshComponent.
 	}
 
+    /// \todo Which EObjectFlags should be passed to NewObject?
 	UStaticMeshComponent* StaticMeshComponent =
-		NewObject<UStaticMeshComponent>(Outer, FName(*AssetId.AssetName)); // Which flags?
+		NewObject<UStaticMeshComponent>(Outer, FName(*AssetId.AssetName));
 	StaticMeshComponent->SetStaticMesh(MeshAsset);
 	Owner->AddInstanceComponent(StaticMeshComponent);
 	StaticMeshComponent->RegisterComponent();
