@@ -17,6 +17,15 @@ void UAGX_Simulation::AddTerrain(AAGX_Terrain* Terrain)
 	NativeBarrier.AddTerrain(Terrain->GetNative());
 }
 
+void UAGX_Simulation::SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2)
+{
+	UE_LOG(
+		LogAGX, Verbose, TEXT("Disabling collision between groups: [%s - %s]"), *Group1.ToString(),
+		*Group2.ToString());
+
+	NativeBarrier.SetDisableCollisionGroupPair(Group1, Group2);
+}
+
 void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);

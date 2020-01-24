@@ -50,6 +50,10 @@
 #include "Materials/AGX_ContactMaterialAssetTypeActions.h"
 #include "Materials/AGX_MaterialAssetTypeActions.h"
 #include "RigidBodyBarrier.h"
+#include "AGX_CollisionGroupManager.h"
+#include "AGX_CollisionGroupManagerCustomization.h"
+#include "AGX_CollisionGroupsComponent.h"
+#include "AGX_CollisionGroupsComponentCustomization.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -181,6 +185,16 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_AgxEdModeFileCustomization::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(
+		AAGX_CollisionGroupManager::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_CollisionGroupManagerCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_CollisionGroupsComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_CollisionGroupsComponentCustomization::MakeInstance));
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -198,6 +212,12 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 		UAGX_AgxEdModeConstraints::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeFile::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		AAGX_CollisionGroupManager::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		UAGX_CollisionGroupsComponent::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }

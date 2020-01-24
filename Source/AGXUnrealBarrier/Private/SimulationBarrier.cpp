@@ -77,6 +77,18 @@ void FSimulationBarrier::AddTerrain(FTerrainBarrier* Terrain)
 	NativeRef->Native->add(Terrain->GetNative()->Native);
 }
 
+void FSimulationBarrier::SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2)
+{
+	check(HasNative());
+
+	// In AGXUnreal, adding a collision group pair always mean "disable collision between these
+	// groups". Therefore, the collision enable flag is always set to false.
+	// Note that internally, the collision group names are converted to a 32 bit unsigned int via a
+	// hash function.
+	NativeRef->Native->getSpace()->setEnablePair(
+		StringTo32BitFnvHash(Group1.ToString()), StringTo32BitFnvHash(Group2.ToString()), false);
+}
+
 bool FSimulationBarrier::WriteAGXArchive(const FString& Filename) const
 {
 	check(HasNative());
