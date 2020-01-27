@@ -2,7 +2,7 @@
 
 #include "Materials/AGX_MaterialAsset.h"
 
-#include "Classes/Engine/World.h"
+#include "Engine/World.h"
 
 #include "Materials/AGX_MaterialInstance.h"
 

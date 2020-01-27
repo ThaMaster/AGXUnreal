@@ -1,5 +1,5 @@
 /// \todo Reduce includes!
-#include "AGX_ConstraintDofGraphicsComponent.h"
+#include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
 #include "RenderingThread.h"
 #include "RenderResource.h"
 #include "PrimitiveViewRelevance.h"
@@ -16,7 +16,7 @@
 #include "StaticMeshResources.h"
 #include "UObject/ConstructorHelpers.h"
 
-#include "AGX_MeshUtilities.h"
+#include "Utilities/AGX_MeshUtilities.h"
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintEnums.h"
 #include "Misc/EngineVersionComparison.h"

@@ -1,6 +1,6 @@
 #include "AGX_ArchiveExporter.h"
 
-#include "AGX_EditorUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
 

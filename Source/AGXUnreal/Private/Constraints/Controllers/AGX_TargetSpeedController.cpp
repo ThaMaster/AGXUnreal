@@ -1,4 +1,4 @@
-#include "AGX_TargetSpeedController.h"
+#include "Constraints/Controllers/AGX_TargetSpeedController.h"
 
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"

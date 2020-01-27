@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AGX_Constraint1DOF.h"
+#include "Constraints/AGX_Constraint1DOF.h"
 
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "Constraints/Constraint1DOFBarrier.h"

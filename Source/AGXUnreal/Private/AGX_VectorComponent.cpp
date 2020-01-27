@@ -1,7 +1,7 @@
 #include "AGX_VectorComponent.h"
 
 // AGXUnreal includes.
-#include "AGX_MeshUtilities.h"
+#include "Utilities/AGX_MeshUtilities.h"
 
 // Unreal Engine includes.
 #include "DynamicMeshBuilder.h"

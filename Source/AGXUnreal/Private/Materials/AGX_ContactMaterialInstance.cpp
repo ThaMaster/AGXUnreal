@@ -2,7 +2,7 @@
 
 #include "Materials/AGX_ContactMaterialInstance.h"
 
-#include "Classes/Engine/World.h"
+#include "Engine/World.h"
 
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"

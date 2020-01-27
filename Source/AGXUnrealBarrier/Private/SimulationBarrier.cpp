@@ -1,7 +1,7 @@
 #include "SimulationBarrier.h"
 
 #include "RigidBodyBarrier.h"
-#include "TerrainBarrier.h"
+#include "Terrain/TerrainBarrier.h"
 #include "TypeConversions.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"

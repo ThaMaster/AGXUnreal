@@ -21,11 +21,11 @@
 #include "Widgets/Notifications/SNotificationList.h"
 
 // AGXUnreal includes.
-#include "AGX_BoxShapeComponent.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
-#include "AGX_SphereShapeComponent.h"
-#include "AGX_TrimeshShapeComponent.h"
+#include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Shapes/AGX_BoxShapeComponent.h"
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 
@@ -215,7 +215,7 @@ namespace
 		// Create the package that will hold our mesh asset.
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
 #if 0
-		/// \todo Unclear if this is needed or not. Leaving it out for now but 
+		/// \todo Unclear if this is needed or not. Leaving it out for now but
 		/// test with it restored if there are problems.
 		Package->FullyLoad();
 #endif

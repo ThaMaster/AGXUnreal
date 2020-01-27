@@ -1,4 +1,4 @@
-#include "AGX_RangeController.h"
+#include "Constraints/Controllers/AGX_RangeController.h"
 
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"

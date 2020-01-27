@@ -1,7 +1,7 @@
 #include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Stepper.h"
-#include "AGX_Terrain.h"
+#include "Terrain/AGX_Terrain.h"
 #include "AGX_LogCategory.h"
 
 #include "Engine/GameInstance.h"

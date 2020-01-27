@@ -2,7 +2,7 @@
 
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 
-#include "AGX_EditorUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 

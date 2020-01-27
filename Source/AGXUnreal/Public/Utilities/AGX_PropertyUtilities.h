@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 
 #include "PropertyHandle.h"
-#include "UnrealType.h"
+#include "UObject/UnrealType.h"
 
 /**
  * Provides helper functions for working with UProperty and IPropertyHandle.

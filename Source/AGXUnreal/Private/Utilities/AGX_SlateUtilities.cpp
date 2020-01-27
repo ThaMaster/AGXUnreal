@@ -2,8 +2,8 @@
 
 #include "AGX_LogCategory.h"
 
-#include "SBoxPanel.h"
-#include "SWidget.h"
+#include "Widgets/SBoxPanel.h"
+#include "Widgets/SWidget.h"
 
 bool FAGX_SlateUtilities::RemoveChildWidgetByType(
 	const TSharedPtr<SWidget>& Parent, const FString& TypeNameToRemove, bool Recursive)

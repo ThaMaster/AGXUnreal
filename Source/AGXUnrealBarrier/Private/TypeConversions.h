@@ -11,7 +11,7 @@
 
 // Unreal Engine includes.
 #include "Containers/UnrealString.h"
-#include <LogVerbosity.h>
+#include <Logging/LogVerbosity.h>
 #include "Math/Vector.h"
 #include "Math/Quat.h"
 #include "Math/TwoVectors.h"

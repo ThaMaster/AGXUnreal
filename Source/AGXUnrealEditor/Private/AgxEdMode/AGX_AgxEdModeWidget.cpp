@@ -2,12 +2,12 @@
 
 #include "AgxEdMode/AGX_AgxEdModeWidget.h"
 
-#include "Application/SlateApplication.h"
+#include "Framework/Application/SlateApplication.h"
 #include "EditorFontGlyphs.h"
 #include "IDetailsView.h"
 #include "IPropertyTypeCustomization.h"
-#include "ModuleManager.h"
-#include "MultiBox/MultiBoxBuilder.h"
+#include "Modules/ModuleManager.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "PropertyCustomizationHelpers.h"
 #include "PropertyEditorModule.h"
 #include "Widgets/Images/SImage.h"
@@ -19,7 +19,7 @@
 #include "Widgets/Layout/SScaleBox.h"
 #include "Widgets/SBoxPanel.h"
 
-#include "AGX_AgxEdModeSubMode.h"
+#include "AgxEdMode/AGX_AgxEdModeSubMode.h"
 #include "AgxEdMode/AGX_AgxEdMode.h"
 
 #define LOCTEXT_NAMESPACE "SAGX_AgxEdModeWidget"

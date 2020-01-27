@@ -1,18 +1,18 @@
-#include "AGX_Terrain.h"
+#include "Terrain/AGX_Terrain.h"
 
 // AGXUnreal includes.
-#include "AGX_CuttingDirectionComponent.h"
-#include "AGX_CuttingEdgeComponent.h"
+#include "Terrain/AGX_CuttingDirectionComponent.h"
+#include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "AGX_LogCategory.h"
-#include "AGX_HeightFieldUtilities.h"
+#include "Utilities/AGX_HeightFieldUtilities.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
-#include "AGX_TopEdgeComponent.h"
+#include "Terrain/AGX_TopEdgeComponent.h"
 #include "Utilities/AGX_TextureUtilities.h"
 
 // AGXUnrealBarrier includes.
-#include "TerrainBarrier.h"
-#include "HeightFieldShapeBarrier.h"
+#include "Terrain/TerrainBarrier.h"
+#include "Shapes/HeightFieldShapeBarrier.h"
 #include "Terrain/ShovelBarrier.h"
 
 // Unreal Engine includes.

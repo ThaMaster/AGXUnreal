@@ -1,6 +1,6 @@
 #pragma once
 
-#include "HeightFieldShapeBarrier.h"
+#include "Shapes/HeightFieldShapeBarrier.h"
 
 class ALandscape;
 

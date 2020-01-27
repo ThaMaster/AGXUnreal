@@ -1,4 +1,4 @@
-#include "AGX_TopEdgeComponent.h"
+#include "Terrain/AGX_TopEdgeComponent.h"
 
 UAGX_TopEdgeComponent::UAGX_TopEdgeComponent()
 {

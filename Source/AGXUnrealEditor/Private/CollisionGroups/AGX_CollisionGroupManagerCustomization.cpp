@@ -1,4 +1,4 @@
-#include "AGX_CollisionGroupManagerCustomization.h"
+#include "CollisionGroups/AGX_CollisionGroupManagerCustomization.h"
 
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
@@ -8,9 +8,9 @@
 #include "Widgets/Text/STextBlock.h"
 
 #include "AGX_LogCategory.h"
-#include "AGX_ObjectUtilities.h"
-#include "AGX_CollisionGroupManager.h"
-#include "AGX_ShapeComponent.h"
+#include "Utilities/AGX_ObjectUtilities.h"
+#include "CollisionGroups/AGX_CollisionGroupManager.h"
+#include "Shapes/AGX_ShapeComponent.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_CollisionGroupManagerCustomization"
 

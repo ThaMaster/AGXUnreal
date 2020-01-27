@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AGX_MaterialManager.h"
+#include "Materials/AGX_MaterialManager.h"
 
 #include "Components/BillboardComponent.h"
 #include "Engine/Texture2D.h"
