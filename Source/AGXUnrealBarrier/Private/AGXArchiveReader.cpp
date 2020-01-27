@@ -133,7 +133,6 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 		}
 	}
 
-
 	agxCollide::CollisionGroupManager* CollisionGroupManager =
 		Simulation->getSpace()->getCollisionGroupManager();
 	agxCollide::CollisionGroupManager::SymmetricCollisionGroupVector DisabledGroupPairs =
