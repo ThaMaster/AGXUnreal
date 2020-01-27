@@ -26,7 +26,7 @@ void AAGX_BallConstraint::CreateNativeImpl()
 	FRigidBodyBarrier* RigidBody1 = BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 	FRigidBodyBarrier* RigidBody2 = BodyAttachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 
-	if (RigidBody1 == nullptr)
+	if (!RigidBody1)
 	{
 		UE_LOG(
 			LogAGX, Error,

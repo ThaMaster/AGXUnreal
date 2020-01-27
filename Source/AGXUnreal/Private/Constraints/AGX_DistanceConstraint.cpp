@@ -31,7 +31,7 @@ void AAGX_DistanceConstraint::CreateNativeImpl()
 	FRigidBodyBarrier* RigidBody1 = BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 	FRigidBodyBarrier* RigidBody2 = BodyAttachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 
-	if (RigidBody1 == nullptr)
+	if (!RigidBody1)
 	{
 		UE_LOG(
 			LogAGX, Error, TEXT("Distance constraint %s: could not get Rigid Body Actor from Body Attachment 1."),
