@@ -142,6 +142,23 @@ namespace
 		return Sanitized;
 	}
 
+	FString CreateAssetName(FString TrimeshSourceName, FString ActorName)
+	{
+		TrimeshSourceName = SanitizeName(TrimeshSourceName);
+		if (!TrimeshSourceName.IsEmpty())
+		{
+			return TrimeshSourceName;
+		}
+
+		ActorName = SanitizeName(ActorName);
+		if (!ActorName.IsEmpty())
+		{
+			return ActorName;
+		}
+
+		return TEXT("ImportedAGXMesh");
+	}
+
 	/**
 	 * Apply the RawMesh data to the StaticMesh.
 	 *
@@ -268,12 +285,7 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshAsset(
 	const FString& AssetFolderName)
 {
 	FRawMesh RawMesh = Trimesh.GetRawMesh();
-	FString TrimeshName = SanitizeName(Trimesh.GetSourceName());
-	if (TrimeshName.IsEmpty())
-	{
-		TrimeshName = TEXT("ImportedAGXMesh");
-	}
-
+	FString TrimeshName = CreateAssetName(Trimesh.GetSourceName(), Owner->GetActorLabel());
 	FAssetId AssetId = CreateTrimeshAsset(RawMesh, AssetFolderName, TrimeshName);
 	if (!AssetId.IsValid())
 	{
