@@ -110,10 +110,12 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 	class EditorBody final : public FAGXArchiveBody
 	{
 	public:
-		EditorBody(AActor& InActor, USceneComponent& InRoot, UWorld& InWorld)
+		EditorBody(
+			AActor& InActor, USceneComponent& InRoot, UWorld& InWorld, const FString& InArchiveName)
 			: Actor(InActor)
 			, Root(InRoot)
 			, World(InWorld)
+			, ArchiveName(InArchiveName)
 		{
 		}
 
@@ -139,7 +141,8 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 				FAGX_EditorUtilities::CreateTrimeshShape(&Actor, &Root);
 			ShapeComponent->MeshSourceLocation =
 				EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
-			FAGX_EditorUtilities::CreateStaticMesh(&Actor, ShapeComponent, Trimesh);
+			FAGX_EditorUtilities::CreateStaticMeshAsset(
+				&Actor, ShapeComponent, Trimesh, ArchiveName);
 			FinalizeShape(ShapeComponent, Trimesh);
 		}
 
@@ -162,6 +165,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		AActor& Actor;
 		USceneComponent& Root;
 		UWorld& World;
+		const FString& ArchiveName;
 	};
 
 	// Archive instantiator that creates top-level objects. Knows how to create
@@ -186,7 +190,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			}
 			NewActor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
 			Bodies.Add(Barrier.GetGuid(), NewActor);
-			return new EditorBody(*NewActor, *ActorRoot, World);
+			return new EditorBody(*NewActor, *ActorRoot, World, ImportedRoot.GetActorLabel());
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Hinge) override

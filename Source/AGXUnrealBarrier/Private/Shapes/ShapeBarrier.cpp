@@ -112,7 +112,7 @@ bool FShapeBarrier::GetEnableCollisions() const
 	return NativeRef->NativeGeometry->getEnableCollisions();
 }
 
-void FShapeBarrier::AddCollisionGroup(const FName & GroupName)
+void FShapeBarrier::AddCollisionGroup(const FName& GroupName)
 {
 	check(HasNative());
 
