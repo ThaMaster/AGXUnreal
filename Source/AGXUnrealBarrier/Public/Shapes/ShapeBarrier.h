@@ -1,8 +1,12 @@
 #pragma once
 
-#include <memory>
+// Unreal Engine includes.
+#include "Containers/Array.h"
 #include "Math/Vector.h"
 #include "Math/Quat.h"
+
+// Standard library includes.
+#include <memory>
 
 class FMaterialBarrier;
 struct FGeometryAndShapeRef;
@@ -46,6 +50,17 @@ public:
 	bool GetEnableCollisions() const;
 
 	void AddCollisionGroup(const FName& GroupName);
+
+	/**
+	 * Get all collision groups registered for this Shape.
+	 *
+	 * AGX Dynamics supports both name- and integer-based IDs while AGXUnreal
+	 * only supports named groups. Any integer ID found is converted to the
+	 * string representation of that integer using FString::FromInt.
+	 *
+	 * \return A list of all collision groups registered for this shape.
+	 */
+	TArray<FName> GetCollisionGroups() const;
 
 protected:
 	template <typename TFunc, typename... TPack>

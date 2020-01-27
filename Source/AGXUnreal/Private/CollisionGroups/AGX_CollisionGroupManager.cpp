@@ -1,12 +1,15 @@
 #include "CollisionGroups/AGX_CollisionGroupManager.h"
 
-#include "Components/BillboardComponent.h"
-#include "Engine/Texture2D.h"
-#include "UObject/ConstructorHelpers.h"
-
+// AGXUnreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Shapes/AGX_ShapeComponent.h"
+
+// Unreal Engine includes.
+#include "Components/BillboardComponent.h"
+#include "EngineUtils.h"
+#include "Engine/Texture2D.h"
+#include "UObject/ConstructorHelpers.h"
 
 #define LOCTEXT_NAMESPACE "AAGX_CollisionGroupManager"
 
@@ -62,7 +65,7 @@ void AAGX_CollisionGroupManager::DisableSelectedCollisionGroupPairs()
 		return;
 	}
 
-	DisabledCollisionGroups.Add(FAGX_CollisionGroupPair { SelectedGroup1, SelectedGroup2 });
+	DisabledCollisionGroups.Add(FAGX_CollisionGroupPair {SelectedGroup1, SelectedGroup2});
 }
 
 void AAGX_CollisionGroupManager::ReenableSelectedCollisionGroupPairs()
@@ -103,6 +106,28 @@ void AAGX_CollisionGroupManager::UpdateAvailableCollisionGroups()
 	RemoveDeprecatedCollisionGroups();
 }
 
+void AAGX_CollisionGroupManager::DisableCollisionGroupPair(const FName& Group1, const FName& Group2)
+{
+	int CurrentIndex;
+	if (CollisionGroupPairDisabled(Group1, Group2, CurrentIndex))
+	{
+		return;
+	}
+
+	DisabledCollisionGroups.Add(FAGX_CollisionGroupPair {Group1, Group2});
+}
+
+AAGX_CollisionGroupManager* AAGX_CollisionGroupManager::GetFrom(UWorld* World)
+{
+	TActorIterator<AAGX_CollisionGroupManager> It(World);
+	if (!It)
+	{
+		return nullptr;
+	}
+
+	return *It;
+}
+
 void AAGX_CollisionGroupManager::BeginPlay()
 {
 	AddCollisionGroupPairsToSimulation();
@@ -119,8 +144,7 @@ void AAGX_CollisionGroupManager::AddCollisionGroupPairsToSimulation()
 
 	for (auto& Pair : DisabledCollisionGroups)
 	{
-		Simulation->SetDisableCollisionGroupPair(
-			Pair.Group1, Pair.Group2);
+		Simulation->SetDisableCollisionGroupPair(Pair.Group1, Pair.Group2);
 	}
 }
 

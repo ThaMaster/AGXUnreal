@@ -132,4 +132,19 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 				*Convert(Constraint->getName()));
 		}
 	}
+
+
+	agxCollide::CollisionGroupManager* CollisionGroupManager =
+		Simulation->getSpace()->getCollisionGroupManager();
+	agxCollide::CollisionGroupManager::SymmetricCollisionGroupVector DisabledGroupPairs =
+		CollisionGroupManager->getDisabledCollisionGroupPairs();
+	TArray<std::pair<FString, FString>> DisabledGroups;
+	DisabledGroups.Reserve(static_cast<int32>(DisabledGroupPairs.size()));
+	for (agx::SymmetricPair<agx::Physics::CollisionGroupPtr>& Pair : DisabledGroupPairs)
+	{
+		FString Group1 = Convert(Pair.first->getName());
+		FString Group2 = Convert(Pair.second->getName());
+		DisabledGroups.Add({Group1, Group2});
+	}
+	Instantiator.DisabledCollisionGroups(DisabledGroups);
 }

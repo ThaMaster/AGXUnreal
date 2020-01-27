@@ -1,4 +1,6 @@
 #include "AGX_ArchiveImporter.h"
+
+// AGXUnreal includes.
 #include "AGXArchiveReader.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "RigidBodyBarrier.h"
@@ -9,6 +11,7 @@
 #include "Constraints/DistanceJointBarrier.h"
 #include "Constraints/LockJointBarrier.h"
 
+#include "AGX_CollisionGroupManager.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
@@ -22,10 +25,11 @@
 #include "Constraints/AGX_DistanceConstraint.h"
 #include "Constraints/AGX_LockConstraint.h"
 
-#include "Math/Transform.h"
-#include "GameFramework/Actor.h"
+// Unreal Engine includes.
 #include "Engine/World.h"
+#include "GameFramework/Actor.h"
 #include "Internationalization/Text.h"
+#include "Math/Transform.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -143,6 +147,10 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		void FinalizeShape(UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier)
 		{
 			Component->bCanCollide = Barrier.GetEnableCollisions();
+			for (const FName& Group : Barrier.GetCollisionGroups())
+			{
+				Component->AddCollisionGroup(Group);
+			}
 
 			FVector Location;
 			FQuat Rotation;
@@ -210,6 +218,39 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) override
 		{
 			CreateConstraint(LockJoint, AAGX_LockConstraint::StaticClass());
+		}
+
+		virtual void DisabledCollisionGroups(
+			const TArray<std::pair<FString, FString>>& DisabledGroups) override
+		{
+			if (DisabledGroups.Num() == 0)
+			{
+				// Do not force a CollisionGroupManager if there are no disabled groups.
+				return;
+			}
+
+			// Make sure we have a CollisionGroupManager.
+			AAGX_CollisionGroupManager* Manager = AAGX_CollisionGroupManager::GetFrom(&World);
+			if (Manager == nullptr)
+			{
+				Manager = World.SpawnActor<AAGX_CollisionGroupManager>();
+			}
+			if (Manager == nullptr)
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("Cannot import disabled collision group pairs because there is no "
+						 "CollisionGroupManager in the level."));
+				return;
+			}
+
+			// Apply the disabled group pairs to the CollisionGroupManager.
+			for (auto& Pair : DisabledGroups)
+			{
+				FName Group1 = *Pair.first;
+				FName Group2 = *Pair.second;
+				Manager->DisableCollisionGroupPair(Group1, Group2);
+			}
 		}
 
 	private:
