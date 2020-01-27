@@ -282,6 +282,11 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			/// \todo Is there a correct transform here? Does it matter?
 			Constraint->SetActorTransform(Actors.first->GetActorTransform());
 			Constraint->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
+			if (!Barrier.GetName().IsEmpty())
+			{
+				Constraint->Rename(*Barrier.GetName());
+				Constraint->SetActorLabel(*Barrier.GetName());
+			}
 		}
 
 		AActor* GetActor(const FRigidBodyBarrier& Body)
