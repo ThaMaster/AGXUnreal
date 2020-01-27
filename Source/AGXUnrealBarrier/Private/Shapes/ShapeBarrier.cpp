@@ -115,6 +115,7 @@ bool FShapeBarrier::GetEnableCollisions() const
 void FShapeBarrier::AddCollisionGroup(const FName & GroupName)
 {
 	check(HasNative());
+
 	// Add collision group as (hashed) unsigned int.
 	NativeRef->NativeGeometry->addGroup(StringTo32BitFnvHash(GroupName.ToString()));
 }
