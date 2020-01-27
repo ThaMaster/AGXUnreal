@@ -393,15 +393,16 @@ void AAGX_Constraint::CreateNative()
 
 	CreateNativeImpl();
 
-	// TODO: Shouldn't it be OK to continue if failed to initialize native (e.g. by lacking user
-	// setup)? At least output a user error instead of crashing the program, since it is a user
-	// mistake and not a code mistake to for example forgetting to assign a rigid body to the
-	// constraint!
-	check(HasNative());
-
-	UpdateNativeProperties();
-
-	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-
-	Simulation->GetNative()->AddConstraint(NativeBarrier.Get());
+	if (HasNative())
+	{
+		UpdateNativeProperties();
+		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+		Simulation->GetNative()->AddConstraint(NativeBarrier.Get());
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("Hinge constraint %s: unable to create constraint."),
+			*GetFName().ToString());
+	}
 }

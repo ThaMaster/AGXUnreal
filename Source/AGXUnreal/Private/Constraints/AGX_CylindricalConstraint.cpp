@@ -3,6 +3,7 @@
 #include "Constraints/AGX_CylindricalConstraint.h"
 
 #include "Constraints/CylindricalJointBarrier.h"
+#include "AGX_LogCategory.h"
 
 class FRigidBodyBarrier;
 
@@ -26,9 +27,21 @@ void AAGX_CylindricalConstraint::CreateNativeImpl()
 	FRigidBodyBarrier* RigidBody1 = BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 	FRigidBodyBarrier* RigidBody2 = BodyAttachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 
-	// TODO: Change checks below to more gentle user errors instead of crashes!
-	check(RigidBody1); // Must be set!
-	check(!(BodyAttachment2.RigidBodyActor && !RigidBody2)); // Actor has no Rigid Body!
+	if (!RigidBody1)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("Cylindrical constraint %s: could not get Rigid Body Actor from Body Attachment 1."),
+			*GetFName().ToString());
+		return;
+	}
+
+	if ((BodyAttachment2.RigidBodyActor && !RigidBody2))
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("Cylindrical constraint %s: could not get Rigid Body Actor from Body Attachment 2."),
+			*GetFName().ToString());
+		return;
+	}
 
 	FVector FrameLocation1 = BodyAttachment1.GetLocalFrameLocation();
 	FVector FrameLocation2 = BodyAttachment2.GetLocalFrameLocation();
