@@ -229,7 +229,6 @@ inline void ConvertConstraintBodiesAndFrames(
 		check(NativeRigidBody1);
 
 		NativeFrame1 = ConvertFrame(*FramePosition1, *FrameRotation1);
-		NativeRigidBody1->addAttachment(NativeFrame1, "ConstraintAttachment");
 	}
 
 	// Convert second Rigid Body and Frame to natives
@@ -241,7 +240,6 @@ inline void ConvertConstraintBodiesAndFrames(
 			check(FrameRotation2);
 
 			NativeFrame2 = ConvertFrame(*FramePosition2, *FrameRotation2);
-			NativeRigidBody2->addAttachment(NativeFrame2, "ConstraintAttachment");
 		}
 		else
 		{
