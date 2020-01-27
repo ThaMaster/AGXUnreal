@@ -11,7 +11,7 @@
 #include "Constraints/DistanceJointBarrier.h"
 #include "Constraints/LockJointBarrier.h"
 
-#include "AGX_CollisionGroupManager.h"
+#include "CollisionGroups/AGX_CollisionGroupManager.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
