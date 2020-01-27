@@ -296,6 +296,7 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 	RegisterPlaceableItem(AAGX_LockConstraint::StaticClass());
 	RegisterPlaceableItem(AAGX_PrismaticConstraint::StaticClass());
 	RegisterPlaceableItem(AAGX_Terrain::StaticClass());
+	RegisterPlaceableItem(AAGX_CollisionGroupManager::StaticClass());
 }
 
 void FAGXUnrealEditorModule::UnregisterPlacementCategory()
