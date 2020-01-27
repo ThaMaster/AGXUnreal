@@ -26,6 +26,7 @@
 #include "Constraints/AGX_LockConstraint.h"
 
 // Unreal Engine includes.
+#include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "Internationalization/Text.h"
@@ -141,8 +142,9 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 				FAGX_EditorUtilities::CreateTrimeshShape(&Actor, &Root);
 			ShapeComponent->MeshSourceLocation =
 				EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
-			FAGX_EditorUtilities::CreateStaticMeshAsset(
+			UStaticMeshComponent* MeshComponent = FAGX_EditorUtilities::CreateStaticMeshAsset(
 				&Actor, ShapeComponent, Trimesh, ArchiveName);
+			ShapeComponent->Rename(*MeshComponent->GetName());
 			FinalizeShape(ShapeComponent, Trimesh);
 		}
 
