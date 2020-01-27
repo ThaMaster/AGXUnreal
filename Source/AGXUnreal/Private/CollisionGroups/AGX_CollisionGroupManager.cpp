@@ -133,6 +133,9 @@ TArray<FName> AAGX_CollisionGroupManager::GetAllAvailableCollisionGroupsFromWorl
 	{
 		UAGX_ShapeComponent* Shape = *ObjectIt;
 
+		if (Shape->IsPendingKill())
+			continue;
+
 		for (const auto& CollisionGroup : Shape->CollisionGroups)
 		{
 			FoundCollisionGroups.AddUnique(CollisionGroup);
