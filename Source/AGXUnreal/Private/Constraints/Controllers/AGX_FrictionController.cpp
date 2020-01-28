@@ -30,3 +30,18 @@ void FAGX_ConstraintFrictionController::ToBarrier(FFrictionControllerBarrier* Ba
 	Barrier->FrictionCoefficient = FrictionCoefficient;
 	Barrier->bEnableNonLinearDirectSolveUpdate = bEnableNonLinearDirectSolveUpdate;
 }
+
+void FAGX_ConstraintFrictionController::FromBarrier(const FFrictionControllerBarrier& Barrier)
+{
+	bEnable = Barrier.bEnable;
+	Elasticity = Barrier.Elasticity;
+	Damping = Barrier.Damping;
+	ForceRange.Min = Barrier.ForceRangeMin;
+	ForceRange.Max = Barrier.ForceRangeMax;
+
+
+	bRotational = Barrier.bRotational;
+
+	FrictionCoefficient = Barrier.FrictionCoefficient;
+	bEnableNonLinearDirectSolveUpdate = Barrier.bEnableNonLinearDirectSolveUpdate;
+}

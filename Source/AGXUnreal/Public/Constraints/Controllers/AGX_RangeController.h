@@ -1,8 +1,12 @@
+//
+
 #pragma once
 
 #include "CoreMinimal.h"
 
 #include "AGX_RangeController.generated.h"
+
+struct FRangeControllerBarrier;
 
 /**
  * Range controller for secondary constraints (usually on one of the DOFs
@@ -34,7 +38,8 @@ struct AGXUNREAL_API FAGX_ConstraintRangeController
 public:
 	FAGX_ConstraintRangeController(bool bRotational = false);
 
-	void ToBarrier(struct FRangeControllerBarrier* Barrier) const;
+	void ToBarrier(FRangeControllerBarrier* Barrier) const;
+	void FromBarrier(FRangeControllerBarrier& Barrier);
 
 private:
 	// Whether the controller is on a Rotational or Translational DOF.
