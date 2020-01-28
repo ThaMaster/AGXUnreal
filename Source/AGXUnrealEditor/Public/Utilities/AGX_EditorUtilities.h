@@ -81,6 +81,11 @@ public:
 		UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bSelect,
 		bool bShowNotification, bool bInPlayingWorldIfAvailable);
 
+	template <typename T>
+	static T* CreateConstraint(
+		AActor* RigidBody1, AActor* RigidBody2, bool bSelect, bool bShowNotification,
+		bool bInPlayingWorldIfAvailable, UClass* ConstraintType = nullptr);
+
 	/**
 	 * Create a new AGX Constraint Frame Actor. Set as child to specified Rigid Body, if available.
 	 */
@@ -149,3 +154,18 @@ public:
 	static void GetAllClassesOfType(
 		TArray<UClass*>& OutMatches, UClass* BaseClass, bool bIncludeAbstract);
 };
+
+template <typename T>
+T* FAGX_EditorUtilities::CreateConstraint(
+	AActor* RigidBody1, AActor* RigidBody2, bool bSelect, bool bShowNotification,
+	bool bInPlayingWorldIfAvailable, UClass* ConstraintType)
+{
+	if (ConstraintType == nullptr)
+	{
+		ConstraintType = T::StaticClass();
+	}
+	check(ConstraintType->IsChildOf<T>());
+	return Cast<T>(CreateConstraint(
+		ConstraintType, RigidBody1, RigidBody2, bSelect, bShowNotification,
+		bInPlayingWorldIfAvailable));
+}
