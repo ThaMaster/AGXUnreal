@@ -113,7 +113,7 @@ void FRangeControllerBarrier::FromNative(const agx::RangeController& Native)
 
 	// Special controller variables.
 	agx::RangeReal Range = Native.getRange();
-	RangeMin = bRotational ? Range.lower() : ConvertDistanceToUnreal<double>(Range.upper());
+	RangeMin = bRotational ? Range.lower() : ConvertDistanceToUnreal<double>(Range.lower());
 	RangeMax = bRotational ? Range.upper() : ConvertDistanceToUnreal<double>(Range.upper());
 }
 
