@@ -28,3 +28,16 @@ void FAGX_ConstraintLockController::ToBarrier(FLockControllerBarrier* Barrier) c
 
 	Barrier->Position = bRotational ? FMath::DegreesToRadians(Position) : Position;
 }
+
+void FAGX_ConstraintLockController::FromBarrier(FLockControllerBarrier& Barrier)
+{
+	bEnable = Barrier.bEnable;
+	Elasticity = Barrier.Elasticity;
+	Damping = Barrier.Damping;
+	ForceRange.Min = Barrier.ForceRangeMin;
+	ForceRange.Max = Barrier.ForceRangeMax;
+
+	bRotational = Barrier.bRotational;
+
+	Position = bRotational ? FMath::RadiansToDegrees(Barrier.Position) : Barrier.Position;
+}

@@ -29,3 +29,17 @@ void FAGX_ConstraintRangeController::ToBarrier(FRangeControllerBarrier* Barrier)
 	Barrier->RangeMin = bRotational ? FMath::DegreesToRadians(Range.Min) : Range.Min;
 	Barrier->RangeMax = bRotational ? FMath::DegreesToRadians(Range.Max) : Range.Max;
 }
+
+void FAGX_ConstraintRangeController::FromBarrier(FRangeControllerBarrier& Barrier)
+{
+	bEnable = Barrier.bEnable;
+	Elasticity = Barrier.Elasticity;
+	Damping = Barrier.Damping;
+	ForceRange.Min = static_cast<float>(Barrier.ForceRangeMin);
+	ForceRange.Max = static_cast<float>(Barrier.ForceRangeMax);
+
+	bRotational = Barrier.bRotational;
+
+	Range.Min = bRotational ? FMath::RadiansToDegrees(Barrier.RangeMin) : Barrier.RangeMin;
+	Range.Max = bRotational ? FMath::RadiansToDegrees(Barrier.RangeMax) : Barrier.RangeMax;
+}

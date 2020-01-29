@@ -4,6 +4,8 @@
 
 #include "AGX_ElectricMotorController.generated.h"
 
+struct FElectricMotorControllerBarrier;
+
 /**
  * Electric motor controller for secondary constraints (usually on one of the DOFs
  * that has not been primarily constrained by the AGX Constraint).
@@ -42,7 +44,8 @@ struct AGXUNREAL_API FAGX_ConstraintElectricMotorController
 public:
 	FAGX_ConstraintElectricMotorController(bool bRotational = false);
 
-	void ToBarrier(struct FElectricMotorControllerBarrier* Barrier) const;
+	void ToBarrier(FElectricMotorControllerBarrier* Barrier) const;
+	void FromBarrier(const FElectricMotorControllerBarrier& Barrier);
 
 private:
 	// Whether the controller is on a Rotational or Translational DOF.

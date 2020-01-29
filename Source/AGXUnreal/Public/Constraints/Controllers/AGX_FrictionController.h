@@ -4,6 +4,8 @@
 
 #include "AGX_FrictionController.generated.h"
 
+struct FFrictionControllerBarrier;
+
 /**
  * Friction controller for secondary constraints (usually on one of the DOFs
  * that has not been primarily constrained by the AGX Constraint).
@@ -50,7 +52,8 @@ struct AGXUNREAL_API FAGX_ConstraintFrictionController
 public:
 	FAGX_ConstraintFrictionController(bool bRotational = false);
 
-	void ToBarrier(struct FFrictionControllerBarrier* Barrier) const;
+	void ToBarrier(FFrictionControllerBarrier* Barrier) const;
+	void FromBarrier(const FFrictionControllerBarrier& Barrier);
 
 private:
 	// Whether the controller is on a Rotational or Translational DOF.

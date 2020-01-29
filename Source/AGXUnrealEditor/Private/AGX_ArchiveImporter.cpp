@@ -24,6 +24,7 @@
 #include "Constraints/AGX_CylindricalConstraint.h"
 #include "Constraints/AGX_DistanceConstraint.h"
 #include "Constraints/AGX_LockConstraint.h"
+#include "Constraints/ControllerConstraintBarriers.h"
 
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
@@ -78,33 +79,6 @@ namespace
 
 		return {NewActor, Root};
 	}
-
-}
-
-AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
-{
-	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
-	if (World == nullptr)
-	{
-		return nullptr;
-	}
-
-	// The ImportGroup AActor will contain all objects created while reading
-	// the AGX Dynamics archive.
-	AActor* ImportGroup;
-	USceneComponent* ImportRoot;
-	/// \todo Consider placing ImportedRoot at the center if the imported bodies.
-	std::tie(ImportGroup, ImportRoot) =
-		FAGX_EditorUtilities::CreateEmptyActor(FTransform::Identity, World);
-	if (ImportGroup == nullptr || ImportRoot == nullptr)
-	{
-		return nullptr;
-	}
-
-	FString Filename;
-	/// \todo What about platforms that don't use / as a path separator?
-	ArchivePath.Split(TEXT("/"), nullptr, &Filename, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
-	ImportGroup->SetActorLabel(Filename);
 
 	// Archive instantiator that creates sub-objects under RigidBody. Knows how
 	// to create various subclasses of AGX_ShapesComponent in Unreal Editor.
@@ -197,33 +171,33 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 
 		virtual void InstantiateHinge(const FHingeBarrier& Hinge) override
 		{
-			CreateConstraint(Hinge, AAGX_HingeConstraint::StaticClass());
+			CreateConstraint1DOF(Hinge, AAGX_HingeConstraint::StaticClass());
 		}
 
 		virtual void InstantiatePrismatic(const FPrismaticBarrier& Prismatic) override
 		{
-			CreateConstraint(Prismatic, AAGX_PrismaticConstraint::StaticClass());
+			CreateConstraint1DOF(Prismatic, AAGX_PrismaticConstraint::StaticClass());
 		}
 
 		virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) override
 		{
-			CreateConstraint(BallJoint, AAGX_BallConstraint::StaticClass());
+			CreateConstraint<AAGX_BallConstraint>(BallJoint, AAGX_BallConstraint::StaticClass());
 		}
 
 		virtual void InstantiateCylindricalJoint(
 			const FCylindricalJointBarrier& CylindricalJoint) override
 		{
-			CreateConstraint(CylindricalJoint, AAGX_CylindricalConstraint::StaticClass());
+			CreateConstraint2DOF(CylindricalJoint, AAGX_CylindricalConstraint::StaticClass());
 		}
 
 		virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& DistanceJoint) override
 		{
-			CreateConstraint(DistanceJoint, AAGX_DistanceConstraint::StaticClass());
+			CreateConstraint1DOF(DistanceJoint, AAGX_DistanceConstraint::StaticClass());
 		}
 
 		virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) override
 		{
-			CreateConstraint(LockJoint, AAGX_LockConstraint::StaticClass());
+			CreateConstraint<AAGX_LockConstraint>(LockJoint, AAGX_LockConstraint::StaticClass());
 		}
 
 		virtual void DisabledCollisionGroups(
@@ -260,7 +234,51 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		}
 
 	private:
-		void CreateConstraint(const FConstraintBarrier& Barrier, UClass* ConstraintType)
+		void CreateConstraint1DOF(const FConstraint1DOFBarrier& Barrier, UClass* ConstraintType)
+		{
+			AAGX_Constraint1DOF* Constraint =
+				CreateConstraint<AAGX_Constraint1DOF>(Barrier, ConstraintType);
+			if (Constraint == nullptr)
+			{
+				// No need to log here, done by CreateConstraint.
+				return;
+			}
+
+			StoreElectricMotorController(Barrier, Constraint->ElectricMotorController);
+			StoreFrictionController(Barrier, Constraint->FrictionController);
+			StoreLockController(Barrier, Constraint->LockController);
+			StoreRangeController(Barrier, Constraint->RangeController);
+			StoreTargetSpeedController(Barrier, Constraint->TargetSpeedController);
+		}
+
+		void CreateConstraint2DOF(const FConstraint2DOFBarrier& Barrier, UClass* ConstraintType)
+		{
+			AAGX_Constraint2DOF* Constraint =
+				CreateConstraint<AAGX_Constraint2DOF>(Barrier, ConstraintType);
+			if (Constraint == nullptr)
+			{
+				// No need to log here, done by CreateConstraint.
+				return;
+			}
+
+			StoreElectricMotorController(Barrier, Constraint->ElectricMotorController1, 0);
+			StoreElectricMotorController(Barrier, Constraint->ElectricMotorController2, 1);
+
+			StoreFrictionController(Barrier, Constraint->FrictionController1, 0);
+			StoreFrictionController(Barrier, Constraint->FrictionController2, 1);
+
+			StoreLockController(Barrier, Constraint->LockController1, 0);
+			StoreLockController(Barrier, Constraint->LockController2, 1);
+
+			StoreRangeController(Barrier, Constraint->RangeController1, 0);
+			StoreRangeController(Barrier, Constraint->RangeController2, 1);
+
+			StoreTargetSpeedController(Barrier, Constraint->TargetSpeedController1, 0);
+			StoreTargetSpeedController(Barrier, Constraint->TargetSpeedController2, 1);
+		}
+
+		template <typename ConstraintType>
+		ConstraintType* CreateConstraint(const FConstraintBarrier& Barrier, UClass* ConstraintClass)
 		{
 			std::pair<AActor*, AActor*> Actors = GetActors(Barrier);
 			if (Actors.first == nullptr)
@@ -270,14 +288,15 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 				UE_LOG(
 					LogAGX, Log, TEXT("Constraint %s doesn't have a first body. Ignoring."),
 					*Barrier.GetName());
-				return;
+				return nullptr;
 			}
 
-			AAGX_Constraint* Constraint = FAGX_EditorUtilities::CreateConstraint(
-				ConstraintType, Actors.first, Actors.second,
-				/*bSelect*/ false, /*bShwNotification*/ false, /*bInPlayingWorld*/ false);
+			ConstraintType* Constraint = FAGX_EditorUtilities::CreateConstraint<ConstraintType>(
+				Actors.first, Actors.second,
+				/*bSelect*/ false, /*bShwNotification*/ false, /*bInPlayingWorld*/ false,
+				ConstraintClass);
 
-			StoreFrames(Barrier, Constraint);
+			StoreFrames(Barrier, *Constraint);
 
 			/// \todo Is there a correct transform here? Does it matter?
 			Constraint->SetActorTransform(Actors.first->GetActorTransform());
@@ -287,6 +306,8 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 				Constraint->Rename(*Barrier.GetName());
 				Constraint->SetActorLabel(*Barrier.GetName());
 			}
+
+			return Constraint;
 		}
 
 		AActor* GetActor(const FRigidBodyBarrier& Body)
@@ -323,10 +344,96 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 			Attachment.LocalFrameRotation = Barrier.GetLocalRotation(BodyIndex);
 		}
 
-		void StoreFrames(const FConstraintBarrier& Barrier, AAGX_Constraint* Constraint)
+		void StoreFrames(const FConstraintBarrier& Barrier, AAGX_Constraint& Constraint)
 		{
-			StoreFrame(Barrier, Constraint->BodyAttachment1, 0);
-			StoreFrame(Barrier, Constraint->BodyAttachment2, 1);
+			StoreFrame(Barrier, Constraint.BodyAttachment1, 0);
+			StoreFrame(Barrier, Constraint.BodyAttachment2, 1);
+		}
+
+		void StoreElectricMotorController(
+			const FConstraint1DOFBarrier& Barrier,
+			FAGX_ConstraintElectricMotorController& Controller)
+		{
+			FElectricMotorControllerBarrier ControllerBarrier;
+			Barrier.GetElectricMotorController(ControllerBarrier);
+			Controller.FromBarrier(ControllerBarrier);
+		}
+
+		void StoreElectricMotorController(
+			const FConstraint2DOFBarrier& Barrier,
+			FAGX_ConstraintElectricMotorController& Controller, int32 SecondaryConstraintIndex)
+		{
+			FElectricMotorControllerBarrier ControllerBarrier;
+			Barrier.GetElectricMotorController(ControllerBarrier, SecondaryConstraintIndex);
+			Controller.FromBarrier(ControllerBarrier);
+		}
+
+		void StoreFrictionController(
+			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller)
+		{
+			FFrictionControllerBarrier ControllerBarrier;
+			Barrier.GetFrictionController(ControllerBarrier);
+			Controller.FromBarrier(ControllerBarrier);
+		}
+
+		void StoreFrictionController(
+			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
+			int32 SecondaryConstraintIndex)
+		{
+			FFrictionControllerBarrier ControllerBarrier;
+			Barrier.GetFrictionController(ControllerBarrier, SecondaryConstraintIndex);
+			Controller.FromBarrier(ControllerBarrier);
+		}
+
+		void StoreLockController(
+			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller)
+		{
+			FLockControllerBarrier ControllerBarrier;
+			Barrier.GetLockController(ControllerBarrier);
+			Controller.FromBarrier(ControllerBarrier);
+		}
+
+		void StoreLockController(
+			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
+			int32 SecondaryConstraintIndex)
+		{
+			FLockControllerBarrier ControllerBarrier;
+			Barrier.GetLockController(ControllerBarrier, SecondaryConstraintIndex);
+			Controller.FromBarrier(ControllerBarrier);
+		}
+
+		void StoreRangeController(
+			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller)
+		{
+			FRangeControllerBarrier ControllerBarrier;
+			Barrier.GetRangeController(ControllerBarrier);
+			Controller.FromBarrier(ControllerBarrier);
+		}
+
+		void StoreRangeController(
+			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
+			int32 SecondaryConstraintIndex)
+		{
+			FRangeControllerBarrier ControllerBarrier;
+			Barrier.GetRangeController(ControllerBarrier, SecondaryConstraintIndex);
+			Controller.FromBarrier(ControllerBarrier);
+		}
+
+		void StoreTargetSpeedController(
+			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller)
+		{
+			FTargetSpeedControllerBarrier ControllerBarrier;
+			Barrier.GetTargetSpeedController(ControllerBarrier);
+			Controller.FromBarrier(ControllerBarrier);
+		}
+
+		void StoreTargetSpeedController(
+			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
+			int32 SecondaryConstraintIndex)
+		{
+			FTargetSpeedControllerBarrier ControllerBarrier;
+			Barrier.GetTargetSpeedController(ControllerBarrier, SecondaryConstraintIndex);
+			Controller.FromBarrier(ControllerBarrier);
 		}
 
 	private:
@@ -337,6 +444,33 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		// AActor that we created for that body.
 		TMap<FGuid, AActor*> Bodies;
 	};
+
+}
+
+AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
+{
+	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
+	if (World == nullptr)
+	{
+		return nullptr;
+	}
+
+	// The ImportGroup AActor will contain all objects created while reading
+	// the AGX Dynamics archive.
+	AActor* ImportGroup;
+	USceneComponent* ImportRoot;
+	/// \todo Consider placing ImportedRoot at the center if the imported bodies.
+	std::tie(ImportGroup, ImportRoot) =
+		FAGX_EditorUtilities::CreateEmptyActor(FTransform::Identity, World);
+	if (ImportGroup == nullptr || ImportRoot == nullptr)
+	{
+		return nullptr;
+	}
+
+	FString Filename;
+	/// \todo What about platforms that don't use / as a path separator?
+	ArchivePath.Split(TEXT("/"), nullptr, &Filename, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+	ImportGroup->SetActorLabel(Filename);
 
 	EditorInstantiator Instantiator(*ImportGroup, *World);
 	FAGXArchiveReader::Read(ArchivePath, Instantiator);
