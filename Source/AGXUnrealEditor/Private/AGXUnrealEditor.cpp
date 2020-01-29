@@ -49,6 +49,7 @@
 #include "Constraints/AGX_PrismaticConstraint.h"
 #include "Materials/AGX_ContactMaterialAssetTypeActions.h"
 #include "Materials/AGX_MaterialAssetTypeActions.h"
+#include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 #include "RigidBodyBarrier.h"
 #include "CollisionGroups/AGX_CollisionGroupManager.h"
 #include "CollisionGroups/AGX_CollisionGroupManagerCustomization.h"
@@ -137,6 +138,8 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 		AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_MaterialAssetTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_TerrainMaterialAssetTypeActions(AgxAssetCategoryBit)));
 }
 
 void FAGXUnrealEditorModule::UnregisterAssetTypeActions()

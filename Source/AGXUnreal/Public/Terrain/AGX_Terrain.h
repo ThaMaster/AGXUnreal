@@ -3,6 +3,7 @@
 // AGXUnreal includes.
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/AGX_Shovel.h"
+#include "Materials/AGX_TerrainMaterial.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -82,21 +83,12 @@ public:
 		meta = (ClampMin = "0", UIMin = "0", ClampMax = "1000", UIMax = "1000"))
 	float MaxDepth = 200.0f;
 
-/// \todo Add UAGX_TerrainMaterial.
-#if 0
-	/** The physical bulk, compaction, and particle properties of the Terrain. */
+
+	/** The physical bulk, compaction, particle and surface properties of the Terrain. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	UAGX_TerrainMaterial* TerrainMaterial;
-#endif
 
-/// \todo Add UAGX_Material.
-#if 0
-	/** The physical material of the surface geometry of the Terrain. */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
-	UAGX_Material* SurfaceMaterial;
-#endif
 
-	/// \todo Add Shovels.
 	/**
 	 * A list of the rigid body actors that should be used as terrain shovels.
 	 *
