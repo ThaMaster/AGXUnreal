@@ -11,11 +11,29 @@
 UAGX_InputTargetSpeed::UAGX_InputTargetSpeed()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
+	if (GetOwner() != nullptr && Cast<AAGX_Constraint1DOF>(GetOwner()) == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("AGX Input Target Speed components should only be created on AGX Constraint 1DOF "
+				 "actors. Actor %s isn't an AGX Constraint 1DOF actor."),
+			*GetOwner()->GetName());
+	}
 }
 
 void UAGX_InputTargetSpeed::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (GetOwner() != nullptr && Cast<AAGX_Constraint1DOF>(GetOwner()) == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("AGX Input Target Speed components should only be created on AGX Constraint 1DOF "
+				 "actors. Actor %s isn't an AGX Constraint 1DOF actor."),
+			*GetOwner()->GetName());
+	}
 }
 
 namespace UAGX_InputTargetSpeed_Helpers
