@@ -1,5 +1,65 @@
 #pragma once
 
+// Unreal Engine includes.
+#include "Math/Interval.h"
+
+// Standard library includes.
+#include <memory>
+
+struct FConstraintControllerRef;
+
+class AGXUNREALBARRIER_API FConstraintControllerBarrier
+{
+public:
+	// FConstraintControllerBarrier(); /// \todo Will this be needed?
+	FConstraintControllerBarrier(FConstraintControllerBarrier&& Other) noexcept;
+	FConstraintControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
+	virtual ~FConstraintControllerBarrier(); /// \todo Can this be removed?
+	FConstraintControllerBarrier& operator=(FConstraintControllerBarrier&& Other) noexcept;
+
+	bool HasNative() const;
+	FConstraintControllerRef* GetNative();
+	const FConstraintControllerRef* GetNative() const;
+
+	void SetCompliance(float Compliance);
+	float GetCompliance() const;
+
+	void SetDamping(float Damping);
+	float GetDamping() const;
+
+	void SetForceRange(FFloatInterval ForceRange);
+	FFloatInterval GetForceRange() const;
+
+private:
+	FConstraintControllerBarrier(const FConstraintControllerBarrier&) = delete;
+	void operator=(const FConstraintControllerBarrier&) = delete;
+
+protected:
+	std::unique_ptr<FConstraintControllerRef> NativeRef;
+};
+
+class AGXUNREALBARRIER_API FElectricMotorControllerBarrier : public FConstraintControllerBarrier
+{
+public:
+	//FElectricMotorControllerBarrier(); Will this be needed?
+	FElectricMotorControllerBarrier(FElectricMotorControllerBarrier&& Other) noexcept;
+	FElectricMotorControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
+	virtual ~FElectricMotorControllerBarrier();
+	FElectricMotorControllerBarrier& operator=(FElectricMotorControllerBarrier&& Other) noexcept;
+
+	void SetVoltage(float Voltage);
+	float GetVoltage() const;
+
+	void SetArmatureResistance(float ArmatureResistance);
+	float GetArmatureResistance() const;
+
+	void SetTorqueConstant(float TorqueConstant);
+	float GetTorqueConstant() const;
+
+private:
+};
+
+#if 0
 namespace agx
 {
 	class ElectricMotorController;
@@ -9,6 +69,9 @@ namespace agx
 	class ScrewController;
 	class TargetSpeedController;
 }
+
+
+
 
 /**
  * Used to transfer Electric Motor Controller data between Unreal and AGX natives,
@@ -137,3 +200,4 @@ struct FTargetSpeedControllerBarrier
 
 	void ToNative(agx::TargetSpeedController* Native) const;
 };
+#endif
