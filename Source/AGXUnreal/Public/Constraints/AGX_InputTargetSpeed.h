@@ -2,9 +2,14 @@
 
 #pragma once
 
+// AGXUnreal includes.
+#include "Constraints/AGX_ConstraintEnums.h"
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+
+// Unreal Engine includes.
 #include "InputCoreTypes.h"
+
 #include "AGX_InputTargetSpeed.generated.h"
 
 /**
@@ -46,6 +51,14 @@ public:
 		meta =
 			(Tooltip = "If checked the constraint will move freely when no key is held. If unchecked the constraint will be stopped when no key is held."))
 	bool bDisableOnRelease;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Speed Input", meta = (EditCondition="bMustSelectDOF"))
+	EConstraintFreeDOF TargetDOF;
+
+	// I want to make this a private property, but I don't know how. Setting
+	// VisibleInstanceOnly as a workaround/hack for now.
+	UPROPERTY(Category = "AGX Constraint Speed Input", VisibleInstanceOnly)
+	bool bMustSelectDOF;
 
 protected:
 	virtual void BeginPlay() override;
