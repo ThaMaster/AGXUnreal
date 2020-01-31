@@ -81,7 +81,7 @@ private:
 
 private:
 	/**
-	 * Called from AllocateNative. Each subclass msut override this function and within
+	 * Called from AllocateNative. Each subclass must override this function and within
 	 * it create the correct agx::Constraint object, and assign it to NativeRef->Native.
 	 *
 	 * The override should not call the override of the parent class, to avoid multiple
