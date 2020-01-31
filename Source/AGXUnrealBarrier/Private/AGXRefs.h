@@ -2,6 +2,7 @@
 
 #include "BeginAGXIncludes.h"
 #include <agx/Constraint.h>
+#include <agx/ElementaryConstraint.h>
 #include <agx/FrictionModel.h>
 #include <agx/Material.h>
 #include <agx/RigidBody.h>
@@ -76,6 +77,16 @@ struct FConstraintRef
 
 	FConstraintRef() = default;
 	FConstraintRef(agx::Constraint* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FConstraintControllerRef
+{
+	agx::ref_ptr<agx::BasicControllerConstraint> Native;
+	FConstraintControllerRef() = default;
+	FConstraintControllerRef(agx::BasicControllerConstraint* InNative)
 		: Native(InNative)
 	{
 	}
