@@ -30,3 +30,17 @@ void FAGX_ConstraintTargetSpeedController::ToBarrier(FTargetSpeedControllerBarri
 	Barrier->Speed = bRotational ? FMath::DegreesToRadians(Speed) : Speed;
 	Barrier->bLockedAtZeroSpeed = bLockedAtZeroSpeed;
 }
+
+void FAGX_ConstraintTargetSpeedController::FromBarrier(const FTargetSpeedControllerBarrier& Barrier)
+{
+	bEnable = Barrier.bEnable;
+	Elasticity = Barrier.Elasticity;
+	Damping = Barrier.Damping;
+	ForceRange.Min = static_cast<float>(Barrier.ForceRangeMin);
+	ForceRange.Max = static_cast<float>(Barrier.ForceRangeMax);
+
+	bRotational = Barrier.bRotational;
+
+	Speed = bRotational ? FMath::RadiansToDegrees(Barrier.Speed) : Barrier.Speed;
+	bLockedAtZeroSpeed = Barrier.bLockedAtZeroSpeed;
+}

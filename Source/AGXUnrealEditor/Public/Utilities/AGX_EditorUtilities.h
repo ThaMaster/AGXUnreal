@@ -60,15 +60,19 @@ public:
 	 * Create a new UStaticMeshComponent, along with the underlying StaticMesh
 	 * asset, from the given mesh data. The UStaticMeshComponent will be added
 	 * as a child to the given UAGX_TrimeshShapeComponent. The underlying
-	 * StaticMesh asset is saved to /Game/ImportedAGXMeshes/ with the source
-	 * name that the native agxCollide::Trimesh has.
+	 * StaticMesh asset is saved to /Game/ImportedAGXMeshes/'AssetFolderName'
+	 * with the source name that the native agxCollide::Trimesh has. If it does
+	 * not have a source name then 'ImportedAGXMesh' is used istead.
 	 *
 	 * @param Owner - The Actor to which the StaticMeshComponent should be added.
 	 * @param Outer - The TrimeshShapeComponent that should use the mesh data.
 	 * @param Trimesh - AGX Dynamics trimesh data to convert to a StaticMesh.
+	 * @param AssetFolderName - The name of the folder within /Game/ImportedAGXMeshes' that the
+	 * asset should be stored to.
 	 */
-	static UStaticMeshComponent* CreateStaticMesh(
-		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh);
+	static UStaticMeshComponent* CreateStaticMeshAsset(
+		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh,
+		const FString& AssetFolderName);
 
 	/**
 	 * Create a new constraint of the specified type.
@@ -76,6 +80,11 @@ public:
 	static AAGX_Constraint* CreateConstraint(
 		UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bSelect,
 		bool bShowNotification, bool bInPlayingWorldIfAvailable);
+
+	template <typename T>
+	static T* CreateConstraint(
+		AActor* RigidBody1, AActor* RigidBody2, bool bSelect, bool bShowNotification,
+		bool bInPlayingWorldIfAvailable, UClass* ConstraintType = nullptr);
 
 	/**
 	 * Create a new AGX Constraint Frame Actor. Set as child to specified Rigid Body, if available.
@@ -145,3 +154,18 @@ public:
 	static void GetAllClassesOfType(
 		TArray<UClass*>& OutMatches, UClass* BaseClass, bool bIncludeAbstract);
 };
+
+template <typename T>
+T* FAGX_EditorUtilities::CreateConstraint(
+	AActor* RigidBody1, AActor* RigidBody2, bool bSelect, bool bShowNotification,
+	bool bInPlayingWorldIfAvailable, UClass* ConstraintType)
+{
+	if (ConstraintType == nullptr)
+	{
+		ConstraintType = T::StaticClass();
+	}
+	check(ConstraintType->IsChildOf<T>());
+	return Cast<T>(CreateConstraint(
+		ConstraintType, RigidBody1, RigidBody2, bSelect, bShowNotification,
+		bInPlayingWorldIfAvailable));
+}

@@ -92,6 +92,7 @@ struct FElectricMotorControllerBarrier
 	double TorqueConstant;
 
 	void ToNative(agx::ElectricMotorController* Native) const;
+	void FromNative(const agx::ElectricMotorController& Native);
 };
 
 /**
@@ -114,6 +115,7 @@ struct FFrictionControllerBarrier
 	bool bEnableNonLinearDirectSolveUpdate;
 
 	void ToNative(agx::FrictionController* Native) const;
+	void FromNative(const agx::FrictionController& Native);
 };
 
 /**
@@ -135,6 +137,7 @@ struct FLockControllerBarrier
 	double Position;
 
 	void ToNative(agx::LockController* Native) const;
+	void FromNative(const agx::LockController& Native);
 };
 
 /**
@@ -158,6 +161,7 @@ struct FRangeControllerBarrier
 	double RangeMax;
 
 	void ToNative(agx::RangeController* Native) const;
+	void FromNative(const agx::RangeController& Native);
 };
 
 /**
@@ -176,6 +180,7 @@ struct FScrewControllerBarrier
 	double Lead;
 
 	void ToNative(agx::ScrewController* Native) const;
+	void FromNative(const agx::ScrewController& Native);
 };
 
 /**
@@ -199,5 +204,6 @@ struct FTargetSpeedControllerBarrier
 	bool bLockedAtZeroSpeed;
 
 	void ToNative(agx::TargetSpeedController* Native) const;
+	void FromNative(const agx::TargetSpeedController& Native);
 };
 #endif

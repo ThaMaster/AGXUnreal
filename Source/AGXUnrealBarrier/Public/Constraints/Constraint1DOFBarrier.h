@@ -25,13 +25,23 @@ public:
 
 	void SetElectricMotorController(const FElectricMotorControllerBarrier& Controller);
 
+	void GetElectricMotorController(FElectricMotorControllerBarrier& Controller) const;
+
 	void SetFrictionController(const FFrictionControllerBarrier& Controller);
+
+	void GetFrictionController(FFrictionControllerBarrier& Controller) const;
 
 	void SetLockController(const FLockControllerBarrier& Controller);
 
+	void GetLockController(FLockControllerBarrier& Controller) const;
+
 	void SetRangeController(const FRangeControllerBarrier& Controller);
 
+	void GetRangeController(FRangeControllerBarrier& Controller) const;
+
 	void SetTargetSpeedController(const FTargetSpeedControllerBarrier& Controller);
+
+	void GetTargetSpeedController(FTargetSpeedControllerBarrier& Controller) const;
 
 private:
 	FConstraint1DOFBarrier(const FConstraint1DOFBarrier&) = delete;

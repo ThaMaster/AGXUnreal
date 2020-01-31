@@ -142,6 +142,23 @@ namespace
 		return Sanitized;
 	}
 
+	FString CreateAssetName(FString TrimeshSourceName, FString ActorName)
+	{
+		TrimeshSourceName = SanitizeName(TrimeshSourceName);
+		if (!TrimeshSourceName.IsEmpty())
+		{
+			return TrimeshSourceName;
+		}
+
+		ActorName = SanitizeName(ActorName);
+		if (!ActorName.IsEmpty())
+		{
+			return ActorName;
+		}
+
+		return TEXT("ImportedAGXMesh");
+	}
+
 	/**
 	 * Apply the RawMesh data to the StaticMesh.
 	 *
@@ -194,19 +211,24 @@ namespace
 	/**
 	 * Convert a raw mesh into a StaticMesh asset on disk.
 	 *
-	 * The mesh asset is stored to the /Game/ImportedAGXMeshes/ folder. The
-	 * given MeshName will only be used as-is if it doesn't collide with an
-	 * already existing asset. The final name and the full asset path is
+	 * The mesh asset is stored to the /Game/ImportedAGXMeshes/<AssetFolderName>
+	 * folder. The given MeshName will only be used as-is if it doesn't collide
+	 * with an already existing asset. The final name and the full asset path is
 	 * returned.
 	 *
-	 * @param RawMesh The mesh to store as an asset.
-	 * @param MeshName The name the mesh
+	 * @param RawMesh - The mesh to store as an asset.
+	 * @param AssetFolderName - The folder within '/Game/ImportedAGXMeshes/' in which the asset
+	 * should be stored.
+	 * @param MeshName - The base name to give the asset. A unique name based on the base name will
+	 * become the final name.
 	 * @return The path to the created package and the final name of the asset.
 	 */
-	FAssetId CreateTrimeshAsset(FRawMesh& RawMesh, const FString& MeshName)
+	FAssetId CreateTrimeshAsset(
+		FRawMesh& RawMesh, const FString& AssetFolderName, const FString& MeshName)
 	{
 		// Find actual package path and a unique asset name.
-		FString PackagePath = FString(TEXT("/Game/ImportedAGXMeshes/"));
+		FString PackagePath =
+			FString::Printf(TEXT("/Game/ImportedAGXMeshes/%s/"), *AssetFolderName);
 		FString AssetName = MeshName;
 		IAssetTools& AssetTools =
 			FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
@@ -258,17 +280,13 @@ namespace
 
 }
 
-UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
-	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh)
+UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshAsset(
+	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh,
+	const FString& AssetFolderName)
 {
 	FRawMesh RawMesh = Trimesh.GetRawMesh();
-	FString TrimeshName = SanitizeName(Trimesh.GetSourceName());
-	if (TrimeshName.IsEmpty())
-	{
-		TrimeshName = TEXT("ImportedAGXMesh");
-	}
-
-	FAssetId AssetId = CreateTrimeshAsset(RawMesh, TrimeshName);
+	FString TrimeshName = CreateAssetName(Trimesh.GetSourceName(), Owner->GetActorLabel());
+	FAssetId AssetId = CreateTrimeshAsset(RawMesh, AssetFolderName, TrimeshName);
 	if (!AssetId.IsValid())
 	{
 		/// \todo What should we do here, other than giving up?
@@ -291,7 +309,7 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMesh(
 		return nullptr; /// \todo Don't reeturn nullptr, return an empty UStaticMeshComponent.
 	}
 
-    /// \todo Which EObjectFlags should be passed to NewObject?
+	/// \todo Which EObjectFlags should be passed to NewObject?
 	UStaticMeshComponent* StaticMeshComponent =
 		NewObject<UStaticMeshComponent>(Outer, FName(*AssetId.AssetName));
 	StaticMeshComponent->SetStaticMesh(MeshAsset);

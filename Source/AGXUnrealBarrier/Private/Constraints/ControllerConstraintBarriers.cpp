@@ -107,6 +107,20 @@ void FElectricMotorControllerBarrier::ToNative(agx::ElectricMotorController* Nat
 	Native->setTorqueConstant(TorqueConstant);
 }
 
+void FElectricMotorControllerBarrier::FromNative(const agx::ElectricMotorController& Native)
+{
+	// Common controller variables.
+	bEnable = Native.getEnable();
+	agx::RangeReal ForceRange = Native.getForceRange();
+	ForceRangeMin = ForceRange.lower();
+	ForceRangeMax = ForceRange.upper();
+
+	// Special controller variables.
+	Voltage = Native.getVoltage();
+	ArmatureResistance = Native.getArmatureResistance();
+	TorqueConstant = Native.getTorqueConstant();
+}
+
 void FFrictionControllerBarrier::ToNative(agx::FrictionController* Native) const
 {
 	// Common controller variables.
@@ -120,6 +134,21 @@ void FFrictionControllerBarrier::ToNative(agx::FrictionController* Native) const
 	Native->setEnableNonLinearDirectSolveUpdate(bEnableNonLinearDirectSolveUpdate);
 }
 
+void FFrictionControllerBarrier::FromNative(const agx::FrictionController& Native)
+{
+	// Common controller variables.
+	bEnable = Native.getEnable();
+	Elasticity = Native.getElasticity();
+	Damping = Native.getDamping();
+	agx::RangeReal ForceRange = Native.getForceRange();
+	ForceRangeMin = ForceRange.lower();
+	ForceRangeMax = ForceRange.upper();
+
+	// Special controller variables.
+	FrictionCoefficient = Native.getFrictionCoefficient();
+	bEnableNonLinearDirectSolveUpdate = Native.getEnableNonLinearDirectSolveUpdate();
+}
+
 void FLockControllerBarrier::ToNative(agx::LockController* Native) const
 {
 	// Common controller variables.
@@ -130,6 +159,21 @@ void FLockControllerBarrier::ToNative(agx::LockController* Native) const
 
 	// Special controller variables.
 	Native->setPosition(bRotational ? Position : ConvertDistanceToAgx(Position));
+}
+
+void FLockControllerBarrier::FromNative(const agx::LockController& Native)
+{
+	// Common controller variables.
+	bEnable = Native.getEnable();
+	Elasticity = Native.getElasticity();
+	Damping = Native.getDamping();
+	agx::RangeReal ForceRange = Native.getForceRange();
+	ForceRangeMin = ForceRange.lower();
+	ForceRangeMax = ForceRange.upper();
+
+	// Special controller variables.
+	agx::Real PositionAGX = Native.getPosition();
+	Position = bRotational ? Position : ConvertDistanceToUnreal<double>(PositionAGX);
 }
 
 void FRangeControllerBarrier::ToNative(agx::RangeController* Native) const
@@ -146,6 +190,22 @@ void FRangeControllerBarrier::ToNative(agx::RangeController* Native) const
 		bRotational ? RangeMax : ConvertDistanceToAgx(RangeMax)));
 }
 
+void FRangeControllerBarrier::FromNative(const agx::RangeController& Native)
+{
+	// Common controller variables.
+	bEnable = Native.getEnable();
+	Elasticity = Native.getElasticity();
+	Damping = Native.getDamping();
+	agx::RangeReal ForceRange = Native.getForceRange();
+	ForceRangeMin = ForceRange.lower();
+	ForceRangeMax = ForceRange.upper();
+
+	// Special controller variables.
+	agx::RangeReal Range = Native.getRange();
+	RangeMin = bRotational ? Range.lower() : ConvertDistanceToUnreal<double>(Range.lower());
+	RangeMax = bRotational ? Range.upper() : ConvertDistanceToUnreal<double>(Range.upper());
+}
+
 void FScrewControllerBarrier::ToNative(agx::ScrewController* Native) const
 {
 	// Common controller variables.
@@ -156,6 +216,20 @@ void FScrewControllerBarrier::ToNative(agx::ScrewController* Native) const
 
 	// Special controller variables.
 	Native->setLead(ConvertDistanceToAgx(Lead));
+}
+
+void FScrewControllerBarrier::FromNative(const agx::ScrewController& Native)
+{
+	// Common controller variables.
+	bEnable = Native.getEnable();
+	Elasticity = Native.getElasticity();
+	Damping = Native.getDamping();
+	agx::RangeReal ForceRange = Native.getForceRange();
+	ForceRangeMin = ForceRange.lower();
+	ForceRangeMax = ForceRange.upper();
+
+	// Special controller variables.
+	Lead = ConvertDistanceToUnreal<double>(Native.getLead());
 }
 
 void FTargetSpeedControllerBarrier::ToNative(agx::TargetSpeedController* Native) const
@@ -170,4 +244,21 @@ void FTargetSpeedControllerBarrier::ToNative(agx::TargetSpeedController* Native)
 	Native->setSpeed(bRotational ? Speed : ConvertDistanceToAgx(Speed));
 	Native->setLockedAtZeroSpeed(bLockedAtZeroSpeed);
 }
+
+void FTargetSpeedControllerBarrier::FromNative(const agx::TargetSpeedController& Native)
+{
+	// Common controller variables.
+	bEnable = Native.getEnable();
+	Elasticity = Native.getElasticity();
+	Damping = Native.getDamping();
+	agx::RangeReal ForceRange = Native.getForceRange();
+	ForceRangeMin = ForceRange.lower();
+	ForceRangeMax = ForceRange.upper();
+
+	// Special controller variables.
+	Speed = bRotational ? Native.getSpeed() : ConvertDistanceToUnreal<double>(Native.getSpeed());
+	bLockedAtZeroSpeed = Native.getLockedAtZeroSpeed();
+}
+
 #endif
+

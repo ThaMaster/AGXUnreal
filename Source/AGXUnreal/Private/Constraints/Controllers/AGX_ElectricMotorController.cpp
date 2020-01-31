@@ -29,3 +29,16 @@ void FAGX_ConstraintElectricMotorController::ToBarrier(
 	Barrier->ArmatureResistance = ArmatureResistance;
 	Barrier->TorqueConstant = TorqueConstant;
 }
+
+void FAGX_ConstraintElectricMotorController::FromBarrier(const FElectricMotorControllerBarrier& Barrier)
+{
+	bEnable = Barrier.bEnable;
+	ForceRange.Min = Barrier.ForceRangeMin;
+	ForceRange.Max = Barrier.ForceRangeMax;
+
+	bRotational = Barrier.bRotational;
+
+	Voltage = Barrier.Voltage;
+	ArmatureResistance = Barrier.ArmatureResistance;
+	TorqueConstant = Barrier.TorqueConstant;
+}

@@ -6,6 +6,8 @@
 
 #include "AGX_TargetSpeedController.generated.h"
 
+struct FTargetSpeedControllerBarrier;
+
 /**
  * Target speed controller for secondary constraints (usually on one of the DOFs
  * that has not been primarily constrained by the AGX Constraint).
@@ -35,7 +37,8 @@ struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController : public FAGX_Constrai
 public:
 	FAGX_ConstraintTargetSpeedController(bool bRotational = false);
 
-	void ToBarrier(struct FTargetSpeedControllerBarrier* Barrier) const;
+	void ToBarrier(FTargetSpeedControllerBarrier* Barrier) const;
+	void FromBarrier(const FTargetSpeedControllerBarrier& Barrier);
 
 private:
 	// Whether the controller is on a Rotational or Translational DOF.
