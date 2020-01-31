@@ -53,6 +53,12 @@ inline T ConvertDistanceToUnreal(agx::Real V)
 	return static_cast<T>(V * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
 }
 
+inline float ConvertAngle(agx::Real A)
+{
+	return Convert(FMath::RadiansToDegrees(A));
+}
+
+
 inline agx::Real Convert(float V)
 {
 	return static_cast<agx::Real>(V);
@@ -68,6 +74,12 @@ inline agx::Real ConvertDistanceToAgx(T V)
 {
 	return static_cast<agx::Real>(V) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
 }
+
+inline agx::Real ConvertAngle(float A)
+{
+	return FMath::DegreesToRadians(Convert(A));
+}
+
 
 inline FVector Convert(agx::Vec3 V)
 {
