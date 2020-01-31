@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 
+#include "AGX_ConstraintController.h"
+
 #include "AGX_TargetSpeedController.generated.h"
 
 /**
@@ -10,12 +12,10 @@
  * Disabled by default.
  */
 USTRUCT()
-struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController
+struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController : public FAGX_ConstraintController
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere)
-	bool bEnable;
 
 	/**
 	 * Target Speed in Degrees Per Second if controller is on a Rotational DOF,
@@ -31,15 +31,6 @@ struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController
 	 */
 	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
 	bool bLockedAtZeroSpeed;
-
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	double Elasticity;
-
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	double Damping;
-
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	FFloatInterval ForceRange;
 
 public:
 	FAGX_ConstraintTargetSpeedController(bool bRotational = false);
