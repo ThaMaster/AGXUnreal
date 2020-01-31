@@ -11,7 +11,8 @@
 
 // Unreal Engine includes.
 #include "Containers/UnrealString.h"
-#include <Logging/LogVerbosity.h>
+#include "Logging/LogVerbosity.h"
+#include "Math/Interval.h"
 #include "Math/Vector.h"
 #include "Math/Quat.h"
 #include "Math/TwoVectors.h"
@@ -98,6 +99,26 @@ inline agx::Vec3 ConvertVector(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3(ConvertDistance(V.X), -ConvertDistance(V.Y), ConvertDistance(V.Z));
+}
+
+inline FFloatInterval Convert(const agx::RangeReal& R)
+{
+	return FFloatInterval(Convert(R.lower()), Convert(R.upper()));
+}
+
+inline FFloatInterval ConvertDistance(const agx::RangeReal& R)
+{
+	return FFloatInterval(ConvertDistance(R.lower()), ConvertDistance(R.upper()));
+}
+
+inline agx::RangeReal Convert(const FFloatInterval& I)
+{
+	return agx::RangeReal(Convert(I.Min), Convert(I.Max));
+}
+
+inline agx::RangeReal ConvertDistance(const FFloatInterval& I)
+{
+	return agx::RangeReal(ConvertDistance(I.Min), ConvertDistance(I.Max));
 }
 
 inline agx::Line Convert(const FTwoVectors& Vs)
