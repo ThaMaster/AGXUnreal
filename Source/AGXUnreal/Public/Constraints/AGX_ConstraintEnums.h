@@ -60,3 +60,13 @@ enum class EDofFlag : uint8
 	DOF_FLAG_ROTATIONAL_2 = 1 << 4 UMETA(DisplayName = "Rotation2"),
 	DOF_FLAG_ROTATIONAL_3 = 1 << 5 UMETA(DisplayName = "Rotation3"),
 };
+
+/**
+ *
+ */
+UENUM()
+enum class EConstraintFreeDOF : uint8
+{
+	FIRST UMETA(DisplayName = "First"),
+	SECOND UMETA(DisplayName = "Second")
+};
