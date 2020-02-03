@@ -36,7 +36,7 @@ UAGX_MaterialBase::~UAGX_MaterialBase()
 {
 }
 
-void UAGX_MaterialBase::CopyProperties(const UAGX_MaterialBase* Source)
+void UAGX_MaterialBase::CopyShapeMaterialProperties(const UAGX_MaterialBase* Source)
 {
 	if (Source)
 	{

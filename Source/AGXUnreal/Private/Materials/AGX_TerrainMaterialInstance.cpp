@@ -46,9 +46,8 @@ UAGX_TerrainMaterialInstance* UAGX_TerrainMaterialInstance::CreateFromAsset(
 	UAGX_TerrainMaterialInstance* NewInstance = NewObject<UAGX_TerrainMaterialInstance>(
 		Outer, UAGX_TerrainMaterialInstance::StaticClass(), *InstanceName, RF_Transient);
 
-	// Copy both the AGX_MaterialBase properties (bulk, surface) and the terrain specific properties
-	NewInstance->CopyProperties(Source);
-	NewInstance->Terrain = Source->Terrain;
+	// Copy the terrain material properties
+	NewInstance->CopyTerrainMaterialProperties(Source);
 
 	NewInstance->CreateNative(PlayingWorld);
 
@@ -95,6 +94,26 @@ void UAGX_TerrainMaterialInstance::UpdateNativeProperties()
 	if (HasNative())
 	{
 		NativeBarrier->SetName(TCHAR_TO_UTF8(*GetName()));
-		NativeBarrier->SetDensity(Terrain.TerrainDensity);
+
+		// Set Bulk properties.
+		NativeBarrier->SetAdhesionOverlapFactor(TerrainBulk.AdhesionOverlapFactor);
+		NativeBarrier->SetCohesion(TerrainBulk.Cohesion);
+		NativeBarrier->SetDensity(TerrainBulk.Density);
+		NativeBarrier->SetDilatancyAngle(TerrainBulk.DilatancyAngle);
+		NativeBarrier->SetFrictionAngle(TerrainBulk.FrictionAngle);
+		NativeBarrier->SetMaximumDensity(TerrainBulk.MaxDensity);
+		NativeBarrier->SetPoissonsRatio(TerrainBulk.PoissonsRatio);
+		NativeBarrier->SetSwellFactor(TerrainBulk.SwellFactor);
+		NativeBarrier->SetYoungsModulus(TerrainBulk.YoungsModulus);
+
+		// Set Compaction properties.
+		NativeBarrier->SetAngleOfReposeCompactionRate(TerrainCompaction.AngleOfReposeCompactionRate);
+		NativeBarrier->SetBankStatePhi(TerrainCompaction.Phi0);
+		NativeBarrier->SetCompactionTimeRelaxationConstant(TerrainCompaction.CompactionTimeRelaxationConstant);
+		NativeBarrier->SetCompressionIndex(TerrainCompaction.CompressionIndex);
+		NativeBarrier->SetHardeningConstantKE(TerrainCompaction.K_e);
+		NativeBarrier->SetHardeningConstantNE(TerrainCompaction.N_e);
+		NativeBarrier->SetPreconsolidationStress(TerrainCompaction.PreconsolidationStress);
+		NativeBarrier->SetStressCutOffFraction(TerrainCompaction.StressCutOffFraction);
 	}
 }

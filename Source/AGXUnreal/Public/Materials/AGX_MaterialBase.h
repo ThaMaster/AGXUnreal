@@ -49,5 +49,6 @@ public:
 	virtual UAGX_ShapeMaterialInstance* GetOrCreateShapeMaterialInstance(UWorld* PlayingWorld)
 		PURE_VIRTUAL(UAGX_MaterialBase::GetOrCreateShapeMaterialInstance, return nullptr;);
 
-	void CopyProperties(const UAGX_MaterialBase* Source);
+protected:
+	void CopyShapeMaterialProperties(const UAGX_MaterialBase* Source);
 };

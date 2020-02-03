@@ -3,7 +3,9 @@
 #include "CoreMinimal.h"
 
 #include "Materials/AGX_MaterialBase.h"
-#include "Materials/AGX_TerrainMaterialProperties.h"
+#include "Materials/AGX_TerrainBulkProperties.h"
+#include "Materials/AGX_TerrainCompactionProperties.h"
+
 #include "AGX_TerrainMaterialBase.generated.h"
 
 class UAGX_TerrainMaterialInstance;
@@ -41,7 +43,10 @@ public:
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "Material Properties")
-	FAGX_TerrainMaterialProperties Terrain;
+	FAGX_TerrainBulkProperties TerrainBulk;
+
+	UPROPERTY(EditAnywhere, Category = "Material Properties")
+	FAGX_TerrainCompactionProperties TerrainCompaction;
 
 	/**
 	 * Invokes the member function GetOrCreateTerrainMaterialInstance() on terrain material pointed
@@ -59,4 +64,7 @@ public:
 	 */
 	virtual UAGX_TerrainMaterialInstance* GetOrCreateTerrainMaterialInstance(UWorld* PlayingWorld)
 		PURE_VIRTUAL(UAGX_TerrainMaterialBase::GetOrCreateTerrainMaterialInstance, return nullptr;);
+
+protected:
+	void CopyTerrainMaterialProperties(const UAGX_TerrainMaterialBase* Source);
 };

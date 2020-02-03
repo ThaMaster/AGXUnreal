@@ -28,7 +28,7 @@ UAGX_ShapeMaterialInstance* UAGX_ShapeMaterialInstance::CreateFromAsset(
 	UAGX_ShapeMaterialInstance* NewInstance = NewObject<UAGX_ShapeMaterialInstance>(
 		Outer, UAGX_ShapeMaterialInstance::StaticClass(), *InstanceName, RF_Transient);
 
-	NewInstance->CopyProperties(Source);
+	NewInstance->CopyShapeMaterialProperties(Source);
 
 	NewInstance->CreateNative(PlayingWorld);
 
