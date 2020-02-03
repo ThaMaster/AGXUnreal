@@ -56,10 +56,10 @@ FString FTerrainMaterialBarrier::GetName() const
 	return Convert(NativeRef->Native->getName());
 }
 
-void FTerrainMaterialBarrier::SetAdhesionOverlapFactor(double Density)
+void FTerrainMaterialBarrier::SetAdhesionOverlapFactor(double AdhesionOverlapFactor)
 {
 	check(HasNative());
-	NativeRef->Native->getBulkProperties()->setAdhesionOverlapFactor(Density);
+	NativeRef->Native->getBulkProperties()->setAdhesionOverlapFactor(AdhesionOverlapFactor);
 }
 
 double FTerrainMaterialBarrier::GetAdhesionOverlapFactor() const
@@ -68,10 +68,10 @@ double FTerrainMaterialBarrier::GetAdhesionOverlapFactor() const
 	return NativeRef->Native->getBulkProperties()->getAdhesionOverlapFactor();
 }
 
-void FTerrainMaterialBarrier::SetCohesion(double Density)
+void FTerrainMaterialBarrier::SetCohesion(double Cohesion)
 {
 	check(HasNative());
-	NativeRef->Native->getBulkProperties()->setCohesion(Density);
+	NativeRef->Native->getBulkProperties()->setCohesion(Cohesion);
 }
 
 double FTerrainMaterialBarrier::GetCohesion() const
@@ -92,10 +92,10 @@ double FTerrainMaterialBarrier::GetDensity() const
 	return NativeRef->Native->getBulkProperties()->getDensity();
 }
 
-void FTerrainMaterialBarrier::SetDilatancyAngle(double Density)
+void FTerrainMaterialBarrier::SetDilatancyAngle(double DilatancyAngle)
 {
 	check(HasNative());
-	NativeRef->Native->getBulkProperties()->setDilatancyAngle(Density);
+	NativeRef->Native->getBulkProperties()->setDilatancyAngle(DilatancyAngle);
 }
 
 double FTerrainMaterialBarrier::GetDilatancyAngle() const
@@ -104,10 +104,10 @@ double FTerrainMaterialBarrier::GetDilatancyAngle() const
 	return NativeRef->Native->getBulkProperties()->getDilatancyAngle();
 }
 
-void FTerrainMaterialBarrier::SetFrictionAngle(double Density)
+void FTerrainMaterialBarrier::SetFrictionAngle(double FrictionAngle)
 {
 	check(HasNative());
-	NativeRef->Native->getBulkProperties()->setFrictionAngle(Density);
+	NativeRef->Native->getBulkProperties()->setFrictionAngle(FrictionAngle);
 }
 
 double FTerrainMaterialBarrier::GetFrictionAngle() const
@@ -116,10 +116,10 @@ double FTerrainMaterialBarrier::GetFrictionAngle() const
 	return NativeRef->Native->getBulkProperties()->getFrictionAngle();
 }
 
-void FTerrainMaterialBarrier::SetMaximumDensity(double Density)
+void FTerrainMaterialBarrier::SetMaximumDensity(double MaxDensity)
 {
 	check(HasNative());
-	NativeRef->Native->getBulkProperties()->setMaximumDensity(Density);
+	NativeRef->Native->getBulkProperties()->setMaximumDensity(MaxDensity);
 }
 
 double FTerrainMaterialBarrier::GetMaximumDensity() const
@@ -128,10 +128,10 @@ double FTerrainMaterialBarrier::GetMaximumDensity() const
 	return NativeRef->Native->getBulkProperties()->getMaximumDensity();
 }
 
-void FTerrainMaterialBarrier::SetPoissonsRatio(double Density)
+void FTerrainMaterialBarrier::SetPoissonsRatio(double PoissonsRatio)
 {
 	check(HasNative());
-	NativeRef->Native->getBulkProperties()->setPoissonsRatio(Density);
+	NativeRef->Native->getBulkProperties()->setPoissonsRatio(PoissonsRatio);
 }
 
 double FTerrainMaterialBarrier::GetPoissonsRatio() const
@@ -140,10 +140,10 @@ double FTerrainMaterialBarrier::GetPoissonsRatio() const
 	return NativeRef->Native->getBulkProperties()->getPoissonsRatio();
 }
 
-void FTerrainMaterialBarrier::SetSwellFactor(double Density)
+void FTerrainMaterialBarrier::SetSwellFactor(double SwellFactor)
 {
 	check(HasNative());
-	NativeRef->Native->getBulkProperties()->setSwellFactor(Density);
+	NativeRef->Native->getBulkProperties()->setSwellFactor(SwellFactor);
 }
 
 double FTerrainMaterialBarrier::GetSwellFactor() const
@@ -152,10 +152,10 @@ double FTerrainMaterialBarrier::GetSwellFactor() const
 	return NativeRef->Native->getBulkProperties()->getSwellFactor();
 }
 
-void FTerrainMaterialBarrier::SetYoungsModulus(double Density)
+void FTerrainMaterialBarrier::SetYoungsModulus(double YoungsModulus)
 {
 	check(HasNative());
-	NativeRef->Native->getBulkProperties()->setYoungsModulus(Density);
+	NativeRef->Native->getBulkProperties()->setYoungsModulus(YoungsModulus);
 }
 
 double FTerrainMaterialBarrier::GetYoungsModulus() const
@@ -164,10 +164,10 @@ double FTerrainMaterialBarrier::GetYoungsModulus() const
 	return NativeRef->Native->getBulkProperties()->getYoungsModulus();
 }
 
-void FTerrainMaterialBarrier::SetAngleOfReposeCompactionRate(double Density)
+void FTerrainMaterialBarrier::SetAngleOfReposeCompactionRate(double AngleOfReposeCompactionRate)
 {
 	check(HasNative());
-	NativeRef->Native->getCompactionProperties()->setAngleOfReposeCompactionRate(Density);
+	NativeRef->Native->getCompactionProperties()->setAngleOfReposeCompactionRate(AngleOfReposeCompactionRate);
 }
 
 double FTerrainMaterialBarrier::GetAngleOfReposeCompactionRate() const
@@ -176,10 +176,10 @@ double FTerrainMaterialBarrier::GetAngleOfReposeCompactionRate() const
 	return NativeRef->Native->getCompactionProperties()->getAngleOfReposeCompactionRate();
 }
 
-void FTerrainMaterialBarrier::SetBankStatePhi(double Density)
+void FTerrainMaterialBarrier::SetBankStatePhi(double Phi0)
 {
 	check(HasNative());
-	NativeRef->Native->getCompactionProperties()->setBankStatePhi(Density);
+	NativeRef->Native->getCompactionProperties()->setBankStatePhi(Phi0);
 }
 
 double FTerrainMaterialBarrier::GetBankStatePhi() const
@@ -188,10 +188,10 @@ double FTerrainMaterialBarrier::GetBankStatePhi() const
 	return NativeRef->Native->getCompactionProperties()->getBankStatePhi();
 }
 
-void FTerrainMaterialBarrier::SetCompactionTimeRelaxationConstant(double Density)
+void FTerrainMaterialBarrier::SetCompactionTimeRelaxationConstant(double CompactionTimeRelaxationConstant)
 {
 	check(HasNative());
-	NativeRef->Native->getCompactionProperties()->setCompactionTimeRelaxationConstant(Density);
+	NativeRef->Native->getCompactionProperties()->setCompactionTimeRelaxationConstant(CompactionTimeRelaxationConstant);
 }
 
 double FTerrainMaterialBarrier::GetCompactionTimeRelaxationConstant() const
@@ -200,10 +200,10 @@ double FTerrainMaterialBarrier::GetCompactionTimeRelaxationConstant() const
 	return NativeRef->Native->getCompactionProperties()->getCompactionTimeRelaxationConstant();
 }
 
-void FTerrainMaterialBarrier::SetCompressionIndex(double Density)
+void FTerrainMaterialBarrier::SetCompressionIndex(double CompressionIndex)
 {
 	check(HasNative());
-	NativeRef->Native->getCompactionProperties()->setCompressionIndex(Density);
+	NativeRef->Native->getCompactionProperties()->setCompressionIndex(CompressionIndex);
 }
 
 double FTerrainMaterialBarrier::GetCompressionIndex() const
@@ -212,10 +212,10 @@ double FTerrainMaterialBarrier::GetCompressionIndex() const
 	return NativeRef->Native->getCompactionProperties()->getCompressionIndex();
 }
 
-void FTerrainMaterialBarrier::SetHardeningConstantKE(double Density)
+void FTerrainMaterialBarrier::SetHardeningConstantKE(double K_e)
 {
 	check(HasNative());
-	NativeRef->Native->getCompactionProperties()->setHardeningConstantKE(Density);
+	NativeRef->Native->getCompactionProperties()->setHardeningConstantKE(K_e);
 }
 
 double FTerrainMaterialBarrier::GetHardeningConstantKE() const
@@ -224,10 +224,10 @@ double FTerrainMaterialBarrier::GetHardeningConstantKE() const
 	return NativeRef->Native->getCompactionProperties()->getHardeningConstantKE();
 }
 
-void FTerrainMaterialBarrier::SetHardeningConstantNE(double Density)
+void FTerrainMaterialBarrier::SetHardeningConstantNE(double N_e)
 {
 	check(HasNative());
-	NativeRef->Native->getCompactionProperties()->setHardeningConstantNE(Density);
+	NativeRef->Native->getCompactionProperties()->setHardeningConstantNE(N_e);
 }
 
 double FTerrainMaterialBarrier::GetHardeningConstantNE() const
@@ -236,10 +236,10 @@ double FTerrainMaterialBarrier::GetHardeningConstantNE() const
 	return NativeRef->Native->getCompactionProperties()->getHardeningConstantNE();
 }
 
-void FTerrainMaterialBarrier::SetPreconsolidationStress(double Density)
+void FTerrainMaterialBarrier::SetPreconsolidationStress(double PreconsolidationStress)
 {
 	check(HasNative());
-	NativeRef->Native->getCompactionProperties()->setPreconsolidationStress(Density);
+	NativeRef->Native->getCompactionProperties()->setPreconsolidationStress(PreconsolidationStress);
 }
 
 double FTerrainMaterialBarrier::GetPreconsolidationStress() const
@@ -248,10 +248,10 @@ double FTerrainMaterialBarrier::GetPreconsolidationStress() const
 	return NativeRef->Native->getCompactionProperties()->getPreconsolidationStress();
 }
 
-void FTerrainMaterialBarrier::SetStressCutOffFraction(double Density)
+void FTerrainMaterialBarrier::SetStressCutOffFraction(double StressCutOffFraction)
 {
 	check(HasNative());
-	NativeRef->Native->getCompactionProperties()->setStressCutOffFraction(Density);
+	NativeRef->Native->getCompactionProperties()->setStressCutOffFraction(StressCutOffFraction);
 }
 
 double FTerrainMaterialBarrier::GetStressCutOffFraction() const

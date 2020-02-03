@@ -27,56 +27,56 @@ public:
 	FString GetName() const;
 
 	// Bulk properties
-	void SetAdhesionOverlapFactor(double Density);
+	void SetAdhesionOverlapFactor(double AdhesionOverlapFactor);
 	double GetAdhesionOverlapFactor() const;
 
-	void SetCohesion(double Density);
+	void SetCohesion(double Cohesion);
 	double GetCohesion() const;
 
 	void SetDensity(double Density);
 	double GetDensity() const;
 
-	void SetDilatancyAngle(double Density);
+	void SetDilatancyAngle(double DilatancyAngle);
 	double GetDilatancyAngle() const;
 
-	void SetFrictionAngle(double Density);
+	void SetFrictionAngle(double FrictionAngle);
 	double GetFrictionAngle() const;
 
-	void SetMaximumDensity(double Density);
+	void SetMaximumDensity(double MaxDensity);
 	double GetMaximumDensity() const;
 
-	void SetPoissonsRatio(double Density);
+	void SetPoissonsRatio(double PoissonsRatio);
 	double GetPoissonsRatio() const;
 
-	void SetSwellFactor(double Density);
+	void SetSwellFactor(double SwellFactor);
 	double GetSwellFactor() const;
 
-	void SetYoungsModulus(double Density);
+	void SetYoungsModulus(double YoungsModulus);
 	double GetYoungsModulus() const;
 
 	// Compaction properties
-	void SetAngleOfReposeCompactionRate(double Density);
+	void SetAngleOfReposeCompactionRate(double AngleOfReposeCompactionRate);
 	double GetAngleOfReposeCompactionRate() const;
 
-	void SetBankStatePhi(double Density);
+	void SetBankStatePhi(double Phi0);
 	double GetBankStatePhi() const;
 
-	void SetCompactionTimeRelaxationConstant(double Density);
+	void SetCompactionTimeRelaxationConstant(double CompactionTimeRelaxationConstant);
 	double GetCompactionTimeRelaxationConstant() const;
 
-	void SetCompressionIndex(double Density);
+	void SetCompressionIndex(double CompressionIndex);
 	double GetCompressionIndex() const;
 
-	void SetHardeningConstantKE(double Density);
+	void SetHardeningConstantKE(double K_e);
 	double GetHardeningConstantKE() const;
 
-	void SetHardeningConstantNE(double Density);
+	void SetHardeningConstantNE(double N_e);
 	double GetHardeningConstantNE() const;
 
-	void SetPreconsolidationStress(double Density);
+	void SetPreconsolidationStress(double PreconsolidationStress);
 	double GetPreconsolidationStress() const;
 
-	void SetStressCutOffFraction(double Density);
+	void SetStressCutOffFraction(double StressCutOffFraction);
 	double GetStressCutOffFraction() const;
 
 private:
