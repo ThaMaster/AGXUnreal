@@ -4,6 +4,7 @@
 #include "TypeConversions.h"
 
 #include <Misc/AssertionMacros.h>
+#include "Math/UnrealMathUtility.h"
 
 FTerrainMaterialBarrier::FTerrainMaterialBarrier()
 	: NativeRef {new FTerrainMaterialRef}
@@ -95,25 +96,29 @@ double FTerrainMaterialBarrier::GetDensity() const
 void FTerrainMaterialBarrier::SetDilatancyAngle(double DilatancyAngle)
 {
 	check(HasNative());
-	NativeRef->Native->getBulkProperties()->setDilatancyAngle(DilatancyAngle);
+	double DilatancyAngleRad = FMath::DegreesToRadians(DilatancyAngle);
+	NativeRef->Native->getBulkProperties()->setDilatancyAngle(DilatancyAngleRad);
 }
 
 double FTerrainMaterialBarrier::GetDilatancyAngle() const
 {
 	check(HasNative());
-	return NativeRef->Native->getBulkProperties()->getDilatancyAngle();
+	double DilatancyAngleRad = NativeRef->Native->getBulkProperties()->getDilatancyAngle();
+	return FMath::RadiansToDegrees(DilatancyAngleRad);
 }
 
 void FTerrainMaterialBarrier::SetFrictionAngle(double FrictionAngle)
 {
 	check(HasNative());
-	NativeRef->Native->getBulkProperties()->setFrictionAngle(FrictionAngle);
+	double FricAngRad = FMath::DegreesToRadians(FrictionAngle);
+	NativeRef->Native->getBulkProperties()->setFrictionAngle(FricAngRad);
 }
 
 double FTerrainMaterialBarrier::GetFrictionAngle() const
 {
 	check(HasNative());
-	return NativeRef->Native->getBulkProperties()->getFrictionAngle();
+	double FricAngRad = NativeRef->Native->getBulkProperties()->getDilatancyAngle();
+	return FMath::RadiansToDegrees(FricAngRad);
 }
 
 void FTerrainMaterialBarrier::SetMaximumDensity(double MaxDensity)
