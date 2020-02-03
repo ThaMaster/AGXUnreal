@@ -3,7 +3,6 @@
 // AGXUnreal includes.
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/AGX_Shovel.h"
-#include "Materials/AGX_TerrainMaterial.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -28,6 +27,7 @@
 
 #include "AGX_Terrain.generated.h"
 
+class UAGX_TerrainMaterialBase;
 class ALandscape;
 class UNiagaraComponent;
 class UNiagaraSystem;
@@ -86,7 +86,7 @@ public:
 
 	/** The physical bulk, compaction, particle and surface properties of the Terrain. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
-	UAGX_TerrainMaterial* TerrainMaterial;
+	UAGX_TerrainMaterialBase* TerrainMaterial;
 
 
 	/**
@@ -181,6 +181,7 @@ private:
 	void InitializeNative();
 	void CreateNativeTerrain();
 	void CreateNativeShovels();
+	void CreateTerrainMaterial();
 
 	void InitializeRendering();
 	void InitializeDisplacementMap();

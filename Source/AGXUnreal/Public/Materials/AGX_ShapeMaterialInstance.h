@@ -3,32 +3,30 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Materials/AGX_MaterialBase.h"
+#include "Materials/AGX_ShapeMaterialBase.h"
 #include "Materials/MaterialBarrier.h" /// \todo Shouldn't be necessary here since we have a destructor in cpp file!
-#include "AGX_MaterialInstance.generated.h"
+#include "AGX_ShapeMaterialInstance.generated.h"
 
 class FMaterialBarrier;
-class UAGX_MaterialAsset;
+class UAGX_ShapeMaterialAsset;
 
 /**
  * Represents a native AGX material in-game. Should never exist when not playing.
  *
  * Should only ever be created using the static function CreateFromAsset, copying data from its
- * sibling class UAGX_MaterialAsset.
+ * sibling class UAGX_ShapeMaterialAsset.
  *
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Transient, NotPlaceable)
-class AGXUNREAL_API UAGX_MaterialInstance : public UAGX_MaterialBase
+class AGXUNREAL_API UAGX_ShapeMaterialInstance : public UAGX_ShapeMaterialBase
 {
 	GENERATED_BODY()
 
 public:
-	static UAGX_MaterialInstance* CreateFromAsset(UWorld* PlayingWorld, UAGX_MaterialAsset* Source);
+	static UAGX_ShapeMaterialInstance* CreateFromAsset(UWorld* PlayingWorld, UAGX_MaterialBase* Source);
 
 public:
-	virtual ~UAGX_MaterialInstance();
-
-	virtual UAGX_MaterialAsset* GetAsset() override;
+	virtual ~UAGX_ShapeMaterialInstance();
 
 	FMaterialBarrier* GetOrCreateNative(UWorld* PlayingWorld);
 
@@ -38,14 +36,13 @@ public:
 
 	void UpdateNativeProperties();
 
+	friend class UAGX_TerrainMaterialInstance;
+
 private:
-	virtual UAGX_MaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld) override;
+	virtual UAGX_ShapeMaterialInstance* GetOrCreateShapeMaterialInstance(UWorld* PlayingWorld) override;
 
 	// Creates the native AGX material and adds it to the simulation.
 	void CreateNative(UWorld* PlayingWorld);
-
-	/// \todo This member is probably not necessary.. Remove it?
-	TWeakObjectPtr<UAGX_MaterialAsset> SourceAsset;
 
 	TUniquePtr<FMaterialBarrier> NativeBarrier;
 };

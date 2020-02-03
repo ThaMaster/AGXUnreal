@@ -10,7 +10,7 @@
 
 #include "AGX_ShapeComponent.generated.h"
 
-class UAGX_MaterialBase;
+class UAGX_ShapeMaterialBase;
 
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Abstract, NotPlaceable,
@@ -29,7 +29,7 @@ public:
 	 * Bulk properties have impact on collision forces but also on Rigid Body mass.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shape")
-	UAGX_MaterialBase* PhysicalMaterial;
+	UAGX_ShapeMaterialBase* PhysicalMaterial;
 
 	/**
 	 * Toggle to enable or disable collision generation against this shape.

@@ -1,16 +1,14 @@
-#include "Materials/AGX_MaterialInstance.h"
-
-#include "AGX_Simulation.h"
+#include "Materials/AGX_ShapeMaterialInstance.h"
 
 #include "Engine/World.h"
 
-#include "AGX_LogCategory.h"
-#include "Materials/AGX_MaterialAsset.h"
 #include "AGX_Simulation.h"
+#include "AGX_LogCategory.h"
+#include "Materials/AGX_ShapeMaterialAsset.h"
 #include "Materials/MaterialBarrier.h"
 
-UAGX_MaterialInstance* UAGX_MaterialInstance::CreateFromAsset(
-	UWorld* PlayingWorld, UAGX_MaterialAsset* Source)
+UAGX_ShapeMaterialInstance* UAGX_ShapeMaterialInstance::CreateFromAsset(
+	UWorld* PlayingWorld, UAGX_MaterialBase* Source)
 {
 	check(Source);
 	check(PlayingWorld);
@@ -23,31 +21,25 @@ UAGX_MaterialInstance* UAGX_MaterialInstance::CreateFromAsset(
 
 	UE_LOG(
 		LogAGX, Log,
-		TEXT("UAGX_MaterialBase::CreateFromAsset is creating an instance named \"%s\" (from asset "
-			 "\"%s\")."),
+		TEXT("UAGX_ShapeMaterialInstance::CreateFromAsset is creating an instance named %s "
+			 "(from asset %s)."),
 		*InstanceName, *Source->GetName());
 
-	UAGX_MaterialInstance* NewInstance = NewObject<UAGX_MaterialInstance>(
-		Outer, UAGX_MaterialInstance::StaticClass(), *InstanceName, RF_Transient);
+	UAGX_ShapeMaterialInstance* NewInstance = NewObject<UAGX_ShapeMaterialInstance>(
+		Outer, UAGX_ShapeMaterialInstance::StaticClass(), *InstanceName, RF_Transient);
 
 	NewInstance->CopyProperties(Source);
-	NewInstance->SourceAsset = Source;
 
 	NewInstance->CreateNative(PlayingWorld);
 
 	return NewInstance;
 }
 
-UAGX_MaterialInstance::~UAGX_MaterialInstance()
+UAGX_ShapeMaterialInstance::~UAGX_ShapeMaterialInstance()
 {
 }
 
-UAGX_MaterialAsset* UAGX_MaterialInstance::GetAsset()
-{
-	return SourceAsset.Get();
-}
-
-FMaterialBarrier* UAGX_MaterialInstance::GetOrCreateNative(UWorld* PlayingWorld)
+FMaterialBarrier* UAGX_ShapeMaterialInstance::GetOrCreateNative(UWorld* PlayingWorld)
 {
 	if (!HasNative())
 	{
@@ -56,7 +48,7 @@ FMaterialBarrier* UAGX_MaterialInstance::GetOrCreateNative(UWorld* PlayingWorld)
 	return GetNative();
 }
 
-FMaterialBarrier* UAGX_MaterialInstance::GetNative()
+FMaterialBarrier* UAGX_ShapeMaterialInstance::GetNative()
 {
 	if (NativeBarrier)
 	{
@@ -68,12 +60,12 @@ FMaterialBarrier* UAGX_MaterialInstance::GetNative()
 	}
 }
 
-bool UAGX_MaterialInstance::HasNative() const
+bool UAGX_ShapeMaterialInstance::HasNative() const
 {
 	return NativeBarrier && NativeBarrier->HasNative();
 }
 
-void UAGX_MaterialInstance::UpdateNativeProperties()
+void UAGX_ShapeMaterialInstance::UpdateNativeProperties()
 {
 	if (HasNative())
 	{
@@ -93,12 +85,13 @@ void UAGX_MaterialInstance::UpdateNativeProperties()
 	}
 }
 
-UAGX_MaterialInstance* UAGX_MaterialInstance::GetOrCreateInstance(UWorld* PlayingWorld)
+UAGX_ShapeMaterialInstance* UAGX_ShapeMaterialInstance::GetOrCreateShapeMaterialInstance(
+	UWorld* PlayingWorld)
 {
 	return this;
 };
 
-void UAGX_MaterialInstance::CreateNative(UWorld* PlayingWorld)
+void UAGX_ShapeMaterialInstance::CreateNative(UWorld* PlayingWorld)
 {
 	NativeBarrier.Reset(new FMaterialBarrier());
 

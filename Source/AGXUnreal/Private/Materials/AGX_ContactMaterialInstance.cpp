@@ -6,7 +6,7 @@
 
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
-#include "Materials/AGX_MaterialInstance.h"
+#include "Materials/AGX_ShapeMaterialInstance.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
 #include "Materials/MaterialBarrier.h"
@@ -138,10 +138,10 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 	/// \note AGX seems OK with referenced materials being null. Falls back on native default
 	/// material.
 
-	UAGX_MaterialInstance* MaterialInstance1 =
-		UAGX_MaterialBase::GetOrCreateInstance(GetWorld(), Material1);
-	UAGX_MaterialInstance* MaterialInstance2 =
-		UAGX_MaterialBase::GetOrCreateInstance(GetWorld(), Material2);
+	UAGX_ShapeMaterialInstance* MaterialInstance1 =
+		UAGX_MaterialBase::GetOrCreateShapeMaterialInstance(GetWorld(), Material1);
+	UAGX_ShapeMaterialInstance* MaterialInstance2 =
+		UAGX_MaterialBase::GetOrCreateShapeMaterialInstance(GetWorld(), Material2);
 
 	FMaterialBarrier* MaterialBarrier1 =
 		MaterialInstance1 ? MaterialInstance1->GetOrCreateNative(GetWorld()) : nullptr;

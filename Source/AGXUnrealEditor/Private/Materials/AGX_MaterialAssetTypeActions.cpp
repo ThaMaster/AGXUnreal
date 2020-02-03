@@ -1,8 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Materials/AGX_MaterialAssetTypeActions.h"
 
-#include "Materials/AGX_MaterialAsset.h"
+#include "Materials/AGX_ShapeMaterialAsset.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_MaterialAssetTypeActions"
 
@@ -34,7 +32,7 @@ FText FAGX_MaterialAssetTypeActions::GetAssetDescription(const FAssetData& Asset
 
 UClass* FAGX_MaterialAssetTypeActions::GetSupportedClass() const
 {
-	return UAGX_MaterialAsset::StaticClass();
+	return UAGX_ShapeMaterialAsset::StaticClass();
 }
 
 #undef LOCTEXT_NAMESPACE

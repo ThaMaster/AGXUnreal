@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "AGX_MaterialBulkProperties.generated.h"
+#include "AGX_ShapeMaterialBulkProperties.generated.h"
 
 /**
  * Physical properties for the bulk of Shapes using the AGX Material.
  */
 USTRUCT()
-struct AGXUNREAL_API FAGX_MaterialBulkProperties
+struct AGXUNREAL_API FAGX_ShapeMaterialBulkProperties
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -61,5 +61,5 @@ public:
 	double MaxElasticRestLength;
 
 public:
-	FAGX_MaterialBulkProperties();
+	FAGX_ShapeMaterialBulkProperties();
 };

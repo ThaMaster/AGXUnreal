@@ -12,7 +12,7 @@ FAGX_TerrainMaterialAssetTypeActions::FAGX_TerrainMaterialAssetTypeActions(
 
 FText FAGX_TerrainMaterialAssetTypeActions::GetName() const
 {
-	return LOCTEXT("AssetName", "AGX Terrain Contact Material");
+	return LOCTEXT("AssetName", "AGX Terrain Material");
 }
 
 uint32 FAGX_TerrainMaterialAssetTypeActions::GetCategories()

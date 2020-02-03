@@ -9,6 +9,10 @@
 #include "AGX_Simulation.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
 #include "Utilities/AGX_TextureUtilities.h"
+#include "Materials/AGX_TerrainMaterialInstance.h"
+#include "Materials/AGX_TerrainMaterialBase.h"
+#include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Materials/AGX_MaterialBase.h"
 
 // AGXUnrealBarrier includes.
 #include "Terrain/TerrainBarrier.h"
@@ -22,7 +26,6 @@
 #include "Misc/AssertionMacros.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
-
 
 AAGX_Terrain::AAGX_Terrain()
 {
@@ -162,6 +165,7 @@ void AAGX_Terrain::InitializeNative()
 	CreateNativeTerrain();
 	CreateNativeShovels();
 	InitializeRendering();
+	CreateTerrainMaterial();
 }
 
 void AAGX_Terrain::CreateNativeTerrain()
@@ -261,6 +265,52 @@ void AAGX_Terrain::InitializeRendering()
 	InitializeDisplacementMap();
 	InitializeParticleSystem();
 	InitializeParticlesMap();
+}
+
+void AAGX_Terrain::CreateTerrainMaterial()
+{
+	if (!HasNative())
+		return;
+
+	if (TerrainMaterial)
+	{
+		// Both an UAGX_TerrainMaterialInstance and a UAGX_ShapeMaterialInstance
+		// are set for the terrain. The former is the native agxTerrain::TerrainMaterial
+		// counterpart and the latter is the native agx::Material counterpart.
+
+		// Set TerrainMaterial
+		UAGX_TerrainMaterialInstance* TerrainMaterialInstance =
+			UAGX_TerrainMaterialBase::GetOrCreateTerrainMaterialInstance(GetWorld(), TerrainMaterial);
+		check(TerrainMaterialInstance);
+
+		FTerrainMaterialBarrier* TerrainMaterialBarrier =
+			TerrainMaterialInstance->GetOrCreateNative(GetWorld());
+		check(TerrainMaterialBarrier);
+
+		UE_LOG(
+			LogAGX, Log,
+			TEXT(
+				"AAGX_Terrain::CreateTerrainMaterial is setting native material %s on terrain %s."),
+			*TerrainMaterialInstance->GetName(), *GetName());
+
+		GetNative()->SetTerrainMaterial(*TerrainMaterialBarrier);
+
+		// Set ShapeMaterial
+		UAGX_ShapeMaterialInstance* ShapeMaterialInstance =
+			UAGX_MaterialBase::GetOrCreateShapeMaterialInstance(GetWorld(), TerrainMaterial);
+		check(ShapeMaterialInstance);
+
+		FMaterialBarrier* MaterialBarrier = ShapeMaterialInstance->GetOrCreateNative(GetWorld());
+		check(MaterialBarrier);
+
+		UE_LOG(
+			LogAGX, Log,
+			TEXT("AAGX_Terrain::CreateTerrainMaterial is setting native material \"%s\" on "
+				 "terrain %s."),
+			*ShapeMaterialInstance->GetName(), *GetName());
+
+		GetNative()->SetMaterial(*MaterialBarrier);
+	}
 }
 
 void AAGX_Terrain::InitializeDisplacementMap()

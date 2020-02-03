@@ -2,7 +2,7 @@
 
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_MaterialBase.h"
-#include "Materials/AGX_MaterialInstance.h"
+#include "Materials/AGX_ShapeMaterialInstance.h"
 #include "Materials/MaterialBarrier.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -50,8 +50,8 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 
 	if (PhysicalMaterial)
 	{
-		UAGX_MaterialInstance* MaterialInstance =
-			UAGX_MaterialBase::GetOrCreateInstance(GetWorld(), PhysicalMaterial);
+		UAGX_ShapeMaterialInstance* MaterialInstance =
+			UAGX_MaterialBase::GetOrCreateShapeMaterialInstance(GetWorld(), PhysicalMaterial);
 		check(MaterialInstance);
 
 		FMaterialBarrier* MaterialBarrier = MaterialInstance->GetOrCreateNative(GetWorld());

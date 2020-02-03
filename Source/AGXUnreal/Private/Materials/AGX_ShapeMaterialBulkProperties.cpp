@@ -1,8 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+#include "Materials/AGX_ShapeMaterialBulkProperties.h"
 
-#include "Materials/AGX_MaterialBulkProperties.h"
-
-FAGX_MaterialBulkProperties::FAGX_MaterialBulkProperties()
+FAGX_ShapeMaterialBulkProperties::FAGX_ShapeMaterialBulkProperties()
 	: Density(1000.0)
 	, YoungsModulus(2.0 / 5.0E-9)
 	, Viscosity(0.5)

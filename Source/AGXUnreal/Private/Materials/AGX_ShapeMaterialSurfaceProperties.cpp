@@ -1,8 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+#include "Materials/AGX_ShapeMaterialSurfaceProperties.h"
 
-#include "Materials/AGX_MaterialSurfaceProperties.h"
-
-FAGX_MaterialSurfaceProperties::FAGX_MaterialSurfaceProperties()
+FAGX_ShapeMaterialSurfaceProperties::FAGX_ShapeMaterialSurfaceProperties()
 	: bFrictionEnabled(true)
 	, Roughness(0.25 / (2 * 0.3))
 	, Viscosity(2.0 / (2.0 / 5.0E-9))
