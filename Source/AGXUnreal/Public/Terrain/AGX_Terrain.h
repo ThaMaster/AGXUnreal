@@ -189,6 +189,7 @@ private:
 	void InitializeNative();
 	void CreateNativeTerrain();
 	void CreateNativeShovels();
+	void UpdateNativeShovelProperties(FShovelBarrier& ShovelBarrier, const FAGX_Shovel& Shovel);
 
 	void InitializeRendering();
 	void InitializeDisplacementMap();

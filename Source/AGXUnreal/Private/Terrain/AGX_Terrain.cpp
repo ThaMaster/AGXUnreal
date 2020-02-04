@@ -23,7 +23,6 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
-
 AAGX_Terrain::AAGX_Terrain()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -222,6 +221,8 @@ void AAGX_Terrain::CreateNativeShovels()
 		ShovelBarrier.AllocateNative(
 			*BodyBarrier, TopEdgeLine, CuttingEdgeLine, CuttingDirectionVector);
 
+		UpdateNativeShovelProperties(ShovelBarrier, Shovel);
+
 		bool Added = NativeBarrier.AddShovel(ShovelBarrier);
 		if (!Added)
 		{
@@ -254,6 +255,15 @@ void AAGX_Terrain::CreateNativeShovels()
 			LogAGX, Log, TEXT("Created shovel '%s' for terrain '%s'."), *Actor->GetName(),
 			*GetName());
 	}
+}
+
+void AAGX_Terrain::UpdateNativeShovelProperties(
+	FShovelBarrier& ShovelBarrier, const FAGX_Shovel& Shovel)
+{
+	ShovelBarrier.SetVerticalBladeSoilMergeDistance(Shovel.VerticalBladeSoilMergeDistance);
+	ShovelBarrier.SetNoMergeExtensionDistance(Shovel.NoMergeExtensionDistance);
+	ShovelBarrier.SetPenetrationForceScaling(Shovel.PenetrationForceScaling);
+	ShovelBarrier.SetAlwaysRemoveShovelContacts(Shovel.AlwaysRemoveShovelContacts);
 }
 
 void AAGX_Terrain::InitializeRendering()

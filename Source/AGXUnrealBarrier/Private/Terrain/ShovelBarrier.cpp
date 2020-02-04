@@ -11,6 +11,7 @@
 // Unreal Engine includes.
 #include "Math/TwoVectors.h"
 #include "Math/Vector.h"
+#include "..\..\Public\Terrain\ShovelBarrier.h"
 
 FShovelBarrier::FShovelBarrier()
 	: NativeRef {new FShovelRef}
@@ -46,6 +47,54 @@ void FShovelBarrier::SetCuttingEdge(const FTwoVectors& CuttingEdge)
 	check(HasNative());
 	agx::Line CuttingEdgeAGX = ConvertVector(CuttingEdge);
 	NativeRef->Native->setCuttingEdge(CuttingEdgeAGX);
+}
+
+void FShovelBarrier::SetVerticalBladeSoilMergeDistance(float VerticalBladeSoilMergeDistance)
+{
+	check(HasNative());
+	NativeRef->Native->setVerticalBladeSoilMergeDistance(VerticalBladeSoilMergeDistance);
+}
+
+float FShovelBarrier::GetVerticalBladeSoilMergeDistance() const
+{
+	check(HasNative());
+	return NativeRef->Native->getVerticalBladeSoilMergeDistance();
+}
+
+void FShovelBarrier::SetNoMergeExtensionDistance(float NoMergeExtensionDistance)
+{
+	check(HasNative());
+	NativeRef->Native->setNoMergeExtensionDistance(NoMergeExtensionDistance);
+}
+
+float FShovelBarrier::GetNoMergeExtensionDistance() const
+{
+	check(HasNative());
+	return NativeRef->Native->getNoMergeExtensionDistance();
+}
+
+void FShovelBarrier::SetPenetrationForceScaling(float PenetrationForceScaling)
+{
+	check(HasNative());
+	NativeRef->Native->setPenetrationForceScaling(PenetrationForceScaling);
+}
+
+float FShovelBarrier::GetPenetrationForceScaling() const
+{
+	check(HasNative());
+	return NativeRef->Native->getPenetrationForceScaling();
+}
+
+void FShovelBarrier::SetAlwaysRemoveShovelContacts(bool Enable)
+{
+	check(HasNative());
+	NativeRef->Native->setAlwaysRemoveShovelContacts(Enable);
+}
+
+float FShovelBarrier::GetAlwaysRemoveShovelContacts() const
+{
+	check(HasNative());
+	return NativeRef->Native->getAlwaysRemoveShovelContacts();
 }
 
 bool FShovelBarrier::HasNative() const
