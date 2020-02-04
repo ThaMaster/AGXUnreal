@@ -11,7 +11,6 @@
 // Unreal Engine includes.
 #include "Math/TwoVectors.h"
 #include "Math/Vector.h"
-#include "..\..\Public\Terrain\ShovelBarrier.h"
 
 FShovelBarrier::FShovelBarrier()
 	: NativeRef {new FShovelRef}
