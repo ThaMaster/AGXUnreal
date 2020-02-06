@@ -10,7 +10,6 @@
 #include "Terrain/AGX_TopEdgeComponent.h"
 #include "Utilities/AGX_TextureUtilities.h"
 #include "Materials/AGX_TerrainMaterialInstance.h"
-#include "Materials/AGX_TerrainMaterialBase.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
 #include "Materials/AGX_MaterialBase.h"
 
@@ -280,11 +279,13 @@ void AAGX_Terrain::CreateTerrainMaterial()
 
 		// Set TerrainMaterial
 		UAGX_TerrainMaterialInstance* TerrainMaterialInstance =
-			UAGX_TerrainMaterialBase::GetOrCreateTerrainMaterialInstance(GetWorld(), TerrainMaterial);
+			static_cast<UAGX_TerrainMaterialInstance*>(
+				TerrainMaterial->GetOrCreateInstance(GetWorld()));
+
 		check(TerrainMaterialInstance);
 
 		FTerrainMaterialBarrier* TerrainMaterialBarrier =
-			TerrainMaterialInstance->GetOrCreateNative(GetWorld());
+			TerrainMaterialInstance->GetOrCreateTerrainMaterialNative(GetWorld());
 		check(TerrainMaterialBarrier);
 
 		UE_LOG(
@@ -296,20 +297,26 @@ void AAGX_Terrain::CreateTerrainMaterial()
 		GetNative()->SetTerrainMaterial(*TerrainMaterialBarrier);
 
 		// Set ShapeMaterial
-		UAGX_ShapeMaterialInstance* ShapeMaterialInstance =
-			UAGX_MaterialBase::GetOrCreateShapeMaterialInstance(GetWorld(), TerrainMaterial);
-		check(ShapeMaterialInstance);
-
-		FMaterialBarrier* MaterialBarrier = ShapeMaterialInstance->GetOrCreateNative(GetWorld());
+		FMaterialBarrier* MaterialBarrier =
+			TerrainMaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
 		check(MaterialBarrier);
 
-		UE_LOG(
-			LogAGX, Log,
-			TEXT("AAGX_Terrain::CreateTerrainMaterial is setting native material \"%s\" on "
-				 "terrain %s."),
-			*ShapeMaterialInstance->GetName(), *GetName());
-
 		GetNative()->SetMaterial(*MaterialBarrier);
+
+		// Swap properties
+		UWorld* PlayingWorld = GetWorld();
+
+		if (TerrainMaterialInstance != TerrainMaterial && PlayingWorld &&
+			PlayingWorld->IsGameWorld())
+		{
+			UE_LOG(
+				LogAGX, Log,
+				TEXT("AAGX_Terrain::CreateTerrainMaterial is swapping a property "
+					 "(to %s from %s)."),
+				*GetNameSafe(TerrainMaterialInstance), *GetNameSafe(TerrainMaterial));
+
+			TerrainMaterial = TerrainMaterialInstance;
+		}
 	}
 }
 

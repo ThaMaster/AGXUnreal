@@ -6,7 +6,7 @@
 
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
-#include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Materials/AGX_MaterialBase.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
 #include "Materials/MaterialBarrier.h"
@@ -138,15 +138,31 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 	/// \note AGX seems OK with referenced materials being null. Falls back on native default
 	/// material.
 
-	UAGX_ShapeMaterialInstance* MaterialInstance1 =
-		UAGX_MaterialBase::GetOrCreateShapeMaterialInstance(GetWorld(), Material1);
-	UAGX_ShapeMaterialInstance* MaterialInstance2 =
-		UAGX_MaterialBase::GetOrCreateShapeMaterialInstance(GetWorld(), Material2);
+	UAGX_MaterialBase* MaterialInstance1 =
+		Material1->GetOrCreateInstance(GetWorld());
+	UAGX_MaterialBase* MaterialInstance2 =
+		Material2->GetOrCreateInstance(GetWorld());
+
+	// Swap properties
+	if (PlayingWorld && PlayingWorld->IsGameWorld())
+	{
+		if (MaterialInstance1 != Material1)
+		{
+			Material1 = MaterialInstance1;
+			PrintPropertySwapMessage(Material1, MaterialInstance1);
+		}
+
+		if (MaterialInstance2 != Material2)
+		{
+			Material2 = MaterialInstance2;
+			PrintPropertySwapMessage(Material2, MaterialInstance2);
+		}
+	}
 
 	FMaterialBarrier* MaterialBarrier1 =
-		MaterialInstance1 ? MaterialInstance1->GetOrCreateNative(GetWorld()) : nullptr;
+		MaterialInstance1 ? MaterialInstance1->GetOrCreateShapeMaterialNative(GetWorld()) : nullptr;
 	FMaterialBarrier* MaterialBarrier2 =
-		MaterialInstance2 ? MaterialInstance2->GetOrCreateNative(GetWorld()) : nullptr;
+		MaterialInstance2 ? MaterialInstance2->GetOrCreateShapeMaterialNative(GetWorld()) : nullptr;
 
 	UE_LOG(
 		LogAGX, Log,
@@ -165,4 +181,14 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 	check(Simulation);
 
 	Simulation->GetNative()->AddContactMaterial(NativeBarrier.Get());
+}
+
+void UAGX_ContactMaterialInstance::PrintPropertySwapMessage(
+	UAGX_MaterialBase* From, UAGX_MaterialBase* To)
+{
+	UE_LOG(
+		LogAGX, Log,
+		TEXT("UAGX_ContactMaterialInstance::PrintPropertySwapMessage is swapping a property "
+			 "(to %s from %s)."),
+		*GetNameSafe(To), *GetNameSafe(From));
 }

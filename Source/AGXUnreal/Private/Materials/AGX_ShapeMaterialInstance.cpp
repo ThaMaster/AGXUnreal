@@ -4,7 +4,6 @@
 
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
-#include "Materials/AGX_ShapeMaterialAsset.h"
 #include "Materials/MaterialBarrier.h"
 
 UAGX_ShapeMaterialInstance* UAGX_ShapeMaterialInstance::CreateFromAsset(
@@ -17,7 +16,7 @@ UAGX_ShapeMaterialInstance* UAGX_ShapeMaterialInstance::CreateFromAsset(
 	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
 	check(Outer);
 
-	FString InstanceName = Source->GetName() + "_Instance";
+	FString InstanceName = Source->GetName() + "_ShapeMaterialInstance";
 
 	UE_LOG(
 		LogAGX, Log,
@@ -39,7 +38,7 @@ UAGX_ShapeMaterialInstance::~UAGX_ShapeMaterialInstance()
 {
 }
 
-FMaterialBarrier* UAGX_ShapeMaterialInstance::GetOrCreateNative(UWorld* PlayingWorld)
+FMaterialBarrier* UAGX_ShapeMaterialInstance::GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
 {
 	if (!HasNative())
 	{
@@ -85,7 +84,7 @@ void UAGX_ShapeMaterialInstance::UpdateNativeProperties()
 	}
 }
 
-UAGX_ShapeMaterialInstance* UAGX_ShapeMaterialInstance::GetOrCreateShapeMaterialInstance(
+UAGX_MaterialBase* UAGX_ShapeMaterialInstance::GetOrCreateInstance(
 	UWorld* PlayingWorld)
 {
 	return this;

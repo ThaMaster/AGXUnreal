@@ -9,6 +9,7 @@
 
 class FContactMaterialBarrier;
 class UAGX_ContactMaterialAsset;
+class UAGX_MaterialBase;
 
 /**
  * Represents a native AGX Contact Material in-game. Should never exist when not playing.
@@ -44,6 +45,9 @@ private:
 
 	// Creates the native AGX Contact Material and adds it to the simulation.
 	void CreateNative(UWorld* PlayingWorld);
+
+	void PrintPropertySwapMessage(
+		UAGX_MaterialBase* From, UAGX_MaterialBase* To);
 
 	/// \todo This member is probably not necessary.. Remove it?
 	TWeakObjectPtr<UAGX_ContactMaterialAsset> SourceAsset;

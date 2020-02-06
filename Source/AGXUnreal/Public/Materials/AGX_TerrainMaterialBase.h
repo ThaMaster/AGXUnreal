@@ -8,8 +8,6 @@
 
 #include "AGX_TerrainMaterialBase.generated.h"
 
-class UAGX_TerrainMaterialInstance;
-
 /**
  * Defines the material for a terrain. Affects both surface and bulk properties.
  *
@@ -35,9 +33,9 @@ class AGXUNREAL_API UAGX_TerrainMaterialBase : public UAGX_MaterialBase
 {
 public:
 	/**
-	 * The terrain material is represented internally as one terrain material (affecting the bulk
-	 * properties of the terrain), and one shape material (affecting the surface properties). This
-	 * translates directly to Agx's native types TerrainMaterial and Material.
+	 * The terrain material instance can spawn both a TerrainMaterialBarrier (affecting the bulk
+	 * properties of the terrain) and a ShapeMaterialBarrier (affecting the surface properties).
+	 * This translates directly to AGX's native types TerrainMaterial and Material.
 	 */
 
 	GENERATED_BODY()
@@ -47,23 +45,6 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Material Properties")
 	FAGX_TerrainCompactionProperties TerrainCompaction;
-
-	/**
-	 * Invokes the member function GetOrCreateTerrainMaterialInstance() on terrain material pointed
-	 * to by Property, assigns the return value to Property, and then returns it. Returns null and
-	 * does nothing if PlayingWorld is not an in-game world.
-	 */
-	static UAGX_TerrainMaterialInstance* GetOrCreateTerrainMaterialInstance(
-		UWorld* PlayingWorld, UAGX_TerrainMaterialBase* Property);
-
-	/**
-	 * If PlayingWorld is an in-game World and this material is a UAGX_TerrainMaterialAsset, returns
-	 * a UAGX_TerrainMaterialInstance representing the material asset throughout the lifetime of the
-	 * GameInstance. If this is already a UAGX_TerrainMaterialInstance it returns itself. Returns null if
-	 * not in-game (invalid call).
-	 */
-	virtual UAGX_TerrainMaterialInstance* GetOrCreateTerrainMaterialInstance(UWorld* PlayingWorld)
-		PURE_VIRTUAL(UAGX_TerrainMaterialBase::GetOrCreateTerrainMaterialInstance, return nullptr;);
 
 protected:
 	void CopyTerrainMaterialProperties(const UAGX_TerrainMaterialBase* Source);

@@ -4,7 +4,7 @@
 
 #include "Materials/AGX_ShapeMaterialInstance.h"
 
-UAGX_ShapeMaterialInstance* UAGX_ShapeMaterialAsset::GetOrCreateShapeMaterialInstance(UWorld* PlayingWorld)
+UAGX_MaterialBase* UAGX_ShapeMaterialAsset::GetOrCreateInstance(UWorld* PlayingWorld)
 {
 	UAGX_ShapeMaterialInstance* InstancePtr = Instance.Get();
 
@@ -15,4 +15,4 @@ UAGX_ShapeMaterialInstance* UAGX_ShapeMaterialAsset::GetOrCreateShapeMaterialIns
 	}
 
 	return InstancePtr;
-};
+}

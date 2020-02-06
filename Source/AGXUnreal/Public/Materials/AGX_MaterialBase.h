@@ -6,10 +6,9 @@
 #include "UObject/NoExportTypes.h"
 #include "Materials/AGX_ShapeMaterialBulkProperties.h"
 #include "Materials/AGX_ShapeMaterialSurfaceProperties.h"
-#include "AGX_MaterialBase.generated.h"
+#include "Materials/MaterialBarrier.h"
 
-class UAGX_ShapeMaterialAsset;
-class UAGX_ShapeMaterialInstance;
+#include "AGX_MaterialBase.generated.h"
 
 /**
  * Defines physical properties of AGX shapes, AGX terrains etc.
@@ -29,25 +28,20 @@ public:
 	FAGX_ShapeMaterialSurfaceProperties Surface;
 
 public:
-	/**
-	 * Invokes the member function GetOrCreateShapeMaterialInstance() on material pointed to by
-	 * Property, assigns the return value to Property, and then returns it. Returns null and does
-	 * nothing if PlayingWorld is not an in-game world.
-	 */
-	static UAGX_ShapeMaterialInstance* GetOrCreateShapeMaterialInstance(
-		UWorld* PlayingWorld, UAGX_MaterialBase* Property);
-
-public:
 	virtual ~UAGX_MaterialBase();
 
 	/**
-	 * If PlayingWorld is an in-game World and this material is a UAGX_ShapeMaterialAsset, returns a
-	 * UAGX_ShapeMaterialInstance representing the material asset throughout the lifetime of the
-	 * GameInstance. If this is already a UAGX_ShapeMaterialInstance it returns itself. Returns null
-	 * if not in-game (invalid call).
+	 * If PlayingWorld is an in-game World and this material is a UAGX_ShapeMaterialAsset or
+	 * UAGX_TerrainMaterialAsset, returns a UAGX_ShapeMaterialInstance or
+	 * UAGX_TerrainMaterialInstance representing the material asset throughout the lifetime of the
+	 * GameInstance. If this is already a UAGX_ShapeMaterialInstance or a
+	 * UAGX_TerrainMaterialInstance, it returns itself. Returns null if not in-game (invalid call).
 	 */
-	virtual UAGX_ShapeMaterialInstance* GetOrCreateShapeMaterialInstance(UWorld* PlayingWorld)
-		PURE_VIRTUAL(UAGX_MaterialBase::GetOrCreateShapeMaterialInstance, return nullptr;);
+	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld)
+		PURE_VIRTUAL(UAGX_MaterialBase::GetOrCreateInstance, return nullptr;);
+
+	virtual FMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
+		PURE_VIRTUAL(UAGX_MaterialBase::GetOrCreateShapeMaterialNative, return nullptr;);
 
 protected:
 	void CopyShapeMaterialProperties(const UAGX_MaterialBase* Source);

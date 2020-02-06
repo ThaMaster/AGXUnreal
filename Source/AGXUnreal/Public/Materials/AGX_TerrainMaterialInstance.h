@@ -3,11 +3,11 @@
 #include "CoreMinimal.h"
 #include "Materials/AGX_TerrainMaterialBase.h"
 #include "Materials/TerrainMaterialBarrier.h"
+#include "Materials/MaterialBarrier.h"
 
 #include "AGX_TerrainMaterialInstance.generated.h"
 
 class UAGX_TerrainMaterialAsset;
-class UAGX_ShapeMaterialInstance;
 
 /**
  * Represents a AGX terrain material in-game. Should never exist when not playing.
@@ -24,28 +24,32 @@ class AGXUNREAL_API UAGX_TerrainMaterialInstance : public UAGX_TerrainMaterialBa
 public:
 	virtual ~UAGX_TerrainMaterialInstance();
 
-	FTerrainMaterialBarrier* GetOrCreateNative(UWorld* PlayingWorld);
+	FTerrainMaterialBarrier* GetOrCreateTerrainMaterialNative(UWorld* PlayingWorld);
 
-	virtual UAGX_TerrainMaterialInstance* GetOrCreateTerrainMaterialInstance(
+	virtual FMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld) override;
+
+	virtual UAGX_MaterialBase* GetOrCreateInstance(
 		UWorld* PlayingWorld) override;
 
 	static UAGX_TerrainMaterialInstance* CreateFromAsset(
 		UWorld* PlayingWorld, UAGX_TerrainMaterialAsset* Source);
 
 private:
-	// Must override pure virtual, but should never be called on a AGX_TerrainMaterialInstance
-	virtual UAGX_ShapeMaterialInstance* GetOrCreateShapeMaterialInstance(
-		UWorld* PlayingWorld) override;
 
 	// Creates the native AGX terrain material
-	void CreateNative(UWorld* PlayingWorld);
+	void CreateTerrainMaterialNative(UWorld* PlayingWorld);
+	void CreateShapeMaterialNative(UWorld* PlayingWorld);
 
-	bool HasNative() const;
+	bool HasTerrainMaterialNative() const;
+	bool HasShapeMaterialNative() const;
 
-	FTerrainMaterialBarrier* GetNative();
+	FTerrainMaterialBarrier* GetTerrainMaterialNative();
+	FMaterialBarrier* GetShapeMaterialNative();
 
-	void UpdateNativeProperties();
+	void UpdateTerrainMaterialNativeProperties();
+	void UpdateShapeMaterialNativeProperties();
 
 private:
-	TUniquePtr<FTerrainMaterialBarrier> NativeBarrier;
+	TUniquePtr<FTerrainMaterialBarrier> TerrainMaterialNativeBarrier;
+	TUniquePtr<FMaterialBarrier> ShapeMaterialNativeBarrier;
 };

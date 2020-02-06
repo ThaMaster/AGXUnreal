@@ -32,14 +32,12 @@ class AGXUNREAL_API UAGX_ShapeMaterialAsset : public UAGX_ShapeMaterialBase
 	// It has no connection with the actual native AGX material.Instead, its sibling class
 	// UAGX_ShapeMaterialInstance handles all interaction with the actual native AGX
 	// material.Therefore, all in - game objects with Uproperty material pointers need to swap their
-	// pointers to in - game UAGX_ShapeMaterialInstances using the static function
-	// UAGX_MaterialBase::GetOrCreateInstance.
+	// pointers to in - game UAGX_ShapeMaterialInstances.
 
 	GENERATED_BODY()
 
 public:
-	virtual UAGX_ShapeMaterialInstance* GetOrCreateShapeMaterialInstance(
-		UWorld* PlayingWorld) override;
+	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld) override;
 
 	TWeakObjectPtr<UAGX_ShapeMaterialInstance> Instance;
 };

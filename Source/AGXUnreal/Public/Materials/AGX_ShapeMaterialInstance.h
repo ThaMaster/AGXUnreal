@@ -5,10 +5,8 @@
 #include "CoreMinimal.h"
 #include "Materials/AGX_ShapeMaterialBase.h"
 #include "Materials/MaterialBarrier.h" /// \todo Shouldn't be necessary here since we have a destructor in cpp file!
-#include "AGX_ShapeMaterialInstance.generated.h"
 
-class FMaterialBarrier;
-class UAGX_ShapeMaterialAsset;
+#include "AGX_ShapeMaterialInstance.generated.h"
 
 /**
  * Represents a native AGX material in-game. Should never exist when not playing.
@@ -28,7 +26,7 @@ public:
 public:
 	virtual ~UAGX_ShapeMaterialInstance();
 
-	FMaterialBarrier* GetOrCreateNative(UWorld* PlayingWorld);
+	virtual FMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld) override;
 
 	FMaterialBarrier* GetNative();
 
@@ -36,10 +34,9 @@ public:
 
 	void UpdateNativeProperties();
 
-	friend class UAGX_TerrainMaterialInstance;
+	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld) override;
 
 private:
-	virtual UAGX_ShapeMaterialInstance* GetOrCreateShapeMaterialInstance(UWorld* PlayingWorld) override;
 
 	// Creates the native AGX material and adds it to the simulation.
 	void CreateNative(UWorld* PlayingWorld);
