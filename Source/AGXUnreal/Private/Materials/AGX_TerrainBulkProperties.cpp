@@ -11,5 +11,4 @@ FAGX_TerrainBulkProperties::FAGX_TerrainBulkProperties()
 	, SwellFactor(1.1)
 	, YoungsModulus(1.0e7)
 {
-	// See agx\src\agxTerrain\TerrainMaterial.cpp for default values
 }

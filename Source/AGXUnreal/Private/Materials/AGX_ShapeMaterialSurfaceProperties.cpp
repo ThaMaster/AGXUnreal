@@ -8,5 +8,4 @@ FAGX_ShapeMaterialSurfaceProperties::FAGX_ShapeMaterialSurfaceProperties()
 	AdhesiveForce(0.0)
 	, AdhesiveOverlap(0.0)
 {
-	// See agx\src\agx\Material.cpp for default values
 }

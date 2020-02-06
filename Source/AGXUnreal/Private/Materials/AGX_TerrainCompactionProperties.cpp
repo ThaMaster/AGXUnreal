@@ -10,5 +10,4 @@ FAGX_TerrainCompactionProperties::FAGX_TerrainCompactionProperties()
 	, PreconsolidationStress(98e3)
 	, StressCutOffFraction(0.01)
 {
-	// See agx\src\agxTerrain\TerrainMaterial.cpp for default values
 }

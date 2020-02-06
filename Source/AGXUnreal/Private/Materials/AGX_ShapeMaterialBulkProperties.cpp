@@ -8,5 +8,4 @@ FAGX_ShapeMaterialBulkProperties::FAGX_ShapeMaterialBulkProperties()
 	, MinElasticRestLength(0.0005)
 	, MaxElasticRestLength(0.05)
 {
-	// See agx\src\agx\Material.cpp for default values
 }
