@@ -8,6 +8,8 @@
 
 #include "AGX_ShapeMaterialInstance.generated.h"
 
+class UAGX_ShapeMaterialAsset;
+
 /**
  * Represents a native AGX material in-game. Should never exist when not playing.
  *
@@ -21,7 +23,7 @@ class AGXUNREAL_API UAGX_ShapeMaterialInstance : public UAGX_ShapeMaterialBase
 	GENERATED_BODY()
 
 public:
-	static UAGX_ShapeMaterialInstance* CreateFromAsset(UWorld* PlayingWorld, UAGX_MaterialBase* Source);
+	static UAGX_ShapeMaterialInstance* CreateFromAsset(UWorld* PlayingWorld, UAGX_ShapeMaterialAsset* Source);
 
 public:
 	virtual ~UAGX_ShapeMaterialInstance();

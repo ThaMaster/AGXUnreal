@@ -5,9 +5,10 @@
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
 #include "Materials/MaterialBarrier.h"
+#include "Materials/AGX_ShapeMaterialAsset.h"
 
 UAGX_ShapeMaterialInstance* UAGX_ShapeMaterialInstance::CreateFromAsset(
-	UWorld* PlayingWorld, UAGX_MaterialBase* Source)
+	UWorld* PlayingWorld, UAGX_ShapeMaterialAsset* Source)
 {
 	check(Source);
 	check(PlayingWorld);
