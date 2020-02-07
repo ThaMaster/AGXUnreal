@@ -48,37 +48,38 @@ void FShovelBarrier::SetCuttingEdge(const FTwoVectors& CuttingEdge)
 	NativeRef->Native->setCuttingEdge(CuttingEdgeAGX);
 }
 
-void FShovelBarrier::SetVerticalBladeSoilMergeDistance(float VerticalBladeSoilMergeDistance)
+void FShovelBarrier::SetVerticalBladeSoilMergeDistance(double VerticalBladeSoilMergeDistance)
 {
 	check(HasNative());
-	NativeRef->Native->setVerticalBladeSoilMergeDistance(VerticalBladeSoilMergeDistance);
+	NativeRef->Native->setVerticalBladeSoilMergeDistance(
+		ConvertDistanceToAgx(VerticalBladeSoilMergeDistance));
 }
 
-float FShovelBarrier::GetVerticalBladeSoilMergeDistance() const
+double FShovelBarrier::GetVerticalBladeSoilMergeDistance() const
 {
 	check(HasNative());
-	return NativeRef->Native->getVerticalBladeSoilMergeDistance();
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getVerticalBladeSoilMergeDistance());
 }
 
-void FShovelBarrier::SetNoMergeExtensionDistance(float NoMergeExtensionDistance)
+void FShovelBarrier::SetNoMergeExtensionDistance(double NoMergeExtensionDistance)
 {
 	check(HasNative());
-	NativeRef->Native->setNoMergeExtensionDistance(NoMergeExtensionDistance);
+	NativeRef->Native->setNoMergeExtensionDistance(ConvertDistanceToAgx(NoMergeExtensionDistance));
 }
 
-float FShovelBarrier::GetNoMergeExtensionDistance() const
+double FShovelBarrier::GetNoMergeExtensionDistance() const
 {
 	check(HasNative());
-	return NativeRef->Native->getNoMergeExtensionDistance();
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getNoMergeExtensionDistance());
 }
 
-void FShovelBarrier::SetPenetrationForceScaling(float PenetrationForceScaling)
+void FShovelBarrier::SetPenetrationForceScaling(double PenetrationForceScaling)
 {
 	check(HasNative());
 	NativeRef->Native->setPenetrationForceScaling(PenetrationForceScaling);
 }
 
-float FShovelBarrier::GetPenetrationForceScaling() const
+double FShovelBarrier::GetPenetrationForceScaling() const
 {
 	check(HasNative());
 	return NativeRef->Native->getPenetrationForceScaling();
@@ -90,7 +91,7 @@ void FShovelBarrier::SetAlwaysRemoveShovelContacts(bool Enable)
 	NativeRef->Native->setAlwaysRemoveShovelContacts(Enable);
 }
 
-float FShovelBarrier::GetAlwaysRemoveShovelContacts() const
+bool FShovelBarrier::GetAlwaysRemoveShovelContacts() const
 {
 	check(HasNative());
 	return NativeRef->Native->getAlwaysRemoveShovelContacts();

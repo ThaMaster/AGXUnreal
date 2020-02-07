@@ -38,17 +38,17 @@ public:
 	void SetTopEdge(const FTwoVectors& TopEdge);
 	void SetCuttingEdge(const FTwoVectors& CuttingEdge);
 
-	void SetVerticalBladeSoilMergeDistance(float VerticalBladeSoilMergeDistance);
-	float GetVerticalBladeSoilMergeDistance() const;
+	void SetVerticalBladeSoilMergeDistance(double VerticalBladeSoilMergeDistance);
+	double GetVerticalBladeSoilMergeDistance() const;
 
-	void SetNoMergeExtensionDistance(float NoMergeExtensionDistance);
-	float GetNoMergeExtensionDistance() const;
+	void SetNoMergeExtensionDistance(double NoMergeExtensionDistance);
+	double GetNoMergeExtensionDistance() const;
 
-	void SetPenetrationForceScaling(float PenetrationForceScaling);
-	float GetPenetrationForceScaling() const;
+	void SetPenetrationForceScaling(double PenetrationForceScaling);
+	double GetPenetrationForceScaling() const;
 
 	void SetAlwaysRemoveShovelContacts(bool Enable);
-	float GetAlwaysRemoveShovelContacts() const;
+	bool GetAlwaysRemoveShovelContacts() const;
 
 	bool HasNative() const;
 	void AllocateNative(
