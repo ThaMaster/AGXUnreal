@@ -1,6 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "Terrain/ShovelBarrier.h"
+
 #include "AGX_Shovel.generated.h"
 
 USTRUCT()
@@ -51,4 +54,13 @@ struct FAGX_Shovel
 	 */
 	UPROPERTY(EditAnywhere)
 	bool AlwaysRemoveShovelContacts = false;
+
+
+	static void UpdateNativeShovelProperties(FShovelBarrier& ShovelBarrier, const FAGX_Shovel& Shovel)
+	{
+		ShovelBarrier.SetVerticalBladeSoilMergeDistance(Shovel.VerticalBladeSoilMergeDistance);
+		ShovelBarrier.SetNoMergeExtensionDistance(Shovel.NoMergeExtensionDistance);
+		ShovelBarrier.SetPenetrationForceScaling(Shovel.PenetrationForceScaling);
+		ShovelBarrier.SetAlwaysRemoveShovelContacts(Shovel.AlwaysRemoveShovelContacts);
+	}
 };
