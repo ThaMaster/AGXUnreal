@@ -301,7 +301,7 @@ void AAGX_Terrain::CreateTerrainMaterial()
 			TerrainMaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
 		check(MaterialBarrier);
 
-		GetNative()->SetMaterial(*MaterialBarrier);
+		GetNative()->SetShapeMaterial(*MaterialBarrier);
 
 		// Swap properties
 		UWorld* PlayingWorld = GetWorld();

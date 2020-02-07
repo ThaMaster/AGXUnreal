@@ -31,7 +31,7 @@ public:
 	void ReleaseNative();
 
 	bool AddShovel(FShovelBarrier& Shovel);
-	void SetMaterial(const FMaterialBarrier& Material);
+	void SetShapeMaterial(const FMaterialBarrier& Material);
 	void SetTerrainMaterial(const FTerrainMaterialBarrier& TerrainMaterial);
 
 	int32 GetGridSizeX() const;

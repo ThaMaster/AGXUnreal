@@ -122,7 +122,7 @@ bool FTerrainBarrier::AddShovel(FShovelBarrier& Shovel)
 	return NativeRef->Native->add(Shovel.GetNative()->Native);
 }
 
-void FTerrainBarrier::SetMaterial(const FMaterialBarrier& Material)
+void FTerrainBarrier::SetShapeMaterial(const FMaterialBarrier& Material)
 {
 	check(HasNative());
 	check(Material.HasNative());
