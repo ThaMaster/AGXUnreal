@@ -2,12 +2,12 @@
 
 #include "CoreMinimal.h"
 
-#include "Terrain/ShovelBarrier.h"
-
 #include "AGX_Shovel.generated.h"
 
+class FShovelBarrier;
+
 USTRUCT()
-struct FAGX_Shovel
+struct AGXUNREAL_API FAGX_Shovel
 {
 	/// /todo Expose more variables of the native shovel API!
 	/// /todo Consider making this a stand-alone Object/ActorComponent?
@@ -55,12 +55,6 @@ struct FAGX_Shovel
 	UPROPERTY(EditAnywhere)
 	bool AlwaysRemoveShovelContacts = false;
 
-
-	static void UpdateNativeShovelProperties(FShovelBarrier& ShovelBarrier, const FAGX_Shovel& Shovel)
-	{
-		ShovelBarrier.SetVerticalBladeSoilMergeDistance(Shovel.VerticalBladeSoilMergeDistance);
-		ShovelBarrier.SetNoMergeExtensionDistance(Shovel.NoMergeExtensionDistance);
-		ShovelBarrier.SetPenetrationForceScaling(Shovel.PenetrationForceScaling);
-		ShovelBarrier.SetAlwaysRemoveShovelContacts(Shovel.AlwaysRemoveShovelContacts);
-	}
+	static void UpdateNativeShovelProperties(
+		FShovelBarrier& ShovelBarrier, const FAGX_Shovel& Shovel);
 };
