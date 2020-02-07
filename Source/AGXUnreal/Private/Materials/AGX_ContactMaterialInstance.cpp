@@ -9,7 +9,7 @@
 #include "Materials/AGX_MaterialBase.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
-#include "Materials/MaterialBarrier.h"
+#include "Materials/ShapeMaterialBarrier.h"
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::CreateFromAsset(
 	UWorld* PlayingWorld, UAGX_ContactMaterialAsset* Source)
@@ -159,9 +159,9 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 		}
 	}
 
-	FMaterialBarrier* MaterialBarrier1 =
+	FShapeMaterialBarrier* MaterialBarrier1 =
 		MaterialInstance1 ? MaterialInstance1->GetOrCreateShapeMaterialNative(GetWorld()) : nullptr;
-	FMaterialBarrier* MaterialBarrier2 =
+	FShapeMaterialBarrier* MaterialBarrier2 =
 		MaterialInstance2 ? MaterialInstance2->GetOrCreateShapeMaterialNative(GetWorld()) : nullptr;
 
 	UE_LOG(

@@ -4,7 +4,7 @@
 
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
-#include "Materials/MaterialBarrier.h"
+#include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
 
 UAGX_ShapeMaterialInstance* UAGX_ShapeMaterialInstance::CreateFromAsset(
@@ -39,7 +39,7 @@ UAGX_ShapeMaterialInstance::~UAGX_ShapeMaterialInstance()
 {
 }
 
-FMaterialBarrier* UAGX_ShapeMaterialInstance::GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
+FShapeMaterialBarrier* UAGX_ShapeMaterialInstance::GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
 {
 	if (!HasNative())
 	{
@@ -48,7 +48,7 @@ FMaterialBarrier* UAGX_ShapeMaterialInstance::GetOrCreateShapeMaterialNative(UWo
 	return GetNative();
 }
 
-FMaterialBarrier* UAGX_ShapeMaterialInstance::GetNative()
+FShapeMaterialBarrier* UAGX_ShapeMaterialInstance::GetNative()
 {
 	if (NativeBarrier)
 	{
@@ -93,7 +93,7 @@ UAGX_MaterialBase* UAGX_ShapeMaterialInstance::GetOrCreateInstance(
 
 void UAGX_ShapeMaterialInstance::CreateNative(UWorld* PlayingWorld)
 {
-	NativeBarrier.Reset(new FMaterialBarrier());
+	NativeBarrier.Reset(new FShapeMaterialBarrier());
 
 	NativeBarrier->AllocateNative(TCHAR_TO_UTF8(*GetName()));
 	check(HasNative());

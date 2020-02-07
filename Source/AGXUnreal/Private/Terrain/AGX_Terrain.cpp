@@ -297,7 +297,7 @@ void AAGX_Terrain::CreateTerrainMaterial()
 		GetNative()->SetTerrainMaterial(*TerrainMaterialBarrier);
 
 		// Set ShapeMaterial
-		FMaterialBarrier* MaterialBarrier =
+		FShapeMaterialBarrier* MaterialBarrier =
 			TerrainMaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
 		check(MaterialBarrier);
 

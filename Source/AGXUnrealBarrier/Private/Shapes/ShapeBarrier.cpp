@@ -3,7 +3,7 @@
 // AGXUnreal includes.
 #include "AGXRefs.h"
 #include "TypeConversions.h"
-#include "Materials/MaterialBarrier.h"
+#include "Materials/ShapeMaterialBarrier.h"
 #include "AGX_LogCategory.h"
 
 // AGX Dynamics includes.
@@ -93,7 +93,7 @@ FQuat FShapeBarrier::GetLocalRotation() const
 	return std::get<1>(GetLocalPositionAndRotation());
 }
 
-void FShapeBarrier::SetMaterial(const FMaterialBarrier& Material)
+void FShapeBarrier::SetMaterial(const FShapeMaterialBarrier& Material)
 {
 	check(HasNative());
 	check(Material.HasNative());

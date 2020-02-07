@@ -1,6 +1,6 @@
 #include "Materials/ContactMaterialBarrier.h"
 
-#include "Materials/MaterialBarrier.h"
+#include "Materials/ShapeMaterialBarrier.h"
 
 #include "AGXRefs.h"
 
@@ -129,7 +129,7 @@ const FContactMaterialRef* FContactMaterialBarrier::GetNative() const
 }
 
 void FContactMaterialBarrier::AllocateNative(
-	const FMaterialBarrier* Material1, const FMaterialBarrier* Material2)
+	const FShapeMaterialBarrier* Material1, const FShapeMaterialBarrier* Material2)
 {
 	check(!HasNative());
 

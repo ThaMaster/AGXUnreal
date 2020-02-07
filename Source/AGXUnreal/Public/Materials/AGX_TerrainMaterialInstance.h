@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Materials/AGX_TerrainMaterialBase.h"
 #include "Materials/TerrainMaterialBarrier.h"
-#include "Materials/MaterialBarrier.h"
+#include "Materials/ShapeMaterialBarrier.h"
 
 #include "AGX_TerrainMaterialInstance.generated.h"
 
@@ -26,7 +26,7 @@ public:
 
 	FTerrainMaterialBarrier* GetOrCreateTerrainMaterialNative(UWorld* PlayingWorld);
 
-	virtual FMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld) override;
+	virtual FShapeMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld) override;
 
 	virtual UAGX_MaterialBase* GetOrCreateInstance(
 		UWorld* PlayingWorld) override;
@@ -44,12 +44,12 @@ private:
 	bool HasShapeMaterialNative() const;
 
 	FTerrainMaterialBarrier* GetTerrainMaterialNative();
-	FMaterialBarrier* GetShapeMaterialNative();
+	FShapeMaterialBarrier* GetShapeMaterialNative();
 
 	void UpdateTerrainMaterialNativeProperties();
 	void UpdateShapeMaterialNativeProperties();
 
 private:
 	TUniquePtr<FTerrainMaterialBarrier> TerrainMaterialNativeBarrier;
-	TUniquePtr<FMaterialBarrier> ShapeMaterialNativeBarrier;
+	TUniquePtr<FShapeMaterialBarrier> ShapeMaterialNativeBarrier;
 };

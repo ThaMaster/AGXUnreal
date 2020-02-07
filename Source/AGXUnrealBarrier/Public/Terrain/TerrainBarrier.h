@@ -11,7 +11,7 @@ struct FTerrainRef;
 class FHeightFieldShapeBarrier;
 class FShovelBarrier;
 class FTerrainMaterialBarrier;
-class FMaterialBarrier;
+class FShapeMaterialBarrier;
 
 /**
  *
@@ -31,7 +31,7 @@ public:
 	void ReleaseNative();
 
 	bool AddShovel(FShovelBarrier& Shovel);
-	void SetShapeMaterial(const FMaterialBarrier& Material);
+	void SetShapeMaterial(const FShapeMaterialBarrier& Material);
 	void SetTerrainMaterial(const FTerrainMaterialBarrier& TerrainMaterial);
 
 	int32 GetGridSizeX() const;

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Materials/AGX_ShapeMaterialBase.h"
-#include "Materials/MaterialBarrier.h" /// \todo Shouldn't be necessary here since we have a destructor in cpp file!
+#include "Materials/ShapeMaterialBarrier.h" /// \todo Shouldn't be necessary here since we have a destructor in cpp file!
 
 #include "AGX_ShapeMaterialInstance.generated.h"
 
@@ -28,9 +28,9 @@ public:
 public:
 	virtual ~UAGX_ShapeMaterialInstance();
 
-	virtual FMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld) override;
+	virtual FShapeMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld) override;
 
-	FMaterialBarrier* GetNative();
+	FShapeMaterialBarrier* GetNative();
 
 	bool HasNative() const;
 
@@ -43,5 +43,5 @@ private:
 	// Creates the native AGX material and adds it to the simulation.
 	void CreateNative(UWorld* PlayingWorld);
 
-	TUniquePtr<FMaterialBarrier> NativeBarrier;
+	TUniquePtr<FShapeMaterialBarrier> NativeBarrier;
 };

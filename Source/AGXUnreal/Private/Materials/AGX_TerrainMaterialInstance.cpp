@@ -20,7 +20,7 @@ FTerrainMaterialBarrier* UAGX_TerrainMaterialInstance::GetOrCreateTerrainMateria
 	return GetTerrainMaterialNative();
 }
 
-FMaterialBarrier* UAGX_TerrainMaterialInstance::GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
+FShapeMaterialBarrier* UAGX_TerrainMaterialInstance::GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
 {
 	if (!HasShapeMaterialNative())
 	{
@@ -75,7 +75,7 @@ void UAGX_TerrainMaterialInstance::CreateTerrainMaterialNative(UWorld* PlayingWo
 
 void UAGX_TerrainMaterialInstance::CreateShapeMaterialNative(UWorld* PlayingWorld)
 {
-	ShapeMaterialNativeBarrier.Reset(new FMaterialBarrier());
+	ShapeMaterialNativeBarrier.Reset(new FShapeMaterialBarrier());
 
 	ShapeMaterialNativeBarrier->AllocateNative(TCHAR_TO_UTF8(*GetName()));
 	check(HasShapeMaterialNative());
@@ -105,7 +105,7 @@ FTerrainMaterialBarrier* UAGX_TerrainMaterialInstance::GetTerrainMaterialNative(
 	}
 }
 
-FMaterialBarrier* UAGX_TerrainMaterialInstance::GetShapeMaterialNative()
+FShapeMaterialBarrier* UAGX_TerrainMaterialInstance::GetShapeMaterialNative()
 {
 	if (ShapeMaterialNativeBarrier)
 	{

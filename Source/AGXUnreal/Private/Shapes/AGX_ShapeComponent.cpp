@@ -2,7 +2,7 @@
 
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
-#include "Materials/MaterialBarrier.h"
+#include "Materials/ShapeMaterialBarrier.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Sets default values for this component's properties
@@ -68,7 +68,7 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 			PhysicalMaterial = MaterialInstance;
 		}
 
-		FMaterialBarrier* MaterialBarrier = MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
+		FShapeMaterialBarrier* MaterialBarrier = MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
 		check(MaterialBarrier);
 
 		UE_LOG(

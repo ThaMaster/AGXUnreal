@@ -5,7 +5,7 @@
 #include "TypeConversions.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
-#include "Materials/MaterialBarrier.h"
+#include "Materials/ShapeMaterialBarrier.h"
 #include "AGX_LogCategory.h"
 
 #include "AGXRefs.h"
@@ -42,14 +42,14 @@ void FSimulationBarrier::AddConstraint(FConstraintBarrier* Constraint)
 	NativeRef->Native->add(Constraint->GetNative()->Native);
 }
 
-void FSimulationBarrier::AddMaterial(FMaterialBarrier* Material)
+void FSimulationBarrier::AddMaterial(FShapeMaterialBarrier* Material)
 {
 	check(HasNative());
 	check(Material->HasNative());
 	NativeRef->Native->add(Material->GetNative()->Native);
 }
 
-void FSimulationBarrier::RemoveMaterial(FMaterialBarrier* Material)
+void FSimulationBarrier::RemoveMaterial(FShapeMaterialBarrier* Material)
 {
 	check(HasNative());
 	check(Material->HasNative());

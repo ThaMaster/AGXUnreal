@@ -6,7 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "Materials/AGX_ShapeMaterialBulkProperties.h"
 #include "Materials/AGX_ShapeMaterialSurfaceProperties.h"
-#include "Materials/MaterialBarrier.h"
+#include "Materials/ShapeMaterialBarrier.h"
 
 #include "AGX_MaterialBase.generated.h"
 
@@ -40,7 +40,7 @@ public:
 	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld)
 		PURE_VIRTUAL(UAGX_MaterialBase::GetOrCreateInstance, return nullptr;);
 
-	virtual FMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
+	virtual FShapeMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
 		PURE_VIRTUAL(UAGX_MaterialBase::GetOrCreateShapeMaterialNative, return nullptr;);
 
 protected:

@@ -8,7 +8,7 @@
 #include "Shapes/ShapeBarrierImpl.h"
 #include "Terrain/ShovelBarrier.h"
 #include "Materials/TerrainMaterialBarrier.h"
-#include "Materials/MaterialBarrier.h"
+#include "Materials/ShapeMaterialBarrier.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -122,7 +122,7 @@ bool FTerrainBarrier::AddShovel(FShovelBarrier& Shovel)
 	return NativeRef->Native->add(Shovel.GetNative()->Native);
 }
 
-void FTerrainBarrier::SetShapeMaterial(const FMaterialBarrier& Material)
+void FTerrainBarrier::SetShapeMaterial(const FShapeMaterialBarrier& Material)
 {
 	check(HasNative());
 	check(Material.HasNative());
