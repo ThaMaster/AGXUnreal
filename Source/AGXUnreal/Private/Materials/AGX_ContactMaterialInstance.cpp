@@ -138,10 +138,8 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 	/// \note AGX seems OK with referenced materials being null. Falls back on native default
 	/// material.
 
-	UAGX_MaterialBase* MaterialInstance1 =
-		Material1->GetOrCreateInstance(GetWorld());
-	UAGX_MaterialBase* MaterialInstance2 =
-		Material2->GetOrCreateInstance(GetWorld());
+	UAGX_MaterialBase* MaterialInstance1 = Material1->GetOrCreateInstance(GetWorld());
+	UAGX_MaterialBase* MaterialInstance2 = Material2->GetOrCreateInstance(GetWorld());
 
 	// Swap properties
 	if (PlayingWorld && PlayingWorld->IsGameWorld())
@@ -149,13 +147,15 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 		if (MaterialInstance1 != Material1)
 		{
 			Material1 = MaterialInstance1;
-			PrintPropertySwapMessage(Material1, MaterialInstance1);
+			PrintPropertySwapMessage(
+				Material1, MaterialInstance1, FName("UAGX_ContactMaterialInstance::CreateNative"));
 		}
 
 		if (MaterialInstance2 != Material2)
 		{
 			Material2 = MaterialInstance2;
-			PrintPropertySwapMessage(Material2, MaterialInstance2);
+			PrintPropertySwapMessage(
+				Material2, MaterialInstance2, FName("UAGX_ContactMaterialInstance::CreateNative"));
 		}
 	}
 
@@ -184,11 +184,9 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 }
 
 void UAGX_ContactMaterialInstance::PrintPropertySwapMessage(
-	UAGX_MaterialBase* From, UAGX_MaterialBase* To)
+	UAGX_MaterialBase* From, UAGX_MaterialBase* To, const FName& CallerName)
 {
 	UE_LOG(
-		LogAGX, Log,
-		TEXT("UAGX_ContactMaterialInstance::PrintPropertySwapMessage is swapping a property "
-			 "(to %s from %s)."),
+		LogAGX, Log, TEXT("%s is swapping a property (to %s from %s)."), *CallerName.ToString(),
 		*GetNameSafe(To), *GetNameSafe(From));
 }
