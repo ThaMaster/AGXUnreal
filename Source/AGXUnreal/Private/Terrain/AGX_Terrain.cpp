@@ -23,7 +23,6 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
-
 AAGX_Terrain::AAGX_Terrain()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -221,6 +220,8 @@ void AAGX_Terrain::CreateNativeShovels()
 			WorldToBody.TransformVector(CuttingDirection->GetVectorDirectionNormalized());
 		ShovelBarrier.AllocateNative(
 			*BodyBarrier, TopEdgeLine, CuttingEdgeLine, CuttingDirectionVector);
+
+		FAGX_Shovel::UpdateNativeShovelProperties(ShovelBarrier, Shovel);
 
 		bool Added = NativeBarrier.AddShovel(ShovelBarrier);
 		if (!Added)
