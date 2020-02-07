@@ -131,6 +131,17 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::GetOrCreateInstance(
 	return this;
 };
 
+namespace
+{
+	void PrintPropertySwapMessage(
+		UAGX_MaterialBase* From, UAGX_MaterialBase* To, const FName& CallerName)
+	{
+		UE_LOG(
+			LogAGX, Log, TEXT("%s is swapping a property (to %s from %s)."), *CallerName.ToString(),
+			*GetNameSafe(To), *GetNameSafe(From));
+	}
+}
+
 void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 {
 	NativeBarrier.Reset(new FContactMaterialBarrier());
@@ -181,12 +192,4 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 	check(Simulation);
 
 	Simulation->GetNative()->AddContactMaterial(NativeBarrier.Get());
-}
-
-void UAGX_ContactMaterialInstance::PrintPropertySwapMessage(
-	UAGX_MaterialBase* From, UAGX_MaterialBase* To, const FName& CallerName)
-{
-	UE_LOG(
-		LogAGX, Log, TEXT("%s is swapping a property (to %s from %s)."), *CallerName.ToString(),
-		*GetNameSafe(To), *GetNameSafe(From));
 }

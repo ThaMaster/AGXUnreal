@@ -46,9 +46,6 @@ private:
 	// Creates the native AGX Contact Material and adds it to the simulation.
 	void CreateNative(UWorld* PlayingWorld);
 
-	void PrintPropertySwapMessage(
-		UAGX_MaterialBase* From, UAGX_MaterialBase* To, const FName& CallerName);
-
 	/// \todo This member is probably not necessary.. Remove it?
 	TWeakObjectPtr<UAGX_ContactMaterialAsset> SourceAsset;
 
