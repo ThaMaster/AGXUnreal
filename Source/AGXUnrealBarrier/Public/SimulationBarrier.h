@@ -21,8 +21,8 @@ public:
 	void AddRigidBody(FRigidBodyBarrier* Body);
 	void AddConstraint(FConstraintBarrier* Constraint);
 
-	void AddMaterial(FShapeMaterialBarrier* Material);
-	void RemoveMaterial(FShapeMaterialBarrier* Material);
+	void AddShapeMaterial(FShapeMaterialBarrier* Material);
+	void RemoveShapeMaterial(FShapeMaterialBarrier* Material);
 
 	void AddContactMaterial(FContactMaterialBarrier* ContactMaterial);
 	void RemoveContactMaterial(FContactMaterialBarrier* ContactMaterial);

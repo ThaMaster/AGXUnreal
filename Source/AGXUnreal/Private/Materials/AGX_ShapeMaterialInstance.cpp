@@ -103,5 +103,5 @@ void UAGX_ShapeMaterialInstance::CreateNative(UWorld* PlayingWorld)
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(PlayingWorld);
 	check(Simulation);
 
-	Simulation->GetNative()->AddMaterial(NativeBarrier.Get());
+	Simulation->GetNative()->AddShapeMaterial(NativeBarrier.Get());
 }
