@@ -59,6 +59,7 @@ UAGX_TerrainMaterialInstance* UAGX_TerrainMaterialInstance::CreateFromAsset(
 	NewInstance->CopyTerrainMaterialProperties(Source);
 
 	NewInstance->CreateTerrainMaterialNative(PlayingWorld);
+	NewInstance->CreateShapeMaterialNative(PlayingWorld);
 
 	return NewInstance;
 }
