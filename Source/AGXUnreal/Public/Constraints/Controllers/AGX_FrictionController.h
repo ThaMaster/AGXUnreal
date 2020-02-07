@@ -16,7 +16,7 @@ struct AGXUNREAL_API FAGX_ConstraintFrictionController
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "AGX Friction Controller")
 	bool bEnable;
 
 	/**
@@ -25,7 +25,8 @@ struct AGXUNREAL_API FAGX_ConstraintFrictionController
 	 * for the comparisons with the normal force to be dimensionally correct.
 	 * I.e., friction_torque <= friction_coefficient * axle_radius * normal_force
 	 */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Friction Controller", Meta = (EditCondition = "bEnable"))
 	double FrictionCoefficient;
 
 	/**
@@ -37,16 +38,20 @@ struct AGXUNREAL_API FAGX_ConstraintFrictionController
 	 * DIRECT_AND_ITERATIVE - meaning, if the constraint has solve
 	 * type ITERATIVE, this feature is ignored.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Friction Controller", Meta = (EditCondition = "bEnable"))
 	bool bEnableNonLinearDirectSolveUpdate;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Friction Controller", Meta = (EditCondition = "bEnable"))
 	double Elasticity;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Friction Controller", Meta = (EditCondition = "bEnable"))
 	double Damping;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Friction Controller", Meta = (EditCondition = "bEnable"))
 	FFloatInterval ForceRange;
 
 public:

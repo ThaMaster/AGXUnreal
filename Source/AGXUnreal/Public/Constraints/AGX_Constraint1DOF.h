@@ -55,6 +55,6 @@ public:
 private:
 	class FConstraint1DOFBarrier* GetNativeBarrierCasted() const;
 
-	UPROPERTY(Transient, VisibleDefaultsOnly)
+	UPROPERTY(Transient, Category = "AGX Secondary Constraint", VisibleDefaultsOnly)
 	bool bIsLockControllerEditable;
 };

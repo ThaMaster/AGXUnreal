@@ -14,22 +14,34 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Translational_1_IsEditable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Property Per Dof",
+		Meta = (EditCondition = "Translational_1_IsEditable"))
 	double Translational_1;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Translational_2_IsEditable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Property Per Dof",
+		Meta = (EditCondition = "Translational_2_IsEditable"))
 	double Translational_2;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Translational_3_IsEditable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Property Per Dof",
+		Meta = (EditCondition = "Translational_3_IsEditable"))
 	double Translational_3;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Rotational_1_IsEditable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Property Per Dof",
+		Meta = (EditCondition = "Rotational_1_IsEditable"))
 	double Rotational_1;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Rotational_2_IsEditable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Property Per Dof",
+		Meta = (EditCondition = "Rotational_2_IsEditable"))
 	double Rotational_2;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Rotational_3_IsEditable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Property Per Dof",
+		Meta = (EditCondition = "Rotational_3_IsEditable"))
 	double Rotational_3;
 
 	FAGX_ConstraintDoublePropertyPerDof(
@@ -59,22 +71,22 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 	}
 
 private:
-	UPROPERTY(Transient, VisibleDefaultsOnly)
+	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
 	bool Translational_1_IsEditable;
 
-	UPROPERTY(Transient, VisibleDefaultsOnly)
+	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
 	bool Translational_2_IsEditable;
 
-	UPROPERTY(Transient, VisibleDefaultsOnly)
+	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
 	bool Translational_3_IsEditable;
 
-	UPROPERTY(Transient, VisibleDefaultsOnly)
+	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
 	bool Rotational_1_IsEditable;
 
-	UPROPERTY(Transient, VisibleDefaultsOnly)
+	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
 	bool Rotational_2_IsEditable;
 
-	UPROPERTY(Transient, VisibleDefaultsOnly)
+	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
 	bool Rotational_3_IsEditable;
 };
 
@@ -87,22 +99,34 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Translational_1_IsEditable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Property Per Dof",
+		Meta = (EditCondition = "Translational_1_IsEditable"))
 	FFloatInterval Translational_1;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Translational_2_IsEditable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Property Per Dof",
+		Meta = (EditCondition = "Translational_2_IsEditable"))
 	FFloatInterval Translational_2;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Translational_3_IsEditable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Property Per Dof",
+		Meta = (EditCondition = "Translational_3_IsEditable"))
 	FFloatInterval Translational_3;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Rotational_1_IsEditable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Property Per Dof",
+		Meta = (EditCondition = "Rotational_1_IsEditable"))
 	FFloatInterval Rotational_1;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Rotational_2_IsEditable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Property Per Dof",
+		Meta = (EditCondition = "Rotational_2_IsEditable"))
 	FFloatInterval Rotational_2;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Rotational_3_IsEditable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Property Per Dof",
+		Meta = (EditCondition = "Rotational_3_IsEditable"))
 	FFloatInterval Rotational_3;
 
 	FAGX_ConstraintRangePropertyPerDof(
@@ -133,21 +157,21 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 	}
 
 private:
-	UPROPERTY(Transient, VisibleDefaultsOnly)
+	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
 	bool Translational_1_IsEditable;
 
-	UPROPERTY(Transient, VisibleDefaultsOnly)
+	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
 	bool Translational_2_IsEditable;
 
-	UPROPERTY(Transient, VisibleDefaultsOnly)
+	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
 	bool Translational_3_IsEditable;
 
-	UPROPERTY(Transient, VisibleDefaultsOnly)
+	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
 	bool Rotational_1_IsEditable;
 
-	UPROPERTY(Transient, VisibleDefaultsOnly)
+	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
 	bool Rotational_2_IsEditable;
 
-	UPROPERTY(Transient, VisibleDefaultsOnly)
+	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
 	bool Rotational_3_IsEditable;
 };

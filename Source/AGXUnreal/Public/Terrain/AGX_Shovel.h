@@ -22,27 +22,27 @@ struct FAGX_Shovel
 	 *
 	 * in addition to the usual Rigid Body and Shape components.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
 	AActor* RigidBodyActor;
 
 	/**
 	 * Vertical distance under the blade cutting edge that the soil is allowed
 	 * to instantly merge up to, in centimeters.
 	 */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	float VerticalBladeSoilMergeDistance = 40.0f;
 
 	/**
 	 * Extension outside the shovel bounding box where soil particle merging
 	 * is forbidden, in centimeters.
 	 */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	float NoMergeExtensionDistance = 50.0f;
 
 	/**
 	 * Linear scaling coefficient for the penetration force that the terrain will
 	 * generated on this shovel.
 	 */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	float PenetrationForceScaling = 1.0f;
 };

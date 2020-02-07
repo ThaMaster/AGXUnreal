@@ -20,26 +20,34 @@ public:
 	 * for automatic calculation of total mass and inertia of the Rigid Body
 	 * (see mass options of Rigid Body Component).
 	 */
-	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(
+		EditAnywhere,
+		Category = "AGX Material Bulk Properties", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double Density;
 
 	/**
 	 * Young's modulus of the material. Same as spring coefficient k.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Material Bulk Properties",
+		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double YoungsModulus;
 
 	/**
 	 * Bulk viscosity coefficient of the material (1.0 - restitution coefficient).
 	 */
-	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Material Bulk Properties",
+		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double Viscosity;
 
 	/**
 	 * Damping factor used by the contact constraint. The value is the time the
 	 * contact constraint has to fulfill its violation.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Material Bulk Properties",
+		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double Damping;
 
 	/**
@@ -48,7 +56,7 @@ public:
 	 * This is only used if the contact area approach is used if the 'Use Contact Area Approach' is
 	 * enabled.
 	 */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "AGX Material Bulk Properties" )
 	double MinElasticRestLength;
 
 	/**
@@ -57,7 +65,7 @@ public:
 	 * This is only used if the contact area approach is used if the 'Use Contact Area Approach' is
 	 * enabled.
 	 */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "AGX Material Bulk Properties")
 	double MaxElasticRestLength;
 
 public:
