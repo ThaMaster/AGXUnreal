@@ -38,6 +38,7 @@ void UAGX_CollisionGroupsComponent::ForceRefreshChildShapes()
 	}
 }
 
+#if WITH_EDITOR
 void UAGX_CollisionGroupsComponent::PostEditChangeProperty(
 	FPropertyChangedEvent& PropertyChangedEvent)
 {
@@ -49,6 +50,7 @@ void UAGX_CollisionGroupsComponent::PostEditChangeProperty(
 		ApplyCollisionGroupChanges(PropertyChangedEvent);
 	}
 }
+#endif
 
 void UAGX_CollisionGroupsComponent::ApplyCollisionGroupChanges(
 	FPropertyChangedEvent& PropertyChangedEvent)

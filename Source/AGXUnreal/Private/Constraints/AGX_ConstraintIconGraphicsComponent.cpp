@@ -555,9 +555,11 @@ UAGX_ConstraintIconGraphicsComponent::UAGX_ConstraintIconGraphicsComponent(
 		// Enabling the SceneComponents's white blob for constraint types with no visualization yet.
 		/// \todo Set bVisualizeComponent to false when these constraints' graphics are implemented
 		/// by in the proxy.
+#if WITH_EDITORONLY_DATA
 		bVisualizeComponent = Owner->IsA(AAGX_DistanceConstraint::StaticClass()) ||
 							  Owner->IsA(AAGX_HingeConstraint::StaticClass()) ||
 							  Owner->IsA(AAGX_LockConstraint::StaticClass());
+#endif
 	}
 
 	// Find materials.

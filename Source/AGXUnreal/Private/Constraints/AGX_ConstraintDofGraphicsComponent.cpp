@@ -601,7 +601,9 @@ UAGX_ConstraintDofGraphicsComponent::UAGX_ConstraintDofGraphicsComponent(
 	SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
 
 	bCastHiddenShadow = false;
+#if WITH_EDITORONLY_DATA
 	bVisualizeComponent = false;
+#endif
 
 	// Find materials.
 	{

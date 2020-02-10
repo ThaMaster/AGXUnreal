@@ -1,7 +1,7 @@
 #include "CollisionGroups/AGX_CollisionGroupsComponentCustomization.h"
 
 #include "CollisionGroups/AGX_CollisionGroupsComponent.h"
-#include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
@@ -19,7 +19,7 @@ void FAGX_CollisionGroupsComponentCustomization::CustomizeDetails(
 	IDetailLayoutBuilder& DetailBuilder)
 {
 	UAGX_CollisionGroupsComponent* CollisionGroupComponent =
-		FAGX_ObjectUtilities::GetSingleObjectBeingCustomized<UAGX_CollisionGroupsComponent>(
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_CollisionGroupsComponent>(
 			DetailBuilder);
 
 	if (!CollisionGroupComponent)
