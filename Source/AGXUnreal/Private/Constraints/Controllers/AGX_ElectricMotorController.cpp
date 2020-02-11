@@ -3,42 +3,53 @@
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
-FAGX_ConstraintElectricMotorController::FAGX_ConstraintElectricMotorController(bool bRotational_)
-	: bEnable(false)
+FAGX_ConstraintElectricMotorController::FAGX_ConstraintElectricMotorController(bool bRotational)
+	: FAGX_ConstraintController(bRotational)
 	, Voltage(24.0)
 	, ArmatureResistance(1.0)
 	, TorqueConstant(1.0)
-	, ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
-	, bRotational(bRotational_)
 {
 }
 
-void FAGX_ConstraintElectricMotorController::ToBarrier(
-	FElectricMotorControllerBarrier* Barrier) const
+void FAGX_ConstraintElectricMotorController::InitializeBarrier(TUniquePtr<FElectricMotorControllerBarrier> Barrier)
 {
-	if (!Barrier)
-		return;
-
-	Barrier->bEnable = bEnable;
-	Barrier->ForceRangeMin = ForceRange.Min;
-	Barrier->ForceRangeMax = ForceRange.Max;
-
-	Barrier->bRotational = bRotational;
-
-	Barrier->Voltage = Voltage;
-	Barrier->ArmatureResistance = ArmatureResistance;
-	Barrier->TorqueConstant = TorqueConstant;
+	check(!HasNative());
+	NativeBarrier = std::move(Barrier);
+	check(HasNative());
 }
 
-void FAGX_ConstraintElectricMotorController::FromBarrier(const FElectricMotorControllerBarrier& Barrier)
+namespace
 {
-	bEnable = Barrier.bEnable;
-	ForceRange.Min = Barrier.ForceRangeMin;
-	ForceRange.Max = Barrier.ForceRangeMax;
+	FElectricMotorControllerBarrier* GetElectricMotorBarrier(FAGX_ConstraintElectricMotorController& Controller)
+	{
+		// Is there a way to guarantee that this cast is safe? We're in the
+		// Unreal Engine potion of the plugin so cannot use dynamic_cast, but
+		// FElectricMotorControllerBarrier doesn't inherit from UObject so we
+		// cannot use Unreal Engine's Cast<> function.
+		//
+		// We "know" that a FAGX_ConstraintElectricMotorController will always
+		// hold a FElectricMotorControllerBarrier, but there doesn't seem to be
+		// a way to verify it here.
+		//
+		// The corresponding functions for the other ControllerBarriers referece
+		// this comment. Remove those if this comment is removed.
+		return static_cast<FElectricMotorControllerBarrier*>(Controller.GetNative());
+	}
+}
 
-	bRotational = Barrier.bRotational;
+void FAGX_ConstraintElectricMotorController::UpdateNativePropertiesImpl()
+{
+	FElectricMotorControllerBarrier* Barrier = GetElectricMotorBarrier(*this);
+	check(Barrier);
+	Barrier->SetVoltage(Voltage);
+	Barrier->SetArmatureResistance(ArmatureResistance);
+	Barrier->SetTorqueConstant(TorqueConstant);
+}
 
-	Voltage = Barrier.Voltage;
-	ArmatureResistance = Barrier.ArmatureResistance;
-	TorqueConstant = Barrier.TorqueConstant;
+void FAGX_ConstraintElectricMotorController::CopyFrom(const FElectricMotorControllerBarrier& Source)
+{
+	Super::CopyFrom(Source);
+	Voltage = Source.GetVoltage();
+	ArmatureResistance = Source.GetArmatureResistance();
+	TorqueConstant = Source.GetTorqueConstant();
 }

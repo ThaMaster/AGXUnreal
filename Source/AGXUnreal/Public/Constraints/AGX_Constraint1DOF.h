@@ -52,6 +52,10 @@ public:
 
 	virtual void UpdateNativeProperties() override;
 
+protected:
+	virtual void CreateNativeImpl() override final;
+	virtual void AllocateNative() PURE_VIRTUAL(AAGX_Constraint1DOF::AllocateNative, );
+
 private:
 	class FConstraint1DOFBarrier* GetNativeBarrierCasted() const;
 

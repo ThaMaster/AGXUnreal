@@ -1,7 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Constraints/AGX_Constraint2DOF.h"
 
+// AGXUnreal includes.
+#include "AGX_LogCategory.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "Constraints/Constraint2DOFBarrier.h"
 
@@ -24,101 +24,28 @@ AAGX_Constraint2DOF::~AAGX_Constraint2DOF()
 
 void AAGX_Constraint2DOF::UpdateNativeProperties()
 {
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("AGX Constraint '%s' is trying to update native properties while not having a "
+				 "native handle."), *GetName());
+		return;
+	}
+
 	Super::UpdateNativeProperties();
 
-	// TODO: To avoid constructing the controller barrier structs on the stack
-	// everytime native data needs to be synced, consider letting the Unreal Controller
-	// instead have a lifetime-bound dynamically created instance of the controller barrier.
-
-	if (FConstraint2DOFBarrier* NativeBarrierCasted = GetNativeBarrierCasted())
-	{
-		// Electric Motor Controller 1
-		{
-			FElectricMotorControllerBarrier ControllerBarrier;
-			ElectricMotorController1.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetElectricMotorController(
-				ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
-		}
-
-		// Electric Motor Controller 2
-		{
-			FElectricMotorControllerBarrier ControllerBarrier;
-			ElectricMotorController2.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetElectricMotorController(
-				ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
-		}
-
-		// Friction Controller 1
-		{
-			FFrictionControllerBarrier ControllerBarrier;
-			FrictionController1.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetFrictionController(
-				ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
-		}
-
-		// Friction Controller 2
-		{
-			FFrictionControllerBarrier ControllerBarrier;
-			FrictionController2.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetFrictionController(
-				ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
-		}
-
-		// Lock Controller 1
-		{
-			FLockControllerBarrier ControllerBarrier;
-			LockController1.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetLockController(
-				ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
-		}
-
-		// Lock Controller 2
-		{
-			FLockControllerBarrier ControllerBarrier;
-			LockController2.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetLockController(
-				ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
-		}
-
-		// Range Controller 1
-		{
-			FRangeControllerBarrier ControllerBarrier;
-			RangeController1.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetRangeController(
-				ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
-		}
-
-		// Range Controller 2
-		{
-			FRangeControllerBarrier ControllerBarrier;
-			RangeController2.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetRangeController(
-				ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
-		}
-
-		// Target Speed Controller 1
-		{
-			FTargetSpeedControllerBarrier ControllerBarrier;
-			TargetSpeedController1.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetTargetSpeedController(
-				ControllerBarrier, /*bSecondaryConstraintIndex*/ 0);
-		}
-
-		// Target Speed Controller 2
-		{
-			FTargetSpeedControllerBarrier ControllerBarrier;
-			TargetSpeedController2.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetTargetSpeedController(
-				ControllerBarrier, /*bSecondaryConstraintIndex*/ 1);
-		}
-
-		// Screw Controller
-		{
-			FScrewControllerBarrier ControllerBarrier;
-			ScrewController.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetScrewController(ControllerBarrier);
-		}
-	}
+	/// \todo Perhaps add a function that returns a list of all the controllers.
+	ElectricMotorController1.UpdateNativeProperties();
+	ElectricMotorController2.UpdateNativeProperties();
+	FrictionController1.UpdateNativeProperties();
+	FrictionController2.UpdateNativeProperties();
+	LockController1.UpdateNativeProperties();
+	LockController2.UpdateNativeProperties();
+	RangeController1.UpdateNativeProperties();
+	RangeController2.UpdateNativeProperties();
+	TargetSpeedController1.UpdateNativeProperties();
+	TargetSpeedController2.UpdateNativeProperties();
 }
 
 FConstraint2DOFBarrier* AAGX_Constraint2DOF::GetNativeBarrierCasted() const

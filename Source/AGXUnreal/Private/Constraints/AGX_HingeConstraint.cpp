@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+//
 
 #include "Constraints/AGX_HingeConstraint.h"
 
@@ -20,7 +20,7 @@ AAGX_HingeConstraint::~AAGX_HingeConstraint()
 {
 }
 
-void AAGX_HingeConstraint::CreateNativeImpl()
+void AAGX_HingeConstraint::AllocateNative()
 {
 	NativeBarrier.Reset(new FHingeBarrier());
 

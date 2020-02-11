@@ -1,10 +1,14 @@
 #pragma once
 
+// AGXUnreal includes.
+#include "Constraints/AGX_ConstraintController.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 
 #include "AGX_LockController.generated.h"
 
-struct FLockControllerBarrier;
+class FLockControllerBarrier;
 
 /**
  * Lock controller for secondary constraints (usually on one of the DOFs
@@ -12,35 +16,24 @@ struct FLockControllerBarrier;
  * Disabled by default.
  */
 USTRUCT()
-struct AGXUNREAL_API FAGX_ConstraintLockController
+struct AGXUNREAL_API FAGX_ConstraintLockController : public FAGX_ConstraintController
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere)
-	bool bEnable;
-
 	/**
-	 * Target position in Degrees if controller is on a Rotational Degree-Of-Freedom,
-	 * else in Centimeters. */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	double Position;
-
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	double Elasticity;
-
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	double Damping;
-
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	FFloatInterval ForceRange;
+	 * Target position in Degrees if controller is on a Rotational
+	 * Degree-Of-Freedom, else in Centimeters.
+	 */
+	 UPROPERTY(EditAnywhere, Meta =	(EditCondition = "bEnable"))
+	 double Position;
 
 public:
-	FAGX_ConstraintLockController(bool bRotational = false);
+	FAGX_ConstraintLockController() = default;
+	FAGX_ConstraintLockController(bool bRotational);
 
-	void ToBarrier(FLockControllerBarrier* Barrier) const;
-	void FromBarrier(FLockControllerBarrier& Barrier);
+	void InitializeBarrier(TUniquePtr<FLockControllerBarrier> Barrier);
+	void CopyFrom(const FLockControllerBarrier& Source);
 
-private:
-	// Whether the controller is on a Rotational or Translational DOF.
-	bool bRotational;
+protected:
+	virtual void UpdateNativePropertiesImpl() override;
 };

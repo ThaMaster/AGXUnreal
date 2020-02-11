@@ -1,12 +1,14 @@
-//
-
 #pragma once
 
+// AGXUnreal includes.
+#include "Constraints/AGX_ConstraintController.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 
 #include "AGX_RangeController.generated.h"
 
-struct FRangeControllerBarrier;
+class FRangeControllerBarrier;
 
 /**
  * Range controller for secondary constraints (usually on one of the DOFs
@@ -14,34 +16,25 @@ struct FRangeControllerBarrier;
  * Disabled by default.
  */
 USTRUCT()
-struct AGXUNREAL_API FAGX_ConstraintRangeController
+struct AGXUNREAL_API FAGX_ConstraintRangeController : public FAGX_ConstraintController
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere)
-	bool bEnable;
-
-	/** Range in Degrees if controller is on a Rotational Degree-Of-Freedom,  else in Centimeters.
+	/**
+	 * Range in Degrees if controller is on a Rotational Degree-Of-Freedom,
+	 * else in Centimeters.
 	 */
 	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	//TInterval<double> Range;
 	FFloatInterval Range;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	double Elasticity;
-
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	double Damping;
-
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	FFloatInterval ForceRange;
-
 public:
-	FAGX_ConstraintRangeController(bool bRotational = false);
+	FAGX_ConstraintRangeController() = default;
+	FAGX_ConstraintRangeController(bool bRotational);
 
-	void ToBarrier(FRangeControllerBarrier* Barrier) const;
-	void FromBarrier(FRangeControllerBarrier& Barrier);
+	void InitializeBarrier(TUniquePtr<FRangeControllerBarrier> Barrier);
+	void CopyFrom(const FRangeControllerBarrier& Source);
 
 private:
-	// Whether the controller is on a Rotational or Translational DOF.
-	bool bRotational;
+	virtual void UpdateNativePropertiesImpl() override;
 };

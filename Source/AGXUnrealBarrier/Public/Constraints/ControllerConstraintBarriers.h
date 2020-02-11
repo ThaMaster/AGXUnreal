@@ -11,24 +11,28 @@ struct FConstraintControllerRef;
 class AGXUNREALBARRIER_API FConstraintControllerBarrier
 {
 public:
-	// FConstraintControllerBarrier(); /// \todo Will this be needed?
-	FConstraintControllerBarrier(FConstraintControllerBarrier&& Other) noexcept;
-	FConstraintControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
-	virtual ~FConstraintControllerBarrier(); /// \todo Can this be removed?
-	FConstraintControllerBarrier& operator=(FConstraintControllerBarrier&& Other) noexcept;
+	virtual ~FConstraintControllerBarrier();
 
 	bool HasNative() const;
 	FConstraintControllerRef* GetNative();
 	const FConstraintControllerRef* GetNative() const;
 
-	void SetCompliance(float Compliance);
-	float GetCompliance() const;
+	void SetEnable(bool bEnabled);
+	bool GetEnable() const;
 
-	void SetDamping(float Damping);
-	float GetDamping() const;
+	void SetCompliance(double Compliance);
+	double GetCompliance() const;
+
+	void SetDamping(double Damping);
+	double GetDamping() const;
 
 	void SetForceRange(FFloatInterval ForceRange);
 	FFloatInterval GetForceRange() const;
+
+protected:
+	FConstraintControllerBarrier() = default;
+	FConstraintControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
+
 
 private:
 	FConstraintControllerBarrier(const FConstraintControllerBarrier&) = delete;
@@ -41,169 +45,74 @@ protected:
 class AGXUNREALBARRIER_API FElectricMotorControllerBarrier : public FConstraintControllerBarrier
 {
 public:
-	//FElectricMotorControllerBarrier(); Will this be needed?
-	FElectricMotorControllerBarrier(FElectricMotorControllerBarrier&& Other) noexcept;
 	FElectricMotorControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
-	virtual ~FElectricMotorControllerBarrier();
-	FElectricMotorControllerBarrier& operator=(FElectricMotorControllerBarrier&& Other) noexcept;
 
-	void SetVoltage(float Voltage);
-	float GetVoltage() const;
+	void SetVoltage(double Voltage);
+	double GetVoltage() const;
 
-	void SetArmatureResistance(float ArmatureResistance);
-	float GetArmatureResistance() const;
+	void SetArmatureResistance(double ArmatureResistance);
+	double GetArmatureResistance() const;
 
-	void SetTorqueConstant(float TorqueConstant);
-	float GetTorqueConstant() const;
-
-private:
+	void SetTorqueConstant(double TorqueConstant);
+	double GetTorqueConstant() const;
 };
 
-#if 0
-namespace agx
+class AGXUNREALBARRIER_API FFrictionControllerBarrier : public FConstraintControllerBarrier
 {
-	class ElectricMotorController;
-	class FrictionController;
-	class LockController;
-	class RangeController;
-	class ScrewController;
-	class TargetSpeedController;
-}
+public:
+	FFrictionControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
 
+	void SetFrictionCoefficient(double FrictionCoefficient);
+	double GetFrictionCoefficient() const;
 
-
-
-/**
- * Used to transfer Electric Motor Controller data between Unreal and AGX natives,
- * instead of having functions with many variables. Also handles
- * unit conversions in one common place.
- */
-struct FElectricMotorControllerBarrier
-{
-	bool bEnable;
-	double ForceRangeMin;
-	double ForceRangeMax;
-
-	// Whether the controller is on a Rotational or Translational DOF.
-	bool bRotational;
-
-	double Voltage;
-	double ArmatureResistance;
-	double TorqueConstant;
-
-	void ToNative(agx::ElectricMotorController* Native) const;
-	void FromNative(const agx::ElectricMotorController& Native);
+	void SetEnableNonLinearDirectSolveUpdate(bool bEnable);
+	bool GetEnableNonLinearDirectSolveUpdate() const;
 };
 
-/**
- * Used to transfer Friction Controller data between Unreal and AGX natives,
- * instead of having functions with many variables. Also handles
- * unit conversions in one common place.
- */
-struct FFrictionControllerBarrier
+class AGXUNREALBARRIER_API FLockControllerBarrier : public FConstraintControllerBarrier
 {
-	bool bEnable;
-	double Elasticity;
-	double Damping;
-	double ForceRangeMin;
-	double ForceRangeMax;
+public:
+	FLockControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
 
-	// Whether the controller is on a Rotational or Translational DOF.
-	bool bRotational;
+	void SetPositionTranslational(double Position);
+	double GetPositionTranslational() const;
 
-	double FrictionCoefficient;
-	bool bEnableNonLinearDirectSolveUpdate;
-
-	void ToNative(agx::FrictionController* Native) const;
-	void FromNative(const agx::FrictionController& Native);
+	void SetPositionRotational(double Position);
+	double GetPositionRotational() const;
 };
 
-/**
- * Used to transfer Lock Controller data between Unreal and AGX natives,
- * instead of having functions with many variables. Also handles
- * unit conversions in one common place.
- */
-struct FLockControllerBarrier
+class AGXUNREALBARRIER_API FRangeControllerBarrier : public FConstraintControllerBarrier
 {
-	bool bEnable;
-	double Elasticity;
-	double Damping;
-	double ForceRangeMin;
-	double ForceRangeMax;
+public:
+	FRangeControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
 
-	// Whether the controller is on a Rotational or Translational DOF.
-	bool bRotational;
+	void SetRangeTranslational(FFloatInterval Range);
+	FFloatInterval GetRangeTranslational() const;
 
-	double Position;
-
-	void ToNative(agx::LockController* Native) const;
-	void FromNative(const agx::LockController& Native);
+	void SetRangeRotational(FFloatInterval Range);
+	FFloatInterval GetRangeRotational() const;
 };
 
-/**
- * Used to transfer Range Controller data between Unreal and AGX natives,
- * instead of having functions with many variables. Also handles
- * unit conversions in one common place.
- */
-struct FRangeControllerBarrier
+class AGXUNREALBARRIER_API FScrewControllerBarrier : public FConstraintControllerBarrier
 {
-	bool bEnable;
-	double Elasticity;
-	double Damping;
-	double ForceRangeMin;
-	double ForceRangeMax;
+public:
+	FScrewControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
 
-	// Whether the controller is on a Rotational or Translational DOF.
-	bool bRotational;
-
-	// Radians if bRotational is true, else Centimeters.
-	double RangeMin;
-	double RangeMax;
-
-	void ToNative(agx::RangeController* Native) const;
-	void FromNative(const agx::RangeController& Native);
+	void SetLead(double Lead);
+	double GetLead() const;
 };
 
-/**
- * Used to transfer Screw Controller data between Unreal and AGX natives,
- * instead of having functions with many variables. Also handles
- * unit conversions in one common place.
- */
-struct FScrewControllerBarrier
+class AGXUNREALBARRIER_API FTargetSpeedControllerBarrier : public FConstraintControllerBarrier
 {
-	bool bEnable;
-	double Elasticity;
-	double Damping;
-	double ForceRangeMin;
-	double ForceRangeMax;
+public:
+	FTargetSpeedControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
 
-	double Lead;
+	void SetSpeedTranslational(double Speed);
+	double GetSpeedTranslational() const;
 
-	void ToNative(agx::ScrewController* Native) const;
-	void FromNative(const agx::ScrewController& Native);
+	void SetSpeedRotational(double Speed);
+	double GetSpeedRotational() const;
+
+	void SetLockedAtZeroSpeed(bool LockedAtZeroSpeed);
+	bool GetLockedAtZeroSpeed() const;
 };
-
-/**
- * Used to transfer Target Speed Controller data between Unreal and AGX natives,
- * instead of having functions with many variables. Also handles
- * unit conversions in one common place.
- */
-struct FTargetSpeedControllerBarrier
-{
-	bool bEnable;
-	double Elasticity;
-	double Damping;
-	double ForceRangeMin;
-	double ForceRangeMax;
-
-	// Whether the controller is on a Rotational or Translational DOF.
-	bool bRotational;
-
-	// Radians per sec if bRotational is true, else Centimeters per sec.
-	double Speed;
-	bool bLockedAtZeroSpeed;
-
-	void ToNative(agx::TargetSpeedController* Native) const;
-	void FromNative(const agx::TargetSpeedController& Native);
-};
-#endif

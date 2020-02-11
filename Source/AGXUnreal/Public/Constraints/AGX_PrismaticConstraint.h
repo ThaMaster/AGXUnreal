@@ -19,5 +19,5 @@ public:
 	virtual ~AAGX_PrismaticConstraint();
 
 protected:
-	virtual void CreateNativeImpl() override;
+	virtual void AllocateNative() override;
 };

@@ -3,10 +3,11 @@
 /// \todo This may become a header file with lots of includes, which will make
 ///       it a compile time hog. Consider splitting it  up.
 
-// AGXUnrealBarrierIncludes.
+// AGXUnreal includes.
 #include "AGX_MotionControl.h"
-#include "AGXRefs.h"
 #include "AGX_LogCategory.h"
+#include "AGXRefs.h"
+#include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 #include "RigidBodyBarrier.h"
 
 // Unreal Engine includes.
@@ -38,7 +39,6 @@ namespace
 	constexpr T UNREAL_TO_AGX_DISTANCE_FACTOR = T(0.01);
 }
 
-
 // Scalars.
 
 inline float Convert(agx::Real V)
@@ -62,6 +62,11 @@ inline float ConvertAngle(agx::Real A)
 	return Convert(FMath::RadiansToDegrees(A));
 }
 
+template <typename T>
+inline T ConvertAngleToUnreal(agx::Real A)
+{
+	return static_cast<T>(FMath::RadiansToDegrees(A));
+}
 
 inline agx::Real Convert(float V)
 {
@@ -84,6 +89,12 @@ inline agx::Real ConvertAngle(float A)
 	return FMath::DegreesToRadians(Convert(A));
 }
 
+template <typename T>
+inline agx::Real ConvertAngleToAgx(T A)
+{
+	// Precision pessimization here because of 32-bit pi in FMath?
+	return FMath::DegreesToRadians(A);
+}
 
 // Vectors.
 
@@ -119,7 +130,6 @@ inline agx::Vec3 ConvertVector(const FVector& V)
 	return agx::Vec3(ConvertDistance(V.X), -ConvertDistance(V.Y), ConvertDistance(V.Z));
 }
 
-
 // Interval/Range.
 
 inline FFloatInterval Convert(const agx::RangeReal& R)
@@ -132,6 +142,11 @@ inline FFloatInterval ConvertDistance(const agx::RangeReal& R)
 	return FFloatInterval(ConvertDistance(R.lower()), ConvertDistance(R.upper()));
 }
 
+inline FFloatInterval ConvertAngle(const agx::RangeReal& R)
+{
+	return FFloatInterval(ConvertAngle(R.lower()), ConvertAngle(R.upper()));
+}
+
 inline agx::RangeReal Convert(const FFloatInterval& I)
 {
 	return agx::RangeReal(Convert(I.Min), Convert(I.Max));
@@ -142,6 +157,10 @@ inline agx::RangeReal ConvertDistance(const FFloatInterval& I)
 	return agx::RangeReal(ConvertDistance(I.Min), ConvertDistance(I.Max));
 }
 
+inline agx::RangeReal ConvertAngle(const FFloatInterval& I)
+{
+	return agx::RangeReal(ConvertAngle(I.Min), ConvertAngle(I.Max));
+}
 
 // TWoVectors/Line.
 // TwoVectors may represent other things as well. If that's the case then we'll
@@ -162,7 +181,6 @@ inline agx::Line ConvertVector(const FTwoVectors& Vs)
 	return {ConvertVector(Vs.v1), ConvertVector(Vs.v2)};
 }
 
-
 // Quaternions.
 
 inline FQuat Convert(const agx::Quat& V)
@@ -174,7 +192,6 @@ inline agx::Quat Convert(const FQuat& V)
 {
 	return agx::Quat(Convert(V.X), -Convert(V.Y), Convert(V.Z), -Convert(V.W));
 }
-
 
 // Text.
 
@@ -217,7 +234,6 @@ inline agx::Uuid Convert(const FGuid& Guid)
 	return Uuid;
 }
 
-
 // Enumerations.
 
 inline agx::RigidBody::MotionControl Convert(EAGX_MotionControl V)
@@ -250,6 +266,17 @@ inline EAGX_MotionControl Convert(agx::RigidBody::MotionControl V)
 	return MC_KINEMATICS;
 }
 
+inline agx::Constraint2DOF::DOF Convert(EAGX_Constraint2DOFFreeDOF Dof)
+{
+	switch (Dof)
+	{
+		case EAGX_Constraint2DOFFreeDOF::FIRST:
+			return agx::Constraint2DOF::FIRST;
+		case EAGX_Constraint2DOFFreeDOF::SECOND:
+			return agx::Constraint2DOF::SECOND;
+	}
+	return agx::Constraint2DOF::FIRST;
+}
 
 inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type LogVerbosity)
 {
@@ -270,11 +297,11 @@ inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type Log
 		case ELogVerbosity::Fatal:
 			return agx::Notify::NOTIFY_ERROR;
 		default:
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("ConvertLogLevelVerbosity: unknown verbosity level: %d. Verbosity level "
-				 "'NOTIFY_INFO' will be used instead."),
-			LogVerbosity);
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("ConvertLogLevelVerbosity: unknown verbosity level: %d. Verbosity level "
+					 "'NOTIFY_INFO' will be used instead."),
+				LogVerbosity);
 
 			// Use NOTIFY_INFO as default, if unknown log verbosity is given
 			return agx::Notify::NOTIFY_INFO;
@@ -287,15 +314,12 @@ inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& Fra
 		agx::AffineMatrix4x4(Convert(FrameRotation), ConvertVector(FramePosition)));
 }
 
-
-
-
 namespace
 {
 	/**
 	 * Given a Barrier, returns the final AGX native object.
 	 */
-	template<typename TNative, typename TBarrier>
+	template <typename TNative, typename TBarrier>
 	TNative* GetNativeFromBarrier(const TBarrier* Barrier)
 	{
 		if (Barrier && Barrier->HasNative())
