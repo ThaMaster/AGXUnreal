@@ -9,6 +9,9 @@
 #include "AGX_Simulation.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
 #include "Utilities/AGX_TextureUtilities.h"
+#include "Materials/AGX_TerrainMaterialInstance.h"
+#include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Materials/AGX_MaterialBase.h"
 
 // AGXUnrealBarrier includes.
 #include "Terrain/TerrainBarrier.h"
@@ -161,6 +164,7 @@ void AAGX_Terrain::InitializeNative()
 	CreateNativeTerrain();
 	CreateNativeShovels();
 	InitializeRendering();
+	CreateTerrainMaterial();
 }
 
 void AAGX_Terrain::CreateNativeTerrain()
@@ -262,6 +266,60 @@ void AAGX_Terrain::InitializeRendering()
 	InitializeDisplacementMap();
 	InitializeParticleSystem();
 	InitializeParticlesMap();
+}
+
+void AAGX_Terrain::CreateTerrainMaterial()
+{
+	if (!HasNative())
+		return;
+
+	if (TerrainMaterial)
+	{
+		// Both an UAGX_TerrainMaterialInstance and a UAGX_ShapeMaterialInstance
+		// are set for the terrain. The former is the native agxTerrain::TerrainMaterial
+		// counterpart and the latter is the native agx::Material counterpart.
+
+		// Set TerrainMaterial
+		UAGX_TerrainMaterialInstance* TerrainMaterialInstance =
+			static_cast<UAGX_TerrainMaterialInstance*>(
+				TerrainMaterial->GetOrCreateInstance(GetWorld()));
+
+		check(TerrainMaterialInstance);
+
+		FTerrainMaterialBarrier* TerrainMaterialBarrier =
+			TerrainMaterialInstance->GetOrCreateTerrainMaterialNative(GetWorld());
+		check(TerrainMaterialBarrier);
+
+		UE_LOG(
+			LogAGX, Log,
+			TEXT(
+				"AAGX_Terrain::CreateTerrainMaterial is setting native material %s on terrain %s."),
+			*TerrainMaterialInstance->GetName(), *GetName());
+
+		GetNative()->SetTerrainMaterial(*TerrainMaterialBarrier);
+
+		// Set ShapeMaterial
+		FShapeMaterialBarrier* MaterialBarrier =
+			TerrainMaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
+		check(MaterialBarrier);
+
+		GetNative()->SetShapeMaterial(*MaterialBarrier);
+
+		// Swap properties
+		UWorld* PlayingWorld = GetWorld();
+
+		if (TerrainMaterialInstance != TerrainMaterial && PlayingWorld &&
+			PlayingWorld->IsGameWorld())
+		{
+			UE_LOG(
+				LogAGX, Log,
+				TEXT("AAGX_Terrain::CreateTerrainMaterial is swapping a property "
+					 "(to %s from %s)."),
+				*GetNameSafe(TerrainMaterialInstance), *GetNameSafe(TerrainMaterial));
+
+			TerrainMaterial = TerrainMaterialInstance;
+		}
+	}
 }
 
 void AAGX_Terrain::InitializeDisplacementMap()

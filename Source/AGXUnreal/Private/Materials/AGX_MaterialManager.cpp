@@ -8,6 +8,7 @@
 
 #include "Materials/AGX_ContactMaterialBase.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
+#include "AGX_LogCategory.h"
 
 #define LOCTEXT_NAMESPACE "AAGX_MaterialManager"
 
@@ -50,6 +51,16 @@ void AAGX_MaterialManager::BeginPlay()
 	{
 		if (!ContactMaterial)
 		{
+			continue;
+		}
+
+		if (!ContactMaterial->Material1 || !ContactMaterial->Material2)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Contact material %s has at least one material that has not been set."),
+				*ContactMaterial->GetName());
+
 			continue;
 		}
 
