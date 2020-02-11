@@ -3,9 +3,10 @@
 #pragma once
 
 // AGXUnreal includes.
-#include "Constraints/AGX_ConstraintEnums.h"
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Constraints/AGX_Constraint2DOFFreeDOF.h"
+
 
 // Unreal Engine includes.
 #include "InputCoreTypes.h"
@@ -53,7 +54,7 @@ public:
 	bool bDisableOnRelease;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Speed Input", meta = (EditCondition="bMustSelectDOF"))
-	EConstraintFreeDOF TargetDOF;
+	EAGX_Constraint2DOFFreeDOF TargetDOF;
 
 	// I want to make this a private property, but I don't know how. Setting
 	// VisibleInstanceOnly as a workaround/hack for now.
@@ -68,7 +69,7 @@ public:
 		float DeltaTime, ELevelTick TickType,
 		FActorComponentTickFunction* ThisTickFunction) override;
 
-	void LogOneErrorMessage(const TCHAR* Message);
+	void LogErrorMessageOnce(const TCHAR* Message);
 
 private:
 	bool bErrorMessageLogged = false;
