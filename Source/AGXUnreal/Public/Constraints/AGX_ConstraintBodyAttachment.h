@@ -100,6 +100,6 @@ private:
 	 * whenever Frame Defining Actor is set to another actor.
 	 */
 	UPROPERTY(Transient)
-	mutable AActor* RecentFrameDefiningActor;
+	AActor* RecentFrameDefiningActor;
 #endif
 };
