@@ -25,7 +25,6 @@ struct AGXUNREAL_API FAGX_ConstraintRangeController : public FAGX_ConstraintCont
 	 * else in Centimeters.
 	 */
 	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	//TInterval<double> Range;
 	FFloatInterval Range;
 
 public:
