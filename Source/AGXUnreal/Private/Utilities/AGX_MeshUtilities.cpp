@@ -14,7 +14,7 @@
 
 void AGX_MeshUtilities::MakeCube(
 	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
-	const FVector& HalfSize)
+	TArray<FVector2D>& TexCoords, const FVector& HalfSize)
 {
 	// 8 Corners,
 	// 6 Quads,
@@ -53,11 +53,23 @@ void AGX_MeshUtilities::MakeCube(
 		16, 17, 18, 16, 18, 19,	// Right
 		20, 22, 21, 20, 23, 22	// Left
 	};
+
+	// This maps the texture the same way as an Unreal Cube.
+	static const TArray<FVector2D> StaticTexCoords =
+	{
+		FVector2D(0,0),		FVector2D(1,0),		FVector2D(1,1),		FVector2D(0,1), //Up
+		FVector2D(0,0),		FVector2D(0,1),		FVector2D(1,1),		FVector2D(1,0), //Forward
+		FVector2D(1,0),		FVector2D(0,0),		FVector2D(0,1),		FVector2D(1,1), //Down
+		FVector2D(0,1),		FVector2D(0,0),		FVector2D(1,0),		FVector2D(1,1), //Backward
+		FVector2D(1,0),		FVector2D(0,0),		FVector2D(0,1),		FVector2D(1,1), //Right
+		FVector2D(1,1),		FVector2D(0,1),		FVector2D(0,0),		FVector2D(1,0)  //Left
+	};
 	// clang-format on
 
 	Positions = StaticPositions;
 	Normals = StaticNormals;
 	Indices = StaticIndices;
+	TexCoords = StaticTexCoords;
 
 	for (FVector& Position : Positions)
 	{
@@ -88,8 +100,8 @@ void AGX_MeshUtilities::SphereConstructionData::AppendBufferSizes(
 }
 
 void AGX_MeshUtilities::MakeSphere(
-	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices, float Radius,
-	uint32 NumSegments)
+	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
+	TArray<FVector2D>& TexCoords, float Radius, uint32 NumSegments)
 {
 	if (NumSegments < 4 || Radius < 1.0e-6)
 		return;
@@ -108,9 +120,7 @@ void AGX_MeshUtilities::MakeSphere(
 
 	float X, Y, Z; // vertex position
 	const float RadiusInv = 1.0f / Radius;
-#ifdef WITH_TEXCOORDS
 	float U, V; // vertex texture coordinate
-#endif
 	float SectorAngle;
 	float StackAngle, StackRadius, StackHeight;
 
@@ -137,13 +147,11 @@ void AGX_MeshUtilities::MakeSphere(
 
 			Normals.Add(FVector(X * RadiusInv, Y * RadiusInv, Z * RadiusInv));
 
-#ifdef WITH_TEXCOORDS
-			// vertex tex coord (u, v) range between [0, 1]
-			U = (float) SectorIndex / SectorCount;
-			V = (float) StackIndex / StackCount;
-			TexCoords.Add(U);
-			TexCoords.Add(V);
-#endif
+			// This mapping will be similar to an Unreal sphere, though rotated 90 degrees.
+			// Vertex tex coord (u, v) range between [0, 1].
+			U = 1.0f - (float) SectorIndex / NumSectors;
+			V = (float) StackIndex / NumStacks;
+			TexCoords.Add(FVector2D(U, V));
 		}
 	}
 
@@ -307,7 +315,7 @@ void AGX_MeshUtilities::CylinderConstructionData::AppendBufferSizes(
 
 void AGX_MeshUtilities::MakeCylinder(
 	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
-	const CylinderConstructionData& Data)
+	TArray<FVector2D>& TexCoords, const CylinderConstructionData& Data)
 {
 	if (Data.CircleSegments < 4 || Data.CircleSegments > uint32(TNumericLimits<uint16>::Max()) ||
 		Data.HeightSegments < 1 || Data.HeightSegments > uint32(TNumericLimits<uint16>::Max()) ||
@@ -320,11 +328,10 @@ void AGX_MeshUtilities::MakeCylinder(
 	Positions.Empty(Data.Vertices);
 	Normals.Empty(Data.Vertices);
 	Indices.Empty(Data.Indices);
+	TexCoords.Empty(Data.Vertices);
 
 	float X, Y, Z; // vertex position
-#ifdef WITH_TEXCOORDS
 	float U, V; // vertex texture coordinate
-#endif
 
 	// Generate vertex attributes.
 
@@ -365,13 +372,14 @@ void AGX_MeshUtilities::MakeCylinder(
 					break;
 			}
 
-#ifdef WITH_TEXCOORDS
-			// vertex tex coord (u, v) range between [0, 1]
-			U = IsCap ? X : ((float) ColumnIndex / Data.CircleSegments);
-			V = IsCap ? Z : ((float) RowIndex / (Data.VertexRows - 1));
-			TexCoords.Add(U);
-			TexCoords.Add(V);
-#endif
+			// These mappings will be similar to an Unreal cylinder (though rotated 90 degrees).
+			// Vertex tex coord (u, v) range between [0, 1].
+			U = IsCap ? 1 - (X / (2 * Data.Radius) + 0.5)
+					  : ((float) ColumnIndex / Data.CircleSegments);
+			V = IsCap ? (Z / (2 * Data.Radius) + 0.5)
+					  : ((float) 1 - (RowIndex / (Data.VertexRows - 1)));
+
+			TexCoords.Add(FVector2D(U, V));
 		}
 	}
 

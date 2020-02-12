@@ -65,7 +65,8 @@ void UAGX_BoxShapeComponent::UpdateNativeProperties()
 void UAGX_BoxShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 {
 	AGX_MeshUtilities::MakeCube(
-		OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, HalfExtent);
+		OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, OutMeshData.TexCoords,
+		HalfExtent);
 }
 
 #if WITH_EDITOR

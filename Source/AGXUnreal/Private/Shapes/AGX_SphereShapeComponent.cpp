@@ -62,7 +62,8 @@ void UAGX_SphereShapeComponent::UpdateNativeProperties()
 void UAGX_SphereShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 {
 	AGX_MeshUtilities::MakeSphere(
-		OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, Radius, 32);
+		OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, OutMeshData.TexCoords,
+		Radius, 32);
 }
 
 #if WITH_EDITOR
