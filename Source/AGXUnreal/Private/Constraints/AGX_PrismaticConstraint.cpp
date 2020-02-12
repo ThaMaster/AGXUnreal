@@ -1,5 +1,3 @@
-//
-
 #include "Constraints/AGX_PrismaticConstraint.h"
 
 #include "Constraints/PrismaticBarrier.h"

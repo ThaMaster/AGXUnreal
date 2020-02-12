@@ -1,5 +1,3 @@
-//
-
 #include "Constraints/AGX_HingeConstraint.h"
 
 #include "Constraints/HingeBarrier.h"

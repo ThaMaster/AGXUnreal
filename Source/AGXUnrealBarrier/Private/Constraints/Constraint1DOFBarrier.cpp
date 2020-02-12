@@ -1,5 +1,3 @@
-//
-
 #include "Constraints/Constraint1DOFBarrier.h"
 
 // AGXUnreal includes.
