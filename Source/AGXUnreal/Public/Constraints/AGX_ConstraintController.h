@@ -57,7 +57,8 @@ public:
 	void UpdateNativeProperties();
 
 protected:
-	virtual void UpdateNativePropertiesImpl() PURE_VIRTUAL(FAGX_ConstraintController::UpdateNativePropertiesImpl, );
+	virtual void UpdateNativePropertiesImpl()
+		PURE_VIRTUAL(FAGX_ConstraintController::UpdateNativePropertiesImpl, );
 	void CopyFrom(const FConstraintControllerBarrier& Source);
 
 	TUniquePtr<FConstraintControllerBarrier> NativeBarrier;
