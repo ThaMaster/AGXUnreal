@@ -77,13 +77,10 @@ namespace UAGX_InputTargetSpeed_Helpers
 
 		if (AAGX_Constraint2DOF* Constraint2DOF = Cast<AAGX_Constraint2DOF>(Input.GetOwner()))
 		{
-			switch (Input.TargetDOF)
-			{
-				case EAGX_Constraint2DOFFreeDOF::FIRST:
-					return {&Constraint2DOF->TargetSpeedController1, Controller, true};
-				case EAGX_Constraint2DOFFreeDOF::SECOND:
-					return {&Constraint2DOF->TargetSpeedController2, Controller, true};
-			}
+			const bool First = Input.TargetDOF == EAGX_Constraint2DOFFreeDOF::FIRST;
+			return {(First ? &Constraint2DOF->TargetSpeedController1
+						   : &Constraint2DOF->TargetSpeedController2),
+					Controller, true};
 		}
 
 		Input.LogErrorMessageOnce(TEXT("Placed below something not a constraint."));
@@ -97,6 +94,7 @@ namespace UAGX_InputTargetSpeed_Helpers
 		{
 			return;
 		}
+
 		Controller.Speed = Speed;
 		Controller.bEnable = bEnabled;
 		Controller.UpdateNativeProperties();
