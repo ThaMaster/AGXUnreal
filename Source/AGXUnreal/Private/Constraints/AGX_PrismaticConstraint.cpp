@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Constraints/AGX_PrismaticConstraint.h"
 
 #include "Constraints/PrismaticBarrier.h"
@@ -20,7 +18,7 @@ AAGX_PrismaticConstraint::~AAGX_PrismaticConstraint()
 {
 }
 
-void AAGX_PrismaticConstraint::CreateNativeImpl()
+void AAGX_PrismaticConstraint::AllocateNative()
 {
 	NativeBarrier.Reset(new FPrismaticBarrier());
 

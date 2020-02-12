@@ -1,23 +1,24 @@
 #pragma once
 
+// AGXUnreal includes.
+#include "Constraints/AGX_ConstraintController.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 
 #include "AGX_ElectricMotorController.generated.h"
 
-struct FElectricMotorControllerBarrier;
+class FElectricMotorControllerBarrier;
 
 /**
- * Electric motor controller for secondary constraints (usually on one of the DOFs
- * that has not been primarily constrained by the AGX Constraint).
- * Disabled by default.
+ * Electric motor controller for secondary constraints (usually on one of the
+ * DOFs that has not been primarily constrained by the AGX Constraint). Disabled
+ * by default.
  */
 USTRUCT()
-struct AGXUNREAL_API FAGX_ConstraintElectricMotorController
+struct AGXUNREAL_API FAGX_ConstraintElectricMotorController : public FAGX_ConstraintController
 {
 	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere)
-	bool bEnable;
 
 	/**
 	 * Available voltage or voltage drop across the terminals of this motor, in Volt.
@@ -38,16 +39,13 @@ struct AGXUNREAL_API FAGX_ConstraintElectricMotorController
 	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
 	double TorqueConstant;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	FFloatInterval ForceRange;
-
 public:
-	FAGX_ConstraintElectricMotorController(bool bRotational = false);
+	FAGX_ConstraintElectricMotorController() = default;
+	FAGX_ConstraintElectricMotorController(bool bRotational);
 
-	void ToBarrier(FElectricMotorControllerBarrier* Barrier) const;
-	void FromBarrier(const FElectricMotorControllerBarrier& Barrier);
+	void InitializeBarrier(TUniquePtr<FElectricMotorControllerBarrier> Barrier);
+	void CopyFrom(const FElectricMotorControllerBarrier& Source);
 
 private:
-	// Whether the controller is on a Rotational or Translational DOF.
-	bool bRotational;
+	virtual void UpdateNativePropertiesImpl() override;
 };

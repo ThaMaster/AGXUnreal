@@ -9,7 +9,7 @@
 /**
  * Locks all degrees of freedom except for translation along the Z-axis.
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX", Category = "AGX", Blueprintable, meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API AAGX_PrismaticConstraint : public AAGX_Constraint1DOF
 {
 	GENERATED_BODY()
@@ -19,5 +19,5 @@ public:
 	virtual ~AAGX_PrismaticConstraint();
 
 protected:
-	virtual void CreateNativeImpl() override;
+	virtual void AllocateNative() override;
 };

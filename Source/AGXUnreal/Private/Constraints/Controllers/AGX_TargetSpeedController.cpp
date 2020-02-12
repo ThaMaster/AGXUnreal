@@ -3,44 +3,54 @@
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
-FAGX_ConstraintTargetSpeedController::FAGX_ConstraintTargetSpeedController(bool bRotational_)
-	: bEnable(false)
+FAGX_ConstraintTargetSpeedController::FAGX_ConstraintTargetSpeedController(bool bRotational)
+	: FAGX_ConstraintController(bRotational)
 	, Speed(0.0)
 	, bLockedAtZeroSpeed(false)
-	, Elasticity(ConstraintConstants::DefaultElasticity())
-	, Damping(ConstraintConstants::DefaultDamping())
-	, ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
-	, bRotational(bRotational_)
 {
 }
 
-void FAGX_ConstraintTargetSpeedController::ToBarrier(FTargetSpeedControllerBarrier* Barrier) const
+void FAGX_ConstraintTargetSpeedController::InitializeBarrier(TUniquePtr<FTargetSpeedControllerBarrier> Barrier)
 {
-	if (!Barrier)
-		return;
-
-	Barrier->bEnable = bEnable;
-	Barrier->Elasticity = Elasticity;
-	Barrier->Damping = Damping;
-	Barrier->ForceRangeMin = static_cast<double>(ForceRange.Min);
-	Barrier->ForceRangeMax = static_cast<double>(ForceRange.Max);
-
-	Barrier->bRotational = bRotational;
-
-	Barrier->Speed = bRotational ? FMath::DegreesToRadians(Speed) : Speed;
-	Barrier->bLockedAtZeroSpeed = bLockedAtZeroSpeed;
+	check(!HasNative());
+	NativeBarrier = std::move(Barrier);
+	check(HasNative());
 }
 
-void FAGX_ConstraintTargetSpeedController::FromBarrier(const FTargetSpeedControllerBarrier& Barrier)
+namespace
 {
-	bEnable = Barrier.bEnable;
-	Elasticity = Barrier.Elasticity;
-	Damping = Barrier.Damping;
-	ForceRange.Min = static_cast<float>(Barrier.ForceRangeMin);
-	ForceRange.Max = static_cast<float>(Barrier.ForceRangeMax);
+	FTargetSpeedControllerBarrier* GetSpeedBarrier(FAGX_ConstraintTargetSpeedController& Controller)
+	{
+		// See comment in GetElectricMotorController.
+		return static_cast<FTargetSpeedControllerBarrier*>(Controller.GetNative());
+	}
+}
 
-	bRotational = Barrier.bRotational;
+void FAGX_ConstraintTargetSpeedController::UpdateNativePropertiesImpl()
+{
+	FTargetSpeedControllerBarrier* Barrier = GetSpeedBarrier(*this);
+	check(Barrier);
+	Barrier->SetLockedAtZeroSpeed(bLockedAtZeroSpeed);
+	if (bRotational)
+	{
+		Barrier->SetSpeedRotational(Speed);
+	}
+	else
+	{
+		Barrier->SetSpeedTranslational(Speed);
+	}
+}
 
-	Speed = bRotational ? FMath::RadiansToDegrees(Barrier.Speed) : Barrier.Speed;
-	bLockedAtZeroSpeed = Barrier.bLockedAtZeroSpeed;
+void FAGX_ConstraintTargetSpeedController::CopyFrom(const FTargetSpeedControllerBarrier& Source)
+{
+	Super::CopyFrom(Source);
+	bLockedAtZeroSpeed = Source.GetLockedAtZeroSpeed();
+	if (bRotational)
+	{
+		Speed = Source.GetSpeedRotational();
+	}
+	else
+	{
+		Speed = Source.GetSpeedTranslational();
+	}
 }

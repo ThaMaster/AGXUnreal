@@ -1,23 +1,24 @@
 #pragma once
 
+// AGXUnreal includes.
+#include "Constraints/AGX_ConstraintController.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 
 #include "AGX_FrictionController.generated.h"
 
-struct FFrictionControllerBarrier;
+class FFrictionControllerBarrier;
 
 /**
  * Friction controller for secondary constraints (usually on one of the DOFs
- * that has not been primarily constrained by the AGX Constraint).
- * Disabled by default.
+ * that has not been primarily constrained by the AGX Constraint). Disabled by
+ * default.
  */
 USTRUCT()
-struct AGXUNREAL_API FAGX_ConstraintFrictionController
+struct AGXUNREAL_API FAGX_ConstraintFrictionController : public FAGX_ConstraintController
 {
 	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere)
-	bool bEnable;
 
 	/**
 	 * Note that if this controller is rotational (Hinge or CylindriclJoint)
@@ -40,22 +41,13 @@ struct AGXUNREAL_API FAGX_ConstraintFrictionController
 	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
 	bool bEnableNonLinearDirectSolveUpdate;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	double Elasticity;
-
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	double Damping;
-
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
-	FFloatInterval ForceRange;
-
 public:
-	FAGX_ConstraintFrictionController(bool bRotational = false);
+	FAGX_ConstraintFrictionController() = default;
+	FAGX_ConstraintFrictionController(bool bRotational);
 
-	void ToBarrier(FFrictionControllerBarrier* Barrier) const;
-	void FromBarrier(const FFrictionControllerBarrier& Barrier);
+	void InitializeBarrier(TUniquePtr<FFrictionControllerBarrier> Barrier);
+	void CopyFrom(const FFrictionControllerBarrier& Source);
 
 private:
-	// Whether the controller is on a Rotational or Translational DOF.
-	bool bRotational;
+	virtual void UpdateNativePropertiesImpl() override;
 };

@@ -9,7 +9,7 @@
 /**
  * Locks the initial relative distance between the bodies.
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX", Category = "AGX", Blueprintable, meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API AAGX_DistanceConstraint : public AAGX_Constraint1DOF
 {
 	GENERATED_BODY()
@@ -19,5 +19,5 @@ public:
 	virtual ~AAGX_DistanceConstraint();
 
 protected:
-	virtual void CreateNativeImpl() override;
+	virtual void AllocateNative() override;
 };

@@ -1,18 +1,57 @@
 #include "Constraints/Controllers/AGX_LockController.h"
 
-#include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
-FAGX_ConstraintLockController::FAGX_ConstraintLockController(bool bRotational_)
-	: bEnable(false)
+FAGX_ConstraintLockController::FAGX_ConstraintLockController(bool bRotational)
+	: FAGX_ConstraintController(bRotational)
 	, Position(0.0)
-	, Elasticity(ConstraintConstants::DefaultElasticity())
-	, Damping(ConstraintConstants::DefaultDamping())
-	, ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
-	, bRotational(bRotational_)
 {
 }
 
+void FAGX_ConstraintLockController::InitializeBarrier(TUniquePtr<FLockControllerBarrier> Barrier)
+{
+	check(!HasNative());
+	NativeBarrier = std::move(Barrier);
+	check(HasNative());
+}
+
+namespace
+{
+	FLockControllerBarrier* GetLockBarrier(FAGX_ConstraintLockController& Controller)
+	{
+		// See comment in GetElectricMotorController.
+		return static_cast<FLockControllerBarrier*>(Controller.GetNative());
+	}
+}
+
+void FAGX_ConstraintLockController::UpdateNativePropertiesImpl()
+{
+	FLockControllerBarrier* Barrier = GetLockBarrier(*this);
+	check(Barrier);
+	if (bRotational)
+	{
+		Barrier->SetPositionRotational(Position);
+	}
+	else
+	{
+		Barrier->SetPositionTranslational(Position);
+	}
+}
+
+void FAGX_ConstraintLockController::CopyFrom(const FLockControllerBarrier& Source)
+{
+	Super::CopyFrom(Source);
+	if (bRotational)
+	{
+		Position = Source.GetPositionRotational();
+	}
+	else
+	{
+		Position = Source.GetPositionTranslational();
+	}
+}
+
+#if 0
 void FAGX_ConstraintLockController::ToBarrier(FLockControllerBarrier* Barrier) const
 {
 	if (!Barrier)
@@ -41,3 +80,4 @@ void FAGX_ConstraintLockController::FromBarrier(FLockControllerBarrier& Barrier)
 
 	Position = bRotational ? FMath::RadiansToDegrees(Barrier.Position) : Barrier.Position;
 }
+#endif

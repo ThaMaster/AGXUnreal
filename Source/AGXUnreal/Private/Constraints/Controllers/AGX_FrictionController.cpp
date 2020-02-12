@@ -1,47 +1,41 @@
 #include "Constraints/Controllers/AGX_FrictionController.h"
 
-#include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
-FAGX_ConstraintFrictionController::FAGX_ConstraintFrictionController(bool bRotational_)
-	: bEnable(false)
+FAGX_ConstraintFrictionController::FAGX_ConstraintFrictionController(bool bRotational)
+	: FAGX_ConstraintController(bRotational)
 	, FrictionCoefficient(0.416667)
 	, bEnableNonLinearDirectSolveUpdate(false)
-	, Elasticity(ConstraintConstants::DefaultElasticity())
-	, Damping(ConstraintConstants::DefaultDamping())
-	, ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
-	, bRotational(bRotational_)
 {
 }
 
-void FAGX_ConstraintFrictionController::ToBarrier(FFrictionControllerBarrier* Barrier) const
+void FAGX_ConstraintFrictionController::InitializeBarrier(TUniquePtr<FFrictionControllerBarrier> Barrier)
 {
-	if (!Barrier)
-		return;
-
-	Barrier->bEnable = bEnable;
-	Barrier->Elasticity = Elasticity;
-	Barrier->Damping = Damping;
-	Barrier->ForceRangeMin = ForceRange.Min;
-	Barrier->ForceRangeMax = ForceRange.Max;
-
-	Barrier->bRotational = bRotational;
-
-	Barrier->FrictionCoefficient = FrictionCoefficient;
-	Barrier->bEnableNonLinearDirectSolveUpdate = bEnableNonLinearDirectSolveUpdate;
+	check(!HasNative());
+	NativeBarrier = std::move(Barrier);
+	check(HasNative());
 }
 
-void FAGX_ConstraintFrictionController::FromBarrier(const FFrictionControllerBarrier& Barrier)
+namespace
 {
-	bEnable = Barrier.bEnable;
-	Elasticity = Barrier.Elasticity;
-	Damping = Barrier.Damping;
-	ForceRange.Min = Barrier.ForceRangeMin;
-	ForceRange.Max = Barrier.ForceRangeMax;
+	FFrictionControllerBarrier* GetFrictionBarrier(FAGX_ConstraintFrictionController& Controller)
+	{
+		// See comment in GetElectricMotorController.
+		return static_cast<FFrictionControllerBarrier*>(Controller.GetNative());
+	}
+}
 
+void FAGX_ConstraintFrictionController::UpdateNativePropertiesImpl()
+{
+	FFrictionControllerBarrier* Barrier = GetFrictionBarrier(*this);
+	check(Barrier);
+	Barrier->SetFrictionCoefficient(FrictionCoefficient);
+	Barrier->SetEnableNonLinearDirectSolveUpdate(bEnableNonLinearDirectSolveUpdate);
+}
 
-	bRotational = Barrier.bRotational;
-
-	FrictionCoefficient = Barrier.FrictionCoefficient;
-	bEnableNonLinearDirectSolveUpdate = Barrier.bEnableNonLinearDirectSolveUpdate;
+void FAGX_ConstraintFrictionController::CopyFrom(const FFrictionControllerBarrier& Source)
+{
+	Super::CopyFrom(Source);
+	FrictionCoefficient = Source.GetFrictionCoefficient();
+	bEnableNonLinearDirectSolveUpdate = Source.GetEnableNonLinearDirectSolveUpdate();
 }

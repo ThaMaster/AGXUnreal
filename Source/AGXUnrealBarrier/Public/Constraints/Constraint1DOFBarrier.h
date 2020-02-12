@@ -1,14 +1,16 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
+// AGXUnreal includes.
 #include "Constraints/ConstraintBarrier.h"
 
-struct FElectricMotorControllerBarrier;
-struct FFrictionControllerBarrier;
-struct FLockControllerBarrier;
-struct FRangeControllerBarrier;
-struct FTargetSpeedControllerBarrier;
+// Unreal Engine includes.
+#include "Templates/UniquePtr.h"
+
+class FElectricMotorControllerBarrier;
+class FFrictionControllerBarrier;
+class FLockControllerBarrier;
+class FRangeControllerBarrier;
+class FTargetSpeedControllerBarrier;
 
 namespace agx
 {
@@ -23,29 +25,19 @@ public:
 	FConstraint1DOFBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FConstraint1DOFBarrier();
 
-	void SetElectricMotorController(const FElectricMotorControllerBarrier& Controller);
+	TUniquePtr<FElectricMotorControllerBarrier> GetElectricMotorController();
+	TUniquePtr<FFrictionControllerBarrier> GetFrictionController();
+	TUniquePtr<FLockControllerBarrier> GetLockController();
+	TUniquePtr<FRangeControllerBarrier> GetRangeController();
+	TUniquePtr<FTargetSpeedControllerBarrier> GetTargetSpeedController();
 
-	void GetElectricMotorController(FElectricMotorControllerBarrier& Controller) const;
-
-	void SetFrictionController(const FFrictionControllerBarrier& Controller);
-
-	void GetFrictionController(FFrictionControllerBarrier& Controller) const;
-
-	void SetLockController(const FLockControllerBarrier& Controller);
-
-	void GetLockController(FLockControllerBarrier& Controller) const;
-
-	void SetRangeController(const FRangeControllerBarrier& Controller);
-
-	void GetRangeController(FRangeControllerBarrier& Controller) const;
-
-	void SetTargetSpeedController(const FTargetSpeedControllerBarrier& Controller);
-
-	void GetTargetSpeedController(FTargetSpeedControllerBarrier& Controller) const;
+	TUniquePtr<const FElectricMotorControllerBarrier> GetElectricMotorController() const;
+	TUniquePtr<const FFrictionControllerBarrier> GetFrictionController() const;
+	TUniquePtr<const FLockControllerBarrier> GetLockController() const;
+	TUniquePtr<const FRangeControllerBarrier> GetRangeController() const;
+	TUniquePtr<const FTargetSpeedControllerBarrier> GetTargetSpeedController() const;
 
 private:
 	FConstraint1DOFBarrier(const FConstraint1DOFBarrier&) = delete;
 	void operator=(const FConstraint1DOFBarrier&) = delete;
-
-	agx::Constraint1DOF* GetNativeCasted() const;
 };
