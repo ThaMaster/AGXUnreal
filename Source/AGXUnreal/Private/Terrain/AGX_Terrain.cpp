@@ -23,7 +23,6 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
-
 AAGX_Terrain::AAGX_Terrain()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -145,9 +144,7 @@ void AAGX_Terrain::InitializeNative()
 {
 	if (SourceLandscape == nullptr)
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("No source landscape selected for terrain %s %s."),
-			*GetActorLabel(), *GetName());
+		UE_LOG(LogAGX, Error, TEXT("No source landscape selected for terrain %s."), *GetName());
 		return;
 	}
 
@@ -180,9 +177,9 @@ void AAGX_Terrain::CreateNativeShovels()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("CreateNativeShovels called on Terrain '%s', '%s' which doesn't have a native "
+			TEXT("CreateNativeShovels called on Terrain '%s' which doesn't have a native "
 				 "representation."),
-			*GetActorLabel(), *GetName());
+			*GetName());
 	}
 
 	for (FAGX_Shovel& Shovel : Shovels)
