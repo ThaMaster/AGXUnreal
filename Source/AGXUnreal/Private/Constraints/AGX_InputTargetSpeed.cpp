@@ -98,8 +98,6 @@ namespace UAGX_InputTargetSpeed_Helpers
 		Controller.Speed = Speed;
 		Controller.bEnable = bEnabled;
 		Controller.UpdateNativeProperties();
-
-		UE_LOG(LogAGX, Log, TEXT("Setting constraint speed %f"), Speed);
 	}
 }
 
