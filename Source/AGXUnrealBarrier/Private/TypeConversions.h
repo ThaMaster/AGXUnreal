@@ -268,14 +268,10 @@ inline EAGX_MotionControl Convert(agx::RigidBody::MotionControl V)
 
 inline agx::Constraint2DOF::DOF Convert(EAGX_Constraint2DOFFreeDOF Dof)
 {
-	switch (Dof)
-	{
-		case EAGX_Constraint2DOFFreeDOF::FIRST:
-			return agx::Constraint2DOF::FIRST;
-		case EAGX_Constraint2DOFFreeDOF::SECOND:
-			return agx::Constraint2DOF::SECOND;
-	}
-	return agx::Constraint2DOF::FIRST;
+	check(Dof == EAGX_Constraint2DOFFreeDOF::FIRST || Dof == EAGX_Constraint2DOFFreeDOF::SECOND);
+
+	return Dof == EAGX_Constraint2DOFFreeDOF::FIRST ? agx::Constraint2DOF::FIRST
+													: agx::Constraint2DOF::SECOND;
 }
 
 inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type LogVerbosity)
