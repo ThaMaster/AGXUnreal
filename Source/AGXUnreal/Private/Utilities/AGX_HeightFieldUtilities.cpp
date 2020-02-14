@@ -15,6 +15,33 @@ namespace
 		check(Root * Root == Value); /// \todo This should be an Error, not a crash.
 		return Root;
 	}
+
+	bool IsOverlappingPoint(
+		int32 X, int32 Y, int32 NumComponentsSide, int32 NumVertsPerComponentSide)
+	{
+		if (NumComponentsSide == 1)
+			return false;
+
+		if (X > 0 && X % NumVertsPerComponentSide == 0)
+			return true;
+
+		if (Y > 0 && Y % NumVertsPerComponentSide == 0)
+			return true;
+
+		return false;
+	}
+
+	float ColorToHeight(FColor Color, float ScaleZ)
+	{
+		// See struct FLandscapeComponentDataInterface::GetHeight for reference.
+		uint16 HeightPixel = (Color.R << 8) + Color.G;
+
+		// At scale = 100, the height span is 512 meters.
+		float Frac = (float) HeightPixel / 65536;
+		float HeightInCentimeters = (Frac - 0.5) * 512 * ScaleZ + 100;
+
+		return HeightInCentimeters;
+	}
 }
 
 int32 AGX_HeightFieldUtilities::GetLandscapeSideSizeInQuads(ALandscape& Landscape)
@@ -40,49 +67,60 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 
 	const int32 NumQuadsPerComponentSide = Landscape.ComponentSizeQuads;
 	const int32 NumQuadsPerSide = NumComponentsSide * NumQuadsPerComponentSide;
-
 	const int32 NumVerticesPerSide = NumQuadsPerSide + 1;
 	const int32 NumVertices = NumVerticesPerSide * NumVerticesPerSide;
-
 	const float QuadSideSize = Landscape.GetActorScale().X;
 	const float SideSize = NumQuadsPerSide * QuadSideSize;
+	const float LandscapeScaleZ = Landscape.GetActorScale3D().Z;
 
 	TArray<float> Heights;
 	Heights.AddUninitialized(NumVertices);
 
-	auto WriteComponent = [&Heights, NumVerticesPerSide](ULandscapeComponent& Component) {
-		const int32 BaseQuadX = Component.SectionBaseX;
-		const int32 BaseQuadY = Component.SectionBaseY;
+	ULandscapeComponent* Component = Landscape.LandscapeComponents[0];
+	UTexture2D* HeightMapTexture = Component->GetHeightmap();
 
-		const int32 NumQuadsPerComponentSide = Component.ComponentSizeQuads;
-		const int32 NumVerticesPerComponentSide = NumQuadsPerComponentSide + 1;
+	// Apply necessary settings to the texure to be able to get color data.
+	// Source: https://isaratech.com/ue4-reading-the-pixels-from-a-utexture2d/
+	TextureCompressionSettings OldCompressionSettings = HeightMapTexture->CompressionSettings;
+	HeightMapTexture->CompressionSettings = TextureCompressionSettings::TC_VectorDisplacementmap;
+#if WITH_EDITORONLY_DATA
+	TextureMipGenSettings OldMipGenSettings = HeightMapTexture->MipGenSettings;
+	HeightMapTexture->MipGenSettings = TextureMipGenSettings::TMGS_NoMipmaps;
+#endif
+	bool OldSRGB = HeightMapTexture->SRGB;
+	HeightMapTexture->SRGB = false;
+	HeightMapTexture->UpdateResource();
 
-		FLandscapeComponentDataInterface ComponentData(&Component);
+	const FColor* Texturecolor =
+		static_cast<const FColor*>(HeightMapTexture->PlatformData->Mips[0].BulkData.LockReadOnly());
 
-		auto GlobalAGXFromLocalUnreal = [NumVerticesPerSide, BaseQuadX, BaseQuadY](
-											int32 LocalVertexX, int32 LocalVertexY) {
-			const int32 GlobalVertexX = BaseQuadX + LocalVertexX;
-			const int32 GlobalVertexY = BaseQuadY + LocalVertexY;
-			const int32 AGXGlobalVertexX = GlobalVertexX;
-			const int32 AGXGlobalVertexY = (NumVerticesPerSide - 1) - GlobalVertexY;
-			return (NumVerticesPerSide * AGXGlobalVertexY) + AGXGlobalVertexX;
-		};
-
-		for (int32 Y = 0; Y < NumVerticesPerComponentSide; ++Y)
+	// AGX terrains Y coordinate goes from Unreals Y-max down to zero (flipped).
+	int32 Vertex = 0;
+	for (int32 Y = HeightMapTexture->GetSizeY() - 1; Y >= 0; Y--)
+	{
+		for (int32 X = 0; X < HeightMapTexture->GetSizeX(); X++)
 		{
-			const int32 BaseIndex = GlobalAGXFromLocalUnreal(0, Y);
-			for (int32 X = 0; X < NumVerticesPerComponentSide; ++X)
+			// Unreals landscape counts pixel at component overlap twice.
+			if (!IsOverlappingPoint(X, Y, NumComponentsSide, NumQuadsPerComponentSide + 1))
 			{
-				const float Height = ComponentData.GetWorldVertex(X, Y).Z;
-				Heights[BaseIndex + X] = Height;
+				FColor PixelColor = Texturecolor[Y * HeightMapTexture->GetSizeX() + X];
+				float Height = ColorToHeight(PixelColor, LandscapeScaleZ);
+
+				Heights[Vertex++] = Height;
 			}
 		}
-	};
-
-	for (ULandscapeComponent* Component : Landscape.LandscapeComponents)
-	{
-		WriteComponent(*Component);
 	}
+
+	check(Vertex == NumVertices);
+
+	// Restore texture settings.
+	HeightMapTexture->PlatformData->Mips[0].BulkData.Unlock();
+	HeightMapTexture->CompressionSettings = OldCompressionSettings;
+#if WITH_EDITORONLY_DATA
+	HeightMapTexture->MipGenSettings = OldMipGenSettings;
+#endif
+	HeightMapTexture->SRGB = OldSRGB;
+	HeightMapTexture->UpdateResource();
 
 	FHeightFieldShapeBarrier HeightField;
 	HeightField.AllocateNative(NumVerticesPerSide, NumVerticesPerSide, SideSize, SideSize, Heights);
