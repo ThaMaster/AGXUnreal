@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -12,6 +10,10 @@
 class UAGX_RigidBodyComponent;
 class UAGX_MaterialBase;
 class AAGX_Terrain;
+
+class AActor;
+class UActorComponent;
+class UWorld;
 
 /**
  * Manages an AGX simulation instance.
@@ -60,6 +62,8 @@ public:
 	const FSimulationBarrier* GetNative() const;
 
 	void Step(float DeltaTime);
+
+	static UAGX_Simulation* GetFrom(const UActorComponent* Component);
 
 	static UAGX_Simulation* GetFrom(const AActor* Actor);
 

@@ -92,10 +92,22 @@ void UAGX_Simulation::Step(float DeltaTime)
 	LeftoverTime = DeltaTime;
 }
 
+UAGX_Simulation* UAGX_Simulation::GetFrom(const UActorComponent* Component)
+{
+	if (!Component)
+	{
+		return nullptr;
+	}
+
+	return GetFrom(Component->GetOwner());
+}
+
 UAGX_Simulation* UAGX_Simulation::GetFrom(const AActor* Actor)
 {
 	if (!Actor)
+	{
 		return nullptr;
+	}
 
 	UGameInstance* GameInstance = Actor->GetGameInstance();
 	check(GameInstance);
