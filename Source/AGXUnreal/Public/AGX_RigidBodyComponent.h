@@ -49,9 +49,10 @@ public:
 	 * Should be called whenever properties (excluding transform and shapes) need to be pushed
 	 * onto the native in runtime.
 	 */
-	void UpdateNativeProperties();
+	void WritePropertiesToNative();
 
-	static UAGX_RigidBodyComponent* GetFromActor(const AActor* Actor);
+	static TArray<UAGX_RigidBodyComponent*> GetFromActor(const AActor* Actor);
+	static UAGX_RigidBodyComponent* GetFirstFromActor(const AActor* Actor);
 
 public:
 	virtual void TickComponent(
@@ -68,9 +69,11 @@ private:
 	// Set native's MotionControl and ensure Unreal has corresponding mobility.
 	void InitializeMotionControl();
 
-	void UpdateActorTransformsFromNative();
-	void UpdateNativeTransformsFromActor();
+	void ReadTransformFromNative();
+	void WriteTransformToNative();
 
 private:
+	// The AGX Dynamics object only exists while simulating. Initialized in
+	// BeginPlay and released in EndPlay.
 	FRigidBodyBarrier NativeBarrier;
 };

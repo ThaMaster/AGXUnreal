@@ -522,7 +522,7 @@ void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
 	{
 		if (AActor* SelectedActor = Cast<AActor>(SelectedActors->GetSelectedObject(i)))
 		{
-			if (UAGX_RigidBodyComponent::GetFromActor(SelectedActor))
+			if (UAGX_RigidBodyComponent::GetFirstFromActor(SelectedActor))
 			{
 				// Found one. Assign it to next available OutActor!
 				if (!AssignOutActors(SelectedActor))
@@ -581,7 +581,7 @@ AActor* FAGX_EditorUtilities::GetRigidBodyActorFromSubtree(
 
 	if (SubtreeRoot)
 	{
-		if (SubtreeRoot != IgnoreActor && UAGX_RigidBodyComponent::GetFromActor(SubtreeRoot))
+		if (SubtreeRoot != IgnoreActor && UAGX_RigidBodyComponent::GetFirstFromActor(SubtreeRoot))
 		{
 			RigidBodyActor = SubtreeRoot; // found it
 		}
@@ -612,7 +612,7 @@ AActor* FAGX_EditorUtilities::GetRigidBodyActorFromAncestors(
 
 	if (Actor)
 	{
-		if (Actor != IgnoreActor && UAGX_RigidBodyComponent::GetFromActor(Actor))
+		if (Actor != IgnoreActor && UAGX_RigidBodyComponent::GetFirstFromActor(Actor))
 		{
 			RigidBodyActor = Actor;
 		}

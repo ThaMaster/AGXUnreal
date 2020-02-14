@@ -76,16 +76,21 @@ FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool Creat
 	if (!RigidBodyActor)
 		return nullptr;
 
-	UAGX_RigidBodyComponent* RigidBodyComponent =
-		UAGX_RigidBodyComponent::GetFromActor(RigidBodyActor);
+	UAGX_RigidBodyComponent* RigidBodyComponent = UAGX_RigidBodyComponent::GetFirstFromActor(RigidBodyActor);
 
 	if (!RigidBodyComponent)
+	{
 		return nullptr;
+	}
 
 	if (CreateIfNeeded)
+	{
 		return RigidBodyComponent->GetOrCreateNative();
+	}
 	else
+	{
 		return RigidBodyComponent->GetNative();
+	}
 }
 
 #if WITH_EDITOR
