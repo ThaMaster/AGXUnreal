@@ -6,16 +6,29 @@
 
 class AActor;
 
+/**
+* A collection of generic helper functions that can be compiled for Runtime.
+*
+* \see AGX_EditorUtilities.h, which is for WITH_EDITOR builds.
+*
+* There are also other, more specialized, AGX_.+Utilities.h collections.
+*/
 class FAGX_ObjectUtilities
 {
 public:
-
 	/**
 	* Returns array containing all child actors (and all their child actors)
 	* recursively, attached to the Parent actor passed as input argument.
 	* The parent itself is not included in the set.
 	*/
 	static void GetChildActorsOfActor(AActor* Parent, TArray<AActor*>& ChildActors);
+
+	/**
+	 * Give a list of pointer-to-base, return a new list with the elements that
+	 * are of a particular derived type.
+	 */
+	template<typename UDerived, typename UBaseContainer>
+	static TArray<UDerived*> Filter(const UBaseContainer& Collection);
 
 	/**
 	 * Returns single object being customized from DetailBuilder if found.
@@ -44,4 +57,19 @@ T* FAGX_ObjectUtilities::GetSingleObjectBeingCustomized(
 		return Cast<T>(Objects[0].Get());
 	else
 		return nullptr;
+}
+
+template <typename UDerived, typename UBaseContainer>
+TArray<UDerived*> FAGX_ObjectUtilities::Filter(const UBaseContainer& Collection)
+{
+	using UBase = typename std::remove_pointer<typename UBaseContainer::ElementType>::type;
+	TArray<UDerived*> Result;
+	for (UBase* Element : Collection)
+	{
+		if (UDerived* Match = Cast<UDerived>(Element))
+		{
+			Result.Add(Match);
+		}
+	}
+	return Result;
 }
