@@ -25,6 +25,7 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	Mass = 1.0f;
 	InertiaTensorDiagonal = FVector(1.f, 1.f, 1.f);
 	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
+	bTransformRootComponent = false;
 }
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
@@ -158,7 +159,8 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("The Rigid Body Component \"%s\" has a RigidBody with Dynamic AGX MotionControl but "
+			TEXT("The Rigid Body Component \"%s\" has a RigidBody with Dynamic AGX MotionControl "
+				 "but "
 				 "Non-Movable Unreal Mobility. "
 				 "Unreal Mobility will automatically be changed to Movable this game session, "
 				 "but should also be "
@@ -172,11 +174,19 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 void UAGX_RigidBodyComponent::ReadTransformFromNative()
 {
 	check(HasNative());
-	const FVector OldLocation = GetComponentLocation();
 	const FVector NewLocation = NativeBarrier.GetPosition();
-	const FVector LocationDelta = NewLocation - OldLocation;
 	const FQuat NewRotation = NativeBarrier.GetRotation();
-	MoveComponent(LocationDelta, NewRotation, false);
+	if (bTransformRootComponent)
+	{
+		check(GetOwner());
+		GetOwner()->SetActorLocationAndRotation(NewLocation, NewRotation);
+	}
+	else
+	{
+		const FVector OldLocation = GetComponentLocation();
+		const FVector LocationDelta = NewLocation - OldLocation;
+		MoveComponent(LocationDelta, NewRotation, false);
+	}
 }
 
 void UAGX_RigidBodyComponent::WriteTransformToNative()
