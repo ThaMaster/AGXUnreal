@@ -24,7 +24,8 @@ class AAGX_Terrain;
  * will have exactly one UAGX_Simulation instance.
  *
  * When not playing, the CDO (class default object) can be modified through the
- * Editor UI. This is useful for setting simulation properties like time step
+ * Editor UI. From the toolbar select Settings, Project Settings, Plugins, AGX
+ * Dynamics. This is useful for setting simulation properties like time step
  * and contact materials. When a GameInstance is started, the properties of the
  * CDO will automatically be copied over by Unreal Engine to the GameInstance
  * specific UAGX_Simulation instance.
@@ -45,6 +46,24 @@ public:
 	/** Uniform default scene gravity, in cm/s^2. -980.665 by default. */
 	UPROPERTY(config, EditAnywhere, Category = "Scene Defaults")
 	FVector Gravity = FVector(0.0f, 0.0f, -980.665f);
+
+	/**
+	 * Remote debugging allows agxViewer, the default scene viewer in AGX
+	 * Dynamics, to connect to the AGX_Simulation running inside Unreal Engine and
+	 * render the internal simulation state using its built-in debug rendering
+	 * capabilities.
+	 *
+	 * To connect to a running Unreal Engine instance launch agxViewer with
+	 *    agxViewer -p --connect localhost:<PORT>
+	 * where <PORT> is the port number configured in Project Settings, Plugins,
+	 * AGX Dynamics, Debug, RemoteDebugginPort.
+	 */
+	UPROPERTY(Config, EditAnywhere, Category = "Debug")
+	uint8 bRemoteDebugging : 1;
+
+	/** Network port to use for remote debugging. */
+	UPROPERTY(Config, EditAnywhere, Category = "Debug", meta = (EditCondition = "bRemoteDebugging"))
+	int16 RemoteDebuggingPort;
 
 	void AddRigidBody(UAGX_RigidBodyComponent* Body);
 	void AddTerrain(AAGX_Terrain* Terrain);

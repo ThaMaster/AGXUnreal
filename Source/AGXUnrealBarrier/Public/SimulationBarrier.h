@@ -33,6 +33,8 @@ public:
 
 	bool WriteAGXArchive(const FString& Filename) const;
 
+	void EnableRemoteDebugging(int16 Port);
+
 	void Step();
 
 	bool HasNative() const;
