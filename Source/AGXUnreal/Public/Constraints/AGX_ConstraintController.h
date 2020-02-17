@@ -18,13 +18,15 @@ struct AGXUNREAL_API FAGX_ConstraintController
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Controller")
 	bool bEnable;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
 	double Compliance;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
 	double Damping;
 
 	/// \todo Should this be in N (Nm) or some cm-based unit?
@@ -34,7 +36,8 @@ struct AGXUNREAL_API FAGX_ConstraintController
 	 * The minimum an maximum force that the constraint controller can produce.
 	 * In newtons, i.e., kg m s^-2.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
 	FFloatInterval ForceRange;
 
 protected:
