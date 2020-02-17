@@ -9,9 +9,9 @@ public class AGXUnrealBarrier : ModuleRules
 		bUseRTTI = true;
 		bEnableExceptions = true;
 
-		// TODO: Determine which of these are really need and why.
-		PublicDependencyModuleNames.AddRange(new string[] {
-			"RHI", "RenderCore", "Core", "CoreUObject", "Engine", "InputCore", "RawMesh"});
+        // TODO: Determine which of these are really need and why.
+        PublicDependencyModuleNames.AddRange(new string[] {
+            "RHI", "RenderCore", "Core", "CoreUObject", "Engine", "InputCore"});
 
 		// TODO: Determine which of these are really needed and why.
 		// TODO: Why are some modules listed both here and in Public... above?
