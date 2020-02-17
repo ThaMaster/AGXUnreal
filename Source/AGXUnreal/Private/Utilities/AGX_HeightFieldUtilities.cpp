@@ -70,7 +70,7 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 			"from landscape without components."));
 
 		// Return empty FHeightFieldShapeBarrier (no native allocated).
-		return FHeightFieldShapeBarrier;
+		return FHeightFieldShapeBarrier();
 	}
 
 	// This assumes a square and uniform grid of components.
