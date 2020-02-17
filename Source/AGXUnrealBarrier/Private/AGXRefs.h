@@ -2,6 +2,7 @@
 
 #include "BeginAGXIncludes.h"
 #include <agx/Constraint.h>
+#include <agx/ElementaryConstraint.h>
 #include <agx/FrictionModel.h>
 #include <agx/Material.h>
 #include <agx/RigidBody.h>
@@ -9,6 +10,7 @@
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
 #include <agxTerrain/Terrain.h>
+#include <agxTerrain/TerrainMaterial.h>
 #include "EndAGXIncludes.h"
 
 #include "AGXNotify.h"
@@ -81,6 +83,16 @@ struct FConstraintRef
 	}
 };
 
+struct FConstraintControllerRef
+{
+	agx::ref_ptr<agx::BasicControllerConstraint> Native;
+	FConstraintControllerRef() = default;
+	FConstraintControllerRef(agx::BasicControllerConstraint* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
 struct FMaterialRef
 {
 	agx::MaterialRef Native;
@@ -98,6 +110,17 @@ struct FContactMaterialRef
 
 	FContactMaterialRef() = default;
 	FContactMaterialRef(agx::ContactMaterial* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FTerrainMaterialRef
+{
+	agxTerrain::TerrainMaterialRef Native;
+
+	FTerrainMaterialRef() = default;
+	FTerrainMaterialRef(agxTerrain::TerrainMaterial* InNative)
 		: Native(InNative)
 	{
 	}

@@ -1,8 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+//
 
 #include "Constraints/AGX_Constraint1DOF.h"
 
+#include "AGX_LogCategory.h"
 #include "Constraints/ControllerConstraintBarriers.h"
+#include "Constraints/Controllers/AGX_LockController.h"
 #include "Constraints/Constraint1DOFBarrier.h"
 
 AAGX_Constraint1DOF::AAGX_Constraint1DOF()
@@ -11,10 +13,14 @@ AAGX_Constraint1DOF::AAGX_Constraint1DOF()
 
 AAGX_Constraint1DOF::AAGX_Constraint1DOF(
 	const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraintRotational,
-	bool bIsLockControllerEditable_)
+	bool bInIsLockControllerEditable)
 	: AAGX_Constraint(LockedDofsOrdered)
+	, ElectricMotorController(bIsSecondaryConstraintRotational)
+	, FrictionController(bIsSecondaryConstraintRotational)
+	, LockController(bIsSecondaryConstraintRotational)
 	, RangeController(bIsSecondaryConstraintRotational)
-	, bIsLockControllerEditable(bIsLockControllerEditable_)
+	, TargetSpeedController(bIsSecondaryConstraintRotational)
+	, bIsLockControllerEditable(bInIsLockControllerEditable)
 {
 }
 
@@ -22,58 +28,47 @@ AAGX_Constraint1DOF::~AAGX_Constraint1DOF()
 {
 }
 
-void AAGX_Constraint1DOF::UpdateNativeProperties()
+namespace
 {
-	Super::UpdateNativeProperties();
-
-	// TODO: To avoid constructing the controller barrier structs on the stack
-	// everytime native data needs to be synced, consider letting the Unreal Controller
-	// instead have a lifetime-bound dynamically created instance of the controller barrier.
-
-	if (FConstraint1DOFBarrier* NativeBarrierCasted = GetNativeBarrierCasted())
+	FConstraint1DOFBarrier* Get1DOFBarrier(AAGX_Constraint1DOF& Constraint)
 	{
-		// Electric Motor Controller
-		{
-			FElectricMotorControllerBarrier ControllerBarrier;
-			ElectricMotorController.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetElectricMotorController(ControllerBarrier);
-		}
-
-		// Friction Controller
-		{
-			FFrictionControllerBarrier ControllerBarrier;
-			FrictionController.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetFrictionController(ControllerBarrier);
-		}
-
-		// Lock Controller
-		if (bIsLockControllerEditable)
-		{
-			FLockControllerBarrier ControllerBarrier;
-			LockController.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetLockController(ControllerBarrier);
-		}
-
-		// Range Controller
-		{
-			FRangeControllerBarrier ControllerBarrier;
-			RangeController.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetRangeController(ControllerBarrier);
-		}
-
-		// Target Speed Controller
-		{
-			FTargetSpeedControllerBarrier ControllerBarrier;
-			TargetSpeedController.ToBarrier(&ControllerBarrier);
-			NativeBarrierCasted->SetTargetSpeedController(ControllerBarrier);
-		}
+		// See comment in GetElectricMotorController.
+		return static_cast<FConstraint1DOFBarrier*>(Constraint.GetNative());
 	}
 }
 
-FConstraint1DOFBarrier* AAGX_Constraint1DOF::GetNativeBarrierCasted() const
+void AAGX_Constraint1DOF::CreateNativeImpl()
 {
-	if (HasNative())
-		return static_cast<FConstraint1DOFBarrier*>(NativeBarrier.Get());
-	else
-		return nullptr;
+	AllocateNative();
+	if (!HasNative())
+	{
+		return;
+	}
+
+	FConstraint1DOFBarrier* Barrier = Get1DOFBarrier(*this);
+	ElectricMotorController.InitializeBarrier(Barrier->GetElectricMotorController());
+	FrictionController.InitializeBarrier(Barrier->GetFrictionController());
+	LockController.InitializeBarrier(Barrier->GetLockController());
+	RangeController.InitializeBarrier(Barrier->GetRangeController());
+	TargetSpeedController.InitializeBarrier(Barrier->GetTargetSpeedController());
+}
+
+void AAGX_Constraint1DOF::UpdateNativeProperties()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("AGX Constraint '%s' is trying to update native properties while not having a "
+				 "native handle."), *GetName());
+		return;
+	}
+
+	Super::UpdateNativeProperties();
+
+	ElectricMotorController.UpdateNativeProperties();
+	FrictionController.UpdateNativeProperties();
+	LockController.UpdateNativeProperties();
+	RangeController.UpdateNativeProperties();
+	TargetSpeedController.UpdateNativeProperties();
 }

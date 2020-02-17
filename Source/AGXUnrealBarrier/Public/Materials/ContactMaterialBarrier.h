@@ -5,9 +5,9 @@
 #include "Containers/UnrealString.h"
 
 struct FContactMaterialRef;
-class FMaterialBarrier;
+class FShapeMaterialBarrier;
 
-class FMaterialBarrier;
+class FShapeMaterialBarrier;
 
 /**
  * Acts as an interface to a native AGX Contact Material, and encapsulates it so that it is
@@ -23,7 +23,7 @@ public:
 	FContactMaterialRef* GetNative();
 	const FContactMaterialRef* GetNative() const;
 
-	void AllocateNative(const FMaterialBarrier* Material1, const FMaterialBarrier* Material2);
+	void AllocateNative(const FShapeMaterialBarrier* Material1, const FShapeMaterialBarrier* Material2);
 	void ReleaseNative();
 
 	void SetFrictionSolveType(int32 SolveType);

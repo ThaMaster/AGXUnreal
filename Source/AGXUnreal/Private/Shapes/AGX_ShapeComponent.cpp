@@ -1,9 +1,8 @@
 #include "Shapes/AGX_ShapeComponent.h"
 
 #include "AGX_LogCategory.h"
-#include "Materials/AGX_MaterialBase.h"
-#include "Materials/AGX_MaterialInstance.h"
-#include "Materials/MaterialBarrier.h"
+#include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Materials/ShapeMaterialBarrier.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Sets default values for this component's properties
@@ -50,11 +49,26 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 
 	if (PhysicalMaterial)
 	{
-		UAGX_MaterialInstance* MaterialInstance =
-			UAGX_MaterialBase::GetOrCreateInstance(GetWorld(), PhysicalMaterial);
+		UAGX_ShapeMaterialInstance* MaterialInstance =
+			static_cast<UAGX_ShapeMaterialInstance*>(
+				PhysicalMaterial->GetOrCreateInstance(GetWorld()));
+
 		check(MaterialInstance);
 
-		FMaterialBarrier* MaterialBarrier = MaterialInstance->GetOrCreateNative(GetWorld());
+		UWorld* PlayingWorld = GetWorld();
+
+		if (MaterialInstance != PhysicalMaterial && PlayingWorld && PlayingWorld->IsGameWorld())
+		{
+			UE_LOG(
+				LogAGX, Log,
+				TEXT("UAGX_ShapeComponent::UpdateNativeProperties is swapping a property "
+					 "(to %s from %s)."),
+				*GetNameSafe(MaterialInstance), *GetNameSafe(PhysicalMaterial));
+
+			PhysicalMaterial = MaterialInstance;
+		}
+
+		FShapeMaterialBarrier* MaterialBarrier = MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
 		check(MaterialBarrier);
 
 		UE_LOG(

@@ -1,16 +1,14 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "AGX_MaterialSurfaceProperties.generated.h"
+#include "AGX_ShapeMaterialSurfaceProperties.generated.h"
 
 /**
  * Physical properties for the surface of Shapes using the AGX Material.
  */
 USTRUCT()
-struct AGXUNREAL_API FAGX_MaterialSurfaceProperties
+struct AGXUNREAL_API FAGX_ShapeMaterialSurfaceProperties
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -62,5 +60,5 @@ public:
 	double AdhesiveOverlap;
 
 public:
-	FAGX_MaterialSurfaceProperties();
+	FAGX_ShapeMaterialSurfaceProperties();
 };

@@ -261,20 +261,23 @@ namespace
 				return;
 			}
 
-			StoreElectricMotorController(Barrier, Constraint->ElectricMotorController1, 0);
-			StoreElectricMotorController(Barrier, Constraint->ElectricMotorController2, 1);
+			const EAGX_Constraint2DOFFreeDOF First = EAGX_Constraint2DOFFreeDOF::FIRST;
+			const EAGX_Constraint2DOFFreeDOF Second = EAGX_Constraint2DOFFreeDOF::SECOND;
 
-			StoreFrictionController(Barrier, Constraint->FrictionController1, 0);
-			StoreFrictionController(Barrier, Constraint->FrictionController2, 1);
+			StoreElectricMotorController(Barrier, Constraint->ElectricMotorController1, First);
+			StoreElectricMotorController(Barrier, Constraint->ElectricMotorController2, Second);
 
-			StoreLockController(Barrier, Constraint->LockController1, 0);
-			StoreLockController(Barrier, Constraint->LockController2, 1);
+			StoreFrictionController(Barrier, Constraint->FrictionController1, First);
+			StoreFrictionController(Barrier, Constraint->FrictionController2, Second);
 
-			StoreRangeController(Barrier, Constraint->RangeController1, 0);
-			StoreRangeController(Barrier, Constraint->RangeController2, 1);
+			StoreLockController(Barrier, Constraint->LockController1, First);
+			StoreLockController(Barrier, Constraint->LockController2, Second);
 
-			StoreTargetSpeedController(Barrier, Constraint->TargetSpeedController1, 0);
-			StoreTargetSpeedController(Barrier, Constraint->TargetSpeedController2, 1);
+			StoreRangeController(Barrier, Constraint->RangeController1, First);
+			StoreRangeController(Barrier, Constraint->RangeController2, Second);
+
+			StoreTargetSpeedController(Barrier, Constraint->TargetSpeedController1, First);
+			StoreTargetSpeedController(Barrier, Constraint->TargetSpeedController2, Second);
 		}
 
 		template <typename ConstraintType>
@@ -354,86 +357,66 @@ namespace
 			const FConstraint1DOFBarrier& Barrier,
 			FAGX_ConstraintElectricMotorController& Controller)
 		{
-			FElectricMotorControllerBarrier ControllerBarrier;
-			Barrier.GetElectricMotorController(ControllerBarrier);
-			Controller.FromBarrier(ControllerBarrier);
+			Controller.CopyFrom(*Barrier.GetElectricMotorController());
 		}
 
 		void StoreElectricMotorController(
 			const FConstraint2DOFBarrier& Barrier,
-			FAGX_ConstraintElectricMotorController& Controller, int32 SecondaryConstraintIndex)
+			FAGX_ConstraintElectricMotorController& Controller, EAGX_Constraint2DOFFreeDOF Dof)
 		{
-			FElectricMotorControllerBarrier ControllerBarrier;
-			Barrier.GetElectricMotorController(ControllerBarrier, SecondaryConstraintIndex);
-			Controller.FromBarrier(ControllerBarrier);
+			Controller.CopyFrom(*Barrier.GetElectricMotorController(Dof));
 		}
 
 		void StoreFrictionController(
 			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller)
 		{
-			FFrictionControllerBarrier ControllerBarrier;
-			Barrier.GetFrictionController(ControllerBarrier);
-			Controller.FromBarrier(ControllerBarrier);
+			Controller.CopyFrom(*Barrier.GetFrictionController());
 		}
 
 		void StoreFrictionController(
 			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
-			int32 SecondaryConstraintIndex)
+			EAGX_Constraint2DOFFreeDOF Dof)
 		{
-			FFrictionControllerBarrier ControllerBarrier;
-			Barrier.GetFrictionController(ControllerBarrier, SecondaryConstraintIndex);
-			Controller.FromBarrier(ControllerBarrier);
+			Controller.CopyFrom(*Barrier.GetFrictionController(Dof));
 		}
 
 		void StoreLockController(
 			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller)
 		{
-			FLockControllerBarrier ControllerBarrier;
-			Barrier.GetLockController(ControllerBarrier);
-			Controller.FromBarrier(ControllerBarrier);
+			Controller.CopyFrom(*Barrier.GetLockController());
 		}
 
 		void StoreLockController(
 			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
-			int32 SecondaryConstraintIndex)
+			EAGX_Constraint2DOFFreeDOF Dof)
 		{
-			FLockControllerBarrier ControllerBarrier;
-			Barrier.GetLockController(ControllerBarrier, SecondaryConstraintIndex);
-			Controller.FromBarrier(ControllerBarrier);
+			Controller.CopyFrom(*Barrier.GetLockController(Dof));
 		}
 
 		void StoreRangeController(
 			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller)
 		{
-			FRangeControllerBarrier ControllerBarrier;
-			Barrier.GetRangeController(ControllerBarrier);
-			Controller.FromBarrier(ControllerBarrier);
+			Controller.CopyFrom(*Barrier.GetRangeController());
 		}
 
 		void StoreRangeController(
 			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
-			int32 SecondaryConstraintIndex)
+			EAGX_Constraint2DOFFreeDOF Dof)
 		{
-			FRangeControllerBarrier ControllerBarrier;
-			Barrier.GetRangeController(ControllerBarrier, SecondaryConstraintIndex);
-			Controller.FromBarrier(ControllerBarrier);
+			Controller.CopyFrom(*Barrier.GetRangeController(Dof));
 		}
 
 		void StoreTargetSpeedController(
 			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller)
 		{
-			FTargetSpeedControllerBarrier ControllerBarrier;
-			Barrier.GetTargetSpeedController(ControllerBarrier);
-			Controller.FromBarrier(ControllerBarrier);
+			Controller.CopyFrom(*Barrier.GetTargetSpeedController());
 		}
 
 		void StoreTargetSpeedController(
 			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
-			int32 SecondaryConstraintIndex)
+			EAGX_Constraint2DOFFreeDOF Dof)
 		{
-			FTargetSpeedControllerBarrier ControllerBarrier;
-			Barrier.GetTargetSpeedController(ControllerBarrier, SecondaryConstraintIndex);
-			Controller.FromBarrier(ControllerBarrier);
+			Controller.CopyFrom(*Barrier.GetTargetSpeedController(Dof));
 		}
 
 	private:

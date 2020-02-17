@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Materials/AGX_MaterialBase.h"
-#include "AGX_MaterialAsset.generated.h"
+#include "Materials/AGX_ShapeMaterialBase.h"
+#include "AGX_ShapeMaterialAsset.generated.h"
 
-class UAGX_MaterialInstance;
+class UAGX_ShapeMaterialInstance;
 
 /**
  * Defines contacts properties between AGX Shapes as well as properties affecting the mass
@@ -21,7 +21,7 @@ class UAGX_MaterialInstance;
  * It is preferred to use AGX Contact Materials for superior simulation results!
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable)
-class AGXUNREAL_API UAGX_MaterialAsset : public UAGX_MaterialBase
+class AGXUNREAL_API UAGX_ShapeMaterialAsset : public UAGX_ShapeMaterialBase
 {
 	/// \note Class comment above is used as tooltip in Content Browser etc, so trying to keep it
 	/// simple and user-centered, while providing a more programmer-aimed comment below.
@@ -30,17 +30,14 @@ class AGXUNREAL_API UAGX_MaterialAsset : public UAGX_MaterialBase
 	// disk.
 	//
 	// It has no connection with the actual native AGX material.Instead, its sibling class
-	// UAGX_MaterialInstance handles all interaction with the actual native AGX material.Therefore,
-	// all in - game objects with Uproperty material pointers need to swap their pointers to in -
-	// game UAGX_MaterialInstances using the static function UAGX_MaterialBase::GetOrCreateInstance.
+	// UAGX_ShapeMaterialInstance handles all interaction with the actual native AGX
+	// material.Therefore, all in - game objects with Uproperty material pointers need to swap their
+	// pointers to in - game UAGX_ShapeMaterialInstances.
 
 	GENERATED_BODY()
 
 public:
-	virtual UAGX_MaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld) override;
+	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld) override;
 
-private:
-	virtual UAGX_MaterialAsset* GetAsset() override;
-
-	TWeakObjectPtr<UAGX_MaterialInstance> Instance;
+	TWeakObjectPtr<UAGX_ShapeMaterialInstance> Instance;
 };

@@ -1,23 +1,24 @@
 #pragma once
 
+// AGXUnreal includes.
+#include "AGX_ConstraintController.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 
 #include "AGX_TargetSpeedController.generated.h"
 
-struct FTargetSpeedControllerBarrier;
+class FTargetSpeedControllerBarrier;
 
 /**
  * Target speed controller for secondary constraints (usually on one of the DOFs
- * that has not been primarily constrained by the AGX Constraint).
- * Disabled by default.
+ * that has not been primarily constrained by the AGX Constraint). Disabled by
+ * default.
  */
 USTRUCT()
-struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController
+struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController : public FAGX_ConstraintController
 {
 	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, Category = "AGX Target Speed Controller")
-	bool bEnable;
 
 	/**
 	 * Target Speed in Degrees Per Second if controller is on a Rotational DOF,
@@ -36,25 +37,13 @@ struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController
 		EditAnywhere, Category = "AGX Target Speed Controller", Meta = (EditCondition = "bEnable"))
 	bool bLockedAtZeroSpeed;
 
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Target Speed Controller", Meta = (EditCondition = "bEnable"))
-	double Elasticity;
-
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Target Speed Controller", Meta = (EditCondition = "bEnable"))
-	double Damping;
-
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Target Speed Controller", Meta = (EditCondition = "bEnable"))
-	FFloatInterval ForceRange;
-
 public:
-	FAGX_ConstraintTargetSpeedController(bool bRotational = false);
+	FAGX_ConstraintTargetSpeedController() = default;
+	FAGX_ConstraintTargetSpeedController(bool bRotational);
 
-	void ToBarrier(FTargetSpeedControllerBarrier* Barrier) const;
-	void FromBarrier(const FTargetSpeedControllerBarrier& Barrier);
+	void InitializeBarrier(TUniquePtr<FTargetSpeedControllerBarrier> Barrier);
+	void CopyFrom(const FTargetSpeedControllerBarrier& Source);
 
 private:
-	// Whether the controller is on a Rotational or Translational DOF.
-	bool bRotational;
+	virtual void UpdateNativePropertiesImpl() override;
 };

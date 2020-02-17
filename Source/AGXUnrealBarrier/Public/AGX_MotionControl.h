@@ -14,3 +14,4 @@ enum EAGX_MotionControl
 	/** Rigid body moves from the influence of AGX simulation forces. */
 	MC_DYNAMICS = 3 UMETA(DisplayName = "Dynamics"),
 };
+

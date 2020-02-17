@@ -1,14 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Constraints/Constraint1DOFBarrier.h"
 
+// AGXUnreal includes.
 #include "AGXRefs.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
 
+// Standard library includes.
+#include <memory>
+
 FConstraint1DOFBarrier::FConstraint1DOFBarrier()
-	: FConstraintBarrier()
 {
 }
 
@@ -23,120 +24,79 @@ FConstraint1DOFBarrier::~FConstraint1DOFBarrier()
 
 namespace
 {
-	template <typename NativeController>
-	using ControllerGetter = std::function<const NativeController*(const agx::Constraint1DOF*)>;
-
-	template <typename NativeController, typename ControllerBarrier>
-	void GetController(
-		const agx::Constraint1DOF* Constraint, ControllerBarrier& Controller,
-		ControllerGetter<NativeController> Getter)
+	agx::Constraint1DOF* Get1DOF(std::unique_ptr<FConstraintRef>& NativeRef)
 	{
-		if (Constraint == nullptr)
-		{
-			return;
-		}
-
-		const NativeController* ControllerAGX = Getter(Constraint);
-		if (ControllerAGX == nullptr)
-		{
-			return;
-		}
-
-		Controller.FromNative(*ControllerAGX);
+		return dynamic_cast<agx::Constraint1DOF*>(NativeRef->Native.get());
 	}
-}
 
-void FConstraint1DOFBarrier::SetElectricMotorController(
-	const FElectricMotorControllerBarrier& ControllerBarrier)
-{
-	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
+	agx::Constraint1DOF* Get1DOF(const std::unique_ptr<FConstraintRef>& NativeRef)
 	{
-		agx::ElectricMotorController* NativeController = NativeCasted->getElectricMotorController();
-		ControllerBarrier.ToNative(NativeController);
+		return dynamic_cast<agx::Constraint1DOF*>(NativeRef->Native.get());
 	}
-}
 
-void FConstraint1DOFBarrier::GetElectricMotorController(
-	FElectricMotorControllerBarrier& ControllerBarrier) const
-{
-	GetController<agx::ElectricMotorController>(
-		GetNativeCasted(), ControllerBarrier, [](const agx::Constraint1DOF* Constraint) {
-			return Constraint->getElectricMotorController();
-		});
-}
-
-void FConstraint1DOFBarrier::SetFrictionController(
-	const FFrictionControllerBarrier& ControllerBarrier)
-{
-	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
+	template<typename Barrier>
+	TUniquePtr<Barrier> CreateControllerBarrier(agx::BasicControllerConstraint* Controller)
 	{
-		agx::FrictionController* NativeController = NativeCasted->getFrictionController();
-		ControllerBarrier.ToNative(NativeController);
+		return TUniquePtr<Barrier>(new Barrier(std::make_unique<FConstraintControllerRef>(Controller)));
 	}
+ }
+
+TUniquePtr<FElectricMotorControllerBarrier> FConstraint1DOFBarrier::GetElectricMotorController()
+{
+	check(HasNative());
+	return CreateControllerBarrier<FElectricMotorControllerBarrier>(Get1DOF(NativeRef)->getElectricMotorController());
 }
 
-void FConstraint1DOFBarrier::GetFrictionController(
-	FFrictionControllerBarrier& ControllerBarrier) const
+TUniquePtr<FFrictionControllerBarrier> FConstraint1DOFBarrier::GetFrictionController()
 {
-	GetController<agx::FrictionController>(
-		GetNativeCasted(), ControllerBarrier,
-		[](const agx::Constraint1DOF* Constraint) { return Constraint->getFrictionController(); });
+	check(HasNative());
+	return CreateControllerBarrier<FFrictionControllerBarrier>(Get1DOF(NativeRef)->getFrictionController());
 }
 
-void FConstraint1DOFBarrier::SetLockController(const FLockControllerBarrier& ControllerBarrier)
+TUniquePtr<FLockControllerBarrier> FConstraint1DOFBarrier::GetLockController()
 {
-	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
-	{
-		agx::LockController* NativeController = NativeCasted->getLock1D();
-
-		ControllerBarrier.ToNative(NativeController);
-	}
+	check(HasNative());
+	return CreateControllerBarrier<FLockControllerBarrier>(Get1DOF(NativeRef)->getLock1D());
 }
 
-void FConstraint1DOFBarrier::GetLockController(FLockControllerBarrier& ControllerBarrier) const
+TUniquePtr<FRangeControllerBarrier> FConstraint1DOFBarrier::GetRangeController()
 {
-	GetController<agx::LockController>(
-		GetNativeCasted(), ControllerBarrier,
-		[](const agx::Constraint1DOF* Constraint) { return Constraint->getLock1D(); });
+	check(HasNative());
+	return CreateControllerBarrier<FRangeControllerBarrier>(Get1DOF(NativeRef)->getRange1D());
 }
 
-void FConstraint1DOFBarrier::SetRangeController(const FRangeControllerBarrier& ControllerBarrier)
+TUniquePtr<FTargetSpeedControllerBarrier> FConstraint1DOFBarrier::GetTargetSpeedController()
 {
-	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
-	{
-		agx::RangeController* NativeController = NativeCasted->getRange1D();
-
-		ControllerBarrier.ToNative(NativeController);
-	}
+	check(HasNative());
+	return CreateControllerBarrier<FTargetSpeedControllerBarrier>(Get1DOF(NativeRef)->getMotor1D());
 }
 
-void FConstraint1DOFBarrier::GetRangeController(FRangeControllerBarrier& ControllerBarrier) const
+TUniquePtr<const FElectricMotorControllerBarrier> FConstraint1DOFBarrier::GetElectricMotorController() const
 {
-	GetController<agx::RangeController>(GetNativeCasted(), ControllerBarrier,
-		[](const agx::Constraint1DOF* Constraint) { return Constraint->getRange1D(); });
+	check(HasNative());
+	return CreateControllerBarrier<const FElectricMotorControllerBarrier>(Get1DOF(NativeRef)->getElectricMotorController());
 }
 
-void FConstraint1DOFBarrier::SetTargetSpeedController(
-	const FTargetSpeedControllerBarrier& ControllerBarrier)
+TUniquePtr<const FFrictionControllerBarrier> FConstraint1DOFBarrier::GetFrictionController() const
 {
-	if (agx::Constraint1DOF* NativeCasted = GetNativeCasted())
-	{
-		agx::TargetSpeedController* NativeController = NativeCasted->getMotor1D();
-
-		ControllerBarrier.ToNative(NativeController);
-	}
+	check(HasNative());
+	return CreateControllerBarrier<const FFrictionControllerBarrier>(Get1DOF(NativeRef)->getFrictionController());
 }
 
-void FConstraint1DOFBarrier::GetTargetSpeedController(FTargetSpeedControllerBarrier& ControllerBarrier) const
+TUniquePtr<const FLockControllerBarrier> FConstraint1DOFBarrier::GetLockController() const
 {
-	GetController<agx::TargetSpeedController>(GetNativeCasted(), ControllerBarrier,
-		[](const agx::Constraint1DOF* Constraint) { return Constraint->getMotor1D(); });
+	check(HasNative());
+	return CreateControllerBarrier<const FLockControllerBarrier>(Get1DOF(NativeRef)->getLock1D());
 }
 
-agx::Constraint1DOF* FConstraint1DOFBarrier::GetNativeCasted() const
+TUniquePtr<const FRangeControllerBarrier> FConstraint1DOFBarrier::GetRangeController() const
 {
-	if (HasNative())
-		return static_cast<agx::Constraint1DOF*>(NativeRef->Native.get());
-	else
-		return nullptr;
+	check(HasNative());
+	return CreateControllerBarrier<const FRangeControllerBarrier>(Get1DOF(NativeRef)->getRange1D());
+}
+
+TUniquePtr<const FTargetSpeedControllerBarrier> FConstraint1DOFBarrier::GetTargetSpeedController() const
+{
+	check(HasNative());
+	return CreateControllerBarrier<const FTargetSpeedControllerBarrier>(Get1DOF(NativeRef)->getMotor1D());
 }

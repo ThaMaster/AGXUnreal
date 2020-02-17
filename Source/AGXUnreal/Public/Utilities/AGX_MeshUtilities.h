@@ -20,7 +20,7 @@ class AGXUNREAL_API AGX_MeshUtilities
 public:
 	static void MakeCube(
 		TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
-		const FVector& HalfSize);
+		TArray<FVector2D>& TexCoords, const FVector& HalfSize);
 
 	/**
 	 * Used to define the geometry of a mesh sphere, and also to know the number of vertices and
@@ -45,8 +45,8 @@ public:
 
 	/// \todo Change to use SphereConstructionData as input.
 	static void MakeSphere(
-		TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices, float Radius,
-		uint32 NumSegments);
+		TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
+		TArray<FVector2D>& TexCoords, float Radius, uint32 NumSegments);
 
 	/**
 	 * Appends buffers with geometry data for a sphere, centered at origin.
@@ -99,7 +99,7 @@ public:
 	 */
 	static void MakeCylinder(
 		TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
-		const CylinderConstructionData& ConstructionData);
+		TArray<FVector2D>& TexCoords, const CylinderConstructionData& ConstructionData);
 
 	/**
 	 * Appends buffers with geometry data for a cylinder extending uniformly along the Z-Axis,

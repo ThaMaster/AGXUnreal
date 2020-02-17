@@ -10,11 +10,11 @@ struct FMaterialRef;
  * Acts as an interface to a native AGX Material, and encapsulates it so that it is completely
  * hidden from code that includes this file.
  */
-class AGXUNREALBARRIER_API FMaterialBarrier
+class AGXUNREALBARRIER_API FShapeMaterialBarrier
 {
 public:
-	FMaterialBarrier();
-	virtual ~FMaterialBarrier();
+	FShapeMaterialBarrier();
+	virtual ~FShapeMaterialBarrier();
 
 	bool HasNative() const;
 	FMaterialRef* GetNative();
@@ -56,8 +56,8 @@ public:
 	double GetAdhesiveOverlap() const;
 
 private:
-	FMaterialBarrier(const FMaterialBarrier&) = delete;
-	void operator=(const FMaterialBarrier&) = delete;
+	FShapeMaterialBarrier(const FShapeMaterialBarrier&) = delete;
+	void operator=(const FShapeMaterialBarrier&) = delete;
 
 	// NativeRef has the same lifetime as this object, so it should never be null.
 	// NativeRef->Native is created by AllocateNative(), released by ReleaseNative(), and can be

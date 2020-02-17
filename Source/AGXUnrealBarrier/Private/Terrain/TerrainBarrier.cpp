@@ -7,6 +7,8 @@
 #include "TypeConversions.h"
 #include "Shapes/ShapeBarrierImpl.h"
 #include "Terrain/ShovelBarrier.h"
+#include "Materials/TerrainMaterialBarrier.h"
+#include "Materials/ShapeMaterialBarrier.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -120,6 +122,20 @@ bool FTerrainBarrier::AddShovel(FShovelBarrier& Shovel)
 	return NativeRef->Native->add(Shovel.GetNative()->Native);
 }
 
+void FTerrainBarrier::SetShapeMaterial(const FShapeMaterialBarrier& Material)
+{
+	check(HasNative());
+	check(Material.HasNative());
+	NativeRef->Native->setMaterial(Material.GetNative()->Native);
+}
+
+void FTerrainBarrier::SetTerrainMaterial(const FTerrainMaterialBarrier& TerrainMaterial)
+{
+	check(HasNative());
+	check(TerrainMaterial.HasNative());
+	NativeRef->Native->setTerrainMaterial(TerrainMaterial.GetNative()->Native);
+}
+
 int32 FTerrainBarrier::GetGridSizeX() const
 {
 	check(HasNative());
@@ -208,7 +224,8 @@ namespace
 	}
 
 	template <typename T>
-	TArray<T> CreateAndUninitializeParticleArray(const agx::Physics::GranularBodyPtrArray& GranularParticles)
+	TArray<T> CreateAndUninitializeParticleArray(
+		const agx::Physics::GranularBodyPtrArray& GranularParticles)
 	{
 		TArray<T> Array;
 		const size_t NumParticlesAGX = FMath::Clamp(

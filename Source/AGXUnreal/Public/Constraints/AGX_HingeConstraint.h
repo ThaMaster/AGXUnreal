@@ -1,5 +1,3 @@
-//
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -9,7 +7,7 @@
 /**
  * Locks all degrees of freedom except for rotation around the Z-axis.
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX", Category = "AGX", Blueprintable, meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API AAGX_HingeConstraint : public AAGX_Constraint1DOF
 {
 	GENERATED_BODY()
@@ -19,5 +17,5 @@ public:
 	virtual ~AAGX_HingeConstraint();
 
 protected:
-	virtual void CreateNativeImpl() override;
+	virtual void AllocateNative() override;
 };

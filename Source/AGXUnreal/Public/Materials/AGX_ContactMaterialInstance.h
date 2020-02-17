@@ -9,6 +9,7 @@
 
 class FContactMaterialBarrier;
 class UAGX_ContactMaterialAsset;
+class UAGX_MaterialBase;
 
 /**
  * Represents a native AGX Contact Material in-game. Should never exist when not playing.

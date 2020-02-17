@@ -24,7 +24,7 @@ AAGX_DistanceConstraint::~AAGX_DistanceConstraint()
 {
 }
 
-void AAGX_DistanceConstraint::CreateNativeImpl()
+void AAGX_DistanceConstraint::AllocateNative()
 {
 	NativeBarrier.Reset(new FDistanceJointBarrier());
 
