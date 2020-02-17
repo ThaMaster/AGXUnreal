@@ -1,5 +1,7 @@
 #include "Utilities/AGX_HeightFieldUtilities.h"
 
+#include "AGX_LogCategory.h"
+
 #include "Landscape.h"
 #include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
@@ -60,6 +62,16 @@ int32 AGX_HeightFieldUtilities::GetLandscapeSideSizeInQuads(ALandscape& Landscap
 FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape& Landscape)
 {
 	const int32 NumComponents = Landscape.LandscapeComponents.Num();
+
+	if (NumComponents <= 0)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("AGX_HeightFieldUtilities::CreateHeightField cannot create heightfield "
+			"from landscape without components."));
+
+		// Return empty FHeightFieldShapeBarrier (no native allocated).
+		return FHeightFieldShapeBarrier;
+	}
 
 	// This assumes a square and uniform grid of components.
 	/// \todo Figure out how to get the size/sides of the component grid.
