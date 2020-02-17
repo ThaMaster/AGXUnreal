@@ -36,11 +36,13 @@ namespace
 		// See struct FLandscapeComponentDataInterface::GetHeight for reference.
 		uint16 HeightPixel = (Color.R << 8) + Color.G;
 
-		// At scale = 100, the height span is 512 meters.
 		float Frac = (float) HeightPixel / 65536;
-		float HeightInCentimeters = (Frac - 0.5) * 512 * ScaleZ + 100;
 
-		return HeightInCentimeters;
+		// At scale = 100, the height span is 512 meters.
+		float Height = (Frac - 0.5) * 512 * ScaleZ + 100;
+
+		// Height in centimeters.
+		return Height;
 	}
 }
 
