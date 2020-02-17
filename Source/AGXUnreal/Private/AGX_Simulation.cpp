@@ -31,10 +31,16 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 	UE_LOG(LogAGX, Log, TEXT("AGX_CALL: new agxSDK::Simulation"));
 	NativeBarrier.AllocateNative();
+	check(HasNative()); /// \todo Consider better error handling.
 	GetWorld()->SpawnActor(AAGX_Stepper::StaticClass());
 	/// \todo Instead of creating an Actor for Step triggering, one may use
 	///       FTickableObjectBase or FTickFunction. It's not clear to me how to
 	///       use these other classes.
+
+	if (bRemoteDebugging)
+	{
+		NativeBarrier.EnableRemoteDebugging(RemoteDebuggingPort);
+	}
 }
 
 void UAGX_Simulation::Deinitialize()
