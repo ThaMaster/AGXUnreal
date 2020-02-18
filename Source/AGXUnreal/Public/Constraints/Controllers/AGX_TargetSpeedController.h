@@ -24,7 +24,8 @@ struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController : public FAGX_Constrai
 	 * Target Speed in Degrees Per Second if controller is on a Rotational DOF,
 	 * else in Centimeters Per Second.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Target Speed Controller", Meta = (EditCondition = "bEnable"))
 	double Speed;
 
 	/**
@@ -32,7 +33,8 @@ struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController : public FAGX_Constrai
 	 * such that it will not drift away from that angle/position if the assigned
 	 * force range is enough to hold it.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Target Speed Controller", Meta = (EditCondition = "bEnable"))
 	bool bLockedAtZeroSpeed;
 
 public:

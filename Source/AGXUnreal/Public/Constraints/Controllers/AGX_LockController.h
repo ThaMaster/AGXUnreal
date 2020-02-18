@@ -24,7 +24,8 @@ struct AGXUNREAL_API FAGX_ConstraintLockController : public FAGX_ConstraintContr
 	 * Target position in Degrees if controller is on a Rotational
 	 * Degree-Of-Freedom, else in Centimeters.
 	 */
-	 UPROPERTY(EditAnywhere, Meta =	(EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Lock Controller", Meta = (EditCondition = "bEnable"))
 	 double Position;
 
 public:

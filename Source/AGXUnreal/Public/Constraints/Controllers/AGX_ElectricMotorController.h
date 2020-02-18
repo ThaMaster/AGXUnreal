@@ -23,20 +23,25 @@ struct AGXUNREAL_API FAGX_ConstraintElectricMotorController : public FAGX_Constr
 	/**
 	 * Available voltage or voltage drop across the terminals of this motor, in Volt.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Electric Motor Controller", Meta = (EditCondition = "bEnable"))
 	double Voltage;
 
 	/**
 	 * Resistance in the armature circuit, in Ohm.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Electric Motor Controller",
+		Meta = (EditCondition = "bEnable"))
 	double ArmatureResistance;
 
 	/**
 	 * Torque constant of this motor, in unit Torque Per Ampere. This value
 	 * couples the torque out to current in.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Electric Motor Controller",
+		Meta = (EditCondition = "bEnable"))
 	double TorqueConstant;
 
 public:

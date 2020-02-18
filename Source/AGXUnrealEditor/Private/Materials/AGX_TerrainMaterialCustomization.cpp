@@ -4,7 +4,7 @@
 #include "DetailLayoutBuilder.h"
 
 #include "Materials/AGX_TerrainMaterialBase.h"
-#include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TerrainMaterialCustomization"
 
@@ -16,7 +16,7 @@ TSharedRef<IDetailCustomization> FAGX_TerrainMaterialCustomization::MakeInstance
 void FAGX_TerrainMaterialCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	UAGX_TerrainMaterialBase* TerrainMaterial =
-		FAGX_ObjectUtilities::GetSingleObjectBeingCustomized<UAGX_TerrainMaterialBase>(
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_TerrainMaterialBase>(
 			DetailBuilder);
 
 	// Make sure this is a UAGX_TerrainMaterialBase and not UAGX_MaterialBase.

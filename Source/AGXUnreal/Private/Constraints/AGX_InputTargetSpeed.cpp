@@ -1,4 +1,4 @@
-#include "AGX_InputTargetSpeed.h"
+#include "Constraints/AGX_InputTargetSpeed.h"
 
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
@@ -9,6 +9,8 @@
 // Unreal Engine includes.
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
+
+#include <tuple>
 
 namespace UAGX_InputTargetSpeed_Helpers
 {

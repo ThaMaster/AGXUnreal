@@ -8,7 +8,7 @@
 #include "Widgets/Text/STextBlock.h"
 
 #include "AGX_LogCategory.h"
-#include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "CollisionGroups/AGX_CollisionGroupManager.h"
 #include "Shapes/AGX_ShapeComponent.h"
 
@@ -22,7 +22,7 @@ TSharedRef<IDetailCustomization> FAGX_CollisionGroupManagerCustomization::MakeIn
 void FAGX_CollisionGroupManagerCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	AAGX_CollisionGroupManager* CollisionGroupManager =
-		FAGX_ObjectUtilities::GetSingleObjectBeingCustomized<AAGX_CollisionGroupManager>(
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<AAGX_CollisionGroupManager>(
 			DetailBuilder);
 
 	if (!CollisionGroupManager)

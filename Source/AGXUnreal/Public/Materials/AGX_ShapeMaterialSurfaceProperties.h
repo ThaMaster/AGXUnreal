@@ -18,14 +18,15 @@ public:
 	 * If this is set to false, the solver will NOT calculate any friction when this material
 	 * is in contact with another material.
 	 */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "AGX Material Surface Properties")
 	bool bFrictionEnabled;
 
 	/**
 	 * Unitless roughness parameter used to calculate the final friction coefficient.
 	 */
 	UPROPERTY(
-		EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bFrictionEnabled"))
+		EditAnywhere, Category = "AGX Material Surface Properties", Meta =
+						  (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bFrictionEnabled"))
 	double Roughness;
 
 	/**
@@ -33,13 +34,17 @@ public:
 	 * the surface is wetter, and contacting objects will creep more. It's like compliance
 	 * for the friction constraints.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Material Surface Properties",
+		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double Viscosity;
 
 	/**
 	 * The attractive force between two colliding objects, in Newtons.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Material Surface Properties",
+		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double AdhesiveForce;
 
 	/**
@@ -49,7 +54,9 @@ public:
 	 * At this overlap, no adhesive force is applied.
 	 * At higher overlap, the (usual) contact force is applied.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Material Surface Properties",
+		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double AdhesiveOverlap;
 
 public:

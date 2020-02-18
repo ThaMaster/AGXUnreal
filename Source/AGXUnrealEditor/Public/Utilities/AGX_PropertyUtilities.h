@@ -10,7 +10,7 @@
 /**
  * Provides helper functions for working with UProperty and IPropertyHandle.
  */
-class AGXUNREAL_API FAGX_PropertyUtilities
+class AGXUNREALEDITOR_API FAGX_PropertyUtilities
 {
 public:
 	static bool PropertyEquals(

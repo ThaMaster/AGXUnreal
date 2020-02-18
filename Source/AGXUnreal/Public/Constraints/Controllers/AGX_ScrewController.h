@@ -25,7 +25,7 @@ struct AGXUNREAL_API FAGX_ConstraintScrewController : public FAGX_ConstraintCont
 	 * The distance, in centimeters along the screw's axis, that is covered by
 	 * one complete rotation of the screw (360 degrees).
 	 */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bEnable"))
+	UPROPERTY(EditAnywhere, Category = "AGX Screw Controller", Meta = (EditCondition = "bEnable"))
 	double Lead;
 
 public:
