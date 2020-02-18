@@ -197,6 +197,7 @@ void UAGX_HeightFieldShapeComponent::CreateNative()
 	}
 
 	NativeBarrier = AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
+	check(NativeBarrier.HasNative());
 	UpdateNativeProperties();
 }
 

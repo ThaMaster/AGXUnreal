@@ -169,6 +169,7 @@ void AAGX_Terrain::CreateNativeTerrain()
 {
 	FHeightFieldShapeBarrier HeightField =
 		AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
+	check(HeightField.HasNative());
 	NativeBarrier.AllocateNative(HeightField);
 	OriginalHeights = NativeBarrier.GetHeights();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
