@@ -8,9 +8,6 @@
 
 #include <limits>
 
-#define LANDSCAPE_HEIGHT_SPAN_NOMINAL_M (512.0f)
-#define LANDSCAPE_ZERO_OFFSET_CM (100.0f)
-
 namespace
 {
 	// A version of the square root that only allows roots that is an integer.
@@ -40,6 +37,9 @@ namespace
 
 	float ColorToHeight(FColor Color, float ScaleZ)
 	{
+		constexpr float LANDSCAPE_HEIGHT_SPAN_NOMINAL_M {512.0f};
+		constexpr float LANDSCAPE_ZERO_OFFSET_CM {100.0f};
+
 		// See struct FLandscapeComponentDataInterface::GetHeight for reference.
 		uint16 HeightPixel = (Color.R << 8) + Color.G;
 
