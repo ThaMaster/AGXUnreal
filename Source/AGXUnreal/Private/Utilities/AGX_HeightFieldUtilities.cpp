@@ -52,6 +52,54 @@ namespace
 		// Height in centimeters.
 		return Height;
 	}
+
+	struct TextureReadHelper
+	{
+		// Source: https://isaratech.com/ue4-reading-the-pixels-from-a-utexture2d/
+		TextureReadHelper(UTexture2D* InTexture)
+		{
+			Texture = InTexture;
+
+			// Store original settings
+			OldCompressionSettings = Texture->CompressionSettings;
+			OldSRGB = Texture->SRGB;
+#if WITH_EDITORONLY_DATA
+			OldMipGenSettings = Texture->MipGenSettings;
+#endif
+
+			// Apply texture settings for reading.
+			Texture->CompressionSettings =
+				TextureCompressionSettings::TC_VectorDisplacementmap;
+			Texture->SRGB = false;
+#if WITH_EDITORONLY_DATA
+			Texture->MipGenSettings = TextureMipGenSettings::TMGS_NoMipmaps;
+#endif
+			Texture->UpdateResource();
+		}
+
+		~TextureReadHelper()
+		{
+			// Restore texture settings.
+			Texture->PlatformData->Mips[0].BulkData.Unlock();
+			Texture->CompressionSettings = OldCompressionSettings;
+			Texture->SRGB = OldSRGB;
+#if WITH_EDITORONLY_DATA
+			Texture->MipGenSettings = OldMipGenSettings;
+#endif
+			Texture->UpdateResource();
+		}
+
+		const FColor* GetColor() const
+		{
+			return static_cast<const FColor*>(
+				Texture->PlatformData->Mips[0].BulkData.LockReadOnly());
+		}
+
+		UTexture2D* Texture;
+		TextureCompressionSettings OldCompressionSettings;
+		TextureMipGenSettings OldMipGenSettings;
+		bool OldSRGB;
+	};
 }
 
 int32 AGX_HeightFieldUtilities::GetLandscapeSideSizeInQuads(ALandscape& Landscape)
@@ -72,8 +120,9 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 	if (NumComponents <= 0)
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("AGX_HeightFieldUtilities::CreateHeightField cannot create heightfield "
-			"from landscape without components."));
+			LogAGX, Error,
+			TEXT("AGX_HeightFieldUtilities::CreateHeightField cannot create heightfield "
+				 "from landscape without components."));
 
 		// Return empty FHeightFieldShapeBarrier (no native allocated).
 		return FHeightFieldShapeBarrier();
@@ -100,19 +149,8 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 	UTexture2D* HeightMapTexture = Component->GetHeightmap();
 
 	// Apply necessary settings to the texure to be able to get color data.
-	// Source: https://isaratech.com/ue4-reading-the-pixels-from-a-utexture2d/
-	TextureCompressionSettings OldCompressionSettings = HeightMapTexture->CompressionSettings;
-	HeightMapTexture->CompressionSettings = TextureCompressionSettings::TC_VectorDisplacementmap;
-#if WITH_EDITORONLY_DATA
-	TextureMipGenSettings OldMipGenSettings = HeightMapTexture->MipGenSettings;
-	HeightMapTexture->MipGenSettings = TextureMipGenSettings::TMGS_NoMipmaps;
-#endif
-	bool OldSRGB = HeightMapTexture->SRGB;
-	HeightMapTexture->SRGB = false;
-	HeightMapTexture->UpdateResource();
-
-	const FColor* Texturecolor =
-		static_cast<const FColor*>(HeightMapTexture->PlatformData->Mips[0].BulkData.LockReadOnly());
+	TextureReadHelper TextureReader(HeightMapTexture);
+	const FColor* Texturecolor = TextureReader.GetColor();
 
 	// AGX terrains Y coordinate goes from Unreals Y-max down to zero (flipped).
 	int32 Vertex = 0;
@@ -132,15 +170,6 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 	}
 
 	check(Vertex == NumVertices);
-
-	// Restore texture settings.
-	HeightMapTexture->PlatformData->Mips[0].BulkData.Unlock();
-	HeightMapTexture->CompressionSettings = OldCompressionSettings;
-#if WITH_EDITORONLY_DATA
-	HeightMapTexture->MipGenSettings = OldMipGenSettings;
-#endif
-	HeightMapTexture->SRGB = OldSRGB;
-	HeightMapTexture->UpdateResource();
 
 	FHeightFieldShapeBarrier HeightField;
 	HeightField.AllocateNative(NumVerticesPerSide, NumVerticesPerSide, SideSize, SideSize, Heights);
