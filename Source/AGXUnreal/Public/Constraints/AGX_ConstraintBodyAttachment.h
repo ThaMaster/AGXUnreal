@@ -93,6 +93,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	void OnFrameDefiningActorChanged(AAGX_Constraint* Owner);
 
 	void OnDestroy(AAGX_Constraint* Owner);
+#endif
 
 private:
 	/**
@@ -101,5 +102,4 @@ private:
 	 */
 	UPROPERTY(Transient)
 	mutable AActor* RecentFrameDefiningActor;
-#endif
 };

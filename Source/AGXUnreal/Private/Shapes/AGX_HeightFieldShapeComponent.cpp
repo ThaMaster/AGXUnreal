@@ -11,6 +11,7 @@ UAGX_HeightFieldShapeComponent::UAGX_HeightFieldShapeComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 	UE_LOG(LogAGX, Log, TEXT("BoxShape instance created."));
 
+#if WITH_EDITOR
 	// HeightFields are tightly coupled to a source landscape. The Actor owning
 	// this HeightField should always be positioned so that heights in the
 	// height field align with heights in the source landscape. This sets up a
@@ -24,11 +25,14 @@ UAGX_HeightFieldShapeComponent::UAGX_HeightFieldShapeComponent()
 			this, &UAGX_HeightFieldShapeComponent::OnSourceLandscapeChanged);
 	OnPropertyChangedHandleDelegateHandle =
 		FCoreUObjectDelegates::OnObjectPropertyChanged.Add(OnPropertyChangedHandle);
+#endif
 }
 
 UAGX_HeightFieldShapeComponent::~UAGX_HeightFieldShapeComponent()
 {
+#if WITH_EDITOR
 	FCoreUObjectDelegates::OnObjectPropertyChanged.Remove(OnPropertyChangedHandleDelegateHandle);
+#endif
 }
 
 FShapeBarrier* UAGX_HeightFieldShapeComponent::GetNative()
@@ -193,6 +197,7 @@ void UAGX_HeightFieldShapeComponent::CreateNative()
 	}
 
 	NativeBarrier = AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
+	check(HasNative());
 	UpdateNativeProperties();
 }
 

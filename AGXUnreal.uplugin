@@ -17,25 +17,41 @@
     {
       "Name": "AGXUnrealBarrier",
       "Type": "Runtime",
-      "LoadingPhase": "Default"
+      "LoadingPhase": "Default",
+      "WhitelistPlatforms": [
+        "Win64",
+        "Linux"
+      ],
+      "BlacklistPlatforms ": [
+        "IOS",
+        "Win32"
+      ]
     },
     {
       "Name": "AGXUnreal",
       "Type": "Runtime",
       "LoadingPhase": "Default",
       "WhitelistPlatforms": [
-        "Linux",
         "Win64",
-        "Win32"
+        "Linux"
       ],
       "BlacklistPlatforms ": [
-        "IOS"
+        "IOS",
+        "Win32"
       ]
     },
     {
       "Name": "AGXUnrealEditor",
       "Type": "Editor",
-      "LoadingPhase": "PostEngineInit"
+      "LoadingPhase": "PostEngineInit",
+      "WhitelistPlatforms": [
+        "Win64",
+        "Linux"
+      ],
+      "BlacklistPlatforms ": [
+        "IOS",
+        "Win32"
+      ]
     }
   ],
   "Plugins": [

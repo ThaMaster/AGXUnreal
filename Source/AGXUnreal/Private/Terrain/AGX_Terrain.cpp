@@ -147,13 +147,11 @@ void AAGX_Terrain::InitializeNative()
 {
 	if (SourceLandscape == nullptr)
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("No source landscape selected for terrain %s %s."),
-			*GetActorLabel(), *GetName());
+		UE_LOG(LogAGX, Error, TEXT("No source landscape selected for terrain %s."), *GetName());
 		return;
 	}
 
-	if (NativeBarrier.HasNative())
+	if (HasNative())
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -171,6 +169,7 @@ void AAGX_Terrain::CreateNativeTerrain()
 {
 	FHeightFieldShapeBarrier HeightField =
 		AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
+	check(HasNative());
 	NativeBarrier.AllocateNative(HeightField);
 	OriginalHeights = NativeBarrier.GetHeights();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
@@ -179,13 +178,13 @@ void AAGX_Terrain::CreateNativeTerrain()
 
 void AAGX_Terrain::CreateNativeShovels()
 {
-	if (!NativeBarrier.HasNative())
+	if (!HasNative())
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("CreateNativeShovels called on Terrain '%s', '%s' which doesn't have a native "
+			TEXT("CreateNativeShovels called on Terrain '%s' which doesn't have a native "
 				 "representation."),
-			*GetActorLabel(), *GetName());
+			*GetName());
 	}
 
 	for (FAGX_Shovel& Shovel : Shovels)
@@ -391,7 +390,7 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	{
 		return;
 	}
-	if (!NativeBarrier.HasNative())
+	if (!HasNative())
 	{
 		return;
 	}
@@ -426,7 +425,7 @@ void AAGX_Terrain::ClearDisplacementMap()
 	{
 		return;
 	}
-	if (!NativeBarrier.HasNative())
+	if (!HasNative())
 	{
 		return;
 	}
@@ -610,7 +609,7 @@ void AAGX_Terrain::ClearParticlesMap()
 	{
 		return;
 	}
-	if (!NativeBarrier.HasNative())
+	if (!HasNative())
 	{
 		return;
 	}

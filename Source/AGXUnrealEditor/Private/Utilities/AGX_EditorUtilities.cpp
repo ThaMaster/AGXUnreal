@@ -278,13 +278,71 @@ namespace
 		return {PackagePath, AssetName};
 	}
 
+	/**
+	 * Creates a FRawMesh from an FTrimeshShapeBarrier.
+	 *
+	 * @param Trimesh - The trimesh barrier used to create the raw mesh.
+	 * @return A raw mesh created from the trimesh barrier passed as argument.
+	 */
+	FRawMesh CreateRawMeshFromTrimesh(const FTrimeshShapeBarrier& Trimesh)
+	{
+		FRawMesh RawMesh;
+
+		RawMesh.VertexPositions = Trimesh.GetVertexPositions();
+		RawMesh.WedgeIndices = Trimesh.GetVertexIndices();
+		TArray<FVector> TriangleNormals = Trimesh.GetTriangleNormals();
+
+		const int32 NumFaces = TriangleNormals.Num();
+		const int32 NumWedges = RawMesh.WedgeIndices.Num();
+		check(NumWedges == 3 * NumFaces);
+
+		RawMesh.FaceMaterialIndices.Reserve(NumFaces);
+		RawMesh.FaceSmoothingMasks.Reserve(NumFaces);
+		for (int32 FaceIndex = 0; FaceIndex < NumFaces; ++FaceIndex)
+		{
+			RawMesh.FaceMaterialIndices.Add(0);
+			RawMesh.FaceSmoothingMasks.Add(0xFFFFFFFF);
+		}
+
+		RawMesh.WedgeTangentX.Reserve(NumWedges);
+		RawMesh.WedgeTangentY.Reserve(NumWedges);
+		RawMesh.WedgeTangentZ.Reserve(NumWedges);
+		RawMesh.WedgeColors.Reserve(NumWedges);
+		for (int32 UVIndex = 0; UVIndex < MAX_MESH_TEXTURE_COORDS; ++UVIndex)
+		{
+			RawMesh.WedgeTexCoords[UVIndex].Reserve(NumWedges);
+		}
+
+		for (int32 i = 0; i < NumWedges; ++i)
+		{
+			RawMesh.WedgeTangentX.Add(FVector(0.0f, 0.0f, 0.0f));
+			RawMesh.WedgeTangentY.Add(FVector(0.0f, 0.0f, 0.0f));
+			RawMesh.WedgeColors.Add(FColor(255, 255, 255));
+			for (int32 UVIndex = 0; UVIndex < MAX_MESH_TEXTURE_COORDS; ++UVIndex)
+			{
+				RawMesh.WedgeTexCoords[UVIndex].Add(FVector2D(0.0f, 0.0f));
+			}
+		}
+
+		for (const FVector& TriangleNormal : TriangleNormals)
+		{
+			// The native trimesh store normals per triangle and not per vertex as
+			// Unreal want it. Duplicating the normals here, but if we want smooth
+			// shading then we should try to let Unreal compute the normals for us.
+			RawMesh.WedgeTangentZ.Add(TriangleNormal);
+			RawMesh.WedgeTangentZ.Add(TriangleNormal);
+			RawMesh.WedgeTangentZ.Add(TriangleNormal);
+		}
+
+		return RawMesh;
+	}
 }
 
 UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshAsset(
 	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh,
 	const FString& AssetFolderName)
 {
-	FRawMesh RawMesh = Trimesh.GetRawMesh();
+	FRawMesh RawMesh = CreateRawMeshFromTrimesh(Trimesh);
 	FString TrimeshName = CreateAssetName(Trimesh.GetSourceName(), Owner->GetActorLabel());
 	FAssetId AssetId = CreateTrimeshAsset(RawMesh, AssetFolderName, TrimeshName);
 	if (!AssetId.IsValid())

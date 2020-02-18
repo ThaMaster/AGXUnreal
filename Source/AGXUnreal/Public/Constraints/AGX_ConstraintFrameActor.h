@@ -42,7 +42,7 @@ private:
 	 *
 	 * Used for convenience only, to be able to quickly access the constraint(s).
 	 */
-	UPROPERTY(VisibleAnywhere, Transient)
+	UPROPERTY(VisibleAnywhere, Category = "AGX Constraint Frame Actor", Transient)
 	TArray<class AAGX_Constraint*> UsedByConstraints;
 
 public:

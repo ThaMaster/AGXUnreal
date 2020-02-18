@@ -38,7 +38,7 @@ public:
 	 * By using contact reduction, the number of contact points later submitted to the solver as
 	 * contact constraint can be heavily reduced, hence improving performance.
 	 */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "AGX Contact Material Reduction Mode")
 	EAGX_ContactReductionMode Mode;
 
 	/**
@@ -50,7 +50,9 @@ public:
 	 *
 	 * Not used if the 'Contact Reduction Mode' property is set to 'None'.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0", UIMin = "0", ClampMax = "10", UIMax = "10"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Contact Material Reduction Mode",
+		Meta = (ClampMin = "0", UIMin = "0", ClampMax = "10", UIMax = "10"))
 	uint8 BinResolution; /// \todo Disable if Mode is set to 'None'.
 
 public:

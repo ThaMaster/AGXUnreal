@@ -1,6 +1,5 @@
 #pragma once
 
-#include "DetailLayoutBuilder.h"
 #include "Containers/Array.h"
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
@@ -34,34 +33,9 @@ public:
 	template<typename T>
 	static T* FindFirstAncestorOfType(const USceneComponent& Start);
 
-	/**
-	 * Returns single object being customized from DetailBuilder if found.
-	 *
-	 * @param FailIfMultiple If true, nullptr is returned if multiple objects are found.
-	 * If False, the first found object is returned, even if multiple objects are found.
-	 */
-	template <typename T>
-	static T* GetSingleObjectBeingCustomized(
-		IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true);
-
 private:
 	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);
 };
-
-template <typename T>
-T* FAGX_ObjectUtilities::GetSingleObjectBeingCustomized(
-	IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple)
-{
-	static_assert(std::is_base_of<UObject, T>::value, "T must inherit from UObject");
-
-	TArray<TWeakObjectPtr<UObject>> Objects;
-	DetailBuilder.GetObjectsBeingCustomized(Objects);
-
-	if (Objects.Num() == 1 || (!FailIfMultiple && Objects.Num() > 1))
-		return Cast<T>(Objects[0].Get());
-	else
-		return nullptr;
-}
 
 template<typename T>
 T* FAGX_ObjectUtilities::FindFirstAncestorOfType(const USceneComponent& Start)
@@ -92,3 +66,4 @@ TArray<UDerived*> FAGX_ObjectUtilities::Filter(const UBaseContainer& Collection)
 	}
 	return Result;
 }
+

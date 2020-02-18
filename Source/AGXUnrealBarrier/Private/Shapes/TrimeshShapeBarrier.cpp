@@ -8,6 +8,7 @@
 #include "EndAGXIncludes.h"
 
 #include "TypeConversions.h"
+#include "Interfaces/Interface_CollisionDataProvider.h"
 
 #include "Misc/AssertionMacros.h"
 
@@ -45,59 +46,6 @@ FTrimeshShapeBarrier::~FTrimeshShapeBarrier()
 	// Must provide a destructor implementation in the .cpp file because the
 	// std::unique_ptr NativeRef's destructor must be able to see the definition,
 	// not just the forward declaration, of FTrimeshShapeRef.
-}
-
-FRawMesh FTrimeshShapeBarrier::GetRawMesh() const
-{
-	FRawMesh RawMesh;
-
-	RawMesh.VertexPositions = GetVertexPositions();
-	RawMesh.WedgeIndices = GetVertexIndices();
-	TArray<FVector> TriangleNormals = GetTriangleNormals();
-
-	const int32 NumFaces = TriangleNormals.Num();
-	const int32 NumWedges = RawMesh.WedgeIndices.Num();
-	check(NumWedges == 3 * NumFaces);
-
-	RawMesh.FaceMaterialIndices.Reserve(NumFaces);
-	RawMesh.FaceSmoothingMasks.Reserve(NumFaces);
-	for (int32 FaceIndex = 0; FaceIndex < NumFaces; ++FaceIndex)
-	{
-		RawMesh.FaceMaterialIndices.Add(0);
-		RawMesh.FaceSmoothingMasks.Add(0xFFFFFFFF);
-	}
-
-	RawMesh.WedgeTangentX.Reserve(NumWedges);
-	RawMesh.WedgeTangentY.Reserve(NumWedges);
-	RawMesh.WedgeTangentZ.Reserve(NumWedges);
-	RawMesh.WedgeColors.Reserve(NumWedges);
-	for (int32 UVIndex = 0; UVIndex < MAX_MESH_TEXTURE_COORDS; ++UVIndex)
-	{
-		RawMesh.WedgeTexCoords[UVIndex].Reserve(NumWedges);
-	}
-
-	for (int32 i = 0; i < NumWedges; ++i)
-	{
-		RawMesh.WedgeTangentX.Add(FVector(0.0f, 0.0f, 0.0f));
-		RawMesh.WedgeTangentY.Add(FVector(0.0f, 0.0f, 0.0f));
-		RawMesh.WedgeColors.Add(FColor(255, 255, 255));
-		for (int32 UVIndex = 0; UVIndex < MAX_MESH_TEXTURE_COORDS; ++UVIndex)
-		{
-			RawMesh.WedgeTexCoords[UVIndex].Add(FVector2D(0.0f, 0.0f));
-		}
-	}
-
-	for (const FVector& TriangleNormal : TriangleNormals)
-	{
-		// The native trimesh store normals per triangle and not per vertex as
-		// Unreal want it. Duplicating the normals here, but if we want smooth
-		// shading then we should try to let Unreal compute the normals for us.
-		RawMesh.WedgeTangentZ.Add(TriangleNormal);
-		RawMesh.WedgeTangentZ.Add(TriangleNormal);
-		RawMesh.WedgeTangentZ.Add(TriangleNormal);
-	}
-
-	return RawMesh;
 }
 
 TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions() const

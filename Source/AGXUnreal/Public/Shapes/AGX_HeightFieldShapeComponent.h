@@ -62,6 +62,8 @@ private:
 private:
 	FHeightFieldShapeBarrier NativeBarrier;
 
+#if WITH_EDITOR
 	FCoreUObjectDelegates::FOnObjectPropertyChanged::FDelegate OnPropertyChangedHandle;
 	FDelegateHandle OnPropertyChangedHandleDelegateHandle;
+#endif
 };

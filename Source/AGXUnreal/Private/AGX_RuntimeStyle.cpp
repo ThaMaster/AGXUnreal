@@ -6,6 +6,7 @@
 #include "Runtime/SlateCore/Public/Styling/SlateStyle.h"
 #include "Runtime/SlateCore/Public/Styling/SlateStyleRegistry.h"
 #include "Runtime/SlateCore/Public/Styling/SlateTypes.h"
+#include "Framework/Application/SlateApplication.h"
 #include "SlateOptMacros.h"
 
 TSharedPtr<FSlateStyleSet> FAGX_RuntimeStyle::StyleInstance = nullptr;

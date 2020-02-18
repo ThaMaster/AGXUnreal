@@ -31,7 +31,7 @@ public:
 	 * Recommended for contact mechanics with a higher level of fidelity, such as grasping involving
 	 * meshes or boxes.
 	 */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "AGX Contact Material Mechanics Approach")
 	bool bUseContactAreaApproach;
 
 	/**
@@ -41,7 +41,7 @@ public:
 	 * Approach' is enabled.
 	 */
 	UPROPERTY(
-		EditAnywhere,
+		EditAnywhere, Category = "AGX Contact Material Mechanics Approach",
 		Meta = (ClampMin = "0", UIMin = "0", EditCondition = "bUseContactAreaApproach"))
 	double MinElasticRestLength;
 
@@ -52,7 +52,7 @@ public:
 	 * Approach' is enabled.
 	 */
 	UPROPERTY(
-		EditAnywhere,
+		EditAnywhere, Category = "AGX Contact Material Mechanics Approach",
 		Meta = (ClampMin = "0", UIMin = "0", EditCondition = "bUseContactAreaApproach"))
 	double MaxElasticRestLength;
 
