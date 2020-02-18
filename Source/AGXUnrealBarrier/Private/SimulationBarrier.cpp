@@ -1,15 +1,18 @@
 #include "SimulationBarrier.h"
 
-#include "RigidBodyBarrier.h"
-#include "Terrain/TerrainBarrier.h"
-#include "TypeConversions.h"
+// AGXUnreal inclues.
+#include "AGX_LogCategory.h"
+#include "AGXRefs.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
-#include "AGX_LogCategory.h"
+#include "RigidBodyBarrier.h"
+#include "ShapeBarrier.h"
+#include "Terrain/TerrainBarrier.h"
+#include "TypeConversions.h"
 
-#include "AGXRefs.h"
 
+// Unreal Engine includes.
 #include "BeginAGXIncludes.h"
 #include <agxSDK/Simulation.h>
 #include "EndAGXIncludes.h"
@@ -33,6 +36,13 @@ void FSimulationBarrier::AddRigidBody(FRigidBodyBarrier* Body)
 	check(HasNative());
 	check(Body->HasNative());
 	NativeRef->Native->add(Body->GetNative()->Native);
+}
+
+void FSimulationBarrier::AddShape(FShapeBarrier* Shape)
+{
+	check(HasNative());
+	check(Shape->HasNative());
+	NativeRef->Native->add(Shape->GetNative()->NativeGeometry);
 }
 
 void FSimulationBarrier::AddConstraint(FConstraintBarrier* Constraint)

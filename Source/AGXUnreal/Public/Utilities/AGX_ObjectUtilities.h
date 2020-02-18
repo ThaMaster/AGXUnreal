@@ -2,6 +2,7 @@
 
 #include "DetailLayoutBuilder.h"
 #include "Containers/Array.h"
+#include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
 
 class AActor;
@@ -30,6 +31,9 @@ public:
 	template<typename UDerived, typename UBaseContainer>
 	static TArray<UDerived*> Filter(const UBaseContainer& Collection);
 
+	template<typename T>
+	static T* FindFirstAncestorOfType(const USceneComponent& Start);
+
 	/**
 	 * Returns single object being customized from DetailBuilder if found.
 	 *
@@ -57,6 +61,21 @@ T* FAGX_ObjectUtilities::GetSingleObjectBeingCustomized(
 		return Cast<T>(Objects[0].Get());
 	else
 		return nullptr;
+}
+
+template<typename T>
+T* FAGX_ObjectUtilities::FindFirstAncestorOfType(const USceneComponent& Start)
+{
+	USceneComponent* Parent = Start.GetAttachParent();
+	while (Parent != nullptr)
+	{
+		if (Parent->IsA<T>())
+		{
+			return Cast<T>(Parent);
+		}
+		Parent = Parent->GetAttachParent();
+	}
+	return nullptr;
 }
 
 template <typename UDerived, typename UBaseContainer>

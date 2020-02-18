@@ -8,6 +8,7 @@
 #include "AGX_Simulation.generated.h"
 
 class UAGX_RigidBodyComponent;
+class UAGX_ShapeComponent;
 class UAGX_MaterialBase;
 class AAGX_Terrain;
 
@@ -68,6 +69,14 @@ public:
 	int16 RemoteDebuggingPort;
 
 	void AddRigidBody(UAGX_RigidBodyComponent* Body);
+
+	/**
+	 * Add a stand-alone shape to the simulation.
+	 *
+	 * Should not be called with Shapes that are part of a RigidBody, the body
+	 * is reponsible for adding all its shapes.
+	 */
+	void AddShape(UAGX_ShapeComponent* Shape);
 	void AddTerrain(AAGX_Terrain* Terrain);
 
 	void SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2);

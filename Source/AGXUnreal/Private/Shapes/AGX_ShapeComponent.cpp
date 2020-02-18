@@ -1,8 +1,11 @@
 #include "Shapes/AGX_ShapeComponent.h"
 
 #include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
+#include "AGX_Simulation.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Sets default values for this component's properties
@@ -145,6 +148,12 @@ void UAGX_ShapeComponent::BeginPlay()
 	UE_LOG(LogAGX, Log, TEXT("BeginPlay for ShapeComponent"));
 	Super::BeginPlay();
 	GetOrCreateNative();
+	UAGX_RigidBodyComponent* RigidBody = FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*this);
+	if (RigidBody == nullptr)
+	{
+		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+		Simulation->AddShape(this);
+	}
 	UpdateVisualMesh();
 }
 
