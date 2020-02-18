@@ -89,7 +89,7 @@ namespace
 			Texture->UpdateResource();
 		}
 
-		const FColor* GetColor() const
+		const FColor* GetTextureData() const
 		{
 			return static_cast<const FColor*>(
 				Texture->PlatformData->Mips[0].BulkData.LockReadOnly());
@@ -150,7 +150,7 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 
 	// Apply necessary settings to the texure to be able to get color data.
 	TextureReadHelper TextureReader(HeightMapTexture);
-	const FColor* Texturecolor = TextureReader.GetColor();
+	const FColor* Texturecolor = TextureReader.GetTextureData();
 
 	// AGX terrains Y coordinate goes from Unreals Y-max down to zero (flipped).
 	int32 Vertex = 0;
