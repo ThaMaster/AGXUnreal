@@ -6,6 +6,11 @@
 #include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
 
+#include <limits>
+
+#define LANDSCAPE_HEIGHT_SPAN_NOMINAL_M (512.0f)
+#define LANDSCAPE_ZERO_OFFSET_CM (100.0f)
+
 namespace
 {
 	// A version of the square root that only allows roots that is an integer.
@@ -38,10 +43,11 @@ namespace
 		// See struct FLandscapeComponentDataInterface::GetHeight for reference.
 		uint16 HeightPixel = (Color.R << 8) + Color.G;
 
-		float Frac = (float) HeightPixel / 65536;
+		float Frac = (float) HeightPixel / (std::numeric_limits<uint16>::max() + 1);
 
 		// At scale = 100, the height span is 512 meters.
-		float Height = (Frac - 0.5) * 512 * ScaleZ + 100;
+		float Height =
+			(Frac - 0.5) * LANDSCAPE_HEIGHT_SPAN_NOMINAL_M * ScaleZ + LANDSCAPE_ZERO_OFFSET_CM;
 
 		// Height in centimeters.
 		return Height;
