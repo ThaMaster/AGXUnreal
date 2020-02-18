@@ -28,15 +28,6 @@ UAGX_InputTargetSpeed::UAGX_InputTargetSpeed()
 	using namespace UAGX_InputTargetSpeed_Helpers;
 
 	PrimaryComponentTick.bCanEverTick = true;
-
-	if (!HasValidParent(*this))
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("AGX Input Target Speed components should only be created on AGX Constraint 1/2 "
-				 "DOF actors. Actor %s isn't one of those."),
-			(GetOwner() ? *GetOwner()->GetName() : TEXT("<NULL>")));
-	}
 }
 
 void UAGX_InputTargetSpeed::BeginPlay()
