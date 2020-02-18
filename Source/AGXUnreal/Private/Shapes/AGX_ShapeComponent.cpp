@@ -47,6 +47,8 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	if (!HasNative())
 		return;
 
+	GetNative()->SetName(GetName());
+
 	if (PhysicalMaterial)
 	{
 		UAGX_ShapeMaterialInstance* MaterialInstance =
@@ -138,7 +140,6 @@ void UAGX_ShapeComponent::PostInitProperties()
 
 #endif
 
-// Called when the game starts
 void UAGX_ShapeComponent::BeginPlay()
 {
 	UE_LOG(LogAGX, Log, TEXT("BeginPlay for ShapeComponent"));

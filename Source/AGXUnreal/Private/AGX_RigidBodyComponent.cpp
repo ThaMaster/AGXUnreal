@@ -134,6 +134,7 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	/// \todo Add call to SetInertiaTensorDiagonal here, when it has been implemented.
 	NativeBarrier.SetVelocity(Velocity);
 	NativeBarrier.SetAngularVelocity(AngularVelocity);
+	NativeBarrier.SetName(GetName());
 	InitializeMotionControl();
 }
 
