@@ -137,12 +137,9 @@ private:
 template <typename TNative>
 void UAGX_ShapeComponent::UpdateNativeLocalTransform(TNative& Native)
 {
-	FTransform RigiBodyTransform = GetOwner()->GetActorTransform();
-
-	FVector LocalPosition =
-		RigiBodyTransform.InverseTransformPositionNoScale(GetComponentLocation());
-	FQuat LocalOrientation = RigiBodyTransform.InverseTransformRotation(GetComponentQuat());
-
-	Native.SetLocalPosition(LocalPosition);
-	Native.SetLocalRotation(LocalOrientation);
+	// This assumes that the Shape's parent is the UAGX_RigidBody. If we want
+	// to support other/deeper hierarchies then we need to find the total
+	// transformation from the UAGX_RigidBody to this shape.
+	Native.SetLocalPosition(GetRelativeTransform().GetLocation());
+	Native.SetLocalRotation(GetRelativeTransform().GetRotation());
 }
