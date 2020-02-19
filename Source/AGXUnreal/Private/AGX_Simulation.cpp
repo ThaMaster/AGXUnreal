@@ -2,9 +2,9 @@
 
 // AGXUnreal includes.
 #include "AGX_RigidBodyComponent.h"
-#include "AGX_ShapeComponent.h"
 #include "AGX_Stepper.h"
 #include "AGX_LogCategory.h"
+#include "Shapes/AGX_ShapeComponent.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
