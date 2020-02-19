@@ -34,7 +34,7 @@ FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
 	{
 		InitializeNative();
 	}
-	check(HasNative()); /// \todo Consider better error handling that 'check'.
+	check(HasNative()); /// \todo Consider better error handling than 'check'.
 	return &NativeBarrier;
 }
 
@@ -69,7 +69,7 @@ void UAGX_RigidBodyComponent::BeginPlay()
 ///       https://docs.unrealengine.com/en-US/Programming/UnrealArchitecture/Actors/Ticking/index.html
 ///
 ///      Take care to synchronize this with the actual AGX Dynamics stepping
-///      done by UAGX_Simulation, they may not happen concurrently.
+///      done by UAGX_Simulation, they must not happen concurrently.
 void UAGX_RigidBodyComponent::TickComponent(
 	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -91,7 +91,7 @@ namespace
 	TArray<UAGX_ShapeComponent*> GetShapes(const UAGX_RigidBodyComponent& Body)
 	{
 		/// \todo Do we want to search recursively? The user many build strange
-		/// hierarchives, bodies beneath bodies and such, and case must be taken to
+		/// hierarchives, bodies beneath bodies and such, and care must be taken to
 		/// get that right if we allow it. Only looking at immediate children
 		/// simplifies things, but makes it impossible to attach shapes relative to
 		/// each other. A middleground is to only search recursively within
@@ -146,12 +146,10 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT(
-				"The Rigid Body Component \"%s\" has a RigidBody with Static AGX MotionControl but "
-				"Non-Static Unreal Mobility. "
-				"Unreal Mobility will automatically be changed to Static this game session, "
-				"but should also be "
-				"changed manually in the Editor to ensure best performance!"),
+			TEXT("The Rigid Body Component \"%s\" has a RigidBody with Static AGX MotionControl "
+				 "but Non-Static Unreal Mobility. Unreal Mobility will automatically be changed to "
+				 "Static this game session, but should also be changed manually in the Editor to "
+				 "ensure best performance!"),
 			*GetName());
 
 		SetMobility(EComponentMobility::Type::Static);
@@ -161,11 +159,9 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("The Rigid Body Component \"%s\" has a RigidBody with Dynamic AGX MotionControl "
-				 "but "
-				 "Non-Movable Unreal Mobility. "
-				 "Unreal Mobility will automatically be changed to Movable this game session, "
-				 "but should also be "
-				 "changed manually in the Editor to avoid future problems!"),
+				 "but Non-Movable Unreal Mobility. Unreal Mobility will automatically be changed "
+				 "to Movable this game session, but should also be changed manually in the Editor "
+				 "to avoid future problems!"),
 			*GetName());
 
 		SetMobility(EComponentMobility::Type::Movable);
@@ -197,7 +193,7 @@ void UAGX_RigidBodyComponent::WriteTransformToNative()
 	NativeBarrier.SetRotation(GetComponentQuat());
 }
 
-/// \todo Can use TInlineComponentArray<UAGX_RigidBodyComponent*> here, for performance.
+/// \note Can use TInlineComponentArray<UAGX_RigidBodyComponent*> here, for performance.
 TArray<UAGX_RigidBodyComponent*> UAGX_RigidBodyComponent::GetFromActor(const AActor* Actor)
 {
 	TArray<UAGX_RigidBodyComponent*> Bodies;

@@ -54,9 +54,8 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 
 	if (PhysicalMaterial)
 	{
-		UAGX_ShapeMaterialInstance* MaterialInstance =
-			static_cast<UAGX_ShapeMaterialInstance*>(
-				PhysicalMaterial->GetOrCreateInstance(GetWorld()));
+		UAGX_ShapeMaterialInstance* MaterialInstance = static_cast<UAGX_ShapeMaterialInstance*>(
+			PhysicalMaterial->GetOrCreateInstance(GetWorld()));
 
 		check(MaterialInstance);
 
@@ -73,7 +72,8 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 			PhysicalMaterial = MaterialInstance;
 		}
 
-		FShapeMaterialBarrier* MaterialBarrier = MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
+		FShapeMaterialBarrier* MaterialBarrier =
+			MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
 		check(MaterialBarrier);
 
 		UE_LOG(
@@ -148,7 +148,8 @@ void UAGX_ShapeComponent::BeginPlay()
 	UE_LOG(LogAGX, Log, TEXT("BeginPlay for ShapeComponent"));
 	Super::BeginPlay();
 	GetOrCreateNative();
-	UAGX_RigidBodyComponent* RigidBody = FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*this);
+	UAGX_RigidBodyComponent* RigidBody =
+		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*this);
 	if (RigidBody == nullptr)
 	{
 		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
@@ -164,13 +165,13 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 	ReleaseNative();
 }
 
-void UAGX_ShapeComponent::AddCollisionGroup(const FName & GroupName)
+void UAGX_ShapeComponent::AddCollisionGroup(const FName& GroupName)
 {
 	if (!GroupName.IsNone())
 		CollisionGroups.AddUnique(GroupName);
 }
 
-void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName & GroupName)
+void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 {
 	if (!GroupName.IsNone())
 	{

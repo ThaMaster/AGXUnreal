@@ -20,7 +20,7 @@ void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
 
 void UAGX_Simulation::AddShape(UAGX_ShapeComponent* Shape)
 {
-	/// \todo It's not entirely clear that we want to allow the user to create
+	/// \note It's not entirely clear that we want to allow the user to create
 	/// Shapes that aren't part of a body. However, we have no obvious way to
 	/// prevent it, so allowing it for now. Remove this member function if it
 	/// causes problems.

@@ -74,7 +74,7 @@ public:
 	 * Add a stand-alone shape to the simulation.
 	 *
 	 * Should not be called with Shapes that are part of a RigidBody, the body
-	 * is reponsible for adding all its shapes.
+	 * is reponsible for adding its own shapes.
 	 */
 	void AddShape(UAGX_ShapeComponent* Shape);
 	void AddTerrain(AAGX_Terrain* Terrain);
