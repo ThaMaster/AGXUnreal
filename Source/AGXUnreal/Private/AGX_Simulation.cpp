@@ -15,6 +15,7 @@
 void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
 {
 	check(Body != nullptr);
+	EnsureStepperCreated();
 	NativeBarrier.AddRigidBody(Body->GetNative());
 }
 
@@ -43,11 +44,14 @@ void UAGX_Simulation::AddShape(UAGX_ShapeComponent* Shape)
 void UAGX_Simulation::AddTerrain(AAGX_Terrain* Terrain)
 {
 	check(Terrain != nullptr);
+	EnsureStepperCreated();
 	NativeBarrier.AddTerrain(Terrain->GetNative());
 }
 
 void UAGX_Simulation::SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2)
 {
+	EnsureStepperCreated();
+
 	UE_LOG(
 		LogAGX, Verbose, TEXT("Disabling collision between groups: [%s - %s]"), *Group1.ToString(),
 		*Group2.ToString());
@@ -61,10 +65,6 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	UE_LOG(LogAGX, Log, TEXT("AGX_CALL: new agxSDK::Simulation"));
 	NativeBarrier.AllocateNative();
 	check(HasNative()); /// \todo Consider better error handling.
-	GetWorld()->SpawnActor(AAGX_Stepper::StaticClass());
-	/// \todo Instead of creating an Actor for Step triggering, one may use
-	///       FTickableObjectBase or FTickFunction. It's not clear to me how to
-	///       use these other classes.
 
 	if (bRemoteDebugging)
 	{
@@ -171,4 +171,20 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const UGameInstance* GameInstance)
 		return nullptr;
 
 	return GameInstance->GetSubsystem<UAGX_Simulation>();
+}
+
+void UAGX_Simulation::EnsureStepperCreated()
+{
+	/// \todo Calling GetWorld() from UAX_Simulation::Initialize returns the wrong
+	/// world when running an executable using this plugin. The reason is not clear.
+	/// Therefore, the GetWorld()->SpawnActor call is made here, after Initialize has been run.
+	if (!StepperCreated)
+	{
+		GetWorld()->SpawnActor(AAGX_Stepper::StaticClass());
+		/// \todo Instead of creating an Actor for Step triggering, one may use
+		///       FTickableObjectBase or FTickFunction. It's not clear to me how to
+		///       use these other classes.
+
+		StepperCreated = true;
+	}
 }
