@@ -1,24 +1,23 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-#include "Constraints/AGX_LockConstraint.h"
+#include "Constraints/AGX_LockConstraintComponent.h"
 
 #include "Constraints/LockJointBarrier.h"
 #include "AGX_LogCategory.h"
 
 class FRigidBodyBarrier;
 
-AAGX_LockConstraint::AAGX_LockConstraint()
-	: AAGX_Constraint({EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
-					   EDofFlag::DOF_FLAG_TRANSLATIONAL_3, EDofFlag::DOF_FLAG_ROTATIONAL_1,
-					   EDofFlag::DOF_FLAG_ROTATIONAL_2, EDofFlag::DOF_FLAG_ROTATIONAL_3})
+UAGX_LockConstraintComponent::UAGX_LockConstraintComponent()
+	: UAGX_ConstraintComponent({EDofFlag::DOF_FLAG_TRANSLATIONAL_1,
+								EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
+								EDofFlag::DOF_FLAG_TRANSLATIONAL_3, EDofFlag::DOF_FLAG_ROTATIONAL_1,
+								EDofFlag::DOF_FLAG_ROTATIONAL_2, EDofFlag::DOF_FLAG_ROTATIONAL_3})
 {
 }
 
-AAGX_LockConstraint::~AAGX_LockConstraint()
+UAGX_LockConstraintComponent::~UAGX_LockConstraintComponent()
 {
 }
 
-void AAGX_LockConstraint::CreateNativeImpl()
+void UAGX_LockConstraintComponent::CreateNativeImpl()
 {
 	NativeBarrier.Reset(new FLockJointBarrier());
 
@@ -28,7 +27,8 @@ void AAGX_LockConstraint::CreateNativeImpl()
 	if (!RigidBody1)
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Lock constraint %s: could not get Rigid Body Actor from Body Attachment 1."),
+			LogAGX, Error,
+			TEXT("Lock constraint %s: could not get Rigid Body Actor from Body Attachment 1."),
 			*GetFName().ToString());
 		return;
 	}

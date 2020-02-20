@@ -1,14 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Constraints/AGX_ConstraintComponentVisualizer.h"
 
+// AGXUnreal includes.
+#include "Constraints/AGX_ConstraintActor.h"
+#include "Constraints/AGX_ConstraintComponent.h"
+#include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
+
+// Unreal Engine inclues.
 #include "CanvasItem.h"
 #include "CanvasTypes.h"
 #include "SceneManagement.h"
-
-#include "Constraints/AGX_Constraint.h"
-#include "Constraints/AGX_ConstraintComponent.h"
-#include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintComponentVisualizer"
 
@@ -63,8 +63,8 @@ void FAGX_ConstraintComponentVisualizer::DrawVisualization(
 	if (ConstraintComponent == nullptr)
 		return;
 
-	const AAGX_Constraint* Constraint =
-		Cast<const AAGX_Constraint>(ConstraintComponent->GetOwner());
+	const UAGX_ConstraintComponent* Constraint =
+		Cast<const UAGX_ConstraintComponent>(ConstraintComponent);
 
 	DrawConstraint(Constraint, View, PDI);
 
@@ -81,7 +81,7 @@ void FAGX_ConstraintComponentVisualizer::DrawVisualizationHUD(
 	const UActorComponent* Component, const FViewport* Viewport, const FSceneView* View,
 	FCanvas* Canvas)
 {
-	const AAGX_Constraint* Constraint = Cast<const AAGX_Constraint>(Component->GetOwner());
+	const UAGX_ConstraintComponent* Constraint = Cast<const UAGX_ConstraintComponent>(Component);
 
 	if (!Constraint)
 	{
@@ -108,7 +108,8 @@ float GetScreenFactorFromWorldSize(float WorldSize, float FOV, float WorldDistan
 }
 
 void FAGX_ConstraintComponentVisualizer::DrawConstraint(
-	const AAGX_Constraint* Constraint, const FSceneView* View, FPrimitiveDrawInterface* PDI)
+	const UAGX_ConstraintComponent* Constraint, const FSceneView* View,
+	FPrimitiveDrawInterface* PDI)
 {
 	if (Constraint == nullptr)
 		return;
@@ -118,6 +119,7 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 		FAGX_ConstraintBodyAttachment BodyAttachment =
 			RigidBodyIndex == 0 ? Constraint->BodyAttachment1 : Constraint->BodyAttachment2;
 
+		/// \todo Cannot assume a single body per actor.
 		if (AActor* RigidBodyActor = BodyAttachment.RigidBodyActor)
 		{
 			// Highlight Rigid Body Actor
@@ -196,7 +198,7 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 }
 
 void FAGX_ConstraintComponentVisualizer::DrawConstraintHUD(
-	const AAGX_Constraint* Constraint, const FViewport* Viewport, const FSceneView* View,
+	const UAGX_ConstraintComponent* Constraint, const FViewport* Viewport, const FSceneView* View,
 	FCanvas* Canvas)
 {
 	if (Constraint->AreFramesInViolatedState())

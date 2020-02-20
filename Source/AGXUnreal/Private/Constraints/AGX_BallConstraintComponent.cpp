@@ -1,26 +1,25 @@
-#include "Constraints/AGX_HingeConstraint.h"
+#include "Constraints/AGX_BallConstraintComponent.h"
 
-#include "Constraints/HingeBarrier.h"
+#include "Constraints/ConstraintBarrier.h"
+#include "Constraints/BallJointBarrier.h"
 #include "AGX_LogCategory.h"
 
 class FRigidBodyBarrier;
 
-AAGX_HingeConstraint::AAGX_HingeConstraint()
-	: AAGX_Constraint1DOF(
+UAGX_BallConstraintComponent::UAGX_BallConstraintComponent()
+	: UAGX_ConstraintComponent(
 		  {EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
-		   EDofFlag::DOF_FLAG_TRANSLATIONAL_3, EDofFlag::DOF_FLAG_ROTATIONAL_1,
-		   EDofFlag::DOF_FLAG_ROTATIONAL_2},
-		  /*bbIsSecondaryConstraintRotational*/ true)
+		   EDofFlag::DOF_FLAG_TRANSLATIONAL_3})
 {
 }
 
-AAGX_HingeConstraint::~AAGX_HingeConstraint()
+UAGX_BallConstraintComponent::~UAGX_BallConstraintComponent()
 {
 }
 
-void AAGX_HingeConstraint::AllocateNative()
+void UAGX_BallConstraintComponent::CreateNativeImpl()
 {
-	NativeBarrier.Reset(new FHingeBarrier());
+	NativeBarrier.Reset(new FBallJointBarrier());
 
 	FRigidBodyBarrier* RigidBody1 = BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 	FRigidBodyBarrier* RigidBody2 = BodyAttachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
@@ -28,7 +27,8 @@ void AAGX_HingeConstraint::AllocateNative()
 	if (!RigidBody1)
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Hinge constraint %s: could not get Rigid Body Actor from Body Attachment 1."),
+			LogAGX, Error,
+			TEXT("Ball constraint %s: could not get Rigid Body Actor from Body Attachment 1."),
 			*GetFName().ToString());
 		return;
 	}
@@ -36,7 +36,7 @@ void AAGX_HingeConstraint::AllocateNative()
 	if ((BodyAttachment2.RigidBodyActor && !RigidBody2))
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Hinge constraint %s: could not get Rigid Body Actor from Body Attachment 2."),
+			LogAGX, Error, TEXT("Ball constraint %s: could not get Rigid Body Actor from Body Attachment 2."),
 			*GetFName().ToString());
 		return;
 	}

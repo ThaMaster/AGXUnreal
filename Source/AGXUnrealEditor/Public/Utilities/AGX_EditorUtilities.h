@@ -5,7 +5,7 @@
 
 #include <tuple>
 
-class AAGX_Constraint;
+class AAGX_ConstraintActor;
 class AAGX_ConstraintFrameActor;
 class UAGX_RigidBodyComponent;
 class UAGX_SphereShapeComponent;
@@ -80,12 +80,12 @@ public:
 	/**
 	 * Create a new constraint of the specified type.
 	 */
-	static AAGX_Constraint* CreateConstraint(
+	static AAGX_ConstraintActor* CreateConstraintActor(
 		UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bSelect,
 		bool bShowNotification, bool bInPlayingWorldIfAvailable);
 
 	template <typename T>
-	static T* CreateConstraint(
+	static T* CreateConstraintActor(
 		AActor* RigidBody1, AActor* RigidBody2, bool bSelect, bool bShowNotification,
 		bool bInPlayingWorldIfAvailable, UClass* ConstraintType = nullptr);
 
@@ -169,7 +169,7 @@ public:
 };
 
 template <typename T>
-T* FAGX_EditorUtilities::CreateConstraint(
+T* FAGX_EditorUtilities::CreateConstraintActor(
 	AActor* RigidBody1, AActor* RigidBody2, bool bSelect, bool bShowNotification,
 	bool bInPlayingWorldIfAvailable, UClass* ConstraintType)
 {
@@ -178,7 +178,7 @@ T* FAGX_EditorUtilities::CreateConstraint(
 		ConstraintType = T::StaticClass();
 	}
 	check(ConstraintType->IsChildOf<T>());
-	return Cast<T>(CreateConstraint(
+	return Cast<T>(CreateConstraintActor(
 		ConstraintType, RigidBody1, RigidBody2, bSelect, bShowNotification,
 		bInPlayingWorldIfAvailable));
 }

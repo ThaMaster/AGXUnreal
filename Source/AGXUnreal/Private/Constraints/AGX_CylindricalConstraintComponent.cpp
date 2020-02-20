@@ -1,26 +1,27 @@
-#include "Constraints/AGX_PrismaticConstraint.h"
+#include "Constraints/AGX_CylindricalConstraintComponent.h"
 
-#include "Constraints/PrismaticBarrier.h"
+// AGXUnreal includes.
+#include "Constraints/CylindricalJointBarrier.h"
 #include "AGX_LogCategory.h"
 
 class FRigidBodyBarrier;
 
-AAGX_PrismaticConstraint::AAGX_PrismaticConstraint()
-	: AAGX_Constraint1DOF(
+UAGX_CylindricalConstraintComponent::UAGX_CylindricalConstraintComponent()
+	: UAGX_Constraint2DofComponent(
 		  {EDofFlag::DOF_FLAG_ROTATIONAL_1, EDofFlag::DOF_FLAG_ROTATIONAL_2,
-		   EDofFlag::DOF_FLAG_ROTATIONAL_3, EDofFlag::DOF_FLAG_TRANSLATIONAL_1,
-		   EDofFlag::DOF_FLAG_TRANSLATIONAL_2},
-		  /*bIsSecondaryConstraintRotational*/ false)
+		   EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2},
+		  /*bIsSecondaryConstraint1Rotational*/ false,
+		  /*bIsSecondaryConstraint2Rotational*/ true)
 {
 }
 
-AAGX_PrismaticConstraint::~AAGX_PrismaticConstraint()
+UAGX_CylindricalConstraintComponent::~UAGX_CylindricalConstraintComponent()
 {
 }
 
-void AAGX_PrismaticConstraint::AllocateNative()
+void UAGX_CylindricalConstraintComponent::CreateNativeImpl()
 {
-	NativeBarrier.Reset(new FPrismaticBarrier());
+	NativeBarrier.Reset(new FCylindricalJointBarrier());
 
 	FRigidBodyBarrier* RigidBody1 = BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 	FRigidBodyBarrier* RigidBody2 = BodyAttachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
@@ -28,7 +29,7 @@ void AAGX_PrismaticConstraint::AllocateNative()
 	if (!RigidBody1)
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Prismatic constraint %s: could not get Rigid Body Actor from Body Attachment 1."),
+			LogAGX, Error, TEXT("Cylindrical constraint %s: could not get Rigid Body Actor from Body Attachment 1."),
 			*GetFName().ToString());
 		return;
 	}
@@ -36,8 +37,7 @@ void AAGX_PrismaticConstraint::AllocateNative()
 	if ((BodyAttachment2.RigidBodyActor && !RigidBody2))
 	{
 		UE_LOG(
-			LogAGX, Error,
-			TEXT("Prismatic constraint %s: could not get Rigid Body Actor from Body Attachment 2."),
+			LogAGX, Error, TEXT("Cylindrical constraint %s: could not get Rigid Body Actor from Body Attachment 2."),
 			*GetFName().ToString());
 		return;
 	}

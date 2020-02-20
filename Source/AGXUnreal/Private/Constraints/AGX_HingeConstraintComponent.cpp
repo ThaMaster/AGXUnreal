@@ -1,27 +1,29 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+#include "Constraints/AGX_HingeConstraintComponent.h"
 
-#include "Constraints/AGX_BallConstraint.h"
+// AGXUnreal includes.
+#include "Constraints/HingeBarrier.h"
 
-#include "Constraints/ConstraintBarrier.h"
-#include "Constraints/BallJointBarrier.h"
+// Unreal Engine includes.
 #include "AGX_LogCategory.h"
 
 class FRigidBodyBarrier;
 
-AAGX_BallConstraint::AAGX_BallConstraint()
-	: AAGX_Constraint(
+UAGX_HingeConstraintComponent::UAGX_HingeConstraintComponent()
+	: UAGX_Constraint1DofComponent(
 		  {EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
-		   EDofFlag::DOF_FLAG_TRANSLATIONAL_3})
+		   EDofFlag::DOF_FLAG_TRANSLATIONAL_3, EDofFlag::DOF_FLAG_ROTATIONAL_1,
+		   EDofFlag::DOF_FLAG_ROTATIONAL_2},
+		  /*bbIsSecondaryConstraintRotational*/ true)
 {
 }
 
-AAGX_BallConstraint::~AAGX_BallConstraint()
+UAGX_HingeConstraintComponent::~UAGX_HingeConstraintComponent()
 {
 }
 
-void AAGX_BallConstraint::CreateNativeImpl()
+void UAGX_HingeConstraintComponent::AllocateNative()
 {
-	NativeBarrier.Reset(new FBallJointBarrier());
+	NativeBarrier.Reset(new FHingeBarrier());
 
 	FRigidBodyBarrier* RigidBody1 = BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 	FRigidBodyBarrier* RigidBody2 = BodyAttachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
@@ -29,8 +31,7 @@ void AAGX_BallConstraint::CreateNativeImpl()
 	if (!RigidBody1)
 	{
 		UE_LOG(
-			LogAGX, Error,
-			TEXT("Ball constraint %s: could not get Rigid Body Actor from Body Attachment 1."),
+			LogAGX, Error, TEXT("Hinge constraint %s: could not get Rigid Body Actor from Body Attachment 1."),
 			*GetFName().ToString());
 		return;
 	}
@@ -38,7 +39,7 @@ void AAGX_BallConstraint::CreateNativeImpl()
 	if ((BodyAttachment2.RigidBodyActor && !RigidBody2))
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Ball constraint %s: could not get Rigid Body Actor from Body Attachment 2."),
+			LogAGX, Error, TEXT("Hinge constraint %s: could not get Rigid Body Actor from Body Attachment 2."),
 			*GetFName().ToString());
 		return;
 	}

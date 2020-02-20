@@ -26,7 +26,8 @@
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
-#include "Constraints/AGX_Constraint.h"
+#include "Constraints/AGX_ConstraintActor.h"
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
@@ -385,23 +386,23 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshAsset(
 	return StaticMeshComponent;
 }
 
-AAGX_Constraint* FAGX_EditorUtilities::CreateConstraint(
+AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 	UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bInPlayingWorldIfAvailable,
 	bool bSelect, bool bShowNotification)
 {
 	UWorld* World = bInPlayingWorldIfAvailable ? GetCurrentWorld() : GetEditorWorld();
 
 	check(World);
-	check(ConstraintType->IsChildOf<AAGX_Constraint>());
+	check(ConstraintType->IsChildOf<AAGX_ConstraintActor>());
 
 	// Create the new Constraint Actor.
-	AAGX_Constraint* NewActor =
-		World->SpawnActorDeferred<AAGX_Constraint>(ConstraintType, FTransform::Identity);
+	AAGX_ConstraintActor* NewActor =
+		World->SpawnActorDeferred<AAGX_ConstraintActor>(ConstraintType, FTransform::Identity);
 
 	check(NewActor);
 
-	NewActor->BodyAttachment1.RigidBodyActor = RigidBody1;
-	NewActor->BodyAttachment2.RigidBodyActor = RigidBody2;
+	NewActor->GetConstraintComponent()->BodyAttachment1.RigidBodyActor = RigidBody1;
+	NewActor->GetConstraintComponent()->BodyAttachment2.RigidBodyActor = RigidBody2;
 
 	NewActor->FinishSpawning(FTransform::Identity, true);
 

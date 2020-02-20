@@ -5,7 +5,7 @@
 
 #include "AGX_ConstraintBodyAttachment.generated.h"
 
-class AAGX_Constraint;
+class UAGX_ConstraintComponent;
 class AAGX_ConstraintFrameActor;
 class FRigidBodyBarrier;
 
@@ -22,6 +22,10 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 {
 	GENERATED_USTRUCT_BODY()
 
+	/// \todo Cannot assume a single body per actor. Should we change the UPROPERTY
+	/// to be a UAGX_RigidBodyComponent instead, or should we keep the Actor
+	/// reference and also keep some kind of component identifier? Should we use
+	/// FComponentRef here?
 	/**
 	 * The Actor containing the Rigid Body Component to be bound by the constraint.
 	 */
@@ -86,13 +90,14 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 
 #if WITH_EDITOR
 	/**
-	 * Should be invoked whenever Frame Defining Actor changes, to trigger the removal
-	 * of the constraint from the previous Frame Defining Actor's list of constraint usages,
-	 * and adding to the new one's (if they are AAGX_ConstraintFrameActor actor types).
+	 * Should be invoked whenever Frame Defining Actor changes, to trigger the
+	 * removal of the constraint from the previous Frame Defining Actor's list of
+	 * constraint usages, and adding to the new one's (if they are
+	 * AAGX_ConstraintFrameActor actor types).
 	 */
-	void OnFrameDefiningActorChanged(AAGX_Constraint* Owner);
+	void OnFrameDefiningActorChanged(UAGX_ConstraintComponent* Parent);
 
-	void OnDestroy(AAGX_Constraint* Owner);
+	void OnDestroy(UAGX_ConstraintComponent* Parent);
 #endif
 
 private:

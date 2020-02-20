@@ -1,34 +1,37 @@
 /// \todo Reduce includes!
 #include "Constraints/AGX_ConstraintIconGraphicsComponent.h"
 
-#include <optional>
+// AGXUnreal includes.
+#include "Constraints/AGX_BallConstraintComponent.h"
+#include "Constraints/AGX_ConstraintComponent.h"
+#include "Constraints/AGX_ConstraintEnums.h"
+#include "Constraints/AGX_CylindricalConstraintComponent.h"
+#include "Constraints/AGX_DistanceConstraintComponent.h"
+#include "Constraints/AGX_HingeConstraintComponent.h"
+#include "Constraints/AGX_LockConstraintComponent.h"
+#include "Constraints/AGX_PrismaticConstraintComponent.h"
+#include "Utilities/AGX_MeshUtilities.h"
 
-#include "RenderingThread.h"
-#include "RenderResource.h"
+// Unreal Engine includes.
+#include "DynamicMeshBuilder.h"
+#include "Engine/CollisionProfile.h"
+#include "Engine/Engine.h"
+#include "EngineGlobals.h"
+#include "LocalVertexFactory.h"
+#include "Materials/Material.h"
+#include "MaterialShared.h"
+#include "Misc/EngineVersionComparison.h"
 #include "PrimitiveViewRelevance.h"
 #include "PrimitiveSceneProxy.h"
-#include "VertexFactory.h"
-#include "MaterialShared.h"
-#include "Engine/CollisionProfile.h"
-#include "Materials/Material.h"
-#include "LocalVertexFactory.h"
+#include "RenderingThread.h"
+#include "RenderResource.h"
 #include "SceneManagement.h"
-#include "DynamicMeshBuilder.h"
-#include "EngineGlobals.h"
-#include "Engine/Engine.h"
 #include "StaticMeshResources.h"
 #include "UObject/ConstructorHelpers.h"
+#include "VertexFactory.h"
 
-#include "Utilities/AGX_MeshUtilities.h"
-#include "Constraints/AGX_BallConstraint.h"
-#include "Constraints/AGX_Constraint.h"
-#include "Constraints/AGX_ConstraintEnums.h"
-#include "Constraints/AGX_CylindricalConstraint.h"
-#include "Constraints/AGX_DistanceConstraint.h"
-#include "Constraints/AGX_HingeConstraint.h"
-#include "Constraints/AGX_LockConstraint.h"
-#include "Constraints/AGX_PrismaticConstraint.h"
-#include "Misc/EngineVersionComparison.h"
+// Standard library includes.
+#include <optional>
 
 /**
  * Holds vertex and index buffers for rendering.
@@ -141,34 +144,35 @@ public:
 		/// \todo Use inheritance instead of this branching below.
 		/// \todo IsA() should probably not be used if future constraints will derive these
 		/// spawnable constraints.
-		if (Component->GetOwner()->IsA(AAGX_BallConstraint::StaticClass()))
+		USceneComponent* Parent = Component->GetAttachParent();
+		if (Parent->IsA<UAGX_BallConstraintComponent>())
 		{
 			CreateBallConstraint(Component);
 		}
-		else if (Component->GetOwner()->IsA(AAGX_CylindricalConstraint::StaticClass()))
+		else if (Parent->IsA<UAGX_CylindricalConstraintComponent>())
 		{
 			CreateCylindricalConstraint(Component);
 		}
-		else if (Component->GetOwner()->IsA(AAGX_DistanceConstraint::StaticClass()))
+		else if (Parent->IsA<UAGX_DistanceConstraintComponent>())
 		{
 			/// \todo
 		}
-		else if (Component->GetOwner()->IsA(AAGX_HingeConstraint::StaticClass()))
+		else if (Parent->IsA<UAGX_HingeConstraintComponent>())
 		{
 			/// \todo
 		}
-		else if (Component->GetOwner()->IsA(AAGX_LockConstraint::StaticClass()))
+		else if (Parent->IsA<UAGX_LockConstraintComponent>())
 		{
 			/// \todo
 		}
-		else if (Component->GetOwner()->IsA(AAGX_PrismaticConstraint::StaticClass()))
+		else if (Parent->IsA<UAGX_PrismaticConstraintComponent>())
 		{
-			CreateCylindricalConstraint(
-				Component, 4); // Using low-res cylindrical for boxy look. \todo Make dedicated!
+			// Using low-res cylindrical for boxy look. \todo Make dedicated!
+			CreateCylindricalConstraint(Component, 4);
 		}
 
 		// Enqueue initialization of render resource
-		for (const TSharedPtr<FAGX_ConstraintIconGraphicsGeometry> Geometry : Geometries)
+		for (const TSharedPtr<FAGX_ConstraintIconGraphicsGeometry>& Geometry : Geometries)
 		{
 			ENQUEUE_RENDER_COMMAND(FAGX_ConstraintIconGraphicsVertexBuffersInit)
 			([Geometry = Geometry.Get()](FRHICommandListImmediate& RHICmdList) {
@@ -550,15 +554,15 @@ UAGX_ConstraintIconGraphicsComponent::UAGX_ConstraintIconGraphicsComponent(
 
 	bCastHiddenShadow = false;
 
-	if (AActor* Owner = GetOwner())
+	if (USceneComponent* Parent = GetAttachParent())
 	{
 		// Enabling the SceneComponents's white blob for constraint types with no visualization yet.
 		/// \todo Set bVisualizeComponent to false when these constraints' graphics are implemented
 		/// by in the proxy.
 #if WITH_EDITORONLY_DATA
-		bVisualizeComponent = Owner->IsA(AAGX_DistanceConstraint::StaticClass()) ||
-							  Owner->IsA(AAGX_HingeConstraint::StaticClass()) ||
-							  Owner->IsA(AAGX_LockConstraint::StaticClass());
+		bVisualizeComponent = Parent->IsA<UAGX_DistanceConstraintComponent>() ||
+							  Parent->IsA<UAGX_HingeConstraintComponent>() ||
+							  Parent->IsA<UAGX_LockConstraintComponent>();
 #endif
 	}
 

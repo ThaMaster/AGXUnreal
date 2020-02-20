@@ -96,7 +96,7 @@ public: // Constraint Creator
 	EAGX_ConstraintFrameSource AttachmentFrameSource;
 
 	/** Creates a new constraint using the current property values. */
-	class AAGX_Constraint* CreateConstraint() const;
+	class AAGX_ConstraintActor* CreateConstraint() const;
 
 public: // Constraint Browser
 };

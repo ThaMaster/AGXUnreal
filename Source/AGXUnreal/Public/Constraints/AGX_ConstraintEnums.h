@@ -53,6 +53,7 @@ UENUM(meta = (Bitflags))
 enum class EDofFlag : uint8
 {
 	DOF_FLAG_ALL = 0x3F UMETA(DisplayName = "All"),
+//	DOF_FLAG_NONE = 0 UMETA(DisplayName = "None"), /// \todo Consider adding this. When would it be used?
 	DOF_FLAG_TRANSLATIONAL_1 = 1 << 0 UMETA(DisplayName = "Translation1"),
 	DOF_FLAG_TRANSLATIONAL_2 = 1 << 1 UMETA(DisplayName = "Translation2"),
 	DOF_FLAG_TRANSLATIONAL_3 = 1 << 2 UMETA(DisplayName = "Translation3"),

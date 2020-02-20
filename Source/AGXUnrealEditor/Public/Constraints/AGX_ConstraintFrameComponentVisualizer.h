@@ -1,12 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
 #include "ComponentVisualizer.h"
 
-class AAGX_Constraint;
 class FPrimitiveDrawInterface;
 class FSceneView;
 class UActorComponent;

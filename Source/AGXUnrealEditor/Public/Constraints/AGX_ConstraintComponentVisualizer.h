@@ -1,12 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
+// AGX Unreal includes.
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
 #include "ConstraintComponentVisualizer.h"
 
-class AAGX_Constraint;
+class UAGX_ConstraintComponent;
 class FPrimitiveDrawInterface;
 class FSceneView;
 class UActorComponent;
@@ -31,8 +30,8 @@ public:
 	//~ End FComponentVisualizer Interface
 
 	static void DrawConstraint(
-		const AAGX_Constraint* Constraint, const FSceneView* View, FPrimitiveDrawInterface* PDI);
+		const UAGX_ConstraintComponent* Constraint, const FSceneView* View, FPrimitiveDrawInterface* PDI);
 	static void DrawConstraintHUD(
-		const AAGX_Constraint* Constraint, const FViewport* Viewport, const FSceneView* View,
+		const UAGX_ConstraintComponent* Constraint, const FViewport* Viewport, const FSceneView* View,
 		FCanvas* Canvas);
 };

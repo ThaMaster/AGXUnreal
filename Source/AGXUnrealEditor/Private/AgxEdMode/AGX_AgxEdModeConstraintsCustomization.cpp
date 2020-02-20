@@ -1,14 +1,21 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "AgxEdMode/AGX_AgxEdModeConstraintsCustomization.h"
 
+// AGXUnreal includes.
+#include "AgxEdMode/AGX_AgxEdModeConstraints.h"
+#include "Constraints/AGX_ConstraintActor.h"
+#include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_PropertyUtilities.h"
+
+// Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "IDetailPropertyRow.h"
-#include "UObject/MetaData.h"
+#include "Misc/Attribute.h"
+#include "Modules/ModuleManager.h"
 #include "SceneOutlinerModule.h"
 #include "SceneOutlinerPublicTypes.h"
+#include "UObject/MetaData.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Input/SComboBox.h"
@@ -16,12 +23,7 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SExpandableArea.h"
 #include "Widgets/Text/STextBlock.h"
-#include "Misc/Attribute.h"
 
-#include "AgxEdMode/AGX_AgxEdModeConstraints.h"
-#include "Constraints/AGX_Constraint.h"
-#include "Utilities/AGX_EditorUtilities.h"
-#include "Utilities/AGX_PropertyUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_AgxEdModeConstraintsCustomization"
 
@@ -34,10 +36,10 @@ FAGX_AgxEdModeConstraintsCustomization::FAGX_AgxEdModeConstraintsCustomization()
 {
 	// Find all spawnable constraint classes so that they can be presented by combo box.
 	FAGX_EditorUtilities::GetAllClassesOfType(
-		ConstraintClasses, AAGX_Constraint::StaticClass(),
+		ConstraintClasses, AAGX_ConstraintActor::StaticClass(),
 		/*bIncludeAbstract*/ false);
 
-	UClass* Class = StaticClass<AAGX_Constraint>();
+	UClass* Class = StaticClass<AAGX_ConstraintActor>();
 }
 
 void FAGX_AgxEdModeConstraintsCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
@@ -292,7 +294,7 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(
 
 	FActorFilterPredicate ActorFilter =
 		FActorFilterPredicate::CreateLambda([](const AActor* const Actor) {
-			return Actor->IsA(AAGX_Constraint::StaticClass()); // only show constraints
+			return Actor->IsA(AAGX_ConstraintActor::StaticClass()); // only show constraints
 		});
 
 	FCustomSceneOutlinerDeleteDelegate DeleteAction =

@@ -96,7 +96,7 @@ FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool Creat
 
 #if WITH_EDITOR
 
-void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(AAGX_Constraint* Owner)
+void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(UAGX_ConstraintComponent* Parent)
 {
 	AAGX_ConstraintFrameActor* RecentConstraintFrame =
 		Cast<AAGX_ConstraintFrameActor>(RecentFrameDefiningActor);
@@ -106,10 +106,14 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(AAGX_Constraint*
 	RecentFrameDefiningActor = FrameDefiningActor;
 
 	if (RecentConstraintFrame)
-		RecentConstraintFrame->RemoveConstraintUsage(Owner);
+	{
+		RecentConstraintFrame->RemoveConstraintUsage(Parent);
+	}
 
 	if (ConstraintFrame)
-		ConstraintFrame->AddConstraintUsage(Owner);
+	{
+		ConstraintFrame->AddConstraintUsage(Parent);
+	}
 
 	UE_LOG(
 		LogAGX, Log,
@@ -117,13 +121,15 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(AAGX_Constraint*
 		*GetNameSafe(FrameDefiningActor), *GetNameSafe(ConstraintFrame));
 }
 
-void FAGX_ConstraintBodyAttachment::OnDestroy(AAGX_Constraint* Owner)
+void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
 {
 	AAGX_ConstraintFrameActor* ConstraintFrame =
 		Cast<AAGX_ConstraintFrameActor>(FrameDefiningActor);
 
 	if (ConstraintFrame)
-		ConstraintFrame->RemoveConstraintUsage(Owner);
+	{
+		ConstraintFrame->RemoveConstraintUsage(Parent);
+	}
 }
 
 #endif

@@ -1,9 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 
+// AGXUnreal includes.
 #include "Utilities/AGX_EditorUtilities.h"
-#include "Constraints/AGX_Constraint.h"
+#include "Constraints/AGX_ConstraintActor.h"
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_AgxEdModeConstraints"
@@ -30,7 +30,7 @@ FText UAGX_AgxEdModeConstraints::GetTooltip() const
 	return LOCTEXT("Tooltip", "Contains tools to quickly create and manage AGX Constraints");
 }
 
-AAGX_Constraint* UAGX_AgxEdModeConstraints::CreateConstraint() const
+AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 {
 	if (!RigidBodyActor1.IsValid())
 	{
@@ -40,7 +40,7 @@ AAGX_Constraint* UAGX_AgxEdModeConstraints::CreateConstraint() const
 		return nullptr;
 	}
 
-	AAGX_Constraint* Constraint = FAGX_EditorUtilities::CreateConstraint(
+	AAGX_ConstraintActor* Constraint = FAGX_EditorUtilities::CreateConstraintActor(
 		ConstraintType, RigidBodyActor1.Get(), RigidBodyActor2.Get(),
 		/*Select*/ false, /*ShowNotification*/ true, /*InPlayingWorldIfAvailable*/ true);
 
@@ -126,11 +126,13 @@ AAGX_Constraint* UAGX_AgxEdModeConstraints::CreateConstraint() const
 			}
 		};
 
-		Constraint->BodyAttachment1.FrameDefiningActor = FrameActor1;
-		Constraint->BodyAttachment2.FrameDefiningActor = FrameActor2;
+		/// \todo Get the UAGX_ConstraintComponent out of the Actor.
+		UAGX_ConstraintComponent* ConstraintComponent = Constraint->GetConstraintComponent();
+		ConstraintComponent->BodyAttachment1.FrameDefiningActor = FrameActor1;
+		ConstraintComponent->BodyAttachment2.FrameDefiningActor = FrameActor2;
 
-		Constraint->BodyAttachment1.OnFrameDefiningActorChanged(Constraint);
-		Constraint->BodyAttachment2.OnFrameDefiningActorChanged(Constraint);
+		ConstraintComponent->BodyAttachment1.OnFrameDefiningActorChanged(ConstraintComponent);
+		ConstraintComponent->BodyAttachment2.OnFrameDefiningActorChanged(ConstraintComponent);
 
 		/// \todo If in-game, we need to create the constraint in a deferred way so that frame
 		/// actors are set before the constraint has been finished!

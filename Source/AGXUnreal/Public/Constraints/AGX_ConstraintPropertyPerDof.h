@@ -1,5 +1,9 @@
 #pragma once
 
+// AGXUnreal includes.
+#include "Constraints/AGX_ConstraintEnums.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 

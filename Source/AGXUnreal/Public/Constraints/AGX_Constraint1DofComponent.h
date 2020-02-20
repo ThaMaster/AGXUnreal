@@ -1,19 +1,23 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Constraints/AGX_Constraint.h"
+// AGXUnreal includes.
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
 #include "Constraints/Controllers/AGX_FrictionController.h"
 #include "Constraints/Controllers/AGX_LockController.h"
 #include "Constraints/Controllers/AGX_RangeController.h"
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
-#include "AGX_Constraint1DOF.generated.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
+#include "AGX_Constraint1DofComponent.generated.h"
 
 /**
  *
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract, meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API AAGX_Constraint1DOF : public AAGX_Constraint
+class AGXUNREAL_API UAGX_Constraint1DofComponent : public UAGX_ConstraintComponent
 {
 	GENERATED_BODY()
 
@@ -40,19 +44,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraint")
 	FAGX_ConstraintTargetSpeedController TargetSpeedController;
 
-	AAGX_Constraint1DOF();
+	UAGX_Constraint1DofComponent();
 
-	AAGX_Constraint1DOF(
+	UAGX_Constraint1DofComponent(
 		const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraintRotational,
 		bool bIsLockControllerEditable = true);
 
-	virtual ~AAGX_Constraint1DOF();
+	virtual ~UAGX_Constraint1DofComponent();
 
 	virtual void UpdateNativeProperties() override;
 
 protected:
 	virtual void CreateNativeImpl() override final;
-	virtual void AllocateNative() PURE_VIRTUAL(AAGX_Constraint1DOF::AllocateNative, );
+	virtual void AllocateNative() PURE_VIRTUAL(UAGX_Constraint1DofComponent::AllocateNative, );
 
 private:
 	class FConstraint1DOFBarrier* GetNativeBarrierCasted() const;

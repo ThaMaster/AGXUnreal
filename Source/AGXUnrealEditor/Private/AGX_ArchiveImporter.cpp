@@ -10,7 +10,6 @@
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Constraints/DistanceJointBarrier.h"
 #include "Constraints/LockJointBarrier.h"
-
 #include "CollisionGroups/AGX_CollisionGroupManager.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
@@ -18,12 +17,25 @@
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "AGX_LogCategory.h"
 
-#include "Constraints/AGX_HingeConstraint.h"
-#include "Constraints/AGX_PrismaticConstraint.h"
-#include "Constraints/AGX_BallConstraint.h"
-#include "Constraints/AGX_CylindricalConstraint.h"
-#include "Constraints/AGX_DistanceConstraint.h"
-#include "Constraints/AGX_LockConstraint.h"
+/// \todo Creating constraint actors for now, but will switch to creating
+/// components when we do import to Blueprint.
+
+#include "Constraints/AGX_ConstraintComponent.h"
+#include "Constraints/AGX_Constraint1DofComponent.h"
+#include "Constraints/AGX_Constraint2DofComponent.h"
+#include "Constraints/AGX_HingeConstraintActor.h"
+#include "Constraints/AGX_PrismaticConstraintActor.h"
+#include "Constraints/AGX_BallConstraintActor.h"
+#include "Constraints/AGX_CylindricalConstraintActor.h"
+#include "Constraints/AGX_DistanceConstraintActor.h"
+#include "Constraints/AGX_LockConstraintActor.h"
+#include "Constraints/AGX_ConstraintBodyAttachment.h"
+#include "Constraints/Controllers/AGX_ElectricMotorController.h"
+#include "Constraints/Controllers/AGX_FrictionController.h"
+#include "Constraints/Controllers/AGX_LockController.h"
+#include "Constraints/Controllers/AGX_RangeController.h"
+#include "Constraints/Controllers/AGX_ScrewController.h"
+#include "Constraints/Controllers/AGX_TargetSpeedController.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
 // Unreal Engine includes.
@@ -171,33 +183,33 @@ namespace
 
 		virtual void InstantiateHinge(const FHingeBarrier& Hinge) override
 		{
-			CreateConstraint1DOF(Hinge, AAGX_HingeConstraint::StaticClass());
+			CreateConstraint1Dof(Hinge, AAGX_HingeConstraintActor::StaticClass());
 		}
 
 		virtual void InstantiatePrismatic(const FPrismaticBarrier& Prismatic) override
 		{
-			CreateConstraint1DOF(Prismatic, AAGX_PrismaticConstraint::StaticClass());
+			CreateConstraint1Dof(Prismatic, AAGX_PrismaticConstraintActor::StaticClass());
 		}
 
 		virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) override
 		{
-			CreateConstraint<AAGX_BallConstraint>(BallJoint, AAGX_BallConstraint::StaticClass());
+			CreateConstraint<AAGX_BallConstraintActor>(BallJoint, AAGX_BallConstraintActor::StaticClass());
 		}
 
 		virtual void InstantiateCylindricalJoint(
 			const FCylindricalJointBarrier& CylindricalJoint) override
 		{
-			CreateConstraint2DOF(CylindricalJoint, AAGX_CylindricalConstraint::StaticClass());
+			CreateConstraint2Dof(CylindricalJoint, AAGX_CylindricalConstraintActor::StaticClass());
 		}
 
 		virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& DistanceJoint) override
 		{
-			CreateConstraint1DOF(DistanceJoint, AAGX_DistanceConstraint::StaticClass());
+			CreateConstraint1Dof(DistanceJoint, AAGX_DistanceConstraintActor::StaticClass());
 		}
 
 		virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) override
 		{
-			CreateConstraint<AAGX_LockConstraint>(LockJoint, AAGX_LockConstraint::StaticClass());
+			CreateConstraint<AAGX_LockConstraintActor>(LockJoint, AAGX_LockConstraintActor::StaticClass());
 		}
 
 		virtual void DisabledCollisionGroups(
@@ -234,50 +246,53 @@ namespace
 		}
 
 	private:
-		void CreateConstraint1DOF(const FConstraint1DOFBarrier& Barrier, UClass* ConstraintType)
+		void CreateConstraint1Dof(const FConstraint1DOFBarrier& Barrier, UClass* ConstraintType)
 		{
-			AAGX_Constraint1DOF* Constraint =
-				CreateConstraint<AAGX_Constraint1DOF>(Barrier, ConstraintType);
+			AAGX_Constraint1DofActor* Constraint =
+				CreateConstraint<AAGX_Constraint1DofActor>(Barrier, ConstraintType);
 			if (Constraint == nullptr)
 			{
 				// No need to log here, done by CreateConstraint.
 				return;
 			}
 
-			StoreElectricMotorController(Barrier, Constraint->ElectricMotorController);
-			StoreFrictionController(Barrier, Constraint->FrictionController);
-			StoreLockController(Barrier, Constraint->LockController);
-			StoreRangeController(Barrier, Constraint->RangeController);
-			StoreTargetSpeedController(Barrier, Constraint->TargetSpeedController);
+			UAGX_Constraint1DofComponent* Component = Constraint->Get1DofComponent();
+			StoreElectricMotorController(Barrier, Component->ElectricMotorController);
+			StoreFrictionController(Barrier, Component->FrictionController);
+			StoreLockController(Barrier, Component->LockController);
+			StoreRangeController(Barrier, Component->RangeController);
+			StoreTargetSpeedController(Barrier, Component->TargetSpeedController);
 		}
 
-		void CreateConstraint2DOF(const FConstraint2DOFBarrier& Barrier, UClass* ConstraintType)
+		void CreateConstraint2Dof(const FConstraint2DOFBarrier& Barrier, UClass* ConstraintType)
 		{
-			AAGX_Constraint2DOF* Constraint =
-				CreateConstraint<AAGX_Constraint2DOF>(Barrier, ConstraintType);
+			AAGX_Constraint2DofActor* Constraint =
+				CreateConstraint<AAGX_Constraint2DofActor>(Barrier, ConstraintType);
 			if (Constraint == nullptr)
 			{
 				// No need to log here, done by CreateConstraint.
 				return;
 			}
+
+			UAGX_Constraint2DofComponent* Component = Constraint->Get2DofComponent();
 
 			const EAGX_Constraint2DOFFreeDOF First = EAGX_Constraint2DOFFreeDOF::FIRST;
 			const EAGX_Constraint2DOFFreeDOF Second = EAGX_Constraint2DOFFreeDOF::SECOND;
 
-			StoreElectricMotorController(Barrier, Constraint->ElectricMotorController1, First);
-			StoreElectricMotorController(Barrier, Constraint->ElectricMotorController2, Second);
+			StoreElectricMotorController(Barrier, Component->ElectricMotorController1, First);
+			StoreElectricMotorController(Barrier, Component->ElectricMotorController2, Second);
 
-			StoreFrictionController(Barrier, Constraint->FrictionController1, First);
-			StoreFrictionController(Barrier, Constraint->FrictionController2, Second);
+			StoreFrictionController(Barrier, Component->FrictionController1, First);
+			StoreFrictionController(Barrier, Component->FrictionController2, Second);
 
-			StoreLockController(Barrier, Constraint->LockController1, First);
-			StoreLockController(Barrier, Constraint->LockController2, Second);
+			StoreLockController(Barrier, Component->LockController1, First);
+			StoreLockController(Barrier, Component->LockController2, Second);
 
-			StoreRangeController(Barrier, Constraint->RangeController1, First);
-			StoreRangeController(Barrier, Constraint->RangeController2, Second);
+			StoreRangeController(Barrier, Component->RangeController1, First);
+			StoreRangeController(Barrier, Component->RangeController2, Second);
 
-			StoreTargetSpeedController(Barrier, Constraint->TargetSpeedController1, First);
-			StoreTargetSpeedController(Barrier, Constraint->TargetSpeedController2, Second);
+			StoreTargetSpeedController(Barrier, Component->TargetSpeedController1, First);
+			StoreTargetSpeedController(Barrier, Component->TargetSpeedController2, Second);
 		}
 
 		template <typename ConstraintType>
@@ -294,12 +309,12 @@ namespace
 				return nullptr;
 			}
 
-			ConstraintType* Constraint = FAGX_EditorUtilities::CreateConstraint<ConstraintType>(
+			ConstraintType* Constraint = FAGX_EditorUtilities::CreateConstraintActor<ConstraintType>(
 				Actors.first, Actors.second,
 				/*bSelect*/ false, /*bShwNotification*/ false, /*bInPlayingWorld*/ false,
 				ConstraintClass);
 
-			StoreFrames(Barrier, *Constraint);
+			StoreFrames(Barrier, *Constraint->GetConstraintComponent());
 
 			/// \todo Is there a correct transform here? Does it matter?
 			Constraint->SetActorTransform(Actors.first->GetActorTransform());
@@ -347,7 +362,7 @@ namespace
 			Attachment.LocalFrameRotation = Barrier.GetLocalRotation(BodyIndex);
 		}
 
-		void StoreFrames(const FConstraintBarrier& Barrier, AAGX_Constraint& Constraint)
+		void StoreFrames(const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Constraint)
 		{
 			StoreFrame(Barrier, Constraint.BodyAttachment1, 0);
 			StoreFrame(Barrier, Constraint.BodyAttachment2, 1);

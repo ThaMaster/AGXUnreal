@@ -1,7 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Constraints/AGX_ConstraintBodyAttachmentCustomization.h"
 
+// AGXUnreal includes.
+#include "Constraints/AGX_ConstraintComponent.h"
+#include "Constraints/AGX_ConstraintFrameActor.h"
+#include "Constraints/AGX_ConstraintBodyAttachment.h"
+#include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_PropertyUtilities.h"
+#include "Utilities/AGX_SlateUtilities.h"
+
+// Unreal Engine includes
 #include "DetailCategoryBuilder.h"
 #include "DetailWidgetRow.h"
 #include "DetailLayoutBuilder.h"
@@ -9,11 +16,6 @@
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
-#include "Constraints/AGX_Constraint.h"
-#include "Constraints/AGX_ConstraintFrameActor.h"
-#include "Utilities/AGX_EditorUtilities.h"
-#include "Utilities/AGX_PropertyUtilities.h"
-#include "Utilities/AGX_SlateUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintBodyAttachmentCustomization"
 
@@ -149,7 +151,7 @@ bool FAGX_ConstraintBodyAttachmentCustomization::HasFrameDefiningActor() const
 	return FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty);
 }
 
-FString GenerateFrameDefiningActorName(const AAGX_Constraint* Constraint, const AActor* RigidBody)
+FString GenerateFrameDefiningActorName(const UAGX_ConstraintComponent* Constraint, const UAGX_RigidBodyComponent* RigidBody)
 {
 	check(Constraint);
 	return "Constraint Frame Actor for " + Constraint->GetName();
@@ -162,7 +164,7 @@ void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor(
 	if (FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty))
 		return; // already exists
 
-	AAGX_Constraint* Constraint = Cast<AAGX_Constraint>(
+	UAGX_ConstraintComponent* Constraint = Cast<UAGX_ConstraintComponent>(
 		FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyAttachmentProperty));
 
 	check(Constraint);

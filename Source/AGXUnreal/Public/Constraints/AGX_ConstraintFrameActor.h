@@ -1,10 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
+// AGXUnreal includes.
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
 #include "AGX_ConstraintFrameActor.generated.h"
+
+class UAGX_ConstraintComponent;
+class UAGX_ConstraintFrameComponent;
 
 /**
  * Actor helper that can be used to define the location and rotation of
@@ -35,7 +40,7 @@ public:
 
 private:
 	UPROPERTY()
-	class UAGX_ConstraintFrameComponent* ConstraintFrameComponent;
+	UAGX_ConstraintFrameComponent* ConstraintFrameComponent;
 
 	/**
 	 * The constraint(s) that are referencing this frame.
@@ -43,12 +48,12 @@ private:
 	 * Used for convenience only, to be able to quickly access the constraint(s).
 	 */
 	UPROPERTY(VisibleAnywhere, Category = "AGX Constraint Frame Actor", Transient)
-	TArray<class AAGX_Constraint*> UsedByConstraints;
+	TArray<UAGX_ConstraintComponent*> UsedByConstraints;
 
 public:
-	void AddConstraintUsage(AAGX_Constraint* Constraint);
+	void AddConstraintUsage(UAGX_ConstraintComponent* Constraint);
 
-	void RemoveConstraintUsage(AAGX_Constraint* Constraint);
+	void RemoveConstraintUsage(UAGX_ConstraintComponent* Constraint);
 
-	const TArray<class AAGX_Constraint*>& GetConstraintUsage() const;
+	const TArray<UAGX_ConstraintComponent*>& GetConstraintUsage() const;
 };

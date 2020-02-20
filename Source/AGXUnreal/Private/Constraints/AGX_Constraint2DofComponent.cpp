@@ -1,28 +1,36 @@
-#include "Constraints/AGX_Constraint2DOF.h"
+#include "Constraints/AGX_Constraint2DofComponent.h"
 
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "Constraints/Constraint2DOFBarrier.h"
 
-AAGX_Constraint2DOF::AAGX_Constraint2DOF()
+UAGX_Constraint2DofComponent::UAGX_Constraint2DofComponent()
 {
 }
 
-AAGX_Constraint2DOF::AAGX_Constraint2DOF(
+UAGX_Constraint2DofComponent::UAGX_Constraint2DofComponent(
 	const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraint1Rotational,
 	bool bIsSecondaryConstraint2Rotational)
-	: AAGX_Constraint(LockedDofsOrdered)
+	: UAGX_ConstraintComponent(LockedDofsOrdered)
+	, ElectricMotorController1(bIsSecondaryConstraint1Rotational)
+	, ElectricMotorController2(bIsSecondaryConstraint2Rotational)
+	, FrictionController1(bIsSecondaryConstraint1Rotational)
+	, FrictionController2(bIsSecondaryConstraint2Rotational)
+	, LockController1(bIsSecondaryConstraint1Rotational)
+	, LockController2(bIsSecondaryConstraint2Rotational)
 	, RangeController1(bIsSecondaryConstraint1Rotational)
 	, RangeController2(bIsSecondaryConstraint2Rotational)
+	, TargetSpeedController1(bIsSecondaryConstraint1Rotational)
+	, TargetSpeedController2(bIsSecondaryConstraint2Rotational)
 {
 }
 
-AAGX_Constraint2DOF::~AAGX_Constraint2DOF()
+UAGX_Constraint2DofComponent::~UAGX_Constraint2DofComponent()
 {
 }
 
-void AAGX_Constraint2DOF::UpdateNativeProperties()
+void UAGX_Constraint2DofComponent::UpdateNativeProperties()
 {
 	if (!HasNative())
 	{
@@ -48,7 +56,7 @@ void AAGX_Constraint2DOF::UpdateNativeProperties()
 	TargetSpeedController2.UpdateNativeProperties();
 }
 
-FConstraint2DOFBarrier* AAGX_Constraint2DOF::GetNativeBarrierCasted() const
+FConstraint2DOFBarrier* UAGX_Constraint2DofComponent::GetNativeBarrierCasted() const
 {
 	if (HasNative())
 		return static_cast<FConstraint2DOFBarrier*>(NativeBarrier.Get());

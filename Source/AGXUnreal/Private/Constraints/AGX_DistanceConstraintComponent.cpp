@@ -1,14 +1,13 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+#include "Constraints/AGX_DistanceConstraintComponent.h"
 
-#include "Constraints/AGX_DistanceConstraint.h"
-
+// AGXUnreal includes.
 #include "Constraints/DistanceJointBarrier.h"
 #include "AGX_LogCategory.h"
 
 class FRigidBodyBarrier;
 
-AAGX_DistanceConstraint::AAGX_DistanceConstraint()
-	: AAGX_Constraint1DOF(
+UAGX_DistanceConstraintComponent::UAGX_DistanceConstraintComponent()
+	: UAGX_Constraint1DofComponent(
 		  TArray<EDofFlag> {
 			  // All common DOFs are free.
 		  },
@@ -20,11 +19,11 @@ AAGX_DistanceConstraint::AAGX_DistanceConstraint()
 	BodyAttachment2.FrameDefiningActor = nullptr;
 }
 
-AAGX_DistanceConstraint::~AAGX_DistanceConstraint()
+UAGX_DistanceConstraintComponent::~UAGX_DistanceConstraintComponent()
 {
 }
 
-void AAGX_DistanceConstraint::AllocateNative()
+void UAGX_DistanceConstraintComponent::AllocateNative()
 {
 	NativeBarrier.Reset(new FDistanceJointBarrier());
 

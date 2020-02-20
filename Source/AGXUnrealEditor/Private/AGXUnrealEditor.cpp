@@ -32,8 +32,8 @@
 #include "AGX_Simulation.h"
 #include "Terrain/AGX_Terrain.h"
 #include "AGX_TopMenu.h"
-#include "Constraints/AGX_BallConstraint.h"
-#include "Constraints/AGX_Constraint.h"
+#include "Constraints/AGX_BallConstraintActor.h"
+#include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
 #include "Constraints/AGX_ConstraintBodyAttachmentCustomization.h"
 #include "Constraints/AGX_ConstraintCustomization.h"
@@ -42,11 +42,11 @@
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintFrameComponent.h"
 #include "Constraints/AGX_ConstraintFrameComponentVisualizer.h"
-#include "Constraints/AGX_CylindricalConstraint.h"
-#include "Constraints/AGX_DistanceConstraint.h"
-#include "Constraints/AGX_HingeConstraint.h"
-#include "Constraints/AGX_LockConstraint.h"
-#include "Constraints/AGX_PrismaticConstraint.h"
+#include "Constraints/AGX_CylindricalConstraintActor.h"
+#include "Constraints/AGX_DistanceConstraintActor.h"
+#include "Constraints/AGX_HingeConstraintActor.h"
+#include "Constraints/AGX_LockConstraintActor.h"
+#include "Constraints/AGX_PrismaticConstraintActor.h"
 #include "Materials/AGX_ContactMaterialAssetTypeActions.h"
 #include "Materials/AGX_MaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
@@ -175,8 +175,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
 
+	/// \todo I don't know if this should be AAGX_ConstraintActor or
+	/// UAGX_ConstraintComponent. Should we have one for each? Which should be
+	/// the new one and what should it contain/do?
 	PropertyModule.RegisterCustomClassLayout(
-		AAGX_Constraint::StaticClass()->GetFName(),
+		AAGX_ConstraintActor::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_ConstraintCustomization::MakeInstance));
 
@@ -219,7 +222,9 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(AAGX_Constraint::StaticClass()->GetFName());
+	/// \todo Not sure if this should be AAGX_ConstraintActor,
+	/// UAGX_ConstraintComponent, or both.
+	PropertyModule.UnregisterCustomClassLayout(AAGX_ConstraintActor::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_AgxEdModeConstraints::StaticClass()->GetFName());
@@ -305,12 +310,12 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 
 	RegisterPlaceableItem(AAGX_MaterialManager::StaticClass());
 	RegisterPlaceableItem(AAGX_ConstraintFrameActor::StaticClass());
-	RegisterPlaceableItem(AAGX_BallConstraint::StaticClass());
-	RegisterPlaceableItem(AAGX_CylindricalConstraint::StaticClass());
-	RegisterPlaceableItem(AAGX_DistanceConstraint::StaticClass());
-	RegisterPlaceableItem(AAGX_HingeConstraint::StaticClass());
-	RegisterPlaceableItem(AAGX_LockConstraint::StaticClass());
-	RegisterPlaceableItem(AAGX_PrismaticConstraint::StaticClass());
+	RegisterPlaceableItem(AAGX_BallConstraintActor::StaticClass());
+	RegisterPlaceableItem(AAGX_CylindricalConstraintActor::StaticClass());
+	RegisterPlaceableItem(AAGX_DistanceConstraintActor::StaticClass());
+	RegisterPlaceableItem(AAGX_HingeConstraintActor::StaticClass());
+	RegisterPlaceableItem(AAGX_LockConstraintActor::StaticClass());
+	RegisterPlaceableItem(AAGX_PrismaticConstraintActor::StaticClass());
 	RegisterPlaceableItem(AAGX_Terrain::StaticClass());
 	RegisterPlaceableItem(AAGX_CollisionGroupManager::StaticClass());
 }
