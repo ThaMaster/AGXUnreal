@@ -92,7 +92,12 @@ public:
 	void Deinitialize() override;
 
 private:
+	void EnsureStepperCreated();
+
+private:
 	FSimulationBarrier NativeBarrier;
+
+	bool StepperCreated = false;
 
 	/// Time that we couldn't step because DeltaTime was not an even multiple
 	/// of the AGX Dynamics step size. That fraction of a time step is carried
