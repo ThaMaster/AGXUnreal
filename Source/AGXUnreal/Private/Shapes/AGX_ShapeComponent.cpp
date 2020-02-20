@@ -1,8 +1,11 @@
 #include "Shapes/AGX_ShapeComponent.h"
 
 #include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
+#include "AGX_Simulation.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Sets default values for this component's properties
@@ -47,11 +50,12 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	if (!HasNative())
 		return;
 
+	GetNative()->SetName(GetName());
+
 	if (PhysicalMaterial)
 	{
-		UAGX_ShapeMaterialInstance* MaterialInstance =
-			static_cast<UAGX_ShapeMaterialInstance*>(
-				PhysicalMaterial->GetOrCreateInstance(GetWorld()));
+		UAGX_ShapeMaterialInstance* MaterialInstance = static_cast<UAGX_ShapeMaterialInstance*>(
+			PhysicalMaterial->GetOrCreateInstance(GetWorld()));
 
 		check(MaterialInstance);
 
@@ -68,7 +72,8 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 			PhysicalMaterial = MaterialInstance;
 		}
 
-		FShapeMaterialBarrier* MaterialBarrier = MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
+		FShapeMaterialBarrier* MaterialBarrier =
+			MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
 		check(MaterialBarrier);
 
 		UE_LOG(
@@ -138,12 +143,18 @@ void UAGX_ShapeComponent::PostInitProperties()
 
 #endif
 
-// Called when the game starts
 void UAGX_ShapeComponent::BeginPlay()
 {
 	UE_LOG(LogAGX, Log, TEXT("BeginPlay for ShapeComponent"));
 	Super::BeginPlay();
 	GetOrCreateNative();
+	UAGX_RigidBodyComponent* RigidBody =
+		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*this);
+	if (RigidBody == nullptr)
+	{
+		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+		Simulation->AddShape(this);
+	}
 	UpdateVisualMesh();
 }
 
@@ -154,13 +165,13 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 	ReleaseNative();
 }
 
-void UAGX_ShapeComponent::AddCollisionGroup(const FName & GroupName)
+void UAGX_ShapeComponent::AddCollisionGroup(const FName& GroupName)
 {
 	if (!GroupName.IsNone())
 		CollisionGroups.AddUnique(GroupName);
 }
 
-void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName & GroupName)
+void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 {
 	if (!GroupName.IsNone())
 	{

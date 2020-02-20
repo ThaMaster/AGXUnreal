@@ -40,6 +40,9 @@ public:
 	FQuat GetLocalRotation() const;
 	std::tuple<FVector, FQuat> GetLocalPositionAndRotation() const;
 
+	void SetName(const FString& Name);
+	FString GetName() const;
+
 	void SetMaterial(const FShapeMaterialBarrier& Material);
 	/// \todo Should GetMaterial() create a new FShapeMaterialBarrier, or get an existing somehow? If it
 	/// creates a new FShapeMaterialBarrier we should implement comparison operators etc since multiple

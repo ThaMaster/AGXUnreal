@@ -9,6 +9,7 @@ struct FSimulationRef;
 class FRigidBodyBarrier;
 class FConstraintBarrier;
 class FContactMaterialBarrier;
+class FShapeBarrier;
 class FShapeMaterialBarrier;
 class FTerrainBarrier;
 
@@ -19,6 +20,7 @@ public:
 	~FSimulationBarrier();
 
 	void AddRigidBody(FRigidBodyBarrier* Body);
+	void AddShape(FShapeBarrier* Shape);
 	void AddConstraint(FConstraintBarrier* Constraint);
 
 	void AddShapeMaterial(FShapeMaterialBarrier* Material);

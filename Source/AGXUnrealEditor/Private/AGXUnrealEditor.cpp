@@ -32,6 +32,7 @@
 #include "AGX_Simulation.h"
 #include "Terrain/AGX_Terrain.h"
 #include "AGX_TopMenu.h"
+#include "AGX_RigidBodyActor.h"
 #include "Constraints/AGX_BallConstraint.h"
 #include "Constraints/AGX_Constraint.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
@@ -313,6 +314,7 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 	RegisterPlaceableItem(AAGX_PrismaticConstraint::StaticClass());
 	RegisterPlaceableItem(AAGX_Terrain::StaticClass());
 	RegisterPlaceableItem(AAGX_CollisionGroupManager::StaticClass());
+	RegisterPlaceableItem(AAGX_RigidBodyActor::StaticClass());
 }
 
 void FAGXUnrealEditorModule::UnregisterPlacementCategory()

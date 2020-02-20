@@ -36,6 +36,11 @@ public:
 	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 
+	UPROPERTY(
+		EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics",
+		meta = (Tooptip = "Write transformations from AGX Dynamics to the Actor's Root Component."))
+	uint8 bTransformRootComponent : 1;
+
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FRigidBodyBarrier* GetOrCreateNative();
 
@@ -49,9 +54,10 @@ public:
 	 * Should be called whenever properties (excluding transform and shapes) need to be pushed
 	 * onto the native in runtime.
 	 */
-	void UpdateNativeProperties();
+	void WritePropertiesToNative();
 
-	static UAGX_RigidBodyComponent* GetFromActor(const AActor* Actor);
+	static TArray<UAGX_RigidBodyComponent*> GetFromActor(const AActor* Actor);
+	static UAGX_RigidBodyComponent* GetFirstFromActor(const AActor* Actor);
 
 public:
 	virtual void TickComponent(
@@ -68,9 +74,11 @@ private:
 	// Set native's MotionControl and ensure Unreal has corresponding mobility.
 	void InitializeMotionControl();
 
-	void UpdateActorTransformsFromNative();
-	void UpdateNativeTransformsFromActor();
+	void ReadTransformFromNative();
+	void WriteTransformToNative();
 
 private:
+	// The AGX Dynamics object only exists while simulating. Initialized in
+	// BeginPlay and released in EndPlay.
 	FRigidBodyBarrier NativeBarrier;
 };

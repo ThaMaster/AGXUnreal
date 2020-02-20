@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -10,8 +8,13 @@
 #include "AGX_Simulation.generated.h"
 
 class UAGX_RigidBodyComponent;
+class UAGX_ShapeComponent;
 class UAGX_MaterialBase;
 class AAGX_Terrain;
+
+class AActor;
+class UActorComponent;
+class UWorld;
 
 /**
  * Manages an AGX simulation instance.
@@ -66,6 +69,14 @@ public:
 	int16 RemoteDebuggingPort;
 
 	void AddRigidBody(UAGX_RigidBodyComponent* Body);
+
+	/**
+	 * Add a stand-alone shape to the simulation.
+	 *
+	 * Should not be called with Shapes that are part of a RigidBody, the body
+	 * is reponsible for adding its own shapes.
+	 */
+	void AddShape(UAGX_ShapeComponent* Shape);
 	void AddTerrain(AAGX_Terrain* Terrain);
 
 	void SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2);
@@ -79,6 +90,8 @@ public:
 	const FSimulationBarrier* GetNative() const;
 
 	void Step(float DeltaTime);
+
+	static UAGX_Simulation* GetFrom(const UActorComponent* Component);
 
 	static UAGX_Simulation* GetFrom(const AActor* Actor);
 

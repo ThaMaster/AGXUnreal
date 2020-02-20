@@ -1,20 +1,49 @@
 #include "AGX_Simulation.h"
+
+// AGXUnreal includes.
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Stepper.h"
-#include "Terrain/AGX_Terrain.h"
 #include "AGX_LogCategory.h"
+#include "Shapes/AGX_ShapeComponent.h"
+#include "Terrain/AGX_Terrain.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
+// Unreal Engine includes.
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 
 void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
 {
+	check(Body != nullptr);
 	EnsureStepperCreated();
 	NativeBarrier.AddRigidBody(Body->GetNative());
 }
 
+void UAGX_Simulation::AddShape(UAGX_ShapeComponent* Shape)
+{
+	/// \note It's not entirely clear that we want to allow the user to create
+	/// Shapes that aren't part of a body. However, we have no obvious way to
+	/// prevent it, so allowing it for now. Remove this member function if it
+	/// causes problems.
+
+	check(Shape != nullptr);
+	UAGX_RigidBodyComponent* OwningBody =
+		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*Shape);
+	if (OwningBody != nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Shape '%s' is owned by RigidBody '%s'. It should not be directly added to the "
+				 "simulation."),
+			*Shape->GetName(), *OwningBody->GetName());
+		return;
+	}
+	NativeBarrier.AddShape(Shape->GetNative());
+}
+
 void UAGX_Simulation::AddTerrain(AAGX_Terrain* Terrain)
 {
+	check(Terrain != nullptr);
 	EnsureStepperCreated();
 	NativeBarrier.AddTerrain(Terrain->GetNative());
 }
@@ -98,10 +127,22 @@ void UAGX_Simulation::Step(float DeltaTime)
 	LeftoverTime = DeltaTime;
 }
 
+UAGX_Simulation* UAGX_Simulation::GetFrom(const UActorComponent* Component)
+{
+	if (!Component)
+	{
+		return nullptr;
+	}
+
+	return GetFrom(Component->GetOwner());
+}
+
 UAGX_Simulation* UAGX_Simulation::GetFrom(const AActor* Actor)
 {
 	if (!Actor)
+	{
 		return nullptr;
+	}
 
 	UGameInstance* GameInstance = Actor->GetGameInstance();
 	check(GameInstance);

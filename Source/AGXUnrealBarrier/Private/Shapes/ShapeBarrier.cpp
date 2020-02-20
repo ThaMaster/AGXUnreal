@@ -93,6 +93,18 @@ FQuat FShapeBarrier::GetLocalRotation() const
 	return std::get<1>(GetLocalPositionAndRotation());
 }
 
+void FShapeBarrier::SetName(const FString& Name)
+{
+	check(HasNative());
+	NativeRef->NativeGeometry->setName(Convert(Name));
+}
+
+FString FShapeBarrier::GetName() const
+{
+	check(HasNative());
+	return Convert(NativeRef->NativeGeometry->getName());
+}
+
 void FShapeBarrier::SetMaterial(const FShapeMaterialBarrier& Material)
 {
 	check(HasNative());
