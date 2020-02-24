@@ -1,7 +1,5 @@
 #pragma once
 
-// AGXUnreal includes.
-
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Engine/EngineTypes.h"
@@ -114,6 +112,15 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * AAGX_ConstraintFrameActor actor types).
 	 */
 	void OnFrameDefiningActorChanged(UAGX_ConstraintComponent* Parent);
+
+	/**
+	 * Should be called whenever the RigidBodyReference is changed.
+	 *
+	 * FAGX_ConstraintBodyAttachment doesn't inherit from anything, so it cannot
+	 * have virtual functions for property changed callbacks. Instead the owning
+	 * UAGX_ConstraintComponent must listen for the events and call here.
+	 */
+	void OnRigidBodyReferenceChanged();
 
 	void OnDestroy(UAGX_ConstraintComponent* Parent);
 #endif
