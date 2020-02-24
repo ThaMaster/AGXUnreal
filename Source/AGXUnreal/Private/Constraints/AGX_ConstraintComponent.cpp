@@ -136,12 +136,20 @@ bool UAGX_ConstraintComponent::HasNative() const
 
 bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance) const
 {
+#if AGX_UNREAL_RIGID_BODY_COMPONENT
+	if (BodyAttachment1.GetRigidBodyComponent() == nullptr ||
+		BodyAttachment2.GetRigidBodyComponent() == nullptr)
+	{
+		return false;
+	}
+#else
 	if (!BodyAttachment1.RigidBodyActor || !BodyAttachment2.RigidBodyActor)
 	{
 		return false;
 	}
+#endif
 
-	FVector Location1 = BodyAttachment1.GetGlobalFrameLocation();
+		FVector Location1 = BodyAttachment1.GetGlobalFrameLocation();
 	FQuat Rotation1 = BodyAttachment1.GetGlobalFrameRotation();
 
 	FVector Location2 = BodyAttachment2.GetGlobalFrameLocation();

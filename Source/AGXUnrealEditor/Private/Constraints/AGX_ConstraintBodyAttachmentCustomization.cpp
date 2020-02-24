@@ -1,6 +1,7 @@
 #include "Constraints/AGX_ConstraintBodyAttachmentCustomization.h"
 
 // AGXUnreal includes.
+#include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
@@ -16,7 +17,6 @@
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
-
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintBodyAttachmentCustomization"
 
 TSharedRef<IPropertyTypeCustomization> FAGX_ConstraintBodyAttachmentCustomization::MakeInstance()
@@ -30,8 +30,13 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeHeader(
 {
 	BodyAttachmentProperty = StructPropertyHandle;
 
+#if AGX_UNREAL_RIGID_BODY_COMPONENT
+	RigidBodyProperty = StructPropertyHandle->GetChildHandle(
+		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, RigidBodyComponent));
+#else
 	RigidBodyProperty = StructPropertyHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, RigidBodyActor));
+#endif
 
 	// Use default visualization in the name column (left side).
 	HeaderRow.NameContent()[StructPropertyHandle->CreatePropertyNameWidget()];
@@ -75,7 +80,11 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 			{
 				TAttribute<EVisibility> IsVisibleDelegate = TAttribute<EVisibility>::Create(
 					TAttribute<EVisibility>::FGetter::CreateLambda([this] {
+#if AGX_UNREAL_RIGID_BODY_COMPONENT
+						return HasRigidBodyComponent() ? EVisibility::Visible : EVisibility::Collapsed;
+#else
 						return HasRigidBodyActor() ? EVisibility::Visible : EVisibility::Collapsed;
+#endif
 					}));
 
 				DefaultPropertyRow.Visibility(IsVisibleDelegate);
@@ -131,6 +140,14 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 
 FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 {
+#if AGX_UNREAL_RIGID_BODY_COMPONENT
+	UObject* PropertyValue = FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty);
+	FComponentReference* ComponentReference = Cast<FComponentReference>(PropertyValue);
+	USceneComponent* SceneComponent = ComponentReference->GetComponent(nullptr);
+	UAGX_RigidBodyComponent* RigidBodyComponent = Cast<UAGX_RigidBodyComponent>(SceneComponent);
+	FString RigidBodyName = RigidBodyComponent->GetName();
+	return FText::FromString(TEXT("(") + RigidBodyName + TEXT(")"));
+#else
 	FString RigidBodyName;
 	if (const AActor* RigidBody =
 			Cast<AActor>(FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty)))
@@ -139,19 +156,32 @@ FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 	}
 
 	return FText::FromString(RigidBodyName);
+#endif
 }
 
+#if AGX_UNREAL_RIGID_BODY_COMPONENT
+bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBodyComponent() const
+{
+	/// \todo This may be the FComponentReference itself. Perhaps we need to
+	/// reach into it and check if the reference is pointing to something.
+	/// \todo Perhaps this whole GetObjectFromHandle setup only works with
+	/// raw pointers and not a struct/class like FComponentReference.
+	return FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty) != nullptr;
+}
+#else
 bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBodyActor() const
 {
 	return FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty);
 }
+#endif
 
 bool FAGX_ConstraintBodyAttachmentCustomization::HasFrameDefiningActor() const
 {
 	return FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty);
 }
 
-FString GenerateFrameDefiningActorName(const UAGX_ConstraintComponent* Constraint, const UAGX_RigidBodyComponent* RigidBody)
+FString GenerateFrameDefiningActorName(
+	const UAGX_ConstraintComponent* Constraint, const UAGX_RigidBodyComponent* RigidBody)
 {
 	check(Constraint);
 	return "Constraint Frame Actor for " + Constraint->GetName();
@@ -162,26 +192,33 @@ void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor(
 	check(BodyAttachmentProperty);
 
 	if (FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty))
-		return; // already exists
+	{
+		return; // Already exists.
+	}
 
 	UAGX_ConstraintComponent* Constraint = Cast<UAGX_ConstraintComponent>(
 		FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyAttachmentProperty));
 
 	check(Constraint);
 
-	AActor* RigidBody =
+#if AGX_UNREAL_RIGID_BODY_COMPONENT
+	/// \todo How do we get from the BodyAttachmentProperty to the Actor that owns it?
+	AActor* ParentActor = nullptr;
+#else
+	AActor* ParentActor =
 		Cast<AActor>(FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty)); // optional
+#endif
 
 	// Create the new Constraint Frame Actor.
 	AActor* NewActor = FAGX_EditorUtilities::CreateConstraintFrameActor(
-		RigidBody,
+		ParentActor,
 		/*Select*/ true,
 		/*ShowNotification*/ true,
 		/*InPlayingWorldIfAvailable*/ true);
 
 	// Set the new actor to our property.
-
-#if 0 // This should work, but doesn't! Using worked-around below instead...
+#if 0
+	// This should work, but doesn't! Using worked-around below instead...
 	FPropertyAccess::Result Result = FrameDefiningActorProperty->SetValue((UObject*)NewActor);
 	check(Result == FPropertyAccess::Success);
 #else
@@ -190,7 +227,6 @@ void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor(
 			BodyAttachmentProperty, Constraint);
 
 	BodyAttachment->FrameDefiningActor = NewActor;
-
 	BodyAttachment->OnFrameDefiningActorChanged(Constraint);
 #endif
 }

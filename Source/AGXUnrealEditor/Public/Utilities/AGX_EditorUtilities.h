@@ -23,8 +23,8 @@ class UStaticMeshComponent;
 class UWorld;
 
 /**
-* A collection of helper functions that can only be compiled in editor builds.
-*/
+ * A collection of helper functions that can only be compiled in editor builds.
+ */
 class FAGX_EditorUtilities
 {
 public:
@@ -81,20 +81,20 @@ public:
 	 * Create a new constraint of the specified type.
 	 */
 	static AAGX_ConstraintActor* CreateConstraintActor(
-		UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bSelect,
-		bool bShowNotification, bool bInPlayingWorldIfAvailable);
+		UClass* ConstraintType, UAGX_RigidBodyComponent* RigidBody1,
+		UAGX_RigidBodyComponent* RigidBody2, bool bSelect, bool bShowNotification,
+		bool bInPlayingWorldIfAvailable);
 
 	template <typename T>
 	static T* CreateConstraintActor(
-		AActor* RigidBody1, AActor* RigidBody2, bool bSelect, bool bShowNotification,
-		bool bInPlayingWorldIfAvailable, UClass* ConstraintType = nullptr);
+		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2, bool bSelect,
+		bool bShowNotification, bool bInPlayingWorldIfAvailable, UClass* ConstraintType = nullptr);
 
 	/**
 	 * Create a new AGX Constraint Frame Actor. Set as child to specified Rigid Body, if available.
 	 */
 	static AAGX_ConstraintFrameActor* CreateConstraintFrameActor(
-		AActor* ParentRigidBody, bool bSelect, bool bShowNotification,
-		bool bInPlayingWorldIfAvailable);
+		AActor* ParentActor, bool bSelect, bool bShowNotification, bool bInPlayingWorldIfAvailable);
 
 	/**
 	 * Change current selection to the specific actor.
@@ -170,8 +170,8 @@ public:
 
 template <typename T>
 T* FAGX_EditorUtilities::CreateConstraintActor(
-	AActor* RigidBody1, AActor* RigidBody2, bool bSelect, bool bShowNotification,
-	bool bInPlayingWorldIfAvailable, UClass* ConstraintType)
+	UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2, bool bSelect,
+	bool bShowNotification, bool bInPlayingWorldIfAvailable, UClass* ConstraintType)
 {
 	if (ConstraintType == nullptr)
 	{

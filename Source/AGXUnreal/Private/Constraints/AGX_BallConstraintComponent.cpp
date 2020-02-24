@@ -7,9 +7,9 @@
 class FRigidBodyBarrier;
 
 UAGX_BallConstraintComponent::UAGX_BallConstraintComponent()
-	: UAGX_ConstraintComponent(
-		  {EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
-		   EDofFlag::DOF_FLAG_TRANSLATIONAL_3})
+	: UAGX_ConstraintComponent({EDofFlag::DOF_FLAG_TRANSLATIONAL_1,
+								EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
+								EDofFlag::DOF_FLAG_TRANSLATIONAL_3})
 {
 }
 
@@ -24,19 +24,21 @@ void UAGX_BallConstraintComponent::CreateNativeImpl()
 	FRigidBodyBarrier* RigidBody1 = BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 	FRigidBodyBarrier* RigidBody2 = BodyAttachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 
-	if (!RigidBody1)
+	if (RigidBody1 == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Ball constraint %s: could not get Rigid Body Actor from Body Attachment 1."),
+			TEXT("Ball constraint %s: could not get Rigid Body from Body Attachment 1. "
+				 "Constraint cannot be created."),
 			*GetFName().ToString());
 		return;
 	}
 
-	if ((BodyAttachment2.RigidBodyActor && !RigidBody2))
+	if (BodyAttachment2.GetRigidBodyComponent() != nullptr && RigidBody2 == nullptr)
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Ball constraint %s: could not get Rigid Body Actor from Body Attachment 2."),
+			LogAGX, Error,
+			TEXT("Ball constraint %s: could not get Rigid Body from Body Attachment 2."),
 			*GetFName().ToString());
 		return;
 	}
@@ -47,7 +49,8 @@ void UAGX_BallConstraintComponent::CreateNativeImpl()
 	FQuat FrameRotation1 = BodyAttachment1.GetLocalFrameRotation();
 	FQuat FrameRotation2 = BodyAttachment2.GetLocalFrameRotation();
 
+	// Ok if second body is nullptr, means that the first body is constrained
+	// to the world.
 	NativeBarrier->AllocateNative(
-		RigidBody1, &FrameLocation1, &FrameRotation1, RigidBody2, &FrameLocation2,
-		&FrameRotation2); // ok if second is nullptr
+		RigidBody1, &FrameLocation1, &FrameRotation1, RigidBody2, &FrameLocation2, &FrameRotation2);
 }

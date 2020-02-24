@@ -1,6 +1,8 @@
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 
 // AGXUnreal includes.
+#include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
@@ -40,12 +42,40 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 		return nullptr;
 	}
 
+	/// \todo Figure out how to setup constraint creation so that we can pick a
+	/// single UAGX_RigidBodyComponent from the selected Actors. There is very
+	/// similar code in AGX_TopMenu.cpp.
+
+	TArray<UAGX_RigidBodyComponent*> Bodies1 = UAGX_RigidBodyComponent::GetFromActor(RigidBodyActor1.Get());
+	TArray<UAGX_RigidBodyComponent*> Bodies2 = UAGX_RigidBodyComponent::GetFromActor(RigidBodyActor2.Get());
+
+	if (Bodies1.Num() != 1)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot create constraint with actor '%s' because it doesn't contain exactly one body."),
+			*RigidBodyActor1->GetName());
+		return nullptr;
+	}
+
+	if (Bodies2.Num() != 1)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot create constraint with actor '%s' because it doesn't contain exactly one body."),
+			*RigidBodyActor2->GetName());
+		return nullptr;
+	}
+
 	AAGX_ConstraintActor* Constraint = FAGX_EditorUtilities::CreateConstraintActor(
-		ConstraintType, RigidBodyActor1.Get(), RigidBodyActor2.Get(),
+		ConstraintType, Bodies1[0], Bodies2[0],
 		/*Select*/ false, /*ShowNotification*/ true, /*InPlayingWorldIfAvailable*/ true);
 
 	if (Constraint)
 	{
+		/// \todo Consider using the UAGX_RigidBodyComponent's transform in the below,
+		/// instead of the owning Actor's transform.
+
 		// Set constraint actor parent in scene hierarchy, and transform.
 		switch (ConstraintParent)
 		{
@@ -74,6 +104,7 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 				break;
 			}
 			case EAGX_ConstraintActorParent::None:
+				// Deliberate fallthrough.
 			default:
 			{
 				// Transform of Rigid Body Actor 1 is usually a good starting point.
@@ -120,13 +151,13 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 				break;
 			}
 			case EAGX_ConstraintFrameSource::LocalOnly:
+				// Deliberate fallthrough.
 			default:
 			{
 				break;
 			}
 		};
 
-		/// \todo Get the UAGX_ConstraintComponent out of the Actor.
 		UAGX_ConstraintComponent* ConstraintComponent = Constraint->GetConstraintComponent();
 		ConstraintComponent->BodyAttachment1.FrameDefiningActor = FrameActor1;
 		ConstraintComponent->BodyAttachment2.FrameDefiningActor = FrameActor2;

@@ -1,5 +1,15 @@
 #include "Utilities/AGX_EditorUtilities.h"
 
+// AGXUnreal includes.
+#include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
+#include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Shapes/AGX_BoxShapeComponent.h"
+#include "Constraints/AGX_ConstraintActor.h"
+#include "Constraints/AGX_ConstraintComponent.h"
+#include "Constraints/AGX_ConstraintFrameActor.h"
+
 // Unreal Engine includes.
 #include "AssetRegistryModule.h"
 #include "AssetToolsModule.h"
@@ -19,16 +29,6 @@
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectGlobals.h"
 #include "Widgets/Notifications/SNotificationList.h"
-
-// AGXUnreal includes.
-#include "AGX_LogCategory.h"
-#include "AGX_RigidBodyComponent.h"
-#include "Shapes/AGX_SphereShapeComponent.h"
-#include "Shapes/AGX_TrimeshShapeComponent.h"
-#include "Shapes/AGX_BoxShapeComponent.h"
-#include "Constraints/AGX_ConstraintActor.h"
-#include "Constraints/AGX_ConstraintComponent.h"
-#include "Constraints/AGX_ConstraintFrameActor.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
@@ -387,7 +387,7 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshAsset(
 }
 
 AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
-	UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bInPlayingWorldIfAvailable,
+	UClass* ConstraintType, UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2, bool bInPlayingWorldIfAvailable,
 	bool bSelect, bool bShowNotification)
 {
 	UWorld* World = bInPlayingWorldIfAvailable ? GetCurrentWorld() : GetEditorWorld();
@@ -401,8 +401,10 @@ AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 
 	check(NewActor);
 
-	NewActor->GetConstraintComponent()->BodyAttachment1.RigidBodyActor = RigidBody1;
-	NewActor->GetConstraintComponent()->BodyAttachment2.RigidBodyActor = RigidBody2;
+	NewActor->GetConstraintComponent()->BodyAttachment1.RigidBodyComponent.OverrideComponent =
+		RigidBody1;
+	NewActor->GetConstraintComponent()->BodyAttachment2.RigidBodyComponent.OverrideComponent =
+		RigidBody2;
 
 	NewActor->FinishSpawning(FTransform::Identity, true);
 
@@ -420,7 +422,7 @@ AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 }
 
 AAGX_ConstraintFrameActor* FAGX_EditorUtilities::CreateConstraintFrameActor(
-	AActor* ParentRigidBody, bool bSelect, bool bShowNotification, bool bInPlayingWorldIfAvailable)
+	AActor* ParentActor, bool bSelect, bool bShowNotification, bool bInPlayingWorldIfAvailable)
 {
 	UWorld* World = bInPlayingWorldIfAvailable ? GetCurrentWorld() : GetEditorWorld();
 	check(World);
@@ -430,12 +432,11 @@ AAGX_ConstraintFrameActor* FAGX_EditorUtilities::CreateConstraintFrameActor(
 	check(NewActor);
 
 	// Set the new actor as child to the Rigid Body.
-	if (ParentRigidBody)
+	if (ParentActor)
 	{
-		if (ParentRigidBody->GetWorld() == World)
+		if (ParentActor->GetWorld() == World)
 		{
-			NewActor->AttachToActor(
-				ParentRigidBody, FAttachmentTransformRules::KeepRelativeTransform);
+			NewActor->AttachToActor(ParentActor, FAttachmentTransformRules::KeepRelativeTransform);
 		}
 		else
 		{

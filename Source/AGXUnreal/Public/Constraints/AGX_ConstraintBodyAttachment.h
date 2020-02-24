@@ -1,13 +1,20 @@
 #pragma once
 
+// AGXUnreal includes.
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Engine/EngineTypes.h"
 #include "GameFramework/Actor.h"
 
 #include "AGX_ConstraintBodyAttachment.generated.h"
 
 class UAGX_ConstraintComponent;
+class UAGX_RigidBodyComponent;
 class AAGX_ConstraintFrameActor;
 class FRigidBodyBarrier;
+
+#define AGX_UNREAL_RIGID_BODY_COMPONENT 1
 
 /**
  * Defines the Rigid Body to be bound by a Constraint and its Local Frame Location
@@ -26,11 +33,20 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	/// to be a UAGX_RigidBodyComponent instead, or should we keep the Actor
 	/// reference and also keep some kind of component identifier? Should we use
 	/// FComponentRef here?
+
+// Would like to easly switch between these two UPROPERTYs, but UnrealHeaderTool
+// doesn't support UPROPERTYs within preprocessor blocks. Move the _DISABLED
+// part around instead.
+//#if AGX_UNREAL_RIGID_BODY_COMPONENT
+	UPROPERTY(EditAnywhere, Category = "Rigid Body")
+	FComponentReference RigidBodyComponent;
+//#else
 	/**
 	 * The Actor containing the Rigid Body Component to be bound by the constraint.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Rigid Body")
-	AActor* RigidBodyActor;
+	AActor* RigidBodyActor_DISABLED;
+//#endif
 
 	/**
 	 * Optional. Use this to define the Local Frame Location and Rotation relative to
@@ -55,6 +71,8 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	/** Frame rotation relative to Rigid Body Actor, or from Frame Defining Actor if set. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
 	FRotator LocalFrameRotation;
+
+	UAGX_RigidBodyComponent* GetRigidBodyComponent() const;
 
 	/**
 	 * Calculates and returns the frame location relative to Rigid Body Actor

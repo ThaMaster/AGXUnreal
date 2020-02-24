@@ -1,6 +1,7 @@
 #include "Constraints/AGX_ConstraintComponentVisualizer.h"
 
 // AGXUnreal includes.
+#include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
@@ -8,6 +9,7 @@
 // Unreal Engine inclues.
 #include "CanvasItem.h"
 #include "CanvasTypes.h"
+#include "Engine.h"
 #include "SceneManagement.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintComponentVisualizer"
@@ -107,6 +109,27 @@ float GetScreenFactorFromWorldSize(float WorldSize, float FOV, float WorldDistan
 	return WorldSize / GetScreenToWorldFactor(FOV, WorldDistance);
 }
 
+namespace
+{
+	FBox GetBoundingBox(UAGX_RigidBodyComponent* Body)
+	{
+		FBox Box(ForceInit);
+
+		const FTransform& BodyToWorld = Body->GetComponentTransform();
+		const FTransform WorldToBody = BodyToWorld.Inverse();
+
+		TArray<USceneComponent*> Children;
+		Body->GetChildrenComponents(true, Children);
+		for (auto Child : Children)
+		{
+			const FTransform ComponentToBody = Child->GetComponentTransform() * WorldToBody;
+			const FBoxSphereBounds BoundInBodySpace = Child->CalcBounds(ComponentToBody);
+			Box += BoundInBodySpace.GetBox();
+		}
+		return Box;
+	}
+}
+
 void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	const UAGX_ConstraintComponent* Constraint, const FSceneView* View,
 	FPrimitiveDrawInterface* PDI)
@@ -120,25 +143,23 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 			RigidBodyIndex == 0 ? Constraint->BodyAttachment1 : Constraint->BodyAttachment2;
 
 		/// \todo Cannot assume a single body per actor.
-		if (AActor* RigidBodyActor = BodyAttachment.RigidBodyActor)
+		if (UAGX_RigidBodyComponent* RigidBody = BodyAttachment.GetRigidBodyComponent())
 		{
 			// Highlight Rigid Body Actor
 			if (bHighlightUsingBoundingBox)
 			{
-				FBox LocalAABB = RigidBodyActor->CalculateComponentsBoundingBoxInLocalSpace(
-					/*bNonColliding*/ true);
+				FBox LocalAABB = GetBoundingBox(RigidBody);
 
 				DrawOrientedWireBox(
-					PDI, RigidBodyActor->GetActorLocation(),
-					RigidBodyActor->GetActorForwardVector(), RigidBodyActor->GetActorRightVector(),
-					RigidBodyActor->GetActorUpVector(), LocalAABB.GetExtent(), HighlightColor,
-					SDPG_World, HighlightThickness, /*DepthBias*/ 0.0f,
+					PDI, RigidBody->GetComponentLocation(), RigidBody->GetForwardVector(),
+					RigidBody->GetRightVector(), RigidBody->GetUpVector(), LocalAABB.GetExtent(),
+					HighlightColor, SDPG_World, HighlightThickness, /*DepthBias*/ 0.0f,
 					/*bScreenSpace*/ true);
 			}
 			else if (bHighlightUsingCircle)
 			{
 				FVector Direction =
-					(RigidBodyActor->GetActorLocation() - View->ViewLocation).GetSafeNormal();
+					(RigidBody->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
 				float Distance = 40.0f;
 				FVector Location = View->ViewLocation + Direction * Distance;
 				float Radius = GetWorldSizeFromScreenFactor(
@@ -175,19 +196,19 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 
 	if (bDrawLineBetweenActors)
 	{
-		AActor* RigidBodyActor1 = Constraint->BodyAttachment1.RigidBodyActor;
-		AActor* RigidBodyActor2 = Constraint->BodyAttachment2.RigidBodyActor;
+		UAGX_RigidBodyComponent* RigidBody1 = Constraint->BodyAttachment1.GetRigidBodyComponent();
+		UAGX_RigidBodyComponent* RigidBody2 = Constraint->BodyAttachment2.GetRigidBodyComponent();
 
-		if (RigidBodyActor1 && RigidBodyActor2)
+		if (RigidBody1 != nullptr && RigidBody2 != nullptr)
 		{
 			float Distance = 100.0f;
 
 			FVector Direction1 =
-				(RigidBodyActor1->GetActorLocation() - View->ViewLocation).GetSafeNormal();
+				(RigidBody1->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
 			FVector Location1 = View->ViewLocation + Direction1 * Distance;
 
 			FVector Direction2 =
-				(RigidBodyActor2->GetActorLocation() - View->ViewLocation).GetSafeNormal();
+				(RigidBody2->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
 			FVector Location2 = View->ViewLocation + Direction2 * Distance;
 
 			DrawDashedLine(
