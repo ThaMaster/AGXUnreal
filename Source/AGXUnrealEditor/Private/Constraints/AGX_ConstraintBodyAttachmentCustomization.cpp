@@ -15,7 +15,9 @@
 #include "DetailLayoutBuilder.h"
 #include "IDetailChildrenBuilder.h"
 #include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Layout/SBox.h"
 #include "Widgets/Notifications/SNotificationList.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintBodyAttachmentCustomization"
 
@@ -81,7 +83,8 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 				TAttribute<EVisibility> IsVisibleDelegate = TAttribute<EVisibility>::Create(
 					TAttribute<EVisibility>::FGetter::CreateLambda([this] {
 #if AGX_UNREAL_RIGID_BODY_COMPONENT
-						return HasRigidBodyComponent() ? EVisibility::Visible : EVisibility::Collapsed;
+						return HasRigidBodyComponent() ? EVisibility::Visible
+													   : EVisibility::Collapsed;
 #else
 						return HasRigidBodyActor() ? EVisibility::Visible : EVisibility::Collapsed;
 #endif
@@ -138,15 +141,59 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 	StructBuilder.AddCustomRow(FText::FromString(""));
 }
 
+namespace
+{
+// Which of these two alternatives is easier to read and understand? Which one should we keep? Is
+// there another way to write this?
+#if 0
+	UAGX_ConstraintComponent* GetOwningConstraint(
+		const TSharedPtr<IPropertyHandle>& ConstraintProperty)
+	{
+		return Cast<UAGX_ConstraintComponent>(
+			FAGX_PropertyUtilities::GetParentObjectOfStruct(ConstraintProperty));
+	}
+
+	FAGX_ConstraintBodyAttachment* GetConstraintBodyAttachment(
+		UAGX_ConstraintComponent* Owner, const TSharedPtr<IPropertyHandle>& BodyAttachmentProperty)
+	{
+		return FAGX_PropertyUtilities::GetStructFromHandle<FAGX_ConstraintBodyAttachment>(
+			BodyAttachmentProperty, Owner);
+	}
+
+	FAGX_ConstraintBodyAttachment* GetConstraintBodyAttachment(
+		const TSharedPtr<IPropertyHandle>& BodyAttachmentProperty)
+	{
+		UAGX_ConstraintComponent* Owner = GetOwningConstraint(BodyAttachmentProperty);
+		return GetConstraintBodyAttachment(Owner, BodyAttachmentProperty);
+	}
+#else
+	FAGX_ConstraintBodyAttachment* GetConstraintBodyAttachment(
+		const TSharedPtr<IPropertyHandle>& BodyAttachmentProperty)
+	{
+		return FAGX_PropertyUtilities::GetStructFromHandle<FAGX_ConstraintBodyAttachment>(
+			BodyAttachmentProperty,
+			Cast<UAGX_ConstraintComponent>(
+				FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyAttachmentProperty)));
+	}
+#endif
+}
+
 FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 {
 #if AGX_UNREAL_RIGID_BODY_COMPONENT
-	UObject* PropertyValue = FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty);
-	FComponentReference* ComponentReference = Cast<FComponentReference>(PropertyValue);
-	USceneComponent* SceneComponent = ComponentReference->GetComponent(nullptr);
-	UAGX_RigidBodyComponent* RigidBodyComponent = Cast<UAGX_RigidBodyComponent>(SceneComponent);
-	FString RigidBodyName = RigidBodyComponent->GetName();
-	return FText::FromString(TEXT("(") + RigidBodyName + TEXT(")"));
+	FAGX_ConstraintBodyAttachment* Attachment = GetConstraintBodyAttachment(BodyAttachmentProperty);
+	USceneComponent* SceneComponent = Attachment->RigidBodyComponent.GetComponent(nullptr);
+	if (SceneComponent == nullptr)
+	{
+		return FText::FromString(TEXT("<Nothing selected>"));
+	}
+	UAGX_RigidBodyComponent* Body = Cast<UAGX_RigidBodyComponent>(SceneComponent);
+	if (Body == nullptr)
+	{
+		return FText::FromString(TEXT("<Something not a body selected>"));
+	}
+	FString Name = Body->GetName();
+	return FText::FromString(TEXT("(") + Name + TEXT(")"));
 #else
 	FString RigidBodyName;
 	if (const AActor* RigidBody =
@@ -162,11 +209,7 @@ FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 #if AGX_UNREAL_RIGID_BODY_COMPONENT
 bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBodyComponent() const
 {
-	/// \todo This may be the FComponentReference itself. Perhaps we need to
-	/// reach into it and check if the reference is pointing to something.
-	/// \todo Perhaps this whole GetObjectFromHandle setup only works with
-	/// raw pointers and not a struct/class like FComponentReference.
-	return FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty) != nullptr;
+	return GetConstraintBodyAttachment(BodyAttachmentProperty)->GetRigidBodyComponent() != nullptr;
 }
 #else
 bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBodyActor() const

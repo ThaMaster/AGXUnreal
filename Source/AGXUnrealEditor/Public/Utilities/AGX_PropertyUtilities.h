@@ -1,9 +1,12 @@
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
-
+#include "Engine/EngineTypes.h"
 #include "PropertyHandle.h"
 #include "UObject/UnrealType.h"
+
+class USceneComponent;
 
 /**
  * Provides helper functions for working with UProperty and IPropertyHandle.
@@ -19,9 +22,13 @@ public:
 
 	static UObject* GetObjectFromHandle(const TSharedPtr<IPropertyHandle>& PropertyHandle);
 
-	template <typename TStruct, typename TOwningClass>
+	template <typename TStruct, typename TOwner>
 	static TStruct* GetStructFromHandle(
-		const TSharedPtr<IPropertyHandle>& PropertyHandle, TOwningClass* OwningClass);
+		const TSharedPtr<IPropertyHandle>& PropertyHandle, TOwner* Owner);
+
+	template <typename TOwner>
+	static USceneComponent* GetComponentFromComponentReferenceHandle(
+		const TSharedPtr<IPropertyHandle>& PropertyHandle, TOwner* Owner);
 
 	/**
 	 * Returns the Display Name metadata if such exists, or else the name converted to
@@ -32,6 +39,15 @@ public:
 	 */
 	static FString GetActualDisplayName(const UField* Field, bool bRemoveAgxPrefix);
 };
+
+template <typename TOwner>
+USceneComponent* FAGX_PropertyUtilities::GetComponentFromComponentReferenceHandle(
+	const TSharedPtr<IPropertyHandle>& PropertyHandle, TOwner* Owner)
+{
+	FComponentReference* Reference =
+		GetStructFromHandle<FComponentReference>(PropertyHandle, Owner);
+	return Reference->GetComponent(nullptr);
+}
 
 template <typename TStruct, typename TOwningClass>
 TStruct* FAGX_PropertyUtilities::GetStructFromHandle(
