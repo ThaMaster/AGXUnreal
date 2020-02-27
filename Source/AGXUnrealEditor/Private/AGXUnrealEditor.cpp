@@ -1,5 +1,6 @@
 #include "AGXUnrealEditor.h"
 
+// Unreal Engine includes.
 #include "AssetToolsModule.h"
 #include "AssetTypeCategories.h"
 #include "IAssetTools.h"
@@ -15,23 +16,25 @@
 #include "Engine/StaticMeshActor.h"
 #include "DesktopPlatformModule.h"
 
+// AGXUnreal includes.
 #include "AGX_ArchiveImporter.h"
 #include "AGX_ArchiveExporter.h"
+#include "AGX_EditorStyle.h"
+#include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
+#include "AGX_RigidBodyReference.h"
+#include "AGX_RigidBodyReferenceCustomization.h"
+#include "AGX_Simulation.h"
+#include "AGX_TopMenu.h"
 #include "AgxEdMode/AGX_AgxEdMode.h"
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 #include "AgxEdMode/AGX_AgxEdModeConstraintsCustomization.h"
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 #include "AgxEdMode/AGX_AgxEdModeFileCustomization.h"
-#include "Shapes/AGX_BoxShapeComponent.h"
-#include "AGX_EditorStyle.h"
-#include "Utilities/AGX_EditorUtilities.h"
-#include "AGX_LogCategory.h"
-#include "Materials/AGX_MaterialManager.h"
-#include "AGX_RigidBodyComponent.h"
-#include "Shapes/AGX_SphereShapeComponent.h"
-#include "AGX_Simulation.h"
-#include "Terrain/AGX_Terrain.h"
-#include "AGX_TopMenu.h"
+#include "CollisionGroups/AGX_CollisionGroupManager.h"
+#include "CollisionGroups/AGX_CollisionGroupManagerCustomization.h"
+#include "CollisionGroups/AGX_CollisionGroupsComponent.h"
+#include "CollisionGroups/AGX_CollisionGroupsComponentCustomization.h"
 #include "Constraints/AGX_BallConstraintActor.h"
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
@@ -52,11 +55,12 @@
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialCustomization.h"
 #include "Materials/AGX_MaterialBase.h"
+#include "Materials/AGX_MaterialManager.h"
 #include "RigidBodyBarrier.h"
-#include "CollisionGroups/AGX_CollisionGroupManager.h"
-#include "CollisionGroups/AGX_CollisionGroupManagerCustomization.h"
-#include "CollisionGroups/AGX_CollisionGroupsComponent.h"
-#include "CollisionGroups/AGX_CollisionGroupsComponentCustomization.h"
+#include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_BoxShapeComponent.h"
+#include "Terrain/AGX_Terrain.h"
+#include "Utilities/AGX_EditorUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -175,6 +179,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
 
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+				FAGX_RigidBodyReference::StaticStruct()->GetFName(),
+				FOnGetPropertyTypeCustomizationInstance::CreateStatic(
+					&FAGX_RigidBodyReferenceCustomization::MakeInstance));
+
 	/// \todo I don't know if this should be AAGX_ConstraintActor or
 	/// UAGX_ConstraintComponent. Should we have one for each? Which should be
 	/// the new one and what should it contain/do?
@@ -221,6 +230,9 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+				FAGX_RigidBodyReference::StaticStruct()->GetFName());
 
 	/// \todo Not sure if this should be AAGX_ConstraintActor,
 	/// UAGX_ConstraintComponent, or both.
