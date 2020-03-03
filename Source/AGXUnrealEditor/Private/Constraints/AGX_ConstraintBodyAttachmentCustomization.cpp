@@ -32,13 +32,8 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeHeader(
 {
 	BodyAttachmentProperty = StructPropertyHandle;
 
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 	RigidBodyProperty = StructPropertyHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, RigidBody));
-#else
-	RigidBodyProperty = StructPropertyHandle->GetChildHandle(
-		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, RigidBodyActor));
-#endif
 
 	// Use default visualization in the name column (left side).
 	HeaderRow.NameContent()[StructPropertyHandle->CreatePropertyNameWidget()];
@@ -83,12 +78,7 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 			{
 				TAttribute<EVisibility> IsVisibleDelegate = TAttribute<EVisibility>::Create(
 					TAttribute<EVisibility>::FGetter::CreateLambda([this] {
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
-						return HasRigidBodyComponent() ? EVisibility::Visible
-													   : EVisibility::Collapsed;
-#else
-						return HasRigidBodyActor() ? EVisibility::Visible : EVisibility::Collapsed;
-#endif
+						return HasRigidBody() ? EVisibility::Visible : EVisibility::Collapsed;
 					}));
 
 				DefaultPropertyRow.Visibility(IsVisibleDelegate);
@@ -182,9 +172,8 @@ namespace
 
 FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 {
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 	FAGX_ConstraintBodyAttachment* Attachment = GetConstraintBodyAttachment(BodyAttachmentProperty);
-	USceneComponent* SceneComponent = Attachment->GetRigidBody(); //.GetComponent(nullptr);
+	USceneComponent* SceneComponent = Attachment->GetRigidBody();
 	if (SceneComponent == nullptr)
 	{
 		return FText::FromString(TEXT("<Nothing selected>"));
@@ -196,29 +185,12 @@ FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 	}
 	FString Name = Body->GetName();
 	return FText::FromString(TEXT("(") + Name + TEXT(")"));
-#else
-	FString RigidBodyName;
-	if (const AActor* RigidBody =
-			Cast<AActor>(FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty)))
-	{
-		RigidBodyName = "(" + RigidBody->GetActorLabel() + ")";
-	}
-
-	return FText::FromString(RigidBodyName);
-#endif
 }
 
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
-bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBodyComponent() const
+bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBody() const
 {
 	return GetConstraintBodyAttachment(BodyAttachmentProperty)->GetRigidBody() != nullptr;
 }
-#else
-bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBodyActor() const
-{
-	return FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty);
-}
-#endif
 
 bool FAGX_ConstraintBodyAttachmentCustomization::HasFrameDefiningActor() const
 {
@@ -238,7 +210,8 @@ void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor(
 
 	if (FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty))
 	{
-		return; // Already exists.
+		// Already exists.
+		return;
 	}
 
 	UAGX_ConstraintComponent* Constraint = Cast<UAGX_ConstraintComponent>(
@@ -246,13 +219,20 @@ void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor(
 
 	check(Constraint);
 
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
-	/// \todo How do we get from the BodyAttachmentProperty to the Actor that owns it?
-	AActor* ParentActor = nullptr;
-#else
-	AActor* ParentActor =
-		Cast<AActor>(FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty)); // optional
-#endif
+	AActor* ParentActor = [this]() -> AActor* {
+		FAGX_ConstraintBodyAttachment* Attachment =
+			GetConstraintBodyAttachment(BodyAttachmentProperty);
+		if (Attachment == nullptr)
+		{
+			return nullptr;
+		}
+		UAGX_RigidBodyComponent* RigidBody = Attachment->GetRigidBody();
+		if (RigidBody == nullptr)
+		{
+			return nullptr;
+		}
+		return RigidBody->GetOwner();
+	}();
 
 	// Create the new Constraint Frame Actor.
 	AActor* NewActor = FAGX_EditorUtilities::CreateConstraintFrameActor(

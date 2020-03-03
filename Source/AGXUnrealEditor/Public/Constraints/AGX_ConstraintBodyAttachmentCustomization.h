@@ -1,9 +1,5 @@
 #pragma once
 
-// AGXUnreal includes.
-/// \todo Remove when we don't need AGX_UNREAL_RIGID_BODY_COMPONENT anymore.
-#include "Constraints/AGX_ConstraintBodyAttachment.h"
-
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Layout/Visibility.h"
@@ -26,11 +22,7 @@ public:
 
 	FText GetRigidBodyLabel() const;
 
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
-	bool HasRigidBodyComponent() const;
-#else
-	bool HasRigidBodyActor() const;
-#endif
+	bool HasRigidBody() const;
 
 	bool HasFrameDefiningActor() const;
 

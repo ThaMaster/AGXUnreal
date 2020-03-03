@@ -15,8 +15,6 @@ class UAGX_RigidBodyComponent;
 class AAGX_ConstraintFrameActor;
 class FRigidBodyBarrier;
 
-#define AGX_UNREAL_RIGID_BODY_COMPONENT 1
-
 /**
  * Defines the Rigid Body to be bound by a Constraint and its Local Frame Location
  * and Rotation.
@@ -35,19 +33,8 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	/// reference and also keep some kind of component identifier? Should we use
 	/// FComponentRef here?
 
-// Would like to easly switch between these two UPROPERTYs, but UnrealHeaderTool
-// doesn't support UPROPERTYs within preprocessor blocks. Move the _DISABLED
-// part around instead.
-//#if AGX_UNREAL_RIGID_BODY_COMPONENT
 	UPROPERTY(EditAnywhere, Category = "Rigid Body")
 	FAGX_RigidBodyReference RigidBody;
-//#else
-	/**
-	 * The Actor containing the Rigid Body Component to be bound by the constraint.
-	 */
-	UPROPERTY(EditAnywhere, Category = "Rigid Body")
-	AActor* RigidBodyActor_DISABLED;
-//#endif
 
 	/**
 	 * Optional. Use this to define the Local Frame Location and Rotation relative to

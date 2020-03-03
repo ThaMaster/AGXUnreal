@@ -15,7 +15,6 @@ UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody() const
 
 FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocation() const
 {
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
 	{
@@ -34,22 +33,10 @@ FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocation() const
 	/// frame defining actor. Detect that case and just return LocalFrameLocation.
 
 	return Body->GetComponentTransform().InverseTransformPositionNoScale(GetGlobalFrameLocation());
-#else
-	if (RigidBodyActor && FrameDefiningActor)
-	{
-		return RigidBodyActor->GetActorTransform().InverseTransformPositionNoScale(
-			GetGlobalFrameLocation());
-	}
-	else
-	{
-		return LocalFrameLocation; // already defined relative to rigid body or world
-	}
-#endif
 }
 
 FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotation() const
 {
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
 	{
@@ -57,26 +44,12 @@ FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotation() const
 	}
 
 	return Body->GetComponentTransform().InverseTransformRotation(GetGlobalFrameRotation());
-#else
-	if (RigidBodyActor && FrameDefiningActor)
-	{
-		return RigidBodyActor->GetActorTransform().InverseTransformRotation(
-			GetGlobalFrameRotation());
-	}
-	else
-	{
-		return LocalFrameRotation.Quaternion(); // already defined relative to rigid body or world
-	}
-#endif
 }
 
 FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 {
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 	if (FrameDefiningActor != nullptr)
 	{
-		/// \todo What is the effect of NoScale here? What happens if ancestor
-		/// transformations contain scales? All all scales ignored?
 		return FrameDefiningActor->GetActorTransform().TransformPositionNoScale(LocalFrameLocation);
 	}
 	else if (UAGX_RigidBodyComponent* Body = GetRigidBody())
@@ -90,25 +63,10 @@ FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 		/// \todo When would that ever happen?
 		return LocalFrameLocation;
 	}
-#else
-	if (FrameDefiningActor)
-	{
-		return FrameDefiningActor->GetActorTransform().TransformPositionNoScale(LocalFrameLocation);
-	}
-	else if (RigidBodyActor)
-	{
-		return RigidBodyActor->GetActorTransform().TransformPositionNoScale(LocalFrameLocation);
-	}
-	else
-	{
-		return LocalFrameLocation; // already defined in world space
-	}
-#endif
 }
 
 FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 {
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 	if (FrameDefiningActor != nullptr)
 	{
 		return FrameDefiningActor->GetActorTransform().TransformRotation(
@@ -121,25 +79,9 @@ FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 	else
 	{
 		// When there is nothing that the local rotation is relative to then we
-		// assume it is a global rotation as well.
+		// assume it is a global rotation.
 		return LocalFrameRotation.Quaternion();
 	}
-#else
-	if (FrameDefiningActor)
-	{
-		return FrameDefiningActor->GetActorTransform().TransformRotation(
-			LocalFrameRotation.Quaternion());
-	}
-	else if (RigidBodyActor)
-	{
-		return RigidBodyActor->GetActorTransform().TransformRotation(
-			LocalFrameRotation.Quaternion());
-	}
-	else
-	{
-		return LocalFrameRotation.Quaternion(); // already defined in world space
-	}
-#endif
 }
 
 FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix() const
@@ -151,7 +93,6 @@ FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix() const
 
 FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool CreateIfNeeded)
 {
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
 	{
@@ -164,27 +105,6 @@ FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool Creat
 		Barrier = Body->GetOrCreateNative();
 	}
 	return Barrier;
-#else
-	if (!RigidBodyActor)
-		return nullptr;
-
-	UAGX_RigidBodyComponent* RigidBodyComponent =
-		UAGX_RigidBodyComponent::GetFirstFromActor(RigidBodyActor);
-
-	if (!RigidBodyComponent)
-	{
-		return nullptr;
-	}
-
-	if (CreateIfNeeded)
-	{
-		return RigidBodyComponent->GetOrCreateNative();
-	}
-	else
-	{
-		return RigidBodyComponent->GetNative();
-	}
-#endif
 }
 
 #if WITH_EDITOR

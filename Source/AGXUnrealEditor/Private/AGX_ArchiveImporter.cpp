@@ -50,7 +50,6 @@
 
 namespace
 {
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 	AAGX_RigidBodyActor* InstantiateBody(const FRigidBodyBarrier& Body, UWorld& World)
 	{
 		FTransform Transform(Body.GetRotation(), Body.GetPosition());
@@ -74,48 +73,6 @@ namespace
 
 		return NewActor;
 	}
-#else
-	std::tuple<AActor*, USceneComponent*> InstantiateBody(
-		const FRigidBodyBarrier& Body, UWorld& World)
-	{
-		UE_LOG(LogAGX, Log, TEXT("Loaded AGX body with name '%s'."), *Body.GetName());
-		AActor* NewActor;
-		USceneComponent* Root;
-		FTransform Transform(Body.GetRotation(), Body.GetPosition());
-		std::tie(NewActor, Root) = FAGX_EditorUtilities::CreateEmptyActor(Transform, &World);
-		if (NewActor == nullptr)
-		{
-			UE_LOG(LogAGX, Log, TEXT("Could not create Actor for body '%s'."), *Body.GetName());
-			return {nullptr, nullptr};
-		}
-		if (Root == nullptr)
-		{
-			/// \todo Do we need to destroy the Actor here?
-			UE_LOG(
-				LogAGX, Log, TEXT("Could not create SceneComponent for body '%s'."),
-				*Body.GetName());
-			return {nullptr, nullptr};
-		}
-
-		NewActor->SetActorLabel(Body.GetName());
-
-		UAGX_RigidBodyComponent* NewBody = FAGX_EditorUtilities::CreateRigidBody(NewActor);
-		if (NewBody == nullptr)
-		{
-			UE_LOG(
-				LogAGX, Log, TEXT("Could not create AGX RigidBodyComponenet for body '%s'."),
-				*Body.GetName());
-			/// \todo Do we need to destroy the Actor and the RigidBodyComponent here?
-			return {nullptr, nullptr};
-		}
-
-		NewBody->Rename(TEXT("AGX_RigidBodyComponent"));
-		NewBody->Mass = Body.GetMass();
-		NewBody->MotionControl = Body.GetMotionControl();
-
-		return {NewActor, Root};
-	}
-#endif
 
 	// Archive instantiator that creates sub-objects under RigidBody. Knows how
 	// to create various subclasses of AGX_ShapesComponent in Unreal Editor.
@@ -194,7 +151,6 @@ namespace
 
 		virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
 		{
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 			AAGX_RigidBodyActor* NewActor = ::InstantiateBody(Barrier, World);
 			if (NewActor == nullptr)
 			{
@@ -204,18 +160,6 @@ namespace
 			Bodies.Add(Barrier.GetGuid(), NewActor);
 			return new EditorBody(
 				*NewActor, *NewActor->RigidBodyComponent, World, ImportedRoot.GetActorLabel());
-#else
-			AAGX_RigidBodyActor* NewActor;
-			USceneComponent* ActorRoot;
-			std::tie(NewActor, ActorRoot) = ::InstantiateBody(Barrier, World);
-			if (NewActor == nullptr || ActorRoot == nullptr)
-			{
-				return nullptr;
-			}
-			NewActor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
-			Bodies.Add(Barrier.GetGuid(), NewActor);
-			return new EditorBody(*NewActor, *ActorRoot, World, ImportedRoot.GetActorLabel());
-#endif
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Hinge) override
@@ -337,11 +281,7 @@ namespace
 		template <typename ConstraintType>
 		ConstraintType* CreateConstraint(const FConstraintBarrier& Barrier, UClass* ConstraintClass)
 		{
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 			std::pair<AAGX_RigidBodyActor*, AAGX_RigidBodyActor*> Actors = GetActors(Barrier);
-#else
-			std::pair<AActor*, AActor*> Actors = GetActors(Barrier);
-#endif
 			if (Actors.first == nullptr)
 			{
 				// Not having a second body is fine. Means that the first body
@@ -352,19 +292,11 @@ namespace
 				return nullptr;
 			}
 
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 			ConstraintType* Constraint =
 				FAGX_EditorUtilities::CreateConstraintActor<ConstraintType>(
 					Actors.first->RigidBodyComponent, Actors.second->RigidBodyComponent,
 					/*bSelect*/ false, /*bShwNotification*/ false, /*bInPlayingWorld*/ false,
 					ConstraintClass);
-#else
-			ConstraintType* Constraint =
-				FAGX_EditorUtilities::CreateConstraintActor<ConstraintType>(
-					Actors.first, Actors.second,
-					/*bSelect*/ false, /*bShwNotification*/ false, /*bInPlayingWorld*/ false,
-					ConstraintClass);
-#endif
 
 			StoreFrames(Barrier, *Constraint->GetConstraintComponent());
 
@@ -382,7 +314,6 @@ namespace
 			return Constraint;
 		}
 
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 		AAGX_RigidBodyActor* GetActor(const FRigidBodyBarrier& Body)
 		{
 			if (!Body.HasNative())
@@ -402,40 +333,12 @@ namespace
 			}
 			return Actor;
 		}
-#else
-		AActor* GetActor(const FRigidBodyBarrier& Body)
-		{
-			if (!Body.HasNative())
-			{
-				// No log since not an error. Means constrainted with world.
-				return nullptr;
-			}
-			FGuid Guid = Body.GetGuid();
-			AActor* Actor = Bodies.FindRef(Guid);
-			if (Actor == nullptr)
-			{
-				UE_LOG(
-					LogAGX, Log,
-					TEXT("Found a constraint to body '%s', but that body isn't known."),
-					*Body.GetName());
-				return nullptr;
-			}
-			return Actor;
-		}
-#endif
 
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 		std::pair<AAGX_RigidBodyActor*, AAGX_RigidBodyActor*> GetActors(
 			const FConstraintBarrier& Barrier)
 		{
 			return {GetActor(Barrier.GetFirstBody()), GetActor(Barrier.GetSecondBody())};
 		}
-#else
-		std::pair<AActor*, AActor*> GetActors(const FConstraintBarrier& Barrier)
-		{
-			return {GetActor(Barrier.GetFirstBody()), GetActor(Barrier.GetSecondBody())};
-		}
-#endif
 
 		void StoreFrame(
 			const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment,
@@ -524,11 +427,7 @@ namespace
 
 		// Map from Guid/Uuid of the AGX Dynamics body provided by the FAGXArchiveReader to the
 		// AActor that we created for that body.
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 		TMap<FGuid, AAGX_RigidBodyActor*> Bodies;
-#else
-		TMap<FGuid, AActor*> Bodies;
-#endif
 	};
 
 }

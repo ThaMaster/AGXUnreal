@@ -136,17 +136,14 @@ bool UAGX_ConstraintComponent::HasNative() const
 
 bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance) const
 {
-#if AGX_UNREAL_RIGID_BODY_COMPONENT
 	if (BodyAttachment1.GetRigidBody() == nullptr || BodyAttachment2.GetRigidBody() == nullptr)
 	{
+		/// \todo Check if it is possible to create a single-body constraint, i.e., body
+		/// constrainted to the world, where the constraint is in an initially violated state. That
+		/// is, can we create a world attachment frame that does not align with the local attachment
+		/// frame of the body.
 		return false;
 	}
-#else
-	if (!BodyAttachment1.RigidBodyActor || !BodyAttachment2.RigidBodyActor)
-	{
-		return false;
-	}
-#endif
 
 	FVector Location1 = BodyAttachment1.GetGlobalFrameLocation();
 	FQuat Rotation1 = BodyAttachment1.GetGlobalFrameRotation();
