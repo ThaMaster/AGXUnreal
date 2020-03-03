@@ -13,7 +13,6 @@
 // Sets default values for this component's properties
 UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 {
-	UE_LOG(LogAGX, Log, TEXT("RigidBody instance created."));
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// We step the AGX Dynamics simulation in PrePhysics and read the new state
@@ -114,13 +113,10 @@ void UAGX_RigidBodyComponent::InitializeNative()
 		/// \todo Should not crash on this. HeightField easy to get wrong.
 		check(NativeShape && NativeShape->HasNative());
 		NativeBarrier.AddShape(NativeShape);
-		UE_LOG(LogAGX, Log, TEXT("Shape added to native object for RigidBody with mass %f."), Mass);
 	}
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	Simulation->AddRigidBody(this);
-
-	UE_LOG(LogAGX, Log, TEXT("Native object created for RigidBody with mass %f."), Mass);
 }
 
 void UAGX_RigidBodyComponent::WritePropertiesToNative()

@@ -104,7 +104,6 @@ bool UAGX_TrimeshShapeComponent::CanEditChange(const UProperty* InProperty) cons
 
 void UAGX_TrimeshShapeComponent::CreateNative()
 {
-	UE_LOG(LogAGX, Log, TEXT("Allocating native object for TrimeshShapeComponent."));
 	check(!HasNative());
 
 	TArray<FVector> Vertices;
@@ -123,7 +122,6 @@ void UAGX_TrimeshShapeComponent::CreateNative()
 
 void UAGX_TrimeshShapeComponent::ReleaseNative()
 {
-	UE_LOG(LogAGX, Log, TEXT("Releasing native object for TrimeshShapeComponent."));
 	check(HasNative());
 	NativeBarrier.ReleaseNative();
 }

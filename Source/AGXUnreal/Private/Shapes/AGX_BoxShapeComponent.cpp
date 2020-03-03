@@ -7,7 +7,6 @@ UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	HalfExtent = FVector(50.0f, 50.0f, 50.0f);
-	UE_LOG(LogAGX, Log, TEXT("BoxShape instance created."));
 }
 
 FShapeBarrier* UAGX_BoxShapeComponent::GetNative()
@@ -82,7 +81,6 @@ bool UAGX_BoxShapeComponent::DoesPropertyAffectVisualMesh(
 
 void UAGX_BoxShapeComponent::CreateNative()
 {
-	UE_LOG(LogAGX, Log, TEXT("Allocating native object for BoxShapeComponent."));
 	check(!HasNative());
 	NativeBarrier.AllocateNative();
 	UpdateNativeProperties();
@@ -90,7 +88,6 @@ void UAGX_BoxShapeComponent::CreateNative()
 
 void UAGX_BoxShapeComponent::ReleaseNative()
 {
-	UE_LOG(LogAGX, Log, TEXT("Releasing native object for BoxShapeComponent."));
 	check(HasNative());
 	NativeBarrier.ReleaseNative();
 }

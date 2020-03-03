@@ -127,11 +127,6 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(UAGX_ConstraintC
 	{
 		ConstraintFrame->AddConstraintUsage(Parent);
 	}
-
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("OnFrameDefiningActorChanged: FrameDefiningActor = %s, ConstraintFrame = %s"),
-		*GetNameSafe(FrameDefiningActor), *GetNameSafe(ConstraintFrame));
 }
 
 void FAGX_ConstraintBodyAttachment::OnRigidBodyReferenceChanged()

@@ -12,8 +12,6 @@
 UAGX_ShapeComponent::UAGX_ShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
-	UE_LOG(LogAGX, Log, TEXT("ShapeComponent instance crated."));
 }
 
 bool UAGX_ShapeComponent::HasNative() const
@@ -23,10 +21,6 @@ bool UAGX_ShapeComponent::HasNative() const
 
 void UAGX_ShapeComponent::UpdateVisualMesh()
 {
-	UE_LOG(
-		LogAGX, Log, TEXT("Updating visual mesh of %s (of actor %s)"), *GetName(),
-		*GetNameSafe(GetOwner()));
-
 	ClearMeshData();
 
 	TSharedPtr<FAGX_SimpleMeshData> Data(new FAGX_SimpleMeshData());
@@ -145,7 +139,6 @@ void UAGX_ShapeComponent::PostInitProperties()
 
 void UAGX_ShapeComponent::BeginPlay()
 {
-	UE_LOG(LogAGX, Log, TEXT("BeginPlay for ShapeComponent"));
 	Super::BeginPlay();
 	GetOrCreateNative();
 	UAGX_RigidBodyComponent* RigidBody =
@@ -160,7 +153,6 @@ void UAGX_ShapeComponent::BeginPlay()
 
 void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
-	UE_LOG(LogAGX, Log, TEXT("EndPlay for ShapeComponent"));
 	Super::EndPlay(Reason);
 	ReleaseNative();
 }

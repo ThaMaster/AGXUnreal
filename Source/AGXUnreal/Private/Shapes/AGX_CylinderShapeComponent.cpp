@@ -89,7 +89,6 @@ bool UAGX_CylinderShapeComponent::DoesPropertyAffectVisualMesh(
 
 void UAGX_CylinderShapeComponent::CreateNative()
 {
-	UE_LOG(LogAGX, Log, TEXT("Allocating native object for CylinderShapeComponent."));
 	check(!HasNative());
 	NativeBarrier.AllocateNative();
 	UpdateNativeProperties();
@@ -97,7 +96,6 @@ void UAGX_CylinderShapeComponent::CreateNative()
 
 void UAGX_CylinderShapeComponent::ReleaseNative()
 {
-	UE_LOG(LogAGX, Log, TEXT("Releasing native object for CylinderShapeComponent."));
 	check(HasNative());
 	NativeBarrier.ReleaseNative();
 }
