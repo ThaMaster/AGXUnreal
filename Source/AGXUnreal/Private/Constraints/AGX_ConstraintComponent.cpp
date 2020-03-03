@@ -404,7 +404,7 @@ void UAGX_ConstraintComponent::CreateNative()
 	else
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Hinge constraint %s: unable to create constraint."),
-			*GetFName().ToString());
+			LogAGX, Error, TEXT("Constraint %s in %s: Unable to create constraint."),
+			*GetFName().ToString(), *GetOwner()->GetName());
 	}
 }

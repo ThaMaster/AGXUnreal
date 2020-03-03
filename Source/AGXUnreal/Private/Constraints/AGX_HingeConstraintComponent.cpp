@@ -32,9 +32,9 @@ void UAGX_HingeConstraintComponent::AllocateNative()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Hinge constraint %s: could not get Rigid Body from Body Attachment 1. Constraint "
+			TEXT("Hinge constraint %s in %s: could not get Rigid Body from Body Attachment 1. Constraint "
 				 "cannot be created."),
-			*GetFName().ToString());
+			*GetFName().ToString(), *GetOwner()->GetFName().ToString());
 		return;
 	}
 
