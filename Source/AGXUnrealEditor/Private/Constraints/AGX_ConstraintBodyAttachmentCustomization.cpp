@@ -34,7 +34,7 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeHeader(
 
 #if AGX_UNREAL_RIGID_BODY_COMPONENT
 	RigidBodyProperty = StructPropertyHandle->GetChildHandle(
-		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, RigidBodyComponent));
+		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, RigidBody));
 #else
 	RigidBodyProperty = StructPropertyHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, RigidBodyActor));
@@ -78,6 +78,7 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 				StructBuilder.AddProperty(ChildHandle.ToSharedRef());
 
 			// Frame properties only visible if Rigid Body Actor has been set.
+#if 0
 			if (!FAGX_PropertyUtilities::PropertyEquals(ChildHandle, RigidBodyProperty))
 			{
 				TAttribute<EVisibility> IsVisibleDelegate = TAttribute<EVisibility>::Create(
@@ -92,6 +93,7 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 
 				DefaultPropertyRow.Visibility(IsVisibleDelegate);
 			}
+#endif
 
 			// Add "Create New" option to context menu for the Frame Defining Actor.
 			if (FAGX_PropertyUtilities::PropertyEquals(ChildHandle, FrameDefiningActorProperty))
@@ -182,7 +184,7 @@ FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 {
 #if AGX_UNREAL_RIGID_BODY_COMPONENT
 	FAGX_ConstraintBodyAttachment* Attachment = GetConstraintBodyAttachment(BodyAttachmentProperty);
-	USceneComponent* SceneComponent = Attachment->RigidBodyComponent.GetComponent(nullptr);
+	USceneComponent* SceneComponent = Attachment->GetRigidBody(); //.GetComponent(nullptr);
 	if (SceneComponent == nullptr)
 	{
 		return FText::FromString(TEXT("<Nothing selected>"));
@@ -209,7 +211,7 @@ FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 #if AGX_UNREAL_RIGID_BODY_COMPONENT
 bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBodyComponent() const
 {
-	return GetConstraintBodyAttachment(BodyAttachmentProperty)->GetRigidBodyComponent() != nullptr;
+	return GetConstraintBodyAttachment(BodyAttachmentProperty)->GetRigidBody() != nullptr;
 }
 #else
 bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBodyActor() const

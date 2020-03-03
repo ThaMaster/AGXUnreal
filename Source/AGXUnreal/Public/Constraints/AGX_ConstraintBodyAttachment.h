@@ -1,5 +1,8 @@
 #pragma once
 
+// AGXUnreal includes.
+#include "AGX_RigidBodyReference.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Engine/EngineTypes.h"
@@ -37,7 +40,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 // part around instead.
 //#if AGX_UNREAL_RIGID_BODY_COMPONENT
 	UPROPERTY(EditAnywhere, Category = "Rigid Body")
-	FComponentReference RigidBodyComponent;
+	FAGX_RigidBodyReference RigidBody;
 //#else
 	/**
 	 * The Actor containing the Rigid Body Component to be bound by the constraint.
@@ -70,7 +73,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
 	FRotator LocalFrameRotation;
 
-	UAGX_RigidBodyComponent* GetRigidBodyComponent() const;
+	UAGX_RigidBodyComponent* GetRigidBody() const;
 
 	/**
 	 * Calculates and returns the frame location relative to Rigid Body Actor

@@ -1,9 +1,13 @@
 #pragma once
 
+// AGXUnreal includes.
+#include "AGX_AgxEdModeConstraints.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
-
-#include "AGX_AgxEdModeConstraints.h"
+#include "Styling/SlateTypes.h"
+#include "Types/SlateEnums.h"
 
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;

@@ -4,7 +4,7 @@
 
 #include "GameFramework/Actor.h"
 
-UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody()
+UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody() const
 {
 	if (Cache == nullptr)
 	{
@@ -30,7 +30,7 @@ namespace
 	}
 }
 
-void FAGX_RigidBodyReference::UpdateCache()
+void FAGX_RigidBodyReference::UpdateCache() const
 {
 	InvalidateCache();
 	if (OwningActor == nullptr)
@@ -40,7 +40,7 @@ void FAGX_RigidBodyReference::UpdateCache()
 	Cache = FindBody(OwningActor, BodyName, bSearchChildActors);
 }
 
-void FAGX_RigidBodyReference::InvalidateCache()
+void FAGX_RigidBodyReference::InvalidateCache() const
 {
 	Cache = nullptr;
 }

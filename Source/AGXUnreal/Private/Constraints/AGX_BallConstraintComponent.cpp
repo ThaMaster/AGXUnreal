@@ -34,7 +34,7 @@ void UAGX_BallConstraintComponent::CreateNativeImpl()
 		return;
 	}
 
-	if (BodyAttachment2.GetRigidBodyComponent() != nullptr && RigidBody2 == nullptr)
+	if (BodyAttachment2.GetRigidBody() != nullptr && RigidBody2 == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Error,

@@ -8,16 +8,15 @@
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
 
-UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBodyComponent() const
+UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody() const
 {
-	USceneComponent* Component = RigidBodyComponent.GetComponent(nullptr);
-	return Cast<UAGX_RigidBodyComponent>(Component);
+	return RigidBody.GetRigidBody();
 }
 
 FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocation() const
 {
 #if AGX_UNREAL_RIGID_BODY_COMPONENT
-	UAGX_RigidBodyComponent* Body = GetRigidBodyComponent();
+	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
 	{
 		/// \todo Someone is using a FAGX_ConstraintBodyAttachment that isn't
@@ -51,7 +50,7 @@ FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocation() const
 FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotation() const
 {
 #if AGX_UNREAL_RIGID_BODY_COMPONENT
-	UAGX_RigidBodyComponent* Body = GetRigidBodyComponent();
+	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
 	{
 		return LocalFrameRotation.Quaternion();
@@ -80,7 +79,7 @@ FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 		/// transformations contain scales? All all scales ignored?
 		return FrameDefiningActor->GetActorTransform().TransformPositionNoScale(LocalFrameLocation);
 	}
-	else if (UAGX_RigidBodyComponent* Body = GetRigidBodyComponent())
+	else if (UAGX_RigidBodyComponent* Body = GetRigidBody())
 	{
 		return Body->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
 	}
@@ -115,7 +114,7 @@ FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 		return FrameDefiningActor->GetActorTransform().TransformRotation(
 			LocalFrameRotation.Quaternion());
 	}
-	else if (UAGX_RigidBodyComponent* Body = GetRigidBodyComponent())
+	else if (UAGX_RigidBodyComponent* Body = GetRigidBody())
 	{
 		return Body->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
 	}
@@ -153,7 +152,7 @@ FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix() const
 FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool CreateIfNeeded)
 {
 #if AGX_UNREAL_RIGID_BODY_COMPONENT
-	UAGX_RigidBodyComponent* Body = GetRigidBodyComponent();
+	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
 	{
 		return nullptr;

@@ -143,7 +143,7 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 			RigidBodyIndex == 0 ? Constraint->BodyAttachment1 : Constraint->BodyAttachment2;
 
 		/// \todo Cannot assume a single body per actor.
-		if (UAGX_RigidBodyComponent* RigidBody = BodyAttachment.GetRigidBodyComponent())
+		if (UAGX_RigidBodyComponent* RigidBody = BodyAttachment.GetRigidBody())
 		{
 			// Highlight Rigid Body Actor
 			if (bHighlightUsingBoundingBox)
@@ -196,8 +196,8 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 
 	if (bDrawLineBetweenActors)
 	{
-		UAGX_RigidBodyComponent* RigidBody1 = Constraint->BodyAttachment1.GetRigidBodyComponent();
-		UAGX_RigidBodyComponent* RigidBody2 = Constraint->BodyAttachment2.GetRigidBodyComponent();
+		UAGX_RigidBodyComponent* RigidBody1 = Constraint->BodyAttachment1.GetRigidBody();
+		UAGX_RigidBodyComponent* RigidBody2 = Constraint->BodyAttachment2.GetRigidBody();
 
 		if (RigidBody1 != nullptr && RigidBody2 != nullptr)
 		{

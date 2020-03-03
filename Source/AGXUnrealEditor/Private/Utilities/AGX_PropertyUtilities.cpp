@@ -29,6 +29,9 @@ UObject* FAGX_PropertyUtilities::GetObjectFromHandle(
 		UObject* Object = nullptr;
 		if (PropertyHandle->GetValue(Object) != FPropertyAccess::Result::Fail)
 		{
+			/// \todo Make sure we get the correct result even when multiple objects are selected. I
+			/// worry that we should test for equality with FPRopertyAccess::Success instead of
+			/// inequality with FPropertyAccess::Fail because of the possibility of MultipleValues.
 			return Object;
 		}
 	}

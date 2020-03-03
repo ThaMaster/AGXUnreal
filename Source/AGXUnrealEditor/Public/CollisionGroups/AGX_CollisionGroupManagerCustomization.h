@@ -1,9 +1,13 @@
 #pragma once
 
+// AGXUnreal includes.
+#include "CollisionGroups/AGX_CollisionGroupManager.h"
+
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
-
-#include "CollisionGroups/AGX_CollisionGroupManager.h"
+#include "Types/SlateEnums.h"
 
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;

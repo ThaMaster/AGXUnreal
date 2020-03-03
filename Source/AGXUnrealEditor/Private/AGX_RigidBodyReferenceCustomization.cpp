@@ -149,6 +149,8 @@ void FAGX_RigidBodyReferenceCustomization::RebuildComboBox()
 	{
 		return;
 	}
+
+	// Will invalidate the RigidBodyReference cache.
 	ComboBoxPtr->SetSelectedItem(BodyNames[0]);
 }
 
@@ -194,6 +196,7 @@ void FAGX_RigidBodyReferenceCustomization::OnComboBoxChanged(
 		SelectedBody = NAME_None;
 	}
 	RigidBodyReference->BodyName = SelectedBody;
+	RigidBodyReference->InvalidateCache();
 }
 
 AActor* FAGX_RigidBodyReferenceCustomization::GetOwningActor()

@@ -387,8 +387,9 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshAsset(
 }
 
 AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
-	UClass* ConstraintType, UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2, bool bInPlayingWorldIfAvailable,
-	bool bSelect, bool bShowNotification)
+	UClass* ConstraintType, UAGX_RigidBodyComponent* RigidBody1,
+	UAGX_RigidBodyComponent* RigidBody2, bool bInPlayingWorldIfAvailable, bool bSelect,
+	bool bShowNotification)
 {
 	UWorld* World = bInPlayingWorldIfAvailable ? GetCurrentWorld() : GetEditorWorld();
 
@@ -401,10 +402,13 @@ AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 
 	check(NewActor);
 
-	NewActor->GetConstraintComponent()->BodyAttachment1.RigidBodyComponent.OverrideComponent =
-		RigidBody1;
-	NewActor->GetConstraintComponent()->BodyAttachment2.RigidBodyComponent.OverrideComponent =
-		RigidBody2;
+	/// \todo We have the Component we want. There should be a way to specify it directly, without
+	/// being dependent on its name.
+	UAGX_ConstraintComponent* Constraint = NewActor->GetConstraintComponent();
+	Constraint->BodyAttachment1.RigidBody.OwningActor = RigidBody1->GetOwner();
+	Constraint->BodyAttachment1.RigidBody.BodyName = RigidBody1->GetFName();
+	Constraint->BodyAttachment2.RigidBody.OwningActor = RigidBody2->GetOwner();
+	Constraint->BodyAttachment2.RigidBody.BodyName = RigidBody2->GetFName();
 
 	NewActor->FinishSpawning(FTransform::Identity, true);
 

@@ -14,7 +14,7 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 		meta = (Tooltip = "The Actor that owns the RigidBodyComponent."))
 	AActor* OwningActor;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Dynamice")
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	FName BodyName;
 
 	/// \todo It may be possible to do this with a UAGX_RigidBodyComponent
@@ -31,20 +31,20 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 	 * OwningActor, or it's child actors if bSearchChildActors is true, doesn't
 	 * containt a UAGX_RigidBodyComponent name BodyName.
 	 */
-	UAGX_RigidBodyComponent* GetRigidBody();
+	UAGX_RigidBodyComponent* GetRigidBody() const;
 
 	/**
 	 * Forget the currently cached body and perform a new search through
 	 * OwningActor's components.
 	 */
-	void UpdateCache();
+	void UpdateCache() const;
 
 	/**
 	 * Forget the currently cached body. Should be called when any of the search
 	 * parameters is changed.
 	 */
-	void InvalidateCache();
+	void InvalidateCache() const;
 
 private:
-	UAGX_RigidBodyComponent* Cache;
+	mutable UAGX_RigidBodyComponent* Cache;
 };
