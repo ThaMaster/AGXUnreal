@@ -70,11 +70,11 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintCreatorCategory(
 
 	/** Rigid Body 1 - Picker */
 	CategoryBuilder.AddProperty(DetailBuilder.GetProperty(
-		GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, RigidBodyActor1)));
+		GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, RigidBody1)));
 
 	/** Rigid Body 2 - Picker */
 	CategoryBuilder.AddProperty(DetailBuilder.GetProperty(
-		GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, RigidBodyActor2)));
+		GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, RigidBody2)));
 
 	/** Find Actors From Selection - Button */
 	CreateGetFromSelectedActorsButton(CategoryBuilder, ConstraintsSubMode);
@@ -182,10 +182,8 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateGetFromSelectedActorsButton(
 						  FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
 							  &Actor1, &Actor2,
 							  /*bSearchSubtrees*/ true, /*bSearchAncestors*/ true);
-
-						  ConstraintsSubMode->RigidBodyActor1 = Actor1;
-						  ConstraintsSubMode->RigidBodyActor2 = Actor2;
-
+						  ConstraintsSubMode->RigidBody1.OwningActor = Actor1;
+						  ConstraintsSubMode->RigidBody2.OwningActor = Actor2;
 						  return FReply::Handled();
 					  })]];
 }

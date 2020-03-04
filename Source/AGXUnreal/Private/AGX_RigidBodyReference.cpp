@@ -14,6 +14,11 @@ UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody() const
 	return Cache;
 }
 
+AActor* FAGX_RigidBodyReference::GetOwningActor() const
+{
+	return OwningActor.Get();
+}
+
 namespace
 {
 	UAGX_RigidBodyComponent* FindBody(AActor* OwningActor, const FName& BodyName, bool bSearchChildActors)
@@ -37,7 +42,7 @@ void FAGX_RigidBodyReference::UpdateCache() const
 	{
 		return;
 	}
-	Cache = FindBody(OwningActor, BodyName, bSearchChildActors);
+	Cache = FindBody(OwningActor.Get(), BodyName, bSearchChildActors);
 }
 
 void FAGX_RigidBodyReference::InvalidateCache() const

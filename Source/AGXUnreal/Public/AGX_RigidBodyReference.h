@@ -9,10 +9,18 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 {
 	GENERATED_BODY()
 
+	// Using a SoftObjectPtr instead of a raw pointer because we use FAGX_RigidBodyReference in the
+	// AGXUnreal Mode for constraint creation and Unreal Engine does not allow raw pointers to world
+	// objects being held by non-world objects. The constraint creation Mode is a non-world object.
+	// When used to define a constraint the OwningActor should always point to an Actor in the same
+	// world as the constraint.
+	//
+	// A LazyObjectPtr could be used as well, I think. I don't understand which of the two would be
+	// better in this case.
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics",
 		meta = (Tooltip = "The Actor that owns the RigidBodyComponent."))
-	AActor* OwningActor;
+	TSoftObjectPtr<AActor> OwningActor;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	FName BodyName;
@@ -32,6 +40,12 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 	 * containt a UAGX_RigidBodyComponent name BodyName.
 	 */
 	UAGX_RigidBodyComponent* GetRigidBody() const;
+
+	/**
+	 * Get the Actor that owns the RigidBody that this reference currently references. Can return
+	 * nullptr.
+	 */
+	AActor* GetOwningActor() const;
 
 	/**
 	 * Forget the currently cached body and perform a new search through

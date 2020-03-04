@@ -180,9 +180,9 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomPropertyTypeLayout(
-				FAGX_RigidBodyReference::StaticStruct()->GetFName(),
-				FOnGetPropertyTypeCustomizationInstance::CreateStatic(
-					&FAGX_RigidBodyReferenceCustomization::MakeInstance));
+		FAGX_RigidBodyReference::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
+			&FAGX_RigidBodyReferenceCustomization::MakeInstance));
 
 	/// \todo I don't know if this should be AAGX_ConstraintActor or
 	/// UAGX_ConstraintComponent. Should we have one for each? Which should be
@@ -232,7 +232,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
-				FAGX_RigidBodyReference::StaticStruct()->GetFName());
+		FAGX_RigidBodyReference::StaticStruct()->GetFName());
 
 	/// \todo Not sure if this should be AAGX_ConstraintActor,
 	/// UAGX_ConstraintComponent, or both.
@@ -249,8 +249,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_CollisionGroupsComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		UAGX_MaterialBase::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomPropertyTypeLayout(UAGX_MaterialBase::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }

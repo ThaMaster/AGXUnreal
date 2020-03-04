@@ -128,7 +128,7 @@ void FAGX_RigidBodyReferenceCustomization::RefreshStoreReferences(
 
 FText FAGX_RigidBodyReferenceCustomization::GetHeaderText() const
 {
-	AActor* OwningActor = RigidBodyReference->OwningActor;
+	AActor* OwningActor = RigidBodyReference->GetOwningActor();
 	FName BodyName = RigidBodyReference->BodyName;
 	FName ActorName = OwningActor ? OwningActor->GetFName() : NAME_None;
 	FString Header = FString::Printf(
@@ -201,7 +201,7 @@ void FAGX_RigidBodyReferenceCustomization::OnComboBoxChanged(
 
 AActor* FAGX_RigidBodyReferenceCustomization::GetOwningActor()
 {
-	return Cast<AActor>(FAGX_PropertyUtilities::GetObjectFromHandle(OwningActorHandle));
+	return RigidBodyReference->GetOwningActor();
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -1,10 +1,16 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
+// AGXUnreal incldues.
+#include "AGX_RigidBodyReference.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "AgxEdMode/AGX_AgxEdModeSubMode.h"
+
 #include "AGX_AgxEdModeConstraints.generated.h"
+
+
+#define AGXUNREAL_USE_RIGID_BODY_REFERENCE 1
 
 /**
  * Preset for setting which actor's transform should be used as attachment frames.
@@ -68,10 +74,10 @@ public: // Constraint Creator
 	UClass* ConstraintType;
 
 	UPROPERTY(Transient, EditAnywhere, Category = "Constraint Creator")
-	TLazyObjectPtr<AActor> RigidBodyActor1;
+	FAGX_RigidBodyReference RigidBody1;
 
 	UPROPERTY(Transient, EditAnywhere, Category = "Constraint Creator")
-	TLazyObjectPtr<AActor> RigidBodyActor2;
+	FAGX_RigidBodyReference RigidBody2;
 
 	/**
 	 * Which actor in the scene hierarchy should the Constraint Actor be attached to?
