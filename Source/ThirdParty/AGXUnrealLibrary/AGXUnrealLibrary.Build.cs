@@ -1,8 +1,6 @@
 using System.IO;
 using System;
 using UnrealBuildTool;
-using System.Collections;
-using System.Collections.Generic;
 
 
 /// The AGXUnrealLibrary is the portal from AGXUnrealBarrier to AGX Dynamics.
