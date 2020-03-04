@@ -2,6 +2,7 @@
 
 // AGXUnreal includes.
 #include "Constraints/AGX_ConstraintConstants.h"
+#include "UObject/UObjectGlobals.h"
 
 /// \todo Determine which of these are really needed.
 #include "AGX_RigidBodyComponent.h"
@@ -134,7 +135,7 @@ bool UAGX_ConstraintComponent::HasNative() const
 	return NativeBarrier.Get() != nullptr && NativeBarrier->HasNative();
 }
 
-bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance) const
+bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString* OutMessage) const
 {
 	if (BodyAttachment1.GetRigidBody() == nullptr || BodyAttachment2.GetRigidBody() == nullptr)
 	{
@@ -144,6 +145,17 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance) const
 		/// frame of the body.
 		return false;
 	}
+
+	auto WriteMessage = [OutMessage](EDofFlag Dof, float Error) {
+		if (OutMessage == nullptr)
+		{
+			return;
+		}
+
+		UEnum* DofEnum = FindObject<UEnum>(nullptr, TEXT("EDofFlag"));
+		FString DofString = DofEnum->GetValueAsString(Dof);
+		*OutMessage += FString::Printf(TEXT("%s has violation %f."), *DofString, Error);
+	};
 
 	FVector Location1 = BodyAttachment1.GetGlobalFrameLocation();
 	FQuat Rotation1 = BodyAttachment1.GetGlobalFrameRotation();
@@ -158,6 +170,7 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance) const
 	{
 		if (FMath::Abs(Location2InLocal1.X) > Tolerance)
 		{
+			WriteMessage(EDofFlag::DOF_FLAG_TRANSLATIONAL_1, FMath::Abs(Location2InLocal1.X));
 			return true;
 		}
 	}
@@ -166,6 +179,7 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance) const
 	{
 		if (FMath::Abs(Location2InLocal1.Y) > Tolerance)
 		{
+			WriteMessage(EDofFlag::DOF_FLAG_TRANSLATIONAL_2, FMath::Abs(Location2InLocal1.Y));
 			return true;
 		}
 	}
@@ -174,17 +188,19 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance) const
 	{
 		if (FMath::Abs(Location2InLocal1.Z) > Tolerance)
 		{
+			WriteMessage(EDofFlag::DOF_FLAG_TRANSLATIONAL_3, FMath::Abs(Location2InLocal1.Z));
 			return true;
 		}
 	}
 
 	/// \todo Checks below might not be correct for ALL scenarios. What if there is for example a 90
-	/// degrees rotation around one axis and then a rotation around another..
+	/// degrees rotation around one axis and then a rotation around another?
 
 	if (IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1))
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisY().Z) > Tolerance)
 		{
+			WriteMessage(EDofFlag::DOF_FLAG_ROTATIONAL_1, FMath::Abs(Rotation2InLocal1.GetAxisY().Z));
 			return true;
 		}
 	}
@@ -193,6 +209,7 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance) const
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Z) > Tolerance)
 		{
+			WriteMessage(EDofFlag::DOF_FLAG_ROTATIONAL_2, FMath::Abs(Rotation2InLocal1.GetAxisX().Z));
 			return true;
 		}
 	}
@@ -201,6 +218,7 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance) const
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Y) > Tolerance)
 		{
+			WriteMessage(EDofFlag::DOF_FLAG_ROTATIONAL_3, FMath::Abs(Rotation2InLocal1.GetAxisX().Y));
 			return true;
 		}
 	}

@@ -88,7 +88,8 @@ public:
 	 *
 	 * Can be overriden for specialized constraint checks.
 	 */
-	virtual bool AreFramesInViolatedState(float Tolerance = KINDA_SMALL_NUMBER) const;
+	virtual bool AreFramesInViolatedState(float Tolerance = KINDA_SMALL_NUMBER, FString* OutMessage = nullptr) const;
+
 
 	EDofFlag GetLockedDofsBitmask() const;
 

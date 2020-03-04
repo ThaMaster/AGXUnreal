@@ -222,10 +222,11 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraintHUD(
 	const UAGX_ConstraintComponent* Constraint, const FViewport* Viewport, const FSceneView* View,
 	FCanvas* Canvas)
 {
-	if (Constraint->AreFramesInViolatedState())
+	FString Message;
+	if (Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER, &Message))
 	{
 		FVector2D Position(0.45f, 0.35f);
-		FText Text = FText::FromString("Constraint Frames In Violated State!");
+		FText Text = FText::FromString(FString::Printf(TEXT("Constraint Frames In Violated State!\n%s"), *Message));
 		UFont* Font = GEngine->GetSubtitleFont();
 		FCanvasTextItem CanvasText(
 			Position * Canvas->GetViewRect().Size(), Text, Font, FColor::Red);
