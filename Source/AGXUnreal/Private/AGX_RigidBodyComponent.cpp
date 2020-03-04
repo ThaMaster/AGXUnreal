@@ -2,7 +2,7 @@
 
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
-#include "AGX_ObjectUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "AGX_Simulation.h"
 #include "Shapes/AGX_ShapeComponent.h"
 

@@ -7,7 +7,7 @@
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
-#include "ShapeBarrier.h"
+#include "Shapes/ShapeBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "TypeConversions.h"
 

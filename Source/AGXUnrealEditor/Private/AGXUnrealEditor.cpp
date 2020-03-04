@@ -21,6 +21,7 @@
 #include "AGX_ArchiveExporter.h"
 #include "AGX_EditorStyle.h"
 #include "AGX_LogCategory.h"
+#include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_RigidBodyReference.h"
 #include "AGX_RigidBodyReferenceCustomization.h"
@@ -329,6 +330,7 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 	RegisterPlaceableItem(AAGX_PrismaticConstraintActor::StaticClass());
 	RegisterPlaceableItem(AAGX_Terrain::StaticClass());
 	RegisterPlaceableItem(AAGX_CollisionGroupManager::StaticClass());
+	RegisterPlaceableItem(AAGX_RigidBodyActor::StaticClass());
 }
 
 void FAGXUnrealEditorModule::UnregisterPlacementCategory()
