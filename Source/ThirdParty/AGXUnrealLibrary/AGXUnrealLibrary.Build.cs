@@ -47,6 +47,16 @@ public class AGXUnrealLibrary : ModuleRules
 		AddRuntimeDependency("vdbgrid", ManualCopy);
 		AddRuntimeDependency("websockets", ManualCopy);
 		AddRuntimeDependency("zlib", ManualCopy);
+
+
+		if(Target.Type == TargetType.Editor)
+		{
+			PublicIncludePaths.Add(CurrentPlatform.LibraryIncludePath);
+			PublicIncludePaths.Add(CurrentPlatform.ComponentsIncludePath);
+			PublicIncludePaths.Add(CurrentPlatform.DependenciesIncludePath);
+			PublicIncludePaths.Add(CurrentPlatform.TerrainDependenciesIncludePath);
+			PublicIncludePaths.Add(CurrentPlatform.ConfigIncludePath);
+		}
 	}
 
 	private void AddRuntimeDependency(string Name, bool PerformManualCopy = false)
