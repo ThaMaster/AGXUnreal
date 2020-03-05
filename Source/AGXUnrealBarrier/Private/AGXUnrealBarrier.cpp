@@ -1,6 +1,7 @@
 #include "AGXUnrealBarrier.h"
 
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_EnvironmentUtilities.h"
 
 #include "BeginAGXIncludes.h"
 #include <agx/agx.h>
@@ -12,81 +13,35 @@
 #define ADD_PLUGIN_TO_PATH 0
 #endif
 
-#if ADD_PLUGIN_TO_PATH
-#include "Windows/WindowsPlatformMisc.h"
-#include "Interfaces/IPluginManager.h"
-#endif
-
 #define LOCTEXT_NAMESPACE "FAGXUnrealBarrierModule"
 
 #if ADD_PLUGIN_TO_PATH
 namespace
 {
-	// May return empty FString if plugin path is not found.
-	FString GetPluginPath()
+	void AddPluginPathToEnvironmentVar(const FString& EnvironmentVarName)
 	{
-		constexpr TCHAR PLUGIN_NAME[] = TEXT("AGXUnreal");
+		FString PluginPath = FAGX_EnvironmentUtilities::GetPluginPath();
 
-		FString AgxPluginPath;
-		if (auto Plugin = IPluginManager::Get().FindPlugin(PLUGIN_NAME))
+		if (PluginPath.IsEmpty())
 		{
-			AgxPluginPath = FPaths::ConvertRelativePathToFull(Plugin->GetBaseDir());
-			AgxPluginPath.Append("/Binaries/Win64");
+			return;
 		}
 
-		return AgxPluginPath;
+		PluginPath.Append("/Binaries/Win64");
+		FAGX_EnvironmentUtilities::AppendStringToEnvironmentVar(EnvironmentVarName, PluginPath);
 	}
 
-	void AddPluginPathToEnvironmentVar(const TCHAR* EnvironmentVarName)
+	void RemovePluginPathFromEnvironmentVar(const FString& EnvironmentVarName)
 	{
-		FString EnvVarVal = FWindowsPlatformMisc::GetEnvironmentVariable(EnvironmentVarName);
-		FString AgxPluginPath = GetPluginPath();
+		FString PluginPath = FAGX_EnvironmentUtilities::GetPluginPath();
 
-		if (EnvVarVal.IsEmpty() || AgxPluginPath.IsEmpty())
+		if (PluginPath.IsEmpty())
 		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("AGX_UnrealBarrier::AddPluginPathToEnvironmentVar unable to add plugin path "
-					 "to environment variable: %s"),
-				EnvironmentVarName);
 			return;
 		}
 
-		// Only add the plugin path if it is not already present.
-		if (EnvVarVal.Find(AgxPluginPath) == -1)
-		{
-			EnvVarVal.Append(";").Append(*AgxPluginPath);
-			FWindowsPlatformMisc::SetEnvironmentVar(EnvironmentVarName, *EnvVarVal);
-		}
-	}
-
-	void RemovePluginPathFromEnvironmentVar(const TCHAR* EnvironmentVarName)
-	{
-		FString EnvVarVal = FWindowsPlatformMisc::GetEnvironmentVariable(EnvironmentVarName);
-		FString AgxPluginPath = GetPluginPath();
-
-		if (EnvVarVal.IsEmpty() || AgxPluginPath.IsEmpty())
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("AGX_UnrealBarrier::RemovePluginPathToEnvironmentVar unable to remove plugin "
-					 "path from environment variable: %s"),
-				EnvironmentVarName);
-			return;
-		}
-
-		// AgxPluginPath was added with a semicolon at the start.
-		AgxPluginPath.InsertAt(0, ";");
-
-		int32 Index = EnvVarVal.Find(AgxPluginPath);
-		if (Index == -1)
-		{
-			// Path not present, do nothing.
-			return;
-		}
-
-		EnvVarVal.RemoveAt(Index, AgxPluginPath.Len());
-		FWindowsPlatformMisc::SetEnvironmentVar(EnvironmentVarName, *EnvVarVal);
+		PluginPath.Append("/Binaries/Win64");
+		FAGX_EnvironmentUtilities::RemoveStringFromEnvironmentVar(EnvironmentVarName, PluginPath);
 	}
 }
 #endif
@@ -100,14 +55,14 @@ void FAGXUnrealBarrierModule::StartupModule()
 	NotifyBarrier.StartAgxNotify(ELogVerbosity::Log);
 
 #if ADD_PLUGIN_TO_PATH
-	AddPluginPathToEnvironmentVar(TEXT("PATH"));
+	AddPluginPathToEnvironmentVar("PATH");
 #endif
 }
 
 void FAGXUnrealBarrierModule::ShutdownModule()
 {
 #if ADD_PLUGIN_TO_PATH
-	RemovePluginPathFromEnvironmentVar(TEXT("PATH"));
+	RemovePluginPathFromEnvironmentVar("PATH");
 #endif
 
 	// Stop AGX logging.
