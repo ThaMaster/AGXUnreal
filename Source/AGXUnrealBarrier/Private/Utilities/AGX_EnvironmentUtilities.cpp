@@ -7,6 +7,27 @@
 
 #define LOCTEXT_NAMESPACE "FAGX_EnvironmentUtilities"
 
+namespace
+{
+	// Returns the value itself if it is present including preceding semicolon. Returns empty string
+	// if the value is not present.
+	FString FindValueWithSemicolonInEnvVar(const FString& EnvVarVal, const FString& Val)
+	{
+		TArray<FString> EnvVarArray;
+		EnvVarVal.ParseIntoArray(EnvVarArray, TEXT(";"));
+
+		for (int i = 0; i < EnvVarArray.Num(); i++)
+		{
+			if (EnvVarArray[i].Equals(Val, ESearchCase::IgnoreCase))
+			{
+				return i == 0 ? Val : FString(";") + Val;
+			}
+		}
+
+		return FString();
+	}
+}
+
 // May return empty FString if plugin path is not found.
 FString FAGX_EnvironmentUtilities::GetPluginPath()
 {
@@ -39,10 +60,13 @@ void FAGX_EnvironmentUtilities::AppendStringToEnvironmentVar(
 		return;
 	}
 
-	FString EnvVarVal = FWindowsPlatformMisc::GetEnvironmentVariable(*EnvironmentVarName);
+	FString EnvVarVal;
+#if defined(_WIN64) // \todo Add calls for other platforms
+	EnvVarVal = FWindowsPlatformMisc::GetEnvironmentVariable(*EnvironmentVarName);
+#endif
 
 	// Only append Value if it is not already present.
-	if (EnvVarVal.Find(Value) != -1)
+	if (!FindValueWithSemicolonInEnvVar(EnvVarVal, Value).IsEmpty())
 	{
 		return;
 	}
@@ -54,11 +78,13 @@ void FAGX_EnvironmentUtilities::AppendStringToEnvironmentVar(
 
 	EnvVarVal.Append(*Value);
 
+#if defined(_WIN64) // \todo Add calls for other platforms
 	FWindowsPlatformMisc::SetEnvironmentVar(*EnvironmentVarName, *EnvVarVal);
+#endif
 }
 
 void FAGX_EnvironmentUtilities::RemoveStringFromEnvironmentVar(
-	const FString& EnvironmentVarName, FString Value)
+	const FString& EnvironmentVarName, const FString& Value)
 {
 	if (Value.IsEmpty())
 	{
@@ -69,24 +95,20 @@ void FAGX_EnvironmentUtilities::RemoveStringFromEnvironmentVar(
 		return;
 	}
 
-	FString EnvVarVal = FWindowsPlatformMisc::GetEnvironmentVariable(*EnvironmentVarName);
+	FString EnvVarVal;
+#if defined(_WIN64) // \todo Add calls for other platforms
+	EnvVarVal = FWindowsPlatformMisc::GetEnvironmentVariable(*EnvironmentVarName);
+#endif
 
-	int32 Index = EnvVarVal.Find(Value);
-	if (Index == -1)
-	{
-		// Value not present, do nothing.
+	FString FoundValue = FindValueWithSemicolonInEnvVar(EnvVarVal, Value);
+	if (FoundValue.IsEmpty())
 		return;
-	}
 
-	// Include preceding semicolon if it exists.
-	if (Index > 0 && EnvVarVal[Index-1] == ';')
-	{
-		Value.InsertAt(0, ';');
-		--Index;
-	}
+	EnvVarVal.RemoveFromEnd(FoundValue);
 
-	EnvVarVal.RemoveAt(Index, Value.Len());
+#if defined(_WIN64) // \todo Add calls for other platforms
 	FWindowsPlatformMisc::SetEnvironmentVar(*EnvironmentVarName, *EnvVarVal);
+#endif
 }
 
 #undef LOCTEXT_NAMESPACE

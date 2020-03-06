@@ -12,5 +12,5 @@ public:
 		const FString& EnvironmentVarName, const FString& Value);
 
 	static void RemoveStringFromEnvironmentVar(
-		const FString& EnvironmentVarName, FString Value);
+		const FString& EnvironmentVarName, const FString& Value);
 };

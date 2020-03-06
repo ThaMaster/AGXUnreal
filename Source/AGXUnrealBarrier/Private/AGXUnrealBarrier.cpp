@@ -27,7 +27,11 @@ namespace
 			return;
 		}
 
+		// \todo Add calls for other platforms (UGameplayStatics::GetPlatformName() only returns
+		// full name, e.g. 'Windows'. Perhaps there are some other ways to get specific platform).
+#if defined(_WIN64)
 		PluginPath.Append("/Binaries/Win64");
+#endif
 		FAGX_EnvironmentUtilities::AppendStringToEnvironmentVar(EnvironmentVarName, PluginPath);
 	}
 
@@ -40,7 +44,11 @@ namespace
 			return;
 		}
 
+		// \todo Add calls for other platforms (UGameplayStatics::GetPlatformName() only returns
+		// full name, e.g. 'Windows'. Perhaps there are some other ways to get specific platform).
+#if defined(_WIN64)
 		PluginPath.Append("/Binaries/Win64");
+#endif
 		FAGX_EnvironmentUtilities::RemoveStringFromEnvironmentVar(EnvironmentVarName, PluginPath);
 	}
 }
