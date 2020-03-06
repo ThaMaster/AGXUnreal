@@ -41,7 +41,7 @@ void FAGX_EnvironmentUtilities::AppendStringToEnvironmentVar(
 
 	FString EnvVarVal = FWindowsPlatformMisc::GetEnvironmentVariable(*EnvironmentVarName);
 
-	// Only add the plugin path if it is not already present.
+	// Only append Value if it is not already present.
 	if (EnvVarVal.Find(Value) != -1)
 	{
 		return;
@@ -74,7 +74,7 @@ void FAGX_EnvironmentUtilities::RemoveStringFromEnvironmentVar(
 	int32 Index = EnvVarVal.Find(Value);
 	if (Index == -1)
 	{
-		// Path not present, do nothing.
+		// Value not present, do nothing.
 		return;
 	}
 
