@@ -3,7 +3,7 @@
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyReference.h"
-#include "AGX_PropertyUtilities.h"
+#include "Utilities/AGX_PropertyUtilities.h"
 #include "AGX_RigidBodyComponent.h"
 
 // Unreal Engine includes.
@@ -19,7 +19,7 @@
 
 // Debug includes. Remove before commit. Point out in code review if accidentally committed.
 #include "Misc/DateTime.h"
-#include "AGX_EditorUtilities.h" /// \todo Remove?
+#include "Utilities/AGX_EditorUtilities.h" /// \todo Remove?
 #include "IPropertyUtilities.h" /// \todo Remove?
 
 #define LOCTEXT_NAMESPACE "FAGX_RigidBodyReferenceCustomization"

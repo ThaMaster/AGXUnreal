@@ -45,7 +45,7 @@ public:
 	const UAGX_ConstraintComponent* GetConstraintComponent() const;
 
 protected:
-	AAGX_ConstraintActor(UAGX_ConstraintComponent* InConstraintComponent);
+	void SetConstraintComponent(UAGX_ConstraintComponent* InConstraintComponent);
 
 public:
 	/** Indicates whether this actor should participate in level bounds calculations. */

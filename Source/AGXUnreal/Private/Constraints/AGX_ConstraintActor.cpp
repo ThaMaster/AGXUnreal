@@ -10,8 +10,13 @@ AAGX_ConstraintActor::AAGX_ConstraintActor()
 	// class Abstract in the UCLASS specifiers.
 }
 
-AAGX_ConstraintActor::AAGX_ConstraintActor(UAGX_ConstraintComponent* InConstraintComponent)
+void AAGX_ConstraintActor::SetConstraintComponent(UAGX_ConstraintComponent* InConstraintComponent)
 {
+	check(ConstraintComponent == nullptr);
+
+	if (!InConstraintComponent)
+		return;
+
 	ConstraintComponent = InConstraintComponent;
 	ConstraintComponent->SetFlags(ConstraintComponent->GetFlags() | RF_Transactional);
 	ConstraintComponent->SetMobility(EComponentMobility::Movable);

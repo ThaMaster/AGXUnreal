@@ -12,10 +12,6 @@ AAGX_Constraint1DofActor::~AAGX_Constraint1DofActor()
 {
 }
 
-AAGX_Constraint1DofActor::AAGX_Constraint1DofActor(UAGX_Constraint1DofComponent* InConstraintComponent) :
-	AAGX_ConstraintActor(InConstraintComponent)
-{
-}
 
 UAGX_Constraint1DofComponent* AAGX_Constraint1DofActor::Get1DofComponent()
 {

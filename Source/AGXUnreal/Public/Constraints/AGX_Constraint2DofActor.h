@@ -20,7 +20,4 @@ public:
 	virtual ~AAGX_Constraint2DofActor();
 
 	UAGX_Constraint2DofComponent* Get2DofComponent();
-
-protected:
-	AAGX_Constraint2DofActor(UAGX_Constraint2DofComponent* InConstraintComponent);
 };

@@ -27,7 +27,4 @@ public:
 	virtual ~AAGX_Constraint1DofActor();
 
 	UAGX_Constraint1DofComponent* Get1DofComponent();
-
-protected:
-	AAGX_Constraint1DofActor(UAGX_Constraint1DofComponent* InConstraintComponent);
 };
