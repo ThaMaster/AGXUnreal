@@ -119,30 +119,6 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 
 namespace
 {
-// Which of these two alternatives is easier to read and understand? Which one should we keep? Is
-// there another way to write this?
-#if 0
-	UAGX_ConstraintComponent* GetOwningConstraint(
-		const TSharedPtr<IPropertyHandle>& ConstraintProperty)
-	{
-		return Cast<UAGX_ConstraintComponent>(
-			FAGX_PropertyUtilities::GetParentObjectOfStruct(ConstraintProperty));
-	}
-
-	FAGX_ConstraintBodyAttachment* GetConstraintBodyAttachment(
-		UAGX_ConstraintComponent* Owner, const TSharedPtr<IPropertyHandle>& BodyAttachmentProperty)
-	{
-		return FAGX_PropertyUtilities::GetStructFromHandle<FAGX_ConstraintBodyAttachment>(
-			BodyAttachmentProperty, Owner);
-	}
-
-	FAGX_ConstraintBodyAttachment* GetConstraintBodyAttachment(
-		const TSharedPtr<IPropertyHandle>& BodyAttachmentProperty)
-	{
-		UAGX_ConstraintComponent* Owner = GetOwningConstraint(BodyAttachmentProperty);
-		return GetConstraintBodyAttachment(Owner, BodyAttachmentProperty);
-	}
-#else
 	FAGX_ConstraintBodyAttachment* GetConstraintBodyAttachment(
 		const TSharedPtr<IPropertyHandle>& BodyAttachmentProperty)
 	{
@@ -151,7 +127,6 @@ namespace
 			Cast<UAGX_ConstraintComponent>(
 				FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyAttachmentProperty)));
 	}
-#endif
 }
 
 FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
