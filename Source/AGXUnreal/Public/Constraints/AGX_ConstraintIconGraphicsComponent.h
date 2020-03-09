@@ -4,7 +4,6 @@
 #include "CoreMinimal.h"
 #include "Components/MeshComponent.h"
 
-
 #include "AGX_ConstraintIconGraphicsComponent.generated.h"
 
 class UAGX_ConstraintComponent;
