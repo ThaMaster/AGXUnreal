@@ -9,9 +9,6 @@
 
 #include "AGX_AgxEdModeConstraints.generated.h"
 
-
-#define AGXUNREAL_USE_RIGID_BODY_REFERENCE 1
-
 /**
  * Preset for setting which actor's transform should be used as attachment frames.
  */

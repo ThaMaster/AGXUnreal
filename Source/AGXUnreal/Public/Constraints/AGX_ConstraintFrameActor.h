@@ -1,7 +1,5 @@
 #pragma once
 
-// AGXUnreal includes.
-
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
