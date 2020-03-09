@@ -25,7 +25,6 @@
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "AGX_EditorStyle.h"
 #include "Utilities/AGX_EditorUtilities.h"
-#include "AGX_LogCategory.h"
 #include "Materials/AGX_MaterialManager.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"

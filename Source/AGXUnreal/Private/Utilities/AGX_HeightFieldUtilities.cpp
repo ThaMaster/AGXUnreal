@@ -68,8 +68,7 @@ namespace
 #endif
 
 			// Apply texture settings for reading.
-			Texture->CompressionSettings =
-				TextureCompressionSettings::TC_VectorDisplacementmap;
+			Texture->CompressionSettings = TextureCompressionSettings::TC_VectorDisplacementmap;
 			Texture->SRGB = false;
 #if WITH_EDITORONLY_DATA
 			Texture->MipGenSettings = TextureMipGenSettings::TMGS_NoMipmaps;
@@ -151,6 +150,7 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 	// Apply necessary settings to the texure to be able to get color data.
 	TextureReadHelper TextureReader(HeightMapTexture);
 	const FColor* Texturecolor = TextureReader.GetTextureData();
+	check(Texturecolor);
 
 	// AGX terrains Y coordinate goes from Unreals Y-max down to zero (flipped).
 	int32 Vertex = 0;
