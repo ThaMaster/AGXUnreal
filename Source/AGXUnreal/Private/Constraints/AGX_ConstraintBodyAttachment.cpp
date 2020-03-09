@@ -25,7 +25,7 @@ FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocation() const
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Something is getting the local location of a ConstraintBodyAttachment without an "
-				 "attached body. Unclear what the result should be."));
+				 "attached body. May produce unwanted behavior."));
 		return LocalFrameLocation;
 	}
 
