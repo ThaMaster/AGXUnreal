@@ -8,9 +8,7 @@ public:
 
 	static FString GetPluginPath();
 
-	static void AppendStringToEnvironmentVar(
-		const FString& EnvironmentVarName, const FString& Value);
+	static void AddEnvironmentVariableEntry(const FString& EnvVarName, const FString& Entry);
 
-	static void RemoveStringFromEnvironmentVar(
-		const FString& EnvironmentVarName, const FString& Value);
+	static void RemoveEnvironmentVariableEntry(const FString& EnvVarName, const FString& Entry);
 };

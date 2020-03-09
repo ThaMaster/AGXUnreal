@@ -27,12 +27,14 @@ namespace
 			return;
 		}
 
-		// \todo Add calls for other platforms (UGameplayStatics::GetPlatformName() only returns
-		// full name, e.g. 'Windows'. Perhaps there are some other ways to get specific platform).
 #if defined(_WIN64)
 		PluginPath.Append("/Binaries/Win64");
+#else
+		// \todo Add calls for other platforms (UGameplayStatics::GetPlatformName() only returns
+		// full name, e.g. 'Windows'. Perhaps there are some other ways to get specific platform).
+		static_assert(false);
 #endif
-		FAGX_EnvironmentUtilities::AppendStringToEnvironmentVar(EnvironmentVarName, PluginPath);
+		FAGX_EnvironmentUtilities::AddEnvironmentVariableEntry(EnvironmentVarName, PluginPath);
 	}
 
 	void RemovePluginPathFromEnvironmentVar(const FString& EnvironmentVarName)
@@ -44,12 +46,14 @@ namespace
 			return;
 		}
 
-		// \todo Add calls for other platforms (UGameplayStatics::GetPlatformName() only returns
-		// full name, e.g. 'Windows'. Perhaps there are some other ways to get specific platform).
 #if defined(_WIN64)
 		PluginPath.Append("/Binaries/Win64");
+#else
+		// \todo Add calls for other platforms (UGameplayStatics::GetPlatformName() only returns
+		// full name, e.g. 'Windows'. Perhaps there are some other ways to get specific platform).
+		static_assert(false);
 #endif
-		FAGX_EnvironmentUtilities::RemoveStringFromEnvironmentVar(EnvironmentVarName, PluginPath);
+		FAGX_EnvironmentUtilities::RemoveEnvironmentVariableEntry(EnvironmentVarName, PluginPath);
 	}
 }
 #endif

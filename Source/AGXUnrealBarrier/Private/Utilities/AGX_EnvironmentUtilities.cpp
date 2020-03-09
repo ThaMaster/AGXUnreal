@@ -9,22 +9,30 @@
 
 namespace
 {
-	// Returns the value itself if it is present including preceding semicolon. Returns empty string
-	// if the value is not present.
-	FString FindValueWithSemicolonInEnvVar(const FString& EnvVarVal, const FString& Val)
+	TArray<FString> GetEnvironmentVariableEntries(const FString& EnvVarName)
 	{
-		TArray<FString> EnvVarArray;
-		EnvVarVal.ParseIntoArray(EnvVarArray, TEXT(";"));
+#if defined(_WIN64)
+		FString EnvVarVal = FWindowsPlatformMisc::GetEnvironmentVariable(*EnvVarName);
+#else
+		// \todo Add calls for other platforms
+		static_assert(false);
+#endif
 
-		for (int i = 0; i < EnvVarArray.Num(); i++)
-		{
-			if (EnvVarArray[i].Equals(Val, ESearchCase::IgnoreCase))
-			{
-				return i == 0 ? Val : FString(";") + Val;
-			}
-		}
+		TArray<FString> EnvVarValArray;
+		EnvVarVal.ParseIntoArray(EnvVarValArray, TEXT(";"), false);
 
-		return FString();
+		return EnvVarValArray;
+	}
+
+	void WriteEnvironmentVariable(const FString& EnvVarName, const TArray<FString>& Entries)
+	{
+		FString EnvVarVal = FString::Join(Entries, TEXT(";"));
+#if defined(_WIN64)
+		FWindowsPlatformMisc::SetEnvironmentVar(*EnvVarName, *EnvVarVal);
+#else
+		// \todo Add calls for other platforms
+		static_assert(false);
+#endif
 	}
 }
 
@@ -48,67 +56,45 @@ FString FAGX_EnvironmentUtilities::GetPluginPath()
 	return AgxPluginPath;
 }
 
-void FAGX_EnvironmentUtilities::AppendStringToEnvironmentVar(
-	const FString& EnvironmentVarName, const FString& Value)
+void FAGX_EnvironmentUtilities::AddEnvironmentVariableEntry(
+	const FString& EnvVarName, const FString& Entry)
 {
-	if (Value.IsEmpty())
+	if (Entry.IsEmpty())
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("FAGX_EnvironmentUtilities::AppendStringToEnvironmentVar parameter Value was "
+			TEXT("FAGX_EnvironmentUtilities::AddEnvironmentVariableEntry parameter Entry was "
 				 "empty."));
 		return;
 	}
 
-	FString EnvVarVal;
-#if defined(_WIN64) // \todo Add calls for other platforms
-	EnvVarVal = FWindowsPlatformMisc::GetEnvironmentVariable(*EnvironmentVarName);
-#endif
+	TArray<FString> EnvVarValArray = GetEnvironmentVariableEntries(EnvVarName);
 
-	// Only append Value if it is not already present.
-	if (!FindValueWithSemicolonInEnvVar(EnvVarVal, Value).IsEmpty())
+	// Only append Entry if it is not already present.
+	if (EnvVarValArray.Find(Entry) != -1)
 	{
 		return;
 	}
 
-	if (!EnvVarVal.IsEmpty() && !EnvVarVal.EndsWith(";"))
-	{
-		EnvVarVal.Append(";");
-	}
-
-	EnvVarVal.Append(*Value);
-
-#if defined(_WIN64) // \todo Add calls for other platforms
-	FWindowsPlatformMisc::SetEnvironmentVar(*EnvironmentVarName, *EnvVarVal);
-#endif
+	EnvVarValArray.Add(Entry);
+	WriteEnvironmentVariable(EnvVarName, EnvVarValArray);
 }
 
-void FAGX_EnvironmentUtilities::RemoveStringFromEnvironmentVar(
-	const FString& EnvironmentVarName, const FString& Value)
+void FAGX_EnvironmentUtilities::RemoveEnvironmentVariableEntry(
+	const FString& EnvVarName, const FString& Entry)
 {
-	if (Value.IsEmpty())
+	if (Entry.IsEmpty())
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("FAGX_EnvironmentUtilities::RemoveStringFromEnvironmentVar parameter Value was "
+			TEXT("FAGX_EnvironmentUtilities::RemoveEnvironmentVariableEntry parameter Entry was "
 				 "empty."));
 		return;
 	}
 
-	FString EnvVarVal;
-#if defined(_WIN64) // \todo Add calls for other platforms
-	EnvVarVal = FWindowsPlatformMisc::GetEnvironmentVariable(*EnvironmentVarName);
-#endif
-
-	FString FoundValue = FindValueWithSemicolonInEnvVar(EnvVarVal, Value);
-	if (FoundValue.IsEmpty())
-		return;
-
-	EnvVarVal.RemoveFromEnd(FoundValue);
-
-#if defined(_WIN64) // \todo Add calls for other platforms
-	FWindowsPlatformMisc::SetEnvironmentVar(*EnvironmentVarName, *EnvVarVal);
-#endif
+	TArray<FString> EnvVarValArray = GetEnvironmentVariableEntries(EnvVarName);
+	EnvVarValArray.Remove(Entry);
+	WriteEnvironmentVariable(EnvVarName, EnvVarValArray);
 }
 
 #undef LOCTEXT_NAMESPACE
