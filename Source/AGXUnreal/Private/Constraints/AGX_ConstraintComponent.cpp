@@ -82,6 +82,9 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	BodyAttachment1.FrameDefiningActor = GetOwner();
 	BodyAttachment2.FrameDefiningActor = GetOwner();
 
+	BodyAttachment1.OnFrameDefiningActorChanged(this);
+	BodyAttachment2.OnFrameDefiningActorChanged(this);
+
 	/// \todo Not sure what to do with this one.
 	// Create UAGX_ConstraintDofGraphicsComponent as child component.
 	{
@@ -107,6 +110,8 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 
 UAGX_ConstraintComponent::~UAGX_ConstraintComponent()
 {
+	BodyAttachment1.OnDestroy(this);
+	BodyAttachment2.OnDestroy(this);
 }
 
 FConstraintBarrier* UAGX_ConstraintComponent::GetOrCreateNative()
@@ -362,24 +367,6 @@ void UAGX_ConstraintComponent::BeginDestroy()
 	BodyAttachment1.OnDestroy(this);
 	BodyAttachment2.OnDestroy(this);
 }
-
-/// \note The Actor version of constraints had this following callbacks.
-/// Components don't have it. Does it matter? Do we need it?
-#if 0
-void UAGX_ConstraintComponent::OnConstruction(const FTransform& Transform)
-{
-	Super::PostActorConstruction();
-	BodyAttachment1.OnFrameDefiningActorChanged(this);
-	BodyAttachment2.OnFrameDefiningActorChanged(this);
-}
-
-void UAGX_ConstraintComponent::Destroyed()
-{
-	Super::Destroyed();
-	BodyAttachment1.OnDestroy(this);
-	BodyAttachment2.OnDestroy(this);
-}
-#endif
 #endif
 
 void UAGX_ConstraintComponent::BeginPlay()
