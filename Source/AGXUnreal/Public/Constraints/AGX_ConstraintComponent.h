@@ -141,7 +141,7 @@ protected:
 	bool ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof);
 
 	/**
-	 * Allocate a native constraint and point NativeBarrier to it. Perform any
+	 * Allocate a type-specific native constraint and point NativeBarrier to it. Perform any
 	 * constraint-specific configuration that may be necessary, such as binding secondary constraint
 	 * barriers to their respective native objects within the native constraint.
 	 */

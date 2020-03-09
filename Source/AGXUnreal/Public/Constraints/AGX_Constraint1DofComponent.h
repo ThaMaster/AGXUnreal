@@ -50,7 +50,7 @@ public:
 		const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraintRotational,
 		bool bIsLockControllerEditable = true);
 
-	virtual ~UAGX_Constraint1DofComponent();
+	virtual ~UAGX_Constraint1DofComponent() override;
 
 	virtual void UpdateNativeProperties() override;
 
