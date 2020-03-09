@@ -82,8 +82,10 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	BodyAttachment1.FrameDefiningActor = GetOwner();
 	BodyAttachment2.FrameDefiningActor = GetOwner();
 
+#if WITH_EDITOR
 	BodyAttachment1.OnFrameDefiningActorChanged(this);
 	BodyAttachment2.OnFrameDefiningActorChanged(this);
+#endif
 
 	/// \todo Not sure what to do with this one.
 	// Create UAGX_ConstraintDofGraphicsComponent as child component.
@@ -110,8 +112,10 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 
 UAGX_ConstraintComponent::~UAGX_ConstraintComponent()
 {
+#if WITH_EDITOR
 	BodyAttachment1.OnDestroy(this);
 	BodyAttachment2.OnDestroy(this);
+#endif
 }
 
 FConstraintBarrier* UAGX_ConstraintComponent::GetOrCreateNative()
