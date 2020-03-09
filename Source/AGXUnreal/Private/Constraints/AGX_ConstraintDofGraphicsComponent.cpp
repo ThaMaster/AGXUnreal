@@ -1,11 +1,9 @@
 #include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
 
-
 // AGXUnreal includes.
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintEnums.h"
 #include "Utilities/AGX_MeshUtilities.h"
-
 
 // Unreal Engine includes.
 /// \todo Reduce includes!
@@ -25,7 +23,6 @@
 #include "StaticMeshResources.h"
 #include "UObject/ConstructorHelpers.h"
 #include "VertexFactory.h"
-
 
 /**
  * Holds vertex and index buffers for rendering.
