@@ -8,21 +8,11 @@
 #include "IPlacementModeModule.h"
 #include "ISettingsModule.h"
 #include "Modules/ModuleManager.h"
-
-#include "Framework/MultiBox/MultiBoxBuilder.h"
-#include "LevelEditor.h"
 #include "PropertyEditorModule.h"
 
-#include "Engine/StaticMeshActor.h"
-#include "DesktopPlatformModule.h"
-
 // AGXUnreal includes.
-#include "AGX_ArchiveImporter.h"
-#include "AGX_ArchiveExporter.h"
 #include "AGX_EditorStyle.h"
-#include "AGX_LogCategory.h"
 #include "AGX_RigidBodyActor.h"
-#include "AGX_RigidBodyComponent.h"
 #include "AGX_RigidBodyReference.h"
 #include "AGX_RigidBodyReferenceCustomization.h"
 #include "AGX_Simulation.h"
@@ -57,11 +47,7 @@
 #include "Materials/AGX_TerrainMaterialCustomization.h"
 #include "Materials/AGX_MaterialBase.h"
 #include "Materials/AGX_MaterialManager.h"
-#include "RigidBodyBarrier.h"
-#include "Shapes/AGX_SphereShapeComponent.h"
-#include "Shapes/AGX_BoxShapeComponent.h"
 #include "Terrain/AGX_Terrain.h"
-#include "Utilities/AGX_EditorUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
