@@ -129,15 +129,6 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(UAGX_ConstraintC
 	}
 }
 
-void FAGX_ConstraintBodyAttachment::OnRigidBodyReferenceChanged()
-{
-	UE_LOG(
-		LogAGX, Error, TEXT("FAGX_ConstraintBodyAttachment::OnRigidBodyReferenceChanged called."));
-
-	/// \todo Check if an illegal, i.e., not UAGX_RigidBodyComponent, component has been selected.
-	/// Selecting nothing is not an error.
-}
-
 void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
 {
 	AAGX_ConstraintFrameActor* ConstraintFrame =
