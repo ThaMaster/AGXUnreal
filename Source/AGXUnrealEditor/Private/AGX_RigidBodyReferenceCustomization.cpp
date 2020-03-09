@@ -185,16 +185,7 @@ void FAGX_RigidBodyReferenceCustomization::FetchBodyNames()
 void FAGX_RigidBodyReferenceCustomization::OnComboBoxChanged(
 	TSharedPtr<FName> NewSelection, ESelectInfo::Type SelectionInfo)
 {
-	if (NewSelection.IsValid())
-	{
-		UE_LOG(LogAGX, Log, TEXT("New selected body: '%s'"), *NewSelection->ToString());
-		SelectedBody = *NewSelection;
-	}
-	else
-	{
-		UE_LOG(LogAGX, Log, TEXT("No body selected"));
-		SelectedBody = NAME_None;
-	}
+	SelectedBody = NewSelection.IsValid() ? *NewSelection : NAME_None;
 	RigidBodyReference->BodyName = SelectedBody;
 	RigidBodyReference->InvalidateCache();
 }
