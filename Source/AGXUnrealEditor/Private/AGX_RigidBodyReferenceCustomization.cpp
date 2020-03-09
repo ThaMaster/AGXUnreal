@@ -39,10 +39,14 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeHeader(
 		return;
 	}
 
-	HeaderRow.ValueContent()[SNew(STextBlock)
-								 .Text(this, &FAGX_RigidBodyReferenceCustomization::GetHeaderText)
-								 .ToolTipText(
-									 this, &FAGX_RigidBodyReferenceCustomization::GetHeaderText)];
+	HeaderRow
+		.ValueContent() //
+		.MinDesiredWidth(250.0f) // 250 from SPropertyEditorAsset::GetDesiredWidth.
+			[SNew(STextBlock)
+				 .Text(this, &FAGX_RigidBodyReferenceCustomization::GetHeaderText)
+				 .ToolTipText(this, &FAGX_RigidBodyReferenceCustomization::GetHeaderText)
+				 .Font(IPropertyTypeCustomizationUtils::GetRegularFont())
+				 .MinDesiredWidth(250.0f)]; // 250 from SPropertyEditorAsset::GetDesiredWidth.
 }
 
 void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
@@ -68,7 +72,9 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 	FDetailWidgetRow& NameRow = StructBuilder.AddCustomRow(FText::FromString("Search String"));
 
 	/// \todo Use CreatePropertyNameWidget here, instead of hard coded string?
-	NameRow.NameContent()[SNew(STextBlock).Text(FText::FromString("RigidBodyComponent"))];
+	NameRow.NameContent()[SNew(STextBlock)
+							  .Text(FText::FromString("RigidBodyComponent"))
+							  .Font(IPropertyTypeCustomizationUtils::GetRegularFont())];
 
 	TSharedRef<SComboBox<TSharedPtr<FName>>> ComboBox =
 		SNew(SComboBox<TSharedPtr<FName>>)
@@ -126,8 +132,7 @@ FText FAGX_RigidBodyReferenceCustomization::GetHeaderText() const
 	AActor* OwningActor = RigidBodyReference->GetOwningActor();
 	FName BodyName = RigidBodyReference->BodyName;
 	FName ActorName = OwningActor ? OwningActor->GetFName() : NAME_None;
-	FString Header = FString::Printf(
-		TEXT("%s in %s. %s"), *BodyName.ToString(), *ActorName.ToString(), TEXT(__TIME__));
+	FString Header = FString::Printf(TEXT("%s in %s"), *BodyName.ToString(), *ActorName.ToString());
 	return FText::FromString(Header);
 }
 
