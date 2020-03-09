@@ -17,11 +17,6 @@
 #include "Widgets/Input/SComboBox.h"
 #include "Widgets/Text/STextBlock.h"
 
-// Debug includes. Remove before commit. Point out in code review if accidentally committed.
-#include "Misc/DateTime.h"
-#include "Utilities/AGX_EditorUtilities.h" /// \todo Remove?
-#include "IPropertyUtilities.h" /// \todo Remove?
-
 #define LOCTEXT_NAMESPACE "FAGX_RigidBodyReferenceCustomization"
 
 TSharedRef<IPropertyTypeCustomization> FAGX_RigidBodyReferenceCustomization::MakeInstance()
