@@ -2,37 +2,40 @@
 
 #include "AGX_LogCategory.h"
 
-#include "Windows/WindowsPlatformMisc.h"
 #include "Interfaces/IPluginManager.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EnvironmentUtilities"
+
+// Create a current-platform-specific version of the OS utilities.
+/// \note Something like this should be built into Unreal. Find it.
+#if defined(_WIN64)
+#include "Windows/WindowsPlatformMisc.h"
+struct FCurrentPlatformMisc : public FWindowsPlatformMisc
+{
+};
+#elif defined(__linux__)
+#include "Linux/LinuxPlatformMisc.h"
+struct FCurrentPlatformMisc : public FLinuxPlatformMisc
+{
+};
+#else
+static_assert(false);
+#endif
 
 namespace
 {
 	TArray<FString> GetEnvironmentVariableEntries(const FString& EnvVarName)
 	{
-#if defined(_WIN64)
-		FString EnvVarVal = FWindowsPlatformMisc::GetEnvironmentVariable(*EnvVarName);
-#else
-		// \todo Add calls for other platforms
-		static_assert(false);
-#endif
-
+		FString EnvVarVal = FCurrentPlatformMisc::GetEnvironmentVariable(*EnvVarName);
 		TArray<FString> EnvVarValArray;
 		EnvVarVal.ParseIntoArray(EnvVarValArray, TEXT(";"), false);
-
 		return EnvVarValArray;
 	}
 
 	void WriteEnvironmentVariable(const FString& EnvVarName, const TArray<FString>& Entries)
 	{
 		FString EnvVarVal = FString::Join(Entries, TEXT(";"));
-#if defined(_WIN64)
-		FWindowsPlatformMisc::SetEnvironmentVar(*EnvVarName, *EnvVarVal);
-#else
-		// \todo Add calls for other platforms
-		static_assert(false);
-#endif
+		FCurrentPlatformMisc::SetEnvironmentVar(*EnvVarName, *EnvVarVal);
 	}
 }
 
