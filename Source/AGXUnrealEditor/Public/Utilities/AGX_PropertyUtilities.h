@@ -26,10 +26,6 @@ public:
 	static TStruct* GetStructFromHandle(
 		const TSharedPtr<IPropertyHandle>& PropertyHandle, TOwner* Owner);
 
-	template <typename TOwner>
-	static USceneComponent* GetComponentFromComponentReferenceHandle(
-		const TSharedPtr<IPropertyHandle>& PropertyHandle, TOwner* Owner);
-
 	/**
 	 * Returns the Display Name metadata if such exists, or else the name converted to
 	 * display format (e.g. adding spacing between words, etc). Does not do localization yet!
@@ -39,15 +35,6 @@ public:
 	 */
 	static FString GetActualDisplayName(const UField* Field, bool bRemoveAgxPrefix);
 };
-
-template <typename TOwner>
-USceneComponent* FAGX_PropertyUtilities::GetComponentFromComponentReferenceHandle(
-	const TSharedPtr<IPropertyHandle>& PropertyHandle, TOwner* Owner)
-{
-	FComponentReference* Reference =
-		GetStructFromHandle<FComponentReference>(PropertyHandle, Owner);
-	return Reference->GetComponent(nullptr);
-}
 
 template <typename TStruct, typename TOwningClass>
 TStruct* FAGX_PropertyUtilities::GetStructFromHandle(
