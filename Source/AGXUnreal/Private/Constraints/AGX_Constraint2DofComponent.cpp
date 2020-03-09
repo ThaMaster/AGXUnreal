@@ -71,7 +71,8 @@ void UAGX_Constraint2DofComponent::UpdateNativeProperties()
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("AGX Constraint '%s' is trying to update native properties while not having a "
-				 "native handle."), *GetName());
+				 "native handle."),
+			*GetName());
 		return;
 	}
 
