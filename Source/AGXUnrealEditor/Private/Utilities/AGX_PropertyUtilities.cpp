@@ -14,9 +14,12 @@ bool FAGX_PropertyUtilities::PropertyEquals(
 UObject* FAGX_PropertyUtilities::GetParentObjectOfStruct(
 	const TSharedPtr<IPropertyHandle>& StructPropertyHandle)
 {
+	if (!StructPropertyHandle.IsValid())
+	{
+		return nullptr;
+	}
 	TArray<UObject*> OuterObjects;
 	StructPropertyHandle->GetOuterObjects(OuterObjects);
-
 	return OuterObjects.Num() > 0 ? OuterObjects[0] : nullptr;
 }
 
