@@ -20,11 +20,22 @@ public:
 	static UObject* GetParentObjectOfStruct(
 		const TSharedPtr<IPropertyHandle>& StructPropertyHandle);
 
+	/**
+	 * Given a PropertyHandle that identifies a UObject* Property, return that UObject* if only a
+	 * single object is selected. Return nullptr if multiple objects are selected.
+	 *
+	 * There is no way to distingquish between a nullptr UObject* Property and the multiple selected
+	 * objects case.
+	 */
 	static UObject* GetObjectFromHandle(const TSharedPtr<IPropertyHandle>& PropertyHandle);
 
-	template <typename TStruct, typename TOwner>
+	/**
+	 * Given a PropertyHandle that identifies a UStruct Property and an UObject that has such a
+	 * property, read the property value, i.e., a pointer to an actual C++ struct, from the UObject.
+	 */
+	template <typename TStruct>
 	static TStruct* GetStructFromHandle(
-		const TSharedPtr<IPropertyHandle>& PropertyHandle, TOwner* Owner);
+		const TSharedPtr<IPropertyHandle>& PropertyHandle, UObject* Owner);
 
 	/**
 	 * Returns the Display Name metadata if such exists, or else the name converted to
@@ -36,14 +47,18 @@ public:
 	static FString GetActualDisplayName(const UField* Field, bool bRemoveAgxPrefix);
 };
 
-template <typename TStruct, typename TOwningClass>
+template <typename TStruct>
 TStruct* FAGX_PropertyUtilities::GetStructFromHandle(
-	const TSharedPtr<IPropertyHandle>& PropertyHandle, TOwningClass* OwningClass)
+	const TSharedPtr<IPropertyHandle>& PropertyHandle, UObject* Owner)
 {
 	if (!PropertyHandle->IsValidHandle())
 	{
 		return nullptr;
 	}
+	if (Owner == nullptr)
+	{
+		return nullptr;
+	}
 
-	return PropertyHandle->GetProperty()->ContainerPtrToValuePtr<TStruct>(OwningClass);
+	return PropertyHandle->GetProperty()->ContainerPtrToValuePtr<TStruct>(Owner);
 }
