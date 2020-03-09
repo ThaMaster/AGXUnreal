@@ -19,7 +19,7 @@ UAGX_CylindricalConstraintComponent::~UAGX_CylindricalConstraintComponent()
 {
 }
 
-void UAGX_CylindricalConstraintComponent::CreateNativeImpl()
+void UAGX_CylindricalConstraintComponent::AllocateNative()
 {
 	NativeBarrier.Reset(new FCylindricalJointBarrier());
 

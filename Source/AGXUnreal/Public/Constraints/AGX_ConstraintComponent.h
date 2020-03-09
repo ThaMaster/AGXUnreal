@@ -88,8 +88,8 @@ public:
 	 *
 	 * Can be overriden for specialized constraint checks.
 	 */
-	virtual bool AreFramesInViolatedState(float Tolerance = KINDA_SMALL_NUMBER, FString* OutMessage = nullptr) const;
-
+	virtual bool AreFramesInViolatedState(
+		float Tolerance = KINDA_SMALL_NUMBER, FString* OutMessage = nullptr) const;
 
 	EDofFlag GetLockedDofsBitmask() const;
 
@@ -140,11 +140,17 @@ protected:
 protected:
 	bool ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof);
 
-	/** Must be overriden by derived class, and create a NativeBarrier with allocated native.
-	 * Nothing more.*/
+	/**
+	 * Allocate a native constraint and point NativeBarrier to it. Perform any
+	 * constraint-specific configuration that may be necessary, such as binding secondary constraint
+	 * barriers to their respective native objects within the native constraint.
+	 */
 	virtual void CreateNativeImpl() PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl, );
 
-private: /** Invokes CreateNativeImpl, then adds the native to the simulation. */
+private:
+	/**
+	 * Invokes CreateNativeImpl, then adds the native to the simulation.
+	 */
 	void CreateNative();
 
 protected:

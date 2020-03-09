@@ -55,12 +55,22 @@ public:
 	virtual void UpdateNativeProperties() override;
 
 protected:
+	/**
+	 * Call AllocateNative and then bind the constraint controllers to their native representations
+	 * within the allocated native constraint.
+	 */
 	virtual void CreateNativeImpl() override final;
+
+	/**
+	 * Allocate the native constraint, of the appropriate type for the current subclass of
+	 * UAGX_Constraint1DofComponent, and assign the new typed ConstraintBarrier to the inherited
+	 * NativeBarrier member variable.
+	 */
 	virtual void AllocateNative() PURE_VIRTUAL(UAGX_Constraint1DofComponent::AllocateNative, );
 
 private:
-	class FConstraint1DOFBarrier* GetNativeBarrierCasted() const;
-
+	// Some constraints, such as Distance, cannot use the lock constraint because it is reserved for
+	// internal use within the native constraint.
 	UPROPERTY(Transient, Category = "AGX Secondary Constraint", VisibleDefaultsOnly)
 	bool bIsLockControllerEditable;
 };

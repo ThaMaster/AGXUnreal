@@ -23,11 +23,45 @@ UAGX_Constraint2DofComponent::UAGX_Constraint2DofComponent(
 	, RangeController2(bIsSecondaryConstraint2Rotational)
 	, TargetSpeedController1(bIsSecondaryConstraint1Rotational)
 	, TargetSpeedController2(bIsSecondaryConstraint2Rotational)
+	, ScrewController()
 {
 }
 
 UAGX_Constraint2DofComponent::~UAGX_Constraint2DofComponent()
 {
+}
+
+namespace
+{
+	FConstraint2DOFBarrier* Get2DofBarrier(UAGX_Constraint2DofComponent& Constraint)
+	{
+		return static_cast<FConstraint2DOFBarrier*>(Constraint.GetNative());
+	}
+}
+
+void UAGX_Constraint2DofComponent::CreateNativeImpl()
+{
+	AllocateNative();
+	if (!HasNative())
+	{
+		return;
+	}
+
+	// Is there a less tedious, and error prone, way to write this?
+	EAGX_Constraint2DOFFreeDOF FIRST = EAGX_Constraint2DOFFreeDOF::FIRST;
+	EAGX_Constraint2DOFFreeDOF SECOND = EAGX_Constraint2DOFFreeDOF::SECOND;
+	FConstraint2DOFBarrier* Barrier = Get2DofBarrier(*this);
+	ElectricMotorController1.InitializeBarrier(Barrier->GetElectricMotorController(FIRST));
+	ElectricMotorController2.InitializeBarrier(Barrier->GetElectricMotorController(SECOND));
+	FrictionController1.InitializeBarrier(Barrier->GetFrictionController(FIRST));
+	FrictionController2.InitializeBarrier(Barrier->GetFrictionController(SECOND));
+	LockController1.InitializeBarrier(Barrier->GetLockController(FIRST));
+	LockController2.InitializeBarrier(Barrier->GetLockController(SECOND));
+	RangeController1.InitializeBarrier(Barrier->GetRangeController(FIRST));
+	RangeController2.InitializeBarrier(Barrier->GetRangeController(SECOND));
+	TargetSpeedController1.InitializeBarrier(Barrier->GetTargetSpeedController(FIRST));
+	TargetSpeedController2.InitializeBarrier(Barrier->GetTargetSpeedController(SECOND));
+	ScrewController.InitializeBarrier(Barrier->GetScrewController());
 }
 
 void UAGX_Constraint2DofComponent::UpdateNativeProperties()
@@ -54,12 +88,5 @@ void UAGX_Constraint2DofComponent::UpdateNativeProperties()
 	RangeController2.UpdateNativeProperties();
 	TargetSpeedController1.UpdateNativeProperties();
 	TargetSpeedController2.UpdateNativeProperties();
-}
-
-FConstraint2DOFBarrier* UAGX_Constraint2DofComponent::GetNativeBarrierCasted() const
-{
-	if (HasNative())
-		return static_cast<FConstraint2DOFBarrier*>(NativeBarrier.Get());
-	else
-		return nullptr;
+	ScrewController.UpdateNativeProperties();
 }

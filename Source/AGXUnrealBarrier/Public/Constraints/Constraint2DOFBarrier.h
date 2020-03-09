@@ -31,6 +31,7 @@ public:
 	TUniquePtr<FRangeControllerBarrier> GetRangeController(EAGX_Constraint2DOFFreeDOF Dof);
 	TUniquePtr<FTargetSpeedControllerBarrier> GetTargetSpeedController(
 		EAGX_Constraint2DOFFreeDOF Dof);
+	TUniquePtr<FScrewControllerBarrier> GetScrewController();
 
 	TUniquePtr<const FElectricMotorControllerBarrier> GetElectricMotorController(
 		EAGX_Constraint2DOFFreeDOF Dof) const;
@@ -42,6 +43,7 @@ public:
 		EAGX_Constraint2DOFFreeDOF Dof) const;
 	TUniquePtr<const FTargetSpeedControllerBarrier> GetTargetSpeedController(
 		EAGX_Constraint2DOFFreeDOF Dof) const;
+	TUniquePtr<const FScrewControllerBarrier> GetScrewController() const;
 
 private:
 	FConstraint2DOFBarrier(const FConstraint2DOFBarrier&) = delete;

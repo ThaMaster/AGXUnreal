@@ -21,5 +21,5 @@ public:
 	virtual ~UAGX_CylindricalConstraintComponent() override;
 
 protected:
-	virtual void CreateNativeImpl() override;
+	virtual void AllocateNative() override;
 };

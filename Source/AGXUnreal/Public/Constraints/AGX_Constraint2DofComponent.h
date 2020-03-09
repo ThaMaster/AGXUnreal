@@ -77,10 +77,21 @@ public:
 		const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraint1Rotational,
 		bool bIsSecondaryConstraint2Rotational);
 
-	virtual ~UAGX_Constraint2DofComponent();
+	virtual ~UAGX_Constraint2DofComponent() override;
 
 	virtual void UpdateNativeProperties() override;
 
-private:
-	class FConstraint2DOFBarrier* GetNativeBarrierCasted() const;
+protected:
+	/**
+	 * Call AllocateNative and then bind the constraint controllers to their native representations
+	 * within the allocated native constraint.
+	 */
+	virtual void CreateNativeImpl() override final;
+
+	/**
+	 * Allocate the native constraint, of the appropriate type for the current subclass of
+	 * UAGX_Constraint1DofComponent, and assign the new typed ConstraintBarrier to the inherited
+	 * NativeBarrier member variable.
+	 */
+	virtual void AllocateNative() PURE_VIRTUAL(UAGX_Constraint2DofComponent::AllocateNativ, );
 };

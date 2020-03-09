@@ -56,9 +56,6 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 	FrameDefiningActorProperty = StructPropertyHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningActor));
 
-	const UObject* FrameDefiningActor =
-		FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty);
-
 	uint32 NumChildren = 0;
 	StructPropertyHandle->GetNumChildren(NumChildren);
 

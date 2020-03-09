@@ -1,8 +1,5 @@
 #pragma once
 
-// AGX Unreal includes.
-//#include "Constraints/AGX_ConstraintComponent.h" /// \todo Is this needed?
-
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
