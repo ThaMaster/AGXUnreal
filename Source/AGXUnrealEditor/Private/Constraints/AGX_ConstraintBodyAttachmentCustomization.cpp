@@ -69,19 +69,6 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 			IDetailPropertyRow& DefaultPropertyRow =
 				StructBuilder.AddProperty(ChildHandle.ToSharedRef());
 
-			// Frame properties only visible if Rigid Body Actor has been set.
-#if 0
-			if (!FAGX_PropertyUtilities::PropertyEquals(ChildHandle, RigidBodyProperty))
-			{
-				TAttribute<EVisibility> IsVisibleDelegate = TAttribute<EVisibility>::Create(
-					TAttribute<EVisibility>::FGetter::CreateLambda([this] {
-						return HasRigidBody() ? EVisibility::Visible : EVisibility::Collapsed;
-					}));
-
-				DefaultPropertyRow.Visibility(IsVisibleDelegate);
-			}
-#endif
-
 			// Add "Create New" option to context menu for the Frame Defining Actor.
 			if (FAGX_PropertyUtilities::PropertyEquals(ChildHandle, FrameDefiningActorProperty))
 			{
