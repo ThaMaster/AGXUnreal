@@ -3,6 +3,7 @@
 #include "AGX_LogCategory.h"
 
 #include "Interfaces/IPluginManager.h"
+#include "Misc/Paths.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EnvironmentUtilities"
 
