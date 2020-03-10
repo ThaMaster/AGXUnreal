@@ -1,39 +1,40 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-#include "Constraints/AGX_LockConstraint.h"
+#include "Constraints/AGX_LockConstraintComponent.h"
 
 #include "Constraints/LockJointBarrier.h"
 #include "AGX_LogCategory.h"
 
 class FRigidBodyBarrier;
 
-AAGX_LockConstraint::AAGX_LockConstraint()
-	: AAGX_Constraint({EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
-					   EDofFlag::DOF_FLAG_TRANSLATIONAL_3, EDofFlag::DOF_FLAG_ROTATIONAL_1,
-					   EDofFlag::DOF_FLAG_ROTATIONAL_2, EDofFlag::DOF_FLAG_ROTATIONAL_3})
+UAGX_LockConstraintComponent::UAGX_LockConstraintComponent()
+	: UAGX_ConstraintComponent({EDofFlag::DOF_FLAG_TRANSLATIONAL_1,
+								EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
+								EDofFlag::DOF_FLAG_TRANSLATIONAL_3, EDofFlag::DOF_FLAG_ROTATIONAL_1,
+								EDofFlag::DOF_FLAG_ROTATIONAL_2, EDofFlag::DOF_FLAG_ROTATIONAL_3})
 {
 }
 
-AAGX_LockConstraint::~AAGX_LockConstraint()
+UAGX_LockConstraintComponent::~UAGX_LockConstraintComponent()
 {
 }
 
-void AAGX_LockConstraint::CreateNativeImpl()
+void UAGX_LockConstraintComponent::CreateNativeImpl()
 {
 	NativeBarrier.Reset(new FLockJointBarrier());
 
 	FRigidBodyBarrier* RigidBody1 = BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 	FRigidBodyBarrier* RigidBody2 = BodyAttachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 
-	if (!RigidBody1)
+	if (RigidBody1 == nullptr)
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Lock constraint %s: could not get Rigid Body Actor from Body Attachment 1."),
+			LogAGX, Error,
+			TEXT("Lock constraint %s: could not get Rigid Body Actor from Body Attachment 1. "
+				 "Constraint cannot be created."),
 			*GetFName().ToString());
 		return;
 	}
 
-	if ((BodyAttachment2.RigidBodyActor && !RigidBody2))
+	if (BodyAttachment2.GetRigidBody() != nullptr && RigidBody2 == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -48,7 +49,8 @@ void AAGX_LockConstraint::CreateNativeImpl()
 	FQuat FrameRotation1 = BodyAttachment1.GetLocalFrameRotation();
 	FQuat FrameRotation2 = BodyAttachment2.GetLocalFrameRotation();
 
+	// Ok if second is nullptr, means that the first body is constrainted to the world.
 	NativeBarrier->AllocateNative(
 		RigidBody1, &FrameLocation1, &FrameRotation1, RigidBody2, &FrameLocation2,
-		&FrameRotation2); // ok if second is nullptr
+		&FrameRotation2);
 }

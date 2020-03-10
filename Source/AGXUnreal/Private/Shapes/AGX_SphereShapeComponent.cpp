@@ -79,7 +79,6 @@ bool UAGX_SphereShapeComponent::DoesPropertyAffectVisualMesh(
 
 void UAGX_SphereShapeComponent::CreateNative()
 {
-	UE_LOG(LogAGX, Log, TEXT("Allocating native object for SphereShapeComponent."));
 	check(!HasNative());
 	NativeBarrier.AllocateNative();
 	UpdateNativeProperties();
@@ -87,7 +86,6 @@ void UAGX_SphereShapeComponent::CreateNative()
 
 void UAGX_SphereShapeComponent::ReleaseNative()
 {
-	UE_LOG(LogAGX, Log, TEXT("Releasing native object for SphereShapeComponent."));
 	check(HasNative());
 	NativeBarrier.ReleaseNative();
 }

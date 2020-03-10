@@ -2,8 +2,8 @@
 
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
-#include "Constraints/AGX_Constraint1DOF.h"
-#include "Constraints/AGX_Constraint2DOF.h"
+#include "Constraints/AGX_Constraint1DofComponent.h"
+#include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 
 // Unreal Engine includes.
@@ -20,8 +20,9 @@ namespace UAGX_InputTargetSpeed_Helpers
 		{
 			return false;
 		}
-		return Input.GetOwner()->IsA<AAGX_Constraint1DOF>() ||
-			   Input.GetOwner()->IsA<AAGX_Constraint2DOF>();
+		USceneComponent* Parent = Input.GetAttachParent();
+		return Parent->IsA<UAGX_Constraint1DofComponent>() ||
+			   Parent->IsA<UAGX_Constraint2DofComponent>();
 	}
 }
 
@@ -63,16 +64,19 @@ namespace UAGX_InputTargetSpeed_Helpers
 			return Failure;
 		}
 
-		if (AAGX_Constraint1DOF* Constraint1DOF = Cast<AAGX_Constraint1DOF>(Input.GetOwner()))
+		USceneComponent* Parent = Input.GetAttachParent();
+		if (UAGX_Constraint1DofComponent* Constraint1Dof =
+				Cast<UAGX_Constraint1DofComponent>(Parent))
 		{
-			return {&Constraint1DOF->TargetSpeedController, Controller, true};
+			return {&Constraint1Dof->TargetSpeedController, Controller, true};
 		}
 
-		if (AAGX_Constraint2DOF* Constraint2DOF = Cast<AAGX_Constraint2DOF>(Input.GetOwner()))
+		if (UAGX_Constraint2DofComponent* Constraint2Dof =
+				Cast<UAGX_Constraint2DofComponent>(Parent))
 		{
 			const bool First = Input.TargetDOF == EAGX_Constraint2DOFFreeDOF::FIRST;
-			return {(First ? &Constraint2DOF->TargetSpeedController1
-						   : &Constraint2DOF->TargetSpeedController2),
+			return {(First ? &Constraint2Dof->TargetSpeedController1
+						   : &Constraint2Dof->TargetSpeedController2),
 					Controller, true};
 		}
 
@@ -88,7 +92,7 @@ namespace UAGX_InputTargetSpeed_Helpers
 			return;
 		}
 
-		Controller.Speed = Speed;
+		Controller.Speed = static_cast<double>(Speed); /// \todo Decide on a precision.
 		Controller.bEnable = bEnabled;
 		Controller.UpdateNativeProperties();
 	}

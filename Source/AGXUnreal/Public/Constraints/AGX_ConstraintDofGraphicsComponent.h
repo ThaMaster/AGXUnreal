@@ -1,10 +1,14 @@
 #pragma once
 
-#include "CoreMinimal.h"
+// AGXUnreal includes.
 #include "Components/MeshComponent.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
 #include "AGX_ConstraintDofGraphicsComponent.generated.h"
 
-class AAGX_Constraint;
+class UAGX_ConstraintComponent;
 class FPrimitiveSceneProxy;
 
 /**
@@ -17,7 +21,7 @@ class AGXUNREAL_API UAGX_ConstraintDofGraphicsComponent : public UMeshComponent
 
 public:
 	UPROPERTY()
-	AAGX_Constraint* Constraint;
+	UAGX_ConstraintComponent* Constraint;
 
 	UMaterialInterface* GetFreeTranslationMaterial() const;
 	UMaterialInterface* GetFreeRotationMaterial() const;

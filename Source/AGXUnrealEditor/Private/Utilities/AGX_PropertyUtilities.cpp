@@ -1,5 +1,6 @@
 #include "Utilities/AGX_PropertyUtilities.h"
 
+// Unreal Engine includes.
 #include "UObject/MetaData.h"
 #include "UObject/Package.h"
 
@@ -13,9 +14,12 @@ bool FAGX_PropertyUtilities::PropertyEquals(
 UObject* FAGX_PropertyUtilities::GetParentObjectOfStruct(
 	const TSharedPtr<IPropertyHandle>& StructPropertyHandle)
 {
+	if (!StructPropertyHandle.IsValid())
+	{
+		return nullptr;
+	}
 	TArray<UObject*> OuterObjects;
 	StructPropertyHandle->GetOuterObjects(OuterObjects);
-
 	return OuterObjects.Num() > 0 ? OuterObjects[0] : nullptr;
 }
 
@@ -28,6 +32,9 @@ UObject* FAGX_PropertyUtilities::GetObjectFromHandle(
 		UObject* Object = nullptr;
 		if (PropertyHandle->GetValue(Object) != FPropertyAccess::Result::Fail)
 		{
+			/// \todo Make sure we get the correct result even when multiple objects are selected. I
+			/// worry that we should test for equality with FPRopertyAccess::Success instead of
+			/// inequality with FPropertyAccess::Fail because of the possibility of MultipleValues.
 			return Object;
 		}
 	}

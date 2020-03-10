@@ -1,22 +1,24 @@
-//
-
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Constraints/AGX_Constraint.h"
+// AGXUnreal includes.
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
 #include "Constraints/Controllers/AGX_FrictionController.h"
 #include "Constraints/Controllers/AGX_LockController.h"
 #include "Constraints/Controllers/AGX_RangeController.h"
 #include "Constraints/Controllers/AGX_ScrewController.h"
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
-#include "AGX_Constraint2DOF.generated.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
+#include "AGX_Constraint2DofComponent.generated.h"
 
 /**
  *
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract, meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API AAGX_Constraint2DOF : public AAGX_Constraint
+class AGXUNREAL_API UAGX_Constraint2DofComponent : public UAGX_ConstraintComponent
 {
 	GENERATED_BODY()
 
@@ -69,16 +71,27 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraints")
 	FAGX_ConstraintScrewController ScrewController;
 
-	AAGX_Constraint2DOF();
+	UAGX_Constraint2DofComponent();
 
-	AAGX_Constraint2DOF(
+	UAGX_Constraint2DofComponent(
 		const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraint1Rotational,
 		bool bIsSecondaryConstraint2Rotational);
 
-	virtual ~AAGX_Constraint2DOF();
+	virtual ~UAGX_Constraint2DofComponent() override;
 
 	virtual void UpdateNativeProperties() override;
 
-private:
-	class FConstraint2DOFBarrier* GetNativeBarrierCasted() const;
+protected:
+	/**
+	 * Call AllocateNative and then bind the constraint controllers to their native representations
+	 * within the allocated native constraint.
+	 */
+	virtual void CreateNativeImpl() override final;
+
+	/**
+	 * Allocate the native constraint, of the appropriate type for the current subclass of
+	 * UAGX_Constraint1DofComponent, and assign the new typed ConstraintBarrier to the inherited
+	 * NativeBarrier member variable.
+	 */
+	virtual void AllocateNative() PURE_VIRTUAL(UAGX_Constraint2DofComponent::AllocateNativ, );
 };

@@ -1,14 +1,16 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Constraints/AGX_ConstraintComponentVisualizer.h"
 
-#include "CanvasItem.h"
-#include "CanvasTypes.h"
-#include "SceneManagement.h"
-
-#include "Constraints/AGX_Constraint.h"
+// AGXUnreal includes.
+#include "AGX_RigidBodyComponent.h"
+#include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
+
+// Unreal Engine inclues.
+#include "CanvasItem.h"
+#include "CanvasTypes.h"
+#include "Engine.h"
+#include "SceneManagement.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintComponentVisualizer"
 
@@ -63,8 +65,8 @@ void FAGX_ConstraintComponentVisualizer::DrawVisualization(
 	if (ConstraintComponent == nullptr)
 		return;
 
-	const AAGX_Constraint* Constraint =
-		Cast<const AAGX_Constraint>(ConstraintComponent->GetOwner());
+	const UAGX_ConstraintComponent* Constraint =
+		Cast<const UAGX_ConstraintComponent>(ConstraintComponent);
 
 	DrawConstraint(Constraint, View, PDI);
 
@@ -81,7 +83,7 @@ void FAGX_ConstraintComponentVisualizer::DrawVisualizationHUD(
 	const UActorComponent* Component, const FViewport* Viewport, const FSceneView* View,
 	FCanvas* Canvas)
 {
-	const AAGX_Constraint* Constraint = Cast<const AAGX_Constraint>(Component->GetOwner());
+	const UAGX_ConstraintComponent* Constraint = Cast<const UAGX_ConstraintComponent>(Component);
 
 	if (!Constraint)
 	{
@@ -107,8 +109,30 @@ float GetScreenFactorFromWorldSize(float WorldSize, float FOV, float WorldDistan
 	return WorldSize / GetScreenToWorldFactor(FOV, WorldDistance);
 }
 
+namespace
+{
+	FBox GetBoundingBox(UAGX_RigidBodyComponent* Body)
+	{
+		FBox Box(ForceInit);
+
+		const FTransform& BodyToWorld = Body->GetComponentTransform();
+		const FTransform WorldToBody = BodyToWorld.Inverse();
+
+		TArray<USceneComponent*> Children;
+		Body->GetChildrenComponents(true, Children);
+		for (auto Child : Children)
+		{
+			const FTransform ComponentToBody = Child->GetComponentTransform() * WorldToBody;
+			const FBoxSphereBounds BoundInBodySpace = Child->CalcBounds(ComponentToBody);
+			Box += BoundInBodySpace.GetBox();
+		}
+		return Box;
+	}
+}
+
 void FAGX_ConstraintComponentVisualizer::DrawConstraint(
-	const AAGX_Constraint* Constraint, const FSceneView* View, FPrimitiveDrawInterface* PDI)
+	const UAGX_ConstraintComponent* Constraint, const FSceneView* View,
+	FPrimitiveDrawInterface* PDI)
 {
 	if (Constraint == nullptr)
 		return;
@@ -118,25 +142,24 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 		FAGX_ConstraintBodyAttachment BodyAttachment =
 			RigidBodyIndex == 0 ? Constraint->BodyAttachment1 : Constraint->BodyAttachment2;
 
-		if (AActor* RigidBodyActor = BodyAttachment.RigidBodyActor)
+		/// \todo Cannot assume a single body per actor.
+		if (UAGX_RigidBodyComponent* RigidBody = BodyAttachment.GetRigidBody())
 		{
 			// Highlight Rigid Body Actor
 			if (bHighlightUsingBoundingBox)
 			{
-				FBox LocalAABB = RigidBodyActor->CalculateComponentsBoundingBoxInLocalSpace(
-					/*bNonColliding*/ true);
+				FBox LocalAABB = GetBoundingBox(RigidBody);
 
 				DrawOrientedWireBox(
-					PDI, RigidBodyActor->GetActorLocation(),
-					RigidBodyActor->GetActorForwardVector(), RigidBodyActor->GetActorRightVector(),
-					RigidBodyActor->GetActorUpVector(), LocalAABB.GetExtent(), HighlightColor,
-					SDPG_World, HighlightThickness, /*DepthBias*/ 0.0f,
+					PDI, RigidBody->GetComponentLocation(), RigidBody->GetForwardVector(),
+					RigidBody->GetRightVector(), RigidBody->GetUpVector(), LocalAABB.GetExtent(),
+					HighlightColor, SDPG_World, HighlightThickness, /*DepthBias*/ 0.0f,
 					/*bScreenSpace*/ true);
 			}
 			else if (bHighlightUsingCircle)
 			{
 				FVector Direction =
-					(RigidBodyActor->GetActorLocation() - View->ViewLocation).GetSafeNormal();
+					(RigidBody->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
 				float Distance = 40.0f;
 				FVector Location = View->ViewLocation + Direction * Distance;
 				float Radius = GetWorldSizeFromScreenFactor(
@@ -173,19 +196,19 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 
 	if (bDrawLineBetweenActors)
 	{
-		AActor* RigidBodyActor1 = Constraint->BodyAttachment1.RigidBodyActor;
-		AActor* RigidBodyActor2 = Constraint->BodyAttachment2.RigidBodyActor;
+		UAGX_RigidBodyComponent* RigidBody1 = Constraint->BodyAttachment1.GetRigidBody();
+		UAGX_RigidBodyComponent* RigidBody2 = Constraint->BodyAttachment2.GetRigidBody();
 
-		if (RigidBodyActor1 && RigidBodyActor2)
+		if (RigidBody1 != nullptr && RigidBody2 != nullptr)
 		{
 			float Distance = 100.0f;
 
 			FVector Direction1 =
-				(RigidBodyActor1->GetActorLocation() - View->ViewLocation).GetSafeNormal();
+				(RigidBody1->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
 			FVector Location1 = View->ViewLocation + Direction1 * Distance;
 
 			FVector Direction2 =
-				(RigidBodyActor2->GetActorLocation() - View->ViewLocation).GetSafeNormal();
+				(RigidBody2->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
 			FVector Location2 = View->ViewLocation + Direction2 * Distance;
 
 			DrawDashedLine(
@@ -196,13 +219,14 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 }
 
 void FAGX_ConstraintComponentVisualizer::DrawConstraintHUD(
-	const AAGX_Constraint* Constraint, const FViewport* Viewport, const FSceneView* View,
+	const UAGX_ConstraintComponent* Constraint, const FViewport* Viewport, const FSceneView* View,
 	FCanvas* Canvas)
 {
-	if (Constraint->AreFramesInViolatedState())
+	FString Message;
+	if (Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER, &Message))
 	{
 		FVector2D Position(0.45f, 0.35f);
-		FText Text = FText::FromString("Constraint Frames In Violated State!");
+		FText Text = FText::FromString(FString::Printf(TEXT("Constraint Frames In Violated State!\n%s"), *Message));
 		UFont* Font = GEngine->GetSubtitleFont();
 		FCanvasTextItem CanvasText(
 			Position * Canvas->GetViewRect().Size(), Text, Font, FColor::Red);

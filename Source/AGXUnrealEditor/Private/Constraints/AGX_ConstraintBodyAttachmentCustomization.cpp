@@ -1,19 +1,23 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Constraints/AGX_ConstraintBodyAttachmentCustomization.h"
 
+// AGXUnreal includes.
+#include "AGX_RigidBodyComponent.h"
+#include "Constraints/AGX_ConstraintComponent.h"
+#include "Constraints/AGX_ConstraintFrameActor.h"
+#include "Constraints/AGX_ConstraintBodyAttachment.h"
+#include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_PropertyUtilities.h"
+#include "Utilities/AGX_SlateUtilities.h"
+
+// Unreal Engine includes
 #include "DetailCategoryBuilder.h"
 #include "DetailWidgetRow.h"
 #include "DetailLayoutBuilder.h"
 #include "IDetailChildrenBuilder.h"
 #include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Layout/SBox.h"
 #include "Widgets/Notifications/SNotificationList.h"
-
-#include "Constraints/AGX_Constraint.h"
-#include "Constraints/AGX_ConstraintFrameActor.h"
-#include "Utilities/AGX_EditorUtilities.h"
-#include "Utilities/AGX_PropertyUtilities.h"
-#include "Utilities/AGX_SlateUtilities.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintBodyAttachmentCustomization"
 
@@ -29,7 +33,7 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeHeader(
 	BodyAttachmentProperty = StructPropertyHandle;
 
 	RigidBodyProperty = StructPropertyHandle->GetChildHandle(
-		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, RigidBodyActor));
+		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, RigidBody));
 
 	// Use default visualization in the name column (left side).
 	HeaderRow.NameContent()[StructPropertyHandle->CreatePropertyNameWidget()];
@@ -52,9 +56,6 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 	FrameDefiningActorProperty = StructPropertyHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningActor));
 
-	const UObject* FrameDefiningActor =
-		FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty);
-
 	uint32 NumChildren = 0;
 	StructPropertyHandle->GetNumChildren(NumChildren);
 
@@ -67,17 +68,6 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 			// Add default visualization.
 			IDetailPropertyRow& DefaultPropertyRow =
 				StructBuilder.AddProperty(ChildHandle.ToSharedRef());
-
-			// Frame properties only visible if Rigid Body Actor has been set.
-			if (!FAGX_PropertyUtilities::PropertyEquals(ChildHandle, RigidBodyProperty))
-			{
-				TAttribute<EVisibility> IsVisibleDelegate = TAttribute<EVisibility>::Create(
-					TAttribute<EVisibility>::FGetter::CreateLambda([this] {
-						return HasRigidBodyActor() ? EVisibility::Visible : EVisibility::Collapsed;
-					}));
-
-				DefaultPropertyRow.Visibility(IsVisibleDelegate);
-			}
 
 			// Add "Create New" option to context menu for the Frame Defining Actor.
 			if (FAGX_PropertyUtilities::PropertyEquals(ChildHandle, FrameDefiningActorProperty))
@@ -127,21 +117,38 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 	StructBuilder.AddCustomRow(FText::FromString(""));
 }
 
-FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
+namespace
 {
-	FString RigidBodyName;
-	if (const AActor* RigidBody =
-			Cast<AActor>(FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty)))
+	FAGX_ConstraintBodyAttachment* GetConstraintBodyAttachment(
+		const TSharedPtr<IPropertyHandle>& BodyAttachmentProperty)
 	{
-		RigidBodyName = "(" + RigidBody->GetActorLabel() + ")";
+		return FAGX_PropertyUtilities::GetStructFromHandle<FAGX_ConstraintBodyAttachment>(
+			BodyAttachmentProperty,
+			Cast<UAGX_ConstraintComponent>(
+				FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyAttachmentProperty)));
 	}
-
-	return FText::FromString(RigidBodyName);
 }
 
-bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBodyActor() const
+FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 {
-	return FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty);
+	FAGX_ConstraintBodyAttachment* Attachment = GetConstraintBodyAttachment(BodyAttachmentProperty);
+	USceneComponent* SceneComponent = Attachment->GetRigidBody();
+	if (SceneComponent == nullptr)
+	{
+		return FText::FromString(TEXT("<Nothing selected>"));
+	}
+	UAGX_RigidBodyComponent* Body = Cast<UAGX_RigidBodyComponent>(SceneComponent);
+	if (Body == nullptr)
+	{
+		return FText::FromString(TEXT("<Something not a body selected>"));
+	}
+	FString Name = Body->GetName();
+	return FText::FromString(TEXT("(") + Name + TEXT(")"));
+}
+
+bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBody() const
+{
+	return GetConstraintBodyAttachment(BodyAttachmentProperty)->GetRigidBody() != nullptr;
 }
 
 bool FAGX_ConstraintBodyAttachmentCustomization::HasFrameDefiningActor() const
@@ -149,7 +156,8 @@ bool FAGX_ConstraintBodyAttachmentCustomization::HasFrameDefiningActor() const
 	return FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty);
 }
 
-FString GenerateFrameDefiningActorName(const AAGX_Constraint* Constraint, const AActor* RigidBody)
+FString GenerateFrameDefiningActorName(
+	const UAGX_ConstraintComponent* Constraint, const UAGX_RigidBodyComponent* RigidBody)
 {
 	check(Constraint);
 	return "Constraint Frame Actor for " + Constraint->GetName();
@@ -160,26 +168,41 @@ void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor(
 	check(BodyAttachmentProperty);
 
 	if (FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty))
-		return; // already exists
+	{
+		// Already exists.
+		return;
+	}
 
-	AAGX_Constraint* Constraint = Cast<AAGX_Constraint>(
+	UAGX_ConstraintComponent* Constraint = Cast<UAGX_ConstraintComponent>(
 		FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyAttachmentProperty));
 
 	check(Constraint);
 
-	AActor* RigidBody =
-		Cast<AActor>(FAGX_PropertyUtilities::GetObjectFromHandle(RigidBodyProperty)); // optional
+	AActor* ParentActor = [this]() -> AActor* {
+		FAGX_ConstraintBodyAttachment* Attachment =
+			GetConstraintBodyAttachment(BodyAttachmentProperty);
+		if (Attachment == nullptr)
+		{
+			return nullptr;
+		}
+		UAGX_RigidBodyComponent* RigidBody = Attachment->GetRigidBody();
+		if (RigidBody == nullptr)
+		{
+			return nullptr;
+		}
+		return RigidBody->GetOwner();
+	}();
 
 	// Create the new Constraint Frame Actor.
 	AActor* NewActor = FAGX_EditorUtilities::CreateConstraintFrameActor(
-		RigidBody,
+		ParentActor,
 		/*Select*/ true,
 		/*ShowNotification*/ true,
 		/*InPlayingWorldIfAvailable*/ true);
 
 	// Set the new actor to our property.
-
-#if 0 // This should work, but doesn't! Using worked-around below instead...
+#if 0
+	// This should work, but doesn't! Using worked-around below instead...
 	FPropertyAccess::Result Result = FrameDefiningActorProperty->SetValue((UObject*)NewActor);
 	check(Result == FPropertyAccess::Success);
 #else
@@ -188,7 +211,6 @@ void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor(
 			BodyAttachmentProperty, Constraint);
 
 	BodyAttachment->FrameDefiningActor = NewActor;
-
 	BodyAttachment->OnFrameDefiningActorChanged(Constraint);
 #endif
 }

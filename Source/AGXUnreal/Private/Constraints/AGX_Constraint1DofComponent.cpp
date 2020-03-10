@@ -1,20 +1,18 @@
-//
-
-#include "Constraints/AGX_Constraint1DOF.h"
+#include "Constraints/AGX_Constraint1DofComponent.h"
 
 #include "AGX_LogCategory.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "Constraints/Controllers/AGX_LockController.h"
 #include "Constraints/Constraint1DOFBarrier.h"
 
-AAGX_Constraint1DOF::AAGX_Constraint1DOF()
+UAGX_Constraint1DofComponent::UAGX_Constraint1DofComponent()
 {
 }
 
-AAGX_Constraint1DOF::AAGX_Constraint1DOF(
+UAGX_Constraint1DofComponent::UAGX_Constraint1DofComponent(
 	const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraintRotational,
 	bool bInIsLockControllerEditable)
-	: AAGX_Constraint(LockedDofsOrdered)
+	: UAGX_ConstraintComponent(LockedDofsOrdered)
 	, ElectricMotorController(bIsSecondaryConstraintRotational)
 	, FrictionController(bIsSecondaryConstraintRotational)
 	, LockController(bIsSecondaryConstraintRotational)
@@ -24,20 +22,20 @@ AAGX_Constraint1DOF::AAGX_Constraint1DOF(
 {
 }
 
-AAGX_Constraint1DOF::~AAGX_Constraint1DOF()
+UAGX_Constraint1DofComponent::~UAGX_Constraint1DofComponent()
 {
 }
 
 namespace
 {
-	FConstraint1DOFBarrier* Get1DOFBarrier(AAGX_Constraint1DOF& Constraint)
+	FConstraint1DOFBarrier* Get1DOFBarrier(UAGX_Constraint1DofComponent& Constraint)
 	{
 		// See comment in GetElectricMotorController.
 		return static_cast<FConstraint1DOFBarrier*>(Constraint.GetNative());
 	}
 }
 
-void AAGX_Constraint1DOF::CreateNativeImpl()
+void UAGX_Constraint1DofComponent::CreateNativeImpl()
 {
 	AllocateNative();
 	if (!HasNative())
@@ -53,7 +51,7 @@ void AAGX_Constraint1DOF::CreateNativeImpl()
 	TargetSpeedController.InitializeBarrier(Barrier->GetTargetSpeedController());
 }
 
-void AAGX_Constraint1DOF::UpdateNativeProperties()
+void UAGX_Constraint1DofComponent::UpdateNativeProperties()
 {
 	if (!HasNative())
 	{

@@ -1,66 +1,86 @@
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
 
+// AGXUnreal includes.
 #include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "AGX_LogCategory.h"
 
+// Unreal Engine includes.
+#include "Components/SceneComponent.h"
+
+UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody() const
+{
+	return RigidBody.GetRigidBody();
+}
+
 FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocation() const
 {
-	if (RigidBodyActor && FrameDefiningActor)
+	UAGX_RigidBodyComponent* Body = GetRigidBody();
+	if (Body == nullptr)
 	{
-		return RigidBodyActor->GetActorTransform().InverseTransformPositionNoScale(
-			GetGlobalFrameLocation());
+		/// \todo Someone is using a FAGX_ConstraintBodyAttachment that isn't
+		/// attached to any body. It's unclear to me what that really means, and if
+		/// it should be legal or not. Logging for now, but remove the logging when
+		/// we find a case where such attachments makes sense.
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Something is getting the local location of a ConstraintBodyAttachment without an "
+				 "attached body. May produce unwanted behavior."));
+		return LocalFrameLocation;
 	}
-	else
-	{
-		return LocalFrameLocation; // already defined relative to rigid body or world
-	}
+
+	/// \todo This does a pointless transform/inversetransform if there is no
+	/// frame defining actor. Detect that case and just return LocalFrameLocation.
+
+	return Body->GetComponentTransform().InverseTransformPositionNoScale(GetGlobalFrameLocation());
 }
 
 FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotation() const
 {
-	if (RigidBodyActor && FrameDefiningActor)
+	UAGX_RigidBodyComponent* Body = GetRigidBody();
+	if (Body == nullptr)
 	{
-		return RigidBodyActor->GetActorTransform().InverseTransformRotation(
-			GetGlobalFrameRotation());
+		return LocalFrameRotation.Quaternion();
 	}
-	else
-	{
-		return LocalFrameRotation.Quaternion(); // already defined relative to rigid body or world
-	}
+
+	return Body->GetComponentTransform().InverseTransformRotation(GetGlobalFrameRotation());
 }
 
 FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 {
-	if (FrameDefiningActor)
+	if (FrameDefiningActor != nullptr)
 	{
 		return FrameDefiningActor->GetActorTransform().TransformPositionNoScale(LocalFrameLocation);
 	}
-	else if (RigidBodyActor)
+	else if (UAGX_RigidBodyComponent* Body = GetRigidBody())
 	{
-		return RigidBodyActor->GetActorTransform().TransformPositionNoScale(LocalFrameLocation);
+		return Body->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
 	}
 	else
 	{
-		return LocalFrameLocation; // already defined in world space
+		// When there is nothing that the local location is relative to then we
+		// assume it is a global location as well.
+		/// \todo When would that ever happen?
+		return LocalFrameLocation;
 	}
 }
 
 FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 {
-	if (FrameDefiningActor)
+	if (FrameDefiningActor != nullptr)
 	{
 		return FrameDefiningActor->GetActorTransform().TransformRotation(
 			LocalFrameRotation.Quaternion());
 	}
-	else if (RigidBodyActor)
+	else if (UAGX_RigidBodyComponent* Body = GetRigidBody())
 	{
-		return RigidBodyActor->GetActorTransform().TransformRotation(
-			LocalFrameRotation.Quaternion());
+		return Body->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
 	}
 	else
 	{
-		return LocalFrameRotation.Quaternion(); // already defined in world space
+		// When there is nothing that the local rotation is relative to then we
+		// assume it is a global rotation.
+		return LocalFrameRotation.Quaternion();
 	}
 }
 
@@ -73,30 +93,23 @@ FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix() const
 
 FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool CreateIfNeeded)
 {
-	if (!RigidBodyActor)
-		return nullptr;
-
-	UAGX_RigidBodyComponent* RigidBodyComponent =
-		UAGX_RigidBodyComponent::GetFirstFromActor(RigidBodyActor);
-
-	if (!RigidBodyComponent)
+	UAGX_RigidBodyComponent* Body = GetRigidBody();
+	if (Body == nullptr)
 	{
 		return nullptr;
 	}
 
-	if (CreateIfNeeded)
+	FRigidBodyBarrier* Barrier = Body->GetNative();
+	if (Barrier == nullptr && CreateIfNeeded)
 	{
-		return RigidBodyComponent->GetOrCreateNative();
+		Barrier = Body->GetOrCreateNative();
 	}
-	else
-	{
-		return RigidBodyComponent->GetNative();
-	}
+	return Barrier;
 }
 
 #if WITH_EDITOR
 
-void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(AAGX_Constraint* Owner)
+void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(UAGX_ConstraintComponent* Parent)
 {
 	AAGX_ConstraintFrameActor* RecentConstraintFrame =
 		Cast<AAGX_ConstraintFrameActor>(RecentFrameDefiningActor);
@@ -106,24 +119,25 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(AAGX_Constraint*
 	RecentFrameDefiningActor = FrameDefiningActor;
 
 	if (RecentConstraintFrame)
-		RecentConstraintFrame->RemoveConstraintUsage(Owner);
+	{
+		RecentConstraintFrame->RemoveConstraintUsage(Parent);
+	}
 
 	if (ConstraintFrame)
-		ConstraintFrame->AddConstraintUsage(Owner);
-
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("OnFrameDefiningActorChanged: FrameDefiningActor = %s, ConstraintFrame = %s"),
-		*GetNameSafe(FrameDefiningActor), *GetNameSafe(ConstraintFrame));
+	{
+		ConstraintFrame->AddConstraintUsage(Parent);
+	}
 }
 
-void FAGX_ConstraintBodyAttachment::OnDestroy(AAGX_Constraint* Owner)
+void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
 {
 	AAGX_ConstraintFrameActor* ConstraintFrame =
 		Cast<AAGX_ConstraintFrameActor>(FrameDefiningActor);
 
 	if (ConstraintFrame)
-		ConstraintFrame->RemoveConstraintUsage(Owner);
+	{
+		ConstraintFrame->RemoveConstraintUsage(Parent);
+	}
 }
 
 #endif

@@ -1,5 +1,12 @@
 #pragma once
 
+// Unreal Engine includes.
+#include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "Templates/SharedPointer.h"
+
+class FMenuBuilder;
+class FText;
+
 /**
  * Creates the AGX Top Menu on the Unreal Main Menu Bar.
  */

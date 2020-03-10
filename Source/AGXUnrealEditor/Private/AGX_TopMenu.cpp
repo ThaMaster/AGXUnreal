@@ -1,23 +1,24 @@
 #include "AGX_TopMenu.h"
 
+// AGXUnreal includes.
+#include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
+#include "AgxEdMode/AGX_AgxEdModeFile.h"
+#include "AGXUnrealEditor.h"
+#include "Constraints/AGX_BallConstraintActor.h"
+#include "Constraints/AGX_CylindricalConstraintActor.h"
+#include "Constraints/AGX_DistanceConstraintActor.h"
+#include "Constraints/AGX_HingeConstraintActor.h"
+#include "Constraints/AGX_LockConstraintActor.h"
+#include "Constraints/AGX_PrismaticConstraintActor.h"
+#include "Utilities/AGX_EditorUtilities.h"
+
+// Unreal Engine includes.
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "LevelEditor.h"
 #include "Misc/MessageDialog.h"
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
-
-#include "AgxEdMode/AGX_AgxEdModeFile.h"
-
-#include "AGX_LogCategory.h"
-#include "Constraints/AGX_BallConstraint.h"
-#include "Constraints/AGX_CylindricalConstraint.h"
-#include "Constraints/AGX_DistanceConstraint.h"
-#include "Constraints/AGX_HingeConstraint.h"
-#include "Constraints/AGX_LockConstraint.h"
-#include "Constraints/AGX_PrismaticConstraint.h"
-
-#include "AGXUnrealEditor.h"
-#include "Utilities/AGX_EditorUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TopMenu"
 
@@ -174,7 +175,9 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 			"CreateBallConstraintTooltip",
 			"Create Ball Constraint. \n\nInitially setup using currently selected Rigid Body "
 			"Actors, or empty."),
-		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_BallConstraint::StaticClass()); });
+		[&]() {
+			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_BallConstraintActor::StaticClass());
+		});
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("CreateCylindricalConstraintLabel", "Create Cylindrical Constraint"),
@@ -183,7 +186,7 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 			"Create Cylindrical Constraint. \n\nInitially setup using currently selected Rigid "
 			"Body Actors, or empty."),
 		[&]() {
-			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_CylindricalConstraint::StaticClass());
+			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_CylindricalConstraintActor::StaticClass());
 		});
 
 	AddFileMenuEntry(
@@ -192,7 +195,9 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 			"CreateDistanceConstraintTooltip",
 			"Create Distance Constraint. \n\nInitially setup using currently selected Rigid Body "
 			"Actors, or empty."),
-		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_DistanceConstraint::StaticClass()); });
+		[&]() {
+			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_DistanceConstraintActor::StaticClass());
+		});
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("CreateHingeConstraintLabel", "Create Hinge Constraint"),
@@ -200,7 +205,9 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 			"CreateHingeConstraintTooltip",
 			"Create Hinge Constraint. \n\nInitially setup using currently selected Rigid Body "
 			"Actors, or empty."),
-		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_HingeConstraint::StaticClass()); });
+		[&]() {
+			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_HingeConstraintActor::StaticClass());
+		});
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("CreateLockConstraintLabel", "Create Lock Constraint"),
@@ -208,7 +215,9 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 			"CreateLockConstraintTooltip",
 			"Create Lock Constraint. \n\nInitially setup using currently selected Rigid Body "
 			"Actors, or empty."),
-		[&]() { FAGX_TopMenu::OnCreateConstraintClicked(AAGX_LockConstraint::StaticClass()); });
+		[&]() {
+			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_LockConstraintActor::StaticClass());
+		});
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("CreatePrismaticConstraintLabel", "Create Prismatic Constraint"),
@@ -217,7 +226,7 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 			"Create Prismatic Constraint. \n\nInitially setup using currently selected Rigid Body "
 			"Actors, or empty."),
 		[&]() {
-			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_PrismaticConstraint::StaticClass());
+			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_PrismaticConstraintActor::StaticClass());
 		});
 }
 
@@ -244,8 +253,39 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 		&Actor1, &Actor2,
 		/*bSearchSubtrees*/ true, /*bSearchAncestors*/ true);
 
-	FAGX_EditorUtilities::CreateConstraint(
-		ConstraintClass, Actor1, Actor2,
+	if (Actor1 == nullptr || Actor2 == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Must select two actors before creating a constraint."));
+		return;
+	}
+
+	/// \todo Figure out how to setup constraint creation so that we can pick a
+	/// single UAGX_RigidBodyComponent from the selected Actors. There is very
+	/// similar code in AGX_AgxEdModeConstraints.cpp.
+
+	TArray<UAGX_RigidBodyComponent*> Bodies1 = UAGX_RigidBodyComponent::GetFromActor(Actor1);
+	TArray<UAGX_RigidBodyComponent*> Bodies2 = UAGX_RigidBodyComponent::GetFromActor(Actor2);
+
+	if (Bodies1.Num() != 1)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot create constraint with actor '%s' because it doesn't contain exactly one body."),
+			*Actor1->GetName());
+		return;
+	}
+
+	if (Bodies2.Num() != 1)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot create constraint with actor '%s' because it doesn't contain exactly one body."),
+			*Actor2->GetName());
+		return;
+	}
+
+	FAGX_EditorUtilities::CreateConstraintActor(
+		ConstraintClass, Bodies1[0], Bodies2[0],
 		/*Select*/ true,
 		/*ShowNotification*/ true,
 		/*InPlayingWorldIfAvailable*/ true);

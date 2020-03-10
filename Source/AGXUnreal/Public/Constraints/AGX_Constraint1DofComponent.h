@@ -1,19 +1,23 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Constraints/AGX_Constraint.h"
+// AGXUnreal includes.
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
 #include "Constraints/Controllers/AGX_FrictionController.h"
 #include "Constraints/Controllers/AGX_LockController.h"
 #include "Constraints/Controllers/AGX_RangeController.h"
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
-#include "AGX_Constraint1DOF.generated.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
+#include "AGX_Constraint1DofComponent.generated.h"
 
 /**
  *
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract, meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API AAGX_Constraint1DOF : public AAGX_Constraint
+class AGXUNREAL_API UAGX_Constraint1DofComponent : public UAGX_ConstraintComponent
 {
 	GENERATED_BODY()
 
@@ -40,23 +44,33 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraint")
 	FAGX_ConstraintTargetSpeedController TargetSpeedController;
 
-	AAGX_Constraint1DOF();
+	UAGX_Constraint1DofComponent();
 
-	AAGX_Constraint1DOF(
+	UAGX_Constraint1DofComponent(
 		const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraintRotational,
 		bool bIsLockControllerEditable = true);
 
-	virtual ~AAGX_Constraint1DOF();
+	virtual ~UAGX_Constraint1DofComponent() override;
 
 	virtual void UpdateNativeProperties() override;
 
 protected:
+	/**
+	 * Call AllocateNative and then bind the constraint controllers to their native representations
+	 * within the allocated native constraint.
+	 */
 	virtual void CreateNativeImpl() override final;
-	virtual void AllocateNative() PURE_VIRTUAL(AAGX_Constraint1DOF::AllocateNative, );
+
+	/**
+	 * Allocate the native constraint, of the appropriate type for the current subclass of
+	 * UAGX_Constraint1DofComponent, and assign the new typed ConstraintBarrier to the inherited
+	 * NativeBarrier member variable.
+	 */
+	virtual void AllocateNative() PURE_VIRTUAL(UAGX_Constraint1DofComponent::AllocateNative, );
 
 private:
-	class FConstraint1DOFBarrier* GetNativeBarrierCasted() const;
-
+	// Some constraints, such as Distance, cannot use the lock constraint because it is reserved for
+	// internal use within the native constraint.
 	UPROPERTY(Transient, Category = "AGX Secondary Constraint", VisibleDefaultsOnly)
 	bool bIsLockControllerEditable;
 };

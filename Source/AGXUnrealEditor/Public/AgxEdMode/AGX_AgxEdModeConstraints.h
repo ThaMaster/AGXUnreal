@@ -1,9 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
+// AGXUnreal incldues.
+#include "AGX_RigidBodyReference.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "AgxEdMode/AGX_AgxEdModeSubMode.h"
+
 #include "AGX_AgxEdModeConstraints.generated.h"
 
 /**
@@ -68,10 +71,10 @@ public: // Constraint Creator
 	UClass* ConstraintType;
 
 	UPROPERTY(Transient, EditAnywhere, Category = "Constraint Creator")
-	TLazyObjectPtr<AActor> RigidBodyActor1;
+	FAGX_RigidBodyReference RigidBody1;
 
 	UPROPERTY(Transient, EditAnywhere, Category = "Constraint Creator")
-	TLazyObjectPtr<AActor> RigidBodyActor2;
+	FAGX_RigidBodyReference RigidBody2;
 
 	/**
 	 * Which actor in the scene hierarchy should the Constraint Actor be attached to?
@@ -96,7 +99,7 @@ public: // Constraint Creator
 	EAGX_ConstraintFrameSource AttachmentFrameSource;
 
 	/** Creates a new constraint using the current property values. */
-	class AAGX_Constraint* CreateConstraint() const;
+	class AAGX_ConstraintActor* CreateConstraint() const;
 
 public: // Constraint Browser
 };

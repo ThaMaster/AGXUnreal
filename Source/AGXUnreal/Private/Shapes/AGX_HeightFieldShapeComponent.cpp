@@ -9,7 +9,6 @@
 UAGX_HeightFieldShapeComponent::UAGX_HeightFieldShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	UE_LOG(LogAGX, Log, TEXT("BoxShape instance created."));
 
 #if WITH_EDITOR
 	// HeightFields are tightly coupled to a source landscape. The Actor owning
@@ -203,7 +202,6 @@ void UAGX_HeightFieldShapeComponent::CreateNative()
 
 void UAGX_HeightFieldShapeComponent::ReleaseNative()
 {
-	UE_LOG(LogAGX, Log, TEXT("Releasing native object for HeightFieldShapeComponent."));
 	check(HasNative());
 	NativeBarrier.ReleaseNative();
 }

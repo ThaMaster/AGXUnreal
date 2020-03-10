@@ -1,5 +1,6 @@
 #include "AGXUnrealEditor.h"
 
+// Unreal Engine includes.
 #include "AssetToolsModule.h"
 #include "AssetTypeCategories.h"
 #include "IAssetTools.h"
@@ -7,33 +8,26 @@
 #include "IPlacementModeModule.h"
 #include "ISettingsModule.h"
 #include "Modules/ModuleManager.h"
-
-#include "Framework/MultiBox/MultiBoxBuilder.h"
-#include "LevelEditor.h"
 #include "PropertyEditorModule.h"
 
-#include "Engine/StaticMeshActor.h"
-#include "DesktopPlatformModule.h"
-
-#include "AGX_ArchiveImporter.h"
-#include "AGX_ArchiveExporter.h"
+// AGXUnreal includes.
+#include "AGX_EditorStyle.h"
+#include "AGX_RigidBodyActor.h"
+#include "AGX_RigidBodyReference.h"
+#include "AGX_RigidBodyReferenceCustomization.h"
+#include "AGX_Simulation.h"
+#include "AGX_TopMenu.h"
 #include "AgxEdMode/AGX_AgxEdMode.h"
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 #include "AgxEdMode/AGX_AgxEdModeConstraintsCustomization.h"
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 #include "AgxEdMode/AGX_AgxEdModeFileCustomization.h"
-#include "Shapes/AGX_BoxShapeComponent.h"
-#include "AGX_EditorStyle.h"
-#include "Utilities/AGX_EditorUtilities.h"
-#include "Materials/AGX_MaterialManager.h"
-#include "AGX_RigidBodyComponent.h"
-#include "Shapes/AGX_SphereShapeComponent.h"
-#include "AGX_Simulation.h"
-#include "Terrain/AGX_Terrain.h"
-#include "AGX_TopMenu.h"
-#include "AGX_RigidBodyActor.h"
-#include "Constraints/AGX_BallConstraint.h"
-#include "Constraints/AGX_Constraint.h"
+#include "CollisionGroups/AGX_CollisionGroupManager.h"
+#include "CollisionGroups/AGX_CollisionGroupManagerCustomization.h"
+#include "CollisionGroups/AGX_CollisionGroupsComponent.h"
+#include "CollisionGroups/AGX_CollisionGroupsComponentCustomization.h"
+#include "Constraints/AGX_BallConstraintActor.h"
+#include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
 #include "Constraints/AGX_ConstraintBodyAttachmentCustomization.h"
 #include "Constraints/AGX_ConstraintCustomization.h"
@@ -42,21 +36,18 @@
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintFrameComponent.h"
 #include "Constraints/AGX_ConstraintFrameComponentVisualizer.h"
-#include "Constraints/AGX_CylindricalConstraint.h"
-#include "Constraints/AGX_DistanceConstraint.h"
-#include "Constraints/AGX_HingeConstraint.h"
-#include "Constraints/AGX_LockConstraint.h"
-#include "Constraints/AGX_PrismaticConstraint.h"
+#include "Constraints/AGX_CylindricalConstraintActor.h"
+#include "Constraints/AGX_DistanceConstraintActor.h"
+#include "Constraints/AGX_HingeConstraintActor.h"
+#include "Constraints/AGX_LockConstraintActor.h"
+#include "Constraints/AGX_PrismaticConstraintActor.h"
 #include "Materials/AGX_ContactMaterialAssetTypeActions.h"
 #include "Materials/AGX_MaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialCustomization.h"
 #include "Materials/AGX_MaterialBase.h"
-#include "RigidBodyBarrier.h"
-#include "CollisionGroups/AGX_CollisionGroupManager.h"
-#include "CollisionGroups/AGX_CollisionGroupManagerCustomization.h"
-#include "CollisionGroups/AGX_CollisionGroupsComponent.h"
-#include "CollisionGroups/AGX_CollisionGroupsComponentCustomization.h"
+#include "Materials/AGX_MaterialManager.h"
+#include "Terrain/AGX_Terrain.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -175,8 +166,16 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
 
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_RigidBodyReference::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
+			&FAGX_RigidBodyReferenceCustomization::MakeInstance));
+
+	/// \todo I don't know if this should be AAGX_ConstraintActor or
+	/// UAGX_ConstraintComponent. Should we have one for each? Which should be
+	/// the new one and what should it contain/do?
 	PropertyModule.RegisterCustomClassLayout(
-		AAGX_Constraint::StaticClass()->GetFName(),
+		AAGX_ConstraintActor::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_ConstraintCustomization::MakeInstance));
 
@@ -219,7 +218,12 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(AAGX_Constraint::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		FAGX_RigidBodyReference::StaticStruct()->GetFName());
+
+	/// \todo Not sure if this should be AAGX_ConstraintActor,
+	/// UAGX_ConstraintComponent, or both.
+	PropertyModule.UnregisterCustomClassLayout(AAGX_ConstraintActor::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_AgxEdModeConstraints::StaticClass()->GetFName());
@@ -232,8 +236,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_CollisionGroupsComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		UAGX_MaterialBase::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomPropertyTypeLayout(UAGX_MaterialBase::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
@@ -305,12 +308,12 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 
 	RegisterPlaceableItem(AAGX_MaterialManager::StaticClass());
 	RegisterPlaceableItem(AAGX_ConstraintFrameActor::StaticClass());
-	RegisterPlaceableItem(AAGX_BallConstraint::StaticClass());
-	RegisterPlaceableItem(AAGX_CylindricalConstraint::StaticClass());
-	RegisterPlaceableItem(AAGX_DistanceConstraint::StaticClass());
-	RegisterPlaceableItem(AAGX_HingeConstraint::StaticClass());
-	RegisterPlaceableItem(AAGX_LockConstraint::StaticClass());
-	RegisterPlaceableItem(AAGX_PrismaticConstraint::StaticClass());
+	RegisterPlaceableItem(AAGX_BallConstraintActor::StaticClass());
+	RegisterPlaceableItem(AAGX_CylindricalConstraintActor::StaticClass());
+	RegisterPlaceableItem(AAGX_DistanceConstraintActor::StaticClass());
+	RegisterPlaceableItem(AAGX_HingeConstraintActor::StaticClass());
+	RegisterPlaceableItem(AAGX_LockConstraintActor::StaticClass());
+	RegisterPlaceableItem(AAGX_PrismaticConstraintActor::StaticClass());
 	RegisterPlaceableItem(AAGX_Terrain::StaticClass());
 	RegisterPlaceableItem(AAGX_CollisionGroupManager::StaticClass());
 	RegisterPlaceableItem(AAGX_RigidBodyActor::StaticClass());

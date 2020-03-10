@@ -1,25 +1,28 @@
-/// \todo Reduce includes!
 #include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
-#include "RenderingThread.h"
-#include "RenderResource.h"
+
+// AGXUnreal includes.
+#include "Constraints/AGX_ConstraintComponent.h"
+#include "Constraints/AGX_ConstraintEnums.h"
+#include "Utilities/AGX_MeshUtilities.h"
+
+// Unreal Engine includes.
+/// \todo Reduce includes!
+#include "DynamicMeshBuilder.h"
+#include "Engine/CollisionProfile.h"
+#include "Engine/Engine.h"
+#include "EngineGlobals.h"
+#include "LocalVertexFactory.h"
+#include "Materials/Material.h"
+#include "MaterialShared.h"
+#include "Misc/EngineVersionComparison.h"
+#include "SceneManagement.h"
 #include "PrimitiveViewRelevance.h"
 #include "PrimitiveSceneProxy.h"
-#include "VertexFactory.h"
-#include "MaterialShared.h"
-#include "Engine/CollisionProfile.h"
-#include "Materials/Material.h"
-#include "LocalVertexFactory.h"
-#include "SceneManagement.h"
-#include "DynamicMeshBuilder.h"
-#include "EngineGlobals.h"
-#include "Engine/Engine.h"
+#include "RenderingThread.h"
+#include "RenderResource.h"
 #include "StaticMeshResources.h"
 #include "UObject/ConstructorHelpers.h"
-
-#include "Utilities/AGX_MeshUtilities.h"
-#include "Constraints/AGX_Constraint.h"
-#include "Constraints/AGX_ConstraintEnums.h"
-#include "Misc/EngineVersionComparison.h"
+#include "VertexFactory.h"
 
 /**
  * Holds vertex and index buffers for rendering.

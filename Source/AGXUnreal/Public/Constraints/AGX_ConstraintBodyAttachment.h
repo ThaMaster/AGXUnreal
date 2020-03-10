@@ -1,11 +1,17 @@
 #pragma once
 
+// AGXUnreal includes.
+#include "AGX_RigidBodyReference.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Engine/EngineTypes.h"
 #include "GameFramework/Actor.h"
 
 #include "AGX_ConstraintBodyAttachment.generated.h"
 
-class AAGX_Constraint;
+class UAGX_ConstraintComponent;
+class UAGX_RigidBodyComponent;
 class AAGX_ConstraintFrameActor;
 class FRigidBodyBarrier;
 
@@ -22,11 +28,13 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 {
 	GENERATED_USTRUCT_BODY()
 
-	/**
-	 * The Actor containing the Rigid Body Component to be bound by the constraint.
-	 */
+	/// \todo Cannot assume a single body per actor. Should we change the UPROPERTY
+	/// to be a UAGX_RigidBodyComponent instead, or should we keep the Actor
+	/// reference and also keep some kind of component identifier? Should we use
+	/// FComponentRef here?
+
 	UPROPERTY(EditAnywhere, Category = "Rigid Body")
-	AActor* RigidBodyActor;
+	FAGX_RigidBodyReference RigidBody;
 
 	/**
 	 * Optional. Use this to define the Local Frame Location and Rotation relative to
@@ -51,6 +59,8 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	/** Frame rotation relative to Rigid Body Actor, or from Frame Defining Actor if set. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
 	FRotator LocalFrameRotation;
+
+	UAGX_RigidBodyComponent* GetRigidBody() const;
 
 	/**
 	 * Calculates and returns the frame location relative to Rigid Body Actor
@@ -86,13 +96,14 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 
 #if WITH_EDITOR
 	/**
-	 * Should be invoked whenever Frame Defining Actor changes, to trigger the removal
-	 * of the constraint from the previous Frame Defining Actor's list of constraint usages,
-	 * and adding to the new one's (if they are AAGX_ConstraintFrameActor actor types).
+	 * Should be invoked whenever Frame Defining Actor changes, to trigger the
+	 * removal of the constraint from the previous Frame Defining Actor's list of
+	 * constraint usages, and adding to the new one's (if they are
+	 * AAGX_ConstraintFrameActor actor types).
 	 */
-	void OnFrameDefiningActorChanged(AAGX_Constraint* Owner);
+	void OnFrameDefiningActorChanged(UAGX_ConstraintComponent* Parent);
 
-	void OnDestroy(AAGX_Constraint* Owner);
+	void OnDestroy(UAGX_ConstraintComponent* Parent);
 #endif
 
 private:

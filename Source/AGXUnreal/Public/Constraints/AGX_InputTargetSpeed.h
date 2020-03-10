@@ -1,12 +1,12 @@
 #pragma once
 
 // AGXUnreal includes.
-#include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 
 
 // Unreal Engine includes.
+#include "Components/SceneComponent.h"
+#include "CoreMinimal.h"
 #include "InputCoreTypes.h"
 
 #include "AGX_InputTargetSpeed.generated.h"
@@ -18,7 +18,7 @@
  * Should only be added to AGX_Constraint1DOF actors.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_InputTargetSpeed : public UActorComponent
+class AGXUNREAL_API UAGX_InputTargetSpeed : public USceneComponent
 {
 	GENERATED_BODY()
 

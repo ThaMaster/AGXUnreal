@@ -1,9 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 
+// AGXUnreal includes.
+#include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
-#include "Constraints/AGX_Constraint.h"
+#include "Constraints/AGX_ConstraintActor.h"
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_AgxEdModeConstraints"
@@ -30,54 +32,58 @@ FText UAGX_AgxEdModeConstraints::GetTooltip() const
 	return LOCTEXT("Tooltip", "Contains tools to quickly create and manage AGX Constraints");
 }
 
-AAGX_Constraint* UAGX_AgxEdModeConstraints::CreateConstraint() const
+AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 {
-	if (!RigidBodyActor1.IsValid())
+	if (RigidBody1.GetRigidBody() == nullptr)
 	{
 		FAGX_EditorUtilities::ShowDialogBox(LOCTEXT(
 			"CreateConstraintFailedNoActorOne",
-			"Cannot create constraint. At least the first Rigid Body Actor must be chosen!"));
+			"Cannot create constraints. At least the first Rigid Body must be chosen!"));
 		return nullptr;
 	}
 
-	AAGX_Constraint* Constraint = FAGX_EditorUtilities::CreateConstraint(
-		ConstraintType, RigidBodyActor1.Get(), RigidBodyActor2.Get(),
-		/*Select*/ false, /*ShowNotification*/ true, /*InPlayingWorldIfAvailable*/ true);
+	UAGX_RigidBodyComponent* Body1 = RigidBody1.GetRigidBody();
+	UAGX_RigidBodyComponent* Body2 = RigidBody2.GetRigidBody();
+	AAGX_ConstraintActor* Constraint = FAGX_EditorUtilities::CreateConstraintActor(
+		ConstraintType, Body1, Body2, false, true, true);
 
 	if (Constraint)
 	{
+		/// \todo Consider using the UAGX_RigidBodyComponent's transform in the below,
+		/// instead of the owning Actor's transform.
+
 		// Set constraint actor parent in scene hierarchy, and transform.
 		switch (ConstraintParent)
 		{
 			case EAGX_ConstraintActorParent::RigidBodyActor1:
 			{
 				Constraint->AttachToActor(
-					RigidBodyActor1.Get(), FAttachmentTransformRules::KeepRelativeTransform);
+					RigidBody1.GetOwningActor(), FAttachmentTransformRules::KeepRelativeTransform);
 				// Transform is implicitly same as RigidBodyActor1, because of no relative
 				// transform.
 				break;
 			}
 			case EAGX_ConstraintActorParent::RigidBodyActor2:
 			{
-				if (RigidBodyActor2.IsValid())
+				if (RigidBody2.GetRigidBody() != nullptr)
 				{
 					Constraint->AttachToActor(
-						RigidBodyActor2.Get(), FAttachmentTransformRules::KeepRelativeTransform);
-					// Transform is implicitly same as RigidBodyActor2, because of no relative
-					// transform.
+						RigidBody2.GetOwningActor(), FAttachmentTransformRules::KeepRelativeTransform);
+					// Transform is implicitly same as RigidBody2, because of no relative transform.
 				}
 				else
 				{
-					// Transform of Rigid Body Actor 1 is usually a good starting point.
-					Constraint->SetActorTransform(RigidBodyActor1.Get()->GetActorTransform());
+					// Transform of rigid body 1 is usually a good starting points.
+					Constraint->SetActorTransform(RigidBody1.OwningActor->GetActorTransform());
 				}
 				break;
 			}
 			case EAGX_ConstraintActorParent::None:
+				// Deliberate fallthrough.
 			default:
 			{
 				// Transform of Rigid Body Actor 1 is usually a good starting point.
-				Constraint->SetActorTransform(RigidBodyActor1.Get()->GetActorTransform());
+				Constraint->SetActorTransform(RigidBody1.OwningActor->GetActorTransform());
 				break;
 			}
 		};
@@ -97,40 +103,42 @@ AAGX_Constraint* UAGX_AgxEdModeConstraints::CreateConstraint() const
 			{
 				FrameActor1 = FrameActor2 =
 					FAGX_EditorUtilities::CreateConstraintFrameActor(nullptr, false, true, true);
-				FrameActor1->SetActorTransform(
-					RigidBodyActor1.Get()->GetActorTransform()); // usually a good starting point
+				// Usually a good starting point.
+				FrameActor1->SetActorTransform(RigidBody1.OwningActor->GetActorTransform());
 				break;
 			}
 			case EAGX_ConstraintFrameSource::TwoFrameActors:
 			{
 				FrameActor1 = FAGX_EditorUtilities::CreateConstraintFrameActor(
-					RigidBodyActor1.Get(), false, true, true);
+							RigidBody1.GetOwningActor(), false, true, true);
 				FrameActor2 = FAGX_EditorUtilities::CreateConstraintFrameActor(
-					RigidBodyActor2.Get(), false, true, true);
+							RigidBody2.GetOwningActor(), false, true, true);
 				break;
 			}
 			case EAGX_ConstraintFrameSource::RigidBodyActor1:
 			{
-				FrameActor1 = FrameActor2 = RigidBodyActor1.Get();
+				FrameActor1 = FrameActor2 = RigidBody1.GetOwningActor();
 				break;
 			}
 			case EAGX_ConstraintFrameSource::RigidBodyActor2:
 			{
-				FrameActor1 = FrameActor2 = RigidBodyActor2.Get();
+				FrameActor1 = FrameActor2 = RigidBody2.GetOwningActor();
 				break;
 			}
 			case EAGX_ConstraintFrameSource::LocalOnly:
+				// Deliberate fallthrough.
 			default:
 			{
 				break;
 			}
 		};
 
-		Constraint->BodyAttachment1.FrameDefiningActor = FrameActor1;
-		Constraint->BodyAttachment2.FrameDefiningActor = FrameActor2;
+		UAGX_ConstraintComponent* ConstraintComponent = Constraint->GetConstraintComponent();
+		ConstraintComponent->BodyAttachment1.FrameDefiningActor = FrameActor1;
+		ConstraintComponent->BodyAttachment2.FrameDefiningActor = FrameActor2;
 
-		Constraint->BodyAttachment1.OnFrameDefiningActorChanged(Constraint);
-		Constraint->BodyAttachment2.OnFrameDefiningActorChanged(Constraint);
+		ConstraintComponent->BodyAttachment1.OnFrameDefiningActorChanged(ConstraintComponent);
+		ConstraintComponent->BodyAttachment2.OnFrameDefiningActorChanged(ConstraintComponent);
 
 		/// \todo If in-game, we need to create the constraint in a deferred way so that frame
 		/// actors are set before the constraint has been finished!

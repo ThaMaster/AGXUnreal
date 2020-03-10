@@ -1,14 +1,21 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "AgxEdMode/AGX_AgxEdModeConstraintsCustomization.h"
 
+// AGXUnreal includes.
+#include "AgxEdMode/AGX_AgxEdModeConstraints.h"
+#include "Constraints/AGX_ConstraintActor.h"
+#include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_PropertyUtilities.h"
+
+// Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "IDetailPropertyRow.h"
-#include "UObject/MetaData.h"
+#include "Misc/Attribute.h"
+#include "Modules/ModuleManager.h"
 #include "SceneOutlinerModule.h"
 #include "SceneOutlinerPublicTypes.h"
+#include "UObject/MetaData.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Input/SComboBox.h"
@@ -16,12 +23,7 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SExpandableArea.h"
 #include "Widgets/Text/STextBlock.h"
-#include "Misc/Attribute.h"
 
-#include "AgxEdMode/AGX_AgxEdModeConstraints.h"
-#include "Constraints/AGX_Constraint.h"
-#include "Utilities/AGX_EditorUtilities.h"
-#include "Utilities/AGX_PropertyUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_AgxEdModeConstraintsCustomization"
 
@@ -34,10 +36,10 @@ FAGX_AgxEdModeConstraintsCustomization::FAGX_AgxEdModeConstraintsCustomization()
 {
 	// Find all spawnable constraint classes so that they can be presented by combo box.
 	FAGX_EditorUtilities::GetAllClassesOfType(
-		ConstraintClasses, AAGX_Constraint::StaticClass(),
+		ConstraintClasses, AAGX_ConstraintActor::StaticClass(),
 		/*bIncludeAbstract*/ false);
 
-	UClass* Class = StaticClass<AAGX_Constraint>();
+	UClass* Class = StaticClass<AAGX_ConstraintActor>();
 }
 
 void FAGX_AgxEdModeConstraintsCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
@@ -68,11 +70,11 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintCreatorCategory(
 
 	/** Rigid Body 1 - Picker */
 	CategoryBuilder.AddProperty(DetailBuilder.GetProperty(
-		GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, RigidBodyActor1)));
+		GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, RigidBody1)));
 
 	/** Rigid Body 2 - Picker */
 	CategoryBuilder.AddProperty(DetailBuilder.GetProperty(
-		GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, RigidBodyActor2)));
+		GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, RigidBody2)));
 
 	/** Find Actors From Selection - Button */
 	CreateGetFromSelectedActorsButton(CategoryBuilder, ConstraintsSubMode);
@@ -180,10 +182,8 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateGetFromSelectedActorsButton(
 						  FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
 							  &Actor1, &Actor2,
 							  /*bSearchSubtrees*/ true, /*bSearchAncestors*/ true);
-
-						  ConstraintsSubMode->RigidBodyActor1 = Actor1;
-						  ConstraintsSubMode->RigidBodyActor2 = Actor2;
-
+						  ConstraintsSubMode->RigidBody1.OwningActor = Actor1;
+						  ConstraintsSubMode->RigidBody2.OwningActor = Actor2;
 						  return FReply::Handled();
 					  })]];
 }
@@ -292,7 +292,7 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(
 
 	FActorFilterPredicate ActorFilter =
 		FActorFilterPredicate::CreateLambda([](const AActor* const Actor) {
-			return Actor->IsA(AAGX_Constraint::StaticClass()); // only show constraints
+			return Actor->IsA(AAGX_ConstraintActor::StaticClass()); // only show constraints
 		});
 
 	FCustomSceneOutlinerDeleteDelegate DeleteAction =

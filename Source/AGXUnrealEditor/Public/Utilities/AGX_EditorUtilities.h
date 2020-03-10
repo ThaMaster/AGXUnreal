@@ -5,7 +5,7 @@
 
 #include <tuple>
 
-class AAGX_Constraint;
+class AAGX_ConstraintActor;
 class AAGX_ConstraintFrameActor;
 class UAGX_RigidBodyComponent;
 class UAGX_SphereShapeComponent;
@@ -23,8 +23,8 @@ class UStaticMeshComponent;
 class UWorld;
 
 /**
-* A collection of helper functions that can only be compiled in editor builds.
-*/
+ * A collection of helper functions that can only be compiled in editor builds.
+ */
 class FAGX_EditorUtilities
 {
 public:
@@ -80,21 +80,21 @@ public:
 	/**
 	 * Create a new constraint of the specified type.
 	 */
-	static AAGX_Constraint* CreateConstraint(
-		UClass* ConstraintType, AActor* RigidBody1, AActor* RigidBody2, bool bSelect,
-		bool bShowNotification, bool bInPlayingWorldIfAvailable);
+	static AAGX_ConstraintActor* CreateConstraintActor(
+		UClass* ConstraintType, UAGX_RigidBodyComponent* RigidBody1,
+		UAGX_RigidBodyComponent* RigidBody2, bool bSelect, bool bShowNotification,
+		bool bInPlayingWorldIfAvailable);
 
 	template <typename T>
-	static T* CreateConstraint(
-		AActor* RigidBody1, AActor* RigidBody2, bool bSelect, bool bShowNotification,
-		bool bInPlayingWorldIfAvailable, UClass* ConstraintType = nullptr);
+	static T* CreateConstraintActor(
+		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2, bool bSelect,
+		bool bShowNotification, bool bInPlayingWorldIfAvailable, UClass* ConstraintType = nullptr);
 
 	/**
 	 * Create a new AGX Constraint Frame Actor. Set as child to specified Rigid Body, if available.
 	 */
 	static AAGX_ConstraintFrameActor* CreateConstraintFrameActor(
-		AActor* ParentRigidBody, bool bSelect, bool bShowNotification,
-		bool bInPlayingWorldIfAvailable);
+		AActor* ParentActor, bool bSelect, bool bShowNotification, bool bInPlayingWorldIfAvailable);
 
 	/**
 	 * Change current selection to the specific actor.
@@ -169,16 +169,16 @@ public:
 };
 
 template <typename T>
-T* FAGX_EditorUtilities::CreateConstraint(
-	AActor* RigidBody1, AActor* RigidBody2, bool bSelect, bool bShowNotification,
-	bool bInPlayingWorldIfAvailable, UClass* ConstraintType)
+T* FAGX_EditorUtilities::CreateConstraintActor(
+	UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2, bool bSelect,
+	bool bShowNotification, bool bInPlayingWorldIfAvailable, UClass* ConstraintType)
 {
 	if (ConstraintType == nullptr)
 	{
 		ConstraintType = T::StaticClass();
 	}
 	check(ConstraintType->IsChildOf<T>());
-	return Cast<T>(CreateConstraint(
+	return Cast<T>(CreateConstraintActor(
 		ConstraintType, RigidBody1, RigidBody2, bSelect, bShowNotification,
 		bInPlayingWorldIfAvailable));
 }

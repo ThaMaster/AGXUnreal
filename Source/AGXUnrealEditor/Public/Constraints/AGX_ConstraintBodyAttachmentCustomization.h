@@ -1,7 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Layout/Visibility.h"
 #include "IPropertyTypeCustomization.h"
@@ -23,7 +22,7 @@ public:
 
 	FText GetRigidBodyLabel() const;
 
-	bool HasRigidBodyActor() const;
+	bool HasRigidBody() const;
 
 	bool HasFrameDefiningActor() const;
 

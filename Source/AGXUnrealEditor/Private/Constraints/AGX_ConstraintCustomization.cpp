@@ -1,6 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Constraints/AGX_ConstraintCustomization.h"
+
+// Unreal Engine includes.
+#include "DetailLayoutBuilder.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintCustomization"
 

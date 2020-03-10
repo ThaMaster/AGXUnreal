@@ -25,19 +25,19 @@ AAGX_ConstraintFrameActor::AAGX_ConstraintFrameActor()
 	}
 }
 
-void AAGX_ConstraintFrameActor::AddConstraintUsage(AAGX_Constraint* Constraint)
+void AAGX_ConstraintFrameActor::AddConstraintUsage(UAGX_ConstraintComponent* Constraint)
 {
 	UsedByConstraints.Add(Constraint);
 }
 
-void AAGX_ConstraintFrameActor::RemoveConstraintUsage(AAGX_Constraint* Constraint)
+void AAGX_ConstraintFrameActor::RemoveConstraintUsage(UAGX_ConstraintComponent* Constraint)
 {
 	// Only remove first occurance, because it is actually valid for a constraint
 	// to use the same Constraint Frame Actor twice.
 	UsedByConstraints.RemoveSingle(Constraint);
 }
 
-const TArray<class AAGX_Constraint*>& AAGX_ConstraintFrameActor::GetConstraintUsage() const
+const TArray<UAGX_ConstraintComponent*>& AAGX_ConstraintFrameActor::GetConstraintUsage() const
 {
 	return UsedByConstraints;
 }
