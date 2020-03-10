@@ -50,6 +50,6 @@ public:
 
 
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Actor")
 	UAGX_ConstraintComponent* ConstraintComponent;
 };
