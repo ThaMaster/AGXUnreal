@@ -26,6 +26,12 @@ namespace
 	}
 }
 
+void FAGX_ConstraintTargetSpeedController::SetSpeed(float InSpeed)
+{
+	Speed = static_cast<double>(InSpeed);
+	Super::UpdateNativeProperties();
+}
+
 void FAGX_ConstraintTargetSpeedController::UpdateNativePropertiesImpl()
 {
 	FTargetSpeedControllerBarrier* Barrier = GetSpeedBarrier(*this);

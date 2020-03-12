@@ -26,5 +26,6 @@ public:
 	AAGX_Constraint1DofActor();
 	virtual ~AAGX_Constraint1DofActor();
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint 1DOF Actor")
 	UAGX_Constraint1DofComponent* Get1DofComponent();
 };

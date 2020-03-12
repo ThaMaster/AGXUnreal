@@ -41,7 +41,7 @@ public:
 	FAGX_ConstraintRangeController RangeController;
 
 	/** Target speed controller for the secondary constraint (on the free DOF, usually). */
-	UPROPERTY(EditAnywhere, Category = "AGX Secondary Constraint")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Secondary Constraint")
 	FAGX_ConstraintTargetSpeedController TargetSpeedController;
 
 	UAGX_Constraint1DofComponent();
