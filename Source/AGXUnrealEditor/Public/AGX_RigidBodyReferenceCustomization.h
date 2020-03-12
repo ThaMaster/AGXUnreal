@@ -11,6 +11,7 @@ struct FAGX_RigidBodyReference;
 class AActor;
 class FDetailWidgetRow;
 class PropertyHandle;
+class SEditableTextBox;
 
 class FAGX_RigidBodyReferenceCustomization : public IPropertyTypeCustomization
 {
@@ -55,6 +56,8 @@ private:
 	 */
 	void OnComboBoxChanged(TSharedPtr<FName> NewSelection, ESelectInfo::Type SelectionInfo);
 
+	void OnBodyNameCommited(const FText& InText, ETextCommit::Type InCommitType);
+
 	/**
 	 * Return the the currently selected body-owning Actor, if exactly one RigidBodyReference is
 	 * selected and that reference has a selected owning Actor.
@@ -76,6 +79,10 @@ private:
 
 	FSimpleDelegate RebuildComboBoxDelegate;
 
+	SEditableTextBox* ComponentNameBoxPtr;
+
+	// The RigidBodyReference being customized. Will be nullptr if none or multiple
+	// RigidBodyReferences are selected.
 	FAGX_RigidBodyReference* RigidBodyReference;
 
 	TSharedPtr<IPropertyHandle> OwningActorHandle;

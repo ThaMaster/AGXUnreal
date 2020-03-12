@@ -209,7 +209,8 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisY().Z) > Tolerance)
 		{
-			WriteMessage(EDofFlag::DOF_FLAG_ROTATIONAL_1, FMath::Abs(Rotation2InLocal1.GetAxisY().Z));
+			WriteMessage(
+				EDofFlag::DOF_FLAG_ROTATIONAL_1, FMath::Abs(Rotation2InLocal1.GetAxisY().Z));
 			return true;
 		}
 	}
@@ -218,7 +219,8 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Z) > Tolerance)
 		{
-			WriteMessage(EDofFlag::DOF_FLAG_ROTATIONAL_2, FMath::Abs(Rotation2InLocal1.GetAxisX().Z));
+			WriteMessage(
+				EDofFlag::DOF_FLAG_ROTATIONAL_2, FMath::Abs(Rotation2InLocal1.GetAxisX().Z));
 			return true;
 		}
 	}
@@ -227,7 +229,8 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Y) > Tolerance)
 		{
-			WriteMessage(EDofFlag::DOF_FLAG_ROTATIONAL_3, FMath::Abs(Rotation2InLocal1.GetAxisX().Y));
+			WriteMessage(
+				EDofFlag::DOF_FLAG_ROTATIONAL_3, FMath::Abs(Rotation2InLocal1.GetAxisX().Y));
 			return true;
 		}
 	}
@@ -376,6 +379,19 @@ void UAGX_ConstraintComponent::BeginDestroy()
 void UAGX_ConstraintComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Provide a default owning actor, the owner of this component, if no owner has been specified
+	// for the RigidBodyReferences. This is always the case when the constraint has been created
+	// from a Blueprint and no OwningActor has been set on the Blueprint instance's constraint.
+	for (FAGX_RigidBodyReference* BodyReference :
+		 {&BodyAttachment1.RigidBody, &BodyAttachment2.RigidBody})
+	{
+		if (BodyReference->OwningActor == nullptr)
+		{
+			BodyReference->OwningActor = GetOwner();
+			BodyReference->UpdateCache();
+		}
+	}
 
 	if (!HasNative())
 	{
