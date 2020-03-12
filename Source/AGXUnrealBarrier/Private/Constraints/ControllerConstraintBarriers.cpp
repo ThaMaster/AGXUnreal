@@ -364,33 +364,33 @@ FTargetSpeedControllerBarrier::FTargetSpeedControllerBarrier(
 	check(NativeRef->Native->is<agx::TargetSpeedController>());
 }
 
-void FTargetSpeedControllerBarrier::SetSpeedTranslational(float Speed)
+void FTargetSpeedControllerBarrier::SetSpeedTranslational(double Speed)
 {
 	check(HasNative());
 	const agx::Real SpeedAGX = ConvertDistanceToAgx(Speed);
 	GetController(*this)->setSpeed(SpeedAGX);
 }
 
-float FTargetSpeedControllerBarrier::GetSpeedTranslational() const
+double FTargetSpeedControllerBarrier::GetSpeedTranslational() const
 {
 	check(HasNative());
 	const agx::Real SpeedAGX = GetController(*this)->getSpeed();
-	const float SpeedUnreal = ConvertDistanceToUnreal<float>(SpeedAGX);
+	const double SpeedUnreal = ConvertDistanceToUnreal<double>(SpeedAGX);
 	return SpeedUnreal;
 }
 
-void FTargetSpeedControllerBarrier::SetSpeedRotational(float Speed)
+void FTargetSpeedControllerBarrier::SetSpeedRotational(double Speed)
 {
 	check(HasNative());
 	const agx::Real SpeedAGX = ConvertAngleToAgx(Speed);
 	GetController(*this)->setSpeed(SpeedAGX);
 }
 
-float FTargetSpeedControllerBarrier::GetSpeedRotational() const
+double FTargetSpeedControllerBarrier::GetSpeedRotational() const
 {
 	check(HasNative());
 	const agx::Real SpeedAGX = GetController(*this)->getSpeed();
-	const float SpeedUnreal = ConvertAngleToUnreal<float>(SpeedAGX);
+	const double SpeedUnreal = ConvertAngleToUnreal<double>(SpeedAGX);
 	return SpeedUnreal;
 }
 

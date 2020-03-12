@@ -27,13 +27,13 @@ namespace
 	}
 }
 
-void FAGX_ConstraintTargetSpeedController::SetSpeed(float InSpeed)
+void FAGX_ConstraintTargetSpeedController::SetSpeed(double InSpeed)
 {
-	Speed = static_cast<double>(InSpeed);
+	Speed = InSpeed;
 	Super::UpdateNativeProperties();
 }
 
-float FAGX_ConstraintTargetSpeedController::GetSpeed() const
+double FAGX_ConstraintTargetSpeedController::GetSpeed() const
 {
 	return Speed;
 }

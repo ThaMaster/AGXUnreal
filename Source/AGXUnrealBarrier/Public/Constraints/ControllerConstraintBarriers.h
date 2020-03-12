@@ -107,11 +107,11 @@ class AGXUNREALBARRIER_API FTargetSpeedControllerBarrier : public FConstraintCon
 public:
 	FTargetSpeedControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
 
-	void SetSpeedTranslational(float Speed);
-	float GetSpeedTranslational() const;
+	void SetSpeedTranslational(double Speed);
+	double GetSpeedTranslational() const;
 
-	void SetSpeedRotational(float Speed);
-	float GetSpeedRotational() const;
+	void SetSpeedRotational(double Speed);
+	double GetSpeedRotational() const;
 
 	void SetLockedAtZeroSpeed(bool LockedAtZeroSpeed);
 	bool GetLockedAtZeroSpeed() const;

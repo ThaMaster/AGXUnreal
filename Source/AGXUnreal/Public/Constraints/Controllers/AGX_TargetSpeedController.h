@@ -27,7 +27,7 @@ struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController : public FAGX_Constrai
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Target Speed Controller", Meta = (EditCondition = "bEnable"))
-	float Speed;
+	double Speed;
 
 	/**
 	 * Whether the controller should auto-lock whenever target speed is zero,
@@ -45,8 +45,8 @@ public:
 	void InitializeBarrier(TUniquePtr<FTargetSpeedControllerBarrier> Barrier);
 	void CopyFrom(const FTargetSpeedControllerBarrier& Source);
 
-	void SetSpeed(float InSpeed);
-	float GetSpeed() const;
+	void SetSpeed(double InSpeed);
+	double GetSpeed() const;
 
 private:
 	virtual void UpdateNativePropertiesImpl() override;
@@ -62,13 +62,13 @@ class AGXUNREAL_API UAGX_ConstraintTargetSpeedController_FL : public UBlueprintF
 	static void SetSpeed(
 		UPARAM(ref) FAGX_ConstraintTargetSpeedController& ControllerRef, const float Speed)
 	{
-		ControllerRef.SetSpeed(Speed);
+		ControllerRef.SetSpeed(static_cast<double>(Speed));
 	};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Target Speed Controller")
 	static float GetSpeed(
 		UPARAM(ref) FAGX_ConstraintTargetSpeedController& ControllerRef)
 	{
-		return ControllerRef.GetSpeed();
+		return static_cast<float>(ControllerRef.GetSpeed());
 	};
 };
