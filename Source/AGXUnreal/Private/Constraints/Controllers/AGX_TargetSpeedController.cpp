@@ -2,7 +2,6 @@
 
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
-#include "..\..\..\Public\Constraints\Controllers\AGX_TargetSpeedController.h"
 
 FAGX_ConstraintTargetSpeedController::FAGX_ConstraintTargetSpeedController(bool bRotational)
 	: FAGX_ConstraintController(bRotational)
