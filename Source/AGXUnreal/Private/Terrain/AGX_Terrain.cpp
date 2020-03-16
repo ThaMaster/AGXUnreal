@@ -23,6 +23,7 @@
 #include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
 #include "Misc/AssertionMacros.h"
+#include "Misc/EngineVersionComparison.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
@@ -479,7 +480,13 @@ void AAGX_Terrain::InitializeParticleSystem()
 
 	ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 		ParticleSystemAsset, RootComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
-		FVector::OneVector, EAttachLocation::Type::KeepWorldPosition, false, EPSCPoolMethod::None);
+		FVector::OneVector, EAttachLocation::Type::KeepWorldPosition, false,
+#if UE_VERSION_OLDER_THAN(4, 24, 0)
+		EPSCPoolMethod::None
+#else
+		ENCPoolMethod::None
+#endif
+		);
 #if WITH_EDITORONLY_DATA
 	ParticleSystemComponent->bVisualizeComponent = true;
 #endif

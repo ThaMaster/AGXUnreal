@@ -1,5 +1,6 @@
 #include "Shapes/AGX_ShapeComponent.h"
 
+// AGXUnreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
@@ -7,6 +8,9 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
+
+// Unreal Engine includes.
+#include "Misc/EngineVersionComparison.h"
 
 // Sets default values for this component's properties
 UAGX_ShapeComponent::UAGX_ShapeComponent()
@@ -35,8 +39,8 @@ void UAGX_ShapeComponent::UpdateVisualMesh()
 
 bool UAGX_ShapeComponent::ShouldCreateVisualMesh() const
 {
-	return bVisible; // TODO: add && !(bHiddenInGame && IsGamePlaying), but how to get
-					 // IsGamePlaying?
+	/// \todo add && !(bHiddenInGame && IsGamePlaying), but how to get IsGamePlaying?
+	return IsVisible();
 }
 
 void UAGX_ShapeComponent::UpdateNativeProperties()
@@ -104,8 +108,15 @@ void UAGX_ShapeComponent::TickComponent(
 bool UAGX_ShapeComponent::DoesPropertyAffectVisualMesh(
 	const FName& PropertyName, const FName& MemberPropertyName) const
 {
-	return PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bVisible) ||
-		   PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, RelativeScale3D);
+#if UE_VERSION_OLDER_THAN(4, 24, 0)
+	const FName& VisibleName = GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, "bVisible");
+	const FName& RelativeScale3DName =
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, "RelativeScale3D");
+#else
+	FName VisibleName(TEXT("bVisible"));
+	FName RelativeScale3DName(TEXT("RelativeScale3D"));
+#endif
+	return PropertyName == VisibleName || PropertyName == RelativeScale3DName;
 }
 
 void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
