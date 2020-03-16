@@ -153,7 +153,7 @@ bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBody() const
 
 bool FAGX_ConstraintBodyAttachmentCustomization::HasFrameDefiningActor() const
 {
-	return FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty);
+	return FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty) != nullptr;
 }
 
 FString GenerateFrameDefiningActorName(
