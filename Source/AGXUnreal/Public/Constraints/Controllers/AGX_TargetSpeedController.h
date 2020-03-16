@@ -5,6 +5,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "AGX_TargetSpeedController.generated.h"
 
@@ -15,7 +16,7 @@ class FTargetSpeedControllerBarrier;
  * that has not been primarily constrained by the AGX Constraint). Disabled by
  * default.
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController : public FAGX_ConstraintController
 {
 	GENERATED_USTRUCT_BODY()
@@ -44,6 +45,30 @@ public:
 	void InitializeBarrier(TUniquePtr<FTargetSpeedControllerBarrier> Barrier);
 	void CopyFrom(const FTargetSpeedControllerBarrier& Source);
 
+	void SetSpeed(double InSpeed);
+	double GetSpeed() const;
+
 private:
 	virtual void UpdateNativePropertiesImpl() override;
+};
+
+/*This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprints*/
+UCLASS()
+class AGXUNREAL_API UAGX_ConstraintTargetSpeedController_FL : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Target Speed Controller")
+	static void SetSpeed(
+		UPARAM(ref) FAGX_ConstraintTargetSpeedController& ControllerRef, const float Speed)
+	{
+		ControllerRef.SetSpeed(static_cast<double>(Speed));
+	};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Target Speed Controller")
+	static float GetSpeed(
+		UPARAM(ref) FAGX_ConstraintTargetSpeedController& ControllerRef)
+	{
+		return static_cast<float>(ControllerRef.GetSpeed());
+	};
 };
