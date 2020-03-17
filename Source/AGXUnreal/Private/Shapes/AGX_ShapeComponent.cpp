@@ -113,6 +113,12 @@ bool UAGX_ShapeComponent::DoesPropertyAffectVisualMesh(
 	const FName& RelativeScale3DName =
 		GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, "RelativeScale3D");
 #else
+	/// \todo bVisible and RelativeScale3D will become private in some Unreal Engine version > 4.25.
+	/// Unclear how we should handle PostEditChangeProperty events for those after that, since
+	/// GET_MEMBER_NAME_CHECKED can't be used with inherited private properties.
+	/// Monitor
+	/// https://answers.unrealengine.com/questions/950031/how-to-use-get-member-name-checked-with-upropertie.html
+	/// for possible solutions.
 	FName VisibleName(TEXT("bVisible"));
 	FName RelativeScale3DName(TEXT("RelativeScale3D"));
 #endif
