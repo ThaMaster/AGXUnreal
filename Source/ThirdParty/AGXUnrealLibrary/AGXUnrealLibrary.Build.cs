@@ -69,10 +69,8 @@ public class AGXUnrealLibrary : ModuleRules
 		else if(Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			AddRuntimeDependency("ot20-OpenThreads", LibSource.Dependencies, ManualCopy);
-			// What are these? And more importantly, where are they?
-			Console.Error.WriteLine("I don't know where msvcp140 and vcruntime140 are.");
-			// AddRuntimeDependency("msvcp140", ManualCopy);
-			// AddRuntimeDependency("vcruntime140", ManualCopy);
+			AddRuntimeDependency("msvcp140", LibSource.Agx, ManualCopy);
+			AddRuntimeDependency("vcruntime140", LibSource.Agx, ManualCopy);
 		}
 
 		if(Target.Type == TargetType.Editor)
