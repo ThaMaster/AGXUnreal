@@ -8,6 +8,7 @@
 #include "Engine/Engine.h"
 #include "LocalVertexFactory.h"
 #include "Materials/Material.h"
+#include "Misc/EngineVersionComparison.h"
 #include "PrimitiveSceneProxy.h"
 #include "StaticMeshResources.h"
 #include "Misc/EngineVersionComparison.h"
@@ -174,7 +175,12 @@ namespace
 
 FVector UAGX_VectorComponent::GetVectorDirection() const
 {
-	FVector localDirection = FVector::ForwardVector * ArrowSize * RelativeScale3D;
+#if UE_VERSION_OLDER_THAN(4, 24, 0)
+	FVector Scale = RelateiveScale3D;
+#else
+	FVector Scale = GetRelativeScale3D();
+#endif
+	FVector localDirection = FVector::ForwardVector * ArrowSize * Scale;
 	return GetComponentQuat().RotateVector(localDirection);
 }
 
