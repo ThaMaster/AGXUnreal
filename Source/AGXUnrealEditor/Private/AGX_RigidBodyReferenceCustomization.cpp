@@ -68,13 +68,14 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 	OwningActorHandle->SetOnPropertyValueChanged(RebuildComboBoxDelegate);
 	SearchChildActorsHandle->SetOnPropertyValueChanged(RebuildComboBoxDelegate);
 
+	SelectedBody = RigidBodyReference->BodyName;
 	FetchBodyNames();
 
 	StructBuilder.AddProperty(OwningActorHandle.ToSharedRef());
 	StructBuilder.AddProperty(SearchChildActorsHandle.ToSharedRef());
 
 	/// \todo Use CreatePropertyNameWidget here, instead of hard coded string?
-	FDetailWidgetRow& NameRow = StructBuilder.AddCustomRow(FText::FromString("Search String"));
+	FDetailWidgetRow& NameRow = StructBuilder.AddCustomRow(FText::FromString("Rigid Body Component"));
 	NameRow.NameContent()[SNew(STextBlock)
 							  .Text(FText::FromString("RigidBodyComponent"))
 							  .Font(IPropertyTypeCustomizationUtils::GetRegularFont())];
@@ -94,7 +95,7 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 			})];
 	for (TSharedPtr<FName>& BodyName : BodyNames)
 	{
-		if (*BodyName == RigidBodyReference->BodyName)
+		if (*BodyName == SelectedBody)
 		{
 			ComboBox->SetSelectedItem(BodyName);
 		}
@@ -192,7 +193,6 @@ void FAGX_RigidBodyReferenceCustomization::RebuildComboBox()
 void FAGX_RigidBodyReferenceCustomization::FetchBodyNames()
 {
 	BodyNames.Empty();
-	SelectedBody = NAME_None;
 
 	AActor* OwningActor = GetOwningActor();
 	if (OwningActor == nullptr)
