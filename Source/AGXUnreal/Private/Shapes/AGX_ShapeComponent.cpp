@@ -109,9 +109,9 @@ bool UAGX_ShapeComponent::DoesPropertyAffectVisualMesh(
 	const FName& PropertyName, const FName& MemberPropertyName) const
 {
 #if UE_VERSION_OLDER_THAN(4, 24, 0)
-	const FName& VisibleName = GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, "bVisible");
+	const FName& VisibleName = GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bVisible);
 	const FName& RelativeScale3DName =
-		GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, "RelativeScale3D");
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, RelativeScale3D);
 #else
 	/// \todo bVisible and RelativeScale3D will become private in some Unreal Engine version > 4.25.
 	/// Unclear how we should handle PostEditChangeProperty events for those after that, since
