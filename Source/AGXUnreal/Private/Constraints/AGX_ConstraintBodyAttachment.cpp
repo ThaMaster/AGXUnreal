@@ -48,6 +48,10 @@ FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotation() const
 
 FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 {
+	/// \todo Is it safe to replace this code with a call to GetGlobalFrameLocation(GetRigidBody())?
+	/// The difference would be that GetRigidBody would be called in cases where it would not
+	/// before.
+
 	if (FrameDefiningActor != nullptr)
 	{
 		return FrameDefiningActor->GetActorTransform().TransformPositionNoScale(LocalFrameLocation);
@@ -65,14 +69,56 @@ FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 	}
 }
 
+FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation(UAGX_RigidBodyComponent* Body) const
+{
+	if (FrameDefiningActor != nullptr)
+	{
+		return FrameDefiningActor->GetActorTransform().TransformPositionNoScale(LocalFrameLocation);
+	}
+	else if (Body != nullptr)
+	{
+		return Body->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
+	}
+	else
+	{
+		// When there is nothing that the local location is relative to then we assume it is a
+		// global location as well.
+		return LocalFrameLocation;
+	}
+}
+
 FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 {
+	/// \todo Is it safe to replace this code with a call to GetGlobalFrameRotation(GetRigidBody())?
+	/// The difference would be that GetRigidBody would be called in cases where it would not
+	/// before.
+
+
 	if (FrameDefiningActor != nullptr)
 	{
 		return FrameDefiningActor->GetActorTransform().TransformRotation(
 			LocalFrameRotation.Quaternion());
 	}
 	else if (UAGX_RigidBodyComponent* Body = GetRigidBody())
+	{
+		return Body->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
+	}
+	else
+	{
+		// When there is nothing that the local rotation is relative to then we
+		// assume it is a global rotation.
+		return LocalFrameRotation.Quaternion();
+	}
+}
+
+FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation(UAGX_RigidBodyComponent* Body) const
+{
+	if (FrameDefiningActor != nullptr)
+	{
+		return FrameDefiningActor->GetActorTransform().TransformRotation(
+				LocalFrameRotation.Quaternion());
+	}
+	else if (Body != nullptr)
 	{
 		return Body->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
 	}

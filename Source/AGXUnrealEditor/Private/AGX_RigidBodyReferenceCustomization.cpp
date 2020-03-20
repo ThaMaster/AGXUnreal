@@ -2,13 +2,15 @@
 
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
-#include "AGX_RigidBodyReference.h"
-#include "Utilities/AGX_PropertyUtilities.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_RigidBodyReference.h"
+#include "Constraints/AGX_ConstraintComponent.h"
+#include "Utilities/AGX_PropertyUtilities.h"
 
 // Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
 #include "DetailWidgetRow.h"
+#include "Engine/BlueprintGeneratedClass.h"
 #include "GameFramework/Actor.h"
 #include "IDetailChildrenBuilder.h"
 #include "IDetailPropertyRow.h"
@@ -52,6 +54,77 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeHeader(
 				 .MinDesiredWidth(250.0f)]; // 250 from SPropertyEditorAsset::GetDesiredWidth.
 }
 
+/**
+ * Fetch all names of RigidBodyComponents held by the pointed-to owning Actor. Optionally searches
+ * child actors if enabled in the RigidBodyReference instance. The found names are stored internally
+ * in this Customization. This member function should be called whenever the owning Actor has been
+ * changed, often via RebuildComboBox.
+ */
+void FetchBodyNamesFromOwner(
+	TArray<TSharedPtr<FName>>& BodyNames, AActor* OwningActor,
+	TSharedPtr<IPropertyHandle>& SearchChildActorsHandle)
+{
+	BodyNames.Empty();
+
+	bool bSearchChildActors;
+	FPropertyAccess::Result Result = SearchChildActorsHandle->GetValue(bSearchChildActors);
+	if (Result != FPropertyAccess::Success)
+	{
+		// Do not produce a list of body names if multiple RigidBodyReferences are selected. Here we
+		// could do something clever to let the user select the same rigid body to many references,
+		// but that's too complicated for the first implementation.
+		return;
+	}
+
+	TArray<UAGX_RigidBodyComponent*> RigidBodyComponents;
+	OwningActor->GetComponents(RigidBodyComponents, bSearchChildActors);
+	for (UAGX_RigidBodyComponent* RigidBody : RigidBodyComponents)
+	{
+		BodyNames.Add(MakeShareable(new FName(RigidBody->GetFName())));
+	}
+}
+
+void FetchBodyNamesFromBlueprint(
+	TArray<TSharedPtr<FName>>& BodyNames, IPropertyHandle& BodyReferenceHandle)
+{
+	/*
+	 The purpose of this function is to collect the names of all RigidBodyComponents in the
+	 currently open Blueprint so that they can be used to populate a ComboBox in e.g. the constraint
+	 details panel. For some reason the number of components is always zero. Not even the Component
+	 currently being customized shows up and it is be definition included in the Blueprint.
+	 Something is wrong.
+	 */
+
+	BodyNames.Empty();
+
+	UAGX_ConstraintComponent* Constraint = Cast<UAGX_ConstraintComponent>(
+		FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyReferenceHandle));
+	if (Constraint == nullptr)
+	{
+		return;
+	}
+
+	UBlueprintGeneratedClass* Blueprint = Cast<UBlueprintGeneratedClass>(Constraint->GetOuter());
+	if (Blueprint == nullptr)
+	{
+		return;
+	}
+
+	UE_LOG(
+		LogAGX, Warning, TEXT("Reading body names from Blueprint named '%s'. Have %d components."),
+		*Blueprint->GetName(), Blueprint->ComponentTemplates.Num());
+
+	for (UActorComponent* Component : Blueprint->ComponentTemplates)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("  Checking component '%s'."), *Component->GetName());
+		if (UAGX_RigidBodyComponent* RigidBody = Cast<UAGX_RigidBodyComponent>(Component))
+		{
+			UE_LOG(LogAGX, Warning, TEXT("  Is a body, adding."));
+			BodyNames.Add(MakeShareable(new FName(RigidBody->GetFName())));
+		}
+	}
+}
+
 void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 	TSharedRef<IPropertyHandle> BodyReferenceHandle, IDetailChildrenBuilder& StructBuilder,
 	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
@@ -69,13 +142,22 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 	SearchChildActorsHandle->SetOnPropertyValueChanged(RebuildComboBoxDelegate);
 
 	SelectedBody = RigidBodyReference->BodyName;
-	FetchBodyNames();
+	AActor* OwningActor = GetOwningActor();
+	if (OwningActor != nullptr)
+	{
+		FetchBodyNamesFromOwner(BodyNames, OwningActor, SearchChildActorsHandle);
+	}
+	else
+	{
+		FetchBodyNamesFromBlueprint(BodyNames, BodyReferenceHandle.Get());
+	}
 
 	StructBuilder.AddProperty(OwningActorHandle.ToSharedRef());
 	StructBuilder.AddProperty(SearchChildActorsHandle.ToSharedRef());
 
 	/// \todo Use CreatePropertyNameWidget here, instead of hard coded string?
-	FDetailWidgetRow& NameRow = StructBuilder.AddCustomRow(FText::FromString("Rigid Body Component"));
+	FDetailWidgetRow& NameRow =
+		StructBuilder.AddCustomRow(FText::FromString("Rigid Body Component"));
 	NameRow.NameContent()[SNew(STextBlock)
 							  .Text(FText::FromString("RigidBodyComponent"))
 							  .Font(IPropertyTypeCustomizationUtils::GetRegularFont())];
@@ -127,8 +209,18 @@ void FAGX_RigidBodyReferenceCustomization::OnBodyNameCommited(
 	SelectedBody = FName(*NewName.ToString());
 	if (RigidBodyReference != nullptr)
 	{
-		RigidBodyReference->BodyName = SelectedBody;
+		/// \todo A write to RigidBodyReference->BodyName is not the same as
+		/// BodyNameHandle->SetValue. Not sure why, but the RigidBodyReference seen by
+		/// AGX_ConstraintComponentVisualizer is not the same as the RigidBodyReference that is
+		/// being customized here. Then how should I handle cache invalidation?
+		/// Is there a way to get the actual RigidBodyReference from the BodyNameHandle?
+		/// Should I invalidate all caches on BeginPlay?
+		BodyNameHandle->SetValue(SelectedBody);
 		RigidBodyReference->InvalidateCache();
+
+		UE_LOG(
+			LogAGX, Warning, TEXT("RigidBodyReference: BodyName in %p updated to '%s'."),
+			(void*) RigidBodyReference, *RigidBodyReference->BodyName.ToString());
 	}
 }
 
@@ -175,7 +267,22 @@ FText FAGX_RigidBodyReferenceCustomization::GetHeaderText() const
 void FAGX_RigidBodyReferenceCustomization::RebuildComboBox()
 {
 	SelectedBody = NAME_None;
-	FetchBodyNames();
+
+	AActor* OwningActor = GetOwningActor();
+	if (OwningActor != nullptr)
+	{
+		FetchBodyNamesFromOwner(BodyNames, GetOwningActor(), SearchChildActorsHandle);
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_RigidBodyReferenceCustomization::RebuildComboBox called with nullptr owner. "
+				 "That's not supposed to happen."));
+		BodyNames.Empty();
+		return;
+	}
+
 	if (ComboBoxPtr == nullptr)
 	{
 		return;
@@ -190,38 +297,6 @@ void FAGX_RigidBodyReferenceCustomization::RebuildComboBox()
 	ComboBoxPtr->SetSelectedItem(BodyNames[0]);
 }
 
-void FAGX_RigidBodyReferenceCustomization::FetchBodyNames()
-{
-	BodyNames.Empty();
-
-	AActor* OwningActor = GetOwningActor();
-	if (OwningActor == nullptr)
-	{
-		/// \todo Here we would like to do something to get the names of the Components in
-		/// the local context. The context should be either the Owner of whatever is holding the
-		/// RigidBodyReference, or the Blueprint that is holding the Component that is holding the
-		/// RigidBodyReference.
-		return;
-	}
-
-	bool bSearchChildActors;
-	FPropertyAccess::Result Result = SearchChildActorsHandle->GetValue(bSearchChildActors);
-	if (Result != FPropertyAccess::Success)
-	{
-		// Do not produce a list of body names if multiple RigidBodyReferences are selected. Here we
-		// could do something clever to let the user select the same rigid body to many references,
-		// but that's too complicated for the first implementation.
-		return;
-	}
-
-	TArray<UAGX_RigidBodyComponent*> RigidBodyComponents;
-	OwningActor->GetComponents(RigidBodyComponents, bSearchChildActors);
-	for (UAGX_RigidBodyComponent* RigidBody : RigidBodyComponents)
-	{
-		BodyNames.Add(MakeShareable(new FName(RigidBody->GetFName())));
-	}
-}
-
 void FAGX_RigidBodyReferenceCustomization::OnComboBoxChanged(
 	TSharedPtr<FName> NewSelection, ESelectInfo::Type SelectionInfo)
 {
@@ -232,7 +307,18 @@ void FAGX_RigidBodyReferenceCustomization::OnComboBoxChanged(
 
 AActor* FAGX_RigidBodyReferenceCustomization::GetOwningActor()
 {
-	return RigidBodyReference->GetOwningActor();
+	if (AActor* OwningActor = RigidBodyReference->GetOwningActor())
+	{
+		return OwningActor;
+	}
+	else if (AActor* FallbackOwningActor = RigidBodyReference->FallbackOwningActor)
+	{
+		return FallbackOwningActor;
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

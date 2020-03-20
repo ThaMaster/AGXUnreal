@@ -149,7 +149,7 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 	if (BodyAttachment1.GetRigidBody() == nullptr || BodyAttachment2.GetRigidBody() == nullptr)
 	{
 		/// \todo Check if it is possible to create a single-body constraint, i.e., body
-		/// constrainted to the world, where the constraint is in an initially violated state. That
+		/// constrained to the world, where the constraint is in an initially violated state. That
 		/// is, can we create a world attachment frame that does not align with the local attachment
 		/// frame of the body.
 		return false;
@@ -252,19 +252,24 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
+	// The leaf property that was changed. May be nested in a struct.
 	FName PropertyName = (PropertyChangedEvent.Property != NULL)
 							 ? PropertyChangedEvent.Property->GetFName()
 							 : NAME_None;
 
+	// The root property that contains the property that was changed.
 	FName MemberPropertyName = (PropertyChangedEvent.MemberProperty != NULL)
 								   ? PropertyChangedEvent.MemberProperty->GetFName()
 								   : NAME_None;
 
-	if (MemberPropertyName == PropertyName) // Property of this class changed
+	if (MemberPropertyName == PropertyName)
 	{
+		// Property of this class changed.
 	}
-	else // Property of an aggregate struct changed
+	else
 	{
+		// Property of an aggregate struct changed.
+
 		FAGX_ConstraintBodyAttachment* ModifiedBodyAttachment =
 			(MemberPropertyName ==
 			 GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, BodyAttachment1))
@@ -285,6 +290,25 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 				// Or/additional add Refresh button to AAGX_ConstraintFrameActor's Details Panel
 				// that rebuilds the constraint usage list.
 				ModifiedBodyAttachment->OnFrameDefiningActorChanged(this);
+			}
+
+			/// \todo This is a bit of a hack and it may be possible to remove it.
+			/// The intention was to handle the Blueprint editor case, where it's not possible to
+			/// select the Actor that will be created when the Blueprint is instantiated as the
+			/// OwningActor in the RigidBodyReference. Here we set the Constraint's owner as the
+			/// OwningActor, meaning that the RigidBodyReference will reference something in the
+			/// "local scope". This should be the Blueprint itself, or a representation thereof,
+			/// but it's unclear to me if it will work like that.
+			if (ModifiedBodyAttachment->RigidBody.OwningActor == nullptr)
+			{
+				ModifiedBodyAttachment->RigidBody.FallbackOwningActor = GetOwner();
+				if (ModifiedBodyAttachment->RigidBody.FallbackOwningActor == nullptr)
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("BodyAttachment in '%s' got nullptr fallback owning actor."),
+						*GetName());
+				}
 			}
 		}
 	}
@@ -382,14 +406,15 @@ void UAGX_ConstraintComponent::BeginPlay()
 
 	// Provide a default owning actor, the owner of this component, if no owner has been specified
 	// for the RigidBodyReferences. This is always the case when the constraint has been created
-	// from a Blueprint and no OwningActor has been set on the Blueprint instance's constraint.
+	// as part of an Actor Blueprint.
 	for (FAGX_RigidBodyReference* BodyReference :
 		 {&BodyAttachment1.RigidBody, &BodyAttachment2.RigidBody})
 	{
+		BodyReference->FallbackOwningActor = nullptr;
 		if (BodyReference->OwningActor == nullptr)
 		{
 			BodyReference->OwningActor = GetOwner();
-			BodyReference->UpdateCache();
+			BodyReference->CacheCurrentRigidBody();
 		}
 	}
 

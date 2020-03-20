@@ -39,6 +39,9 @@ namespace
 		FVector const Y = R.GetScaledAxis(EAxis::Y);
 		FVector const Z = R.GetScaledAxis(EAxis::Z);
 
+		// UE_LOG(LogAGX, Warning, TEXT("Drawing axes at %.2f, %.2f, %.2f"), AxisLoc.X, AxisLoc.Y,
+		// AxisLoc.Z);
+
 		PDI->DrawLine(
 			AxisLoc, AxisLoc + X * Scale, FLinearColor::Red, DepthPriority, Thickness, DepthBias,
 			bScreenSpace);
@@ -60,14 +63,9 @@ namespace
 void FAGX_ConstraintComponentVisualizer::DrawVisualization(
 	const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI)
 {
-	const UAGX_ConstraintComponent* ConstraintComponent =
-		Cast<const UAGX_ConstraintComponent>(Component);
-
-	if (ConstraintComponent == nullptr)
+	const UAGX_ConstraintComponent* Constraint = Cast<const UAGX_ConstraintComponent>(Component);
+	if (Constraint == nullptr)
 		return;
-
-	const UAGX_ConstraintComponent* Constraint =
-		Cast<const UAGX_ConstraintComponent>(ConstraintComponent);
 
 	DrawConstraint(Constraint, View, PDI);
 
@@ -140,11 +138,12 @@ UAGX_RigidBodyComponent* GetRigidBody(
 		return Body;
 	}
 
+	// Not sure why this is needed when in the Blueprint editor. The intention is that a fallback
+	// OwningActor should be stored in the RigidBodyReference.
 	if (Fallback == nullptr)
 	{
 		return nullptr;
 	}
-
 	TArray<UAGX_RigidBodyComponent*> AllBodies;
 	Fallback->GetComponents(AllBodies, BodyReference.bSearchChildActors);
 	for (UAGX_RigidBodyComponent* Candidate : AllBodies)
@@ -159,9 +158,12 @@ UAGX_RigidBodyComponent* GetRigidBody(
 }
 
 void RenderBodyMarker(
-	UAGX_RigidBodyComponent* Body, float CircleScreenFactor, const FColor& Color,
-	const FSceneView* View, FPrimitiveDrawInterface* PDI)
+	const FAGX_ConstraintBodyAttachment& Attachment, UAGX_RigidBodyComponent* Body,
+	float CircleScreenFactor, const FColor& Color, const FSceneView* View,
+	FPrimitiveDrawInterface* PDI)
 {
+	// UE_LOG(LogAGX, Log, TEXT("Rendering body markers for body '%s'."), *Body->GetName());
+
 	if (bHighlightUsingBoundingBox)
 	{
 		FBox LocalAABB = GetBoundingBox(Body);
@@ -199,13 +201,13 @@ void RenderBodyMarker(
 		// used).
 
 /// \todo This doesn't work in the Blueprint editor as RigidBodyReference is currently implemented
-/// RigidBodyReference must be made aware of fallback owneres.
+/// RigidBodyReference must be made aware of fallback owners.
 /// Can I just set the OwningActor to the Constraint's owner? What would be cool.
 /// What will the DeatailCustomization do?
-#if 0
+#if 1
 		DrawCoordinateSystemAxes(
-			PDI, BodyAttachment.GetGlobalFrameLocation(),
-			BodyAttachment.GetGlobalFrameRotation().Rotator(), FrameGizmoScale, SDPG_Foreground,
+			PDI, Attachment.GetGlobalFrameLocation(Body),
+			Attachment.GetGlobalFrameRotation().Rotator(), FrameGizmoScale, SDPG_Foreground,
 			FrameGizmoThickness, /*DepthBias*/ 0.0f,
 			/*bScreenSpace*/ true);
 #endif
@@ -229,7 +231,8 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	if (Body1 != nullptr)
 	{
 		float CircleScreenFactor = 0.08f;
-		RenderBodyMarker(Body1, CircleScreenFactor,HighlightColor, View, PDI);
+		RenderBodyMarker(
+			Constraint->BodyAttachment1, Body1, CircleScreenFactor, HighlightColor, View, PDI);
 	}
 	if (Body2 != nullptr)
 	{
@@ -237,7 +240,7 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 		FColor Color = FColor(
 			HighlightColor.R * 0.6f, HighlightColor.G * 0.6f, HighlightColor.B * 0.6f,
 			HighlightColor.A);
-		RenderBodyMarker(Body2, CircleScreenFactor, Color, View, PDI);
+		RenderBodyMarker(Constraint->BodyAttachment2, Body2, CircleScreenFactor, Color, View, PDI);
 	}
 
 	if (bDrawLineBetweenActors && Body1 != nullptr && Body2 != nullptr)
