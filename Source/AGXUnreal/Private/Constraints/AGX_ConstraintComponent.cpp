@@ -383,6 +383,20 @@ void UAGX_ConstraintComponent::PostLoad()
 	Super::PostLoad();
 	BodyAttachment1.OnFrameDefiningActorChanged(this);
 	BodyAttachment2.OnFrameDefiningActorChanged(this);
+
+	// Provide a default owning actor, the owner of this component, if no owner has been specified
+	// for the RigidBodyReferences. This is always the case when the constraint has been created
+	// as part of an Actor Blueprint.
+	for (FAGX_RigidBodyReference* BodyReference :
+		 {&BodyAttachment1.RigidBody, &BodyAttachment2.RigidBody})
+	{
+		BodyReference->FallbackOwningActor = nullptr;
+		if (BodyReference->OwningActor == nullptr)
+		{
+			BodyReference->OwningActor = GetOwner();
+			BodyReference->CacheCurrentRigidBody();
+		}
+	}
 }
 
 void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
@@ -403,21 +417,6 @@ void UAGX_ConstraintComponent::BeginDestroy()
 void UAGX_ConstraintComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Provide a default owning actor, the owner of this component, if no owner has been specified
-	// for the RigidBodyReferences. This is always the case when the constraint has been created
-	// as part of an Actor Blueprint.
-	for (FAGX_RigidBodyReference* BodyReference :
-		 {&BodyAttachment1.RigidBody, &BodyAttachment2.RigidBody})
-	{
-		BodyReference->FallbackOwningActor = nullptr;
-		if (BodyReference->OwningActor == nullptr)
-		{
-			BodyReference->OwningActor = GetOwner();
-			BodyReference->CacheCurrentRigidBody();
-		}
-	}
-
 	if (!HasNative())
 	{
 		CreateNative();
