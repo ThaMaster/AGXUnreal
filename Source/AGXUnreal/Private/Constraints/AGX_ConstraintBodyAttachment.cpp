@@ -137,6 +137,13 @@ FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix() const
 	return FMatrix(Rotation.GetAxisX(), Rotation.GetAxisY(), Rotation.GetAxisZ(), Location);
 }
 
+FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix(UAGX_RigidBodyComponent* Body) const
+{
+	FQuat Rotation = GetGlobalFrameRotation(Body);
+	FVector Location = GetGlobalFrameLocation(Body);
+	return FMatrix(Rotation.GetAxisX(), Rotation.GetAxisY(), Rotation.GetAxisZ(), Location);
+}
+
 FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool CreateIfNeeded)
 {
 	UAGX_RigidBodyComponent* Body = GetRigidBody();

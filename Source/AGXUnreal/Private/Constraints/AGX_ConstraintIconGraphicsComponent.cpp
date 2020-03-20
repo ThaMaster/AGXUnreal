@@ -138,9 +138,20 @@ public:
 		, MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel()))
 		, bDrawOnlyIfUnselected(true)
 		, LockedDofs(Component->Constraint->GetLockedDofsBitmask())
-		, FrameTransform1(Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix())
-		, FrameTransform2(Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix())
 	{
+		FAGX_RigidBodyReference& BodyReference1 = Component->Constraint->BodyAttachment1.RigidBody;
+		FAGX_RigidBodyReference& BodyReference2 = Component->Constraint->BodyAttachment2.RigidBody;
+
+		if (BodyReference1.GetOwningActor() == nullptr)
+		{
+			BodyReference1.FallbackOwningActor = Component->GetOwner();
+		}
+		if (BodyReference2.GetOwningActor() == nullptr)
+		{
+			BodyReference2.FallbackOwningActor = Component->GetOwner();
+		}
+		FrameTransform1 = (Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix());
+		FrameTransform2 = (Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix());
 		/// \todo Use inheritance instead of this branching below.
 		/// \todo IsA() should probably not be used if future constraints will derive these
 		/// spawnable constraints.

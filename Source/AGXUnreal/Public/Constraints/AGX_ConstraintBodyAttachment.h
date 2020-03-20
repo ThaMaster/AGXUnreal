@@ -124,6 +124,8 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 
 	FMatrix GetGlobalFrameMatrix() const;
 
+	FMatrix GetGlobalFrameMatrix(UAGX_RigidBodyComponent* Body) const;
+
 	FRigidBodyBarrier* GetRigidBodyBarrier(bool CreateIfNeeded);
 
 #if WITH_EDITOR
