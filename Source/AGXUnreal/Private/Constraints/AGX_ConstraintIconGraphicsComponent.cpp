@@ -137,6 +137,7 @@ public:
 		: FPrimitiveSceneProxy(Component)
 		, MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel()))
 		, bDrawOnlyIfUnselected(true)
+		, Constraint(Component->Constraint)
 		, LockedDofs(Component->Constraint->GetLockedDofsBitmask())
 	{
 		FAGX_RigidBodyReference& BodyReference1 = Component->Constraint->BodyAttachment1.RigidBody;
@@ -504,7 +505,7 @@ private:
 
 	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View) const override
 	{
-		const bool bVisibleForSelection = !bDrawOnlyIfUnselected || !IsSelected();
+		const bool bVisibleForSelection = IsSelected() && !Constraint->IsSelected();
 
 		FPrimitiveViewRelevance Result;
 		Result.bDrawRelevance = IsShown(View) && bVisibleForSelection;
@@ -547,6 +548,7 @@ private:
 	TArray<TSharedPtr<FAGX_ConstraintIconGraphicsSection>> Sections;
 	FMaterialRelevance MaterialRelevance;
 	const bool bDrawOnlyIfUnselected = true;
+	UAGX_ConstraintComponent* Constraint;
 	const EDofFlag LockedDofs;
 	FMatrix FrameTransform1; // global transforms
 	FMatrix FrameTransform2;

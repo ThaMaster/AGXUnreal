@@ -87,18 +87,26 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	BodyAttachment2.OnFrameDefiningActorChanged(this);
 #endif
 
-	/// \todo Not sure what to do with this one.
 	// Create UAGX_ConstraintDofGraphicsComponent as child component.
 	{
-		DofGraphicsComponent = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
-			TEXT("DofGraphicsComponent"));
+		DofGraphicsComponent1 = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
+			TEXT("DofGraphicsComponent1"));
 
-		DofGraphicsComponent->Constraint = this;
-		DofGraphicsComponent->SetupAttachment(this);
-		DofGraphicsComponent->bHiddenInGame = true;
+		DofGraphicsComponent1->Constraint = this;
+		DofGraphicsComponent1->SetupAttachment(this);
+		DofGraphicsComponent1->bHiddenInGame = true;
+		DofGraphicsComponent1->AttachmentId = 1;
+	}
+	{
+		DofGraphicsComponent2 = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
+				TEXT("DofGraphicsComponent2"));
+
+		DofGraphicsComponent2->Constraint = this;
+		DofGraphicsComponent2->SetupAttachment(this);
+		DofGraphicsComponent2->bHiddenInGame = true;
+		DofGraphicsComponent2->AttachmentId = 2;
 	}
 
-	/// \todo Not sure what to do with this one.
 	// Create UAGX_ConstraintIconGraphicsComponent as child component.
 	{
 		IconGraphicsComponent = CreateDefaultSubobject<UAGX_ConstraintIconGraphicsComponent>(
