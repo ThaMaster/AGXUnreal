@@ -42,7 +42,7 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 	// Blueprint that is bound to a particular level and uses references to objects within the
 	// level, but that will not be supported at this stage.
 	UPROPERTY(
-		EditInstanceOnly, Category = "AGX Dynamics",
+		EditAnywhere, Category = "AGX Dynamics",
 		meta = (Tooltip = "The Actor that owns the RigidBodyComponent."))
 	TSoftObjectPtr<AActor> OwningActor;
 
@@ -56,7 +56,7 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 
 	/// If true, then search not only within OwningActor's Components, but also recursively through
 	/// ChildActorComponents as well.
-	UPROPERTY(EditInstanceOnly, Category = "Body reference")
+	UPROPERTY(EditAnywhere, Category = "Body reference")
 	uint8 bSearchChildActors : 1;
 
 	// A fallback owning Actor that can be used when we want to specify an Actor to search for
