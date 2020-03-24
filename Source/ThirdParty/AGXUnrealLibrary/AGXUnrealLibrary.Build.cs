@@ -73,7 +73,8 @@ public class AGXUnrealLibrary : ModuleRules
 			AddRuntimeDependency("vcruntime140", LibSource.Agx, ManualCopy);
 		}
 
-		if(Target.Type == TargetType.Editor)
+		// Not entire sure on this if-test.
+		if (Target.Type == TargetType.Editor || Target.Type == TargetType.Game)
 		{
 			AddIncludePath(LibSource.Agx);
 			AddIncludePath(LibSource.Components);
