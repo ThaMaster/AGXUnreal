@@ -1,6 +1,7 @@
 #include "Constraints/AGX_ConstraintComponentVisualizer.h"
 
 // AGXUnreal includes.
+#include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
@@ -38,6 +39,9 @@ namespace
 		FVector const Y = R.GetScaledAxis(EAxis::Y);
 		FVector const Z = R.GetScaledAxis(EAxis::Z);
 
+		// UE_LOG(LogAGX, Warning, TEXT("Drawing axes at %.2f, %.2f, %.2f"), AxisLoc.X, AxisLoc.Y,
+		// AxisLoc.Z);
+
 		PDI->DrawLine(
 			AxisLoc, AxisLoc + X * Scale, FLinearColor::Red, DepthPriority, Thickness, DepthBias,
 			bScreenSpace);
@@ -59,18 +63,20 @@ namespace
 void FAGX_ConstraintComponentVisualizer::DrawVisualization(
 	const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI)
 {
-	const UAGX_ConstraintComponent* ConstraintComponent =
-		Cast<const UAGX_ConstraintComponent>(Component);
-
-	if (ConstraintComponent == nullptr)
+	const UAGX_ConstraintComponent* Constraint = Cast<const UAGX_ConstraintComponent>(Component);
+	if (Constraint == nullptr)
 		return;
-
-	const UAGX_ConstraintComponent* Constraint =
-		Cast<const UAGX_ConstraintComponent>(ConstraintComponent);
 
 	DrawConstraint(Constraint, View, PDI);
 
-	if (UAGX_ConstraintDofGraphicsComponent* DofGraphics = Constraint->GetDofGraphics())
+	if (UAGX_ConstraintDofGraphicsComponent* DofGraphics = Constraint->GetDofGraphics1())
+	{
+		/// Hack to force update of render transform, if for example the constraint uses a
+		/// constraint transform actor and it was moved without UAGX_ConstraintDofGraphicsComponent
+		/// knowing about it... \todo Might be a better way to do this?
+		DofGraphics->OnBecameSelected();
+	}
+	if (UAGX_ConstraintDofGraphicsComponent* DofGraphics = Constraint->GetDofGraphics2())
 	{
 		/// Hack to force update of render transform, if for example the constraint uses a
 		/// constraint transform actor and it was moved without UAGX_ConstraintDofGraphicsComponent
@@ -130,6 +136,91 @@ namespace
 	}
 }
 
+/// \todo Consider moving GetRigidBody with fallback to FAGX_ConstraintBodyAttachment.
+UAGX_RigidBodyComponent* GetRigidBody(
+	const FAGX_RigidBodyReference& BodyReference, AActor* Fallback)
+{
+	if (UAGX_RigidBodyComponent* Body = BodyReference.GetRigidBody())
+	{
+		return Body;
+	}
+
+	// Not sure why this is needed when in the Blueprint editor. The intention is that a fallback
+	// OwningActor should be stored in the RigidBodyReference.
+	if (Fallback == nullptr)
+	{
+		return nullptr;
+	}
+	TArray<UAGX_RigidBodyComponent*> AllBodies;
+	Fallback->GetComponents(AllBodies, BodyReference.bSearchChildActors);
+	for (UAGX_RigidBodyComponent* Candidate : AllBodies)
+	{
+		if (Candidate->GetFName() == BodyReference.BodyName)
+		{
+			return Candidate;
+		}
+	}
+
+	return nullptr;
+}
+
+void RenderBodyMarker(
+	const FAGX_ConstraintBodyAttachment& Attachment, UAGX_RigidBodyComponent* Body,
+	float CircleScreenFactor, const FColor& Color, const FSceneView* View,
+	FPrimitiveDrawInterface* PDI)
+{
+	// UE_LOG(LogAGX, Log, TEXT("Rendering body markers for body '%s'."), *Body->GetName());
+
+	if (bHighlightUsingBoundingBox)
+	{
+		FBox LocalAABB = GetBoundingBox(Body);
+
+		DrawOrientedWireBox(
+			PDI, Body->GetComponentLocation(), Body->GetForwardVector(), Body->GetRightVector(),
+			Body->GetUpVector(), LocalAABB.GetExtent(), Color, SDPG_World, HighlightThickness,
+			/*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
+	}
+
+	if (bHighlightUsingCircle)
+	{
+		const FVector Direction =
+			(Body->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
+		const float Distance = 40.0f;
+		const FVector Location = View->ViewLocation + Direction * Distance;
+		const float Radius = GetWorldSizeFromScreenFactor(
+			CircleScreenFactor, FMath::DegreesToRadians(View->FOV), Distance);
+		DrawCircle(
+			PDI, Location, View->GetViewRight(), View->GetViewUp(), Color, Radius, 32,
+			SDPG_Foreground, HighlightThickness, /*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
+	}
+
+	if (bDrawAttachmenFrameTripod)
+	{
+		// It is important to make sure that drawn coordinate system does not interfere
+		// with the default transform gizmo. Therefore, make sure thickness of drawn
+		// coordinate system is thinner than transform gizmo, so that the transform gizmo is
+		// always selectable.
+		//
+		// If is not thinner, in the scenario where the coordinate system equals the
+		// currently active transform gizmo (i.e. visually overlapping), and they are
+		// located inside a mesh while the camera is ouside of the mesh, there are
+		// difficulties	selecting the transform gizmo (even if HitProxy, depth bias, etc are
+		// used).
+
+/// \todo This doesn't work in the Blueprint editor as RigidBodyReference is currently implemented
+/// RigidBodyReference must be made aware of fallback owners.
+/// Can I just set the OwningActor to the Constraint's owner? What would be cool.
+/// What will the DeatailCustomization do?
+#if 1
+		DrawCoordinateSystemAxes(
+			PDI, Attachment.GetGlobalFrameLocation(Body),
+			Attachment.GetGlobalFrameRotation().Rotator(), FrameGizmoScale, SDPG_Foreground,
+			FrameGizmoThickness, /*DepthBias*/ 0.0f,
+			/*bScreenSpace*/ true);
+#endif
+	}
+}
+
 void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	const UAGX_ConstraintComponent* Constraint, const FSceneView* View,
 	FPrimitiveDrawInterface* PDI)
@@ -137,84 +228,41 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	if (Constraint == nullptr)
 		return;
 
-	for (int RigidBodyIndex = 0; RigidBodyIndex < 2; ++RigidBodyIndex)
+	const FAGX_RigidBodyReference& BodyReference1 = Constraint->BodyAttachment1.RigidBody;
+	const FAGX_RigidBodyReference& BodyReference2 = Constraint->BodyAttachment2.RigidBody;
+
+	AActor* BodyOwnerFallback = Constraint->GetOwner();
+	UAGX_RigidBodyComponent* Body1 = GetRigidBody(BodyReference1, BodyOwnerFallback);
+	UAGX_RigidBodyComponent* Body2 = GetRigidBody(BodyReference2, BodyOwnerFallback);
+
+	if (Body1 != nullptr)
 	{
-		FAGX_ConstraintBodyAttachment BodyAttachment =
-			RigidBodyIndex == 0 ? Constraint->BodyAttachment1 : Constraint->BodyAttachment2;
-
-		/// \todo Cannot assume a single body per actor.
-		if (UAGX_RigidBodyComponent* RigidBody = BodyAttachment.GetRigidBody())
-		{
-			// Highlight Rigid Body Actor
-			if (bHighlightUsingBoundingBox)
-			{
-				FBox LocalAABB = GetBoundingBox(RigidBody);
-
-				DrawOrientedWireBox(
-					PDI, RigidBody->GetComponentLocation(), RigidBody->GetForwardVector(),
-					RigidBody->GetRightVector(), RigidBody->GetUpVector(), LocalAABB.GetExtent(),
-					HighlightColor, SDPG_World, HighlightThickness, /*DepthBias*/ 0.0f,
-					/*bScreenSpace*/ true);
-			}
-			else if (bHighlightUsingCircle)
-			{
-				FVector Direction =
-					(RigidBody->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
-				float Distance = 40.0f;
-				FVector Location = View->ViewLocation + Direction * Distance;
-				float Radius = GetWorldSizeFromScreenFactor(
-					0.08f, FMath::DegreesToRadians(View->FOV), Distance);
-
-				DrawCircle(
-					PDI, Location, View->GetViewRight(), View->GetViewUp(), HighlightColor, Radius,
-					/*Sides*/ 32, SDPG_Foreground, HighlightThickness, /*DepthBias*/ 0.0f,
-					/*bScreenSpace*/ true);
-			}
-
-			// Draw tripod for final Attachment Frame
-			if (bDrawAttachmenFrameTripod)
-			{
-				// It is important to make sure that drawn coordinate system does not interfere
-				// with the default transform gizmo. Therefore, make sure thickness of drawn
-				// coordinate system is thinner than transform gizmo, so that the transform gizmo is
-				// always selectable.
-				//
-				// If is not thinner, in the scenario where the coordinate system equals the
-				// currently active transform gizmo (i.e. visually overlapping), and they are
-				// located inside a mesh while the camera is ouside of the mesh, there are
-				// difficulties	selecting the transform gizmo (even if HitProxy, depth bias, etc are
-				// used).
-
-				DrawCoordinateSystemAxes(
-					PDI, BodyAttachment.GetGlobalFrameLocation(),
-					BodyAttachment.GetGlobalFrameRotation().Rotator(), FrameGizmoScale,
-					SDPG_Foreground, FrameGizmoThickness, /*DepthBias*/ 0.0f,
-					/*bScreenSpace*/ true);
-			}
-		}
+		float CircleScreenFactor = 0.08f;
+		RenderBodyMarker(
+			Constraint->BodyAttachment1, Body1, CircleScreenFactor, HighlightColor, View, PDI);
+	}
+	if (Body2 != nullptr)
+	{
+		float CircleScreenFactor = 0.06f;
+		FColor Color = FColor(
+			HighlightColor.R * 0.6f, HighlightColor.G * 0.6f, HighlightColor.B * 0.6f,
+			HighlightColor.A);
+		RenderBodyMarker(Constraint->BodyAttachment2, Body2, CircleScreenFactor, Color, View, PDI);
 	}
 
-	if (bDrawLineBetweenActors)
+	if (bDrawLineBetweenActors && Body1 != nullptr && Body2 != nullptr)
 	{
-		UAGX_RigidBodyComponent* RigidBody1 = Constraint->BodyAttachment1.GetRigidBody();
-		UAGX_RigidBodyComponent* RigidBody2 = Constraint->BodyAttachment2.GetRigidBody();
+		float Distance = 100.0f;
 
-		if (RigidBody1 != nullptr && RigidBody2 != nullptr)
-		{
-			float Distance = 100.0f;
+		FVector Direction1 = (Body1->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
+		FVector Location1 = View->ViewLocation + Direction1 * Distance;
 
-			FVector Direction1 =
-				(RigidBody1->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
-			FVector Location1 = View->ViewLocation + Direction1 * Distance;
+		FVector Direction2 = (Body2->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
+		FVector Location2 = View->ViewLocation + Direction2 * Distance;
 
-			FVector Direction2 =
-				(RigidBody2->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
-			FVector Location2 = View->ViewLocation + Direction2 * Distance;
-
-			DrawDashedLine(
-				PDI, Location1, Location2, HighlightColor, HighlightThickness, SDPG_Foreground,
-				/*DepthBias*/ 0.0f);
-		}
+		DrawDashedLine(
+			PDI, Location1, Location2, HighlightColor, HighlightThickness, SDPG_Foreground,
+			/*DepthBias*/ 0.0f);
 	}
 }
 
@@ -226,7 +274,8 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraintHUD(
 	if (Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER, &Message))
 	{
 		FVector2D Position(0.45f, 0.35f);
-		FText Text = FText::FromString(FString::Printf(TEXT("Constraint Frames In Violated State!\n%s"), *Message));
+		FText Text = FText::FromString(
+			FString::Printf(TEXT("Constraint Frames In Violated State!\n%s"), *Message));
 		UFont* Font = GEngine->GetSubtitleFont();
 		FCanvasTextItem CanvasText(
 			Position * Canvas->GetViewRect().Size(), Text, Font, FColor::Red);

@@ -20,6 +20,8 @@ public:
 	static UObject* GetParentObjectOfStruct(
 		const TSharedPtr<IPropertyHandle>& StructPropertyHandle);
 
+	static UObject* GetParentObjectOfStruct(IPropertyHandle& StructPropertyHandle);
+
 	/**
 	 * Given a PropertyHandle that identifies a UObject* Property, return that UObject* if only a
 	 * single object is selected. Return nullptr if multiple objects are selected.

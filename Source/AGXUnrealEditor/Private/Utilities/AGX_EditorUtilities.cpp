@@ -95,8 +95,13 @@ UAGX_RigidBodyComponent* FAGX_EditorUtilities::CreateRigidBody(AActor* Owner)
 	UAGX_RigidBodyComponent* Body = ::CreateComponent<UAGX_RigidBodyComponent>(Owner);
 	Body->AttachToComponent(
 		Owner->GetRootComponent(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false));
+#if UE_VERSION_OLDER_THAN(4, 24, 0)
 	Body->RelativeLocation = FVector(0.0f, 0.0f, 0.0f);
 	Body->RelativeRotation = FRotator(0.0f, 0.0f, 0.0f);
+#else
+	Body->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+	Body->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+#endif
 	return Body;
 }
 

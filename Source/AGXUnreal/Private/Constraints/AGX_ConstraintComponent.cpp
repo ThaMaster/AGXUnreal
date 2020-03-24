@@ -87,18 +87,26 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	BodyAttachment2.OnFrameDefiningActorChanged(this);
 #endif
 
-	/// \todo Not sure what to do with this one.
 	// Create UAGX_ConstraintDofGraphicsComponent as child component.
 	{
-		DofGraphicsComponent = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
-			TEXT("DofGraphicsComponent"));
+		DofGraphicsComponent1 = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
+			TEXT("DofGraphicsComponent1"));
 
-		DofGraphicsComponent->Constraint = this;
-		DofGraphicsComponent->SetupAttachment(this);
-		DofGraphicsComponent->bHiddenInGame = true;
+		DofGraphicsComponent1->Constraint = this;
+		DofGraphicsComponent1->SetupAttachment(this);
+		DofGraphicsComponent1->bHiddenInGame = true;
+		DofGraphicsComponent1->AttachmentId = 1;
+	}
+	{
+		DofGraphicsComponent2 = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
+				TEXT("DofGraphicsComponent2"));
+
+		DofGraphicsComponent2->Constraint = this;
+		DofGraphicsComponent2->SetupAttachment(this);
+		DofGraphicsComponent2->bHiddenInGame = true;
+		DofGraphicsComponent2->AttachmentId = 2;
 	}
 
-	/// \todo Not sure what to do with this one.
 	// Create UAGX_ConstraintIconGraphicsComponent as child component.
 	{
 		IconGraphicsComponent = CreateDefaultSubobject<UAGX_ConstraintIconGraphicsComponent>(
@@ -149,7 +157,7 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 	if (BodyAttachment1.GetRigidBody() == nullptr || BodyAttachment2.GetRigidBody() == nullptr)
 	{
 		/// \todo Check if it is possible to create a single-body constraint, i.e., body
-		/// constrainted to the world, where the constraint is in an initially violated state. That
+		/// constrained to the world, where the constraint is in an initially violated state. That
 		/// is, can we create a world attachment frame that does not align with the local attachment
 		/// frame of the body.
 		return false;
@@ -209,7 +217,8 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisY().Z) > Tolerance)
 		{
-			WriteMessage(EDofFlag::DOF_FLAG_ROTATIONAL_1, FMath::Abs(Rotation2InLocal1.GetAxisY().Z));
+			WriteMessage(
+				EDofFlag::DOF_FLAG_ROTATIONAL_1, FMath::Abs(Rotation2InLocal1.GetAxisY().Z));
 			return true;
 		}
 	}
@@ -218,7 +227,8 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Z) > Tolerance)
 		{
-			WriteMessage(EDofFlag::DOF_FLAG_ROTATIONAL_2, FMath::Abs(Rotation2InLocal1.GetAxisX().Z));
+			WriteMessage(
+				EDofFlag::DOF_FLAG_ROTATIONAL_2, FMath::Abs(Rotation2InLocal1.GetAxisX().Z));
 			return true;
 		}
 	}
@@ -227,7 +237,8 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Y) > Tolerance)
 		{
-			WriteMessage(EDofFlag::DOF_FLAG_ROTATIONAL_3, FMath::Abs(Rotation2InLocal1.GetAxisX().Y));
+			WriteMessage(
+				EDofFlag::DOF_FLAG_ROTATIONAL_3, FMath::Abs(Rotation2InLocal1.GetAxisX().Y));
 			return true;
 		}
 	}
@@ -249,19 +260,24 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
+	// The leaf property that was changed. May be nested in a struct.
 	FName PropertyName = (PropertyChangedEvent.Property != NULL)
 							 ? PropertyChangedEvent.Property->GetFName()
 							 : NAME_None;
 
+	// The root property that contains the property that was changed.
 	FName MemberPropertyName = (PropertyChangedEvent.MemberProperty != NULL)
 								   ? PropertyChangedEvent.MemberProperty->GetFName()
 								   : NAME_None;
 
-	if (MemberPropertyName == PropertyName) // Property of this class changed
+	if (MemberPropertyName == PropertyName)
 	{
+		// Property of this class changed.
 	}
-	else // Property of an aggregate struct changed
+	else
 	{
+		// Property of an aggregate struct changed.
+
 		FAGX_ConstraintBodyAttachment* ModifiedBodyAttachment =
 			(MemberPropertyName ==
 			 GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, BodyAttachment1))
@@ -282,6 +298,25 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 				// Or/additional add Refresh button to AAGX_ConstraintFrameActor's Details Panel
 				// that rebuilds the constraint usage list.
 				ModifiedBodyAttachment->OnFrameDefiningActorChanged(this);
+			}
+
+			/// \todo This is a bit of a hack and it may be possible to remove it.
+			/// The intention was to handle the Blueprint editor case, where it's not possible to
+			/// select the Actor that will be created when the Blueprint is instantiated as the
+			/// OwningActor in the RigidBodyReference. Here we set the Constraint's owner as the
+			/// OwningActor, meaning that the RigidBodyReference will reference something in the
+			/// "local scope". This should be the Blueprint itself, or a representation thereof,
+			/// but it's unclear to me if it will work like that.
+			if (ModifiedBodyAttachment->RigidBody.OwningActor == nullptr)
+			{
+				ModifiedBodyAttachment->RigidBody.FallbackOwningActor = GetOwner();
+				if (ModifiedBodyAttachment->RigidBody.FallbackOwningActor == nullptr)
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("BodyAttachment in '%s' got nullptr fallback owning actor."),
+						*GetName());
+				}
 			}
 		}
 	}
@@ -356,6 +391,20 @@ void UAGX_ConstraintComponent::PostLoad()
 	Super::PostLoad();
 	BodyAttachment1.OnFrameDefiningActorChanged(this);
 	BodyAttachment2.OnFrameDefiningActorChanged(this);
+
+	// Provide a default owning actor, the owner of this component, if no owner has been specified
+	// for the RigidBodyReferences. This is always the case when the constraint has been created
+	// as part of an Actor Blueprint.
+	for (FAGX_RigidBodyReference* BodyReference :
+		 {&BodyAttachment1.RigidBody, &BodyAttachment2.RigidBody})
+	{
+		BodyReference->FallbackOwningActor = nullptr;
+		if (BodyReference->OwningActor == nullptr)
+		{
+			BodyReference->OwningActor = GetOwner();
+			BodyReference->CacheCurrentRigidBody();
+		}
+	}
 }
 
 void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
@@ -376,7 +425,6 @@ void UAGX_ConstraintComponent::BeginDestroy()
 void UAGX_ConstraintComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
 	if (!HasNative())
 	{
 		CreateNative();

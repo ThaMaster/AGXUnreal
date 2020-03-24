@@ -4,24 +4,10 @@
 
 #include "GameFramework/Actor.h"
 
-UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody() const
-{
-	if (Cache == nullptr)
-	{
-		UpdateCache();
-	}
-
-	return Cache;
-}
-
-AActor* FAGX_RigidBodyReference::GetOwningActor() const
-{
-	return OwningActor.Get();
-}
-
 namespace
 {
-	UAGX_RigidBodyComponent* FindBody(AActor* OwningActor, const FName& BodyName, bool bSearchChildActors)
+	UAGX_RigidBodyComponent* FindBody(
+		AActor* OwningActor, const FName& BodyName, bool bSearchChildActors)
 	{
 		TArray<UAGX_RigidBodyComponent*> Bodies;
 		OwningActor->GetComponents(Bodies, bSearchChildActors);
@@ -35,17 +21,42 @@ namespace
 	}
 }
 
-void FAGX_RigidBodyReference::UpdateCache() const
+UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody() const
+{
+	if (Cache != nullptr)
+	{
+		return Cache;
+	}
+	else if (OwningActor.IsValid())
+	{
+		return FindBody(OwningActor.Get(), BodyName, bSearchChildActors);
+	}
+	else if (FallbackOwningActor != nullptr)
+	{
+		return FindBody(FallbackOwningActor, BodyName, bSearchChildActors);
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+AActor* FAGX_RigidBodyReference::GetOwningActor() const
+{
+	return OwningActor.Get();
+}
+
+void FAGX_RigidBodyReference::CacheCurrentRigidBody()
 {
 	InvalidateCache();
-	if (OwningActor == nullptr)
+	if (!OwningActor.IsValid())
 	{
 		return;
 	}
 	Cache = FindBody(OwningActor.Get(), BodyName, bSearchChildActors);
 }
 
-void FAGX_RigidBodyReference::InvalidateCache() const
+void FAGX_RigidBodyReference::InvalidateCache()
 {
 	Cache = nullptr;
 }

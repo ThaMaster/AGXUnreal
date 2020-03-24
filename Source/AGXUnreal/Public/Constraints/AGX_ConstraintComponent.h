@@ -74,10 +74,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintRangePropertyPerDof ForceRange;
 
-	/// \todo What should this do now that there is only one Component?
-	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics() const
+	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics1() const
 	{
-		return DofGraphicsComponent;
+		return DofGraphicsComponent1;
+	}
+
+	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics2() const
+	{
+		return DofGraphicsComponent2;
 	}
 
 	/**
@@ -171,5 +175,6 @@ private:
 	// It may not be possible to have these as sub-components. In that case we
 	// must move all functionality from them into this class.
 	UAGX_ConstraintIconGraphicsComponent* IconGraphicsComponent;
-	UAGX_ConstraintDofGraphicsComponent* DofGraphicsComponent;
+	UAGX_ConstraintDofGraphicsComponent* DofGraphicsComponent1;
+	UAGX_ConstraintDofGraphicsComponent* DofGraphicsComponent2;
 };
