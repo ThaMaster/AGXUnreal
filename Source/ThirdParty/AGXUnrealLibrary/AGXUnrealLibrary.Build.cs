@@ -297,7 +297,7 @@ public class AGXUnrealLibrary : ModuleRules
 				LibSources.Add(LibSource.TerrainDependencies, new LibSourceInfo(
 					Path.Combine(BaseDir, "include"),
 					UseInstalledAgx ? Path.Combine(BaseDir, "lib", "x64") : Path.Combine(BaseDir, "lib", "Win64"),
-					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "lib", "Win64")
+					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "Binaries", "Win64")
 				));
 			}
 
