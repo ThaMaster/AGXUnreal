@@ -18,8 +18,13 @@ UObject* FAGX_PropertyUtilities::GetParentObjectOfStruct(
 	{
 		return nullptr;
 	}
+	return GetParentObjectOfStruct(*StructPropertyHandle);
+}
+
+UObject* FAGX_PropertyUtilities::GetParentObjectOfStruct(IPropertyHandle& StructPropertyHandle)
+{
 	TArray<UObject*> OuterObjects;
-	StructPropertyHandle->GetOuterObjects(OuterObjects);
+	StructPropertyHandle.GetOuterObjects(OuterObjects);
 	return OuterObjects.Num() > 0 ? OuterObjects[0] : nullptr;
 }
 

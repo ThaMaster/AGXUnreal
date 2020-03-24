@@ -48,6 +48,10 @@ FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotation() const
 
 FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 {
+	/// \todo Is it safe to replace this code with a call to GetGlobalFrameLocation(GetRigidBody())?
+	/// The difference would be that GetRigidBody would be called in cases where it would not
+	/// before.
+
 	if (FrameDefiningActor != nullptr)
 	{
 		return FrameDefiningActor->GetActorTransform().TransformPositionNoScale(LocalFrameLocation);
@@ -65,8 +69,31 @@ FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 	}
 }
 
+FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation(UAGX_RigidBodyComponent* Body) const
+{
+	if (FrameDefiningActor != nullptr)
+	{
+		return FrameDefiningActor->GetActorTransform().TransformPositionNoScale(LocalFrameLocation);
+	}
+	else if (Body != nullptr)
+	{
+		return Body->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
+	}
+	else
+	{
+		// When there is nothing that the local location is relative to then we assume it is a
+		// global location as well.
+		return LocalFrameLocation;
+	}
+}
+
 FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 {
+	/// \todo Is it safe to replace this code with a call to GetGlobalFrameRotation(GetRigidBody())?
+	/// The difference would be that GetRigidBody would be called in cases where it would not
+	/// before.
+
+
 	if (FrameDefiningActor != nullptr)
 	{
 		return FrameDefiningActor->GetActorTransform().TransformRotation(
@@ -84,10 +111,36 @@ FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 	}
 }
 
+FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation(UAGX_RigidBodyComponent* Body) const
+{
+	if (FrameDefiningActor != nullptr)
+	{
+		return FrameDefiningActor->GetActorTransform().TransformRotation(
+				LocalFrameRotation.Quaternion());
+	}
+	else if (Body != nullptr)
+	{
+		return Body->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
+	}
+	else
+	{
+		// When there is nothing that the local rotation is relative to then we
+		// assume it is a global rotation.
+		return LocalFrameRotation.Quaternion();
+	}
+}
+
 FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix() const
 {
 	FQuat Rotation = GetGlobalFrameRotation();
 	FVector Location = GetGlobalFrameLocation();
+	return FMatrix(Rotation.GetAxisX(), Rotation.GetAxisY(), Rotation.GetAxisZ(), Location);
+}
+
+FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix(UAGX_RigidBodyComponent* Body) const
+{
+	FQuat Rotation = GetGlobalFrameRotation(Body);
+	FVector Location = GetGlobalFrameLocation(Body);
 	return FMatrix(Rotation.GetAxisX(), Rotation.GetAxisY(), Rotation.GetAxisZ(), Location);
 }
 
