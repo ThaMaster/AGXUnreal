@@ -1,7 +1,7 @@
 #pragma once
 
 // AGXUnreal includes.
-#include "AGX_ConstraintController.h"
+#include "Constraints/AGX_ConstraintController.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
