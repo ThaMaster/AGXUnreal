@@ -112,7 +112,15 @@ namespace
 				EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 			UStaticMeshComponent* MeshComponent = FAGX_EditorUtilities::CreateStaticMeshAsset(
 				&Actor, ShapeComponent, Trimesh, ArchiveName);
-			ShapeComponent->Rename(*MeshComponent->GetName());
+
+			FString Name = MeshComponent->GetName() + "Shape";
+			if (!ShapeComponent->Rename(*Name, nullptr, REN_Test))
+			{
+				Name = MakeUniqueObjectName(
+						   &Actor, UAGX_TrimeshShapeComponent::StaticClass(), FName(*Name))
+						   .ToString();
+			}
+			ShapeComponent->Rename(*Name, nullptr, REN_DontCreateRedirectors);
 			FinalizeShape(ShapeComponent, Trimesh);
 		}
 
