@@ -82,12 +82,29 @@ FConstraint1DOFBarrier::GetElectricMotorController() const
 		Get1DOF(NativeRef)->getElectricMotorController());
 }
 
+namespace
+{
+	agx::FrictionController* GetOrCreateFrictionController(agx::Constraint1DOF* Constraint)
+	{
+		agx::FrictionController* Friction = Constraint->getFrictionController();
+		if (Friction == nullptr)
+		{
+			agx::AttachmentPair* Attachments = Constraint->getAttachmentPair();
+			agx::Angle* Angle = Attachments->getAngle(0);
+			agx::ConstraintAngleBasedData AngleData(Attachments, Angle);
+			Friction = new agx::FrictionController(AngleData);
+			Constraint->addSecondaryConstraint("FT", Friction);
+			check(Friction == Constraint->getFrictionController());
+		}
+		return Friction;
+	}
 }
 
 TUniquePtr<const FFrictionControllerBarrier> FConstraint1DOFBarrier::GetFrictionController() const
 {
 	check(HasNative());
-	return CreateControllerBarrier<const FFrictionControllerBarrier>(Get1DOF(NativeRef)->getFrictionController());
+	agx::FrictionController* Friction = GetOrCreateFrictionController(Get1DOF(NativeRef));
+	return CreateControllerBarrier<const FFrictionControllerBarrier>(Friction);
 }
 
 TUniquePtr<const FLockControllerBarrier> FConstraint1DOFBarrier::GetLockController() const
