@@ -455,8 +455,8 @@ private:
 		FMaterialRenderProxy* ViolatedMaterialInstance = ViolatedMaterial->GetRenderProxy();
 
 		auto SelectMaterial =
-			[bWireframe, bViolated, WireframeMaterialInstance, ViolatedMaterialInstance, this](
-				FAGX_ConstraintDofGraphicsSection& Section) -> FMaterialRenderProxy* {
+			[bWireframe, bViolated, WireframeMaterialInstance, ViolatedMaterialInstance,
+			 this](FAGX_ConstraintDofGraphicsSection& Section) -> FMaterialRenderProxy* {
 			if (bWireframe)
 			{
 				return WireframeMaterialInstance;
@@ -566,17 +566,10 @@ private:
 
 	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View) const override
 	{
-		const bool bVisibleForSelection = [this]() {
-			if (AttachmentId == 2 && !Constraint->AreFramesInViolatedState())
-			{
-				// Only render second body's attachment frame if the constraint is violated.
-				return false;
-			}
-			else
-			{
-				return IsSelected() && Constraint->IsSelected();
-			}
-		}();
+		const bool bSelected = IsSelected() && Constraint->IsSelected();
+		const bool bPrimary = AttachmentId == 1;
+		const bool bVisibleForSelection =
+			bSelected && (bPrimary || Constraint->AreFramesInViolatedState());
 
 		FPrimitiveViewRelevance Result;
 		Result.bDrawRelevance = IsShown(View) && bVisibleForSelection;
