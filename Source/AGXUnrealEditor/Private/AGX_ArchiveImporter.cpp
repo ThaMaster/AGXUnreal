@@ -319,10 +319,21 @@ namespace
 			Constraint->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
 			if (!Barrier.GetName().IsEmpty())
 			{
+				FString Name = Barrier.GetName();
+				if (!Constraint->Rename(*Name, nullptr, REN_Test))
+				{
+					FString OldName = Name;
+					Name = MakeUniqueObjectName(
+						Constraint->GetOuter(), ConstraintType::StaticClass(), FName(*Name)).ToString();
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("Constraint '%s' imported with name '%s' because of name collision."),
+						*OldName, *Name);
+				}
 				/// \todo I think it's enough to do SetActorLabel here.
 				/// It matters if we are in Editor mode or not.
-				Constraint->Rename(*Barrier.GetName());
-				Constraint->SetActorLabel(*Barrier.GetName());
+				Constraint->Rename(*Name);
+				Constraint->SetActorLabel(*Name);
 			}
 
 			return Constraint;
