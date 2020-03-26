@@ -448,10 +448,6 @@ private:
 
 		// Check if violated, if so pick violated material instead of Section->Material.
 		bool bViolated = Constraint->AreFramesInViolatedState();
-		UE_LOG(
-			LogAGX, Warning, TEXT("Checking violation state for constraint '%s'."),
-			*Constraint->GetName());
-
 		auto WireframeMaterialInstance = new FColoredMaterialRenderProxy(
 			GEngine->WireframeMaterial ? GEngine->WireframeMaterial->GetRenderProxy() : NULL,
 			FLinearColor(0, 0.5f, 1.f));
