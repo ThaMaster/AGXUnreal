@@ -176,7 +176,7 @@ namespace
 FVector UAGX_VectorComponent::GetVectorDirection() const
 {
 #if UE_VERSION_OLDER_THAN(4, 24, 0)
-	FVector Scale = RelateiveScale3D;
+	FVector Scale = RelativeScale3D;
 #else
 	FVector Scale = GetRelativeScale3D();
 #endif

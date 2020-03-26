@@ -1,6 +1,7 @@
 #include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
 
 // AGXUnreal includes.
+#include "AGX_LogCategory.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintEnums.h"
 #include "Utilities/AGX_MeshUtilities.h"
@@ -123,11 +124,14 @@ public:
 
 	FAGX_ConstraintDofGraphicsProxy(UAGX_ConstraintDofGraphicsComponent* Component)
 		: FPrimitiveSceneProxy(Component)
+		, ViolatedMaterial(Component->GetViolatedMaterial())
 		, MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel()))
 		, bDrawOnlyIfSelected(true)
+		, Constraint(Component->Constraint)
 		, LockedDofs(Component->Constraint->GetLockedDofsBitmask())
 		, FrameTransform1(Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix())
 		, FrameTransform2(Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix())
+		, AttachmentId(Component->AttachmentId)
 	{
 		CreateTranslationalArrows(Component);
 		CreateRotationalArrows(Component);
@@ -442,17 +446,36 @@ private:
 
 		const bool bWireframe = AllowDebugViewmodes() && ViewFamily.EngineShowFlags.Wireframe;
 
+		// Check if violated, if so pick violated material instead of Section->Material.
+		bool bViolated = Constraint->AreFramesInViolatedState();
 		auto WireframeMaterialInstance = new FColoredMaterialRenderProxy(
 			GEngine->WireframeMaterial ? GEngine->WireframeMaterial->GetRenderProxy() : NULL,
 			FLinearColor(0, 0.5f, 1.f));
+
+		FMaterialRenderProxy* ViolatedMaterialInstance = ViolatedMaterial->GetRenderProxy();
+
+		auto SelectMaterial =
+			[bWireframe, bViolated, WireframeMaterialInstance, ViolatedMaterialInstance, this](
+				FAGX_ConstraintDofGraphicsSection& Section) -> FMaterialRenderProxy* {
+			if (bWireframe)
+			{
+				return WireframeMaterialInstance;
+			}
+			else if (bViolated && AttachmentId == 2)
+			{
+				return ViolatedMaterialInstance;
+			}
+			else
+			{
+				return Section.Material->GetRenderProxy();
+			}
+		};
 
 		Collector.RegisterOneFrameMaterialProxy(WireframeMaterialInstance);
 
 		for (const TSharedPtr<FAGX_ConstraintDofGraphicsSection> Section : Sections)
 		{
-			FMaterialRenderProxy* MaterialProxy =
-				bWireframe ? WireframeMaterialInstance : Section->Material->GetRenderProxy();
-
+			FMaterialRenderProxy* MaterialProxy = SelectMaterial(*Section);
 			for (int32 ViewIndex = 0; ViewIndex < Views.Num(); ViewIndex++)
 			{
 				if (VisibilityMap & (1 << ViewIndex))
@@ -543,7 +566,17 @@ private:
 
 	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View) const override
 	{
-		const bool bVisibleForSelection = !bDrawOnlyIfSelected || IsSelected();
+		const bool bVisibleForSelection = [this]() {
+			if (AttachmentId == 2 && !Constraint->AreFramesInViolatedState())
+			{
+				// Only render second body's attachment frame if the constraint is violated.
+				return false;
+			}
+			else
+			{
+				return IsSelected() && Constraint->IsSelected();
+			}
+		}();
 
 		FPrimitiveViewRelevance Result;
 		Result.bDrawRelevance = IsShown(View) && bVisibleForSelection;
@@ -584,20 +617,25 @@ private:
 private:
 	TArray<TSharedPtr<FAGX_ConstraintDofGraphicsGeometry>> Geometries;
 	TArray<TSharedPtr<FAGX_ConstraintDofGraphicsSection>> Sections;
+	UMaterialInterface* ViolatedMaterial;
 	FMaterialRelevance MaterialRelevance;
 	const bool bDrawOnlyIfSelected = false;
+	UAGX_ConstraintComponent* Constraint;
 	const EDofFlag LockedDofs;
 	FMatrix FrameTransform1; // global transforms
 	FMatrix FrameTransform2;
+	int32 AttachmentId;
 };
 
 UAGX_ConstraintDofGraphicsComponent::UAGX_ConstraintDofGraphicsComponent(
 	const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
+	, AttachmentId(1)
 	, FreeTranslationMaterialIndex(-1)
 	, FreeRotationMaterialIndex(-1)
 	, LockedTranslationMaterialIndex(-1)
 	, LockedRotationMaterialIndex(-1)
+	, ViolatedMaterialIndex(-1)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
@@ -623,6 +661,9 @@ UAGX_ConstraintDofGraphicsComponent::UAGX_ConstraintDofGraphicsComponent(
 		static ConstructorHelpers::FObjectFinder<UMaterialInterface> LockedRotationMaterialFinder(
 			TEXT("/AGXUnreal/Runtime/Materials/M_ConstraintDofGraphicsRot_Locked"));
 
+		static ConstructorHelpers::FObjectFinder<UMaterialInterface> ViolatedMaterialFinder(
+			TEXT("/AGXUnreal/Runtime/Materials/M_ConstraintDofGraphics_Violated"));
+
 		UMaterialInterface* FallbackMaterial = UMaterial::GetDefaultMaterial(MD_Surface);
 
 		UMaterialInterface* FreeTranslationMaterial =
@@ -645,6 +686,11 @@ UAGX_ConstraintDofGraphicsComponent::UAGX_ConstraintDofGraphicsComponent(
 				? Cast<UMaterialInterface>(LockedRotationMaterialFinder.Object)
 				: FallbackMaterial;
 
+		UMaterialInterface* ViolatedMaterial =
+			ViolatedMaterialFinder.Succeeded()
+				? Cast<UMaterialInterface>(ViolatedMaterialFinder.Object)
+				: FallbackMaterial;
+
 		FreeTranslationMaterialIndex = GetNumMaterials();
 		SetMaterial(FreeTranslationMaterialIndex, FreeTranslationMaterial);
 
@@ -656,6 +702,9 @@ UAGX_ConstraintDofGraphicsComponent::UAGX_ConstraintDofGraphicsComponent(
 
 		LockedRotationMaterialIndex = GetNumMaterials();
 		SetMaterial(LockedRotationMaterialIndex, LockedRotationMaterial);
+
+		ViolatedMaterialIndex = GetNumMaterials();
+		SetMaterial(ViolatedMaterialIndex, ViolatedMaterial);
 	}
 }
 
@@ -677,6 +726,11 @@ UMaterialInterface* UAGX_ConstraintDofGraphicsComponent::GetLockedTranslationMat
 UMaterialInterface* UAGX_ConstraintDofGraphicsComponent::GetLockedRotationMaterial() const
 {
 	return GetMaterial(LockedRotationMaterialIndex);
+}
+
+UMaterialInterface* UAGX_ConstraintDofGraphicsComponent::GetViolatedMaterial() const
+{
+	return GetMaterial(ViolatedMaterialIndex);
 }
 
 void UAGX_ConstraintDofGraphicsComponent::OnBecameSelected()
@@ -764,7 +818,16 @@ FMatrix UAGX_ConstraintDofGraphicsComponent::GetRenderMatrix() const
 {
 	if (Constraint)
 	{
-		return Constraint->BodyAttachment1.GetGlobalFrameMatrix();
+		switch (AttachmentId)
+		{
+			case 1:
+				return Constraint->BodyAttachment1.GetGlobalFrameMatrix();
+			case 2:
+				return Constraint->BodyAttachment2.GetGlobalFrameMatrix();
+			default:
+				checkNoEntry();
+				return FMatrix::Identity;
+		}
 	}
 	else
 	{

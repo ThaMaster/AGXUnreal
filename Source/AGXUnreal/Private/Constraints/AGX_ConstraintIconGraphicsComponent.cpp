@@ -137,10 +137,22 @@ public:
 		: FPrimitiveSceneProxy(Component)
 		, MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel()))
 		, bDrawOnlyIfUnselected(true)
+		, Constraint(Component->Constraint)
 		, LockedDofs(Component->Constraint->GetLockedDofsBitmask())
-		, FrameTransform1(Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix())
-		, FrameTransform2(Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix())
 	{
+		FAGX_RigidBodyReference& BodyReference1 = Component->Constraint->BodyAttachment1.RigidBody;
+		FAGX_RigidBodyReference& BodyReference2 = Component->Constraint->BodyAttachment2.RigidBody;
+
+		if (BodyReference1.GetOwningActor() == nullptr)
+		{
+			BodyReference1.FallbackOwningActor = Component->GetOwner();
+		}
+		if (BodyReference2.GetOwningActor() == nullptr)
+		{
+			BodyReference2.FallbackOwningActor = Component->GetOwner();
+		}
+		FrameTransform1 = (Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix());
+		FrameTransform2 = (Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix());
 		/// \todo Use inheritance instead of this branching below.
 		/// \todo IsA() should probably not be used if future constraints will derive these
 		/// spawnable constraints.
@@ -493,7 +505,7 @@ private:
 
 	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View) const override
 	{
-		const bool bVisibleForSelection = !bDrawOnlyIfUnselected || !IsSelected();
+		const bool bVisibleForSelection = IsSelected() && !Constraint->IsSelected();
 
 		FPrimitiveViewRelevance Result;
 		Result.bDrawRelevance = IsShown(View) && bVisibleForSelection;
@@ -536,6 +548,7 @@ private:
 	TArray<TSharedPtr<FAGX_ConstraintIconGraphicsSection>> Sections;
 	FMaterialRelevance MaterialRelevance;
 	const bool bDrawOnlyIfUnselected = true;
+	UAGX_ConstraintComponent* Constraint;
 	const EDofFlag LockedDofs;
 	FMatrix FrameTransform1; // global transforms
 	FMatrix FrameTransform2;

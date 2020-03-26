@@ -27,6 +27,7 @@ public:
 	UMaterialInterface* GetFreeRotationMaterial() const;
 	UMaterialInterface* GetLockedTranslationMaterial() const;
 	UMaterialInterface* GetLockedRotationMaterial() const;
+	UMaterialInterface* GetViolatedMaterial() const;
 
 	void OnBecameSelected();
 
@@ -51,9 +52,12 @@ public:
 	}
 	//~ End UActorComponent Interface.
 
+	int32 AttachmentId;
+
 private:
 	int32 FreeTranslationMaterialIndex;
 	int32 FreeRotationMaterialIndex;
 	int32 LockedTranslationMaterialIndex;
 	int32 LockedRotationMaterialIndex;
+	int32 ViolatedMaterialIndex;
 };
