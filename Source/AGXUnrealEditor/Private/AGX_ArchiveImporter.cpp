@@ -61,15 +61,21 @@ namespace
 			UE_LOG(LogAGX, Log, TEXT("Could not create Actor for body '%s'."), *Body.GetName());
 			return nullptr;
 		}
-		NewActor->SetActorLabel(Body.GetName());
+		NewActor->SetActorLabel(Body.GetName()); /// \todo Rename instead of SetActorLabel?
 		UAGX_RigidBodyComponent* NewBody = NewActor->RigidBodyComponent;
 
 		/// \todo Move property setting to a more central location, perhaps
-		/// in a member function in UAGX_RigidBodyComponent. Decide on a patter
+		/// in a member function in UAGX_RigidBodyComponent. Decide on a pattern
 		/// to be used for all classes backed by a Barrier.
-		NewBody->Rename(*Body.GetName());
 		NewBody->Mass = Body.GetMass();
 		NewBody->MotionControl = Body.GetMotionControl();
+
+		// It is tempting to rename the body here, i.e., NewBody->Rename, but
+		// that breaks things. I suspect the reason is that because we create
+		// the RigidBodyComponent with CreateDefaultSubobject in C++, Unreal
+		// Engine assumes that such a component should be there. When we do the
+		// rename here then Unreal Engine doesn't find it and creates a new one.
+		// Badness ensues.
 
 		return NewActor;
 	}
