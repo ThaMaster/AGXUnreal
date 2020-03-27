@@ -33,7 +33,13 @@ FTrimeshShapeBarrier::FTrimeshShapeBarrier()
 FTrimeshShapeBarrier::FTrimeshShapeBarrier(std::unique_ptr<FGeometryAndShapeRef> Native)
 	: FShapeBarrier(std::move(Native))
 {
-	check(NativeRef->NativeShape->is<agxCollide::Trimesh>());
+	/// \todo It seems Shape::is<T>() broke with Unreal Engine 2.24. Now we trip
+	/// on this check when restoring AGX Dynamics archives containing
+	/// trimeshes. I suspect it's at least partially related to
+	///     #define dynamic_cast UE4Casts_Private::DynamicCast
+	/// in Casts.h
+	// check(NativeRef->NativeShape->is<agxCollide::Trimesh>());
+	check(NativeRef->NativeShape->getType() == agxCollide::Shape::TRIMESH);
 }
 
 FTrimeshShapeBarrier::FTrimeshShapeBarrier(FTrimeshShapeBarrier&& Other)

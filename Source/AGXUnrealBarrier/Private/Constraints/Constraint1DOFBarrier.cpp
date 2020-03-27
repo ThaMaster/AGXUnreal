@@ -34,23 +34,26 @@ namespace
 		return dynamic_cast<agx::Constraint1DOF*>(NativeRef->Native.get());
 	}
 
-	template<typename Barrier>
+	template <typename Barrier>
 	TUniquePtr<Barrier> CreateControllerBarrier(agx::BasicControllerConstraint* Controller)
 	{
-		return TUniquePtr<Barrier>(new Barrier(std::make_unique<FConstraintControllerRef>(Controller)));
+		return TUniquePtr<Barrier>(
+			new Barrier(std::make_unique<FConstraintControllerRef>(Controller)));
 	}
- }
+}
 
 TUniquePtr<FElectricMotorControllerBarrier> FConstraint1DOFBarrier::GetElectricMotorController()
 {
 	check(HasNative());
-	return CreateControllerBarrier<FElectricMotorControllerBarrier>(Get1DOF(NativeRef)->getElectricMotorController());
+	return CreateControllerBarrier<FElectricMotorControllerBarrier>(
+		Get1DOF(NativeRef)->getElectricMotorController());
 }
 
 TUniquePtr<FFrictionControllerBarrier> FConstraint1DOFBarrier::GetFrictionController()
 {
 	check(HasNative());
-	return CreateControllerBarrier<FFrictionControllerBarrier>(Get1DOF(NativeRef)->getFrictionController());
+	return CreateControllerBarrier<FFrictionControllerBarrier>(
+		Get1DOF(NativeRef)->getFrictionController());
 }
 
 TUniquePtr<FLockControllerBarrier> FConstraint1DOFBarrier::GetLockController()
@@ -71,16 +74,37 @@ TUniquePtr<FTargetSpeedControllerBarrier> FConstraint1DOFBarrier::GetTargetSpeed
 	return CreateControllerBarrier<FTargetSpeedControllerBarrier>(Get1DOF(NativeRef)->getMotor1D());
 }
 
-TUniquePtr<const FElectricMotorControllerBarrier> FConstraint1DOFBarrier::GetElectricMotorController() const
+TUniquePtr<const FElectricMotorControllerBarrier>
+FConstraint1DOFBarrier::GetElectricMotorController() const
 {
 	check(HasNative());
-	return CreateControllerBarrier<const FElectricMotorControllerBarrier>(Get1DOF(NativeRef)->getElectricMotorController());
+	return CreateControllerBarrier<const FElectricMotorControllerBarrier>(
+		Get1DOF(NativeRef)->getElectricMotorController());
+}
+
+namespace
+{
+	agx::FrictionController* GetOrCreateFrictionController(agx::Constraint1DOF* Constraint)
+	{
+		agx::FrictionController* Friction = Constraint->getFrictionController();
+		if (Friction == nullptr)
+		{
+			agx::AttachmentPair* Attachments = Constraint->getAttachmentPair();
+			agx::Angle* Angle = Attachments->getAngle(0);
+			agx::ConstraintAngleBasedData AngleData(Attachments, Angle);
+			Friction = new agx::FrictionController(AngleData);
+			Constraint->addSecondaryConstraint("FT", Friction);
+			check(Friction == Constraint->getFrictionController());
+		}
+		return Friction;
+	}
 }
 
 TUniquePtr<const FFrictionControllerBarrier> FConstraint1DOFBarrier::GetFrictionController() const
 {
 	check(HasNative());
-	return CreateControllerBarrier<const FFrictionControllerBarrier>(Get1DOF(NativeRef)->getFrictionController());
+	agx::FrictionController* Friction = GetOrCreateFrictionController(Get1DOF(NativeRef));
+	return CreateControllerBarrier<const FFrictionControllerBarrier>(Friction);
 }
 
 TUniquePtr<const FLockControllerBarrier> FConstraint1DOFBarrier::GetLockController() const
@@ -95,8 +119,10 @@ TUniquePtr<const FRangeControllerBarrier> FConstraint1DOFBarrier::GetRangeContro
 	return CreateControllerBarrier<const FRangeControllerBarrier>(Get1DOF(NativeRef)->getRange1D());
 }
 
-TUniquePtr<const FTargetSpeedControllerBarrier> FConstraint1DOFBarrier::GetTargetSpeedController() const
+TUniquePtr<const FTargetSpeedControllerBarrier> FConstraint1DOFBarrier::GetTargetSpeedController()
+	const
 {
 	check(HasNative());
-	return CreateControllerBarrier<const FTargetSpeedControllerBarrier>(Get1DOF(NativeRef)->getMotor1D());
+	return CreateControllerBarrier<const FTargetSpeedControllerBarrier>(
+		Get1DOF(NativeRef)->getMotor1D());
 }
