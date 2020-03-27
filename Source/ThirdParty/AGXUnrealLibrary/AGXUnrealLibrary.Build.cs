@@ -73,7 +73,8 @@ public class AGXUnrealLibrary : ModuleRules
 			AddRuntimeDependency("vcruntime140", LibSource.Agx, ManualCopy);
 		}
 
-		if(Target.Type == TargetType.Editor)
+		// Not entire sure on this if-test.
+		if (Target.Type == TargetType.Editor || Target.Type == TargetType.Game)
 		{
 			AddIncludePath(LibSource.Agx);
 			AddIncludePath(LibSource.Components);
@@ -137,6 +138,35 @@ public class AGXUnrealLibrary : ModuleRules
 				Source,
 				Destination,
 				overwrite: true);
+		}
+	}
+
+	private class Heuristics
+	{
+		/**
+		From the plugin's point of view AGX Dynamics can be in one of two states: Installed or Packaged.
+		Installed means that AGX Dynamics exists somewhere outside of the plugin. It does not mean that
+		it must be an actual installation, a source build also counts as an installation. A source build
+		is identified by the presence of the AGX Dynamics environment variable AGX_DIR, which is set
+		when AGX Dynamics' setup_env is run. If the AGX_DIR environment variable isn't set then it is
+		assumed that AGX Dynamics is packaged with the plugin and all AGX Dynamics search path will be
+		relative to the plugin directory.
+		*/
+		public static bool UseInstalledAgx(UnrealTargetPlatform Platform)
+		{
+			bool bHasInstalledAgx = Environment.GetEnvironmentVariable("AGX_DIR") != null;
+			if (bHasInstalledAgx)
+			{
+				Console.WriteLine(
+					"\nUsing AGX Dynamics installation {0}.",
+					Environment.GetEnvironmentVariable("AGX_DIR"));
+			}
+			else
+			{
+				Console.WriteLine(
+					"\nNo installation of AGX Dynamics detected, using version packaged with the plugin.");
+			}
+			return bHasInstalledAgx;
 		}
 	}
 
@@ -211,7 +241,7 @@ public class AGXUnrealLibrary : ModuleRules
 		{
 			LibSources = new Dictionary<LibSource, LibSourceInfo>();
 
-			bool UseInstalledAgx = Target.Type != TargetType.Game;
+			bool UseInstalledAgx = Heuristics.UseInstalledAgx(Target.Platform);
 
 			// TODO: Detect if AGX Dynamics is in local build or installed mode.
 			//	   Currently assuming local build for Linux and installed for Windows.
