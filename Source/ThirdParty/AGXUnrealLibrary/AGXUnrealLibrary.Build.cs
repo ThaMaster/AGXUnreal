@@ -152,9 +152,21 @@ public class AGXUnrealLibrary : ModuleRules
 		assumed that AGX Dynamics is packaged with the plugin and all AGX Dynamics search path will be
 		relative to the plugin directory.
 		*/
-		public static bool UseInstalledAgx(TargetType InTargetType, UnrealTargetPlatform Platform)
+		public static bool UseInstalledAgx(UnrealTargetPlatform Platform)
 		{
-			return Environment.GetEnvironmentVariable("AGX_DIR") != null;
+			bool bHasInstalledAgx = Environment.GetEnvironmentVariable("AGX_DIR") != null;
+			if (bHasInstalledAgx)
+			{
+				Console.WriteLine(
+					"\nUsing AGX Dynamics installation {0}.",
+					Environment.GetEnvironmentVariable("AGX_DIR"));
+			}
+			else
+			{
+				Console.WriteLine(
+					"\nNo installation of AGX Dynamics detected, using version packaged with the plugin.");
+			}
+			return bHasInstalledAgx;
 		}
 	}
 
@@ -229,7 +241,7 @@ public class AGXUnrealLibrary : ModuleRules
 		{
 			LibSources = new Dictionary<LibSource, LibSourceInfo>();
 
-			bool UseInstalledAgx = Heuristics.UseInstalledAgx(Target.Type, Target.Platform);
+			bool UseInstalledAgx = Heuristics.UseInstalledAgx(Target.Platform);
 
 			// TODO: Detect if AGX Dynamics is in local build or installed mode.
 			//	   Currently assuming local build for Linux and installed for Windows.
@@ -315,7 +327,7 @@ public class AGXUnrealLibrary : ModuleRules
 				LibSources.Add(LibSource.TerrainDependencies, new LibSourceInfo(
 					Path.Combine(BaseDir, "include"),
 					UseInstalledAgx ? Path.Combine(BaseDir, "lib", "x64") : Path.Combine(BaseDir, "lib", "Win64"),
-					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "lib", "Win64")
+					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "Binaries", "Win64")
 				));
 			}
 
