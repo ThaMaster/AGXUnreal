@@ -61,15 +61,21 @@ namespace
 			UE_LOG(LogAGX, Log, TEXT("Could not create Actor for body '%s'."), *Body.GetName());
 			return nullptr;
 		}
-		NewActor->SetActorLabel(Body.GetName());
+		NewActor->SetActorLabel(Body.GetName()); /// \todo Rename instead of SetActorLabel?
 		UAGX_RigidBodyComponent* NewBody = NewActor->RigidBodyComponent;
 
 		/// \todo Move property setting to a more central location, perhaps
-		/// in a member function in UAGX_RigidBodyComponent. Decide on a patter
+		/// in a member function in UAGX_RigidBodyComponent. Decide on a pattern
 		/// to be used for all classes backed by a Barrier.
-		NewBody->Rename(*Body.GetName());
 		NewBody->Mass = Body.GetMass();
 		NewBody->MotionControl = Body.GetMotionControl();
+
+		// It is tempting to rename the body here, i.e., NewBody->Rename, but
+		// that breaks things. I suspect the reason is that because we create
+		// the RigidBodyComponent with CreateDefaultSubobject in C++, Unreal
+		// Engine assumes that such a component should be there. When we do the
+		// rename here then Unreal Engine doesn't find it and creates a new one.
+		// Badness ensues.
 
 		return NewActor;
 	}
@@ -112,7 +118,15 @@ namespace
 				EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 			UStaticMeshComponent* MeshComponent = FAGX_EditorUtilities::CreateStaticMeshAsset(
 				&Actor, ShapeComponent, Trimesh, ArchiveName);
-			ShapeComponent->Rename(*MeshComponent->GetName());
+
+			FString Name = MeshComponent->GetName() + "Shape";
+			if (!ShapeComponent->Rename(*Name, nullptr, REN_Test))
+			{
+				Name = MakeUniqueObjectName(
+						   &Actor, UAGX_TrimeshShapeComponent::StaticClass(), FName(*Name))
+						   .ToString();
+			}
+			ShapeComponent->Rename(*Name, nullptr, REN_DontCreateRedirectors);
 			FinalizeShape(ShapeComponent, Trimesh);
 		}
 
@@ -305,10 +319,21 @@ namespace
 			Constraint->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
 			if (!Barrier.GetName().IsEmpty())
 			{
+				FString Name = Barrier.GetName();
+				if (!Constraint->Rename(*Name, nullptr, REN_Test))
+				{
+					FString OldName = Name;
+					Name = MakeUniqueObjectName(
+						Constraint->GetOuter(), ConstraintType::StaticClass(), FName(*Name)).ToString();
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("Constraint '%s' imported with name '%s' because of name collision."),
+						*OldName, *Name);
+				}
 				/// \todo I think it's enough to do SetActorLabel here.
 				/// It matters if we are in Editor mode or not.
-				Constraint->Rename(*Barrier.GetName());
-				Constraint->SetActorLabel(*Barrier.GetName());
+				Constraint->Rename(*Name);
+				Constraint->SetActorLabel(*Name);
 			}
 
 			return Constraint;
