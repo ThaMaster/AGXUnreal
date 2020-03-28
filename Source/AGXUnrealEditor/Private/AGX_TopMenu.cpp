@@ -234,15 +234,20 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 {
 	// Import AGX Archive menu item
 	AddFileMenuEntry(
-		Builder, LOCTEXT("FileMenuEntryLabelIm", "Import AGX Archive..."),
+		Builder, LOCTEXT("FileMenuEntryLabelIm", "Import AGX Archive to level..."),
 		LOCTEXT("FileMenuEntryToolTipIm", "Import an AGX Archive into the Editor."),
-		[]() { UAGX_AgxEdModeFile::ImportAGXArchive(); });
+		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToLevel(); });
+
+	AddFileMenuEntry(
+		Builder, LOCTEXT("FileMEnuEntryLabelImportBP", "Import AGX Archive to Blueprint..."),
+		LOCTEXT("FileMenuEntryhTooltopImportBP", "Import an AGX Archive to a Blueprint."),
+		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint(); });
 
 	// Export AGX Archive menu item
 	AddFileMenuEntry(
 		Builder, LOCTEXT("FileMenuEntryLabelEx", "Export AGX Archive..."),
 		LOCTEXT("FileMenuEntryToolTipEx", "Export an AGX Archive from the Editor."),
-		[]() { UAGX_AgxEdModeFile::ExportAGXArchive(); });
+		[]() { UAGX_AgxEdModeFile::ExportAgxArchive(); });
 }
 
 void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
@@ -270,7 +275,8 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Cannot create constraint with actor '%s' because it doesn't contain exactly one body."),
+			TEXT("Cannot create constraint with actor '%s' because it doesn't contain exactly one "
+				 "body."),
 			*Actor1->GetName());
 		return;
 	}
@@ -279,7 +285,8 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Cannot create constraint with actor '%s' because it doesn't contain exactly one body."),
+			TEXT("Cannot create constraint with actor '%s' because it doesn't contain exactly one "
+				 "body."),
 			*Actor2->GetName());
 		return;
 	}
