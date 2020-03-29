@@ -87,54 +87,7 @@ namespace
 		Package->FullyLoad();
 		return Package;
 	}
-#if 0
-	UPackage* GetOrCreatePackage(const FBlueprintId& BlueprintId)
-	{
-		// Create a Package to put the Blueprint into.
-		FString ParentPackageName = TEXT("/Game/ImportedBlueprints/");
-		FString ParentAssetName = ArchiveFilename;
-		IAssetTools& AssetTools = GetAssetTools();
-		AssetTools.CreateUniqueAssetName(
-			ParentPackageName, ParentAssetName, ParentPackageName, ParentAssetName);
-		UPackage* ParentPackage = CreatePackage(nullptr, *ParentPackageName);
-		FString Path = FPaths::GetPath(ParentPackage->GetName());
 
-		UE_LOG(LogAGX, Warning, TEXT("Parent package name: '%s'."), *ParentPackageName);
-		UE_LOG(LogAGX, Warning, TEXT("Parent asset name: '%s'."), *ParentAssetName);
-		UE_LOG(LogAGX, Warning, TEXT("ParentPacket->GetName: '%s'."), *ParentPackage->GetName());
-		UE_LOG(LogAGX, Warning, TEXT("ParentPacket->GetPath: '%s'."), *Path);
-
-		const FString FullnameBP =
-			UPackageTools::SanitizePackageName(Path + TEXT("/BP_") + ArchiveFilename);
-		FString AssetName = TEXT("BP_") + ArchiveFilename;
-		FString WantedPackageName = FullnameBP;
-		FString PackageNameOfficial = UPackageTools::SanitizePackageName(WantedPackageName);
-		check(!FEditorFileUtils::IsMapPackageAsset(PackageNameOfficial));
-		bool IsPkgExists = FPackageName::DoesPackageExist(PackageNameOfficial);
-		if (!IsPkgExists)
-		{
-			IsPkgExists = FindObject<UPackage>(nullptr, *PackageNameOfficial) != nullptr;
-		}
-		int32 TryCount = 1;
-		while (IsPkgExists)
-		{
-			++TryCount;
-			PackageNameOfficial = WantedPackageName + TEXT("_") + FString::FromInt(TryCount);
-			PackageNameOfficial = UPackageTools::SanitizePackageName(PackageNameOfficial);
-			IsPkgExists = FPackageName::DoesPackageExist(PackageNameOfficial);
-			if (!IsPkgExists)
-			{
-				IsPkgExists = FindObject<UPackage>(nullptr, *PackageNameOfficial) != nullptr;
-			}
-		}
-
-		UPackage* Pkg = CreatePackage(nullptr, *PackageNameOfficial);
-		check(Pkg != nullptr);
-		Pkg->FullyLoad();
-		// AssetName = FPackageName::GetLongPackageAssetName(Pkg->GetOutermost()->GetName());
-		return Pkg;
-	}
-#endif
 	AActor* CreateTemplate(const FString& BlueprintName)
 	{
 		UActorFactory* Factory =
