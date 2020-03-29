@@ -1,13 +1,20 @@
 #include "AGX_ArchiveImporterToBlueprint.h"
 
+// Unreal Engine includes.
+#include "AGXArchiveReader.h"
 #include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
+#include "Shapes/AGX_BoxShapeComponent.h"
+#include "Utilities/AGX_EditorUtilities.h"
+
+// Unreal Engine includes.
 #include "ActorFactories/ActorFactoryEmptyActor.h"
-#include "FileHelpers.h"
 #include "AssetSelection.h"
 #include "AssetToolsModule.h"
 #include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Editor.h"
+#include "FileHelpers.h"
 #include "GameFramework/Actor.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "UObject/Package.h"
@@ -69,13 +76,14 @@ namespace
 				   FindObject<UPackage>(nullptr, *PackagePath) != nullptr;
 		};
 
+		/// \todo Should be possible to use one of the unique name creators here.
 		int32 TryCount = 0;
 		while (PackageExists(PackagePath))
 		{
 			++TryCount;
 			PackagePath = BasePackagePath + "_" + FString::FromInt(TryCount);
 			check(TryCount < 10000); /// \todo For debugging only. Remove.
-		};
+		}
 
 		return FBlueprintId(ArchiveFilename, PackagePath, BlueprintName);
 	}
@@ -88,7 +96,112 @@ namespace
 		return Package;
 	}
 
-	AActor* CreateTemplate(const FString& BlueprintName)
+	class FBlueprintBody final : public FAGXArchiveBody
+	{
+	public:
+		FBlueprintBody(UAGX_RigidBodyComponent* InBodyComponent)
+			: BodyComponent(InBodyComponent)
+		{
+		}
+
+		virtual void InstantiateSphere(const FSphereShapeBarrier& Sphere) override
+		{
+		}
+
+		virtual void InstantiateBox(const FBoxShapeBarrier& Box) override
+		{
+			UAGX_BoxShapeComponent* BoxComponent =
+				FAGX_EditorUtilities::CreateBoxShape(BodyComponent->GetOwner(), BodyComponent);
+			BoxComponent->HalfExtent = Box.GetHalfExtents();
+
+			BoxComponent->bCanCollide = Box.GetEnableCollisions();
+			for (const FName& Group : Box.GetCollisionGroups())
+			{
+				BoxComponent->AddCollisionGroup(Group);
+			}
+			BoxComponent->SetRelativeLocation(Box.GetLocalPosition());
+			BoxComponent->SetRelativeRotation(Box.GetLocalRotation());
+			BoxComponent->UpdateVisualMesh();
+		}
+
+		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) override
+		{
+		}
+
+	private:
+		UAGX_RigidBodyComponent* BodyComponent;
+	};
+
+	class FBlueprintInstantiator final : public FAGXArchiveInstantiator
+	{
+	public:
+		FBlueprintInstantiator(AActor* InImportedActor)
+			: ImportedActor(InImportedActor)
+		{
+		}
+
+		virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& RigidBody) override
+		{
+			UAGX_RigidBodyComponent* BodyComponent =
+				NewObject<UAGX_RigidBodyComponent>(ImportedActor, NAME_None);
+
+			BodyComponent->SetWorldLocation(RigidBody.GetPosition());
+			BodyComponent->SetWorldRotation(RigidBody.GetRotation());
+			BodyComponent->Mass = RigidBody.GetMass();
+			BodyComponent->MotionControl = RigidBody.GetMotionControl();
+
+			BodyComponent->SetFlags(RF_Transactional);
+			ImportedActor->AddInstanceComponent(BodyComponent);
+			BodyComponent->RegisterComponent();
+			BodyComponent->AttachToComponent(
+				ImportedActor->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+			BodyComponent->PostEditChange();
+			return new FBlueprintBody(BodyComponent);
+		}
+
+		virtual void InstantiateHinge(const FHingeBarrier& Hinge) override
+		{
+		}
+
+		virtual void InstantiatePrismatic(const FPrismaticBarrier& Prismatic) override
+		{
+		}
+
+		virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) override
+		{
+		}
+
+		virtual void InstantiateCylindricalJoint(
+			const FCylindricalJointBarrier& CylindricalJoint) override
+		{
+		}
+
+		virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& DistanceJoint) override
+		{
+		}
+
+		virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) override
+		{
+		}
+
+		virtual void DisabledCollisionGroups(
+			const TArray<std::pair<FString, FString>>& DisabledGroups) override
+		{
+		}
+
+		virtual ~FBlueprintInstantiator() = default;
+
+	private:
+		AActor* ImportedActor;
+	};
+
+	void AddComponentsFromArchive(const FString& ArchivePath, AActor* ImportedActor)
+	{
+		FBlueprintInstantiator Instantiator(ImportedActor);
+		FAGXArchiveReader::Read(ArchivePath, Instantiator);
+	}
+
+	AActor* CreateTemplate(const FString& BlueprintName, const FString ArchivePath)
 	{
 		UActorFactory* Factory =
 			GEditor->FindActorFactoryByClass(UActorFactoryEmptyActor::StaticClass());
@@ -109,6 +222,9 @@ namespace
 		RootActorContainer->SetFlags(RF_Transactional);
 		ActorRootComponent->SetFlags(RF_Transactional);
 
+#if 1
+		AddComponentsFromArchive(ArchivePath, RootActorContainer);
+#else
 		/*
 		 * This is the part where the imported objects should be created.
 		 */
@@ -157,6 +273,8 @@ namespace
 			ActorRootComponent, FAttachmentTransformRules::KeepWorldTransform);
 		LightComponent->SetRelativeTransform(FTransform());
 		LightComponent->PostEditChange();
+#endif
+
 		return RootActorContainer;
 	}
 
@@ -190,7 +308,7 @@ UBlueprint* AGX_ArchiveImporterToBlueprint::ImportAGXArchive(const FString& Arch
 	PreCreationSetup();
 	FBlueprintId Id = CreateBlueprintId(ArchivePath);
 	UPackage* Package = GetPackage(Id);
-	AActor* Template = CreateTemplate(Id.BlueprintName);
+	AActor* Template = CreateTemplate(Id.BlueprintName, ArchivePath);
 	UBlueprint* Blueprint = CreateBlueprint(Package, Template);
 	PostCreationTeardown(Package, Blueprint, Id.PackagePath);
 	return Blueprint;
