@@ -153,8 +153,14 @@ namespace
 			BodyComponent->SetFlags(RF_Transactional);
 			ImportedActor->AddInstanceComponent(BodyComponent);
 			BodyComponent->RegisterComponent();
+
+// This is the attach part of the RootComponent strangeness. I would like to
+// call AttachToComponent here, but I don't have a RootComponent. See comment in
+// CreateTemplate.
+#if 0
 			BodyComponent->AttachToComponent(
 				ImportedActor->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+#endif
 			BodyComponent->PostEditChange();
 			return new FBlueprintBody(BodyComponent);
 		}
@@ -210,17 +216,30 @@ namespace
 		AActor* RootActorContainer =
 			FActorFactoryAssetProxy::AddActorForAsset(EmptyActorAsset, false);
 		check(RootActorContainer != nullptr);
+		RootActorContainer->SetFlags(RF_Transactional);
+		RootActorContainer->SetActorLabel(BlueprintName);
+
+// I would like to be able to create and configure the RootComponent here, but
+// the way Blueprint creation has been done in Unreal Engine makes this
+// impossible. A new RootComponent is always created and the DefaultSceneRoot I
+// create here is made a child of that new SceneComponent. Not what I want. My
+// work-around for now is to rely on the implicitly created RootComponent and
+// hoping it does what we want in all cases. I leave SceneComponents that should
+// be attached to the RootComponent unconnected, they are implicitly connected
+// to the implicit RootComponent by the Blueprint creator code. This produces a
+// weird/invalid template actor so I'm worried that the it-happens-to-work state
+// we now have won't survive for long.
+#if 0
 		USceneComponent* ActorRootComponent = NewObject<USceneComponent>(
 			RootActorContainer, USceneComponent::GetDefaultSceneRootVariableName());
 		check(ActorRootComponent != nullptr);
 		ActorRootComponent->Mobility = EComponentMobility::Movable;
 		ActorRootComponent->bVisualizeComponent = true;
-		RootActorContainer->SetRootComponent(ActorRootComponent);
-		RootActorContainer->AddInstanceComponent(ActorRootComponent);
-		ActorRootComponent->RegisterComponent();
-		RootActorContainer->SetActorLabel(BlueprintName);
-		RootActorContainer->SetFlags(RF_Transactional);
 		ActorRootComponent->SetFlags(RF_Transactional);
+		ActorRootComponent->RegisterComponent();
+		RootActorContainer->AddInstanceComponent(ActorRootComponent);
+		RootActorContainer->SetRootComponent(ActorRootComponent);
+#endif
 
 #if 1
 		AddComponentsFromArchive(ArchivePath, RootActorContainer);
