@@ -145,6 +145,14 @@ namespace
 			UAGX_RigidBodyComponent* BodyComponent =
 				NewObject<UAGX_RigidBodyComponent>(ImportedActor, NAME_None);
 
+			FString Name = RigidBody.GetName();
+			if (!BodyComponent->Rename(*Name, nullptr, REN_Test))
+			{
+				Name = MakeUniqueObjectName(
+					ImportedActor, UAGX_RigidBodyComponent::StaticClass(), *Name).ToString();
+			}
+			BodyComponent->Rename(*Name);
+
 			BodyComponent->SetWorldLocation(RigidBody.GetPosition());
 			BodyComponent->SetWorldRotation(RigidBody.GetRotation());
 			BodyComponent->Mass = RigidBody.GetMass();
@@ -305,9 +313,9 @@ namespace
 		return Blueprint;
 	}
 
-	void PostCreationTeardown(AActor* Template, UPackage* Package, UBlueprint* Blueprint, const FString& PackagePath)
+	void PostCreationTeardown(
+		AActor* Template, UPackage* Package, UBlueprint* Blueprint, const FString& PackagePath)
 	{
-
 		Template->Destroy();
 		GEngine->BroadcastLevelActorListChanged();
 
