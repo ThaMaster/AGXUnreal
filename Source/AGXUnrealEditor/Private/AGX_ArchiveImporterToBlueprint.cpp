@@ -305,8 +305,10 @@ namespace
 		return Blueprint;
 	}
 
-	void PostCreationTeardown(UPackage* Package, UBlueprint* Blueprint, const FString& PackagePath)
+	void PostCreationTeardown(AActor* Template, UPackage* Package, UBlueprint* Blueprint, const FString& PackagePath)
 	{
+
+		Template->Destroy();
 		GEngine->BroadcastLevelActorListChanged();
 
 		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
@@ -329,6 +331,6 @@ UBlueprint* AGX_ArchiveImporterToBlueprint::ImportAGXArchive(const FString& Arch
 	UPackage* Package = GetPackage(Id);
 	AActor* Template = CreateTemplate(Id.BlueprintName, ArchivePath);
 	UBlueprint* Blueprint = CreateBlueprint(Package, Template);
-	PostCreationTeardown(Package, Blueprint, Id.PackagePath);
+	PostCreationTeardown(Template, Package, Blueprint, Id.PackagePath);
 	return Blueprint;
 }
