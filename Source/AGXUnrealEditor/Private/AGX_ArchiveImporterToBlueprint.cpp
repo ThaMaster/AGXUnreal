@@ -122,6 +122,14 @@ namespace
 			BoxComponent->SetRelativeLocation(Box.GetLocalPosition());
 			BoxComponent->SetRelativeRotation(Box.GetLocalRotation());
 			BoxComponent->UpdateVisualMesh();
+			FString Name = Box.GetName();
+			if (!BoxComponent->Rename(*Name, nullptr, REN_Test))
+			{
+				Name = MakeUniqueObjectName(
+						   BoxComponent->GetOwner(), UAGX_BoxShapeComponent::StaticClass(), *Name)
+						   .ToString();
+			}
+			BoxComponent->Rename(*Name);
 		}
 
 		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) override
@@ -149,7 +157,8 @@ namespace
 			if (!BodyComponent->Rename(*Name, nullptr, REN_Test))
 			{
 				Name = MakeUniqueObjectName(
-					ImportedActor, UAGX_RigidBodyComponent::StaticClass(), *Name).ToString();
+						   ImportedActor, UAGX_RigidBodyComponent::StaticClass(), *Name)
+						   .ToString();
 			}
 			BodyComponent->Rename(*Name);
 
