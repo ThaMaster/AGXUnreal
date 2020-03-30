@@ -300,7 +300,7 @@ namespace
 	UBlueprint* CreateBlueprint(UPackage* Package, AActor* Template)
 	{
 		UBlueprint* Blueprint = FKismetEditorUtilities::CreateBlueprintFromActor(
-			Package->GetName(), Template, true, true);
+			Package->GetName(), Template, false, true);
 		check(Blueprint);
 		return Blueprint;
 	}
