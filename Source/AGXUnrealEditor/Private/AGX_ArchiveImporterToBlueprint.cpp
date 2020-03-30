@@ -5,6 +5,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
+#include "Shapes/AGX_SphereShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
@@ -104,36 +105,44 @@ namespace
 		{
 		}
 
-		virtual void InstantiateSphere(const FSphereShapeBarrier& Sphere) override
+		virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
 		{
+			UAGX_SphereShapeComponent* Component =
+				FAGX_EditorUtilities::CreateSphereShape(BodyComponent->GetOwner(), BodyComponent);
+			Component->Radius = Barrier.GetRadius();
+			FinalizeShape(Component, Barrier);
 		}
 
-		virtual void InstantiateBox(const FBoxShapeBarrier& Box) override
+		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier) override
 		{
-			UAGX_BoxShapeComponent* BoxComponent =
+			UAGX_BoxShapeComponent* Component =
 				FAGX_EditorUtilities::CreateBoxShape(BodyComponent->GetOwner(), BodyComponent);
-			BoxComponent->HalfExtent = Box.GetHalfExtents();
-
-			BoxComponent->bCanCollide = Box.GetEnableCollisions();
-			for (const FName& Group : Box.GetCollisionGroups())
-			{
-				BoxComponent->AddCollisionGroup(Group);
-			}
-			BoxComponent->SetRelativeLocation(Box.GetLocalPosition());
-			BoxComponent->SetRelativeRotation(Box.GetLocalRotation());
-			BoxComponent->UpdateVisualMesh();
-			FString Name = Box.GetName();
-			if (!BoxComponent->Rename(*Name, nullptr, REN_Test))
-			{
-				Name = MakeUniqueObjectName(
-						   BoxComponent->GetOwner(), UAGX_BoxShapeComponent::StaticClass(), *Name)
-						   .ToString();
-			}
-			BoxComponent->Rename(*Name);
+			Component->HalfExtent = Barrier.GetHalfExtents();
+			FinalizeShape(Component, Barrier);
 		}
 
 		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) override
 		{
+		}
+
+	private:
+		void FinalizeShape(UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier)
+		{
+			Component->bCanCollide = Barrier.GetEnableCollisions();
+			for (const FName& Group : Barrier.GetCollisionGroups())
+			{
+				Component->AddCollisionGroup(Group);
+			}
+			Component->SetRelativeLocation(Barrier.GetLocalPosition());
+			Component->SetRelativeRotation(Barrier.GetLocalRotation());
+			Component->UpdateVisualMesh();
+			FString Name = Barrier.GetName();
+			if (!Component->Rename(*Name, nullptr, REN_Test))
+			{
+				Name = MakeUniqueObjectName(Component->GetOwner(), Component->GetClass(), *Name)
+						   .ToString();
+			}
+			Component->Rename(*Name);
 		}
 
 	private:
