@@ -104,13 +104,14 @@ public:
 
 	template <typename UConstraint>
 	static UConstraint* CreateConstraintComponent(
-		AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2);
+		AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2 = nullptr,
+		UClass* ConstraintType = nullptr);
 
 	static UAGX_HingeConstraintComponent* CreateHingeConstraintComponent(
 		AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2);
 
 	static UAGX_PrismaticConstraintComponent* CreatePrismaticConstraintComponent(
-			AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2);
+		AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2);
 
 	/**
 	 * Create a new AGX Constraint Frame Actor. Set as child to specified Rigid Body, if available.
@@ -207,15 +208,17 @@ T* FAGX_EditorUtilities::CreateConstraintActor(
 
 template <typename UConstraint>
 UConstraint* FAGX_EditorUtilities::CreateConstraintComponent(
-	AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2)
+	AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2, UClass* Type)
 {
-	UAGX_ConstraintComponent* BaseConstraint =
-		CreateConstraintComponent(Owner, Body1, Body2, UConstraint::StaticClass());
+	if (Type == nullptr)
+	{
+		Type = UConstraint::StaticClass();
+	}
+	UAGX_ConstraintComponent* BaseConstraint = CreateConstraintComponent(Owner, Body1, Body2, Type);
 	if (BaseConstraint == nullptr)
 	{
 		return nullptr;
 	}
-
 	UConstraint* DerivedConstraint = Cast<UConstraint>(BaseConstraint);
 	// The created constraint must be of the type we asked for.
 	check(DerivedConstraint != nullptr);

@@ -4,10 +4,19 @@
 #include "AGXArchiveReader.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "Constraint1DOFBarrier.h"
 #include "HingeBarrier.h"
 #include "PrismaticBarrier.h"
+#include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
+#include "Constraints/Controllers/AGX_ElectricMotorController.h"
+#include "Constraints/Controllers/AGX_FrictionController.h"
+#include "Constraints/Controllers/AGX_LockController.h"
+#include "Constraints/Controllers/AGX_RangeController.h"
+#include "Constraints/Controllers/AGX_ScrewController.h"
+#include "Constraints/Controllers/AGX_TargetSpeedController.h"
+#include "Constraints/ControllerConstraintBarriers.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
@@ -198,12 +207,12 @@ namespace
 
 		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
 		{
-			InstantiateConstraint(Barrier, UAGX_HingeConstraintComponent::StaticClass());
+			InstantiateConstraint1Dof(Barrier, UAGX_HingeConstraintComponent::StaticClass());
 		}
 
 		virtual void InstantiatePrismatic(const FPrismaticBarrier& Barrier) override
 		{
-			InstantiateConstraint(Barrier, UAGX_PrismaticConstraintComponent::StaticClass());
+			InstantiateConstraint1Dof(Barrier, UAGX_PrismaticConstraintComponent::StaticClass());
 		}
 
 		virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) override
@@ -234,7 +243,26 @@ namespace
 		using FBodyPair = std::pair<UAGX_RigidBodyComponent*, UAGX_RigidBodyComponent*>;
 
 	private:
-		void InstantiateConstraint(const FConstraintBarrier& Barrier, UClass* ConstraintType)
+		void InstantiateConstraint1Dof(const FConstraint1DOFBarrier& Barrier, UClass* Type)
+		{
+			UAGX_Constraint1DofComponent* Component =
+				InstantiateConstraint<UAGX_Constraint1DofComponent>(Barrier, Type);
+			if (Component == nullptr)
+			{
+				// No need to log here, done by InstantiateConstraint.
+				return;
+			}
+
+			/// \todo This is copy/paste from AGX_ArchiveImporter. Find a sensible shared location.
+			StoreElectricMotorController(Barrier, Component->ElectricMotorController);
+			StoreFrictionController(Barrier, Component->FrictionController);
+			StoreLockController(Barrier, Component->LockController);
+			StoreRangeController(Barrier, Component->RangeController);
+			StoreTargetSpeedController(Barrier, Component->TargetSpeedController);
+		}
+
+		template <typename UConstraint>
+		UConstraint* InstantiateConstraint(const FConstraintBarrier& Barrier, UClass* Type)
 		{
 			FBodyPair Bodies = GetBodies(Barrier);
 			if (Bodies.first == nullptr)
@@ -244,14 +272,14 @@ namespace
 				UE_LOG(
 					LogAGX, Warning, TEXT("Constraint '%s' does not have a first body. Ignoring."),
 					*Barrier.GetName());
-				return;
+				return nullptr;
 			}
 
-			UAGX_ConstraintComponent* Component = FAGX_EditorUtilities::CreateConstraintComponent(
-				BlueprintTemplate, Bodies.first, Bodies.second, ConstraintType);
+			UConstraint* Component = FAGX_EditorUtilities::CreateConstraintComponent<UConstraint>(
+				BlueprintTemplate, Bodies.first, Bodies.second, Type);
 			if (Component == nullptr)
 			{
-				return;
+				return nullptr;
 			}
 
 			// By default the BodyAttachments are created with the OwningActor set to the owner of
@@ -269,7 +297,8 @@ namespace
 			if (!Component->Rename(*Name, nullptr, REN_Test))
 			{
 				FString OldName = Name;
-				Name = MakeUniqueObjectName(BlueprintTemplate, ConstraintType, FName(*Name))
+				Name = MakeUniqueObjectName(
+						   BlueprintTemplate, UConstraint::StaticClass(), FName(*Name))
 						   .ToString();
 				UE_LOG(
 					LogAGX, Warning,
@@ -277,6 +306,46 @@ namespace
 					*OldName, *Name);
 			}
 			Component->Rename(*Name);
+
+			return Component;
+		}
+
+		/// \todo There is copy/paste from AGX_ArchiveImporter. Find a sensible shared location.
+
+		void StoreElectricMotorController(
+			const FConstraint1DOFBarrier& Barrier,
+			FAGX_ConstraintElectricMotorController& Controller)
+		{
+			Controller.CopyFrom(*Barrier.GetElectricMotorController());
+		}
+
+
+		void StoreFrictionController(
+			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller)
+		{
+			Controller.CopyFrom(*Barrier.GetFrictionController());
+		}
+
+		void StoreLockController(
+			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller)
+		{
+			Controller.CopyFrom(*Barrier.GetLockController());
+		}
+
+
+		void StoreRangeController(
+			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller)
+		{
+			Controller.CopyFrom(*Barrier.GetRangeController());
+		}
+
+
+		void StoreTargetSpeedController(
+			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller)
+		{
+			Controller.CopyFrom(*Barrier.GetTargetSpeedController());
+		}
+
 		}
 
 		UAGX_RigidBodyComponent* GetBody(const FRigidBodyBarrier& Barrier)
