@@ -198,88 +198,12 @@ namespace
 
 		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
 		{
-			FBodyPair Bodies = GetBodies(Barrier);
-			if (Bodies.first == nullptr)
-			{
-				// Not having a second body is fine, means that the first body is constrained to the
-				// world. Not having a first body is bad.
-				UE_LOG(
-					LogAGX, Warning, TEXT("Constraint '%s' does not have a first body. Ignoring."),
-					*Barrier.GetName());
-				return;
-			}
-
-			UAGX_HingeConstraintComponent* Component =
-				FAGX_EditorUtilities::CreateHingeConstraintComponent(
-					BlueprintTemplate, Bodies.first, Bodies.second);
-			if (Component == nullptr)
-			{
-				return;
-			}
-
-			// By default the BodyAttachments are created with the OwningActor set to the owner of
-			// the RigidBodyComponents passed to CreateConstraintComponent. In this case the
-			// OwningActor points to the temporary template actor and Unreal doesn't update the
-			// pointers to instead point to the actor that is created when the Blueprint is
-			// instantiated. The best we can do is to set them to nullptr and rely on the body
-			// names only.
-			Component->BodyAttachment1.RigidBody.OwningActor = nullptr;
-			Component->BodyAttachment2.RigidBody.OwningActor = nullptr;
-
-			StoreFrames(Barrier, *Component);
-
-			FString Name = Barrier.GetName();
-			if (!Component->Rename(*Name, nullptr, REN_Test))
-			{
-				FString OldName = Name;
-				Name = MakeUniqueObjectName(BlueprintTemplate, Component->GetClass(), FName(*Name))
-						   .ToString();
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Constraint '%s' imported with name '%s' because of name collision."),
-					*OldName, *Name);
-			}
-			Component->Rename(*Name);
+			InstantiateConstraint(Barrier, UAGX_HingeConstraintComponent::StaticClass());
 		}
 
 		virtual void InstantiatePrismatic(const FPrismaticBarrier& Barrier) override
 		{
-			FBodyPair Bodies = GetBodies(Barrier);
-			if (Bodies.first == nullptr)
-			{
-				// Not having a second body is fine, means that the first body is constrained to the
-				// world. Not having a first body is bad.
-				UE_LOG(
-					LogAGX, Warning, TEXT("Constraint '%s' does not have a first body. Ignoring"),
-					*Barrier.GetName());
-				return;
-			}
-
-			UClass* ConstraintClass = UAGX_PrismaticConstraintComponent::StaticClass();
-			UAGX_PrismaticConstraintComponent* Component =
-				FAGX_EditorUtilities::CreatePrismaticConstraintComponent(
-					BlueprintTemplate, Bodies.first, Bodies.second);
-			if (Component == nullptr)
-			{
-				return;
-			}
-
-			Component->BodyAttachment1.RigidBody.OwningActor = nullptr;
-			Component->BodyAttachment2.RigidBody.OwningActor = nullptr;
-
-			StoreFrames(Barrier, *Component);
-			FString Name = Barrier.GetName();
-			if (!Component->Rename(*Name, nullptr, REN_Test))
-			{
-				FString OldName = Name;
-				Name = MakeUniqueObjectName(BlueprintTemplate, Component->GetClass(), FName(*Name))
-						   .ToString();
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Constraint'%s' imported with name '%s' because of name collision."),
-					*OldName, *Name);
-			}
-			Component->Rename(*Name);
+			InstantiateConstraint(Barrier, UAGX_PrismaticConstraintComponent::StaticClass());
 		}
 
 		virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) override
@@ -310,6 +234,51 @@ namespace
 		using FBodyPair = std::pair<UAGX_RigidBodyComponent*, UAGX_RigidBodyComponent*>;
 
 	private:
+		void InstantiateConstraint(const FConstraintBarrier& Barrier, UClass* ConstraintType)
+		{
+			FBodyPair Bodies = GetBodies(Barrier);
+			if (Bodies.first == nullptr)
+			{
+				// Not having a second body is fine, means that the first body is constrained to the
+				// world. Not having a first body is bad.
+				UE_LOG(
+					LogAGX, Warning, TEXT("Constraint '%s' does not have a first body. Ignoring."),
+					*Barrier.GetName());
+				return;
+			}
+
+			UAGX_ConstraintComponent* Component = FAGX_EditorUtilities::CreateConstraintComponent(
+				BlueprintTemplate, Bodies.first, Bodies.second, ConstraintType);
+			if (Component == nullptr)
+			{
+				return;
+			}
+
+			// By default the BodyAttachments are created with the OwningActor set to the owner of
+			// the RigidBodyComponents passed to CreateConstraintComponent. In this case the
+			// OwningActor points to the temporary template actor and Unreal doesn't update the
+			// pointers to instead point to the actor that is created when the Blueprint is
+			// instantiated. The best we can do is to set them to nullptr and rely on the body
+			// names only.
+			Component->BodyAttachment1.RigidBody.OwningActor = nullptr;
+			Component->BodyAttachment2.RigidBody.OwningActor = nullptr;
+
+			StoreFrames(Barrier, *Component);
+
+			FString Name = Barrier.GetName();
+			if (!Component->Rename(*Name, nullptr, REN_Test))
+			{
+				FString OldName = Name;
+				Name = MakeUniqueObjectName(BlueprintTemplate, ConstraintType, FName(*Name))
+						   .ToString();
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Constraint '%s' imported with name '%s' because of name collision."),
+					*OldName, *Name);
+			}
+			Component->Rename(*Name);
+		}
+
 		UAGX_RigidBodyComponent* GetBody(const FRigidBodyBarrier& Barrier)
 		{
 			if (!Barrier.HasNative())
