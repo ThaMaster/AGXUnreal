@@ -5,7 +5,9 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "HingeBarrier.h"
+#include "PrismaticBarrier.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
+#include "Constraints/AGX_PrismaticConstraintComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
@@ -199,7 +201,7 @@ namespace
 			FBodyPair Bodies = GetBodies(Barrier);
 			if (Bodies.first == nullptr)
 			{
-				// Not having a second body is file, means that the first body is constrained to the
+				// Not having a second body is fine, means that the first body is constrained to the
 				// world. Not having a first body is bad.
 				UE_LOG(
 					LogAGX, Warning, TEXT("Constraint '%s' does not have a first body. Ignoring."),
@@ -240,8 +242,44 @@ namespace
 			Component->Rename(*Name);
 		}
 
-		virtual void InstantiatePrismatic(const FPrismaticBarrier& Prismatic) override
+		virtual void InstantiatePrismatic(const FPrismaticBarrier& Barrier) override
 		{
+			FBodyPair Bodies = GetBodies(Barrier);
+			if (Bodies.first == nullptr)
+			{
+				// Not having a second body is fine, means that the first body is constrained to the
+				// world. Not having a first body is bad.
+				UE_LOG(
+					LogAGX, Warning, TEXT("Constraint '%s' does not have a first body. Ignoring"),
+					*Barrier.GetName());
+				return;
+			}
+
+			UClass* ConstraintClass = UAGX_PrismaticConstraintComponent::StaticClass();
+			UAGX_PrismaticConstraintComponent* Component =
+				FAGX_EditorUtilities::CreatePrismaticConstraintComponent(
+					BlueprintTemplate, Bodies.first, Bodies.second);
+			if (Component == nullptr)
+			{
+				return;
+			}
+
+			Component->BodyAttachment1.RigidBody.OwningActor = nullptr;
+			Component->BodyAttachment2.RigidBody.OwningActor = nullptr;
+
+			StoreFrames(Barrier, *Component);
+			FString Name = Barrier.GetName();
+			if (!Component->Rename(*Name, nullptr, REN_Test))
+			{
+				FString OldName = Name;
+				Name = MakeUniqueObjectName(BlueprintTemplate, Component->GetClass(), FName(*Name))
+						   .ToString();
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Constraint'%s' imported with name '%s' because of name collision."),
+					*OldName, *Name);
+			}
+			Component->Rename(*Name);
 		}
 
 		virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) override

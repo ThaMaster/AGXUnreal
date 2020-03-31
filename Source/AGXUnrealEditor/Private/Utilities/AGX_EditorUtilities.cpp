@@ -10,6 +10,7 @@
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
+#include "Constraints/AGX_PrismaticConstraintComponent.h"
 
 // Unreal Engine includes.
 #include "AssetRegistryModule.h"
@@ -447,9 +448,15 @@ UAGX_ConstraintComponent* FAGX_EditorUtilities::CreateConstraintComponent(
 }
 
 UAGX_HingeConstraintComponent* FAGX_EditorUtilities::CreateHingeConstraintComponent(
-		AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2)
+	AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2)
 {
 	return CreateConstraintComponent<UAGX_HingeConstraintComponent>(Owner, Body1, Body2);
+}
+
+UAGX_PrismaticConstraintComponent* FAGX_EditorUtilities::CreatePrismaticConstraintComponent(
+	AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2)
+{
+	return CreateConstraintComponent<UAGX_PrismaticConstraintComponent>(Owner, Body1, Body2);
 }
 
 AAGX_ConstraintFrameActor* FAGX_EditorUtilities::CreateConstraintFrameActor(

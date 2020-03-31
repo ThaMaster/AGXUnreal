@@ -15,6 +15,7 @@ class AAGX_ConstraintActor;
 class AAGX_ConstraintFrameActor;
 class UAGX_ConstraintComponent;
 class UAGX_HingeConstraintComponent;
+class UAGX_PrismaticConstraintComponent;
 
 // Other AGXUnreal classes.
 class FTrimeshShapeBarrier;
@@ -107,6 +108,9 @@ public:
 
 	static UAGX_HingeConstraintComponent* CreateHingeConstraintComponent(
 		AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2);
+
+	static UAGX_PrismaticConstraintComponent* CreatePrismaticConstraintComponent(
+			AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2);
 
 	/**
 	 * Create a new AGX Constraint Frame Actor. Set as child to specified Rigid Body, if available.
