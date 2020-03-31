@@ -4,6 +4,8 @@
 #include "AGXArchiveReader.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "HingeBarrier.h"
+#include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
@@ -152,47 +154,90 @@ namespace
 	class FBlueprintInstantiator final : public FAGXArchiveInstantiator
 	{
 	public:
-		FBlueprintInstantiator(AActor* InImportedActor)
-			: ImportedActor(InImportedActor)
+		FBlueprintInstantiator(AActor* InBlueprintTemplate)
+			: BlueprintTemplate(InBlueprintTemplate)
 		{
 		}
 
-		virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& RigidBody) override
+		virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
 		{
-			UAGX_RigidBodyComponent* BodyComponent =
-				NewObject<UAGX_RigidBodyComponent>(ImportedActor, NAME_None);
+			UAGX_RigidBodyComponent* Component =
+				NewObject<UAGX_RigidBodyComponent>(BlueprintTemplate, NAME_None);
 
-			FString Name = RigidBody.GetName();
-			if (!BodyComponent->Rename(*Name, nullptr, REN_Test))
+			FString Name = Barrier.GetName();
+			if (!Component->Rename(*Name, nullptr, REN_Test))
 			{
 				Name = MakeUniqueObjectName(
-						   ImportedActor, UAGX_RigidBodyComponent::StaticClass(), *Name)
+						   BlueprintTemplate, UAGX_RigidBodyComponent::StaticClass(), *Name)
 						   .ToString();
 			}
-			BodyComponent->Rename(*Name);
+			Component->Rename(*Name);
 
-			BodyComponent->SetWorldLocation(RigidBody.GetPosition());
-			BodyComponent->SetWorldRotation(RigidBody.GetRotation());
-			BodyComponent->Mass = RigidBody.GetMass();
-			BodyComponent->MotionControl = RigidBody.GetMotionControl();
+			Component->SetWorldLocation(Barrier.GetPosition());
+			Component->SetWorldRotation(Barrier.GetRotation());
+			Component->Mass = Barrier.GetMass();
+			Component->MotionControl = Barrier.GetMotionControl();
 
-			BodyComponent->SetFlags(RF_Transactional);
-			ImportedActor->AddInstanceComponent(BodyComponent);
-			BodyComponent->RegisterComponent();
+			Component->SetFlags(RF_Transactional);
+			BlueprintTemplate->AddInstanceComponent(Component);
+			Component->RegisterComponent();
 
 // This is the attach part of the RootComponent strangeness. I would like to
 // call AttachToComponent here, but I don't have a RootComponent. See comment in
 // CreateTemplate.
 #if 0
-			BodyComponent->AttachToComponent(
-				ImportedActor->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+			Component->AttachToComponent(
+				BlueprintTemplate->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 #endif
-			BodyComponent->PostEditChange();
-			return new FBlueprintBody(BodyComponent);
+			Component->PostEditChange();
+			RestoredBodies.Add(Barrier.GetGuid(), Component);
+			return new FBlueprintBody(Component);
 		}
 
-		virtual void InstantiateHinge(const FHingeBarrier& Hinge) override
+		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
 		{
+			FBodyPair Bodies = GetBodies(Barrier);
+			if (Bodies.first == nullptr)
+			{
+				// Not having a second body is file, means that the first body is constrained to the
+				// world. Not having a first body is bad.
+				UE_LOG(
+					LogAGX, Warning, TEXT("Constraint '%s' does not have a first body. Ignoring."),
+					*Barrier.GetName());
+				return;
+			}
+
+			UAGX_HingeConstraintComponent* Component =
+				FAGX_EditorUtilities::CreateHingeConstraintComponent(
+					BlueprintTemplate, Bodies.first, Bodies.second);
+			if (Component == nullptr)
+			{
+				return;
+			}
+
+			// By default the BodyAttachments are created with the OwningActor set to the owner of
+			// the RigidBodyComponents passed to CreateConstraintComponent. In this case the
+			// OwningActor points to the temporary template actor and Unreal doesn't update the
+			// pointers to instead point to the actor that is created when the Blueprint is
+			// instantiated. The best we can do is to set them to nullptr and rely on the body
+			// names only.
+			Component->BodyAttachment1.RigidBody.OwningActor = nullptr;
+			Component->BodyAttachment2.RigidBody.OwningActor = nullptr;
+
+			StoreFrames(Barrier, *Component);
+
+			FString Name = Barrier.GetName();
+			if (!Component->Rename(*Name, nullptr, REN_Test))
+			{
+				FString OldName = Name;
+				Name = MakeUniqueObjectName(BlueprintTemplate, Component->GetClass(), FName(*Name))
+						   .ToString();
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Constraint '%s' imported with name '%s' because of name collision."),
+					*OldName, *Name);
+			}
+			Component->Rename(*Name);
 		}
 
 		virtual void InstantiatePrismatic(const FPrismaticBarrier& Prismatic) override
@@ -224,7 +269,55 @@ namespace
 		virtual ~FBlueprintInstantiator() = default;
 
 	private:
-		AActor* ImportedActor;
+		using FBodyPair = std::pair<UAGX_RigidBodyComponent*, UAGX_RigidBodyComponent*>;
+
+	private:
+		UAGX_RigidBodyComponent* GetBody(const FRigidBodyBarrier& Barrier)
+		{
+			if (!Barrier.HasNative())
+			{
+				// Not an error. Means constrained with world.
+				return nullptr;
+			}
+			FGuid Guid = Barrier.GetGuid();
+			UAGX_RigidBodyComponent* Component = RestoredBodies.FindRef(Guid);
+			if (Component == nullptr)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Found a constraint to body '%s', but that body isn't known."),
+					*Barrier.GetName());
+				return nullptr;
+			}
+			return Component;
+		}
+
+		FBodyPair GetBodies(const FConstraintBarrier& Constraint)
+		{
+			return {GetBody(Constraint.GetFirstBody()), GetBody(Constraint.GetSecondBody())};
+		}
+
+		/// \todo The two StoreFrame(s) member functions are copy/paste from AGX_ArchiveImporter.
+		/// Find a reasonable shared location to put them in.
+
+		void StoreFrame(
+			const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment,
+			int32 BodyIndex)
+		{
+			Attachment.FrameDefiningActor = nullptr;
+			Attachment.LocalFrameLocation = Barrier.GetLocalLocation(BodyIndex);
+			Attachment.LocalFrameRotation = Barrier.GetLocalRotation(BodyIndex);
+		}
+
+		void StoreFrames(const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component)
+		{
+			StoreFrame(Barrier, Component.BodyAttachment1, 0);
+			StoreFrame(Barrier, Component.BodyAttachment2, 1);
+		}
+
+	private:
+		AActor* BlueprintTemplate;
+		TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	};
 
 	void AddComponentsFromArchive(const FString& ArchivePath, AActor* ImportedActor)

@@ -5,18 +5,25 @@
 
 #include <tuple>
 
-class AAGX_ConstraintActor;
-class AAGX_ConstraintFrameActor;
-class UAGX_RigidBodyComponent;
+// Shape classes.
 class UAGX_SphereShapeComponent;
 class UAGX_BoxShapeComponent;
 class UAGX_TrimeshShapeComponent;
 
-class FTrimeshShapeBarrier;
-class IDetailLayoutBuilder;
+// Constraint classes.
+class AAGX_ConstraintActor;
+class AAGX_ConstraintFrameActor;
+class UAGX_ConstraintComponent;
+class UAGX_HingeConstraintComponent;
 
+// Other AGXUnreal classes.
+class FTrimeshShapeBarrier;
+class UAGX_RigidBodyComponent;
+
+// Unreal Engine classes.
 class AActor;
 class FText;
+class IDetailLayoutBuilder;
 class UClass;
 class USceneComponent;
 class UStaticMeshComponent;
@@ -89,6 +96,17 @@ public:
 	static T* CreateConstraintActor(
 		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2, bool bSelect,
 		bool bShowNotification, bool bInPlayingWorldIfAvailable, UClass* ConstraintType = nullptr);
+
+	static UAGX_ConstraintComponent* CreateConstraintComponent(
+		AActor* Owner, UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2,
+		UClass* ConstraintType = nullptr);
+
+	template <typename UConstraint>
+	static UConstraint* CreateConstraintComponent(
+		AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2);
+
+	static UAGX_HingeConstraintComponent* CreateHingeConstraintComponent(
+		AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2);
 
 	/**
 	 * Create a new AGX Constraint Frame Actor. Set as child to specified Rigid Body, if available.
@@ -181,6 +199,23 @@ T* FAGX_EditorUtilities::CreateConstraintActor(
 	return Cast<T>(CreateConstraintActor(
 		ConstraintType, RigidBody1, RigidBody2, bSelect, bShowNotification,
 		bInPlayingWorldIfAvailable));
+}
+
+template <typename UConstraint>
+UConstraint* FAGX_EditorUtilities::CreateConstraintComponent(
+	AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2)
+{
+	UAGX_ConstraintComponent* BaseConstraint =
+		CreateConstraintComponent(Owner, Body1, Body2, UConstraint::StaticClass());
+	if (BaseConstraint == nullptr)
+	{
+		return nullptr;
+	}
+
+	UConstraint* DerivedConstraint = Cast<UConstraint>(BaseConstraint);
+	// The created constraint must be of the type we asked for.
+	check(DerivedConstraint != nullptr);
+	return DerivedConstraint;
 }
 
 template <typename T>

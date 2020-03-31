@@ -9,6 +9,7 @@
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
+#include "Constraints/AGX_HingeConstraintComponent.h"
 
 // Unreal Engine includes.
 #include "AssetRegistryModule.h"
@@ -428,6 +429,27 @@ AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 	}
 
 	return NewActor;
+}
+
+UAGX_ConstraintComponent* FAGX_EditorUtilities::CreateConstraintComponent(
+	AActor* Owner, UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2,
+	UClass* ConstraintType)
+{
+	UAGX_ConstraintComponent* Constraint =
+		NewObject<UAGX_ConstraintComponent>(Owner, ConstraintType);
+	Owner->AddInstanceComponent(Constraint);
+	Constraint->RegisterComponent();
+	Constraint->BodyAttachment1.RigidBody.OwningActor = RigidBody1->GetOwner();
+	Constraint->BodyAttachment1.RigidBody.BodyName = RigidBody1->GetFName();
+	Constraint->BodyAttachment2.RigidBody.OwningActor = RigidBody2->GetOwner();
+	Constraint->BodyAttachment2.RigidBody.BodyName = RigidBody2->GetFName();
+	return Constraint;
+}
+
+UAGX_HingeConstraintComponent* FAGX_EditorUtilities::CreateHingeConstraintComponent(
+		AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2)
+{
+	return CreateConstraintComponent<UAGX_HingeConstraintComponent>(Owner, Body1, Body2);
 }
 
 AAGX_ConstraintFrameActor* FAGX_EditorUtilities::CreateConstraintFrameActor(
