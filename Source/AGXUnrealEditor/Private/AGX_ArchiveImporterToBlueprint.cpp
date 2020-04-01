@@ -6,12 +6,14 @@
 #include "AGX_RigidBodyComponent.h"
 #include "Constraint1DOFBarrier.h"
 #include "Constraint2DOFBarrier.h"
+#include "DistanceJointBarrier.h"
 #include "HingeBarrier.h"
 #include "PrismaticBarrier.h"
 #include "CylindricalJointBarrier.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_CylindricalConstraintComponent.h"
+#include "Constraints/AGX_DistanceConstraintComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
@@ -229,8 +231,9 @@ namespace
 			InstantiateConstraint2Dof(Barrier, UAGX_CylindricalConstraintComponent::StaticClass());
 		}
 
-		virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& DistanceJoint) override
+		virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& Barrier) override
 		{
+			InstantiateConstraint1Dof(Barrier, UAGX_DistanceConstraintComponent::StaticClass());
 		}
 
 		virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) override
