@@ -27,6 +27,16 @@ FConstraint2DOFBarrier::~FConstraint2DOFBarrier()
 // specialized for.
 namespace
 {
+	agx::Constraint2DOF* Get2DOF(std::unique_ptr<FConstraintRef>& NativeRef)
+	{
+		return dynamic_cast<agx::Constraint2DOF*>(NativeRef->Native.get());
+	}
+
+	agx::Constraint2DOF* Get2DOF(const std::unique_ptr<FConstraintRef>& NativeRef)
+	{
+		return dynamic_cast<agx::Constraint2DOF*>(NativeRef->Native.get());
+	}
+
 	// Base implementation for the controller constraints for which there are two per constraint.
 	// Should never get here.
 	/// \todo Can we enforce this at compile time?
@@ -44,6 +54,7 @@ namespace
 	agx::BasicControllerConstraint* GetNativeController<FElectricMotorControllerBarrier>(
 		agx::Constraint2DOF* Constraint, agx::Constraint2DOF::DOF Dof)
 	{
+		check(Constraint->getElectricMotorController(Dof) != nullptr);
 		return Constraint->getElectricMotorController(Dof);
 	}
 
@@ -119,8 +130,10 @@ namespace
 	template <typename FBarrier>
 	TUniquePtr<FBarrier> CreateControllerBarrier(const FConstraint2DOFBarrier& Barrier)
 	{
+		check(Barrier.HasNative());
 		agx::Constraint2DOF* Native =
 			dynamic_cast<agx::Constraint2DOF*>(Barrier.GetNative()->Native.get());
+		check(Native != nullptr);
 
 		return TUniquePtr<FBarrier>(new FBarrier(
 			std::make_unique<FConstraintControllerRef>(GetNativeController<FBarrier>(Native))));
@@ -165,34 +178,80 @@ TUniquePtr<FScrewControllerBarrier> FConstraint2DOFBarrier::GetScrewController()
 TUniquePtr<const FElectricMotorControllerBarrier>
 FConstraint2DOFBarrier::GetElectricMotorController(EAGX_Constraint2DOFFreeDOF Dof) const
 {
-	return CreateControllerBarrier<const FElectricMotorControllerBarrier>(*this, Dof);
+	// return CreateControllerBarrier<const FElectricMotorControllerBarrier>(*this, Dof);
+	agx::ElectricMotorController* Controller =
+		Get2DOF(NativeRef)->getElectricMotorController(Convert(Dof));
+	return TUniquePtr<const FElectricMotorControllerBarrier>(new FElectricMotorControllerBarrier(
+		std::make_unique<FConstraintControllerRef>(Controller)));
+}
+
+namespace
+{
+	agx::FrictionController* GetOrCreateFrictionController(
+		agx::Constraint2DOF* Constraint, agx::Constraint2DOF::DOF Dof)
+	{
+		agx::FrictionController* Friction = Constraint->getFrictionController(Dof);
+		if (Friction == nullptr)
+		{
+			agx::AttachmentPair* Attachments = Constraint->getAttachmentPair();
+			agx::Angle* SepAngle = Attachments->getAngle(0);
+			agx::Angle* RotAngle = Attachments->getAngle(1);
+			agx::ConstraintAngleBasedData SepData(Attachments, SepAngle);
+			agx::ConstraintAngleBasedData RotData(Attachments, RotAngle);
+			agx::FrictionController* SepFriction = new agx::FrictionController(SepData);
+			agx::FrictionController* RotFriction = new agx::FrictionController(RotData);
+			Constraint->addSecondaryConstraint("FT", SepFriction);
+			Constraint->addSecondaryConstraint("FR", RotFriction);
+			Friction = Dof == agx::Constraint2DOF::FIRST ? SepFriction : RotFriction;
+			check(Friction == Constraint->getFrictionController(Dof));
+		}
+		return Friction;
+	}
 }
 
 TUniquePtr<const FFrictionControllerBarrier> FConstraint2DOFBarrier::GetFrictionController(
 	EAGX_Constraint2DOFFreeDOF Dof) const
 {
+	check(HasNative());
+	agx::FrictionController* Controller =
+		GetOrCreateFrictionController(Get2DOF(NativeRef), Convert(Dof));
+	return TUniquePtr<const FFrictionControllerBarrier>(
+		new FFrictionControllerBarrier(std::make_unique<FConstraintControllerRef>(Controller)));
+
 	return CreateControllerBarrier<const FFrictionControllerBarrier>(*this, Dof);
 }
 
 TUniquePtr<const FLockControllerBarrier> FConstraint2DOFBarrier::GetLockController(
 	EAGX_Constraint2DOFFreeDOF Dof) const
 {
-	return CreateControllerBarrier<const FLockControllerBarrier>(*this, Dof);
+	// return CreateControllerBarrier<const FLockControllerBarrier>(*this, Dof);
+	agx::LockController* Controller = Get2DOF(NativeRef)->getLock1D(Convert(Dof));
+	return TUniquePtr<const FLockControllerBarrier>(
+		new FLockControllerBarrier(std::make_unique<FConstraintControllerRef>(Controller)));
 }
 
 TUniquePtr<const FRangeControllerBarrier> FConstraint2DOFBarrier::GetRangeController(
 	EAGX_Constraint2DOFFreeDOF Dof) const
 {
-	return CreateControllerBarrier<const FRangeControllerBarrier>(*this, Dof);
+	// return CreateControllerBarrier<const FRangeControllerBarrier>(*this, Dof);
+	agx::RangeController* Controller = Get2DOF(NativeRef)->getRange1D(Convert(Dof));
+	return TUniquePtr<const FRangeControllerBarrier>(
+		new FRangeControllerBarrier(std::make_unique<FConstraintControllerRef>(Controller)));
 }
 
 TUniquePtr<const FTargetSpeedControllerBarrier> FConstraint2DOFBarrier::GetTargetSpeedController(
 	EAGX_Constraint2DOFFreeDOF Dof) const
 {
-	return CreateControllerBarrier<const FTargetSpeedControllerBarrier>(*this, Dof);
+	// return CreateControllerBarrier<const FTargetSpeedControllerBarrier>(*this, Dof);
+	agx::TargetSpeedController* Controller = Get2DOF(NativeRef)->getMotor1D(Convert(Dof));
+	return TUniquePtr<const FTargetSpeedControllerBarrier>(
+		new FTargetSpeedControllerBarrier(std::make_unique<FConstraintControllerRef>(Controller)));
 }
 
 TUniquePtr<const FScrewControllerBarrier> FConstraint2DOFBarrier::GetScrewController() const
 {
-	return CreateControllerBarrier<const FScrewControllerBarrier>(*this);
+	// return CreateControllerBarrier<const FScrewControllerBarrier>(*this);
+	agx::ScrewController* Controller = Get2DOF(NativeRef)->getScrew1D();
+	return TUniquePtr<const FScrewControllerBarrier>(
+		new FScrewControllerBarrier(std::make_unique<FConstraintControllerRef>(Controller)));
 }
