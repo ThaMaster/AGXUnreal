@@ -5,9 +5,13 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Constraint1DOFBarrier.h"
+#include "Constraint2DOFBarrier.h"
 #include "HingeBarrier.h"
 #include "PrismaticBarrier.h"
+#include "CylindricalJointBarrier.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
+#include "Constraints/AGX_Constraint2DofComponent.h"
+#include "Constraints/AGX_CylindricalConstraintComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
@@ -220,8 +224,9 @@ namespace
 		}
 
 		virtual void InstantiateCylindricalJoint(
-			const FCylindricalJointBarrier& CylindricalJoint) override
+			const FCylindricalJointBarrier& Barrier) override
 		{
+			InstantiateConstraint2Dof(Barrier, UAGX_CylindricalConstraintComponent::StaticClass());
 		}
 
 		virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& DistanceJoint) override
@@ -259,6 +264,36 @@ namespace
 			StoreLockController(Barrier, Component->LockController);
 			StoreRangeController(Barrier, Component->RangeController);
 			StoreTargetSpeedController(Barrier, Component->TargetSpeedController);
+		}
+
+		void InstantiateConstraint2Dof(const FConstraint2DOFBarrier& Barrier, UClass* Type)
+		{
+			UAGX_Constraint2DofComponent* Component =
+				InstantiateConstraint<UAGX_Constraint2DofComponent>(Barrier, Type);
+			if (Component == nullptr)
+			{
+				// No need to log here, done by InstantiateConstraint.
+				return;
+			}
+
+			/// \todo This is copy/paste from AGX_ArchiveImporter. Find a sensible shared location.
+			const EAGX_Constraint2DOFFreeDOF First = EAGX_Constraint2DOFFreeDOF::FIRST;
+			const EAGX_Constraint2DOFFreeDOF Second = EAGX_Constraint2DOFFreeDOF::SECOND;
+
+			StoreElectricMotorController(Barrier, Component->ElectricMotorController1, First);
+			StoreElectricMotorController(Barrier, Component->ElectricMotorController2, Second);
+
+			StoreFrictionController(Barrier, Component->FrictionController1, First);
+			StoreFrictionController(Barrier, Component->FrictionController2, Second);
+
+			StoreLockController(Barrier, Component->LockController1, First);
+			StoreLockController(Barrier, Component->LockController2, Second);
+
+			StoreRangeController(Barrier, Component->RangeController1, First);
+			StoreRangeController(Barrier, Component->RangeController2, Second);
+
+			StoreTargetSpeedController(Barrier, Component->TargetSpeedController1, First);
+			StoreTargetSpeedController(Barrier, Component->TargetSpeedController2, Second);
 		}
 
 		template <typename UConstraint>
@@ -319,11 +354,24 @@ namespace
 			Controller.CopyFrom(*Barrier.GetElectricMotorController());
 		}
 
+		void StoreElectricMotorController(
+			const FConstraint2DOFBarrier& Barrier,
+			FAGX_ConstraintElectricMotorController& Controller, EAGX_Constraint2DOFFreeDOF Dof)
+		{
+			Controller.CopyFrom(*Barrier.GetElectricMotorController(Dof));
+		}
 
 		void StoreFrictionController(
 			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller)
 		{
 			Controller.CopyFrom(*Barrier.GetFrictionController());
+		}
+
+		void StoreFrictionController(
+			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
+			EAGX_Constraint2DOFFreeDOF Dof)
+		{
+			Controller.CopyFrom(*Barrier.GetFrictionController(Dof));
 		}
 
 		void StoreLockController(
@@ -332,6 +380,12 @@ namespace
 			Controller.CopyFrom(*Barrier.GetLockController());
 		}
 
+		void StoreLockController(
+			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
+			EAGX_Constraint2DOFFreeDOF Dof)
+		{
+			Controller.CopyFrom(*Barrier.GetLockController(Dof));
+		}
 
 		void StoreRangeController(
 			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller)
@@ -339,6 +393,12 @@ namespace
 			Controller.CopyFrom(*Barrier.GetRangeController());
 		}
 
+		void StoreRangeController(
+			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
+			EAGX_Constraint2DOFFreeDOF Dof)
+		{
+			Controller.CopyFrom(*Barrier.GetRangeController(Dof));
+		}
 
 		void StoreTargetSpeedController(
 			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller)
@@ -346,6 +406,11 @@ namespace
 			Controller.CopyFrom(*Barrier.GetTargetSpeedController());
 		}
 
+		void StoreTargetSpeedController(
+			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
+			EAGX_Constraint2DOFFreeDOF Dof)
+		{
+			Controller.CopyFrom(*Barrier.GetTargetSpeedController(Dof));
 		}
 
 		UAGX_RigidBodyComponent* GetBody(const FRigidBodyBarrier& Barrier)
