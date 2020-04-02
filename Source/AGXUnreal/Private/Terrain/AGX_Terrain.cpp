@@ -12,6 +12,7 @@
 #include "Materials/AGX_TerrainMaterialInstance.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
 #include "Materials/AGX_MaterialBase.h"
+#include "Terrain/AGX_LandscapeSizeInfo.h"
 
 // AGXUnrealBarrier includes.
 #include "Terrain/TerrainBarrier.h"
@@ -88,13 +89,17 @@ void AAGX_Terrain::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 		{
 			return;
 		}
-		int32 NumQuadsSide =
-			AGX_HeightFieldUtilities::GetLandscapeSideSizeInQuads(*SourceLandscape);
-		float QuadSize = SourceLandscape->GetActorScale().X;
-		float Size = QuadSize * NumQuadsSide;
+
+		FAGX_LandscapeSizeInfo LandscapeSizeInfo(*SourceLandscape);
+		const int32 QuadCountX = LandscapeSizeInfo.NumQuadsSideX;
+		const int32 QuadCountY = LandscapeSizeInfo.NumQuadsSideY;
+		const float QuadSizeX = LandscapeSizeInfo.QuadSideSizeX;
+		const float QuadSizeY = LandscapeSizeInfo.QuadSideSizeY;
+		const float SizeX = QuadSizeX * QuadCountX;
+		const float SizeY = QuadSizeY * QuadCountY;
 		UE_LOG(
-			LogAGX, Display, TEXT("Selected %fcm x %fcm Landscape containing %d x %d quads."), Size,
-			Size, NumQuadsSide, NumQuadsSide);
+			LogAGX, Display, TEXT("Selected %fcm x %fcm Landscape containing %d x %d quads."),
+			SizeX, SizeY, QuadCountX, QuadCountY);
 	}
 }
 #endif
