@@ -29,6 +29,7 @@
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
@@ -123,8 +124,9 @@ namespace
 	class FBlueprintBody final : public FAGXArchiveBody
 	{
 	public:
-		FBlueprintBody(UAGX_RigidBodyComponent* InBodyComponent)
+		FBlueprintBody(UAGX_RigidBodyComponent* InBodyComponent, const FString& InArchiveName)
 			: BodyComponent(InBodyComponent)
+			, ArchiveName(InArchiveName)
 		{
 		}
 
@@ -144,8 +146,30 @@ namespace
 			FinalizeShape(Component, Barrier);
 		}
 
-		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) override
+		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Barrier) override
 		{
+			AActor* Owner = BodyComponent->GetOwner();
+			UAGX_TrimeshShapeComponent* Component =
+				FAGX_EditorUtilities::CreateTrimeshShape(Owner, BodyComponent);
+			Component->MeshSourceLocation =
+				EAGX_TrimeshSourceLocation ::TSL_CHILD_STATIC_MESH_COMPONENT;
+			UStaticMeshComponent* MeshComponent =
+				FAGX_EditorUtilities::CreateStaticMeshAsset(Owner, Component, Barrier, ArchiveName);
+
+			FString Name = MeshComponent->GetName() + "Shape";
+			if (!Component->Rename(*Name, nullptr, REN_Test))
+			{
+				FString OldName = Name;
+				Name = MakeUniqueObjectName(
+						   Owner, UAGX_TrimeshShapeComponent::StaticClass(), FName(*Name))
+						   .ToString();
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Trimesh '%s' imported with name '%s' because of name conflict."),
+					*OldName, *Name);
+			}
+			Component->Rename(*Name, nullptr, REN_DontCreateRedirectors);
+			FinalizeShape(Component, Barrier);
 		}
 
 	private:
@@ -170,13 +194,15 @@ namespace
 
 	private:
 		UAGX_RigidBodyComponent* BodyComponent;
+		const FString& ArchiveName;
 	};
 
 	class FBlueprintInstantiator final : public FAGXArchiveInstantiator
 	{
 	public:
-		FBlueprintInstantiator(AActor* InBlueprintTemplate)
+		FBlueprintInstantiator(AActor* InBlueprintTemplate, const FString& InArchiveName)
 			: BlueprintTemplate(InBlueprintTemplate)
+			, ArchiveName(InArchiveName)
 		{
 		}
 
@@ -212,7 +238,7 @@ namespace
 #endif
 			Component->PostEditChange();
 			RestoredBodies.Add(Barrier.GetGuid(), Component);
-			return new FBlueprintBody(Component);
+			return new FBlueprintBody(Component, ArchiveName);
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
@@ -468,12 +494,14 @@ namespace
 
 	private:
 		AActor* BlueprintTemplate;
+		const FString& ArchiveName;
 		TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	};
 
 	void AddComponentsFromArchive(const FString& ArchivePath, AActor* ImportedActor)
 	{
-		FBlueprintInstantiator Instantiator(ImportedActor);
+		FString ArchiveName = FPaths::GetCleanFilename(ArchivePath);
+		FBlueprintInstantiator Instantiator(ImportedActor, ArchiveName);
 		FAGXArchiveReader::Read(ArchivePath, Instantiator);
 	}
 
