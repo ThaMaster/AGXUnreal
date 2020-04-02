@@ -20,16 +20,16 @@ namespace
 		return Root;
 	}
 
-	bool IsOverlappingPoint(
-		int32 X, int32 Y, int32 NumComponentsSide, int32 NumVertsPerComponentSide)
+	inline bool IsOverlappingPoint(
+		int32 X, int32 Y, int32 NumSectionSides, int32 NumVerticesPerSectionSide)
 	{
-		if (NumComponentsSide == 1)
+		if (NumSectionSides == 1)
 			return false;
 
-		if (X > 0 && X % NumVertsPerComponentSide == 0)
+		if (X > 0 && X % NumVerticesPerSectionSide == 0)
 			return true;
 
-		if (Y > 0 && Y % NumVertsPerComponentSide == 0)
+		if (Y > 0 && Y % NumVerticesPerSectionSide == 0)
 			return true;
 
 		return false;
@@ -140,6 +140,8 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 	const float QuadSideSize = Landscape.GetActorScale().X;
 	const float SideSize = NumQuadsPerSide * QuadSideSize;
 	const float LandscapeScaleZ = Landscape.GetActorScale3D().Z;
+	const int32 NumSectionSides = NumComponentsSide * Landscape.NumSubsections;
+	const int32 NumVerticesPerSectionSide = Landscape.SubsectionSizeQuads + 1;
 
 	TArray<float> Heights;
 	Heights.AddUninitialized(NumVertices);
@@ -158,12 +160,11 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 	{
 		for (int32 X = 0; X < HeightMapTexture->GetSizeX(); X++)
 		{
-			// Unreals landscape counts pixel at component overlap twice.
-			if (!IsOverlappingPoint(X, Y, NumComponentsSide, NumQuadsPerComponentSide + 1))
+			// Unreals landscape counts pixel at section overlap twice.
+			if (!IsOverlappingPoint(X, Y, NumSectionSides, NumVerticesPerSectionSide))
 			{
 				FColor PixelColor = Texturecolor[Y * HeightMapTexture->GetSizeX() + X];
 				float Height = ColorToHeight(PixelColor, LandscapeScaleZ);
-
 				Heights[Vertex++] = Height;
 			}
 		}
