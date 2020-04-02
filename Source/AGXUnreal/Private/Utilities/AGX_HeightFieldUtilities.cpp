@@ -20,22 +20,22 @@ namespace
 		return Root;
 	}
 
-	bool IsOverlappingPoint(
-		int32 X, int32 Y, int32 NumComponentsSide, int32 NumVertsPerComponentSide)
+	inline bool IsOverlappingPoint(
+		int32 X, int32 Y, int32 NumSectionSides, int32 NumVerticesPerSectionSide)
 	{
-		if (NumComponentsSide == 1)
+		if (NumSectionSides == 1)
 			return false;
 
-		if (X > 0 && X % NumVertsPerComponentSide == 0)
+		if (X > 0 && X % NumVerticesPerSectionSide == 0)
 			return true;
 
-		if (Y > 0 && Y % NumVertsPerComponentSide == 0)
+		if (Y > 0 && Y % NumVerticesPerSectionSide == 0)
 			return true;
 
 		return false;
 	}
 
-	float ColorToHeight(FColor Color, float ScaleZ)
+	inline float ColorToHeight(FColor Color, float ScaleZ)
 	{
 		constexpr float LANDSCAPE_HEIGHT_SPAN_NOMINAL_M {512.0f};
 		constexpr float LANDSCAPE_ZERO_OFFSET_CM {100.0f};
@@ -140,6 +140,8 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 	const float QuadSideSize = Landscape.GetActorScale().X;
 	const float SideSize = NumQuadsPerSide * QuadSideSize;
 	const float LandscapeScaleZ = Landscape.GetActorScale3D().Z;
+	const int32 NumSectionSides = NumComponentsSide * Landscape.NumSubsections;
+	const int32 NumVerticesPerSectionSide = Landscape.SubsectionSizeQuads + 1;
 
 	TArray<float> Heights;
 	Heights.AddUninitialized(NumVertices);
@@ -152,18 +154,36 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 	const FColor* Texturecolor = TextureReader.GetTextureData();
 	check(Texturecolor);
 
+	// The UTexture2D is always allocated such that it has a sizeX and sizeY that is a power of two
+	// and may hold data that goes outside the landscape. The ActualSize below is the data that is
+	// actually part of the landscape.
+	const int32 ActualSizeX = NumSectionSides * NumVerticesPerSectionSide;
+	const int32 ActualSizeY = NumSectionSides * NumVerticesPerSectionSide;
+
+	// \todo The UTexture2D sizeX and sizeY maxes out at 512 for some reason, meaning we can
+	// currently only handle landscapes with vertex count less than that per side.
+	if (ActualSizeX > 512 || ActualSizeY > 512)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("AGX_HeightFieldUtilities::CreateHeightField landscape has too many quads "
+				 "to be able to create a height field from it."));
+
+		// Return empty FHeightFieldShapeBarrier (no native allocated).
+		return FHeightFieldShapeBarrier();
+	}
+
 	// AGX terrains Y coordinate goes from Unreals Y-max down to zero (flipped).
 	int32 Vertex = 0;
-	for (int32 Y = HeightMapTexture->GetSizeY() - 1; Y >= 0; Y--)
+	for (int32 Y = ActualSizeY - 1; Y >= 0; Y--)
 	{
-		for (int32 X = 0; X < HeightMapTexture->GetSizeX(); X++)
+		for (int32 X = 0; X < ActualSizeX; X++)
 		{
-			// Unreals landscape counts pixel at component overlap twice.
-			if (!IsOverlappingPoint(X, Y, NumComponentsSide, NumQuadsPerComponentSide + 1))
+			// Unreals landscape counts pixel at section overlap twice.
+			if (!IsOverlappingPoint(X, Y, NumSectionSides, NumVerticesPerSectionSide))
 			{
 				FColor PixelColor = Texturecolor[Y * HeightMapTexture->GetSizeX() + X];
 				float Height = ColorToHeight(PixelColor, LandscapeScaleZ);
-
 				Heights[Vertex++] = Height;
 			}
 		}
