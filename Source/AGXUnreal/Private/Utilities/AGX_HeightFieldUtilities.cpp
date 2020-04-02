@@ -154,11 +154,30 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 	const FColor* Texturecolor = TextureReader.GetTextureData();
 	check(Texturecolor);
 
+	// The UTexture2D is always allocated such that it has a sizeX and sizeY that is a power of two
+	// and may hold data that goes outside the landscape. The ActualSize below is the data that is
+	// actually part of the landscape.
+	const int32 ActualSizeX = NumSectionSides * NumVerticesPerSectionSide;
+	const int32 ActualSizeY = NumSectionSides * NumVerticesPerSectionSide;
+
+	// \todo The UTexture2D sizeX and sizeY maxes out at 512 for some reason, meaning we can
+	// currently only handle landscapes with vertex count less than that per side.
+	if (ActualSizeX > 512 || ActualSizeY > 512)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("AGX_HeightFieldUtilities::CreateHeightField landscape has too many quads "
+				 "to be able to create a height field from it."));
+
+		// Return empty FHeightFieldShapeBarrier (no native allocated).
+		return FHeightFieldShapeBarrier();
+	}
+
 	// AGX terrains Y coordinate goes from Unreals Y-max down to zero (flipped).
 	int32 Vertex = 0;
-	for (int32 Y = HeightMapTexture->GetSizeY() - 1; Y >= 0; Y--)
+	for (int32 Y = ActualSizeY - 1; Y >= 0; Y--)
 	{
-		for (int32 X = 0; X < HeightMapTexture->GetSizeX(); X++)
+		for (int32 X = 0; X < ActualSizeX; X++)
 		{
 			// Unreals landscape counts pixel at section overlap twice.
 			if (!IsOverlappingPoint(X, Y, NumSectionSides, NumVerticesPerSectionSide))
