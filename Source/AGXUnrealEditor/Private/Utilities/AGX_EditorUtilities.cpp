@@ -442,8 +442,16 @@ UAGX_ConstraintComponent* FAGX_EditorUtilities::CreateConstraintComponent(
 	Constraint->RegisterComponent();
 	Constraint->BodyAttachment1.RigidBody.OwningActor = RigidBody1->GetOwner();
 	Constraint->BodyAttachment1.RigidBody.BodyName = RigidBody1->GetFName();
-	Constraint->BodyAttachment2.RigidBody.OwningActor = RigidBody2->GetOwner();
-	Constraint->BodyAttachment2.RigidBody.BodyName = RigidBody2->GetFName();
+	if (RigidBody2 != nullptr)
+	{
+		Constraint->BodyAttachment2.RigidBody.OwningActor = RigidBody2->GetOwner();
+		Constraint->BodyAttachment2.RigidBody.BodyName = RigidBody2->GetFName();
+	}
+	else
+	{
+		Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
+		Constraint->BodyAttachment2.RigidBody.BodyName = NAME_None;
+	}
 	return Constraint;
 }
 
