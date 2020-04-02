@@ -35,7 +35,7 @@ namespace
 		return false;
 	}
 
-	float ColorToHeight(FColor Color, float ScaleZ)
+	inline float ColorToHeight(FColor Color, float ScaleZ)
 	{
 		constexpr float LANDSCAPE_HEIGHT_SPAN_NOMINAL_M {512.0f};
 		constexpr float LANDSCAPE_ZERO_OFFSET_CM {100.0f};
