@@ -3,6 +3,7 @@
 #include "Utilities/AGX_HeightFieldUtilities.h"
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Terrain/AGX_LandscapeSizeInfo.h"
 
 #include "Landscape.h"
 
@@ -150,23 +151,19 @@ void UAGX_HeightFieldShapeComponent::RecenterActorOnLandscape()
 {
 	check(SourceLandscape != nullptr);
 
-	// Assumes that the Landscape is square and uniform, and that the actor
+	// Assumes that the Landscape is rectangular and uniform, and that the actor
 	// location is in the lower left corner of the component grid, i.e., that
 	// components are laid out along positive X and Y.
 	//
 	// AGX Dynamics height fields have their model origin at the center of the
 	// height field.
-	const int32 NumComponents = SourceLandscape->LandscapeComponents.Num();
-	const int32 NumComponentsSide =
-		FMath::RoundToInt(FMath::Sqrt(static_cast<float>(NumComponents)));
-	const int32 NumQuadsPerComponentSide = SourceLandscape->ComponentSizeQuads;
-	const int32 NumQuadsPerSide = NumComponentsSide * NumQuadsPerComponentSide;
-	const float QuadSideSize =
-		SourceLandscape->GetActorScale().X; // The Actor scale is the size of the quads, in cm.
-	const float LandscapeSideSize = QuadSideSize * NumQuadsPerSide;
+	FAGX_LandscapeSizeInfo LandscapeSizeInfo(*SourceLandscape);
+
+	const float SideSizeX = LandscapeSizeInfo.NumQuadsSideX * LandscapeSizeInfo.QuadSideSizeX;
+	const float SideSizeY = LandscapeSizeInfo.NumQuadsSideY * LandscapeSizeInfo.QuadSideSizeY;
+
 	const FVector Location = SourceLandscape->GetActorLocation();
-	const FVector Middle =
-		Location + FVector(LandscapeSideSize / 2.0f, LandscapeSideSize / 2.0f, Location.Z);
+	const FVector Middle = Location + FVector(SideSizeX / 2.0f, SideSizeY / 2.0f, Location.Z);
 	GetOwner()->SetActorLocation(Middle);
 	MarkRenderStateDirty(); /// \todo Not sure if this is actually required or not.
 }
