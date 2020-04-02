@@ -6,6 +6,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "Constraint1DOFBarrier.h"
 #include "Constraint2DOFBarrier.h"
+#include "BallJointBarrier.h"
 #include "DistanceJointBarrier.h"
 #include "HingeBarrier.h"
 #include "LockJointBarrier.h"
@@ -13,6 +14,7 @@
 #include "CylindricalJointBarrier.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
+#include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_CylindricalConstraintComponent.h"
 #include "Constraints/AGX_DistanceConstraintComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
@@ -223,8 +225,10 @@ namespace
 			InstantiateConstraint1Dof(Barrier, UAGX_PrismaticConstraintComponent::StaticClass());
 		}
 
-		virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) override
+		virtual void InstantiateBallJoint(const FBallJointBarrier& Barrier) override
 		{
+			InstantiateConstraint<UAGX_ConstraintComponent>(
+				Barrier, UAGX_BallConstraintComponent::StaticClass());
 		}
 
 		virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& Barrier) override
