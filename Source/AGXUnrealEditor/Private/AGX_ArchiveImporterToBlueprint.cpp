@@ -8,6 +8,7 @@
 #include "Constraint2DOFBarrier.h"
 #include "DistanceJointBarrier.h"
 #include "HingeBarrier.h"
+#include "LockJointBarrier.h"
 #include "PrismaticBarrier.h"
 #include "CylindricalJointBarrier.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
@@ -15,6 +16,7 @@
 #include "Constraints/AGX_CylindricalConstraintComponent.h"
 #include "Constraints/AGX_DistanceConstraintComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
+#include "Constraints/AGX_LockConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
 #include "Constraints/Controllers/AGX_FrictionController.h"
@@ -225,8 +227,7 @@ namespace
 		{
 		}
 
-		virtual void InstantiateCylindricalJoint(
-			const FCylindricalJointBarrier& Barrier) override
+		virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& Barrier) override
 		{
 			InstantiateConstraint2Dof(Barrier, UAGX_CylindricalConstraintComponent::StaticClass());
 		}
@@ -236,8 +237,10 @@ namespace
 			InstantiateConstraint1Dof(Barrier, UAGX_DistanceConstraintComponent::StaticClass());
 		}
 
-		virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) override
+		virtual void InstantiateLockJoint(const FLockJointBarrier& Barrier) override
 		{
+			InstantiateConstraint<UAGX_ConstraintComponent>(
+				Barrier, UAGX_LockConstraintComponent::StaticClass());
 		}
 
 		virtual void DisabledCollisionGroups(
