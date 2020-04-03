@@ -25,21 +25,31 @@ namespace
 
 		/// \todo Consider adding a GetOrCreateFrom member function to AAGX_CollisionGroupManager.
 		AAGX_CollisionGroupManager* DisabledCollisions = AAGX_CollisionGroupManager::GetFrom(World);
+		if (DisabledCollisions == nullptr && World->bIsRunningConstructionScript)
+		{
+			// Not allowed to spawn new actors, such as the CollisionGroupManager, while a
+			// construction script is running. Bail and try again later. This will happen while
+			// importing an AGX Dynamics archive to a Blueprint. In that case "later" is when
+			// the generated Blueprint is instantiated in a level.
+			//
+			// There is also FActorSpawnParameters.bAllowDuringConstructionScript that may be used.
+			// Need to understand what the implications of setting that to true is.
+			return;
+		}
 		if (DisabledCollisions == nullptr)
 		{
-			/// \todo This fails and prints an error message while in the Blueprint editor. We would
-			/// like to detect that case and bail early to prevent the error message.
-			/// How can we detect that SpawnActor will fail?
+			/// \todo This sometimes creates an extra CollisionGroupManager on Play. Happens when
+			/// this component is instantiated before the real/original/user-created
+			/// CollisionGroupManager.
 			DisabledCollisions = World->SpawnActor<AAGX_CollisionGroupManager>();
 		}
 		if (DisabledCollisions == nullptr)
 		{
-			// This is currently printed when in the Blueprint editor. We want to detect that and
-			// bail before we get this far.
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Cannot import disabled collision group pairs because there is no "
-					 "CollisionGroupManager in the level."));
+				TEXT("'%s' cannot apply disabled collision group pairs because there is no "
+					 "CollisionGroupManager in the level."),
+				*Owner->GetName());
 			return;
 		}
 
