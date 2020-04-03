@@ -11,16 +11,6 @@
 
 namespace
 {
-	// A version of the square root that only allows roots that is an integer.
-	int32 SqrtInt32(int32 Value)
-	{
-		const float ValueFloat = static_cast<float>(Value);
-		const float RootFloat = FMath::Sqrt(ValueFloat);
-		const int32 Root = FMath::RoundToInt(RootFloat);
-		// check(Root * Root == Value); /// \todo This should be an Error, not a crash.
-		return Root;
-	}
-
 	inline bool IsOverlappingPoint(
 		int32 X, int32 Y, int32 NumSectionSideX, int32 NumSectionSideY,
 		int32 NumVerticesPerSectionSide)
