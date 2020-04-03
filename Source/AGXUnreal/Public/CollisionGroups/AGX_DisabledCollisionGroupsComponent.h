@@ -9,6 +9,10 @@
 
 #include "AGX_DisabledCollisionGroupsComponent.generated.h"
 
+/**
+ * Holds a collection of collision group pairs for which collisions should be disabled. Registers
+ * the pairs with the Level's CollisionGroupManager when appropriate.
+ */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	HideCategories = (Cooking, LOD, Replication))
