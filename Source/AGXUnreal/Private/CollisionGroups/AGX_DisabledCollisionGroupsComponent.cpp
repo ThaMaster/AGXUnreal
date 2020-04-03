@@ -33,7 +33,7 @@ namespace
 			// the generated Blueprint is instantiated in a level.
 			//
 			// There is also FActorSpawnParameters.bAllowDuringConstructionScript that may be used.
-			// Need to understand what the implications of setting that to true is.
+			// Need to understand what the implications of setting that to true are.
 			return;
 		}
 		if (DisabledCollisions == nullptr)
