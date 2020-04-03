@@ -1,6 +1,6 @@
 #include "AGX_ArchiveImporterToBlueprint.h"
 
-// Unreal Engine includes.
+// AGXUnreal includes.
 #include "AGXArchiveReader.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
@@ -65,7 +65,6 @@ namespace
 
 	struct FBlueprintId
 	{
-		// FString ArchiveFilepath;
 		FString ArchiveFilename;
 		FString PackagePath;
 		FString BlueprintName;
@@ -108,7 +107,6 @@ namespace
 		{
 			++TryCount;
 			PackagePath = BasePackagePath + "_" + FString::FromInt(TryCount);
-			check(TryCount < 10000); /// \todo For debugging only. Remove.
 		}
 
 		return FBlueprintId(ArchiveFilename, PackagePath, BlueprintName);
@@ -153,7 +151,7 @@ namespace
 			UAGX_TrimeshShapeComponent* Component =
 				FAGX_EditorUtilities::CreateTrimeshShape(Owner, BodyComponent);
 			Component->MeshSourceLocation =
-				EAGX_TrimeshSourceLocation ::TSL_CHILD_STATIC_MESH_COMPONENT;
+				EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 			UStaticMeshComponent* MeshComponent =
 				FAGX_EditorUtilities::CreateStaticMeshAsset(Owner, Component, Barrier, ArchiveName);
 
@@ -176,6 +174,7 @@ namespace
 	private:
 		void FinalizeShape(UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier)
 		{
+			Component->SetFlags(RF_Transactional);
 			Component->bCanCollide = Barrier.GetEnableCollisions();
 			for (const FName& Group : Barrier.GetCollisionGroups())
 			{
@@ -187,8 +186,13 @@ namespace
 			FString Name = Barrier.GetName();
 			if (!Component->Rename(*Name, nullptr, REN_Test))
 			{
+				FString OldName = Name;
 				Name = MakeUniqueObjectName(Component->GetOwner(), Component->GetClass(), *Name)
 						   .ToString();
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Shape '%s' imported with name '%s' becaue of name conflict."), *OldName,
+					*Name);
 			}
 			Component->Rename(*Name);
 		}
@@ -215,9 +219,14 @@ namespace
 			FString Name = Barrier.GetName();
 			if (!Component->Rename(*Name, nullptr, REN_Test))
 			{
+				FString OldName = Name;
 				Name = MakeUniqueObjectName(
 						   BlueprintTemplate, UAGX_RigidBodyComponent::StaticClass(), *Name)
 						   .ToString();
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("RigidBody '%s' imported with name '%s' becaue of name conflict."),
+					*OldName, *Name);
 			}
 			Component->Rename(*Name);
 
@@ -556,59 +565,7 @@ namespace
 		RootActorContainer->SetRootComponent(ActorRootComponent);
 #endif
 
-#if 1
 		AddComponentsFromArchive(ArchivePath, RootActorContainer);
-#else
-		/*
-		 * This is the part where the imported objects should be created.
-		 */
-
-		// Create static mesh.
-		UStaticMeshComponent* StaticMeshComponent =
-			NewObject<UStaticMeshComponent>(RootActorContainer, NAME_None);
-		StaticMeshComponent->Mobility = EComponentMobility::Movable;
-		StaticMeshComponent->SetFlags(RF_Transactional);
-		FString StaticMeshUniqueName = TEXT("MyMesh");
-		if (!StaticMeshComponent->Rename(*StaticMeshUniqueName, nullptr, REN_Test))
-		{
-			StaticMeshUniqueName =
-				MakeUniqueObjectName(
-					RootActorContainer, USceneComponent::StaticClass(), FName("MyMesh"))
-					.ToString();
-		}
-		StaticMeshComponent->Rename(*StaticMeshUniqueName, nullptr, REN_DontCreateRedirectors);
-		RootActorContainer->AddInstanceComponent(StaticMeshComponent);
-		StaticMeshComponent->RegisterComponent();
-		StaticMeshComponent->AttachToComponent(
-			ActorRootComponent, FAttachmentTransformRules::KeepWorldTransform);
-		StaticMeshComponent->SetRelativeTransform(FTransform());
-		StaticMeshComponent->PostEditChange();
-
-		// Create point light.
-		UPointLightComponent* LightComponent =
-			NewObject<UPointLightComponent>(RootActorContainer, "MyLight");
-		LightComponent->SetAttenuationRadius(1000.0f);
-		LightComponent->SetIntensity(500.0f);
-		LightComponent->SetLightColor(FLinearColor::Green);
-		LightComponent->SetCastDeepShadow(true);
-		LightComponent->SetFlags(RF_Transactional);
-		FString LightUniqueName = TEXT("MyLight");
-		if (!LightComponent->Rename(*LightUniqueName, nullptr, REN_Test))
-		{
-			LightUniqueName =
-				MakeUniqueObjectName(
-					RootActorContainer, USceneComponent::StaticClass(), FName("MyLight"))
-					.ToString();
-		}
-		LightComponent->Rename(*LightUniqueName, nullptr, REN_DontCreateRedirectors);
-		RootActorContainer->AddInstanceComponent(LightComponent);
-		LightComponent->RegisterComponent();
-		LightComponent->AttachToComponent(
-			ActorRootComponent, FAttachmentTransformRules::KeepWorldTransform);
-		LightComponent->SetRelativeTransform(FTransform());
-		LightComponent->PostEditChange();
-#endif
-
 		return RootActorContainer;
 	}
 
@@ -628,10 +585,6 @@ namespace
 
 		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
 			PackagePath, FPackageName::GetAssetPackageExtension());
-
-		UE_LOG(
-			LogAGX, Log, TEXT("Got filename '%s' for package path '%s'."), *PackageFilename,
-			*PackagePath);
 
 		UPackage::SavePackage(
 			Package, Blueprint, RF_Public | RF_Standalone | RF_MarkAsRootSet, *PackageFilename,
