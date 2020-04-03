@@ -218,6 +218,7 @@ namespace
 				return;
 			}
 
+			/// \todo Consider creating a GetOrCreateFrom member function to CollisionGroupManager.
 			// Make sure we have a CollisionGroupManager.
 			AAGX_CollisionGroupManager* Manager = AAGX_CollisionGroupManager::GetFrom(&World);
 			if (Manager == nullptr)

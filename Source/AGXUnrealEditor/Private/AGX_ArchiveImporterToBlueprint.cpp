@@ -12,6 +12,7 @@
 #include "LockJointBarrier.h"
 #include "PrismaticBarrier.h"
 #include "CylindricalJointBarrier.h"
+#include "CollisionGroups/AGX_DisabledCollisionGroupsComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_BallConstraintComponent.h"
@@ -274,8 +275,24 @@ namespace
 		}
 
 		virtual void DisabledCollisionGroups(
-			const TArray<std::pair<FString, FString>>& DisabledGroups) override
+			const TArray<std::pair<FString, FString>>& DisabledPairs) override
 		{
+			if (DisabledPairs.Num() == 0)
+			{
+				return;
+			}
+
+			UAGX_DisabledCollisionGroupsComponent* Component =
+				NewObject<UAGX_DisabledCollisionGroupsComponent>(
+					BlueprintTemplate, TEXT("DisabledCollisionGroupPairs"));
+			Component->SetFlags(RF_Transactional);
+			BlueprintTemplate->AddInstanceComponent(Component);
+			Component->RegisterComponent();
+			for (const std::pair<FString, FString>& DisabledPair : DisabledPairs)
+			{
+				Component->DisabledCollisionGroupPairs.Add(
+					{FName(*DisabledPair.first), FName(*DisabledPair.second)});
+			}
 		}
 
 		virtual ~FBlueprintInstantiator() = default;
