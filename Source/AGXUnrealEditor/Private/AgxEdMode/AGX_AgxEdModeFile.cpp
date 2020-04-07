@@ -31,7 +31,7 @@ namespace
 	{
 		TArray<FString> Filenames;
 		bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
-			nullptr, TEXT("Select and AGX Archive to import"), TEXT("DefaultPath"),
+			nullptr, TEXT("Select an AGX Archive to import"), TEXT("DefaultPath"),
 			TEXT("DefaultFile"), TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None,
 			Filenames);
 		if (!FileSelected || Filenames.Num() == 0)
