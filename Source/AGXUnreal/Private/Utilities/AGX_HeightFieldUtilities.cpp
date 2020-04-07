@@ -1,6 +1,7 @@
 #include "Utilities/AGX_HeightFieldUtilities.h"
 
 #include "AGX_LogCategory.h"
+#include "Terrain/AGX_LandscapeSizeInfo.h"
 
 #include "Landscape.h"
 #include "LandscapeDataAccess.h"
@@ -10,32 +11,23 @@
 
 namespace
 {
-	// A version of the square root that only allows roots that is an integer.
-	int32 SqrtInt32(int32 Value)
+	inline bool IsOverlappingPoint(
+		int32 X, int32 Y, int32 NumSectionSideX, int32 NumSectionSideY,
+		int32 NumVerticesPerSectionSide)
 	{
-		const float ValueFloat = static_cast<float>(Value);
-		const float RootFloat = FMath::Sqrt(ValueFloat);
-		const int32 Root = FMath::RoundToInt(RootFloat);
-		check(Root * Root == Value); /// \todo This should be an Error, not a crash.
-		return Root;
-	}
-
-	bool IsOverlappingPoint(
-		int32 X, int32 Y, int32 NumComponentsSide, int32 NumVertsPerComponentSide)
-	{
-		if (NumComponentsSide == 1)
+		if (NumSectionSideX == 1 && NumSectionSideY == 1)
 			return false;
 
-		if (X > 0 && X % NumVertsPerComponentSide == 0)
+		if (X > 0 && X % NumVerticesPerSectionSide == 0)
 			return true;
 
-		if (Y > 0 && Y % NumVertsPerComponentSide == 0)
+		if (Y > 0 && Y % NumVerticesPerSectionSide == 0)
 			return true;
 
 		return false;
 	}
 
-	float ColorToHeight(FColor Color, float ScaleZ)
+	inline float ColorToHeight(FColor Color, float ScaleZ)
 	{
 		constexpr float LANDSCAPE_HEIGHT_SPAN_NOMINAL_M {512.0f};
 		constexpr float LANDSCAPE_ZERO_OFFSET_CM {100.0f};
@@ -101,22 +93,11 @@ namespace
 	};
 }
 
-int32 AGX_HeightFieldUtilities::GetLandscapeSideSizeInQuads(ALandscape& Landscape)
-{
-	// This assumes a square and uniform grid of components.
-	/// \todo Figure out how to get the size/sides of the component grid.
-	const int32 NumComponents = Landscape.LandscapeComponents.Num();
-	const int32 NumComponentsSide = SqrtInt32(NumComponents);
-	const int32 NumQuadsPerComponentSide = Landscape.ComponentSizeQuads;
-	const int32 NumQuadsPerSide = NumComponentsSide * NumQuadsPerComponentSide;
-	return NumQuadsPerSide;
-}
-
 FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape& Landscape)
 {
-	const int32 NumComponents = Landscape.LandscapeComponents.Num();
+	FAGX_LandscapeSizeInfo LandscapeSizeInfo(Landscape);
 
-	if (NumComponents <= 0)
+	if (LandscapeSizeInfo.NumComponents <= 0)
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -127,51 +108,65 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 		return FHeightFieldShapeBarrier();
 	}
 
-	// This assumes a square and uniform grid of components.
-	/// \todo Figure out how to get the size/sides of the component grid.
-	const int32 NumComponentsSide =
-		FMath::RoundToInt(FMath::Sqrt(static_cast<float>(NumComponents)));
-	check(NumComponentsSide * NumComponentsSide == NumComponents);
-
-	const int32 NumQuadsPerComponentSide = Landscape.ComponentSizeQuads;
-	const int32 NumQuadsPerSide = NumComponentsSide * NumQuadsPerComponentSide;
-	const int32 NumVerticesPerSide = NumQuadsPerSide + 1;
-	const int32 NumVertices = NumVerticesPerSide * NumVerticesPerSide;
-	const float QuadSideSize = Landscape.GetActorScale().X;
-	const float SideSize = NumQuadsPerSide * QuadSideSize;
-	const float LandscapeScaleZ = Landscape.GetActorScale3D().Z;
-
 	TArray<float> Heights;
-	Heights.AddUninitialized(NumVertices);
+	Heights.AddUninitialized(LandscapeSizeInfo.NumVertices);
 
 	ULandscapeComponent* Component = Landscape.LandscapeComponents[0];
 	UTexture2D* HeightMapTexture = Component->GetHeightmap();
 
-	// Apply necessary settings to the texure to be able to get color data.
+	// Apply necessary settings to the texture to be able to get color data.
 	TextureReadHelper TextureReader(HeightMapTexture);
 	const FColor* Texturecolor = TextureReader.GetTextureData();
 	check(Texturecolor);
 
+	const int32 NumSectionsSideX = LandscapeSizeInfo.NumSectionsSideX;
+	const int32 NumSectionsSideY = LandscapeSizeInfo.NumSectionsSideY;
+	const int32 NumVerticesPerSectionSide = LandscapeSizeInfo.NumVerticesPerSectionSide;
+
+	// The UTexture2D is always allocated such that it has a sizeX and sizeY that is a power of two
+	// and may hold data that goes outside the landscape. The ActualSize below is the data that is
+	// actually part of the landscape.
+	const int32 ActualSizeX = NumSectionsSideX * NumVerticesPerSectionSide;
+	const int32 ActualSizeY = NumSectionsSideY * NumVerticesPerSectionSide;
+
+	// \todo The UTexture2D sizeX and sizeY maxes out at 512 for some reason, meaning we can
+	// currently only handle landscapes with vertex count less than that per side.
+	if (ActualSizeX > 512 || ActualSizeY > 512)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("AGX_HeightFieldUtilities::CreateHeightField landscape has too many quads "
+				 "to be able to create a height field from it."));
+
+		// Return empty FHeightFieldShapeBarrier (no native allocated).
+		return FHeightFieldShapeBarrier();
+	}
+
 	// AGX terrains Y coordinate goes from Unreals Y-max down to zero (flipped).
 	int32 Vertex = 0;
-	for (int32 Y = HeightMapTexture->GetSizeY() - 1; Y >= 0; Y--)
+	for (int32 Y = ActualSizeY - 1; Y >= 0; Y--)
 	{
-		for (int32 X = 0; X < HeightMapTexture->GetSizeX(); X++)
+		for (int32 X = 0; X < ActualSizeX; X++)
 		{
-			// Unreals landscape counts pixel at component overlap twice.
-			if (!IsOverlappingPoint(X, Y, NumComponentsSide, NumQuadsPerComponentSide + 1))
+			// Unreals landscape counts pixel at section overlap twice.
+			if (!IsOverlappingPoint(
+					X, Y, NumSectionsSideX, NumSectionsSideY, NumVerticesPerSectionSide))
 			{
 				FColor PixelColor = Texturecolor[Y * HeightMapTexture->GetSizeX() + X];
-				float Height = ColorToHeight(PixelColor, LandscapeScaleZ);
-
+				float Height = ColorToHeight(PixelColor, LandscapeSizeInfo.LandscapeScaleZ);
 				Heights[Vertex++] = Height;
 			}
 		}
 	}
 
-	check(Vertex == NumVertices);
+	check(Vertex == LandscapeSizeInfo.NumVertices);
+
+	const float SideSizeX = LandscapeSizeInfo.NumQuadsSideX * LandscapeSizeInfo.QuadSideSizeX;
+	const float SideSizeY = LandscapeSizeInfo.NumQuadsSideY * LandscapeSizeInfo.QuadSideSizeY;
 
 	FHeightFieldShapeBarrier HeightField;
-	HeightField.AllocateNative(NumVerticesPerSide, NumVerticesPerSide, SideSize, SideSize, Heights);
+	HeightField.AllocateNative(
+		LandscapeSizeInfo.NumVerticesSideX, LandscapeSizeInfo.NumVerticesSideY, SideSizeX,
+		SideSizeY, Heights);
 	return HeightField;
 }
