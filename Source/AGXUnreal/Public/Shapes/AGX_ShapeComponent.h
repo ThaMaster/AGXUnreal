@@ -117,6 +117,13 @@ protected:
 	// TUniquePtr).
 
 	/**
+	 * Write the global/world Unreal transform to the local/relative transform of the native shape.
+	 * This should be used only for body-less stand-alone shapes for which the native parent frame
+	 * is the world coordinate system.
+	 */
+	void UpdateNativeGlobalTransform();
+
+	/**
 	 * Defines triangles for a visual mesh to render in Unreal Engine. Whether
 	 * the mesh is always rendered or just for debug is for the user to decide.
 	 * The mesh should be in local coordinates relative to this component,
