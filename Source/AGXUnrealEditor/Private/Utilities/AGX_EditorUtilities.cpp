@@ -412,8 +412,16 @@ AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 	UAGX_ConstraintComponent* Constraint = NewActor->GetConstraintComponent();
 	Constraint->BodyAttachment1.RigidBody.OwningActor = RigidBody1->GetOwner();
 	Constraint->BodyAttachment1.RigidBody.BodyName = RigidBody1->GetFName();
-	Constraint->BodyAttachment2.RigidBody.OwningActor = RigidBody2->GetOwner();
-	Constraint->BodyAttachment2.RigidBody.BodyName = RigidBody2->GetFName();
+	if (RigidBody2 != nullptr)
+	{
+		Constraint->BodyAttachment2.RigidBody.OwningActor = RigidBody2->GetOwner();
+		Constraint->BodyAttachment2.RigidBody.BodyName = RigidBody2->GetFName();
+	}
+	else
+	{
+		Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
+		Constraint->BodyAttachment2.RigidBody.BodyName = NAME_None;
+	}
 
 	NewActor->FinishSpawning(FTransform::Identity, true);
 
