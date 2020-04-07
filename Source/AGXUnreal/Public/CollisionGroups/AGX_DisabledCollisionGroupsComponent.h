@@ -29,7 +29,7 @@ protected:
 	 * Not sure how to do this. We want the disabled collisions to be registered with the
 	 * CollisionGroupManager as soon as possible, but at the latest on BeginPlay. We want the
 	 * disabled collisions to be visible in the Unreal Editor while building the scene as soon as
-	 * the UAGX_DisabledCollisionGroupsComponent is created so that the user has a change to know
+	 * the UAGX_DisabledCollisionGroupsComponent is created so that the user has a chance to know
 	 * why collisions aren't detected. This is made more complicated by the fact that the
 	 * CollisionGroupManager may not exist yet and we're not allowed to created it during PostLoad
 	 * because the level is then in the RunningConstructionScript state. Worse, during PostLoad for
