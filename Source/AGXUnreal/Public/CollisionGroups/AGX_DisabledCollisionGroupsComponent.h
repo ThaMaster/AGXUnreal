@@ -25,6 +25,8 @@ public:
 	TArray<FAGX_CollisionGroupPair> DisabledCollisionGroupPairs;
 
 protected:
+	/// \todo Decide/figure out how to manage synchronization between
+	/// UAGX_DisabledCollisionGroupsComponents and the AGX_CollisionGroupManager.
 	/*
 	 * Not sure how to do this. We want the disabled collisions to be registered with the
 	 * CollisionGroupManager as soon as possible, but at the latest on BeginPlay. We want the
