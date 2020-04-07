@@ -162,6 +162,10 @@ void UAGX_ShapeComponent::BeginPlay()
 		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*this);
 	if (RigidBody == nullptr)
 	{
+		// This shape doesn't have a parent body so the native shape's local transform will become
+		// its world transform. Push the entire Unreal world transform down into the native shape.
+		UpdateNativeGlobalTransform();
+
 		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 		Simulation->AddShape(this);
 	}
@@ -172,6 +176,14 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
 	ReleaseNative();
+}
+
+void UAGX_ShapeComponent::UpdateNativeGlobalTransform()
+{
+	check(HasNative());
+	FShapeBarrier* Shape = GetNative();
+	Shape->SetLocalPosition(GetComponentLocation());
+	Shape->SetLocalRotation(GetComponentQuat());
 }
 
 void UAGX_ShapeComponent::AddCollisionGroup(const FName& GroupName)
