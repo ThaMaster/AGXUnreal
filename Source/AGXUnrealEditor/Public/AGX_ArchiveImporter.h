@@ -1,6 +1,7 @@
-#include "Containers/UnrealString.h"
+#pragma once
 
 class AActor;
+class FString;
 
 namespace AGX_ArchiveImporter
 {

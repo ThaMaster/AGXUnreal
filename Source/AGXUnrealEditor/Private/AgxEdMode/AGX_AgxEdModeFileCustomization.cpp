@@ -1,5 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 #include "AgxEdMode/AGX_AgxEdModeFileCustomization.h"
+
+#include "AgxEdMode/AGX_AgxEdModeFile.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailCategoryBuilder.h"
 
@@ -21,14 +22,21 @@ void FAGX_AgxEdModeFileCustomization::CustomizeFileImporterCategory(
 	IDetailLayoutBuilder& DetailBuilder)
 {
 	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder.EditCategory("AGX File Importer");
-
 	CategoryBuilder.InitiallyCollapsed(false);
 
-	/** Create AGX Archive import Button */
-	AddCustomButton(CategoryBuilder, LOCTEXT("CreateButtonTextIm", "Import AGX Archive..."), [&]() {
-		UAGX_AgxEdModeFile::ImportAGXArchive();
-		return FReply::Handled();
-	});
+	// Create AGX Archive import Buttons.
+	AddCustomButton(
+		CategoryBuilder, LOCTEXT("CreateButtonTextImportLevel", "Import AGX Archive to level..."),
+		[&]() {
+			UAGX_AgxEdModeFile::ImportAgxArchiveToLevel();
+			return FReply::Handled();
+		});
+	AddCustomButton(
+		CategoryBuilder, LOCTEXT("CreateButtonTextImportBP", "Import AGX Archive to Blueprint..."),
+		[&]() {
+			UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint();
+			return FReply::Handled();
+		});
 }
 
 void FAGX_AgxEdModeFileCustomization::CustomizeFileExporterCategory(
@@ -40,7 +48,7 @@ void FAGX_AgxEdModeFileCustomization::CustomizeFileExporterCategory(
 
 	/** Create AGX Archive export Button */
 	AddCustomButton(CategoryBuilder, LOCTEXT("CreateButtonTextEx", "Export AGX Archive..."), [&]() {
-		UAGX_AgxEdModeFile::ExportAGXArchive();
+		UAGX_AgxEdModeFile::ExportAgxArchive();
 		return FReply::Handled();
 	});
 }

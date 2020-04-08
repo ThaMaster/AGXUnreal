@@ -2,6 +2,7 @@
 
 #include "Utilities/AGX_EditorUtilities.h"
 #include "AGX_ArchiveImporter.h"
+#include "AGX_ArchiveImporterToBlueprint.h"
 #include "AGX_ArchiveExporter.h"
 #include "AGX_LogCategory.h"
 
@@ -22,7 +23,41 @@ UAGX_AgxEdModeFile* UAGX_AgxEdModeFile::GetInstance()
 	return FileTool;
 }
 
-void UAGX_AgxEdModeFile::ImportAGXArchive()
+namespace
+{
+	static const FString NON_SELECTED("");
+
+	FString SelectExistingAgxArchive()
+	{
+		TArray<FString> Filenames;
+		bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
+			nullptr, TEXT("Select an AGX Archive to import"), TEXT("DefaultPath"),
+			TEXT("DefaultFile"), TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None,
+			Filenames);
+		if (!FileSelected || Filenames.Num() == 0)
+		{
+			UE_LOG(LogAGX, Log, TEXT("No .agx file selected. Doing nothing."));
+			return NON_SELECTED;
+		}
+		if (Filenames.Num() > 1)
+		{
+			UE_LOG(
+				LogAGX, Log,
+				TEXT(
+					"Multiple files selected but we only support single file import for now. Doing "
+					"nothing."));
+			FAGX_EditorUtilities::ShowNotification(LOCTEXT(
+				"Multiple .agx",
+				"Multiple files selected but we only support single files for now. Doing "
+				"nothing."));
+			return NON_SELECTED;
+		}
+		FString Filename = Filenames[0];
+		return Filename;
+	}
+}
+
+void UAGX_AgxEdModeFile::ImportAgxArchiveToLevel()
 {
 	/// \todo See
 	/// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html?sort=oldest
@@ -34,7 +69,7 @@ void UAGX_AgxEdModeFile::ImportAGXArchive()
 
 	if (!FileSelected || Filenames.Num() == 0)
 	{
-		UE_LOG(LogAGX, Log, TEXT("No .agx file selected. Doing nothing"));
+		UE_LOG(LogAGX, Log, TEXT("No .agx file selected. Doing nothing."));
 		return;
 	}
 
@@ -54,7 +89,18 @@ void UAGX_AgxEdModeFile::ImportAGXArchive()
 	AGX_ArchiveImporter::ImportAGXArchive(Filename);
 }
 
-void UAGX_AgxEdModeFile::ExportAGXArchive()
+void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()
+{
+	const FString Filename = SelectExistingAgxArchive();
+	if (Filename == NON_SELECTED)
+	{
+		return;
+	}
+
+	AGX_ArchiveImporterToBlueprint::ImportAGXArchive(Filename);
+}
+
+void UAGX_AgxEdModeFile::ExportAgxArchive()
 {
 	TArray<FString> Filenames;
 	bool FileSelected = FDesktopPlatformModule::Get()->SaveFileDialog(

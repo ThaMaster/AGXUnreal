@@ -27,11 +27,22 @@ public:
 
 	void DisableCollisionGroupPair(const FName& Group1, const FName& Group2);
 
-	TArray<FName> GetAvailableCollisionGroups() const { return AvailableCollisionGroups; }
+	void DisableCollisionGroupPair(const FAGX_CollisionGroupPair& Pair);
 
-	FName& GetSelectedGroup1() { return SelectedGroup1; }
+	TArray<FName> GetAvailableCollisionGroups() const
+	{
+		return AvailableCollisionGroups;
+	}
 
-	FName& GetSelectedGroup2() { return SelectedGroup2; }
+	FName& GetSelectedGroup1()
+	{
+		return SelectedGroup1;
+	}
+
+	FName& GetSelectedGroup2()
+	{
+		return SelectedGroup2;
+	}
 
 	static AAGX_CollisionGroupManager* GetFrom(UWorld* World);
 
@@ -43,8 +54,9 @@ private:
 
 	TArray<FName> GetAllAvailableCollisionGroupsFromWorld();
 
-	bool CollisionGroupPairDisabled(
-		FName CollisionGroup1, FName CollisionGroup2, int& OutIndex);
+	bool IsCollisionGroupPairDisabled(FName CollisionGroup1, FName CollisionGroup2, int& OutIndex);
+
+	bool IsCollisionGroupPairDisabled(FName CollisionGroup1, FName CollisionGroup2);
 
 	void RemoveDeprecatedCollisionGroups();
 

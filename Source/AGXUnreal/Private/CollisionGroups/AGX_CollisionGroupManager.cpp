@@ -56,8 +56,7 @@ void AAGX_CollisionGroupManager::DisableSelectedCollisionGroupPairs()
 		return;
 	}
 
-	int OutIndex;
-	if (CollisionGroupPairDisabled(SelectedGroup1, SelectedGroup2, OutIndex))
+	if (IsCollisionGroupPairDisabled(SelectedGroup1, SelectedGroup2))
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -80,7 +79,7 @@ void AAGX_CollisionGroupManager::ReenableSelectedCollisionGroupPairs()
 	}
 
 	int OutIndex;
-	if (CollisionGroupPairDisabled(SelectedGroup1, SelectedGroup2, OutIndex))
+	if (IsCollisionGroupPairDisabled(SelectedGroup1, SelectedGroup2, OutIndex))
 	{
 		DisabledCollisionGroups.RemoveAt(OutIndex);
 	}
@@ -109,12 +108,22 @@ void AAGX_CollisionGroupManager::UpdateAvailableCollisionGroups()
 void AAGX_CollisionGroupManager::DisableCollisionGroupPair(const FName& Group1, const FName& Group2)
 {
 	int CurrentIndex;
-	if (CollisionGroupPairDisabled(Group1, Group2, CurrentIndex))
+	if (IsCollisionGroupPairDisabled(Group1, Group2, CurrentIndex))
 	{
 		return;
 	}
 
 	DisabledCollisionGroups.Add(FAGX_CollisionGroupPair {Group1, Group2});
+}
+
+void AAGX_CollisionGroupManager::DisableCollisionGroupPair(const FAGX_CollisionGroupPair& Pair)
+{
+	if (IsCollisionGroupPairDisabled(Pair.Group1, Pair.Group2))
+	{
+		return;
+	}
+
+	DisabledCollisionGroups.Add(Pair);
 }
 
 AAGX_CollisionGroupManager* AAGX_CollisionGroupManager::GetFrom(UWorld* World)
@@ -169,7 +178,7 @@ TArray<FName> AAGX_CollisionGroupManager::GetAllAvailableCollisionGroupsFromWorl
 	return FoundCollisionGroups;
 }
 
-bool AAGX_CollisionGroupManager::CollisionGroupPairDisabled(
+bool AAGX_CollisionGroupManager::IsCollisionGroupPairDisabled(
 	FName CollisionGroup1, FName CollisionGroup2, int& OutIndex)
 {
 	OutIndex = -1;
@@ -189,6 +198,13 @@ bool AAGX_CollisionGroupManager::CollisionGroupPairDisabled(
 	}
 
 	return false;
+}
+
+bool AAGX_CollisionGroupManager::IsCollisionGroupPairDisabled(
+	FName CollisionGroup1, FName CollisionGroup2)
+{
+	int Unused;
+	return IsCollisionGroupPairDisabled(CollisionGroup1, CollisionGroup2, Unused);
 }
 
 void AAGX_CollisionGroupManager::RemoveDeprecatedCollisionGroups()

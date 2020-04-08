@@ -218,6 +218,7 @@ namespace
 				return;
 			}
 
+			/// \todo Consider creating a GetOrCreateFrom member function to CollisionGroupManager.
 			// Make sure we have a CollisionGroupManager.
 			AAGX_CollisionGroupManager* Manager = AAGX_CollisionGroupManager::GetFrom(&World);
 			if (Manager == nullptr)
@@ -299,7 +300,7 @@ namespace
 			if (Actors.first == nullptr)
 			{
 				// Not having a second body is fine. Means that the first body
-				// is constrainted to the world. Not having a first body is bad.
+				// is constrained to the world. Not having a first body is bad.
 				UE_LOG(
 					LogAGX, Log, TEXT("Constraint %s doesn't have a first body. Ignoring."),
 					*Barrier.GetName());
@@ -324,7 +325,8 @@ namespace
 				{
 					FString OldName = Name;
 					Name = MakeUniqueObjectName(
-						Constraint->GetOuter(), ConstraintType::StaticClass(), FName(*Name)).ToString();
+							   Constraint->GetOuter(), ConstraintType::StaticClass(), FName(*Name))
+							   .ToString();
 					UE_LOG(
 						LogAGX, Warning,
 						TEXT("Constraint '%s' imported with name '%s' because of name collision."),
@@ -343,7 +345,7 @@ namespace
 		{
 			if (!Body.HasNative())
 			{
-				// No log since not an error. Means constrainted with world.
+				// No log since not an error. Means constrained with world.
 				return nullptr;
 			}
 			FGuid Guid = Body.GetGuid();

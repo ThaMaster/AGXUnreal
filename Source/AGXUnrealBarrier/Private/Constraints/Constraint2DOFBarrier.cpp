@@ -27,172 +27,149 @@ FConstraint2DOFBarrier::~FConstraint2DOFBarrier()
 // specialized for.
 namespace
 {
-	// Base implementation for the controller constraints for which there are two per constraint.
-	// Should never get here.
-	/// \todo Can we enforce this at compile time?
-	template <typename FBarrier>
-	agx::BasicControllerConstraint* GetNativeController(
-		agx::Constraint2DOF* Constraint, agx::Constraint2DOF::DOF Dof)
+	agx::Constraint2DOF* Get2DOF(std::unique_ptr<FConstraintRef>& NativeRef)
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Failed to get secondary constraint for 2-DOF constraint '%s'."),
-			*Convert(Constraint->getName()));
-		return nullptr;
+		return dynamic_cast<agx::Constraint2DOF*>(NativeRef->Native.get());
 	}
 
-	template <>
-	agx::BasicControllerConstraint* GetNativeController<FElectricMotorControllerBarrier>(
-		agx::Constraint2DOF* Constraint, agx::Constraint2DOF::DOF Dof)
+	agx::Constraint2DOF* Get2DOF(const std::unique_ptr<FConstraintRef>& NativeRef)
 	{
-		return Constraint->getElectricMotorController(Dof);
+		return dynamic_cast<agx::Constraint2DOF*>(NativeRef->Native.get());
 	}
 
-	template <>
-	agx::BasicControllerConstraint* GetNativeController<FFrictionControllerBarrier>(
-		agx::Constraint2DOF* Constraint, agx::Constraint2DOF::DOF Dof)
+	agx::Constraint2DOF* Get2DOF(FConstraintRef* NativeRef)
 	{
-		return Constraint->getFrictionController(Dof);
+		return dynamic_cast<agx::Constraint2DOF*>(NativeRef->Native.get());
 	}
 
-	template <>
-	agx::BasicControllerConstraint* GetNativeController<FLockControllerBarrier>(
-		agx::Constraint2DOF* Constraint, agx::Constraint2DOF::DOF Dof)
+	template <typename FControllerBarrier, typename FControllerGetter>
+	TUniquePtr<FControllerBarrier> CreateControllerBarrier(
+		const std::unique_ptr<FConstraintRef>& NativeRef, FControllerGetter ControllerGetter)
 	{
-		return Constraint->getLock1D(Dof);
-	}
-
-	template <>
-	agx::BasicControllerConstraint* GetNativeController<FRangeControllerBarrier>(
-		agx::Constraint2DOF* Constraint, agx::Constraint2DOF::DOF Dof)
-	{
-		return Constraint->getRange1D(Dof);
-	}
-
-	template <>
-	agx::BasicControllerConstraint* GetNativeController<FTargetSpeedControllerBarrier>(
-		agx::Constraint2DOF* Constraint, agx::Constraint2DOF::DOF Dof)
-	{
-		return Constraint->getMotor1D(Dof);
-	}
-
-	// Base implementation for the controller constraints for which there are one per constraint.
-	// Should never get here.
-	/// \todo Can we enforce this at compile time?
-	template <typename FBarrier>
-	agx::BasicControllerConstraint* GetNativeController(agx::Constraint2DOF* Constraint)
-	{
-		/// \todo Better error message here.
-		UE_LOG(
-			LogAGX, Error, TEXT("Failed to get secondary constraint for 2-DOF constraint '%s'."));
-		return nullptr;
-	}
-
-	template <>
-	agx::BasicControllerConstraint* GetNativeController<FScrewControllerBarrier>(
-		agx::Constraint2DOF* Constraint)
-	{
-		return Constraint->getScrew1D();
-	}
-
-	// Dispatch function that extracts the AGX Dynamics Constraint2DOF and then uses the template
-	// overload set above to get the proper constraint controller from it.
-	// Call this for all constraint controller types for which Constraint2DOF has two controllers.
-	// FBarrier should be one of the constraint controller barrier types, e.g.,
-	// FRangeControllerBarrier.
-	template <typename FBarrier>
-	TUniquePtr<FBarrier> CreateControllerBarrier(
-		const FConstraint2DOFBarrier& Barrier, EAGX_Constraint2DOFFreeDOF Dof)
-	{
-		agx::Constraint2DOF* Native =
-			dynamic_cast<agx::Constraint2DOF*>(Barrier.GetNative()->Native.get());
-
-		return TUniquePtr<FBarrier>(new FBarrier(std::make_unique<FConstraintControllerRef>(
-			GetNativeController<FBarrier>(Native, Convert(Dof)))));
-	}
-
-	// Dispatch function that extracts the AGX Dynamics Constraint2DOF and then uses the template
-	// overload set above to get the proper constraint controller from it.
-	// Call this for all constraint controller types for which Constraint2DOF has only one
-	// controller.
-	// FBarrier should be one of the constraint controller barrier types, e.g.,
-	// FScrewControllerBarrier.
-	template <typename FBarrier>
-	TUniquePtr<FBarrier> CreateControllerBarrier(const FConstraint2DOFBarrier& Barrier)
-	{
-		agx::Constraint2DOF* Native =
-			dynamic_cast<agx::Constraint2DOF*>(Barrier.GetNative()->Native.get());
-
-		return TUniquePtr<FBarrier>(new FBarrier(
-			std::make_unique<FConstraintControllerRef>(GetNativeController<FBarrier>(Native))));
+		check(NativeRef != nullptr && NativeRef->Native != nullptr);
+		auto* Controller = ControllerGetter(Get2DOF(NativeRef));
+		return TUniquePtr<FControllerBarrier>(
+			new FControllerBarrier(std::make_unique<FConstraintControllerRef>(Controller)));
 	}
 }
 
 TUniquePtr<FElectricMotorControllerBarrier> FConstraint2DOFBarrier::GetElectricMotorController(
 	EAGX_Constraint2DOFFreeDOF Dof)
 {
-	return CreateControllerBarrier<FElectricMotorControllerBarrier>(*this, Dof);
+	return CreateControllerBarrier<FElectricMotorControllerBarrier>(
+		NativeRef, [Dof](agx::Constraint2DOF* Constraint) {
+			return Constraint->getElectricMotorController(Convert(Dof));
+		});
 }
 
 TUniquePtr<FFrictionControllerBarrier> FConstraint2DOFBarrier::GetFrictionController(
 	EAGX_Constraint2DOFFreeDOF Dof)
 {
-	return CreateControllerBarrier<FFrictionControllerBarrier>(*this, Dof);
+	/// \todo Why not using GetOrCreateFrictionController here?
+	return CreateControllerBarrier<FFrictionControllerBarrier>(
+		NativeRef, [Dof](agx::Constraint2DOF* Constraint) {
+			return Constraint->getFrictionController(Convert(Dof));
+		});
 }
 
 TUniquePtr<FLockControllerBarrier> FConstraint2DOFBarrier::GetLockController(
 	EAGX_Constraint2DOFFreeDOF Dof)
 {
-	return CreateControllerBarrier<FLockControllerBarrier>(*this, Dof);
+	return CreateControllerBarrier<FLockControllerBarrier>(
+		NativeRef,
+		[Dof](agx::Constraint2DOF* Constraint) { return Constraint->getLock1D(Convert(Dof)); });
 }
 
 TUniquePtr<FRangeControllerBarrier> FConstraint2DOFBarrier::GetRangeController(
 	EAGX_Constraint2DOFFreeDOF Dof)
 {
-	return CreateControllerBarrier<FRangeControllerBarrier>(*this, Dof);
+	return CreateControllerBarrier<FRangeControllerBarrier>(
+		NativeRef,
+		[Dof](agx::Constraint2DOF* Constraint) { return Constraint->getRange1D(Convert(Dof)); });
 }
 
 TUniquePtr<FTargetSpeedControllerBarrier> FConstraint2DOFBarrier::GetTargetSpeedController(
 	EAGX_Constraint2DOFFreeDOF Dof)
 {
-	return CreateControllerBarrier<FTargetSpeedControllerBarrier>(*this, Dof);
+	return CreateControllerBarrier<FTargetSpeedControllerBarrier>(
+		NativeRef,
+		[Dof](agx::Constraint2DOF* Constraint) { return Constraint->getMotor1D(Convert(Dof)); });
 }
 
 TUniquePtr<FScrewControllerBarrier> FConstraint2DOFBarrier::GetScrewController()
 {
-	return CreateControllerBarrier<FScrewControllerBarrier>(*this);
+	return CreateControllerBarrier<FScrewControllerBarrier>(
+		NativeRef, [](agx::Constraint2DOF* Constraint) { return Constraint->getScrew1D(); });
 }
 
 TUniquePtr<const FElectricMotorControllerBarrier>
 FConstraint2DOFBarrier::GetElectricMotorController(EAGX_Constraint2DOFFreeDOF Dof) const
 {
-	return CreateControllerBarrier<const FElectricMotorControllerBarrier>(*this, Dof);
+	return CreateControllerBarrier<const FElectricMotorControllerBarrier>(
+		NativeRef, [Dof](agx::Constraint2DOF* Constraint) {
+			return Constraint->getElectricMotorController(Convert(Dof));
+		});
+}
+
+namespace
+{
+	agx::FrictionController* GetOrCreateFrictionController(
+		agx::Constraint2DOF* Constraint, agx::Constraint2DOF::DOF Dof)
+	{
+		agx::FrictionController* Friction = Constraint->getFrictionController(Dof);
+		if (Friction == nullptr)
+		{
+			agx::AttachmentPair* Attachments = Constraint->getAttachmentPair();
+			agx::Angle* SepAngle = Attachments->getAngle(0);
+			agx::Angle* RotAngle = Attachments->getAngle(1);
+			agx::ConstraintAngleBasedData SepData(Attachments, SepAngle);
+			agx::ConstraintAngleBasedData RotData(Attachments, RotAngle);
+			agx::FrictionController* SepFriction = new agx::FrictionController(SepData);
+			agx::FrictionController* RotFriction = new agx::FrictionController(RotData);
+			Constraint->addSecondaryConstraint("FT", SepFriction);
+			Constraint->addSecondaryConstraint("FR", RotFriction);
+			Friction = Dof == agx::Constraint2DOF::FIRST ? SepFriction : RotFriction;
+			check(Friction == Constraint->getFrictionController(Dof));
+		}
+		return Friction;
+	}
 }
 
 TUniquePtr<const FFrictionControllerBarrier> FConstraint2DOFBarrier::GetFrictionController(
 	EAGX_Constraint2DOFFreeDOF Dof) const
 {
-	return CreateControllerBarrier<const FFrictionControllerBarrier>(*this, Dof);
+	return CreateControllerBarrier<const FFrictionControllerBarrier>(
+		NativeRef, [Dof](agx::Constraint2DOF* Constraint) {
+			return GetOrCreateFrictionController(Constraint, Convert(Dof));
+		});
 }
 
 TUniquePtr<const FLockControllerBarrier> FConstraint2DOFBarrier::GetLockController(
 	EAGX_Constraint2DOFFreeDOF Dof) const
 {
-	return CreateControllerBarrier<const FLockControllerBarrier>(*this, Dof);
+	return CreateControllerBarrier<const FLockControllerBarrier>(
+		NativeRef,
+		[Dof](agx::Constraint2DOF* Constraint) { return Constraint->getLock1D(Convert(Dof)); });
 }
 
 TUniquePtr<const FRangeControllerBarrier> FConstraint2DOFBarrier::GetRangeController(
 	EAGX_Constraint2DOFFreeDOF Dof) const
 {
-	return CreateControllerBarrier<const FRangeControllerBarrier>(*this, Dof);
+	return CreateControllerBarrier<const FRangeControllerBarrier>(
+		NativeRef,
+		[Dof](agx::Constraint2DOF* Constraint) { return Constraint->getRange1D(Convert(Dof)); });
 }
 
 TUniquePtr<const FTargetSpeedControllerBarrier> FConstraint2DOFBarrier::GetTargetSpeedController(
 	EAGX_Constraint2DOFFreeDOF Dof) const
 {
-	return CreateControllerBarrier<const FTargetSpeedControllerBarrier>(*this, Dof);
+	return CreateControllerBarrier<const FTargetSpeedControllerBarrier>(
+		NativeRef,
+		[Dof](agx::Constraint2DOF* Constraint) { return Constraint->getMotor1D(Convert(Dof)); });
 }
 
 TUniquePtr<const FScrewControllerBarrier> FConstraint2DOFBarrier::GetScrewController() const
 {
-	return CreateControllerBarrier<const FScrewControllerBarrier>(*this);
+	return CreateControllerBarrier<const FScrewControllerBarrier>(
+		NativeRef, [](agx::Constraint2DOF* Constraint) { return Constraint->getScrew1D(); });
 }

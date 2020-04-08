@@ -22,6 +22,7 @@ public:
 	virtual FText GetTooltip() const override;
 
 public:
-	static void ImportAGXArchive();
-	static void ExportAGXArchive();
+	static void ImportAgxArchiveToLevel();
+	static void ImportAgxArchiveToBlueprint();
+	static void ExportAgxArchive();
 };
