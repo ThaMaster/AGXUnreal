@@ -1,8 +1,8 @@
-#include "Materials/AGX_MaterialAssetFactory.h"
+#include "Materials/AGX_ShapeMaterialAssetFactory.h"
 
 #include "Materials/AGX_ShapeMaterialAsset.h"
 
-UAGX_MaterialAssetFactory::UAGX_MaterialAssetFactory(const class FObjectInitializer& OBJ)
+UAGX_ShapeMaterialAssetFactory::UAGX_ShapeMaterialAssetFactory(const class FObjectInitializer& OBJ)
 	: Super(OBJ)
 {
 	SupportedClass = UAGX_ShapeMaterialAsset::StaticClass();
@@ -10,7 +10,7 @@ UAGX_MaterialAssetFactory::UAGX_MaterialAssetFactory(const class FObjectInitiali
 	bCreateNew = true;
 }
 
-UObject* UAGX_MaterialAssetFactory::FactoryCreateNew(
+UObject* UAGX_ShapeMaterialAssetFactory::FactoryCreateNew(
 	UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context,
 	FFeedbackContext* Warn)
 {

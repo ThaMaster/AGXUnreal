@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,13 +5,13 @@
 #include "AssetTypeActions_Base.h"
 
 /**
- * Asset Type Actions for UAGX_MaterialAsset, customizing its appearance in the Editor menues and
+ * Asset Type Actions for UAGX_ShapeMaterialAsset, customizing its appearance in the Editor menus and
  * browsers.
  */
-class AGXUNREALEDITOR_API FAGX_MaterialAssetTypeActions : public FAssetTypeActions_Base
+class AGXUNREALEDITOR_API FAGX_ShapeMaterialAssetTypeActions : public FAssetTypeActions_Base
 {
 public:
-	FAGX_MaterialAssetTypeActions(EAssetTypeCategories::Type InAssetCategory);
+	FAGX_ShapeMaterialAssetTypeActions(EAssetTypeCategories::Type InAssetCategory);
 
 	FText GetName() const override;
 

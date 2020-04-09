@@ -42,11 +42,11 @@
 #include "Constraints/AGX_LockConstraintActor.h"
 #include "Constraints/AGX_PrismaticConstraintActor.h"
 #include "Materials/AGX_ContactMaterialAssetTypeActions.h"
-#include "Materials/AGX_MaterialAssetTypeActions.h"
-#include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
-#include "Materials/AGX_TerrainMaterialCustomization.h"
 #include "Materials/AGX_MaterialBase.h"
 #include "Materials/AGX_MaterialManager.h"
+#include "Materials/AGX_ShapeMaterialAssetTypeActions.h"
+#include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
+#include "Materials/AGX_TerrainMaterialCustomization.h"
 #include "Terrain/AGX_Terrain.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
@@ -130,7 +130,7 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_MaterialAssetTypeActions(AgxAssetCategoryBit)));
+		AssetTools, MakeShareable(new FAGX_ShapeMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_TerrainMaterialAssetTypeActions(AgxAssetCategoryBit)));
 }
