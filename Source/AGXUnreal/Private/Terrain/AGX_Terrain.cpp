@@ -177,6 +177,9 @@ void AAGX_Terrain::CreateNativeTerrain()
 		AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
 	NativeBarrier.AllocateNative(HeightField);
 	check(HasNative());
+
+	SetInitialTransform();
+
 	OriginalHeights = NativeBarrier.GetHeights();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	Simulation->AddTerrain(this);
@@ -264,6 +267,50 @@ void AAGX_Terrain::CreateNativeShovels()
 			LogAGX, Log, TEXT("Created shovel '%s' for terrain '%s'."), *Actor->GetName(),
 			*GetName());
 	}
+}
+
+void AAGX_Terrain::SetInitialTransform()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("SetInitialTransform called on Terrain '%s' which doesn't have a native "
+				 "representation."),
+			*GetName());
+		return;
+	}
+
+	// Apply the same rotation to the native terrain as the landscape.
+	const FQuat LandscapeRotation = SourceLandscape->GetActorQuat();
+	NativeBarrier.SetRotation(LandscapeRotation);
+
+	// The Unreal landscape has its origin in the bottom left corner.
+	// The native terrain has its origin at the center of the terrain, when there are an even number
+	// of tiles in the x and y direction. If there are an odd number of tiles in the x-direction,
+	// the origins x-coordinate is the same as the x-coordinate of the left edge of the center tile.
+	// If there are an odd number of tiles in the y-direction, the origins y-coordinate is the same
+	// as the y-coordinate of the top edge of the center tile.
+	const FAGX_LandscapeSizeInfo LandscapeSizeInfo(*SourceLandscape);
+	const float SideSizeX = LandscapeSizeInfo.NumQuadsSideX * LandscapeSizeInfo.QuadSideSizeX;
+	const float SideSizeY = LandscapeSizeInfo.NumQuadsSideY * LandscapeSizeInfo.QuadSideSizeY;
+	const float TerrainTileCenterOffsetX =
+		(LandscapeSizeInfo.NumQuadsSideX % 2 == 0) ? 0 : LandscapeSizeInfo.QuadSideSizeX / 2;
+	const float TerrainTileCenterOffsetY =
+		(LandscapeSizeInfo.NumQuadsSideY % 2 == 0) ? 0 : -LandscapeSizeInfo.QuadSideSizeY / 2;
+
+	// Calculate the offset from landscape origin to terrain origin expressed in landscapes local
+	// coordinate system.
+	const FVector LandscapeToTerrainOffsetLocal = FVector(
+		SideSizeX / 2.0f + TerrainTileCenterOffsetX, SideSizeY / 2.0f + TerrainTileCenterOffsetY,
+		0);
+
+	// Transform the offset from landscape local coordinate system to the global coordinate system.
+	const FTransform LandscapeTransform = SourceLandscape->GetTransform();
+	const FVector LandscapeToTerrainOffsetGlobal =
+		LandscapeTransform.TransformPositionNoScale(LandscapeToTerrainOffsetLocal);
+
+	NativeBarrier.SetPosition(LandscapeToTerrainOffsetGlobal);
 }
 
 void AAGX_Terrain::InitializeRendering()
@@ -491,7 +538,7 @@ void AAGX_Terrain::InitializeParticleSystem()
 #else
 		ENCPoolMethod::None
 #endif
-		);
+	);
 #if WITH_EDITORONLY_DATA
 	ParticleSystemComponent->bVisualizeComponent = true;
 #endif
