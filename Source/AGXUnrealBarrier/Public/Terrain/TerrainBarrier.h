@@ -30,6 +30,12 @@ public:
 	const FTerrainRef* GetNative() const;
 	void ReleaseNative();
 
+	void SetPosition(FVector Position);
+	FVector GetPosition() const;
+
+	void SetRotation(FQuat Rotation);
+	FQuat GetRotation() const;
+
 	bool AddShovel(FShovelBarrier& Shovel);
 	void SetShapeMaterial(const FShapeMaterialBarrier& Material);
 	void SetTerrainMaterial(const FTerrainMaterialBarrier& TerrainMaterial);

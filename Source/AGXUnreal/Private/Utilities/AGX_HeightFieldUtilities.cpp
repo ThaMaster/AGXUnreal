@@ -30,7 +30,6 @@ namespace
 	inline float ColorToHeight(FColor Color, float ScaleZ)
 	{
 		constexpr float LANDSCAPE_HEIGHT_SPAN_NOMINAL_M {512.0f};
-		constexpr float LANDSCAPE_ZERO_OFFSET_CM {100.0f};
 
 		// See struct FLandscapeComponentDataInterface::GetHeight for reference.
 		uint16 HeightPixel = (Color.R << 8) + Color.G;
@@ -39,7 +38,7 @@ namespace
 
 		// At scale = 100, the height span is 512 meters.
 		float Height =
-			(Frac - 0.5) * LANDSCAPE_HEIGHT_SPAN_NOMINAL_M * ScaleZ + LANDSCAPE_ZERO_OFFSET_CM;
+			(Frac - 0.5) * LANDSCAPE_HEIGHT_SPAN_NOMINAL_M * ScaleZ;
 
 		// Height in centimeters.
 		return Height;

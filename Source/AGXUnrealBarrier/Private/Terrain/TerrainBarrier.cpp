@@ -115,6 +115,36 @@ void FTerrainBarrier::ReleaseNative()
 	NativeRef->Native = nullptr;
 }
 
+void FTerrainBarrier::SetPosition(FVector PositionUnreal)
+{
+	check(HasNative());
+	agx::Vec3 PositionAGX = ConvertVector(PositionUnreal);
+	NativeRef->Native->setPosition(PositionAGX);
+}
+
+FVector FTerrainBarrier::GetPosition() const
+{
+	check(HasNative());
+	agx::Vec3 PositionAGX = NativeRef->Native->getPosition();
+	FVector PositionUnreal = ConvertVector(PositionAGX);
+	return PositionUnreal;
+}
+
+void FTerrainBarrier::SetRotation(FQuat RotationUnreal)
+{
+	check(HasNative());
+	agx::Quat RotationAGX = Convert(RotationUnreal);
+	NativeRef->Native->setRotation(RotationAGX);
+}
+
+FQuat FTerrainBarrier::GetRotation() const
+{
+	check(HasNative());
+	agx::Quat RotationAGX = NativeRef->Native->getRotation();
+	FQuat RotationUnreal = Convert(RotationAGX);
+	return RotationUnreal;
+}
+
 bool FTerrainBarrier::AddShovel(FShovelBarrier& Shovel)
 {
 	check(HasNative());

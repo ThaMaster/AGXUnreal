@@ -183,6 +183,7 @@ private:
 	void CreateNativeShovels();
 	void CreateTerrainMaterial();
 
+	void SetInitialTransform();
 	void InitializeRendering();
 	void InitializeDisplacementMap();
 	void UpdateDisplacementMap();
