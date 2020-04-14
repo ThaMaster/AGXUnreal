@@ -47,10 +47,10 @@ public class AGXUnrealLibrary : ModuleRules
 		AddRuntimeDependency("agxSabre", LibSource.Agx, ManualCopy);
 		AddRuntimeDependency("agxTerrain", LibSource.Agx, ManualCopy);
 		AddRuntimeDependency("vdbgrid", LibSource.Agx, ManualCopy);
+		AddRuntimeDependency("colamd", LibSource.Agx, ManualCopy);
 
-		AddRuntimeDependency("colamd", LibSource.Dependencies, ManualCopy);
 		AddRuntimeDependency("glew", LibSource.Dependencies, ManualCopy);
-		AddRuntimeDependency("libpng", LibSource.Dependencies, ManualCopy);
+		AddRuntimeDependency("png", LibSource.Dependencies, ManualCopy);
 		AddRuntimeDependency("zlib", LibSource.Dependencies, ManualCopy);
 
 		AddRuntimeDependency("Half", LibSource.TerrainDependencies, ManualCopy);
