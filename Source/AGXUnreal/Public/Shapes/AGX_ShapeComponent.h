@@ -98,6 +98,8 @@ public:
 
 	virtual void PostInitProperties() override;
 
+	virtual void OnComponentCreated() override;
+
 #endif
 
 protected:

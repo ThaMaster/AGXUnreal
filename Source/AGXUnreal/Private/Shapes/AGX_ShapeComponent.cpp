@@ -152,6 +152,13 @@ void UAGX_ShapeComponent::PostInitProperties()
 	UpdateVisualMesh();
 }
 
+void UAGX_ShapeComponent::OnComponentCreated()
+{
+	Super::OnComponentCreated();
+
+	UpdateVisualMesh();
+}
+
 #endif
 
 void UAGX_ShapeComponent::BeginPlay()
