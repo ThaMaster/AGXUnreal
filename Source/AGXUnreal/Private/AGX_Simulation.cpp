@@ -113,17 +113,81 @@ const FSimulationBarrier* UAGX_Simulation::GetNative() const
 
 void UAGX_Simulation::Step(float DeltaTime)
 {
+	switch (StepMode)
+	{
+		case SM_CATCH_UP_IMMEDIATELY:
+			StepCatchUpImmediately(DeltaTime);
+			break;
+		case SM_CATCH_UP_OVER_TIME:
+			StepCatchUpOverTime(DeltaTime);
+			break;
+		case SM_CATCH_UP_OVER_TIME_CAPPED:
+			StepCatchUpOverTimeCapped(DeltaTime);
+			break;
+		case SM_DROP_IMMEDIATELY:
+			StepDropImmediately(DeltaTime);
+			break;
+		default:
+			UE_LOG(LogAGX, Error, TEXT("Unknown step mode: %d"), StepMode);
+	}
+}
+
+void UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
+{
 	DeltaTime += LeftoverTime;
 	LeftoverTime = 0.0f;
 
 	while (DeltaTime >= TimeStep)
 	{
-#if 0
-		UE_LOG(LogAGX, Log, TEXT("AGX_CALL: agxSDK::Simulation::stepForward"));
-#endif
 		NativeBarrier.Step();
 		DeltaTime -= TimeStep;
 	}
+	LeftoverTime = DeltaTime;
+}
+
+void UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
+{
+	DeltaTime += LeftoverTime;
+	LeftoverTime = 0.0f;
+
+	NativeBarrier.Step();
+	DeltaTime -= TimeStep;
+
+	// Step an extra time if the AGX simulation is still behind.
+	if (DeltaTime >= TimeStep)
+	{
+		NativeBarrier.Step();
+		DeltaTime -= TimeStep;
+	}
+	LeftoverTime = DeltaTime;
+}
+
+void UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
+{
+	DeltaTime += LeftoverTime;
+	LeftoverTime = 0.0f;
+
+	NativeBarrier.Step();
+	DeltaTime -= TimeStep;
+
+	// Step an extra time if the AGX simulation is still behind, but less than the Time Lag Gap.
+	if (DeltaTime >= TimeStep && DeltaTime <= TimeLagCap)
+	{
+		NativeBarrier.Step();
+		DeltaTime -= TimeStep;
+	}
+	LeftoverTime = DeltaTime;
+}
+
+void UAGX_Simulation::StepDropImmediately(float DeltaTime)
+{
+	DeltaTime += LeftoverTime;
+	LeftoverTime = 0.0f;
+
+	NativeBarrier.Step();
+	DeltaTime -= TimeStep;
+
+	// Keep LeftoverTime updated in case the information is needed in the future.
 	LeftoverTime = DeltaTime;
 }
 
@@ -172,6 +236,19 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const UGameInstance* GameInstance)
 
 	return GameInstance->GetSubsystem<UAGX_Simulation>();
 }
+
+#if WITH_EDITOR
+bool UAGX_Simulation::CanEditChange(const UProperty* InProperty) const
+{
+	// Time Lag Cap should only be editable when step mode SM_CATCH_UP_OVER_TIME_CAPPED is used.
+	if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UAGX_Simulation, TimeLagCap))
+	{
+		return StepMode == SM_CATCH_UP_OVER_TIME_CAPPED;
+	}
+
+	return Super::CanEditChange(InProperty);
+}
+#endif
 
 void UAGX_Simulation::EnsureStepperCreated()
 {
