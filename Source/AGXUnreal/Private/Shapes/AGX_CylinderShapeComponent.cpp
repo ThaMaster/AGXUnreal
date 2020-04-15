@@ -1,6 +1,5 @@
 #include "Shapes/AGX_CylinderShapeComponent.h"
 
-#include "AGX_LogCategory.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 UAGX_CylinderShapeComponent::UAGX_CylinderShapeComponent()
@@ -8,7 +7,6 @@ UAGX_CylinderShapeComponent::UAGX_CylinderShapeComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 	Height = 100.0f;
 	Radius = 50.0f;
-	UE_LOG(LogAGX, Log, TEXT("CylinderShape instance created."));
 }
 
 FShapeBarrier* UAGX_CylinderShapeComponent::GetNative()
