@@ -26,16 +26,16 @@ void FAGXNotify::message(const agx::String& msg, int notifyLevel)
 	switch (notifyLevel)
 	{
 		case agx::Notify::NOTIFY_DEBUG:
-			UE_LOG(LogAGX, Verbose, TEXT("%s"), *Convert(msg));
+			UE_LOG(LogAGXDynamics, Verbose, TEXT("%s"), *Convert(msg));
 			break;
 		case agx::Notify::NOTIFY_INFO:
-			UE_LOG(LogAGX, Log, TEXT("%s"), *Convert(msg));
+			UE_LOG(LogAGXDynamics, Log, TEXT("%s"), *Convert(msg));
 			break;
 		case agx::Notify::NOTIFY_WARNING:
-			UE_LOG(LogAGX, Error, TEXT("%s"), *Convert(msg));
+			UE_LOG(LogAGXDynamics, Error, TEXT("%s"), *Convert(msg));
 			break;
 		case agx::Notify::NOTIFY_ERROR:
-			UE_LOG(LogAGX, Error, TEXT("%s"), *Convert(msg));
+			UE_LOG(LogAGXDynamics, Error, TEXT("%s"), *Convert(msg));
 			break;
 		default:
 			UE_LOG(
@@ -45,6 +45,6 @@ void FAGXNotify::message(const agx::String& msg, int notifyLevel)
 				notifyLevel);
 
 			// Use verbosity level 'Log' by default if unknown notifyLevel is given.
-			UE_LOG(LogAGX, Log, TEXT("%s"), *Convert(msg));
+			UE_LOG(LogAGXDynamics, Log, TEXT("%s"), *Convert(msg));
 	}
 }
