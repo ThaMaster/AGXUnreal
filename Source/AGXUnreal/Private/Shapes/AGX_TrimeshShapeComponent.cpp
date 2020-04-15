@@ -1,6 +1,5 @@
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 
-#include "AGX_LogCategory.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 #include "Engine/StaticMesh.h"
@@ -14,8 +13,6 @@ UAGX_TrimeshShapeComponent::UAGX_TrimeshShapeComponent()
 	MeshSourceLocation = TSL_PARENT_STATIC_MESH_COMPONENT;
 	bOverrideMeshSourceLodIndex = true;
 	MeshSourceLodIndex = 0;
-
-	UE_LOG(LogAGX, Log, TEXT("TrimeshShape instance created."));
 }
 
 FShapeBarrier* UAGX_TrimeshShapeComponent::GetNative()

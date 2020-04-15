@@ -1,13 +1,11 @@
 #include "Shapes/AGX_SphereShapeComponent.h"
 
-#include "AGX_LogCategory.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 UAGX_SphereShapeComponent::UAGX_SphereShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	Radius = 50.0f;
-	UE_LOG(LogAGX, Log, TEXT("SphereShape instance created."));
 }
 
 FShapeBarrier* UAGX_SphereShapeComponent::GetNative()
