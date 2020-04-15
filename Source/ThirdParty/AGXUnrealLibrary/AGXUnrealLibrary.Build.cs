@@ -50,7 +50,6 @@ public class AGXUnrealLibrary : ModuleRules
 		AddRuntimeDependency("colamd", LibSource.Agx, ManualCopy);
 
 		AddRuntimeDependency("glew", LibSource.Dependencies, ManualCopy);
-		AddRuntimeDependency("png", LibSource.Dependencies, ManualCopy);
 		AddRuntimeDependency("zlib", LibSource.Dependencies, ManualCopy);
 
 		AddRuntimeDependency("Half", LibSource.TerrainDependencies, ManualCopy);
@@ -60,6 +59,7 @@ public class AGXUnrealLibrary : ModuleRules
 
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
+			AddRuntimeDependency("png", LibSource.Dependencies, ManualCopy);
 			AddRuntimeDependency("OpenThreads", LibSource.Dependencies, ManualCopy);
 
 			// OpenVDB is only required because of problems with initialization.
@@ -68,6 +68,7 @@ public class AGXUnrealLibrary : ModuleRules
 		}
 		else if(Target.Platform == UnrealTargetPlatform.Win64)
 		{
+			AddRuntimeDependency("libpng", LibSource.Dependencies, ManualCopy);
 			AddRuntimeDependency("ot20-OpenThreads", LibSource.Dependencies, ManualCopy);
 			AddRuntimeDependency("msvcp140", LibSource.Agx, ManualCopy);
 			AddRuntimeDependency("vcruntime140", LibSource.Agx, ManualCopy);
