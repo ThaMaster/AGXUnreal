@@ -15,6 +15,6 @@ enum EAGX_StepMode
 	/** Similar to 'Catch up over time' but will only keep track of time lags smaller or equal to the Time Lag Cap. May result in permanent difference between AGX and Unreal time. */
 	SM_CATCH_UP_OVER_TIME_CAPPED UMETA(DisplayName = "Catch up over time Capped"),
 
-	/** Step the AGX simulation exactly one time per Unreal step. May result in simulation appearing to run in slow-motion. */
+	/** Step the AGX simulation up to one time per Unreal step. May result in simulation appearing to run in slow-motion. */
 	SM_DROP_IMMEDIATELY UMETA(DisplayName = "Drop immediately"),
 };
