@@ -189,8 +189,11 @@ void UAGX_Simulation::StepDropImmediately(float DeltaTime)
 	DeltaTime += LeftoverTime;
 	LeftoverTime = 0.0f;
 
-	NativeBarrier.Step();
-	DeltaTime -= TimeStep;
+	if (DeltaTime >= TimeStep)
+	{
+		NativeBarrier.Step();
+		DeltaTime -= TimeStep;
+	}
 
 	// Keep LeftoverTime updated in case the information is needed in the future.
 	LeftoverTime = DeltaTime;
