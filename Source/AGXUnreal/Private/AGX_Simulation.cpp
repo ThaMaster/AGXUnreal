@@ -12,6 +12,8 @@
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 
+#include <algorithm>
+
 void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
 {
 	check(Body != nullptr);
@@ -168,21 +170,18 @@ void UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
 	DeltaTime += LeftoverTime;
 	LeftoverTime = 0.0f;
 
-	// Step once if needed.
-	if (DeltaTime >= TimeStep)
+	// Step up to two times.
+	for (int i = 0; i < 2; i++)
 	{
-		NativeBarrier.Step();
-		DeltaTime -= TimeStep;
+		if (DeltaTime >= TimeStep)
+		{
+			NativeBarrier.Step();
+			DeltaTime -= TimeStep;
+		}
 	}
 
-	// Step an extra time if the AGX simulation is still behind, but less than the Time Lag Gap.
-	if (DeltaTime >= TimeStep && DeltaTime <= TimeLagCap)
-	{
-		NativeBarrier.Step();
-		DeltaTime -= TimeStep;
-	}
-
-	LeftoverTime = DeltaTime;
+	// Cap the LeftoverTime according to the TimeLagCap.
+	LeftoverTime = std::min(DeltaTime, TimeLagCap);
 }
 
 void UAGX_Simulation::StepDropImmediately(float DeltaTime)
