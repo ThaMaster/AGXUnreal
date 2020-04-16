@@ -150,15 +150,16 @@ void UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
 	DeltaTime += LeftoverTime;
 	LeftoverTime = 0.0f;
 
-	NativeBarrier.Step();
-	DeltaTime -= TimeStep;
-
-	// Step an extra time if the AGX simulation is still behind.
-	if (DeltaTime >= TimeStep)
+	// Step up to two times.
+	for (int i = 0; i < 2; i++)
 	{
-		NativeBarrier.Step();
-		DeltaTime -= TimeStep;
+		if (DeltaTime >= TimeStep)
+		{
+			NativeBarrier.Step();
+			DeltaTime -= TimeStep;
+		}
 	}
+
 	LeftoverTime = DeltaTime;
 }
 
@@ -167,8 +168,12 @@ void UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
 	DeltaTime += LeftoverTime;
 	LeftoverTime = 0.0f;
 
-	NativeBarrier.Step();
-	DeltaTime -= TimeStep;
+	// Step once if needed.
+	if (DeltaTime >= TimeStep)
+	{
+		NativeBarrier.Step();
+		DeltaTime -= TimeStep;
+	}
 
 	// Step an extra time if the AGX simulation is still behind, but less than the Time Lag Gap.
 	if (DeltaTime >= TimeStep && DeltaTime <= TimeLagCap)
@@ -176,6 +181,7 @@ void UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
 		NativeBarrier.Step();
 		DeltaTime -= TimeStep;
 	}
+
 	LeftoverTime = DeltaTime;
 }
 
