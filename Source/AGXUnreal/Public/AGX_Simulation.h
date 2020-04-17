@@ -1,9 +1,12 @@
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 
+// AGXUnreal includes.
 #include "SimulationBarrier.h"
+#include "AGX_StepperEnums.h"
 
 #include "AGX_Simulation.generated.h"
 
@@ -68,6 +71,14 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "Debug", meta = (EditCondition = "bRemoteDebugging"))
 	int16 RemoteDebuggingPort;
 
+	/** Simulation stepping mode. SM_CATCH_UP_IMMEDIATELY is set as default.*/
+	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
+	TEnumAsByte<enum EAGX_StepMode> StepMode = SM_CATCH_UP_IMMEDIATELY;
+
+	/** Maximum time lag in seconds for the Catch up over time Capped step mode before dropping. */
+	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
+	float TimeLagCap = 1.0;
+
 	void AddRigidBody(UAGX_RigidBodyComponent* Body);
 
 	/**
@@ -99,12 +110,20 @@ public:
 
 	static UAGX_Simulation* GetFrom(const UGameInstance* GameInstance);
 
-public:
+#if WITH_EDITOR
+	virtual bool CanEditChange(const UProperty* InProperty) const override;
+#endif
+
 	void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	void Deinitialize() override;
 
 private:
+	void StepCatchUpImmediately(float DeltaTime);
+	void StepCatchUpOverTime(float DeltaTime);
+	void StepCatchUpOverTimeCapped(float DeltaTime);
+	void StepDropImmediately(float DeltaTime);
+
 	void EnsureStepperCreated();
 
 private:
