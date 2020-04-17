@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-"""Unreal compatible package generator for AGX Dynamics.
+"""Unreal compatible package generator for AGX Dynamics on Linux.
 
 This program creates an AGX Dynamics for Unreal package from a source build of
 AGX Dynamics. The build is assumed to have been made according to the AGX
