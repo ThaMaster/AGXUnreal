@@ -172,7 +172,25 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 	if (bTransformRootComponent)
 	{
 		check(GetOwner());
-		GetOwner()->SetActorLocationAndRotation(NewLocation, NewRotation);
+
+		// To keep the RigidBodyComponent transform the same as the Native transform, apply the
+		// inverse of the RigidBodyComponents local transform to the native transform before
+		// applying the result to the root component.
+		// Note: Using GetRelativeTransform() directly would be tempting to use to get the
+		// RigidBodyComponents local transform, but it gives the local transform of the
+		// RigidBodyComponent as set in the editor, expressed in the root components reference
+		// frame, and does not take into account the case where the RigidBodyComponent is a child to
+		// some other component with a local transform of its own. Therefore, we use the global
+		// transforms of the RigidBodyComponent and the root component to get the correct local
+		// transform in all cases.
+		const FTransform LocalTransfInv =
+			GetOwner()->GetTransform().GetRelativeTransform(GetComponentTransform());
+		const FTransform NativeTransf = FTransform(NewRotation, NewLocation);
+
+		FTransform NewRootTransf;
+		FTransform::Multiply(&NewRootTransf, &LocalTransfInv, &NativeTransf);
+
+		GetOwner()->SetActorTransform(NewRootTransf);
 	}
 	else
 	{
