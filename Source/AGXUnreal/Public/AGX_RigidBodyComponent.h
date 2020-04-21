@@ -36,9 +36,9 @@ public:
 	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 
-	UPROPERTY(
-		EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics",
-		meta = (Tooptip = "Write transformations from AGX Dynamics to the Actor's Root Component."))
+	/** Write transformations from AGX Dynamics to the Actor's Root Component. Only allowed when the
+	 * owning actor has a single AGX Rigid Body Component.*/
+	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
 	uint8 bTransformRootComponent : 1;
 
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
@@ -59,6 +59,8 @@ public:
 	static TArray<UAGX_RigidBodyComponent*> GetFromActor(const AActor* Actor);
 	static UAGX_RigidBodyComponent* GetFirstFromActor(const AActor* Actor);
 
+	bool TransformRootComponentAllowed() const;
+
 public:
 	virtual void TickComponent(
 		float DeltaTime, ELevelTick TickType,
@@ -76,6 +78,10 @@ private:
 
 	void ReadTransformFromNative();
 	void WriteTransformToNative();
+
+#if WITH_EDITOR
+	virtual bool CanEditChange(const UProperty* InProperty) const override;
+#endif
 
 private:
 	// The AGX Dynamics object only exists while simulating. Initialized in

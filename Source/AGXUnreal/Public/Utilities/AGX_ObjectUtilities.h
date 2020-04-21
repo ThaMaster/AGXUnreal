@@ -7,37 +7,44 @@
 class AActor;
 
 /**
-* A collection of generic helper functions that can be compiled for Runtime.
-*
-* \see AGX_EditorUtilities.h, which is for WITH_EDITOR builds.
-*
-* There are also other, more specialized, AGX_.+Utilities.h collections.
-*/
+ * A collection of generic helper functions that can be compiled for Runtime.
+ *
+ * \see AGX_EditorUtilities.h, which is for WITH_EDITOR builds.
+ *
+ * There are also other, more specialized, AGX_.+Utilities.h collections.
+ */
 class FAGX_ObjectUtilities
 {
 public:
 	/**
-	* Returns array containing all child actors (and all their child actors)
-	* recursively, attached to the Parent actor passed as input argument.
-	* The parent itself is not included in the set.
-	*/
+	 * Returns array containing all child actors (and all their child actors)
+	 * recursively, attached to the Parent actor passed as input argument.
+	 * The parent itself is not included in the set.
+	 */
 	static void GetChildActorsOfActor(AActor* Parent, TArray<AActor*>& ChildActors);
 
 	/**
 	 * Give a list of pointer-to-base, return a new list with the elements that
 	 * are of a particular derived type.
 	 */
-	template<typename UDerived, typename UBaseContainer>
+	template <typename UDerived, typename UBaseContainer>
 	static TArray<UDerived*> Filter(const UBaseContainer& Collection);
 
-	template<typename T>
+	template <typename T>
 	static T* FindFirstAncestorOfType(const USceneComponent& Start);
+
+	/**
+	 * Returns the number children of type T of the actor.
+	 */
+	template <typename T>
+	static uint32 GetNumComponentsInActor(
+		const AActor& Actor, bool bIncludeFromChildActors = false);
 
 private:
 	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);
 };
 
-template<typename T>
+template <typename T>
 T* FAGX_ObjectUtilities::FindFirstAncestorOfType(const USceneComponent& Start)
 {
 	USceneComponent* Parent = Start.GetAttachParent();
@@ -67,3 +74,11 @@ TArray<UDerived*> FAGX_ObjectUtilities::Filter(const UBaseContainer& Collection)
 	return Result;
 }
 
+template <typename T>
+uint32 FAGX_ObjectUtilities::GetNumComponentsInActor(
+	const AActor& Actor, bool bIncludeFromChildActors)
+{
+	TArray<T*> Components;
+	Actor.GetComponents<T>(Components, bIncludeFromChildActors);
+	return Components.Num();
+}

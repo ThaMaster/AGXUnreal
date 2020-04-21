@@ -207,6 +207,21 @@ void UAGX_RigidBodyComponent::WriteTransformToNative()
 	NativeBarrier.SetRotation(GetComponentQuat());
 }
 
+#if WITH_EDITOR
+bool UAGX_RigidBodyComponent::CanEditChange(const UProperty* InProperty) const
+{
+	// bTransformRootComponent is only allowed when this is the only RigidBodyComponent owned by the
+	// parent actor.
+	if (InProperty->GetFName() ==
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bTransformRootComponent))
+	{
+		return TransformRootComponentAllowed();
+	}
+
+	return Super::CanEditChange(InProperty);
+}
+#endif
+
 /// \note Can use TInlineComponentArray<UAGX_RigidBodyComponent*> here, for performance.
 TArray<UAGX_RigidBodyComponent*> UAGX_RigidBodyComponent::GetFromActor(const AActor* Actor)
 {
@@ -228,4 +243,9 @@ UAGX_RigidBodyComponent* UAGX_RigidBodyComponent::GetFirstFromActor(const AActor
 	}
 
 	return Actor->FindComponentByClass<UAGX_RigidBodyComponent>();
+}
+
+bool UAGX_RigidBodyComponent::TransformRootComponentAllowed() const
+{
+	return FAGX_ObjectUtilities::GetNumComponentsInActor<UAGX_RigidBodyComponent>(*GetOwner()) == 1;
 }
