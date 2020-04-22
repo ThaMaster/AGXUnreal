@@ -15,6 +15,8 @@
 #include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyReference.h"
 #include "AGX_RigidBodyReferenceCustomization.h"
+#include "AGX_RigidBodyComponent.h"
+#include "AGX_RigidBodyComponentCustomization.h"
 #include "AGX_Simulation.h"
 #include "AGX_TopMenu.h"
 #include "AgxEdMode/AGX_AgxEdMode.h"
@@ -199,6 +201,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_CollisionGroupsComponentCustomization::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_RigidBodyComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_RigidBodyComponentCustomization::MakeInstance));
+
 	// The reason why UAGX_MaterialBase is used here instead of UAGX_TerrainMaterial is that
 	// the former must be used to be able to customize some of the properties inherited by the
 	// UAGX_TerrainMaterial from the UAGX_MaterialBase.
@@ -237,6 +244,9 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 		UAGX_CollisionGroupsComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(UAGX_MaterialBase::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		UAGX_RigidBodyComponent::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
