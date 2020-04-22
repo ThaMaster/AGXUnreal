@@ -220,6 +220,11 @@ bool UAGX_RigidBodyComponent::CanEditChange(const UProperty* InProperty) const
 
 	return Super::CanEditChange(InProperty);
 }
+
+bool UAGX_RigidBodyComponent::TransformRootComponentAllowed() const
+{
+	return FAGX_ObjectUtilities::GetNumComponentsInActor<UAGX_RigidBodyComponent>(*GetOwner()) == 1;
+}
 #endif
 
 /// \note Can use TInlineComponentArray<UAGX_RigidBodyComponent*> here, for performance.
@@ -245,7 +250,28 @@ UAGX_RigidBodyComponent* UAGX_RigidBodyComponent::GetFirstFromActor(const AActor
 	return Actor->FindComponentByClass<UAGX_RigidBodyComponent>();
 }
 
-bool UAGX_RigidBodyComponent::TransformRootComponentAllowed() const
+#if WITH_EDITOR
+void UAGX_RigidBodyComponent::OnComponentView()
 {
-	return FAGX_ObjectUtilities::GetNumComponentsInActor<UAGX_RigidBodyComponent>(*GetOwner()) == 1;
+	// If there are multiple UAGX_RigidBodyComponent in the owning actor, the
+	// bTransformRootComponent flag must be set to false for all of these UAGX_RigidBodyComponents.
+	DisableTransformRootCompIfMultiple();
 }
+
+void UAGX_RigidBodyComponent::DisableTransformRootCompIfMultiple()
+{
+	TArray<UAGX_RigidBodyComponent*> Components;
+	GetOwner()->GetComponents<UAGX_RigidBodyComponent>(Components, false);
+
+	if (Components.Num() > 1)
+	{
+		// Disable the bTransformRootComponent flag for all UAGX_RigidBodyComponent in the owning
+		// actor.
+		for (auto C : Components)
+		{
+			if (C->bTransformRootComponent)
+				C->bTransformRootComponent = false;
+		}
+	}
+}
+#endif

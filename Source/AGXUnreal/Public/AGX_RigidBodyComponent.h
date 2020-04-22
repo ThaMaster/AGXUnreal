@@ -59,7 +59,10 @@ public:
 	static TArray<UAGX_RigidBodyComponent*> GetFromActor(const AActor* Actor);
 	static UAGX_RigidBodyComponent* GetFirstFromActor(const AActor* Actor);
 
+#if WITH_EDITOR
+	void OnComponentView();
 	bool TransformRootComponentAllowed() const;
+#endif
 
 public:
 	virtual void TickComponent(
@@ -81,6 +84,7 @@ private:
 
 #if WITH_EDITOR
 	virtual bool CanEditChange(const UProperty* InProperty) const override;
+	void DisableTransformRootCompIfMultiple();
 #endif
 
 private:

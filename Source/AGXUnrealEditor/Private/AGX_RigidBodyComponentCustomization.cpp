@@ -23,15 +23,7 @@ void FAGX_RigidBodyComponentCustomization::CustomizeDetails(IDetailLayoutBuilder
 	if (!RigidBodyComponent)
 		return;
 
-	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder.EditCategory("AGX Dynamics");
-
-	// Force the bTransformRootComponent flag to false in case there are several RigidBodyComponents
-	// in the owning actor.
-	if (RigidBodyComponent->bTransformRootComponent &&
-		!RigidBodyComponent->TransformRootComponentAllowed())
-	{
-		RigidBodyComponent->bTransformRootComponent = false;
-	}
+	RigidBodyComponent->OnComponentView();
 }
 
 #undef LOCTEXT_NAMESPACE
