@@ -200,6 +200,14 @@ inline FString Convert(const agx::String& StringAGX)
 	return FString(UTF8_TO_TCHAR(StringAGX.c_str()));
 }
 
+inline FString Convert(const agx::Name& NameAGX)
+{
+	// For some reason agx::Name seems to sometimes give runtime crashes when copied. Therefore,
+	// agx::Name.c_str() is used, and copying the type in general should be avoided. The underlying
+	// reason for this is not yet known.
+	return FString(NameAGX.c_str());
+}
+
 inline agx::String Convert(const FString& StringUnreal)
 {
 	return agx::String(TCHAR_TO_UTF8(*StringUnreal));

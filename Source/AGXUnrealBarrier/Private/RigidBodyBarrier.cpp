@@ -114,8 +114,7 @@ void FRigidBodyBarrier::SetName(const FString& NameUnreal)
 FString FRigidBodyBarrier::GetName() const
 {
 	check(HasNative());
-	agx::String NameAGX = NativeRef->Native->getName();
-	FString NameUnreal = Convert(NameAGX);
+	FString NameUnreal(Convert(NativeRef->Native->getName()));
 	return NameUnreal;
 }
 
