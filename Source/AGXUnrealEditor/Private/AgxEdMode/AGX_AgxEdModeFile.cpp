@@ -1,7 +1,7 @@
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 
 #include "Utilities/AGX_EditorUtilities.h"
-#include "AGX_ArchiveImporter.h"
+#include "AGX_ArchiveImporterToActorTree.h"
 #include "AGX_ArchiveImporterToBlueprint.h"
 #include "AGX_ArchiveExporter.h"
 #include "AGX_LogCategory.h"
@@ -57,7 +57,7 @@ namespace
 	}
 }
 
-void UAGX_AgxEdModeFile::ImportAgxArchiveToLevel()
+void UAGX_AgxEdModeFile::ImportAgxArchiveToActorTree()
 {
 	/// \todo See
 	/// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html?sort=oldest
@@ -86,7 +86,7 @@ void UAGX_AgxEdModeFile::ImportAgxArchiveToLevel()
 	}
 
 	FString Filename = Filenames[0];
-	AGX_ArchiveImporter::ImportAGXArchive(Filename);
+	AGX_ArchiveImporterToActorTree::ImportAGXArchive(Filename);
 }
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()

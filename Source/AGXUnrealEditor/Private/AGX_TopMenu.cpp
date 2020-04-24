@@ -234,9 +234,9 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 {
 	// Import AGX Archive menu item
 	AddFileMenuEntry(
-		Builder, LOCTEXT("FileMenuEntryLabelIm", "Import AGX Archive to level..."),
-		LOCTEXT("FileMenuEntryToolTipIm", "Import an AGX Archive into the Editor."),
-		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToLevel(); });
+		Builder, LOCTEXT("FileMenuEntryLabelIm", "Import AGX Archive to level as actor tree..."),
+		LOCTEXT("FileMenuEntryToolTipIm", "Import an AGX Archive into the Editor as a tree of actors."),
+		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToActorTree(); });
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("FileMEnuEntryLabelImportBP", "Import AGX Archive to Blueprint..."),

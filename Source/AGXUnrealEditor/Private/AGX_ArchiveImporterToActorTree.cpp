@@ -1,4 +1,4 @@
-#include "AGX_ArchiveImporter.h"
+#include "AGX_ArchiveImporterToActorTree.h"
 
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
@@ -469,7 +469,7 @@ namespace
 
 }
 
-AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
+AActor* AGX_ArchiveImporterToActorTree::ImportAGXArchive(const FString& ArchivePath)
 {
 	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
 	if (World == nullptr)
