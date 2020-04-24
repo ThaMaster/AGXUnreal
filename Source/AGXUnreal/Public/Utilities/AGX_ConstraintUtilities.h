@@ -1,7 +1,8 @@
 #pragma once
 
 // AGXUnreal includes.
-#include <AGXUnreal/Public/Constraints/AGX_Constraint2DofComponent.h>
+#include "Constraints/AGX_Constraint1DofComponent.h"
+#include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 
 // Unreal Engine includes.
