@@ -30,6 +30,11 @@ FBoxShapeBarrier CreateBoxShapeBarrier(agxCollide::Box* Box)
 	return {std::make_unique<FGeometryAndShapeRef>(Box->getGeometry(), Box)};
 }
 
+FCylinderShapeBarrier CreateCylinderShapeBarrier(agxCollide::Cylinder* Cylinder)
+{
+	return {std::make_unique<FGeometryAndShapeRef>(Cylinder->getGeometry(), Cylinder)};
+}
+
 FTrimeshShapeBarrier CreateTrimeshShapeBarrier(agxCollide::Trimesh* Trimesh)
 {
 	return {std::make_unique<FGeometryAndShapeRef>(Trimesh->getGeometry(), Trimesh)};

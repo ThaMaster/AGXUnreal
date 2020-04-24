@@ -8,6 +8,7 @@
 // Shape classes.
 class UAGX_SphereShapeComponent;
 class UAGX_BoxShapeComponent;
+class UAGX_CylinderShapeComponent;
 class UAGX_TrimeshShapeComponent;
 
 // Constraint classes.
@@ -58,6 +59,15 @@ public:
 	 * The shape will be attached to the given USceneComponent.
 	 */
 	static UAGX_BoxShapeComponent* CreateBoxShape(AActor* Owner, USceneComponent* Outer);
+
+	/**
+	 * Create a new AGX Cylinder Shape as a child of the given Actor.
+	 * The shape will be attached to the give USceneComponent.
+	 * @param Owner - The Actor that should own the new cylinder shape.
+	 * @param Outer - The SceneComponent that the new cylinder shape should be attached to.
+	 * @return A newly created cylinder shape.
+	 */
+	static UAGX_CylinderShapeComponent* CreateCylinderShape(AActor* Owner, USceneComponent* Outer);
 
 	/**
 	 * Create a new AGX Trimesh Shape as a child of the given actor.

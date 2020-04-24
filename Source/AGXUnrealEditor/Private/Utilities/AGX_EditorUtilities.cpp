@@ -4,6 +4,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Constraints/AGX_ConstraintActor.h"
@@ -116,6 +117,12 @@ UAGX_SphereShapeComponent* FAGX_EditorUtilities::CreateSphereShape(
 UAGX_BoxShapeComponent* FAGX_EditorUtilities::CreateBoxShape(AActor* Owner, USceneComponent* Outer)
 {
 	return ::CreateShapeComponent<UAGX_BoxShapeComponent>(Owner, Outer);
+}
+
+UAGX_CylinderShapeComponent* FAGX_EditorUtilities::CreateCylinderShape(
+	AActor* Owner, USceneComponent* Outer)
+{
+	return ::CreateShapeComponent<UAGX_CylinderShapeComponent>(Owner, Outer);
 }
 
 UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(
