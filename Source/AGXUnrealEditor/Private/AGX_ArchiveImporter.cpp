@@ -34,6 +34,7 @@
 #include "RigidBodyBarrier.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
+#include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
@@ -108,6 +109,15 @@ namespace
 				FAGX_EditorUtilities::CreateBoxShape(&Actor, &Root);
 			ShapeComponent->HalfExtent = Box.GetHalfExtents();
 			FinalizeShape(ShapeComponent, Box);
+		}
+
+		virtual void InstantiateCylinder(const FCylinderShapeBarrier& Cylinder) override
+		{
+			UAGX_CylinderShapeComponent* ShapeComponent =
+				FAGX_EditorUtilities::CreateCylinderShape(&Actor, &Root);
+			ShapeComponent->Radius = Cylinder.GetRadius();
+			ShapeComponent->Height = Cylinder.GetHeight();
+			FinalizeShape(ShapeComponent, Cylinder);
 		}
 
 		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) override

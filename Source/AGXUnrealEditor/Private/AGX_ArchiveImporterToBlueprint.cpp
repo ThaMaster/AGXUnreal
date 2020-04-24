@@ -30,6 +30,7 @@
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
@@ -142,6 +143,15 @@ namespace
 			UAGX_BoxShapeComponent* Component =
 				FAGX_EditorUtilities::CreateBoxShape(BodyComponent->GetOwner(), BodyComponent);
 			Component->HalfExtent = Barrier.GetHalfExtents();
+			FinalizeShape(Component, Barrier);
+		}
+
+		virtual void InstantiateCylinder(const FCylinderShapeBarrier& Barrier) override
+		{
+			UAGX_CylinderShapeComponent* Component =
+				FAGX_EditorUtilities::CreateCylinderShape(BodyComponent->GetOwner(), BodyComponent);
+			Component->Radius = Barrier.GetRadius();
+			Component->Height = Barrier.GetHeight();
 			FinalizeShape(Component, Barrier);
 		}
 

@@ -43,6 +43,12 @@ namespace
 					ArchiveBody.InstantiateBox(CreateBoxShapeBarrier(Box));
 					break;
 				}
+				case agxCollide::Shape::CYLINDER:
+				{
+					agxCollide::Cylinder* Cylinder {Shape->as<agxCollide::Cylinder>()};
+					ArchiveBody.InstantiateCylinder(CreateCylinderShapeBarrier(Cylinder));
+					break;
+				}
 				case agxCollide::Shape::TRIMESH:
 				{
 					agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
