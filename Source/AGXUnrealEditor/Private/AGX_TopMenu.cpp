@@ -232,15 +232,36 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 
 void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 {
-	// Import AGX Archive menu item
+	// Import AGX Dynamics archive to in-level single actor menu item.
 	AddFileMenuEntry(
-		Builder, LOCTEXT("FileMenuEntryLabelIm", "Import AGX Archive to level as actor tree..."),
-		LOCTEXT("FileMenuEntryToolTipIm", "Import an AGX Archive into the Editor as a tree of actors."),
+			Builder,
+			LOCTEXT(
+					"FileMenuEntryLabelImportSingleActor",
+					"Import AGX Dynamics archive to level as a single actor..."),
+			LOCTEXT(
+					"FileMenuEntryTooTipImportSingleActor",
+					"Import an AGX Dynamics archive into the current level as a single actor"),
+			[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor(); });
+
+	// Import AGX archive to in-level actor tree menu item.
+	AddFileMenuEntry(
+		Builder,
+		LOCTEXT(
+			"FileMenuEntryLabelImportActorTree",
+			"Import AGX Dynamics archive to level as an actor tree..."),
+		LOCTEXT(
+			"FileMenuEntryToolTipImportActorTree",
+			"Import an AGX Dynamics Archive into the current level as a tree of actors."),
 		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToActorTree(); });
 
+	// Import AGX Dynamics archive to blueprint menu item.
 	AddFileMenuEntry(
-		Builder, LOCTEXT("FileMEnuEntryLabelImportBP", "Import AGX Archive to Blueprint..."),
-		LOCTEXT("FileMenuEntryhTooltopImportBP", "Import an AGX Archive to a Blueprint."),
+		Builder,
+		LOCTEXT(
+			"FileMEnuEntryLabelImportBluePrint", "Import AGX Dynamics archive to a Blueprint..."),
+		LOCTEXT(
+			"FileMenuEntryhTooltopImportBluePrint",
+			"Import an AGX Dynamics archive to a Blueprint."),
 		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint(); });
 
 	// Export AGX Archive menu item

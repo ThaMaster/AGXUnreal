@@ -150,8 +150,8 @@ namespace
 		{
 			UAGX_CylinderShapeComponent* Component =
 				FAGX_EditorUtilities::CreateCylinderShape(BodyComponent->GetOwner(), BodyComponent);
-			Component->Radius = Barrier.GetRadius();
 			Component->Height = Barrier.GetHeight();
+			Component->Radius = Barrier.GetRadius();
 			FinalizeShape(Component, Barrier);
 		}
 
@@ -201,7 +201,7 @@ namespace
 						   .ToString();
 				UE_LOG(
 					LogAGX, Warning,
-					TEXT("Shape '%s' imported with name '%s' becaue of name conflict."), *OldName,
+					TEXT("Shape '%s' imported with name '%s' because of name conflict."), *OldName,
 					*Name);
 			}
 			Component->Rename(*Name);
@@ -235,7 +235,7 @@ namespace
 						   .ToString();
 				UE_LOG(
 					LogAGX, Warning,
-					TEXT("RigidBody '%s' imported with name '%s' becaue of name conflict."),
+					TEXT("RigidBody '%s' imported with name '%s' because of name conflict."),
 					*OldName, *Name);
 			}
 			Component->Rename(*Name);
@@ -330,7 +330,8 @@ namespace
 				return;
 			}
 
-			/// \todo This is copy/paste from AGX_ArchiveImporter. Find a sensible shared location.
+			/// \todo This is copy/paste from AGX_ArchiveImporterToActorTree. Find a sensible shared
+			/// location.
 			StoreElectricMotorController(Barrier, Component->ElectricMotorController);
 			StoreFrictionController(Barrier, Component->FrictionController);
 			StoreLockController(Barrier, Component->LockController);
@@ -412,7 +413,7 @@ namespace
 					TEXT("Constraint '%s' imported with name '%s' because of name collision."),
 					*OldName, *Name);
 			}
-			Component->Rename(*Name);
+			Component->Rename(*Name, nullptr, REN_DontCreateRedirectors);
 
 			return Component;
 		}

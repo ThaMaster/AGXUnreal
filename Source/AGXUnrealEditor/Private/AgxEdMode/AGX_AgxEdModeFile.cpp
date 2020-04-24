@@ -1,6 +1,7 @@
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 
 #include "Utilities/AGX_EditorUtilities.h"
+#include "AGX_ArchiveImporterToSingleActor.h"
 #include "AGX_ArchiveImporterToActorTree.h"
 #include "AGX_ArchiveImporterToBlueprint.h"
 #include "AGX_ArchiveExporter.h"
@@ -55,6 +56,17 @@ namespace
 		FString Filename = Filenames[0];
 		return Filename;
 	}
+}
+
+void UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor()
+{
+	const FString Filename = SelectExistingAgxArchive();
+	if (Filename == NON_SELECTED)
+	{
+		return;
+	}
+
+	AGX_ArchiveImporterToSingleActor::ImportAGXArchive(Filename);
 }
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToActorTree()
