@@ -18,7 +18,7 @@ struct FAGX_ConstraintLockController;
 struct FAGX_ConstraintRangeController;
 struct FAGX_ConstraintTargetSpeedController;
 
-class FAGX_ConstraintUtilities
+class AGXUNREAL_API FAGX_ConstraintUtilities
 {
 public:
 	static void StoreControllers(
