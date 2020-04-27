@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -22,7 +20,8 @@ public:
 	virtual FText GetTooltip() const override;
 
 public:
-	static void ImportAgxArchiveToLevel();
+	static void ImportAgxArchiveToSingleActor();
+	static void ImportAgxArchiveToActorTree();
 	static void ImportAgxArchiveToBlueprint();
 	static void ExportAgxArchive();
 };

@@ -1,4 +1,4 @@
-#include "AGX_ArchiveImporter.h"
+#include "AGX_ArchiveImporterToActorTree.h"
 
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
@@ -86,11 +86,9 @@ namespace
 	class EditorBody final : public FAGXArchiveBody
 	{
 	public:
-		EditorBody(
-			AActor& InActor, USceneComponent& InRoot, UWorld& InWorld, const FString& InArchiveName)
+		EditorBody(AActor& InActor, USceneComponent& InRoot, const FString& InArchiveName)
 			: Actor(InActor)
 			, Root(InRoot)
-			, World(InWorld)
 			, ArchiveName(InArchiveName)
 		{
 		}
@@ -132,9 +130,14 @@ namespace
 			FString Name = MeshComponent->GetName() + "Shape";
 			if (!ShapeComponent->Rename(*Name, nullptr, REN_Test))
 			{
+				FString OldName = Name;
 				Name = MakeUniqueObjectName(
 						   &Actor, UAGX_TrimeshShapeComponent::StaticClass(), FName(*Name))
 						   .ToString();
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Trimesh '%s' imported with name '%s' because of name conflict."),
+					*OldName, *Name);
 			}
 			ShapeComponent->Rename(*Name, nullptr, REN_DontCreateRedirectors);
 			FinalizeShape(ShapeComponent, Trimesh);
@@ -154,11 +157,12 @@ namespace
 			std::tie(Location, Rotation) = Barrier.GetLocalPositionAndRotation();
 			Component->SetRelativeLocationAndRotation(Location, Rotation);
 			Component->UpdateVisualMesh();
+
+			/// \todo Rename the shape.
 		}
 
 		AActor& Actor;
 		USceneComponent& Root;
-		UWorld& World;
 		const FString& ArchiveName;
 	};
 
@@ -183,7 +187,7 @@ namespace
 			NewActor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
 			Bodies.Add(Barrier.GetGuid(), NewActor);
 			return new EditorBody(
-				*NewActor, *NewActor->RigidBodyComponent, World, ImportedRoot.GetActorLabel());
+				*NewActor, *NewActor->RigidBodyComponent, ImportedRoot.GetActorLabel());
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Hinge) override
@@ -252,6 +256,8 @@ namespace
 				Manager->DisableCollisionGroupPair(Group1, Group2);
 			}
 		}
+
+		virtual ~EditorInstantiator() = default;
 
 	private:
 		void CreateConstraint1Dof(const FConstraint1DOFBarrier& Barrier, UClass* ConstraintType)
@@ -469,7 +475,7 @@ namespace
 
 }
 
-AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
+AActor* AGX_ArchiveImporterToActorTree::ImportAGXArchive(const FString& ArchivePath)
 {
 	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
 	if (World == nullptr)
@@ -489,9 +495,7 @@ AActor* AGX_ArchiveImporter::ImportAGXArchive(const FString& ArchivePath)
 		return nullptr;
 	}
 
-	FString Filename;
-	/// \todo What about platforms that don't use / as a path separator?
-	ArchivePath.Split(TEXT("/"), nullptr, &Filename, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+	FString Filename = FPaths::GetBaseFilename(ArchivePath);
 	ImportGroup->SetActorLabel(Filename);
 
 	EditorInstantiator Instantiator(*ImportGroup, *World);

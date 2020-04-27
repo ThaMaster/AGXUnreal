@@ -3,7 +3,7 @@
 class AActor;
 class FString;
 
-namespace AGX_ArchiveImporter
+namespace AGX_ArchiveImporterToActorTree
 {
 	/**
 	 * Read simulation objects from the .agx archive pointed to by 'ArchivePath'

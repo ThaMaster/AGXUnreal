@@ -44,6 +44,7 @@ std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(
 	AActor* NewActor = World->SpawnActor<AActor>(AActor::StaticClass());
 	if (NewActor == nullptr)
 	{
+		UE_LOG(LogAGX, Warning, TEXT("Failed to create empty actor."));
 		/// \todo Do we need to destroy the Actor here?
 		return {nullptr, nullptr};
 	}

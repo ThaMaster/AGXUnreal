@@ -1,7 +1,8 @@
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 
 #include "Utilities/AGX_EditorUtilities.h"
-#include "AGX_ArchiveImporter.h"
+#include "AGX_ArchiveImporterToSingleActor.h"
+#include "AGX_ArchiveImporterToActorTree.h"
 #include "AGX_ArchiveImporterToBlueprint.h"
 #include "AGX_ArchiveExporter.h"
 #include "AGX_LogCategory.h"
@@ -25,10 +26,12 @@ UAGX_AgxEdModeFile* UAGX_AgxEdModeFile::GetInstance()
 
 namespace
 {
-	static const FString NON_SELECTED("");
+	static const FString NONE_SELECTED("");
 
 	FString SelectExistingAgxArchive()
 	{
+		// For a discussion on window handles see
+		// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html
 		TArray<FString> Filenames;
 		bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
 			nullptr, TEXT("Select an AGX Archive to import"), TEXT("DefaultPath"),
@@ -37,7 +40,7 @@ namespace
 		if (!FileSelected || Filenames.Num() == 0)
 		{
 			UE_LOG(LogAGX, Log, TEXT("No .agx file selected. Doing nothing."));
-			return NON_SELECTED;
+			return NONE_SELECTED;
 		}
 		if (Filenames.Num() > 1)
 		{
@@ -50,49 +53,37 @@ namespace
 				"Multiple .agx",
 				"Multiple files selected but we only support single files for now. Doing "
 				"nothing."));
-			return NON_SELECTED;
+			return NONE_SELECTED;
 		}
 		FString Filename = Filenames[0];
 		return Filename;
 	}
 }
 
-void UAGX_AgxEdModeFile::ImportAgxArchiveToLevel()
+void UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor()
 {
-	/// \todo See
-	/// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html?sort=oldest
-	/// for a discussion on window handles.
-	TArray<FString> Filenames;
-	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
-		nullptr, TEXT("Select an AGX Archive to import"), TEXT("DefaultPath"), TEXT("DefaultFile"),
-		TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None, Filenames);
-
-	if (!FileSelected || Filenames.Num() == 0)
+	const FString Filename = SelectExistingAgxArchive();
+	if (Filename == NONE_SELECTED)
 	{
-		UE_LOG(LogAGX, Log, TEXT("No .agx file selected. Doing nothing."));
 		return;
 	}
+	AGX_ArchiveImporterToSingleActor::ImportAGXArchive(Filename);
+}
 
-	if (Filenames.Num() > 1)
+void UAGX_AgxEdModeFile::ImportAgxArchiveToActorTree()
+{
+	const FString Filename = SelectExistingAgxArchive();
+	if (Filename == NONE_SELECTED)
 	{
-		UE_LOG(
-			LogAGX, Log,
-			TEXT("Multiple files selected but we only support single files for now. Doing "
-				 "nothing."));
-		FAGX_EditorUtilities::ShowNotification(LOCTEXT(
-			"Multiple .agx",
-			"Multiple file selected but we only support single files for now. Doing nothing."));
 		return;
 	}
-
-	FString Filename = Filenames[0];
-	AGX_ArchiveImporter::ImportAGXArchive(Filename);
+	AGX_ArchiveImporterToActorTree::ImportAGXArchive(Filename);
 }
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()
 {
 	const FString Filename = SelectExistingAgxArchive();
-	if (Filename == NON_SELECTED)
+	if (Filename == NONE_SELECTED)
 	{
 		return;
 	}
