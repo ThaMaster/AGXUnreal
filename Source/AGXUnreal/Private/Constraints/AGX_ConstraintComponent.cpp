@@ -79,12 +79,23 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	, LockedDofs(LockedDofsOrdered)
 	, NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 {
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+	// NAME_None means use the RootComponent of the passed Actor.
+	BodyAttachment1.FrameDefiningComponent.Set(GetOwner(), NAME_None);
+	BodyAttachment2.FrameDefiningComponent.Set(GetOwner(), NAME_None);
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 	BodyAttachment1.FrameDefiningActor = GetOwner();
 	BodyAttachment2.FrameDefiningActor = GetOwner();
+#endif
 
 #if WITH_EDITOR
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+	BodyAttachment1.OnFrameDefiningComponentChanged(this);
+	BodyAttachment1.OnFrameDefiningComponentChanged(this);
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 	BodyAttachment1.OnFrameDefiningActorChanged(this);
 	BodyAttachment2.OnFrameDefiningActorChanged(this);
+#endif
 #endif
 
 	// Create UAGX_ConstraintDofGraphicsComponent as child component.
@@ -99,7 +110,7 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	}
 	{
 		DofGraphicsComponent2 = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
-				TEXT("DofGraphicsComponent2"));
+			TEXT("DofGraphicsComponent2"));
 
 		DofGraphicsComponent2->Constraint = this;
 		DofGraphicsComponent2->SetupAttachment(this);
@@ -255,6 +266,27 @@ bool UAGX_ConstraintComponent::IsDofLocked(EDofFlag Dof) const
 	return static_cast<uint8>(LockedDofsBitmask) & static_cast<uint8>(Dof);
 }
 
+namespace
+{
+	FAGX_ConstraintBodyAttachment* GetAttachmentNamed(
+		const FName& Name, FAGX_ConstraintBodyAttachment* Attachment1,
+		FAGX_ConstraintBodyAttachment* Attachment2)
+	{
+		if (Name == GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, BodyAttachment1))
+		{
+			return Attachment1;
+		}
+		else if (Name == GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, BodyAttachment2))
+		{
+			return Attachment2;
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
+}
+
 #if WITH_EDITOR
 void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
@@ -279,34 +311,41 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 		// Property of an aggregate struct changed.
 
 		FAGX_ConstraintBodyAttachment* ModifiedBodyAttachment =
-			(MemberPropertyName ==
-			 GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, BodyAttachment1))
-				? &BodyAttachment1
-				: ((MemberPropertyName ==
-					GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, BodyAttachment2))
-					   ? &BodyAttachment2
-					   : nullptr);
+			GetAttachmentNamed(MemberPropertyName, &BodyAttachment1, &BodyAttachment2);
 
 		if (ModifiedBodyAttachment)
 		{
+			// TODO: Code below needs to be triggered also when modified through code!
+			// Editor-only probably OK though, since it is just for Editor convenience.
+			// See FCoreUObjectDelegates::OnObjectPropertyChanged.
+			// Or/additional add Refresh button to AAGX_ConstraintFrameActor's Details Panel
+			// that rebuilds the constraint usage list.
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+			/// \todo This propery is three levels deep instread of two for the FrameDefiningActor.
+			/// The middle layer is an FAGX_SCeneComponentReference. Here we don't know if the
+			/// property change happened in the ModifiedBodyAttachment's RigidBody or its
+			/// FrameDefiningComponent. Assuming we have to update.
+			/// Consider doing this in PostEditChangeChainProperty instead.
+			if (PropertyName == GET_MEMBER_NAME_CHECKED(FAGX_SceneComponentReference, OwningActor))
+			{
+				ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
+			}
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 			if (PropertyName ==
 				GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningActor))
 			{
-				// TODO: Code below needs to be triggered also when modified through code!
-				// Editor-only probably OK though, since it is just for Editor convenience.
-				// See FCoreUObjectDelegates::OnObjectPropertyChanged.
-				// Or/additional add Refresh button to AAGX_ConstraintFrameActor's Details Panel
-				// that rebuilds the constraint usage list.
 				ModifiedBodyAttachment->OnFrameDefiningActorChanged(this);
 			}
+#endif
 
-			/// \todo This is a bit of a hack and it may be possible to remove it.
+			/// \todo These two are a bit of a hack and it may be possible to remove it.
 			/// The intention was to handle the Blueprint editor case, where it's not possible to
 			/// select the Actor that will be created when the Blueprint is instantiated as the
-			/// OwningActor in the RigidBodyReference. Here we set the Constraint's owner as the
-			/// OwningActor, meaning that the RigidBodyReference will reference something in the
-			/// "local scope". This should be the Blueprint itself, or a representation thereof,
-			/// but it's unclear to me if it will work like that.
+			/// OwningActor in the RigidBodyReference/SceneComponentReference. Here we set the
+			/// Constraint's owner as the OwningActor, meaning that the
+			/// RigidBodyReference/SceneComponentRefrerence will reference something in the "local
+			/// scope". This should be the Blueprint itself, or a representation thereof, but it's
+			/// unclear to me if it will work like that. Very few things work the way I expect.
 			if (ModifiedBodyAttachment->RigidBody.OwningActor == nullptr)
 			{
 				ModifiedBodyAttachment->RigidBody.FallbackOwningActor = GetOwner();
@@ -315,6 +354,18 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 					UE_LOG(
 						LogAGX, Warning,
 						TEXT("BodyAttachment in '%s' got nullptr fallback owning actor."),
+						*GetName());
+				}
+			}
+			if (ModifiedBodyAttachment->FrameDefiningComponent.OwningActor == nullptr)
+			{
+				ModifiedBodyAttachment->FrameDefiningComponent.FallbackOwningActor = GetOwner();
+				if (ModifiedBodyAttachment->FrameDefiningComponent.FallbackOwningActor == nullptr)
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("FrameDefiningComponent reference in '%s' got nullptr fallback owning "
+							 "actor."),
 						*GetName());
 				}
 			}
@@ -389,12 +440,17 @@ void UAGX_ConstraintComponent::UpdateNativeProperties()
 void UAGX_ConstraintComponent::PostLoad()
 {
 	Super::PostLoad();
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+	BodyAttachment1.OnFrameDefiningComponentChanged(this);
+	BodyAttachment2.OnFrameDefiningComponentChanged(this);
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 	BodyAttachment1.OnFrameDefiningActorChanged(this);
 	BodyAttachment2.OnFrameDefiningActorChanged(this);
+#endif
 
 	// Provide a default owning actor, the owner of this component, if no owner has been specified
-	// for the RigidBodyReferences. This is always the case when the constraint has been created
-	// as part of an Actor Blueprint.
+	// for the RigidBodyReferences and FrameDefiningComponents. This is always the case when the
+	// constraint has been created as part of an Actor Blueprint.
 	for (FAGX_RigidBodyReference* BodyReference :
 		 {&BodyAttachment1.RigidBody, &BodyAttachment2.RigidBody})
 	{
@@ -405,13 +461,36 @@ void UAGX_ConstraintComponent::PostLoad()
 			BodyReference->CacheCurrentRigidBody();
 		}
 	}
+	for (FAGX_SceneComponentReference* ComponentReference :
+		 {&BodyAttachment1.FrameDefiningComponent, &BodyAttachment2.FrameDefiningComponent})
+	{
+		ComponentReference->FallbackOwningActor = nullptr;
+		/// \todo Investigate the relationship between FName("") and NAME_None, and what an emtpy
+		/// text field in the Blueprint editor produces. Playing it safe for now and checking for
+		/// both.
+		if (ComponentReference->OwningActor == nullptr &&
+			(ComponentReference->SceneComponentName != "" &&
+			 ComponentReference->SceneComponentName != NAME_None))
+		{
+			// A nullptr FrameDefiningComponent actually means something (use the body as origin),
+			// so we shouldn't set it unconditionally. We use the name as a sign that an
+			// OwningActor should be set.
+			ComponentReference->OwningActor = GetOwner();
+			ComponentReference->CacheCurrentSceneComponent();
+		}
+	}
 }
 
 void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
 {
 	Super::PostDuplicate(bDuplicateForPIE);
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+	BodyAttachment1.OnFrameDefiningComponentChanged(this);
+	BodyAttachment2.OnFrameDefiningComponentChanged(this);
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 	BodyAttachment1.OnFrameDefiningActorChanged(this);
 	BodyAttachment2.OnFrameDefiningActorChanged(this);
+#endif
 }
 
 void UAGX_ConstraintComponent::BeginDestroy()

@@ -2,11 +2,14 @@
 
 // AGXUnreal includes.
 #include "AGX_RigidBodyComponent.h"
-#include "Constraints/AGX_ConstraintFrameActor.h"
+#include "AGX_SceneComponentReference.h"
 #include "AGX_LogCategory.h"
+#include "Constraints/AGX_ConstraintFrameActor.h"
+#include "Constraints/AGX_ConstraintFrameComponent.h"
 
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
+#include "UObject/UObjectGlobals.h"
 
 UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody() const
 {
@@ -52,10 +55,18 @@ FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 	/// The difference would be that GetRigidBody would be called in cases where it would not
 	/// before.
 
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+	if (USceneComponent* FrameOriginComponent = FrameDefiningComponent.GetSceneComponent())
+	{
+		return FrameOriginComponent->GetComponentTransform().TransformPositionNoScale(
+			LocalFrameLocation);
+	}
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 	if (FrameDefiningActor != nullptr)
 	{
 		return FrameDefiningActor->GetActorTransform().TransformPositionNoScale(LocalFrameLocation);
 	}
+#endif
 	else if (UAGX_RigidBodyComponent* Body = GetRigidBody())
 	{
 		return Body->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
@@ -71,10 +82,17 @@ FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 
 FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation(UAGX_RigidBodyComponent* Body) const
 {
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+	if (USceneComponent* Origin = FrameDefiningComponent.GetSceneComponent())
+	{
+		return Origin->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
+	}
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 	if (FrameDefiningActor != nullptr)
 	{
 		return FrameDefiningActor->GetActorTransform().TransformPositionNoScale(LocalFrameLocation);
 	}
+#endif
 	else if (Body != nullptr)
 	{
 		return Body->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
@@ -93,12 +111,18 @@ FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 	/// The difference would be that GetRigidBody would be called in cases where it would not
 	/// before.
 
-
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+	if (USceneComponent* Origin = FrameDefiningComponent.GetSceneComponent())
+	{
+		return Origin->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
+	}
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 	if (FrameDefiningActor != nullptr)
 	{
 		return FrameDefiningActor->GetActorTransform().TransformRotation(
 			LocalFrameRotation.Quaternion());
 	}
+#endif
 	else if (UAGX_RigidBodyComponent* Body = GetRigidBody())
 	{
 		return Body->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
@@ -113,11 +137,18 @@ FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 
 FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation(UAGX_RigidBodyComponent* Body) const
 {
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+	if (USceneComponent* Origin = FrameDefiningComponent.GetSceneComponent())
+	{
+		return Origin->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
+	}
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 	if (FrameDefiningActor != nullptr)
 	{
 		return FrameDefiningActor->GetActorTransform().TransformRotation(
-				LocalFrameRotation.Quaternion());
+			LocalFrameRotation.Quaternion());
 	}
+#endif
 	else if (Body != nullptr)
 	{
 		return Body->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
@@ -162,6 +193,14 @@ FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool Creat
 
 #if WITH_EDITOR
 
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+void FAGX_ConstraintBodyAttachment::OnFrameDefiningComponentChanged(
+	UAGX_ConstraintComponent* Parent)
+{
+	/// \todo Add code here once ConstraintUsage stuff has been moved from ConstraintFrameActor to
+	/// ConstraintFrameComponent.
+}
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(UAGX_ConstraintComponent* Parent)
 {
 	AAGX_ConstraintFrameActor* RecentConstraintFrame =
@@ -181,16 +220,36 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(UAGX_ConstraintC
 		ConstraintFrame->AddConstraintUsage(Parent);
 	}
 }
+#endif
 
 void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
 {
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+	// This may be a problem. FrameDefiningComponent uses a TSoftObjectPtr to reference the
+	// SceneComponent. This is required for it to be usabel in the Mode Panel and Blueprint editors.
+	// It is not legal to dereference a TSoftObjectPtr during  GarbageCollection, and OnDestroy is
+	// likely to be called during GarbageCollection.
+
+	// The assert message from Unreal Engine is
+	//     Illegal call to StaticFindObject() while collecting garbage!
+	if (IsGarbageCollecting())
+	{
+		return;
+	}
+
+	UAGX_ConstraintFrameComponent* ConstraintFrame =
+		Cast<UAGX_ConstraintFrameComponent>(FrameDefiningComponent.GetSceneComponent());
+
+	/// \todo Call ConstraintFrame->RemoveConstraintUsage once ConstraintUsage stuff has been moved
+	/// from ConstraintFrameActor to ConstraintFrameComponent.
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 	AAGX_ConstraintFrameActor* ConstraintFrame =
 		Cast<AAGX_ConstraintFrameActor>(FrameDefiningActor);
-
 	if (ConstraintFrame)
 	{
 		ConstraintFrame->RemoveConstraintUsage(Parent);
 	}
+#endif
 }
 
 #endif

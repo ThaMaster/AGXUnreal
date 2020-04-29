@@ -17,10 +17,10 @@ class UAGX_RigidBodyComponent;
  * when the Blueprint is instantiated. The RigidBodyReference provides a getter with an
  * InOwningActor parameter for this purpose.
  *
- * The RigidBodyReference supports caching of the RigidBodyComponent through the CacheRigidBody
- * member function. Only call this once the RigidBodyReference has been fully formed, i.e., the
- * OwningActor property set to the final Actor and when the references RigidBodyComponent has been
- * given its final name.
+ * The RigidBodyReference supports caching of the RigidBodyComponent through the
+ * CacheCurrentRigidBody member function. Only call this once the RigidBodyReference has been fully
+ * formed, i.e., the OwningActor property set to the final Actor and when the referenced
+ * RigidBodyComponent has been given its final name.
  */
 USTRUCT()
 struct AGXUNREAL_API FAGX_RigidBodyReference
@@ -66,7 +66,7 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 	// itself.
 	//
 	// FallbackOwningActor is ignored while OwningActor is not nullptr.
-	// Should be cleared on BeginPlay in the object holds this RigidBodyReference.
+	// Should be cleared on BeginPlay in the object that holds this RigidBodyReference.
 	// Intentionally not a UPROPERTY.
 	AActor* FallbackOwningActor;
 

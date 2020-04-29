@@ -2,6 +2,7 @@
 
 // AGXUnreal includes.
 #include "AGX_RigidBodyReference.h"
+#include "AGX_SceneComponentReference.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -9,6 +10,10 @@
 #include "GameFramework/Actor.h"
 
 #include "AGX_ConstraintBodyAttachment.generated.h"
+
+#define AGXUNREAL_ACTOR 1
+#define AGXUNREAL_COMPONENT 2
+#define AGXUNREAL_FRAME_DEFINING_TYPE AGXUNREAL_COMPONENT
 
 class UAGX_ConstraintComponent;
 class UAGX_RigidBodyComponent;
@@ -36,6 +41,10 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	UPROPERTY(EditAnywhere, Category = "Rigid Body")
 	FAGX_RigidBodyReference RigidBody;
 
+	/// \todo Add comment here. Most likely very similar to the FrameDefiningActor comment.
+	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
+	FAGX_SceneComponentReference FrameDefiningComponent;
+
 	/**
 	 * Optional. Use this to define the Local Frame Location and Rotation relative to
 	 * an actor other than the Rigid Body Actor (or to use the other Actor's transform
@@ -50,7 +59,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * can use the other rigid body as frame defining actor, etc.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
-	AActor* FrameDefiningActor;
+	AActor* FrameDefiningActor_DISABLED;
 
 	/** Frame location relative to Rigid Body Actor, or from Frame Defining Actor if set. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
@@ -129,13 +138,23 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	FRigidBodyBarrier* GetRigidBodyBarrier(bool CreateIfNeeded);
 
 #if WITH_EDITOR
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
 	/**
-	 * Should be invoked whenever Frame Defining Actor changes, to trigger the
+	 * Should be invoked whenever FrameDefiningComponent changes, to trigger the
+	 * removal of the constraint from the previous FrameDefiningComponent's list of
+	 * constraint usages, and adding to the new one's (if they are
+	 * AAGX_ConstraintFrameActor actor types).
+	 */
+	void OnFrameDefiningComponentChanged(UAGX_ConstraintComponent* Parent);
+#else
+	/**
+	 * Should be invoked whenever FrameDefiningActor changes, to trigger the
 	 * removal of the constraint from the previous Frame Defining Actor's list of
 	 * constraint usages, and adding to the new one's (if they are
 	 * AAGX_ConstraintFrameActor actor types).
 	 */
 	void OnFrameDefiningActorChanged(UAGX_ConstraintComponent* Parent);
+#endif
 
 	void OnDestroy(UAGX_ConstraintComponent* Parent);
 #endif

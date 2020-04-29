@@ -371,7 +371,11 @@ namespace
 			const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment,
 			int32 BodyIndex)
 		{
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+			Attachment.FrameDefiningComponent.Clear();
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 			Attachment.FrameDefiningActor = nullptr;
+#endif
 			Attachment.LocalFrameLocation = Barrier.GetLocalLocation(BodyIndex);
 			Attachment.LocalFrameRotation = Barrier.GetLocalRotation(BodyIndex);
 		}

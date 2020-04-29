@@ -53,8 +53,13 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 	TSharedRef<IPropertyHandle> StructPropertyHandle, IDetailChildrenBuilder& StructBuilder,
 	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+	FrameDefiningComponentProperty = StructPropertyHandle->GetChildHandle(
+		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningComponent));
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 	FrameDefiningActorProperty = StructPropertyHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningActor));
+#endif
 
 	uint32 NumChildren = 0;
 	StructPropertyHandle->GetNumChildren(NumChildren);
@@ -69,6 +74,9 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 			IDetailPropertyRow& DefaultPropertyRow =
 				StructBuilder.AddProperty(ChildHandle.ToSharedRef());
 
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+			/// \todo Figure out how to do this part with a FrameDefiningComponent.
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 			// Add "Create New" option to context menu for the Frame Defining Actor.
 			if (FAGX_PropertyUtilities::PropertyEquals(ChildHandle, FrameDefiningActorProperty))
 			{
@@ -111,6 +119,7 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 									  [SNew(SHorizontalBox) +
 									   SHorizontalBox::Slot()[DefaultValueWidget.ToSharedRef()]]]];
 			}
+#endif
 		}
 	}
 
@@ -153,7 +162,11 @@ bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBody() const
 
 bool FAGX_ConstraintBodyAttachmentCustomization::HasFrameDefiningActor() const
 {
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+	return FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningComponentProperty) != nullptr;
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 	return FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty) != nullptr;
+#endif
 }
 
 FString GenerateFrameDefiningActorName(
@@ -165,6 +178,9 @@ FString GenerateFrameDefiningActorName(
 
 void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor()
 {
+#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+	/// \todo Figure out how to do this when using ConstraintFrameComponent instead of -Actor.
+#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 	check(BodyAttachmentProperty);
 
 	if (FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty))
@@ -212,6 +228,7 @@ void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor(
 
 	BodyAttachment->FrameDefiningActor = NewActor;
 	BodyAttachment->OnFrameDefiningActorChanged(Constraint);
+#endif
 #endif
 }
 
