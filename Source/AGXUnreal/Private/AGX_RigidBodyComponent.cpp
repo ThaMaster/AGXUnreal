@@ -223,6 +223,13 @@ bool UAGX_RigidBodyComponent::CanEditChange(const UProperty* InProperty) const
 
 bool UAGX_RigidBodyComponent::TransformRootComponentAllowed() const
 {
+	if (GetOwner() == nullptr)
+	{
+		// Components don't have an owner while being built in a Blueprint. Not sure how to handle
+		// this. Leaving it to the user for now, i.e., the user is responsible for not enabling
+		// TransformRootComponent when there are multiple RigidBodyComponents in a Blueprint.
+		return true;
+	}
 	return FAGX_ObjectUtilities::GetNumComponentsInActor<UAGX_RigidBodyComponent>(*GetOwner()) == 1;
 }
 #endif
@@ -260,9 +267,22 @@ void UAGX_RigidBodyComponent::OnComponentView()
 
 void UAGX_RigidBodyComponent::DisableTransformRootCompIfMultiple()
 {
+	if (GetOwner() == nullptr)
+	{
+		// Components don't have an owner while being built in a Blueprint. This may actually be
+		// a problem. Makes automatic bTransformRootComponent disabling impossible. Is there
+		// another way to get a list of all sibling RigidBodyComponents?
+		return;
+	}
+
+	/*
+	 * TransformRootComponent is not allowed when the owning Actor has multiple RigidBodyComponents
+	 * because the rigid bodies would then be fighting each others' transform synchronization from
+	 * AGX Dynamics. This is true even if a single RigidBodyComponent has bTransformRootComponet set
+	 * to true because that rigid body would wreck all the other bodies.
+	 */
 	TArray<UAGX_RigidBodyComponent*> Components;
 	GetOwner()->GetComponents<UAGX_RigidBodyComponent>(Components, false);
-
 	if (Components.Num() > 1)
 	{
 		// Disable the bTransformRootComponent flag for all UAGX_RigidBodyComponent in the owning
@@ -270,7 +290,9 @@ void UAGX_RigidBodyComponent::DisableTransformRootCompIfMultiple()
 		for (auto C : Components)
 		{
 			if (C->bTransformRootComponent)
+			{
 				C->bTransformRootComponent = false;
+			}
 		}
 	}
 }
