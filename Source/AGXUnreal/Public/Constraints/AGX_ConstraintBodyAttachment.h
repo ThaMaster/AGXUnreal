@@ -166,4 +166,5 @@ private:
 	 */
 	UPROPERTY(Transient)
 	mutable AActor* RecentFrameDefiningActor;
+	USceneComponent* PreviousFrameDefiningComponent;
 };

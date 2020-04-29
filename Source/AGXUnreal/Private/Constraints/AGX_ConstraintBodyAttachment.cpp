@@ -197,8 +197,21 @@ FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool Creat
 void FAGX_ConstraintBodyAttachment::OnFrameDefiningComponentChanged(
 	UAGX_ConstraintComponent* Parent)
 {
-	/// \todo Add code here once ConstraintUsage stuff has been moved from ConstraintFrameActor to
-	/// ConstraintFrameComponent.
+	UAGX_ConstraintFrameComponent* Previous =
+		Cast<UAGX_ConstraintFrameComponent>(PreviousFrameDefiningComponent);
+	UAGX_ConstraintFrameComponent* Next =
+		Cast<UAGX_ConstraintFrameComponent>(FrameDefiningComponent.GetSceneComponent());
+
+	PreviousFrameDefiningComponent = FrameDefiningComponent.GetSceneComponent();
+
+	if (Previous)
+	{
+		Previous->RemoveConstraintUsage(Parent);
+	}
+	if (Next)
+	{
+		Next->AddConstraintUsage(Parent);
+	}
 }
 #elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 void FAGX_ConstraintBodyAttachment::OnFrameDefiningActorChanged(UAGX_ConstraintComponent* Parent)
@@ -228,9 +241,7 @@ void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
 	// This may be a problem. FrameDefiningComponent uses a TSoftObjectPtr to reference the
 	// SceneComponent. This is required for it to be usabel in the Mode Panel and Blueprint editors.
 	// It is not legal to dereference a TSoftObjectPtr during  GarbageCollection, and OnDestroy is
-	// likely to be called during GarbageCollection.
-
-	// The assert message from Unreal Engine is
+	// likely to be called during GarbageCollection. The assert message from Unreal Engine is
 	//     Illegal call to StaticFindObject() while collecting garbage!
 	if (IsGarbageCollecting())
 	{
@@ -239,17 +250,15 @@ void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
 
 	UAGX_ConstraintFrameComponent* ConstraintFrame =
 		Cast<UAGX_ConstraintFrameComponent>(FrameDefiningComponent.GetSceneComponent());
-
-	/// \todo Call ConstraintFrame->RemoveConstraintUsage once ConstraintUsage stuff has been moved
-	/// from ConstraintFrameActor to ConstraintFrameComponent.
 #elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 	AAGX_ConstraintFrameActor* ConstraintFrame =
 		Cast<AAGX_ConstraintFrameActor>(FrameDefiningActor);
+#endif
+
 	if (ConstraintFrame)
 	{
 		ConstraintFrame->RemoveConstraintUsage(Parent);
 	}
-#endif
 }
 
 #endif

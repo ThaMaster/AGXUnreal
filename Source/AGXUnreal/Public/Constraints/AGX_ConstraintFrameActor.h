@@ -40,14 +40,6 @@ private:
 	UPROPERTY()
 	UAGX_ConstraintFrameComponent* ConstraintFrameComponent;
 
-	/**
-	 * The constraint(s) that are referencing this frame.
-	 *
-	 * Used for convenience only, to be able to quickly access the constraint(s).
-	 */
-	UPROPERTY(VisibleAnywhere, Category = "AGX Constraint Frame Actor", Transient)
-	TArray<UAGX_ConstraintComponent*> UsedByConstraints;
-
 public:
 	void AddConstraintUsage(UAGX_ConstraintComponent* Constraint);
 

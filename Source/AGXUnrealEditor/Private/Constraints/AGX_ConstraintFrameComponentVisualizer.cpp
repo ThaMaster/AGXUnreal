@@ -24,7 +24,8 @@ void FAGX_ConstraintFrameComponentVisualizer::DrawVisualization(
 	{
 		return;
 	}
-
+// This should not be needed now that we use Components instead of Actors for constraint frames.
+#if 0
 	const AAGX_ConstraintFrameActor* ConstraintFrameActor =
 		Cast<const AAGX_ConstraintFrameActor>(ConstraintFrameComponent->GetOwner());
 
@@ -32,6 +33,7 @@ void FAGX_ConstraintFrameComponentVisualizer::DrawVisualization(
 	{
 		return;
 	}
+#endif
 
 	if (GUnrealEd == nullptr)
 	{
@@ -49,8 +51,10 @@ void FAGX_ConstraintFrameComponentVisualizer::DrawVisualization(
 		return;
 	}
 
-	for (UAGX_ConstraintComponent* Constraint : ConstraintFrameActor->GetConstraintUsage())
+	for (UAGX_ConstraintComponent* Constraint : ConstraintFrameComponent->GetConstraintUsage())
 	{
+		/// \todo Should this be a call to DrawVisualization? Depends on if we want icons or not.
+		/// Change to a static call if we don't want the icons.
 		ConstraintComponentVisualizer->DrawConstraint(Constraint, View, PDI);
 	}
 }
