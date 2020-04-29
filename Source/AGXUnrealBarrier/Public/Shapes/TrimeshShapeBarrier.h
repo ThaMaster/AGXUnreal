@@ -35,6 +35,16 @@ public:
 	TArray<FVector> GetTriangleNormals() const;
 
 	/**
+	 * Mapping from RenderData vertex to UV texture coordinates.
+	 */
+	TArray<FVector2D> GetRenderDataTextureCoordinates() const;
+
+	/**
+	 * Mapping from RenderData triangles to vertex index.
+	 */
+	TArray<uint32> GetRenderDataVertexIndices() const;
+
+	/**
 	 * The source name is a user-provided string that is stored with the trimesh.
 	 * it can be the name of a file on disk from which the mesh data was read,
 	 * or some other form of description. May be the empty string.

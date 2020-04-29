@@ -334,9 +334,34 @@ namespace
 			RawMesh.WedgeTangentX.Add(FVector(0.0f, 0.0f, 0.0f));
 			RawMesh.WedgeTangentY.Add(FVector(0.0f, 0.0f, 0.0f));
 			RawMesh.WedgeColors.Add(FColor(255, 255, 255));
-			for (int32 UVIndex = 0; UVIndex < MAX_MESH_TEXTURE_COORDS; ++UVIndex)
+		}
+
+		// Apply texture coordinates.
+		TArray<uint32> RenderDataIndices = Trimesh.GetRenderDataVertexIndices();
+		if (NumWedges == RenderDataIndices.Num())
+		{
+			TArray<FVector2D> TextureCoordiantes = Trimesh.GetRenderDataTextureCoordinates();
+			for (int32 i = 0; i < NumWedges; ++i)
 			{
-				RawMesh.WedgeTexCoords[UVIndex].Add(FVector2D(0.0f, 0.0f));
+				for (int32 UVIndex = 0; UVIndex < MAX_MESH_TEXTURE_COORDS; ++UVIndex)
+				{
+					RawMesh.WedgeTexCoords[UVIndex].Add(TextureCoordiantes[RenderDataIndices[i]]);
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("Unable to get texture coordinates for trimesh %s"),
+				*Trimesh.GetSourceName());
+
+			// Set texture coordinates to zero if we cannot use RenderData's texture coordinates.
+			for (int32 i = 0; i < NumWedges; ++i)
+			{
+				for (int32 UVIndex = 0; UVIndex < MAX_MESH_TEXTURE_COORDS; ++UVIndex)
+				{
+					RawMesh.WedgeTexCoords[UVIndex].Add(FVector2D(0.0f, 0.0f));
+				}
 			}
 		}
 
