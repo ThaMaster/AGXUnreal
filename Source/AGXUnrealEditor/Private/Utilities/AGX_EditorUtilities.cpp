@@ -357,6 +357,8 @@ namespace
 				}
 				else
 				{
+					// If we didn't get usable texture coordinates, set them to zero. Not setting
+					// them to anything will result in a runtime crash.
 					RawMesh.WedgeTexCoords[UVIndex].Add(FVector2D(0.0f, 0.0f));
 				}
 			}
