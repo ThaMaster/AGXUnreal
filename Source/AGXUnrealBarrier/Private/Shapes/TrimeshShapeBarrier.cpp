@@ -128,6 +128,34 @@ namespace
 
 		return DataUnreal;
 	}
+
+	template <typename AgxType, typename UnrealType, typename FGetAgxBuffer, typename FConvert>
+	TArray<UnrealType> ConvertRenderBuffer(
+		const FTrimeshShapeBarrier* Barrier, const TCHAR* Operation, const TCHAR* DataName,
+		FGetAgxBuffer GetAgxBuffer, FConvert Convert)
+	{
+		TArray<UnrealType> DataUnreal;
+
+		const agxCollide::RenderData* RenderData = GetRenderData(Barrier, Operation);
+		if (RenderData == nullptr)
+		{
+			return DataUnreal;
+		}
+
+		const agx::VectorPOD<AgxType>& DataAgx = GetAgxBuffer(RenderData);
+		if (!CheckSize(DataAgx.size(), DataName))
+		{
+			return DataUnreal;
+		}
+
+		DataUnreal.Reserve(static_cast<int32>(DataAgx.size()));
+		for (AgxType DatumAgx : DataAgx)
+		{
+			DataUnreal.Add(Convert(DatumAgx));
+		}
+
+		return DataUnreal;
+	}
 }
 
 FTrimeshShapeBarrier::FTrimeshShapeBarrier()
@@ -183,56 +211,36 @@ TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals() const
 		[](const agx::Vec3& Normal) { return ConvertVector(Normal); });
 }
 
-TArray<FVector2D> FTrimeshShapeBarrier::GetRenderDataTextureCoordinates() const
-{
-	TArray<FVector2D> TextureCoord;
-
-	const agxCollide::RenderData* RenderData =
-		GetRenderData(this, TEXT("fetch texture coordinates from"));
-	if (RenderData == nullptr)
-	{
-		return TextureCoord;
-	}
-
-	const agx::Vec2Vector& TexCoordArray = RenderData->getTexCoordArray();
-	if (!CheckSize(TexCoordArray.size(), TEXT("texture coordinates")))
-	{
-		return TextureCoord;
-	}
-
-	TextureCoord.Reserve(static_cast<int32>(TexCoordArray.size()));
-	for (const agx::Vec2& TexCoord : TexCoordArray)
-	{
-		TextureCoord.Add(Convert(TexCoord));
-	}
-
-	return TextureCoord;
-}
-
 TArray<uint32> FTrimeshShapeBarrier::GetRenderDataIndices() const
 {
-	TArray<uint32> VertexIndices;
+	return ConvertRenderBuffer<agx::UInt32, uint32>(
+		this, TEXT("fetch render data indices from"), TEXT("render data indices"),
+		[](const agxCollide::RenderData* Render) -> auto& { return Render->getIndexArray(); },
+		[](const agx::UInt32 Index) { return static_cast<uint32>(Index); });
+}
 
-	const agxCollide::RenderData* RenderData =
-		GetRenderData(this, TEXT("fetch render data indices from"));
-	if (RenderData == nullptr)
-	{
-		return VertexIndices;
-	}
-	const agx::UInt32Vector& IndicesAgx = RenderData->getIndexArray();
-	if (!CheckSize(IndicesAgx.size(), TEXT("render data indices")))
-	{
-		return VertexIndices;
-	}
-	VertexIndices.Reserve(static_cast<int32>(IndicesAgx.size()));
+TArray<FVector> FTrimeshShapeBarrier::GetRenderDataPositions() const
+{
+	return ConvertRenderBuffer<agx::Vec3, FVector>(
+		this, TEXT("fetch render data positions from"), TEXT("render data positions"),
+		[](const agxCollide::RenderData* Render) -> auto& { return Render->getVertexArray(); },
+		[](const agx::Vec3& Position) { return ConvertVector(Position); });
+}
 
-	for (agx::UInt32 Index : IndicesAgx)
-	{
-		// Assuming agx::UInt32 to uint32 conversion is always safe.
-		VertexIndices.Add(static_cast<uint32>(Index));
-	}
+TArray<FVector> FTrimeshShapeBarrier::GetRenderDataNormals() const
+{
+	return ConvertRenderBuffer<agx::Vec3, FVector>(
+		this, TEXT("fetch render data normals"), TEXT("render data normals"),
+		[](const agxCollide::RenderData* Render) -> auto& { return Render->getNormalArray(); },
+		[](const agx::Vec3& Normal) { return ConvertVector(Normal); });
+}
 
-	return VertexIndices;
+TArray<FVector2D> FTrimeshShapeBarrier::GetRenderDataTextureCoordinates() const
+{
+	return ConvertRenderBuffer<agx::Vec2, FVector2D>(
+		this, TEXT("fetch texture coordinates from"), TEXT("texture coordinates"),
+		[](const agxCollide::RenderData* Render) -> auto& { return Render->getTexCoordArray(); },
+		[](const agx::Vec2& Coordinate) { return Convert(Coordinate); });
 }
 
 FString FTrimeshShapeBarrier::GetSourceName() const

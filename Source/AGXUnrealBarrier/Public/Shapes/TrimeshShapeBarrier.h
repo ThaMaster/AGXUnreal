@@ -57,6 +57,19 @@ public:
 	 * Indices into the other render data arrays. Each three consecutive indices form a triangle.
 	 */
 	TArray<uint32> GetRenderDataIndices() const;
+
+	/**
+	 * Positions for each render data vertex.
+	 */
+	TArray<FVector> GetRenderDataPositions() const;
+
+	/**
+	 * Normals for each render data vertex.
+	 */
+	TArray<FVector> GetRenderDataNormals() const;
+
+	/**
+	 * Texture coordinates for each render data vertex.
 	 */
 	TArray<FVector2D> GetRenderDataTextureCoordinates() const;
 
