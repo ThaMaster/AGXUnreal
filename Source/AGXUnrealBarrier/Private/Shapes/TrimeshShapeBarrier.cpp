@@ -227,7 +227,7 @@ TArray<FVector2D> FTrimeshShapeBarrier::GetRenderDataTextureCoordinates() const
 	TextureCoord.Reserve(NumTexCoord);
 	for (const agx::Vec2& TexCoord : TexCoordArray)
 	{
-		TextureCoord.Add(FVector2D(TexCoord[0], TexCoord[1]));
+		TextureCoord.Add(Convert(TexCoord));
 	}
 
 	return TextureCoord;
