@@ -195,7 +195,7 @@ namespace
 		FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
 
 		// Somewhat unclear what all these should be.
-		BuildSettings.bRecomputeNormals = true;
+		BuildSettings.bRecomputeNormals = false;
 		BuildSettings.bRecomputeTangents = true;
 		BuildSettings.bUseMikkTSpace = true;
 		BuildSettings.bGenerateLightmapUVs = true;
@@ -320,12 +320,9 @@ namespace
 		//    tex coord: | Vec2, Vec2, Vec2 | Vec2, Vec2, Vec2 | ... |
 		//
 		// The positions and indices can simply be copied over. The normals must be triplicated over
-		// all three vertices of each triangle. The other tangents and the texture coordinates must
-		// be invented.
-
-		Trimesh.GetVertexIndices();
-		Trimesh.GetVertexPositions();
-		Trimesh.GetTriangleNormals();
+		// all three vertices of each triangle. The other tangents are left unset and
+		// bRecomputeTangents enabled in the StaticMesh SourceModel settings. Texture coordinates
+		// are left empty.
 
 		FRawMesh RawMesh;
 
@@ -333,38 +330,117 @@ namespace
 		RawMesh.WedgeIndices = Trimesh.GetVertexIndices();
 
 		const int32 NumTriangles = Trimesh.GetNumTriangles();
+		const int32 NumIndices = Trimesh.GetNumIndices();
+
+		RawMesh.WedgeTangentZ.Reserve(NumIndices);
+		RawMesh.WedgeColors.Reserve(NumIndices);
+		RawMesh.WedgeTexCoords[0].Reserve(NumIndices);
+
+		// Unreal Engine data that has no correspondent in the AGX Dynamics data.
+		RawMesh.FaceMaterialIndices.Reserve(NumTriangles);
+		RawMesh.FaceSmoothingMasks.Reserve(NumTriangles);
+
+		TArray<FVector> TriangleNormals = Trimesh.GetTriangleNormals();
+
 		for (int32 TIdx = 0; TIdx < NumTriangles; ++TIdx)
 		{
-			RawMesh.WedgeTangentX;
-			RawMesh.WedgeTangentY;
-			RawMesh.WedgeTangentZ;
-			RawMesh.WedgeTexCoords;
+			// I don't know how to compute the first two two tangents, but bRecomputeTangents (not
+			// bRecomputeNormals) has been enabled on the StaticMesh SourceModel. Perhaps that's
+			// enough.
+
+			FVector Normal = TriangleNormals[TIdx];
+			RawMesh.WedgeTangentZ.Add(Normal);
+			RawMesh.WedgeTangentZ.Add(Normal);
+			RawMesh.WedgeTangentZ.Add(Normal);
+
+			RawMesh.WedgeColors.Add(FColor(255, 255, 255));
+			RawMesh.WedgeColors.Add(FColor(255, 255, 255));
+			RawMesh.WedgeColors.Add(FColor(255, 255, 255));
+
+			FVector2D TexCoord(0.0f, 0.0f); /// \todo Project position onto a primary plane.
+			RawMesh.WedgeTexCoords[0].Add(TexCoord);
+			RawMesh.WedgeTexCoords[0].Add(TexCoord);
+			RawMesh.WedgeTexCoords[0].Add(TexCoord);
+
+			RawMesh.FaceMaterialIndices.Add(0);
+			RawMesh.FaceSmoothingMasks.Add(0x00000000);
+			// Not entirely sure on the FaceSmoothingMasks, the documentation says only
+			//     Smoothing mask. Array[FaceId] = uint32
+			// but I believe the process is that Unreal Engine does bit-and between two neighboring
+			// faces and if the result comes out as non-zero then smoothing will happen along that
+			// edge. Not sure what is being smoothed though. Perhaps the vertex normals are merged
+			// if smoothing is on, and kept separate if smoothing is off. Also not sure how this
+			// relates to the bRecompute.* settings on the StaticMesh's SourceModel.
 		}
-
-		TArray<uint32> RenderIndices = Trimesh.GetRenderDataIndices();
-		TArray<FVector> RenderNormals = Trimesh.GetRenderDataNormals();
-		TArray<FVector> RenderPositions = Trimesh.GetRenderDataPositions();
-		TArray<FVector2D> RenderCoordinates = Trimesh.GetRenderDataTextureCoordinates();
-
-		RawMesh.WedgeTangentX;
-		RawMesh.WedgeTangentY;
-		RawMesh.WedgeTangentZ;
-		RawMesh.WedgeTexCoords;
-
-		// Per-face data.
-		RawMesh.FaceMaterialIndices;
-		RawMesh.FaceSmoothingMasks;
 
 		return RawMesh;
 	}
 
 	FRawMesh CreateRawMeshFromRenderData(const FTrimeshShapeBarrier& Trimesh)
 	{
+		// What we have:
+		//
+		// Data shared among triangles:
+		//    positions: [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+		//    normals:   [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+		//    tex coord: [Vec2, Vec2, Vec2, Vec2, Vec2, ... ]
+		//
+		// Data owned by each triangle:
+		//    indices:   | int, int, int | int, int, int | ... |
+		//               |  Triangle 0   |  Triangle 1   | ... |
+		//
+		//
+		// What we want:
+		//
+		// Data shared among triangles:
+		//   positions: [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+		//
+		// Data owned by each triangle:
+		//    indices:   | int,  int,  int  | int,  int,  int  | ... |
+		//    tangent x: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+		//    tangent y: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+		//    tangent z: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+		//    tex coord: | Vec2, Vec2, Vec2 | Vec2, Vec2, Vec2 | ... |
+		//
+		// The positions and indices can simply be copied over. The normals and texture coordinates
+		// must be applied per triangle vertex instead of stored with the shared vertex data.
+
 		FRawMesh RawMesh;
+
+		RawMesh.VertexPositions = Trimesh.GetRenderDataPositions();
+		RawMesh.WedgeIndices = Trimesh.GetRenderDataIndices();
+
+		const int32 NumTriangles = Trimesh.GetNumRenderTriangles();
+		const int32 NumIndices = Trimesh.GetNumRenderIndices();
+
+		RawMesh.WedgeTangentZ.Reserve(NumIndices);
+		RawMesh.WedgeColors.Reserve(NumIndices);
+		RawMesh.WedgeTexCoords[0].Reserve(NumIndices);
+
+		RawMesh.FaceMaterialIndices.Reserve(NumTriangles);
+		RawMesh.FaceSmoothingMasks.Reserve(NumTriangles);
+
+		TArray<FVector> RenderNormals = Trimesh.GetRenderDataNormals();
+		TArray<FVector2D> RenderCoordinates = Trimesh.GetRenderDataTextureCoordinates();
+
+		for (int32 I = 0; I < NumIndices; ++I)
+		{
+			const int32 RenderI = RawMesh.WedgeIndices[I];
+			RawMesh.WedgeTangentZ.Add(RenderNormals[RenderI]);
+			RawMesh.WedgeTexCoords[0].Add(RenderCoordinates[RenderI]);
+			RawMesh.WedgeColors.Add(FColor(255, 255, 255));
+		}
+
+		for (int32 I = 0; I < NumTriangles; ++I)
+		{
+			RawMesh.FaceMaterialIndices.Add(0);
+			RawMesh.FaceSmoothingMasks.Add(0xFFFFFFFF);
+		}
+
 		return RawMesh;
 	}
 
-	FRawMesh CreateRawMeshFromTrimesh_new(const FTrimeshShapeBarrier& Trimesh)
+	FRawMesh CreateRawMeshFromTrimesh(const FTrimeshShapeBarrier& Trimesh)
 	{
 		// AGX Dynamics store mesh data in two formats: collision and render.
 		//
@@ -421,13 +497,13 @@ namespace
 		//
 		// The strategy employed here is based on the observation that the render data in AGX
 		// Dynamics is closer to the Unreal Engine format since it contains texture coordinates and
-		// per-vertex-per-triangle normals. If both the number of vertex positions and the number of
-		// triangles match between the collision mesh and the render mesh then we assume that the
-		// meshes are equivalent and the render data is used. The render data provide everything we
-		// need except for the tangents. If the collision and render data sizes don't match then the
-		// collision data is used and all three vertices in an Unreal Engine triangle is given the
-		// same normal and the texture coordinates are computed as a projection of each triangle
-		// onto one of the primary axis planes.
+		// per-vertex-per-triangle normals. If the number of triangles match between the collision
+		// mesh and the render mesh then we assume that the meshes are equivalent and the render
+		// data is used. The render data provide everything we need except for the tangents. If the
+		// collision and render data sizes don't match then the collision data is used and all three
+		// vertices in an Unreal Engine triangle is given the same normal and the texture
+		// coordinates are computed as a projection of each triangle onto one of the primary axis
+		// planes.
 
 		const int32 NumCollisionPositions = Trimesh.GetNumPositions();
 		const int32 NumRenderPositions = Trimesh.GetNumRenderPositions();
@@ -437,9 +513,14 @@ namespace
 		if (NumCollisionPositions <= 0 || NumCollisionIndices <= 0)
 		{
 			// No collision mesh data available, this trimesh is broken.
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Did not find any triangle data in imported trimesh '%s'. Cannot create "
+					 "StatiMesh asset."),
+				*Trimesh.GetSourceName());
 			return FRawMesh();
 		}
-		if (NumCollisionPositions == NumRenderPositions && NumCollisionIndices == NumRenderIndices)
+		if (NumCollisionIndices == NumRenderIndices)
 		{
 			return CreateRawMeshFromRenderData(Trimesh);
 		}
@@ -455,7 +536,7 @@ namespace
 	 * @param Trimesh - The trimesh barrier used to create the raw mesh.
 	 * @return A raw mesh created from the trimesh barrier passed as argument.
 	 */
-	FRawMesh CreateRawMeshFromTrimesh(const FTrimeshShapeBarrier& Trimesh)
+	FRawMesh CreateRawMeshFromTrimesh_old(const FTrimeshShapeBarrier& Trimesh)
 	{
 		FRawMesh RawMesh;
 
