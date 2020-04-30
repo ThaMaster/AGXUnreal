@@ -306,7 +306,7 @@ namespace
 
 		RawMesh.VertexPositions = Trimesh.GetVertexPositions();
 		RawMesh.WedgeIndices = Trimesh.GetVertexIndices();
-		TArray<FVector> TriangleNormals = Trimesh.GetTriangleNormals();
+		const TArray<FVector> TriangleNormals = Trimesh.GetTriangleNormals();
 
 		const int32 NumFaces = TriangleNormals.Num();
 		const int32 NumWedges = RawMesh.WedgeIndices.Num();
@@ -334,9 +334,35 @@ namespace
 			RawMesh.WedgeTangentX.Add(FVector(0.0f, 0.0f, 0.0f));
 			RawMesh.WedgeTangentY.Add(FVector(0.0f, 0.0f, 0.0f));
 			RawMesh.WedgeColors.Add(FColor(255, 255, 255));
+		}
+
+		// Apply texture coordinates.
+		const TArray<FVector2D> TextureCoordiantes = Trimesh.GetRenderDataTextureCoordinates();
+		const TArray<uint32> RenderDataIndices = Trimesh.GetRenderDataVertexIndices();
+		const bool TextureCoordinatesUsable = RenderDataIndices.Num() == NumWedges;
+		if (!TextureCoordinatesUsable)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Cannot use render data for trimesh '%s' because the number of"
+					 "render data indices (%d) does not match the number of wedges (%d)."),
+				*Trimesh.GetSourceName(), RenderDataIndices.Num(), NumWedges);
+		}
+
+		for (int32 i = 0; i < NumWedges; ++i)
+		{
 			for (int32 UVIndex = 0; UVIndex < MAX_MESH_TEXTURE_COORDS; ++UVIndex)
 			{
-				RawMesh.WedgeTexCoords[UVIndex].Add(FVector2D(0.0f, 0.0f));
+				if (TextureCoordinatesUsable)
+				{
+					RawMesh.WedgeTexCoords[UVIndex].Add(TextureCoordiantes[RenderDataIndices[i]]);
+				}
+				else
+				{
+					// If we didn't get usable texture coordinates, set them to zero. Not setting
+					// them to anything will result in a runtime crash.
+					RawMesh.WedgeTexCoords[UVIndex].Add(FVector2D(0.0f, 0.0f));
+				}
 			}
 		}
 

@@ -69,7 +69,10 @@ TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions() const
 	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
 	if (Trimesh == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Native shape is not a Trimesh."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch positions from Trimesh barrier whose native shape is not a "
+				 "Trimesh."));
 		return VertexPositions;
 	}
 
@@ -109,7 +112,10 @@ TArray<uint32> FTrimeshShapeBarrier::GetVertexIndices() const
 	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
 	if (Trimesh == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Native shape is not a Trimesh."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch vertex indices from Trimesh barrier whose native shape is not a "
+				 "Trimesh."));
 		return VertexIndices;
 	}
 
@@ -149,7 +155,10 @@ TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals() const
 	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
 	if (Trimesh == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("NativeShape is not a Trimesh."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch triangle normals from Trimesh barrier whose native shape is not a "
+				 "Trimesh."));
 		return TriangleNormals;
 	}
 
@@ -170,6 +179,107 @@ TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals() const
 	}
 
 	return TriangleNormals;
+}
+
+TArray<FVector2D> FTrimeshShapeBarrier::GetRenderDataTextureCoordinates() const
+{
+	TArray<FVector2D> TextureCoord;
+
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT(
+				"Cannot fetch texture coordinates from Trimesh barrier without a native Trimesh."));
+		return TextureCoord;
+	}
+
+	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
+	if (Trimesh == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch texture coordinates from Trimesh barrier whose native shape is not "
+				 "a Trimesh."));
+		return TextureCoord;
+	}
+
+	const agxCollide::RenderData* RenderData = Trimesh->getRenderData();
+	if (RenderData == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch texture coordinates from Trimesh barrier whose native Trimesh "
+				 "doesn't contain render data."));
+		return TextureCoord;
+	}
+
+	const agx::Vec2Vector& TexCoordArray = RenderData->getTexCoordArray();
+	const size_t NumTexCoord = TexCoordArray.size();
+	if (NumTexCoord > static_cast<size_t>(std::numeric_limits<int32>::max()))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Native trimesh's RenderData contains more triangles than Unreal can handle."));
+		return TextureCoord;
+	}
+
+	TextureCoord.Reserve(NumTexCoord);
+	for (const agx::Vec2& TexCoord : TexCoordArray)
+	{
+		TextureCoord.Add(Convert(TexCoord));
+	}
+
+	return TextureCoord;
+}
+
+TArray<uint32> FTrimeshShapeBarrier::GetRenderDataVertexIndices() const
+{
+	TArray<uint32> VertexIndices;
+
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch render data vertex indices from Trimesh barrier without a native "
+				 "Trimesh."));
+		return VertexIndices;
+	}
+
+	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
+	if (Trimesh == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch render data vertex indices from Trimesh barrier whose native shape "
+				 "is not a Trimesh."));
+		return VertexIndices;
+	}
+
+	const agxCollide::RenderData* RenderData = Trimesh->getRenderData();
+	if (RenderData == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Cannot fetch render data vertex indices from Trimesh barrier whose native Trimesh doesn't contain render data."));
+		return VertexIndices;
+	}
+
+	const agx::UInt32Vector& Indices = RenderData->getIndexArray();
+	const size_t NumIndices = Indices.size();
+	if (NumIndices > static_cast<size_t>(std::numeric_limits<int32>::max()))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Native trimesh's RenderData contains more triangles than Unreal can handle."));
+		return VertexIndices;
+	}
+
+	for (agx::UInt32 Index : Indices)
+	{
+		// Assuming agx::UInt32 to uint32 conversion is always safe.
+		VertexIndices.Add(static_cast<uint32>(Index));
+	}
+
+	return VertexIndices;
 }
 
 FString FTrimeshShapeBarrier::GetSourceName() const
@@ -195,7 +305,8 @@ void FTrimeshShapeBarrier::AllocateNative(
 	{
 		// Create temporary allocation parameters structure for AllocateNativeShape() to use.
 
-		std::shared_ptr<AllocationParameters> Params = std::make_shared<AllocationParameters>(SourceName);
+		std::shared_ptr<AllocationParameters> Params =
+			std::make_shared<AllocationParameters>(SourceName);
 		Params->Vertices = &Vertices;
 		Params->TriIndices = &TriIndices;
 		Params->bClockwise = bClockwise;
