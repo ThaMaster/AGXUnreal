@@ -187,6 +187,50 @@ FTrimeshShapeBarrier::~FTrimeshShapeBarrier()
 	// not just the forward declaration, of FTrimeshShapeRef.
 }
 
+int32 FTrimeshShapeBarrier::GetNumPositions() const
+{
+	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this, TEXT("fetch num positions from"));
+	if (Trimesh == nullptr)
+	{
+		return -1;
+	}
+	if (!CheckSize(Trimesh->getNumVertices(), TEXT("positions")))
+	{
+		return -1;
+	}
+	return static_cast<int>(Trimesh->getNumVertices());
+}
+
+int32 FTrimeshShapeBarrier::GetNumIndices() const
+{
+	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this, TEXT("fetch num indices"));
+	if (Trimesh == nullptr)
+	{
+		return -1;
+	}
+	const size_t NumIndices = Trimesh->getNumTriangles() * 3;
+	if (!CheckSize(NumIndices, TEXT("indices")))
+	{
+		return -1;
+	}
+	return static_cast<int>(NumIndices);
+}
+
+int32 FTrimeshShapeBarrier::GetNumTriangles() const
+{
+	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this, TEXT("fetch num triangles"));
+	if (Trimesh == nullptr)
+	{
+		return -1;
+	}
+	const size_t NumTriangles = Trimesh->getNumTriangles();
+	if (!CheckSize(NumTriangles, TEXT("triangles")))
+	{
+		return -1;
+	}
+	return static_cast<int>(Trimesh->getNumTriangles());
+}
+
 TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions() const
 {
 	return ConvertCollisionBuffer<agx::Vec3, FVector>(
@@ -209,6 +253,38 @@ TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals() const
 		this, TEXT("fetch triangle normals from"), TEXT("normals"),
 		[](const agxCollide::CollisionMeshData* Mesh) -> auto& { return Mesh->getNormals(); },
 		[](const agx::Vec3& Normal) { return ConvertVector(Normal); });
+}
+
+int32 FTrimeshShapeBarrier::GetNumRenderPositions() const
+{
+	const agxCollide::RenderData* RenderData =
+		GetRenderData(this, TEXT("fetch num render positions"));
+	if (RenderData == nullptr)
+	{
+		return -1;
+	}
+	const size_t NumPositions = RenderData->getVertexArray().size();
+	if (!CheckSize(NumPositions, TEXT("render positions")))
+	{
+		return -1;
+	}
+	return static_cast<int32>(NumPositions);
+}
+
+int32 FTrimeshShapeBarrier::GetNumRenderIndices() const
+{
+	const agxCollide::RenderData* RenderData =
+		GetRenderData(this, TEXT("fetch num render indices"));
+	if (RenderData == nullptr)
+	{
+		return -1;
+	}
+	const size_t NumIndices = RenderData->getIndexArray().size();
+	if (!CheckSize(NumIndices, TEXT("render indices")))
+	{
+		return -1;
+	}
+	return static_cast<int32>(NumIndices);
 }
 
 TArray<uint32> FTrimeshShapeBarrier::GetRenderDataIndices() const

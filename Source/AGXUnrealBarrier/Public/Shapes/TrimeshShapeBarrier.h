@@ -35,6 +35,12 @@ public:
 	FTrimeshShapeBarrier(FTrimeshShapeBarrier&& Other);
 	virtual ~FTrimeshShapeBarrier() override;
 
+	int32 GetNumPositions() const;
+
+	int32 GetNumIndices() const;
+
+	int32 GetNumTriangles() const;
+
 	/**
 	 * One FVector per vertex location. Vertex positions can be shared between
 	 * triangles.
@@ -52,6 +58,10 @@ public:
 	 * Per-triangle normal.
 	 */
 	TArray<FVector> GetTriangleNormals() const;
+
+	int32 GetNumRenderPositions() const;
+
+	int32 GetNumRenderIndices() const;
 
 	/**
 	 * Indices into the other render data arrays. Each three consecutive indices form a triangle.
