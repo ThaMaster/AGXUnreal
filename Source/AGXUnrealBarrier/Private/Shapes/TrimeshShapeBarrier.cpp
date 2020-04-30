@@ -69,7 +69,10 @@ TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions() const
 	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
 	if (Trimesh == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Native shape is not a Trimesh."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch positions from Trimesh barrier whose native shape is not a "
+				 "Trimesh."));
 		return VertexPositions;
 	}
 
@@ -109,7 +112,10 @@ TArray<uint32> FTrimeshShapeBarrier::GetVertexIndices() const
 	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
 	if (Trimesh == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Native shape is not a Trimesh."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch vertex indices from Trimesh barrier whose native shape is not a "
+				 "Trimesh."));
 		return VertexIndices;
 	}
 
