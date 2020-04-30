@@ -15,6 +15,7 @@
 #include "Logging/LogVerbosity.h"
 #include "Math/Interval.h"
 #include "Math/Vector.h"
+#include "Math/Vector2D.h"
 #include "Math/Quat.h"
 #include "Math/TwoVectors.h"
 
@@ -24,6 +25,7 @@
 #include <agx/Notify.h>
 #include <agx/RigidBody.h>
 #include <agx/Quat.h>
+#include <agx/Vec2.h>
 #include <agx/Vec3.h>
 #include "EndAGXIncludes.h"
 
@@ -96,7 +98,32 @@ inline agx::Real ConvertAngleToAgx(T A)
 	return FMath::DegreesToRadians(A);
 }
 
-// Vectors.
+// Two-dimensional vectors.
+
+inline FVector2D Convert(const agx::Vec2& V)
+{
+	return FVector2D(Convert(V.x()), Convert(V.y()));
+}
+
+inline FVector2D ConvertDistance(const agx::Vec2& V)
+{
+	return FVector2D(ConvertDistance(V.x()), ConvertDistance(V.y()));
+}
+
+// No ConvertVector for two-dimensional vectors because there is no handedness here, so it would be
+// identical to ConvertDistance.
+
+inline agx::Vec2 Convert(const FVector2D& V)
+{
+	return agx::Vec2(Convert(V.X), Convert(V.Y));
+}
+
+inline agx::Vec2 ConvertDistance(const FVector2D& V)
+{
+	return agx::Vec2(ConvertDistance(V.X), ConvertDistance(V.Y));
+}
+
+// Three-dimensional vectors.
 
 inline FVector Convert(agx::Vec3 V)
 {
