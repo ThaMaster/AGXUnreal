@@ -134,84 +134,78 @@ FTrimeshShapeBarrier::~FTrimeshShapeBarrier()
 
 TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions() const
 {
-	TArray<FVector> VertexPositions;
+	TArray<FVector> PositionsUnreal;
 
 	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this, TEXT("fetch positions from"));
 	if (Trimesh == nullptr)
 	{
-		return VertexPositions;
+		return PositionsUnreal;
 	}
 
-	if (!CheckSize(Trimesh->getNumVertices(), TEXT("vertices")))
+	const agx::Vec3Vector& PositionsAgx = Trimesh->getMeshData()->getVertices();
+	if (!CheckSize(PositionsAgx.size(), TEXT("vertices")))
 	{
-		return VertexPositions;
+		return PositionsUnreal;
 	}
 
-	int32 NumVertices = static_cast<int32>(Trimesh->getNumVertices());
-	VertexPositions.Reserve(NumVertices);
-
-	const agxCollide::CollisionMeshData* MeshData = Trimesh->getMeshData();
-	const agx::Vec3Vector& Positions = MeshData->getVertices();
-	for (const agx::Vec3& Position : Positions)
+	PositionsUnreal.Reserve(static_cast<int32>(PositionsAgx.size()));
+	for (const agx::Vec3& Position : PositionsAgx)
 	{
-		VertexPositions.Add(ConvertVector(Position));
+		PositionsUnreal.Add(ConvertVector(Position));
 	}
 
-	return VertexPositions;
+	return PositionsUnreal;
 }
 
 TArray<uint32> FTrimeshShapeBarrier::GetVertexIndices() const
 {
-	TArray<uint32> VertexIndices;
+	TArray<uint32> IndicesUnreal;
 
 	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this, TEXT("fetch indices from"));
 	if (Trimesh == nullptr)
 	{
-		return VertexIndices;
+		return IndicesUnreal;
 	}
 
-	if (!CheckSize(3 * Trimesh->getNumTriangles(), TEXT("triangles")))
+	const agx::UInt32Vector& IndicesAgx = Trimesh->getMeshData()->getIndices();
+	if (!CheckSize(IndicesAgx.size(), TEXT("vertex indices")))
 	{
-		return VertexIndices;
+		return IndicesUnreal;
 	}
 
-	const int32 NumIndices = static_cast<int32>(3 * Trimesh->getNumTriangles());
-	VertexIndices.Reserve(NumIndices);
-	const agxCollide::CollisionMeshData* MeshData = Trimesh->getMeshData();
-	const agx::UInt32Vector& Indices = MeshData->getIndices();
-	for (agx::UInt32 Index : Indices)
+	IndicesUnreal.Reserve(static_cast<int32>(IndicesAgx.size()));
+	for (agx::UInt32 Index : IndicesAgx)
 	{
 		// Assuming agx::UInt32 to uint32 conversion is always safe.
-		VertexIndices.Add(static_cast<uint32>(Index));
+		IndicesUnreal.Add(static_cast<uint32>(Index));
 	}
 
-	return VertexIndices;
+	return IndicesUnreal;
 }
 
 TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals() const
 {
-	TArray<FVector> TriangleNormals;
+	TArray<FVector> NormalsUnreal;
 
 	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this, TEXT("fetch triangle normals from"));
 	if (Trimesh == nullptr)
 	{
-		return TriangleNormals;
+		return NormalsUnreal;
 	}
 
-	if (!CheckSize(Trimesh->getNumTriangles(), TEXT("triangles")))
+	const agx::Vec3Vector& NormalsAgx = Trimesh->getMeshData()->getNormals();
+	if (!CheckSize(NormalsAgx.size(), TEXT("normals")))
 	{
-		return TriangleNormals;
+		return NormalsUnreal;
 	}
 
-	const int32 NumTriangles = static_cast<int32>(Trimesh->getNumTriangles());
-	TriangleNormals.Reserve(NumTriangles);
-	const agx::Vec3Vector& Normals = Trimesh->getMeshData()->getNormals();
-	for (const agx::Vec3& Normal : Normals)
+	NormalsUnreal.Reserve(static_cast<int32>(NormalsAgx.size()));
+	for (const agx::Vec3& Normal : NormalsAgx)
 	{
-		TriangleNormals.Add(ConvertVector(Normal));
+		NormalsUnreal.Add(ConvertVector(Normal));
 	}
 
-	return TriangleNormals;
+	return NormalsUnreal;
 }
 
 TArray<FVector2D> FTrimeshShapeBarrier::GetRenderDataTextureCoordinates() const
