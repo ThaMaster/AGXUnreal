@@ -8,6 +8,25 @@
 
 struct FTriIndices;
 
+/**
+ * A handle to an AGX Dynamics trimesh collision shape.
+ *
+ * An AGX Dynamics collision trimesh consists of a collection of triangles. Each triangle has three
+ * vertices and a single normal. Vertex positions are frequently shared among several triangles so
+ * the triangle doesn't store the vertex position but instead an index into a vertex position
+ * buffer.
+ *
+ * VertexPositions: TArray<FVector> - One FVector per point in space where a vertex resides.
+ * VertexIndices: TArray<uint32> - Three uint32s per triangle. Used to read from VertexPositions.
+ * TriangleNormals: TArray<FVector> - One FVector per triangle.
+ *
+ * In addition to the collision data a trimesh may contain rendering data. The rendering data
+ * contains  its own mesh which may be equivalent to the collision mesh, but may also be different.
+ * The render data also store vertex positions, vertex indices, and normals, but also texture
+ * coordinates. The normals are not stored per triangle but instead per vertex and should be
+ * accessed via the vertex indices just like the positions. The same is true for the texture
+ * coordinates.
+ */
 class AGXUNREALBARRIER_API FTrimeshShapeBarrier : public FShapeBarrier
 {
 public:
@@ -24,7 +43,7 @@ public:
 
 	/**
 	 * Mapping from triangles to vertex positions. Each three consecutive
-	 * indices for a triangle between the three pointed-to vertex positions.
+	 * indices form a triangle between the three pointed-to vertex positions.
 	 * Several triangles may reference the same vertex position.
 	 */
 	TArray<uint32> GetVertexIndices() const;
