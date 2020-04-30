@@ -294,6 +294,161 @@ namespace
 		return {PackagePath, AssetName};
 	}
 
+	FRawMesh CreateRawMeshFromCollisionData(const FTrimeshShapeBarrier& Trimesh)
+	{
+		// What we have:
+		//
+		// Data shared among triangles:
+		//   positions: [Vec3, Vec3, Vec3 Vec3, Vec3, ... ]
+		//
+		// Data owned by each triangle:
+		//   indices:    | int, int, int | int, int, int | ... |
+		//   normal:     |     Vec3      |      Vec3     | ... |
+		//               |  Triangle 0   |  Triangle 1   | ... |
+		//
+		//
+		// What we want:
+		//
+		// Data shared among triangles:
+		//   positions: [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+		//
+		// Data owned by each triangle:
+		//    indices:   | int,  int,  int  | int,  int,  int  | ... |
+		//    tangent x: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+		//    tangent y: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+		//    tangent z: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+		//    tex coord: | Vec2, Vec2, Vec2 | Vec2, Vec2, Vec2 | ... |
+		//
+		// The positions and indices can simply be copied over. The normals must be triplicated over
+		// all three vertices of each triangle. The other tangents and the texture coordinates must
+		// be invented.
+
+		Trimesh.GetVertexIndices();
+		Trimesh.GetVertexPositions();
+		Trimesh.GetTriangleNormals();
+
+		FRawMesh RawMesh;
+
+		RawMesh.VertexPositions = Trimesh.GetVertexPositions();
+		RawMesh.WedgeIndices = Trimesh.GetVertexIndices();
+
+		const int32 NumTriangles = Trimesh.GetNumTriangles();
+		for (int32 TIdx = 0; TIdx < NumTriangles; ++TIdx)
+		{
+			RawMesh.WedgeTangentX;
+			RawMesh.WedgeTangentY;
+			RawMesh.WedgeTangentZ;
+			RawMesh.WedgeTexCoords;
+		}
+
+		TArray<uint32> RenderIndices = Trimesh.GetRenderDataIndices();
+		TArray<FVector> RenderNormals = Trimesh.GetRenderDataNormals();
+		TArray<FVector> RenderPositions = Trimesh.GetRenderDataPositions();
+		TArray<FVector2D> RenderCoordinates = Trimesh.GetRenderDataTextureCoordinates();
+
+		RawMesh.WedgeTangentX;
+		RawMesh.WedgeTangentY;
+		RawMesh.WedgeTangentZ;
+		RawMesh.WedgeTexCoords;
+
+		// Per-face data.
+		RawMesh.FaceMaterialIndices;
+		RawMesh.FaceSmoothingMasks;
+
+		return RawMesh;
+	}
+
+	FRawMesh CreateRawMeshFromRenderData(const FTrimeshShapeBarrier& Trimesh)
+	{
+		FRawMesh RawMesh;
+		return RawMesh;
+	}
+
+	FRawMesh CreateRawMeshFromTrimesh_new(const FTrimeshShapeBarrier& Trimesh)
+	{
+		// AGX Dynamics store mesh data in two formats: collision and render.
+		//
+		// Collision
+		//
+		// The collision data consists of three arrays: positions, indices, and normals. The
+		// positions is a list of vertex positions. The indices comes in triplets for each triangle
+		// and the triplet defines which vertex positions form that triangle. There is one normal
+		// per triangle and they are stored in the same order as the position index triplets.
+		//
+		// Data shared among triangles:
+		//   positions: [Vec3, Vec3, Vec3 Vec3, Vec3, ... ]
+		//
+		// Data owned by each triangle:
+		//   indices:    | int, int, int | int, int, int | ... |
+		//   normal:     |     Vec3      |      Vec3     | ... |
+		//               |  Triangle 0   |  Triangle 1   | ... |
+		//
+		// Render
+		//
+		// The render data consists of four arrays: positions, normals, texture coordinates, and
+		// indices. The function is similar to the collision data, but this time everything is
+		// indexed and all arrays except for the index array create a single conceptual Vertex
+		// struct.
+		//
+		// Data shared among triangles:
+		//    positions: [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+		//    normals:   [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+		//    tex coord: [Vec2, Vec2, Vec2, Vec2, Vec2, ... ]
+		//
+		// Data owned by each triangle:
+		//    indices:   | int, int, int | int, int, int | ... |
+		//               |  Triangle 0   |  Triangle 1   | ... |
+		//
+		//
+		// Unreal Engine store its meshes in a third format. It is similar to the render format in
+		// AGX Dynamics, but more data is owned per triangle instead of shared between multiple
+		// triangles. Another way of saying the same thing is that it is similar to the collision
+		// format in AGX Dynamics, but with additional data owned by each triangle. The Unreal
+		// Engine format consists of six arrays: positions, indices, tangent X, tangent Y, tangent
+		// Z, and texture coordinates. Tangent Z has the same meaning as the normal in the AGX
+		// Dynamics data.
+		//
+		// Data shared among triangles:
+		//   positions: [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+		//
+		// Data owned by each triangle:
+		//    indices:   | int,  int,  int  | int,  int,  int  | ... |
+		//    tangent x: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+		//    tangent y: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+		//    tangent z: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+		//    tex coord: | Vec2, Vec2, Vec2 | Vec2, Vec2, Vec2 | ... |
+		//
+		//
+		// The strategy employed here is based on the observation that the render data in AGX
+		// Dynamics is closer to the Unreal Engine format since it contains texture coordinates and
+		// per-vertex-per-triangle normals. If both the number of vertex positions and the number of
+		// triangles match between the collision mesh and the render mesh then we assume that the
+		// meshes are equivalent and the render data is used. The render data provide everything we
+		// need except for the tangents. If the collision and render data sizes don't match then the
+		// collision data is used and all three vertices in an Unreal Engine triangle is given the
+		// same normal and the texture coordinates are computed as a projection of each triangle
+		// onto one of the primary axis planes.
+
+		const int32 NumCollisionPositions = Trimesh.GetNumPositions();
+		const int32 NumRenderPositions = Trimesh.GetNumRenderPositions();
+		const int32 NumCollisionIndices = Trimesh.GetNumIndices();
+		const int32 NumRenderIndices = Trimesh.GetNumRenderIndices();
+
+		if (NumCollisionPositions <= 0 || NumCollisionIndices <= 0)
+		{
+			// No collision mesh data available, this trimesh is broken.
+			return FRawMesh();
+		}
+		if (NumCollisionPositions == NumRenderPositions && NumCollisionIndices == NumRenderIndices)
+		{
+			return CreateRawMeshFromRenderData(Trimesh);
+		}
+		else
+		{
+			return CreateRawMeshFromCollisionData(Trimesh);
+		}
+	}
+
 	/**
 	 * Creates a FRawMesh from an FTrimeshShapeBarrier.
 	 *
