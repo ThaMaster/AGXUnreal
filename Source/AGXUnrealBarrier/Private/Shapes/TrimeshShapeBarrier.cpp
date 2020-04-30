@@ -155,7 +155,10 @@ TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals() const
 	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
 	if (Trimesh == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("NativeShape is not a Trimesh."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch triangle normals from Trimesh barrier whose native shape is not a "
+				 "Trimesh."));
 		return TriangleNormals;
 	}
 
@@ -194,14 +197,20 @@ TArray<FVector2D> FTrimeshShapeBarrier::GetRenderDataTextureCoordinates() const
 	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
 	if (Trimesh == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("NativeShape is not a Trimesh."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch texture coordinates from Trimesh barrier whose native shape is not "
+				 "a Trimesh."));
 		return TextureCoord;
 	}
 
 	const agxCollide::RenderData* RenderData = Trimesh->getRenderData();
 	if (RenderData == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("RenderData of Native Trimesh was nullptr."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch texture coordinates from Trimesh barrier whose native Trimesh "
+				 "doesn't contain render data."));
 		return TextureCoord;
 	}
 
@@ -240,14 +249,17 @@ TArray<uint32> FTrimeshShapeBarrier::GetRenderDataVertexIndices() const
 	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
 	if (Trimesh == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Native shape is not a Trimesh."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot fetch render data vertex indices from Trimesh barrier whose native shape "
+				 "is not a Trimesh."));
 		return VertexIndices;
 	}
 
 	const agxCollide::RenderData* RenderData = Trimesh->getRenderData();
 	if (RenderData == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("RenderData of Native Trimesh was nullptr."));
+		UE_LOG(LogAGX, Error, TEXT("Cannot fetch render data vertex indices from Trimesh barrier whose native Trimesh doesn't contain render data."));
 		return VertexIndices;
 	}
 
