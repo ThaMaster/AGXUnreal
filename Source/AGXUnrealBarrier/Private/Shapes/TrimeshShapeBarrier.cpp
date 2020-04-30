@@ -271,6 +271,21 @@ int32 FTrimeshShapeBarrier::GetNumRenderPositions() const
 	return static_cast<int32>(NumPositions);
 }
 
+int32 FTrimeshShapeBarrier::GetNumRenderTriangles() const
+{
+	const agxCollide::RenderData* RenderData = GetRenderData(this, TEXT("fetch num triangles"));
+	if (RenderData == nullptr)
+	{
+		return -1;
+	}
+	const size_t NumTriangles = RenderData->getIndexArray().size() / 3;
+	if (!CheckSize(NumTriangles, TEXT("render triangles")))
+	{
+		return -1;
+	}
+	return static_cast<int32>(NumTriangles);
+}
+
 int32 FTrimeshShapeBarrier::GetNumRenderIndices() const
 {
 	const agxCollide::RenderData* RenderData =

@@ -63,6 +63,8 @@ public:
 
 	int32 GetNumRenderIndices() const;
 
+	int32 GetNumRenderTriangles() const;
+
 	/**
 	 * Indices into the other render data arrays. Each three consecutive indices form a triangle.
 	 */
