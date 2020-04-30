@@ -343,8 +343,10 @@ namespace
 		if (!TextureCoordinatesUsable)
 		{
 			UE_LOG(
-				LogAGX, Warning, TEXT("Unable to get texture coordinates for trimesh %s"),
-				*Trimesh.GetSourceName());
+				LogAGX, Warning,
+				TEXT("Cannot use render data for trimesh '%s' because the number of"
+					 "render data indices (%d) does not match the number of wedges (%d)."),
+				*Trimesh.GetSourceName(), RenderDataIndices.Num(), NumWedges);
 		}
 
 		for (int32 i = 0; i < NumWedges; ++i)
