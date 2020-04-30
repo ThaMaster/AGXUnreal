@@ -338,7 +338,7 @@ namespace
 
 		// Apply texture coordinates.
 		const TArray<FVector2D> TextureCoordiantes = Trimesh.GetRenderDataTextureCoordinates();
-		const TArray<uint32> RenderDataIndices = Trimesh.GetRenderDataVertexIndices();
+		const TArray<uint32> RenderDataIndices = Trimesh.GetRenderDataIndices();
 		const bool TextureCoordinatesUsable = RenderDataIndices.Num() == NumWedges;
 		if (!TextureCoordinatesUsable)
 		{

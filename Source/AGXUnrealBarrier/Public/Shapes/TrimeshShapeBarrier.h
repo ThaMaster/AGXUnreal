@@ -54,14 +54,11 @@ public:
 	TArray<FVector> GetTriangleNormals() const;
 
 	/**
-	 * Mapping from RenderData vertex to UV texture coordinates.
+	 * Indices into the other render data arrays. Each three consecutive indices form a triangle.
+	 */
+	TArray<uint32> GetRenderDataIndices() const;
 	 */
 	TArray<FVector2D> GetRenderDataTextureCoordinates() const;
-
-	/**
-	 * Mapping from RenderData triangles to vertex index.
-	 */
-	TArray<uint32> GetRenderDataVertexIndices() const;
 
 	/**
 	 * The source name is a user-provided string that is stored with the trimesh.

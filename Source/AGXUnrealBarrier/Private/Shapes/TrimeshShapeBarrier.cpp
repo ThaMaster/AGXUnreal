@@ -23,6 +23,84 @@ namespace
 	{
 		return Barrier->GetNative()->NativeShape->as<agxCollide::Trimesh>();
 	}
+
+	const agxCollide::Trimesh* NativeTrimesh(
+		const FTrimeshShapeBarrier* Barrier, const TCHAR* Operation)
+	{
+		if (!Barrier->HasNative())
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("Cannot %s Trimesh barrier without a native Trimesh"),
+				Operation);
+			return nullptr;
+		}
+
+		const agxCollide::Trimesh* Native = NativeTrimesh(Barrier);
+		if (Native == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Cannot %s Trimesh barrier whose native shape is not a Trimesh."));
+		}
+
+		return Native;
+	}
+
+	agxCollide::Trimesh* NativeTrimesh(FTrimeshShapeBarrier* Barrier, const TCHAR* Operation)
+	{
+		const FTrimeshShapeBarrier* ConstBarrier = const_cast<const FTrimeshShapeBarrier*>(Barrier);
+		const agxCollide::Trimesh* ConstTrimesh = NativeTrimesh(ConstBarrier, Operation);
+		agxCollide::Trimesh* Trimesh = const_cast<agxCollide::Trimesh*>(ConstTrimesh);
+		return Trimesh;
+	}
+
+	const agxCollide::RenderData* GetRenderData(
+		const FTrimeshShapeBarrier* Barrier, const TCHAR* Operation)
+	{
+		const agxCollide::Trimesh* Native = NativeTrimesh(Barrier, Operation);
+		if (Native == nullptr)
+		{
+			return nullptr;
+		}
+
+		const agxCollide::RenderData* RenderData = Native->getRenderData();
+		if (RenderData == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Cannot %s Trimesh barrier whose native Trimesh doesn't contain render data."),
+				Operation);
+			return nullptr;
+		}
+
+		return RenderData;
+	}
+
+	agxCollide::RenderData* GetRenderData(FTrimeshShapeBarrier* Barrier, const TCHAR* Operation)
+	{
+		const FTrimeshShapeBarrier* ConstBarrier = const_cast<const FTrimeshShapeBarrier*>(Barrier);
+		const agxCollide::RenderData* ConstRenderData = GetRenderData(ConstBarrier, Operation);
+		agxCollide::RenderData* RenderData = const_cast<agxCollide::RenderData*>(ConstRenderData);
+		return RenderData;
+	}
+
+	bool CheckSize(size_t Size)
+	{
+		return Size <= static_cast<size_t>(std::numeric_limits<int32>::max());
+	}
+
+	bool CheckSize(size_t Size, const TCHAR* DataName)
+	{
+		bool Ok = CheckSize(Size);
+		if (!Ok)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Native trimesh contains more %s than Unreal can handle. Size is %zu."),
+				DataName, Size);
+		}
+		return Ok;
+	}
 }
 
 FTrimeshShapeBarrier::FTrimeshShapeBarrier()
@@ -58,33 +136,18 @@ TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions() const
 {
 	TArray<FVector> VertexPositions;
 
-	if (!HasNative())
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot fetch positions from Trimesh barrier without a native Trimesh."));
-		return VertexPositions;
-	}
-
-	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
+	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this, TEXT("fetch positions from"));
 	if (Trimesh == nullptr)
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot fetch positions from Trimesh barrier whose native shape is not a "
-				 "Trimesh."));
 		return VertexPositions;
 	}
 
-	size_t NumVerticesAGX = Trimesh->getNumVertices();
-	if (NumVerticesAGX > static_cast<size_t>(std::numeric_limits<int32>::max()))
+	if (!CheckSize(Trimesh->getNumVertices(), TEXT("vertices")))
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Native trimesh contains more vertices than Unreal can handle."));
 		return VertexPositions;
 	}
 
-	int32 NumVertices = static_cast<int32>(NumVerticesAGX);
+	int32 NumVertices = static_cast<int32>(Trimesh->getNumVertices());
 	VertexPositions.Reserve(NumVertices);
 
 	const agxCollide::CollisionMeshData* MeshData = Trimesh->getMeshData();
@@ -101,33 +164,18 @@ TArray<uint32> FTrimeshShapeBarrier::GetVertexIndices() const
 {
 	TArray<uint32> VertexIndices;
 
-	if (!HasNative())
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot fetch vertex indices from Trimesh barrier without a native Trimesh."));
-		return VertexIndices;
-	}
-
-	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
+	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this, TEXT("fetch indices from"));
 	if (Trimesh == nullptr)
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot fetch vertex indices from Trimesh barrier whose native shape is not a "
-				 "Trimesh."));
 		return VertexIndices;
 	}
 
-	size_t NumTriangles = Trimesh->getNumTriangles();
-	if (NumTriangles * 3 > static_cast<size_t>(std::numeric_limits<int32>::max()))
+	if (!CheckSize(3 * Trimesh->getNumTriangles(), TEXT("triangles")))
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Native trimesh contains more triangles than Unreal can handle"));
 		return VertexIndices;
 	}
 
-	const int32 NumIndices = static_cast<int32>(3 * NumTriangles);
+	const int32 NumIndices = static_cast<int32>(3 * Trimesh->getNumTriangles());
 	VertexIndices.Reserve(NumIndices);
 	const agxCollide::CollisionMeshData* MeshData = Trimesh->getMeshData();
 	const agx::UInt32Vector& Indices = MeshData->getIndices();
@@ -144,33 +192,18 @@ TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals() const
 {
 	TArray<FVector> TriangleNormals;
 
-	if (!HasNative())
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot fetch triangle normals from Trimesh barrier without a native Trimesh."));
-		return TriangleNormals;
-	}
-
-	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
+	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this, TEXT("fetch triangle normals from"));
 	if (Trimesh == nullptr)
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot fetch triangle normals from Trimesh barrier whose native shape is not a "
-				 "Trimesh."));
 		return TriangleNormals;
 	}
 
-	const size_t NumTrianglesAGX = Trimesh->getNumTriangles();
-	if (NumTrianglesAGX > static_cast<size_t>(std::numeric_limits<int32>::max()))
+	if (!CheckSize(Trimesh->getNumTriangles(), TEXT("triangles")))
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Native trimesh contains more triangles than Unreal can handle"));
 		return TriangleNormals;
 	}
 
-	const int32 NumTriangles = static_cast<int32>(NumTrianglesAGX);
+	const int32 NumTriangles = static_cast<int32>(Trimesh->getNumTriangles());
 	TriangleNormals.Reserve(NumTriangles);
 	const agx::Vec3Vector& Normals = Trimesh->getMeshData()->getNormals();
 	for (const agx::Vec3& Normal : Normals)
@@ -185,46 +218,20 @@ TArray<FVector2D> FTrimeshShapeBarrier::GetRenderDataTextureCoordinates() const
 {
 	TArray<FVector2D> TextureCoord;
 
-	if (!HasNative())
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT(
-				"Cannot fetch texture coordinates from Trimesh barrier without a native Trimesh."));
-		return TextureCoord;
-	}
-
-	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
-	if (Trimesh == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot fetch texture coordinates from Trimesh barrier whose native shape is not "
-				 "a Trimesh."));
-		return TextureCoord;
-	}
-
-	const agxCollide::RenderData* RenderData = Trimesh->getRenderData();
+	const agxCollide::RenderData* RenderData =
+		GetRenderData(this, TEXT("fetch texture coordinates from"));
 	if (RenderData == nullptr)
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot fetch texture coordinates from Trimesh barrier whose native Trimesh "
-				 "doesn't contain render data."));
 		return TextureCoord;
 	}
 
 	const agx::Vec2Vector& TexCoordArray = RenderData->getTexCoordArray();
-	const size_t NumTexCoord = TexCoordArray.size();
-	if (NumTexCoord > static_cast<size_t>(std::numeric_limits<int32>::max()))
+	if (!CheckSize(TexCoordArray.size(), TEXT("texture coordinates")))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Native trimesh's RenderData contains more triangles than Unreal can handle."));
 		return TextureCoord;
 	}
 
-	TextureCoord.Reserve(NumTexCoord);
+	TextureCoord.Reserve(static_cast<int32>(TexCoordArray.size()));
 	for (const agx::Vec2& TexCoord : TexCoordArray)
 	{
 		TextureCoord.Add(Convert(TexCoord));
@@ -233,47 +240,24 @@ TArray<FVector2D> FTrimeshShapeBarrier::GetRenderDataTextureCoordinates() const
 	return TextureCoord;
 }
 
-TArray<uint32> FTrimeshShapeBarrier::GetRenderDataVertexIndices() const
+TArray<uint32> FTrimeshShapeBarrier::GetRenderDataIndices() const
 {
 	TArray<uint32> VertexIndices;
 
-	if (!HasNative())
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot fetch render data vertex indices from Trimesh barrier without a native "
-				 "Trimesh."));
-		return VertexIndices;
-	}
-
-	const agxCollide::Trimesh* Trimesh = NativeTrimesh(this);
-	if (Trimesh == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot fetch render data vertex indices from Trimesh barrier whose native shape "
-				 "is not a Trimesh."));
-		return VertexIndices;
-	}
-
-	const agxCollide::RenderData* RenderData = Trimesh->getRenderData();
+	const agxCollide::RenderData* RenderData =
+		GetRenderData(this, TEXT("fetch render data indices from"));
 	if (RenderData == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Cannot fetch render data vertex indices from Trimesh barrier whose native Trimesh doesn't contain render data."));
 		return VertexIndices;
 	}
-
-	const agx::UInt32Vector& Indices = RenderData->getIndexArray();
-	const size_t NumIndices = Indices.size();
-	if (NumIndices > static_cast<size_t>(std::numeric_limits<int32>::max()))
+	const agx::UInt32Vector& IndicesAgx = RenderData->getIndexArray();
+	if (!CheckSize(IndicesAgx.size(), TEXT("render data indices")))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Native trimesh's RenderData contains more triangles than Unreal can handle."));
 		return VertexIndices;
 	}
+	VertexIndices.Reserve(static_cast<int32>(IndicesAgx.size()));
 
-	for (agx::UInt32 Index : Indices)
+	for (agx::UInt32 Index : IndicesAgx)
 	{
 		// Assuming agx::UInt32 to uint32 conversion is always safe.
 		VertexIndices.Add(static_cast<uint32>(Index));
