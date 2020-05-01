@@ -364,9 +364,9 @@ namespace
 
 			RawMesh.FaceMaterialIndices.Add(0);
 			RawMesh.FaceSmoothingMasks.Add(0x00000000);
-			// Not entirely sure on the FaceSmoothingMasks, the documentation says only
+			// Not entirely sure on the FaceSmoothingMasks, the documentation is a little wague:
 			//     Smoothing mask. Array[FaceId] = uint32
-			// but I believe the process is that Unreal Engine does bit-and between two neighboring
+			// But I believe the process is that Unreal Engine does bit-and between two neighboring
 			// faces and if the result comes out as non-zero then smoothing will happen along that
 			// edge. Not sure what is being smoothed though. Perhaps the vertex normals are merged
 			// if smoothing is on, and kept separate if smoothing is off. Also not sure how this
@@ -405,32 +405,47 @@ namespace
 		// The positions and indices can simply be copied over. The normals and texture coordinates
 		// must be applied per triangle vertex instead of stored with the shared vertex data.
 
+		check(Trimesh.GetNumRenderIndices() == Trimesh.GetNumIndices());
+
 		FRawMesh RawMesh;
 
-		RawMesh.VertexPositions = Trimesh.GetRenderDataPositions();
-		RawMesh.WedgeIndices = Trimesh.GetRenderDataIndices();
+		// Here we assume that the collision mesh and the render mesh are equivalent, i.e., that
+		// they descrive the same triangles in the same order. That is, we assume that
+		//   Collision.Position[Collision.Index[I]] == Render.Position[Collision.Index[I]]
+		// for all I in [0 ... 3*#tris).
+		// This assumption allows us to use the collision mesh positions, which is often much fewer,
+		// and still apply per-wedge normals and texture coordinates from the render mesh.
+		RawMesh.VertexPositions = Trimesh.GetVertexPositions();
+		RawMesh.WedgeIndices = Trimesh.GetVertexIndices();
+		const TArray<uint32> RenderDataIndices = Trimesh.GetRenderDataIndices();
 
 		const int32 NumTriangles = Trimesh.GetNumRenderTriangles();
 		const int32 NumIndices = Trimesh.GetNumRenderIndices();
 
+		// Not touching WedgeTangent[XY] because I don't know how to compute them and
+		// bRecomputeTangents has been set to true on the StaticMesh's SourceModel.
 		RawMesh.WedgeTangentZ.Reserve(NumIndices);
 		RawMesh.WedgeColors.Reserve(NumIndices);
 		RawMesh.WedgeTexCoords[0].Reserve(NumIndices);
 
-		RawMesh.FaceMaterialIndices.Reserve(NumTriangles);
-		RawMesh.FaceSmoothingMasks.Reserve(NumTriangles);
-
+		// Lookup into these should use indices from the RenderDataIndices array.
 		TArray<FVector> RenderNormals = Trimesh.GetRenderDataNormals();
 		TArray<FVector2D> RenderCoordinates = Trimesh.GetRenderDataTextureCoordinates();
 
+		// Gather data that is per-vertex indexed in the AGX Dynamics format but per-wedge in the
+		// Unreal Engine format.
 		for (int32 I = 0; I < NumIndices; ++I)
 		{
-			const int32 RenderI = RawMesh.WedgeIndices[I];
+			const int32 RenderI = RenderDataIndices[I];
 			RawMesh.WedgeTangentZ.Add(RenderNormals[RenderI]);
 			RawMesh.WedgeTexCoords[0].Add(RenderCoordinates[RenderI]);
 			RawMesh.WedgeColors.Add(FColor(255, 255, 255));
 		}
 
+		// A single face material index is used for all triangles.
+		// We have nice normals, so enable smooth shading for all triangles.
+		RawMesh.FaceMaterialIndices.Reserve(NumTriangles);
+		RawMesh.FaceSmoothingMasks.Reserve(NumTriangles);
 		for (int32 I = 0; I < NumTriangles; ++I)
 		{
 			RawMesh.FaceMaterialIndices.Add(0);
@@ -520,6 +535,7 @@ namespace
 				*Trimesh.GetSourceName());
 			return FRawMesh();
 		}
+
 		if (NumCollisionIndices == NumRenderIndices)
 		{
 			return CreateRawMeshFromRenderData(Trimesh);
