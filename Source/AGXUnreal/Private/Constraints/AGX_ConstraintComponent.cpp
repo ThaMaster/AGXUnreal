@@ -311,8 +311,8 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			// Or/additional add Refresh button to AAGX_ConstraintFrameActor's Details Panel
 			// that rebuilds the constraint usage list.
 
-			/// \todo This propery is three levels deep instead of two for the FrameDefiningActor.
-			/// The middle layer is an FAGX_SCeneComponentReference. Here we don't know if the
+			/// \todo This property is three levels deep instead of two for the FrameDefiningActor.
+			/// The middle layer is an FAGX_SceneComponentReference. Here we don't know if the
 			/// property change happened in the ModifiedBodyAttachment's RigidBody or its
 			/// FrameDefiningComponent. Assuming we have to update.
 			/// Consider doing this in PostEditChangeChainProperty instead.
@@ -328,9 +328,9 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 
 			// Handle the Blueprint editor case, where it's not possible to select the Actor
 			// that will be created when the Blueprint is instantiated as the OwningActor in the
-			// RigidBodyReference and the SeneComponentReference. Here we set the Constraint's
+			// RigidBodyReference and the SceneComponentReference. Here we set the Constraint's
 			// owner as the FallbackOwningActor, meaning that the  RigidBodyReference and the
-			// SceneComponentRefrerence will reference something in the "local scope", i.e. the
+			// SceneComponentReference will reference something in the "local scope", i.e. the
 			// Actor that contains this ConstraintComponent. On PostLoad the FallbackOwningActor
 			// will be cleared and the OwningActor set to the current owner, unless already set to
 			// some other Actor.
