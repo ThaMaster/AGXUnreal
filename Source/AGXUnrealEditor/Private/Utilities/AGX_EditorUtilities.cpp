@@ -457,7 +457,9 @@ namespace
 
 	FRawMesh CreateRawMeshFromTrimesh(const FTrimeshShapeBarrier& Trimesh)
 	{
-		// AGX Dynamics store mesh data in two formats: collision and render.
+		// AGX Dynamics store mesh data in two formats: collision and render. The render portion is
+		// optional.
+		//
 		//
 		// Collision
 		//
@@ -471,8 +473,9 @@ namespace
 		//
 		// Data owned by each triangle:
 		//   indices:    | int, int, int | int, int, int | ... |
-		//   normal:     |     Vec3      |      Vec3     | ... |
+		//   normals:    |     Vec3      |      Vec3     | ... |
 		//               |  Triangle 0   |  Triangle 1   | ... |
+		//
 		//
 		// Render
 		//
@@ -510,15 +513,16 @@ namespace
 		//    tex coord: | Vec2, Vec2, Vec2 | Vec2, Vec2, Vec2 | ... |
 		//
 		//
-		// The strategy employed here is based on the observation that the render data in AGX
-		// Dynamics is closer to the Unreal Engine format since it contains texture coordinates and
-		// per-vertex-per-triangle normals. If the number of triangles match between the collision
-		// mesh and the render mesh then we assume that the meshes are equivalent and the render
-		// data is used. The render data provide everything we need except for the tangents. If the
-		// collision and render data sizes don't match then the collision data is used and all three
-		// vertices in an Unreal Engine triangle is given the same normal and the texture
-		// coordinates are computed as a projection of each triangle onto one of the primary axis
-		// planes.
+		// The AGX Dynamics to Unreal Engine mesh conversion uses vertex positions from the
+		// collision data, and normals and texture coordinates from the render data if available and
+		// compatible. By compatible we mean that the two meshes have the same number of triangles,
+		// in which case we assume that the two meshes are equivalent and their data can be mixed.
+		// There is no guarantee that this is true in all cases. If nor render data is available, or
+		// if the meshes aren't compatible then the collision normals are used for rendering as
+		// well. The same normal are used for all vertices within a triangle so the result will be
+		// a flat-shaded triangle. No texture coordinates are written in this case. Ideas with
+		// vertex position projections onto primary axis planes or nearest render vertex mapping has
+		// been discussed but not implemented.
 
 		const int32 NumCollisionPositions = Trimesh.GetNumPositions();
 		const int32 NumRenderPositions = Trimesh.GetNumRenderPositions();
