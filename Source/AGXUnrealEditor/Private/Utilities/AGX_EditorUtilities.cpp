@@ -324,6 +324,15 @@ namespace
 		// bRecomputeTangents enabled in the StaticMesh SourceModel settings. Texture coordinates
 		// are left empty.
 
+		if (Trimesh.GetNumIndices() != Trimesh.GetNumTriangles() * 3)
+		{
+			UE_LOG(
+					LogAGX, Warning,
+					TEXT("The trimesh '%s' does not have three vertex indices per triangle. The mesh "
+						 "may be be imported incorrectly. Found %d triangles and %d indices."),
+					*Trimesh.GetSourceName(), Trimesh.GetNumTriangles(), Trimesh.GetNumIndices());
+		}
+
 		FRawMesh RawMesh;
 
 		RawMesh.VertexPositions = Trimesh.GetVertexPositions();
@@ -406,6 +415,15 @@ namespace
 		// must be applied per triangle vertex instead of stored with the shared vertex data.
 
 		check(Trimesh.GetNumRenderIndices() == Trimesh.GetNumIndices());
+		check(Trimesh.GetNumRenderTriangles() == Trimesh.GetNumTriangles());
+		if (Trimesh.GetNumIndices() != Trimesh.GetNumTriangles() * 3)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("The trimesh '%s' does not have three vertex indices per triangle. The mesh "
+					 "may be be imported incorrectly. Found %d triangles and %d indices."),
+				*Trimesh.GetSourceName(), Trimesh.GetNumTriangles(), Trimesh.GetNumIndices());
+		}
 
 		FRawMesh RawMesh;
 

@@ -113,19 +113,16 @@ namespace
 		{
 			return DataUnreal;
 		}
-
 		const agx::VectorPOD<AgxType>& DataAgx = GetAgxBuffer(Trimesh->getMeshData());
 		if (!CheckSize(DataAgx.size(), DataName))
 		{
 			return DataUnreal;
 		}
-
 		DataUnreal.Reserve(static_cast<int32>(DataAgx.size()));
 		for (AgxType DatumAgx : DataAgx)
 		{
 			DataUnreal.Add(Convert(DatumAgx));
 		}
-
 		return DataUnreal;
 	}
 
@@ -135,25 +132,21 @@ namespace
 		FGetAgxBuffer GetAgxBuffer, FConvert Convert)
 	{
 		TArray<UnrealType> DataUnreal;
-
 		const agxCollide::RenderData* RenderData = GetRenderData(Barrier, Operation);
 		if (RenderData == nullptr)
 		{
 			return DataUnreal;
 		}
-
 		const agx::VectorPOD<AgxType>& DataAgx = GetAgxBuffer(RenderData);
 		if (!CheckSize(DataAgx.size(), DataName))
 		{
 			return DataUnreal;
 		}
-
 		DataUnreal.Reserve(static_cast<int32>(DataAgx.size()));
 		for (AgxType DatumAgx : DataAgx)
 		{
 			DataUnreal.Add(Convert(DatumAgx));
 		}
-
 		return DataUnreal;
 	}
 }
@@ -166,7 +159,7 @@ FTrimeshShapeBarrier::FTrimeshShapeBarrier()
 FTrimeshShapeBarrier::FTrimeshShapeBarrier(std::unique_ptr<FGeometryAndShapeRef> Native)
 	: FShapeBarrier(std::move(Native))
 {
-	/// \todo It seems Shape::is<T>() broke with Unreal Engine 2.24. Now we trip
+	/// \todo It seems Shape::is<T>() broken with Unreal Engine 2.24. Now we trip
 	/// on this check when restoring AGX Dynamics archives containing
 	/// trimeshes. I suspect it's at least partially related to
 	///     #define dynamic_cast UE4Casts_Private::DynamicCast
@@ -208,7 +201,15 @@ int32 FTrimeshShapeBarrier::GetNumIndices() const
 	{
 		return -1;
 	}
-	const size_t NumIndices = Trimesh->getNumTriangles() * 3;
+	const size_t NumIndices = Trimesh->getMeshData()->getIndices().size();
+	if (NumIndices % 3 != 0)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Trimesh '%s' has invalid collision data. The number of vertex indices isn't a "
+				 "multiple of 3. The last triangle will be skipped."),
+			*GetSourceName())
+	}
 	if (!CheckSize(NumIndices, TEXT("indices")))
 	{
 		return -1;
@@ -228,7 +229,7 @@ int32 FTrimeshShapeBarrier::GetNumTriangles() const
 	{
 		return -1;
 	}
-	return static_cast<int>(Trimesh->getNumTriangles());
+	return static_cast<int>(NumTriangles);
 }
 
 TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions() const
