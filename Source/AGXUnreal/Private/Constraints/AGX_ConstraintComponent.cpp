@@ -301,7 +301,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 		// Property of an aggregate struct changed.
 
 		FAGX_ConstraintBodyAttachment* ModifiedBodyAttachment =
-				SelectByName(MemberPropertyName, &BodyAttachment1, &BodyAttachment2);
+			SelectByName(MemberPropertyName, &BodyAttachment1, &BodyAttachment2);
 
 		if (ModifiedBodyAttachment)
 		{
@@ -311,7 +311,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			// Or/additional add Refresh button to AAGX_ConstraintFrameActor's Details Panel
 			// that rebuilds the constraint usage list.
 
-			/// \todo This propery is three levels deep instread of two for the FrameDefiningActor.
+			/// \todo This propery is three levels deep instead of two for the FrameDefiningActor.
 			/// The middle layer is an FAGX_SCeneComponentReference. Here we don't know if the
 			/// property change happened in the ModifiedBodyAttachment's RigidBody or its
 			/// FrameDefiningComponent. Assuming we have to update.
@@ -326,36 +326,21 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 				ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
 			}
 
-			/// \todo These two are a bit of a hack and it may be possible to remove it.
-			/// The intention was to handle the Blueprint editor case, where it's not possible to
-			/// select the Actor that will be created when the Blueprint is instantiated as the
-			/// OwningActor in the RigidBodyReference/SceneComponentReference. Here we set the
-			/// Constraint's owner as the OwningActor, meaning that the
-			/// RigidBodyReference/SceneComponentRefrerence will reference something in the "local
-			/// scope". This should be the Blueprint itself, or a representation thereof, but it's
-			/// unclear to me if it will work like that. Very few things work the way I expect.
+			// Handle the Blueprint editor case, where it's not possible to select the Actor
+			// that will be created when the Blueprint is instantiated as the OwningActor in the
+			// RigidBodyReference and the SeneComponentReference. Here we set the Constraint's
+			// owner as the FallbackOwningActor, meaning that the  RigidBodyReference and the
+			// SceneComponentRefrerence will reference something in the "local scope", i.e. the
+			// Actor that contains this ConstraintComponent. On PostLoad the FallbackOwningActor
+			// will be cleared and the OwningActor set to the current owner, unless already set to
+			// some other Actor.
 			if (ModifiedBodyAttachment->RigidBody.OwningActor == nullptr)
 			{
 				ModifiedBodyAttachment->RigidBody.FallbackOwningActor = GetOwner();
-				if (ModifiedBodyAttachment->RigidBody.FallbackOwningActor == nullptr)
-				{
-					UE_LOG(
-						LogAGX, Warning,
-						TEXT("BodyAttachment in '%s' got nullptr fallback owning actor."),
-						*GetName());
-				}
 			}
 			if (ModifiedBodyAttachment->FrameDefiningComponent.OwningActor == nullptr)
 			{
 				ModifiedBodyAttachment->FrameDefiningComponent.FallbackOwningActor = GetOwner();
-				if (ModifiedBodyAttachment->FrameDefiningComponent.FallbackOwningActor == nullptr)
-				{
-					UE_LOG(
-						LogAGX, Warning,
-						TEXT("FrameDefiningComponent reference in '%s' got nullptr fallback owning "
-							 "actor."),
-						*GetName());
-				}
 			}
 		}
 	}
