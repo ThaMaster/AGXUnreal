@@ -40,7 +40,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	/**
 	 * Optional. Use this to define the Local Frame Location and Rotation relative to a Component
 	 * other then the Rigid Body Component. This is used for convenience during setup only, the
-	 * actual frame transforms used by the simulation will envertheless be calculated and stored
+	 * actual frame transforms used by the simulation will nevertheless be calculated and stored
 	 * relative to the rigid body when the simulation starts.
 	 *
 	 * Not that the two rigid bodies in a  constraint can use the same Frame Defining Component, or
