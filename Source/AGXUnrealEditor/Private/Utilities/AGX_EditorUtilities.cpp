@@ -366,7 +366,10 @@ namespace
 			RawMesh.WedgeColors.Add(FColor(255, 255, 255));
 			RawMesh.WedgeColors.Add(FColor(255, 255, 255));
 
-			FVector2D TexCoord(0.0f, 0.0f); /// \todo Project position onto a primary plane.
+			/// \todo We should do something cleverer here. Perhaps project position onto a primary
+			/// plane or, if incompatible render data is available, find the nearest render vertex
+			/// and use that texture coordinate.
+			FVector2D TexCoord(0.0f, 0.0f);
 			RawMesh.WedgeTexCoords[0].Add(TexCoord);
 			RawMesh.WedgeTexCoords[0].Add(TexCoord);
 			RawMesh.WedgeTexCoords[0].Add(TexCoord);
