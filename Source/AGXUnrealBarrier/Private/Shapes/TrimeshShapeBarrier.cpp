@@ -278,7 +278,16 @@ int32 FTrimeshShapeBarrier::GetNumRenderTriangles() const
 	{
 		return -1;
 	}
-	const size_t NumTriangles = RenderData->getIndexArray().size() / 3;
+	const size_t NumIndices = RenderData->getIndexArray().size();
+	if (NumIndices % 3 != 0)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Trimesh '%s' has invalid render data. The number of vertex indices isn't a "
+				 "multiple of 3. The last triangle will be skipped."),
+			*GetSourceName())
+	}
+	const size_t NumTriangles = NumIndices / 3;
 	if (!CheckSize(NumTriangles, TEXT("render triangles")))
 	{
 		return -1;
