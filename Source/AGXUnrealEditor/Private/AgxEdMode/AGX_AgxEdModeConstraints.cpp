@@ -138,7 +138,7 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 		ConstraintComponent->BodyAttachment2.FrameDefiningComponent.OwningActor = FrameActor2;
 
 		ConstraintComponent->BodyAttachment1.OnFrameDefiningComponentChanged(ConstraintComponent);
-		ConstraintComponent->BodyAttachment1.OnFrameDefiningComponentChanged(ConstraintComponent);
+		ConstraintComponent->BodyAttachment2.OnFrameDefiningComponentChanged(ConstraintComponent);
 
 		/// \todo If in-game, we need to create the constraint in a deferred way so that frame
 		/// actors are set before the constraint has been finished!
