@@ -7,20 +7,23 @@ class AActor;
 /**
  * A reference to a USceneComponent.
  *
- * The intention is that it should be used much like Actors pointers can, but limitations in the
- * Unreal Editor forces us to do some tricks and workarounds. There is no Component picker, so the
- * user must first pick an Actor that owns the Component and then select the wanted component from a
- * combo box of names. There is no actual pointer to the Componet stored in the
- * FAGX_SceneComponentReference, on the the name, so renaming the Component will break the
- * reference. This is a serious limitaiton. Also, while building the a Blueprint Actor in the
- * Blueprint editor there is no actual Actor yet, so the Actor picker cannot be used to select the
- * Actor that will be created when the Bluepritn is instantiated. The SceneComponentReference
- * provdies a getter with an InOwningActor parameter for this purpose.
+ * The intention is that it should be used much like Actors pointers can, to a SceneComponent
+ * instead of an Actor, but limitations in the Unreal Editor forces us to do some tricks and
+ * workarounds. There is no built-in Component picker, so the user must first pick an Actor that
+ * owns the Component and then select the wanted component by entering its name in a text field.
+ * Populating a combo box with the available names is a possible future extension. There is no
+ * actual pointer to the Component stored in the FAGX_SceneComponentReference, only the name, so
+ * renaming the Component will break the reference. This is a serious limitation. Also, while
+ * building the a Blueprint Actor in the Blueprint editor there is no actual Actor yet, so the Actor
+ * picker cannot be used to select the Actor that will be created when the Blueprint is
+ * instantiated. The SceneComponentReference provides a FallbackOwningActor for this purpose. The
+ * FallbackOwningActor should be cleared and the OwningActor set to something sensible in the
+ * PostLoad callback of the Component containing the USceneComponentReference.
  *
  * The SceneComponentReference supports caching of the SceneComponent through the
  * CacheCurrentSceneComponent member function. Only call this once the RigidBodyReference has been
- * fully fomred, i.e., the OwningActor property set to the final Actor and when the referenced
- * SceneComponent has been given its final name.
+ * fully formed, i.e., the OwningActor property set to the final Actor and the referenced
+ * SceneComponent been given its final name.
  *
  * \todo The implementation is very similar to UAGX_RigidBodyComponent. Find what can be shared and
  * put somewhere.
