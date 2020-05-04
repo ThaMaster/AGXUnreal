@@ -258,7 +258,7 @@ bool UAGX_ConstraintComponent::IsDofLocked(EDofFlag Dof) const
 
 namespace
 {
-	FAGX_ConstraintBodyAttachment* GetAttachmentNamed(
+	FAGX_ConstraintBodyAttachment* SelectByName(
 		const FName& Name, FAGX_ConstraintBodyAttachment* Attachment1,
 		FAGX_ConstraintBodyAttachment* Attachment2)
 	{
@@ -301,7 +301,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 		// Property of an aggregate struct changed.
 
 		FAGX_ConstraintBodyAttachment* ModifiedBodyAttachment =
-			GetAttachmentNamed(MemberPropertyName, &BodyAttachment1, &BodyAttachment2);
+				SelectByName(MemberPropertyName, &BodyAttachment1, &BodyAttachment2);
 
 		if (ModifiedBodyAttachment)
 		{
