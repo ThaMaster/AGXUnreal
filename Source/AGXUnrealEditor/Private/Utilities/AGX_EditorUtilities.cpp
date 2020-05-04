@@ -410,7 +410,7 @@ namespace
 		FRawMesh RawMesh;
 
 		// Here we assume that the collision mesh and the render mesh are equivalent, i.e., that
-		// they descrive the same triangles in the same order. That is, we assume that
+		// they describe the same triangles in the same order. That is, we assume that
 		//   Collision.Position[Collision.Index[I]] == Render.Position[Collision.Index[I]]
 		// for all I in [0 ... 3*#tris).
 		// This assumption allows us to use the collision mesh positions, which is often much fewer,
