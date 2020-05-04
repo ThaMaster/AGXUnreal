@@ -69,6 +69,8 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 			IDetailPropertyRow& DefaultPropertyRow =
 				StructBuilder.AddProperty(ChildHandle.ToSharedRef());
 
+/// \todo Update 'Create New Frame Defining Actor' functionality to be FrameDefiningComponent
+/// compatible.
 // This code added a 'Create New Frame Defining Actor' entry in right-click context menu. Not sure
 // how to best do that now that the property is a Component instead of an actor. The effect could
 // still be the same, create a new Constriant Frame Actor and assign its RootComponent to the
@@ -172,6 +174,8 @@ FString GenerateFrameDefiningActorName(
 
 void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor()
 {
+/// \todo Update 'Create New Frame Defining Actor' functionality to be FrameDefiningComponent
+/// compatible.
 // This is the implementation part of the constraint frame origin creation helper. See comment in
 // CustomizeChildren above.
 #if 0
