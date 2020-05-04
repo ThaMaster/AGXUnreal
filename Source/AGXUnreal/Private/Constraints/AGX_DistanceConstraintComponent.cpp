@@ -17,13 +17,8 @@ UAGX_DistanceConstraintComponent::UAGX_DistanceConstraintComponent()
 {
 	/// \todo Determine if this is needed, or if the FAGX_ConstraintFrameComponent constructor
 	/// does what we want.
-#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
 	BodyAttachment1.FrameDefiningComponent.Clear();
 	BodyAttachment2.FrameDefiningComponent.Clear();
-#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
-	BodyAttachment1.FrameDefiningActor = nullptr;
-	BodyAttachment2.FrameDefiningActor = nullptr;
-#endif
 }
 
 UAGX_DistanceConstraintComponent::~UAGX_DistanceConstraintComponent()

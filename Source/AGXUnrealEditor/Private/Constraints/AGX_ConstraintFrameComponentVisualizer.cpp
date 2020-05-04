@@ -19,43 +19,17 @@ void FAGX_ConstraintFrameComponentVisualizer::DrawVisualization(
 {
 	const UAGX_ConstraintFrameComponent* ConstraintFrameComponent =
 		Cast<const UAGX_ConstraintFrameComponent>(Component);
-
 	if (ConstraintFrameComponent == nullptr)
-	{
-		return;
-	}
-// This should not be needed now that we use Components instead of Actors for constraint frames.
-#if 0
-	const AAGX_ConstraintFrameActor* ConstraintFrameActor =
-		Cast<const AAGX_ConstraintFrameActor>(ConstraintFrameComponent->GetOwner());
-
-	if (!ConstraintFrameActor)
-	{
-		return;
-	}
-#endif
-
-	if (GUnrealEd == nullptr)
-	{
-		return;
-	}
-
-	TSharedPtr<FComponentVisualizer> ComponentVisualizer =
-		GUnrealEd->FindComponentVisualizer(UAGX_ConstraintComponent::StaticClass());
-
-	FAGX_ConstraintComponentVisualizer* ConstraintComponentVisualizer =
-		static_cast<FAGX_ConstraintComponentVisualizer*>(ComponentVisualizer.Get());
-
-	if (!ConstraintComponentVisualizer)
 	{
 		return;
 	}
 
 	for (UAGX_ConstraintComponent* Constraint : ConstraintFrameComponent->GetConstraintUsage())
 	{
-		/// \todo Should this be a call to DrawVisualization? Depends on if we want icons or not.
-		/// Change to a static call if we don't want the icons.
-		ConstraintComponentVisualizer->DrawConstraint(Constraint, View, PDI);
+		/// \note Here I would like to also draw the constraint frame degrees of freedom, i.e., the
+		/// arrows that are rendered by the ConstraintComponent's render proxy. I don't know how to
+		/// do that.
+		FAGX_ConstraintComponentVisualizer::DrawConstraint(Constraint, View, PDI);
 	}
 }
 

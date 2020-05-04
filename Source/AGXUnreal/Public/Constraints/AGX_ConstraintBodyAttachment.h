@@ -11,10 +11,6 @@
 
 #include "AGX_ConstraintBodyAttachment.generated.h"
 
-#define AGXUNREAL_ACTOR 1
-#define AGXUNREAL_COMPONENT 2
-#define AGXUNREAL_FRAME_DEFINING_TYPE AGXUNREAL_COMPONENT
-
 class UAGX_ConstraintComponent;
 class UAGX_RigidBodyComponent;
 class AAGX_ConstraintFrameActor;
@@ -41,25 +37,22 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	UPROPERTY(EditAnywhere, Category = "Rigid Body")
 	FAGX_RigidBodyReference RigidBody;
 
-	/// \todo Add comment here. Most likely very similar to the FrameDefiningActor comment.
-	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
-	FAGX_SceneComponentReference FrameDefiningComponent;
-
 	/**
-	 * Optional. Use this to define the Local Frame Location and Rotation relative to
-	 * an actor other than the Rigid Body Actor (or to use the other Actor's transform
-	 * directly by setting Local Frame Location and Rotation to zero). It is recommended
-	 * to use the dedicated AGX Constraint Frame Actor, but any other actor can also be used.
+	 * Optional. Use this to define the Local Frame Location and Rotation relative to a Component
+	 * other then the Rigid Body Component. This is used for convenience during setup only, the
+	 * actual frame transforms used by the simulation will envertheless be calculated and stored
+	 * relative to the rigid body when the simulation starts.
 	 *
-	 * This is used for convenience only. The actual local frame transform used by
-	 * the simulation will nevertheless be calculated and stored relative to the
-	 * rigid body when the simulation is starting.
+	 * Not that the two rigid bodies in a  constraint can use the same Frame Defining Component, or
+	 * different, or one can have one and the other not. It's even possible to use one of the
+	 * constrainted bodies as the Frame Defining Component for both of them.
 	 *
-	 * Note that both rigid bodies can use the same frame defining actor, or one rigid body
-	 * can use the other rigid body as frame defining actor, etc.
+	 * AGX Dynamics for Unreal provides Constraint Frame Component which is intended for this
+	 * purpose. It provides constraint listing and visualization making it possible to see which
+	 * constraints are using that Constraint Frame Component.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
-	AActor* FrameDefiningActor_DISABLED;
+	FAGX_SceneComponentReference FrameDefiningComponent;
 
 	/** Frame location relative to Rigid Body Actor, or from Frame Defining Actor if set. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
@@ -138,7 +131,6 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	FRigidBodyBarrier* GetRigidBodyBarrier(bool CreateIfNeeded);
 
 #if WITH_EDITOR
-#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
 	/**
 	 * Should be invoked whenever FrameDefiningComponent changes, to trigger the
 	 * removal of the constraint from the previous FrameDefiningComponent's list of
@@ -146,15 +138,6 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * AAGX_ConstraintFrameActor actor types).
 	 */
 	void OnFrameDefiningComponentChanged(UAGX_ConstraintComponent* Parent);
-#else
-	/**
-	 * Should be invoked whenever FrameDefiningActor changes, to trigger the
-	 * removal of the constraint from the previous Frame Defining Actor's list of
-	 * constraint usages, and adding to the new one's (if they are
-	 * AAGX_ConstraintFrameActor actor types).
-	 */
-	void OnFrameDefiningActorChanged(UAGX_ConstraintComponent* Parent);
-#endif
 
 	void OnDestroy(UAGX_ConstraintComponent* Parent);
 #endif

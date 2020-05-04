@@ -53,13 +53,8 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 	TSharedRef<IPropertyHandle> StructPropertyHandle, IDetailChildrenBuilder& StructBuilder,
 	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
-#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
 	FrameDefiningComponentProperty = StructPropertyHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningComponent));
-#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
-	FrameDefiningActorProperty = StructPropertyHandle->GetChildHandle(
-		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningActor));
-#endif
 
 	uint32 NumChildren = 0;
 	StructPropertyHandle->GetNumChildren(NumChildren);
@@ -74,9 +69,12 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 			IDetailPropertyRow& DefaultPropertyRow =
 				StructBuilder.AddProperty(ChildHandle.ToSharedRef());
 
-#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
-			/// \todo Figure out how to do this part with a FrameDefiningComponent.
-#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
+// This code added a 'Create New Frame Defining Actor' entry in right-click context menu. Not sure
+// how to best do that now that the property is a Component instead of an actor. The effect could
+// still be the same, create a new Constriant Frame Actor and assign its RootComponent to the
+// ConstraintFrameComponent property. But is it always safe to create a new Actor? It isn't when
+// in the Blueprint editor, for example. Leaving this disabled for now.
+#if 0
 			// Add "Create New" option to context menu for the Frame Defining Actor.
 			if (FAGX_PropertyUtilities::PropertyEquals(ChildHandle, FrameDefiningActorProperty))
 			{
@@ -162,11 +160,7 @@ bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBody() const
 
 bool FAGX_ConstraintBodyAttachmentCustomization::HasFrameDefiningActor() const
 {
-#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
 	return FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningComponentProperty) != nullptr;
-#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
-	return FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty) != nullptr;
-#endif
 }
 
 FString GenerateFrameDefiningActorName(
@@ -178,9 +172,9 @@ FString GenerateFrameDefiningActorName(
 
 void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor()
 {
-#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
-	/// \todo Figure out how to do this when using ConstraintFrameComponent instead of -Actor.
-#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
+// This is the implementation part of the constraint frame origin creation helper. See comment in
+// CustomizeChildren above.
+#if 0
 	check(BodyAttachmentProperty);
 
 	if (FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty))

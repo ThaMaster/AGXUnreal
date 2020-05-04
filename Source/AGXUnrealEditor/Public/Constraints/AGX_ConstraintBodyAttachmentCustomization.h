@@ -2,10 +2,6 @@
 
 // AGXUnreal includes.
 
-// Only needed for AGXUNREAL_FRAME_DEFINING_TYPE. Remove when the FrameDefiningActor property is
-// removed.
-#include "Constraints/AGX_ConstraintBodyAttachment.h"
-
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Layout/Visibility.h"
@@ -37,9 +33,5 @@ public:
 private:
 	TSharedPtr<class IPropertyHandle> BodyAttachmentProperty = nullptr;
 	TSharedPtr<class IPropertyHandle> RigidBodyProperty = nullptr;
-#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
 	TSharedPtr<class IPropertyHandle> FrameDefiningComponentProperty = nullptr;
-#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
-	TSharedPtr<class IPropertyHandle> FrameDefiningActorProperty = nullptr;
-#endif
 };

@@ -79,23 +79,13 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	, LockedDofs(LockedDofsOrdered)
 	, NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 {
-#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
 	// NAME_None means use the RootComponent of the passed Actor.
 	BodyAttachment1.FrameDefiningComponent.Set(GetOwner(), NAME_None);
 	BodyAttachment2.FrameDefiningComponent.Set(GetOwner(), NAME_None);
-#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
-	BodyAttachment1.FrameDefiningActor = GetOwner();
-	BodyAttachment2.FrameDefiningActor = GetOwner();
-#endif
 
 #if WITH_EDITOR
-#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
-#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
-	BodyAttachment1.OnFrameDefiningActorChanged(this);
-	BodyAttachment2.OnFrameDefiningActorChanged(this);
-#endif
 #endif
 
 	// Create UAGX_ConstraintDofGraphicsComponent as child component.
@@ -320,7 +310,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			// See FCoreUObjectDelegates::OnObjectPropertyChanged.
 			// Or/additional add Refresh button to AAGX_ConstraintFrameActor's Details Panel
 			// that rebuilds the constraint usage list.
-#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
+
 			/// \todo This propery is three levels deep instread of two for the FrameDefiningActor.
 			/// The middle layer is an FAGX_SCeneComponentReference. Here we don't know if the
 			/// property change happened in the ModifiedBodyAttachment's RigidBody or its
@@ -330,13 +320,11 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			{
 				ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
 			}
-#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
 			if (PropertyName ==
-				GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningActor))
+				GET_MEMBER_NAME_CHECKED(FAGX_SceneComponentReference, SceneComponentName))
 			{
-				ModifiedBodyAttachment->OnFrameDefiningActorChanged(this);
+				ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
 			}
-#endif
 
 			/// \todo These two are a bit of a hack and it may be possible to remove it.
 			/// The intention was to handle the Blueprint editor case, where it's not possible to
@@ -440,13 +428,8 @@ void UAGX_ConstraintComponent::UpdateNativeProperties()
 void UAGX_ConstraintComponent::PostLoad()
 {
 	Super::PostLoad();
-#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
-#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
-	BodyAttachment1.OnFrameDefiningActorChanged(this);
-	BodyAttachment2.OnFrameDefiningActorChanged(this);
-#endif
 
 	// Provide a default owning actor, the owner of this component, if no owner has been specified
 	// for the RigidBodyReferences and FrameDefiningComponents. This is always the case when the
@@ -484,13 +467,8 @@ void UAGX_ConstraintComponent::PostLoad()
 void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
 {
 	Super::PostDuplicate(bDuplicateForPIE);
-#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
-#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
-	BodyAttachment1.OnFrameDefiningActorChanged(this);
-	BodyAttachment2.OnFrameDefiningActorChanged(this);
-#endif
 }
 
 void UAGX_ConstraintComponent::BeginDestroy()

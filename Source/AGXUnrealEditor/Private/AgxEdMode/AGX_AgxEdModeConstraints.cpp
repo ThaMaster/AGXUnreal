@@ -134,19 +134,12 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 		};
 
 		UAGX_ConstraintComponent* ConstraintComponent = Constraint->GetConstraintComponent();
-#if AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_COMPONENT
 		ConstraintComponent->BodyAttachment1.FrameDefiningComponent.OwningActor = FrameActor1;
 		ConstraintComponent->BodyAttachment2.FrameDefiningComponent.OwningActor = FrameActor2;
 
 		ConstraintComponent->BodyAttachment1.OnFrameDefiningComponentChanged(ConstraintComponent);
 		ConstraintComponent->BodyAttachment1.OnFrameDefiningComponentChanged(ConstraintComponent);
-#elif AGXUNREAL_FRAME_DEFINING_TYPE == AGXUNREAL_ACTOR
-		ConstraintComponent->BodyAttachment1.FrameDefiningActor = FrameActor1;
-		ConstraintComponent->BodyAttachment2.FrameDefiningActor = FrameActor2;
 
-		ConstraintComponent->BodyAttachment1.OnFrameDefiningActorChanged(ConstraintComponent);
-		ConstraintComponent->BodyAttachment2.OnFrameDefiningActorChanged(ConstraintComponent);
-#endif
 		/// \todo If in-game, we need to create the constraint in a deferred way so that frame
 		/// actors are set before the constraint has been finished!
 	}
