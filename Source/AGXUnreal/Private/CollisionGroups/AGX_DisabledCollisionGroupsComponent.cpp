@@ -3,6 +3,7 @@
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
 #include "CollisionGroups/AGX_CollisionGroupManager.h"
+#include "Engine/World.h"
 
 namespace
 {
