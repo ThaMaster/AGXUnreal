@@ -3,6 +3,7 @@
 // AGXUnreal includes.
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
+#include "Constraints/AGX_ConstraintBodyAttachment.h"
 #include "Constraints/Constraint1DOFBarrier.h"
 #include "Constraints/Constraint2DOFBarrier.h"
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
@@ -113,7 +114,7 @@ void FAGX_ConstraintUtilities::StoreFrame(
 		const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment,
 		int32 BodyIndex)
 {
-	Attachment.FrameDefiningActor = nullptr;
+	Attachment.FrameDefiningComponent.Clear();
 	Attachment.LocalFrameLocation = Barrier.GetLocalLocation(BodyIndex);
 	Attachment.LocalFrameRotation = Barrier.GetLocalRotation(BodyIndex);
 }
