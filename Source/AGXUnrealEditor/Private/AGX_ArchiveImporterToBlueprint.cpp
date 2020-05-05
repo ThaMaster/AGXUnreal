@@ -518,7 +518,7 @@ namespace
 			const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment,
 			int32 BodyIndex)
 		{
-			Attachment.FrameDefiningActor = nullptr;
+			Attachment.FrameDefiningComponent.Clear();
 			Attachment.LocalFrameLocation = Barrier.GetLocalLocation(BodyIndex);
 			Attachment.LocalFrameRotation = Barrier.GetLocalRotation(BodyIndex);
 		}

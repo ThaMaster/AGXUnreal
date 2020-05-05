@@ -2,6 +2,7 @@
 
 // AGXUnreal includes.
 #include "AGX_RigidBodyReference.h"
+#include "AGX_SceneComponentReference.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -37,20 +38,21 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	FAGX_RigidBodyReference RigidBody;
 
 	/**
-	 * Optional. Use this to define the Local Frame Location and Rotation relative to
-	 * an actor other than the Rigid Body Actor (or to use the other Actor's transform
-	 * directly by setting Local Frame Location and Rotation to zero). It is recommended
-	 * to use the dedicated AGX Constraint Frame Actor, but any other actor can also be used.
+	 * Optional. Use this to define the Local Frame Location and Rotation relative to a Component
+	 * other then the Rigid Body Component. This is used for convenience during setup only, the
+	 * actual frame transforms used by the simulation will nevertheless be calculated and stored
+	 * relative to the rigid body when the simulation starts.
 	 *
-	 * This is used for convenience only. The actual local frame transform used by
-	 * the simulation will nevertheless be calculated and stored relative to the
-	 * rigid body when the simulation is starting.
+	 * Not that the two rigid bodies in a  constraint can use the same Frame Defining Component, or
+	 * different, or one can have one and the other not. It's even possible to use one of the
+	 * constrainted bodies as the Frame Defining Component for both of them.
 	 *
-	 * Note that both rigid bodies can use the same frame defining actor, or one rigid body
-	 * can use the other rigid body as frame defining actor, etc.
+	 * AGX Dynamics for Unreal provides Constraint Frame Component which is intended for this
+	 * purpose. It provides constraint listing and visualization making it possible to see which
+	 * constraints are using that Constraint Frame Component.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
-	AActor* FrameDefiningActor;
+	FAGX_SceneComponentReference FrameDefiningComponent;
 
 	/** Frame location relative to Rigid Body Actor, or from Frame Defining Actor if set. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
@@ -130,12 +132,12 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 
 #if WITH_EDITOR
 	/**
-	 * Should be invoked whenever Frame Defining Actor changes, to trigger the
-	 * removal of the constraint from the previous Frame Defining Actor's list of
+	 * Should be invoked whenever FrameDefiningComponent changes, to trigger the
+	 * removal of the constraint from the previous FrameDefiningComponent's list of
 	 * constraint usages, and adding to the new one's (if they are
 	 * AAGX_ConstraintFrameActor actor types).
 	 */
-	void OnFrameDefiningActorChanged(UAGX_ConstraintComponent* Parent);
+	void OnFrameDefiningComponentChanged(UAGX_ConstraintComponent* Parent);
 
 	void OnDestroy(UAGX_ConstraintComponent* Parent);
 #endif
@@ -147,4 +149,5 @@ private:
 	 */
 	UPROPERTY(Transient)
 	mutable AActor* RecentFrameDefiningActor;
+	USceneComponent* PreviousFrameDefiningComponent;
 };

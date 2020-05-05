@@ -53,8 +53,8 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 	TSharedRef<IPropertyHandle> StructPropertyHandle, IDetailChildrenBuilder& StructBuilder,
 	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
-	FrameDefiningActorProperty = StructPropertyHandle->GetChildHandle(
-		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningActor));
+	FrameDefiningComponentProperty = StructPropertyHandle->GetChildHandle(
+		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningComponent));
 
 	uint32 NumChildren = 0;
 	StructPropertyHandle->GetNumChildren(NumChildren);
@@ -69,6 +69,14 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 			IDetailPropertyRow& DefaultPropertyRow =
 				StructBuilder.AddProperty(ChildHandle.ToSharedRef());
 
+/// \todo Update 'Create New Frame Defining Actor' functionality to be FrameDefiningComponent
+/// compatible.
+// This code added a 'Create New Frame Defining Actor' entry in right-click context menu. Not sure
+// how to best do that now that the property is a Component instead of an actor. The effect could
+// still be the same, create a new Constriant Frame Actor and assign its RootComponent to the
+// ConstraintFrameComponent property. But is it always safe to create a new Actor? It isn't when
+// in the Blueprint editor, for example. Leaving this disabled for now.
+#if 0
 			// Add "Create New" option to context menu for the Frame Defining Actor.
 			if (FAGX_PropertyUtilities::PropertyEquals(ChildHandle, FrameDefiningActorProperty))
 			{
@@ -111,6 +119,7 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 									  [SNew(SHorizontalBox) +
 									   SHorizontalBox::Slot()[DefaultValueWidget.ToSharedRef()]]]];
 			}
+#endif
 		}
 	}
 
@@ -153,7 +162,7 @@ bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBody() const
 
 bool FAGX_ConstraintBodyAttachmentCustomization::HasFrameDefiningActor() const
 {
-	return FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty) != nullptr;
+	return FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningComponentProperty) != nullptr;
 }
 
 FString GenerateFrameDefiningActorName(
@@ -165,6 +174,11 @@ FString GenerateFrameDefiningActorName(
 
 void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor()
 {
+/// \todo Update 'Create New Frame Defining Actor' functionality to be FrameDefiningComponent
+/// compatible.
+// This is the implementation part of the constraint frame origin creation helper. See comment in
+// CustomizeChildren above.
+#if 0
 	check(BodyAttachmentProperty);
 
 	if (FAGX_PropertyUtilities::GetObjectFromHandle(FrameDefiningActorProperty))
@@ -212,6 +226,7 @@ void FAGX_ConstraintBodyAttachmentCustomization::CreateAndSetFrameDefiningActor(
 
 	BodyAttachment->FrameDefiningActor = NewActor;
 	BodyAttachment->OnFrameDefiningActorChanged(Constraint);
+#endif
 #endif
 }
 

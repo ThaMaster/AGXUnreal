@@ -1,5 +1,7 @@
 #pragma once
 
+// AGXUnreal includes.
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Layout/Visibility.h"
@@ -31,5 +33,5 @@ public:
 private:
 	TSharedPtr<class IPropertyHandle> BodyAttachmentProperty = nullptr;
 	TSharedPtr<class IPropertyHandle> RigidBodyProperty = nullptr;
-	TSharedPtr<class IPropertyHandle> FrameDefiningActorProperty = nullptr;
+	TSharedPtr<class IPropertyHandle> FrameDefiningComponentProperty = nullptr;
 };

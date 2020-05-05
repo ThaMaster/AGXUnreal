@@ -15,8 +15,10 @@ UAGX_DistanceConstraintComponent::UAGX_DistanceConstraintComponent()
 		  /*bIsLockControllerEditable*/ false) // disable because the native impl uses Lock
 											   // Controller implicitly!
 {
-	BodyAttachment1.FrameDefiningActor = nullptr;
-	BodyAttachment2.FrameDefiningActor = nullptr;
+	/// \todo Determine if this is needed, or if the FAGX_ConstraintFrameComponent constructor
+	/// does what we want.
+	BodyAttachment1.FrameDefiningComponent.Clear();
+	BodyAttachment2.FrameDefiningComponent.Clear();
 }
 
 UAGX_DistanceConstraintComponent::~UAGX_DistanceConstraintComponent()
