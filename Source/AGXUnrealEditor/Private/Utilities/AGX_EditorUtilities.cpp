@@ -631,7 +631,7 @@ namespace
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Did not find any triangle data in imported trimesh '%s'. Cannot create "
-					 "StatiMesh asset."),
+					 "StaticMesh asset."),
 				*Trimesh.GetSourceName());
 			return FRawMesh();
 		}
