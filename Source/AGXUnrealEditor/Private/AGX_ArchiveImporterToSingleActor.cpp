@@ -2,7 +2,6 @@
 
 // AGXUnreal includes.
 #include "AGXArchiveReader.h"
-#include "AGX_EditorUtilities.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupManager.h"
@@ -27,6 +26,7 @@
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
 #include "GameFramework/Actor.h"
