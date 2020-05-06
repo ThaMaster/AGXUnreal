@@ -349,7 +349,7 @@ namespace
 		RawMesh.FaceMaterialIndices.Reserve(NumTriangles);
 		RawMesh.FaceSmoothingMasks.Reserve(NumTriangles);
 
-		TArray<FVector> TriangleNormals = Trimesh.GetTriangleNormals();
+		const TArray<FVector> TriangleNormals = Trimesh.GetTriangleNormals();
 
 		for (int32 TIdx = 0; TIdx < NumTriangles; ++TIdx)
 		{
@@ -431,8 +431,8 @@ namespace
 		RawMesh.WedgeColors.Reserve(NumIndices);
 		RawMesh.WedgeTexCoords[0].Reserve(NumIndices);
 
-		TArray<FVector> RenderNormals = Trimesh.GetRenderDataNormals();
-		TArray<FVector2D> RenderCoordinates = Trimesh.GetRenderDataTextureCoordinates();
+		const TArray<FVector> RenderNormals = Trimesh.GetRenderDataNormals();
+		const TArray<FVector2D> RenderCoordinates = Trimesh.GetRenderDataTextureCoordinates();
 
 		for (int32 I = 0; I < NumIndices; ++I)
 		{
@@ -525,8 +525,8 @@ namespace
 		RawMesh.WedgeTexCoords[0].Reserve(NumIndices);
 
 		// Lookup into these should use indices from the RenderDataIndices array.
-		TArray<FVector> RenderNormals = Trimesh.GetRenderDataNormals();
-		TArray<FVector2D> RenderCoordinates = Trimesh.GetRenderDataTextureCoordinates();
+		const TArray<FVector> RenderNormals = Trimesh.GetRenderDataNormals();
+		const TArray<FVector2D> RenderCoordinates = Trimesh.GetRenderDataTextureCoordinates();
 
 		// Gather data that is per-vertex indexed in the AGX Dynamics format but per-wedge in the
 		// Unreal Engine format.
