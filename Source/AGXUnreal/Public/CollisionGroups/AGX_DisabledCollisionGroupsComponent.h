@@ -21,8 +21,14 @@ class AGXUNREAL_API UAGX_DisabledCollisionGroupsComponent : public UActorCompone
 	GENERATED_BODY()
 
 public:
+	UAGX_DisabledCollisionGroupsComponent();
+
 	UPROPERTY(EditAnywhere, Category = "AGX Collisions")
 	TArray<FAGX_CollisionGroupPair> DisabledCollisionGroupPairs;
+
+	virtual void TickComponent(
+		float DeltaTime, ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
 	/// \todo Decide/figure out how to manage synchronization between
@@ -51,4 +57,7 @@ protected:
 	virtual void PostLoad() override;
 
 	virtual void BeginPlay() override;
+
+private:
+	bool bPairsDisabled = false;
 };

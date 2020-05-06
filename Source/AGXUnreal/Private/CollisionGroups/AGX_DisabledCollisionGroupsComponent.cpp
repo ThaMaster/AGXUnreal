@@ -6,68 +6,118 @@
 
 namespace
 {
-	void AddDisabledPairs(
-		AActor* Owner, TArray<FAGX_CollisionGroupPair>& DisabledCollisionGroupPairs)
+	AAGX_CollisionGroupManager* GetCollisionGroupManager(AActor* Owner)
 	{
 		if (Owner == nullptr)
 		{
-			return;
+			return nullptr;
 		}
-
 		UWorld* World = Owner->GetWorld();
 		if (World == nullptr)
 		{
-			// Unclear if we should log here or not. Is there any case in which there is no World
-			// but the user still need the disabled pairs to be registered in a
-			// CollisionGroupManager?
-			return;
+			return nullptr;
 		}
-
-		/// \todo Consider adding a GetOrCreateFrom member function to AAGX_CollisionGroupManager.
 		AAGX_CollisionGroupManager* DisabledCollisions = AAGX_CollisionGroupManager::GetFrom(World);
-		if (DisabledCollisions == nullptr && World->bIsRunningConstructionScript)
-		{
-			// Not allowed to spawn new actors, such as the CollisionGroupManager, while a
-			// construction script is running. Bail and try again later. This will happen while
-			// importing an AGX Dynamics archive to a Blueprint. In that case "later" is when
-			// the generated Blueprint is instantiated in a level.
-			//
-			// There is also FActorSpawnParameters.bAllowDuringConstructionScript that may be used.
-			// Need to understand what the implications of setting that to true are.
-			return;
-		}
 		if (DisabledCollisions == nullptr)
 		{
-			/// \todo This sometimes creates an extra CollisionGroupManager on Play. Happens when
-			/// this component is instantiated before the real/original/user-created
-			/// CollisionGroupManager.
-			DisabledCollisions = World->SpawnActor<AAGX_CollisionGroupManager>();
+			return nullptr;
 		}
+		return DisabledCollisions;
+	}
+
+	bool AddDisabledPairs(AActor* Owner, TArray<FAGX_CollisionGroupPair>& PairsToDisable)
+	{
+		AAGX_CollisionGroupManager* DisabledCollisions = GetCollisionGroupManager(Owner);
 		if (DisabledCollisions == nullptr)
 		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("'%s' cannot apply disabled collision group pairs because there is no "
-					 "CollisionGroupManager in the level."),
-				*Owner->GetName());
-			return;
+			return false;
 		}
 
-		for (const FAGX_CollisionGroupPair& Pair : DisabledCollisionGroupPairs)
+		for (const FAGX_CollisionGroupPair& Pair : PairsToDisable)
 		{
 			DisabledCollisions->DisableCollisionGroupPair(Pair);
 		}
+		return true;
 	}
 }
+
+UAGX_DisabledCollisionGroupsComponent::UAGX_DisabledCollisionGroupsComponent()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+};
 
 void UAGX_DisabledCollisionGroupsComponent::PostLoad()
 {
 	Super::PostLoad();
-	AddDisabledPairs(GetOwner(), DisabledCollisionGroupPairs);
+	if (bPairsDisabled)
+	{
+		return;
+	}
+	if (AddDisabledPairs(GetOwner(), DisabledCollisionGroupPairs))
+	{
+		bPairsDisabled = true;
+		SetComponentTickEnabled(false);
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("AGX_DisableCollisionGroupsComponent in '%s' could not register disabled "
+				 "collision groups in PostLoad because the current level doesn't have an "
+				 "AGX_CollisionGroupManager. Will try again later."),
+			*GetOwner()->GetName());
+	}
 }
 
 void UAGX_DisabledCollisionGroupsComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	AddDisabledPairs(GetOwner(), DisabledCollisionGroupPairs);
+	if (bPairsDisabled)
+	{
+		return;
+	}
+	if (AddDisabledPairs(GetOwner(), DisabledCollisionGroupPairs))
+	{
+		bPairsDisabled = true;
+		SetComponentTickEnabled(false);
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT(
+				"AGX_DisableCollisionGroupsComponent in '%s' could not register disabled collision "
+				"groups in BeginPlay because the current level doesn't have an "
+				"AGX_CollisionGroupManager. Will try again later."),
+			*GetOwner()->GetName());
+	}
+}
+
+void UAGX_DisabledCollisionGroupsComponent::TickComponent(
+	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// Only making one attempt from the tick callback. If we don't have a collision group
+	// manager by now then we probably never will.
+	SetComponentTickEnabled(false);
+
+	if (bPairsDisabled)
+	{
+		return;
+	}
+
+	if (AddDisabledPairs(GetOwner(), DisabledCollisionGroupPairs))
+	{
+		bPairsDisabled = true;
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("AGX_DisableCollisionGroupsComponent in '%s' could not register disabled "
+				 "collision groups in TickComponent because there is no CollisionGroupManager "
+				 "in the level. No further attempts will be made."),
+			*GetOwner()->GetName());
+	}
 }
