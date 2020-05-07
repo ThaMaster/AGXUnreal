@@ -59,5 +59,8 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	void TryAddDisabledCollisionPairs(const TCHAR* CalledFrom, bool WillTryAgain);
+
+private:
 	bool bPairsDisabled = false;
 };
