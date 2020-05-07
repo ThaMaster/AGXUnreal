@@ -10,10 +10,10 @@
 
 #include "AGX_Simulation.generated.h"
 
+class AAGX_Terrain;
 class UAGX_RigidBodyComponent;
 class UAGX_ShapeComponent;
 class UAGX_MaterialBase;
-class AAGX_Terrain;
 
 class AActor;
 class UActorComponent;
