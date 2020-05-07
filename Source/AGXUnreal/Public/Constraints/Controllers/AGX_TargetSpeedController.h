@@ -52,7 +52,9 @@ private:
 	virtual void UpdateNativePropertiesImpl() override;
 };
 
-/*This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprints*/
+/**
+ * This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprints.
+ */
 UCLASS()
 class AGXUNREAL_API UAGX_ConstraintTargetSpeedController_FL : public UBlueprintFunctionLibrary
 {
@@ -66,9 +68,17 @@ class AGXUNREAL_API UAGX_ConstraintTargetSpeedController_FL : public UBlueprintF
 	};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Target Speed Controller")
-	static float GetSpeed(
-		UPARAM(ref) FAGX_ConstraintTargetSpeedController& ControllerRef)
+	static float GetSpeed(UPARAM(ref) FAGX_ConstraintTargetSpeedController& ControllerRef)
 	{
 		return static_cast<float>(ControllerRef.GetSpeed());
 	};
+
+	//~ Functions inherited from AGX_ConstraintController.
+	/// \todo Why can't the functions in UAGX_ConstraintController_FL be called on a
+	/// FAGX_ConstraintTargetSpeedController?
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static bool IsValid(UPARAM(ref) FAGX_ConstraintTargetSpeedController& ControllerRef)
+	{
+		return ControllerRef.HasNative();
+	}
 };
