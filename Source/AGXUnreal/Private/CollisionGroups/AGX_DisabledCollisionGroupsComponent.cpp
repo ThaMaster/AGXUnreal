@@ -50,48 +50,13 @@ UAGX_DisabledCollisionGroupsComponent::UAGX_DisabledCollisionGroupsComponent()
 void UAGX_DisabledCollisionGroupsComponent::PostLoad()
 {
 	Super::PostLoad();
-	if (bPairsDisabled)
-	{
-		return;
-	}
-	if (AddDisabledPairs(GetOwner(), DisabledCollisionGroupPairs))
-	{
-		bPairsDisabled = true;
-		SetComponentTickEnabled(false);
-	}
-	else
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("AGX_DisableCollisionGroupsComponent in '%s' could not register disabled "
-				 "collision groups in PostLoad because the current level doesn't have an "
-				 "AGX_CollisionGroupManager. Will try again later."),
-			*GetOwner()->GetName());
-	}
+	TryAddDisabledCollisionPairs(TEXT("PostLoad"), true);
 }
 
 void UAGX_DisabledCollisionGroupsComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	if (bPairsDisabled)
-	{
-		return;
-	}
-	if (AddDisabledPairs(GetOwner(), DisabledCollisionGroupPairs))
-	{
-		bPairsDisabled = true;
-		SetComponentTickEnabled(false);
-	}
-	else
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT(
-				"AGX_DisableCollisionGroupsComponent in '%s' could not register disabled collision "
-				"groups in BeginPlay because the current level doesn't have an "
-				"AGX_CollisionGroupManager. Will try again later."),
-			*GetOwner()->GetName());
-	}
+	TryAddDisabledCollisionPairs(TEXT("BeginPlay"), true);
 }
 
 void UAGX_DisabledCollisionGroupsComponent::TickComponent(
@@ -103,22 +68,43 @@ void UAGX_DisabledCollisionGroupsComponent::TickComponent(
 	// manager by now then we probably never will.
 	SetComponentTickEnabled(false);
 
+	TryAddDisabledCollisionPairs(TEXT("TickComponent"), false);
+}
+
+void UAGX_DisabledCollisionGroupsComponent::TryAddDisabledCollisionPairs(
+	const TCHAR* CalledFrom, bool WillTryAgain)
+{
 	if (bPairsDisabled)
 	{
 		return;
 	}
-
-	if (AddDisabledPairs(GetOwner(), DisabledCollisionGroupPairs))
+	AActor* const Owner = GetOwner();
+	if (Owner == nullptr)
+	{
+		return;
+	}
+	if (AddDisabledPairs(Owner, DisabledCollisionGroupPairs))
 	{
 		bPairsDisabled = true;
+		SetComponentTickEnabled(false);
+		return;
+	}
+	if (WillTryAgain)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("AGX_DisableCollisionGroupsComponent in '%s' could not register disabled "
+				 "collision groups from '%s' because there is no CollisionGroupManager in the "
+				 "level. Will try again later."),
+			*Owner->GetName(), CalledFrom);
 	}
 	else
 	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("AGX_DisableCollisionGroupsComponent in '%s' could not register disabled "
-				 "collision groups in TickComponent because there is no CollisionGroupManager "
-				 "in the level. No further attempts will be made."),
-			*GetOwner()->GetName());
+				 "collision groups from '%s' because there is no CollisionGroupManager in the "
+				 "level. No further attempts will be made."),
+			*Owner->GetName(), CalledFrom);
 	}
 }
