@@ -2,6 +2,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
 #include "Math/Interval.h"
 
 #include "AGX_ConstraintController.generated.h"
@@ -13,7 +14,7 @@ class FConstraintControllerBarrier;
  * that has not been primarily constrained by the AGX Constraint).
  * Disabled by default.
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ConstraintController
 {
 	GENERATED_USTRUCT_BODY()
@@ -65,4 +66,19 @@ protected:
 	void CopyFrom(const FConstraintControllerBarrier& Source);
 
 	TUniquePtr<FConstraintControllerBarrier> NativeBarrier;
+};
+
+/**
+ * This class acts as an API that exposes functions of FAGX_ConstraintController in Blueprints.
+ */
+UCLASS()
+class AGXUNREAL_API UAGX_ConstraintController_FL : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static bool IsValid(UPARAM(ref) FAGX_ConstraintController& ControllerRef)
+	{
+		return ControllerRef.HasNative();
+	}
 };
