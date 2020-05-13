@@ -6,6 +6,7 @@
 #include <tuple>
 
 // Shape classes.
+class UAGX_ShapeComponent;
 class UAGX_SphereShapeComponent;
 class UAGX_BoxShapeComponent;
 class UAGX_CylinderShapeComponent;
@@ -20,6 +21,7 @@ class UAGX_PrismaticConstraintComponent;
 
 // Other AGXUnreal classes.
 class FTrimeshShapeBarrier;
+class FShapeMaterialBarrier;
 class UAGX_RigidBodyComponent;
 
 // Unreal Engine classes.
@@ -94,6 +96,13 @@ public:
 	static UStaticMeshComponent* CreateStaticMeshAsset(
 		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh,
 		const FString& AssetFolderName);
+
+	/**
+	 * Creates a new UAGX_ShapeMaterialAsset for a shape material and returns the shape material
+	 * asset path. Returns empty string if the asset could not be created.
+	 */
+	static FString CreateShapeMaterialAsset(
+		const FString& DirName, const FShapeMaterialBarrier& Material);
 
 	/**
 	 * Create a new constraint of the specified type.
@@ -199,6 +208,13 @@ public:
 	template <typename T>
 	static T* GetSingleObjectBeingCustomized(
 		IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true);
+
+	/**
+	 * Assigns a shape material asset to the physical material of a UAGX_ShapeComponent, if the
+	 * asset is found. The ShapeMaterialAsset FString contains the path to the asset along with its
+	 * name.
+	 */
+	static void ApplyShapeMaterial(UAGX_ShapeComponent* Shape, const FString& ShapeMaterialAsset);
 };
 
 template <typename T>

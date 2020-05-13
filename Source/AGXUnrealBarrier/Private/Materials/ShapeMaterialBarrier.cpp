@@ -10,6 +10,11 @@ FShapeMaterialBarrier::FShapeMaterialBarrier()
 {
 }
 
+FShapeMaterialBarrier::FShapeMaterialBarrier(std::unique_ptr<FMaterialRef> Native)
+	: NativeRef(std::move(Native))
+{
+}
+
 FShapeMaterialBarrier::~FShapeMaterialBarrier()
 {
 	// Must provide a destructor implementation in the .cpp file because the
