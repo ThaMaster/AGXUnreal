@@ -724,7 +724,7 @@ FString FAGX_EditorUtilities::CreateShapeMaterialAsset(
 		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
 	AssetTools.CreateUniqueAssetName(PackagePath, MaterialName, PackagePath, MaterialName);
 
-	// Create the package that will hold our mesh asset.
+	// Create the package that will hold our shape material asset.
 	UPackage* Package = CreatePackage(nullptr, *PackagePath);
 #if 0
 		/// \todo Unclear if this is needed or not. Leaving it out for now but
