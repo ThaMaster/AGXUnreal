@@ -10,6 +10,8 @@
 
 #include "AGX_MaterialBase.generated.h"
 
+class FShapeMaterialBarrier;
+
 /**
  * Defines physical properties of AGX shapes, AGX terrains etc.
  *
@@ -42,6 +44,8 @@ public:
 
 	virtual FShapeMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
 		PURE_VIRTUAL(UAGX_MaterialBase::GetOrCreateShapeMaterialNative, return nullptr;);
+
+	void CopyShapeMaterialProperties(const FShapeMaterialBarrier* Source);
 
 protected:
 	void CopyShapeMaterialProperties(const UAGX_MaterialBase* Source);
