@@ -1,12 +1,12 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿#pragma once
 
-#pragma once
-
-#include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
+// AGXUnreal includes.
 #include "Materials/AGX_ShapeMaterialBulkProperties.h"
 #include "Materials/AGX_ShapeMaterialSurfaceProperties.h"
-#include "Materials/ShapeMaterialBarrier.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
 
 #include "AGX_MaterialBase.generated.h"
 
@@ -44,8 +44,6 @@ public:
 
 	virtual FShapeMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
 		PURE_VIRTUAL(UAGX_MaterialBase::GetOrCreateShapeMaterialNative, return nullptr;);
-
-	void CopyShapeMaterialProperties(const FShapeMaterialBarrier* Source);
 
 protected:
 	void CopyShapeMaterialProperties(const UAGX_MaterialBase* Source);

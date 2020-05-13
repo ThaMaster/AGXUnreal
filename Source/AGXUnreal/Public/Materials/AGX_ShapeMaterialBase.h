@@ -1,10 +1,12 @@
 #pragma once
-
-#include "CoreMinimal.h"
-
 #include "Materials/AGX_MaterialBase.h"
 
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
 #include "AGX_ShapeMaterialBase.generated.h"
+
+class FShapeMaterialBarrier;
 
 /**
  * Represents an AGX shape material.
@@ -30,4 +32,7 @@ UCLASS(
 class AGXUNREAL_API UAGX_ShapeMaterialBase : public UAGX_MaterialBase
 {
 	GENERATED_BODY()
+
+public:
+	void CopyFrom(const FShapeMaterialBarrier* Source);
 };

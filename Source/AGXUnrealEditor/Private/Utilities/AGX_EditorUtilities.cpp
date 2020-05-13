@@ -736,7 +736,7 @@ FString FAGX_EditorUtilities::CreateShapeMaterialAsset(
 		Package, FName(*MaterialName), RF_Public | RF_Standalone);
 
 	// Copy material properties to the new material asset.
-	MaterialAsset->CopyShapeMaterialProperties(&Material);
+	MaterialAsset->CopyFrom(&Material);
 
 	FAssetId AssetId = FinalizeAndSavePackage(Package, MaterialAsset, PackagePath, MaterialName);
 
