@@ -152,7 +152,17 @@ namespace
 			UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier,
 			const FString& ShapeMaterialAsset)
 		{
-			FAGX_EditorUtilities::ApplyShapeMaterial(Component, ShapeMaterialAsset);
+			if (!ShapeMaterialAsset.IsEmpty())
+			{
+				bool Result = FAGX_EditorUtilities::ApplyShapeMaterial(Component, ShapeMaterialAsset);
+				if (!Result)
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("ApplyShapeMaterial in FinalizeShape failed. Actor: %s, Shape Component: %s, Asset: %s."),
+						*Actor.GetActorLabel(), *Component->GetName(), *ShapeMaterialAsset);
+				}
+			}
 
 			Component->bCanCollide = Barrier.GetEnableCollisions();
 			for (const FName& Group : Barrier.GetCollisionGroups())

@@ -1113,12 +1113,12 @@ void FAGX_EditorUtilities::GetAllClassesOfType(
 	}
 }
 
-void FAGX_EditorUtilities::ApplyShapeMaterial(
+bool FAGX_EditorUtilities::ApplyShapeMaterial(
 	UAGX_ShapeComponent* Shape, const FString& ShapeMaterialAsset)
 {
 	if (!Shape)
 	{
-		return;
+		return false;
 	}
 
 	// Find the ShapeMaterialAsset.
@@ -1131,11 +1131,19 @@ void FAGX_EditorUtilities::ApplyShapeMaterial(
 	UAGX_ShapeMaterialAsset* MaterialAsset =
 		FAssetData::GetFirstAsset<UAGX_ShapeMaterialAsset>(AssetData);
 
-	// If found, apply the shape material to the shape.
-	if (MaterialAsset)
+	if (!MaterialAsset)
 	{
-		Shape->PhysicalMaterial = MaterialAsset;
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Could not apply PhysicalMaterial using asset: %s since the asset could not be "
+				 "found."),
+			*ShapeMaterialAsset);
+
+		return false;
 	}
+
+	Shape->PhysicalMaterial = MaterialAsset;
+	return true;
 }
 
 #undef LOCTEXT_NAMESPACE

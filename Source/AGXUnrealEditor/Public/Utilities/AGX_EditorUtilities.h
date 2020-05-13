@@ -214,7 +214,7 @@ public:
 	 * asset is found. The ShapeMaterialAsset FString contains the path to the asset along with its
 	 * name.
 	 */
-	static void ApplyShapeMaterial(UAGX_ShapeComponent* Shape, const FString& ShapeMaterialAsset);
+	static bool ApplyShapeMaterial(UAGX_ShapeComponent* Shape, const FString& ShapeMaterialAsset);
 };
 
 template <typename T>

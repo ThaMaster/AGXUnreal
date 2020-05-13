@@ -190,8 +190,6 @@ namespace
 			UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier,
 			const FString& ShapeMaterialAsset)
 		{
-			FAGX_EditorUtilities::ApplyShapeMaterial(Component, ShapeMaterialAsset);
-
 			Component->SetFlags(RF_Transactional);
 			Component->bCanCollide = Barrier.GetEnableCollisions();
 			for (const FName& Group : Barrier.GetCollisionGroups())
@@ -213,6 +211,20 @@ namespace
 					*Name);
 			}
 			Component->Rename(*Name);
+
+			if (!ShapeMaterialAsset.IsEmpty())
+			{
+				bool Result =
+					FAGX_EditorUtilities::ApplyShapeMaterial(Component, ShapeMaterialAsset);
+				if (!Result)
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("ApplyShapeMaterial in FinalizeShape failed. Rigid Body: %s, Shape "
+							 "Component: %s, Asset: %s."),
+						*BodyComponent->GetName(), *Component->GetName(), *ShapeMaterialAsset);
+				}
+			}
 		}
 
 	private:
