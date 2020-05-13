@@ -136,8 +136,7 @@ namespace
 			UAGX_SphereShapeComponent* Component =
 				FAGX_EditorUtilities::CreateSphereShape(BodyComponent->GetOwner(), BodyComponent);
 			Component->Radius = Barrier.GetRadius();
-			FAGX_EditorUtilities::ApplyShapeMaterial(Component, ShapeMaterialAsset);
-			FinalizeShape(Component, Barrier);
+			FinalizeShape(Component, Barrier, ShapeMaterialAsset);
 		}
 
 		virtual void InstantiateBox(
@@ -146,8 +145,7 @@ namespace
 			UAGX_BoxShapeComponent* Component = FAGX_EditorUtilities::CreateBoxShape(
 				BodyComponent->GetOwner(), BodyComponent);
 			Component->HalfExtent = Barrier.GetHalfExtents();
-			FAGX_EditorUtilities::ApplyShapeMaterial(Component, ShapeMaterialAsset);
-			FinalizeShape(Component, Barrier);
+			FinalizeShape(Component, Barrier, ShapeMaterialAsset);
 		}
 
 		virtual void InstantiateCylinder(
@@ -157,8 +155,7 @@ namespace
 				FAGX_EditorUtilities::CreateCylinderShape(BodyComponent->GetOwner(), BodyComponent);
 			Component->Height = Barrier.GetHeight();
 			Component->Radius = Barrier.GetRadius();
-			FAGX_EditorUtilities::ApplyShapeMaterial(Component, ShapeMaterialAsset);
-			FinalizeShape(Component, Barrier);
+			FinalizeShape(Component, Barrier, ShapeMaterialAsset);
 		}
 
 		virtual void InstantiateTrimesh(
@@ -185,13 +182,16 @@ namespace
 					*OldName, *Name);
 			}
 			Component->Rename(*Name, nullptr, REN_DontCreateRedirectors);
-			FAGX_EditorUtilities::ApplyShapeMaterial(Component, ShapeMaterialAsset);
-			FinalizeShape(Component, Barrier);
+			FinalizeShape(Component, Barrier, ShapeMaterialAsset);
 		}
 
 	private:
-		void FinalizeShape(UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier)
+		void FinalizeShape(
+			UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier,
+			const FString& ShapeMaterialAsset)
 		{
+			FAGX_EditorUtilities::ApplyShapeMaterial(Component, ShapeMaterialAsset);
+
 			Component->SetFlags(RF_Transactional);
 			Component->bCanCollide = Barrier.GetEnableCollisions();
 			for (const FName& Group : Barrier.GetCollisionGroups())

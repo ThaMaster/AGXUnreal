@@ -99,8 +99,7 @@ namespace
 			UAGX_SphereShapeComponent* ShapeComponent =
 				FAGX_EditorUtilities::CreateSphereShape(&Actor, &Root);
 			ShapeComponent->Radius = Sphere.GetRadius();
-			FAGX_EditorUtilities::ApplyShapeMaterial(ShapeComponent, ShapeMaterialAsset);
-			FinalizeShape(ShapeComponent, Sphere);
+			FinalizeShape(ShapeComponent, Sphere, ShapeMaterialAsset);
 		}
 
 		virtual void InstantiateBox(
@@ -109,8 +108,7 @@ namespace
 			UAGX_BoxShapeComponent* ShapeComponent =
 				FAGX_EditorUtilities::CreateBoxShape(&Actor, &Root);
 			ShapeComponent->HalfExtent = Box.GetHalfExtents();
-			FAGX_EditorUtilities::ApplyShapeMaterial(ShapeComponent, ShapeMaterialAsset);
-			FinalizeShape(ShapeComponent, Box);
+			FinalizeShape(ShapeComponent, Box, ShapeMaterialAsset);
 		}
 
 		virtual void InstantiateCylinder(
@@ -120,8 +118,7 @@ namespace
 				FAGX_EditorUtilities::CreateCylinderShape(&Actor, &Root);
 			ShapeComponent->Radius = Cylinder.GetRadius();
 			ShapeComponent->Height = Cylinder.GetHeight();
-			FAGX_EditorUtilities::ApplyShapeMaterial(ShapeComponent, ShapeMaterialAsset);
-			FinalizeShape(ShapeComponent, Cylinder);
+			FinalizeShape(ShapeComponent, Cylinder, ShapeMaterialAsset);
 		}
 
 		virtual void InstantiateTrimesh(
@@ -147,13 +144,16 @@ namespace
 					*OldName, *Name);
 			}
 			ShapeComponent->Rename(*Name, nullptr, REN_DontCreateRedirectors);
-			FAGX_EditorUtilities::ApplyShapeMaterial(ShapeComponent, ShapeMaterialAsset);
-			FinalizeShape(ShapeComponent, Trimesh);
+			FinalizeShape(ShapeComponent, Trimesh, ShapeMaterialAsset);
 		}
 
 	private:
-		void FinalizeShape(UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier)
+		void FinalizeShape(
+			UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier,
+			const FString& ShapeMaterialAsset)
 		{
+			FAGX_EditorUtilities::ApplyShapeMaterial(Component, ShapeMaterialAsset);
+
 			Component->bCanCollide = Barrier.GetEnableCollisions();
 			for (const FName& Group : Barrier.GetCollisionGroups())
 			{
