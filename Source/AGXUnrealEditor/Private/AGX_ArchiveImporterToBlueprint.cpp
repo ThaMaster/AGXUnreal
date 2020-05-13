@@ -142,8 +142,8 @@ namespace
 		virtual void InstantiateBox(
 			const FBoxShapeBarrier& Barrier, const FString& ShapeMaterialAsset) override
 		{
-			UAGX_BoxShapeComponent* Component = FAGX_EditorUtilities::CreateBoxShape(
-				BodyComponent->GetOwner(), BodyComponent);
+			UAGX_BoxShapeComponent* Component =
+				FAGX_EditorUtilities::CreateBoxShape(BodyComponent->GetOwner(), BodyComponent);
 			Component->HalfExtent = Barrier.GetHalfExtents();
 			FinalizeShape(Component, Barrier, ShapeMaterialAsset);
 		}
