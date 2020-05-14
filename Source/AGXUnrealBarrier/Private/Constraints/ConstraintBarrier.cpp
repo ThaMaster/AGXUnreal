@@ -163,7 +163,7 @@ namespace
 		{
 			return FRigidBodyBarrier();
 		}
-		return CreateRigidBodyBarrier(Constraint->getBodyAt(Index));
+		return AGXBarrierFactories::CreateRigidBodyBarrier(Constraint->getBodyAt(Index));
 	}
 }
 

@@ -1,7 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Materials/AGX_MaterialBase.h"
 
+// Unreal Engine includes.
 #include "Engine/World.h"
 
 UAGX_MaterialBase::~UAGX_MaterialBase()

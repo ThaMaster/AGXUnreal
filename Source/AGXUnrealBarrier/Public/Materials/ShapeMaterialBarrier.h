@@ -14,6 +14,8 @@ class AGXUNREALBARRIER_API FShapeMaterialBarrier
 {
 public:
 	FShapeMaterialBarrier();
+	FShapeMaterialBarrier(FShapeMaterialBarrier&& Other) = default;
+	FShapeMaterialBarrier(std::unique_ptr<FMaterialRef> Native);
 	virtual ~FShapeMaterialBarrier();
 
 	bool HasNative() const;

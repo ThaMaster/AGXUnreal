@@ -3,6 +3,7 @@
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
@@ -12,6 +13,8 @@
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
+#include "Materials/ShapeMaterialBarrier.h"
+#include "Materials/AGX_ShapeMaterialAsset.h"
 
 // Unreal Engine includes.
 #include "AssetRegistryModule.h"
@@ -158,12 +161,12 @@ namespace
 		return Sanitized;
 	}
 
-	FString CreateAssetName(FString TrimeshSourceName, FString ActorName)
+	FString CreateAssetName(FString SourceName, FString ActorName, FString DefaultName)
 	{
-		TrimeshSourceName = SanitizeName(TrimeshSourceName);
-		if (!TrimeshSourceName.IsEmpty())
+		SourceName = SanitizeName(SourceName);
+		if (!SourceName.IsEmpty())
 		{
-			return TrimeshSourceName;
+			return SourceName;
 		}
 
 		ActorName = SanitizeName(ActorName);
@@ -172,7 +175,13 @@ namespace
 			return ActorName;
 		}
 
-		return TEXT("ImportedAGXMesh");
+		DefaultName = SanitizeName(DefaultName);
+		if (!DefaultName.IsEmpty())
+		{
+			return DefaultName;
+		}
+
+		return TEXT("ImportedAGXObject");
 	}
 
 	/**
@@ -224,6 +233,38 @@ namespace
 		}
 	};
 
+	FAssetId FinalizeAndSavePackage(
+		UPackage* Package, UObject* Asset, FString& PackagePath, const FString& AssetName)
+	{
+		FAssetRegistryModule::AssetCreated(Asset);
+		Asset->MarkPackageDirty();
+		Asset->PostEditChange();
+		Asset->AddToRoot();
+		Package->SetDirtyFlag(true);
+
+		// Store our new package to disk.
+		FString PackageFilename = FPackageName::LongPackageNameToFilename(
+			PackagePath, FPackageName::GetAssetPackageExtension());
+		if (PackageFilename.IsEmpty())
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unreal Engine unable to provide a package filename for package path '%s'."),
+				*PackagePath);
+			return FAssetId();
+		}
+		bool bSaved = UPackage::SavePackage(Package, Asset, RF_NoFlags, *PackageFilename);
+		if (!bSaved)
+		{
+			UE_LOG(
+				LogAGX, Error, TEXT("Unreal Engine unable to save package '%s' to file '%s'."),
+				*PackagePath, *PackageFilename);
+			return FAssetId();
+		}
+
+		return {PackagePath, AssetName};
+	}
+
 	/**
 	 * Convert a raw mesh into a StaticMesh asset on disk.
 	 *
@@ -263,35 +304,9 @@ namespace
 			NewObject<UStaticMesh>(Package, FName(*AssetName), RF_Public | RF_Standalone);
 		AddRawMeshToStaticMesh(RawMesh, StaticMesh);
 
-		// Package is now complete. Trigger all the "engine stuff" to finalize it.
 		StaticMesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
-		FAssetRegistryModule::AssetCreated(StaticMesh);
-		StaticMesh->MarkPackageDirty();
-		StaticMesh->PostEditChange();
-		StaticMesh->AddToRoot();
-		Package->SetDirtyFlag(true);
 
-		// Store our new package to disk.
-		FString PackageFilename = FPackageName::LongPackageNameToFilename(
-			PackagePath, FPackageName::GetAssetPackageExtension());
-		if (PackageFilename.IsEmpty())
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Unreal Engine unable to provide a package filename for package path '%s'."),
-				*PackagePath);
-			return FAssetId();
-		}
-		bool bSaved = UPackage::SavePackage(Package, StaticMesh, RF_NoFlags, *PackageFilename);
-		if (!bSaved)
-		{
-			UE_LOG(
-				LogAGX, Error, TEXT("Unreal Engine unable to save package '%s' to file '%s'."),
-				*PackagePath, *PackageFilename);
-			return FAssetId();
-		}
-
-		return {PackagePath, AssetName};
+		return FinalizeAndSavePackage(Package, StaticMesh, PackagePath, AssetName);
 	}
 
 	FRawMesh CreateRawMeshFromCollisionData(const FTrimeshShapeBarrier& Trimesh)
@@ -654,7 +669,8 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshAsset(
 	const FString& AssetFolderName)
 {
 	FRawMesh RawMesh = CreateRawMeshFromTrimesh(Trimesh);
-	FString TrimeshName = CreateAssetName(Trimesh.GetSourceName(), Owner->GetActorLabel());
+	FString TrimeshName =
+		CreateAssetName(Trimesh.GetSourceName(), Owner->GetActorLabel(), TEXT("ImportedAGXMesh"));
 	FAssetId AssetId = CreateTrimeshAsset(RawMesh, AssetFolderName, TrimeshName);
 	if (!AssetId.IsValid())
 	{
@@ -675,7 +691,7 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshAsset(
 	{
 		/// \todo What should we do here, other than printing a message and giving up?
 		UE_LOG(LogAGX, Error, TEXT("Failed to load imported mesh asset '%s'"), *MeshAssetPath);
-		return nullptr; /// \todo Don't reeturn nullptr, return an empty UStaticMeshComponent.
+		return nullptr; /// \todo Don't return nullptr, return an empty UStaticMeshComponent.
 	}
 
 	/// \todo Which EObjectFlags should be passed to NewObject?
@@ -694,6 +710,43 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshAsset(
 			*Owner->GetName());
 	}
 	return StaticMeshComponent;
+}
+
+FString FAGX_EditorUtilities::CreateShapeMaterialAsset(
+	const FString& DirName, const FShapeMaterialBarrier& Material)
+{
+	FString MaterialName =
+		CreateAssetName(Material.GetName(), DirName, TEXT("ImportedAGXMaterial"));
+
+	// Find actual package path and a unique asset name.
+	FString PackagePath = FString::Printf(TEXT("/Game/ImportedAGXShapeMaterials/%s/"), *DirName);
+	IAssetTools& AssetTools =
+		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	AssetTools.CreateUniqueAssetName(PackagePath, MaterialName, PackagePath, MaterialName);
+
+	// Create the package that will hold our shape material asset.
+	UPackage* Package = CreatePackage(nullptr, *PackagePath);
+#if 0
+		/// \todo Unclear if this is needed or not. Leaving it out for now but
+		/// test with it restored if there are problems.
+		Package->FullyLoad();
+#endif
+
+	UAGX_ShapeMaterialAsset* MaterialAsset = NewObject<UAGX_ShapeMaterialAsset>(
+		Package, FName(*MaterialName), RF_Public | RF_Standalone);
+
+	// Copy material properties to the new material asset.
+	MaterialAsset->CopyFrom(&Material);
+
+	FAssetId AssetId = FinalizeAndSavePackage(Package, MaterialAsset, PackagePath, MaterialName);
+
+	if (!AssetId.IsValid())
+	{
+		// Return empty string if asset was not created properly.
+		return FString();
+	}
+
+	return AssetId.PackagePath;
 }
 
 AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
@@ -1058,6 +1111,39 @@ void FAGX_EditorUtilities::GetAllClassesOfType(
 			}
 		}
 	}
+}
+
+bool FAGX_EditorUtilities::ApplyShapeMaterial(
+	UAGX_ShapeComponent* Shape, const FString& ShapeMaterialAsset)
+{
+	if (!Shape)
+	{
+		return false;
+	}
+
+	// Find the ShapeMaterialAsset.
+	FAssetRegistryModule& AssetRegistryModule =
+		FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+	TArray<FAssetData> AssetData;
+	FARFilter Filter;
+	Filter.PackageNames.Add(FName(*ShapeMaterialAsset));
+	AssetRegistryModule.Get().GetAssets(Filter, AssetData);
+	UAGX_ShapeMaterialAsset* MaterialAsset =
+		FAssetData::GetFirstAsset<UAGX_ShapeMaterialAsset>(AssetData);
+
+	if (!MaterialAsset)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Could not apply PhysicalMaterial using asset: %s since the asset could not be "
+				 "found."),
+			*ShapeMaterialAsset);
+
+		return false;
+	}
+
+	Shape->PhysicalMaterial = MaterialAsset;
+	return true;
 }
 
 #undef LOCTEXT_NAMESPACE

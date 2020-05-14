@@ -93,32 +93,36 @@ namespace
 		{
 		}
 
-		virtual void InstantiateSphere(const FSphereShapeBarrier& Sphere) override
+		virtual void InstantiateSphere(
+			const FSphereShapeBarrier& Sphere, const FString& ShapeMaterialAsset) override
 		{
 			UAGX_SphereShapeComponent* ShapeComponent =
 				FAGX_EditorUtilities::CreateSphereShape(&Actor, &Root);
 			ShapeComponent->Radius = Sphere.GetRadius();
-			FinalizeShape(ShapeComponent, Sphere);
+			FinalizeShape(ShapeComponent, Sphere, ShapeMaterialAsset);
 		}
 
-		virtual void InstantiateBox(const FBoxShapeBarrier& Box) override
+		virtual void InstantiateBox(
+			const FBoxShapeBarrier& Box, const FString& ShapeMaterialAsset) override
 		{
 			UAGX_BoxShapeComponent* ShapeComponent =
 				FAGX_EditorUtilities::CreateBoxShape(&Actor, &Root);
 			ShapeComponent->HalfExtent = Box.GetHalfExtents();
-			FinalizeShape(ShapeComponent, Box);
+			FinalizeShape(ShapeComponent, Box, ShapeMaterialAsset);
 		}
 
-		virtual void InstantiateCylinder(const FCylinderShapeBarrier& Cylinder) override
+		virtual void InstantiateCylinder(
+			const FCylinderShapeBarrier& Cylinder, const FString& ShapeMaterialAsset) override
 		{
 			UAGX_CylinderShapeComponent* ShapeComponent =
 				FAGX_EditorUtilities::CreateCylinderShape(&Actor, &Root);
 			ShapeComponent->Radius = Cylinder.GetRadius();
 			ShapeComponent->Height = Cylinder.GetHeight();
-			FinalizeShape(ShapeComponent, Cylinder);
+			FinalizeShape(ShapeComponent, Cylinder, ShapeMaterialAsset);
 		}
 
-		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) override
+		virtual void InstantiateTrimesh(
+			const FTrimeshShapeBarrier& Trimesh, const FString& ShapeMaterialAsset) override
 		{
 			UAGX_TrimeshShapeComponent* ShapeComponent =
 				FAGX_EditorUtilities::CreateTrimeshShape(&Actor, &Root);
@@ -140,12 +144,28 @@ namespace
 					*OldName, *Name);
 			}
 			ShapeComponent->Rename(*Name, nullptr, REN_DontCreateRedirectors);
-			FinalizeShape(ShapeComponent, Trimesh);
+			FinalizeShape(ShapeComponent, Trimesh, ShapeMaterialAsset);
 		}
 
 	private:
-		void FinalizeShape(UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier)
+		void FinalizeShape(
+			UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier,
+			const FString& ShapeMaterialAsset)
 		{
+			if (!ShapeMaterialAsset.IsEmpty())
+			{
+				const bool Result =
+					FAGX_EditorUtilities::ApplyShapeMaterial(Component, ShapeMaterialAsset);
+				if (!Result)
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("ApplyShapeMaterial in FinalizeShape failed. Actor: %s, Shape "
+							 "Component: %s, Asset: %s."),
+						*Actor.GetActorLabel(), *Component->GetName(), *ShapeMaterialAsset);
+				}
+			}
+
 			Component->bCanCollide = Barrier.GetEnableCollisions();
 			for (const FName& Group : Barrier.GetCollisionGroups())
 			{
@@ -255,6 +275,14 @@ namespace
 				FName Group2 = *Pair.second;
 				Manager->DisableCollisionGroupPair(Group1, Group2);
 			}
+		}
+
+		virtual FString CreateMaterialAsset(const FShapeMaterialBarrier& ShapeMaterial) override
+		{
+			FString AssetPath = FAGX_EditorUtilities::CreateShapeMaterialAsset(
+				ImportedRoot.GetActorLabel(), ShapeMaterial);
+
+			return AssetPath;
 		}
 
 		virtual ~EditorInstantiator() = default;

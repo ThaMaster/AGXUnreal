@@ -11,6 +11,7 @@
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Constraints/DistanceJointBarrier.h"
 #include "Constraints/LockJointBarrier.h"
+#include "Materials/ShapeMaterialBarrier.h"
 
 #include "AGXRefs.h"
 
@@ -32,24 +33,29 @@ namespace agxCollide
 	class Trimesh;
 }
 
-FRigidBodyBarrier CreateRigidBodyBarrier(agx::RigidBody* Body);
+namespace AGXBarrierFactories
+{
+	FRigidBodyBarrier CreateRigidBodyBarrier(agx::RigidBody* Body);
 
-FSphereShapeBarrier CreateSphereShapeBarrier(agxCollide::Sphere* Sphere);
+	FSphereShapeBarrier CreateSphereShapeBarrier(agxCollide::Sphere* Sphere);
 
-FBoxShapeBarrier CreateBoxShapeBarrier(agxCollide::Box* Box);
+	FBoxShapeBarrier CreateBoxShapeBarrier(agxCollide::Box* Box);
 
-FCylinderShapeBarrier CreateCylinderShapeBarrier(agxCollide::Cylinder* Cylinder);
+	FCylinderShapeBarrier CreateCylinderShapeBarrier(agxCollide::Cylinder* Cylinder);
 
-FTrimeshShapeBarrier CreateTrimeshShapeBarrier(agxCollide::Trimesh* Trimesh);
+	FTrimeshShapeBarrier CreateTrimeshShapeBarrier(agxCollide::Trimesh* Trimesh);
 
-FHingeBarrier CreateHingeBarrier(agx::Hinge* Hinge);
+	FHingeBarrier CreateHingeBarrier(agx::Hinge* Hinge);
 
-FPrismaticBarrier CreatePrismaticBarrier(agx::Prismatic* Prismatic);
+	FPrismaticBarrier CreatePrismaticBarrier(agx::Prismatic* Prismatic);
 
-FBallJointBarrier CreateBallJointBarrier(agx::BallJoint* BallJoint);
+	FBallJointBarrier CreateBallJointBarrier(agx::BallJoint* BallJoint);
 
-FCylindricalJointBarrier CreateCylindricalJointBarrier(agx::CylindricalJoint* CylindricalJoint);
+	FCylindricalJointBarrier CreateCylindricalJointBarrier(agx::CylindricalJoint* CylindricalJoint);
 
-FDistanceJointBarrier CreateDistanceJointBarrier(agx::DistanceJoint* DistanceJoint);
+	FDistanceJointBarrier CreateDistanceJointBarrier(agx::DistanceJoint* DistanceJoint);
 
-FLockJointBarrier CreateLockJointBarrier(agx::LockJoint* LockJoint);
+	FLockJointBarrier CreateLockJointBarrier(agx::LockJoint* LockJoint);
+
+	FShapeMaterialBarrier CreateShapeMaterialBarrier(agx::Material* Material);
+}

@@ -25,7 +25,9 @@
 
 namespace
 {
-	void InstantiateShapes(const agxCollide::ShapeRefVector& Shapes, FAGXArchiveBody& ArchiveBody)
+	void InstantiateShapes(
+		const agxCollide::ShapeRefVector& Shapes, FAGXArchiveBody& ArchiveBody,
+		const FString& ShapeMaterialAsset)
 	{
 		for (const agxCollide::ShapeRef& Shape : Shapes)
 		{
@@ -34,31 +36,37 @@ namespace
 				case agxCollide::Shape::SPHERE:
 				{
 					agxCollide::Sphere* Sphere {Shape->as<agxCollide::Sphere>()};
-					ArchiveBody.InstantiateSphere(CreateSphereShapeBarrier(Sphere));
+					ArchiveBody.InstantiateSphere(
+						AGXBarrierFactories::CreateSphereShapeBarrier(Sphere), ShapeMaterialAsset);
 					break;
 				}
 				case agxCollide::Shape::BOX:
 				{
 					agxCollide::Box* Box {Shape->as<agxCollide::Box>()};
-					ArchiveBody.InstantiateBox(CreateBoxShapeBarrier(Box));
+					ArchiveBody.InstantiateBox(
+						AGXBarrierFactories::CreateBoxShapeBarrier(Box), ShapeMaterialAsset);
 					break;
 				}
 				case agxCollide::Shape::CYLINDER:
 				{
 					agxCollide::Cylinder* Cylinder {Shape->as<agxCollide::Cylinder>()};
-					ArchiveBody.InstantiateCylinder(CreateCylinderShapeBarrier(Cylinder));
+					ArchiveBody.InstantiateCylinder(
+						AGXBarrierFactories::CreateCylinderShapeBarrier(Cylinder),
+						ShapeMaterialAsset);
 					break;
 				}
 				case agxCollide::Shape::TRIMESH:
 				{
 					agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
-					ArchiveBody.InstantiateTrimesh(CreateTrimeshShapeBarrier(Trimesh));
+					ArchiveBody.InstantiateTrimesh(
+						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh),
+						ShapeMaterialAsset);
 					break;
 				}
 				case agxCollide::Shape::GROUP:
 				{
 					agxCollide::ShapeGroup* Group {Shape->as<agxCollide::ShapeGroup>()};
-					InstantiateShapes(Group->getChildren(), ArchiveBody);
+					InstantiateShapes(Group->getChildren(), ArchiveBody, ShapeMaterialAsset);
 					break;
 				}
 			}
@@ -72,25 +80,49 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 	size_t NumRead {Simulation->read(Convert(Filename))};
 	if (NumRead == 0)
 	{
-		UE_LOG(LogAGX, Log, TEXT("Could not read .agx filel %s."), *Filename);
+		UE_LOG(LogAGX, Log, TEXT("Could not read .agx file %s."), *Filename);
 		return;
+	}
+
+	// Get all materials and create one shape material asset for each. Each agx::Material have a
+	// unique name. Several agx::Geometries may use the same agx::Material.
+	const agxSDK::StringMaterialRefTable& MaterialsTable =
+		Simulation->getMaterialManager()->getMaterials();
+
+	// Maps agx::Material* to AGX_ShapeMaterialAsset asset name (with path).
+	TMap<agx::Material*, FString> ShapeMaterialAssets;
+	for (auto it = MaterialsTable.begin(); it != MaterialsTable.end(); ++it)
+	{
+		agx::Material* Mat = it->second.get();
+		const FString ShapeMaterialAsset =
+			Instantiator.CreateMaterialAsset(AGXBarrierFactories::CreateShapeMaterialBarrier(Mat));
+
+		ShapeMaterialAssets.Add(Mat, ShapeMaterialAsset);
 	}
 
 	agx::RigidBodyRefVector& Bodies {Simulation->getRigidBodies()};
 	if (Bodies.size() > size_t(std::numeric_limits<int32>::max()))
 	{
 		UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many bodies."), *Filename);
-		return; /// \todo Should be bail, or restore as many bodies as we can?
+		return; /// \todo Should we bail, or restore as many bodies as we can?
 	}
 
 	for (agx::RigidBodyRef& Body : Bodies)
 	{
-		FRigidBodyBarrier BodyBarrier {CreateRigidBodyBarrier(Body)};
+		FRigidBodyBarrier BodyBarrier {AGXBarrierFactories::CreateRigidBodyBarrier(Body)};
 		std::unique_ptr<FAGXArchiveBody> ArchiveBody {Instantiator.InstantiateBody(BodyBarrier)};
 		const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
 		for (const agxCollide::GeometryRef& Geometry : Geometries)
 		{
-			::InstantiateShapes(Geometry->getShapes(), *ArchiveBody);
+			FString ShapeMaterialAsset;
+
+			if (agx::Material* AgxMaterial = Geometry->getMaterial())
+			{
+				check(ShapeMaterialAssets.Find(AgxMaterial))
+				ShapeMaterialAsset = ShapeMaterialAssets[AgxMaterial];
+			}
+
+			::InstantiateShapes(Geometry->getShapes(), *ArchiveBody, ShapeMaterialAsset);
 		}
 	}
 
@@ -107,29 +139,33 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 	{
 		if (agx::Hinge* Hinge = Constraint->asSafe<agx::Hinge>())
 		{
-			Instantiator.InstantiateHinge(CreateHingeBarrier(Hinge));
+			Instantiator.InstantiateHinge(AGXBarrierFactories::CreateHingeBarrier(Hinge));
 		}
 		else if (agx::Prismatic* Prismatic = Constraint->asSafe<agx::Prismatic>())
 		{
-			Instantiator.InstantiatePrismatic(CreatePrismaticBarrier(Prismatic));
+			Instantiator.InstantiatePrismatic(
+				AGXBarrierFactories::CreatePrismaticBarrier(Prismatic));
 		}
 		else if (agx::BallJoint* BallJoint = Constraint->asSafe<agx::BallJoint>())
 		{
-			Instantiator.InstantiateBallJoint(CreateBallJointBarrier(BallJoint));
+			Instantiator.InstantiateBallJoint(
+				AGXBarrierFactories::CreateBallJointBarrier(BallJoint));
 		}
 		else if (
 			agx::CylindricalJoint* CylindricalJoint = Constraint->asSafe<agx::CylindricalJoint>())
 		{
 			Instantiator.InstantiateCylindricalJoint(
-				CreateCylindricalJointBarrier(CylindricalJoint));
+				AGXBarrierFactories::CreateCylindricalJointBarrier(CylindricalJoint));
 		}
 		else if (agx::DistanceJoint* DistanceJoint = Constraint->asSafe<agx::DistanceJoint>())
 		{
-			Instantiator.InstantiateDistanceJoint(CreateDistanceJointBarrier(DistanceJoint));
+			Instantiator.InstantiateDistanceJoint(
+				AGXBarrierFactories::CreateDistanceJointBarrier(DistanceJoint));
 		}
 		else if (agx::LockJoint* LockJoint = Constraint->asSafe<agx::LockJoint>())
 		{
-			Instantiator.InstantiateLockJoint(CreateLockJointBarrier(LockJoint));
+			Instantiator.InstantiateLockJoint(
+				AGXBarrierFactories::CreateLockJointBarrier(LockJoint));
 		}
 		else
 		{
