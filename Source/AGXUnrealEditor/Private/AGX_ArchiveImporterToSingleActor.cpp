@@ -128,14 +128,18 @@ namespace
 			}
 			Component.Rename(*Name, nullptr, REN_DontCreateRedirectors);
 
-			bool Result = FAGX_EditorUtilities::ApplyShapeMaterial(&Component, ShapeMaterialAsset);
-			if (!Result)
+			if (!ShapeMaterialAsset.IsEmpty())
 			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("ApplyShapeMaterial in FinalizeShape failed. Rigid Body: %s, Shape "
-						 "Component: %s, Asset: %s."),
-					*Body.GetName(), *Component.GetName(), *ShapeMaterialAsset);
+				const bool Result =
+					FAGX_EditorUtilities::ApplyShapeMaterial(&Component, ShapeMaterialAsset);
+				if (!Result)
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("ApplyShapeMaterial in FinalizeShape failed. Rigid Body: %s, Shape "
+							 "Component: %s, Asset: %s."),
+						*Body.GetName(), *Component.GetName(), *ShapeMaterialAsset);
+				}
 			}
 		}
 

@@ -154,7 +154,7 @@ namespace
 		{
 			if (!ShapeMaterialAsset.IsEmpty())
 			{
-				bool Result =
+				const bool Result =
 					FAGX_EditorUtilities::ApplyShapeMaterial(Component, ShapeMaterialAsset);
 				if (!Result)
 				{
