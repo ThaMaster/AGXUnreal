@@ -784,7 +784,7 @@ FString FAGX_EditorUtilities::CreateContactMaterialAsset(
 	}
 
 	const FString ContMatName =
-		TEXT("CM_") + Material1Asset->GetName() + "_" + Material2Asset->GetName();
+		TEXT("CM_") + Material1Asset->GetName() + TEXT ("_") + Material2Asset->GetName();
 
 	FString AssetName = CreateAssetName(ContMatName, DirName, TEXT("ImportedAGXContactMaterial"));
 
