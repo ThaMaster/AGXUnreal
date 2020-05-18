@@ -32,7 +32,7 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::CreateFromAsset(
 	UAGX_ContactMaterialInstance* NewInstance = NewObject<UAGX_ContactMaterialInstance>(
 		Outer, UAGX_ContactMaterialInstance::StaticClass(), *InstanceName, RF_Transient);
 
-	NewInstance->CopyProperties(Source);
+	NewInstance->CopyFrom(Source);
 	NewInstance->SourceAsset = Source;
 
 	NewInstance->CreateNative(PlayingWorld);

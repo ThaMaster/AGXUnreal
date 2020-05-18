@@ -12,6 +12,7 @@
 #include "Constraints/DistanceJointBarrier.h"
 #include "Constraints/LockJointBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "Materials/ContactMaterialBarrier.h"
 
 #include "AGXRefs.h"
 
@@ -58,4 +59,6 @@ namespace AGXBarrierFactories
 	FLockJointBarrier CreateLockJointBarrier(agx::LockJoint* LockJoint);
 
 	FShapeMaterialBarrier CreateShapeMaterialBarrier(agx::Material* Material);
+
+	FContactMaterialBarrier CreateContactMaterialBarrier(agx::ContactMaterial* ContactMaterial);
 }

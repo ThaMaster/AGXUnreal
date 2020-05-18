@@ -22,6 +22,7 @@ class UAGX_PrismaticConstraintComponent;
 // Other AGXUnreal classes.
 class FTrimeshShapeBarrier;
 class FShapeMaterialBarrier;
+class FContactMaterialBarrier;
 class UAGX_RigidBodyComponent;
 
 // Unreal Engine classes.
@@ -103,6 +104,14 @@ public:
 	 */
 	static FString CreateShapeMaterialAsset(
 		const FString& DirName, const FShapeMaterialBarrier& Material);
+
+	/**
+	 * Creates a new UAGX_ContactMaterialAsset for a contact material and returns the contact material
+	 * asset path. Returns empty string if the asset could not be created.
+	 */
+	static FString CreateContactMaterialAsset(
+		const FString& DirName, const FContactMaterialBarrier& ContactMaterial,
+		const FString& Material1, const FString& Material2);
 
 	/**
 	 * Create a new constraint of the specified type.

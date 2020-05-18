@@ -17,6 +17,7 @@ class FCylindricalJointBarrier;
 class FDistanceJointBarrier;
 class FLockJointBarrier;
 class FShapeMaterialBarrier;
+class FContactMaterialBarrier;
 
 /*
 The separation between the Unreal part and the AGX Dynamics part of the plugin
@@ -71,7 +72,11 @@ public:
 	virtual void DisabledCollisionGroups(
 		const TArray<std::pair<FString, FString>>& DisabledGroups) = 0;
 
-	virtual FString CreateMaterialAsset(const FShapeMaterialBarrier& ShapeMaterial) = 0;
+	virtual FString CreateShapeMaterialAsset(const FShapeMaterialBarrier& ShapeMaterial) = 0;
+
+	virtual FString CreateContactMaterialAsset(
+		const FContactMaterialBarrier& ContactMaterial, const FString& Material1,
+		const FString& Material2) = 0;
 
 	virtual ~FAGXArchiveInstantiator() = default;
 };

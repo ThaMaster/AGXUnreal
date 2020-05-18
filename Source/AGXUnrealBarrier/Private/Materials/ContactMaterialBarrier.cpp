@@ -106,6 +106,11 @@ FContactMaterialBarrier::FContactMaterialBarrier()
 {
 }
 
+FContactMaterialBarrier::FContactMaterialBarrier(std::unique_ptr<FContactMaterialRef> Native)
+	: NativeRef(std::move(Native))
+{
+}
+
 FContactMaterialBarrier::~FContactMaterialBarrier()
 {
 	// Must provide a destructor implementation in the .cpp file because the

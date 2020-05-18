@@ -94,10 +94,34 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 	for (auto it = MaterialsTable.begin(); it != MaterialsTable.end(); ++it)
 	{
 		agx::Material* Mat = it->second.get();
-		const FString ShapeMaterialAsset =
-			Instantiator.CreateMaterialAsset(AGXBarrierFactories::CreateShapeMaterialBarrier(Mat));
+		const FString ShapeMaterialAsset = Instantiator.CreateShapeMaterialAsset(
+			AGXBarrierFactories::CreateShapeMaterialBarrier(Mat));
 
 		ShapeMaterialAssets.Add(Mat, ShapeMaterialAsset);
+	}
+
+	const agxSDK::MaterialSPairContactMaterialRefTable& ContactMaterialsTable =
+		Simulation->getMaterialManager()->getContactMaterials();
+	for (auto it = ContactMaterialsTable.begin(); it != ContactMaterialsTable.end(); ++it)
+	{
+		agx::ContactMaterial* ContMat = it->second.get();
+		const agx::Material* Material1 = ContMat->getMaterial1();
+		const agx::Material* Material2 = ContMat->getMaterial2();
+		const FString Material1Asset = ShapeMaterialAssets[Material1];
+		const FString Material2Asset = ShapeMaterialAssets[Material2];
+		const FContactMaterialBarrier& ContMatBarrier =
+			AGXBarrierFactories::CreateContactMaterialBarrier(ContMat);
+
+		const FString ContactMaterialAsset =
+			Instantiator.CreateContactMaterialAsset(ContMatBarrier, Material1Asset, Material2Asset);
+
+		if (ContactMaterialAsset.IsEmpty())
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Unable to create contact material asset for materials: %s and %s"),
+				*Material1Asset, *Material2Asset);
+		}
 	}
 
 	agx::RigidBodyRefVector& Bodies {Simulation->getRigidBodies()};

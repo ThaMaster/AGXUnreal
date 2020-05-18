@@ -31,6 +31,8 @@
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Constraints/DistanceJointBarrier.h"
 #include "Constraints/LockJointBarrier.h"
+#include "Materials/ShapeMaterialBarrier.h"
+#include "Materials/ContactMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
@@ -277,12 +279,18 @@ namespace
 			}
 		}
 
-		virtual FString CreateMaterialAsset(const FShapeMaterialBarrier& ShapeMaterial) override
+		virtual FString CreateShapeMaterialAsset(const FShapeMaterialBarrier& ShapeMaterial) override
 		{
-			FString AssetPath = FAGX_EditorUtilities::CreateShapeMaterialAsset(
+			return FAGX_EditorUtilities::CreateShapeMaterialAsset(
 				ImportedRoot.GetActorLabel(), ShapeMaterial);
+		}
 
-			return AssetPath;
+		virtual FString CreateContactMaterialAsset(
+			const FContactMaterialBarrier& ContactMaterial, const FString& Material1,
+			const FString& Material2) override
+		{
+			return FAGX_EditorUtilities::CreateContactMaterialAsset(
+				ImportedRoot.GetActorLabel(), ContactMaterial, Material1, Material2);
 		}
 
 		virtual ~EditorInstantiator() = default;
