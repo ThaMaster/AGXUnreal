@@ -1,9 +1,12 @@
 #include "Materials/AGX_ContactMaterialBase.h"
 
-#include "Engine/World.h"
-
+// AGXUnreal includes.
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
+#include "Materials/ContactMaterialBarrier.h"
+
+// Unreal Engine includes.
+#include "Engine/World.h"
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialBase::GetOrCreateInstance(
 	UWorld* PlayingWorld, UAGX_ContactMaterialBase*& Property)
@@ -27,6 +30,38 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialBase::GetOrCreateInstance(
 	}
 
 	return Instance;
+}
+
+void UAGX_ContactMaterialBase::CopyFrom(const FContactMaterialBarrier* Source)
+{
+	if (Source)
+	{
+		ContactSolver = static_cast<EAGX_ContactSolver>(Source->GetFrictionSolveType());
+
+		ContactReduction = FAGX_ContactMaterialReductionMode();
+		ContactReduction.Mode =
+			static_cast<EAGX_ContactReductionMode>(Source->GetContactReductionMode());
+		ContactReduction.BinResolution = Source->GetContactReductionBinResolution();
+
+		MechanicsApproach = FAGX_ContactMaterialMechanicsApproach();
+		MechanicsApproach.bUseContactAreaApproach = Source->GetUseContactAreaApproach();
+		MechanicsApproach.MinElasticRestLength = Source->GetMinElasticRestLength();
+		MechanicsApproach.MaxElasticRestLength = Source->GetMaxElasticRestLength();
+
+		FrictionModel = static_cast<EAGX_FrictionModel>(Source->GetFrictionModel());
+		bSurfaceFrictionEnabled = Source->GetSurfaceFrictionEnabled();
+		FrictionCoefficient = Source->GetFrictionCoefficient(true, false);
+		SecondaryFrictionCoefficient = Source->GetFrictionCoefficient(false, true);
+		bUseSecondaryFrictionCoefficient = FrictionCoefficient != SecondaryFrictionCoefficient;
+		SurfaceViscosity = Source->GetSurfaceViscosity(true, false);
+		SecondarySurfaceViscosity = Source->GetSurfaceViscosity(false, true);
+		bUseSecondarySurfaceViscosity = SurfaceViscosity != SecondarySurfaceViscosity;
+		Restitution = Source->GetRestitution();
+		YoungsModulus = Source->GetYoungsModulus();
+		Damping = Source->GetDamping();
+		AdhesiveForce = Source->GetAdhesiveForce();
+		AdhesiveOverlap = Source->GetAdhesiveOverlap();
+	}
 }
 
 UAGX_ContactMaterialBase::UAGX_ContactMaterialBase()
@@ -61,7 +96,7 @@ UAGX_ContactMaterialBase::~UAGX_ContactMaterialBase()
 		Name = Source->Name;            \
 	}
 
-void UAGX_ContactMaterialBase::CopyProperties(const UAGX_ContactMaterialBase* Source)
+void UAGX_ContactMaterialBase::CopyFrom(const UAGX_ContactMaterialBase* Source)
 {
 	if (Source)
 	{

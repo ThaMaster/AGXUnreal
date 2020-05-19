@@ -15,6 +15,8 @@
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
+#include "Materials/ContactMaterialBarrier.h"
+#include "Materials/AGX_ContactMaterialAsset.h"
 
 // Unreal Engine includes.
 #include "AssetRegistryModule.h"
@@ -94,6 +96,25 @@ namespace
 			Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		check(Attached);
 		return Shape;
+	}
+
+	template <typename T>
+	static T* GetAssetByPath(const FString& AssetPath)
+	{
+		FAssetRegistryModule& AssetRegistryModule =
+			FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+		TArray<FAssetData> AssetData;
+		FARFilter Filter;
+		Filter.PackageNames.Add(FName(*AssetPath));
+		AssetRegistryModule.Get().GetAssets(Filter, AssetData);
+		T* Asset = FAssetData::GetFirstAsset<T>(AssetData);
+
+		if (Asset == nullptr)
+		{
+			UE_LOG(LogAGX, Error, TEXT("Could not find asset with path %s."), *AssetPath);
+		}
+
+		return Asset;
 	}
 }
 
@@ -749,6 +770,60 @@ FString FAGX_EditorUtilities::CreateShapeMaterialAsset(
 	return AssetId.PackagePath;
 }
 
+FString FAGX_EditorUtilities::CreateContactMaterialAsset(
+	const FString& DirName, const FContactMaterialBarrier& ContactMaterial,
+	const FString& Material1, const FString& Material2)
+{
+	UAGX_ShapeMaterialAsset* Material1Asset = GetAssetByPath<UAGX_ShapeMaterialAsset>(Material1);
+	UAGX_ShapeMaterialAsset* Material2Asset = GetAssetByPath<UAGX_ShapeMaterialAsset>(Material2);
+
+	if (Material1Asset == nullptr || Material2Asset == nullptr)
+	{
+		//Logging handled by GetAssetByPath().
+		return FString("");
+	}
+
+	const FString ContMatName =
+		TEXT("CM_") + Material1Asset->GetName() + TEXT ("_") + Material2Asset->GetName();
+
+	FString AssetName = CreateAssetName(ContMatName, DirName, TEXT("ImportedAGXContactMaterial"));
+
+	// Find actual package path and a unique asset name.
+	FString PackagePath = FString::Printf(TEXT("/Game/ImportedAGXContactMaterials/%s/"), *DirName);
+	IAssetTools& AssetTools =
+		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	AssetTools.CreateUniqueAssetName(PackagePath, AssetName, PackagePath, AssetName);
+
+	// Create the package that will hold our contact material asset.
+	UPackage* Package = CreatePackage(nullptr, *PackagePath);
+#if 0
+		/// \todo Unclear if this is needed or not. Leaving it out for now but
+		/// test with it restored if there are problems.
+		Package->FullyLoad();
+#endif
+
+	UAGX_ContactMaterialAsset* ContactMaterialAsset =
+		NewObject<UAGX_ContactMaterialAsset>(Package, FName(*AssetName), RF_Public | RF_Standalone);
+
+	// Copy contact material properties to the new contact material asset.
+	ContactMaterialAsset->CopyFrom(&ContactMaterial);
+
+	// Set Material1 and Material2 references.
+	ContactMaterialAsset->Material1 = Material1Asset;
+	ContactMaterialAsset->Material2 = Material2Asset;
+
+	FAssetId AssetId =
+		FinalizeAndSavePackage(Package, ContactMaterialAsset, PackagePath, AssetName);
+
+	if (!AssetId.IsValid())
+	{
+		// Return empty string if asset was not created properly.
+		return FString();
+	}
+
+	return AssetId.PackagePath;
+}
+
 AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 	UClass* ConstraintType, UAGX_RigidBodyComponent* RigidBody1,
 	UAGX_RigidBodyComponent* RigidBody2, bool bInPlayingWorldIfAvailable, bool bSelect,
@@ -1121,24 +1196,13 @@ bool FAGX_EditorUtilities::ApplyShapeMaterial(
 		return false;
 	}
 
-	// Find the ShapeMaterialAsset.
-	FAssetRegistryModule& AssetRegistryModule =
-		FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
-	TArray<FAssetData> AssetData;
-	FARFilter Filter;
-	Filter.PackageNames.Add(FName(*ShapeMaterialAsset));
-	AssetRegistryModule.Get().GetAssets(Filter, AssetData);
+	// Get the ShapeMaterialAsset.
 	UAGX_ShapeMaterialAsset* MaterialAsset =
-		FAssetData::GetFirstAsset<UAGX_ShapeMaterialAsset>(AssetData);
+		GetAssetByPath<UAGX_ShapeMaterialAsset>(ShapeMaterialAsset);
 
 	if (!MaterialAsset)
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Could not apply PhysicalMaterial using asset: %s since the asset could not be "
-				 "found."),
-			*ShapeMaterialAsset);
-
+		// Logging handled by GetAssetByPath().
 		return false;
 	}
 

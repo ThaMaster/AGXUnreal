@@ -10,6 +10,7 @@
 
 class UAGX_ContactMaterialAsset;
 class UAGX_ContactMaterialInstance;
+class FContactMaterialBarrier;
 class UAGX_MaterialBase;
 
 /**
@@ -209,7 +210,6 @@ public:
 	static UAGX_ContactMaterialInstance* GetOrCreateInstance(
 		UWorld* PlayingWorld, UAGX_ContactMaterialBase*& Property);
 
-public:
 	UAGX_ContactMaterialBase();
 
 	virtual ~UAGX_ContactMaterialBase();
@@ -230,5 +230,6 @@ public:
 	virtual UAGX_ContactMaterialAsset* GetAsset()
 		PURE_VIRTUAL(UAGX_ContactMaterialBase::GetOrCreateInstance, return nullptr;);
 
-	void CopyProperties(const UAGX_ContactMaterialBase* Source);
+	void CopyFrom(const UAGX_ContactMaterialBase* Source);
+	void CopyFrom(const FContactMaterialBarrier* Source);
 };

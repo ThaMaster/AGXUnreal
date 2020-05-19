@@ -30,7 +30,8 @@ FBoxShapeBarrier AGXBarrierFactories::CreateBoxShapeBarrier(agxCollide::Box* Box
 	return {std::make_unique<FGeometryAndShapeRef>(Box->getGeometry(), Box)};
 }
 
-FCylinderShapeBarrier AGXBarrierFactories::CreateCylinderShapeBarrier(agxCollide::Cylinder* Cylinder)
+FCylinderShapeBarrier AGXBarrierFactories::CreateCylinderShapeBarrier(
+	agxCollide::Cylinder* Cylinder)
 {
 	return {std::make_unique<FGeometryAndShapeRef>(Cylinder->getGeometry(), Cylinder)};
 }
@@ -55,12 +56,14 @@ FBallJointBarrier AGXBarrierFactories::CreateBallJointBarrier(agx::BallJoint* Ba
 	return {std::make_unique<FConstraintRef>(BallJoint)};
 }
 
-FCylindricalJointBarrier AGXBarrierFactories::CreateCylindricalJointBarrier(agx::CylindricalJoint* CylindricalJoint)
+FCylindricalJointBarrier AGXBarrierFactories::CreateCylindricalJointBarrier(
+	agx::CylindricalJoint* CylindricalJoint)
 {
 	return {std::make_unique<FConstraintRef>(CylindricalJoint)};
 }
 
-FDistanceJointBarrier AGXBarrierFactories::CreateDistanceJointBarrier(agx::DistanceJoint* DistanceJoint)
+FDistanceJointBarrier AGXBarrierFactories::CreateDistanceJointBarrier(
+	agx::DistanceJoint* DistanceJoint)
 {
 	return {std::make_unique<FConstraintRef>(DistanceJoint)};
 }
@@ -73,4 +76,10 @@ FLockJointBarrier AGXBarrierFactories::CreateLockJointBarrier(agx::LockJoint* Lo
 FShapeMaterialBarrier AGXBarrierFactories::CreateShapeMaterialBarrier(agx::Material* Material)
 {
 	return {std::make_unique<FMaterialRef>(Material)};
+}
+
+FContactMaterialBarrier AGXBarrierFactories::CreateContactMaterialBarrier(
+	agx::ContactMaterial* ContactMaterial)
+{
+	return {std::make_unique<FContactMaterialRef>(ContactMaterial)};
 }
