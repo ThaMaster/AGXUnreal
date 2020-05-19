@@ -52,8 +52,10 @@ void UAGX_ContactMaterialBase::CopyFrom(const FContactMaterialBarrier* Source)
 		bSurfaceFrictionEnabled = Source->GetSurfaceFrictionEnabled();
 		FrictionCoefficient = Source->GetFrictionCoefficient(true, false);
 		SecondaryFrictionCoefficient = Source->GetFrictionCoefficient(false, true);
+		bUseSecondaryFrictionCoefficient = FrictionCoefficient != SecondaryFrictionCoefficient;
 		SurfaceViscosity = Source->GetSurfaceViscosity(true, false);
 		SecondarySurfaceViscosity = Source->GetSurfaceViscosity(false, true);
+		bUseSecondarySurfaceViscosity = SurfaceViscosity != SecondarySurfaceViscosity;
 		Restitution = Source->GetRestitution();
 		YoungsModulus = Source->GetYoungsModulus();
 		Damping = Source->GetDamping();
