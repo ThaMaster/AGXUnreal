@@ -126,9 +126,12 @@ namespace
 	class FBlueprintBody final : public FAGXArchiveBody
 	{
 	public:
-		FBlueprintBody(UAGX_RigidBodyComponent* InBodyComponent, const FString& InArchiveName)
+		FBlueprintBody(
+			UAGX_RigidBodyComponent* InBodyComponent, const FString& InArchiveName,
+			TMap<FGuid, UStaticMesh*>* InMeshAssets)
 			: BodyComponent(InBodyComponent)
 			, ArchiveName(InArchiveName)
+			, MeshAssets(InMeshAssets)
 		{
 		}
 
@@ -168,8 +171,15 @@ namespace
 				FAGX_EditorUtilities::CreateTrimeshShape(Owner, BodyComponent);
 			Component->MeshSourceLocation =
 				EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
+			UStaticMesh* MeshAsset = GetOrCreateStaticMeshAsset(Owner, Barrier);
+			if (!MeshAsset)
+			{
+				// No point in continuing further. Logging handled in GetOrCreateStaticMeshAsset.
+				return;
+			}
+
 			UStaticMeshComponent* MeshComponent =
-				FAGX_EditorUtilities::CreateStaticMeshAsset(Owner, Component, Barrier, ArchiveName);
+				FAGX_EditorUtilities::CreateStaticMeshComponent(Owner, Component, MeshAsset);
 
 			FString Name = MeshComponent->GetName() + "Shape";
 			if (!Component->Rename(*Name, nullptr, REN_Test))
@@ -229,9 +239,36 @@ namespace
 			}
 		}
 
+		UStaticMesh* GetOrCreateStaticMeshAsset(AActor* Owner, const FTrimeshShapeBarrier& Barrier)
+		{
+			FGuid Guid = Barrier.GetMeshDataGuid();
+			if (!Guid.IsValid())
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("Unable to create static mesh asset from TrimeshShapeBarrier: %s for "
+						 "owner: %s since the TrimeshShapeBarrier did not have a valid Guid."),
+					*Barrier.GetSourceName(), *Owner->GetName());
+
+				return nullptr;
+			}
+
+			if (MeshAssets->Find(Guid))
+			{
+				return (*MeshAssets)[Guid];
+			}
+
+			UStaticMesh* MeshAsset =
+				FAGX_EditorUtilities::CreateStaticMeshAsset(Barrier, ArchiveName);
+			MeshAssets->Add(Guid, MeshAsset);
+
+			return MeshAsset;
+		}
+
 	private:
 		UAGX_RigidBodyComponent* BodyComponent;
 		const FString& ArchiveName;
+		TMap<FGuid, UStaticMesh*>* MeshAssets;
 	};
 
 	class FBlueprintInstantiator final : public FAGXArchiveInstantiator
@@ -280,7 +317,7 @@ namespace
 #endif
 			Component->PostEditChange();
 			RestoredBodies.Add(Barrier.GetGuid(), Component);
-			return new FBlueprintBody(Component, ArchiveName);
+			return new FBlueprintBody(Component, ArchiveName, &MeshAssets);
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
@@ -568,6 +605,7 @@ namespace
 		AActor* BlueprintTemplate;
 		const FString& ArchiveName;
 		TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
+		TMap<FGuid, UStaticMesh*> MeshAssets;
 	};
 
 	void AddComponentsFromArchive(const FString& ArchivePath, AActor* ImportedActor)

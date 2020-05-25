@@ -360,6 +360,16 @@ FString FTrimeshShapeBarrier::GetSourceName() const
 	return SourceName;
 }
 
+FGuid FTrimeshShapeBarrier::GetMeshDataGuid() const
+{
+	check(HasNative());
+	if (const agxCollide::Trimesh* Trimesh = NativeTrimesh(this, TEXT("fetch mesh data guid")))
+	{
+		return Convert(Trimesh->getMeshData()->getUuid());
+	}
+	return FGuid();
+}
+
 void FTrimeshShapeBarrier::AllocateNative(
 	const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise,
 	const FString& SourceName)

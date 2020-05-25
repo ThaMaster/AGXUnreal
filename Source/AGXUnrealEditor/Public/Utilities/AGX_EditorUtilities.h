@@ -81,22 +81,29 @@ public:
 	static UAGX_TrimeshShapeComponent* CreateTrimeshShape(AActor* Owner, USceneComponent* Outer);
 
 	/**
-	 * Create a new UStaticMeshComponent, along with the underlying StaticMesh
-	 * asset, from the given mesh data. The UStaticMeshComponent will be added
-	 * as a child to the given UAGX_TrimeshShapeComponent. The underlying
-	 * StaticMesh asset is saved to /Game/ImportedAGXMeshes/'AssetFolderName'
-	 * with the source name that the native agxCollide::Trimesh has. If it does
-	 * not have a source name then 'ImportedAGXMesh' is used istead.
+	 * Create a new UStaticMesh asset from the given mesh data. The StaticMesh asset is saved to
+	 * /Game/ImportedAGXMeshes/'AssetFolderName' with the source name that the native
+	 * agxCollide::Trimesh has. If it does not have a source name then 'ImportedAGXMesh' is used
+	 * instead.
 	 *
-	 * @param Owner - The Actor to which the StaticMeshComponent should be added.
-	 * @param Outer - The TrimeshShapeComponent that should use the mesh data.
 	 * @param Trimesh - AGX Dynamics trimesh data to convert to a StaticMesh.
 	 * @param AssetFolderName - The name of the folder within /Game/ImportedAGXMeshes' that the
 	 * asset should be stored to.
 	 */
-	static UStaticMeshComponent* CreateStaticMeshAsset(
-		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh,
-		const FString& AssetFolderName);
+	static UStaticMesh* CreateStaticMeshAsset(
+		const FTrimeshShapeBarrier& Trimesh, const FString& AssetFolderName);
+
+	/**
+	 * Create a new UStaticMeshComponent. The UStaticMeshComponent will be added as a child to the
+	 * given UAGX_TrimeshShapeComponent. The StaticMesh asset is assigned to the
+	 * UStaticMeshComponent's static mesh.
+	 *
+	 * @param Owner - The Actor to which the StaticMeshComponent should be added.
+	 * @param Outer - The TrimeshShapeComponent that should use the mesh data.
+	 * @param MeshAsset - The Mesh asset to assign the UStaticMeshComponent's static mesh to.
+	 */
+	static UStaticMeshComponent* CreateStaticMeshComponent(
+		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset);
 
 	/**
 	 * Creates a new UAGX_ShapeMaterialAsset for a shape material and returns the shape material
@@ -106,8 +113,8 @@ public:
 		const FString& DirName, const FShapeMaterialBarrier& Material);
 
 	/**
-	 * Creates a new UAGX_ContactMaterialAsset for a contact material and returns the contact material
-	 * asset path. Returns empty string if the asset could not be created.
+	 * Creates a new UAGX_ContactMaterialAsset for a contact material and returns the contact
+	 * material asset path. Returns empty string if the asset could not be created.
 	 */
 	static FString CreateContactMaterialAsset(
 		const FString& DirName, const FContactMaterialBarrier& ContactMaterial,

@@ -301,7 +301,7 @@ namespace
 	 * become the final name.
 	 * @return The path to the created package and the final name of the asset.
 	 */
-	FAssetId CreateTrimeshAsset(
+	UStaticMesh* CreateTrimeshAsset(
 		FRawMesh& RawMesh, const FString& AssetFolderName, const FString& MeshName)
 	{
 		// Find actual package path and a unique asset name.
@@ -327,7 +327,20 @@ namespace
 
 		StaticMesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
 
-		return FinalizeAndSavePackage(Package, StaticMesh, PackagePath, AssetName);
+		FAssetId AssetId = FinalizeAndSavePackage(Package, StaticMesh, PackagePath, AssetName);
+
+		if (!AssetId.IsValid())
+		{
+			/// \todo What should we do here, other than giving up?
+			// No need to log, should have been done by FinalizeAndSavePackage.
+			return nullptr; /// \todo Don't return nullptr, return an empty UStaticMesh.
+		}
+
+		UE_LOG(
+			LogAGX, Log, TEXT("Trimesh '%s' successfully stored to package '%s', asset '%s'"),
+			*MeshName, *AssetId.PackagePath, *AssetId.AssetName);
+
+		return StaticMesh;
 	}
 
 	FRawMesh CreateRawMeshFromCollisionData(const FTrimeshShapeBarrier& Trimesh)
@@ -685,39 +698,27 @@ namespace
 	}
 }
 
-UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshAsset(
-	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, const FTrimeshShapeBarrier& Trimesh,
-	const FString& AssetFolderName)
+UStaticMesh* FAGX_EditorUtilities::CreateStaticMeshAsset(
+	const FTrimeshShapeBarrier& Trimesh, const FString& AssetFolderName)
 {
 	FRawMesh RawMesh = CreateRawMeshFromTrimesh(Trimesh);
 	FString TrimeshName =
-		CreateAssetName(Trimesh.GetSourceName(), Owner->GetActorLabel(), TEXT("ImportedAGXMesh"));
-	FAssetId AssetId = CreateTrimeshAsset(RawMesh, AssetFolderName, TrimeshName);
-	if (!AssetId.IsValid())
-	{
-		/// \todo What should we do here, other than giving up?
-		// No need to log, should have been done by CreateTrimeshAsset.
-		return nullptr; /// \todo Don't return nullptr, return an empty UStaticMeshComponent.
-	}
+		CreateAssetName(Trimesh.GetSourceName(), FString(""), TEXT("ImportedAGXMesh"));
+	return CreateTrimeshAsset(RawMesh, AssetFolderName, TrimeshName);
+}
 
-	UE_LOG(
-		LogAGX, Log, TEXT("Trimesh '%s' successfully stored to package '%s', asset '%s'"),
-		*Trimesh.GetSourceName(), *AssetId.PackagePath, *AssetId.AssetName);
-
-	FString MeshAssetPath =
-		FString::Printf(TEXT("%s.%s"), *AssetId.PackagePath, *AssetId.AssetName);
-	UE_LOG(LogAGX, Log, TEXT("Loading imported mesh asset from '%s'."), *MeshAssetPath);
-	UStaticMesh* MeshAsset = LoadObject<UStaticMesh>(NULL, *MeshAssetPath, NULL, LOAD_None, NULL);
-	if (MeshAsset == nullptr)
+UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
+	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset)
+{
+	if (!MeshAsset)
 	{
-		/// \todo What should we do here, other than printing a message and giving up?
-		UE_LOG(LogAGX, Error, TEXT("Failed to load imported mesh asset '%s'"), *MeshAssetPath);
-		return nullptr; /// \todo Don't return nullptr, return an empty UStaticMeshComponent.
+		UE_LOG(LogAGX, Error, TEXT("CreateStaticMeshComponent: parameter MeshAsset was nullptr."));
+		return nullptr;
 	}
 
 	/// \todo Which EObjectFlags should be passed to NewObject?
 	UStaticMeshComponent* StaticMeshComponent =
-		NewObject<UStaticMeshComponent>(Outer, FName(*AssetId.AssetName));
+		NewObject<UStaticMeshComponent>(Outer, FName(*MeshAsset->GetName()));
 	StaticMeshComponent->SetStaticMesh(MeshAsset);
 	Owner->AddInstanceComponent(StaticMeshComponent);
 	StaticMeshComponent->RegisterComponent();
@@ -727,8 +728,8 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshAsset(
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Failed to attach imported StaticMeshComponent '%s' to Actor '%s'."), *TrimeshName,
-			*Owner->GetName());
+			TEXT("Failed to attach imported StaticMeshComponent '%s' to Actor '%s'."),
+			*StaticMeshComponent->GetName(), *Owner->GetName());
 	}
 	return StaticMeshComponent;
 }
@@ -779,12 +780,11 @@ FString FAGX_EditorUtilities::CreateContactMaterialAsset(
 
 	if (Material1Asset == nullptr || Material2Asset == nullptr)
 	{
-		//Logging handled by GetAssetByPath().
+		// Logging handled by GetAssetByPath().
 		return FString("");
 	}
 
-	const FString ContMatName =
-		TEXT("CM_") + Material1Asset->GetName() + TEXT ("_") + Material2Asset->GetName();
+	const FString ContMatName = TEXT("CM") + Material1Asset->GetName() + Material2Asset->GetName();
 
 	FString AssetName = CreateAssetName(ContMatName, DirName, TEXT("ImportedAGXContactMaterial"));
 

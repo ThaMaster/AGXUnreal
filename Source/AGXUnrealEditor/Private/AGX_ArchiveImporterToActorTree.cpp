@@ -88,10 +88,13 @@ namespace
 	class EditorBody final : public FAGXArchiveBody
 	{
 	public:
-		EditorBody(AActor& InActor, USceneComponent& InRoot, const FString& InArchiveName)
+		EditorBody(
+			AActor& InActor, USceneComponent& InRoot, const FString& InArchiveName,
+			TMap<FGuid, UStaticMesh*>* InMeshAssets)
 			: Actor(InActor)
 			, Root(InRoot)
 			, ArchiveName(InArchiveName)
+			, MeshAssets(InMeshAssets)
 		{
 		}
 
@@ -130,8 +133,15 @@ namespace
 				FAGX_EditorUtilities::CreateTrimeshShape(&Actor, &Root);
 			ShapeComponent->MeshSourceLocation =
 				EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
-			UStaticMeshComponent* MeshComponent = FAGX_EditorUtilities::CreateStaticMeshAsset(
-				&Actor, ShapeComponent, Trimesh, ArchiveName);
+			UStaticMesh* MeshAsset = GetOrCreateStaticMeshAsset(&Actor, Trimesh);
+			if (!MeshAsset)
+			{
+				// No point in continuing further. Logging handled in GetOrCreateStaticMeshAsset.
+				return;
+			}
+
+			UStaticMeshComponent* MeshComponent =
+				FAGX_EditorUtilities::CreateStaticMeshComponent(&Actor, ShapeComponent, MeshAsset);
 
 			FString Name = MeshComponent->GetName() + "Shape";
 			if (!ShapeComponent->Rename(*Name, nullptr, REN_Test))
@@ -183,9 +193,36 @@ namespace
 			/// \todo Rename the shape.
 		}
 
+		UStaticMesh* GetOrCreateStaticMeshAsset(AActor* Owner, const FTrimeshShapeBarrier& Barrier)
+		{
+			FGuid Guid = Barrier.GetMeshDataGuid();
+			if (!Guid.IsValid())
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("Unable to create static mesh asset from TrimeshShapeBarrier: %s for "
+						 "owner: %s since the TrimeshShapeBarrier did not have a valid Guid."),
+					*Barrier.GetSourceName(), *Owner->GetName());
+
+				return nullptr;
+			}
+
+			if (MeshAssets->Find(Guid))
+			{
+				return (*MeshAssets)[Guid];
+			}
+
+			UStaticMesh* MeshAsset =
+				FAGX_EditorUtilities::CreateStaticMeshAsset(Barrier, ArchiveName);
+			MeshAssets->Add(Guid, MeshAsset);
+
+			return MeshAsset;
+		}
+
 		AActor& Actor;
 		USceneComponent& Root;
 		const FString& ArchiveName;
+		TMap<FGuid, UStaticMesh*>* MeshAssets;
 	};
 
 	// Archive instantiator that creates top-level objects. Knows how to create
@@ -209,7 +246,7 @@ namespace
 			NewActor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
 			Bodies.Add(Barrier.GetGuid(), NewActor);
 			return new EditorBody(
-				*NewActor, *NewActor->RigidBodyComponent, ImportedRoot.GetActorLabel());
+				*NewActor, *NewActor->RigidBodyComponent, ImportedRoot.GetActorLabel(), &MeshAssets);
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Hinge) override
@@ -503,6 +540,7 @@ namespace
 	private:
 		AActor& ImportedRoot;
 		UWorld& World;
+		TMap<FGuid, UStaticMesh*> MeshAssets;
 
 		// Map from Guid/Uuid of the AGX Dynamics body provided by the FAGXArchiveReader to the
 		// AActor that we created for that body.

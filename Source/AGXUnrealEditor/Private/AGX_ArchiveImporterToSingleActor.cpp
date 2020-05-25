@@ -42,9 +42,12 @@ namespace
 	class SingleActorBody final : public FAGXArchiveBody
 	{
 	public:
-		SingleActorBody(UAGX_RigidBodyComponent& InBody, const FString& InArchiveName)
+		SingleActorBody(
+			UAGX_RigidBodyComponent& InBody, const FString& InArchiveName,
+			TMap<FGuid, UStaticMesh*>* InMeshAssets)
 			: Body(InBody)
 			, ArchiveName(InArchiveName)
+			, MeshAssets(InMeshAssets)
 		{
 		}
 
@@ -84,8 +87,15 @@ namespace
 				FAGX_EditorUtilities::CreateTrimeshShape(Owner, &Body);
 			Component->MeshSourceLocation =
 				EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
+			UStaticMesh* MeshAsset = GetOrCreateStaticMeshAsset(Owner, Barrier);
+			if (!MeshAsset)
+			{
+				// No point in continuing further. Logging handled in GetOrCreateStaticMeshAsset.
+				return;
+			}
+
 			UStaticMeshComponent* MeshComponent =
-				FAGX_EditorUtilities::CreateStaticMeshAsset(Owner, Component, Barrier, ArchiveName);
+				FAGX_EditorUtilities::CreateStaticMeshComponent(Owner, Component, MeshAsset);
 
 			FString Name = MeshComponent->GetName() + "Shape";
 			if (!Component->Rename(*Name, nullptr, REN_Test))
@@ -145,9 +155,36 @@ namespace
 			}
 		}
 
+		UStaticMesh* GetOrCreateStaticMeshAsset(AActor* Owner, const FTrimeshShapeBarrier& Barrier)
+		{
+			FGuid Guid = Barrier.GetMeshDataGuid();
+			if (!Guid.IsValid())
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("Unable to create static mesh asset from TrimeshShapeBarrier: %s for "
+						 "owner: %s since the TrimeshShapeBarrier did not have a valid Guid."),
+					*Barrier.GetSourceName(), *Owner->GetName());
+
+				return nullptr;
+			}
+
+			if (MeshAssets->Find(Guid))
+			{
+				return (*MeshAssets)[Guid];
+			}
+
+			UStaticMesh* MeshAsset =
+				FAGX_EditorUtilities::CreateStaticMeshAsset(Barrier, ArchiveName);
+			MeshAssets->Add(Guid, MeshAsset);
+
+			return MeshAsset;
+		}
+
 	private:
 		UAGX_RigidBodyComponent& Body;
 		const FString& ArchiveName;
+		TMap<FGuid, UStaticMesh*>* MeshAssets;
 	};
 
 	/// \todo Consider moving this to the generic importer file. It's the same for all importers.
@@ -232,7 +269,7 @@ namespace
 
 			Component->PostEditChange();
 			RestoredBodies.Add(Barrier.GetGuid(), Component);
-			return new SingleActorBody(*Component, ArchiveName);
+			return new SingleActorBody(*Component, ArchiveName, &MeshAssets);
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
@@ -408,6 +445,7 @@ namespace
 		USceneComponent& Root;
 		const FString& ArchiveName;
 		TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
+		TMap<FGuid, UStaticMesh*> MeshAssets;
 	};
 }
 

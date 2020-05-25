@@ -93,6 +93,8 @@ public:
 	 */
 	FString GetSourceName() const;
 
+	FGuid GetMeshDataGuid() const;
+
 	void AllocateNative(
 		const TArray<FVector>& Vertices, const TArray<FTriIndices>& TriIndices, bool bClockwise,
 		const FString& SourceName);
