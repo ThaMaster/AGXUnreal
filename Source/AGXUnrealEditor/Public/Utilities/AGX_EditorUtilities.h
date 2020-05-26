@@ -89,9 +89,11 @@ public:
 	 * @param Trimesh - AGX Dynamics trimesh data to convert to a StaticMesh.
 	 * @param AssetFolderName - The name of the folder within /Game/ImportedAGXMeshes' that the
 	 * asset should be stored to.
+	 * @param FallbackName - Name used for the new Mesh Asset in case Trimesh does not have a source
+	 * name.
 	 */
 	static UStaticMesh* CreateStaticMeshAsset(
-		const FTrimeshShapeBarrier& Trimesh, const FString& AssetFolderName);
+		const FTrimeshShapeBarrier& Trimesh, const FString& AssetFolderName, const FString& FallbackName);
 
 	/**
 	 * Create a new UStaticMeshComponent. The UStaticMeshComponent will be added as a child to the

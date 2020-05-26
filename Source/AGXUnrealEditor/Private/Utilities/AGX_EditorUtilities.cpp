@@ -699,11 +699,12 @@ namespace
 }
 
 UStaticMesh* FAGX_EditorUtilities::CreateStaticMeshAsset(
-	const FTrimeshShapeBarrier& Trimesh, const FString& AssetFolderName)
+	const FTrimeshShapeBarrier& Trimesh, const FString& AssetFolderName,
+	const FString& FallbackName)
 {
 	FRawMesh RawMesh = CreateRawMeshFromTrimesh(Trimesh);
 	FString TrimeshName =
-		CreateAssetName(Trimesh.GetSourceName(), FString(""), TEXT("ImportedAGXMesh"));
+		CreateAssetName(Trimesh.GetSourceName(), FallbackName, TEXT("ImportedAGXMesh"));
 	return CreateTrimeshAsset(RawMesh, AssetFolderName, TrimeshName);
 }
 

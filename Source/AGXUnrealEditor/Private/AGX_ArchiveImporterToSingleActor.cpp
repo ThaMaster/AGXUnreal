@@ -87,7 +87,7 @@ namespace
 				FAGX_EditorUtilities::CreateTrimeshShape(Owner, &Body);
 			Component->MeshSourceLocation =
 				EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
-			UStaticMesh* MeshAsset = GetOrCreateStaticMeshAsset(Owner, Barrier);
+			UStaticMesh* MeshAsset = GetOrCreateStaticMeshAsset(Barrier, Owner->GetActorLabel());
 			if (!MeshAsset)
 			{
 				// No point in continuing further. Logging handled in GetOrCreateStaticMeshAsset.
@@ -155,7 +155,8 @@ namespace
 			}
 		}
 
-		UStaticMesh* GetOrCreateStaticMeshAsset(AActor* Owner, const FTrimeshShapeBarrier& Barrier)
+		UStaticMesh* GetOrCreateStaticMeshAsset(
+			const FTrimeshShapeBarrier& Barrier, const FString& FallbackName)
 		{
 			FGuid Guid = Barrier.GetMeshDataGuid();
 			if (UStaticMesh* MeshAsset = MeshAssets.FindRef(Guid))
@@ -164,7 +165,7 @@ namespace
 			}
 
 			UStaticMesh* MeshAsset =
-				FAGX_EditorUtilities::CreateStaticMeshAsset(Barrier, ArchiveName);
+				FAGX_EditorUtilities::CreateStaticMeshAsset(Barrier, ArchiveName, FallbackName);
 			if (Guid.IsValid())
 			{
 				MeshAssets.Add(Guid, MeshAsset);
