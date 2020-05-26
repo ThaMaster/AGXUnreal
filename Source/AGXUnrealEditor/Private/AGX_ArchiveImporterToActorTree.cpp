@@ -196,17 +196,6 @@ namespace
 		UStaticMesh* GetOrCreateStaticMeshAsset(AActor* Owner, const FTrimeshShapeBarrier& Barrier)
 		{
 			FGuid Guid = Barrier.GetMeshDataGuid();
-			if (!Guid.IsValid())
-			{
-				UE_LOG(
-					LogAGX, Error,
-					TEXT("Unable to create static mesh asset from TrimeshShapeBarrier: %s for "
-						 "owner: %s since the TrimeshShapeBarrier did not have a valid Guid."),
-					*Barrier.GetSourceName(), *Owner->GetName());
-
-				return nullptr;
-			}
-
 			if (MeshAssets.Find(Guid))
 			{
 				return MeshAssets[Guid];
@@ -214,7 +203,10 @@ namespace
 
 			UStaticMesh* MeshAsset =
 				FAGX_EditorUtilities::CreateStaticMeshAsset(Barrier, ArchiveName);
-			MeshAssets.Add(Guid, MeshAsset);
+			if (Guid.IsValid())
+			{
+				MeshAssets.Add(Guid, MeshAsset);
+			}
 
 			return MeshAsset;
 		}
