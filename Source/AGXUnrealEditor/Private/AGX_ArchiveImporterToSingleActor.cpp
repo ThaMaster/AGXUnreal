@@ -159,6 +159,15 @@ namespace
 			const FTrimeshShapeBarrier& Barrier, const FString& FallbackName)
 		{
 			FGuid Guid = Barrier.GetMeshDataGuid();
+
+			// If the FGuid is invalid, try to create the Mesh Asset, but without adding it to the
+			// MeshAssets TMap.
+			if (!Guid.IsValid())
+			{
+				return FAGX_EditorUtilities::CreateStaticMeshAsset(
+					Barrier, ArchiveName, FallbackName);
+			}
+
 			if (UStaticMesh* MeshAsset = MeshAssets.FindRef(Guid))
 			{
 				return MeshAsset;
@@ -166,10 +175,7 @@ namespace
 
 			UStaticMesh* MeshAsset =
 				FAGX_EditorUtilities::CreateStaticMeshAsset(Barrier, ArchiveName, FallbackName);
-			if (Guid.IsValid())
-			{
-				MeshAssets.Add(Guid, MeshAsset);
-			}
+			MeshAssets.Add(Guid, MeshAsset);
 
 			return MeshAsset;
 		}
