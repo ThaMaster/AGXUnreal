@@ -196,9 +196,9 @@ namespace
 		UStaticMesh* GetOrCreateStaticMeshAsset(AActor* Owner, const FTrimeshShapeBarrier& Barrier)
 		{
 			FGuid Guid = Barrier.GetMeshDataGuid();
-			if (MeshAssets.Find(Guid))
+			if (UStaticMesh* MeshAsset = MeshAssets.FindRef(Guid))
 			{
-				return MeshAssets[Guid];
+				return MeshAsset;
 			}
 
 			UStaticMesh* MeshAsset =
