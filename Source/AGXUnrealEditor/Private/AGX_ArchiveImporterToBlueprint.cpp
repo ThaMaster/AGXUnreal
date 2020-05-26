@@ -128,7 +128,7 @@ namespace
 	public:
 		FBlueprintBody(
 			UAGX_RigidBodyComponent* InBodyComponent, const FString& InArchiveName,
-			TMap<FGuid, UStaticMesh*>* InMeshAssets)
+			TMap<FGuid, UStaticMesh*>& InMeshAssets)
 			: BodyComponent(InBodyComponent)
 			, ArchiveName(InArchiveName)
 			, MeshAssets(InMeshAssets)
@@ -253,14 +253,14 @@ namespace
 				return nullptr;
 			}
 
-			if (MeshAssets->Find(Guid))
+			if (MeshAssets.Find(Guid))
 			{
-				return (*MeshAssets)[Guid];
+				return MeshAssets[Guid];
 			}
 
 			UStaticMesh* MeshAsset =
 				FAGX_EditorUtilities::CreateStaticMeshAsset(Barrier, ArchiveName);
-			MeshAssets->Add(Guid, MeshAsset);
+			MeshAssets.Add(Guid, MeshAsset);
 
 			return MeshAsset;
 		}
@@ -268,7 +268,7 @@ namespace
 	private:
 		UAGX_RigidBodyComponent* BodyComponent;
 		const FString& ArchiveName;
-		TMap<FGuid, UStaticMesh*>* MeshAssets;
+		TMap<FGuid, UStaticMesh*>& MeshAssets;
 	};
 
 	class FBlueprintInstantiator final : public FAGXArchiveInstantiator
@@ -317,7 +317,7 @@ namespace
 #endif
 			Component->PostEditChange();
 			RestoredBodies.Add(Barrier.GetGuid(), Component);
-			return new FBlueprintBody(Component, ArchiveName, &MeshAssets);
+			return new FBlueprintBody(Component, ArchiveName, MeshAssets);
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override

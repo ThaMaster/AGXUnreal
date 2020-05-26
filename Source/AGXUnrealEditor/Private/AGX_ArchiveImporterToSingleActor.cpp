@@ -44,7 +44,7 @@ namespace
 	public:
 		SingleActorBody(
 			UAGX_RigidBodyComponent& InBody, const FString& InArchiveName,
-			TMap<FGuid, UStaticMesh*>* InMeshAssets)
+			TMap<FGuid, UStaticMesh*>& InMeshAssets)
 			: Body(InBody)
 			, ArchiveName(InArchiveName)
 			, MeshAssets(InMeshAssets)
@@ -169,14 +169,14 @@ namespace
 				return nullptr;
 			}
 
-			if (MeshAssets->Find(Guid))
+			if (MeshAssets.Find(Guid))
 			{
-				return (*MeshAssets)[Guid];
+				return MeshAssets[Guid];
 			}
 
 			UStaticMesh* MeshAsset =
 				FAGX_EditorUtilities::CreateStaticMeshAsset(Barrier, ArchiveName);
-			MeshAssets->Add(Guid, MeshAsset);
+			MeshAssets.Add(Guid, MeshAsset);
 
 			return MeshAsset;
 		}
@@ -184,7 +184,7 @@ namespace
 	private:
 		UAGX_RigidBodyComponent& Body;
 		const FString& ArchiveName;
-		TMap<FGuid, UStaticMesh*>* MeshAssets;
+		TMap<FGuid, UStaticMesh*>& MeshAssets;
 	};
 
 	/// \todo Consider moving this to the generic importer file. It's the same for all importers.
@@ -269,7 +269,7 @@ namespace
 
 			Component->PostEditChange();
 			RestoredBodies.Add(Barrier.GetGuid(), Component);
-			return new SingleActorBody(*Component, ArchiveName, &MeshAssets);
+			return new SingleActorBody(*Component, ArchiveName, MeshAssets);
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override

@@ -90,7 +90,7 @@ namespace
 	public:
 		EditorBody(
 			AActor& InActor, USceneComponent& InRoot, const FString& InArchiveName,
-			TMap<FGuid, UStaticMesh*>* InMeshAssets)
+			TMap<FGuid, UStaticMesh*>& InMeshAssets)
 			: Actor(InActor)
 			, Root(InRoot)
 			, ArchiveName(InArchiveName)
@@ -207,14 +207,14 @@ namespace
 				return nullptr;
 			}
 
-			if (MeshAssets->Find(Guid))
+			if (MeshAssets.Find(Guid))
 			{
-				return (*MeshAssets)[Guid];
+				return MeshAssets[Guid];
 			}
 
 			UStaticMesh* MeshAsset =
 				FAGX_EditorUtilities::CreateStaticMeshAsset(Barrier, ArchiveName);
-			MeshAssets->Add(Guid, MeshAsset);
+			MeshAssets.Add(Guid, MeshAsset);
 
 			return MeshAsset;
 		}
@@ -222,7 +222,7 @@ namespace
 		AActor& Actor;
 		USceneComponent& Root;
 		const FString& ArchiveName;
-		TMap<FGuid, UStaticMesh*>* MeshAssets;
+		TMap<FGuid, UStaticMesh*>& MeshAssets;
 	};
 
 	// Archive instantiator that creates top-level objects. Knows how to create
@@ -246,7 +246,7 @@ namespace
 			NewActor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
 			Bodies.Add(Barrier.GetGuid(), NewActor);
 			return new EditorBody(
-				*NewActor, *NewActor->RigidBodyComponent, ImportedRoot.GetActorLabel(), &MeshAssets);
+				*NewActor, *NewActor->RigidBodyComponent, ImportedRoot.GetActorLabel(), MeshAssets);
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Hinge) override
