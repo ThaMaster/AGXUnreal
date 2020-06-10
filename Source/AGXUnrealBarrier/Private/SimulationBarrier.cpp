@@ -1,6 +1,6 @@
 #include "SimulationBarrier.h"
 
-// AGXUnreal inclues.
+// AGXUnreal includes.
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
 #include "Constraints/ConstraintBarrier.h"
@@ -11,12 +11,13 @@
 #include "Terrain/TerrainBarrier.h"
 #include "TypeConversions.h"
 
-
-// Unreal Engine includes.
+// AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agxSDK/Simulation.h>
+#include <agx/Statistics.h>
 #include "EndAGXIncludes.h"
 
+// Unreal Engine includes.
 #include "Misc/AssertionMacros.h"
 
 FSimulationBarrier::FSimulationBarrier()
@@ -122,6 +123,26 @@ void FSimulationBarrier::Step()
 {
 	check(HasNative());
 	NativeRef->Native->stepForward();
+}
+
+void FSimulationBarrier::EnableStatistics()
+{
+	agx::Statistics::instance()->setEnable(true);
+}
+
+float FSimulationBarrier::GetStatistics()
+{
+	agx::Statistics::Data<agx::Real>* StepForwardTime =
+		agx::Statistics::instance()->getData<agx::Real>(
+			NativeRef->Native.get(), "Step forward time");
+	if (StepForwardTime == nullptr)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Could not get step forward time from statistics"));
+		return -1.0f;
+	}
+
+	agx::Real Time = StepForwardTime->value();
+	return Convert(Time);
 }
 
 bool FSimulationBarrier::HasNative() const

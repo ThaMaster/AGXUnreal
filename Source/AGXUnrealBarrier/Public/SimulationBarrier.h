@@ -39,6 +39,9 @@ public:
 
 	void Step();
 
+	void EnableStatistics();
+	float GetStatistics();
+
 	bool HasNative() const;
 	void AllocateNative();
 	FSimulationRef* GetNative();

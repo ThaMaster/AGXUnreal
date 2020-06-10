@@ -14,6 +14,21 @@
 
 #include <algorithm>
 
+float UAGX_Simulation::GetStepForwardTime()
+{
+	check(HasNative());
+	if (!bEnableStatistics)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_Simulation::GetStepForwardTime called while statistics gathering is "
+				 "disabled. Enable in Project Settings > Plugins > AGX Dynamics > Statistics."));
+		return -1.0f;
+	}
+
+	return NativeBarrier.GetStatistics();
+}
+
 void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
 {
 	check(Body != nullptr);
@@ -67,6 +82,11 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	UE_LOG(LogAGX, Log, TEXT("AGX_CALL: new agxSDK::Simulation"));
 	NativeBarrier.AllocateNative();
 	check(HasNative()); /// \todo Consider better error handling.
+
+	if (bEnableStatistics)
+	{
+		NativeBarrier.EnableStatistics();
+	}
 
 	if (bRemoteDebugging)
 	{
