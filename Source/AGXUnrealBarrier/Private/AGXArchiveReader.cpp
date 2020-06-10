@@ -114,17 +114,16 @@ namespace
 			FRigidBodyBarrier BodyBarrier {AGXBarrierFactories::CreateRigidBodyBarrier(Body)};
 			std::unique_ptr<FAGXArchiveBody> ArchiveBody {
 				Instantiator.InstantiateBody(BodyBarrier)};
+
 			const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
 			for (const agxCollide::GeometryRef& Geometry : Geometries)
 			{
 				FString ShapeMaterialAsset;
-
 				if (agx::Material* AgxMaterial = Geometry->getMaterial())
 				{
-					check(ShapeMaterialAssets.Find(AgxMaterial)) ShapeMaterialAsset =
-						ShapeMaterialAssets[AgxMaterial];
+					check(ShapeMaterialAssets.Find(AgxMaterial));
+					ShapeMaterialAsset = ShapeMaterialAssets[AgxMaterial];
 				}
-
 				::InstantiateShapes(Geometry->getShapes(), *ArchiveBody, ShapeMaterialAsset);
 			}
 		}
