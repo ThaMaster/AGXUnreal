@@ -17,10 +17,11 @@
 #include <agx/CylindricalJoint.h>
 #include <agx/DistanceJoint.h>
 #include <agx/LockJoint.h>
-#include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Box.h>
 #include <agxCollide/Trimesh.h>
+#include <agxSDK/Simulation.h>
+#include <agxWire/Wire.h>
 #include "EndAGXIncludes.h"
 
 namespace
@@ -69,6 +70,62 @@ namespace
 					InstantiateShapes(Group->getChildren(), ArchiveBody, ShapeMaterialAsset);
 					break;
 				}
+			}
+		}
+	}
+}
+
+namespace
+{
+	bool IsRegularBody(agx::RigidBody& Body)
+	{
+		return !Body.isPowerlineBody() && agxWire::Wire::getWire(&Body) == nullptr;
+#if 0
+			/// \todo Cannot check for cable because of macro name conflict for DEPRECATED between
+			/// AGX Dynamics and Unreal Engine. Remove the AGX Dynamics macro.
+			&& agxCable::Cable::getCableForBody(&Body) == nullptr;
+#endif
+	}
+
+	void RestoreRigidBodies(
+		agxSDK::Simulation& Simulation, const FString& Filename,
+		FAGXArchiveInstantiator& Instantiator,
+		const TMap<agx::Material*, FString>& ShapeMaterialAssets)
+	{
+		agx::RigidBodyRefVector& Bodies {Simulation.getRigidBodies()};
+		if (Bodies.size() > size_t(std::numeric_limits<int32>::max()))
+		{
+			UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many bodies."), *Filename);
+			return; /// \todo Should we bail, or restore as many bodies as we can?
+		}
+
+		for (agx::RigidBodyRef& Body : Bodies)
+		{
+			if (Body == nullptr)
+			{
+				continue;
+			}
+
+			if (!IsRegularBody(*Body))
+			{
+				continue;
+			}
+
+			FRigidBodyBarrier BodyBarrier {AGXBarrierFactories::CreateRigidBodyBarrier(Body)};
+			std::unique_ptr<FAGXArchiveBody> ArchiveBody {
+				Instantiator.InstantiateBody(BodyBarrier)};
+			const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
+			for (const agxCollide::GeometryRef& Geometry : Geometries)
+			{
+				FString ShapeMaterialAsset;
+
+				if (agx::Material* AgxMaterial = Geometry->getMaterial())
+				{
+					check(ShapeMaterialAssets.Find(AgxMaterial)) ShapeMaterialAsset =
+						ShapeMaterialAssets[AgxMaterial];
+				}
+
+				::InstantiateShapes(Geometry->getShapes(), *ArchiveBody, ShapeMaterialAsset);
 			}
 		}
 	}
@@ -124,31 +181,7 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 		}
 	}
 
-	agx::RigidBodyRefVector& Bodies {Simulation->getRigidBodies()};
-	if (Bodies.size() > size_t(std::numeric_limits<int32>::max()))
-	{
-		UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many bodies."), *Filename);
-		return; /// \todo Should we bail, or restore as many bodies as we can?
-	}
-
-	for (agx::RigidBodyRef& Body : Bodies)
-	{
-		FRigidBodyBarrier BodyBarrier {AGXBarrierFactories::CreateRigidBodyBarrier(Body)};
-		std::unique_ptr<FAGXArchiveBody> ArchiveBody {Instantiator.InstantiateBody(BodyBarrier)};
-		const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
-		for (const agxCollide::GeometryRef& Geometry : Geometries)
-		{
-			FString ShapeMaterialAsset;
-
-			if (agx::Material* AgxMaterial = Geometry->getMaterial())
-			{
-				check(ShapeMaterialAssets.Find(AgxMaterial))
-				ShapeMaterialAsset = ShapeMaterialAssets[AgxMaterial];
-			}
-
-			::InstantiateShapes(Geometry->getShapes(), *ArchiveBody, ShapeMaterialAsset);
-		}
-	}
+	::RestoreRigidBodies(*Simulation, Filename, Instantiator, ShapeMaterialAssets);
 
 	agx::ConstraintRefSetVector& Constraints = Simulation->getConstraints();
 	if (Constraints.size() > size_t(std::numeric_limits<int32>::max()))
