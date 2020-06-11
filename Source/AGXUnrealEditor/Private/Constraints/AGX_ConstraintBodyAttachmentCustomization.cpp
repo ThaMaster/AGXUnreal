@@ -144,15 +144,21 @@ FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 	USceneComponent* SceneComponent = Attachment->GetRigidBody();
 	if (SceneComponent == nullptr)
 	{
-		return FText::FromString(TEXT("<Nothing selected>"));
+		if (Attachment->RigidBody.BodyName == NAME_None)
+		{
+			return FText::FromString(TEXT("<Nothing selected>"));
+		}
+		else
+		{
+			return FText::FromString(*Attachment->RigidBody.BodyName.ToString());
+		}
 	}
 	UAGX_RigidBodyComponent* Body = Cast<UAGX_RigidBodyComponent>(SceneComponent);
 	if (Body == nullptr)
 	{
 		return FText::FromString(TEXT("<Something not a body selected>"));
 	}
-	FString Name = Body->GetName();
-	return FText::FromString(TEXT("(") + Name + TEXT(")"));
+	return FText::FromString(Body->GetName());
 }
 
 bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBody() const
