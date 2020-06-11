@@ -39,6 +39,11 @@ public:
 
 	void Step();
 
+	/// \todo Statistics isn't a per-simulation thing in AGX Dynamics, so having statistics
+	/// management here is a bit misleading.
+	void SetStatisticsEnabled(bool bEnable);
+	float GetStatistics();
+
 	bool HasNative() const;
 	void AllocateNative();
 	FSimulationRef* GetNative();

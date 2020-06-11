@@ -79,6 +79,14 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
 	float TimeLagCap = 1.0;
 
+	/** Set to true to enable statistics gather in AGX Dynamics. */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Statistics")
+	bool bEnableStatistics = false;
+
+	/** Get the wall clock time for the most recent AGX Dynamics simulation step. */
+	UFUNCTION(BlueprintCallable, Category = "Statistics")
+	float GetStepForwardTime();
+
 	void AddRigidBody(UAGX_RigidBodyComponent* Body);
 
 	/**

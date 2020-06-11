@@ -14,6 +14,21 @@
 
 #include <algorithm>
 
+float UAGX_Simulation::GetStepForwardTime()
+{
+	check(HasNative());
+	if (!bEnableStatistics)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_Simulation::GetStepForwardTime called while statistics gathering is "
+				 "disabled. Enable in Project Settings > Plugins > AGX Dynamics > Statistics."));
+		return -1.0f;
+	}
+
+	return NativeBarrier.GetStatistics();
+}
+
 void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
 {
 	check(Body != nullptr);
@@ -68,6 +83,8 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	NativeBarrier.AllocateNative();
 	check(HasNative()); /// \todo Consider better error handling.
 
+	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
+
 	if (bRemoteDebugging)
 	{
 		NativeBarrier.EnableRemoteDebugging(RemoteDebuggingPort);
@@ -77,7 +94,11 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 void UAGX_Simulation::Deinitialize()
 {
 	Super::Deinitialize();
-	UE_LOG(LogAGX, Log, TEXT("AGX_CALL: delete agxSDK::Simulation"));
+	if (!HasNative())
+	{
+		return;
+	}
+	NativeBarrier.SetStatisticsEnabled(false);
 	NativeBarrier.ReleaseNative();
 }
 
