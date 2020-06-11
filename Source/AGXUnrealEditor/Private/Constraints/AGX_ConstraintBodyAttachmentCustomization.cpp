@@ -5,7 +5,6 @@
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
-#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_PropertyUtilities.h"
 #include "Utilities/AGX_SlateUtilities.h"
 
@@ -14,9 +13,7 @@
 #include "DetailWidgetRow.h"
 #include "DetailLayoutBuilder.h"
 #include "IDetailChildrenBuilder.h"
-#include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Layout/SBox.h"
-#include "Widgets/Notifications/SNotificationList.h"
 #include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintBodyAttachmentCustomization"
@@ -144,15 +141,21 @@ FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 	USceneComponent* SceneComponent = Attachment->GetRigidBody();
 	if (SceneComponent == nullptr)
 	{
-		return FText::FromString(TEXT("<Nothing selected>"));
+		if (Attachment->RigidBody.BodyName == NAME_None)
+		{
+			return FText::FromString(TEXT("<Nothing selected>"));
+		}
+		else
+		{
+			return FText::FromString(Attachment->RigidBody.BodyName.ToString());
+		}
 	}
 	UAGX_RigidBodyComponent* Body = Cast<UAGX_RigidBodyComponent>(SceneComponent);
 	if (Body == nullptr)
 	{
 		return FText::FromString(TEXT("<Something not a body selected>"));
 	}
-	FString Name = Body->GetName();
-	return FText::FromString(TEXT("(") + Name + TEXT(")"));
+	return FText::FromString(Body->GetName());
 }
 
 bool FAGX_ConstraintBodyAttachmentCustomization::HasRigidBody() const

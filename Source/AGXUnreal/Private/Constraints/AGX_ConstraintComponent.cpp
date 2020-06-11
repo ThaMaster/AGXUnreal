@@ -85,7 +85,7 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 
 #if WITH_EDITOR
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
-	BodyAttachment1.OnFrameDefiningComponentChanged(this);
+	BodyAttachment2.OnFrameDefiningComponentChanged(this);
 #endif
 
 	// Create UAGX_ConstraintDofGraphicsComponent as child component.
