@@ -147,7 +147,7 @@ FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 		}
 		else
 		{
-			return FText::FromString(*Attachment->RigidBody.BodyName.ToString());
+			return FText::FromString(Attachment->RigidBody.BodyName.ToString());
 		}
 	}
 	UAGX_RigidBodyComponent* Body = Cast<UAGX_RigidBodyComponent>(SceneComponent);
