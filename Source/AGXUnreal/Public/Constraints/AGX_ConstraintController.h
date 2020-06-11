@@ -63,7 +63,6 @@ public:
 	 * @return A reference to this.
 	 */
 	FAGX_ConstraintController& operator=(const FAGX_ConstraintController& Other);
-	/// \todo Consider adding operator= to derived classes.
 
 	bool HasNative() const;
 	FConstraintControllerBarrier* GetNative();
