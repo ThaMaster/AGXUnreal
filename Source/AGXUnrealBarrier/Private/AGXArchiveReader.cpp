@@ -17,6 +17,13 @@
 #include <agx/CylindricalJoint.h>
 #include <agx/DistanceJoint.h>
 #include <agx/LockJoint.h>
+
+// In 2.28 including Cable.h causes a preprocessor macro named DEPRECATED to be defined. This
+// conflicts with a macro with the same name in Unreal. Undeffing the Unreal one.
+/// \todo Remove this #undef once the macro has been removed from AGX Dynamics.
+#undef DEPRECATED
+#include <agxCable/Cable.h>
+
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Box.h>
 #include <agxCollide/Trimesh.h>
@@ -79,12 +86,8 @@ namespace
 {
 	bool IsRegularBody(agx::RigidBody& Body)
 	{
-		return !Body.isPowerlineBody() && agxWire::Wire::getWire(&Body) == nullptr;
-#if 0
-			/// \todo Cannot check for cable because of macro name conflict for DEPRECATED between
-			/// AGX Dynamics and Unreal Engine. Remove the AGX Dynamics macro.
-			&& agxCable::Cable::getCableForBody(&Body) == nullptr;
-#endif
+		return !Body.isPowerlineBody() && agxWire::Wire::getWire(&Body) == nullptr &&
+			   agxCable::Cable::getCableForBody(&Body) == nullptr;
 	}
 
 	void RestoreRigidBodies(
