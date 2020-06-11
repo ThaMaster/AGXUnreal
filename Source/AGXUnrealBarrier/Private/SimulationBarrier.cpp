@@ -125,9 +125,9 @@ void FSimulationBarrier::Step()
 	NativeRef->Native->stepForward();
 }
 
-void FSimulationBarrier::EnableStatistics()
+void FSimulationBarrier::SetStatisticsEnabled(bool bEnabled)
 {
-	agx::Statistics::instance()->setEnable(true);
+	agx::Statistics::instance()->setEnable(bEnabled);
 }
 
 float FSimulationBarrier::GetStatistics()

@@ -83,10 +83,7 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	NativeBarrier.AllocateNative();
 	check(HasNative()); /// \todo Consider better error handling.
 
-	if (bEnableStatistics)
-	{
-		NativeBarrier.EnableStatistics();
-	}
+	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
 
 	if (bRemoteDebugging)
 	{
@@ -97,7 +94,11 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 void UAGX_Simulation::Deinitialize()
 {
 	Super::Deinitialize();
-	UE_LOG(LogAGX, Log, TEXT("AGX_CALL: delete agxSDK::Simulation"));
+	if (!HasNative())
+	{
+		return;
+	}
+	NativeBarrier.SetStatisticsEnabled(false);
 	NativeBarrier.ReleaseNative();
 }
 
