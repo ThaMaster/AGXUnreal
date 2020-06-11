@@ -52,6 +52,16 @@ public:
 	FAGX_ConstraintController();
 	FAGX_ConstraintController(bool bInRotational);
 	virtual ~FAGX_ConstraintController();
+
+	// We must provide an assignment operator because Unreal must be able to copy structs and we
+	// contain a non-copyable TUniquePtr to the underlying Barrier object. That object is not
+	// copied.
+	/**
+	 * Copy the properties from Other into this. The underlying Barrier object will neither be
+	 * copied nor shared.
+	 * @param Other The object to copy parameters from.
+	 * @return A reference to this.
+	 */
 	FAGX_ConstraintController& operator=(const FAGX_ConstraintController& Other);
 	/// \todo Consider adding operator= to derived classes.
 
