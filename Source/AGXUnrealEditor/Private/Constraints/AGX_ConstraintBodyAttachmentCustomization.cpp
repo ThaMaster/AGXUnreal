@@ -5,7 +5,6 @@
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
-#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_PropertyUtilities.h"
 #include "Utilities/AGX_SlateUtilities.h"
 
@@ -14,9 +13,7 @@
 #include "DetailWidgetRow.h"
 #include "DetailLayoutBuilder.h"
 #include "IDetailChildrenBuilder.h"
-#include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Layout/SBox.h"
-#include "Widgets/Notifications/SNotificationList.h"
 #include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintBodyAttachmentCustomization"
