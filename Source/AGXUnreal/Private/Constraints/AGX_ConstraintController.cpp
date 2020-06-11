@@ -1,7 +1,8 @@
 #include "Constraints/AGX_ConstraintController.h"
 
+// AGXUnreal includes.
+#include "AGX_LogCategory.h"
 #include "Constraints/AGX_ConstraintConstants.h"
-
 #include "Constraints/ControllerConstraintBarriers.h"
 
 FAGX_ConstraintController::FAGX_ConstraintController()
@@ -24,10 +25,10 @@ FAGX_ConstraintController::FAGX_ConstraintController(bool bInRotational)
 
 FAGX_ConstraintController::~FAGX_ConstraintController()
 {
-
 }
 
-FAGX_ConstraintController& FAGX_ConstraintController::operator=(const FAGX_ConstraintController& Other)
+FAGX_ConstraintController& FAGX_ConstraintController::operator=(
+	const FAGX_ConstraintController& Other)
 {
 	bEnable = Other.bEnable;
 	Compliance = Other.Compliance;
@@ -50,7 +51,16 @@ FConstraintControllerBarrier* FAGX_ConstraintController::GetNative()
 
 void FAGX_ConstraintController::UpdateNativeProperties()
 {
-	check(HasNative());
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("ConstraintController without a native constraint used.\nThis happens when a "
+				 "ConstraintController is stored in a Blueprint variable. Instead, store a "
+				 "reference to the constraint and re-fetch the ConstraintController every time "
+				 "it's needed."));
+		return;
+	}
 	NativeBarrier->SetEnable(bEnable);
 	NativeBarrier->SetCompliance(Compliance);
 	NativeBarrier->SetDamping(Damping);
