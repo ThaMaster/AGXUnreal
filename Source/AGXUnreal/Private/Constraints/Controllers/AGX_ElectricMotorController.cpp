@@ -1,5 +1,6 @@
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
 
+// AGXUnreal includes.
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
@@ -11,7 +12,8 @@ FAGX_ConstraintElectricMotorController::FAGX_ConstraintElectricMotorController(b
 {
 }
 
-void FAGX_ConstraintElectricMotorController::InitializeBarrier(TUniquePtr<FElectricMotorControllerBarrier> Barrier)
+void FAGX_ConstraintElectricMotorController::InitializeBarrier(
+	TUniquePtr<FElectricMotorControllerBarrier> Barrier)
 {
 	check(!HasNative());
 	NativeBarrier = std::move(Barrier);
@@ -20,7 +22,8 @@ void FAGX_ConstraintElectricMotorController::InitializeBarrier(TUniquePtr<FElect
 
 namespace
 {
-	FElectricMotorControllerBarrier* GetElectricMotorBarrier(FAGX_ConstraintElectricMotorController& Controller)
+	FElectricMotorControllerBarrier* GetElectricMotorBarrier(
+		FAGX_ConstraintElectricMotorController& Controller)
 	{
 		// Is there a way to guarantee that this cast is safe? We're in the
 		// Unreal Engine potion of the plugin so cannot use dynamic_cast, but
@@ -31,7 +34,7 @@ namespace
 		// hold a FElectricMotorControllerBarrier, but there doesn't seem to be
 		// a way to verify it here.
 		//
-		// The corresponding functions for the other ControllerBarriers referece
+		// The corresponding functions for the other ControllerBarriers reference
 		// this comment. Remove those if this comment is removed.
 		return static_cast<FElectricMotorControllerBarrier*>(Controller.GetNative());
 	}

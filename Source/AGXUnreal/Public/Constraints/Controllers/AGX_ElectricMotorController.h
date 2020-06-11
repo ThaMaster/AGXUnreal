@@ -24,7 +24,8 @@ struct AGXUNREAL_API FAGX_ConstraintElectricMotorController : public FAGX_Constr
 	 * Available voltage or voltage drop across the terminals of this motor, in Volt.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Electric Motor Controller", Meta = (EditCondition = "bEnable"))
+		EditAnywhere, Category = "AGX Electric Motor Controller",
+		Meta = (EditCondition = "bEnable"))
 	double Voltage;
 
 	/**
