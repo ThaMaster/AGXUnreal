@@ -1,9 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
-#include "CoreMinimal.h"
+// AGXUnreal includes.
 #include "Materials/AGX_ShapeMaterialBase.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
 #include "AGX_ShapeMaterialAsset.generated.h"
 
 class UAGX_ShapeMaterialInstance;
