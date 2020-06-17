@@ -134,6 +134,17 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	InitializeMotionControl();
 }
 
+void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
+{
+	Mass = Barrier.GetMass();
+	/// \todo Add call to GetInertiaTensorDiagonal here, when it has been implemented.
+	Velocity = Barrier.GetVelocity();
+	AngularVelocity = Barrier.GetAngularVelocity();
+	MotionControl = Barrier.GetMotionControl();
+
+	SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
+}
+
 void UAGX_RigidBodyComponent::InitializeMotionControl()
 {
 	NativeBarrier.SetMotionControl(MotionControl);

@@ -56,6 +56,8 @@ public:
 	 */
 	void WritePropertiesToNative();
 
+	void CopyFrom(const FRigidBodyBarrier& Barrier);
+
 	static TArray<UAGX_RigidBodyComponent*> GetFromActor(const AActor* Actor);
 	static UAGX_RigidBodyComponent* GetFirstFromActor(const AActor* Actor);
 
