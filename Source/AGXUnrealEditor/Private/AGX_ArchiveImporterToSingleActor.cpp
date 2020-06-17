@@ -1,7 +1,7 @@
 #include "AGX_ArchiveImporterToSingleActor.h"
 
 // AGXUnreal includes.
-#include "AGX_ArchiveImporter.h"
+#include "AGX_ArchiveImporterHelper.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGXArchiveReader.h"
@@ -42,7 +42,7 @@ namespace
 	class SingleActorBody final : public FAGXArchiveBody
 	{
 	public:
-		SingleActorBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporter& InHelper)
+		SingleActorBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
 			: Body(InBody)
 			, Helper(InHelper)
 		{
@@ -70,7 +70,7 @@ namespace
 
 	private:
 		UAGX_RigidBodyComponent& Body;
-		FAGX_ArchiveImporter& Helper;
+		FAGX_ArchiveImporterHelper& Helper;
 	};
 
 	/**
@@ -238,7 +238,7 @@ namespace
 		}
 
 	private:
-		FAGX_ArchiveImporter Helper;
+		FAGX_ArchiveImporterHelper Helper;
 		UWorld& World;
 		AActor& Actor;
 		USceneComponent& Root;

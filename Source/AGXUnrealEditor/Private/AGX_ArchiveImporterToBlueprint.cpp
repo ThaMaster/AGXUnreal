@@ -1,7 +1,7 @@
 #include "AGX_ArchiveImporterToBlueprint.h"
 
 // AGXUnreal includes.
-#include "AGX_ArchiveImporter.h"
+#include "AGX_ArchiveImporterHelper.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGXArchiveReader.h"
@@ -64,7 +64,7 @@ namespace
 		GEditor->SelectNone(false, false);
 	}
 
-	FString CreateBlueprintPackagePath(FAGX_ArchiveImporter& Helper)
+	FString CreateBlueprintPackagePath(FAGX_ArchiveImporterHelper& Helper)
 	{
 		// Create directory for this archive and a "Blueprints" directory inside of that.
 		/// \todo I think this is more complicated than it needs to be. What are all the pieces for?
@@ -114,7 +114,7 @@ namespace
 	class FBlueprintBody final : public FAGXArchiveBody
 	{
 	public:
-		FBlueprintBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporter& InHelper)
+		FBlueprintBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
 			: Body(InBody)
 			, Helper(InHelper)
 		{
@@ -142,13 +142,13 @@ namespace
 
 	private:
 		UAGX_RigidBodyComponent& Body;
-		FAGX_ArchiveImporter& Helper;
+		FAGX_ArchiveImporterHelper& Helper;
 	};
 
 	class FBlueprintInstantiator final : public FAGXArchiveInstantiator
 	{
 	public:
-		FBlueprintInstantiator(AActor* InBlueprintTemplate, FAGX_ArchiveImporter& InHelper)
+		FBlueprintInstantiator(AActor* InBlueprintTemplate, FAGX_ArchiveImporterHelper& InHelper)
 			: Helper(InHelper)
 			, BlueprintTemplate(InBlueprintTemplate)
 		{
@@ -439,7 +439,7 @@ namespace
 			return {GetBody(Constraint.GetFirstBody()), GetBody(Constraint.GetSecondBody())};
 		}
 
-/// \todo Use FAGX_ArchiveImporter::GetShapeMaterial instead, if it has been added yet.
+/// \todo Use FAGX_ArchiveImporterHelper::GetShapeMaterial instead, if it has been added yet.
 #if 0
 		UAGX_ShapeMaterialAsset* GetShapeMaterial(const FShapeMaterialBarrier& Barrier)
 		{
@@ -458,7 +458,7 @@ namespace
 		}
 #endif
 
-/// \todo Use FAGX_ArchiveImporter::GetShapeMaterials instead, if it has been added get.
+/// \todo Use FAGX_ArchiveImporterHelper::GetShapeMaterials instead, if it has been added get.
 #if 0
 		FShapeMaterialPair GetShapeMaterials(const FContactMaterialBarrier& ContactMaterial)
 		{
@@ -486,17 +486,17 @@ namespace
 		}
 
 	private:
-		FAGX_ArchiveImporter Helper;
+		FAGX_ArchiveImporterHelper Helper;
 		AActor* BlueprintTemplate;
 	};
 
-	void AddComponentsFromArchive(AActor* ImportedActor, FAGX_ArchiveImporter& Helper)
+	void AddComponentsFromArchive(AActor* ImportedActor, FAGX_ArchiveImporterHelper& Helper)
 	{
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
 		FAGXArchiveReader::Read(Helper.ArchiveFilePath, Instantiator);
 	}
 
-	AActor* CreateTemplate(FAGX_ArchiveImporter& Helper)
+	AActor* CreateTemplate(FAGX_ArchiveImporterHelper& Helper)
 	{
 		UActorFactory* Factory =
 			GEditor->FindActorFactoryByClass(UActorFactoryEmptyActor::StaticClass());
@@ -559,7 +559,7 @@ namespace
 
 UBlueprint* AGX_ArchiveImporterToBlueprint::ImportAGXArchive(const FString& ArchivePath)
 {
-	FAGX_ArchiveImporter Helper(ArchivePath);
+	FAGX_ArchiveImporterHelper Helper(ArchivePath);
 	PreCreationSetup();
 	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
 	UPackage* Package = GetPackage(BlueprintPackagePath);

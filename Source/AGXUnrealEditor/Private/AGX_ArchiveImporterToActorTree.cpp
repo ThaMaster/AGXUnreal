@@ -1,7 +1,7 @@
 #include "AGX_ArchiveImporterToActorTree.h"
 
 // AGXUnreal includes.
-#include "AGX_ArchiveImporter.h"
+#include "AGX_ArchiveImporterHelper.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyComponent.h"
@@ -59,7 +59,7 @@ namespace
 	class EditorBody final : public FAGXArchiveBody
 	{
 	public:
-		EditorBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporter& InHelper)
+		EditorBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
 			: Helper(InHelper)
 			, Body(InBody)
 		{
@@ -86,14 +86,14 @@ namespace
 		}
 
 	private:
-		FAGX_ArchiveImporter& Helper;
+		FAGX_ArchiveImporterHelper& Helper;
 		UAGX_RigidBodyComponent& Body;
 	};
 
 	class EditorInstantiator final : public FAGXArchiveInstantiator
 	{
 	public:
-		EditorInstantiator(AActor& InImportedRoot, UWorld& InWorld, FAGX_ArchiveImporter& InHelper)
+		EditorInstantiator(AActor& InImportedRoot, UWorld& InWorld, FAGX_ArchiveImporterHelper& InHelper)
 			: Helper(InHelper)
 			, ImportedRoot(InImportedRoot)
 			, World(InWorld)
@@ -409,7 +409,7 @@ namespace
 		}
 
 	private:
-		FAGX_ArchiveImporter Helper;
+		FAGX_ArchiveImporterHelper Helper;
 		AActor& ImportedRoot;
 		UWorld& World;
 	};
@@ -439,7 +439,7 @@ AActor* AGX_ArchiveImporterToActorTree::ImportAGXArchive(const FString& ArchiveP
 	FString Filename = FPaths::GetBaseFilename(ArchivePath);
 	ImportGroup->SetActorLabel(Filename);
 
-	FAGX_ArchiveImporter Helper(ArchivePath);
+	FAGX_ArchiveImporterHelper Helper(ArchivePath);
 	EditorInstantiator Instantiator(*ImportGroup, *World, Helper);
 	FAGXArchiveReader::Read(ArchivePath, Instantiator);
 

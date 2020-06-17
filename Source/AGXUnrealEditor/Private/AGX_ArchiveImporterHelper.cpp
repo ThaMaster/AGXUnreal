@@ -1,4 +1,4 @@
-#include "AGX_ArchiveImporter.h"
+#include "AGX_ArchiveImporterHelper.h"
 
 // AGXUnreal includes.
 #include "AGX_ImportUtilities.h"
@@ -32,7 +32,7 @@ namespace
 	}
 };
 
-UAGX_RigidBodyComponent* FAGX_ArchiveImporter::InstantiateBody(
+UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::InstantiateBody(
 	const FRigidBodyBarrier& Barrier, AActor& Actor)
 {
 	UAGX_RigidBodyComponent* Component = NewObject<UAGX_RigidBodyComponent>(&Actor);
@@ -53,7 +53,7 @@ UAGX_RigidBodyComponent* FAGX_ArchiveImporter::InstantiateBody(
 	return Component;
 }
 
-AAGX_RigidBodyActor* FAGX_ArchiveImporter::InstantiateBody(
+AAGX_RigidBodyActor* FAGX_ArchiveImporterHelper::InstantiateBody(
 	const FRigidBodyBarrier& Barrier, UWorld& World)
 {
 	FTransform Transform(Barrier.GetRotation(), Barrier.GetPosition());
@@ -93,7 +93,7 @@ namespace
 	}
 }
 
-UAGX_SphereShapeComponent* FAGX_ArchiveImporter::InstantiateSphere(
+UAGX_SphereShapeComponent* FAGX_ArchiveImporterHelper::InstantiateSphere(
 	const FSphereShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body)
 {
 	UAGX_SphereShapeComponent* Component =
@@ -110,7 +110,7 @@ UAGX_SphereShapeComponent* FAGX_ArchiveImporter::InstantiateSphere(
 	return Component;
 }
 
-UAGX_BoxShapeComponent* FAGX_ArchiveImporter::InstantiateBox(
+UAGX_BoxShapeComponent* FAGX_ArchiveImporterHelper::InstantiateBox(
 	const FBoxShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body)
 {
 	UAGX_BoxShapeComponent* Component =
@@ -127,7 +127,7 @@ UAGX_BoxShapeComponent* FAGX_ArchiveImporter::InstantiateBox(
 	return Component;
 }
 
-UAGX_CylinderShapeComponent* FAGX_ArchiveImporter::InstantiateCylinder(
+UAGX_CylinderShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCylinder(
 	const FCylinderShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body)
 {
 	UAGX_CylinderShapeComponent* Component =
@@ -172,7 +172,7 @@ namespace
 	}
 }
 
-UAGX_TrimeshShapeComponent* FAGX_ArchiveImporter::InstantiateTrimesh(
+UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	const FTrimeshShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body)
 {
 	AActor* Owner = Body.GetOwner();
@@ -196,7 +196,7 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporter::InstantiateTrimesh(
 	return Component;
 }
 
-UAGX_ShapeMaterialAsset* FAGX_ArchiveImporter::InstantiateShapeMaterial(
+UAGX_ShapeMaterialAsset* FAGX_ArchiveImporterHelper::InstantiateShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
 	/// \todo Do we need any special handling of the default material?
@@ -206,7 +206,7 @@ UAGX_ShapeMaterialAsset* FAGX_ArchiveImporter::InstantiateShapeMaterial(
 	return Asset;
 }
 
-UAGX_ContactMaterialAsset* FAGX_ArchiveImporter::InstantiateContactMaterial(
+UAGX_ContactMaterialAsset* FAGX_ArchiveImporterHelper::InstantiateContactMaterial(
 	const FContactMaterialBarrier& Barrier)
 {
 	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
@@ -215,7 +215,7 @@ UAGX_ContactMaterialAsset* FAGX_ArchiveImporter::InstantiateContactMaterial(
 	return Asset;
 }
 
-UAGX_RigidBodyComponent* FAGX_ArchiveImporter::GetBody(const FRigidBodyBarrier& Barrier)
+UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(const FRigidBodyBarrier& Barrier)
 {
 	if (!Barrier.HasNative())
 	{
@@ -237,19 +237,19 @@ UAGX_RigidBodyComponent* FAGX_ArchiveImporter::GetBody(const FRigidBodyBarrier& 
 	return Component;
 }
 
-FAGX_ArchiveImporter::FBodyPair FAGX_ArchiveImporter::GetBodies()
+FAGX_ArchiveImporterHelper::FBodyPair FAGX_ArchiveImporterHelper::GetBodies()
 {
 	/// \todo Continue here.
 	return {nullptr, nullptr};
 }
 
-UAGX_ShapeMaterialAsset* FAGX_ArchiveImporter::GetShapeMaterial(
+UAGX_ShapeMaterialAsset* FAGX_ArchiveImporterHelper::GetShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
 	return RestoredShapeMaterials.FindRef(Barrier.GetGuid());
 }
 
-FAGX_ArchiveImporter::FShapeMaterialPair FAGX_ArchiveImporter::GetShapeMaterials(
+FAGX_ArchiveImporterHelper::FShapeMaterialPair FAGX_ArchiveImporterHelper::GetShapeMaterials(
 	const FContactMaterialBarrier& ContactMaterial)
 {
 	return {GetShapeMaterial(ContactMaterial.GetMaterial1()),
@@ -265,7 +265,7 @@ namespace
 	}
 }
 
-FAGX_ArchiveImporter::FAGX_ArchiveImporter(const FString& InArchiveFilePath)
+FAGX_ArchiveImporterHelper::FAGX_ArchiveImporterHelper(const FString& InArchiveFilePath)
 	: ArchiveFilePath(InArchiveFilePath)
 	, ArchiveFileName(FPaths::GetBaseFilename(InArchiveFilePath))
 	, ArchiveName(MakeArchiveName(ArchiveFileName))
