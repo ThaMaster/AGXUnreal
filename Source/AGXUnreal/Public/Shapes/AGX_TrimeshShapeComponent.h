@@ -75,6 +75,8 @@ public:
 
 	virtual void UpdateNativeProperties() override;
 
+	void CopyFrom(const FTrimeshShapeBarrier& Barrier);
+
 protected:
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 

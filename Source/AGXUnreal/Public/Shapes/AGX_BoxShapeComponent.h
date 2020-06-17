@@ -1,9 +1,11 @@
 #pragma once
 
+// AGXUnreal includes.
 #include "Shapes/AGX_ShapeComponent.h"
-#include "CoreMinimal.h"
-
 #include "Shapes/BoxShapeBarrier.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
 
 #include "AGX_BoxShapeComponent.generated.h"
 
@@ -30,6 +32,8 @@ public:
 	FBoxShapeBarrier* GetNativeBox();
 
 	virtual void UpdateNativeProperties() override;
+
+	void CopyFrom(const FBoxShapeBarrier& Barrier);
 
 protected:
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;

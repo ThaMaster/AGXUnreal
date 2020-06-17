@@ -108,6 +108,8 @@ protected:
 
 	virtual void ReleaseNative() PURE_VIRTUAL(UAGX_ShapeComponent::ReleaseNative, );
 
+	void CopyFrom(const FShapeBarrier& Barrier);
+
 	/**
 	 * Updates the local transform of the native geometry to match this component's
 	 * transform relative to the actor. Must be called from each subclass immediately

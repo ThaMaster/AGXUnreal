@@ -1,9 +1,11 @@
 #pragma once
 
+// AGXUnreal includes.
 #include "Shapes/AGX_ShapeComponent.h"
-#include "CoreMinimal.h"
-
 #include "Shapes/CylinderShapeBarrier.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
 
 #include "AGX_CylinderShapeComponent.generated.h"
 
@@ -32,6 +34,8 @@ public:
 	FCylinderShapeBarrier* GetNativeCylinder();
 
 	virtual void UpdateNativeProperties() override;
+
+	void CopyFrom(const FCylinderShapeBarrier& Barrier);
 
 protected:
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;

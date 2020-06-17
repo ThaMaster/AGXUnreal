@@ -65,6 +65,11 @@ void UAGX_TrimeshShapeComponent::UpdateNativeProperties()
 	UpdateNativeLocalTransform(NativeBarrier);
 }
 
+void UAGX_TrimeshShapeComponent::CopyFrom(const FTrimeshShapeBarrier& Barrier)
+{
+	Super::CopyFrom(Barrier);
+}
+
 void UAGX_TrimeshShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& /*OutMeshData*/)
 {
 	// Visualized by the Static Mesh.. But maybe we should visualize the
