@@ -160,11 +160,6 @@ UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(
 
 namespace
 {
-	IAssetTools& GetAssetTools()
-	{
-		return FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-	}
-
 	/// \todo There is probably a name sanitizer already in Unreal. Find it.
 	/// \todo The sanitizers are called multiple times on the same string. Find a root function, or
 	/// a suitable helper function, and sanitize once. Assume already sanitizied in all other helper
