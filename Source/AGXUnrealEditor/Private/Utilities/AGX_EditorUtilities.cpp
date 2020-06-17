@@ -133,6 +133,8 @@ UAGX_RigidBodyComponent* FAGX_EditorUtilities::CreateRigidBody(AActor* Owner)
 	return Body;
 }
 
+/// \todo Can the Owner parameter be removed, and instead use Outer->GetOwner()?
+/// When would we want to attach the sphere to a component that is in another Actor.
 UAGX_SphereShapeComponent* FAGX_EditorUtilities::CreateSphereShape(
 	AActor* Owner, USceneComponent* Outer)
 {
@@ -158,83 +160,40 @@ UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(
 
 namespace
 {
-	/**
-	 * Remove characters that are unsafe to use in object names, content
-	 * references or filenames. Unsupported characters are dropped, so check the
-	 * returned string for emptyness and have a fallback.
-	 *
-	 * May remove more characters than necessary.
-	 *
-	 * @param Name The name to sanitize.
-	 * @return The name with all dangerous characters removed.
-	 */
-	FString SanitizeName(const FString& Name)
+	IAssetTools& GetAssetTools()
 	{
-		FString Sanitized;
-		Sanitized.Reserve(Name.Len());
-		for (TCHAR C : Name)
-		{
-			if (TChar<TCHAR>::IsAlnum(C))
-			{
-				Sanitized.AppendChar(C);
-			}
-		}
-		return Sanitized;
+		return FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
 	}
+
+	/// \todo There is probably a name sanitizer already in Unreal. Find it.
+	/// \todo The sanitizers are called multiple times on the same string. Find a root function, or
+	/// a suitable helper function, and sanitize once. Assume already sanitizied in all other helper
+	/// functions.
 
 	FString CreateAssetName(FString SourceName, FString ActorName, FString DefaultName)
 	{
-		SourceName = SanitizeName(SourceName);
+		SourceName = FAGX_EditorUtilities::SanitizeName(SourceName);
 		if (!SourceName.IsEmpty())
 		{
 			return SourceName;
 		}
 
-		ActorName = SanitizeName(ActorName);
+		ActorName = FAGX_EditorUtilities::SanitizeName(ActorName);
 		if (!ActorName.IsEmpty())
 		{
 			return ActorName;
 		}
 
-		DefaultName = SanitizeName(DefaultName);
+		DefaultName = FAGX_EditorUtilities::SanitizeName(DefaultName);
 		if (!DefaultName.IsEmpty())
 		{
 			return DefaultName;
 		}
 
-		return TEXT("ImportedAGXObject");
+		return TEXT("ImportedAgxObject");
 	}
 
-	/**
-	 * Apply the RawMesh data to the StaticMesh.
-	 *
-	 * @param RawMesh - The RawMesh holding the mesh data.
-	 * @param StaticMesh - The StaticMesh that should receive the mesh data.
-	 */
-	void AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh* StaticMesh)
-	{
-		StaticMesh->StaticMaterials.Add(FStaticMaterial());
-#if UE_VERSION_OLDER_THAN(4, 23, 0)
-		StaticMesh->SourceModels.Emplace();
-		FStaticMeshSourceModel& SourceModel = StaticMesh->SourceModels.Last();
-#else
-		StaticMesh->GetSourceModels().Emplace();
-		FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModels().Last();
-#endif
-		SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
-		FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
-
-		// Somewhat unclear what all these should be.
-		BuildSettings.bRecomputeNormals = false;
-		BuildSettings.bRecomputeTangents = true;
-		BuildSettings.bUseMikkTSpace = true;
-		BuildSettings.bGenerateLightmapUVs = true;
-		BuildSettings.bBuildAdjacencyBuffer = false;
-		BuildSettings.bBuildReversedIndexBuffer = false;
-		BuildSettings.bUseFullPrecisionUVs = false;
-		BuildSettings.bUseHighPrecisionTangentBasis = false;
-	}
-
+#if 0
 	/**
 	 * A way to identify an asset within the project content.
 	 *
@@ -253,55 +212,26 @@ namespace
 			return !PackagePath.IsEmpty() && !AssetName.IsEmpty();
 		}
 	};
+#endif
 
-	FAssetId FinalizeAndSavePackage(
-		UPackage* Package, UObject* Asset, FString& PackagePath, const FString& AssetName)
-	{
-		FAssetRegistryModule::AssetCreated(Asset);
-		Asset->MarkPackageDirty();
-		Asset->PostEditChange();
-		Asset->AddToRoot();
-		Package->SetDirtyFlag(true);
-
-		// Store our new package to disk.
-		FString PackageFilename = FPackageName::LongPackageNameToFilename(
-			PackagePath, FPackageName::GetAssetPackageExtension());
-		if (PackageFilename.IsEmpty())
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Unreal Engine unable to provide a package filename for package path '%s'."),
-				*PackagePath);
-			return FAssetId();
-		}
-		bool bSaved = UPackage::SavePackage(Package, Asset, RF_NoFlags, *PackageFilename);
-		if (!bSaved)
-		{
-			UE_LOG(
-				LogAGX, Error, TEXT("Unreal Engine unable to save package '%s' to file '%s'."),
-				*PackagePath, *PackageFilename);
-			return FAssetId();
-		}
-
-		return {PackagePath, AssetName};
-	}
-
+/// \todo A version of this has been implemented in FAGX_ImportUtilities. Determine how this one
+/// should be changed to be more general, if it's needed at all.
+#if 0
 	/**
 	 * Convert a raw mesh into a StaticMesh asset on disk.
 	 *
-	 * The mesh asset is stored to the /Game/ImportedAGXMeshes/<AssetFolderName>
-	 * folder. The given MeshName will only be used as-is if it doesn't collide
-	 * with an already existing asset. The final name and the full asset path is
-	 * returned.
+	 * The mesh asset is stored to /Game/ImportedAgxArchives/{ArchiveName}/StaticMeshes/{MeshName}.
+	 * The given MeshName will only be used as-is if it doesn't collide with an already existing
+	 * asset. The final name and the full asset path is returned.
 	 *
 	 * @param RawMesh - The mesh to store as an asset.
-	 * @param AssetFolderName - The folder within '/Game/ImportedAGXMeshes/' in which the asset
+	 * @param ArchiveName - The folder within '/Game/ImportedAGXMeshes/' in which the asset
 	 * should be stored.
 	 * @param MeshName - The base name to give the asset. A unique name based on the base name will
 	 * become the final name.
 	 * @return The path to the created package and the final name of the asset.
 	 */
-	UStaticMesh* CreateTrimeshAsset(
+	UStaticMesh* CreateImportedTrimeshAsset(
 		FRawMesh& RawMesh, const FString& AssetFolderName, const FString& MeshName)
 	{
 		// Find actual package path and a unique asset name.
@@ -323,13 +253,13 @@ namespace
 		// Create the actual mesh object and fill it with our mesh data.
 		UStaticMesh* StaticMesh =
 			NewObject<UStaticMesh>(Package, FName(*AssetName), RF_Public | RF_Standalone);
-		AddRawMeshToStaticMesh(RawMesh, StaticMesh);
+		FAGX_EditorUtilities::AddRawMeshToStaticMesh(RawMesh, StaticMesh);
 
 		StaticMesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
 
-		FAssetId AssetId = FinalizeAndSavePackage(Package, StaticMesh, PackagePath, AssetName);
-
-		if (!AssetId.IsValid())
+		bool Saved = FAGX_EditorUtilities::FinalizeAndSavePackage(
+			Package, StaticMesh, PackagePath, AssetName);
+		if (!Saved)
 		{
 			/// \todo What should we do here, other than giving up?
 			// No need to log, should have been done by FinalizeAndSavePackage.
@@ -338,10 +268,11 @@ namespace
 
 		UE_LOG(
 			LogAGX, Log, TEXT("Trimesh '%s' successfully stored to package '%s', asset '%s'"),
-			*MeshName, *AssetId.PackagePath, *AssetId.AssetName);
+			*MeshName, *PackagePath, *AssetName);
 
 		return StaticMesh;
 	}
+#endif
 
 	FRawMesh CreateRawMeshFromCollisionData(const FTrimeshShapeBarrier& Trimesh)
 	{
@@ -599,113 +530,213 @@ namespace
 
 		return RawMesh;
 	}
-
-	FRawMesh CreateRawMeshFromTrimesh(const FTrimeshShapeBarrier& Trimesh)
-	{
-		// AGX Dynamics store mesh data in two formats: collision and render. The render portion is
-		// optional.
-		//
-		//
-		// Collision
-		//
-		// The collision data consists of three arrays: positions, indices, and normals. The
-		// positions is a list of vertex positions. The indices comes in triplets for each triangle
-		// and the triplet defines which vertex positions form that triangle. There is one normal
-		// per triangle and they are stored in the same order as the position index triplets.
-		//
-		// Data shared among triangles:
-		//   positions: [Vec3, Vec3, Vec3 Vec3, Vec3, ... ]
-		//
-		// Data owned by each triangle:
-		//   indices:    | int, int, int | int, int, int | ... |
-		//   normals:    |     Vec3      |      Vec3     | ... |
-		//               |  Triangle 0   |  Triangle 1   | ... |
-		//
-		//
-		// Render
-		//
-		// The render data consists of four arrays: positions, normals, texture coordinates, and
-		// indices. The function is similar to the collision data, but this time everything is
-		// indexed and all arrays except for the index array create a single conceptual Vertex
-		// struct.
-		//
-		// Data shared among triangles:
-		//    positions: [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
-		//    normals:   [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
-		//    tex coord: [Vec2, Vec2, Vec2, Vec2, Vec2, ... ]
-		//
-		// Data owned by each triangle:
-		//    indices:   | int, int, int | int, int, int | ... |
-		//               |  Triangle 0   |  Triangle 1   | ... |
-		//
-		//
-		// Unreal Engine store its meshes in a third format. It is similar to the render format in
-		// AGX Dynamics, but more data is owned per triangle instead of shared between multiple
-		// triangles. Another way of saying the same thing is that it is similar to the collision
-		// format in AGX Dynamics, but with additional data owned by each triangle. The Unreal
-		// Engine format consists of six arrays: positions, indices, tangent X, tangent Y, tangent
-		// Z, and texture coordinates. Tangent Z has the same meaning as the normal in the AGX
-		// Dynamics data.
-		//
-		// Data shared among triangles:
-		//   positions: [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
-		//
-		// Data owned by each triangle:
-		//    indices:   | int,  int,  int  | int,  int,  int  | ... |
-		//    tangent x: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
-		//    tangent y: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
-		//    tangent z: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
-		//    tex coord: | Vec2, Vec2, Vec2 | Vec2, Vec2, Vec2 | ... |
-		//
-		//
-		// The AGX Dynamics to Unreal Engine mesh conversion uses vertex positions from the
-		// collision data, and normals and texture coordinates from the render data if available and
-		// compatible. By compatible we mean that the two meshes have the same number of triangles,
-		// in which case we assume that the two meshes are equivalent and their data can be mixed.
-		// There is no guarantee that this is true in all cases. If nor render data is available, or
-		// if the meshes aren't compatible then the collision normals are used for rendering as
-		// well. The same normal are used for all vertices within a triangle so the result will be
-		// a flat-shaded triangle. No texture coordinates are written in this case. Ideas with
-		// vertex position projections onto primary axis planes or nearest render vertex mapping has
-		// been discussed but not implemented.
-
-		const int32 NumCollisionPositions = Trimesh.GetNumPositions();
-		const int32 NumRenderPositions = Trimesh.GetNumRenderPositions();
-		const int32 NumCollisionIndices = Trimesh.GetNumIndices();
-		const int32 NumRenderIndices = Trimesh.GetNumRenderIndices();
-
-		if (NumCollisionPositions <= 0 || NumCollisionIndices <= 0)
-		{
-			// No collision mesh data available, this trimesh is broken.
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Did not find any triangle data in imported trimesh '%s'. Cannot create "
-					 "StaticMesh asset."),
-				*Trimesh.GetSourceName());
-			return FRawMesh();
-		}
-
-		if (NumCollisionIndices == NumRenderIndices)
-		{
-			return CreateRawMeshFromCollisionAndRenderData(Trimesh);
-		}
-		else
-		{
-			return CreateRawMeshFromCollisionData(Trimesh);
-		}
-		// We could have a call to CreateRawMeshFromRenderData somewhere around here, if we had a
-		// way to let the user request that.
-	}
 }
 
+/// \todo A variant of this has been implemented in FAGX_ImportUtilities. Determine how this one
+/// should be different, if it's even needed.
+#if 0
 UStaticMesh* FAGX_EditorUtilities::CreateStaticMeshAsset(
-	const FTrimeshShapeBarrier& Trimesh, const FString& AssetFolderName,
-	const FString& FallbackName)
+		const FTrimeshShapeBarrier& Trimesh, const FString& AssetFolderName,
+		const FString& FallbackName)
 {
 	FRawMesh RawMesh = CreateRawMeshFromTrimesh(Trimesh);
 	FString TrimeshName =
-		CreateAssetName(Trimesh.GetSourceName(), FallbackName, TEXT("ImportedAGXMesh"));
+			CreateAssetName(Trimesh.GetSourceName(), FallbackName, TEXT("ImportedAgxMesh"));
 	return CreateTrimeshAsset(RawMesh, AssetFolderName, TrimeshName);
+}
+#endif
+
+FString FAGX_EditorUtilities::SanitizeName(const FString& Name)
+{
+	FString Sanitized;
+	Sanitized.Reserve(Name.Len());
+	for (TCHAR C : Name)
+	{
+		/// \todo Will this accept non-english characters? Should it?
+		if (TChar<TCHAR>::IsAlnum(C))
+		{
+			Sanitized.AppendChar(C);
+		}
+	}
+	return Sanitized;
+}
+
+FString FAGX_EditorUtilities::SanitizeName(const FString& Name, const FString& Fallback)
+{
+	FString Sanitized = SanitizeName(Name);
+	if (Sanitized.IsEmpty())
+	{
+		return Fallback;
+	}
+	return Sanitized;
+}
+
+FString FAGX_EditorUtilities::SanitizeName(const FString& Name, const TCHAR* Fallback)
+{
+	FString Sanitized = SanitizeName(Name);
+	if (Sanitized.IsEmpty())
+	{
+		return FString(Fallback);
+	}
+	return Sanitized;
+}
+
+bool FAGX_EditorUtilities::FinalizeAndSavePackage(
+	UPackage* Package, UObject* Asset, const FString& PackagePath, const FString& AssetName)
+{
+	/// \todo Can the PackagePath and AssetName be read from the Package and Asset? To reduce
+	/// the number of parameters and avoid passing mismatching arguments. When would we want
+	/// to custom PackagePath and AssetName?
+
+	FAssetRegistryModule::AssetCreated(Asset);
+	Asset->MarkPackageDirty();
+	Asset->PostEditChange();
+	Asset->AddToRoot();
+	Package->SetDirtyFlag(true);
+
+	// Store our new package to disk.
+	const FString PackageFilename = FPackageName::LongPackageNameToFilename(
+		PackagePath, FPackageName::GetAssetPackageExtension());
+	if (PackageFilename.IsEmpty())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unreal Engine unable to provide a package filename for package path '%s'."),
+			*PackagePath);
+		return false;
+	}
+
+	bool bSaved = UPackage::SavePackage(Package, Asset, RF_NoFlags, *PackageFilename);
+	if (!bSaved)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("Unreal Engine unable to save package '%s' to file '%s'."),
+			*PackagePath, *PackageFilename);
+		return false;
+	}
+
+	return true;
+}
+
+FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarrier& Trimesh)
+{
+	// AGX Dynamics store mesh data in two formats: collision and render. The render portion is
+	// optional.
+	//
+	//
+	// Collision
+	//
+	// The collision data consists of three arrays: positions, indices, and normals. The
+	// positions is a list of vertex positions. The indices comes in triplets for each triangle
+	// and the triplet defines which vertex positions form that triangle. There is one normal
+	// per triangle and they are stored in the same order as the position index triplets.
+	//
+	// Data shared among triangles:
+	//   positions: [Vec3, Vec3, Vec3 Vec3, Vec3, ... ]
+	//
+	// Data owned by each triangle:
+	//   indices:    | int, int, int | int, int, int | ... |
+	//   normals:    |     Vec3      |      Vec3     | ... |
+	//               |  Triangle 0   |  Triangle 1   | ... |
+	//
+	//
+	// Render
+	//
+	// The render data consists of four arrays: positions, normals, texture coordinates, and
+	// indices. The function is similar to the collision data, but this time everything is
+	// indexed and all arrays except for the index array create a single conceptual Vertex
+	// struct.
+	//
+	// Data shared among triangles:
+	//    positions: [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+	//    normals:   [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+	//    tex coord: [Vec2, Vec2, Vec2, Vec2, Vec2, ... ]
+	//
+	// Data owned by each triangle:
+	//    indices:   | int, int, int | int, int, int | ... |
+	//               |  Triangle 0   |  Triangle 1   | ... |
+	//
+	//
+	// Unreal Engine store its meshes in a third format. It is similar to the render format in
+	// AGX Dynamics, but more data is owned per triangle instead of shared between multiple
+	// triangles. Another way of saying the same thing is that it is similar to the collision
+	// format in AGX Dynamics, but with additional data owned by each triangle. The Unreal
+	// Engine format consists of six arrays: positions, indices, tangent X, tangent Y, tangent
+	// Z, and texture coordinates. Tangent Z has the same meaning as the normal in the AGX
+	// Dynamics data.
+	//
+	// Data shared among triangles:
+	//   positions: [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+	//
+	// Data owned by each triangle:
+	//    indices:   | int,  int,  int  | int,  int,  int  | ... |
+	//    tangent x: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+	//    tangent y: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+	//    tangent z: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+	//    tex coord: | Vec2, Vec2, Vec2 | Vec2, Vec2, Vec2 | ... |
+	//
+	//
+	// The AGX Dynamics to Unreal Engine mesh conversion uses vertex positions from the
+	// collision data, and normals and texture coordinates from the render data if available and
+	// compatible. By compatible we mean that the two meshes have the same number of triangles,
+	// in which case we assume that the two meshes are equivalent and their data can be mixed.
+	// There is no guarantee that this is true in all cases. If nor render data is available, or
+	// if the meshes aren't compatible then the collision normals are used for rendering as
+	// well. The same normal are used for all vertices within a triangle so the result will be
+	// a flat-shaded triangle. No texture coordinates are written in this case. Ideas with
+	// vertex position projections onto primary axis planes or nearest render vertex mapping has
+	// been discussed but not implemented.
+
+	const int32 NumCollisionPositions = Trimesh.GetNumPositions();
+	const int32 NumRenderPositions = Trimesh.GetNumRenderPositions();
+	const int32 NumCollisionIndices = Trimesh.GetNumIndices();
+	const int32 NumRenderIndices = Trimesh.GetNumRenderIndices();
+
+	if (NumCollisionPositions <= 0 || NumCollisionIndices <= 0)
+	{
+		// No collision mesh data available, this trimesh is broken.
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Did not find any triangle data in imported trimesh '%s'. Cannot create "
+				 "StaticMesh asset."),
+			*Trimesh.GetSourceName());
+		return FRawMesh();
+	}
+
+	if (NumCollisionIndices == NumRenderIndices)
+	{
+		return CreateRawMeshFromCollisionAndRenderData(Trimesh);
+	}
+	else
+	{
+		return CreateRawMeshFromCollisionData(Trimesh);
+	}
+	// We could have a call to CreateRawMeshFromRenderData somewhere around here, if we had a
+	// way to let the user request that.
+}
+
+void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh* StaticMesh)
+{
+	StaticMesh->StaticMaterials.Add(FStaticMaterial());
+#if UE_VERSION_OLDER_THAN(4, 23, 0)
+	StaticMesh->SourceModels.Emplace();
+	FStaticMeshSourceModel& SourceModel = StaticMesh->SourceModels.Last();
+#else
+	StaticMesh->GetSourceModels().Emplace();
+	FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModels().Last();
+#endif
+	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
+	FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
+
+	// Somewhat unclear what all these should be.
+	BuildSettings.bRecomputeNormals = false;
+	BuildSettings.bRecomputeTangents = true;
+	BuildSettings.bUseMikkTSpace = true;
+	BuildSettings.bGenerateLightmapUVs = true;
+	BuildSettings.bBuildAdjacencyBuffer = false;
+	BuildSettings.bBuildReversedIndexBuffer = false;
+	BuildSettings.bUseFullPrecisionUVs = false;
+	BuildSettings.bUseHighPrecisionTangentBasis = false;
 }
 
 UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
@@ -761,17 +792,17 @@ FString FAGX_EditorUtilities::CreateShapeMaterialAsset(
 	// Copy material properties to the new material asset.
 	MaterialAsset->CopyFrom(&Material);
 
-	FAssetId AssetId = FinalizeAndSavePackage(Package, MaterialAsset, PackagePath, MaterialName);
-
-	if (!AssetId.IsValid())
+	bool Saved = FinalizeAndSavePackage(Package, MaterialAsset, PackagePath, MaterialName);
+	if (!Saved)
 	{
 		// Return empty string if asset was not created properly.
 		return FString();
 	}
 
-	return AssetId.PackagePath;
+	return PackagePath;
 }
 
+#if 0
 FString FAGX_EditorUtilities::CreateContactMaterialAsset(
 	const FString& DirName, const FContactMaterialBarrier& ContactMaterial,
 	const FString& Material1, const FString& Material2)
@@ -813,17 +844,16 @@ FString FAGX_EditorUtilities::CreateContactMaterialAsset(
 	ContactMaterialAsset->Material1 = Material1Asset;
 	ContactMaterialAsset->Material2 = Material2Asset;
 
-	FAssetId AssetId =
-		FinalizeAndSavePackage(Package, ContactMaterialAsset, PackagePath, AssetName);
-
-	if (!AssetId.IsValid())
+	bool Saved = FinalizeAndSavePackage(Package, ContactMaterialAsset, PackagePath, AssetName);
+	if (!Saved)
 	{
 		// Return empty string if asset was not created properly.
 		return FString();
 	}
 
-	return AssetId.PackagePath;
+	return PackagePath;
 }
+#endif
 
 AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 	UClass* ConstraintType, UAGX_RigidBodyComponent* RigidBody1,

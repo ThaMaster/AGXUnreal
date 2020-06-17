@@ -1,9 +1,10 @@
 #include "AGX_ArchiveImporterToSingleActor.h"
 
 // AGXUnreal includes.
-#include "AGXArchiveReader.h"
+#include "AGX_ArchiveImporter.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AGXArchiveReader.h"
 #include "CollisionGroups/AGX_CollisionGroupManager.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_BallConstraintComponent.h"
@@ -35,182 +36,41 @@
 #include "Math/Transform.h"
 #include "Misc/Paths.h"
 #include "UObject/UObjectGlobals.h"
-#include "Containers/Map.h"
 
 namespace
 {
 	class SingleActorBody final : public FAGXArchiveBody
 	{
 	public:
-		SingleActorBody(
-			UAGX_RigidBodyComponent& InBody, const FString& InArchiveName,
-			TMap<FGuid, UStaticMesh*>& InMeshAssets)
+		SingleActorBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporter& InHelper)
 			: Body(InBody)
-			, ArchiveName(InArchiveName)
-			, MeshAssets(InMeshAssets)
+			, Helper(InHelper)
 		{
 		}
 
-		virtual void InstantiateSphere(
-			const FSphereShapeBarrier& Barrier, const FString& ShapeMaterialAsset) override
+		virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
 		{
-			UAGX_SphereShapeComponent* Component =
-				FAGX_EditorUtilities::CreateSphereShape(Body.GetOwner(), &Body);
-			Component->Radius = Barrier.GetRadius();
-			FinalizeShape(*Component, Barrier, ShapeMaterialAsset);
+			Helper.InstantiateSphere(Barrier, Body);
 		}
 
-		virtual void InstantiateBox(
-			const FBoxShapeBarrier& Barrier, const FString& ShapeMaterialAsset) override
+		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier) override
 		{
-			UAGX_BoxShapeComponent* Component =
-				FAGX_EditorUtilities::CreateBoxShape(Body.GetOwner(), &Body);
-			Component->HalfExtent = Barrier.GetHalfExtents();
-			FinalizeShape(*Component, Barrier, ShapeMaterialAsset);
+			Helper.InstantiateBox(Barrier, Body);
 		}
 
-		virtual void InstantiateCylinder(
-			const FCylinderShapeBarrier& Barrier, const FString& ShapeMaterialAsset) override
+		virtual void InstantiateCylinder(const FCylinderShapeBarrier& Barrier) override
 		{
-			UAGX_CylinderShapeComponent* Component =
-				FAGX_EditorUtilities::CreateCylinderShape(Body.GetOwner(), &Body);
-			Component->Height = Barrier.GetHeight();
-			Component->Radius = Barrier.GetRadius();
-			FinalizeShape(*Component, Barrier, ShapeMaterialAsset);
+			Helper.InstantiateCylinder(Barrier, Body);
 		}
 
-		virtual void InstantiateTrimesh(
-			const FTrimeshShapeBarrier& Barrier, const FString& ShapeMaterialAsset) override
+		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Barrier) override
 		{
-			AActor* Owner = Body.GetOwner();
-			UAGX_TrimeshShapeComponent* Component =
-				FAGX_EditorUtilities::CreateTrimeshShape(Owner, &Body);
-			Component->MeshSourceLocation =
-				EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
-			UStaticMesh* MeshAsset = GetOrCreateStaticMeshAsset(Barrier, Owner->GetActorLabel());
-			if (!MeshAsset)
-			{
-				// No point in continuing further. Logging handled in GetOrCreateStaticMeshAsset.
-				return;
-			}
-
-			UStaticMeshComponent* MeshComponent =
-				FAGX_EditorUtilities::CreateStaticMeshComponent(Owner, Component, MeshAsset);
-
-			FString Name = MeshComponent->GetName() + "Shape";
-			if (!Component->Rename(*Name, nullptr, REN_Test))
-			{
-				FString OldName = Name;
-				Name = MakeUniqueObjectName(Owner, UAGX_TrimeshShapeComponent::StaticClass(), *Name)
-						   .ToString();
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Trimesh '%s' imported with name '%s' vecause of name conflict."),
-					*OldName, *Name);
-			}
-			Component->Rename(*Name, nullptr, REN_DontCreateRedirectors);
-			FinalizeShape(*Component, Barrier, ShapeMaterialAsset);
-		}
-
-	private:
-		void FinalizeShape(
-			UAGX_ShapeComponent& Component, const FShapeBarrier& Barrier,
-			const FString& ShapeMaterialAsset)
-		{
-			Component.SetFlags(RF_Transactional);
-			Component.bCanCollide = Barrier.GetEnableCollisions();
-			for (const FName& Group : Barrier.GetCollisionGroups())
-			{
-				Component.AddCollisionGroup(Group);
-			}
-			Component.SetRelativeLocation(Barrier.GetLocalPosition());
-			Component.SetRelativeRotation(Barrier.GetLocalRotation());
-			Component.UpdateVisualMesh();
-			FString Name = Barrier.GetName();
-			/// \todo This pattern is repeated in multiple places. Find a way to extract.
-			if (!Component.Rename(*Name, nullptr, REN_Test))
-			{
-				FString OldName = Name;
-				Name = MakeUniqueObjectName(Component.GetOwner(), Component.GetClass(), *Name)
-						   .ToString();
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Shape '%s' imported with name '%s' because of name conflict."), *OldName,
-					*Name);
-			}
-			Component.Rename(*Name, nullptr, REN_DontCreateRedirectors);
-
-			if (!ShapeMaterialAsset.IsEmpty())
-			{
-				const bool Result =
-					FAGX_EditorUtilities::ApplyShapeMaterial(&Component, ShapeMaterialAsset);
-				if (!Result)
-				{
-					UE_LOG(
-						LogAGX, Warning,
-						TEXT("ApplyShapeMaterial in FinalizeShape failed. Rigid Body: %s, Shape "
-							 "Component: %s, Asset: %s."),
-						*Body.GetName(), *Component.GetName(), *ShapeMaterialAsset);
-				}
-			}
-		}
-
-		UStaticMesh* GetOrCreateStaticMeshAsset(
-			const FTrimeshShapeBarrier& Barrier, const FString& FallbackName)
-		{
-			FGuid Guid = Barrier.GetMeshDataGuid();
-
-			// If the FGuid is invalid, try to create the Mesh Asset, but without adding it to the
-			// MeshAssets TMap.
-			if (!Guid.IsValid())
-			{
-				return FAGX_EditorUtilities::CreateStaticMeshAsset(
-					Barrier, ArchiveName, FallbackName);
-			}
-
-			if (UStaticMesh* MeshAsset = MeshAssets.FindRef(Guid))
-			{
-				return MeshAsset;
-			}
-
-			UStaticMesh* MeshAsset =
-				FAGX_EditorUtilities::CreateStaticMeshAsset(Barrier, ArchiveName, FallbackName);
-			MeshAssets.Add(Guid, MeshAsset);
-
-			return MeshAsset;
+			Helper.InstantiateTrimesh(Barrier, Body);
 		}
 
 	private:
 		UAGX_RigidBodyComponent& Body;
-		const FString& ArchiveName;
-		TMap<FGuid, UStaticMesh*>& MeshAssets;
-	};
-
-	/// \todo Consider moving this to the generic importer file. It's the same for all importers.
-	/**
-	 * An ArchiveBody that creates nothing. Used when the Unreal object couldn't be created.
-	 */
-	class NopEditorBody final : public FAGXArchiveBody
-	{
-		virtual void InstantiateSphere(
-			const FSphereShapeBarrier& Barrier, const FString& ShapeMaterialAsset) override
-		{
-		}
-
-		virtual void InstantiateBox(
-			const FBoxShapeBarrier& Box, const FString& ShapeMaterialAsset) override
-		{
-		}
-
-		virtual void InstantiateCylinder(
-			const FCylinderShapeBarrier& Cylinder, const FString& ShapeMaterialAsset) override
-		{
-		}
-
-		virtual void InstantiateTrimesh(
-			const FTrimeshShapeBarrier& Barrier, const FString& ShapeMaterialAsset) override
-		{
-		}
+		FAGX_ArchiveImporter& Helper;
 	};
 
 	/**
@@ -220,55 +80,23 @@ namespace
 	{
 	public:
 		SingleActorInstantiator(
-			UWorld& InWorld, AActor& InActor, USceneComponent& InRoot, const FString& InArchiveName)
-			: World(InWorld)
+			UWorld& InWorld, AActor& InActor, USceneComponent& InRoot,
+			const FString& InArchiveFilePath)
+			: Helper(InArchiveFilePath)
+			, World(InWorld)
 			, Actor(InActor)
 			, Root(InRoot)
-			, ArchiveName(InArchiveName)
 		{
 		}
 
 		virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
 		{
-			UAGX_RigidBodyComponent* Component =
-				NewObject<UAGX_RigidBodyComponent>(&Actor, NAME_None);
+			UAGX_RigidBodyComponent* Component = Helper.InstantiateBody(Barrier, Actor);
 			if (Component == nullptr)
 			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Could not import AGX Dynamics body '%s'. Could not create a new "
-						 "RigidBodyComponent."),
-					*Barrier.GetName());
 				return new NopEditorBody();
 			}
-
-			FString Name = Barrier.GetName();
-			if (!Component->Rename(*Name, nullptr, REN_Test))
-			{
-				FString OldName = Name;
-				Name = MakeUniqueObjectName(&Actor, UAGX_RigidBodyComponent::StaticClass(), *Name)
-						   .ToString();
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("RigidBody '%s' imported with name '%s' because of name conflict"),
-					*OldName, *Name);
-			}
-			Component->Rename(*Name);
-
-			Component->SetWorldLocation(Barrier.GetPosition());
-			Component->SetWorldRotation(Barrier.GetRotation());
-			Component->Mass = Barrier.GetMass();
-			Component->MotionControl = Barrier.GetMotionControl();
-
-			Component->SetFlags(RF_Transactional);
-			Actor.AddInstanceComponent(Component);
-			Component->RegisterComponent();
-
-			Component->AttachToComponent(&Root, FAttachmentTransformRules::KeepWorldTransform);
-
-			Component->PostEditChange();
-			RestoredBodies.Add(Barrier.GetGuid(), Component);
-			return new SingleActorBody(*Component, ArchiveName, MeshAssets);
+			return new SingleActorBody(*Component, Helper);
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
@@ -333,18 +161,14 @@ namespace
 			}
 		}
 
-		virtual FString CreateShapeMaterialAsset(
-			const FShapeMaterialBarrier& ShapeMaterial) override
+		virtual void InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier) override
 		{
-			return FAGX_EditorUtilities::CreateShapeMaterialAsset(ArchiveName, ShapeMaterial);
+			Helper.InstantiateShapeMaterial(Barrier);
 		}
 
-		virtual FString CreateContactMaterialAsset(
-			const FContactMaterialBarrier& ContactMaterial, const FString& Material1,
-			const FString& Material2) override
+		virtual void InstantiateContactMaterial(const FContactMaterialBarrier& Barrier) override
 		{
-			return FAGX_EditorUtilities::CreateContactMaterialAsset(
-				ArchiveName, ContactMaterial, Material1, Material2);
+			Helper.InstantiateContactMaterial(Barrier);
 		}
 
 	private:
@@ -380,7 +204,7 @@ namespace
 		template <typename UConstraint>
 		UConstraint* InstantiateConstraint(const FConstraintBarrier& Barrier, UClass* Type)
 		{
-			FBodyPair Bodies = GetBodies(Barrier);
+			FBodyPair Bodies = Helper.GetBodies(/*Barrier*/);
 			if (Bodies.first == nullptr)
 			{
 				UE_LOG(
@@ -413,38 +237,11 @@ namespace
 			return Component;
 		}
 
-		UAGX_RigidBodyComponent* GetBody(const FRigidBodyBarrier& Barrier)
-		{
-			if (!Barrier.HasNative())
-			{
-				// Not an error, means constrainted with world.
-				return nullptr;
-			}
-			FGuid Guid = Barrier.GetGuid();
-			UAGX_RigidBodyComponent* Component = RestoredBodies.FindRef(Guid);
-			if (Component == nullptr)
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Found a constraint to body '%s', but that body hans't been restored."),
-					*Barrier.GetName());
-				return nullptr;
-			}
-			return Component;
-		}
-
-		FBodyPair GetBodies(const FConstraintBarrier& Constraint)
-		{
-			return {GetBody(Constraint.GetFirstBody()), GetBody(Constraint.GetSecondBody())};
-		}
-
 	private:
+		FAGX_ArchiveImporter Helper;
 		UWorld& World;
 		AActor& Actor;
 		USceneComponent& Root;
-		const FString& ArchiveName;
-		TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
-		TMap<FGuid, UStaticMesh*> MeshAssets;
 	};
 }
 
@@ -472,7 +269,7 @@ AActor* AGX_ArchiveImporterToSingleActor::ImportAGXArchive(const FString& Archiv
 	FString Filename = FPaths::GetBaseFilename(ArchivePath);
 	NewActor->SetActorLabel(Filename);
 
-	SingleActorInstantiator Instantiator(*World, *NewActor, *NewRoot, Filename);
+	SingleActorInstantiator Instantiator(*World, *NewActor, *NewRoot, ArchivePath);
 	FAGXArchiveReader::Read(ArchivePath, Instantiator);
 	return NewActor;
 }

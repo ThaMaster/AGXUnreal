@@ -34,8 +34,8 @@
 namespace
 {
 	void InstantiateShapes(
-		const agxCollide::ShapeRefVector& Shapes, FAGXArchiveBody& ArchiveBody,
-		const FString& ShapeMaterialAsset)
+		const agxCollide::ShapeRefVector& Shapes,
+		FAGXArchiveBody& ArchiveBody)
 	{
 		for (const agxCollide::ShapeRef& Shape : Shapes)
 		{
@@ -45,36 +45,34 @@ namespace
 				{
 					agxCollide::Sphere* Sphere {Shape->as<agxCollide::Sphere>()};
 					ArchiveBody.InstantiateSphere(
-						AGXBarrierFactories::CreateSphereShapeBarrier(Sphere), ShapeMaterialAsset);
+						AGXBarrierFactories::CreateSphereShapeBarrier(Sphere));
 					break;
 				}
 				case agxCollide::Shape::BOX:
 				{
 					agxCollide::Box* Box {Shape->as<agxCollide::Box>()};
 					ArchiveBody.InstantiateBox(
-						AGXBarrierFactories::CreateBoxShapeBarrier(Box), ShapeMaterialAsset);
+						AGXBarrierFactories::CreateBoxShapeBarrier(Box));
 					break;
 				}
 				case agxCollide::Shape::CYLINDER:
 				{
 					agxCollide::Cylinder* Cylinder {Shape->as<agxCollide::Cylinder>()};
 					ArchiveBody.InstantiateCylinder(
-						AGXBarrierFactories::CreateCylinderShapeBarrier(Cylinder),
-						ShapeMaterialAsset);
+						AGXBarrierFactories::CreateCylinderShapeBarrier(Cylinder));
 					break;
 				}
 				case agxCollide::Shape::TRIMESH:
 				{
 					agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
 					ArchiveBody.InstantiateTrimesh(
-						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh),
-						ShapeMaterialAsset);
+						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh));
 					break;
 				}
 				case agxCollide::Shape::GROUP:
 				{
 					agxCollide::ShapeGroup* Group {Shape->as<agxCollide::ShapeGroup>()};
-					InstantiateShapes(Group->getChildren(), ArchiveBody, ShapeMaterialAsset);
+					InstantiateShapes(Group->getChildren(), ArchiveBody);
 					break;
 				}
 			}
@@ -90,14 +88,39 @@ namespace
 			   agxCable::Cable::getCableForBody(&Body) == nullptr;
 	}
 
+	/**
+	 * Get all materials and create one shape material asset for each. Each agx::Material have a
+	 * unique name. Several agx::Geometries may use the same agx::Material.
+	 */
+	void RestoreMaterials(agxSDK::Simulation& Simulation, FAGXArchiveInstantiator& Instantiator)
+	{
+		const agxSDK::StringMaterialRefTable& MaterialsTable =
+			Simulation.getMaterialManager()->getMaterials();
+		for (auto& It : MaterialsTable)
+		{
+			agx::Material* Mat = It.second.get();
+			Instantiator.InstantiateShapeMaterial(
+				AGXBarrierFactories::CreateShapeMaterialBarrier(Mat));
+		}
+
+		const agxSDK::MaterialSPairContactMaterialRefTable& ContactMaterialsTable =
+			Simulation.getMaterialManager()->getContactMaterials();
+		for (auto& It : ContactMaterialsTable)
+		{
+			agx::ContactMaterial* ContMat = It.second.get();
+
+			Instantiator.InstantiateContactMaterial(
+				AGXBarrierFactories::CreateContactMaterialBarrier(ContMat));
+		}
+	}
+
 	void RestoreRigidBodies(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXArchiveInstantiator& Instantiator,
-		const TMap<agx::Material*, FString>& ShapeMaterialAssets)
+		FAGXArchiveInstantiator& Instantiator)
 	{
 		agx::RigidBodyRefVector& Bodies {Simulation.getRigidBodies()};
 		if (Bodies.size() > size_t(std::numeric_limits<int32>::max()))
-		{
+		{ /// \todo Are there checks really necessary?
 			UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many bodies."), *Filename);
 			return; /// \todo Should we bail, or restore as many bodies as we can?
 		}
@@ -108,7 +131,6 @@ namespace
 			{
 				continue;
 			}
-
 			if (!IsRegularBody(*Body))
 			{
 				continue;
@@ -121,15 +143,21 @@ namespace
 			const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
 			for (const agxCollide::GeometryRef& Geometry : Geometries)
 			{
+#if 0
 				FString ShapeMaterialAsset;
 				if (agx::Material* AgxMaterial = Geometry->getMaterial())
 				{
 					check(ShapeMaterialAssets.Find(AgxMaterial));
 					ShapeMaterialAsset = ShapeMaterialAssets[AgxMaterial];
 				}
-				::InstantiateShapes(Geometry->getShapes(), *ArchiveBody, ShapeMaterialAsset);
+#endif
+				::InstantiateShapes(Geometry->getShapes(), *ArchiveBody);
 			}
 		}
+	}
+
+	void RestoreConstraints()
+	{
 	}
 }
 
@@ -143,47 +171,9 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 		return;
 	}
 
-	// Get all materials and create one shape material asset for each. Each agx::Material have a
-	// unique name. Several agx::Geometries may use the same agx::Material.
-	const agxSDK::StringMaterialRefTable& MaterialsTable =
-		Simulation->getMaterialManager()->getMaterials();
+	::RestoreMaterials(*Simulation, Instantiator);
 
-	// Maps agx::Material* to AGX_ShapeMaterialAsset asset name (with path).
-	TMap<agx::Material*, FString> ShapeMaterialAssets;
-	for (auto it = MaterialsTable.begin(); it != MaterialsTable.end(); ++it)
-	{
-		agx::Material* Mat = it->second.get();
-		const FString ShapeMaterialAsset = Instantiator.CreateShapeMaterialAsset(
-			AGXBarrierFactories::CreateShapeMaterialBarrier(Mat));
-
-		ShapeMaterialAssets.Add(Mat, ShapeMaterialAsset);
-	}
-
-	const agxSDK::MaterialSPairContactMaterialRefTable& ContactMaterialsTable =
-		Simulation->getMaterialManager()->getContactMaterials();
-	for (auto it = ContactMaterialsTable.begin(); it != ContactMaterialsTable.end(); ++it)
-	{
-		agx::ContactMaterial* ContMat = it->second.get();
-		const agx::Material* Material1 = ContMat->getMaterial1();
-		const agx::Material* Material2 = ContMat->getMaterial2();
-		const FString Material1Asset = ShapeMaterialAssets[Material1];
-		const FString Material2Asset = ShapeMaterialAssets[Material2];
-		const FContactMaterialBarrier& ContMatBarrier =
-			AGXBarrierFactories::CreateContactMaterialBarrier(ContMat);
-
-		const FString ContactMaterialAsset =
-			Instantiator.CreateContactMaterialAsset(ContMatBarrier, Material1Asset, Material2Asset);
-
-		if (ContactMaterialAsset.IsEmpty())
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Unable to create contact material asset for materials: %s and %s"),
-				*Material1Asset, *Material2Asset);
-		}
-	}
-
-	::RestoreRigidBodies(*Simulation, Filename, Instantiator, ShapeMaterialAssets);
+	::RestoreRigidBodies(*Simulation, Filename, Instantiator);
 
 	agx::ConstraintRefSetVector& Constraints = Simulation->getConstraints();
 	if (Constraints.size() > size_t(std::numeric_limits<int32>::max()))
