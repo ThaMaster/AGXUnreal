@@ -70,6 +70,9 @@ public:
 	void SetUseContactAreaApproach(bool bUse);
 	bool GetUseContactAreaApproach() const;
 
+	FShapeMaterialBarrier GetMaterial1() const;
+	FShapeMaterialBarrier GetMaterial2() const;
+
 private:
 	FContactMaterialBarrier(const FContactMaterialBarrier&) = delete;
 	void operator=(const FContactMaterialBarrier&) = delete;
