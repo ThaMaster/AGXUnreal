@@ -1,7 +1,6 @@
 #include "AGX_ArchiveImporterHelper.h"
 
 // AGXUnreal includes.
-#include "AGX_ImportUtilities.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyComponent.h"
@@ -13,6 +12,7 @@
 #include "Materials/AGX_ShapeMaterialAsset.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
+#include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
