@@ -25,9 +25,11 @@ public:
 	 * version of "/Game/ImportedAgxArchives/{ArchiveName}/{AssetType}s/"
 	 * @param ArchiveName - The name of the archive from which the asset was read.
 	 * @param AssetType - The type of the asset.
-	 * @return
+	 * @return A package path for the asset, or the empty string if the names are invalid.
 	 */
 	static FString CreateArchivePackagePath(FString ArchiveName, FString AssetType);
+
+	static FString CreateArchivePackagePath(FString ArchiveName);
 
 	/**
 	 * Pick a name for an imported asset. NativeName and ArchiveName will be sanitized and the first
@@ -42,6 +44,20 @@ public:
 	static FString CreateAssetName(
 		const FString& NativeName, const FString& FallbackName, const FString& AssetType);
 
+	/**
+	 * Find package- and asset names that are unique. The package name can be a directory. A unique
+	 * name, based on AssetName, will be generated and the full package- and asset names will be
+	 * stored in the parameters.
+	 *
+	 * An example, passing "/Game/Textures/", "MyTexture" when there already is an asset named
+	 * "MyTexture" in "/Game/Textures/" will result in "/Game/Textures/MyTexture_1" to be stored in
+	 * PackageName and "MyTexture_1" to be stored in AssetName.
+	 *
+	 * @param PackageName - Package path to the folder that should hold the new asset.
+	 * @param AssetName - Candidate name for the new asset.
+	 */
+	static void MakePackageAndAssetNameUnique(FString& PackageName, FString& AssetName);
+
 	/// \todo Determine if it's enough to return the asset created in the following few
 	/// functions, or if we must pack it in a struct together with the package path and/or asset
 	/// name.
@@ -50,28 +66,28 @@ public:
 	 * Store an AGX Dynamics Trimesh imported from an AGX Dynamics archive as a UStaticMesh
 	 * asset.
 	 * @param Trimesh - The imported trimesh to be saved.
-	 * @param ArchiveName - The name of the archive from which the trimesh was read.
+	 * @param DirectoryName - The name of the directory where the archive's assets are collected.
 	 * @param FallbackName - Name to give the asset in case the trimesh doesn't have a source
 	 * name.
 	 * @return
 	 */
 	static UStaticMesh* SaveImportedStaticMeshAsset(
-		const FTrimeshShapeBarrier& Trimesh, const FString& ArchiveName,
+		const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName,
 		const FString& FallbackName);
 
 	/**
 	 * Store an AGX Dynamics shape imported from an AGX Dynamics archive as a
 	 * UAGX_ShapeMaterialAsset.
 	 * @param Material - The imported material to be saved.
-	 * @param ArchiveName - The name of the archive from which the material was read.
+	 * @param DirectoryName - The name of the archive from which the material was read.
 	 * @return
 	 */
 	static UAGX_ShapeMaterialAsset* SaveImportedShapeMaterialAsset(
-		const FShapeMaterialBarrier& Material, const FString& ArchiveName);
+		const FShapeMaterialBarrier& Material, const FString& DirectoryName);
 
 	static UAGX_ContactMaterialAsset* SaveImportedContactMaterialAsset(
 		const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterialAsset* Material1,
-		UAGX_ShapeMaterialAsset* Material2, const FString& ArchiveName);
+		UAGX_ShapeMaterialAsset* Material2, const FString& DirectoryName);
 
 	/** Rename the object. Generates a fallback name if the given name can't be used. */
 	static void Rename(UObject& Object, const FString& Name);

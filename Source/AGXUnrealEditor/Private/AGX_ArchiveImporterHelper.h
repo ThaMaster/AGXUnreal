@@ -83,8 +83,7 @@ public:
 	UAGX_CylindricalConstraintComponent* InstantiateCylindricalJoint(
 		const FCylindricalJointBarrier& Barrier, AActor& Owner);
 
-	AAGX_DistanceConstraintActor* InstantiateDistanceJoint(
-		const FDistanceJointBarrier& Barrier);
+	AAGX_DistanceConstraintActor* InstantiateDistanceJoint(const FDistanceJointBarrier& Barrier);
 
 	UAGX_DistanceConstraintComponent* InstantiateDistanceJoint(
 		const FDistanceJointBarrier& Barrier, AActor& Owner);
@@ -109,6 +108,7 @@ public:
 	const FString ArchiveFilePath;
 	const FString ArchiveFileName;
 	const FString ArchiveName;
+	const FString DirectoryName;
 	TMap<FGuid, UStaticMesh*> RestoredMeshes;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterialAsset*> RestoredShapeMaterials;

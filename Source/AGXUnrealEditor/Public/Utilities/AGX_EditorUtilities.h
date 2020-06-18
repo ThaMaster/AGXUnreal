@@ -99,7 +99,8 @@ public:
 	 * references or file names. Unsupported characters are dropped, so check the
 	 * returned string for emptyness.
 	 *
-	 * May remove more characters than necessary.
+	 * May remove more characters than necessary, and the set of allowed characters may be extended
+	 * in the future.
 	 *
 	 * @param Name The name to sanitize.
 	 * @return The name with all dangerous characters removed.

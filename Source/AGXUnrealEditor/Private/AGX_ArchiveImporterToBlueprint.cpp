@@ -64,9 +64,9 @@ namespace
 		// Create directory for this archive and a "Blueprints" directory inside of that.
 		/// \todo I think this is more complicated than it needs to be. What are all the pieces for?
 		FString ParentPackagePath =
-			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.ArchiveName, TEXT("Blueprint"));
+			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
 		FString ParentAssetName = Helper.ArchiveFileName; /// \todo Why is this never used?
-		FAGX_EditorUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
+		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
 		UPackage* ParentPackage = CreatePackage(nullptr, *ParentPackagePath);
 		FString Path = FPaths::GetPath(ParentPackage->GetName());
 
@@ -76,7 +76,7 @@ namespace
 
 		// Create a known unique name for the Blueprint package, but don't create the actual
 		// package yet.
-		const FString BlueprintName = TEXT("BP_") + Helper.ArchiveName;
+		const FString BlueprintName = TEXT("BP_") + Helper.DirectoryName;
 		FString BasePackagePath = UPackageTools::SanitizePackageName(Path + "/" + BlueprintName);
 		FString PackagePath = BasePackagePath;
 
@@ -283,7 +283,7 @@ namespace
 			FActorFactoryAssetProxy::AddActorForAsset(EmptyActorAsset, false);
 		check(RootActorContainer != nullptr); /// \todo Test and return false instead of check?
 		RootActorContainer->SetFlags(RF_Transactional);
-		RootActorContainer->SetActorLabel(Helper.ArchiveName);
+		RootActorContainer->SetActorLabel(Helper.DirectoryName);
 
 // I would like to be able to create and configure the RootComponent here, but
 // the way Blueprint creation has been done in Unreal Engine makes this

@@ -41,6 +41,7 @@
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
+#include "FileHelpers.h"
 #include "GameFramework/Actor.h"
 #include "UObject/UObjectGlobals.h"
 
@@ -172,7 +173,7 @@ namespace
 {
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FTrimeshShapeBarrier& Barrier, const FString& FallbackName,
-		TMap<FGuid, UStaticMesh*> RestoredMeshes, const FString& ArchiveName)
+		TMap<FGuid, UStaticMesh*> RestoredMeshes, const FString& DirectoryName)
 	{
 		FGuid Guid = Barrier.GetMeshDataGuid();
 
@@ -181,7 +182,7 @@ namespace
 		if (!Guid.IsValid())
 		{
 			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-				Barrier, ArchiveName, FallbackName);
+				Barrier, DirectoryName, FallbackName);
 		}
 
 		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
@@ -190,7 +191,7 @@ namespace
 		}
 
 		UStaticMesh* Asset =
-			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Barrier, ArchiveName, FallbackName);
+			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Barrier, DirectoryName, FallbackName);
 		RestoredMeshes.Add(Guid, Asset);
 		return Asset;
 	}
@@ -203,7 +204,7 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	UAGX_TrimeshShapeComponent* Component = FAGX_EditorUtilities::CreateTrimeshShape(Owner, &Body);
 	Component->MeshSourceLocation = EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 	UStaticMesh* MeshAsset =
-		GetOrCreateStaticMeshAsset(Barrier, Body.GetName(), RestoredMeshes, ArchiveName);
+		GetOrCreateStaticMeshAsset(Barrier, Body.GetName(), RestoredMeshes, DirectoryName);
 	if (MeshAsset == nullptr)
 	{
 		// No point in continuing further. Logging handled in GetOrCreateStaticMeshAsset.
@@ -225,7 +226,7 @@ UAGX_ShapeMaterialAsset* FAGX_ArchiveImporterHelper::InstantiateShapeMaterial(
 {
 	/// \todo Do we need any special handling of the default material?
 	UAGX_ShapeMaterialAsset* Asset =
-		FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(Barrier, ArchiveName);
+		FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(Barrier, DirectoryName);
 	RestoredShapeMaterials.Add(Barrier.GetGuid(), Asset);
 	return Asset;
 }
@@ -235,7 +236,7 @@ UAGX_ContactMaterialAsset* FAGX_ArchiveImporterHelper::InstantiateContactMateria
 {
 	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
 	UAGX_ContactMaterialAsset* Asset = FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
-		Barrier, Materials.first, Materials.second, ArchiveName);
+		Barrier, Materials.first, Materials.second, DirectoryName);
 	return Asset;
 }
 
@@ -375,7 +376,7 @@ UAGX_PrismaticConstraintComponent* FAGX_ArchiveImporterHelper::InstantiatePrisma
 }
 
 AAGX_BallConstraintActor* FAGX_ArchiveImporterHelper::InstantiateBallJoint(
-		const FBallJointBarrier& Barrier)
+	const FBallJointBarrier& Barrier)
 {
 	return ::InstantiateConstraint<AAGX_BallConstraintActor>(Barrier, *this);
 }
@@ -387,7 +388,7 @@ UAGX_BallConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateBallJoint(
 }
 
 AAGX_CylindricalConstraintActor* FAGX_ArchiveImporterHelper::InstantiateCylindricalJoint(
-		const FCylindricalJointBarrier& Barrier)
+	const FCylindricalJointBarrier& Barrier)
 {
 	return ::InstantiateConstraint2Dof<AAGX_CylindricalConstraintActor>(Barrier, *this);
 }
@@ -399,7 +400,7 @@ UAGX_CylindricalConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateCyli
 }
 
 AAGX_DistanceConstraintActor* FAGX_ArchiveImporterHelper::InstantiateDistanceJoint(
-		const FDistanceJointBarrier& Barrier)
+	const FDistanceJointBarrier& Barrier)
 {
 	return ::InstantiateConstraint1Dof<AAGX_DistanceConstraintActor>(Barrier, *this);
 }
@@ -411,7 +412,7 @@ UAGX_DistanceConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateDistanc
 }
 
 AAGX_LockConstraintActor* FAGX_ArchiveImporterHelper::InstantiateLockJoint(
-		const FLockJointBarrier& Barrier)
+	const FLockJointBarrier& Barrier)
 {
 	return ::InstantiateConstraint<AAGX_LockConstraintActor>(Barrier, *this);
 }
@@ -477,11 +478,48 @@ namespace
 		ArchiveFilename.RemoveFromEnd(TEXT(".agx"));
 		return FAGX_EditorUtilities::SanitizeName(ArchiveFilename, TEXT("ImportedAgxArchive"));
 	}
+
+	FString MakeDirectoryName(const FString ArchiveName)
+	{
+		FString BasePath = FAGX_ImportUtilities::CreateArchivePackagePath(ArchiveName);
+
+		auto PackageExists = [&](const FString& DirPath) {
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Creating import helper for '%s', testing package path '%s'."), *BasePath,
+				*DirPath);
+			check(!FEditorFileUtils::IsMapPackageAsset(DirPath));
+			FString DiskPath = FPackageName::LongPackageNameToFilename(DirPath);
+			UE_LOG(
+				LogAGX, Warning, TEXT("The content folder '%s' is disk directory '%s'."), *DirPath,
+				*DiskPath);
+			return FPackageName::DoesPackageExist(DirPath) ||
+				   FindObject<UPackage>(nullptr, *DirPath) != nullptr ||
+				   FPaths::DirectoryExists(DiskPath) || FPaths::FileExists(DiskPath);
+		};
+
+		int32 TryCount = 0;
+		FString DirectoryPath = BasePath;
+		FString DirectoryName = ArchiveName;
+		while (PackageExists(DirectoryPath))
+		{
+			++TryCount;
+			DirectoryPath = BasePath + TEXT("_") + FString::FromInt(TryCount);
+			DirectoryName = ArchiveName + TEXT("_") + FString::FromInt(TryCount);
+		}
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Creating import helper for '%s', decided on package path '%s' and package name "
+				 "'%s'."),
+			*BasePath, *DirectoryPath, *DirectoryName);
+		return DirectoryName;
+	}
 }
 
 FAGX_ArchiveImporterHelper::FAGX_ArchiveImporterHelper(const FString& InArchiveFilePath)
 	: ArchiveFilePath(InArchiveFilePath)
 	, ArchiveFileName(FPaths::GetBaseFilename(InArchiveFilePath))
 	, ArchiveName(MakeArchiveName(ArchiveFileName))
+	, DirectoryName(MakeDirectoryName(ArchiveName))
 {
 }
