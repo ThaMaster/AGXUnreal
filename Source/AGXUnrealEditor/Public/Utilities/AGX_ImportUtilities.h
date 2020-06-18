@@ -29,14 +29,30 @@ public:
 	 */
 	static FString CreateArchivePackagePath(FString ArchiveName, FString AssetType);
 
-	/// \todo Determine if it's enough to return the created asset, or if we must pack it in a
-	/// struct together with the package path and/or asset name.
+	/**
+	 * Pick a name for an imported asset. NativeName and ArchiveName will be sanitized and the first
+	 * non-empty of the two is returned. If both sanitize to the empty string then AssetType is
+	 * returned unchanged. Even though the name returned will be valid, it may not be unique and may
+	 * therefore not be the final asset name.
+	 * @param NativeName - The name of the restored object.
+	 * @param ArchiveName - The of the archive from which the native object was read.
+	 * @param AssetType - The type of the asset.
+	 * @return A safe name for the asset.
+	 */
+	static FString CreateAssetName(
+		const FString& NativeName, const FString& FallbackName, const FString& AssetType);
+
+	/// \todo Determine if it's enough to return the asset created in the following few
+	/// functions, or if we must pack it in a struct together with the package path and/or asset
+	/// name.
 
 	/**
-	 * Store an AGX Dynamics Trimesh imported from an AGX Dynamics archive as a UStaticMesh asset.
+	 * Store an AGX Dynamics Trimesh imported from an AGX Dynamics archive as a UStaticMesh
+	 * asset.
 	 * @param Trimesh - The imported trimesh to be saved.
 	 * @param ArchiveName - The name of the archive from which the trimesh was read.
-	 * @param FallbackName - Name to give the asset in case the trimesh doesn't have a source name.
+	 * @param FallbackName - Name to give the asset in case the trimesh doesn't have a source
+	 * name.
 	 * @return
 	 */
 	static UStaticMesh* SaveImportedStaticMeshAsset(

@@ -46,32 +46,6 @@ namespace
 		return Sanitized;
 	}
 
-	/**
-	 * Pick a name for an imported asset. NativeName and ArchiveName will be sanitized and the first
-	 * non-empty of the two is returned. If both sanitize to the empty string then AssetType is
-	 * returned unchanged. Even though the name returned will be valid, it may not be unique and may
-	 * therefore not be the final asset name.
-	 * @param NativeName - The name of the restored object.
-	 * @param ArchiveName - The of the archive from which the native object was read.
-	 * @param AssetType - The type of the asset.
-	 * @return A safe name for the asset.
-	 */
-	FString CreateAssetName(
-		const FString& NativeName, const FString& FallbackName, const FString& AssetType)
-	{
-		FString Name = SanitizeName(NativeName);
-		if (!Name.IsEmpty())
-		{
-			return Name;
-		}
-		Name = SanitizeName(FallbackName);
-		if (!Name.IsEmpty())
-		{
-			return Name;
-		}
-		return AssetType;
-	}
-
 	/// \todo Determine if it's enough to return the created asset, or if we must pack it in a
 	/// struct together with the package path and/or asset name.
 	template <typename UAsset, typename FInitAssetCallback>
@@ -79,7 +53,7 @@ namespace
 		const FString& ArchiveName, FString AssetName, const FString& FallbackName,
 		const FString& AssetType, FInitAssetCallback InitAsset)
 	{
-		AssetName = CreateAssetName(AssetName, FallbackName, AssetType);
+		AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, FallbackName, AssetType);
 		FString PackagePath =
 			FAGX_ImportUtilities::CreateArchivePackagePath(ArchiveName, AssetType);
 		GetAssetTools().CreateUniqueAssetName(PackagePath, AssetName, PackagePath, AssetName);
@@ -116,6 +90,22 @@ FString FAGX_ImportUtilities::CreateArchivePackagePath(FString ArchiveName, FStr
 		return FString();
 	}
 	return FString::Printf(TEXT("/Game/ImportedAgxArchives/%s/%ss/"), *ArchiveName, *AssetType);
+}
+
+FString FAGX_ImportUtilities::CreateAssetName(
+	const FString& NativeName, const FString& FallbackName, const FString& AssetType)
+{
+	FString Name = SanitizeName(NativeName);
+	if (!Name.IsEmpty())
+	{
+		return Name;
+	}
+	Name = SanitizeName(FallbackName);
+	if (!Name.IsEmpty())
+	{
+		return Name;
+	}
+	return AssetType;
 }
 
 UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(

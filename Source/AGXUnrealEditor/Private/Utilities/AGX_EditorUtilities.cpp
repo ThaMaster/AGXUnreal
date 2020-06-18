@@ -165,29 +165,6 @@ namespace
 	/// a suitable helper function, and sanitize once. Assume already sanitizied in all other helper
 	/// functions.
 
-	FString CreateAssetName(FString SourceName, FString ActorName, FString DefaultName)
-	{
-		SourceName = FAGX_EditorUtilities::SanitizeName(SourceName);
-		if (!SourceName.IsEmpty())
-		{
-			return SourceName;
-		}
-
-		ActorName = FAGX_EditorUtilities::SanitizeName(ActorName);
-		if (!ActorName.IsEmpty())
-		{
-			return ActorName;
-		}
-
-		DefaultName = FAGX_EditorUtilities::SanitizeName(DefaultName);
-		if (!DefaultName.IsEmpty())
-		{
-			return DefaultName;
-		}
-
-		return TEXT("ImportedAgxObject");
-	}
-
 #if 0
 	/**
 	 * A way to identify an asset within the project content.
@@ -574,6 +551,30 @@ FString FAGX_EditorUtilities::SanitizeName(const FString& Name, const TCHAR* Fal
 		return FString(Fallback);
 	}
 	return Sanitized;
+}
+
+FString FAGX_EditorUtilities::CreateAssetName(
+	FString SourceName, FString ActorName, FString DefaultName)
+{
+	SourceName = FAGX_EditorUtilities::SanitizeName(SourceName);
+	if (!SourceName.IsEmpty())
+	{
+		return SourceName;
+	}
+
+	ActorName = FAGX_EditorUtilities::SanitizeName(ActorName);
+	if (!ActorName.IsEmpty())
+	{
+		return ActorName;
+	}
+
+	DefaultName = FAGX_EditorUtilities::SanitizeName(DefaultName);
+	if (!DefaultName.IsEmpty())
+	{
+		return DefaultName;
+	}
+
+	return TEXT("ImportedAgxObject");
 }
 
 bool FAGX_EditorUtilities::FinalizeAndSavePackage(

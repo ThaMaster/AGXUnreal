@@ -132,6 +132,8 @@ public:
 	 */
 	static FString SanitizeName(const FString& Name, const TCHAR* Fallback);
 
+	static FString CreateAssetName(FString SourceName, FString ActorName, FString DefaultName);
+
 	/**
 	 * Save the given package/asset pair to disk.
 	 * @param Package The package in which the asset will be saved..
