@@ -157,6 +157,11 @@ UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsse
 
 void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)
 {
+	if (Name.IsEmpty())
+	{
+		// Not having an imported name means use whatever default name Unreal decided.
+		return;
+	}
 	if (Object.Rename(*Name, nullptr, REN_Test))
 	{
 		Object.Rename(*Name, nullptr, REN_DontCreateRedirectors);
