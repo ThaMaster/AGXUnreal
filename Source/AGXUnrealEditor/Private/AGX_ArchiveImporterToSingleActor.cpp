@@ -101,34 +101,32 @@ namespace
 
 		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
 		{
-			InstantiateConstraint1Dof(Barrier, UAGX_HingeConstraintComponent::StaticClass());
+			Helper.InstantiateHinge(Barrier, Actor);
 		}
 
 		virtual void InstantiatePrismatic(const FPrismaticBarrier& Barrier) override
 		{
-			InstantiateConstraint1Dof(Barrier, UAGX_PrismaticConstraintComponent::StaticClass());
+			Helper.InstantiatePrismatic(Barrier, Actor);
 		}
 
 		virtual void InstantiateBallJoint(const FBallJointBarrier& Barrier) override
 		{
-			InstantiateConstraint<UAGX_ConstraintComponent>(
-				Barrier, UAGX_BallConstraintComponent::StaticClass());
+			Helper.InstantiateBallJoint(Barrier, Actor);
 		}
 
 		virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& Barrier) override
 		{
-			InstantiateConstraint2Dof(Barrier, UAGX_CylindricalConstraintComponent::StaticClass());
+			Helper.InstantiateCylindricalJoint(Barrier, Actor);
 		}
 
 		virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& Barrier) override
 		{
-			InstantiateConstraint1Dof(Barrier, UAGX_DistanceConstraintComponent::StaticClass());
+			Helper.InstantiateDistanceJoint(Barrier, Actor);
 		}
 
 		virtual void InstantiateLockJoint(const FLockJointBarrier& Barrier) override
 		{
-			InstantiateConstraint<UAGX_ConstraintComponent>(
-				Barrier, UAGX_LockConstraintComponent::StaticClass());
+			Helper.InstantiateLockJoint(Barrier, Actor);
 		}
 
 		virtual void DisabledCollisionGroups(
@@ -169,72 +167,6 @@ namespace
 		virtual void InstantiateContactMaterial(const FContactMaterialBarrier& Barrier) override
 		{
 			Helper.InstantiateContactMaterial(Barrier);
-		}
-
-	private:
-		using FBodyPair = std::pair<UAGX_RigidBodyComponent*, UAGX_RigidBodyComponent*>;
-
-	private:
-		void InstantiateConstraint1Dof(const FConstraint1DOFBarrier& Barrier, UClass* Type)
-		{
-			UAGX_Constraint1DofComponent* Component =
-				InstantiateConstraint<UAGX_Constraint1DofComponent>(Barrier, Type);
-			if (Component == nullptr)
-			{
-				// No need to log here, done by InstantiateConstraint.
-				return;
-			}
-
-			FAGX_ConstraintUtilities::StoreControllers(*Component, Barrier);
-		}
-
-		void InstantiateConstraint2Dof(const FConstraint2DOFBarrier& Barrier, UClass* Type)
-		{
-			UAGX_Constraint2DofComponent* Component =
-				InstantiateConstraint<UAGX_Constraint2DofComponent>(Barrier, Type);
-			if (Component == nullptr)
-			{
-				// No need to log here, done by InstantiateConstraint.
-				return;
-			}
-
-			FAGX_ConstraintUtilities::StoreControllers(*Component, Barrier);
-		}
-
-		template <typename UConstraint>
-		UConstraint* InstantiateConstraint(const FConstraintBarrier& Barrier, UClass* Type)
-		{
-			FBodyPair Bodies = Helper.GetBodies(/*Barrier*/);
-			if (Bodies.first == nullptr)
-			{
-				UE_LOG(
-					LogAGX, Warning, TEXT("Constraint '%s' does not have a first body. Ignoring."),
-					*Barrier.GetName());
-				return nullptr;
-			}
-
-			UConstraint* Component = FAGX_EditorUtilities::CreateConstraintComponent<UConstraint>(
-				&Actor, Bodies.first, Bodies.second, Type);
-			if (Component == nullptr)
-			{
-				return nullptr;
-			}
-
-			FAGX_ConstraintUtilities::StoreFrames(Barrier, *Component);
-
-			FString Name = Barrier.GetName();
-			if (!Component->Rename(*Name, nullptr, REN_Test))
-			{
-				FString OldName = Name;
-				Name = MakeUniqueObjectName(&Actor, UConstraint::StaticClass(), *Name).ToString();
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Constraint '%s' imported with name '%s' because of name collision."),
-					*OldName, *Name);
-			}
-			Component->Rename(*Name, nullptr, REN_DontCreateRedirectors);
-
-			return Component;
 		}
 
 	private:

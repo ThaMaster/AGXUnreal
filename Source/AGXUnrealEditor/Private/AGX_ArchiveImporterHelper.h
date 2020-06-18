@@ -8,7 +8,14 @@
 #include "Misc/Guid.h"
 
 // AGXUnreal classes.
+class AAGX_BallConstraintActor;
+class AAGX_CylindricalConstraintActor;
+class AAGX_DistanceConstraintActor;
+class AAGX_HingeConstraintActor;
+class AAGX_LockConstraintActor;
+class AAGX_PrismaticConstraintActor;
 class AAGX_RigidBodyActor;
+class FConstraintBarrier;
 class UAGX_RigidBodyComponent;
 class UAGX_SphereShapeComponent;
 class UAGX_BoxShapeComponent;
@@ -16,6 +23,12 @@ class UAGX_CylinderShapeComponent;
 class UAGX_TrimeshShapeComponent;
 class UAGX_ShapeMaterialAsset;
 class UAGX_ContactMaterialAsset;
+class UAGX_HingeConstraintComponent;
+class UAGX_PrismaticConstraintComponent;
+class UAGX_BallConstraintComponent;
+class UAGX_CylindricalConstraintComponent;
+class UAGX_DistanceConstraintComponent;
+class UAGX_LockConstraintComponent;
 
 // Unreal Engine classes.
 class AActor;
@@ -29,7 +42,7 @@ struct FAGX_ArchiveImporterHelper
 {
 public:
 	/** Create a new UAGX_RigidBodyComponent in the given actor. */
-	UAGX_RigidBodyComponent* InstantiateBody(const FRigidBodyBarrier& Barrier, AActor& Actor);
+	UAGX_RigidBodyComponent* InstantiateBody(const FRigidBodyBarrier& Barrier, AActor& Owner);
 
 	/** Create a new AAGX_RigidBodyActor in the given world. */
 	AAGX_RigidBodyActor* InstantiateBody(const FRigidBodyBarrier& Barrier, UWorld& World);
@@ -50,10 +63,41 @@ public:
 
 	UAGX_ContactMaterialAsset* InstantiateContactMaterial(const FContactMaterialBarrier& Barrier);
 
+	AAGX_HingeConstraintActor* InstantiateHinge(const FHingeBarrier& Barrier);
+
+	UAGX_HingeConstraintComponent* InstantiateHinge(const FHingeBarrier& Barrier, AActor& Owner);
+
+	AAGX_PrismaticConstraintActor* InstantiatePrismatic(const FPrismaticBarrier& Barrier);
+
+	UAGX_PrismaticConstraintComponent* InstantiatePrismatic(
+		const FPrismaticBarrier& Barrier, AActor& Owner);
+
+	AAGX_BallConstraintActor* InstantiateBallJoint(const FBallJointBarrier& Barrier);
+
+	UAGX_BallConstraintComponent* InstantiateBallJoint(
+		const FBallJointBarrier& Barrier, AActor& Owner);
+
+	AAGX_CylindricalConstraintActor* InstantiateCylindricalJoint(
+		const FCylindricalJointBarrier& Barrier);
+
+	UAGX_CylindricalConstraintComponent* InstantiateCylindricalJoint(
+		const FCylindricalJointBarrier& Barrier, AActor& Owner);
+
+	AAGX_DistanceConstraintActor* InstantiateDistanceJoint(
+		const FDistanceJointBarrier& Barrier);
+
+	UAGX_DistanceConstraintComponent* InstantiateDistanceJoint(
+		const FDistanceJointBarrier& Barrier, AActor& Owner);
+
+	AAGX_LockConstraintActor* InstantiateLockJoint(const FLockJointBarrier& Barrier);
+
+	UAGX_LockConstraintComponent* InstantiateLockJoint(
+		const FLockJointBarrier& Barrier, AActor& Owner);
+
 	UAGX_RigidBodyComponent* GetBody(const FRigidBodyBarrier& Barrier);
 
 	using FBodyPair = std::pair<UAGX_RigidBodyComponent*, UAGX_RigidBodyComponent*>;
-	FBodyPair GetBodies(/*Constraint barrier here.*/);
+	FBodyPair GetBodies(const FConstraintBarrier& Barrier);
 
 	UAGX_ShapeMaterialAsset* GetShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
@@ -69,6 +113,9 @@ public:
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterialAsset*> RestoredShapeMaterials;
 };
+
+/// \todo Consider creating a FEditorBody inheriting from FAGXArchiveBody that has a Body and a
+/// Helper and simply forwards each call to the helper.
 
 /**
  * An ArchiveBody that creates nothing. Used when the Unreal object couldn't be created.

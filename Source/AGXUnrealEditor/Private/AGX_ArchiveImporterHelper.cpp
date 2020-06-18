@@ -5,6 +5,29 @@
 #include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyComponent.h"
 #include "RigidBodyBarrier.h"
+#include "Constraints/AGX_Constraint1DofComponent.h"
+#include "Constraints/AGX_Constraint2DofComponent.h"
+#include "Constraints/AGX_BallConstraintComponent.h"
+#include "Constraints/AGX_BallConstraintActor.h"
+#include "Constraints/AGX_CylindricalConstraintActor.h"
+#include "Constraints/AGX_CylindricalConstraintComponent.h"
+#include "Constraints/AGX_DistanceConstraintActor.h"
+#include "Constraints/AGX_DistanceConstraintComponent.h"
+#include "Constraints/AGX_HingeConstraintActor.h"
+#include "Constraints/AGX_HingeConstraintComponent.h"
+#include "Constraints/AGX_LockConstraintActor.h"
+#include "Constraints/AGX_LockConstraintComponent.h"
+#include "Constraints/AGX_PrismaticConstraintActor.h"
+#include "Constraints/AGX_PrismaticConstraintComponent.h"
+#include "Constraints/ConstraintBarrier.h"
+#include "Constraints/Constraint1DOFBarrier.h"
+#include "Constraints/Constraint2DOFBarrier.h"
+#include "Constraints/BallJointBarrier.h"
+#include "Constraints/CylindricalJointBarrier.h"
+#include "Constraints/DistanceJointBarrier.h"
+#include "Constraints/HingeBarrier.h"
+#include "Constraints/LockJointBarrier.h"
+#include "Constraints/PrismaticBarrier.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
@@ -13,6 +36,7 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_ConstraintUtilities.h"
 
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
@@ -215,8 +239,197 @@ UAGX_ContactMaterialAsset* FAGX_ArchiveImporterHelper::InstantiateContactMateria
 	return Asset;
 }
 
+namespace
+{
+	template <typename UComponent, typename FBarrier>
+	UComponent* InstantiateConstraint(
+		const FBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper)
+	{
+		FAGX_ArchiveImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
+		if (Bodies.first == nullptr)
+		{
+			// Not having a second body is fine, means that the first body is constrained to the
+			// world. Not having a first body is bad.
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Constraint '%s' imported from '%s' does not have a first body. Ignoring."),
+				*Barrier.GetName(), *Helper.ArchiveFilePath);
+			return nullptr;
+		}
+
+		UComponent* Component = FAGX_EditorUtilities::CreateConstraintComponent<UComponent>(
+			&Owner, Bodies.first, Bodies.second);
+		if (Component == nullptr)
+		{
+			return nullptr;
+		}
+
+		FAGX_ConstraintUtilities::StoreFrames(Barrier, *Component);
+		FAGX_ConstraintUtilities::StoreControllers(*Component, Barrier);
+		FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
+		return Component;
+	}
+
+	template <typename UActor, typename FBarrier>
+	UActor* InstantiateConstraint(const FBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper)
+	{
+		FAGX_ArchiveImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
+		if (Bodies.first == nullptr)
+		{
+			WriteImportErrorMessage(
+				TEXT("Hinge"), Barrier.GetName(), Helper.ArchiveFilePath,
+				TEXT("The constraint contains a reference to an unknown body"));
+			return nullptr;
+		}
+
+		UActor* Actor = FAGX_EditorUtilities::CreateConstraintActor<UActor>(
+			Bodies.first, Bodies.second, false, false, false);
+		/// \todo Check for nullptr;
+
+		FAGX_ConstraintUtilities::StoreFrames(Barrier, *Actor->GetConstraintComponent());
+
+		/// \todo Make StoreControllers (CopyControllersFrom) a virtual member function of
+		/// UAGX_ConstraintComponent. Then we won't need the code duplication in the functions
+		/// calling this one.
+
+		/// \todo Compute the inverse of the first body's attachment frame. That will place the
+		/// Actor at the right spot relative to that body.
+		Actor->SetActorTransform(Bodies.first->GetComponentTransform());
+
+		// This is where AttachToActor was. Now it's in the ToActorTree class.
+
+		FAGX_ImportUtilities::Rename(*Actor, Barrier.GetName());
+		/// \todo Should we call SetActorLabel here?
+
+		return Actor;
+	}
+
+	/// \todo Consider removing the 1Dof and 2Dof instantiatior functions. Does not seem to be
+	/// needed, just call the generic InstantiateConstraint immediately.
+
+	template <typename UComponent>
+	UComponent* InstantiateConstraint1Dof(
+		const FConstraint1DOFBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper)
+	{
+		return InstantiateConstraint<UComponent>(Barrier, Owner, Helper);
+	}
+
+	template <typename UActor>
+	UActor* InstantiateConstraint1Dof(
+		const FConstraint1DOFBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper)
+	{
+		UActor* Actor = InstantiateConstraint<UActor>(Barrier, Helper);
+		if (Actor == nullptr)
+		{
+			// No need to log here, done by InstantiateConstraint.
+			return nullptr;
+		}
+		FAGX_ConstraintUtilities::StoreControllers(*Actor->Get1DofComponent(), Barrier);
+		return Actor;
+	}
+
+	template <typename UConstraint>
+	UConstraint* InstantiateConstraint2Dof(
+		const FConstraint2DOFBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper)
+	{
+		return InstantiateConstraint<UConstraint>(Barrier, Owner, Helper);
+	}
+
+	template <typename UActor>
+	UActor* InstantiateConstraint2Dof(
+		const FConstraint2DOFBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper)
+	{
+		UActor* Actor = InstantiateConstraint<UActor>(Barrier, Helper);
+		if (Actor == nullptr)
+		{
+			// No need to log here, doen by InstantiateConstraint.
+			return nullptr;
+		}
+		FAGX_ConstraintUtilities::StoreControllers(*Actor->Get2DofComponent(), Barrier);
+		return Actor;
+	}
+}
+
+AAGX_HingeConstraintActor* FAGX_ArchiveImporterHelper::InstantiateHinge(
+	const FHingeBarrier& Barrier)
+{
+	return ::InstantiateConstraint1Dof<AAGX_HingeConstraintActor>(Barrier, *this);
+}
+
+UAGX_HingeConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateHinge(
+	const FHingeBarrier& Barrier, AActor& Owner)
+{
+	return ::InstantiateConstraint1Dof<UAGX_HingeConstraintComponent>(Barrier, Owner, *this);
+}
+
+AAGX_PrismaticConstraintActor* FAGX_ArchiveImporterHelper::InstantiatePrismatic(
+	const FPrismaticBarrier& Barrier)
+{
+	return ::InstantiateConstraint1Dof<AAGX_PrismaticConstraintActor>(Barrier, *this);
+}
+
+UAGX_PrismaticConstraintComponent* FAGX_ArchiveImporterHelper::InstantiatePrismatic(
+	const FPrismaticBarrier& Barrier, AActor& Owner)
+{
+	return ::InstantiateConstraint1Dof<UAGX_PrismaticConstraintComponent>(Barrier, Owner, *this);
+}
+
+AAGX_BallConstraintActor* FAGX_ArchiveImporterHelper::InstantiateBallJoint(
+		const FBallJointBarrier& Barrier)
+{
+	return ::InstantiateConstraint<AAGX_BallConstraintActor>(Barrier, *this);
+}
+
+UAGX_BallConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateBallJoint(
+	const FBallJointBarrier& Barrier, AActor& Owner)
+{
+	return InstantiateConstraint<UAGX_BallConstraintComponent>(Barrier, Owner, *this);
+}
+
+AAGX_CylindricalConstraintActor* FAGX_ArchiveImporterHelper::InstantiateCylindricalJoint(
+		const FCylindricalJointBarrier& Barrier)
+{
+	return ::InstantiateConstraint2Dof<AAGX_CylindricalConstraintActor>(Barrier, *this);
+}
+
+UAGX_CylindricalConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateCylindricalJoint(
+	const FCylindricalJointBarrier& Barrier, AActor& Owner)
+{
+	return ::InstantiateConstraint2Dof<UAGX_CylindricalConstraintComponent>(Barrier, Owner, *this);
+}
+
+AAGX_DistanceConstraintActor* FAGX_ArchiveImporterHelper::InstantiateDistanceJoint(
+		const FDistanceJointBarrier& Barrier)
+{
+	return ::InstantiateConstraint1Dof<AAGX_DistanceConstraintActor>(Barrier, *this);
+}
+
+UAGX_DistanceConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateDistanceJoint(
+	const FDistanceJointBarrier& Barrier, AActor& Owner)
+{
+	return ::InstantiateConstraint1Dof<UAGX_DistanceConstraintComponent>(Barrier, Owner, *this);
+}
+
+AAGX_LockConstraintActor* FAGX_ArchiveImporterHelper::InstantiateLockJoint(
+		const FLockJointBarrier& Barrier)
+{
+	return ::InstantiateConstraint<AAGX_LockConstraintActor>(Barrier, *this);
+}
+
+UAGX_LockConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateLockJoint(
+	const FLockJointBarrier& Barrier, AActor& Owner)
+{
+	return ::InstantiateConstraint<UAGX_LockConstraintComponent>(Barrier, Owner, *this);
+}
+
 UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(const FRigidBodyBarrier& Barrier)
 {
+	/// \todo Calles cannot differentiate between a nullptr return because the Barrier really
+	/// represents a nullptr body, and a nullptr return because the AGXUnreal representation of an
+	/// existing Barrier body couldn't be found. This may cause constraints that should be between
+	/// to bodies to be between a body and the world instead. A warning will be printed, however, so
+	/// the user will know what happened, of they read warnings.
+
 	if (!Barrier.HasNative())
 	{
 		// Not an error for constraints. Means that the other body is constrained to the world.
@@ -228,19 +441,20 @@ UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(const FRigidBodyBar
 	{
 		/// \todo Consider moving this error message to the constraint importer code.
 		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Found a constraint to body '%s', but that body hans't been restored."),
-			*Barrier.GetName());
+			LogAGX, Error,
+			TEXT("While importing from '%s': Found a constraint to body '%s', but that body hasn't "
+				 "been restored."),
+			*ArchiveFilePath, *Barrier.GetName());
 		return nullptr;
 	}
 
 	return Component;
 }
 
-FAGX_ArchiveImporterHelper::FBodyPair FAGX_ArchiveImporterHelper::GetBodies()
+FAGX_ArchiveImporterHelper::FBodyPair FAGX_ArchiveImporterHelper::GetBodies(
+	const FConstraintBarrier& Barrier)
 {
-	/// \todo Continue here.
-	return {nullptr, nullptr};
+	return {GetBody(Barrier.GetFirstBody()), GetBody(Barrier.GetSecondBody())};
 }
 
 UAGX_ShapeMaterialAsset* FAGX_ArchiveImporterHelper::GetShapeMaterial(

@@ -148,7 +148,7 @@ namespace
 	class FBlueprintInstantiator final : public FAGXArchiveInstantiator
 	{
 	public:
-		FBlueprintInstantiator(AActor* InBlueprintTemplate, FAGX_ArchiveImporterHelper& InHelper)
+		FBlueprintInstantiator(AActor& InBlueprintTemplate, FAGX_ArchiveImporterHelper& InHelper)
 			: Helper(InHelper)
 			, BlueprintTemplate(InBlueprintTemplate)
 		{
@@ -156,8 +156,7 @@ namespace
 
 		virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
 		{
-			UAGX_RigidBodyComponent* Component =
-				Helper.InstantiateBody(Barrier, *BlueprintTemplate);
+			UAGX_RigidBodyComponent* Component = Helper.InstantiateBody(Barrier, BlueprintTemplate);
 			if (Component == nullptr)
 			{
 				return new NopEditorBody();
@@ -175,34 +174,61 @@ namespace
 
 		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
 		{
-			InstantiateConstraint1Dof(Barrier, UAGX_HingeConstraintComponent::StaticClass());
+			UAGX_ConstraintComponent* Constraint =
+				Helper.InstantiateHinge(Barrier, BlueprintTemplate);
+			ClearOwningActors(Constraint);
 		}
 
 		virtual void InstantiatePrismatic(const FPrismaticBarrier& Barrier) override
 		{
-			InstantiateConstraint1Dof(Barrier, UAGX_PrismaticConstraintComponent::StaticClass());
+			UAGX_ConstraintComponent* Constraint =
+				Helper.InstantiatePrismatic(Barrier, BlueprintTemplate);
+			ClearOwningActors(Constraint);
 		}
 
 		virtual void InstantiateBallJoint(const FBallJointBarrier& Barrier) override
 		{
-			InstantiateConstraint<UAGX_ConstraintComponent>(
-				Barrier, UAGX_BallConstraintComponent::StaticClass());
+			UAGX_ConstraintComponent* Constraint =
+				Helper.InstantiateBallJoint(Barrier, BlueprintTemplate);
+			ClearOwningActors(Constraint);
 		}
 
 		virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& Barrier) override
 		{
-			InstantiateConstraint2Dof(Barrier, UAGX_CylindricalConstraintComponent::StaticClass());
+			UAGX_ConstraintComponent* Constraint =
+				Helper.InstantiateCylindricalJoint(Barrier, BlueprintTemplate);
+			ClearOwningActors(Constraint);
 		}
 
 		virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& Barrier) override
 		{
-			InstantiateConstraint1Dof(Barrier, UAGX_DistanceConstraintComponent::StaticClass());
+			UAGX_ConstraintComponent* Constraint =
+				Helper.InstantiateDistanceJoint(Barrier, BlueprintTemplate);
+			ClearOwningActors(Constraint);
 		}
 
 		virtual void InstantiateLockJoint(const FLockJointBarrier& Barrier) override
 		{
-			InstantiateConstraint<UAGX_ConstraintComponent>(
-				Barrier, UAGX_LockConstraintComponent::StaticClass());
+			UAGX_ConstraintComponent* Constraint =
+				Helper.InstantiateLockJoint(Barrier, BlueprintTemplate);
+			ClearOwningActors(Constraint);
+		}
+
+		void ClearOwningActors(UAGX_ConstraintComponent* Constraint)
+		{
+			if (Constraint == nullptr)
+			{
+				return;
+			}
+
+			// By default the BodyAttachments are created with the OwningActor set to the owner of
+			// the RigidBodyComponents passed to CreateConstraintComponent. In this case the
+			// OwningActor points to the temporary template actor and Unreal doesn't update the
+			// pointers to instead point to the actor that is created when the Blueprint is
+			// instantiated. The best we can do is to set them to nullptr and rely on the body
+			// names only.
+			Constraint->BodyAttachment1.RigidBody.OwningActor = nullptr;
+			Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
 		}
 
 		virtual void DisabledCollisionGroups(
@@ -215,9 +241,9 @@ namespace
 
 			UAGX_DisabledCollisionGroupsComponent* Component =
 				NewObject<UAGX_DisabledCollisionGroupsComponent>(
-					BlueprintTemplate, TEXT("DisabledCollisionGroupPairs"));
+					&BlueprintTemplate, TEXT("DisabledCollisionGroupPairs"));
 			Component->SetFlags(RF_Transactional);
-			BlueprintTemplate->AddInstanceComponent(Component);
+			BlueprintTemplate.AddInstanceComponent(Component);
 			Component->RegisterComponent();
 			for (const std::pair<FString, FString>& DisabledPair : DisabledPairs)
 			{
@@ -243,254 +269,11 @@ namespace
 		using FShapeMaterialPair = std::pair<UAGX_ShapeMaterialAsset*, UAGX_ShapeMaterialAsset*>;
 
 	private:
-		void InstantiateConstraint1Dof(const FConstraint1DOFBarrier& Barrier, UClass* Type)
-		{
-			UAGX_Constraint1DofComponent* Component =
-				InstantiateConstraint<UAGX_Constraint1DofComponent>(Barrier, Type);
-			if (Component == nullptr)
-			{
-				// No need to log here, done by InstantiateConstraint.
-				return;
-			}
-
-			/// \todo This is copy/paste from AGX_ArchiveImporterToActorTree. Find a sensible shared
-			/// location.
-			StoreElectricMotorController(Barrier, Component->ElectricMotorController);
-			StoreFrictionController(Barrier, Component->FrictionController);
-			StoreLockController(Barrier, Component->LockController);
-			StoreRangeController(Barrier, Component->RangeController);
-			StoreTargetSpeedController(Barrier, Component->TargetSpeedController);
-		}
-
-		void InstantiateConstraint2Dof(const FConstraint2DOFBarrier& Barrier, UClass* Type)
-		{
-			UAGX_Constraint2DofComponent* Component =
-				InstantiateConstraint<UAGX_Constraint2DofComponent>(Barrier, Type);
-			if (Component == nullptr)
-			{
-				// No need to log here, done by InstantiateConstraint.
-				return;
-			}
-
-			/// \todo This is copy/paste from AGX_ArchiveImporter. Find a sensible shared location.
-			const EAGX_Constraint2DOFFreeDOF First = EAGX_Constraint2DOFFreeDOF::FIRST;
-			const EAGX_Constraint2DOFFreeDOF Second = EAGX_Constraint2DOFFreeDOF::SECOND;
-
-			StoreElectricMotorController(Barrier, Component->ElectricMotorController1, First);
-			StoreElectricMotorController(Barrier, Component->ElectricMotorController2, Second);
-
-			StoreFrictionController(Barrier, Component->FrictionController1, First);
-			StoreFrictionController(Barrier, Component->FrictionController2, Second);
-
-			StoreLockController(Barrier, Component->LockController1, First);
-			StoreLockController(Barrier, Component->LockController2, Second);
-
-			StoreRangeController(Barrier, Component->RangeController1, First);
-			StoreRangeController(Barrier, Component->RangeController2, Second);
-
-			StoreTargetSpeedController(Barrier, Component->TargetSpeedController1, First);
-			StoreTargetSpeedController(Barrier, Component->TargetSpeedController2, Second);
-		}
-
-		template <typename UConstraint>
-		UConstraint* InstantiateConstraint(const FConstraintBarrier& Barrier, UClass* Type)
-		{
-			FBodyPair Bodies = GetBodies(Barrier);
-			if (Bodies.first == nullptr)
-			{
-				// Not having a second body is fine, means that the first body is constrained to the
-				// world. Not having a first body is bad.
-				UE_LOG(
-					LogAGX, Warning, TEXT("Constraint '%s' does not have a first body. Ignoring."),
-					*Barrier.GetName());
-				return nullptr;
-			}
-
-			UConstraint* Component = FAGX_EditorUtilities::CreateConstraintComponent<UConstraint>(
-				BlueprintTemplate, Bodies.first, Bodies.second, Type);
-			if (Component == nullptr)
-			{
-				return nullptr;
-			}
-
-			// By default the BodyAttachments are created with the OwningActor set to the owner of
-			// the RigidBodyComponents passed to CreateConstraintComponent. In this case the
-			// OwningActor points to the temporary template actor and Unreal doesn't update the
-			// pointers to instead point to the actor that is created when the Blueprint is
-			// instantiated. The best we can do is to set them to nullptr and rely on the body
-			// names only.
-			Component->BodyAttachment1.RigidBody.OwningActor = nullptr;
-			Component->BodyAttachment2.RigidBody.OwningActor = nullptr;
-
-			StoreFrames(Barrier, *Component);
-
-			FString Name = Barrier.GetName();
-			if (!Component->Rename(*Name, nullptr, REN_Test))
-			{
-				FString OldName = Name;
-				Name = MakeUniqueObjectName(
-						   BlueprintTemplate, UConstraint::StaticClass(), FName(*Name))
-						   .ToString();
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Constraint '%s' imported with name '%s' because of name collision."),
-					*OldName, *Name);
-			}
-			Component->Rename(*Name, nullptr, REN_DontCreateRedirectors);
-
-			return Component;
-		}
-
-		/// \todo There is copy/paste from AGX_ArchiveImporter. Find a sensible shared location.
-
-		void StoreElectricMotorController(
-			const FConstraint1DOFBarrier& Barrier,
-			FAGX_ConstraintElectricMotorController& Controller)
-		{
-			Controller.CopyFrom(*Barrier.GetElectricMotorController());
-		}
-
-		void StoreElectricMotorController(
-			const FConstraint2DOFBarrier& Barrier,
-			FAGX_ConstraintElectricMotorController& Controller, EAGX_Constraint2DOFFreeDOF Dof)
-		{
-			Controller.CopyFrom(*Barrier.GetElectricMotorController(Dof));
-		}
-
-		void StoreFrictionController(
-			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller)
-		{
-			Controller.CopyFrom(*Barrier.GetFrictionController());
-		}
-
-		void StoreFrictionController(
-			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
-			EAGX_Constraint2DOFFreeDOF Dof)
-		{
-			Controller.CopyFrom(*Barrier.GetFrictionController(Dof));
-		}
-
-		void StoreLockController(
-			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller)
-		{
-			Controller.CopyFrom(*Barrier.GetLockController());
-		}
-
-		void StoreLockController(
-			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
-			EAGX_Constraint2DOFFreeDOF Dof)
-		{
-			Controller.CopyFrom(*Barrier.GetLockController(Dof));
-		}
-
-		void StoreRangeController(
-			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller)
-		{
-			Controller.CopyFrom(*Barrier.GetRangeController());
-		}
-
-		void StoreRangeController(
-			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
-			EAGX_Constraint2DOFFreeDOF Dof)
-		{
-			Controller.CopyFrom(*Barrier.GetRangeController(Dof));
-		}
-
-		void StoreTargetSpeedController(
-			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller)
-		{
-			Controller.CopyFrom(*Barrier.GetTargetSpeedController());
-		}
-
-		void StoreTargetSpeedController(
-			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
-			EAGX_Constraint2DOFFreeDOF Dof)
-		{
-			Controller.CopyFrom(*Barrier.GetTargetSpeedController(Dof));
-		}
-
-		/// \todo Remove this function.
-		UAGX_RigidBodyComponent* GetBody(const FRigidBodyBarrier& Barrier)
-		{
-#if 1
-			return Helper.GetBody(Barrier);
-#else
-			if (!Barrier.HasNative())
-			{
-				// Not an error. Means constrained with world.
-				return nullptr;
-			}
-			FGuid Guid = Barrier.GetGuid();
-			UAGX_RigidBodyComponent* Component = RestoredBodies.FindRef(Guid);
-			if (Component == nullptr)
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Found a constraint to body '%s', but that body isn't known."),
-					*Barrier.GetName());
-				return nullptr;
-			}
-			return Component;
-#endif
-		}
-
-		FBodyPair GetBodies(const FConstraintBarrier& Constraint)
-		{
-			return {GetBody(Constraint.GetFirstBody()), GetBody(Constraint.GetSecondBody())};
-		}
-
-/// \todo Use FAGX_ArchiveImporterHelper::GetShapeMaterial instead, if it has been added yet.
-#if 0
-		UAGX_ShapeMaterialAsset* GetShapeMaterial(const FShapeMaterialBarrier& Barrier)
-		{
-			const FGuid Guid = Barrier.GetGuid();
-			UAGX_ShapeMaterialAsset* Asset = ShapeMaterials.FindRef(Guid);
-			if (Asset == nullptr)
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Found a ContactMaterial containing the ShapeMaterial '%s', but that "
-						 "material hasn't been restored."),
-					*Barrier.GetName());
-				return nullptr;
-			}
-			return Asset;
-		}
-#endif
-
-/// \todo Use FAGX_ArchiveImporterHelper::GetShapeMaterials instead, if it has been added get.
-#if 0
-		FShapeMaterialPair GetShapeMaterials(const FContactMaterialBarrier& ContactMaterial)
-		{
-			return {GetShapeMaterial(ContactMaterial.GetMaterial1()),
-					GetShapeMaterial(ContactMaterial.GetMaterial2())};
-		}
-#endif
-
-		/// \todo The two StoreFrame(s) member functions are copy/paste from AGX_ArchiveImporter.
-		/// Find a reasonable shared location to put them in.
-
-		void StoreFrame(
-			const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment,
-			int32 BodyIndex)
-		{
-			Attachment.FrameDefiningComponent.Clear();
-			Attachment.LocalFrameLocation = Barrier.GetLocalLocation(BodyIndex);
-			Attachment.LocalFrameRotation = Barrier.GetLocalRotation(BodyIndex);
-		}
-
-		void StoreFrames(const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component)
-		{
-			StoreFrame(Barrier, Component.BodyAttachment1, 0);
-			StoreFrame(Barrier, Component.BodyAttachment2, 1);
-		}
-
-	private:
 		FAGX_ArchiveImporterHelper Helper;
-		AActor* BlueprintTemplate;
+		AActor& BlueprintTemplate;
 	};
 
-	void AddComponentsFromArchive(AActor* ImportedActor, FAGX_ArchiveImporterHelper& Helper)
+	void AddComponentsFromArchive(AActor& ImportedActor, FAGX_ArchiveImporterHelper& Helper)
 	{
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
 		FAGXArchiveReader::Read(Helper.ArchiveFilePath, Instantiator);
@@ -504,7 +287,7 @@ namespace
 		UObject* EmptyActorAsset = EmptyActorAssetData.GetAsset();
 		AActor* RootActorContainer =
 			FActorFactoryAssetProxy::AddActorForAsset(EmptyActorAsset, false);
-		check(RootActorContainer != nullptr);
+		check(RootActorContainer != nullptr); /// \todo Test and return false instead of check?
 		RootActorContainer->SetFlags(RF_Transactional);
 		RootActorContainer->SetActorLabel(Helper.ArchiveName);
 
@@ -530,7 +313,7 @@ namespace
 		RootActorContainer->SetRootComponent(ActorRootComponent);
 #endif
 
-		AddComponentsFromArchive(RootActorContainer, Helper);
+		AddComponentsFromArchive(*RootActorContainer, Helper);
 		return RootActorContainer;
 	}
 
