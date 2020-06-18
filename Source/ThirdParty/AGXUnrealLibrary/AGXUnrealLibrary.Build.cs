@@ -41,11 +41,13 @@ public class AGXUnrealLibrary : ModuleRules
 		AddLinkLibrary("agxCore", LibSource.Agx, ManualCopy);
 		AddLinkLibrary("agxSabre", LibSource.Agx, ManualCopy);
 		AddLinkLibrary("agxTerrain", LibSource.Agx, ManualCopy);
+		AddLinkLibrary("agxCable", LibSource.Agx, ManualCopy);
 
 		AddRuntimeDependency("agxPhysics", LibSource.Agx, ManualCopy);
 		AddRuntimeDependency("agxCore", LibSource.Agx, ManualCopy);
 		AddRuntimeDependency("agxSabre", LibSource.Agx, ManualCopy);
 		AddRuntimeDependency("agxTerrain", LibSource.Agx, ManualCopy);
+		AddRuntimeDependency("agxCable", LibSource.Agx, ManualCopy);
 		AddRuntimeDependency("vdbgrid", LibSource.Agx, ManualCopy);
 		AddRuntimeDependency("colamd", LibSource.Agx, ManualCopy);
 
