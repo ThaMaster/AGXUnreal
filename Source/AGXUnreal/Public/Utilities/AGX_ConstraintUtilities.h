@@ -27,6 +27,9 @@ public:
 	static void StoreControllers(
 		UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier);
 
+	static void StoreControllers(
+		UAGX_ConstraintComponent& Component, const FConstraintBarrier& Barrier);
+
 	static void StoreElectricMotorController(
 		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller);
 
