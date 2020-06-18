@@ -54,11 +54,6 @@
 
 namespace
 {
-	IAssetTools& GetAssetTools()
-	{
-		return FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-	}
-
 	void PreCreationSetup()
 	{
 		GEditor->SelectNone(false, false);
@@ -71,8 +66,7 @@ namespace
 		FString ParentPackagePath =
 			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.ArchiveName, TEXT("Blueprint"));
 		FString ParentAssetName = Helper.ArchiveFileName; /// \todo Why is this never used?
-		GetAssetTools().CreateUniqueAssetName(
-			ParentPackagePath, ParentAssetName, ParentPackagePath, ParentAssetName);
+		FAGX_EditorUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
 		UPackage* ParentPackage = CreatePackage(nullptr, *ParentPackagePath);
 		FString Path = FPaths::GetPath(ParentPackage->GetName());
 

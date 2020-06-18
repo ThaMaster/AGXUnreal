@@ -134,6 +134,8 @@ public:
 
 	static FString CreateAssetName(FString SourceName, FString ActorName, FString DefaultName);
 
+	static void MakePackageAndAssetNameUnique(FString& PackageName, FString& AssetName);
+
 	/**
 	 * Save the given package/asset pair to disk.
 	 * @param Package The package in which the asset will be saved..

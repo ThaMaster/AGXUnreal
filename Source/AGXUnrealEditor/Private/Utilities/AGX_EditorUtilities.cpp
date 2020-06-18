@@ -577,6 +577,13 @@ FString FAGX_EditorUtilities::CreateAssetName(
 	return TEXT("ImportedAgxObject");
 }
 
+void FAGX_EditorUtilities::MakePackageAndAssetNameUnique(FString& PackageName, FString& AssetName)
+{
+	IAssetTools& AssetTools =
+		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	AssetTools.CreateUniqueAssetName(PackageName, AssetName, PackageName, AssetName);
+}
+
 bool FAGX_EditorUtilities::FinalizeAndSavePackage(
 	UPackage* Package, UObject* Asset, const FString& PackagePath, const FString& AssetName)
 {

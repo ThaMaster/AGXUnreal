@@ -17,11 +17,6 @@
 
 namespace
 {
-	IAssetTools& GetAssetTools()
-	{
-		return FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-	}
-
 	/**
 	 * Remove characters that are unsafe to use in object names, content
 	 * references or file names. Unsupported characters are dropped, so check the
@@ -56,7 +51,7 @@ namespace
 		AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, FallbackName, AssetType);
 		FString PackagePath =
 			FAGX_ImportUtilities::CreateArchivePackagePath(ArchiveName, AssetType);
-		GetAssetTools().CreateUniqueAssetName(PackagePath, AssetName, PackagePath, AssetName);
+		FAGX_EditorUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
 #if 0
 		/// \todo Unclear if this is needed or not. Leaving it out for now but
