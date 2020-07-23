@@ -267,7 +267,7 @@ namespace
 		}
 
 		FAGX_ConstraintUtilities::StoreFrames(Barrier, *Component);
-		FAGX_ConstraintUtilities::StoreControllers(*Component, Barrier);
+		FAGX_ConstraintUtilities::CopyControllersFrom(*Component, Barrier);
 		FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
 		return Component;
 	}
@@ -290,9 +290,8 @@ namespace
 
 		FAGX_ConstraintUtilities::StoreFrames(Barrier, *Actor->GetConstraintComponent());
 
-		/// \todo Make StoreControllers (CopyControllersFrom) a virtual member function of
-		/// UAGX_ConstraintComponent. Then we won't need the code duplication in the functions
-		/// calling this one.
+		/// \todo Make CopyControllersFrom a virtual member function of UAGX_ConstraintComponent.
+		/// Then we won't need the code duplication in the functions calling this one.
 
 		/// \todo Compute the inverse of the first body's attachment frame. That will place the
 		/// Actor at the right spot relative to that body.
@@ -326,7 +325,7 @@ namespace
 			// No need to log here, done by InstantiateConstraint.
 			return nullptr;
 		}
-		FAGX_ConstraintUtilities::StoreControllers(*Actor->Get1DofComponent(), Barrier);
+		FAGX_ConstraintUtilities::CopyControllersFrom(*Actor->Get1DofComponent(), Barrier);
 		return Actor;
 	}
 
@@ -347,7 +346,7 @@ namespace
 			// No need to log here, done by InstantiateConstraint.
 			return nullptr;
 		}
-		FAGX_ConstraintUtilities::StoreControllers(*Actor->Get2DofComponent(), Barrier);
+		FAGX_ConstraintUtilities::CopyControllersFrom(*Actor->Get2DofComponent(), Barrier);
 		return Actor;
 	}
 }

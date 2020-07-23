@@ -13,7 +13,7 @@
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
-void FAGX_ConstraintUtilities::StoreControllers(
+void FAGX_ConstraintUtilities::CopyControllersFrom(
 	UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier)
 {
 	StoreElectricMotorController(Barrier, Component.ElectricMotorController);
@@ -23,7 +23,7 @@ void FAGX_ConstraintUtilities::StoreControllers(
 	StoreTargetSpeedController(Barrier, Component.TargetSpeedController);
 }
 
-void FAGX_ConstraintUtilities::StoreControllers(
+void FAGX_ConstraintUtilities::CopyControllersFrom(
 	UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier)
 {
 	const EAGX_Constraint2DOFFreeDOF First = EAGX_Constraint2DOFFreeDOF::FIRST;
@@ -45,12 +45,12 @@ void FAGX_ConstraintUtilities::StoreControllers(
 	StoreTargetSpeedController(Barrier, Component.TargetSpeedController2, Second);
 }
 
-void FAGX_ConstraintUtilities::StoreControllers(
+void FAGX_ConstraintUtilities::CopyControllersFrom(
 	UAGX_ConstraintComponent& Component, const FConstraintBarrier& Barrier)
 {
 	// This exists only to provide a complete overload resolution set for the constraint types. Only
 	// 1Dof and 2Dof constraints, the other overloads, have any controllers to store. Make sure you
-	// end up in the correct overload of StoreControllers for the type of constraint you actually
+	// end up in the correct overload of CopyControllersFrom for the type of constraint you actually
 	// have.
 	/// \todo Consider making this a virtual member function instead, to avoid ending up in this
 	/// empty version unintentionally.
