@@ -27,7 +27,7 @@ public:
 	 * @param Component The AGXUnreal constraint to copy properties to.
 	 * @param Barrier The AGX Dynamics constraint to copy properties from.
 	 */
-	static void StoreControllers(
+	static void CopyControllersFrom(
 		UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier);
 
 	/**
@@ -36,7 +36,7 @@ public:
 	 * @param Component The AGXUnreal constraint to copy properties to.
 	 * @param Barrier The AGX Dynamics constraint to copy properties from.
 	 */
-	static void StoreControllers(
+	static void CopyControllersFrom(
 		UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier);
 
 	/**
@@ -47,7 +47,7 @@ public:
 	 * @param Component
 	 * @param Barrier
 	 */
-	static void StoreControllers(
+	static void CopyControllersFrom(
 		UAGX_ConstraintComponent& Component, const FConstraintBarrier& Barrier);
 
 	static void StoreElectricMotorController(
