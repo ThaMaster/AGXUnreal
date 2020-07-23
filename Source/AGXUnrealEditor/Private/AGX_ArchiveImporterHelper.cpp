@@ -344,7 +344,7 @@ namespace
 		UActor* Actor = InstantiateConstraint<UActor>(Barrier, Helper);
 		if (Actor == nullptr)
 		{
-			// No need to log here, doen by InstantiateConstraint.
+			// No need to log here, done by InstantiateConstraint.
 			return nullptr;
 		}
 		FAGX_ConstraintUtilities::StoreControllers(*Actor->Get2DofComponent(), Barrier);
