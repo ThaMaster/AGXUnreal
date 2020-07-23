@@ -67,6 +67,7 @@ void UAGX_TrimeshShapeComponent::UpdateNativeProperties()
 
 void UAGX_TrimeshShapeComponent::CopyFrom(const FTrimeshShapeBarrier& Barrier)
 {
+	/// \todo Where is all the triangle data copied?
 	Super::CopyFrom(Barrier);
 }
 

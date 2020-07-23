@@ -13,7 +13,7 @@
  *
  */
 UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_BoxShapeComponent : public UAGX_ShapeComponent
+class AGXUNREAL_API UAGX_BoxShapeComponent final : public UAGX_ShapeComponent
 {
 	GENERATED_BODY()
 
@@ -33,6 +33,11 @@ public:
 
 	virtual void UpdateNativeProperties() override;
 
+	/**
+	 * Copy properties from the given AGX Dynamics box into this component.
+	 * Will also copy properties inherited from UAGX_ShapeComponent.
+	 * @param Barrier The AGX Dynamics box to copy from.
+	 */
 	void CopyFrom(const FBoxShapeBarrier& Barrier);
 
 protected:

@@ -36,8 +36,10 @@ public:
 	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 
-	/** Write transformations from AGX Dynamics to the Actor's Root Component. Only allowed when the
-	 * owning actor has a single AGX Rigid Body Component.*/
+	/**
+	 * Write transformations from AGX Dynamics to the Actor's Root Component. Only allowed when the
+	 * owning actor has a single AGX Rigid Body Component.
+	 */
 	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
 	uint8 bTransformRootComponent : 1;
 
@@ -56,6 +58,14 @@ public:
 	 */
 	void WritePropertiesToNative();
 
+	/**
+	 * Copy direct rigid body properties from the barrier to this component.
+	 *
+	 * This includes things like mass, velocity, and motion control. Does not copy sub-component
+	 * data such as shapes or materials.
+	 *
+	 * @param Barrier The AGX Dynamics RigidBody to copy from.
+	 */
 	void CopyFrom(const FRigidBodyBarrier& Barrier);
 
 	static TArray<UAGX_RigidBodyComponent*> GetFromActor(const AActor* Actor);

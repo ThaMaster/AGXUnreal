@@ -108,6 +108,12 @@ protected:
 
 	virtual void ReleaseNative() PURE_VIRTUAL(UAGX_ShapeComponent::ReleaseNative, );
 
+	/**
+	 * Copy properties from the given AGX Dynamics shape into this component.
+	 * Does not copy referenced attributes such as material properties.
+	 * Called from each subclass' type-specific CopyFrom.
+	 * @param Barrier The AGX Dynamics shape to copy from.
+	 */
 	void CopyFrom(const FShapeBarrier& Barrier);
 
 	/**

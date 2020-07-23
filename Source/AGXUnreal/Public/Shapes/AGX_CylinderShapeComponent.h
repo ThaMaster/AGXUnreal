@@ -13,7 +13,7 @@
  *
  */
 UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_CylinderShapeComponent : public UAGX_ShapeComponent
+class AGXUNREAL_API UAGX_CylinderShapeComponent final : public UAGX_ShapeComponent
 {
 	GENERATED_BODY()
 
@@ -35,6 +35,11 @@ public:
 
 	virtual void UpdateNativeProperties() override;
 
+	/**
+	 * Copy properties from the given AGX Dynamics cylinder into this component.
+	 * Will also copy properties inherited from UAGX_ShapeComponent.
+	 * @param Barrier The AGX Dynamics cylinder to copy from.
+	 */
 	void CopyFrom(const FCylinderShapeBarrier& Barrier);
 
 protected:

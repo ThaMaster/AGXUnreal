@@ -28,6 +28,11 @@ public:
 
 	virtual void UpdateNativeProperties() override;
 
+	/**
+	 * Copy properties from the given AGX Dynamics sphere into this component.
+	 * Will also copy properties inherited from UAGX_ShapeComponent.
+	 * @param Barrier The AGX Dynamics sphere to copy from.
+	 */
 	void CopyFrom(const FSphereShapeBarrier& Barrier);
 
 protected:
