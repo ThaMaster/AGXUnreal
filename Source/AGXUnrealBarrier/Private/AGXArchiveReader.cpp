@@ -33,9 +33,7 @@
 
 namespace
 {
-	void InstantiateShapes(
-		const agxCollide::ShapeRefVector& Shapes,
-		FAGXArchiveBody& ArchiveBody)
+	void InstantiateShapes(const agxCollide::ShapeRefVector& Shapes, FAGXArchiveBody& ArchiveBody)
 	{
 		for (const agxCollide::ShapeRef& Shape : Shapes)
 		{
@@ -51,8 +49,7 @@ namespace
 				case agxCollide::Shape::BOX:
 				{
 					agxCollide::Box* Box {Shape->as<agxCollide::Box>()};
-					ArchiveBody.InstantiateBox(
-						AGXBarrierFactories::CreateBoxShapeBarrier(Box));
+					ArchiveBody.InstantiateBox(AGXBarrierFactories::CreateBoxShapeBarrier(Box));
 					break;
 				}
 				case agxCollide::Shape::CYLINDER:
@@ -92,7 +89,7 @@ namespace
 	 * Get all materials and create one shape material asset for each. Each agx::Material have a
 	 * unique name. Several agx::Geometries may use the same agx::Material.
 	 */
-	void RestoreMaterials(agxSDK::Simulation& Simulation, FAGXArchiveInstantiator& Instantiator)
+	void ReadMaterials(agxSDK::Simulation& Simulation, FAGXArchiveInstantiator& Instantiator)
 	{
 		const agxSDK::StringMaterialRefTable& MaterialsTable =
 			Simulation.getMaterialManager()->getMaterials();
@@ -108,13 +105,12 @@ namespace
 		for (auto& It : ContactMaterialsTable)
 		{
 			agx::ContactMaterial* ContMat = It.second.get();
-
 			Instantiator.InstantiateContactMaterial(
 				AGXBarrierFactories::CreateContactMaterialBarrier(ContMat));
 		}
 	}
 
-	void RestoreRigidBodies(
+	void ReadRigidBodies(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FAGXArchiveInstantiator& Instantiator)
 	{
@@ -143,21 +139,82 @@ namespace
 			const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
 			for (const agxCollide::GeometryRef& Geometry : Geometries)
 			{
-#if 0
-				FString ShapeMaterialAsset;
-				if (agx::Material* AgxMaterial = Geometry->getMaterial())
-				{
-					check(ShapeMaterialAssets.Find(AgxMaterial));
-					ShapeMaterialAsset = ShapeMaterialAssets[AgxMaterial];
-				}
-#endif
 				::InstantiateShapes(Geometry->getShapes(), *ArchiveBody);
 			}
 		}
 	}
 
-	void RestoreConstraints()
+	void ReadConstraints(
+		agxSDK::Simulation& Simulation, const FString& Filename,
+		FAGXArchiveInstantiator& Instantiator)
 	{
+		agx::ConstraintRefSetVector& Constraints = Simulation.getConstraints();
+		if (Constraints.size() > size_t(std::numeric_limits<int32>::max()))
+		{
+			UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many constraints."), *Filename);
+			return; /// \todo Should we bail, or restore as many constraints as we can?
+			/// \todo Should we do as much error checking as possible first, before
+			/// creating any Editor instances?
+		}
+
+		for (agx::ConstraintRef& Constraint : Constraints)
+		{
+			if (agx::Hinge* Hinge = Constraint->asSafe<agx::Hinge>())
+			{
+				Instantiator.InstantiateHinge(AGXBarrierFactories::CreateHingeBarrier(Hinge));
+			}
+			else if (agx::Prismatic* Prismatic = Constraint->asSafe<agx::Prismatic>())
+			{
+				Instantiator.InstantiatePrismatic(
+					AGXBarrierFactories::CreatePrismaticBarrier(Prismatic));
+			}
+			else if (agx::BallJoint* BallJoint = Constraint->asSafe<agx::BallJoint>())
+			{
+				Instantiator.InstantiateBallJoint(
+					AGXBarrierFactories::CreateBallJointBarrier(BallJoint));
+			}
+			else if (
+				agx::CylindricalJoint* CylindricalJoint =
+					Constraint->asSafe<agx::CylindricalJoint>())
+			{
+				Instantiator.InstantiateCylindricalJoint(
+					AGXBarrierFactories::CreateCylindricalJointBarrier(CylindricalJoint));
+			}
+			else if (agx::DistanceJoint* DistanceJoint = Constraint->asSafe<agx::DistanceJoint>())
+			{
+				Instantiator.InstantiateDistanceJoint(
+					AGXBarrierFactories::CreateDistanceJointBarrier(DistanceJoint));
+			}
+			else if (agx::LockJoint* LockJoint = Constraint->asSafe<agx::LockJoint>())
+			{
+				Instantiator.InstantiateLockJoint(
+					AGXBarrierFactories::CreateLockJointBarrier(LockJoint));
+			}
+			else
+			{
+				UE_LOG(
+					LogAGX, Log, TEXT("Constraint '%s' has unupported type."),
+					*Convert(Constraint->getName()));
+			}
+		}
+	}
+
+	void ReadCollisionGroups(
+		agxSDK::Simulation& Simulation, FAGXArchiveInstantiator& Instantiator)
+	{
+		agxCollide::CollisionGroupManager* CollisionGroupManager =
+			Simulation.getSpace()->getCollisionGroupManager();
+		agxCollide::CollisionGroupManager::SymmetricCollisionGroupVector DisabledGroupPairs =
+			CollisionGroupManager->getDisabledCollisionGroupPairs();
+		TArray<std::pair<FString, FString>> DisabledGroups;
+		DisabledGroups.Reserve(static_cast<int32>(DisabledGroupPairs.size()));
+		for (agx::SymmetricPair<agx::Physics::CollisionGroupPtr>& Pair : DisabledGroupPairs)
+		{
+			FString Group1 = Convert(Pair.first->getName());
+			FString Group2 = Convert(Pair.second->getName());
+			DisabledGroups.Add({Group1, Group2});
+		}
+		Instantiator.DisabledCollisionGroups(DisabledGroups);
 	}
 }
 
@@ -171,70 +228,8 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 		return;
 	}
 
-	::RestoreMaterials(*Simulation, Instantiator);
-
-	::RestoreRigidBodies(*Simulation, Filename, Instantiator);
-
-	agx::ConstraintRefSetVector& Constraints = Simulation->getConstraints();
-	if (Constraints.size() > size_t(std::numeric_limits<int32>::max()))
-	{
-		UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many constraints."), *Filename);
-		return; /// \todo Should we bail, or restore as many constraints as we can?
-		/// \todo Should we do as much error checking as possible first, before
-		/// creating any Editor instances?
-	}
-
-	for (agx::ConstraintRef& Constraint : Constraints)
-	{
-		if (agx::Hinge* Hinge = Constraint->asSafe<agx::Hinge>())
-		{
-			Instantiator.InstantiateHinge(AGXBarrierFactories::CreateHingeBarrier(Hinge));
-		}
-		else if (agx::Prismatic* Prismatic = Constraint->asSafe<agx::Prismatic>())
-		{
-			Instantiator.InstantiatePrismatic(
-				AGXBarrierFactories::CreatePrismaticBarrier(Prismatic));
-		}
-		else if (agx::BallJoint* BallJoint = Constraint->asSafe<agx::BallJoint>())
-		{
-			Instantiator.InstantiateBallJoint(
-				AGXBarrierFactories::CreateBallJointBarrier(BallJoint));
-		}
-		else if (
-			agx::CylindricalJoint* CylindricalJoint = Constraint->asSafe<agx::CylindricalJoint>())
-		{
-			Instantiator.InstantiateCylindricalJoint(
-				AGXBarrierFactories::CreateCylindricalJointBarrier(CylindricalJoint));
-		}
-		else if (agx::DistanceJoint* DistanceJoint = Constraint->asSafe<agx::DistanceJoint>())
-		{
-			Instantiator.InstantiateDistanceJoint(
-				AGXBarrierFactories::CreateDistanceJointBarrier(DistanceJoint));
-		}
-		else if (agx::LockJoint* LockJoint = Constraint->asSafe<agx::LockJoint>())
-		{
-			Instantiator.InstantiateLockJoint(
-				AGXBarrierFactories::CreateLockJointBarrier(LockJoint));
-		}
-		else
-		{
-			UE_LOG(
-				LogAGX, Log, TEXT("Constraint '%s' has unupported type."),
-				*Convert(Constraint->getName()));
-		}
-	}
-
-	agxCollide::CollisionGroupManager* CollisionGroupManager =
-		Simulation->getSpace()->getCollisionGroupManager();
-	agxCollide::CollisionGroupManager::SymmetricCollisionGroupVector DisabledGroupPairs =
-		CollisionGroupManager->getDisabledCollisionGroupPairs();
-	TArray<std::pair<FString, FString>> DisabledGroups;
-	DisabledGroups.Reserve(static_cast<int32>(DisabledGroupPairs.size()));
-	for (agx::SymmetricPair<agx::Physics::CollisionGroupPtr>& Pair : DisabledGroupPairs)
-	{
-		FString Group1 = Convert(Pair.first->getName());
-		FString Group2 = Convert(Pair.second->getName());
-		DisabledGroups.Add({Group1, Group2});
-	}
-	Instantiator.DisabledCollisionGroups(DisabledGroups);
+	::ReadMaterials(*Simulation, Instantiator);
+	::ReadRigidBodies(*Simulation, Filename, Instantiator);
+	::ReadConstraints(*Simulation, Filename, Instantiator);
+	::ReadCollisionGroups(*Simulation, Instantiator);
 }
