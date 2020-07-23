@@ -160,92 +160,6 @@ UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(
 
 namespace
 {
-	/// \todo There is probably a name sanitizer already in Unreal. Find it.
-	/// \todo The sanitizers are called multiple times on the same string. Find a root function, or
-	/// a suitable helper function, and sanitize once. Assume already sanitizied in all other helper
-	/// functions.
-
-#if 0
-	/**
-	 * A way to identify an asset within the project content.
-	 *
-	 * Contains the full package path to the asset as well as the asset name.
-	 * ex:
-	 * 	PackagePath: "/Game/ImportedAGXMeshes/ImportedAGXMesh4"
-	 * 	AssetName: "ImportedAGXMesh4"
-	 */
-	struct FAssetId
-	{
-		FString PackagePath;
-		FString AssetName;
-
-		bool IsValid() const
-		{
-			return !PackagePath.IsEmpty() && !AssetName.IsEmpty();
-		}
-	};
-#endif
-
-/// \todo A version of this has been implemented in FAGX_ImportUtilities. Determine how this one
-/// should be changed to be more general, if it's needed at all.
-#if 0
-	/**
-	 * Convert a raw mesh into a StaticMesh asset on disk.
-	 *
-	 * The mesh asset is stored to /Game/ImportedAgxArchives/{ArchiveName}/StaticMeshes/{MeshName}.
-	 * The given MeshName will only be used as-is if it doesn't collide with an already existing
-	 * asset. The final name and the full asset path is returned.
-	 *
-	 * @param RawMesh - The mesh to store as an asset.
-	 * @param ArchiveName - The folder within '/Game/ImportedAGXMeshes/' in which the asset
-	 * should be stored.
-	 * @param MeshName - The base name to give the asset. A unique name based on the base name will
-	 * become the final name.
-	 * @return The path to the created package and the final name of the asset.
-	 */
-	UStaticMesh* CreateImportedTrimeshAsset(
-		FRawMesh& RawMesh, const FString& AssetFolderName, const FString& MeshName)
-	{
-		// Find actual package path and a unique asset name.
-		FString PackagePath =
-			FString::Printf(TEXT("/Game/ImportedAGXMeshes/%s/"), *AssetFolderName);
-		FString AssetName = MeshName;
-		IAssetTools& AssetTools =
-			FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-		AssetTools.CreateUniqueAssetName(PackagePath, AssetName, PackagePath, AssetName);
-
-		// Create the package that will hold our mesh asset.
-		UPackage* Package = CreatePackage(nullptr, *PackagePath);
-#if 0
-		/// \todo Unclear if this is needed or not. Leaving it out for now but
-		/// test with it restored if there are problems.
-		Package->FullyLoad();
-#endif
-
-		// Create the actual mesh object and fill it with our mesh data.
-		UStaticMesh* StaticMesh =
-			NewObject<UStaticMesh>(Package, FName(*AssetName), RF_Public | RF_Standalone);
-		FAGX_EditorUtilities::AddRawMeshToStaticMesh(RawMesh, StaticMesh);
-
-		StaticMesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
-
-		bool Saved = FAGX_EditorUtilities::FinalizeAndSavePackage(
-			Package, StaticMesh, PackagePath, AssetName);
-		if (!Saved)
-		{
-			/// \todo What should we do here, other than giving up?
-			// No need to log, should have been done by FinalizeAndSavePackage.
-			return nullptr; /// \todo Don't return nullptr, return an empty UStaticMesh.
-		}
-
-		UE_LOG(
-			LogAGX, Log, TEXT("Trimesh '%s' successfully stored to package '%s', asset '%s'"),
-			*MeshName, *PackagePath, *AssetName);
-
-		return StaticMesh;
-	}
-#endif
-
 	FRawMesh CreateRawMeshFromCollisionData(const FTrimeshShapeBarrier& Trimesh)
 	{
 		// What we have:
@@ -504,19 +418,10 @@ namespace
 	}
 }
 
-/// \todo A variant of this has been implemented in FAGX_ImportUtilities. Determine how this one
-/// should be different, if it's even needed.
-#if 0
-UStaticMesh* FAGX_EditorUtilities::CreateStaticMeshAsset(
-		const FTrimeshShapeBarrier& Trimesh, const FString& AssetFolderName,
-		const FString& FallbackName)
-{
-	FRawMesh RawMesh = CreateRawMeshFromTrimesh(Trimesh);
-	FString TrimeshName =
-			CreateAssetName(Trimesh.GetSourceName(), FallbackName, TEXT("ImportedAgxMesh"));
-	return CreateTrimeshAsset(RawMesh, AssetFolderName, TrimeshName);
-}
-#endif
+/// \todo There is probably a name sanitizer already in Unreal. Find it.
+/// \todo The sanitizers are called multiple times on the same string. Find a root function, or
+/// a suitable helper function, and sanitize once. Assume already sanitizied in all other helper
+/// functions.
 
 FString FAGX_EditorUtilities::SanitizeName(const FString& Name)
 {
@@ -805,59 +710,6 @@ FString FAGX_EditorUtilities::CreateShapeMaterialAsset(
 	return PackagePath;
 }
 
-#if 0
-FString FAGX_EditorUtilities::CreateContactMaterialAsset(
-	const FString& DirName, const FContactMaterialBarrier& ContactMaterial,
-	const FString& Material1, const FString& Material2)
-{
-	UAGX_ShapeMaterialAsset* Material1Asset = GetAssetByPath<UAGX_ShapeMaterialAsset>(Material1);
-	UAGX_ShapeMaterialAsset* Material2Asset = GetAssetByPath<UAGX_ShapeMaterialAsset>(Material2);
-
-	if (Material1Asset == nullptr || Material2Asset == nullptr)
-	{
-		// Logging handled by GetAssetByPath().
-		return FString("");
-	}
-
-	const FString ContMatName = TEXT("CM") + Material1Asset->GetName() + Material2Asset->GetName();
-
-	FString AssetName = CreateAssetName(ContMatName, DirName, TEXT("ImportedAGXContactMaterial"));
-
-	// Find actual package path and a unique asset name.
-	FString PackagePath = FString::Printf(TEXT("/Game/ImportedAGXContactMaterials/%s/"), *DirName);
-	IAssetTools& AssetTools =
-		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-	AssetTools.CreateUniqueAssetName(PackagePath, AssetName, PackagePath, AssetName);
-
-	// Create the package that will hold our contact material asset.
-	UPackage* Package = CreatePackage(nullptr, *PackagePath);
-#if 0
-		/// \todo Unclear if this is needed or not. Leaving it out for now but
-		/// test with it restored if there are problems.
-		Package->FullyLoad();
-#endif
-
-	UAGX_ContactMaterialAsset* ContactMaterialAsset =
-		NewObject<UAGX_ContactMaterialAsset>(Package, FName(*AssetName), RF_Public | RF_Standalone);
-
-	// Copy contact material properties to the new contact material asset.
-	ContactMaterialAsset->CopyFrom(&ContactMaterial);
-
-	// Set Material1 and Material2 references.
-	ContactMaterialAsset->Material1 = Material1Asset;
-	ContactMaterialAsset->Material2 = Material2Asset;
-
-	bool Saved = FinalizeAndSavePackage(Package, ContactMaterialAsset, PackagePath, AssetName);
-	if (!Saved)
-	{
-		// Return empty string if asset was not created properly.
-		return FString();
-	}
-
-	return PackagePath;
-}
-#endif
-
 AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 	UClass* ConstraintType, UAGX_RigidBodyComponent* RigidBody1,
 	UAGX_RigidBodyComponent* RigidBody2, bool bInPlayingWorldIfAvailable, bool bSelect,
@@ -1021,12 +873,12 @@ void FAGX_EditorUtilities::ShowNotification(const FText& Text)
 
 void FAGX_EditorUtilities::ShowDialogBox(const FText& Text)
 {
-#if 0
-	// Example of how an FText can be created.
-	FText DialogText = FText::Format(LOCTEXT("PluginButtonDialogText", "{0} was recompiled at {1}.\n{2}"),
-		FText::FromString(TEXT(__FILE__)), FText::FromString(TEXT(__TIME__)),
-		FText::FromString(TEXT("Create body before root component.")));
-#endif
+	// Example of how an FText can be created:
+	// FText DialogText = FText::Format(
+	// 	LOCTEXT("PluginButtonDialogText", "{0} was recompiled at {1}.\n{2}"),
+	// 	FText::FromString(TEXT(__FILE__)), FText::FromString(TEXT(__TIME__)),
+	// 	FText::FromString(TEXT("Create body before root component.")));
+
 	FMessageDialog::Open(EAppMsgType::Ok, Text);
 }
 
