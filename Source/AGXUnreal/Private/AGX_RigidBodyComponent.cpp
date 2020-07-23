@@ -142,6 +142,7 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 	AngularVelocity = Barrier.GetAngularVelocity();
 	MotionControl = Barrier.GetMotionControl();
 
+	/// \todo Should it always be SetWorld... here, or should we do SetRelative in some cases?
 	SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
 }
 
