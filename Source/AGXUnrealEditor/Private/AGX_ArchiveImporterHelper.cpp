@@ -92,6 +92,7 @@ AAGX_RigidBodyActor* FAGX_ArchiveImporterHelper::InstantiateBody(
 		return nullptr;
 	}
 	FAGX_ImportUtilities::Rename(*NewActor, Barrier.GetName());
+	NewActor->SetActorLabel(NewActor->GetName());
 	NewActor->RigidBodyComponent->CopyFrom(Barrier);
 	RestoredBodies.Add(Barrier.GetGuid(), NewActor->RigidBodyComponent);
 	/// \todo Do we need to do any additional configuration here?
