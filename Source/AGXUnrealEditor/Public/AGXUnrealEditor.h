@@ -18,6 +18,7 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
+	/// \todo Should this really return a reference to a shared pointer, or would a TAGX_TopMenu* be better?
 	const TSharedPtr<class FAGX_TopMenu>& GetAgxTopMenu() const;
 
 private:
