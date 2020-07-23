@@ -134,6 +134,18 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	InitializeMotionControl();
 }
 
+void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
+{
+	Mass = Barrier.GetMass();
+	/// \todo Add call to GetInertiaTensorDiagonal here, when it has been implemented.
+	Velocity = Barrier.GetVelocity();
+	AngularVelocity = Barrier.GetAngularVelocity();
+	MotionControl = Barrier.GetMotionControl();
+
+	/// \todo Should it always be SetWorld... here, or should we do SetRelative in some cases?
+	SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
+}
+
 void UAGX_RigidBodyComponent::InitializeMotionControl()
 {
 	NativeBarrier.SetMotionControl(MotionControl);

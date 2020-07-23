@@ -185,6 +185,26 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 	ReleaseNative();
 }
 
+void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
+{
+	bCanCollide = Barrier.GetEnableCollisions();
+
+	FVector Position;
+	FQuat Rotation;
+	std::tie(Position, Rotation) = Barrier.GetLocalPositionAndRotation();
+	SetRelativeLocationAndRotation(Position, Rotation);
+
+	TArray<FName> NewCollisionGroups = Barrier.GetCollisionGroups();
+	CollisionGroups.Empty(NewCollisionGroups.Num());
+	for (const FName& Group : NewCollisionGroups)
+	{
+		AddCollisionGroup(Group);
+	}
+
+	/// \todo Should shape material be handled here? If so, how? We don't have access to the
+	/// <Guid, Object> restore tables from here.
+}
+
 void UAGX_ShapeComponent::UpdateNativeGlobalTransform()
 {
 	check(HasNative());

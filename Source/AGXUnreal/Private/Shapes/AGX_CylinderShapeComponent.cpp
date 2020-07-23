@@ -62,6 +62,13 @@ void UAGX_CylinderShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetRadius(Radius * GetComponentScale().X);
 }
 
+void UAGX_CylinderShapeComponent::CopyFrom(const FCylinderShapeBarrier& Barrier)
+{
+	Super::CopyFrom(Barrier);
+	Height = Barrier.GetHeight();
+	Radius = Barrier.GetRadius();
+}
+
 void UAGX_CylinderShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 {
 	const uint32 NumCircleSegments = 32;

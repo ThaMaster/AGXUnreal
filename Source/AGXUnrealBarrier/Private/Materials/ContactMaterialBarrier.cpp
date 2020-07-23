@@ -1,8 +1,9 @@
 #include "Materials/ContactMaterialBarrier.h"
 
-#include "Materials/ShapeMaterialBarrier.h"
-
+// AGXUnreal includes.
 #include "AGXRefs.h"
+#include "AGXBarrierFactories.h"
+#include "Materials/ShapeMaterialBarrier.h"
 
 #include <Misc/AssertionMacros.h>
 
@@ -369,4 +370,34 @@ bool FContactMaterialBarrier::GetUseContactAreaApproach() const
 {
 	check(HasNative());
 	return NativeRef->Native->getUseContactAreaApproach();
+}
+
+namespace
+{
+	agx::Material* GetMaterial(agx::ContactMaterial& Native, int Index)
+	{
+		check(Index == 1 || Index == 2);
+		const agx::Material* Material = Index == 1 ? Native.getMaterial1() : Native.getMaterial2();
+		// const_cast because there is no way to get a non-const Material from a ContactMaterial.
+		return const_cast<agx::Material*>(Material);
+	}
+
+	FShapeMaterialBarrier GetMaterial(FContactMaterialRef& NativeRef, int Index)
+	{
+		agx::Material* Material = GetMaterial(*NativeRef.Native, Index);
+		return AGXBarrierFactories::CreateShapeMaterialBarrier(Material);
+	}
+}
+
+FShapeMaterialBarrier FContactMaterialBarrier::GetMaterial1() const
+{
+	check(HasNative());
+	return ::GetMaterial(*NativeRef, 1);
+
+}
+
+FShapeMaterialBarrier FContactMaterialBarrier::GetMaterial2() const
+{
+	check(HasNative());
+	return ::GetMaterial(*NativeRef, 2);
 }

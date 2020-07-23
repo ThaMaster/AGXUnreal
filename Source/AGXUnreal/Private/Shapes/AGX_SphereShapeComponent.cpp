@@ -57,6 +57,12 @@ void UAGX_SphereShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetRadius(Radius * GetComponentScale().X);
 }
 
+void UAGX_SphereShapeComponent::CopyFrom(const FSphereShapeBarrier& Barrier)
+{
+	Super::CopyFrom(Barrier);
+	Radius = Barrier.GetRadius();
+}
+
 void UAGX_SphereShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 {
 	AGX_MeshUtilities::MakeSphere(

@@ -1,8 +1,11 @@
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "DetailLayoutBuilder.h"
+#include "RawMesh.h"
 
+// Standard library includes.
 #include <tuple>
 
 // Shape classes.
@@ -31,6 +34,7 @@ class FText;
 class IDetailLayoutBuilder;
 class UClass;
 class USceneComponent;
+class UStaticMesh;
 class UStaticMeshComponent;
 class UWorld;
 
@@ -80,20 +84,85 @@ public:
 	 */
 	static UAGX_TrimeshShapeComponent* CreateTrimeshShape(AActor* Owner, USceneComponent* Outer);
 
+	static FRawMesh CreateRawMeshFromTrimesh(const FTrimeshShapeBarrier& Trimesh);
+
+	/**
+	 * Apply the RawMesh data to the StaticMesh.
+	 *
+	 * @param RawMesh - The RawMesh holding the mesh data.
+	 * @param StaticMesh - The StaticMesh that should receive the mesh data.
+	 */
+	static void AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh* StaticMesh);
+
+	/**
+	 * Remove characters that are unsafe to use in object names, content
+	 * references or file names. Unsupported characters are dropped, so check the
+	 * returned string for emptyness.
+	 *
+	 * May remove more characters than necessary, and the set of allowed characters may be extended
+	 * in the future.
+	 *
+	 * @param Name The name to sanitize.
+	 * @return The name with all dangerous characters removed.
+	 */
+	static FString SanitizeName(const FString& Name);
+
+	/**
+	 * Remove characters that are unsafe to use in object names, content references or file names.
+	 * Unsupported characters are dropped. If no characters remain then the fallback is returned.
+	 *
+	 * May remove more characters than necessary.
+	 *
+	 * @param Name The name to sanitize.
+	 * @param Fallback Returned if none of the original characters remain.
+	 * @return The name with all dangerous characters removed, or the fallback if all characters are
+	 * dangerous.
+	 */
+	static FString SanitizeName(const FString& Name, const FString& Fallback);
+
+	/**
+	 * Remove characters that are unsafe to use in object names, content references or file names.
+	 * Unsupported characters are dropped. If no characters remain then the fallback is returned.
+	 *
+	 * May remove more characters than necessary.
+	 *
+	 * @param Name The name to sanitize.
+	 * @param Fallback Returned if none of the original characters remain.
+	 * @return The name with all dangerous characters removed, or the fallback if all characters are
+	 * dangerous.
+	 */
+	static FString SanitizeName(const FString& Name, const TCHAR* Fallback);
+
+	static FString CreateAssetName(FString SourceName, FString ActorName, FString DefaultName);
+
+	static void MakePackageAndAssetNameUnique(FString& PackageName, FString& AssetName);
+
+	/**
+	 * Save the given package/asset pair to disk.
+	 * @param Package The package in which the asset will be saved..
+	 * @param Asset The asset to save.
+	 * @param PackagePath Asset path to the package. Often starting with "/Game/"
+	 * @param AssetName The ane of the asset to save.
+	 * @return The filename of the saved file, or the empty string on error.
+	 */
+	static bool FinalizeAndSavePackage(
+		UPackage* Package, UObject* Asset, const FString& PackagePath, const FString& AssetName);
+
 	/**
 	 * Create a new UStaticMesh asset from the given mesh data. The StaticMesh asset is saved to
-	 * /Game/ImportedAGXMeshes/'AssetFolderName' with the source name that the native
-	 * agxCollide::Trimesh has. If it does not have a source name then 'ImportedAGXMesh' is used
+	 * /Game/ImportedAgxMeshes/'AssetFolderName' with the source name that the native
+	 * agxCollide::Trimesh has. If it does not have a source name then 'ImportedAgxMesh' is used
 	 * instead.
 	 *
 	 * @param Trimesh - AGX Dynamics trimesh data to convert to a StaticMesh.
-	 * @param AssetFolderName - The name of the folder within /Game/ImportedAGXMeshes' that the
+	 * @param AssetFolderName - The name of the folder within /Game/ImportedAgxMeshes' that the
 	 * asset should be stored to.
-	 * @param FallbackName - Name used for the new Mesh Asset in case Trimesh does not have a source
-	 * name.
+	 * @param FallbackName - Name used for the new Mesh Asset in case Trimesh does not have a
+	 * source name.
 	 */
 	static UStaticMesh* CreateStaticMeshAsset(
-		const FTrimeshShapeBarrier& Trimesh, const FString& AssetFolderName, const FString& FallbackName);
+		const FTrimeshShapeBarrier& Trimesh, const FString& AssetFolderName,
+		const FString& FallbackName);
 
 	/**
 	 * Create a new UStaticMeshComponent. The UStaticMeshComponent will be added as a child to the
