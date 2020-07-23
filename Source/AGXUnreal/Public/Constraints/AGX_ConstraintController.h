@@ -72,6 +72,11 @@ public:
 protected:
 	virtual void UpdateNativePropertiesImpl()
 		PURE_VIRTUAL(FAGX_ConstraintController::UpdateNativePropertiesImpl, );
+
+	/**
+	 * Copy properties from the give AGX Dynamics constraint controller into this AGXUnreal
+	 * constraint controller.
+	 */
 	void CopyFrom(const FConstraintControllerBarrier& Source);
 
 	TUniquePtr<FConstraintControllerBarrier> NativeBarrier;

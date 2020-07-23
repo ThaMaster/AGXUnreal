@@ -60,6 +60,12 @@ void UAGX_BoxShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale());
 }
 
+void UAGX_BoxShapeComponent::CopyFrom(const FBoxShapeBarrier& Barrier)
+{
+	Super::CopyFrom(Barrier);
+	HalfExtent = Barrier.GetHalfExtents();
+}
+
 void UAGX_BoxShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 {
 	AGX_MeshUtilities::MakeCube(

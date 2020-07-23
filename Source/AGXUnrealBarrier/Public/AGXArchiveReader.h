@@ -69,14 +69,12 @@ public:
 
 	virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) = 0;
 
+	virtual void InstantiateShapeMaterial(const FShapeMaterialBarrier& ShapeMaterial) = 0;
+
+	virtual void InstantiateContactMaterial(const FContactMaterialBarrier& ContactMaterial) = 0;
+
 	virtual void DisabledCollisionGroups(
 		const TArray<std::pair<FString, FString>>& DisabledGroups) = 0;
-
-	virtual FString CreateShapeMaterialAsset(const FShapeMaterialBarrier& ShapeMaterial) = 0;
-
-	virtual FString CreateContactMaterialAsset(
-		const FContactMaterialBarrier& ContactMaterial, const FString& Material1,
-		const FString& Material2) = 0;
 
 	virtual ~FAGXArchiveInstantiator() = default;
 };
@@ -92,31 +90,28 @@ public:
 	 * Does not return anything because a Sphere cannot have subobjects.
 	 * @param Sphere The sphere for which a persistent representation should be created.
 	 */
-	virtual void InstantiateSphere(
-		const FSphereShapeBarrier& Sphere, const FString& ShapeMaterialAsset) = 0;
+	virtual void InstantiateSphere(const FSphereShapeBarrier& Sphere) = 0;
 
 	/**
 	 * Create a new Box corresponding to the given FBoxShapeBarrier.
 	 * Does not return anything because a Box cannot have subobjects.
 	 * @param Box The box for which a persistent representation should be created.
 	 */
-	virtual void InstantiateBox(const FBoxShapeBarrier& Box, const FString& ShapeMaterialAsset) = 0;
+	virtual void InstantiateBox(const FBoxShapeBarrier& Box) = 0;
 
 	/**
 	 * Create a new Cylinder corresponding to the given FCylinderShapeBarrier.
 	 * Does not return anything because a Cylinder cannot have subobjects.
 	 * @param Cylinder The cylinder for which a persistent representation should be created.
 	 */
-	virtual void InstantiateCylinder(
-		const FCylinderShapeBarrier& Cylinder, const FString& ShapeMaterialAsset) = 0;
+	virtual void InstantiateCylinder(const FCylinderShapeBarrier& Cylinder) = 0;
 
 	/**
 	 * Create a new Trimesh corresponding to the given FTrimeshShapeBarrier.
 	 * Does not return anything because a Trimesh cannot have subobjects.
 	 * @param Trimesh The trimesh for which a persistent representation should be created.
 	 */
-	virtual void InstantiateTrimesh(
-		const FTrimeshShapeBarrier& Trimesh, const FString& ShapeMaterialAsset) = 0;
+	virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) = 0;
 
 	virtual ~FAGXArchiveBody() = default;
 };

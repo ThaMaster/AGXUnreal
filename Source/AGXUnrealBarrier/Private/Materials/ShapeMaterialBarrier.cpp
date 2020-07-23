@@ -10,6 +10,12 @@ FShapeMaterialBarrier::FShapeMaterialBarrier()
 {
 }
 
+FShapeMaterialBarrier::FShapeMaterialBarrier(FShapeMaterialBarrier&& Other)
+	: NativeRef {std::move(Other.NativeRef)}
+{
+
+}
+
 FShapeMaterialBarrier::FShapeMaterialBarrier(std::unique_ptr<FMaterialRef> Native)
 	: NativeRef(std::move(Native))
 {
@@ -181,4 +187,11 @@ double FShapeMaterialBarrier::GetAdhesiveOverlap() const
 {
 	check(HasNative());
 	return NativeRef->Native->getSurfaceMaterial()->getAdhesiveOverlap();
+}
+
+FGuid FShapeMaterialBarrier::GetGuid() const
+{
+	check(HasNative());
+	FGuid Guid = Convert(NativeRef->Native->getUuid());
+	return Guid;
 }

@@ -30,7 +30,7 @@ enum EAGX_TrimeshSourceLocation
 UCLASS(
 	ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent),
 	HideCategories = (HLOD, Lighting, LOD, Materials, MaterialParameters, Rendering))
-class AGXUNREAL_API UAGX_TrimeshShapeComponent : public UAGX_ShapeComponent
+class AGXUNREAL_API UAGX_TrimeshShapeComponent final : public UAGX_ShapeComponent
 {
 	GENERATED_BODY()
 
@@ -74,6 +74,14 @@ public:
 	FTrimeshShapeBarrier* GetNativeTrimesh();
 
 	virtual void UpdateNativeProperties() override;
+
+	/**
+	 * Copy properties from the given AGX Dynamics trimesh into this component.
+	 * Does not copy assets, so not triangle data and not material.
+	 * Does copy properties inherited from UAGX_ShapeComponent.
+	 * @param Barrier The AGX Dynamics trimesh to copy from.
+	 */
+	void CopyFrom(const FTrimeshShapeBarrier& Barrier);
 
 protected:
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;

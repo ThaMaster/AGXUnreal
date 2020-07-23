@@ -1,9 +1,10 @@
 #include "AGX_ArchiveImporterToBlueprint.h"
 
 // AGXUnreal includes.
-#include "AGXArchiveReader.h"
+#include "AGX_ArchiveImporterHelper.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AGXArchiveReader.h"
 #include "CollisionGroups/AGX_DisabledCollisionGroupsComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
@@ -28,13 +29,15 @@
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
+#include "Materials/AGX_ShapeMaterialAsset.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
-#include "Utilities/AGX_EditorUtilities.h"
+//#include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.
 #include "ActorFactories/ActorFactoryEmptyActor.h"
@@ -51,51 +54,30 @@
 
 namespace
 {
-	IAssetTools& GetAssetTools()
-	{
-		return FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-	}
-
 	void PreCreationSetup()
 	{
 		GEditor->SelectNone(false, false);
 	}
 
-	FString Sanitize(const FString& In)
+	FString CreateBlueprintPackagePath(FAGX_ArchiveImporterHelper& Helper)
 	{
-		return UPackageTools::SanitizePackageName(In);
-	}
-
-	struct FBlueprintId
-	{
-		FString ArchiveFilename;
-		FString PackagePath;
-		FString BlueprintName;
-
-		FBlueprintId(
-			const FString& InArchiveFilename, const FString& InPackagePath,
-			const FString& InBlueprintName)
-			: ArchiveFilename(InArchiveFilename)
-			, PackagePath(InPackagePath)
-			, BlueprintName(InBlueprintName)
-		{
-		}
-	};
-
-	FBlueprintId CreateBlueprintId(const FString& ArchiveFilepath)
-	{
-		const FString ArchiveFilename = FPaths::GetBaseFilename(ArchiveFilepath);
-
-		FString ParentPackageName = TEXT("/Game/ImportedBlueprints/");
-		FString ParentAssetName = ArchiveFilename;
-		IAssetTools& AssetTools = GetAssetTools();
-		AssetTools.CreateUniqueAssetName(
-			ParentPackageName, ParentAssetName, ParentPackageName, ParentAssetName);
-		UPackage* ParentPackage = CreatePackage(nullptr, *ParentPackageName);
+		// Create directory for this archive and a "Blueprints" directory inside of that.
+		/// \todo I think this is more complicated than it needs to be. What are all the pieces for?
+		FString ParentPackagePath =
+			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
+		FString ParentAssetName = Helper.ArchiveFileName; /// \todo Why is this never used?
+		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
+		UPackage* ParentPackage = CreatePackage(nullptr, *ParentPackagePath);
 		FString Path = FPaths::GetPath(ParentPackage->GetName());
 
-		const FString BlueprintName = TEXT("BP_") + ArchiveFilename;
-		FString BasePackagePath = Sanitize(Path + "/" + BlueprintName);
+		UE_LOG(
+			LogAGX, Display, TEXT("Archive '%s' imported to package '%s', path '%s'"),
+			*Helper.ArchiveFileName, *ParentPackagePath, *Path);
+
+		// Create a known unique name for the Blueprint package, but don't create the actual
+		// package yet.
+		const FString BlueprintName = TEXT("BP_") + Helper.DirectoryName;
+		FString BasePackagePath = UPackageTools::SanitizePackageName(Path + "/" + BlueprintName);
 		FString PackagePath = BasePackagePath;
 
 		auto PackageExists = [](const FString& PackagePath) {
@@ -112,12 +94,12 @@ namespace
 			PackagePath = BasePackagePath + "_" + FString::FromInt(TryCount);
 		}
 
-		return FBlueprintId(ArchiveFilename, PackagePath, BlueprintName);
+		return PackagePath;
 	}
 
-	UPackage* GetPackage(const FBlueprintId& BlueprintId)
+	UPackage* GetPackage(const FString& BlueprintPackagePath)
 	{
-		UPackage* Package = CreatePackage(nullptr, *BlueprintId.PackagePath);
+		UPackage* Package = CreatePackage(nullptr, *BlueprintPackagePath);
 		check(Package != nullptr);
 		Package->FullyLoad();
 		return Package;
@@ -126,229 +108,121 @@ namespace
 	class FBlueprintBody final : public FAGXArchiveBody
 	{
 	public:
-		FBlueprintBody(
-			UAGX_RigidBodyComponent* InBodyComponent, const FString& InArchiveName,
-			TMap<FGuid, UStaticMesh*>& InMeshAssets)
-			: BodyComponent(InBodyComponent)
-			, ArchiveName(InArchiveName)
-			, MeshAssets(InMeshAssets)
+		FBlueprintBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
+			: Body(InBody)
+			, Helper(InHelper)
 		{
 		}
 
-		virtual void InstantiateSphere(
-			const FSphereShapeBarrier& Barrier, const FString& ShapeMaterialAsset) override
+		virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
 		{
-			UAGX_SphereShapeComponent* Component =
-				FAGX_EditorUtilities::CreateSphereShape(BodyComponent->GetOwner(), BodyComponent);
-			Component->Radius = Barrier.GetRadius();
-			FinalizeShape(Component, Barrier, ShapeMaterialAsset);
+			Helper.InstantiateSphere(Barrier, Body);
 		}
 
-		virtual void InstantiateBox(
-			const FBoxShapeBarrier& Barrier, const FString& ShapeMaterialAsset) override
+		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier) override
 		{
-			UAGX_BoxShapeComponent* Component =
-				FAGX_EditorUtilities::CreateBoxShape(BodyComponent->GetOwner(), BodyComponent);
-			Component->HalfExtent = Barrier.GetHalfExtents();
-			FinalizeShape(Component, Barrier, ShapeMaterialAsset);
+			Helper.InstantiateBox(Barrier, Body);
 		}
 
-		virtual void InstantiateCylinder(
-			const FCylinderShapeBarrier& Barrier, const FString& ShapeMaterialAsset) override
+		virtual void InstantiateCylinder(const FCylinderShapeBarrier& Barrier) override
 		{
-			UAGX_CylinderShapeComponent* Component =
-				FAGX_EditorUtilities::CreateCylinderShape(BodyComponent->GetOwner(), BodyComponent);
-			Component->Height = Barrier.GetHeight();
-			Component->Radius = Barrier.GetRadius();
-			FinalizeShape(Component, Barrier, ShapeMaterialAsset);
+			Helper.InstantiateCylinder(Barrier, Body);
 		}
 
-		virtual void InstantiateTrimesh(
-			const FTrimeshShapeBarrier& Barrier, const FString& ShapeMaterialAsset) override
+		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Barrier) override
 		{
-			AActor* Owner = BodyComponent->GetOwner();
-			UAGX_TrimeshShapeComponent* Component =
-				FAGX_EditorUtilities::CreateTrimeshShape(Owner, BodyComponent);
-			Component->MeshSourceLocation =
-				EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
-			UStaticMesh* MeshAsset = GetOrCreateStaticMeshAsset(Barrier, Owner->GetActorLabel());
-			if (!MeshAsset)
-			{
-				// No point in continuing further. Logging handled in GetOrCreateStaticMeshAsset.
-				return;
-			}
-
-			UStaticMeshComponent* MeshComponent =
-				FAGX_EditorUtilities::CreateStaticMeshComponent(Owner, Component, MeshAsset);
-
-			FString Name = MeshComponent->GetName() + "Shape";
-			if (!Component->Rename(*Name, nullptr, REN_Test))
-			{
-				FString OldName = Name;
-				Name = MakeUniqueObjectName(
-						   Owner, UAGX_TrimeshShapeComponent::StaticClass(), FName(*Name))
-						   .ToString();
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Trimesh '%s' imported with name '%s' because of name conflict."),
-					*OldName, *Name);
-			}
-			Component->Rename(*Name, nullptr, REN_DontCreateRedirectors);
-			FinalizeShape(Component, Barrier, ShapeMaterialAsset);
+			Helper.InstantiateTrimesh(Barrier, Body);
 		}
 
 	private:
-		void FinalizeShape(
-			UAGX_ShapeComponent* Component, const FShapeBarrier& Barrier,
-			const FString& ShapeMaterialAsset)
-		{
-			Component->SetFlags(RF_Transactional);
-			Component->bCanCollide = Barrier.GetEnableCollisions();
-			for (const FName& Group : Barrier.GetCollisionGroups())
-			{
-				Component->AddCollisionGroup(Group);
-			}
-			Component->SetRelativeLocation(Barrier.GetLocalPosition());
-			Component->SetRelativeRotation(Barrier.GetLocalRotation());
-			Component->UpdateVisualMesh();
-			FString Name = Barrier.GetName();
-			if (!Component->Rename(*Name, nullptr, REN_Test))
-			{
-				FString OldName = Name;
-				Name = MakeUniqueObjectName(Component->GetOwner(), Component->GetClass(), *Name)
-						   .ToString();
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Shape '%s' imported with name '%s' because of name conflict."), *OldName,
-					*Name);
-			}
-			Component->Rename(*Name);
-
-			if (!ShapeMaterialAsset.IsEmpty())
-			{
-				const bool Result =
-					FAGX_EditorUtilities::ApplyShapeMaterial(Component, ShapeMaterialAsset);
-				if (!Result)
-				{
-					UE_LOG(
-						LogAGX, Warning,
-						TEXT("ApplyShapeMaterial in FinalizeShape failed. Rigid Body: %s, Shape "
-							 "Component: %s, Asset: %s."),
-						*BodyComponent->GetName(), *Component->GetName(), *ShapeMaterialAsset);
-				}
-			}
-		}
-
-		UStaticMesh* GetOrCreateStaticMeshAsset(
-			const FTrimeshShapeBarrier& Barrier, const FString& FallbackName)
-		{
-			FGuid Guid = Barrier.GetMeshDataGuid();
-
-			// If the FGuid is invalid, try to create the Mesh Asset, but without adding it to the
-			// MeshAssets TMap.
-			if (!Guid.IsValid())
-			{
-				return FAGX_EditorUtilities::CreateStaticMeshAsset(
-					Barrier, ArchiveName, FallbackName);
-			}
-
-			if (UStaticMesh* MeshAsset = MeshAssets.FindRef(Guid))
-			{
-				return MeshAsset;
-			}
-
-			UStaticMesh* MeshAsset =
-				FAGX_EditorUtilities::CreateStaticMeshAsset(Barrier, ArchiveName, FallbackName);
-			MeshAssets.Add(Guid, MeshAsset);
-
-			return MeshAsset;
-		}
-
-	private:
-		UAGX_RigidBodyComponent* BodyComponent;
-		const FString& ArchiveName;
-		TMap<FGuid, UStaticMesh*>& MeshAssets;
+		UAGX_RigidBodyComponent& Body;
+		FAGX_ArchiveImporterHelper& Helper;
 	};
 
 	class FBlueprintInstantiator final : public FAGXArchiveInstantiator
 	{
 	public:
-		FBlueprintInstantiator(AActor* InBlueprintTemplate, const FString& InArchiveName)
-			: BlueprintTemplate(InBlueprintTemplate)
-			, ArchiveName(InArchiveName)
+		FBlueprintInstantiator(AActor& InBlueprintTemplate, FAGX_ArchiveImporterHelper& InHelper)
+			: Helper(InHelper)
+			, BlueprintTemplate(InBlueprintTemplate)
 		{
 		}
 
 		virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
 		{
-			UAGX_RigidBodyComponent* Component =
-				NewObject<UAGX_RigidBodyComponent>(BlueprintTemplate, NAME_None);
-
-			FString Name = Barrier.GetName();
-			if (!Component->Rename(*Name, nullptr, REN_Test))
+			UAGX_RigidBodyComponent* Component = Helper.InstantiateBody(Barrier, BlueprintTemplate);
+			if (Component == nullptr)
 			{
-				FString OldName = Name;
-				Name = MakeUniqueObjectName(
-						   BlueprintTemplate, UAGX_RigidBodyComponent::StaticClass(), *Name)
-						   .ToString();
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("RigidBody '%s' imported with name '%s' because of name conflict."),
-					*OldName, *Name);
+				return new NopEditorBody();
 			}
-			Component->Rename(*Name);
-
-			Component->SetWorldLocation(Barrier.GetPosition());
-			Component->SetWorldRotation(Barrier.GetRotation());
-			Component->Mass = Barrier.GetMass();
-			Component->MotionControl = Barrier.GetMotionControl();
-
-			Component->SetFlags(RF_Transactional);
-			BlueprintTemplate->AddInstanceComponent(Component);
-			Component->RegisterComponent();
-
-// This is the attach part of the RootComponent strangeness. I would like to
-// call AttachToComponent here, but I don't have a RootComponent. See comment in
-// CreateTemplate.
+			// This is the attach part of the RootComponent strangeness. I would like to call
+			// AttachToComponent here, but I don't have a RootComponent. See comment in
+			// CreateTemplate.
 #if 0
 			Component->AttachToComponent(
-				BlueprintTemplate->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+				BlueprintTemplate->GetRootComponent(),
+				FAttachmentTransformRules::KeepWorldTransform);
 #endif
-			Component->PostEditChange();
-			RestoredBodies.Add(Barrier.GetGuid(), Component);
-			return new FBlueprintBody(Component, ArchiveName, MeshAssets);
+			return new FBlueprintBody(*Component, Helper);
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
 		{
-			InstantiateConstraint1Dof(Barrier, UAGX_HingeConstraintComponent::StaticClass());
+			UAGX_ConstraintComponent* Constraint =
+				Helper.InstantiateHinge(Barrier, BlueprintTemplate);
+			ClearOwningActors(Constraint);
 		}
 
 		virtual void InstantiatePrismatic(const FPrismaticBarrier& Barrier) override
 		{
-			InstantiateConstraint1Dof(Barrier, UAGX_PrismaticConstraintComponent::StaticClass());
+			UAGX_ConstraintComponent* Constraint =
+				Helper.InstantiatePrismatic(Barrier, BlueprintTemplate);
+			ClearOwningActors(Constraint);
 		}
 
 		virtual void InstantiateBallJoint(const FBallJointBarrier& Barrier) override
 		{
-			InstantiateConstraint<UAGX_ConstraintComponent>(
-				Barrier, UAGX_BallConstraintComponent::StaticClass());
+			UAGX_ConstraintComponent* Constraint =
+				Helper.InstantiateBallJoint(Barrier, BlueprintTemplate);
+			ClearOwningActors(Constraint);
 		}
 
 		virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& Barrier) override
 		{
-			InstantiateConstraint2Dof(Barrier, UAGX_CylindricalConstraintComponent::StaticClass());
+			UAGX_ConstraintComponent* Constraint =
+				Helper.InstantiateCylindricalJoint(Barrier, BlueprintTemplate);
+			ClearOwningActors(Constraint);
 		}
 
 		virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& Barrier) override
 		{
-			InstantiateConstraint1Dof(Barrier, UAGX_DistanceConstraintComponent::StaticClass());
+			UAGX_ConstraintComponent* Constraint =
+				Helper.InstantiateDistanceJoint(Barrier, BlueprintTemplate);
+			ClearOwningActors(Constraint);
 		}
 
 		virtual void InstantiateLockJoint(const FLockJointBarrier& Barrier) override
 		{
-			InstantiateConstraint<UAGX_ConstraintComponent>(
-				Barrier, UAGX_LockConstraintComponent::StaticClass());
+			UAGX_ConstraintComponent* Constraint =
+				Helper.InstantiateLockJoint(Barrier, BlueprintTemplate);
+			ClearOwningActors(Constraint);
+		}
+
+		void ClearOwningActors(UAGX_ConstraintComponent* Constraint)
+		{
+			if (Constraint == nullptr)
+			{
+				return;
+			}
+
+			// By default the BodyAttachments are created with the OwningActor set to the owner of
+			// the RigidBodyComponents passed to CreateConstraintComponent. In this case the
+			// OwningActor points to the temporary template actor and Unreal doesn't update the
+			// pointers to instead point to the actor that is created when the Blueprint is
+			// instantiated. The best we can do is to set them to nullptr and rely on the body
+			// names only.
+			Constraint->BodyAttachment1.RigidBody.OwningActor = nullptr;
+			Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
 		}
 
 		virtual void DisabledCollisionGroups(
@@ -361,9 +235,9 @@ namespace
 
 			UAGX_DisabledCollisionGroupsComponent* Component =
 				NewObject<UAGX_DisabledCollisionGroupsComponent>(
-					BlueprintTemplate, TEXT("DisabledCollisionGroupPairs"));
+					&BlueprintTemplate, TEXT("DisabledCollisionGroupPairs"));
 			Component->SetFlags(RF_Transactional);
-			BlueprintTemplate->AddInstanceComponent(Component);
+			BlueprintTemplate.AddInstanceComponent(Component);
 			Component->RegisterComponent();
 			for (const std::pair<FString, FString>& DisabledPair : DisabledPairs)
 			{
@@ -372,249 +246,34 @@ namespace
 			}
 		}
 
-		virtual FString CreateShapeMaterialAsset(const FShapeMaterialBarrier& ShapeMaterial) override
+		virtual void InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier) override
 		{
-			return FAGX_EditorUtilities::CreateShapeMaterialAsset(ArchiveName, ShapeMaterial);
+			Helper.InstantiateShapeMaterial(Barrier);
 		}
 
-		virtual FString CreateContactMaterialAsset(
-			const FContactMaterialBarrier& ContactMaterial, const FString& Material1,
-			const FString& Material2) override
+		virtual void InstantiateContactMaterial(const FContactMaterialBarrier& Barrier) override
 		{
-			return FAGX_EditorUtilities::CreateContactMaterialAsset(
-				ArchiveName, ContactMaterial, Material1, Material2);
+			Helper.InstantiateContactMaterial(Barrier);
 		}
 
 		virtual ~FBlueprintInstantiator() = default;
 
 	private:
 		using FBodyPair = std::pair<UAGX_RigidBodyComponent*, UAGX_RigidBodyComponent*>;
+		using FShapeMaterialPair = std::pair<UAGX_ShapeMaterialAsset*, UAGX_ShapeMaterialAsset*>;
 
 	private:
-		void InstantiateConstraint1Dof(const FConstraint1DOFBarrier& Barrier, UClass* Type)
-		{
-			UAGX_Constraint1DofComponent* Component =
-				InstantiateConstraint<UAGX_Constraint1DofComponent>(Barrier, Type);
-			if (Component == nullptr)
-			{
-				// No need to log here, done by InstantiateConstraint.
-				return;
-			}
-
-			/// \todo This is copy/paste from AGX_ArchiveImporterToActorTree. Find a sensible shared
-			/// location.
-			StoreElectricMotorController(Barrier, Component->ElectricMotorController);
-			StoreFrictionController(Barrier, Component->FrictionController);
-			StoreLockController(Barrier, Component->LockController);
-			StoreRangeController(Barrier, Component->RangeController);
-			StoreTargetSpeedController(Barrier, Component->TargetSpeedController);
-		}
-
-		void InstantiateConstraint2Dof(const FConstraint2DOFBarrier& Barrier, UClass* Type)
-		{
-			UAGX_Constraint2DofComponent* Component =
-				InstantiateConstraint<UAGX_Constraint2DofComponent>(Barrier, Type);
-			if (Component == nullptr)
-			{
-				// No need to log here, done by InstantiateConstraint.
-				return;
-			}
-
-			/// \todo This is copy/paste from AGX_ArchiveImporter. Find a sensible shared location.
-			const EAGX_Constraint2DOFFreeDOF First = EAGX_Constraint2DOFFreeDOF::FIRST;
-			const EAGX_Constraint2DOFFreeDOF Second = EAGX_Constraint2DOFFreeDOF::SECOND;
-
-			StoreElectricMotorController(Barrier, Component->ElectricMotorController1, First);
-			StoreElectricMotorController(Barrier, Component->ElectricMotorController2, Second);
-
-			StoreFrictionController(Barrier, Component->FrictionController1, First);
-			StoreFrictionController(Barrier, Component->FrictionController2, Second);
-
-			StoreLockController(Barrier, Component->LockController1, First);
-			StoreLockController(Barrier, Component->LockController2, Second);
-
-			StoreRangeController(Barrier, Component->RangeController1, First);
-			StoreRangeController(Barrier, Component->RangeController2, Second);
-
-			StoreTargetSpeedController(Barrier, Component->TargetSpeedController1, First);
-			StoreTargetSpeedController(Barrier, Component->TargetSpeedController2, Second);
-		}
-
-		template <typename UConstraint>
-		UConstraint* InstantiateConstraint(const FConstraintBarrier& Barrier, UClass* Type)
-		{
-			FBodyPair Bodies = GetBodies(Barrier);
-			if (Bodies.first == nullptr)
-			{
-				// Not having a second body is fine, means that the first body is constrained to the
-				// world. Not having a first body is bad.
-				UE_LOG(
-					LogAGX, Warning, TEXT("Constraint '%s' does not have a first body. Ignoring."),
-					*Barrier.GetName());
-				return nullptr;
-			}
-
-			UConstraint* Component = FAGX_EditorUtilities::CreateConstraintComponent<UConstraint>(
-				BlueprintTemplate, Bodies.first, Bodies.second, Type);
-			if (Component == nullptr)
-			{
-				return nullptr;
-			}
-
-			// By default the BodyAttachments are created with the OwningActor set to the owner of
-			// the RigidBodyComponents passed to CreateConstraintComponent. In this case the
-			// OwningActor points to the temporary template actor and Unreal doesn't update the
-			// pointers to instead point to the actor that is created when the Blueprint is
-			// instantiated. The best we can do is to set them to nullptr and rely on the body
-			// names only.
-			Component->BodyAttachment1.RigidBody.OwningActor = nullptr;
-			Component->BodyAttachment2.RigidBody.OwningActor = nullptr;
-
-			StoreFrames(Barrier, *Component);
-
-			FString Name = Barrier.GetName();
-			if (!Component->Rename(*Name, nullptr, REN_Test))
-			{
-				FString OldName = Name;
-				Name = MakeUniqueObjectName(
-						   BlueprintTemplate, UConstraint::StaticClass(), FName(*Name))
-						   .ToString();
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Constraint '%s' imported with name '%s' because of name collision."),
-					*OldName, *Name);
-			}
-			Component->Rename(*Name, nullptr, REN_DontCreateRedirectors);
-
-			return Component;
-		}
-
-		/// \todo There is copy/paste from AGX_ArchiveImporter. Find a sensible shared location.
-
-		void StoreElectricMotorController(
-			const FConstraint1DOFBarrier& Barrier,
-			FAGX_ConstraintElectricMotorController& Controller)
-		{
-			Controller.CopyFrom(*Barrier.GetElectricMotorController());
-		}
-
-		void StoreElectricMotorController(
-			const FConstraint2DOFBarrier& Barrier,
-			FAGX_ConstraintElectricMotorController& Controller, EAGX_Constraint2DOFFreeDOF Dof)
-		{
-			Controller.CopyFrom(*Barrier.GetElectricMotorController(Dof));
-		}
-
-		void StoreFrictionController(
-			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller)
-		{
-			Controller.CopyFrom(*Barrier.GetFrictionController());
-		}
-
-		void StoreFrictionController(
-			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
-			EAGX_Constraint2DOFFreeDOF Dof)
-		{
-			Controller.CopyFrom(*Barrier.GetFrictionController(Dof));
-		}
-
-		void StoreLockController(
-			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller)
-		{
-			Controller.CopyFrom(*Barrier.GetLockController());
-		}
-
-		void StoreLockController(
-			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
-			EAGX_Constraint2DOFFreeDOF Dof)
-		{
-			Controller.CopyFrom(*Barrier.GetLockController(Dof));
-		}
-
-		void StoreRangeController(
-			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller)
-		{
-			Controller.CopyFrom(*Barrier.GetRangeController());
-		}
-
-		void StoreRangeController(
-			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
-			EAGX_Constraint2DOFFreeDOF Dof)
-		{
-			Controller.CopyFrom(*Barrier.GetRangeController(Dof));
-		}
-
-		void StoreTargetSpeedController(
-			const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller)
-		{
-			Controller.CopyFrom(*Barrier.GetTargetSpeedController());
-		}
-
-		void StoreTargetSpeedController(
-			const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
-			EAGX_Constraint2DOFFreeDOF Dof)
-		{
-			Controller.CopyFrom(*Barrier.GetTargetSpeedController(Dof));
-		}
-
-		UAGX_RigidBodyComponent* GetBody(const FRigidBodyBarrier& Barrier)
-		{
-			if (!Barrier.HasNative())
-			{
-				// Not an error. Means constrained with world.
-				return nullptr;
-			}
-			FGuid Guid = Barrier.GetGuid();
-			UAGX_RigidBodyComponent* Component = RestoredBodies.FindRef(Guid);
-			if (Component == nullptr)
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Found a constraint to body '%s', but that body isn't known."),
-					*Barrier.GetName());
-				return nullptr;
-			}
-			return Component;
-		}
-
-		FBodyPair GetBodies(const FConstraintBarrier& Constraint)
-		{
-			return {GetBody(Constraint.GetFirstBody()), GetBody(Constraint.GetSecondBody())};
-		}
-
-		/// \todo The two StoreFrame(s) member functions are copy/paste from AGX_ArchiveImporter.
-		/// Find a reasonable shared location to put them in.
-
-		void StoreFrame(
-			const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment,
-			int32 BodyIndex)
-		{
-			Attachment.FrameDefiningComponent.Clear();
-			Attachment.LocalFrameLocation = Barrier.GetLocalLocation(BodyIndex);
-			Attachment.LocalFrameRotation = Barrier.GetLocalRotation(BodyIndex);
-		}
-
-		void StoreFrames(const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component)
-		{
-			StoreFrame(Barrier, Component.BodyAttachment1, 0);
-			StoreFrame(Barrier, Component.BodyAttachment2, 1);
-		}
-
-	private:
-		AActor* BlueprintTemplate;
-		const FString& ArchiveName;
-		TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
-		TMap<FGuid, UStaticMesh*> MeshAssets;
+		FAGX_ArchiveImporterHelper Helper;
+		AActor& BlueprintTemplate;
 	};
 
-	void AddComponentsFromArchive(const FString& ArchivePath, AActor* ImportedActor)
+	void AddComponentsFromArchive(AActor& ImportedActor, FAGX_ArchiveImporterHelper& Helper)
 	{
-		FString ArchiveName = FPaths::GetCleanFilename(ArchivePath);
-		FBlueprintInstantiator Instantiator(ImportedActor, ArchiveName);
-		FAGXArchiveReader::Read(ArchivePath, Instantiator);
+		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
+		FAGXArchiveReader::Read(Helper.ArchiveFilePath, Instantiator);
 	}
 
-	AActor* CreateTemplate(const FString& BlueprintName, const FString ArchivePath)
+	AActor* CreateTemplate(FAGX_ArchiveImporterHelper& Helper)
 	{
 		UActorFactory* Factory =
 			GEditor->FindActorFactoryByClass(UActorFactoryEmptyActor::StaticClass());
@@ -622,9 +281,9 @@ namespace
 		UObject* EmptyActorAsset = EmptyActorAssetData.GetAsset();
 		AActor* RootActorContainer =
 			FActorFactoryAssetProxy::AddActorForAsset(EmptyActorAsset, false);
-		check(RootActorContainer != nullptr);
+		check(RootActorContainer != nullptr); /// \todo Test and return false instead of check?
 		RootActorContainer->SetFlags(RF_Transactional);
-		RootActorContainer->SetActorLabel(BlueprintName);
+		RootActorContainer->SetActorLabel(Helper.DirectoryName);
 
 // I would like to be able to create and configure the RootComponent here, but
 // the way Blueprint creation has been done in Unreal Engine makes this
@@ -648,7 +307,7 @@ namespace
 		RootActorContainer->SetRootComponent(ActorRootComponent);
 #endif
 
-		AddComponentsFromArchive(ArchivePath, RootActorContainer);
+		AddComponentsFromArchive(*RootActorContainer, Helper);
 		return RootActorContainer;
 	}
 
@@ -677,11 +336,12 @@ namespace
 
 UBlueprint* AGX_ArchiveImporterToBlueprint::ImportAGXArchive(const FString& ArchivePath)
 {
+	FAGX_ArchiveImporterHelper Helper(ArchivePath);
 	PreCreationSetup();
-	FBlueprintId Id = CreateBlueprintId(ArchivePath);
-	UPackage* Package = GetPackage(Id);
-	AActor* Template = CreateTemplate(Id.BlueprintName, ArchivePath);
+	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
+	UPackage* Package = GetPackage(BlueprintPackagePath);
+	AActor* Template = CreateTemplate(Helper);
 	UBlueprint* Blueprint = CreateBlueprint(Package, Template);
-	PostCreationTeardown(Template, Package, Blueprint, Id.PackagePath);
+	PostCreationTeardown(Template, Package, Blueprint, BlueprintPackagePath);
 	return Blueprint;
 }

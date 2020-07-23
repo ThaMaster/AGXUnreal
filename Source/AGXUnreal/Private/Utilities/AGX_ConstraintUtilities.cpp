@@ -14,7 +14,7 @@
 #include "Constraints/ControllerConstraintBarriers.h"
 
 void FAGX_ConstraintUtilities::StoreControllers(
-		UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier)
+	UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier)
 {
 	StoreElectricMotorController(Barrier, Component.ElectricMotorController);
 	StoreFrictionController(Barrier, Component.FrictionController);
@@ -24,7 +24,7 @@ void FAGX_ConstraintUtilities::StoreControllers(
 }
 
 void FAGX_ConstraintUtilities::StoreControllers(
-		UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier)
+	UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier)
 {
 	const EAGX_Constraint2DOFFreeDOF First = EAGX_Constraint2DOFFreeDOF::FIRST;
 	const EAGX_Constraint2DOFFreeDOF Second = EAGX_Constraint2DOFFreeDOF::SECOND;
@@ -43,6 +43,17 @@ void FAGX_ConstraintUtilities::StoreControllers(
 
 	StoreTargetSpeedController(Barrier, Component.TargetSpeedController1, First);
 	StoreTargetSpeedController(Barrier, Component.TargetSpeedController2, Second);
+}
+
+void FAGX_ConstraintUtilities::StoreControllers(
+	UAGX_ConstraintComponent& Component, const FConstraintBarrier& Barrier)
+{
+	// This exists only to provide a complete overload resolution set for the constraint types. Only
+	// 1Dof and 2Dof constraints, the other overloads, have any controllers to store. Make sure you
+	// end up in the correct overload of StoreControllers for the type of constraint you actually
+	// have.
+	/// \todo Consider making this a virtual member function instead, to avoid ending up in this
+	/// empty version unintentionally.
 }
 
 void FAGX_ConstraintUtilities::StoreElectricMotorController(
@@ -111,15 +122,15 @@ void FAGX_ConstraintUtilities::StoreTargetSpeedController(
 }
 
 void FAGX_ConstraintUtilities::StoreFrame(
-		const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment,
-		int32 BodyIndex)
+	const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment, int32 BodyIndex)
 {
 	Attachment.FrameDefiningComponent.Clear();
 	Attachment.LocalFrameLocation = Barrier.GetLocalLocation(BodyIndex);
 	Attachment.LocalFrameRotation = Barrier.GetLocalRotation(BodyIndex);
 }
 
-void FAGX_ConstraintUtilities::StoreFrames(const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component)
+void FAGX_ConstraintUtilities::StoreFrames(
+	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component)
 {
 	StoreFrame(Barrier, Component.BodyAttachment1, 0);
 	StoreFrame(Barrier, Component.BodyAttachment2, 1);

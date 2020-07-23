@@ -1,15 +1,17 @@
 #pragma once
 
+// AGXUnreal includes.
 #include "Shapes/AGX_ShapeComponent.h"
+#include "Shapes/SphereShapeBarrier.h"
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 
-#include "Shapes/SphereShapeBarrier.h"
 
 #include "AGX_SphereShapeComponent.generated.h"
 
 UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_SphereShapeComponent : public UAGX_ShapeComponent
+class AGXUNREAL_API UAGX_SphereShapeComponent final : public UAGX_ShapeComponent
 {
 	GENERATED_BODY()
 public:
@@ -25,6 +27,13 @@ public:
 	FSphereShapeBarrier* GetNativeSphere();
 
 	virtual void UpdateNativeProperties() override;
+
+	/**
+	 * Copy properties from the given AGX Dynamics sphere into this component.
+	 * Will also copy properties inherited from UAGX_ShapeComponent.
+	 * @param Barrier The AGX Dynamics sphere to copy from.
+	 */
+	void CopyFrom(const FSphereShapeBarrier& Barrier);
 
 protected:
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;

@@ -14,7 +14,7 @@ class AGXUNREALBARRIER_API FShapeMaterialBarrier
 {
 public:
 	FShapeMaterialBarrier();
-	FShapeMaterialBarrier(FShapeMaterialBarrier&& Other) = default;
+	FShapeMaterialBarrier(FShapeMaterialBarrier&& Other);
 	FShapeMaterialBarrier(std::unique_ptr<FMaterialRef> Native);
 	virtual ~FShapeMaterialBarrier();
 
@@ -56,6 +56,8 @@ public:
 	void SetAdhesion(double AdhesiveForce, double AdhesiveOverlap);
 	double GetAdhesiveForce() const;
 	double GetAdhesiveOverlap() const;
+
+	FGuid GetGuid() const;
 
 private:
 	FShapeMaterialBarrier(const FShapeMaterialBarrier&) = delete;

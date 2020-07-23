@@ -1,6 +1,7 @@
 #include "Shapes/ShapeBarrier.h"
 
 // AGXUnreal includes.
+#include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 #include "Materials/ShapeMaterialBarrier.h"
@@ -112,6 +113,13 @@ void FShapeBarrier::SetMaterial(const FShapeMaterialBarrier& Material)
 	NativeRef->NativeGeometry->setMaterial(Material.GetNative()->Native);
 }
 
+FShapeMaterialBarrier FShapeBarrier::GetMaterial() const
+{
+	check(HasNative());
+	agx::Material* Material = NativeRef->NativeGeometry->getMaterial();
+	return AGXBarrierFactories::CreateShapeMaterialBarrier(Material);
+}
+
 void FShapeBarrier::SetEnableCollisions(bool CanCollide)
 {
 	check(HasNative());
@@ -146,6 +154,13 @@ TArray<FName> FShapeBarrier::GetCollisionGroups() const
 		Result.Add(FName(*FString::FromInt(Id)));
 	}
 	return Result;
+}
+
+FGuid FShapeBarrier::GetGuid() const
+{
+	check(HasNative());
+	FGuid Guid = Convert(NativeRef->NativeShape->getUuid());
+	return Guid;
 }
 
 namespace
