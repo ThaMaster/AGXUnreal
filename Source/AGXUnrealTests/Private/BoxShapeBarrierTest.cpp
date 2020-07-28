@@ -1,4 +1,7 @@
 
+// This test is disabled because including it leads to
+//    Warning: dlopen failed: libUE4Editor-AGXUnrealBarrier.so: undefined symbol: "typeinfo for FAutomationTestBase"
+#if 0
 // AGXUnreal includes.
 #include "Shapes/BoxShapeBarrier.h"
 
@@ -14,3 +17,4 @@ bool FBoxShapeBarrierTest::RunTest(const FString& Parameters)
 {
   return true;
 }
+#endif

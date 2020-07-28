@@ -14,9 +14,10 @@ public class AGXUnrealEditor : ModuleRules
 
 		/// \todo Copied from the prototype plugin. Not sure if all of these are
 		///       required.
-		PrivateDependencyModuleNames.AddRange(new string[]{"AGXUnrealBarrier", "AGXUnrealLibrary", "AssetTools",
-			"CoreUObject", "DesktopPlatform", "EditorStyle", "Engine", "InputCore", "Json",
-			"LevelEditor", "PlacementMode", "Projects", "PropertyEditor", "RawMesh", "RenderCore", "RHI", "Slate",
-			"SlateCore", "SlateCore", "UnrealEd", "SceneOutliner"});
+		PrivateDependencyModuleNames.AddRange(new string[] {
+			"AGXUnrealBarrier", "AGXUnrealLibrary", "AssetTools", "CoreUObject", "DesktopPlatform", "EditorStyle",
+			"Engine", "InputCore", "Json", "LevelEditor", "PlacementMode", "Projects", "PropertyEditor", "RawMesh",
+			"RenderCore", "RHI", "Slate", "SlateCore", "SlateCore", "UnrealEd", "SceneOutliner"
+		});
     }
 }
