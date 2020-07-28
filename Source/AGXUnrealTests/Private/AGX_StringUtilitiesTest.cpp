@@ -5,6 +5,7 @@
 
 // Unreal Engine includes.
 #include "Misc/AutomationTest.h"
+#include "Tests/AutomationCommon.h"
 
 #include "GameFramework/Actor.h"
 
@@ -13,7 +14,7 @@ DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FWaitTicks, int, NumTicks);
 bool FWaitTicks::Update()
 {
 	--NumTicks;
-	UE_LOG(LogAGX, Warning, TEXT("FWaitTicks ticked to %d."), NumTicks);
+	// UE_LOG(LogAGX, Warning, TEXT("FWaitTicks ticked to %d."), NumTicks);
 	return NumTicks < 0;
 }
 
