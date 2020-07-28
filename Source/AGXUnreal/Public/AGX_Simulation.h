@@ -110,6 +110,8 @@ public:
 
 	void Step(float DeltaTime);
 
+	float GetTimeStamp() const;
+
 	static UAGX_Simulation* GetFrom(const UActorComponent* Component);
 
 	static UAGX_Simulation* GetFrom(const AActor* Actor);

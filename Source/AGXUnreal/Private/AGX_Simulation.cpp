@@ -220,6 +220,11 @@ void UAGX_Simulation::StepDropImmediately(float DeltaTime)
 	LeftoverTime = DeltaTime;
 }
 
+float UAGX_Simulation::GetTimeStamp() const
+{
+	return NativeBarrier.GetTimeStamp();
+}
+
 UAGX_Simulation* UAGX_Simulation::GetFrom(const UActorComponent* Component)
 {
 	if (!Component)

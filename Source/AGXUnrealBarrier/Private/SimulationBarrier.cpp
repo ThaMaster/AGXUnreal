@@ -125,6 +125,12 @@ void FSimulationBarrier::Step()
 	NativeRef->Native->stepForward();
 }
 
+float FSimulationBarrier::GetTimeStamp() const
+{
+	check(HasNative());
+	return Convert(NativeRef->Native->getTimeStamp());
+}
+
 void FSimulationBarrier::SetStatisticsEnabled(bool bEnabled)
 {
 	agx::Statistics::instance()->setEnable(bEnabled);
