@@ -14,85 +14,323 @@
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
 
-/// \TODO GetTestWorld doesn't work, I have only ever seen it return nullptr.
-/// What does it do, actually? When is it supposed to be used? Why doesn it work in
-/// AutomationCommon.cpp?
+/*
+ * This file contains a set of tests that deal with importing AGX Dynamics archives into an Actor
+ * with ActorComponents for each imported AGX Dynamics body etc. All importing is done using
+ * AGX_ArchiveImporterToSingleActor::ImportAGXArchive.
+ */
 
-// Copy of the hidden method GetAnyGameWorld() in AutomationCommon.cpp.
-// Marked as temporary there, hence, this one is temporary, too.
-UWorld* GetTestWorld()
+/**
+ * A collection of helper functions used by our Automation tests.
+ *
+ * \todo Move these somewhere where all tests have access to them.
+ */
+namespace TestHelpers
 {
-	const TIndirectArray<FWorldContext>& WorldContexts = GEngine->GetWorldContexts();
-	if (WorldContexts.Num() == 0)
+	// Copy of the hidden method GetAnyGameWorld() in AutomationCommon.cpp.
+	// Marked as temporary there, hence, this one is temporary, too.
+	//
+	/// \TODO GetTestWorld doesn't work, I have only ever seen it return nullptr.
+	/// What does it do, actually? When is it supposed to be used? Why does it work in
+	/// AutomationCommon.cpp?
+	///
+	/// Answer:
+	/// It does work, but the world must be enabled/running/ticking first. The way to enable the
+	/// world when running unit tests from the command line through Unreal Editor is to pass `-Game`
+	/// on the command line to UE4Editor. When I do that I get the same UWorld pointer from both
+	/// GetTestWorld and FAGX_EditorUtilities::GetCurrentWorld.
+	UWorld* GetTestWorld()
 	{
-		UE_LOG(LogAGX, Warning, TEXT("GEngine->GetWorldContexts() is empty."));
-	}
-	for (const FWorldContext& Context : WorldContexts)
-	{
-		if (((Context.WorldType == EWorldType::PIE) || (Context.WorldType == EWorldType::Game)) &&
-			(Context.World() != nullptr))
+		const TIndirectArray<FWorldContext>& WorldContexts = GEngine->GetWorldContexts();
+		if (WorldContexts.Num() == 0)
 		{
-			return Context.World();
+			UE_LOG(LogAGX, Warning, TEXT("GEngine->GetWorldContexts() is empty."));
+			return nullptr;
 		}
+		for (const FWorldContext& Context : WorldContexts)
+		{
+			bool bIsPieOrGame =
+				Context.WorldType == EWorldType::PIE || Context.WorldType == EWorldType::Game;
+			if (bIsPieOrGame && Context.World() != nullptr)
+			{
+				return Context.World();
+			}
+		}
+		UE_LOG(
+			LogAGX, Warning, TEXT("Non of the %d WorldContexts contain a PIE or Game world."),
+			WorldContexts.Num());
+		return nullptr;
 	}
 
-	return nullptr;
+	/**
+	 * Get the file system path to and AGX Dynamcis archive intended for Automation testing.
+	 * @param ArchiveName The name of the AGX Dynamics archive to find.
+	 * @return File system path to the AGX Dynamics archive.
+	 */
+	FString GetArchivePath(const TCHAR* ArchiveName)
+	{
+		/// \todo Find where, if at all, Automation test AGX Dynamics archives should be stored.
+		/// In the repository or downloaded as with test files for AGX Dynamics.
+		/// \todo Find the proper path somehow. Likely using FPaths.
+		return FPaths::Combine(
+			TEXT("/home/ibbles/workspace/Algoryx/AGX_Dynamics_archives"), ArchiveName);
+	}
+
+	/**
+	 * Get the file system path to and AGX Dynamcis archive intended for Automation testing.
+	 * @param ArchiveName The name of the AGX Dynamics archive to find.
+	 * @return File system path to the AGX Dynamics archive.
+	 */
+	FString GetArchivePath(const FString& ArchiveName)
+	{
+		return GetArchivePath(*ArchiveName);
+	}
+
+	template <typename T>
+	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
+	{
+		UActorComponent** Match = Components.FindByPredicate([Name](UActorComponent* Component) {
+			return Cast<T>(Component) && Component->GetName() == Name;
+		});
+
+		return Match != nullptr ? Cast<T>(*Match) : nullptr;
+	}
+};
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogWarningAgxCommand, FString, Message);
+bool FLogWarningAgxCommand::Update()
+{
+	UE_LOG(LogAGX, Warning, TEXT("%s"), *Message);
+	return true;
 }
 
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogErrorAgxCommand, FString, Message);
+bool FLogErrorAgxCommand::Update()
+{
+	UE_LOG(LogAGX, Error, TEXT("%s"), *Message);
+	return true;
+}
+
+/**
+ * The purpose of this test is to figure out how to abort a test from a Latent Command so that
+ * the subsequent Latent Commands are skipped. I haven't found a way yet and I'm starting to suspect
+ * that it would be a bad idea. Tests should clean up after themselves which must happen in a Latent
+ * Command. By aborting the test we would also skip the clean-up step. I don't think we have any
+ * flow control / exceptions / then-else support in Latent Commands. A better approach would be to
+ * write each Latent Command to handle failures in the preceding Latent Commands.
+ */
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FTestAbort, "AGXUnreal.TestAbort",
+	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter);
+bool FTestAbort::RunTest(const FString& Parameters)
+{
+	ADD_LATENT_AUTOMATION_COMMAND(FLogWarningAgxCommand(TEXT("Before the error")));
+	ADD_LATENT_AUTOMATION_COMMAND(FLogErrorAgxCommand(TEXT("At the error.")));
+	ADD_LATENT_AUTOMATION_COMMAND(FLogWarningAgxCommand(TEXT("After the error.")));
+	return true;
+}
+
+/**
+ * Latent Command that tests that TestHelper::GetTestWorld and FAGX_EditorUtilities::GetCurrentWorld
+ * return the same world.
+ *
+ * \note This could be implemented directly in the Test itself, instead of as a Latent Command. Done
+ * this way for experimentation/learning purposes. Move the actual test code to the Test's RunTest
+ * once we're confident in our ability to write both Tests and Latent Commands.
+ */
+class FCheckWorldsCommand final : public IAutomationLatentCommand
+{
+public:
+	FCheckWorldsCommand(FAutomationTestBase& InTest)
+		: Test(InTest)
+	{
+	}
+
+	virtual bool Update() override
+	{
+		UWorld* TestWorld = TestHelpers::GetTestWorld();
+		UWorld* CurrentWorld = FAGX_EditorUtilities::GetCurrentWorld();
+		UE_LOG(LogAGX, Warning, TEXT("TestWorld:    %p"), (void*) TestWorld);
+		UE_LOG(LogAGX, Warning, TEXT("CurrentWorld: %p"), (void*) CurrentWorld);
+		Test.TestEqual(TEXT("Worlds"), TestWorld, CurrentWorld);
+		Test.TestNotNull("TestWorld", TestWorld);
+		Test.TestNotNull("CurrentWorld", CurrentWorld);
+		return true;
+	}
+
+private:
+	FAutomationTestBase& Test;
+};
+
+/**
+ * Test that TestHelper::GetTestWorld and FAGX_EditorUtilities::GetCurrentWorld return the same
+ * world.
+ */
+class FCheckWorldsTest final : public FAutomationTestBase
+{
+public:
+	FCheckWorldsTest()
+		: FAutomationTestBase(TEXT("FCheckWorldsTest"), false)
+	{
+	}
+
+	uint32 GetTestFlags() const override
+	{
+		return EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter;
+	}
+
+	uint32 GetRequiredDeviceNum() const override
+	{
+		return 1;
+	}
+
+	FString GetBeautifiedTestName() const override
+	{
+		return TEXT("AGXUnreal.CheckWorlds");
+	}
+
+protected:
+	void GetTests(
+		TArray<FString>& OutBeutifiedNames, TArray<FString>& OutTestCommands) const override
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("This should not be called since this is not a complex test."));
+		OutBeutifiedNames.Add(GetBeautifiedTestName());
+		OutTestCommands.Add(FString());
+	}
+
+	bool RunTest(const FString& InParameter) override
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("Running test '%s' with parameter '%s'."), *GetTestName(),
+			*InParameter);
+
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckWorldsCommand(*this));
+		return true;
+	}
+};
+
+// We must create an instantiate of the test class for the testing framework to find it.
+namespace
+{
+	FCheckWorldsTest CheckWorldsTest;
+}
+
+/**
+ * Get the file system path to and AGX Dynamcis archive intended for Automation testing.
+ * @param ArchiveName The name of the AGX Dynamics archive to find.
+ * @return File system path to the AGX Dynamics archive.
+ * @deprecated Use TestHelpers::GetArchivePath instead.
+ */
+UE_DEPRECATED(4.16, "Use TestHelpers::GetArchivePath")
 FString GetArchivePath(const TCHAR* ArchiveName)
 {
+	/// \todo Find where, if at all, Automation test AGX Dynamics archives should be stored.
+	/// In the repository or downloaded as with test files for AGX Dynamics.
+	/// \todo Find the proper path somehow. Likely using FPaths.
 	return FPaths::Combine(
 		TEXT("/home/ibbles/workspace/Algoryx/AGX_Dynamics_archives"), ArchiveName);
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-	FArchiveImporterToSingleActor_EmptySceneTest,
-	"AGXUnreal.ArchiveImporterToSingleActor.EmptyScene",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
-
-bool FArchiveImporterToSingleActor_EmptySceneTest::RunTest(const FString& Parameters)
+/**
+ * Latent Command that imports an AGX Dynamics archive.
+ */
+DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
+	FImportArchiveSingleActorCommand, FString, ArchiveName, AActor*&, Contents,
+	FAutomationTestBase&, Test);
+bool FImportArchiveSingleActorCommand::Update()
 {
-	/// \todo Add the archive to some folder within the plugin and use some API call to find that
-	/// path.
-	FString ArchiveFilePath = GetArchivePath(TEXT("empty_scene.agx"));
+	Test.TestEqual(
+		TEXT("TestWorld and CurrentWorld"), TestHelpers::GetTestWorld(),
+		FAGX_EditorUtilities::GetCurrentWorld());
 
-	UWorld* TestWorld = GetTestWorld();
-	TestNotNull(TEXT("UWorld fetched with GetTestWorld"), TestWorld);
-
-	UWorld* CurrentWorld = FAGX_EditorUtilities::GetCurrentWorld();
-	TestNotNull(TEXT("UWorld fetched with FAGX_EditorUtilities::GetCurrentWorld()"), CurrentWorld);
-
-	TestEqual(
-		TEXT("Worlds fetched from GetTestWorld and GetCurrentWorld"), CurrentWorld, TestWorld);
-
-	AActor* Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
-	TestNotNull(TEXT("Contents restored with ImportAGXArchive"), Contents);
-	if (Contents == nullptr)
-	{
-		return false;
-	}
-
-	TArray<AActor*> Children;
-	Contents->GetAllChildActors(Children, true);
-	TestEqual(TEXT("Number of child actors"), Children.Num(), 0);
+	FString ArchiveFilePath = TestHelpers::GetArchivePath(ArchiveName);
+	Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
+	Test.TestNotNull(TEXT("Contents"), Contents);
 
 	return true;
+}
+
+/**
+ * Latent Command testing that the empty scene was imported correctly.
+ */
+DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
+	FCheckEmptySceneImportCommand, AActor*&, Contents, FAutomationTestBase&, Test);
+bool FCheckEmptySceneImportCommand::Update()
+{
+	TArray<UActorComponent*> Components;
+	Contents->GetComponents(Components, false);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 1);
+	USceneComponent* SceneRoot =
+		TestHelpers::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	Test.TestEqual(
+		TEXT("The actor's world should be the test world."), Contents->GetWorld(),
+		TestHelpers::GetTestWorld());
+	Test.TestEqual(
+		TEXT("The Actor's world should be the current world."), Contents->GetWorld(),
+		FAGX_EditorUtilities::GetCurrentWorld());
+	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
+	return true;
+}
+
+/**
+ * Test that an empty AGX Dynamics archive can be imported, that the archive Actor root is created
+ * as it should, and that it is added to the world.
+ */
+class FArchiveImporterToSingleActor_EmptySceneTest final : public FAutomationTestBase
+{
+public:
+	FArchiveImporterToSingleActor_EmptySceneTest()
+		: FAutomationTestBase("FArchiveImporterToSingleActor_EmptySceneTest", false)
+	{
+	}
+
+	uint32 GetTestFlags() const override
+	{
+		return EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter;
+	}
+
+	uint32 GetRequiredDeviceNum() const override
+	{
+		return 1;
+	}
+
+	void GetTests(
+		TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands) const override
+	{
+		OutBeautifiedNames.Add(GetBeautifiedTestName());
+		OutTestCommands.Add(FString());
+	}
+
+protected:
+	bool RunTest(const FString& Parameters) override
+	{
+		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")));
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand());
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand("empty_scene.agx", Contents, *this));
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckEmptySceneImportCommand(Contents, *this));
+		return true;
+	}
+
+	FString GetBeautifiedTestName() const override
+	{
+		return TEXT("AGXUnreal.ArchiveImporterToSingleActor.EmptyScene");
+	}
+
+private:
+	AActor* Contents;
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_EmptySceneTest ArchiveImporterToSingleActor_EmptySceneTest;
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FArchiveImporterToSingleActor_SingleSphereTest,
 	"AGXUnreal.ArchiveImporterToSingleActor.SingleSphere",
 	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
-
-template <typename T>
-T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
-{
-	UActorComponent** Match = Components.FindByPredicate([Name](UActorComponent* Component) {
-		return Cast<T>(Component) && Component->GetName() == Name;
-	});
-
-	return Match != nullptr ? Cast<T>(*Match) : nullptr;
-}
 
 struct FSingleSphereTestState
 {
@@ -201,12 +439,12 @@ bool FLoadSingleSphereArchive::Update()
 	TArray<UActorComponent*> Components;
 	Contents->GetComponents(Components, false);
 	GameTest->TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
+	USceneComponent* SceneRoot = TestHelpers::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
 
-	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
 	UAGX_RigidBodyComponent* BulletBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
+			TestHelpers::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
 	UAGX_SphereShapeComponent* BulletShape =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("bullet_1"));
+			TestHelpers::GetByName<UAGX_SphereShapeComponent>(Components, TEXT("bullet_1"));
 
 	GameTest->TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
 	GameTest->TestNotNull(TEXT("Bullet"), BulletBody);
