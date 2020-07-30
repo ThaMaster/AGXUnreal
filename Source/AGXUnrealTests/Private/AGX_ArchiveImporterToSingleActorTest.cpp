@@ -10,6 +10,7 @@
 // Unreal Engine includes.
 #include "Engine/Engine.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
 #include "GameFramework/Actor.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
@@ -94,6 +95,12 @@ namespace TestHelpers
 		});
 
 		return Match != nullptr ? Cast<T>(*Match) : nullptr;
+	}
+
+	template <typename T>
+	void GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name, T*& Out)
+	{
+		Out = GetByName<T>(Components, Name);
 	}
 };
 
@@ -258,18 +265,27 @@ DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
 	FCheckEmptySceneImportCommand, AActor*&, Contents, FAutomationTestBase&, Test);
 bool FCheckEmptySceneImportCommand::Update()
 {
+	UWorld* World = TestHelpers::GetTestWorld();
+	Test.TestEqual(TEXT("The actor's world and the test world."), Contents->GetWorld(), World);
+
 	TArray<UActorComponent*> Components;
 	Contents->GetComponents(Components, false);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 1);
 	USceneComponent* SceneRoot =
 		TestHelpers::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
-	Test.TestEqual(
-		TEXT("The actor's world should be the test world."), Contents->GetWorld(),
-		TestHelpers::GetTestWorld());
-	Test.TestEqual(
-		TEXT("The Actor's world should be the current world."), Contents->GetWorld(),
-		FAGX_EditorUtilities::GetCurrentWorld());
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
+
+	bool Found = false;
+	for (FActorIterator It(World); It; ++It)
+	{
+		if (*It == Contents)
+		{
+			Found = true;
+			break;
+		}
+	}
+	Test.TestTrue(TEXT("Imported actor found in test world."), Found);
+
 	return true;
 }
 
@@ -439,12 +455,13 @@ bool FLoadSingleSphereArchive::Update()
 	TArray<UActorComponent*> Components;
 	Contents->GetComponents(Components, false);
 	GameTest->TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
-	USceneComponent* SceneRoot = TestHelpers::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	USceneComponent* SceneRoot =
+		TestHelpers::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
 
 	UAGX_RigidBodyComponent* BulletBody =
-			TestHelpers::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
+		TestHelpers::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
 	UAGX_SphereShapeComponent* BulletShape =
-			TestHelpers::GetByName<UAGX_SphereShapeComponent>(Components, TEXT("bullet_1"));
+		TestHelpers::GetByName<UAGX_SphereShapeComponent>(Components, TEXT("bullet_1"));
 
 	GameTest->TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
 	GameTest->TestNotNull(TEXT("Bullet"), BulletBody);
