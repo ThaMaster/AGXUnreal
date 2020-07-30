@@ -331,7 +331,7 @@ protected:
 
 	FString GetBeautifiedTestName() const override
 	{
-		return TEXT("AGXUnreal.ArchiveImporterToSingleActor.EmptyScene");
+		return TEXT("AGXUnreal.ArchiveImporterToSingleActor.EmptyScene.Test");
 	}
 
 private:
@@ -341,6 +341,53 @@ private:
 namespace
 {
 	FArchiveImporterToSingleActor_EmptySceneTest ArchiveImporterToSingleActor_EmptySceneTest;
+}
+
+BEGIN_DEFINE_SPEC(
+	FArchiveImporterToSingleActor_EmptySceneSpec,
+	"AGXUnreal.ArchiveImporterToSingleActor.EmptyScene.Spec",
+	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
+UWorld* World = nullptr;
+AActor* Contents = nullptr;
+END_DEFINE_SPEC(FArchiveImporterToSingleActor_EmptySceneSpec)
+
+void FArchiveImporterToSingleActor_EmptySceneSpec::Define()
+{
+	Describe("Import empty scene", [this]() {
+		BeforeEach([this]() {
+			World = TestHelpers::GetTestWorld();
+			TestNotNull(TEXT("World"), World);
+			UE_LOG(LogAGX, Warning, TEXT("Got world %p"), (void*)World);
+		});
+
+		BeforeEach([this]() {
+			UE_LOG(LogAGX, Warning, TEXT("Opening map 'Test_ArchiveImport'."));
+			GEngine->Exec(World, TEXT("open Test_ArchiveImport"));
+		});
+
+		BeforeEach([this]() {
+			FString ArchiveName = TEXT("empty_scene.agx");
+			FString ArchiveFilePath = TestHelpers::GetArchivePath(ArchiveName);
+			Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
+			UE_LOG(LogAGX, Warning, TEXT("Imported archive '%s'."), *ArchiveFilePath);
+		});
+
+		It("should contain the archive actor", [this]() {
+			UE_LOG(LogAGX, Warning, TEXT("Running checks"));
+			TestNotNull(TEXT(""), Contents);
+
+			bool Found = false;
+			for (FActorIterator It(World); It; ++It)
+			{
+				if (*It == Contents)
+				{
+					Found = true;
+					break;
+				}
+			}
+			TestTrue(TEXT("Imported actor found in test world."), Found);
+		});
+	});
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
