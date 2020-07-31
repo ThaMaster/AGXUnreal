@@ -20,6 +20,7 @@ FRigidBodyBarrier::FRigidBodyBarrier(std::unique_ptr<FRigidBodyRef> Native)
 FRigidBodyBarrier::FRigidBodyBarrier(FRigidBodyBarrier&& other)
 	: NativeRef {std::move(other.NativeRef)}
 {
+	other.NativeRef.reset(new FRigidBodyRef);
 }
 
 FRigidBodyBarrier::~FRigidBodyBarrier()
