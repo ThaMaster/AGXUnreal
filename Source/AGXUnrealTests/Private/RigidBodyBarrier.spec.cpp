@@ -40,8 +40,18 @@ void FRigidBodyBarrierSpec::Define()
 	});
 
 	Describe("Copying", [this]() {
-		It("should copy the native between barriers",
-		   [this]() { TestTrue("NOT YET IMPLEMENTED", false); });
+		It("should copy the native between barriers", [this]() {
+			FRigidBodyBarrier Source;
+			Source.AllocateNative();
+			TestTrue("Allocation should give teh barrier a native.", Source.HasNative());
+			BAIL_TEST_IF(!Source.HasNative());
+			FRigidBodyRef* Native = Source.GetNative();
+			FRigidBodyBarrier Destination(std::move(Source));
+			TestFalse("Move should clear source", Source.HasNative());
+			TestTrue("Move should set destination", Destination.HasNative());
+			BAIL_TEST_IF(!Destination.HasNative());
+			TestEqual("Move should preserve native pointer", Destination.GetNative(), Native);
+		});
 	});
 
 	Describe("Setting and getting properties", [this]() {
