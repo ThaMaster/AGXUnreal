@@ -46,10 +46,10 @@ public:
 	void SetName(const FString& NewName);
 	FString GetName() const;
 
-	FGuid GetGuid() const;
-
 	void SetMotionControl(EAGX_MotionControl MotionControl);
 	EAGX_MotionControl GetMotionControl() const;
+
+	FGuid GetGuid() const;
 
 	void AddShape(FShapeBarrier* Shape);
 
