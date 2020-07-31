@@ -71,7 +71,7 @@ FVector FRigidBodyBarrier::GetVelocity() const
 {
 	check(HasNative());
 	agx::Vec3 VelocityAGX = NativeRef->Native->getVelocity();
-	FVector VelocityUnreal = Convert(VelocityAGX);
+	FVector VelocityUnreal = ConvertVector(VelocityAGX);
 	return VelocityUnreal;
 }
 
