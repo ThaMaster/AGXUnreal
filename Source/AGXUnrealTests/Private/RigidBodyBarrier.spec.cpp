@@ -23,6 +23,10 @@ void FRigidBodyBarrierSpec::Define()
 			FRigidBodyBarrier RigidBody;
 			RigidBody.AllocateNative();
 			TestTrue("Allocation should give the barrier a native.", RigidBody.HasNative());
+			if (!RigidBody.HasNative())
+			{
+				return;
+			}
 			TestNotNull(
 				"Allocation should give the barrier a non-null native", RigidBody.GetNative());
 		});
@@ -30,12 +34,79 @@ void FRigidBodyBarrierSpec::Define()
 		It("should not have a native after release", [this]() {
 			FRigidBodyBarrier RigidBody;
 			RigidBody.AllocateNative();
+			TestTrue("Allocation should give the barrier a native.", RigidBody.HasNative());
+			if (!RigidBody.HasNative())
+			{
+				return;
+			}
 			RigidBody.ReleaseNative();
 			TestFalse("Release should remove the native from the barrier.", RigidBody.HasNative());
 		});
 	});
 
-	Describe("Setting and getting properties", [this]() {
+	Describe("Copying", [this]() {
+		It("should copy the native between barriers",
+		   [this]() { TestTrue("NOT YET IMPLEMENTED", false); });
+	});
 
+	Describe("Setting and getting properties", [this]() {
+		It("should return the same value that was set to a property", [this]() {
+			// All hard-coded numbers in this 'It' are arbitrarily selected. We just want the same
+			// numbers back again.
+			//
+			// We test what looks like trivial set/get methods because there is conversion happening
+			// between the Unreal Engine types and units and the AGX Dynamics types and units.
+
+			FRigidBodyBarrier RigidBody;
+			RigidBody.AllocateNative();
+			TestTrue("Allocation should give the barrier a native.", RigidBody.HasNative());
+			if (!RigidBody.HasNative())
+			{
+				return;
+			}
+
+			{
+				const FVector ExpectedPosition(1.0f, 2.0f, 3.0f);
+				RigidBody.SetPosition(ExpectedPosition);
+				const FVector ActualPosition = RigidBody.GetPosition();
+				TestEqual("Position", ActualPosition, ExpectedPosition);
+			}
+			{
+				const FQuat ExpectedRotation(FVector(2.0f, 4.0f, 3.0f).GetSafeNormal(), 4.0f);
+				RigidBody.SetRotation(ExpectedRotation);
+				const FQuat ActualRotation = RigidBody.GetRotation();
+				TestEqual("Rotation", ActualRotation, ExpectedRotation);
+			}
+			{
+				const FVector ExpectedVelocity(10.0f, 20.0f, 30.0f);
+				RigidBody.SetVelocity(ExpectedVelocity);
+				const FVector ActualVelocity = RigidBody.GetVelocity();
+				TestEqual("Velocity", ActualVelocity, ExpectedVelocity);
+			}
+			{
+				const FVector ExpectedAngularVelocity(11.0f, 21.0f, 31.0f);
+				RigidBody.SetAngularVelocity(ExpectedAngularVelocity);
+				const FVector ActualAngularVelocity = RigidBody.GetAngularVelocity();
+				TestEqual("Angular velocity", ActualAngularVelocity, ExpectedAngularVelocity);
+			}
+			{
+				const float ExpectedMass(3.0f);
+				RigidBody.SetMass(ExpectedMass);
+				const float ActualMass = RigidBody.GetMass();
+				TestEqual("Mass", ActualMass, ExpectedMass);
+			}
+			{
+				const FString ExpectedName("MyRigidBody");
+				RigidBody.SetName(ExpectedName);
+				const FString ActualName = RigidBody.GetName();
+				TestEqual("Name", ActualName, ExpectedName);
+			}
+			{
+				const EAGX_MotionControl ExpectedMotionControl = EAGX_MotionControl::MC_KINEMATICS;
+				RigidBody.SetMotionControl(ExpectedMotionControl);
+				const EAGX_MotionControl ActualMotionControl = RigidBody.GetMotionControl();
+				TestEqual("MotionControl", ActualMotionControl, ExpectedMotionControl);
+			}
+		});
 	});
 }
