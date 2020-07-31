@@ -28,6 +28,9 @@
  */
 namespace TestHelpers
 {
+	constexpr EAutomationTestFlags::Type ApplicationProduct = EAutomationTestFlags::Type(
+		EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask);
+
 	// Copy of the hidden method GetAnyGameWorld() in AutomationCommon.cpp.
 	// Marked as temporary there, hence, this one is temporary, too.
 	//
@@ -357,7 +360,7 @@ void FArchiveImporterToSingleActor_EmptySceneSpec::Define()
 		BeforeEach([this]() {
 			World = TestHelpers::GetTestWorld();
 			TestNotNull(TEXT("World"), World);
-			UE_LOG(LogAGX, Warning, TEXT("Got world %p"), (void*)World);
+			UE_LOG(LogAGX, Warning, TEXT("Got world %p"), (void*) World);
 		});
 
 		BeforeEach([this]() {
@@ -386,6 +389,58 @@ void FArchiveImporterToSingleActor_EmptySceneSpec::Define()
 				}
 			}
 			TestTrue(TEXT("Imported actor found in test world."), Found);
+		});
+	});
+}
+
+BEGIN_DEFINE_SPEC(
+	FArchiveImporterToSingleAcgor_SingleSphereSpec,
+	"AGXUnreal.ArchiveImporterToSingleActor.SingleSphere.Spec", TestHelpers::ApplicationProduct)
+const TCHAR* MapName = TEXT("Test_ArchiveImport");
+const TCHAR* ArchiveName = TEXT("single_sphere.agx");
+UWorld* World = nullptr;
+AActor* Contents = nullptr;
+UAGX_RigidBodyComponent* Sphere = nullptr;
+FVector SphereStartPosition;
+END_DEFINE_SPEC(FArchiveImporterToSingleAcgor_SingleSphereSpec)
+
+void FArchiveImporterToSingleAcgor_SingleSphereSpec::Define()
+{
+	Describe(TEXT("Import single sphere"), [this]() {
+		// Check world.
+		BeforeEach([this]() {
+			World = TestHelpers::GetTestWorld();
+			TestNotNull(TEXT("The test world most not be null."), World);
+			UE_LOG(LogAGX, Warning, TEXT("Got world %p."), (void*) World);
+		});
+
+		// Load map.
+		BeforeEach([this]() {
+			UE_LOG(LogAGX, Warning, TEXT("Opening map '%s'"), MapName);
+			GEngine->Exec(World, *FString::Printf(TEXT("open %s"), MapName));
+		});
+
+		// Import archive.
+		BeforeEach([this]() {
+			FString ArchiveFilePath = TestHelpers::GetArchivePath(ArchiveName);
+			Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
+			TestNotNull(TEXT("Contents"), Contents);
+			TArray<UActorComponent*> Components;
+			Contents->GetComponents(Components, false);
+			TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
+			Sphere = TestHelpers::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
+			TestNotNull(TEXT("Sphere body"), Sphere);
+			SphereStartPosition = Sphere->GetComponentLocation();
+			UE_LOG(LogAGX, Warning, TEXT("Imported archive '%s'."), *ArchiveFilePath);
+		});
+
+		// Check contents.
+		It(TEXT("should have imported a sphere"), [this]() {
+			TestNotNull(TEXT("Imported sphere"), Sphere);
+		});
+
+		LatentIt(TEXT("should have a falling sphere"), [this](const FDoneDelegate& Done) {
+
 		});
 	});
 }
