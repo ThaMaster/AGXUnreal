@@ -77,12 +77,7 @@ void FRigidBodyBarrierSpec::Define()
 				const FQuat ExpectedRotation(FVector(2.0f, 4.0f, 3.0f).GetSafeNormal(), 4.0f);
 				RigidBody.SetRotation(ExpectedRotation);
 				const FQuat ActualRotation = RigidBody.GetRotation();
-				// TestEqual("Rotation", ActualRotation, ExpectedRotation);
 				TestHelpers::TestEqual(*this, TEXT("Rotation"), ActualRotation, ExpectedRotation);
-				UE_LOG(
-					LogAGX, Warning, TEXT("Actual(%f, %f, %f, %f) != Expected(%f, %f, %f, %f)."),
-					ActualRotation.X, ActualRotation.Y, ActualRotation.Z, ActualRotation.W,
-					ExpectedRotation.X, ExpectedRotation.Y, ExpectedRotation.Z, ExpectedRotation.W);
 			}
 			{
 				const FVector ExpectedVelocity(10.0f, 20.0f, 30.0f);
