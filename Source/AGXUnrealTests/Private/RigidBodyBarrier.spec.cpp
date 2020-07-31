@@ -1,5 +1,6 @@
 
 // AGXUnreal includes.
+#include "AGX_LogCategory.h"
 #include "RigidBodyBarrier.h"
 #include "TestHelpers.h"
 
@@ -23,10 +24,7 @@ void FRigidBodyBarrierSpec::Define()
 			FRigidBodyBarrier RigidBody;
 			RigidBody.AllocateNative();
 			TestTrue("Allocation should give the barrier a native.", RigidBody.HasNative());
-			if (!RigidBody.HasNative())
-			{
-				return;
-			}
+			BAIL_TEST_IF(!RigidBody.HasNative())
 			TestNotNull(
 				"Allocation should give the barrier a non-null native", RigidBody.GetNative());
 		});
@@ -35,10 +33,7 @@ void FRigidBodyBarrierSpec::Define()
 			FRigidBodyBarrier RigidBody;
 			RigidBody.AllocateNative();
 			TestTrue("Allocation should give the barrier a native.", RigidBody.HasNative());
-			if (!RigidBody.HasNative())
-			{
-				return;
-			}
+			BAIL_TEST_IF(!RigidBody.HasNative())
 			RigidBody.ReleaseNative();
 			TestFalse("Release should remove the native from the barrier.", RigidBody.HasNative());
 		});
@@ -60,10 +55,7 @@ void FRigidBodyBarrierSpec::Define()
 			FRigidBodyBarrier RigidBody;
 			RigidBody.AllocateNative();
 			TestTrue("Allocation should give the barrier a native.", RigidBody.HasNative());
-			if (!RigidBody.HasNative())
-			{
-				return;
-			}
+			BAIL_TEST_IF(!RigidBody.HasNative())
 
 			{
 				const FVector ExpectedPosition(1.0f, 2.0f, 3.0f);
