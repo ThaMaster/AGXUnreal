@@ -9,5 +9,11 @@ namespace TestHelpers
 		static_cast<const EAutomationTestFlags::Type>(
 			EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask);
 
-
 }
+
+#define BAIL_TEST_IF(expression)      \
+	if (expression)                   \
+	{                                 \
+		TestFalse(#expression, true); \
+		return;                       \
+	}
