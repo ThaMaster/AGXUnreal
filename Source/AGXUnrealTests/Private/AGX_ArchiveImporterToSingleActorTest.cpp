@@ -6,6 +6,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
+#include "TestHelpers.h"
 
 // Unreal Engine includes.
 #include "Engine/Engine.h"
@@ -324,6 +325,7 @@ public:
 protected:
 	bool RunTest(const FString& Parameters) override
 	{
+		BAIL_TEST_IF_NO_WORLD()
 		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")));
 		ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand());
 		ADD_LATENT_AUTOMATION_COMMAND(
@@ -435,9 +437,8 @@ void FArchiveImporterToSingleAcgor_SingleSphereSpec::Define()
 		});
 
 		// Check contents.
-		It(TEXT("should have imported a sphere"), [this]() {
-			TestNotNull(TEXT("Imported sphere"), Sphere);
-		});
+		It(TEXT("should have imported a sphere"),
+		   [this]() { TestNotNull(TEXT("Imported sphere"), Sphere); });
 
 		LatentIt(TEXT("should have a falling sphere"), [this](const FDoneDelegate& Done) {
 
