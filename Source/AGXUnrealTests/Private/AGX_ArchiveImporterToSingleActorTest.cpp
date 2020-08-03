@@ -171,8 +171,6 @@ protected:
 	void GetTests(
 		TArray<FString>& OutBeutifiedNames, TArray<FString>& OutTestCommands) const override
 	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("This should not be called since this is not a complex test."));
 		OutBeutifiedNames.Add(GetBeautifiedTestName());
 		OutTestCommands.Add(FString());
 	}

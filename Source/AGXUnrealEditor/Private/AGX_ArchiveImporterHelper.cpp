@@ -484,15 +484,11 @@ namespace
 		FString BasePath = FAGX_ImportUtilities::CreateArchivePackagePath(ArchiveName);
 
 		auto PackageExists = [&](const FString& DirPath) {
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Creating import helper for '%s', testing package path '%s'."), *BasePath,
-				*DirPath);
+			/// @todo Is this check necessary? Can it be something less crashy? It was copied from
+			/// somewehre, where?
 			check(!FEditorFileUtils::IsMapPackageAsset(DirPath));
+
 			FString DiskPath = FPackageName::LongPackageNameToFilename(DirPath);
-			UE_LOG(
-				LogAGX, Warning, TEXT("The content folder '%s' is disk directory '%s'."), *DirPath,
-				*DiskPath);
 			return FPackageName::DoesPackageExist(DirPath) ||
 				   FindObject<UPackage>(nullptr, *DirPath) != nullptr ||
 				   FPaths::DirectoryExists(DiskPath) || FPaths::FileExists(DiskPath);
@@ -508,10 +504,8 @@ namespace
 			DirectoryName = ArchiveName + TEXT("_") + FString::FromInt(TryCount);
 		}
 		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Creating import helper for '%s', decided on package path '%s' and package name "
-				 "'%s'."),
-			*BasePath, *DirectoryPath, *DirectoryName);
+			LogAGX, Display, TEXT("Importing AGX Dynamics archive '%s' to '%s'."), *ArchiveName,
+			*DirectoryPath);
 		return DirectoryName;
 	}
 }
