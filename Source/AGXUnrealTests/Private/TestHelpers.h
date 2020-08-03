@@ -9,6 +9,46 @@
 /// @todo Move most of the function definitions to TestHelper.cpp
 namespace TestHelpers
 {
+	// Copy of the hidden method GetAnyGameWorld() in AutomationCommon.cpp.
+	// Marked as temporary there, hence, this one is temporary, too.
+	//
+	/// \TODO GetTestWorld doesn't work, I have only ever seen it return nullptr.
+	/// What does it do, actually? When is it supposed to be used? Why does it work in
+	/// AutomationCommon.cpp?
+	///
+	/// Answer:
+	/// It does work, but the world must be enabled/running/ticking first. The way to enable the
+	/// world when running unit tests from the command line through Unreal Editor is to pass `-Game`
+	/// on the command line to UE4Editor. When I do that I get the same UWorld pointer from both
+	/// GetTestWorld and FAGX_EditorUtilities::GetCurrentWorld.
+	inline UWorld* GetTestWorld()
+	{
+		if (GEngine == nullptr)
+		{
+			UE_LOG(LogAGX, Warning, TEXT("Cannot get the test world because GEngine is nullptr."));
+			return nullptr;
+		}
+		const TIndirectArray<FWorldContext>& WorldContexts = GEngine->GetWorldContexts();
+		if (WorldContexts.Num() == 0)
+		{
+			UE_LOG(LogAGX, Warning, TEXT("GEngine->GetWorldContexts() is empty."));
+			return nullptr;
+		}
+		for (const FWorldContext& Context : WorldContexts)
+		{
+			bool bIsPieOrGame =
+				Context.WorldType == EWorldType::PIE || Context.WorldType == EWorldType::Game;
+			if (bIsPieOrGame && Context.World() != nullptr)
+			{
+				return Context.World();
+			}
+		}
+		UE_LOG(
+			LogAGX, Warning, TEXT("Non of the %d WorldContexts contain a PIE or Game world."),
+			WorldContexts.Num());
+		return nullptr;
+	}
+
 	constexpr EAutomationTestFlags::Type DefaultTestFlags =
 		static_cast<const EAutomationTestFlags::Type>(
 			EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask);
