@@ -29,35 +29,6 @@
  */
 namespace AgxAutomationCommon
 {
-	constexpr EAutomationTestFlags::Type ApplicationProduct = EAutomationTestFlags::Type(
-		EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask);
-
-
-
-	/**
-	 * Get the file system path to and AGX Dynamcis archive intended for Automation testing.
-	 * @param ArchiveName The name of the AGX Dynamics archive to find.
-	 * @return File system path to the AGX Dynamics archive.
-	 */
-	FString GetArchivePath(const TCHAR* ArchiveName)
-	{
-		/// \todo Find where, if at all, Automation test AGX Dynamics archives should be stored.
-		/// In the repository or downloaded as with test files for AGX Dynamics.
-		/// \todo Find the proper path somehow. Likely using FPaths.
-		return FPaths::Combine(
-			TEXT("/home/ibbles/workspace/Algoryx/AGX_Dynamics_archives"), ArchiveName);
-	}
-
-	/**
-	 * Get the file system path to and AGX Dynamcis archive intended for Automation testing.
-	 * @param ArchiveName The name of the AGX Dynamics archive to find.
-	 * @return File system path to the AGX Dynamics archive.
-	 */
-	FString GetArchivePath(const FString& ArchiveName)
-	{
-		return GetArchivePath(*ArchiveName);
-	}
-
 	template <typename T>
 	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
 	{
@@ -193,22 +164,6 @@ namespace
 }
 
 /**
- * Get the file system path to and AGX Dynamcis archive intended for Automation testing.
- * @param ArchiveName The name of the AGX Dynamics archive to find.
- * @return File system path to the AGX Dynamics archive.
- * @deprecated Use AgxAutomationCommon::GetArchivePath instead.
- */
-UE_DEPRECATED(4.16, "Use AgxAutomationCommon::GetArchivePath")
-FString GetArchivePath(const TCHAR* ArchiveName)
-{
-	/// \todo Find where, if at all, Automation test AGX Dynamics archives should be stored.
-	/// In the repository or downloaded as with test files for AGX Dynamics.
-	/// \todo Find the proper path somehow. Likely using FPaths.
-	return FPaths::Combine(
-		TEXT("/home/ibbles/workspace/Algoryx/AGX_Dynamics_archives"), ArchiveName);
-}
-
-/**
  * Latent Command that imports an AGX Dynamics archive.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
@@ -217,8 +172,8 @@ DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
 bool FImportArchiveSingleActorCommand::Update()
 {
 	Test.TestEqual(
-			TEXT("TestWorld and CurrentWorld"), AgxAutomationCommon::GetTestWorld(),
-			FAGX_EditorUtilities::GetCurrentWorld());
+		TEXT("TestWorld and CurrentWorld"), AgxAutomationCommon::GetTestWorld(),
+		FAGX_EditorUtilities::GetCurrentWorld());
 
 	FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(ArchiveName);
 	Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
@@ -361,8 +316,9 @@ void FArchiveImporterToSingleActor_EmptySceneSpec::Define()
 }
 
 BEGIN_DEFINE_SPEC(
-		FArchiveImporterToSingleAcgor_SingleSphereSpec,
-		"AGXUnreal.ArchiveImporterToSingleActor.SingleSphere.Spec", AgxAutomationCommon::ApplicationProduct)
+	FArchiveImporterToSingleAcgor_SingleSphereSpec,
+	"AGXUnreal.ArchiveImporterToSingleActor.SingleSphere.Spec",
+	AgxAutomationCommon::DefaultTestFlags)
 const TCHAR* MapName = TEXT("Test_ArchiveImport");
 const TCHAR* ArchiveName = TEXT("single_sphere.agx");
 UWorld* World = nullptr;
@@ -395,7 +351,8 @@ void FArchiveImporterToSingleAcgor_SingleSphereSpec::Define()
 			TArray<UActorComponent*> Components;
 			Contents->GetComponents(Components, false);
 			TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
-			Sphere = AgxAutomationCommon::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
+			Sphere =
+				AgxAutomationCommon::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
 			TestNotNull(TEXT("Sphere body"), Sphere);
 			SphereStartPosition = Sphere->GetComponentLocation();
 			UE_LOG(LogAGX, Warning, TEXT("Imported archive '%s'."), *ArchiveFilePath);
@@ -512,7 +469,7 @@ bool FLoadSingleSphereArchive::Update()
 	UWorld* CurrentWorld = FAGX_EditorUtilities::GetCurrentWorld();
 	GameTest->TestNotNull(TEXT("Current world"), CurrentWorld);
 
-	FString ArchiveFilePath = GetArchivePath(TEXT("single_sphere.agx"));
+	FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(TEXT("single_sphere.agx"));
 	AActor* Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
 	GameTest->TestNotNull(TEXT("Actor restored from archive"), Contents);
 	if (Contents == nullptr)

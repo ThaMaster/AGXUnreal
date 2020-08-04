@@ -59,6 +59,21 @@ namespace AgxAutomationCommon
 	 * @return The reason why world tests can't be run, or NoReason if world tests can be run.
 	 */
 	NoWorldTestsReason CanRunWorldTests();
+
+	/**
+	 * Get the file system path to an AGX Dynamcis archive intended for Automation testing.
+	 * @param ArchiveName The name of the AGX Dynamics archive to find.
+	 * @return File system path to the AGX Dynamics archive.
+	 */
+	FString GetArchivePath(const TCHAR* ArchiveName);
+
+	/**
+	 * Get the file system path to an AGX Dynamcis archive intended for Automation testing.
+	 * @param ArchiveName The name of the AGX Dynamics archive to find.
+	 * @return File system path to the AGX Dynamics archive.
+	 */
+	FString GetArchivePath(const FString& ArchiveName);
+
 }
 
 #define BAIL_TEST_IF(expression)      \
@@ -71,6 +86,6 @@ namespace AgxAutomationCommon
 #define BAIL_TEST_IF_NO_WORLD()                                                                   \
 	if (AgxAutomationCommon::NoWorldTestsReason Reason = AgxAutomationCommon::CanRunWorldTests()) \
 	{                                                                                             \
-		AddError(AgxAutomationCommon::GetNoWorldTestsReasonText(Reason));                                 \
+		AddError(AgxAutomationCommon::GetNoWorldTestsReasonText(Reason));                         \
 		return false;                                                                             \
 	}

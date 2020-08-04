@@ -6,6 +6,7 @@
 // Unreal Engine includes.
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"
+#include "Misc/Paths.h"
 
 UWorld* AgxAutomationCommon::GetTestWorld()
 {
@@ -114,4 +115,18 @@ AgxAutomationCommon::NoWorldTestsReason AgxAutomationCommon::CanRunWorldTests()
 		return NoWorldTestsReason::IllegalWorldType;
 	}
 	return NoWorldTestsReason::NoReason;
+}
+
+FString AgxAutomationCommon::GetArchivePath(const TCHAR* ArchiveName)
+{
+	/// \todo Find where, if at all, Automation test AGX Dynamics archives should be stored.
+	/// In the repository or downloaded as with test files for AGX Dynamics.
+	/// \todo Find the proper path somehow. Likely using FPaths.
+	return FPaths::Combine(
+		TEXT("/home/ibbles/workspace/Algoryx/AGX_Dynamics_archives"), ArchiveName);
+}
+
+FString AgxAutomationCommon::GetArchivePath(const FString& ArchiveName)
+{
+	return GetArchivePath(*ArchiveName);
 }
