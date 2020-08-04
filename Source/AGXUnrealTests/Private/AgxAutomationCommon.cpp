@@ -23,11 +23,20 @@ UWorld* AgxAutomationCommon::GetTestWorld()
 	const TIndirectArray<FWorldContext>& WorldContexts = GEngine->GetWorldContexts();
 	if (WorldContexts.Num() == 0)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("GEngine->GetWorldContexts() is empty."));
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot get the test world because GEngine->GetWorldContexts() is empty."));
 		return nullptr;
 	}
 	for (const FWorldContext& Context : WorldContexts)
 	{
+		// It's not clear to me which worlds are OK to use when testing. Here, taken from
+		// GetAnyGameWorld in the engine's AutomationCommon.cpp, we allow with PIE and Game.
+		// However, in FLoadGameMapCommand, in the same AutomationCommon.cpp, only Game worlds, not
+		// PIE, are accepted. So some things are allowed on both PIE and Game worlds, but map
+		// loading is only allowed on Game worlds? Is there a way to create a hidden background
+		// world used for the test only, detaching the entire test from the state of the rest of the
+		// worlds?
 		bool bIsPieOrGame =
 			Context.WorldType == EWorldType::PIE || Context.WorldType == EWorldType::Game;
 		if (bIsPieOrGame && Context.World() != nullptr)
@@ -36,7 +45,7 @@ UWorld* AgxAutomationCommon::GetTestWorld()
 		}
 	}
 	UE_LOG(
-		LogAGX, Warning, TEXT("Non of the %d WorldContexts contain a PIE or Game world."),
+		LogAGX, Warning, TEXT("None of the %d WorldContexts contain a PIE or Game world."),
 		WorldContexts.Num());
 	return nullptr;
 }

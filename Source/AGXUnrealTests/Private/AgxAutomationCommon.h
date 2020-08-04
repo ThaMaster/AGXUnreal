@@ -16,7 +16,7 @@ namespace AgxAutomationCommon
 	 * Get a pointer to the best guess for which world is the test world.
 	 *
 	 * There is some heuristics involved. Returns the world found in the first WorldContext that is
-	 * either a play-in-editor context are a game context. For there to be such a world the tests
+	 * either a play-in-editor context or a game context. For there to be such a world the tests
 	 * must either be run from within the editor or from and command line with the parameter '-Game'
 	 * passed to UE4Editor.
 	 *
@@ -37,7 +37,8 @@ namespace AgxAutomationCommon
 		FAutomationTestBase& Test, const TCHAR* What, const FQuat& Actual, const FQuat& Expected,
 		float Tolerance = KINDA_SMALL_NUMBER);
 
-	/// @todo Figure out how to use UEnum::GetVAlueAsString. I get linker errors.
+	/// @todo Figure out how to use UEnum::GetValueAsString instead of this helper function.
+	/// I get linker errors.
 	FString WorldTypeToString(EWorldType::Type Type);
 
 	// Not 'enum class' because I want implicit conversion to bool, with 'NoReason' being false.
