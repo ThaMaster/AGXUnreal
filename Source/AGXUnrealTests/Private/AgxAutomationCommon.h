@@ -7,9 +7,10 @@
 
 class UWorld;
 
-/// @todo Move most of the function definitions to TestHelper.cpp
-/// @todo Consider renaming this file to AgxAutomationCommon, for consistency with engine plugins.
-namespace TestHelpers
+/**
+ * A set of helper functions used by several Automation tests.
+ */
+namespace AgxAutomationCommon
 {
 	/**
 	 * Get a pointer to the best guess for which world is the test world.
@@ -66,9 +67,9 @@ namespace TestHelpers
 		return;                       \
 	}
 
-#define BAIL_TEST_IF_NO_WORLD()                                                   \
-	if (TestHelpers::NoWorldTestsReason Reason = TestHelpers::CanRunWorldTests()) \
-	{                                                                             \
-		AddError(TestHelpers::GetNoWorldTestsReasonText(Reason));                 \
-		return false;                                                             \
+#define BAIL_TEST_IF_NO_WORLD()                                                                   \
+	if (AgxAutomationCommon::NoWorldTestsReason Reason = AgxAutomationCommon::CanRunWorldTests()) \
+	{                                                                                             \
+		AddError(AgxAutomationCommon::GetNoWorldTestsReasonText(Reason));                                 \
+		return false;                                                                             \
 	}

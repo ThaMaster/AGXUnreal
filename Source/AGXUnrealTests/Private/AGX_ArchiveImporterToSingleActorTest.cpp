@@ -6,7 +6,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
-#include "TestHelpers.h"
+#include "AgxAutomationCommon.h"
 
 // Unreal Engine includes.
 #include "Engine/Engine.h"
@@ -27,7 +27,7 @@
  *
  * \todo Move these somewhere where all tests have access to them.
  */
-namespace TestHelpers
+namespace AgxAutomationCommon
 {
 	constexpr EAutomationTestFlags::Type ApplicationProduct = EAutomationTestFlags::Type(
 		EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask);
@@ -126,7 +126,7 @@ public:
 
 	virtual bool Update() override
 	{
-		UWorld* TestWorld = TestHelpers::GetTestWorld();
+		UWorld* TestWorld = AgxAutomationCommon::GetTestWorld();
 		UWorld* CurrentWorld = FAGX_EditorUtilities::GetCurrentWorld();
 		UE_LOG(LogAGX, Warning, TEXT("TestWorld:    %p"), (void*) TestWorld);
 		UE_LOG(LogAGX, Warning, TEXT("CurrentWorld: %p"), (void*) CurrentWorld);
@@ -196,9 +196,9 @@ namespace
  * Get the file system path to and AGX Dynamcis archive intended for Automation testing.
  * @param ArchiveName The name of the AGX Dynamics archive to find.
  * @return File system path to the AGX Dynamics archive.
- * @deprecated Use TestHelpers::GetArchivePath instead.
+ * @deprecated Use AgxAutomationCommon::GetArchivePath instead.
  */
-UE_DEPRECATED(4.16, "Use TestHelpers::GetArchivePath")
+UE_DEPRECATED(4.16, "Use AgxAutomationCommon::GetArchivePath")
 FString GetArchivePath(const TCHAR* ArchiveName)
 {
 	/// \todo Find where, if at all, Automation test AGX Dynamics archives should be stored.
@@ -217,10 +217,10 @@ DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
 bool FImportArchiveSingleActorCommand::Update()
 {
 	Test.TestEqual(
-		TEXT("TestWorld and CurrentWorld"), TestHelpers::GetTestWorld(),
-		FAGX_EditorUtilities::GetCurrentWorld());
+			TEXT("TestWorld and CurrentWorld"), AgxAutomationCommon::GetTestWorld(),
+			FAGX_EditorUtilities::GetCurrentWorld());
 
-	FString ArchiveFilePath = TestHelpers::GetArchivePath(ArchiveName);
+	FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(ArchiveName);
 	Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 
@@ -234,14 +234,14 @@ DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
 	FCheckEmptySceneImportCommand, AActor*&, Contents, FAutomationTestBase&, Test);
 bool FCheckEmptySceneImportCommand::Update()
 {
-	UWorld* World = TestHelpers::GetTestWorld();
+	UWorld* World = AgxAutomationCommon::GetTestWorld();
 	Test.TestEqual(TEXT("The actor's world and the test world."), Contents->GetWorld(), World);
 
 	TArray<UActorComponent*> Components;
 	Contents->GetComponents(Components, false);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 1);
 	USceneComponent* SceneRoot =
-		TestHelpers::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+		AgxAutomationCommon::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
 
 	bool Found = false;
@@ -325,7 +325,7 @@ void FArchiveImporterToSingleActor_EmptySceneSpec::Define()
 {
 	Describe("Import empty scene", [this]() {
 		BeforeEach([this]() {
-			World = TestHelpers::GetTestWorld();
+			World = AgxAutomationCommon::GetTestWorld();
 			TestNotNull(TEXT("World"), World);
 			UE_LOG(LogAGX, Warning, TEXT("Got world %p"), (void*) World);
 		});
@@ -337,7 +337,7 @@ void FArchiveImporterToSingleActor_EmptySceneSpec::Define()
 
 		BeforeEach([this]() {
 			FString ArchiveName = TEXT("empty_scene.agx");
-			FString ArchiveFilePath = TestHelpers::GetArchivePath(ArchiveName);
+			FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(ArchiveName);
 			Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
 			UE_LOG(LogAGX, Warning, TEXT("Imported archive '%s'."), *ArchiveFilePath);
 		});
@@ -361,8 +361,8 @@ void FArchiveImporterToSingleActor_EmptySceneSpec::Define()
 }
 
 BEGIN_DEFINE_SPEC(
-	FArchiveImporterToSingleAcgor_SingleSphereSpec,
-	"AGXUnreal.ArchiveImporterToSingleActor.SingleSphere.Spec", TestHelpers::ApplicationProduct)
+		FArchiveImporterToSingleAcgor_SingleSphereSpec,
+		"AGXUnreal.ArchiveImporterToSingleActor.SingleSphere.Spec", AgxAutomationCommon::ApplicationProduct)
 const TCHAR* MapName = TEXT("Test_ArchiveImport");
 const TCHAR* ArchiveName = TEXT("single_sphere.agx");
 UWorld* World = nullptr;
@@ -376,7 +376,7 @@ void FArchiveImporterToSingleAcgor_SingleSphereSpec::Define()
 	Describe(TEXT("Import single sphere"), [this]() {
 		// Check world.
 		BeforeEach([this]() {
-			World = TestHelpers::GetTestWorld();
+			World = AgxAutomationCommon::GetTestWorld();
 			TestNotNull(TEXT("The test world most not be null."), World);
 			UE_LOG(LogAGX, Warning, TEXT("Got world %p."), (void*) World);
 		});
@@ -389,13 +389,13 @@ void FArchiveImporterToSingleAcgor_SingleSphereSpec::Define()
 
 		// Import archive.
 		BeforeEach([this]() {
-			FString ArchiveFilePath = TestHelpers::GetArchivePath(ArchiveName);
+			FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(ArchiveName);
 			Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
 			TestNotNull(TEXT("Contents"), Contents);
 			TArray<UActorComponent*> Components;
 			Contents->GetComponents(Components, false);
 			TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
-			Sphere = TestHelpers::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
+			Sphere = AgxAutomationCommon::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
 			TestNotNull(TEXT("Sphere body"), Sphere);
 			SphereStartPosition = Sphere->GetComponentLocation();
 			UE_LOG(LogAGX, Warning, TEXT("Imported archive '%s'."), *ArchiveFilePath);
@@ -524,12 +524,12 @@ bool FLoadSingleSphereArchive::Update()
 	Contents->GetComponents(Components, false);
 	GameTest->TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
 	USceneComponent* SceneRoot =
-		TestHelpers::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+		AgxAutomationCommon::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
 
 	UAGX_RigidBodyComponent* BulletBody =
-		TestHelpers::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
+		AgxAutomationCommon::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
 	UAGX_SphereShapeComponent* BulletShape =
-		TestHelpers::GetByName<UAGX_SphereShapeComponent>(Components, TEXT("bullet_1"));
+		AgxAutomationCommon::GetByName<UAGX_SphereShapeComponent>(Components, TEXT("bullet_1"));
 
 	GameTest->TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
 	GameTest->TestNotNull(TEXT("Bullet"), BulletBody);

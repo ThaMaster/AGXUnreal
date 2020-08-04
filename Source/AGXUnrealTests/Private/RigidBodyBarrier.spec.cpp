@@ -2,14 +2,14 @@
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
 #include "RigidBodyBarrier.h"
-#include "TestHelpers.h"
+#include "AgxAutomationCommon.h"
 
 // Unreal Engine includes.
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
 
 BEGIN_DEFINE_SPEC(
-	FRigidBodyBarrierSpec, "AGXUnreal.Barrier.RigidBody", TestHelpers::DefaultTestFlags)
+	FRigidBodyBarrierSpec, "AGXUnreal.Barrier.RigidBody", AgxAutomationCommon::DefaultTestFlags)
 END_DEFINE_SPEC(FRigidBodyBarrierSpec)
 
 void FRigidBodyBarrierSpec::Define()
@@ -77,7 +77,8 @@ void FRigidBodyBarrierSpec::Define()
 				const FQuat ExpectedRotation(FVector(2.0f, 4.0f, 3.0f).GetSafeNormal(), 4.0f);
 				RigidBody.SetRotation(ExpectedRotation);
 				const FQuat ActualRotation = RigidBody.GetRotation();
-				TestHelpers::TestEqual(*this, TEXT("Rotation"), ActualRotation, ExpectedRotation);
+				AgxAutomationCommon::TestEqual(
+					*this, TEXT("Rotation"), ActualRotation, ExpectedRotation);
 			}
 			{
 				const FVector ExpectedVelocity(10.0f, 20.0f, 30.0f);

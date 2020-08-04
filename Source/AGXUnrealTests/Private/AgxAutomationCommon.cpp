@@ -1,4 +1,4 @@
-#include "TestHelpers.h"
+#include "AgxAutomationCommon.h"
 
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
@@ -7,7 +7,7 @@
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"
 
-UWorld* TestHelpers::GetTestWorld()
+UWorld* AgxAutomationCommon::GetTestWorld()
 {
 	// Based on GetAnyGameWorld() in AutomationCommon.cpp.
 	// That implementation has the following commend:
@@ -41,7 +41,7 @@ UWorld* TestHelpers::GetTestWorld()
 	return nullptr;
 }
 
-void TestHelpers::TestEqual(
+void AgxAutomationCommon::TestEqual(
 	FAutomationTestBase& Test, const TCHAR* What, const FQuat& Actual, const FQuat& Expected,
 	float Tolerance)
 {
@@ -53,7 +53,7 @@ void TestHelpers::TestEqual(
 	}
 }
 
-FString TestHelpers::WorldTypeToString(EWorldType::Type Type)
+FString AgxAutomationCommon::WorldTypeToString(EWorldType::Type Type)
 {
 	switch (Type)
 	{
@@ -76,7 +76,7 @@ FString TestHelpers::WorldTypeToString(EWorldType::Type Type)
 	}
 }
 
-FString TestHelpers::GetNoWorldTestsReasonText(NoWorldTestsReason Reason)
+FString AgxAutomationCommon::GetNoWorldTestsReasonText(NoWorldTestsReason Reason)
 {
 	switch (Reason)
 	{
@@ -87,13 +87,13 @@ FString TestHelpers::GetNoWorldTestsReasonText(NoWorldTestsReason Reason)
 			return FString::Printf(
 				TEXT("Cannot run tests that need a world because the available world isn't a "
 					 "'Game' world, it's a '%s' world."),
-				*TestHelpers::WorldTypeToString(
+				*AgxAutomationCommon::WorldTypeToString(
 					GEngine->GetWorldContexts()[0].WorldType.GetValue()));
 	}
 	return FString();
 }
 
-TestHelpers::NoWorldTestsReason TestHelpers::CanRunWorldTests()
+AgxAutomationCommon::NoWorldTestsReason AgxAutomationCommon::CanRunWorldTests()
 {
 	const TIndirectArray<FWorldContext>& Worlds = GEngine->GetWorldContexts();
 	if (Worlds.Num() != 1)
