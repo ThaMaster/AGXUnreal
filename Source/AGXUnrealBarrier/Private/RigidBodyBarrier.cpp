@@ -78,7 +78,7 @@ FVector FRigidBodyBarrier::GetVelocity() const
 void FRigidBodyBarrier::SetAngularVelocity(FVector AngularVelocityUnreal)
 {
 	check(HasNative());
-	agx::Vec3 AngularVelocityAGX = ConvertVector(AngularVelocityUnreal);
+	agx::Vec3 AngularVelocityAGX = ConvertAngularVelocity(AngularVelocityUnreal);
 	NativeRef->Native->setAngularVelocity(AngularVelocityAGX);
 }
 
@@ -86,7 +86,7 @@ FVector FRigidBodyBarrier::GetAngularVelocity() const
 {
 	check(HasNative());
 	agx::Vec3 AngularVelocityAGX = NativeRef->Native->getAngularVelocity();
-	FVector AngularVelocityUnreal = ConvertVector(AngularVelocityAGX);
+	FVector AngularVelocityUnreal = ConvertAngularVelocity(AngularVelocityAGX);
 	return AngularVelocityUnreal;
 }
 

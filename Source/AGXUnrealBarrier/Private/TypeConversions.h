@@ -141,6 +141,31 @@ inline FVector ConvertVector(const agx::Vec3& V)
 	return FVector(ConvertDistance(V.x()), -ConvertDistance(V.y()), ConvertDistance(V.z()));
 }
 
+inline FVector ConvertAngularVelocity(const agx::Vec3& V)
+{
+	/*
+	 * Angular velocities in Unreal are weird. Even rotations are kind of weird. We're basing this
+	 * conversion on the rotation widget in the Details Panel. Unreal Engine uses a left-handed
+	 * coordinate system, meaning that thumb=X, index=Y, middle=Z matches the left hand. Normally,
+	 * rotations also has a handedness. Imagine gripping the axis around which we rotate with your
+	 * thumb pointing towards increasing axis values and look at your (usually) four non-thumb
+	 * fingers. Their direction from the knuckles towards the finger tips define the direction of
+	 * positive rotation. If you switch hand then the direction of positive rotation is inverted. In
+	 * Unreal Engine, at least according to the rotation widget in the Details Panel, uses
+	 * right-handed rotations for the X and Y axes, and left-handed rotations for the Z axis.
+	 *
+	 * AGX Dynamics is right-handed throughout. There are two sets of flips going on, one because of
+	 * the left-vs-right-handedness of the coordinate system itself and one for the
+	 * left-vs-right-handedness of each axis' rotation. The X axis point in the same direction in
+	 * both cases and is right-handed in both cases, so we pass it through untouched. The Y axis
+	 * should be negated because of the right-to-left switch of the coordinate system, but the
+	 * rotations are right-handed in both cases so one negation is enough. The Z axis point in the
+	 * same direction in both cases, so no negation there, but the handedness of rotations around X
+	 * is different so so we must negate it for that reason.
+	 */
+	return FVector(Convert(V.x()), -Convert(V.y()), -Convert(V.z()));
+}
+
 inline agx::Vec3 Convert(const FVector& V)
 {
 	return agx::Vec3(Convert(V.X), Convert(V.Y), Convert(V.Z));
@@ -155,6 +180,12 @@ inline agx::Vec3 ConvertVector(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3(ConvertDistance(V.X), -ConvertDistance(V.Y), ConvertDistance(V.Z));
+}
+
+inline agx::Vec3 ConvertAngularVelocity(const FVector& V)
+{
+	// See comment in the AGX-to-Unreal version of this function.
+	return agx::Vec3(Convert(V.X), -Convert(V.Y), -Convert(V.Z));
 }
 
 // Interval/Range.
@@ -189,7 +220,7 @@ inline agx::RangeReal ConvertAngle(const FFloatInterval& I)
 	return agx::RangeReal(ConvertAngle(I.Min), ConvertAngle(I.Max));
 }
 
-// TWoVectors/Line.
+// TwoVectors/Line.
 // TwoVectors may represent other things as well. If that's the case then we'll
 // need to do something else.
 

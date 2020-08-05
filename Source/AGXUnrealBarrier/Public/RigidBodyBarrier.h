@@ -37,7 +37,10 @@ public:
 	void SetVelocity(FVector Velocity);
 	FVector GetVelocity() const;
 
+	/// In radians.
 	void SetAngularVelocity(FVector AngularVelocity);
+
+	/// In radians.
 	FVector GetAngularVelocity() const;
 
 	void SetMass(float NewMass);
