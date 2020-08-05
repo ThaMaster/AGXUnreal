@@ -2,6 +2,7 @@
 
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/Engine.h"
@@ -130,3 +131,104 @@ FString AgxAutomationCommon::GetArchivePath(const FString& ArchiveName)
 {
 	return GetArchivePath(*ArchiveName);
 }
+
+bool AgxAutomationCommon::FLogWarningAgxCommand::Update()
+{
+	UE_LOG(LogAGX, Warning, TEXT("%s"), *Message);
+	return true;
+}
+
+bool AgxAutomationCommon::FLogErrorAgxCommand::Update()
+{
+	UE_LOG(LogAGX, Error, TEXT("%s"), *Message);
+	return true;
+}
+
+bool AgxAutomationCommon::FTickUntilCommand::Update()
+{
+	return World->GetTimeSeconds() >= Time;
+}
+
+bool AgxAutomationCommon::FCheckWorldsCommand::Update()
+{
+	UWorld* TestWorld = AgxAutomationCommon::GetTestWorld();
+	UWorld* CurrentWorld = FAGX_EditorUtilities::GetCurrentWorld();
+	UE_LOG(LogAGX, Warning, TEXT("TestWorld:    %p"), (void*) TestWorld);
+	UE_LOG(LogAGX, Warning, TEXT("CurrentWorld: %p"), (void*) CurrentWorld);
+	Test.TestEqual(TEXT("Worlds"), TestWorld, CurrentWorld);
+	Test.TestNotNull("TestWorld", TestWorld);
+	Test.TestNotNull("CurrentWorld", CurrentWorld);
+	return true;
+}
+
+AgxAutomationCommon::FCheckWorldsTest::FCheckWorldsTest()
+	: FAutomationTestBase(TEXT("FCheckWorldsTest"), false)
+{
+}
+
+uint32 AgxAutomationCommon::FCheckWorldsTest::GetTestFlags() const
+{
+	return DefaultTestFlags;
+}
+
+uint32 AgxAutomationCommon::FCheckWorldsTest::GetRequiredDeviceNum() const
+{
+	return 1;
+}
+
+FString AgxAutomationCommon::FCheckWorldsTest::GetBeautifiedTestName() const
+{
+	return TEXT("AGXUnreal.CheckWorlds");
+}
+
+void AgxAutomationCommon::FCheckWorldsTest::GetTests(
+	TArray<FString>& OutBeutifiedNames, TArray<FString>& OutTestCommands) const
+{
+	OutBeutifiedNames.Add(GetBeautifiedTestName());
+	OutTestCommands.Add(FString());
+}
+
+bool AgxAutomationCommon::FCheckWorldsTest::RunTest(const FString& InParameter)
+{
+	UE_LOG(
+		LogAGX, Warning, TEXT("Running test '%s' with parameter '%s'."), *GetTestName(),
+		*InParameter);
+
+	ADD_LATENT_AUTOMATION_COMMAND(AgxAutomationCommon::FCheckWorldsCommand(*this));
+	return true;
+}
+
+// We must create an instantiate of the test class for the testing framework to find it.
+namespace
+{
+	AgxAutomationCommon::FCheckWorldsTest CheckWorldsTest;
+}
+
+AgxAutomationCommon::FAgxAutomationTest::FAgxAutomationTest(
+	const FString& InClassName, const FString& InBeautifiedName)
+	: FAutomationTestBase(InClassName, false)
+	, BeautifiedTestName(InBeautifiedName)
+{
+}
+
+uint32 AgxAutomationCommon::FAgxAutomationTest::GetTestFlags() const
+{
+	return DefaultTestFlags;
+}
+
+uint32 AgxAutomationCommon::FAgxAutomationTest::GetRequiredDeviceNum() const
+{
+	return 1;
+}
+
+FString AgxAutomationCommon::FAgxAutomationTest::GetBeautifiedTestName() const
+{
+	return BeautifiedTestName;
+}
+
+void AgxAutomationCommon::FAgxAutomationTest::GetTests(
+	TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands) const
+{
+	OutBeautifiedNames.Add(GetBeautifiedTestName());
+	OutTestCommands.Add(FString());
+};

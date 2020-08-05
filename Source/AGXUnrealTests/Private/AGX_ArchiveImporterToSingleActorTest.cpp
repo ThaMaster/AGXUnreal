@@ -23,44 +23,7 @@
  */
 
 /**
- * A collection of helper functions used by our Automation tests.
- *
- * \todo Move these somewhere where all tests have access to them.
- */
-namespace AgxAutomationCommon
-{
-	template <typename T>
-	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
-	{
-		UActorComponent** Match = Components.FindByPredicate([Name](UActorComponent* Component) {
-			return Cast<T>(Component) && Component->GetName() == Name;
-		});
-
-		return Match != nullptr ? Cast<T>(*Match) : nullptr;
-	}
-
-	template <typename T>
-	void GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name, T*& Out)
-	{
-		Out = GetByName<T>(Components, Name);
-	}
-};
-
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogWarningAgxCommand, FString, Message);
-bool FLogWarningAgxCommand::Update()
-{
-	UE_LOG(LogAGX, Warning, TEXT("%s"), *Message);
-	return true;
-}
-
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogErrorAgxCommand, FString, Message);
-bool FLogErrorAgxCommand::Update()
-{
-	UE_LOG(LogAGX, Error, TEXT("%s"), *Message);
-	return true;
-}
-
-/**
+ * @todo Remove this test code.
  * The purpose of this test is to figure out how to abort a test from a Latent Command so that
  * the subsequent Latent Commands are skipped. I haven't found a way yet and I'm starting to suspect
  * that it would be a bad idea. Tests should clean up after themselves which must happen in a Latent
@@ -73,6 +36,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter);
 bool FTestAbort::RunTest(const FString& Parameters)
 {
+	using namespace AgxAutomationCommon;
 	ADD_LATENT_AUTOMATION_COMMAND(FLogWarningAgxCommand(TEXT("Before the error")));
 	ADD_LATENT_AUTOMATION_COMMAND(FLogErrorAgxCommand(TEXT("At the error.")));
 	ADD_LATENT_AUTOMATION_COMMAND(FLogWarningAgxCommand(TEXT("After the error.")));
@@ -80,91 +44,7 @@ bool FTestAbort::RunTest(const FString& Parameters)
 }
 
 /**
- * Latent Command that tests that TestHelper::GetTestWorld and FAGX_EditorUtilities::GetCurrentWorld
- * return the same world.
- *
- * \note This could be implemented directly in the Test itself, instead of as a Latent Command. Done
- * this way for experimentation/learning purposes. Move the actual test code to the Test's RunTest
- * once we're confident in our ability to write both Tests and Latent Commands.
- */
-class FCheckWorldsCommand final : public IAutomationLatentCommand
-{
-public:
-	FCheckWorldsCommand(FAutomationTestBase& InTest)
-		: Test(InTest)
-	{
-	}
-
-	virtual bool Update() override
-	{
-		UWorld* TestWorld = AgxAutomationCommon::GetTestWorld();
-		UWorld* CurrentWorld = FAGX_EditorUtilities::GetCurrentWorld();
-		UE_LOG(LogAGX, Warning, TEXT("TestWorld:    %p"), (void*) TestWorld);
-		UE_LOG(LogAGX, Warning, TEXT("CurrentWorld: %p"), (void*) CurrentWorld);
-		Test.TestEqual(TEXT("Worlds"), TestWorld, CurrentWorld);
-		Test.TestNotNull("TestWorld", TestWorld);
-		Test.TestNotNull("CurrentWorld", CurrentWorld);
-		return true;
-	}
-
-private:
-	FAutomationTestBase& Test;
-};
-
-/**
- * Test that TestHelper::GetTestWorld and FAGX_EditorUtilities::GetCurrentWorld return the same
- * world.
- */
-class FCheckWorldsTest final : public FAutomationTestBase
-{
-public:
-	FCheckWorldsTest()
-		: FAutomationTestBase(TEXT("FCheckWorldsTest"), false)
-	{
-	}
-
-	uint32 GetTestFlags() const override
-	{
-		return EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter;
-	}
-
-	uint32 GetRequiredDeviceNum() const override
-	{
-		return 1;
-	}
-
-	FString GetBeautifiedTestName() const override
-	{
-		return TEXT("AGXUnreal.CheckWorlds");
-	}
-
-protected:
-	void GetTests(
-		TArray<FString>& OutBeutifiedNames, TArray<FString>& OutTestCommands) const override
-	{
-		OutBeutifiedNames.Add(GetBeautifiedTestName());
-		OutTestCommands.Add(FString());
-	}
-
-	bool RunTest(const FString& InParameter) override
-	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("Running test '%s' with parameter '%s'."), *GetTestName(),
-			*InParameter);
-
-		ADD_LATENT_AUTOMATION_COMMAND(FCheckWorldsCommand(*this));
-		return true;
-	}
-};
-
-// We must create an instantiate of the test class for the testing framework to find it.
-namespace
-{
-	FCheckWorldsTest CheckWorldsTest;
-}
-
-/**
- * Latent Command that imports an AGX Dynamics archive.
+ * Latent Command that imports an AGX Dynamics archive into a single actor.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
 	FImportArchiveSingleActorCommand, FString, ArchiveName, AActor*&, Contents,
@@ -186,8 +66,8 @@ bool FImportArchiveSingleActorCommand::Update()
  * Latent Command testing that the empty scene was imported correctly.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
-	FCheckEmptySceneImportCommand, AActor*&, Contents, FAutomationTestBase&, Test);
-bool FCheckEmptySceneImportCommand::Update()
+	FCheckEmptySceneImportedCommand, AActor*&, Contents, FAutomationTestBase&, Test);
+bool FCheckEmptySceneImportedCommand::Update()
 {
 	UWorld* World = AgxAutomationCommon::GetTestWorld();
 	Test.TestEqual(TEXT("The actor's world and the test world."), Contents->GetWorld(), World);
@@ -217,46 +97,28 @@ bool FCheckEmptySceneImportCommand::Update()
  * Test that an empty AGX Dynamics archive can be imported, that the archive Actor root is created
  * as it should, and that it is added to the world.
  */
-class FArchiveImporterToSingleActor_EmptySceneTest final : public FAutomationTestBase
+class FArchiveImporterToSingleActor_EmptySceneTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
 	FArchiveImporterToSingleActor_EmptySceneTest()
-		: FAutomationTestBase("FArchiveImporterToSingleActor_EmptySceneTest", false)
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_EmptySceneTest"),
+			  TEXT("AGXUnreal.ArchiveImporterToSingleActor.EmptyScene.Test"))
 	{
-	}
-
-	uint32 GetTestFlags() const override
-	{
-		return EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter;
-	}
-
-	uint32 GetRequiredDeviceNum() const override
-	{
-		return 1;
-	}
-
-	void GetTests(
-		TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands) const override
-	{
-		OutBeautifiedNames.Add(GetBeautifiedTestName());
-		OutTestCommands.Add(FString());
 	}
 
 protected:
 	bool RunTest(const FString& Parameters) override
 	{
 		BAIL_TEST_IF_NO_WORLD()
+		BAIL_TEST_IF_WORLDS_MISMATCH()
 		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")));
 		ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand());
 		ADD_LATENT_AUTOMATION_COMMAND(
 			FImportArchiveSingleActorCommand("empty_scene.agx", Contents, *this));
-		ADD_LATENT_AUTOMATION_COMMAND(FCheckEmptySceneImportCommand(Contents, *this));
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckEmptySceneImportedCommand(Contents, *this));
 		return true;
-	}
-
-	FString GetBeautifiedTestName() const override
-	{
-		return TEXT("AGXUnreal.ArchiveImporterToSingleActor.EmptyScene.Test");
 	}
 
 private:
@@ -270,8 +132,7 @@ namespace
 
 BEGIN_DEFINE_SPEC(
 	FArchiveImporterToSingleActor_EmptySceneSpec,
-	"AGXUnreal.ArchiveImporterToSingleActor.EmptyScene.Spec",
-	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
+	"AGXUnreal.ArchiveImporterToSingleActor.EmptyScene.Spec", AgxAutomationCommon::DefaultTestFlags)
 UWorld* World = nullptr;
 AActor* Contents = nullptr;
 END_DEFINE_SPEC(FArchiveImporterToSingleActor_EmptySceneSpec)
@@ -315,6 +176,11 @@ void FArchiveImporterToSingleActor_EmptySceneSpec::Define()
 	});
 }
 
+/// @todo Cannot (yet) use Spec for tickign tests because I don't know how to make a Latent It
+/// that waits until the game world reaches some pre-defiend time. With Latent Commands that is
+/// handled automatically by checking the time on each call to Update returning false until the time
+/// is right. What I need to know is, how do I abandon an LatentIt until the next tick?
+#if 0
 BEGIN_DEFINE_SPEC(
 	FArchiveImporterToSingleAcgor_SingleSphereSpec,
 	"AGXUnreal.ArchiveImporterToSingleActor.SingleSphere.Spec",
@@ -367,55 +233,205 @@ void FArchiveImporterToSingleAcgor_SingleSphereSpec::Define()
 		});
 	});
 }
+#endif
 
+#if 0
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FArchiveImporterToSingleActor_SingleSphereTest,
 	"AGXUnreal.ArchiveImporterToSingleActor.SingleSphere",
 	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+#endif
 
-struct FSingleSphereTestState
+class FArchiveImporterToSingleActor_SingleSphereTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckSingleSphereImportedCommand, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckSphereHasMoved, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
+
+/**
+ * Latent Command that waits until the given World reaches the given time, in seconds.
+ * @todo Replace with AgxAutomationCommon::FWaitUntilTime once we're confident that this won't cause
+ * and infinite wait.
+ */
+class FWaitUntilTime final : public IAutomationLatentCommand
 {
-	UAGX_RigidBodyComponent* Body;
-};
-
-struct FBodyMovedParams
-{
-	UAGX_RigidBodyComponent* Body;
-	UWorld* World = nullptr;
-	FVector StartPosition = {0.0f, 0.0f, 0.0f};
-	float StartTime = 0.0f;
-	float EndTime = 0.0f;
-
-	FBodyMovedParams(FSingleSphereTestState* InTestState, float InDuration)
-		: Body(InTestState->Body)
-		, Duration(InDuration)
+public:
+	FWaitUntilTime(UWorld*& InWorld, float InTime, FAutomationTestBase& InTest)
+		: World(InWorld)
+		, Time(InTime)
+		, Test(InTest)
 	{
 	}
 
-	void Update()
+	virtual ~FWaitUntilTime()
 	{
-		if (UpdateCounter == 0)
+	}
+
+	virtual bool Update()
+	{
+		++NumUpdates;
+		if (NumUpdates > 1000)
 		{
-			Init();
+			Test.AddError("Did not reach the time event after many ticks. Giving up.");
+			return true;
 		}
-		++UpdateCounter;
+		return World->GetTimeSeconds() >= Time;
 	}
 
-	void Init()
-	{
-		World = Body->GetWorld();
-		StartPosition = Body->GetComponentLocation();
-		StartTime = World->GetTimeSeconds();
-		EndTime = StartTime + Duration;
-
-		UE_LOG(
-			LogAGX, Warning, TEXT("Will wait until world time is %f. Right now it is %f."), EndTime,
-			StartTime);
-	}
-	int UpdateCounter = 0;
-	float Duration = 0.0f;
+private:
+	UWorld*& World;
+	float Time;
+	int32 NumUpdates = 0;
+	FAutomationTestBase& Test;
 };
 
+class FArchiveImporterToSingleActor_SingleSphereTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_SingleSphereTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_SingleSphereTest"),
+			  TEXT("AGXUnreal.ArchiveImporterToSingleActor.SingleSphere.Test"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UAGX_RigidBodyComponent* SphereBody = nullptr;
+	FVector StartPosition;
+	FVector StartVelocity;
+	float StartAgxTime = -1.0f;
+	float StartUnrealTime = -1.0f;
+	float EndTime = -1.0f;
+	int32 NumTicks = 0;
+
+protected:
+	bool RunTest(const FString& Parameters) override
+	{
+		using namespace AgxAutomationCommon;
+		BAIL_TEST_IF_CANT_SIMULATE()
+		World = AgxAutomationCommon::GetTestWorld();
+		Simulation = UAGX_Simulation::GetFrom(World);
+		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand())
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand("single_sphere.agx", Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckSingleSphereImportedCommand(*this))
+
+		/// @todo Using local game time waiter until we know it works as intended.
+		// ADD_LATENT_AUTOMATION_COMMAND(FTickUntilCommand(World, 1.0f));
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitUntilTime(World, 1.0f, *this));
+
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckSphereHasMoved(*this));
+
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_SingleSphereTest ArchiveImporterToSingleActor_SingleSphereTest;
+}
+
+bool FCheckSingleSphereImportedCommand::Update()
+{
+	if (Test.World == nullptr)
+	{
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
+
+	// Get the components we know should be there.
+	USceneComponent* SceneRoot =
+		AgxAutomationCommon::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* BulletBody =
+		AgxAutomationCommon::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
+	UAGX_SphereShapeComponent* BulletShape =
+		AgxAutomationCommon::GetByName<UAGX_SphereShapeComponent>(Components, TEXT("bullet_1"));
+
+	// Make sure we got the components we know should be there.
+	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
+	Test.TestNotNull(TEXT("Bullet"), BulletBody);
+	Test.TestNotNull(TEXT("Bullet_1"), BulletShape);
+
+	// Read and verify state for each UAGX_RigidBodyComponent property.
+	float Mass = BulletBody->Mass;
+	Test.TestEqual(TEXT("Sphere mass"), Mass, 100.0f);
+
+	{
+		FVector LinearVelocity = BulletBody->Velocity;
+		// The velocity, in AGX Dynamics' units, that was given to the sphere when created.
+		/// @todo Replace these numbers once we get a dedicated test scene.
+		FVector AgxVelocity(-4.73094, 16.5768, 10.9014);
+		FVector AgxToUnreal(100.0f, -100.0f, 100.0f);
+		FVector ExpectedVelocity = AgxVelocity * AgxToUnreal;
+		Test.TestEqual(TEXT("Sphere linear velocity"), LinearVelocity, ExpectedVelocity, 1e-2);
+	}
+
+	{
+		FVector ActualAngularVelocity = BulletBody->AngularVelocity;
+		// The angular velocity, in AGX Dynamics' units, that was given to the sphere when created.
+		/// @todo Replace these numbers once we get a dedicated test scene.
+		FVector AgxAngularVelocity(17.7668f, 2.27498f, 7.87081f);
+		FVector AgxToUnreal(1.0f, -1.0f, -1.0f);
+		FVector ExpectedAngularVelocity = AgxAngularVelocity * AgxToUnreal;
+		Test.TestEqual(
+				TEXT("Sphere angular velocity"), ActualAngularVelocity, ExpectedAngularVelocity);
+	}
+
+	EAGX_MotionControl MotionControl = BulletBody->MotionControl;
+	Test.TestEqual(TEXT("Sphere motion control"), MotionControl, EAGX_MotionControl::MC_DYNAMICS);
+
+	uint8_t bTransformRootComponent = BulletBody->bTransformRootComponent;
+	Test.TestFalse(TEXT("Sphere transform root component"), bTransformRootComponent);
+
+	bool bHasNative = BulletBody->HasNative();
+	Test.TestFalse(TEXT("Sphere has native"), bHasNative); /// \todo Are we sure?
+
+	UWorld* BodyWorld = BulletBody->GetWorld();
+	Test.TestEqual(TEXT("Sphere world"), BodyWorld, Test.World);
+
+#if 0
+	UE_LOG(
+			LogAGX, Warning, TEXT("Body has velocity (%f, %f, %f)."), LinearVelocity.X,
+			LinearVelocity.Y, LinearVelocity.Z);
+#endif
+
+	// Publish the important bits to the rest of the test.
+	Test.SphereBody = BulletBody;
+	Test.StartPosition = BulletBody->GetComponentLocation();
+	Test.StartVelocity = BulletBody->Velocity;
+	Test.StartAgxTime = Test.Simulation->GetTimeStamp();
+	Test.StartUnrealTime = Test.World->GetTimeSeconds();
+	Test.TestEqual("World and AGX times should be equal", Test.StartAgxTime, Test.StartUnrealTime);
+
+	return true;
+}
+
+bool FCheckSphereHasMoved::Update()
+{
+	if (Test.SphereBody == nullptr)
+	{
+		return true;
+	}
+	FVector EndPosition = Test.SphereBody->GetComponentLocation();
+	Test.TestEqual("Sphere should move", EndPosition, Test.StartPosition);
+
+	FVector EndVelocity = Test.SphereBody->Velocity;
+	Test.TestEqual("Sphere should accelerate due to gravity", EndVelocity, Test.StartVelocity);
+	return true;
+}
+
+#if 0
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FBodyMoved, FBodyMovedParams, Params);
 
 bool FBodyMoved::Update()
@@ -554,3 +570,4 @@ bool FArchiveImporterToSingleActor_SingleSphereTest::RunTest(const FString& Para
 	UE_LOG(LogAGX, Warning, TEXT("End of RunTest.\n\n\n\n"))
 	return true;
 }
+#endif

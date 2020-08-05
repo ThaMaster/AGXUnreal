@@ -74,6 +74,86 @@ namespace AgxAutomationCommon
 	 */
 	FString GetArchivePath(const FString& ArchiveName);
 
+	template <typename T>
+	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
+	{
+		UActorComponent** Match = Components.FindByPredicate([Name](UActorComponent* Component) {
+			return Cast<T>(Component) && Component->GetName() == Name;
+		});
+
+		return Match != nullptr ? Cast<T>(*Match) : nullptr;
+	}
+
+	template <typename T>
+	void GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name, T*& Out)
+	{
+		Out = GetByName<T>(Components, Name);
+	}
+
+	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogWarningAgxCommand, FString, Message);
+	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogErrorAgxCommand, FString, Message);
+	DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(FTickUntilCommand, UWorld*&, World, float, Time);
+
+	/**
+	 * Latent Command that tests that TestHelper::GetTestWorld and
+	 * FAGX_EditorUtilities::GetCurrentWorld return the same world.
+	 *
+	 * \note This could be implemented directly in the Test itself, instead of as a Latent Command.
+	 * Done this way for experimentation/learning purposes. Move the actual test code to the Test's
+	 * RunTest once we're confident in our ability to write both Tests and Latent Commands.
+	 */
+	/// @todo Replace this with a DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER.
+	class FCheckWorldsCommand final : public IAutomationLatentCommand
+	{
+	public:
+		FCheckWorldsCommand(FAutomationTestBase& InTest)
+			: Test(InTest)
+		{
+		}
+
+		virtual bool Update() override;
+
+	private:
+		FAutomationTestBase& Test;
+	};
+
+	class FAgxAutomationTest : public FAutomationTestBase
+	{
+	public:
+		FAgxAutomationTest(const FString& InName, const FString& InBeautifiedTestName);
+		uint32 GetTestFlags() const override;
+		uint32 GetRequiredDeviceNum() const override;
+
+	protected:
+		FString GetBeautifiedTestName() const override;
+		void GetTests(
+			TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands) const override;
+
+	protected:
+		FString BeautifiedTestName;
+	};
+
+	/**
+	 * Test that TestHelper::GetTestWorld and FAGX_EditorUtilities::GetCurrentWorld return the same
+	 * world.
+	 */
+	class FCheckWorldsTest final : public FAutomationTestBase
+	{
+	public:
+		FCheckWorldsTest();
+
+		uint32 GetTestFlags() const override;
+
+		uint32 GetRequiredDeviceNum() const override;
+
+		FString GetBeautifiedTestName() const override;
+
+	protected:
+		void GetTests(
+			TArray<FString>& OutBeutifiedNames, TArray<FString>& OutTestCommands) const override;
+
+		bool RunTest(const FString& InParameter) override;
+	};
 }
 
 #define BAIL_TEST_IF(expression)      \
@@ -89,3 +169,24 @@ namespace AgxAutomationCommon
 		AddError(AgxAutomationCommon::GetNoWorldTestsReasonText(Reason));                         \
 		return false;                                                                             \
 	}
+
+#define BAIL_TEST_IF_WORLDS_MISMATCH()                                                           \
+	if (AgxAutomationCommon::GetTestWorld() != FAGX_EditorUtilities::GetCurrentWorld())          \
+	{                                                                                            \
+		AddError(                                                                                \
+			"Cannot run test because the test world and the AGX Dynamics world are different."); \
+		return false;                                                                            \
+	}
+#define BAIL_TEST_IF_NO_AGX()                                                           \
+	if (UAGX_Simulation::GetFrom(AgxAutomationCommon::GetTestWorld()) == nullptr)       \
+	{                                                                                   \
+		AddError(                                                                       \
+			"Cannot run test because the test world doesn't contain a UAGX_Simulation " \
+			"subsystem.");                                                              \
+		return false;                                                                   \
+	}
+
+#define BAIL_TEST_IF_CANT_SIMULATE() \
+	BAIL_TEST_IF_NO_WORLD()          \
+	BAIL_TEST_IF_WORLDS_MISMATCH()   \
+	BAIL_TEST_IF_NO_AGX()
