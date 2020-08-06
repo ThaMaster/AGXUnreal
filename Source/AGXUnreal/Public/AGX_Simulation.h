@@ -112,6 +112,8 @@ public:
 
 	float GetTimeStamp() const;
 
+	void SetTimeStamp(float NewTimeStamp);
+
 	static UAGX_Simulation* GetFrom(const UActorComponent* Component);
 
 	static UAGX_Simulation* GetFrom(const AActor* Actor);

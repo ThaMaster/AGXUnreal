@@ -225,6 +225,11 @@ float UAGX_Simulation::GetTimeStamp() const
 	return NativeBarrier.GetTimeStamp();
 }
 
+void UAGX_Simulation::SetTimeStamp(float NewTimeStamp)
+{
+	NativeBarrier.SetTimeStamp(NewTimeStamp);
+}
+
 UAGX_Simulation* UAGX_Simulation::GetFrom(const UActorComponent* Component)
 {
 	if (!Component)
