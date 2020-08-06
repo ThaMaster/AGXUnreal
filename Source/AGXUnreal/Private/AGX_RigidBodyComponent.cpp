@@ -76,6 +76,7 @@ void UAGX_RigidBodyComponent::TickComponent(
 	if (MotionControl != MC_STATIC)
 	{
 		ReadTransformFromNative();
+		Velocity = NativeBarrier.GetVelocity();
 	}
 }
 
