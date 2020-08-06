@@ -16,6 +16,8 @@
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
 
+/// @todo Add the `#if WITH_DEV_AUTOMATION_TESTS` macro before the function definition
+
 /*
  * This file contains a set of tests that deal with importing AGX Dynamics archives into an Actor
  * with ActorComponents for each imported AGX Dynamics body etc. All importing is done using
@@ -251,40 +253,31 @@ DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FCheckSphereHasMoved, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
 
 /**
- * Latent Command that waits until the given World reaches the given time, in seconds.
- * @todo Replace with AgxAutomationCommon::FWaitUntilTime once we're confident that this won't cause
- * and infinite wait.
+ * Latent Command that waits for the given time, starting at the time when the Latent Command is
+ * first updated.
  */
-class FWaitUntilTime final : public IAutomationLatentCommand
+class FWaitUntilTimeRelative final : public IAutomationLatentCommand
 {
 public:
-	FWaitUntilTime(UWorld*& InWorld, float InTime, FAutomationTestBase& InTest)
-		: World(InWorld)
-		, Time(InTime)
-		, Test(InTest)
+	FWaitUntilTimeRelative(
+		float InTimeToWait, FArchiveImporterToSingleActor_SingleSphereTest& InTest)
+		: Test(InTest)
+		, TimeToWait(InTimeToWait)
 	{
 	}
 
-	virtual ~FWaitUntilTime()
-	{
-	}
-
-	virtual bool Update()
-	{
-		++NumUpdates;
-		if (NumUpdates > 1000)
-		{
-			Test.AddError("Did not reach the time event after many ticks. Giving up.");
-			return true;
-		}
-		return World->GetTimeSeconds() >= Time;
-	}
+	virtual bool Update();
 
 private:
-	UWorld*& World;
-	float Time;
+	void Init();
+	bool HaveReachedEndTime();
+	void Shutdown();
+
+private:
+	FArchiveImporterToSingleActor_SingleSphereTest& Test;
+	float TimeToWait;
+	float EndTime;
 	int32 NumUpdates = 0;
-	FAutomationTestBase& Test;
 };
 
 class FArchiveImporterToSingleActor_SingleSphereTest final
@@ -307,7 +300,8 @@ public:
 	FVector StartVelocity;
 	float StartAgxTime = -1.0f;
 	float StartUnrealTime = -1.0f;
-	float EndTime = -1.0f;
+	float EndUnrealTime = -1.0f;
+	float EndAgxTime = -1.0f;
 	int32 NumTicks = 0;
 
 protected:
@@ -317,15 +311,16 @@ protected:
 		BAIL_TEST_IF_CANT_SIMULATE()
 		World = AgxAutomationCommon::GetTestWorld();
 		Simulation = UAGX_Simulation::GetFrom(World);
-		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
-		ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand())
+		// ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
+		// ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand())
 		ADD_LATENT_AUTOMATION_COMMAND(
 			FImportArchiveSingleActorCommand("single_sphere.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSingleSphereImportedCommand(*this))
 
 		/// @todo Using local game time waiter until we know it works as intended.
 		// ADD_LATENT_AUTOMATION_COMMAND(FTickUntilCommand(World, 1.0f));
-		ADD_LATENT_AUTOMATION_COMMAND(FWaitUntilTime(World, 1.0f, *this));
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitUntilTimeRelative(1.0f, *this));
+		// ADD_LATENT_AUTOMATION_COMMAND(FTickForDuration(World, 1.0f, 1.0f / 60.0f, *this));
 
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSphereHasMoved(*this));
 
@@ -423,11 +418,75 @@ bool FCheckSingleSphereImportedCommand::Update()
 	Test.SphereBody = BulletBody;
 	Test.StartPosition = BulletBody->GetComponentLocation();
 	Test.StartVelocity = BulletBody->Velocity;
-	Test.StartAgxTime = Test.Simulation->GetTimeStamp();
-	Test.StartUnrealTime = Test.World->GetTimeSeconds();
-	Test.TestEqual("World and AGX times should be equal", Test.StartAgxTime, Test.StartUnrealTime);
 
 	return true;
+}
+
+bool FWaitUntilTimeRelative::Update()
+{
+	if (Test.World == nullptr)
+	{
+		return true;
+	}
+	if (NumUpdates == 0)
+	{
+		Init();
+	}
+
+#if 0
+	UE_LOG(
+		LogAGX, Warning, TEXT("Update number %d with World time %f and Simulation time %f."),
+		NumUpdates, World->GetTimeSeconds(), UAGX_Simulation::GetFrom(World)->GetTimeStamp());
+#endif
+
+	++NumUpdates;
+
+	/// @todo Safety bail-out to prevent test hangs. Decide if really needed and remove if not.
+	if (NumUpdates > 1000)
+	{
+		Test.AddError("Did not reach the time event after many ticks. Giving up.");
+		return true;
+	}
+
+	if (HaveReachedEndTime())
+	{
+		Shutdown();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void FWaitUntilTimeRelative::Init()
+{
+	Test.StartUnrealTime = Test.World->GetTimeSeconds();
+	EndTime = Test.StartUnrealTime + TimeToWait;
+	UAGX_Simulation::GetFrom(Test.World)->SetTimeStamp(StartTime);
+	Test.StartAgxTime = UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp();
+
+	UE_LOG(
+		LogAGX, Warning,
+		TEXT("Waiting for %f seconds, starting at world time %f and simulation time %f."),
+		TimeToWait, Test.World->GetTimeSeconds(),
+		UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp());
+}
+
+bool FWaitUntilTimeRelative::HaveReachedEndTime()
+{
+	return Test.World->GetTimeSeconds() >= EndTime;
+}
+
+void FWaitUntilTimeRelative::Shutdown()
+{
+	Test.EndUnrealTime = Test.World->GetTimeSeconds();
+	Test.EndAgxTime = UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp();
+}
+
+float RelativeTolerance(float Expected, float Tolerance)
+{
+	return FMath::Abs(Expected * Tolerance);
 }
 
 bool FCheckSphereHasMoved::Update()
@@ -436,151 +495,51 @@ bool FCheckSphereHasMoved::Update()
 	{
 		return true;
 	}
+
+	// Test.TestEqual("World and AGX times should be equal", Test.StartAgxTime,
+	// Test.StartUnrealTime);
+
 	FVector EndPosition = Test.SphereBody->GetComponentLocation();
-	Test.TestEqual("Sphere should move", EndPosition, Test.StartPosition);
-
 	FVector EndVelocity = Test.SphereBody->Velocity;
-	Test.TestEqual("Sphere should accelerate due to gravity", EndVelocity, Test.StartVelocity);
-	return true;
-}
-
-#if 0
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FBodyMoved, FBodyMovedParams, Params);
-
-bool FBodyMoved::Update()
-{
-	Params.Update();
-	if (Params.UpdateCounter > 1000)
-	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Did not reach target time even after %d updates. Bailing"),
-			Params.UpdateCounter);
-		return true;
-	}
-
-	UE_LOG(LogAGX, Warning, TEXT("Update at time %f."), Params.World->GetTimeSeconds());
-
-	if (Params.World->GetTimeSeconds() < Params.EndTime)
-	{
-		FVector NewPosition =
-			Params.Body->GetOwner()->GetActorLocation(); // GetComponentLocation();
-		UE_LOG(
-			LogAGX, Warning, TEXT("Still stepping when body is at (%f, %f, %f)."), NewPosition.X,
-			NewPosition.Y, NewPosition.Z);
-
-		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(Params.Body->GetOwner());
-		if (Simulation != nullptr)
-		{
-			UE_LOG(LogAGX, Warning, TEXT("Simulation time is %d."), Simulation->GetTimeStamp());
-		}
-		else
-		{
-			UE_LOG(LogAGX, Warning, TEXT("DO NOT HAVE A SIMULATION!"));
-		}
-
-		return false;
-	}
-
-	FVector NewPosition = Params.Body->GetComponentLocation();
-	FVector Displacement = NewPosition - Params.StartPosition;
-	UE_LOG(
-		LogAGX, Warning, TEXT("Body has moved (%f, %f, %f)."), Displacement.X, Displacement.Y,
-		Displacement.Z);
-	return true;
-}
-
-// FAutomationTestBase
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FLoadSingleSphereArchive, FAutomationTestBase*, GameTest);
-
-bool FLoadSingleSphereArchive::Update()
-{
-	UWorld* CurrentWorld = FAGX_EditorUtilities::GetCurrentWorld();
-	GameTest->TestNotNull(TEXT("Current world"), CurrentWorld);
-
-	FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(TEXT("single_sphere.agx"));
-	AActor* Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
-	GameTest->TestNotNull(TEXT("Actor restored from archive"), Contents);
-	if (Contents == nullptr)
-	{
-		return true;
-	}
-
-	TArray<UActorComponent*> Components;
-	Contents->GetComponents(Components, false);
-	GameTest->TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
-	USceneComponent* SceneRoot =
-		AgxAutomationCommon::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
-
-	UAGX_RigidBodyComponent* BulletBody =
-		AgxAutomationCommon::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
-	UAGX_SphereShapeComponent* BulletShape =
-		AgxAutomationCommon::GetByName<UAGX_SphereShapeComponent>(Components, TEXT("bullet_1"));
-
-	GameTest->TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
-	GameTest->TestNotNull(TEXT("Bullet"), BulletBody);
-	GameTest->TestNotNull(TEXT("Bullet_1"), BulletShape);
-
-	float Mass = BulletBody->Mass;
-	FVector LinearVelocity = BulletBody->Velocity;
-	FVector AngularVelocity = BulletBody->AngularVelocity;
-	EAGX_MotionControl MotionControl = BulletBody->MotionControl;
-	uint8_t bTransformRootComponent = BulletBody->bTransformRootComponent;
-	bool bHasNative = BulletBody->HasNative();
-	UWorld* BodyWorld = BulletBody->GetWorld();
 
 	UE_LOG(
-		LogAGX, Warning, TEXT("Body has velocity (%f, %f, %f)."), LinearVelocity.X,
-		LinearVelocity.Y, LinearVelocity.Z);
-	GameTest->TestEqual(TEXT("Sphere mass"), Mass, 100.0f);
-	GameTest->TestEqual(
-		TEXT("Sphere linear velocity"), LinearVelocity, FVector(-4.73094f, 16.5768f, 10.9014f));
+		LogAGX, Warning, TEXT("Sphere positions:\n   %s\n   %s"), *Test.StartPosition.ToString(),
+		*EndPosition.ToString())
 
-	/// \todo This fails. Partly because we can't just text-copy the 'Expected' part from agxViewer
-	/// print-outs, and partly because of an actual bug in
-	/// UAGX_RigidBodyComponent::GetAngularVelocity. It doesn't handle radians/degrees as it should.
-	GameTest->TestEqual(
-		TEXT("Sphere angular velocity"), AngularVelocity, FVector(17.7668f, 2.27498f, 7.87081f));
-	GameTest->TestEqual(
-		TEXT("Sphere motion control"), MotionControl, EAGX_MotionControl::MC_DYNAMICS);
-	GameTest->TestFalse(TEXT("Sphere transform root component"), bTransformRootComponent);
-	GameTest->TestFalse(TEXT("Sphere has native"), bHasNative); /// \todo Are we sure?
-	GameTest->TestEqual(TEXT("Sphere world"), BodyWorld, CurrentWorld);
+	UE_LOG(
+		LogAGX, Warning, TEXT("Sphere velocities:\n   %s\n   %s"), *Test.StartVelocity.ToString(),
+		*EndVelocity.ToString())
 
-	UE_LOG(LogAGX, Warning, TEXT("Found %d components in SingleSphere."), Components.Num());
-	for (auto& Component : Components)
+
+
+	float Duration = Test.EndAgxTime - Test.StartAgxTime;
+	UE_LOG(LogAGX, Warning, TEXT("Simulated for %f seconds."), Duration);
+
+	// Velocity constant only for X and Y directions. Z has gravity.
+	for (int32 I : {0, 1})
 	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("  Component named '%s' is of type '%s'."), *Component->GetName(),
-			*Component->GetClass()->GetName())
+		float ExpectedDisplacement = EndVelocity[I] * Duration;
+		float ExpectedPosition = Test.StartPosition[I] + ExpectedDisplacement;
+		float ActualPosition = EndPosition[I];
+		Test.TestEqual(
+			"Body should move according to velocity.", ActualPosition, ExpectedPosition,
+			RelativeTolerance(ExpectedPosition, 0.01f));
 	}
 
+	// Velocity test for Z.
+	{
+		float StartVelocity = Test.StartVelocity.Z;
+		float StartPosition = Test.StartPosition.Z;
+		float Acceleration = UAGX_Simulation::GetFrom(Test.World)->Gravity.Z;
+		float ExpectedPosition =
+			StartPosition + StartVelocity * Duration + 0.5f * Acceleration * Duration * Duration;
+		float ActualPosition = EndPosition.Z;
+		Test.TestEqual(
+			"Velocity in the Z direction should be subject to gravity.", ActualPosition,
+			ExpectedPosition, RelativeTolerance(ExpectedPosition, 0.02f));
+	}
+
+	// FVector EndVelocity = Test.SphereBody->Velocity;
+	// Test.TestEqual("Sphere should accelerate due to gravity", EndVelocity, Test.StartVelocity);
 	return true;
 }
-
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FDeallocateSingleSphereTestState, FSingleSphereTestState*, SingleSphereTestState);
-
-bool FDeallocateSingleSphereTestState::Update()
-{
-	delete SingleSphereTestState;
-	return true;
-}
-
-bool FArchiveImporterToSingleActor_SingleSphereTest::RunTest(const FString& Parameters)
-{
-	// Reference to the test level: World'/Game/Tests/Test_ArchiveImport.Test_ArchiveImport'
-	FString MapName = TEXT("Test_ArchiveImport");
-
-	/// \todo I don't know what I should do instead of new/delete here.
-	FSingleSphereTestState* SingleSphereTestState = new FSingleSphereTestState();
-
-	ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(MapName));
-	ADD_LATENT_AUTOMATION_COMMAND(FLoadSingleSphereArchive(this));
-	ADD_LATENT_AUTOMATION_COMMAND(FBodyMoved(FBodyMovedParams(SingleSphereTestState, 1.0f)));
-	ADD_LATENT_AUTOMATION_COMMAND(FDeallocateSingleSphereTestState(SingleSphereTestState));
-
-	UE_LOG(LogAGX, Warning, TEXT("End of RunTest.\n\n\n\n"))
-	return true;
-}
-#endif
