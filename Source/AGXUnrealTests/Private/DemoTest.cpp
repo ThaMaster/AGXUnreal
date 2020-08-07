@@ -1,5 +1,6 @@
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
+#include "AgxAutomationCommon.h"
 
 // Unreal Engine includes.
 #include "Tests/AutomationCommon.h"
@@ -179,6 +180,10 @@ bool FWaitTwentyTicksTest::RunTest(const FString&)
  * When writing Update member functions that do these kinds of tests it's important to remember that
  * a Latent Command's return value is whether or not the Latent Command is finished, not whether the
  * test passed or failed.
+ *
+ * A test will not stop at errors, the Latent Command will continue to have its Update member
+ * function called until it returns true and all subsequent Latent commands will still run.
+ * Therefore, each Latent Command should be written to handle failure at any prior Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FTestingLatentCommand, FAutomationTestBase&, Test);
 
@@ -204,5 +209,26 @@ bool FTestInLatentCommandTest::RunTest(const FString&)
 	return true;
 }
 
+/*
+ * The Automation test framework listens to logging messages and any message with Error severity
+ * trigger a test failure. This means that a test can fail without any failure being detected and
+ * reported by the test itself if any function called by the test uses logging for error reporting.
+ * We can tell a particular test that we expect a particular error log message, which means the test
+ * won't fail because of it, by calling AddExpectedError.
+ *
+ * In AgxAutomationCommon we provide Warning and Error logging Latent Commands.
+ */
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FTestAbort, "AGXUnreal.Demo.ExpectErrorLog",
+	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter);
+bool FTestAbort::RunTest(const FString& Parameters)
+{
+	using namespace AgxAutomationCommon;
+	AddExpectedError("At the error.", EAutomationExpectedErrorFlags::Exact, 1);
+	ADD_LATENT_AUTOMATION_COMMAND(FLogWarningAgxCommand(TEXT("Before the error")));
+	ADD_LATENT_AUTOMATION_COMMAND(FLogErrorAgxCommand(TEXT("At the error.")));
+	ADD_LATENT_AUTOMATION_COMMAND(FLogWarningAgxCommand(TEXT("After the error.")));
+	return true;
+}
 
 /// @todo Show how to create Spec tests.
