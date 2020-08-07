@@ -94,8 +94,19 @@ protected:
 	{
 		BAIL_TEST_IF_NO_WORLD()
 		BAIL_TEST_IF_WORLDS_MISMATCH()
-		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")));
-		ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand());
+
+		/// @todo I would like to load a fresh map before doing the actual test, which it would seem
+		/// one does with FLoadGameMapCommand and FWaitForMapToLoadCommand, but including them
+		/// causes the world to stop ticking. Figure out why. For now I just hope that loading the
+		/// map as a unit test launch command line parameter is good enough. Not sure how multiple
+		/// import tests interact though. Some form of level cleanup Latent Command at the end of
+		/// each test may be required. I really hope multiple tests don't run concurrently on the
+		/// same world.
+#if 0
+		// ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")));
+		// ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand());
+#endif
+
 		ADD_LATENT_AUTOMATION_COMMAND(
 			FImportArchiveSingleActorCommand("empty_scene.agx", Contents, *this));
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckEmptySceneImportedCommand(Contents, *this));
@@ -186,8 +197,14 @@ protected:
 		BAIL_TEST_IF_CANT_SIMULATE()
 		World = AgxAutomationCommon::GetTestWorld();
 		Simulation = UAGX_Simulation::GetFrom(World);
-		// ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
-		// ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand())
+
+		// See comment in FArchiveImporterToSingleActor_EmptySceneTest.
+		// In short, loading a map stops world ticking.
+#if 0
+		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand())
+#endif
+
 		ADD_LATENT_AUTOMATION_COMMAND(
 			FImportArchiveSingleActorCommand("single_sphere.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSingleSphereImportedCommand(*this))
