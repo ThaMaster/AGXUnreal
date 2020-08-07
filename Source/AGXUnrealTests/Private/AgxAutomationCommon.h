@@ -31,7 +31,7 @@ namespace AgxAutomationCommon
 			EAutomationTestFlags::ProductFilter | EAutomationTestFlags::EditorContext |
 			EAutomationTestFlags::ClientContext);
 
-	/// @todo Remove local TestEqual for FQuat once it's include in-engine.
+	/// @todo Remove this TestEqual implementation for FQuat once it's included in-engine.
 	/// @see "Misc/AutomationTest.h"
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, const FQuat& Actual, const FQuat& Expected,
@@ -90,10 +90,6 @@ namespace AgxAutomationCommon
 		Out = GetByName<T>(Components, Name);
 	}
 
-	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogWarningAgxCommand, FString, Message);
-	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogErrorAgxCommand, FString, Message);
-	DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(FTickUntilCommand, UWorld*&, World, float, Time);
-
 	/**
 	 * Latent Command that tests that TestHelper::GetTestWorld and
 	 * FAGX_EditorUtilities::GetCurrentWorld return the same world.
@@ -117,6 +113,30 @@ namespace AgxAutomationCommon
 		FAutomationTestBase& Test;
 	};
 
+	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogWarningAgxCommand, FString, Message);
+	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogErrorAgxCommand, FString, Message);
+	DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(FTickUntilCommand, UWorld*&, World, float, Time);
+
+	/**
+	 * Latent Command that waits until a given number of seconds has passed in the given world.
+	 * Timing starts when the Latent Commands' Update member function is first called.
+	 */
+	class FWaitWorldDuration final : public IAutomationLatentCommand
+	{
+	public:
+		FWaitWorldDuration(UWorld*& InWorld, float InDuration);
+		virtual bool Update() override;
+
+	private:
+		UWorld*& World;
+		const float Duration;
+		float EndTime = -1.0f;
+	};
+
+	/**
+	 * Default implementations for the virtual functions in FAutomationTestBase to simplify the
+	 * creation of Automation Tests that contain state.
+	 */
 	class FAgxAutomationTest : public FAutomationTestBase
 	{
 	public:

@@ -144,11 +144,6 @@ bool AgxAutomationCommon::FLogErrorAgxCommand::Update()
 	return true;
 }
 
-bool AgxAutomationCommon::FTickUntilCommand::Update()
-{
-	return World->GetTimeSeconds() >= Time;
-}
-
 bool AgxAutomationCommon::FCheckWorldsCommand::Update()
 {
 	UWorld* TestWorld = AgxAutomationCommon::GetTestWorld();
@@ -159,6 +154,27 @@ bool AgxAutomationCommon::FCheckWorldsCommand::Update()
 	Test.TestNotNull("TestWorld", TestWorld);
 	Test.TestNotNull("CurrentWorld", CurrentWorld);
 	return true;
+}
+
+bool AgxAutomationCommon::FTickUntilCommand::Update()
+{
+	return World->GetTimeSeconds() >= Time;
+}
+
+AgxAutomationCommon::FWaitWorldDuration::FWaitWorldDuration(
+	UWorld*& InWorld, float InDuration)
+	: World(InWorld)
+	, Duration(InDuration)
+{
+}
+
+bool AgxAutomationCommon::FWaitWorldDuration::Update()
+{
+	if (EndTime < 0.0f)
+	{
+		EndTime = World->GetTimeSeconds() + Duration;
+	}
+	return World->GetTimeSeconds() >= EndTime;
 }
 
 AgxAutomationCommon::FCheckWorldsTest::FCheckWorldsTest()
