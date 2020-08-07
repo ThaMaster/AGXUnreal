@@ -50,9 +50,7 @@ DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
 	FCheckEmptySceneImportedCommand, AActor*&, Contents, FAutomationTestBase&, Test);
 bool FCheckEmptySceneImportedCommand::Update()
 {
-	UWorld* World = AgxAutomationCommon::GetTestWorld();
-	Test.TestEqual(TEXT("The actor's world and the test world."), Contents->GetWorld(), World);
-
+	// The Actor's only component should be the root component.
 	TArray<UActorComponent*> Components;
 	Contents->GetComponents(Components, false);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 1);
@@ -60,16 +58,10 @@ bool FCheckEmptySceneImportedCommand::Update()
 		AgxAutomationCommon::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
 
-	bool Found = false;
-	for (FActorIterator It(World); It; ++It)
-	{
-		if (*It == Contents)
-		{
-			Found = true;
-			break;
-		}
-	}
-	Test.TestTrue(TEXT("Imported actor found in test world."), Found);
+	// The Actor should have been created in the test world.
+	UWorld* World = AgxAutomationCommon::GetTestWorld();
+	Test.TestEqual(TEXT("The actor should be in the test world."), Contents->GetWorld(), World);
+	Test.TestTrue(TEXT("The actor should be in the test world."), World->ContainsActor(Contents));
 
 	return true;
 }
