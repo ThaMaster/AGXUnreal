@@ -25,27 +25,6 @@
  */
 
 /**
- * @todo Remove this test code.
- * The purpose of this test is to figure out how to abort a test from a Latent Command so that
- * the subsequent Latent Commands are skipped. I haven't found a way yet and I'm starting to suspect
- * that it would be a bad idea. Tests should clean up after themselves which must happen in a Latent
- * Command. By aborting the test we would also skip the clean-up step. I don't think we have any
- * flow control / exceptions / then-else support in Latent Commands. A better approach would be to
- * write each Latent Command to handle failures in the preceding Latent Commands.
- */
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-	FTestAbort, "AGXUnreal.TestAbort",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter);
-bool FTestAbort::RunTest(const FString& Parameters)
-{
-	using namespace AgxAutomationCommon;
-	ADD_LATENT_AUTOMATION_COMMAND(FLogWarningAgxCommand(TEXT("Before the error")));
-	ADD_LATENT_AUTOMATION_COMMAND(FLogErrorAgxCommand(TEXT("At the error.")));
-	ADD_LATENT_AUTOMATION_COMMAND(FLogWarningAgxCommand(TEXT("After the error.")));
-	return true;
-}
-
-/**
  * Latent Command that imports an AGX Dynamics archive into a single actor.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
