@@ -203,9 +203,6 @@ bool FStoreInitialTimes::Update()
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(Test.World);
 	Simulation->SetTimeStamp(Test.StartUnrealTime);
 	Simulation->StepMode = SM_CATCH_UP_IMMEDIATELY;
-	UE_LOG(
-		LogAGX, Warning, TEXT("Starting ticking at time World=%f, Simulation=%f."),
-		Test.World->GetTimeSeconds(), UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp());
 	return true;
 }
 
@@ -213,8 +210,6 @@ bool FStoreResultingTimes::Update()
 {
 	Test.EndUnrealTime = Test.World->GetTimeSeconds();
 	Test.EndAgxTime = UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp();
-	UE_LOG(LogAGX, Warning, TEXT("Ending ticking at time World=%f, Simulation=%f."),
-		Test.EndUnrealTime, Test.EndAgxTime);
 	return true;
 }
 
@@ -319,22 +314,9 @@ bool FCheckSphereHasMoved::Update()
 		return true;
 	}
 
-	// Test.TestEqual("World and AGX times should be equal", Test.StartAgxTime,
-	// Test.StartUnrealTime);
-
 	FVector EndPosition = Test.SphereBody->GetComponentLocation();
 	FVector EndVelocity = Test.SphereBody->Velocity;
-
-	UE_LOG(
-		LogAGX, Warning, TEXT("Sphere positions:\n   %s\n   %s"), *Test.StartPosition.ToString(),
-		*EndPosition.ToString())
-
-	UE_LOG(
-		LogAGX, Warning, TEXT("Sphere velocities:\n   %s\n   %s"), *Test.StartVelocity.ToString(),
-		*EndVelocity.ToString())
-
 	float Duration = Test.EndAgxTime - Test.StartAgxTime;
-	UE_LOG(LogAGX, Warning, TEXT("Simulated for %f seconds."), Duration);
 
 	// Velocity constant only for X and Y directions. Z has gravity.
 	for (int32 I : {0, 1})
@@ -347,11 +329,12 @@ bool FCheckSphereHasMoved::Update()
 			RelativeTolerance(ExpectedPosition, 0.01f));
 	}
 
-	// Velocity test for Z.
+	// Position test for Z.
 	{
 		float StartVelocity = Test.StartVelocity.Z;
 		float StartPosition = Test.StartPosition.Z;
 		float Acceleration = UAGX_Simulation::GetFrom(Test.World)->Gravity.Z;
+		// The familiar Xt = X0 + V0 * t + 1/2 * a * t^2.
 		float ExpectedPosition =
 			StartPosition + StartVelocity * Duration + 0.5f * Acceleration * Duration * Duration;
 		float ActualPosition = EndPosition.Z;
@@ -360,8 +343,6 @@ bool FCheckSphereHasMoved::Update()
 			ExpectedPosition, RelativeTolerance(ExpectedPosition, 0.02f));
 	}
 
-	// FVector EndVelocity = Test.SphereBody->Velocity;
-	// Test.TestEqual("Sphere should accelerate due to gravity", EndVelocity, Test.StartVelocity);
 	return true;
 }
 
