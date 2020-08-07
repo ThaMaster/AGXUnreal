@@ -265,24 +265,30 @@ bool FCheckSingleSphereImportedCommand::Update()
 	USceneComponent* SceneRoot =
 		AgxAutomationCommon::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
 	UAGX_RigidBodyComponent* BulletBody =
-		AgxAutomationCommon::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("bullet"));
+		AgxAutomationCommon::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("SphereBody"));
 	UAGX_SphereShapeComponent* BulletShape =
-		AgxAutomationCommon::GetByName<UAGX_SphereShapeComponent>(Components, TEXT("bullet_1"));
+		AgxAutomationCommon::GetByName<UAGX_SphereShapeComponent>(Components, TEXT("SphereGeometry"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
-	Test.TestNotNull(TEXT("Bullet"), BulletBody);
-	Test.TestNotNull(TEXT("Bullet_1"), BulletShape);
+	Test.TestNotNull(TEXT("SphereBody"), BulletBody);
+	Test.TestNotNull(TEXT("SphereShape"), BulletShape);
+
+	if (BulletBody == nullptr)
+	{
+		Test.AddError("No sphere body found in the level, cannot continue.");
+		return true;
+	}
 
 	// Read and verify state for each UAGX_RigidBodyComponent property.
 	float Mass = BulletBody->Mass;
-	Test.TestEqual(TEXT("Sphere mass"), Mass, 100.0f);
+	Test.TestEqual(TEXT("Sphere mass"), Mass, 5.23598775598298857403e+02f);
 
 	{
 		FVector LinearVelocity = BulletBody->Velocity;
 		// The velocity, in AGX Dynamics' units, that was given to the sphere when created.
 		/// @todo Replace these numbers once we get a dedicated test scene.
-		FVector AgxVelocity(-4.73094, 16.5768, 10.9014);
+		FVector AgxVelocity(1.00000000000000000000e+00f, 2.00000000000000000000e+00f, 3.00000000000000000000e+00f);
 		FVector AgxToUnreal(100.0f, -100.0f, 100.0f);
 		FVector ExpectedVelocity = AgxVelocity * AgxToUnreal;
 		Test.TestEqual(TEXT("Sphere linear velocity"), LinearVelocity, ExpectedVelocity, 1e-2);
