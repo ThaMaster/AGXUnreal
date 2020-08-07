@@ -120,11 +120,29 @@ AgxAutomationCommon::NoWorldTestsReason AgxAutomationCommon::CanRunWorldTests()
 
 FString AgxAutomationCommon::GetArchivePath(const TCHAR* ArchiveName)
 {
-	/// \todo Find where, if at all, Automation test AGX Dynamics archives should be stored.
+	/// @todo Find where, if at all, Automation test AGX Dynamics archives should be stored.
 	/// In the repository or downloaded as with test files for AGX Dynamics.
-	/// \todo Find the proper path somehow. Likely using FPaths.
-	return FPaths::Combine(
-		TEXT("/home/ibbles/workspace/Algoryx/AGX_Dynamics_archives"), ArchiveName);
+	/// @todo Find the proper path somehow. Likely using FPaths.
+	static const TCHAR* Directories[] = {
+		TEXT("/home/ibbles/workspace/Algoryx/AGXUnreal/AGX_Dynamics_scenes"),
+		TEXT("/home/ibbles/workspace/Algoryx/AGX_Dynamics_archives")};
+
+	for (const TCHAR* DirCandidate : Directories)
+	{
+		FString FullPath = FPaths::Combine(DirCandidate, ArchiveName);
+		if (FPaths::FileExists(FullPath))
+		{
+			UE_LOG(LogAGX, Display, TEXT("Found '%s' in '%s'."), ArchiveName, DirCandidate);
+			return FullPath;
+		}
+	}
+	UE_LOG(LogAGX, Warning, TEXT("Did not find full path for AGX Dynamics archive '%s'."), ArchiveName)
+	UE_LOG(LogAGX, Display, TEXT("Searched in the following directories:"))
+	for (const TCHAR* DirCandidate : Directories)
+	{
+		UE_LOG(LogAGX, Display, TEXT("  %s"), DirCandidate);
+	}
+	return FString();
 }
 
 FString AgxAutomationCommon::GetArchivePath(const FString& ArchiveName)
@@ -167,8 +185,7 @@ bool AgxAutomationCommon::FTickUntilCommand::Update()
 	return World->GetTimeSeconds() >= Time;
 }
 
-AgxAutomationCommon::FWaitWorldDuration::FWaitWorldDuration(
-	UWorld*& InWorld, float InDuration)
+AgxAutomationCommon::FWaitWorldDuration::FWaitWorldDuration(UWorld*& InWorld, float InDuration)
 	: World(InWorld)
 	, Duration(InDuration)
 {
