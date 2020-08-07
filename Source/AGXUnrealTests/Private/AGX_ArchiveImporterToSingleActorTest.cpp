@@ -135,37 +135,6 @@ DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FStoreResultingTimes, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
 
-/// @todo This is being replaced.
-#if 0
-/**
- * Latent Command that waits for the given time, starting at the time when the Latent Command is
- * first updated.
- */
-class FWaitUntilTimeRelative final : public IAutomationLatentCommand
-{
-public:
-	FWaitUntilTimeRelative(
-		float InTimeToWait, FArchiveImporterToSingleActor_SingleSphereTest& InTest)
-		: Test(InTest)
-		, TimeToWait(InTimeToWait)
-	{
-	}
-
-	virtual bool Update();
-
-private:
-	void Init();
-	bool HaveReachedEndTime();
-	void Shutdown();
-
-private:
-	FArchiveImporterToSingleActor_SingleSphereTest& Test;
-	float TimeToWait;
-	float EndTime;
-	int32 NumUpdates = 0;
-};
-#endif
-
 class FArchiveImporterToSingleActor_SingleSphereTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
@@ -337,70 +306,6 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	return true;
 }
-
-#if 0
-bool FWaitUntilTimeRelative::Update()
-{
-	if (Test.World == nullptr)
-	{
-		return true;
-	}
-	if (NumUpdates == 0)
-	{
-		Init();
-	}
-
-#if 0
-	UE_LOG(
-		LogAGX, Warning, TEXT("Update number %d with World time %f and Simulation time %f."),
-		NumUpdates, World->GetTimeSeconds(), UAGX_Simulation::GetFrom(World)->GetTimeStamp());
-#endif
-
-	++NumUpdates;
-
-	/// @todo Safety bail-out to prevent test hangs. Decide if really needed and remove if not.
-	if (NumUpdates > 1000)
-	{
-		Test.AddError("Did not reach the time event after many ticks. Giving up.");
-		return true;
-	}
-
-	if (HaveReachedEndTime())
-	{
-		Shutdown();
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-void FWaitUntilTimeRelative::Init()
-{
-	Test.StartUnrealTime = Test.World->GetTimeSeconds();
-	EndTime = Test.StartUnrealTime + TimeToWait;
-	UAGX_Simulation::GetFrom(Test.World)->SetTimeStamp(StartTime);
-	Test.StartAgxTime = UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp();
-
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("Waiting for %f seconds, starting at world time %f and simulation time %f."),
-		TimeToWait, Test.World->GetTimeSeconds(),
-		UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp());
-}
-
-bool FWaitUntilTimeRelative::HaveReachedEndTime()
-{
-	return Test.World->GetTimeSeconds() >= EndTime;
-}
-
-void FWaitUntilTimeRelative::Shutdown()
-{
-	Test.EndUnrealTime = Test.World->GetTimeSeconds();
-	Test.EndAgxTime = UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp();
-}
-#endif
 
 float RelativeTolerance(float Expected, float Tolerance)
 {
