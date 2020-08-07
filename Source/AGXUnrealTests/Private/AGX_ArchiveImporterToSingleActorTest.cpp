@@ -55,6 +55,12 @@ DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
 	FCheckEmptySceneImportedCommand, AActor*&, Contents, FAutomationTestBase&, Test);
 bool FCheckEmptySceneImportedCommand::Update()
 {
+	UWorld* World = AgxAutomationCommon::GetTestWorld();
+	if (World == nullptr || Contents == nullptr)
+	{
+		return true;
+	}
+
 	// The Actor's only component should be the root component.
 	TArray<UActorComponent*> Components;
 	Contents->GetComponents(Components, false);
@@ -64,10 +70,22 @@ bool FCheckEmptySceneImportedCommand::Update()
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
 
 	// The Actor should have been created in the test world.
-	UWorld* World = AgxAutomationCommon::GetTestWorld();
 	Test.TestEqual(TEXT("The actor should be in the test world."), Contents->GetWorld(), World);
 	Test.TestTrue(TEXT("The actor should be in the test world."), World->ContainsActor(Contents));
 
+	return true;
+}
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FClearEmptySceneImportedCommand, AActor*&, Contents);
+bool FClearEmptySceneImportedCommand::Update()
+{
+	UWorld* World = AgxAutomationCommon::GetTestWorld();
+	if (World == nullptr || Contents == nullptr)
+	{
+		return true;
+	}
+	World->DestroyActor(Contents);
+	Contents = nullptr;
 	return true;
 }
 
@@ -108,6 +126,8 @@ protected:
 			FImportArchiveSingleActorCommand("empty_scene.agx", Contents, *this));
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckEmptySceneImportedCommand(Contents, *this));
 		/// @todo Add Latent Command to clean up the level here.
+		ADD_LATENT_AUTOMATION_COMMAND(FClearEmptySceneImportedCommand(Contents));
+		ADD_LATENT_AUTOMATION_COMMAND(AgxAutomationCommon::FWaitNTicks(1));
 
 		return true;
 	}
@@ -134,6 +154,19 @@ DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FStoreResultingTimes, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FClearSingleSphereImportedCommand, AActor*&, Contents);
+bool FClearSingleSphereImportedCommand::Update()
+{
+	UWorld* World = AgxAutomationCommon::GetTestWorld();
+	if (World == nullptr || Contents == nullptr)
+	{
+		return true;
+	}
+	World->DestroyActor(Contents);
+	Contents = nullptr;
+	return true;
+}
 
 class FArchiveImporterToSingleActor_SingleSphereTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
@@ -186,6 +219,9 @@ protected:
 		// ADD_LATENT_AUTOMATION_COMMAND(FWaitUntilTimeRelative(1.0f, *this));
 
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSphereHasMoved(*this));
+
+		ADD_LATENT_AUTOMATION_COMMAND(FClearSingleSphereImportedCommand(Contents));
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitNTicks(1));
 
 		return true;
 	}
