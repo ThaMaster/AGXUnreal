@@ -144,6 +144,12 @@ bool AgxAutomationCommon::FLogErrorAgxCommand::Update()
 	return true;
 }
 
+bool AgxAutomationCommon::FWaitNTicks::Update()
+{
+	--NumTicks;
+	return NumTicks <= 0;
+}
+
 bool AgxAutomationCommon::FCheckWorldsCommand::Update()
 {
 	UWorld* TestWorld = AgxAutomationCommon::GetTestWorld();

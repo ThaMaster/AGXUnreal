@@ -117,6 +117,8 @@ namespace AgxAutomationCommon
 	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogErrorAgxCommand, FString, Message);
 	DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(FTickUntilCommand, UWorld*&, World, float, Time);
 
+	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FWaitNTicks, int32, NumTicks);
+
 	/**
 	 * Latent Command that waits until a given number of seconds has passed in the given world.
 	 * Timing starts when the Latent Commands' Update member function is first called.
