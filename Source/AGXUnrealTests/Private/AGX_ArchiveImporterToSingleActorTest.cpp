@@ -5,8 +5,8 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
-#include "Shapes/AGX_SphereShapeComponent.h"
 #include "AgxAutomationCommon.h"
+#include "Shapes/AGX_SphereShapeComponent.h"
 
 // Unreal Engine includes.
 #include "Engine/Engine.h"
@@ -16,16 +16,21 @@
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
 
-/// @todo Add the `#if WITH_DEV_AUTOMATION_TESTS` macro before the function definition
+#if WITH_DEV_AUTOMATION_TESTS
 
 /*
- * This file contains a set of tests that deal with importing AGX Dynamics archives into an Actor
- * with ActorComponents for each imported AGX Dynamics body etc. All importing is done using
- * AGX_ArchiveImporterToSingleActor::ImportAGXArchive.
+ * This file contains a set of tests for AGX_ArchiveImporterToSingleActor, which imports an AGX
+ * Dynamics archive into the current world as a single Actor that contains ActorComponents for each
+ * imported object.
  */
 
 /**
- * Latent Command that imports an AGX Dynamics archive into a single actor.
+ * Latent Command that imports an AGX Dynamics archive into a single actor. A pointer to the Actor
+ * created to hold the imported objects is stored in the Contents parameter.
+ *
+ * @param ArchiveName The AGX Dynamics archive to import.
+ * @param Contents Pointer set to point to the Actor containing the imported objects.
+ * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
 	FImportArchiveSingleActorCommand, FString, ArchiveName, AActor*&, Contents,
@@ -35,16 +40,16 @@ bool FImportArchiveSingleActorCommand::Update()
 	Test.TestEqual(
 		TEXT("TestWorld and CurrentWorld"), AgxAutomationCommon::GetTestWorld(),
 		FAGX_EditorUtilities::GetCurrentWorld());
-
 	FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(ArchiveName);
 	Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
 	Test.TestNotNull(TEXT("Contents"), Contents);
-
 	return true;
 }
 
 /**
  * Latent Command testing that the empty scene was imported correctly.
+ * @param Contents The Actor that was created by the archive importer to hold the imported objects.
+ * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
 	FCheckEmptySceneImportedCommand, AActor*&, Contents, FAutomationTestBase&, Test);
@@ -102,25 +107,19 @@ protected:
 		ADD_LATENT_AUTOMATION_COMMAND(
 			FImportArchiveSingleActorCommand("empty_scene.agx", Contents, *this));
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckEmptySceneImportedCommand(Contents, *this));
+		/// @todo Add Latent Command to clean up the level here.
+
 		return true;
 	}
 
 private:
-	AActor* Contents;
+	AActor* Contents = nullptr;
 };
 
 namespace
 {
 	FArchiveImporterToSingleActor_EmptySceneTest ArchiveImporterToSingleActor_EmptySceneTest;
 }
-
-
-#if 0
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-	FArchiveImporterToSingleActor_SingleSphereTest,
-	"AGXUnreal.ArchiveImporterToSingleActor.SingleSphere",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
-#endif
 
 class FArchiveImporterToSingleActor_SingleSphereTest;
 
@@ -130,6 +129,14 @@ DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FCheckSphereHasMoved, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
 
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FStoreInitialTimes, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FStoreResultingTimes, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
+
+/// @todo This is being replaced.
+#if 0
 /**
  * Latent Command that waits for the given time, starting at the time when the Latent Command is
  * first updated.
@@ -157,6 +164,7 @@ private:
 	float EndTime;
 	int32 NumUpdates = 0;
 };
+#endif
 
 class FArchiveImporterToSingleActor_SingleSphereTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
@@ -201,10 +209,12 @@ protected:
 			FImportArchiveSingleActorCommand("single_sphere.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSingleSphereImportedCommand(*this))
 
-		/// @todo Using local game time waiter until we know it works as intended.
-		// ADD_LATENT_AUTOMATION_COMMAND(FTickUntilCommand(World, 1.0f));
-		ADD_LATENT_AUTOMATION_COMMAND(FWaitUntilTimeRelative(1.0f, *this));
-		// ADD_LATENT_AUTOMATION_COMMAND(FTickForDuration(World, 1.0f, 1.0f / 60.0f, *this));
+		ADD_LATENT_AUTOMATION_COMMAND(FStoreInitialTimes(*this));
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitWorldDuration(World, 1.0f));
+		ADD_LATENT_AUTOMATION_COMMAND(FStoreResultingTimes(*this));
+
+		/// @todo This is being replaced.
+		// ADD_LATENT_AUTOMATION_COMMAND(FWaitUntilTimeRelative(1.0f, *this));
 
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSphereHasMoved(*this));
 
@@ -215,6 +225,28 @@ protected:
 namespace
 {
 	FArchiveImporterToSingleActor_SingleSphereTest ArchiveImporterToSingleActor_SingleSphereTest;
+}
+
+bool FStoreInitialTimes::Update()
+{
+	Test.StartUnrealTime = Test.World->GetTimeSeconds();
+	Test.StartAgxTime = Test.StartUnrealTime;
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(Test.World);
+	Simulation->SetTimeStamp(Test.StartUnrealTime);
+	Simulation->StepMode = SM_CATCH_UP_IMMEDIATELY;
+	UE_LOG(
+		LogAGX, Warning, TEXT("Starting ticking at time World=%f, Simulation=%f."),
+		Test.World->GetTimeSeconds(), UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp());
+	return true;
+}
+
+bool FStoreResultingTimes::Update()
+{
+	Test.EndUnrealTime = Test.World->GetTimeSeconds();
+	Test.EndAgxTime = UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp();
+	UE_LOG(LogAGX, Warning, TEXT("Ending ticking at time World=%f, Simulation=%f."),
+		Test.EndUnrealTime, Test.EndAgxTime);
+	return true;
 }
 
 bool FCheckSingleSphereImportedCommand::Update()
@@ -306,6 +338,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 	return true;
 }
 
+#if 0
 bool FWaitUntilTimeRelative::Update()
 {
 	if (Test.World == nullptr)
@@ -367,6 +400,7 @@ void FWaitUntilTimeRelative::Shutdown()
 	Test.EndUnrealTime = Test.World->GetTimeSeconds();
 	Test.EndAgxTime = UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp();
 }
+#endif
 
 float RelativeTolerance(float Expected, float Tolerance)
 {
@@ -393,8 +427,6 @@ bool FCheckSphereHasMoved::Update()
 	UE_LOG(
 		LogAGX, Warning, TEXT("Sphere velocities:\n   %s\n   %s"), *Test.StartVelocity.ToString(),
 		*EndVelocity.ToString())
-
-
 
 	float Duration = Test.EndAgxTime - Test.StartAgxTime;
 	UE_LOG(LogAGX, Warning, TEXT("Simulated for %f seconds."), Duration);
@@ -427,3 +459,6 @@ bool FCheckSphereHasMoved::Update()
 	// Test.TestEqual("Sphere should accelerate due to gravity", EndVelocity, Test.StartVelocity);
 	return true;
 }
+
+// WITH_DEV_AUTOMATION_TESTS
+#endif
