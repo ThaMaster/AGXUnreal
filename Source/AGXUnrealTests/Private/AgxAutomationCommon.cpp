@@ -30,6 +30,7 @@ UWorld* AgxAutomationCommon::GetTestWorld()
 			TEXT("Cannot get the test world because GEngine->GetWorldContexts() is empty."));
 		return nullptr;
 	}
+	TArray<UWorld*> Candidates;
 	for (const FWorldContext& Context : WorldContexts)
 	{
 		// It's not clear to me which worlds are OK to use when testing. Here, taken from
@@ -39,16 +40,33 @@ UWorld* AgxAutomationCommon::GetTestWorld()
 		// loading is only allowed on Game worlds? Is there a way to create a hidden background
 		// world used for the test only, detaching the entire test from the state of the rest of the
 		// worlds?
-		bool bIsPieOrGame =
-			Context.WorldType == EWorldType::PIE || Context.WorldType == EWorldType::Game;
+		EWorldType::Type Type = Context.WorldType;
+		bool bIsPieOrGame = Type == EWorldType::PIE || Type == EWorldType::Game;
 		if (bIsPieOrGame && Context.World() != nullptr)
 		{
-			return Context.World();
+			Candidates.Add(Context.World());
 		}
 	}
-	UE_LOG(
-		LogAGX, Warning, TEXT("None of the %d WorldContexts contain a PIE or Game world."),
-		WorldContexts.Num());
+	if (Candidates.Num() == 0)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("None of the %d WorldContexts contain a PIE or Game world."),
+			WorldContexts.Num());
+		return nullptr;
+	}
+	else if (Candidates.Num() == 1)
+	{
+		return Candidates[0];
+	}
+	else if (Candidates.Num() > 1)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Got more than one world that looks like a test world. Don't know which one "
+				 "should be used."))
+		return nullptr;
+	}
+	checkNoEntry();
 	return nullptr;
 }
 
