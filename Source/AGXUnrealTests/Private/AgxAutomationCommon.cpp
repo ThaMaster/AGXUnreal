@@ -166,7 +166,8 @@ FString AgxAutomationCommon::GetArchivePath(const TCHAR* ArchiveName)
 			return FullPath;
 		}
 	}
-	UE_LOG(LogAGX, Warning, TEXT("Did not find full path for AGX Dynamics archive '%s'."), ArchiveName)
+	UE_LOG(
+		LogAGX, Warning, TEXT("Did not find full path for AGX Dynamics archive '%s'."), ArchiveName)
 	UE_LOG(LogAGX, Display, TEXT("Searched in the following directories:"))
 	for (const TCHAR* DirCandidate : Directories)
 	{
