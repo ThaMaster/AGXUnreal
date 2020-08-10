@@ -155,7 +155,8 @@ DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FStoreResultingTimes, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
 
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FClearSingleSphereImportedCommand, AActor*&, Contents);
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearSingleSphereImportedCommand, AActor*&, Contents);
 bool FClearSingleSphereImportedCommand::Update()
 {
 	UWorld* World = AgxAutomationCommon::GetTestWorld();
@@ -198,7 +199,15 @@ protected:
 		using namespace AgxAutomationCommon;
 		BAIL_TEST_IF_CANT_SIMULATE()
 		World = AgxAutomationCommon::GetTestWorld();
+		if (World == nullptr)
+		{
+			AddError(TEXT("Do not have a test world, cannot test SingleSphere import."));
+		}
 		Simulation = UAGX_Simulation::GetFrom(World);
+		if (Simulation == nullptr)
+		{
+			AddError(TEXT("Do not have a simulation, cannot test SingleSphere import."));
+		}
 
 		// See comment in FArchiveImporterToSingleActor_EmptySceneTest.
 		// In short, loading a map stops world ticking.
@@ -208,15 +217,12 @@ protected:
 #endif
 
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand("single_sphere.agx", Contents, *this))
+			FImportArchiveSingleActorCommand("single_sphere_build.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSingleSphereImportedCommand(*this))
 
 		ADD_LATENT_AUTOMATION_COMMAND(FStoreInitialTimes(*this));
 		ADD_LATENT_AUTOMATION_COMMAND(FWaitWorldDuration(World, 1.0f));
 		ADD_LATENT_AUTOMATION_COMMAND(FStoreResultingTimes(*this));
-
-		/// @todo This is being replaced.
-		// ADD_LATENT_AUTOMATION_COMMAND(FWaitUntilTimeRelative(1.0f, *this));
 
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSphereHasMoved(*this));
 
@@ -249,9 +255,17 @@ bool FStoreResultingTimes::Update()
 	return true;
 }
 
+/*
+ * Check that the expected state has been created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script single_sphere.agxPy.
+ */
 bool FCheckSingleSphereImportedCommand::Update()
 {
-	if (Test.World == nullptr)
+	using namespace AgxAutomationCommon;
+
+	if (Test.World == nullptr || Test.Simulation == nullptr)
 	{
 		return true;
 	}
@@ -262,54 +276,95 @@ bool FCheckSingleSphereImportedCommand::Update()
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
 
 	// Get the components we know should be there.
-	USceneComponent* SceneRoot =
-		AgxAutomationCommon::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
-	UAGX_RigidBodyComponent* BulletBody =
-		AgxAutomationCommon::GetByName<UAGX_RigidBodyComponent>(Components, TEXT("SphereBody"));
-	UAGX_SphereShapeComponent* BulletShape =
-		AgxAutomationCommon::GetByName<UAGX_SphereShapeComponent>(Components, TEXT("SphereGeometry"));
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* SphereBody =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("SphereBody"));
+	UAGX_SphereShapeComponent* SphereShape =
+		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("SphereGeometry"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
-	Test.TestNotNull(TEXT("SphereBody"), BulletBody);
-	Test.TestNotNull(TEXT("SphereShape"), BulletShape);
+	Test.TestNotNull(TEXT("SphereBody"), SphereBody);
+	Test.TestNotNull(TEXT("SphereShape"), SphereShape);
 
-	if (BulletBody == nullptr)
+	if (SphereBody == nullptr || SphereShape == nullptr)
 	{
 		Test.AddError("No sphere body found in the level, cannot continue.");
 		return true;
 	}
 
-	// Read and verify state for each UAGX_RigidBodyComponent property.
-	float Mass = BulletBody->Mass;
-	Test.TestEqual(TEXT("Sphere mass"), Mass, 5.23598775598298857403e+02f);
-
+	// Name.
 	{
-		FVector LinearVelocity = BulletBody->Velocity;
+		Test.TestEqual("Sphere name", SphereBody->GetFName(), FName(TEXT("SphereBody")));
+	}
+
+	// Position.
+	{
+		FVector Actual = SphereBody->GetComponentLocation();
+		// The position, in AGX Dynamics' units, that was given to the sphere when created.
+		FVector ExpectedAgx(
+			1.00000000000000000000e+01f, 2.00000000000000000000e+01f, 3.00000000000000000000e+01f);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere position"), Actual, Expected);
+	}
+
+	// Rotation.
+	{
+		FRotator Actual = SphereBody->GetComponentRotation();
+		// The rotation, in AGX Dynamics' units, that was given to the sphere when created.
+		FVector ExpectedAgx(
+			1.01770284974289526581e+00f, -2.65482457436691521302e-01f,
+			-1.54866776461627897454e+00f);
+		FRotator Expected = AgxToUnrealEulerAngles(ExpectedAgx);
+		TestEqual(Test, TEXT("Sphere rotation"), Actual, Expected);
+	}
+
+	// Velocity.
+	{
+		FVector Actual = SphereBody->Velocity;
 		// The velocity, in AGX Dynamics' units, that was given to the sphere when created.
-		/// @todo Replace these numbers once we get a dedicated test scene.
-		FVector AgxVelocity(1.00000000000000000000e+00f, 2.00000000000000000000e+00f, 3.00000000000000000000e+00f);
-		FVector AgxToUnreal(100.0f, -100.0f, 100.0f);
-		FVector ExpectedVelocity = AgxVelocity * AgxToUnreal;
-		Test.TestEqual(TEXT("Sphere linear velocity"), LinearVelocity, ExpectedVelocity, 1e-2);
+		FVector ExpectedAgx(
+			1.00000000000000000000e+00f, 2.00000000000000000000e+00f, 3.00000000000000000000e+00f);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere linear velocity"), Actual, Expected);
 	}
+
+	// Angular velocity.
+	{
+		FVector Actual = SphereBody->AngularVelocity;
+		// The angular velocity, in AGX Dynamics' units, that was given to the sphere when created.
+		FVector ExpectedAgx(
+			0.00000000000000000000e+00f, 0.00000000000000000000e+00f, 0.00000000000000000000e+00f);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere angular velocity"), Actual, Expected);
+	}
+
+	// Mass.
+	{
+		Test.TestEqual(TEXT("Sphere mass"), SphereBody->Mass, 5.00000000000000000000e+02f);
+	}
+
+	// Inertia tensor diagonal.
+	{
+		FVector Actual = SphereBody->InertiaTensorDiagonal;
+		FVector Expected(
+			1.00000000000000000000e+02f, 2.00000000000000000000e+02f, 3.00000000000000000000e+02f);
+		Test.TestEqual(TEXT("Sphere inertia tensor diagonal"), Actual, Expected);
+	}
+
+	// Motion control.
+	{
+		EAGX_MotionControl Actual = SphereBody->MotionControl;
+		EAGX_MotionControl Expected = EAGX_MotionControl::MC_DYNAMICS;
+		Test.TestEqual(TEXT("Sphere motion control"), Actual, Expected);
+	}
+
+	// Transform root component.
 
 	{
-		FVector ActualAngularVelocity = BulletBody->AngularVelocity;
-		// The angular velocity, in AGX Dynamics' units, that was given to the sphere when created.
-		/// @todo Replace these numbers once we get a dedicated test scene.
-		FVector AgxAngularVelocity(17.7668f, 2.27498f, 7.87081f);
-		FVector AgxToUnreal(1.0f, -1.0f, -1.0f);
-		FVector ExpectedAngularVelocity = AgxAngularVelocity * AgxToUnreal;
-		Test.TestEqual(
-			TEXT("Sphere angular velocity"), ActualAngularVelocity, ExpectedAngularVelocity);
+		Test.TestFalse(
+			TEXT("Sphere transform root component"), SphereBody->bTransformRootComponent);
 	}
-
-	EAGX_MotionControl MotionControl = BulletBody->MotionControl;
-	Test.TestEqual(TEXT("Sphere motion control"), MotionControl, EAGX_MotionControl::MC_DYNAMICS);
-
-	uint8_t bTransformRootComponent = BulletBody->bTransformRootComponent;
-	Test.TestFalse(TEXT("Sphere transform root component"), bTransformRootComponent);
 
 	/**
 	 * @todo A native AGX Dynamics RigidBody is created for the body when the AGX_RigidBodyComponent
@@ -324,10 +379,10 @@ bool FCheckSingleSphereImportedCommand::Update()
 	 * causes BeginPlay to be called on the AGX_RigidBody from UActorComponent::RegisterComponent.
 	 * That's when the Native object is created.
 	 */
-	bool bHasNative = BulletBody->HasNative();
+	bool bHasNative = SphereBody->HasNative();
 	Test.TestTrue(TEXT("Sphere has native"), bHasNative);
 
-	UWorld* BodyWorld = BulletBody->GetWorld();
+	UWorld* BodyWorld = SphereBody->GetWorld();
 	Test.TestEqual(TEXT("Sphere world"), BodyWorld, Test.World);
 
 #if 0
@@ -337,9 +392,9 @@ bool FCheckSingleSphereImportedCommand::Update()
 #endif
 
 	// Publish the important bits to the rest of the test.
-	Test.SphereBody = BulletBody;
-	Test.StartPosition = BulletBody->GetComponentLocation();
-	Test.StartVelocity = BulletBody->Velocity;
+	Test.SphereBody = SphereBody;
+	Test.StartPosition = SphereBody->GetComponentLocation();
+	Test.StartVelocity = SphereBody->Velocity;
 
 	return true;
 }
