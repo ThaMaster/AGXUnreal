@@ -19,14 +19,14 @@ UWorld* AgxAutomationCommon::GetTestWorld()
 
 	if (GEngine == nullptr)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Cannot get the test world because GEngine is nullptr."));
+		UE_LOG(LogAGX, Error, TEXT("Cannot get the test world because GEngine is nullptr."));
 		return nullptr;
 	}
 	const TIndirectArray<FWorldContext>& WorldContexts = GEngine->GetWorldContexts();
 	if (WorldContexts.Num() == 0)
 	{
 		UE_LOG(
-			LogAGX, Warning,
+			LogAGX, Error,
 			TEXT("Cannot get the test world because GEngine->GetWorldContexts() is empty."));
 		return nullptr;
 	}
