@@ -105,6 +105,22 @@ float FRigidBodyBarrier::GetMass() const
 	return MassUnreal;
 }
 
+void FRigidBodyBarrier::SetInertiaTensorDiagonal(const FVector& InertiaUnreal)
+{
+	check(HasNative())
+	agx::Vec3 InertiaAGX = Convert(InertiaUnreal);
+	NativeRef->Native->getMassProperties()->setInertiaTensor(InertiaAGX);
+}
+
+FVector FRigidBodyBarrier::GetInertiaTensorDiagonal() const
+{
+	check(HasNative())
+	agx::Vec3 InertiaAGX = NativeRef->Native->getMassProperties()->getInertiaTensor().getDiagonal();
+	FVector InertiaUnreal = Convert(InertiaAGX);
+	return InertiaUnreal;
+}
+
+
 void FRigidBodyBarrier::SetName(const FString& NameUnreal)
 {
 	check(HasNative());

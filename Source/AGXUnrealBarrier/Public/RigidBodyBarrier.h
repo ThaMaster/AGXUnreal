@@ -46,6 +46,9 @@ public:
 	void SetMass(float NewMass);
 	float GetMass() const;
 
+	void SetInertiaTensorDiagonal(const FVector& NewInertiaTensorDiagonal);
+	FVector GetInertiaTensorDiagonal() const;
+
 	void SetName(const FString& NewName);
 	FString GetName() const;
 
