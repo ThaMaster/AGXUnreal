@@ -59,7 +59,19 @@ void AgxAutomationCommon::TestEqual(
 	if (!Expected.Equals(Actual, Tolerance))
 	{
 		Test.AddError(FString::Printf(
-			TEXT("Expected '%s' to be '%s', but it was %s within tolerance %f."), What,
+			TEXT("Expected '%s' to be '%s' but it was '%s', with tolerance %f."), What,
+			*Expected.ToString(), *Actual.ToString(), Tolerance));
+	}
+}
+
+void AgxAutomationCommon::TestEqual(
+	FAutomationTestBase& Test, const TCHAR* What, const FRotator& Actual, const FRotator& Expected,
+	float Tolerance)
+{
+	if (!Expected.Equals(Actual, Tolerance))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("Expected '%s' to be '%s' but it was '%s', with tolerance %f."), What,
 			*Expected.ToString(), *Actual.ToString(), Tolerance));
 	}
 }

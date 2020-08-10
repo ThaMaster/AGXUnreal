@@ -32,10 +32,16 @@ namespace AgxAutomationCommon
 			EAutomationTestFlags::ClientContext);
 
 	/// @todo Remove this TestEqual implementation for FQuat once it's included in-engine.
-	/// @see "Misc/AutomationTest.h"
+	/// @see Misc/AutomationTest.h
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, const FQuat& Actual, const FQuat& Expected,
 		float Tolerance = KINDA_SMALL_NUMBER);
+
+	/// @toto Remove this TestEqual implementation for FRotator once it's included in-engine.
+	/// @see Misc/AutomationTest.h
+	void TestEqual(
+		FAutomationTestBase& Test, const TCHAR* What, const FRotator& Actual,
+		const FRotator& Expected, float Tolerance = KINDA_SMALL_NUMBER);
 
 	/// @todo Figure out how to use UEnum::GetValueAsString instead of this helper function.
 	/// I get linker errors.
@@ -172,7 +178,7 @@ namespace AgxAutomationCommon
 
 	protected:
 		void GetTests(
-			TArray<FString>& OutBeutifiedNames, TArray<FString>& OutTestCommands) const override;
+			TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands) const override;
 
 		bool RunTest(const FString& InParameter) override;
 	};
