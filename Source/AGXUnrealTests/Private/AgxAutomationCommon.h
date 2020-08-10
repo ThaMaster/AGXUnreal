@@ -182,6 +182,20 @@ namespace AgxAutomationCommon
 
 		bool RunTest(const FString& InParameter) override;
 	};
+
+	inline FVector AgxToUnrealVector(const FVector& Agx)
+	{
+		return FVector(100.0f * Agx.X, -100.0f * Agx.Y, 100.0f * Agx.Z);
+	}
+
+	inline FRotator AgxToUnrealEulerAngles(const FVector& Agx)
+	{
+		/// @todo Verify a third time that the order and signs are correct.
+		return FRotator(
+			/*pitch*/ FMath::RadiansToDegrees(-Agx.Y),
+			/*yaw*/ FMath::RadiansToDegrees(-Agx.Z),
+			/*roll*/ FMath::RadiansToDegrees(Agx.X));
+	}
 }
 
 #define BAIL_TEST_IF(expression)      \
