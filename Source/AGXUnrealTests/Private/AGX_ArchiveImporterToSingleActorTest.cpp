@@ -308,8 +308,8 @@ bool FCheckSingleSphereImportedCommand::Update()
 		FVector Actual = SphereBody->AngularVelocity;
 		// The angular velocity, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(
-			0.00000000000000000000e+00f, 0.00000000000000000000e+00f, 0.00000000000000000000e+00f);
-		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+			1.10000000000000000000e+01f, 1.20000000000000000000e+01f, 1.30000000000000000000e+01f);
+		FVector Expected = AgxToUnrealAngularVelocity(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere angular velocity"), Actual, Expected);
 	}
 
