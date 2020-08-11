@@ -183,6 +183,11 @@ namespace AgxAutomationCommon
 		bool RunTest(const FString& InParameter) override;
 	};
 
+	inline float AgxToUnrealDistance(float Agx)
+	{
+		return 100.0f * Agx;
+	}
+
 	inline FVector AgxToUnrealVector(const FVector& Agx)
 	{
 		return FVector(100.0f * Agx.X, -100.0f * Agx.Y, 100.0f * Agx.Z);
