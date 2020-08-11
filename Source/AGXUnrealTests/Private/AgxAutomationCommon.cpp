@@ -153,27 +153,24 @@ FString AgxAutomationCommon::GetArchivePath(const TCHAR* ArchiveName)
 	/// @todo Find where, if at all, Automation test AGX Dynamics archives should be stored.
 	/// In the repository or downloaded as with test files for AGX Dynamics.
 	/// @todo Find the proper path somehow. Likely using FPaths.
-	static const TCHAR* Directories[] = {
-		TEXT("/home/ibbles/workspace/Algoryx/AGXUnreal/AGX_Dynamics_scenes"),
-		TEXT("/home/ibbles/workspace/Algoryx/AGX_Dynamics_archives")};
-
-	for (const TCHAR* DirCandidate : Directories)
+	FString ProjectDir = FPaths::ProjectDir();
+	FPaths::CollapseRelativeDirectories(ProjectDir);
+	ProjectDir = FPaths::ConvertRelativePathToFull(ProjectDir);
+	const FString ArchivesDir = ProjectDir.Replace(
+		TEXT("/AGXUnrealDev/"), TEXT("/AGX_Dynamics_scenes/"), ESearchCase::CaseSensitive);
+	const FString ArchivePath = FPaths::Combine(ArchivesDir, ArchiveName);
+	if (FPaths::FileExists(ArchivePath))
 	{
-		FString FullPath = FPaths::Combine(DirCandidate, ArchiveName);
-		if (FPaths::FileExists(FullPath))
-		{
-			UE_LOG(LogAGX, Display, TEXT("Found '%s' in '%s'."), ArchiveName, DirCandidate);
-			return FullPath;
-		}
+		return ArchivePath;
 	}
-	UE_LOG(
-		LogAGX, Warning, TEXT("Did not find full path for AGX Dynamics archive '%s'."), ArchiveName)
-	UE_LOG(LogAGX, Display, TEXT("Searched in the following directories:"))
-	for (const TCHAR* DirCandidate : Directories)
+	else
 	{
-		UE_LOG(LogAGX, Display, TEXT("  %s"), DirCandidate);
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Did not find full path for AGX Dynamics archive '%s'. Searched in '%s'."),
+			*ArchiveName, *ArchivesDir)
+		return FString();
 	}
-	return FString();
 }
 
 FString AgxAutomationCommon::GetArchivePath(const FString& ArchiveName)
