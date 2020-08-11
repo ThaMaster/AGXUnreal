@@ -27,7 +27,6 @@
 /**
  * Latent Command that imports an AGX Dynamics archive into a single actor. A pointer to the Actor
  * created to hold the imported objects is stored in the Contents parameter.
- *
  * @param ArchiveName The AGX Dynamics archive to import.
  * @param Contents Pointer set to point to the Actor containing the imported objects.
  * @param Test The Automation test that contains this Latent Command.
@@ -76,6 +75,13 @@ bool FCheckEmptySceneImportedCommand::Update()
 	return true;
 }
 
+/**
+ * Latent Command that removes everything that was created by the Import Empty Scene test. Actual
+ * removal isn't done immediately by Unreal Engine so it may be neccessary to do an extra tick after
+ * this Latent Command to let the change finalize.
+ * @todo Write this Latent command so that it returns false on the first call to Update and true on
+ * the second.
+ */
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FClearEmptySceneImportedCommand, AActor*&, Contents);
 bool FClearEmptySceneImportedCommand::Update()
 {
@@ -115,7 +121,7 @@ protected:
 		/// causes the world to stop ticking. Figure out why. For now I just hope that loading the
 		/// map as a unit test launch command line parameter is good enough. Not sure how multiple
 		/// import tests interact though. Some form of level cleanup Latent Command at the end of
-		/// each test may be required. I really hope multiple tests don't run concurrently on the
+		/// each test may be required. I really hope multiple tests don't run concurrently in the
 		/// same world.
 #if 0
 		// ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")));
@@ -125,7 +131,6 @@ protected:
 		ADD_LATENT_AUTOMATION_COMMAND(
 			FImportArchiveSingleActorCommand("empty_scene.agx", Contents, *this));
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckEmptySceneImportedCommand(Contents, *this));
-		/// @todo Add Latent Command to clean up the level here.
 		ADD_LATENT_AUTOMATION_COMMAND(FClearEmptySceneImportedCommand(Contents));
 		ADD_LATENT_AUTOMATION_COMMAND(AgxAutomationCommon::FWaitNTicks(1));
 
@@ -147,27 +152,16 @@ DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FCheckSingleSphereImportedCommand, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckSphereHasMoved, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
-
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FStoreInitialTimes, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FStoreResultingTimes, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckSphereHasMoved, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FClearSingleSphereImportedCommand, AActor*&, Contents);
-bool FClearSingleSphereImportedCommand::Update()
-{
-	UWorld* World = AgxAutomationCommon::GetTestWorld();
-	if (World == nullptr || Contents == nullptr)
-	{
-		return true;
-	}
-	World->DestroyActor(Contents);
-	Contents = nullptr;
-	return true;
-}
 
 class FArchiveImporterToSingleActor_SingleSphereTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
@@ -219,13 +213,10 @@ protected:
 		ADD_LATENT_AUTOMATION_COMMAND(
 			FImportArchiveSingleActorCommand("single_sphere_build.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSingleSphereImportedCommand(*this))
-
 		ADD_LATENT_AUTOMATION_COMMAND(FStoreInitialTimes(*this));
 		ADD_LATENT_AUTOMATION_COMMAND(FWaitWorldDuration(World, 1.0f));
 		ADD_LATENT_AUTOMATION_COMMAND(FStoreResultingTimes(*this));
-
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSphereHasMoved(*this));
-
 		ADD_LATENT_AUTOMATION_COMMAND(FClearSingleSphereImportedCommand(Contents));
 		ADD_LATENT_AUTOMATION_COMMAND(FWaitNTicks(1));
 
@@ -236,23 +227,6 @@ protected:
 namespace
 {
 	FArchiveImporterToSingleActor_SingleSphereTest ArchiveImporterToSingleActor_SingleSphereTest;
-}
-
-bool FStoreInitialTimes::Update()
-{
-	Test.StartUnrealTime = Test.World->GetTimeSeconds();
-	Test.StartAgxTime = Test.StartUnrealTime;
-	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(Test.World);
-	Simulation->SetTimeStamp(Test.StartUnrealTime);
-	Simulation->StepMode = SM_CATCH_UP_IMMEDIATELY;
-	return true;
-}
-
-bool FStoreResultingTimes::Update()
-{
-	Test.EndUnrealTime = Test.World->GetTimeSeconds();
-	Test.EndAgxTime = UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp();
-	return true;
 }
 
 /*
@@ -406,13 +380,27 @@ bool FCheckSingleSphereImportedCommand::Update()
 	return true;
 }
 
-float RelativeTolerance(float Expected, float Tolerance)
+bool FStoreInitialTimes::Update()
 {
-	return FMath::Abs(Expected * Tolerance);
+	Test.StartUnrealTime = Test.World->GetTimeSeconds();
+	Test.StartAgxTime = Test.StartUnrealTime;
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(Test.World);
+	Simulation->SetTimeStamp(Test.StartUnrealTime);
+	Simulation->StepMode = SM_CATCH_UP_IMMEDIATELY;
+	return true;
+}
+
+bool FStoreResultingTimes::Update()
+{
+	Test.EndUnrealTime = Test.World->GetTimeSeconds();
+	Test.EndAgxTime = UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp();
+	return true;
 }
 
 bool FCheckSphereHasMoved::Update()
 {
+	using namespace AgxAutomationCommon;
+
 	if (Test.SphereBody == nullptr)
 	{
 		return true;
@@ -447,6 +435,18 @@ bool FCheckSphereHasMoved::Update()
 			ExpectedPosition, RelativeTolerance(ExpectedPosition, 0.02f));
 	}
 
+	return true;
+}
+
+bool FClearSingleSphereImportedCommand::Update()
+{
+	UWorld* World = AgxAutomationCommon::GetTestWorld();
+	if (World == nullptr || Contents == nullptr)
+	{
+		return true;
+	}
+	World->DestroyActor(Contents);
+	Contents = nullptr;
 	return true;
 }
 
