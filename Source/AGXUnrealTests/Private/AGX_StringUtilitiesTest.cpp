@@ -28,7 +28,7 @@ bool FStringUtilities_GetFNameSafe_Test::RunTest(const FString& Parameters)
 	UE_LOG(LogAGX, Warning, TEXT("Running unit test AGXUnreal.StringUtilities"));
 
 	FName Name = GetFNameSafe(nullptr);
-	if (Name == NAME_None) /// \todo Reverse this test.
+	if (Name != NAME_None)
 	{
 		AddError(FString::Printf(
 			TEXT("Expected to get 'NAME_None' for 'nullptr', got '%s' instead."),
