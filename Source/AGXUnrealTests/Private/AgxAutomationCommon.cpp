@@ -2,7 +2,7 @@
 
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
-#include "AGX_EditorUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/Engine.h"
