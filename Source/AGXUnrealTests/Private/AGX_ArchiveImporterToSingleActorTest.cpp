@@ -431,6 +431,8 @@ bool FCheckSphereHasMoved::Update()
 			StartPosition + StartVelocity * Duration + 0.5f * Acceleration * Duration * Duration;
 		float ActualPosition = EndPosition.Z;
 		/// @todo Not sure why the relative tolerance must be so large here. Maybe gravity mismatch?
+		/// There is also the SPOOK/leapfrog integration formulation that makes free-fall in gravity
+		/// a bit less straight-forward. Perhaps that is enough to explain the difference.
 		Test.TestEqual(
 			"Velocity in the Z direction should be subject to gravity.", ActualPosition,
 			ExpectedPosition, RelativeTolerance(ExpectedPosition, 0.003f));
