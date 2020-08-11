@@ -360,10 +360,17 @@ bool FCheckSingleSphereImportedCommand::Update()
 	}
 
 	// Transform root component.
-
 	{
 		Test.TestFalse(
 			TEXT("Sphere transform root component"), SphereBody->bTransformRootComponent);
+	}
+
+	// Radius.
+	{
+		float Actual = SphereShape->Radius;
+		float ExpectedAgx = 5.00000000000000000000e-01f;
+		float Expected = AgxToUnrealDistance(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere radius"), Actual, Expected);
 	}
 
 	/**
