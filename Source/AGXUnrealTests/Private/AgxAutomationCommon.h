@@ -206,6 +206,11 @@ namespace AgxAutomationCommon
 			/*yaw*/ FMath::RadiansToDegrees(-Agx.Z),
 			/*roll*/ FMath::RadiansToDegrees(Agx.X));
 	}
+
+	inline FVector AgxToUnrealAngularVelocity(const FVector& Agx)
+	{
+		return FVector(Agx.X, -Agx.Y, -Agx.Z);
+	}
 }
 
 #define BAIL_TEST_IF(expression)      \
