@@ -12,10 +12,13 @@
 UWorld* AgxAutomationCommon::GetTestWorld()
 {
 	// Based on GetAnyGameWorld() in AutomationCommon.cpp.
-	// That implementation has the following commend:
+	// That implementation has the following comment:
 	//
 	// @todo this is a temporary solution. Once we know how to get test's hands on a proper world
 	// this function should be redone/removed
+	//
+	// Keep an eye at the engine implementation and replace this once they provide a better way to
+	// get the test world.
 
 	if (GEngine == nullptr)
 	{
@@ -150,9 +153,6 @@ AgxAutomationCommon::NoWorldTestsReason AgxAutomationCommon::CanRunWorldTests()
 
 FString AgxAutomationCommon::GetArchivePath(const TCHAR* ArchiveName)
 {
-	/// @todo Find where, if at all, Automation test AGX Dynamics archives should be stored.
-	/// In the repository or downloaded as with test files for AGX Dynamics.
-	/// @todo Find the proper path somehow. Likely using FPaths.
 	FString ProjectDir = FPaths::ProjectDir();
 	FPaths::CollapseRelativeDirectories(ProjectDir);
 	ProjectDir = FPaths::ConvertRelativePathToFull(ProjectDir);
