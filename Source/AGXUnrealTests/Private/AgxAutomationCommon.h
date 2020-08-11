@@ -183,6 +183,11 @@ namespace AgxAutomationCommon
 		bool RunTest(const FString& InParameter) override;
 	};
 
+	inline float RelativeTolerance(float Expected, float Tolerance)
+	{
+		return FMath::Abs(Expected * Tolerance);
+	}
+
 	inline float AgxToUnrealDistance(float Agx)
 	{
 		return 100.0f * Agx;
