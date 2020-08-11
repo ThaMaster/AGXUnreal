@@ -239,7 +239,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 {
 	using namespace AgxAutomationCommon;
 
-	if (Test.World == nullptr || Test.Simulation == nullptr)
+	if (Test.World == nullptr || Test.Simulation == nullptr || Test.Contents == nullptr)
 	{
 		return true;
 	}
