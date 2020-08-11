@@ -418,7 +418,7 @@ bool FCheckSphereHasMoved::Update()
 		float ActualPosition = EndPosition[I];
 		Test.TestEqual(
 			"Body should move according to velocity.", ActualPosition, ExpectedPosition,
-			RelativeTolerance(ExpectedPosition, 0.01f));
+			RelativeTolerance(ExpectedPosition, KINDA_SMALL_NUMBER));
 	}
 
 	// Position test for Z.
@@ -430,9 +430,10 @@ bool FCheckSphereHasMoved::Update()
 		float ExpectedPosition =
 			StartPosition + StartVelocity * Duration + 0.5f * Acceleration * Duration * Duration;
 		float ActualPosition = EndPosition.Z;
+		/// @todo Not sure why the relative tolerance must be so large here. Maybe gravity mismatch?
 		Test.TestEqual(
 			"Velocity in the Z direction should be subject to gravity.", ActualPosition,
-			ExpectedPosition, RelativeTolerance(ExpectedPosition, 0.02f));
+			ExpectedPosition, RelativeTolerance(ExpectedPosition, 0.003f));
 	}
 
 	return true;
