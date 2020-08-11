@@ -30,6 +30,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
 	FVector Velocity;
 
+	/**
+	 * In radians per second and following the Unreal Editor rotation widget so that a positive
+	 * angular velocity about some axis produces increasing rotation values in the editor widget.
+	 *
+	 * A positive X angular velocity rotates the Z axis towards the Y axis, i.e., roll right. A
+	 * right-handed rotation.
+	 *
+	 * A positive Y angular velocity rotates the X axis towards the Z axis, i.e., pitch up. A
+	 * right-handed rotation.
+	 *
+	 * A positive Z angular velocity rotates the X axis towards the Y axis, i.e, yaw right. A
+	 * left-handed rotation.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
 	FVector AngularVelocity;
 
