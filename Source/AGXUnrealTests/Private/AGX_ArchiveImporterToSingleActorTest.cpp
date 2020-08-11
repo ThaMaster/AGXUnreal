@@ -1,12 +1,12 @@
 
 // AGXUnreal includes.
 #include "AGX_ArchiveImporterToSingleActor.h"
-#include "AGX_EditorUtilities.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "AgxAutomationCommon.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
+#include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/Engine.h"
