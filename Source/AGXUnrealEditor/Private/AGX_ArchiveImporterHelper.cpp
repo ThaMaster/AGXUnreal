@@ -94,7 +94,7 @@ UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::InstantiateBody(
 	/// }
 	///
 	/// So, BeginPlay is only called if we don't have a Game world (have Editor world, for example)
-	/// and the owning Actor have had it's BeginPlay called already.
+	/// and the owning Actor have had its BeginPlay called already.
 	///
 	/// This makes the Editor situation different from the Automation Test situation since the
 	/// Editor has an Editor world and Automation Tests run with a Game world. So creating an
