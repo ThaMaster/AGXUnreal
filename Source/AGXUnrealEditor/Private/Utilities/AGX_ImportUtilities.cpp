@@ -187,7 +187,7 @@ UMaterialInstanceConstant* FAGX_ImportUtilities::SaveImportedRenderDataAsset(
 	UMaterialInstanceConstant* Material = Cast<UMaterialInstanceConstant>(Asset);
 
 	Material->SetVectorParameterValueEditorOnly(
-		FName(TEXT("DiffuseColor")), FLinearColor(RenderData.DiffuseColor));
+		FName(TEXT("Diffuse")), FLinearColor(RenderData.DiffuseColor));
 
 	Material->SetFlags(RF_Standalone);
 	Material->MarkPackageDirty();
