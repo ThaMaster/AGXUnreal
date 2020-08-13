@@ -2,17 +2,20 @@
 
 // AGXUnreal includes.
 #include "AGX_LogCategory.h"
-#include "Utilities/AGX_EditorUtilities.h"
-#include "Shapes/TrimeshShapeBarrier.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "Shapes/TrimeshShapeBarrier.h"
+#include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
 #include "AssetToolsModule.h"
 #include "Components/ActorComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Factories/MaterialInstanceConstantFactoryNew.h"
+#include "Materials/MaterialInterface.h"
+#include "Materials/MaterialInstanceConstant.h"
 #include "RawMesh.h"
 
 namespace
@@ -153,6 +156,43 @@ UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsse
 		DirectoryName, Name, TEXT(""), TEXT("ContactMaterial"), InitAsset);
 
 	return Asset;
+}
+
+UMaterialInstanceConstant* FAGX_ImportUtilities::SaveImportedRenderDataAsset(
+	const FAGX_RenderData& RenderData, const FString& DirectoryName, const FString& MaterialName)
+{
+	UMaterial* Base = LoadObject<UMaterial>(
+		nullptr, TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'"));
+	if (Base == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not load parent material for imported AGX Dynamics render materials."));
+		return nullptr;
+	}
+	UMaterialInstanceConstantFactoryNew* Factory = NewObject<UMaterialInstanceConstantFactoryNew>();
+	Factory->InitialParent = Base;
+
+	FString AssetName = FAGX_ImportUtilities::CreateAssetName(
+		MaterialName, TEXT("ImportedAGXDynamicsMaterial"), TEXT("RenderMaterial"));
+	FString PackagePath =
+		FAGX_ImportUtilities::CreateArchivePackagePath(DirectoryName, TEXT("RenderMaterial"));
+
+	IAssetTools& AssetTools =
+		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	UObject* Asset = AssetTools.CreateAsset(
+		AssetName, FPackageName::GetLongPackagePath(PackagePath),
+		UMaterialInstanceConstant::StaticClass(), Factory);
+
+	UMaterialInstanceConstant* Material = Cast<UMaterialInstanceConstant>(Asset);
+
+	Material->SetVectorParameterValueEditorOnly(
+		FName(TEXT("DiffuseColor")), FLinearColor(RenderData.DiffuseColor));
+
+	Material->SetFlags(RF_Standalone);
+	Material->MarkPackageDirty();
+	Material->PostEditChange();
+	return Material;
 }
 
 void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)

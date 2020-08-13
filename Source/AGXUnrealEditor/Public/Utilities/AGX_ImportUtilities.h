@@ -7,14 +7,17 @@
 #include "CoreMinimal.h"
 
 class FTrimeshShapeBarrier;
+class FShapeBarrier;
 class FShapeMaterialBarrier;
 class FContactMaterialBarrier;
 class UAGX_ContactMaterialAsset;
 class UAGX_ShapeMaterialAsset;
+struct FAGX_RenderData;
 
 class AActor;
-class UActorComponent;
 class FString;
+class UActorComponent;
+class UMaterialInstanceConstant;
 class UStaticMesh;
 
 class FAGX_ImportUtilities
@@ -108,6 +111,13 @@ public:
 	static UAGX_ContactMaterialAsset* SaveImportedContactMaterialAsset(
 		const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterialAsset* Material1,
 		UAGX_ShapeMaterialAsset* Material2, const FString& DirectoryName);
+
+	/**
+	 *
+	 * @return
+	 */
+	static UMaterialInstanceConstant* SaveImportedRenderDataAsset(
+		const FAGX_RenderData& Shape, const FString& DirectoryName, const FString& MaterialName);
 
 	/**
 	 * Rename the object. Generates a fallback name if the given name can't be used.
