@@ -37,19 +37,25 @@ public:
 	void SetVelocity(FVector Velocity);
 	FVector GetVelocity() const;
 
+	/// In radians.
 	void SetAngularVelocity(FVector AngularVelocity);
+
+	/// In radians.
 	FVector GetAngularVelocity() const;
 
 	void SetMass(float NewMass);
 	float GetMass() const;
 
+	void SetInertiaTensorDiagonal(const FVector& NewInertiaTensorDiagonal);
+	FVector GetInertiaTensorDiagonal() const;
+
 	void SetName(const FString& NewName);
 	FString GetName() const;
 
-	FGuid GetGuid() const;
-
 	void SetMotionControl(EAGX_MotionControl MotionControl);
 	EAGX_MotionControl GetMotionControl() const;
+
+	FGuid GetGuid() const;
 
 	void AddShape(FShapeBarrier* Shape);
 

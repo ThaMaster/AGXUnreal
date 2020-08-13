@@ -1,7 +1,7 @@
 #pragma once
 
 // AGXUnreal includes.
-#include "AGX_EditorUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"

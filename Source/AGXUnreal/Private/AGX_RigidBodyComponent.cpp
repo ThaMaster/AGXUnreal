@@ -76,6 +76,7 @@ void UAGX_RigidBodyComponent::TickComponent(
 	if (MotionControl != MC_STATIC)
 	{
 		ReadTransformFromNative();
+		Velocity = NativeBarrier.GetVelocity();
 	}
 }
 
@@ -127,6 +128,7 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	}
 
 	NativeBarrier.SetMass(Mass);
+	NativeBarrier.SetInertiaTensorDiagonal(InertiaTensorDiagonal);
 	/// \todo Add call to SetInertiaTensorDiagonal here, when it has been implemented.
 	NativeBarrier.SetVelocity(Velocity);
 	NativeBarrier.SetAngularVelocity(AngularVelocity);
@@ -137,6 +139,7 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 {
 	Mass = Barrier.GetMass();
+	InertiaTensorDiagonal = Barrier.GetInertiaTensorDiagonal();
 	/// \todo Add call to GetInertiaTensorDiagonal here, when it has been implemented.
 	Velocity = Barrier.GetVelocity();
 	AngularVelocity = Barrier.GetAngularVelocity();
