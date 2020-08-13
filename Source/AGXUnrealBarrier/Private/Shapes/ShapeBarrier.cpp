@@ -163,6 +163,25 @@ FGuid FShapeBarrier::GetGuid() const
 	return Guid;
 }
 
+bool FShapeBarrier::HasRenderData() const
+{
+	check(HasNative());
+	return NativeRef->NativeShape->getRenderData() != nullptr;
+}
+
+FAGX_RenderData FShapeBarrier::GetRenderData() const
+{
+	check(HasNative());
+	const agxCollide::RenderData* RenderDataAGX = NativeRef->NativeShape->getRenderData();
+	const agxCollide::RenderMaterial* RenderMaterial = RenderDataAGX->getRenderMaterial();
+	/// @todo Use the RenderMaterial::Has.+ functions here. FAGX_RenderData must know which
+	/// properties has been set.
+	agx::Vec3 DiffuseColorAgx(RenderMaterial->getDiffuseColor().asVec3());
+	FAGX_RenderData RenderDataUnreal;
+	RenderDataUnreal.DiffuseColor = Convert(DiffuseColorAgx);
+	return RenderDataUnreal;
+}
+
 namespace
 {
 	agxCollide::ShapeIterator FindShape(agxCollide::Geometry* Geometry, agxCollide::Shape* Shape)

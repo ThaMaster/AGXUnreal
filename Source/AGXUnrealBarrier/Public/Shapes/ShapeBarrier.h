@@ -1,5 +1,8 @@
 #pragma once
 
+// AGXUnreal includes.
+#include "Shapes/RenderData.h"
+
 // Unreal Engine includes.
 #include "Containers/Array.h"
 #include "Math/Vector.h"
@@ -8,8 +11,8 @@
 // Standard library includes.
 #include <memory>
 
-class FShapeMaterialBarrier;
 struct FGeometryAndShapeRef;
+class FShapeMaterialBarrier;
 
 class AGXUNREALBARRIER_API FShapeBarrier
 {
@@ -68,6 +71,10 @@ public:
 	TArray<FName> GetCollisionGroups() const;
 
 	FGuid GetGuid() const;
+
+	bool HasRenderData() const;
+
+	FAGX_RenderData GetRenderData() const;
 
 protected:
 	template <typename TFunc, typename... TPack>
