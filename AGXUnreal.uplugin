@@ -22,7 +22,7 @@
 				"Win64",
 				"Linux"
 			],
-			"BlacklistPlatforms ": [
+			"BlacklistPlatforms": [
 				"IOS",
 				"Win32"
 			]
@@ -35,7 +35,7 @@
 				"Win64",
 				"Linux"
 			],
-			"BlacklistPlatforms ": [
+			"BlacklistPlatforms": [
 				"IOS",
 				"Win32"
 			]
@@ -48,7 +48,20 @@
 				"Win64",
 				"Linux"
 			],
-			"BlacklistPlatforms ": [
+			"BlacklistPlatforms": [
+				"IOS",
+				"Win32"
+			]
+		},
+		{
+			"Name": "AGXUnrealTests",
+			"Type": "Developer",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Linux"
+			],
+			"BlacklistPlatforms": [
 				"IOS",
 				"Win32"
 			]

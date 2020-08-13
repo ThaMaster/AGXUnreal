@@ -72,7 +72,37 @@ UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::InstantiateBody(
 	Component->CopyFrom(Barrier);
 	Component->SetFlags(RF_Transactional);
 	Actor.AddInstanceComponent(Component);
+
+	/// @todo What does this do, really? Are we required to call it? A side effect of this is that
+	/// BeginPlay is called, which in turn calls AllocateNative. Which means that an AGX Dynamics
+	/// RigidBody is created. I'm not sure if this is consistent with AGX_RigidBodyComponents
+	/// created with using the Editor's Add Component button for an Actor in the Level Viewport.
+	/// <investigating>
+	/// ActorComponent.cpp, RegisterComponentWithWorld, has the following code snippet, somewhat
+	/// simplified:
+	///
+	/// if (!InWorld->IsGameWorld())
+	/// {}
+	/// else if (MyOwner == nullptr)
+	/// {}
+	/// else
+	/// {
+	///    if (MyOwner->HasActorBegunPlay() && !bHasBegunPlay)
+	///    {
+	///        BeginPlay();
+	///     }
+	/// }
+	///
+	/// So, BeginPlay is only called if we don't have a Game world (have Editor world, for example)
+	/// and the owning Actor have had its BeginPlay called already.
+	///
+	/// This makes the Editor situation different from the Automation Test situation since the
+	/// Editor has an Editor world and Automation Tests run with a Game world. So creating an
+	/// AGX_RigidBodyComponent in the editor does not trigger BeginPlay, but creating an
+	/// AGX_RigidBody while importing an AGX Dynamics archive during an Automation Test does trigger
+	/// BeginPlay here. Not sure if this is a problem or not, but something to be aware of.
 	Component->RegisterComponent();
+
 	Component->PostEditChange();
 	RestoredBodies.Add(Barrier.GetGuid(), Component);
 	return Component;
@@ -484,15 +514,11 @@ namespace
 		FString BasePath = FAGX_ImportUtilities::CreateArchivePackagePath(ArchiveName);
 
 		auto PackageExists = [&](const FString& DirPath) {
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Creating import helper for '%s', testing package path '%s'."), *BasePath,
-				*DirPath);
+			/// @todo Is this check necessary? Can it be something less crashy? It was copied from
+			/// somewehre, where?
 			check(!FEditorFileUtils::IsMapPackageAsset(DirPath));
+
 			FString DiskPath = FPackageName::LongPackageNameToFilename(DirPath);
-			UE_LOG(
-				LogAGX, Warning, TEXT("The content folder '%s' is disk directory '%s'."), *DirPath,
-				*DiskPath);
 			return FPackageName::DoesPackageExist(DirPath) ||
 				   FindObject<UPackage>(nullptr, *DirPath) != nullptr ||
 				   FPaths::DirectoryExists(DiskPath) || FPaths::FileExists(DiskPath);
@@ -508,10 +534,8 @@ namespace
 			DirectoryName = ArchiveName + TEXT("_") + FString::FromInt(TryCount);
 		}
 		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Creating import helper for '%s', decided on package path '%s' and package name "
-				 "'%s'."),
-			*BasePath, *DirectoryPath, *DirectoryName);
+			LogAGX, Display, TEXT("Importing AGX Dynamics archive '%s' to '%s'."), *ArchiveName,
+			*DirectoryPath);
 		return DirectoryName;
 	}
 }

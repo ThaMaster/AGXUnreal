@@ -20,6 +20,7 @@ FRigidBodyBarrier::FRigidBodyBarrier(std::unique_ptr<FRigidBodyRef> Native)
 FRigidBodyBarrier::FRigidBodyBarrier(FRigidBodyBarrier&& other)
 	: NativeRef {std::move(other.NativeRef)}
 {
+	other.NativeRef.reset(new FRigidBodyRef);
 }
 
 FRigidBodyBarrier::~FRigidBodyBarrier()
@@ -70,14 +71,14 @@ FVector FRigidBodyBarrier::GetVelocity() const
 {
 	check(HasNative());
 	agx::Vec3 VelocityAGX = NativeRef->Native->getVelocity();
-	FVector VelocityUnreal = Convert(VelocityAGX);
+	FVector VelocityUnreal = ConvertVector(VelocityAGX);
 	return VelocityUnreal;
 }
 
 void FRigidBodyBarrier::SetAngularVelocity(FVector AngularVelocityUnreal)
 {
 	check(HasNative());
-	agx::Vec3 AngularVelocityAGX = ConvertVector(AngularVelocityUnreal);
+	agx::Vec3 AngularVelocityAGX = ConvertAngularVelocity(AngularVelocityUnreal);
 	NativeRef->Native->setAngularVelocity(AngularVelocityAGX);
 }
 
@@ -85,7 +86,7 @@ FVector FRigidBodyBarrier::GetAngularVelocity() const
 {
 	check(HasNative());
 	agx::Vec3 AngularVelocityAGX = NativeRef->Native->getAngularVelocity();
-	FVector AngularVelocityUnreal = ConvertVector(AngularVelocityAGX);
+	FVector AngularVelocityUnreal = ConvertAngularVelocity(AngularVelocityAGX);
 	return AngularVelocityUnreal;
 }
 
@@ -103,6 +104,22 @@ float FRigidBodyBarrier::GetMass() const
 	float MassUnreal = Convert(MassAGX);
 	return MassUnreal;
 }
+
+void FRigidBodyBarrier::SetInertiaTensorDiagonal(const FVector& InertiaUnreal)
+{
+	check(HasNative())
+	agx::Vec3 InertiaAGX = Convert(InertiaUnreal);
+	NativeRef->Native->getMassProperties()->setInertiaTensor(InertiaAGX);
+}
+
+FVector FRigidBodyBarrier::GetInertiaTensorDiagonal() const
+{
+	check(HasNative())
+	agx::Vec3 InertiaAGX = NativeRef->Native->getMassProperties()->getInertiaTensor().getDiagonal();
+	FVector InertiaUnreal = Convert(InertiaAGX);
+	return InertiaUnreal;
+}
+
 
 void FRigidBodyBarrier::SetName(const FString& NameUnreal)
 {
