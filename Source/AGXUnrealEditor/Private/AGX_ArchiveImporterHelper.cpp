@@ -185,8 +185,10 @@ namespace
 			Component.PhysicalMaterial = Material;
 		}
 
-		if (Barrier.HasRenderData())
+		if (Barrier.HasRenderData() && GIsEditor)
 		{
+			// We are only allowed to create new assets, such as a MaterialInstance, when running
+			// within the Unreal Editor.
 			CreateRenderMaterialInstance(Component, Barrier.GetRenderData(), DirectoryName);
 		}
 		else
