@@ -36,10 +36,17 @@ DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
 	FAutomationTestBase&, Test);
 bool FImportArchiveSingleActorCommand::Update()
 {
-	Test.TestEqual(
-		TEXT("TestWorld and CurrentWorld"), AgxAutomationCommon::GetTestWorld(),
-		FAGX_EditorUtilities::GetCurrentWorld());
+	if (ArchiveName.IsEmpty())
+	{
+		Test.AddError(TEXT("FImportArchiveSingleActorCommand not given an archive to import."));
+		return true;
+	}
 	FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(ArchiveName);
+	if (ArchiveFilePath.IsEmpty())
+	{
+		Test.AddError(FString::Printf(TEXT("Did not find an archive name '%s'."), *ArchiveName));
+		return true;
+	}
 	Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
