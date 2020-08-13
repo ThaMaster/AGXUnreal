@@ -43,6 +43,7 @@
 #include "Engine/World.h"
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
+#include "Materials/MaterialInstanceConstant.h"
 #include "UObject/UObjectGlobals.h"
 
 namespace
@@ -101,9 +102,46 @@ AAGX_RigidBodyActor* FAGX_ArchiveImporterHelper::InstantiateBody(
 
 namespace
 {
+	void CreateRenderMaterialInstance(
+		UAGX_ShapeComponent& Component, const FAGX_RenderData& RenderData,
+		const FString& DirectoryName)
+	{
+		FString MaterialName = Component.GetName();
+		UMaterialInstanceConstant* Material = FAGX_ImportUtilities::SaveImportedRenderDataAsset(
+			RenderData, DirectoryName, MaterialName);
+		Component.SetMaterial(0, Material);
+	}
+
+	void SetDefaultRenderMaterial(UAGX_ShapeComponent& Component)
+	{
+		const TCHAR* AssetPath =
+			TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'");
+		UObject* LoadResult = StaticLoadObject(UMaterial::StaticClass(), nullptr, AssetPath);
+		if (LoadResult == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Could not set render material on imported shape '%s'. The material '%s' "
+					 "could not be loaded."),
+				*Component.GetName(), AssetPath);
+			return;
+		}
+		UMaterial* Material = Cast<UMaterial>(LoadResult);
+		if (Material == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Could not set render material on imported shape '%s'. The asset '%s' is not "
+					 "a Materil."),
+				*Component.GetName(), AssetPath);
+		}
+		Component.SetMaterial(0, Material);
+	}
+
 	void FinalizeShape(
 		UAGX_ShapeComponent& Component, const FShapeBarrier& Barrier,
-		const TMap<FGuid, UAGX_ShapeMaterialAsset*>& RestoredShapeMaterials)
+		const TMap<FGuid, UAGX_ShapeMaterialAsset*>& RestoredShapeMaterials,
+		const FString& DirectoryName)
 	{
 		Component.UpdateVisualMesh();
 		Component.SetFlags(RF_Transactional);
@@ -115,6 +153,15 @@ namespace
 			FGuid Guid = NativeMaterial.GetGuid();
 			UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
 			Component.PhysicalMaterial = Material;
+		}
+
+		if (Barrier.HasRenderData())
+		{
+			CreateRenderMaterialInstance(Component, Barrier.GetRenderData(), DirectoryName);
+		}
+		else
+		{
+			SetDefaultRenderMaterial(Component);
 		}
 	}
 }
@@ -132,7 +179,7 @@ UAGX_SphereShapeComponent* FAGX_ArchiveImporterHelper::InstantiateSphere(
 		return nullptr;
 	}
 	Component->CopyFrom(Barrier);
-	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials);
+	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials, DirectoryName);
 	return Component;
 }
 
@@ -149,7 +196,7 @@ UAGX_BoxShapeComponent* FAGX_ArchiveImporterHelper::InstantiateBox(
 		return nullptr;
 	}
 	Component->CopyFrom(Barrier);
-	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials);
+	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials, DirectoryName);
 	return Component;
 }
 
@@ -166,7 +213,7 @@ UAGX_CylinderShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCylinder(
 		return nullptr;
 	}
 	Component->CopyFrom(Barrier);
-	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials);
+	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials, DirectoryName);
 	return Component;
 }
 
@@ -218,7 +265,7 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	FAGX_ImportUtilities::Rename(*MeshComponent, *(Barrier.GetName() + TEXT("Mesh")));
 
 	Component->CopyFrom(Barrier);
-	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials);
+	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials, DirectoryName);
 	return Component;
 }
 
