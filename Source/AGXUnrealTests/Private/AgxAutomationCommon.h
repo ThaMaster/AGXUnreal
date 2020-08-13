@@ -213,37 +213,37 @@ namespace AgxAutomationCommon
 	}
 }
 
-#define BAIL_TEST_IF(expression)      \
-	if (expression)                   \
+#define BAIL_TEST_IF(Expression, Ret) \
+	if (Expression)                   \
 	{                                 \
-		TestFalse(#expression, true); \
-		return;                       \
+		TestFalse(#Expression, true); \
+		return Ret;                   \
 	}
 
-#define BAIL_TEST_IF_NO_WORLD()                                                                   \
+#define BAIL_TEST_IF_NO_WORLD(Ret)                                                                \
 	if (AgxAutomationCommon::NoWorldTestsReason Reason = AgxAutomationCommon::CanRunWorldTests()) \
 	{                                                                                             \
 		AddError(AgxAutomationCommon::GetNoWorldTestsReasonText(Reason));                         \
-		return false;                                                                             \
+		return Ret;                                                                               \
 	}
 
-#define BAIL_TEST_IF_WORLDS_MISMATCH()                                                           \
+#define BAIL_TEST_IF_WORLDS_MISMATCH(Ret)                                                        \
 	if (AgxAutomationCommon::GetTestWorld() != FAGX_EditorUtilities::GetCurrentWorld())          \
 	{                                                                                            \
 		AddError(                                                                                \
 			"Cannot run test because the test world and the AGX Dynamics world are different."); \
-		return false;                                                                            \
+		return Ret;                                                                              \
 	}
-#define BAIL_TEST_IF_NO_AGX()                                                           \
+#define BAIL_TEST_IF_NO_AGX(Ret)                                                        \
 	if (UAGX_Simulation::GetFrom(AgxAutomationCommon::GetTestWorld()) == nullptr)       \
 	{                                                                                   \
 		AddError(                                                                       \
 			"Cannot run test because the test world doesn't contain a UAGX_Simulation " \
 			"subsystem.");                                                              \
-		return false;                                                                   \
+		return Ret;                                                                     \
 	}
 
-#define BAIL_TEST_IF_CANT_SIMULATE() \
-	BAIL_TEST_IF_NO_WORLD()          \
-	BAIL_TEST_IF_WORLDS_MISMATCH()   \
-	BAIL_TEST_IF_NO_AGX()
+#define BAIL_TEST_IF_CANT_SIMULATE(Ret) \
+	BAIL_TEST_IF_NO_WORLD(Ret)          \
+	BAIL_TEST_IF_WORLDS_MISMATCH(Ret)   \
+	BAIL_TEST_IF_NO_AGX(Ret)

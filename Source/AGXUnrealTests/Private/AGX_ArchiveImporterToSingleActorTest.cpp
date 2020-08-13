@@ -113,8 +113,8 @@ public:
 protected:
 	bool RunTest(const FString& Parameters) override
 	{
-		BAIL_TEST_IF_NO_WORLD()
-		BAIL_TEST_IF_WORLDS_MISMATCH()
+		BAIL_TEST_IF_NO_WORLD(false)
+		BAIL_TEST_IF_WORLDS_MISMATCH(false)
 
 		/// @todo I would like to load a fresh map before doing the actual test, which it would seem
 		/// one does with FLoadGameMapCommand and FWaitForMapToLoadCommand, but including them
@@ -191,7 +191,7 @@ protected:
 	bool RunTest(const FString& Parameters) override
 	{
 		using namespace AgxAutomationCommon;
-		BAIL_TEST_IF_CANT_SIMULATE()
+		BAIL_TEST_IF_CANT_SIMULATE(false)
 		World = AgxAutomationCommon::GetTestWorld();
 		if (World == nullptr)
 		{
