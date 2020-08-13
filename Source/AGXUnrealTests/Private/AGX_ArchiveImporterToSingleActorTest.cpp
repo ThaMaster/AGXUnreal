@@ -373,11 +373,57 @@ bool FCheckSingleSphereImportedCommand::Update()
 	UWorld* BodyWorld = SphereBody->GetWorld();
 	Test.TestEqual(TEXT("Sphere world"), BodyWorld, Test.World);
 
-#if 0
-	UE_LOG(
-			LogAGX, Warning, TEXT("Body has velocity (%f, %f, %f)."), LinearVelocity.X,
-			LinearVelocity.Y, LinearVelocity.Z);
-#endif
+	// Diffuse color.
+	{
+		UMaterialInterface* Material = SphereShape->GetMaterial(0);
+		if (Material == nullptr)
+		{
+			Test.AddError(TEXT("Imported sphere shape did not get a material"));
+			/// @todo How should we write this? Just continuing with the test will give segmentation
+			/// fault, returning will skip the rest of this test (might be ok), but adding an if
+			/// (Material != nullptr) {} will produce too much indentation (possibly, try it).
+			return true;
+		}
+		FMaterialParameterInfo Info;
+		Info.Name = TEXT("Diffuse");
+		FLinearColor Actual;
+		if (Material->GetVectorParameterValue(Info, Actual, true))
+		{
+			// Color set in single_sphere.agxPy and imported to a Material Instance.
+			FLinearColor Expected(1.0f, 0.3f, 0.3f, 1.0f);
+			Test.TestEqual(TEXT(""), Actual, Expected);
+		}
+		else
+		{
+			// Color not set in a Material Instance. The default material should be used.
+			if (GIsEditor)
+			{
+				// We expect to get here when running the test outside of the editor because then
+				// we're not allowed to create new Material Instance assets. But if we get here when
+				// in the editor then failing to create the material asset is a test failure.
+				Test.AddError(TEXT(
+					"The imported render material does not have an overridden diffuse color."));
+			}
+			if (Material->GetVectorParameterValue(Info, Actual, false))
+			{
+				// The default color that should be given to imported shapes that don't come with
+				// a render material.
+				FLinearColor Expected(0.896269f, 0.258183f, 0.000000f, 1.000000f);
+				Test.TestEqual(
+					*FString::Printf(
+						TEXT("Actual: %s. Expected: %s."), *Actual.ToString(),
+						*Expected.ToString()),
+					Actual.ToString(), Expected.ToString());
+				/// \@todo Don't compare strings, either find the actual expected color values or
+				/// add an FLinearColor TestEqual overload that takes a Tolerance in
+				/// AgxAutomationCommon.
+			}
+			else
+			{
+				Test.AddError(TEXT("Sphere shape's Material does not have a diffuse parameter."));
+			}
+		}
+	}
 
 	// Publish the important bits to the rest of the test.
 	Test.SphereBody = SphereBody;
