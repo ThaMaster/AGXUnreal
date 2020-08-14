@@ -176,12 +176,19 @@ FAGX_RenderData FShapeBarrier::GetRenderData() const
 	const agxCollide::RenderMaterial* RenderMaterial = RenderDataAGX->getRenderMaterial();
 	/// @todo Use the RenderMaterial::Has.+ functions here. FAGX_RenderData must know which
 	/// properties has been set.
-	agx::Vec3 DiffuseColorAgx(RenderMaterial->getDiffuseColor().asVec3());
+
 	FAGX_RenderData RenderDataUnreal;
 	RenderDataUnreal.bHasDiffuse = RenderMaterial->hasDiffuseColor();
 	if (RenderDataUnreal.bHasDiffuse)
 	{
+		agx::Vec3 DiffuseColorAgx(RenderMaterial->getDiffuseColor().asVec3());
 		RenderDataUnreal.DiffuseColor = Convert(DiffuseColorAgx);
+	}
+	RenderDataUnreal.bHasAmbient = RenderMaterial->hasAmbientColor();
+	if (RenderDataUnreal.bHasAmbient)
+	{
+		agx::Vec3 AmbientColorAgx(RenderMaterial->getAmbientColor().asVec3());
+		RenderDataUnreal.AmbientColor = Convert(AmbientColorAgx);
 	}
 	return RenderDataUnreal;
 }

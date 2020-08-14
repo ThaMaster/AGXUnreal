@@ -189,11 +189,14 @@ UMaterialInstanceConstant* FAGX_ImportUtilities::SaveImportedRenderDataAsset(
 	if (RenderData.bHasDiffuse)
 	{
 		Material->SetVectorParameterValueEditorOnly(
-				FName(TEXT("Diffuse")), FLinearColor(RenderData.DiffuseColor));
+			FName(TEXT("Diffuse")), FLinearColor(RenderData.DiffuseColor));
 	}
 
-
-
+	if (RenderData.bHasDiffuse)
+	{
+		Material->SetVectorParameterValueEditorOnly(
+			FName(TEXT("Ambient")), FLinearColor(RenderData.AmbientColor));
+	}
 
 	Material->SetFlags(RF_Standalone);
 	Material->MarkPackageDirty();
