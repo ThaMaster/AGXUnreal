@@ -84,14 +84,17 @@ namespace
 	}
 
 	template <typename TShapeComponent>
-	TShapeComponent* CreateShapeComponent(AActor* Owner, USceneComponent* Outer)
+	TShapeComponent* CreateShapeComponent(AActor* Owner, USceneComponent* Outer, bool bRegister)
 	{
 		/// \todo Is the Owner pointless here since we do `AttachToComponent`
 		/// immediately afterwards?
 		UClass* Class = TShapeComponent::StaticClass();
 		TShapeComponent* Shape = NewObject<TShapeComponent>(Owner, Class);
 		Owner->AddInstanceComponent(Shape);
-		Shape->RegisterComponent();
+		if (bRegister)
+		{
+			Shape->RegisterComponent();
+		}
 		const bool Attached = Shape->AttachToComponent(
 			Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		check(Attached);
@@ -138,24 +141,24 @@ UAGX_RigidBodyComponent* FAGX_EditorUtilities::CreateRigidBody(AActor* Owner)
 UAGX_SphereShapeComponent* FAGX_EditorUtilities::CreateSphereShape(
 	AActor* Owner, USceneComponent* Outer)
 {
-	return ::CreateShapeComponent<UAGX_SphereShapeComponent>(Owner, Outer);
+	return ::CreateShapeComponent<UAGX_SphereShapeComponent>(Owner, Outer, true);
 }
 
 UAGX_BoxShapeComponent* FAGX_EditorUtilities::CreateBoxShape(AActor* Owner, USceneComponent* Outer)
 {
-	return ::CreateShapeComponent<UAGX_BoxShapeComponent>(Owner, Outer);
+	return ::CreateShapeComponent<UAGX_BoxShapeComponent>(Owner, Outer, true);
 }
 
 UAGX_CylinderShapeComponent* FAGX_EditorUtilities::CreateCylinderShape(
 	AActor* Owner, USceneComponent* Outer)
 {
-	return ::CreateShapeComponent<UAGX_CylinderShapeComponent>(Owner, Outer);
+	return ::CreateShapeComponent<UAGX_CylinderShapeComponent>(Owner, Outer, true);
 }
 
 UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(
-	AActor* Owner, USceneComponent* Outer)
+	AActor* Owner, USceneComponent* Outer, bool bRegister)
 {
-	return ::CreateShapeComponent<UAGX_TrimeshShapeComponent>(Owner, Outer);
+	return ::CreateShapeComponent<UAGX_TrimeshShapeComponent>(Owner, Outer, bRegister);
 }
 
 namespace
@@ -658,7 +661,7 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 }
 
 UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
-	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset)
+	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset, bool bRegisterComponent)
 {
 	if (!MeshAsset)
 	{
@@ -671,7 +674,10 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
 		NewObject<UStaticMeshComponent>(Outer, FName(*MeshAsset->GetName()));
 	StaticMeshComponent->SetStaticMesh(MeshAsset);
 	Owner->AddInstanceComponent(StaticMeshComponent);
-	StaticMeshComponent->RegisterComponent();
+	if (bRegisterComponent)
+	{
+		StaticMeshComponent->RegisterComponent();
+	}
 	const bool Attached = StaticMeshComponent->AttachToComponent(
 		Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 	if (!Attached)

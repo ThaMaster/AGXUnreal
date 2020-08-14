@@ -281,7 +281,8 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	const FTrimeshShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body)
 {
 	AActor* Owner = Body.GetOwner();
-	UAGX_TrimeshShapeComponent* Component = FAGX_EditorUtilities::CreateTrimeshShape(Owner, &Body);
+	UAGX_TrimeshShapeComponent* Component =
+		FAGX_EditorUtilities::CreateTrimeshShape(Owner, &Body, false);
 	Component->MeshSourceLocation = EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 	UStaticMesh* MeshAsset =
 		GetOrCreateStaticMeshAsset(Barrier, Body.GetName(), RestoredMeshes, DirectoryName);
@@ -293,10 +294,14 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	}
 
 	UStaticMeshComponent* MeshComponent =
-		FAGX_EditorUtilities::CreateStaticMeshComponent(Owner, Component, MeshAsset);
+		FAGX_EditorUtilities::CreateStaticMeshComponent(Owner, Component, MeshAsset, false);
 	FString SourceName = Barrier.GetSourceName();
 	FString MeshName = !SourceName.IsEmpty() ? SourceName : (Barrier.GetName() + TEXT("Mesh"));
 	FAGX_ImportUtilities::Rename(*MeshComponent, *MeshName);
+
+	/// @todo In which order should these be?
+	MeshComponent->RegisterComponent();
+	Component->RegisterComponent();
 
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials, DirectoryName);
