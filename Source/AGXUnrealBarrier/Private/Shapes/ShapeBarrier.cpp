@@ -178,7 +178,11 @@ FAGX_RenderData FShapeBarrier::GetRenderData() const
 	/// properties has been set.
 	agx::Vec3 DiffuseColorAgx(RenderMaterial->getDiffuseColor().asVec3());
 	FAGX_RenderData RenderDataUnreal;
-	RenderDataUnreal.DiffuseColor = Convert(DiffuseColorAgx);
+	RenderDataUnreal.bHasDiffuse = RenderMaterial->hasDiffuseColor();
+	if (RenderDataUnreal.bHasDiffuse)
+	{
+		RenderDataUnreal.DiffuseColor = Convert(DiffuseColorAgx);
+	}
 	return RenderDataUnreal;
 }
 
