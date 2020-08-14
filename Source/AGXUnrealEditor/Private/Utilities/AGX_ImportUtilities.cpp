@@ -189,17 +189,17 @@ UMaterialInstanceConstant* FAGX_ImportUtilities::SaveImportedRenderDataAsset(
 	if (RenderData.bHasDiffuse)
 	{
 		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Diffuse")), FLinearColor(RenderData.DiffuseColor));
+			FName(TEXT("Diffuse")), FLinearColor(RenderData.Diffuse));
 	}
 	if (RenderData.bHasAmbient)
 	{
 		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Ambient")), FLinearColor(RenderData.AmbientColor));
+			FName(TEXT("Ambient")), FLinearColor(RenderData.Ambient));
 	}
 	if (RenderData.bHasEmissive)
 	{
 		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Emissive")), FLinearColor(RenderData.EmissiveColor));
+			FName(TEXT("Emissive")), FLinearColor(RenderData.Emissive));
 	}
 	if (RenderData.bHasShininess)
 	{

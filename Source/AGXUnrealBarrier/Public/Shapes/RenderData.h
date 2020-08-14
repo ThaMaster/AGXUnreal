@@ -24,13 +24,13 @@ struct AGXUNREALBARRIER_API FAGX_RenderData
 	uint8 bHasShininess : 1;
 
 	UPROPERTY()
-	FVector AmbientColor;
+	FVector Ambient;
 
 	UPROPERTY()
-	FVector DiffuseColor;
+	FVector Diffuse;
 
 	UPROPERTY()
-	FVector EmissiveColor;
+	FVector Emissive;
 
 	UPROPERTY()
 	float Shininess;

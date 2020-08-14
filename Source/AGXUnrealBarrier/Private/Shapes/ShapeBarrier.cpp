@@ -181,20 +181,20 @@ FAGX_RenderData FShapeBarrier::GetRenderData() const
 	RenderDataUnreal.bHasDiffuse = RenderMaterial->hasDiffuseColor();
 	if (RenderDataUnreal.bHasDiffuse)
 	{
-		agx::Vec3 DiffuseColorAgx(RenderMaterial->getDiffuseColor().asVec3());
-		RenderDataUnreal.DiffuseColor = Convert(DiffuseColorAgx);
+		agx::Vec3 DiffuseAgx(RenderMaterial->getDiffuseColor().asVec3());
+		RenderDataUnreal.Diffuse = Convert(DiffuseAgx);
 	}
 	RenderDataUnreal.bHasAmbient = RenderMaterial->hasAmbientColor();
 	if (RenderDataUnreal.bHasAmbient)
 	{
-		agx::Vec3 AmbientColorAgx(RenderMaterial->getAmbientColor().asVec3());
-		RenderDataUnreal.AmbientColor = Convert(AmbientColorAgx);
+		agx::Vec3 AmbientAgx(RenderMaterial->getAmbientColor().asVec3());
+		RenderDataUnreal.Ambient = Convert(AmbientAgx);
 	}
 	RenderDataUnreal.bHasEmissive = RenderMaterial->hasEmissiveColor();
 	if (RenderDataUnreal.bHasEmissive)
 	{
-		agx::Vec3 EmissiveColorAgx(RenderMaterial->getEmissiveColor().asVec3());
-		RenderDataUnreal.EmissiveColor = Convert(EmissiveColorAgx);
+		agx::Vec3 EmissiveAgx(RenderMaterial->getEmissiveColor().asVec3());
+		RenderDataUnreal.Emissive = Convert(EmissiveAgx);
 	}
 	RenderDataUnreal.bHasShininess = RenderMaterial->hasShininess();
 	if (RenderDataUnreal.bHasShininess)
