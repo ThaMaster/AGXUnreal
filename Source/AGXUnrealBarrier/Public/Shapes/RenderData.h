@@ -18,10 +18,16 @@ struct AGXUNREALBARRIER_API FAGX_RenderData
 	uint8 bHasDiffuse : 1;
 
 	UPROPERTY()
+	uint8 bHasEmissive : 1;
+
+	UPROPERTY()
 	FVector AmbientColor;
 
 	UPROPERTY()
 	FVector DiffuseColor;
+
+	UPROPERTY()
+	FVector EmissiveColor;
 
 
 	/// @todo Add the rest of the render data properties.

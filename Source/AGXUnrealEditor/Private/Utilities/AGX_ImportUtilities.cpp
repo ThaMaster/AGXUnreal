@@ -196,6 +196,11 @@ UMaterialInstanceConstant* FAGX_ImportUtilities::SaveImportedRenderDataAsset(
 		Material->SetVectorParameterValueEditorOnly(
 			FName(TEXT("Ambient")), FLinearColor(RenderData.AmbientColor));
 	}
+	if (RenderData.bHasEmissive)
+	{
+		Material->SetVectorParameterValueEditorOnly(
+			FName(TEXT("Emissive")), FLinearColor(RenderData.EmissiveColor));
+	}
 
 	Material->SetFlags(RF_Standalone);
 	Material->MarkPackageDirty();

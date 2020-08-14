@@ -190,6 +190,12 @@ FAGX_RenderData FShapeBarrier::GetRenderData() const
 		agx::Vec3 AmbientColorAgx(RenderMaterial->getAmbientColor().asVec3());
 		RenderDataUnreal.AmbientColor = Convert(AmbientColorAgx);
 	}
+	RenderDataUnreal.bHasEmissive = RenderMaterial->hasEmissiveColor();
+	if (RenderDataUnreal.bHasEmissive)
+	{
+		agx::Vec3 EmissiveColorAgx(RenderMaterial->getEmissiveColor().asVec3());
+		RenderDataUnreal.EmissiveColor = Convert(EmissiveColorAgx);
+	}
 	return RenderDataUnreal;
 }
 
