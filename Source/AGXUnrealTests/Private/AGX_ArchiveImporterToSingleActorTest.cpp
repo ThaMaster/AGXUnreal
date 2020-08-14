@@ -6,6 +6,7 @@
 #include "AGX_Simulation.h"
 #include "AgxAutomationCommon.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
@@ -220,12 +221,12 @@ protected:
 		ADD_LATENT_AUTOMATION_COMMAND(
 			FImportArchiveSingleActorCommand("single_sphere_build.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSingleSphereImportedCommand(*this))
-		ADD_LATENT_AUTOMATION_COMMAND(FStoreInitialTimes(*this));
-		ADD_LATENT_AUTOMATION_COMMAND(FWaitWorldDuration(World, 1.0f));
-		ADD_LATENT_AUTOMATION_COMMAND(FStoreResultingTimes(*this));
-		ADD_LATENT_AUTOMATION_COMMAND(FCheckSphereHasMoved(*this));
-		ADD_LATENT_AUTOMATION_COMMAND(FClearSingleSphereImportedCommand(Contents));
-		ADD_LATENT_AUTOMATION_COMMAND(FWaitNTicks(1));
+		ADD_LATENT_AUTOMATION_COMMAND(FStoreInitialTimes(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitWorldDuration(World, 1.0f))
+		ADD_LATENT_AUTOMATION_COMMAND(FStoreResultingTimes(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckSphereHasMoved(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearSingleSphereImportedCommand(Contents))
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitNTicks(1))
 
 		return true;
 	}
@@ -503,6 +504,148 @@ bool FClearSingleSphereImportedCommand::Update()
 	}
 	World->DestroyActor(Contents);
 	Contents = nullptr;
+	return true;
+}
+
+//
+// SimpleTrimesh test starts here.
+//
+
+class FArchiveImporterToSingleActor_SimpleTrimeshTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckSimpleTrimeshImportedCommand, FArchiveImporterToSingleActor_SimpleTrimeshTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearSimpleTrimeshImportedCommand, FArchiveImporterToSingleActor_SimpleTrimeshTest&, Test);
+
+class FArchiveImporterToSingleActor_SimpleTrimeshTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_SimpleTrimeshTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_SimpleTrimeshTest"),
+			  TEXT("AGXUnreal.ArchiveImporterToSingleActor.SimpleTrimesh"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NO_AGX(false)
+		BAIL_TEST_IF_NO_WORLD(false)
+		BAIL_TEST_IF_WORLDS_MISMATCH(false)
+		World = AgxAutomationCommon::GetTestWorld();
+		Simulation = UAGX_Simulation::GetFrom(World);
+
+		// See comment in FArchiveImporterToSingleActor_EmptySceneTest.
+		// In short, loading a map stops world ticking.
+#if 0
+		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand())
+#endif
+
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand("simple_trimesh_build.agx", Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckSimpleTrimeshImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearSimpleTrimeshImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_SimpleTrimeshTest ArchiveImporterToSingleActor_SimpleTrimeshTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script simple_trimesh.agxPy.
+ * @return true when the check is complete. Never returns false.
+ */
+bool FCheckSimpleTrimeshImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
+
+	for (UActorComponent* Component : Components)
+	{
+		UE_LOG(LogAGX, Display, TEXT(  "Component named '%s'."), *Component->GetName());
+	}
+
+	// Get the components we know should be there.
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* TrimeshBody =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("TrimeshBody"));
+	UAGX_TrimeshShapeComponent* TrimeshShape =
+		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("TrimeshGeometry"));
+	UStaticMeshComponent* StaticMesh =
+		GetByName<UStaticMeshComponent>(Components, TEXT("simple_trimesh"));
+
+	// Make sure we got the components we konw should be there.
+	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
+	Test.TestNotNull(TEXT("TrimeshBody"), TrimeshBody);
+	Test.TestNotNull(TEXT("TrimeshShape"), TrimeshShape);
+	Test.TestNotNull(TEXT("StaticMesh"), StaticMesh);
+	if (TrimeshBody == nullptr || TrimeshShape == nullptr || StaticMesh == nullptr)
+	{
+		Test.AddError("A required component wasn't found in the imported actor. Cannot continue.");
+		return true;
+	}
+
+	// StaticMeshComponent.
+	for (auto _ : {1})
+	{
+		const TArray<USceneComponent*>& Children = TrimeshShape->GetAttachChildren();
+		Test.TestEqual(TEXT("TrimeshShape child components"), Children.Num(), 1);
+		if (Children.Num() != 1)
+		{
+			break;
+		}
+		USceneComponent* Child = Children[0];
+		Test.TestNotNull(TEXT("Child"), Child);
+		if (Child == nullptr)
+		{
+			break;
+		}
+		UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Child);
+		Test.TestNotNull(TEXT("Trimesh asset"), Mesh);
+		if (Mesh == nullptr)
+		{
+			break;
+		}
+		Test.TestEqual(
+			TEXT("The StaticMesh should be a child of the TrimeshShape"), Mesh, StaticMesh);
+	}
+
+	UE_LOG(LogAGX, Display, TEXT("End of SimpleTrimesh import test."));
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearSimpleTrimeshImportedCommand::Update()
+{
 	return true;
 }
 
