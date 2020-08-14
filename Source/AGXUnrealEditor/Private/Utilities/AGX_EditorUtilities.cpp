@@ -514,6 +514,16 @@ bool FAGX_EditorUtilities::FinalizeAndSavePackage(
 		return false;
 	}
 
+	// A package must have meta-data in order to be saved. It seems to be created automatically
+	// most of the time but sometimes, during unit tests for example, the engine tries to create it
+	// on-demand while saving the package which leads to a fatal error because this type of object
+	// look-up isn't allowed while saving packages. So try to force it here before calling
+	// SavePackage.
+	//
+	// The error message sometimes printed while within UPackage::SavePackage called below is:
+	// Illegal call to StaticFindObjectFast() while serializing object data or garbage collecting!
+	Package->GetMetaData();
+
 	bool bSaved = UPackage::SavePackage(Package, Asset, RF_NoFlags, *PackageFilename);
 	if (!bSaved)
 	{
