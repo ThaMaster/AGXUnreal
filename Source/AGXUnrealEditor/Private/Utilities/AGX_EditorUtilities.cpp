@@ -606,9 +606,9 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 	// been discussed but not implemented.
 
 	const int32 NumCollisionPositions = Trimesh.GetNumPositions();
-	const int32 NumRenderPositions = Trimesh.GetNumRenderPositions();
+	const int32 NumRenderPositions = Trimesh.HasRenderData() ? Trimesh.GetNumRenderPositions() : 0;
 	const int32 NumCollisionIndices = Trimesh.GetNumIndices();
-	const int32 NumRenderIndices = Trimesh.GetNumRenderIndices();
+	const int32 NumRenderIndices = Trimesh.HasRenderData() ? Trimesh.GetNumRenderIndices() : 0;
 
 	if (NumCollisionPositions <= 0 || NumCollisionIndices <= 0)
 	{
@@ -617,7 +617,7 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 			LogAGX, Error,
 			TEXT("Did not find any triangle data in imported trimesh '%s'. Cannot create "
 				 "StaticMesh asset."),
-			*Trimesh.GetSourceName());
+			*Trimesh.GetSourceName())
 		return FRawMesh();
 	}
 
