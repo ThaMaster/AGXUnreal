@@ -294,7 +294,9 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 
 	UStaticMeshComponent* MeshComponent =
 		FAGX_EditorUtilities::CreateStaticMeshComponent(Owner, Component, MeshAsset);
-	FAGX_ImportUtilities::Rename(*MeshComponent, *(Barrier.GetName() + TEXT("Mesh")));
+	FString SourceName = Barrier.GetSourceName();
+	FString MeshName = !SourceName.IsEmpty() ? SourceName : (Barrier.GetName() + TEXT("Mesh"));
+	FAGX_ImportUtilities::Rename(*MeshComponent, *MeshName);
 
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials, DirectoryName);
