@@ -21,6 +21,9 @@ struct AGXUNREALBARRIER_API FAGX_RenderData
 	uint8 bHasEmissive : 1;
 
 	UPROPERTY()
+	uint8 bHasShininess : 1;
+
+	UPROPERTY()
 	FVector AmbientColor;
 
 	UPROPERTY()
@@ -28,6 +31,9 @@ struct AGXUNREALBARRIER_API FAGX_RenderData
 
 	UPROPERTY()
 	FVector EmissiveColor;
+
+	UPROPERTY()
+	float Shininess;
 
 
 	/// @todo Add the rest of the render data properties.

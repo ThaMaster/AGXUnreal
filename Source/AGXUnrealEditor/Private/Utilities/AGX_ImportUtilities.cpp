@@ -201,6 +201,12 @@ UMaterialInstanceConstant* FAGX_ImportUtilities::SaveImportedRenderDataAsset(
 		Material->SetVectorParameterValueEditorOnly(
 			FName(TEXT("Emissive")), FLinearColor(RenderData.EmissiveColor));
 	}
+	if (RenderData.bHasShininess)
+	{
+		FMaterialParameterInfo Info;
+		Info.Name = TEXT("Shininess");
+		Material->SetScalarParameterValueEditorOnly(Info, RenderData.Shininess);
+	}
 
 	Material->SetFlags(RF_Standalone);
 	Material->MarkPackageDirty();
