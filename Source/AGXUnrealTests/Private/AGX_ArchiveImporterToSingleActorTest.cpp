@@ -14,6 +14,7 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/Actor.h"
+#include "HAL/FileManager.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
 
@@ -585,11 +586,6 @@ bool FCheckSimpleTrimeshImportedCommand::Update()
 	Test.Contents->GetComponents(Components, false);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
 
-	for (UActorComponent* Component : Components)
-	{
-		UE_LOG(LogAGX, Display, TEXT(  "Component named '%s'."), *Component->GetName());
-	}
-
 	// Get the components we know should be there.
 	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
 	UAGX_RigidBodyComponent* TrimeshBody =
@@ -646,6 +642,108 @@ bool FCheckSimpleTrimeshImportedCommand::Update()
  */
 bool FClearSimpleTrimeshImportedCommand::Update()
 {
+	if (Test.World == nullptr || Test.Contents == nullptr)
+	{
+		return true;
+	}
+	Test.World->DestroyActor(Test.Contents);
+
+#if 1
+	// The is the sledgehammer appraoch. I don't expect Unreal Engine to like this.
+	// An attempt at deleting the assets that are created by the SimpleTrimesh test.
+	// I have tried a few variantes (see below) to do this cleanly via the Engine API but I don't
+	// know what I'm doing and it always crashes. Doing filesystem delete for now. Nothing is
+	// referencing theses assets and nothing ever will again, and the engine will shut down shortly,
+	// if the tests are being run from the command line.
+	//
+	// I'm just worried that the wrong directory may be deleted in some circumstances.
+
+	const FString Root = FPaths::ProjectContentDir();
+	const FString ImportsLocal = TEXT("ImportedAgxArchives/simple_trimesh_build");
+	const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
+	const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
+	if (ImportsFull == Root)
+	{
+		Test.AddError(
+			"Cannot clean SimpleTrimesh assets: Test directory is the same as the root content "
+			"directory.");
+		return true;
+	}
+	if (ImportsAbsolute.IsEmpty())
+	{
+		Test.AddError("Cannot clean SimpleTrimesh assets: Did not find content directory.");
+		return true;
+	}
+	if (!FPaths::DirectoryExists(ImportsAbsolute))
+	{
+		Test.AddError("Cannot clean SimpleTrimeshAssets: Content directory does not exist.");
+		return true;
+	}
+
+	TArray<FString> Files;
+	IFileManager::Get().FindFilesRecursive(Files, *ImportsAbsolute, TEXT("*"), true, true);
+	if (Files.Num() != 2)
+	{
+		Test.AddError(
+			TEXT("Cannot clean SimpleTrimeshAssets: Test directory contains an unexpected number "
+				 "of files or directories."));
+		return true;
+	}
+	TArray<FString> ExpectedFiles;
+	ExpectedFiles.Add("StaticMeshs");
+	ExpectedFiles.Add("simple_trimesh.uasset");
+	for (const FString& File : Files)
+	{
+		const FString Name = FPaths::GetCleanFilename(File);
+		if (!ExpectedFiles.Contains(Name))
+		{
+			Test.AddError(
+				"Cannot clean SimpleTrimeshAssets: Test directory contains unexpected file or "
+				"directory.");
+			return true;
+		}
+	}
+	IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true);
+#elif 0
+	// An attempt at deleting the StaticMesh asset.
+	// Crashes on GEditor->Something because GEditor is nullptr.
+	/// @todo The path for this particular run may be different, may have a _# suffix. How do I find
+	/// the path for this particular run?
+	const TCHAR* MeshPath = TEXT(
+		"StaticMesh'/Game/ImportedAgxArchives/simple_trimesh_build/StaticMeshs/"
+		"simple_trimesh.simple_trimesh'");
+	UObject* Asset = StaticLoadObject(UStaticMesh::StaticClass(), nullptr, MeshPath);
+	if (Asset == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot delete imported asset '%s': The asset was not found by StaticLoadObject."),
+			MeshPath)
+		return true;
+	}
+	TArray<FAssetData> Assets;
+	Assets.Add(FAssetData(Asset));
+	ObjectTools::DeleteAssets(Assets, false);
+#else
+	// An attempt at deleting the StaticMesh asset.
+	// Crashes on the first run, and does nothing for subsequent runs.
+	/// @todo The path for this particular run may be different, may have a _# suffix. How do I find
+	/// the path for this particular run?
+	const TCHAR* MeshPath = TEXT(
+		"StaticMesh'/Game/ImportedAgxArchives/simple_trimesh_build/StaticMeshs/"
+		"simple_trimesh.simple_trimesh'");
+	UObject* Asset = StaticLoadObject(UStaticMesh::StaticClass(), nullptr, MeshPath);
+	if (Asset == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot delete imported asset '%s': The asset was not found by StaticLoadObject."),
+			MeshPath)
+		return true;
+	}
+	Asset->MarkPendingKill();
+#endif
+
 	return true;
 }
 
