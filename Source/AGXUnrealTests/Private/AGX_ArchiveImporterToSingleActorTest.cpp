@@ -858,6 +858,8 @@ namespace CheckRenderMaterialImportedCommand_helpers
 		}
 		TestColor(*Material, TEXT("Ambient"), Parameters.Ambient, Test);
 		TestColor(*Material, TEXT("Diffuse"), Parameters.Diffuse, Test);
+		TestColor(*Material, TEXT("Emissive"), Parameters.Emissive, Test);
+		TestScalar(*Material, TEXT("Shininess"), Parameters.Shininess, Test);
 	}
 }
 
@@ -923,6 +925,46 @@ bool FCheckRenderMaterialImportedCommand::Update()
 		FMaterialParameters Parameters;
 		Parameters.Ambient = {0.32f, 0.85f, 0.21f, 1.0f};
 		TestMaterial(*Ambient, Parameters, Test);
+	}
+	// Diffuse.
+	{
+		FMaterialParameters Parameters;
+		Parameters.Diffuse = {0.80f, 0.34f, 0.21f, 1.0f};
+		TestMaterial(*Diffuse, Parameters, Test);
+	}
+	// Emissive.
+	{
+		FMaterialParameters Parameters;
+		Parameters.Emissive = {0.98f, 0.94f, 0.76f, 1.0f};
+		TestMaterial(*Emissive, Parameters, Test);
+	}
+	// AmbientDiffuse
+	{
+		FMaterialParameters Parameters;
+		Parameters.Ambient = {0.81f, 0.34f, 0.26f, 1.0f};
+		Parameters.Diffuse = {0.32f, 0.28f, 0.67f, 1.0f};
+		TestMaterial(*AmbientDiffuse, Parameters, Test);
+	}
+	// AmbientEmissive.
+	{
+		FMaterialParameters Parameters;
+		Parameters.Ambient = {0.32f, 0.34f, 0.54f, 1.0f};
+		Parameters.Emissive = {0.21f, 0.17f, 0.23f, 1.0f};
+		TestMaterial(*AmbientEmissive, Parameters, Test);
+	}
+	// DiffuseShininessLow
+	{
+		FMaterialParameters Parameters;
+		Parameters.Diffuse = {0.65f, 0.74f, 0.48f, 1.0f};
+		Parameters.Shininess = 0.0f;
+		TestMaterial(*DiffuseShininessLow, Parameters, Test);
+	}
+	// DiffuseShininessHigh
+	{
+		FMaterialParameters Parameters;
+		Parameters.Diffuse = {0.65f, 0.74f, 0.48f, 1.0f};
+		Parameters.Shininess = 1.0f;
+		TestMaterial(*DiffuseShininessHigh, Parameters, Test);
 	}
 	{
 		UMaterialInterface* Material = Ambient->GetMaterial(0);
