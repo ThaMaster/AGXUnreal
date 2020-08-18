@@ -243,6 +243,20 @@ namespace AgxAutomationCommon
 		return Ret;                                                                     \
 	}
 
+#define BAIL_TEST_IF_NOT_EDITOR(Ret)                       \
+	if (!GIsEditor)                                        \
+	{                                                      \
+		AddError("This test must be run in Editor mode."); \
+		return Ret;                                        \
+	}
+
+#define BAIL_TEST_IF_NOT_GAME(Ret)                       \
+	if (GIsEditor)                                       \
+	{                                                    \
+		AddError("This test must be run in Game mode."); \
+		return Ret;                                      \
+	}
+
 #define BAIL_TEST_IF_CANT_SIMULATE(Ret) \
 	BAIL_TEST_IF_NO_WORLD(Ret)          \
 	BAIL_TEST_IF_WORLDS_MISMATCH(Ret)   \
