@@ -188,7 +188,7 @@ public:
 	FArchiveImporterToSingleActor_SingleSphereTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
 			  TEXT("FArchiveImporterToSingleActor_SingleSphereTest"),
-			  TEXT("AGXUnreal.ArchiveImporterToSingleActor.SingleSphere"))
+			  TEXT("AGXUnreal.Game.ArchiveImporterToSingleActor.SingleSphere"))
 	{
 	}
 
