@@ -501,6 +501,8 @@ protected:
 		ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand())
 #endif
 
+		/// @todo A bug in the Unreal->AGX Dynamics trimesh conversion causes this error message
+		/// to be printed. Remove this when the bug has been fixed. See GitLab issue #107.
 		AddExpectedError(TEXT("Trimesh creation warnings for source"));
 
 		ADD_LATENT_AUTOMATION_COMMAND(
@@ -557,32 +559,25 @@ bool FCheckSimpleTrimeshImportedCommand::Update()
 		return true;
 	}
 
-	// StaticMeshComponent.
-	for (auto _ : {1}) // This weird for-loop is a hacky way to get break;. Why not a function?
+	const TArray<USceneComponent*>& Children = TrimeshShape->GetAttachChildren();
+	Test.TestEqual(TEXT("TrimeshShape child components"), Children.Num(), 1);
+	if (Children.Num() != 1)
 	{
-		const TArray<USceneComponent*>& Children = TrimeshShape->GetAttachChildren();
-		Test.TestEqual(TEXT("TrimeshShape child components"), Children.Num(), 1);
-		if (Children.Num() != 1)
-		{
-			break;
-		}
-		USceneComponent* Child = Children[0];
-		Test.TestNotNull(TEXT("Child"), Child);
-		if (Child == nullptr)
-		{
-			break;
-		}
-		UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Child);
-		Test.TestNotNull(TEXT("Trimesh asset"), Mesh);
-		if (Mesh == nullptr)
-		{
-			break;
-		}
-		Test.TestEqual(
-			TEXT("The StaticMesh should be a child of the TrimeshShape"), Mesh, StaticMesh);
+		return true;
 	}
-
-	UE_LOG(LogAGX, Display, TEXT("End of SimpleTrimesh import test."));
+	USceneComponent* Child = Children[0];
+	Test.TestNotNull(TEXT("Child"), Child);
+	if (Child == nullptr)
+	{
+		return true;
+	}
+	UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Child);
+	Test.TestNotNull(TEXT("Trimesh asset"), Mesh);
+	if (Mesh == nullptr)
+	{
+		return true;
+	}
+	Test.TestEqual(TEXT("The StaticMesh should be a child of the TrimeshShape"), Mesh, StaticMesh);
 
 	return true;
 }
