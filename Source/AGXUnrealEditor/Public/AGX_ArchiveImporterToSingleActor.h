@@ -12,5 +12,5 @@ namespace AGX_ArchiveImporterToSingleActor
 	 * @param ArchivePath - The path to the AGX Dynamics archive to read.
 	 * @return An Actor containing Components for each object read.
 	 */
-	AActor* ImportAGXArchive(const FString& ArchivePath);
+	AGXUNREALEDITOR_API AActor* ImportAGXArchive(const FString& ArchivePath);
 }
