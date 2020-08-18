@@ -475,7 +475,7 @@ public:
 	FArchiveImporterToSingleActor_SimpleTrimeshTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
 			  TEXT("FArchiveImporterToSingleActor_SimpleTrimeshTest"),
-			  TEXT("AGXUnreal.ArchiveImporterToSingleActor.SimpleTrimesh"))
+			  TEXT("AGXUnreal.Game.ArchiveImporterToSingleActor.SimpleTrimesh"))
 	{
 	}
 
@@ -500,6 +500,8 @@ protected:
 		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
 		ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand())
 #endif
+
+		AddExpectedError(TEXT("Trimesh creation warnings for source"));
 
 		ADD_LATENT_AUTOMATION_COMMAND(
 			FImportArchiveSingleActorCommand("simple_trimesh_build.agx", Contents, *this))
