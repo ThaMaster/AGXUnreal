@@ -17,6 +17,7 @@ struct FAGX_RenderMaterial;
 class AActor;
 class FString;
 class UActorComponent;
+class UMaterialInterface;
 class UMaterialInstanceConstant;
 class UStaticMesh;
 
@@ -116,7 +117,7 @@ public:
 	 *
 	 * @return
 	 */
-	static UMaterialInstanceConstant* SaveImportedRenderMaterialAsset(
+	static UMaterialInterface* SaveImportedRenderMaterialAsset(
 		const FAGX_RenderMaterial& Imported, const FString& DirectoryName,
 		const FString& MaterialName);
 

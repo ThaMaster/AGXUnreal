@@ -171,13 +171,15 @@ bool FShapeBarrier::HasRenderData() const
 
 bool FShapeBarrier::HasRenderMaterial() const
 {
-	check(HasNative())
+	check(HasNative());
 	return HasRenderData() && NativeRef->NativeShape->getRenderData()->hasRenderMaterial();
 }
 
 FAGX_RenderMaterial FShapeBarrier::GetRenderMaterial() const
 {
 	check(HasNative());
+	check(HasRenderMaterial());
+
 	const agxCollide::RenderData* RenderDataAgx = NativeRef->NativeShape->getRenderData();
 	const agxCollide::RenderMaterial* RenderMaterialAgx = RenderDataAgx->getRenderMaterial();
 
@@ -241,6 +243,6 @@ std::tuple<FVector, FQuat> FShapeBarrier::GetLocalPositionAndRotation() const
 	const agx::AffineMatrix4x4& GeometryTransform = NativeRef->NativeGeometry->getLocalTransform();
 	const agx::AffineMatrix4x4& ShapeTransform = Iterator.getLocalTransform();
 	const agx::AffineMatrix4x4 ShapeRelativeBody = ShapeTransform * GeometryTransform;
-	return {ConvertVector(ShapeRelativeBody.getTranslate()),
-			Convert(ShapeRelativeBody.getRotate())};
+	return {
+		ConvertVector(ShapeRelativeBody.getTranslate()), Convert(ShapeRelativeBody.getRotate())};
 }

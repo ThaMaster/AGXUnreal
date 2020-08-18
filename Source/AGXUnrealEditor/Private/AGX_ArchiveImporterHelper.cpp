@@ -137,7 +137,7 @@ namespace
 		const FString& DirectoryName)
 	{
 		FString MaterialName = Component.GetName();
-		UMaterialInstanceConstant* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
+		UMaterialInterface* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 			RenderMaterial, DirectoryName, MaterialName);
 		Component.SetMaterial(0, Material);
 	}

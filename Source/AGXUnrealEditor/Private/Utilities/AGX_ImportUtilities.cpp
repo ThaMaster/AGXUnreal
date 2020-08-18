@@ -158,7 +158,7 @@ UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsse
 	return Asset;
 }
 
-UMaterialInstanceConstant* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
+UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	const FAGX_RenderMaterial& Imported, const FString& DirectoryName, const FString& MaterialName)
 {
 	UMaterial* Base = LoadObject<UMaterial>(
@@ -183,8 +183,26 @@ UMaterialInstanceConstant* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset
 	UObject* Asset = AssetTools.CreateAsset(
 		AssetName, FPackageName::GetLongPackagePath(PackagePath),
 		UMaterialInstanceConstant::StaticClass(), Factory);
+	if (Asset == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not create new Material asset for material '%s' imported from '%s' "
+				 "Falling back to the default imported material."),
+			*MaterialName, *DirectoryName);
+		return Base;
+	}
 
 	UMaterialInstanceConstant* Material = Cast<UMaterialInstanceConstant>(Asset);
+	if (Material == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not create new Material Instance Constant for material '%s' imported from "
+				 "'%s'. Falling back to the default imported material."),
+			*MaterialName, *DirectoryName)
+		return Base;
+	}
 
 	if (Imported.bHasDiffuse)
 	{
