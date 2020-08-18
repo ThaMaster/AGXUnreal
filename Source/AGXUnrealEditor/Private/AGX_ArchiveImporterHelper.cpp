@@ -185,11 +185,25 @@ namespace
 			Component.PhysicalMaterial = Material;
 		}
 
-		if (Barrier.HasRenderData() && GIsEditor)
+		if (Barrier.HasRenderData())
 		{
 			// We are only allowed to create new assets, such as a MaterialInstance, when running
 			// within the Unreal Editor.
-			CreateRenderMaterialInstance(Component, Barrier.GetRenderData(), DirectoryName);
+			/// @todo This is not true. It seems we are allowed to create UStaticMeshs. What's the
+			/// difference?
+			if (GIsEditor)
+			{
+				CreateRenderMaterialInstance(Component, Barrier.GetRenderData(), DirectoryName);
+			}
+			else
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Cannot import render data for '%s' because running without the Unreal "
+						 "Editor."),
+					*Component.GetName())
+				SetDefaultRenderMaterial(Component);
+			}
 		}
 		else
 		{
@@ -553,8 +567,9 @@ UAGX_ShapeMaterialAsset* FAGX_ArchiveImporterHelper::GetShapeMaterial(
 FAGX_ArchiveImporterHelper::FShapeMaterialPair FAGX_ArchiveImporterHelper::GetShapeMaterials(
 	const FContactMaterialBarrier& ContactMaterial)
 {
-	return {GetShapeMaterial(ContactMaterial.GetMaterial1()),
-			GetShapeMaterial(ContactMaterial.GetMaterial2())};
+	return {
+		GetShapeMaterial(ContactMaterial.GetMaterial1()),
+		GetShapeMaterial(ContactMaterial.GetMaterial2())};
 }
 
 namespace
