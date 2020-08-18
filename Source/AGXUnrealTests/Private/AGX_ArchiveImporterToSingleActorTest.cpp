@@ -792,9 +792,58 @@ namespace
 		ArchiveImporterToSingleActor_RenderMaterialTest;
 }
 
+namespace CheckRenderMaterialImportedCommand_helpers
+{
+	void TestColor(
+		UMaterialInterface& Material, const TCHAR* ParameterName, const FLinearColor& Expected,
+		FAutomationTestBase& Test)
+	{
+		FMaterialParameterInfo Info;
+		Info.Name = ParameterName;
+		FLinearColor Actual;
+		if (!Material.GetVectorParameterValue(Info, Actual, false))
+		{
+			Test.AddError(FString::Printf(
+				TEXT("Could not get parameter '%s' from material '%s'."), ParameterName,
+				*Material.GetName()));
+			return;
+		}
+		UE_LOG(
+			LogAGX, Warning, TEXT("Comparing %s and %s for %s."), *Expected.ToString(),
+			*Actual.ToString(), ParameterName)
+		AgxAutomationCommon::TestEqual(
+			Test, *FString::Printf(TEXT("%s in %s"), ParameterName, *Material.GetName()), Actual,
+			Expected);
+	}
+
+	struct FMaterialParameters
+	{
+		FLinearColor Ambient {0.01f, 0.0028806f, 0.0f, 1.0f};
+		FLinearColor Diffuse {0.8962694f, 0.258183f, 0.0f, 1.0f};
+		FLinearColor Emissive {0.0f, 0.0f, 0.0f, 1.0f};
+		float Shininess {0.0f};
+	};
+
+	void TestMaterial(
+		UAGX_SphereShapeComponent& Sphere, const FMaterialParameters& Parameters,
+		FAutomationTestBase& Test)
+	{
+		UMaterialInterface* Material = Sphere.GetMaterial(0);
+		if (Material == nullptr)
+		{
+			Test.AddError(
+				FString::Printf(TEXT("Sphere '%s' does not have a material."), *Sphere.GetName()));
+			return;
+		}
+		TestColor(*Material, TEXT("Ambient"), Parameters.Ambient, Test);
+		TestColor(*Material, TEXT("Diffuse"), Parameters.Diffuse, Test);
+	}
+}
+
 bool FCheckRenderMaterialImportedCommand::Update()
 {
 	using namespace AgxAutomationCommon;
+	using namespace CheckRenderMaterialImportedCommand_helpers;
 	if (Test.Contents == nullptr)
 	{
 		Test.AddError(TEXT("Could not import RenderMaterial test scene: No content created."));
@@ -848,6 +897,12 @@ bool FCheckRenderMaterialImportedCommand::Update()
 		return true;
 	}
 
+	// Ambient.
+	{
+		FMaterialParameters Parameters;
+		Parameters.Ambient = {0.32f, 0.85f, 0.21f, 1.0f};
+		TestMaterial(*Ambient, Parameters, Test);
+	}
 	{
 		UMaterialInterface* Material = Ambient->GetMaterial(0);
 		if (Material == nullptr)
@@ -855,7 +910,8 @@ bool FCheckRenderMaterialImportedCommand::Update()
 			Test.AddError(TEXT("A sphere did not get a material."));
 			return true;
 		}
-		UE_LOG(LogAGX, Warning, TEXT("Got material named '%s'."), *Material->GetName());
+		UE_LOG(LogAGX, Warning, TEXT("Got material named '%s'."), *Material->GetName())
+		TestColor(*Material, TEXT("Ambient"), FLinearColor(0.32f, 0.85f, 0.21f, 1.0f), Test);
 		// Ambient.
 		{
 			FMaterialParameterInfo Info;
