@@ -808,8 +808,6 @@ namespace CheckRenderMaterialImportedCommand_helpers
 				*Material.GetName()));
 			return;
 		}
-		UE_LOG(
-			LogAGX, Warning, TEXT("Comparing %f and %f for %s."), Expected, Actual, ParameterName);
 		Test.TestEqual(
 			*FString::Printf(TEXT("%s in %s"), ParameterName, *Material.GetName()), Actual,
 			Expected);
@@ -829,9 +827,6 @@ namespace CheckRenderMaterialImportedCommand_helpers
 				*Material.GetName()));
 			return;
 		}
-		UE_LOG(
-			LogAGX, Warning, TEXT("Comparing %s and %s for %s."), *Expected.ToString(),
-			*Actual.ToString(), ParameterName)
 		AgxAutomationCommon::TestEqual(
 			Test, *FString::Printf(TEXT("%s in %s"), ParameterName, *Material.GetName()), Actual,
 			Expected);
@@ -870,17 +865,13 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	if (Test.Contents == nullptr)
 	{
 		Test.AddError(TEXT("Could not import RenderMaterial test scene: No content created."));
+		return true;
 	}
 
 	// Get all the imported components.
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 10);
-
-	for (UActorComponent* Component : Components)
-	{
-		UE_LOG(LogAGX, Warning, TEXT("  Got component named '%s'."), *Component->GetName());
-	}
 
 	auto GetSphere = [&Components](const TCHAR* Name) -> UAGX_SphereShapeComponent* {
 		return GetByName<UAGX_SphereShapeComponent>(Components, Name);
@@ -917,6 +908,7 @@ bool FCheckRenderMaterialImportedCommand::Update()
 		AmbientEmissive == nullptr || DiffuseShininessLow == nullptr ||
 		DiffuseShininessHigh == nullptr)
 	{
+		Test.AddError(TEXT("At least one required object was nullptr, cannot continue."));
 		return true;
 	}
 
