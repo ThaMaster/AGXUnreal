@@ -794,6 +794,27 @@ namespace
 
 namespace CheckRenderMaterialImportedCommand_helpers
 {
+	void TestScalar(
+		UMaterialInterface& Material, const TCHAR* ParameterName, float Expected,
+		FAutomationTestBase& Test)
+	{
+		FMaterialParameterInfo Info;
+		Info.Name = ParameterName;
+		float Actual;
+		if (!Material.GetScalarParameterValue(Info, Actual, false))
+		{
+			Test.AddError(FString::Printf(
+				TEXT("Could not get parameter '%s' for material '%s'."), ParameterName,
+				*Material.GetName()));
+			return;
+		}
+		UE_LOG(
+			LogAGX, Warning, TEXT("Comparing %f and %f for %s."), Expected, Actual, ParameterName);
+		Test.TestEqual(
+			*FString::Printf(TEXT("%s in %s"), ParameterName, *Material.GetName()), Actual,
+			Expected);
+	}
+
 	void TestColor(
 		UMaterialInterface& Material, const TCHAR* ParameterName, const FLinearColor& Expected,
 		FAutomationTestBase& Test)
