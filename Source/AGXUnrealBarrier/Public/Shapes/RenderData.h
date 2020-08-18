@@ -34,9 +34,4 @@ struct AGXUNREALBARRIER_API FAGX_RenderData
 
 	UPROPERTY()
 	float Shininess;
-
-
-	/// @todo Add the rest of the render data properties.
-
-	/// @todo Properties are optional, so some form of Has.+ must be added.
 };
