@@ -61,6 +61,7 @@ bool FImportArchiveSingleActorCommand::Update()
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
 	FCheckEmptySceneImportedCommand, AActor*&, Contents, FAutomationTestBase&, Test);
+
 bool FCheckEmptySceneImportedCommand::Update()
 {
 	UWorld* World = AgxAutomationCommon::GetTestWorld();
@@ -86,14 +87,19 @@ bool FCheckEmptySceneImportedCommand::Update()
 
 /**
  * Latent Command that removes everything that was created by the Import Empty Scene test. Actual
- * removal isn't done immediately by Unreal Engine so it may be neccessary to do an extra tick after
- * this Latent Command to let the change finalize.
- * @todo Write this Latent command so that it returns false on the first call to Update and true on
- * the second.
+ * removal isn't done immediately by Unreal Engine so the first call to Update will return false
+ * so that the removal is completed before the next Latent Command starts.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FClearEmptySceneImportedCommand, AActor*&, Contents);
 bool FClearEmptySceneImportedCommand::Update()
 {
+	if (Contents == nullptr)
+	{
+		// The removal happened the previous tick so it's safe to return true and complete this
+		// Latent Command now.
+		return true;
+	}
+
 	UWorld* World = AgxAutomationCommon::GetTestWorld();
 	if (World == nullptr || Contents == nullptr)
 	{
@@ -101,7 +107,9 @@ bool FClearEmptySceneImportedCommand::Update()
 	}
 	World->DestroyActor(Contents);
 	Contents = nullptr;
-	return true;
+
+	// Return false so the engine get a tick to do the actual removal.
+	return false;
 }
 
 /**
