@@ -365,21 +365,12 @@ bool FCheckSingleSphereImportedCommand::Update()
 		Test.TestEqual(TEXT("Sphere radius"), Actual, Expected);
 	}
 
-	/**
-	 * @todo A native AGX Dynamics RigidBody is created for the body when the AGX_RigidBodyComponent
-	 * is registered with the owning actor. This is because engine code detects that the Actors has
-	 * a World already, the editor world that the ArchiveImported passed to the ArchiveReader, so
-	 * BeginPlay is called on the AGX_RigidBodyComponent immediately. I'm not entirely sure that is
-	 * what we want.
-	 *
-	 * The above is incorrect. It's not the Editor world but the Game world created because
-	 * Automation Tests are run with -Game so a Game world is created that causes the BeginPlay to
-	 * be called. Something causes BeginPlay to be called on the Actor very early, which in turn
-	 * causes BeginPlay to be called on the AGX_RigidBody from UActorComponent::RegisterComponent.
-	 * That's when the Native object is created.
-	 */
-	bool bHasNative = SphereBody->HasNative();
-	Test.TestTrue(TEXT("Sphere has native"), bHasNative);
+	// Imported objects don't get a native AGX Dynamics representation immediately when imported
+	// into Unreal Editor but this unit test is run in Game mode which means that BeginPlay is
+	// called on an Actor as soon as it is created, and Actors which have had BeginPlay called will
+	// call BeginPlay on any registered Component, with UActorComponent::RegisterComponent,
+	// immediately. Which creates the AGX Dynamics native object.
+	Test.TestTrue(TEXT("Sphere has native"), SphereBody->HasNative());
 
 	UWorld* BodyWorld = SphereBody->GetWorld();
 	Test.TestEqual(TEXT("Sphere world"), BodyWorld, Test.World);
