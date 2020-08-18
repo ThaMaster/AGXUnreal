@@ -139,6 +139,11 @@ namespace
 		FString MaterialName = Component.GetName();
 		UMaterialInterface* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 			RenderMaterial, DirectoryName, MaterialName);
+		if (Material == nullptr)
+		{
+			// Error log printed by SaveImportedRenderMaterialAsset, no need to log here.
+			return;
+		}
 		Component.SetMaterial(0, Material);
 	}
 
@@ -162,7 +167,7 @@ namespace
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("Could not set render material on imported shape '%s'. The asset '%s' is not "
-					 "a Materil."),
+					 "a Material."),
 				*Component.GetName(), AssetPath);
 		}
 		Component.SetMaterial(0, Material);
@@ -313,7 +318,10 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	FString MeshName = !SourceName.IsEmpty() ? SourceName : (Barrier.GetName() + TEXT("Mesh"));
 	FAGX_ImportUtilities::Rename(*MeshComponent, *MeshName);
 
-	/// @todo In which order should these be?
+	// Both components must be created and attached before they are registered because BeginPlay
+	// may be called by RegisterComponent and the TrimeshMeshComponent must know of the
+	// StaticMeshComponent before that happens.
+	/// @todo In which order should these be? Does it matter?
 	MeshComponent->RegisterComponent();
 	Component->RegisterComponent();
 
