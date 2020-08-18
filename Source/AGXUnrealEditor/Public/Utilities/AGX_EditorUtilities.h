@@ -41,7 +41,7 @@ class UWorld;
 /**
  * A collection of helper functions that can only be compiled in editor builds.
  */
-class FAGX_EditorUtilities
+class AGXUNREALEDITOR_API FAGX_EditorUtilities
 {
 public:
 	/**
