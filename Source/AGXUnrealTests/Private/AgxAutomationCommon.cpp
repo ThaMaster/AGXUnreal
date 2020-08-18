@@ -97,6 +97,18 @@ void AgxAutomationCommon::TestEqual(
 	}
 }
 
+void AgxAutomationCommon::TestEqual(
+	FAutomationTestBase& Test, const TCHAR* What, const FLinearColor& Actual,
+	const FLinearColor& Expected, float Tolerance)
+{
+	if (!Expected.Equals(Actual, Tolerance))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("Expected '%s' to be '%s' but with was '%s', with tolerance %f."), What,
+			*Expected.ToString(), *Actual.ToString(), Tolerance));
+	}
+}
+
 FString AgxAutomationCommon::WorldTypeToString(EWorldType::Type Type)
 {
 	switch (Type)

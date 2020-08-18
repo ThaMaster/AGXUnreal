@@ -7,6 +7,10 @@
 
 class UWorld;
 
+struct FLinearColor;
+struct FQuat;
+struct FRotator;
+
 /**
  * A set of helper functions used by several Automation tests.
  */
@@ -37,11 +41,17 @@ namespace AgxAutomationCommon
 		FAutomationTestBase& Test, const TCHAR* What, const FQuat& Actual, const FQuat& Expected,
 		float Tolerance = KINDA_SMALL_NUMBER);
 
-	/// @toto Remove this TestEqual implementation for FRotator once it's included in-engine.
+	/// @todo Remove this TestEqual implementation for FRotator once it's included in-engine.
 	/// @see Misc/AutomationTest.h
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, const FRotator& Actual,
 		const FRotator& Expected, float Tolerance = KINDA_SMALL_NUMBER);
+
+	/// @todo Remove this TestEqual implementation for FLinearColor once it's included in-engine.
+	/// @see Misc/AutomaitonTest.h
+	void TestEqual(
+		FAutomationTestBase& Test, const TCHAR* What, const FLinearColor& Actual,
+		const FLinearColor& Expected, float Tolerance = KINDA_SMALL_NUMBER);
 
 	/// @todo Figure out how to use UEnum::GetValueAsString instead of this helper function.
 	/// I get linker errors.
