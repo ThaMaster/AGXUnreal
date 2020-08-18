@@ -90,6 +90,25 @@ namespace AgxAutomationCommon
 	 */
 	FString GetArchivePath(const FString& ArchiveName);
 
+	/**
+	 * Delete all assets created when the given archive was imported.
+	 *
+	 * Will do a file system delete of the entire import directory.
+	 *
+	 * WARNING: The implementation currently assumes that the import was does without name conflict
+	 * with a previous import of an archive with the same name. If there are several imports then
+	 * the one that did not get a directory name suffix is deleted.
+	 *
+	 * @param ArchiveName The name of the archive whose imported assets are to be deleted, without
+	 * '.agx' suffix.
+	 * @param ExpectedFileAndDirectoryNames List of file and directory names that is expected to
+	 * be found in the archive. No delete will be performed if any file not in this list is found in
+	 * the directory.
+	 * @return True if the directory was deleted. False otherwise.
+	 */
+	bool DeleteImportDirectory(
+		const TCHAR* ArchiveName, const TArray<const TCHAR*>& ExpectedFileAndDirectoryNames);
+
 	template <typename T>
 	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
 	{
