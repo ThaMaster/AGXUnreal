@@ -99,6 +99,11 @@ namespace AgxAutomationCommon
 	 * with a previous import of an archive with the same name. If there are several imports then
 	 * the one that did not get a directory name suffix is deleted.
 	 *
+	 * This will result in an error being printed to the log, which will cause the current test to
+	 * fail. Prevent this on Linux by adding
+	 *     Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+	 * to the test. Additional AddExpectedError may be required for other platforms.
+	 *
 	 * @param ArchiveName The name of the archive whose imported assets are to be deleted, without
 	 * '.agx' suffix.
 	 * @param ExpectedFileAndDirectoryNames List of file and directory names that is expected to

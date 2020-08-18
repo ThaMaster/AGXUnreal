@@ -970,6 +970,9 @@ bool FClearRenderMaterialImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
+	// The error message that is printed when folders are deleted from under the editor.
+	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+
 	TArray<const TCHAR*> ExpectedFiles = {
 		TEXT("RenderMaterials")
 	};

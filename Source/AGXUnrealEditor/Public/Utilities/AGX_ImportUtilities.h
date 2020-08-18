@@ -12,7 +12,7 @@ class FShapeMaterialBarrier;
 class FContactMaterialBarrier;
 class UAGX_ContactMaterialAsset;
 class UAGX_ShapeMaterialAsset;
-struct FAGX_RenderData;
+struct FAGX_RenderMaterial;
 
 class AActor;
 class FString;
@@ -116,8 +116,9 @@ public:
 	 *
 	 * @return
 	 */
-	static UMaterialInstanceConstant* SaveImportedRenderDataAsset(
-		const FAGX_RenderData& Shape, const FString& DirectoryName, const FString& MaterialName);
+	static UMaterialInstanceConstant* SaveImportedRenderMaterialAsset(
+		const FAGX_RenderMaterial& Imported, const FString& DirectoryName,
+		const FString& MaterialName);
 
 	/**
 	 * Rename the object. Generates a fallback name if the given name can't be used.

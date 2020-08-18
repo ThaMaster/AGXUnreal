@@ -1,7 +1,7 @@
 #pragma once
 
 // AGXUnreal includes.
-#include "Shapes/RenderData.h"
+#include "Shapes/RenderMaterial.h"
 
 // Unreal Engine includes.
 #include "Containers/Array.h"
@@ -74,7 +74,9 @@ public:
 
 	bool HasRenderData() const;
 
-	FAGX_RenderData GetRenderData() const;
+	bool HasRenderMaterial() const;
+
+	FAGX_RenderMaterial GetRenderMaterial() const;
 
 protected:
 	template <typename TFunc, typename... TPack>

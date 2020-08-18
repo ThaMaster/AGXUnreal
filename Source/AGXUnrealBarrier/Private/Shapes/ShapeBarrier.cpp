@@ -169,35 +169,39 @@ bool FShapeBarrier::HasRenderData() const
 	return NativeRef->NativeShape->getRenderData() != nullptr;
 }
 
-FAGX_RenderData FShapeBarrier::GetRenderData() const
+bool FShapeBarrier::HasRenderMaterial() const
+{
+	check(HasNative())
+	return HasRenderData() && NativeRef->NativeShape->getRenderData()->hasRenderMaterial();
+}
+
+FAGX_RenderMaterial FShapeBarrier::GetRenderMaterial() const
 {
 	check(HasNative());
-	const agxCollide::RenderData* RenderDataAGX = NativeRef->NativeShape->getRenderData();
-	const agxCollide::RenderMaterial* RenderMaterial = RenderDataAGX->getRenderMaterial();
-	/// @todo Use the RenderMaterial::Has.+ functions here. FAGX_RenderData must know which
-	/// properties has been set.
+	const agxCollide::RenderData* RenderDataAgx = NativeRef->NativeShape->getRenderData();
+	const agxCollide::RenderMaterial* RenderMaterialAgx = RenderDataAgx->getRenderMaterial();
 
-	FAGX_RenderData RenderDataUnreal;
-	if ((RenderDataUnreal.bHasDiffuse = RenderMaterial->hasDiffuseColor()))
+	FAGX_RenderMaterial RenderMaterialUnreal;
+	if ((RenderMaterialUnreal.bHasDiffuse = RenderMaterialAgx->hasDiffuseColor()))
 	{
-		agx::Vec3 DiffuseAgx(RenderMaterial->getDiffuseColor().asVec3());
-		RenderDataUnreal.Diffuse = Convert(DiffuseAgx);
+		agx::Vec3 DiffuseAgx(RenderMaterialAgx->getDiffuseColor().asVec3());
+		RenderMaterialUnreal.Diffuse = Convert(DiffuseAgx);
 	}
-	if ((RenderDataUnreal.bHasAmbient = RenderMaterial->hasAmbientColor()))
+	if ((RenderMaterialUnreal.bHasAmbient = RenderMaterialAgx->hasAmbientColor()))
 	{
-		agx::Vec3 AmbientAgx(RenderMaterial->getAmbientColor().asVec3());
-		RenderDataUnreal.Ambient = Convert(AmbientAgx);
+		agx::Vec3 AmbientAgx(RenderMaterialAgx->getAmbientColor().asVec3());
+		RenderMaterialUnreal.Ambient = Convert(AmbientAgx);
 	}
-	if ((RenderDataUnreal.bHasEmissive = RenderMaterial->hasEmissiveColor()))
+	if ((RenderMaterialUnreal.bHasEmissive = RenderMaterialAgx->hasEmissiveColor()))
 	{
-		agx::Vec3 EmissiveAgx(RenderMaterial->getEmissiveColor().asVec3());
-		RenderDataUnreal.Emissive = Convert(EmissiveAgx);
+		agx::Vec3 EmissiveAgx(RenderMaterialAgx->getEmissiveColor().asVec3());
+		RenderMaterialUnreal.Emissive = Convert(EmissiveAgx);
 	}
-	if ((RenderDataUnreal.bHasShininess = RenderMaterial->hasShininess()))
+	if ((RenderMaterialUnreal.bHasShininess = RenderMaterialAgx->hasShininess()))
 	{
-		RenderDataUnreal.Shininess = RenderMaterial->getShininess();
+		RenderMaterialUnreal.Shininess = RenderMaterialAgx->getShininess();
 	}
-	return RenderDataUnreal;
+	return RenderMaterialUnreal;
 }
 
 namespace

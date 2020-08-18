@@ -133,12 +133,12 @@ AAGX_RigidBodyActor* FAGX_ArchiveImporterHelper::InstantiateBody(
 namespace
 {
 	void CreateRenderMaterialInstance(
-		UAGX_ShapeComponent& Component, const FAGX_RenderData& RenderData,
+		UAGX_ShapeComponent& Component, const FAGX_RenderMaterial& RenderMaterial,
 		const FString& DirectoryName)
 	{
 		FString MaterialName = Component.GetName();
-		UMaterialInstanceConstant* Material = FAGX_ImportUtilities::SaveImportedRenderDataAsset(
-			RenderData, DirectoryName, MaterialName);
+		UMaterialInstanceConstant* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
+			RenderMaterial, DirectoryName, MaterialName);
 		Component.SetMaterial(0, Material);
 	}
 
@@ -185,15 +185,15 @@ namespace
 			Component.PhysicalMaterial = Material;
 		}
 
-		if (Barrier.HasRenderData())
+		if (Barrier.HasRenderMaterial())
 		{
 			// We are only allowed to create new assets, such as a MaterialInstance, when running
 			// within the Unreal Editor.
-			/// @todo This is not true. It seems we are allowed to create UStaticMeshs. What's the
-			/// difference?
+			/// @todo This is not true. It seems we are allowed to create StaticMeshs. What's the
+			/// difference between a StaticMesh and a MaterialInstance?
 			if (GIsEditor)
 			{
-				CreateRenderMaterialInstance(Component, Barrier.GetRenderData(), DirectoryName);
+				CreateRenderMaterialInstance(Component, Barrier.GetRenderMaterial(), DirectoryName);
 			}
 			else
 			{

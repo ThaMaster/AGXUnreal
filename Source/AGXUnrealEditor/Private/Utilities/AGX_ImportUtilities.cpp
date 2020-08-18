@@ -158,8 +158,8 @@ UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsse
 	return Asset;
 }
 
-UMaterialInstanceConstant* FAGX_ImportUtilities::SaveImportedRenderDataAsset(
-	const FAGX_RenderData& RenderData, const FString& DirectoryName, const FString& MaterialName)
+UMaterialInstanceConstant* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
+	const FAGX_RenderMaterial& Imported, const FString& DirectoryName, const FString& MaterialName)
 {
 	UMaterial* Base = LoadObject<UMaterial>(
 		nullptr, TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'"));
@@ -186,26 +186,26 @@ UMaterialInstanceConstant* FAGX_ImportUtilities::SaveImportedRenderDataAsset(
 
 	UMaterialInstanceConstant* Material = Cast<UMaterialInstanceConstant>(Asset);
 
-	if (RenderData.bHasDiffuse)
+	if (Imported.bHasDiffuse)
 	{
 		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Diffuse")), FLinearColor(RenderData.Diffuse));
+			FName(TEXT("Diffuse")), FLinearColor(Imported.Diffuse));
 	}
-	if (RenderData.bHasAmbient)
+	if (Imported.bHasAmbient)
 	{
 		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Ambient")), FLinearColor(RenderData.Ambient));
+			FName(TEXT("Ambient")), FLinearColor(Imported.Ambient));
 	}
-	if (RenderData.bHasEmissive)
+	if (Imported.bHasEmissive)
 	{
 		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Emissive")), FLinearColor(RenderData.Emissive));
+			FName(TEXT("Emissive")), FLinearColor(Imported.Emissive));
 	}
-	if (RenderData.bHasShininess)
+	if (Imported.bHasShininess)
 	{
 		FMaterialParameterInfo Info;
 		Info.Name = TEXT("Shininess");
-		Material->SetScalarParameterValueEditorOnly(Info, RenderData.Shininess);
+		Material->SetScalarParameterValueEditorOnly(Info, Imported.Shininess);
 	}
 
 	Material->SetFlags(RF_Standalone);

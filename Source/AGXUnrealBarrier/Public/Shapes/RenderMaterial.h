@@ -4,10 +4,10 @@
 #include "CoreMinimal.h"
 #include "Math/Vector.h"
 
-#include "RenderData.generated.h"
+#include "RenderMaterial.generated.h"
 
 USTRUCT()
-struct AGXUNREALBARRIER_API FAGX_RenderData
+struct AGXUNREALBARRIER_API FAGX_RenderMaterial
 {
 	GENERATED_BODY()
 
