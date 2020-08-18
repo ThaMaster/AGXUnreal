@@ -964,6 +964,17 @@ bool FCheckRenderMaterialImportedCommand::Update()
 
 bool FClearRenderMaterialImportedCommand::Update()
 {
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("RenderMaterials")
+	};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_materials_build"), ExpectedFiles);
+
 	return true;
 }
 
