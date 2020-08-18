@@ -115,7 +115,7 @@ public:
 	FArchiveImporterToSingleActor_EmptySceneTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
 			  TEXT("FArchiveImporterToSingleActor_EmptySceneTest"),
-			  TEXT("AGXUnreal.ArchiveImporterToSingleActor.EmptyScene.Test"))
+			  TEXT("AGXUnreal.ArchiveImporterToSingleActor.EmptyScene"))
 	{
 	}
 
@@ -179,7 +179,7 @@ public:
 	FArchiveImporterToSingleActor_SingleSphereTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
 			  TEXT("FArchiveImporterToSingleActor_SingleSphereTest"),
-			  TEXT("AGXUnreal.ArchiveImporterToSingleActor.SingleSphere.Test"))
+			  TEXT("AGXUnreal.ArchiveImporterToSingleActor.SingleSphere"))
 	{
 	}
 
@@ -578,6 +578,7 @@ bool FCheckSimpleTrimeshImportedCommand::Update()
 	using namespace AgxAutomationCommon;
 	if (Test.Contents == nullptr)
 	{
+		Test.AddError(TEXT("Could not import SimpleTrimesh test scene: No content created."));
 		return true;
 	}
 
@@ -595,7 +596,7 @@ bool FCheckSimpleTrimeshImportedCommand::Update()
 	UStaticMeshComponent* StaticMesh =
 		GetByName<UStaticMeshComponent>(Components, TEXT("simple_trimesh"));
 
-	// Make sure we got the components we konw should be there.
+	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
 	Test.TestNotNull(TEXT("TrimeshBody"), TrimeshBody);
 	Test.TestNotNull(TEXT("TrimeshShape"), TrimeshShape);
@@ -607,7 +608,7 @@ bool FCheckSimpleTrimeshImportedCommand::Update()
 	}
 
 	// StaticMeshComponent.
-	for (auto _ : {1})
+	for (auto _ : {1}) // This weird for-loop is a hacky way to get break;. Why not a function?
 	{
 		const TArray<USceneComponent*>& Children = TrimeshShape->GetAttachChildren();
 		Test.TestEqual(TEXT("TrimeshShape child components"), Children.Num(), 1);
@@ -744,6 +745,178 @@ bool FClearSimpleTrimeshImportedCommand::Update()
 	Asset->MarkPendingKill();
 #endif
 
+	return true;
+}
+
+//
+// RenderMaterial test starts here.
+//
+
+class FArchiveImporterToSingleActor_RenderMaterialTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckRenderMaterialImportedCommand, FArchiveImporterToSingleActor_RenderMaterialTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearRenderMaterialImportedCommand, FArchiveImporterToSingleActor_RenderMaterialTest&, Test);
+
+class FArchiveImporterToSingleActor_RenderMaterialTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_RenderMaterialTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_RenderMaterialTest"),
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.RenderMaterial"))
+	{
+	}
+
+public:
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("render_materials_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckRenderMaterialImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearRenderMaterialImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_RenderMaterialTest
+		ArchiveImporterToSingleActor_RenderMaterialTest;
+}
+
+bool FCheckRenderMaterialImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import RenderMaterial test scene: No content created."));
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 10);
+
+	for (UActorComponent* Component : Components)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("  Got component named '%s'."), *Component->GetName());
+	}
+
+	auto GetSphere = [&Components](const TCHAR* Name) -> UAGX_SphereShapeComponent* {
+		return GetByName<UAGX_SphereShapeComponent>(Components, Name);
+	};
+
+	// Get the components we know should be there.
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* Body =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("RenderMaterialBody"));
+	UAGX_SphereShapeComponent* Ambient = GetSphere(TEXT("AmbientGeometry"));
+	UAGX_SphereShapeComponent* Diffuse = GetSphere(TEXT("DiffuseGeometry"));
+	UAGX_SphereShapeComponent* Emissive = GetSphere(TEXT("EmissiveGeometry"));
+	UAGX_SphereShapeComponent* Shininess = GetSphere(TEXT("ShininessGeometry"));
+	UAGX_SphereShapeComponent* AmbientDiffuse = GetSphere(TEXT("AmbientDiffuseGeometry"));
+	UAGX_SphereShapeComponent* AmbientEmissive = GetSphere(TEXT("AmbientEmissiveGeometry"));
+	UAGX_SphereShapeComponent* DiffuseShininessLow = GetSphere(TEXT("DiffuseShininessLowGeometry"));
+	UAGX_SphereShapeComponent* DiffuseShininessHigh =
+		GetSphere(TEXT("DiffuseShininessHighGeometry"));
+
+	// Make sure we got the components we know should be there.
+	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
+	Test.TestNotNull(TEXT("Body"), Body);
+	Test.TestNotNull(TEXT("Ambient"), Ambient);
+	Test.TestNotNull(TEXT("Diffuse"), Diffuse);
+	Test.TestNotNull(TEXT("Emissive"), Emissive);
+	Test.TestNotNull(TEXT("Shininess"), Shininess);
+	Test.TestNotNull(TEXT("AmbientDiffuse"), AmbientDiffuse);
+	Test.TestNotNull(TEXT("AmbientEmissive"), AmbientEmissive);
+	Test.TestNotNull(TEXT("DiffuseShininessLow"), DiffuseShininessLow);
+	Test.TestNotNull(TEXT("DiffuseShininessHigh"), DiffuseShininessHigh);
+
+	if (SceneRoot == nullptr || Body == nullptr || Ambient == nullptr || Diffuse == nullptr ||
+		Emissive == nullptr || Shininess == nullptr || AmbientDiffuse == nullptr ||
+		AmbientEmissive == nullptr || DiffuseShininessLow == nullptr ||
+		DiffuseShininessHigh == nullptr)
+	{
+		return true;
+	}
+
+	{
+		UMaterialInterface* Material = Ambient->GetMaterial(0);
+		if (Material == nullptr)
+		{
+			Test.AddError(TEXT("A sphere did not get a material."));
+			return true;
+		}
+		UE_LOG(LogAGX, Warning, TEXT("Got material named '%s'."), *Material->GetName());
+		// Ambient.
+		{
+			FMaterialParameterInfo Info;
+			Info.Name = TEXT("Ambient");
+			FLinearColor Actual;
+			if (!Material->GetVectorParameterValue(Info, Actual, true))
+			{
+				Test.AddError(TEXT("Could not get Ambient color from a sphere material."));
+				return true;
+			}
+			FLinearColor Expected(0.32f, 0.85f, 0.21f, 1.0f);
+			UE_LOG(LogAGX, Warning, TEXT("Ambient: %s"), *Actual.ToString())
+			UE_LOG(LogAGX, Warning, TEXT("Ambient: %s"), *Expected.ToString())
+			Test.TestEqual(TEXT("Ambient"), Actual, Expected);
+		}
+		// Diffuse.
+		{
+			FMaterialParameterInfo Info;
+			Info.Name = TEXT("Diffuse");
+			FLinearColor Actual;
+			if (!Material->GetVectorParameterValue(Info, Actual, false))
+			{
+				Test.AddError(TEXT("Could not get Diffuse color from a sphere material"));
+				return true;
+			}
+			FLinearColor Expected(0.8962694f, 0.2581829f, 0.0f, 1.0f);
+			Test.TestEqual(TEXT("Diffuse"), Actual, Expected);
+		}
+		// Emissive.
+		{
+			FMaterialParameterInfo Info;
+			Info.Name = TEXT("Emissive");
+			FLinearColor Actual;
+			if (!Material->GetVectorParameterValue(Info, Actual, false))
+			{
+				Test.AddError(TEXT("Could not get Amissive color from a sphere material"));
+				return true;
+			}
+			FLinearColor Expected(0.0f, 0.0f, 0.0f, 1.0f);
+			Test.TestEqual(TEXT("Emissive"), Actual, Expected);
+		}
+		// Shininess.
+		{
+			FMaterialParameterInfo Info;
+			Info.Name = TEXT("Shininess");
+			float Actual;
+			if (!Material->GetScalarParameterValue(Info, Actual, false))
+			{
+				Test.AddError(TEXT("Could not get Shininess from a sphere material"));
+				return true;
+			}
+			float Expected(0.0f);
+			Test.TestEqual(TEXT("Shininess"), Actual, Expected);
+		}
+	}
+
+	return true;
+}
+
+bool FClearRenderMaterialImportedCommand::Update()
+{
 	return true;
 }
 
