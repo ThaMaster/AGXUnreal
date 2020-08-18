@@ -11,6 +11,14 @@ struct AGXUNREALBARRIER_API FAGX_RenderMaterial
 {
 	GENERATED_BODY()
 
+	FAGX_RenderMaterial()
+		: bHasAmbient(0)
+		, bHasDiffuse(0)
+		, bHasEmissive(0)
+		, bHasShininess(0)
+	{
+	}
+
 	UPROPERTY()
 	uint8 bHasAmbient : 1;
 

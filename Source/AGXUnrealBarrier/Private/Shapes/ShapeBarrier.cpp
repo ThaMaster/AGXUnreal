@@ -178,12 +178,17 @@ bool FShapeBarrier::HasRenderMaterial() const
 FAGX_RenderMaterial FShapeBarrier::GetRenderMaterial() const
 {
 	check(HasNative());
-	check(HasRenderMaterial());
+
+	FAGX_RenderMaterial RenderMaterialUnreal;
+	if (!HasRenderMaterial())
+	{
+		// Default-created FAGX_RenderMaterial has all bHas-properties set to false.
+		return RenderMaterialUnreal;
+	}
 
 	const agxCollide::RenderData* RenderDataAgx = NativeRef->NativeShape->getRenderData();
 	const agxCollide::RenderMaterial* RenderMaterialAgx = RenderDataAgx->getRenderMaterial();
 
-	FAGX_RenderMaterial RenderMaterialUnreal;
 	if ((RenderMaterialUnreal.bHasDiffuse = RenderMaterialAgx->hasDiffuseColor()))
 	{
 		agx::Vec3 DiffuseAgx(RenderMaterialAgx->getDiffuseColor().asVec3());
