@@ -36,6 +36,7 @@
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
 	FImportArchiveSingleActorCommand, FString, ArchiveName, AActor*&, Contents,
 	FAutomationTestBase&, Test);
+
 bool FImportArchiveSingleActorCommand::Update()
 {
 	if (ArchiveName.IsEmpty())
@@ -123,7 +124,7 @@ public:
 	FArchiveImporterToSingleActor_EmptySceneTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
 			  TEXT("FArchiveImporterToSingleActor_EmptySceneTest"),
-			  TEXT("AGXUnreal.ArchiveImporterToSingleActor.EmptyScene"))
+			  TEXT("AGXUnreal.Game.ArchiveImporterToSingleActor.EmptyScene"))
 	{
 	}
 
@@ -981,9 +982,7 @@ bool FClearRenderMaterialImportedCommand::Update()
 	// The error message that is printed when folders are deleted from under the editor.
 	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
 
-	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("RenderMaterials")
-	};
+	TArray<const TCHAR*> ExpectedFiles = {TEXT("RenderMaterials")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_materials_build"), ExpectedFiles);
 
 	return true;
