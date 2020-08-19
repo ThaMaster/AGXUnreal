@@ -131,6 +131,8 @@ FString AgxAutomationCommon::WorldTypeToString(EWorldType::Type Type)
 		case EWorldType::Inactive:
 			return TEXT("Inactive");
 	}
+
+	return TEXT("Unknown");
 }
 
 FString AgxAutomationCommon::GetNoWorldTestsReasonText(NoWorldTestsReason Reason)
