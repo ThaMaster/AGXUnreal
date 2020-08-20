@@ -37,10 +37,23 @@ public:
 
 	void EnableRemoteDebugging(int16 Port);
 
+	/**
+	 * Perform one simulation step, moving the time stamp forward by one time step duration.
+	 */
 	void Step();
 
+	/**
+	 * The returned value is usually the amount of time that has been simulated, but SetTimeStamp
+	 * may invalidate this assumption.
+	 * @return The current simulation time stamp.
+	 */
 	float GetTimeStamp() const;
 
+	/**
+	 * Set the current simulation time stamp. Does not simulate to that time, just moves the clock
+	 * hands.
+	 * @param TimeStamp The new time stamp.
+	 */
 	void SetTimeStamp(float TimeStamp);
 
 	/// \todo Statistics isn't a per-simulation thing in AGX Dynamics, so having statistics
