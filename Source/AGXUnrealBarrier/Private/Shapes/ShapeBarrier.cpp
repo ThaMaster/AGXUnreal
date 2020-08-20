@@ -189,22 +189,22 @@ FAGX_RenderMaterial FShapeBarrier::GetRenderMaterial() const
 	const agxCollide::RenderData* RenderDataAgx = NativeRef->NativeShape->getRenderData();
 	const agxCollide::RenderMaterial* RenderMaterialAgx = RenderDataAgx->getRenderMaterial();
 
-	if ((RenderMaterialUnreal.bHasDiffuse = RenderMaterialAgx->hasDiffuseColor()))
+	if ((RenderMaterialUnreal.bHasDiffuse = RenderMaterialAgx->hasDiffuseColor()) == true)
 	{
 		agx::Vec3 DiffuseAgx(RenderMaterialAgx->getDiffuseColor().asVec3());
 		RenderMaterialUnreal.Diffuse = Convert(DiffuseAgx);
 	}
-	if ((RenderMaterialUnreal.bHasAmbient = RenderMaterialAgx->hasAmbientColor()))
+	if ((RenderMaterialUnreal.bHasAmbient = RenderMaterialAgx->hasAmbientColor()) == true)
 	{
 		agx::Vec3 AmbientAgx(RenderMaterialAgx->getAmbientColor().asVec3());
 		RenderMaterialUnreal.Ambient = Convert(AmbientAgx);
 	}
-	if ((RenderMaterialUnreal.bHasEmissive = RenderMaterialAgx->hasEmissiveColor()))
+	if ((RenderMaterialUnreal.bHasEmissive = RenderMaterialAgx->hasEmissiveColor()) == true)
 	{
 		agx::Vec3 EmissiveAgx(RenderMaterialAgx->getEmissiveColor().asVec3());
 		RenderMaterialUnreal.Emissive = Convert(EmissiveAgx);
 	}
-	if ((RenderMaterialUnreal.bHasShininess = RenderMaterialAgx->hasShininess()))
+	if ((RenderMaterialUnreal.bHasShininess = RenderMaterialAgx->hasShininess()) == true)
 	{
 		RenderMaterialUnreal.Shininess = RenderMaterialAgx->getShininess();
 	}
