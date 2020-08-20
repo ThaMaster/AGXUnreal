@@ -188,14 +188,17 @@ namespace AgxAutomationCommon
 		return FMath::Abs(Expected * Tolerance);
 	}
 
+	constexpr float AgxToUnreal {100.0f};
+	constexpr float UnrealToAgx {0.01f};
+
 	inline float AgxToUnrealDistance(float Agx)
 	{
-		return 100.0f * Agx;
+		return Agx * AgxToUnreal;
 	}
 
 	inline FVector AgxToUnrealVector(const FVector& Agx)
 	{
-		return FVector(100.0f * Agx.X, -100.0f * Agx.Y, 100.0f * Agx.Z);
+		return FVector(Agx.X * AgxToUnreal, -Agx.Y * AgxToUnreal, Agx.Z * AgxToUnreal);
 	}
 
 	inline FRotator AgxToUnrealEulerAngles(const FVector& Agx)
