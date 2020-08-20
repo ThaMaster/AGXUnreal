@@ -204,8 +204,8 @@ namespace
 			{
 				UE_LOG(
 					LogAGX, Warning,
-					TEXT("Cannot import render data for '%s' because running without the Unreal "
-						 "Editor."),
+					TEXT("Cannot import render data for '%s' because Material Instances cannot be "
+						 "created in Game mode. Editor mode is required."),
 					*Component.GetName())
 				SetDefaultRenderMaterial(Component);
 			}
