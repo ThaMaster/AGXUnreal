@@ -25,7 +25,7 @@ class AGXUNREALBARRIER_API FRigidBodyBarrier
 public:
 	FRigidBodyBarrier();
 	FRigidBodyBarrier(std::unique_ptr<FRigidBodyRef> Native);
-	FRigidBodyBarrier(FRigidBodyBarrier&& other);
+	FRigidBodyBarrier(FRigidBodyBarrier&& Other);
 	~FRigidBodyBarrier();
 
 	void SetPosition(FVector Position);

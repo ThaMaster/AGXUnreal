@@ -515,7 +515,7 @@ namespace
 
 		auto PackageExists = [&](const FString& DirPath) {
 			/// @todo Is this check necessary? Can it be something less crashy? It was copied from
-			/// somewehre, where?
+			/// somewhere, where?
 			check(!FEditorFileUtils::IsMapPackageAsset(DirPath));
 
 			FString DiskPath = FPackageName::LongPackageNameToFilename(DirPath);

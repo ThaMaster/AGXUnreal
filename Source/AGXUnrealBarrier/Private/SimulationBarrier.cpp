@@ -131,10 +131,10 @@ float FSimulationBarrier::GetTimeStamp() const
 	return Convert(NativeRef->Native->getTimeStamp());
 }
 
-void FSimulationBarrier::SetTimeStamp(float NewTimeStamp)
+void FSimulationBarrier::SetTimeStamp(float TimeStamp)
 {
 	check(HasNative());
-	NativeRef->Native->setTimeStamp(Convert(NewTimeStamp));
+	NativeRef->Native->setTimeStamp(Convert(TimeStamp));
 }
 
 void FSimulationBarrier::SetStatisticsEnabled(bool bEnabled)
