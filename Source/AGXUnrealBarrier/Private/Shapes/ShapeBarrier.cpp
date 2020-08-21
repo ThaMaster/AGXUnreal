@@ -163,6 +163,54 @@ FGuid FShapeBarrier::GetGuid() const
 	return Guid;
 }
 
+bool FShapeBarrier::HasRenderData() const
+{
+	check(HasNative());
+	return NativeRef->NativeShape->getRenderData() != nullptr;
+}
+
+bool FShapeBarrier::HasRenderMaterial() const
+{
+	check(HasNative());
+	return HasRenderData() && NativeRef->NativeShape->getRenderData()->hasRenderMaterial();
+}
+
+FAGX_RenderMaterial FShapeBarrier::GetRenderMaterial() const
+{
+	check(HasNative());
+
+	FAGX_RenderMaterial RenderMaterialUnreal;
+	if (!HasRenderMaterial())
+	{
+		// Default-created FAGX_RenderMaterial has all bHas-properties set to false.
+		return RenderMaterialUnreal;
+	}
+
+	const agxCollide::RenderData* RenderDataAgx = NativeRef->NativeShape->getRenderData();
+	const agxCollide::RenderMaterial* RenderMaterialAgx = RenderDataAgx->getRenderMaterial();
+
+	if ((RenderMaterialUnreal.bHasDiffuse = RenderMaterialAgx->hasDiffuseColor()) == true)
+	{
+		agx::Vec3 DiffuseAgx(RenderMaterialAgx->getDiffuseColor().asVec3());
+		RenderMaterialUnreal.Diffuse = Convert(DiffuseAgx);
+	}
+	if ((RenderMaterialUnreal.bHasAmbient = RenderMaterialAgx->hasAmbientColor()) == true)
+	{
+		agx::Vec3 AmbientAgx(RenderMaterialAgx->getAmbientColor().asVec3());
+		RenderMaterialUnreal.Ambient = Convert(AmbientAgx);
+	}
+	if ((RenderMaterialUnreal.bHasEmissive = RenderMaterialAgx->hasEmissiveColor()) == true)
+	{
+		agx::Vec3 EmissiveAgx(RenderMaterialAgx->getEmissiveColor().asVec3());
+		RenderMaterialUnreal.Emissive = Convert(EmissiveAgx);
+	}
+	if ((RenderMaterialUnreal.bHasShininess = RenderMaterialAgx->hasShininess()) == true)
+	{
+		RenderMaterialUnreal.Shininess = RenderMaterialAgx->getShininess();
+	}
+	return RenderMaterialUnreal;
+}
+
 namespace
 {
 	agxCollide::ShapeIterator FindShape(agxCollide::Geometry* Geometry, agxCollide::Shape* Shape)
@@ -200,6 +248,6 @@ std::tuple<FVector, FQuat> FShapeBarrier::GetLocalPositionAndRotation() const
 	const agx::AffineMatrix4x4& GeometryTransform = NativeRef->NativeGeometry->getLocalTransform();
 	const agx::AffineMatrix4x4& ShapeTransform = Iterator.getLocalTransform();
 	const agx::AffineMatrix4x4 ShapeRelativeBody = ShapeTransform * GeometryTransform;
-	return {ConvertVector(ShapeRelativeBody.getTranslate()),
-			Convert(ShapeRelativeBody.getRotate())};
+	return {
+		ConvertVector(ShapeRelativeBody.getTranslate()), Convert(ShapeRelativeBody.getRotate())};
 }

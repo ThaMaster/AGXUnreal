@@ -1,7 +1,10 @@
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 
+// AGXUnreal includes.
+#include "AGX_LogCategory.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
+// Unreal Engine includes.
 #include "Engine/StaticMesh.h"
 #include "Components/StaticMeshComponent.h"
 #include "Rendering/PositionVertexBuffer.h"
@@ -117,6 +120,7 @@ void UAGX_TrimeshShapeComponent::CreateNative()
 	}
 	else
 	{
+		UE_LOG(LogAGX, Warning, TEXT("TrimeshShapeComponent '%s' does not have a StaticMeshComponent to read triangle data from. The generated native shape will be invalid."), *GetName());
 		NativeBarrier.AllocateNative({}, {}, /*bClockwise*/ false, GetName());
 	}
 

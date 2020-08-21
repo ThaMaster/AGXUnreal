@@ -79,7 +79,7 @@ namespace
 	agxCollide::RenderData* GetRenderData(FTrimeshShapeBarrier* Barrier, const TCHAR* Operation)
 	{
 		const FTrimeshShapeBarrier* ConstBarrier = const_cast<const FTrimeshShapeBarrier*>(Barrier);
-		const agxCollide::RenderData* ConstRenderData = GetRenderData(ConstBarrier, Operation);
+		const agxCollide::RenderData* ConstRenderData = ::GetRenderData(ConstBarrier, Operation);
 		agxCollide::RenderData* RenderData = const_cast<agxCollide::RenderData*>(ConstRenderData);
 		return RenderData;
 	}
@@ -132,7 +132,7 @@ namespace
 		FGetAgxBuffer GetAgxBuffer, FConvert Convert)
 	{
 		TArray<UnrealType> DataUnreal;
-		const agxCollide::RenderData* RenderData = GetRenderData(Barrier, Operation);
+		const agxCollide::RenderData* RenderData = ::GetRenderData(Barrier, Operation);
 		if (RenderData == nullptr)
 		{
 			return DataUnreal;
@@ -259,7 +259,7 @@ TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals() const
 int32 FTrimeshShapeBarrier::GetNumRenderPositions() const
 {
 	const agxCollide::RenderData* RenderData =
-		GetRenderData(this, TEXT("fetch num render positions"));
+		::GetRenderData(this, TEXT("fetch num render positions"));
 	if (RenderData == nullptr)
 	{
 		return -1;
@@ -274,7 +274,7 @@ int32 FTrimeshShapeBarrier::GetNumRenderPositions() const
 
 int32 FTrimeshShapeBarrier::GetNumRenderTriangles() const
 {
-	const agxCollide::RenderData* RenderData = GetRenderData(this, TEXT("fetch num triangles"));
+	const agxCollide::RenderData* RenderData = ::GetRenderData(this, TEXT("fetch num triangles"));
 	if (RenderData == nullptr)
 	{
 		return -1;
@@ -299,7 +299,7 @@ int32 FTrimeshShapeBarrier::GetNumRenderTriangles() const
 int32 FTrimeshShapeBarrier::GetNumRenderIndices() const
 {
 	const agxCollide::RenderData* RenderData =
-		GetRenderData(this, TEXT("fetch num render indices"));
+		::GetRenderData(this, TEXT("fetch num render indices"));
 	if (RenderData == nullptr)
 	{
 		return -1;
