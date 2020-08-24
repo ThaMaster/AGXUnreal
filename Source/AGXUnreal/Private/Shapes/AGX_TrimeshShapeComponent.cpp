@@ -7,7 +7,6 @@
 // Unreal Engine includes.
 #include "Engine/StaticMesh.h"
 #include "Components/StaticMeshComponent.h"
-#include "MeshDescription.h"
 #include "Rendering/PositionVertexBuffer.h"
 
 UAGX_TrimeshShapeComponent::UAGX_TrimeshShapeComponent()
