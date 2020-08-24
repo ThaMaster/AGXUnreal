@@ -7,6 +7,7 @@
 // Unreal Engine includes.
 #include "Engine/StaticMesh.h"
 #include "Components/StaticMeshComponent.h"
+#include "MeshDescription.h"
 #include "Rendering/PositionVertexBuffer.h"
 
 UAGX_TrimeshShapeComponent::UAGX_TrimeshShapeComponent()
@@ -120,7 +121,11 @@ void UAGX_TrimeshShapeComponent::CreateNative()
 	}
 	else
 	{
-		UE_LOG(LogAGX, Warning, TEXT("TrimeshShapeComponent '%s' does not have a StaticMeshComponent to read triangle data from. The generated native shape will be invalid."), *GetName());
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("TrimeshShapeComponent '%s' does not have a StaticMeshComponent to read triangle "
+				 "data from. The generated native shape will be invalid."),
+			*GetName());
 		NativeBarrier.AllocateNative({}, {}, /*bClockwise*/ false, GetName());
 	}
 
@@ -188,6 +193,10 @@ bool UAGX_TrimeshShapeComponent::FindStaticMeshSource(
 	return false;
 }
 
+#define AGXUNREAL_HASH_ON_INDEX 0
+#define AGXUNREAL_HASH_ON_POSITION 1
+
+#if AGXUNREAL_HASH_ON_INDEX
 static int32 AddCollisionVertex(
 	const int32 MeshVertexIndex, const FPositionVertexBuffer& MeshVertices,
 	const FTransform& Transform, TArray<FVector>& CollisionVertices,
@@ -210,6 +219,30 @@ static int32 AddCollisionVertex(
 		return CollisionVertexIndex;
 	}
 }
+#elif AGXUNREAL_HASH_ON_POSITION
+static int32 AddCollisionVertex(
+	const int32 MeshVertexIndex, const FPositionVertexBuffer& MeshVertices,
+	const FTransform& Transform, TArray<FVector>& CollisionVertices,
+	TMap<FVector, int32>& MeshToCollisionVertexIndices)
+{
+	FVector MeshPosition = MeshVertices.VertexPosition(MeshVertexIndex);
+	if (int32* CollisionVertexIndexPtr = MeshToCollisionVertexIndices.Find(MeshPosition))
+	{
+		// Already been added once, so just return the index.
+		return *CollisionVertexIndexPtr;
+	}
+	else
+	{
+		// Copy position from mesh to collision data.
+		int CollisionVertexIndex = CollisionVertices.Add(Transform.TransformPosition(MeshPosition));
+
+		// Add collision index to map.
+		MeshToCollisionVertexIndices.Add(MeshPosition, CollisionVertexIndex);
+
+		return CollisionVertexIndex;
+	}
+}
+#endif
 
 bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 	TArray<FVector>& Vertices, TArray<FTriIndices>& Indices) const
@@ -241,7 +274,11 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 
 	const FStaticMeshLODResources& Mesh = StaticMesh->GetLODForExport(/*LODIndex*/ LodIndex);
 	FIndexArrayView MeshIndices = Mesh.IndexBuffer.GetArrayView();
+#if AGXUNREAL_HASH_ON_INDEX
 	TMap<int32, int32> MeshToCollisionVertexIndices;
+#elif AGXUNREAL_HASH_ON_POSITION
+	TMap<FVector, int32> MeshToCollisionVertexIndices;
+#endif
 
 	for (int32 SectionIndex = 0; SectionIndex < Mesh.Sections.Num(); ++SectionIndex)
 	{
