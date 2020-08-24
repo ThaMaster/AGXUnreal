@@ -646,7 +646,11 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 	StaticMesh->GetSourceModels().Emplace();
 	FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModels().Last();
 #endif
-	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh); /// @todo Call directly on the SourceModel instead.
+
+	// There is a SaveRawMesh on the source model as well, but calling that causes a failed assert.
+	// Is that a sign that we're doing something we shouldn't and the engine doesn't detect it
+	// because we're sidestepping the safety checks? Or is it OK to do it this way?
+	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
 	FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
 
 	// Somewhat unclear what all these should be.
