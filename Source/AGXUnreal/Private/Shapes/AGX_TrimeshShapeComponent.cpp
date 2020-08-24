@@ -221,6 +221,8 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 {
 	// NOTE: Code below is very similar to UStaticMesh::GetPhysicsTriMeshData,
 	// only with some simplifications, so one can check that implementation for reference.
+	// One important difference is that we hash on vertex position instead of index because we
+	// want to re-merge vertices that has been split in the rendering data.
 
 	UStaticMesh* StaticMesh = nullptr;
 	FTransform MeshWorldTransform;
