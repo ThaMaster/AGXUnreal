@@ -193,33 +193,6 @@ bool UAGX_TrimeshShapeComponent::FindStaticMeshSource(
 	return false;
 }
 
-#define AGXUNREAL_HASH_ON_INDEX 0
-#define AGXUNREAL_HASH_ON_POSITION 1
-
-#if AGXUNREAL_HASH_ON_INDEX
-static int32 AddCollisionVertex(
-	const int32 MeshVertexIndex, const FPositionVertexBuffer& MeshVertices,
-	const FTransform& Transform, TArray<FVector>& CollisionVertices,
-	TMap<int32, int32>& MeshToCollisionVertexIndices)
-{
-	if (int32* CollisionVertexIndexPtr = MeshToCollisionVertexIndices.Find(MeshVertexIndex))
-	{
-		// Already been added once, so just return its index.
-		return *CollisionVertexIndexPtr;
-	}
-	else
-	{
-		// Copy position
-		int32 CollisionVertexIndex = CollisionVertices.Add(
-			Transform.TransformPosition(MeshVertices.VertexPosition(MeshVertexIndex)));
-
-		// Add index to map.
-		MeshToCollisionVertexIndices.Add(MeshVertexIndex, CollisionVertexIndex);
-
-		return CollisionVertexIndex;
-	}
-}
-#elif AGXUNREAL_HASH_ON_POSITION
 static int32 AddCollisionVertex(
 	const int32 MeshVertexIndex, const FPositionVertexBuffer& MeshVertices,
 	const FTransform& Transform, TArray<FVector>& CollisionVertices,
@@ -242,7 +215,6 @@ static int32 AddCollisionVertex(
 		return CollisionVertexIndex;
 	}
 }
-#endif
 
 bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 	TArray<FVector>& Vertices, TArray<FTriIndices>& Indices) const
@@ -274,11 +246,7 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 
 	const FStaticMeshLODResources& Mesh = StaticMesh->GetLODForExport(/*LODIndex*/ LodIndex);
 	FIndexArrayView MeshIndices = Mesh.IndexBuffer.GetArrayView();
-#if AGXUNREAL_HASH_ON_INDEX
-	TMap<int32, int32> MeshToCollisionVertexIndices;
-#elif AGXUNREAL_HASH_ON_POSITION
 	TMap<FVector, int32> MeshToCollisionVertexIndices;
-#endif
 
 	for (int32 SectionIndex = 0; SectionIndex < Mesh.Sections.Num(); ++SectionIndex)
 	{
