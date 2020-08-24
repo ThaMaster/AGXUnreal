@@ -646,7 +646,7 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 	StaticMesh->GetSourceModels().Emplace();
 	FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModels().Last();
 #endif
-	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
+	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh); /// @todo Call directly on the SourceModel instead.
 	FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
 
 	// Somewhat unclear what all these should be.
