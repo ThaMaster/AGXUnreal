@@ -71,7 +71,7 @@ public class AGXUnrealLibrary : ModuleRules
 		else if(Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			AddRuntimeDependency("libpng", LibSource.Dependencies, ManualCopy);
-			AddRuntimeDependency("ot20-OpenThreads", LibSource.Dependencies, ManualCopy);
+			AddRuntimeDependency("ot2*-OpenThreads", LibSource.Dependencies, ManualCopy);
 			AddRuntimeDependency("msvcp140", LibSource.Agx, ManualCopy);
 			AddRuntimeDependency("vcruntime140", LibSource.Agx, ManualCopy);
 		}
@@ -94,6 +94,12 @@ public class AGXUnrealLibrary : ModuleRules
 
 	private void AddRuntimeDependency(string Name, LibSource Src, bool PerformManualCopy = false)
 	{
+		if (Name.Contains("*"))
+		{
+			// Allow wildcard character.
+			Name =  FindFirstMatchingFile(CurrentPlatform.RuntimeLibraryDirectory(Src), Name);
+		}
+
 		RuntimeDependencies.Add(CurrentPlatform.RuntimeLibraryPath(Name, Src));
 
 		if(PerformManualCopy)
@@ -120,6 +126,12 @@ public class AGXUnrealLibrary : ModuleRules
 
 	private void AddLinkLibrary(string Name, LibSource Src, bool PerformManualCopy = false)
 	{
+		if (Name.Contains("*"))
+		{
+			// Allow wildcard character.
+			Name = FindFirstMatchingFile(CurrentPlatform.LinkLibraryDirectory(Src), Name);
+		}
+
 		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath(Name, Src));
 
 		if (PerformManualCopy)
@@ -142,6 +154,12 @@ public class AGXUnrealLibrary : ModuleRules
 				Destination,
 				overwrite: true);
 		}
+	}
+
+	private string FindFirstMatchingFile(string Dir, string FileName)
+	{
+		string[] Res = Directory.GetFiles(Dir, FileName + ".*");
+		return (Res.Length > 0) ? Path.GetFileNameWithoutExtension(Res[0]) : string.Empty;
 	}
 
 	private class Heuristics
@@ -223,10 +241,21 @@ public class AGXUnrealLibrary : ModuleRules
 			LibSourceInfo Info = LibSources[Src];
 			if (Info.LinkLibrariesPath == null)
 			{
-				Console.Error.WriteLine("NoLinkLibraryPath for '{0}', '{1}' cannot be found.", Src, LibraryName);
+				Console.Error.WriteLine("No LinkLibraryPath for '{0}', '{1}' cannot be found.", Src, LibraryName);
 				return LibraryName;
 			}
 			return Path.Combine(Info.LinkLibrariesPath, LinkLibraryFileName(LibraryName));
+		}
+
+		public string LinkLibraryDirectory(LibSource Src)
+		{
+			LibSourceInfo Info = LibSources[Src];
+			if (Info.LinkLibrariesPath == null)
+			{
+				Console.Error.WriteLine("No LinkLibraryPath for '{0}'.", Src);
+				return string.Empty;
+			}
+			return Info.LinkLibrariesPath;
 		}
 
 		public string RuntimeLibraryPath(string LibraryName, LibSource Src)
@@ -238,6 +267,17 @@ public class AGXUnrealLibrary : ModuleRules
 				return LibraryName;
 			}
 			return Path.Combine(Info.RuntimeLibrariesPath, RuntimeLibraryFileName(LibraryName));
+		}
+
+		public string RuntimeLibraryDirectory(LibSource Src)
+		{
+			LibSourceInfo Info = LibSources[Src];
+			if (Info.RuntimeLibrariesPath == null)
+			{
+				Console.Error.WriteLine("No RuntimeLibraryDirectory for '{0}'.", Src);
+				return string.Empty;
+			}
+			return Info.RuntimeLibrariesPath;
 		}
 
 		public PlatformInfo(ReadOnlyTargetRules Target, string PluginDir)
