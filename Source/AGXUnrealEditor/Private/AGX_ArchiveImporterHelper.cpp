@@ -272,7 +272,7 @@ namespace
 {
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FTrimeshShapeBarrier& Barrier, const FString& FallbackName,
-		TMap<FGuid, UStaticMesh*> RestoredMeshes, const FString& DirectoryName)
+		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName)
 	{
 		FGuid Guid = Barrier.GetMeshDataGuid();
 
