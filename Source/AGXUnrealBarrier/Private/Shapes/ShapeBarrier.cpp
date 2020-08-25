@@ -18,7 +18,7 @@ FShapeBarrier::FShapeBarrier()
 {
 }
 
-/// \todo Pointless comment that was added only to trigger a GitLab CI build.
+/// \todo Pointless comment 2 that was added only to trigger a GitLab CI build.
 
 FShapeBarrier::FShapeBarrier(FShapeBarrier&& Other) noexcept
 	: NativeRef {std::move(Other.NativeRef)}
