@@ -161,6 +161,8 @@ UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsse
 UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	const FAGX_RenderMaterial& Imported, const FString& DirectoryName, const FString& MaterialName)
 {
+	// Implementation based on https://github.com/gildor2/UEViewer/issues/118.
+
 	UMaterial* Base = LoadObject<UMaterial>(
 		nullptr, TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'"));
 	if (Base == nullptr)
@@ -229,6 +231,7 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	Material->SetFlags(RF_Standalone);
 	Material->MarkPackageDirty();
 	Material->PostEditChange();
+
 	return Material;
 }
 
