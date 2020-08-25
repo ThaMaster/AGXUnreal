@@ -162,6 +162,7 @@ namespace
 		}
 		if (UMaterialInstanceConstant* Instance = Cast<UMaterialInstanceConstant>(Material))
 		{
+			// We don't get here if the save failed and we fell back to the default import material.
 			RestoredMaterials.Add(RenderMaterial.Guid, Instance);
 		}
 		Component.SetMaterial(0, Material);
