@@ -94,72 +94,100 @@ public class AGXUnrealLibrary : ModuleRules
 
 	private void AddRuntimeDependency(string Name, LibSource Src, bool PerformManualCopy = false)
 	{
+		List<string> FilesToAdd = new List<string>();
+
 		if (Name.Contains("*"))
 		{
-			// Allow wildcard character.
-			Name =  FindFirstMatchingFile(CurrentPlatform.RuntimeLibraryDirectory(Src), Name);
+			// Find all files matching the given pattern.
+			FilesToAdd = FindMatchingFiles(CurrentPlatform.RuntimeLibraryDirectory(Src), Name);
+		}
+		else
+		{
+			FilesToAdd.Add(Name);
 		}
 
-		RuntimeDependencies.Add(CurrentPlatform.RuntimeLibraryPath(Name, Src));
-
-		if(PerformManualCopy)
+		if (FilesToAdd.Count == 0)
 		{
-			string PluginRuntimeBinariesDirectory = Path.GetFullPath(Path.Combine(new string[] {
+			Console.WriteLine("File {0} did not match any found files on disk. The dependency will not be added in the build.", Name);
+		}
+
+		foreach (string FileName in FilesToAdd)
+		{
+			RuntimeDependencies.Add(CurrentPlatform.RuntimeLibraryPath(FileName, Src));
+
+			if (PerformManualCopy)
+			{
+				string PluginRuntimeBinariesDirectory = Path.GetFullPath(Path.Combine(new string[] {
 				Directory.GetParent(PluginDirectory).Parent.Parent.FullName, "Binaries", Target.Platform.ToString()}));
 
-			if (!Directory.Exists(PluginRuntimeBinariesDirectory))
-			{
-				Directory.CreateDirectory(PluginRuntimeBinariesDirectory);
+				if (!Directory.Exists(PluginRuntimeBinariesDirectory))
+				{
+					Directory.CreateDirectory(PluginRuntimeBinariesDirectory);
+				}
+
+				// TODO: Why do I need to do the copy the .dll/.so if I have already
+				// added the library to RuntimeDependencies?
+				string Source = CurrentPlatform.RuntimeLibraryPath(FileName, Src);
+				string Destination = Path.Combine(PluginRuntimeBinariesDirectory, CurrentPlatform.RuntimeLibraryFileName(FileName));
+
+				File.Copy(Source, Destination, overwrite: true);
 			}
-
-			// TODO: Why do I need to do the copy the .dll/.so if I have already
-			// added the library to RuntimeDependencies?
-			string Source = CurrentPlatform.RuntimeLibraryPath(Name, Src);
-			string Destination = Path.Combine(PluginRuntimeBinariesDirectory, CurrentPlatform.RuntimeLibraryFileName(Name));
-
-			File.Copy(
-				Source,
-				Destination,
-				overwrite: true);
 		}
 	}
 
 	private void AddLinkLibrary(string Name, LibSource Src, bool PerformManualCopy = false)
 	{
+		List<string> FilesToAdd = new List<string>();
+
 		if (Name.Contains("*"))
 		{
-			// Allow wildcard character.
-			Name = FindFirstMatchingFile(CurrentPlatform.LinkLibraryDirectory(Src), Name);
+			// Find all files matching the given pattern.
+			FilesToAdd = FindMatchingFiles(CurrentPlatform.LinkLibraryDirectory(Src), Name);
+		}
+		else
+		{
+			FilesToAdd.Add(Name);
 		}
 
-		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath(Name, Src));
-
-		if (PerformManualCopy)
+		if (FilesToAdd.Count == 0)
 		{
-			string PluginLinkLibraryDirectory = Path.GetFullPath(Path.Combine(new string[] {
+			Console.WriteLine("File {0} did not match any found files on disk. The library will not be added in the build.", Name);
+		}
+
+		foreach (string FileName in FilesToAdd)
+		{
+			PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath(FileName, Src));
+
+			if (PerformManualCopy)
+			{
+				string PluginLinkLibraryDirectory = Path.GetFullPath(Path.Combine(new string[] {
 				Directory.GetParent(PluginDirectory).Parent.Parent.FullName, "lib", Target.Platform.ToString()}));
 
-			if (!Directory.Exists(PluginLinkLibraryDirectory))
-			{
-				Directory.CreateDirectory(PluginLinkLibraryDirectory);
+				if (!Directory.Exists(PluginLinkLibraryDirectory))
+				{
+					Directory.CreateDirectory(PluginLinkLibraryDirectory);
+				}
+
+				// TODO: Why do I need to do the copy the .dll/.so if I have already
+				//	   added the library to RuntimeDependencies?
+				string Source = CurrentPlatform.LinkLibraryPath(FileName, Src);
+				string Destination = Path.Combine(PluginLinkLibraryDirectory, CurrentPlatform.LinkLibraryFileName(FileName));
+
+				File.Copy(Source, Destination, overwrite: true);
 			}
-
-			// TODO: Why do I need to do the copy the .dll/.so if I have already
-			//	   added the library to RuntimeDependencies?
-			string Source = CurrentPlatform.LinkLibraryPath(Name, Src);
-			string Destination = Path.Combine(PluginLinkLibraryDirectory, CurrentPlatform.LinkLibraryFileName(Name));
-
-			File.Copy(
-				Source,
-				Destination,
-				overwrite: true);
 		}
 	}
 
-	private string FindFirstMatchingFile(string Dir, string FileName)
+	private List<string> FindMatchingFiles(string Dir, string FileName)
 	{
-		string[] Res = Directory.GetFiles(Dir, FileName + ".*");
-		return (Res.Length > 0) ? Path.GetFileNameWithoutExtension(Res[0]) : string.Empty;
+		string[] Matches = Directory.GetFiles(Dir, FileName + ".*");
+		List<string> Res = new List<string>();
+		foreach (string Match in Matches)
+		{
+			Res.Add(Path.GetFileNameWithoutExtension(Match));
+		}
+
+		return Res;
 	}
 
 	private class Heuristics
