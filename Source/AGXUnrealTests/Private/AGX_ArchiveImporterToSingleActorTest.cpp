@@ -590,10 +590,7 @@ bool FClearSimpleTrimeshImportedCommand::Update()
 	}
 	Test.World->DestroyActor(Test.Contents);
 
-	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("StaticMeshs"),
-		TEXT("simple_trimesh.uasset")
-	};
+	TArray<const TCHAR*> ExpectedFiles = {TEXT("StaticMeshs"), TEXT("simple_trimesh.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("simple_trimesh_build"), ExpectedFiles);
 
 	return true;
@@ -722,7 +719,7 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	// Get all the imported components.
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
-	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 10);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 12);
 
 	auto GetSphere = [&Components](const TCHAR* Name) -> UAGX_SphereShapeComponent* {
 		return GetByName<UAGX_SphereShapeComponent>(Components, Name);
@@ -741,6 +738,8 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	UAGX_SphereShapeComponent* DiffuseShininessLow = GetSphere(TEXT("DiffuseShininessLowGeometry"));
 	UAGX_SphereShapeComponent* DiffuseShininessHigh =
 		GetSphere(TEXT("DiffuseShininessHighGeometry"));
+	UAGX_SphereShapeComponent* SharedSphere1 = GetSphere(TEXT("SharedGeometry"));
+	UAGX_SphereShapeComponent* SharedSphere2 = GetSphere(TEXT("SharedGeometry_10"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -753,11 +752,13 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	Test.TestNotNull(TEXT("AmbientEmissive"), AmbientEmissive);
 	Test.TestNotNull(TEXT("DiffuseShininessLow"), DiffuseShininessLow);
 	Test.TestNotNull(TEXT("DiffuseShininessHigh"), DiffuseShininessHigh);
+	Test.TestNotNull(TEXT("SharedSphere1"), SharedSphere1);
+	Test.TestNotNull(TEXT("SharedSphere2"), SharedSphere2);
 
 	if (SceneRoot == nullptr || Body == nullptr || Ambient == nullptr || Diffuse == nullptr ||
 		Emissive == nullptr || Shininess == nullptr || AmbientDiffuse == nullptr ||
 		AmbientEmissive == nullptr || DiffuseShininessLow == nullptr ||
-		DiffuseShininessHigh == nullptr)
+		DiffuseShininessHigh == nullptr || SharedSphere1 == nullptr || SharedSphere2 == nullptr)
 	{
 		Test.AddError(TEXT("At least one required object was nullptr, cannot continue."));
 		return true;
@@ -808,6 +809,15 @@ bool FCheckRenderMaterialImportedCommand::Update()
 		Parameters.Diffuse = {0.65f, 0.74f, 0.48f, 1.0f};
 		Parameters.Shininess = 1.0f;
 		TestMaterial(*DiffuseShininessHigh, Parameters, Test);
+	}
+	// Shared
+	{
+		const UMaterialInterface* const Material1 = SharedSphere1->GetMaterial(0);
+		const UMaterialInterface* const Material2 = SharedSphere2->GetMaterial(0);
+		Test.TestNotNull(TEXT("SharedSphere1 material"), Material1);
+		Test.TestNotNull(TEXT("SharedSphere2 material"), Material2);
+		Test.TestEqual(TEXT("SharedSphere materials"), Material1, Material2);
+		UE_LOG(LogAGX, Warning, TEXT("Materials:\n%p\n%p\n"), (void*)Material1, (void*)Material2);
 	}
 
 	return true;
