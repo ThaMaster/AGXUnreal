@@ -501,10 +501,6 @@ protected:
 		ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand())
 #endif
 
-		/// @todo A bug in the Unreal->AGX Dynamics trimesh conversion causes this error message
-		/// to be printed. Remove this when the bug has been fixed. See GitLab issue #107.
-		AddExpectedError(TEXT("Trimesh creation warnings for source"));
-
 		ADD_LATENT_AUTOMATION_COMMAND(
 			FImportArchiveSingleActorCommand("simple_trimesh_build.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSimpleTrimeshImportedCommand(*this))
