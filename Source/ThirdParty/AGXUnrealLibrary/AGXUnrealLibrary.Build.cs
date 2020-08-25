@@ -71,7 +71,7 @@ public class AGXUnrealLibrary : ModuleRules
 		else if(Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			AddRuntimeDependency("libpng", LibSource.Dependencies, ManualCopy);
-			AddRuntimeDependency("ot20-OpenThreads", LibSource.Dependencies, ManualCopy);
+			AddRuntimeDependency("ot2*-OpenThreads", LibSource.Dependencies, ManualCopy);
 			AddRuntimeDependency("msvcp140", LibSource.Agx, ManualCopy);
 			AddRuntimeDependency("vcruntime140", LibSource.Agx, ManualCopy);
 		}
@@ -94,54 +94,100 @@ public class AGXUnrealLibrary : ModuleRules
 
 	private void AddRuntimeDependency(string Name, LibSource Src, bool PerformManualCopy = false)
 	{
-		RuntimeDependencies.Add(CurrentPlatform.RuntimeLibraryPath(Name, Src));
+		List<string> FilesToAdd = new List<string>();
 
-		if(PerformManualCopy)
+		if (Name.Contains("*"))
 		{
-			string PluginRuntimeBinariesDirectory = Path.GetFullPath(Path.Combine(new string[] {
+			// Find all files matching the given pattern.
+			FilesToAdd = FindMatchingFiles(CurrentPlatform.RuntimeLibraryDirectory(Src), Name);
+		}
+		else
+		{
+			FilesToAdd.Add(Name);
+		}
+
+		if (FilesToAdd.Count == 0)
+		{
+			Console.WriteLine("File {0} did not match any found files on disk. The dependency will not be added in the build.", Name);
+		}
+
+		foreach (string FileName in FilesToAdd)
+		{
+			RuntimeDependencies.Add(CurrentPlatform.RuntimeLibraryPath(FileName, Src));
+
+			if (PerformManualCopy)
+			{
+				string PluginRuntimeBinariesDirectory = Path.GetFullPath(Path.Combine(new string[] {
 				Directory.GetParent(PluginDirectory).Parent.Parent.FullName, "Binaries", Target.Platform.ToString()}));
 
-			if (!Directory.Exists(PluginRuntimeBinariesDirectory))
-			{
-				Directory.CreateDirectory(PluginRuntimeBinariesDirectory);
+				if (!Directory.Exists(PluginRuntimeBinariesDirectory))
+				{
+					Directory.CreateDirectory(PluginRuntimeBinariesDirectory);
+				}
+
+				// TODO: Why do I need to do the copy the .dll/.so if I have already
+				// added the library to RuntimeDependencies?
+				string Source = CurrentPlatform.RuntimeLibraryPath(FileName, Src);
+				string Destination = Path.Combine(PluginRuntimeBinariesDirectory, CurrentPlatform.RuntimeLibraryFileName(FileName));
+
+				File.Copy(Source, Destination, overwrite: true);
 			}
-
-			// TODO: Why do I need to do the copy the .dll/.so if I have already
-			// added the library to RuntimeDependencies?
-			string Source = CurrentPlatform.RuntimeLibraryPath(Name, Src);
-			string Destination = Path.Combine(PluginRuntimeBinariesDirectory, CurrentPlatform.RuntimeLibraryFileName(Name));
-
-			File.Copy(
-				Source,
-				Destination,
-				overwrite: true);
 		}
 	}
 
 	private void AddLinkLibrary(string Name, LibSource Src, bool PerformManualCopy = false)
 	{
-		PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath(Name, Src));
+		List<string> FilesToAdd = new List<string>();
 
-		if (PerformManualCopy)
+		if (Name.Contains("*"))
 		{
-			string PluginLinkLibraryDirectory = Path.GetFullPath(Path.Combine(new string[] {
+			// Find all files matching the given pattern.
+			FilesToAdd = FindMatchingFiles(CurrentPlatform.LinkLibraryDirectory(Src), Name);
+		}
+		else
+		{
+			FilesToAdd.Add(Name);
+		}
+
+		if (FilesToAdd.Count == 0)
+		{
+			Console.WriteLine("File {0} did not match any found files on disk. The library will not be added in the build.", Name);
+		}
+
+		foreach (string FileName in FilesToAdd)
+		{
+			PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath(FileName, Src));
+
+			if (PerformManualCopy)
+			{
+				string PluginLinkLibraryDirectory = Path.GetFullPath(Path.Combine(new string[] {
 				Directory.GetParent(PluginDirectory).Parent.Parent.FullName, "lib", Target.Platform.ToString()}));
 
-			if (!Directory.Exists(PluginLinkLibraryDirectory))
-			{
-				Directory.CreateDirectory(PluginLinkLibraryDirectory);
+				if (!Directory.Exists(PluginLinkLibraryDirectory))
+				{
+					Directory.CreateDirectory(PluginLinkLibraryDirectory);
+				}
+
+				// TODO: Why do I need to do the copy the .dll/.so if I have already
+				//	   added the library to RuntimeDependencies?
+				string Source = CurrentPlatform.LinkLibraryPath(FileName, Src);
+				string Destination = Path.Combine(PluginLinkLibraryDirectory, CurrentPlatform.LinkLibraryFileName(FileName));
+
+				File.Copy(Source, Destination, overwrite: true);
 			}
-
-			// TODO: Why do I need to do the copy the .dll/.so if I have already
-			//	   added the library to RuntimeDependencies?
-			string Source = CurrentPlatform.LinkLibraryPath(Name, Src);
-			string Destination = Path.Combine(PluginLinkLibraryDirectory, CurrentPlatform.LinkLibraryFileName(Name));
-
-			File.Copy(
-				Source,
-				Destination,
-				overwrite: true);
 		}
+	}
+
+	private List<string> FindMatchingFiles(string Dir, string FileName)
+	{
+		string[] Matches = Directory.GetFiles(Dir, FileName + ".*");
+		List<string> Res = new List<string>();
+		foreach (string Match in Matches)
+		{
+			Res.Add(Path.GetFileNameWithoutExtension(Match));
+		}
+
+		return Res;
 	}
 
 	private class Heuristics
@@ -223,10 +269,21 @@ public class AGXUnrealLibrary : ModuleRules
 			LibSourceInfo Info = LibSources[Src];
 			if (Info.LinkLibrariesPath == null)
 			{
-				Console.Error.WriteLine("NoLinkLibraryPath for '{0}', '{1}' cannot be found.", Src, LibraryName);
+				Console.Error.WriteLine("No LinkLibraryPath for '{0}', '{1}' cannot be found.", Src, LibraryName);
 				return LibraryName;
 			}
 			return Path.Combine(Info.LinkLibrariesPath, LinkLibraryFileName(LibraryName));
+		}
+
+		public string LinkLibraryDirectory(LibSource Src)
+		{
+			LibSourceInfo Info = LibSources[Src];
+			if (Info.LinkLibrariesPath == null)
+			{
+				Console.Error.WriteLine("No LinkLibraryPath for '{0}'.", Src);
+				return string.Empty;
+			}
+			return Info.LinkLibrariesPath;
 		}
 
 		public string RuntimeLibraryPath(string LibraryName, LibSource Src)
@@ -238,6 +295,17 @@ public class AGXUnrealLibrary : ModuleRules
 				return LibraryName;
 			}
 			return Path.Combine(Info.RuntimeLibrariesPath, RuntimeLibraryFileName(LibraryName));
+		}
+
+		public string RuntimeLibraryDirectory(LibSource Src)
+		{
+			LibSourceInfo Info = LibSources[Src];
+			if (Info.RuntimeLibrariesPath == null)
+			{
+				Console.Error.WriteLine("No RuntimeLibraryDirectory for '{0}'.", Src);
+				return string.Empty;
+			}
+			return Info.RuntimeLibrariesPath;
 		}
 
 		public PlatformInfo(ReadOnlyTargetRules Target, string PluginDir)
