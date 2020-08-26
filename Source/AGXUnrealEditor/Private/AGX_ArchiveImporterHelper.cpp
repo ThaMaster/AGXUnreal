@@ -43,6 +43,7 @@
 #include "Engine/World.h"
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
+#include "Materials/MaterialInstanceConstant.h"
 #include "UObject/UObjectGlobals.h"
 
 namespace
@@ -131,9 +132,51 @@ AAGX_RigidBodyActor* FAGX_ArchiveImporterHelper::InstantiateBody(
 
 namespace
 {
+	void CreateRenderMaterialInstance(
+		UMeshComponent& Component, const FAGX_RenderMaterial& RenderMaterial,
+		const FString& DirectoryName)
+	{
+		FString MaterialName = Component.GetName();
+		UMaterialInterface* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
+			RenderMaterial, DirectoryName, MaterialName);
+		if (Material == nullptr)
+		{
+			// Error log printed by SaveImportedRenderMaterialAsset, no need to log here.
+			return;
+		}
+		Component.SetMaterial(0, Material);
+	}
+
+	void SetDefaultRenderMaterial(UMeshComponent& Component)
+	{
+		const TCHAR* AssetPath =
+			TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'");
+		UObject* LoadResult = StaticLoadObject(UMaterial::StaticClass(), nullptr, AssetPath);
+		if (LoadResult == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Could not set render material on imported shape '%s'. The material '%s' "
+					 "could not be loaded."),
+				*Component.GetName(), AssetPath);
+			return;
+		}
+		UMaterial* Material = Cast<UMaterial>(LoadResult);
+		if (Material == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Could not set render material on imported shape '%s'. The asset '%s' is not "
+					 "a Material."),
+				*Component.GetName(), AssetPath);
+		}
+		Component.SetMaterial(0, Material);
+	}
+
 	void FinalizeShape(
 		UAGX_ShapeComponent& Component, const FShapeBarrier& Barrier,
-		const TMap<FGuid, UAGX_ShapeMaterialAsset*>& RestoredShapeMaterials)
+		const TMap<FGuid, UAGX_ShapeMaterialAsset*>& RestoredShapeMaterials,
+		const FString& DirectoryName, UMeshComponent* RenderMaterialReceiver)
 	{
 		Component.UpdateVisualMesh();
 		Component.SetFlags(RF_Transactional);
@@ -145,6 +188,47 @@ namespace
 			FGuid Guid = NativeMaterial.GetGuid();
 			UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
 			Component.PhysicalMaterial = Material;
+		}
+
+		// Create and assign render material, if possible.
+		const bool bHasSource = Barrier.HasRenderMaterial();
+		const bool bHasDestination = RenderMaterialReceiver != nullptr;
+		if (bHasSource && bHasDestination)
+		{
+			// We are only allowed to create new assets, such as a MaterialInstance, when running
+			// within the Unreal Editor.
+			/// @todo This is not true. It seems we are allowed to create StaticMeshs. What's the
+			/// difference between a StaticMesh and a MaterialInstance?
+			if (GIsEditor)
+			{
+				CreateRenderMaterialInstance(
+					*RenderMaterialReceiver, Barrier.GetRenderMaterial(), DirectoryName);
+			}
+			else
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Cannot import render data for '%s' because Material Instances cannot be "
+						 "created in Game mode. Editor mode is required."),
+					*Component.GetName())
+				SetDefaultRenderMaterial(*RenderMaterialReceiver);
+			}
+		}
+		else if (bHasSource && !bHasDestination)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Cannot create render material for '%s' because it doesn't have a "
+					 "UMeshComponent to set the render material on."),
+				*Component.GetName());
+		}
+		else if (!bHasSource && bHasDestination)
+		{
+			SetDefaultRenderMaterial(*RenderMaterialReceiver);
+		}
+		else if (!bHasSource && !bHasDestination)
+		{
+			// Nothing to do.
 		}
 	}
 }
@@ -162,7 +246,7 @@ UAGX_SphereShapeComponent* FAGX_ArchiveImporterHelper::InstantiateSphere(
 		return nullptr;
 	}
 	Component->CopyFrom(Barrier);
-	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials);
+	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials, DirectoryName, Component);
 	return Component;
 }
 
@@ -179,7 +263,7 @@ UAGX_BoxShapeComponent* FAGX_ArchiveImporterHelper::InstantiateBox(
 		return nullptr;
 	}
 	Component->CopyFrom(Barrier);
-	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials);
+	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials, DirectoryName, Component);
 	return Component;
 }
 
@@ -196,7 +280,7 @@ UAGX_CylinderShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCylinder(
 		return nullptr;
 	}
 	Component->CopyFrom(Barrier);
-	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials);
+	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials, DirectoryName, Component);
 	return Component;
 }
 
@@ -204,7 +288,7 @@ namespace
 {
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FTrimeshShapeBarrier& Barrier, const FString& FallbackName,
-		TMap<FGuid, UStaticMesh*> RestoredMeshes, const FString& DirectoryName)
+		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName)
 	{
 		FGuid Guid = Barrier.GetMeshDataGuid();
 
@@ -232,7 +316,8 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	const FTrimeshShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body)
 {
 	AActor* Owner = Body.GetOwner();
-	UAGX_TrimeshShapeComponent* Component = FAGX_EditorUtilities::CreateTrimeshShape(Owner, &Body);
+	UAGX_TrimeshShapeComponent* Component =
+		FAGX_EditorUtilities::CreateTrimeshShape(Owner, &Body, false);
 	Component->MeshSourceLocation = EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 	UStaticMesh* MeshAsset =
 		GetOrCreateStaticMeshAsset(Barrier, Body.GetName(), RestoredMeshes, DirectoryName);
@@ -244,11 +329,33 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	}
 
 	UStaticMeshComponent* MeshComponent =
-		FAGX_EditorUtilities::CreateStaticMeshComponent(Owner, Component, MeshAsset);
-	FAGX_ImportUtilities::Rename(*MeshComponent, *(Barrier.GetName() + TEXT("Mesh")));
+		FAGX_EditorUtilities::CreateStaticMeshComponent(Owner, Component, MeshAsset, false);
+	FString SourceName = Barrier.GetSourceName();
+	FString MeshName = !SourceName.IsEmpty() ? SourceName : (Barrier.GetName() + TEXT("Mesh"));
+	if (MeshComponent == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Could not create MeshComponent for imported trimesh '%s' in body '%s'."),
+			*MeshName, *Body.GetName());
+	}
+	if (MeshComponent != nullptr)
+	{
+		FAGX_ImportUtilities::Rename(*MeshComponent, *MeshName);
+	}
+
+	// Both components must be created and attached before they are registered because BeginPlay
+	// may be called by RegisterComponent and the TrimeshMeshComponent must know of the
+	// StaticMeshComponent before that happens.
+	/// @todo In which order should these be? Does it matter?
+	if (MeshComponent != nullptr)
+	{
+		MeshComponent->RegisterComponent();
+	}
+	Component->RegisterComponent();
 
 	Component->CopyFrom(Barrier);
-	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials);
+	::FinalizeShape(*Component, Barrier, RestoredShapeMaterials, DirectoryName, MeshComponent);
 	return Component;
 }
 
@@ -497,8 +604,9 @@ UAGX_ShapeMaterialAsset* FAGX_ArchiveImporterHelper::GetShapeMaterial(
 FAGX_ArchiveImporterHelper::FShapeMaterialPair FAGX_ArchiveImporterHelper::GetShapeMaterials(
 	const FContactMaterialBarrier& ContactMaterial)
 {
-	return {GetShapeMaterial(ContactMaterial.GetMaterial1()),
-			GetShapeMaterial(ContactMaterial.GetMaterial2())};
+	return {
+		GetShapeMaterial(ContactMaterial.GetMaterial1()),
+		GetShapeMaterial(ContactMaterial.GetMaterial2())};
 }
 
 namespace
@@ -515,7 +623,7 @@ namespace
 
 		auto PackageExists = [&](const FString& DirPath) {
 			/// @todo Is this check necessary? Can it be something less crashy? It was copied from
-			/// somewehre, where?
+			/// somewhere, where?
 			check(!FEditorFileUtils::IsMapPackageAsset(DirPath));
 
 			FString DiskPath = FPackageName::LongPackageNameToFilename(DirPath);

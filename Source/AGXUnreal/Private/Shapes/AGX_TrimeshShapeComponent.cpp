@@ -1,7 +1,10 @@
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 
+// AGXUnreal includes.
+#include "AGX_LogCategory.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
+// Unreal Engine includes.
 #include "Engine/StaticMesh.h"
 #include "Components/StaticMeshComponent.h"
 #include "Rendering/PositionVertexBuffer.h"
@@ -123,6 +126,11 @@ void UAGX_TrimeshShapeComponent::CreateNative()
 	}
 	else
 	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("TrimeshShapeComponent '%s' does not have a StaticMeshComponent to read triangle "
+				 "data from. The generated native shape will be invalid."),
+			*GetName());
 		NativeBarrier.AllocateNative({}, {}, /*bClockwise*/ false, GetName());
 	}
 
@@ -193,21 +201,21 @@ bool UAGX_TrimeshShapeComponent::FindStaticMeshSource(
 static int32 AddCollisionVertex(
 	const int32 MeshVertexIndex, const FPositionVertexBuffer& MeshVertices,
 	const FTransform& Transform, TArray<FVector>& CollisionVertices,
-	TMap<int32, int32>& MeshToCollisionVertexIndices)
+	TMap<FVector, int32>& MeshToCollisionVertexIndices)
 {
-	if (int32* CollisionVertexIndexPtr = MeshToCollisionVertexIndices.Find(MeshVertexIndex))
+	FVector MeshPosition = MeshVertices.VertexPosition(MeshVertexIndex);
+	if (int32* CollisionVertexIndexPtr = MeshToCollisionVertexIndices.Find(MeshPosition))
 	{
-		// Already been added once, so just return its index.
+		// Already been added once, so just return the index.
 		return *CollisionVertexIndexPtr;
 	}
 	else
 	{
-		// Copy position
-		int32 CollisionVertexIndex = CollisionVertices.Add(
-			Transform.TransformPosition(MeshVertices.VertexPosition(MeshVertexIndex)));
+		// Copy position from mesh to collision data.
+		int CollisionVertexIndex = CollisionVertices.Add(Transform.TransformPosition(MeshPosition));
 
-		// Add index to map.
-		MeshToCollisionVertexIndices.Add(MeshVertexIndex, CollisionVertexIndex);
+		// Add collision index to map.
+		MeshToCollisionVertexIndices.Add(MeshPosition, CollisionVertexIndex);
 
 		return CollisionVertexIndex;
 	}
@@ -218,6 +226,8 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 {
 	// NOTE: Code below is very similar to UStaticMesh::GetPhysicsTriMeshData,
 	// only with some simplifications, so one can check that implementation for reference.
+	// One important difference is that we hash on vertex position instead of index because we
+	// want to re-merge vertices that has been split in the rendering data.
 
 	UStaticMesh* StaticMesh = nullptr;
 	FTransform MeshWorldTransform;
@@ -243,7 +253,7 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 
 	const FStaticMeshLODResources& Mesh = StaticMesh->GetLODForExport(/*LODIndex*/ LodIndex);
 	FIndexArrayView MeshIndices = Mesh.IndexBuffer.GetArrayView();
-	TMap<int32, int32> MeshToCollisionVertexIndices;
+	TMap<FVector, int32> MeshToCollisionVertexIndices;
 
 	for (int32 SectionIndex = 0; SectionIndex < Mesh.Sections.Num(); ++SectionIndex)
 	{

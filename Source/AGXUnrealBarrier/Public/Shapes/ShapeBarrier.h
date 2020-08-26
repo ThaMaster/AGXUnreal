@@ -1,5 +1,8 @@
 #pragma once
 
+// AGXUnreal includes.
+#include "Shapes/RenderMaterial.h"
+
 // Unreal Engine includes.
 #include "Containers/Array.h"
 #include "Math/Vector.h"
@@ -8,8 +11,8 @@
 // Standard library includes.
 #include <memory>
 
-class FShapeMaterialBarrier;
 struct FGeometryAndShapeRef;
+class FShapeMaterialBarrier;
 
 class AGXUNREALBARRIER_API FShapeBarrier
 {
@@ -45,10 +48,10 @@ public:
 
 	void SetMaterial(const FShapeMaterialBarrier& Material);
 
-	/// \todo Should GetMaterial() create a new FShapeMaterialBarrier, or get an existing somehow? If it
-	/// creates a new FShapeMaterialBarrier we should implement comparison operators etc since multiple
-	/// FShapeMaterialBarrier that points to the same native object should be logically seen as same
-	/// object (similar to smart pointers).
+	/// \todo Should GetMaterial() create a new FShapeMaterialBarrier, or get an existing somehow?
+	/// If it creates a new FShapeMaterialBarrier we should implement comparison operators etc since
+	/// multiple FShapeMaterialBarrier that points to the same native object should be logically
+	/// seen as same object (similar to smart pointers).
 	FShapeMaterialBarrier GetMaterial() const;
 
 	void SetEnableCollisions(bool CanCollide);
@@ -68,6 +71,23 @@ public:
 	TArray<FName> GetCollisionGroups() const;
 
 	FGuid GetGuid() const;
+
+	/**
+	 * @return True if the native shape contains render data. The render data may be incomplete.
+	 */
+	bool HasRenderData() const;
+
+	/**
+	 * @return True if the native shape contains render data and the render data has a render
+	 * material.
+	 */
+	bool HasRenderMaterial() const;
+
+	/**
+	 * @return The native shape's render material, if there is one. Otherwise an empty fallback
+	 * material.
+	 */
+	FAGX_RenderMaterial GetRenderMaterial() const;
 
 protected:
 	template <typename TFunc, typename... TPack>

@@ -81,8 +81,13 @@ public:
 	 * The shape will be attached to the given USceneComponent.
 	 * A StaticMeshComponent is neither selected nor created.
 	 * @see CreateStaticMesh.
+	 * @param Owner The Actor that should own the newly created Component.
+	 * @param Outer The USceneComponent that the newly created Component should be a attached to.
+	 * @param bRegister True if AActor::registerComponent should be called. Must be called later if
+	 * false.
 	 */
-	static UAGX_TrimeshShapeComponent* CreateTrimeshShape(AActor* Owner, USceneComponent* Outer);
+	static UAGX_TrimeshShapeComponent* CreateTrimeshShape(
+		AActor* Owner, USceneComponent* Outer, bool bRegister);
 
 	static FRawMesh CreateRawMeshFromTrimesh(const FTrimeshShapeBarrier& Trimesh);
 
@@ -169,12 +174,14 @@ public:
 	 * given UAGX_TrimeshShapeComponent. The StaticMesh asset is assigned to the
 	 * UStaticMeshComponent's static mesh.
 	 *
-	 * @param Owner - The Actor to which the StaticMeshComponent should be added.
-	 * @param Outer - The TrimeshShapeComponent that should use the mesh data.
-	 * @param MeshAsset - The Mesh asset to assign the UStaticMeshComponent's static mesh to.
+	 * @param Owner The Actor to which the StaticMeshComponent should be added.
+	 * @param Outer The TrimeshShapeComponent that should use the mesh data.
+	 * @param MeshAsset The Mesh asset to assign the UStaticMeshComponent's static mesh to.
+	 * @param bRegister True if AActor::RegisterComponent should be called. Must be called later if
+	 * false.
 	 */
 	static UStaticMeshComponent* CreateStaticMeshComponent(
-		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset);
+		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset, bool bRegister);
 
 	/**
 	 * Creates a new UAGX_ShapeMaterialAsset for a shape material and returns the shape material

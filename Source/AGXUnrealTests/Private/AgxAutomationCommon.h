@@ -7,6 +7,10 @@
 
 class UWorld;
 
+struct FLinearColor;
+struct FQuat;
+struct FRotator;
+
 /**
  * A set of helper functions used by several Automation tests.
  */
@@ -37,11 +41,17 @@ namespace AgxAutomationCommon
 		FAutomationTestBase& Test, const TCHAR* What, const FQuat& Actual, const FQuat& Expected,
 		float Tolerance = KINDA_SMALL_NUMBER);
 
-	/// @toto Remove this TestEqual implementation for FRotator once it's included in-engine.
+	/// @todo Remove this TestEqual implementation for FRotator once it's included in-engine.
 	/// @see Misc/AutomationTest.h
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, const FRotator& Actual,
 		const FRotator& Expected, float Tolerance = KINDA_SMALL_NUMBER);
+
+	/// @todo Remove this TestEqual implementation for FLinearColor once it's included in-engine.
+	/// @see Misc/AutomaitonTest.h
+	void TestEqual(
+		FAutomationTestBase& Test, const TCHAR* What, const FLinearColor& Actual,
+		const FLinearColor& Expected, float Tolerance = KINDA_SMALL_NUMBER);
 
 	/// @todo Figure out how to use UEnum::GetValueAsString instead of this helper function.
 	/// I get linker errors.
@@ -79,6 +89,30 @@ namespace AgxAutomationCommon
 	 * @return File system path to the AGX Dynamics archive.
 	 */
 	FString GetArchivePath(const FString& ArchiveName);
+
+	/**
+	 * Delete all assets created when the given archive was imported.
+	 *
+	 * Will do a file system delete of the entire import directory.
+	 *
+	 * WARNING: The implementation currently assumes that the import was does without name conflict
+	 * with a previous import of an archive with the same name. If there are several imports then
+	 * the one that did not get a directory name suffix is deleted.
+	 *
+	 * This will result in an error being printed to the log, which will cause the current test to
+	 * fail. Prevent this on Linux by adding
+	 *     Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+	 * to the test. Additional AddExpectedError may be required for other platforms.
+	 *
+	 * @param ArchiveName The name of the archive whose imported assets are to be deleted, without
+	 * '.agx' suffix.
+	 * @param ExpectedFileAndDirectoryNames List of file and directory names that is expected to
+	 * be found in the archive. No delete will be performed if any file not in this list is found in
+	 * the directory.
+	 * @return True if the directory was deleted. False otherwise.
+	 */
+	bool DeleteImportDirectory(
+		const TCHAR* ArchiveName, const TArray<const TCHAR*>& ExpectedFileAndDirectoryNames);
 
 	template <typename T>
 	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
@@ -188,14 +222,17 @@ namespace AgxAutomationCommon
 		return FMath::Abs(Expected * Tolerance);
 	}
 
+	constexpr float AgxToUnreal {100.0f};
+	constexpr float UnrealToAgx {0.01f};
+
 	inline float AgxToUnrealDistance(float Agx)
 	{
-		return 100.0f * Agx;
+		return Agx * AgxToUnreal;
 	}
 
 	inline FVector AgxToUnrealVector(const FVector& Agx)
 	{
-		return FVector(100.0f * Agx.X, -100.0f * Agx.Y, 100.0f * Agx.Z);
+		return FVector(Agx.X * AgxToUnreal, -Agx.Y * AgxToUnreal, Agx.Z * AgxToUnreal);
 	}
 
 	inline FRotator AgxToUnrealEulerAngles(const FVector& Agx)
@@ -213,37 +250,51 @@ namespace AgxAutomationCommon
 	}
 }
 
-#define BAIL_TEST_IF(expression)      \
-	if (expression)                   \
+#define BAIL_TEST_IF(Expression, Ret) \
+	if (Expression)                   \
 	{                                 \
-		TestFalse(#expression, true); \
-		return;                       \
+		TestFalse(#Expression, true); \
+		return Ret;                   \
 	}
 
-#define BAIL_TEST_IF_NO_WORLD()                                                                   \
+#define BAIL_TEST_IF_NO_WORLD(Ret)                                                                \
 	if (AgxAutomationCommon::NoWorldTestsReason Reason = AgxAutomationCommon::CanRunWorldTests()) \
 	{                                                                                             \
 		AddError(AgxAutomationCommon::GetNoWorldTestsReasonText(Reason));                         \
-		return false;                                                                             \
+		return Ret;                                                                               \
 	}
 
-#define BAIL_TEST_IF_WORLDS_MISMATCH()                                                           \
+#define BAIL_TEST_IF_WORLDS_MISMATCH(Ret)                                                        \
 	if (AgxAutomationCommon::GetTestWorld() != FAGX_EditorUtilities::GetCurrentWorld())          \
 	{                                                                                            \
 		AddError(                                                                                \
 			"Cannot run test because the test world and the AGX Dynamics world are different."); \
-		return false;                                                                            \
+		return Ret;                                                                              \
 	}
-#define BAIL_TEST_IF_NO_AGX()                                                           \
+#define BAIL_TEST_IF_NO_AGX(Ret)                                                        \
 	if (UAGX_Simulation::GetFrom(AgxAutomationCommon::GetTestWorld()) == nullptr)       \
 	{                                                                                   \
 		AddError(                                                                       \
 			"Cannot run test because the test world doesn't contain a UAGX_Simulation " \
 			"subsystem.");                                                              \
-		return false;                                                                   \
+		return Ret;                                                                     \
 	}
 
-#define BAIL_TEST_IF_CANT_SIMULATE() \
-	BAIL_TEST_IF_NO_WORLD()          \
-	BAIL_TEST_IF_WORLDS_MISMATCH()   \
-	BAIL_TEST_IF_NO_AGX()
+#define BAIL_TEST_IF_NOT_EDITOR(Ret)                       \
+	if (!GIsEditor)                                        \
+	{                                                      \
+		AddError("This test must be run in Editor mode."); \
+		return Ret;                                        \
+	}
+
+#define BAIL_TEST_IF_NOT_GAME(Ret)                       \
+	if (GIsEditor)                                       \
+	{                                                    \
+		AddError("This test must be run in Game mode."); \
+		return Ret;                                      \
+	}
+
+#define BAIL_TEST_IF_CANT_SIMULATE(Ret) \
+	BAIL_TEST_IF_NO_WORLD(Ret)          \
+	BAIL_TEST_IF_WORLDS_MISMATCH(Ret)   \
+	BAIL_TEST_IF_NO_AGX(Ret)

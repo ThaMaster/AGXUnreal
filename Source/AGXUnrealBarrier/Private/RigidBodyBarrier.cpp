@@ -17,10 +17,10 @@ FRigidBodyBarrier::FRigidBodyBarrier(std::unique_ptr<FRigidBodyRef> Native)
 {
 }
 
-FRigidBodyBarrier::FRigidBodyBarrier(FRigidBodyBarrier&& other)
-	: NativeRef {std::move(other.NativeRef)}
+FRigidBodyBarrier::FRigidBodyBarrier(FRigidBodyBarrier&& Other)
+	: NativeRef {std::move(Other.NativeRef)}
 {
-	other.NativeRef.reset(new FRigidBodyRef);
+	Other.NativeRef.reset(new FRigidBodyRef);
 }
 
 FRigidBodyBarrier::~FRigidBodyBarrier()

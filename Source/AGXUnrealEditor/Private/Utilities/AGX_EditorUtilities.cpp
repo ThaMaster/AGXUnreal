@@ -84,14 +84,17 @@ namespace
 	}
 
 	template <typename TShapeComponent>
-	TShapeComponent* CreateShapeComponent(AActor* Owner, USceneComponent* Outer)
+	TShapeComponent* CreateShapeComponent(AActor* Owner, USceneComponent* Outer, bool bRegister)
 	{
 		/// \todo Is the Owner pointless here since we do `AttachToComponent`
 		/// immediately afterwards?
 		UClass* Class = TShapeComponent::StaticClass();
 		TShapeComponent* Shape = NewObject<TShapeComponent>(Owner, Class);
 		Owner->AddInstanceComponent(Shape);
-		Shape->RegisterComponent();
+		if (bRegister)
+		{
+			Shape->RegisterComponent();
+		}
 		const bool Attached = Shape->AttachToComponent(
 			Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		check(Attached);
@@ -138,24 +141,24 @@ UAGX_RigidBodyComponent* FAGX_EditorUtilities::CreateRigidBody(AActor* Owner)
 UAGX_SphereShapeComponent* FAGX_EditorUtilities::CreateSphereShape(
 	AActor* Owner, USceneComponent* Outer)
 {
-	return ::CreateShapeComponent<UAGX_SphereShapeComponent>(Owner, Outer);
+	return ::CreateShapeComponent<UAGX_SphereShapeComponent>(Owner, Outer, true);
 }
 
 UAGX_BoxShapeComponent* FAGX_EditorUtilities::CreateBoxShape(AActor* Owner, USceneComponent* Outer)
 {
-	return ::CreateShapeComponent<UAGX_BoxShapeComponent>(Owner, Outer);
+	return ::CreateShapeComponent<UAGX_BoxShapeComponent>(Owner, Outer, true);
 }
 
 UAGX_CylinderShapeComponent* FAGX_EditorUtilities::CreateCylinderShape(
 	AActor* Owner, USceneComponent* Outer)
 {
-	return ::CreateShapeComponent<UAGX_CylinderShapeComponent>(Owner, Outer);
+	return ::CreateShapeComponent<UAGX_CylinderShapeComponent>(Owner, Outer, true);
 }
 
 UAGX_TrimeshShapeComponent* FAGX_EditorUtilities::CreateTrimeshShape(
-	AActor* Owner, USceneComponent* Outer)
+	AActor* Owner, USceneComponent* Outer, bool bRegister)
 {
-	return ::CreateShapeComponent<UAGX_TrimeshShapeComponent>(Owner, Outer);
+	return ::CreateShapeComponent<UAGX_TrimeshShapeComponent>(Owner, Outer, bRegister);
 }
 
 namespace
@@ -514,6 +517,16 @@ bool FAGX_EditorUtilities::FinalizeAndSavePackage(
 		return false;
 	}
 
+	// A package must have meta-data in order to be saved. It seems to be created automatically
+	// most of the time but sometimes, during unit tests for example, the engine tries to create it
+	// on-demand while saving the package which leads to a fatal error because this type of object
+	// look-up isn't allowed while saving packages. So try to force it here before calling
+	// SavePackage.
+	//
+	// The error message sometimes printed while within UPackage::SavePackage called below is:
+	// Illegal call to StaticFindObjectFast() while serializing object data or garbage collecting!
+	Package->GetMetaData();
+
 	bool bSaved = UPackage::SavePackage(Package, Asset, RF_NoFlags, *PackageFilename);
 	if (!bSaved)
 	{
@@ -596,9 +609,9 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 	// been discussed but not implemented.
 
 	const int32 NumCollisionPositions = Trimesh.GetNumPositions();
-	const int32 NumRenderPositions = Trimesh.GetNumRenderPositions();
+	const int32 NumRenderPositions = Trimesh.HasRenderData() ? Trimesh.GetNumRenderPositions() : 0;
 	const int32 NumCollisionIndices = Trimesh.GetNumIndices();
-	const int32 NumRenderIndices = Trimesh.GetNumRenderIndices();
+	const int32 NumRenderIndices = Trimesh.HasRenderData() ? Trimesh.GetNumRenderIndices() : 0;
 
 	if (NumCollisionPositions <= 0 || NumCollisionIndices <= 0)
 	{
@@ -607,7 +620,7 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 			LogAGX, Error,
 			TEXT("Did not find any triangle data in imported trimesh '%s'. Cannot create "
 				 "StaticMesh asset."),
-			*Trimesh.GetSourceName());
+			*Trimesh.GetSourceName())
 		return FRawMesh();
 	}
 
@@ -633,6 +646,10 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 	StaticMesh->GetSourceModels().Emplace();
 	FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModels().Last();
 #endif
+
+	// There is a SaveRawMesh on the source model as well, but calling that causes a failed assert.
+	// Is that a sign that we're doing something we shouldn't and the engine doesn't detect it
+	// because we're sidestepping the safety checks? Or is it OK to do it this way?
 	SourceModel.RawMeshBulkData->SaveRawMesh(RawMesh);
 	FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
 
@@ -648,7 +665,7 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 }
 
 UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
-	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset)
+	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset, bool bRegisterComponent)
 {
 	if (!MeshAsset)
 	{
@@ -661,7 +678,10 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
 		NewObject<UStaticMeshComponent>(Outer, FName(*MeshAsset->GetName()));
 	StaticMeshComponent->SetStaticMesh(MeshAsset);
 	Owner->AddInstanceComponent(StaticMeshComponent);
-	StaticMeshComponent->RegisterComponent();
+	if (bRegisterComponent)
+	{
+		StaticMeshComponent->RegisterComponent();
+	}
 	const bool Attached = StaticMeshComponent->AttachToComponent(
 		Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 	if (!Attached)

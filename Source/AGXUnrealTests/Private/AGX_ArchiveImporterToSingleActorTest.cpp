@@ -6,6 +6,7 @@
 #include "AGX_Simulation.h"
 #include "AgxAutomationCommon.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
@@ -13,6 +14,7 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/Actor.h"
+#include "HAL/FileManager.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
 
@@ -34,12 +36,20 @@
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
 	FImportArchiveSingleActorCommand, FString, ArchiveName, AActor*&, Contents,
 	FAutomationTestBase&, Test);
+
 bool FImportArchiveSingleActorCommand::Update()
 {
-	Test.TestEqual(
-		TEXT("TestWorld and CurrentWorld"), AgxAutomationCommon::GetTestWorld(),
-		FAGX_EditorUtilities::GetCurrentWorld());
+	if (ArchiveName.IsEmpty())
+	{
+		Test.AddError(TEXT("FImportArchiveSingleActorCommand not given an archive to import."));
+		return true;
+	}
 	FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(ArchiveName);
+	if (ArchiveFilePath.IsEmpty())
+	{
+		Test.AddError(FString::Printf(TEXT("Did not find an archive name '%s'."), *ArchiveName));
+		return true;
+	}
 	Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
@@ -52,6 +62,7 @@ bool FImportArchiveSingleActorCommand::Update()
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
 	FCheckEmptySceneImportedCommand, AActor*&, Contents, FAutomationTestBase&, Test);
+
 bool FCheckEmptySceneImportedCommand::Update()
 {
 	UWorld* World = AgxAutomationCommon::GetTestWorld();
@@ -77,14 +88,19 @@ bool FCheckEmptySceneImportedCommand::Update()
 
 /**
  * Latent Command that removes everything that was created by the Import Empty Scene test. Actual
- * removal isn't done immediately by Unreal Engine so it may be neccessary to do an extra tick after
- * this Latent Command to let the change finalize.
- * @todo Write this Latent command so that it returns false on the first call to Update and true on
- * the second.
+ * removal isn't done immediately by Unreal Engine so the first call to Update will return false
+ * so that the removal is completed before the next Latent Command starts.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FClearEmptySceneImportedCommand, AActor*&, Contents);
 bool FClearEmptySceneImportedCommand::Update()
 {
+	if (Contents == nullptr)
+	{
+		// The removal happened the previous tick so it's safe to return true and complete this
+		// Latent Command now.
+		return true;
+	}
+
 	UWorld* World = AgxAutomationCommon::GetTestWorld();
 	if (World == nullptr || Contents == nullptr)
 	{
@@ -92,7 +108,9 @@ bool FClearEmptySceneImportedCommand::Update()
 	}
 	World->DestroyActor(Contents);
 	Contents = nullptr;
-	return true;
+
+	// Return false so the engine get a tick to do the actual removal.
+	return false;
 }
 
 /**
@@ -106,15 +124,15 @@ public:
 	FArchiveImporterToSingleActor_EmptySceneTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
 			  TEXT("FArchiveImporterToSingleActor_EmptySceneTest"),
-			  TEXT("AGXUnreal.ArchiveImporterToSingleActor.EmptyScene.Test"))
+			  TEXT("AGXUnreal.Game.ArchiveImporterToSingleActor.EmptyScene"))
 	{
 	}
 
 protected:
 	bool RunTest(const FString& Parameters) override
 	{
-		BAIL_TEST_IF_NO_WORLD()
-		BAIL_TEST_IF_WORLDS_MISMATCH()
+		BAIL_TEST_IF_NO_WORLD(false)
+		BAIL_TEST_IF_WORLDS_MISMATCH(false)
 
 		/// @todo I would like to load a fresh map before doing the actual test, which it would seem
 		/// one does with FLoadGameMapCommand and FWaitForMapToLoadCommand, but including them
@@ -170,7 +188,7 @@ public:
 	FArchiveImporterToSingleActor_SingleSphereTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
 			  TEXT("FArchiveImporterToSingleActor_SingleSphereTest"),
-			  TEXT("AGXUnreal.ArchiveImporterToSingleActor.SingleSphere.Test"))
+			  TEXT("AGXUnreal.Game.ArchiveImporterToSingleActor.SingleSphere"))
 	{
 	}
 
@@ -191,7 +209,7 @@ protected:
 	bool RunTest(const FString& Parameters) override
 	{
 		using namespace AgxAutomationCommon;
-		BAIL_TEST_IF_CANT_SIMULATE()
+		BAIL_TEST_IF_CANT_SIMULATE(false)
 		World = AgxAutomationCommon::GetTestWorld();
 		if (World == nullptr)
 		{
@@ -213,12 +231,12 @@ protected:
 		ADD_LATENT_AUTOMATION_COMMAND(
 			FImportArchiveSingleActorCommand("single_sphere_build.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSingleSphereImportedCommand(*this))
-		ADD_LATENT_AUTOMATION_COMMAND(FStoreInitialTimes(*this));
-		ADD_LATENT_AUTOMATION_COMMAND(FWaitWorldDuration(World, 1.0f));
-		ADD_LATENT_AUTOMATION_COMMAND(FStoreResultingTimes(*this));
-		ADD_LATENT_AUTOMATION_COMMAND(FCheckSphereHasMoved(*this));
-		ADD_LATENT_AUTOMATION_COMMAND(FClearSingleSphereImportedCommand(Contents));
-		ADD_LATENT_AUTOMATION_COMMAND(FWaitNTicks(1));
+		ADD_LATENT_AUTOMATION_COMMAND(FStoreInitialTimes(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitWorldDuration(World, 1.0f))
+		ADD_LATENT_AUTOMATION_COMMAND(FStoreResultingTimes(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckSphereHasMoved(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearSingleSphereImportedCommand(Contents))
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitNTicks(1))
 
 		return true;
 	}
@@ -347,30 +365,15 @@ bool FCheckSingleSphereImportedCommand::Update()
 		Test.TestEqual(TEXT("Sphere radius"), Actual, Expected);
 	}
 
-	/**
-	 * @todo A native AGX Dynamics RigidBody is created for the body when the AGX_RigidBodyComponent
-	 * is registered with the owning actor. This is because engine code detects that the Actors has
-	 * a World already, the editor world that the ArchiveImported passed to the ArchiveReader, so
-	 * BeginPlay is called on the AGX_RigidBodyComponent immediately. I'm not entirely sure that is
-	 * what we want.
-	 *
-	 * The above is incorrect. It's not the Editor world but the Game world created because
-	 * Automation Tests are run with -Game so a Game world is created that causes the BeginPlay to
-	 * be called. Something causes BeginPlay to be called on the Actor very early, which in turn
-	 * causes BeginPlay to be called on the AGX_RigidBody from UActorComponent::RegisterComponent.
-	 * That's when the Native object is created.
-	 */
-	bool bHasNative = SphereBody->HasNative();
-	Test.TestTrue(TEXT("Sphere has native"), bHasNative);
+	// Imported objects don't get a native AGX Dynamics representation immediately when imported
+	// into Unreal Editor but this unit test is run in Game mode which means that BeginPlay is
+	// called on an Actor as soon as it is created, and Actors which have had BeginPlay called will
+	// call BeginPlay on any registered Component, with UActorComponent::RegisterComponent,
+	// immediately. Which creates the AGX Dynamics native object.
+	Test.TestTrue(TEXT("Sphere has native"), SphereBody->HasNative());
 
-	UWorld* BodyWorld = SphereBody->GetWorld();
-	Test.TestEqual(TEXT("Sphere world"), BodyWorld, Test.World);
-
-#if 0
-	UE_LOG(
-			LogAGX, Warning, TEXT("Body has velocity (%f, %f, %f)."), LinearVelocity.X,
-			LinearVelocity.Y, LinearVelocity.Z);
-#endif
+	// The body should have been created in the test world.
+	Test.TestEqual(TEXT("Sphere world"), SphereBody->GetWorld(), Test.World);
 
 	// Publish the important bits to the rest of the test.
 	Test.SphereBody = SphereBody;
@@ -450,6 +453,380 @@ bool FClearSingleSphereImportedCommand::Update()
 	}
 	World->DestroyActor(Contents);
 	Contents = nullptr;
+	return true;
+}
+
+//
+// SimpleTrimesh test starts here.
+//
+
+class FArchiveImporterToSingleActor_SimpleTrimeshTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckSimpleTrimeshImportedCommand, FArchiveImporterToSingleActor_SimpleTrimeshTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearSimpleTrimeshImportedCommand, FArchiveImporterToSingleActor_SimpleTrimeshTest&, Test);
+
+class FArchiveImporterToSingleActor_SimpleTrimeshTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_SimpleTrimeshTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_SimpleTrimeshTest"),
+			  TEXT("AGXUnreal.Game.ArchiveImporterToSingleActor.SimpleTrimesh"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NO_AGX(false)
+		BAIL_TEST_IF_NO_WORLD(false)
+		BAIL_TEST_IF_WORLDS_MISMATCH(false)
+		World = AgxAutomationCommon::GetTestWorld();
+		Simulation = UAGX_Simulation::GetFrom(World);
+
+		// See comment in FArchiveImporterToSingleActor_EmptySceneTest.
+		// In short, loading a map stops world ticking.
+#if 0
+		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand())
+#endif
+
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand("simple_trimesh_build.agx", Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckSimpleTrimeshImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearSimpleTrimeshImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_SimpleTrimeshTest ArchiveImporterToSingleActor_SimpleTrimeshTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script simple_trimesh.agxPy.
+ * @return true when the check is complete. Never returns false.
+ */
+bool FCheckSimpleTrimeshImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import SimpleTrimesh test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
+
+	// Get the components we know should be there.
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* TrimeshBody =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("TrimeshBody"));
+	UAGX_TrimeshShapeComponent* TrimeshShape =
+		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("TrimeshGeometry"));
+	UStaticMeshComponent* StaticMesh =
+		GetByName<UStaticMeshComponent>(Components, TEXT("simple_trimesh"));
+
+	// Make sure we got the components we know should be there.
+	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
+	Test.TestNotNull(TEXT("TrimeshBody"), TrimeshBody);
+	Test.TestNotNull(TEXT("TrimeshShape"), TrimeshShape);
+	Test.TestNotNull(TEXT("StaticMesh"), StaticMesh);
+	if (TrimeshBody == nullptr || TrimeshShape == nullptr || StaticMesh == nullptr)
+	{
+		Test.AddError("A required component wasn't found in the imported actor. Cannot continue.");
+		return true;
+	}
+
+	const TArray<USceneComponent*>& Children = TrimeshShape->GetAttachChildren();
+	Test.TestEqual(TEXT("TrimeshShape child components"), Children.Num(), 1);
+	if (Children.Num() != 1)
+	{
+		return true;
+	}
+	USceneComponent* Child = Children[0];
+	Test.TestNotNull(TEXT("Child"), Child);
+	if (Child == nullptr)
+	{
+		return true;
+	}
+	UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Child);
+	Test.TestNotNull(TEXT("Trimesh asset"), Mesh);
+	if (Mesh == nullptr)
+	{
+		return true;
+	}
+	Test.TestEqual(TEXT("The StaticMesh should be a child of the TrimeshShape"), Mesh, StaticMesh);
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearSimpleTrimeshImportedCommand::Update()
+{
+	if (Test.World == nullptr || Test.Contents == nullptr)
+	{
+		return true;
+	}
+	Test.World->DestroyActor(Test.Contents);
+
+	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("StaticMeshs"),
+		TEXT("simple_trimesh.uasset")
+	};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("simple_trimesh_build"), ExpectedFiles);
+
+	return true;
+}
+
+//
+// RenderMaterial test starts here.
+//
+
+class FArchiveImporterToSingleActor_RenderMaterialTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckRenderMaterialImportedCommand, FArchiveImporterToSingleActor_RenderMaterialTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearRenderMaterialImportedCommand, FArchiveImporterToSingleActor_RenderMaterialTest&, Test);
+
+class FArchiveImporterToSingleActor_RenderMaterialTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_RenderMaterialTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_RenderMaterialTest"),
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.RenderMaterial"))
+	{
+	}
+
+public:
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("render_materials_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckRenderMaterialImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearRenderMaterialImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_RenderMaterialTest
+		ArchiveImporterToSingleActor_RenderMaterialTest;
+}
+
+namespace CheckRenderMaterialImportedCommand_helpers
+{
+	void TestScalar(
+		UMaterialInterface& Material, const TCHAR* ParameterName, float Expected,
+		FAutomationTestBase& Test)
+	{
+		FMaterialParameterInfo Info;
+		Info.Name = ParameterName;
+		float Actual;
+		if (!Material.GetScalarParameterValue(Info, Actual, false))
+		{
+			Test.AddError(FString::Printf(
+				TEXT("Could not get parameter '%s' for material '%s'."), ParameterName,
+				*Material.GetName()));
+			return;
+		}
+		Test.TestEqual(
+			*FString::Printf(TEXT("%s in %s"), ParameterName, *Material.GetName()), Actual,
+			Expected);
+	}
+
+	void TestColor(
+		UMaterialInterface& Material, const TCHAR* ParameterName, const FLinearColor& Expected,
+		FAutomationTestBase& Test)
+	{
+		FMaterialParameterInfo Info;
+		Info.Name = ParameterName;
+		FLinearColor Actual;
+		if (!Material.GetVectorParameterValue(Info, Actual, false))
+		{
+			Test.AddError(FString::Printf(
+				TEXT("Could not get parameter '%s' from material '%s'."), ParameterName,
+				*Material.GetName()));
+			return;
+		}
+		AgxAutomationCommon::TestEqual(
+			Test, *FString::Printf(TEXT("%s in %s"), ParameterName, *Material.GetName()), Actual,
+			Expected);
+	}
+
+	struct FMaterialParameters
+	{
+		FLinearColor Ambient {0.01f, 0.0028806f, 0.0f, 1.0f};
+		FLinearColor Diffuse {0.8962694f, 0.258183f, 0.0f, 1.0f};
+		FLinearColor Emissive {0.0f, 0.0f, 0.0f, 1.0f};
+		float Shininess {0.0f};
+	};
+
+	void TestMaterial(
+		UAGX_SphereShapeComponent& Sphere, const FMaterialParameters& Parameters,
+		FAutomationTestBase& Test)
+	{
+		UMaterialInterface* Material = Sphere.GetMaterial(0);
+		if (Material == nullptr)
+		{
+			Test.AddError(
+				FString::Printf(TEXT("Sphere '%s' does not have a material."), *Sphere.GetName()));
+			return;
+		}
+		TestColor(*Material, TEXT("Ambient"), Parameters.Ambient, Test);
+		TestColor(*Material, TEXT("Diffuse"), Parameters.Diffuse, Test);
+		TestColor(*Material, TEXT("Emissive"), Parameters.Emissive, Test);
+		TestScalar(*Material, TEXT("Shininess"), Parameters.Shininess, Test);
+	}
+}
+
+bool FCheckRenderMaterialImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	using namespace CheckRenderMaterialImportedCommand_helpers;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import RenderMaterial test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 10);
+
+	auto GetSphere = [&Components](const TCHAR* Name) -> UAGX_SphereShapeComponent* {
+		return GetByName<UAGX_SphereShapeComponent>(Components, Name);
+	};
+
+	// Get the components we know should be there.
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* Body =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("RenderMaterialBody"));
+	UAGX_SphereShapeComponent* Ambient = GetSphere(TEXT("AmbientGeometry"));
+	UAGX_SphereShapeComponent* Diffuse = GetSphere(TEXT("DiffuseGeometry"));
+	UAGX_SphereShapeComponent* Emissive = GetSphere(TEXT("EmissiveGeometry"));
+	UAGX_SphereShapeComponent* Shininess = GetSphere(TEXT("ShininessGeometry"));
+	UAGX_SphereShapeComponent* AmbientDiffuse = GetSphere(TEXT("AmbientDiffuseGeometry"));
+	UAGX_SphereShapeComponent* AmbientEmissive = GetSphere(TEXT("AmbientEmissiveGeometry"));
+	UAGX_SphereShapeComponent* DiffuseShininessLow = GetSphere(TEXT("DiffuseShininessLowGeometry"));
+	UAGX_SphereShapeComponent* DiffuseShininessHigh =
+		GetSphere(TEXT("DiffuseShininessHighGeometry"));
+
+	// Make sure we got the components we know should be there.
+	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
+	Test.TestNotNull(TEXT("Body"), Body);
+	Test.TestNotNull(TEXT("Ambient"), Ambient);
+	Test.TestNotNull(TEXT("Diffuse"), Diffuse);
+	Test.TestNotNull(TEXT("Emissive"), Emissive);
+	Test.TestNotNull(TEXT("Shininess"), Shininess);
+	Test.TestNotNull(TEXT("AmbientDiffuse"), AmbientDiffuse);
+	Test.TestNotNull(TEXT("AmbientEmissive"), AmbientEmissive);
+	Test.TestNotNull(TEXT("DiffuseShininessLow"), DiffuseShininessLow);
+	Test.TestNotNull(TEXT("DiffuseShininessHigh"), DiffuseShininessHigh);
+
+	if (SceneRoot == nullptr || Body == nullptr || Ambient == nullptr || Diffuse == nullptr ||
+		Emissive == nullptr || Shininess == nullptr || AmbientDiffuse == nullptr ||
+		AmbientEmissive == nullptr || DiffuseShininessLow == nullptr ||
+		DiffuseShininessHigh == nullptr)
+	{
+		Test.AddError(TEXT("At least one required object was nullptr, cannot continue."));
+		return true;
+	}
+
+	// Ambient.
+	{
+		FMaterialParameters Parameters;
+		Parameters.Ambient = {0.32f, 0.85f, 0.21f, 1.0f};
+		TestMaterial(*Ambient, Parameters, Test);
+	}
+	// Diffuse.
+	{
+		FMaterialParameters Parameters;
+		Parameters.Diffuse = {0.80f, 0.34f, 0.21f, 1.0f};
+		TestMaterial(*Diffuse, Parameters, Test);
+	}
+	// Emissive.
+	{
+		FMaterialParameters Parameters;
+		Parameters.Emissive = {0.98f, 0.94f, 0.76f, 1.0f};
+		TestMaterial(*Emissive, Parameters, Test);
+	}
+	// AmbientDiffuse
+	{
+		FMaterialParameters Parameters;
+		Parameters.Ambient = {0.81f, 0.34f, 0.26f, 1.0f};
+		Parameters.Diffuse = {0.32f, 0.28f, 0.67f, 1.0f};
+		TestMaterial(*AmbientDiffuse, Parameters, Test);
+	}
+	// AmbientEmissive.
+	{
+		FMaterialParameters Parameters;
+		Parameters.Ambient = {0.32f, 0.34f, 0.54f, 1.0f};
+		Parameters.Emissive = {0.21f, 0.17f, 0.23f, 1.0f};
+		TestMaterial(*AmbientEmissive, Parameters, Test);
+	}
+	// DiffuseShininessLow
+	{
+		FMaterialParameters Parameters;
+		Parameters.Diffuse = {0.65f, 0.74f, 0.48f, 1.0f};
+		Parameters.Shininess = 0.0f;
+		TestMaterial(*DiffuseShininessLow, Parameters, Test);
+	}
+	// DiffuseShininessHigh
+	{
+		FMaterialParameters Parameters;
+		Parameters.Diffuse = {0.65f, 0.74f, 0.48f, 1.0f};
+		Parameters.Shininess = 1.0f;
+		TestMaterial(*DiffuseShininessHigh, Parameters, Test);
+	}
+
+	return true;
+}
+
+bool FClearRenderMaterialImportedCommand::Update()
+{
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+	// The error message that is printed when folders are deleted from under the editor.
+	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+
+	TArray<const TCHAR*> ExpectedFiles = {TEXT("RenderMaterials")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_materials_build"), ExpectedFiles);
+
 	return true;
 }
 

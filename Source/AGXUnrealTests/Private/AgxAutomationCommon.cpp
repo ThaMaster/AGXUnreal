@@ -7,6 +7,7 @@
 // Unreal Engine includes.
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"
+#include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 
 UWorld* AgxAutomationCommon::GetTestWorld()
@@ -97,6 +98,18 @@ void AgxAutomationCommon::TestEqual(
 	}
 }
 
+void AgxAutomationCommon::TestEqual(
+	FAutomationTestBase& Test, const TCHAR* What, const FLinearColor& Actual,
+	const FLinearColor& Expected, float Tolerance)
+{
+	if (!Expected.Equals(Actual, Tolerance))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("Expected '%s' to be '%s' but with was '%s', with tolerance %f."), What,
+			*Expected.ToString(), *Actual.ToString(), Tolerance));
+	}
+}
+
 FString AgxAutomationCommon::WorldTypeToString(EWorldType::Type Type)
 {
 	switch (Type)
@@ -118,6 +131,8 @@ FString AgxAutomationCommon::WorldTypeToString(EWorldType::Type Type)
 		case EWorldType::Inactive:
 			return TEXT("Inactive");
 	}
+
+	return TEXT("Unknown");
 }
 
 FString AgxAutomationCommon::GetNoWorldTestsReasonText(NoWorldTestsReason Reason)
@@ -168,7 +183,7 @@ FString AgxAutomationCommon::GetArchivePath(const TCHAR* ArchiveName)
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Did not find full path for AGX Dynamics archive '%s'. Searched in '%s'."),
-			*ArchiveName, *ArchivesDir)
+			ArchiveName, *ArchivesDir)
 		return FString();
 	}
 }
@@ -176,6 +191,122 @@ FString AgxAutomationCommon::GetArchivePath(const TCHAR* ArchiveName)
 FString AgxAutomationCommon::GetArchivePath(const FString& ArchiveName)
 {
 	return GetArchivePath(*ArchiveName);
+}
+
+bool AgxAutomationCommon::DeleteImportDirectory(
+	const TCHAR* ArchiveName, const TArray<const TCHAR*>& ExpectedFileAndDirectoryNames)
+{
+	/// @todo There is probably a correct way to delete assets but I haven't been able to get it to
+	/// work. See attempts below. For now we just delete the files.
+
+	// The is the sledgehammer appraoch. I don't expect Unreal Engine to like this.
+	// I have tried a few variantes (see below) to do this cleanly via the Engine API but I don't
+	// know what I'm doing and it always crashes. Doing filesystem delete for now. Nothing is
+	// referencing theses assets and nothing ever will again, and the engine will shut down shortly,
+	// at least if the tests are being run from the command line.
+	//
+	// I'm just worried that the wrong directory may be deleted in some circumstances.
+
+	const FString Root = FPaths::ProjectContentDir();
+	const FString ImportsLocal = FPaths::Combine(TEXT("ImportedAgxArchives"), ArchiveName);
+	const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
+	const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
+	if (ImportsFull == Root)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot delete import directory for archive '%s': Directory path is the same as "
+				 "the project content directory."),
+			ArchiveName)
+		return false;
+	}
+	if (ImportsAbsolute.IsEmpty())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot delete import directory for archive '%s': Directory path is the empty "
+				 "string."),
+			ArchiveName);
+		return false;
+	}
+	if (!FPaths::DirectoryExists(ImportsAbsolute))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot delete import directory for archive '%s': Directory '%s' does not exist."),
+			ArchiveName, *ImportsAbsolute)
+		return false;
+	}
+
+	TArray<FString> DirectoryContents;
+	IFileManager::Get().FindFilesRecursive(
+		DirectoryContents, *ImportsAbsolute, TEXT("*"), true, true);
+	if (DirectoryContents.Num() != ExpectedFileAndDirectoryNames.Num())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT(
+				"Cannot delete import directory for archive '%s': Directory '%s' contains "
+				"unexpected files or directories. Expected %d files and directories but found %d."),
+			ArchiveName, *ImportsAbsolute, ExpectedFileAndDirectoryNames.Num(),
+			DirectoryContents.Num())
+		return false;
+	}
+	for (const FString& Entry : DirectoryContents)
+	{
+		const FString Name = FPaths::GetCleanFilename(Entry);
+		if (!ExpectedFileAndDirectoryNames.ContainsByPredicate(
+				[&Name](const TCHAR* E) { return Name == E; }))
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Cannot delete import directory for archive '%s': Directory '%s' contains "
+					 "unexpected files or directories. Found unexpected file or directory '%s'."),
+				ArchiveName, *ImportsAbsolute, *Name)
+			return false;
+		}
+	}
+	return IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true);
+
+#if 0
+	// An attempt at deleting the StaticMesh asset.
+	// Crashes on GEditor->Something because GEditor is nullptr.
+	/// @todo The path for this particular run may be different, may have a _# suffix. How do I find
+	/// the path for this particular run?
+	const TCHAR* MeshPath = TEXT(
+								"StaticMesh'/Game/ImportedAgxArchives/simple_trimesh_build/StaticMeshs/"
+								"simple_trimesh.simple_trimesh'");
+	UObject* Asset = StaticLoadObject(UStaticMesh::StaticClass(), nullptr, MeshPath);
+	if (Asset == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot delete imported asset '%s': The asset was not found by StaticLoadObject."),
+			MeshPath)
+		return true;
+	}
+	TArray<FAssetData> Assets;
+	Assets.Add(FAssetData(Asset));
+	ObjectTools::DeleteAssets(Assets, false);
+#elif 0
+	// An attempt at deleting the StaticMesh asset.
+	// Crashes on the first run, and does nothing for subsequent runs.
+	/// @todo The path for this particular run may be different, may have a _# suffix. How do I find
+	/// the path for this particular run?
+	const TCHAR* MeshPath = TEXT(
+		"StaticMesh'/Game/ImportedAgxArchives/simple_trimesh_build/StaticMeshs/"
+		"simple_trimesh.simple_trimesh'");
+	UObject* Asset = StaticLoadObject(UStaticMesh::StaticClass(), nullptr, MeshPath);
+	if (Asset == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot delete imported asset '%s': The asset was not found by StaticLoadObject."),
+			MeshPath)
+		return true;
+	}
+	Asset->MarkPendingKill();
+#endif
 }
 
 bool AgxAutomationCommon::FLogWarningAgxCommand::Update()
