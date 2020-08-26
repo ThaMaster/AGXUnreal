@@ -516,7 +516,13 @@ private:
 		Result.bRenderCustomDepth = ShouldRenderCustomDepth();
 		Result.bTranslucentSelfShadow = bCastVolumetricTranslucentShadow;
 		Result.bVelocityRelevance =
-			IsMovable() && Result.bOpaqueRelevance && Result.bRenderInMainPass;
+			IsMovable() &&
+#if UE_VERSION_OLDER_THAN(4,25,0)
+			Result.bOpaqueRelevance &&
+#else
+			Result.bOpaque &&
+#endif
+			Result.bRenderInMainPass;
 
 		MaterialRelevance.SetPrimitiveViewRelevance(Result);
 
