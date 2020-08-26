@@ -1,11 +1,15 @@
 #include "Shapes/AGX_HeightFieldShapeComponent.h"
 
-#include "Utilities/AGX_HeightFieldUtilities.h"
+// AGXUnreal includes.
 #include "AGX_LogCategory.h"
-#include "Utilities/AGX_MeshUtilities.h"
 #include "Terrain/AGX_LandscapeSizeInfo.h"
+#include "Utilities/AGX_HeightFieldUtilities.h"
+#include "Utilities/AGX_MeshUtilities.h"
 
+// Unreal Engine includes.
 #include "Landscape.h"
+#include "Misc/EngineVersionComparison.h"
+
 
 UAGX_HeightFieldShapeComponent::UAGX_HeightFieldShapeComponent()
 {
@@ -104,7 +108,12 @@ void UAGX_HeightFieldShapeComponent::PostEditChangeChainProperty(
 
 	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 
+#if UE_VERSION_OLDER_THAN(4,25,0)
 	UProperty* const ChangedProperty = PropertyChangedEvent.Property;
+#else
+	FProperty* const ChangedProperty = PropertyChangedEvent.Property;
+#endif
+
 	if (ChangedProperty == nullptr)
 	{
 		return;

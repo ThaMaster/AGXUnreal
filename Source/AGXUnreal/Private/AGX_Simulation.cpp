@@ -277,7 +277,13 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const UGameInstance* GameInstance)
 }
 
 #if WITH_EDITOR
-bool UAGX_Simulation::CanEditChange(const UProperty* InProperty) const
+bool UAGX_Simulation::CanEditChange(
+#if UE_VERSION_OLDER_THAN(4,25,0)
+	const UProperty* InProperty
+#else
+	const FProperty* InProperty
+#endif
+	) const
 {
 	// Time Lag Cap should only be editable when step mode SM_CATCH_UP_OVER_TIME_CAPPED is used.
 	if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UAGX_Simulation, TimeLagCap))

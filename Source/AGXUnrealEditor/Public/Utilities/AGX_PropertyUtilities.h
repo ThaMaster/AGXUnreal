@@ -3,6 +3,7 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Engine/EngineTypes.h"
+#include "Misc/EngineVersionComparison.h"
 #include "PropertyHandle.h"
 #include "UObject/UnrealType.h"
 
@@ -44,9 +45,15 @@ public:
 	 * display format (e.g. adding spacing between words, etc). Does not do localization yet!
 	 *
 	 * Note that this functions takes UField as input. The reason for that is because most
-	 * metadata classes (UProperty, UClass, UStruct) inherit from UField.
+	 * metadata classes ([UF]Property, UClass, UStruct) inherit from UField.
+	 *
+	 * @note It is still unclear how the UProperty -> FProperty change in 4.25 changes this.
 	 */
+//#if UE_VERSION_OLDER_THAN(2,25,0)
 	static FString GetActualDisplayName(const UField* Field, bool bRemoveAgxPrefix);
+//#else
+	static FString GetActualDisplayName(const FField* Field, bool bRemoveAgxPrefix);
+//#endif
 };
 
 template <typename TStruct>

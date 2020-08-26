@@ -1,10 +1,13 @@
 #pragma once
 
-#include "Components/SceneComponent.h"
-#include "CoreMinimal.h"
-
+// AGXUnreal includes.
 #include "AGX_MotionControl.h"
 #include "RigidBodyBarrier.h"
+
+// Unreal Engine includes.
+#include "Components/SceneComponent.h"
+#include "CoreMinimal.h"
+#include "Misc/EngineVersionComparison.h"
 
 #include "AGX_RigidBodyComponent.generated.h"
 
@@ -108,7 +111,11 @@ private:
 	void WriteTransformToNative();
 
 #if WITH_EDITOR
+#if UE_VERSION_OLDER_THAN(4,25,0)
 	virtual bool CanEditChange(const UProperty* InProperty) const override;
+#else
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
+#endif
 	void DisableTransformRootCompIfMultiple();
 #endif
 

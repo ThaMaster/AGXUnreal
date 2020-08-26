@@ -1,6 +1,7 @@
 #include "Utilities/AGX_PropertyUtilities.h"
 
 // Unreal Engine includes.
+#include "Misc/EngineVersionComparison.h"
 #include "UObject/MetaData.h"
 #include "UObject/Package.h"
 
@@ -31,8 +32,13 @@ UObject* FAGX_PropertyUtilities::GetParentObjectOfStruct(IPropertyHandle& Struct
 UObject* FAGX_PropertyUtilities::GetObjectFromHandle(
 	const TSharedPtr<IPropertyHandle>& PropertyHandle)
 {
+#if UE_VERSION_OLDER_THAN(4,25,0)
+		UClass* PropertyClass = UObjectProperty::StaticClass();
+#else
+		FFieldClass* PropertyClass = FObjectProperty::StaticClass();
+#endif
 	if (PropertyHandle && PropertyHandle->IsValidHandle() && PropertyHandle->GetProperty() &&
-		PropertyHandle->GetProperty()->IsA(UObjectProperty::StaticClass()))
+		PropertyHandle->GetProperty()->IsA(PropertyClass))
 	{
 		UObject* Object = nullptr;
 		if (PropertyHandle->GetValue(Object) != FPropertyAccess::Result::Fail)
@@ -46,6 +52,7 @@ UObject* FAGX_PropertyUtilities::GetObjectFromHandle(
 	return nullptr;
 }
 
+//#if UE_VERSION_OLDER_THAN(2,25,0)
 FString FAGX_PropertyUtilities::GetActualDisplayName(const UField* Field, bool bRemoveAgxPrefix)
 {
 	FString Name;
@@ -58,8 +65,12 @@ FString FAGX_PropertyUtilities::GetActualDisplayName(const UField* Field, bool b
 		}
 		else
 		{
-			Name = FName::NameToDisplayString(
-				Field->GetFName().ToString(), Field->IsA(UBoolProperty::StaticClass()));
+#if UE_VERSION_OLDER_THAN(2,25,0)
+			bool bIsBool = Field->IsA(UBoolProperty::StaticClass());
+#else
+			bool bIsBool = false; /// @todo How test if the property is a bool in 4.25?
+#endif
+			Name = FName::NameToDisplayString(Field->GetFName().ToString(), bIsBool);
 		}
 
 		if (bRemoveAgxPrefix)
@@ -71,3 +82,30 @@ FString FAGX_PropertyUtilities::GetActualDisplayName(const UField* Field, bool b
 
 	return Name;
 }
+//#else
+FString FAGX_PropertyUtilities::GetActualDisplayName(const FField* Field, bool bRemoveAgxPrefix)
+{
+	FString Name;
+
+	if (Field)
+	{
+		if (Field->HasMetaData(TEXT("DisplayName")))
+		{
+			Name = Field->GetMetaData(TEXT("DisplayName"));
+		}
+		else
+		{
+			Name = FName::NameToDisplayString(
+				Field->GetFName().ToString(), Field->IsA(FBoolProperty::StaticClass()));
+		}
+
+		if (bRemoveAgxPrefix)
+		{
+			Name.RemoveFromStart("AGX", ESearchCase::CaseSensitive);
+			Name.TrimStartAndEndInline();
+		}
+	}
+
+	return Name;
+}
+//#endif

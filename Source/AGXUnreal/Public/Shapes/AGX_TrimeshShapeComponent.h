@@ -1,9 +1,12 @@
 #pragma once
 
+// AGXUnreal includes
 #include "Shapes/AGX_ShapeComponent.h"
-#include "CoreMinimal.h"
-
 #include "Shapes/TrimeshShapeBarrier.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+#include "Misc/EngineVersionComparison.h"
 
 #include "AGX_TrimeshShapeComponent.generated.h"
 
@@ -90,7 +93,13 @@ protected:
 	virtual bool DoesPropertyAffectVisualMesh(
 		const FName& PropertyName, const FName& MemberPropertyName) const;
 
-	virtual bool CanEditChange(const UProperty* InProperty) const override;
+	virtual bool CanEditChange(
+#if UE_VERSION_OLDER_THAN(4,25,0)
+		const UProperty* InProperty
+#else
+		const FProperty* InProperty
+#endif
+		) const override;
 #endif
 
 private:

@@ -1,12 +1,13 @@
 #pragma once
 
-// Unreal Engine includes.
-#include "CoreMinimal.h"
-#include "Subsystems/GameInstanceSubsystem.h"
-
 // AGXUnreal includes.
 #include "SimulationBarrier.h"
 #include "AGX_StepperEnums.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+#include "Misc/EngineVersionComparison.h"
+#include "Subsystems/GameInstanceSubsystem.h"
 
 #include "AGX_Simulation.generated.h"
 
@@ -123,7 +124,13 @@ public:
 	static UAGX_Simulation* GetFrom(const UGameInstance* GameInstance);
 
 #if WITH_EDITOR
-	virtual bool CanEditChange(const UProperty* InProperty) const override;
+	virtual bool CanEditChange(
+#if UE_VERSION_OLDER_THAN(4,25,0)
+		const UProperty* InProperty
+#else
+		const FProperty* InProperty
+#endif
+		) const override;
 #endif
 
 	void Initialize(FSubsystemCollectionBase& Collection) override;
