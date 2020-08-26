@@ -30,7 +30,7 @@ agx::RigidBody* FAGX_NativeObjectsAccess::BarrierToNative(FRigidBodyBarrier* Bar
 		return nullptr;
 	}
 
-	return Barrier->GetNative()->Native;
+	return Barrier->GetNative()->Native.get();
 }
 
 agxSDK::Simulation* FAGX_NativeObjectsAccess::BarrierToNative(FSimulationBarrier* Barrier)
@@ -51,5 +51,5 @@ agxSDK::Simulation* FAGX_NativeObjectsAccess::BarrierToNative(FSimulationBarrier
 		return nullptr;
 	}
 
-	return Barrier->GetNative()->Native;
+	return Barrier->GetNative()->Native.get();
 }
