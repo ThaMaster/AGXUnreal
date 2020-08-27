@@ -4,7 +4,7 @@
 #include "AGXRefs.h "
 #include "RigidBodyBarrier.h"
 #include "SimulationBarrier.h"
-#include "ShapeBarrier.h"
+#include "Shapes/ShapeBarrier.h"
 #include "AGX_LogCategory.h"
 
 // AGX Dynamics includes.
