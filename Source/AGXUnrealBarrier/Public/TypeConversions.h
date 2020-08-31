@@ -182,6 +182,12 @@ inline agx::Vec3 ConvertVector(const FVector& V)
 	return agx::Vec3(ConvertDistance(V.X), -ConvertDistance(V.Y), ConvertDistance(V.Z));
 }
 
+inline agx::Vec3f ConvertFloatVector(const FVector& V)
+{
+	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
+	return agx::Vec3f(ConvertDistance(V.X), -ConvertDistance(V.Y), ConvertDistance(V.Z));
+}
+
 inline agx::Vec3 ConvertAngularVelocity(const FVector& V)
 {
 	// See comment in the AGX-to-Unreal version of this function.
