@@ -148,7 +148,8 @@ namespace
 		}
 
 		// It's a new material, save it as an asset and in the cache.
-		FString MaterialName = Component.GetName();
+		FString MaterialName =
+			RenderMaterial.Name.IsNone() ? Component.GetName() : RenderMaterial.Name.ToString();
 		UMaterialInterface* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 			RenderMaterial, DirectoryName, MaterialName);
 		if (Material == nullptr)
