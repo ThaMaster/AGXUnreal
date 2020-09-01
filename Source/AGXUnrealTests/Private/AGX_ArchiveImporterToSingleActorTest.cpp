@@ -837,7 +837,6 @@ bool FCheckRenderMaterialImportedCommand::Update()
 		Test.TestNotNull(TEXT("SharedSphere1 material"), Material1);
 		Test.TestNotNull(TEXT("SharedSphere2 material"), Material2);
 		Test.TestEqual(TEXT("SharedSphere materials"), Material1, Material2);
-		UE_LOG(LogAGX, Warning, TEXT("Materials:\n%p\n%p\n"), (void*) Material1, (void*) Material2);
 	}
 	// NameConflict.
 	{
