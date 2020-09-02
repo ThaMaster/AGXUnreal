@@ -3,6 +3,7 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Math/Vector.h"
+#include "Misc/Guid.h"
 
 #include "RenderMaterial.generated.h"
 
@@ -42,4 +43,6 @@ struct AGXUNREALBARRIER_API FAGX_RenderMaterial
 
 	UPROPERTY()
 	float Shininess;
+
+	FGuid Guid;
 };

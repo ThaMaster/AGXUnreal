@@ -189,6 +189,8 @@ FAGX_RenderMaterial FShapeBarrier::GetRenderMaterial() const
 	const agxCollide::RenderData* RenderDataAgx = NativeRef->NativeShape->getRenderData();
 	const agxCollide::RenderMaterial* RenderMaterialAgx = RenderDataAgx->getRenderMaterial();
 
+	RenderMaterialUnreal.Guid = Convert(RenderMaterialAgx->getUuid());
+
 	if ((RenderMaterialUnreal.bHasDiffuse = RenderMaterialAgx->hasDiffuseColor()) == true)
 	{
 		agx::Vec3 DiffuseAgx(RenderMaterialAgx->getDiffuseColor().asVec3());

@@ -32,6 +32,7 @@ class UAGX_LockConstraintComponent;
 
 // Unreal Engine classes.
 class AActor;
+class UMaterialInstanceConstant;
 class UStaticMesh;
 
 /**
@@ -112,6 +113,7 @@ public:
 	TMap<FGuid, UStaticMesh*> RestoredMeshes;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterialAsset*> RestoredShapeMaterials;
+	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
 };
 
 /// \todo Consider creating a FEditorBody inheriting from FAGXArchiveBody that has a Body and a
