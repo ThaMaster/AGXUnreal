@@ -182,6 +182,7 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 
 	IAssetTools& AssetTools =
 		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	AssetTools.CreateUniqueAssetName(PackagePath, AssetName, PackagePath, AssetName);
 	UObject* Asset = AssetTools.CreateAsset(
 		AssetName, FPackageName::GetLongPackagePath(PackagePath),
 		UMaterialInstanceConstant::StaticClass(), Factory);

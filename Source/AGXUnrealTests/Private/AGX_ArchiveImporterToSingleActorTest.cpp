@@ -719,13 +719,28 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	// Get all the imported components.
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
-	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 12);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 14);
+
+// Enable this to see the names of the components that was imported. Useful when adding new stuff
+// to the archive.
+#if 0
+	UE_LOG(LogAGX, Warning, TEXT("Imported the following components:"));
+	for (const UActorComponent* Component : Components)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("  %s"), *Component->GetName());
+	}
+#endif
 
 	auto GetSphere = [&Components](const TCHAR* Name) -> UAGX_SphereShapeComponent* {
 		return GetByName<UAGX_SphereShapeComponent>(Components, Name);
 	};
 
 	// Get the components we know should be there.
+	/// @todo Some of these get auto-generated names because of name conflicts. Happens every time a
+	/// agxCollide::Geometry contains more than once agxCollide::Shape since the name lives in the
+	/// Geometry. So far the generated names have been consistent between runs, but I'm not sure if
+	/// we're guaranteed that. Especially if we run multiple tests in the same invocation of the
+	/// editor. The fix is to fetch objects based on UUID/GUID instead of names.
 	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
 	UAGX_RigidBodyComponent* Body =
 		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("RenderMaterialBody"));
@@ -740,6 +755,8 @@ bool FCheckRenderMaterialImportedCommand::Update()
 		GetSphere(TEXT("DiffuseShininessHighGeometry"));
 	UAGX_SphereShapeComponent* SharedSphere1 = GetSphere(TEXT("SharedGeometry"));
 	UAGX_SphereShapeComponent* SharedSphere2 = GetSphere(TEXT("SharedGeometry_10"));
+	UAGX_SphereShapeComponent* NameConflictSphere1 = GetSphere(TEXT("MaterialNameConflict"));
+	UAGX_SphereShapeComponent* NameConflictSphere2 = GetSphere(TEXT("MaterialNameConflict_13"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -754,11 +771,14 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	Test.TestNotNull(TEXT("DiffuseShininessHigh"), DiffuseShininessHigh);
 	Test.TestNotNull(TEXT("SharedSphere1"), SharedSphere1);
 	Test.TestNotNull(TEXT("SharedSphere2"), SharedSphere2);
+	Test.TestNotNull(TEXT("NameConflictSphere1"), NameConflictSphere1);
+	Test.TestNotNull(TEXT("NameConflictSphere2"), NameConflictSphere2);
 
 	if (SceneRoot == nullptr || Body == nullptr || Ambient == nullptr || Diffuse == nullptr ||
 		Emissive == nullptr || Shininess == nullptr || AmbientDiffuse == nullptr ||
 		AmbientEmissive == nullptr || DiffuseShininessLow == nullptr ||
-		DiffuseShininessHigh == nullptr || SharedSphere1 == nullptr || SharedSphere2 == nullptr)
+		DiffuseShininessHigh == nullptr || SharedSphere1 == nullptr || SharedSphere2 == nullptr ||
+		NameConflictSphere1 == nullptr || NameConflictSphere2 == nullptr)
 	{
 		Test.AddError(TEXT("At least one required object was nullptr, cannot continue."));
 		return true;
@@ -817,7 +837,24 @@ bool FCheckRenderMaterialImportedCommand::Update()
 		Test.TestNotNull(TEXT("SharedSphere1 material"), Material1);
 		Test.TestNotNull(TEXT("SharedSphere2 material"), Material2);
 		Test.TestEqual(TEXT("SharedSphere materials"), Material1, Material2);
-		UE_LOG(LogAGX, Warning, TEXT("Materials:\n%p\n%p\n"), (void*)Material1, (void*)Material2);
+	}
+	// NameConflict.
+	{
+		const UMaterialInterface* const Material1 = NameConflictSphere1->GetMaterial(0);
+		const UMaterialInterface* const Material2 = NameConflictSphere2->GetMaterial(0);
+		Test.TestNotEqual(TEXT("Name conflict materials"), Material1, Material2);
+// AGX Dynamics does not currently store render material names in archives. The importer always
+// reads empty strings. Enable these tests if/when render material names are added to serialization.
+#if 0
+		Test.TestEqual(TEXT("Conflict name"), Material1->GetName(), FString(TEXT("NameConflict")));
+		Test.TestEqual(TEXT("Conflict name"), Material2->GetName(), FString(TEXT("NameConflict")));
+#endif
+		FMaterialParameters Parameters1;
+		Parameters1.Shininess = 0.30f;
+		TestMaterial(*NameConflictSphere1, Parameters1, Test);
+		FMaterialParameters Parameters2;
+		Parameters2.Shininess = 0.99f;
+		TestMaterial(*NameConflictSphere2, Parameters2, Test);
 	}
 
 	return true;

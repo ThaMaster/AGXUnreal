@@ -44,5 +44,8 @@ struct AGXUNREALBARRIER_API FAGX_RenderMaterial
 	UPROPERTY()
 	float Shininess;
 
+	UPROPERTY()
+	FName Name;
+
 	FGuid Guid;
 };
