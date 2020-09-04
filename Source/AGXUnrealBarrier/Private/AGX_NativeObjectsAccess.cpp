@@ -1,7 +1,7 @@
 #include "AGX_NativeObjectsAccess.h"
 
 // AGXUnreal includes.
-#include "AGXRefs.h "
+#include "AGXRefs.h"
 #include "RigidBodyBarrier.h"
 #include "SimulationBarrier.h"
 #include "Shapes/ShapeBarrier.h"
@@ -19,8 +19,7 @@ agx::RigidBody* FAGX_NativeObjectsAccess::BarrierToNative(FRigidBodyBarrier* Bar
 {
 	if (!Barrier)
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Could not get AGX native from barrier. Barrier was nullptr."));
+		UE_LOG(LogAGX, Error, TEXT("Could not get AGX native from barrier. Barrier was nullptr."));
 		return nullptr;
 	}
 
@@ -40,8 +39,7 @@ agxSDK::Simulation* FAGX_NativeObjectsAccess::BarrierToNative(FSimulationBarrier
 {
 	if (!Barrier)
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Could not get AGX native from barrier. Barrier was nullptr."));
+		UE_LOG(LogAGX, Error, TEXT("Could not get AGX native from barrier. Barrier was nullptr."));
 		return nullptr;
 	}
 
@@ -61,8 +59,7 @@ agxCollide::Geometry* FAGX_NativeObjectsAccess::BarrierToNativeGeometry(FShapeBa
 {
 	if (!Barrier)
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Could not get AGX native from barrier. Barrier was nullptr."));
+		UE_LOG(LogAGX, Error, TEXT("Could not get AGX native from barrier. Barrier was nullptr."));
 		return nullptr;
 	}
 
