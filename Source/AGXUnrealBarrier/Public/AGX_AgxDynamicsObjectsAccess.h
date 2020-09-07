@@ -23,8 +23,8 @@ class FShapeBarrier;
 class AGXUNREALBARRIER_API FAGX_AgxDynamicsObjectsAccess
 {
 public:
-	static agx::RigidBody* GetFrom(FRigidBodyBarrier* Barrier);
-	static agxSDK::Simulation* GetFrom(FSimulationBarrier* Barrier);
-	static agxCollide::Geometry* GetGeometryFrom(FShapeBarrier* Barrier);
-	static agxCollide::Shape* GetShapeFrom(FShapeBarrier* Barrier);
+	static agx::RigidBody* GetFrom(const FRigidBodyBarrier* Barrier);
+	static agxSDK::Simulation* GetFrom(const FSimulationBarrier* Barrier);
+	static agxCollide::Geometry* GetGeometryFrom(const FShapeBarrier* Barrier);
+	static agxCollide::Shape* GetShapeFrom(const FShapeBarrier* Barrier);
 };

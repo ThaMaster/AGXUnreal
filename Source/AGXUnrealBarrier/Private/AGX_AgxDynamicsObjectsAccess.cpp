@@ -18,7 +18,7 @@
 namespace AgxDynamicsObjectAccess_Helper
 {
 	template <typename AgxType, typename BarrierType>
-	AgxType* GetFrom(BarrierType* Barrier)
+	AgxType* GetFrom(const BarrierType* Barrier)
 	{
 		if (!CheckAgxDynamicsObject<BarrierType>(Barrier))
 		{
@@ -29,7 +29,7 @@ namespace AgxDynamicsObjectAccess_Helper
 	}
 
 	template <typename BarrierType>
-	bool CheckAgxDynamicsObject(BarrierType* Barrier)
+	bool CheckAgxDynamicsObject(const BarrierType* Barrier)
 	{
 		if (!Barrier)
 		{
@@ -53,17 +53,17 @@ namespace AgxDynamicsObjectAccess_Helper
 	}
 }
 
-agx::RigidBody* FAGX_AgxDynamicsObjectsAccess::GetFrom(FRigidBodyBarrier* Barrier)
+agx::RigidBody* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FRigidBodyBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agx::RigidBody>(Barrier);
 }
 
-agxSDK::Simulation* FAGX_AgxDynamicsObjectsAccess::GetFrom(FSimulationBarrier* Barrier)
+agxSDK::Simulation* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FSimulationBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxSDK::Simulation>(Barrier);
 }
 
-agxCollide::Geometry* FAGX_AgxDynamicsObjectsAccess::GetGeometryFrom(FShapeBarrier* Barrier)
+agxCollide::Geometry* FAGX_AgxDynamicsObjectsAccess::GetGeometryFrom(const FShapeBarrier* Barrier)
 {
 	if (!AgxDynamicsObjectAccess_Helper::CheckAgxDynamicsObject<FShapeBarrier>(Barrier))
 	{
@@ -73,7 +73,7 @@ agxCollide::Geometry* FAGX_AgxDynamicsObjectsAccess::GetGeometryFrom(FShapeBarri
 	return Barrier->GetNative()->NativeGeometry.get();
 }
 
-agxCollide::Shape* FAGX_AgxDynamicsObjectsAccess::GetShapeFrom(FShapeBarrier* Barrier)
+agxCollide::Shape* FAGX_AgxDynamicsObjectsAccess::GetShapeFrom(const FShapeBarrier* Barrier)
 {
 	if (!AgxDynamicsObjectAccess_Helper::CheckAgxDynamicsObject<FShapeBarrier>(Barrier))
 	{

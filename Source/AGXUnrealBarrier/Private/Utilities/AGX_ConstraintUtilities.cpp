@@ -2,21 +2,8 @@
 
 #include "TypeConversions.h"
 #include "AGXRefs.h"
+#include "AGX_AgxDynamicsObjectsAccess.h"
 
-namespace
-{
-	/**
-	 * Given a Barrier, returns the final AGX native object.
-	 */
-	template <typename TNative, typename TBarrier>
-	TNative* GetNativeFromBarrier(const TBarrier* Barrier)
-	{
-		if (Barrier && Barrier->HasNative())
-			return Barrier->GetNative()->Native.get();
-		else
-			return nullptr;
-	}
-}
 
 void FAGX_ConstraintUtilities::ConvertConstraintBodiesAndFrames(
 	const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
@@ -30,7 +17,7 @@ void FAGX_ConstraintUtilities::ConvertConstraintBodiesAndFrames(
 		check(FramePosition1);
 		check(FrameRotation1);
 
-		NativeRigidBody1 = GetNativeFromBarrier<agx::RigidBody>(RigidBody1);
+		NativeRigidBody1 = FAGX_AgxDynamicsObjectsAccess::GetFrom(RigidBody1);
 		check(NativeRigidBody1);
 
 		NativeFrame1 = ConvertFrame(*FramePosition1, *FrameRotation1);
@@ -38,7 +25,7 @@ void FAGX_ConstraintUtilities::ConvertConstraintBodiesAndFrames(
 
 	// Convert second Rigid Body and Frame to natives
 	{
-		NativeRigidBody2 = GetNativeFromBarrier<agx::RigidBody>(RigidBody2);
+		NativeRigidBody2 = FAGX_AgxDynamicsObjectsAccess::GetFrom(RigidBody2);
 		if (NativeRigidBody2)
 		{
 			check(FramePosition2);
