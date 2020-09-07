@@ -2,7 +2,7 @@
 
 #include "AGXRefs.h"
 #include "RigidBodyBarrier.h"
-#include "TypeConversions.h"
+#include "Utilities/AGX_ConstraintUtilities.h"
 
 #include "BeginAGXIncludes.h"
 #include <agx/Hinge.h>
@@ -35,7 +35,7 @@ void FHingeBarrier::AllocateNativeImpl(
 	agx::FrameRef NativeFrame1 = nullptr;
 	agx::FrameRef NativeFrame2 = nullptr;
 
-	ConvertConstraintBodiesAndFrames(
+	FAGX_ConstraintUtilities::ConvertConstraintBodiesAndFrames(
 		RigidBody1, FramePosition1, FrameRotation1, RigidBody2, FramePosition2, FrameRotation2,
 		NativeRigidBody1, NativeFrame1, NativeRigidBody2, NativeFrame2);
 

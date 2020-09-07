@@ -6,7 +6,6 @@
 // AGXUnreal includes.
 #include "AGX_MotionControl.h"
 #include "AGX_LogCategory.h"
-#include "AGXRefs.h"
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 #include "RigidBodyBarrier.h"
 
@@ -21,6 +20,7 @@
 
 // AGX Dynamics includes
 #include "BeginAGXIncludes.h"
+#include <agx/Constraint.h>
 #include <agx/Line.h>
 #include <agx/Notify.h>
 #include <agx/RigidBody.h>
@@ -141,6 +141,12 @@ inline FVector ConvertVector(const agx::Vec3& V)
 	return FVector(ConvertDistance(V.x()), -ConvertDistance(V.y()), ConvertDistance(V.z()));
 }
 
+inline FVector ConvertFloatVector(const agx::Vec3f& V)
+{
+	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
+	return FVector(ConvertDistance(V.x()), -ConvertDistance(V.y()), ConvertDistance(V.z()));
+}
+
 inline FVector ConvertAngularVelocity(const agx::Vec3& V)
 {
 	/*
@@ -180,6 +186,12 @@ inline agx::Vec3 ConvertVector(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3(ConvertDistance(V.X), -ConvertDistance(V.Y), ConvertDistance(V.Z));
+}
+
+inline agx::Vec3f ConvertFloatVector(const FVector& V)
+{
+	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
+	return agx::Vec3f(ConvertDistance(V.X), -ConvertDistance(V.Y), ConvertDistance(V.Z));
 }
 
 inline agx::Vec3 ConvertAngularVelocity(const FVector& V)
@@ -374,57 +386,6 @@ inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& Fra
 {
 	return new agx::Frame(
 		agx::AffineMatrix4x4(Convert(FrameRotation), ConvertVector(FramePosition)));
-}
-
-namespace
-{
-	/**
-	 * Given a Barrier, returns the final AGX native object.
-	 */
-	template <typename TNative, typename TBarrier>
-	TNative* GetNativeFromBarrier(const TBarrier* Barrier)
-	{
-		if (Barrier && Barrier->HasNative())
-			return Barrier->GetNative()->Native.get();
-		else
-			return nullptr;
-	}
-}
-
-/// \todo Consider moving this to the .cpp file.
-inline void ConvertConstraintBodiesAndFrames(
-	const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
-	const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2,
-	agx::RigidBody*& NativeRigidBody1, agx::FrameRef& NativeFrame1,
-	agx::RigidBody*& NativeRigidBody2, agx::FrameRef& NativeFrame2)
-{
-	// Convert first Rigid Body and Frame to natives
-	{
-		check(RigidBody1);
-		check(FramePosition1);
-		check(FrameRotation1);
-
-		NativeRigidBody1 = GetNativeFromBarrier<agx::RigidBody>(RigidBody1);
-		check(NativeRigidBody1);
-
-		NativeFrame1 = ConvertFrame(*FramePosition1, *FrameRotation1);
-	}
-
-	// Convert second Rigid Body and Frame to natives
-	{
-		NativeRigidBody2 = GetNativeFromBarrier<agx::RigidBody>(RigidBody2);
-		if (NativeRigidBody2)
-		{
-			check(FramePosition2);
-			check(FrameRotation2);
-
-			NativeFrame2 = ConvertFrame(*FramePosition2, *FrameRotation2);
-		}
-		else
-		{
-			NativeFrame2 = nullptr;
-		}
-	}
 }
 
 inline uint32 StringTo32BitFnvHash(const FString& StringUnreal)
