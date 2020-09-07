@@ -17,17 +17,6 @@
 
 namespace AgxDynamicsObjectAccess_Helper
 {
-	template <typename AgxType, typename BarrierType>
-	AgxType* GetFrom(const BarrierType* Barrier)
-	{
-		if (!CheckAgxDynamicsObject<BarrierType>(Barrier))
-		{
-			return nullptr;
-		}
-
-		return Barrier->GetNative()->Native.get();
-	}
-
 	template <typename BarrierType>
 	bool CheckAgxDynamicsObject(const BarrierType* Barrier)
 	{
@@ -50,6 +39,17 @@ namespace AgxDynamicsObjectAccess_Helper
 		}
 
 		return true;
+	}
+
+	template <typename AgxType, typename BarrierType>
+	AgxType* GetFrom(const BarrierType* Barrier)
+	{
+		if (!CheckAgxDynamicsObject<BarrierType>(Barrier))
+		{
+			return nullptr;
+		}
+
+		return Barrier->GetNative()->Native.get();
 	}
 }
 
