@@ -862,6 +862,11 @@ bool FCheckRenderMaterialImportedCommand::Update()
 
 bool FClearRenderMaterialImportedCommand::Update()
 {
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
 	UWorld* World = Test.Contents->GetWorld();
 	if (World != nullptr)
 	{
