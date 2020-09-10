@@ -33,16 +33,16 @@ struct AGXUNREALBARRIER_API FAGX_RenderMaterial
 	uint8 bHasShininess : 1;
 
 	UPROPERTY()
-	FVector Ambient;
+	FVector Ambient = FVector::ZeroVector;
 
 	UPROPERTY()
-	FVector Diffuse;
+	FVector Diffuse = FVector::ZeroVector;
 
 	UPROPERTY()
-	FVector Emissive;
+	FVector Emissive = FVector::ZeroVector;
 
 	UPROPERTY()
-	float Shininess;
+	float Shininess = {};
 
 	UPROPERTY()
 	FName Name;
