@@ -81,7 +81,7 @@ namespace
 
 		const FColor* GetTextureData() const
 		{
-			return static_cast<const FColor*>(
+			return reinterpret_cast<const FColor*>(
 				Texture->PlatformData->Mips[0].BulkData.LockReadOnly());
 		}
 
