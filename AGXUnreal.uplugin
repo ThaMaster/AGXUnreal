@@ -56,7 +56,6 @@
 		{
 			"Name": "AGXUnrealTests",
 			"Type": "DeveloperTool",
-                        "TypeComment": "Unclear to me what this should be. This name fits, but I have no idea what 'where bBuildDeveloperTools' really means",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [
 				"Win64",
