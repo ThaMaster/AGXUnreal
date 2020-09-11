@@ -37,8 +37,7 @@ namespace
 		float Frac = (float) HeightPixel / (std::numeric_limits<uint16>::max() + 1);
 
 		// At scale = 100, the height span is 512 meters.
-		float Height =
-			(Frac - 0.5) * LANDSCAPE_HEIGHT_SPAN_NOMINAL_M * ScaleZ;
+		float Height = (Frac - 0.5) * LANDSCAPE_HEIGHT_SPAN_NOMINAL_M * ScaleZ;
 
 		// Height in centimeters.
 		return Height;
