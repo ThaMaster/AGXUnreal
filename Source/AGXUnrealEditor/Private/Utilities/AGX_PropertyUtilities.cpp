@@ -52,7 +52,6 @@ UObject* FAGX_PropertyUtilities::GetObjectFromHandle(
 	return nullptr;
 }
 
-//#if UE_VERSION_OLDER_THAN(2,25,0)
 FString FAGX_PropertyUtilities::GetActualDisplayName(const UField* Field, bool bRemoveAgxPrefix)
 {
 	FString Name;
@@ -82,7 +81,7 @@ FString FAGX_PropertyUtilities::GetActualDisplayName(const UField* Field, bool b
 
 	return Name;
 }
-//#else
+
 FString FAGX_PropertyUtilities::GetActualDisplayName(const FField* Field, bool bRemoveAgxPrefix)
 {
 	FString Name;
@@ -108,4 +107,3 @@ FString FAGX_PropertyUtilities::GetActualDisplayName(const FField* Field, bool b
 
 	return Name;
 }
-//#endif
