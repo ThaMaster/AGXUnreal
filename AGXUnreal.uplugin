@@ -55,7 +55,7 @@
 		},
 		{
 			"Name": "AGXUnrealTests",
-			"Type": "DeveloperTool",
+			"Type": "Editor",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [
 				"Win64",
