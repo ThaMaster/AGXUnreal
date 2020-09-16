@@ -9,6 +9,7 @@
 // Unreal Engine includes.
 #include "Engine/GameInstance.h"
 #include "GameFramework/Actor.h"
+#include "Misc/EngineVersionComparison.h"
 
 // Sets default values for this component's properties
 UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
@@ -223,7 +224,13 @@ void UAGX_RigidBodyComponent::WriteTransformToNative()
 }
 
 #if WITH_EDITOR
-bool UAGX_RigidBodyComponent::CanEditChange(const UProperty* InProperty) const
+bool UAGX_RigidBodyComponent::CanEditChange(
+#if UE_VERSION_OLDER_THAN(4,25,0)
+	const UProperty* InProperty
+#else
+	const FProperty* InProperty
+#endif
+	) const
 {
 	// bTransformRootComponent is only allowed when this is the only RigidBodyComponent owned by the
 	// parent actor.

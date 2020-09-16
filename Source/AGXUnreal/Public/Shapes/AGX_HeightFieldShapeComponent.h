@@ -1,10 +1,12 @@
 #pragma once
 
+
+// AGXUnreal includes.
 #include "Shapes/AGX_ShapeComponent.h"
-
-#include "CoreMinimal.h"
-
 #include "Shapes/HeightFieldShapeBarrier.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
 
 #include "AGX_HeightFieldShapeComponent.generated.h"
 

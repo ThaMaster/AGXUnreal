@@ -5,6 +5,7 @@
 
 // Unreal Engine includes.
 #include "Misc/AutomationTest.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Tests/AutomationCommon.h"
 
 #include "GameFramework/Actor.h"
@@ -27,13 +28,22 @@ bool FStringUtilities_GetFNameSafe_Test::RunTest(const FString& Parameters)
 {
 	UE_LOG(LogAGX, Warning, TEXT("Running unit test AGXUnreal.StringUtilities"));
 
-	FName Name = GetFNameSafe(nullptr);
+	FName Name = GetFNameSafe(static_cast<const UObjectBase*>(nullptr));
 	if (Name != NAME_None)
 	{
 		AddError(FString::Printf(
-			TEXT("Expected to get 'NAME_None' for 'nullptr', got '%s' instead."),
+			TEXT("Expected to get 'NAME_None' for 'nullptr' UObjectBase, got '%s' instead."),
 			*Name.ToString()));
 	}
+#if !UE_VERSION_OLDER_THAN(4,25,0)
+	Name = GetFNameSafe(static_cast<const FField*>(nullptr));
+	if (Name != NAME_None)
+	{
+		AddError(FString::Printf(
+			TEXT("Expected to get 'NAME_None' for 'nullptr' FField, got '%s' instead."),
+			*Name.ToString()));
+	}
+#endif
 
 	TUniquePtr<UObject> TestObject {
 		NewObject<AActor>(GetTransientPackage(), TEXT("TestObjectName"), RF_Transient)};

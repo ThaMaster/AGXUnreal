@@ -93,7 +93,13 @@ bool UAGX_TrimeshShapeComponent::DoesPropertyAffectVisualMesh(
 			   GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceAsset);
 }
 
-bool UAGX_TrimeshShapeComponent::CanEditChange(const UProperty* InProperty) const
+bool UAGX_TrimeshShapeComponent::CanEditChange(
+#if UE_VERSION_OLDER_THAN(4,25,0)
+	const UProperty* InProperty
+#else
+	const FProperty* InProperty
+#endif
+	) const
 {
 	if (InProperty->GetFName() ==
 		GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceAsset))
