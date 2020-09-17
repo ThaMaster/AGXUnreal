@@ -188,8 +188,8 @@ private:
 	void InitializeDisplacementMap();
 	void UpdateDisplacementMap();
 	void ClearDisplacementMap();
-	void InitializeParticleSystem();
-	void InitializeParticlesMap();
+	bool InitializeParticleSystem();
+	bool InitializeParticlesMap();
 	void UpdateParticlesMap();
 	void ClearParticlesMap();
 
