@@ -316,7 +316,7 @@ void AAGX_Terrain::SetInitialTransform()
 void AAGX_Terrain::InitializeRendering()
 {
 	InitializeDisplacementMap();
-	ParticleSystemInitialized = (InitializeParticleSystem() && InitializeParticlesMap());
+	ParticleSystemInitialized = InitializeParticleSystem();
 }
 
 void AAGX_Terrain::CreateTerrainMaterial()
@@ -519,6 +519,11 @@ namespace
 }
 
 bool AAGX_Terrain::InitializeParticleSystem()
+{
+	return InitializeParticleSystemComponent() && InitializeParticlesMap();
+}
+
+bool AAGX_Terrain::InitializeParticleSystemComponent()
 {
 	if (!ParticleSystemAsset)
 	{
