@@ -625,7 +625,13 @@ void AAGX_Terrain::UpdateParticlesMap()
 
 	int32 NumParticles = FMath::Min(Positions.Num(), MaxNumParticles);
 
-	ParticleSystemComponent->SetNiagaraVariableInt("User.TargetParticleCount", NumParticles);
+	// If ParticleSystemComponent is nullptr (not initialized) the user have already gotten an error
+	// log message from InitializeParticleSystem(), therefore no error message is printed here.
+	if (ParticleSystemComponent)
+	{
+		ParticleSystemComponent->SetNiagaraVariableInt("User.TargetParticleCount", NumParticles);
+	}
+
 	for (int32 ParticleIndex = 0, PixelIndex = 0; ParticleIndex < NumParticles;
 		 ++ParticleIndex, PixelIndex += NumComponentsPerParticle)
 	{
