@@ -316,8 +316,7 @@ void AAGX_Terrain::SetInitialTransform()
 void AAGX_Terrain::InitializeRendering()
 {
 	InitializeDisplacementMap();
-	InitializeParticleSystem();
-	InitializeParticlesMap();
+	ParticleSystemInitialized = InitializeParticleSystem();
 }
 
 void AAGX_Terrain::CreateTerrainMaterial()
@@ -519,7 +518,12 @@ namespace
 	}
 }
 
-void AAGX_Terrain::InitializeParticleSystem()
+bool AAGX_Terrain::InitializeParticleSystem()
+{
+	return InitializeParticleSystemComponent() && InitializeParticlesMap();
+}
+
+bool AAGX_Terrain::InitializeParticleSystemComponent()
 {
 	if (!ParticleSystemAsset)
 	{
@@ -527,7 +531,7 @@ void AAGX_Terrain::InitializeParticleSystem()
 			LogAGX, Error,
 			TEXT("Terrain '%s' does not have a particle system, cannot render particles"),
 			*GetName());
-		return;
+		return false;
 	}
 
 	ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
@@ -542,9 +546,11 @@ void AAGX_Terrain::InitializeParticleSystem()
 #if WITH_EDITORONLY_DATA
 	ParticleSystemComponent->bVisualizeComponent = true;
 #endif
+
+	return true;
 }
 
-void AAGX_Terrain::InitializeParticlesMap()
+bool AAGX_Terrain::InitializeParticlesMap()
 {
 	if (TerrainParticlesDataMap == nullptr)
 	{
@@ -553,7 +559,7 @@ void AAGX_Terrain::InitializeParticlesMap()
 			TEXT("No particles data map configured for terrain '%s'. Terrain rendering will not "
 				 "include particle."),
 			*GetName());
-		return;
+		return false;
 	}
 
 	if (TerrainParticlesDataMap->GetFormat() != EPixelFormat::PF_A32B32G32R32F)
@@ -562,7 +568,7 @@ void AAGX_Terrain::InitializeParticlesMap()
 			LogAGX, Error,
 			TEXT("The particle data map pixel format for the terrain '%s' must be RGBA32F."),
 			*GetName());
-		return;
+		return false;
 	}
 
 	// Finds the closest fitting base size of a square sized texture such that it has room for all
@@ -587,7 +593,7 @@ void AAGX_Terrain::InitializeParticlesMap()
 		TerrainParticlesDataMap->ResizeTarget(TextureBaseSize, TextureBaseSize);
 	}
 
-	ParticleSystemInitialized = true;
+	return true;
 }
 
 void AAGX_Terrain::UpdateParticlesMap()
@@ -624,8 +630,8 @@ void AAGX_Terrain::UpdateParticlesMap()
 	check(Positions.Num() == Rotations.Num());
 
 	int32 NumParticles = FMath::Min(Positions.Num(), MaxNumParticles);
-
 	ParticleSystemComponent->SetNiagaraVariableInt("User.TargetParticleCount", NumParticles);
+
 	for (int32 ParticleIndex = 0, PixelIndex = 0; ParticleIndex < NumParticles;
 		 ++ParticleIndex, PixelIndex += NumComponentsPerParticle)
 	{
