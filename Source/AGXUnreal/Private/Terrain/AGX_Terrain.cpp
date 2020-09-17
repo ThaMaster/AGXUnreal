@@ -534,6 +534,13 @@ bool AAGX_Terrain::InitializeParticleSystemComponent()
 		return false;
 	}
 
+	// For a yet unknown reason, no particles are rendered unless the NiagaraSystem is compiled before it is
+	// used. This can be done manually by opening the NiagaraSystem asset in the editor and pressing
+	// "Compile" and that solves the problem until the Editor is restarted. To fix this permanently,
+	// we request a recompile of the NiagaraSystem here instead. The underlying cause of the need
+	// for the re-compile is not known. The issue was introduced with Engine version 4.25.3.
+	ParticleSystemAsset->RequestCompile(true);
+
 	ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 		ParticleSystemAsset, RootComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
 		FVector::OneVector, EAttachLocation::Type::KeepWorldPosition, false,
