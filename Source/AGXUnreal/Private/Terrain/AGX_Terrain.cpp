@@ -534,7 +534,7 @@ bool AAGX_Terrain::InitializeParticleSystemComponent()
 		return false;
 	}
 
-#if WITH_EDITORONLY_DATA && UE_VERSION_OLDER_THAN(4, 25, 0) == false
+#if WITH_EDITORONLY_DATA && !UE_VERSION_OLDER_THAN(4, 25, 0)
 	// For a yet unknown reason, the NiagaraSystem asset must be re-compiled each time the Unreal
 	// Editor is restarted. What happens if it is not re-compiled is that no particles are rendered.
 	// The re-compilation can be done manually by opening the NiagaraSystem asset in the Unreal
