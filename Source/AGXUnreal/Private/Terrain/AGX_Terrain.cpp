@@ -534,6 +534,7 @@ bool AAGX_Terrain::InitializeParticleSystemComponent()
 		return false;
 	}
 
+#if WITH_EDITORONLY_DATA
 	// For a yet unknown reason, the NiagaraSystem asset must be re-compiled each time the Unreal
 	// Editor is restarted. What happens if it is not re-compiled is that no particles are rendered.
 	// The re-compilation can be done manually by opening the NiagaraSystem asset in the Unreal
@@ -546,6 +547,8 @@ bool AAGX_Terrain::InitializeParticleSystemComponent()
 #else
 	ParticleSystemAsset->RequestCompile(true);
 #endif
+
+#endif // WITH_EDITORONLY_DATA
 
 	ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 		ParticleSystemAsset, RootComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
