@@ -119,7 +119,7 @@ namespace
 				// Line trace missed. This is unusual but has been observed with large
 				// landscapes at the seams between landscape components/sections, similar to
 				// line traces at the very edge being missed. Re-try the line trace but force
-				// the ray's x and y coordinates to be nudged slightly.
+				// the ray's intersection point to be nudged slightly.
 				else if (ShootSingleRay(
 							 Landscape, X, Y, HEIGHT_SPAN_HALF, LandscapeSizeInfo, CollisionParams,
 							 HitResult, Height, true))
