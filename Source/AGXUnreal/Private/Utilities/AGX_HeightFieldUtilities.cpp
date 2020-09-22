@@ -44,12 +44,17 @@ namespace
 		}
 	}
 
+	// Shoot single ray at landscape to measure the height. Returns false if the ray misses the
+	// landscape and true otherwise. If it returns false the OutHeight is set to 0.0 but is not a
+	// valid measurement.
 	inline bool ShootSingleRay(
 		ALandscape& Landscape, const int32 VertX, const int32 VertY, const float ZOffsetLocal,
 		const FAGX_LandscapeSizeInfo& LandscapeSizeInfo,
 		const FCollisionQueryParams& CollisionParams, FHitResult& HitResult, float& OutHeight,
 		bool ForceNudge = false)
 	{
+		OutHeight = 0.0f;
+
 		// Vertex position in the landscapes local coordinate system.
 		float Xlocal = VertX * LandscapeSizeInfo.QuadSideSizeX;
 		float Ylocal = VertY * LandscapeSizeInfo.QuadSideSizeY;
