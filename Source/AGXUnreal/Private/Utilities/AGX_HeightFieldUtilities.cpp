@@ -97,7 +97,7 @@ namespace
 
 		// At scale = 1, the height span is +- 256 cm
 		// https://docs.unrealengine.com/en-US/Engine/Landscape/TechnicalGuide/#calculatingheightmapzscale
-		const float HEIGHT_SPAN_HALF = 265 * LandscapeSizeInfo.LandscapeScaleZ;
+		const float HEIGHT_SPAN_HALF = 256.0f * LandscapeSizeInfo.LandscapeScaleZ;
 
 		int32 Vertex = 0;
 		int32 LineTraceMisses = 0;
