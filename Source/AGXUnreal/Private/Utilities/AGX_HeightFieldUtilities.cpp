@@ -4,7 +4,7 @@
 #include "AGX_LogCategory.h"
 #include "Terrain/AGX_LandscapeSizeInfo.h"
 
-// AGXUnreal includes.
+// Unreal Engine includes.
 #include "Landscape.h"
 #include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
