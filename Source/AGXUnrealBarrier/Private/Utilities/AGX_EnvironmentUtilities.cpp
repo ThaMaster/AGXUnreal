@@ -25,14 +25,6 @@ static_assert(false);
 
 namespace
 {
-	TArray<FString> GetEnvironmentVariableEntries(const FString& EnvVarName)
-	{
-		FString EnvVarVal = FCurrentPlatformMisc::GetEnvironmentVariable(*EnvVarName);
-		TArray<FString> EnvVarValArray;
-		EnvVarVal.ParseIntoArray(EnvVarValArray, TEXT(";"), false);
-		return EnvVarValArray;
-	}
-
 	void WriteEnvironmentVariable(const FString& EnvVarName, const TArray<FString>& Entries)
 	{
 		FString EnvVarVal = FString::Join(Entries, TEXT(";"));
@@ -99,6 +91,14 @@ void FAGX_EnvironmentUtilities::RemoveEnvironmentVariableEntry(
 	TArray<FString> EnvVarValArray = GetEnvironmentVariableEntries(EnvVarName);
 	EnvVarValArray.Remove(Entry);
 	WriteEnvironmentVariable(EnvVarName, EnvVarValArray);
+}
+
+TArray<FString> FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries(const FString& EnvVarName)
+{
+	FString EnvVarVal = FCurrentPlatformMisc::GetEnvironmentVariable(*EnvVarName);
+	TArray<FString> EnvVarValArray;
+	EnvVarVal.ParseIntoArray(EnvVarValArray, TEXT(";"), false);
+	return EnvVarValArray;
 }
 
 #undef LOCTEXT_NAMESPACE
