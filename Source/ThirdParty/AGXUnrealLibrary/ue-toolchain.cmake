@@ -19,7 +19,7 @@
 # libraries to use. This variable must have been set before running CMake.
 
 # For now this script contains a number of in-source configurations. The intent
-# is that all of these will either be removed or made automatic. Sear for
+# is that all of these will either be removed or made automatic. Search for
 # 'CONFIGURATION POINT' to find them.
 
 # Make sure we know which Unreal Engine installation to use.
@@ -55,13 +55,16 @@ set(ue_compiler_dir "${UE_ROOT}/${ue_compiler_subdir}/${ue_compiler_name}/x86_64
 # The long-term solution is to always use the compiled shipped with Unreal Engine.
 #
 
-# Tell CMake about the compiler, both the path to the binaries and the sysroot.
+# Tell CMake about the Unreal Engine compiler, both the path to the binaries and
+# the sysroot.
 #set(CMAKE_C_COMPILER "${ue_compiler_dir}/bin/clang" CACHE STRING "The C compiler to use.")
 #set(CMAKE_CXX_COMPILER "${ue_compiler_dir}/bin/clang++" CACHE STRING "The C++ compiler to use.")
 #set(CMAKE_SYSROOT "${ue_compiler_dir}" CACHE STRING "The root directory of the compiler installation.")
 
-set(CMAKE_C_COMPILER "clang-8" CACHE STRING "The C compiler to use.")
-set(CMAKE_CXX_COMPILER "clang++-8" CACHE STRING "The C++ compiler to use.")
+# Tell CMake to use the system compiler. Make sure the version is correct,
+# whatever that means.
+set(CMAKE_C_COMPILER "clang-7" CACHE STRING "The C compiler to use.")
+set(CMAKE_CXX_COMPILER "clang++-7" CACHE STRING "The C++ compiler to use.")
 
 
 #
