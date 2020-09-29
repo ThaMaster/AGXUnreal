@@ -52,6 +52,24 @@ FString FAGX_EnvironmentUtilities::GetPluginPath()
 	return AgxPluginPath;
 }
 
+FString FAGX_EnvironmentUtilities::GetProjectBinariesPath()
+{
+	FString ProjectPath =
+		FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
+
+	// Append relative path to binaries directory (depends on current platform).
+	// @todo Can the binaries directory be found another way for any platform?
+#if defined(_WIN64)
+	ProjectPath.Append("Binaries/Win64");
+#elif defined(__linux__)
+	// @todo, append correct relative path to binaries directory.
+#else
+	static_assert(false);
+#endif
+
+	return ProjectPath;
+}
+
 void FAGX_EnvironmentUtilities::AddEnvironmentVariableEntry(
 	const FString& EnvVarName, const FString& Entry)
 {

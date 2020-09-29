@@ -77,8 +77,8 @@ namespace SetupAgxEnvironment_helper
 			TEXT("No installation of AGX Dynamics detected. Using AGX Dynamics resources from the "
 				 "AGXUnreal plugin."));
 
-		const FString PluginPath = FAGX_EnvironmentUtilities::GetPluginPath();
-		const FString AgxResourcesPath = FPaths::Combine(PluginPath, FString("agx"));
+		const FString BinariesPath = FAGX_EnvironmentUtilities::GetProjectBinariesPath();
+		const FString AgxResourcesPath = FPaths::Combine(BinariesPath, FString("agx"));
 		const FString AgxDataPath = FPaths::Combine(AgxResourcesPath, FString("data"));
 		const FString AgxPluginsPath = FPaths::Combine(AgxResourcesPath, FString("plugins"));
 
