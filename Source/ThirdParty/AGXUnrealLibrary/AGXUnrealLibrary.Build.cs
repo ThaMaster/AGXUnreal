@@ -21,7 +21,9 @@ public class AGXUnrealLibrary : ModuleRules
 		Config,
 		Components,
 		Dependencies,
-		TerrainDependencies
+		TerrainDependencies,
+		Plugins,
+		Data
 	};
 
 	public AGXUnrealLibrary(ReadOnlyTargetRules Target) : base(Target)
@@ -35,52 +37,61 @@ public class AGXUnrealLibrary : ModuleRules
 		// Because AGX Dynamics uses exceptions.
 		bEnableExceptions = true;
 
-		bool ManualCopy = (Target.Type == TargetType.Editor && bTreatAsEngineModule);
+		// '*' Means to include all files in the directory.
+		AddRuntimeDependencyDirectory("*", LibSource.Plugins, "Components/agx/Physics", "agx/plugins/Components/agx/Physics");
+		AddRuntimeDependencyDirectory("*", LibSource.Data, "cfg", "agx/data/cfg");
 
-		AddLinkLibrary("agxPhysics", LibSource.Agx, ManualCopy);
-		AddLinkLibrary("agxCore", LibSource.Agx, ManualCopy);
-		AddLinkLibrary("agxSabre", LibSource.Agx, ManualCopy);
-		AddLinkLibrary("agxTerrain", LibSource.Agx, ManualCopy);
-		AddLinkLibrary("agxCable", LibSource.Agx, ManualCopy);
-		AddLinkLibrary("agxModel", LibSource.Agx, ManualCopy);
+		AddRuntimeDependencyExplicitFile("Referenced.agxEntity", LibSource.Plugins, "Components/agx", "agx/plugins/Components/agx");
 
-		AddRuntimeDependency("agxPhysics", LibSource.Agx, ManualCopy);
-		AddRuntimeDependency("agxCore", LibSource.Agx, ManualCopy);
-		AddRuntimeDependency("agxSabre", LibSource.Agx, ManualCopy);
-		AddRuntimeDependency("agxTerrain", LibSource.Agx, ManualCopy);
-		AddRuntimeDependency("agxCable", LibSource.Agx, ManualCopy);
-		AddRuntimeDependency("agxModel", LibSource.Agx, ManualCopy);
-		AddRuntimeDependency("vdbgrid", LibSource.Agx, ManualCopy);
-		AddRuntimeDependency("colamd", LibSource.Agx, ManualCopy);
+		AddRuntimeDependency("agxPhysics", LibSource.Agx);
+		AddRuntimeDependency("agxCore", LibSource.Agx);
+		AddRuntimeDependency("agxSabre", LibSource.Agx);
+		AddRuntimeDependency("agxTerrain", LibSource.Agx);
+		AddRuntimeDependency("agxCable", LibSource.Agx);
+		AddRuntimeDependency("agxModel", LibSource.Agx);
+		AddRuntimeDependency("vdbgrid", LibSource.Agx);
+		AddRuntimeDependency("colamd", LibSource.Agx);
 
-		AddRuntimeDependency("glew", LibSource.Dependencies, ManualCopy);
-		AddRuntimeDependency("zlib", LibSource.Dependencies, ManualCopy);
+		AddRuntimeDependency("glew", LibSource.Dependencies);
+		AddRuntimeDependency("zlib", LibSource.Dependencies);
 
-		AddRuntimeDependency("Half", LibSource.TerrainDependencies, ManualCopy);
-		AddRuntimeDependency("openvdb", LibSource.TerrainDependencies, ManualCopy);
-		AddRuntimeDependency("tbb", LibSource.TerrainDependencies, ManualCopy);
-		AddRuntimeDependency("websockets", LibSource.Dependencies, ManualCopy);
+		AddRuntimeDependency("Half", LibSource.TerrainDependencies);
+		AddRuntimeDependency("openvdb", LibSource.TerrainDependencies);
+		AddRuntimeDependency("websockets", LibSource.Dependencies);
+		// @todo This 'tbb' dependency seems to be added by some other part of the Unreal Engine and results
+		// in a build error if it is included when building an executable from a project using this plugin.
+		// It is not clear if may cause issues for the AGX terrain in some cases if it is not added though.
+		// AddRuntimeDependency("tbb", LibSource.TerrainDependencies);
 
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
-			AddRuntimeDependency("png", LibSource.Dependencies, ManualCopy);
-			AddRuntimeDependency("OpenThreads", LibSource.Dependencies, ManualCopy);
-
-			// OpenVDB is only required because of problems with initialization.
-			// We should try to figure out what goes wrong.
-			AddLinkLibrary("openvdb", LibSource.TerrainDependencies, ManualCopy);
+			AddRuntimeDependency("png", LibSource.Dependencies);
+			AddRuntimeDependency("OpenThreads", LibSource.Dependencies);
 		}
-		else if(Target.Platform == UnrealTargetPlatform.Win64)
+		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-			AddRuntimeDependency("libpng", LibSource.Dependencies, ManualCopy);
-			AddRuntimeDependency("ot2*-OpenThreads", LibSource.Dependencies, ManualCopy);
-			AddRuntimeDependency("msvcp140", LibSource.Agx, ManualCopy);
-			AddRuntimeDependency("vcruntime140", LibSource.Agx, ManualCopy);
+			AddRuntimeDependency("libpng", LibSource.Dependencies);
+			AddRuntimeDependency("ot2*-OpenThreads", LibSource.Dependencies);
+			AddRuntimeDependency("msvcp140", LibSource.Agx);
+			AddRuntimeDependency("vcruntime140", LibSource.Agx);
 		}
 
-		// Not entire sure on this if-test.
-		if (Target.Type == TargetType.Editor || Target.Type == TargetType.Game)
+		if (CurrentPlatform.UseInstalledAgx)
 		{
+			AddLinkLibrary("agxPhysics", LibSource.Agx);
+			AddLinkLibrary("agxCore", LibSource.Agx);
+			AddLinkLibrary("agxSabre", LibSource.Agx);
+			AddLinkLibrary("agxTerrain", LibSource.Agx);
+			AddLinkLibrary("agxCable", LibSource.Agx);
+			AddLinkLibrary("agxModel", LibSource.Agx);
+
+			if (Target.Platform == UnrealTargetPlatform.Linux)
+			{
+				// OpenVDB is only required because of problems with initialization.
+				// We should try to figure out what goes wrong.
+				AddLinkLibrary("openvdb", LibSource.TerrainDependencies);
+			}
+
 			AddIncludePath(LibSource.Agx);
 			AddIncludePath(LibSource.Components);
 			AddIncludePath(LibSource.Config);
@@ -94,14 +105,31 @@ public class AGXUnrealLibrary : ModuleRules
 		PublicIncludePaths.Add(CurrentPlatform.IncludePath(Src));
 	}
 
-	private void AddRuntimeDependency(string Name, LibSource Src, bool PerformManualCopy = false)
+	private void AddRuntimeDependencyDirectory(string Name, LibSource Src, string SourceRelPath = "", string TargetRelPath = "")
+	{
+		string Source = CurrentPlatform.RuntimeLibraryPath(Name, Src, SourceRelPath, true);
+		string Target = Path.Combine("$(BinaryOutputDir)", TargetRelPath);
+
+		RuntimeDependencies.Add(Target, Source);
+	}
+
+	private void AddRuntimeDependencyExplicitFile(string Name, LibSource Src, string SourceRelPath = "", string TargetRelPath = "")
+	{
+		string Source = Path.Combine(CurrentPlatform.RuntimeLibraryDirectory(Src), SourceRelPath, Name);
+		string Target = Path.Combine("$(BinaryOutputDir)", TargetRelPath, Name);
+
+		RuntimeDependencies.Add(Target, Source);
+	}
+
+	private void AddRuntimeDependency(string Name, LibSource Src, string SourceRelPath = "", string TargetRelPath = "")
 	{
 		List<string> FilesToAdd = new List<string>();
 
 		if (Name.Contains("*"))
 		{
 			// Find all files matching the given pattern.
-			FilesToAdd = FindMatchingFiles(CurrentPlatform.RuntimeLibraryDirectory(Src), Name);
+			string Directory = Path.Combine(CurrentPlatform.RuntimeLibraryDirectory(Src), SourceRelPath);
+			FilesToAdd = FindMatchingFiles(Directory, Name);
 		}
 		else
 		{
@@ -115,29 +143,14 @@ public class AGXUnrealLibrary : ModuleRules
 
 		foreach (string FileName in FilesToAdd)
 		{
-			RuntimeDependencies.Add(CurrentPlatform.RuntimeLibraryPath(FileName, Src));
-
-			if (PerformManualCopy)
-			{
-				string PluginRuntimeBinariesDirectory = Path.GetFullPath(Path.Combine(new string[] {
-				Directory.GetParent(PluginDirectory).Parent.Parent.FullName, "Binaries", Target.Platform.ToString()}));
-
-				if (!Directory.Exists(PluginRuntimeBinariesDirectory))
-				{
-					Directory.CreateDirectory(PluginRuntimeBinariesDirectory);
-				}
-
-				// TODO: Why do I need to do the copy the .dll/.so if I have already
-				// added the library to RuntimeDependencies?
-				string Source = CurrentPlatform.RuntimeLibraryPath(FileName, Src);
-				string Destination = Path.Combine(PluginRuntimeBinariesDirectory, CurrentPlatform.RuntimeLibraryFileName(FileName));
-
-				File.Copy(Source, Destination, overwrite: true);
-			}
+			string FileNameFull = CurrentPlatform.RuntimeLibraryFileName(FileName);
+			string Target = Path.Combine("$(BinaryOutputDir)", TargetRelPath, FileNameFull);
+			string Source = CurrentPlatform.RuntimeLibraryPath(FileName, Src, SourceRelPath);
+			RuntimeDependencies.Add(Target, Source);
 		}
 	}
 
-	private void AddLinkLibrary(string Name, LibSource Src, bool PerformManualCopy = false)
+	private void AddLinkLibrary(string Name, LibSource Src)
 	{
 		List<string> FilesToAdd = new List<string>();
 
@@ -159,24 +172,6 @@ public class AGXUnrealLibrary : ModuleRules
 		foreach (string FileName in FilesToAdd)
 		{
 			PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath(FileName, Src));
-
-			if (PerformManualCopy)
-			{
-				string PluginLinkLibraryDirectory = Path.GetFullPath(Path.Combine(new string[] {
-				Directory.GetParent(PluginDirectory).Parent.Parent.FullName, "lib", Target.Platform.ToString()}));
-
-				if (!Directory.Exists(PluginLinkLibraryDirectory))
-				{
-					Directory.CreateDirectory(PluginLinkLibraryDirectory);
-				}
-
-				// TODO: Why do I need to do the copy the .dll/.so if I have already
-				//	   added the library to RuntimeDependencies?
-				string Source = CurrentPlatform.LinkLibraryPath(FileName, Src);
-				string Destination = Path.Combine(PluginLinkLibraryDirectory, CurrentPlatform.LinkLibraryFileName(FileName));
-
-				File.Copy(Source, Destination, overwrite: true);
-			}
 		}
 	}
 
@@ -198,19 +193,19 @@ public class AGXUnrealLibrary : ModuleRules
 		From the plugin's point of view AGX Dynamics can be in one of two states: Installed or Packaged.
 		Installed means that AGX Dynamics exists somewhere outside of the plugin. It does not mean that
 		it must be an actual installation, a source build also counts as an installation. A source build
-		is identified by the presence of the AGX Dynamics environment variable AGX_DIR, which is set
-		when AGX Dynamics' setup_env is run. If the AGX_DIR environment variable isn't set then it is
+		is identified by the presence of the AGX Dynamics environment variable AGX_DEPENDENCIES_DIR, which is set
+		when AGX Dynamics' setup_env is run. If the AGX_DEPENDENCIES_DIR environment variable isn't set then it is
 		assumed that AGX Dynamics is packaged with the plugin and all AGX Dynamics search path will be
 		relative to the plugin directory.
 		*/
 		public static bool UseInstalledAgx(UnrealTargetPlatform Platform)
 		{
-			bool bHasInstalledAgx = Environment.GetEnvironmentVariable("AGX_DIR") != null;
+			bool bHasInstalledAgx = Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR") != null;
 			if (bHasInstalledAgx)
 			{
 				Console.WriteLine(
 					"\nUsing AGX Dynamics installation {0}.",
-					Environment.GetEnvironmentVariable("AGX_DIR"));
+					Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR"));
 			}
 			else
 			{
@@ -242,6 +237,8 @@ public class AGXUnrealLibrary : ModuleRules
 
 		public string RuntimeLibraryPrefix;
 		public string RuntimeLibraryPostfix;
+
+		public bool UseInstalledAgx;
 
 		Dictionary<LibSource, LibSourceInfo> LibSources;
 
@@ -288,7 +285,7 @@ public class AGXUnrealLibrary : ModuleRules
 			return Info.LinkLibrariesPath;
 		}
 
-		public string RuntimeLibraryPath(string LibraryName, LibSource Src)
+		public string RuntimeLibraryPath(string LibraryName, LibSource Src, string RelativePath = "", bool IsDirectory = false)
 		{
 			LibSourceInfo Info = LibSources[Src];
 			if (Info.RuntimeLibrariesPath == null)
@@ -296,7 +293,14 @@ public class AGXUnrealLibrary : ModuleRules
 				Console.Error.WriteLine("No RuntimeLibraryPath for '{0}', '{1}' cannot be found.", Src, LibraryName);
 				return LibraryName;
 			}
-			return Path.Combine(Info.RuntimeLibrariesPath, RuntimeLibraryFileName(LibraryName));
+			if (IsDirectory)
+			{
+				return Path.Combine(Info.RuntimeLibrariesPath, RelativePath, LibraryName);
+			}
+			else
+			{
+				return Path.Combine(Info.RuntimeLibrariesPath, RelativePath, RuntimeLibraryFileName(LibraryName));
+			}
 		}
 
 		public string RuntimeLibraryDirectory(LibSource Src)
@@ -314,7 +318,7 @@ public class AGXUnrealLibrary : ModuleRules
 		{
 			LibSources = new Dictionary<LibSource, LibSourceInfo>();
 
-			bool UseInstalledAgx = Heuristics.UseInstalledAgx(Target.Platform);
+			this.UseInstalledAgx = Heuristics.UseInstalledAgx(Target.Platform);
 
 			// TODO: Detect if AGX Dynamics is in local build or installed mode.
 			//	   Currently assuming local build for Linux and installed for Windows.
@@ -365,6 +369,18 @@ public class AGXUnrealLibrary : ModuleRules
 					Path.Combine(TerrainDependenciesDir, "lib"),
 					Path.Combine(TerrainDependenciesDir, "lib")
 				));
+
+				LibSources.Add(LibSource.Plugins, new LibSourceInfo(
+					null,
+					null,
+					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "Linux", "plugins") : Path.Combine(BaseDir, "Binaries/Linux/agx/plugins")
+				));
+
+				LibSources.Add(LibSource.Data, new LibSourceInfo(
+					null,
+					null,
+					UseInstalledAgx ? Path.Combine(BaseDir, "data") : Path.Combine(BaseDir, "Binaries/Linux/agx/data")
+				));
 			}
 			else if(Target.Platform == UnrealTargetPlatform.Win64)
 			{
@@ -401,6 +417,18 @@ public class AGXUnrealLibrary : ModuleRules
 					Path.Combine(BaseDir, "include"),
 					UseInstalledAgx ? Path.Combine(BaseDir, "lib", "x64") : Path.Combine(BaseDir, "lib", "Win64"),
 					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "Binaries", "Win64")
+				));
+
+				LibSources.Add(LibSource.Plugins, new LibSourceInfo(
+					null,
+					null,
+					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64", "plugins") : Path.Combine(BaseDir, "Binaries/Win64/agx/plugins")
+				));
+
+				LibSources.Add(LibSource.Data, new LibSourceInfo(
+					null,
+					null,
+					UseInstalledAgx ? Path.Combine(BaseDir, "data") : Path.Combine(BaseDir, "Binaries/Win64/agx/data")
 				));
 			}
 
