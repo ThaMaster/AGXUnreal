@@ -41,7 +41,8 @@ public class AGXUnrealLibrary : ModuleRules
 		AddRuntimeDependencyDirectory("*", LibSource.Plugins, "Components/agx/Physics", "agx/plugins/Components/agx/Physics");
 		AddRuntimeDependencyDirectory("*", LibSource.Data, "cfg", "agx/data/cfg");
 
-		AddRuntimeDependencyExplicitFile("Referenced.agxEntity", LibSource.Plugins, "Components/agx", "agx/plugins/Components/agx");
+		AddDependencyExplicitFile("Referenced.agxEntity", CurrentPlatform.RuntimeLibraryDirectory(LibSource.Plugins),
+			"Components/agx", "agx/plugins/Components/agx");
 
 		AddRuntimeDependency("agxPhysics", LibSource.Agx);
 		AddRuntimeDependency("agxCore", LibSource.Agx);
@@ -76,22 +77,22 @@ public class AGXUnrealLibrary : ModuleRules
 			AddRuntimeDependency("vcruntime140", LibSource.Agx);
 		}
 
+		AddLinkLibrary("agxPhysics", LibSource.Agx);
+		AddLinkLibrary("agxCore", LibSource.Agx);
+		AddLinkLibrary("agxSabre", LibSource.Agx);
+		AddLinkLibrary("agxTerrain", LibSource.Agx);
+		AddLinkLibrary("agxCable", LibSource.Agx);
+		AddLinkLibrary("agxModel", LibSource.Agx);
+
+		if (Target.Platform == UnrealTargetPlatform.Linux)
+		{
+			// OpenVDB is only required because of problems with initialization.
+			// We should try to figure out what goes wrong.
+			AddLinkLibrary("openvdb", LibSource.TerrainDependencies);
+		}
+
 		if (CurrentPlatform.UseInstalledAgx)
 		{
-			AddLinkLibrary("agxPhysics", LibSource.Agx);
-			AddLinkLibrary("agxCore", LibSource.Agx);
-			AddLinkLibrary("agxSabre", LibSource.Agx);
-			AddLinkLibrary("agxTerrain", LibSource.Agx);
-			AddLinkLibrary("agxCable", LibSource.Agx);
-			AddLinkLibrary("agxModel", LibSource.Agx);
-
-			if (Target.Platform == UnrealTargetPlatform.Linux)
-			{
-				// OpenVDB is only required because of problems with initialization.
-				// We should try to figure out what goes wrong.
-				AddLinkLibrary("openvdb", LibSource.TerrainDependencies);
-			}
-
 			AddIncludePath(LibSource.Agx);
 			AddIncludePath(LibSource.Components);
 			AddIncludePath(LibSource.Config);
@@ -105,6 +106,7 @@ public class AGXUnrealLibrary : ModuleRules
 		PublicIncludePaths.Add(CurrentPlatform.IncludePath(Src));
 	}
 
+	// The runtime dependency directory will be automatically copied to the target.
 	private void AddRuntimeDependencyDirectory(string Name, LibSource Src, string SourceRelPath = "", string TargetRelPath = "")
 	{
 		string Source = CurrentPlatform.RuntimeLibraryPath(Name, Src, SourceRelPath, true);
@@ -113,14 +115,16 @@ public class AGXUnrealLibrary : ModuleRules
 		RuntimeDependencies.Add(Target, Source);
 	}
 
-	private void AddRuntimeDependencyExplicitFile(string Name, LibSource Src, string SourceRelPath = "", string TargetRelPath = "")
+	// The dependency file will be automatically copied to the target.
+	private void AddDependencyExplicitFile(string Name, string SourceDirectory, string SourceRelPath = "", string TargetRelPath = "")
 	{
-		string Source = Path.Combine(CurrentPlatform.RuntimeLibraryDirectory(Src), SourceRelPath, Name);
+		string Source = Path.Combine(SourceDirectory, SourceRelPath, Name);
 		string Target = Path.Combine("$(BinaryOutputDir)", TargetRelPath, Name);
 
 		RuntimeDependencies.Add(Target, Source);
 	}
 
+	// The runtime dependency file will be automatically copied to the target.
 	private void AddRuntimeDependency(string Name, LibSource Src, string SourceRelPath = "", string TargetRelPath = "")
 	{
 		List<string> FilesToAdd = new List<string>();
@@ -172,6 +176,17 @@ public class AGXUnrealLibrary : ModuleRules
 		foreach (string FileName in FilesToAdd)
 		{
 			PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath(FileName, Src));
+
+			// Copy the link library file to the target.
+			string FileNameFull = CurrentPlatform.LinkLibraryFileName(FileName);
+			string TargetRelativePath = "../../lib";
+
+			if(Target.Platform == UnrealTargetPlatform.Win64)
+			{
+				TargetRelativePath = Path.Combine(TargetRelativePath, "Win64");
+			}
+
+			AddDependencyExplicitFile(FileNameFull, CurrentPlatform.LinkLibraryDirectory(Src), "", TargetRelativePath);
 		}
 	}
 
