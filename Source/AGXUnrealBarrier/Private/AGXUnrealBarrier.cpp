@@ -68,7 +68,7 @@ namespace
 namespace SetupAgxEnvironment_helper
 {
 	// In case this process is ran without an AGX Dynamics environment (setup_env has not been run),
-	// setup the AGX environment to use the necessary AGX resources that comes with the plugin
+	// setup the AGX environment to use the necessary AGX Dynamics resources that comes with the plugin
 	// itself, if they exist.
 	void SetupUsePluginResourcesOnly()
 	{
@@ -77,21 +77,28 @@ namespace SetupAgxEnvironment_helper
 			TEXT("No installation of AGX Dynamics detected. Using AGX Dynamics resources from the "
 				 "AGXUnreal plugin."));
 
-		const FString BinariesPath = FAGX_EnvironmentUtilities::GetProjectBinariesPath();
-		const FString AgxResourcesPath = FPaths::Combine(BinariesPath, FString("agx"));
-		const FString AgxDataPath = FPaths::Combine(AgxResourcesPath, FString("data"));
-		const FString AgxPluginsPath = FPaths::Combine(AgxResourcesPath, FString("plugins"));
+#if WITH_EDITOR
+		FString BinariesPath = FAGX_EnvironmentUtilities::GetPluginBinariesPath();
+#else
+		// This is the correct binaries path when running as a built executable.
+		FString BinariesPath = FAGX_EnvironmentUtilities::GetProjectBinariesPath();
+#endif
+		FString AgxResourcesPath = FPaths::Combine(BinariesPath, FString("agx"));
+		FString AgxDataPath = FPaths::Combine(AgxResourcesPath, FString("data"));
+		FString AgxCfgPath = FPaths::Combine(AgxDataPath, FString("cfg"));
+		FString AgxPluginsPath = FPaths::Combine(AgxResourcesPath, FString("plugins"));
 
 		// Ensure that the necessary AGX Dynamics resources are packed with the plugin.
 		if (!FPaths::DirectoryExists(AgxResourcesPath) || !FPaths::DirectoryExists(AgxDataPath) ||
-			!FPaths::DirectoryExists(AgxPluginsPath))
+			!FPaths::DirectoryExists(AgxCfgPath) || !FPaths::DirectoryExists(AgxPluginsPath))
 		{
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("No AGX Dynamics resources found in the AGXUnreal plugin. The plugin will not "
-					 "be able to load AGX."));
+					 "be able to load AGX Dynamics. The resources where expected to be at: %s"),
+				*AgxResourcesPath);
 
-			// This will likely result in a runtime error since the needed AGX resources are nowhere
+			// This will likely result in a runtime error since the needed AGX Dynamics resources are nowhere
 			// to be found.
 			// @todo What to do here, simply continue and crash or can we throw some type of
 			// exception?
@@ -101,7 +108,7 @@ namespace SetupAgxEnvironment_helper
 		// If AGX Dynamics is installed on this computer, agxIO.Environment.instance() will
 		// read data from the registry and add runtime and resource paths to
 		// the installed version (even if setup_env has not been called). Clear all, from registry
-		// added paths since we will use the AGX resources packed with the plugin only.
+		// added paths since we will use the AGX Dynamics resources packed with the plugin only.
 		for (int i = 0; i < (int) agxIO::Environment::Type::NUM_TYPES; i++)
 		{
 			AGX_ENVIRONMENT().getFilePath((agxIO::Environment::Type) i).clear();
@@ -119,12 +126,16 @@ namespace SetupAgxEnvironment_helper
 		AGX_ENVIRONMENT()
 			.getFilePath(agxIO::Environment::RESOURCE_PATH)
 			.pushbackPath(Convert(AgxDataPath));
+
+		AGX_ENVIRONMENT()
+			.getFilePath(agxIO::Environment::RESOURCE_PATH)
+			.pushbackPath(Convert(AgxCfgPath));
 	}
 
 	void SetupAgxEnvironment()
 	{
 		const TArray<FString> AgxDirEntries =
-			FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries("AGX_DIR");
+			FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries("AGX_DEPENDENCIES_DIR");
 
 		// Check if an AGX environment is already set up, in that case we do not have to do anything
 		// more here.
