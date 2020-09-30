@@ -52,22 +52,41 @@ FString FAGX_EnvironmentUtilities::GetPluginPath()
 	return AgxPluginPath;
 }
 
+FString FAGX_EnvironmentUtilities::GetPluginBinariesPath()
+{
+	FString PluginBinPath = GetPluginPath();
+
+	// Append relative path to binaries directory (depends on current platform).
+	// @todo Can the binaries directory be found another way for any platform?
+#if defined(_WIN64)
+	PluginBinPath.Append("Binaries/Win64");
+#elif defined(__linux__)
+	PluginBinPath.Append("Binaries/Linux");
+#else
+	// @todo Find a good way to get this path for any platform.
+	static_assert(false);
+#endif
+
+	return PluginBinPath;
+}
+
 FString FAGX_EnvironmentUtilities::GetProjectBinariesPath()
 {
-	FString ProjectPath =
+	FString ProjectBinPath =
 		FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
 
 	// Append relative path to binaries directory (depends on current platform).
 	// @todo Can the binaries directory be found another way for any platform?
 #if defined(_WIN64)
-	ProjectPath.Append("Binaries/Win64");
+	ProjectBinPath.Append("Binaries/Win64");
 #elif defined(__linux__)
-	// @todo, append correct relative path to binaries directory.
+	ProjectBinPath.Append("Binaries/Linux");
 #else
+	// @todo Find a good way to get this path for any platform.
 	static_assert(false);
 #endif
 
-	return ProjectPath;
+	return ProjectBinPath;
 }
 
 void FAGX_EnvironmentUtilities::AddEnvironmentVariableEntry(

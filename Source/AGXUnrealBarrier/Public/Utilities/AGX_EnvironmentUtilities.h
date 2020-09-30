@@ -8,6 +8,8 @@ public:
 
 	static FString GetPluginPath();
 
+	static FString GetPluginBinariesPath();
+
 	static FString GetProjectBinariesPath();
 
 	static void AddEnvironmentVariableEntry(const FString& EnvVarName, const FString& Entry);
