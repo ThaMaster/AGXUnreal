@@ -84,7 +84,7 @@ public class AGXUnrealLibrary : ModuleRules
 		AddRuntimeDependency("websockets", LibSource.Dependencies);
 		// @todo This 'tbb' dependency seems to be added by some other part of the Unreal Engine and results
 		// in a build error if it is included when building an executable from a project using this plugin.
-		// It is not clear if may cause issues for the AGX terrain in some cases if it is not added though.
+		// It is not clear if it may cause issues for the AGX terrain in some cases if it is not added.
 		// AddRuntimeDependency("tbb", LibSource.TerrainDependencies);
 
 		if (Target.Platform == UnrealTargetPlatform.Linux)
