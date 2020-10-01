@@ -67,9 +67,9 @@ namespace
 
 namespace SetupAgxEnvironment_helper
 {
-	// In case this process is ran without an AGX Dynamics environment (setup_env has not been run),
-	// setup the AGX environment to use the necessary AGX Dynamics resources that comes with the plugin
-	// itself, if they exist.
+	// In case this process is run without an AGX Dynamics environment (setup_env has not been run),
+	// setup the AGX environment to use the necessary AGX Dynamics resources that is packaged with
+	// the plugin itself, if they exist.
 	void SetupUsePluginResourcesOnly()
 	{
 		UE_LOG(
@@ -94,13 +94,14 @@ namespace SetupAgxEnvironment_helper
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("No AGX Dynamics resources found in the AGXUnreal plugin. The plugin will not "
-					 "be able to load AGX Dynamics. The resources where expected to be at: %s"),
+				TEXT("AGX Dynamics resources are not packaged with the AGXUnreal plugin. The "
+					 "plugin will not be able to load AGX Dynamics. The resources where expected "
+					 "to be at: %s"),
 				*AgxResourcesPath);
 
-			// This will likely result in a runtime error since the needed AGX Dynamics resources are nowhere
-			// to be found.
-			// @todo What to do here, simply continue and crash or can we throw some type of
+			// This will likely result in a runtime error since the needed AGX Dynamics resources
+			// are nowhere to be found.
+			// @todo What to do here, simply continue and crash or can/should we throw some type of
 			// exception?
 			return;
 		}
@@ -148,7 +149,7 @@ namespace SetupAgxEnvironment_helper
 		}
 		else
 		{
-			// No AGX environment found, use the AGX resources packed with the plugin.
+			// No AGX environment found, use the AGX resources packaged with the plugin.
 			SetupUsePluginResourcesOnly();
 		}
 	}
