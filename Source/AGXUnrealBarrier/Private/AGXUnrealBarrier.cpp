@@ -157,6 +157,7 @@ namespace SetupAgxEnvironment_helper
 
 void FAGXUnrealBarrierModule::StartupModule()
 {
+	// SetupAgxEnvironment must be called before agx::init().
 	SetupAgxEnvironment_helper::SetupAgxEnvironment();
 
 	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::StartupModule(). Calling agx::init."));
