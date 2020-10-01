@@ -31,7 +31,9 @@ public class AGXUnrealLibrary : ModuleRules
 	// 2. When building an executable from a project that uses the AGxUnreal plugin.
 	// In both cases all necessary AGX Dynamics resources are packaged with the target
 	// so that it is then possible to use plugin or executable without the need to call AGX's
-	// setup_env.
+	// setup_env. Also, AGX Dynamics's link libraries are packaged with the target so that it
+	// becomes possible to build an executable from a project using the AGXUrdf plugin, even
+	// if setup_env has not been called.
 	//
 	// Details situation 1 (building/packaging the plugin):
 	// AGX Dynamics binary files (.dll/.so), link library files and header files must be
