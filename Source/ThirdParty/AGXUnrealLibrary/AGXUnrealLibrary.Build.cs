@@ -143,32 +143,32 @@ public class AGXUnrealLibrary : ModuleRules
 	}
 
 	// The runtime dependency directory will be automatically copied to the target.
-	private void AddRuntimeDependencyDirectory(string Name, LibSource Src, string SourceRelPath = "", string TargetRelPath = "")
+	private void AddRuntimeDependencyDirectory(string Name, LibSource Src, string SourceAppendPath = "", string TargetAppendPath = "")
 	{
-		string Source = CurrentPlatform.RuntimeLibraryPath(Name, Src, SourceRelPath, true);
-		string Target = Path.Combine("$(BinaryOutputDir)", TargetRelPath);
+		string Source = CurrentPlatform.RuntimeLibraryPath(Name, Src, SourceAppendPath, true);
+		string Target = Path.Combine("$(BinaryOutputDir)", TargetAppendPath);
 
 		RuntimeDependencies.Add(Target, Source);
 	}
 
 	// The dependency file will be automatically copied to the target.
-	private void AddDependencyExplicitFile(string Name, string SourceDirectory, string SourceRelPath = "", string TargetRelPath = "")
+	private void AddDependencyExplicitFile(string Name, string SourceDirectory, string SourceAppendPath = "", string TargetAppendPath = "")
 	{
-		string Source = Path.Combine(SourceDirectory, SourceRelPath, Name);
-		string Target = Path.Combine("$(BinaryOutputDir)", TargetRelPath, Name);
+		string Source = Path.Combine(SourceDirectory, SourceAppendPath, Name);
+		string Target = Path.Combine("$(BinaryOutputDir)", TargetAppendPath, Name);
 
 		RuntimeDependencies.Add(Target, Source);
 	}
 
 	// The runtime dependency file will be automatically copied to the target.
-	private void AddRuntimeDependency(string Name, LibSource Src, string SourceRelPath = "", string TargetRelPath = "")
+	private void AddRuntimeDependency(string Name, LibSource Src, string SourceAppendPath = "", string TargetAppendPath = "")
 	{
 		List<string> FilesToAdd = new List<string>();
 
 		if (Name.Contains("*"))
 		{
 			// Find all files matching the given pattern.
-			string Directory = Path.Combine(CurrentPlatform.RuntimeLibraryDirectory(Src), SourceRelPath);
+			string Directory = Path.Combine(CurrentPlatform.RuntimeLibraryDirectory(Src), SourceAppendPath);
 			FilesToAdd = FindMatchingFiles(Directory, Name);
 		}
 		else
@@ -184,8 +184,8 @@ public class AGXUnrealLibrary : ModuleRules
 		foreach (string FileName in FilesToAdd)
 		{
 			string FileNameFull = CurrentPlatform.RuntimeLibraryFileName(FileName);
-			string Target = Path.Combine("$(BinaryOutputDir)", TargetRelPath, FileNameFull);
-			string Source = CurrentPlatform.RuntimeLibraryPath(FileName, Src, SourceRelPath);
+			string Target = Path.Combine("$(BinaryOutputDir)", TargetAppendPath, FileNameFull);
+			string Source = CurrentPlatform.RuntimeLibraryPath(FileName, Src, SourceAppendPath);
 			RuntimeDependencies.Add(Target, Source);
 		}
 	}
@@ -341,7 +341,7 @@ public class AGXUnrealLibrary : ModuleRules
 			return Info.LinkLibrariesPath;
 		}
 
-		public string RuntimeLibraryPath(string LibraryName, LibSource Src, string RelativePath = "", bool IsDirectory = false)
+		public string RuntimeLibraryPath(string LibraryName, LibSource Src, string AppendPath = "", bool IsDirectory = false)
 		{
 			LibSourceInfo Info = LibSources[Src];
 			if (Info.RuntimeLibrariesPath == null)
@@ -351,11 +351,11 @@ public class AGXUnrealLibrary : ModuleRules
 			}
 			if (IsDirectory)
 			{
-				return Path.Combine(Info.RuntimeLibrariesPath, RelativePath, LibraryName);
+				return Path.Combine(Info.RuntimeLibrariesPath, AppendPath, LibraryName);
 			}
 			else
 			{
-				return Path.Combine(Info.RuntimeLibrariesPath, RelativePath, RuntimeLibraryFileName(LibraryName));
+				return Path.Combine(Info.RuntimeLibrariesPath, AppendPath, RuntimeLibraryFileName(LibraryName));
 			}
 		}
 
