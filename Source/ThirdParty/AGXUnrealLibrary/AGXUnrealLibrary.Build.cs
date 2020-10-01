@@ -31,15 +31,15 @@ public class AGXUnrealLibrary : ModuleRules
 	// 2. When building an executable from a project that uses the AGxUnreal plugin.
 	// In both cases all necessary AGX Dynamics resources are packaged with the target
 	// so that it is then possible to use plugin or executable without the need to call AGX's
-	// setup_env. Also, AGX Dynamics's link libraries are packaged with the target so that it
-	// becomes possible to build an executable from a project using the AGXUrdf plugin, even
-	// if setup_env has not been called.
+	// setup_env. Also, the needed AGX Dynamics link libraries are packaged with the target so
+	// that it becomes possible to build an executable from a project using the AGXUnreal plugin,
+	// even if setup_env has not been called.
 	//
 	// Details situation 1 (building/packaging the plugin):
 	// AGX Dynamics binary files (.dll/.so), link library files and header files must be
 	// available at build time. AGX's setup_env must always be set up when building/packaging
 	// the plugin itself. All AGX Dynamics runtime resources are copied from the AGX Dynamics
-	// installation and packaged with the target.
+	// installation directory and are packaged with the target.
 	// Also note: AGX Dynamics header files are never packaged with the plugin, these will only
 	// be available if an AGX environment has been set up (setup_env has been called).
 	//
@@ -47,9 +47,9 @@ public class AGXUnrealLibrary : ModuleRules
 	// AGX Dynamics binary files (.dll/.so) and link library files must be available at build time
 	// (not headers).
 	// If AGX's setup_env has been called, all AGX Dynamics resources will be taken from the AGX
-	// installation directory.
+	// Dynamics installation directory.
 	// It is also possible to build an executable without calling AGX's setup_env if and only if the
-	// necessary AGX Dynamics resources has been packaged with the AGXUnreal plugin itself..
+	// necessary AGX Dynamics resources has been packaged with the AGXUnreal plugin itself.
 
 	public AGXUnrealLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
