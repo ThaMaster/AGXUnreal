@@ -79,7 +79,7 @@ set(CMAKE_CXX_COMPILER "clang++-7" CACHE STRING "The C++ compiler to use.")
 
 # This part is buggy. I want to enable C++ flags for C++ sources only, but on
 # CMake < 3.12 the COMPILE_LANGUAGE:CXX gives error because for C-only libraries
-# the CXX language isn't been loaded. I therefor added the
+# the CXX language hasn't been loaded. I therefore added the
 # CMAKE_CXX_COMPILER_LOADED check so that we only check for CXX when we know
 # about the language. This also fails because while enabling CXX, which is what
 # we're currently doing, CXX hasn't yet been loaded so the check is always
@@ -87,12 +87,13 @@ set(CMAKE_CXX_COMPILER "clang++-7" CACHE STRING "The C++ compiler to use.")
 # but that's not legal to call here because we may be in the process or enabling
 # C++ right now.
 #
-# For now I just comment all of this out when building C libraries and
-# un-comment it again when building C++ libraries.
-#
-# I don't rember why we can't just pass the C++ flags to all compilers, i.e. also C.
 # Cannot use CMAKE_CXX_FLAGS because those flags are also passed to the linker
 # and we don't want that.
+#
+# I don't rember why we can't just pass the C++ flags to all compilers,
+# i.e. also C. For now I just comment all of this out when building C libraries
+# and un-comment it again when building C++ libraries.
+
 
 #if (CMAKE_CXX_COMPILER_LOADED) # Not needed after CMake 3.12.
 
@@ -119,6 +120,8 @@ list(APPEND CMAKE_PREFIX_PATH
   "${ue_compiler_dir}/usr/lib"
   "${ue_compiler_dir}/usr/lib64")
 list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
+
+
 
 # Disable linking with the system standard library and setup linker directories
 # to the Unreal Engine paths instead.
