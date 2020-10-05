@@ -23,15 +23,6 @@ struct FCurrentPlatformMisc : public FLinuxPlatformMisc
 static_assert(false);
 #endif
 
-namespace
-{
-	void WriteEnvironmentVariable(const FString& EnvVarName, const TArray<FString>& Entries)
-	{
-		FString EnvVarVal = FString::Join(Entries, TEXT(";"));
-		FCurrentPlatformMisc::SetEnvironmentVar(*EnvVarName, *EnvVarVal);
-	}
-}
-
 // May return empty FString if plugin path is not found.
 FString FAGX_EnvironmentUtilities::GetPluginPath()
 {
@@ -72,8 +63,7 @@ FString FAGX_EnvironmentUtilities::GetPluginBinariesPath()
 
 FString FAGX_EnvironmentUtilities::GetProjectBinariesPath()
 {
-	const FString ProjectPath =
-		FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
+	const FString ProjectPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
 
 	// Append relative path to binaries directory (depends on current platform).
 	// @todo Can the binaries directory be found another way for any platform?
@@ -110,7 +100,7 @@ void FAGX_EnvironmentUtilities::AddEnvironmentVariableEntry(
 	}
 
 	EnvVarValArray.Add(Entry);
-	WriteEnvironmentVariable(EnvVarName, EnvVarValArray);
+	SetEnvironmentVariable(EnvVarName, EnvVarValArray);
 }
 
 void FAGX_EnvironmentUtilities::RemoveEnvironmentVariableEntry(
@@ -127,7 +117,7 @@ void FAGX_EnvironmentUtilities::RemoveEnvironmentVariableEntry(
 
 	TArray<FString> EnvVarValArray = GetEnvironmentVariableEntries(EnvVarName);
 	EnvVarValArray.Remove(Entry);
-	WriteEnvironmentVariable(EnvVarName, EnvVarValArray);
+	SetEnvironmentVariable(EnvVarName, EnvVarValArray);
 }
 
 TArray<FString> FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries(const FString& EnvVarName)
@@ -136,6 +126,13 @@ TArray<FString> FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries(const F
 	TArray<FString> EnvVarValArray;
 	EnvVarVal.ParseIntoArray(EnvVarValArray, TEXT(";"), false);
 	return EnvVarValArray;
+}
+
+void FAGX_EnvironmentUtilities::SetEnvironmentVariable(
+	const FString& EnvVarName, const TArray<FString>& Entries)
+{
+	FString EnvVarVal = FString::Join(Entries, TEXT(";"));
+	FCurrentPlatformMisc::SetEnvironmentVar(*EnvVarName, *EnvVarVal);
 }
 
 #undef LOCTEXT_NAMESPACE

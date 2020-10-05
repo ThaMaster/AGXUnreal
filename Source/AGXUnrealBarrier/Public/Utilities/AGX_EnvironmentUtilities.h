@@ -5,7 +5,6 @@
 class AGXUNREALBARRIER_API FAGX_EnvironmentUtilities
 {
 public:
-
 	static FString GetPluginPath();
 
 	static FString GetPluginBinariesPath();
@@ -17,4 +16,6 @@ public:
 	static void RemoveEnvironmentVariableEntry(const FString& EnvVarName, const FString& Entry);
 
 	static TArray<FString> GetEnvironmentVariableEntries(const FString& EnvVarName);
+
+	static void SetEnvironmentVariable(const FString& EnvVarName, const TArray<FString>& Entries);
 };
