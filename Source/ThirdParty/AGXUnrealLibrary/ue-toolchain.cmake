@@ -52,7 +52,7 @@ set(ue_compiler_dir "${UE_ROOT}/${ue_compiler_subdir}/${ue_compiler_name}/x86_64
 # Different Ubuntu distributions have different versions of Clang, so set the
 # proper binary name each time the system compiler is to be used.
 #
-# The long-term solution is to always use the compiled shipped with Unreal Engine.
+# The long-term solution is to always use the compiler shipped with Unreal Engine.
 #
 
 # Tell CMake about the Unreal Engine compiler, both the path to the binaries and
@@ -71,9 +71,9 @@ set(CMAKE_CXX_COMPILER "clang++-7" CACHE STRING "The C++ compiler to use.")
 # CONFIGURATION POINT: compiler flags
 #
 # We have a list of compiler flags that we want to pass when compiling C++
-# source files but not when compiling other file types. Recent CMake has support
-# for making this automatic but that doesn't work on some of the older CMake
-# version we must support. For now just comment and uncomment the
+# source files but not when compiling other file types. Recent CMake (3.12) has
+# support for making this automatic but that isn't available on some of the
+# older CMake version we must support. For now just comment and uncomment the
 # add_compile_options call depending on the language of the library being built.
 #
 
@@ -86,6 +86,7 @@ set(CMAKE_CXX_COMPILER "clang++-7" CACHE STRING "The C++ compiler to use.")
 # false. One might think that an 'enable_language(CXX)' call would fixed that,
 # but that's not legal to call here because we may be in the process or enabling
 # C++ right now.
+# See https://gitlab.kitware.com/cmake/cmake/-/issues/17952
 #
 # Cannot use CMAKE_CXX_FLAGS because those flags are also passed to the linker
 # and we don't want that.
@@ -109,7 +110,7 @@ add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${ue_compiler_flags}>")
 
 
 #
-# CONFIGURATION POINT: Unreal Enging system libraries to CMake
+# CONFIGURATION POINT: Unreal Engine system libraries to CMake
 #
 # This informs CMake of the Unreal Engine system libraries, so that
 # 'find_package' can find them. This is strongly related to sysroot and system
@@ -135,7 +136,6 @@ set(ue_linker_flags "-nodefaultlibs -L${ue_libcxx_libdir}")
 # directories. That's where we have 'm', 'c', 'rt', and such.
 #
 
-# This adds a linker path for the compiler libraries as well, such as m and c.
 #set(ue_linker_flags "${ue_linker_flags} -L${ue_compiler_dir} -L${ue_compiler_dir}/usr/lib -L${ue_compiler_dir}/usr/lib64")
 
 
@@ -150,7 +150,9 @@ if(NOT CMAKE_SHARED_LINKER_FLAGS MATCHES "${ue_libcxx_libdir}")
 endif()
 
 # Including static libraries here causes `-nodefaultlibs` to be passed to `ar`,
-# which errors out because it dosn't have a `-n` parameter.
+# which errors out because it dosn't have a `-n` parameter. Static libraries
+# doesn't really have a proper link stage, so the linker flags doesn't really
+# make sense.
 # if(NOT CMAKE_STATIC_LINKER_FLAGS MATCHES "${ue_libcxx_libdir}")
 #   set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} ${ue_linker_flags}" CACHE INTERNAL "")
 # endif()
