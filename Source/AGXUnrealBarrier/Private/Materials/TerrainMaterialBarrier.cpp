@@ -1,10 +1,17 @@
 #include "Materials/TerrainMaterialBarrier.h"
 
+// AGXUnreal includes.
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 
-#include <Misc/AssertionMacros.h>
+// AGX Dynamics includes.
+THIRD_PARTY_INCLUDES_START
+#include <agx/version.h>
+THIRD_PARTY_INCLUDES_END
+
+// Unreal Engine includes.
 #include "Math/UnrealMathUtility.h"
+#include "Misc/AssertionMacros.h"
 
 FTerrainMaterialBarrier::FTerrainMaterialBarrier()
 	: NativeRef {new FTerrainMaterialRef}
@@ -48,25 +55,41 @@ void FTerrainMaterialBarrier::ReleaseNative()
 void FTerrainMaterialBarrier::SetName(const FString& Name)
 {
 	check(HasNative());
+#if AGX_VERSION_GREATER_OR_EQUAL(2, 29, 0, 0)
+	NativeRef->Native->setDescription(Convert(Name));
+#else
 	NativeRef->Native->setName(Convert(Name));
+#endif
 }
 
 FString FTerrainMaterialBarrier::GetName() const
 {
 	check(HasNative());
+#if AGX_VERSION_GREATER_OR_EQUAL(2, 29, 0, 0)
+	return Convert(NativeRef->Native->getDescription());
+#else
 	return Convert(NativeRef->Native->getName());
+#endif
 }
 
 void FTerrainMaterialBarrier::SetAdhesionOverlapFactor(double AdhesionOverlapFactor)
 {
 	check(HasNative());
+#if AGX_VERSION_GREATER_OR_EQUAL(2, 29, 0, 0)
+	NativeRef->Native->getParticleProperties()->setAdhesionOverlapFactor(AdhesionOverlapFactor);
+#else
 	NativeRef->Native->getBulkProperties()->setAdhesionOverlapFactor(AdhesionOverlapFactor);
+#endif
 }
 
 double FTerrainMaterialBarrier::GetAdhesionOverlapFactor() const
 {
 	check(HasNative());
+#if AGX_VERSION_GREATER_OR_EQUAL(2, 29, 0, 0)
+	return NativeRef->Native->getParticleProperties()->getAdhesionOverlapFactor();
+#else
 	return NativeRef->Native->getBulkProperties()->getAdhesionOverlapFactor();
+#endif
 }
 
 void FTerrainMaterialBarrier::SetCohesion(double Cohesion)
