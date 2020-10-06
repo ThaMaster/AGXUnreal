@@ -429,13 +429,15 @@ public class AGXUnrealLibrary : ModuleRules
 				LibSources.Add(LibSource.Plugins, new LibSourceInfo(
 					null,
 					null,
-					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "Linux", "plugins") : Path.Combine(BaseDir, "Binaries", "Linux", "agx", "plugins")
+					UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_PLUGIN_PATH")
+						: Path.Combine(BaseDir, "Binaries", "Linux", "agx", "plugins")
 				));
 
 				LibSources.Add(LibSource.Data, new LibSourceInfo(
 					null,
 					null,
-					UseInstalledAgx ? Path.Combine(BaseDir, "data") : Path.Combine(BaseDir, "Binaries", "Linux", "agx", "data")
+					UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_DATA_DIR")
+						: Path.Combine(BaseDir, "Binaries", "Linux", "agx", "data")
 				));
 			}
 			else if(Target.Platform == UnrealTargetPlatform.Win64)
@@ -478,13 +480,15 @@ public class AGXUnrealLibrary : ModuleRules
 				LibSources.Add(LibSource.Plugins, new LibSourceInfo(
 					null,
 					null,
-					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64", "plugins") : Path.Combine(BaseDir, "Binaries", "Win64", "agx", "plugins")
+					UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_PLUGIN_PATH")
+						: Path.Combine(BaseDir, "Binaries", "Win64", "agx", "plugins")
 				));
 
 				LibSources.Add(LibSource.Data, new LibSourceInfo(
 					null,
 					null,
-					UseInstalledAgx ? Path.Combine(BaseDir, "data") : Path.Combine(BaseDir, "Binaries", "Win64", "agx", "data")
+					UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_DATA_DIR")
+						: Path.Combine(BaseDir, "Binaries", "Win64", "agx", "data")
 				));
 			}
 
