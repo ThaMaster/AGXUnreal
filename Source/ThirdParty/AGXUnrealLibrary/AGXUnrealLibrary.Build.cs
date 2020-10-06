@@ -143,7 +143,8 @@ public class AGXUnrealLibrary : ModuleRules
 	}
 
 	// The runtime dependency directory will be automatically copied to the target.
-	private void AddRuntimeDependencyDirectory(string Name, LibSource Src, string SourceAppendPath = "", string TargetAppendPath = "")
+	private void AddRuntimeDependencyDirectory(string Name, LibSource Src, string SourceAppendPath = "",
+		string TargetAppendPath = "")
 	{
 		string Source = CurrentPlatform.RuntimeLibraryPath(Name, Src, SourceAppendPath, true);
 		string Target = Path.Combine("$(BinaryOutputDir)", TargetAppendPath);
@@ -152,7 +153,8 @@ public class AGXUnrealLibrary : ModuleRules
 	}
 
 	// The dependency file will be automatically copied to the target.
-	private void AddDependencyExplicitFile(string Name, string SourceDirectory, string SourceAppendPath = "", string TargetAppendPath = "")
+	private void AddDependencyExplicitFile(string Name, string SourceDirectory, string SourceAppendPath = "",
+		string TargetAppendPath = "")
 	{
 		string Source = Path.Combine(SourceDirectory, SourceAppendPath, Name);
 		string Target = Path.Combine("$(BinaryOutputDir)", TargetAppendPath, Name);
@@ -161,7 +163,8 @@ public class AGXUnrealLibrary : ModuleRules
 	}
 
 	// The runtime dependency file will be automatically copied to the target.
-	private void AddRuntimeDependency(string Name, LibSource Src, string SourceAppendPath = "", string TargetAppendPath = "")
+	private void AddRuntimeDependency(string Name, LibSource Src, string SourceAppendPath = "",
+		string TargetAppendPath = "")
 	{
 		List<string> FilesToAdd = new List<string>();
 
@@ -178,7 +181,8 @@ public class AGXUnrealLibrary : ModuleRules
 
 		if (FilesToAdd.Count == 0)
 		{
-			Console.WriteLine("File {0} did not match any found files on disk. The dependency will not be added in the build.", Name);
+			Console.WriteLine("File {0} did not match any found files on disk. " +
+				"The dependency will not be added in the build.", Name);
 		}
 
 		foreach (string FileName in FilesToAdd)
@@ -206,7 +210,8 @@ public class AGXUnrealLibrary : ModuleRules
 
 		if (FilesToAdd.Count == 0)
 		{
-			Console.WriteLine("File {0} did not match any found files on disk. The library will not be added in the build.", Name);
+			Console.WriteLine("File {0} did not match any found files on disk. The library will not be added " +
+				"in the build.", Name);
 		}
 
 		foreach (string FileName in FilesToAdd)
@@ -227,7 +232,8 @@ public class AGXUnrealLibrary : ModuleRules
 				TargetRelativePath = Path.Combine(TargetRelativePath, "Win64");
 			}
 
-			AddDependencyExplicitFile(FileNameFull, CurrentPlatform.LinkLibraryDirectory(Src), "", TargetRelativePath);
+			AddDependencyExplicitFile(FileNameFull, CurrentPlatform.LinkLibraryDirectory(Src), "",
+				TargetRelativePath);
 		}
 	}
 
@@ -341,12 +347,14 @@ public class AGXUnrealLibrary : ModuleRules
 			return Info.LinkLibrariesPath;
 		}
 
-		public string RuntimeLibraryPath(string LibraryName, LibSource Src, string AppendPath = "", bool IsDirectory = false)
+		public string RuntimeLibraryPath(string LibraryName, LibSource Src, string AppendPath = "",
+			bool IsDirectory = false)
 		{
 			LibSourceInfo Info = LibSources[Src];
 			if (Info.RuntimeLibrariesPath == null)
 			{
-				Console.Error.WriteLine("No RuntimeLibraryPath for '{0}', '{1}' cannot be found.", Src, LibraryName);
+				Console.Error.WriteLine("No RuntimeLibraryPath for '{0}', '{1}' cannot be found.", Src,
+					LibraryName);
 				return LibraryName;
 			}
 			if (IsDirectory)
@@ -379,10 +387,14 @@ public class AGXUnrealLibrary : ModuleRules
 			// TODO: Detect if AGX Dynamics is in local build or installed mode.
 			//	   Currently assuming local build for Linux and installed for Windows.
 			string BaseDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_DIR") : PluginDir;
-			string BuildDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_BUILD_DIR") ?? BaseDir : PluginDir;
-			string DependenciesDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR") ?? BaseDir : PluginDir;
-			string TerrainDependenciesDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGXTERRAIN_DEPENDENCIES_DIR") ?? BaseDir : PluginDir;
-			if (UseInstalledAgx && (BaseDir == null || BuildDir == null || DependenciesDir == null || TerrainDependenciesDir == null))
+			string BuildDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_BUILD_DIR")
+				?? BaseDir : PluginDir;
+			string DependenciesDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR")
+				?? BaseDir : PluginDir;
+			string TerrainDependenciesDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGXTERRAIN_DEPENDENCIES_DIR")
+				?? BaseDir : PluginDir;
+			if (UseInstalledAgx && (BaseDir == null || BuildDir == null || DependenciesDir == null
+				|| TerrainDependenciesDir == null))
 			{
 				Console.Error.WriteLine("Did not find AGX Dynamics installation folder.");
 				Console.Error.WriteLine("Have you run setup_env?");
