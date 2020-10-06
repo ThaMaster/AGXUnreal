@@ -17,5 +17,6 @@ public:
 
 	static TArray<FString> GetEnvironmentVariableEntries(const FString& EnvVarName);
 
-	static void SetEnvironmentVariable(const FString& EnvVarName, const TArray<FString>& Entries);
+	static void SetEnvironmentVariableEntries(
+		const FString& EnvVarName, const TArray<FString>& Entries);
 };

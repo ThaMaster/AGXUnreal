@@ -100,7 +100,7 @@ void FAGX_EnvironmentUtilities::AddEnvironmentVariableEntry(
 	}
 
 	EnvVarValArray.Add(Entry);
-	SetEnvironmentVariable(EnvVarName, EnvVarValArray);
+	SetEnvironmentVariableEntries(EnvVarName, EnvVarValArray);
 }
 
 void FAGX_EnvironmentUtilities::RemoveEnvironmentVariableEntry(
@@ -117,7 +117,7 @@ void FAGX_EnvironmentUtilities::RemoveEnvironmentVariableEntry(
 
 	TArray<FString> EnvVarValArray = GetEnvironmentVariableEntries(EnvVarName);
 	EnvVarValArray.Remove(Entry);
-	SetEnvironmentVariable(EnvVarName, EnvVarValArray);
+	SetEnvironmentVariableEntries(EnvVarName, EnvVarValArray);
 }
 
 TArray<FString> FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries(const FString& EnvVarName)
@@ -128,7 +128,7 @@ TArray<FString> FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries(const F
 	return EnvVarValArray;
 }
 
-void FAGX_EnvironmentUtilities::SetEnvironmentVariable(
+void FAGX_EnvironmentUtilities::SetEnvironmentVariableEntries(
 	const FString& EnvVarName, const TArray<FString>& Entries)
 {
 	FString EnvVarVal = FString::Join(Entries, TEXT(";"));
