@@ -79,7 +79,6 @@ public class AGXUnrealLibrary : ModuleRules
 		AddRuntimeDependency("vdbgrid", LibSource.Agx);
 		AddRuntimeDependency("colamd", LibSource.Agx);
 
-		AddRuntimeDependency("glew", LibSource.Dependencies);
 		AddRuntimeDependency("zlib", LibSource.Dependencies);
 
 		AddRuntimeDependency("Half", LibSource.TerrainDependencies);
@@ -99,10 +98,12 @@ public class AGXUnrealLibrary : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-			AddRuntimeDependency("libpng", LibSource.Dependencies);
-			AddRuntimeDependency("ot2*-OpenThreads", LibSource.Dependencies);
 			AddRuntimeDependency("msvcp140", LibSource.Agx);
 			AddRuntimeDependency("vcruntime140", LibSource.Agx);
+
+			AddRuntimeDependency("libpng", LibSource.Dependencies);
+			AddRuntimeDependency("ot2*-OpenThreads", LibSource.Dependencies);
+			AddRuntimeDependency("glew", LibSource.Dependencies);
 		}
 
 		AddLinkLibrary("agxPhysics", LibSource.Agx);
@@ -435,27 +436,6 @@ public class AGXUnrealLibrary : ModuleRules
 			}
 		}
 
-		// TEMPORARY AREA START
-		private void PrintPathContents(string path)
-		{
-			Console.WriteLine("PrintPathContents for path: " + path);
-			if(!Directory.Exists(path))
-			{
-				Console.WriteLine("Path does not exist.");
-				return;
-			}
-
-			foreach (var p in Directory.GetFiles(path))
-			{
-				Console.WriteLine("File: " + p);
-			}
-			foreach (var d in Directory.GetDirectories(path))
-			{
-				Console.WriteLine("Dirs: " + d);
-			}
-		}
-		// TEMPORARY AREA END
-
 		public PlatformInfo(ReadOnlyTargetRules Target, string PluginDir)
 		{
 			LibSources = new Dictionary<LibSource, LibSourceInfo>();
@@ -486,14 +466,6 @@ public class AGXUnrealLibrary : ModuleRules
 				LinkLibraryPostfix = ".so";
 				RuntimeLibraryPrefix = "lib";
 				RuntimeLibraryPostfix = ".so";
-
-				// TEMPORARY AREA START
-				Console.WriteLine("Temporary area start");
-				PrintPathContents("/home/jenkins/workspace/agx/dependencies/agx_dependencies_200928_ubuntu_18.04_64");
-				PrintPathContents("/home/jenkins/workspace/agx/dependencies/agx_dependencies_200928_ubuntu_18.04_64/lib");
-				PrintPathContents("/home/jenkins/workspace/agx/dependencies/agx_dependencies_200928_ubuntu_18.04_64/bin");
-				Console.WriteLine("Temporary area end");
-				// TEMPORARY AREA END
 
 				LibSources.Add(LibSource.Agx, new LibSourceInfo(
 					Path.Combine(BaseDir, "include"),
