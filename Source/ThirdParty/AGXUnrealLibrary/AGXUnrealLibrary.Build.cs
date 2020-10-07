@@ -491,7 +491,7 @@ public class AGXUnrealLibrary : ModuleRules
 				Console.WriteLine("Temporary area start");
 				PrintPathContents("/home/jenkins/workspace/agx/dependencies/agx_dependencies_200928_ubuntu_18.04_64");
 				PrintPathContents("/home/jenkins/workspace/agx/dependencies/agx_dependencies_200928_ubuntu_18.04_64/lib");
-				PrintPathContents("/home/jenkins/workspace/agx/dependencies/agx_dependencies_200928_ubuntu_18.04_64/lib/Linux");
+				PrintPathContents("/home/jenkins/workspace/agx/dependencies/agx_dependencies_200928_ubuntu_18.04_64/bin");
 				Console.WriteLine("Temporary area end");
 				// TEMPORARY AREA END
 
