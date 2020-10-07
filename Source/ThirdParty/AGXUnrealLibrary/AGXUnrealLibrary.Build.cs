@@ -22,7 +22,7 @@ public class AGXUnrealLibrary : ModuleRules
 		Components,
 		Dependencies,
 		TerrainDependencies,
-		Data
+		Cfg
 	};
 
 	// This build script will be run mainly in two situations:
@@ -62,10 +62,12 @@ public class AGXUnrealLibrary : ModuleRules
 		bEnableExceptions = true;
 
 		// '*' Means to include all files in the directory.
-		AddRuntimeDependencyDirectory("*", LibSource.Components, "agx/Physics", "agx/plugins/Components/agx/Physics");
-		AddRuntimeDependencyDirectory("*", LibSource.Data, "cfg", "agx/data/cfg");
+		AddRuntimeDependencyDirectory("*", LibSource.Components, "agx/Physics",
+			"agx/plugins/Components/agx/Physics");
+		AddRuntimeDependencyDirectory("*", LibSource.Cfg, string.Empty, "agx/data/cfg");
 
-		AddDependencyExplicitFile("Referenced.agxEntity", CurrentPlatform.RuntimeLibraryDirectory(LibSource.Components),
+		AddDependencyExplicitFile("Referenced.agxEntity",
+			CurrentPlatform.RuntimeLibraryDirectory(LibSource.Components),
 			"agx", "agx/plugins/Components/agx");
 
 		AddRuntimeDependency("agxPhysics", LibSource.Agx);
@@ -446,7 +448,8 @@ public class AGXUnrealLibrary : ModuleRules
 				?? BaseDir : PluginDir;
 			string DependenciesDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR")
 				?? BaseDir : PluginDir;
-			string TerrainDependenciesDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGXTERRAIN_DEPENDENCIES_DIR")
+			string TerrainDependenciesDir = UseInstalledAgx ?
+				Environment.GetEnvironmentVariable("AGXTERRAIN_DEPENDENCIES_DIR")
 				?? BaseDir : PluginDir;
 			if (UseInstalledAgx && (BaseDir == null || BuildDir == null || DependenciesDir == null
 				|| TerrainDependenciesDir == null))
@@ -493,19 +496,14 @@ public class AGXUnrealLibrary : ModuleRules
 					Path.Combine(TerrainDependenciesDir, "lib")
 				));
 
-				// TEMPORARY AREA, START
-				Console.WriteLine("**Temporary area start**");
-				Console.WriteLine("UseInstalledAgx: " + UseInstalledAgx.ToString());
-				Console.WriteLine("AGX_DIR: " + Environment.GetEnvironmentVariable("AGX_DIR"));
-				Console.WriteLine("AGX_DATA_DIR: " + Environment.GetEnvironmentVariable("AGX_DATA_DIR"));
-				Console.WriteLine("**Temporary area end**");
-				// TEMPORARY AREA, END
-
-				LibSources.Add(LibSource.Data, new LibSourceInfo(
+				// On Linux, environment variable 'AGX_DATA_DIR' is not always visible here when using
+				//  abuilt Agx Dynamics. Therefore 'AGX_DIR' is used instead to find the cfg directory.
+				LibSources.Add(LibSource.Cfg, new LibSourceInfo(
 					null,
 					null,
-					UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_DATA_DIR")
-						: Path.Combine(BaseDir, "Binaries", "Linux", "agx", "data")
+					UseInstalledAgx ?
+						Path.Combine(Environment.GetEnvironmentVariable("AGX_DIR"), "data", "cfg")
+						: Path.Combine(BaseDir, "Binaries", "Linux", "agx", "data", "cfg")
 				));
 			}
 			else if(Target.Platform == UnrealTargetPlatform.Win64)
@@ -517,8 +515,10 @@ public class AGXUnrealLibrary : ModuleRules
 
 				LibSources.Add(LibSource.Agx, new LibSourceInfo(
 					Path.Combine(BaseDir, "include"),
-					UseInstalledAgx ? Path.Combine(BaseDir, "lib", "x64") : Path.Combine(BaseDir, "lib", "Win64"),
-					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "Binaries", "Win64")
+					UseInstalledAgx ? Path.Combine(BaseDir, "lib", "x64")
+						: Path.Combine(BaseDir, "lib", "Win64"),
+					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64")
+						: Path.Combine(BaseDir, "Binaries", "Win64")
 				));
 
 				LibSources.Add(LibSource.Config, new LibSourceInfo(
@@ -545,11 +545,11 @@ public class AGXUnrealLibrary : ModuleRules
 					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "Binaries", "Win64")
 				));
 
-				LibSources.Add(LibSource.Data, new LibSourceInfo(
+				LibSources.Add(LibSource.Cfg, new LibSourceInfo(
 					null,
 					null,
-					UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_DATA_DIR")
-						: Path.Combine(BaseDir, "Binaries", "Win64", "agx", "data")
+					UseInstalledAgx ? Path.Combine(Environment.GetEnvironmentVariable("AGX_DATA_DIR"), "cfg")
+						: Path.Combine(BaseDir, "Binaries", "Win64", "agx", "data", "cfg")
 				));
 			}
 
