@@ -442,6 +442,7 @@ public class AGXUnrealLibrary : ModuleRules
 			if(!Directory.Exists(path))
 			{
 				Console.WriteLine("Path does not exist.");
+				return;
 			}
 
 			foreach (var p in Directory.GetFiles(path))
