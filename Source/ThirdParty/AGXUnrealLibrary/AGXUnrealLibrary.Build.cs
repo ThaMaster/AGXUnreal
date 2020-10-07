@@ -93,7 +93,10 @@ public class AGXUnrealLibrary : ModuleRules
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			AddRuntimeDependency("png", LibSource.Dependencies);
-			AddRuntimeDependency("OpenThreads", LibSource.Dependencies);
+
+			// OpenVDB is only required because of problems with initialization.
+			// We should try to figure out what goes wrong.
+			AddLinkLibrary("openvdb", LibSource.TerrainDependencies);
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
@@ -112,13 +115,6 @@ public class AGXUnrealLibrary : ModuleRules
 		AddLinkLibrary("agxTerrain", LibSource.Agx);
 		AddLinkLibrary("agxCable", LibSource.Agx);
 		AddLinkLibrary("agxModel", LibSource.Agx);
-
-		if (Target.Platform == UnrealTargetPlatform.Linux)
-		{
-			// OpenVDB is only required because of problems with initialization.
-			// We should try to figure out what goes wrong.
-			AddLinkLibrary("openvdb", LibSource.TerrainDependencies);
-		}
 
 		// @todo IncludePaths are only needed when building/packaging
 		// the plugin itself (not when building an executable). So the below if-statement
