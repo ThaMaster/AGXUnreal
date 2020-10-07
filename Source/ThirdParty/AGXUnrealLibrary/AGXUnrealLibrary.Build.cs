@@ -22,7 +22,6 @@ public class AGXUnrealLibrary : ModuleRules
 		Components,
 		Dependencies,
 		TerrainDependencies,
-		Plugins,
 		Data
 	};
 
@@ -63,11 +62,11 @@ public class AGXUnrealLibrary : ModuleRules
 		bEnableExceptions = true;
 
 		// '*' Means to include all files in the directory.
-		AddRuntimeDependencyDirectory("*", LibSource.Plugins, "Components/agx/Physics", "agx/plugins/Components/agx/Physics");
+		AddRuntimeDependencyDirectory("*", LibSource.Components, "agx/Physics", "agx/plugins/Components/agx/Physics");
 		AddRuntimeDependencyDirectory("*", LibSource.Data, "cfg", "agx/data/cfg");
 
-		AddDependencyExplicitFile("Referenced.agxEntity", CurrentPlatform.RuntimeLibraryDirectory(LibSource.Plugins),
-			"Components/agx", "agx/plugins/Components/agx");
+		AddDependencyExplicitFile("Referenced.agxEntity", CurrentPlatform.RuntimeLibraryDirectory(LibSource.Components),
+			"agx", "agx/plugins/Components/agx");
 
 		AddRuntimeDependency("agxPhysics", LibSource.Agx);
 		AddRuntimeDependency("agxCore", LibSource.Agx);
@@ -378,6 +377,62 @@ public class AGXUnrealLibrary : ModuleRules
 			return Info.RuntimeLibrariesPath;
 		}
 
+		private string GetComponentsRuntimePath(ReadOnlyTargetRules Target, string BaseDir,
+			bool UseInstalledAgx)
+		{
+			if (Target.Platform == UnrealTargetPlatform.Linux)
+			{
+				if (UseInstalledAgx)
+				{
+					// On Linux, depending if this is a built or installed Agx Dynamics, the environment
+					// variable AGX_PLUGIN_PATH may return several paths which may or may not include the
+					// sought after Components directory. If none does, it is assumed that the Components
+					// directory is located directly in one of the plugin paths.
+					string[] PluginPaths = Environment.GetEnvironmentVariable("AGX_PLUGIN_PATH").Split(':');
+
+					foreach (string PluginPath in PluginPaths)
+					{
+						string ParentCandidate = PluginPath;
+						if (ParentCandidate.Contains("Components"))
+						{
+							ParentCandidate = ParentCandidate.Substring(0, ParentCandidate.LastIndexOf("Components"));
+						}
+
+						bool IsValidParent = Directory.Exists(Path.Combine(ParentCandidate, "Components", "agx"));
+						if (IsValidParent)
+						{
+							return Path.Combine(ParentCandidate, "Components");
+						}
+					}
+
+					Console.WriteLine("Unable to find installed Agx Dynamics Components runtime path");
+					return string.Empty;
+				}
+				else
+				{
+					return Path.Combine(BaseDir, "Binaries", "Linux", "agx", "plugins", "Components");
+				}
+
+			}
+			else if (Target.Platform == UnrealTargetPlatform.Win64)
+			{
+				if (UseInstalledAgx)
+				{
+					return Path.Combine(Environment.GetEnvironmentVariable("AGX_PLUGIN_PATH"), "Components");
+				}
+				else
+				{
+					return Path.Combine(BaseDir, "Binaries", "Win64", "agx", "plugins", "Components");
+				}
+			}
+			else
+			{
+				Console.WriteLine("Could not get Components runtime path from unsupported platform: " +
+					Target.Platform);
+				return string.Empty;
+			}
+		}
+
 		public PlatformInfo(ReadOnlyTargetRules Target, string PluginDir)
 		{
 			LibSources = new Dictionary<LibSource, LibSourceInfo>();
@@ -423,7 +478,7 @@ public class AGXUnrealLibrary : ModuleRules
 				LibSources.Add(LibSource.Components, new LibSourceInfo(
 					Path.Combine(BaseDir, "Components"),
 					null,
-					null
+					GetComponentsRuntimePath(Target, BaseDir, UseInstalledAgx)
 				));
 
 				LibSources.Add(LibSource.Dependencies, new LibSourceInfo(
@@ -436,13 +491,6 @@ public class AGXUnrealLibrary : ModuleRules
 					Path.Combine(TerrainDependenciesDir, "include"),
 					Path.Combine(TerrainDependenciesDir, "lib"),
 					Path.Combine(TerrainDependenciesDir, "lib")
-				));
-
-				LibSources.Add(LibSource.Plugins, new LibSourceInfo(
-					null,
-					null,
-					UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_PLUGIN_PATH")
-						: Path.Combine(BaseDir, "Binaries", "Linux", "agx", "plugins")
 				));
 
 				LibSources.Add(LibSource.Data, new LibSourceInfo(
@@ -474,7 +522,7 @@ public class AGXUnrealLibrary : ModuleRules
 				LibSources.Add(LibSource.Components, new LibSourceInfo(
 					Path.Combine(BaseDir, "include"),
 					null,
-					null
+					GetComponentsRuntimePath(Target, BaseDir, UseInstalledAgx)
 				));
 
 				LibSources.Add(LibSource.Dependencies, new LibSourceInfo(
@@ -487,13 +535,6 @@ public class AGXUnrealLibrary : ModuleRules
 					Path.Combine(BaseDir, "include"),
 					UseInstalledAgx ? Path.Combine(BaseDir, "lib", "x64") : Path.Combine(BaseDir, "lib", "Win64"),
 					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "Binaries", "Win64")
-				));
-
-				LibSources.Add(LibSource.Plugins, new LibSourceInfo(
-					null,
-					null,
-					UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_PLUGIN_PATH")
-						: Path.Combine(BaseDir, "Binaries", "Win64", "agx", "plugins")
 				));
 
 				LibSources.Add(LibSource.Data, new LibSourceInfo(
