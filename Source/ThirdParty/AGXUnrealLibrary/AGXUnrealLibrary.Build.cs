@@ -83,7 +83,6 @@ public class AGXUnrealLibrary : ModuleRules
 
 		AddRuntimeDependency("Half", LibSource.TerrainDependencies);
 		AddRuntimeDependency("openvdb", LibSource.TerrainDependencies);
-		AddRuntimeDependency("websockets", LibSource.Dependencies);
 		// @todo This 'tbb' dependency seems to be added by some other part of the Unreal Engine and results
 		// in a build error if it is included when building an executable from a project using this plugin.
 		// It is not clear if it may cause issues for the AGX terrain in some cases if it is not added, but
@@ -101,6 +100,7 @@ public class AGXUnrealLibrary : ModuleRules
 			AddRuntimeDependency("msvcp140", LibSource.Agx);
 			AddRuntimeDependency("vcruntime140", LibSource.Agx);
 
+			AddRuntimeDependency("websockets", LibSource.Dependencies);
 			AddRuntimeDependency("libpng", LibSource.Dependencies);
 			AddRuntimeDependency("ot2*-OpenThreads", LibSource.Dependencies);
 			AddRuntimeDependency("glew", LibSource.Dependencies);
