@@ -493,6 +493,13 @@ public class AGXUnrealLibrary : ModuleRules
 					Path.Combine(TerrainDependenciesDir, "lib")
 				));
 
+				// TEMPORARY AREA, START
+				Console.WriteLine("**Temporary area start**");
+				Console.WriteLine("UseInstalledAgx: " + UseInstalledAgx.ToString());
+				Console.WriteLine(Environment.GetEnvironmentVariable("AGX_DATA_DIR"));
+				Console.WriteLine("**Temporary area end**");
+				// TEMPORARY AREA, END
+
 				LibSources.Add(LibSource.Data, new LibSourceInfo(
 					null,
 					null,
