@@ -496,7 +496,8 @@ public class AGXUnrealLibrary : ModuleRules
 				// TEMPORARY AREA, START
 				Console.WriteLine("**Temporary area start**");
 				Console.WriteLine("UseInstalledAgx: " + UseInstalledAgx.ToString());
-				Console.WriteLine(Environment.GetEnvironmentVariable("AGX_DATA_DIR"));
+				Console.WriteLine("AGX_DIR: " + Environment.GetEnvironmentVariable("AGX_DIR"));
+				Console.WriteLine("AGX_DATA_DIR: " + Environment.GetEnvironmentVariable("AGX_DATA_DIR"));
 				Console.WriteLine("**Temporary area end**");
 				// TEMPORARY AREA, END
 
