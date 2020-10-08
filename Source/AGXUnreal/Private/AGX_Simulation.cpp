@@ -136,6 +136,7 @@ const FSimulationBarrier* UAGX_Simulation::GetNative() const
 
 void UAGX_Simulation::Step(float DeltaTime)
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:UAGX_Simulation::Step"));
 	switch (StepMode)
 	{
 		case SM_CATCH_UP_IMMEDIATELY:
@@ -162,6 +163,7 @@ void UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
 
 	while (DeltaTime >= TimeStep)
 	{
+		TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 		NativeBarrier.Step();
 		DeltaTime -= TimeStep;
 	}
@@ -178,6 +180,7 @@ void UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
 	{
 		if (DeltaTime >= TimeStep)
 		{
+			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 			NativeBarrier.Step();
 			DeltaTime -= TimeStep;
 		}
@@ -196,6 +199,7 @@ void UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
 	{
 		if (DeltaTime >= TimeStep)
 		{
+			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:"));
 			NativeBarrier.Step();
 			DeltaTime -= TimeStep;
 		}
@@ -212,6 +216,7 @@ void UAGX_Simulation::StepDropImmediately(float DeltaTime)
 
 	if (DeltaTime >= TimeStep)
 	{
+		TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:"));
 		NativeBarrier.Step();
 		DeltaTime -= TimeStep;
 	}
