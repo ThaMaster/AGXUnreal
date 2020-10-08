@@ -123,6 +123,7 @@ void AAGX_Terrain::EndPlay(const EEndPlayReason::Type EndPlayReason)
 // Called every frame
 void AAGX_Terrain::Tick(float DeltaTime)
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::Tick"));
 	Super::Tick(DeltaTime);
 	UpdateDisplacementMap();
 	UpdateParticlesMap();
@@ -447,6 +448,8 @@ void AAGX_Terrain::UpdateDisplacementMap()
 		return;
 	}
 
+	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::UpdateDisplacementMap"));
+
 	const int32 NumVerticesX = NativeBarrier.GetGridSizeX();
 	const int32 NumVerticesY = NativeBarrier.GetGridSizeY();
 	const int32 NumPixels = NumVerticesX * NumVerticesY;
@@ -613,6 +616,8 @@ void AAGX_Terrain::UpdateParticlesMap()
 	{
 		return;
 	}
+
+	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::UpdateParticlesMap"));
 
 	const int32 ResolutionX = TerrainParticlesDataMap->SizeX;
 	const int32 ResolutionY = TerrainParticlesDataMap->SizeY;
