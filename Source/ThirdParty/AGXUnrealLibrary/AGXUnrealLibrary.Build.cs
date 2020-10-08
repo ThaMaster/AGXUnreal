@@ -461,7 +461,7 @@ public class AGXUnrealLibrary : ModuleRules
 				LinkLibraryPrefix = "lib";
 				LinkLibraryPostfix = ".so";
 				RuntimeLibraryPrefix = "lib";
-				RuntimeLibraryPostfix = ".so";
+				RuntimeLibraryPostfix = ".so*";
 
 				LibSources.Add(LibSource.Agx, new LibSourceInfo(
 					Path.Combine(BaseDir, "include"),
