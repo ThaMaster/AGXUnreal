@@ -23,23 +23,6 @@ struct FCurrentPlatformMisc : public FLinuxPlatformMisc
 static_assert(false);
 #endif
 
-namespace
-{
-	TArray<FString> GetEnvironmentVariableEntries(const FString& EnvVarName)
-	{
-		FString EnvVarVal = FCurrentPlatformMisc::GetEnvironmentVariable(*EnvVarName);
-		TArray<FString> EnvVarValArray;
-		EnvVarVal.ParseIntoArray(EnvVarValArray, TEXT(";"), false);
-		return EnvVarValArray;
-	}
-
-	void WriteEnvironmentVariable(const FString& EnvVarName, const TArray<FString>& Entries)
-	{
-		FString EnvVarVal = FString::Join(Entries, TEXT(";"));
-		FCurrentPlatformMisc::SetEnvironmentVar(*EnvVarName, *EnvVarVal);
-	}
-}
-
 // May return empty FString if plugin path is not found.
 FString FAGX_EnvironmentUtilities::GetPluginPath()
 {
@@ -58,6 +41,42 @@ FString FAGX_EnvironmentUtilities::GetPluginPath()
 	}
 
 	return AgxPluginPath;
+}
+
+FString FAGX_EnvironmentUtilities::GetPluginBinariesPath()
+{
+	const FString PluginPath = GetPluginPath();
+
+	// Append relative path to binaries directory (depends on current platform).
+	// @todo Can the binaries directory be found another way for any platform?
+#if defined(_WIN64)
+	const FString PluginBinPath = FPaths::Combine(PluginPath, FString("Binaries/Win64"));
+#elif defined(__linux__)
+	const FString PluginBinPath = FPaths::Combine(PluginPath, FString("Binaries/Linux"));
+#else
+	// @todo Find a good way to get this path for any platform.
+	static_assert(false);
+#endif
+
+	return PluginBinPath;
+}
+
+FString FAGX_EnvironmentUtilities::GetProjectBinariesPath()
+{
+	const FString ProjectPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
+
+	// Append relative path to binaries directory (depends on current platform).
+	// @todo Can the binaries directory be found another way for any platform?
+#if defined(_WIN64)
+	const FString ProjectBinPath = FPaths::Combine(ProjectPath, FString("Binaries/Win64"));
+#elif defined(__linux__)
+	const FString ProjectBinPath = FPaths::Combine(ProjectPath, FString("Binaries/Linux"));
+#else
+	// @todo Find a good way to get this path for any platform.
+	static_assert(false);
+#endif
+
+	return ProjectBinPath;
 }
 
 void FAGX_EnvironmentUtilities::AddEnvironmentVariableEntry(
@@ -81,7 +100,7 @@ void FAGX_EnvironmentUtilities::AddEnvironmentVariableEntry(
 	}
 
 	EnvVarValArray.Add(Entry);
-	WriteEnvironmentVariable(EnvVarName, EnvVarValArray);
+	SetEnvironmentVariableEntries(EnvVarName, EnvVarValArray);
 }
 
 void FAGX_EnvironmentUtilities::RemoveEnvironmentVariableEntry(
@@ -98,7 +117,22 @@ void FAGX_EnvironmentUtilities::RemoveEnvironmentVariableEntry(
 
 	TArray<FString> EnvVarValArray = GetEnvironmentVariableEntries(EnvVarName);
 	EnvVarValArray.Remove(Entry);
-	WriteEnvironmentVariable(EnvVarName, EnvVarValArray);
+	SetEnvironmentVariableEntries(EnvVarName, EnvVarValArray);
+}
+
+TArray<FString> FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries(const FString& EnvVarName)
+{
+	FString EnvVarVal = FCurrentPlatformMisc::GetEnvironmentVariable(*EnvVarName);
+	TArray<FString> EnvVarValArray;
+	EnvVarVal.ParseIntoArray(EnvVarValArray, TEXT(";"), false);
+	return EnvVarValArray;
+}
+
+void FAGX_EnvironmentUtilities::SetEnvironmentVariableEntries(
+	const FString& EnvVarName, const TArray<FString>& Entries)
+{
+	FString EnvVarVal = FString::Join(Entries, TEXT(";"));
+	FCurrentPlatformMisc::SetEnvironmentVar(*EnvVarName, *EnvVarVal);
 }
 
 #undef LOCTEXT_NAMESPACE
