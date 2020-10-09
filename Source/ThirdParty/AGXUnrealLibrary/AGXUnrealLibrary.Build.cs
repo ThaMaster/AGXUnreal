@@ -27,7 +27,7 @@ public class AGXUnrealLibrary : ModuleRules
 
 	// This build script will be run mainly in two situations:
 	// 1. When building/packaging the AGXUnreal plugin itself.
-	// 2. When building an executable from a project that uses the AGxUnreal plugin.
+	// 2. When building an executable from a project that uses the AGX Dynamics for Unreal plugin.
 	// In both cases all necessary AGX Dynamics resources are packaged with the target
 	// so that it is then possible to use plugin or executable without the need to call AGX's
 	// setup_env. Also, the needed AGX Dynamics link libraries are packaged with the target so
@@ -83,20 +83,26 @@ public class AGXUnrealLibrary : ModuleRules
 
 		AddRuntimeDependency("Half", LibSource.TerrainDependencies);
 		AddRuntimeDependency("openvdb", LibSource.TerrainDependencies);
-		// @todo This 'tbb' dependency seems to be added by some other part of the Unreal Engine and results
-		// in a build error if it is included when building an executable from a project using this plugin.
-		// It is not clear if it may cause issues for the AGX terrain in some cases if it is not added, but
-		// a simple shovel digging in terrain scenario has been tested both in the Unreal Editor and in an
-		// executable successfully without it.
-		// AddRuntimeDependency("tbb", LibSource.TerrainDependencies);
 
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			AddRuntimeDependency("png", LibSource.Dependencies);
 
-			// OpenVDB is only required because of problems with initialization.
-			// We should try to figure out what goes wrong.
+			// We must list OpenVDB only because of problems with
+			// initialization. We should try to figure out what goes wrong.
 			AddLinkLibrary("openvdb", LibSource.TerrainDependencies);
+
+			// TODO: Use Unreal Engine packaged TBB.
+			//
+			// tbb, i.e., Intel Threading Building Blocks, is problematic
+			// because it is also included in Unreal Engine itself. We should
+			// build AGX Dynamics' dependencies against those binaries of tbb
+			// but our dependencies build pipeline currently doesn't support
+			// that. Including this line on Windows causes build errors when
+			// building an executable from a project using this plugin. On Linux
+			// this line must be here because otherwise we get linker errors at
+			// startup.
+			AddRuntimeDependency("tbb", LibSource.TerrainDependencies);
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
