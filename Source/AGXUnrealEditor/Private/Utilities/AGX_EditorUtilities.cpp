@@ -624,16 +624,25 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 		return FRawMesh();
 	}
 
+// Would like to do this as a run time dialog question instead, like the FBX importer does.
+#if !defined(AGXUNREAL_IMPORT_PREFER_RENDER_MESH)
+#define AGXUNREAL_IMPORT_PREFER_RENDER_MESH 0
+#endif
+
 	if (NumCollisionIndices == NumRenderIndices)
 	{
 		return CreateRawMeshFromCollisionAndRenderData(Trimesh);
 	}
+#if AGXUNREAL_IMPORT_PREFER_RENDER_MESH
+	else if (NumRenderIndices > 0)
+	{
+		return CreateRawMeshFromRenderData(Trimesh);
+	}
+#endif
 	else
 	{
 		return CreateRawMeshFromCollisionData(Trimesh);
 	}
-	// We could have a call to CreateRawMeshFromRenderData somewhere around here, if we had a
-	// way to let the user request that.
 }
 
 void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh* StaticMesh)
@@ -665,7 +674,8 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 }
 
 UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
-	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset, bool bRegisterComponent)
+	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset,
+	bool bRegisterComponent)
 {
 	if (!MeshAsset)
 	{
