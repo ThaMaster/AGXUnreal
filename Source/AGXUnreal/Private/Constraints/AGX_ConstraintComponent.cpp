@@ -148,6 +148,18 @@ FConstraintBarrier* UAGX_ConstraintComponent::GetNative()
 	}
 }
 
+const FConstraintBarrier* UAGX_ConstraintComponent::GetNative() const
+{
+	if (NativeBarrier)
+	{
+		return NativeBarrier.Get();
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
 bool UAGX_ConstraintComponent::HasNative() const
 {
 	return NativeBarrier.Get() != nullptr && NativeBarrier->HasNative();

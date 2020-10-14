@@ -33,6 +33,16 @@ namespace
 		// See comment in GetElectricMotorController.
 		return static_cast<FConstraint1DOFBarrier*>(Constraint.GetNative());
 	}
+
+	const FConstraint1DOFBarrier* Get1DOFBarrier(const UAGX_Constraint1DofComponent& Constraint)
+	{
+		return static_cast<const FConstraint1DOFBarrier*>(Constraint.GetNative());
+	}
+}
+
+float UAGX_Constraint1DofComponent::GetAngle() const
+{
+	return static_cast<float>(Get1DOFBarrier(*this)->GetAngle());
 }
 
 void UAGX_Constraint1DofComponent::CreateNativeImpl()

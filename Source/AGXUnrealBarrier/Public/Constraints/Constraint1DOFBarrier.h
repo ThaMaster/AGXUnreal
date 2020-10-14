@@ -25,6 +25,16 @@ public:
 	FConstraint1DOFBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FConstraint1DOFBarrier();
 
+	/**
+	 * @TODO GetAngle currently returns native AGX Dynamics units, i.e., radians and meters, and not
+	 * Unreal Engine units, i.e., degrees and centimeters.
+	 *
+	 * Get the current position of the free degree of freedom is this constraint. For Hinge this is
+	 * an angle, for a prismatic this is a distance.
+	 * @return The current angle of the free degree of freedom.
+	 */
+	double GetAngle() const;
+
 	TUniquePtr<FElectricMotorControllerBarrier> GetElectricMotorController();
 	TUniquePtr<FFrictionControllerBarrier> GetFrictionController();
 	TUniquePtr<FLockControllerBarrier> GetLockController();
