@@ -665,7 +665,8 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 }
 
 UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
-	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset, bool bRegisterComponent)
+	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset,
+	bool bRegisterComponent)
 {
 	if (!MeshAsset)
 	{
