@@ -28,6 +28,9 @@ struct AGXUNREAL_API FAGX_Shovel
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
 	AActor* RigidBodyActor;
 
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FString BodyName;
+
 	/**
 	 * Vertical distance under the blade cutting edge that the soil is allowed
 	 * to instantly merge up to, in centimeters.

@@ -1,18 +1,18 @@
 #include "Terrain/AGX_Terrain.h"
 
 // AGXUnreal includes.
-#include "Terrain/AGX_CuttingDirectionComponent.h"
-#include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "AGX_LogCategory.h"
-#include "Utilities/AGX_HeightFieldUtilities.h"
-#include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
-#include "Terrain/AGX_TopEdgeComponent.h"
-#include "Utilities/AGX_TextureUtilities.h"
+#include "AGX_RigidBodyComponent.h"
 #include "Materials/AGX_TerrainMaterialInstance.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
 #include "Materials/AGX_MaterialBase.h"
+#include "Terrain/AGX_CuttingDirectionComponent.h"
+#include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "Terrain/AGX_LandscapeSizeInfo.h"
+#include "Terrain/AGX_TopEdgeComponent.h"
+#include "Utilities/AGX_HeightFieldUtilities.h"
+#include "Utilities/AGX_TextureUtilities.h"
 
 // AGXUnrealBarrier includes.
 #include "Terrain/TerrainBarrier.h"
@@ -130,6 +130,52 @@ void AAGX_Terrain::Tick(float DeltaTime)
 
 namespace
 {
+	UAGX_RigidBodyComponent* GetBodyComponent(
+		AActor* OwningActor, const FString& BodyName, const TCHAR* TerrainName)
+	{
+		TArray<UAGX_RigidBodyComponent*> Bodies;
+		OwningActor->GetComponents(Bodies, false);
+
+		UE_LOG(LogAGX, Warning, TEXT("Looking for '%s' in:"), *BodyName);
+		for (auto& Body : Bodies)
+		{
+			UE_LOG(LogAGX, Warning, TEXT("  %s"), *Body->GetName());
+		}
+
+		UAGX_RigidBodyComponent** It = Bodies.FindByPredicate(
+			[BodyName](UAGX_RigidBodyComponent* Body) { return BodyName == Body->GetName(); });
+		if (It == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("The shovel '%s' in the AGX Terrain '%s' is invalid because it doesn't have a "
+					 "RigidBodyComponent."),
+				*BodyName, TerrainName);
+			return nullptr;
+		}
+		return *It;
+	}
+
+	template <typename TPtr>
+	TPtr GetShovelComponent(UAGX_RigidBodyComponent& Body, const TCHAR* TerrainName)
+	{
+		auto RecursiveFind = [](const TArray<USceneComponent*>& Components, auto& recurse) {
+			for (USceneComponent* Component : Components)
+			{
+				if (TPtr Match = Cast<std::remove_pointer_t<TPtr>>(Component))
+				{
+					return Match;
+				}
+				if (TPtr Match = recurse(Component->GetAttachChildren(), recurse))
+				{
+					return Match;
+				}
+			}
+			return TPtr(nullptr);
+		};
+		return RecursiveFind(Body.GetAttachChildren(), RecursiveFind);
+	}
+
 	template <typename TPtr>
 	TPtr GetShovelComponent(AActor* Owner, const TCHAR* TerrainName)
 	{
@@ -147,6 +193,7 @@ namespace
 		}
 		return Components[0];
 	}
+
 }
 
 void AAGX_Terrain::InitializeNative()
@@ -209,15 +256,19 @@ void AAGX_Terrain::CreateNativeShovels()
 		}
 
 		AActor* Actor = Shovel.RigidBodyActor;
-		UAGX_RigidBodyComponent* Body = GetShovelComponent<decltype(Body)>(Actor, *GetName());
-		UAGX_TopEdgeComponent* TopEdge = GetShovelComponent<decltype(TopEdge)>(Actor, *GetName());
+		UAGX_RigidBodyComponent* Body = ::GetBodyComponent(Actor, Shovel.BodyName, *GetName());
+		if (Body == nullptr)
+		{
+			// Error message printed by GetBodyComponent.
+			continue;
+		}
+		UAGX_TopEdgeComponent* TopEdge = GetShovelComponent<decltype(TopEdge)>(*Body, *GetName());
 		UAGX_CuttingEdgeComponent* CuttingEdge =
-			GetShovelComponent<decltype(CuttingEdge)>(Actor, *GetName());
+			GetShovelComponent<decltype(CuttingEdge)>(*Body, *GetName());
 		UAGX_CuttingDirectionComponent* CuttingDirection =
-			GetShovelComponent<decltype(CuttingDirection)>(Actor, *GetName());
+			GetShovelComponent<decltype(CuttingDirection)>(*Body, *GetName());
 
-		if (Body == nullptr || TopEdge == nullptr || CuttingEdge == nullptr ||
-			CuttingDirection == nullptr)
+		if (TopEdge == nullptr || CuttingEdge == nullptr || CuttingDirection == nullptr)
 		{
 			// GetShovelComponent is responsible for printing the error message.
 			continue;
