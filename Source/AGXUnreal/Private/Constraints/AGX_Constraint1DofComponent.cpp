@@ -42,7 +42,7 @@ namespace
 
 float UAGX_Constraint1DofComponent::GetAngle() const
 {
-	return static_cast<float>(Get1DOFBarrier(*this)->GetAngle());
+	return Get1DOFBarrier(*this)->GetAngle();
 }
 
 void UAGX_Constraint1DofComponent::CreateNativeImpl()
