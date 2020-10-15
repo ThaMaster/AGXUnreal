@@ -25,6 +25,14 @@ public:
 	FConstraint1DOFBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FConstraint1DOFBarrier();
 
+	/**
+	 * Get the current angle of the free degree of freedom is this constraint. For a Hinge this
+	 * is an angle measured in degrees and for a prismatic this is a distance measured in
+	 * centimeters.
+	 * @return The current angle of the free degree of freedom.
+	 */
+	float GetAngle() const;
+
 	TUniquePtr<FElectricMotorControllerBarrier> GetElectricMotorController();
 	TUniquePtr<FFrictionControllerBarrier> GetFrictionController();
 	TUniquePtr<FLockControllerBarrier> GetLockController();

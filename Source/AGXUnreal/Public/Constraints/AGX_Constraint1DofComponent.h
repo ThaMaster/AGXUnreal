@@ -44,6 +44,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Secondary Constraint")
 	FAGX_ConstraintTargetSpeedController TargetSpeedController;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Constraint")
+	float GetAngle() const;
+
 	UAGX_Constraint1DofComponent();
 
 	UAGX_Constraint1DofComponent(

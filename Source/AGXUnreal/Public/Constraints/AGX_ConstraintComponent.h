@@ -105,6 +105,9 @@ public:
 	/** Get the native AGX Dynamics representation of this constraint. May return nullptr. */
 	FConstraintBarrier* GetNative();
 
+	/** Get the native AGX Dynamics representation of this constraint. May return nullptr. */
+	const FConstraintBarrier* GetNative() const;
+
 	/** Return true if the AGX Dynamics object has been created. False otherwise. */
 	bool HasNative() const;
 
