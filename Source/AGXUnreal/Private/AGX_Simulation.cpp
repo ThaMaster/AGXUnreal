@@ -199,7 +199,7 @@ void UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
 	{
 		if (DeltaTime >= TimeStep)
 		{
-			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:"));
+			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 			NativeBarrier.Step();
 			DeltaTime -= TimeStep;
 		}
@@ -216,7 +216,7 @@ void UAGX_Simulation::StepDropImmediately(float DeltaTime)
 
 	if (DeltaTime >= TimeStep)
 	{
-		TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:"));
+		TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 		NativeBarrier.Step();
 		DeltaTime -= TimeStep;
 	}
