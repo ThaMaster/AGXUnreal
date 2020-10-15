@@ -42,13 +42,35 @@ namespace
 	}
 }
 
-double FConstraint1DOFBarrier::GetAngle() const
+float FConstraint1DOFBarrier::GetAngle() const
 {
 	/// @TODO Convert from AGX Dynamics units to Unreal Engine units. Difficult because we could
 	/// be a constraint with either a free rotational degree of freedom or a free translational
 	/// degree of freedom.
 	check(HasNative());
-	return Get1DOF(NativeRef)->getAngle();
+
+	const agx::Constraint1DOF* Constraint = Get1DOF(NativeRef);
+	const agx::Real NativeAngle = Constraint->getAngle();
+	const agx::Motor1D* Motor = Constraint->getMotor1D();
+	if (Motor == nullptr)
+	{
+		return NativeAngle;
+	}
+	const agx::Angle* AngleType = Motor->getData().getAngle();
+	if (AngleType == nullptr)
+	{
+		return NativeAngle;
+	}
+	const agx::Angle::Type DofType = AngleType->getType();
+	switch (DofType)
+	{
+		case agx::Angle::ROTATIONAL:
+			return ConvertAngle(NativeAngle);
+		case agx::Angle::TRANSLATIONAL:
+			ConvertDistance(NativeAngle);
+		default:
+			return NativeAngle;
+	}
 }
 
 TUniquePtr<FElectricMotorControllerBarrier> FConstraint1DOFBarrier::GetElectricMotorController()
