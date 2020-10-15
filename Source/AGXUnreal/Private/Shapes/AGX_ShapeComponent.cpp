@@ -54,33 +54,15 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	{
 		UAGX_ShapeMaterialInstance* MaterialInstance = static_cast<UAGX_ShapeMaterialInstance*>(
 			PhysicalMaterial->GetOrCreateInstance(GetWorld()));
-
 		check(MaterialInstance);
-
 		UWorld* PlayingWorld = GetWorld();
-
 		if (MaterialInstance != PhysicalMaterial && PlayingWorld && PlayingWorld->IsGameWorld())
 		{
-			UE_LOG(
-				LogAGX, Log,
-				TEXT("UAGX_ShapeComponent::UpdateNativeProperties is swapping a property "
-					 "(to %s from %s)."),
-				*GetNameSafe(MaterialInstance), *GetNameSafe(PhysicalMaterial));
-
 			PhysicalMaterial = MaterialInstance;
 		}
-
 		FShapeMaterialBarrier* MaterialBarrier =
 			MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
 		check(MaterialBarrier);
-
-		UE_LOG(
-			LogAGX, Log,
-			TEXT("UAGX_ShapeComponent::UpdateNativeProperties is setting native material \"%s\" on "
-				 "shape "
-				 "\"%s\" of rigid body \"%s\"."),
-			*MaterialInstance->GetName(), *GetName(), *GetNameSafe(GetOwner()));
-
 		GetNative()->SetMaterial(*MaterialBarrier);
 	}
 

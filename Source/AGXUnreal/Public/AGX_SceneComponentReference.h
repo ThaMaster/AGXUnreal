@@ -25,7 +25,7 @@ class AActor;
  * fully formed, i.e., the OwningActor property set to the final Actor and the referenced
  * SceneComponent been given its final name.
  *
- * \todo The implementation is very similar to UAGX_RigidBodyComponent. Find what can be shared and
+ * \todo The implementation is very similar to FAGX_RigidBodyReference. Find what can be shared and
  * put somewhere.
  */
 USTRUCT()
@@ -33,6 +33,7 @@ struct AGXUNREAL_API FAGX_SceneComponentReference
 {
 	GENERATED_BODY()
 
+	// Don't like using soft references here. See comment in FAGX_RigidBodyReference.
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics",
 		meta = (Tooltip = "The Actor that owns the SceneComponent"))
