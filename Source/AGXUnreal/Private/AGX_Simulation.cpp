@@ -14,7 +14,7 @@
 
 #include <algorithm>
 
-float UAGX_Simulation::GetStepForwardTime()
+FAGX_Statistics UAGX_Simulation::GetStatistics()
 {
 	check(HasNative());
 	if (!bEnableStatistics)
@@ -23,7 +23,7 @@ float UAGX_Simulation::GetStepForwardTime()
 			LogAGX, Warning,
 			TEXT("UAGX_Simulation::GetStepForwardTime called while statistics gathering is "
 				 "disabled. Enable in Project Settings > Plugins > AGX Dynamics > Statistics."));
-		return -1.0f;
+		return FAGX_Statistics();
 	}
 
 	return NativeBarrier.GetStatistics();

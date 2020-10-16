@@ -142,19 +142,36 @@ void FSimulationBarrier::SetStatisticsEnabled(bool bEnabled)
 	agx::Statistics::instance()->setEnable(bEnabled);
 }
 
-float FSimulationBarrier::GetStatistics()
+FAGX_Statistics FSimulationBarrier::GetStatistics()
 {
+	FAGX_Statistics Statistics;
+
 	agx::Statistics::Data<agx::Real>* StepForwardTime =
 		agx::Statistics::instance()->getData<agx::Real>(
 			NativeRef->Native.get(), "Step forward time");
 	if (StepForwardTime == nullptr)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Could not get step forward time from statistics"));
-		return -1.0f;
+		UE_LOG(LogAGX, Warning, TEXT("Could not get step forward time from statistics."));
+		Statistics.StepForwardTime = -1.0f;
+	}
+	else
+	{
+		Statistics.StepForwardTime = Convert(StepForwardTime->value());
 	}
 
-	agx::Real Time = StepForwardTime->value();
-	return Convert(Time);
+	agx::Statistics::Data<size_t>* NumParticles =
+		agx::Statistics::instance()->getData<size_t>(NativeRef->Native.get(), "Num particles");
+	if (NumParticles == nullptr)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Could not get number of particles from statistics."));
+		Statistics.NumParticles = -1;
+	}
+	else
+	{
+		Statistics.NumParticles = static_cast<uint32>(NumParticles->value());
+	}
+
+	return Statistics;
 }
 
 bool FSimulationBarrier::HasNative() const
