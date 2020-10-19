@@ -474,6 +474,14 @@ void UAGX_ConstraintComponent::BeginDestroy()
 	BodyAttachment1.OnDestroy(this);
 	BodyAttachment2.OnDestroy(this);
 }
+
+void UAGX_ConstraintComponent::DestroyComponent(bool bPromoteChildren)
+{
+	Super::DestroyComponent(bPromoteChildren);
+	DofGraphicsComponent1->DestroyComponent();
+	DofGraphicsComponent2->DestroyComponent();
+	IconGraphicsComponent->DestroyComponent();
+}
 #endif
 
 void UAGX_ConstraintComponent::BeginPlay()

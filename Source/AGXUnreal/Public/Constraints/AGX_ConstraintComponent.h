@@ -133,6 +133,9 @@ protected:
 	// When destroyed in Game.
 	virtual void BeginDestroy() override;
 
+	// When destroyed in Editor.
+	virtual void DestroyComponent(bool bPromoteChildren) override;
+
 /// \note The Actor version of constraints had this following callbacks.
 /// Components don't have it. Does it matter? Do we need it?
 #if 0
