@@ -131,6 +131,14 @@ const FSimulationBarrier* UAGX_Simulation::GetNative() const
 
 void UAGX_Simulation::Step(float DeltaTime)
 {
+	if (bExportInitialState) {
+		// Is there a suitable callback we can use instead of checking before every step?
+		bExportInitialState = false;
+		if (!ExportPath.IsEmpty()) {
+			WriteAGXArchive(ExportPath);
+		}
+	}
+
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:UAGX_Simulation::Step"));
 	switch (StepMode)
 	{

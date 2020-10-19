@@ -84,6 +84,12 @@ public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Statistics")
 	bool bEnableStatistics = false;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Startup")
+	bool bExportInitialState = false;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Startup", meta = (EditCondition ="bExportInitialState"))
+	FString ExportPath;
+
 	/** Get the wall clock time for the most recent AGX Dynamics simulation step. */
 	UFUNCTION(BlueprintCallable, Category = "Statistics")
 	float GetStepForwardTime();
