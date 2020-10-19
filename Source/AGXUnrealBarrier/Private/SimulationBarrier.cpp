@@ -142,34 +142,68 @@ void FSimulationBarrier::SetStatisticsEnabled(bool bEnabled)
 	agx::Statistics::instance()->setEnable(bEnabled);
 }
 
+namespace
+{
+	float GetStatisticsTime(void* Instance, const char* Name)
+	{
+		agx::Statistics::Data<agx::Real>* Entry =
+			agx::Statistics::instance()->getData<agx::Real>(Instance, Name);
+		if (Entry == nullptr)
+		{
+			/// @todo Unclear where this message should be. Not here, since the user may not be
+			/// interested in this particular part of the statistics.
+			// UE_LOG(
+			//	LogAGX, Warning, TEXT("Could not get '%s' from AGX Dynamics Statistics."),
+			//	UTF8_TO_TCHAR(Name));
+			return -1.0f;
+		}
+		return Convert(Entry->value());
+	}
+
+	float GetStatisticsCount(void* Instance, const char* Name)
+	{
+		agx::Statistics::Data<size_t>* Entry =
+			agx::Statistics::instance()->getData<size_t>(Instance, Name);
+		if (Entry == nullptr)
+		{
+			return std::numeric_limits<size_t>::max();
+		}
+		size_t ValueAgx = Entry->value();
+		size_t MaxAllowed = std::numeric_limits<int32>::max();
+		if (ValueAgx > MaxAllowed)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Statistics value %ull for '%s' is too large, truncated to %d."), ValueAgx,
+				UTF8_TO_TCHAR(Name), MaxAllowed);
+			ValueAgx = MaxAllowed;
+		}
+		return static_cast<int32>(ValueAgx);
+	}
+};
+
 FAGX_Statistics FSimulationBarrier::GetStatistics()
 {
 	FAGX_Statistics Statistics;
 
-	agx::Statistics::Data<agx::Real>* StepForwardTime =
-		agx::Statistics::instance()->getData<agx::Real>(
-			NativeRef->Native.get(), "Step forward time");
-	if (StepForwardTime == nullptr)
-	{
-		UE_LOG(LogAGX, Warning, TEXT("Could not get step forward time from statistics."));
-		Statistics.StepForwardTime = -1.0f;
-	}
-	else
-	{
-		Statistics.StepForwardTime = Convert(StepForwardTime->value());
-	}
+	void* SimulationContext = static_cast<void*>(NativeRef->Native.get());
+	Statistics.StepForwardTime = GetStatisticsTime(SimulationContext, "Step forward time");
+	Statistics.PreCollideTime = GetStatisticsTime(SimulationContext, "Pre-collide event time");
+	Statistics.ContactEventsTime =
+		GetStatisticsTime(SimulationContext, "Triggering contact events");
+	Statistics.PreStepTime = GetStatisticsTime(SimulationContext, "Pre-step event time");
+	Statistics.DynamicsSystemTime = GetStatisticsTime(SimulationContext, "Dynamics-system time");
+	Statistics.SpaceTime = GetStatisticsTime(SimulationContext, "Collision-detection time");
+	Statistics.PostStepTime = GetStatisticsTime(SimulationContext, "Post-step event time");
+	Statistics.LastStepTime = GetStatisticsTime(SimulationContext, "Last-step event time");
+	Statistics.InterStepTime = GetStatisticsTime(SimulationContext, "Inter-step time");
+	Statistics.NumParticles = GetStatisticsCount(SimulationContext, "Num particles");
 
-	agx::Statistics::Data<size_t>* NumParticles =
-		agx::Statistics::instance()->getData<size_t>(NativeRef->Native.get(), "Num particles");
-	if (NumParticles == nullptr)
-	{
-		UE_LOG(LogAGX, Warning, TEXT("Could not get number of particles from statistics."));
-		Statistics.NumParticles = -1;
-	}
-	else
-	{
-		Statistics.NumParticles = static_cast<uint32>(NumParticles->value());
-	}
+	void* DynamicsContext = static_cast<void*>(NativeRef->Native.get()->getDynamicsSystem());
+	Statistics.NumBodies = GetStatisticsCount(DynamicsContext, "Num enabled rigid bodies");
+	Statistics.NumConstraints = GetStatisticsCount(DynamicsContext, "Num binary constraints") +
+								GetStatisticsCount(DynamicsContext, "Num multi-body constraints");
+	Statistics.NumContacts = GetStatisticsCount(DynamicsContext, "Num contact constraints");
 
 	return Statistics;
 }
