@@ -86,7 +86,7 @@ public:
 
 	/** Get the wall clock time for the most recent AGX Dynamics simulation step. */
 	UFUNCTION(BlueprintCallable, Category = "Statistics")
-	float GetStepForwardTime();
+	FAGX_Statistics GetStatistics();
 
 	void AddRigidBody(UAGX_RigidBodyComponent* Body);
 

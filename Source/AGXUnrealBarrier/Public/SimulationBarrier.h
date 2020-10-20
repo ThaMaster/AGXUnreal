@@ -1,7 +1,12 @@
 #pragma once
 
+// AGXUnreal includes.
+#include "Utilities/AGX_Statistics.h"
+
+// Unreal Engine includes.
 #include "Containers/UnrealString.h"
 
+// System includes.
 #include <memory>
 
 struct FSimulationRef;
@@ -59,7 +64,7 @@ public:
 	/// \todo Statistics isn't a per-simulation thing in AGX Dynamics, so having statistics
 	/// management here is a bit misleading.
 	void SetStatisticsEnabled(bool bEnable);
-	float GetStatistics();
+	FAGX_Statistics GetStatistics();
 
 	bool HasNative() const;
 	void AllocateNative();

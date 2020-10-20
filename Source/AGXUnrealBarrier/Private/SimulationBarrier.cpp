@@ -142,19 +142,70 @@ void FSimulationBarrier::SetStatisticsEnabled(bool bEnabled)
 	agx::Statistics::instance()->setEnable(bEnabled);
 }
 
-float FSimulationBarrier::GetStatistics()
+namespace
 {
-	agx::Statistics::Data<agx::Real>* StepForwardTime =
-		agx::Statistics::instance()->getData<agx::Real>(
-			NativeRef->Native.get(), "Step forward time");
-	if (StepForwardTime == nullptr)
+	float GetStatisticsTime(void* Instance, const char* Name)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Could not get step forward time from statistics"));
-		return -1.0f;
+		agx::Statistics::Data<agx::Real>* Entry =
+			agx::Statistics::instance()->getData<agx::Real>(Instance, Name);
+		if (Entry == nullptr)
+		{
+			/// @todo Unclear where this message should be. Not here, since the user may not be
+			/// interested in this particular part of the statistics.
+			// UE_LOG(
+			//	LogAGX, Warning, TEXT("Could not get '%s' from AGX Dynamics Statistics."),
+			//	UTF8_TO_TCHAR(Name));
+			return -1.0f;
+		}
+		return Convert(Entry->value());
 	}
 
-	agx::Real Time = StepForwardTime->value();
-	return Convert(Time);
+	int32 GetStatisticsCount(void* Instance, const char* Name)
+	{
+		agx::Statistics::Data<size_t>* Entry =
+			agx::Statistics::instance()->getData<size_t>(Instance, Name);
+		if (Entry == nullptr)
+		{
+			return -1;
+		}
+		size_t ValueAgx = Entry->value();
+		const size_t MaxAllowed = std::numeric_limits<int32>::max();
+		if (ValueAgx > MaxAllowed)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Statistics value %llu for '%s' is too large, truncated to %d."),
+				(unsigned long long) ValueAgx, UTF8_TO_TCHAR(Name), MaxAllowed);
+			ValueAgx = MaxAllowed;
+		}
+		return static_cast<int32>(ValueAgx);
+	}
+};
+
+FAGX_Statistics FSimulationBarrier::GetStatistics()
+{
+	FAGX_Statistics Statistics;
+
+	void* SimulationContext = static_cast<void*>(NativeRef->Native.get());
+	Statistics.StepForwardTime = GetStatisticsTime(SimulationContext, "Step forward time");
+	Statistics.PreCollideTime = GetStatisticsTime(SimulationContext, "Pre-collide event time");
+	Statistics.ContactEventsTime =
+		GetStatisticsTime(SimulationContext, "Triggering contact events");
+	Statistics.PreStepTime = GetStatisticsTime(SimulationContext, "Pre-step event time");
+	Statistics.DynamicsSystemTime = GetStatisticsTime(SimulationContext, "Dynamics-system time");
+	Statistics.SpaceTime = GetStatisticsTime(SimulationContext, "Collision-detection time");
+	Statistics.PostStepTime = GetStatisticsTime(SimulationContext, "Post-step event time");
+	Statistics.LastStepTime = GetStatisticsTime(SimulationContext, "Last-step event time");
+	Statistics.InterStepTime = GetStatisticsTime(SimulationContext, "Inter-step time");
+	Statistics.NumParticles = GetStatisticsCount(SimulationContext, "Num particles");
+
+	void* DynamicsContext = static_cast<void*>(NativeRef->Native.get()->getDynamicsSystem());
+	Statistics.NumBodies = GetStatisticsCount(DynamicsContext, "Num enabled rigid bodies");
+	Statistics.NumConstraints = GetStatisticsCount(DynamicsContext, "Num binary constraints") +
+								GetStatisticsCount(DynamicsContext, "Num multi-body constraints");
+	Statistics.NumContacts = GetStatisticsCount(DynamicsContext, "Num contact constraints");
+
+	return Statistics;
 }
 
 bool FSimulationBarrier::HasNative() const
