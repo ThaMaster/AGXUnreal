@@ -160,22 +160,22 @@ namespace
 		return Convert(Entry->value());
 	}
 
-	float GetStatisticsCount(void* Instance, const char* Name)
+	int32 GetStatisticsCount(void* Instance, const char* Name)
 	{
 		agx::Statistics::Data<size_t>* Entry =
 			agx::Statistics::instance()->getData<size_t>(Instance, Name);
 		if (Entry == nullptr)
 		{
-			return std::numeric_limits<size_t>::max();
+			return -1;
 		}
 		size_t ValueAgx = Entry->value();
-		size_t MaxAllowed = std::numeric_limits<int32>::max();
+		const size_t MaxAllowed = std::numeric_limits<int32>::max();
 		if (ValueAgx > MaxAllowed)
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Statistics value %ull for '%s' is too large, truncated to %d."), ValueAgx,
-				UTF8_TO_TCHAR(Name), MaxAllowed);
+				TEXT("Statistics value %llu for '%s' is too large, truncated to %d."),
+				(unsigned long long) ValueAgx, UTF8_TO_TCHAR(Name), MaxAllowed);
 			ValueAgx = MaxAllowed;
 		}
 		return static_cast<int32>(ValueAgx);
