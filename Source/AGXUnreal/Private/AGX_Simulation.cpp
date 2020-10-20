@@ -11,6 +11,8 @@
 // Unreal Engine includes.
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
+#include "Misc/Paths.h"
 
 #include <algorithm>
 
@@ -129,14 +131,54 @@ const FSimulationBarrier* UAGX_Simulation::GetNative() const
 	return &NativeBarrier;
 }
 
+namespace agx_simulation_helpers
+{
+	void WriteInitialStateArchive(const FString& ExportPath, UAGX_Simulation& Simulation)
+	{
+		if (ExportPath.IsEmpty())
+		{
+			// No path specified, default to ProjectUserDir.
+			WriteInitialStateArchive(FPaths::ProjectUserDir(), Simulation);
+		}
+		else if (FPaths::DirectoryExists(ExportPath))
+		{
+			// Exporting to a directory. Name archive based on current level.
+			FString LevelName = UGameplayStatics::GetCurrentLevelName(&Simulation);
+			if (LevelName.IsEmpty())
+			{
+				LevelName = TEXT("InitialState");
+			}
+			FString FileName = LevelName + TEXT(".agx");
+			WriteInitialStateArchive(
+				FPaths::Combine(ExportPath, FileName), Simulation);
+		}
+		else
+		{
+			// Exporting to a file. Must be a valid AGX Dynamics archive name.
+			if (!(ExportPath.EndsWith(".agx") || ExportPath.EndsWith(".aagx")))
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Cannot export initial state to archive: Export path '%s' does not "
+						 "specify a "
+						 "'.agx' or '.aagx' path."),
+					*ExportPath)
+				return;
+			}
+			FString FullPath = FPaths::ConvertRelativePathToFull(ExportPath);
+			Simulation.WriteAGXArchive(FullPath);
+		}
+	}
+}
+
 void UAGX_Simulation::Step(float DeltaTime)
 {
-	if (bExportInitialState) {
+	using namespace agx_simulation_helpers;
+	if (bExportInitialState)
+	{
 		// Is there a suitable callback we can use instead of checking before every step?
 		bExportInitialState = false;
-		if (!ExportPath.IsEmpty()) {
-			WriteAGXArchive(ExportPath);
-		}
+		WriteInitialStateArchive(ExportPath, *this);
 	}
 
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:UAGX_Simulation::Step"));
@@ -286,12 +328,12 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const UGameInstance* GameInstance)
 
 #if WITH_EDITOR
 bool UAGX_Simulation::CanEditChange(
-#if UE_VERSION_OLDER_THAN(4,25,0)
+#if UE_VERSION_OLDER_THAN(4, 25, 0)
 	const UProperty* InProperty
 #else
 	const FProperty* InProperty
 #endif
-	) const
+) const
 {
 	// Time Lag Cap should only be editable when step mode SM_CATCH_UP_OVER_TIME_CAPPED is used.
 	if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UAGX_Simulation, TimeLagCap))
