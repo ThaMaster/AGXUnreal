@@ -24,6 +24,8 @@
  * This file contains a set of tests for AGX_ArchiveImporterToSingleActor, which imports an AGX
  * Dynamics archive into the current world as a single Actor that contains ActorComponents for each
  * imported object.
+ *
+ * Search for "test starts here." within this file to find the start of each test case.
  */
 
 /**
@@ -54,6 +56,10 @@ bool FImportArchiveSingleActorCommand::Update()
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
 }
+
+//
+// EmptyScene test starts here.
+//
 
 /**
  * Latent Command testing that the empty scene was imported correctly.
@@ -163,6 +169,10 @@ namespace
 {
 	FArchiveImporterToSingleActor_EmptySceneTest ArchiveImporterToSingleActor_EmptySceneTest;
 }
+
+//
+// SingleSphere test starts here.
+//
 
 class FArchiveImporterToSingleActor_SingleSphereTest;
 
@@ -453,6 +463,126 @@ bool FClearSingleSphereImportedCommand::Update()
 	}
 	World->DestroyActor(Contents);
 	Contents = nullptr;
+	return true;
+}
+
+//
+// MotionControl test starts here.
+//
+
+class FArchiveImporterToSingleActor_MotionControlTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckMotionControlImportedCommand, FArchiveImporterToSingleActor_MotionControlTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearMotionControlImportedCommand, FArchiveImporterToSingleActor_MotionControlTest&, Test);
+
+class FArchiveImporterToSingleActor_MotionControlTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_MotionControlTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_MotionControlTest"),
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.MotionControl"))
+	{
+	}
+
+public:
+	AActor* Contents = nullptr; // <! The Actor created to hold the archive contents.
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand("motion_control_build.agx", Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckMotionControlImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearMotionControlImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_MotionControlTest FArchiveImporterToSingleActor_MotionControlTest;
+}
+
+bool FCheckMotionControlImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import MotionControl test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
+
+	// Get the components we know should be there.
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* StaticBody =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("StaticBody"));
+	UAGX_SphereShapeComponent* StaticShape =
+		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("StaticShape"));
+	UAGX_RigidBodyComponent* KinematicsBody =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("KinematicBody"));
+	UAGX_SphereShapeComponent* KinematicsShape =
+		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("KinematicShape"));
+	UAGX_RigidBodyComponent* DynamicsBody =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("DynamicBody"));
+	UAGX_SphereShapeComponent* DynamicsShape =
+		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("DynamicShape"));
+
+	// Make sure we got the components we know should be there.
+	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
+	Test.TestNotNull(TEXT("StaticBody"), StaticBody);
+	Test.TestNotNull(TEXT("StaticShape"), StaticShape);
+	Test.TestNotNull(TEXT("KinematicBody"), KinematicsBody);
+	Test.TestNotNull(TEXT("KinematicShape"), KinematicsShape);
+	Test.TestNotNull(TEXT("DynamicBody"), DynamicsBody);
+	Test.TestNotNull(TEXT("DynamicShape"), DynamicsShape);
+	if (SceneRoot == nullptr || StaticBody == nullptr || StaticShape == nullptr ||
+		KinematicsBody == nullptr || KinematicsShape == nullptr || DynamicsBody == nullptr ||
+		DynamicsShape == nullptr)
+	{
+		Test.AddError("A required component wasn't found in the imported actor. Cannot continue");
+		return true;
+	}
+
+	Test.TestEqual(
+		TEXT("Static body motion control"), StaticBody->MotionControl,
+		EAGX_MotionControl::MC_STATIC);
+	Test.TestEqual(
+		TEXT("Kinematic body motion control"), KinematicsBody->MotionControl,
+		EAGX_MotionControl::MC_KINEMATICS);
+	Test.TestEqual(
+		TEXT("Dynamic body motion control"), DynamicsBody->MotionControl,
+		EAGX_MotionControl::MC_DYNAMICS);
+
+	Test.TestEqual(TEXT("Static body mobility"), StaticBody->Mobility, EComponentMobility::Static);
+	Test.TestEqual(
+		TEXT("Kinematic body mobility"), KinematicsBody->Mobility, EComponentMobility::Movable);
+	Test.TestEqual(
+		TEXT("Dynamic body mobility"), DynamicsBody->Mobility, EComponentMobility::Movable);
+
+	return true;
+}
+
+bool FClearMotionControlImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
 	return true;
 }
 
