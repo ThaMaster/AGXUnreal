@@ -145,6 +145,16 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 	Velocity = Barrier.GetVelocity();
 	AngularVelocity = Barrier.GetAngularVelocity();
 	MotionControl = Barrier.GetMotionControl();
+	switch (MotionControl)
+	{
+		case MC_DYNAMICS:
+		case MC_KINEMATICS:
+			SetMobility(EComponentMobility::Movable);
+			break;
+		case MC_STATIC:
+			SetMobility(EComponentMobility::Static);
+			break;
+	}
 
 	/// \todo Should it always be SetWorld... here, or should we do SetRelative in some cases?
 	SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
