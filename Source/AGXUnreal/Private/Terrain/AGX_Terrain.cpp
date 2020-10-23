@@ -136,22 +136,16 @@ namespace
 	{
 		TArray<UAGX_RigidBodyComponent*> Bodies;
 		OwningActor->GetComponents(Bodies, false);
-
-		UE_LOG(LogAGX, Warning, TEXT("Looking for '%s' in:"), *BodyName);
-		for (auto& Body : Bodies)
-		{
-			UE_LOG(LogAGX, Warning, TEXT("  %s"), *Body->GetName());
-		}
-
 		UAGX_RigidBodyComponent** It = Bodies.FindByPredicate(
 			[BodyName](UAGX_RigidBodyComponent* Body) { return BodyName == Body->GetName(); });
 		if (It == nullptr)
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("The shovel '%s' in the AGX Terrain '%s' is invalid because it doesn't have a "
-					 "RigidBodyComponent."),
-				*BodyName, TerrainName);
+				TEXT("Cannot create shovel: Shovel Actor '%s' in terrain '%s' could not be created "
+					 "because the configured shovel body '%s' does not exist in the shovel Actor."),
+				*OwningActor->GetName(), TerrainName, *BodyName);
+
 			return nullptr;
 		}
 		return *It;
