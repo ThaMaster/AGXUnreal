@@ -5,9 +5,9 @@
 #include "TypeConversions.h"
 
 // AGX Dynamics includes.
-THIRD_PARTY_INCLUDES_START
+#include "BeginAGXIncludes.h"
 #include <agx/Vec3.h>
-THIRD_PARTY_INCLUDES_END
+#include "EndAGXIncludes.h"
 
 FMassPropertiesBarrier::FMassPropertiesBarrier()
 	: NativePtr {new FMassPropertiesPtr}

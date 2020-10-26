@@ -4,8 +4,10 @@
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 
+#include "BeginAGXIncludes.h"
 #include <agx/Vec3.h>
 #include <agx/Quat.h>
+#include "EndAGXIncludes.h"
 
 FRigidBodyBarrier::FRigidBodyBarrier()
 	: NativeRef {new FRigidBodyRef}

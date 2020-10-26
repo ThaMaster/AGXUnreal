@@ -1,16 +1,20 @@
 #include "Shapes/TrimeshShapeBarrier.h"
 
+// AGXUnreal includes.
 #include "AGXRefs.h"
 #include "AGX_LogCategory.h"
+#include "TypeConversions.h"
 
+// AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agxCollide/Trimesh.h>
 #include "EndAGXIncludes.h"
 
-#include "TypeConversions.h"
+// Unreal Engine includes.
 #include "Interfaces/Interface_CollisionDataProvider.h"
-
 #include "Misc/AssertionMacros.h"
+
+
 
 namespace
 {

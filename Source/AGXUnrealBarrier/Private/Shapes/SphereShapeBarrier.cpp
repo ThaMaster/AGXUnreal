@@ -1,11 +1,16 @@
 #include "Shapes/SphereShapeBarrier.h"
 
+// AGXUnreal includes.
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 
+// Unreal Engine includes.
 #include "Misc/AssertionMacros.h"
 
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
 #include <agxCollide/Sphere.h>
+#include "EndAGXIncludes.h"
 
 namespace
 {
