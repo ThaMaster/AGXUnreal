@@ -1,14 +1,20 @@
 #pragma once
 
+// AGXUnreal includes.
 #include "AGX_MotionControl.h"
+#include "MassPropertiesBarrier.h"
 
+// Unreal Engine includes.
+#include "Containers/UnrealString.h"
 #include "Math/Vector.h"
 #include "Math/Quat.h"
-#include "Containers/UnrealString.h"
 
+// System includes.
 #include <memory>
 
 struct FRigidBodyRef;
+
+class FMassPropertiesBarrier;
 class FShapeBarrier;
 
 /**
@@ -43,11 +49,15 @@ public:
 	/// In radians.
 	FVector GetAngularVelocity() const;
 
+	FMassPropertiesBarrier& GetMassProperties();
+	const FMassPropertiesBarrier& GetMassProperties() const;
+
+
 	void SetMass(float NewMass);
 	float GetMass() const;
 
-	void SetInertiaTensorDiagonal(const FVector& NewInertiaTensorDiagonal);
-	FVector GetInertiaTensorDiagonal() const;
+	void SetPrincipalInertiae(const FVector& NewPrincipalInertiae);
+	FVector GetPrincipalInertiae() const;
 
 	void SetName(const FString& NewName);
 	FString GetName() const;
@@ -71,4 +81,5 @@ private:
 
 private:
 	std::unique_ptr<FRigidBodyRef> NativeRef;
+	FMassPropertiesBarrier MassProperties;
 };
