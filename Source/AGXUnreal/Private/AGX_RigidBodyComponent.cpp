@@ -151,9 +151,10 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 
 void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 {
-	Mass = Barrier.GetMass();
-	PrincipalInertiae = Barrier.GetPrincipalInertiae();
-	bAutomaticMassProperties = false;
+	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
+	Mass = MassProperties.GetMass();
+	PrincipalInertiae = MassProperties.GetPrincipalInertiae();
+	bAutomaticMassProperties = MassProperties.GetAutoGenerate();
 	Velocity = Barrier.GetVelocity();
 	AngularVelocity = Barrier.GetAngularVelocity();
 	MotionControl = Barrier.GetMotionControl();
