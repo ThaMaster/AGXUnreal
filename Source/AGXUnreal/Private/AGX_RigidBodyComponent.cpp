@@ -134,14 +134,15 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	{
 		return;
 	}
+	FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
 	if (bAutomaticMassProperties)
 	{
-		NativeBarrier.GetMassProperties().SetAutoGenerate(bAutomaticMassProperties);
+		MassProperties.SetAutoGenerate(bAutomaticMassProperties);
 	}
 	else
 	{
-		NativeBarrier.SetMass(Mass);
-		NativeBarrier.SetPrincipalInertiae(PrincipalInertiae);
+		MassProperties.SetMass(Mass);
+		MassProperties.SetPrincipalInertiae(PrincipalInertiae);
 	}
 	NativeBarrier.SetVelocity(Velocity);
 	NativeBarrier.SetAngularVelocity(AngularVelocity);

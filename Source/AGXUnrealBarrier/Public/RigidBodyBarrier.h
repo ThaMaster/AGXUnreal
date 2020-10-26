@@ -52,13 +52,6 @@ public:
 	FMassPropertiesBarrier& GetMassProperties();
 	const FMassPropertiesBarrier& GetMassProperties() const;
 
-
-	void SetMass(float NewMass);
-	float GetMass() const;
-
-	void SetPrincipalInertiae(const FVector& NewPrincipalInertiae);
-	FVector GetPrincipalInertiae() const;
-
 	void SetName(const FString& NewName);
 	FString GetName() const;
 
