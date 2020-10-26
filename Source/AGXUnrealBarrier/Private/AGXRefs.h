@@ -5,6 +5,7 @@
 #include <agx/ElementaryConstraint.h>
 #include <agx/FrictionModel.h>
 #include <agx/Material.h>
+#include <agx/MassProperties.h>
 #include <agx/RigidBody.h>
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
@@ -68,6 +69,17 @@ struct FGeometryAndShapeRef
 	FGeometryAndShapeRef(agxCollide::Geometry* InNativeGeometry, agxCollide::Shape* InNativeShape)
 		: NativeGeometry(InNativeGeometry)
 		, NativeShape(InNativeShape)
+	{
+	}
+};
+
+struct FMassPropertiesPtr
+{
+	agx::MassProperties* Native = nullptr;
+
+	FMassPropertiesPtr() = default;
+	FMassPropertiesPtr(agx::MassProperties* InNative)
+		: Native(InNative)
 	{
 	}
 };
