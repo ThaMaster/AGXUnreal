@@ -94,8 +94,8 @@ void FRigidBodyBarrierSpec::Define()
 			}
 			{
 				const float ExpectedMass(3.0f);
-				RigidBody.SetMass(ExpectedMass);
-				const float ActualMass = RigidBody.GetMass();
+				RigidBody.GetMassProperties().SetMass(ExpectedMass);
+				const float ActualMass = RigidBody.GetMassProperties().GetMass();
 				TestEqual("Mass", ActualMass, ExpectedMass);
 			}
 			{

@@ -4,8 +4,10 @@
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 
+#include "BeginAGXIncludes.h"
 #include <agx/Vec3.h>
 #include <agx/Quat.h>
+#include "EndAGXIncludes.h"
 
 FRigidBodyBarrier::FRigidBodyBarrier()
 	: NativeRef {new FRigidBodyRef}
@@ -15,12 +17,17 @@ FRigidBodyBarrier::FRigidBodyBarrier()
 FRigidBodyBarrier::FRigidBodyBarrier(std::unique_ptr<FRigidBodyRef> Native)
 	: NativeRef(std::move(Native))
 {
+	check(NativeRef);
+	MassProperties.BindTo(*NativeRef);
 }
 
 FRigidBodyBarrier::FRigidBodyBarrier(FRigidBodyBarrier&& Other)
 	: NativeRef {std::move(Other.NativeRef)}
 {
 	Other.NativeRef.reset(new FRigidBodyRef);
+	Other.MassProperties.BindTo(*Other.NativeRef);
+
+	MassProperties.BindTo(*NativeRef);
 }
 
 FRigidBodyBarrier::~FRigidBodyBarrier()
@@ -90,36 +97,15 @@ FVector FRigidBodyBarrier::GetAngularVelocity() const
 	return AngularVelocityUnreal;
 }
 
-void FRigidBodyBarrier::SetMass(float MassUnreal)
+FMassPropertiesBarrier& FRigidBodyBarrier::GetMassProperties()
 {
-	check(HasNative());
-	agx::Real MassAGX = Convert(MassUnreal);
-	NativeRef->Native->getMassProperties()->setMass(MassAGX);
+	return MassProperties;
 }
 
-float FRigidBodyBarrier::GetMass() const
+const FMassPropertiesBarrier& FRigidBodyBarrier::GetMassProperties() const
 {
-	check(HasNative());
-	agx::Real MassAGX = NativeRef->Native->getMassProperties()->getMass();
-	float MassUnreal = Convert(MassAGX);
-	return MassUnreal;
+	return MassProperties;
 }
-
-void FRigidBodyBarrier::SetInertiaTensorDiagonal(const FVector& InertiaUnreal)
-{
-	check(HasNative())
-	agx::Vec3 InertiaAGX = Convert(InertiaUnreal);
-	NativeRef->Native->getMassProperties()->setInertiaTensor(InertiaAGX);
-}
-
-FVector FRigidBodyBarrier::GetInertiaTensorDiagonal() const
-{
-	check(HasNative())
-	agx::Vec3 InertiaAGX = NativeRef->Native->getMassProperties()->getInertiaTensor().getDiagonal();
-	FVector InertiaUnreal = Convert(InertiaAGX);
-	return InertiaUnreal;
-}
-
 
 void FRigidBodyBarrier::SetName(const FString& NameUnreal)
 {
@@ -172,6 +158,7 @@ void FRigidBodyBarrier::AllocateNative()
 {
 	check(!HasNative());
 	NativeRef->Native = new agx::RigidBody();
+	MassProperties.BindTo(*NativeRef);
 }
 
 FRigidBodyRef* FRigidBodyBarrier::GetNative()

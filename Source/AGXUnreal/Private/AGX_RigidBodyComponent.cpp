@@ -23,7 +23,7 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	PrimaryComponentTick.TickGroup = TG_PostPhysics;
 
 	Mass = 1.0f;
-	InertiaTensorDiagonal = FVector(1.f, 1.f, 1.f);
+	PrincipalInertiae = FVector(1.f, 1.f, 1.f);
 	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
 	bTransformRootComponent = false;
 }
@@ -78,6 +78,7 @@ void UAGX_RigidBodyComponent::TickComponent(
 	{
 		ReadTransformFromNative();
 		Velocity = NativeBarrier.GetVelocity();
+		AngularVelocity = NativeBarrier.GetAngularVelocity();
 	}
 }
 
@@ -119,6 +120,12 @@ void UAGX_RigidBodyComponent::InitializeNative()
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	Simulation->AddRigidBody(this);
+
+	if (bAutomaticMassProperties)
+	{
+		Mass = NativeBarrier.GetMassProperties().GetMass();
+		PrincipalInertiae = NativeBarrier.GetMassProperties().GetPrincipalInertiae();
+	}
 }
 
 void UAGX_RigidBodyComponent::WritePropertiesToNative()
@@ -127,10 +134,16 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	{
 		return;
 	}
-
-	NativeBarrier.SetMass(Mass);
-	NativeBarrier.SetInertiaTensorDiagonal(InertiaTensorDiagonal);
-	/// \todo Add call to SetInertiaTensorDiagonal here, when it has been implemented.
+	FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
+	if (bAutomaticMassProperties)
+	{
+		MassProperties.SetAutoGenerate(bAutomaticMassProperties);
+	}
+	else
+	{
+		MassProperties.SetMass(Mass);
+		MassProperties.SetPrincipalInertiae(PrincipalInertiae);
+	}
 	NativeBarrier.SetVelocity(Velocity);
 	NativeBarrier.SetAngularVelocity(AngularVelocity);
 	NativeBarrier.SetName(GetName());
@@ -139,9 +152,10 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 
 void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 {
-	Mass = Barrier.GetMass();
-	InertiaTensorDiagonal = Barrier.GetInertiaTensorDiagonal();
-	/// \todo Add call to GetInertiaTensorDiagonal here, when it has been implemented.
+	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
+	Mass = MassProperties.GetMass();
+	PrincipalInertiae = MassProperties.GetPrincipalInertiae();
+	bAutomaticMassProperties = MassProperties.GetAutoGenerate();
 	Velocity = Barrier.GetVelocity();
 	AngularVelocity = Barrier.GetAngularVelocity();
 	MotionControl = Barrier.GetMotionControl();
@@ -235,12 +249,12 @@ void UAGX_RigidBodyComponent::WriteTransformToNative()
 
 #if WITH_EDITOR
 bool UAGX_RigidBodyComponent::CanEditChange(
-#if UE_VERSION_OLDER_THAN(4,25,0)
+#if UE_VERSION_OLDER_THAN(4, 25, 0)
 	const UProperty* InProperty
 #else
 	const FProperty* InProperty
 #endif
-	) const
+) const
 {
 	// bTransformRootComponent is only allowed when this is the only RigidBodyComponent owned by the
 	// parent actor.

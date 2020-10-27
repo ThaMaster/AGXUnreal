@@ -22,13 +22,21 @@ public:
 	// Sets default values for this component's properties
 	UAGX_RigidBodyComponent();
 
-	/// The mass of the body.
+	/// Whether the mass should be computed automatically.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
+	bool bAutomaticMassProperties = true;
+
+	/// The mass of the body.
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics",
+		Meta = (EditCondition = "!bAutomaticMassProperties"))
 	float Mass;
 
 	/// The three-component diagonal of the inertia tensor.
-	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
-	FVector InertiaTensorDiagonal;
+	UPROPERTY(
+		EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics",
+		Meta = (EditCondition = "!bAutomaticMassProperties"))
+	FVector PrincipalInertiae;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
 	FVector Velocity;
@@ -111,7 +119,7 @@ private:
 	void WriteTransformToNative();
 
 #if WITH_EDITOR
-#if UE_VERSION_OLDER_THAN(4,25,0)
+#if UE_VERSION_OLDER_THAN(4, 25, 0)
 	virtual bool CanEditChange(const UProperty* InProperty) const override;
 #else
 	virtual bool CanEditChange(const FProperty* InProperty) const override;
