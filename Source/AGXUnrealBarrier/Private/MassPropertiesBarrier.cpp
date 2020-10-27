@@ -119,6 +119,7 @@ void FMassPropertiesBarrier::BindTo(FRigidBodyRef& RigidBody)
 	if (RigidBody.Native == nullptr)
 	{
 		NativePtr->Native = nullptr;
+		return;
 	}
 
 	NativePtr->Native = RigidBody.Native->getMassProperties();
