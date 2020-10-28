@@ -375,8 +375,10 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	const UAGX_ConstraintComponent* Constraint, const FSceneView* View,
 	FPrimitiveDrawInterface* PDI)
 {
-	if (Constraint == nullptr)
+	if (Constraint == nullptr || !Constraint->IsVisible())
+	{
 		return;
+	}
 
 	FString Unused;
 	const bool Violated = Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER, &Unused);
@@ -458,6 +460,11 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraintHUD(
 	const UAGX_ConstraintComponent* Constraint, const FViewport* Viewport, const FSceneView* View,
 	FCanvas* Canvas)
 {
+	if (Constraint == nullptr || !Constraint->IsVisible())
+	{
+		return;
+	}
+
 	FString Message;
 	if (Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER, &Message))
 	{
