@@ -25,7 +25,11 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	Mass = 1.0f;
 	PrincipalInertiae = FVector(1.f, 1.f, 1.f);
 	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
+#if AGXUNREAL_USE_TRANSFORM_TARGET
+	TransformTarget = EAGX_TransformTarget::TT_SELF;
+#else
 	bTransformRootComponent = false;
+#endif
 }
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
@@ -209,6 +213,57 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 	check(HasNative());
 	const FVector NewLocation = NativeBarrier.GetPosition();
 	const FQuat NewRotation = NativeBarrier.GetRotation();
+
+#if AGXUNREAL_USE_TRANSFORM_TARGET
+	auto TransformSelf = [this, &NewLocation, &NewRotation]() {
+		const FVector OldLocation = GetComponentLocation();
+		const FVector LocationDelta = NewLocation - OldLocation;
+		MoveComponent(LocationDelta, NewRotation, false);
+	};
+
+	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor) {
+		// Where ToTransform is relative to RigidBodyComponent, i.e., how the AGX Dynamics
+		// transformation should be changed in order to be applicable to ToTransform.
+		const FTransform AncestorRelativeToBody =
+			Ancestor.GetComponentTransform().GetRelativeTransform(GetComponentTransform());
+
+		// The transform we got from AGX Dynamics. We should manipulate ToTransform's transformation
+		// so that RigidBodyComponent end up at this position. All other children of ToTransform
+		// should follow.
+		const FTransform TargetBodyLocation = FTransform(NewRotation, NewLocation);
+
+		FTransform NewTransform;
+		FTransform::Multiply(&NewTransform, &AncestorRelativeToBody, &TargetBodyLocation);
+
+		Ancestor.SetWorldTransform(NewTransform);
+	};
+
+	auto TryTransformAncestor = [this, &NewLocation, &NewRotation,
+								 &TransformAncestor](USceneComponent* Ancestor) {
+		if (Ancestor == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Cannot update transformation of ancestor of RigidBody '%s' because it "
+					 "doesn't have an ancestor."), *GetName());
+			return;
+		}
+		TransformAncestor(*Ancestor);
+	};
+
+	switch (TransformTarget)
+	{
+		case TT_SELF:
+			TransformSelf();
+			break;
+		case TT_PARENT:
+			TryTransformAncestor(GetAttachParent());
+			break;
+		case TT_ROOT:
+			TryTransformAncestor(GetAttachmentRoot());
+			break;
+	}
+#else
 	if (bTransformRootComponent)
 	{
 		check(GetOwner());
@@ -238,6 +293,7 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 		const FVector LocationDelta = NewLocation - OldLocation;
 		MoveComponent(LocationDelta, NewRotation, false);
 	}
+#endif
 }
 
 void UAGX_RigidBodyComponent::WriteTransformToNative()
