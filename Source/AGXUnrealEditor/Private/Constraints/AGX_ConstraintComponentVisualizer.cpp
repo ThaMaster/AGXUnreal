@@ -120,21 +120,24 @@ namespace
 		// translate it Height
 		// + Offset distance.
 		FTransform ConeAlignedTransform;
-		const FVector X = WorldTransform.GetUnitAxis(EAxis::X);
-		const FVector Y = WorldTransform.GetUnitAxis(EAxis::Y);
-		const FVector Z = WorldTransform.GetUnitAxis(EAxis::Z);
-		const FVector Origo = WorldTransform.GetLocation();
+		const FVector X_w = WorldTransform.GetUnitAxis(EAxis::X);
+		const FVector Y_w = WorldTransform.GetUnitAxis(EAxis::Y);
+		const FVector Z_w = WorldTransform.GetUnitAxis(EAxis::Z);
+		const FVector Origo_w = WorldTransform.GetLocation();
 
 		switch (Axis)
 		{
 			case EAxis::X:
-				ConeAlignedTransform = FTransform(-X, -Y, Z, Origo + (Height + Offset) * X);
+				ConeAlignedTransform =
+					FTransform(-X_w, -Y_w, Z_w, Origo_w + (Height + Offset) * X_w);
 				break;
 			case EAxis::Y:
-				ConeAlignedTransform = FTransform(-Y, X, Z, Origo + (Height + Offset) * Y);
+				ConeAlignedTransform =
+					FTransform(-Y_w, X_w, Z_w, Origo_w + (Height + Offset) * Y_w);
 				break;
 			case EAxis::Z:
-				ConeAlignedTransform = FTransform(-Z, Y, X, Origo + (Height + Offset) * Z);
+				ConeAlignedTransform =
+					FTransform(-Z_w, Y_w, X_w, Origo_w + (Height + Offset) * Z_w);
 				break;
 		}
 
@@ -144,36 +147,71 @@ namespace
 			SDPG_Foreground);
 	}
 
+	// Draws NumArrows arrows of height Height along a circle with radius Radius around
+	// WorldTransform's x-axis.
+	void DrawArrowsAlongCircle(
+		FPrimitiveDrawInterface* PDI, const FColor& Color, FTransform WorldTransform, float Radius,
+		float Height, int32 NumArrows)
+	{
+		constexpr int32 NUM_SIDES {32};
+		constexpr float CONE_ANGLE {30};
+
+		// LocalArrowTransform is the final location and rotation of the arrow being drawn,
+		// expressed in the WorldTransform coordinate system.
+		FTransform LocalArrowTransform;
+		LocalArrowTransform.SetLocation(FVector(Radius, -Height / 2, 0));
+		LocalArrowTransform.SetRotation(FQuat::MakeFromEuler(FVector(0.0f, 0.0f, 90.0f)));
+
+		for (int i = 0; i < NumArrows; i++)
+		{
+			TArray<FVector> Unused;
+			DrawWireCone(
+				PDI, Unused, (LocalArrowTransform * WorldTransform), Height, CONE_ANGLE, NUM_SIDES,
+				Color, SDPG_Foreground);
+
+			// Rotate WorldTransform by (360 / NumArrows) deg so that the next drawn arrow gets the correct
+			// position and orientation.
+			WorldTransform.SetRotation(
+				WorldTransform.GetRotation() *
+				FQuat::MakeFromEuler(FVector(0.0f, 0.0f, 360.0f / NumArrows)));
+		}
+	}
+
 	void DrawRotationalPrimitive(
 		FPrimitiveDrawInterface* PDI, const FColor& Color, const FTransform& WorldTransform,
 		EAxis::Type Axis, float Radius, float Offset)
 	{
 		constexpr int32 NUM_SIDES {64};
 
-		const FVector X = WorldTransform.GetUnitAxis(EAxis::X);
-		const FVector Y = WorldTransform.GetUnitAxis(EAxis::Y);
-		const FVector Z = WorldTransform.GetUnitAxis(EAxis::Z);
-		const FVector Origo = WorldTransform.GetLocation();
+		const FVector X_w = WorldTransform.GetUnitAxis(EAxis::X);
+		const FVector Y_w = WorldTransform.GetUnitAxis(EAxis::Y);
+		const FVector Z_w = WorldTransform.GetUnitAxis(EAxis::Z);
+		const FVector Origo_w = WorldTransform.GetLocation();
 
-		const float CylinderHalfHeight = 0.1f * Radius;
+		FTransform CylinderAlignedTransform;
+		const float CylinderHalfHeight = 0.15f * Radius;
 		switch (Axis)
 		{
 			case EAxis::X:
-				DrawWireCylinder(
-					PDI, Origo + X * Offset, Y, Z, X, Color, Radius, CylinderHalfHeight, NUM_SIDES,
-					SDPG_Foreground);
+				CylinderAlignedTransform = FTransform(Y_w, Z_w, X_w, Origo_w + Offset * X_w);
 				break;
 			case EAxis::Y:
-				DrawWireCylinder(
-					PDI, Origo + Y * Offset, Z, X, Y, Color, Radius, CylinderHalfHeight, NUM_SIDES,
-					SDPG_Foreground);
+				CylinderAlignedTransform = FTransform(Z_w, X_w, Y_w, Origo_w + Offset * Y_w);
 				break;
 			case EAxis::Z:
-				DrawWireCylinder(
-					PDI, Origo + Z * Offset, X, Y, Z, Color, Radius, CylinderHalfHeight, NUM_SIDES,
-					SDPG_Foreground);
+				CylinderAlignedTransform = FTransform(X_w, Y_w, Z_w, Origo_w + Offset * Z_w);
 				break;
 		}
+
+		DrawWireCylinder(
+			PDI, CylinderAlignedTransform.GetLocation(),
+			CylinderAlignedTransform.GetUnitAxis(EAxis::X),
+			CylinderAlignedTransform.GetUnitAxis(EAxis::Y),
+			CylinderAlignedTransform.GetUnitAxis(EAxis::Z), Color, Radius, CylinderHalfHeight,
+			NUM_SIDES, SDPG_Foreground);
+
+		const float ArrowHeight = 0.6f * Radius;
+		DrawArrowsAlongCircle(PDI, Color, CylinderAlignedTransform, Radius, ArrowHeight, 3);
 	}
 
 	void RenderBodyMarker(
@@ -241,10 +279,10 @@ namespace
 	void RenderDofPrimitives(
 		FPrimitiveDrawInterface* PDI, const FSceneView* View,
 		const UAGX_ConstraintComponent* Constraint, const FAGX_ConstraintBodyAttachment& Attachment,
-		const FColor& Color)
+		bool IsViolated)
 	{
 		constexpr float TRANSLATIONAL_PRIMITIVE_SCALE {0.06f};
-		constexpr float ROTATIONAL_PRIMITIVE_SCALE {0.06f};
+		constexpr float ROTATIONAL_PRIMITIVE_SCALE {0.07f};
 
 		const FTransform AttachmentTransform(Attachment.GetGlobalFrameMatrix());
 		const float AttachemtFrameDistance =
@@ -252,39 +290,44 @@ namespace
 
 		const float Radius = GetWorldSizeFromScreenFactor(
 			ROTATIONAL_PRIMITIVE_SCALE, FMath::DegreesToRadians(View->FOV), AttachemtFrameDistance);
-		const float RotOffset = 0.8 * Radius;
+		const float RotOffset = 1.4f * Radius;
 
 		const float Height = GetWorldSizeFromScreenFactor(
 			TRANSLATIONAL_PRIMITIVE_SCALE, FMath::DegreesToRadians(View->FOV),
 			AttachemtFrameDistance);
-		const float TransOffset = 0.8 * Height;
+		const float TransOffset = 1.4f * Height;
 
+		const FColor RotDofPrimitiveColor = IsViolated ? FColor::Red : FColor(243, 139, 0);
+		const FColor TransDofPrimitiveColor = IsViolated ? FColor::Red : FColor(243, 200, 0);
 		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1))
 		{
-			DrawRotationalPrimitive(PDI, Color, AttachmentTransform, EAxis::X, Radius, RotOffset);
+			DrawRotationalPrimitive(
+				PDI, RotDofPrimitiveColor, AttachmentTransform, EAxis::X, Radius, RotOffset);
 		}
 		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_2))
 		{
-			DrawRotationalPrimitive(PDI, Color, AttachmentTransform, EAxis::Y, Radius, RotOffset);
+			DrawRotationalPrimitive(
+				PDI, RotDofPrimitiveColor, AttachmentTransform, EAxis::Y, Radius, RotOffset);
 		}
 		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_3))
 		{
-			DrawRotationalPrimitive(PDI, Color, AttachmentTransform, EAxis::Z, Radius, RotOffset);
+			DrawRotationalPrimitive(
+				PDI, RotDofPrimitiveColor, AttachmentTransform, EAxis::Z, Radius, RotOffset);
 		}
 		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_1))
 		{
 			DrawTranslationalPrimitive(
-				PDI, Color, AttachmentTransform, EAxis::X, Height, TransOffset);
+				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::X, Height, TransOffset);
 		}
 		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_2))
 		{
 			DrawTranslationalPrimitive(
-				PDI, Color, AttachmentTransform, EAxis::Y, Height, TransOffset);
+				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::Y, Height, TransOffset);
 		}
 		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_3))
 		{
 			DrawTranslationalPrimitive(
-				PDI, Color, AttachmentTransform, EAxis::Z, Height, TransOffset);
+				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::Z, Height, TransOffset);
 		}
 	}
 }
@@ -366,9 +409,8 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 			PDI);
 	}
 
-	FColor DofPrimitiveColor = Violated ? FColor::Red : HighlightColor;
-	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment1, DofPrimitiveColor);
-	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment2, DofPrimitiveColor);
+	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment1, Violated);
+	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment2, Violated);
 
 	if (Body1 != nullptr && Body2 != nullptr)
 	{
