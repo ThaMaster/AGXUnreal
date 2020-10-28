@@ -385,6 +385,14 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 		DrawDashedLine(
 			PDI, Location1, Location2, HighlightColor, HighlightThickness, SDPG_Foreground,
 			/*DepthBias*/ 0.0f);
+
+		if (Violated)
+		{
+			DrawDashedLine(
+				PDI, LocationAttach1, LocationAttach2, FColor::Red, HighlightThickness,
+				SDPG_Foreground,
+				/*DepthBias*/ 0.0f);
+		}
 	}
 }
 
