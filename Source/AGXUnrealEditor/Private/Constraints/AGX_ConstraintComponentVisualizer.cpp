@@ -17,19 +17,6 @@
 
 namespace
 {
-	/// \todo Change these to settings editable from editor UI!
-
-	const bool bHighlightUsingBoundingBox = false;
-	const bool bHighlightUsingCircle = true;
-	const FColor HighlightColor(243, 139, 0);
-	const float HighlightThickness(1.0f);
-
-	const bool bDrawAttachmenFrameTripod = true;
-	const float FrameGizmoScale(50.0f);
-	const float FrameGizmoThickness(1.0f);
-
-	const bool bDrawLineBetweenActors = true;
-
 	void DrawCoordinateSystemAxes(
 		FPrimitiveDrawInterface* PDI, FVector const& AxisLoc, FRotator const& AxisRot, float Scale,
 		uint8 DepthPriority, float Thickness, float DepthBias, bool bScreenSpace)
@@ -191,22 +178,21 @@ namespace
 
 	void RenderBodyMarker(
 		const FAGX_ConstraintBodyAttachment& Attachment, UAGX_RigidBodyComponent* Body,
-		float CircleScreenFactor, const FColor& Color, const FSceneView* View,
-		FPrimitiveDrawInterface* PDI)
+		float CircleScreenFactor, const FColor& Color, const float Thickness,
+		const FSceneView* View, FPrimitiveDrawInterface* PDI)
 	{
 		// UE_LOG(LogAGX, Log, TEXT("Rendering body markers for body '%s'."), *Body->GetName());
 
-		if (bHighlightUsingBoundingBox)
-		{
-			FBox LocalAABB = GetBoundingBox(Body);
+#if 0 // bHighlightUsingBoundingBox
+	FBox LocalAABB = GetBoundingBox(Body);
 
-			DrawOrientedWireBox(
-				PDI, Body->GetComponentLocation(), Body->GetForwardVector(), Body->GetRightVector(),
-				Body->GetUpVector(), LocalAABB.GetExtent(), Color, SDPG_World, HighlightThickness,
-				/*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
-		}
+	DrawOrientedWireBox(
+		PDI, Body->GetComponentLocation(), Body->GetForwardVector(), Body->GetRightVector(),
+		Body->GetUpVector(), LocalAABB.GetExtent(), Color, SDPG_World, Thickness,
+		/*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
+#endif
 
-		if (bHighlightUsingCircle)
+		// Highlight Body with circle.
 		{
 			const FVector Direction =
 				(Body->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
@@ -214,12 +200,13 @@ namespace
 			const FVector Location = View->ViewLocation + Direction * Distance;
 			const float Radius = GetWorldSizeFromScreenFactor(
 				CircleScreenFactor, FMath::DegreesToRadians(View->FOV), Distance);
+
 			DrawCircle(
 				PDI, Location, View->GetViewRight(), View->GetViewUp(), Color, Radius, 32,
-				SDPG_Foreground, HighlightThickness, /*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
+				SDPG_Foreground, Thickness, /*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
 		}
 
-		if (bDrawAttachmenFrameTripod)
+		// Draw frame attachment gizmo.
 		{
 			// It is important to make sure that drawn coordinate system does not interfere
 			// with the default transform gizmo. Therefore, make sure thickness of drawn
@@ -232,17 +219,22 @@ namespace
 			// difficulties	selecting the transform gizmo (even if HitProxy, depth bias, etc are
 			// used).
 
-/// \todo This doesn't work in the Blueprint editor as RigidBodyReference is currently implemented
-/// RigidBodyReference must be made aware of fallback owners.
-/// Can I just set the OwningActor to the Constraint's owner? What would be cool.
-/// What will the DeatailCustomization do?
-#if 1
+			/// \todo This doesn't work in the Blueprint editor as RigidBodyReference is currently
+			/// implemented RigidBodyReference must be made aware of fallback owners. Can I just set
+			/// the OwningActor to the Constraint's owner? What would be cool. What will the
+			/// DeatailCustomization do?
+			constexpr float FRAME_GIZMO_SCALE {0.2f};
+
+			const float AttachemtFrameDistance =
+				FVector::Dist(Attachment.GetGlobalFrameLocation(Body), View->ViewLocation);
+			const float FrameGizmoSize = GetWorldSizeFromScreenFactor(
+				FRAME_GIZMO_SCALE, FMath::DegreesToRadians(View->FOV), AttachemtFrameDistance);
+
 			DrawCoordinateSystemAxes(
 				PDI, Attachment.GetGlobalFrameLocation(Body),
-				Attachment.GetGlobalFrameRotation().Rotator(), FrameGizmoScale, SDPG_Foreground,
-				FrameGizmoThickness, /*DepthBias*/ 0.0f,
-				/*bScreenSpace*/ true);
-#endif
+				Attachment.GetGlobalFrameRotation().Rotator(), FrameGizmoSize, SDPG_Foreground,
+				0.0f,
+				/*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
 		}
 	}
 
@@ -353,37 +345,61 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	UAGX_RigidBodyComponent* Body1 = GetRigidBody(BodyReference1, BodyOwnerFallback);
 	UAGX_RigidBodyComponent* Body2 = GetRigidBody(BodyReference2, BodyOwnerFallback);
 
+	const FColor HighlightColor(243, 139, 0);
+	const float HighlightThickness(1.0f);
+
 	if (Body1 != nullptr)
 	{
 		float CircleScreenFactor = 0.08f;
 		RenderBodyMarker(
-			Constraint->BodyAttachment1, Body1, CircleScreenFactor, HighlightColor, View, PDI);
+			Constraint->BodyAttachment1, Body1, CircleScreenFactor, HighlightColor,
+			HighlightThickness, View, PDI);
 	}
 	if (Body2 != nullptr)
 	{
-		float CircleScreenFactor = 0.06f;
+		float CircleScreenFactor = 0.05f;
 		FColor Color = FColor(
 			HighlightColor.R * 0.6f, HighlightColor.G * 0.6f, HighlightColor.B * 0.6f,
 			HighlightColor.A);
-		RenderBodyMarker(Constraint->BodyAttachment2, Body2, CircleScreenFactor, Color, View, PDI);
+		RenderBodyMarker(
+			Constraint->BodyAttachment2, Body2, CircleScreenFactor, Color, HighlightThickness, View,
+			PDI);
 	}
 
 	FColor DofPrimitiveColor = Violated ? FColor::Red : HighlightColor;
 	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment1, DofPrimitiveColor);
 	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment2, DofPrimitiveColor);
 
-	if (bDrawLineBetweenActors && Body1 != nullptr && Body2 != nullptr)
+	if (Body1 != nullptr && Body2 != nullptr)
 	{
 		float Distance = 100.0f;
 
-		FVector Direction1 = (Body1->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
-		FVector Location1 = View->ViewLocation + Direction1 * Distance;
+		const FVector DirectionBody1 =
+			(Body1->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
+		const FVector LocationBody1 = View->ViewLocation + DirectionBody1 * Distance;
 
-		FVector Direction2 = (Body2->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
-		FVector Location2 = View->ViewLocation + Direction2 * Distance;
+		const FVector DirectionAttach1 =
+			(Constraint->BodyAttachment1.GetGlobalFrameLocation(Body1) - View->ViewLocation)
+				.GetSafeNormal();
+		const FVector LocationAttach1 = View->ViewLocation + DirectionAttach1 * Distance;
+
+		const FVector DirectionBody2 =
+			(Body2->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
+		const FVector LocationBody2 = View->ViewLocation + DirectionBody2 * Distance;
+
+		const FVector DirectionAttach2 =
+			(Constraint->BodyAttachment2.GetGlobalFrameLocation(Body2) - View->ViewLocation)
+				.GetSafeNormal();
+		const FVector LocationAttach2 = View->ViewLocation + DirectionAttach2 * Distance;
 
 		DrawDashedLine(
-			PDI, Location1, Location2, HighlightColor, HighlightThickness, SDPG_Foreground,
+			PDI, LocationBody1, LocationAttach1, HighlightColor, HighlightThickness,
+			SDPG_Foreground,
+			/*DepthBias*/ 0.0f);
+
+		DrawDashedLine(
+			PDI, LocationBody2, LocationAttach2, HighlightColor, HighlightThickness,
+			SDPG_Foreground,
 			/*DepthBias*/ 0.0f);
 
 		if (Violated)
