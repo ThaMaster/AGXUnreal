@@ -121,6 +121,74 @@ namespace
 		return nullptr;
 	}
 
+	void DrawTranslationalPrimitive(
+		FPrimitiveDrawInterface* PDI, const FColor& Color, const FTransform& WorldTransform,
+		EAxis::Type Axis, float Height, float Offset)
+	{
+		constexpr int32 NUM_SIDES {64};
+		constexpr float CONE_ANGLE {20};
+
+		// DrawWireCone renders the cone along the x-axis with the tip at the origin of
+		// WorldTransform. Create a new transform with its x-axis in the negative Axis direction and
+		// translate it Height
+		// + Offset distance.
+		FTransform ConeAlignedTransform;
+		const FVector X = WorldTransform.GetUnitAxis(EAxis::X);
+		const FVector Y = WorldTransform.GetUnitAxis(EAxis::Y);
+		const FVector Z = WorldTransform.GetUnitAxis(EAxis::Z);
+		const FVector Origo = WorldTransform.GetLocation();
+
+		switch (Axis)
+		{
+			case EAxis::X:
+				ConeAlignedTransform = FTransform(-X, -Y, Z, Origo + (Height + Offset) * X);
+				break;
+			case EAxis::Y:
+				ConeAlignedTransform = FTransform(-Y, X, Z, Origo + (Height + Offset) * Y);
+				break;
+			case EAxis::Z:
+				ConeAlignedTransform = FTransform(-Z, Y, X, Origo + (Height + Offset) * Z);
+				break;
+		}
+
+		TArray<FVector> Unused;
+		DrawWireCone(
+			PDI, Unused, ConeAlignedTransform, Height, CONE_ANGLE, NUM_SIDES, Color,
+			SDPG_Foreground);
+	}
+
+	void DrawRotationalPrimitive(
+		FPrimitiveDrawInterface* PDI, const FColor& Color, const FTransform& WorldTransform,
+		EAxis::Type Axis, float Radius, float Offset)
+	{
+		constexpr int32 NUM_SIDES {64};
+
+		const FVector X = WorldTransform.GetUnitAxis(EAxis::X);
+		const FVector Y = WorldTransform.GetUnitAxis(EAxis::Y);
+		const FVector Z = WorldTransform.GetUnitAxis(EAxis::Z);
+		const FVector Origo = WorldTransform.GetLocation();
+
+		const float CylinderHalfHeight = 0.1f * Radius;
+		switch (Axis)
+		{
+			case EAxis::X:
+				DrawWireCylinder(
+					PDI, Origo + X * Offset, Y, Z, X, Color, Radius, CylinderHalfHeight, NUM_SIDES,
+					SDPG_Foreground);
+				break;
+			case EAxis::Y:
+				DrawWireCylinder(
+					PDI, Origo + Y * Offset, Z, X, Y, Color, Radius, CylinderHalfHeight, NUM_SIDES,
+					SDPG_Foreground);
+				break;
+			case EAxis::Z:
+				DrawWireCylinder(
+					PDI, Origo + Z * Offset, X, Y, Z, Color, Radius, CylinderHalfHeight, NUM_SIDES,
+					SDPG_Foreground);
+				break;
+		}
+	}
+
 	void RenderBodyMarker(
 		const FAGX_ConstraintBodyAttachment& Attachment, UAGX_RigidBodyComponent* Body,
 		float CircleScreenFactor, const FColor& Color, const FSceneView* View,
@@ -177,6 +245,56 @@ namespace
 #endif
 		}
 	}
+
+	void RenderDofPrimitives(
+		FPrimitiveDrawInterface* PDI, const FSceneView* View,
+		const UAGX_ConstraintComponent* Constraint, const FAGX_ConstraintBodyAttachment& Attachment,
+		const FColor& Color)
+	{
+		constexpr float TRANSLATIONAL_PRIMITIVE_SCALE {0.06f};
+		constexpr float ROTATIONAL_PRIMITIVE_SCALE {0.06f};
+
+		const FTransform AttachmentTransform(Attachment.GetGlobalFrameMatrix());
+		const float AttachemtFrameDistance =
+			FVector::Dist(Attachment.GetGlobalFrameLocation(), View->ViewLocation);
+
+		const float Radius = GetWorldSizeFromScreenFactor(
+			ROTATIONAL_PRIMITIVE_SCALE, FMath::DegreesToRadians(View->FOV), AttachemtFrameDistance);
+		const float RotOffset = 0.8 * Radius;
+
+		const float Height = GetWorldSizeFromScreenFactor(
+			TRANSLATIONAL_PRIMITIVE_SCALE, FMath::DegreesToRadians(View->FOV),
+			AttachemtFrameDistance);
+		const float TransOffset = 0.8 * Height;
+
+		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1))
+		{
+			DrawRotationalPrimitive(PDI, Color, AttachmentTransform, EAxis::X, Radius, RotOffset);
+		}
+		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_2))
+		{
+			DrawRotationalPrimitive(PDI, Color, AttachmentTransform, EAxis::Y, Radius, RotOffset);
+		}
+		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_3))
+		{
+			DrawRotationalPrimitive(PDI, Color, AttachmentTransform, EAxis::Z, Radius, RotOffset);
+		}
+		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_1))
+		{
+			DrawTranslationalPrimitive(
+				PDI, Color, AttachmentTransform, EAxis::X, Height, TransOffset);
+		}
+		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_2))
+		{
+			DrawTranslationalPrimitive(
+				PDI, Color, AttachmentTransform, EAxis::Y, Height, TransOffset);
+		}
+		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_3))
+		{
+			DrawTranslationalPrimitive(
+				PDI, Color, AttachmentTransform, EAxis::Z, Height, TransOffset);
+		}
+	}
 }
 
 void FAGX_ConstraintComponentVisualizer::DrawVisualization(
@@ -225,6 +343,9 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	if (Constraint == nullptr)
 		return;
 
+	FString Unused;
+	const bool Violated = Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER, &Unused);
+
 	const FAGX_RigidBodyReference& BodyReference1 = Constraint->BodyAttachment1.RigidBody;
 	const FAGX_RigidBodyReference& BodyReference2 = Constraint->BodyAttachment2.RigidBody;
 
@@ -246,6 +367,10 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 			HighlightColor.A);
 		RenderBodyMarker(Constraint->BodyAttachment2, Body2, CircleScreenFactor, Color, View, PDI);
 	}
+
+	FColor DofPrimitiveColor = Violated ? FColor::Red : HighlightColor;
+	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment1, DofPrimitiveColor);
+	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment2, DofPrimitiveColor);
 
 	if (bDrawLineBetweenActors && Body1 != nullptr && Body2 != nullptr)
 	{
