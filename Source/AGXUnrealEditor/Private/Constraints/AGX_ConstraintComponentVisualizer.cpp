@@ -58,6 +58,125 @@ namespace
 		return FVector2D(
 			NormalizedCoordinates.X * ViewSize.X, NormalizedCoordinates.Y * ViewSize.Y);
 	}
+
+	float GetScreenToWorldFactor(float FOV, float WorldDistance)
+	{
+		float Hack = 0.5f; // because result seemed a bit off...
+		return Hack * 2.0f * WorldDistance * FMath::Atan(FOV / 2.0f);
+	}
+
+	float GetWorldSizeFromScreenFactor(float ScreenFactor, float FOV, float WorldDistance)
+	{
+		return ScreenFactor * GetScreenToWorldFactor(FOV, WorldDistance);
+	}
+
+	float GetScreenFactorFromWorldSize(float WorldSize, float FOV, float WorldDistance)
+	{
+		return WorldSize / GetScreenToWorldFactor(FOV, WorldDistance);
+	}
+
+	FBox GetBoundingBox(UAGX_RigidBodyComponent* Body)
+	{
+		FBox Box(ForceInit);
+
+		const FTransform& BodyToWorld = Body->GetComponentTransform();
+		const FTransform WorldToBody = BodyToWorld.Inverse();
+
+		TArray<USceneComponent*> Children;
+		Body->GetChildrenComponents(true, Children);
+		for (auto Child : Children)
+		{
+			const FTransform ComponentToBody = Child->GetComponentTransform() * WorldToBody;
+			const FBoxSphereBounds BoundInBodySpace = Child->CalcBounds(ComponentToBody);
+			Box += BoundInBodySpace.GetBox();
+		}
+		return Box;
+	}
+
+	/// \todo Consider moving GetRigidBody with fallback to FAGX_ConstraintBodyAttachment.
+	UAGX_RigidBodyComponent* GetRigidBody(
+		const FAGX_RigidBodyReference& BodyReference, AActor* Fallback)
+	{
+		if (UAGX_RigidBodyComponent* Body = BodyReference.GetRigidBody())
+		{
+			return Body;
+		}
+
+		// Not sure why this is needed when in the Blueprint editor. The intention is that a
+		// fallback OwningActor should be stored in the RigidBodyReference.
+		if (Fallback == nullptr)
+		{
+			return nullptr;
+		}
+		TArray<UAGX_RigidBodyComponent*> AllBodies;
+		Fallback->GetComponents(AllBodies, BodyReference.bSearchChildActors);
+		for (UAGX_RigidBodyComponent* Candidate : AllBodies)
+		{
+			if (Candidate->GetFName() == BodyReference.BodyName)
+			{
+				return Candidate;
+			}
+		}
+
+		return nullptr;
+	}
+
+	void RenderBodyMarker(
+		const FAGX_ConstraintBodyAttachment& Attachment, UAGX_RigidBodyComponent* Body,
+		float CircleScreenFactor, const FColor& Color, const FSceneView* View,
+		FPrimitiveDrawInterface* PDI)
+	{
+		// UE_LOG(LogAGX, Log, TEXT("Rendering body markers for body '%s'."), *Body->GetName());
+
+		if (bHighlightUsingBoundingBox)
+		{
+			FBox LocalAABB = GetBoundingBox(Body);
+
+			DrawOrientedWireBox(
+				PDI, Body->GetComponentLocation(), Body->GetForwardVector(), Body->GetRightVector(),
+				Body->GetUpVector(), LocalAABB.GetExtent(), Color, SDPG_World, HighlightThickness,
+				/*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
+		}
+
+		if (bHighlightUsingCircle)
+		{
+			const FVector Direction =
+				(Body->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
+			const float Distance = 40.0f;
+			const FVector Location = View->ViewLocation + Direction * Distance;
+			const float Radius = GetWorldSizeFromScreenFactor(
+				CircleScreenFactor, FMath::DegreesToRadians(View->FOV), Distance);
+			DrawCircle(
+				PDI, Location, View->GetViewRight(), View->GetViewUp(), Color, Radius, 32,
+				SDPG_Foreground, HighlightThickness, /*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
+		}
+
+		if (bDrawAttachmenFrameTripod)
+		{
+			// It is important to make sure that drawn coordinate system does not interfere
+			// with the default transform gizmo. Therefore, make sure thickness of drawn
+			// coordinate system is thinner than transform gizmo, so that the transform gizmo is
+			// always selectable.
+			//
+			// If is not thinner, in the scenario where the coordinate system equals the
+			// currently active transform gizmo (i.e. visually overlapping), and they are
+			// located inside a mesh while the camera is ouside of the mesh, there are
+			// difficulties	selecting the transform gizmo (even if HitProxy, depth bias, etc are
+			// used).
+
+/// \todo This doesn't work in the Blueprint editor as RigidBodyReference is currently implemented
+/// RigidBodyReference must be made aware of fallback owners.
+/// Can I just set the OwningActor to the Constraint's owner? What would be cool.
+/// What will the DeatailCustomization do?
+#if 1
+			DrawCoordinateSystemAxes(
+				PDI, Attachment.GetGlobalFrameLocation(Body),
+				Attachment.GetGlobalFrameRotation().Rotator(), FrameGizmoScale, SDPG_Foreground,
+				FrameGizmoThickness, /*DepthBias*/ 0.0f,
+				/*bScreenSpace*/ true);
+#endif
+		}
+	}
 }
 
 void FAGX_ConstraintComponentVisualizer::DrawVisualization(
@@ -97,128 +216,6 @@ void FAGX_ConstraintComponentVisualizer::DrawVisualizationHUD(
 	}
 
 	DrawConstraintHUD(Constraint, Viewport, View, Canvas);
-}
-
-float GetScreenToWorldFactor(float FOV, float WorldDistance)
-{
-	float Hack = 0.5f; // because result seemed a bit off...
-	return Hack * 2.0f * WorldDistance * FMath::Atan(FOV / 2.0f);
-}
-
-float GetWorldSizeFromScreenFactor(float ScreenFactor, float FOV, float WorldDistance)
-{
-	return ScreenFactor * GetScreenToWorldFactor(FOV, WorldDistance);
-}
-
-float GetScreenFactorFromWorldSize(float WorldSize, float FOV, float WorldDistance)
-{
-	return WorldSize / GetScreenToWorldFactor(FOV, WorldDistance);
-}
-
-namespace
-{
-	FBox GetBoundingBox(UAGX_RigidBodyComponent* Body)
-	{
-		FBox Box(ForceInit);
-
-		const FTransform& BodyToWorld = Body->GetComponentTransform();
-		const FTransform WorldToBody = BodyToWorld.Inverse();
-
-		TArray<USceneComponent*> Children;
-		Body->GetChildrenComponents(true, Children);
-		for (auto Child : Children)
-		{
-			const FTransform ComponentToBody = Child->GetComponentTransform() * WorldToBody;
-			const FBoxSphereBounds BoundInBodySpace = Child->CalcBounds(ComponentToBody);
-			Box += BoundInBodySpace.GetBox();
-		}
-		return Box;
-	}
-}
-
-/// \todo Consider moving GetRigidBody with fallback to FAGX_ConstraintBodyAttachment.
-UAGX_RigidBodyComponent* GetRigidBody(
-	const FAGX_RigidBodyReference& BodyReference, AActor* Fallback)
-{
-	if (UAGX_RigidBodyComponent* Body = BodyReference.GetRigidBody())
-	{
-		return Body;
-	}
-
-	// Not sure why this is needed when in the Blueprint editor. The intention is that a fallback
-	// OwningActor should be stored in the RigidBodyReference.
-	if (Fallback == nullptr)
-	{
-		return nullptr;
-	}
-	TArray<UAGX_RigidBodyComponent*> AllBodies;
-	Fallback->GetComponents(AllBodies, BodyReference.bSearchChildActors);
-	for (UAGX_RigidBodyComponent* Candidate : AllBodies)
-	{
-		if (Candidate->GetFName() == BodyReference.BodyName)
-		{
-			return Candidate;
-		}
-	}
-
-	return nullptr;
-}
-
-void RenderBodyMarker(
-	const FAGX_ConstraintBodyAttachment& Attachment, UAGX_RigidBodyComponent* Body,
-	float CircleScreenFactor, const FColor& Color, const FSceneView* View,
-	FPrimitiveDrawInterface* PDI)
-{
-	// UE_LOG(LogAGX, Log, TEXT("Rendering body markers for body '%s'."), *Body->GetName());
-
-	if (bHighlightUsingBoundingBox)
-	{
-		FBox LocalAABB = GetBoundingBox(Body);
-
-		DrawOrientedWireBox(
-			PDI, Body->GetComponentLocation(), Body->GetForwardVector(), Body->GetRightVector(),
-			Body->GetUpVector(), LocalAABB.GetExtent(), Color, SDPG_World, HighlightThickness,
-			/*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
-	}
-
-	if (bHighlightUsingCircle)
-	{
-		const FVector Direction =
-			(Body->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
-		const float Distance = 40.0f;
-		const FVector Location = View->ViewLocation + Direction * Distance;
-		const float Radius = GetWorldSizeFromScreenFactor(
-			CircleScreenFactor, FMath::DegreesToRadians(View->FOV), Distance);
-		DrawCircle(
-			PDI, Location, View->GetViewRight(), View->GetViewUp(), Color, Radius, 32,
-			SDPG_Foreground, HighlightThickness, /*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
-	}
-
-	if (bDrawAttachmenFrameTripod)
-	{
-		// It is important to make sure that drawn coordinate system does not interfere
-		// with the default transform gizmo. Therefore, make sure thickness of drawn
-		// coordinate system is thinner than transform gizmo, so that the transform gizmo is
-		// always selectable.
-		//
-		// If is not thinner, in the scenario where the coordinate system equals the
-		// currently active transform gizmo (i.e. visually overlapping), and they are
-		// located inside a mesh while the camera is ouside of the mesh, there are
-		// difficulties	selecting the transform gizmo (even if HitProxy, depth bias, etc are
-		// used).
-
-/// \todo This doesn't work in the Blueprint editor as RigidBodyReference is currently implemented
-/// RigidBodyReference must be made aware of fallback owners.
-/// Can I just set the OwningActor to the Constraint's owner? What would be cool.
-/// What will the DeatailCustomization do?
-#if 1
-		DrawCoordinateSystemAxes(
-			PDI, Attachment.GetGlobalFrameLocation(Body),
-			Attachment.GetGlobalFrameRotation().Rotator(), FrameGizmoScale, SDPG_Foreground,
-			FrameGizmoThickness, /*DepthBias*/ 0.0f,
-			/*bScreenSpace*/ true);
-#endif
-	}
 }
 
 void FAGX_ConstraintComponentVisualizer::DrawConstraint(
