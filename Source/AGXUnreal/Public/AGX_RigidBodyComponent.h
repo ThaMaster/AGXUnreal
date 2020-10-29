@@ -12,7 +12,6 @@
 
 #include "AGX_RigidBodyComponent.generated.h"
 
-#define AGXUNREAL_USE_TRANSFORM_TARGET 1
 
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
@@ -63,17 +62,11 @@ public:
 	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 
-//#if AGXUNREAL_USE_TRANSFORM_TARGET
+	/**
+	 * Decide to where transformation updates from AGX Dynamics should be written.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_TransformTarget> TransformTarget;
-//#else
-	/**
-	 * Write transformations from AGX Dynamics to the Actor's Root Component. Only allowed when the
-	 * owning actor has a single AGX Rigid Body Component.
-	 */
-	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
-	uint8 bTransformRootComponent : 1;
-//#endif
 
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FRigidBodyBarrier* GetOrCreateNative();

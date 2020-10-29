@@ -363,8 +363,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	// Transform root component.
 	{
-		Test.TestFalse(
-			TEXT("Sphere transform root component"), SphereBody->bTransformRootComponent);
+		Test.TestEqual(TEXT("Sphere transform target"), SphereBody->TransformTarget, EAGX_TransformTarget::TT_SELF);
 	}
 
 	// Radius.
