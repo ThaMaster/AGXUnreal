@@ -383,8 +383,7 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 		return;
 	}
 
-	FString Unused;
-	const bool Violated = Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER, &Unused);
+	const bool Violated = Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER);
 
 	const FAGX_RigidBodyReference& BodyReference1 = Constraint->BodyAttachment1.RigidBody;
 	const FAGX_RigidBodyReference& BodyReference2 = Constraint->BodyAttachment2.RigidBody;
