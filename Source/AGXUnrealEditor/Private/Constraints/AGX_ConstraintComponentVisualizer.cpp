@@ -110,6 +110,18 @@ namespace
 		return nullptr;
 	}
 
+	FVector GetConstantDistanceLocation(
+		const FSceneView* View, const FVector& Location, float Distance)
+	{
+		if (!View)
+		{
+			return FVector(0.0f, 0.0f, 0.0f);
+		}
+
+		const FVector Direction = (Location - View->ViewLocation).GetSafeNormal();
+		return View->ViewLocation + Direction * Distance;
+	}
+
 	void DrawTranslationalPrimitive(
 		FPrimitiveDrawInterface* PDI, const FColor& Color, const FTransform& WorldTransform,
 		EAxis::Type Axis, float Height, float Offset)
@@ -233,10 +245,9 @@ namespace
 
 		// Highlight Body with circle.
 		{
-			const FVector Direction =
-				(Body->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
 			const float Distance = 40.0f;
-			const FVector Location = View->ViewLocation + Direction * Distance;
+			const FVector Location =
+				GetConstantDistanceLocation(View, Body->GetComponentLocation(), Distance);
 			const float Radius = GetWorldSizeFromScreenFactor(
 				CircleScreenFactor, FMath::DegreesToRadians(View->FOV), Distance);
 
@@ -332,17 +343,6 @@ namespace
 			DrawTranslationalPrimitive(
 				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::Z, Height, TransOffset);
 		}
-	}
-
-	FVector GetConstantDistanceLocation(const FSceneView* View, const FVector& Location, float Distance)
-	{
-		if (!View)
-		{
-			return FVector(0.0f, 0.0f, 0.0f);
-		}
-
-		const FVector Direction = (Location - View->ViewLocation).GetSafeNormal();
-		return View->ViewLocation + Direction * Distance;
 	}
 }
 
