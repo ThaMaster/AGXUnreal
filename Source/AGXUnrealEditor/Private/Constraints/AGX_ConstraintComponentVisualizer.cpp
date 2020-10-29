@@ -333,6 +333,17 @@ namespace
 				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::Z, Height, TransOffset);
 		}
 	}
+
+	FVector GetConstantDistanceLocation(const FSceneView* View, const FVector& Location, float Distance)
+	{
+		if (!View)
+		{
+			return FVector(0.0f, 0.0f, 0.0f);
+		}
+
+		const FVector Direction = (Location - View->ViewLocation).GetSafeNormal();
+		return View->ViewLocation + Direction * Distance;
+	}
 }
 
 void FAGX_ConstraintComponentVisualizer::DrawVisualization(
@@ -418,18 +429,15 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 
 	const float Distance = 100.0f;
 
-	const FVector DirectionAttach1 =
-		(Constraint->BodyAttachment1.GetGlobalFrameLocation() - View->ViewLocation).GetSafeNormal();
-	const FVector LocationAttach1 = View->ViewLocation + DirectionAttach1 * Distance;
-	const FVector DirectionAttach2 =
-		(Constraint->BodyAttachment2.GetGlobalFrameLocation() - View->ViewLocation).GetSafeNormal();
-	const FVector LocationAttach2 = View->ViewLocation + DirectionAttach2 * Distance;
+	const FVector LocationAttach1 = GetConstantDistanceLocation(
+		View, Constraint->BodyAttachment1.GetGlobalFrameLocation(), Distance);
+	const FVector LocationAttach2 = GetConstantDistanceLocation(
+		View, Constraint->BodyAttachment2.GetGlobalFrameLocation(), Distance);
 
 	if (Body1 != nullptr)
 	{
-		const FVector DirectionBody1 =
-			(Body1->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
-		const FVector LocationBody1 = View->ViewLocation + DirectionBody1 * Distance;
+		const FVector LocationBody1 =
+			GetConstantDistanceLocation(View, Body1->GetComponentLocation(), Distance);
 
 		// Draw line between body1 and attachment frame 1.
 		DrawDashedLine(
@@ -440,9 +448,8 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 
 	if (Body2 != nullptr)
 	{
-		const FVector DirectionBody2 =
-			(Body2->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
-		const FVector LocationBody2 = View->ViewLocation + DirectionBody2 * Distance;
+		const FVector LocationBody2 =
+			GetConstantDistanceLocation(View, Body2->GetComponentLocation(), Distance);
 
 		// Draw line between body2 and attachment frame 2.
 		DrawDashedLine(
