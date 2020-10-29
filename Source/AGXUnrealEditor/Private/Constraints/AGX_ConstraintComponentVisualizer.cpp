@@ -168,8 +168,8 @@ namespace
 				PDI, Unused, (LocalArrowTransform * WorldTransform), Height, CONE_ANGLE, NUM_SIDES,
 				Color, SDPG_Foreground);
 
-			// Rotate WorldTransform by (360 / NumArrows) deg so that the next drawn arrow gets the correct
-			// position and orientation.
+			// Rotate WorldTransform by (360 / NumArrows) deg so that the next drawn arrow gets the
+			// correct position and orientation.
 			WorldTransform.SetRotation(
 				WorldTransform.GetRotation() *
 				FQuat::MakeFromEuler(FVector(0.0f, 0.0f, 360.0f / NumArrows)));
@@ -413,45 +413,48 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment1, Violated);
 	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment2, Violated);
 
-	if (Body1 != nullptr && Body2 != nullptr)
-	{
-		float Distance = 100.0f;
+	const float Distance = 100.0f;
 
+	const FVector DirectionAttach1 =
+		(Constraint->BodyAttachment1.GetGlobalFrameLocation() - View->ViewLocation).GetSafeNormal();
+	const FVector LocationAttach1 = View->ViewLocation + DirectionAttach1 * Distance;
+	const FVector DirectionAttach2 =
+		(Constraint->BodyAttachment2.GetGlobalFrameLocation() - View->ViewLocation).GetSafeNormal();
+	const FVector LocationAttach2 = View->ViewLocation + DirectionAttach2 * Distance;
+
+	if (Body1 != nullptr)
+	{
 		const FVector DirectionBody1 =
 			(Body1->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
 		const FVector LocationBody1 = View->ViewLocation + DirectionBody1 * Distance;
 
-		const FVector DirectionAttach1 =
-			(Constraint->BodyAttachment1.GetGlobalFrameLocation(Body1) - View->ViewLocation)
-				.GetSafeNormal();
-		const FVector LocationAttach1 = View->ViewLocation + DirectionAttach1 * Distance;
-
-		const FVector DirectionBody2 =
-			(Body2->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
-		const FVector LocationBody2 = View->ViewLocation + DirectionBody2 * Distance;
-
-		const FVector DirectionAttach2 =
-			(Constraint->BodyAttachment2.GetGlobalFrameLocation(Body2) - View->ViewLocation)
-				.GetSafeNormal();
-		const FVector LocationAttach2 = View->ViewLocation + DirectionAttach2 * Distance;
-
+		// Draw line between body1 and attachment frame 1.
 		DrawDashedLine(
 			PDI, LocationBody1, LocationAttach1, HighlightColor, HighlightThickness,
 			SDPG_Foreground,
 			/*DepthBias*/ 0.0f);
+	}
 
+	if (Body2 != nullptr)
+	{
+		const FVector DirectionBody2 =
+			(Body2->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
+		const FVector LocationBody2 = View->ViewLocation + DirectionBody2 * Distance;
+
+		// Draw line between body2 and attachment frame 2.
 		DrawDashedLine(
 			PDI, LocationBody2, LocationAttach2, HighlightColor, HighlightThickness,
 			SDPG_Foreground,
 			/*DepthBias*/ 0.0f);
+	}
 
-		if (Violated)
-		{
-			DrawDashedLine(
-				PDI, LocationAttach1, LocationAttach2, FColor::Red, HighlightThickness,
-				SDPG_Foreground,
-				/*DepthBias*/ 0.0f);
-		}
+	if (Violated)
+	{
+		// Draw red line between attachment frame 1 and attachment frame 2 if the constraint is
+		// violated.
+		DrawDashedLine(
+			PDI, LocationAttach1, LocationAttach2, FColor::Red, HighlightThickness, SDPG_Foreground,
+			/*DepthBias*/ 0.0f);
 	}
 }
 
