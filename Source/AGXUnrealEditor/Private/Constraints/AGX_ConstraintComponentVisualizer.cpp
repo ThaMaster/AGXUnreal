@@ -117,8 +117,7 @@ namespace
 
 		// DrawWireCone renders the cone along the x-axis with the tip at the origin of
 		// WorldTransform. Create a new transform with its x-axis in the negative Axis direction and
-		// translate it Height
-		// + Offset distance.
+		// translate it Height + Offset distance.
 		FTransform ConeAlignedTransform;
 		const FVector X_w = WorldTransform.GetUnitAxis(EAxis::X);
 		const FVector Y_w = WorldTransform.GetUnitAxis(EAxis::Y);
