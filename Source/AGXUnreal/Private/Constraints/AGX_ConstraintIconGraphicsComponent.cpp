@@ -505,7 +505,8 @@ private:
 
 	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View) const override
 	{
-		const bool bVisibleForSelection = IsSelected() && !Constraint->IsSelected();
+		const bool bVisibleForSelection =
+			IsSelected() && !Constraint->IsSelected() && Constraint->IsVisible();
 
 		FPrimitiveViewRelevance Result;
 		Result.bDrawRelevance = IsShown(View) && bVisibleForSelection;
