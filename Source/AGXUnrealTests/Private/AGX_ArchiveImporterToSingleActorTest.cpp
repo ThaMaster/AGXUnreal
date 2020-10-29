@@ -1004,7 +1004,10 @@ bool FClearRenderMaterialImportedCommand::Update()
 	}
 
 	// The error message that is printed when folders are deleted from under the editor.
-	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+	//
+	/// @todo The error is only printed sometimes, and not for the last three runs on GitLab.
+	/// Commenting it out for now. See GitLab issue #213.
+	//Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
 
 	TArray<const TCHAR*> ExpectedFiles = {TEXT("RenderMaterials")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_materials_build"), ExpectedFiles);
