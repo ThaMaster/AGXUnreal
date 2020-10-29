@@ -566,7 +566,7 @@ private:
 
 	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View) const override
 	{
-		const bool bSelected = IsSelected() && Constraint->IsSelected();
+		const bool bSelected = IsSelected() && Constraint->IsSelected() && Constraint->IsVisible();
 		const bool bPrimary = AttachmentId == 1;
 		const bool bVisibleForSelection =
 			bSelected && (bPrimary || Constraint->AreFramesInViolatedState());

@@ -17,18 +17,7 @@
 
 namespace
 {
-	/// \todo Change these to settings editable from editor UI!
-
-	const bool bHighlightUsingBoundingBox = false;
-	const bool bHighlightUsingCircle = true;
-	const FColor HighlightColor(243, 139, 0);
-	const float HighlightThickness(1.0f);
-
-	const bool bDrawAttachmenFrameTripod = true;
-	const float FrameGizmoScale(50.0f);
-	const float FrameGizmoThickness(1.0f);
-
-	const bool bDrawLineBetweenActors = true;
+	const FColor ColorViolated = FColor::Red;
 
 	void DrawCoordinateSystemAxes(
 		FPrimitiveDrawInterface* PDI, FVector const& AxisLoc, FRotator const& AxisRot, float Scale,
@@ -57,6 +46,303 @@ namespace
 	{
 		return FVector2D(
 			NormalizedCoordinates.X * ViewSize.X, NormalizedCoordinates.Y * ViewSize.Y);
+	}
+
+	float GetScreenToWorldFactor(float FOV, float WorldDistance)
+	{
+		float Hack = 0.5f; // because result seemed a bit off...
+		return Hack * 2.0f * WorldDistance * FMath::Atan(FOV / 2.0f);
+	}
+
+	float GetWorldSizeFromScreenFactor(float ScreenFactor, float FOV, float WorldDistance)
+	{
+		return ScreenFactor * GetScreenToWorldFactor(FOV, WorldDistance);
+	}
+
+	float GetScreenFactorFromWorldSize(float WorldSize, float FOV, float WorldDistance)
+	{
+		return WorldSize / GetScreenToWorldFactor(FOV, WorldDistance);
+	}
+
+	FBox GetBoundingBox(UAGX_RigidBodyComponent* Body)
+	{
+		FBox Box(ForceInit);
+
+		const FTransform& BodyToWorld = Body->GetComponentTransform();
+		const FTransform WorldToBody = BodyToWorld.Inverse();
+
+		TArray<USceneComponent*> Children;
+		Body->GetChildrenComponents(true, Children);
+		for (auto Child : Children)
+		{
+			const FTransform ComponentToBody = Child->GetComponentTransform() * WorldToBody;
+			const FBoxSphereBounds BoundInBodySpace = Child->CalcBounds(ComponentToBody);
+			Box += BoundInBodySpace.GetBox();
+		}
+		return Box;
+	}
+
+	/// \todo Consider moving GetRigidBody with fallback to FAGX_ConstraintBodyAttachment.
+	UAGX_RigidBodyComponent* GetRigidBody(
+		const FAGX_RigidBodyReference& BodyReference, AActor* Fallback)
+	{
+		if (UAGX_RigidBodyComponent* Body = BodyReference.GetRigidBody())
+		{
+			return Body;
+		}
+
+		// Not sure why this is needed when in the Blueprint editor. The intention is that a
+		// fallback OwningActor should be stored in the RigidBodyReference.
+		if (Fallback == nullptr)
+		{
+			return nullptr;
+		}
+		TArray<UAGX_RigidBodyComponent*> AllBodies;
+		Fallback->GetComponents(AllBodies, BodyReference.bSearchChildActors);
+		for (UAGX_RigidBodyComponent* Candidate : AllBodies)
+		{
+			if (Candidate->GetFName() == BodyReference.BodyName)
+			{
+				return Candidate;
+			}
+		}
+
+		return nullptr;
+	}
+
+	void DrawTranslationalPrimitive(
+		FPrimitiveDrawInterface* PDI, const FColor& Color, const FTransform& WorldTransform,
+		EAxis::Type Axis, float Height, float Offset)
+	{
+		constexpr int32 NUM_SIDES {64};
+		constexpr float CONE_ANGLE {20};
+
+		// DrawWireCone renders the cone along the x-axis with the tip at the origin of
+		// WorldTransform. Create a new transform with its x-axis in the negative Axis direction and
+		// translate it Height + Offset distance.
+		FTransform ConeAlignedTransform;
+		const FVector X_w = WorldTransform.GetUnitAxis(EAxis::X);
+		const FVector Y_w = WorldTransform.GetUnitAxis(EAxis::Y);
+		const FVector Z_w = WorldTransform.GetUnitAxis(EAxis::Z);
+		const FVector Origo_w = WorldTransform.GetLocation();
+
+		switch (Axis)
+		{
+			case EAxis::X:
+				ConeAlignedTransform =
+					FTransform(-X_w, -Y_w, Z_w, Origo_w + (Height + Offset) * X_w);
+				break;
+			case EAxis::Y:
+				ConeAlignedTransform =
+					FTransform(-Y_w, X_w, Z_w, Origo_w + (Height + Offset) * Y_w);
+				break;
+			case EAxis::Z:
+				ConeAlignedTransform =
+					FTransform(-Z_w, Y_w, X_w, Origo_w + (Height + Offset) * Z_w);
+				break;
+		}
+
+		TArray<FVector> Unused;
+		DrawWireCone(
+			PDI, Unused, ConeAlignedTransform, Height, CONE_ANGLE, NUM_SIDES, Color,
+			SDPG_Foreground);
+	}
+
+	// Draws NumArrows arrows of height Height along a circle with radius Radius around
+	// WorldTransform's x-axis.
+	void DrawArrowsAlongCircle(
+		FPrimitiveDrawInterface* PDI, const FColor& Color, FTransform WorldTransform, float Radius,
+		float Height, int32 NumArrows)
+	{
+		constexpr int32 NUM_SIDES {32};
+		constexpr float CONE_ANGLE {30};
+
+		// LocalArrowTransform is the final location and rotation of the arrow being drawn,
+		// expressed in the WorldTransform coordinate system.
+		FTransform LocalArrowTransform;
+		LocalArrowTransform.SetLocation(FVector(Radius, -Height / 2, 0));
+		LocalArrowTransform.SetRotation(FQuat::MakeFromEuler(FVector(0.0f, 0.0f, 90.0f)));
+
+		for (int i = 0; i < NumArrows; i++)
+		{
+			TArray<FVector> Unused;
+			DrawWireCone(
+				PDI, Unused, (LocalArrowTransform * WorldTransform), Height, CONE_ANGLE, NUM_SIDES,
+				Color, SDPG_Foreground);
+
+			// Rotate WorldTransform by (360 / NumArrows) deg so that the next drawn arrow gets the
+			// correct position and orientation.
+			WorldTransform.SetRotation(
+				WorldTransform.GetRotation() *
+				FQuat::MakeFromEuler(FVector(0.0f, 0.0f, 360.0f / NumArrows)));
+		}
+	}
+
+	void DrawRotationalPrimitive(
+		FPrimitiveDrawInterface* PDI, const FColor& Color, const FTransform& WorldTransform,
+		EAxis::Type Axis, float Radius, float Offset)
+	{
+		constexpr int32 NUM_SIDES {64};
+
+		const FVector X_w = WorldTransform.GetUnitAxis(EAxis::X);
+		const FVector Y_w = WorldTransform.GetUnitAxis(EAxis::Y);
+		const FVector Z_w = WorldTransform.GetUnitAxis(EAxis::Z);
+		const FVector Origo_w = WorldTransform.GetLocation();
+
+		FTransform CylinderAlignedTransform;
+		const float CylinderHalfHeight = 0.15f * Radius;
+		switch (Axis)
+		{
+			case EAxis::X:
+				CylinderAlignedTransform = FTransform(Y_w, Z_w, X_w, Origo_w + Offset * X_w);
+				break;
+			case EAxis::Y:
+				CylinderAlignedTransform = FTransform(Z_w, X_w, Y_w, Origo_w + Offset * Y_w);
+				break;
+			case EAxis::Z:
+				CylinderAlignedTransform = FTransform(X_w, Y_w, Z_w, Origo_w + Offset * Z_w);
+				break;
+		}
+
+		DrawWireCylinder(
+			PDI, CylinderAlignedTransform.GetLocation(),
+			CylinderAlignedTransform.GetUnitAxis(EAxis::X),
+			CylinderAlignedTransform.GetUnitAxis(EAxis::Y),
+			CylinderAlignedTransform.GetUnitAxis(EAxis::Z), Color, Radius, CylinderHalfHeight,
+			NUM_SIDES, SDPG_Foreground);
+
+		const float ArrowHeight = 0.6f * Radius;
+		DrawArrowsAlongCircle(PDI, Color, CylinderAlignedTransform, Radius, ArrowHeight, 3);
+	}
+
+	void RenderBodyMarker(
+		const FAGX_ConstraintBodyAttachment& Attachment, UAGX_RigidBodyComponent* Body,
+		float CircleScreenFactor, const FColor& Color, const float Thickness,
+		const FSceneView* View, FPrimitiveDrawInterface* PDI)
+	{
+		// UE_LOG(LogAGX, Log, TEXT("Rendering body markers for body '%s'."), *Body->GetName());
+
+#if 0 // bHighlightUsingBoundingBox
+	FBox LocalAABB = GetBoundingBox(Body);
+
+	DrawOrientedWireBox(
+		PDI, Body->GetComponentLocation(), Body->GetForwardVector(), Body->GetRightVector(),
+		Body->GetUpVector(), LocalAABB.GetExtent(), Color, SDPG_World, Thickness,
+		/*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
+#endif
+
+		// Highlight Body with circle.
+		{
+			const FVector Direction =
+				(Body->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
+			const float Distance = 40.0f;
+			const FVector Location = View->ViewLocation + Direction * Distance;
+			const float Radius = GetWorldSizeFromScreenFactor(
+				CircleScreenFactor, FMath::DegreesToRadians(View->FOV), Distance);
+
+			DrawCircle(
+				PDI, Location, View->GetViewRight(), View->GetViewUp(), Color, Radius, 32,
+				SDPG_Foreground, Thickness, /*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
+		}
+
+		// Draw frame attachment gizmo.
+		{
+			// It is important to make sure that drawn coordinate system does not interfere
+			// with the default transform gizmo. Therefore, make sure thickness of drawn
+			// coordinate system is thinner than transform gizmo, so that the transform gizmo is
+			// always selectable.
+			//
+			// If is not thinner, in the scenario where the coordinate system equals the
+			// currently active transform gizmo (i.e. visually overlapping), and they are
+			// located inside a mesh while the camera is ouside of the mesh, there are
+			// difficulties	selecting the transform gizmo (even if HitProxy, depth bias, etc are
+			// used).
+
+			/// \todo This doesn't work in the Blueprint editor as RigidBodyReference is currently
+			/// implemented RigidBodyReference must be made aware of fallback owners. Can I just set
+			/// the OwningActor to the Constraint's owner? What would be cool. What will the
+			/// DeatailCustomization do?
+			constexpr float FRAME_GIZMO_SCALE {0.2f};
+
+			const float AttachemtFrameDistance =
+				FVector::Dist(Attachment.GetGlobalFrameLocation(Body), View->ViewLocation);
+			const float FrameGizmoSize = GetWorldSizeFromScreenFactor(
+				FRAME_GIZMO_SCALE, FMath::DegreesToRadians(View->FOV), AttachemtFrameDistance);
+
+			DrawCoordinateSystemAxes(
+				PDI, Attachment.GetGlobalFrameLocation(Body),
+				Attachment.GetGlobalFrameRotation().Rotator(), FrameGizmoSize, SDPG_Foreground,
+				0.0f,
+				/*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
+		}
+	}
+
+	void RenderDofPrimitives(
+		FPrimitiveDrawInterface* PDI, const FSceneView* View,
+		const UAGX_ConstraintComponent* Constraint, const FAGX_ConstraintBodyAttachment& Attachment,
+		bool IsViolated)
+	{
+		constexpr float TRANSLATIONAL_PRIMITIVE_SCALE {0.06f};
+		constexpr float ROTATIONAL_PRIMITIVE_SCALE {0.07f};
+		constexpr FColor ROT_COLOR_DEFAULT {243, 139, 0};
+		constexpr FColor TRANS_COLOR_DEFAULT {243, 200, 0};
+
+		const FTransform AttachmentTransform(Attachment.GetGlobalFrameMatrix());
+		const float AttachemtFrameDistance =
+			FVector::Dist(Attachment.GetGlobalFrameLocation(), View->ViewLocation);
+
+		const float Radius = GetWorldSizeFromScreenFactor(
+			ROTATIONAL_PRIMITIVE_SCALE, FMath::DegreesToRadians(View->FOV), AttachemtFrameDistance);
+		const float RotOffset = 1.4f * Radius;
+
+		const float Height = GetWorldSizeFromScreenFactor(
+			TRANSLATIONAL_PRIMITIVE_SCALE, FMath::DegreesToRadians(View->FOV),
+			AttachemtFrameDistance);
+		const float TransOffset = 1.4f * Height;
+
+		const FColor RotDofPrimitiveColor = IsViolated ? ColorViolated : ROT_COLOR_DEFAULT;
+		const FColor TransDofPrimitiveColor = IsViolated ? ColorViolated : TRANS_COLOR_DEFAULT;
+		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1))
+		{
+			DrawRotationalPrimitive(
+				PDI, RotDofPrimitiveColor, AttachmentTransform, EAxis::X, Radius, RotOffset);
+		}
+		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_2))
+		{
+			DrawRotationalPrimitive(
+				PDI, RotDofPrimitiveColor, AttachmentTransform, EAxis::Y, Radius, RotOffset);
+		}
+		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_3))
+		{
+			DrawRotationalPrimitive(
+				PDI, RotDofPrimitiveColor, AttachmentTransform, EAxis::Z, Radius, RotOffset);
+		}
+		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_1))
+		{
+			DrawTranslationalPrimitive(
+				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::X, Height, TransOffset);
+		}
+		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_2))
+		{
+			DrawTranslationalPrimitive(
+				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::Y, Height, TransOffset);
+		}
+		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_3))
+		{
+			DrawTranslationalPrimitive(
+				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::Z, Height, TransOffset);
+		}
+	}
+
+	FVector GetConstantDistanceLocation(const FSceneView* View, const FVector& Location, float Distance)
+	{
+		if (!View)
+		{
+			return FVector(0.0f, 0.0f, 0.0f);
+		}
+
+		const FVector Direction = (Location - View->ViewLocation).GetSafeNormal();
+		return View->ViewLocation + Direction * Distance;
 	}
 }
 
@@ -99,134 +385,16 @@ void FAGX_ConstraintComponentVisualizer::DrawVisualizationHUD(
 	DrawConstraintHUD(Constraint, Viewport, View, Canvas);
 }
 
-float GetScreenToWorldFactor(float FOV, float WorldDistance)
-{
-	float Hack = 0.5f; // because result seemed a bit off...
-	return Hack * 2.0f * WorldDistance * FMath::Atan(FOV / 2.0f);
-}
-
-float GetWorldSizeFromScreenFactor(float ScreenFactor, float FOV, float WorldDistance)
-{
-	return ScreenFactor * GetScreenToWorldFactor(FOV, WorldDistance);
-}
-
-float GetScreenFactorFromWorldSize(float WorldSize, float FOV, float WorldDistance)
-{
-	return WorldSize / GetScreenToWorldFactor(FOV, WorldDistance);
-}
-
-namespace
-{
-	FBox GetBoundingBox(UAGX_RigidBodyComponent* Body)
-	{
-		FBox Box(ForceInit);
-
-		const FTransform& BodyToWorld = Body->GetComponentTransform();
-		const FTransform WorldToBody = BodyToWorld.Inverse();
-
-		TArray<USceneComponent*> Children;
-		Body->GetChildrenComponents(true, Children);
-		for (auto Child : Children)
-		{
-			const FTransform ComponentToBody = Child->GetComponentTransform() * WorldToBody;
-			const FBoxSphereBounds BoundInBodySpace = Child->CalcBounds(ComponentToBody);
-			Box += BoundInBodySpace.GetBox();
-		}
-		return Box;
-	}
-}
-
-/// \todo Consider moving GetRigidBody with fallback to FAGX_ConstraintBodyAttachment.
-UAGX_RigidBodyComponent* GetRigidBody(
-	const FAGX_RigidBodyReference& BodyReference, AActor* Fallback)
-{
-	if (UAGX_RigidBodyComponent* Body = BodyReference.GetRigidBody())
-	{
-		return Body;
-	}
-
-	// Not sure why this is needed when in the Blueprint editor. The intention is that a fallback
-	// OwningActor should be stored in the RigidBodyReference.
-	if (Fallback == nullptr)
-	{
-		return nullptr;
-	}
-	TArray<UAGX_RigidBodyComponent*> AllBodies;
-	Fallback->GetComponents(AllBodies, BodyReference.bSearchChildActors);
-	for (UAGX_RigidBodyComponent* Candidate : AllBodies)
-	{
-		if (Candidate->GetFName() == BodyReference.BodyName)
-		{
-			return Candidate;
-		}
-	}
-
-	return nullptr;
-}
-
-void RenderBodyMarker(
-	const FAGX_ConstraintBodyAttachment& Attachment, UAGX_RigidBodyComponent* Body,
-	float CircleScreenFactor, const FColor& Color, const FSceneView* View,
-	FPrimitiveDrawInterface* PDI)
-{
-	// UE_LOG(LogAGX, Log, TEXT("Rendering body markers for body '%s'."), *Body->GetName());
-
-	if (bHighlightUsingBoundingBox)
-	{
-		FBox LocalAABB = GetBoundingBox(Body);
-
-		DrawOrientedWireBox(
-			PDI, Body->GetComponentLocation(), Body->GetForwardVector(), Body->GetRightVector(),
-			Body->GetUpVector(), LocalAABB.GetExtent(), Color, SDPG_World, HighlightThickness,
-			/*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
-	}
-
-	if (bHighlightUsingCircle)
-	{
-		const FVector Direction =
-			(Body->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
-		const float Distance = 40.0f;
-		const FVector Location = View->ViewLocation + Direction * Distance;
-		const float Radius = GetWorldSizeFromScreenFactor(
-			CircleScreenFactor, FMath::DegreesToRadians(View->FOV), Distance);
-		DrawCircle(
-			PDI, Location, View->GetViewRight(), View->GetViewUp(), Color, Radius, 32,
-			SDPG_Foreground, HighlightThickness, /*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
-	}
-
-	if (bDrawAttachmenFrameTripod)
-	{
-		// It is important to make sure that drawn coordinate system does not interfere
-		// with the default transform gizmo. Therefore, make sure thickness of drawn
-		// coordinate system is thinner than transform gizmo, so that the transform gizmo is
-		// always selectable.
-		//
-		// If is not thinner, in the scenario where the coordinate system equals the
-		// currently active transform gizmo (i.e. visually overlapping), and they are
-		// located inside a mesh while the camera is ouside of the mesh, there are
-		// difficulties	selecting the transform gizmo (even if HitProxy, depth bias, etc are
-		// used).
-
-/// \todo This doesn't work in the Blueprint editor as RigidBodyReference is currently implemented
-/// RigidBodyReference must be made aware of fallback owners.
-/// Can I just set the OwningActor to the Constraint's owner? What would be cool.
-/// What will the DeatailCustomization do?
-#if 1
-		DrawCoordinateSystemAxes(
-			PDI, Attachment.GetGlobalFrameLocation(Body),
-			Attachment.GetGlobalFrameRotation().Rotator(), FrameGizmoScale, SDPG_Foreground,
-			FrameGizmoThickness, /*DepthBias*/ 0.0f,
-			/*bScreenSpace*/ true);
-#endif
-	}
-}
-
 void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	const UAGX_ConstraintComponent* Constraint, const FSceneView* View,
 	FPrimitiveDrawInterface* PDI)
 {
-	if (Constraint == nullptr)
+	if (Constraint == nullptr || !Constraint->IsVisible())
+	{
 		return;
+	}
+
+	const bool Violated = Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER);
 
 	const FAGX_RigidBodyReference& BodyReference1 = Constraint->BodyAttachment1.RigidBody;
 	const FAGX_RigidBodyReference& BodyReference2 = Constraint->BodyAttachment2.RigidBody;
@@ -235,33 +403,68 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	UAGX_RigidBodyComponent* Body1 = GetRigidBody(BodyReference1, BodyOwnerFallback);
 	UAGX_RigidBodyComponent* Body2 = GetRigidBody(BodyReference2, BodyOwnerFallback);
 
+	const FColor HighlightColor(243, 139, 0);
+	const float HighlightThickness(1.0f);
+
 	if (Body1 != nullptr)
 	{
 		float CircleScreenFactor = 0.08f;
 		RenderBodyMarker(
-			Constraint->BodyAttachment1, Body1, CircleScreenFactor, HighlightColor, View, PDI);
+			Constraint->BodyAttachment1, Body1, CircleScreenFactor, HighlightColor,
+			HighlightThickness, View, PDI);
 	}
 	if (Body2 != nullptr)
 	{
-		float CircleScreenFactor = 0.06f;
+		float CircleScreenFactor = 0.05f;
 		FColor Color = FColor(
 			HighlightColor.R * 0.6f, HighlightColor.G * 0.6f, HighlightColor.B * 0.6f,
 			HighlightColor.A);
-		RenderBodyMarker(Constraint->BodyAttachment2, Body2, CircleScreenFactor, Color, View, PDI);
+		RenderBodyMarker(
+			Constraint->BodyAttachment2, Body2, CircleScreenFactor, Color, HighlightThickness, View,
+			PDI);
 	}
 
-	if (bDrawLineBetweenActors && Body1 != nullptr && Body2 != nullptr)
+	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment1, Violated);
+	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment2, Violated);
+
+	const float Distance = 100.0f;
+
+	const FVector LocationAttach1 = GetConstantDistanceLocation(
+		View, Constraint->BodyAttachment1.GetGlobalFrameLocation(), Distance);
+	const FVector LocationAttach2 = GetConstantDistanceLocation(
+		View, Constraint->BodyAttachment2.GetGlobalFrameLocation(), Distance);
+
+	if (Body1 != nullptr)
 	{
-		float Distance = 100.0f;
+		const FVector LocationBody1 =
+			GetConstantDistanceLocation(View, Body1->GetComponentLocation(), Distance);
 
-		FVector Direction1 = (Body1->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
-		FVector Location1 = View->ViewLocation + Direction1 * Distance;
-
-		FVector Direction2 = (Body2->GetComponentLocation() - View->ViewLocation).GetSafeNormal();
-		FVector Location2 = View->ViewLocation + Direction2 * Distance;
-
+		// Draw line between body1 and attachment frame 1.
 		DrawDashedLine(
-			PDI, Location1, Location2, HighlightColor, HighlightThickness, SDPG_Foreground,
+			PDI, LocationBody1, LocationAttach1, HighlightColor, HighlightThickness,
+			SDPG_Foreground,
+			/*DepthBias*/ 0.0f);
+	}
+
+	if (Body2 != nullptr)
+	{
+		const FVector LocationBody2 =
+			GetConstantDistanceLocation(View, Body2->GetComponentLocation(), Distance);
+
+		// Draw line between body2 and attachment frame 2.
+		DrawDashedLine(
+			PDI, LocationBody2, LocationAttach2, HighlightColor, HighlightThickness,
+			SDPG_Foreground,
+			/*DepthBias*/ 0.0f);
+	}
+
+	if (Violated)
+	{
+		// Draw red line between attachment frame 1 and attachment frame 2 if the constraint is
+		// violated.
+		DrawDashedLine(
+			PDI, LocationAttach1, LocationAttach2, ColorViolated, HighlightThickness,
+			SDPG_Foreground,
 			/*DepthBias*/ 0.0f);
 	}
 }
@@ -270,6 +473,11 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraintHUD(
 	const UAGX_ConstraintComponent* Constraint, const FViewport* Viewport, const FSceneView* View,
 	FCanvas* Canvas)
 {
+	if (Constraint == nullptr || !Constraint->IsVisible())
+	{
+		return;
+	}
+
 	FString Message;
 	if (Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER, &Message))
 	{
