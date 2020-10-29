@@ -17,6 +17,8 @@
 
 namespace
 {
+	const FColor ColorViolated = FColor::Red;
+
 	void DrawCoordinateSystemAxes(
 		FPrimitiveDrawInterface* PDI, FVector const& AxisLoc, FRotator const& AxisRot, float Scale,
 		uint8 DepthPriority, float Thickness, float DepthBias, bool bScreenSpace)
@@ -282,6 +284,8 @@ namespace
 	{
 		constexpr float TRANSLATIONAL_PRIMITIVE_SCALE {0.06f};
 		constexpr float ROTATIONAL_PRIMITIVE_SCALE {0.07f};
+		constexpr FColor ROT_COLOR_DEFAULT {243, 139, 0};
+		constexpr FColor TRANS_COLOR_DEFAULT {243, 200, 0};
 
 		const FTransform AttachmentTransform(Attachment.GetGlobalFrameMatrix());
 		const float AttachemtFrameDistance =
@@ -296,8 +300,8 @@ namespace
 			AttachemtFrameDistance);
 		const float TransOffset = 1.4f * Height;
 
-		const FColor RotDofPrimitiveColor = IsViolated ? FColor::Red : FColor(243, 139, 0);
-		const FColor TransDofPrimitiveColor = IsViolated ? FColor::Red : FColor(243, 200, 0);
+		const FColor RotDofPrimitiveColor = IsViolated ? ColorViolated : ROT_COLOR_DEFAULT;
+		const FColor TransDofPrimitiveColor = IsViolated ? ColorViolated : TRANS_COLOR_DEFAULT;
 		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1))
 		{
 			DrawRotationalPrimitive(
@@ -453,7 +457,8 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 		// Draw red line between attachment frame 1 and attachment frame 2 if the constraint is
 		// violated.
 		DrawDashedLine(
-			PDI, LocationAttach1, LocationAttach2, FColor::Red, HighlightThickness, SDPG_Foreground,
+			PDI, LocationAttach1, LocationAttach2, ColorViolated, HighlightThickness,
+			SDPG_Foreground,
 			/*DepthBias*/ 0.0f);
 	}
 }
