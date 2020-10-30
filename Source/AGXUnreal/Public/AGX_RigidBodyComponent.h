@@ -1,6 +1,7 @@
 #pragma once
 
 // AGXUnreal includes.
+#include "AGX_RigidBodyEnums.h"
 #include "AGX_MotionControl.h"
 #include "RigidBodyBarrier.h"
 
@@ -10,6 +11,7 @@
 #include "Misc/EngineVersionComparison.h"
 
 #include "AGX_RigidBodyComponent.generated.h"
+
 
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
@@ -61,11 +63,10 @@ public:
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 
 	/**
-	 * Write transformations from AGX Dynamics to the Actor's Root Component. Only allowed when the
-	 * owning actor has a single AGX Rigid Body Component.
+	 * Decide to where transformation updates from AGX Dynamics should be written.
 	 */
-	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
-	uint8 bTransformRootComponent : 1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
+	TEnumAsByte<enum EAGX_TransformTarget> TransformTarget;
 
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FRigidBodyBarrier* GetOrCreateNative();

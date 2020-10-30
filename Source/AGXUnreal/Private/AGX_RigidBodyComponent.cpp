@@ -25,7 +25,7 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	Mass = 1.0f;
 	PrincipalInertiae = FVector(1.f, 1.f, 1.f);
 	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
-	bTransformRootComponent = false;
+	TransformTarget = EAGX_TransformTarget::TT_SELF;
 }
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
@@ -209,34 +209,55 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 	check(HasNative());
 	const FVector NewLocation = NativeBarrier.GetPosition();
 	const FQuat NewRotation = NativeBarrier.GetRotation();
-	if (bTransformRootComponent)
-	{
-		check(GetOwner());
 
-		// To keep the RigidBodyComponent transform the same as the Native transform, apply the
-		// inverse of the RigidBodyComponents local transform to the native transform before
-		// applying the result to the root component.
-		// Note: Using GetRelativeTransform() directly would be tempting to use to get the
-		// RigidBodyComponents local transform, but it gives the local transform of the
-		// RigidBodyComponent as set in the editor, expressed in the root components reference
-		// frame, and does not take into account the case where the RigidBodyComponent is a child to
-		// some other component with a local transform of its own. Therefore, we use the global
-		// transforms of the RigidBodyComponent and the root component to get the correct local
-		// transform in all cases.
-		const FTransform LocalTransfInv =
-			GetOwner()->GetTransform().GetRelativeTransform(GetComponentTransform());
-		const FTransform NativeTransf = FTransform(NewRotation, NewLocation);
-
-		FTransform NewRootTransf;
-		FTransform::Multiply(&NewRootTransf, &LocalTransfInv, &NativeTransf);
-
-		GetOwner()->SetActorTransform(NewRootTransf);
-	}
-	else
-	{
+	auto TransformSelf = [this, &NewLocation, &NewRotation]() {
 		const FVector OldLocation = GetComponentLocation();
 		const FVector LocationDelta = NewLocation - OldLocation;
 		MoveComponent(LocationDelta, NewRotation, false);
+	};
+
+	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor) {
+		// Where Ancestor is relative to RigidBodyComponent, i.e., how the AGX Dynamics
+		// transformation should be changed in order to be applicable to Ancestor.
+		const FTransform AncestorRelativeToBody =
+			Ancestor.GetComponentTransform().GetRelativeTransform(GetComponentTransform());
+
+		// The transform we got from AGX Dynamics. We should manipulate Ancestor's transformation
+		// so that this RigidBodyComponent end up at this position. All other children of
+		// Ancestor should follow.
+		const FTransform TargetBodyLocation = FTransform(NewRotation, NewLocation);
+
+		FTransform NewTransform;
+		FTransform::Multiply(&NewTransform, &AncestorRelativeToBody, &TargetBodyLocation);
+
+		Ancestor.SetWorldTransform(NewTransform);
+	};
+
+	auto TryTransformAncestor = [this, &NewLocation, &NewRotation,
+								 &TransformAncestor](USceneComponent* Ancestor) {
+		if (Ancestor == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Cannot update transformation of ancestor of RigidBody '%s' because it "
+					 "doesn't have an ancestor."),
+				*GetName());
+			return;
+		}
+		TransformAncestor(*Ancestor);
+	};
+
+	switch (TransformTarget)
+	{
+		case TT_SELF:
+			TransformSelf();
+			break;
+		case TT_PARENT:
+			TryTransformAncestor(GetAttachParent());
+			break;
+		case TT_ROOT:
+			TryTransformAncestor(GetAttachmentRoot());
+			break;
 	}
 }
 
@@ -256,6 +277,15 @@ bool UAGX_RigidBodyComponent::CanEditChange(
 #endif
 ) const
 {
+// This code was used when we had a bool property for the transform target and it used to enable
+// or disable the checkbox in the Details Panel. Now that we have a drop-down list instead doing
+// something like this is more complicated. Leaving the code here both as a reminder and for future
+// inspiration.
+//
+// In essence, we want to disable the TT_ROOT option when TransformRootComponentAllowed returns
+// false, and disable the TT_PARENT option when TransformParentComponentAllowed (not written yet)
+// returns false.
+#if 0
 	// bTransformRootComponent is only allowed when this is the only RigidBodyComponent owned by the
 	// parent actor.
 	if (InProperty->GetFName() ==
@@ -263,7 +293,7 @@ bool UAGX_RigidBodyComponent::CanEditChange(
 	{
 		return TransformRootComponentAllowed();
 	}
-
+#endif
 	return Super::CanEditChange(InProperty);
 }
 
@@ -306,13 +336,21 @@ UAGX_RigidBodyComponent* UAGX_RigidBodyComponent::GetFirstFromActor(const AActor
 #if WITH_EDITOR
 void UAGX_RigidBodyComponent::OnComponentView()
 {
-	// If there are multiple UAGX_RigidBodyComponent in the owning actor, the
-	// bTransformRootComponent flag must be set to false for all of these UAGX_RigidBodyComponents.
+	/// @todo Here we should detect if TransformTarget has an illegal value for the current
+	/// Component configuration in the Actor and if so set it back to TT_SELF.
+	/// Or perhaps notify the user in some other way. Whatever gives the best UX.
 	DisableTransformRootCompIfMultiple();
 }
 
 void UAGX_RigidBodyComponent::DisableTransformRootCompIfMultiple()
 {
+// This code was used when we had a bool property for the transform target and it used to forcibly
+// disable root targeting when discovered that it was no longer legal due to multple bodies with
+// the same Actor. This is a bit more complicated now that we have an enum instead of a bool, but
+// the process should be similar.
+//
+// I'm leaving this code here both as a reminder and for future inspiration.
+#if 0
 	if (GetOwner() == nullptr)
 	{
 		// Components don't have an owner while being built in a Blueprint. This may actually be
@@ -341,5 +379,6 @@ void UAGX_RigidBodyComponent::DisableTransformRootCompIfMultiple()
 			}
 		}
 	}
+#endif
 }
 #endif
