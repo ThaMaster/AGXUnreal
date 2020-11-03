@@ -227,8 +227,12 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 		// Ancestor should follow.
 		const FTransform TargetBodyLocation = FTransform(NewRotation, NewLocation);
 
+		// Compute the transform that moves Ancestor so that the body end up where we want it. Do
+		// not change the scale of the ancestor, we don't want do deform meshes and other stuff in
+		// there.
 		FTransform NewTransform;
 		FTransform::Multiply(&NewTransform, &AncestorRelativeToBody, &TargetBodyLocation);
+		NewTransform.SetScale3D(Ancestor.GetComponentScale());
 
 		Ancestor.SetWorldTransform(NewTransform);
 	};
