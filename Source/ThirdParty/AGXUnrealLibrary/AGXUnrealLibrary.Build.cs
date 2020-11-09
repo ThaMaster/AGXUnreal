@@ -58,7 +58,8 @@ public class AGXUnrealLibrary : ModuleRules
 
 	public AGXUnrealLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PackagedAgxResources = new AgxResourcesInfo(Target, AgxResourcesLocation.PackagedAgx, PluginDirectory);
+		PackagedAgxResources =
+			new AgxResourcesInfo(Target, AgxResourcesLocation.PackagedAgx, GetPackagedAgxResourcesPath());
 		Type = ModuleType.External;
 
 		// Because the AGX Dynamics type system uses typeid and dynamic_cast.
@@ -127,41 +128,25 @@ public class AGXUnrealLibrary : ModuleRules
 		AddIncludePath(LibSource.TerrainDependencies);
 	}
 
+	private string GetPackagedAgxResourcesPath()
+	{
+		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries", "ThirdParty", "agx"));
+	}
+
 	private void AddIncludePath(LibSource Src)
 	{
 		PublicIncludePaths.Add(PackagedAgxResources.IncludePath(Src));
 	}
 
-	// The runtime dependency directory will be automatically copied to the target.
-	private void AddRuntimeDependencyDirectory(string Name, LibSource Src, string SourceAppendPath = "",
-		string TargetAppendPath = "")
-	{
-		string Source = PackagedAgxResources.RuntimeLibraryPath(Name, Src, SourceAppendPath, true);
-		string Target = Path.Combine("$(BinaryOutputDir)", TargetAppendPath);
-
-		RuntimeDependencies.Add(Target, Source);
-	}
-
-	// The dependency file will be automatically copied to the target.
-	private void AddDependencyExplicitFile(string Name, string SourceDirectory, string SourceAppendPath = "",
-		string TargetAppendPath = "")
-	{
-		string Source = Path.Combine(SourceDirectory, SourceAppendPath, Name);
-		string Target = Path.Combine("$(BinaryOutputDir)", TargetAppendPath, Name);
-
-		RuntimeDependencies.Add(Target, Source);
-	}
-
-	// The runtime dependency file will be automatically copied to the target.
-	private void AddRuntimeDependency(string Name, LibSource Src, string SourceAppendPath = "",
-		string TargetAppendPath = "")
+	// The runtime dependency file will be automatically copied to the target binaries directory.
+	private void AddRuntimeDependency(string Name, LibSource Src)
 	{
 		List<string> FilesToAdd = new List<string>();
 
 		if (Name.Contains("*"))
 		{
 			// Find all files matching the given pattern.
-			string Directory = Path.Combine(PackagedAgxResources.RuntimeLibraryDirectory(Src), SourceAppendPath);
+			string Directory = Path.Combine(PackagedAgxResources.RuntimeLibraryDirectory(Src));
 			FilesToAdd = FindMatchingFiles(Directory, Name);
 		}
 		else
@@ -178,8 +163,8 @@ public class AGXUnrealLibrary : ModuleRules
 		foreach (string FileName in FilesToAdd)
 		{
 			string FileNameFull = PackagedAgxResources.RuntimeLibraryFileName(FileName);
-			string Target = Path.Combine("$(BinaryOutputDir)", TargetAppendPath, FileNameFull);
-			string Source = PackagedAgxResources.RuntimeLibraryPath(FileName, Src, SourceAppendPath);
+			string Target = Path.Combine("$(BinaryOutputDir)", FileNameFull);
+			string Source = PackagedAgxResources.RuntimeLibraryPath(FileName, Src);
 			RuntimeDependencies.Add(Target, Source);
 		}
 	}
@@ -207,23 +192,6 @@ public class AGXUnrealLibrary : ModuleRules
 		foreach (string FileName in FilesToAdd)
 		{
 			PublicAdditionalLibraries.Add(PackagedAgxResources.LinkLibraryPath(FileName, Src));
-
-			// Copy the link library file to the target.
-			// @todo Copying the lib files are only necessary when building/packaging the plugin
-			// itself, not when building an executable. Currently no reliable way of separating
-			// the two here have been found, so right now the link library files will be copied
-			// to the target when building executables also even if they are not needed in that
-			// case.
-			string FileNameFull = PackagedAgxResources.LinkLibraryFileName(FileName);
-			string TargetRelativePath = "../../lib";
-
-			if(Target.Platform == UnrealTargetPlatform.Win64)
-			{
-				TargetRelativePath = Path.Combine(TargetRelativePath, "Win64");
-			}
-
-			AddDependencyExplicitFile(FileNameFull, PackagedAgxResources.LinkLibraryDirectory(Src), "",
-				TargetRelativePath);
 		}
 	}
 
@@ -314,7 +282,7 @@ public class AGXUnrealLibrary : ModuleRules
 			return Info.LinkLibrariesPath;
 		}
 
-		public string RuntimeLibraryPath(string LibraryName, LibSource Src, string AppendPath = "",
+		public string RuntimeLibraryPath(string LibraryName, LibSource Src,
 			bool IsDirectory = false)
 		{
 			LibSourceInfo Info = LibSources[Src];
@@ -326,11 +294,11 @@ public class AGXUnrealLibrary : ModuleRules
 			}
 			if (IsDirectory)
 			{
-				return Path.Combine(Info.RuntimeLibrariesPath, AppendPath, LibraryName);
+				return Path.Combine(Info.RuntimeLibrariesPath, LibraryName);
 			}
 			else
 			{
-				return Path.Combine(Info.RuntimeLibrariesPath, AppendPath, RuntimeLibraryFileName(LibraryName));
+				return Path.Combine(Info.RuntimeLibrariesPath, RuntimeLibraryFileName(LibraryName));
 			}
 		}
 
@@ -345,7 +313,7 @@ public class AGXUnrealLibrary : ModuleRules
 			return Info.RuntimeLibrariesPath;
 		}
 
-		private string GetComponentsRuntimePath(ReadOnlyTargetRules Target, string BaseDir,
+		private string GetComponentsRuntimePath(ReadOnlyTargetRules Target, string PackagedAgxResourcesPath,
 			bool UseInstalledAgx)
 		{
 			if (Target.Platform == UnrealTargetPlatform.Linux)
@@ -378,7 +346,7 @@ public class AGXUnrealLibrary : ModuleRules
 				}
 				else
 				{
-					return Path.Combine(BaseDir, "Binaries", "Linux", "agx", "plugins", "Components");
+					return Path.Combine(PackagedAgxResourcesPath, "plugins", "Components");
 				}
 
 			}
@@ -390,7 +358,7 @@ public class AGXUnrealLibrary : ModuleRules
 				}
 				else
 				{
-					return Path.Combine(BaseDir, "Binaries", "Win64", "agx", "plugins", "Components");
+					return Path.Combine(PackagedAgxResourcesPath, "plugins", "Components");
 				}
 			}
 			else
@@ -401,7 +369,7 @@ public class AGXUnrealLibrary : ModuleRules
 			}
 		}
 
-		public AgxResourcesInfo(ReadOnlyTargetRules Target, AgxResourcesLocation AgxLocation, string PluginDir = "")
+		public AgxResourcesInfo(ReadOnlyTargetRules Target, AgxResourcesLocation AgxLocation, string PackagedAgxResourcesPath = "")
 		{
 			LibSources = new Dictionary<LibSource, LibSourceInfo>();
 			bool UseInstalledAgx = AgxLocation == AgxResourcesLocation.InstalledAgx ? true : false;
@@ -415,14 +383,14 @@ public class AGXUnrealLibrary : ModuleRules
 
 			// TODO: Detect if AGX Dynamics is in local build or installed mode.
 			//	   Currently assuming local build for Linux and installed for Windows.
-			string BaseDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_DIR") : PluginDir;
+			string BaseDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_DIR") : PackagedAgxResourcesPath;
 			string BuildDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_BUILD_DIR")
-				?? BaseDir : PluginDir;
+				?? BaseDir : PackagedAgxResourcesPath;
 			string DependenciesDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR")
-				?? BaseDir : PluginDir;
+				?? BaseDir : PackagedAgxResourcesPath;
 			string TerrainDependenciesDir = UseInstalledAgx ?
 				Environment.GetEnvironmentVariable("AGXTERRAIN_DEPENDENCIES_DIR")
-				?? BaseDir : PluginDir;
+				?? BaseDir : PackagedAgxResourcesPath;
 			if (UseInstalledAgx && (BaseDir == null || BuildDir == null || DependenciesDir == null
 				|| TerrainDependenciesDir == null))
 			{
@@ -475,7 +443,7 @@ public class AGXUnrealLibrary : ModuleRules
 					null,
 					UseInstalledAgx ?
 						Path.Combine(Environment.GetEnvironmentVariable("AGX_DIR"), "data", "cfg")
-						: Path.Combine(BaseDir, "Binaries", "Linux", "agx", "data", "cfg")
+						: Path.Combine(BaseDir, "data", "cfg")
 				));
 			}
 			else if(Target.Platform == UnrealTargetPlatform.Win64)
@@ -490,7 +458,7 @@ public class AGXUnrealLibrary : ModuleRules
 					UseInstalledAgx ? Path.Combine(BaseDir, "lib", "x64")
 						: Path.Combine(BaseDir, "lib", "Win64"),
 					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64")
-						: Path.Combine(BaseDir, "Binaries", "Win64")
+						: Path.Combine(BaseDir, "bin", "Win64")
 				));
 
 				LibSources.Add(LibSource.Config, new LibSourceInfo(
@@ -508,20 +476,20 @@ public class AGXUnrealLibrary : ModuleRules
 				LibSources.Add(LibSource.Dependencies, new LibSourceInfo(
 					Path.Combine(BaseDir, "include"),
 					UseInstalledAgx ? Path.Combine(BaseDir, "lib", "x64") : Path.Combine(BaseDir, "lib", "Win64"),
-					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "Binaries", "Win64")
+					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "bin", "Win64")
 				));
 
 				LibSources.Add(LibSource.TerrainDependencies, new LibSourceInfo(
 					Path.Combine(BaseDir, "include"),
 					UseInstalledAgx ? Path.Combine(BaseDir, "lib", "x64") : Path.Combine(BaseDir, "lib", "Win64"),
-					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "Binaries", "Win64")
+					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "bin", "Win64")
 				));
 
 				LibSources.Add(LibSource.Cfg, new LibSourceInfo(
 					null,
 					null,
 					UseInstalledAgx ? Path.Combine(Environment.GetEnvironmentVariable("AGX_DATA_DIR"), "cfg")
-						: Path.Combine(BaseDir, "Binaries", "Win64", "agx", "data", "cfg")
+						: Path.Combine(BaseDir, "agx", "data", "cfg")
 				));
 			}
 
