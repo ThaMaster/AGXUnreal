@@ -9,9 +9,10 @@ using UnrealBuildTool;
 /// Unreal Engine plugin that uses AGX Dynamics.
 public class AGXUnrealLibrary : ModuleRules
 {
+
 	/// Information about how AGX Dynamics is packaged and used on the current
 	/// platform.
-	private PlatformInfo CurrentPlatform;
+	private AgxResourcesInfo PackagedAgxResources;
 
 	// The various dependency sources we have. Each come with an include path,
 	// a linker path and a runtime path. The PlatformInfo is responsible for
@@ -24,6 +25,11 @@ public class AGXUnrealLibrary : ModuleRules
 		TerrainDependencies,
 		Cfg
 	};
+
+	private enum AgxResourcesLocation {
+		InstalledAgx,
+		PackagedAgx
+	}
 
 	// This build script will be run mainly in two situations:
 	// 1. When building/packaging the AGXUnreal plugin itself.
@@ -52,7 +58,7 @@ public class AGXUnrealLibrary : ModuleRules
 
 	public AGXUnrealLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
-		CurrentPlatform = new PlatformInfo(Target, PluginDirectory);
+		PackagedAgxResources = new AgxResourcesInfo(Target, AgxResourcesLocation.PackagedAgx, PluginDirectory);
 		Type = ModuleType.External;
 
 		// Because the AGX Dynamics type system uses typeid and dynamic_cast.
@@ -60,15 +66,6 @@ public class AGXUnrealLibrary : ModuleRules
 
 		// Because AGX Dynamics uses exceptions.
 		bEnableExceptions = true;
-
-		// '*' Means to include all files in the directory.
-		AddRuntimeDependencyDirectory("*", LibSource.Components, "agx/Physics",
-			"agx/plugins/Components/agx/Physics");
-		AddRuntimeDependencyDirectory("*", LibSource.Cfg, string.Empty, "agx/data/cfg");
-
-		AddDependencyExplicitFile("Referenced.agxEntity",
-			CurrentPlatform.RuntimeLibraryDirectory(LibSource.Components),
-			"agx", "agx/plugins/Components/agx");
 
 		AddRuntimeDependency("agxPhysics", LibSource.Agx);
 		AddRuntimeDependency("agxCore", LibSource.Agx);
@@ -122,35 +119,24 @@ public class AGXUnrealLibrary : ModuleRules
 		AddLinkLibrary("agxCable", LibSource.Agx);
 		AddLinkLibrary("agxModel", LibSource.Agx);
 
-		// @todo IncludePaths are only needed when building/packaging
-		// the plugin itself (not when building an executable). So the below if-statement
-		// would optimally check if we are building/packaging the plugin instead.
-		// Currently no reliable way of telling the two situations apart here has been found.
-		// Therefore we simply use the rule that if an AGX environment has been detected,
-		// they are always added. When building/packaging the plugin itself an AGX
-		// environment MUST be set up so for that situation the logic is correct.
-		// For the case that an executable is being built and an AGX environment is
-		// set up, adding these will not affect the build result.
-		if (CurrentPlatform.UseInstalledAgx)
-		{
-			AddIncludePath(LibSource.Agx);
-			AddIncludePath(LibSource.Components);
-			AddIncludePath(LibSource.Config);
-			AddIncludePath(LibSource.Dependencies);
-			AddIncludePath(LibSource.TerrainDependencies);
-		}
+
+		AddIncludePath(LibSource.Agx);
+		AddIncludePath(LibSource.Components);
+		AddIncludePath(LibSource.Config);
+		AddIncludePath(LibSource.Dependencies);
+		AddIncludePath(LibSource.TerrainDependencies);
 	}
 
 	private void AddIncludePath(LibSource Src)
 	{
-		PublicIncludePaths.Add(CurrentPlatform.IncludePath(Src));
+		PublicIncludePaths.Add(PackagedAgxResources.IncludePath(Src));
 	}
 
 	// The runtime dependency directory will be automatically copied to the target.
 	private void AddRuntimeDependencyDirectory(string Name, LibSource Src, string SourceAppendPath = "",
 		string TargetAppendPath = "")
 	{
-		string Source = CurrentPlatform.RuntimeLibraryPath(Name, Src, SourceAppendPath, true);
+		string Source = PackagedAgxResources.RuntimeLibraryPath(Name, Src, SourceAppendPath, true);
 		string Target = Path.Combine("$(BinaryOutputDir)", TargetAppendPath);
 
 		RuntimeDependencies.Add(Target, Source);
@@ -175,7 +161,7 @@ public class AGXUnrealLibrary : ModuleRules
 		if (Name.Contains("*"))
 		{
 			// Find all files matching the given pattern.
-			string Directory = Path.Combine(CurrentPlatform.RuntimeLibraryDirectory(Src), SourceAppendPath);
+			string Directory = Path.Combine(PackagedAgxResources.RuntimeLibraryDirectory(Src), SourceAppendPath);
 			FilesToAdd = FindMatchingFiles(Directory, Name);
 		}
 		else
@@ -191,9 +177,9 @@ public class AGXUnrealLibrary : ModuleRules
 
 		foreach (string FileName in FilesToAdd)
 		{
-			string FileNameFull = CurrentPlatform.RuntimeLibraryFileName(FileName);
+			string FileNameFull = PackagedAgxResources.RuntimeLibraryFileName(FileName);
 			string Target = Path.Combine("$(BinaryOutputDir)", TargetAppendPath, FileNameFull);
-			string Source = CurrentPlatform.RuntimeLibraryPath(FileName, Src, SourceAppendPath);
+			string Source = PackagedAgxResources.RuntimeLibraryPath(FileName, Src, SourceAppendPath);
 			RuntimeDependencies.Add(Target, Source);
 		}
 	}
@@ -205,7 +191,7 @@ public class AGXUnrealLibrary : ModuleRules
 		if (Name.Contains("*"))
 		{
 			// Find all files matching the given pattern.
-			FilesToAdd = FindMatchingFiles(CurrentPlatform.LinkLibraryDirectory(Src), Name);
+			FilesToAdd = FindMatchingFiles(PackagedAgxResources.LinkLibraryDirectory(Src), Name);
 		}
 		else
 		{
@@ -220,7 +206,7 @@ public class AGXUnrealLibrary : ModuleRules
 
 		foreach (string FileName in FilesToAdd)
 		{
-			PublicAdditionalLibraries.Add(CurrentPlatform.LinkLibraryPath(FileName, Src));
+			PublicAdditionalLibraries.Add(PackagedAgxResources.LinkLibraryPath(FileName, Src));
 
 			// Copy the link library file to the target.
 			// @todo Copying the lib files are only necessary when building/packaging the plugin
@@ -228,7 +214,7 @@ public class AGXUnrealLibrary : ModuleRules
 			// the two here have been found, so right now the link library files will be copied
 			// to the target when building executables also even if they are not needed in that
 			// case.
-			string FileNameFull = CurrentPlatform.LinkLibraryFileName(FileName);
+			string FileNameFull = PackagedAgxResources.LinkLibraryFileName(FileName);
 			string TargetRelativePath = "../../lib";
 
 			if(Target.Platform == UnrealTargetPlatform.Win64)
@@ -236,7 +222,7 @@ public class AGXUnrealLibrary : ModuleRules
 				TargetRelativePath = Path.Combine(TargetRelativePath, "Win64");
 			}
 
-			AddDependencyExplicitFile(FileNameFull, CurrentPlatform.LinkLibraryDirectory(Src), "",
+			AddDependencyExplicitFile(FileNameFull, PackagedAgxResources.LinkLibraryDirectory(Src), "",
 				TargetRelativePath);
 		}
 	}
@@ -255,30 +241,9 @@ public class AGXUnrealLibrary : ModuleRules
 
 	private class Heuristics
 	{
-		/**
-		From the plugin's point of view AGX Dynamics can be in one of two states: Installed or Packaged.
-		Installed means that AGX Dynamics exists somewhere outside of the plugin. It does not mean that
-		it must be an actual installation, a source build also counts as an installation. A source build
-		is identified by the presence of the AGX Dynamics environment variable AGX_DEPENDENCIES_DIR, which is set
-		when AGX Dynamics' setup_env is run. If the AGX_DEPENDENCIES_DIR environment variable isn't set then it is
-		assumed that AGX Dynamics is packaged with the plugin and all AGX Dynamics search path will be
-		relative to the plugin directory.
-		*/
-		public static bool UseInstalledAgx(UnrealTargetPlatform Platform)
+		public static bool IsAgxSetupEnvCalled()
 		{
-			bool bHasInstalledAgx = Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR") != null;
-			if (bHasInstalledAgx)
-			{
-				Console.WriteLine(
-					"\nUsing AGX Dynamics installation {0}.",
-					Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR"));
-			}
-			else
-			{
-				Console.WriteLine(
-					"\nNo installation of AGX Dynamics detected, using version packaged with the plugin.");
-			}
-			return bHasInstalledAgx;
+			return Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR") != null;
 		}
 	}
 
@@ -296,15 +261,13 @@ public class AGXUnrealLibrary : ModuleRules
 		}
 	}
 
-	private class PlatformInfo
+	private class AgxResourcesInfo
 	{
 		public string LinkLibraryPrefix;
 		public string LinkLibraryPostfix;
 
 		public string RuntimeLibraryPrefix;
 		public string RuntimeLibraryPostfix;
-
-		public bool UseInstalledAgx;
 
 		Dictionary<LibSource, LibSourceInfo> LibSources;
 
@@ -438,11 +401,17 @@ public class AGXUnrealLibrary : ModuleRules
 			}
 		}
 
-		public PlatformInfo(ReadOnlyTargetRules Target, string PluginDir)
+		public AgxResourcesInfo(ReadOnlyTargetRules Target, AgxResourcesLocation AgxLocation, string PluginDir = "")
 		{
 			LibSources = new Dictionary<LibSource, LibSourceInfo>();
+			bool UseInstalledAgx = AgxLocation == AgxResourcesLocation.InstalledAgx ? true : false;
 
-			this.UseInstalledAgx = Heuristics.UseInstalledAgx(Target.Platform);
+			if (UseInstalledAgx && !Heuristics.IsAgxSetupEnvCalled())
+			{
+				Console.Error.WriteLine("Tried to create an AgxResourcesInfo instance with installed AGX, but " +
+					"setup_env has not been called.");
+				return;
+			}
 
 			// TODO: Detect if AGX Dynamics is in local build or installed mode.
 			//	   Currently assuming local build for Linux and installed for Windows.
@@ -458,7 +427,7 @@ public class AGXUnrealLibrary : ModuleRules
 				|| TerrainDependenciesDir == null))
 			{
 				Console.Error.WriteLine("Did not find AGX Dynamics installation folder.");
-				Console.Error.WriteLine("Have you run setup_env?");
+				Console.Error.WriteLine("Please check that your AGX Dynamics installation is valid.");
 				return;
 			}
 
