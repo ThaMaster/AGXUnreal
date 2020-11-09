@@ -34,7 +34,7 @@ namespace SetupAgxEnvironment_helper
 		// This is the correct binaries path when running as a built executable.
 		FString BinariesPath = FAGX_EnvironmentUtilities::GetProjectBinariesPath();
 #endif
-		FString AgxResourcesPath = FPaths::Combine(BinariesPath, FString("agx"));
+		FString AgxResourcesPath = FPaths::Combine(BinariesPath, FString("ThirdParty"), FString("agx"));
 		FString AgxDataPath = FPaths::Combine(AgxResourcesPath, FString("data"));
 		FString AgxCfgPath = FPaths::Combine(AgxDataPath, FString("cfg"));
 		FString AgxPluginsPath = FPaths::Combine(AgxResourcesPath, FString("plugins"));

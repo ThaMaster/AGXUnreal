@@ -46,17 +46,7 @@ FString FAGX_EnvironmentUtilities::GetPluginPath()
 FString FAGX_EnvironmentUtilities::GetPluginBinariesPath()
 {
 	const FString PluginPath = GetPluginPath();
-
-	// Append relative path to binaries directory (depends on current platform).
-	// @todo Can the binaries directory be found another way for any platform?
-#if defined(_WIN64)
-	const FString PluginBinPath = FPaths::Combine(PluginPath, FString("Binaries/Win64"));
-#elif defined(__linux__)
-	const FString PluginBinPath = FPaths::Combine(PluginPath, FString("Binaries/Linux"));
-#else
-	// @todo Find a good way to get this path for any platform.
-	static_assert(false);
-#endif
+	const FString PluginBinPath = FPaths::Combine(PluginPath, FString("Binaries"));
 
 	return PluginBinPath;
 }
@@ -64,17 +54,7 @@ FString FAGX_EnvironmentUtilities::GetPluginBinariesPath()
 FString FAGX_EnvironmentUtilities::GetProjectBinariesPath()
 {
 	const FString ProjectPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
-
-	// Append relative path to binaries directory (depends on current platform).
-	// @todo Can the binaries directory be found another way for any platform?
-#if defined(_WIN64)
-	const FString ProjectBinPath = FPaths::Combine(ProjectPath, FString("Binaries/Win64"));
-#elif defined(__linux__)
-	const FString ProjectBinPath = FPaths::Combine(ProjectPath, FString("Binaries/Linux"));
-#else
-	// @todo Find a good way to get this path for any platform.
-	static_assert(false);
-#endif
+	const FString ProjectBinPath = FPaths::Combine(ProjectPath, FString("Binaries"));
 
 	return ProjectBinPath;
 }
