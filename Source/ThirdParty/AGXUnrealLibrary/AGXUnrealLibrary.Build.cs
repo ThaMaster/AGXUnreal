@@ -68,6 +68,11 @@ public class AGXUnrealLibrary : ModuleRules
 		// Because AGX Dynamics uses exceptions.
 		bEnableExceptions = true;
 
+		if (!IsAgxResourcesPackaged())
+		{
+			PackageAgxResources();
+		}
+
 		AddRuntimeDependency("agxPhysics", LibSource.Agx);
 		AddRuntimeDependency("agxCore", LibSource.Agx);
 		AddRuntimeDependency("agxSabre", LibSource.Agx);
@@ -128,17 +133,12 @@ public class AGXUnrealLibrary : ModuleRules
 		AddIncludePath(LibSource.TerrainDependencies);
 	}
 
-	private string GetPackagedAgxResourcesPath()
-	{
-		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries", "ThirdParty", "agx"));
-	}
-
 	private void AddIncludePath(LibSource Src)
 	{
 		PublicIncludePaths.Add(PackagedAgxResources.IncludePath(Src));
 	}
 
-	// The runtime dependency file will be automatically copied to the target binaries directory.
+	// The runtime dependency file is copied to the target binaries directory.
 	private void AddRuntimeDependency(string Name, LibSource Src)
 	{
 		List<string> FilesToAdd = new List<string>();
@@ -205,6 +205,31 @@ public class AGXUnrealLibrary : ModuleRules
 		}
 
 		return Res;
+	}
+
+	private string GetPackagedAgxResourcesPath()
+	{
+		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries", "ThirdParty", "agx"));
+	}
+
+	// Returns true if AGX Dynamics resources are currently packaged with the plugin.
+	// Returns false otherwise.
+	private bool IsAgxResourcesPackaged()
+	{
+		return Directory.Exists(GetPackagedAgxResourcesPath());
+	}
+
+	private void PackageAgxResources()
+	{
+		if (!Heuristics.IsAgxSetupEnvCalled())
+		{
+			Console.Error.WriteLine("Could not package AGX Dynamics resources because no AGX Dynamics installation "
+				+ "was found. Please ensure that setup_env has been called.");
+			return;
+		}
+
+		// TODO: copy all necessary files from AGX Dynamics to the plugin.
+
 	}
 
 	private class Heuristics
