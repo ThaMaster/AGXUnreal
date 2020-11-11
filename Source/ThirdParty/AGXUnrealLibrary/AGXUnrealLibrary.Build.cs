@@ -124,7 +124,7 @@ public class AGXUnrealLibrary : ModuleRules
 
 			RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
-			RuntimeLibFiles.Add("ot2*-OpenThreads", LibSource.Dependencies);
+			RuntimeLibFiles.Add("ot2?-OpenThreads", LibSource.Dependencies);
 			RuntimeLibFiles.Add("glew", LibSource.Dependencies);
 		}
 
