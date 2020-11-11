@@ -581,8 +581,8 @@ public class AGXUnrealLibrary : ModuleRules
 
 				LibSources.Add(LibSource.Agx, new LibSourceInfo(
 					Path.Combine(BaseDir, "include"),
-					Path.Combine(BuildDir, "lib"),
-					Path.Combine(BuildDir, "lib")
+					UseInstalledAgx ? Path.Combine(BuildDir, "lib") : Path.Combine(BaseDir, "lib", "Linux"),
+					UseInstalledAgx ? Path.Combine(BuildDir, "lib") : Path.Combine(BaseDir, "bin", "Linux")
 				));
 
 				LibSources.Add(LibSource.Config, new LibSourceInfo(
@@ -599,14 +599,14 @@ public class AGXUnrealLibrary : ModuleRules
 
 				LibSources.Add(LibSource.Dependencies, new LibSourceInfo(
 					Path.Combine(DependenciesDir, "include"),
-					Path.Combine(DependenciesDir, "lib"),
-					Path.Combine(DependenciesDir, "lib")
+					UseInstalledAgx ? Path.Combine(DependenciesDir, "lib") : Path.Combine(BaseDir, "lib", "Linux"),
+					UseInstalledAgx ? Path.Combine(DependenciesDir, "lib") : Path.Combine(BaseDir, "bin", "Linux")
 				));
 
 				LibSources.Add(LibSource.TerrainDependencies, new LibSourceInfo(
 					Path.Combine(TerrainDependenciesDir, "include"),
-					Path.Combine(TerrainDependenciesDir, "lib"),
-					Path.Combine(TerrainDependenciesDir, "lib")
+					UseInstalledAgx ? Path.Combine(TerrainDependenciesDir, "lib") : Path.Combine(BaseDir, "lib", "Linux"),
+					UseInstalledAgx ? Path.Combine(TerrainDependenciesDir, "lib") : Path.Combine(BaseDir, "bin", "Linux")
 				));
 
 				// On Linux, environment variable 'AGX_DATA_DIR' is not always visible here when using
@@ -628,10 +628,8 @@ public class AGXUnrealLibrary : ModuleRules
 
 				LibSources.Add(LibSource.Agx, new LibSourceInfo(
 					Path.Combine(BaseDir, "include"),
-					UseInstalledAgx ? Path.Combine(BaseDir, "lib", "x64")
-						: Path.Combine(BaseDir, "lib", "Win64"),
-					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64")
-						: Path.Combine(BaseDir, "bin", "Win64")
+					UseInstalledAgx ? Path.Combine(BaseDir, "lib", "x64") : Path.Combine(BaseDir, "lib", "Win64"),
+					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "bin", "Win64")
 				));
 
 				LibSources.Add(LibSource.Config, new LibSourceInfo(
