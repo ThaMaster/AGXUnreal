@@ -68,9 +68,10 @@ public class AGXUnrealLibrary : ModuleRules
 		// Because AGX Dynamics uses exceptions.
 		bEnableExceptions = true;
 
-		Dictionary<string, LibSource> RuntimeLibFiles;
-		Dictionary<string, LibSource> LinkLibFiles;
-		List<LibSource> IncludePaths;
+
+		Dictionary<string, LibSource> RuntimeLibFiles = new Dictionary<string, LibSource>();
+		Dictionary<string, LibSource> LinkLibFiles = new Dictionary<string, LibSource>();
+		List<LibSource> IncludePaths = new List<LibSource>();
 
 		RuntimeLibFiles.Add("agxPhysics", LibSource.Agx);
 		RuntimeLibFiles.Add("agxCore", LibSource.Agx);
