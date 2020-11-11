@@ -176,16 +176,6 @@ public class AGXUnrealLibrary : ModuleRules
 		{
 			Console.Error.WriteLine("Error: File {0} did not match any file in {1}. The dependency " +
 				"will not be added in the build.", FileName, Dir);
-
-			// TEMP AREA START
-			Console.WriteLine("TEMP AREA START------------");
-			string[] filePaths = Directory.GetFiles(Dir);
-			for (int i = 0; i < filePaths.Length; ++i)
-			{
-				Console.WriteLine(filePaths[i]);
-			}
-			Console.WriteLine("TEMP AREA END---------------");
-			// TEMP AREA END
 			return;
 		}
 
@@ -260,7 +250,10 @@ public class AGXUnrealLibrary : ModuleRules
 
 			foreach (string FilePath in FilesToCopy)
 			{
-				string Dest = PackagedAgxResources.RuntimeLibraryPath(Path.GetFileNameWithoutExtension(FilePath), RuntimeLibFile.Value);
+				// Note: the PackagedAgxResources.RuntimeLibraryPath() function cannot be used here since
+				// the file name may have an added prefix that would then be added once again.
+				string Dest = Path.Combine(
+					PackagedAgxResources.RuntimeLibraryDirectory(RuntimeLibFile.Value), Path.GetFileName(FilePath));
 				if (!CopyFile(FilePath, Dest))
 				{
 					CleanPackagedAgxDynamicsResources();
@@ -287,7 +280,10 @@ public class AGXUnrealLibrary : ModuleRules
 
 			foreach (string FilePath in FilesToCopy)
 			{
-				string Dest = PackagedAgxResources.LinkLibraryPath(Path.GetFileNameWithoutExtension(FilePath), LinkLibFile.Value);
+				// Note: the PackagedAgxResources.LinkLibraryPath() function cannot be used here since
+				// the file name may have an added prefix that would then be added once again.
+				string Dest = Path.Combine(
+					PackagedAgxResources.LinkLibraryDirectory(LinkLibFile.Value), Path.GetFileName(FilePath));
 				if (!CopyFile(FilePath, Dest))
 				{
 					CleanPackagedAgxDynamicsResources();
