@@ -139,7 +139,7 @@ public class AGXUnrealLibrary : ModuleRules
 		// Package AGX Dynamics resources in plugin if no packaged resources exists.
 		if (!forceDisablePackagning && !IsAgxResourcesPackaged())
 		{
-			PackageAgxResources(RuntimeLibFiles, LinkLibFiles, IncludePaths);
+			PackageAgxResources(Target, RuntimeLibFiles, LinkLibFiles, IncludePaths);
 		}
 
 		foreach (var RuntimeLibFile in RuntimeLibFiles)
@@ -219,8 +219,8 @@ public class AGXUnrealLibrary : ModuleRules
 		return Directory.Exists(GetPackagedAgxResourcesPath());
 	}
 
-	private void PackageAgxResources(Dictionary<string, LibSource> RuntimeLibFiles,
-		Dictionary<string, LibSource> LinkLibFiles, Dictionary<LibSource> IncludePaths)
+	private void PackageAgxResources(ReadOnlyTargetRules Target, Dictionary<string, LibSource> RuntimeLibFiles,
+		Dictionary<string, LibSource> LinkLibFiles, List<LibSource> IncludePaths)
 	{
 		if (!Heuristics.IsAgxSetupEnvCalled())
 		{
@@ -229,8 +229,153 @@ public class AGXUnrealLibrary : ModuleRules
 			return;
 		}
 
-		// TODO: copy all necessary files from AGX Dynamics to the plugin.
+		AgxResourcesInfo InstalledAgxResources = new AgxResourcesInfo(Target, AgxResourcesLocation.InstalledAgx);
 
+		// Copy AGX Dynamics runtime library files.
+		foreach (var RuntimeLibFile in RuntimeLibFiles)
+		{
+			string Dir = InstalledAgxResources.RuntimeLibraryDirectory(RuntimeLibFile.Value);
+			string FileName = InstalledAgxResources.RuntimeLibraryFileName(RuntimeLibFile.Key);
+
+			// File name and/or extension may include search patterns such as '*' or '?'. Resolve all these.
+			string[] FilesToCopy = Directory.GetFiles(Dir, FileName);
+
+			foreach (string FilePath in FilesToCopy)
+			{
+				string Dest = PackagedAgxResources.RuntimeLibraryPath(Path.GetFileNameWithoutExtension(FilePath), RuntimeLibFile.Value);
+				if (!CopyFile(FilePath, Dest))
+				{
+					CleanPackagedAgxDynamicsResources();
+					return;
+				}
+			}
+		}
+
+		// Copy AGX Dynamics link library files.
+		foreach (var LinkLibFile in LinkLibFiles)
+		{
+			string Dir = InstalledAgxResources.LinkLibraryDirectory(LinkLibFile.Value);
+			string FileName = InstalledAgxResources.LinkLibraryFileName(LinkLibFile.Key);
+
+			// File name and/or extension may include search patterns such as '*' or '?'. Resolve all these.
+			string[] FilesToCopy = Directory.GetFiles(Dir, FileName);
+
+			foreach (string FilePath in FilesToCopy)
+			{
+				string Dest = PackagedAgxResources.LinkLibraryPath(Path.GetFileNameWithoutExtension(FilePath), LinkLibFile.Value);
+				if (!CopyFile(FilePath, Dest))
+				{
+					CleanPackagedAgxDynamicsResources();
+					return;
+				}
+			}
+		}
+
+		// Copy AGX Dynamics header files.
+		foreach (var IncludePath in IncludePaths)
+		{
+			string Source = InstalledAgxResources.IncludePath(IncludePath);
+			string Dest = PackagedAgxResources.IncludePath(IncludePath);
+			if(!CopyDirectoryRecursively(Source, Dest))
+			{
+				CleanPackagedAgxDynamicsResources();
+				return;
+			}
+		}
+
+		// Copy AGX Dynamics cfg directory.
+		{
+			string Source = InstalledAgxResources.RuntimeLibraryPath(string.Empty, LibSource.Cfg, true);
+			string Dest = PackagedAgxResources.RuntimeLibraryPath(string.Empty, LibSource.Cfg, true);
+			if (!CopyDirectoryRecursively(Source, Dest))
+			{
+				CleanPackagedAgxDynamicsResources();
+				return;
+			}
+		}
+
+		// Copy AGX Dynamics Components/agx/Physics directory and Components/agx/Referenced.agxEntity file.
+		{
+			string ComponentsDirSource = InstalledAgxResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
+			string ComponentsDirDest = PackagedAgxResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
+			string PhysicsDirSource = Path.Combine(ComponentsDirSource, "agx", "Physics");
+			string PhysicsDirDest = Path.Combine(ComponentsDirDest, "agx", "Physics");
+			string ReferencedFileSource = Path.Combine(ComponentsDirSource, "agx", "Referenced.agxEntity");
+			string ReferencedFileDest = Path.Combine(ComponentsDirDest, "agx", "Referenced.agxEntity");
+
+			if (!CopyDirectoryRecursively(PhysicsDirSource, PhysicsDirDest))
+			{
+				CleanPackagedAgxDynamicsResources();
+				return;
+			}
+			if (!CopyFile(ReferencedFileSource, ReferencedFileDest))
+			{
+				CleanPackagedAgxDynamicsResources();
+				return;
+			}
+		}
+	}
+
+	private bool CopyFile(string Source, string Dest)
+	{
+		try
+		{
+			string DestDir = Path.GetDirectoryName(Dest);
+			if (!Directory.Exists(DestDir))
+			{
+				Directory.CreateDirectory(DestDir);
+			}
+
+			File.Copy(Source, Dest);
+		}
+		catch (Exception e)
+		{
+			Console.Error.WriteLine("Unable to copy file {0} to {1}. Exception: {2}", Source, Dest, e.Message);
+			return false;
+		}
+
+		return true;
+	}
+
+	private bool CopyDirectoryRecursively(string SourceDir, string DestDir)
+	{
+		foreach (string DirPath in Directory.GetDirectories(SourceDir, "*", SearchOption.AllDirectories))
+		{
+			Directory.CreateDirectory(DirPath.Replace(SourceDir, DestDir));
+		}
+
+		foreach (string FilePath in Directory.GetFiles(SourceDir, "*.*", SearchOption.AllDirectories))
+		{
+			// Do not copy license files.
+			if (Path.GetExtension(FilePath).Equals(".lic"))
+			{
+				continue;
+			}
+
+			if (!CopyFile(FilePath, FilePath.Replace(SourceDir, DestDir)))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private void CleanPackagedAgxDynamicsResources()
+	{
+		string PackagedAgxResourcesPath = GetPackagedAgxResourcesPath();
+		try
+		{
+			if (Directory.Exists(PackagedAgxResourcesPath))
+			{
+				Directory.Delete(PackagedAgxResourcesPath, true);
+			}
+		}
+		catch (Exception e)
+		{
+			Console.Error.WriteLine("Unable to delete directory {0}. Exception: {1}",
+				PackagedAgxResourcesPath, e.Message);
+		}
 	}
 
 	private class Heuristics
