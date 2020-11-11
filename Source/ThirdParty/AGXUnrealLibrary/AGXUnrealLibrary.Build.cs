@@ -73,7 +73,6 @@ public class AGXUnrealLibrary : ModuleRules
 		List<LibSource> IncludePaths;
 
 		RuntimeLibFiles.Add("agxPhysics", LibSource.Agx);
-		RuntimeLibFiles.Add("agxPhysics", LibSource.Agx);
 		RuntimeLibFiles.Add("agxCore", LibSource.Agx);
 		RuntimeLibFiles.Add("agxSabre", LibSource.Agx);
 		RuntimeLibFiles.Add("agxTerrain", LibSource.Agx);
