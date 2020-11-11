@@ -174,8 +174,8 @@ public class AGXUnrealLibrary : ModuleRules
 
 		if (FilesToAdd.Length == 0)
 		{
-			Console.Error.WriteLine("Error: File {0} did not match any found files on disk. " +
-				"The dependency will not be added in the build.", FileName);
+			Console.Error.WriteLine("Error: File {0} did not match any file in {1}. The dependency " +
+				"will not be added in the build.", FileName, Dir);
 			return;
 		}
 
@@ -196,8 +196,8 @@ public class AGXUnrealLibrary : ModuleRules
 
 		if (FilesToAdd.Length == 0)
 		{
-			Console.Error.WriteLine("Error: File {0} did not match any found files on disk. The library will not be added " +
-				"in the build.", FileName);
+			Console.Error.WriteLine("Error: File {0} did not match any file in {1}. The library will not be added " +
+				"in the build.", FileName, Dir);
 			return;
 		}
 
