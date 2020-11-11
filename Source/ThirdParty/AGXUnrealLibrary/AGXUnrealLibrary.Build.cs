@@ -141,71 +141,47 @@ public class AGXUnrealLibrary : ModuleRules
 	// The runtime dependency file is copied to the target binaries directory.
 	private void AddRuntimeDependency(string Name, LibSource Src)
 	{
-		List<string> FilesToAdd = new List<string>();
+		string Dir = PackagedAgxResources.RuntimeLibraryDirectory(Src);
+		string FileName = RuntimeLibraryFileName(Name);
 
-		if (Name.Contains("*"))
-		{
-			// Find all files matching the given pattern.
-			string Directory = Path.Combine(PackagedAgxResources.RuntimeLibraryDirectory(Src));
-			FilesToAdd = FindMatchingFiles(Directory, Name);
-		}
-		else
-		{
-			FilesToAdd.Add(Name);
-		}
+		// File name and/or extension may include search patterns such as '*' or '?'. Resolve all these.
+		string[] FilesToAdd = Directory.GetFiles(Dir, FileName);
 
 		if (FilesToAdd.Count == 0)
 		{
 			Console.WriteLine("File {0} did not match any found files on disk. " +
 				"The dependency will not be added in the build.", Name);
+			return;
 		}
 
-		foreach (string FileName in FilesToAdd)
+		foreach (string FilePath in FilesToAdd)
 		{
-			string FileNameFull = PackagedAgxResources.RuntimeLibraryFileName(FileName);
-			string Target = Path.Combine("$(BinaryOutputDir)", FileNameFull);
-			string Source = PackagedAgxResources.RuntimeLibraryPath(FileName, Src);
-			RuntimeDependencies.Add(Target, Source);
+			string Target = Path.Combine("$(BinaryOutputDir)", Path.GetFileName(FilePath));
+			RuntimeDependencies.Add(Target, FilePath);
 		}
 	}
 
 	private void AddLinkLibrary(string Name, LibSource Src)
 	{
-		List<string> FilesToAdd = new List<string>();
+		string Dir = PackagedAgxResources.LinkLibraryDirectory(Src);
+		string FileName = LinkLibraryFileName(Name);
 
-		if (Name.Contains("*"))
-		{
-			// Find all files matching the given pattern.
-			FilesToAdd = FindMatchingFiles(PackagedAgxResources.LinkLibraryDirectory(Src), Name);
-		}
-		else
-		{
-			FilesToAdd.Add(Name);
-		}
+		// File name and/or extension may include search patterns such as '*' or '?'. Resolve all these.
+		string[] FilesToAdd = Directory.GetFiles(Dir, FileName);
 
 		if (FilesToAdd.Count == 0)
 		{
 			Console.WriteLine("File {0} did not match any found files on disk. The library will not be added " +
-				"in the build.", Name);
+				"in the build.", FileName);
+			return;
 		}
 
-		foreach (string FileName in FilesToAdd)
+		foreach (string FilePath in FilesToAdd)
 		{
-			PublicAdditionalLibraries.Add(PackagedAgxResources.LinkLibraryPath(FileName, Src));
+			PublicAdditionalLibraries.Add(FilePath);
 		}
 	}
 
-	private List<string> FindMatchingFiles(string Dir, string FileName)
-	{
-		string[] Matches = Directory.GetFiles(Dir, FileName + ".*");
-		List<string> Res = new List<string>();
-		foreach (string Match in Matches)
-		{
-			Res.Add(Path.GetFileNameWithoutExtension(Match));
-		}
-
-		return Res;
-	}
 
 	private string GetPackagedAgxResourcesPath()
 	{
