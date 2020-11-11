@@ -327,7 +327,7 @@ public class AGXUnrealLibrary : ModuleRules
 				Directory.CreateDirectory(DestDir);
 			}
 
-			File.Copy(Source, Dest);
+			File.Copy(Source, Dest, true);
 		}
 		catch (Exception e)
 		{
