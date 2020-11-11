@@ -240,6 +240,13 @@ public class AGXUnrealLibrary : ModuleRules
 
 			// File name and/or extension may include search patterns such as '*' or '?'. Resolve all these.
 			string[] FilesToCopy = Directory.GetFiles(Dir, FileName);
+			if (FilesToCopy.Length == 0)
+			{
+				Console.Error.WriteLine("Error: File {0} did not match any file in {1}. Packaging " +
+					"of AGX Dynamics resources failed.", FileName, Dir);
+				AbortPackagedAgxDynamicsResources();
+				return;
+			}
 
 			foreach (string FilePath in FilesToCopy)
 			{
@@ -260,6 +267,13 @@ public class AGXUnrealLibrary : ModuleRules
 
 			// File name and/or extension may include search patterns such as '*' or '?'. Resolve all these.
 			string[] FilesToCopy = Directory.GetFiles(Dir, FileName);
+			if (FilesToCopy.Length == 0)
+			{
+				Console.Error.WriteLine("Error: File {0} did not match any file in {1}. Packaging " +
+					"of AGX Dynamics resources failed.", FileName, Dir);
+				AbortPackagedAgxDynamicsResources();
+				return;
+			}
 
 			foreach (string FilePath in FilesToCopy)
 			{
