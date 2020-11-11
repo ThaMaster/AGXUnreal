@@ -633,25 +633,25 @@ public class AGXUnrealLibrary : ModuleRules
 				));
 
 				LibSources.Add(LibSource.Config, new LibSourceInfo(
-					Path.Combine(BaseDir, "include"),
+					null,
 					null,
 					null
 				));
 
 				LibSources.Add(LibSource.Components, new LibSourceInfo(
-					Path.Combine(BaseDir, "include"),
+					null,
 					null,
 					GetComponentsRuntimePath(Target, BaseDir, UseInstalledAgx)
 				));
 
 				LibSources.Add(LibSource.Dependencies, new LibSourceInfo(
-					Path.Combine(BaseDir, "include"),
+					null,
 					UseInstalledAgx ? Path.Combine(BaseDir, "lib", "x64") : Path.Combine(BaseDir, "lib", "Win64"),
 					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "bin", "Win64")
 				));
 
 				LibSources.Add(LibSource.TerrainDependencies, new LibSourceInfo(
-					Path.Combine(BaseDir, "include"),
+					null,
 					UseInstalledAgx ? Path.Combine(BaseDir, "lib", "x64") : Path.Combine(BaseDir, "lib", "Win64"),
 					UseInstalledAgx ? Path.Combine(BaseDir, "bin", "x64") : Path.Combine(BaseDir, "bin", "Win64")
 				));
@@ -660,7 +660,7 @@ public class AGXUnrealLibrary : ModuleRules
 					null,
 					null,
 					UseInstalledAgx ? Path.Combine(Environment.GetEnvironmentVariable("AGX_DATA_DIR"), "cfg")
-						: Path.Combine(BaseDir, "agx", "data", "cfg")
+						: Path.Combine(BaseDir, "data", "cfg")
 				));
 			}
 
