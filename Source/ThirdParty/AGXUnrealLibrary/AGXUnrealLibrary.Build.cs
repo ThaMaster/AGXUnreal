@@ -229,6 +229,7 @@ public class AGXUnrealLibrary : ModuleRules
 			return;
 		}
 
+		Console.WriteLine("Packaging AGX Dynamics resources.");
 		AgxResourcesInfo InstalledAgxResources = new AgxResourcesInfo(Target, AgxResourcesLocation.InstalledAgx);
 
 		// Copy AGX Dynamics runtime library files.
@@ -245,7 +246,7 @@ public class AGXUnrealLibrary : ModuleRules
 				string Dest = PackagedAgxResources.RuntimeLibraryPath(Path.GetFileNameWithoutExtension(FilePath), RuntimeLibFile.Value);
 				if (!CopyFile(FilePath, Dest))
 				{
-					CleanPackagedAgxDynamicsResources();
+					AbortPackagedAgxDynamicsResources();
 					return;
 				}
 			}
@@ -265,7 +266,7 @@ public class AGXUnrealLibrary : ModuleRules
 				string Dest = PackagedAgxResources.LinkLibraryPath(Path.GetFileNameWithoutExtension(FilePath), LinkLibFile.Value);
 				if (!CopyFile(FilePath, Dest))
 				{
-					CleanPackagedAgxDynamicsResources();
+					AbortPackagedAgxDynamicsResources();
 					return;
 				}
 			}
@@ -278,7 +279,7 @@ public class AGXUnrealLibrary : ModuleRules
 			string Dest = PackagedAgxResources.IncludePath(IncludePath);
 			if(!CopyDirectoryRecursively(Source, Dest))
 			{
-				CleanPackagedAgxDynamicsResources();
+				AbortPackagedAgxDynamicsResources();
 				return;
 			}
 		}
@@ -289,7 +290,7 @@ public class AGXUnrealLibrary : ModuleRules
 			string Dest = PackagedAgxResources.RuntimeLibraryPath(string.Empty, LibSource.Cfg, true);
 			if (!CopyDirectoryRecursively(Source, Dest))
 			{
-				CleanPackagedAgxDynamicsResources();
+				AbortPackagedAgxDynamicsResources();
 				return;
 			}
 		}
@@ -305,12 +306,12 @@ public class AGXUnrealLibrary : ModuleRules
 
 			if (!CopyDirectoryRecursively(PhysicsDirSource, PhysicsDirDest))
 			{
-				CleanPackagedAgxDynamicsResources();
+				AbortPackagedAgxDynamicsResources();
 				return;
 			}
 			if (!CopyFile(ReferencedFileSource, ReferencedFileDest))
 			{
-				CleanPackagedAgxDynamicsResources();
+				AbortPackagedAgxDynamicsResources();
 				return;
 			}
 		}
@@ -361,8 +362,9 @@ public class AGXUnrealLibrary : ModuleRules
 		return true;
 	}
 
-	private void CleanPackagedAgxDynamicsResources()
+	private void AbortPackagedAgxDynamicsResources()
 	{
+		Console.WriteLine("Aborting packaging of AGX Dynamics resources.");
 		string PackagedAgxResourcesPath = GetPackagedAgxResourcesPath();
 		try
 		{
