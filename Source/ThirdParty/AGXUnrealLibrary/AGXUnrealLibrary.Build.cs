@@ -229,7 +229,7 @@ public class AGXUnrealLibrary : ModuleRules
 			return;
 		}
 
-		Console.WriteLine("Packaging AGX Dynamics resources.");
+		Console.WriteLine("Packaging AGX Dynamics resources starting...");
 		AgxResourcesInfo InstalledAgxResources = new AgxResourcesInfo(Target, AgxResourcesLocation.InstalledAgx);
 
 		// Copy AGX Dynamics runtime library files.
@@ -244,7 +244,7 @@ public class AGXUnrealLibrary : ModuleRules
 			{
 				Console.Error.WriteLine("Error: File {0} did not match any file in {1}. Packaging " +
 					"of AGX Dynamics resources failed.", FileName, Dir);
-				AbortPackagedAgxDynamicsResources();
+				CleanPackagedAgxDynamicsResources();
 				return;
 			}
 
@@ -253,7 +253,7 @@ public class AGXUnrealLibrary : ModuleRules
 				string Dest = PackagedAgxResources.RuntimeLibraryPath(Path.GetFileNameWithoutExtension(FilePath), RuntimeLibFile.Value);
 				if (!CopyFile(FilePath, Dest))
 				{
-					AbortPackagedAgxDynamicsResources();
+					CleanPackagedAgxDynamicsResources();
 					return;
 				}
 			}
@@ -271,7 +271,7 @@ public class AGXUnrealLibrary : ModuleRules
 			{
 				Console.Error.WriteLine("Error: File {0} did not match any file in {1}. Packaging " +
 					"of AGX Dynamics resources failed.", FileName, Dir);
-				AbortPackagedAgxDynamicsResources();
+				CleanPackagedAgxDynamicsResources();
 				return;
 			}
 
@@ -280,7 +280,7 @@ public class AGXUnrealLibrary : ModuleRules
 				string Dest = PackagedAgxResources.LinkLibraryPath(Path.GetFileNameWithoutExtension(FilePath), LinkLibFile.Value);
 				if (!CopyFile(FilePath, Dest))
 				{
-					AbortPackagedAgxDynamicsResources();
+					CleanPackagedAgxDynamicsResources();
 					return;
 				}
 			}
@@ -293,7 +293,7 @@ public class AGXUnrealLibrary : ModuleRules
 			string Dest = PackagedAgxResources.IncludePath(IncludePath);
 			if(!CopyDirectoryRecursively(Source, Dest))
 			{
-				AbortPackagedAgxDynamicsResources();
+				CleanPackagedAgxDynamicsResources();
 				return;
 			}
 		}
@@ -304,7 +304,7 @@ public class AGXUnrealLibrary : ModuleRules
 			string Dest = PackagedAgxResources.RuntimeLibraryPath(string.Empty, LibSource.Cfg, true);
 			if (!CopyDirectoryRecursively(Source, Dest))
 			{
-				AbortPackagedAgxDynamicsResources();
+				CleanPackagedAgxDynamicsResources();
 				return;
 			}
 		}
@@ -320,15 +320,17 @@ public class AGXUnrealLibrary : ModuleRules
 
 			if (!CopyDirectoryRecursively(PhysicsDirSource, PhysicsDirDest))
 			{
-				AbortPackagedAgxDynamicsResources();
+				CleanPackagedAgxDynamicsResources();
 				return;
 			}
 			if (!CopyFile(ReferencedFileSource, ReferencedFileDest))
 			{
-				AbortPackagedAgxDynamicsResources();
+				CleanPackagedAgxDynamicsResources();
 				return;
 			}
 		}
+
+		Console.WriteLine("Packaging AGX Dynamics resources complete.");
 	}
 
 	private bool CopyFile(string Source, string Dest)
@@ -376,9 +378,9 @@ public class AGXUnrealLibrary : ModuleRules
 		return true;
 	}
 
-	private void AbortPackagedAgxDynamicsResources()
+	private void CleanPackagedAgxDynamicsResources()
 	{
-		Console.WriteLine("Aborting packaging of AGX Dynamics resources.");
+		Console.WriteLine("Cleaning packaged AGX Dynamics resources started...");
 		string PackagedAgxResourcesPath = GetPackagedAgxResourcesPath();
 		try
 		{
@@ -392,6 +394,7 @@ public class AGXUnrealLibrary : ModuleRules
 			Console.Error.WriteLine("Error: Unable to delete directory {0}. Exception: {1}",
 				PackagedAgxResourcesPath, e.Message);
 		}
+		Console.WriteLine("Cleaning packaged AGX Dynamics resources complete.");
 	}
 
 	private class Heuristics
