@@ -68,28 +68,36 @@ public class AGXUnrealLibrary : ModuleRules
 		// Because AGX Dynamics uses exceptions.
 		bEnableExceptions = true;
 
-		if (!IsAgxResourcesPackaged())
-		{
-			PackageAgxResources();
-		}
+		Dictionary<string, LibSource> RuntimeLibFiles;
+		Dictionary<string, LibSource> LinkLibFiles;
+		List<LibSource> IncludePaths;
 
-		AddRuntimeDependency("agxPhysics", LibSource.Agx);
-		AddRuntimeDependency("agxCore", LibSource.Agx);
-		AddRuntimeDependency("agxSabre", LibSource.Agx);
-		AddRuntimeDependency("agxTerrain", LibSource.Agx);
-		AddRuntimeDependency("agxCable", LibSource.Agx);
-		AddRuntimeDependency("agxModel", LibSource.Agx);
-		AddRuntimeDependency("vdbgrid", LibSource.Agx);
-		AddRuntimeDependency("colamd", LibSource.Agx);
+		RuntimeLibFiles.Add("agxPhysics", LibSource.Agx);
+		RuntimeLibFiles.Add("agxPhysics", LibSource.Agx);
+		RuntimeLibFiles.Add("agxCore", LibSource.Agx);
+		RuntimeLibFiles.Add("agxSabre", LibSource.Agx);
+		RuntimeLibFiles.Add("agxTerrain", LibSource.Agx);
+		RuntimeLibFiles.Add("agxCable", LibSource.Agx);
+		RuntimeLibFiles.Add("agxModel", LibSource.Agx);
+		RuntimeLibFiles.Add("vdbgrid", LibSource.Agx);
+		RuntimeLibFiles.Add("colamd", LibSource.Agx);
+		RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
+		RuntimeLibFiles.Add("Half", LibSource.TerrainDependencies);
+		RuntimeLibFiles.Add("openvdb", LibSource.TerrainDependencies);
 
-		AddRuntimeDependency("zlib", LibSource.Dependencies);
+		LinkLibFiles.Add("agxPhysics", LibSource.Agx);
+		LinkLibFiles.Add("agxCore", LibSource.Agx);
+		LinkLibFiles.Add("agxSabre", LibSource.Agx);
+		LinkLibFiles.Add("agxTerrain", LibSource.Agx);
+		LinkLibFiles.Add("agxCable", LibSource.Agx);
+		LinkLibFiles.Add("agxModel", LibSource.Agx);
 
-		AddRuntimeDependency("Half", LibSource.TerrainDependencies);
-		AddRuntimeDependency("openvdb", LibSource.TerrainDependencies);
+		IncludePaths.Add(LibSource.Agx);
 
+		// OS specific dependencies.
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
-			AddRuntimeDependency("png", LibSource.Dependencies);
+			RuntimeLibFiles.Add("png", LibSource.Dependencies);
 
 			// TODO: Use Unreal Engine packaged TBB.
 			//
@@ -101,36 +109,51 @@ public class AGXUnrealLibrary : ModuleRules
 			// building an executable from a project using this plugin. On Linux
 			// this line must be here because otherwise we get linker errors at
 			// startup.
-			AddRuntimeDependency("tbb", LibSource.TerrainDependencies);
+			RuntimeLibFiles.Add("tbb", LibSource.TerrainDependencies);
 
 			// We must list OpenVDB only because of problems with
 			// initialization. We should try to figure out what goes wrong.
-			AddLinkLibrary("openvdb", LibSource.TerrainDependencies);
+			LinkLibFiles.Add("openvdb", LibSource.TerrainDependencies);
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-			AddRuntimeDependency("msvcp140", LibSource.Agx);
-			AddRuntimeDependency("vcruntime140", LibSource.Agx);
+			RuntimeLibFiles.Add("msvcp140", LibSource.Agx);
+			RuntimeLibFiles.Add("vcruntime140", LibSource.Agx);
 
-			AddRuntimeDependency("websockets", LibSource.Dependencies);
-			AddRuntimeDependency("libpng", LibSource.Dependencies);
-			AddRuntimeDependency("ot2*-OpenThreads", LibSource.Dependencies);
-			AddRuntimeDependency("glew", LibSource.Dependencies);
+			RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
+			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
+			RuntimeLibFiles.Add("ot2*-OpenThreads", LibSource.Dependencies);
+			RuntimeLibFiles.Add("glew", LibSource.Dependencies);
 		}
 
-		AddLinkLibrary("agxPhysics", LibSource.Agx);
-		AddLinkLibrary("agxCore", LibSource.Agx);
-		AddLinkLibrary("agxSabre", LibSource.Agx);
-		AddLinkLibrary("agxTerrain", LibSource.Agx);
-		AddLinkLibrary("agxCable", LibSource.Agx);
-		AddLinkLibrary("agxModel", LibSource.Agx);
+		if (Target.Platform == UnrealTargetPlatform.Linux)
+		{
+			IncludePaths.Add(LibSource.Components);
+			IncludePaths.Add(LibSource.Config);
+			IncludePaths.Add(LibSource.Dependencies);
+			IncludePaths.Add(LibSource.TerrainDependencies);
+		}
 
+		// Package AGX Dynamics resources in plugin if no packaged resources exists.
+		if (!IsAgxResourcesPackaged())
+		{
+			PackageAgxResources(RuntimeLibFiles, LinkLibFiles, IncludePaths);
+		}
 
-		AddIncludePath(LibSource.Agx);
-		AddIncludePath(LibSource.Components);
-		AddIncludePath(LibSource.Config);
-		AddIncludePath(LibSource.Dependencies);
-		AddIncludePath(LibSource.TerrainDependencies);
+		foreach (var RuntimeLibFile in RuntimeLibFiles)
+		{
+			AddRuntimeDependency(RuntimeLibFile.Key, RuntimeLibFile.Value);
+		}
+
+		foreach (var LinkLibFile in LinkLibFiles)
+		{
+			AddLinkLibrary(LinkLibFile.Key, LinkLibFile.Value);
+		}
+
+		foreach (var HeaderPath in IncludePaths)
+		{
+			AddIncludePath(HeaderPath);
+		}
 	}
 
 	private void AddIncludePath(LibSource Src)
@@ -182,7 +205,6 @@ public class AGXUnrealLibrary : ModuleRules
 		}
 	}
 
-
 	private string GetPackagedAgxResourcesPath()
 	{
 		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries", "ThirdParty", "agx"));
@@ -195,7 +217,8 @@ public class AGXUnrealLibrary : ModuleRules
 		return Directory.Exists(GetPackagedAgxResourcesPath());
 	}
 
-	private void PackageAgxResources()
+	private void PackageAgxResources(Dictionary<string, LibSource> RuntimeLibFiles,
+		Dictionary<string, LibSource> LinkLibFiles, Dictionary<LibSource> IncludePaths)
 	{
 		if (!Heuristics.IsAgxSetupEnvCalled())
 		{
