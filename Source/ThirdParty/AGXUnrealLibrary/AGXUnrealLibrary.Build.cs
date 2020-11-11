@@ -167,36 +167,36 @@ public class AGXUnrealLibrary : ModuleRules
 	private void AddRuntimeDependency(string Name, LibSource Src)
 	{
 		string Dir = PackagedAgxResources.RuntimeLibraryDirectory(Src);
-		string FileName = RuntimeLibraryFileName(Name);
+		string FileName = PackagedAgxResources.RuntimeLibraryFileName(Name);
 
 		// File name and/or extension may include search patterns such as '*' or '?'. Resolve all these.
 		string[] FilesToAdd = Directory.GetFiles(Dir, FileName);
 
-		if (FilesToAdd.Count == 0)
+		if (FilesToAdd.Length == 0)
 		{
-			Console.WriteLine("File {0} did not match any found files on disk. " +
-				"The dependency will not be added in the build.", Name);
+			Console.Error.WriteLine("File {0} did not match any found files on disk. " +
+				"The dependency will not be added in the build.", FileName);
 			return;
 		}
 
 		foreach (string FilePath in FilesToAdd)
 		{
-			string Target = Path.Combine("$(BinaryOutputDir)", Path.GetFileName(FilePath));
-			RuntimeDependencies.Add(Target, FilePath);
+			string Dest = Path.Combine("$(BinaryOutputDir)", Path.GetFileName(FilePath));
+			RuntimeDependencies.Add(Dest, FilePath);
 		}
 	}
 
 	private void AddLinkLibrary(string Name, LibSource Src)
 	{
 		string Dir = PackagedAgxResources.LinkLibraryDirectory(Src);
-		string FileName = LinkLibraryFileName(Name);
+		string FileName = PackagedAgxResources.LinkLibraryFileName(Name);
 
 		// File name and/or extension may include search patterns such as '*' or '?'. Resolve all these.
 		string[] FilesToAdd = Directory.GetFiles(Dir, FileName);
 
-		if (FilesToAdd.Count == 0)
+		if (FilesToAdd.Length == 0)
 		{
-			Console.WriteLine("File {0} did not match any found files on disk. The library will not be added " +
+			Console.Error.WriteLine("File {0} did not match any found files on disk. The library will not be added " +
 				"in the build.", FileName);
 			return;
 		}
