@@ -174,7 +174,7 @@ public class AGXUnrealLibrary : ModuleRules
 
 		if (FilesToAdd.Length == 0)
 		{
-			Console.Error.WriteLine("File {0} did not match any found files on disk. " +
+			Console.Error.WriteLine("Error: File {0} did not match any found files on disk. " +
 				"The dependency will not be added in the build.", FileName);
 			return;
 		}
@@ -196,7 +196,7 @@ public class AGXUnrealLibrary : ModuleRules
 
 		if (FilesToAdd.Length == 0)
 		{
-			Console.Error.WriteLine("File {0} did not match any found files on disk. The library will not be added " +
+			Console.Error.WriteLine("Error: File {0} did not match any found files on disk. The library will not be added " +
 				"in the build.", FileName);
 			return;
 		}
@@ -224,7 +224,7 @@ public class AGXUnrealLibrary : ModuleRules
 	{
 		if (!Heuristics.IsAgxSetupEnvCalled())
 		{
-			Console.Error.WriteLine("Could not package AGX Dynamics resources because no AGX Dynamics installation "
+			Console.Error.WriteLine("Error: Could not package AGX Dynamics resources because no AGX Dynamics installation "
 				+ "was found. Please ensure that setup_env has been called.");
 			return;
 		}
@@ -331,7 +331,7 @@ public class AGXUnrealLibrary : ModuleRules
 		}
 		catch (Exception e)
 		{
-			Console.Error.WriteLine("Unable to copy file {0} to {1}. Exception: {2}", Source, Dest, e.Message);
+			Console.Error.WriteLine("Error: Unable to copy file {0} to {1}. Exception: {2}", Source, Dest, e.Message);
 			return false;
 		}
 
@@ -375,7 +375,7 @@ public class AGXUnrealLibrary : ModuleRules
 		}
 		catch (Exception e)
 		{
-			Console.Error.WriteLine("Unable to delete directory {0}. Exception: {1}",
+			Console.Error.WriteLine("Error: Unable to delete directory {0}. Exception: {1}",
 				PackagedAgxResourcesPath, e.Message);
 		}
 	}
@@ -427,7 +427,7 @@ public class AGXUnrealLibrary : ModuleRules
 			LibSourceInfo Info = LibSources[Src];
 			if (Info.IncludePath == null)
 			{
-				Console.Error.WriteLine("No include path for '{0}'.", Src);
+				Console.Error.WriteLine("Error: No include path for '{0}'.", Src);
 				return null;
 			}
 			return Info.IncludePath;
@@ -438,7 +438,7 @@ public class AGXUnrealLibrary : ModuleRules
 			LibSourceInfo Info = LibSources[Src];
 			if (Info.LinkLibrariesPath == null)
 			{
-				Console.Error.WriteLine("No LinkLibraryPath for '{0}', '{1}' cannot be found.", Src, LibraryName);
+				Console.Error.WriteLine("Error: No LinkLibraryPath for '{0}', '{1}' cannot be found.", Src, LibraryName);
 				return LibraryName;
 			}
 			return Path.Combine(Info.LinkLibrariesPath, LinkLibraryFileName(LibraryName));
@@ -449,7 +449,7 @@ public class AGXUnrealLibrary : ModuleRules
 			LibSourceInfo Info = LibSources[Src];
 			if (Info.LinkLibrariesPath == null)
 			{
-				Console.Error.WriteLine("No LinkLibraryPath for '{0}'.", Src);
+				Console.Error.WriteLine("Error: No LinkLibraryPath for '{0}'.", Src);
 				return string.Empty;
 			}
 			return Info.LinkLibrariesPath;
@@ -461,7 +461,7 @@ public class AGXUnrealLibrary : ModuleRules
 			LibSourceInfo Info = LibSources[Src];
 			if (Info.RuntimeLibrariesPath == null)
 			{
-				Console.Error.WriteLine("No RuntimeLibraryPath for '{0}', '{1}' cannot be found.", Src,
+				Console.Error.WriteLine("Error: No RuntimeLibraryPath for '{0}', '{1}' cannot be found.", Src,
 					LibraryName);
 				return LibraryName;
 			}
@@ -480,7 +480,7 @@ public class AGXUnrealLibrary : ModuleRules
 			LibSourceInfo Info = LibSources[Src];
 			if (Info.RuntimeLibrariesPath == null)
 			{
-				Console.Error.WriteLine("No RuntimeLibraryDirectory for '{0}'.", Src);
+				Console.Error.WriteLine("Error: No RuntimeLibraryDirectory for '{0}'.", Src);
 				return string.Empty;
 			}
 			return Info.RuntimeLibrariesPath;
@@ -549,7 +549,7 @@ public class AGXUnrealLibrary : ModuleRules
 
 			if (UseInstalledAgx && !Heuristics.IsAgxSetupEnvCalled())
 			{
-				Console.Error.WriteLine("Tried to create an AgxResourcesInfo instance with installed AGX, but " +
+				Console.Error.WriteLine("Error: Tried to create an AgxResourcesInfo instance with installed AGX, but " +
 					"setup_env has not been called.");
 				return;
 			}
@@ -567,7 +567,7 @@ public class AGXUnrealLibrary : ModuleRules
 			if (UseInstalledAgx && (BaseDir == null || BuildDir == null || DependenciesDir == null
 				|| TerrainDependenciesDir == null))
 			{
-				Console.Error.WriteLine("Did not find AGX Dynamics installation folder.");
+				Console.Error.WriteLine("Error: Did not find AGX Dynamics installation folder.");
 				Console.Error.WriteLine("Please check that your AGX Dynamics installation is valid.");
 				return;
 			}
