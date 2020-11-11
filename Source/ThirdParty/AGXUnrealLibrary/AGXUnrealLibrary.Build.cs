@@ -31,30 +31,29 @@ public class AGXUnrealLibrary : ModuleRules
 		PackagedAgx
 	}
 
-	// This build script will be run mainly in two situations:
-	// 1. When building/packaging the AGXUnreal plugin itself.
-	// 2. When building an executable from a project that uses the AGX Dynamics for Unreal plugin.
-	// In both cases all necessary AGX Dynamics resources are packaged with the target
-	// so that it is then possible to use plugin or executable without the need to call AGX's
-	// setup_env. Also, the needed AGX Dynamics link libraries are packaged with the target so
-	// that it becomes possible to build an executable from a project using the AGXUnreal plugin,
-	// even if setup_env has not been called.
+	// All needed AGX Dynamics runtime and build-time resources are located in the
+	// directory AGXUnreal/Binaries/Thirdparty/agx within this plugin.
+	// When compiling/packaging the AGX Dynamics for Unreal plugin, the AGX Dynamics
+	// resources found in AGXUnreal/Binaries/Thirdparty/agx are used. In this
+	// directory also all needed AGX Dynamics runtime files are located. That means
+	// this plugin can be built and used without the need to call AGX Dynamic's
+	// setup_env as long as these resources are available.
 	//
-	// Details situation 1 (building/packaging the plugin):
-	// AGX Dynamics binary files (.dll/.so), link library files and header files must be
-	// available at build time. AGX's setup_env must always be set up when building/packaging
-	// the plugin itself. All AGX Dynamics runtime resources are copied from the AGX Dynamics
-	// installation directory and are packaged with the target.
-	// Also note: AGX Dynamics header files are never packaged with the plugin, these will only
-	// be available if an AGX environment has been set up (setup_env has been called).
-	//
-	// Details situation 2 (building an executable):
-	// AGX Dynamics binary files (.dll/.so) and link library files must be available at build time
-	// (not headers).
-	// If AGX's setup_env has been called, all AGX Dynamics resources will be taken from the AGX
-	// Dynamics installation directory.
-	// It is also possible to build an executable without calling AGX's setup_env if and only if the
-	// necessary AGX Dynamics resources has been packaged with the AGXUnreal plugin itself.
+	// If the AGX Dynamics resources are not available in the directory
+	// AGXUnreal/Binaries/Thirdparty/agx, they are automatically copied from the
+	// AGX Dynamics installation who's setup_env has been called as part of the
+	// build process. Note that this means that if the AGX Dynamics resources are
+	// not available in AGXUnreal/Binaries/Thirdparty/agx at build-time, setup_env
+	// must have been called prior to performing the build.
+
+	// Important note:
+	// Currently no reliable way of copying the AGX Dynamics resources to the correct
+	// location when building an executable from a project using this plugin has been
+	// found. It is therefore recommended to manually copy the 'agx' directory located
+	// in AGXUnreal/Binaries/Thirdparty and place it in the same directory as the
+	// executable file. Also, all files inside
+	// AGXUnreal/Binaries/Thirdparty/agx/bin/<platform> should be manually copied to
+	// the same directory as the executable file.
 
 	public AGXUnrealLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
