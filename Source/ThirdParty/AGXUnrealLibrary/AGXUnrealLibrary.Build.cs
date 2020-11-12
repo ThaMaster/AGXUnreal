@@ -67,9 +67,6 @@ public class AGXUnrealLibrary : ModuleRules
 		// Because AGX Dynamics uses exceptions.
 		bEnableExceptions = true;
 
-		// Toggle this to manually disable packaging of AGX Dynamics resources. Default = true.
-		bool forceDisablePackagning = false;
-
 		Dictionary<string, LibSource> RuntimeLibFiles = new Dictionary<string, LibSource>();
 		Dictionary<string, LibSource> LinkLibFiles = new Dictionary<string, LibSource>();
 		List<LibSource> IncludePaths = new List<LibSource>();
@@ -136,7 +133,7 @@ public class AGXUnrealLibrary : ModuleRules
 		}
 
 		// Package AGX Dynamics resources in plugin if no packaged resources exists.
-		if (!forceDisablePackagning && !IsAgxResourcesPackaged())
+		if (!IsAgxResourcesPackaged())
 		{
 			PackageAgxResources(Target, RuntimeLibFiles, LinkLibFiles, IncludePaths);
 		}
