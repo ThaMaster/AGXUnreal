@@ -411,6 +411,7 @@ public class AGXUnrealLibrary : ModuleRules
 		{
 			Console.Error.WriteLine("Error: Unable to delete directory {0}. Exception: {1}",
 				PackagedAgxResourcesPath, e.Message);
+			return;
 		}
 		Console.WriteLine("Cleaning packaged AGX Dynamics resources complete.");
 	}
