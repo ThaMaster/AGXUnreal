@@ -583,13 +583,6 @@ public class AGXUnrealLibrary : ModuleRules
 			LibSources = new Dictionary<LibSource, LibSourceInfo>();
 			bool UseInstalledAgx = AgxLocation == AgxResourcesLocation.InstalledAgx ? true : false;
 
-			if (UseInstalledAgx && !Heuristics.IsAgxSetupEnvCalled())
-			{
-				Console.Error.WriteLine("Error: Tried to create an AgxResourcesInfo instance with installed AGX, but " +
-					"setup_env has not been called.");
-				return;
-			}
-
 			// TODO: Detect if AGX Dynamics is in local build or installed mode.
 			//	   Currently assuming local build for Linux and installed for Windows.
 			string BaseDir = UseInstalledAgx ? Environment.GetEnvironmentVariable("AGX_DIR") : PackagedAgxResourcesPath;
