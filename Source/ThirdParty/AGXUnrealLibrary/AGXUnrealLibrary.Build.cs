@@ -363,7 +363,7 @@ public class AGXUnrealLibrary : ModuleRules
 			Directory.CreateDirectory(DirPath.Replace(SourceDir, DestDir));
 		}
 
-		foreach (string FilePath in Directory.GetFiles(SourceDir, "*.*", SearchOption.AllDirectories))
+		foreach (string FilePath in Directory.GetFiles(SourceDir, "*", SearchOption.AllDirectories))
 		{
 			// Do not copy license files.
 			if (Path.GetExtension(FilePath).Equals(".lic"))
