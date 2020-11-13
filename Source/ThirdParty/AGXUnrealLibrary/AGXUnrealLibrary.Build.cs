@@ -317,15 +317,15 @@ public class AGXUnrealLibrary : ModuleRules
 			string ComponentsDirDest = PackagedAgxResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
 			string PhysicsDirSource = Path.Combine(ComponentsDirSource, "agx", "Physics");
 			string PhysicsDirDest = Path.Combine(ComponentsDirDest, "agx", "Physics");
-			string ReferencedFileSource = Path.Combine(ComponentsDirSource, "agx", "Referenced.agxEntity");
-			string ReferencedFileDest = Path.Combine(ComponentsDirDest, "agx", "Referenced.agxEntity");
 
 			if (!CopyDirectoryRecursively(PhysicsDirSource, PhysicsDirDest))
 			{
 				CleanPackagedAgxDynamicsResources();
 				return;
 			}
-			if (!CopyFile(ReferencedFileSource, ReferencedFileDest))
+
+			// Copy all single files in the Components/agx directory.
+			if (!CopyFilesNonRecursive(Path.Combine(ComponentsDirSource, "agx"), Path.Combine(ComponentsDirDest, "agx")))
 			{
 				CleanPackagedAgxDynamicsResources();
 				return;
@@ -372,6 +372,22 @@ public class AGXUnrealLibrary : ModuleRules
 			}
 
 			if (!CopyFile(FilePath, FilePath.Replace(SourceDir, DestDir)))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private bool CopyFilesNonRecursive(string SourceDir, string DestDir)
+	{
+		string[] FilesPaths = Directory.GetFiles(SourceDir);
+
+		foreach (string FilePath in FilesPaths)
+		{
+			string FileName = Path.GetFileName(FilePath);
+			if (!CopyFile(FilePath, Path.Combine(DestDir, FileName)))
 			{
 				return false;
 			}
