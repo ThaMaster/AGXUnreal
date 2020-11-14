@@ -13,4 +13,7 @@ public:
 
 private:
 	FNotifyBarrier NotifyBarrier;
+
+	void SetupAgxEnvironment();
+	void SetupUsePluginResourcesOnly();
 };
