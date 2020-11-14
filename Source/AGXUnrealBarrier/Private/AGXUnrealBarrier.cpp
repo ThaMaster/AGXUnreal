@@ -16,6 +16,47 @@
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealBarrierModule"
 
+void FAGXUnrealBarrierModule::StartupModule()
+{
+	// SetupAgxEnvironment must be called before agx::init().
+	SetupAgxEnvironment_helper::SetupAgxEnvironment();
+
+	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::StartupModule(). Calling agx::init."));
+	agx::init();
+
+	// Start AGX logging.
+	NotifyBarrier.StartAgxNotify(ELogVerbosity::Log);
+}
+
+void FAGXUnrealBarrierModule::ShutdownModule()
+{
+	// Stop AGX logging.
+	NotifyBarrier.StopAgxNotify();
+
+	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::ShutdownModule(). Calling agx::shutdown"));
+	agx::shutdown();
+}
+
+void FAGXUnrealBarrierModule::SetupAgxEnvironment()
+{
+	const TArray<FString> AgxDirEntries =
+		FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries("AGX_DEPENDENCIES_DIR");
+
+	// Check if an AGX environment is already set up, in that case we do not have to do anything
+	// more here.
+	if (AgxDirEntries.Num() > 0)
+	{
+		UE_LOG(
+			LogAGX, Log, TEXT("AGX Dynamics installation was detected. Using resources from: %s"),
+			*AgxDirEntries[0]);
+	}
+	else
+	{
+		// No AGX environment found, use the AGX resources packaged with the plugin.
+		SetupUsePluginResourcesOnly();
+	}
+}
+
 // In case this process is run without an AGX Dynamics environment (setup_env has not been run),
 // setup the AGX environment to use the necessary AGX Dynamics resources that is packaged with
 // the plugin itself, if they exist.
@@ -24,7 +65,7 @@ void FAGXUnrealBarrierModule::SetupUsePluginResourcesOnly()
 	UE_LOG(
 		LogAGX, Log,
 		TEXT("No installation of AGX Dynamics detected. Using AGX Dynamics resources from the "
-				"AGXUnreal plugin."));
+			 "AGXUnreal plugin."));
 
 #if WITH_EDITOR
 	FString BinariesPath = FAGX_EnvironmentUtilities::GetPluginBinariesPath();
@@ -44,8 +85,8 @@ void FAGXUnrealBarrierModule::SetupUsePluginResourcesOnly()
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("AGX Dynamics resources are not packaged with the AGXUnreal plugin. The "
-					"plugin will not be able to load AGX Dynamics. The resources where expected "
-					"to be at: %s"),
+				 "plugin will not be able to load AGX Dynamics. The resources where expected "
+				 "to be at: %s"),
 			*AgxResourcesPath);
 
 		// This will likely result in a runtime error since the needed AGX Dynamics resources
@@ -80,48 +121,6 @@ void FAGXUnrealBarrierModule::SetupUsePluginResourcesOnly()
 	AGX_ENVIRONMENT()
 		.getFilePath(agxIO::Environment::RESOURCE_PATH)
 		.pushbackPath(Convert(AgxCfgPath));
-}
-
-void FAGXUnrealBarrierModule::SetupAgxEnvironment()
-{
-	const TArray<FString> AgxDirEntries =
-		FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries("AGX_DEPENDENCIES_DIR");
-
-	// Check if an AGX environment is already set up, in that case we do not have to do anything
-	// more here.
-	if (AgxDirEntries.Num() > 0)
-	{
-		UE_LOG(
-			LogAGX, Log,
-			TEXT("AGX Dynamics installation was detected. Using resources from: %s"),
-			*AgxDirEntries[0]);
-	}
-	else
-	{
-		// No AGX environment found, use the AGX resources packaged with the plugin.
-		SetupUsePluginResourcesOnly();
-	}
-}
-
-void FAGXUnrealBarrierModule::StartupModule()
-{
-	// SetupAgxEnvironment must be called before agx::init().
-	SetupAgxEnvironment_helper::SetupAgxEnvironment();
-
-	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::StartupModule(). Calling agx::init."));
-	agx::init();
-
-	// Start AGX logging.
-	NotifyBarrier.StartAgxNotify(ELogVerbosity::Log);
-}
-
-void FAGXUnrealBarrierModule::ShutdownModule()
-{
-	// Stop AGX logging.
-	NotifyBarrier.StopAgxNotify();
-
-	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::ShutdownModule(). Calling agx::shutdown"));
-	agx::shutdown();
 }
 
 #undef LOCTEXT_NAMESPACE
