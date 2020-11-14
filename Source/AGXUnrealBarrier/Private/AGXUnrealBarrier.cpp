@@ -13,13 +13,16 @@
 
 // Unreal Engine includes.
 #include "Misc/Paths.h"
+#if defined(_WIN64)
+#include "GenericPlatform/GenericPlatformProcess.h"
+#endif
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealBarrierModule"
 
 void FAGXUnrealBarrierModule::StartupModule()
 {
 	// SetupAgxEnvironment must be called before agx::init().
-	SetupAgxEnvironment_helper::SetupAgxEnvironment();
+	SetupAgxEnvironment();
 
 	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::StartupModule(). Calling agx::init."));
 	agx::init();
@@ -35,6 +38,14 @@ void FAGXUnrealBarrierModule::ShutdownModule()
 
 	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::ShutdownModule(). Calling agx::shutdown"));
 	agx::shutdown();
+
+#if defined(_WIN64)
+	if (VdbGridLibHandle)
+	{
+		FPlatformProcess::FreeDllHandle(VdbGridLibHandle);
+		VdbGridLibHandle = nullptr;
+	}
+#endif
 }
 
 void FAGXUnrealBarrierModule::SetupAgxEnvironment()
@@ -68,19 +79,22 @@ void FAGXUnrealBarrierModule::SetupUsePluginResourcesOnly()
 			 "AGXUnreal plugin."));
 
 #if WITH_EDITOR
-	FString BinariesPath = FAGX_EnvironmentUtilities::GetPluginBinariesPath();
+	const FString BinariesPath = FAGX_EnvironmentUtilities::GetPluginBinariesPath();
 #else
 	// This is the correct binaries path when running as a built executable.
-	FString BinariesPath = FAGX_EnvironmentUtilities::GetProjectBinariesPath();
+	const FString BinariesPath = FAGX_EnvironmentUtilities::GetProjectBinariesPath();
 #endif
-	FString AgxResourcesPath = FPaths::Combine(BinariesPath, FString("ThirdParty"), FString("agx"));
-	FString AgxDataPath = FPaths::Combine(AgxResourcesPath, FString("data"));
-	FString AgxCfgPath = FPaths::Combine(AgxDataPath, FString("cfg"));
-	FString AgxPluginsPath = FPaths::Combine(AgxResourcesPath, FString("plugins"));
+	const FString AgxResourcesPath =
+		FPaths::Combine(BinariesPath, FString("ThirdParty"), FString("agx"));
+	const FString AgxBinPath = FPaths::Combine(AgxResourcesPath, FString("bin"));
+	const FString AgxDataPath = FPaths::Combine(AgxResourcesPath, FString("data"));
+	const FString AgxCfgPath = FPaths::Combine(AgxDataPath, FString("cfg"));
+	const FString AgxPluginsPath = FPaths::Combine(AgxResourcesPath, FString("plugins"));
 
 	// Ensure that the necessary AGX Dynamics resources are packed with the plugin.
-	if (!FPaths::DirectoryExists(AgxResourcesPath) || !FPaths::DirectoryExists(AgxDataPath) ||
-		!FPaths::DirectoryExists(AgxCfgPath) || !FPaths::DirectoryExists(AgxPluginsPath))
+	if (!FPaths::DirectoryExists(AgxResourcesPath) || !FPaths::DirectoryExists(AgxBinPath) ||
+		!FPaths::DirectoryExists(AgxDataPath) || !FPaths::DirectoryExists(AgxCfgPath) ||
+		!FPaths::DirectoryExists(AgxPluginsPath))
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -91,10 +105,18 @@ void FAGXUnrealBarrierModule::SetupUsePluginResourcesOnly()
 
 		// This will likely result in a runtime error since the needed AGX Dynamics resources
 		// are nowhere to be found.
-		// @todo What to do here, simply continue and crash or can/should we throw some type of
-		// exception?
 		return;
 	}
+
+#if defined(_WIN64)
+	// vdbgrid.dll is loaded dynamically at runtime by AGX Dynamics's Terrain module. The directory
+	// containing vdbgrid.dll must either be in PATH or it can be pre-loaded which is done here.
+	// The result of not doing either is a runtime crash when using certain AGX Dynamics Terrain
+	// features.
+	const FString VdbGridLibPath =
+		FPaths::Combine(AgxBinPath, FString("Win64"), FString("vdbgrid.dll"));
+	VdbGridLibHandle = FPlatformProcess::GetDllHandle(*VdbGridLibPath);
+#endif
 
 	// If AGX Dynamics is installed on this computer, agxIO.Environment.instance() will
 	// read data from the registry and add runtime and resource paths to
