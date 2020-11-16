@@ -13,4 +13,8 @@ public:
 
 private:
 	FNotifyBarrier NotifyBarrier;
+	void* VdbGridLibHandle;
+
+	void SetupAgxEnvironment();
+	void SetupUsePluginResourcesOnly();
 };
