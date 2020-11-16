@@ -108,10 +108,6 @@ public class AGXUnrealLibrary : ModuleRules
 			// this line must be here because otherwise we get linker errors at
 			// startup.
 			RuntimeLibFiles.Add("tbb", LibSource.TerrainDependencies);
-
-			// We must list OpenVDB only because of problems with
-			// initialization. We should try to figure out what goes wrong.
-			LinkLibFiles.Add("openvdb", LibSource.TerrainDependencies);
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{

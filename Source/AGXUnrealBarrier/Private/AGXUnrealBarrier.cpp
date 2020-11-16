@@ -13,9 +13,7 @@
 
 // Unreal Engine includes.
 #include "Misc/Paths.h"
-#if defined(_WIN64)
 #include "GenericPlatform/GenericPlatformProcess.h"
-#endif
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealBarrierModule"
 
@@ -39,13 +37,11 @@ void FAGXUnrealBarrierModule::ShutdownModule()
 	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::ShutdownModule(). Calling agx::shutdown"));
 	agx::shutdown();
 
-#if defined(_WIN64)
 	if (VdbGridLibHandle)
 	{
 		FPlatformProcess::FreeDllHandle(VdbGridLibHandle);
 		VdbGridLibHandle = nullptr;
 	}
-#endif
 }
 
 void FAGXUnrealBarrierModule::SetupAgxEnvironment()
@@ -109,14 +105,26 @@ void FAGXUnrealBarrierModule::SetupUsePluginResourcesOnly()
 	}
 
 #if defined(_WIN64)
+	const FString VdbGridLibPath =
+		FPaths::Combine(AgxBinPath, FString("Win64"), FString("vdbgrid.dll"));
+#endif
+#if defined(__linux__)
+	const FString VdbGridLibPath =
+		FPaths::Combine(AgxBinPath, FString("Linux"), FString("libvdbgrid.so"));
+#endif
 	// vdbgrid.dll is loaded dynamically at runtime by AGX Dynamics's Terrain module. The directory
 	// containing vdbgrid.dll must either be in PATH or it can be pre-loaded which is done here.
 	// The result of not doing either is a runtime crash when using certain AGX Dynamics Terrain
 	// features.
-	const FString VdbGridLibPath =
-		FPaths::Combine(AgxBinPath, FString("Win64"), FString("vdbgrid.dll"));
 	VdbGridLibHandle = FPlatformProcess::GetDllHandle(*VdbGridLibPath);
-#endif
+
+	if (!VdbGridLibHandle)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to dynamically load %s but the loading failed. Some AGX Dynamics terrain "
+				 "features might not be available."));
+	}
 
 	// If AGX Dynamics is installed on this computer, agxIO.Environment.instance() will
 	// read data from the registry and add runtime and resource paths to
