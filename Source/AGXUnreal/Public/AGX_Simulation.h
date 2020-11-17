@@ -13,6 +13,7 @@
 
 class AAGX_Terrain;
 class UAGX_RigidBodyComponent;
+class UAGX_SimulationObjectComponent;
 class UAGX_ShapeComponent;
 class UAGX_MaterialBase;
 
@@ -95,6 +96,8 @@ public:
 	FAGX_Statistics GetStatistics();
 
 	void AddRigidBody(UAGX_RigidBodyComponent* Body);
+
+	void AddRigidBody(UAGX_SimulationObjectComponent* Body);
 
 	/**
 	 * Add a stand-alone shape to the simulation.

@@ -1,0 +1,346 @@
+#include "AGX_SimulationObjectComponent.h"
+
+// AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
+#include "AGX_Simulation.h"
+#include "Materials/AGX_ShapeMaterialAsset.h"
+#include "Materials/AGX_ShapeMaterialBase.h"
+#include "Materials/AGX_ShapeMaterialInstance.h"
+
+// Unreal Engien includes.
+#include "Engine/StaticMesh.h"
+#include "PhysicsEngine/BodySetup.h"
+#include "PhysicsEngine/AggregateGeom.h"
+
+UAGX_SimulationObjectComponent::UAGX_SimulationObjectComponent()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.TickGroup = TG_PostPhysics;
+
+	/// \todo Determine if this is necessary. Alternative implementations include the virtual
+	/// OnMeshChanged member function, the virtual OnCreatePhysicsState, and
+	/// GetStaticMesh()->OnMeshChanged.
+	///
+	/// This one is problematic because it's a call to a virtual function from a constructor, which
+	/// means that the vtable may not have been fully formed yet.
+	OnStaticMeshChanged().AddUObject(this, &UAGX_SimulationObjectComponent::UpdateCollisionShapes);
+}
+
+bool UAGX_SimulationObjectComponent::HasNative() const
+{
+	return NativeBarrier.HasNative();
+}
+
+FRigidBodyBarrier* UAGX_SimulationObjectComponent::GetNative()
+{
+	return &NativeBarrier;
+}
+
+const FRigidBodyBarrier* UAGX_SimulationObjectComponent::GetNative() const
+{
+	return &NativeBarrier;
+}
+
+FRigidBodyBarrier* UAGX_SimulationObjectComponent::GetOrCreateNative()
+{
+	if (!HasNative())
+	{
+		AllocateNative();
+	}
+	return GetNative();
+}
+
+void UAGX_SimulationObjectComponent::OnMeshChanged()
+{
+	UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from OnMeshChanged."))
+	RefreshCollisionShapes();
+}
+
+void UAGX_SimulationObjectComponent::UpdateCollisionShapes(UStaticMeshComponent* Self)
+{
+	if (Self != this)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Self != this.  That is surprising. What should we do in this case?"));
+		return;
+	}
+
+	UE_LOG(LogAGX, Warning, TEXT("UpdateCollisionShapes called"));
+
+	UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from UpdateCollisionShapes."))
+	RefreshCollisionShapes();
+}
+
+void UAGX_SimulationObjectComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	if (!HasNative())
+	{
+		AllocateNative();
+	}
+}
+
+void UAGX_SimulationObjectComponent::EndPlay(const EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+	if (HasNative())
+	{
+		GetNative()->ReleaseNative();
+	}
+}
+
+void UAGX_SimulationObjectComponent::TickComponent(
+	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	ReadTransformFromNative();
+}
+
+namespace UAGX_SimulationObject_helpers
+{
+// I would like to use RefreshCollisionShapes(PhysicsShapes, CollisionShapes) to
+// reorder PhysicsShapes so that they match the new ordering of CollisionShapes.
+// To do this I need a way to identify which of the new CollisionShapes each
+// PhysicsShape belong to.
+#if 0
+	template <typename FCollisionShape>
+	void RefreshCollisionShapes(
+		TArray<FAGX_Shape>& PhysicsShapes, TArray<FCollisionShape>& CollisionShapes)
+	{
+
+	}
+#endif
+}
+
+bool UAGX_SimulationObjectComponent::ShouldCreatePhysicsState() const
+{
+	/// \note I'm not entirely sure on the consequences of doing this. I want to maintain my own
+	/// physics state, which is the AGX Dynamics state. I do not want the PhysX code to start doing
+	/// stuff because of this. And it's not even the actual AGX Dynamics state but the local state
+	/// we keep in order to create the AGX Dynamics objects later, on BeginPlay.
+	///
+	/// All I want is to keep the TArray<FAGX_Shape> containers in sync with the collision shapes
+	/// stored in the StaticMesh asset.
+	return true;
+}
+
+void UAGX_SimulationObjectComponent::OnCreatePhysicsState()
+{
+	UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from OnCreatePhysicsState."))
+	RefreshCollisionShapes();
+	bPhysicsStateCreated = true;
+}
+
+void UAGX_SimulationObjectComponent::PostEditChangeProperty(FPropertyChangedEvent& Event)
+{
+	Super::PostEditChangeProperty(Event);
+	UE_LOG(LogAGX, Warning, TEXT("PropertyChangedEvent called"));
+
+	if (Event.GetPropertyName() == GetMemberNameChecked_StaticMesh())
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from PostEditChangeProperty."))
+		RefreshCollisionShapes();
+	}
+}
+
+void UAGX_SimulationObjectComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
+{
+	Super::PostEditChangeChainProperty(Event);
+	UE_LOG(
+		LogAGX, Warning, TEXT("ChainPropertyChangedEvent for %s."),
+		*Event.GetPropertyName().ToString());
+
+	/// \todo Only do this if the changed property actually affects the shapes.
+	/// Is there any such property?
+	///
+	/// The comment above needs some clarification. I want to detect when the collision shapes
+	/// within the StaticMesh asset is changed. I'm not sure this will work since the mesh pointer
+	/// is the same, it's the thing pointed to that is modified. We need a callback when
+	/// PostEditChange(Chain)?Property is called on the StaticMesh asset. There is `OnMeshChanged`,
+	/// I will experiment with that, but I think that is for vertices only.
+	/// There is also RecreatePhysicsState which StaticMeshEditor calls from time to time, but it
+	if (Event.GetPropertyName() == GetMemberNameChecked_StaticMesh())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Calling RefreshCollisionShapes from PostEditChangeChainProperty."))
+		RefreshCollisionShapes();
+		GetStaticMesh()->OnMeshChanged.AddUObject(
+			this, &UAGX_SimulationObjectComponent::OnMeshChanged);
+	}
+}
+
+namespace AGX_SimulationObject_helpers
+{
+	void SwapInMaterialInstance(FAGX_Shape& Shape, UWorld& World)
+	{
+		// No asset pointers should remain after a swap. If we fail to create an instance then we
+		// should fall back to the default material, with a warning.
+		UAGX_ShapeMaterialBase* Asset = Shape.Material;
+		Shape.Material = nullptr;
+
+		if (Asset == nullptr)
+		{
+			// If the asset material is nullptr then the instance material should also be nullptr,
+			// AGX Dynamics will interpret that to mean the default material.
+			return;
+		}
+
+		if (!World.IsGameWorld())
+		{
+			// Only create instances in game worlds, never in the editor world.
+			return;
+		}
+
+		FShapeMaterialBarrier* Barrier = nullptr;
+		UAGX_ShapeMaterialInstance* Instance =
+			Cast<UAGX_ShapeMaterialInstance>(Asset->GetOrCreateInstance(&World));
+		if (Instance == nullptr)
+		{
+			/// \todo Better error message.
+			UE_LOG(LogAGX, Warning, TEXT("Could not create a ShapeMaterialInstance."));
+			return;
+		}
+
+		Shape.Material = Instance;
+	}
+
+	FAGX_Shape& GetShape(TArray<FAGX_Shape>& Shapes, int32 Index, FAGX_Shape& Default)
+	{
+		return Shapes.IsValidIndex(Index) ? Shapes[Index] : Default;
+	}
+
+	FVector GetHalfExtent(const FKBoxElem& Box)
+	{
+		return FVector(Box.X / 2.0f, Box.Y / 2.0f, Box.Z / 2.0f);
+	}
+}
+
+void UAGX_SimulationObjectComponent::AllocateNative()
+{
+	using namespace AGX_SimulationObject_helpers; /// \todo Rename the other namespace to match
+												  /// this.
+
+	if (GetWorld() == nullptr)
+	{
+		return;
+	}
+	UWorld& World = *GetWorld();
+
+	/// \todo Replace with early-out once we're confident that things work the way they should.
+	check(!NativeBarrier.HasNative());
+	check(SphereBarriers.Num() == 0);
+	check(BoxBarriers.Num() == 0);
+
+	RefreshCollisionShapes();
+	NativeBarrier.AllocateNative();
+
+	SwapInMaterialInstance(DefaultShape, World);
+	for (auto& Sphere : Spheres)
+	{
+		SwapInMaterialInstance(Sphere, World);
+	}
+	for (auto& Box : Boxes)
+	{
+		SwapInMaterialInstance(Box, World);
+	}
+
+	UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from AllocateNative."))
+
+	FKAggregateGeom& CollisionShapes = GetStaticMesh()->BodySetup->AggGeom;
+
+	// Copy sphere data from the collision spheres to the barrier spheres.
+	TArray<FKSphereElem>& CollisionSpheres = CollisionShapes.SphereElems;
+	SphereBarriers.Reserve(CollisionSpheres.Num());
+	for (int32 I = 0; I < CollisionSpheres.Num(); ++I)
+	{
+		FKSphereElem& Collision = CollisionSpheres[I];
+		FAGX_Shape& Shape = GetShape(Spheres, I, DefaultShape);
+		FSphereShapeBarrier Barrier;
+		Barrier.AllocateNative();
+		check(Barrier.HasNative());
+		Barrier.SetRadius(Collision.Radius);
+		Barrier.SetLocalPosition(Collision.Center);
+		Barrier.SetLocalRotation(FQuat::Identity); // Rotation does not matter for spheres.
+		Barrier.SetEnableCollisions(Shape.bCanCollide);
+		if (Shape.Material != nullptr)
+		{
+			FShapeMaterialBarrier* MaterialBarrier =
+				Shape.Material->GetOrCreateShapeMaterialNative(&World);
+			if (MaterialBarrier != nullptr)
+			{
+				Barrier.SetMaterial(*MaterialBarrier);
+			}
+		}
+		Barrier.SetName(Collision.GetName().ToString());
+		Barrier.AddCollisionGroups(Shape.CollisionGroups);
+		NativeBarrier.AddShape(&Barrier);
+		SphereBarriers.Add(std::move(Barrier));
+	}
+
+	// Copy box data from the collision boxes to the barrier boxes.
+	TArray<FKBoxElem>& CollisionBoxes = CollisionShapes.BoxElems;
+	BoxBarriers.Reserve(CollisionBoxes.Num());
+	for (int32 I = 0; I < CollisionBoxes.Num(); ++I)
+	{
+		FKBoxElem& Collision = CollisionBoxes[I];
+		FAGX_Shape& Shape = GetShape(Boxes, I, DefaultShape);
+		FBoxShapeBarrier Barrier;
+		Barrier.AllocateNative();
+		check(Barrier.HasNative());
+		Barrier.SetHalfExtents(GetHalfExtent(Collision));
+		Barrier.SetLocalPosition(Collision.Center);
+		Barrier.SetLocalRotation(Collision.Rotation.Quaternion());
+		Barrier.SetEnableCollisions(Shape.bCanCollide);
+		if (Shape.Material != nullptr)
+		{
+			FShapeMaterialBarrier* MaterialBarrier =
+				Shape.Material->GetOrCreateShapeMaterialNative(&World);
+			if (MaterialBarrier != nullptr)
+			{
+				Barrier.SetMaterial(*MaterialBarrier);
+			}
+		}
+		Barrier.SetName(Collision.GetName().ToString());
+		Barrier.AddCollisionGroups(Shape.CollisionGroups);
+		NativeBarrier.AddShape(&Barrier);
+		BoxBarriers.Add(std::move(Barrier));
+	}
+
+	WriteTransformToNative();
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	Simulation->AddRigidBody(this);
+}
+
+void UAGX_SimulationObjectComponent::RefreshCollisionShapes()
+{
+	FKAggregateGeom& CollisionShapes = GetStaticMesh()->BodySetup->AggGeom;
+	TArray<FKSphereElem>& CollisionSpheres = CollisionShapes.SphereElems;
+	TArray<FKBoxElem>& CollisionBoxes = CollisionShapes.BoxElems;
+
+	UE_LOG(LogAGX, Warning, TEXT("Have %d spheres and %d boxes."), Spheres.Num(), Boxes.Num());
+
+	Spheres.SetNum(CollisionSpheres.Num());
+	Boxes.SetNum(CollisionBoxes.Num());
+}
+
+void UAGX_SimulationObjectComponent::ReadTransformFromNative()
+{
+	check(HasNative());
+	const FVector NewLocation = NativeBarrier.GetPosition();
+	const FQuat NewRotation = NativeBarrier.GetRotation();
+
+	/// \todo Consider supporting other transformation targets, such as parent and root.
+	/// Should we? If so, why?
+	const FVector OldLocation = GetComponentLocation();
+	const FVector LocationDelta = NewLocation - OldLocation;
+	MoveComponent(LocationDelta, NewRotation, false);
+}
+
+void UAGX_SimulationObjectComponent::WriteTransformToNative()
+{
+	check(HasNative());
+	NativeBarrier.SetPosition(GetComponentLocation());
+	NativeBarrier.SetRotation(GetComponentQuat());
+}
