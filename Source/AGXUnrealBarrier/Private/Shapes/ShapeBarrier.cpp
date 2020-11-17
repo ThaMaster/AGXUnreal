@@ -140,6 +140,16 @@ void FShapeBarrier::AddCollisionGroup(const FName& GroupName)
 	NativeRef->NativeGeometry->addGroup(StringTo32BitFnvHash(GroupName.ToString()));
 }
 
+void FShapeBarrier::AddCollisionGroups(const TArray<FName>& GroupNames)
+{
+	check(HasNative());
+
+	for (auto& GroupName : GroupNames)
+	{
+		AddCollisionGroup(GroupName);
+	}
+}
+
 TArray<FName> FShapeBarrier::GetCollisionGroups() const
 {
 	check(HasNative());
