@@ -15,6 +15,55 @@ class FShapeMaterialBarrier;
 /**
  * Defines physical properties of AGX shapes, AGX terrains etc.
  *
+ * Materials can exist in two different contexts: editing and play.
+ *
+ * Editing is the regular Unreal Editor mode, where we use the editor to set
+ * properties and assign assets. In this case the material is an asset. New
+ * materials are created and existing materials are edited in the Content
+ * Browser. Material properties, such as on an UAGX_ShapeComponent, are pointers
+ * to these assets.
+ *
+ * During play things are a bit different. This is because we don't want changes
+ * made during play to affect the on-disk assets. We therefore decouple edit-mode
+ * assets from play session objects by creating clones of the edit mode assets
+ * for use during the duration of the play session. The Instances are the only
+ * classes that has a native AGX Dynamics object associated with it.
+ *
+ * Subclasses are used to differentiate between the two types, with the Asset
+ * suffix being used for editing mode objects and the Instance suffix being used
+ * for the play mode objects. The switch is done in BeginPlay of the class that
+ * has the UPROPERTY. A short illustrative example:
+ *
+ *	UCLASS()
+ *	class UMyClass : public UObject
+ *	{
+ *		GENERATED_BODY()
+ *
+ *		UPROPERTY()
+ *		UAGX_MaterialBase* MyMaterial; // Asset while in editor, Instance during gameplay.
+ *
+ *		virtual void BeginPlay();
+ * 	};
+ *
+ * 	void UMyClass::BeginPlay()
+ * 	{
+ *		if (GetWorld()->IsGameWorld())
+ *		{
+ *			// We are being created in game mode, so get the non-Asset
+ *			// instance and swap out the Asset pointer.
+ *			UAGX_MaterialInstance* MaterialInstance =
+ *				Cast<UAGX_MaterialInstance>(MyMaterial->GetOrCreateInstance());
+ *			MyMaterial = Instance;
+ *		}
+ * 	}
+ *
+ * There may be a bit more to it, depending on the type of material (see next
+ * paragraph) but something like that.
+ *
+ * In addition to the Asset/Instance separation there are also multiple types
+ * of materials, currently Shape and Terrain, each with their own Base, Asset,
+ * and Instance classes. What they all have in common is that a contact material
+ * may be created between any pair of materials, regardless of their types.
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", abstract, AutoExpandCategories = ("Material Properties"))
