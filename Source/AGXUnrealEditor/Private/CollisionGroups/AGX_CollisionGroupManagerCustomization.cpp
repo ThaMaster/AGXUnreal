@@ -102,25 +102,37 @@ void FAGX_CollisionGroupManagerCustomization::AddComboBox(
 	IDetailCategoryBuilder& CategoryBuilder, AAGX_CollisionGroupManager* CollisionGroupManager,
 	FText Name, FName* SelectedGroup)
 {
+	//clang-format off
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
-		.NameContent()[SNew(STextBlock).Text(Name)]
-		.ValueContent()[SNew(SComboBox<TSharedPtr<FName>>)
-							.ContentPadding(2)
-							.OptionsSource(&AvailableCollisionGroups)
-							.OnGenerateWidget_Lambda([=](TSharedPtr<FName> Item) {
-								// content for each item in combo box
-								return SNew(STextBlock)
-									.Text(FText::FromName(*Item))
-									.ToolTipText(FText::GetEmpty());
-							})
-							.OnSelectionChanged(
-								this, &FAGX_CollisionGroupManagerCustomization::OnComboBoxChanged,
-								CollisionGroupManager, SelectedGroup)
-							.Content() // header content (i.e. showing selected item, even while
-									   // combo box is closed)
-								[SNew(STextBlock).Text_Lambda([SelectedGroup]() {
-									return FText::FromName(*SelectedGroup);
-								})]];
+	.NameContent()
+	[
+		SNew(STextBlock).Text(Name)
+	]
+	.ValueContent()
+	[
+		SNew(SComboBox<TSharedPtr<FName>>)
+		.ContentPadding(2)
+		.OptionsSource(&AvailableCollisionGroups)
+		.OnGenerateWidget_Lambda([=](TSharedPtr<FName> Item)
+		 {
+			// content for each item in combo box
+			return SNew(STextBlock)
+			.Text(FText::FromName(*Item))
+			.ToolTipText(FText::GetEmpty());
+		})
+		.OnSelectionChanged(
+			this, &FAGX_CollisionGroupManagerCustomization::OnComboBoxChanged,
+			CollisionGroupManager, SelectedGroup)
+		.Content() // header content showing selected item, even while combo box is closed.
+		[
+			SNew(STextBlock)
+			.Text_Lambda([SelectedGroup]()
+			{
+				return FText::FromName(*SelectedGroup);
+			})
+		]
+	];
+	//clang-format on
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -23,30 +23,39 @@ void FAGX_CollisionGroupsComponentCustomization::CustomizeDetails(
 			DetailBuilder);
 
 	if (!CollisionGroupComponent)
+	{
 		return;
+	}
 
 	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder.EditCategory("AGX Collision Groups");
 
 	CategoryBuilder.AddProperty(DetailBuilder.GetProperty(
 		GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupsComponent, CollisionGroups)));
 
-	// Add button for forcing a refresh of all child shape
-	// components according to collision groups list
+	// clang-format off
+
+	// Add button for forcing a refresh of all child shape components according
+	// to collision groups list.
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
-		[SNew(SHorizontalBox) +
-		 SHorizontalBox::Slot().AutoWidth()[SNew(SButton)
-												.Text(LOCTEXT(
-													"CreateCollisionForceRefreshButtonText",
-													"Force refresh all shapes"))
-												.ToolTipText(LOCTEXT(
-													"CollisionForceRefreshButtonTooltip",
-													"Force apply collision groups to all child "
-													"shape components."))
-												.OnClicked_Lambda([CollisionGroupComponent]() {
-													CollisionGroupComponent
-														->ForceRefreshChildShapes();
-													return FReply::Handled();
-												})]];
+	[
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("CreateCollisionForceRefreshButtonText", "Force refresh all shapes"))
+			.ToolTipText(LOCTEXT(
+				"CollisionForceRefreshButtonTooltip",
+				"Force apply collision groups to all child shape components."))
+			.OnClicked_Lambda([CollisionGroupComponent]()
+			{
+				CollisionGroupComponent->ForceRefreshChildShapes();
+				return FReply::Handled();
+			})
+		]
+	];
+
+	// clang-format on
 
 	// Hide CollisionGroupsLastChange from the Editor view
 	DetailBuilder.HideProperty(DetailBuilder.GetProperty(
