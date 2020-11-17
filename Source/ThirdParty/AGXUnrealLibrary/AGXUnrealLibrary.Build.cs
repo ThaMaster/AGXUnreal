@@ -136,7 +136,7 @@ public class AGXUnrealLibrary : ModuleRules
 		else
 		{
 			Console.WriteLine("Skipping packaging of AGX Dynamics resources, packaged "
-				+ "resources already exists.");
+				+ "resources already exists in: {0}", GetPackagedAgxResourcesPath());
 		}
 
 		foreach (var RuntimeLibFile in RuntimeLibFiles)
