@@ -133,6 +133,11 @@ public class AGXUnrealLibrary : ModuleRules
 		{
 			PackageAgxResources(Target, RuntimeLibFiles, LinkLibFiles, IncludePaths);
 		}
+		else
+		{
+			Console.WriteLine("Skipping packaging of AGX Dynamics resources, packaged "
+				+ "resources already exists.");
+		}
 
 		foreach (var RuntimeLibFile in RuntimeLibFiles)
 		{
