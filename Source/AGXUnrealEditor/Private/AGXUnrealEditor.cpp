@@ -18,6 +18,8 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_RigidBodyComponentCustomization.h"
 #include "AGX_Simulation.h"
+#include "AGX_SimulationObjectComponent.h"
+#include "AGX_SimulationObjectCustomization.h"
 #include "AGX_TopMenu.h"
 #include "AgxEdMode/AGX_AgxEdMode.h"
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
@@ -205,6 +207,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		UAGX_RigidBodyComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_RigidBodyComponentCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_SimulationObjectComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_SimulationObjectCustomization::MakeInstance));
 
 	// The reason why UAGX_MaterialBase is used here instead of UAGX_TerrainMaterial is that
 	// the former must be used to be able to customize some of the properties inherited by the
