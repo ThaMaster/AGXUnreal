@@ -57,8 +57,9 @@ public class AGXUnrealLibrary : ModuleRules
 
 	public AGXUnrealLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
+		string PackagedAgxResoucesPath = GetPackagedAgxResourcesPath();
 		PackagedAgxResources =
-			new AgxResourcesInfo(Target, AgxResourcesLocation.PackagedAgx, GetPackagedAgxResourcesPath());
+			new AgxResourcesInfo(Target, AgxResourcesLocation.PackagedAgx, PackagedAgxResoucesPath);
 		Type = ModuleType.External;
 
 		// Because the AGX Dynamics type system uses typeid and dynamic_cast.
@@ -136,7 +137,7 @@ public class AGXUnrealLibrary : ModuleRules
 		else
 		{
 			Console.WriteLine("Skipping packaging of AGX Dynamics resources, packaged "
-				+ "resources already exists in: {0}", GetPackagedAgxResourcesPath());
+				+ "resources already exists in: {0}", PackagedAgxResoucesPath);
 		}
 
 		foreach (var RuntimeLibFile in RuntimeLibFiles)
