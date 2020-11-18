@@ -233,6 +233,7 @@ void UAGX_SimulationObjectComponent::AllocateNative()
 	check(SphereBarriers.Num() == 0);
 	check(BoxBarriers.Num() == 0);
 
+	UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from AllocateNative."))
 	RefreshCollisionShapes();
 	NativeBarrier.AllocateNative();
 
@@ -246,66 +247,67 @@ void UAGX_SimulationObjectComponent::AllocateNative()
 		SwapInMaterialInstance(Box, World);
 	}
 
-	UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from AllocateNative."))
-
-	FKAggregateGeom& CollisionShapes = GetStaticMesh()->BodySetup->AggGeom;
-
-	// Copy sphere data from the collision spheres to the barrier spheres.
-	TArray<FKSphereElem>& CollisionSpheres = CollisionShapes.SphereElems;
-	SphereBarriers.Reserve(CollisionSpheres.Num());
-	for (int32 I = 0; I < CollisionSpheres.Num(); ++I)
+	if (GetStaticMesh() != nullptr)
 	{
-		FKSphereElem& Collision = CollisionSpheres[I];
-		FAGX_Shape& Shape = GetShape(Spheres, I, DefaultShape);
-		FSphereShapeBarrier Barrier;
-		Barrier.AllocateNative();
-		check(Barrier.HasNative());
-		Barrier.SetRadius(Collision.Radius);
-		Barrier.SetLocalPosition(Collision.Center);
-		Barrier.SetLocalRotation(FQuat::Identity); // Rotation does not matter for spheres.
-		Barrier.SetEnableCollisions(Shape.bCanCollide);
-		if (Shape.Material != nullptr)
-		{
-			FShapeMaterialBarrier* MaterialBarrier =
-				Shape.Material->GetOrCreateShapeMaterialNative(&World);
-			if (MaterialBarrier != nullptr)
-			{
-				Barrier.SetMaterial(*MaterialBarrier);
-			}
-		}
-		Barrier.SetName(Collision.GetName().ToString());
-		Barrier.AddCollisionGroups(Shape.CollisionGroups);
-		NativeBarrier.AddShape(&Barrier);
-		SphereBarriers.Add(std::move(Barrier));
-	}
+		FKAggregateGeom& CollisionShapes = GetStaticMesh()->BodySetup->AggGeom;
 
-	// Copy box data from the collision boxes to the barrier boxes.
-	TArray<FKBoxElem>& CollisionBoxes = CollisionShapes.BoxElems;
-	BoxBarriers.Reserve(CollisionBoxes.Num());
-	for (int32 I = 0; I < CollisionBoxes.Num(); ++I)
-	{
-		FKBoxElem& Collision = CollisionBoxes[I];
-		FAGX_Shape& Shape = GetShape(Boxes, I, DefaultShape);
-		FBoxShapeBarrier Barrier;
-		Barrier.AllocateNative();
-		check(Barrier.HasNative());
-		Barrier.SetHalfExtents(GetHalfExtent(Collision));
-		Barrier.SetLocalPosition(Collision.Center);
-		Barrier.SetLocalRotation(Collision.Rotation.Quaternion());
-		Barrier.SetEnableCollisions(Shape.bCanCollide);
-		if (Shape.Material != nullptr)
+		// Copy sphere data from the collision spheres to the barrier spheres.
+		TArray<FKSphereElem>& CollisionSpheres = CollisionShapes.SphereElems;
+		SphereBarriers.Reserve(CollisionSpheres.Num());
+		for (int32 I = 0; I < CollisionSpheres.Num(); ++I)
 		{
-			FShapeMaterialBarrier* MaterialBarrier =
-				Shape.Material->GetOrCreateShapeMaterialNative(&World);
-			if (MaterialBarrier != nullptr)
+			FKSphereElem& Collision = CollisionSpheres[I];
+			FAGX_Shape& Shape = GetShape(Spheres, I, DefaultShape);
+			FSphereShapeBarrier Barrier;
+			Barrier.AllocateNative();
+			check(Barrier.HasNative());
+			Barrier.SetRadius(Collision.Radius);
+			Barrier.SetLocalPosition(Collision.Center);
+			Barrier.SetLocalRotation(FQuat::Identity); // Rotation does not matter for spheres.
+			Barrier.SetEnableCollisions(Shape.bCanCollide);
+			if (Shape.Material != nullptr)
 			{
-				Barrier.SetMaterial(*MaterialBarrier);
+				FShapeMaterialBarrier* MaterialBarrier =
+					Shape.Material->GetOrCreateShapeMaterialNative(&World);
+				if (MaterialBarrier != nullptr)
+				{
+					Barrier.SetMaterial(*MaterialBarrier);
+				}
 			}
+			Barrier.SetName(Collision.GetName().ToString());
+			Barrier.AddCollisionGroups(Shape.CollisionGroups);
+			NativeBarrier.AddShape(&Barrier);
+			SphereBarriers.Add(std::move(Barrier));
 		}
-		Barrier.SetName(Collision.GetName().ToString());
-		Barrier.AddCollisionGroups(Shape.CollisionGroups);
-		NativeBarrier.AddShape(&Barrier);
-		BoxBarriers.Add(std::move(Barrier));
+
+		// Copy box data from the collision boxes to the barrier boxes.
+		TArray<FKBoxElem>& CollisionBoxes = CollisionShapes.BoxElems;
+		BoxBarriers.Reserve(CollisionBoxes.Num());
+		for (int32 I = 0; I < CollisionBoxes.Num(); ++I)
+		{
+			FKBoxElem& Collision = CollisionBoxes[I];
+			FAGX_Shape& Shape = GetShape(Boxes, I, DefaultShape);
+			FBoxShapeBarrier Barrier;
+			Barrier.AllocateNative();
+			check(Barrier.HasNative());
+			Barrier.SetHalfExtents(GetHalfExtent(Collision));
+			Barrier.SetLocalPosition(Collision.Center);
+			Barrier.SetLocalRotation(Collision.Rotation.Quaternion());
+			Barrier.SetEnableCollisions(Shape.bCanCollide);
+			if (Shape.Material != nullptr)
+			{
+				FShapeMaterialBarrier* MaterialBarrier =
+					Shape.Material->GetOrCreateShapeMaterialNative(&World);
+				if (MaterialBarrier != nullptr)
+				{
+					Barrier.SetMaterial(*MaterialBarrier);
+				}
+			}
+			Barrier.SetName(Collision.GetName().ToString());
+			Barrier.AddCollisionGroups(Shape.CollisionGroups);
+			NativeBarrier.AddShape(&Barrier);
+			BoxBarriers.Add(std::move(Barrier));
+		}
 	}
 
 	WriteTransformToNative();
@@ -315,6 +317,13 @@ void UAGX_SimulationObjectComponent::AllocateNative()
 
 void UAGX_SimulationObjectComponent::RefreshCollisionShapes()
 {
+	if (GetStaticMesh() == nullptr)
+	{
+		Spheres.SetNum(0);
+		Boxes.SetNum(0);
+		return;
+	}
+
 	FKAggregateGeom& CollisionShapes = GetStaticMesh()->BodySetup->AggGeom;
 	TArray<FKSphereElem>& CollisionSpheres = CollisionShapes.SphereElems;
 	TArray<FKBoxElem>& CollisionBoxes = CollisionShapes.BoxElems;
