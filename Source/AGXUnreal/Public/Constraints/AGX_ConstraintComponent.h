@@ -180,7 +180,12 @@ private:
 
 	// It may not be possible to have these as sub-components. In that case we
 	// must move all functionality from them into this class.
+	UPROPERTY()
 	UAGX_ConstraintIconGraphicsComponent* IconGraphicsComponent;
+
+	UPROPERTY()
 	UAGX_ConstraintDofGraphicsComponent* DofGraphicsComponent1;
+
+	UPROPERTY()
 	UAGX_ConstraintDofGraphicsComponent* DofGraphicsComponent2;
 };
