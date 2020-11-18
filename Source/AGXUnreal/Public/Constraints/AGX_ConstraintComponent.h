@@ -182,8 +182,10 @@ private:
 	// must move all functionality from them into this class.
 	UPROPERTY()
 	UAGX_ConstraintIconGraphicsComponent* IconGraphicsComponent;
+
 	UPROPERTY()
 	UAGX_ConstraintDofGraphicsComponent* DofGraphicsComponent1;
+
 	UPROPERTY()
 	UAGX_ConstraintDofGraphicsComponent* DofGraphicsComponent2;
 };
