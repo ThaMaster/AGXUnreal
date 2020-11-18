@@ -129,6 +129,7 @@ protected: // Inherited interfaces.
 
 #if WITH_EDITOR
 	//~ Begin UObject interface.
+	virtual void PreEditChange(FProperty* Property) override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 	//~ End UObject interface.
@@ -145,4 +146,6 @@ private: // Private member variables.
 	FRigidBodyBarrier NativeBarrier;
 	TArray<FSphereShapeBarrier> SphereBarriers;
 	TArray<FBoxShapeBarrier> BoxBarriers;
+
+	FDelegateHandle MeshChangedHandle;
 };

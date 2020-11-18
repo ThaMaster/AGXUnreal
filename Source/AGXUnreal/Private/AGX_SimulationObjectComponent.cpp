@@ -144,6 +144,18 @@ void UAGX_SimulationObjectComponent::PostEditChangeProperty(FPropertyChangedEven
 	}
 }
 
+void UAGX_SimulationObjectComponent::PreEditChange(FProperty* Property)
+{
+	if (Property->GetName() == GetMemberNameChecked_StaticMesh().ToString())
+	{
+		if (GetStaticMesh() != nullptr)
+		{
+			GetStaticMesh()->OnMeshChanged.Remove(MeshChangedHandle);
+			MeshChangedHandle.Reset();
+		}
+	}
+}
+
 void UAGX_SimulationObjectComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	Super::PostEditChangeChainProperty(Event);
@@ -166,8 +178,11 @@ void UAGX_SimulationObjectComponent::PostEditChangeChainProperty(FPropertyChange
 			LogAGX, Warning,
 			TEXT("Calling RefreshCollisionShapes from PostEditChangeChainProperty."))
 		RefreshCollisionShapes();
-		GetStaticMesh()->OnMeshChanged.AddUObject(
-			this, &UAGX_SimulationObjectComponent::OnMeshChanged);
+		if (GetStaticMesh() != nullptr)
+		{
+			MeshChangedHandle = GetStaticMesh()->OnMeshChanged.AddUObject(
+				this, &UAGX_SimulationObjectComponent::OnMeshChanged);
+		}
 	}
 }
 
