@@ -32,19 +32,20 @@ FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocationFromBody() const
 	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
 	{
-		/// \todo Someone is using a FAGX_ConstraintBodyAttachment that isn't
-		/// attached to any body. It's unclear to me what that really means, and if
-		/// it should be legal or not. Logging for now, but remove the logging when
-		/// we find a case where such attachments makes sense.
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Something is getting the local location of a ConstraintBodyAttachment without an "
-				 "attached body. May produce unwanted behavior."));
+			TEXT("GetLocalFrameLocationFromBody() called on AGX_ConstraintBodyAttachment whose "
+				 "RigidBody is not set which may lead to unwanted behaviour. The FrameLocation "
+				 "retuned will be given in world coordinate system."));
 		return LocalFrameLocation;
 	}
 
-	/// \todo This does a pointless transform/inversetransform if there is no
-	/// frame defining actor. Detect that case and just return LocalFrameLocation.
+	// If the FrameDefiningMode is RIGIDBODY, the LocalFrameLocation is already given in RigidBody's
+	// frame by definition and we can simply return the value directly.
+	if (FrameDefiningMode == EAGX_FrameDefiningMode::RIGIDBODY)
+	{
+		return LocalFrameLocation;
+	}
 
 	return Body->GetComponentTransform().InverseTransformPositionNoScale(GetGlobalFrameLocation());
 }
@@ -53,6 +54,18 @@ FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotationFromBody() const
 {
 	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("GetLocalFrameRotationFromBody() called on AGX_ConstraintBodyAttachment whose "
+				 "RigidBody is not set which may lead to unwanted behaviour. The LocalFrameRotation "
+				 "retuned will be given in world coordinate system."));
+		return LocalFrameRotation.Quaternion();
+	}
+
+	// If the FrameDefiningMode is RIGIDBODY, the LocalFrameRotation is already given in RigidBody's
+	// frame by definition and we can simply return the value directly.
+	if (FrameDefiningMode == EAGX_FrameDefiningMode::RIGIDBODY)
 	{
 		return LocalFrameRotation.Quaternion();
 	}
