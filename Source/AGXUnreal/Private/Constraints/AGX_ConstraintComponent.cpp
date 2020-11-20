@@ -438,6 +438,23 @@ void UAGX_ConstraintComponent::PostLoad()
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
 
+	// PostLoad is run when creating AGX_Constraints inside a Blueprint or when instantiating a
+	// Blueprint in the level. Unreal creates multiple instances of AGX_Constraints "behind the
+	// scenes" even when only a single AGX_Constraint has been added to the Blueprint and it
+	// has proved difficult to know which instance you are really working on, from the c++ side.
+	// One side-effect of this is that the BodyAttachment.Owner (that are set to "this" during
+	// construction) gets the wrong AGX_Constraint instance which obviously causes trouble.
+	// We fix this by simply re-writing the BodyAttachment.Owner pointers to "this" if they
+	// do not match. This ensures the correct instance is set both during editing of the Blueprint
+	// and when instantiating it in the level.
+	for (FAGX_ConstraintBodyAttachment* BodyAttachment : {&BodyAttachment1, &BodyAttachment2})
+	{
+		if (BodyAttachment->Owner != this)
+		{
+			BodyAttachment->Owner = this;
+		}
+	}
+
 	// Provide a default owning actor, the owner of this component, if no owner has been specified
 	// for the RigidBodyReferences and FrameDefiningComponents. This is always the case when the
 	// constraint has been created as part of an Actor Blueprint.
