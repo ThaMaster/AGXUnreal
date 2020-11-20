@@ -62,12 +62,16 @@ TMap<EGenericDofIndex, int32> BuildNativeDofIndexMap(const TArray<EDofFlag>& Loc
 }
 
 UAGX_ConstraintComponent::UAGX_ConstraintComponent()
+	: BodyAttachment1(this)
+	, BodyAttachment2(this)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
 UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& LockedDofsOrdered)
-	: bEnable(true)
+	: BodyAttachment1(this)
+	, BodyAttachment2(this)
+	, bEnable(true)
 	, SolveType(EAGX_SolveType::ST_DIRECT)
 	, Elasticity(
 		  ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
@@ -317,6 +321,12 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 
 		if (ModifiedBodyAttachment)
 		{
+			if (PropertyName ==
+				GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningMode))
+			{
+				ModifiedBodyAttachment->bCanEditFrameDefiningComponent =
+					ModifiedBodyAttachment->FrameDefiningMode == EAGX_FrameDefiningMode::OTHER;
+			}
 			// TODO: Code below needs to be triggered also when modified through code!
 			// Editor-only probably OK though, since it is just for Editor convenience.
 			// See FCoreUObjectDelegates::OnObjectPropertyChanged.

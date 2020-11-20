@@ -52,6 +52,8 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 {
 	FrameDefiningComponentProperty = StructPropertyHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningComponent));
+	auto CanEditFrameDefiningProperty = StructPropertyHandle->GetChildHandle(
+		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, bCanEditFrameDefiningComponent));
 
 	uint32 NumChildren = 0;
 	StructPropertyHandle->GetNumChildren(NumChildren);
@@ -62,6 +64,11 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 		if (TSharedPtr<IPropertyHandle> ChildHandle =
 				StructPropertyHandle->GetChildHandle(ChildIndex))
 		{
+			if (FAGX_PropertyUtilities::PropertyEquals(ChildHandle, CanEditFrameDefiningProperty))
+			{
+				continue;
+			}
+
 			// Add default visualization.
 			IDetailPropertyRow& DefaultPropertyRow =
 				StructBuilder.AddProperty(ChildHandle.ToSharedRef());

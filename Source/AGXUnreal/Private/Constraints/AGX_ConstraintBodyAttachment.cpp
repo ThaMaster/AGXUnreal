@@ -11,6 +11,17 @@
 #include "Components/SceneComponent.h"
 #include "UObject/UObjectGlobals.h"
 
+FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment()
+{
+	bCanEditFrameDefiningComponent = FrameDefiningMode == EAGX_FrameDefiningMode::OTHER;
+}
+
+FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment(USceneComponent* InOwner)
+	: Owner {InOwner}
+{
+	bCanEditFrameDefiningComponent = FrameDefiningMode == EAGX_FrameDefiningMode::OTHER;
+}
+
 UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody() const
 {
 	return RigidBody.GetRigidBody();

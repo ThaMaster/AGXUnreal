@@ -3,6 +3,7 @@
 // AGXUnreal includes.
 #include "AGX_RigidBodyReference.h"
 #include "AGX_SceneComponentReference.h"
+#include "Constraints/AGX_ConstraintEnums.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -29,6 +30,9 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 {
 	GENERATED_USTRUCT_BODY()
 
+	FAGX_ConstraintBodyAttachment();
+	FAGX_ConstraintBodyAttachment(USceneComponent* InOwner);
+
 	/// \todo Cannot assume a single body per actor. Should we change the UPROPERTY
 	/// to be a UAGX_RigidBodyComponent instead, or should we keep the Actor
 	/// reference and also keep some kind of component identifier? Should we use
@@ -36,6 +40,9 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 
 	UPROPERTY(EditAnywhere, Category = "Rigid Body")
 	FAGX_RigidBodyReference RigidBody;
+
+	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
+	TEnumAsByte<enum EAGX_FrameDefiningMode> FrameDefiningMode = EAGX_FrameDefiningMode::CONSTRAINT;
 
 	/**
 	 * Optional. Use this to define the Local Frame Location and Rotation relative to a Component
@@ -51,7 +58,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * purpose. It provides constraint listing and visualization making it possible to see which
 	 * constraints are using that Constraint Frame Component.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
+	UPROPERTY(EditAnywhere, Category = "Frame Transformation", Meta = (EditCondition = "bCanEditFrameDefiningComponent"))
 	FAGX_SceneComponentReference FrameDefiningComponent;
 
 	/** Frame location relative to Rigid Body Actor, or from Frame Defining Actor if set. */
@@ -61,6 +68,9 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	/** Frame rotation relative to Rigid Body Actor, or from Frame Defining Actor if set. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
 	FRotator LocalFrameRotation;
+
+	UPROPERTY(EditAnywhere)
+	bool bCanEditFrameDefiningComponent;
 
 	UAGX_RigidBodyComponent* GetRigidBody() const;
 
@@ -129,6 +139,8 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	FMatrix GetGlobalFrameMatrix(UAGX_RigidBodyComponent* Body) const;
 
 	FRigidBodyBarrier* GetRigidBodyBarrier(bool CreateIfNeeded);
+
+	USceneComponent* Owner;
 
 #if WITH_EDITOR
 	/**

@@ -16,6 +16,20 @@ enum EAGX_SolveType
 	ST_DIRECT_AND_ITERATIVE = (ST_DIRECT | ST_ITERATIVE) UMETA(DisplayName = "Direct & Iterative")
 };
 
+/** TODO WRITE */
+UENUM()
+enum EAGX_FrameDefiningMode
+{
+	/** TODO. */
+	CONSTRAINT = 1 UMETA(DisplayName = "Constraint"),
+
+	/** TODO. */
+	RIGIDBODY = 2 UMETA(DisplayName = "RigidBody"),
+
+	/** TODO. */
+	OTHER = 3 UMETA(DisplayName = "Other")
+};
+
 /**
  * Constraint type independent index of Degree of Freedom(DOF).Does never change
  * index order layout, even in derived constraints, contrary to the AGX's native
