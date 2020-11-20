@@ -92,45 +92,11 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	FVector GetGlobalFrameLocation() const;
 
 	/**
-	 * Calculates and returns the frame location in world space as-if this attachment was attached
-	 * to the given RigidBody.
-	 *
-	 * As with the regular, parameter-less, GetGlobalFrameLocation, the RigidBody is ignored if a
-	 * FrameDefiningActor has been set.
-	 *
-	 * This is used while in the Blueprint editor, where we don't yet have a "real"
-	 * ConstraintBodyAttachment or a "real" Actor that owns it.
-	 *
-	 * @param Body The body that the local location should be relative too, if no
-	 * FrameDefiningActor.
-	 * @return The world location that this ConstraintBodyAttachment represents.
-	 */
-	FVector GetGlobalFrameLocation(UAGX_RigidBodyComponent* Body) const;
-
-	/**
 	 * Calculates and returns the frame rotation in world space.
 	 */
 	FQuat GetGlobalFrameRotation() const;
 
-	/**
-	 * Calculates and returns the frame rotation in world space as-if this attachment was attached
-	 * to the given RigidBody.
-	 *
-	 * As with the regular, parameter-less, GetGlobalFrameRotation, the RigidBody is ignored if a
-	 * FrameDefiningActor has been set.
-	 *
-	 * This is used while in the Blueprint editor, where we don't yet have a "real"
-	 * ConstraintBodyAttachment or a "real" Actor that owns it.
-	 *
-	 * @param Body The body that the local rotation should be relative too, if no
-	 * FrameDefiningActor.
-	 * @return The world rotation that this ConstraintBodyAttachment represents.
-	 */
-	FQuat GetGlobalFrameRotation(UAGX_RigidBodyComponent* Body) const;
-
 	FMatrix GetGlobalFrameMatrix() const;
-
-	FMatrix GetGlobalFrameMatrix(UAGX_RigidBodyComponent* Body) const;
 
 	FRigidBodyBarrier* GetRigidBodyBarrier(bool CreateIfNeeded);
 
@@ -156,4 +122,7 @@ private:
 	UPROPERTY(Transient)
 	mutable AActor* RecentFrameDefiningActor;
 	USceneComponent* PreviousFrameDefiningComponent;
+
+	// Returns the currently active FrameDefiningComponent given the FrameDefiningMode selected.
+	USceneComponent* GetFinalFrameDefiningComponent() const;
 };

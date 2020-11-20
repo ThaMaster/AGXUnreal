@@ -75,96 +75,30 @@ FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotationFromBody() const
 
 FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 {
-	/// \todo Is it safe to replace this code with a call to GetGlobalFrameLocation(GetRigidBody())?
-	/// The difference would be that GetRigidBody would be called in cases where it would not
-	/// before.
+	if (USceneComponent* FrameDefiningComp = GetFinalFrameDefiningComponent())
+	{
+		return FrameDefiningComp->GetComponentTransform().TransformPositionNoScale(
+			LocalFrameLocation);
+	}
 
-	if (USceneComponent* Origin = FrameDefiningComponent.GetSceneComponent())
-	{
-		return Origin->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
-	}
-	else if (UAGX_RigidBodyComponent* Body = GetRigidBody())
-	{
-		return Body->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
-	}
-	else
-	{
-		// When there is nothing that the local location is relative to then we
-		// assume it is a global location as well.
-		/// \todo When would that ever happen?
-		return LocalFrameLocation;
-	}
-}
-
-FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation(UAGX_RigidBodyComponent* Body) const
-{
-	if (USceneComponent* Origin = FrameDefiningComponent.GetSceneComponent())
-	{
-		return Origin->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
-	}
-	else if (Body != nullptr)
-	{
-		return Body->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
-	}
-	else
-	{
-		// When there is nothing that the local location is relative to then we assume it is a
-		// global location as well.
-		return LocalFrameLocation;
-	}
+	return LocalFrameLocation;
 }
 
 FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 {
-	/// \todo Is it safe to replace this code with a call to GetGlobalFrameRotation(GetRigidBody())?
-	/// The difference would be that GetRigidBody would be called in cases where it would not
-	/// before.
+	if (USceneComponent * FrameDefiningComp = GetFinalFrameDefiningComponent())
+	{
+		return FrameDefiningComp->GetComponentTransform().TransformRotation(
+			LocalFrameRotation.Quaternion());
+	}
 
-	if (USceneComponent* Origin = FrameDefiningComponent.GetSceneComponent())
-	{
-		return Origin->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
-	}
-	else if (UAGX_RigidBodyComponent* Body = GetRigidBody())
-	{
-		return Body->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
-	}
-	else
-	{
-		// When there is nothing that the local rotation is relative to then we
-		// assume it is a global rotation.
-		return LocalFrameRotation.Quaternion();
-	}
-}
-
-FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation(UAGX_RigidBodyComponent* Body) const
-{
-	if (USceneComponent* Origin = FrameDefiningComponent.GetSceneComponent())
-	{
-		return Origin->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
-	}
-	else if (Body != nullptr)
-	{
-		return Body->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
-	}
-	else
-	{
-		// When there is nothing that the local rotation is relative to then we
-		// assume it is a global rotation.
-		return LocalFrameRotation.Quaternion();
-	}
+	return LocalFrameRotation.Quaternion();
 }
 
 FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix() const
 {
 	FQuat Rotation = GetGlobalFrameRotation();
 	FVector Location = GetGlobalFrameLocation();
-	return FMatrix(Rotation.GetAxisX(), Rotation.GetAxisY(), Rotation.GetAxisZ(), Location);
-}
-
-FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix(UAGX_RigidBodyComponent* Body) const
-{
-	FQuat Rotation = GetGlobalFrameRotation(Body);
-	FVector Location = GetGlobalFrameLocation(Body);
 	return FMatrix(Rotation.GetAxisX(), Rotation.GetAxisY(), Rotation.GetAxisZ(), Location);
 }
 
@@ -227,4 +161,18 @@ void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
 	}
 }
 
+USceneComponent* FAGX_ConstraintBodyAttachment::GetFinalFrameDefiningComponent() const
+{
+	switch (FrameDefiningMode)
+	{
+		case CONSTRAINT:
+			return Owner;
+		case RIGIDBODY:
+			return GetRigidBody();
+		case OTHER:
+			return FrameDefiningComponent.GetSceneComponent();
+	}
+
+	return nullptr;
+}
 #endif
