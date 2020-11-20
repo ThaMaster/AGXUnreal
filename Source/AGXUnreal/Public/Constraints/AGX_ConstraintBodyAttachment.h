@@ -18,12 +18,12 @@ class AAGX_ConstraintFrameActor;
 class FRigidBodyBarrier;
 
 /**
- * Defines the Rigid Body to be bound by a Constraint and its Local Frame Location
- * and Rotation.
+ * Defines the Rigid Body to be bound by a Constraint and an attachment frame that is
+ * defined by the transform of either the Constraint itself, the Rigid Body or some other Actor
+ * or Component plus an optional offset given by the Local Frame Location and Rotation.
  *
- * The actual usage of the Local Frame Location and Rotation varies dependening on
- * constraint type, but it can generally be seen as the local points (on the rigid bodies)
- * that should in some way be glewed together by the constraint.
+ * Whether the constraint itself, the Rigid Body or some other Actor or Component should be used
+ * to define the attachment frame can be selected by changing the Frame Defining Mode accordingly.
  */
 USTRUCT()
 struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
@@ -45,27 +45,25 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	TEnumAsByte<enum EAGX_FrameDefiningMode> FrameDefiningMode = EAGX_FrameDefiningMode::CONSTRAINT;
 
 	/**
-	 * Optional. Use this to define the Local Frame Location and Rotation relative to a Component
-	 * other then the Rigid Body Component. This is used for convenience during setup only, the
-	 * actual frame transforms used by the simulation will nevertheless be calculated and stored
-	 * relative to the rigid body when the simulation starts.
+	 * The Frame Defining Component makes it possible to use the transform of any Actor or Component
+	 * to define the attachment frame of the Constrained Rigid Body.
 	 *
-	 * Not that the two rigid bodies in a  constraint can use the same Frame Defining Component, or
-	 * different, or one can have one and the other not. It's even possible to use one of the
-	 * constrainted bodies as the Frame Defining Component for both of them.
-	 *
+	 * Note that the two rigid bodies in a  constraint can use the same Frame Defining Component, or
+	 * different, or one can have one and the other not.
 	 * AGX Dynamics for Unreal provides Constraint Frame Component which is intended for this
 	 * purpose. It provides constraint listing and visualization making it possible to see which
 	 * constraints are using that Constraint Frame Component.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Frame Transformation", Meta = (EditCondition = "bCanEditFrameDefiningComponent"))
+	UPROPERTY(
+		EditAnywhere, Category = "Frame Transformation",
+		Meta = (EditCondition = "bCanEditFrameDefiningComponent"))
 	FAGX_SceneComponentReference FrameDefiningComponent;
 
-	/** Frame location relative to Rigid Body Actor, or from Frame Defining Actor if set. */
+	/** Frame location relative to either the Constraint, the Rigid Body Actor or from the Frame Defining Actor. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
 	FVector LocalFrameLocation;
 
-	/** Frame rotation relative to Rigid Body Actor, or from Frame Defining Actor if set. */
+	/** Frame rotation relative to to either the Constraint, the Rigid Body Actor or from the Frame Defining Actor. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
 	FRotator LocalFrameRotation;
 
