@@ -81,7 +81,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * to Rigid Body Actor's transform space, and if not set the returned value is
 	 * just Local Frame Location.
 	 */
-	FVector GetLocalFrameLocation() const;
+	FVector GetLocalFrameLocationFromBody() const;
 
 	/**
 	 * Calculates and returns the frame rotation relative to Rigid Body Actor
@@ -90,7 +90,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * to Rigid Body Actor's transform space, and if not set the returned value is
 	 * just Local Frame Rotation.
 	 */
-	FQuat GetLocalFrameRotation() const;
+	FQuat GetLocalFrameRotationFromBody() const;
 
 	/**
 	 * Calculates and returns the frame location in world space.

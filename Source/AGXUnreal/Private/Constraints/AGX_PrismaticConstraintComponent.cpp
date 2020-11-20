@@ -45,11 +45,11 @@ void UAGX_PrismaticConstraintComponent::AllocateNative()
 		return;
 	}
 
-	FVector FrameLocation1 = BodyAttachment1.GetLocalFrameLocation();
-	FVector FrameLocation2 = BodyAttachment2.GetLocalFrameLocation();
+	FVector FrameLocation1 = BodyAttachment1.GetLocalFrameLocationFromBody();
+	FVector FrameLocation2 = BodyAttachment2.GetLocalFrameLocationFromBody();
 
-	FQuat FrameRotation1 = BodyAttachment1.GetLocalFrameRotation();
-	FQuat FrameRotation2 = BodyAttachment2.GetLocalFrameRotation();
+	FQuat FrameRotation1 = BodyAttachment1.GetLocalFrameRotationFromBody();
+	FQuat FrameRotation2 = BodyAttachment2.GetLocalFrameRotationFromBody();
 
 	// Ok if second is nullptr, means that the first body is constrainted to the world.
 	NativeBarrier->AllocateNative(

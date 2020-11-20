@@ -27,7 +27,7 @@ UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody() const
 	return RigidBody.GetRigidBody();
 }
 
-FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocation() const
+FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocationFromBody() const
 {
 	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
@@ -49,7 +49,7 @@ FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocation() const
 	return Body->GetComponentTransform().InverseTransformPositionNoScale(GetGlobalFrameLocation());
 }
 
-FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotation() const
+FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotationFromBody() const
 {
 	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
