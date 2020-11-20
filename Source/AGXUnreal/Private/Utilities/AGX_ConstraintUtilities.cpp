@@ -12,6 +12,8 @@
 #include "Constraints/Controllers/AGX_RangeController.h"
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
 #include "Constraints/ControllerConstraintBarriers.h"
+#include "AGX_RigidBodyComponent.h"
+#include "AGX_LogCategory.h"
 
 void FAGX_ConstraintUtilities::CopyControllersFrom(
 	UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier)
@@ -121,17 +123,53 @@ void FAGX_ConstraintUtilities::StoreTargetSpeedController(
 	Controller.CopyFrom(*Barrier.GetTargetSpeedController(Dof));
 }
 
-void FAGX_ConstraintUtilities::StoreFrame(
-	const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment, int32 BodyIndex)
+void FAGX_ConstraintUtilities::SetupFrames(
+	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
+	UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2)
 {
-	Attachment.FrameDefiningComponent.Clear();
-	Attachment.LocalFrameLocation = Barrier.GetLocalLocation(BodyIndex);
-	Attachment.LocalFrameRotation = Barrier.GetLocalRotation(BodyIndex);
-}
+	// Constraints are setup to use FrameDefiningMode == CONSTAINT by default, meaning the constraint
+	// itself is used to define the attachment frames. This means that we need to update the transform
+	// of the constraint to be the same as the attachment frames (global) transform as given by the
+	// barrier. One thing to note is that this works fine for unviolated constraints, where the
+	// attachment frames (by definition) has the same global transform as each other. In the case
+	// that the constraint is violated there is no common transform, and therefore the constraint
+	// is always placed at the first attachment (BodyAttachment1's) global transform.
+	// This means that the LocalFrameLocation/Rotation of BodyAttachment1 will be zero by definition
+	// and that LocalFrameLocation/Rotation of BodyAttachment2 is exactly the violation.
 
-void FAGX_ConstraintUtilities::StoreFrames(
-	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component)
-{
-	StoreFrame(Barrier, Component.BodyAttachment1, 0);
-	StoreFrame(Barrier, Component.BodyAttachment2, 1);
+	Component.BodyAttachment1.FrameDefiningMode = EAGX_FrameDefiningMode::CONSTRAINT;
+	Component.BodyAttachment2.FrameDefiningMode = EAGX_FrameDefiningMode::CONSTRAINT;
+	Component.BodyAttachment1.FrameDefiningComponent.Clear();
+	Component.BodyAttachment2.FrameDefiningComponent.Clear();
+
+	if (!RigidBody1)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("Could not setup Constraint frames since RigidBody1 was nullptr.");
+		return;
+	}
+
+	const FVector Attach1LocalPos = Barrier.GetLocalLocation(0);
+	const FQuat Attach1LocalRot = Barrier.GetLocalRotation(0).Quaternion();
+	const FVector Attach2LocalPos = Barrier.GetLocalLocation(1);
+	const FQuat Attach2LocalRot = Barrier.GetLocalRotation(1).Quaternion();
+
+	// TODO BEFORE MERGE: Handle case where RigidBody2 is nullptr (RB1 constrained to world).
+	const FVector Attach1GlobalPos =
+		RigidBody1->GetComponentTransform().TransformPositionNoScale(Attach1LocalPos);
+	const FQuat Attach1GlobalRot =
+		RigidBody1->GetComponentTransform().TransformRotation(Attach1LocalRot);
+	const FVector Attach2GlobalPos =
+		RigidBody2->GetComponentTransform().TransformPositionNoScale(Attach2LocalPos);
+	const FQuat Attach2GlobalRot =
+		RigidBody2->GetComponentTransform().TransformRotation(Attach2LocalRot);
+
+	Component.SetWorldLocationAndRotation(Attach1GlobalPos, Attach1GlobalRot);
+
+	Component.BodyAttachment1.LocalFrameLocation = FVector(0.f, 0.f, 0.f);
+	Component.BodyAttachment1.LocalFrameRotation = FQuat::Identity;
+	Component.BodyAttachment2.LocalFrameLocation =
+		Component.GetComponentTransform().InverseTransformPositionNoScale(Attach2GlobalPos);
+	Component.BodyAttachment2.LocalFrameRotation =
+		FRotator(Component.GetComponentTransform().InverseTransformRotation(Attach1GlobalRot));
 }

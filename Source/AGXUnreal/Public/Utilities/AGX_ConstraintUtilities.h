@@ -11,6 +11,7 @@
 class FConstraint1DOFBarrier;
 class FConstraint2DOFBarrier;
 class UAGX_Constraint1DofComponent;
+class UAGX_RigidBodyComponent;
 
 struct FAGX_ConstraintElectricMotorController;
 struct FAGX_ConstraintFrictionController;
@@ -85,9 +86,7 @@ public:
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
 		EAGX_Constraint2DOFFreeDOF Dof);
 
-	static void StoreFrame(
-		const FConstraintBarrier& Barrier, FAGX_ConstraintBodyAttachment& Attachment,
-		int32 BodyIndex);
-
-	static void StoreFrames(const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component);
+	static void SetupFrames(
+		const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
+		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2);
 };
