@@ -149,8 +149,9 @@ void FAGX_ConstraintUtilities::CreateNative(
 		return;
 	}
 
-	FRigidBodyBarrier* RigidBody1 = BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
-	if (RigidBody1 == nullptr)
+	FRigidBodyBarrier* RigidBody1Barrier =
+		BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
+	if (RigidBody1Barrier == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -165,10 +166,10 @@ void FAGX_ConstraintUtilities::CreateNative(
 
 	if (BodyAttachment2.GetRigidBody())
 	{
-		FRigidBodyBarrier* RigidBody2 =
+		FRigidBodyBarrier* RigidBody2Barrier =
 			BodyAttachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
 
-		if (RigidBody2 == nullptr)
+		if (RigidBody2Barrier == nullptr)
 		{
 			UE_LOG(
 				LogAGX, Error,
@@ -181,13 +182,14 @@ void FAGX_ConstraintUtilities::CreateNative(
 		FQuat FrameRotation2 = BodyAttachment2.GetLocalFrameRotation();
 
 		Barrier->AllocateNative(
-			RigidBody1, &FrameLocation1, &FrameRotation1, RigidBody2, &FrameLocation2,
+			RigidBody1Barrier, &FrameLocation1, &FrameRotation1, RigidBody2Barrier, &FrameLocation2,
 			&FrameRotation2);
 	}
 	else
 	{
-		// When RigidBody2 does not exists, it means that RigidBody1 is constrained to the world.
+		// When BodyAttachment2 does not have a Rigid Body, it means that RigidBody1 is constrained
+		// to the world.
 		Barrier->AllocateNative(
-			RigidBody1, &FrameLocation1, &FrameRotation1, nullptr, nullptr, nullptr);
+			RigidBody1Barrier, &FrameLocation1, &FrameRotation1, nullptr, nullptr, nullptr);
 	}
 }
