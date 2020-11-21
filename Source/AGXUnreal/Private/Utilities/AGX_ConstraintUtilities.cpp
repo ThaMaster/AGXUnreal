@@ -12,6 +12,7 @@
 #include "Constraints/Controllers/AGX_RangeController.h"
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
 #include "Constraints/ControllerConstraintBarriers.h"
+#include "AGX_LogCategory.h"
 
 void FAGX_ConstraintUtilities::CopyControllersFrom(
 	UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier)
@@ -134,4 +135,59 @@ void FAGX_ConstraintUtilities::StoreFrames(
 {
 	StoreFrame(Barrier, Component.BodyAttachment1, 0);
 	StoreFrame(Barrier, Component.BodyAttachment2, 1);
+}
+
+void FAGX_ConstraintUtilities::CreateNative(
+	FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& BodyAttachment1,
+	FAGX_ConstraintBodyAttachment& BodyAttachment2, const FName& ConstraintName)
+{
+	if (Barrier == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("Create Native failed for Constraint %s, Barrier was nullptr"),
+			*ConstraintName.ToString());
+		return;
+	}
+
+	FRigidBodyBarrier* RigidBody1 = BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
+	if (RigidBody1 == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Constraint %s: could not get Rigid Body from Body Attachment 1. "
+				 "Constraint cannot be created."),
+			*ConstraintName.ToString());
+		return;
+	}
+
+	FVector FrameLocation1 = BodyAttachment1.GetLocalFrameLocation();
+	FQuat FrameRotation1 = BodyAttachment1.GetLocalFrameRotation();
+
+	if (BodyAttachment2.GetRigidBody())
+	{
+		FRigidBodyBarrier* RigidBody2 =
+			BodyAttachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
+
+		if (RigidBody2 == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Constraint %s: could not get Rigid Body from Body Attachment 2."),
+				*ConstraintName.ToString());
+			return;
+		}
+
+		FVector FrameLocation2 = BodyAttachment2.GetLocalFrameLocation();
+		FQuat FrameRotation2 = BodyAttachment2.GetLocalFrameRotation();
+
+		Barrier->AllocateNative(
+			RigidBody1, &FrameLocation1, &FrameRotation1, RigidBody2, &FrameLocation2,
+			&FrameRotation2);
+	}
+	else
+	{
+		// When RigidBody2 does not exists, it means that RigidBody1 is constrained to the world.
+		Barrier->AllocateNative(
+			RigidBody1, &FrameLocation1, &FrameRotation1, nullptr, nullptr, nullptr);
+	}
 }
