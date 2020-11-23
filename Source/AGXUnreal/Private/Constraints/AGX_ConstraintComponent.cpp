@@ -350,7 +350,8 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			{
 				ModifiedBodyAttachment->RigidBody.FallbackOwningActor = GetOwner();
 			}
-			if (ModifiedBodyAttachment->FrameDefiningComponent.OwningActor == nullptr)
+			if (ModifiedBodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::OTHER &&
+				ModifiedBodyAttachment->FrameDefiningComponent.OwningActor == nullptr)
 			{
 				ModifiedBodyAttachment->FrameDefiningComponent.FallbackOwningActor = GetOwner();
 			}
@@ -458,6 +459,7 @@ void UAGX_ConstraintComponent::PostLoad()
 			BodyReference->CacheCurrentRigidBody();
 		}
 	}
+
 	for (FAGX_ConstraintBodyAttachment* BodyAttachment : {&BodyAttachment1, &BodyAttachment2})
 	{
 		if (BodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::OTHER)
@@ -487,6 +489,8 @@ void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
 	Super::PostDuplicate(bDuplicateForPIE);
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
+	BodyAttachment1.OnFremeDefiningSourceChanged();
+	BodyAttachment2.OnFremeDefiningSourceChanged();
 }
 
 void UAGX_ConstraintComponent::BeginDestroy()
