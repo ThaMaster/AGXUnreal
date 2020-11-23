@@ -313,17 +313,11 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 		return;
 	}
 
-	AAGX_ConstraintActor* Constraint = FAGX_EditorUtilities::CreateConstraintActor(
+	FAGX_EditorUtilities::CreateConstraintActor(
 		ConstraintClass, Bodies1[0], Bodies2[0],
 		/*Select*/ true,
 		/*ShowNotification*/ true,
 		/*InPlayingWorldIfAvailable*/ true);
-
-	UAGX_ConstraintComponent* ConstraintComponent = Constraint->GetConstraintComponent();
-	ConstraintComponent->BodyAttachment1.FrameDefiningSource = EAGX_FrameDefiningSource::CONSTRAINT;
-	ConstraintComponent->BodyAttachment2.FrameDefiningSource = EAGX_FrameDefiningSource::CONSTRAINT;
-	ConstraintComponent->BodyAttachment1.OnFremeDefiningSourceChanged();
-	ConstraintComponent->BodyAttachment2.OnFremeDefiningSourceChanged();
 }
 
 void FAGX_TopMenu::OnOpenAboutDialogClicked()

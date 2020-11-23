@@ -132,18 +132,10 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 			}
 		};
 
-		UAGX_ConstraintComponent* ConstraintComponent = Constraint->GetConstraintComponent();
-		if (AttachmentFrameSource == EAGX_ConstraintCreationFrameSource::ConstraintTransform)
+		if (AttachmentFrameSource != EAGX_ConstraintCreationFrameSource::ConstraintTransform)
 		{
-			ConstraintComponent->BodyAttachment1.FrameDefiningSource =
-				EAGX_FrameDefiningSource::CONSTRAINT;
-			ConstraintComponent->BodyAttachment2.FrameDefiningSource =
-				EAGX_FrameDefiningSource::CONSTRAINT;
-			ConstraintComponent->BodyAttachment1.OnFremeDefiningSourceChanged();
-			ConstraintComponent->BodyAttachment2.OnFremeDefiningSourceChanged();
-		}
-		else
-		{
+			UAGX_ConstraintComponent* ConstraintComponent = Constraint->GetConstraintComponent();
+
 			ConstraintComponent->BodyAttachment1.FrameDefiningSource =
 				EAGX_FrameDefiningSource::OTHER;
 			ConstraintComponent->BodyAttachment2.FrameDefiningSource =
