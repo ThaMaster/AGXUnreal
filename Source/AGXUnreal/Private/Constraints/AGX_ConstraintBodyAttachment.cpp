@@ -140,6 +140,11 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningComponentChanged(
 	}
 }
 
+void FAGX_ConstraintBodyAttachment::OnFremeDefiningSourceChanged()
+{
+	bCanEditFrameDefiningComponent = FrameDefiningSource == EAGX_FrameDefiningSource::OTHER;
+}
+
 void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
 {
 	// This may be a problem. FrameDefiningComponent uses a TSoftObjectPtr to reference the

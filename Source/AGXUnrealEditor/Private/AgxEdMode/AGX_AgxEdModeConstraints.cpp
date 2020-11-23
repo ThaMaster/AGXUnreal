@@ -132,10 +132,27 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 			}
 		};
 
-		if (AttachmentFrameSource != EAGX_ConstraintCreationFrameSource::ConstraintTransform)
+		UAGX_ConstraintComponent* ConstraintComponent = Constraint->GetConstraintComponent();
+		if (AttachmentFrameSource == EAGX_ConstraintCreationFrameSource::ConstraintTransform)
 		{
-			UAGX_ConstraintComponent* ConstraintComponent = Constraint->GetConstraintComponent();
-			ConstraintComponent->BodyAttachment1.FrameDefiningSource = EAGX_FrameDefiningSource::OTHER;
+			ConstraintComponent->BodyAttachment1.FrameDefiningSource =
+				EAGX_FrameDefiningSource::CONSTRAINT;
+			ConstraintComponent->BodyAttachment2.FrameDefiningSource =
+				EAGX_FrameDefiningSource::CONSTRAINT;
+			ConstraintComponent->BodyAttachment1.OnFremeDefiningSourceChanged();
+			ConstraintComponent->BodyAttachment2.OnFremeDefiningSourceChanged();
+
+			ConstraintComponent->BodyAttachment1.FrameDefiningComponent.Clear();
+			ConstraintComponent->BodyAttachment2.FrameDefiningComponent.Clear();
+		}
+		else
+		{
+			ConstraintComponent->BodyAttachment1.FrameDefiningSource =
+				EAGX_FrameDefiningSource::OTHER;
+			ConstraintComponent->BodyAttachment2.FrameDefiningSource =
+				EAGX_FrameDefiningSource::OTHER;
+			ConstraintComponent->BodyAttachment1.OnFremeDefiningSourceChanged();
+			ConstraintComponent->BodyAttachment2.OnFremeDefiningSourceChanged();
 
 			ConstraintComponent->BodyAttachment1.FrameDefiningComponent.OwningActor = FrameActor1;
 			ConstraintComponent->BodyAttachment2.FrameDefiningComponent.OwningActor = FrameActor2;

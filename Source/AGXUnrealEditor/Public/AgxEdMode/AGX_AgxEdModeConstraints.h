@@ -15,8 +15,8 @@
 UENUM()
 enum class EAGX_ConstraintCreationFrameSource
 {
-	/** Both Attachment Frames share the Constraint Actor's transform. */
-	ConstraintTransform UMETA(DisplayName = "Constraint Actor Transform (recommended)"),
+	/** Both Attachment Frames share the Constraint Component's transform. */
+	ConstraintTransform UMETA(DisplayName = "Constraint Component Transform (recommended)"),
 
 	/** Both Attachment Frames share the transform of an auto-created Constraint Frame Actor. */
 	OneSharedFrameActor UMETA(DisplayName = "Shared Frame Actor"),
