@@ -83,15 +83,6 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	, LockedDofs(LockedDofsOrdered)
 	, NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 {
-	// NAME_None means use the RootComponent of the passed Actor.
-	BodyAttachment1.FrameDefiningComponent.Set(GetOwner(), NAME_None);
-	BodyAttachment2.FrameDefiningComponent.Set(GetOwner(), NAME_None);
-
-#if WITH_EDITOR
-	BodyAttachment1.OnFrameDefiningComponentChanged(this);
-	BodyAttachment2.OnFrameDefiningComponentChanged(this);
-#endif
-
 	// Create UAGX_ConstraintDofGraphicsComponent as child component.
 	{
 		DofGraphicsComponent1 = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
@@ -467,22 +458,26 @@ void UAGX_ConstraintComponent::PostLoad()
 			BodyReference->CacheCurrentRigidBody();
 		}
 	}
-	for (FAGX_SceneComponentReference* ComponentReference :
-		 {&BodyAttachment1.FrameDefiningComponent, &BodyAttachment2.FrameDefiningComponent})
+	for (FAGX_ConstraintBodyAttachment* BodyAttachment : {&BodyAttachment1, &BodyAttachment2})
 	{
-		ComponentReference->FallbackOwningActor = nullptr;
-		/// \todo Investigate the relationship between FName("") and NAME_None, and what an emtpy
-		/// text field in the Blueprint editor produces. Playing it safe for now and checking for
-		/// both.
-		if (ComponentReference->OwningActor == nullptr &&
-			(ComponentReference->SceneComponentName != "" &&
-			 ComponentReference->SceneComponentName != NAME_None))
+		if (BodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::OTHER)
 		{
-			// A nullptr FrameDefiningComponent actually means something (use the body as origin),
-			// so we shouldn't set it unconditionally. We use the name as a sign that an
-			// OwningActor should be set.
-			ComponentReference->OwningActor = GetOwner();
-			ComponentReference->CacheCurrentSceneComponent();
+			FAGX_SceneComponentReference* ComponentReference =
+				&BodyAttachment->FrameDefiningComponent;
+			ComponentReference->FallbackOwningActor = nullptr;
+			/// \todo Investigate the relationship between FName("") and NAME_None, and what an
+			/// emtpy text field in the Blueprint editor produces. Playing it safe for now and
+			/// checking for both.
+			if (ComponentReference->OwningActor == nullptr &&
+				(ComponentReference->SceneComponentName != "" &&
+				 ComponentReference->SceneComponentName != NAME_None))
+			{
+				// A nullptr FrameDefiningComponent actually means something (use the body as
+				// origin), so we shouldn't set it unconditionally. We use the name as a sign that
+				// an OwningActor should be set.
+				ComponentReference->OwningActor = GetOwner();
+				ComponentReference->CacheCurrentSceneComponent();
+			}
 		}
 	}
 }

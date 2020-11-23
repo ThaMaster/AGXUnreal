@@ -148,8 +148,6 @@ void FAGX_ConstraintUtilities::SetupFrames(
 	Component.BodyAttachment2.FrameDefiningSource = EAGX_FrameDefiningSource::CONSTRAINT;
 	Component.BodyAttachment1.OnFremeDefiningSourceChanged();
 	Component.BodyAttachment2.OnFremeDefiningSourceChanged();
-	Component.BodyAttachment1.FrameDefiningComponent.Clear();
-	Component.BodyAttachment2.FrameDefiningComponent.Clear();
 
 	const FVector Attach1LocalPos = Barrier.GetLocalLocation(0);
 	const FQuat Attach1LocalRot = Barrier.GetLocalRotation(0).Quaternion();
