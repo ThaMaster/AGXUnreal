@@ -127,49 +127,64 @@ void FAGX_ConstraintUtilities::SetupFrames(
 	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
 	UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2)
 {
-	// Constraints are setup to use FrameDefiningMode == CONSTAINT by default, meaning the constraint
-	// itself is used to define the attachment frames. This means that we need to update the transform
-	// of the constraint to be the same as the attachment frames (global) transform as given by the
-	// barrier. One thing to note is that this works fine for unviolated constraints, where the
-	// attachment frames (by definition) has the same global transform as each other. In the case
-	// that the constraint is violated there is no common transform, and therefore the constraint
-	// is always placed at the first attachment (BodyAttachment1's) global transform.
+	// Constraints are setup to use FrameDefiningMode == CONSTAINT by default, meaning the
+	// constraint itself is used to define the attachment frames. This means that we need to update
+	// the transform of the constraint to be the same as the attachment frames (global) transform as
+	// given by the barrier. One thing to note is that this works fine for unviolated constraints,
+	// where the attachment frames (by definition) has the same global transform as each other. In
+	// the case that the constraint is violated there is no common transform, and therefore the
+	// constraint is always placed at the first attachment (BodyAttachment1's) global transform.
 	// This means that the LocalFrameLocation/Rotation of BodyAttachment1 will be zero by definition
 	// and that LocalFrameLocation/Rotation of BodyAttachment2 is exactly the violation.
+
+	if (!RigidBody1)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("Could not setup Constraint frames since RigidBody1 was nullptr."));
+		return;
+	}
 
 	Component.BodyAttachment1.FrameDefiningMode = EAGX_FrameDefiningMode::CONSTRAINT;
 	Component.BodyAttachment2.FrameDefiningMode = EAGX_FrameDefiningMode::CONSTRAINT;
 	Component.BodyAttachment1.FrameDefiningComponent.Clear();
 	Component.BodyAttachment2.FrameDefiningComponent.Clear();
 
-	if (!RigidBody1)
-	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Could not setup Constraint frames since RigidBody1 was nullptr.");
-		return;
-	}
-
 	const FVector Attach1LocalPos = Barrier.GetLocalLocation(0);
 	const FQuat Attach1LocalRot = Barrier.GetLocalRotation(0).Quaternion();
 	const FVector Attach2LocalPos = Barrier.GetLocalLocation(1);
 	const FQuat Attach2LocalRot = Barrier.GetLocalRotation(1).Quaternion();
 
-	// TODO BEFORE MERGE: Handle case where RigidBody2 is nullptr (RB1 constrained to world).
 	const FVector Attach1GlobalPos =
 		RigidBody1->GetComponentTransform().TransformPositionNoScale(Attach1LocalPos);
 	const FQuat Attach1GlobalRot =
 		RigidBody1->GetComponentTransform().TransformRotation(Attach1LocalRot);
-	const FVector Attach2GlobalPos =
-		RigidBody2->GetComponentTransform().TransformPositionNoScale(Attach2LocalPos);
-	const FQuat Attach2GlobalRot =
-		RigidBody2->GetComponentTransform().TransformRotation(Attach2LocalRot);
 
+	// Set the Constraint's transform same as attachment frame 1.
 	Component.SetWorldLocationAndRotation(Attach1GlobalPos, Attach1GlobalRot);
 
+	// The LocalFrameLocation and Rotation of BodyAttachment1 always zero since the Constraint is
+	// placed at the attachment frame 1.
 	Component.BodyAttachment1.LocalFrameLocation = FVector(0.f, 0.f, 0.f);
-	Component.BodyAttachment1.LocalFrameRotation = FQuat::Identity;
-	Component.BodyAttachment2.LocalFrameLocation =
-		Component.GetComponentTransform().InverseTransformPositionNoScale(Attach2GlobalPos);
-	Component.BodyAttachment2.LocalFrameRotation =
-		FRotator(Component.GetComponentTransform().InverseTransformRotation(Attach1GlobalRot));
+	Component.BodyAttachment1.LocalFrameRotation = FRotator(FQuat::Identity);
+
+	if (!RigidBody2)
+	{
+		// When RigidBody2 is nullptr, it means that RigidBody1 is constrained to the world. In this
+		// case the LocalFrameLocation/Rotation of BodyAttachment2 should be the same as for
+		// BodyAttachment1.
+		Component.BodyAttachment2.LocalFrameLocation = Component.BodyAttachment1.LocalFrameLocation;
+		Component.BodyAttachment2.LocalFrameRotation = Component.BodyAttachment1.LocalFrameRotation;
+	}
+	else
+	{
+		const FVector Attach2GlobalPos =
+			RigidBody2->GetComponentTransform().TransformPositionNoScale(Attach2LocalPos);
+		const FQuat Attach2GlobalRot =
+			RigidBody2->GetComponentTransform().TransformRotation(Attach2LocalRot);
+
+		Component.BodyAttachment2.LocalFrameLocation =
+			Component.GetComponentTransform().InverseTransformPositionNoScale(Attach2GlobalPos);
+		Component.BodyAttachment2.LocalFrameRotation =
+			FRotator(Component.GetComponentTransform().InverseTransformRotation(Attach1GlobalRot));
+	}
 }
