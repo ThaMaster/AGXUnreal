@@ -13,13 +13,13 @@
 
 FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment()
 {
-	bCanEditFrameDefiningComponent = FrameDefiningMode == EAGX_FrameDefiningMode::OTHER;
+	bCanEditFrameDefiningComponent = FrameDefiningSource == EAGX_FrameDefiningSource::OTHER;
 }
 
 FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment(USceneComponent* InOwner)
 	: Owner {InOwner}
 {
-	bCanEditFrameDefiningComponent = FrameDefiningMode == EAGX_FrameDefiningMode::OTHER;
+	bCanEditFrameDefiningComponent = FrameDefiningSource == EAGX_FrameDefiningSource::OTHER;
 }
 
 UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody() const
@@ -40,9 +40,9 @@ FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocationFromBody() const
 		return LocalFrameLocation;
 	}
 
-	// If the FrameDefiningMode is RIGIDBODY, the LocalFrameLocation is already given in RigidBody's
+	// If the FrameDefiningSource is RIGIDBODY, the LocalFrameLocation is already given in RigidBody's
 	// frame by definition and we can simply return the value directly.
-	if (FrameDefiningMode == EAGX_FrameDefiningMode::RIGIDBODY)
+	if (FrameDefiningSource == EAGX_FrameDefiningSource::RIGIDBODY)
 	{
 		return LocalFrameLocation;
 	}
@@ -63,9 +63,9 @@ FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotationFromBody() const
 		return LocalFrameRotation.Quaternion();
 	}
 
-	// If the FrameDefiningMode is RIGIDBODY, the LocalFrameRotation is already given in RigidBody's
+	// If the FrameDefiningSource is RIGIDBODY, the LocalFrameRotation is already given in RigidBody's
 	// frame by definition and we can simply return the value directly.
-	if (FrameDefiningMode == EAGX_FrameDefiningMode::RIGIDBODY)
+	if (FrameDefiningSource == EAGX_FrameDefiningSource::RIGIDBODY)
 	{
 		return LocalFrameRotation.Quaternion();
 	}
@@ -163,7 +163,7 @@ void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
 
 USceneComponent* FAGX_ConstraintBodyAttachment::GetFinalFrameDefiningComponent() const
 {
-	switch (FrameDefiningMode)
+	switch (FrameDefiningSource)
 	{
 		case CONSTRAINT:
 			return Owner;

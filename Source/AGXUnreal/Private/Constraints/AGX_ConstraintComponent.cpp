@@ -322,10 +322,10 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 		if (ModifiedBodyAttachment)
 		{
 			if (PropertyName ==
-				GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningMode))
+				GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningSource))
 			{
 				ModifiedBodyAttachment->bCanEditFrameDefiningComponent =
-					ModifiedBodyAttachment->FrameDefiningMode == EAGX_FrameDefiningMode::OTHER;
+					ModifiedBodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::OTHER;
 			}
 			// TODO: Code below needs to be triggered also when modified through code!
 			// Editor-only probably OK though, since it is just for Editor convenience.

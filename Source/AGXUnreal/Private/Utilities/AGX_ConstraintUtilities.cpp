@@ -127,7 +127,7 @@ void FAGX_ConstraintUtilities::SetupFrames(
 	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
 	UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2)
 {
-	// Constraints are setup to use FrameDefiningMode == CONSTAINT by default, meaning the
+	// Constraints are setup to use FrameDefiningSource == CONSTAINT by default, meaning the
 	// constraint itself is used to define the attachment frames. This means that we need to update
 	// the transform of the constraint to be the same as the attachment frames (global) transform as
 	// given by the barrier. One thing to note is that this works fine for unviolated constraints,
@@ -144,8 +144,8 @@ void FAGX_ConstraintUtilities::SetupFrames(
 		return;
 	}
 
-	Component.BodyAttachment1.FrameDefiningMode = EAGX_FrameDefiningMode::CONSTRAINT;
-	Component.BodyAttachment2.FrameDefiningMode = EAGX_FrameDefiningMode::CONSTRAINT;
+	Component.BodyAttachment1.FrameDefiningSource = EAGX_FrameDefiningSource::CONSTRAINT;
+	Component.BodyAttachment2.FrameDefiningSource = EAGX_FrameDefiningSource::CONSTRAINT;
 	Component.BodyAttachment1.FrameDefiningComponent.Clear();
 	Component.BodyAttachment2.FrameDefiningComponent.Clear();
 

@@ -23,7 +23,7 @@ class FRigidBodyBarrier;
  * or Component plus an optional offset given by the Local Frame Location and Rotation.
  *
  * Whether the constraint itself, the Rigid Body or some other Actor or Component should be used
- * to define the attachment frame can be selected by changing the Frame Defining Mode accordingly.
+ * to define the attachment frame can be selected by changing the Frame Defining Source accordingly.
  */
 USTRUCT()
 struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
@@ -42,7 +42,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	FAGX_RigidBodyReference RigidBody;
 
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
-	TEnumAsByte<enum EAGX_FrameDefiningMode> FrameDefiningMode = EAGX_FrameDefiningMode::CONSTRAINT;
+	TEnumAsByte<enum EAGX_FrameDefiningSource> FrameDefiningSource = EAGX_FrameDefiningSource::CONSTRAINT;
 
 	/**
 	 * The Frame Defining Component makes it possible to use the transform of any Actor or Component
@@ -121,6 +121,6 @@ private:
 	mutable AActor* RecentFrameDefiningActor;
 	USceneComponent* PreviousFrameDefiningComponent;
 
-	// Returns the currently active FrameDefiningComponent given the FrameDefiningMode selected.
+	// Returns the currently active FrameDefiningComponent given the FrameDefiningSource selected.
 	USceneComponent* GetFinalFrameDefiningComponent() const;
 };

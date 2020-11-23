@@ -18,7 +18,7 @@ enum EAGX_SolveType
 
 /** TODO WRITE */
 UENUM()
-enum EAGX_FrameDefiningMode
+enum EAGX_FrameDefiningSource
 {
 	/** TODO. */
 	CONSTRAINT = 1 UMETA(DisplayName = "Constraint"),
