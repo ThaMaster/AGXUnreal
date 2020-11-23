@@ -90,4 +90,8 @@ public:
 		int32 BodyIndex);
 
 	static void StoreFrames(const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component);
+
+	static void CreateNative(
+		FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& BodyAttachment1,
+		FAGX_ConstraintBodyAttachment& BodyAttachment2, const FName& ConstraintName);
 };
