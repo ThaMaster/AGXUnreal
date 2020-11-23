@@ -116,7 +116,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * Should be invoked whenever FrameDefiningSource changes, to keep the correct state of
 	 * bCanEditFrameDefiningComponent.
 	 */
-	void OnFremeDefiningSourceChanged();
+	void OnFrameDefiningSourceChanged();
 
 	void OnDestroy(UAGX_ConstraintComponent* Parent);
 #endif

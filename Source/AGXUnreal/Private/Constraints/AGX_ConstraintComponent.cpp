@@ -315,7 +315,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			if (PropertyName ==
 				GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningSource))
 			{
-				ModifiedBodyAttachment->OnFremeDefiningSourceChanged();
+				ModifiedBodyAttachment->OnFrameDefiningSourceChanged();
 			}
 			// TODO: Code below needs to be triggered also when modified through code!
 			// Editor-only probably OK though, since it is just for Editor convenience.
@@ -489,8 +489,8 @@ void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
 	Super::PostDuplicate(bDuplicateForPIE);
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
-	BodyAttachment1.OnFremeDefiningSourceChanged();
-	BodyAttachment2.OnFremeDefiningSourceChanged();
+	BodyAttachment1.OnFrameDefiningSourceChanged();
+	BodyAttachment2.OnFrameDefiningSourceChanged();
 }
 
 void UAGX_ConstraintComponent::BeginDestroy()

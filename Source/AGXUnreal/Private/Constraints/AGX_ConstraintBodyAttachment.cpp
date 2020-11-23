@@ -140,7 +140,7 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningComponentChanged(
 	}
 }
 
-void FAGX_ConstraintBodyAttachment::OnFremeDefiningSourceChanged()
+void FAGX_ConstraintBodyAttachment::OnFrameDefiningSourceChanged()
 {
 	bCanEditFrameDefiningComponent = FrameDefiningSource == EAGX_FrameDefiningSource::OTHER;
 }
