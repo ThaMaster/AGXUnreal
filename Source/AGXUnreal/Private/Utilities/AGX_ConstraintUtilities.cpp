@@ -144,11 +144,6 @@ void FAGX_ConstraintUtilities::SetupFrames(
 		return;
 	}
 
-	Component.BodyAttachment1.FrameDefiningSource = EAGX_FrameDefiningSource::CONSTRAINT;
-	Component.BodyAttachment2.FrameDefiningSource = EAGX_FrameDefiningSource::CONSTRAINT;
-	Component.BodyAttachment1.OnFremeDefiningSourceChanged();
-	Component.BodyAttachment2.OnFremeDefiningSourceChanged();
-
 	const FVector Attach1LocalPos = Barrier.GetLocalLocation(0);
 	const FQuat Attach1LocalRot = Barrier.GetLocalRotation(0).Quaternion();
 	const FVector Attach2LocalPos = Barrier.GetLocalLocation(1);
