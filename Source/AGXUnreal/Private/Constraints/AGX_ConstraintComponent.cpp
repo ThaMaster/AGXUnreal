@@ -357,10 +357,6 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			}
 		}
 	}
-
-	UE_LOG(
-		LogAGX, Log, TEXT("PostEditChangeProperty: PropertyName = %s, MemberPropertyName = %s"),
-		*PropertyName.ToString(), *MemberPropertyName.ToString());
 }
 #endif
 
