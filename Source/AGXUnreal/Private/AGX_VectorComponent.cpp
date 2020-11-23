@@ -114,7 +114,7 @@ namespace
 					DynamicPrimitiveUniformBuffer.Set(
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(),
-						GetLocalBounds(), true, false, DrawsVelocity(), LpvBiasMultiplier);
+						GetLocalBounds(), true, false, DrawsVelocity(), (LpvBiasMultiplier == 0.f));
 #endif
 
 					BatchElement.PrimitiveUniformBufferResource =
