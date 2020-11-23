@@ -94,12 +94,11 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 
 		switch (AttachmentFrameSource)
 		{
-			case EAGX_ConstraintFrameSource::ConstraintTransform:
+			case EAGX_ConstraintCreationFrameSource::ConstraintTransform:
 			{
-				FrameActor1 = FrameActor2 = Constraint;
 				break;
 			}
-			case EAGX_ConstraintFrameSource::OneSharedFrameActor:
+			case EAGX_ConstraintCreationFrameSource::OneSharedFrameActor:
 			{
 				FrameActor1 = FrameActor2 =
 					FAGX_EditorUtilities::CreateConstraintFrameActor(nullptr, false, true, true);
@@ -107,7 +106,7 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 				FrameActor1->SetActorTransform(RigidBody1.OwningActor->GetActorTransform());
 				break;
 			}
-			case EAGX_ConstraintFrameSource::TwoFrameActors:
+			case EAGX_ConstraintCreationFrameSource::TwoFrameActors:
 			{
 				FrameActor1 = FAGX_EditorUtilities::CreateConstraintFrameActor(
 							RigidBody1.GetOwningActor(), false, true, true);
@@ -115,17 +114,17 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 							RigidBody2.GetOwningActor(), false, true, true);
 				break;
 			}
-			case EAGX_ConstraintFrameSource::RigidBodyActor1:
+			case EAGX_ConstraintCreationFrameSource::RigidBodyActor1:
 			{
 				FrameActor1 = FrameActor2 = RigidBody1.GetOwningActor();
 				break;
 			}
-			case EAGX_ConstraintFrameSource::RigidBodyActor2:
+			case EAGX_ConstraintCreationFrameSource::RigidBodyActor2:
 			{
 				FrameActor1 = FrameActor2 = RigidBody2.GetOwningActor();
 				break;
 			}
-			case EAGX_ConstraintFrameSource::LocalOnly:
+			case EAGX_ConstraintCreationFrameSource::LocalOnly:
 				// Deliberate fallthrough.
 			default:
 			{
@@ -133,12 +132,19 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 			}
 		};
 
-		UAGX_ConstraintComponent* ConstraintComponent = Constraint->GetConstraintComponent();
-		ConstraintComponent->BodyAttachment1.FrameDefiningComponent.OwningActor = FrameActor1;
-		ConstraintComponent->BodyAttachment2.FrameDefiningComponent.OwningActor = FrameActor2;
+		if (AttachmentFrameSource != EAGX_ConstraintCreationFrameSource::ConstraintTransform)
+		{
+			UAGX_ConstraintComponent* ConstraintComponent = Constraint->GetConstraintComponent();
+			ConstraintComponent->BodyAttachment1.FrameDefiningSource = EAGX_FrameDefiningSource::OTHER;
 
-		ConstraintComponent->BodyAttachment1.OnFrameDefiningComponentChanged(ConstraintComponent);
-		ConstraintComponent->BodyAttachment2.OnFrameDefiningComponentChanged(ConstraintComponent);
+			ConstraintComponent->BodyAttachment1.FrameDefiningComponent.OwningActor = FrameActor1;
+			ConstraintComponent->BodyAttachment2.FrameDefiningComponent.OwningActor = FrameActor2;
+
+			ConstraintComponent->BodyAttachment1.OnFrameDefiningComponentChanged(
+				ConstraintComponent);
+			ConstraintComponent->BodyAttachment2.OnFrameDefiningComponentChanged(
+				ConstraintComponent);
+		}
 
 		/// \todo If in-game, we need to create the constraint in a deferred way so that frame
 		/// actors are set before the constraint has been finished!

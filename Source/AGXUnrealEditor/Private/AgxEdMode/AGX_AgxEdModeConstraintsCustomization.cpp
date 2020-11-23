@@ -197,7 +197,7 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateFrameSourceRadioButtons(
 		CategoryBuilder.GetParentLayout().GetProperty(
 			GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, AttachmentFrameSource));
 
-	UEnum* FrameSourceEnum = StaticEnum<EAGX_ConstraintFrameSource>();
+	UEnum* FrameSourceEnum = StaticEnum<EAGX_ConstraintCreationFrameSource>();
 	check(FrameSourceEnum);
 
 	IDetailPropertyRow& PropertyRow = CategoryBuilder.AddProperty(PropertyHandle);
@@ -226,8 +226,8 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateFrameSourceRadioButtons(
 		FrameSourceEnum->NumEnums() - 1; // minus one because Unreal adds a "MAX" item on the end
 	for (int32 EnumIndex = 0; EnumIndex < NumEnums; ++EnumIndex)
 	{
-		const EAGX_ConstraintFrameSource EnumValue =
-			static_cast<EAGX_ConstraintFrameSource>(FrameSourceEnum->GetValueByIndex(EnumIndex));
+		const EAGX_ConstraintCreationFrameSource EnumValue =
+			static_cast<EAGX_ConstraintCreationFrameSource>(FrameSourceEnum->GetValueByIndex(EnumIndex));
 
 		RadioButtonsBox->AddSlot().Padding(FMargin(
 			0.0f,
@@ -261,7 +261,7 @@ void FAGX_AgxEdModeConstraintsCustomization::OnConstraintTypeComboBoxChanged(
 }
 
 void FAGX_AgxEdModeConstraintsCustomization::OnFrameSourceRadioButtonChanged(
-	ECheckBoxState NewCheckedState, EAGX_ConstraintFrameSource RadioButton,
+	ECheckBoxState NewCheckedState, EAGX_ConstraintCreationFrameSource RadioButton,
 	UAGX_AgxEdModeConstraints* ConstraintsSubMode)
 {
 	if (ConstraintsSubMode && NewCheckedState == ECheckBoxState::Checked)

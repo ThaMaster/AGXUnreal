@@ -13,7 +13,7 @@
  * Preset for setting which actor's transform should be used as attachment frames.
  */
 UENUM()
-enum class EAGX_ConstraintFrameSource
+enum class EAGX_ConstraintCreationFrameSource
 {
 	/** Both Attachment Frames share the Constraint Actor's transform. */
 	ConstraintTransform UMETA(DisplayName = "Constraint Actor Transform (recommended)"),
@@ -96,7 +96,7 @@ public: // Constraint Creator
 	 * from the constraint's Details Window.
 	 */
 	UPROPERTY(Transient, EditAnywhere, Category = "Constraint Creator")
-	EAGX_ConstraintFrameSource AttachmentFrameSource;
+	EAGX_ConstraintCreationFrameSource AttachmentFrameSource;
 
 	/** Creates a new constraint using the current property values. */
 	class AAGX_ConstraintActor* CreateConstraint() const;
