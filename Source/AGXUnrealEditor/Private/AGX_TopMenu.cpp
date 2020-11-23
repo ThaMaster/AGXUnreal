@@ -5,6 +5,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 #include "AGXUnrealEditor.h"
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_BallConstraintActor.h"
 #include "Constraints/AGX_CylindricalConstraintActor.h"
 #include "Constraints/AGX_DistanceConstraintActor.h"
@@ -312,11 +313,17 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 		return;
 	}
 
-	FAGX_EditorUtilities::CreateConstraintActor(
+	AAGX_ConstraintActor* Constraint = FAGX_EditorUtilities::CreateConstraintActor(
 		ConstraintClass, Bodies1[0], Bodies2[0],
 		/*Select*/ true,
 		/*ShowNotification*/ true,
 		/*InPlayingWorldIfAvailable*/ true);
+
+	UAGX_ConstraintComponent* ConstraintComponent = Constraint->GetConstraintComponent();
+	ConstraintComponent->BodyAttachment1.FrameDefiningSource = EAGX_FrameDefiningSource::CONSTRAINT;
+	ConstraintComponent->BodyAttachment2.FrameDefiningSource = EAGX_FrameDefiningSource::CONSTRAINT;
+	ConstraintComponent->BodyAttachment1.OnFremeDefiningSourceChanged();
+	ConstraintComponent->BodyAttachment2.OnFremeDefiningSourceChanged();
 }
 
 void FAGX_TopMenu::OnOpenAboutDialogClicked()
