@@ -16,17 +16,21 @@ enum EAGX_SolveType
 	ST_DIRECT_AND_ITERATIVE = (ST_DIRECT | ST_ITERATIVE) UMETA(DisplayName = "Direct & Iterative")
 };
 
-/** TODO WRITE */
+/** Specifies which Actor or Component is used to define the transform of the attachment frame of
+ * the Constraint's Body Attachment. */
 UENUM()
 enum EAGX_FrameDefiningSource
 {
-	/** TODO. */
+	/** The transformation of the Constraint itself is used to define the transform of the
+	   attachment frame. */
 	CONSTRAINT = 1 UMETA(DisplayName = "Constraint"),
 
-	/** TODO. */
+	/** The transformation of the Rigid Body is used to define the transform of the attachment
+	   frame. */
 	RIGIDBODY = 2 UMETA(DisplayName = "RigidBody"),
 
-	/** TODO. */
+	/** The transformation of some other Actor or Component is used to define the transform of the
+	   attachment frame. */
 	OTHER = 3 UMETA(DisplayName = "Other")
 };
 
@@ -67,7 +71,8 @@ UENUM(meta = (Bitflags))
 enum class EDofFlag : uint8
 {
 	DOF_FLAG_ALL = 0x3F UMETA(DisplayName = "All"),
-//	DOF_FLAG_NONE = 0 UMETA(DisplayName = "None"), /// \todo Consider adding this. When would it be used?
+	//	DOF_FLAG_NONE = 0 UMETA(DisplayName = "None"), /// \todo Consider adding this. When would it
+	// be used?
 	DOF_FLAG_TRANSLATIONAL_1 = 1 << 0 UMETA(DisplayName = "Translation1"),
 	DOF_FLAG_TRANSLATIONAL_2 = 1 << 1 UMETA(DisplayName = "Translation2"),
 	DOF_FLAG_TRANSLATIONAL_3 = 1 << 2 UMETA(DisplayName = "Translation3"),
@@ -75,4 +80,3 @@ enum class EDofFlag : uint8
 	DOF_FLAG_ROTATIONAL_2 = 1 << 4 UMETA(DisplayName = "Rotation2"),
 	DOF_FLAG_ROTATIONAL_3 = 1 << 5 UMETA(DisplayName = "Rotation3"),
 };
-
