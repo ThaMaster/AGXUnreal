@@ -2,9 +2,7 @@
 
 // AGXUnreal includes.
 #include "Constraints/HingeBarrier.h"
-
-// Unreal Engine includes.
-#include "AGX_LogCategory.h"
+#include "Utilities/AGX_ConstraintUtilities.h"
 
 class FRigidBodyBarrier;
 
@@ -25,37 +23,6 @@ void UAGX_HingeConstraintComponent::AllocateNative()
 {
 	NativeBarrier.Reset(new FHingeBarrier());
 
-	FRigidBodyBarrier* RigidBody1 = BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
-	FRigidBodyBarrier* RigidBody2 = BodyAttachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
-
-	if (RigidBody1 == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Hinge constraint %s in %s: could not get Rigid Body '%s' from Body Attachment 1. "
-				 "Constraint cannot be created."),
-			*GetFName().ToString(), *GetOwner()->GetFName().ToString(),
-			*BodyAttachment1.RigidBody.BodyName.ToString());
-		return;
-	}
-
-	if (BodyAttachment2.GetRigidBody() != nullptr && RigidBody2 == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Hinge constraint %s: could not get Rigid Body from Body Attachment 2."),
-			*GetFName().ToString());
-		return;
-	}
-
-	FVector FrameLocation1 = BodyAttachment1.GetLocalFrameLocationFromBody();
-	FVector FrameLocation2 = BodyAttachment2.GetLocalFrameLocationFromBody();
-
-	FQuat FrameRotation1 = BodyAttachment1.GetLocalFrameRotationFromBody();
-	FQuat FrameRotation2 = BodyAttachment2.GetLocalFrameRotationFromBody();
-
-	// Ok if second is nullptr, means that the first body is constrained to the
-	// world.
-	NativeBarrier->AllocateNative(
-		RigidBody1, &FrameLocation1, &FrameRotation1, RigidBody2, &FrameLocation2, &FrameRotation2);
+	FAGX_ConstraintUtilities::CreateNative(
+		GetNative(), BodyAttachment1, BodyAttachment2, GetFName());
 }

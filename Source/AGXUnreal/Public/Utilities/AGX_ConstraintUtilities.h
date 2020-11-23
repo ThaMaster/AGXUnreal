@@ -89,4 +89,8 @@ public:
 	static void SetupFrames(
 		const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
 		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2);
+
+	static void CreateNative(
+		FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& BodyAttachment1,
+		FAGX_ConstraintBodyAttachment& BodyAttachment2, const FName& ConstraintName);
 };

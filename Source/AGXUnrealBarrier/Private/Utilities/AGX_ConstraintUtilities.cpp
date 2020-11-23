@@ -4,7 +4,6 @@
 #include "AGXRefs.h"
 #include "AGX_AgxDynamicsObjectsAccess.h"
 
-
 void FAGX_ConstraintUtilities::ConvertConstraintBodiesAndFrames(
 	const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
 	const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2,
@@ -25,16 +24,24 @@ void FAGX_ConstraintUtilities::ConvertConstraintBodiesAndFrames(
 
 	// Convert second Rigid Body and Frame to natives
 	{
-		NativeRigidBody2 = FAGX_AgxDynamicsObjectsAccess::GetFrom(RigidBody2);
-		if (NativeRigidBody2)
+		if (RigidBody2)
 		{
-			check(FramePosition2);
-			check(FrameRotation2);
+			NativeRigidBody2 = FAGX_AgxDynamicsObjectsAccess::GetFrom(RigidBody2);
+			if (NativeRigidBody2)
+			{
+				check(FramePosition2);
+				check(FrameRotation2);
 
-			NativeFrame2 = ConvertFrame(*FramePosition2, *FrameRotation2);
+				NativeFrame2 = ConvertFrame(*FramePosition2, *FrameRotation2);
+			}
+			else
+			{
+				NativeFrame2 = nullptr;
+			}
 		}
 		else
 		{
+			NativeRigidBody2 = nullptr;
 			NativeFrame2 = nullptr;
 		}
 	}

@@ -114,7 +114,7 @@ namespace
 					DynamicPrimitiveUniformBuffer.Set(
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(),
-						GetLocalBounds(), true, false, DrawsVelocity(), LpvBiasMultiplier);
+						GetLocalBounds(), true, false, DrawsVelocity(), (LpvBiasMultiplier == 0.f));
 #endif
 
 					BatchElement.PrimitiveUniformBufferResource =
@@ -137,8 +137,12 @@ namespace
 		virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View) const override
 		{
 			FPrimitiveViewRelevance Result;
+#if WITH_EDITOR
 			Result.bDrawRelevance =
 				IsShown(View) && (View->Family->EngineShowFlags.BillboardSprites);
+#else
+			Result.bDrawRelevance = false;
+#endif
 			Result.bDynamicRelevance = true;
 			Result.bShadowRelevance = IsShadowCast(View);
 			Result.bEditorPrimitiveRelevance = UseEditorCompositing(View);
