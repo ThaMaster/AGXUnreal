@@ -141,9 +141,6 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 				EAGX_FrameDefiningSource::CONSTRAINT;
 			ConstraintComponent->BodyAttachment1.OnFremeDefiningSourceChanged();
 			ConstraintComponent->BodyAttachment2.OnFremeDefiningSourceChanged();
-
-			ConstraintComponent->BodyAttachment1.FrameDefiningComponent.Clear();
-			ConstraintComponent->BodyAttachment2.FrameDefiningComponent.Clear();
 		}
 		else
 		{
