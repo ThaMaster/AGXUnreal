@@ -52,7 +52,7 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 {
 	FrameDefiningComponentProperty = StructPropertyHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, FrameDefiningComponent));
-	auto CanEditFrameDefiningProperty = StructPropertyHandle->GetChildHandle(
+	auto CanEditFrameDefiningComponentProperty = StructPropertyHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintBodyAttachment, bCanEditFrameDefiningComponent));
 
 	uint32 NumChildren = 0;
@@ -64,7 +64,9 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 		if (TSharedPtr<IPropertyHandle> ChildHandle =
 				StructPropertyHandle->GetChildHandle(ChildIndex))
 		{
-			if (FAGX_PropertyUtilities::PropertyEquals(ChildHandle, CanEditFrameDefiningProperty))
+			// Hide CanEditFrameDefiningComponentProperty by not adding it to the StructBuilder.
+			if (FAGX_PropertyUtilities::PropertyEquals(
+					ChildHandle, CanEditFrameDefiningComponentProperty))
 			{
 				continue;
 			}
