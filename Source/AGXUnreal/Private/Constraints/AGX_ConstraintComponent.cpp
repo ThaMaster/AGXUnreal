@@ -88,34 +88,44 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
 #endif
 
-	// Create UAGX_ConstraintDofGraphicsComponent as child component.
+	// Using an AGX_ConstraintComponent in a blueprint instance has in some cases caused crashes
+	// during project startup. It seems to happen for one of the 'behind-the-scenes' created objects
+	// that are created for blueprints, typically with name postfix '_GEN_VARIABLE'. This
+	// 'behind-the-scenes' created object crashes for some reason when trying to attach a
+	// DofGraphicsComponent or IconGraphicsComponent to it. Therefore we detect when this
+	// constructor is run for such an object by checking if its parent is null (which will only be
+	// the case for such an object) and in that case we do not attach the GraphicsComponents to it.
+	if (GetOwner() != nullptr)
 	{
-		DofGraphicsComponent1 = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
-			TEXT("DofGraphicsComponent1"));
+		// Create UAGX_ConstraintDofGraphicsComponent as child component.
+		{
+			DofGraphicsComponent1 = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
+				TEXT("DofGraphicsComponent1"));
 
-		DofGraphicsComponent1->Constraint = this;
-		DofGraphicsComponent1->SetupAttachment(this);
-		DofGraphicsComponent1->bHiddenInGame = true;
-		DofGraphicsComponent1->AttachmentId = 1;
-	}
-	{
-		DofGraphicsComponent2 = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
-			TEXT("DofGraphicsComponent2"));
+			DofGraphicsComponent1->Constraint = this;
+			DofGraphicsComponent1->SetupAttachment(this);
+			DofGraphicsComponent1->bHiddenInGame = true;
+			DofGraphicsComponent1->AttachmentId = 1;
+		}
+		{
+			DofGraphicsComponent2 = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
+				TEXT("DofGraphicsComponent2"));
 
-		DofGraphicsComponent2->Constraint = this;
-		DofGraphicsComponent2->SetupAttachment(this);
-		DofGraphicsComponent2->bHiddenInGame = true;
-		DofGraphicsComponent2->AttachmentId = 2;
-	}
+			DofGraphicsComponent2->Constraint = this;
+			DofGraphicsComponent2->SetupAttachment(this);
+			DofGraphicsComponent2->bHiddenInGame = true;
+			DofGraphicsComponent2->AttachmentId = 2;
+		}
 
-	// Create UAGX_ConstraintIconGraphicsComponent as child component.
-	{
-		IconGraphicsComponent = CreateDefaultSubobject<UAGX_ConstraintIconGraphicsComponent>(
-			TEXT("IconGraphicsComponent"));
+		// Create UAGX_ConstraintIconGraphicsComponent as child component.
+		{
+			IconGraphicsComponent = CreateDefaultSubobject<UAGX_ConstraintIconGraphicsComponent>(
+				TEXT("IconGraphicsComponent"));
 
-		IconGraphicsComponent->Constraint = this;
-		IconGraphicsComponent->SetupAttachment(this);
-		IconGraphicsComponent->bHiddenInGame = true;
+			IconGraphicsComponent->Constraint = this;
+			IconGraphicsComponent->SetupAttachment(this);
+			IconGraphicsComponent->bHiddenInGame = true;
+		}
 	}
 }
 
@@ -478,9 +488,18 @@ void UAGX_ConstraintComponent::BeginDestroy()
 void UAGX_ConstraintComponent::DestroyComponent(bool bPromoteChildren)
 {
 	Super::DestroyComponent(bPromoteChildren);
-	DofGraphicsComponent1->DestroyComponent();
-	DofGraphicsComponent2->DestroyComponent();
-	IconGraphicsComponent->DestroyComponent();
+	if (DofGraphicsComponent1)
+	{
+		DofGraphicsComponent1->DestroyComponent();
+	}
+	if (DofGraphicsComponent2)
+	{
+		DofGraphicsComponent2->DestroyComponent();
+	}
+	if (IconGraphicsComponent)
+	{
+		IconGraphicsComponent->DestroyComponent();
+	}
 }
 #endif
 
