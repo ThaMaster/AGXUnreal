@@ -123,7 +123,7 @@ void FAGX_ConstraintUtilities::StoreTargetSpeedController(
 	Controller.CopyFrom(*Barrier.GetTargetSpeedController(Dof));
 }
 
-void FAGX_ConstraintUtilities::SetupFrames(
+void FAGX_ConstraintUtilities::SetupBodyAttachmentFrames(
 	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
 	UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2)
 {

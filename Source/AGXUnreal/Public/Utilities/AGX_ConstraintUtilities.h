@@ -86,7 +86,12 @@ public:
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
 		EAGX_Constraint2DOFFreeDOF Dof);
 
-	static void SetupFrames(
+	/**
+	 * Sets up the constraint 'Component' and its BodyAttachments in accordance with
+	 * FrameDefiningSource = Constraint, given an FConstraintBarrier and the constrained
+	 * RigidBodies.
+	 */
+	static void SetupBodyAttachmentFrames(
 		const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
 		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2);
 
