@@ -91,7 +91,7 @@ public:
 	 * FrameDefiningSource = Constraint, given an FConstraintBarrier and the constrained
 	 * RigidBodies.
 	 */
-	static void SetupBodyAttachmentFrames(
+	static void SetupConstraintAsFrameDefiningSource(
 		const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
 		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2);
 

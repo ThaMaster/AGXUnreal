@@ -435,7 +435,7 @@ namespace
 			return nullptr;
 		}
 
-		FAGX_ConstraintUtilities::SetupBodyAttachmentFrames(
+		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 			Barrier, *Component, Bodies.first, Bodies.second);
 		FAGX_ConstraintUtilities::CopyControllersFrom(*Component, Barrier);
 		FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
@@ -458,7 +458,7 @@ namespace
 			Bodies.first, Bodies.second, false, false, false);
 		/// \todo Check for nullptr;
 
-		FAGX_ConstraintUtilities::SetupBodyAttachmentFrames(
+		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 			Barrier, *Actor->GetConstraintComponent(), Bodies.first, Bodies.second);
 
 		/// \todo Make CopyControllersFrom a virtual member function of UAGX_ConstraintComponent.
