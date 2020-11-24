@@ -57,7 +57,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Frame Transformation",
-		Meta = (EditCondition = "bCanEditFrameDefiningComponent"))
+		Meta = (EditCondition = "FrameDefiningSource == EAGX_FrameDefiningSource::OTHER"))
 	FAGX_SceneComponentReference FrameDefiningComponent;
 
 	/** Frame location relative to either the Constraint, the Rigid Body Actor or from the Frame
@@ -69,9 +69,6 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * Defining Actor. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
 	FRotator LocalFrameRotation;
-
-	UPROPERTY(EditAnywhere)
-	bool bCanEditFrameDefiningComponent;
 
 	UAGX_RigidBodyComponent* GetRigidBody() const;
 
@@ -111,12 +108,6 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * AAGX_ConstraintFrameActor actor types).
 	 */
 	void OnFrameDefiningComponentChanged(UAGX_ConstraintComponent* Parent);
-
-	/**
-	 * Should be invoked whenever FrameDefiningSource changes, to keep the correct state of
-	 * bCanEditFrameDefiningComponent.
-	 */
-	void OnFrameDefiningSourceChanged();
 
 	void OnDestroy(UAGX_ConstraintComponent* Parent);
 #endif

@@ -13,13 +13,11 @@
 
 FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment()
 {
-	bCanEditFrameDefiningComponent = FrameDefiningSource == EAGX_FrameDefiningSource::OTHER;
 }
 
 FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment(USceneComponent* InOwner)
 	: Owner {InOwner}
 {
-	bCanEditFrameDefiningComponent = FrameDefiningSource == EAGX_FrameDefiningSource::OTHER;
 }
 
 UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody() const
@@ -138,11 +136,6 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningComponentChanged(
 	{
 		Next->AddConstraintUsage(Parent);
 	}
-}
-
-void FAGX_ConstraintBodyAttachment::OnFrameDefiningSourceChanged()
-{
-	bCanEditFrameDefiningComponent = FrameDefiningSource == EAGX_FrameDefiningSource::OTHER;
 }
 
 void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
