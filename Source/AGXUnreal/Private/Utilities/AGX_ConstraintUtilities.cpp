@@ -149,9 +149,9 @@ void FAGX_ConstraintUtilities::SetupFrames(
 	Component.BodyAttachment2.FrameDefiningSource = EAGX_FrameDefiningSource::CONSTRAINT;
 
 	const FVector Attach1LocalPos = Barrier.GetLocalLocation(0);
-	const FQuat Attach1LocalRot = Barrier.GetLocalRotation(0).Quaternion();
+	const FQuat Attach1LocalRot = Barrier.GetLocalRotation(0);
 	const FVector Attach2LocalPos = Barrier.GetLocalLocation(1);
-	const FQuat Attach2LocalRot = Barrier.GetLocalRotation(1).Quaternion();
+	const FQuat Attach2LocalRot = Barrier.GetLocalRotation(1);
 
 	const FVector Attach1GlobalPos =
 		RigidBody1->GetComponentTransform().TransformPositionNoScale(Attach1LocalPos);
