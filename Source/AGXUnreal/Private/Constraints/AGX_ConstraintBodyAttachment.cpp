@@ -28,11 +28,10 @@ FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocationFromBody() const
 	if (Body == nullptr)
 	{
 		UE_LOG(
-			LogAGX, Warning,
+			LogAGX, Error,
 			TEXT("GetLocalFrameLocationFromBody() called on AGX_ConstraintBodyAttachment whose "
-				 "RigidBody is not set which may lead to unwanted behaviour. The FrameLocation "
-				 "retuned will be given in world coordinate system."));
-		return LocalFrameLocation;
+				 "RigidBody is not set. Returning zero vector."));
+		return FVector::ZeroVector;
 	}
 
 	// If the FrameDefiningSource is RIGIDBODY, the LocalFrameLocation is already given in RigidBody's
@@ -51,11 +50,10 @@ FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotationFromBody() const
 	if (Body == nullptr)
 	{
 		UE_LOG(
-			LogAGX, Warning,
+			LogAGX, Error,
 			TEXT("GetLocalFrameRotationFromBody() called on AGX_ConstraintBodyAttachment whose "
-				 "RigidBody is not set which may lead to unwanted behaviour. The LocalFrameRotation "
-				 "retuned will be given in world coordinate system."));
-		return LocalFrameRotation.Quaternion();
+				 "RigidBody is not set. Returning identity quaternion."));
+		return FQuat::Identity;
 	}
 
 	// If the FrameDefiningSource is RIGIDBODY, the LocalFrameRotation is already given in RigidBody's

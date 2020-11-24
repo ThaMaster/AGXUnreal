@@ -73,14 +73,14 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	UAGX_RigidBodyComponent* GetRigidBody() const;
 
 	/**
-	 * Calculates and returns the frame location given in the RigidBody's frame
-	 * (or in world space if not set, which gives a warning).
+	 * Calculates and returns the frame location given in the RigidBody's frame.
+	 * Returns zero vector if RigidBody has not been set.
 	 */
 	FVector GetLocalFrameLocationFromBody() const;
 
 	/**
-	 * Calculates and returns the frame rotation given in the RigidBody's frame
-	 * (or in world space if not set, which gives a warning).
+	 * Calculates and returns the frame rotation given in the RigidBody's frame.
+	 * Returns identity quaternion of RigidBody has not been set.
 	 */
 	FQuat GetLocalFrameRotationFromBody() const;
 
