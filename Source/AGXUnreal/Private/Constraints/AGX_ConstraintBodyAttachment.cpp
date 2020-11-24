@@ -11,9 +11,6 @@
 #include "Components/SceneComponent.h"
 #include "UObject/UObjectGlobals.h"
 
-FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment()
-{
-}
 
 FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment(USceneComponent* InOwner)
 	: Owner {InOwner}

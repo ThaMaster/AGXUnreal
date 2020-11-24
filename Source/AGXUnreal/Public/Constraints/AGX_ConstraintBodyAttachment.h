@@ -30,7 +30,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 {
 	GENERATED_USTRUCT_BODY()
 
-	FAGX_ConstraintBodyAttachment();
+	FAGX_ConstraintBodyAttachment() = default;
 	FAGX_ConstraintBodyAttachment(USceneComponent* InOwner);
 
 	/// \todo Cannot assume a single body per actor. Should we change the UPROPERTY
