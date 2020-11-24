@@ -137,9 +137,9 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 			UAGX_ConstraintComponent* ConstraintComponent = Constraint->GetConstraintComponent();
 
 			ConstraintComponent->BodyAttachment1.FrameDefiningSource =
-				EAGX_FrameDefiningSource::OTHER;
+				EAGX_FrameDefiningSource::Other;
 			ConstraintComponent->BodyAttachment2.FrameDefiningSource =
-				EAGX_FrameDefiningSource::OTHER;
+				EAGX_FrameDefiningSource::Other;
 
 			ConstraintComponent->BodyAttachment1.FrameDefiningComponent.OwningActor = FrameActor1;
 			ConstraintComponent->BodyAttachment2.FrameDefiningComponent.OwningActor = FrameActor2;

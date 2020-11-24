@@ -280,32 +280,32 @@ namespace
 
 		const FColor RotDofPrimitiveColor = IsViolated ? ColorViolated : ROT_COLOR_DEFAULT;
 		const FColor TransDofPrimitiveColor = IsViolated ? ColorViolated : TRANS_COLOR_DEFAULT;
-		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1))
+		if (!Constraint->IsDofLocked(EDofFlag::DofFlagRotational1))
 		{
 			DrawRotationalPrimitive(
 				PDI, RotDofPrimitiveColor, AttachmentTransform, EAxis::X, Radius, RotOffset);
 		}
-		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_2))
+		if (!Constraint->IsDofLocked(EDofFlag::DofFlagRotational2))
 		{
 			DrawRotationalPrimitive(
 				PDI, RotDofPrimitiveColor, AttachmentTransform, EAxis::Y, Radius, RotOffset);
 		}
-		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_3))
+		if (!Constraint->IsDofLocked(EDofFlag::DofFlagRotational3))
 		{
 			DrawRotationalPrimitive(
 				PDI, RotDofPrimitiveColor, AttachmentTransform, EAxis::Z, Radius, RotOffset);
 		}
-		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_1))
+		if (!Constraint->IsDofLocked(EDofFlag::DofFlagTranslational1))
 		{
 			DrawTranslationalPrimitive(
 				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::X, Height, TransOffset);
 		}
-		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_2))
+		if (!Constraint->IsDofLocked(EDofFlag::DofFlagTranslational2))
 		{
 			DrawTranslationalPrimitive(
 				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::Y, Height, TransOffset);
 		}
-		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_3))
+		if (!Constraint->IsDofLocked(EDofFlag::DofFlagTranslational3))
 		{
 			DrawTranslationalPrimitive(
 				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::Z, Height, TransOffset);

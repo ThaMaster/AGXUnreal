@@ -170,7 +170,7 @@ private:
 	const EDofFlag LockedDofsBitmask = static_cast<EDofFlag>(0);
 
 	// The Degrees of Freedom (DOF) that are locked by the specific constraint type,
-	// ordered the way they are indexed by in the native AGX api (except for ALL_DOF and NUM_DOF).
+	// ordered the way they are indexed by in the native AGX api (except for AllDof and NUM_DOF).
 	const TArray<EDofFlag> LockedDofs;
 
 	// Mapping from EGenericDofIndex to native AGX constraint specific DOF index.

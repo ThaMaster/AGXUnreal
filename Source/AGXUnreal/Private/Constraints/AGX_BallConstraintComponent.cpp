@@ -9,8 +9,8 @@ class FRigidBodyBarrier;
 
 UAGX_BallConstraintComponent::UAGX_BallConstraintComponent()
 	: UAGX_ConstraintComponent(
-		  {EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
-		   EDofFlag::DOF_FLAG_TRANSLATIONAL_3})
+		  {EDofFlag::DofFlagTranslational1, EDofFlag::DofFlagTranslational2,
+		   EDofFlag::DofFlagTranslational3})
 {
 }
 

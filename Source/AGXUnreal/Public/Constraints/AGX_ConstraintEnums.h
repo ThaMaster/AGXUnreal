@@ -7,13 +7,13 @@ UENUM()
 enum EAGX_SolveType
 {
 	/** Solved only in the DIRECT solver. */
-	ST_DIRECT = 1 UMETA(DisplayName = "Direct"),
+	StDirect = 1 UMETA(DisplayName = "Direct"),
 
 	/** Solved only in the ITERATIVE solver. */
-	ST_ITERATIVE = (1 << 2) UMETA(DisplayName = "Iterative"),
+	StIterative = (1 << 2) UMETA(DisplayName = "Iterative"),
 
 	/** Solved both in the ITERATIVE and the DIRECT solver. */
-	ST_DIRECT_AND_ITERATIVE = (ST_DIRECT | ST_ITERATIVE) UMETA(DisplayName = "Direct & Iterative")
+	StDirectAndIterative = (StDirect | StIterative) UMETA(DisplayName = "Direct & Iterative")
 };
 
 /** Specifies which Actor or Component is used to define the transform of the attachment frame of
@@ -23,15 +23,15 @@ enum EAGX_FrameDefiningSource
 {
 	/** The transformation of the Constraint itself is used to define the transform of the
 	   attachment frame. */
-	CONSTRAINT = 1 UMETA(DisplayName = "Constraint"),
+	Constraint = 1 UMETA(DisplayName = "Constraint"),
 
 	/** The transformation of the Rigid Body is used to define the transform of the attachment
 	   frame. */
-	RIGIDBODY = 2 UMETA(DisplayName = "RigidBody"),
+	RigidBody = 2 UMETA(DisplayName = "RigidBody"),
 
 	/** The transformation of some other Actor or Component is used to define the transform of the
 	   attachment frame. */
-	OTHER = 3 UMETA(DisplayName = "Other")
+	Other = 3 UMETA(DisplayName = "Other")
 };
 
 /**
@@ -43,25 +43,25 @@ UENUM()
 enum class EGenericDofIndex
 {
 	/** All degrees of freedom */
-	ALL_DOF = -1 UMETA(DisplayName = "All"),
+	AllDof = -1 UMETA(DisplayName = "All"),
 
 	/** DOF for the first translational axis */
-	TRANSLATIONAL_1 = 0 UMETA(DisplayName = "Translation1"),
+	Translational1 = 0 UMETA(DisplayName = "Translation1"),
 
 	/** DOF for the second translational axis */
-	TRANSLATIONAL_2 = 1 UMETA(DisplayName = "Translation2"),
+	Translational2 = 1 UMETA(DisplayName = "Translation2"),
 
 	/** DOF for the third translational axis */
-	TRANSLATIONAL_3 = 2 UMETA(DisplayName = "Translation3"),
+	Translational3 = 2 UMETA(DisplayName = "Translation3"),
 
 	/** DOF corresponding to the first rotational axis */
-	ROTATIONAL_1 = 3 UMETA(DisplayName = "Rotation1"),
+	Rotational1 = 3 UMETA(DisplayName = "Rotation1"),
 
 	/** DOF corresponding to the second rotational axis */
-	ROTATIONAL_2 = 4 UMETA(DisplayName = "Rotation2"),
+	Rotational2 = 4 UMETA(DisplayName = "Rotation2"),
 
 	/** DOF for rotation around Z-axis */
-	ROTATIONAL_3 = 5 UMETA(DisplayName = "Rotation3"),
+	Rotational3 = 5 UMETA(DisplayName = "Rotation3"),
 };
 
 /**
@@ -73,10 +73,10 @@ enum class EDofFlag : uint8
 	DOF_FLAG_ALL = 0x3F UMETA(DisplayName = "All"),
 	//	DOF_FLAG_NONE = 0 UMETA(DisplayName = "None"), /// \todo Consider adding this. When would it
 	// be used?
-	DOF_FLAG_TRANSLATIONAL_1 = 1 << 0 UMETA(DisplayName = "Translation1"),
-	DOF_FLAG_TRANSLATIONAL_2 = 1 << 1 UMETA(DisplayName = "Translation2"),
-	DOF_FLAG_TRANSLATIONAL_3 = 1 << 2 UMETA(DisplayName = "Translation3"),
-	DOF_FLAG_ROTATIONAL_1 = 1 << 3 UMETA(DisplayName = "Rotation1"),
-	DOF_FLAG_ROTATIONAL_2 = 1 << 4 UMETA(DisplayName = "Rotation2"),
-	DOF_FLAG_ROTATIONAL_3 = 1 << 5 UMETA(DisplayName = "Rotation3"),
+	DofFlagTranslational1 = 1 << 0 UMETA(DisplayName = "Translation1"),
+	DofFlagTranslational2 = 1 << 1 UMETA(DisplayName = "Translation2"),
+	DofFlagTranslational3 = 1 << 2 UMETA(DisplayName = "Translation3"),
+	DofFlagRotational1 = 1 << 3 UMETA(DisplayName = "Rotation1"),
+	DofFlagRotational2 = 1 << 4 UMETA(DisplayName = "Rotation2"),
+	DofFlagRotational3 = 1 << 5 UMETA(DisplayName = "Rotation3"),
 };

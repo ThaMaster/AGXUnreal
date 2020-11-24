@@ -8,9 +8,9 @@ class FRigidBodyBarrier;
 
 UAGX_HingeConstraintComponent::UAGX_HingeConstraintComponent()
 	: UAGX_Constraint1DofComponent(
-		  {EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
-		   EDofFlag::DOF_FLAG_TRANSLATIONAL_3, EDofFlag::DOF_FLAG_ROTATIONAL_1,
-		   EDofFlag::DOF_FLAG_ROTATIONAL_2},
+		  {EDofFlag::DofFlagTranslational1, EDofFlag::DofFlagTranslational2,
+		   EDofFlag::DofFlagTranslational3, EDofFlag::DofFlagRotational1,
+		   EDofFlag::DofFlagRotational2},
 		  /*bbIsSecondaryConstraintRotational*/ true)
 {
 }

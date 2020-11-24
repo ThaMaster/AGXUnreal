@@ -257,27 +257,27 @@ private:
 
 		// X-Axis
 		Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(
-			Geometry, GetTranslationMaterial(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_1),
-			false, // GetShowSelectionOutline(EDofFlag::DOF_FLAG_TRANSLATIONAL_1),
-			GetScaleMatrix(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_1) *
+			Geometry, GetTranslationMaterial(Component, EDofFlag::DofFlagTranslational1),
+			false, // GetShowSelectionOutline(EDofFlag::DofFlagTranslational1),
+			GetScaleMatrix(Component, EDofFlag::DofFlagTranslational1) *
 				FRotationMatrix(FRotator(-90.0f, 0.0f, 0.0f)) *
 				FTranslationMatrix(FVector(TranslationOffset, 0.0f, 0.0f)),
 			GetDepthPriority()));
 
 		// Y-Axis
 		Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(
-			Geometry, GetTranslationMaterial(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_2),
-			false, // GetShowSelectionOutline(EDofFlag::DOF_FLAG_TRANSLATIONAL_2),
-			GetScaleMatrix(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_2) *
+			Geometry, GetTranslationMaterial(Component, EDofFlag::DofFlagTranslational2),
+			false, // GetShowSelectionOutline(EDofFlag::DofFlagTranslational2),
+			GetScaleMatrix(Component, EDofFlag::DofFlagTranslational2) *
 				FRotationMatrix(FRotator(0.0f, 0.0f, 90.0f)) *
 				FTranslationMatrix(FVector(0.0f, TranslationOffset, 0.0f)),
 			GetDepthPriority()));
 
 		// Z-Axis
 		Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(
-			Geometry, GetTranslationMaterial(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_3),
-			false, // GetShowSelectionOutline(EDofFlag::DOF_FLAG_TRANSLATIONAL_3),
-			GetScaleMatrix(Component, EDofFlag::DOF_FLAG_TRANSLATIONAL_3) *
+			Geometry, GetTranslationMaterial(Component, EDofFlag::DofFlagTranslational3),
+			false, // GetShowSelectionOutline(EDofFlag::DofFlagTranslational3),
+			GetScaleMatrix(Component, EDofFlag::DofFlagTranslational3) *
 				FRotationMatrix(FRotator(0.0f, 0.0f, 0.0f)) *
 				FTranslationMatrix(FVector(0.0f, 0.0f, TranslationOffset)),
 			GetDepthPriority()));
@@ -347,9 +347,9 @@ private:
 
 		// Create sections using the geometry.
 
-		const int32 NumLockedDofs = (IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1) ? 1 : 0) +
-									(IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_2) ? 1 : 0) +
-									(IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_3) ? 1 : 0);
+		const int32 NumLockedDofs = (IsDofLocked(EDofFlag::DofFlagRotational1) ? 1 : 0) +
+									(IsDofLocked(EDofFlag::DofFlagRotational2) ? 1 : 0) +
+									(IsDofLocked(EDofFlag::DofFlagRotational3) ? 1 : 0);
 
 		const bool ShowLockedRotationalDofs = false;
 		const bool MultipleVisible = ShowLockedRotationalDofs || NumLockedDofs > 1;
@@ -358,33 +358,33 @@ private:
 		const float RotationOffset = -140.0f;
 
 		// X-Axis
-		if (!IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1) || ShowLockedRotationalDofs)
+		if (!IsDofLocked(EDofFlag::DofFlagRotational1) || ShowLockedRotationalDofs)
 		{
 			Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(
-				Geometry, GetRotationMaterial(Component, EDofFlag::DOF_FLAG_ROTATIONAL_1),
-				GetShowSelectionOutline(EDofFlag::DOF_FLAG_ROTATIONAL_1),
+				Geometry, GetRotationMaterial(Component, EDofFlag::DofFlagRotational1),
+				GetShowSelectionOutline(EDofFlag::DofFlagRotational1),
 				FRotationMatrix(FRotator(-140.0f, -90.0f, 0.0f)) *
 					FTranslationMatrix(FVector(TranslationOffset, 0.0f, 0.0f)),
 				GetDepthPriority()));
 		}
 
 		// Y-Axis
-		if (!IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_2) || ShowLockedRotationalDofs)
+		if (!IsDofLocked(EDofFlag::DofFlagRotational2) || ShowLockedRotationalDofs)
 		{
 			Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(
-				Geometry, GetRotationMaterial(Component, EDofFlag::DOF_FLAG_ROTATIONAL_2),
-				GetShowSelectionOutline(EDofFlag::DOF_FLAG_ROTATIONAL_2),
+				Geometry, GetRotationMaterial(Component, EDofFlag::DofFlagRotational2),
+				GetShowSelectionOutline(EDofFlag::DofFlagRotational2),
 				FRotationMatrix(FRotator(-140.0f, 0.0f, 0.0f)) *
 					FTranslationMatrix(FVector(0.0f, TranslationOffset, 0.0f)),
 				GetDepthPriority()));
 		}
 
 		// Z-Axis
-		if (!IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_3) || ShowLockedRotationalDofs)
+		if (!IsDofLocked(EDofFlag::DofFlagRotational3) || ShowLockedRotationalDofs)
 		{
 			Sections.Add(MakeShared<FAGX_ConstraintDofGraphicsSection>(
-				Geometry, GetRotationMaterial(Component, EDofFlag::DOF_FLAG_ROTATIONAL_3),
-				GetShowSelectionOutline(EDofFlag::DOF_FLAG_ROTATIONAL_3),
+				Geometry, GetRotationMaterial(Component, EDofFlag::DofFlagRotational3),
+				GetShowSelectionOutline(EDofFlag::DofFlagRotational3),
 				FRotationMatrix(FRotator(0.0f, -60.0f, -90.0f)) *
 					FTranslationMatrix(FVector(0.0f, 0.0f, TranslationOffset)),
 				GetDepthPriority()));

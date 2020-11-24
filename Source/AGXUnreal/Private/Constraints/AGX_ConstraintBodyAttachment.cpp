@@ -34,9 +34,9 @@ FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocationFromBody() const
 		return FVector::ZeroVector;
 	}
 
-	// If the FrameDefiningSource is RIGIDBODY, the LocalFrameLocation is already given in RigidBody's
+	// If the FrameDefiningSource is RigidBody, the LocalFrameLocation is already given in RigidBody's
 	// frame by definition and we can simply return the value directly.
-	if (FrameDefiningSource == EAGX_FrameDefiningSource::RIGIDBODY)
+	if (FrameDefiningSource == EAGX_FrameDefiningSource::RigidBody)
 	{
 		return LocalFrameLocation;
 	}
@@ -56,9 +56,9 @@ FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotationFromBody() const
 		return FQuat::Identity;
 	}
 
-	// If the FrameDefiningSource is RIGIDBODY, the LocalFrameRotation is already given in RigidBody's
+	// If the FrameDefiningSource is RigidBody, the LocalFrameRotation is already given in RigidBody's
 	// frame by definition and we can simply return the value directly.
-	if (FrameDefiningSource == EAGX_FrameDefiningSource::RIGIDBODY)
+	if (FrameDefiningSource == EAGX_FrameDefiningSource::RigidBody)
 	{
 		return LocalFrameRotation.Quaternion();
 	}
@@ -158,11 +158,11 @@ USceneComponent* FAGX_ConstraintBodyAttachment::GetFinalFrameDefiningComponent()
 {
 	switch (FrameDefiningSource)
 	{
-		case CONSTRAINT:
+		case EAGX_FrameDefiningSource::Constraint:
 			return Owner;
-		case RIGIDBODY:
+		case EAGX_FrameDefiningSource::RigidBody:
 			return GetRigidBody();
-		case OTHER:
+		case EAGX_FrameDefiningSource::Other:
 			return FrameDefiningComponent.GetSceneComponent();
 	}
 

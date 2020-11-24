@@ -32,23 +32,23 @@ TMap<EGenericDofIndex, int32> BuildNativeDofIndexMap(const TArray<EDofFlag>& Loc
 	{
 		switch (LockedDofsOrdered[NativeIndex])
 		{
-			case EDofFlag::DOF_FLAG_TRANSLATIONAL_1:
-				DofIndexMap.Add(EGenericDofIndex::TRANSLATIONAL_1, NativeIndex);
+			case EDofFlag::DofFlagTranslational1:
+				DofIndexMap.Add(EGenericDofIndex::Translational1, NativeIndex);
 				break;
-			case EDofFlag::DOF_FLAG_TRANSLATIONAL_2:
-				DofIndexMap.Add(EGenericDofIndex::TRANSLATIONAL_2, NativeIndex);
+			case EDofFlag::DofFlagTranslational2:
+				DofIndexMap.Add(EGenericDofIndex::Translational2, NativeIndex);
 				break;
-			case EDofFlag::DOF_FLAG_TRANSLATIONAL_3:
-				DofIndexMap.Add(EGenericDofIndex::TRANSLATIONAL_3, NativeIndex);
+			case EDofFlag::DofFlagTranslational3:
+				DofIndexMap.Add(EGenericDofIndex::Translational3, NativeIndex);
 				break;
-			case EDofFlag::DOF_FLAG_ROTATIONAL_1:
-				DofIndexMap.Add(EGenericDofIndex::ROTATIONAL_1, NativeIndex);
+			case EDofFlag::DofFlagRotational1:
+				DofIndexMap.Add(EGenericDofIndex::Rotational1, NativeIndex);
 				break;
-			case EDofFlag::DOF_FLAG_ROTATIONAL_2:
-				DofIndexMap.Add(EGenericDofIndex::ROTATIONAL_2, NativeIndex);
+			case EDofFlag::DofFlagRotational2:
+				DofIndexMap.Add(EGenericDofIndex::Rotational2, NativeIndex);
 				break;
-			case EDofFlag::DOF_FLAG_ROTATIONAL_3:
-				DofIndexMap.Add(EGenericDofIndex::ROTATIONAL_3, NativeIndex);
+			case EDofFlag::DofFlagRotational3:
+				DofIndexMap.Add(EGenericDofIndex::Rotational3, NativeIndex);
 				break;
 			default:
 				checkNoEntry();
@@ -56,7 +56,7 @@ TMap<EGenericDofIndex, int32> BuildNativeDofIndexMap(const TArray<EDofFlag>& Loc
 	}
 
 	// General mappings:
-	DofIndexMap.Add(EGenericDofIndex::ALL_DOF, -1);
+	DofIndexMap.Add(EGenericDofIndex::AllDof, -1);
 
 	return DofIndexMap;
 }
@@ -72,7 +72,7 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	: BodyAttachment1(this)
 	, BodyAttachment2(this)
 	, bEnable(true)
-	, SolveType(EAGX_SolveType::ST_DIRECT)
+	, SolveType(EAGX_SolveType::StDirect)
 	, Elasticity(
 		  ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, Damping(ConstraintConstants::DefaultDamping(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
@@ -201,29 +201,29 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 	FVector Location2InLocal1 = Rotation1.Inverse().RotateVector(Location2 - Location1);
 	FQuat Rotation2InLocal1 = Rotation1.Inverse() * Rotation2;
 
-	if (IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_1))
+	if (IsDofLocked(EDofFlag::DofFlagTranslational1))
 	{
 		if (FMath::Abs(Location2InLocal1.X) > Tolerance)
 		{
-			WriteMessage(EDofFlag::DOF_FLAG_TRANSLATIONAL_1, FMath::Abs(Location2InLocal1.X));
+			WriteMessage(EDofFlag::DofFlagTranslational1, FMath::Abs(Location2InLocal1.X));
 			return true;
 		}
 	}
 
-	if (IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_2))
+	if (IsDofLocked(EDofFlag::DofFlagTranslational2))
 	{
 		if (FMath::Abs(Location2InLocal1.Y) > Tolerance)
 		{
-			WriteMessage(EDofFlag::DOF_FLAG_TRANSLATIONAL_2, FMath::Abs(Location2InLocal1.Y));
+			WriteMessage(EDofFlag::DofFlagTranslational2, FMath::Abs(Location2InLocal1.Y));
 			return true;
 		}
 	}
 
-	if (IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_3))
+	if (IsDofLocked(EDofFlag::DofFlagTranslational3))
 	{
 		if (FMath::Abs(Location2InLocal1.Z) > Tolerance)
 		{
-			WriteMessage(EDofFlag::DOF_FLAG_TRANSLATIONAL_3, FMath::Abs(Location2InLocal1.Z));
+			WriteMessage(EDofFlag::DofFlagTranslational3, FMath::Abs(Location2InLocal1.Z));
 			return true;
 		}
 	}
@@ -231,32 +231,32 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 	/// \todo Checks below might not be correct for ALL scenarios. What if there is for example a 90
 	/// degrees rotation around one axis and then a rotation around another?
 
-	if (IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1))
+	if (IsDofLocked(EDofFlag::DofFlagRotational1))
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisY().Z) > Tolerance)
 		{
 			WriteMessage(
-				EDofFlag::DOF_FLAG_ROTATIONAL_1, FMath::Abs(Rotation2InLocal1.GetAxisY().Z));
+				EDofFlag::DofFlagRotational1, FMath::Abs(Rotation2InLocal1.GetAxisY().Z));
 			return true;
 		}
 	}
 
-	if (IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_2))
+	if (IsDofLocked(EDofFlag::DofFlagRotational2))
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Z) > Tolerance)
 		{
 			WriteMessage(
-				EDofFlag::DOF_FLAG_ROTATIONAL_2, FMath::Abs(Rotation2InLocal1.GetAxisX().Z));
+				EDofFlag::DofFlagRotational2, FMath::Abs(Rotation2InLocal1.GetAxisX().Z));
 			return true;
 		}
 	}
 
-	if (IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_3))
+	if (IsDofLocked(EDofFlag::DofFlagRotational3))
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Y) > Tolerance)
 		{
 			WriteMessage(
-				EDofFlag::DOF_FLAG_ROTATIONAL_3, FMath::Abs(Rotation2InLocal1.GetAxisX().Y));
+				EDofFlag::DofFlagRotational3, FMath::Abs(Rotation2InLocal1.GetAxisX().Y));
 			return true;
 		}
 	}
@@ -355,7 +355,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			{
 				ModifiedBodyAttachment->RigidBody.FallbackOwningActor = GetOwner();
 			}
-			if (ModifiedBodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::OTHER &&
+			if (ModifiedBodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::Other &&
 				ModifiedBodyAttachment->FrameDefiningComponent.OwningActor == nullptr)
 			{
 				ModifiedBodyAttachment->FrameDefiningComponent.FallbackOwningActor = GetOwner();
@@ -389,34 +389,34 @@ void UAGX_ConstraintComponent::UpdateNativeProperties()
 		// TODO: Could just loop NativeDofIndexMap instead!!
 
 		TRY_SET_DOF_VALUE(
-			Elasticity, EGenericDofIndex::TRANSLATIONAL_1, NativeBarrier->SetElasticity);
+			Elasticity, EGenericDofIndex::Translational1, NativeBarrier->SetElasticity);
 		TRY_SET_DOF_VALUE(
-			Elasticity, EGenericDofIndex::TRANSLATIONAL_2, NativeBarrier->SetElasticity);
+			Elasticity, EGenericDofIndex::Translational2, NativeBarrier->SetElasticity);
 		TRY_SET_DOF_VALUE(
-			Elasticity, EGenericDofIndex::TRANSLATIONAL_3, NativeBarrier->SetElasticity);
-		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::ROTATIONAL_1, NativeBarrier->SetElasticity);
-		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::ROTATIONAL_2, NativeBarrier->SetElasticity);
-		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::ROTATIONAL_3, NativeBarrier->SetElasticity);
+			Elasticity, EGenericDofIndex::Translational3, NativeBarrier->SetElasticity);
+		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational1, NativeBarrier->SetElasticity);
+		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational2, NativeBarrier->SetElasticity);
+		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational3, NativeBarrier->SetElasticity);
 
-		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::TRANSLATIONAL_1, NativeBarrier->SetDamping);
-		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::TRANSLATIONAL_2, NativeBarrier->SetDamping);
-		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::TRANSLATIONAL_3, NativeBarrier->SetDamping);
-		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::ROTATIONAL_1, NativeBarrier->SetDamping);
-		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::ROTATIONAL_2, NativeBarrier->SetDamping);
-		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::ROTATIONAL_3, NativeBarrier->SetDamping);
+		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Translational1, NativeBarrier->SetDamping);
+		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Translational2, NativeBarrier->SetDamping);
+		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Translational3, NativeBarrier->SetDamping);
+		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Rotational1, NativeBarrier->SetDamping);
+		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Rotational2, NativeBarrier->SetDamping);
+		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Rotational3, NativeBarrier->SetDamping);
 
 		TRY_SET_DOF_RANGE_VALUE(
-			ForceRange, EGenericDofIndex::TRANSLATIONAL_1, NativeBarrier->SetForceRange);
+			ForceRange, EGenericDofIndex::Translational1, NativeBarrier->SetForceRange);
 		TRY_SET_DOF_RANGE_VALUE(
-			ForceRange, EGenericDofIndex::TRANSLATIONAL_2, NativeBarrier->SetForceRange);
+			ForceRange, EGenericDofIndex::Translational2, NativeBarrier->SetForceRange);
 		TRY_SET_DOF_RANGE_VALUE(
-			ForceRange, EGenericDofIndex::TRANSLATIONAL_3, NativeBarrier->SetForceRange);
+			ForceRange, EGenericDofIndex::Translational3, NativeBarrier->SetForceRange);
 		TRY_SET_DOF_RANGE_VALUE(
-			ForceRange, EGenericDofIndex::ROTATIONAL_1, NativeBarrier->SetForceRange);
+			ForceRange, EGenericDofIndex::Rotational1, NativeBarrier->SetForceRange);
 		TRY_SET_DOF_RANGE_VALUE(
-			ForceRange, EGenericDofIndex::ROTATIONAL_2, NativeBarrier->SetForceRange);
+			ForceRange, EGenericDofIndex::Rotational2, NativeBarrier->SetForceRange);
 		TRY_SET_DOF_RANGE_VALUE(
-			ForceRange, EGenericDofIndex::ROTATIONAL_3, NativeBarrier->SetForceRange);
+			ForceRange, EGenericDofIndex::Rotational3, NativeBarrier->SetForceRange);
 	}
 }
 
@@ -463,7 +463,7 @@ void UAGX_ConstraintComponent::PostLoad()
 
 	for (FAGX_ConstraintBodyAttachment* BodyAttachment : {&BodyAttachment1, &BodyAttachment2})
 	{
-		if (BodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::OTHER)
+		if (BodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::Other)
 		{
 			FAGX_SceneComponentReference* ComponentReference =
 				&BodyAttachment->FrameDefiningComponent;

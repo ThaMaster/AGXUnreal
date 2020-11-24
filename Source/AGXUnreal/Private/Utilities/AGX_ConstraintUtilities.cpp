@@ -127,7 +127,7 @@ void FAGX_ConstraintUtilities::SetupFrames(
 	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
 	UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2)
 {
-	// Constraints are setup to use FrameDefiningSource == CONSTRAINT by default, meaning the
+	// Constraints are setup to use FrameDefiningSource == Constraint by default, meaning the
 	// constraint itself is used to define the attachment frames. This means that we need to update
 	// the transform of the constraint to be the same as the attachment frames (global) transform as
 	// given by the barrier. One thing to note is that this is straight forward when the attachment
@@ -145,8 +145,8 @@ void FAGX_ConstraintUtilities::SetupFrames(
 		return;
 	}
 
-	Component.BodyAttachment1.FrameDefiningSource = EAGX_FrameDefiningSource::CONSTRAINT;
-	Component.BodyAttachment2.FrameDefiningSource = EAGX_FrameDefiningSource::CONSTRAINT;
+	Component.BodyAttachment1.FrameDefiningSource = EAGX_FrameDefiningSource::Constraint;
+	Component.BodyAttachment2.FrameDefiningSource = EAGX_FrameDefiningSource::Constraint;
 
 	const FVector Attach1LocalPos = Barrier.GetLocalLocation(0);
 	const FQuat Attach1LocalRot = Barrier.GetLocalRotation(0);

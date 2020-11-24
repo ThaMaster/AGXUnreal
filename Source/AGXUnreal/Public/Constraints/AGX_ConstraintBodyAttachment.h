@@ -43,7 +43,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
 	TEnumAsByte<enum EAGX_FrameDefiningSource> FrameDefiningSource =
-		EAGX_FrameDefiningSource::CONSTRAINT;
+		EAGX_FrameDefiningSource::Constraint;
 
 	/**
 	 * The Frame Defining Component makes it possible to use the transform of any Actor or Component
@@ -57,7 +57,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Frame Transformation",
-		Meta = (EditCondition = "FrameDefiningSource == EAGX_FrameDefiningSource::OTHER"))
+		Meta = (EditCondition = "FrameDefiningSource == EAGX_FrameDefiningSource::Other"))
 	FAGX_SceneComponentReference FrameDefiningComponent;
 
 	/** Frame location relative to either the Constraint, the Rigid Body Actor or from the Frame
