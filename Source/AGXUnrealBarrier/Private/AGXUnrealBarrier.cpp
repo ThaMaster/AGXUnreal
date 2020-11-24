@@ -69,11 +69,6 @@ void FAGXUnrealBarrierModule::SetupAgxEnvironment()
 // the plugin itself, if they exist.
 void FAGXUnrealBarrierModule::SetupUsePluginResourcesOnly()
 {
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("No installation of AGX Dynamics detected. Using AGX Dynamics resources from the "
-			 "AGXUnreal plugin."));
-
 #if WITH_EDITOR
 	const FString BinariesPath = FAGX_EnvironmentUtilities::GetPluginBinariesPath();
 #else
@@ -86,6 +81,12 @@ void FAGXUnrealBarrierModule::SetupUsePluginResourcesOnly()
 	const FString AgxDataPath = FPaths::Combine(AgxResourcesPath, FString("data"));
 	const FString AgxCfgPath = FPaths::Combine(AgxDataPath, FString("cfg"));
 	const FString AgxPluginsPath = FPaths::Combine(AgxResourcesPath, FString("plugins"));
+
+	UE_LOG(
+		LogAGX, Log,
+		TEXT("No installation of AGX Dynamics detected. Using AGX Dynamics resources from the "
+			 "AGXUnreal plugin at: %s"),
+		*AgxResourcesPath);
 
 	// Ensure that the necessary AGX Dynamics resources are packed with the plugin.
 	if (!FPaths::DirectoryExists(AgxResourcesPath) || !FPaths::DirectoryExists(AgxBinPath) ||
