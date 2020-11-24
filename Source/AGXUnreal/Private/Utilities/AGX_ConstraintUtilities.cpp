@@ -130,12 +130,13 @@ void FAGX_ConstraintUtilities::SetupFrames(
 	// Constraints are setup to use FrameDefiningSource == CONSTRAINT by default, meaning the
 	// constraint itself is used to define the attachment frames. This means that we need to update
 	// the transform of the constraint to be the same as the attachment frames (global) transform as
-	// given by the barrier. One thing to note is that this works fine for unviolated constraints,
-	// where the attachment frames (by definition) has the same global transform as each other. In
-	// the case that the constraint is violated there is no common transform, and therefore the
-	// constraint is always placed at the first attachment (BodyAttachment1's) global transform.
-	// This means that the LocalFrameLocation/Rotation of BodyAttachment1 will be zero by definition
-	// and that LocalFrameLocation/Rotation of BodyAttachment2 is exactly the violation.
+	// given by the barrier. One thing to note is that this is straight forward when the attachment
+	// frames have the same global transform as each other. In the case that the constraint is
+	// violated or rotated/translated along its degree(s) of freedom, there is no common transform
+	// and therefore the constraint is always placed at the first attachment (BodyAttachment1's)
+	// global transform. This means that the LocalFrameLocation/Rotation of BodyAttachment1 will be
+	// zero by definition and that LocalFrameLocation/Rotation of BodyAttachment2 will reflect the
+	// constraint violation and/or the translation/rotation along the degree(s) of freedom.
 
 	if (!RigidBody1)
 	{
@@ -159,7 +160,7 @@ void FAGX_ConstraintUtilities::SetupFrames(
 
 	// The LocalFrameLocation and Rotation of BodyAttachment1 is always zero since the Constraint is
 	// placed at the attachment frame 1.
-	Component.BodyAttachment1.LocalFrameLocation = FVector(0.f, 0.f, 0.f);
+	Component.BodyAttachment1.LocalFrameLocation = FVector::ZeroVector;
 	Component.BodyAttachment1.LocalFrameRotation = FRotator(FQuat::Identity);
 
 	if (!RigidBody2)
