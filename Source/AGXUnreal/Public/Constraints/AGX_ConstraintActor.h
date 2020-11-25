@@ -22,7 +22,7 @@ class UAGX_ConstraintComponent;
  *   1. Implement CreateNativeImpl (see method comment).
  *   2. In the constructor pass the constraint type specific array of locked DOFs to the
  *       overloaded AAGX_Constraint constructor. The array items and their indexes must exactly
- *       match the enum in the header of the native AGX constraint (without AllDof and NUM_DOF).
+ *       match the enum in the header of the native AGX constraint (without ALL_DOF and NUM_DOF).
  *
  */
 UCLASS(
@@ -47,7 +47,6 @@ protected:
 public:
 	/** Indicates whether this actor should participate in level bounds calculations. */
 	bool IsLevelBoundsRelevant() const override;
-
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Actor")
