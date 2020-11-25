@@ -458,20 +458,16 @@ namespace
 			Bodies.first, Bodies.second, false, false, false);
 		/// \todo Check for nullptr;
 
+		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
+			Barrier, *Actor->GetConstraintComponent(), Bodies.first, Bodies.second);
+
 		/// \todo Make CopyControllersFrom a virtual member function of UAGX_ConstraintComponent.
 		/// Then we won't need the code duplication in the functions calling this one.
-
-		/// \todo Compute the inverse of the first body's attachment frame. That will place the
-		/// Actor at the right spot relative to that body.
-		Actor->SetActorTransform(Bodies.first->GetComponentTransform());
 
 		// This is where AttachToActor was. Now it's in the ToActorTree class.
 
 		FAGX_ImportUtilities::Rename(*Actor, Barrier.GetName());
 		/// \todo Should we call SetActorLabel here?
-
-		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
-			Barrier, *Actor->GetConstraintComponent(), Bodies.first, Bodies.second);
 
 		return Actor;
 	}
