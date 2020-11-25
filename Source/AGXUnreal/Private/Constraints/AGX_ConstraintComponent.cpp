@@ -172,15 +172,6 @@ bool UAGX_ConstraintComponent::HasNative() const
 
 bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString* OutMessage) const
 {
-	if (BodyAttachment1.GetRigidBody() == nullptr || BodyAttachment2.GetRigidBody() == nullptr)
-	{
-		/// \todo Check if it is possible to create a single-body constraint, i.e., body
-		/// constrained to the world, where the constraint is in an initially violated state. That
-		/// is, can we create a world attachment frame that does not align with the local attachment
-		/// frame of the body.
-		return false;
-	}
-
 	auto WriteMessage = [OutMessage](EDofFlag Dof, float Error) {
 		if (OutMessage == nullptr)
 		{
