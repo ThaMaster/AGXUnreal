@@ -330,6 +330,37 @@ void UAGX_SimulationObjectComponent::AllocateNative()
 	Simulation->AddRigidBody(this);
 }
 
+/*
+ Call order when assigning a StaticMesh with 0 spheres and 3 boxes to a new SimulationObject:
+
+ // This is the virtual function inherited from StaticMeshComponent.
+ Calling RefreshCollisionShapes from OnCreatePhysicsState.
+ Have 0 spheres and 0 boxes.
+
+ // This is the delegate callback from StaticMeshComponent.
+ UpdateCollisionShapes called.
+ Calling RefreshCollisionShapes from UpdateCollisionShapes.
+ Have 0 spheres and 3 boxes.
+
+ // This is because we changed a property on SimulationObject.
+ PropertyChangedEvent called
+ Calling RefreshCollisionShapes from PostEditChangeProperty.
+ Have 0 spheres and 3 boxes.
+
+ // This is also because we changed a property on SimulationObject.
+ ChainPropertyChangedEvent for StaticMesh.
+ Calling RefreshCollisionShapes from PostEditChangeChainProperty.
+ Have 0 spheres and 3 boxes.
+
+
+ Call order when adding a collision sphere with the SimulationObject Details Panel open and visible.
+
+ // This is the virtual function inherited from StaticMeshComponent.
+ Calling RefreshCollisionShapes from OnCreatePhysicsState.
+ Have 0 spheres and 3 boxes.
+
+ The same call, OnCreatePhysicsState, is also made when deleting a collision shape.
+ */
 void UAGX_SimulationObjectComponent::RefreshCollisionShapes()
 {
 	if (GetStaticMesh() == nullptr)
