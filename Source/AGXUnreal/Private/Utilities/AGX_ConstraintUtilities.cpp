@@ -123,6 +123,31 @@ void FAGX_ConstraintUtilities::StoreTargetSpeedController(
 	Controller.CopyFrom(*Barrier.GetTargetSpeedController(Dof));
 }
 
+namespace
+{
+	FVector GetGlobalAttachmentFramePos(UAGX_RigidBodyComponent* RigidBody, const FVector LocalPos)
+	{
+		if (RigidBody)
+		{
+			return RigidBody->GetComponentTransform().TransformPositionNoScale(LocalPos);
+		}
+
+		// When RigidBody is nullptr the LocalPos is relative to the world.
+		return LocalPos;
+	}
+
+	FQuat GetGlobalAttachmentFrameRot(UAGX_RigidBodyComponent* RigidBody, const FQuat LocalRot)
+	{
+		if (RigidBody)
+		{
+			return RigidBody->GetComponentTransform().TransformRotation(LocalRot);
+		}
+
+		// When RigidBody is nullptr the LocalRot is relative to the world.
+		return LocalRot;
+	}
+}
+
 void FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
 	UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2)
@@ -133,10 +158,16 @@ void FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	// given by the barrier. One thing to note is that this is straight forward when the attachment
 	// frames have the same global transform as each other. In the case that the constraint is
 	// violated or rotated/translated along its degree(s) of freedom, there is no common transform
-	// and therefore the constraint is always placed at the first attachment (BodyAttachment1's)
-	// global transform. This means that the LocalFrameLocation/Rotation of BodyAttachment1 will be
-	// zero by definition and that LocalFrameLocation/Rotation of BodyAttachment2 will reflect the
+	// and therefore the constraint is always placed at the second attachment frame's
+	// global transform. This means that the LocalFrameLocation/Rotation of BodyAttachment2 will be
+	// zero by definition and that LocalFrameLocation/Rotation of BodyAttachment1 will reflect the
 	// constraint violation and/or the translation/rotation along the degree(s) of freedom.
+	// The reason that the constraint is placed at the second attachments frame instead of the first
+	// is that if one were to describe a parent/child relationship between the two, the first
+	// would be child and the second parent. This becomes apparent when considering creating an agx
+	// constraint with new Constraint(body, Frame::Identity, nullptr, nullptr) where the second body
+	// (nullptr) implicitly means the world. Also, the sign of the rotation/translation of the
+	// secondary constraints support this ordering.
 
 	if (!RigidBody1)
 	{
@@ -148,44 +179,29 @@ void FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	Component.BodyAttachment1.FrameDefiningSource = EAGX_FrameDefiningSource::Constraint;
 	Component.BodyAttachment2.FrameDefiningSource = EAGX_FrameDefiningSource::Constraint;
 
-	const FVector Attach1LocalPos = Barrier.GetLocalLocation(0);
-	const FQuat Attach1LocalRot = Barrier.GetLocalRotation(0);
-	const FVector Attach2LocalPos = Barrier.GetLocalLocation(1);
-	const FQuat Attach2LocalRot = Barrier.GetLocalRotation(1);
-
 	const FVector Attach1GlobalPos =
-		RigidBody1->GetComponentTransform().TransformPositionNoScale(Attach1LocalPos);
+		GetGlobalAttachmentFramePos(RigidBody1, Barrier.GetLocalLocation(0));
 	const FQuat Attach1GlobalRot =
-		RigidBody1->GetComponentTransform().TransformRotation(Attach1LocalRot);
+		GetGlobalAttachmentFrameRot(RigidBody1, Barrier.GetLocalRotation(0));
+	const FVector Attach2GlobalPos =
+		GetGlobalAttachmentFramePos(RigidBody2, Barrier.GetLocalLocation(1));
+	const FQuat Attach2GlobalRot =
+		GetGlobalAttachmentFrameRot(RigidBody2, Barrier.GetLocalRotation(1));
 
-	// Set the Constraint's transform same as attachment frame 1.
-	Component.SetWorldLocationAndRotation(Attach1GlobalPos, Attach1GlobalRot);
+	// Set the Constraint's transform same as attachment frame 2.
+	Component.SetWorldLocationAndRotation(Attach2GlobalPos, Attach2GlobalRot);
 
-	// The LocalFrameLocation and Rotation of BodyAttachment1 is always zero since the Constraint is
-	// placed at the attachment frame 1.
-	Component.BodyAttachment1.LocalFrameLocation = FVector::ZeroVector;
-	Component.BodyAttachment1.LocalFrameRotation = FRotator(FQuat::Identity);
+	// The LocalFrameLocation and Rotation of BodyAttachment2 is always zero since the Constraint is
+	// placed at the attachment frame 2.
+	Component.BodyAttachment2.LocalFrameLocation = FVector::ZeroVector;
+	Component.BodyAttachment2.LocalFrameRotation = FRotator(FQuat::Identity);
 
-	if (!RigidBody2)
-	{
-		// When RigidBody2 is nullptr, it means that RigidBody1 is constrained to the world. In this
-		// case the LocalFrameLocation/Rotation of BodyAttachment2 should be the same as for
-		// BodyAttachment1.
-		Component.BodyAttachment2.LocalFrameLocation = Component.BodyAttachment1.LocalFrameLocation;
-		Component.BodyAttachment2.LocalFrameRotation = Component.BodyAttachment1.LocalFrameRotation;
-	}
-	else
-	{
-		const FVector Attach2GlobalPos =
-			RigidBody2->GetComponentTransform().TransformPositionNoScale(Attach2LocalPos);
-		const FQuat Attach2GlobalRot =
-			RigidBody2->GetComponentTransform().TransformRotation(Attach2LocalRot);
-
-		Component.BodyAttachment2.LocalFrameLocation =
-			Component.GetComponentTransform().InverseTransformPositionNoScale(Attach2GlobalPos);
-		Component.BodyAttachment2.LocalFrameRotation =
-			FRotator(Component.GetComponentTransform().InverseTransformRotation(Attach1GlobalRot));
-	}
+	// The LocalFrameLocation and Rotation of BodyAttachment1 is the (global) attachment frame 1
+	// expressed in the constraints (new) global frame.
+	Component.BodyAttachment1.LocalFrameLocation =
+		Component.GetComponentTransform().InverseTransformPositionNoScale(Attach1GlobalPos);
+	Component.BodyAttachment1.LocalFrameRotation =
+		FRotator(Component.GetComponentTransform().InverseTransformRotation(Attach1GlobalRot));
 }
 
 void FAGX_ConstraintUtilities::CreateNative(
