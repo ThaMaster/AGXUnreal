@@ -562,7 +562,18 @@ bool FCheckMotionControlImportedCommand::Update()
 		TEXT("Dynamic body motion control"), DynamicsBody->MotionControl,
 		EAGX_MotionControl::MC_DYNAMICS);
 
+#if 0
+	// We would like this to be Static, but setting it in UAGX_RigidBodyComponent::CopyFrom during
+	// import of an AGX Dynamics archive causes the move widget in Unreal Editor to break. Static
+	// bodies doesn't follow the Actor's RootComponent. For now we set Mobility to Movable even for
+	// static bodies. This comes with a rendering performance cost since baked lighting can't be
+	// used anymore, and possibly other reasons as well. I'm guessing that we're supposed to do
+	// something when changing Mobility to make it update everywhere, or perhaps we're setting it
+	// at the wrong time. Not sure, more investigation needed.
 	Test.TestEqual(TEXT("Static body mobility"), StaticBody->Mobility, EComponentMobility::Static);
+#else
+	Test.TestEqual(TEXT("Static body mobility"), StaticBody->Mobility, EComponentMobility::Movable);
+#endif
 	Test.TestEqual(
 		TEXT("Kinematic body mobility"), KinematicsBody->Mobility, EComponentMobility::Movable);
 	Test.TestEqual(
