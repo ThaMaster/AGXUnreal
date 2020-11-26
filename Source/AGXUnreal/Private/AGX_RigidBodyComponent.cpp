@@ -158,11 +158,11 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 	bAutomaticMassProperties = MassProperties.GetAutoGenerate();
 	Velocity = Barrier.GetVelocity();
 	AngularVelocity = Barrier.GetAngularVelocity();
+	MotionControl = Barrier.GetMotionControl();
 
 // This breaks the move widget in Unreal Editor. Static bodies within Actors that have been
 // imported from an AGX Dynamics archive does not move when the Actor is moved.
 #if 0
-	MotionControl = Barrier.GetMotionControl();
 	switch (MotionControl)
 	{
 		case MC_DYNAMICS:
