@@ -6,10 +6,10 @@
 class FRigidBodyBarrier;
 
 UAGX_LockConstraintComponent::UAGX_LockConstraintComponent()
-	: UAGX_ConstraintComponent({EDofFlag::DOF_FLAG_TRANSLATIONAL_1,
-								EDofFlag::DOF_FLAG_TRANSLATIONAL_2,
-								EDofFlag::DOF_FLAG_TRANSLATIONAL_3, EDofFlag::DOF_FLAG_ROTATIONAL_1,
-								EDofFlag::DOF_FLAG_ROTATIONAL_2, EDofFlag::DOF_FLAG_ROTATIONAL_3})
+	: UAGX_ConstraintComponent({EDofFlag::DofFlagTranslational1,
+								EDofFlag::DofFlagTranslational2,
+								EDofFlag::DofFlagTranslational3, EDofFlag::DofFlagRotational1,
+								EDofFlag::DofFlagRotational2, EDofFlag::DofFlagRotational3})
 {
 }
 

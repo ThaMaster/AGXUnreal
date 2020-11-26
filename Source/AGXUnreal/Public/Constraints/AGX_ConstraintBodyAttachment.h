@@ -3,6 +3,7 @@
 // AGXUnreal includes.
 #include "AGX_RigidBodyReference.h"
 #include "AGX_SceneComponentReference.h"
+#include "Constraints/AGX_ConstraintEnums.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -17,17 +18,20 @@ class AAGX_ConstraintFrameActor;
 class FRigidBodyBarrier;
 
 /**
- * Defines the Rigid Body to be bound by a Constraint and its Local Frame Location
- * and Rotation.
+ * Defines the Rigid Body to be bound by a Constraint and an attachment frame that is
+ * defined by the transform of either the Constraint itself, the Rigid Body or some other Actor
+ * or Component plus an optional offset given by the Local Frame Location and Rotation.
  *
- * The actual usage of the Local Frame Location and Rotation varies dependening on
- * constraint type, but it can generally be seen as the local points (on the rigid bodies)
- * that should in some way be glewed together by the constraint.
+ * Whether the constraint itself, the Rigid Body or some other Actor or Component should be used
+ * to define the attachment frame can be selected by changing the Frame Defining Source accordingly.
  */
 USTRUCT()
 struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 {
 	GENERATED_USTRUCT_BODY()
+
+	FAGX_ConstraintBodyAttachment() = default;
+	FAGX_ConstraintBodyAttachment(USceneComponent* InOwner);
 
 	/// \todo Cannot assume a single body per actor. Should we change the UPROPERTY
 	/// to be a UAGX_RigidBodyComponent instead, or should we keep the Actor
@@ -37,50 +41,48 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	UPROPERTY(EditAnywhere, Category = "Rigid Body")
 	FAGX_RigidBodyReference RigidBody;
 
+	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
+	TEnumAsByte<enum EAGX_FrameDefiningSource> FrameDefiningSource =
+		EAGX_FrameDefiningSource::Constraint;
+
 	/**
-	 * Optional. Use this to define the Local Frame Location and Rotation relative to a Component
-	 * other then the Rigid Body Component. This is used for convenience during setup only, the
-	 * actual frame transforms used by the simulation will nevertheless be calculated and stored
-	 * relative to the rigid body when the simulation starts.
+	 * The Frame Defining Component makes it possible to use the transform of any Actor or Component
+	 * to define the attachment frame of the Constrained Rigid Body.
 	 *
-	 * Not that the two rigid bodies in a  constraint can use the same Frame Defining Component, or
-	 * different, or one can have one and the other not. It's even possible to use one of the
-	 * constrainted bodies as the Frame Defining Component for both of them.
-	 *
+	 * Note that the two rigid bodies in a  constraint can use the same Frame Defining Component, or
+	 * different, or one can have one and the other not.
 	 * AGX Dynamics for Unreal provides Constraint Frame Component which is intended for this
 	 * purpose. It provides constraint listing and visualization making it possible to see which
 	 * constraints are using that Constraint Frame Component.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
+	UPROPERTY(
+		EditAnywhere, Category = "Frame Transformation",
+		Meta = (EditCondition = "FrameDefiningSource == EAGX_FrameDefiningSource::Other"))
 	FAGX_SceneComponentReference FrameDefiningComponent;
 
-	/** Frame location relative to Rigid Body Actor, or from Frame Defining Actor if set. */
+	/** Frame location relative to either the Constraint, the Rigid Body Actor or from the Frame
+	 * Defining Actor. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
 	FVector LocalFrameLocation;
 
-	/** Frame rotation relative to Rigid Body Actor, or from Frame Defining Actor if set. */
+	/** Frame rotation relative to to either the Constraint, the Rigid Body Actor or from the Frame
+	 * Defining Actor. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
 	FRotator LocalFrameRotation;
 
 	UAGX_RigidBodyComponent* GetRigidBody() const;
 
 	/**
-	 * Calculates and returns the frame location relative to Rigid Body Actor
-	 * (or in world space if not set). I.e. if Frame Defining Actor is set, the
-	 * returned value is Local Frame Location transformed from Frame Defining Actor's
-	 * to Rigid Body Actor's transform space, and if not set the returned value is
-	 * just Local Frame Location.
+	 * Calculates and returns the frame location given in the RigidBody's frame.
+	 * Returns zero vector if RigidBody has not been set.
 	 */
-	FVector GetLocalFrameLocation() const;
+	FVector GetLocalFrameLocationFromBody() const;
 
 	/**
-	 * Calculates and returns the frame rotation relative to Rigid Body Actor
-	 * (or in world space if not set). I.e. if Frame Defining Actor is set, the
-	 * returned value is Local Frame Rotation transformed from Frame Defining Actor's
-	 * to Rigid Body Actor's transform space, and if not set the returned value is
-	 * just Local Frame Rotation.
+	 * Calculates and returns the frame rotation given in the RigidBody's frame.
+	 * Returns identity quaternion of RigidBody has not been set.
 	 */
-	FQuat GetLocalFrameRotation() const;
+	FQuat GetLocalFrameRotationFromBody() const;
 
 	/**
 	 * Calculates and returns the frame location in world space.
@@ -88,47 +90,15 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	FVector GetGlobalFrameLocation() const;
 
 	/**
-	 * Calculates and returns the frame location in world space as-if this attachment was attached
-	 * to the given RigidBody.
-	 *
-	 * As with the regular, parameter-less, GetGlobalFrameLocation, the RigidBody is ignored if a
-	 * FrameDefiningActor has been set.
-	 *
-	 * This is used while in the Blueprint editor, where we don't yet have a "real"
-	 * ConstraintBodyAttachment or a "real" Actor that owns it.
-	 *
-	 * @param Body The body that the local location should be relative too, if no
-	 * FrameDefiningActor.
-	 * @return The world location that this ConstraintBodyAttachment represents.
-	 */
-	FVector GetGlobalFrameLocation(UAGX_RigidBodyComponent* Body) const;
-
-	/**
 	 * Calculates and returns the frame rotation in world space.
 	 */
 	FQuat GetGlobalFrameRotation() const;
 
-	/**
-	 * Calculates and returns the frame rotation in world space as-if this attachment was attached
-	 * to the given RigidBody.
-	 *
-	 * As with the regular, parameter-less, GetGlobalFrameRotation, the RigidBody is ignored if a
-	 * FrameDefiningActor has been set.
-	 *
-	 * This is used while in the Blueprint editor, where we don't yet have a "real"
-	 * ConstraintBodyAttachment or a "real" Actor that owns it.
-	 *
-	 * @param Body The body that the local rotation should be relative too, if no
-	 * FrameDefiningActor.
-	 * @return The world rotation that this ConstraintBodyAttachment represents.
-	 */
-	FQuat GetGlobalFrameRotation(UAGX_RigidBodyComponent* Body) const;
-
 	FMatrix GetGlobalFrameMatrix() const;
 
-	FMatrix GetGlobalFrameMatrix(UAGX_RigidBodyComponent* Body) const;
-
 	FRigidBodyBarrier* GetRigidBodyBarrier(bool CreateIfNeeded);
+
+	USceneComponent* Owner;
 
 #if WITH_EDITOR
 	/**
@@ -150,4 +120,7 @@ private:
 	UPROPERTY(Transient)
 	mutable AActor* RecentFrameDefiningActor;
 	USceneComponent* PreviousFrameDefiningComponent;
+
+	// Returns the currently active FrameDefiningComponent given the FrameDefiningSource selected.
+	USceneComponent* GetFinalFrameDefiningComponent() const;
 };

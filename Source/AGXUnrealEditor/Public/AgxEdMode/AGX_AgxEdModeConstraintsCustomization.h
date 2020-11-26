@@ -44,7 +44,7 @@ private: // Constraint Creator
 		UAGX_AgxEdModeConstraints* ConstraintsSubMode);
 
 	void OnFrameSourceRadioButtonChanged(
-		ECheckBoxState NewCheckedState, EAGX_ConstraintFrameSource RadioButton,
+		ECheckBoxState NewCheckedState, EAGX_ConstraintCreationFrameSource RadioButton,
 		UAGX_AgxEdModeConstraints* ConstraintsSubMode);
 
 	TArray<UClass*> ConstraintClasses;

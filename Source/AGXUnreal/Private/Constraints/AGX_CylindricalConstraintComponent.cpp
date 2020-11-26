@@ -8,8 +8,8 @@ class FRigidBodyBarrier;
 
 UAGX_CylindricalConstraintComponent::UAGX_CylindricalConstraintComponent()
 	: UAGX_Constraint2DofComponent(
-		  {EDofFlag::DOF_FLAG_ROTATIONAL_1, EDofFlag::DOF_FLAG_ROTATIONAL_2,
-		   EDofFlag::DOF_FLAG_TRANSLATIONAL_1, EDofFlag::DOF_FLAG_TRANSLATIONAL_2},
+		  {EDofFlag::DofFlagRotational1, EDofFlag::DofFlagRotational2,
+		   EDofFlag::DofFlagTranslational1, EDofFlag::DofFlagTranslational2},
 		  /*bIsSecondaryConstraint1Rotational*/ false,
 		  /*bIsSecondaryConstraint2Rotational*/ true)
 {

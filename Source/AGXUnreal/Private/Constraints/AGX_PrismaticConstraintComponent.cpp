@@ -8,9 +8,9 @@ class FRigidBodyBarrier;
 
 UAGX_PrismaticConstraintComponent::UAGX_PrismaticConstraintComponent()
 	: UAGX_Constraint1DofComponent(
-		  {EDofFlag::DOF_FLAG_ROTATIONAL_1, EDofFlag::DOF_FLAG_ROTATIONAL_2,
-		   EDofFlag::DOF_FLAG_ROTATIONAL_3, EDofFlag::DOF_FLAG_TRANSLATIONAL_1,
-		   EDofFlag::DOF_FLAG_TRANSLATIONAL_2},
+		  {EDofFlag::DofFlagRotational1, EDofFlag::DofFlagRotational2,
+		   EDofFlag::DofFlagRotational3, EDofFlag::DofFlagTranslational1,
+		   EDofFlag::DofFlagTranslational2},
 		  /*bIsSecondaryConstraintRotational*/ false)
 {
 }

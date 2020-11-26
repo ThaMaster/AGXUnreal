@@ -28,9 +28,6 @@ namespace
 		FVector const Y = R.GetScaledAxis(EAxis::Y);
 		FVector const Z = R.GetScaledAxis(EAxis::Z);
 
-		// UE_LOG(LogAGX, Warning, TEXT("Drawing axes at %.2f, %.2f, %.2f"), AxisLoc.X, AxisLoc.Y,
-		// AxisLoc.Z);
-
 		PDI->DrawLine(
 			AxisLoc, AxisLoc + X * Scale, FLinearColor::Red, DepthPriority, Thickness, DepthBias,
 			bScreenSpace);
@@ -80,34 +77,6 @@ namespace
 			Box += BoundInBodySpace.GetBox();
 		}
 		return Box;
-	}
-
-	/// \todo Consider moving GetRigidBody with fallback to FAGX_ConstraintBodyAttachment.
-	UAGX_RigidBodyComponent* GetRigidBody(
-		const FAGX_RigidBodyReference& BodyReference, AActor* Fallback)
-	{
-		if (UAGX_RigidBodyComponent* Body = BodyReference.GetRigidBody())
-		{
-			return Body;
-		}
-
-		// Not sure why this is needed when in the Blueprint editor. The intention is that a
-		// fallback OwningActor should be stored in the RigidBodyReference.
-		if (Fallback == nullptr)
-		{
-			return nullptr;
-		}
-		TArray<UAGX_RigidBodyComponent*> AllBodies;
-		Fallback->GetComponents(AllBodies, BodyReference.bSearchChildActors);
-		for (UAGX_RigidBodyComponent* Candidate : AllBodies)
-		{
-			if (Candidate->GetFName() == BodyReference.BodyName)
-			{
-				return Candidate;
-			}
-		}
-
-		return nullptr;
 	}
 
 	FVector GetConstantDistanceLocation(
@@ -232,8 +201,6 @@ namespace
 		float CircleScreenFactor, const FColor& Color, const float Thickness,
 		const FSceneView* View, FPrimitiveDrawInterface* PDI)
 	{
-		// UE_LOG(LogAGX, Log, TEXT("Rendering body markers for body '%s'."), *Body->GetName());
-
 #if 0 // bHighlightUsingBoundingBox
 	FBox LocalAABB = GetBoundingBox(Body);
 
@@ -276,12 +243,12 @@ namespace
 			constexpr float FRAME_GIZMO_SCALE {0.2f};
 
 			const float AttachemtFrameDistance =
-				FVector::Dist(Attachment.GetGlobalFrameLocation(Body), View->ViewLocation);
+				FVector::Dist(Attachment.GetGlobalFrameLocation(), View->ViewLocation);
 			const float FrameGizmoSize = GetWorldSizeFromScreenFactor(
 				FRAME_GIZMO_SCALE, FMath::DegreesToRadians(View->FOV), AttachemtFrameDistance);
 
 			DrawCoordinateSystemAxes(
-				PDI, Attachment.GetGlobalFrameLocation(Body),
+				PDI, Attachment.GetGlobalFrameLocation(),
 				Attachment.GetGlobalFrameRotation().Rotator(), FrameGizmoSize, SDPG_Foreground,
 				0.0f,
 				/*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
@@ -313,32 +280,32 @@ namespace
 
 		const FColor RotDofPrimitiveColor = IsViolated ? ColorViolated : ROT_COLOR_DEFAULT;
 		const FColor TransDofPrimitiveColor = IsViolated ? ColorViolated : TRANS_COLOR_DEFAULT;
-		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_1))
+		if (!Constraint->IsDofLocked(EDofFlag::DofFlagRotational1))
 		{
 			DrawRotationalPrimitive(
 				PDI, RotDofPrimitiveColor, AttachmentTransform, EAxis::X, Radius, RotOffset);
 		}
-		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_2))
+		if (!Constraint->IsDofLocked(EDofFlag::DofFlagRotational2))
 		{
 			DrawRotationalPrimitive(
 				PDI, RotDofPrimitiveColor, AttachmentTransform, EAxis::Y, Radius, RotOffset);
 		}
-		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_ROTATIONAL_3))
+		if (!Constraint->IsDofLocked(EDofFlag::DofFlagRotational3))
 		{
 			DrawRotationalPrimitive(
 				PDI, RotDofPrimitiveColor, AttachmentTransform, EAxis::Z, Radius, RotOffset);
 		}
-		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_1))
+		if (!Constraint->IsDofLocked(EDofFlag::DofFlagTranslational1))
 		{
 			DrawTranslationalPrimitive(
 				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::X, Height, TransOffset);
 		}
-		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_2))
+		if (!Constraint->IsDofLocked(EDofFlag::DofFlagTranslational2))
 		{
 			DrawTranslationalPrimitive(
 				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::Y, Height, TransOffset);
 		}
-		if (!Constraint->IsDofLocked(EDofFlag::DOF_FLAG_TRANSLATIONAL_3))
+		if (!Constraint->IsDofLocked(EDofFlag::DofFlagTranslational3))
 		{
 			DrawTranslationalPrimitive(
 				PDI, TransDofPrimitiveColor, AttachmentTransform, EAxis::Z, Height, TransOffset);
@@ -396,12 +363,8 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 
 	const bool Violated = Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER);
 
-	const FAGX_RigidBodyReference& BodyReference1 = Constraint->BodyAttachment1.RigidBody;
-	const FAGX_RigidBodyReference& BodyReference2 = Constraint->BodyAttachment2.RigidBody;
-
-	AActor* BodyOwnerFallback = Constraint->GetOwner();
-	UAGX_RigidBodyComponent* Body1 = GetRigidBody(BodyReference1, BodyOwnerFallback);
-	UAGX_RigidBodyComponent* Body2 = GetRigidBody(BodyReference2, BodyOwnerFallback);
+	UAGX_RigidBodyComponent* Body1 = Constraint->BodyAttachment1.GetRigidBody();
+	UAGX_RigidBodyComponent* Body2 = Constraint->BodyAttachment2.GetRigidBody();
 
 	const FColor HighlightColor(243, 139, 0);
 	const float HighlightThickness(1.0f);
@@ -489,9 +452,6 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraintHUD(
 			Position * Canvas->GetViewRect().Size(), Text, Font, FColor::Red);
 
 		Canvas->DrawItem(CanvasText);
-
-		// GEngine->AddOnScreenDebugMessage(45456, 5.f, FColor::Red, TEXT("Constraint Frames In
-		// Violated State!"));
 	}
 }
 

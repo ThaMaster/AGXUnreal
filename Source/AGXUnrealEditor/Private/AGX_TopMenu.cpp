@@ -5,6 +5,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 #include "AGXUnrealEditor.h"
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_BallConstraintActor.h"
 #include "Constraints/AGX_CylindricalConstraintActor.h"
 #include "Constraints/AGX_DistanceConstraintActor.h"

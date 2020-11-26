@@ -73,7 +73,7 @@ public:
 
 	/// \todo Consider creating a Barrier for agx::Attachment.
 	FVector GetLocalLocation(int32 BodyIndex) const;
-	FRotator GetLocalRotation(int32 BodyIndex) const;
+	FQuat GetLocalRotation(int32 BodyIndex) const;
 
 private:
 	FConstraintBarrier(const FConstraintBarrier&) = delete;

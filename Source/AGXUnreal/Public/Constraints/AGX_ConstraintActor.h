@@ -48,7 +48,6 @@ public:
 	/** Indicates whether this actor should participate in level bounds calculations. */
 	bool IsLevelBoundsRelevant() const override;
 
-
 protected:
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Actor")
 	UAGX_ConstraintComponent* ConstraintComponent;

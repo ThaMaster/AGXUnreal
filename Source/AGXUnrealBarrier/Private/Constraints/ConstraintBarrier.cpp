@@ -197,10 +197,10 @@ FVector FConstraintBarrier::GetLocalLocation(int32 Index) const
 	return TranslateUnreal;
 }
 
-FRotator FConstraintBarrier::GetLocalRotation(int32 Index) const
+FQuat FConstraintBarrier::GetLocalRotation(int32 Index) const
 {
 	check(HasNative());
 	agx::Quat RotateAGX = GetFrame(*NativeRef->Native, Index)->getLocalRotate();
 	FQuat RotateUnreal = Convert(RotateAGX);
-	return FRotator(RotateUnreal);
+	return RotateUnreal;
 }

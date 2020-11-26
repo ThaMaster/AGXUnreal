@@ -11,37 +11,54 @@
 #include "Components/SceneComponent.h"
 #include "UObject/UObjectGlobals.h"
 
+
+FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment(USceneComponent* InOwner)
+	: Owner {InOwner}
+{
+}
+
 UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody() const
 {
 	return RigidBody.GetRigidBody();
 }
 
-FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocation() const
+FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocationFromBody() const
 {
 	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
 	{
-		/// \todo Someone is using a FAGX_ConstraintBodyAttachment that isn't
-		/// attached to any body. It's unclear to me what that really means, and if
-		/// it should be legal or not. Logging for now, but remove the logging when
-		/// we find a case where such attachments makes sense.
 		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Something is getting the local location of a ConstraintBodyAttachment without an "
-				 "attached body. May produce unwanted behavior."));
-		return LocalFrameLocation;
+			LogAGX, Error,
+			TEXT("GetLocalFrameLocationFromBody() called on AGX_ConstraintBodyAttachment whose "
+				 "RigidBody is not set. Returning zero vector."));
+		return FVector::ZeroVector;
 	}
 
-	/// \todo This does a pointless transform/inversetransform if there is no
-	/// frame defining actor. Detect that case and just return LocalFrameLocation.
+	// If the FrameDefiningSource is RigidBody, the LocalFrameLocation is already given in RigidBody's
+	// frame by definition and we can simply return the value directly.
+	if (FrameDefiningSource == EAGX_FrameDefiningSource::RigidBody)
+	{
+		return LocalFrameLocation;
+	}
 
 	return Body->GetComponentTransform().InverseTransformPositionNoScale(GetGlobalFrameLocation());
 }
 
-FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotation() const
+FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotationFromBody() const
 {
 	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("GetLocalFrameRotationFromBody() called on AGX_ConstraintBodyAttachment whose "
+				 "RigidBody is not set. Returning identity quaternion."));
+		return FQuat::Identity;
+	}
+
+	// If the FrameDefiningSource is RigidBody, the LocalFrameRotation is already given in RigidBody's
+	// frame by definition and we can simply return the value directly.
+	if (FrameDefiningSource == EAGX_FrameDefiningSource::RigidBody)
 	{
 		return LocalFrameRotation.Quaternion();
 	}
@@ -51,96 +68,30 @@ FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotation() const
 
 FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 {
-	/// \todo Is it safe to replace this code with a call to GetGlobalFrameLocation(GetRigidBody())?
-	/// The difference would be that GetRigidBody would be called in cases where it would not
-	/// before.
+	if (USceneComponent* FrameDefiningComp = GetFinalFrameDefiningComponent())
+	{
+		return FrameDefiningComp->GetComponentTransform().TransformPositionNoScale(
+			LocalFrameLocation);
+	}
 
-	if (USceneComponent* Origin = FrameDefiningComponent.GetSceneComponent())
-	{
-		return Origin->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
-	}
-	else if (UAGX_RigidBodyComponent* Body = GetRigidBody())
-	{
-		return Body->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
-	}
-	else
-	{
-		// When there is nothing that the local location is relative to then we
-		// assume it is a global location as well.
-		/// \todo When would that ever happen?
-		return LocalFrameLocation;
-	}
-}
-
-FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation(UAGX_RigidBodyComponent* Body) const
-{
-	if (USceneComponent* Origin = FrameDefiningComponent.GetSceneComponent())
-	{
-		return Origin->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
-	}
-	else if (Body != nullptr)
-	{
-		return Body->GetComponentTransform().TransformPositionNoScale(LocalFrameLocation);
-	}
-	else
-	{
-		// When there is nothing that the local location is relative to then we assume it is a
-		// global location as well.
-		return LocalFrameLocation;
-	}
+	return LocalFrameLocation;
 }
 
 FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 {
-	/// \todo Is it safe to replace this code with a call to GetGlobalFrameRotation(GetRigidBody())?
-	/// The difference would be that GetRigidBody would be called in cases where it would not
-	/// before.
+	if (USceneComponent * FrameDefiningComp = GetFinalFrameDefiningComponent())
+	{
+		return FrameDefiningComp->GetComponentTransform().TransformRotation(
+			LocalFrameRotation.Quaternion());
+	}
 
-	if (USceneComponent* Origin = FrameDefiningComponent.GetSceneComponent())
-	{
-		return Origin->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
-	}
-	else if (UAGX_RigidBodyComponent* Body = GetRigidBody())
-	{
-		return Body->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
-	}
-	else
-	{
-		// When there is nothing that the local rotation is relative to then we
-		// assume it is a global rotation.
-		return LocalFrameRotation.Quaternion();
-	}
-}
-
-FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation(UAGX_RigidBodyComponent* Body) const
-{
-	if (USceneComponent* Origin = FrameDefiningComponent.GetSceneComponent())
-	{
-		return Origin->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
-	}
-	else if (Body != nullptr)
-	{
-		return Body->GetComponentTransform().TransformRotation(LocalFrameRotation.Quaternion());
-	}
-	else
-	{
-		// When there is nothing that the local rotation is relative to then we
-		// assume it is a global rotation.
-		return LocalFrameRotation.Quaternion();
-	}
+	return LocalFrameRotation.Quaternion();
 }
 
 FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix() const
 {
 	FQuat Rotation = GetGlobalFrameRotation();
 	FVector Location = GetGlobalFrameLocation();
-	return FMatrix(Rotation.GetAxisX(), Rotation.GetAxisY(), Rotation.GetAxisZ(), Location);
-}
-
-FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix(UAGX_RigidBodyComponent* Body) const
-{
-	FQuat Rotation = GetGlobalFrameRotation(Body);
-	FVector Location = GetGlobalFrameLocation(Body);
 	return FMatrix(Rotation.GetAxisX(), Rotation.GetAxisY(), Rotation.GetAxisZ(), Location);
 }
 
@@ -203,4 +154,18 @@ void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
 	}
 }
 
+USceneComponent* FAGX_ConstraintBodyAttachment::GetFinalFrameDefiningComponent() const
+{
+	switch (FrameDefiningSource)
+	{
+		case EAGX_FrameDefiningSource::Constraint:
+			return Owner;
+		case EAGX_FrameDefiningSource::RigidBody:
+			return GetRigidBody();
+		case EAGX_FrameDefiningSource::Other:
+			return FrameDefiningComponent.GetSceneComponent();
+	}
+
+	return nullptr;
+}
 #endif
