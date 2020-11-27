@@ -19,7 +19,4 @@ class AGXUNREAL_API UAGX_TireComponent : public UActorComponent
 public:
 	UAGX_TireComponent();
 	virtual ~UAGX_TireComponent() = default;
-
-	UPROPERTY(EditAnywhere, Category = "AGX Tire")
-	float OuterRadius;
 };

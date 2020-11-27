@@ -19,13 +19,22 @@ class AGXUNREAL_API UAGX_TwoBodyTireComponent : public UAGX_TireComponent
 {
 	GENERATED_BODY()
 
+public:
+	UAGX_TwoBodyTireComponent() = default;
+	virtual ~UAGX_TwoBodyTireComponent() = default;
+
 	UPROPERTY(EditAnywhere, Category = "AGX Tire")
 	FAGX_RigidBodyReference HubRigidBody;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Tire")
+	float InnerRadius;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Tire")
 	FAGX_RigidBodyReference TireRigidBody;
 
-public:
-	UAGX_TwoBodyTireComponent() = default;
-	virtual ~UAGX_TwoBodyTireComponent() = default;
+	UPROPERTY(EditAnywhere, Category = "AGX Tire")
+	float OuterRadius;
+
+	UAGX_RigidBodyComponent* GetHubRigidBody() const;
+	UAGX_RigidBodyComponent* GetTireRigidBody() const;
 };
