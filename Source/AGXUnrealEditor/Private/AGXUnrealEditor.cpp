@@ -50,6 +50,8 @@
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialCustomization.h"
 #include "Terrain/AGX_Terrain.h"
+#include "Tires/AGX_TireComponentVisualizer.h"
+#include "Tires/AGX_TireComponent.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -256,15 +258,21 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 	RegisterComponentVisualizer(
 		UAGX_ConstraintComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_ConstraintComponentVisualizer));
+
 	RegisterComponentVisualizer(
 		UAGX_ConstraintFrameComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_ConstraintFrameComponentVisualizer));
+
+	RegisterComponentVisualizer(
+		UAGX_TireComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_TireComponentVisualizer));
 }
 
 void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
 {
 	UnregisterComponentVisualizer(UAGX_ConstraintComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName());
+	UnregisterComponentVisualizer(UAGX_TireComponent::StaticClass()->GetFName());
 }
 
 void FAGXUnrealEditorModule::RegisterComponentVisualizer(
