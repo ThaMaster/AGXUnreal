@@ -7,7 +7,7 @@
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
 
-// Unreal Engine inclues.
+// Unreal Engine includes.
 #include "CanvasItem.h"
 #include "CanvasTypes.h"
 #include "Engine.h"

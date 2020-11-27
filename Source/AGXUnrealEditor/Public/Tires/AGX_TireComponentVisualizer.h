@@ -1,8 +1,7 @@
 #pragma once
 
-// AGX Unreal includes.
+// Unreal Engine includes.
 #include "CoreMinimal.h"
-#include "IDetailCustomization.h"
 #include "ComponentVisualizer.h"
 
 class FPrimitiveDrawInterface;
