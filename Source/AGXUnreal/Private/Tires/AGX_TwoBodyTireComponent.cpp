@@ -1,1 +1,1 @@
-#include "Tire/AGX_TwoBodyTireComponent.h"
+#include "Tires/AGX_TwoBodyTireComponent.h"

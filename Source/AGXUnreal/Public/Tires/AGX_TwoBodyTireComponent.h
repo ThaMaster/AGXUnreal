@@ -1,7 +1,8 @@
 #pragma once
 
 // AGXUnreal includes.
-#include "Tire/AGX_TireComponent.h"
+#include "Tires/AGX_TireComponent.h"
+#include "AGX_RigidBodyReference.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
