@@ -26,7 +26,7 @@ public:
 	virtual ~UAGX_TwoBodyTireComponent() = default;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Tire")
-	FAGX_RigidBodyReference HubRigidBody;
+	float OuterRadius;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Tire")
 	float InnerRadius;
@@ -35,7 +35,41 @@ public:
 	FAGX_RigidBodyReference TireRigidBody;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Tire")
-	float OuterRadius;
+	FAGX_RigidBodyReference HubRigidBody;
+
+	// TODO BEFORE MERGE: Set proper initial values (look at agx::Hinge).
+
+	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	float RadialStiffness;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	float LateralStiffness;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	float BendingStiffness;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	float TorsionalStiffness;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	float RadialDamping;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	float LateralDamping;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	float BendingDamping;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	float TorsionalDamping;
+
+	/**
+	 * Set the implicit friction multiplier in order to get different behavior for different
+	 * friction directions (forwards, sideways). This is only necessary for implicit contact
+	 * materials, since for explicit ones, this can be set directly at the contact material instead.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Tire")
+	FVector2D ImplicitFrictionMultiplier;
 
 	UAGX_RigidBodyComponent* GetHubRigidBody() const;
 

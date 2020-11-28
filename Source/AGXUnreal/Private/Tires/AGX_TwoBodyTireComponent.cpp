@@ -22,6 +22,28 @@ void UAGX_TwoBodyTireComponent::AllocateNative()
 
 void UAGX_TwoBodyTireComponent::UpdateNativeProperties()
 {
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tire %s UpdateNativeProperties failed, HasNative() returned false."),
+			*GetFName().ToString());
+		return;
+	}
+
+	FTwoBodyTireBarrier* Barrier = static_cast<FTwoBodyTireBarrier*>(GetNative());
+
+	Barrier->SetStiffness(RadialStiffness, FTwoBodyTireBarrier::RADIAL);
+	Barrier->SetStiffness(LateralStiffness, FTwoBodyTireBarrier::LATERAL);
+	Barrier->SetStiffness(BendingStiffness, FTwoBodyTireBarrier::BENDING);
+	Barrier->SetStiffness(TorsionalStiffness, FTwoBodyTireBarrier::TORSIONAL);
+
+	Barrier->SetDamping(RadialDamping, FTwoBodyTireBarrier::RADIAL);
+	Barrier->SetDamping(LateralDamping, FTwoBodyTireBarrier::LATERAL);
+	Barrier->SetDamping(BendingDamping, FTwoBodyTireBarrier::BENDING);
+	Barrier->SetDamping(TorsionalDamping, FTwoBodyTireBarrier::TORSIONAL);
+
+	Barrier->SetImplicitFrictionMultiplier(ImplicitFrictionMultiplier);
 }
 
 FTwoBodyTireBarrier* UAGX_TwoBodyTireComponent::CreateTwoBodyTireBarrier()

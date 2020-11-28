@@ -8,6 +8,7 @@
 #include "AGX_LogCategory.h"
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 #include "RigidBodyBarrier.h"
+#include "Tires/TwoBodyTireBarrier.h"
 
 // Unreal Engine includes.
 #include "Containers/UnrealString.h"
@@ -27,6 +28,7 @@
 #include <agx/Quat.h>
 #include <agx/Vec2.h>
 #include <agx/Vec3.h>
+#include <agxModel/TwoBodyTire.h>
 #include "EndAGXIncludes.h"
 
 /// \note These functions assume that agx::Real and float are different types.
@@ -379,6 +381,71 @@ inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type Log
 
 			// Use NOTIFY_INFO as default, if unknown log verbosity is given
 			return agx::Notify::NOTIFY_INFO;
+	}
+}
+
+inline agxModel::TwoBodyTire::DeformationMode Convert(FTwoBodyTireBarrier::DeformationMode Mode)
+{
+	switch (Mode)
+	{
+		case FTwoBodyTireBarrier::RADIAL:
+		{
+			return agxModel::TwoBodyTire::RADIAL;
+		}
+		case FTwoBodyTireBarrier::LATERAL:
+		{
+			return agxModel::TwoBodyTire::LATERAL;
+		}
+		case FTwoBodyTireBarrier::BENDING:
+		{
+			return agxModel::TwoBodyTire::BENDING;
+		}
+		case FTwoBodyTireBarrier::TORSIONAL:
+		{
+			return agxModel::TwoBodyTire::TORSIONAL;
+		}
+		default:
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an FTwoBodyTireBarrier::DeformationMode "
+					 "literal of unknown type to an agxModel::TwoBodyTire::DeformationMode "
+					 "literal. Returning agxModel::TwoBodyTire::RADIAL."));
+			return agxModel::TwoBodyTire::RADIAL;
+		}
+	}
+}
+
+inline FTwoBodyTireBarrier::DeformationMode Convert(agxModel::TwoBodyTire::DeformationMode Mode)
+{
+	switch (Mode)
+	{
+		case agxModel::TwoBodyTire::RADIAL:
+		{
+			return FTwoBodyTireBarrier::RADIAL;
+		}
+		case agxModel::TwoBodyTire::LATERAL:
+		{
+			return FTwoBodyTireBarrier::LATERAL;
+		}
+		case agxModel::TwoBodyTire::BENDING:
+		{
+			return FTwoBodyTireBarrier::BENDING;
+		}
+		case agxModel::TwoBodyTire::TORSIONAL:
+		{
+			return FTwoBodyTireBarrier::TORSIONAL;
+		}
+		default:
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an "
+					 "agxModel::TwoBodyTire::DeformationMode "
+					 "literal of unknown type to an FTwoBodyTireBarrier::DeformationMode "
+					 "literal. Returning FTwoBodyTireBarrier::DeformationMode::RADIAL."));
+			return FTwoBodyTireBarrier::DeformationMode::RADIAL;
+		}
 	}
 }
 
