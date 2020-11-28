@@ -25,15 +25,27 @@ FTwoBodyTireBarrier::~FTwoBodyTireBarrier()
 {
 }
 
-
 void FTwoBodyTireBarrier::AllocateNative(
 	const FRigidBodyBarrier* TireRigidBody, float OuterRadius,
 	const FRigidBodyBarrier* HubRigidBody, float InnerRadius)
 {
 	check(!HasNative());
 
-	agx::RigidBody* Tire = FAGX_AgxDynamicsObjectsAccess::GetFrom(TireRigidBody);
-	agx::RigidBody* Hub = FAGX_AgxDynamicsObjectsAccess::GetFrom(HubRigidBody);
+	agx::RigidBody* TireBody = FAGX_AgxDynamicsObjectsAccess::GetFrom(TireRigidBody);
+	agx::RigidBody* HubBody = FAGX_AgxDynamicsObjectsAccess::GetFrom(HubRigidBody);
 
-	NativeRef->Native = new agxModel::TwoBodyTire(Tire, OuterRadius, Hub, InnerRadius);
+	agxModel::TwoBodyTireRef Tire =
+		new agxModel::TwoBodyTire(TireBody, OuterRadius, HubBody, InnerRadius);
+
+	// Use of invalid agxModel::TwoBodyTire may lead to sudden crash during runtime.
+	if (Tire->isValid())
+	{
+		NativeRef->Native = Tire;
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Error during creation of agxModel::TwoBodyTire, isValid() returned false."));
+	}
 }

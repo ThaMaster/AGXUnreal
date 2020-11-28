@@ -10,6 +10,8 @@
 
 #include "AGX_TwoBodyTireComponent.generated.h"
 
+class FTwoBodyTireBarrier;
+
 /**
  * TODO add descr.
  *
@@ -36,5 +38,14 @@ public:
 	float OuterRadius;
 
 	UAGX_RigidBodyComponent* GetHubRigidBody() const;
+
 	UAGX_RigidBodyComponent* GetTireRigidBody() const;
+
+protected:
+	virtual void AllocateNative() override;
+
+	virtual void UpdateNativeProperties() override;
+
+private:
+	FTwoBodyTireBarrier* CreateTwoBodyTireBarrier();
 };
