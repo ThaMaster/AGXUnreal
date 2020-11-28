@@ -3,6 +3,7 @@
 // AGXUnreal includes.
 #include "AGXRefs.h"
 #include "TypeConversions.h"
+#include "AGX_LogCategory.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
