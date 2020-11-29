@@ -23,7 +23,8 @@ public:
 
 	void AllocateNative(
 		const FRigidBodyBarrier* TireRigidBody, float OuterRadius,
-		const FRigidBodyBarrier* HubRigidBody, float InnerRadius);
+		const FRigidBodyBarrier* HubRigidBody, float InnerRadius, const FVector& LocalLocation,
+		const FQuat& LocalRotation);
 
 	void SetDamping(float Damping, DeformationMode Mode);
 	float GetDamping(DeformationMode Mode) const;

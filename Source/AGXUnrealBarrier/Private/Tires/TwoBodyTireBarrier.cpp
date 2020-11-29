@@ -28,15 +28,17 @@ FTwoBodyTireBarrier::~FTwoBodyTireBarrier()
 
 void FTwoBodyTireBarrier::AllocateNative(
 	const FRigidBodyBarrier* TireRigidBody, float OuterRadius,
-	const FRigidBodyBarrier* HubRigidBody, float InnerRadius)
+	const FRigidBodyBarrier* HubRigidBody, float InnerRadius, const FVector& LocalLocation,
+	const FQuat& LocalRotation)
 {
 	check(!HasNative());
 
 	agx::RigidBody* TireBody = FAGX_AgxDynamicsObjectsAccess::GetFrom(TireRigidBody);
 	agx::RigidBody* HubBody = FAGX_AgxDynamicsObjectsAccess::GetFrom(HubRigidBody);
+	agx::AffineMatrix4x4 LocalTransform = ConvertMatrix(LocalLocation, LocalRotation);
 
 	agxModel::TwoBodyTireRef Tire =
-		new agxModel::TwoBodyTire(TireBody, OuterRadius, HubBody, InnerRadius);
+		new agxModel::TwoBodyTire(TireBody, OuterRadius, HubBody, InnerRadius, LocalTransform);
 
 	// Use of invalid agxModel::TwoBodyTire may lead to sudden crash during runtime.
 	if (Tire->isValid())

@@ -37,6 +37,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Tire")
 	FAGX_RigidBodyReference HubRigidBody;
 
+	UPROPERTY(EditAnywhere, Category = "AGX Tire")
+	FVector LocalLocation;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Tire")
+	FRotator LocalRotation;
+
 	// TODO BEFORE MERGE: Set proper initial values (look at agx::Hinge).
 
 	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
@@ -74,6 +80,8 @@ public:
 	UAGX_RigidBodyComponent* GetHubRigidBody() const;
 
 	UAGX_RigidBodyComponent* GetTireRigidBody() const;
+
+	FTransform GetGlobalTireTransform() const;
 
 protected:
 	virtual void AllocateNative() override;

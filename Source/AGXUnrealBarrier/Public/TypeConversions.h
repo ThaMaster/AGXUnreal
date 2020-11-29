@@ -455,6 +455,11 @@ inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& Fra
 		agx::AffineMatrix4x4(Convert(FrameRotation), ConvertVector(FramePosition)));
 }
 
+inline agx::AffineMatrix4x4 ConvertMatrix(const FVector& FramePosition, const FQuat& FrameRotation)
+{
+	return agx::AffineMatrix4x4(Convert(FrameRotation), ConvertVector(FramePosition));
+}
+
 inline uint32 StringTo32BitFnvHash(const FString& StringUnreal)
 {
 	TArray<TCHAR> Bytes = StringUnreal.GetCharArray();

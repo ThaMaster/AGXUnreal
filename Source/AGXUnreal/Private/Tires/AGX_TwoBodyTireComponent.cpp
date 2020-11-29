@@ -15,6 +15,26 @@ UAGX_RigidBodyComponent* UAGX_TwoBodyTireComponent::GetTireRigidBody() const
 	return TireRigidBody.GetRigidBody();
 }
 
+FTransform UAGX_TwoBodyTireComponent::GetGlobalTireTransform() const
+{
+	UAGX_RigidBodyComponent* TireBody = GetTireRigidBody();
+	if (TireBody == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tire %s GetGlobalTireTransform failed, Tire Rigid Body was nullptr."),
+			*GetFName().ToString());
+		return FTransform::Identity;
+	}
+
+	// This reflects the behaviour of the agxModel::TwoBodyTire where a local transform relative
+	// to the tire Rigid Body is used to define the final transform of the Tire model.
+	FVector Pos = TireBody->GetComponentTransform().TransformPositionNoScale(LocalLocation);
+	FQuat Rot = TireBody->GetComponentTransform().TransformRotation(LocalRotation.Quaternion());
+
+	return FTransform(Rot, Pos);
+}
+
 void UAGX_TwoBodyTireComponent::AllocateNative()
 {
 	NativeBarrier.Reset(CreateTwoBodyTireBarrier());
@@ -75,7 +95,8 @@ FTwoBodyTireBarrier* UAGX_TwoBodyTireComponent::CreateTwoBodyTireBarrier()
 		return Barrier;
 	}
 
-	Barrier->AllocateNative(TireBarrier, OuterRadius, HubBarrier, InnerRadius);
+	Barrier->AllocateNative(
+		TireBarrier, OuterRadius, HubBarrier, InnerRadius, LocalLocation, LocalRotation.Quaternion());
 
 	return Barrier;
 }

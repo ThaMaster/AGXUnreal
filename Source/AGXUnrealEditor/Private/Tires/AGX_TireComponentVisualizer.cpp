@@ -14,29 +14,43 @@
 namespace
 {
 	void DrawTirePrimitive(
-		UAGX_RigidBodyComponent* RigidBody, float Radius, const FSceneView* View,
-		FPrimitiveDrawInterface* PDI, FColor Color)
+		const FTransform& TireTransform, float OuterRadius, float InnerRadius,
+		const FSceneView* View, FPrimitiveDrawInterface* PDI, FColor Color)
 	{
-		if (RigidBody == nullptr || Radius <= 0.f)
+		if (OuterRadius <= 0.f || InnerRadius <= 0.f)
 		{
 			return;
 		}
 
 		constexpr int32 NUM_SIDES {64};
-		const FTransform BodyTransform = RigidBody->GetComponentTransform();
-		const float CylinderHalfHeight = 0.1f * Radius;
+		const float OuterCylinderHalfHeight = 0.1f * OuterRadius;
+		const float InnerCylinderHalfHeight = 0.1f * InnerRadius;
 
-		// Note: The agx::Tire model is implemented in such a way that it is assumed that the axis of
-		// rotation of the tire is along the y-axis of the tire RigidBody. Therefore we draw the
-		// cylinder so that it's principal axis is aligned with the y-axis. We have to consider the
+		// Note: The agx::Tire model is implemented in such a way that it assumes that the axis of
+		// rotation of the tire is along the y-axis of the final TireTransform that is given by the
+		// transform of the tire RigidBody plus a local offset position and rotation. Therefore we
+		// draw the Tire primitives along the y-axis of the TireTransform. We have to consider the
 		// different coordinate systems used in AGX Dynamics vs Unreal; AGX Dynamics y-axis goes in
-		// Unreal's negative y-axis direction, but since we are drawing a symmetric cylinder with no
-		// offset from origo there is no difference in this case.
+		// Unreal's negative y-axis direction, but since we are drawing a symmetric collection of
+		// primitives with no offset from origo there is no difference in this case.
 		DrawWireCylinder(
-			PDI, BodyTransform.GetLocation(), BodyTransform.GetUnitAxis(EAxis::Z),
-			BodyTransform.GetUnitAxis(EAxis::X), BodyTransform.GetUnitAxis(EAxis::Y), Color, Radius,
-			CylinderHalfHeight,
-			NUM_SIDES, SDPG_Foreground);
+			PDI, TireTransform.GetLocation(), TireTransform.GetUnitAxis(EAxis::Z),
+			TireTransform.GetUnitAxis(EAxis::X), TireTransform.GetUnitAxis(EAxis::Y), Color,
+			OuterRadius, OuterCylinderHalfHeight, NUM_SIDES, SDPG_Foreground);
+
+		DrawWireCylinder(
+			PDI, TireTransform.GetLocation(), TireTransform.GetUnitAxis(EAxis::Z),
+			TireTransform.GetUnitAxis(EAxis::X), TireTransform.GetUnitAxis(EAxis::Y), Color,
+			InnerRadius, InnerCylinderHalfHeight, NUM_SIDES, SDPG_Foreground);
+
+		const float LineLength = 75.0f;
+		const float DashSize = 1.0f;
+		const FVector LineStart =
+			TireTransform.GetLocation() + TireTransform.GetUnitAxis(EAxis::Y) * LineLength / 2;
+		const FVector LineEnd =
+			TireTransform.GetLocation() - TireTransform.GetUnitAxis(EAxis::Y) * LineLength / 2;
+
+		DrawDashedLine(PDI, LineStart, LineEnd, Color, DashSize, SDPG_Foreground);
 	}
 
 	void DrawTwoBodyTire(
@@ -47,13 +61,14 @@ namespace
 			return;
 		}
 
-		const FColor TirePrimitiveColor(240, 230, 0);
+		if (Tire->GetTireRigidBody())
+		{
+			const FColor TirePrimitiveColor(240, 230, 0);
 
-		UAGX_RigidBodyComponent* HubRigidBody = Tire->GetHubRigidBody();
-		UAGX_RigidBodyComponent* TireRigidBody = Tire->GetTireRigidBody();
-
-		DrawTirePrimitive(HubRigidBody, Tire->InnerRadius, View, PDI, TirePrimitiveColor);
-		DrawTirePrimitive(TireRigidBody, Tire->OuterRadius, View, PDI, TirePrimitiveColor);
+			DrawTirePrimitive(
+				Tire->GetGlobalTireTransform(), Tire->OuterRadius, Tire->InnerRadius, View, PDI,
+				TirePrimitiveColor);
+		}
 	}
 }
 
