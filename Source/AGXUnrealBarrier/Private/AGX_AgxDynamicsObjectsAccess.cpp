@@ -5,11 +5,13 @@
 #include "RigidBodyBarrier.h"
 #include "SimulationBarrier.h"
 #include "Shapes/ShapeBarrier.h"
+#include "Constraints/HingeBarrier.h"
 #include "AGX_LogCategory.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/RigidBody.h>
+#include <agx/Hinge.h>
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
@@ -82,3 +84,14 @@ agxCollide::Shape* FAGX_AgxDynamicsObjectsAccess::GetShapeFrom(const FShapeBarri
 
 	return Barrier->GetNative()->NativeShape.get();
 }
+
+agx::Hinge* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FHingeBarrier* Barrier)
+{
+	if (!AgxDynamicsObjectAccess_Helper::CheckAgxDynamicsObject(Barrier))
+	{
+		return nullptr;
+	}
+
+	return Barrier->GetNative()->Native.get()->as<agx::Hinge>();
+}
+

@@ -3,6 +3,7 @@
 namespace agx
 {
 	class RigidBody;
+	class Hinge;
 }
 
 namespace agxSDK
@@ -19,6 +20,7 @@ namespace agxCollide
 class FRigidBodyBarrier;
 class FSimulationBarrier;
 class FShapeBarrier;
+class FHingeBarrier;
 
 class AGXUNREALBARRIER_API FAGX_AgxDynamicsObjectsAccess
 {
@@ -27,4 +29,5 @@ public:
 	static agxSDK::Simulation* GetFrom(const FSimulationBarrier* Barrier);
 	static agxCollide::Geometry* GetGeometryFrom(const FShapeBarrier* Barrier);
 	static agxCollide::Shape* GetShapeFrom(const FShapeBarrier* Barrier);
+	static agx::Hinge* GetFrom(const FHingeBarrier* Barrier);
 };
