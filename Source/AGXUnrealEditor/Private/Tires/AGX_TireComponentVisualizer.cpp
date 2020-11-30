@@ -56,7 +56,7 @@ namespace
 	void DrawTwoBodyTire(
 		const UAGX_TwoBodyTireComponent* Tire, const FSceneView* View, FPrimitiveDrawInterface* PDI)
 	{
-		if (Tire == nullptr || Tire->Visible == false)
+		if (Tire == nullptr)
 		{
 			return;
 		}
@@ -76,8 +76,10 @@ void FAGX_TireComponentVisualizer::DrawVisualization(
 	const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI)
 {
 	const UAGX_TwoBodyTireComponent* Tire = Cast<const UAGX_TwoBodyTireComponent>(Component);
-	if (Tire == nullptr)
+	if (Tire == nullptr || Tire->Visible == false)
+	{
 		return;
+	}
 
 	DrawTwoBodyTire(Tire, View, PDI);
 }
