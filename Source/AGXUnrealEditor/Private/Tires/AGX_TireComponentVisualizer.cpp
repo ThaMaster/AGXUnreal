@@ -56,7 +56,7 @@ namespace
 	void DrawTwoBodyTire(
 		const UAGX_TwoBodyTireComponent* Tire, const FSceneView* View, FPrimitiveDrawInterface* PDI)
 	{
-		if (Tire == nullptr)
+		if (Tire == nullptr || Tire->Visible == false)
 		{
 			return;
 		}

@@ -77,6 +77,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
 	FVector2D ImplicitFrictionMultiplier;
 
+	UPROPERTY(EditAnywhere, Category = "Rendering")
+	bool Visible = true;
+
 	UAGX_RigidBodyComponent* GetHubRigidBody() const;
 
 	UAGX_RigidBodyComponent* GetTireRigidBody() const;
