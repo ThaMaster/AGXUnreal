@@ -74,7 +74,7 @@ public:
 	 * friction directions (forwards, sideways). This is only necessary for implicit contact
 	 * materials, since for explicit ones, this can be set directly at the contact material instead.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire")
+	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
 	FVector2D ImplicitFrictionMultiplier;
 
 	UAGX_RigidBodyComponent* GetHubRigidBody() const;
