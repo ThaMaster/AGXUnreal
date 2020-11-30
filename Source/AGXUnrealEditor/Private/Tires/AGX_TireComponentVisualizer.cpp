@@ -43,14 +43,14 @@ namespace
 			TireTransform.GetUnitAxis(EAxis::X), TireTransform.GetUnitAxis(EAxis::Y), Color,
 			InnerRadius, InnerCylinderHalfHeight, NUM_SIDES, SDPG_Foreground);
 
-		const float LineLength = 75.0f;
-		const float DashSize = 1.0f;
+		const float LineLength = OuterRadius;
+		const float LineThickness = 1.f;
 		const FVector LineStart =
 			TireTransform.GetLocation() + TireTransform.GetUnitAxis(EAxis::Y) * LineLength / 2;
 		const FVector LineEnd =
 			TireTransform.GetLocation() - TireTransform.GetUnitAxis(EAxis::Y) * LineLength / 2;
 
-		DrawDashedLine(PDI, LineStart, LineEnd, Color, DashSize, SDPG_Foreground);
+		PDI->DrawLine(LineStart, LineEnd, Color, SDPG_Foreground, LineThickness);
 	}
 
 	void DrawTwoBodyTire(
