@@ -26,6 +26,11 @@ public:
 		const FRigidBodyBarrier* HubRigidBody, float InnerRadius, const FVector& LocalLocation,
 		const FQuat& LocalRotation);
 
+	float GetOuterRadius() const;
+	float GetInnerRadius() const;
+
+	FTransform GetLocalTransform() const;
+
 	void SetDamping(float Damping, DeformationMode Mode);
 	float GetDamping(DeformationMode Mode) const;
 

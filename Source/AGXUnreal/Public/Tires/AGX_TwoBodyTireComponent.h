@@ -83,6 +83,8 @@ public:
 
 	FTransform GetGlobalTireTransform() const;
 
+	void CopyFrom(const FTwoBodyTireBarrier& Barrier);
+
 protected:
 	virtual void AllocateNative() override;
 

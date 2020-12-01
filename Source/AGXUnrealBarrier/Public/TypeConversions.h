@@ -455,6 +455,11 @@ inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& Fra
 		agx::AffineMatrix4x4(Convert(FrameRotation), ConvertVector(FramePosition)));
 }
 
+inline FTransform ConvertLocalFrame(const agx::Frame* Frame)
+{
+	return FTransform(Convert(Frame->getLocalRotate()), ConvertVector(Frame->getLocalTranslate()));
+}
+
 inline agx::AffineMatrix4x4 ConvertMatrix(const FVector& FramePosition, const FQuat& FrameRotation)
 {
 	return agx::AffineMatrix4x4(Convert(FrameRotation), ConvertVector(FramePosition));

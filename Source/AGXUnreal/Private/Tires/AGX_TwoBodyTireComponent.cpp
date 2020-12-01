@@ -37,6 +37,26 @@ FTransform UAGX_TwoBodyTireComponent::GetGlobalTireTransform() const
 	return FTransform(Rot, Pos);
 }
 
+void UAGX_TwoBodyTireComponent::CopyFrom(const FTwoBodyTireBarrier& Barrier)
+{
+	OuterRadius = Barrier.GetOuterRadius();
+	InnerRadius = Barrier.GetInnerRadius();
+
+	FTransform LocalTransform = Barrier.GetLocalTransform();
+	LocalLocation = LocalTransform.GetLocation();
+	LocalRotation = FRotator(LocalTransform.GetRotation());
+
+	RadialStiffness = Barrier.GetStiffness(FTwoBodyTireBarrier::RADIAL);
+	LateralStiffness = Barrier.GetStiffness(FTwoBodyTireBarrier::LATERAL);
+	BendingStiffness = Barrier.GetStiffness(FTwoBodyTireBarrier::BENDING);
+	TorsionalStiffness = Barrier.GetStiffness(FTwoBodyTireBarrier::TORSIONAL);
+
+	RadialDamping = Barrier.GetDamping(FTwoBodyTireBarrier::RADIAL);
+	LateralDamping = Barrier.GetDamping(FTwoBodyTireBarrier::LATERAL);
+	BendingDamping = Barrier.GetDamping(FTwoBodyTireBarrier::BENDING);
+	TorsionalDamping = Barrier.GetDamping(FTwoBodyTireBarrier::TORSIONAL);
+}
+
 void UAGX_TwoBodyTireComponent::AllocateNative()
 {
 	NativeBarrier.Reset(CreateTwoBodyTireBarrier());
@@ -98,7 +118,8 @@ FTwoBodyTireBarrier* UAGX_TwoBodyTireComponent::CreateTwoBodyTireBarrier()
 	}
 
 	Barrier->AllocateNative(
-		TireBarrier, OuterRadius, HubBarrier, InnerRadius, LocalLocation, LocalRotation.Quaternion());
+		TireBarrier, OuterRadius, HubBarrier, InnerRadius, LocalLocation,
+		LocalRotation.Quaternion());
 
 	return Barrier;
 }

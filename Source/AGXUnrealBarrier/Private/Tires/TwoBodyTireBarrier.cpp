@@ -37,8 +37,11 @@ void FTwoBodyTireBarrier::AllocateNative(
 	agx::RigidBody* HubBody = FAGX_AgxDynamicsObjectsAccess::GetFrom(HubRigidBody);
 	agx::AffineMatrix4x4 LocalTransform = ConvertMatrix(LocalLocation, LocalRotation);
 
-	agxModel::TwoBodyTireRef Tire =
-		new agxModel::TwoBodyTire(TireBody, OuterRadius, HubBody, InnerRadius, LocalTransform);
+	agx::Real OuterRadiusAgx = ConvertDistanceToAgx<agx::Real>(OuterRadius);
+	agx::Real InnerRadiusAgx = ConvertDistanceToAgx<agx::Real>(InnerRadius);
+
+	agxModel::TwoBodyTireRef Tire = new agxModel::TwoBodyTire(
+		TireBody, OuterRadiusAgx, HubBody, InnerRadiusAgx, LocalTransform);
 
 	// Use of invalid agxModel::TwoBodyTire may lead to sudden crash during runtime.
 	if (Tire->isValid())
@@ -51,6 +54,60 @@ void FTwoBodyTireBarrier::AllocateNative(
 			LogAGX, Error,
 			TEXT("Error during creation of agxModel::TwoBodyTire, isValid() returned false."));
 	}
+}
+
+float FTwoBodyTireBarrier::GetOuterRadius() const
+{
+	check(HasNative());
+
+	agxModel::TwoBodyTire* Tire = dynamic_cast<agxModel::TwoBodyTire*>(NativeRef->Native.get());
+	if (Tire == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("TwoBodyTireBarrier::GetOuterRadius failed: Cast from agxModel::Tire to "
+				 "agxModel::TwoBodyTire failed."));
+		return 0.f;
+	}
+
+	float RadiusAgx = Tire->getOuterRadius();
+	return ConvertDistanceToUnreal<float>(RadiusAgx);
+}
+
+float FTwoBodyTireBarrier::GetInnerRadius() const
+{
+	check(HasNative());
+
+	agxModel::TwoBodyTire* Tire = dynamic_cast<agxModel::TwoBodyTire*>(NativeRef->Native.get());
+	if (Tire == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("TwoBodyTireBarrier::GetInnerRadius failed: Cast from agxModel::Tire to "
+				 "agxModel::TwoBodyTire failed."));
+		return 0.f;
+	}
+
+	float RadiusAgx = Tire->getInnerRadius();
+	return ConvertDistanceToUnreal<float>(RadiusAgx);
+}
+
+FTransform FTwoBodyTireBarrier::GetLocalTransform() const
+{
+	check(HasNative());
+
+	agxModel::TwoBodyTire* Tire = dynamic_cast<agxModel::TwoBodyTire*>(NativeRef->Native.get());
+	if (Tire == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("TwoBodyTireBarrier::GetDamping failed: Cast from agxModel::Tire to "
+				 "agxModel::TwoBodyTire failed."));
+		return FTransform::Identity;
+	}
+
+	const agx::Frame* FrameAgx = Tire->getReferenceFrame();
+	return ConvertLocalFrame(FrameAgx);
 }
 
 void FTwoBodyTireBarrier::SetDamping(float Damping, DeformationMode Mode)
