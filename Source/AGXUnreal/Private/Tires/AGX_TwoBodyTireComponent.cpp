@@ -28,7 +28,9 @@ FTransform UAGX_TwoBodyTireComponent::GetGlobalTireTransform() const
 	}
 
 	// This reflects the behaviour of the agxModel::TwoBodyTire where a local transform relative
-	// to the tire Rigid Body is used to define the final transform of the Tire model.
+	// to the tire Rigid Body is used to define the final transform of the Tire model. The axis of
+	// rotation is along the y-axis of this final transform in AGX Dynamics, which corresponds to
+	// the negative y-axis in Unreal.
 	FVector Pos = TireBody->GetComponentTransform().TransformPositionNoScale(LocalLocation);
 	FQuat Rot = TireBody->GetComponentTransform().TransformRotation(LocalRotation.Quaternion());
 
