@@ -113,7 +113,7 @@ public:
 	 *
 	 * @tparam UComponent The type of the Component. Deduced from the parameter.
 	 * @tparam bIsConst Whether or not the types are const. Deduced from the parameter.
-	 * @param Component The Component to read
+	 * @param Component The Component to get the Barrier from.
 	 * @return The Barrier object created for the given Component, if one has been created.
 	 */
 	template <typename UComponent, bool bIsConst = std::is_const<UComponent>::value>
