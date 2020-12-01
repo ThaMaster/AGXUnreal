@@ -52,6 +52,7 @@
 #include "Terrain/AGX_Terrain.h"
 #include "Tires/AGX_TireComponentVisualizer.h"
 #include "Tires/AGX_TireComponent.h"
+#include "Tires/AGX_TwoBodyTireActor.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -335,6 +336,7 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 	RegisterPlaceableItem(AAGX_Terrain::StaticClass());
 	RegisterPlaceableItem(AAGX_CollisionGroupManager::StaticClass());
 	RegisterPlaceableItem(AAGX_RigidBodyActor::StaticClass());
+	RegisterPlaceableItem(AAGX_TwoBodyTireActor::StaticClass());
 }
 
 void FAGXUnrealEditorModule::UnregisterPlacementCategory()
