@@ -43,31 +43,31 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Tire")
 	FRotator LocalRotation;
 
-	// TODO BEFORE MERGE: Set proper initial values (look at agx::Hinge).
+	// TODO BEFORE MERGE: add comments
 
 	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
-	float RadialStiffness;
+	float RadialStiffness = 500000.f;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
-	float LateralStiffness;
+	float LateralStiffness = 50000000.f;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
-	float BendingStiffness;
+	float BendingStiffness = 250000.f;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
-	float TorsionalStiffness;
+	float TorsionalStiffness = 250000.f;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
-	float RadialDamping;
+	float RadialDamping = 16666.f;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
-	float LateralDamping;
+	float LateralDamping = 1666666.f;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
-	float BendingDamping;
+	float BendingDamping = 8333.f;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
-	float TorsionalDamping;
+	float TorsionalDamping = 8333.f;
 
 	/**
 	 * Set the implicit friction multiplier in order to get different behavior for different
