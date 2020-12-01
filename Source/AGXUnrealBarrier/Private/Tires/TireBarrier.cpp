@@ -2,7 +2,7 @@
 
 // AGXUnreal includes.
 #include "AGXRefs.h"
-
+#include "TypeConversions.h"
 
 FTireBarrier::FTireBarrier()
 	: NativeRef {new FTireRef}
@@ -31,6 +31,20 @@ FTireRef* FTireBarrier::GetNative()
 const FTireRef* FTireBarrier::GetNative() const
 {
 	return NativeRef.get();
+}
+
+void FTireBarrier::SetName(const FString& NewName)
+{
+	check(HasNative());
+	agx::String NameAGX = Convert(NewName);
+	NativeRef->Native->setName(NameAGX);
+}
+
+FString FTireBarrier::GetName() const
+{
+	check(HasNative());
+	FString NameUnreal(Convert(NativeRef->Native->getName()));
+	return NameUnreal;
 }
 
 void FTireBarrier::ReleaseNative()

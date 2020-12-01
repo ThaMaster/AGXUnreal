@@ -26,6 +26,9 @@ public:
 	FTireRef* GetNative();
 	const FTireRef* GetNative() const;
 
+	void SetName(const FString& NewName);
+	FString GetName() const;
+
 	void ReleaseNative();
 
 private:

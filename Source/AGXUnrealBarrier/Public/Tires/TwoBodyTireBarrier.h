@@ -2,8 +2,7 @@
 
 // AGXUnreal includes.
 #include "Tires/TireBarrier.h"
-
-class FRigidBodyBarrier;
+#include "RigidBodyBarrier.h"
 
 class AGXUNREALBARRIER_API FTwoBodyTireBarrier : public FTireBarrier
 {
@@ -39,6 +38,9 @@ public:
 
 	void SetImplicitFrictionMultiplier(const FVector2D& Multiplier);
 	FVector2D GetImplicitFrictionMultiplier() const;
+
+	FRigidBodyBarrier GetTireRigidBody() const;
+	FRigidBodyBarrier GetHubRigidBody() const;
 
 private:
 	FTwoBodyTireBarrier(const FTwoBodyTireBarrier&) = delete;
