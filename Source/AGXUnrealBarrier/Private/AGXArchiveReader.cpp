@@ -18,6 +18,7 @@
 #include <agx/CylindricalJoint.h>
 #include <agx/DistanceJoint.h>
 #include <agx/LockJoint.h>
+#include <agxModel/TwoBodyTire.h>
 
 // In 2.28 including Cable.h causes a preprocessor macro named DEPRECATED to be defined. This
 // conflicts with a macro with the same name in Unreal. Undeffing the Unreal one.
@@ -145,9 +146,42 @@ namespace
 		}
 	}
 
-	void ReadConstraints(
+	TArray<const agx::Constraint*> ReadTireModels(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FAGXArchiveInstantiator& Instantiator)
+	{
+		TArray<const agx::Constraint*> TireModelConstraints;
+
+		const agxSDK::AssemblyHash& Assemblies = Simulation.getAssemblies();
+		if (Assemblies.size() > size_t(std::numeric_limits<int32>::max()))
+		{
+			UE_LOG(
+				LogAGX, Log,
+				TEXT(
+					".agx file %s contains too many assemblies. Tire models will not be imported."),
+				*Filename);
+			return TireModelConstraints;
+		}
+
+		for (const auto& Assembly : Assemblies)
+		{
+			agxModel::TwoBodyTire* Tire = dynamic_cast<agxModel::TwoBodyTire*>(Assembly.first);
+			if (Tire == nullptr)
+			{
+				continue;
+			}
+
+			TireModelConstraints.Add(Tire->getHinge());
+			Instantiator.InstantiateTwoBodyTire(
+				AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
+		}
+
+		return TireModelConstraints;
+	}
+
+	void ReadConstraints(
+		agxSDK::Simulation& Simulation, const FString& Filename,
+		FAGXArchiveInstantiator& Instantiator, TArray<const agx::Constraint*>* IgnoreList = nullptr)
 	{
 		agx::ConstraintRefSetVector& Constraints = Simulation.getConstraints();
 		if (Constraints.size() > size_t(std::numeric_limits<int32>::max()))
@@ -160,6 +194,11 @@ namespace
 
 		for (agx::ConstraintRef& Constraint : Constraints)
 		{
+			if (IgnoreList && IgnoreList->Contains(Constraint.get()))
+			{
+				continue;
+			}
+
 			if (agx::Hinge* Hinge = Constraint->asSafe<agx::Hinge>())
 			{
 				Instantiator.InstantiateHinge(AGXBarrierFactories::CreateHingeBarrier(Hinge));
@@ -200,8 +239,7 @@ namespace
 		}
 	}
 
-	void ReadCollisionGroups(
-		agxSDK::Simulation& Simulation, FAGXArchiveInstantiator& Instantiator)
+	void ReadCollisionGroups(agxSDK::Simulation& Simulation, FAGXArchiveInstantiator& Instantiator)
 	{
 		agxCollide::CollisionGroupManager* CollisionGroupManager =
 			Simulation.getSpace()->getCollisionGroupManager();
@@ -231,6 +269,12 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 
 	::ReadMaterials(*Simulation, Instantiator);
 	::ReadRigidBodies(*Simulation, Filename, Instantiator);
-	::ReadConstraints(*Simulation, Filename, Instantiator);
+	TArray<const agx::Constraint*> TireConstraints =
+		::ReadTireModels(*Simulation, Filename, Instantiator);
+
+	// Any constraint that is owned by a Tire model is ignored on import. Such constraints are
+	// created when the native agxModel::Tire is created after begin play and is never instantiated
+	// as an AGXUnreal Actor or Component object.
+	::ReadConstraints(*Simulation, Filename, Instantiator, &TireConstraints);
 	::ReadCollisionGroups(*Simulation, Instantiator);
 }

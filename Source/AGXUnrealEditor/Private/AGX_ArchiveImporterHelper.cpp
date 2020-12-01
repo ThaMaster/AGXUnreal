@@ -35,6 +35,8 @@
 #include "Materials/AGX_ShapeMaterialAsset.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
+#include "Tires/TwoBodyTireBarrier.h"
+#include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 
@@ -590,13 +592,58 @@ UAGX_LockConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateLockJoint(
 	return ::InstantiateConstraint<UAGX_LockConstraintComponent>(Barrier, Owner, *this);
 }
 
+UAGX_TwoBodyTireComponent* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
+	const FTwoBodyTireBarrier& Barrier, AActor& Owner)
+{
+	UAGX_TwoBodyTireComponent* Component = NewObject<UAGX_TwoBodyTireComponent>(&Owner);
+	if (Component == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ArchiveFilePath,
+			TEXT("Could not create new AGX_TwoBodyTireComponent"));
+		return nullptr;
+	}
+
+	if (UAGX_RigidBodyComponent* TireBody = GetBody(Barrier.GetTireRigidBody()))
+	{
+		Component->TireRigidBody.OwningActor = TireBody->GetOwner();
+		Component->TireRigidBody.BodyName = TireBody->GetFName();
+	}
+	else
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ArchiveFilePath,
+			TEXT("Could not set TireRigidBody"));
+	}
+
+	if (UAGX_RigidBodyComponent* HubBody = GetBody(Barrier.GetHubRigidBody()))
+	{
+		Component->HubRigidBody.OwningActor = HubBody->GetOwner();
+		Component->HubRigidBody.BodyName = HubBody->GetFName();
+	}
+	else
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ArchiveFilePath,
+			TEXT("Could not set HubRigidBody"));
+	}
+
+	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
+	Component->CopyFrom(Barrier);
+	Component->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Component);
+	Component->RegisterComponent();
+
+	return Component;
+}
+
 UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(const FRigidBodyBarrier& Barrier)
 {
 	/// \todo Calles cannot differentiate between a nullptr return because the Barrier really
 	/// represents a nullptr body, and a nullptr return because the AGXUnreal representation of an
-	/// existing Barrier body couldn't be found. This may cause constraints that should be between
-	/// to bodies to be between a body and the world instead. A warning will be printed, however, so
-	/// the user will know what happened, of they read warnings.
+	/// existing Barrier body couldn't be found. This may cause e.g. constraints that should be
+	/// between to bodies to be between a body and the world instead. A warning will be printed,
+	/// however, so the user will know what happened, if they read warnings.
 
 	if (!Barrier.HasNative())
 	{
@@ -607,10 +654,10 @@ UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(const FRigidBodyBar
 	UAGX_RigidBodyComponent* Component = RestoredBodies.FindRef(Barrier.GetGuid());
 	if (Component == nullptr)
 	{
-		/// \todo Consider moving this error message to the constraint importer code.
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("While importing from '%s': Found a constraint to body '%s', but that body hasn't "
+			TEXT("While importing from '%s': A component references a body '%s', but that body "
+				 "hasn't "
 				 "been restored."),
 			*ArchiveFilePath, *Barrier.GetName());
 		return nullptr;

@@ -28,6 +28,7 @@
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
@@ -167,6 +168,11 @@ namespace
 		virtual void InstantiateContactMaterial(const FContactMaterialBarrier& Barrier) override
 		{
 			Helper.InstantiateContactMaterial(Barrier);
+		}
+
+		virtual void InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Barrier) override
+		{
+			 Helper.InstantiateTwoBodyTire(Barrier, Actor);
 		}
 
 	private:

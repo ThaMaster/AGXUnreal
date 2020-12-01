@@ -11,6 +11,7 @@
 #include <agxCollide/Sphere.h>
 #include <agxCollide/Box.h>
 #include <agxCollide/Trimesh.h>
+#include <agxModel/TwoBodyTire.h>
 #include <EndAGXIncludes.h>
 
 #include <memory>
@@ -82,4 +83,9 @@ FContactMaterialBarrier AGXBarrierFactories::CreateContactMaterialBarrier(
 	agx::ContactMaterial* ContactMaterial)
 {
 	return {std::make_unique<FContactMaterialRef>(ContactMaterial)};
+}
+
+FTwoBodyTireBarrier AGXBarrierFactories::CreateTwoBodyTireBarrier(agxModel::TwoBodyTire* Tire)
+{
+	return {std::make_unique<FTireRef>(Tire)};
 }

@@ -29,6 +29,8 @@ class UAGX_BallConstraintComponent;
 class UAGX_CylindricalConstraintComponent;
 class UAGX_DistanceConstraintComponent;
 class UAGX_LockConstraintComponent;
+class FTwoBodyTireBarrier;
+class UAGX_TwoBodyTireComponent;
 
 // Unreal Engine classes.
 class AActor;
@@ -93,6 +95,9 @@ public:
 
 	UAGX_LockConstraintComponent* InstantiateLockJoint(
 		const FLockJointBarrier& Barrier, AActor& Owner);
+
+	UAGX_TwoBodyTireComponent* InstantiateTwoBodyTire(
+		const FTwoBodyTireBarrier& Barrier, AActor& Owner);
 
 	UAGX_RigidBodyComponent* GetBody(const FRigidBodyBarrier& Barrier);
 
