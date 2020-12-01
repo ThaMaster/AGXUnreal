@@ -25,6 +25,16 @@ UAGX_DistanceConstraintComponent::~UAGX_DistanceConstraintComponent()
 {
 }
 
+FDistanceJointBarrier* UAGX_DistanceConstraintComponent::GetNativeDistance()
+{
+	return FAGX_ConstraintUtilities::GetNativeCast(this);
+}
+
+const FDistanceJointBarrier* UAGX_DistanceConstraintComponent::GetNativeDistance() const
+{
+	return FAGX_ConstraintUtilities::GetNativeCast(this);
+}
+
 void UAGX_DistanceConstraintComponent::AllocateNative()
 {
 	NativeBarrier.Reset(new FDistanceJointBarrier());

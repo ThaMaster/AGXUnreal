@@ -5,16 +5,30 @@
 #include "RigidBodyBarrier.h"
 #include "SimulationBarrier.h"
 #include "Shapes/ShapeBarrier.h"
+#include "Constraints/BallJointBarrier.h"
+#include "Constraints/CylindricalJointBarrier.h"
+#include "Constraints/DistanceJointBarrier.h"
 #include "Constraints/HingeBarrier.h"
+#include "Constraints/LockJointBarrier.h"
+#include "Constraints/PrismaticBarrier.h"
 #include "AGX_LogCategory.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
+
 #include <agx/RigidBody.h>
+#include <agx/BallJoint.h>
+#include <agx/CylindricalJoint.h>
+#include <agx/DistanceJoint.h>
 #include <agx/Hinge.h>
+#include <agx/LockJoint.h>
+#include <agx/Prismatic.h>
+
 #include <agxSDK/Simulation.h>
+
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
+
 #include "EndAGXIncludes.h"
 
 namespace AgxDynamicsObjectAccess_Helper
@@ -53,6 +67,17 @@ namespace AgxDynamicsObjectAccess_Helper
 
 		return Barrier->GetNative()->Native.get();
 	}
+
+	template <typename AgxType, typename BarrierType>
+	AgxType* GetFromAs(const BarrierType* Barrier)
+	{
+		if (!CheckAgxDynamicsObject(Barrier))
+		{
+			return nullptr;
+		}
+
+		return Barrier->GetNative()->Native->template as<AgxType>();
+	}
 }
 
 agx::RigidBody* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FRigidBodyBarrier* Barrier)
@@ -85,13 +110,33 @@ agxCollide::Shape* FAGX_AgxDynamicsObjectsAccess::GetShapeFrom(const FShapeBarri
 	return Barrier->GetNative()->NativeShape.get();
 }
 
-agx::Hinge* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FHingeBarrier* Barrier)
+agx::BallJoint* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FBallJointBarrier* Barrier)
 {
-	if (!AgxDynamicsObjectAccess_Helper::CheckAgxDynamicsObject(Barrier))
-	{
-		return nullptr;
-	}
-
-	return Barrier->GetNative()->Native.get()->as<agx::Hinge>();
+	return AgxDynamicsObjectAccess_Helper::GetFromAs<agx::BallJoint>(Barrier);
 }
 
+agx::CylindricalJoint* FAGX_AgxDynamicsObjectsAccess::GetFrom(
+	const FCylindricalJointBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFromAs<agx::CylindricalJoint>(Barrier);
+}
+
+agx::DistanceJoint* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FDistanceJointBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFromAs<agx::DistanceJoint>(Barrier);
+}
+
+agx::Hinge* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FHingeBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFromAs<agx::Hinge>(Barrier);
+}
+
+agx::LockJoint* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FLockJointBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFromAs<agx::LockJoint>(Barrier);
+}
+
+agx::Prismatic* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FPrismaticBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFromAs<agx::Prismatic>(Barrier);
+}

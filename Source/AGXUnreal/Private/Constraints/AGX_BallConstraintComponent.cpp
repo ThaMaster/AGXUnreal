@@ -18,6 +18,16 @@ UAGX_BallConstraintComponent::~UAGX_BallConstraintComponent()
 {
 }
 
+FBallJointBarrier* UAGX_BallConstraintComponent::GetNativeBallJoint()
+{
+	return FAGX_ConstraintUtilities::GetNativeCast(this);
+}
+
+const FBallJointBarrier* UAGX_BallConstraintComponent::GetNativeBallJoint() const
+{
+	return FAGX_ConstraintUtilities::GetNativeCast(this);
+}
+
 void UAGX_BallConstraintComponent::CreateNativeImpl()
 {
 	NativeBarrier.Reset(new FBallJointBarrier());

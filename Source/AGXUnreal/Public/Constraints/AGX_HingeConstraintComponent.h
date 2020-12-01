@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_Constraint1DofComponent.h"
 
 // Unreal Engine includes.
@@ -17,6 +17,9 @@ UCLASS(ClassGroup = "AGX", Category = "AGX", Blueprintable, meta = (BlueprintSpa
 class AGXUNREAL_API UAGX_HingeConstraintComponent : public UAGX_Constraint1DofComponent
 {
 	GENERATED_BODY()
+
+public:
+	using FBarrierType = FHingeBarrier;
 
 public:
 	UAGX_HingeConstraintComponent();

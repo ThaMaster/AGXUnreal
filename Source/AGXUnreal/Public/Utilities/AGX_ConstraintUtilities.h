@@ -1,12 +1,16 @@
 #pragma once
 
 // AGXUnreal includes.
+#include "AGX_LogCategory.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+
+// Standard library includes.
+#include <type_traits>
 
 class FConstraint1DOFBarrier;
 class FConstraint2DOFBarrier;
@@ -98,4 +102,58 @@ public:
 	static void CreateNative(
 		FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& BodyAttachment1,
 		FAGX_ConstraintBodyAttachment& BodyAttachment2, const FName& ConstraintName);
+
+	/**
+	 * Get the Barrier object for the given Component.
+	 *
+	 * The Component must have a FBarrierType member type that declare the type
+	 * of the Barrier that the Component contains.
+	 *
+	 * Will return nullptr if a native AGX Dynamics object hasn't been created yet.
+	 *
+	 * @tparam UComponent The type of the Component. Deduced from the parameter.
+	 * @tparam bIsConst Whether or not the types are const. Deduced from the parameter.
+	 * @param Component The Component to read
+	 * @return The Barrier object created for the given Component, if one has been created.
+	 */
+	template <typename UComponent, bool bIsConst = std::is_const<UComponent>::value>
+	static typename std::conditional<
+		bIsConst, const typename UComponent::FBarrierType*,
+		typename UComponent::FBarrierType*>::type
+	GetNativeCast(UComponent* Component);
 };
+
+template <typename UComponent, bool bIsConst>
+typename std::conditional<
+	bIsConst, const typename UComponent::FBarrierType*, typename UComponent::FBarrierType*>::type
+FAGX_ConstraintUtilities::GetNativeCast(UComponent* Component)
+{
+	if (Component == nullptr)
+	{
+		return nullptr;
+	}
+
+	using FBarrierType = typename std::conditional<
+		bIsConst, const typename UComponent::FBarrierType, typename UComponent::FBarrierType>::type;
+	using FBaseBarrier =
+		typename std::conditional<bIsConst, const FConstraintBarrier, FConstraintBarrier>::type;
+
+	FBaseBarrier* BaseBarrier = Component->GetNative();
+	if (BaseBarrier == nullptr)
+	{
+		return nullptr;
+	}
+
+	// We "know" that the Barrier can only ever be the correct type, but it would be nice to be able
+	// to make sure. But we can't use dynamic_cast since Unreal Engine disables RTTI.
+	FBarrierType* Barrier = static_cast<FBarrierType*>(BaseBarrier);
+	if (Barrier == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Found Component with a mismatched Barrier type."));
+		return nullptr;
+	}
+
+	return Barrier;
+}

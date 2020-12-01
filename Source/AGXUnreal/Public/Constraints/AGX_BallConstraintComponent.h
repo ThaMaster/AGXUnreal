@@ -8,6 +8,8 @@
 
 #include "AGX_BallConstraintComponent.generated.h"
 
+class FBallJointBarrier;
+
 /**
  * Locks all translational degrees of freedom, but rotation is free.
  */
@@ -17,8 +19,14 @@ class AGXUNREAL_API UAGX_BallConstraintComponent : public UAGX_ConstraintCompone
 	GENERATED_BODY()
 
 public:
+	using FBarrierType = FBallJointBarrier;
+
+public:
 	UAGX_BallConstraintComponent();
 	virtual ~UAGX_BallConstraintComponent() override;
+
+	FBallJointBarrier* GetNativeBallJoint();
+	const FBallJointBarrier* GetNativeBallJoint() const;
 
 protected:
 	virtual void CreateNativeImpl() override;
