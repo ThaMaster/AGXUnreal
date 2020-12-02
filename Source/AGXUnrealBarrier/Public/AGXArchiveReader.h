@@ -46,6 +46,21 @@ the duration of the notification call.
 class FAGXArchiveBody;
 
 /**
+ * Struct for holding Rigid Bod Archives of TwoBodyTire.
+ */
+struct TwoBodyTireBodiesArchive
+{
+	TwoBodyTireBodiesArchive() = default;
+	TwoBodyTireBodiesArchive(FAGXArchiveBody* InTire, FAGXArchiveBody* InHub)
+		: TireBodyArchive {InTire}
+		, HubBodyArchive {InHub}
+	{
+	}
+	FAGXArchiveBody* TireBodyArchive;
+	FAGXArchiveBody* HubBodyArchive;
+};
+
+/**
  * Instantiator base class for top-level objects.
  */
 class AGXUNREALBARRIER_API FAGXArchiveInstantiator
@@ -77,7 +92,7 @@ public:
 	virtual void DisabledCollisionGroups(
 		const TArray<std::pair<FString, FString>>& DisabledGroups) = 0;
 
-	virtual void InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Tire) = 0;
+	virtual TwoBodyTireBodiesArchive InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Tire) = 0;
 
 	virtual ~FAGXArchiveInstantiator() = default;
 };

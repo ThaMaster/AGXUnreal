@@ -31,6 +31,7 @@ class UAGX_DistanceConstraintComponent;
 class UAGX_LockConstraintComponent;
 class FTwoBodyTireBarrier;
 class UAGX_TwoBodyTireComponent;
+class AAGX_TwoBodyTireActor;
 
 // Unreal Engine classes.
 class AActor;
@@ -99,7 +100,11 @@ public:
 	UAGX_TwoBodyTireComponent* InstantiateTwoBodyTire(
 		const FTwoBodyTireBarrier& Barrier, AActor& Owner);
 
-	UAGX_RigidBodyComponent* GetBody(const FRigidBodyBarrier& Barrier);
+	AAGX_TwoBodyTireActor* InstantiateTwoBodyTire(
+		const FTwoBodyTireBarrier& Barrier, UWorld& World);
+
+	UAGX_RigidBodyComponent* GetBody(
+		const FRigidBodyBarrier& Barrier, bool LogErrorIfNotFound = true);
 
 	using FBodyPair = std::pair<UAGX_RigidBodyComponent*, UAGX_RigidBodyComponent*>;
 	FBodyPair GetBodies(const FConstraintBarrier& Barrier);

@@ -131,7 +131,6 @@ namespace
 		FAGXArchiveInstantiator& Instantiator)
 	{
 		TArray<const agx::Constraint*> TireModelConstraints;
-
 		const agxSDK::AssemblyHash& Assemblies = Simulation.getAssemblies();
 		if (Assemblies.size() > size_t(std::numeric_limits<int32>::max()))
 		{
@@ -143,6 +142,20 @@ namespace
 			return TireModelConstraints;
 		}
 
+		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire,
+							const FString& Description) {
+			if (Body == nullptr)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("The %s used by agxModel::TwoBodyTire: %s "
+						 "was nullptr. The agxModel::TwoBodyTire will not be imported."),
+					*Description, *Convert(Tire->getName()));
+				return false;
+			}
+			return true;
+		};
+
 		for (const auto& Assembly : Assemblies)
 		{
 			agxModel::TwoBodyTire* Tire = dynamic_cast<agxModel::TwoBodyTire*>(Assembly.first);
@@ -151,9 +164,18 @@ namespace
 				continue;
 			}
 
+			if (!CheckBody(Tire->getTireRigidBody(), Tire, FString("Tire Rigid Body")) ||
+				!CheckBody(Tire->getHubRigidBody(), Tire, FString("Hub Rigid Body")))
+			{
+				continue;
+			}
+
 			TireModelConstraints.Add(Tire->getHinge());
-			Instantiator.InstantiateTwoBodyTire(
+			TwoBodyTireBodiesArchive ArchiveBodies = Instantiator.InstantiateTwoBodyTire(
 				AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
+
+			::InstantiateShapes(Tire->getTireRigidBody(), *ArchiveBodies.TireBodyArchive);
+			::InstantiateShapes(Tire->getHubRigidBody(), *ArchiveBodies.HubBodyArchive);
 		}
 
 		return TireModelConstraints;
@@ -278,9 +300,8 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 	}
 
 	::ReadMaterials(*Simulation, Instantiator);
+	auto TireConstraints = ::ReadTireModels(*Simulation, Filename, Instantiator);
 	::ReadRigidBodies(*Simulation, Filename, Instantiator);
-	TArray<const agx::Constraint*> TireConstraints =
-		::ReadTireModels(*Simulation, Filename, Instantiator);
 
 	// Any constraint that is owned by a Tire model is ignored on import. Such constraints are
 	// created when the native agxModel::Tire is created after begin play and is never instantiated

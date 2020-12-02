@@ -37,6 +37,7 @@
 #include "Materials/ContactMaterialBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
+#include "Tires/AGX_TwoBodyTireActor.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 
@@ -63,6 +64,13 @@ namespace
 UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::InstantiateBody(
 	const FRigidBodyBarrier& Barrier, AActor& Actor)
 {
+	// Only instantiate body if it has not already been instantiated. It might have been
+	// instantiated during import e.g. of TwoBodyTire.
+	if (GetBody(Barrier, false) != nullptr)
+	{
+		return nullptr;
+	}
+
 	UAGX_RigidBodyComponent* Component = NewObject<UAGX_RigidBodyComponent>(&Actor);
 	if (Component == nullptr)
 	{
@@ -114,6 +122,13 @@ UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::InstantiateBody(
 AAGX_RigidBodyActor* FAGX_ArchiveImporterHelper::InstantiateBody(
 	const FRigidBodyBarrier& Barrier, UWorld& World)
 {
+	// Only instantiate body if it has not already been instantiated. It might have been
+	// instantiated during import e.g. of TwoBodyTire.
+	if (GetBody(Barrier, false) != nullptr)
+	{
+		return nullptr;
+	}
+
 	FTransform Transform(Barrier.GetRotation(), Barrier.GetPosition());
 	AAGX_RigidBodyActor* NewActor =
 		World.SpawnActor<AAGX_RigidBodyActor>(AAGX_RigidBodyActor::StaticClass(), Transform);
@@ -604,30 +619,21 @@ UAGX_TwoBodyTireComponent* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 		return nullptr;
 	}
 
-	if (UAGX_RigidBodyComponent* TireBody = GetBody(Barrier.GetTireRigidBody()))
-	{
-		Component->TireRigidBody.OwningActor = TireBody->GetOwner();
-		Component->TireRigidBody.BodyName = TireBody->GetFName();
-	}
-	else
-	{
-		WriteImportErrorMessage(
-			TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ArchiveFilePath,
-			TEXT("Could not set TireRigidBody"));
-	}
+	auto SetRigidBody = [&](UAGX_RigidBodyComponent* Body, FAGX_RigidBodyReference& BodyRef) {
+		if (Body == nullptr)
+		{
+			WriteImportErrorMessage(
+				TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ArchiveFilePath,
+				TEXT("Could not set TireRigidBody"));
+			return;
+		}
 
-	if (UAGX_RigidBodyComponent* HubBody = GetBody(Barrier.GetHubRigidBody()))
-	{
-		Component->HubRigidBody.OwningActor = HubBody->GetOwner();
-		Component->HubRigidBody.BodyName = HubBody->GetFName();
-	}
-	else
-	{
-		WriteImportErrorMessage(
-			TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ArchiveFilePath,
-			TEXT("Could not set HubRigidBody"));
-	}
+		BodyRef.OwningActor = Body->GetOwner();
+		BodyRef.BodyName = Body->GetFName();
+	};
 
+	SetRigidBody(GetBody(Barrier.GetTireRigidBody()), Component->TireRigidBody);
+	SetRigidBody(GetBody(Barrier.GetHubRigidBody()), Component->HubRigidBody);
 	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
 	Component->CopyFrom(Barrier);
 	Component->SetFlags(RF_Transactional);
@@ -637,7 +643,49 @@ UAGX_TwoBodyTireComponent* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 	return Component;
 }
 
-UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(const FRigidBodyBarrier& Barrier)
+AAGX_TwoBodyTireActor* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
+	const FTwoBodyTireBarrier& Barrier, UWorld& World)
+{
+	AAGX_TwoBodyTireActor* NewActor =
+		World.SpawnActor<AAGX_TwoBodyTireActor>(AAGX_TwoBodyTireActor::StaticClass());
+	if (NewActor == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ArchiveFilePath,
+			TEXT("Could not create new AGX_TwoBodyTireActor"));
+		return nullptr;
+	}
+
+	FAGX_ImportUtilities::Rename(*NewActor, Barrier.GetName());
+	NewActor->SetActorLabel(NewActor->GetName());
+	NewActor->TwoBodyTireComponent->CopyFrom(Barrier);
+
+	// Setup TireRigidBody and HubRigidBody.
+	auto SetupBody = [&](const FRigidBodyBarrier& BodyBarrier, UAGX_RigidBodyComponent* Body,
+						 const FString& Description) {
+		if (BodyBarrier.HasNative() == false)
+		{
+			WriteImportErrorMessage(
+				TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ArchiveFilePath,
+				TEXT("The referenced %s did not have a native Rigid Body allocated. The "
+					 "TwoBodyTire might not work as expected."));
+			return;
+		}
+
+		Body->CopyFrom(BodyBarrier);
+		RestoredBodies.Add(BodyBarrier.GetGuid(), Body);
+	};
+
+	SetupBody(
+		Barrier.GetTireRigidBody(), NewActor->TireRigidBodyComponent, FString("Tire Rigid Body"));
+	SetupBody(
+		Barrier.GetHubRigidBody(), NewActor->HubRigidBodyComponent, FString("Hub Rigid Body"));
+
+	return NewActor;
+}
+
+UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(
+	const FRigidBodyBarrier& Barrier, bool LogErrorIfNotFound)
 {
 	/// \todo Calles cannot differentiate between a nullptr return because the Barrier really
 	/// represents a nullptr body, and a nullptr return because the AGXUnreal representation of an
@@ -652,15 +700,13 @@ UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(const FRigidBodyBar
 	}
 
 	UAGX_RigidBodyComponent* Component = RestoredBodies.FindRef(Barrier.GetGuid());
-	if (Component == nullptr)
+	if (Component == nullptr && LogErrorIfNotFound)
 	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("While importing from '%s': A component references a body '%s', but that body "
-				 "hasn't "
-				 "been restored."),
+				 "hasn't been restored."),
 			*ArchiveFilePath, *Barrier.GetName());
-		return nullptr;
 	}
 
 	return Component;

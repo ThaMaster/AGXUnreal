@@ -39,6 +39,8 @@
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Tires/TwoBodyTireBarrier.h"
+#include "Tires/AGX_TwoBodyTireActor.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
@@ -199,6 +201,21 @@ namespace
 		virtual void InstantiateContactMaterial(const FContactMaterialBarrier& Barrier) override
 		{
 			Helper.InstantiateContactMaterial(Barrier);
+		}
+
+		virtual TwoBodyTireBodiesArchive InstantiateTwoBodyTire(
+			const FTwoBodyTireBarrier& Barrier) override
+		{
+			AAGX_TwoBodyTireActor* Actor = Helper.InstantiateTwoBodyTire(Barrier, World);
+			if (Actor == nullptr)
+			{
+				return TwoBodyTireBodiesArchive(new NopEditorBody, new NopEditorBody);
+			}
+
+			Actor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
+			return TwoBodyTireBodiesArchive(
+				new EditorBody(*Actor->TireRigidBodyComponent, Helper),
+				new EditorBody(*Actor->HubRigidBodyComponent, Helper));
 		}
 
 		virtual ~EditorInstantiator() = default;
