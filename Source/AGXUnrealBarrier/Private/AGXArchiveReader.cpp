@@ -77,6 +77,20 @@ namespace
 			}
 		}
 	}
+
+	void InstantiateShapes(agx::RigidBody* Body, FAGXArchiveBody& ArchiveBody)
+	{
+		if (Body == nullptr)
+		{
+			return;
+		}
+
+		const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
+		for (const agxCollide::GeometryRef& Geometry : Geometries)
+		{
+			::InstantiateShapes(Geometry->getShapes(), ArchiveBody);
+		}
+	}
 }
 
 namespace
@@ -112,40 +126,6 @@ namespace
 		}
 	}
 
-	void ReadRigidBodies(
-		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXArchiveInstantiator& Instantiator)
-	{
-		agx::RigidBodyRefVector& Bodies {Simulation.getRigidBodies()};
-		if (Bodies.size() > size_t(std::numeric_limits<int32>::max()))
-		{ /// \todo Are there checks really necessary?
-			UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many bodies."), *Filename);
-			return; /// \todo Should we bail, or restore as many bodies as we can?
-		}
-
-		for (agx::RigidBodyRef& Body : Bodies)
-		{
-			if (Body == nullptr)
-			{
-				continue;
-			}
-			if (!IsRegularBody(*Body))
-			{
-				continue;
-			}
-
-			FRigidBodyBarrier BodyBarrier {AGXBarrierFactories::CreateRigidBodyBarrier(Body)};
-			std::unique_ptr<FAGXArchiveBody> ArchiveBody {
-				Instantiator.InstantiateBody(BodyBarrier)};
-
-			const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
-			for (const agxCollide::GeometryRef& Geometry : Geometries)
-			{
-				::InstantiateShapes(Geometry->getShapes(), *ArchiveBody);
-			}
-		}
-	}
-
 	TArray<const agx::Constraint*> ReadTireModels(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FAGXArchiveInstantiator& Instantiator)
@@ -177,6 +157,36 @@ namespace
 		}
 
 		return TireModelConstraints;
+	}
+
+	void ReadRigidBodies(
+		agxSDK::Simulation& Simulation, const FString& Filename,
+		FAGXArchiveInstantiator& Instantiator)
+	{
+		agx::RigidBodyRefVector& Bodies {Simulation.getRigidBodies()};
+		if (Bodies.size() > size_t(std::numeric_limits<int32>::max()))
+		{ /// \todo Are there checks really necessary?
+			UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many bodies."), *Filename);
+			return; /// \todo Should we bail, or restore as many bodies as we can?
+		}
+
+		for (agx::RigidBodyRef& Body : Bodies)
+		{
+			if (Body == nullptr)
+			{
+				continue;
+			}
+			if (!IsRegularBody(*Body))
+			{
+				continue;
+			}
+
+			FRigidBodyBarrier BodyBarrier {AGXBarrierFactories::CreateRigidBodyBarrier(Body)};
+			std::unique_ptr<FAGXArchiveBody> ArchiveBody {
+				Instantiator.InstantiateBody(BodyBarrier)};
+
+			::InstantiateShapes(Body, *ArchiveBody);
+		}
 	}
 
 	void ReadConstraints(
