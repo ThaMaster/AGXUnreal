@@ -149,7 +149,9 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 	}
 	else
 	{
-		FetchBodyNamesFromBlueprint(BodyNames, BodyReferenceHandle.Get());
+		// @todo FetchBodyNamesFromBlueprint currently always fails. Find some way to fix this. For now
+		// the call is commented out since it floods the log with warning messages.
+		// FetchBodyNamesFromBlueprint(BodyNames, BodyReferenceHandle.Get());
 	}
 
 	StructBuilder.AddProperty(OwningActorHandle.ToSharedRef());
