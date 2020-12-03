@@ -24,7 +24,7 @@ class AGXUNREAL_API UAGX_TwoBodyTireComponent : public UAGX_TireComponent
 	GENERATED_BODY()
 
 public:
-	UAGX_TwoBodyTireComponent() = default;
+	UAGX_TwoBodyTireComponent();
 	virtual ~UAGX_TwoBodyTireComponent() = default;
 
 	/**
@@ -133,6 +133,10 @@ protected:
 	virtual void AllocateNative() override;
 
 	virtual void UpdateNativeProperties() override;
+
+#if WITH_EDITOR
+	virtual void PostLoad() override;
+#endif
 
 private:
 	FTwoBodyTireBarrier* CreateTwoBodyTireBarrier();

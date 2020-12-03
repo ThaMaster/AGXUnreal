@@ -6,6 +6,12 @@
 #include "AGX_LogCategory.h"
 #include "Tires/TwoBodyTireBarrier.h"
 
+UAGX_TwoBodyTireComponent::UAGX_TwoBodyTireComponent()
+{
+	TireRigidBody.FallbackOwningActor = GetOwner();
+	HubRigidBody.FallbackOwningActor = GetOwner();
+}
+
 UAGX_RigidBodyComponent* UAGX_TwoBodyTireComponent::GetHubRigidBody() const
 {
 	return HubRigidBody.GetRigidBody();
@@ -99,6 +105,21 @@ void UAGX_TwoBodyTireComponent::UpdateNativeProperties()
 
 	Barrier->SetImplicitFrictionMultiplier(ImplicitFrictionMultiplier);
 }
+
+#if WITH_EDITOR
+void UAGX_TwoBodyTireComponent::PostLoad()
+{
+	Super::PostLoad();
+
+	// PostLoad is run when this component is created in a Blueprint or when a Blueprint containing
+	// this component is instantiated in the level. This allows us to set the correct
+	// FallbackOwningActor even for the Blueprint case where these FallbackOwningActors will point
+	// to the wrong object instances of for some reason, even though they are set in the
+	// constructor. The reason why this happens is still not known.
+	TireRigidBody.FallbackOwningActor = GetOwner();
+	HubRigidBody.FallbackOwningActor = GetOwner();
+}
+#endif
 
 FTwoBodyTireBarrier* UAGX_TwoBodyTireComponent::CreateTwoBodyTireBarrier()
 {
