@@ -1,7 +1,7 @@
-#include "AGX_TwoBodyTireActor.h"
+#include "Tires/AGX_TwoBodyTireActor.h"
 
 // AGXUnreal includes.
-#include "AGX_TwoBodyTireComponent.h"
+#include "Tires/AGX_TwoBodyTireComponent.h"
 #include "AGX_RigidBodyComponent.h"
 
 // Unreal Engine includes.

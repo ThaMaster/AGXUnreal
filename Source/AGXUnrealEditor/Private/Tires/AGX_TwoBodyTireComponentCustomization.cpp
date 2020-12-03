@@ -1,4 +1,4 @@
-#include "AGX_TwoBodyTireComponentCustomization.h"
+#include "Tires/AGX_TwoBodyTireComponentCustomization.h"
 
 // AGXUnreal includes.
 #include "Tires/AGX_TwoBodyTireComponent.h"
