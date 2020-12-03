@@ -117,7 +117,7 @@ public:
 	 * materials, since for explicit ones, this can be set directly at the contact material instead.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
-	FVector2D ImplicitFrictionMultiplier;
+	FVector2D ImplicitFrictionMultiplier{1.f, 1.f};
 
 	UAGX_RigidBodyComponent* GetHubRigidBody() const;
 

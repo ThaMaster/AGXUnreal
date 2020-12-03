@@ -62,6 +62,8 @@ void UAGX_TwoBodyTireComponent::CopyFrom(const FTwoBodyTireBarrier& Barrier)
 	LateralDamping = Barrier.GetDamping(FTwoBodyTireBarrier::LATERAL);
 	BendingDamping = Barrier.GetDamping(FTwoBodyTireBarrier::BENDING);
 	TorsionalDamping = Barrier.GetDamping(FTwoBodyTireBarrier::TORSIONAL);
+
+	ImplicitFrictionMultiplier = Barrier.GetImplicitFrictionMultiplier();
 }
 
 bool UAGX_TwoBodyTireComponent::IsDefaultSubObjectOfTwoBodyTireActor() const
