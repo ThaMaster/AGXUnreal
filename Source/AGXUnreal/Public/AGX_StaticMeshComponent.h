@@ -11,6 +11,9 @@
 
 #include "AGX_StaticMeshComponent.generated.h"
 
+/**
+ * AGX Dynamics data that we store per shape.
+ */
 USTRUCT(BlueprintType)
 struct FAGX_Shape
 {
@@ -25,7 +28,7 @@ struct FAGX_Shape
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics|Shapes")
 	TArray<FName> CollisionGroups;
 
-// This was supposed to allow us to map physics shape settings to the correct
+// This was supposed to allow us to map AGX shape settings to the correct
 // collision shape after changing the collision shape setup but I don't think
 // it will work because the collision shapes are stored by-value in TArrays so
 // adding or removing collision shapes will cause this pointer to become invalid.
@@ -37,49 +40,20 @@ struct FAGX_Shape
 #endif
 };
 
-#if 0
-USTRUCT(BlueprintType)
-struct FAGX_Sphere : public FAGX_Shape
-{
-	GENERATED_BODY()
-
-	FAGX_Sphere()
-		: Radius(0.5f)
-	{
-	}
-
-	FAGX_Sphere(float InRadius)
-		: Radius(InRadius)
-	{
-	}
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
-	float Radius;
-};
-
-USTRUCT(BlueprintType)
-struct FAGX_Box : public FAGX_Shape
-{
-	GENERATED_BODY()
-
-	FAGX_Box()
-		: HalfExtent(0.5f)
-	{
-	}
-
-	FAGX_Box(FVector InHalfExtent)
-		: HalfExtent(InHalfExtent)
-	{
-	}
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
-	FVector HalfExtent;
-};
-#endif
-
+/**
+ * A StaticMeshComponent that uses AGX Dynamics for physics simulation instead of the built-in
+ * physics engine. Very much experimental and work-in-progress.
+ *
+ * Just like the built-in StaticMeshComponent, UAGX_StaticMeshComponent references a StaticMesh
+ * assets and reads the simulation setup, e.g., collision shapes, from that. The StaticMesh assets
+ * contains some properties that are unrepresentable in AGX Dynamics, and AGX Dynamics has some
+ * properties that aren't part of the StaticMesh asset so the conversion is performed on a
+ * best-effort basis. Some AGX Dynamics specific per-shape properties are stored in FAGX_Shape
+ * instances, one per collision shape in the StaticMesh asset.
+ */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
-	HideCategories = ("Physics"))
+	HideCategories = ("Physics", "Collision"))
 class AGXUNREAL_API UAGX_StaticMeshComponent : public UStaticMeshComponent
 {
 	GENERATED_BODY()
@@ -87,12 +61,23 @@ class AGXUNREAL_API UAGX_StaticMeshComponent : public UStaticMeshComponent
 public: // Properties.
 	UAGX_StaticMeshComponent();
 
+	/**
+	 * When a new collision shape is discovered the AGX Dynamics properties, i.e., the FAGX_Shape
+	 * instance for that collision shape, is initialized from this template. It is not used directly
+	 * during simulation.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics|Shapes")
 	FAGX_Shape DefaultShape;
 
+	/**
+	 * AGX Dynamics properties for each collision sphere.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics|Shapes")
 	TArray<FAGX_Shape> Spheres;
 
+	/**
+	 * AGX Dynamics properties for each collision box.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics|Shapes")
 	TArray<FAGX_Shape> Boxes;
 
@@ -105,8 +90,10 @@ public: // Public member functions.
 	/// Bound to the source mesh asset's OnMeshChanged event/delegate.
 	void OnMeshChanged();
 
-	// Resize the shape data arrays to match the size of the collision shapes in the StaticMesh
-	// asset.
+	/**
+	 * Resize the shape data arrays to match the size of the collision shapes in the StaticMesh
+	 * asset. Any new FAGX_Shape instances created are initialized according to DefaultShape.
+	 */
 	void RefreshCollisionShapes();
 
 public: // Inherited interfaces.

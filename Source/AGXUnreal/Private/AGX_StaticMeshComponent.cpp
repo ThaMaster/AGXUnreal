@@ -66,8 +66,6 @@ void UAGX_StaticMeshComponent::UpdateCollisionShapes(UStaticMeshComponent* Self)
 		return;
 	}
 
-	UE_LOG(LogAGX, Warning, TEXT("UpdateCollisionShapes called"));
-
 	UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from UpdateCollisionShapes."))
 	RefreshCollisionShapes();
 }
@@ -97,7 +95,7 @@ void UAGX_StaticMeshComponent::TickComponent(
 	ReadTransformFromNative();
 }
 
-namespace UAGX_StaticMesh_helpers
+namespace AGX_StaticMeshComponent_helpers
 {
 // I would like to use RefreshCollisionShapes(PhysicsShapes, CollisionShapes) to
 // reorder PhysicsShapes so that they match the new ordering of CollisionShapes.
@@ -186,8 +184,13 @@ void UAGX_StaticMeshComponent::PostEditChangeChainProperty(FPropertyChangedChain
 	}
 }
 
-namespace AGX_StaticMesh_helpers
+namespace AGX_StaticMeshComponent_helpers
 {
+	/**
+	 * Swap all shape material assets for their material instance version.
+	 * @param Shape The shape for which the material should be swapped.
+	 * @param World The workd in which material instances should be created.
+	 */
 	void SwapInMaterialInstance(FAGX_Shape& Shape, UWorld& World)
 	{
 		// No asset pointers should remain after a swap. If we fail to create an instance then we
@@ -234,8 +237,7 @@ namespace AGX_StaticMesh_helpers
 
 void UAGX_StaticMeshComponent::AllocateNative()
 {
-	using namespace AGX_StaticMesh_helpers; /// \todo Rename the other namespace to match
-											/// this.
+	using namespace AGX_StaticMeshComponent_helpers;
 
 	if (GetWorld() == nullptr)
 	{
@@ -330,6 +332,19 @@ void UAGX_StaticMeshComponent::AllocateNative()
 	Simulation->AddRigidBody(this);
 }
 
+namespace AGX_StaticMeshComponent_helpers
+{
+	void ResizeShapeArray(TArray<FAGX_Shape>& Shapes, FAGX_Shape& DefaultShape, int32 Num)
+	{
+		int32 OldNum = Shapes.Num();
+		Shapes.SetNum(Num);
+		for (int32 I = OldNum; I < Num; ++I)
+		{
+			Shapes[I] = DefaultShape;
+		}
+	}
+}
+
 /*
  Call order when assigning a StaticMesh with 0 spheres and 3 boxes to a new SimulationObject:
 
@@ -363,6 +378,8 @@ void UAGX_StaticMeshComponent::AllocateNative()
  */
 void UAGX_StaticMeshComponent::RefreshCollisionShapes()
 {
+	using namespace AGX_StaticMeshComponent_helpers;
+
 	if (GetStaticMesh() == nullptr)
 	{
 		Spheres.SetNum(0);
@@ -374,10 +391,14 @@ void UAGX_StaticMeshComponent::RefreshCollisionShapes()
 	TArray<FKSphereElem>& CollisionSpheres = CollisionShapes.SphereElems;
 	TArray<FKBoxElem>& CollisionBoxes = CollisionShapes.BoxElems;
 
-	UE_LOG(LogAGX, Warning, TEXT("Have %d spheres and %d boxes."), Spheres.Num(), Boxes.Num());
+	UE_LOG(
+		LogAGX, Warning, TEXT("Want %d spheres and %d boxes."), CollisionSpheres.Num(),
+		CollisionBoxes.Num());
 
-	Spheres.SetNum(CollisionSpheres.Num());
-	Boxes.SetNum(CollisionBoxes.Num());
+	UE_LOG(LogAGX, Warning, TEXT("Had %d spheres and %d boxes."), Spheres.Num(), Boxes.Num());
+	ResizeShapeArray(Spheres, DefaultShape, CollisionSpheres.Num());
+	ResizeShapeArray(Boxes, DefaultShape, CollisionBoxes.Num());
+	UE_LOG(LogAGX, Warning, TEXT("Have %d spheres and %d boxes."), Spheres.Num(), Boxes.Num());
 }
 
 void UAGX_StaticMeshComponent::ReadTransformFromNative()
