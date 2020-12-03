@@ -608,7 +608,7 @@ UAGX_LockConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateLockJoint(
 }
 
 UAGX_TwoBodyTireComponent* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
-	const FTwoBodyTireBarrier& Barrier, AActor& Owner)
+	const FTwoBodyTireBarrier& Barrier, AActor& Owner, bool IsBlueprintOwner)
 {
 	UAGX_TwoBodyTireComponent* Component = NewObject<UAGX_TwoBodyTireComponent>(&Owner);
 	if (Component == nullptr)
@@ -628,8 +628,11 @@ UAGX_TwoBodyTireComponent* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 			return;
 		}
 
-		BodyRef.OwningActor = Body->GetOwner();
 		BodyRef.BodyName = Body->GetFName();
+		if (!IsBlueprintOwner)
+		{
+			BodyRef.OwningActor = Body->GetOwner();
+		}
 	};
 
 	SetRigidBody(GetBody(Barrier.GetTireRigidBody()), Component->TireRigidBody);

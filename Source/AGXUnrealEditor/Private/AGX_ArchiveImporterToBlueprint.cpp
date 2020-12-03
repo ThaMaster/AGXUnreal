@@ -278,7 +278,7 @@ namespace
 			ArchiveBodies.TireBodyArchive = InstantiateBody(TireBody);
 			ArchiveBodies.HubBodyArchive = InstantiateBody(HubBody);
 
-			Helper.InstantiateTwoBodyTire(Barrier, BlueprintTemplate);
+			Helper.InstantiateTwoBodyTire(Barrier, BlueprintTemplate, true);
 			return ArchiveBodies;
 		}
 

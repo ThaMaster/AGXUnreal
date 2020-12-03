@@ -98,7 +98,7 @@ public:
 		const FLockJointBarrier& Barrier, AActor& Owner);
 
 	UAGX_TwoBodyTireComponent* InstantiateTwoBodyTire(
-		const FTwoBodyTireBarrier& Barrier, AActor& Owner);
+		const FTwoBodyTireBarrier& Barrier, AActor& Owner, bool IsBlueprintOwner = false);
 
 	AAGX_TwoBodyTireActor* InstantiateTwoBodyTire(
 		const FTwoBodyTireBarrier& Barrier, UWorld& World);
