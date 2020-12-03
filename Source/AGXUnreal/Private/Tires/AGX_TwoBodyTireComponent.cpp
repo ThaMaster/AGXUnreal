@@ -1,6 +1,7 @@
 #include "Tires/AGX_TwoBodyTireComponent.h"
 
 // AGXUnreal includes.
+#include "Tires/AGX_TwoBodyTireActor.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_LogCategory.h"
 #include "Tires/TwoBodyTireBarrier.h"
@@ -55,6 +56,17 @@ void UAGX_TwoBodyTireComponent::CopyFrom(const FTwoBodyTireBarrier& Barrier)
 	LateralDamping = Barrier.GetDamping(FTwoBodyTireBarrier::LATERAL);
 	BendingDamping = Barrier.GetDamping(FTwoBodyTireBarrier::BENDING);
 	TorsionalDamping = Barrier.GetDamping(FTwoBodyTireBarrier::TORSIONAL);
+}
+
+bool UAGX_TwoBodyTireComponent::IsDefaultSubObjectOfTwoBodyTireActor() const
+{
+	AActor* Owner = GetOwner();
+	if (IsDefaultSubobject() && Owner != nullptr && Cast<AAGX_TwoBodyTireActor>(Owner) != nullptr)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 void UAGX_TwoBodyTireComponent::AllocateNative()

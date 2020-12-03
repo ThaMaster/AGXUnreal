@@ -52,7 +52,9 @@
 #include "Terrain/AGX_Terrain.h"
 #include "Tires/AGX_TireComponentVisualizer.h"
 #include "Tires/AGX_TireComponent.h"
+#include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Tires/AGX_TwoBodyTireActor.h"
+#include "Tires/AGX_TwoBodyTireComponentCustomization.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -217,6 +219,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_TerrainMaterialCustomization::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_TwoBodyTireComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_TwoBodyTireComponentCustomization::MakeInstance));
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -250,6 +257,9 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_RigidBodyComponent::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }

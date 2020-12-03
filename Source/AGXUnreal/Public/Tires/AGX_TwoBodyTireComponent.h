@@ -127,6 +127,8 @@ public:
 
 	void CopyFrom(const FTwoBodyTireBarrier& Barrier);
 
+	bool IsDefaultSubObjectOfTwoBodyTireActor() const;
+
 protected:
 	virtual void AllocateNative() override;
 
