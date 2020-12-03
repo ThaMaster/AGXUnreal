@@ -9,7 +9,7 @@
 #include "CoreMinimal.h"
 #include "Components/StaticMeshComponent.h"
 
-#include "AGX_SimulationObjectComponent.generated.h"
+#include "AGX_StaticMeshComponent.generated.h"
 
 USTRUCT(BlueprintType)
 struct FAGX_Shape
@@ -80,12 +80,12 @@ struct FAGX_Box : public FAGX_Shape
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	HideCategories = ("Physics"))
-class AGXUNREAL_API UAGX_SimulationObjectComponent : public UStaticMeshComponent
+class AGXUNREAL_API UAGX_StaticMeshComponent : public UStaticMeshComponent
 {
 	GENERATED_BODY()
 
 public: // Properties.
-	UAGX_SimulationObjectComponent();
+	UAGX_StaticMeshComponent();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics|Shapes")
 	FAGX_Shape DefaultShape;

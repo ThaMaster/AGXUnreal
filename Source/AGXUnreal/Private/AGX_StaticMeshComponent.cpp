@@ -1,4 +1,4 @@
-#include "AGX_SimulationObjectComponent.h"
+#include "AGX_StaticMeshComponent.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
@@ -12,7 +12,7 @@
 #include "PhysicsEngine/BodySetup.h"
 #include "PhysicsEngine/AggregateGeom.h"
 
-UAGX_SimulationObjectComponent::UAGX_SimulationObjectComponent()
+UAGX_StaticMeshComponent::UAGX_StaticMeshComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.TickGroup = TG_PostPhysics;
@@ -23,25 +23,25 @@ UAGX_SimulationObjectComponent::UAGX_SimulationObjectComponent()
 	///
 	/// This one is problematic because it's a call to a virtual function from a constructor, which
 	/// means that the vtable may not have been fully formed yet.
-	OnStaticMeshChanged().AddUObject(this, &UAGX_SimulationObjectComponent::UpdateCollisionShapes);
+	OnStaticMeshChanged().AddUObject(this, &UAGX_StaticMeshComponent::UpdateCollisionShapes);
 }
 
-bool UAGX_SimulationObjectComponent::HasNative() const
+bool UAGX_StaticMeshComponent::HasNative() const
 {
 	return NativeBarrier.HasNative();
 }
 
-FRigidBodyBarrier* UAGX_SimulationObjectComponent::GetNative()
+FRigidBodyBarrier* UAGX_StaticMeshComponent::GetNative()
 {
 	return &NativeBarrier;
 }
 
-const FRigidBodyBarrier* UAGX_SimulationObjectComponent::GetNative() const
+const FRigidBodyBarrier* UAGX_StaticMeshComponent::GetNative() const
 {
 	return &NativeBarrier;
 }
 
-FRigidBodyBarrier* UAGX_SimulationObjectComponent::GetOrCreateNative()
+FRigidBodyBarrier* UAGX_StaticMeshComponent::GetOrCreateNative()
 {
 	if (!HasNative())
 	{
@@ -50,13 +50,13 @@ FRigidBodyBarrier* UAGX_SimulationObjectComponent::GetOrCreateNative()
 	return GetNative();
 }
 
-void UAGX_SimulationObjectComponent::OnMeshChanged()
+void UAGX_StaticMeshComponent::OnMeshChanged()
 {
 	UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from OnMeshChanged."))
 	RefreshCollisionShapes();
 }
 
-void UAGX_SimulationObjectComponent::UpdateCollisionShapes(UStaticMeshComponent* Self)
+void UAGX_StaticMeshComponent::UpdateCollisionShapes(UStaticMeshComponent* Self)
 {
 	if (Self != this)
 	{
@@ -72,7 +72,7 @@ void UAGX_SimulationObjectComponent::UpdateCollisionShapes(UStaticMeshComponent*
 	RefreshCollisionShapes();
 }
 
-void UAGX_SimulationObjectComponent::BeginPlay()
+void UAGX_StaticMeshComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	if (!HasNative())
@@ -81,7 +81,7 @@ void UAGX_SimulationObjectComponent::BeginPlay()
 	}
 }
 
-void UAGX_SimulationObjectComponent::EndPlay(const EEndPlayReason::Type Reason)
+void UAGX_StaticMeshComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
 	if (HasNative())
@@ -90,14 +90,14 @@ void UAGX_SimulationObjectComponent::EndPlay(const EEndPlayReason::Type Reason)
 	}
 }
 
-void UAGX_SimulationObjectComponent::TickComponent(
+void UAGX_StaticMeshComponent::TickComponent(
 	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	ReadTransformFromNative();
 }
 
-namespace UAGX_SimulationObject_helpers
+namespace UAGX_StaticMesh_helpers
 {
 // I would like to use RefreshCollisionShapes(PhysicsShapes, CollisionShapes) to
 // reorder PhysicsShapes so that they match the new ordering of CollisionShapes.
@@ -113,7 +113,7 @@ namespace UAGX_SimulationObject_helpers
 #endif
 }
 
-bool UAGX_SimulationObjectComponent::ShouldCreatePhysicsState() const
+bool UAGX_StaticMeshComponent::ShouldCreatePhysicsState() const
 {
 	/// \note I'm not entirely sure on the consequences of doing this. I want to maintain my own
 	/// physics state, which is the AGX Dynamics state. I do not want the PhysX code to start doing
@@ -125,14 +125,14 @@ bool UAGX_SimulationObjectComponent::ShouldCreatePhysicsState() const
 	return true;
 }
 
-void UAGX_SimulationObjectComponent::OnCreatePhysicsState()
+void UAGX_StaticMeshComponent::OnCreatePhysicsState()
 {
 	UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from OnCreatePhysicsState."))
 	RefreshCollisionShapes();
 	bPhysicsStateCreated = true;
 }
 
-void UAGX_SimulationObjectComponent::PostEditChangeProperty(FPropertyChangedEvent& Event)
+void UAGX_StaticMeshComponent::PostEditChangeProperty(FPropertyChangedEvent& Event)
 {
 	Super::PostEditChangeProperty(Event);
 	UE_LOG(LogAGX, Warning, TEXT("PropertyChangedEvent called"));
@@ -144,7 +144,7 @@ void UAGX_SimulationObjectComponent::PostEditChangeProperty(FPropertyChangedEven
 	}
 }
 
-void UAGX_SimulationObjectComponent::PreEditChange(FProperty* Property)
+void UAGX_StaticMeshComponent::PreEditChange(FProperty* Property)
 {
 	if (Property->GetName() == GetMemberNameChecked_StaticMesh().ToString())
 	{
@@ -156,7 +156,7 @@ void UAGX_SimulationObjectComponent::PreEditChange(FProperty* Property)
 	}
 }
 
-void UAGX_SimulationObjectComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
+void UAGX_StaticMeshComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	Super::PostEditChangeChainProperty(Event);
 	UE_LOG(
@@ -181,12 +181,12 @@ void UAGX_SimulationObjectComponent::PostEditChangeChainProperty(FPropertyChange
 		if (GetStaticMesh() != nullptr)
 		{
 			MeshChangedHandle = GetStaticMesh()->OnMeshChanged.AddUObject(
-				this, &UAGX_SimulationObjectComponent::OnMeshChanged);
+				this, &UAGX_StaticMeshComponent::OnMeshChanged);
 		}
 	}
 }
 
-namespace AGX_SimulationObject_helpers
+namespace AGX_StaticMesh_helpers
 {
 	void SwapInMaterialInstance(FAGX_Shape& Shape, UWorld& World)
 	{
@@ -232,10 +232,10 @@ namespace AGX_SimulationObject_helpers
 	}
 }
 
-void UAGX_SimulationObjectComponent::AllocateNative()
+void UAGX_StaticMeshComponent::AllocateNative()
 {
-	using namespace AGX_SimulationObject_helpers; /// \todo Rename the other namespace to match
-												  /// this.
+	using namespace AGX_StaticMesh_helpers; /// \todo Rename the other namespace to match
+											/// this.
 
 	if (GetWorld() == nullptr)
 	{
@@ -361,7 +361,7 @@ void UAGX_SimulationObjectComponent::AllocateNative()
 
  The same call, OnCreatePhysicsState, is also made when deleting a collision shape.
  */
-void UAGX_SimulationObjectComponent::RefreshCollisionShapes()
+void UAGX_StaticMeshComponent::RefreshCollisionShapes()
 {
 	if (GetStaticMesh() == nullptr)
 	{
@@ -380,7 +380,7 @@ void UAGX_SimulationObjectComponent::RefreshCollisionShapes()
 	Boxes.SetNum(CollisionBoxes.Num());
 }
 
-void UAGX_SimulationObjectComponent::ReadTransformFromNative()
+void UAGX_StaticMeshComponent::ReadTransformFromNative()
 {
 	check(HasNative());
 	const FVector NewLocation = NativeBarrier.GetPosition();
@@ -393,7 +393,7 @@ void UAGX_SimulationObjectComponent::ReadTransformFromNative()
 	MoveComponent(LocationDelta, NewRotation, false);
 }
 
-void UAGX_SimulationObjectComponent::WriteTransformToNative()
+void UAGX_StaticMeshComponent::WriteTransformToNative()
 {
 	check(HasNative());
 	NativeBarrier.SetPosition(GetComponentLocation());

@@ -2,7 +2,7 @@
 
 // AGXUnreal includes.
 #include "AGX_RigidBodyComponent.h"
-#include "AGX_SimulationObjectComponent.h"
+#include "AGX_StaticMeshComponent.h"
 #include "AGX_Stepper.h"
 #include "AGX_LogCategory.h"
 #include "Shapes/AGX_ShapeComponent.h"
@@ -39,7 +39,7 @@ void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
 	NativeBarrier.AddRigidBody(Body->GetNative());
 }
 
-void UAGX_Simulation::AddRigidBody(UAGX_SimulationObjectComponent* Body)
+void UAGX_Simulation::AddRigidBody(UAGX_StaticMeshComponent* Body)
 {
 	check(Body != nullptr);
 	EnsureStepperCreated();
@@ -157,8 +157,7 @@ namespace agx_simulation_helpers
 				LevelName = TEXT("InitialState");
 			}
 			FString FileName = LevelName + TEXT(".agx");
-			WriteInitialStateArchive(
-				FPaths::Combine(ExportPath, FileName), Simulation);
+			WriteInitialStateArchive(FPaths::Combine(ExportPath, FileName), Simulation);
 		}
 		else
 		{

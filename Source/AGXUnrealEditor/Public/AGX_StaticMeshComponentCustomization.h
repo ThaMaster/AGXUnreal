@@ -1,7 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_SimulationObjectComponent.h"
+#include "AGX_StaticMeshComponent.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -10,10 +10,10 @@
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
 
-class AGXUNREALEDITOR_API FAGX_SimulationObjectCustomization : public IDetailCustomization
+class AGXUNREALEDITOR_API FAGX_StaticMeshComponentCustomization : public IDetailCustomization
 {
 public:
-	static TSharedRef <IDetailCustomization> MakeInstance();
+	static TSharedRef<IDetailCustomization> MakeInstance();
 
 	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
 };

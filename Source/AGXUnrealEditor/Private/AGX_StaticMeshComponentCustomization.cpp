@@ -1,9 +1,9 @@
-#include "AGX_SimulationObjectCustomization.h"
+#include "AGX_StaticMeshComponentCustomization.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_EditorUtilities.h"
-#include "AGX_SimulationObjectComponent.h"
+#include "AGX_StaticMeshComponent.h"
 
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
@@ -16,14 +16,14 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SSpinBox.h"
 
-#define LOCTEXT_NAMESPACE "FAGX_SimulationObjectCustomization"
+#define LOCTEXT_NAMESPACE "FAGX_StaticMeshComponentCustomization"
 
-TSharedRef<IDetailCustomization> FAGX_SimulationObjectCustomization::MakeInstance()
+TSharedRef<IDetailCustomization> FAGX_StaticMeshComponentCustomization::MakeInstance()
 {
-	return MakeShareable(new FAGX_SimulationObjectCustomization);
+	return MakeShareable(new FAGX_StaticMeshComponentCustomization);
 }
 
-namespace FAGX_SimulationObjectCustomization_helpers
+namespace FAGX_StaticMeshComponentCustomization_helpers
 {
 	class SShapeWidget : public SCompoundWidget
 	{
@@ -90,14 +90,14 @@ namespace FAGX_SimulationObjectCustomization_helpers
 	}
 }
 
-void FAGX_SimulationObjectCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
+void FAGX_StaticMeshComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
-	using namespace FAGX_SimulationObjectCustomization_helpers;
+	using namespace FAGX_StaticMeshComponentCustomization_helpers;
 
 	UE_LOG(LogAGX, Warning, TEXT("SimulationObject customization running"));
 
-	UAGX_SimulationObjectComponent* SimulationObject =
-		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_SimulationObjectComponent>(
+	UAGX_StaticMeshComponent* SimulationObject =
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_StaticMeshComponent>(
 			DetailBuilder);
 	if (!SimulationObject)
 	{
