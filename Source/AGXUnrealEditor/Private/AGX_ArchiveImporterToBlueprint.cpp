@@ -264,7 +264,7 @@ namespace
 			// and can thus be found and used when the TwoBodyTire component is instantiated.
 			const FRigidBodyBarrier TireBody = Barrier.GetTireRigidBody();
 			const FRigidBodyBarrier HubBody = Barrier.GetHubRigidBody();
-			if (TireBody.GetNative() == false || HubBody.GetNative() == false)
+			if (TireBody.HasNative() == false || HubBody.HasNative() == false)
 			{
 				UE_LOG(
 					LogAGX, Error,
