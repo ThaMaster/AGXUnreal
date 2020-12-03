@@ -219,7 +219,7 @@ void FAGX_RigidBodyReferenceCustomization::OnBodyNameCommited(
 		RigidBodyReference->InvalidateCache();
 
 		UE_LOG(
-			LogAGX, Warning, TEXT("RigidBodyReference: BodyName in %p updated to '%s'."),
+			LogAGX, Verbose, TEXT("RigidBodyReference: BodyName in %p updated to '%s'."),
 			(void*) RigidBodyReference, *RigidBodyReference->BodyName.ToString());
 	}
 }
