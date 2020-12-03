@@ -10,8 +10,7 @@
 #include "AGX_TireComponent.generated.h"
 
 /**
- * TODO add descr.
- *
+ * Base class for Tire model components.
  */
 UCLASS(Category = "AGX", ClassGroup = "AGX", notplaceable)
 class AGXUNREAL_API UAGX_TireComponent : public UActorComponent
