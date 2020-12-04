@@ -3,7 +3,6 @@
 // AGXUnreal includes.
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "AGX_RigidBodyComponent.h"
-#include "AGX_LogCategory.h"
 
 // Unreal Engine includes.
 #include "SceneView.h"
@@ -43,12 +42,12 @@ namespace
 			TireTransform.GetUnitAxis(EAxis::X), TireTransform.GetUnitAxis(EAxis::Y), Color,
 			InnerRadius, InnerCylinderHalfHeight, NUM_SIDES, SDPG_Foreground);
 
-		const float LineLength = OuterRadius;
+		const float HalfLineLength = OuterRadius * 0.4;
 		const float LineThickness = 1.f;
 		const FVector LineStart =
-			TireTransform.GetLocation() + TireTransform.GetUnitAxis(EAxis::Y) * LineLength / 2;
+			TireTransform.GetLocation() + TireTransform.GetUnitAxis(EAxis::Y) * HalfLineLength;
 		const FVector LineEnd =
-			TireTransform.GetLocation() - TireTransform.GetUnitAxis(EAxis::Y) * LineLength / 2;
+			TireTransform.GetLocation() - TireTransform.GetUnitAxis(EAxis::Y) * HalfLineLength;
 
 		PDI->DrawLine(LineStart, LineEnd, Color, SDPG_Foreground, LineThickness);
 	}

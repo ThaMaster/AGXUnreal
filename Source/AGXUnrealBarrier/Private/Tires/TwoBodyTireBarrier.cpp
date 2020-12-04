@@ -60,8 +60,8 @@ namespace
 {
 	agxModel::TwoBodyTire* CastToTwoBodyTire(agxModel::Tire* Tire)
 	{
-		agxModel::TwoBodyTire* TwoBody = dynamic_cast<agxModel::TwoBodyTire*>(Tire);
-		if (TwoBody == nullptr)
+		agxModel::TwoBodyTire* TwoBodyTire = dynamic_cast<agxModel::TwoBodyTire*>(Tire);
+		if (TwoBodyTire == nullptr)
 		{
 			UE_LOG(
 				LogAGX, Error,
@@ -69,7 +69,7 @@ namespace
 					 "agxModel::TwoBodyTire failed."));
 		}
 
-		return TwoBody;
+		return TwoBodyTire;
 	}
 }
 
@@ -84,7 +84,7 @@ float FTwoBodyTireBarrier::GetOuterRadius() const
 		return 0.f;
 	}
 
-	float RadiusAgx = Tire->getOuterRadius();
+	agx::Real RadiusAgx = Tire->getOuterRadius();
 	return ConvertDistanceToUnreal<float>(RadiusAgx);
 }
 
@@ -99,7 +99,7 @@ float FTwoBodyTireBarrier::GetInnerRadius() const
 		return 0.f;
 	}
 
-	float RadiusAgx = Tire->getInnerRadius();
+	agx::Real RadiusAgx = Tire->getInnerRadius();
 	return ConvertDistanceToUnreal<float>(RadiusAgx);
 }
 
@@ -143,7 +143,8 @@ float FTwoBodyTireBarrier::GetDamping(DeformationMode Mode) const
 		return 0.f;
 	}
 
-	return Tire->getDampingCoefficient(Convert(Mode));
+	agx::Real DampingAgx = Tire->getDampingCoefficient(Convert(Mode));
+	return Convert(DampingAgx);
 }
 
 void FTwoBodyTireBarrier::SetStiffness(float Stiffness, DeformationMode Mode)
@@ -171,7 +172,8 @@ float FTwoBodyTireBarrier::GetStiffness(DeformationMode Mode) const
 		return 0.f;
 	}
 
-	return Tire->getStiffness(Convert(Mode));
+	agx::Real StiffnessAgx = Tire->getStiffness(Convert(Mode));
+	return Convert(StiffnessAgx);
 }
 
 void FTwoBodyTireBarrier::SetImplicitFrictionMultiplier(const FVector2D& Multiplier)

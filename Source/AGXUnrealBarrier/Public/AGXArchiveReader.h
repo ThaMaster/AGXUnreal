@@ -46,7 +46,7 @@ the duration of the notification call.
 class FAGXArchiveBody;
 
 /**
- * Struct for holding Rigid Bod Archives of TwoBodyTire.
+ * Struct for holding Rigid Body Archives of TwoBodyTire.
  */
 struct TwoBodyTireBodiesArchive
 {

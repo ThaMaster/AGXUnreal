@@ -37,7 +37,6 @@
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Tires/TwoBodyTireBarrier.h"
-//#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.

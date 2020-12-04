@@ -65,7 +65,7 @@ UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::InstantiateBody(
 	const FRigidBodyBarrier& Barrier, AActor& Actor)
 {
 	// Only instantiate body if it has not already been instantiated. It might have been
-	// instantiated during import e.g. of TwoBodyTire.
+	// instantiated already during import of e.g. Tire model.
 	if (GetBody(Barrier, false) != nullptr)
 	{
 		return nullptr;
@@ -123,7 +123,7 @@ AAGX_RigidBodyActor* FAGX_ArchiveImporterHelper::InstantiateBody(
 	const FRigidBodyBarrier& Barrier, UWorld& World)
 {
 	// Only instantiate body if it has not already been instantiated. It might have been
-	// instantiated during import e.g. of TwoBodyTire.
+	// instantiated already during import of e.g. Tire model.
 	if (GetBody(Barrier, false) != nullptr)
 	{
 		return nullptr;
@@ -624,7 +624,7 @@ UAGX_TwoBodyTireComponent* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 		{
 			WriteImportErrorMessage(
 				TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ArchiveFilePath,
-				TEXT("Could not set TireRigidBody"));
+				TEXT("Could not set Rigid Body"));
 			return;
 		}
 
@@ -664,13 +664,12 @@ AAGX_TwoBodyTireActor* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 	NewActor->TwoBodyTireComponent->CopyFrom(Barrier);
 
 	// Setup TireRigidBody and HubRigidBody.
-	auto SetupBody = [&](const FRigidBodyBarrier& BodyBarrier, UAGX_RigidBodyComponent* Body,
-						 const FString& Description) {
+	auto SetupBody = [&](const FRigidBodyBarrier& BodyBarrier, UAGX_RigidBodyComponent* Body) {
 		if (BodyBarrier.HasNative() == false)
 		{
 			WriteImportErrorMessage(
 				TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ArchiveFilePath,
-				TEXT("The referenced %s did not have a native Rigid Body allocated. The "
+				TEXT("The referenced Rigid Body did not have a native Rigid Body allocated. The "
 					 "TwoBodyTire might not work as expected."));
 			return;
 		}
@@ -679,10 +678,8 @@ AAGX_TwoBodyTireActor* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 		RestoredBodies.Add(BodyBarrier.GetGuid(), Body);
 	};
 
-	SetupBody(
-		Barrier.GetTireRigidBody(), NewActor->TireRigidBodyComponent, FString("Tire Rigid Body"));
-	SetupBody(
-		Barrier.GetHubRigidBody(), NewActor->HubRigidBodyComponent, FString("Hub Rigid Body"));
+	SetupBody(Barrier.GetTireRigidBody(), NewActor->TireRigidBodyComponent);
+	SetupBody(Barrier.GetHubRigidBody(), NewActor->HubRigidBodyComponent);
 
 	return NewActor;
 }
@@ -690,11 +687,11 @@ AAGX_TwoBodyTireActor* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(
 	const FRigidBodyBarrier& Barrier, bool LogErrorIfNotFound)
 {
-	/// \todo Calles cannot differentiate between a nullptr return because the Barrier really
+	/// \todo Callers cannot differentiate between a nullptr return because the Barrier really
 	/// represents a nullptr body, and a nullptr return because the AGXUnreal representation of an
 	/// existing Barrier body couldn't be found. This may cause e.g. constraints that should be
-	/// between to bodies to be between a body and the world instead. A warning will be printed,
-	/// however, so the user will know what happened, if they read warnings.
+	/// between two bodies to be between a body and the world instead. An error message will be
+	/// printed, however, so the user will know what happened, if they read the log.
 
 	if (!Barrier.HasNative())
 	{

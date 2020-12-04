@@ -9,8 +9,8 @@ class FSceneView;
 class UActorComponent;
 
 /**
- * Todo: Write descr.
- *
+ * Component Visualizer of UAGX_TireComponent, which draws some simple primitives to visualize the
+ * tire model.
  */
 class AGXUNREALEDITOR_API FAGX_TireComponentVisualizer : public FComponentVisualizer
 {

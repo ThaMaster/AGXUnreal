@@ -28,7 +28,7 @@ void FAGX_TwoBodyTireComponentCustomization::CustomizeDetails(IDetailLayoutBuild
 
 	// In case this UAGX_TwoBodyTireComponent is the default UAGX_TwoBodyTireComponent of an
 	// AAGX_TwoBodyTireActor, the tire and hub Rigid Body references are hidden since they are
-	// already set up by the AAGX_TwoBodyTireActor.
+	// already set up by the AAGX_TwoBodyTireActor and should not be changed.
 	if (TwoBodyTireComponent->IsDefaultSubObjectOfTwoBodyTireActor())
 	{
 		DetailBuilder.HideProperty(DetailBuilder.GetProperty(

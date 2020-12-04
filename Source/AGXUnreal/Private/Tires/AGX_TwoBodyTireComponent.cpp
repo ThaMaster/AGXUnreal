@@ -2,9 +2,9 @@
 
 // AGXUnreal includes.
 #include "Tires/AGX_TwoBodyTireActor.h"
+#include "Tires/TwoBodyTireBarrier.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_LogCategory.h"
-#include "Tires/TwoBodyTireBarrier.h"
 
 UAGX_TwoBodyTireComponent::UAGX_TwoBodyTireComponent()
 {
@@ -34,7 +34,7 @@ FTransform UAGX_TwoBodyTireComponent::GetGlobalTireTransform() const
 		return FTransform::Identity;
 	}
 
-	// This reflects the behaviour of the AGx Dynamics agxModel::TwoBodyTire where a local transform
+	// This reflects the behaviour of the AGX Dynamics agxModel::TwoBodyTire where a local transform
 	// relative to the tire Rigid Body is used to define the final transform of the Tire model. The
 	// axis of rotation is along the y-axis of this final transform in AGX Dynamics, which
 	// corresponds to the negative y-axis in Unreal.
@@ -94,6 +94,15 @@ void UAGX_TwoBodyTireComponent::UpdateNativeProperties()
 	}
 
 	FTwoBodyTireBarrier* Barrier = static_cast<FTwoBodyTireBarrier*>(GetNative());
+	if (Barrier == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tire %s UpdateNativeProperties, casting of FTireBarrier to FTwoBodyTireBarrier "
+				 "failed."),
+			*GetFName().ToString());
+		return;
+	}
 
 	Barrier->SetStiffness(RadialStiffness, FTwoBodyTireBarrier::RADIAL);
 	Barrier->SetStiffness(LateralStiffness, FTwoBodyTireBarrier::LATERAL);
@@ -115,9 +124,9 @@ void UAGX_TwoBodyTireComponent::PostLoad()
 
 	// PostLoad is run when this component is created in a Blueprint or when a Blueprint containing
 	// this component is instantiated in the level. This allows us to set the correct
-	// FallbackOwningActor even for the Blueprint case where these FallbackOwningActors will point
-	// to the wrong object instances of for some reason, even though they are set in the
-	// constructor. The reason why this happens is still not known.
+	// FallbackOwningActor even for the Blueprint case where these FallbackOwningActor pointers will
+	// point to the wrong object instances, even though they are set in the constructor. The reason
+	// why this happens is still not known.
 	TireRigidBody.FallbackOwningActor = GetOwner();
 	HubRigidBody.FallbackOwningActor = GetOwner();
 }
@@ -126,10 +135,8 @@ void UAGX_TwoBodyTireComponent::PostLoad()
 FTwoBodyTireBarrier* UAGX_TwoBodyTireComponent::CreateTwoBodyTireBarrier()
 {
 	FTwoBodyTireBarrier* Barrier = new FTwoBodyTireBarrier;
-
 	UAGX_RigidBodyComponent* TireBody = GetTireRigidBody();
 	UAGX_RigidBodyComponent* HubBody = GetHubRigidBody();
-
 	if (TireBody == nullptr || HubBody == nullptr)
 	{
 		UE_LOG(
@@ -142,12 +149,11 @@ FTwoBodyTireBarrier* UAGX_TwoBodyTireComponent::CreateTwoBodyTireBarrier()
 
 	FRigidBodyBarrier* TireBarrier = TireBody->GetOrCreateNative();
 	FRigidBodyBarrier* HubBarrier = HubBody->GetOrCreateNative();
-
 	if (TireBarrier == nullptr || HubBarrier == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tire %s creation failed: at least one of the Rigid Bodie's Natives was nullptr."),
+			TEXT("Tire %s creation failed: at least one of the Rigid Bodie's Barriers was nullptr."),
 			*GetFName().ToString());
 		return Barrier;
 	}
