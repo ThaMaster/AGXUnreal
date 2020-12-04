@@ -4,13 +4,14 @@
 #include "AGX_LogCategory.h"
 #include "AGX_EditorUtilities.h"
 #include "AGX_StaticMeshComponent.h"
+#include "Widgets/ShapeWidget.h"
 
 // Unreal Engine includes.
-#include "Components/StaticMeshComponent.h"
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "Engine/StaticMesh.h"
+#include "IDetailGroup.h"
 #include "PhysicsEngine/BodySetup.h"
 #include "PhysicsEngine/AggregateGeom.h"
 #include "Widgets/Input/SButton.h"
@@ -23,85 +24,18 @@ TSharedRef<IDetailCustomization> FAGX_StaticMeshComponentCustomization::MakeInst
 	return MakeShareable(new FAGX_StaticMeshComponentCustomization);
 }
 
-namespace FAGX_StaticMeshComponentCustomization_helpers
-{
-	class SShapeWidget : public SCompoundWidget
-	{
-	public:
-		SLATE_BEGIN_ARGS(SShapeWidget)
-			: _Shape(nullptr)
-			, _ShapeType(EAggCollisionShape::Unknown)
-		{
-		}
-
-		SLATE_ARGUMENT(FAGX_Shape*, Shape)
-		SLATE_ARGUMENT(EAggCollisionShape::Type, ShapeType)
-
-		SLATE_END_ARGS()
-
-		void Construct(const FArguments& InArguments);
-	};
-
-	void SShapeWidget::Construct(const FArguments& InArguments)
-	{
-		// clang-format off
-		FAGX_Shape* Shape = InArguments._Shape;
-		EAggCollisionShape::Type ShapeType = InArguments._ShapeType;
-		if (Shape == nullptr)
-		{
-			UE_LOG(LogAGX, Error, TEXT("Got nullptr shape in SShapeWidget. That's unexpected"));
-			ChildSlot
-			[
-				SNew(STextBlock)
-				.ColorAndOpacity(FLinearColor::Red)
-				.Text(LOCTEXT("SShapeWidget_ShapeNull", "Get nullptr shape. That's unexpected"))
-			];
-			return;
-		}
-		if (ShapeType == EAggCollisionShape::Unknown)
-		{
-			UE_LOG(LogAGX, Error, TEXT("Got unknown shape type in SShapeWidget. That's unexpected"));
-			ChildSlot
-			[
-				SNew(STextBlock)
-				.ColorAndOpacity(FLinearColor::Red)
-				.Text(LOCTEXT(
-					"SShapeWidget_ShapeTypeUnknown",
-					"Got unknown shape type. That's unexpected"))
-			];
-			return;
-		}
-		ChildSlot
-		[
-			SNew(SBorder)
-			.BorderBackgroundColor(FLinearColor(1.0f, 0.2f, 0.0f))
-			.Padding(FMargin(5.0f, 5.0f))
-			.Content()
-			[
-				SNew(SVerticalBox)
-				+ SVerticalBox::Slot()
-				[
-					SNew(STextBlock)
-					.Text(LOCTEXT("Shape ", "I'm a SShapeWidget"))
-				]
-			]
-		];
-		// clang-format on
-	}
-}
-
+// This whole CustomizeDetails implementation is one big experimentation playground. There is a
+// whole bunch of code blocks that exists solely to try out various ways of creating and layouting
+// Slate widgets. Each such experimentation block if #if 0-ed and commented with a description of
+// what is being tested.
 void FAGX_StaticMeshComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
-	using namespace FAGX_StaticMeshComponentCustomization_helpers;
-
-	UE_LOG(LogAGX, Warning, TEXT("SimulationObject customization running"));
-
-	UAGX_StaticMeshComponent* SimulationObject =
+	UAGX_StaticMeshComponent* SelectedMeshComponent =
 		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_StaticMeshComponent>(
 			DetailBuilder);
-	if (!SimulationObject)
+	if (SelectedMeshComponent == nullptr)
 	{
-		// We're modifying multiple (or zero) Simulation objects. Either handle that in the below
+		// We're modifying multiple (or zero) meshes. Either handle that in the below
 		// code or simply fall back to the default Details Panel view.
 		//
 		// The latter is probably unexpected for the user, but kind of works for now.
@@ -111,206 +45,184 @@ void FAGX_StaticMeshComponentCustomization::CustomizeDetails(IDetailLayoutBuilde
 		return;
 	}
 
+	/// \todo Is it safe to perform state modifications on the object for which we are currently
+	/// creating the Details Panel? It's not const, so I guess it's ok.
+	SelectedMeshComponent->RefreshCollisionShapes();
+
 	IDetailCategoryBuilder& AgxCategory =
 		DetailBuilder.EditCategory("AGX Dynamics", FText::GetEmpty(), ECategoryPriority::Important);
 
-	/// \todo Create an orange border around AgxCategory.
+	// Put all the property widgets before the experimental widets. The way to reorder default
+	// property widgets is to call AddPropertyRow in the order we want them to be. A side effect
+	// of this is that they lose their subcategory set in their UPROPERTY, so we recreate it here.
 
+	IDetailGroup& AgxShapesCategory = AgxCategory.AddGroup(
+		FName(TEXT("CollisionShapes")), FText::FromString(TEXT("Collision shapes")));
+	AgxShapesCategory
+		.HeaderRow()[SNew(STextBlock).Text(LOCTEXT("CollisionShapes", "Collision shapes"))];
 
+	TSharedRef<IPropertyHandle> ShapesProperty =
+		DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_StaticMeshComponent, DefaultShape));
+	AgxShapesCategory.AddPropertyRow(ShapesProperty);
 
+	TSharedRef<IPropertyHandle> SpheresProperty =
+		DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_StaticMeshComponent, Spheres));
+	AgxShapesCategory.AddPropertyRow(SpheresProperty);
 
+	TSharedRef<IPropertyHandle> BoxesProperty =
+		DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_StaticMeshComponent, Boxes));
+	AgxShapesCategory.AddPropertyRow(BoxesProperty);
+
+	// All properties in the Shapes category has been moved, so hide the category.
+	/// \todo This doesn't work, the category is still visible. The | separator doesn't work in the
+	// IDetailLayoutBuilder member function. Figure out what to do instead.
+	DetailBuilder.HideCategory("AGX Dynamics|Shapes");
 
 	// clang-format off
 
-#if 0
-	// Create button to add a new sphere.
-	// Not used anymore now that we read collision shapes from the Static Mesh.
-	// Can we modify the StaticMesh from here?
-	// Would that edit the source Asset or this SimulationObject's instance?
-	AgxCategory.AddCustomRow(FText::FromString("Add sphere"))
-	[
-		SNew(SButton)
-		.Text(LOCTEXT("AddSphere", "Add sphere"))
-		.ToolTipText(LOCTEXT("AddSphereTooltip", "Add a sphere to this simulation object"))
-		.OnClicked_Lambda([SimulationObject]() {
-			UE_LOG(LogAGX, Warning, TEXT("Adding a sphere."));
-			SimulationObject->Spheres.Add({1.0});
-			/// \todo We may want to re-run CustomizeDetails after this change.
-			/// How do we trigger that?
-			return FReply::Handled();
-		})
-	];
-#endif
-
-	AgxCategory.AddCustomRow(FText::FromString(""))
-	[
-		SNew(SButton)
-		.Text(LOCTEXT("RefreshCollisionShapes", "Refresh collision shapes"))
-		.ToolTipText(LOCTEXT(
-			"RefreshCollisionShapesTip",
-			"Fetch the current collision shapes from the static mesh and populate the physics shape "
-			"lists."))
-		.OnClicked_Lambda([SimulationObject]() {
-			SimulationObject->RefreshCollisionShapes();
-			return FReply::Handled();
-		})
-	];
-
-	SimulationObject->RefreshCollisionShapes();
-
-	if (SimulationObject->Spheres.Num() > 0)
-	{
-		AgxCategory.AddCustomRow(FText::FromString("ShapeWidget"))
-		[
-			SNew(SShapeWidget)
-			.Shape(nullptr)
-			.ShapeType(EAggCollisionShape::Sphere)
-		];
-		AgxCategory.AddCustomRow(FText::FromString("ShapeWidget"))
-		[
-				SNew(SShapeWidget)
-				.Shape(&SimulationObject->Spheres[0])
-				.ShapeType(EAggCollisionShape::Unknown)
-		];
-		AgxCategory.AddCustomRow(FText::FromString("ShapeWidget"))
-		[
-			SNew(SShapeWidget)
-			.Shape(&SimulationObject->Spheres[0])
-			.ShapeType(EAggCollisionShape::Sphere)
-		];
-	}
-
-
-#if 0
-	UStaticMesh* Mesh = SimulationObject->GetStaticMesh();
-	FKAggregateGeom& Shapes = Mesh->BodySetup->AggGeom;
-
-	for (FKSphereElem& Sphere : Shapes.SphereElems)
-	{
-
-	}
-
-	Shapes.BoxElems;
-#endif
-
-
-#if 1
-	IDetailCategoryBuilder& Spheres = AgxCategory;
-#else
-	IDetailCategoryBuilder&  Spheres = DetailBuilder.EditCategory(
-		"AGX Dynamics|Spheres", LOCTEXT("CatSpheresName", "Spheres"));
-#endif
-
-	AgxCategory.AddCustomRow(FText::FromString("SphereTitle"))
-	[
-		SNew(STextBlock)
-		.Text(LOCTEXT("BoxAndSlotSlot", "Using box and AddSlot:"))
-	];
-
-	FDetailWidgetRow& SpheresRow = Spheres.AddCustomRow(FText::FromString("Spheres"));
-	TSharedRef<SBorder> SpheresBorder =
-		SNew(SBorder)
-		.BorderBackgroundColor(FLinearColor(1.0f, 0.2f, 0.0f))
-		.Padding(FMargin(5.0f, 5.0f));
-
-	TSharedRef<SVerticalBox> SpheresBox = SNew(SVerticalBox);
-
-	for (auto& Sphere : SimulationObject->Spheres)
-	{
-		SpheresBox->AddSlot()
-		[
-			SNew(STextBlock)
-			.Text(LOCTEXT("SphereRadius", "Sphere radius in box"))
-		];
-	}
-
-	SpheresBorder->SetContent(SpheresBox);
-	SpheresRow
-	[
-		SpheresBorder
-	];
-
-
-	AgxCategory.AddCustomRow(FText::FromString("SphereTitle"))
-	[
-			SNew(STextBlock)
-			.Text(LOCTEXT("BorderAndTextBlock", "Using border and text block:"))
-	];
-
-
-	for (auto& Sphere : SimulationObject->Spheres)
-	{
-	#if 1
-		Spheres.AddCustomRow(FText::FromString("Spheres"))
-		[
-			SNew(SBorder)
-			.BorderBackgroundColor(FLinearColor(1.0f, 0.2f, 0.0f))
-			.Padding(FMargin(5, 5))
-			.Content()
-			[
-				SNew(STextBlock)
-				.Text(LOCTEXT("SphereRadius", "SphereRadius"))
-			]
-		];
-	#endif
-	#if 0
-		Spheres.AddCustomRow(FText::FromString("Spheres"))
-		.WholeRowContent()
-		[
-			// Q: This border is not rendered. Why not?
-			// A: I don't think we're supposed to use both `WholeRowContent`
-			// and the Name/ValueContent slots on the same widget. Not sure tho.
-			SNew(SBorder)
-			.ColorAndOpacity(FLinearColor::Blue)
-		]
-		.NameContent()
-		[
-			SNew(STextBlock)
-			.Text(LOCTEXT("SphereRadius", "Sphere radius"))
-		]
-		.ValueContent()
-		[
-			SNew(SSpinBox<float>)
-			.MinValue(0.0f)
-			.MaxValue(10.0f)
-		];
-	#endif
-	#if 0
-		AgxCategory.AddCustomRow(FText::FText::FromString("Spheres"))
-		[
-			SNew()
-		];
-	#endif
-	}
-
-	AgxCategory.AddCustomRow(FText::GetEmpty())
+	/// Add a button to force a refresh of the StatiMesh asset's collision shapes into the AGX
+	/// StaticMesh's shape arrays.
+	AgxShapesCategory.AddWidgetRow()
 	[
 		SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
 		.AutoWidth()
 		[
 			SNew(SButton)
-			.Text(LOCTEXT("TestButton", "Test button."))
-	 		.ToolTipText(LOCTEXT("TestButtonTooltip", "Test button tooltip."))
-			.OnClicked_Lambda([]() {
-				UE_LOG(LogAGX, Warning, TEXT("Button clicked."));
+			.Text(LOCTEXT("RefreshCollisionShapes", "Refresh collision shapes"))
+			.ToolTipText(LOCTEXT(
+				"RefreshCollisionShapesTip",
+				"Fetch the current collision shapes from the static mesh and populate the physics "
+				"shape lists."))
+			.OnClicked_Lambda([SelectedMeshComponent]() {
+				SelectedMeshComponent->RefreshCollisionShapes();
 				return FReply::Handled();
 			})
 		]
 	];
+
+
+// This block of code is intended to provide body/mesh-level editing of collision shapes, e.g.,
+// adding and configuring collision shapes from the Details Panel as an alternative to using the
+// StaticMesh Editor.
+#if 0
+	// Create button to add a new sphere.
+	// Can we modify the StaticMesh from here?
+	// Would that edit the source Asset or this SelectedMeshComponent's instance?
+	AgxCategory.AddCustomRow(FText::FromString("Add sphere"))
+	[
+		SNew(SButton)
+		.Text(LOCTEXT("AddSphere", "Add sphere"))
+		.ToolTipText(LOCTEXT("AddSphereTooltip", "Add a sphere to this simulation object"))
+		.OnClicked_Lambda([SelectedMeshComponent]() {
+			UE_LOG(LogAGX, Warning, TEXT("Adding a sphere."));
+			/// \todo Only adding the the AGX StaticMeshs' spheres list doesn't do much, must also
+			/// add the sphere to the the underlying StaticMesh asset.
+			SelectedMeshComponent->Spheres.Add({1.0});
+			/// \todo We may want to re-run CustomizeDetails after this change.
+			/// How do we trigger that?
+			/// Look into IDetailLayoutBuilder::ForceRefreshDetails.
+			/// DetailBuilder must be captured by this lambda.
+			return FReply::Handled();
+		})
+	];
+#endif
+
+
+// This block of code experiments with various ways of adding widgets to a details panel.
+#if 1
+	/// \todo Create an orange border around AgxCategory, to match the visual style of AGX Dynamics
+	/// for Unity.
+
+
+	// Create a group for this experiment, so we can easily see what the results of our experiments
+	// are. The intended output is two subgroups, one for spheres and one for boxes. In the future
+	// there will be additional groups for the shape types we don't yet support.
+	IDetailGroup& AgxShapeWidgetsCategory =
+		AgxCategory.AddGroup("ShapeWidget", FText::FromString(TEXT("Shape widgets")));
+
+	// Create the subgroup for the spheres.
+	IDetailGroup& AgxSpheresCategory =
+		AgxShapeWidgetsCategory.AddGroup("Spheres", FText::FromString(TEXT("Spheres")));
+
+	// First we add a full-row title, describing the purpose of this subgroup.
+	AgxSpheresCategory.AddWidgetRow()
+	[
+			SNew(STextBlock)
+			.Text(LOCTEXT(
+				"SpheresTitle",
+				"This group will contain a listing of all sphere collision shapes in the static mesh, "
+				"visualized as ShapeWidgets"))
+	];
+
+
+	// Next we want to create a collection of widgets that have an orange border around them.
+	// We do this by first creating a VerticalBox that holds the individual widgets and then put
+	// the VerticalBox into a Border.
+
+	// Create the vertical box and all the widgets that should be enclosed by the border.
+	TSharedRef<SVerticalBox> SpheresBox = SNew(SVerticalBox);
+	for (auto& Sphere : SelectedMeshComponent->Spheres)
+	{
+		SpheresBox->AddSlot()
+		[
+			// Here we can do arbitrarily complicated stuff. For now we just add a single
+			// ShapeWidget per sphere.
+			SNew(SShapeWidget)
+			.Shape(&Sphere)
+			.ShapeType(EAggCollisionShape::Sphere)
+		];
+	}
+
+	// Create the border.
+	FDetailWidgetRow& SpheresRow = AgxSpheresCategory.AddWidgetRow(/*FText::FromString("Spheres")*/)
+	[
+		SNew(SBorder)
+		.BorderBackgroundColor(FLinearColor(1.0f, 0.2f, 0.0f))
+		.Padding(FMargin(5.0f, 5.0f))
+		[
+			SpheresBox
+		]
+	];
+#endif
+
+	// Create placeholder for the ShapeWidgets for the collision boxes.
+	IDetailGroup& AgxBoxesCategory =
+		AgxShapeWidgetsCategory.AddGroup("Boxes", FText::FromString(TEXT("Boxes")));
+	AgxBoxesCategory.AddWidgetRow()
+	[
+			SNew(STextBlock)
+			.Text(LOCTEXT(
+				"PlaceForBoxes",
+				"This is where the AGX Dynamics settings for box shapes will show up."))
+	];
+
+// This block of code demonstrates how to get at the primitive collision shapes stored within a
+// StaticMesh asset. This can be used to make our ShapeWidget display and edit data in the
+// collision shape, and not only in our FAGX_Shape struct.
+#if 0
+	UStaticMesh* Mesh = SelectedMeshComponent->GetStaticMesh();
+	FKAggregateGeom& Shapes = Mesh->BodySetup->AggGeom;
+
+	for (FKSphereElem& Sphere : Shapes.SphereElems)
+	{
+	}
+
+	for (FKBxElem& Box : Shapes.BoxElems)
+	{
+	}
+#endif
 
 	// clang-format on
 }
 
 #undef LOCTEXT_NAMESPACE
 
-
-
 #if 0
 A question:
 
-In `CustomizeDetails`, is it possible to add a property widget nested somewhere inside a row created with `AddCustomRow`, inside a `SVerticalBox` for example?
-
+In CustomizeDetails, is it possible to add a property widget nested somewhere inside a row created
+with AddCustomRow, inside a SVerticalBox for example?
 
 Category.AddCustomRow(LOCTEXT("FilterKey", "FilterValue"))
 .WholeRowContent()
