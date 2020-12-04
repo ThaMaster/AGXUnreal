@@ -214,15 +214,11 @@ void FAGX_RigidBodyReferenceCustomization::OnBodyNameCommited(
 		/// \todo A write to RigidBodyReference->BodyName is not the same as
 		/// BodyNameHandle->SetValue. Not sure why, but the RigidBodyReference seen by
 		/// AGX_ConstraintComponentVisualizer is not the same as the RigidBodyReference that is
-		/// being customized here. Then how should I handle cache invalidation?
+		/// being customized here. Then how should we handle cache invalidation?
 		/// Is there a way to get the actual RigidBodyReference from the BodyNameHandle?
-		/// Should I invalidate all caches on BeginPlay?
+		/// Should we invalidate all caches on BeginPlay?
 		BodyNameHandle->SetValue(SelectedBody);
 		RigidBodyReference->InvalidateCache();
-
-		UE_LOG(
-			LogAGX, Warning, TEXT("RigidBodyReference: BodyName in %p updated to '%s'."),
-			(void*) RigidBodyReference, *RigidBodyReference->BodyName.ToString());
 	}
 }
 
