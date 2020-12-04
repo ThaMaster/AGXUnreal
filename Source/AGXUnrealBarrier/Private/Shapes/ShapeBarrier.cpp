@@ -143,7 +143,6 @@ void FShapeBarrier::AddCollisionGroup(const FName& GroupName)
 void FShapeBarrier::AddCollisionGroups(const TArray<FName>& GroupNames)
 {
 	check(HasNative());
-
 	for (auto& GroupName : GroupNames)
 	{
 		AddCollisionGroup(GroupName);
