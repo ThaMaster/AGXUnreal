@@ -117,6 +117,12 @@ void UAGX_TwoBodyTireComponent::UpdateNativeProperties()
 	Barrier->SetImplicitFrictionMultiplier(ImplicitFrictionMultiplier);
 }
 
+void UAGX_TwoBodyTireComponent::EndPlay(const EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+	NativeBarrier->ReleaseNative();
+}
+
 #if WITH_EDITOR
 void UAGX_TwoBodyTireComponent::PostLoad()
 {

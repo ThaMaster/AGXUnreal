@@ -134,6 +134,8 @@ protected:
 
 	virtual void UpdateNativeProperties() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+
 #if WITH_EDITOR
 	virtual void PostLoad() override;
 #endif
