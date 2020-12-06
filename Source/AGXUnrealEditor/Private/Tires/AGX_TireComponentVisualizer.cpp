@@ -60,7 +60,7 @@ namespace
 			return;
 		}
 
-		if (Tire->GetTireRigidBody())
+		if (Tire->GetTireRigidBody() && Tire->GetHubRigidBody())
 		{
 			const FColor TirePrimitiveColor(240, 230, 0);
 
