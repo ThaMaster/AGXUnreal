@@ -38,6 +38,29 @@ FAGX_ConstraintController& FAGX_ConstraintController::operator=(
 	return *this;
 }
 
+namespace FAGX_ConstraintController_helpers
+{
+	void PrintNoNativeConstraintWarning()
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("ConstraintController without a native constraint used.\nThis happens when a "
+				 "ConstraintController is stored in a Blueprint variable. Instead, store a "
+				 "reference to the constraint and re-fetch the ConstraintController every time "
+				 "it's needed."));
+	}
+}
+
+double FAGX_ConstraintController::GetForce()
+{
+	if (!HasNative())
+	{
+		FAGX_ConstraintController_helpers::PrintNoNativeConstraintWarning();
+		return 0.0f;
+	}
+	return NativeBarrier->GetForce();
+}
+
 bool FAGX_ConstraintController::HasNative() const
 {
 	return NativeBarrier.IsValid() && NativeBarrier->HasNative();
@@ -53,12 +76,7 @@ void FAGX_ConstraintController::UpdateNativeProperties()
 {
 	if (!HasNative())
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("ConstraintController without a native constraint used.\nThis happens when a "
-				 "ConstraintController is stored in a Blueprint variable. Instead, store a "
-				 "reference to the constraint and re-fetch the ConstraintController every time "
-				 "it's needed."));
+		FAGX_ConstraintController_helpers::PrintNoNativeConstraintWarning();
 		return;
 	}
 	NativeBarrier->SetEnable(bEnable);

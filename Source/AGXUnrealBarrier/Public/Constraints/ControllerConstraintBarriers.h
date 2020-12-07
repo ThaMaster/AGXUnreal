@@ -29,6 +29,8 @@ public:
 	void SetForceRange(FFloatInterval ForceRange);
 	FFloatInterval GetForceRange() const;
 
+	double GetForce() const;
+
 protected:
 	FConstraintControllerBarrier() = default;
 	FConstraintControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);

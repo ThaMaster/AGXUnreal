@@ -91,6 +91,12 @@ FFloatInterval FConstraintControllerBarrier::GetForceRange() const
 	return Convert(ForceRangeAGX);
 }
 
+double FConstraintControllerBarrier::GetForce() const
+{
+	check(HasNative());
+	return NativeRef->Native->getCurrentForce();
+}
+
 namespace
 {
 	template <typename AGXController>
