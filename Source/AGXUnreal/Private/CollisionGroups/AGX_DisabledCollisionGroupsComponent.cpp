@@ -1,6 +1,6 @@
 #include "CollisionGroups/AGX_DisabledCollisionGroupsComponent.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "CollisionGroups/AGX_CollisionGroupManager.h"
 #include "Engine/World.h"

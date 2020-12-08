@@ -1,6 +1,6 @@
 #include "Constraints/AGX_ConstraintComponent.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "UObject/UObjectGlobals.h"
 

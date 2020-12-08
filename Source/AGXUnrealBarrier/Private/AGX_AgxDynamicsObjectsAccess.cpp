@@ -1,6 +1,6 @@
 #include "AGX_AgxDynamicsObjectsAccess.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
 #include "RigidBodyBarrier.h"
 #include "SimulationBarrier.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_AgxEdModeConstraints.h"
 
 // Unreal Engine includes.

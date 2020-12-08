@@ -1,6 +1,6 @@
 #include "Constraints/AGX_Constraint2DofActor.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_Constraint2DofComponent.h"
 
 AAGX_Constraint2DofActor::AAGX_Constraint2DofActor()

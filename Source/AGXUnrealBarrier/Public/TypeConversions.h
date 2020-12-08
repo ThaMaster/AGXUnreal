@@ -3,7 +3,7 @@
 /// \todo This may become a header file with lots of includes, which will make
 ///       it a compile time hog. Consider splitting it  up.
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_MotionControl.h"
 #include "AGX_LogCategory.h"
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"

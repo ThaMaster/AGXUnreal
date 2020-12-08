@@ -1,6 +1,6 @@
 #include "Shapes/AGX_HeightFieldShapeComponent.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Terrain/AGX_LandscapeSizeInfo.h"
 #include "Utilities/AGX_HeightFieldUtilities.h"

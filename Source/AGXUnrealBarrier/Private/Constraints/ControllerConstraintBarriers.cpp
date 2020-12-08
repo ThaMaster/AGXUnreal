@@ -1,6 +1,6 @@
 #include "Constraints/ControllerConstraintBarriers.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "TypeConversions.h"
 #include "AGXRefs.h"
 

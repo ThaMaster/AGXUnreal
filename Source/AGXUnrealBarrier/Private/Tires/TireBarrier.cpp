@@ -1,6 +1,6 @@
 #include "Tires/TireBarrier.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 

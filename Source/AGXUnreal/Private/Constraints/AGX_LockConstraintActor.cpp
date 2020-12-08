@@ -1,6 +1,6 @@
 #include "Constraints/AGX_LockConstraintActor.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_LockConstraintComponent.h"
 
 AAGX_LockConstraintActor::AAGX_LockConstraintActor()

@@ -1,6 +1,6 @@
 #include "Tires/AGX_TwoBodyTireComponentCustomization.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"

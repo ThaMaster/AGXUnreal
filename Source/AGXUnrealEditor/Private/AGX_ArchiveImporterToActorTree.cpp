@@ -1,6 +1,6 @@
 #include "AGX_ArchiveImporterToActorTree.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_ArchiveImporterHelper.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyActor.h"

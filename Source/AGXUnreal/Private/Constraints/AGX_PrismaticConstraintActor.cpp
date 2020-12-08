@@ -1,6 +1,6 @@
 #include "Constraints/AGX_PrismaticConstraintActor.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
 
 AAGX_PrismaticConstraintActor::AAGX_PrismaticConstraintActor()

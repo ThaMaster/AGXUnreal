@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "SimulationBarrier.h"
 #include "AGX_StepperEnums.h"
 

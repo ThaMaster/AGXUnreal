@@ -1,6 +1,6 @@
 #include "AGX_VectorComponent.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Utilities/AGX_MeshUtilities.h"
 
 // Unreal Engine includes.

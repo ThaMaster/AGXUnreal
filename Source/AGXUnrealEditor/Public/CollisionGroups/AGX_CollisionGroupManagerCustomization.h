@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "CollisionGroups/AGX_CollisionGroupManager.h"
 
 // Unreal Engine includes.

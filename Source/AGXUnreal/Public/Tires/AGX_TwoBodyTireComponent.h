@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Tires/AGX_TireComponent.h"
 #include "AGX_RigidBodyReference.h"
 

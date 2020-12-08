@@ -1,6 +1,6 @@
 #include "AGXUnrealBarrier.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_EnvironmentUtilities.h"
 #include "TypeConversions.h"

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Materials/AGX_ShapeMaterialBulkProperties.h"
 #include "Materials/AGX_ShapeMaterialSurfaceProperties.h"
 

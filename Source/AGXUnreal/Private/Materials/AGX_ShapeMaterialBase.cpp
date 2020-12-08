@@ -1,6 +1,6 @@
 #include "Materials/AGX_ShapeMaterialBase.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Materials/ShapeMaterialBarrier.h"
 
 void UAGX_ShapeMaterialBase::CopyFrom(const FShapeMaterialBarrier* Source)

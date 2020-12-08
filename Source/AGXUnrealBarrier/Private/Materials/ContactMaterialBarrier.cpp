@@ -1,6 +1,6 @@
 #include "Materials/ContactMaterialBarrier.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
 #include "AGXBarrierFactories.h"
 #include "Materials/ShapeMaterialBarrier.h"

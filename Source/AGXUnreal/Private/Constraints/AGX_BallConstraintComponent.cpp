@@ -1,6 +1,6 @@
 #include "Constraints/AGX_BallConstraintComponent.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/ConstraintBarrier.h"
 #include "Constraints/BallJointBarrier.h"
 #include "Utilities/AGX_ConstraintUtilities.h"

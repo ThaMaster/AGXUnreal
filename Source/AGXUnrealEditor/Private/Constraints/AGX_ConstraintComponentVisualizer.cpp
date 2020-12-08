@@ -1,6 +1,6 @@
 #include "Constraints/AGX_ConstraintComponentVisualizer.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_ConstraintActor.h"

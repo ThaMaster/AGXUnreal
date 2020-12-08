@@ -1,6 +1,6 @@
 #include "AGX_RigidBodyComponent.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "AGX_Simulation.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_RigidBodyEnums.h"
 #include "AGX_MotionControl.h"
 #include "RigidBodyBarrier.h"

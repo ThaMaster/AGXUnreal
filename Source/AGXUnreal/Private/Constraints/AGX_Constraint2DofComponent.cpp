@@ -1,6 +1,6 @@
 #include "Constraints/AGX_Constraint2DofComponent.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "Constraints/Constraint2DOFBarrier.h"

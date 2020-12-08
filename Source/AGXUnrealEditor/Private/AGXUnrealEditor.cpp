@@ -10,7 +10,7 @@
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_EditorStyle.h"
 #include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyReference.h"

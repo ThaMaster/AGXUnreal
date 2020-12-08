@@ -1,6 +1,6 @@
 #include "Shapes/ShapeBarrier.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
 #include "TypeConversions.h"

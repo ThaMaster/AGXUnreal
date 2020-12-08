@@ -1,6 +1,6 @@
 #include "SimulationBarrier.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
 #include "Constraints/ConstraintBarrier.h"

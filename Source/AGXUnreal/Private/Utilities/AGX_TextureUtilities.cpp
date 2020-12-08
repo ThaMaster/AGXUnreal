@@ -1,6 +1,6 @@
 #include "Utilities/AGX_TextureUtilities.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 
 // Unreal Engine includes.

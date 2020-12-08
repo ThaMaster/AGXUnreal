@@ -1,6 +1,6 @@
 #include "Constraints/AGX_DistanceConstraintActor.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_DistanceConstraintComponent.h"
 
 AAGX_DistanceConstraintActor::AAGX_DistanceConstraintActor()

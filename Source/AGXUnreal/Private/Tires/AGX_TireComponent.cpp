@@ -1,6 +1,6 @@
 #include "Tires/AGX_TireComponent.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
 

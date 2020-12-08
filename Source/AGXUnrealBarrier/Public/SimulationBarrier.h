@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Utilities/AGX_Statistics.h"
 
 // Unreal Engine includes.
