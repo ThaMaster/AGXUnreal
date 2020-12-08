@@ -62,16 +62,15 @@ void UAGX_TireComponent::CreateNative()
 
 	AllocateNative();
 
-	if (HasNative())
-	{
-		UpdateNativeProperties();
-		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-		Simulation->GetNative()->AddTire(NativeBarrier.Get());
-	}
-	else
+	if (!HasNative())
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Tire %s in %s: Unable to create Tire."),
-			*GetFName().ToString(), *GetOwner()->GetName());
+			LogAGX, Error, TEXT("Tire %s in %s: Unable to create Tire."), *GetFName().ToString(),
+			*GetOwner()->GetName());
+		return;
 	}
+
+	UpdateNativeProperties();
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	Simulation->GetNative()->AddTire(NativeBarrier.Get());
 }
