@@ -172,8 +172,15 @@ namespace
 			FTwoBodyTireArchiveBodies ArchiveBodies = Instantiator.InstantiateTwoBodyTire(
 				AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
 
-			::InstantiateShapes(Tire->getTireRigidBody(), *ArchiveBodies.TireBodyArchive);
-			::InstantiateShapes(Tire->getHubRigidBody(), *ArchiveBodies.HubBodyArchive);
+			if (ArchiveBodies.TireBodyArchive)
+			{
+				::InstantiateShapes(Tire->getTireRigidBody(), *ArchiveBodies.TireBodyArchive);
+			}
+
+			if (ArchiveBodies.HubBodyArchive)
+			{
+				::InstantiateShapes(Tire->getHubRigidBody(), *ArchiveBodies.HubBodyArchive);
+			}
 		}
 	}
 
@@ -203,7 +210,10 @@ namespace
 			std::unique_ptr<FAGXArchiveBody> ArchiveBody {
 				Instantiator.InstantiateBody(BodyBarrier)};
 
-			::InstantiateShapes(Body, *ArchiveBody);
+			if (ArchiveBody)
+			{
+				::InstantiateShapes(Body, *ArchiveBody);
+			}
 		}
 	}
 
