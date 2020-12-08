@@ -12,19 +12,19 @@ AAGX_TwoBodyTireActor::AAGX_TwoBodyTireActor()
 	PrimaryActorTick.bCanEverTick = false;
 
 	Root =
-		CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+		CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = Root;
 
 	TireRigidBodyComponent =
-		CreateDefaultSubobject<UAGX_RigidBodyComponent>(TEXT("TireRigidBodyComponent"));
+		CreateDefaultSubobject<UAGX_RigidBodyComponent>(TEXT("TireRigidBody"));
 	TireRigidBodyComponent->SetupAttachment(RootComponent);
 
 	HubRigidBodyComponent =
-		CreateDefaultSubobject<UAGX_RigidBodyComponent>(TEXT("HubRigidBodyComponent"));
+		CreateDefaultSubobject<UAGX_RigidBodyComponent>(TEXT("HubRigidBody"));
 	HubRigidBodyComponent->SetupAttachment(RootComponent);
 
 	TwoBodyTireComponent =
-		CreateDefaultSubobject<UAGX_TwoBodyTireComponent>(TEXT("TwoBodyTireComponent"));
+		CreateDefaultSubobject<UAGX_TwoBodyTireComponent>(TEXT("TwoBodyTire"));
 
 	TwoBodyTireComponent->TireRigidBody.OwningActor = this;
 	TwoBodyTireComponent->TireRigidBody.BodyName = TireRigidBodyComponent->GetFName();
