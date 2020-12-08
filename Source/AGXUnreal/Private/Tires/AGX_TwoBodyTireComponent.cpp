@@ -154,7 +154,7 @@ FTwoBodyTireBarrier* UAGX_TwoBodyTireComponent::CreateTwoBodyTireBarrier()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tire %s creation failed: at least one of the Rigid Bodie's Barriers was nullptr."),
+			TEXT("Tire %s creation failed: at least one of the Rigid Bodies' Barriers was nullptr."),
 			*GetFName().ToString());
 		return Barrier;
 	}
