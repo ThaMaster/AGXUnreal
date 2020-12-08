@@ -31,7 +31,7 @@ namespace
 		// draw the Tire primitives along the y-axis of the TireTransform. We have to consider the
 		// different coordinate systems used in AGX Dynamics vs Unreal; AGX Dynamics y-axis goes in
 		// Unreal's negative y-axis direction, but since we are drawing a symmetric collection of
-		// primitives with no offset from origo there is no difference in this case.
+		// primitives with no offset from the origin there is no difference in this case.
 		DrawWireCylinder(
 			PDI, TireTransform.GetLocation(), TireTransform.GetUnitAxis(EAxis::Z),
 			TireTransform.GetUnitAxis(EAxis::X), TireTransform.GetUnitAxis(EAxis::Y), Color,

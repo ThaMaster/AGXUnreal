@@ -105,21 +105,21 @@ namespace
 		const FVector X_w = WorldTransform.GetUnitAxis(EAxis::X);
 		const FVector Y_w = WorldTransform.GetUnitAxis(EAxis::Y);
 		const FVector Z_w = WorldTransform.GetUnitAxis(EAxis::Z);
-		const FVector Origo_w = WorldTransform.GetLocation();
+		const FVector Origin_w = WorldTransform.GetLocation();
 
 		switch (Axis)
 		{
 			case EAxis::X:
 				ConeAlignedTransform =
-					FTransform(-X_w, -Y_w, Z_w, Origo_w + (Height + Offset) * X_w);
+					FTransform(-X_w, -Y_w, Z_w, Origin_w + (Height + Offset) * X_w);
 				break;
 			case EAxis::Y:
 				ConeAlignedTransform =
-					FTransform(-Y_w, X_w, Z_w, Origo_w + (Height + Offset) * Y_w);
+					FTransform(-Y_w, X_w, Z_w, Origin_w + (Height + Offset) * Y_w);
 				break;
 			case EAxis::Z:
 				ConeAlignedTransform =
-					FTransform(-Z_w, Y_w, X_w, Origo_w + (Height + Offset) * Z_w);
+					FTransform(-Z_w, Y_w, X_w, Origin_w + (Height + Offset) * Z_w);
 				break;
 		}
 
@@ -168,20 +168,20 @@ namespace
 		const FVector X_w = WorldTransform.GetUnitAxis(EAxis::X);
 		const FVector Y_w = WorldTransform.GetUnitAxis(EAxis::Y);
 		const FVector Z_w = WorldTransform.GetUnitAxis(EAxis::Z);
-		const FVector Origo_w = WorldTransform.GetLocation();
+		const FVector Origin_w = WorldTransform.GetLocation();
 
 		FTransform CylinderAlignedTransform;
 		const float CylinderHalfHeight = 0.15f * Radius;
 		switch (Axis)
 		{
 			case EAxis::X:
-				CylinderAlignedTransform = FTransform(Y_w, Z_w, X_w, Origo_w + Offset * X_w);
+				CylinderAlignedTransform = FTransform(Y_w, Z_w, X_w, Origin_w + Offset * X_w);
 				break;
 			case EAxis::Y:
-				CylinderAlignedTransform = FTransform(Z_w, X_w, Y_w, Origo_w + Offset * Y_w);
+				CylinderAlignedTransform = FTransform(Z_w, X_w, Y_w, Origin_w + Offset * Y_w);
 				break;
 			case EAxis::Z:
-				CylinderAlignedTransform = FTransform(X_w, Y_w, Z_w, Origo_w + Offset * Z_w);
+				CylinderAlignedTransform = FTransform(X_w, Y_w, Z_w, Origin_w + Offset * Z_w);
 				break;
 		}
 
