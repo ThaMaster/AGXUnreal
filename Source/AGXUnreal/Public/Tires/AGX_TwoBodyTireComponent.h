@@ -127,8 +127,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	FVector2D ImplicitFrictionMultiplier {1.f, 1.f};
 
+	/**
+	 * Get the Hub Rigid Body. Returns nullptr if it has not been set.
+	 */
 	UAGX_RigidBodyComponent* GetHubRigidBody() const;
 
+	/**
+	 * Get the Tire Rigid Body. Returns nullptr if it has not been set.
+	 */
 	UAGX_RigidBodyComponent* GetTireRigidBody() const;
 
 	/**
