@@ -48,16 +48,16 @@ class FAGXArchiveBody;
 /**
  * Struct for holding Rigid Body Archives of TwoBodyTire.
  */
-struct TwoBodyTireBodiesArchive
+struct FTwoBodyTireArchiveBodies
 {
-	TwoBodyTireBodiesArchive() = default;
-	TwoBodyTireBodiesArchive(FAGXArchiveBody* InTire, FAGXArchiveBody* InHub)
+	FTwoBodyTireArchiveBodies() = default;
+	FTwoBodyTireArchiveBodies(FAGXArchiveBody* InTire, FAGXArchiveBody* InHub)
 		: TireBodyArchive {InTire}
 		, HubBodyArchive {InHub}
 	{
 	}
-	FAGXArchiveBody* TireBodyArchive;
-	FAGXArchiveBody* HubBodyArchive;
+	std::unique_ptr<FAGXArchiveBody> TireBodyArchive;
+	std::unique_ptr<FAGXArchiveBody> HubBodyArchive;
 };
 
 /**
@@ -92,7 +92,7 @@ public:
 	virtual void DisabledCollisionGroups(
 		const TArray<std::pair<FString, FString>>& DisabledGroups) = 0;
 
-	virtual TwoBodyTireBodiesArchive InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Tire) = 0;
+	virtual FTwoBodyTireArchiveBodies InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Tire) = 0;
 
 	virtual ~FAGXArchiveInstantiator() = default;
 };
