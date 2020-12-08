@@ -44,16 +44,15 @@ void FTwoBodyTireBarrier::AllocateNative(
 		TireBody, OuterRadiusAgx, HubBody, InnerRadiusAgx, LocalTransform);
 
 	// Use of invalid agxModel::TwoBodyTire may lead to sudden crash during runtime.
-	if (Tire->isValid())
-	{
-		NativeRef->Native = Tire;
-	}
-	else
+	if (!Tire->isValid())
 	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Error during creation of agxModel::TwoBodyTire, isValid() returned false."));
+		return;
 	}
+
+	NativeRef->Native = Tire;
 }
 
 namespace
