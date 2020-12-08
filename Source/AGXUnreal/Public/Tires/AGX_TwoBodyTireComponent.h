@@ -85,7 +85,7 @@ public:
 	float BendingStiffness = 250000.f;
 
 	/**
-	 * Torsional stiffness affects rotation between the Hub Rigid Body and Tire Rigid Body along
+	 * Torsional stiffness affects rotation between the Hub Rigid Body and Tire Rigid Body around
 	 * axis of rotation [Nm/rad].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
@@ -113,7 +113,7 @@ public:
 	float BendingDamping = 8333.f;
 
 	/**
-	 * Torsional damping affects rotation between the Hub Rigid Body and Tire Rigid Body along axis
+	 * Torsional damping affects rotation between the Hub Rigid Body and Tire Rigid Body around axis
 	 * of rotation [Nms/rad].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
