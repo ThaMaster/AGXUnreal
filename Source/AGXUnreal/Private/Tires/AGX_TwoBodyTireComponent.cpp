@@ -69,12 +69,7 @@ void UAGX_TwoBodyTireComponent::CopyFrom(const FTwoBodyTireBarrier& Barrier)
 bool UAGX_TwoBodyTireComponent::IsDefaultSubObjectOfTwoBodyTireActor() const
 {
 	AActor* Owner = GetOwner();
-	if (IsDefaultSubobject() && Owner != nullptr && Cast<AAGX_TwoBodyTireActor>(Owner) != nullptr)
-	{
-		return true;
-	}
-
-	return false;
+	return IsDefaultSubobject() && Owner != nullptr && Cast<AAGX_TwoBodyTireActor>(Owner) != nullptr;
 }
 
 void UAGX_TwoBodyTireComponent::AllocateNative()
