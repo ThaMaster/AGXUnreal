@@ -8,6 +8,8 @@
 
 #include "AGX_PrismaticConstraintComponent.generated.h"
 
+class FPrismaticBarrier;
+
 /**
  * Locks all degrees of freedom except for translation along the Z-axis.
  */
@@ -17,8 +19,14 @@ class AGXUNREAL_API UAGX_PrismaticConstraintComponent : public UAGX_Constraint1D
 	GENERATED_BODY()
 
 public:
+	using FBarrierType = FPrismaticBarrier;
+
+public:
 	UAGX_PrismaticConstraintComponent();
 	virtual ~UAGX_PrismaticConstraintComponent();
+
+	FPrismaticBarrier* GetNativePrismatic();
+	const FPrismaticBarrier* GetNativePrismatic() const;
 
 protected:
 	virtual void AllocateNative() override;

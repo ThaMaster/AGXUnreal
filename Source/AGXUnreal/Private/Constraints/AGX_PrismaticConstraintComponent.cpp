@@ -8,15 +8,24 @@ class FRigidBodyBarrier;
 
 UAGX_PrismaticConstraintComponent::UAGX_PrismaticConstraintComponent()
 	: UAGX_Constraint1DofComponent(
-		  {EDofFlag::DofFlagRotational1, EDofFlag::DofFlagRotational2,
-		   EDofFlag::DofFlagRotational3, EDofFlag::DofFlagTranslational1,
-		   EDofFlag::DofFlagTranslational2},
+		  {EDofFlag::DofFlagRotational1, EDofFlag::DofFlagRotational2, EDofFlag::DofFlagRotational3,
+		   EDofFlag::DofFlagTranslational1, EDofFlag::DofFlagTranslational2},
 		  /*bIsSecondaryConstraintRotational*/ false)
 {
 }
 
 UAGX_PrismaticConstraintComponent::~UAGX_PrismaticConstraintComponent()
 {
+}
+
+FPrismaticBarrier* UAGX_PrismaticConstraintComponent::GetNativePrismatic()
+{
+	return FAGX_ConstraintUtilities::GetNativeCast(this);
+}
+
+const FPrismaticBarrier* UAGX_PrismaticConstraintComponent::GetNativePrismatic() const
+{
+	return FAGX_ConstraintUtilities::GetNativeCast(this);
 }
 
 void UAGX_PrismaticConstraintComponent::AllocateNative()

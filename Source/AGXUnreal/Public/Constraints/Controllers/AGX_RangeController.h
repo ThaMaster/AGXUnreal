@@ -5,6 +5,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "AGX_RangeController.generated.h"
 
@@ -36,4 +37,30 @@ public:
 
 private:
 	virtual void UpdateNativePropertiesImpl() override;
+};
+
+/**
+ * This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprints.
+ */
+UCLASS()
+class AGXUNREAL_API UAGX_ConstraintRangeController_FL : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+	//~ Begin AGX_ConstraintController Blueprint Library interface.
+	// These are copy/pasted from FAGX_ConstraintController.h. See the comment in that file.
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static bool IsValid(UPARAM(ref) FAGX_ConstraintRangeController& ControllerRef)
+	{
+		return ControllerRef.HasNative();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForce(UPARAM(ref) FAGX_ConstraintRangeController& ControllerRef)
+	{
+		return static_cast<float>(ControllerRef.GetForce());
+	}
+
+	//~ End AGX_ConstraintController Blueprint Library interface.
 };

@@ -41,6 +41,8 @@ struct AGXUNREAL_API FAGX_ConstraintController
 		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
 	FFloatInterval ForceRange;
 
+	double GetForce();
+
 protected:
 	// Would like to have this const but Unreal provides default copy operations
 	// that don't compile when USTRUCT structs contains constant members.
@@ -95,4 +97,31 @@ class AGXUNREAL_API UAGX_ConstraintController_FL : public UBlueprintFunctionLibr
 	{
 		return ControllerRef.HasNative();
 	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForce(UPARAM(ref) FAGX_ConstraintController& ControllerRef)
+	{
+		return static_cast<float>(ControllerRef.GetForce());
+	}
 };
+
+// We have substructs of FAGX_ConstraintController which we also want to have the base struct
+// Blueprint Library functions. Unfortunately, we have not found a way to automate this yet. The
+// Blueprint Library declared above isn't callable on the subtypes and a #define containing
+// all the function declarations and definitions doesn't work because UHT doesn't expand macros. So
+// for now we're stuck with copy/paste. The following code block should be copy/pasted in each
+// ConstraintController Blueprint Library class. Search/replace FAGX_TYPE and substitute the actual
+// ConstraintController subtype.
+/*
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+ 	static bool IsValid(UPARAM(ref) FAGX_TYPE& ControllerRef)
+	{
+		return ControllerRef.HasNative();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForce(UPARAM(ref) FAGX_TYPE& ControllerRef)
+	{
+		return static_cast<float>(ControllerRef.GetForce());
+	}
+*/

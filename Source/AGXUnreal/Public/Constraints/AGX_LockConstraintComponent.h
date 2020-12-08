@@ -8,6 +8,9 @@
 
 #include "AGX_LockConstraintComponent.generated.h"
 
+class FLockJointBarrier;
+
+
 /**
  * Locks all degrees of freedom.
  */
@@ -17,8 +20,14 @@ class AGXUNREAL_API UAGX_LockConstraintComponent : public UAGX_ConstraintCompone
 	GENERATED_BODY()
 
 public:
+	using FBarrierType = FLockJointBarrier;
+
+public:
 	UAGX_LockConstraintComponent();
 	virtual ~UAGX_LockConstraintComponent();
+
+	FLockJointBarrier* GetNativeLock();
+	const FLockJointBarrier* GetNativeLock() const;
 
 protected:
 	virtual void CreateNativeImpl() override;

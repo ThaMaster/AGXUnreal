@@ -8,6 +8,8 @@
 
 #include "AGX_HingeConstraintComponent.generated.h"
 
+class FHingeBarrier;
+
 /**
  * Locks all degrees of freedom except for rotation around the Z-axis.
  */
@@ -17,8 +19,14 @@ class AGXUNREAL_API UAGX_HingeConstraintComponent : public UAGX_Constraint1DofCo
 	GENERATED_BODY()
 
 public:
+	using FBarrierType = FHingeBarrier;
+
+public:
 	UAGX_HingeConstraintComponent();
 	virtual ~UAGX_HingeConstraintComponent() override;
+
+	FHingeBarrier* GetNativeHinge();
+	const FHingeBarrier* GetNativeHinge() const;
 
 protected:
 	virtual void AllocateNative() override;

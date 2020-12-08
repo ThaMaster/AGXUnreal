@@ -73,12 +73,20 @@ class AGXUNREAL_API UAGX_ConstraintTargetSpeedController_FL : public UBlueprintF
 		return static_cast<float>(ControllerRef.GetSpeed());
 	};
 
-	//~ Functions inherited from AGX_ConstraintController.
-	/// \todo Why can't the functions in UAGX_ConstraintController_FL be called on a
-	/// FAGX_ConstraintTargetSpeedController?
+	//~ Begin AGX_ConstraintController Blueprint Library interface.
+	// These are copy/pasted from FAGX_ConstraintController.h. See the comment in that file.
+
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
 	static bool IsValid(UPARAM(ref) FAGX_ConstraintTargetSpeedController& ControllerRef)
 	{
 		return ControllerRef.HasNative();
 	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForce(UPARAM(ref) FAGX_ConstraintTargetSpeedController& ControllerRef)
+	{
+		return static_cast<float>(ControllerRef.GetForce());
+	}
+
+	//~ End AGX_ConstraintController Blueprint Library interface.
 };
