@@ -30,13 +30,13 @@ public:
 	/**
 	 * Outer radius of the tire.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire")
 	float OuterRadius;
 
 	/**
 	 * Inner radius of the tire (and outer radius of hub).
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire")
 	float InnerRadius;
 
 	/**
@@ -54,61 +54,61 @@ public:
 	/**
 	 * Tire relative location from Tire Rigid Body.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire")
 	FVector LocalLocation;
 
 	/**
 	 * Tire relative rotation from Tire Rigid Body.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire")
 	FRotator LocalRotation;
 
 	/**
 	 * Radial stiffness affects translation orthogonal to tire rotation axis.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	float RadialStiffness = 500000.f;
 
 	/**
 	 * Lateral stiffness affects translation in axis of rotation.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	float LateralStiffness = 50000000.f;
 
 	/**
 	 * Bending stiffness affects rotation orthogonal to axis of rotation.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	float BendingStiffness = 250000.f;
 
 	/**
 	 * Torsional stiffness affects rotation in axis of rotation.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	float TorsionalStiffness = 250000.f;
 
 	/**
 	 * Radial damping affects translation orthogonal to tire rotation axis.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	float RadialDamping = 16666.f;
 
 	/**
 	 * Lateral damping affects translation in axis of rotation.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	float LateralDamping = 1666666.f;
 
 	/**
 	 * Bending damping affects rotation orthogonal to axis of rotation.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	float BendingDamping = 8333.f;
 
 	/**
 	 * Torsional damping affects rotation in axis of rotation.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	float TorsionalDamping = 8333.f;
 
 	/**
@@ -116,7 +116,7 @@ public:
 	 * friction directions (forwards, sideways). This is only necessary for implicit contact
 	 * materials, since for explicit ones, this can be set directly at the contact material instead.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	FVector2D ImplicitFrictionMultiplier{1.f, 1.f};
 
 	UAGX_RigidBodyComponent* GetHubRigidBody() const;
