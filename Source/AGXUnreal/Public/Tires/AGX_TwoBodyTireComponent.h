@@ -71,8 +71,8 @@ public:
 	float RadialStiffness = 500000.f;
 
 	/**
-	 * Lateral stiffness affects translation between the Hub Rigid Body and Tire Rigid Body in axis
-	 * of rotation [N/m].
+	 * Lateral stiffness affects translation between the Hub Rigid Body and Tire Rigid Body along
+	 * axis of rotation [N/m].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	float LateralStiffness = 50000000.f;
@@ -85,8 +85,8 @@ public:
 	float BendingStiffness = 250000.f;
 
 	/**
-	 * Torsional stiffness affects rotation between the Hub Rigid Body and Tire Rigid Body in axis
-	 * of rotation [Nm/rad].
+	 * Torsional stiffness affects rotation between the Hub Rigid Body and Tire Rigid Body along
+	 * axis of rotation [Nm/rad].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	float TorsionalStiffness = 250000.f;
@@ -99,8 +99,8 @@ public:
 	float RadialDamping = 16666.f;
 
 	/**
-	 * Lateral damping affects translation between the Hub Rigid Body and Tire Rigid Body in axis of
-	 * rotation [Ns/m].
+	 * Lateral damping affects translation between the Hub Rigid Body and Tire Rigid Body along axis
+	 * of rotation [Ns/m].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	float LateralDamping = 1666666.f;
@@ -113,8 +113,8 @@ public:
 	float BendingDamping = 8333.f;
 
 	/**
-	 * Torsional damping affects rotation between the Hub Rigid Body and Tire Rigid Body in axis of
-	 * rotation [Nms/rad].
+	 * Torsional damping affects rotation between the Hub Rigid Body and Tire Rigid Body along axis
+	 * of rotation [Nms/rad].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	float TorsionalDamping = 8333.f;
