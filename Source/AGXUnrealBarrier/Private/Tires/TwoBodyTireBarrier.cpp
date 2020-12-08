@@ -57,15 +57,17 @@ void FTwoBodyTireBarrier::AllocateNative(
 
 namespace
 {
-	agxModel::TwoBodyTire* CastToTwoBodyTire(agxModel::Tire* Tire)
+	agxModel::TwoBodyTire* CastToTwoBodyTire(agxModel::Tire* Tire, const FString& Operation)
 	{
 		agxModel::TwoBodyTire* TwoBodyTire = dynamic_cast<agxModel::TwoBodyTire*>(Tire);
 		if (TwoBodyTire == nullptr)
 		{
+			const FString Name = Tire != nullptr ? Convert(Tire->getName()) : FString("");
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("TwoBodyTireBarrier: Cast from agxModel::Tire to "
-					 "agxModel::TwoBodyTire failed."));
+				TEXT("TwoBodyTireBarrier %s: operation %s failed, could not cast native Tire to "
+					 "TwoBodyTire."),
+				*Name, *Operation);
 		}
 
 		return TwoBodyTire;
@@ -76,7 +78,8 @@ float FTwoBodyTireBarrier::GetOuterRadius() const
 {
 	check(HasNative());
 
-	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get());
+	agxModel::TwoBodyTire* Tire =
+		CastToTwoBodyTire(NativeRef->Native.get(), FString("GetOuterRadius"));
 	if (Tire == nullptr)
 	{
 		// Logging done in CastToTwoBodyTire.
@@ -91,7 +94,8 @@ float FTwoBodyTireBarrier::GetInnerRadius() const
 {
 	check(HasNative());
 
-	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get());
+	agxModel::TwoBodyTire* Tire =
+		CastToTwoBodyTire(NativeRef->Native.get(), FString("GetInnerRadius"));
 	if (Tire == nullptr)
 	{
 		// Logging done in CastToTwoBodyTire.
@@ -106,7 +110,8 @@ FTransform FTwoBodyTireBarrier::GetLocalTransform() const
 {
 	check(HasNative());
 
-	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get());
+	agxModel::TwoBodyTire* Tire =
+		CastToTwoBodyTire(NativeRef->Native.get(), FString("GetLocalTransform"));
 	if (Tire == nullptr)
 	{
 		// Logging done in CastToTwoBodyTire.
@@ -121,7 +126,7 @@ void FTwoBodyTireBarrier::SetDamping(float Damping, DeformationMode Mode)
 {
 	check(HasNative());
 
-	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get());
+	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get(), FString("SetDamping"));
 	if (Tire == nullptr)
 	{
 		// Logging done in CastToTwoBodyTire.
@@ -135,7 +140,7 @@ float FTwoBodyTireBarrier::GetDamping(DeformationMode Mode) const
 {
 	check(HasNative());
 
-	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get());
+	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get(), FString("GetDamping"));
 	if (Tire == nullptr)
 	{
 		// Logging done in CastToTwoBodyTire.
@@ -150,7 +155,8 @@ void FTwoBodyTireBarrier::SetStiffness(float Stiffness, DeformationMode Mode)
 {
 	check(HasNative());
 
-	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get());
+	agxModel::TwoBodyTire* Tire =
+		CastToTwoBodyTire(NativeRef->Native.get(), FString("SetStiffness"));
 	if (Tire == nullptr)
 	{
 		// Logging done in CastToTwoBodyTire.
@@ -164,7 +170,8 @@ float FTwoBodyTireBarrier::GetStiffness(DeformationMode Mode) const
 {
 	check(HasNative());
 
-	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get());
+	agxModel::TwoBodyTire* Tire =
+		CastToTwoBodyTire(NativeRef->Native.get(), FString("GetStiffness"));
 	if (Tire == nullptr)
 	{
 		// Logging done in CastToTwoBodyTire.
@@ -179,7 +186,8 @@ void FTwoBodyTireBarrier::SetImplicitFrictionMultiplier(const FVector2D& Multipl
 {
 	check(HasNative());
 
-	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get());
+	agxModel::TwoBodyTire* Tire =
+		CastToTwoBodyTire(NativeRef->Native.get(), FString("SetImplicitFrictionMultiplier"));
 	if (Tire == nullptr)
 	{
 		// Logging done in CastToTwoBodyTire.
@@ -193,7 +201,8 @@ FVector2D FTwoBodyTireBarrier::GetImplicitFrictionMultiplier() const
 {
 	check(HasNative());
 
-	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get());
+	agxModel::TwoBodyTire* Tire =
+		CastToTwoBodyTire(NativeRef->Native.get(), FString("GetImplicitFrictionMultiplier"));
 	if (Tire == nullptr)
 	{
 		// Logging done in CastToTwoBodyTire.
@@ -208,7 +217,8 @@ FRigidBodyBarrier FTwoBodyTireBarrier::GetTireRigidBody() const
 {
 	check(HasNative());
 
-	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get());
+	agxModel::TwoBodyTire* Tire =
+		CastToTwoBodyTire(NativeRef->Native.get(), FString("GetTireRigidBody"));
 	if (Tire == nullptr)
 	{
 		// Logging done in CastToTwoBodyTire.
@@ -232,7 +242,8 @@ FRigidBodyBarrier FTwoBodyTireBarrier::GetHubRigidBody() const
 {
 	check(HasNative());
 
-	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get());
+	agxModel::TwoBodyTire* Tire =
+		CastToTwoBodyTire(NativeRef->Native.get(), FString("GetHubRigidBody"));
 	if (Tire == nullptr)
 	{
 		// Logging done in CastToTwoBodyTire.
@@ -255,7 +266,8 @@ FRigidBodyBarrier FTwoBodyTireBarrier::GetHubRigidBody() const
 FGuid FTwoBodyTireBarrier::GetHingeGuid() const
 {
 	check(HasNative());
-	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get());
+	agxModel::TwoBodyTire* Tire =
+		CastToTwoBodyTire(NativeRef->Native.get(), FString("GetHingeGuid"));
 	if (Tire == nullptr)
 	{
 		// Logging done in CastToTwoBodyTire.
