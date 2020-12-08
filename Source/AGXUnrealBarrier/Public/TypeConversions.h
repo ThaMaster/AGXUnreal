@@ -389,30 +389,20 @@ inline agxModel::TwoBodyTire::DeformationMode Convert(FTwoBodyTireBarrier::Defor
 	switch (Mode)
 	{
 		case FTwoBodyTireBarrier::RADIAL:
-		{
 			return agxModel::TwoBodyTire::RADIAL;
-		}
 		case FTwoBodyTireBarrier::LATERAL:
-		{
 			return agxModel::TwoBodyTire::LATERAL;
-		}
 		case FTwoBodyTireBarrier::BENDING:
-		{
 			return agxModel::TwoBodyTire::BENDING;
-		}
 		case FTwoBodyTireBarrier::TORSIONAL:
-		{
 			return agxModel::TwoBodyTire::TORSIONAL;
-		}
 		default:
-		{
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Conversion failed: Tried to convert an FTwoBodyTireBarrier::DeformationMode "
 					 "literal of unknown type to an agxModel::TwoBodyTire::DeformationMode "
 					 "literal. Returning agxModel::TwoBodyTire::RADIAL."));
 			return agxModel::TwoBodyTire::RADIAL;
-		}
 	}
 }
 
@@ -421,23 +411,14 @@ inline FTwoBodyTireBarrier::DeformationMode Convert(agxModel::TwoBodyTire::Defor
 	switch (Mode)
 	{
 		case agxModel::TwoBodyTire::RADIAL:
-		{
 			return FTwoBodyTireBarrier::RADIAL;
-		}
 		case agxModel::TwoBodyTire::LATERAL:
-		{
 			return FTwoBodyTireBarrier::LATERAL;
-		}
 		case agxModel::TwoBodyTire::BENDING:
-		{
 			return FTwoBodyTireBarrier::BENDING;
-		}
 		case agxModel::TwoBodyTire::TORSIONAL:
-		{
 			return FTwoBodyTireBarrier::TORSIONAL;
-		}
 		default:
-		{
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Conversion failed: Tried to convert an "
@@ -445,7 +426,6 @@ inline FTwoBodyTireBarrier::DeformationMode Convert(agxModel::TwoBodyTire::Defor
 					 "literal of unknown type to an FTwoBodyTireBarrier::DeformationMode "
 					 "literal. Returning FTwoBodyTireBarrier::DeformationMode::RADIAL."));
 			return FTwoBodyTireBarrier::DeformationMode::RADIAL;
-		}
 	}
 }
 
