@@ -14,7 +14,7 @@ class FTwoBodyTireBarrier;
 
 /**
  * TwoBodyTire is a tire model that uses two Rigid Bodies, a tire Rigid Body and a hub Rigid Body.
- * The axis or rotation is always assumed to be around the y-axis of the final tire transform which
+ * The axis of rotation is always assumed to be around the y-axis of the final tire transform which
  * is defined by the tire Rigid Body's transform plus a local offset given by LocalLocation and
  * LocalRotation.
  */
