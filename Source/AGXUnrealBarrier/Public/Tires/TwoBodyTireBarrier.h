@@ -42,6 +42,8 @@ public:
 	FRigidBodyBarrier GetTireRigidBody() const;
 	FRigidBodyBarrier GetHubRigidBody() const;
 
+	FGuid GetHingeGuid() const;
+
 private:
 	FTwoBodyTireBarrier(const FTwoBodyTireBarrier&) = delete;
 	void operator=(const FTwoBodyTireBarrier&) = delete;

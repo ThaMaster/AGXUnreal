@@ -143,6 +143,13 @@ void FConstraintBarrier::GetForceRange(double* Min, double* Max, int32 Dof) cons
 		*Max = Range.upper();
 }
 
+FGuid FConstraintBarrier::GetGuid() const
+{
+	check(HasNative());
+	FGuid Guid = Convert(NativeRef->Native->getUuid());
+	return Guid;
+}
+
 bool FConstraintBarrier::HasFirstBody() const
 {
 	check(HasNative());

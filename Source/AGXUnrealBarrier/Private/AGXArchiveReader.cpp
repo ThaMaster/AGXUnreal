@@ -126,11 +126,10 @@ namespace
 		}
 	}
 
-	TArray<const agx::Constraint*> ReadTireModels(
+	void ReadTireModels(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FAGXArchiveInstantiator& Instantiator)
 	{
-		TArray<const agx::Constraint*> TireModelConstraints;
 		const agxSDK::AssemblyHash& Assemblies = Simulation.getAssemblies();
 		if (Assemblies.size() > size_t(std::numeric_limits<int32>::max()))
 		{
@@ -139,7 +138,7 @@ namespace
 				TEXT(
 					".agx file %s contains too many assemblies. Tire models will not be imported."),
 				*Filename);
-			return TireModelConstraints;
+			return;
 		}
 
 		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire,
@@ -170,15 +169,12 @@ namespace
 				continue;
 			}
 
-			TireModelConstraints.Add(Tire->getHinge());
 			TwoBodyTireBodiesArchive ArchiveBodies = Instantiator.InstantiateTwoBodyTire(
 				AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
 
 			::InstantiateShapes(Tire->getTireRigidBody(), *ArchiveBodies.TireBodyArchive);
 			::InstantiateShapes(Tire->getHubRigidBody(), *ArchiveBodies.HubBodyArchive);
 		}
-
-		return TireModelConstraints;
 	}
 
 	void ReadRigidBodies(
@@ -213,7 +209,7 @@ namespace
 
 	void ReadConstraints(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXArchiveInstantiator& Instantiator, TArray<const agx::Constraint*>* IgnoreList = nullptr)
+		FAGXArchiveInstantiator& Instantiator)
 	{
 		agx::ConstraintRefSetVector& Constraints = Simulation.getConstraints();
 		if (Constraints.size() > size_t(std::numeric_limits<int32>::max()))
@@ -226,11 +222,6 @@ namespace
 
 		for (agx::ConstraintRef& Constraint : Constraints)
 		{
-			if (IgnoreList && IgnoreList->Contains(Constraint.get()))
-			{
-				continue;
-			}
-
 			if (agx::Hinge* Hinge = Constraint->asSafe<agx::Hinge>())
 			{
 				Instantiator.InstantiateHinge(AGXBarrierFactories::CreateHingeBarrier(Hinge));
@@ -300,12 +291,8 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 	}
 
 	::ReadMaterials(*Simulation, Instantiator);
-	auto TireConstraints = ::ReadTireModels(*Simulation, Filename, Instantiator);
+	::ReadTireModels(*Simulation, Filename, Instantiator);
 	::ReadRigidBodies(*Simulation, Filename, Instantiator);
-
-	// Any constraint that is owned by a Tire model is ignored on import. Such constraints are
-	// created when the native agxModel::Tire is created after begin play and is never instantiated
-	// as an AGXUnreal Actor or Component object.
-	::ReadConstraints(*Simulation, Filename, Instantiator, &TireConstraints);
+	::ReadConstraints(*Simulation, Filename, Instantiator);
 	::ReadCollisionGroups(*Simulation, Instantiator);
 }

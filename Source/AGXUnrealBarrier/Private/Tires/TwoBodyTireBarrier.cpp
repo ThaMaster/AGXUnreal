@@ -252,3 +252,25 @@ FRigidBodyBarrier FTwoBodyTireBarrier::GetHubRigidBody() const
 
 	return AGXBarrierFactories::CreateRigidBodyBarrier(HubBodyAGX);
 }
+
+FGuid FTwoBodyTireBarrier::GetHingeGuid() const
+{
+	check(HasNative());
+	agxModel::TwoBodyTire* Tire = CastToTwoBodyTire(NativeRef->Native.get());
+	if (Tire == nullptr)
+	{
+		// Logging done in CastToTwoBodyTire.
+		return FGuid();
+	}
+
+	agx::Hinge* Hinge = Tire->getHinge();
+	if (Hinge == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("TwoBodyTireBarrier::GetHingeGuid failed: The TwoBodyTire's Hinge was nullptr."));
+		return FGuid();
+	}
+
+	return Convert(Hinge->getUuid());
+}

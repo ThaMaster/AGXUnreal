@@ -431,8 +431,16 @@ namespace
 {
 	template <typename UComponent, typename FBarrier>
 	UComponent* InstantiateConstraint(
-		const FBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper)
+		const FBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper,
+		const TArray<FGuid> IgnoreList)
 	{
+		if (IgnoreList.Contains(Barrier.GetGuid()))
+		{
+			// Don't instantiate the Constraint if it is in the ignore list. This might be the case
+			// for e.g. the Hinge constraint owned by a native TwoBodyTire object.
+			return nullptr;
+		}
+
 		FAGX_ArchiveImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
 		if (Bodies.first == nullptr)
 		{
@@ -460,8 +468,16 @@ namespace
 	}
 
 	template <typename UActor, typename FBarrier>
-	UActor* InstantiateConstraint(const FBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper)
+	UActor* InstantiateConstraint(
+		const FBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper, const TArray<FGuid> IgnoreList)
 	{
+		if (IgnoreList.Contains(Barrier.GetGuid()))
+		{
+			// Don't instantiate the Constraint if it is in the ignore list. This might be the case
+			// for e.g. the Hinge constraint owned by a native TwoBodyTire object.
+			return nullptr;
+		}
+
 		FAGX_ArchiveImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
 		if (Bodies.first == nullptr)
 		{
@@ -494,16 +510,18 @@ namespace
 
 	template <typename UComponent>
 	UComponent* InstantiateConstraint1Dof(
-		const FConstraint1DOFBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper)
+		const FConstraint1DOFBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper,
+		const TArray<FGuid> IgnoreList)
 	{
-		return InstantiateConstraint<UComponent>(Barrier, Owner, Helper);
+		return InstantiateConstraint<UComponent>(Barrier, Owner, Helper, IgnoreList);
 	}
 
 	template <typename UActor>
 	UActor* InstantiateConstraint1Dof(
-		const FConstraint1DOFBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper)
+		const FConstraint1DOFBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper,
+		const TArray<FGuid> IgnoreList)
 	{
-		UActor* Actor = InstantiateConstraint<UActor>(Barrier, Helper);
+		UActor* Actor = InstantiateConstraint<UActor>(Barrier, Helper, IgnoreList);
 		if (Actor == nullptr)
 		{
 			// No need to log here, done by InstantiateConstraint.
@@ -515,16 +533,18 @@ namespace
 
 	template <typename UConstraint>
 	UConstraint* InstantiateConstraint2Dof(
-		const FConstraint2DOFBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper)
+		const FConstraint2DOFBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper,
+		const TArray<FGuid> IgnoreList)
 	{
-		return InstantiateConstraint<UConstraint>(Barrier, Owner, Helper);
+		return InstantiateConstraint<UConstraint>(Barrier, Owner, Helper, IgnoreList);
 	}
 
 	template <typename UActor>
 	UActor* InstantiateConstraint2Dof(
-		const FConstraint2DOFBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper)
+		const FConstraint2DOFBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper,
+		const TArray<FGuid> IgnoreList)
 	{
-		UActor* Actor = InstantiateConstraint<UActor>(Barrier, Helper);
+		UActor* Actor = InstantiateConstraint<UActor>(Barrier, Helper, IgnoreList);
 		if (Actor == nullptr)
 		{
 			// No need to log here, done by InstantiateConstraint.
@@ -538,73 +558,83 @@ namespace
 AAGX_HingeConstraintActor* FAGX_ArchiveImporterHelper::InstantiateHinge(
 	const FHingeBarrier& Barrier)
 {
-	return ::InstantiateConstraint1Dof<AAGX_HingeConstraintActor>(Barrier, *this);
+	return ::InstantiateConstraint1Dof<AAGX_HingeConstraintActor>(
+		Barrier, *this, ConstraintIgnoreList);
 }
 
 UAGX_HingeConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateHinge(
 	const FHingeBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint1Dof<UAGX_HingeConstraintComponent>(Barrier, Owner, *this);
+	return ::InstantiateConstraint1Dof<UAGX_HingeConstraintComponent>(
+		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
 AAGX_PrismaticConstraintActor* FAGX_ArchiveImporterHelper::InstantiatePrismatic(
 	const FPrismaticBarrier& Barrier)
 {
-	return ::InstantiateConstraint1Dof<AAGX_PrismaticConstraintActor>(Barrier, *this);
+	return ::InstantiateConstraint1Dof<AAGX_PrismaticConstraintActor>(
+		Barrier, *this, ConstraintIgnoreList);
 }
 
 UAGX_PrismaticConstraintComponent* FAGX_ArchiveImporterHelper::InstantiatePrismatic(
 	const FPrismaticBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint1Dof<UAGX_PrismaticConstraintComponent>(Barrier, Owner, *this);
+	return ::InstantiateConstraint1Dof<UAGX_PrismaticConstraintComponent>(
+		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
 AAGX_BallConstraintActor* FAGX_ArchiveImporterHelper::InstantiateBallJoint(
 	const FBallJointBarrier& Barrier)
 {
-	return ::InstantiateConstraint<AAGX_BallConstraintActor>(Barrier, *this);
+	return ::InstantiateConstraint<AAGX_BallConstraintActor>(Barrier, *this, ConstraintIgnoreList);
 }
 
 UAGX_BallConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateBallJoint(
 	const FBallJointBarrier& Barrier, AActor& Owner)
 {
-	return InstantiateConstraint<UAGX_BallConstraintComponent>(Barrier, Owner, *this);
+	return InstantiateConstraint<UAGX_BallConstraintComponent>(
+		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
 AAGX_CylindricalConstraintActor* FAGX_ArchiveImporterHelper::InstantiateCylindricalJoint(
 	const FCylindricalJointBarrier& Barrier)
 {
-	return ::InstantiateConstraint2Dof<AAGX_CylindricalConstraintActor>(Barrier, *this);
+	return ::InstantiateConstraint2Dof<AAGX_CylindricalConstraintActor>(
+		Barrier, *this, ConstraintIgnoreList);
 }
 
 UAGX_CylindricalConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateCylindricalJoint(
 	const FCylindricalJointBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint2Dof<UAGX_CylindricalConstraintComponent>(Barrier, Owner, *this);
+	return ::InstantiateConstraint2Dof<UAGX_CylindricalConstraintComponent>(
+		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
 AAGX_DistanceConstraintActor* FAGX_ArchiveImporterHelper::InstantiateDistanceJoint(
 	const FDistanceJointBarrier& Barrier)
 {
-	return ::InstantiateConstraint1Dof<AAGX_DistanceConstraintActor>(Barrier, *this);
+	return ::InstantiateConstraint1Dof<AAGX_DistanceConstraintActor>(
+		Barrier, *this, ConstraintIgnoreList);
 }
 
 UAGX_DistanceConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateDistanceJoint(
 	const FDistanceJointBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint1Dof<UAGX_DistanceConstraintComponent>(Barrier, Owner, *this);
+	return ::InstantiateConstraint1Dof<UAGX_DistanceConstraintComponent>(
+		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
 AAGX_LockConstraintActor* FAGX_ArchiveImporterHelper::InstantiateLockJoint(
 	const FLockJointBarrier& Barrier)
 {
-	return ::InstantiateConstraint<AAGX_LockConstraintActor>(Barrier, *this);
+	return ::InstantiateConstraint<AAGX_LockConstraintActor>(Barrier, *this, ConstraintIgnoreList);
 }
 
 UAGX_LockConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateLockJoint(
 	const FLockJointBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint<UAGX_LockConstraintComponent>(Barrier, Owner, *this);
+	return ::InstantiateConstraint<UAGX_LockConstraintComponent>(
+		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
 UAGX_TwoBodyTireComponent* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
@@ -643,6 +673,10 @@ UAGX_TwoBodyTireComponent* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 	Owner.AddInstanceComponent(Component);
 	Component->RegisterComponent();
 
+	// The internal constraint owned by the TwoBodyTire should not be imported, but is created after
+	// BeginPlay by the native TwoBodyTire.
+	ConstraintIgnoreList.Add(Barrier.GetHingeGuid());
+
 	return Component;
 }
 
@@ -680,6 +714,10 @@ AAGX_TwoBodyTireActor* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 
 	SetupBody(Barrier.GetTireRigidBody(), NewActor->TireRigidBodyComponent);
 	SetupBody(Barrier.GetHubRigidBody(), NewActor->HubRigidBodyComponent);
+
+	// The internal constraint owned by the TwoBodyTire should not be imported, but is created after
+	// BeginPlay by the native TwoBodyTire.
+	ConstraintIgnoreList.Add(Barrier.GetHingeGuid());
 
 	return NewActor;
 }

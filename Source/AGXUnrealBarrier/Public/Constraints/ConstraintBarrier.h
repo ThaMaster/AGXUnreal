@@ -65,6 +65,8 @@ public:
 	void SetForceRange(double Min, double Max, int32 Dof);
 	void GetForceRange(double* Min, double* Max, int32 Dof) const;
 
+	FGuid GetGuid() const;
+
 	bool HasFirstBody() const;
 	bool HasSecondBody() const;
 
