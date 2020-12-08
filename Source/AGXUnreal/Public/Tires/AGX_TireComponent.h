@@ -12,7 +12,7 @@
 /**
  * Base class for Tire model components.
  */
-UCLASS(Category = "AGX", ClassGroup = "AGX", notplaceable)
+UCLASS(Category = "AGX", ClassGroup = "AGX", NotPlaceable)
 class AGXUNREAL_API UAGX_TireComponent : public UActorComponent
 {
 	GENERATED_BODY()
