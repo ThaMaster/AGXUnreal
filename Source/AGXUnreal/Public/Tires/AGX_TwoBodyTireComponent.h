@@ -131,6 +131,10 @@ public:
 
 	UAGX_RigidBodyComponent* GetTireRigidBody() const;
 
+	/**
+	 * The final transform of the Tire model, defined by the transform of the Tire Rigid Body plus
+	 * a local offset given by LocalLocation and LocalRotation.
+	 */
 	FTransform GetGlobalTireTransform() const;
 
 	void CopyFrom(const FTwoBodyTireBarrier& Barrier);
