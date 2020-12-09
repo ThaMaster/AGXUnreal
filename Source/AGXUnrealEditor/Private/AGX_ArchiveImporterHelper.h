@@ -124,6 +124,10 @@ public:
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterialAsset*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
+
+	// List of Constraints that should not be imported the usual way, i.e. through the
+	// Instantiate<Constraint-type>() functions. These may be owned by higher level models such as
+	// e.g. TwoBodyTire and it is up to those models to handle import of their own Constraints.
 	TArray<FGuid> ConstraintIgnoreList;
 };
 
