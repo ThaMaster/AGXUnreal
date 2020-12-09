@@ -1,6 +1,6 @@
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SceneComponentReference.h"
 #include "AGX_LogCategory.h"
@@ -153,6 +153,7 @@ void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
 		ConstraintFrame->RemoveConstraintUsage(Parent);
 	}
 }
+#endif
 
 USceneComponent* FAGX_ConstraintBodyAttachment::GetFinalFrameDefiningComponent() const
 {
@@ -168,4 +169,3 @@ USceneComponent* FAGX_ConstraintBodyAttachment::GetFinalFrameDefiningComponent()
 
 	return nullptr;
 }
-#endif

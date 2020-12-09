@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
 #include "Constraints/AGX_ConstraintEnums.h"
 #include "Constraints/AGX_ConstraintPropertyPerDof.h"

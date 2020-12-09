@@ -1,7 +1,7 @@
 /// \todo Reduce includes!
 #include "Constraints/AGX_ConstraintIconGraphicsComponent.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintEnums.h"

@@ -3,11 +3,12 @@
 /// \todo This may become a header file with lots of includes, which will make
 ///       it a compile time hog. Consider splitting it  up.
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_MotionControl.h"
 #include "AGX_LogCategory.h"
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 #include "RigidBodyBarrier.h"
+#include "Tires/TwoBodyTireBarrier.h"
 
 // Unreal Engine includes.
 #include "Containers/UnrealString.h"
@@ -27,6 +28,7 @@
 #include <agx/Quat.h>
 #include <agx/Vec2.h>
 #include <agx/Vec3.h>
+#include <agxModel/TwoBodyTire.h>
 #include "EndAGXIncludes.h"
 
 /// \note These functions assume that agx::Real and float are different types.
@@ -382,10 +384,65 @@ inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type Log
 	}
 }
 
+inline agxModel::TwoBodyTire::DeformationMode Convert(FTwoBodyTireBarrier::DeformationMode Mode)
+{
+	switch (Mode)
+	{
+		case FTwoBodyTireBarrier::RADIAL:
+			return agxModel::TwoBodyTire::RADIAL;
+		case FTwoBodyTireBarrier::LATERAL:
+			return agxModel::TwoBodyTire::LATERAL;
+		case FTwoBodyTireBarrier::BENDING:
+			return agxModel::TwoBodyTire::BENDING;
+		case FTwoBodyTireBarrier::TORSIONAL:
+			return agxModel::TwoBodyTire::TORSIONAL;
+		default:
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an FTwoBodyTireBarrier::DeformationMode "
+					 "literal of unknown type to an agxModel::TwoBodyTire::DeformationMode "
+					 "literal. Returning agxModel::TwoBodyTire::RADIAL."));
+			return agxModel::TwoBodyTire::RADIAL;
+	}
+}
+
+inline FTwoBodyTireBarrier::DeformationMode Convert(agxModel::TwoBodyTire::DeformationMode Mode)
+{
+	switch (Mode)
+	{
+		case agxModel::TwoBodyTire::RADIAL:
+			return FTwoBodyTireBarrier::RADIAL;
+		case agxModel::TwoBodyTire::LATERAL:
+			return FTwoBodyTireBarrier::LATERAL;
+		case agxModel::TwoBodyTire::BENDING:
+			return FTwoBodyTireBarrier::BENDING;
+		case agxModel::TwoBodyTire::TORSIONAL:
+			return FTwoBodyTireBarrier::TORSIONAL;
+		default:
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an "
+					 "agxModel::TwoBodyTire::DeformationMode "
+					 "literal of unknown type to an FTwoBodyTireBarrier::DeformationMode "
+					 "literal. Returning FTwoBodyTireBarrier::DeformationMode::RADIAL."));
+			return FTwoBodyTireBarrier::DeformationMode::RADIAL;
+	}
+}
+
 inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& FrameRotation)
 {
 	return new agx::Frame(
 		agx::AffineMatrix4x4(Convert(FrameRotation), ConvertVector(FramePosition)));
+}
+
+inline FTransform ConvertLocalFrame(const agx::Frame* Frame)
+{
+	return FTransform(Convert(Frame->getLocalRotate()), ConvertVector(Frame->getLocalTranslate()));
+}
+
+inline agx::AffineMatrix4x4 ConvertMatrix(const FVector& FramePosition, const FQuat& FrameRotation)
+{
+	return agx::AffineMatrix4x4(Convert(FrameRotation), ConvertVector(FramePosition));
 }
 
 inline uint32 StringTo32BitFnvHash(const FString& StringUnreal)

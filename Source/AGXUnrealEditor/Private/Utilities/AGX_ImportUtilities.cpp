@@ -1,6 +1,6 @@
 #include "Utilities/AGX_ImportUtilities.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"

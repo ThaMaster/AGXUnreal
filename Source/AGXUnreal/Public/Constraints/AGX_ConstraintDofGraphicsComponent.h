@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Components/MeshComponent.h"
 
 // Unreal Engine includes.

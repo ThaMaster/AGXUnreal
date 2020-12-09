@@ -10,7 +10,7 @@
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_EditorStyle.h"
 #include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyReference.h"
@@ -50,6 +50,11 @@
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialCustomization.h"
 #include "Terrain/AGX_Terrain.h"
+#include "Tires/AGX_TireComponentVisualizer.h"
+#include "Tires/AGX_TireComponent.h"
+#include "Tires/AGX_TwoBodyTireComponent.h"
+#include "Tires/AGX_TwoBodyTireActor.h"
+#include "Tires/AGX_TwoBodyTireComponentCustomization.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -214,6 +219,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_TerrainMaterialCustomization::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_TwoBodyTireComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_TwoBodyTireComponentCustomization::MakeInstance));
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -248,6 +258,9 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_RigidBodyComponent::StaticClass()->GetFName());
 
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -256,15 +269,21 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 	RegisterComponentVisualizer(
 		UAGX_ConstraintComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_ConstraintComponentVisualizer));
+
 	RegisterComponentVisualizer(
 		UAGX_ConstraintFrameComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_ConstraintFrameComponentVisualizer));
+
+	RegisterComponentVisualizer(
+		UAGX_TireComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_TireComponentVisualizer));
 }
 
 void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
 {
 	UnregisterComponentVisualizer(UAGX_ConstraintComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName());
+	UnregisterComponentVisualizer(UAGX_TireComponent::StaticClass()->GetFName());
 }
 
 void FAGXUnrealEditorModule::RegisterComponentVisualizer(
@@ -327,6 +346,7 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 	RegisterPlaceableItem(AAGX_Terrain::StaticClass());
 	RegisterPlaceableItem(AAGX_CollisionGroupManager::StaticClass());
 	RegisterPlaceableItem(AAGX_RigidBodyActor::StaticClass());
+	RegisterPlaceableItem(AAGX_TwoBodyTireActor::StaticClass());
 }
 
 void FAGXUnrealEditorModule::UnregisterPlacementCategory()

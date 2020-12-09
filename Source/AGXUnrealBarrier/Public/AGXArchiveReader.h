@@ -18,6 +18,7 @@ class FDistanceJointBarrier;
 class FLockJointBarrier;
 class FShapeMaterialBarrier;
 class FContactMaterialBarrier;
+class FTwoBodyTireBarrier;
 
 /*
 The separation between the Unreal part and the AGX Dynamics part of the plugin
@@ -43,6 +44,21 @@ the duration of the notification call.
 */
 
 class FAGXArchiveBody;
+
+/**
+ * Struct for holding Rigid Body Archives of TwoBodyTire.
+ */
+struct FTwoBodyTireArchiveBodies
+{
+	FTwoBodyTireArchiveBodies() = default;
+	FTwoBodyTireArchiveBodies(FAGXArchiveBody* InTire, FAGXArchiveBody* InHub)
+		: TireBodyArchive {InTire}
+		, HubBodyArchive {InHub}
+	{
+	}
+	std::unique_ptr<FAGXArchiveBody> TireBodyArchive;
+	std::unique_ptr<FAGXArchiveBody> HubBodyArchive;
+};
 
 /**
  * Instantiator base class for top-level objects.
@@ -75,6 +91,8 @@ public:
 
 	virtual void DisabledCollisionGroups(
 		const TArray<std::pair<FString, FString>>& DisabledGroups) = 0;
+
+	virtual FTwoBodyTireArchiveBodies InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Tire) = 0;
 
 	virtual ~FAGXArchiveInstantiator() = default;
 };

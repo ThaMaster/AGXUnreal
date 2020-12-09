@@ -1,6 +1,6 @@
 #include "Constraints/AGX_CylindricalConstraintComponent.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 

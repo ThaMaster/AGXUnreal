@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGXArchiveReader.h"
 
 // Unreal Engine includes.
@@ -29,6 +29,9 @@ class UAGX_BallConstraintComponent;
 class UAGX_CylindricalConstraintComponent;
 class UAGX_DistanceConstraintComponent;
 class UAGX_LockConstraintComponent;
+class FTwoBodyTireBarrier;
+class UAGX_TwoBodyTireComponent;
+class AAGX_TwoBodyTireActor;
 
 // Unreal Engine classes.
 class AActor;
@@ -94,7 +97,14 @@ public:
 	UAGX_LockConstraintComponent* InstantiateLockJoint(
 		const FLockJointBarrier& Barrier, AActor& Owner);
 
-	UAGX_RigidBodyComponent* GetBody(const FRigidBodyBarrier& Barrier);
+	UAGX_TwoBodyTireComponent* InstantiateTwoBodyTire(
+		const FTwoBodyTireBarrier& Barrier, AActor& Owner, bool IsBlueprintOwner = false);
+
+	AAGX_TwoBodyTireActor* InstantiateTwoBodyTire(
+		const FTwoBodyTireBarrier& Barrier, UWorld& World);
+
+	UAGX_RigidBodyComponent* GetBody(
+		const FRigidBodyBarrier& Barrier, bool LogErrorIfNotFound = true);
 
 	using FBodyPair = std::pair<UAGX_RigidBodyComponent*, UAGX_RigidBodyComponent*>;
 	FBodyPair GetBodies(const FConstraintBarrier& Barrier);
@@ -114,6 +124,11 @@ public:
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterialAsset*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
+
+	// List of Constraints that should not be imported the usual way, i.e. through the
+	// Instantiate<Constraint-type>() functions. These may be owned by higher level models such as
+	// e.g. TwoBodyTire and it is up to those models to handle import of their own Constraints.
+	TArray<FGuid> ConstraintIgnoreList;
 };
 
 /// \todo Consider creating a FEditorBody inheriting from FAGXArchiveBody that has a Body and a

@@ -1,8 +1,9 @@
 #include "MassPropertiesBarrier.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
 #include "TypeConversions.h"
+#include "AGX_LogCategory.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"

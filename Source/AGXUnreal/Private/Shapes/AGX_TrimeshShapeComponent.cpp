@@ -1,6 +1,6 @@
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_MeshUtilities.h"
 

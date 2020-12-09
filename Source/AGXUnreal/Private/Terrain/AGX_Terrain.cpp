@@ -1,6 +1,6 @@
 #include "Terrain/AGX_Terrain.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"

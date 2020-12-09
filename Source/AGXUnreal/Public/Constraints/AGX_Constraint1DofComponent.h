@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
 #include "Constraints/Controllers/AGX_FrictionController.h"

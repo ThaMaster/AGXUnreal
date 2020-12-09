@@ -1,6 +1,6 @@
 #include "SimulationBarrier.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
 #include "Constraints/ConstraintBarrier.h"
@@ -9,6 +9,7 @@
 #include "RigidBodyBarrier.h"
 #include "Shapes/ShapeBarrier.h"
 #include "Terrain/TerrainBarrier.h"
+#include "Tires/TireBarrier.h"
 #include "TypeConversions.h"
 
 // AGX Dynamics includes.
@@ -86,6 +87,13 @@ void FSimulationBarrier::AddTerrain(FTerrainBarrier* Terrain)
 	check(HasNative());
 	check(Terrain->HasNative());
 	NativeRef->Native->add(Terrain->GetNative()->Native);
+}
+
+void FSimulationBarrier::AddTire(FTireBarrier* Tire)
+{
+	check(HasNative());
+	check(Tire->HasNative());
+	NativeRef->Native->add(Tire->GetNative()->Native);
 }
 
 void FSimulationBarrier::SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2)

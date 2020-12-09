@@ -1,6 +1,6 @@
 #include "Constraints/AGX_ConstraintFrameActor.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_ConstraintFrameComponent.h"
 
 // Unreal Engine includes.

@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Materials/AGX_MaterialBase.h"
 
 // Unreal Engine includes.

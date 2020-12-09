@@ -1,6 +1,6 @@
 #include "AGX_ArchiveImporterToSingleActor.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_ArchiveImporterHelper.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
@@ -28,6 +28,7 @@
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
@@ -167,6 +168,31 @@ namespace
 		virtual void InstantiateContactMaterial(const FContactMaterialBarrier& Barrier) override
 		{
 			Helper.InstantiateContactMaterial(Barrier);
+		}
+
+		virtual FTwoBodyTireArchiveBodies InstantiateTwoBodyTire(
+			const FTwoBodyTireBarrier& Barrier) override
+		{
+			// Instantiate the Tire and Hub Rigid Bodies. This adds them to the RestoredBodies TMap
+			// and can thus be found and used when the TwoBodyTire component is instantiated.
+			const FRigidBodyBarrier TireBody = Barrier.GetTireRigidBody();
+			const FRigidBodyBarrier HubBody = Barrier.GetHubRigidBody();
+			if (TireBody.HasNative() == false || HubBody.HasNative() == false)
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("At lest one of the Rigid Bodies referenced by the TwoBodyTire %s did not "
+						 "have a native Rigid Body. The TwoBodyTire will not be instantiated."),
+					*Barrier.GetName());
+				return FTwoBodyTireArchiveBodies(new NopEditorBody(), new NopEditorBody());
+			}
+
+			FTwoBodyTireArchiveBodies ArchiveBodies;
+			ArchiveBodies.TireBodyArchive.reset(InstantiateBody(TireBody));
+			ArchiveBodies.HubBodyArchive.reset(InstantiateBody(HubBody));
+
+			Helper.InstantiateTwoBodyTire(Barrier, Actor);
+			return ArchiveBodies;
 		}
 
 	private:

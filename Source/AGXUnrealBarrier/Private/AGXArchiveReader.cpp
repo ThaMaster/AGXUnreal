@@ -18,6 +18,7 @@
 #include <agx/CylindricalJoint.h>
 #include <agx/DistanceJoint.h>
 #include <agx/LockJoint.h>
+#include <agxModel/TwoBodyTire.h>
 
 // In 2.28 including Cable.h causes a preprocessor macro named DEPRECATED to be defined. This
 // conflicts with a macro with the same name in Unreal. Undeffing the Unreal one.
@@ -76,6 +77,20 @@ namespace
 			}
 		}
 	}
+
+	void InstantiateShapes(agx::RigidBody* Body, FAGXArchiveBody& ArchiveBody)
+	{
+		if (Body == nullptr)
+		{
+			return;
+		}
+
+		const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
+		for (const agxCollide::GeometryRef& Geometry : Geometries)
+		{
+			::InstantiateShapes(Geometry->getShapes(), ArchiveBody);
+		}
+	}
 }
 
 namespace
@@ -111,6 +126,64 @@ namespace
 		}
 	}
 
+	void ReadTireModels(
+		agxSDK::Simulation& Simulation, const FString& Filename,
+		FAGXArchiveInstantiator& Instantiator)
+	{
+		const agxSDK::AssemblyHash& Assemblies = Simulation.getAssemblies();
+		if (Assemblies.size() > size_t(std::numeric_limits<int32>::max()))
+		{
+			UE_LOG(
+				LogAGX, Log,
+				TEXT(
+					".agx file %s contains too many assemblies. Tire models will not be imported."),
+				*Filename);
+			return;
+		}
+
+		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire,
+							const FString& Description) {
+			if (Body == nullptr)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("The %s used by agxModel::TwoBodyTire: %s "
+						 "was nullptr. The agxModel::TwoBodyTire will not be imported."),
+					*Description, *Convert(Tire->getName()));
+				return false;
+			}
+			return true;
+		};
+
+		for (const auto& Assembly : Assemblies)
+		{
+			agxModel::TwoBodyTire* Tire = dynamic_cast<agxModel::TwoBodyTire*>(Assembly.first);
+			if (Tire == nullptr)
+			{
+				continue;
+			}
+
+			if (!CheckBody(Tire->getTireRigidBody(), Tire, FString("Tire Rigid Body")) ||
+				!CheckBody(Tire->getHubRigidBody(), Tire, FString("Hub Rigid Body")))
+			{
+				continue;
+			}
+
+			FTwoBodyTireArchiveBodies ArchiveBodies = Instantiator.InstantiateTwoBodyTire(
+				AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
+
+			if (ArchiveBodies.TireBodyArchive)
+			{
+				::InstantiateShapes(Tire->getTireRigidBody(), *ArchiveBodies.TireBodyArchive);
+			}
+
+			if (ArchiveBodies.HubBodyArchive)
+			{
+				::InstantiateShapes(Tire->getHubRigidBody(), *ArchiveBodies.HubBodyArchive);
+			}
+		}
+	}
+
 	void ReadRigidBodies(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FAGXArchiveInstantiator& Instantiator)
@@ -137,10 +210,9 @@ namespace
 			std::unique_ptr<FAGXArchiveBody> ArchiveBody {
 				Instantiator.InstantiateBody(BodyBarrier)};
 
-			const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
-			for (const agxCollide::GeometryRef& Geometry : Geometries)
+			if (ArchiveBody)
 			{
-				::InstantiateShapes(Geometry->getShapes(), *ArchiveBody);
+				::InstantiateShapes(Body, *ArchiveBody);
 			}
 		}
 	}
@@ -200,8 +272,7 @@ namespace
 		}
 	}
 
-	void ReadCollisionGroups(
-		agxSDK::Simulation& Simulation, FAGXArchiveInstantiator& Instantiator)
+	void ReadCollisionGroups(agxSDK::Simulation& Simulation, FAGXArchiveInstantiator& Instantiator)
 	{
 		agxCollide::CollisionGroupManager* CollisionGroupManager =
 			Simulation.getSpace()->getCollisionGroupManager();
@@ -230,6 +301,7 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 	}
 
 	::ReadMaterials(*Simulation, Instantiator);
+	::ReadTireModels(*Simulation, Filename, Instantiator);
 	::ReadRigidBodies(*Simulation, Filename, Instantiator);
 	::ReadConstraints(*Simulation, Filename, Instantiator);
 	::ReadCollisionGroups(*Simulation, Instantiator);

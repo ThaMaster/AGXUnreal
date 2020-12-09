@@ -1,6 +1,6 @@
 #include "Constraints/AGX_HingeConstraintComponent.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/HingeBarrier.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "AGX_LogCategory.h"

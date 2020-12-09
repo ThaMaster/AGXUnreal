@@ -1,6 +1,6 @@
 #include "AgxEdMode/AGX_AgxEdModeConstraintsCustomization.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Utilities/AGX_EditorUtilities.h"

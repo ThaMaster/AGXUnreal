@@ -1,6 +1,6 @@
 #include "AGX_RigidBodyComponentCustomization.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.

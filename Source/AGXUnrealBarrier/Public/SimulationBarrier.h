@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Utilities/AGX_Statistics.h"
 
 // Unreal Engine includes.
@@ -17,6 +17,7 @@ class FContactMaterialBarrier;
 class FShapeBarrier;
 class FShapeMaterialBarrier;
 class FTerrainBarrier;
+class FTireBarrier;
 
 class AGXUNREALBARRIER_API FSimulationBarrier
 {
@@ -35,6 +36,8 @@ public:
 	void RemoveContactMaterial(FContactMaterialBarrier* ContactMaterial);
 
 	void AddTerrain(FTerrainBarrier* Terrain);
+
+	void AddTire(FTireBarrier* Tire);
 
 	void SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2);
 

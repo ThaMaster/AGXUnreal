@@ -13,6 +13,7 @@
 #include "Constraints/LockJointBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
+#include "Tires/TwoBodyTireBarrier.h"
 
 #include "AGXRefs.h"
 
@@ -32,6 +33,11 @@ namespace agxCollide
 	class Box;
 	class Cylinder;
 	class Trimesh;
+}
+
+namespace agxModel
+{
+	class TwoBodyTire;
 }
 
 namespace AGXBarrierFactories
@@ -61,4 +67,6 @@ namespace AGXBarrierFactories
 	FShapeMaterialBarrier CreateShapeMaterialBarrier(agx::Material* Material);
 
 	FContactMaterialBarrier CreateContactMaterialBarrier(agx::ContactMaterial* ContactMaterial);
+
+	FTwoBodyTireBarrier CreateTwoBodyTireBarrier(agxModel::TwoBodyTire* Tire);
 }

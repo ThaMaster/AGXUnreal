@@ -1,5 +1,5 @@
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Utilities/AGX_StringUtilities.h"
 #include "AGX_LogCategory.h"
 

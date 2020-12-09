@@ -1,6 +1,6 @@
 #include "AGX_RigidBodyActor.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_MotionControl.h"
 

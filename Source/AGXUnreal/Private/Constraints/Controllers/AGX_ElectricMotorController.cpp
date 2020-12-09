@@ -1,6 +1,6 @@
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 

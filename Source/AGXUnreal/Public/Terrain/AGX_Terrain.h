@@ -1,6 +1,6 @@
 #pragma once
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/AGX_Shovel.h"
 

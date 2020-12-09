@@ -12,6 +12,7 @@
 #include <agxCollide/Shape.h>
 #include <agxTerrain/Terrain.h>
 #include <agxTerrain/TerrainMaterial.h>
+#include <agxModel/Tire.h>
 #include "EndAGXIncludes.h"
 
 #include "AGXNotify.h"
@@ -166,6 +167,17 @@ struct FNotifyRef
 
 	FNotifyRef() = default;
 	FNotifyRef(FAGXNotify* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FTireRef
+{
+	agxModel::TireRef Native;
+
+	FTireRef() = default;
+	FTireRef(agxModel::Tire* InNative)
 		: Native(InNative)
 	{
 	}

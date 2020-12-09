@@ -1,6 +1,6 @@
 #include "Materials/AGX_ContactMaterialBase.h"
 
-// AGXUnreal includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
 #include "Materials/ContactMaterialBarrier.h"
