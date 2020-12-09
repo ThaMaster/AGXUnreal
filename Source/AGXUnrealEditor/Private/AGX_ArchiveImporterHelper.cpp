@@ -432,7 +432,7 @@ namespace
 	template <typename UComponent, typename FBarrier>
 	UComponent* InstantiateConstraint(
 		const FBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper,
-		const TArray<FGuid> IgnoreList)
+		const TArray<FGuid>& IgnoreList)
 	{
 		if (IgnoreList.Contains(Barrier.GetGuid()))
 		{
@@ -469,7 +469,8 @@ namespace
 
 	template <typename UActor, typename FBarrier>
 	UActor* InstantiateConstraint(
-		const FBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper, const TArray<FGuid> IgnoreList)
+		const FBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper,
+		const TArray<FGuid>& IgnoreList)
 	{
 		if (IgnoreList.Contains(Barrier.GetGuid()))
 		{
@@ -511,7 +512,7 @@ namespace
 	template <typename UComponent>
 	UComponent* InstantiateConstraint1Dof(
 		const FConstraint1DOFBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper,
-		const TArray<FGuid> IgnoreList)
+		const TArray<FGuid>& IgnoreList)
 	{
 		return InstantiateConstraint<UComponent>(Barrier, Owner, Helper, IgnoreList);
 	}
@@ -519,7 +520,7 @@ namespace
 	template <typename UActor>
 	UActor* InstantiateConstraint1Dof(
 		const FConstraint1DOFBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper,
-		const TArray<FGuid> IgnoreList)
+		const TArray<FGuid>& IgnoreList)
 	{
 		UActor* Actor = InstantiateConstraint<UActor>(Barrier, Helper, IgnoreList);
 		if (Actor == nullptr)
@@ -534,7 +535,7 @@ namespace
 	template <typename UConstraint>
 	UConstraint* InstantiateConstraint2Dof(
 		const FConstraint2DOFBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper,
-		const TArray<FGuid> IgnoreList)
+		const TArray<FGuid>& IgnoreList)
 	{
 		return InstantiateConstraint<UConstraint>(Barrier, Owner, Helper, IgnoreList);
 	}
@@ -542,7 +543,7 @@ namespace
 	template <typename UActor>
 	UActor* InstantiateConstraint2Dof(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper,
-		const TArray<FGuid> IgnoreList)
+		const TArray<FGuid>& IgnoreList)
 	{
 		UActor* Actor = InstantiateConstraint<UActor>(Barrier, Helper, IgnoreList);
 		if (Actor == nullptr)
