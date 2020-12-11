@@ -45,6 +45,14 @@ public:
 
 	void EnableRemoteDebugging(int16 Port);
 
+	void SetTimeStep(float TimeStep);
+
+	float GetTimeStep();
+
+	void SetNumPpgsIterations(int32 NumIterations);
+
+	int32 GetNumPpgsIterations();
+
 	/**
 	 * Perform one simulation step, moving the time stamp forward by one time step duration.
 	 */

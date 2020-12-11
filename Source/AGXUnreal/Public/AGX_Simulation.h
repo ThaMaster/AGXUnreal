@@ -43,16 +43,62 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
-public:
+public: // Properties.
 	/** Step length of the integrator, in seconds. 0.0167 by default. */
 	UPROPERTY(
 		config, EditAnywhere, Category = "Solver",
 		meta = (ClampMin = "0.001", UIMin = "0.001", ClampMax = "1.0", UIMax = "1.0"))
 	float TimeStep = 1.0f / 60.0f;
 
+	/**
+	 * Set to true to override the AGX Dynamics default value for the number of Parallel Projected
+	 * Gauss-Seidel (PPGS) solver iterations.
+	 */
+	UPROPERTY(Config, EditAnywhere, Category = "Solver")
+	bool bOverridePPGSIterations = false;
+
+	/**
+	 * The number of solver resting iterations to use for the Parallel Projected Gauss-Seidel (PPGS)
+	 * solver. This value influences the accuracy and computation cost of e.g. terrain particles.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Solver",
+		meta = (ClampMin = 1, UIMin = 1, EditCondition = "bOverridePPGSIterations"))
+	int32 NumPpgsIterations = 25;
+
 	/** Uniform default scene gravity, in cm/s^2. -980.665 by default. */
 	UPROPERTY(config, EditAnywhere, Category = "Scene Defaults")
 	FVector Gravity = FVector(0.0f, 0.0f, -980.665f);
+
+	/**
+	 * Simulation stepping mode. This controls what happens when the simulation is unable to keep
+	 * up with real-time.
+	 */
+	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
+	TEnumAsByte<enum EAGX_StepMode> StepMode = SM_CATCH_UP_IMMEDIATELY;
+
+	/** Maximum time lag in seconds for the Catch up over time Capped step mode before dropping. */
+	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
+	float TimeLagCap = 1.0;
+
+	/** Set to true to enable statistics gathering in AGX Dynamics. */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Statistics")
+	bool bEnableStatistics = false;
+
+	/**
+	 * Set to true to write an AGX Dynamics for Unreal archive of the initial state.
+	 * The archive is written to the path set in ExportPath.
+	 */
+	UPROPERTY(Config, EditAnywhere, Category = "Startup")
+	bool bExportInitialState = false;
+
+	/**
+	 * Path to the file to which the initial AGX Dynamics state is written if ExportInitialState is
+	 * set.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Startup", meta = (EditCondition = "bExportInitialState"))
+	FString ExportPath;
 
 	/**
 	 * Remote debugging allows agxViewer, the default scene viewer in AGX
@@ -62,8 +108,8 @@ public:
 	 *
 	 * To connect to a running Unreal Engine instance launch agxViewer with
 	 *    agxViewer -p --connect localhost:<PORT>
-	 * where <PORT> is the port number configured in Project Settings -> Plugins
-	 * -> AGX Dynamics -> Debug -> RemoteDebuggingPort.
+	 * where <PORT> is the port number configured in Project Settings > Plugins >  AGX Dynamics >
+	 * Debug > RemoteDebuggingPort.
 	 */
 	UPROPERTY(Config, EditAnywhere, Category = "Debug")
 	uint8 bRemoteDebugging : 1;
@@ -72,27 +118,49 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "Debug", meta = (EditCondition = "bRemoteDebugging"))
 	int16 RemoteDebuggingPort;
 
-	/** Simulation stepping mode. SM_CATCH_UP_IMMEDIATELY is set as default.*/
-	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
-	TEnumAsByte<enum EAGX_StepMode> StepMode = SM_CATCH_UP_IMMEDIATELY;
+public: // Member functions.
+	/**
+	 * Set the number of solver resting iterations to use for the Parallel Projected Gauss-Seidel
+	 * (PPGS) solver. This value influences the accuracy and computation cost of terrain particles.
+	 * @param NumIterations The number of PPGS iterations to perform each solve.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Solver")
+	void SetNumPpgsIterations(int32 NumIterations);
 
-	/** Maximum time lag in seconds for the Catch up over time Capped step mode before dropping. */
-	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
-	float TimeLagCap = 1.0;
+	/// \return The number of Parallel Projected Gauss-Seidel solver iterations to perform per
+	/// solve.
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Solver")
+	int32 GetNumPpgsIterations();
 
-	/** Set to true to enable statistics gather in AGX Dynamics. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Statistics")
-	bool bEnableStatistics = false;
-
-	UPROPERTY(Config, EditAnywhere, Category = "Startup")
-	bool bExportInitialState = false;
-
-	UPROPERTY(Config, EditAnywhere, Category = "Startup", meta = (EditCondition ="bExportInitialState"))
-	FString ExportPath;
-
-	/** Get the wall clock time for the most recent AGX Dynamics simulation step. */
+	/**
+	 * Get a collection of statistics from the AGX Dynamics simulation.
+	 * These will likely be split into several functions in the future.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Statistics")
 	FAGX_Statistics GetStatistics();
+
+	/**
+	 * Returns the current time within the AGX Dynamics simulation world.
+	 *
+	 * The returned value is usually the amount of time that has been simulated, but calls to
+	 * SetTimeStamp will invalidate this.
+	 *
+	 * The AGX Dynamics time tries to follow the Unreal Engine world time, using the DeltaTime
+	 * values passed to the Tick callbacks, but some of the Step Modes allow for the two times to
+	 * diverge.
+	 *
+	 * @return The current simulation time stamp.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Simulation")
+	float GetTimeStamp() const;
+
+	/**
+	 * Set the current simulation time stamp. Does not simulate to that time, just moves the clock
+	 * hands.
+	 * @param NewTimeStamp The new time stamp.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Simulation")
+	void SetTimeStamp(float NewTimeStamp);
 
 	void AddRigidBody(UAGX_RigidBodyComponent* Body);
 
@@ -100,9 +168,10 @@ public:
 	 * Add a stand-alone shape to the simulation.
 	 *
 	 * Should not be called with Shapes that are part of a RigidBody, the body
-	 * is reponsible for adding its own shapes.
+	 * is responsible for adding its own shapes.
 	 */
 	void AddShape(UAGX_ShapeComponent* Shape);
+
 	void AddTerrain(AAGX_Terrain* Terrain);
 
 	void SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2);
@@ -117,10 +186,6 @@ public:
 
 	void Step(float DeltaTime);
 
-	float GetTimeStamp() const;
-
-	void SetTimeStamp(float NewTimeStamp);
-
 	static UAGX_Simulation* GetFrom(const UActorComponent* Component);
 
 	static UAGX_Simulation* GetFrom(const AActor* Actor);
@@ -131,14 +196,15 @@ public:
 
 #if WITH_EDITOR
 	virtual bool CanEditChange(
-#if UE_VERSION_OLDER_THAN(4,25,0)
+#if UE_VERSION_OLDER_THAN(4, 25, 0)
 		const UProperty* InProperty
 #else
 		const FProperty* InProperty
 #endif
-		) const override;
+	) const override;
 #endif
 
+private:
 	void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	void Deinitialize() override;

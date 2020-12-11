@@ -31,6 +31,9 @@
 #include <agxModel/TwoBodyTire.h>
 #include "EndAGXIncludes.h"
 
+// Standard library includes.
+#include <limits>
+
 /// \note These functions assume that agx::Real and float are different types.
 /// They also assume that agx::Real has higher (or equal) precision than float.
 
@@ -98,6 +101,28 @@ inline agx::Real ConvertAngleToAgx(T A)
 {
 	// Precision pessimization here because of 32-bit pi in FMath?
 	return FMath::DegreesToRadians(A);
+}
+
+static_assert(
+	std::numeric_limits<agx::Int>::max() >= std::numeric_limits<int32>::max(),
+	"Expecting agx::Int to hold all values that int32 can hold.");
+
+inline int32 Convert(agx::Int I)
+{
+	agx::Int MaxAllowed = static_cast<agx::Int>(std::numeric_limits<int32>::max());
+	if (I > MaxAllowed)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Too large agx::Int being converted to int32, value is truncated."));
+		I = MaxAllowed;
+	}
+	return static_cast<int32>(I);
+}
+
+inline agx::Int Convert(int32 I)
+{
+	return static_cast<agx::Int>(I);
 }
 
 // Two-dimensional vectors.

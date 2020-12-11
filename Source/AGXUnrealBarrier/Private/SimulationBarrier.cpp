@@ -127,6 +127,41 @@ void FSimulationBarrier::EnableRemoteDebugging(int16 Port)
 	NativeRef->Native->setEnableRemoteDebugging(true, Port);
 }
 
+void FSimulationBarrier::SetTimeStep(float TimeStep)
+{
+	check(HasNative());
+	NativeRef->Native->setTimeStep(TimeStep);
+}
+
+float FSimulationBarrier::GetTimeStep()
+{
+	check(HasNative());
+	return NativeRef->Native->getTimeStep();
+}
+
+void FSimulationBarrier::SetNumPpgsIterations(int32 NumIterations)
+{
+	check(HasNative());
+	check(NumIterations > 0);
+	agx::Int NumIterationsAgx = Convert(NumIterations);
+	NativeRef->Native->getSolver()->setNumPPGSRestingIterations(NumIterations);
+}
+
+int32 FSimulationBarrier::GetNumPpgsIterations()
+{
+	check(HasNative());
+	agx::UInt NumIterationsAgx = NativeRef->Native->getSolver()->getNumPPGSRestingIterations();
+	if (NumIterationsAgx > std::numeric_limits<int32>::max())
+	{
+		NumIterationsAgx = std::numeric_limits<int32>::max();
+		UE_LOG(
+			LogAGX, Warning, TEXT("Too many PPGS resting iterations. Value clamped to %llu."),
+			NumIterationsAgx);
+	}
+	int32 NumIterations = static_cast<int32>(NumIterationsAgx);
+	return NumIterations;
+}
+
 void FSimulationBarrier::Step()
 {
 	check(HasNative());
