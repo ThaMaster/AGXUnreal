@@ -46,6 +46,16 @@ FTransform UAGX_TwoBodyTireComponent::GetGlobalTireTransform() const
 
 void UAGX_TwoBodyTireComponent::CopyFrom(const FTwoBodyTireBarrier& Barrier)
 {
+	if (!Barrier.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tire %s could not copy properties from Barrier because the Barrier does not have "
+				 "a native allocated."),
+			*GetFName().ToString());
+		return;
+	}
+
 	OuterRadius = Barrier.GetOuterRadius();
 	InnerRadius = Barrier.GetInnerRadius();
 
@@ -69,7 +79,8 @@ void UAGX_TwoBodyTireComponent::CopyFrom(const FTwoBodyTireBarrier& Barrier)
 bool UAGX_TwoBodyTireComponent::IsDefaultSubObjectOfTwoBodyTireActor() const
 {
 	AActor* Owner = GetOwner();
-	return IsDefaultSubobject() && Owner != nullptr && Cast<AAGX_TwoBodyTireActor>(Owner) != nullptr;
+	return IsDefaultSubobject() && Owner != nullptr &&
+		   Cast<AAGX_TwoBodyTireActor>(Owner) != nullptr;
 }
 
 void UAGX_TwoBodyTireComponent::AllocateNative()
@@ -115,7 +126,10 @@ void UAGX_TwoBodyTireComponent::UpdateNativeProperties()
 void UAGX_TwoBodyTireComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
-	NativeBarrier->ReleaseNative();
+	if (NativeBarrier->HasNative())
+	{
+		NativeBarrier->ReleaseNative();
+	}
 }
 
 #if WITH_EDITOR
@@ -154,7 +168,8 @@ FTwoBodyTireBarrier* UAGX_TwoBodyTireComponent::CreateTwoBodyTireBarrier()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tire %s creation failed: at least one of the Rigid Bodies' Barriers was nullptr."),
+			TEXT(
+				"Tire %s creation failed: at least one of the Rigid Bodies' Barriers was nullptr."),
 			*GetFName().ToString());
 		return Barrier;
 	}
