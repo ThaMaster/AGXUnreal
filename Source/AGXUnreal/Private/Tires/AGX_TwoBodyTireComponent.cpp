@@ -51,7 +51,7 @@ void UAGX_TwoBodyTireComponent::CopyFrom(const FTwoBodyTireBarrier& Barrier)
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Tire %s could not copy properties from Barrier because the Barrier does not have "
-				 "a native allocated."),
+				 "a native object allocated."),
 			*GetFName().ToString());
 		return;
 	}
