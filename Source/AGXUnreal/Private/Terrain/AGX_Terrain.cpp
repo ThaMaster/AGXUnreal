@@ -582,17 +582,6 @@ bool AAGX_Terrain::InitializeParticleSystemComponent()
 		return false;
 	}
 
-#if WITH_EDITORONLY_DATA && !UE_VERSION_OLDER_THAN(4, 25, 0)
-	// For a yet unknown reason, the NiagaraSystem asset must be re-compiled each time the Unreal
-	// Editor is restarted. What happens if it is not re-compiled is that no particles are rendered.
-	// The re-compilation can be done manually by opening the NiagaraSystem asset in the Unreal
-	// Editor and pressing "Compile" and that solves the problem temporarily until the Unreal Editor
-	// is restarted. To fix this permanently, we request a recompile of the NiagaraSystem here
-	// instead. The underlying cause of the need for the re-compilation is not known. The issue was
-	// introduced with Unreal Engine version 4.25.
-	ParticleSystemAsset->RequestCompile(true);
-#endif
-
 	ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 		ParticleSystemAsset, RootComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
 		FVector::OneVector, EAttachLocation::Type::KeepWorldPosition, false,
@@ -639,17 +628,28 @@ bool AAGX_Terrain::InitializeParticlesMap()
 	check(TextureBaseSize % NumPixelsPerParticle == 0);
 	check(TextureBaseSize * TextureBaseSize >= MaxNumRenderParticles * NumPixelsPerParticle);
 
-	if (TerrainParticlesDataMap->SizeX != TextureBaseSize ||
-		TerrainParticlesDataMap->SizeY != TextureBaseSize)
+	const bool TargetLargeEnough =
+		TerrainParticlesDataMap->SizeX * TerrainParticlesDataMap->SizeY >=
+		TextureBaseSize * TextureBaseSize;
+	const bool TargetSquare = TerrainParticlesDataMap->SizeX == TerrainParticlesDataMap->SizeY;
+	const bool TargetSizeMultipleOfPpp = TerrainParticlesDataMap->SizeX % NumPixelsPerParticle == 0;
+
+	if (!TargetLargeEnough || !TargetSquare || !TargetSizeMultipleOfPpp)
 	{
 		UE_LOG(
-			LogAGX, Verbose,
+			LogAGX, Error,
 			TEXT("The size of the particle data render target (%dx%d) for "
-				 "AGX Terrain '%s' does not match the amount data required to hold the terrain "
-				 "particle data. Resizing the displacement map."),
-			TerrainParticlesDataMap->SizeX, TerrainParticlesDataMap->SizeY, *GetName());
+				 "AGX Terrain '%s' has a size that does not meet the requirements to hold the \n"
+				 "terrain particles data. It must be square, be at least (%dx%d) in size and have "
+				 "side size that is a multiple of %d. Please resize the displacement map. The \n"
+				 "recommended size given current 'Max Num Render Particles' is (%dx%d). Note \n"
+				 "that you may have to recompile the Niagara Particle System after changing the "
+				 "size of the particle data render taget."),
+			TerrainParticlesDataMap->SizeX, TerrainParticlesDataMap->SizeY, *GetName(),
+			TextureBaseSize, TextureBaseSize, NumPixelsPerParticle, TextureBaseSize,
+			TextureBaseSize);
 
-		TerrainParticlesDataMap->ResizeTarget(TextureBaseSize, TextureBaseSize);
+		return false;
 	}
 
 	return true;
