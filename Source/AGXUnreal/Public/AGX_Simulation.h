@@ -52,9 +52,12 @@ public: // Properties.
 
 	/**
 	 * Set to true to override the AGX Dynamics default value for the number of Parallel Projected
-	 * Gauss-Seidel (PPGS) solver iterations.
+	 * Gauss-Seidel (PPGS) solver iterations. The number of iterations to use is set with Num PPGS
+	 * Iterations.
 	 */
-	UPROPERTY(Config, EditAnywhere, Category = "Solver")
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Solver",
+		Meta = (DisplayName = "Override PPGS Iterations"))
 	bool bOverridePPGSIterations = false;
 
 	/**
@@ -63,7 +66,9 @@ public: // Properties.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "Solver",
-		meta = (ClampMin = 1, UIMin = 1, EditCondition = "bOverridePPGSIterations"))
+		meta =
+			(ClampMin = 1, UIMin = 1, DisplayName = "Num PPGS Iterations",
+			 EditCondition = "bOverridePPGSIterations"))
 	int32 NumPpgsIterations = 25;
 
 	/** Uniform default scene gravity, in cm/s^2. -980.665 by default. */
