@@ -18,15 +18,6 @@ UAGX_StaticMeshComponent::UAGX_StaticMeshComponent()
 	PrimaryComponentTick.TickGroup = TG_PostPhysics;
 }
 
-void UAGX_StaticMeshComponent::PostLoad()
-{
-	Super::PostLoad();
-	/// \todo Determine if this is necessary. Alternative implementations include the virtual
-	/// OnMeshChanged member function, the virtual OnCreatePhysicsState, and
-	/// GetStaticMesh()->OnMeshChanged.
-	OnStaticMeshChanged().AddUObject(this, &UAGX_StaticMeshComponent::UpdateCollisionShapes);
-}
-
 bool UAGX_StaticMeshComponent::HasNative() const
 {
 	return NativeBarrier.HasNative();
@@ -49,26 +40,6 @@ FRigidBodyBarrier* UAGX_StaticMeshComponent::GetOrCreateNative()
 		AllocateNative();
 	}
 	return GetNative();
-}
-
-void UAGX_StaticMeshComponent::OnMeshChanged()
-{
-	UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from OnMeshChanged."))
-	RefreshCollisionShapes();
-}
-
-void UAGX_StaticMeshComponent::UpdateCollisionShapes(UStaticMeshComponent* Self)
-{
-	if (Self != this)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Self != this.  That is surprising. What should we do in this case?"));
-		return;
-	}
-
-	UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from UpdateCollisionShapes."))
-	RefreshCollisionShapes();
 }
 
 void UAGX_StaticMeshComponent::BeginPlay()
@@ -114,19 +85,21 @@ namespace AGX_StaticMeshComponent_helpers
 
 bool UAGX_StaticMeshComponent::ShouldCreatePhysicsState() const
 {
-	/// \note I'm not entirely sure on the consequences of doing this. I want to maintain my own
-	/// physics state, which is the AGX Dynamics state. I do not want the PhysX code to start doing
-	/// stuff because of this. And it's not even the actual AGX Dynamics state but the local state
-	/// we keep in order to create the AGX Dynamics objects later, on BeginPlay.
-	///
-	/// All I want is to keep the TArray<FAGX_Shape> containers in sync with the collision shapes
-	/// stored in the StaticMesh asset.
+	// Return true so that OnCreatePhysicsState is called when the underlying StaticMesh is changed.
+	/**
+	 * \note I'm not entirely sure on the consequences of doing this. I want to maintain my own
+	 * physics state, which is the AGX Dynamics state. I do not want the PhysX code to start doing
+	 * stuff because of this. And it's not even the actual AGX Dynamics state but the local state we
+	 * keep in order to create the AGX Dynamics objects later, on BeginPlay.
+	 *
+	 * All I want is to keep the TArray<FAGX_Shape> containers in sync with the collision shapes
+	 * stored in the StaticMesh asset.
+	 */
 	return true;
 }
 
 void UAGX_StaticMeshComponent::OnCreatePhysicsState()
 {
-	UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from OnCreatePhysicsState."))
 	RefreshCollisionShapes();
 	bPhysicsStateCreated = true;
 }
@@ -134,54 +107,14 @@ void UAGX_StaticMeshComponent::OnCreatePhysicsState()
 void UAGX_StaticMeshComponent::PostEditChangeProperty(FPropertyChangedEvent& Event)
 {
 	Super::PostEditChangeProperty(Event);
-	UE_LOG(LogAGX, Warning, TEXT("PropertyChangedEvent called"));
-
 	if (Event.GetPropertyName() == GetMemberNameChecked_StaticMesh())
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from PostEditChangeProperty."))
+		// We have a new StaticMesh, replace the collision shapes for the old mesh with the  new
+		// ones.
+		/// \note This may not be necessary, it may be that OnCreatePhysicsState, which does the
+		/// same work, is called in all cases where PostEditChangeProperty (this function) is
+		/// called.
 		RefreshCollisionShapes();
-	}
-}
-
-void UAGX_StaticMeshComponent::PreEditChange(FProperty* Property)
-{
-	if (Property->GetName() == GetMemberNameChecked_StaticMesh().ToString())
-	{
-		if (GetStaticMesh() != nullptr)
-		{
-			GetStaticMesh()->OnMeshChanged.Remove(MeshChangedHandle);
-			MeshChangedHandle.Reset();
-		}
-	}
-}
-
-void UAGX_StaticMeshComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
-{
-	Super::PostEditChangeChainProperty(Event);
-	UE_LOG(
-		LogAGX, Warning, TEXT("ChainPropertyChangedEvent for %s."),
-		*Event.GetPropertyName().ToString());
-
-	/// \todo Only do this if the changed property actually affects the shapes.
-	/// Is there any such property?
-	///
-	/// The comment above needs some clarification. I want to detect when the collision shapes
-	/// within the StaticMesh asset is changed. I'm not sure this will work since the mesh pointer
-	/// is the same, it's the thing pointed to that is modified. We need a callback when
-	/// PostEditChange(Chain)?Property is called on the StaticMesh asset. There is `OnMeshChanged`,
-	/// I will experiment with that, but I think that is for vertices only.
-	/// There is also RecreatePhysicsState which StaticMeshEditor calls from time to time, but it
-	if (Event.GetPropertyName() == GetMemberNameChecked_StaticMesh())
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Calling RefreshCollisionShapes from PostEditChangeChainProperty."))
-		RefreshCollisionShapes();
-		if (GetStaticMesh() != nullptr)
-		{
-			MeshChangedHandle = GetStaticMesh()->OnMeshChanged.AddUObject(
-				this, &UAGX_StaticMeshComponent::OnMeshChanged);
-		}
 	}
 }
 
@@ -245,7 +178,8 @@ void UAGX_StaticMeshComponent::AllocateNative()
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Cannot create AGX Dynamics representation of AGX_StaticMeshComponent '%s' "
-				 "because no world is available."), *GetName());
+				 "because no world is available."),
+			*GetName());
 		return;
 	}
 	UWorld& World = *GetWorld();
@@ -255,7 +189,6 @@ void UAGX_StaticMeshComponent::AllocateNative()
 	check(SphereBarriers.Num() == 0);
 	check(BoxBarriers.Num() == 0);
 
-	UE_LOG(LogAGX, Warning, TEXT("Calling RefreshCollisionShapes from AllocateNative."))
 	RefreshCollisionShapes();
 	NativeBarrier.AllocateNative();
 
@@ -350,37 +283,6 @@ namespace AGX_StaticMeshComponent_helpers
 	}
 }
 
-/*
- Call order when assigning a StaticMesh with 0 spheres and 3 boxes to a new SimulationObject:
-
- // This is the virtual function inherited from StaticMeshComponent.
- Calling RefreshCollisionShapes from OnCreatePhysicsState.
- Have 0 spheres and 0 boxes.
-
- // This is the delegate callback from StaticMeshComponent.
- UpdateCollisionShapes called.
- Calling RefreshCollisionShapes from UpdateCollisionShapes.
- Have 0 spheres and 3 boxes.
-
- // This is because we changed a property on SimulationObject.
- PropertyChangedEvent called
- Calling RefreshCollisionShapes from PostEditChangeProperty.
- Have 0 spheres and 3 boxes.
-
- // This is also because we changed a property on SimulationObject.
- ChainPropertyChangedEvent for StaticMesh.
- Calling RefreshCollisionShapes from PostEditChangeChainProperty.
- Have 0 spheres and 3 boxes.
-
-
- Call order when adding a collision sphere with the SimulationObject Details Panel open and visible.
-
- // This is the virtual function inherited from StaticMeshComponent.
- Calling RefreshCollisionShapes from OnCreatePhysicsState.
- Have 0 spheres and 3 boxes.
-
- The same call, OnCreatePhysicsState, is also made when deleting a collision shape.
- */
 void UAGX_StaticMeshComponent::RefreshCollisionShapes()
 {
 	using namespace AGX_StaticMeshComponent_helpers;
@@ -396,14 +298,8 @@ void UAGX_StaticMeshComponent::RefreshCollisionShapes()
 	TArray<FKSphereElem>& CollisionSpheres = CollisionShapes.SphereElems;
 	TArray<FKBoxElem>& CollisionBoxes = CollisionShapes.BoxElems;
 
-	UE_LOG(
-		LogAGX, Warning, TEXT("Want %d spheres and %d boxes."), CollisionSpheres.Num(),
-		CollisionBoxes.Num());
-
-	UE_LOG(LogAGX, Warning, TEXT("Had %d spheres and %d boxes."), Spheres.Num(), Boxes.Num());
 	ResizeShapeArray(Spheres, DefaultShape, CollisionSpheres.Num());
 	ResizeShapeArray(Boxes, DefaultShape, CollisionBoxes.Num());
-	UE_LOG(LogAGX, Warning, TEXT("Have %d spheres and %d boxes."), Spheres.Num(), Boxes.Num());
 }
 
 void UAGX_StaticMeshComponent::ReadTransformFromNative()

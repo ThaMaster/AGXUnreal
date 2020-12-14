@@ -45,10 +45,6 @@ void FAGX_StaticMeshComponentCustomization::CustomizeDetails(IDetailLayoutBuilde
 		return;
 	}
 
-	/// \todo Is it safe to perform state modifications on the object for which we are currently
-	/// creating the Details Panel? It's not const, so I guess it's ok.
-	SelectedMeshComponent->RefreshCollisionShapes();
-
 	IDetailCategoryBuilder& AgxCategory =
 		DetailBuilder.EditCategory("AGX Dynamics", FText::GetEmpty(), ECategoryPriority::Important);
 
@@ -80,6 +76,10 @@ void FAGX_StaticMeshComponentCustomization::CustomizeDetails(IDetailLayoutBuilde
 
 	// clang-format off
 
+// I had a button here to force a refresh of the AGX Dynamics for Unreal collision shapes. I don't
+// thinks that's necessary, and I wanted to make the shape update member function private. Restore
+// this if we ever find a reason to have a refresh button.
+#if 0
 	/// Add a button to force a refresh of the StatiMesh asset's collision shapes into the AGX
 	/// StaticMesh's shape arrays.
 	AgxShapesCategory.AddWidgetRow()
@@ -100,6 +100,7 @@ void FAGX_StaticMeshComponentCustomization::CustomizeDetails(IDetailLayoutBuilde
 			})
 		]
 	];
+#endif
 
 
 // This block of code is intended to provide body/mesh-level editing of collision shapes, e.g.,

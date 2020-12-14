@@ -49,7 +49,7 @@ struct FAGX_Shape
  * contains some properties that are unrepresentable in AGX Dynamics, and AGX Dynamics has some
  * properties that aren't part of the StaticMesh asset so the conversion is performed on a
  * best-effort basis. Some AGX Dynamics specific per-shape properties are stored in FAGX_Shape
- * instances, one per collision shape in the StaticMesh asset.
+ * instances, one per collision shape, in the StaticMesh asset.
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
@@ -87,22 +87,10 @@ public: // Public member functions.
 	const FRigidBodyBarrier* GetNative() const;
 	FRigidBodyBarrier* GetOrCreateNative();
 
-	/// Bound to the source mesh asset's OnMeshChanged event/delegate.
-	void OnMeshChanged();
-
-	/**
-	 * Resize the shape data arrays to match the size of the collision shapes in the StaticMesh
-	 * asset. Any new FAGX_Shape instances created are initialized according to DefaultShape.
-	 */
-	void RefreshCollisionShapes();
-
 public: // Inherited interfaces.
 	//~ Begin public UActorComponent interface.
-
 	virtual void BeginPlay();
-
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
-
 	virtual void TickComponent(
 		float DeltaTime, ELevelTick TickType,
 		FActorComponentTickFunction* ThisTickFunction) override;
@@ -114,19 +102,20 @@ protected: // Inherited interfaces.
 	virtual void OnCreatePhysicsState() override;
 	//~ End protected UActorComponent interface.
 
-	//~ Begin UObject interface.
-	virtual void PostLoad() override;
+	//~ Begin protected UObject interface.
 #if WITH_EDITOR
-	virtual void PreEditChange(FProperty* Property) override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
-	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
 	//~ End UObject interface.
 
 private: // Private member functions.
-	void UpdateCollisionShapes(UStaticMeshComponent* Self);
-	void AllocateNative();
+	/**
+	 * Resize the shape data arrays to match the size of the collision shapes in the StaticMesh
+	 * asset. Any new FAGX_Shape instances created are initialized according to DefaultShape.
+	 */
+	void RefreshCollisionShapes();
 
+	void AllocateNative();
 	void ReadTransformFromNative();
 	void WriteTransformToNative();
 
@@ -134,6 +123,4 @@ private: // Private member variables.
 	FRigidBodyBarrier NativeBarrier;
 	TArray<FSphereShapeBarrier> SphereBarriers;
 	TArray<FBoxShapeBarrier> BoxBarriers;
-
-	FDelegateHandle MeshChangedHandle;
 };
