@@ -128,8 +128,10 @@ public: // Member functions.
 	UFUNCTION(BlueprintCallable, Category = "Solver")
 	void SetNumPpgsIterations(int32 NumIterations);
 
-	/// \return The number of Parallel Projected Gauss-Seidel solver iterations to perform per
-	/// solve.
+	/**
+	 * \return The number of Parallel Projected Gauss-Seidel solver iterations to perform per
+	 * solve.
+	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Solver")
 	int32 GetNumPpgsIterations();
 
