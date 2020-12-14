@@ -235,14 +235,14 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 {
 	// Import AGX Dynamics archive to in-level single actor menu item.
 	AddFileMenuEntry(
-			Builder,
-			LOCTEXT(
-					"FileMenuEntryLabelImportSingleActor",
-					"Import AGX Dynamics archive to level as a single actor..."),
-			LOCTEXT(
-					"FileMenuEntryTooTipImportSingleActor",
-					"Import an AGX Dynamics archive into the current level as a single actor"),
-			[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor(); });
+		Builder,
+		LOCTEXT(
+			"FileMenuEntryLabelImportSingleActor",
+			"Import AGX Dynamics archive to level as a single actor..."),
+		LOCTEXT(
+			"FileMenuEntryTooTipImportSingleActor",
+			"Import an AGX Dynamics archive into the current level as a single actor"),
+		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor(); });
 
 	// Import AGX archive to in-level actor tree menu item.
 	AddFileMenuEntry(
@@ -280,9 +280,12 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 		&Actor1, &Actor2,
 		/*bSearchSubtrees*/ true, /*bSearchAncestors*/ true);
 
-	if (Actor1 == nullptr || Actor2 == nullptr)
+	if (Actor1 == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Must select two actors before creating a constraint."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Must select at least one actor with a Rigid Body component before creating a "
+				 "constraint."));
 		return;
 	}
 
@@ -291,7 +294,11 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 	/// similar code in AGX_AgxEdModeConstraints.cpp.
 
 	TArray<UAGX_RigidBodyComponent*> Bodies1 = UAGX_RigidBodyComponent::GetFromActor(Actor1);
-	TArray<UAGX_RigidBodyComponent*> Bodies2 = UAGX_RigidBodyComponent::GetFromActor(Actor2);
+	TArray<UAGX_RigidBodyComponent*> Bodies2;
+	if (Actor2)
+	{
+		Bodies2 = UAGX_RigidBodyComponent::GetFromActor(Actor2);
+	}
 
 	if (Bodies1.Num() != 1)
 	{
@@ -303,7 +310,7 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 		return;
 	}
 
-	if (Bodies2.Num() != 1)
+	if (Actor2 && Bodies2.Num() != 1)
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -313,11 +320,26 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 		return;
 	}
 
-	FAGX_EditorUtilities::CreateConstraintActor(
-		ConstraintClass, Bodies1[0], Bodies2[0],
+	UAGX_RigidBodyComponent* Body1 = Bodies1[0];
+	UAGX_RigidBodyComponent* Body2 = Actor2 != nullptr ? Bodies2[0] : nullptr;
+	AActor* Constraint = FAGX_EditorUtilities::CreateConstraintActor(
+		ConstraintClass, Body1, Body2,
 		/*Select*/ true,
 		/*ShowNotification*/ true,
 		/*InPlayingWorldIfAvailable*/ true);
+
+	// Place the Constraint actor right between the two Rigid Bodies, or in the case of a single
+	// Rigid Body: at Body1's location.
+	if (Constraint)
+	{
+		FVector NewLocation = Body1->GetComponentLocation();
+		if (Body2)
+		{
+			NewLocation = (NewLocation + Body2->GetComponentLocation()) / 2;
+		}
+
+		Constraint->SetActorLocation(NewLocation);
+	}
 }
 
 void FAGX_TopMenu::OnOpenAboutDialogClicked()
