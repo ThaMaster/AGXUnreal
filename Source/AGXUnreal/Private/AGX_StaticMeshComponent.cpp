@@ -241,6 +241,10 @@ void UAGX_StaticMeshComponent::AllocateNative()
 
 	if (GetWorld() == nullptr)
 	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot create AGX Dynamics representation of AGX_StaticMeshComponent '%s' "
+				 "because no world is available."), *GetName());
 		return;
 	}
 	UWorld& World = *GetWorld();
