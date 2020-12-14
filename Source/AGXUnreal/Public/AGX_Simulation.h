@@ -121,7 +121,8 @@ public: // Properties.
 public: // Member functions.
 	/**
 	 * Set the number of solver resting iterations to use for the Parallel Projected Gauss-Seidel
-	 * (PPGS) solver. This value influences the accuracy and computation cost of terrain particles.
+	 * (PPGS) solver. This value influences the accuracy and computation cost of e.g. terrain
+	 * particles.
 	 * @param NumIterations The number of PPGS iterations to perform each solve.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Solver")
