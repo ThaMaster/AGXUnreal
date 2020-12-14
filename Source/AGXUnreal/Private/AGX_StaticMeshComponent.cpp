@@ -167,6 +167,42 @@ namespace AGX_StaticMeshComponent_helpers
 	{
 		return FVector(Box.X / 2.0f, Box.Y / 2.0f, Box.Z / 2.0f);
 	}
+
+	void CopyShapeData(FSphereShapeBarrier& Destination, const FKSphereElem& Source)
+	{
+		Destination.SetRadius(Source.Radius);
+		Destination.SetLocalPosition(Source.Center);
+		Destination.SetLocalRotation(FQuat::Identity);
+	}
+
+	void CopyShapeData(FBoxShapeBarrier& Destination, const FKBoxElem& Source)
+	{
+		Destination.SetHalfExtents(GetHalfExtent(Source));
+		Destination.SetLocalPosition(Source.Center);
+		Destination.SetLocalRotation(Source.Rotation.Quaternion());
+	}
+
+	template <typename FBarrier, typename FCollisionShape>
+	void CreateNativeShape(
+		FBarrier& Barrier, const FCollisionShape& Collision, const FAGX_Shape& AgxConfig,
+		UWorld& World)
+	{
+		Barrier.AllocateNative();
+		check(Barrier.HasNative());
+		CopyShapeData(Barrier, Collision);
+		Barrier.SetEnableCollisions(AgxConfig.bCanCollide);
+		if (AgxConfig.Material != nullptr)
+		{
+			FShapeMaterialBarrier* MaterialBarrier =
+				AgxConfig.Material->GetOrCreateShapeMaterialNative(&World);
+			if (MaterialBarrier != nullptr)
+			{
+				Barrier.SetMaterial(*MaterialBarrier);
+			}
+		}
+		Barrier.SetName(Collision.GetName().ToString());
+		Barrier.AddCollisionGroups(AgxConfig.CollisionGroups);
+	}
 }
 
 void UAGX_StaticMeshComponent::AllocateNative()
@@ -214,23 +250,7 @@ void UAGX_StaticMeshComponent::AllocateNative()
 			FKSphereElem& Collision = CollisionSpheres[I];
 			FAGX_Shape& Shape = GetShape(Spheres, I, DefaultShape);
 			FSphereShapeBarrier Barrier;
-			Barrier.AllocateNative();
-			check(Barrier.HasNative());
-			Barrier.SetRadius(Collision.Radius);
-			Barrier.SetLocalPosition(Collision.Center);
-			Barrier.SetLocalRotation(FQuat::Identity); // Rotation does not matter for spheres.
-			Barrier.SetEnableCollisions(Shape.bCanCollide);
-			if (Shape.Material != nullptr)
-			{
-				FShapeMaterialBarrier* MaterialBarrier =
-					Shape.Material->GetOrCreateShapeMaterialNative(&World);
-				if (MaterialBarrier != nullptr)
-				{
-					Barrier.SetMaterial(*MaterialBarrier);
-				}
-			}
-			Barrier.SetName(Collision.GetName().ToString());
-			Barrier.AddCollisionGroups(Shape.CollisionGroups);
+			CreateNativeShape(Barrier, Collision, Shape, World);
 			NativeBarrier.AddShape(&Barrier);
 			SphereBarriers.Add(std::move(Barrier));
 		}
@@ -243,23 +263,7 @@ void UAGX_StaticMeshComponent::AllocateNative()
 			FKBoxElem& Collision = CollisionBoxes[I];
 			FAGX_Shape& Shape = GetShape(Boxes, I, DefaultShape);
 			FBoxShapeBarrier Barrier;
-			Barrier.AllocateNative();
-			check(Barrier.HasNative());
-			Barrier.SetHalfExtents(GetHalfExtent(Collision));
-			Barrier.SetLocalPosition(Collision.Center);
-			Barrier.SetLocalRotation(Collision.Rotation.Quaternion());
-			Barrier.SetEnableCollisions(Shape.bCanCollide);
-			if (Shape.Material != nullptr)
-			{
-				FShapeMaterialBarrier* MaterialBarrier =
-					Shape.Material->GetOrCreateShapeMaterialNative(&World);
-				if (MaterialBarrier != nullptr)
-				{
-					Barrier.SetMaterial(*MaterialBarrier);
-				}
-			}
-			Barrier.SetName(Collision.GetName().ToString());
-			Barrier.AddCollisionGroups(Shape.CollisionGroups);
+			CreateNativeShape(Barrier, Collision, Shape, World);
 			NativeBarrier.AddShape(&Barrier);
 			BoxBarriers.Add(std::move(Barrier));
 		}
