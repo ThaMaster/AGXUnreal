@@ -144,7 +144,7 @@ void FSimulationBarrier::SetNumPpgsIterations(int32 NumIterations)
 	check(HasNative());
 	check(NumIterations > 0);
 	agx::Int NumIterationsAgx = Convert(NumIterations);
-	NativeRef->Native->getSolver()->setNumPPGSRestingIterations(NumIterations);
+	NativeRef->Native->getSolver()->setNumPPGSRestingIterations(NumIterationsAgx);
 }
 
 int32 FSimulationBarrier::GetNumPpgsIterations()
