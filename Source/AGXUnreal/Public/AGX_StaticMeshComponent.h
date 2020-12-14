@@ -114,13 +114,14 @@ protected: // Inherited interfaces.
 	virtual void OnCreatePhysicsState() override;
 	//~ End protected UActorComponent interface.
 
-#if WITH_EDITOR
 	//~ Begin UObject interface.
+	virtual void PostLoad() override;
+#if WITH_EDITOR
 	virtual void PreEditChange(FProperty* Property) override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
-	//~ End UObject interface.
 #endif
+	//~ End UObject interface.
 
 private: // Private member functions.
 	void UpdateCollisionShapes(UStaticMeshComponent* Self);

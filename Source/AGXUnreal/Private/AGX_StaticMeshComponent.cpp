@@ -16,13 +16,13 @@ UAGX_StaticMeshComponent::UAGX_StaticMeshComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.TickGroup = TG_PostPhysics;
+}
 
+void UAGX_StaticMeshComponent::PostLoad()
+{
 	/// \todo Determine if this is necessary. Alternative implementations include the virtual
 	/// OnMeshChanged member function, the virtual OnCreatePhysicsState, and
 	/// GetStaticMesh()->OnMeshChanged.
-	///
-	/// This one is problematic because it's a call to a virtual function from a constructor, which
-	/// means that the vtable may not have been fully formed yet.
 	OnStaticMeshChanged().AddUObject(this, &UAGX_StaticMeshComponent::UpdateCollisionShapes);
 }
 
