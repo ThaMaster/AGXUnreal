@@ -2,8 +2,8 @@
 
 // AGX Dynamics for Unreal includes.
 #include "RigidBodyBarrier.h"
-#include "BoxShapeBarrier.h"
-#include "SphereShapeBarrier.h"
+#include "Shapes/BoxShapeBarrier.h"
+#include "Shapes/SphereShapeBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
