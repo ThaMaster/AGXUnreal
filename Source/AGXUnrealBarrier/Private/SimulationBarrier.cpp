@@ -130,13 +130,13 @@ void FSimulationBarrier::EnableRemoteDebugging(int16 Port)
 void FSimulationBarrier::SetTimeStep(float TimeStep)
 {
 	check(HasNative());
-	NativeRef->Native->setTimeStep(TimeStep);
+	NativeRef->Native->setTimeStep(Convert(TimeStep));
 }
 
 float FSimulationBarrier::GetTimeStep()
 {
 	check(HasNative());
-	return NativeRef->Native->getTimeStep();
+	return Convert(NativeRef->Native->getTimeStep());
 }
 
 void FSimulationBarrier::SetNumPpgsIterations(int32 NumIterations)
