@@ -217,7 +217,7 @@ namespace AGX_StaticMeshComponent_helpers
 		if (Instance == nullptr)
 		{
 			/// \todo Better error message.
-			UE_LOG(LogAGX, Warning, TEXT("Could not create a ShapeMaterialInstance."));
+			UE_LOG(LogAGX, Error, TEXT("Could not create a ShapeMaterialInstance."));
 			return;
 		}
 
