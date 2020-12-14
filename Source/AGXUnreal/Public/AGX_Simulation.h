@@ -87,7 +87,7 @@ public: // Properties.
 
 	/**
 	 * Set to true to write an AGX Dynamics for Unreal archive of the initial state.
-	 * The archive is written to the path set in ExportPath.
+	 * The archive is written to the path set in ExportPath on the first game Tick.
 	 */
 	UPROPERTY(Config, EditAnywhere, Category = "Startup")
 	bool bExportInitialState = false;
