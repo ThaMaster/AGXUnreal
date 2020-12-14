@@ -83,11 +83,9 @@ public:
 		meta = (ClampMin = "0", UIMin = "0", ClampMax = "1000", UIMax = "1000"))
 	float MaxDepth = 200.0f;
 
-
 	/** The physical bulk, compaction, particle and surface properties of the Terrain. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	UAGX_TerrainMaterialBase* TerrainMaterial;
-
 
 	/**
 	 * A list of the rigid body actors that should be used as terrain shovels.
@@ -133,15 +131,13 @@ public:
 
 	/**
 	 * Rough estimation of number of particles that will exist at once. Should not be too low,
-	 * or some particles might not be rendered! Used internally to allocate large enough rendering
-	 * data buffers. The actual buffer sizes might have slightly larger capacity though due to data
-	 * layout.
+	 * or some particles might not be rendered.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Rendering",
 		meta =
 			(EditCondition = "bEnableParticleRendering", ClampMin = "1", UIMin = "1",
-			 ClampMax = "4096", UIMax = "4096"))
+			 UIMax = "4096"))
 	int32 MaxNumRenderParticles = 2048;
 
 	UPROPERTY(
