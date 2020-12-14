@@ -73,12 +73,53 @@ void UAGX_Simulation::SetDisableCollisionGroupPair(const FName& Group1, const FN
 	NativeBarrier.SetDisableCollisionGroupPair(Group1, Group2);
 }
 
+void UAGX_Simulation::SetNumPpgsIterations(int32 NumIterations)
+{
+	NumPpgsIterations = NumIterations;
+	if (HasNative())
+	{
+		NativeBarrier.SetNumPpgsIterations(NumIterations);
+	}
+}
+
+int32 UAGX_Simulation::GetNumPpgsIterations()
+{
+	if (HasNative())
+	{
+		check(NumPpgsIterations == NativeBarrier.GetNumPpgsIterations());
+	}
+	return NumPpgsIterations;
+}
+
 void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	UE_LOG(LogAGX, Log, TEXT("AGX_CALL: new agxSDK::Simulation"));
+
 	NativeBarrier.AllocateNative();
 	check(HasNative()); /// \todo Consider better error handling.
+
+	/// \todo Set time step here.
+
+	if (bOverridePPGSIterations)
+	{
+		if (NumPpgsIterations < 1)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT(
+					"Clamping the number of PPGS solver iterations from %d to 1. Set the number of "
+					"iterations to a positive value in Project Settings > Plugins > AGX Dynamics > "
+					"Solver."),
+				NumPpgsIterations);
+			NumPpgsIterations = 1;
+		}
+		NativeBarrier.SetNumPpgsIterations(NumPpgsIterations);
+
+		// Note that AGX Dynamics' Terrain can change the number of PPGS iterations. AAGX_Terrain
+		// is responsible for restoring it to the value we set here.
+	}
+
+	/// \todo Set gravity here.
 
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
 
@@ -149,8 +190,7 @@ namespace agx_simulation_helpers
 				LevelName = TEXT("InitialState");
 			}
 			FString FileName = LevelName + TEXT(".agx");
-			WriteInitialStateArchive(
-				FPaths::Combine(ExportPath, FileName), Simulation);
+			WriteInitialStateArchive(FPaths::Combine(ExportPath, FileName), Simulation);
 		}
 		else
 		{
@@ -174,12 +214,14 @@ namespace agx_simulation_helpers
 void UAGX_Simulation::Step(float DeltaTime)
 {
 	using namespace agx_simulation_helpers;
+#if WITH_EDITORONLY_DATA
 	if (bExportInitialState)
 	{
 		// Is there a suitable callback we can use instead of checking before every step?
 		bExportInitialState = false;
 		WriteInitialStateArchive(ExportPath, *this);
 	}
+#endif
 
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:UAGX_Simulation::Step"));
 	switch (StepMode)

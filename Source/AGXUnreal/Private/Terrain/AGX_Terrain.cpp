@@ -221,10 +221,31 @@ void AAGX_Terrain::CreateNativeTerrain()
 	check(HasNative());
 
 	SetInitialTransform();
-
 	OriginalHeights = NativeBarrier.GetHeights();
+
+	// Create the AGX Dynamics instance for the terrain.
+	// Note that the AGX Dynamics Terrain messes with the solver parameters on add, parameters that
+	// our user may have set explicitly. If so, re-set the user-provided settings.
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	int32 NumIterations = Simulation->GetNumPpgsIterations();
 	Simulation->AddTerrain(this);
+	if (Simulation->bOverridePPGSIterations)
+	{
+		// We must check the override flag and not blindly re-set the value we read a few lines up
+		// because when not overriding one should get the number of iterations set by the terrain,
+		// not the number of iterations that is the default in the solver.
+		Simulation->SetNumPpgsIterations(NumIterations);
+	}
+	else
+	{
+		// Not overriding the number of iterations so the UAGX_Simulation instance should be
+		// notified of the new current number of iterations set by the AGX Dynamics terrain. Not
+		// using SetNumPpgsIterations because this code fixes a broken class invariant, it does
+		// not move from one valid state to another, so lower-level fiddling is required.
+		//
+		// I don't like it.
+		Simulation->NumPpgsIterations = Simulation->GetNative()->GetNumPpgsIterations();
+	}
 }
 
 void AAGX_Terrain::CreateNativeShovels()
