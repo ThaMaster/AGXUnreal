@@ -189,7 +189,7 @@ namespace AGX_StaticMeshComponent_helpers
 	/**
 	 * Swap all shape material assets for their material instance version.
 	 * @param Shape The shape for which the material should be swapped.
-	 * @param World The workd in which material instances should be created.
+	 * @param World The world in which material instances should be created.
 	 */
 	void SwapInMaterialInstance(FAGX_Shape& Shape, UWorld& World)
 	{
