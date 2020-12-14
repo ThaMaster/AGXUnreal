@@ -214,12 +214,14 @@ namespace agx_simulation_helpers
 void UAGX_Simulation::Step(float DeltaTime)
 {
 	using namespace agx_simulation_helpers;
+#if WITH_EDITORONLY_DATA
 	if (bExportInitialState)
 	{
 		// Is there a suitable callback we can use instead of checking before every step?
 		bExportInitialState = false;
 		WriteInitialStateArchive(ExportPath, *this);
 	}
+#endif
 
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:UAGX_Simulation::Step"));
 	switch (StepMode)

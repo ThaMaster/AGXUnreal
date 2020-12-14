@@ -85,6 +85,7 @@ public: // Properties.
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Statistics")
 	bool bEnableStatistics = false;
 
+#if WITH_EDITORONLY_DATA
 	/**
 	 * Set to true to write an AGX Dynamics for Unreal archive of the initial state.
 	 * The archive is written to the path set in ExportPath on the first game Tick.
@@ -99,6 +100,7 @@ public: // Properties.
 	UPROPERTY(
 		Config, EditAnywhere, Category = "Startup", meta = (EditCondition = "bExportInitialState"))
 	FString ExportPath;
+#endif
 
 	/**
 	 * Remote debugging allows agxViewer, the default scene viewer in AGX
