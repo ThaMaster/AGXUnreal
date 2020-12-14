@@ -20,6 +20,7 @@ UAGX_StaticMeshComponent::UAGX_StaticMeshComponent()
 
 void UAGX_StaticMeshComponent::PostLoad()
 {
+	Super::PostLoad();
 	/// \todo Determine if this is necessary. Alternative implementations include the virtual
 	/// OnMeshChanged member function, the virtual OnCreatePhysicsState, and
 	/// GetStaticMesh()->OnMeshChanged.
