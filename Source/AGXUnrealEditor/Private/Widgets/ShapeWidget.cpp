@@ -14,7 +14,7 @@
 // in the AGX_StaticMeshComponent's Details Panel and provide per-instance collision shape
 // editing and configuration options. I don't know enough about Slate to do anything practical
 // yet, and I don't know enough about the intended workflow to know what editing and
-// configuration options are required. Disabling this code until we know more.
+// configuration options are required. This code is just placeholder until we know more.
 void SShapeWidget::Construct(const FArguments& InArguments)
 {
 	// clang-format off
