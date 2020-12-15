@@ -118,6 +118,13 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 		// Note that AGX Dynamics' Terrain can change the number of PPGS iterations. AAGX_Terrain
 		// is responsible for restoring it to the value we set here.
 	}
+	else
+	{
+		// The user has requested that we use the default number of PPGS solver iterations. Update
+		// the setting to reflect the actual value set by AGX Dynamics. This will not change the
+		// plugin settings since 'this' is now the in-game instance, not the CDO.
+		NumPpgsIterations = NativeBarrier.GetNumPpgsIterations();
+	}
 
 	/// \todo Set gravity here.
 

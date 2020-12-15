@@ -238,10 +238,10 @@ void AAGX_Terrain::CreateNativeTerrain()
 	}
 	else
 	{
-		// Not overriding the number of iterations so the UAGX_Simulation instance should be
-		// notified of the new current number of iterations set by the AGX Dynamics terrain. Not
-		// using SetNumPpgsIterations because this code fixes a broken class invariant, it does
-		// not move from one valid state to another, so lower-level fiddling is required.
+		// Not overriding the number of iterations, which means that the UAGX_Simulation instance
+		// should be notified of the new current number of iterations set by the AGX Dynamics
+		// terrain. Not using SetNumPpgsIterations because this code fixes a broken class invariant,
+		// it does not move from one valid state to another, so lower-level fiddling is required.
 		//
 		// I don't like it.
 		Simulation->NumPpgsIterations = Simulation->GetNative()->GetNumPpgsIterations();
