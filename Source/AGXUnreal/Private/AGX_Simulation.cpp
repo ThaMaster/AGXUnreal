@@ -120,9 +120,9 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	}
 	else
 	{
-		// Use has requested that we use the default number of PPGS solver iterations. Update the
-		// setting to reflect the actual value set by AGX Dynamics. This will not change the plugin
-		// settings since 'this' is now the in-game instance, not the CDO.
+		// The user has requested that we use the default number of PPGS solver iterations. Update
+		// the setting to reflect the actual value set by AGX Dynamics. This will not change the
+		// plugin settings since 'this' is now the in-game instance, not the CDO.
 		NumPpgsIterations = NativeBarrier.GetNumPpgsIterations();
 	}
 
