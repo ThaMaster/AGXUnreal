@@ -1,4 +1,4 @@
-#include "ShapeWidget.h"
+#include "Widgets/ShapeWidget.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
