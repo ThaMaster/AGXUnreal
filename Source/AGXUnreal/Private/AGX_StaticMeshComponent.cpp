@@ -104,6 +104,7 @@ void UAGX_StaticMeshComponent::OnCreatePhysicsState()
 	bPhysicsStateCreated = true;
 }
 
+#if WITH_EDITOR
 void UAGX_StaticMeshComponent::PostEditChangeProperty(FPropertyChangedEvent& Event)
 {
 	Super::PostEditChangeProperty(Event);
@@ -117,6 +118,7 @@ void UAGX_StaticMeshComponent::PostEditChangeProperty(FPropertyChangedEvent& Eve
 		RefreshCollisionShapes();
 	}
 }
+#endif
 
 namespace AGX_StaticMeshComponent_helpers
 {
