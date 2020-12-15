@@ -98,6 +98,9 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 
 	FRigidBodyBarrier* GetRigidBodyBarrier(bool CreateIfNeeded);
 
+	// This must be a UPROPERTY to work for built applications where this will point to the wrong
+	// instance if it is not.
+	UPROPERTY()
 	USceneComponent* Owner;
 
 #if WITH_EDITOR
