@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_StaticMeshComponent.h"
 #include "AGX_Stepper.h"
 #include "AGX_LogCategory.h"
 #include "Shapes/AGX_ShapeComponent.h"
@@ -32,6 +33,13 @@ FAGX_Statistics UAGX_Simulation::GetStatistics()
 }
 
 void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
+{
+	check(Body != nullptr);
+	EnsureStepperCreated();
+	NativeBarrier.AddRigidBody(Body->GetNative());
+}
+
+void UAGX_Simulation::AddRigidBody(UAGX_StaticMeshComponent* Body)
 {
 	check(Body != nullptr);
 	EnsureStepperCreated();

@@ -58,6 +58,7 @@ public:
 	bool GetEnableCollisions() const;
 
 	void AddCollisionGroup(const FName& GroupName);
+	void AddCollisionGroups(const TArray<FName>& GroupNames);
 
 	/**
 	 * Get all collision groups registered for this Shape.
