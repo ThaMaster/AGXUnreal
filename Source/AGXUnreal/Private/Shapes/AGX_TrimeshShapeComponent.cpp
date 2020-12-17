@@ -200,11 +200,10 @@ bool UAGX_TrimeshShapeComponent::FindStaticMeshSource(
 }
 
 static int32 AddCollisionVertex(
-	const uint16 MeshVertexIndex, const FVector& VertexPos, const FTransform& Transform,
-	TArray<FVector>& CollisionVertices, TMap<FVector, int32>& MeshToCollisionVertexIndices)
+	const FVector& VertexPosition, const FTransform& Transform, TArray<FVector>& CollisionVertices,
+	TMap<FVector, int32>& MeshToCollisionVertexIndices)
 {
-	int32 VertIndex = static_cast<int32>(MeshVertexIndex);
-	if (int32* CollisionVertexIndexPtr = MeshToCollisionVertexIndices.Find(VertexPos))
+	if (int32* CollisionVertexIndexPtr = MeshToCollisionVertexIndices.Find(VertexPosition))
 	{
 		// Already been added once, so just return the index.
 		return *CollisionVertexIndexPtr;
@@ -212,10 +211,11 @@ static int32 AddCollisionVertex(
 	else
 	{
 		// Copy position from mesh to collision data.
-		int CollisionVertexIndex = CollisionVertices.Add(Transform.TransformPosition(VertexPos));
+		int CollisionVertexIndex =
+			CollisionVertices.Add(Transform.TransformPosition(VertexPosition));
 
 		// Add collision index to map.
-		MeshToCollisionVertexIndices.Add(VertexPos, CollisionVertexIndex);
+		MeshToCollisionVertexIndices.Add(VertexPosition, CollisionVertexIndex);
 
 		return CollisionVertexIndex;
 	}
@@ -269,7 +269,6 @@ namespace
 			}
 
 			RHIUnlockVertexBuffer(Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI);
-
 			Result = true;
 		});
 
@@ -313,6 +312,7 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 	const FStaticMeshLODResources& Mesh = StaticMesh->GetLODForExport(/*LODIndex*/ LodIndex);
 	TMap<FVector, int32> MeshToCollisionVertexIndices;
 
+	// Copy the Index and Vertex buffers from the mesh.
 	TArray<uint16> IndexBuffer;
 	TArray<FVector> VertexBuffer;
 	const bool CopyResult = CopyMeshBuffers(Mesh, IndexBuffer, VertexBuffer);
@@ -334,16 +334,20 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 				break;
 			}
 
+			const uint16 IndexFirst = IndexBuffer[Index];
+			const uint16 IndexSecond = IndexBuffer[Index + 1];
+			const uint16 IndexThird = IndexBuffer[Index + 2];
 			FTriIndices Triangle;
+
 			Triangle.v0 = AddCollisionVertex(
-				IndexBuffer[Index + 0], VertexBuffer[IndexBuffer[Index + 0]], RelativeTransform,
-				Vertices, MeshToCollisionVertexIndices);
+				VertexBuffer[IndexFirst], RelativeTransform, Vertices,
+				MeshToCollisionVertexIndices);
 			Triangle.v1 = AddCollisionVertex(
-				IndexBuffer[Index + 1], VertexBuffer[IndexBuffer[Index + 1]], RelativeTransform,
-				Vertices, MeshToCollisionVertexIndices);
+				VertexBuffer[IndexSecond], RelativeTransform, Vertices,
+				MeshToCollisionVertexIndices);
 			Triangle.v2 = AddCollisionVertex(
-				IndexBuffer[Index + 2], VertexBuffer[IndexBuffer[Index + 2]], RelativeTransform,
-				Vertices, MeshToCollisionVertexIndices);
+				VertexBuffer[IndexThird], RelativeTransform, Vertices,
+				MeshToCollisionVertexIndices);
 
 			Indices.Add(Triangle);
 		}
