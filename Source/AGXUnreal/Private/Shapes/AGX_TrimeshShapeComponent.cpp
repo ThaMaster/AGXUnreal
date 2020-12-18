@@ -330,9 +330,7 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 		return false;
 	}
 
-#if WITH_EDITOR
 	check(Mesh.IndexBuffer.GetNumIndices() == IndexBuffer.Num());
-#endif
 
 	const uint32 NumIndices = static_cast<uint32>(IndexBuffer.Num());
 	for (int32 SectionIndex = 0; SectionIndex < Mesh.Sections.Num(); ++SectionIndex)
