@@ -223,11 +223,10 @@ static int32 AddCollisionVertex(
 
 namespace
 {
-	bool CopyMeshBuffers(
+	void CopyMeshBuffers(
 		const FStaticMeshLODResources& Mesh, TArray<uint32>& OutIndices,
 		TArray<FVector>& OutVertices)
 	{
-		bool Result = false;
 		const uint32 NumIndices = static_cast<uint32>(Mesh.IndexBuffer.GetNumIndices());
 		const uint32 NumVertices = Mesh.VertexBuffers.PositionVertexBuffer.GetNumVertices();
 		OutIndices.Reserve(static_cast<size_t>(NumIndices));
@@ -238,15 +237,6 @@ namespace
 		([&](FRHICommandListImmediate& RHICmdList) {
 			auto& IndexBufferRHI = Mesh.IndexBuffer.IndexBufferRHI;
 			auto& VertexBufferRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
-
-			// Check buffer sizes.
-			uint32 NumIndicesRHI = IndexBufferRHI->GetSize() / sizeof(uint16);
-			uint32 NumVerticesRHI = VertexBufferRHI->GetSize() / sizeof(FVector);
-			if (NumIndices != NumIndicesRHI || NumVertices != NumVerticesRHI)
-			{
-				Result = false;
-				return;
-			}
 
 			// Copy index buffer.
 			if (IndexBufferRHI->GetStride() == 2)
@@ -279,12 +269,10 @@ namespace
 				OutVertices.Add(VertexBufferData[i]);
 			}
 			RHIUnlockVertexBuffer(Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI);
-			Result = true;
 		});
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();
-		return Result;
 	}
 }
 
@@ -324,13 +312,14 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 	// Copy the Index and Vertex buffers from the mesh.
 	TArray<uint32> IndexBuffer;
 	TArray<FVector> VertexBuffer;
-	const bool CopyResult = CopyMeshBuffers(Mesh, IndexBuffer, VertexBuffer);
-	if (CopyResult == false || IndexBuffer.Num() == 0 || VertexBuffer.Num() == 0)
+	CopyMeshBuffers(Mesh, IndexBuffer, VertexBuffer);
+	if (IndexBuffer.Num() == 0 || VertexBuffer.Num() == 0)
 	{
 		return false;
 	}
 
 	check(Mesh.IndexBuffer.GetNumIndices() == IndexBuffer.Num());
+	check(Mesh.VertexBuffers.PositionVertexBuffer.GetNumVertices() == VertexBuffer.Num());
 
 	const uint32 NumIndices = static_cast<uint32>(IndexBuffer.Num());
 	for (int32 SectionIndex = 0; SectionIndex < Mesh.Sections.Num(); ++SectionIndex)
