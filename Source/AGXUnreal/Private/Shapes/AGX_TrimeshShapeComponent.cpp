@@ -259,7 +259,7 @@ namespace
 					OutIndices.Add(IndexBufferData[i]);
 				}
 			}
-			RHIUnlockIndexBuffer(Mesh.IndexBuffer.IndexBufferRHI);
+			RHIUnlockIndexBuffer(IndexBufferRHI);
 
 			// Copy vertex buffer.
 			FVector* VertexBufferData = static_cast<FVector*>(
@@ -268,7 +268,7 @@ namespace
 			{
 				OutVertices.Add(VertexBufferData[i]);
 			}
-			RHIUnlockVertexBuffer(Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI);
+			RHIUnlockVertexBuffer(VertexBufferRHI);
 		});
 
 		// Wait for rendering thread to finish.
