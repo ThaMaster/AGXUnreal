@@ -224,7 +224,7 @@ static int32 AddCollisionVertex(
 namespace
 {
 	bool CopyMeshBuffers(
-		const FStaticMeshLODResources& Mesh, TArray<uint16>& OutIndices,
+		const FStaticMeshLODResources& Mesh, TArray<uint32>& OutIndices,
 		TArray<FVector>& OutVertices)
 	{
 		bool Result = false;
@@ -234,7 +234,7 @@ namespace
 		OutVertices.Reserve(static_cast<size_t>(NumVertices));
 
 		// In cooked builds the Mesh data can only be accessed from the rendering thread.
-		ENQUEUE_RENDER_COMMAND(FWatchOut)
+		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
 		([&](FRHICommandListImmediate& RHICmdList) {
 			auto& IndexBufferRHI = Mesh.IndexBuffer.IndexBufferRHI;
 			auto& VertexBufferRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
@@ -249,32 +249,41 @@ namespace
 			}
 
 			// Copy index buffer.
-			uint16* IndexBufferData = static_cast<uint16*>(
-				RHILockIndexBuffer(IndexBufferRHI, 0, IndexBufferRHI->GetSize(), RLM_ReadOnly));
-
-			for (uint32 i = 0; i < NumIndices; i++)
+			if (IndexBufferRHI->GetStride() == 2)
 			{
-				OutIndices.Add(IndexBufferData[i]);
+				// Two byte index size.
+				uint16* IndexBufferData = static_cast<uint16*>(
+					RHILockIndexBuffer(IndexBufferRHI, 0, IndexBufferRHI->GetSize(), RLM_ReadOnly));
+				for (uint32 i = 0; i < NumIndices; i++)
+				{
+					OutIndices.Add(static_cast<uint32>(IndexBufferData[i]));
+				}
 			}
-
+			else
+			{
+				// Four byte index size (stride must be either 2 or 4).
+				uint32* IndexBufferData = static_cast<uint32*>(
+					RHILockIndexBuffer(IndexBufferRHI, 0, IndexBufferRHI->GetSize(), RLM_ReadOnly));
+				for (uint32 i = 0; i < NumIndices; i++)
+				{
+					OutIndices.Add(IndexBufferData[i]);
+				}
+			}
 			RHIUnlockIndexBuffer(Mesh.IndexBuffer.IndexBufferRHI);
 
 			// Copy vertex buffer.
 			FVector* VertexBufferData = static_cast<FVector*>(
 				RHILockVertexBuffer(VertexBufferRHI, 0, VertexBufferRHI->GetSize(), RLM_ReadOnly));
-
 			for (uint32 i = 0; i < NumVertices; i++)
 			{
 				OutVertices.Add(VertexBufferData[i]);
 			}
-
 			RHIUnlockVertexBuffer(Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI);
 			Result = true;
 		});
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();
-
 		return Result;
 	}
 }
@@ -313,7 +322,7 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 	TMap<FVector, int32> MeshToCollisionVertexIndices;
 
 	// Copy the Index and Vertex buffers from the mesh.
-	TArray<uint16> IndexBuffer;
+	TArray<uint32> IndexBuffer;
 	TArray<FVector> VertexBuffer;
 	const bool CopyResult = CopyMeshBuffers(Mesh, IndexBuffer, VertexBuffer);
 	if (CopyResult == false || IndexBuffer.Num() == 0 || VertexBuffer.Num() == 0)
@@ -334,9 +343,9 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 				break;
 			}
 
-			const uint16 IndexFirst = IndexBuffer[Index];
-			const uint16 IndexSecond = IndexBuffer[Index + 1];
-			const uint16 IndexThird = IndexBuffer[Index + 2];
+			const uint32 IndexFirst = IndexBuffer[Index];
+			const uint32 IndexSecond = IndexBuffer[Index + 1];
+			const uint32 IndexThird = IndexBuffer[Index + 2];
 			FTriIndices Triangle;
 
 			Triangle.v0 = AddCollisionVertex(
