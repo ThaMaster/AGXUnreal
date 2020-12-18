@@ -252,6 +252,7 @@ namespace
 			else
 			{
 				// Four byte index size (stride must be either 2 or 4).
+				check(IndexBufferRHI->GetStride() == 4);
 				uint32* IndexBufferData = static_cast<uint32*>(
 					RHILockIndexBuffer(IndexBufferRHI, 0, IndexBufferRHI->GetSize(), RLM_ReadOnly));
 				for (uint32 i = 0; i < NumIndices; i++)
