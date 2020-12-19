@@ -83,6 +83,7 @@ public class AGXUnrealLibrary : ModuleRules
 		RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
 		RuntimeLibFiles.Add("Half", LibSource.TerrainDependencies);
 		RuntimeLibFiles.Add("openvdb", LibSource.TerrainDependencies);
+		RuntimeLibFiles.Add("tbb", LibSource.TerrainDependencies);
 
 		LinkLibFiles.Add("agxPhysics", LibSource.Agx);
 		LinkLibFiles.Add("agxCore", LibSource.Agx);
@@ -97,18 +98,6 @@ public class AGXUnrealLibrary : ModuleRules
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			RuntimeLibFiles.Add("png", LibSource.Dependencies);
-
-			// TODO: Use Unreal Engine packaged TBB.
-			//
-			// tbb, i.e., Intel Threading Building Blocks, is problematic
-			// because it is also included in Unreal Engine itself. We should
-			// build AGX Dynamics' dependencies against those binaries of tbb
-			// but our dependencies build pipeline currently doesn't support
-			// that. Including this line on Windows causes build errors when
-			// building an executable from a project using this plugin. On Linux
-			// this line must be here because otherwise we get linker errors at
-			// startup.
-			RuntimeLibFiles.Add("tbb", LibSource.TerrainDependencies);
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
