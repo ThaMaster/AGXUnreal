@@ -27,6 +27,18 @@ void FAGXUnrealBarrierModule::StartupModule()
 
 	// Start AGX logging.
 	NotifyBarrier.StartAgxNotify(ELogVerbosity::Log);
+
+	// Log error if the AGX Dynamics license is invalid.
+	if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid() == false)
+	{
+		const FString AgxDynamicsResouces =
+			FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath();
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("No valid AGX Dynamics license file was found. The Agx Dynamics resouces used are "
+				 "located in: %s"),
+			AgxDynamicsResouces);
+	}
 }
 
 void FAGXUnrealBarrierModule::ShutdownModule()
@@ -46,16 +58,15 @@ void FAGXUnrealBarrierModule::ShutdownModule()
 
 void FAGXUnrealBarrierModule::SetupAgxEnvironment()
 {
-	const TArray<FString> AgxDirEntries =
-		FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries("AGX_DEPENDENCIES_DIR");
-
 	// Check if an AGX environment is already set up, in that case we do not have to do anything
 	// more here.
-	if (AgxDirEntries.Num() > 0)
+	if (FAGX_EnvironmentUtilities::IsSetupEnvRun())
 	{
+		const FString AgxDynamicsResoucePath =
+			FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath();
 		UE_LOG(
 			LogAGX, Log, TEXT("AGX Dynamics installation was detected. Using resources from: %s"),
-			*AgxDirEntries[0]);
+			*AgxDynamicsResoucePath);
 	}
 	else
 	{
@@ -69,14 +80,8 @@ void FAGXUnrealBarrierModule::SetupAgxEnvironment()
 // the plugin itself, if they exist.
 void FAGXUnrealBarrierModule::SetupUsePluginResourcesOnly()
 {
-#if WITH_EDITOR
-	const FString BinariesPath = FAGX_EnvironmentUtilities::GetPluginBinariesPath();
-#else
-	// This is the correct binaries path when running as a built executable.
-	const FString BinariesPath = FAGX_EnvironmentUtilities::GetProjectBinariesPath();
-#endif
-	const FString AgxResourcesPath =
-		FPaths::Combine(BinariesPath, FString("ThirdParty"), FString("agx"));
+	check(FAGX_EnvironmentUtilities::IsSetupEnvRun() == false);
+	const FString AgxResourcesPath = FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath();
 	const FString AgxBinPath = FPaths::Combine(AgxResourcesPath, FString("bin"));
 	const FString AgxDataPath = FPaths::Combine(AgxResourcesPath, FString("data"));
 	const FString AgxCfgPath = FPaths::Combine(AgxDataPath, FString("cfg"));
