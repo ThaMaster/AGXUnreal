@@ -57,8 +57,23 @@
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Tires/AGX_TwoBodyTireActor.h"
 #include "Tires/AGX_TwoBodyTireComponentCustomization.h"
+#include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_EnvironmentUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
+
+namespace
+{
+	void CheckAgxDynamicsLicense()
+	{
+		FString Status;
+		if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&Status) == false)
+		{
+			const FString Message = "Invalid AGX Dynamics license. Status: " + Status;
+			FAGX_EditorUtilities::ShowDialogBox(FText::FromString(Message));
+		}
+	}
+}
 
 void FAGXUnrealEditorModule::StartupModule()
 {
@@ -72,6 +87,7 @@ void FAGXUnrealEditorModule::StartupModule()
 	RegisterComponentVisualizers();
 	RegisterModes();
 	RegisterPlacementCategory();
+	CheckAgxDynamicsLicense();
 
 	AgxTopMenu = MakeShareable(new FAGX_TopMenu());
 }
