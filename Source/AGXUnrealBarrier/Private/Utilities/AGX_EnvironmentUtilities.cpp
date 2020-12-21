@@ -1,7 +1,14 @@
 #include "Utilities/AGX_EnvironmentUtilities.h"
 
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agx/Runtime.h>
+#include "EndAGXIncludes.h"
+
+// Unreal Engine includes.
 #include "Interfaces/IPluginManager.h"
 #include "Misc/Paths.h"
 
@@ -113,6 +120,62 @@ void FAGX_EnvironmentUtilities::SetEnvironmentVariableEntries(
 {
 	FString EnvVarVal = FString::Join(Entries, TEXT(";"));
 	FCurrentPlatformMisc::SetEnvironmentVar(*EnvVarName, *EnvVarVal);
+}
+
+bool FAGX_EnvironmentUtilities::IsSetupEnvRun()
+{
+	const TArray<FString> AgxDepDirEntries =
+		FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries("AGX_DEPENDENCIES_DIR");
+
+	const TArray<FString> AgxDirEntries =
+		FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries("AGX_DIR");
+
+	return AgxDepDirEntries.Num() > 0 && AgxDirEntries.Num() > 0;
+}
+
+FString FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath()
+{
+	if (IsSetupEnvRun())
+	{
+		const TArray<FString> AgxDirEntries =
+			FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries("AGX_DIR");
+		if (AgxDirEntries.Num() <= 0)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath environment variable "
+					 "AGX_DIR not set when expecting setup_env to have be called. Returning empty "
+					 "string."));
+			return FString("");
+		}
+
+		return AgxDirEntries[0];
+	}
+	else
+	{
+		// Get and return path to AGX Dynamics resources when packaged with the plugin.
+#if WITH_EDITOR
+		const FString BinariesPath = FAGX_EnvironmentUtilities::GetPluginBinariesPath();
+#else
+		// This is the correct binaries path when running as a built executable.
+		const FString BinariesPath = FAGX_EnvironmentUtilities::GetProjectBinariesPath();
+#endif
+		const FString AgxResourcesPath =
+			FPaths::Combine(BinariesPath, FString("ThirdParty"), FString("agx"));
+
+		return AgxResourcesPath;
+	}
+}
+
+bool FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid()
+{
+	bool LicenseValid = false;
+	if (agx::Runtime* AgxRuntime = agx::Runtime::instance())
+	{
+		LicenseValid = AgxRuntime->isValid();
+	}
+
+	return LicenseValid;
 }
 
 #undef LOCTEXT_NAMESPACE
