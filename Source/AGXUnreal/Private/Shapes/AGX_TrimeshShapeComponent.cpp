@@ -223,7 +223,32 @@ static int32 AddCollisionVertex(
 
 namespace
 {
-	void CopyMeshBuffers(
+	void CopyMeshBuffersGameThread(
+		const FStaticMeshLODResources& Mesh, TArray<uint32>& OutIndices,
+		TArray<FVector>& OutVertices)
+	{
+		FIndexArrayView MeshIndices = Mesh.IndexBuffer.GetArrayView();
+		const FPositionVertexBuffer& MeshPositions = Mesh.VertexBuffers.PositionVertexBuffer;
+
+		int32 NumIndices = Mesh.IndexBuffer.GetNumIndices();
+		int32 NumVertices = MeshPositions.GetNumVertices();
+
+		OutIndices.Reserve(NumIndices);
+		OutVertices.Reserve(NumVertices);
+
+		for (int32 I = 0; I < NumIndices; ++I)
+		{
+			check(MeshIndices[I] < NumVertices);
+			OutIndices.Add(MeshIndices[I]);
+		}
+
+		for (int32 I = 0; I < NumVertices; ++I)
+		{
+			OutVertices.Add(MeshPositions.VertexPosition(I));
+		}
+	}
+
+	void CopyMeshBuffersRenderThread(
 		const FStaticMeshLODResources& Mesh, TArray<uint32>& OutIndices,
 		TArray<FVector>& OutVertices)
 	{
@@ -246,6 +271,7 @@ namespace
 					RHILockIndexBuffer(IndexBufferRHI, 0, IndexBufferRHI->GetSize(), RLM_ReadOnly));
 				for (uint32 i = 0; i < NumIndices; i++)
 				{
+					check(IndexBufferData[i] < NumVertices);
 					OutIndices.Add(static_cast<uint32>(IndexBufferData[i]));
 				}
 			}
@@ -257,6 +283,7 @@ namespace
 					RHILockIndexBuffer(IndexBufferRHI, 0, IndexBufferRHI->GetSize(), RLM_ReadOnly));
 				for (uint32 i = 0; i < NumIndices; i++)
 				{
+					check(IndexBufferData[i] < NumVertices);
 					OutIndices.Add(IndexBufferData[i]);
 				}
 			}
@@ -274,6 +301,33 @@ namespace
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();
+	}
+
+	void CopyMeshBuffers(
+		const FStaticMeshLODResources& Mesh, TArray<uint32>& OutIndices,
+		TArray<FVector>& OutVertices)
+	{
+		CopyMeshBuffersGameThread(Mesh, OutIndices, OutVertices);
+
+#if 0
+		TArray<uint32> LocalIndices;
+		TArray<FVector> LocalVertices;
+
+		CopyMeshBuffersRenderThread(Mesh, LocalIndices, LocalVertices);
+
+		check(LocalIndices.Num() == OutIndices.Num());
+		check(LocalVertices.Num() == OutVertices.Num());
+
+		for (int32 I = 0; I < LocalIndices.Num(); ++I)
+		{
+			check(LocalIndices[I] == OutIndices[I]);
+		}
+
+		for (int32 I = 0; I < LocalVertices.Num(); ++I)
+		{
+			check(LocalVertices[I] == OutVertices[I]);
+		}
+#endif
 	}
 }
 
