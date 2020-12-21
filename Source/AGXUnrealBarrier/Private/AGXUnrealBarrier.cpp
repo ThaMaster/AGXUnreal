@@ -19,7 +19,7 @@
 
 namespace
 {
-	LogAgxDynamicsLicenseStatus()
+	void LogAgxDynamicsLicenseStatus()
 	{
 		FString Status;
 		if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&Status) == false)
