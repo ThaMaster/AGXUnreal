@@ -24,7 +24,7 @@ namespace
 		FString Status;
 		if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&Status) == false)
 		{
-			UE_LOG(LogAGX, Error, TEXT("AGX Dynamics license is invalid. Status: %s"), Status);
+			UE_LOG(LogAGX, Error, TEXT("AGX Dynamics license is invalid. Status: %s"), *Status);
 		}
 		else
 		{
