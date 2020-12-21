@@ -24,5 +24,5 @@ public:
 
 	static FString GetAgxDynamicsResourcesPath();
 
-	static bool IsAgxDynamicsLicenseValid();
+	static bool IsAgxDynamicsLicenseValid(FString* OutStatus = nullptr);
 };

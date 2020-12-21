@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "TypeConversions.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -167,12 +168,17 @@ FString FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath()
 	}
 }
 
-bool FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid()
+bool FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(FString* OutStatus)
 {
 	bool LicenseValid = false;
 	if (agx::Runtime* AgxRuntime = agx::Runtime::instance())
 	{
 		LicenseValid = AgxRuntime->isValid();
+		if (OutStatus)
+		{
+			const FString Status = Convert(AgxRuntime->getStatus());
+			*OutStatus = Status;
+		}
 	}
 
 	return LicenseValid;
