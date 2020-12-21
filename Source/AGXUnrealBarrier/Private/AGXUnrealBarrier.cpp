@@ -29,15 +29,16 @@ void FAGXUnrealBarrierModule::StartupModule()
 	NotifyBarrier.StartAgxNotify(ELogVerbosity::Log);
 
 	// Log error if the AGX Dynamics license is invalid.
-	if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid() == false)
+	FString LicenseStatus;
+	if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&LicenseStatus) == false)
 	{
 		const FString AgxDynamicsResouces =
 			FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath();
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("No valid AGX Dynamics license file was found. The Agx Dynamics resouces used are "
-				 "located in: %s"),
-			*AgxDynamicsResouces);
+				 "located in: %s. Status: %s"),
+			*AgxDynamicsResouces, *LicenseStatus);
 	}
 }
 
