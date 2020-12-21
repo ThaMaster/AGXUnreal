@@ -37,7 +37,7 @@ void FAGXUnrealBarrierModule::StartupModule()
 			LogAGX, Error,
 			TEXT("No valid AGX Dynamics license file was found. The Agx Dynamics resouces used are "
 				 "located in: %s"),
-			AgxDynamicsResouces);
+			*AgxDynamicsResouces);
 	}
 }
 
