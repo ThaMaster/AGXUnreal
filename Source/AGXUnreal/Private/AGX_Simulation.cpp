@@ -109,12 +109,17 @@ namespace
 		FString Status;
 		if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&Status) == false)
 		{
-			const FString ResourcesPath = FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath();
-			const FString Message = "No valid AGX Dynamics license was found. Status: " + Status +
-									"\n\nIt will not be possible to run simulations using the AGX "
-									"Dynamics for Unreal plugin. The AGX Dynamics license file "
-									"must be placed in the correct subdirectory within " +
-									ResourcesPath;
+			FString Message = "Invalid AGX Dynamics license. Status: " + Status +
+							  "\n\nIt will not be possible to run simulations using the AGX "
+							  "Dynamics for Unreal plugin.";
+
+			if (!FAGX_EnvironmentUtilities::IsSetupEnvRun())
+			{
+				const FString ResourcesPath =
+					FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath();
+				Message += "\n\nThe AGX Dynamics license file should be placed in: " +
+						   FPaths::Combine(ResourcesPath, FString("data"), FString("cfg"));
+			}
 
 			FMessageDialog::Open(EAppMsgType::Ok, FText::FromString(Message));
 		}
