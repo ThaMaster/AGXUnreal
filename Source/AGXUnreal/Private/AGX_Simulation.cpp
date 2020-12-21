@@ -99,9 +99,34 @@ int32 UAGX_Simulation::GetNumPpgsIterations()
 	return NumPpgsIterations;
 }
 
+#if WITH_EDITOR
+#include "Misc/MessageDialog.h"
+#include "Utilities/AGX_EnvironmentUtilities.h"
+namespace
+{
+	void InvalidLicenseMessageBox()
+	{
+		FString Status;
+		if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&Status) == false)
+		{
+			const FString ResourcesPath = FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath();
+			const FString Message =
+				"Tried to find a valid AGX Dynamics license within: " + ResourcesPath +
+				" but none was found. \n\nStatus: " + Status;
+
+			FMessageDialog::Open(EAppMsgType::Ok, FText::FromString(Message));
+		}
+	}
+}
+#endif
+
 void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
+
+#if WITH_EDITOR
+	InvalidLicenseMessageBox();
+#endif
 
 	NativeBarrier.AllocateNative();
 	check(HasNative()); /// \todo Consider better error handling.
