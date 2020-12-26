@@ -99,9 +99,42 @@ int32 UAGX_Simulation::GetNumPpgsIterations()
 	return NumPpgsIterations;
 }
 
+#if WITH_EDITOR
+#include "Misc/MessageDialog.h"
+#include "Utilities/AGX_EnvironmentUtilities.h"
+namespace
+{
+	void InvalidLicenseMessageBox()
+	{
+		FString Status;
+		if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&Status) == false)
+		{
+			FString Message =
+				"Invalid AGX Dynamics license. Status: " + Status +
+				"\n\nIt will not be possible to run simulations using the AGX "
+				"Dynamics for Unreal plugin.\n\nTo get your license, visit us at www.algoryx.se";
+
+			if (!FAGX_EnvironmentUtilities::IsSetupEnvRun())
+			{
+				const FString ResourcesPath =
+					FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath();
+				Message += "\n\nThe AGX Dynamics license file should be placed in: " +
+						   FPaths::Combine(ResourcesPath, FString("data"), FString("cfg"));
+			}
+
+			FMessageDialog::Open(EAppMsgType::Ok, FText::FromString(Message));
+		}
+	}
+}
+#endif
+
 void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
+
+#if WITH_EDITOR
+	InvalidLicenseMessageBox();
+#endif
 
 	NativeBarrier.AllocateNative();
 	check(HasNative()); /// \todo Consider better error handling.

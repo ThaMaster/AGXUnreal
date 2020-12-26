@@ -1,6 +1,7 @@
 #include "AGX_Stepper.h"
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_EnvironmentUtilities.h"
 
 #include "Engine/GameInstance.h"
 
@@ -10,14 +11,15 @@ AAGX_Stepper::AAGX_Stepper()
 	///       stepper to be PrePhysics while everything else retain the default
 	///       DuringPhysics. This means that the other classes are guaranteed
 	///       to see the new state for this tick.
-	PrimaryActorTick.bCanEverTick = true;
+
+	// Only tick if the AGX Dynamics license is valid.
+	PrimaryActorTick.bCanEverTick =
+		FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid();
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
-	UE_LOG(LogAGX, Log, TEXT("Stepper created"));
 }
 
 AAGX_Stepper::~AAGX_Stepper()
 {
-	UE_LOG(LogAGX, Log, TEXT("Stepper destroyed."));
 }
 
 void AAGX_Stepper::Tick(float DeltaTime)

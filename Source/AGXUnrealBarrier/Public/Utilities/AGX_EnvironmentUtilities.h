@@ -19,4 +19,10 @@ public:
 
 	static void SetEnvironmentVariableEntries(
 		const FString& EnvVarName, const TArray<FString>& Entries);
+
+	static bool IsSetupEnvRun();
+
+	static FString GetAgxDynamicsResourcesPath();
+
+	static bool IsAgxDynamicsLicenseValid(FString* OutStatus = nullptr);
 };
