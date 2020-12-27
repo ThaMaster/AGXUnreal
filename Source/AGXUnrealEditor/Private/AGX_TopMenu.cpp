@@ -363,13 +363,12 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 	// clang-format off
 	const FString Message(
 		"\n"
-		"Copyright: Algoryx Simulation AB\n"
-		"\n"
-		"Plugin name: AGX Dynamics for Unreal\n"
-		"Plugin version: " + Version + "\n"
+		"AGX Dynamics for Unreal\n"
+		"Version: " + Version + "\n"
 		"\n" +
 		LicenseText +
 		"\n"
+		"Copyright Algoryx Simulation AB\n"
 		"www.algoryx.se");
 	// clang-format on
 
