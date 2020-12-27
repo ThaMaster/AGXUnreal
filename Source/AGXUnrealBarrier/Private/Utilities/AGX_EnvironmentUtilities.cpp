@@ -67,6 +67,23 @@ FString FAGX_EnvironmentUtilities::GetProjectBinariesPath()
 	return ProjectBinPath;
 }
 
+FString FAGX_EnvironmentUtilities::GetPluginVersion()
+{
+	constexpr TCHAR PLUGIN_NAME[] = TEXT("AGXUnreal");
+
+	if (auto Plugin = IPluginManager::Get().FindPlugin(PLUGIN_NAME))
+	{
+		return Plugin->GetDescriptor().VersionName;
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("AGX_EnvironmentUtilities::GetPluginVersion unable to get plugin version."));
+		return FString();
+	}
+}
+
 void FAGX_EnvironmentUtilities::AddEnvironmentVariableEntry(
 	const FString& EnvVarName, const FString& Entry)
 {
