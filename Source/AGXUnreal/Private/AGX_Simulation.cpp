@@ -450,7 +450,7 @@ void UAGX_Simulation::EnsureLicenseChecked()
 {
 	// This function provides a mechanism for showing a message box to the user exactly one time in
 	// case the AGX Dynamics license is invalid.
-	if (IsLicenseChecked == false)
+	if (!IsLicenseChecked)
 	{
 		InvalidLicenseMessageBox();
 		IsLicenseChecked = true;
