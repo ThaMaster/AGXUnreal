@@ -170,6 +170,7 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	/// \todo Set gravity here.
 
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
+	NativeBarrier.SetTimeStep(TimeStep);
 
 	if (bRemoteDebugging)
 	{
