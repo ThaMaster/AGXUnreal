@@ -133,7 +133,7 @@ void FSimulationBarrier::SetTimeStep(float TimeStep)
 	NativeRef->Native->setTimeStep(Convert(TimeStep));
 }
 
-float FSimulationBarrier::GetTimeStep()
+float FSimulationBarrier::GetTimeStep() const
 {
 	check(HasNative());
 	return Convert(NativeRef->Native->getTimeStep());
@@ -147,7 +147,7 @@ void FSimulationBarrier::SetNumPpgsIterations(int32 NumIterations)
 	NativeRef->Native->getSolver()->setNumPPGSRestingIterations(NumIterationsAgx);
 }
 
-int32 FSimulationBarrier::GetNumPpgsIterations()
+int32 FSimulationBarrier::GetNumPpgsIterations() const
 {
 	check(HasNative());
 	agx::UInt NumIterationsAgx = NativeRef->Native->getSolver()->getNumPPGSRestingIterations();

@@ -47,11 +47,11 @@ public:
 
 	void SetTimeStep(float TimeStep);
 
-	float GetTimeStep();
+	float GetTimeStep() const;
 
 	void SetNumPpgsIterations(int32 NumIterations);
 
-	int32 GetNumPpgsIterations();
+	int32 GetNumPpgsIterations() const;
 
 	/**
 	 * Perform one simulation step, moving the time stamp forward by one time step duration.
