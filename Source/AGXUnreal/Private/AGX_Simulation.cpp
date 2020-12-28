@@ -241,8 +241,6 @@ void UAGX_Simulation::Step(float DeltaTime)
 	}
 #endif
 
-	check(IsLicenseChecked);
-
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:UAGX_Simulation::Step"));
 	switch (StepMode)
 	{
