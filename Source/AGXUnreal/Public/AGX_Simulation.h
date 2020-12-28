@@ -229,11 +229,13 @@ private:
 	void StepDropImmediately(float DeltaTime);
 
 	void EnsureStepperCreated();
+	void EnsureLicenseChecked();
 
 private:
 	FSimulationBarrier NativeBarrier;
 
-	bool StepperCreated = false;
+	bool IsStepperCreated = false;
+	bool IsLicenseChecked = false;
 
 	/// Time that we couldn't step because DeltaTime was not an even multiple
 	/// of the AGX Dynamics step size. That fraction of a time step is carried

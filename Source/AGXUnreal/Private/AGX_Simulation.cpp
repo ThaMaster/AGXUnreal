@@ -8,12 +8,14 @@
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_EnvironmentUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/Paths.h"
+#include "Misc/MessageDialog.h"
 
 #include <algorithm>
 
@@ -35,6 +37,7 @@ FAGX_Statistics UAGX_Simulation::GetStatistics()
 void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
 {
 	check(Body != nullptr);
+	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	NativeBarrier.AddRigidBody(Body->GetNative());
 }
@@ -42,18 +45,16 @@ void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
 void UAGX_Simulation::AddRigidBody(UAGX_StaticMeshComponent* Body)
 {
 	check(Body != nullptr);
+	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	NativeBarrier.AddRigidBody(Body->GetNative());
 }
 
 void UAGX_Simulation::AddShape(UAGX_ShapeComponent* Shape)
 {
-	/// \note It's not entirely clear that we want to allow the user to create
-	/// Shapes that aren't part of a body. However, we have no obvious way to
-	/// prevent it, so allowing it for now. Remove this member function if it
-	/// causes problems.
-
 	check(Shape != nullptr);
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
 	UAGX_RigidBodyComponent* OwningBody =
 		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*Shape);
 	if (OwningBody != nullptr)
@@ -71,12 +72,14 @@ void UAGX_Simulation::AddShape(UAGX_ShapeComponent* Shape)
 void UAGX_Simulation::AddTerrain(AAGX_Terrain* Terrain)
 {
 	check(Terrain != nullptr);
+	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	NativeBarrier.AddTerrain(Terrain->GetNative());
 }
 
 void UAGX_Simulation::SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2)
 {
+	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	NativeBarrier.SetDisableCollisionGroupPair(Group1, Group2);
 }
@@ -99,42 +102,9 @@ int32 UAGX_Simulation::GetNumPpgsIterations()
 	return NumPpgsIterations;
 }
 
-#if WITH_EDITOR
-#include "Misc/MessageDialog.h"
-#include "Utilities/AGX_EnvironmentUtilities.h"
-namespace
-{
-	void InvalidLicenseMessageBox()
-	{
-		FString Status;
-		if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&Status) == false)
-		{
-			FString Message =
-				"Invalid AGX Dynamics license. Status: " + Status +
-				"\n\nIt will not be possible to run simulations using the AGX "
-				"Dynamics for Unreal plugin.\n\nTo get your license, visit us at www.algoryx.se";
-
-			if (!FAGX_EnvironmentUtilities::IsSetupEnvRun())
-			{
-				const FString ResourcesPath =
-					FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath();
-				Message += "\n\nThe AGX Dynamics license file should be placed in: " +
-						   FPaths::Combine(ResourcesPath, FString("data"), FString("cfg"));
-			}
-
-			FMessageDialog::Open(EAppMsgType::Ok, FText::FromString(Message));
-		}
-	}
-}
-#endif
-
 void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-
-#if WITH_EDITOR
-	InvalidLicenseMessageBox();
-#endif
 
 	NativeBarrier.AllocateNative();
 	check(HasNative()); /// \todo Consider better error handling.
@@ -441,13 +411,49 @@ void UAGX_Simulation::EnsureStepperCreated()
 	/// \todo Calling GetWorld() from UAX_Simulation::Initialize returns the wrong
 	/// world when running an executable using this plugin. The reason is not clear.
 	/// Therefore, the GetWorld()->SpawnActor call is made here, after Initialize has been run.
-	if (!StepperCreated)
+	if (!IsStepperCreated)
 	{
 		GetWorld()->SpawnActor(AAGX_Stepper::StaticClass());
 		/// \todo Instead of creating an Actor for Step triggering, one may use
 		///       FTickableObjectBase or FTickFunction. It's not clear to me how to
 		///       use these other classes.
 
-		StepperCreated = true;
+		IsStepperCreated = true;
+	}
+}
+
+namespace
+{
+	void InvalidLicenseMessageBox()
+	{
+		FString Status;
+		if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&Status) == false)
+		{
+			FString Message =
+				"Invalid AGX Dynamics license. Status: " + Status +
+				"\n\nIt will not be possible to run simulations using the AGX "
+				"Dynamics for Unreal plugin.\n\nTo get your license, visit us at www.algoryx.se";
+
+			if (!FAGX_EnvironmentUtilities::IsSetupEnvRun())
+			{
+				const FString ResourcesPath =
+					FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath();
+				Message += "\n\nThe AGX Dynamics license file should be placed in: " +
+						   FPaths::Combine(ResourcesPath, FString("data"), FString("cfg"));
+			}
+
+			FMessageDialog::Open(EAppMsgType::Ok, FText::FromString(Message));
+		}
+	}
+}
+
+void UAGX_Simulation::EnsureLicenseChecked()
+{
+	// This function provides a mechanism for showing a message box to the user exactly one time in
+	// case the AGX Dynamics license is invalid.
+	if (!IsLicenseChecked)
+	{
+		InvalidLicenseMessageBox();
+		IsLicenseChecked = true;
 	}
 }
