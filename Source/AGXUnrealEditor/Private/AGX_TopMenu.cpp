@@ -352,8 +352,10 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 	FString LicenseStatus;
 	if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&LicenseStatus) == false)
 	{
-		LicenseText = "AGX Dynamics license: Invalid\n"
-			"Status: " + LicenseStatus + "\n";
+		LicenseText =
+			"AGX Dynamics license: Invalid\n"
+			"Status: " +
+			LicenseStatus + "\n";
 	}
 	else
 	{
