@@ -13,6 +13,7 @@
 #include "Constraints/AGX_LockConstraintActor.h"
 #include "Constraints/AGX_PrismaticConstraintActor.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_EnvironmentUtilities.h"
 
 // Unreal Engine includes.
 #include "Framework/MultiBox/MultiBoxBuilder.h"
@@ -162,7 +163,7 @@ FAGX_TopMenu::~FAGX_TopMenu()
 	Builder.AddMenuSeparator();
 
 	Builder.AddMenuEntry(
-		LOCTEXT("AboutAgxDialogLabel", "About AGX Unreal..."),
+		LOCTEXT("AboutAgxDialogLabel", "About..."),
 		LOCTEXT("AboutAgxDialogToolTip", "Open the About AGX Window."), FSlateIcon(),
 		FExecuteAction::CreateRaw(this, &FAGX_TopMenu::OnOpenAboutDialogClicked), NAME_None,
 		EUserInterfaceActionType::Button);
@@ -344,20 +345,36 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 
 void FAGX_TopMenu::OnOpenAboutDialogClicked()
 {
-	FText Title = LOCTEXT("AboutDialogTitle", "About AGX Unreal");
+	const FText Title = LOCTEXT("AboutDialogTitle", "About AGX Dynamics for Unreal");
+	const FString Version = FAGX_EnvironmentUtilities::GetPluginVersion();
 
-	FText Message = LOCTEXT(
-		"AboutDialogMessage",
-		"\n"
-		"Copyright: Algoryx Simulation AB\n"
-		"\n"
-		"Plugin version: N/A\n"
-		"AGX Dynamics version: N/A\n"
-		"\n"
-		"License valid until: N/A\n"
-		"Licensee: N/A");
+	FString LicenseText;
+	FString LicenseStatus;
+	if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&LicenseStatus) == false)
+	{
+		LicenseText =
+			"AGX Dynamics license: Invalid\n"
+			"Status: " +
+			LicenseStatus + "\n";
+	}
+	else
+	{
+		LicenseText = "AGX Dynamics license: Valid\n";
+	}
 
-	FMessageDialog::Open(EAppMsgType::Ok, Message, &Title);
+	// clang-format off
+	const FString Message(
+		"\n"
+		"AGX Dynamics for Unreal\n"
+		"Version: " + Version + "\n"
+		"\n" +
+		LicenseText +
+		"\n"
+		"Copyright Algoryx Simulation AB\n"
+		"www.algoryx.se");
+	// clang-format on
+
+	FMessageDialog::Open(EAppMsgType::Ok, FText::FromString(Message), &Title);
 }
 
 #undef LOCTEXT_NAMESPACE
