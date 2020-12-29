@@ -2,7 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "SimulationBarrier.h"
-#include "AGX_StepperEnums.h"
+#include "AGX_SimulationEnums.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -72,16 +72,36 @@ public: // Properties.
 			 EditCondition = "bOverridePPGSIterations"))
 	int32 NumPpgsIterations = 25;
 
-	/** Uniform default scene gravity, in cm/s^2. -980.665 by default. */
-	UPROPERTY(config, EditAnywhere, Category = "Scene Defaults")
-	FVector Gravity = FVector(0.0f, 0.0f, -980.665f);
+	/** Specifies the gravity model used by the simulation. */
+	UPROPERTY(Config, EditAnywhere, Category = "Gravity")
+	TEnumAsByte<enum EAGX_GravityModel> GravityModel = EAGX_GravityModel::Uniform;
+
+	/** Specifies the gravity vector when using Uniform Gravity Field with magnitude given in
+	 * [cm/s^2]. */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Gravity",
+		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Uniform"))
+	FVector UniformGravity = FVector(0.0f, 0.0f, -980.665f);
+
+	/** Specifies the world location towards which the gravity field is directed when using Point
+	 * Gravity Field. */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Gravity",
+		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Point"))
+	FVector PointGravityOrigin = FVector::ZeroVector;
+
+	/** Specifies the gravity magnitude when using Point Gravity Field [cm/s^2]. */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Gravity",
+		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Point"))
+	float PointGravityMagnitude = -980.665f;
 
 	/**
 	 * Simulation stepping mode. This controls what happens when the simulation is unable to keep
 	 * up with real-time.
 	 */
 	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
-	TEnumAsByte<enum EAGX_StepMode> StepMode = SM_CATCH_UP_IMMEDIATELY;
+	TEnumAsByte<enum EAGX_StepMode> StepMode = SmCatchUpImmediately;
 
 	/** Maximum time lag in seconds for the Catch up over time Capped step mode before dropping. */
 	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
@@ -230,6 +250,8 @@ private:
 
 	void EnsureStepperCreated();
 	void EnsureLicenseChecked();
+
+	void SetGravity();
 
 private:
 	FSimulationBarrier NativeBarrier;
