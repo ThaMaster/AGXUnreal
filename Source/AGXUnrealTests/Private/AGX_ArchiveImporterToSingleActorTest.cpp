@@ -398,7 +398,7 @@ bool FStoreInitialTimes::Update()
 	Test.StartAgxTime = Test.StartUnrealTime;
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(Test.World);
 	Simulation->SetTimeStamp(Test.StartUnrealTime);
-	Simulation->StepMode = SM_CATCH_UP_IMMEDIATELY;
+	Simulation->StepMode = SmCatchUpImmediately;
 	return true;
 }
 
@@ -437,7 +437,7 @@ bool FCheckSphereHasMoved::Update()
 	{
 		float StartVelocity = Test.StartVelocity.Z;
 		float StartPosition = Test.StartPosition.Z;
-		float Acceleration = UAGX_Simulation::GetFrom(Test.World)->Gravity.Z;
+		float Acceleration = UAGX_Simulation::GetFrom(Test.World)->UniformGravity.Z;
 		// The familiar Xt = X0 + V0 * t + 1/2 * a * t^2.
 		float ExpectedPosition =
 			StartPosition + StartVelocity * Duration + 0.5f * Acceleration * Duration * Duration;
