@@ -137,8 +137,7 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 		NumPpgsIterations = NativeBarrier.GetNumPpgsIterations();
 	}
 
-	/// \todo Set gravity here.
-
+	SetGravity();
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
 	NativeBarrier.SetTimeStep(TimeStep);
 
@@ -245,16 +244,16 @@ void UAGX_Simulation::Step(float DeltaTime)
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:UAGX_Simulation::Step"));
 	switch (StepMode)
 	{
-		case SM_CATCH_UP_IMMEDIATELY:
+		case SmCatchUpImmediately:
 			StepCatchUpImmediately(DeltaTime);
 			break;
-		case SM_CATCH_UP_OVER_TIME:
+		case SmCatchUpOverTime:
 			StepCatchUpOverTime(DeltaTime);
 			break;
-		case SM_CATCH_UP_OVER_TIME_CAPPED:
+		case SmCatchUpOverTimeCapped:
 			StepCatchUpOverTimeCapped(DeltaTime);
 			break;
-		case SM_DROP_IMMEDIATELY:
+		case SmDropImmediately:
 			StepDropImmediately(DeltaTime);
 			break;
 		default:
@@ -396,10 +395,10 @@ bool UAGX_Simulation::CanEditChange(
 #endif
 ) const
 {
-	// Time Lag Cap should only be editable when step mode SM_CATCH_UP_OVER_TIME_CAPPED is used.
+	// Time Lag Cap should only be editable when step mode SmCatchUpOverTimeCapped is used.
 	if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UAGX_Simulation, TimeLagCap))
 	{
-		return StepMode == SM_CATCH_UP_OVER_TIME_CAPPED;
+		return StepMode == SmCatchUpOverTimeCapped;
 	}
 
 	return Super::CanEditChange(InProperty);
@@ -455,5 +454,27 @@ void UAGX_Simulation::EnsureLicenseChecked()
 	{
 		InvalidLicenseMessageBox();
 		IsLicenseChecked = true;
+	}
+}
+
+void UAGX_Simulation::SetGravity()
+{
+	if (!HasNative())
+	{
+		UE_LOG(LogAGX, Error, TEXT("SetGravity failed, native object has not been allocated."));
+		return;
+	}
+
+	switch (GravityModel)
+	{
+		case EAGX_GravityModel::Uniform:
+			NativeBarrier.SetUniformGravity(UniformGravity);
+			break;
+		case EAGX_GravityModel::Point:
+			NativeBarrier.SetPointGravity(PointGravityOrigin, PointGravityMagnitude);
+			break;
+		default:
+			UE_LOG(LogAGX, Error, TEXT("SetGravity failed, unknown GravityModel."));
+			break;
 	}
 }
