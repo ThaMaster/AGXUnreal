@@ -46,12 +46,13 @@ public:
 	void EnableRemoteDebugging(int16 Port);
 
 	void SetTimeStep(float TimeStep);
-
 	float GetTimeStep() const;
 
 	void SetNumPpgsIterations(int32 NumIterations);
-
 	int32 GetNumPpgsIterations() const;
+
+	void SetUniformGravity(const FVector& Gravity);
+	void SetPointGravity(const FVector& Origin, float Magnitude);
 
 	/**
 	 * Perform one simulation step, moving the time stamp forward by one time step duration.
