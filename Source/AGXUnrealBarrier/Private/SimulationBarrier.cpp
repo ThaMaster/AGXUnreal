@@ -16,6 +16,8 @@
 #include "BeginAGXIncludes.h"
 #include <agxSDK/Simulation.h>
 #include <agx/Statistics.h>
+#include <agx/UniformGravityField.h>
+#include <agx/PointGravityField.h>
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
@@ -160,6 +162,76 @@ int32 FSimulationBarrier::GetNumPpgsIterations() const
 	}
 	int32 NumIterations = static_cast<int32>(NumIterationsAgx);
 	return NumIterations;
+}
+
+void FSimulationBarrier::SetUniformGravity(const FVector& Gravity)
+{
+	check(HasNative());
+
+	agx::Vec3 GravityAgx = ConvertVector(Gravity);
+	agx::UniformGravityFieldRef Field = new agx::UniformGravityField(GravityAgx);
+	NativeRef->Native->setGravityField(Field);
+}
+
+FVector FSimulationBarrier::GetUniformGravity() const
+{
+	agx::GravityField* GravityField = NativeRef->Native->getGravityField();
+	if (!GravityField)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("GetUniformGravity failed, native Simulation does not have a gravity field."));
+		return FVector();
+	}
+
+	agx::UniformGravityField* UniformField = dynamic_cast<agx::UniformGravityField*>(GravityField);
+	if (!UniformField)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("GetUniformGravity called on Simulation with a Gravity Field that is not a "
+				 "UniformGravityField."));
+		return FVector();
+	}
+
+	return ConvertVector(UniformField->getGravity());
+}
+
+void FSimulationBarrier::SetPointGravity(const FVector& Origin, float Magnitude)
+{
+	// Magnitude from cm/s^2 to m/s^2.
+	agx::Real MagnitudeAgx = ConvertDistance(Magnitude);
+	agx::Vec3 OriginAgx = ConvertVector(Origin);
+
+	agx::PointGravityFieldRef Field = new agx::PointGravityField(OriginAgx, MagnitudeAgx);
+	NativeRef->Native->setGravityField(Field);
+}
+
+FVector FSimulationBarrier::GetPointGravity(float& OutMagnitude) const
+{
+	agx::GravityField* GravityField = NativeRef->Native->getGravityField();
+	if (!GravityField)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("GetPointGravity failed, native Simulation does not have a gravity field."));
+		OutMagnitude = 0.f;
+		return FVector();
+	}
+
+	agx::PointGravityField* PointField = dynamic_cast<agx::PointGravityField*>(GravityField);
+	if (!PointField)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("GetPointGravity called on Simulation with a Gravity Field that is not a "
+				 "PointGravityField."));
+		OutMagnitude = 0.f;
+		return FVector();
+	}
+
+	OutMagnitude = Convert(PointField->getGravity());
+	return ConvertVector(PointField->getCenter());
 }
 
 void FSimulationBarrier::Step()
