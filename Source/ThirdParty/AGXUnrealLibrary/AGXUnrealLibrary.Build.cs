@@ -170,6 +170,7 @@ public class AGXUnrealLibrary : ModuleRules
 		{
 			// This is a temporary work-around to fix the issue where dll/so files are copied to the
 			// Binaries directory of any project that are built that uses this plugin, which should not happen.
+			// See issue: https://git.algoryx.se/algoryx/agxunreal/-/issues/282
 			// @todo Figure out how to properly copy the dll/so files for all build scenarios.
 			if (ShouldCopyBinFiles(Target))
 			{
@@ -419,6 +420,7 @@ public class AGXUnrealLibrary : ModuleRules
 
 	// This is a temporary work-around to fix the issue where dll/so files are copied to the
 	// Binaries directory of any project that are built that uses this plugin, which should not happen.
+	// See issue: https://git.algoryx.se/algoryx/agxunreal/-/issues/282
 	// @todo Figure out how to properly copy the dll/so files for all build scenarios.
 	private bool ShouldCopyBinFiles(ReadOnlyTargetRules Target)
 	{
