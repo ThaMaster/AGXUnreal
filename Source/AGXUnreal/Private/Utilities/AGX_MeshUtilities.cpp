@@ -320,7 +320,13 @@ void AGX_MeshUtilities::MakeCylinder(
 	if (Data.CircleSegments < 4 || Data.CircleSegments > uint32(TNumericLimits<uint16>::Max()) ||
 		Data.HeightSegments < 1 || Data.HeightSegments > uint32(TNumericLimits<uint16>::Max()) ||
 		Data.Radius < 1.0e-6 || Data.Height < 1.0e-6)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("AGX_MeshUtilities::MakeCylinder(): Invalid CylinderConstructionData, could not "
+				 "make cylinder."));
 		return;
+	}
 
 	const float SegmentSize = 2.0 * PI / Data.CircleSegments;
 	const float RadiusInv = 1.0f / Data.Radius;
