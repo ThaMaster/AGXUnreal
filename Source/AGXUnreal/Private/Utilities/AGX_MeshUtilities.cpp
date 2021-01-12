@@ -389,7 +389,7 @@ void AGX_MeshUtilities::MakeCylinder(
 		}
 	}
 
-	// Generate triangle indexes for the side segments of the capsule.
+	// Generate triangle indexes for the side segments of the cylinder.
 	uint32 K0, K1;
 	for (uint32 HeightSegmentIndex = 0; HeightSegmentIndex < Data.HeightSegments;
 		 ++HeightSegmentIndex)
@@ -540,7 +540,7 @@ void AGX_MeshUtilities::MakeCylinder(
 		}
 	}
 
-	// Generate triangle indexes for the side segments of the capsule.
+	// Generate triangle indexes for the side segments of the cylinder.
 	uint32 K0, K1;
 	for (uint32 HeightSegmentIndex = 0; HeightSegmentIndex < Data.HeightSegments;
 		 ++HeightSegmentIndex)
