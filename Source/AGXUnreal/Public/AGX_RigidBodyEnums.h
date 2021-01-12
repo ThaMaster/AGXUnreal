@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-UENUM()
+UENUM(BlueprintType)
 enum EAGX_TransformTarget
 {
 	TT_SELF = 0 UMETA(DisplayName = "Self",	ToolTip="Synchronize AGX Dynamics transformations the local transformation."),
