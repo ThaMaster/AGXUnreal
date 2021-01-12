@@ -25,22 +25,22 @@ public:
 	UAGX_RigidBodyComponent();
 
 	/// Whether the mass should be computed automatically.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	bool bAutomaticMassProperties = true;
 
 	/// The mass of the body.
 	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics",
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics",
 		Meta = (EditCondition = "!bAutomaticMassProperties"))
 	float Mass;
 
 	/// The three-component diagonal of the inertia tensor.
 	UPROPERTY(
-		EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics",
+		EditAnywhere, BluePrintReadWrite, Category = "AGX Dynamics",
 		Meta = (EditCondition = "!bAutomaticMassProperties"))
 	FVector PrincipalInertiae;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	FVector Velocity;
 
 	/**
@@ -56,17 +56,32 @@ public:
 	 * A positive Z angular velocity rotates the X axis towards the Y axis, i.e, yaw right. A
 	 * left-handed rotation.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	FVector AngularVelocity;
 
-	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "AGX Dynamics")
+	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 
 	/**
 	 * Decide to where transformation updates from AGX Dynamics should be written.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_TransformTarget> TransformTarget;
+
+
+	/**
+	 * Should be called whenever properties (excluding transform and shapes) need to be pushed
+	 * onto the native in runtime.
+	 */
+	UFUNCTION(BlueprintCallable)
+	void WritePropertiesToNative();
+
+	UFUNCTION(BlueprintCallable)
+	void ReadTransformFromNative();
+
+	UFUNCTION(BlueprintCallable)
+	void WriteTransformToNative();
+
 
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FRigidBodyBarrier* GetOrCreateNative();
@@ -76,12 +91,6 @@ public:
 
 	/// Return true if the AGX Dynamics object has been created. False otherwise.
 	bool HasNative();
-
-	/**
-	 * Should be called whenever properties (excluding transform and shapes) need to be pushed
-	 * onto the native in runtime.
-	 */
-	void WritePropertiesToNative();
 
 	/**
 	 * Copy direct rigid body properties from the barrier to this component.
@@ -115,9 +124,6 @@ private:
 
 	// Set native's MotionControl and ensure Unreal has corresponding mobility.
 	void InitializeMotionControl();
-
-	void ReadTransformFromNative();
-	void WriteTransformToNative();
 
 #if WITH_EDITOR
 #if UE_VERSION_OLDER_THAN(4, 25, 0)
