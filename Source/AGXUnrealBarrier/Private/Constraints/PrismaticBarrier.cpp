@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Constraints/PrismaticBarrier.h"
 
 #include "AGXRefs.h"
@@ -27,8 +25,8 @@ FPrismaticBarrier::~FPrismaticBarrier()
 }
 
 void FPrismaticBarrier::AllocateNativeImpl(
-	const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
-	const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2)
+	const FRigidBodyBarrier& RigidBody1, const FVector& FramePosition1, const FQuat& FrameRotation1,
+	const FRigidBodyBarrier* RigidBody2, const FVector& FramePosition2, const FQuat& FrameRotation2)
 {
 	check(!HasNative());
 

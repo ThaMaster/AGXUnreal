@@ -85,6 +85,11 @@ agx::RigidBody* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FRigidBodyBarrier* 
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agx::RigidBody>(Barrier);
 }
 
+agx::RigidBody* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FRigidBodyBarrier& Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFrom<agx::RigidBody>(&Barrier);
+}
+
 agxSDK::Simulation* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FSimulationBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxSDK::Simulation>(Barrier);

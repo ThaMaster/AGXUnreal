@@ -36,8 +36,8 @@ const FConstraintRef* FConstraintBarrier::GetNative() const
 }
 
 void FConstraintBarrier::AllocateNative(
-	const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
-	const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2)
+	const FRigidBodyBarrier& RigidBody1, const FVector& FramePosition1, const FQuat& FrameRotation1,
+	const FRigidBodyBarrier* RigidBody2, const FVector& FramePosition2, const FQuat& FrameRotation2)
 {
 	check(!HasNative());
 

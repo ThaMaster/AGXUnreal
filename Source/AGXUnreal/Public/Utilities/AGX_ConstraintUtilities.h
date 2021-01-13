@@ -100,8 +100,8 @@ public:
 		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2);
 
 	static void CreateNative(
-		FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& BodyAttachment1,
-		FAGX_ConstraintBodyAttachment& BodyAttachment2, const FName& ConstraintName);
+		FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& Attachment1,
+		FAGX_ConstraintBodyAttachment& Attachment2, const FName& ConstraintName);
 
 	/**
 	 * Get the Barrier object for the given Component.

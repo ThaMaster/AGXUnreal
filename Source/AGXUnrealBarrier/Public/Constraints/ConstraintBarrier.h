@@ -38,9 +38,9 @@ public:
 	const FConstraintRef* GetNative() const;
 
 	void AllocateNative(
-		const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1,
-		const FQuat* FrameRotation1, const FRigidBodyBarrier* RigidBody2,
-		const FVector* FramePosition2, const FQuat* FrameRotation2);
+		const FRigidBodyBarrier& RigidBody1, const FVector& FramePosition1,
+		const FQuat& FrameRotation1, const FRigidBodyBarrier* RigidBody2,
+		const FVector& FramePosition2, const FQuat& FrameRotation2);
 
 	void ReleaseNative();
 
@@ -93,9 +93,9 @@ private:
 	 * The derived class should not store a reference to the native object!
 	 */
 	virtual void AllocateNativeImpl(
-		const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1,
-		const FQuat* FrameRotation1, const FRigidBodyBarrier* RigidBody2,
-		const FVector* FramePosition2, const FQuat* FrameRotation2) = 0;
+		const FRigidBodyBarrier& RigidBody1, const FVector& FramePosition1,
+		const FQuat& FrameRotation1, const FRigidBodyBarrier* RigidBody2,
+		const FVector& FramePosition2, const FQuat& FrameRotation2) = 0;
 
 protected:
 	// NativeRef has the same lifetime as this object.
