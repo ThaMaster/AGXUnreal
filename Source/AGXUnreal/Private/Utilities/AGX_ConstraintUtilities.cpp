@@ -222,7 +222,7 @@ namespace FAGX_ConstraintUtilities_helpers
 		FAGX_ConstraintBodyAttachment& Attachment1, FAGX_ConstraintBodyAttachment& Attachment2,
 		const FName& ConstraintName)
 	{
-		FRigidBodyBarrier* Body1 = Attachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
+		FRigidBodyBarrier* Body1 = Attachment1.GetOrCreateRigidBodyBarrier();
 		if (Body1 == nullptr)
 		{
 			UE_LOG(
@@ -232,8 +232,8 @@ namespace FAGX_ConstraintUtilities_helpers
 				*ConstraintName.ToString());
 			return false;
 		}
-
-		FRigidBodyBarrier* Body2 = Attachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
+		// Rename to GetOrCreate
+		FRigidBodyBarrier* Body2 = Attachment2.GetOrCreateRigidBodyBarrier();
 		if (Body2 == nullptr && Attachment2.GetRigidBody() != nullptr)
 		{
 			UE_LOG(
@@ -284,8 +284,8 @@ void FAGX_ConstraintUtilities::CreateNative(
 		return;
 	}
 
-	FRigidBodyBarrier* Body1 = Attachment1.GetRigidBodyBarrier(false);
-	FRigidBodyBarrier* Body2 = Attachment2.GetRigidBodyBarrier(false);
+	FRigidBodyBarrier* Body1 = Attachment1.GetRigidBodyBarrier();
+	FRigidBodyBarrier* Body2 = Attachment2.GetRigidBodyBarrier();
 
 	FTransform Transform1 = GetFrameTransform(Attachment1);
 	FTransform Transform2 = GetFrameTransform(Attachment2);
