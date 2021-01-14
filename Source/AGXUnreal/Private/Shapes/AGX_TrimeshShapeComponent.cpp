@@ -223,111 +223,258 @@ static int32 AddCollisionVertex(
 
 namespace
 {
+	/**
+	 * Read triangle mesh data directly from the Static Mesh asset.
+	 *
+	 * This only works in Editor builds, and for meshes that has the Allow CPU Access flag set. In
+	 * particular, it does not work for cooked builds.
+	 *
+	 * If neither of the above is true then the mesh data must be read using
+	 * CopyMeshBuffesRenderThread.
+	 *
+	 * @param Mesh The mesh to read triangles from.
+	 * @param OutPositions Array to which the vertex locations are written.
+	 * @param OutIndices Array to which the vertex indices are written.
+	 */
 	void CopyMeshBuffersGameThread(
-		const FStaticMeshLODResources& Mesh, TArray<uint32>& OutIndices,
-		TArray<FVector>& OutVertices)
+		const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions,
+		TArray<uint32>& OutIndices)
 	{
-		FIndexArrayView MeshIndices = Mesh.IndexBuffer.GetArrayView();
+		// Copy positions.
 		const FPositionVertexBuffer& MeshPositions = Mesh.VertexBuffers.PositionVertexBuffer;
-
-		int32 NumIndices = Mesh.IndexBuffer.GetNumIndices();
-		int32 NumVertices = MeshPositions.GetNumVertices();
-
-		OutIndices.Reserve(NumIndices);
-		OutVertices.Reserve(NumVertices);
-
-		for (int32 I = 0; I < NumIndices; ++I)
+		const int32 NumPositions = MeshPositions.GetNumVertices();
+		OutPositions.Reserve(NumPositions);
+		for (int32 I = 0; I < NumPositions; ++I)
 		{
-			check(MeshIndices[I] < NumVertices);
-			OutIndices.Add(MeshIndices[I]);
+			OutPositions.Add(MeshPositions.VertexPosition(I));
 		}
 
-		for (int32 I = 0; I < NumVertices; ++I)
+		// Copy indices.
+		const FIndexArrayView MeshIndices = Mesh.IndexBuffer.GetArrayView();
+		const int32 NumIndices = MeshIndices.Num();
+		check(MeshIndices.Num() == Mesh.IndexBuffer.GetNumIndices()); /// \todo Remove this line.
+		OutIndices.Reserve(NumIndices);
+		for (int32 I = 0; I < NumIndices; ++I)
 		{
-			OutVertices.Add(MeshPositions.VertexPosition(I));
+			check(MeshIndices[I] < NumPositions);
+			OutIndices.Add(MeshIndices[I]);
 		}
 	}
 
+	/**
+	 * Enqueue, and wait for the completion of, a render command to copy the triangle mesh data from
+	 * graphics memory to host memory.
+	 *
+	 * This approach is required for cooked builds unless the Static Mesh asset has the Allow CPU
+	 * Access flag set.
+	 *
+	 * @todo This doesn't work on Linux. We get indices that point outside of the vertex buffer,
+	 * which should never happen.
+	 *
+	 * @param Mesh The mesh to read triangle mesh data from.
+	 * @param OutPositions Array to which the vertex positions are written.
+	 * @param OutIndices Array to which the vertex indices are written.
+	 */
 	void CopyMeshBuffersRenderThread(
-		const FStaticMeshLODResources& Mesh, TArray<uint32>& OutIndices,
-		TArray<FVector>& OutVertices)
+		const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions,
+		TArray<uint32>& OutIndices)
 	{
-		const uint32 NumIndices = static_cast<uint32>(Mesh.IndexBuffer.GetNumIndices());
-		const uint32 NumVertices = Mesh.VertexBuffers.PositionVertexBuffer.GetNumVertices();
-		OutIndices.Reserve(static_cast<size_t>(NumIndices));
-		OutVertices.Reserve(static_cast<size_t>(NumVertices));
+		const int32 NumIndices = Mesh.IndexBuffer.GetNumIndices();
+		OutIndices.Reserve(NumIndices);
 
-		// In cooked builds the Mesh data can only be accessed from the rendering thread.
+		const int32 NumPositions =
+			static_cast<int32>(Mesh.VertexBuffers.PositionVertexBuffer.GetNumVertices());
+		OutPositions.Reserve(NumPositions);
+
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
 		([&](FRHICommandListImmediate& RHICmdList) {
-			auto& IndexBufferRHI = Mesh.IndexBuffer.IndexBufferRHI;
-			auto& VertexBufferRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
+			// Copy vertex buffer.
+			auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
+			const uint32 NumPositionBytes = PositionRHI->GetSize();
+			FVector* PositionData = static_cast<FVector*>(
+				RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
+			for (uint32 I = 0; I < NumPositions; I++)
+			{
+				OutPositions.Add(PositionData[I]);
+			}
+			RHIUnlockVertexBuffer(PositionRHI);
 
 			// Copy index buffer.
-			if (IndexBufferRHI->GetStride() == 2)
+			auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
+			if (IndexRHI->GetStride() == 2)
 			{
 				// Two byte index size.
-				uint16* IndexBufferData = static_cast<uint16*>(
-					RHILockIndexBuffer(IndexBufferRHI, 0, IndexBufferRHI->GetSize(), RLM_ReadOnly));
+				uint16* IndexData = static_cast<uint16*>(
+					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 				for (uint32 i = 0; i < NumIndices; i++)
 				{
-					check(IndexBufferData[i] < NumVertices);
-					OutIndices.Add(static_cast<uint32>(IndexBufferData[i]));
+					check(IndexData[i] < NumPositions);
+					OutIndices.Add(static_cast<uint32>(IndexData[i]));
 				}
 			}
 			else
 			{
 				// Four byte index size (stride must be either 2 or 4).
-				check(IndexBufferRHI->GetStride() == 4);
-				uint32* IndexBufferData = static_cast<uint32*>(
-					RHILockIndexBuffer(IndexBufferRHI, 0, IndexBufferRHI->GetSize(), RLM_ReadOnly));
+				check(IndexRHI->GetStride() == 4);
+				uint32* IndexData = static_cast<uint32*>(
+					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 				for (uint32 i = 0; i < NumIndices; i++)
 				{
-					check(IndexBufferData[i] < NumVertices);
-					OutIndices.Add(IndexBufferData[i]);
+					check(IndexData[i] < NumPositions);
+					OutIndices.Add(IndexData[i]);
 				}
 			}
-			RHIUnlockIndexBuffer(IndexBufferRHI);
-
-			// Copy vertex buffer.
-			FVector* VertexBufferData = static_cast<FVector*>(
-				RHILockVertexBuffer(VertexBufferRHI, 0, VertexBufferRHI->GetSize(), RLM_ReadOnly));
-			for (uint32 i = 0; i < NumVertices; i++)
-			{
-				OutVertices.Add(VertexBufferData[i]);
-			}
-			RHIUnlockVertexBuffer(VertexBufferRHI);
+			RHIUnlockIndexBuffer(IndexRHI);
 		});
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();
 	}
 
+	void CheckMeshBufferValidity(const FStaticMeshLODResources& Mesh);
+
 	void CopyMeshBuffers(
-		const FStaticMeshLODResources& Mesh, TArray<uint32>& OutIndices,
-		TArray<FVector>& OutVertices)
+		const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions,
+		TArray<uint32>& OutIndices)
 	{
-		CopyMeshBuffersGameThread(Mesh, OutIndices, OutVertices);
-
-#if 0
-		TArray<uint32> LocalIndices;
-		TArray<FVector> LocalVertices;
-
-		CopyMeshBuffersRenderThread(Mesh, LocalIndices, LocalVertices);
-
-		check(LocalIndices.Num() == OutIndices.Num());
-		check(LocalVertices.Num() == OutVertices.Num());
-
-		for (int32 I = 0; I < LocalIndices.Num(); ++I)
-		{
-			check(LocalIndices[I] == OutIndices[I]);
-		}
-
-		for (int32 I = 0; I < LocalVertices.Num(); ++I)
-		{
-			check(LocalVertices[I] == OutVertices[I]);
-		}
+		CheckMeshBufferValidity(Mesh);
+#if WITH_EDITOR
+		CopyMeshBuffersGameThread(Mesh, OutPositions, OutIndices);
+#else
+		CopyMeshBuffersRenderThread(Mesh, OutPositions, OutIndices);
 #endif
+	}
+
+	/**
+	 * Check that CopyMeshBuffersGameThread and CopyMeshBuffersRenderThread produces the same
+	 * result. On Linux it doesn't, which is bad.
+	 *
+	 * @param Mesh The mesh to read trimesh data from.
+	 */
+	void CheckMeshBufferValidity(const FStaticMeshLODResources& Mesh)
+	{
+		// We trust the game thread version, so just call it.
+		TArray<FVector> GamePositions;
+		TArray<uint32> GameIndices;
+		CopyMeshBuffersGameThread(Mesh, GamePositions, GameIndices);
+
+		const int32 TrueNumIndices = GameIndices.Num();
+		const int32 TrueNumPositions = GamePositions.Num();
+
+		// We don't trust the render thread version, so copy-pasted into here with some additional
+		// test/verification code.
+
+		auto& PositionBuffer = Mesh.VertexBuffers.PositionVertexBuffer;
+
+		const int32 NumPositions = static_cast<int32>(PositionBuffer.GetNumVertices());
+		if (NumPositions != TrueNumPositions)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Got wrong number of locations from "
+					 "Mesh.VertexBuffers.PositionVertexBuffer.GetNumVertices()."));
+		}
+
+		auto& PositionRhi = PositionBuffer.VertexBufferRHI;
+		uint32 PositionRhiSize = PositionRhi->GetSize();
+		uint32 PositionRhiCount = PositionRhiSize / sizeof(FVector);
+		if (PositionRhiCount != TrueNumPositions)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT(
+					"Got wrong number of locations from PositionRhi->GetSize() / sizeof(FVector)."))
+		}
+
+		TArray<FVector> RenderPositions;
+		RenderPositions.Reserve(NumPositions);
+
+		auto& IndexBuffer = Mesh.IndexBuffer;
+		const int32 NumIndices = IndexBuffer.GetNumIndices();
+		if (NumIndices != TrueNumIndices)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Got wrong number of indices from Mesh.IndexBuffer.GetNumIndices()."));
+		}
+
+		auto& IndexRhi = Mesh.IndexBuffer.IndexBufferRHI;
+		uint32 IndexRhiSize = IndexRhi->GetSize();
+		uint32 IndexRhiCount = IndexRhiSize / IndexRhi->GetStride();
+		if (IndexRhiCount != TrueNumIndices)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Got wrong number of indices from IndexRhi->GetSize() / sizeof(uint16)."));
+		}
+
+		TArray<uint32> RenderIndices;
+		RenderIndices.Reserve(NumIndices);
+
+		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
+		([&](FRHICommandListImmediate& RHICmdList) {
+			// Copy position buffer.
+			FVector* PositionData = static_cast<FVector*>(
+				RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+			for (uint32 i = 0; i < NumPositions; i++)
+			{
+				RenderPositions.Add(PositionData[i]);
+			}
+			RHIUnlockVertexBuffer(PositionRhi);
+
+			// Copy index buffer.
+			if (IndexRhi->GetStride() == 2)
+			{
+				// Two byte index size.
+				uint16* IndexBufferData = static_cast<uint16*>(
+					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+				for (uint32 i = 0; i < NumIndices; i++)
+				{
+					RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
+				}
+			}
+			else
+			{
+				// Four byte index size (stride must be either 2 or 4).
+				check(IndexRhi->GetStride() == 4);
+				uint32* IndexData = static_cast<uint32*>(
+					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+				for (uint32 i = 0; i < NumIndices; i++)
+				{
+					RenderIndices.Add(IndexData[i]);
+				}
+			}
+			RHIUnlockIndexBuffer(IndexRhi);
+		});
+
+		// Wait for rendering thread to finish.
+		FlushRenderingCommands();
+
+		// Check if the render thread copy got the same data as the game thread copy.
+		int32 NumIndexMismatch {0};
+		for (int I = 0; I < FMath::Min(TrueNumIndices, NumIndices); ++I)
+		{
+			uint32 TrueIndex = GameIndices[I];
+			uint32 Index = RenderIndices[I];
+			if (TrueIndex != Index)
+			{
+				++NumIndexMismatch;
+			}
+		}
+		if (NumIndexMismatch > 0)
+		{
+			UE_LOG(LogAGX, Error, TEXT("Got %d mismatched indices."), NumIndexMismatch);
+		}
+
+
+		if (GameIndices != RenderIndices)
+		{
+			UE_LOG(LogAGX, Error, TEXT("Error reading vertex indices from GPU memory."));
+		}
+		if (GamePositions != RenderPositions)
+		{
+			UE_LOG(LogAGX, Error, TEXT("Error reading vertex positions from GPU memory."));
+		}
 	}
 }
 
@@ -361,13 +508,14 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 	if (!StaticMesh->HasValidRenderData(/*bCheckLODForVerts*/ true, LodIndex))
 		return false;
 
-	const FStaticMeshLODResources& Mesh = StaticMesh->GetLODForExport(/*LODIndex*/ LodIndex);
+	// const FStaticMeshLODResources& Mesh = StaticMesh->GetLODForExport(/*LODIndex*/ LodIndex);
+	const FStaticMeshLODResources& Mesh = StaticMesh->RenderData->LODResources[LodIndex];
 	TMap<FVector, int32> MeshToCollisionVertexIndices;
 
 	// Copy the Index and Vertex buffers from the mesh.
 	TArray<uint32> IndexBuffer;
 	TArray<FVector> VertexBuffer;
-	CopyMeshBuffers(Mesh, IndexBuffer, VertexBuffer);
+	CopyMeshBuffers(Mesh, VertexBuffer, IndexBuffer);
 	if (IndexBuffer.Num() == 0 || VertexBuffer.Num() == 0)
 	{
 		return false;
