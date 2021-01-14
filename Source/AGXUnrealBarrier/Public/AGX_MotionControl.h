@@ -2,9 +2,12 @@
 
 #include "UObject/ObjectMacros.h"
 
-UENUM()
+UENUM(BlueprintType)
 enum EAGX_MotionControl
 {
+	/** Required by the Blueprint system. */
+	MC_INVALID = 0 UMETA(Hidden),
+
 	/** Rigid body will never move. */
 	MC_STATIC = 1 UMETA(DisplayName = "Static"),
 
