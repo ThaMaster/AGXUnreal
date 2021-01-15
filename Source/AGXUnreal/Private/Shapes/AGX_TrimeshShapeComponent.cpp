@@ -331,13 +331,10 @@ namespace
 		FlushRenderingCommands();
 	}
 
-	void CheckMeshBufferValidity(const FStaticMeshLODResources& Mesh);
-
 	void CopyMeshBuffers(
 		const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions,
 		TArray<uint32>& OutIndices)
 	{
-		CheckMeshBufferValidity(Mesh);
 #if WITH_EDITOR
 		CopyMeshBuffersGameThread(Mesh, OutPositions, OutIndices);
 #else
@@ -465,7 +462,6 @@ namespace
 		{
 			UE_LOG(LogAGX, Error, TEXT("Got %d mismatched indices."), NumIndexMismatch);
 		}
-
 
 		if (GameIndices != RenderIndices)
 		{
