@@ -5,44 +5,35 @@
 #include "AGX_AgxDynamicsObjectsAccess.h"
 
 void FAGX_ConstraintUtilities::ConvertConstraintBodiesAndFrames(
-	const FRigidBodyBarrier* RigidBody1, const FVector* FramePosition1, const FQuat* FrameRotation1,
-	const FRigidBodyBarrier* RigidBody2, const FVector* FramePosition2, const FQuat* FrameRotation2,
-	agx::RigidBody*& NativeRigidBody1, agx::FrameRef& NativeFrame1,
-	agx::RigidBody*& NativeRigidBody2, agx::FrameRef& NativeFrame2)
+	const FRigidBodyBarrier& RigidBody1, const FVector& FramePosition1, const FQuat& FrameRotation1,
+	const FRigidBodyBarrier* RigidBody2, const FVector& FramePosition2, const FQuat& FrameRotation2,
+	agx::RigidBody*& OutNativeRigidBody1, agx::FrameRef& OutNativeFrame1,
+	agx::RigidBody*& OutNativeRigidBody2, agx::FrameRef& OutNativeFrame2)
 {
-	// Convert first Rigid Body and Frame to natives
+	// Convert first Rigid Body and Frame to natives. There must always be a first body. The Frame
+	// created is relative to this body.
+	OutNativeRigidBody1 = FAGX_AgxDynamicsObjectsAccess::GetFrom(RigidBody1);
+	check(OutNativeRigidBody1);
+	OutNativeFrame1 = ConvertFrame(FramePosition1, FrameRotation1);
+
+	// The second rigid body is optional. If no body is given then the Frame created is relative
+	// to the world.
+	if (RigidBody2 != nullptr)
 	{
-		check(RigidBody1);
-		check(FramePosition1);
-		check(FrameRotation1);
-
-		NativeRigidBody1 = FAGX_AgxDynamicsObjectsAccess::GetFrom(RigidBody1);
-		check(NativeRigidBody1);
-
-		NativeFrame1 = ConvertFrame(*FramePosition1, *FrameRotation1);
+		OutNativeRigidBody2 = FAGX_AgxDynamicsObjectsAccess::GetFrom(RigidBody2);
+		check(OutNativeRigidBody2);
 	}
-
-	// Convert second Rigid Body and Frame to natives
+	else
 	{
-		if (RigidBody2)
-		{
-			NativeRigidBody2 = FAGX_AgxDynamicsObjectsAccess::GetFrom(RigidBody2);
-			if (NativeRigidBody2)
-			{
-				check(FramePosition2);
-				check(FrameRotation2);
-
-				NativeFrame2 = ConvertFrame(*FramePosition2, *FrameRotation2);
-			}
-			else
-			{
-				NativeFrame2 = nullptr;
-			}
-		}
-		else
-		{
-			NativeRigidBody2 = nullptr;
-			NativeFrame2 = nullptr;
-		}
+		OutNativeRigidBody2 = nullptr;
 	}
+	OutNativeFrame2 = ConvertFrame(FramePosition2, FrameRotation2);
+}
+
+void FAGX_ConstraintUtilities::ConvertConstraintBodyAndFrame(
+	const FRigidBodyBarrier& Body, const FVector& FramePosition, const FQuat& FrameRotation,
+	agx::RigidBody*& OutNativeBody, agx::FrameRef& OutNativeFrame)
+{
+	OutNativeBody = FAGX_AgxDynamicsObjectsAccess::GetFrom(Body);
+	OutNativeFrame = ConvertFrame(FramePosition, FrameRotation);
 }

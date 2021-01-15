@@ -204,10 +204,72 @@ void FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 		FRotator(Component.GetComponentTransform().InverseTransformRotation(Attach1GlobalRot));
 }
 
-void FAGX_ConstraintUtilities::CreateNative(
-	FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& BodyAttachment1,
-	FAGX_ConstraintBodyAttachment& BodyAttachment2, const FName& ConstraintName)
+namespace FAGX_ConstraintUtilities_helpers
 {
+	/**
+	 * Ensure that the attachment pair describe a valid constraint configuration. This means that
+	 * the first body exists and has a valid native body, and that if the second body exists then
+	 * it also has a native body.
+	 *
+	 * The native bodies are created if necessary.
+	 *
+	 * @param Attachment1 The attachment for the first body.
+	 * @param Attachment2 The attachment for the second body or the world.
+	 * @param ConstraintName Used only for error messages.
+	 * @return True if the required native bodies are now available, false otherwise.
+	 */
+	bool EnsureValidConstraintAttachmentPair(
+		FAGX_ConstraintBodyAttachment& Attachment1, FAGX_ConstraintBodyAttachment& Attachment2,
+		const FName& ConstraintName)
+	{
+		FRigidBodyBarrier* Body1 = Attachment1.GetOrCreateRigidBodyBarrier();
+		if (Body1 == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Constraint %s: Could not get Rigid Body from Body Attachment 1. "
+					 "Constraint cannot be created."),
+				*ConstraintName.ToString());
+			return false;
+		}
+
+		FRigidBodyBarrier* Body2 = Attachment2.GetOrCreateRigidBodyBarrier();
+		if (Body2 == nullptr && Attachment2.GetRigidBody() != nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Constraint %s: A second body has been configured but it could not be "
+					 "fetched. Constraint cannot be created."),
+				*ConstraintName.ToString());
+			return false;
+		}
+
+		return true;
+	}
+
+	FTransform GetFrameTransform(FAGX_ConstraintBodyAttachment& Attachment)
+	{
+		if (Attachment.GetRigidBody() != nullptr)
+		{
+			const FVector Location = Attachment.GetLocalFrameLocationFromBody();
+			const FQuat Rotation = Attachment.GetLocalFrameRotationFromBody();
+			return FTransform(Rotation, Location);
+		}
+		else
+		{
+			const FVector Location = Attachment.GetGlobalFrameLocation();
+			const FQuat Rotation = Attachment.GetGlobalFrameRotation();
+			return FTransform(Rotation, Location);
+		}
+	}
+}
+
+void FAGX_ConstraintUtilities::CreateNative(
+	FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& Attachment1,
+	FAGX_ConstraintBodyAttachment& Attachment2, const FName& ConstraintName)
+{
+	using namespace FAGX_ConstraintUtilities_helpers;
+
 	if (Barrier == nullptr)
 	{
 		UE_LOG(
@@ -216,47 +278,18 @@ void FAGX_ConstraintUtilities::CreateNative(
 		return;
 	}
 
-	FRigidBodyBarrier* RigidBody1Barrier =
-		BodyAttachment1.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
-	if (RigidBody1Barrier == nullptr)
+	if (!EnsureValidConstraintAttachmentPair(Attachment1, Attachment2, ConstraintName))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Constraint %s: could not get Rigid Body from Body Attachment 1. "
-				 "Constraint cannot be created."),
-			*ConstraintName.ToString());
+		// Error message is already printed.
 		return;
 	}
 
-	FVector FrameLocation1 = BodyAttachment1.GetLocalFrameLocationFromBody();
-	FQuat FrameRotation1 = BodyAttachment1.GetLocalFrameRotationFromBody();
+	FRigidBodyBarrier* Body1 = Attachment1.GetRigidBodyBarrier();
+	FRigidBodyBarrier* Body2 = Attachment2.GetRigidBodyBarrier();
 
-	if (BodyAttachment2.GetRigidBody())
-	{
-		FRigidBodyBarrier* RigidBody2Barrier =
-			BodyAttachment2.GetRigidBodyBarrier(/*CreateIfNeeded*/ true);
-
-		if (RigidBody2Barrier == nullptr)
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Constraint %s: could not get Rigid Body from Body Attachment 2."),
-				*ConstraintName.ToString());
-			return;
-		}
-
-		FVector FrameLocation2 = BodyAttachment2.GetLocalFrameLocationFromBody();
-		FQuat FrameRotation2 = BodyAttachment2.GetLocalFrameRotationFromBody();
-
-		Barrier->AllocateNative(
-			RigidBody1Barrier, &FrameLocation1, &FrameRotation1, RigidBody2Barrier, &FrameLocation2,
-			&FrameRotation2);
-	}
-	else
-	{
-		// When BodyAttachment2 does not have a Rigid Body, it means that RigidBody1 is constrained
-		// to the world.
-		Barrier->AllocateNative(
-			RigidBody1Barrier, &FrameLocation1, &FrameRotation1, nullptr, nullptr, nullptr);
-	}
+	FTransform Transform1 = GetFrameTransform(Attachment1);
+	FTransform Transform2 = GetFrameTransform(Attachment2);
+	Barrier->AllocateNative(
+		*Body1, Transform1.GetLocation(), Transform1.GetRotation(), Body2, Transform2.GetLocation(),
+		Transform2.GetRotation());
 }

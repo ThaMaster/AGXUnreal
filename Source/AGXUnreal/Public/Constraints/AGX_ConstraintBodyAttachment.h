@@ -96,7 +96,29 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 
 	FMatrix GetGlobalFrameMatrix() const;
 
-	FRigidBodyBarrier* GetRigidBodyBarrier(bool CreateIfNeeded);
+	/**
+	 * Get the RigidBodyBarrier owned by the RigidBodyComponent this Attachment points to.
+	 *
+	 * Will return nullptr if this Attachment doesn't have a RigidBodyComponent, or if the body
+	 * doesn't yet have a native AGX Dynamics RigidBody representation.
+	 *
+	 * @see GetOrCreateRigidBodyBarrier
+	 * @return The Barrier object for the RigidBody that this Attachment references, or nullptr.
+	 */
+	FRigidBodyBarrier* GetRigidBodyBarrier();
+
+	/**
+	 * Get the RigidBodyBarrier owned by the RigidBodyComponent this Attachment points to.
+	 *
+	 * Will return nullptr if this Attachment doesn't have a RigidBodyComponent.
+	 *
+	 * A native AGX Dynamics RigidBody representation will be created for the RigidBodyComponent if
+	 * one hasn't already been created.
+	 *
+	 * @see GetRigidBodyBarrier
+	 * @return The Barrier object for the RigidBody that this Attachment references.
+	 */
+	FRigidBodyBarrier* GetOrCreateRigidBodyBarrier();
 
 	// This must be a UPROPERTY to work for built applications where this will point to the wrong
 	// instance if it is not.

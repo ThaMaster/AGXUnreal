@@ -95,7 +95,7 @@ FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix() const
 	return FMatrix(Rotation.GetAxisX(), Rotation.GetAxisY(), Rotation.GetAxisZ(), Location);
 }
 
-FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool CreateIfNeeded)
+FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier()
 {
 	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
@@ -103,12 +103,18 @@ FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(bool Creat
 		return nullptr;
 	}
 
-	FRigidBodyBarrier* Barrier = Body->GetNative();
-	if (Barrier == nullptr && CreateIfNeeded)
+	return Body->GetNative();
+}
+
+FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetOrCreateRigidBodyBarrier()
+{
+	UAGX_RigidBodyComponent* Body = GetRigidBody();
+	if (Body == nullptr)
 	{
-		Barrier = Body->GetOrCreateNative();
+		return nullptr;
 	}
-	return Barrier;
+
+	return Body->GetOrCreateNative();
 }
 
 #if WITH_EDITOR
