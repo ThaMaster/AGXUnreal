@@ -504,8 +504,7 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 	if (!StaticMesh->HasValidRenderData(/*bCheckLODForVerts*/ true, LodIndex))
 		return false;
 
-	// const FStaticMeshLODResources& Mesh = StaticMesh->GetLODForExport(/*LODIndex*/ LodIndex);
-	const FStaticMeshLODResources& Mesh = StaticMesh->RenderData->LODResources[LodIndex];
+	const FStaticMeshLODResources& Mesh = StaticMesh->GetLODForExport(LodIndex);
 	TMap<FVector, int32> MeshToCollisionVertexIndices;
 
 	// Copy the Index and Vertex buffers from the mesh.
