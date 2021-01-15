@@ -232,7 +232,7 @@ namespace FAGX_ConstraintUtilities_helpers
 				*ConstraintName.ToString());
 			return false;
 		}
-		// Rename to GetOrCreate
+
 		FRigidBodyBarrier* Body2 = Attachment2.GetOrCreateRigidBodyBarrier();
 		if (Body2 == nullptr && Attachment2.GetRigidBody() != nullptr)
 		{
