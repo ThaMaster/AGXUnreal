@@ -313,6 +313,138 @@ void AGX_MeshUtilities::CylinderConstructionData::AppendBufferSizes(
 	InOutNumIndices += Indices;
 }
 
+namespace
+{
+	void AppendCylinderBody(
+		TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
+		TArray<FVector2D>& TexCoords, const AGX_MeshUtilities::CylinderConstructionData& Data)
+	{
+		// Positions may already have data, we only append triangle data in this function.
+		const uint32 FirstVertex = Positions.Num();
+		const float SegmentSize = 2.0 * PI / Data.CircleSegments;
+		const float RadiusInv = 1.0f / Data.Radius;
+
+		// Vertex position and texture coordinates.
+		float X, Y, Z, U, V;
+
+		// Calculate and add vertex positions and normals.
+		for (uint32 RowIndex = 0; RowIndex < Data.VertexRows; ++RowIndex)
+		{
+			const float RowHeight = static_cast<float>(
+				Data.Height * RowIndex / (Data.HeightSegments) - Data.Height * 0.5f);
+
+			for (uint32 ColumnIndex = 0; ColumnIndex < Data.VertexColumns; ++ColumnIndex)
+			{
+				float ColumnAngle = ColumnIndex * SegmentSize;
+
+				X = Data.Radius * FMath::Cos(ColumnAngle);
+				Y = RowHeight;
+				Z = Data.Radius * FMath::Sin(ColumnAngle);
+
+				Positions.Add(FVector(X, Y, Z));
+				Normals.Add(FVector(X * RadiusInv, 0.0f, Z * RadiusInv));
+
+				// Vertex texture coordinates (U, V) range between [0, 1].
+				U = static_cast<float>(ColumnIndex / Data.CircleSegments);
+				V = static_cast<float>(1 - (RowIndex / (Data.HeightSegments)));
+				TexCoords.Add(FVector2D(U, V));
+			}
+		}
+
+		// Calculate and add triangle indices.
+		uint32 K0, K1;
+		for (uint32 HeightSegIndex = 0; HeightSegIndex < Data.HeightSegments; ++HeightSegIndex)
+		{
+			// Index of first vertex in lower row.
+			K0 = FirstVertex + HeightSegIndex * Data.VertexColumns;
+
+			// Index of first vertex one row above.
+			K1 = K0 + Data.VertexColumns;
+
+			for (uint32 CircleSegIndex = 0; CircleSegIndex < Data.CircleSegments; ++CircleSegIndex)
+			{
+				// First triangle.
+				Indices.Add(K0);
+				Indices.Add(K0 + 1);
+				Indices.Add(K1);
+
+				// Second triangle.
+				Indices.Add(K0 + 1);
+				Indices.Add(K1 + 1);
+				Indices.Add(K1);
+
+				K0++;
+				K1++;
+			}
+		}
+	}
+
+	void AppendDiskBody(
+		TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
+		TArray<FVector2D>& TexCoords, float Radius, uint32 CircleSegments, float Offset, bool isBottom)
+	{
+		// Positions may already have data, we only append triangle data in this function.
+		const uint32 FirstVertex = Positions.Num();
+
+		const uint32 VertexColumns = CircleSegments + 1;
+		const float SegmentSize = 2.0 * PI / CircleSegments;
+		const float RadiusInv = 1.0f / Radius;
+
+		// Vertex position and texture coordinates.
+		float X, Y, Z, U, V;
+
+		// Calculate and add vertex positions and normals.
+		for (uint32 ColumnIndex = 0; ColumnIndex < VertexColumns; ++ColumnIndex)
+		{
+			float ColumnAngle = ColumnIndex * SegmentSize;
+
+			X = Radius * FMath::Cos(ColumnAngle);
+			Y = Offset;
+			Z = Radius * FMath::Sin(ColumnAngle);
+
+			Positions.Add(FVector(X, Y, Z));
+
+			const FVector Normal =
+				isBottom ? FVector(0.f, -1.f, 0.f) : FVector(0.f, 1.f, 0.f);
+			Normals.Add(FVector(0.f, -1.f, 0.f));
+
+			// Vertex texture coordinates (U, V) range between [0, 1].
+			U = static_cast<float>(1 - (X / (2 * Radius) + 0.5));
+			V = static_cast<float>(Z / (2 * Radius) + 0.5);
+			TexCoords.Add(FVector2D(U, V));
+		}
+
+		// Calculate and add triangle indices.
+		uint32 K0 = FirstVertex;
+		uint32 K1 = K0 + 1; // second vertex in cap row
+		uint32 K2 = K1 + 1; // third vertex in cap row
+
+		for (uint32 CircleSegmentIndex = 1; CircleSegmentIndex < Data.CircleSegments - 1;
+				++CircleSegmentIndex)
+		{
+			// 1 triangles per segment (except for first and last segment)
+
+			if (CapIndex == 0)
+			{
+				// K2 => K1 => K0
+				Indices.Add(K2);
+				Indices.Add(K1);
+				Indices.Add(K0);
+			}
+			else
+			{
+				// K0 => K1 => K2
+				Indices.Add(K0);
+				Indices.Add(K1);
+				Indices.Add(K2);
+			}
+
+			K1++;
+			K2++:
+		}
+	}
+}
+
 void AGX_MeshUtilities::MakeCylinder(
 	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
 	TArray<FVector2D>& TexCoords, const CylinderConstructionData& Data)
