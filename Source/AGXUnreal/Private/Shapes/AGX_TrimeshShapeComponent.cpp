@@ -242,9 +242,9 @@ namespace
 	{
 		// Copy positions.
 		const FPositionVertexBuffer& MeshPositions = Mesh.VertexBuffers.PositionVertexBuffer;
-		const int32 NumPositions = MeshPositions.GetNumVertices();
+		const uint32 NumPositions = static_cast<uint32>(MeshPositions.GetNumVertices());
 		OutPositions.Reserve(NumPositions);
-		for (int32 I = 0; I < NumPositions; ++I)
+		for (uint32 I = 0; I < NumPositions; ++I)
 		{
 			OutPositions.Add(MeshPositions.VertexPosition(I));
 		}
@@ -279,11 +279,10 @@ namespace
 		const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions,
 		TArray<uint32>& OutIndices)
 	{
-		const int32 NumIndices = Mesh.IndexBuffer.GetNumIndices();
+		const uint32 NumIndices = static_cast<uint32>(Mesh.IndexBuffer.GetNumIndices());
 		OutIndices.Reserve(NumIndices);
 
-		const int32 NumPositions =
-			static_cast<int32>(Mesh.VertexBuffers.PositionVertexBuffer.GetNumVertices());
+		const uint32 NumPositions = Mesh.VertexBuffers.PositionVertexBuffer.GetNumVertices();
 		OutPositions.Reserve(NumPositions);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
@@ -363,7 +362,7 @@ namespace
 
 		auto& PositionBuffer = Mesh.VertexBuffers.PositionVertexBuffer;
 
-		const int32 NumPositions = static_cast<int32>(PositionBuffer.GetNumVertices());
+		const uint32 NumPositions = PositionBuffer.GetNumVertices();
 		if (NumPositions != TrueNumPositions)
 		{
 			UE_LOG(
@@ -425,7 +424,7 @@ namespace
 				// Two byte index size.
 				uint16* IndexBufferData = static_cast<uint16*>(
 					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-				for (uint32 i = 0; i < NumIndices; i++)
+				for (int32 i = 0; i < NumIndices; i++)
 				{
 					RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
 				}
@@ -436,7 +435,7 @@ namespace
 				check(IndexRhi->GetStride() == 4);
 				uint32* IndexData = static_cast<uint32*>(
 					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-				for (uint32 i = 0; i < NumIndices; i++)
+				for (int32 i = 0; i < NumIndices; i++)
 				{
 					RenderIndices.Add(IndexData[i]);
 				}
