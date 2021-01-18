@@ -831,6 +831,25 @@ void AGX_MeshUtilities::MakeCylinder(
 	}
 }
 
+AGX_MeshUtilities::CapsuleConstructionData::CapsuleConstructionData(
+	float InRadius, float InHeight, uint32 InNumCircleSegments, uint32 InNumHeightSegments)
+	: Radius(InRadius)
+	, Height(InHeight)
+	, CircleSegments(InNumCircleSegments)
+	, HeightSegments(InNumHeightSegments)
+{
+}
+
+void AGX_MeshUtilities::MakeCapsule(
+	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
+	TArray<FVector2D>& TexCoords, const CapsuleConstructionData& ConstructionData)
+{
+	// Make capsule body.
+	CylinderConstructionData CylinderData(
+		ConstructionData.Radius, ConstructionData.Height, ConstructionData.CircleSegments,
+		ConstructionData.HeightSegments);
+}
+
 namespace
 {
 	FVector CalcConeVert(float Angle1, float Angle2, float AzimuthAngle)
@@ -1371,7 +1390,7 @@ void AGX_MeshUtilities::PrintMeshToLog(
 				 .ToString());
 	}
 
-	UE_LOG(LogAGX, Log, TEXT("AGX_MeshUtilities::PrintMeshToLog() : Finished printing mesh data."))
+	UE_LOG(LogAGX, Log, TEXT("AGX_MeshUtilities::PrintMeshToLog() : Finished printing mesh data."));
 }
 
 AGX_MeshUtilities::DiskArrayConstructionData::DiskArrayConstructionData(

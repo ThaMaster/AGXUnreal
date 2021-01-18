@@ -122,6 +122,30 @@ public:
 		float Radius, float HalfHeight, uint32 Sides, TArray<FDynamicMeshVertex>& OutVerts,
 		TArray<uint32>& OutIndices);
 
+	/**
+	 * Used to define the geometry of a mesh capsule, and also to know the number of vertices and
+	 * indices in advance.
+	 */
+	struct CapsuleConstructionData
+	{
+		// Input:
+		const float Radius;
+		const float Height;
+		const uint32 CircleSegments;
+		const uint32 HeightSegments;
+
+		CapsuleConstructionData(
+			float InRadius, float InHeight, uint32 InNumCircleSegments, uint32 InNumHeightSegments);
+	};
+
+		/**
+	 * Initializes buffers with geometry data for a capsule extending uniformly along the Y-Axis,
+	 * centered at origin.
+	 */
+	static void MakeCapsule(
+		TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
+		TArray<FVector2D>& TexCoords, const CapsuleConstructionData& ConstructionData);
+
 	static void MakeCone(
 		float Angle1, float Angle2, float Scale, float XOffset, uint32 NumSides,
 		TArray<FDynamicMeshVertex>& OutVerts, TArray<uint32>& OutIndices);
