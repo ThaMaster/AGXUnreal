@@ -23,6 +23,16 @@
 # 'CONFIGURATION POINT' to find them.
 
 
+
+
+# Enable the 'IN_LIST' operator.
+#
+# I don't know why I need to explicitly specify this all of a sudden. I didn't
+# before and IN_LIST has existed for ages, at least since CMake 3.3.
+cmake_policy(SET CMP0057 NEW)
+
+
+
 # Make sure we know which Unreal Engine installation to use.
 if("${UE_ROOT}" STREQUAL "")
   set(UE_ROOT "$ENV{UE_ROOT}")
@@ -70,8 +80,8 @@ endif()
 # according to the language of the library being built.
 #
 # Pick one:
-#set(CONFIG_COMPILER_FLAGS "C")
-set(CONFIG_COMPILER_FLAGS "CXX")
+set(CONFIG_COMPILER_FLAGS "C")
+#set(CONFIG_COMPILER_FLAGS "CXX")
 
 set(CONFIG_OPTIONS_COMPILER_FLAGS "C" "CXX")
 if(NOT "${CONFIG_COMPILER_FLAGS}" IN_LIST CONFIG_OPTIONS_COMPILER_FLAGS)
