@@ -57,6 +57,7 @@ public:
 	 * Re-creates (or destroys) the triangle mesh data for the visual representation
 	 * of the shape to match the physical definition of the shape.
 	 */
+	UFUNCTION(BlueprintCallable)
 	void UpdateVisualMesh();
 
 	/**
