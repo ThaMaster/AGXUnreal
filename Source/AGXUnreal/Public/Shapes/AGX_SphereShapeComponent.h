@@ -17,7 +17,8 @@ class AGXUNREAL_API UAGX_SphereShapeComponent final : public UAGX_ShapeComponent
 public:
 	UAGX_SphereShapeComponent();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
+	/// The distance from the center of the sphere to its surface.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	float Radius;
 
 	FShapeBarrier* GetNative() override;

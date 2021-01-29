@@ -20,11 +20,13 @@ class AGXUNREAL_API UAGX_CylinderShapeComponent final : public UAGX_ShapeCompone
 public:
 	UAGX_CylinderShapeComponent();
 
-	UPROPERTY(EditAnywhere, Category = "AGX Shape")
-	double Height;
+	/// The distance from the center of the cylinder to the surface of its end circles.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
+	float Height;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Shape")
-	double Radius;
+	/// The distance from the center of the cylinder to the cylindrical surface.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
+	float Radius;
 
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;
