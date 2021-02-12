@@ -46,9 +46,10 @@ public:
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Speed Input",
-		meta =
-			(Tooltip = "If checked the constraint will move freely when no key is held. If "
-					   "unchecked the constraint will be stopped when no key is held."))
+		// Unreal Header Tool does not support line breaks in Property Specifier strings.
+		// clang-format off
+		meta = (Tooltip = "If checked the constraint will move freely when no key is held. If unchecked the constraint will be stopped when no key is held."))
+		// clang-format on
 	bool bDisableOnRelease;
 
 	UPROPERTY(
