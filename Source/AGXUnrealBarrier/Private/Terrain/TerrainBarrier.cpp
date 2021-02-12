@@ -16,7 +16,6 @@
 #include <agx/Physics/GranularBodySystem.h>
 #include "EndAGXIncludes.h"
 
-
 FTerrainBarrier::FTerrainBarrier()
 	: NativeRef {new FTerrainRef}
 {

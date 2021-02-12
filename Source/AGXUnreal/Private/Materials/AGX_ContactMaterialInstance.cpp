@@ -125,7 +125,6 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::GetOrCreateInstance(
 	return this;
 };
 
-
 void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 {
 	NativeBarrier.Reset(new FContactMaterialBarrier());

@@ -37,8 +37,7 @@ FCylinderShapeBarrier AGXBarrierFactories::CreateCylinderShapeBarrier(
 	return {std::make_unique<FGeometryAndShapeRef>(Cylinder->getGeometry(), Cylinder)};
 }
 
-FCapsuleShapeBarrier AGXBarrierFactories::CreateCapsuleShapeBarrier(
-	agxCollide::Capsule* Capsule)
+FCapsuleShapeBarrier AGXBarrierFactories::CreateCapsuleShapeBarrier(agxCollide::Capsule* Capsule)
 {
 	return {std::make_unique<FGeometryAndShapeRef>(Capsule->getGeometry(), Capsule)};
 }

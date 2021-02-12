@@ -62,7 +62,6 @@ void FAGX_ConstraintBodyAttachmentCustomization::CustomizeChildren(
 		if (TSharedPtr<IPropertyHandle> ChildHandle =
 				StructPropertyHandle->GetChildHandle(ChildIndex))
 		{
-
 			// Add default visualization.
 			IDetailPropertyRow& DefaultPropertyRow =
 				StructBuilder.AddProperty(ChildHandle.ToSharedRef());

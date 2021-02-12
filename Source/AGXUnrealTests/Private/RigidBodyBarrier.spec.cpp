@@ -24,7 +24,7 @@ void FRigidBodyBarrierSpec::Define()
 			FRigidBodyBarrier RigidBody;
 			RigidBody.AllocateNative();
 			TestTrue("Allocation should give the barrier a native.", RigidBody.HasNative());
-			BAIL_TEST_IF(!RigidBody.HasNative(),)
+			BAIL_TEST_IF(!RigidBody.HasNative(), )
 			TestNotNull(
 				"Allocation should give the barrier a non-null native", RigidBody.GetNative());
 		});
@@ -33,7 +33,7 @@ void FRigidBodyBarrierSpec::Define()
 			FRigidBodyBarrier RigidBody;
 			RigidBody.AllocateNative();
 			TestTrue("Allocation should give the barrier a native.", RigidBody.HasNative());
-			BAIL_TEST_IF(!RigidBody.HasNative(),)
+			BAIL_TEST_IF(!RigidBody.HasNative(), )
 			RigidBody.ReleaseNative();
 			TestFalse("Release should remove the native from the barrier.", RigidBody.HasNative());
 		});
@@ -44,12 +44,12 @@ void FRigidBodyBarrierSpec::Define()
 			FRigidBodyBarrier Source;
 			Source.AllocateNative();
 			TestTrue("Allocation should give teh barrier a native.", Source.HasNative());
-			BAIL_TEST_IF(!Source.HasNative(),);
+			BAIL_TEST_IF(!Source.HasNative(), );
 			FRigidBodyRef* Native = Source.GetNative();
 			FRigidBodyBarrier Destination(std::move(Source));
 			TestFalse("Move should clear source", Source.HasNative());
 			TestTrue("Move should set destination", Destination.HasNative());
-			BAIL_TEST_IF(!Destination.HasNative(),);
+			BAIL_TEST_IF(!Destination.HasNative(), );
 			TestEqual("Move should preserve native pointer", Destination.GetNative(), Native);
 		});
 	});
@@ -65,7 +65,7 @@ void FRigidBodyBarrierSpec::Define()
 			FRigidBodyBarrier RigidBody;
 			RigidBody.AllocateNative();
 			TestTrue("Allocation should give the barrier a native.", RigidBody.HasNative());
-			BAIL_TEST_IF(!RigidBody.HasNative(),)
+			BAIL_TEST_IF(!RigidBody.HasNative(), )
 
 			{
 				const FVector ExpectedPosition(1.0f, 2.0f, 3.0f);

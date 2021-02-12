@@ -25,9 +25,8 @@ struct AGXUNREAL_API FAGX_ConstraintLockController : public FAGX_ConstraintContr
 	 * Target position in Degrees if controller is on a Rotational
 	 * Degree-Of-Freedom, else in Centimeters.
 	 */
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Lock Controller", Meta = (EditCondition = "bEnable"))
-	 double Position;
+	UPROPERTY(EditAnywhere, Category = "AGX Lock Controller", Meta = (EditCondition = "bEnable"))
+	double Position;
 
 public:
 	FAGX_ConstraintLockController() = default;
@@ -43,7 +42,6 @@ protected:
 	virtual void UpdateNativePropertiesImpl() override;
 };
 
-
 /**
  * This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprints.
  */
@@ -54,7 +52,7 @@ class AGXUNREAL_API UAGX_ConstraintLockController_FL : public UBlueprintFunction
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lock Controller")
 	static void SetPosition(
-	UPARAM(ref) FAGX_ConstraintLockController& ControllerRef, const float Position)
+		UPARAM(ref) FAGX_ConstraintLockController& ControllerRef, const float Position)
 	{
 		ControllerRef.SetPosition(static_cast<double>(Position));
 	};

@@ -13,7 +13,6 @@ FShapeMaterialBarrier::FShapeMaterialBarrier()
 FShapeMaterialBarrier::FShapeMaterialBarrier(FShapeMaterialBarrier&& Other)
 	: NativeRef {std::move(Other.NativeRef)}
 {
-
 }
 
 FShapeMaterialBarrier::FShapeMaterialBarrier(std::unique_ptr<FMaterialRef> Native)

@@ -16,5 +16,6 @@ UObject* UAGX_TerrainMaterialAssetFactory::FactoryCreateNew(
 	FFeedbackContext* Warn)
 {
 	check(Class->IsChildOf(UAGX_TerrainMaterialAsset::StaticClass()));
-	return NewObject<UAGX_TerrainMaterialAsset>(InParent, Class, Name, Flags | RF_Transactional, Context);
+	return NewObject<UAGX_TerrainMaterialAsset>(
+		InParent, Class, Name, Flags | RF_Transactional, Context);
 }

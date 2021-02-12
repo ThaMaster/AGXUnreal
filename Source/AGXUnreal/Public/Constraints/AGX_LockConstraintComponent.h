@@ -10,7 +10,6 @@
 
 class FLockJointBarrier;
 
-
 /**
  * Locks all degrees of freedom.
  */

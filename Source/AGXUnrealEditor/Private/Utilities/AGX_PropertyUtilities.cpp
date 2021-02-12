@@ -32,10 +32,10 @@ UObject* FAGX_PropertyUtilities::GetParentObjectOfStruct(IPropertyHandle& Struct
 UObject* FAGX_PropertyUtilities::GetObjectFromHandle(
 	const TSharedPtr<IPropertyHandle>& PropertyHandle)
 {
-#if UE_VERSION_OLDER_THAN(4,25,0)
-		UClass* PropertyClass = UObjectProperty::StaticClass();
+#if UE_VERSION_OLDER_THAN(4, 25, 0)
+	UClass* PropertyClass = UObjectProperty::StaticClass();
 #else
-		FFieldClass* PropertyClass = FObjectProperty::StaticClass();
+	FFieldClass* PropertyClass = FObjectProperty::StaticClass();
 #endif
 	if (PropertyHandle && PropertyHandle->IsValidHandle() && PropertyHandle->GetProperty() &&
 		PropertyHandle->GetProperty()->IsA(PropertyClass))
@@ -64,7 +64,7 @@ FString FAGX_PropertyUtilities::GetActualDisplayName(const UField* Field, bool b
 		}
 		else
 		{
-#if UE_VERSION_OLDER_THAN(2,25,0)
+#if UE_VERSION_OLDER_THAN(2, 25, 0)
 			bool bIsBool = Field->IsA(UBoolProperty::StaticClass());
 #else
 			bool bIsBool = false; /// @todo How test if the property is a bool in 4.25?

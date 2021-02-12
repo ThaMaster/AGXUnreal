@@ -4,8 +4,7 @@
 
 #include "Materials/AGX_TerrainMaterialInstance.h"
 
-UAGX_MaterialBase* UAGX_TerrainMaterialAsset::GetOrCreateInstance(
-	UWorld* PlayingWorld)
+UAGX_MaterialBase* UAGX_TerrainMaterialAsset::GetOrCreateInstance(UWorld* PlayingWorld)
 {
 	UAGX_TerrainMaterialInstance* InstancePtr = TerrainMaterialInstance.Get();
 

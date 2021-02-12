@@ -75,8 +75,7 @@ namespace
 		TArray<uint32> Indices;
 		TArray<FVector2D> TexCoords;
 
-		AGX_MeshUtilities::MakeCube(
-			Positions, Normals, Indices, TexCoords, HalfSize);
+		AGX_MeshUtilities::MakeCube(Positions, Normals, Indices, TexCoords, HalfSize);
 
 		return MeshGenerationTest_Helper::IsMeshDataValid(Positions, Normals, Indices, TexCoords);
 	}
@@ -104,7 +103,7 @@ namespace
 		AGX_MeshUtilities::MakeCylinder(
 			Positions, Normals, Indices, TexCoords,
 			AGX_MeshUtilities::CylinderConstructionData(
-			Radius, Height, NumCircleSegments, NumHeightSegments));
+				Radius, Height, NumCircleSegments, NumHeightSegments));
 
 		return MeshGenerationTest_Helper::IsMeshDataValid(Positions, Normals, Indices, TexCoords);
 	}

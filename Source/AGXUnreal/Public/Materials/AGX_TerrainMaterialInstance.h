@@ -28,14 +28,12 @@ public:
 
 	virtual FShapeMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld) override;
 
-	virtual UAGX_MaterialBase* GetOrCreateInstance(
-		UWorld* PlayingWorld) override;
+	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld) override;
 
 	static UAGX_TerrainMaterialInstance* CreateFromAsset(
 		UWorld* PlayingWorld, UAGX_TerrainMaterialAsset* Source);
 
 private:
-
 	// Creates the native AGX terrain material
 	void CreateTerrainMaterialNative(UWorld* PlayingWorld);
 	void CreateShapeMaterialNative(UWorld* PlayingWorld);

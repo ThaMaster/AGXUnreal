@@ -30,8 +30,9 @@ public:
 	//~ End FComponentVisualizer Interface
 
 	static void DrawConstraint(
-		const UAGX_ConstraintComponent* Constraint, const FSceneView* View, FPrimitiveDrawInterface* PDI);
+		const UAGX_ConstraintComponent* Constraint, const FSceneView* View,
+		FPrimitiveDrawInterface* PDI);
 	static void DrawConstraintHUD(
-		const UAGX_ConstraintComponent* Constraint, const FViewport* Viewport, const FSceneView* View,
-		FCanvas* Canvas);
+		const UAGX_ConstraintComponent* Constraint, const FViewport* Viewport,
+		const FSceneView* View, FCanvas* Canvas);
 };

@@ -14,8 +14,6 @@
 #include "Interfaces/Interface_CollisionDataProvider.h"
 #include "Misc/AssertionMacros.h"
 
-
-
 namespace
 {
 	agxCollide::Trimesh* NativeTrimesh(FTrimeshShapeBarrier* Barrier)

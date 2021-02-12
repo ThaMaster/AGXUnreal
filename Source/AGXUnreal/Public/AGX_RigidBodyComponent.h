@@ -12,7 +12,6 @@
 
 #include "AGX_RigidBodyComponent.generated.h"
 
-
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
@@ -68,7 +67,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_TransformTarget> TransformTarget;
 
-
 	/**
 	 * Should be called whenever properties (excluding transform and shapes) need to be pushed
 	 * onto the native in runtime.
@@ -81,7 +79,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void WriteTransformToNative();
-
 
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FRigidBodyBarrier* GetOrCreateNative();

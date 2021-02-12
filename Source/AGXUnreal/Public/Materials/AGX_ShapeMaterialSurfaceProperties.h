@@ -25,8 +25,8 @@ public:
 	 * Unitless roughness parameter used to calculate the final friction coefficient.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Material Surface Properties", Meta =
-						  (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bFrictionEnabled"))
+		EditAnywhere, Category = "AGX Material Surface Properties",
+		Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bFrictionEnabled"))
 	double Roughness;
 
 	/**

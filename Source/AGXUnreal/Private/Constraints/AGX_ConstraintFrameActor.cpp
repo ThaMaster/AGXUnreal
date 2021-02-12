@@ -6,7 +6,6 @@
 // Unreal Engine includes.
 #include "EngineUtils.h"
 
-
 AAGX_ConstraintFrameActor::AAGX_ConstraintFrameActor()
 {
 	// Create a root SceneComponent so that this Actor has a transform
@@ -29,7 +28,6 @@ AAGX_ConstraintFrameActor::AAGX_ConstraintFrameActor()
 void AAGX_ConstraintFrameActor::AddConstraintUsage(UAGX_ConstraintComponent* Constraint)
 {
 	ConstraintFrameComponent->AddConstraintUsage(Constraint);
-
 }
 
 void AAGX_ConstraintFrameActor::RemoveConstraintUsage(UAGX_ConstraintComponent* Constraint)

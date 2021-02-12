@@ -1,6 +1,5 @@
 #pragma once
 
-
 // AGX Dynamics for Unreal includes.
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/HeightFieldShapeBarrier.h"

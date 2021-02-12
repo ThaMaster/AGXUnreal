@@ -9,7 +9,6 @@
 
 #include "AGX_CapsuleShapeComponent.generated.h"
 
-
 UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_CapsuleShapeComponent final : public UAGX_ShapeComponent
 {

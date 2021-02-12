@@ -23,7 +23,8 @@ class AGXUNREAL_API UAGX_ShapeMaterialInstance : public UAGX_ShapeMaterialBase
 	GENERATED_BODY()
 
 public:
-	static UAGX_ShapeMaterialInstance* CreateFromAsset(UWorld* PlayingWorld, UAGX_ShapeMaterialAsset* Source);
+	static UAGX_ShapeMaterialInstance* CreateFromAsset(
+		UWorld* PlayingWorld, UAGX_ShapeMaterialAsset* Source);
 
 public:
 	virtual ~UAGX_ShapeMaterialInstance();
@@ -39,7 +40,6 @@ public:
 	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld) override;
 
 private:
-
 	// Creates the native AGX material and adds it to the simulation.
 	void CreateNative(UWorld* PlayingWorld);
 

@@ -57,8 +57,6 @@ private:
 	virtual void UpdateNativePropertiesImpl() override;
 };
 
-
-
 /**
  * This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprints.
  */

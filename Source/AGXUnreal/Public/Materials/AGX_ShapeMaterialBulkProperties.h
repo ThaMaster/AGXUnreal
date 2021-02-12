@@ -21,8 +21,8 @@ public:
 	 * (see mass options of Rigid Body Component).
 	 */
 	UPROPERTY(
-		EditAnywhere,
-		Category = "AGX Material Bulk Properties", Meta = (ClampMin = "0.0", UIMin = "0.0"))
+		EditAnywhere, Category = "AGX Material Bulk Properties",
+		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double Density;
 
 	/**
@@ -56,7 +56,7 @@ public:
 	 * This is only used if the contact area approach is used if the 'Use Contact Area Approach' is
 	 * enabled.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Material Bulk Properties" )
+	UPROPERTY(EditAnywhere, Category = "AGX Material Bulk Properties")
 	double MinElasticRestLength;
 
 	/**

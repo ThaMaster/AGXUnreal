@@ -10,7 +10,8 @@ FAGX_ConstraintTargetSpeedController::FAGX_ConstraintTargetSpeedController(bool 
 {
 }
 
-void FAGX_ConstraintTargetSpeedController::InitializeBarrier(TUniquePtr<FTargetSpeedControllerBarrier> Barrier)
+void FAGX_ConstraintTargetSpeedController::InitializeBarrier(
+	TUniquePtr<FTargetSpeedControllerBarrier> Barrier)
 {
 	check(!HasNative());
 	NativeBarrier = std::move(Barrier);

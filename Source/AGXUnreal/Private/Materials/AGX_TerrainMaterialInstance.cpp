@@ -20,7 +20,8 @@ FTerrainMaterialBarrier* UAGX_TerrainMaterialInstance::GetOrCreateTerrainMateria
 	return GetTerrainMaterialNative();
 }
 
-FShapeMaterialBarrier* UAGX_TerrainMaterialInstance::GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
+FShapeMaterialBarrier* UAGX_TerrainMaterialInstance::GetOrCreateShapeMaterialNative(
+	UWorld* PlayingWorld)
 {
 	if (!HasShapeMaterialNative())
 	{

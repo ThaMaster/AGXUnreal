@@ -35,7 +35,7 @@ bool FStringUtilities_GetFNameSafe_Test::RunTest(const FString& Parameters)
 			TEXT("Expected to get 'NAME_None' for 'nullptr' UObjectBase, got '%s' instead."),
 			*Name.ToString()));
 	}
-#if !UE_VERSION_OLDER_THAN(4,25,0)
+#if !UE_VERSION_OLDER_THAN(4, 25, 0)
 	Name = GetFNameSafe(static_cast<const FField*>(nullptr));
 	if (Name != NAME_None)
 	{

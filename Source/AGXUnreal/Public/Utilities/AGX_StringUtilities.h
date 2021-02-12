@@ -16,7 +16,7 @@ FORCEINLINE FName GetFNameSafe(const UObjectBase* Object)
 	}
 }
 
-#if !UE_VERSION_OLDER_THAN(4,25,0)
+#if !UE_VERSION_OLDER_THAN(4, 25, 0)
 FORCEINLINE FName GetFNameSafe(const FField* Field)
 {
 	if (Field == NULL)

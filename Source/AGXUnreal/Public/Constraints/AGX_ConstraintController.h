@@ -114,7 +114,7 @@ class AGXUNREAL_API UAGX_ConstraintController_FL : public UBlueprintFunctionLibr
 // ConstraintController subtype.
 /*
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
- 	static bool IsValid(UPARAM(ref) FAGX_TYPE& ControllerRef)
+	static bool IsValid(UPARAM(ref) FAGX_TYPE& ControllerRef)
 	{
 		return ControllerRef.HasNative();
 	}

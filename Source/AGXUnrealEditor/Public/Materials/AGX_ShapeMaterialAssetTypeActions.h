@@ -5,8 +5,8 @@
 #include "AssetTypeActions_Base.h"
 
 /**
- * Asset Type Actions for UAGX_ShapeMaterialAsset, customizing its appearance in the Editor menus and
- * browsers.
+ * Asset Type Actions for UAGX_ShapeMaterialAsset, customizing its appearance in the Editor menus
+ * and browsers.
  */
 class AGXUNREALEDITOR_API FAGX_ShapeMaterialAssetTypeActions : public FAssetTypeActions_Base
 {

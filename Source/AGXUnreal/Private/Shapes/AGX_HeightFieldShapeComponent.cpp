@@ -10,7 +10,6 @@
 #include "Landscape.h"
 #include "Misc/EngineVersionComparison.h"
 
-
 UAGX_HeightFieldShapeComponent::UAGX_HeightFieldShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -108,7 +107,7 @@ void UAGX_HeightFieldShapeComponent::PostEditChangeChainProperty(
 
 	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 
-#if UE_VERSION_OLDER_THAN(4,25,0)
+#if UE_VERSION_OLDER_THAN(4, 25, 0)
 	UProperty* const ChangedProperty = PropertyChangedEvent.Property;
 #else
 	FProperty* const ChangedProperty = PropertyChangedEvent.Property;

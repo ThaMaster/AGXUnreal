@@ -24,7 +24,6 @@
 #include "Widgets/Layout/SExpandableArea.h"
 #include "Widgets/Text/STextBlock.h"
 
-
 #define LOCTEXT_NAMESPACE "FAGX_AgxEdModeConstraintsCustomization"
 
 TSharedRef<IDetailCustomization> FAGX_AgxEdModeConstraintsCustomization::MakeInstance()
@@ -69,12 +68,12 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintCreatorCategory(
 	CreateConstraintTypeComboBox(CategoryBuilder, ConstraintsSubMode);
 
 	/** Rigid Body 1 - Picker */
-	CategoryBuilder.AddProperty(DetailBuilder.GetProperty(
-		GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, RigidBody1)));
+	CategoryBuilder.AddProperty(
+		DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, RigidBody1)));
 
 	/** Rigid Body 2 - Picker */
-	CategoryBuilder.AddProperty(DetailBuilder.GetProperty(
-		GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, RigidBody2)));
+	CategoryBuilder.AddProperty(
+		DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_AgxEdModeConstraints, RigidBody2)));
 
 	/** Find Actors From Selection - Button */
 	CreateGetFromSelectedActorsButton(CategoryBuilder, ConstraintsSubMode);
@@ -227,7 +226,8 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateFrameSourceRadioButtons(
 	for (int32 EnumIndex = 0; EnumIndex < NumEnums; ++EnumIndex)
 	{
 		const EAGX_ConstraintCreationFrameSource EnumValue =
-			static_cast<EAGX_ConstraintCreationFrameSource>(FrameSourceEnum->GetValueByIndex(EnumIndex));
+			static_cast<EAGX_ConstraintCreationFrameSource>(
+				FrameSourceEnum->GetValueByIndex(EnumIndex));
 
 		RadioButtonsBox->AddSlot().Padding(FMargin(
 			0.0f,

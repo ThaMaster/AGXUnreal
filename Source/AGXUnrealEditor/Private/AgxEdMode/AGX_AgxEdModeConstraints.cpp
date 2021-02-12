@@ -68,7 +68,8 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 				if (RigidBody2.GetRigidBody() != nullptr)
 				{
 					Constraint->AttachToActor(
-						RigidBody2.GetOwningActor(), FAttachmentTransformRules::KeepRelativeTransform);
+						RigidBody2.GetOwningActor(),
+						FAttachmentTransformRules::KeepRelativeTransform);
 					// Transform is implicitly same as RigidBody2, because of no relative transform.
 				}
 				else
@@ -109,9 +110,9 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 			case EAGX_ConstraintCreationFrameSource::TwoFrameActors:
 			{
 				FrameActor1 = FAGX_EditorUtilities::CreateConstraintFrameActor(
-							RigidBody1.GetOwningActor(), false, true, true);
+					RigidBody1.GetOwningActor(), false, true, true);
 				FrameActor2 = FAGX_EditorUtilities::CreateConstraintFrameActor(
-							RigidBody2.GetOwningActor(), false, true, true);
+					RigidBody2.GetOwningActor(), false, true, true);
 				break;
 			}
 			case EAGX_ConstraintCreationFrameSource::RigidBodyActor1:

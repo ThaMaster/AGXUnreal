@@ -94,12 +94,12 @@ protected:
 		const FName& PropertyName, const FName& MemberPropertyName) const;
 
 	virtual bool CanEditChange(
-#if UE_VERSION_OLDER_THAN(4,25,0)
+#if UE_VERSION_OLDER_THAN(4, 25, 0)
 		const UProperty* InProperty
 #else
 		const FProperty* InProperty
 #endif
-		) const override;
+	) const override;
 #endif
 
 private:

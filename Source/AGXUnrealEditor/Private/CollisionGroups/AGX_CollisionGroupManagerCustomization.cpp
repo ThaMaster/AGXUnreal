@@ -102,7 +102,7 @@ void FAGX_CollisionGroupManagerCustomization::AddComboBox(
 	IDetailCategoryBuilder& CategoryBuilder, AAGX_CollisionGroupManager* CollisionGroupManager,
 	FText Name, FName* SelectedGroup)
 {
-	//clang-format off
+	// clang-format off
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
 	.NameContent()
 	[
@@ -132,7 +132,7 @@ void FAGX_CollisionGroupManagerCustomization::AddComboBox(
 			})
 		]
 	];
-	//clang-format on
+	// clang-format on
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -274,8 +274,12 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 
 	// Export AGX Archive menu item
 	AddFileMenuEntry(
-		Builder, LOCTEXT("FileMenuEntryLabelEx", "Export Play-In-Editor Session to an AGX Dynamics Archive..."),
-		LOCTEXT("FileMenuEntryToolTipEx", "Export an AGX Archive from the Editor. A Play-In-Editor session must be active."),
+		Builder,
+		LOCTEXT(
+			"FileMenuEntryLabelEx", "Export Play-In-Editor Session to an AGX Dynamics Archive..."),
+		LOCTEXT(
+			"FileMenuEntryToolTipEx",
+			"Export an AGX Archive from the Editor. A Play-In-Editor session must be active."),
 		[]() { UAGX_AgxEdModeFile::ExportAgxArchive(); });
 }
 

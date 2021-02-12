@@ -21,7 +21,6 @@ struct AGXUNREAL_API FAGX_ConstraintScrewController : public FAGX_ConstraintCont
 {
 	GENERATED_USTRUCT_BODY()
 
-
 	/**
 	 * The distance, in centimeters along the screw's axis, that is covered by
 	 * one complete rotation of the screw (360 degrees).

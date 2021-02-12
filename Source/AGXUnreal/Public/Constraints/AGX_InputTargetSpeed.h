@@ -3,7 +3,6 @@
 // AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 
-
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
@@ -48,10 +47,13 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Speed Input",
 		meta =
-			(Tooltip = "If checked the constraint will move freely when no key is held. If unchecked the constraint will be stopped when no key is held."))
+			(Tooltip = "If checked the constraint will move freely when no key is held. If "
+					   "unchecked the constraint will be stopped when no key is held."))
 	bool bDisableOnRelease;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint Speed Input", meta = (EditCondition="bMustSelectDOF"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Speed Input",
+		meta = (EditCondition = "bMustSelectDOF"))
 	EAGX_Constraint2DOFFreeDOF TargetDOF;
 
 	// I want to make this a private property, but I don't know how. Setting

@@ -16,6 +16,5 @@
  */
 AGXUNREALBARRIER_API DECLARE_LOG_CATEGORY_EXTERN(LogAGX, Verbose, All);
 
-
 /// Log category for messages forwarded from AGX Dynamics.
 AGXUNREALBARRIER_API DECLARE_LOG_CATEGORY_EXTERN(LogAGXDynamics, Verbose, All);

@@ -393,7 +393,6 @@ FShapeMaterialBarrier FContactMaterialBarrier::GetMaterial1() const
 {
 	check(HasNative());
 	return ::GetMaterial(*NativeRef, 1);
-
 }
 
 FShapeMaterialBarrier FContactMaterialBarrier::GetMaterial2() const

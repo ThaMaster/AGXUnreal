@@ -7,7 +7,6 @@ AAGX_PrismaticConstraintActor::AAGX_PrismaticConstraintActor()
 {
 	SetConstraintComponent(
 		CreateDefaultSubobject<UAGX_PrismaticConstraintComponent>(TEXT("Prismatic")));
-
 }
 
 AAGX_PrismaticConstraintActor::~AAGX_PrismaticConstraintActor()

@@ -195,7 +195,8 @@ double FTerrainMaterialBarrier::GetYoungsModulus() const
 void FTerrainMaterialBarrier::SetAngleOfReposeCompactionRate(double AngleOfReposeCompactionRate)
 {
 	check(HasNative());
-	NativeRef->Native->getCompactionProperties()->setAngleOfReposeCompactionRate(AngleOfReposeCompactionRate);
+	NativeRef->Native->getCompactionProperties()->setAngleOfReposeCompactionRate(
+		AngleOfReposeCompactionRate);
 }
 
 double FTerrainMaterialBarrier::GetAngleOfReposeCompactionRate() const
@@ -216,10 +217,12 @@ double FTerrainMaterialBarrier::GetBankStatePhi() const
 	return NativeRef->Native->getCompactionProperties()->getBankStatePhi();
 }
 
-void FTerrainMaterialBarrier::SetCompactionTimeRelaxationConstant(double CompactionTimeRelaxationConstant)
+void FTerrainMaterialBarrier::SetCompactionTimeRelaxationConstant(
+	double CompactionTimeRelaxationConstant)
 {
 	check(HasNative());
-	NativeRef->Native->getCompactionProperties()->setCompactionTimeRelaxationConstant(CompactionTimeRelaxationConstant);
+	NativeRef->Native->getCompactionProperties()->setCompactionTimeRelaxationConstant(
+		CompactionTimeRelaxationConstant);
 }
 
 double FTerrainMaterialBarrier::GetCompactionTimeRelaxationConstant() const

@@ -9,7 +9,8 @@ FAGX_ConstraintFrictionController::FAGX_ConstraintFrictionController(bool bRotat
 {
 }
 
-void FAGX_ConstraintFrictionController::InitializeBarrier(TUniquePtr<FFrictionControllerBarrier> Barrier)
+void FAGX_ConstraintFrictionController::InitializeBarrier(
+	TUniquePtr<FFrictionControllerBarrier> Barrier)
 {
 	check(!HasNative());
 	NativeBarrier = std::move(Barrier);

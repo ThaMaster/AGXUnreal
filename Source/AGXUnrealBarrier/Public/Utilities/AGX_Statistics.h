@@ -6,7 +6,8 @@
 #include "AGX_Statistics.generated.h"
 
 USTRUCT(BlueprintType)
-struct AGXUNREALBARRIER_API FAGX_Statistics {
+struct AGXUNREALBARRIER_API FAGX_Statistics
+{
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AGX Statistics")

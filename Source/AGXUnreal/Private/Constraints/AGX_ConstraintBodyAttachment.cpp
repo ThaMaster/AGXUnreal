@@ -11,7 +11,6 @@
 #include "Components/SceneComponent.h"
 #include "UObject/UObjectGlobals.h"
 
-
 FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment(USceneComponent* InOwner)
 	: Owner {InOwner}
 {
@@ -34,8 +33,8 @@ FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocationFromBody() const
 		return FVector::ZeroVector;
 	}
 
-	// If the FrameDefiningSource is RigidBody, the LocalFrameLocation is already given in RigidBody's
-	// frame by definition and we can simply return the value directly.
+	// If the FrameDefiningSource is RigidBody, the LocalFrameLocation is already given in
+	// RigidBody's frame by definition and we can simply return the value directly.
 	if (FrameDefiningSource == EAGX_FrameDefiningSource::RigidBody)
 	{
 		return LocalFrameLocation;
@@ -56,8 +55,8 @@ FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotationFromBody() const
 		return FQuat::Identity;
 	}
 
-	// If the FrameDefiningSource is RigidBody, the LocalFrameRotation is already given in RigidBody's
-	// frame by definition and we can simply return the value directly.
+	// If the FrameDefiningSource is RigidBody, the LocalFrameRotation is already given in
+	// RigidBody's frame by definition and we can simply return the value directly.
 	if (FrameDefiningSource == EAGX_FrameDefiningSource::RigidBody)
 	{
 		return LocalFrameRotation.Quaternion();
@@ -79,7 +78,7 @@ FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 
 FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 {
-	if (USceneComponent * FrameDefiningComp = GetFinalFrameDefiningComponent())
+	if (USceneComponent* FrameDefiningComp = GetFinalFrameDefiningComponent())
 	{
 		return FrameDefiningComp->GetComponentTransform().TransformRotation(
 			LocalFrameRotation.Quaternion());

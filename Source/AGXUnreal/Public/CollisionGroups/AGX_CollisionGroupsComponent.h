@@ -20,7 +20,6 @@ class AGXUNREAL_API UAGX_CollisionGroupsComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-
 	// Sets default values for this component's properties
 	UAGX_CollisionGroupsComponent();
 
@@ -53,5 +52,5 @@ private:
 		int32 ChangeIndex);
 
 private:
-	//TArray<FName> CollisionGroupsLastChange;
+	// TArray<FName> CollisionGroupsLastChange;
 };

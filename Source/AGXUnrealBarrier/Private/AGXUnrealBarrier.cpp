@@ -51,8 +51,7 @@ void FAGXUnrealBarrierModule::ShutdownModule()
 	// Stop AGX logging.
 	NotifyBarrier.StopAgxNotify();
 
-	UE_LOG(
-		LogAGX, Log, TEXT("FAGXUnrealBarrierModule::ShutdownModule(). Calling agx::shutdown"));
+	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::ShutdownModule(). Calling agx::shutdown"));
 	agx::shutdown();
 
 	if (VdbGridLibHandle)

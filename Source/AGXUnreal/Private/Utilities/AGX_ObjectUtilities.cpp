@@ -1,7 +1,6 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 
-void FAGX_ObjectUtilities::GetChildActorsOfActor(
-	AActor* Parent, TArray<AActor*>& ChildActors)
+void FAGX_ObjectUtilities::GetChildActorsOfActor(AActor* Parent, TArray<AActor*>& ChildActors)
 {
 	TArray<AActor*> CurrentLevel;
 

@@ -149,9 +149,7 @@ FAGX_ConstraintUtilities::GetNativeCast(UComponent* Component)
 	FBarrierType* Barrier = static_cast<FBarrierType*>(BaseBarrier);
 	if (Barrier == nullptr)
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Found Component with a mismatched Barrier type."));
+		UE_LOG(LogAGX, Error, TEXT("Found Component with a mismatched Barrier type."));
 		return nullptr;
 	}
 

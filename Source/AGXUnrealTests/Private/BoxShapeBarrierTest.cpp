@@ -1,6 +1,7 @@
 
 // This test is disabled because including it leads to
-//    Warning: dlopen failed: libUE4Editor-AGXUnrealBarrier.so: undefined symbol: "typeinfo for FAutomationTestBase"
+//    Warning: dlopen failed: libUE4Editor-AGXUnrealBarrier.so: undefined symbol: "typeinfo for
+//    FAutomationTestBase"
 #if 0
 // AGX Dynamics for Unreal includes.
 #include "Shapes/BoxShapeBarrier.h"

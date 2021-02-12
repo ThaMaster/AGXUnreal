@@ -13,8 +13,7 @@ AAGX_Stepper::AAGX_Stepper()
 	///       to see the new state for this tick.
 
 	// Only tick if the AGX Dynamics license is valid.
-	PrimaryActorTick.bCanEverTick =
-		FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid();
+	PrimaryActorTick.bCanEverTick = FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid();
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
 }
 

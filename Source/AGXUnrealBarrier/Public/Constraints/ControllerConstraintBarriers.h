@@ -35,7 +35,6 @@ protected:
 	FConstraintControllerBarrier() = default;
 	FConstraintControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
 
-
 private:
 	FConstraintControllerBarrier(const FConstraintControllerBarrier&) = delete;
 	void operator=(const FConstraintControllerBarrier&) = delete;

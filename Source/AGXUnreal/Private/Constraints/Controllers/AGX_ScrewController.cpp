@@ -37,4 +37,3 @@ void FAGX_ConstraintScrewController::CopyFrom(const FScrewControllerBarrier& Sou
 	Super::CopyFrom(Source);
 	Lead = Source.GetLead();
 }
-

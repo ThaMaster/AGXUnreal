@@ -56,12 +56,9 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 		, Rotational_1(DefaultValue)
 		, Rotational_2(DefaultValue)
 		, Rotational_3(DefaultValue)
-		, Translational_1_IsEditable(
-			  (uint8) EditableDofs & (uint8) EDofFlag::DofFlagTranslational1)
-		, Translational_2_IsEditable(
-			  (uint8) EditableDofs & (uint8) EDofFlag::DofFlagTranslational2)
-		, Translational_3_IsEditable(
-			  (uint8) EditableDofs & (uint8) EDofFlag::DofFlagTranslational3)
+		, Translational_1_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagTranslational1)
+		, Translational_2_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagTranslational2)
+		, Translational_3_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagTranslational3)
 		, Rotational_1_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagRotational1)
 		, Rotational_2_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagRotational2)
 		, Rotational_3_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagRotational3)
@@ -142,12 +139,9 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 		, Rotational_1(DefaultMinValue, DefaultMaxValue)
 		, Rotational_2(DefaultMinValue, DefaultMaxValue)
 		, Rotational_3(DefaultMinValue, DefaultMaxValue)
-		, Translational_1_IsEditable(
-			  (uint8) EditableDofs & (uint8) EDofFlag::DofFlagTranslational1)
-		, Translational_2_IsEditable(
-			  (uint8) EditableDofs & (uint8) EDofFlag::DofFlagTranslational2)
-		, Translational_3_IsEditable(
-			  (uint8) EditableDofs & (uint8) EDofFlag::DofFlagTranslational3)
+		, Translational_1_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagTranslational1)
+		, Translational_2_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagTranslational2)
+		, Translational_3_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagTranslational3)
 		, Rotational_1_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagRotational1)
 		, Rotational_2_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagRotational2)
 		, Rotational_3_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagRotational3)

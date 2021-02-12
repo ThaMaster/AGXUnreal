@@ -25,7 +25,8 @@ public:
 	FContactMaterialRef* GetNative();
 	const FContactMaterialRef* GetNative() const;
 
-	void AllocateNative(const FShapeMaterialBarrier* Material1, const FShapeMaterialBarrier* Material2);
+	void AllocateNative(
+		const FShapeMaterialBarrier* Material1, const FShapeMaterialBarrier* Material2);
 	void ReleaseNative();
 
 	void SetFrictionSolveType(int32 SolveType);

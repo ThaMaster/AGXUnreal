@@ -33,7 +33,8 @@ UAGX_ShapeMaterialInstance::~UAGX_ShapeMaterialInstance()
 {
 }
 
-FShapeMaterialBarrier* UAGX_ShapeMaterialInstance::GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
+FShapeMaterialBarrier* UAGX_ShapeMaterialInstance::GetOrCreateShapeMaterialNative(
+	UWorld* PlayingWorld)
 {
 	if (!HasNative())
 	{
@@ -79,8 +80,7 @@ void UAGX_ShapeMaterialInstance::UpdateNativeProperties()
 	}
 }
 
-UAGX_MaterialBase* UAGX_ShapeMaterialInstance::GetOrCreateInstance(
-	UWorld* PlayingWorld)
+UAGX_MaterialBase* UAGX_ShapeMaterialInstance::GetOrCreateInstance(UWorld* PlayingWorld)
 {
 	return this;
 };

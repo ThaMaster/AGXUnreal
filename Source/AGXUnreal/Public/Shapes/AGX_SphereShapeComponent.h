@@ -7,7 +7,6 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
-
 #include "AGX_SphereShapeComponent.generated.h"
 
 UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))

@@ -2,7 +2,6 @@
 
 #include "Engine/World.h"
 
-
 void UAGX_TerrainMaterialBase::CopyTerrainMaterialProperties(const UAGX_TerrainMaterialBase* Source)
 {
 	if (Source)

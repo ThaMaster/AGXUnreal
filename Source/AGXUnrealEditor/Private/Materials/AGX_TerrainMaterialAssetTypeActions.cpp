@@ -27,8 +27,7 @@ FColor FAGX_TerrainMaterialAssetTypeActions::GetTypeColor() const
 
 FText FAGX_TerrainMaterialAssetTypeActions::GetAssetDescription(const FAssetData& AssetData) const
 {
-	return LOCTEXT(
-		"AssetDescription", "Defines detailed material properties for a terrain.");
+	return LOCTEXT("AssetDescription", "Defines detailed material properties for a terrain.");
 }
 
 UClass* FAGX_TerrainMaterialAssetTypeActions::GetSupportedClass() const

@@ -28,8 +28,7 @@ public:
 
 	GENERATED_BODY()
 
-	virtual UAGX_MaterialBase* GetOrCreateInstance(
-		UWorld* PlayingWorld) override;
+	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld) override;
 
 private:
 	TWeakObjectPtr<UAGX_TerrainMaterialInstance> TerrainMaterialInstance;

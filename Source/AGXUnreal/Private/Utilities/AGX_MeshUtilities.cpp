@@ -881,7 +881,8 @@ void AGX_MeshUtilities::MakeCapsule(
 
 	if (Data.CircleSegments < 4 || Data.CircleSegments > MaxUint16)
 	{
-		LogConstructionError("CircleSegments must be at least 4 and at most " + FString::FromInt(MaxUint16));
+		LogConstructionError(
+			"CircleSegments must be at least 4 and at most " + FString::FromInt(MaxUint16));
 		return;
 	}
 

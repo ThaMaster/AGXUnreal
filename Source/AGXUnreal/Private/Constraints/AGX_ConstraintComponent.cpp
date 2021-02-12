@@ -226,8 +226,7 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisY().Z) > Tolerance)
 		{
-			WriteMessage(
-				EDofFlag::DofFlagRotational1, FMath::Abs(Rotation2InLocal1.GetAxisY().Z));
+			WriteMessage(EDofFlag::DofFlagRotational1, FMath::Abs(Rotation2InLocal1.GetAxisY().Z));
 			return true;
 		}
 	}
@@ -236,8 +235,7 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Z) > Tolerance)
 		{
-			WriteMessage(
-				EDofFlag::DofFlagRotational2, FMath::Abs(Rotation2InLocal1.GetAxisX().Z));
+			WriteMessage(EDofFlag::DofFlagRotational2, FMath::Abs(Rotation2InLocal1.GetAxisX().Z));
 			return true;
 		}
 	}
@@ -246,8 +244,7 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 	{
 		if (FMath::Abs(Rotation2InLocal1.GetAxisX().Y) > Tolerance)
 		{
-			WriteMessage(
-				EDofFlag::DofFlagRotational3, FMath::Abs(Rotation2InLocal1.GetAxisX().Y));
+			WriteMessage(EDofFlag::DofFlagRotational3, FMath::Abs(Rotation2InLocal1.GetAxisX().Y));
 			return true;
 		}
 	}

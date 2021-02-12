@@ -75,9 +75,10 @@ namespace UAGX_InputTargetSpeed_Helpers
 				Cast<UAGX_Constraint2DofComponent>(Parent))
 		{
 			const bool First = Input.TargetDOF == EAGX_Constraint2DOFFreeDOF::FIRST;
-			return {(First ? &Constraint2Dof->TargetSpeedController1
-						   : &Constraint2Dof->TargetSpeedController2),
-					Controller, true};
+			return {
+				(First ? &Constraint2Dof->TargetSpeedController1
+					   : &Constraint2Dof->TargetSpeedController2),
+				Controller, true};
 		}
 
 		Input.LogErrorMessageOnce(TEXT("Placed below something not a constraint."));

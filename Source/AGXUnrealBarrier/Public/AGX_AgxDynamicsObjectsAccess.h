@@ -34,7 +34,6 @@ class FHingeBarrier;
 class FLockJointBarrier;
 class FPrismaticBarrier;
 
-
 class AGXUNREALBARRIER_API FAGX_AgxDynamicsObjectsAccess
 {
 public:

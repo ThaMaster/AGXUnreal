@@ -239,7 +239,6 @@ inline agx::Vec4 Convert(const FVector4& V)
 	return agx::Vec4(Convert(V.X), Convert(V.Y), Convert(V.Z), Convert(V.W));
 }
 
-
 // Interval/Range.
 
 inline FFloatInterval Convert(const agx::RangeReal& R)
