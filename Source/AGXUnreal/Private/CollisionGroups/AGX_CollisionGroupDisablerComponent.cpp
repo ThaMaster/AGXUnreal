@@ -131,7 +131,9 @@ void UAGX_CollisionGroupDisablerComponent::UpdateAvailableCollisionGroupsFromWor
 {
 	AvailableCollisionGroups.Empty();
 
-	// Find all ShapeComponent objects in the world and get all collision groups from those.
+	// @todo Find a way to only get the shapes in the current UWorld.
+
+	// Find all ShapeComponent objects and get all collision groups from those.
 	for (TObjectIterator<UAGX_ShapeComponent> ObjectIt; ObjectIt; ++ObjectIt)
 	{
 		UAGX_ShapeComponent* Shape = *ObjectIt;
@@ -169,16 +171,13 @@ void UAGX_CollisionGroupDisablerComponent::RemoveDeprecatedCollisionGroups()
 bool UAGX_CollisionGroupDisablerComponent::IsCollisionGroupPairDisabled(
 	const FName& CollisionGroup1, const FName& CollisionGroup2, int& OutIndex) const
 {
-	OutIndex = -1;
+	OutIndex = INDEX_NONE;
 
 	// Check all disabled collision group pairs, and check all
-	// permutations (i.e. here [A,B] == [B,A])
+	// permutations (i.e. here [A,B] == [B,A]).
 	for (int i = 0; i < DisabledCollisionGroupPairs.Num(); i++)
 	{
-		if ((CollisionGroup1.IsEqual(DisabledCollisionGroupPairs[i].Group1) &&
-			 CollisionGroup2.IsEqual(DisabledCollisionGroupPairs[i].Group2)) ||
-			(CollisionGroup1.IsEqual(DisabledCollisionGroupPairs[i].Group2) &&
-			 CollisionGroup2.IsEqual(DisabledCollisionGroupPairs[i].Group1)))
+		if (DisabledCollisionGroupPairs[i].IsEqual(CollisionGroup1, CollisionGroup2))
 		{
 			OutIndex = i;
 			return true;

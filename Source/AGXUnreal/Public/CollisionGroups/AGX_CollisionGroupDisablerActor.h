@@ -26,8 +26,5 @@ public:
 	AAGX_CollisionGroupDisablerActor();
 
 	UPROPERTY(Category = "AGX Dynamics", VisibleAnywhere, BlueprintReadOnly)
-	USceneComponent* Root;
-
-	UPROPERTY(Category = "AGX Dynamics", VisibleAnywhere, BlueprintReadOnly)
 	UAGX_CollisionGroupDisablerComponent* CollisionGroupDisablerComponent;
 };
