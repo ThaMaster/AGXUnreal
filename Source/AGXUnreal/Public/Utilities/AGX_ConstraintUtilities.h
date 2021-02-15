@@ -1,0 +1,157 @@
+#pragma once
+
+// AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
+#include "Constraints/AGX_Constraint1DofComponent.h"
+#include "Constraints/AGX_Constraint2DofComponent.h"
+#include "Constraints/AGX_Constraint2DOFFreeDOF.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
+// Standard library includes.
+#include <type_traits>
+
+class FConstraint1DOFBarrier;
+class FConstraint2DOFBarrier;
+class UAGX_Constraint1DofComponent;
+class UAGX_RigidBodyComponent;
+
+struct FAGX_ConstraintElectricMotorController;
+struct FAGX_ConstraintFrictionController;
+struct FAGX_ConstraintLockController;
+struct FAGX_ConstraintRangeController;
+struct FAGX_ConstraintTargetSpeedController;
+
+class AGXUNREAL_API FAGX_ConstraintUtilities
+{
+public:
+	/**
+	 * Copy constraint controller properties, such as enabled, compliance, force range, voltage,
+	 * from the AGX Dynamics constraint to the AGXUnreal constraint.
+	 * @param Component The AGXUnreal constraint to copy properties to.
+	 * @param Barrier The AGX Dynamics constraint to copy properties from.
+	 */
+	static void CopyControllersFrom(
+		UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier);
+
+	/**
+	 * Copy constraint controller properties, such as enabled, compliance, force range, voltage,
+	 * from the AGX Dynamics constraint to the AGXUnreal constraint.
+	 * @param Component The AGXUnreal constraint to copy properties to.
+	 * @param Barrier The AGX Dynamics constraint to copy properties from.
+	 */
+	static void CopyControllersFrom(
+		UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier);
+
+	/**
+	 * Base class overload that does nothing. Only 1Dof- and 2Dof constraints have controllers so
+	 * make sure one of those overloads are called when appropriate. This overload is required
+	 * because the call is made from a function template that is sometimes given a non-1/2Dof
+	 * constraint.
+	 * @param Component
+	 * @param Barrier
+	 */
+	static void CopyControllersFrom(
+		UAGX_ConstraintComponent& Component, const FConstraintBarrier& Barrier);
+
+	static void StoreElectricMotorController(
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller);
+
+	static void StoreElectricMotorController(
+		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller,
+		EAGX_Constraint2DOFFreeDOF Dof);
+
+	static void StoreFrictionController(
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller);
+
+	static void StoreFrictionController(
+		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
+		EAGX_Constraint2DOFFreeDOF Dof);
+
+	static void StoreLockController(
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller);
+
+	static void StoreLockController(
+		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
+		EAGX_Constraint2DOFFreeDOF Dof);
+
+	static void StoreRangeController(
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller);
+
+	static void StoreRangeController(
+		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
+		EAGX_Constraint2DOFFreeDOF Dof);
+
+	static void StoreTargetSpeedController(
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller);
+
+	static void StoreTargetSpeedController(
+		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
+		EAGX_Constraint2DOFFreeDOF Dof);
+
+	/**
+	 * Sets up the constraint 'Component' and its BodyAttachments in accordance with
+	 * FrameDefiningSource = Constraint, given an FConstraintBarrier and the constrained
+	 * RigidBodies.
+	 */
+	static void SetupConstraintAsFrameDefiningSource(
+		const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
+		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2);
+
+	static void CreateNative(
+		FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& Attachment1,
+		FAGX_ConstraintBodyAttachment& Attachment2, const FName& ConstraintName);
+
+	/**
+	 * Get the Barrier object for the given Component.
+	 *
+	 * The Component must have a FBarrierType member type that declare the type
+	 * of the Barrier that the Component contains.
+	 *
+	 * Will return nullptr if a native AGX Dynamics object hasn't been created yet.
+	 *
+	 * @tparam UComponent The type of the Component. Deduced from the parameter.
+	 * @tparam bIsConst Whether or not the types are const. Deduced from the parameter.
+	 * @param Component The Component to get the Barrier from.
+	 * @return The Barrier object created for the given Component, if one has been created.
+	 */
+	template <typename UComponent, bool bIsConst = std::is_const<UComponent>::value>
+	static typename std::conditional<
+		bIsConst, const typename UComponent::FBarrierType*,
+		typename UComponent::FBarrierType*>::type
+	GetNativeCast(UComponent* Component);
+};
+
+template <typename UComponent, bool bIsConst>
+typename std::conditional<
+	bIsConst, const typename UComponent::FBarrierType*, typename UComponent::FBarrierType*>::type
+FAGX_ConstraintUtilities::GetNativeCast(UComponent* Component)
+{
+	if (Component == nullptr)
+	{
+		return nullptr;
+	}
+
+	using FBarrierType = typename std::conditional<
+		bIsConst, const typename UComponent::FBarrierType, typename UComponent::FBarrierType>::type;
+	using FBaseBarrier =
+		typename std::conditional<bIsConst, const FConstraintBarrier, FConstraintBarrier>::type;
+
+	FBaseBarrier* BaseBarrier = Component->GetNative();
+	if (BaseBarrier == nullptr)
+	{
+		return nullptr;
+	}
+
+	// We "know" that the Barrier can only ever be the correct type, but it would be nice to be able
+	// to make sure. But we can't use dynamic_cast since Unreal Engine disables RTTI.
+	FBarrierType* Barrier = static_cast<FBarrierType*>(BaseBarrier);
+	if (Barrier == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Found Component with a mismatched Barrier type."));
+		return nullptr;
+	}
+
+	return Barrier;
+}
