@@ -10,6 +10,22 @@
 // Unreal Engine includes.
 #include "Engine/World.h"
 
+namespace
+{
+	void LogErrorWithMessageBoxInEditor(const FString& Msg, UWorld* World)
+	{
+		if (World && World->IsGameWorld())
+		{
+			// Write only to the log during Play.
+			UE_LOG(LogAGX, Error, TEXT("%s"), *Msg);
+		}
+		else
+		{
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Msg);
+		}
+	}
+}
+
 UAGX_CollisionGroupDisablerComponent::UAGX_CollisionGroupDisablerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -17,12 +33,12 @@ UAGX_CollisionGroupDisablerComponent::UAGX_CollisionGroupDisablerComponent()
 
 void UAGX_CollisionGroupDisablerComponent::DisableSelectedCollisionGroupPairs()
 {
-	DisableCollisionGroupPair(SelectedGroup1, SelectedGroup2, true);
+	DisableCollisionGroupPair(SelectedGroup1, SelectedGroup2);
 }
 
 void UAGX_CollisionGroupDisablerComponent::ReenableSelectedCollisionGroupPairs()
 {
-	EnableCollisionGroupPair(SelectedGroup1, SelectedGroup2, true);
+	EnableCollisionGroupPair(SelectedGroup1, SelectedGroup2);
 }
 
 void UAGX_CollisionGroupDisablerComponent::UpdateAvailableCollisionGroups()
@@ -40,36 +56,20 @@ void UAGX_CollisionGroupDisablerComponent::UpdateAvailableCollisionGroups()
 }
 
 void UAGX_CollisionGroupDisablerComponent::DisableCollisionGroupPair(
-	const FName& Group1, const FName& Group2, bool ErrorAsMessageBox)
+	const FName& Group1, const FName& Group2)
 {
 	if (Group1.IsNone() || Group2.IsNone())
 	{
-		const FString Msg =
-			"A selected collision group may not be 'None'. Please select valid collision groups.";
-		if (ErrorAsMessageBox)
-		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Msg);
-		}
-		else
-		{
-			UE_LOG(LogAGX, Error, TEXT("%s"), *Msg);
-		}
-
+		LogErrorWithMessageBoxInEditor(
+			"A selected collision group may not be 'None'. Please select valid collision groups.",
+			GetWorld());
 		return;
 	}
 
 	if (IsCollisionGroupPairDisabled(Group1, Group2))
 	{
-		const FString Msg =
-			"Collision has already been disabled for the selected collision groups.";
-		if (ErrorAsMessageBox)
-		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Msg);
-		}
-		else
-		{
-			UE_LOG(LogAGX, Error, TEXT("%s"), *Msg);
-		}
+		LogErrorWithMessageBoxInEditor(
+			"Collision has already been disabled for the selected collision groups.", GetWorld());
 		return;
 	}
 
@@ -85,20 +85,14 @@ void UAGX_CollisionGroupDisablerComponent::DisableCollisionGroupPair(
 }
 
 void UAGX_CollisionGroupDisablerComponent::EnableCollisionGroupPair(
-	const FName& Group1, const FName& Group2, bool ErrorAsMessageBox)
+	const FName& Group1, const FName& Group2)
 {
 	if (Group1.IsNone() || Group2.IsNone())
 	{
-		const FString Msg =
-			"A selected collision group may not be 'None'. Please select valid collision groups.";
-		if (ErrorAsMessageBox)
-		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Msg);
-		}
-		else
-		{
-			UE_LOG(LogAGX, Error, TEXT("%s"), *Msg);
-		}
+		LogErrorWithMessageBoxInEditor(
+			"A selected collision group may not be 'None'. Please select valid collision groups.",
+			GetWorld());
+		return;
 	}
 
 	int OutIndex;

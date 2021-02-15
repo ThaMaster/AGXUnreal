@@ -35,15 +35,13 @@ public:
 	 * Disable collision between two given collision groups.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Collision Group Pairs")
-	void DisableCollisionGroupPair(
-		const FName& Group1, const FName& Group2, bool ErrorAsMessageBox = false);
+	void DisableCollisionGroupPair(const FName& Group1, const FName& Group2);
 
 	/**
 	 * (Re-)Enable collision between two given collision groups.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Collision Group Pairs")
-	void EnableCollisionGroupPair(
-		const FName& Group1, const FName& Group2, bool ErrorAsMessageBox = false);
+	void EnableCollisionGroupPair(const FName& Group1, const FName& Group2);
 
 	void DisableSelectedCollisionGroupPairs();
 
@@ -66,7 +64,8 @@ public:
 		return SelectedGroup2;
 	}
 
-	bool IsCollisionGroupPairDisabled(const FName& CollisionGroup1, const FName& CollisionGroup2) const;
+	bool IsCollisionGroupPairDisabled(
+		const FName& CollisionGroup1, const FName& CollisionGroup2) const;
 
 protected:
 	virtual void BeginPlay() override;
@@ -78,7 +77,8 @@ private:
 
 	void RemoveDeprecatedCollisionGroups();
 
-	bool IsCollisionGroupPairDisabled(const FName& CollisionGroup1, const FName& CollisionGroup2, int& OutIndex) const;
+	bool IsCollisionGroupPairDisabled(
+		const FName& CollisionGroup1, const FName& CollisionGroup2, int& OutIndex) const;
 
 	TArray<FName> AvailableCollisionGroups;
 	FName SelectedGroup1;
