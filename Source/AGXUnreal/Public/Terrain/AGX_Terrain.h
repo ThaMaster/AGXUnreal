@@ -33,7 +33,7 @@ class UNiagaraComponent;
 class UNiagaraSystem;
 
 UCLASS(ClassGroup = "AGX_Terrain", Blueprintable, Category = "AGX")
-class AGXFORUNREAL_API AAGX_Terrain : public AActor
+class AGXUNREAL_API AAGX_Terrain : public AActor
 {
 	GENERATED_BODY()
 
