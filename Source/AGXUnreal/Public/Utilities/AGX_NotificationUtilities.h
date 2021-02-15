@@ -7,7 +7,7 @@
  * Provides helper functions for working with notifications, both when in Editor and built
  * executable.
  */
-class AGXFORUNREAL_API FAGX_NotificationUtilities
+class AGXUNREAL_API FAGX_NotificationUtilities
 {
 public:
 	/**

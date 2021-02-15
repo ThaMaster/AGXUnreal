@@ -22,7 +22,7 @@ class UAGX_ShapeComponent;
  * Note: This Component might not work inside Blueprints.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent))
-class AGXFORUNREAL_API UAGX_CollisionGroupAdderComponent : public UActorComponent
+class AGXUNREAL_API UAGX_CollisionGroupAdderComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

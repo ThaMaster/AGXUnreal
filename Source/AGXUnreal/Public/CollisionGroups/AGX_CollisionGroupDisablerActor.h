@@ -18,7 +18,7 @@ class UAGX_CollisionGroupDisablerComponent;
  * associated with them.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", HideCategories = (Cooking, LOD, Replication))
-class AGXFORUNREAL_API AAGX_CollisionGroupDisablerActor : public AActor
+class AGXUNREAL_API AAGX_CollisionGroupDisablerActor : public AActor
 {
 	GENERATED_BODY()
 

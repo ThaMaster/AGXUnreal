@@ -11,7 +11,7 @@ class IDetailCategoryBuilder;
 /**
  * Defines the design of the Collision Group component in the Editor.
  */
-class AGXFORUNREALEDITOR_API FAGX_CollisionGroupAdderComponentCustomization : public IDetailCustomization
+class AGXUNREALEDITOR_API FAGX_CollisionGroupAdderComponentCustomization : public IDetailCustomization
 {
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();

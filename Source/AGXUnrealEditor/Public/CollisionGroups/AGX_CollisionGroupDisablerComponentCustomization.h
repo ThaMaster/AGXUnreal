@@ -13,7 +13,7 @@ class UAGX_CollisionGroupDisablerComponent;
 /**
  * Defines the design of the Collision Group Disabler Component object in the Editor.
  */
-class AGXFORUNREALEDITOR_API FAGX_CollisionGroupDisablerComponentCustomization
+class AGXUNREALEDITOR_API FAGX_CollisionGroupDisablerComponentCustomization
 	: public IDetailCustomization
 {
 public:

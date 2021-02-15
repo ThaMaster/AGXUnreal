@@ -18,7 +18,7 @@
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	HideCategories = (Cooking, LOD, Replication))
-class AGXFORUNREAL_API UAGX_CollisionGroupDisablerComponent : public UActorComponent
+class AGXUNREAL_API UAGX_CollisionGroupDisablerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
