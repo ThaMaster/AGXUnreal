@@ -75,11 +75,10 @@ void UAGX_CollisionGroupDisablerComponent::DisableCollisionGroupPair(
 
 	DisabledCollisionGroupPairs.Add(FAGX_CollisionGroupPair {Group1, Group2});
 
-	// For the non-game world case, the groups are added to the simulation in BeginPlay().
-	UWorld* World = GetWorld();
-	if (World && World->IsGameWorld())
+	// For the non-game world case (where there is no UAGX_Simulation), the groups are added to the
+	// simulation in BeginPlay().
+	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(GetWorld()))
 	{
-		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(GetWorld());
 		Simulation->SetEnableCollisionGroupPair(Group1, Group2, false);
 	}
 }
@@ -96,17 +95,18 @@ void UAGX_CollisionGroupDisablerComponent::EnableCollisionGroupPair(
 	}
 
 	int OutIndex;
-	if (IsCollisionGroupPairDisabled(Group1, Group2, OutIndex))
+	if (!IsCollisionGroupPairDisabled(Group1, Group2, OutIndex))
 	{
-		DisabledCollisionGroupPairs.RemoveAt(OutIndex);
+		return;
+	}
 
-		// For the non-game world case, the groups are added to the simulation in BeginPlay().
-		UWorld* World = GetWorld();
-		if (World && World->IsGameWorld())
-		{
-			UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(GetWorld());
-			Simulation->SetEnableCollisionGroupPair(Group1, Group2, true);
-		}
+	DisabledCollisionGroupPairs.RemoveAt(OutIndex);
+
+	// For the non-game world case (where there is no UAGX_Simulation), the groups are added to
+	// the simulation in BeginPlay().
+	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(GetWorld()))
+	{
+		Simulation->SetEnableCollisionGroupPair(Group1, Group2, true);
 	}
 }
 
@@ -118,11 +118,6 @@ void UAGX_CollisionGroupDisablerComponent::BeginPlay()
 
 void UAGX_CollisionGroupDisablerComponent::AddCollisionGroupPairsToSimulation()
 {
-	if (DisabledCollisionGroupPairs.Num() <= 0)
-	{
-		return;
-	}
-
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(GetWorld());
 	for (auto& Pair : DisabledCollisionGroupPairs)
 	{
