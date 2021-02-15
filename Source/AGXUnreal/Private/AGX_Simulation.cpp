@@ -373,10 +373,8 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const UWorld* World)
 	{
 		return GetFrom(World->GetGameInstance());
 	}
-	else
-	{
-		return GetMutableDefault<UAGX_Simulation>();
-	}
+
+	return nullptr;
 }
 
 UAGX_Simulation* UAGX_Simulation::GetFrom(const UGameInstance* GameInstance)
