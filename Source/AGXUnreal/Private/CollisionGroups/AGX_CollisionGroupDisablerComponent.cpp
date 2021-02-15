@@ -118,10 +118,12 @@ void UAGX_CollisionGroupDisablerComponent::BeginPlay()
 
 void UAGX_CollisionGroupDisablerComponent::AddCollisionGroupPairsToSimulation()
 {
-	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(GetWorld());
-	for (auto& Pair : DisabledCollisionGroupPairs)
+	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(GetWorld()))
 	{
-		Simulation->SetEnableCollisionGroupPair(Pair.Group1, Pair.Group2, false);
+		for (auto& Pair : DisabledCollisionGroupPairs)
+		{
+			Simulation->SetEnableCollisionGroupPair(Pair.Group1, Pair.Group2, false);
+		}
 	}
 }
 
