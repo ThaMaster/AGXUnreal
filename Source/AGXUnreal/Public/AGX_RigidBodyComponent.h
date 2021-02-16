@@ -33,7 +33,7 @@ public:
 	bool GetEnabled();
 
 	/// Whether the mass should be computed automatically.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	bool bAutomaticMassProperties = true;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
