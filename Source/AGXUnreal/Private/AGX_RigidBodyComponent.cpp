@@ -147,6 +147,7 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	NativeBarrier.SetVelocity(Velocity);
 	NativeBarrier.SetAngularVelocity(AngularVelocity);
 	NativeBarrier.SetName(GetName());
+	NativeBarrier.SetEnabled(bEnabled);
 	InitializeMotionControl();
 }
 
@@ -159,6 +160,7 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 	Velocity = Barrier.GetVelocity();
 	AngularVelocity = Barrier.GetAngularVelocity();
 	MotionControl = Barrier.GetMotionControl();
+	bEnabled = Barrier.GetEnabled();
 
 // This breaks the move widget in Unreal Editor. Static bodies within Actors that have been
 // imported from an AGX Dynamics archive does not move when the Actor is moved.
@@ -391,3 +393,149 @@ void UAGX_RigidBodyComponent::DisableTransformRootCompIfMultiple()
 #endif
 }
 #endif
+
+void UAGX_RigidBodyComponent::SetEnabled(bool InEnabled)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetEnabled(InEnabled);
+	}
+
+	bEnabled = InEnabled;
+}
+
+bool UAGX_RigidBodyComponent::GetEnabled()
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetEnabled();
+	}
+
+	return bEnabled;
+}
+
+void UAGX_RigidBodyComponent::SetAutomaticMassProperties(bool InEnabled)
+{
+	if (HasNative())
+	{
+		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
+		MassProperties.SetAutoGenerate(InEnabled);
+	}
+
+	bAutomaticMassProperties = InEnabled;
+}
+
+bool UAGX_RigidBodyComponent::GetAutomaticMassProperties()
+{
+	if (HasNative())
+	{
+		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
+		return MassProperties.GetAutoGenerate();
+	}
+
+	return bAutomaticMassProperties;
+}
+
+void UAGX_RigidBodyComponent::SetMass(float InMass)
+{
+	if (HasNative())
+	{
+		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
+		MassProperties.SetMass(InMass);
+	}
+
+	Mass = InMass;
+}
+
+float UAGX_RigidBodyComponent::GetMass()
+{
+	if (HasNative())
+	{
+		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
+		return MassProperties.GetMass();
+	}
+
+	return Mass;
+}
+
+void UAGX_RigidBodyComponent::SetPrincipalInertiae(FVector InPrincipalInertiae)
+{
+	if (HasNative())
+	{
+		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
+		MassProperties.SetPrincipalInertiae(InPrincipalInertiae);
+	}
+
+	PrincipalInertiae = InPrincipalInertiae;
+}
+
+FVector UAGX_RigidBodyComponent::GetPrincipalInertiae()
+{
+	if (HasNative())
+	{
+		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
+		return MassProperties.GetPrincipalInertiae();
+	}
+
+	return PrincipalInertiae;
+}
+
+void UAGX_RigidBodyComponent::SetVelocity(FVector InVelocity)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetVelocity(InVelocity);
+	}
+
+	Velocity = InVelocity;
+}
+
+FVector UAGX_RigidBodyComponent::GetVelocity()
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetVelocity();
+	}
+
+	return Velocity;
+}
+
+void UAGX_RigidBodyComponent::SetAngularVelocity(FVector InAngularVelocity)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetAngularVelocity(InAngularVelocity);
+	}
+
+	AngularVelocity = InAngularVelocity;
+}
+
+FVector UAGX_RigidBodyComponent::GetAngularVelocity()
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetAngularVelocity();
+	}
+
+	return AngularVelocity;
+}
+
+void UAGX_RigidBodyComponent::SetMotionControl(TEnumAsByte<enum EAGX_MotionControl> InMotionControl)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetMotionControl(InMotionControl);
+	}
+
+	MotionControl = InMotionControl;
+}
+
+TEnumAsByte<enum EAGX_MotionControl> UAGX_RigidBodyComponent::GetMotionControl()
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetMotionControl();
+	}
+
+	return MotionControl;
+}

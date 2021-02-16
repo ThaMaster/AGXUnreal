@@ -37,6 +37,18 @@ FRigidBodyBarrier::~FRigidBodyBarrier()
 	// not just the forward declaration, of FRigidBodyRef.
 }
 
+void FRigidBodyBarrier::SetEnabled(bool Enabled)
+{
+	check(HasNative());
+	NativeRef->Native->setEnable(Enabled);
+}
+
+bool FRigidBodyBarrier::GetEnabled() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnable();
+}
+
 void FRigidBodyBarrier::SetPosition(FVector PositionUnreal)
 {
 	check(HasNative());
