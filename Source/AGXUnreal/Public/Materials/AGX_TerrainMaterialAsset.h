@@ -31,5 +31,13 @@ public:
 	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld) override;
 
 private:
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+	void WriteSurfacePropertyToInstance(const FName& PropertyName);
+	void WriteBulkPropertyToInstance(const FName& PropertyName);
+	void WriteCompactionPropertyToInstance(const FName& PropertyName);
+#endif
+
 	TWeakObjectPtr<UAGX_TerrainMaterialInstance> TerrainMaterialInstance;
 };

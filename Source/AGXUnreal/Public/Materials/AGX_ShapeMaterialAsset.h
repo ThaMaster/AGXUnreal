@@ -41,5 +41,16 @@ class AGXUNREAL_API UAGX_ShapeMaterialAsset : public UAGX_ShapeMaterialBase
 public:
 	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld) override;
 
+private:
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+	void SynchronizePropertyChangeWithInstance(
+		const FName& MemberPropertyName, const FName& PropertyName);
+
+	void WriteSurfacePropertyToInstance(const FName& PropertyName);
+	void WriteBulkPropertyToInstance(const FName& PropertyName);
+#endif
+
 	TWeakObjectPtr<UAGX_ShapeMaterialInstance> Instance;
 };
