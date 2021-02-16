@@ -283,6 +283,10 @@ void AAGX_Terrain::CreateNativeTerrain()
 
 	SetInitialTransform();
 	OriginalHeights = NativeBarrier.GetHeights();
+	NativeBarrier.SetCreateParticles(bCreateParticles);
+	NativeBarrier.SetDeleteParticlesOutsideBounds(bDeleteParticlesOutsideBounds);
+	NativeBarrier.SetPenetrationForceVelocityScaling(
+		static_cast<double>(PenetrationForceVelocityScaling));
 
 	// Create the AGX Dynamics instance for the terrain.
 	// Note that the AGX Dynamics Terrain messes with the solver parameters on add, parameters that
