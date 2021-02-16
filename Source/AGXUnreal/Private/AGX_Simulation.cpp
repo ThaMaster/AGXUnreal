@@ -9,13 +9,13 @@
 #include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_EnvironmentUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/Paths.h"
-#include "Misc/MessageDialog.h"
 
 #include <algorithm>
 
@@ -77,11 +77,12 @@ void UAGX_Simulation::AddTerrain(AAGX_Terrain* Terrain)
 	NativeBarrier.AddTerrain(Terrain->GetNative());
 }
 
-void UAGX_Simulation::SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2)
+void UAGX_Simulation::SetEnableCollisionGroupPair(
+	const FName& Group1, const FName& Group2, bool CanCollide)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	NativeBarrier.SetDisableCollisionGroupPair(Group1, Group2);
+	NativeBarrier.SetEnableCollisionGroupPair(Group1, Group2, CanCollide);
 }
 
 void UAGX_Simulation::SetNumPpgsIterations(int32 NumIterations)
@@ -441,7 +442,12 @@ namespace
 						   FPaths::Combine(ResourcesPath, FString("data"), FString("cfg"));
 			}
 
-			FMessageDialog::Open(EAppMsgType::Ok, FText::FromString(Message));
+#if WITH_EDITOR
+			Message +=
+				"\n\nNote that the Unreal Editor must be restarted after adding the license file.";
+#endif
+
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
 		}
 	}
 }

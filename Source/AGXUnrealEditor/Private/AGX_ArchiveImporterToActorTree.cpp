@@ -6,7 +6,7 @@
 #include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGXArchiveReader.h"
-#include "CollisionGroups/AGX_CollisionGroupManager.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerActor.h"
 /// \todo Creating constraint actors for now, but will switch to creating
 /// components when we do import to Blueprint.
 #include "Constraints/AGX_ConstraintComponent.h"
@@ -170,32 +170,14 @@ namespace
 		{
 			if (DisabledGroups.Num() == 0)
 			{
-				// Do not force a CollisionGroupManager if there are no disabled groups.
 				return;
 			}
 
-			/// \todo Consider creating a GetOrCreateFrom member function to CollisionGroupManager.
-			// Make sure we have a CollisionGroupManager.
-			AAGX_CollisionGroupManager* Manager = AAGX_CollisionGroupManager::GetFrom(&World);
-			if (Manager == nullptr)
+			AAGX_CollisionGroupDisablerActor* Actor =
+				Helper.InstantiateCollisionGroupDisabler(World, DisabledGroups);
+			if (Actor)
 			{
-				Manager = World.SpawnActor<AAGX_CollisionGroupManager>();
-			}
-			if (Manager == nullptr)
-			{
-				UE_LOG(
-					LogAGX, Error,
-					TEXT("Cannot import disabled collision group pairs because there is no "
-						 "CollisionGroupManager in the level."));
-				return;
-			}
-
-			// Apply the disabled group pairs to the CollisionGroupManager.
-			for (auto& Pair : DisabledGroups)
-			{
-				FName Group1 = *Pair.first;
-				FName Group2 = *Pair.second;
-				Manager->DisableCollisionGroupPair(Group1, Group2);
+				Actor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
 			}
 		}
 

@@ -282,6 +282,19 @@ namespace
 
 	void ReadCollisionGroups(agxSDK::Simulation& Simulation, FAGXArchiveInstantiator& Instantiator)
 	{
+		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString {
+			FString Str = Convert(Cg.name());
+
+			// If the CollisionGroup was stored as an Id (uint32), then it will contain no name
+			// data.
+			if (!Str.IsEmpty())
+			{
+				return Str;
+			}
+
+			return FString::FromInt(Cg.id());
+		};
+
 		agxCollide::CollisionGroupManager* CollisionGroupManager =
 			Simulation.getSpace()->getCollisionGroupManager();
 		agxCollide::CollisionGroupManager::SymmetricCollisionGroupVector DisabledGroupPairs =
@@ -290,8 +303,8 @@ namespace
 		DisabledGroups.Reserve(static_cast<int32>(DisabledGroupPairs.size()));
 		for (agx::SymmetricPair<agx::Physics::CollisionGroupPtr>& Pair : DisabledGroupPairs)
 		{
-			FString Group1 = Convert(Pair.first->getName());
-			FString Group2 = Convert(Pair.second->getName());
+			FString Group1 = GetCollisionGroupString(Pair.first);
+			FString Group2 = GetCollisionGroupString(Pair.second);
 			DisabledGroups.Add({Group1, Group2});
 		}
 		Instantiator.DisabledCollisionGroups(DisabledGroups);

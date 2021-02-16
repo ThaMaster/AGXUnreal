@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Materials/AGX_ContactMaterialAssetFactory.h"
 
 #include "Materials/AGX_ContactMaterialAsset.h"

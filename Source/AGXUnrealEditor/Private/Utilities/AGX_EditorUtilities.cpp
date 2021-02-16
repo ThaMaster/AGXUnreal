@@ -32,7 +32,6 @@
 #include "Framework/Notifications/NotificationManager.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/Char.h"
-#include "Misc/MessageDialog.h"
 #include "Misc/EngineVersionComparison.h"
 #include "RawMesh.h"
 #include "UObject/ConstructorHelpers.h"
@@ -906,17 +905,6 @@ void FAGX_EditorUtilities::ShowNotification(const FText& Text)
 	NotificationItem->SetCompletionState(SNotificationItem::CS_Success);
 	NotificationItem->ExpireAndFadeout();
 	// GEditor->PlayEditorSound(CompileSuccessSound);
-}
-
-void FAGX_EditorUtilities::ShowDialogBox(const FText& Text)
-{
-	// Example of how an FText can be created:
-	// FText DialogText = FText::Format(
-	// 	LOCTEXT("PluginButtonDialogText", "{0} was recompiled at {1}.\n{2}"),
-	// 	FText::FromString(TEXT(__FILE__)), FText::FromString(TEXT(__TIME__)),
-	// 	FText::FromString(TEXT("Create body before root component.")));
-
-	FMessageDialog::Open(EAppMsgType::Ok, Text);
 }
 
 UWorld* FAGX_EditorUtilities::GetEditorWorld()

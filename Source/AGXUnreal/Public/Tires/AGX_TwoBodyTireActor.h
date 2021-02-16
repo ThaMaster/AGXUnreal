@@ -25,12 +25,6 @@ public:
 	AAGX_TwoBodyTireActor();
 
 	/**
-	 * The root Component.
-	 */
-	UPROPERTY(Category = "AGX Dynamics", VisibleAnywhere, BlueprintReadOnly)
-	USceneComponent* Root;
-
-	/**
 	 * The tire Rigid Body.
 	 */
 	UPROPERTY(Category = "AGX Dynamics", VisibleAnywhere, BlueprintReadOnly)

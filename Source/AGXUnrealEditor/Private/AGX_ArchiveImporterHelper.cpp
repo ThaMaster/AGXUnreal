@@ -39,6 +39,8 @@
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Tires/AGX_TwoBodyTireActor.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerActor.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 
@@ -745,6 +747,46 @@ AAGX_TwoBodyTireActor* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 	// The internal constraint owned by the TwoBodyTire should not be imported, but is created after
 	// BeginPlay by the native TwoBodyTire.
 	ConstraintIgnoreList.Add(Barrier.GetHingeGuid());
+
+	return NewActor;
+}
+
+UAGX_CollisionGroupDisablerComponent* FAGX_ArchiveImporterHelper::InstantiateCollisionGroupDisabler(
+	AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs)
+{
+	UAGX_CollisionGroupDisablerComponent* Component =
+		NewObject<UAGX_CollisionGroupDisablerComponent>(&Owner, TEXT("AGX_CollisionGroupDisabler"));
+
+	Component->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Component);
+	Component->RegisterComponent();
+	for (const std::pair<FString, FString>& DisabledPair : DisabledPairs)
+	{
+		Component->DisableCollisionGroupPair(
+			FName(*DisabledPair.first), FName(*DisabledPair.second));
+	}
+
+	return Component;
+}
+
+AAGX_CollisionGroupDisablerActor* FAGX_ArchiveImporterHelper::InstantiateCollisionGroupDisabler(
+	UWorld& World, const TArray<std::pair<FString, FString>>& DisabledPairs)
+{
+	AAGX_CollisionGroupDisablerActor* NewActor = World.SpawnActor<AAGX_CollisionGroupDisablerActor>(
+		AAGX_CollisionGroupDisablerActor::StaticClass());
+	if (NewActor == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics CollisionGroupDisabler"), "", ArchiveFilePath,
+			TEXT("Could not create new AGX_CollisionGroupDisablerActor"));
+		return nullptr;
+	}
+
+	for (const std::pair<FString, FString>& DisabledPair : DisabledPairs)
+	{
+		NewActor->CollisionGroupDisablerComponent->DisableCollisionGroupPair(
+			FName(*DisabledPair.first), FName(*DisabledPair.second));
+	}
 
 	return NewActor;
 }

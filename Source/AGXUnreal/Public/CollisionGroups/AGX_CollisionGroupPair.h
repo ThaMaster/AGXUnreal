@@ -13,4 +13,6 @@ struct FAGX_CollisionGroupPair
 
 	UPROPERTY(EditAnywhere, Category = "AGX Collision Groups")
 	FName Group2;
+
+	bool IsEqual(const FName& GroupA, const FName& GroupB) const;
 };

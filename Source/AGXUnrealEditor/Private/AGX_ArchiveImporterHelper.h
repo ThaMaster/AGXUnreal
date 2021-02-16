@@ -33,6 +33,8 @@ class UAGX_LockConstraintComponent;
 class FTwoBodyTireBarrier;
 class UAGX_TwoBodyTireComponent;
 class AAGX_TwoBodyTireActor;
+class AAGX_CollisionGroupDisablerActor;
+class UAGX_CollisionGroupDisablerComponent;
 
 // Unreal Engine classes.
 class AActor;
@@ -106,6 +108,12 @@ public:
 
 	AAGX_TwoBodyTireActor* InstantiateTwoBodyTire(
 		const FTwoBodyTireBarrier& Barrier, UWorld& World);
+
+	UAGX_CollisionGroupDisablerComponent* InstantiateCollisionGroupDisabler(
+		AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs);
+
+	AAGX_CollisionGroupDisablerActor* InstantiateCollisionGroupDisabler(
+		UWorld& World, const TArray<std::pair<FString, FString>>& DisabledPairs);
 
 	UAGX_RigidBodyComponent* GetBody(
 		const FRigidBodyBarrier& Barrier, bool LogErrorIfNotFound = true);

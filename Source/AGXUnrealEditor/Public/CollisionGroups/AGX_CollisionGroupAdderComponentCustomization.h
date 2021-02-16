@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
 
-class UAGX_CollisionGroupsComponent;
+class UAGX_CollisionGroupAdderComponent;
 
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
@@ -11,7 +11,7 @@ class IDetailCategoryBuilder;
 /**
  * Defines the design of the Collision Group component in the Editor.
  */
-class AGXUNREALEDITOR_API FAGX_CollisionGroupsComponentCustomization : public IDetailCustomization
+class AGXUNREALEDITOR_API FAGX_CollisionGroupAdderComponentCustomization : public IDetailCustomization
 {
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();

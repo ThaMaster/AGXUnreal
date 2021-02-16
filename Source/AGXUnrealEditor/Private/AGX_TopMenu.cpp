@@ -14,11 +14,11 @@
 #include "Constraints/AGX_PrismaticConstraintActor.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_EnvironmentUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 
 // Unreal Engine includes.
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "LevelEditor.h"
-#include "Misc/MessageDialog.h"
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
 
@@ -293,10 +293,9 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 
 	if (Actor1 == nullptr)
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Must select at least one actor with a Rigid Body component before creating a "
-				 "constraint."));
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Must select at least one actor with a Rigid Body component before creating a "
+			"constraint.");
 		return;
 	}
 
@@ -313,21 +312,17 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 
 	if (Bodies1.Num() != 1)
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot create constraint with actor '%s' because it doesn't contain exactly one "
-				 "body."),
-			*Actor1->GetName());
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Cannot create constraint with actor '%s' because it doesn't contain exactly one "
+			"body.");
 		return;
 	}
 
 	if (Actor2 && Bodies2.Num() != 1)
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot create constraint with actor '%s' because it doesn't contain exactly one "
-				 "body."),
-			*Actor2->GetName());
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Cannot create constraint with actor '%s' because it doesn't contain exactly one "
+			"body.");
 		return;
 	}
 
@@ -355,7 +350,7 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 
 void FAGX_TopMenu::OnOpenAboutDialogClicked()
 {
-	const FText Title = LOCTEXT("AboutDialogTitle", "About AGX Dynamics for Unreal");
+	const FString Title = "About AGX Dynamics for Unreal";
 	const FString Version = FAGX_EnvironmentUtilities::GetPluginVersion();
 
 	FString LicenseText;
@@ -365,7 +360,8 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 		LicenseText =
 			"AGX Dynamics license: Invalid\n"
 			"Status: " +
-			LicenseStatus + "\n";
+			LicenseStatus + "\n\n" +
+			"Note that the Unreal Editor must be restarted after adding the license file.\n";
 	}
 	else
 	{
@@ -384,7 +380,7 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 		"www.algoryx.se");
 	// clang-format on
 
-	FMessageDialog::Open(EAppMsgType::Ok, FText::FromString(Message), &Title);
+	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(Message, Title);
 }
 
 #undef LOCTEXT_NAMESPACE

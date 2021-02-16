@@ -4,6 +4,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
@@ -36,9 +37,8 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 {
 	if (RigidBody1.GetRigidBody() == nullptr)
 	{
-		FAGX_EditorUtilities::ShowDialogBox(LOCTEXT(
-			"CreateConstraintFailedNoActorOne",
-			"Cannot create constraints. At least the first Rigid Body must be chosen!"));
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Cannot create constraints. At least the first Rigid Body must be chosen!");
 		return nullptr;
 	}
 

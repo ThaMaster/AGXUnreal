@@ -98,7 +98,7 @@ void FSimulationBarrier::AddTire(FTireBarrier* Tire)
 	NativeRef->Native->add(Tire->GetNative()->Native);
 }
 
-void FSimulationBarrier::SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2)
+void FSimulationBarrier::SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide)
 {
 	check(HasNative());
 
@@ -107,7 +107,7 @@ void FSimulationBarrier::SetDisableCollisionGroupPair(const FName& Group1, const
 	// Note that internally, the collision group names are converted to a 32 bit unsigned int via a
 	// hash function.
 	NativeRef->Native->getSpace()->setEnablePair(
-		StringTo32BitFnvHash(Group1.ToString()), StringTo32BitFnvHash(Group2.ToString()), false);
+		StringTo32BitFnvHash(Group1.ToString()), StringTo32BitFnvHash(Group2.ToString()), CanCollide);
 }
 
 bool FSimulationBarrier::WriteAGXArchive(const FString& Filename) const

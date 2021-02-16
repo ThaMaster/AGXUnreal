@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "AGX_RuntimeStyle.h"
 
 #include "Runtime/Projects/Public/Interfaces/IPluginManager.h"

@@ -6,7 +6,9 @@
 #include "AGX_Simulation.h"
 #include "AgxAutomationCommon.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 
@@ -1063,6 +1065,205 @@ bool FClearRenderMaterialImportedCommand::Update()
 
 	TArray<const TCHAR*> ExpectedFiles = {TEXT("RenderMaterials")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_materials_build"), ExpectedFiles);
+
+	return true;
+}
+
+//
+// CollisionGroups test starts here.
+//
+
+class FArchiveImporterToSingleActor_CollisionGroupsTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckCollisionGroupsImportedCommand, FArchiveImporterToSingleActor_CollisionGroupsTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearCollisionGroupsImportedCommand, FArchiveImporterToSingleActor_CollisionGroupsTest&, Test);
+
+class FArchiveImporterToSingleActor_CollisionGroupsTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_CollisionGroupsTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_CollisionGroupsTest"),
+			  TEXT("AgxForUnreal.Editor.ArchiveImporterToSingleActor.CollisionGroups"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("collision_groups_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckCollisionGroupsImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearCollisionGroupsImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_CollisionGroupsTest
+		ArchiveImporterToSingleActor_CollisionGroupsTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script collision_groups.agxPy.
+ * @return true when the check is complete. Never returns false.
+ */
+bool FCheckCollisionGroupsImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import CollisionGroups test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 18);
+
+	auto GetBox = [&Components](
+					  const TCHAR* Name,
+					  TArray<UAGX_BoxShapeComponent*>& OutArr) -> UAGX_BoxShapeComponent* {
+		UAGX_BoxShapeComponent* Box = GetByName<UAGX_BoxShapeComponent>(Components, Name);
+		OutArr.Add(Box);
+		return Box;
+	};
+
+	auto GetBody = [&Components](
+					   const TCHAR* Name,
+					   TArray<UAGX_RigidBodyComponent*>& OutArr) -> UAGX_RigidBodyComponent* {
+		UAGX_RigidBodyComponent* Rb = GetByName<UAGX_RigidBodyComponent>(Components, Name);
+		OutArr.Add(Rb);
+		return Rb;
+	};
+
+	TArray<UAGX_RigidBodyComponent*> RbArr;
+	TArray<UAGX_BoxShapeComponent*> BoxArr;
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* rb_0_brown = GetBody(TEXT("rb_0_brown"), RbArr);
+	UAGX_BoxShapeComponent* geom_0_brown = GetBox(TEXT("geom_0_brown"), BoxArr);
+	UAGX_RigidBodyComponent* rb_left_1_brown = GetBody(TEXT("rb_left_1_brown"), RbArr);
+	UAGX_BoxShapeComponent* geom_left_1_brown = GetBox(TEXT("geom_left_1_brown"), BoxArr);
+	UAGX_RigidBodyComponent* rb_right_1_orange = GetBody(TEXT("rb_right_1_orange"), RbArr);
+	UAGX_BoxShapeComponent* geom_right_1_orange = GetBox(TEXT("geom_right_1_orange"), BoxArr);
+	UAGX_RigidBodyComponent* rb_left_2_orange = GetBody(TEXT("rb_left_2_orange"), RbArr);
+	UAGX_BoxShapeComponent* geom_left_2_orange = GetBox(TEXT("geom_left_2_orange"), BoxArr);
+	UAGX_RigidBodyComponent* rb_right_2_orange = GetBody(TEXT("rb_right_2_orange"), RbArr);
+	UAGX_BoxShapeComponent* geom_right_2_orange = GetBox(TEXT("geom_right_2_orange"), BoxArr);
+	UAGX_RigidBodyComponent* rb_left_3_brown = GetBody(TEXT("rb_left_3_brown"), RbArr);
+	UAGX_BoxShapeComponent* geom_left_3_brown = GetBox(TEXT("geom_left_3_brown"), BoxArr);
+	UAGX_RigidBodyComponent* rb_4_blue = GetBody(TEXT("rb_4_blue"), RbArr);
+	UAGX_BoxShapeComponent* geom_4_blue = GetBox(TEXT("geom_4_blue"), BoxArr);
+	UAGX_RigidBodyComponent* rb_left_5_blue = GetBody(TEXT("rb_left_5_blue"), RbArr);
+	UAGX_BoxShapeComponent* geom_left_5_blue = GetBox(TEXT("geom_left_5_blue"), BoxArr);
+	UAGX_CollisionGroupDisablerComponent* AGX_CollisionGroupDisabler =
+		GetByName<UAGX_CollisionGroupDisablerComponent>(
+			Components, TEXT("AGX_CollisionGroupDisabler"));
+
+	Test.TestEqual(TEXT("Number of Rigid Bodies"), RbArr.Num(), 8);
+	Test.TestEqual(TEXT("Number of Box Shapes"), BoxArr.Num(), 8);
+
+	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
+	Test.TestNotNull(TEXT("AGX_CollisionGroupDisabler"), AGX_CollisionGroupDisabler);
+
+	for (auto& R : RbArr)
+	{
+		Test.TestNotNull(TEXT("Rigid Body"), R);
+		if (R == nullptr)
+		{
+			Test.AddError(TEXT("At least one required object was nullptr, cannot continue."));
+			return true;
+		}
+	}
+
+	for (auto& B : BoxArr)
+	{
+		Test.TestNotNull(TEXT("Box Shape"), B);
+		if (B == nullptr)
+		{
+			Test.AddError(TEXT("At least one required object was nullptr, cannot continue."));
+			return true;
+		}
+
+		Test.TestEqual(TEXT("Number of Collision groups"), B->CollisionGroups.Num(), 1);
+		if (B->CollisionGroups.Num() != 1)
+		{
+			Test.AddError(TEXT("Wrong number of collision groups, cannot continue."));
+			return true;
+		}
+	}
+
+	Test.TestEqual(
+		TEXT("Collision group name"), geom_0_brown->CollisionGroups[0].IsEqual("A"), true);
+	Test.TestEqual(
+		TEXT("Collision grp name"), geom_left_1_brown->CollisionGroups[0].IsEqual("A"), true);
+	Test.TestEqual(
+		TEXT("Collision grp name"), geom_right_1_orange->CollisionGroups[0].IsEqual("5"), true);
+	Test.TestEqual(
+		TEXT("Collision grp name"), geom_left_2_orange->CollisionGroups[0].IsEqual("5"), true);
+	Test.TestEqual(
+		TEXT("Collision grp name"), geom_right_2_orange->CollisionGroups[0].IsEqual("5"), true);
+	Test.TestEqual(
+		TEXT("Collision grp name"), geom_left_3_brown->CollisionGroups[0].IsEqual("A"), true);
+	Test.TestEqual(TEXT("Collision grp name"), geom_4_blue->CollisionGroups[0].IsEqual("b"), true);
+	Test.TestEqual(
+		TEXT("Collision grp name"), geom_left_5_blue->CollisionGroups[0].IsEqual("b"), true);
+
+	Test.TestEqual(
+		TEXT("Number of Collision group pairs"),
+		AGX_CollisionGroupDisabler->DisabledCollisionGroupPairs.Num(), 3);
+
+	Test.TestEqual(
+		TEXT("Pair collision disabled"),
+		AGX_CollisionGroupDisabler->IsCollisionGroupPairDisabled(FName("A"), FName("b")), true);
+
+	Test.TestEqual(
+		TEXT("Pair collision disabled"),
+		AGX_CollisionGroupDisabler->IsCollisionGroupPairDisabled(FName("b"), FName("b")), true);
+
+	Test.TestEqual(
+		TEXT("Pair collision disabled"),
+		AGX_CollisionGroupDisabler->IsCollisionGroupPairDisabled(FName("5"), FName("5")), true);
+
+	Test.TestEqual(
+		TEXT("Pair collision disabled"),
+		AGX_CollisionGroupDisabler->IsCollisionGroupPairDisabled(FName("A"), FName("A")), false);
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearCollisionGroupsImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
 
 	return true;
 }

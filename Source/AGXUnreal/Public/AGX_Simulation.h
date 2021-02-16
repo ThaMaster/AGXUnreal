@@ -207,7 +207,7 @@ public: // Member functions.
 
 	void AddTerrain(AAGX_Terrain* Terrain);
 
-	void SetDisableCollisionGroupPair(const FName& Group1, const FName& Group2);
+	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);
 
 	bool WriteAGXArchive(const FString& Filename) const;
 

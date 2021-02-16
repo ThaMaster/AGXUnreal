@@ -1,21 +1,26 @@
-#include "CollisionGroups/AGX_CollisionGroupsComponent.h"
+#include "CollisionGroups/AGX_CollisionGroupAdderComponent.h"
 
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "AGX_LogCategory.h"
 
-#define LOCTEXT_NAMESPACE "UAGX_CollisionGroupsComponent"
+#define LOCTEXT_NAMESPACE "UAGX_CollisionGroupAdderComponent"
 
-UAGX_CollisionGroupsComponent::UAGX_CollisionGroupsComponent()
+UAGX_CollisionGroupAdderComponent::UAGX_CollisionGroupAdderComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-void UAGX_CollisionGroupsComponent::ForceRefreshChildShapes()
+void UAGX_CollisionGroupAdderComponent::ForceRefreshChildShapes()
 {
 	UE_LOG(LogAGX, Log, TEXT("Force refresh shapes called."));
 
 	AActor* Parent = GetOwner();
+	if (Parent == nullptr)
+	{
+		return;
+	}
+
 	TArray<AActor*> AllActors;
 	FAGX_ObjectUtilities::GetChildActorsOfActor(Parent, AllActors);
 
@@ -39,27 +44,33 @@ void UAGX_CollisionGroupsComponent::ForceRefreshChildShapes()
 }
 
 #if WITH_EDITOR
-void UAGX_CollisionGroupsComponent::PostEditChangeProperty(
+void UAGX_CollisionGroupAdderComponent::PostEditChangeProperty(
 	FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
 	if (PropertyChangedEvent.GetPropertyName().IsEqual(
-			GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupsComponent, CollisionGroups)))
+			GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupAdderComponent, CollisionGroups)))
 	{
 		ApplyCollisionGroupChanges(PropertyChangedEvent);
 	}
 }
 #endif
 
-void UAGX_CollisionGroupsComponent::ApplyCollisionGroupChanges(
+void UAGX_CollisionGroupAdderComponent::ApplyCollisionGroupChanges(
 	FPropertyChangedEvent& PropertyChangedEvent)
 {
-	FName PropertyName = GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupsComponent, CollisionGroups);
+	FName PropertyName =
+		GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupAdderComponent, CollisionGroups);
 	int32 ChangedArrayIndex = PropertyChangedEvent.GetArrayIndex(PropertyName.ToString());
 	EPropertyChangeType::Type ChangeType = PropertyChangedEvent.ChangeType;
 
 	AActor* Parent = GetOwner();
+	if (Parent == nullptr)
+	{
+		return;
+	}
+
 	TArray<AActor*> AllActors;
 	FAGX_ObjectUtilities::GetChildActorsOfActor(Parent, AllActors);
 
@@ -80,7 +91,7 @@ void UAGX_CollisionGroupsComponent::ApplyCollisionGroupChanges(
 	CollisionGroupsLastChange = CollisionGroups;
 }
 
-void UAGX_CollisionGroupsComponent::ApplyChangesToChildShapes(
+void UAGX_CollisionGroupAdderComponent::ApplyChangesToChildShapes(
 	UAGX_ShapeComponent* ShapeComponent, EPropertyChangeType::Type ChangeType, int32 ChangeIndex)
 {
 	switch (ChangeType)
@@ -103,7 +114,15 @@ void UAGX_CollisionGroupsComponent::ApplyChangesToChildShapes(
 		case EPropertyChangeType::ValueSet: // Value changed.
 		{
 			// Remove old collision group and add new collision group.
-			ShapeComponent->RemoveCollisionGroupIfExists(CollisionGroupsLastChange[ChangeIndex]);
+			// @todo This check can be removed once we figure out how to either have proper support
+			// for this component in BluePrints, or make it impossible to create this component
+			// within a BluePrint. This check is done only so that we don't get a hard crash when
+			// using this component in a Blueprint.
+			if (CollisionGroupsLastChange.Num() > ChangeIndex)
+			{
+				ShapeComponent->RemoveCollisionGroupIfExists(
+					CollisionGroupsLastChange[ChangeIndex]);
+			}
 
 			ShapeComponent->AddCollisionGroup(CollisionGroups[ChangeIndex]);
 

@@ -1,6 +1,6 @@
-#include "CollisionGroups/AGX_CollisionGroupsComponentCustomization.h"
+#include "CollisionGroups/AGX_CollisionGroupAdderComponentCustomization.h"
 
-#include "CollisionGroups/AGX_CollisionGroupsComponent.h"
+#include "CollisionGroups/AGX_CollisionGroupAdderComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 #include "DetailCategoryBuilder.h"
@@ -8,18 +8,18 @@
 #include "DetailWidgetRow.h"
 #include "Widgets/Input/SButton.h"
 
-#define LOCTEXT_NAMESPACE "FAGX_CollisionGroupsComponentCustomization"
+#define LOCTEXT_NAMESPACE "FAGX_CollisionGroupAdderComponentCustomization"
 
-TSharedRef<IDetailCustomization> FAGX_CollisionGroupsComponentCustomization::MakeInstance()
+TSharedRef<IDetailCustomization> FAGX_CollisionGroupAdderComponentCustomization::MakeInstance()
 {
-	return MakeShareable(new FAGX_CollisionGroupsComponentCustomization);
+	return MakeShareable(new FAGX_CollisionGroupAdderComponentCustomization);
 }
 
-void FAGX_CollisionGroupsComponentCustomization::CustomizeDetails(
+void FAGX_CollisionGroupAdderComponentCustomization::CustomizeDetails(
 	IDetailLayoutBuilder& DetailBuilder)
 {
-	UAGX_CollisionGroupsComponent* CollisionGroupComponent =
-		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_CollisionGroupsComponent>(
+	UAGX_CollisionGroupAdderComponent* CollisionGroupComponent =
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_CollisionGroupAdderComponent>(
 			DetailBuilder);
 
 	if (!CollisionGroupComponent)
@@ -30,7 +30,7 @@ void FAGX_CollisionGroupsComponentCustomization::CustomizeDetails(
 	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder.EditCategory("AGX Collision Groups");
 
 	CategoryBuilder.AddProperty(DetailBuilder.GetProperty(
-		GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupsComponent, CollisionGroups)));
+		GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupAdderComponent, CollisionGroups)));
 
 	// clang-format off
 
@@ -59,7 +59,7 @@ void FAGX_CollisionGroupsComponentCustomization::CustomizeDetails(
 
 	// Hide CollisionGroupsLastChange from the Editor view
 	DetailBuilder.HideProperty(DetailBuilder.GetProperty(
-		GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupsComponent, CollisionGroupsLastChange)));
+		GET_MEMBER_NAME_CHECKED(UAGX_CollisionGroupAdderComponent, CollisionGroupsLastChange)));
 }
 
 #undef LOCTEXT_NAMESPACE

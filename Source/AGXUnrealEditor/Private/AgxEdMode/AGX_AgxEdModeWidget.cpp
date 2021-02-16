@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "AgxEdMode/AGX_AgxEdModeWidget.h"
 
 #include "Framework/Application/SlateApplication.h"

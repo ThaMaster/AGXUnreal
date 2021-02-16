@@ -26,10 +26,11 @@
 #include "AgxEdMode/AGX_AgxEdModeConstraintsCustomization.h"
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 #include "AgxEdMode/AGX_AgxEdModeFileCustomization.h"
-#include "CollisionGroups/AGX_CollisionGroupManager.h"
-#include "CollisionGroups/AGX_CollisionGroupManagerCustomization.h"
-#include "CollisionGroups/AGX_CollisionGroupsComponent.h"
-#include "CollisionGroups/AGX_CollisionGroupsComponentCustomization.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerActor.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerComponentCustomization.h"
+#include "CollisionGroups/AGX_CollisionGroupAdderComponent.h"
+#include "CollisionGroups/AGX_CollisionGroupAdderComponentCustomization.h"
 #include "Constraints/AGX_BallConstraintActor.h"
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
@@ -199,14 +200,14 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_AgxEdModeFileCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
-		AAGX_CollisionGroupManager::StaticClass()->GetFName(),
+		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_CollisionGroupManagerCustomization::MakeInstance));
+			&FAGX_CollisionGroupDisablerComponentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
-		UAGX_CollisionGroupsComponent::StaticClass()->GetFName(),
+		UAGX_CollisionGroupAdderComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_CollisionGroupsComponentCustomization::MakeInstance));
+			&FAGX_CollisionGroupAdderComponentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_RigidBodyComponent::StaticClass()->GetFName(),
@@ -255,10 +256,10 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeFile::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		AAGX_CollisionGroupManager::StaticClass()->GetFName());
+		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		UAGX_CollisionGroupsComponent::StaticClass()->GetFName());
+		UAGX_CollisionGroupAdderComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(UAGX_MaterialBase::StaticClass()->GetFName());
 
@@ -351,7 +352,7 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 	RegisterPlaceableItem(AAGX_LockConstraintActor::StaticClass());
 	RegisterPlaceableItem(AAGX_PrismaticConstraintActor::StaticClass());
 	RegisterPlaceableItem(AAGX_Terrain::StaticClass());
-	RegisterPlaceableItem(AAGX_CollisionGroupManager::StaticClass());
+	RegisterPlaceableItem(AAGX_CollisionGroupDisablerActor::StaticClass());
 	RegisterPlaceableItem(AAGX_RigidBodyActor::StaticClass());
 	RegisterPlaceableItem(AAGX_TwoBodyTireActor::StaticClass());
 }

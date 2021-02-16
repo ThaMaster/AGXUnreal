@@ -18,6 +18,11 @@ void FAGX_ObjectUtilities::GetActorsTree(
 {
 	for (AActor* Actor : CurrentLevel)
 	{
+		if (Actor == nullptr)
+		{
+			continue;
+		}
+
 		ChildActors.Add(Actor);
 
 		TArray<AActor*> NextLevel;

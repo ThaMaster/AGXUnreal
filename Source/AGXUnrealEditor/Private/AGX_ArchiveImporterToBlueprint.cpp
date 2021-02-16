@@ -5,7 +5,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGXArchiveReader.h"
-#include "CollisionGroups/AGX_DisabledCollisionGroupsComponent.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_BallConstraintComponent.h"
@@ -239,17 +239,7 @@ namespace
 				return;
 			}
 
-			UAGX_DisabledCollisionGroupsComponent* Component =
-				NewObject<UAGX_DisabledCollisionGroupsComponent>(
-					&BlueprintTemplate, TEXT("DisabledCollisionGroupPairs"));
-			Component->SetFlags(RF_Transactional);
-			BlueprintTemplate.AddInstanceComponent(Component);
-			Component->RegisterComponent();
-			for (const std::pair<FString, FString>& DisabledPair : DisabledPairs)
-			{
-				Component->DisabledCollisionGroupPairs.Add(
-					{FName(*DisabledPair.first), FName(*DisabledPair.second)});
-			}
+			Helper.InstantiateCollisionGroupDisabler(BlueprintTemplate, DisabledPairs);
 		}
 
 		virtual void InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier) override

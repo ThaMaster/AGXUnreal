@@ -253,11 +253,6 @@ public:
 	static void ShowNotification(const FText& Text);
 
 	/**
-	 * Display a dialog box with an OK button.
-	 */
-	static void ShowDialogBox(const FText& Text);
-
-	/**
 	 * Return the Editor world, i.e. not the one that is potentially currently playing.
 	 */
 	static UWorld* GetEditorWorld();

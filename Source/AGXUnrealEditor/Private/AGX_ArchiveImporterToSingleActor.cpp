@@ -5,7 +5,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGXArchiveReader.h"
-#include "CollisionGroups/AGX_CollisionGroupManager.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_LockConstraintComponent.h"
@@ -144,26 +144,7 @@ namespace
 				return;
 			}
 
-			AAGX_CollisionGroupManager* Manager = AAGX_CollisionGroupManager::GetFrom(&World);
-			if (Manager == nullptr)
-			{
-				Manager = World.SpawnActor<AAGX_CollisionGroupManager>();
-			}
-			if (Manager == nullptr)
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Cannot import disabled collision group pairs because there is no "
-						 "CollisionGroupManager in the level and one could not be created."));
-				return;
-			}
-
-			for (auto& Pair : DisabledPairs)
-			{
-				FName Group1 = *Pair.first;
-				FName Group2 = *Pair.second;
-				Manager->DisableCollisionGroupPair(Group1, Group2);
-			}
+			Helper.InstantiateCollisionGroupDisabler(Actor, DisabledPairs);
 		}
 
 		virtual void InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier) override
