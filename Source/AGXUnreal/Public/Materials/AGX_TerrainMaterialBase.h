@@ -40,11 +40,115 @@ public:
 
 	GENERATED_BODY()
 
+	// Bulk properties.
 	UPROPERTY(EditAnywhere, Category = "Material Properties")
 	FAGX_TerrainBulkProperties TerrainBulk;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual void SetAdhesionOverlapFactor(float AdhesionOverlapFactor);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual float GetAdhesionOverlapFactor() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual void SetCohesion(float Cohesion);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual float GetCohesion() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual void SetDensity(float Density);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual float GetDensity() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual void SetDilatancyAngle(float DilatancyAngle);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual float GetDilatancyAngle() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual void SetFrictionAngle(float FrictionAngle);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual float GetFrictionAngle() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual void SetMaxDensity(float MaxDensity);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual float GetMaxDensity() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual void SetPoissonsRatio(float PoissonsRatio);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual float GetPoissonsRatio() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual void SetSwellFactor(float SwellFactor);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual float GetSwellFactor() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual void SetYoungsModulus(float YoungsModulus);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
+	virtual float GetYoungsModulus() const;
+
+	// Compaction properties.
 	UPROPERTY(EditAnywhere, Category = "Material Properties")
 	FAGX_TerrainCompactionProperties TerrainCompaction;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual void SetAngleOfReposeCompactionRate(float AngleOfReposeCompactionRate);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual float GetAngleOfReposeCompactionRate() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual void SetBankStatePhi(float Phi0);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual float GetBankStatePhi() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual void SetCompactionTimeRelaxationConstant(float CompactionTimeRelaxationConstant);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual float GetCompactionTimeRelaxationConstant() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual void SetCompressionIndex(float CompressionIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual float GetCompressionIndex() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual void SetHardeningConstantKe(float K_e);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual float GetHardeningConstantKe() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual void SetHardeningConstantNe(float N_e);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual float GetHardeningConstantNe() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual void SetPreconsolidationStress(float PreconsolidationStress);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual float GetPreconsolidationStress() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual void SetStressCutOffFraction(float StressCutOffFraction);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
+	virtual float GetStressCutOffFraction() const;
 
 protected:
 	void CopyTerrainMaterialProperties(const UAGX_TerrainMaterialBase* Source);

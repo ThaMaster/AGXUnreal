@@ -43,13 +43,12 @@ bool FTerrainBarrier::HasNative() const
 	return NativeRef->Native != nullptr;
 }
 
-void FTerrainBarrier::AllocateNative(FHeightFieldShapeBarrier& SourceHeightField)
+void FTerrainBarrier::AllocateNative(FHeightFieldShapeBarrier& SourceHeightField, double MaxDepth)
 {
 	check(!HasNative());
-	agx::Real MaximumDepth {10.0};
 	agxCollide::HeightField* HeightFieldAGX =
 		SourceHeightField.GetNativeShape<agxCollide::HeightField>();
-	NativeRef->Native = agxTerrain::Terrain::createFromHeightField(HeightFieldAGX, MaximumDepth);
+	NativeRef->Native = agxTerrain::Terrain::createFromHeightField(HeightFieldAGX, MaxDepth);
 	UE_LOG(LogAGX, Log, TEXT("Native terrain allocated."));
 }
 
@@ -99,6 +98,44 @@ FQuat FTerrainBarrier::GetRotation() const
 	agx::Quat RotationAGX = NativeRef->Native->getRotation();
 	FQuat RotationUnreal = Convert(RotationAGX);
 	return RotationUnreal;
+}
+
+void FTerrainBarrier::SetCreateParticles(bool CreateParticles)
+{
+	check(HasNative());
+	NativeRef->Native->getProperties()->setCreateParticles(CreateParticles);
+}
+
+bool FTerrainBarrier::GetCreateParticles() const
+{
+	check(HasNative());
+	return NativeRef->Native->getProperties()->getCreateParticles();
+}
+
+void FTerrainBarrier::SetDeleteParticlesOutsideBounds(bool DeleteParticlesOutsideBounds)
+{
+	check(HasNative());
+	NativeRef->Native->getProperties()->setDeleteSoilParticlesOutsideBounds(
+		DeleteParticlesOutsideBounds);
+}
+
+bool FTerrainBarrier::GetDeleteParticlesOutsideBounds() const
+{
+	check(HasNative());
+	return NativeRef->Native->getProperties()->getDeleteSoilParticlesOutsideBounds();
+}
+
+void FTerrainBarrier::SetPenetrationForceVelocityScaling(double PenetrationForceVelocityScaling)
+{
+	check(HasNative());
+	NativeRef->Native->getProperties()->setPenetrationForceVelocityScaling(
+		PenetrationForceVelocityScaling);
+}
+
+double FTerrainBarrier::GetPenetrationForceVelocityScaling() const
+{
+	check(HasNative());
+	return NativeRef->Native->getProperties()->getPenetrationForceVelocityScaling();
 }
 
 bool FTerrainBarrier::AddShovel(FShovelBarrier& Shovel)

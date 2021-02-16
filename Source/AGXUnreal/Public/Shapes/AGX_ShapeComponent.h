@@ -28,7 +28,7 @@ public:
 	 *
 	 * Bulk properties have impact on collision forces but also on Rigid Body mass.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shape")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
 	UAGX_ShapeMaterialBase* PhysicalMaterial;
 
 	/**

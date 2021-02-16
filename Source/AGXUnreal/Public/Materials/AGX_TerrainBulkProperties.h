@@ -18,7 +18,7 @@ public:
 	 * radius is allowed to overlap to simulate adhesion.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Bulk Properties",
+		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double AdhesionOverlapFactor;
 
@@ -26,7 +26,7 @@ public:
 	 * Sets the bulk cohesion (Pa) of the bulk material.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Bulk Properties",
+		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double Cohesion;
 
@@ -34,27 +34,27 @@ public:
 	 * Density of the terrain bulk, in kg/m^2.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Bulk Properties",
+		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double Density;
 
 	/**
 	 * Sets the dilatancy angle (deg) of the bulk material.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain Bulk Properties")
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Bulk")
 	double DilatancyAngle;
 
 	/**
 	 * Sets the internal friction angle (deg) of the bulk material.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain Bulk Properties")
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Bulk")
 	double FrictionAngle;
 
 	/**
 	 * Sets the maximum density (kg/m^3) of the bulk material.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Bulk Properties",
+		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double MaxDensity;
 
@@ -62,7 +62,7 @@ public:
 	 * Sets the Poisson's ratio of the bulk material.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Bulk Properties",
+		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double PoissonsRatio;
 
@@ -71,7 +71,7 @@ public:
 	 * excavation.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Bulk Properties",
+		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double SwellFactor;
 
@@ -79,7 +79,7 @@ public:
 	 * Sets the bulk Young's modulus (Pa) of the bulk material.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Bulk Properties",
+		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double YoungsModulus;
 

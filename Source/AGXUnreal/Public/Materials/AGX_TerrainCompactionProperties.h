@@ -16,20 +16,20 @@ public:
 	/**
 	 * Sets how the compaction should increase the angle of repose.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain Compaction Properties")
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Compaction")
 	double AngleOfReposeCompactionRate;
 
 	/**
 	 * Sets the phi0 value of the bank state soil.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain Compaction Properties")
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Compaction")
 	double Phi0;
 
 	/**
 	 * Sets time relaxation for compaction.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Compaction Properties",
+		EditAnywhere, Category = "AGX Terrain Material Compaction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double CompactionTimeRelaxationConstant;
 
@@ -38,7 +38,7 @@ public:
 	 * soil should compress given increased surface stress.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Compaction Properties",
+		EditAnywhere, Category = "AGX Terrain Material Compaction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double CompressionIndex;
 
@@ -47,7 +47,7 @@ public:
 	 * terrain contacts should scale with increasing/decreasing compaction.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Compaction Properties",
+		EditAnywhere, Category = "AGX Terrain Material Compaction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double K_e;
 
@@ -56,7 +56,7 @@ public:
 	 * terrain contacts should scale with increasing/decreasing compaction.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Compaction Properties",
+		EditAnywhere, Category = "AGX Terrain Material Compaction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double N_e;
 
@@ -65,7 +65,7 @@ public:
 	 * nominal compaction 1.0.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Compaction Properties",
+		EditAnywhere, Category = "AGX Terrain Material Compaction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double PreconsolidationStress;
 
@@ -74,7 +74,7 @@ public:
 	 * stress propagation from the surface downward into the soil should stop.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Compaction Properties",
+		EditAnywhere, Category = "AGX Terrain Material Compaction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double StressCutOffFraction;
 

@@ -36,5 +36,39 @@ class AGXUNREAL_API UAGX_ShapeMaterialBase : public UAGX_MaterialBase
 	GENERATED_BODY()
 
 public:
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
+	virtual void SetDensity(float InDensity);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
+	virtual float GetDensity() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
+	virtual void SetYoungsModulus(float InYoungsModulus);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
+	virtual float GetYoungsModulus() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
+	virtual void SetBulkViscosity(float InBulkViscosity);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
+	virtual float GetBulkViscosity() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
+	virtual void SetDamping(float InDamping);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
+	virtual float GetDamping() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
+	virtual void SetMinMaxElasticRestLength(float InMin, float InMax);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
+	virtual float GetMinElasticRestLength() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
+	virtual float GetMaxElasticRestLength() const;
+
 	void CopyFrom(const FShapeMaterialBarrier* Source);
 };

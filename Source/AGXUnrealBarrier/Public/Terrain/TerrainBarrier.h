@@ -25,7 +25,7 @@ public:
 	~FTerrainBarrier();
 
 	bool HasNative() const;
-	void AllocateNative(FHeightFieldShapeBarrier& SourceHeightField);
+	void AllocateNative(FHeightFieldShapeBarrier& SourceHeightField, double MaxDepth);
 	FTerrainRef* GetNative();
 	const FTerrainRef* GetNative() const;
 	void ReleaseNative();
@@ -35,6 +35,15 @@ public:
 
 	void SetRotation(FQuat Rotation);
 	FQuat GetRotation() const;
+
+	void SetCreateParticles(bool CreateParticles);
+	bool GetCreateParticles() const;
+
+	void SetDeleteParticlesOutsideBounds(bool DeleteParticlesOutsideBounds);
+	bool GetDeleteParticlesOutsideBounds() const;
+
+	void SetPenetrationForceVelocityScaling(double PenetrationForceVelocityScaling);
+	double GetPenetrationForceVelocityScaling() const;
 
 	bool AddShovel(FShovelBarrier& Shovel);
 	void SetShapeMaterial(const FShapeMaterialBarrier& Material);

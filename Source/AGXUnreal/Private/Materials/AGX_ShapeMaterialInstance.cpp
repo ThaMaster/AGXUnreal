@@ -3,9 +3,211 @@
 #include "Engine/World.h"
 
 #include "AGX_Simulation.h"
-#include "AGX_LogCategory.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
+
+
+void UAGX_ShapeMaterialInstance::SetDensity(float InDensity)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetDensity(static_cast<double>(InDensity));
+	}
+
+	Bulk.Density = InDensity;
+}
+
+float UAGX_ShapeMaterialInstance::GetDensity() const
+{
+	if (HasNative())
+	{
+		return static_cast<float>(NativeBarrier->GetDensity());
+	}
+
+	return Bulk.Density;
+}
+
+void UAGX_ShapeMaterialInstance::SetYoungsModulus(float InYoungsModulus)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetYoungsModulus(static_cast<double>(InYoungsModulus));
+	}
+
+	Bulk.YoungsModulus = InYoungsModulus;
+}
+
+float UAGX_ShapeMaterialInstance::GetYoungsModulus() const
+{
+	if (HasNative())
+	{
+		return static_cast<float>(NativeBarrier->GetYoungsModulus());
+	}
+
+	return Bulk.YoungsModulus;
+}
+
+void UAGX_ShapeMaterialInstance::SetBulkViscosity(float InBulkViscosity)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetBulkViscosity(static_cast<double>(InBulkViscosity));
+	}
+
+	Bulk.Viscosity = InBulkViscosity;
+}
+
+float UAGX_ShapeMaterialInstance::GetBulkViscosity() const
+{
+	if (HasNative())
+	{
+		return static_cast<float>(NativeBarrier->GetBulkViscosity());
+	}
+
+	return Bulk.Viscosity;
+}
+
+void UAGX_ShapeMaterialInstance::SetDamping(float InDamping)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetDamping(static_cast<double>(InDamping));
+	}
+
+	Bulk.Damping = InDamping;
+}
+
+float UAGX_ShapeMaterialInstance::GetDamping() const
+{
+	if (HasNative())
+	{
+		return static_cast<float>(NativeBarrier->GetDamping());
+	}
+
+	return Bulk.Damping;
+}
+
+void UAGX_ShapeMaterialInstance::SetMinMaxElasticRestLength(float InMin, float InMax)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetMinMaxElasticRestLength(static_cast<double>(InMin), static_cast<double>(InMax));
+	}
+
+	Bulk.MinElasticRestLength = InMin;
+	Bulk.MaxElasticRestLength = InMax;
+}
+
+float UAGX_ShapeMaterialInstance::GetMinElasticRestLength() const
+{
+	if (HasNative())
+	{
+		return static_cast<float>(NativeBarrier->GetMinElasticRestLength());
+	}
+
+	return Bulk.MinElasticRestLength;
+}
+
+float UAGX_ShapeMaterialInstance::GetMaxElasticRestLength() const
+{
+	if (HasNative())
+	{
+		return static_cast<float>(NativeBarrier->GetMaxElasticRestLength());
+	}
+
+	return Bulk.MaxElasticRestLength;
+}
+
+void UAGX_ShapeMaterialInstance::SetFrictionEnabled(bool Enabled)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetFrictionEnabled(Enabled);
+	}
+
+	Surface.bFrictionEnabled = Enabled;
+}
+
+bool UAGX_ShapeMaterialInstance::GetFrictionEnabled() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetFrictionEnabled();
+	}
+
+	return Surface.bFrictionEnabled;
+}
+
+void UAGX_ShapeMaterialInstance::SetRoughness(float Roughness)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetRoughness(static_cast<double>(Roughness));
+	}
+
+	Surface.Roughness = static_cast<double>(Roughness);
+}
+
+float UAGX_ShapeMaterialInstance::GetRoughness() const
+{
+	if (HasNative())
+	{
+		return static_cast<float>(NativeBarrier->GetRoughness());
+	}
+
+	return static_cast<float>(Surface.Roughness);
+}
+
+void UAGX_ShapeMaterialInstance::SetSurfaceViscosity(float Viscosity)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetSurfaceViscosity(static_cast<double>(Viscosity));
+	}
+
+	Surface.Viscosity = static_cast<double>(Viscosity);
+}
+
+float UAGX_ShapeMaterialInstance::GetSurfaceViscosity() const
+{
+	if (HasNative())
+	{
+		return static_cast<float>(NativeBarrier->GetSurfaceViscosity());
+	}
+
+	return static_cast<float>(Surface.Viscosity);
+}
+
+void UAGX_ShapeMaterialInstance::SetAdhesion(float AdhesiveForce, float AdhesiveOverlap)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetAdhesion(static_cast<double>(AdhesiveForce), static_cast<double>(AdhesiveOverlap));
+	}
+
+	Surface.AdhesiveForce = static_cast<double>(AdhesiveForce);
+	Surface.AdhesiveOverlap = static_cast<double>(AdhesiveOverlap);
+}
+
+float UAGX_ShapeMaterialInstance::GetAdhesiveForce() const
+{
+	if (HasNative())
+	{
+		return static_cast<float>(NativeBarrier->GetAdhesiveForce());
+	}
+
+	return static_cast<float>(Surface.AdhesiveForce);
+}
+
+float UAGX_ShapeMaterialInstance::GetAdhesiveOverlap() const
+{
+	if (HasNative())
+	{
+		return static_cast<float>(NativeBarrier->GetAdhesiveOverlap());
+	}
+
+	return static_cast<float>(Surface.AdhesiveOverlap);
+}
 
 UAGX_ShapeMaterialInstance* UAGX_ShapeMaterialInstance::CreateFromAsset(
 	UWorld* PlayingWorld, UAGX_ShapeMaterialAsset* Source)

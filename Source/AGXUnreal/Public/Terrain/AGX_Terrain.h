@@ -32,7 +32,7 @@ class ALandscape;
 class UNiagaraComponent;
 class UNiagaraSystem;
 
-UCLASS(ClassGroup = "AGX_Terrain", Category = "AGX")
+UCLASS(ClassGroup = "AGX_Terrain", Blueprintable, Category = "AGX")
 class AGXUNREAL_API AAGX_Terrain : public AActor
 {
 	GENERATED_BODY()
@@ -61,10 +61,22 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	bool bCreateParticles = true;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	void SetCreateParticles(bool CreateParticles);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	bool GetCreateParticles() const;
+
 	/** Whether the native terrain simulation should auto-delete particles that are out of bounds.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	bool bDeleteParticlesOutsideBounds = true;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	void SetDeleteParticlesOutsideBounds(bool DeleteParticlesOutsideBounds);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	bool GetDeleteParticlesOutsideBounds() const;
 
 	/**
 	 * Scales the penetration force with the shovel velocity squared in the cutting
@@ -72,6 +84,12 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	float PenetrationForceVelocityScaling = 0.0f;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	void SetPenetrationForceVelocityScaling(float InPenetrationForceVelocityScaling);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	float GetPenetrationForceVelocityScaling() const;
 
 	/**
 	 * The maximum depth of the terrain, in centimeters from local origin. Should at least be
@@ -84,7 +102,7 @@ public:
 	float MaxDepth = 200.0f;
 
 	/** The physical bulk, compaction, particle and surface properties of the Terrain. */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Terrain")
 	UAGX_TerrainMaterialBase* TerrainMaterial;
 
 	/**
@@ -156,7 +174,7 @@ public:
 	bool bEnableActiveZoneRendering = false;
 
 	/// Return true if the AGX Dynamics object has been created. False otherwise.
-	bool HasNative();
+	bool HasNative() const;
 
 	FTerrainBarrier* GetNative();
 	const FTerrainBarrier* GetNative() const;

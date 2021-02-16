@@ -50,7 +50,68 @@ AAGX_Terrain::AAGX_Terrain()
 	}
 }
 
-bool AAGX_Terrain::HasNative()
+void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetCreateParticles(CreateParticles);
+	}
+
+	bCreateParticles = CreateParticles;
+}
+
+bool AAGX_Terrain::GetCreateParticles() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetCreateParticles();
+	}
+
+	return bCreateParticles;
+}
+
+void AAGX_Terrain::SetDeleteParticlesOutsideBounds(bool DeleteParticlesOutsideBounds)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetDeleteParticlesOutsideBounds(DeleteParticlesOutsideBounds);
+	}
+
+	bDeleteParticlesOutsideBounds = DeleteParticlesOutsideBounds;
+}
+
+bool AAGX_Terrain::GetDeleteParticlesOutsideBounds() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetDeleteParticlesOutsideBounds();
+	}
+
+	return bDeleteParticlesOutsideBounds;
+}
+
+void AAGX_Terrain::SetPenetrationForceVelocityScaling(float InPenetrationForceVelocityScaling)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetPenetrationForceVelocityScaling(
+			static_cast<double>(InPenetrationForceVelocityScaling));
+	}
+
+	PenetrationForceVelocityScaling = InPenetrationForceVelocityScaling;
+}
+
+float AAGX_Terrain::GetPenetrationForceVelocityScaling() const
+{
+	if (HasNative())
+	{
+		return static_cast<float>(NativeBarrier.GetPenetrationForceVelocityScaling());
+	}
+
+	return PenetrationForceVelocityScaling;
+}
+
+bool AAGX_Terrain::HasNative() const
 {
 	return NativeBarrier.HasNative();
 }
@@ -217,11 +278,15 @@ void AAGX_Terrain::CreateNativeTerrain()
 {
 	FHeightFieldShapeBarrier HeightField =
 		AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
-	NativeBarrier.AllocateNative(HeightField);
+	NativeBarrier.AllocateNative(HeightField, MaxDepth);
 	check(HasNative());
 
 	SetInitialTransform();
 	OriginalHeights = NativeBarrier.GetHeights();
+	NativeBarrier.SetCreateParticles(bCreateParticles);
+	NativeBarrier.SetDeleteParticlesOutsideBounds(bDeleteParticlesOutsideBounds);
+	NativeBarrier.SetPenetrationForceVelocityScaling(
+		static_cast<double>(PenetrationForceVelocityScaling));
 
 	// Create the AGX Dynamics instance for the terrain.
 	// Note that the AGX Dynamics Terrain messes with the solver parameters on add, parameters that

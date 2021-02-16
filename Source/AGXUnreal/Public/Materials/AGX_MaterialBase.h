@@ -78,6 +78,33 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Material Properties")
 	FAGX_ShapeMaterialSurfaceProperties Surface;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	virtual void SetFrictionEnabled(bool Enabled);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	virtual bool GetFrictionEnabled() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	virtual void SetRoughness(float Roughness);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	virtual float GetRoughness() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	virtual void SetSurfaceViscosity(float Viscosity);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	virtual float GetSurfaceViscosity() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	virtual void SetAdhesion(float AdhesiveForce, float AdhesiveOverlap);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	virtual float GetAdhesiveForce() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	virtual float GetAdhesiveOverlap() const;
+
 public:
 	virtual ~UAGX_MaterialBase();
 
