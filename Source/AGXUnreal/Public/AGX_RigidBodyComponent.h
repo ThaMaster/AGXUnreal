@@ -43,7 +43,7 @@ public:
 	FVector Velocity;
 
 	/**
-	 * In radians per second and following the Unreal Editor rotation widget so that a positive
+	 * In degrees per second and following the Unreal Editor rotation widget so that a positive
 	 * angular velocity about some axis produces increasing rotation values in the editor widget.
 	 *
 	 * A positive X angular velocity rotates the Z axis towards the Y axis, i.e., roll right. A

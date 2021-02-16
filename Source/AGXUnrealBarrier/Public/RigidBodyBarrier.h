@@ -43,10 +43,10 @@ public:
 	void SetVelocity(FVector Velocity);
 	FVector GetVelocity() const;
 
-	/// In radians.
+	// In degrees/s.
 	void SetAngularVelocity(FVector AngularVelocity);
 
-	/// In radians.
+	// In degrees/s.
 	FVector GetAngularVelocity() const;
 
 	FMassPropertiesBarrier& GetMassProperties();
