@@ -11,8 +11,8 @@ AAGX_TwoBodyTireActor::AAGX_TwoBodyTireActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	RootComponent = Root;
+	RootComponent =
+		CreateDefaultSubobject<USceneComponent>(USceneComponent::GetDefaultSceneRootVariableName());
 
 	TireRigidBodyComponent = CreateDefaultSubobject<UAGX_RigidBodyComponent>(TEXT("TireRigidBody"));
 	TireRigidBodyComponent->SetupAttachment(RootComponent);

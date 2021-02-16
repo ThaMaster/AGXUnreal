@@ -9,7 +9,8 @@ AAGX_CollisionGroupDisablerActor::AAGX_CollisionGroupDisablerActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	RootComponent =
+		CreateDefaultSubobject<USceneComponent>(USceneComponent::GetDefaultSceneRootVariableName());
 
 	CollisionGroupDisablerComponent = CreateDefaultSubobject<UAGX_CollisionGroupDisablerComponent>(
 		TEXT("AGX_CollisionGroupDisabler"));
