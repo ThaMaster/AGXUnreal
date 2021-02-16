@@ -196,7 +196,9 @@ inline FVector ConvertAngularVelocity(const agx::Vec3& V)
 	 * same direction in both cases, so no negation there, but the handedness of rotations around X
 	 * is different so so we must negate it for that reason.
 	 */
-	return FVector(Convert(V.x()), -Convert(V.y()), -Convert(V.z()));
+	return FVector(
+		FMath::RadiansToDegrees(Convert(V.x())), FMath::RadiansToDegrees(-Convert(V.y())),
+		FMath::RadiansToDegrees(-Convert(V.z())));
 }
 
 inline agx::Vec3 Convert(const FVector& V)
@@ -224,7 +226,9 @@ inline agx::Vec3f ConvertFloatVector(const FVector& V)
 inline agx::Vec3 ConvertAngularVelocity(const FVector& V)
 {
 	// See comment in the AGX-to-Unreal version of this function.
-	return agx::Vec3(Convert(V.X), -Convert(V.Y), -Convert(V.Z));
+	return agx::Vec3(
+		Convert(FMath::DegreesToRadians(V.X)), -Convert(FMath::DegreesToRadians(V.Y)),
+		-Convert(FMath::DegreesToRadians(V.Z)));
 }
 
 // Four-dimensional vectors.
