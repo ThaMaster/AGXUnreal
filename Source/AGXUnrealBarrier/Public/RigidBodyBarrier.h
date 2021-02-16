@@ -34,6 +34,9 @@ public:
 	FRigidBodyBarrier(FRigidBodyBarrier&& Other);
 	~FRigidBodyBarrier();
 
+	void SetEnabled(bool Enabled);
+	bool GetEnabled() const;
+
 	void SetPosition(FVector Position);
 	FVector GetPosition() const;
 

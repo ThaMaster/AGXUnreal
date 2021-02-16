@@ -23,24 +23,57 @@ public:
 	// Sets default values for this component's properties
 	UAGX_RigidBodyComponent();
 
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	bool bEnabled = true;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetEnabled(bool InEnabled);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	bool GetEnabled();
+
 	/// Whether the mass should be computed automatically.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	bool bAutomaticMassProperties = true;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetAutomaticMassProperties(bool InEnabled);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	bool GetAutomaticMassProperties();
+
 	/// The mass of the body.
 	UPROPERTY(
-		EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics",
+		EditAnywhere, Category = "AGX Dynamics",
 		Meta = (EditCondition = "!bAutomaticMassProperties"))
 	float Mass;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetMass(float InMass);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	float GetMass();
+
 	/// The three-component diagonal of the inertia tensor.
 	UPROPERTY(
-		EditAnywhere, BluePrintReadWrite, Category = "AGX Dynamics",
+		EditAnywhere, Category = "AGX Dynamics",
 		Meta = (EditCondition = "!bAutomaticMassProperties"))
 	FVector PrincipalInertiae;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetPrincipalInertiae(FVector InPrincipalInertiae);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FVector GetPrincipalInertiae();
+
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	FVector Velocity;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetVelocity(FVector InVelocity);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FVector GetVelocity();
 
 	/**
 	 * In degrees per second and following the Unreal Editor rotation widget so that a positive
@@ -55,30 +88,29 @@ public:
 	 * A positive Z angular velocity rotates the X axis towards the Y axis, i.e, yaw right. A
 	 * left-handed rotation.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	FVector AngularVelocity;
 
-	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetAngularVelocity(FVector InAngularVelocity);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FVector GetAngularVelocity();
+
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetMotionControl(TEnumAsByte<enum EAGX_MotionControl> InMotionControl);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	TEnumAsByte<enum EAGX_MotionControl> GetMotionControl();
 
 	/**
 	 * Decide to where transformation updates from AGX Dynamics should be written.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_TransformTarget> TransformTarget;
-
-	/**
-	 * Should be called whenever properties (excluding transform and shapes) need to be pushed
-	 * onto the native in runtime.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void WritePropertiesToNative();
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void ReadTransformFromNative();
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void WriteTransformToNative();
 
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FRigidBodyBarrier* GetOrCreateNative();
@@ -121,6 +153,15 @@ private:
 
 	// Set native's MotionControl and ensure Unreal has corresponding mobility.
 	void InitializeMotionControl();
+
+	/**
+	 * Should be called whenever properties (excluding transform and shapes) need to be pushed
+	 * onto the native in runtime.
+	 */
+	void WritePropertiesToNative();
+
+	void ReadTransformFromNative();
+	void WriteTransformToNative();
 
 #if WITH_EDITOR
 #if UE_VERSION_OLDER_THAN(4, 25, 0)
