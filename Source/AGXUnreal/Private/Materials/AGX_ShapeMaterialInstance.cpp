@@ -21,7 +21,7 @@ float UAGX_ShapeMaterialInstance::GetDensity() const
 {
 	if (HasNative())
 	{
-		return static_cast<float>(NativeBarrier->GetDamping());
+		return static_cast<float>(NativeBarrier->GetDensity());
 	}
 
 	return Bulk.Density;
@@ -41,7 +41,7 @@ float UAGX_ShapeMaterialInstance::GetYoungsModulus() const
 {
 	if (HasNative())
 	{
-		return static_cast<float>(NativeBarrier->GetDamping());
+		return static_cast<float>(NativeBarrier->GetYoungsModulus());
 	}
 
 	return Bulk.YoungsModulus;
@@ -61,7 +61,7 @@ float UAGX_ShapeMaterialInstance::GetBulkViscosity() const
 {
 	if (HasNative())
 	{
-		return static_cast<float>(NativeBarrier->GetDamping());
+		return static_cast<float>(NativeBarrier->GetBulkViscosity());
 	}
 
 	return Bulk.Viscosity;
@@ -102,7 +102,7 @@ float UAGX_ShapeMaterialInstance::GetMinElasticRestLength() const
 {
 	if (HasNative())
 	{
-		return static_cast<float>(NativeBarrier->GetDamping());
+		return static_cast<float>(NativeBarrier->GetMinElasticRestLength());
 	}
 
 	return Bulk.MinElasticRestLength;
@@ -112,7 +112,7 @@ float UAGX_ShapeMaterialInstance::GetMaxElasticRestLength() const
 {
 	if (HasNative())
 	{
-		return static_cast<float>(NativeBarrier->GetDamping());
+		return static_cast<float>(NativeBarrier->GetMaxElasticRestLength());
 	}
 
 	return Bulk.MaxElasticRestLength;
@@ -145,7 +145,7 @@ void UAGX_ShapeMaterialInstance::SetRoughness(float Roughness)
 		NativeBarrier->SetRoughness(static_cast<double>(Roughness));
 	}
 
-	Surface.bFrictionEnabled = static_cast<double>(Roughness);
+	Surface.Roughness = static_cast<double>(Roughness);
 }
 
 float UAGX_ShapeMaterialInstance::GetRoughness() const
