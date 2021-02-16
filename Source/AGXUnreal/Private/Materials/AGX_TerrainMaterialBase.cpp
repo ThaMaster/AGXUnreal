@@ -148,13 +148,13 @@ float UAGX_TerrainMaterialBase::GetHardeningConstantKe() const
 	return static_cast<float>(TerrainCompaction.K_e);
 }
 
-void UAGX_TerrainMaterialBase::SetHardeningConstant(float N_e)
+void UAGX_TerrainMaterialBase::SetHardeningConstantNe(float N_e)
 {
 	TerrainCompaction.N_e =
 		static_cast<double>(N_e);
 }
 
-float UAGX_TerrainMaterialBase::GetHardeningConstant() const
+float UAGX_TerrainMaterialBase::GetHardeningConstantNe() const
 {
 	return static_cast<float>(TerrainCompaction.N_e);
 }

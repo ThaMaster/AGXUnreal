@@ -42,54 +42,55 @@ public:
 	virtual void SetAdhesionOverlapFactor(float AdhesionOverlapFactor) override;
 	virtual float GetAdhesionOverlapFactor() const override;
 
-	virtual void SetCohesion(float Cohesion);
-	virtual float GetCohesion() const;
+	virtual void SetCohesion(float Cohesion) override;
+	virtual float GetCohesion() const override;
 
-	virtual void SetDensity(float Density);
-	virtual float GetDensity() const;
+	virtual void SetDensity(float Density) override;
+	virtual float GetDensity() const override;
 
-	virtual void SetDilatancyAngle(float DilatancyAngle);
-	virtual float GetDilatancyAngle() const;
+	virtual void SetDilatancyAngle(float DilatancyAngle) override;
+	virtual float GetDilatancyAngle() const override;
 
-	virtual void SetFrictionAngle(float FrictionAngle);
-	virtual float GetFrictionAngle() const;
+	virtual void SetFrictionAngle(float FrictionAngle) override;
+	virtual float GetFrictionAngle() const override;
 
-	virtual void SetMaxDensity(float MaxDensity);
-	virtual float GetMaxDensity() const;
+	virtual void SetMaxDensity(float MaxDensity) override;
+	virtual float GetMaxDensity() const override;
 
-	virtual void SetPoissonsRatio(float PoissonsRatio);
-	virtual float GetPoissonsRatio() const;
+	virtual void SetPoissonsRatio(float PoissonsRatio) override;
+	virtual float GetPoissonsRatio() const override;
 
-	virtual void SetSwellFactor(float SwellFactor);
-	virtual float GetSwellFactor() const;
+	virtual void SetSwellFactor(float SwellFactor) override;
+	virtual float GetSwellFactor() const override;
 
-	virtual void SetYoungsModulus(float YoungsModulus);
-	virtual float GetYoungsModulus() const;
+	virtual void SetYoungsModulus(float YoungsModulus) override;
+	virtual float GetYoungsModulus() const override;
 
 	// Compaction properties.
-	virtual void SetAngleOfReposeCompactionRate(float AngleOfReposeCompactionRate);
-	virtual float GetAngleOfReposeCompactionRate() const;
+	virtual void SetAngleOfReposeCompactionRate(float AngleOfReposeCompactionRate) override;
+	virtual float GetAngleOfReposeCompactionRate() const override;
 
-	virtual void SetBankStatePhi(float Phi0);
-	virtual float GetBankStatePhi() const;
+	virtual void SetBankStatePhi(float Phi0) override;
+	virtual float GetBankStatePhi() const override;
 
-	virtual void SetCompactionTimeRelaxationConstant(float CompactionTimeRelaxationConstant);
-	virtual float GetCompactionTimeRelaxationConstant() const;
+	virtual void SetCompactionTimeRelaxationConstant(
+		float CompactionTimeRelaxationConstant) override;
+	virtual float GetCompactionTimeRelaxationConstant() const override;
 
-	virtual void SetCompressionIndex(float CompressionIndex);
-	virtual float GetCompressionIndex() const;
+	virtual void SetCompressionIndex(float CompressionIndex) override;
+	virtual float GetCompressionIndex() const override;
 
-	virtual void SetHardeningConstantKe(float K_e);
-	virtual float GetHardeningConstantKe() const;
+	virtual void SetHardeningConstantKe(float K_e) override;
+	virtual float GetHardeningConstantKe() const override;
 
-	virtual void SetHardeningConstantNe(float N_e);
-	virtual float GetHardeningConstantNe() const;
+	virtual void SetHardeningConstantNe(float N_e) override;
+	virtual float GetHardeningConstantNe() const override;
 
-	virtual void SetPreconsolidationStress(float PreconsolidationStress);
-	virtual float GetPreconsolidationStress() const;
+	virtual void SetPreconsolidationStress(float PreconsolidationStress) override;
+	virtual float GetPreconsolidationStress() const override;
 
-	virtual void SetStressCutOffFraction(float StressCutOffFraction);
-	virtual float GetStressCutOffFraction() const;
+	virtual void SetStressCutOffFraction(float StressCutOffFraction) override;
+	virtual float GetStressCutOffFraction() const override;
 
 	FTerrainMaterialBarrier* GetOrCreateTerrainMaterialNative(UWorld* PlayingWorld);
 

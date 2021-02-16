@@ -133,10 +133,10 @@ public:
 	virtual float GetHardeningConstantKe() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual void SetHardeningConstant(float N_e);
+	virtual void SetHardeningConstantNe(float N_e);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual float GetHardeningConstant() const;
+	virtual float GetHardeningConstantNe() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
 	virtual void SetPreconsolidationStress(float PreconsolidationStress);
