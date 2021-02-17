@@ -135,7 +135,7 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
 
 	EAssetTypeCategories::Type AgxAssetCategoryBit = AssetTools.RegisterAdvancedAssetCategory(
-		FName(TEXT("AgxUnreal")), LOCTEXT("AgxAssetCategory", "AGX"));
+		FName(TEXT("AgxUnreal")), LOCTEXT("AgxAssetCategory", "AGX Dynamics"));
 
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
