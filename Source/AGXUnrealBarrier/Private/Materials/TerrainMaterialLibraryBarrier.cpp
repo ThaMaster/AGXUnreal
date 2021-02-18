@@ -7,7 +7,7 @@
 // AGX Dynamics includes.
 #include <BeginAGXIncludes.h>
 #include <agxTerrain/TerrainMaterial.h>
-#include <agxTerrain/TerrainMaterialLibraryBarrier.h>
+#include <agxTerrain/TerrainMaterialLibrary.h>
 #include <EndAGXIncludes.h>
 
 TArray<FString> AGX_TerrainMaterialLibraryBarrier::GetAvailableLibraryMaterials()
