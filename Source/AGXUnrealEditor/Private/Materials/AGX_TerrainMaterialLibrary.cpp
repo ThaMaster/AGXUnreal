@@ -3,13 +3,13 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_TerrainMaterialAsset.h"
-#include "TerrainMaterialLibraryBarrier.h"
+#include "Materials/TerrainMaterialLibraryBarrier.h"
 
 // Unreal Engine includes.
 #include "AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #include "AssetRegistryModule.h"
-#include "ModuleManager.h"
+#include "Modules/ModuleManager.h"
 #include "PackageTools.h"
 
 // Naming convention:
