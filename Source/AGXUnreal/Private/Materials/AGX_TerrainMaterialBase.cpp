@@ -1,5 +1,9 @@
 #include "Materials/AGX_TerrainMaterialBase.h"
 
+// AGX Dynamics for Unreal includes.
+#include "Materials/TerrainMaterialBarrier.h"
+
+// Unreal Engine includes.
 #include "Engine/World.h"
 
 // Bulk properties.
@@ -179,6 +183,30 @@ void UAGX_TerrainMaterialBase::SetStressCutOffFraction(float StressCutOffFractio
 float UAGX_TerrainMaterialBase::GetStressCutOffFraction() const
 {
 	return static_cast<float>(TerrainCompaction.StressCutOffFraction);
+}
+
+void UAGX_TerrainMaterialBase::CopyFrom(const FTerrainMaterialBarrier& Source)
+{
+	TerrainBulk = FAGX_TerrainBulkProperties();
+	TerrainBulk.AdhesionOverlapFactor = Source.GetAdhesionOverlapFactor();
+	TerrainBulk.Cohesion = Source.GetCohesion();
+	TerrainBulk.Density = Source.GetDensity();
+	TerrainBulk.DilatancyAngle = Source.GetDilatancyAngle();
+	TerrainBulk.FrictionAngle = Source.GetFrictionAngle();
+	TerrainBulk.MaxDensity = Source.GetMaximumDensity();
+	TerrainBulk.PoissonsRatio = Source.GetPoissonsRatio();
+	TerrainBulk.SwellFactor = Source.GetSwellFactor();
+	TerrainBulk.YoungsModulus = Source.GetYoungsModulus();
+
+	TerrainCompaction = FAGX_TerrainCompactionProperties();
+	TerrainCompaction.AngleOfReposeCompactionRate = Source.GetAngleOfReposeCompactionRate();
+	TerrainCompaction.Phi0 = Source.GetBankStatePhi();
+	TerrainCompaction.CompactionTimeRelaxationConstant = Source.GetCompactionTimeRelaxationConstant();
+	TerrainCompaction.CompressionIndex = Source.GetCompressionIndex();
+	TerrainCompaction.K_e = Source.GetHardeningConstantKE();
+	TerrainCompaction.N_e = Source.GetHardeningConstantNE();
+	TerrainCompaction.PreconsolidationStress = Source.GetPreconsolidationStress();
+	TerrainCompaction.StressCutOffFraction = Source.GetStressCutOffFraction();
 }
 
 void UAGX_TerrainMaterialBase::CopyTerrainMaterialProperties(const UAGX_TerrainMaterialBase* Source)
