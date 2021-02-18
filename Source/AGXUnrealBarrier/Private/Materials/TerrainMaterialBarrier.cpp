@@ -140,7 +140,7 @@ void FTerrainMaterialBarrier::SetFrictionAngle(double FrictionAngle)
 double FTerrainMaterialBarrier::GetFrictionAngle() const
 {
 	check(HasNative());
-	double FricAngRad = NativeRef->Native->getBulkProperties()->getDilatancyAngle();
+	double FricAngRad = NativeRef->Native->getBulkProperties()->getFrictionAngle();
 	return FMath::RadiansToDegrees(FricAngRad);
 }
 
