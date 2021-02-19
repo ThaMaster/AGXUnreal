@@ -1,7 +1,11 @@
 #pragma once
 
-#include "CoreMinimal.h"
+// AGX Dynamics for Unreal includes.
 #include "AgxEdMode/AGX_AgxEdModeSubMode.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
 #include "AGX_AgxEdModeFile.generated.h"
 
 /**
