@@ -72,11 +72,6 @@ public:
 
 	void RemoveCollisionGroupIfExists(const FName& GroupName);
 
-public:
-	virtual void TickComponent(
-		float DeltaTime, ELevelTick TickType,
-		FActorComponentTickFunction* ThisTickFunction) override;
-
 #if WITH_EDITOR
 
 	/**

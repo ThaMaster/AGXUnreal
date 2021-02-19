@@ -15,7 +15,7 @@
 // Sets default values for this component's properties
 UAGX_ShapeComponent::UAGX_ShapeComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 bool UAGX_ShapeComponent::HasNative() const
@@ -72,17 +72,6 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	{
 		GetNative()->AddCollisionGroup(Group);
 	}
-}
-
-void UAGX_ShapeComponent::TickComponent(
-	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	/// \todo Do we need TickComponent on UAGX_ShapeComponent?
-
-	UE_LOG(
-		LogAGX, Log, TEXT("TickComponent for ShapeComponent.")); // Haven't seen this in the log ??
 }
 
 #if WITH_EDITOR
