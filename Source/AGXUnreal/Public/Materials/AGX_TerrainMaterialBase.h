@@ -8,6 +8,8 @@
 
 #include "AGX_TerrainMaterialBase.generated.h"
 
+class FTerrainMaterialBarrier;
+
 /**
  * Defines the material for a terrain. Affects both surface and bulk properties.
  *
@@ -149,6 +151,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
 	virtual float GetStressCutOffFraction() const;
+
+	void CopyFrom(const FTerrainMaterialBarrier& Source);
 
 protected:
 	void CopyTerrainMaterialProperties(const UAGX_TerrainMaterialBase* Source);

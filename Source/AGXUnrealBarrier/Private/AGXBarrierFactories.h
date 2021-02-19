@@ -14,6 +14,7 @@
 #include "Constraints/LockJointBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
+#include "Materials/TerrainMaterialBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
 
 #include "AGXRefs.h"
@@ -42,6 +43,14 @@ namespace agxModel
 	class TwoBodyTire;
 }
 
+/**
+ * These factory functions are required because it's not possible to create a Barrier constructor
+ * that takes the AGX Dynamics type as a parameter because we may not use AGX Dynamics types in
+ * public header files. This header file is private to the Barrier module so here we can use AGX
+ * Dynamics types. The factory functions sidestep the limitation by passing a unique_ptr to an
+ * instance of the forward-declared Refs-type to the Barrier constructor, which the constructor
+ * implementation will move from.
+ */
 namespace AGXBarrierFactories
 {
 	FRigidBodyBarrier CreateRigidBodyBarrier(agx::RigidBody* Body);
@@ -73,4 +82,6 @@ namespace AGXBarrierFactories
 	FContactMaterialBarrier CreateContactMaterialBarrier(agx::ContactMaterial* ContactMaterial);
 
 	FTwoBodyTireBarrier CreateTwoBodyTireBarrier(agxModel::TwoBodyTire* Tire);
+
+	FTerrainMaterialBarrier CreateTerrainMaterialBarrier(agxTerrain::TerrainMaterial* Material);
 }
