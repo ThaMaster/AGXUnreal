@@ -318,10 +318,16 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			string Source = InstalledAgxResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
 			string Dest = PackagedAgxResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
-			if (!CopyDirectoryRecursively(Source, Dest))
+
+			// We don't yet include the Terrain Material Library in the Docker images.
+			// Remove this check once the images has been rebuilt.
+			if (Directory.Exists(Source))
 			{
-				CleanPackagedAgxDynamicsResources();
-				return;
+				if (!CopyDirectoryRecursively(Source, Dest))
+				{
+					CleanPackagedAgxDynamicsResources();
+					return;
+				}
 			}
 		}
 
