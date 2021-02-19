@@ -10,6 +10,7 @@
 #include <memory>
 
 struct FSimulationRef;
+struct FSensorContactData;
 
 class FRigidBodyBarrier;
 class FConstraintBarrier;
@@ -56,6 +57,9 @@ public:
 
 	void SetPointGravity(const FVector& Origin, float Magnitude);
 	FVector GetPointGravity(float& OutMagnitude) const;
+
+	// This data is only valid during a single tick.
+	TArray<FSensorContactData> GetSensorContactData(const FShapeBarrier& Shape) const;
 
 	/**
 	 * Perform one simulation step, moving the time stamp forward by one time step duration.

@@ -8,6 +8,7 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/ShapeBarrier.h"
+#include "Shapes/Sensors/SensorContactData.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TireBarrier.h"
 #include "TypeConversions.h"
@@ -232,6 +233,24 @@ FVector FSimulationBarrier::GetPointGravity(float& OutMagnitude) const
 
 	OutMagnitude = Convert(PointField->getGravity());
 	return ConvertVector(PointField->getCenter());
+}
+
+TArray<FSensorContactData> FSimulationBarrier::GetSensorContactData(
+	const FShapeBarrier& Shape) const
+{
+	check(HasNative());
+	check(Shape.HasNative());
+
+	TArray<FSensorContactData> SensorContactDataArr;
+	agxCollide::GeometryContactPtrVector ContactsAgx;
+	NativeRef->Native->getSpace()->getGeometryContacts(ContactsAgx, Shape.GetNative()->NativeGeometry);
+
+	SensorContactDataArr.Reserve(ContactsAgx.size());
+	for (const agxCollide::GeometryContact* Gc : ContactsAgx)
+	{
+		// TODO Copy data from agxCollide::GeometryContacts to FSensorContactData and push into arr.
+	}
+	return SensorContactDataArr;
 }
 
 void FSimulationBarrier::Step()
