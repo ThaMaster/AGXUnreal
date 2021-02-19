@@ -18,6 +18,16 @@ FTerrainMaterialBarrier::FTerrainMaterialBarrier()
 {
 }
 
+FTerrainMaterialBarrier::FTerrainMaterialBarrier(FTerrainMaterialBarrier&& Other)
+	: NativeRef {std::move(Other.NativeRef)}
+{
+}
+
+FTerrainMaterialBarrier::FTerrainMaterialBarrier(std::unique_ptr<FTerrainMaterialRef> Native)
+	: NativeRef {std::move(Native)}
+{
+}
+
 FTerrainMaterialBarrier::~FTerrainMaterialBarrier()
 {
 	// Must provide a destructor implementation in the .cpp file because the

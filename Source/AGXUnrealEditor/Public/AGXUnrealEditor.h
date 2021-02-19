@@ -67,6 +67,8 @@ private:
 	void RegisterPlacementCategory();
 	void UnregisterPlacementCategory();
 
+	void InitializeAssets();
+
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;
 	TSharedPtr<class FAGX_TopMenu> AgxTopMenu;

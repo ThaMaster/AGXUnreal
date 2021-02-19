@@ -52,6 +52,7 @@
 #include "Materials/AGX_ShapeMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialCustomization.h"
+#include "Materials/AGX_TerrainMaterialLibrary.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Tires/AGX_TireComponentVisualizer.h"
 #include "Tires/AGX_TireComponent.h"
@@ -73,6 +74,7 @@ void FAGXUnrealEditorModule::StartupModule()
 	RegisterComponentVisualizers();
 	RegisterModes();
 	RegisterPlacementCategory();
+	InitializeAssets();
 
 	AgxTopMenu = MakeShareable(new FAGX_TopMenu());
 }
@@ -363,6 +365,11 @@ void FAGXUnrealEditorModule::UnregisterPlacementCategory()
 	{
 		IPlacementModeModule::Get().UnregisterPlacementCategory("AGX");
 	}
+}
+
+void FAGXUnrealEditorModule::InitializeAssets()
+{
+	AGX_TerrainMaterialLibrary::InitializeTerrainMaterialAssetLibrary();
 }
 
 #undef LOCTEXT_NAMESPACE

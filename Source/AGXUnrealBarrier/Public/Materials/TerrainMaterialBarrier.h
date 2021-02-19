@@ -14,6 +14,8 @@ class AGXUNREALBARRIER_API FTerrainMaterialBarrier
 {
 public:
 	FTerrainMaterialBarrier();
+	FTerrainMaterialBarrier(FTerrainMaterialBarrier&& Other);
+	FTerrainMaterialBarrier(std::unique_ptr<FTerrainMaterialRef> Native);
 	virtual ~FTerrainMaterialBarrier();
 
 	bool HasNative() const;

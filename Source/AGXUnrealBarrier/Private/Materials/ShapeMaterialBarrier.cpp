@@ -1,8 +1,10 @@
 #include "Materials/ShapeMaterialBarrier.h"
 
+// AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 
+// AGX Dynamics includes.
 #include <Misc/AssertionMacros.h>
 
 FShapeMaterialBarrier::FShapeMaterialBarrier()

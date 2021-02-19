@@ -23,7 +23,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		Components,
 		Dependencies,
 		TerrainDependencies,
-		Cfg
+		Cfg,
+		TerrainMaterialLibrary
 	};
 
 	private enum AgxResourcesLocation {
@@ -310,6 +311,23 @@ public class AGXDynamicsLibrary : ModuleRules
 			{
 				CleanPackagedAgxDynamicsResources();
 				return;
+			}
+		}
+
+		// Copy Terrain Material Library.
+		{
+			string Source = InstalledAgxResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
+			string Dest = PackagedAgxResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
+
+			// We don't yet include the Terrain Material Library in the Docker images.
+			// Remove this check once the images has been rebuilt.
+			if (Directory.Exists(Source))
+			{
+				if (!CopyDirectoryRecursively(Source, Dest))
+				{
+					CleanPackagedAgxDynamicsResources();
+					return;
+				}
 			}
 		}
 
@@ -653,13 +671,21 @@ public class AGXDynamicsLibrary : ModuleRules
 				));
 
 				// On Linux, environment variable 'AGX_DATA_DIR' is not always visible here when using
-				//  abuilt Agx Dynamics. Therefore 'AGX_DIR' is used instead to find the cfg directory.
+				//  a built Agx Dynamics. Therefore 'AGX_DIR' is used instead to find the cfg directory.
 				LibSources.Add(LibSource.Cfg, new LibSourceInfo(
 					null,
 					null,
 					UseInstalledAgx ?
 						Path.Combine(Environment.GetEnvironmentVariable("AGX_DIR"), "data", "cfg")
 						: Path.Combine(BaseDir, "data", "cfg")
+				));
+
+				LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
+					null,
+					null,
+					UseInstalledAgx ?
+						Path.Combine(Environment.GetEnvironmentVariable("AGX_DIR"), "data", "TerrainMaterials")
+						: Path.Combine(BaseDir, "data", "TerrainMaterials")
 				));
 			}
 			else if(Target.Platform == UnrealTargetPlatform.Win64)
@@ -702,8 +728,17 @@ public class AGXDynamicsLibrary : ModuleRules
 				LibSources.Add(LibSource.Cfg, new LibSourceInfo(
 					null,
 					null,
-					UseInstalledAgx ? Path.Combine(Environment.GetEnvironmentVariable("AGX_DATA_DIR"), "cfg")
+					UseInstalledAgx ?
+						Path.Combine(Environment.GetEnvironmentVariable("AGX_DATA_DIR"), "cfg")
 						: Path.Combine(BaseDir, "data", "cfg")
+				));
+
+				LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
+					null,
+					null,
+					UseInstalledAgx ?
+						Path.Combine(Environment.GetEnvironmentVariable("AGX_DATA_DIR"), "TerrainMaterials")
+						: Path.Combine(BaseDir, "data", "TerrainMaterials")
 				));
 			}
 
