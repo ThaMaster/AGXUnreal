@@ -49,6 +49,7 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 		return;
 
 	GetNative()->SetName(GetName());
+	GetNative()->SetIsSensor(bIsSensor, SensorType == EAGX_ShapeSensorType::ContactSensor);
 
 	if (PhysicalMaterial)
 	{
@@ -159,6 +160,9 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 {
 	bCanCollide = Barrier.GetEnableCollisions();
+	bIsSensor = Barrier.GetIsSensor();
+	SensorType = Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactSensor
+															: EAGX_ShapeSensorType::BooleanSensor;
 
 	FVector Position;
 	FQuat Rotation;
@@ -201,4 +205,29 @@ void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 			CollisionGroups.RemoveAt(Index);
 		}
 	}
+}
+
+void UAGX_ShapeComponent::SetIsSensor(bool IsSensor)
+{
+	if (HasNative())
+	{
+		GetNative()->SetIsSensor(IsSensor, SensorType == EAGX_ShapeSensorType::ContactSensor);
+	}
+
+	bIsSensor = IsSensor;
+}
+
+bool UAGX_ShapeComponent::GetIsSensor() const
+{
+	if (HasNative())
+	{
+		return GetNative()->GetIsSensor();
+	}
+
+	return bIsSensor;
+}
+
+TArray<FAGX_SensorContact> UAGX_ShapeComponent::GetSensorContacts()
+{
+	return TArray<FAGX_SensorContact>();
 }

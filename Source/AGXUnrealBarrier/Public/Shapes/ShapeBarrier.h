@@ -31,6 +31,10 @@ public:
 	FGeometryAndShapeRef* GetNative();
 	const FGeometryAndShapeRef* GetNative() const;
 
+	void SetIsSensor(bool IsSensor, bool GenerateContactData);
+	bool GetIsSensor() const;
+	bool GetIsSensorGeneratingContactData() const;
+
 	template <typename T>
 	T* GetNativeShape();
 

@@ -72,6 +72,24 @@ const FGeometryAndShapeRef* FShapeBarrier::GetNative() const
 	return NativeRef.get();
 }
 
+bool FShapeBarrier::GetIsSensorGeneratingContactData() const
+{
+	check(HasNative());
+	return NativeRef->NativeGeometry->isSensorGeneratingContactData();
+}
+
+void FShapeBarrier::SetIsSensor(bool IsSensor, bool GenerateContactData)
+{
+	check(HasNative());
+	NativeRef->NativeGeometry->setSensor(IsSensor, GenerateContactData);
+}
+
+bool FShapeBarrier::GetIsSensor() const
+{
+	check(HasNative());
+	return NativeRef->NativeGeometry->isSensor();
+}
+
 void FShapeBarrier::SetLocalPosition(const FVector& Position)
 {
 	check(HasNative());
