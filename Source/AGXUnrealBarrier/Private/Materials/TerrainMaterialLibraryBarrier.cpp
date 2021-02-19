@@ -12,7 +12,7 @@
 
 TArray<FString> AGX_TerrainMaterialLibraryBarrier::GetAvailableLibraryMaterials()
 {
-	agx::StringVector NamesAGX = agxTerrain::TerrainMaterialLibrary::getAvailableLibraryMaterials();
+	const agx::StringVector NamesAGX = agxTerrain::TerrainMaterialLibrary::getAvailableLibraryMaterials();
 	TArray<FString> NamesUnreal;
 	NamesUnreal.Reserve(NamesAGX.size());
 	for (const agx::String& NameAGX : NamesAGX)
@@ -25,7 +25,7 @@ TArray<FString> AGX_TerrainMaterialLibraryBarrier::GetAvailableLibraryMaterials(
 FTerrainMaterialBarrier AGX_TerrainMaterialLibraryBarrier::LoadMaterialProfile(
 	const FString& MaterialName)
 {
-	agx::String MaterialNameAGX = Convert(MaterialName);
+	const agx::String MaterialNameAGX = Convert(MaterialName);
 	agxTerrain::TerrainMaterialRef Material = new agxTerrain::TerrainMaterial(MaterialNameAGX);
 	agxTerrain::TerrainMaterialLibrary::loadMaterialProfile(MaterialNameAGX, Material);
 	return AGXBarrierFactories::CreateTerrainMaterialBarrier(Material);
