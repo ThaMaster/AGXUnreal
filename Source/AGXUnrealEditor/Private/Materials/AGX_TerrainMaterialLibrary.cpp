@@ -23,10 +23,10 @@ namespace AGX_TerrainMaterialLibrary_helpers
 	void EnsureMaterialImported(const FString& NameAGX)
 	{
 		// Create a package for our asset.
-		FString Name = UPackageTools::SanitizePackageName(NameAGX);
-		FString AssetName = FString::Printf(TEXT("AGX_TM_%s"), *Name);
-		FString PackagePath =
-			FString::Printf(TEXT("/AGXUnreal/Terrain/TerrainMaterials/%s"), *AssetName);
+		const FString Name = UPackageTools::SanitizePackageName(NameAGX);
+		const FString AssetName = FString::Printf(TEXT("AGX_TM_%s"), *Name);
+		const FString PackagePath =
+			FString::Printf(TEXT("/AGXUnreal/Terrain/TerrainMaterialLibrary/%s"), *AssetName);
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
 
 // Not sure if or when this is needed or legal.
@@ -66,7 +66,7 @@ void AGX_TerrainMaterialLibrary::InitializeTerrainMaterialAssetLibrary()
 {
 	using namespace AGX_TerrainMaterialLibrary_helpers;
 
-	TArray<FString> Names = AGX_TerrainMaterialLibraryBarrier::GetAvailableLibraryMaterials();
+	const TArray<FString> Names = AGX_TerrainMaterialLibraryBarrier::GetAvailableLibraryMaterials();
 	for (const FString& NameAGX : Names)
 	{
 		EnsureMaterialImported(NameAGX);
