@@ -26,7 +26,7 @@ namespace AGX_TerrainMaterialLibrary_helpers
 		FString Name = UPackageTools::SanitizePackageName(NameAGX);
 		FString AssetName = FString::Printf(TEXT("AGX_TM_%s"), *Name);
 		FString PackagePath =
-			FString::Printf(TEXT("/AGXUnreal/Terrain/TerrainMaterials/%s"), *AssetName);
+			FString::Printf(TEXT("/AGXUnreal/Terrain/TerrainMaterialLibrary/%s"), *AssetName);
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
 
 // Not sure if or when this is needed or legal.
