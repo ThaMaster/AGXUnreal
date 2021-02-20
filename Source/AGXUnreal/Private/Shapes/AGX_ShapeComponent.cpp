@@ -108,6 +108,21 @@ void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& Property
 	{
 		UpdateVisualMesh();
 	}
+
+	// @todo Follow the below pattern for all relevant UPROPERTIES to support live changes from
+	// the details panel in the Editor during play. Note that setting a UPROPERTY from c++ does not
+	// trigger the PostEditChangeProperty(), so no recursive loops will occur.
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bCanCollide))
+	{
+		SetCanCollide(bCanCollide);
+		return;
+	}
+
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bIsSensor))
+	{
+		SetIsSensor(bIsSensor);
+		return;
+	}
 }
 
 void UAGX_ShapeComponent::PostLoad()
@@ -205,6 +220,26 @@ void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 			CollisionGroups.RemoveAt(Index);
 		}
 	}
+}
+
+void UAGX_ShapeComponent::SetCanCollide(bool CanCollide)
+{
+	if (HasNative())
+	{
+		GetNative()->SetEnableCollisions(CanCollide);
+	}
+
+	bCanCollide = CanCollide;
+}
+
+bool UAGX_ShapeComponent::GetCanCollide() const
+{
+	if (HasNative())
+	{
+		return GetNative()->GetEnableCollisions();
+	}
+
+	return bCanCollide;
 }
 
 void UAGX_ShapeComponent::SetIsSensor(bool IsSensor)

@@ -40,6 +40,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Shape")
 	bool bCanCollide = true;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	void SetCanCollide(bool CanCollide);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	bool GetCanCollide() const;
+
 	/**
 	 * List of collision groups that this shape component is part of.
 	 */
