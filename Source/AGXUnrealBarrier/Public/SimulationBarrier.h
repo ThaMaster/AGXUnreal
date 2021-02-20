@@ -58,7 +58,7 @@ public:
 	void SetPointGravity(const FVector& Origin, float Magnitude);
 	FVector GetPointGravity(float& OutMagnitude) const;
 
-	// This data is only valid during a single tick.
+	// The sensor contact data is only valid during a single time step.
 	TArray<FSensorContactData> GetSensorContactData(const FShapeBarrier& Shape) const;
 
 	/**

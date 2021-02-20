@@ -1,5 +1,8 @@
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Shapes/Sensors/SensorContactData.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -14,8 +17,16 @@ struct AGXUNREAL_API FAGX_SensorContact
 {
 	GENERATED_USTRUCT_BODY()
 
+	FAGX_SensorContact(FSensorContactData&& InData) noexcept
+		: Data(std::move(InData))
+	{
+	}
+
 	UPROPERTY(EditAnywhere, Category = "AGX Sensor Contacts")
 	float Dummy;
 
 	FAGX_SensorContact() = default;
+
+private:
+	FSensorContactData Data;
 };

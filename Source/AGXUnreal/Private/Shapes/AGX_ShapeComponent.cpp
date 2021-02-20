@@ -264,5 +264,22 @@ bool UAGX_ShapeComponent::GetIsSensor() const
 
 TArray<FAGX_SensorContact> UAGX_ShapeComponent::GetSensorContacts()
 {
-	return TArray<FAGX_SensorContact>();
+	TArray<FAGX_SensorContact> SensorContacts;
+	if (!HasNative())
+	{
+		return SensorContacts;
+	}
+
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	if (!Simulation)
+	{
+		return SensorContacts;
+	}
+
+	for (FSensorContactData& Data : Simulation->GetSensorContactData(*GetNative()))
+	{
+		SensorContacts.Add(FAGX_SensorContact(std::move(Data)));
+	}
+
+	return SensorContacts;
 }

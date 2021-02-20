@@ -249,6 +249,7 @@ TArray<FSensorContactData> FSimulationBarrier::GetSensorContactData(
 	for (const agxCollide::GeometryContact* Gc : ContactsAgx)
 	{
 		// TODO Copy data from agxCollide::GeometryContacts to FSensorContactData and push into arr.
+		SensorContactDataArr.Add(FSensorContactData());
 	}
 	return SensorContactDataArr;
 }

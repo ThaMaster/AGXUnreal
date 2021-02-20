@@ -11,6 +11,8 @@
 
 #include "AGX_Simulation.generated.h"
 
+struct FSensorContactData;
+
 class AAGX_Terrain;
 class UAGX_RigidBodyComponent;
 class UAGX_StaticMeshComponent;
@@ -20,6 +22,7 @@ class UAGX_MaterialBase;
 class AActor;
 class UActorComponent;
 class UWorld;
+class FShapeBarrier;
 
 /**
  * Manages an AGX simulation instance.
@@ -226,6 +229,9 @@ public: // Member functions.
 	static UAGX_Simulation* GetFrom(const UWorld* World);
 
 	static UAGX_Simulation* GetFrom(const UGameInstance* GameInstance);
+
+	// The sensor contact data is only valid during a single time step.
+	TArray<FSensorContactData> GetSensorContactData(const FShapeBarrier& Shape) const;
 
 #if WITH_EDITOR
 	virtual bool CanEditChange(
