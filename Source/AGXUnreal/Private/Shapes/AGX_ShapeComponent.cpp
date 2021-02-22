@@ -289,7 +289,7 @@ TArray<FAGX_ShapeContact> UAGX_ShapeComponent::GetShapeContacts()
 
 void UAGX_ShapeComponent::ApplySensorMaterial()
 {
-	static constexpr TCHAR* AssetPath =
+	static const TCHAR* AssetPath =
 		TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'");
 	static UMaterial* SensorMaterial = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
 
@@ -312,7 +312,7 @@ void UAGX_ShapeComponent::ApplySensorMaterial()
 
 void UAGX_ShapeComponent::RemoveSensorMaterial()
 {
-	static constexpr TCHAR* AssetPath =
+	static const TCHAR* AssetPath =
 		TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'");
 	static UMaterial* SensorMaterial = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
 
