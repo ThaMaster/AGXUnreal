@@ -7,7 +7,7 @@
 #include "AGX_LogCategory.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/ShapeBarrier.h"
-#include "Shapes/Sensors/SensorContactData.h"
+#include "Shapes/Contacts/ShapeContactData.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_EnvironmentUtilities.h"
@@ -389,14 +389,14 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const UGameInstance* GameInstance)
 	return GameInstance->GetSubsystem<UAGX_Simulation>();
 }
 
-TArray<FSensorContactData> UAGX_Simulation::GetSensorContactData(const FShapeBarrier& Shape) const
+TArray<FShapeContactData> UAGX_Simulation::GetShapeContactData(const FShapeBarrier& Shape) const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetSensorContactData(Shape);
+		return NativeBarrier.GetShapeContactData(Shape);
 	}
 
-	return TArray<FSensorContactData>();
+	return TArray<FShapeContactData>();
 }
 
 #if WITH_EDITOR

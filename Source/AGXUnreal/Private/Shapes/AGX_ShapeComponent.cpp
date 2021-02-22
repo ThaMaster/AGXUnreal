@@ -265,26 +265,26 @@ bool UAGX_ShapeComponent::GetIsSensor() const
 	return bIsSensor;
 }
 
-TArray<FAGX_SensorContact> UAGX_ShapeComponent::GetSensorContacts()
+TArray<FAGX_ShapeContact> UAGX_ShapeComponent::GetShapeContacts()
 {
-	TArray<FAGX_SensorContact> SensorContacts;
+	TArray<FAGX_ShapeContact> ShapeContacts;
 	if (!HasNative())
 	{
-		return SensorContacts;
+		return ShapeContacts;
 	}
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (!Simulation)
 	{
-		return SensorContacts;
+		return ShapeContacts;
 	}
 
-	for (FSensorContactData& Data : Simulation->GetSensorContactData(*GetNative()))
+	for (FShapeContactData& Data : Simulation->GetShapeContactData(*GetNative()))
 	{
-		SensorContacts.Add(FAGX_SensorContact(std::move(Data)));
+		ShapeContacts.Add(FAGX_ShapeContact(std::move(Data)));
 	}
 
-	return SensorContacts;
+	return ShapeContacts;
 }
 
 void UAGX_ShapeComponent::ApplySensorMaterial()

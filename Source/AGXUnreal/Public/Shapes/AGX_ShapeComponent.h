@@ -3,7 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Shapes/ShapeBarrier.h"
 #include "AGX_SimpleMeshComponent.h"
-#include "Shapes/Sensors/AGX_SensorContact.h"
+#include "Shapes/Contacts/AGX_ShapeContact.h"
 #include "Shapes/AGX_ShapeEnums.h"
 
 // Unreal Engine includes.
@@ -56,32 +56,32 @@ public:
 	/**
 	 * TODO
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Sensor Contacts")
+	UPROPERTY(EditAnywhere, Category = "AGX Shape Contacts")
 	bool bIsSensor;
 
 	/**
 	 * TODO
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Sensor Contacts", Meta = (EditCondition = "bIsSensor"))
+	UPROPERTY(EditAnywhere, Category = "AGX Shape Contacts", Meta = (EditCondition = "bIsSensor"))
 	TEnumAsByte<enum EAGX_ShapeSensorType> SensorType = EAGX_ShapeSensorType::ContactSensor;
 
 	/**
 	 * TODO
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Contacts")
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	void SetIsSensor(bool IsSensor);
 
 	/**
 	 * TODO
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Contacts")
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	bool GetIsSensor() const;
 
 	/**
 	 * TODO Add description. Mention lifetime/validity of data.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Contacts")
-	TArray<FAGX_SensorContact> GetSensorContacts();
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	TArray<FAGX_ShapeContact> GetShapeContacts();
 
 	UAGX_ShapeComponent();
 

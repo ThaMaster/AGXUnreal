@@ -3,7 +3,7 @@
 // Unreal Engine includes.
 #include "Containers/Array.h"
 
-struct AGXUNREALBARRIER_API FSensorContactPoint
+struct AGXUNREALBARRIER_API FShapeContactPoint
 {
 	FVector Position;
 	FVector Force;
