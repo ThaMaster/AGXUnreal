@@ -125,6 +125,18 @@ inline agx::Int Convert(int32 I)
 	return static_cast<agx::Int>(I);
 }
 
+inline agx::Real ConvertArea(float A)
+{
+	return static_cast<agx::Real>(A) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
+		   UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+}
+
+inline float ConvertArea(agx::Real A)
+{
+	return static_cast<float>(
+		A * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
+}
+
 // Two-dimensional vectors.
 
 inline FVector2D Convert(const agx::Vec2& V)

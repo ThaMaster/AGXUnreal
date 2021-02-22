@@ -285,7 +285,7 @@ TArray<FShapeContactData> FSimulationBarrier::GetShapeContactData(
 			PointData.NomalForce = ConvertVector(Point.getNormalForce());
 			PointData.Normal = ConvertFloatVector(Point.normal());
 			PointData.Depth = ConvertDistance(Point.depth());
-			PointData.Area = Convert(Point.area());
+			PointData.Area = ConvertArea(Point.area());
 			ContactData.Points.Add(PointData);
 		}
 
