@@ -167,6 +167,18 @@ void FShapeBarrier::AddCollisionGroups(const TArray<FName>& GroupNames)
 	}
 }
 
+FGuid FShapeBarrier::GetShapeGuid() const
+{
+	check(HasNative());
+	return Convert(NativeRef->NativeShape->getUuid());
+}
+
+FGuid FShapeBarrier::GetGeometryGuid() const
+{
+	check(HasNative());
+	return Convert(NativeRef->NativeGeometry->getUuid());
+}
+
 TArray<FName> FShapeBarrier::GetCollisionGroups() const
 {
 	check(HasNative());
@@ -181,13 +193,6 @@ TArray<FName> FShapeBarrier::GetCollisionGroups() const
 		Result.Add(FName(*FString::FromInt(Id)));
 	}
 	return Result;
-}
-
-FGuid FShapeBarrier::GetGuid() const
-{
-	check(HasNative());
-	FGuid Guid = Convert(NativeRef->NativeShape->getUuid());
-	return Guid;
 }
 
 bool FShapeBarrier::HasRenderData() const

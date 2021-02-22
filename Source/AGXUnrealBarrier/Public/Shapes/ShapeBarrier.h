@@ -65,6 +65,9 @@ public:
 	void AddCollisionGroup(const FName& GroupName);
 	void AddCollisionGroups(const TArray<FName>& GroupNames);
 
+	FGuid GetShapeGuid() const;
+	FGuid GetGeometryGuid() const;
+
 	/**
 	 * Get all collision groups registered for this Shape.
 	 *
@@ -75,8 +78,6 @@ public:
 	 * \return A list of all collision groups registered for this shape.
 	 */
 	TArray<FName> GetCollisionGroups() const;
-
-	FGuid GetGuid() const;
 
 	/**
 	 * @return True if the native shape contains render data. The render data may be incomplete.

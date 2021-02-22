@@ -99,7 +99,8 @@ void FSimulationBarrier::AddTire(FTireBarrier* Tire)
 	NativeRef->Native->add(Tire->GetNative()->Native);
 }
 
-void FSimulationBarrier::SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide)
+void FSimulationBarrier::SetEnableCollisionGroupPair(
+	const FName& Group1, const FName& Group2, bool CanCollide)
 {
 	check(HasNative());
 
@@ -108,7 +109,8 @@ void FSimulationBarrier::SetEnableCollisionGroupPair(const FName& Group1, const 
 	// Note that internally, the collision group names are converted to a 32 bit unsigned int via a
 	// hash function.
 	NativeRef->Native->getSpace()->setEnablePair(
-		StringTo32BitFnvHash(Group1.ToString()), StringTo32BitFnvHash(Group2.ToString()), CanCollide);
+		StringTo32BitFnvHash(Group1.ToString()), StringTo32BitFnvHash(Group2.ToString()),
+		CanCollide);
 }
 
 bool FSimulationBarrier::WriteAGXArchive(const FString& Filename) const
@@ -235,6 +237,22 @@ FVector FSimulationBarrier::GetPointGravity(float& OutMagnitude) const
 	return ConvertVector(PointField->getCenter());
 }
 
+namespace
+{
+	template <typename T>
+	FGuid GetGuid(const T* NativeObject)
+	{
+		if (!NativeObject)
+		{
+			FGuid Guid;
+			Guid.Invalidate();
+			return Guid;
+		}
+
+		return Convert(NativeObject->getUuid());
+	}
+}
+
 TArray<FSensorContactData> FSimulationBarrier::GetSensorContactData(
 	const FShapeBarrier& Shape) const
 {
@@ -243,13 +261,35 @@ TArray<FSensorContactData> FSimulationBarrier::GetSensorContactData(
 
 	TArray<FSensorContactData> SensorContactDataArr;
 	agxCollide::GeometryContactPtrVector ContactsAgx;
-	NativeRef->Native->getSpace()->getGeometryContacts(ContactsAgx, Shape.GetNative()->NativeGeometry);
+	NativeRef->Native->getSpace()->getGeometryContacts(
+		ContactsAgx, Shape.GetNative()->NativeGeometry);
 
 	SensorContactDataArr.Reserve(ContactsAgx.size());
 	for (const agxCollide::GeometryContact* Gc : ContactsAgx)
 	{
-		// TODO Copy data from agxCollide::GeometryContacts to FSensorContactData and push into arr.
-		SensorContactDataArr.Add(FSensorContactData());
+		const agxCollide::ContactPointVector Points = Gc->points();
+		FSensorContactData ContactData;
+
+		ContactData.FirstShapeGuid = GetGuid<agxCollide::Geometry>(Gc->geometry(0));
+		ContactData.SecondShapeGuid = GetGuid<agxCollide::Geometry>(Gc->geometry(1));
+		ContactData.FirstBodyGuid = GetGuid<agx::RigidBody>(Gc->rigidBody(0));
+		ContactData.SecondBodyGuid = GetGuid<agx::RigidBody>(Gc->rigidBody(1));
+
+		// Set contact points data.
+		ContactData.Points.Reserve(Points.size());
+		for (const agxCollide::ContactPoint& Point : Points)
+		{
+			FSensorContactPoint PointData;
+			PointData.Position = ConvertVector(Point.point());
+			PointData.Force = ConvertVector(Point.getForce());
+			PointData.NomalForce = ConvertVector(Point.getNormalForce());
+			PointData.Normal = ConvertFloatVector(Point.normal());
+			PointData.Depth = Convert(Point.depth());
+			PointData.Area = Convert(Point.area());
+			ContactData.Points.Add(PointData);
+		}
+
+		SensorContactDataArr.Add(ContactData);
 	}
 	return SensorContactDataArr;
 }

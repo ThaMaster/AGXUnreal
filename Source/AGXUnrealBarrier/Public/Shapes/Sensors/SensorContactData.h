@@ -8,6 +8,9 @@
 
 struct AGXUNREALBARRIER_API FSensorContactData
 {
-	float dummy;
+	FGuid FirstShapeGuid;
+	FGuid SecondShapeGuid;
+	FGuid FirstBodyGuid;
+	FGuid SecondBodyGuid;
 	TArray<FSensorContactPoint> Points;
 };

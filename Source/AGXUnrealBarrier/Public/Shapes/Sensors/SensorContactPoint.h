@@ -5,5 +5,10 @@
 
 struct AGXUNREALBARRIER_API FSensorContactPoint
 {
-	float dummy;
+	FVector Position;
+	FVector Force;
+	FVector NomalForce;
+	FVector Normal;
+	float Depth;
+	float Area;
 };
