@@ -7,8 +7,9 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "RHI.h"
 #include "RHICommandList.h"
+#include "Materials/Material.h"
 
-bool AGX_TextureUtilities::UpdateRenderTextureRegions(
+bool FAGX_TextureUtilities::UpdateRenderTextureRegions(
 	UTextureRenderTarget2D& RenderTarget, uint32 NumRegions, FUpdateTextureRegion2D* Regions,
 	uint32 SourcePitch, uint32 SourceBitsPerPixel, uint8* SourceData, bool bFreeData)
 {
@@ -39,4 +40,19 @@ bool AGX_TextureUtilities::UpdateRenderTextureRegions(
 	ENQUEUE_RENDER_COMMAND(UpdateRenderTextureRegionsData)(std::move(WriteTexture));
 
 	return true;
+}
+
+UMaterial* FAGX_TextureUtilities::GetMaterialFromAssetPath(const TCHAR* AssetPath)
+{
+	UObject* LoadResult = StaticLoadObject(UMaterial::StaticClass(), nullptr, AssetPath);
+	if (LoadResult == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("AGX_TextureUtilities::GetMaterialFromAssetPath: Unable to load material '%s'."),
+			AssetPath);
+		return nullptr;
+	}
+
+	return Cast<UMaterial>(LoadResult);
 }

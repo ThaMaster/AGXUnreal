@@ -43,6 +43,7 @@
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
+#include "Utilities/AGX_TextureUtilities.h"
 
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
@@ -189,21 +190,13 @@ namespace
 		Component.SetMaterial(0, Material);
 	}
 
-	void SetDefaultRenderMaterial(UMeshComponent& Component)
+	void SetDefaultRenderMaterial(UMeshComponent& Component, bool IsSensor)
 	{
-		const TCHAR* AssetPath =
-			TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'");
-		UObject* LoadResult = StaticLoadObject(UMaterial::StaticClass(), nullptr, AssetPath);
-		if (LoadResult == nullptr)
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Could not set render material on imported shape '%s'. The material '%s' "
-					 "could not be loaded."),
-				*Component.GetName(), AssetPath);
-			return;
-		}
-		UMaterial* Material = Cast<UMaterial>(LoadResult);
+		static const TCHAR* AssetPath =
+			IsSensor
+				? TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'")
+				: TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'");
+		static UMaterial* Material = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
 		if (Material == nullptr)
 		{
 			UE_LOG(
@@ -261,7 +254,7 @@ namespace
 					TEXT("Cannot import render data for '%s' because Material Instances cannot be "
 						 "created in Game mode. Editor mode is required."),
 					*Component.GetName())
-				SetDefaultRenderMaterial(*RenderMaterialReceiver);
+				SetDefaultRenderMaterial(*RenderMaterialReceiver, Component.bIsSensor);
 			}
 		}
 		else if (bHasSource && !bHasDestination)
@@ -274,7 +267,7 @@ namespace
 		}
 		else if (!bHasSource && bHasDestination)
 		{
-			SetDefaultRenderMaterial(*RenderMaterialReceiver);
+			SetDefaultRenderMaterial(*RenderMaterialReceiver, Component.bIsSensor);
 		}
 		else if (!bHasSource && !bHasDestination)
 		{

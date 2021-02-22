@@ -13,7 +13,7 @@ class AActor;
  *
  * There are also other, more specialized, AGX_.+Utilities.h collections.
  */
-class FAGX_ObjectUtilities
+class AGXUNREAL_API FAGX_ObjectUtilities
 {
 public:
 	/**

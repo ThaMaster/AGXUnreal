@@ -13,6 +13,7 @@
 
 #include "AGX_ShapeComponent.generated.h"
 
+class UMaterial;
 class UAGX_ShapeMaterialBase;
 
 UCLASS(
@@ -180,6 +181,9 @@ protected:
 	} // PURE_VIRTUAL(UAGX_ShapeComponent::CreateVisualMesh, );
 
 private:
+	void ApplySensorMaterial();
+	void RemoveSensorMaterial();
+
 	// UAGX_ShapeComponent does not own the Barrier object because it cannot
 	// name its type. It is instead owned by the typed subclass, such as
 	// UAGX_BoxShapeComponent. Access to it is provided using virtual Get

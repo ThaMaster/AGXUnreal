@@ -8,6 +8,7 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "Utilities/AGX_TextureUtilities.h"
 
 // Unreal Engine includes.
 #include "Misc/EngineVersionComparison.h"
@@ -175,7 +176,7 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 {
 	bCanCollide = Barrier.GetEnableCollisions();
-	bIsSensor = Barrier.GetIsSensor();
+	SetIsSensor(Barrier.GetIsSensor());
 	SensorType = Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactSensor
 															: EAGX_ShapeSensorType::BooleanSensor;
 
@@ -250,6 +251,8 @@ void UAGX_ShapeComponent::SetIsSensor(bool IsSensor)
 	}
 
 	bIsSensor = IsSensor;
+
+	IsSensor ? ApplySensorMaterial() : RemoveSensorMaterial();
 }
 
 bool UAGX_ShapeComponent::GetIsSensor() const
@@ -282,4 +285,45 @@ TArray<FAGX_SensorContact> UAGX_ShapeComponent::GetSensorContacts()
 	}
 
 	return SensorContacts;
+}
+
+void UAGX_ShapeComponent::ApplySensorMaterial()
+{
+	static constexpr TCHAR* AssetPath =
+		TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'");
+	static UMaterial* SensorMaterial = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
+
+	if (SensorMaterial == nullptr)
+	{
+		return;
+	}
+
+	const auto Materials = GetMaterials();
+	if (Materials.Num() >= 1 && Materials[0] != nullptr)
+	{
+		// Only apply the sensor material if no material has been set for this shape.
+		// Normally, a single material slot in the Materials array will be available, but with a
+		// nullptr material.
+		return;
+	}
+
+	SetMaterial(0, SensorMaterial);
+}
+
+void UAGX_ShapeComponent::RemoveSensorMaterial()
+{
+	static constexpr TCHAR* AssetPath =
+		TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'");
+	static UMaterial* SensorMaterial = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
+
+	if (SensorMaterial == nullptr)
+	{
+		return;
+	}
+
+	const auto Materials = GetMaterials();
+	if (Materials.Num() >= 1 && Materials[0] && Materials[0]->GetName() == "M_SensorMaterial")
+	{
+		SetMaterial(0, nullptr);
+	}
 }
