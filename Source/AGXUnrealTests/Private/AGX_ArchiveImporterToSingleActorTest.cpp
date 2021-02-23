@@ -1358,10 +1358,12 @@ bool FCheckGeometrySensorsImportedCommand::Update()
 		return true;
 	}
 
+	// Test the bIsSensor property.
 	Test.TestEqual(TEXT("Is Sensor property"), BoolSensor->bIsSensor, true);
 	Test.TestEqual(TEXT("Is Sensor property"), ContactsSensor->bIsSensor, true);
 	Test.TestEqual(TEXT("Is Sensor property"), NotASensor->bIsSensor, false);
 
+	// Test the SensorType property (only relevant for sensor geometries).
 	Test.TestEqual(
 		TEXT("Sensor type property"), BoolSensor->SensorType == EAGX_ShapeSensorType::BooleanSensor,
 		true);
@@ -1369,6 +1371,30 @@ bool FCheckGeometrySensorsImportedCommand::Update()
 	Test.TestEqual(
 		TEXT("Sensor type property"),
 		ContactsSensor->SensorType == EAGX_ShapeSensorType::ContactsSensor, true);
+
+	// Test the Materials applied after import.
+	const auto BoolSensorMaterials = BoolSensor->GetMaterials();
+	Test.TestEqual(
+		TEXT("Sensor Material"),
+		(BoolSensorMaterials.Num() == 1 && BoolSensorMaterials[0] != nullptr &&
+		 BoolSensorMaterials[0]->GetName() == "M_SensorMaterial"),
+		true);
+
+	const auto ContactsSensorMaterials = ContactsSensor->GetMaterials();
+	Test.TestEqual(
+		TEXT("Sensor Material"),
+		(ContactsSensorMaterials.Num() == 1 && ContactsSensorMaterials[0] != nullptr &&
+		 ContactsSensorMaterials[0]->GetName() == "M_SensorMaterial"),
+		true);
+
+	const auto NotASensorMaterials = NotASensor->GetMaterials();
+	Test.TestEqual(
+		TEXT("Default Material"),
+		(NotASensorMaterials.Num() == 1 && NotASensorMaterials[0] != nullptr &&
+		 NotASensorMaterials[0]->GetName() == "M_ImportedBase"),
+		true);
+
+
 
 	return true;
 }

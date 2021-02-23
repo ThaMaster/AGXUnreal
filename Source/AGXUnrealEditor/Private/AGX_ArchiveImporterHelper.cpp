@@ -192,11 +192,11 @@ namespace
 
 	void SetDefaultRenderMaterial(UMeshComponent& Component, bool IsSensor)
 	{
-		static const TCHAR* AssetPath =
+		const TCHAR* AssetPath =
 			IsSensor
 				? TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'")
 				: TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'");
-		static UMaterial* Material = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
+		UMaterial* Material = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
 		if (Material == nullptr)
 		{
 			UE_LOG(
