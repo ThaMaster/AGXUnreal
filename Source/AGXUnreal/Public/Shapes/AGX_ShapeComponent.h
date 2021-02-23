@@ -82,7 +82,7 @@ public:
 	 * step. This function must therefore be called each time that the contact data is accessed.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
-	TArray<FAGX_ShapeContact> GetShapeContacts();
+	TArray<FAGX_ShapeContact> GetShapeContacts() const;
 
 	UAGX_ShapeComponent();
 

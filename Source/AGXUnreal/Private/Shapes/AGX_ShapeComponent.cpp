@@ -265,7 +265,7 @@ bool UAGX_ShapeComponent::GetIsSensor() const
 	return bIsSensor;
 }
 
-TArray<FAGX_ShapeContact> UAGX_ShapeComponent::GetShapeContacts()
+TArray<FAGX_ShapeContact> UAGX_ShapeComponent::GetShapeContacts() const
 {
 	TArray<FAGX_ShapeContact> ShapeContacts;
 	if (!HasNative())

@@ -258,21 +258,18 @@ TArray<FShapeContactData> FSimulationBarrier::GetShapeContactData(const FShapeBa
 	check(HasNative());
 	check(Shape.HasNative());
 
-	TArray<FShapeContactData> ShapeContactDataArr;
-	agxCollide::GeometryContactPtrVector ContactsAgx;
-
 	// Get the geometry contact information from AGX Dynamics.
+	agxCollide::GeometryContactPtrVector ContactsAgx;
 	NativeRef->Native->getSpace()->getGeometryContacts(
 		ContactsAgx, Shape.GetNative()->NativeGeometry);
 
+	TArray<FShapeContactData> ShapeContactDataArr;
 	ShapeContactDataArr.Reserve(ContactsAgx.size());
 
 	// Copy the geometry contact information.
 	for (const agxCollide::GeometryContact* Gc : ContactsAgx)
 	{
-		const agxCollide::ContactPointVector& Points = Gc->points();
 		FShapeContactData ContactData;
-
 		ContactData.FirstShapeGuid = GetGuid<agxCollide::Geometry>(Gc->geometry(0));
 		ContactData.SecondShapeGuid = GetGuid<agxCollide::Geometry>(Gc->geometry(1));
 		ContactData.FirstBodyGuid = GetGuid<agx::RigidBody>(Gc->rigidBody(0));
@@ -280,6 +277,8 @@ TArray<FShapeContactData> FSimulationBarrier::GetShapeContactData(const FShapeBa
 
 		if (Shape.GetIsSensorGeneratingContactData())
 		{
+			const agxCollide::ContactPointVector& Points = Gc->points();
+
 			// Copy contact points data.
 			ContactData.Points.Reserve(Points.size());
 			for (const agxCollide::ContactPoint& Point : Points)

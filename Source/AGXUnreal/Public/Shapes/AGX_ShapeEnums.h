@@ -4,7 +4,7 @@ UENUM(BlueprintType)
 enum EAGX_ShapeSensorType
 {
 	/** This shape will generate contact point information. Note that this is alternative is more
-	 * computationally demanding than the Boolean Sensor setting.
+	 * computationally expensive than the Boolean Sensor setting.
 	 */
 	ContactsSensor,
 

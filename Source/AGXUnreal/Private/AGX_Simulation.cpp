@@ -391,12 +391,12 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const UGameInstance* GameInstance)
 
 TArray<FShapeContactData> UAGX_Simulation::GetShapeContactData(const FShapeBarrier& Shape) const
 {
-	if (HasNative())
+	if (!HasNative())
 	{
-		return NativeBarrier.GetShapeContactData(Shape);
+		return TArray<FShapeContactData>();
 	}
 
-	return TArray<FShapeContactData>();
+	return NativeBarrier.GetShapeContactData(Shape);
 }
 
 #if WITH_EDITOR
