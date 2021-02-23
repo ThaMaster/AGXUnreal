@@ -145,6 +145,9 @@ protected:
 
 	virtual void ReleaseNative() PURE_VIRTUAL(UAGX_ShapeComponent::ReleaseNative, );
 
+	static void ApplySensorMaterial(UMeshComponent& Mesh);
+	static void RemoveSensorMaterial(UMeshComponent& Mesh);
+
 	/**
 	 * Copy properties from the given AGX Dynamics shape into this component.
 	 * Does not copy referenced attributes such as material properties.
@@ -182,9 +185,6 @@ protected:
 	} // PURE_VIRTUAL(UAGX_ShapeComponent::CreateVisualMesh, );
 
 private:
-	void ApplySensorMaterial();
-	void RemoveSensorMaterial();
-
 	// UAGX_ShapeComponent does not own the Barrier object because it cannot
 	// name its type. It is instead owned by the typed subclass, such as
 	// UAGX_BoxShapeComponent. Access to it is provided using virtual Get

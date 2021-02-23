@@ -102,8 +102,8 @@ void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& Property
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-	FName PropertyName = GetFNameSafe(PropertyChangedEvent.Property);
-	FName MemberPropertyName = GetFNameSafe(PropertyChangedEvent.MemberProperty);
+	const FName PropertyName = GetFNameSafe(PropertyChangedEvent.Property);
+	const FName MemberPropertyName = GetFNameSafe(PropertyChangedEvent.MemberProperty);
 
 	if (DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName))
 	{
@@ -252,7 +252,7 @@ void UAGX_ShapeComponent::SetIsSensor(bool IsSensor)
 
 	bIsSensor = IsSensor;
 
-	IsSensor ? ApplySensorMaterial() : RemoveSensorMaterial();
+	IsSensor ? ApplySensorMaterial(*this) : RemoveSensorMaterial(*this);
 }
 
 bool UAGX_ShapeComponent::GetIsSensor() const
@@ -287,7 +287,7 @@ TArray<FAGX_ShapeContact> UAGX_ShapeComponent::GetShapeContacts() const
 	return ShapeContacts;
 }
 
-void UAGX_ShapeComponent::ApplySensorMaterial()
+void UAGX_ShapeComponent::ApplySensorMaterial(UMeshComponent& Mesh)
 {
 	static const TCHAR* AssetPath =
 		TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'");
@@ -298,17 +298,17 @@ void UAGX_ShapeComponent::ApplySensorMaterial()
 		return;
 	}
 
-	const auto Materials = GetMaterials();
+	const auto Materials = Mesh.GetMaterials();
 	if (Materials.Num() >= 1 && Materials[0] != nullptr)
 	{
 		// Only apply the sensor material if no material has been set for this shape.
 		return;
 	}
 
-	SetMaterial(0, SensorMaterial);
+	Mesh.SetMaterial(0, SensorMaterial);
 }
 
-void UAGX_ShapeComponent::RemoveSensorMaterial()
+void UAGX_ShapeComponent::RemoveSensorMaterial(UMeshComponent& Mesh)
 {
 	static const TCHAR* AssetPath =
 		TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'");
@@ -319,9 +319,9 @@ void UAGX_ShapeComponent::RemoveSensorMaterial()
 		return;
 	}
 
-	const auto Materials = GetMaterials();
+	const auto Materials = Mesh.GetMaterials();
 	if (Materials.Num() >= 1 && Materials[0] && Materials[0]->GetName() == "M_SensorMaterial")
 	{
-		SetMaterial(0, nullptr);
+		Mesh.SetMaterial(0, nullptr);
 	}
 }
