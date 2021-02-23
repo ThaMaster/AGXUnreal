@@ -109,14 +109,9 @@ void UAGX_TrimeshShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& P
 	else if (PropertyChangedEvent.GetPropertyName().IsEqual(
 				 GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceLocation)))
 	{
-		if (!bIsSensor)
-		{
-			return;
-		}
-
 		if (UMeshComponent* Mesh = FindMeshComponent(MeshSourceLocation))
 		{
-			ApplySensorMaterial(*Mesh);
+			bIsSensor ? ApplySensorMaterial(*Mesh) : RemoveSensorMaterial(*Mesh);
 		}
 	}
 }
