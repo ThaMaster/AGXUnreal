@@ -44,25 +44,25 @@ namespace
 }
 
 UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetFirstShape(UPARAM(ref)
-															  FAGX_ShapeContact& ShapeContactRef)
+															 FAGX_ShapeContact& ShapeContactRef)
 {
 	return GetFromGuid<UAGX_ShapeComponent>(ShapeContactRef.Data.FirstShapeGuid);
 }
 
 UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetSecondShape(UPARAM(ref)
-															   FAGX_ShapeContact& ShapeContactRef)
+															  FAGX_ShapeContact& ShapeContactRef)
 {
 	return GetFromGuid<UAGX_ShapeComponent>(ShapeContactRef.Data.SecondShapeGuid);
 }
 
-UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetFirstBody(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef)
+UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetFirstBody(UPARAM(ref)
+																FAGX_ShapeContact& ShapeContactRef)
 {
 	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContactRef.Data.FirstBodyGuid);
 }
 
-UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetSecondBody(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef)
+UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetSecondBody(UPARAM(ref)
+																 FAGX_ShapeContact& ShapeContactRef)
 {
 	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContactRef.Data.SecondBodyGuid);
 }

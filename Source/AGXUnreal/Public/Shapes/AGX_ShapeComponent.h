@@ -54,31 +54,32 @@ public:
 	TArray<FName> CollisionGroups;
 
 	/**
-	 * TODO
+	 * Determines whether this shape should act as a sensor.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shape Contacts")
 	bool bIsSensor;
 
 	/**
-	 * TODO
+	 * Determines the sensor type. Only relevant if the Is Sensor property is checked.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shape Contacts", Meta = (EditCondition = "bIsSensor"))
 	TEnumAsByte<enum EAGX_ShapeSensorType> SensorType = EAGX_ShapeSensorType::ContactSensor;
 
 	/**
-	 * TODO
+	 * Enable or disable this shape as a sensor.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	void SetIsSensor(bool IsSensor);
 
 	/**
-	 * TODO
+	 * Returns true if this shape is a sensor, otherwise false.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	bool GetIsSensor() const;
 
 	/**
-	 * TODO Add description. Mention lifetime/validity of data.
+	 * Get all shape contacts. Important: The data returned is only valid during a single simulation
+	 * step. This function must therefore be called each time that the contact data is accessed.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	TArray<FAGX_ShapeContact> GetShapeContacts();
