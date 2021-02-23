@@ -50,7 +50,7 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 		return;
 
 	GetNative()->SetName(GetName());
-	GetNative()->SetIsSensor(bIsSensor, SensorType == EAGX_ShapeSensorType::ContactSensor);
+	GetNative()->SetIsSensor(bIsSensor, SensorType == EAGX_ShapeSensorType::ContactsSensor);
 
 	if (PhysicalMaterial)
 	{
@@ -176,8 +176,8 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 {
 	bCanCollide = Barrier.GetEnableCollisions();
-	SetIsSensor(Barrier.GetIsSensor());
-	SensorType = Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactSensor
+	bIsSensor = Barrier.GetIsSensor();
+	SensorType = Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactsSensor
 															: EAGX_ShapeSensorType::BooleanSensor;
 
 	FVector Position;
@@ -247,7 +247,7 @@ void UAGX_ShapeComponent::SetIsSensor(bool IsSensor)
 {
 	if (HasNative())
 	{
-		GetNative()->SetIsSensor(IsSensor, SensorType == EAGX_ShapeSensorType::ContactSensor);
+		GetNative()->SetIsSensor(IsSensor, SensorType == EAGX_ShapeSensorType::ContactsSensor);
 	}
 
 	bIsSensor = IsSensor;
@@ -302,8 +302,6 @@ void UAGX_ShapeComponent::ApplySensorMaterial()
 	if (Materials.Num() >= 1 && Materials[0] != nullptr)
 	{
 		// Only apply the sensor material if no material has been set for this shape.
-		// Normally, a single material slot in the Materials array will be available, but with a
-		// nullptr material.
 		return;
 	}
 

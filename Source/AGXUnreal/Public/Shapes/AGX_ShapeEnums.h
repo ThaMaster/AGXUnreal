@@ -1,14 +1,16 @@
 #pragma once
 
-/**
- * TODO add description
- */
 UENUM(BlueprintType)
 enum EAGX_ShapeSensorType
 {
-	/** TODO add description. */
-	ContactSensor,
+	/** This shape will generate contact point information. Note that this is alternative is more
+	 * computationally demanding than the Boolean Sensor setting.
+	 */
+	ContactsSensor,
 
-	/** TODO Add descript. */
+	/** This shape will not generate contact point information, but will detect if this shape is in
+	 * contact with other shapes. This alternative may be used to increase performance where contact
+	 * point data is not needed.
+	 */
 	BooleanSensor
 };

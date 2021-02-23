@@ -63,7 +63,7 @@ public:
 	 * Determines the sensor type. Only relevant if the Is Sensor property is checked.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shape Contacts", Meta = (EditCondition = "bIsSensor"))
-	TEnumAsByte<enum EAGX_ShapeSensorType> SensorType = EAGX_ShapeSensorType::ContactSensor;
+	TEnumAsByte<enum EAGX_ShapeSensorType> SensorType = EAGX_ShapeSensorType::ContactsSensor;
 
 	/**
 	 * Enable or disable this shape as a sensor.
