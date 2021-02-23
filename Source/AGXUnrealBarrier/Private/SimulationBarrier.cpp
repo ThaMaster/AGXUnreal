@@ -253,21 +253,24 @@ namespace
 	}
 }
 
-TArray<FShapeContactData> FSimulationBarrier::GetShapeContactData(
-	const FShapeBarrier& Shape) const
+TArray<FShapeContactData> FSimulationBarrier::GetShapeContactData(const FShapeBarrier& Shape) const
 {
 	check(HasNative());
 	check(Shape.HasNative());
 
 	TArray<FShapeContactData> ShapeContactDataArr;
 	agxCollide::GeometryContactPtrVector ContactsAgx;
+
+	// Get the geometry contact information from AGX Dynamics.
 	NativeRef->Native->getSpace()->getGeometryContacts(
 		ContactsAgx, Shape.GetNative()->NativeGeometry);
 
 	ShapeContactDataArr.Reserve(ContactsAgx.size());
+
+	// Copy the geometry contact information.
 	for (const agxCollide::GeometryContact* Gc : ContactsAgx)
 	{
-		const agxCollide::ContactPointVector Points = Gc->points();
+		const agxCollide::ContactPointVector& Points = Gc->points();
 		FShapeContactData ContactData;
 
 		ContactData.FirstShapeGuid = GetGuid<agxCollide::Geometry>(Gc->geometry(0));
@@ -275,18 +278,21 @@ TArray<FShapeContactData> FSimulationBarrier::GetShapeContactData(
 		ContactData.FirstBodyGuid = GetGuid<agx::RigidBody>(Gc->rigidBody(0));
 		ContactData.SecondBodyGuid = GetGuid<agx::RigidBody>(Gc->rigidBody(1));
 
-		// Set contact points data.
-		ContactData.Points.Reserve(Points.size());
-		for (const agxCollide::ContactPoint& Point : Points)
+		if (Shape.GetIsSensorGeneratingContactData())
 		{
-			FShapeContactPoint PointData;
-			PointData.Position = ConvertVector(Point.point());
-			PointData.Force = ConvertVector(Point.getForce());
-			PointData.NomalForce = ConvertVector(Point.getNormalForce());
-			PointData.Normal = ConvertFloatVector(Point.normal());
-			PointData.Depth = ConvertDistance(Point.depth());
-			PointData.Area = ConvertArea(Point.area());
-			ContactData.Points.Add(PointData);
+			// Copy contact points data.
+			ContactData.Points.Reserve(Points.size());
+			for (const agxCollide::ContactPoint& Point : Points)
+			{
+				FShapeContactPoint PointData;
+				PointData.Position = ConvertVector(Point.point());
+				PointData.Force = ConvertVector(Point.getForce());
+				PointData.NomalForce = ConvertVector(Point.getNormalForce());
+				PointData.Normal = ConvertFloatVector(Point.normal());
+				PointData.Depth = ConvertDistance(Point.depth());
+				PointData.Area = ConvertArea(Point.area());
+				ContactData.Points.Add(PointData);
+			}
 		}
 
 		ShapeContactDataArr.Add(ContactData);
