@@ -47,7 +47,7 @@ FRigidBodyBarrier* UAGX_RigidBodyComponent::GetNative()
 	return &NativeBarrier;
 }
 
-bool UAGX_RigidBodyComponent::HasNative()
+bool UAGX_RigidBodyComponent::HasNative() const
 {
 	return NativeBarrier.HasNative();
 }
@@ -394,6 +394,46 @@ void UAGX_RigidBodyComponent::DisableTransformRootCompIfMultiple()
 }
 #endif
 
+void UAGX_RigidBodyComponent::SetPosition(const FVector& Position)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetPosition(Position);
+	}
+
+	SetWorldLocation(Position);
+}
+
+FVector UAGX_RigidBodyComponent::GetPosition() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetPosition();
+	}
+
+	return GetComponentLocation();
+}
+
+void UAGX_RigidBodyComponent::SetRotation(const FQuat& Rotation)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetRotation(Rotation);
+	}
+
+	SetWorldRotation(Rotation);
+}
+
+FQuat UAGX_RigidBodyComponent::GetRotation() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetRotation();
+	}
+
+	return GetComponentQuat();
+}
+
 void UAGX_RigidBodyComponent::SetEnabled(bool InEnabled)
 {
 	if (HasNative())
@@ -404,7 +444,7 @@ void UAGX_RigidBodyComponent::SetEnabled(bool InEnabled)
 	bEnabled = InEnabled;
 }
 
-bool UAGX_RigidBodyComponent::GetEnabled()
+bool UAGX_RigidBodyComponent::GetEnabled() const
 {
 	if (HasNative())
 	{
@@ -425,11 +465,11 @@ void UAGX_RigidBodyComponent::SetAutomaticMassProperties(bool InEnabled)
 	bAutomaticMassProperties = InEnabled;
 }
 
-bool UAGX_RigidBodyComponent::GetAutomaticMassProperties()
+bool UAGX_RigidBodyComponent::GetAutomaticMassProperties() const
 {
 	if (HasNative())
 	{
-		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
+		const FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
 		return MassProperties.GetAutoGenerate();
 	}
 
@@ -447,18 +487,18 @@ void UAGX_RigidBodyComponent::SetMass(float InMass)
 	Mass = InMass;
 }
 
-float UAGX_RigidBodyComponent::GetMass()
+float UAGX_RigidBodyComponent::GetMass() const
 {
 	if (HasNative())
 	{
-		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
+		const FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
 		return MassProperties.GetMass();
 	}
 
 	return Mass;
 }
 
-void UAGX_RigidBodyComponent::SetPrincipalInertiae(FVector InPrincipalInertiae)
+void UAGX_RigidBodyComponent::SetPrincipalInertiae(const FVector& InPrincipalInertiae)
 {
 	if (HasNative())
 	{
@@ -469,18 +509,18 @@ void UAGX_RigidBodyComponent::SetPrincipalInertiae(FVector InPrincipalInertiae)
 	PrincipalInertiae = InPrincipalInertiae;
 }
 
-FVector UAGX_RigidBodyComponent::GetPrincipalInertiae()
+FVector UAGX_RigidBodyComponent::GetPrincipalInertiae() const
 {
 	if (HasNative())
 	{
-		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
+		const FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
 		return MassProperties.GetPrincipalInertiae();
 	}
 
 	return PrincipalInertiae;
 }
 
-void UAGX_RigidBodyComponent::SetVelocity(FVector InVelocity)
+void UAGX_RigidBodyComponent::SetVelocity(const FVector& InVelocity)
 {
 	if (HasNative())
 	{
@@ -490,7 +530,7 @@ void UAGX_RigidBodyComponent::SetVelocity(FVector InVelocity)
 	Velocity = InVelocity;
 }
 
-FVector UAGX_RigidBodyComponent::GetVelocity()
+FVector UAGX_RigidBodyComponent::GetVelocity() const
 {
 	if (HasNative())
 	{
@@ -500,7 +540,7 @@ FVector UAGX_RigidBodyComponent::GetVelocity()
 	return Velocity;
 }
 
-void UAGX_RigidBodyComponent::SetAngularVelocity(FVector InAngularVelocity)
+void UAGX_RigidBodyComponent::SetAngularVelocity(const FVector& InAngularVelocity)
 {
 	if (HasNative())
 	{
@@ -510,7 +550,7 @@ void UAGX_RigidBodyComponent::SetAngularVelocity(FVector InAngularVelocity)
 	AngularVelocity = InAngularVelocity;
 }
 
-FVector UAGX_RigidBodyComponent::GetAngularVelocity()
+FVector UAGX_RigidBodyComponent::GetAngularVelocity() const
 {
 	if (HasNative())
 	{
@@ -530,7 +570,7 @@ void UAGX_RigidBodyComponent::SetMotionControl(TEnumAsByte<enum EAGX_MotionContr
 	MotionControl = InMotionControl;
 }
 
-TEnumAsByte<enum EAGX_MotionControl> UAGX_RigidBodyComponent::GetMotionControl()
+TEnumAsByte<enum EAGX_MotionControl> UAGX_RigidBodyComponent::GetMotionControl() const
 {
 	if (HasNative())
 	{

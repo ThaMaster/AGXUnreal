@@ -70,7 +70,7 @@ void FTerrainBarrier::ReleaseNative()
 	NativeRef->Native = nullptr;
 }
 
-void FTerrainBarrier::SetPosition(FVector PositionUnreal)
+void FTerrainBarrier::SetPosition(const FVector& PositionUnreal)
 {
 	check(HasNative());
 	agx::Vec3 PositionAGX = ConvertVector(PositionUnreal);
@@ -85,7 +85,7 @@ FVector FTerrainBarrier::GetPosition() const
 	return PositionUnreal;
 }
 
-void FTerrainBarrier::SetRotation(FQuat RotationUnreal)
+void FTerrainBarrier::SetRotation(const FQuat& RotationUnreal)
 {
 	check(HasNative());
 	agx::Quat RotationAGX = Convert(RotationUnreal);

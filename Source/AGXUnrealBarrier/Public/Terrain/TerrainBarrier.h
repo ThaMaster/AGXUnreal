@@ -30,10 +30,10 @@ public:
 	const FTerrainRef* GetNative() const;
 	void ReleaseNative();
 
-	void SetPosition(FVector Position);
+	void SetPosition(const FVector& Position);
 	FVector GetPosition() const;
 
-	void SetRotation(FQuat Rotation);
+	void SetRotation(const FQuat& Rotation);
 	FQuat GetRotation() const;
 
 	void SetCreateParticles(bool CreateParticles);
