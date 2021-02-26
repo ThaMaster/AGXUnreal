@@ -1,10 +1,10 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "Shapes/ShapeBarrier.h"
 #include "AGX_SimpleMeshComponent.h"
-#include "Shapes/Contacts/AGX_ShapeContact.h"
 #include "Shapes/AGX_ShapeEnums.h"
+#include "Shapes/Contacts/AGX_ShapeContact.h"
+#include "Shapes/ShapeBarrier.h"
 
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
