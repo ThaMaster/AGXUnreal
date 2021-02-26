@@ -78,8 +78,9 @@ public:
 	bool GetIsSensor() const;
 
 	/**
-	 * Get all shape contacts. Important: The data returned is only valid during a single simulation
-	 * step. This function must therefore be called each time that the contact data is accessed.
+	 * Get all shape contacts for this shape. Important: The data returned is only valid during a
+	 * single simulation step. This function must therefore be called each time that the contact
+	 * data is accessed.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	TArray<FAGX_ShapeContact> GetShapeContacts() const;
