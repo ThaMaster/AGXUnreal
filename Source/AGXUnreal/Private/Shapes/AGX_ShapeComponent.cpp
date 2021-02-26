@@ -289,19 +289,19 @@ TArray<FAGX_ShapeContact> UAGX_ShapeComponent::GetShapeContacts() const
 
 void UAGX_ShapeComponent::ApplySensorMaterial(UMeshComponent& Mesh)
 {
+	const auto Materials = Mesh.GetMaterials();
+	if (Materials.Num() >= 1 && Materials[0] != nullptr)
+	{
+		// Only apply the sensor material if no material has been set for this shape.
+		return;
+	}
+
 	static const TCHAR* AssetPath =
 		TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'");
 	static UMaterial* SensorMaterial = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
 
 	if (SensorMaterial == nullptr)
 	{
-		return;
-	}
-
-	const auto Materials = Mesh.GetMaterials();
-	if (Materials.Num() >= 1 && Materials[0] != nullptr)
-	{
-		// Only apply the sensor material if no material has been set for this shape.
 		return;
 	}
 
@@ -310,15 +310,6 @@ void UAGX_ShapeComponent::ApplySensorMaterial(UMeshComponent& Mesh)
 
 void UAGX_ShapeComponent::RemoveSensorMaterial(UMeshComponent& Mesh)
 {
-	static const TCHAR* AssetPath =
-		TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'");
-	static UMaterial* SensorMaterial = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
-
-	if (SensorMaterial == nullptr)
-	{
-		return;
-	}
-
 	const auto Materials = Mesh.GetMaterials();
 	if (Materials.Num() >= 1 && Materials[0] && Materials[0]->GetName() == "M_SensorMaterial")
 	{
