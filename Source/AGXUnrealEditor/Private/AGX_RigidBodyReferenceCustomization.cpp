@@ -55,7 +55,7 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeHeader(
 }
 
 /**
- * Fetch all names of RigidBodyComponents held by the pointed-to owning Actor. Optionally searches
+ * Fetch all names of RigidBodyComponents held by the pointed-to OwningActor. Optionally searches
  * child actors if enabled in the RigidBodyReference instance. The found names are stored internally
  * in this Customization. This member function should be called whenever the owning Actor has been
  * changed, often via RebuildComboBox.
@@ -305,14 +305,7 @@ void FAGX_RigidBodyReferenceCustomization::OnComboBoxChanged(
 
 AActor* FAGX_RigidBodyReferenceCustomization::GetOwningActor()
 {
-	if (AActor* OwningActor = RigidBodyReference->GetOwningActor())
-	{
-		return OwningActor;
-	}
-	else
-	{
-		return nullptr;
-	}
+	return RigidBodyReference->GetOwningActor();
 }
 
 #undef LOCTEXT_NAMESPACE

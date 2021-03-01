@@ -232,14 +232,14 @@ namespace
 			//
 			// If is not thinner, in the scenario where the coordinate system equals the
 			// currently active transform gizmo (i.e. visually overlapping), and they are
-			// located inside a mesh while the camera is ouside of the mesh, there are
+			// located inside a mesh while the camera is outside of the mesh, there are
 			// difficulties	selecting the transform gizmo (even if HitProxy, depth bias, etc are
 			// used).
 
 			/// \todo This doesn't work in the Blueprint editor as RigidBodyReference is currently
-			/// implemented RigidBodyReference must be made aware of fallback owners. Can I just set
-			/// the OwningActor to the Constraint's owner? What would be cool. What will the
-			/// DeatailCustomization do?
+			/// implemented because we currently have no way of getting access to the
+			/// RigidBodyComponents referenced by the RigidBodyReferences in the BodyAttachments in
+			/// the ConstraintComponent.
 			constexpr float FRAME_GIZMO_SCALE {0.2f};
 
 			const float AttachemtFrameDistance =

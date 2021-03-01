@@ -70,7 +70,7 @@ public: // Constraint Creator
 	UPROPERTY()
 	UClass* ConstraintType;
 
-	/// \todo These Rigid Body References cannot be the regular FAGX_RigidBodyReference kind
+	/// \todo These RigidBodyReferences cannot be the regular FAGX_RigidBodyReference kind
 	/// because of:
 	///
 	///    Warning: Illegal TEXT reference to a private object in external package
@@ -82,7 +82,7 @@ public: // Constraint Creator
 	///
 	/// What I believe this says is that we cannot have a reference from a Class Default Object to
 	/// an instance that lives in a level. It can be done with TSoftObjectPtr, so we should create
-	/// a Rigid Body Reference variant that uses TSoftObjectPtr instead of regular UPROPERTY
+	/// a RigidBodyReference variant that uses TSoftObjectPtr instead of regular UPROPERTY
 	/// pointers.
 	UPROPERTY(Transient, EditAnywhere, Category = "Constraint Creator")
 	FAGX_RigidBodyReference RigidBody1;

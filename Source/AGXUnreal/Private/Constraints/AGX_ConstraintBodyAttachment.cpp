@@ -4,7 +4,6 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SceneComponentReference.h"
 #include "AGX_LogCategory.h"
-//#include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintFrameComponent.h"
 
 // Unreal Engine includes.

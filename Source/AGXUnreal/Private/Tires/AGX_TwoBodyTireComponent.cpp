@@ -140,6 +140,18 @@ void UAGX_TwoBodyTireComponent::EndPlay(const EEndPlayReason::Type Reason)
 void UAGX_TwoBodyTireComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
+
+	// This code is run after the constructor and after InitProperties, where property values are
+	// copied from the Class Default Object, but before deserialization in cases where this object
+	// is created from another, such as at the start of a Play-in-Editor session or when loading
+	// a map in a cooked build (I hope).
+	//
+	// The intention is to provide by default a local scope that is the Actor outer that this
+	// component is part of. If the OwningActor is set anywhere else, such as in the Details Panel,
+	// then that "else" should overwrite this value shortly.
+	//
+	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
+	// but there will always be an outer chain. This worry may be unfounded.
 	TireRigidBody.OwningActor = GetTypedOuter<AActor>();
 	HubRigidBody.OwningActor = GetTypedOuter<AActor>();
 }
