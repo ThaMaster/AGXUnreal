@@ -156,10 +156,6 @@ protected:
 
 	virtual void PostInitProperties() override;
 
-#if WITH_EDITOR
-	virtual void PostLoad() override;
-#endif
-
 private:
 	FTwoBodyTireBarrier* CreateTwoBodyTireBarrier();
 };

@@ -348,11 +348,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			// some other Actor.
 			if (ModifiedBodyAttachment->RigidBody.OwningActor == nullptr)
 			{
-#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
 				ModifiedBodyAttachment->RigidBody.OwningActor = GetTypedOuter<AActor>();
-#else
-				ModifiedBodyAttachment->RigidBody.FallbackOwningActor = GetOwner();
-#endif
 			}
 
 			if (ModifiedBodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::Other &&
@@ -429,26 +425,6 @@ void UAGX_ConstraintComponent::PostLoad()
 	Super::PostLoad();
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
-
-#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
-	// We do not want to write to UPROPERTIES in PostLoad because it causes the property to become
-	// read-only in the Details Panel. See internal issue 352 for more information. Instead we
-	// use GetTypedOuter<AActor>() in constructors and PostEditChanged. Also, since
-#else
-	// Provide a default owning actor, the owner of this component, if no owner has been specified
-	// for the RigidBodyReferences and FrameDefiningComponents. This is always the case when the
-	// constraint has been created as part of an Actor Blueprint.
-	for (FAGX_RigidBodyReference* BodyReference :
-		 {&BodyAttachment1.RigidBody, &BodyAttachment2.RigidBody})
-	{
-		BodyReference->FallbackOwningActor = nullptr;
-		if (BodyReference->OwningActor == nullptr)
-		{
-			BodyReference->OwningActor = GetOwner();
-			BodyReference->CacheCurrentRigidBody();
-		}
-	}
-#endif
 
 	for (FAGX_ConstraintBodyAttachment* BodyAttachment : {&BodyAttachment1, &BodyAttachment2})
 	{

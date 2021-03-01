@@ -8,11 +8,6 @@
 
 UAGX_TwoBodyTireComponent::UAGX_TwoBodyTireComponent()
 {
-#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
-#else
-	TireRigidBody.FallbackOwningActor = GetOwner();
-	HubRigidBody.FallbackOwningActor = GetOwner();
-#endif
 }
 
 UAGX_RigidBodyComponent* UAGX_TwoBodyTireComponent::GetHubRigidBody() const
@@ -141,31 +136,6 @@ void UAGX_TwoBodyTireComponent::PostInitProperties()
 	TireRigidBody.OwningActor = GetTypedOuter<AActor>();
 	HubRigidBody.OwningActor = GetTypedOuter<AActor>();
 }
-
-#if WITH_EDITOR
-void UAGX_TwoBodyTireComponent::PostLoad()
-{
-	Super::PostLoad();
-
-	// PostLoad is run when this component is created in a Blueprint or when a Blueprint containing
-	// this component is instantiated in the level. This allows us to set the correct
-	// OwningActor even for the Blueprint case where these FallbackOwningActor pointers will
-	// point to the wrong object instances, even though they are set in the constructor. The reason
-	// why this happens is still not known.
-#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
-#else
-	for (FAGX_RigidBodyReference* BodyReference : {&TireRigidBody, &HubRigidBody})
-	{
-		BodyReference->FallbackOwningActor = nullptr;
-		if (BodyReference->OwningActor == nullptr)
-		{
-			BodyReference->OwningActor = GetOwner();
-			BodyReference->CacheCurrentRigidBody();
-		}
-	}
-#endif
-}
-#endif
 
 FTwoBodyTireBarrier* UAGX_TwoBodyTireComponent::CreateTwoBodyTireBarrier()
 {

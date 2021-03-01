@@ -140,21 +140,8 @@ public:
 		, Constraint(Component->Constraint)
 		, LockedDofs(Component->Constraint->GetLockedDofsBitmask())
 	{
-		FAGX_RigidBodyReference& BodyReference1 = Component->Constraint->BodyAttachment1.RigidBody;
-		FAGX_RigidBodyReference& BodyReference2 = Component->Constraint->BodyAttachment2.RigidBody;
-#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
-#else
-		if (BodyReference1.GetOwningActor() == nullptr)
-		{
-			BodyReference1.FallbackOwningActor = Component->GetOwner();
-		}
-		if (BodyReference2.GetOwningActor() == nullptr)
-		{
-			BodyReference2.FallbackOwningActor = Component->GetOwner();
-		}
-#endif
-		FrameTransform1 = (Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix());
-		FrameTransform2 = (Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix());
+		FrameTransform1 = Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix();
+		FrameTransform2 = Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix();
 		/// \todo Use inheritance instead of this branching below.
 		/// \todo IsA() should probably not be used if future constraints will derive these
 		/// spawnable constraints.

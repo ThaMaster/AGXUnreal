@@ -14,32 +14,6 @@
 FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment(USceneComponent* InOwner)
 	: Owner {InOwner}
 {
-#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
-
-
-// No point in setting Owning Actor in the constructor because ObjectInitialize::InitProperites will
-// overwrite everything we do here with the value that each property has in the Class Default
-// Object, which will have a nulllptr Owning Actor since the setting of Owning Actor below is
-// guarded by an IsTemplate check. Template and Class Default Object seems to be the same thing.
-#if 0
-	if (!Owner->IsTemplate())
-	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("ConstraintBodyAttachment in %p:%s is not a template."),
-			(void*) Owner, *Owner->GetName());
-		RigidBody.OwningActor = Owner->GetTypedOuter<AActor>();
-		check(RigidBody.OwningActor != nullptr);
-	}
-
-	/// \todo Debug output, remove.
-	UE_LOG(
-		LogAGX, Warning, TEXT("ConstraintBodyAttachment in %p:%s points to a body owned by %p:%s."),
-		Owner, *Owner->GetName(), RigidBody.OwningActor,
-		(RigidBody.OwningActor != nullptr ? *RigidBody.OwningActor->GetName() : TEXT("")));
-#endif
-
-#else
-#endif
 }
 
 UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody() const

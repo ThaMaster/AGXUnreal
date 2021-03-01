@@ -6,8 +6,6 @@ class UAGX_RigidBodyComponent;
 
 class AActor;
 
-#define AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR 1
-
 /**
  * A reference to a UAGX_RigidBodyComponent.
  *
@@ -108,7 +106,6 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 		EditAnywhere, Category = "AGX Dynamics",
 		meta = (Tooltip = "The Actor that owns the RigidBodyComponent."))
 	AActor* OwningActor;
-	// TSoftObjectPtr<AActor> OwningActor;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	FName BodyName;
