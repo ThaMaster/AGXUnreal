@@ -135,6 +135,13 @@ void UAGX_TwoBodyTireComponent::EndPlay(const EEndPlayReason::Type Reason)
 	}
 }
 
+void UAGX_TwoBodyTireComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+	TireRigidBody.OwningActor = GetTypedOuter<AActor>();
+	HubRigidBody.OwningActor = GetTypedOuter<AActor>();
+}
+
 #if WITH_EDITOR
 void UAGX_TwoBodyTireComponent::PostLoad()
 {

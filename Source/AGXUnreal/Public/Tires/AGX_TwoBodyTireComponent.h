@@ -42,13 +42,13 @@ public:
 	/**
 	 * Reference to the Tire Rigid Body.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire")
+	UPROPERTY(EditAnywhere, Category = "AGX Tire", Meta = (SkipUCSModifiedProperties))
 	FAGX_RigidBodyReference TireRigidBody;
 
 	/**
 	 * Reference to the Hub Rigid Body.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire")
+	UPROPERTY(EditAnywhere, Category = "AGX Tire", Meta = (SkipUCSModifiedProperties))
 	FAGX_RigidBodyReference HubRigidBody;
 
 	/**
@@ -153,6 +153,8 @@ protected:
 	virtual void UpdateNativeProperties() override;
 
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+
+	virtual void PostInitProperties() override;
 
 #if WITH_EDITOR
 	virtual void PostLoad() override;
