@@ -66,6 +66,14 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent()
 	, BodyAttachment2(this)
 {
 	PrimaryComponentTick.bCanEverTick = false;
+
+	UE_LOG(
+		LogAGX, Warning, TEXT("Constraint %p:%s in %p with owner %p: Default-constructed."),
+		(void*) this, *this->GetName(), (void*) GetTypedOuter<AActor>(), (void*) GetOwner());
+	UE_LOG(
+		LogAGX, Warning, TEXT("  Body1 owner: %p."), (void*) BodyAttachment1.RigidBody.OwningActor);
+	UE_LOG(
+		LogAGX, Warning, TEXT("  Body2 owner: %p."), (void*) BodyAttachment2.RigidBody.OwningActor);
 }
 
 UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& LockedDofsOrdered)
@@ -83,6 +91,14 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	, LockedDofs(LockedDofsOrdered)
 	, NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
 {
+	UE_LOG(
+		LogAGX, Warning, TEXT("Constraint %p:%s in %p with owner %p: Created."), (void*) this,
+		*this->GetName(), (void*) GetTypedOuter<AActor>(), (void*) GetOwner());
+	UE_LOG(
+		LogAGX, Warning, TEXT("  Body1 owner: %p."), (void*) BodyAttachment1.RigidBody.OwningActor);
+	UE_LOG(
+		LogAGX, Warning, TEXT("  Body2 owner: %p."), (void*) BodyAttachment2.RigidBody.OwningActor);
+
 	// Using an AGX_ConstraintComponent in a blueprint instance has in some cases caused crashes
 	// during project startup. It seems to happen for one of the 'behind-the-scenes' created objects
 	// that are created for blueprints, typically with name postfix '_GEN_VARIABLE'. This
@@ -122,6 +138,12 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 			IconGraphicsComponent->bHiddenInGame = true;
 		}
 	}
+
+	UE_LOG(LogAGX, Warning, TEXT("After graphics creation:"));
+	UE_LOG(
+		LogAGX, Warning, TEXT("  Body1 owner: %p."), (void*) BodyAttachment1.RigidBody.OwningActor);
+	UE_LOG(
+		LogAGX, Warning, TEXT("  Body2 owner: %p."), (void*) BodyAttachment2.RigidBody.OwningActor);
 }
 
 UAGX_ConstraintComponent::~UAGX_ConstraintComponent()
@@ -130,6 +152,19 @@ UAGX_ConstraintComponent::~UAGX_ConstraintComponent()
 	BodyAttachment1.OnDestroy(this);
 	BodyAttachment2.OnDestroy(this);
 #endif
+}
+
+void UAGX_ConstraintComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+	BodyAttachment1.RigidBody.OwningActor = GetTypedOuter<AActor>();
+	BodyAttachment2.RigidBody.OwningActor = GetTypedOuter<AActor>();
+
+	UE_LOG(LogAGX, Warning, TEXT("After PostInitProperties:"));
+	UE_LOG(
+		LogAGX, Warning, TEXT("  Body1 owner: %p."), (void*) BodyAttachment1.RigidBody.OwningActor);
+	UE_LOG(
+		LogAGX, Warning, TEXT("  Body2 owner: %p."), (void*) BodyAttachment2.RigidBody.OwningActor);
 }
 
 FConstraintBarrier* UAGX_ConstraintComponent::GetOrCreateNative()
@@ -331,6 +366,15 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 				ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
 			}
 
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Constraint %p:%s in %p with owner %p: Attachment modified.."), (void*) this,
+				*this->GetName(), (void*) GetTypedOuter<AActor>(), (void*) GetOwner());
+			UE_LOG(
+				LogAGX, Warning, TEXT("  Body1 owner: %p"), BodyAttachment1.RigidBody.OwningActor);
+			UE_LOG(
+				LogAGX, Warning, TEXT("  Body2 owner: %p"), BodyAttachment2.RigidBody.OwningActor);
+
 			// Handle the Blueprint editor case, where it's not possible to select the Actor
 			// that will be created when the Blueprint is instantiated as the OwningActor in the
 			// RigidBodyReference and the SceneComponentReference. Here we set the Constraint's
@@ -341,8 +385,19 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			// some other Actor.
 			if (ModifiedBodyAttachment->RigidBody.OwningActor == nullptr)
 			{
+#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
+				ModifiedBodyAttachment->RigidBody.OwningActor = GetTypedOuter<AActor>();
+#else
 				ModifiedBodyAttachment->RigidBody.FallbackOwningActor = GetOwner();
+#endif
 			}
+
+			UE_LOG(LogAGX, Warning, TEXT("  After fix-up:"));
+			UE_LOG(
+				LogAGX, Warning, TEXT("  Body1 owner: %p"), BodyAttachment1.RigidBody.OwningActor);
+			UE_LOG(
+				LogAGX, Warning, TEXT("  Body2 owner: %p"), BodyAttachment2.RigidBody.OwningActor);
+
 			if (ModifiedBodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::Other &&
 				ModifiedBodyAttachment->FrameDefiningComponent.OwningActor == nullptr)
 			{
@@ -418,6 +473,19 @@ void UAGX_ConstraintComponent::PostLoad()
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
 
+	UE_LOG(
+		LogAGX, Warning, TEXT("Constraint %p:%s in %p with owner %p: PostLoad."), (void*) this,
+		*this->GetName(), (void*) GetTypedOuter<AActor>(), (void*) GetOwner());
+	UE_LOG(
+		LogAGX, Warning, TEXT("  Body1 owner: %p"), (void*) BodyAttachment1.RigidBody.OwningActor);
+	UE_LOG(
+		LogAGX, Warning, TEXT("  Body2 owner: %p"), (void*) BodyAttachment2.RigidBody.OwningActor);
+
+#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
+	// We do not want to write to UPROPERTIES in PostLoad because it causes the property to become
+	// read-only in the Details Panel. See internal issue 352 for more information. Instead we
+	// use GetTypedOuter<AActor>() in constructors and PostEditChanged. Also, since
+#else
 	// Provide a default owning actor, the owner of this component, if no owner has been specified
 	// for the RigidBodyReferences and FrameDefiningComponents. This is always the case when the
 	// constraint has been created as part of an Actor Blueprint.
@@ -431,6 +499,7 @@ void UAGX_ConstraintComponent::PostLoad()
 			BodyReference->CacheCurrentRigidBody();
 		}
 	}
+#endif
 
 	for (FAGX_ConstraintBodyAttachment* BodyAttachment : {&BodyAttachment1, &BodyAttachment2})
 	{
@@ -513,6 +582,12 @@ bool UAGX_ConstraintComponent::ToNativeDof(EGenericDofIndex GenericDof, int32& N
 void UAGX_ConstraintComponent::CreateNative()
 {
 	/// \todo Verify that we are in-game!
+
+	UE_LOG(
+		LogAGX, Warning, TEXT("Constraint %p:%s in %p with owner %p: CreateNative."), (void*) this,
+		*this->GetName(), (void*) GetTypedOuter<AActor>(), (void*) GetOwner());
+	UE_LOG(LogAGX, Warning, TEXT("  Body1 owner: %p"), BodyAttachment1.RigidBody.OwningActor);
+	UE_LOG(LogAGX, Warning, TEXT("  Body2 owner: %p"), BodyAttachment2.RigidBody.OwningActor);
 
 	check(!HasNative());
 

@@ -26,6 +26,9 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	PrincipalInertiae = FVector(1.f, 1.f, 1.f);
 	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
 	TransformTarget = EAGX_TransformTarget::TT_SELF;
+
+	UE_LOG(LogAGX, Warning, TEXT("Body %p in %p with owner %p: Created."),
+		   (void*)this, (void*)GetTypedOuter<AActor>(), (void*)GetOwner());
 }
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
@@ -54,6 +57,9 @@ bool UAGX_RigidBodyComponent::HasNative()
 
 void UAGX_RigidBodyComponent::BeginPlay()
 {
+	UE_LOG(LogAGX, Warning, TEXT("Body %p in %p with owner %p: BeginPlay."),
+		(void*)this, (void*)GetTypedOuter<AActor>(), (void*)GetOwner());
+
 	Super::BeginPlay();
 	if (!HasNative())
 	{
@@ -104,6 +110,9 @@ namespace
 
 void UAGX_RigidBodyComponent::InitializeNative()
 {
+	UE_LOG(LogAGX, Warning, TEXT("Body %p in %p with owner %p: InitializeNative."),
+		(void*)this, (void*)GetTypedOuter<AActor>(), (void*)GetOwner());
+
 	NativeBarrier.AllocateNative();
 	check(HasNative()); /// \todo Consider better error handling than 'check'.
 

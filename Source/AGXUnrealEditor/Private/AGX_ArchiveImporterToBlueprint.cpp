@@ -227,8 +227,16 @@ namespace
 			// pointers to instead point to the actor that is created when the Blueprint is
 			// instantiated. The best we can do is to set them to nullptr and rely on the body
 			// names only.
+#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
+			// We _should_ not need to do this anymore. Since we initialize the Owning Actor in
+			// the Constraint constructor and don't touch it afterwards we hope that Unreal Engine
+			// will leave the pointers created by the instance in place and not overwrite them with
+			// the Blueprint pointers that was set when the Constraint was created as part of the
+			// Blueprint.
+#else
 			Constraint->BodyAttachment1.RigidBody.OwningActor = nullptr;
 			Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
+#endif
 		}
 
 		virtual void DisabledCollisionGroups(

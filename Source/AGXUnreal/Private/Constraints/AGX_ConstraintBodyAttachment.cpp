@@ -4,7 +4,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SceneComponentReference.h"
 #include "AGX_LogCategory.h"
-#include "Constraints/AGX_ConstraintFrameActor.h"
+//#include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintFrameComponent.h"
 
 // Unreal Engine includes.
@@ -14,6 +14,32 @@
 FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment(USceneComponent* InOwner)
 	: Owner {InOwner}
 {
+#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
+
+
+// No point in setting Owning Actor in the constructor because ObjectInitialize::InitProperites will
+// overwrite everything we do here with the value that each property has in the Class Default
+// Object, which will have a nulllptr Owning Actor since the setting of Owning Actor below is
+// guarded by an IsTemplate check. Template and Class Default Object seems to be the same thing.
+#if 0
+	if (!Owner->IsTemplate())
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("ConstraintBodyAttachment in %p:%s is not a template."),
+			(void*) Owner, *Owner->GetName());
+		RigidBody.OwningActor = Owner->GetTypedOuter<AActor>();
+		check(RigidBody.OwningActor != nullptr);
+	}
+
+	/// \todo Debug output, remove.
+	UE_LOG(
+		LogAGX, Warning, TEXT("ConstraintBodyAttachment in %p:%s points to a body owned by %p:%s."),
+		Owner, *Owner->GetName(), RigidBody.OwningActor,
+		(RigidBody.OwningActor != nullptr ? *RigidBody.OwningActor->GetName() : TEXT("")));
+#endif
+
+#else
+#endif
 }
 
 UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody() const
@@ -141,7 +167,7 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningComponentChanged(
 void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
 {
 	// This may be a problem. FrameDefiningComponent uses a TSoftObjectPtr to reference the
-	// SceneComponent. This is required for it to be usabel in the Mode Panel and Blueprint editors.
+	// SceneComponent. This is required for it to be usable in the Mode Panel and Blueprint editors.
 	// It is not legal to dereference a TSoftObjectPtr during  GarbageCollection, and OnDestroy is
 	// likely to be called during GarbageCollection. The assert message from Unreal Engine is
 	//     Illegal call to StaticFindObject() while collecting garbage!

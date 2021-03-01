@@ -309,10 +309,13 @@ AActor* FAGX_RigidBodyReferenceCustomization::GetOwningActor()
 	{
 		return OwningActor;
 	}
+#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
+#else
 	else if (AActor* FallbackOwningActor = RigidBodyReference->FallbackOwningActor)
 	{
 		return FallbackOwningActor;
 	}
+#endif
 	else
 	{
 		return nullptr;

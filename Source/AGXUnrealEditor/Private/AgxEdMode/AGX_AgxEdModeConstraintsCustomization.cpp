@@ -160,31 +160,37 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintTypeComboBox(
 void FAGX_AgxEdModeConstraintsCustomization::CreateGetFromSelectedActorsButton(
 	IDetailCategoryBuilder& CategoryBuilder, UAGX_AgxEdModeConstraints* ConstraintsSubMode)
 {
+	// clang-format off
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
-		.ValueContent()
-			[SNew(SHorizontalBox) +
-			 SHorizontalBox::Slot().AutoWidth().HAlign(HAlign_Left)
-				 //.Padding(5, 0)
-				 [SNew(SButton)
-					  .Text(
-						  LOCTEXT("FindActorsFromSelectionButtonText", "Get Actors From Selection"))
-					  .ToolTipText(LOCTEXT(
-						  "FindActorsFromSelectionButtonTooltip",
-						  "Searches selected actors for two Actors "
-						  "with a Rigid Body Component.\n\nAlso searches the subtree and parent "
-						  "chain of "
-						  "each selected actor "
-						  "if a direct match was not found."))
-					  .OnClicked_Lambda([ConstraintsSubMode]() {
-						  AActor* Actor1;
-						  AActor* Actor2;
-						  FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
-							  &Actor1, &Actor2,
-							  /*bSearchSubtrees*/ true, /*bSearchAncestors*/ true);
-						  ConstraintsSubMode->RigidBody1.OwningActor = Actor1;
-						  ConstraintsSubMode->RigidBody2.OwningActor = Actor2;
-						  return FReply::Handled();
-					  })]];
+	.ValueContent()
+	[
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.HAlign(HAlign_Left)
+		//.Padding(5, 0)
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("FindActorsFromSelectionButtonText", "Get Actors From Selection"))
+			.ToolTipText(
+				LOCTEXT(
+					"FindActorsFromSelectionButtonTooltip",
+					"Searches selected actors for two Actors with a Rigid Body Component."
+					"\n\n"
+					"Also searches the subtree and parent chain of each selected actor if a direct "
+					"match was not found."))
+		  	.OnClicked_Lambda([ConstraintsSubMode]() {
+				AActor* Actor1;
+				AActor* Actor2;
+				FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
+					&Actor1, &Actor2, /*bSearchSubtrees*/ true, /*bSearchAncestors*/ true);
+				ConstraintsSubMode->RigidBody1.OwningActor = Actor1;
+				ConstraintsSubMode->RigidBody2.OwningActor = Actor2;
+				return FReply::Handled();
+			})
+		]
+	];
+	// clang-format on
 }
 
 void FAGX_AgxEdModeConstraintsCustomization::CreateFrameSourceRadioButtons(

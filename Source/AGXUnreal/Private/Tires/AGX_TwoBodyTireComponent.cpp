@@ -8,8 +8,11 @@
 
 UAGX_TwoBodyTireComponent::UAGX_TwoBodyTireComponent()
 {
+#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
+#else
 	TireRigidBody.FallbackOwningActor = GetOwner();
 	HubRigidBody.FallbackOwningActor = GetOwner();
+#endif
 }
 
 UAGX_RigidBodyComponent* UAGX_TwoBodyTireComponent::GetHubRigidBody() const
@@ -142,6 +145,8 @@ void UAGX_TwoBodyTireComponent::PostLoad()
 	// OwningActor even for the Blueprint case where these FallbackOwningActor pointers will
 	// point to the wrong object instances, even though they are set in the constructor. The reason
 	// why this happens is still not known.
+#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
+#else
 	for (FAGX_RigidBodyReference* BodyReference : {&TireRigidBody, &HubRigidBody})
 	{
 		BodyReference->FallbackOwningActor = nullptr;
@@ -151,6 +156,7 @@ void UAGX_TwoBodyTireComponent::PostLoad()
 			BodyReference->CacheCurrentRigidBody();
 		}
 	}
+#endif
 }
 #endif
 

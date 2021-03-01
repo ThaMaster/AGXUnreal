@@ -27,6 +27,12 @@ UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody() const
 	{
 		return Cache;
 	}
+#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
+	else if (IsValid(OwningActor))
+	{
+		return FindBody(OwningActor, BodyName, bSearchChildActors);
+	}
+#else
 	else if (OwningActor.IsValid())
 	{
 		return FindBody(OwningActor.Get(), BodyName, bSearchChildActors);
@@ -35,6 +41,7 @@ UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody() const
 	{
 		return FindBody(FallbackOwningActor, BodyName, bSearchChildActors);
 	}
+#endif
 	else
 	{
 		return nullptr;
@@ -43,17 +50,29 @@ UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody() const
 
 AActor* FAGX_RigidBodyReference::GetOwningActor() const
 {
+#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
+	return OwningActor;
+#else
 	return OwningActor.Get();
+#endif
 }
 
 void FAGX_RigidBodyReference::CacheCurrentRigidBody()
 {
 	InvalidateCache();
+#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
+	if (!IsValid(OwningActor))
+#else
 	if (!OwningActor.IsValid())
+#endif
 	{
 		return;
 	}
+#if AGXUNREAL_RIGID_BODY_REFERENCE_REFACTOR
+	Cache = FindBody(OwningActor, BodyName, bSearchChildActors);
+#else
 	Cache = FindBody(OwningActor.Get(), BodyName, bSearchChildActors);
+#endif
 }
 
 void FAGX_RigidBodyReference::InvalidateCache()

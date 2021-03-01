@@ -42,15 +42,15 @@ public:
 	 * The first Rigid Body bound by this constraint, and its Attachment Frame definition.
 	 * Rigid Body Actor must be set.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies")
-	FAGX_ConstraintBodyAttachment BodyAttachment1;
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies", meta=(SkipUCSModifiedProperties))
+	FAGX_ConstraintBodyAttachment BodyAttachment1; // meta: ShowOnlyInnerProperties
 
 	/**
 	 * The second Rigid Body bound by this constraint, and its Attachment Frame definition.
 	 * If second Rigid Body is null, the first Rigid Body will be constrained to the World.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies")
-	FAGX_ConstraintBodyAttachment BodyAttachment2;
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies", meta=(SkipUCSModifiedProperties))
+	FAGX_ConstraintBodyAttachment BodyAttachment2; // meta: ShowOnlyInnerProperties
 
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	bool bEnable;
@@ -115,6 +115,8 @@ public:
 	virtual void UpdateNativeProperties();
 
 	virtual void BeginPlay() override;
+
+	virtual void PostInitProperties() override;
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
