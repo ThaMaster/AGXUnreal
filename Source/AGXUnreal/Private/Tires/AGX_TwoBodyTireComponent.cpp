@@ -121,6 +121,13 @@ void UAGX_TwoBodyTireComponent::UpdateNativeProperties()
 	Barrier->SetImplicitFrictionMultiplier(ImplicitFrictionMultiplier);
 }
 
+void UAGX_TwoBodyTireComponent::BeginPlay()
+{
+	HubRigidBody.CacheCurrentRigidBody();
+	TireRigidBody.CacheCurrentRigidBody();
+	Super::BeginPlay();
+}
+
 void UAGX_TwoBodyTireComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);

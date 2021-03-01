@@ -152,6 +152,8 @@ protected:
 
 	virtual void UpdateNativeProperties() override;
 
+	virtual void BeginPlay() override;
+
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 
 	virtual void PostInitProperties() override;

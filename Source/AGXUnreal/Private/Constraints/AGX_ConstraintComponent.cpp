@@ -485,6 +485,8 @@ void UAGX_ConstraintComponent::DestroyComponent(bool bPromoteChildren)
 void UAGX_ConstraintComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	BodyAttachment1.RigidBody.CacheCurrentRigidBody();
+	BodyAttachment2.RigidBody.CacheCurrentRigidBody();
 	if (!HasNative())
 	{
 		CreateNative();
