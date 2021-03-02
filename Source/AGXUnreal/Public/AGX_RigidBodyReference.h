@@ -21,7 +21,7 @@ class AActor;
  *
  * void UMyComponent::PostInitProperties()
  * {
- * 		Super::PostInitProperties();
+ *  	Super::PostInitProperties();
  *  	MyRigidBodyReference.OwningActor = GetTypedOuter<AActor>();
  * }
  *
@@ -41,18 +41,22 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 {
 	GENERATED_BODY()
 
-	// The EditInstanceOnly specifier is passed because Actor Blueprints should be self-contained,
-	// all Actor references should point to the Actor that will be created when the Blueprint is
-	// instantiated in a level, which is achieved by not allowing a Blueprint to change the
-	// OwningActor, which means that the GetTypedOuter<AActor>() fethced in PostInitProperties will
-	// be the active OwningActor when instantiation is complete.
-	//
-	// Rules for OwningActor:
-	//  - The OwningActor should be set to GetTypedOuter<AActor>() in PostInitProperties of the
-	//    Component containing the RigidBodyReference to enable local scope lookup by default.
-	//  - The OwningActor should be set to GetTypedOuter<AActor>() in PostEditChangeProperty of the
-	//    Component containing the RigidBodyReference whenever OwningActor is changed to nullptr.
-	//    This reenables the local scope state.
+	/**
+	 * That Actor that owns the RigidBodyComponent that this RigidBodyReference references.
+	 *
+	 * The EditInstanceOnly specifier is set because Actor Blueprints should be self-contained,
+	 * all Actor references should point to the Actor that is created when the Blueprint is
+	 * instantiated in a level, which is achieved by not allowing a Blueprint to change the
+	 * OwningActor, which means that the GetTypedOuter<AActor>() fetched in PostInitProperties will
+	 * be the active OwningActor when instantiation is complete.
+	 *
+	 * Rules for OwningActor:
+	 *  - The OwningActor should be set to GetTypedOuter<AActor>() in PostInitProperties of the
+	 *    Component containing the RigidBodyReference to enable local scope lookup by default.
+	 *  - The OwningActor should be set to GetTypedOuter<AActor>() in PostEditChangeProperty of the
+	 *    Component containing the RigidBodyReference whenever OwningActor is changed to nullptr.
+	 *    This reenables the local scope state.
+	 */
 	UPROPERTY(
 		EditInstanceOnly, Category = "AGX Dynamics",
 		Meta = (Tooltip = "The Actor that owns the RigidBodyComponent."))
