@@ -25,7 +25,9 @@ public:
 
 	FShapeBarrier& operator=(FShapeBarrier&& Other) noexcept;
 
-	bool HasNative() const;
+	bool HasNativeGeometry() const;
+	bool HasNativeShape() const;
+	virtual bool HasNative() const;
 	void AllocateNative();
 	void ReleaseNative();
 	FGeometryAndShapeRef* GetNative();

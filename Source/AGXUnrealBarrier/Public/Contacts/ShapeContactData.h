@@ -1,7 +1,8 @@
 #pragma once
 
+#if 0
 // AGX Dynamics for Unreal includes.
-#include "Shapes/Contacts/ShapeContactPoint.h"
+#include "Contacts/ShapeContactPoint.h"
 
 // Unreal Engine includes.
 #include "Containers/Array.h"
@@ -14,3 +15,4 @@ struct AGXUNREALBARRIER_API FShapeContactData
 	FGuid SecondBodyGuid;
 	TArray<FShapeContactPoint> Points;
 };
+#endif

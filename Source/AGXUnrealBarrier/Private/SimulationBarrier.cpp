@@ -2,13 +2,14 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
 #include "Constraints/ConstraintBarrier.h"
+#include "Contacts/ShapeContactData.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/ShapeBarrier.h"
-#include "Shapes/Contacts/ShapeContactData.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TireBarrier.h"
 #include "TypeConversions.h"
@@ -253,6 +254,52 @@ namespace
 	}
 }
 
+TArray<FShapeContactBarrier> FSimulationBarrier::GetShapeContacts(const FShapeBarrier& Shape) const
+{
+	check(HasNative());
+	check(Shape.HasNative());
+
+	// Get the Geometry Contact information from AGX Dynamics.
+	agxCollide::GeometryContactPtrVector ContactsAGX;
+	agxCollide::Geometry* GeometryAGX = Shape.GetNative()->NativeGeometry;
+	NativeRef->Native->getSpace()->getGeometryContacts(ContactsAGX, GeometryAGX);
+	size_t NumContacts = ContactsAGX.size();
+	// Save one for INVALID_INDEX/InvalidIndex.
+	int32 MaxAllowed = std::numeric_limits<int32>::max() - 1;
+	if (NumContacts > MaxAllowed)
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("Too many ShapeContacts, %zu, will only see the first %d."),
+			NumContacts, MaxAllowed);
+		NumContacts = MaxAllowed;
+	}
+
+	// Wrap each Geometry Contact in a Barrier.
+	TArray<FShapeContactBarrier> Contacts;
+	Contacts.Reserve(NumContacts);
+	for (int32 I = 0; I < NumContacts; ++I)
+	{
+		agxCollide::GeometryContact* ContactAGX = ContactsAGX[I];
+
+		// We're pessimizing the MaxAllowed limit since any nullptr or invalid Geometry Contacts
+		// will still count towards the limit. I don't think this will ever matter, but if it does
+		// simply don't truncate NumContacts, let I loop over all Geometry Contacts, and break when
+		// the TArray is full.
+		if (ContactAGX == nullptr)
+		{
+			continue;
+		}
+		if (!ContactAGX->isValid())
+		{
+			continue;
+		}
+		Contacts.Add(AGXBarrierFactories::CreateShapeContactBarrier(ContactAGX));
+	}
+
+	return Contacts;
+}
+
+#if 0
 TArray<FShapeContactData> FSimulationBarrier::GetShapeContactData(const FShapeBarrier& Shape) const
 {
 	check(HasNative());
@@ -298,6 +345,7 @@ TArray<FShapeContactData> FSimulationBarrier::GetShapeContactData(const FShapeBa
 	}
 	return ShapeContactDataArr;
 }
+#endif
 
 void FSimulationBarrier::Step()
 {

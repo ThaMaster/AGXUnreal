@@ -4,6 +4,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "Contacts/AGX_ShapeContact.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -267,6 +268,27 @@ bool UAGX_ShapeComponent::GetIsSensor() const
 
 TArray<FAGX_ShapeContact> UAGX_ShapeComponent::GetShapeContacts() const
 {
+	if (!HasNative())
+	{
+		return TArray<FAGX_ShapeContact>();
+	}
+
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	if (!Simulation)
+	{
+		return TArray<FAGX_ShapeContact>();
+	}
+
+	TArray<FShapeContactBarrier> Barriers = Simulation->GetShapeContacts(*GetNative());
+	TArray<FAGX_ShapeContact> ShapeContacts;
+	ShapeContacts.Reserve(Barriers.Num());
+	for (FShapeContactBarrier& Barrier : Barriers)
+	{
+		ShapeContacts.Emplace(std::move(Barrier));
+	}
+	return ShapeContacts;
+
+#if 0
 	TArray<FAGX_ShapeContact> ShapeContacts;
 	if (!HasNative())
 	{
@@ -285,6 +307,7 @@ TArray<FAGX_ShapeContact> UAGX_ShapeComponent::GetShapeContacts() const
 	}
 
 	return ShapeContacts;
+#endif
 }
 
 void UAGX_ShapeComponent::ApplySensorMaterial(UMeshComponent& Mesh)

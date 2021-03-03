@@ -1,7 +1,10 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "Shapes/Contacts/ShapeContactData.h"
+#include "Contacts/ShapeContactBarrier.h"
+#include "Contacts/AGX_ContactPoint.h"
+#include "Shapes/EmptyShapeBarrier.h"
+#include "RigidBodyBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -16,11 +19,40 @@ class UAGX_RigidBodyComponent;
  * Struct that holds contact data for a shape. Note that this data is only valid during a single
  * simulation step.
  */
-USTRUCT(BlueprintType)
+USTRUCT(Category = "AGX", BlueprintType)
 struct AGXUNREAL_API FAGX_ShapeContact
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
+	FAGX_ShapeContact() = default;
+	FAGX_ShapeContact(FShapeContactBarrier&& InBarrier);
+
+	/**
+	 * @return True iff this ShapeContact is backed by native AGX Dynamics data.
+	 */
+	bool HasNative() const;
+
+	/**
+	 * @return True iff the Shape Contact is enabled, i.e., its ContactPoints are included in the
+	 * solve.
+	 */
+	bool IsEnabled() const;
+
+	FRigidBodyBarrier GetBody1() const;
+	FRigidBodyBarrier GetBody2() const;
+
+	FEmptyShapeBarrier GetShape1() const;
+	FEmptyShapeBarrier GetShape2() const;
+
+	int32 GetNumContacts() const;
+
+	TArray<FAGX_ContactPoint> GetContactPoints() const;
+
+
+private:
+	FShapeContactBarrier Barrier;
+
+#if 0
 	FAGX_ShapeContact(FShapeContactData&& InData) noexcept
 		: Data(std::move(InData))
 	{
@@ -31,6 +63,7 @@ struct AGXUNREAL_API FAGX_ShapeContact
 private:
 	friend class UAGX_ShapeContact_FL;
 	FShapeContactData Data;
+#endif
 };
 
 /**
@@ -44,6 +77,7 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static UAGX_ShapeComponent* GetFirstShape(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
 
+#if 0
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static UAGX_ShapeComponent* GetSecondShape(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
 
@@ -58,10 +92,12 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static UAGX_RigidBodyComponent* GetSecondBody(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
+#endif
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static int GetNumPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
 
+#if 0
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static FVector GetPointPosition(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
 
@@ -80,4 +116,5 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static float GetPointArea(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
+#endif
 };

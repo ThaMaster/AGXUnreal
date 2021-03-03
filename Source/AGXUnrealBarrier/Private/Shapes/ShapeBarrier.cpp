@@ -43,7 +43,17 @@ FShapeBarrier& FShapeBarrier::operator=(FShapeBarrier&& Other) noexcept
 
 bool FShapeBarrier::HasNative() const
 {
-	return NativeRef->NativeGeometry != nullptr && NativeRef->NativeShape != nullptr;
+	return HasNativeGeometry() && HasNativeShape();
+}
+
+bool FShapeBarrier::HasNativeGeometry() const
+{
+	return NativeRef->NativeGeometry != nullptr;
+}
+
+bool FShapeBarrier::HasNativeShape() const
+{
+	return NativeRef->NativeShape != nullptr;
 }
 
 void FShapeBarrier::AllocateNative()

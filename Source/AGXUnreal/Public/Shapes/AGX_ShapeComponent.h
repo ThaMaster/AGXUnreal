@@ -2,8 +2,8 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_SimpleMeshComponent.h"
+#include "Contacts/AGX_ShapeContact.h"
 #include "Shapes/AGX_ShapeEnums.h"
-#include "Shapes/Contacts/AGX_ShapeContact.h"
 #include "Shapes/ShapeBarrier.h"
 
 // Unreal Engine includes.
@@ -82,6 +82,9 @@ public:
 	 * single simulation step. This function must therefore be called each time that the contact
 	 * data is accessed.
 	 */
+	//UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	//TArray<FAGX_ShapeContact> GetShapeContacts() const;
+
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	TArray<FAGX_ShapeContact> GetShapeContacts() const;
 

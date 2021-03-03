@@ -1,5 +1,10 @@
 #include "AGXBarrierFactories.h"
 
+// AGX Dynamics for Unreal includes.
+#include "Contacts/ShapeContactEntity.h"
+#include "Contacts/ContactPointEntity.h"
+
+// AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/RigidBody.h>
 #include <agx/Hinge.h>
@@ -8,6 +13,7 @@
 #include <agx/CylindricalJoint.h>
 #include <agx/DistanceJoint.h>
 #include <agx/LockJoint.h>
+#include <agxCollide/Contacts.h>
 #include <agxCollide/Sphere.h>
 #include <agxCollide/Box.h>
 #include <agxCollide/Trimesh.h>
@@ -20,6 +26,11 @@
 FRigidBodyBarrier AGXBarrierFactories::CreateRigidBodyBarrier(agx::RigidBody* Body)
 {
 	return {std::make_unique<FRigidBodyRef>(Body)};
+}
+
+FEmptyShapeBarrier AGXBarrierFactories::CreateEmptyShapeBarrier(agxCollide::Geometry* Geometry)
+{
+	return {std::make_unique<FGeometryAndShapeRef>(Geometry, nullptr)};
 }
 
 FSphereShapeBarrier AGXBarrierFactories::CreateSphereShapeBarrier(agxCollide::Sphere* Sphere)
@@ -91,12 +102,25 @@ FContactMaterialBarrier AGXBarrierFactories::CreateContactMaterialBarrier(
 	return {std::make_unique<FContactMaterialRef>(ContactMaterial)};
 }
 
+FShapeContactBarrier AGXBarrierFactories::CreateShapeContactBarrier(
+	agxCollide::GeometryContact* GeometryContact)
+{
+	return {std::make_unique<FShapeContactEntity>(*GeometryContact)};
+}
+
+FContactPointBarrier AGXBarrierFactories::CreateContactPointBarrier(
+	agxCollide::ContactPoint* ContactPoint)
+{
+	return {std::make_unique<FContactPointEntity>(*ContactPoint)};
+}
+
 FTwoBodyTireBarrier AGXBarrierFactories::CreateTwoBodyTireBarrier(agxModel::TwoBodyTire* Tire)
 {
 	return {std::make_unique<FTireRef>(Tire)};
 }
 
-FTerrainMaterialBarrier AGXBarrierFactories::CreateTerrainMaterialBarrier(agxTerrain::TerrainMaterial* Material)
+FTerrainMaterialBarrier AGXBarrierFactories::CreateTerrainMaterialBarrier(
+	agxTerrain::TerrainMaterial* Material)
 {
 	return {std::make_unique<FTerrainMaterialRef>(Material)};
 }
