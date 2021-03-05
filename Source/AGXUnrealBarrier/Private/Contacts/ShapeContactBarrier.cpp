@@ -11,6 +11,7 @@
 #include "EndAGXIncludes.h"
 
 FShapeContactBarrier::FShapeContactBarrier()
+	: NativeEntity {new FShapeContactEntity}
 {
 }
 
@@ -30,7 +31,14 @@ FShapeContactBarrier::~FShapeContactBarrier()
 
 FShapeContactBarrier& FShapeContactBarrier::operator=(const FShapeContactBarrier& InOther)
 {
-	NativeEntity->Native = InOther.NativeEntity->Native;
+	if (InOther.HasNative())
+	{
+		NativeEntity->Native = InOther.NativeEntity->Native;
+	}
+	else
+	{
+		NativeEntity->Native = agxCollide::GeometryContact();
+	}
 	return *this;
 }
 
@@ -74,8 +82,7 @@ FEmptyShapeBarrier FShapeContactBarrier::GetShape2() const
 	return AGXBarrierFactories::CreateEmptyShapeBarrier(Geometry);
 }
 
-
-int32 FShapeContactBarrier::GetNumContacts() const
+int32 FShapeContactBarrier::GetNumContactPoints() const
 {
 	check(HasNative());
 	const size_t NumPointsAGX = NativeEntity->Native.points().size();
@@ -84,8 +91,8 @@ int32 FShapeContactBarrier::GetNumContacts() const
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("A Shape Contact has too many contact points, %zu truncated to %d."),
-			NumPointsAGX, MaxAllowed);
+			TEXT("A Shape Contact has too many contact points, %zu truncated to %d."), NumPointsAGX,
+			MaxAllowed);
 		return MaxAllowed;
 	}
 	else
@@ -99,7 +106,7 @@ TArray<FContactPointBarrier> FShapeContactBarrier::GetContactPoints() const
 	check(HasNative());
 
 	// Read contact points from AGX Dynamics
-	agxData::Array<agxCollide::ContactPoint>& ContactPointsAGX = NativeEntity->Native.points();
+	agxCollide::ContactPointVector& ContactPointsAGX = NativeEntity->Native.points();
 	size_t NumContactPoints = ContactPointsAGX.size();
 	// Save one for INVALID_INDEX/InvalidIndex.
 	const int32 MaxAllowed = std::numeric_limits<int32>::max() - 1;
@@ -131,6 +138,32 @@ TArray<FContactPointBarrier> FShapeContactBarrier::GetContactPoints() const
 	}
 
 	return ContactPoints;
+}
+
+FContactPointBarrier FShapeContactBarrier::GetContactPoint(int32 Index) const
+{
+	check(HasNative());
+
+	if (Index < 0)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Negative index passed to FShapeContactBarrier::GetContactPoint."));
+		return FContactPointBarrier();
+	}
+
+	const size_t IndexAGX = static_cast<size_t>(Index);
+	agxCollide::ContactPointVector& Points = NativeEntity->Native.points();
+	if (IndexAGX >= Points.size())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Too large index passed to FShapeContactBarrier::GetContactPoint. Given %zu but "
+				 "only have %u contact points."), IndexAGX, Points.size());
+		return FContactPointBarrier();
+	}
+
+	return AGXBarrierFactories::CreateContactPointBarrier(Points[IndexAGX]);
 }
 
 bool FShapeContactBarrier::HasNative() const

@@ -44,10 +44,11 @@ struct AGXUNREAL_API FAGX_ShapeContact
 	FEmptyShapeBarrier GetShape1() const;
 	FEmptyShapeBarrier GetShape2() const;
 
-	int32 GetNumContacts() const;
+	int32 GetNumContactPoints() const;
 
 	TArray<FAGX_ContactPoint> GetContactPoints() const;
 
+	FAGX_ContactPoint GetContactPoint(int Index) const;
 
 private:
 	FShapeContactBarrier Barrier;
@@ -77,7 +78,6 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static UAGX_ShapeComponent* GetFirstShape(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
 
-#if 0
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static UAGX_ShapeComponent* GetSecondShape(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
 
@@ -92,14 +92,15 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static UAGX_RigidBodyComponent* GetSecondBody(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
-#endif
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
-	static int GetNumPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
+	static int GetNumContactPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
 
-#if 0
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
-	static FVector GetPointPosition(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
+	static float GetPointDepth(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	static FVector GetPointLocation(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static FVector GetPointForce(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
@@ -112,9 +113,5 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	static FVector GetPointNormal(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
-	static float GetPointDepth(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static float GetPointArea(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
-#endif
 };

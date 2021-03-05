@@ -31,8 +31,10 @@ public:
 
 	FContactMaterialBarrier GetContactMaterial() const;
 
-	int32 GetNumContacts() const;
+	int32 GetNumContactPoints() const;
 	TArray<FContactPointBarrier> GetContactPoints() const;
+
+	FContactPointBarrier GetContactPoint(int32 Index) const;
 
 	bool HasNative() const;
 	FShapeContactEntity* GetNative();

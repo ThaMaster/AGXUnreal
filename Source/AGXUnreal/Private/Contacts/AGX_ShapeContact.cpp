@@ -21,40 +21,74 @@ bool FAGX_ShapeContact::IsEnabled() const
 	return Barrier.IsEnabled();
 }
 
+namespace
+{
+	bool checkHasNative(const FAGX_ShapeContact& ShapeContact, const TCHAR* AttributeName)
+	{
+		if (ShapeContact.HasNative())
+		{
+			return true;
+		}
+
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Trying to get %s from a ShapeContact that doesn't have a native AGX Dynamics "
+				 "representation"));
+		return false;
+	}
+}
+
 FRigidBodyBarrier FAGX_ShapeContact::GetBody1() const
 {
-	check(HasNative());
+	if (!checkHasNative(*this, TEXT("First Body")))
+	{
+		return FRigidBodyBarrier();
+	}
 	return Barrier.GetBody1();
 }
 
 FRigidBodyBarrier FAGX_ShapeContact::GetBody2() const
 {
-	check(HasNative());
+	if (!checkHasNative(*this, TEXT("Second Body")))
+	{
+		return FRigidBodyBarrier();
+	}
 	return Barrier.GetBody2();
 }
 
 FEmptyShapeBarrier FAGX_ShapeContact::GetShape1() const
 {
-	check(HasNative());
+	if (!checkHasNative(*this, TEXT("First Shape")))
+	{
+		return FEmptyShapeBarrier();
+	}
 	return Barrier.GetShape1();
 }
 
 FEmptyShapeBarrier FAGX_ShapeContact::GetShape2() const
 {
-	check(HasNative());
+	if (!checkHasNative(*this, TEXT("Second Shape")))
+	{
+		return FEmptyShapeBarrier();
+	}
 	return Barrier.GetShape2();
 }
 
-
-int32 FAGX_ShapeContact::GetNumContacts() const
+int32 FAGX_ShapeContact::GetNumContactPoints() const
 {
-	check(HasNative());
-	return Barrier.GetNumContacts();
+	if (!checkHasNative(*this, TEXT("Num Contact Points")))
+	{
+		return 0;
+	}
+	return Barrier.GetNumContactPoints();
 }
 
 TArray<FAGX_ContactPoint> FAGX_ShapeContact::GetContactPoints() const
 {
-	check(HasNative());
+	if (!checkHasNative(*this, TEXT("Contact Points")))
+	{
+		return TArray<FAGX_ContactPoint>();
+	}
 	TArray<FContactPointBarrier> ContactPointBarriers = Barrier.GetContactPoints();
 	TArray<FAGX_ContactPoint> ContactPoints;
 	ContactPoints.Reserve(ContactPointBarriers.Num());
@@ -65,12 +99,54 @@ TArray<FAGX_ContactPoint> FAGX_ShapeContact::GetContactPoints() const
 	return ContactPoints;
 }
 
-int UAGX_ShapeContact_FL::GetNumPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef)
+FAGX_ContactPoint FAGX_ShapeContact::GetContactPoint(int Index) const
 {
-	// UFUNCTIONS does not support size_t or uint32, so the best we can do is to give a warning
-	// if the numbe of points are above the maximum value for an int.
+	if (!checkHasNative(*this, TEXT("Contact Point")))
+	{
+		return FAGX_ContactPoint();
+	}
+	return Barrier.GetContactPoint(Index);
+}
 
-	return ShapeContactRef.GetNumContacts();
+int UAGX_ShapeContact_FL::GetNumContactPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef)
+{
+	if (!checkHasNative(ShapeContactRef, TEXT("Num Contact Points")))
+	{
+		return 0;
+	}
+	return ShapeContactRef.GetNumContactPoints();
+}
+
+float UAGX_ShapeContact_FL::GetPointDepth(
+	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex)
+{
+	if (!checkHasNative(ShapeContactRef, TEXT("Point Depth")))
+	{
+		return 0.0f;
+	}
+	if (PointIndex >= ShapeContactRef.GetNumContactPoints())
+	{
+		/// @todo Figure out how to get the shape/body names here.
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("GetPointDepth: Tried to access point index out of bounds in ShapeContact between "
+				 "'%s' and '%s'."),
+			TEXT("TODO!"), TEXT("TODO!"));
+		return 0.0f;
+	}
+
+	FAGX_ContactPoint Point = ShapeContactRef.GetContactPoint(PointIndex);
+	if (!Point.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("GetPointDepth: Could not get contact point %d from ShapeContact between '%s' and "
+				 "'%s'."),
+			TEXT("TODO!"), TEXT("TODO!"));
+		return 0.0f;
+	}
+
+	return Point.GetDepth();
 }
 
 namespace
@@ -114,123 +190,129 @@ namespace
 UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetFirstShape(UPARAM(ref)
 															 FAGX_ShapeContact& ShapeContactRef)
 {
-	FEmptyShapeBarrier Shape = ShapeContactRef.GetShape1();
-	FGuid Guid = Shape.GetGuid();
-	return GetFromGuid<UAGX_ShapeComponent>(Guid);
-}
-
-#if 0
-UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetFirstShape(UPARAM(ref)
-															 FAGX_ShapeContact& ShapeContactRef)
-{
-	return GetFromGuid<UAGX_ShapeComponent>(ShapeContactRef.Data.FirstShapeGuid);
+	if (!checkHasNative(ShapeContactRef, TEXT("First Shape")))
+	{
+		return nullptr;
+	}
+	return GetFromGuid<UAGX_ShapeComponent>(ShapeContactRef.GetShape1().GetGeometryGuid());
 }
 
 UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetSecondShape(UPARAM(ref)
 															  FAGX_ShapeContact& ShapeContactRef)
 {
-	return GetFromGuid<UAGX_ShapeComponent>(ShapeContactRef.Data.SecondShapeGuid);
+	if (!checkHasNative(ShapeContactRef, TEXT("Second Shape")))
+	{
+		return nullptr;
+	}
+	return GetFromGuid<UAGX_ShapeComponent>(ShapeContactRef.GetShape2().GetGeometryGuid());
 }
 
 UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetFirstBody(UPARAM(ref)
 																FAGX_ShapeContact& ShapeContactRef)
 {
-	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContactRef.Data.FirstBodyGuid);
+	if (!checkHasNative(ShapeContactRef, TEXT("First Body")))
+	{
+		return nullptr;
+	}
+	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContactRef.GetBody1().GetGuid());
 }
 
 UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetSecondBody(UPARAM(ref)
 																 FAGX_ShapeContact& ShapeContactRef)
 {
-	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContactRef.Data.SecondBodyGuid);
-}
-
-int UAGX_ShapeContact_FL::GetNumPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef)
-{
-	// UFUNCTIONS does not support size_t or uint32, so the best we can do is to give a warning
-	// if the numbe of points are above the maximum value for an int.
-	size_t NumPoints = ShapeContactRef.Data.Points.Num();
-	if (NumPoints > std::numeric_limits<int>::max())
+	if (!checkHasNative(ShapeContactRef, TEXT("Second Body")))
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("GetNumPoints: The number of contact points is too large for int. Returning "
-				 "std::numeric_limits<int>::max()."));
-		return std::numeric_limits<int>::max();
+		return nullptr;
 	}
-
-	return static_cast<int>(NumPoints);
+	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContactRef.GetBody2().GetGuid());
 }
 
-FVector UAGX_ShapeContact_FL::GetPointPosition(
+namespace
+{
+	bool IsValidPointIndex(
+		const FAGX_ShapeContact& ShapeContact, int32 PointIndex, const TCHAR* AttributeName)
+	{
+		const int32 NumContactPoints = ShapeContact.GetNumContactPoints();
+		if (PointIndex >= 0 && PointIndex < NumContactPoints)
+		{
+			return true;
+		}
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Trying to get %s from contact point at index %d in ShapeContact that only has %d "
+				 "contact points."),
+			AttributeName, PointIndex, NumContactPoints);
+		return false;
+	}
+}
+
+FVector UAGX_ShapeContact_FL::GetPointLocation(
 	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex)
 {
-	if (PointIndex >= ShapeContactRef.Data.Points.Num())
+	if (!checkHasNative(ShapeContactRef, TEXT("GetPointLocation")))
 	{
-		UE_LOG(LogAGX, Error, TEXT("GetPointPosition: tried to access point index out of bounds."));
 		return FVector::ZeroVector;
 	}
-
-	return ShapeContactRef.Data.Points[PointIndex].Position;
+	if (!IsValidPointIndex(ShapeContactRef, PointIndex, TEXT("Location")))
+	{
+		return FVector::ZeroVector;
+	}
+	return ShapeContactRef.GetContactPoint(PointIndex).GetLocation();
 }
 
 FVector UAGX_ShapeContact_FL::GetPointForce(
 	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex)
 {
-	if (PointIndex >= ShapeContactRef.Data.Points.Num())
+	if (!checkHasNative(ShapeContactRef, TEXT("Point Force")))
 	{
-		UE_LOG(LogAGX, Error, TEXT("GetPointForce: tried to access point index out of bounds."));
 		return FVector::ZeroVector;
 	}
-
-	return ShapeContactRef.Data.Points[PointIndex].Force;
+	if (!IsValidPointIndex(ShapeContactRef, PointIndex, TEXT("Force")))
+	{
+		return FVector::ZeroVector;
+	}
+	return ShapeContactRef.GetContactPoint(PointIndex).GetForce();
 }
 
 FVector UAGX_ShapeContact_FL::GetPointNormalForce(
 	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex)
 {
-	if (PointIndex >= ShapeContactRef.Data.Points.Num())
+	if (!checkHasNative(ShapeContactRef, TEXT("Point Normal Force")))
+
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("GetPointNormalForce: tried to access point index out of bounds."));
 		return FVector::ZeroVector;
 	}
-
-	return ShapeContactRef.Data.Points[PointIndex].NomalForce;
+	if (!IsValidPointIndex(ShapeContactRef, PointIndex, TEXT("Normal Force")))
+	{
+		return FVector::ZeroVector;
+	}
+	return ShapeContactRef.GetContactPoint(PointIndex).GetNormalForce();
 }
 
 FVector UAGX_ShapeContact_FL::GetPointNormal(
 	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex)
 {
-	if (PointIndex >= ShapeContactRef.Data.Points.Num())
+	if (!checkHasNative(ShapeContactRef, TEXT("Point Normal")))
 	{
-		UE_LOG(LogAGX, Error, TEXT("GetPointNormal: tried to access point index out of bounds."));
 		return FVector::ZeroVector;
 	}
-
-	return ShapeContactRef.Data.Points[PointIndex].Normal;
-}
-
-float UAGX_ShapeContact_FL::GetPointDepth(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex)
-{
-	if (PointIndex >= ShapeContactRef.Data.Points.Num())
+	if (!IsValidPointIndex(ShapeContactRef, PointIndex, TEXT("Normal")))
 	{
-		UE_LOG(LogAGX, Error, TEXT("GetPointDepth: tried to access point index out of bounds."));
-		return 0.f;
+		return FVector::ZeroVector;
 	}
-
-	return ShapeContactRef.Data.Points[PointIndex].Depth;
+	return ShapeContactRef.GetContactPoint(PointIndex).GetNormal();
 }
 
 float UAGX_ShapeContact_FL::GetPointArea(
 	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex)
 {
-	if (PointIndex >= ShapeContactRef.Data.Points.Num())
+	if (!checkHasNative(ShapeContactRef, TEXT("Point Area")))
 	{
-		UE_LOG(LogAGX, Error, TEXT("GetPointArea: tried to access point index out of bounds."));
-		return 0.f;
+		return 0.0f;
 	}
-
-	return ShapeContactRef.Data.Points[PointIndex].Area;
+	if (!IsValidPointIndex(ShapeContactRef, PointIndex, TEXT("Area")))
+	{
+		return 0.0f;
+	}
+	return ShapeContactRef.GetContactPoint(PointIndex).GetArea();
 }
-#endif
