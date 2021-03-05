@@ -58,6 +58,13 @@ inline float ConvertDistance(agx::Real D)
 	return static_cast<float>(D * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
 }
 
+// Convert a distance-squared unit, such as area or moment of inertia.
+inline float ConvertDistance2(agx::Real D)
+{
+	return static_cast<float>(
+		D * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
+}
+
 template <typename T>
 inline T ConvertDistanceToUnreal(agx::Real D)
 {
@@ -83,6 +90,13 @@ inline agx::Real Convert(float V)
 inline agx::Real ConvertDistance(float V)
 {
 	return static_cast<agx::Real>(V) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+}
+
+// Convert a distance-squared unit, such as area or moment of inertia.
+inline agx::Real ConvertDistance2(float V)
+{
+	return static_cast<agx::Real>(V) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
+		   UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
 }
 
 template <typename T>
