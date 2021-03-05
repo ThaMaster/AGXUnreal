@@ -52,19 +52,6 @@ struct AGXUNREAL_API FAGX_ShapeContact
 
 private:
 	FShapeContactBarrier Barrier;
-
-#if 0
-	FAGX_ShapeContact(FShapeContactData&& InData) noexcept
-		: Data(std::move(InData))
-	{
-	}
-
-	FAGX_ShapeContact() = default;
-
-private:
-	friend class UAGX_ShapeContact_FL;
-	FShapeContactData Data;
-#endif
 };
 
 /**

@@ -15,21 +15,14 @@ bool FAGX_ShapeContact::HasNative() const
 	return Barrier.HasNative();
 }
 
-bool FAGX_ShapeContact::IsEnabled() const
-{
-	check(HasNative());
-	return Barrier.IsEnabled();
-}
-
 namespace
 {
-	bool checkHasNative(const FAGX_ShapeContact& ShapeContact, const TCHAR* AttributeName)
+	bool CheckHasNative(const FAGX_ShapeContact& ShapeContact, const TCHAR* AttributeName)
 	{
 		if (ShapeContact.HasNative())
 		{
 			return true;
 		}
-
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Trying to get %s from a ShapeContact that doesn't have a native AGX Dynamics "
@@ -38,9 +31,18 @@ namespace
 	}
 }
 
+bool FAGX_ShapeContact::IsEnabled() const
+{
+	if (!CheckHasNative(*this, TEXT("Enabled")))
+	{
+		return false;
+	}
+	return Barrier.IsEnabled();
+}
+
 FRigidBodyBarrier FAGX_ShapeContact::GetBody1() const
 {
-	if (!checkHasNative(*this, TEXT("First Body")))
+	if (!CheckHasNative(*this, TEXT("First Body")))
 	{
 		return FRigidBodyBarrier();
 	}
@@ -49,7 +51,7 @@ FRigidBodyBarrier FAGX_ShapeContact::GetBody1() const
 
 FRigidBodyBarrier FAGX_ShapeContact::GetBody2() const
 {
-	if (!checkHasNative(*this, TEXT("Second Body")))
+	if (!CheckHasNative(*this, TEXT("Second Body")))
 	{
 		return FRigidBodyBarrier();
 	}
@@ -58,7 +60,7 @@ FRigidBodyBarrier FAGX_ShapeContact::GetBody2() const
 
 FEmptyShapeBarrier FAGX_ShapeContact::GetShape1() const
 {
-	if (!checkHasNative(*this, TEXT("First Shape")))
+	if (!CheckHasNative(*this, TEXT("First Shape")))
 	{
 		return FEmptyShapeBarrier();
 	}
@@ -67,7 +69,7 @@ FEmptyShapeBarrier FAGX_ShapeContact::GetShape1() const
 
 FEmptyShapeBarrier FAGX_ShapeContact::GetShape2() const
 {
-	if (!checkHasNative(*this, TEXT("Second Shape")))
+	if (!CheckHasNative(*this, TEXT("Second Shape")))
 	{
 		return FEmptyShapeBarrier();
 	}
@@ -76,7 +78,7 @@ FEmptyShapeBarrier FAGX_ShapeContact::GetShape2() const
 
 int32 FAGX_ShapeContact::GetNumContactPoints() const
 {
-	if (!checkHasNative(*this, TEXT("Num Contact Points")))
+	if (!CheckHasNative(*this, TEXT("Num Contact Points")))
 	{
 		return 0;
 	}
@@ -85,7 +87,7 @@ int32 FAGX_ShapeContact::GetNumContactPoints() const
 
 TArray<FAGX_ContactPoint> FAGX_ShapeContact::GetContactPoints() const
 {
-	if (!checkHasNative(*this, TEXT("Contact Points")))
+	if (!CheckHasNative(*this, TEXT("Contact Points")))
 	{
 		return TArray<FAGX_ContactPoint>();
 	}
@@ -99,58 +101,53 @@ TArray<FAGX_ContactPoint> FAGX_ShapeContact::GetContactPoints() const
 	return ContactPoints;
 }
 
-FAGX_ContactPoint FAGX_ShapeContact::GetContactPoint(int Index) const
+FAGX_ContactPoint FAGX_ShapeContact::GetContactPoint(int32 Index) const
 {
-	if (!checkHasNative(*this, TEXT("Contact Point")))
+	if (!CheckHasNative(*this, TEXT("Contact Point")))
 	{
 		return FAGX_ContactPoint();
 	}
 	return Barrier.GetContactPoint(Index);
 }
 
-int UAGX_ShapeContact_FL::GetNumContactPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef)
+int32 UAGX_ShapeContact_FL::GetNumContactPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef)
 {
-	if (!checkHasNative(ShapeContactRef, TEXT("Num Contact Points")))
+	if (!CheckHasNative(ShapeContactRef, TEXT("Num Contact Points")))
 	{
 		return 0;
 	}
 	return ShapeContactRef.GetNumContactPoints();
 }
 
-float UAGX_ShapeContact_FL::GetPointDepth(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex)
-{
-	if (!checkHasNative(ShapeContactRef, TEXT("Point Depth")))
-	{
-		return 0.0f;
-	}
-	if (PointIndex >= ShapeContactRef.GetNumContactPoints())
-	{
-		/// @todo Figure out how to get the shape/body names here.
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("GetPointDepth: Tried to access point index out of bounds in ShapeContact between "
-				 "'%s' and '%s'."),
-			TEXT("TODO!"), TEXT("TODO!"));
-		return 0.0f;
-	}
-
-	FAGX_ContactPoint Point = ShapeContactRef.GetContactPoint(PointIndex);
-	if (!Point.HasNative())
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("GetPointDepth: Could not get contact point %d from ShapeContact between '%s' and "
-				 "'%s'."),
-			TEXT("TODO!"), TEXT("TODO!"));
-		return 0.0f;
-	}
-
-	return Point.GetDepth();
-}
+/*
+ * Function Library implementation starts here.
+ */
 
 namespace
 {
+	bool IsValidPointIndex(
+		const FAGX_ShapeContact& ShapeContact, int32 PointIndex, const TCHAR* AttributeName)
+	{
+		const int32 NumContactPoints = ShapeContact.GetNumContactPoints();
+		if (PointIndex >= 0 && PointIndex < NumContactPoints)
+		{
+			return true;
+		}
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Trying to get %s from contact point at index %d in a ShapeContact that only has "
+				 "%d contact points."),
+			AttributeName, PointIndex, NumContactPoints);
+		return false;
+	}
+
+	bool CheckHasNativeAndValidPointIndex(
+		const FAGX_ShapeContact& ShapeContact, int32 PointIndex, const TCHAR* AttributeName)
+	{
+		return CheckHasNative(ShapeContact, AttributeName) &&
+			   IsValidPointIndex(ShapeContact, PointIndex, AttributeName);
+	}
+
 	bool IsMatch(UAGX_ShapeComponent* Shape, const FGuid& Guid)
 	{
 		if (!Shape || !Shape->HasNative() || !Guid.IsValid())
@@ -190,7 +187,7 @@ namespace
 UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetFirstShape(UPARAM(ref)
 															 FAGX_ShapeContact& ShapeContactRef)
 {
-	if (!checkHasNative(ShapeContactRef, TEXT("First Shape")))
+	if (!CheckHasNative(ShapeContactRef, TEXT("First Shape")))
 	{
 		return nullptr;
 	}
@@ -200,7 +197,7 @@ UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetFirstShape(UPARAM(ref)
 UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetSecondShape(UPARAM(ref)
 															  FAGX_ShapeContact& ShapeContactRef)
 {
-	if (!checkHasNative(ShapeContactRef, TEXT("Second Shape")))
+	if (!CheckHasNative(ShapeContactRef, TEXT("Second Shape")))
 	{
 		return nullptr;
 	}
@@ -210,7 +207,7 @@ UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetSecondShape(UPARAM(ref)
 UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetFirstBody(UPARAM(ref)
 																FAGX_ShapeContact& ShapeContactRef)
 {
-	if (!checkHasNative(ShapeContactRef, TEXT("First Body")))
+	if (!CheckHasNative(ShapeContactRef, TEXT("First Body")))
 	{
 		return nullptr;
 	}
@@ -220,40 +217,27 @@ UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetFirstBody(UPARAM(ref)
 UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetSecondBody(UPARAM(ref)
 																 FAGX_ShapeContact& ShapeContactRef)
 {
-	if (!checkHasNative(ShapeContactRef, TEXT("Second Body")))
+	if (!CheckHasNative(ShapeContactRef, TEXT("Second Body")))
 	{
 		return nullptr;
 	}
 	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContactRef.GetBody2().GetGuid());
 }
 
-namespace
+float UAGX_ShapeContact_FL::GetPointDepth(
+	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
 {
-	bool IsValidPointIndex(
-		const FAGX_ShapeContact& ShapeContact, int32 PointIndex, const TCHAR* AttributeName)
+	if (!CheckHasNativeAndValidPointIndex(ShapeContactRef, PointIndex, TEXT("Depth")))
 	{
-		const int32 NumContactPoints = ShapeContact.GetNumContactPoints();
-		if (PointIndex >= 0 && PointIndex < NumContactPoints)
-		{
-			return true;
-		}
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Trying to get %s from contact point at index %d in ShapeContact that only has %d "
-				 "contact points."),
-			AttributeName, PointIndex, NumContactPoints);
-		return false;
+		return 0.0f;
 	}
+	return ShapeContactRef.GetContactPoint(PointIndex).GetDepth();
 }
 
 FVector UAGX_ShapeContact_FL::GetPointLocation(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex)
+	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
 {
-	if (!checkHasNative(ShapeContactRef, TEXT("GetPointLocation")))
-	{
-		return FVector::ZeroVector;
-	}
-	if (!IsValidPointIndex(ShapeContactRef, PointIndex, TEXT("Location")))
+	if (!CheckHasNativeAndValidPointIndex(ShapeContactRef, PointIndex, TEXT("Location")))
 	{
 		return FVector::ZeroVector;
 	}
@@ -261,13 +245,9 @@ FVector UAGX_ShapeContact_FL::GetPointLocation(
 }
 
 FVector UAGX_ShapeContact_FL::GetPointForce(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex)
+	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
 {
-	if (!checkHasNative(ShapeContactRef, TEXT("Point Force")))
-	{
-		return FVector::ZeroVector;
-	}
-	if (!IsValidPointIndex(ShapeContactRef, PointIndex, TEXT("Force")))
+	if (!CheckHasNativeAndValidPointIndex(ShapeContactRef, PointIndex, TEXT("Force")))
 	{
 		return FVector::ZeroVector;
 	}
@@ -275,14 +255,9 @@ FVector UAGX_ShapeContact_FL::GetPointForce(
 }
 
 FVector UAGX_ShapeContact_FL::GetPointNormalForce(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex)
+	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
 {
-	if (!checkHasNative(ShapeContactRef, TEXT("Point Normal Force")))
-
-	{
-		return FVector::ZeroVector;
-	}
-	if (!IsValidPointIndex(ShapeContactRef, PointIndex, TEXT("Normal Force")))
+	if (!CheckHasNativeAndValidPointIndex(ShapeContactRef, PointIndex, TEXT("Normal Force")))
 	{
 		return FVector::ZeroVector;
 	}
@@ -290,13 +265,9 @@ FVector UAGX_ShapeContact_FL::GetPointNormalForce(
 }
 
 FVector UAGX_ShapeContact_FL::GetPointNormal(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex)
+	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
 {
-	if (!checkHasNative(ShapeContactRef, TEXT("Point Normal")))
-	{
-		return FVector::ZeroVector;
-	}
-	if (!IsValidPointIndex(ShapeContactRef, PointIndex, TEXT("Normal")))
+	if (!CheckHasNativeAndValidPointIndex(ShapeContactRef, PointIndex, TEXT("Point Normal")))
 	{
 		return FVector::ZeroVector;
 	}
@@ -304,13 +275,9 @@ FVector UAGX_ShapeContact_FL::GetPointNormal(
 }
 
 float UAGX_ShapeContact_FL::GetPointArea(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex)
+	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
 {
-	if (!checkHasNative(ShapeContactRef, TEXT("Point Area")))
-	{
-		return 0.0f;
-	}
-	if (!IsValidPointIndex(ShapeContactRef, PointIndex, TEXT("Area")))
+	if (!CheckHasNativeAndValidPointIndex(ShapeContactRef, PointIndex, TEXT("Point Area")))
 	{
 		return 0.0f;
 	}
