@@ -119,7 +119,7 @@ public:
 	FRigidBodyBarrier* GetNative();
 
 	/// Return true if the AGX Dynamics object has been created. False otherwise.
-	bool HasNative();
+	bool HasNative() const;
 
 	/**
 	 * Copy direct rigid body properties from the barrier to this component.

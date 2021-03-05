@@ -47,7 +47,7 @@ FRigidBodyBarrier* UAGX_RigidBodyComponent::GetNative()
 	return &NativeBarrier;
 }
 
-bool UAGX_RigidBodyComponent::HasNative()
+bool UAGX_RigidBodyComponent::HasNative() const
 {
 	return NativeBarrier.HasNative();
 }
