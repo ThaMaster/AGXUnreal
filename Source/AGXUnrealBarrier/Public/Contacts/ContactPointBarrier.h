@@ -24,7 +24,7 @@ public:
 	bool IsEnabled() const;
 
 	float GetDepth() const;
-	FVector GetPoint() const;
+	FVector GetLocation() const;
 	FVector GetNormal() const;
 	FVector GetTangentU() const;
 	FVector GetTangentV() const;
@@ -32,10 +32,11 @@ public:
 	FVector GetForce() const;
 	FVector GetNormalForce() const;
 	FVector GetTangentialForce() const;
-	float GetLocalForce() const;
+	FVector GetLocalForce() const;
 
 	FVector GetVelocity() const;
-	FVector GetWitnessPoint() const;
+	FVector GetWitnessPoint(int32 Index) const;
+	float GetArea() const;
 
 	bool HasNative() const;
 	FContactPointEntity* GetNative();

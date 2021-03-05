@@ -24,6 +24,21 @@ public:
 
 	bool IsEnabled() const;
 
+	float GetDepth() const;
+	FVector GetLocation() const;
+	FVector GetNormal() const;
+	FVector GetTangentU() const;
+	FVector GetTangentV() const;
+
+	FVector GetForce() const;
+	FVector GetNormalForce() const;
+	FVector GetTangentialForce() const;
+	FVector GetLocalForce() const;
+
+	FVector GetVelocity() const;
+	FVector GetWitnessPoint(int32 Index) const;
+	float GetArea() const;
+
 private:
 	FContactPointBarrier Barrier;
 };

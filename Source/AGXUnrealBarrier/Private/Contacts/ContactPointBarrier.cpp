@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Contacts/ContactPointEntity.h"
+#include "TypeConversions.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -9,6 +10,7 @@
 #include "EndAGXIncludes.h"
 
 FContactPointBarrier::FContactPointBarrier()
+	: NativeEntity {new FContactPointEntity}
 {
 }
 
@@ -33,8 +35,91 @@ FContactPointBarrier::~FContactPointBarrier()
 
 FContactPointBarrier& FContactPointBarrier::operator=(const FContactPointBarrier& InOther)
 {
-	NativeEntity->Native = InOther.NativeEntity->Native;
+	if (InOther.HasNative())
+	{
+		NativeEntity->Native = InOther.NativeEntity->Native;
+	}
+	else
+	{
+		NativeEntity->Native = agxCollide::ContactPoint();
+	}
 	return *this;
+}
+
+float FContactPointBarrier::GetDepth() const
+{
+	check(HasNative());
+	return ConvertDistance(NativeEntity->Native.depth());
+}
+
+/// @TODO: Check these agx::Vec3 -> FVector conversions once the AddForce/AddTorque branch has been
+/// merged to master and then to this branch. It contains changes to how these conversions are named
+/// and structured.
+
+FVector FContactPointBarrier::GetLocation() const
+{
+	check(HasNative());
+	return ConvertVector(NativeEntity->Native.point()); /// @TODO ConvertDisplacement?
+}
+
+FVector FContactPointBarrier::GetNormal() const
+{
+	check(HasNative());
+	return ConvertFloatVector(NativeEntity->Native.normal());
+}
+
+FVector FContactPointBarrier::GetTangentU() const
+{
+	check(HasNative());
+	return ConvertFloatVector(NativeEntity->Native.tangentU());
+}
+
+FVector FContactPointBarrier::GetTangentV() const
+{
+	check(HasNative());
+	return ConvertFloatVector(NativeEntity->Native.tangentV());
+}
+
+FVector FContactPointBarrier::GetForce() const
+{
+	check(HasNative());
+	return ConvertVector(NativeEntity->Native.getForce());
+}
+
+FVector FContactPointBarrier::GetNormalForce() const
+{
+	check(HasNative());
+	return ConvertVector(NativeEntity->Native.getNormalForce());
+}
+
+FVector FContactPointBarrier::GetTangentialForce() const
+{
+	check(HasNative());
+	return ConvertVector(NativeEntity->Native.getTangentialForce());
+}
+
+FVector FContactPointBarrier::GetLocalForce() const
+{
+	check(HasNative());
+	return ConvertVector(NativeEntity->Native.localForce());
+}
+
+FVector FContactPointBarrier::GetVelocity() const
+{
+	check(HasNative());
+	return ConvertFloatVector(NativeEntity->Native.velocity()); /// @TODO ConvertDisplacement?
+}
+
+FVector FContactPointBarrier::GetWitnessPoint(int32 Index) const
+{
+	check(HasNative());
+	return ConvertVector(NativeEntity->Native.getWitnessPoint(Index)); /// @TODO ConvertDisplacement?
+}
+
+float FContactPointBarrier::GetArea() const
+{
+	check(HasNative());
+	return ConvertDistance2(NativeEntity->Native.area());
 }
 
 bool FContactPointBarrier::IsEnabled() const
