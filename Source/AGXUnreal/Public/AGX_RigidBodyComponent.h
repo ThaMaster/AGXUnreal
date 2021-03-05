@@ -112,6 +112,78 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_TransformTarget> TransformTarget;
 
+	/**
+	 * Add an external force, given in the world coordinate frame, that will be affecting this body
+	 * in the next solve. The force will be applied at the center of mass.
+	 *
+	 * This member function may only be called when a native AGX Dynamics representation has already
+	 * been created, i.e., HasNative() returns true;
+	 *
+	 * @param Force The force to add, given in the world coordinate frame.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void AddForceAtCenterOfMass(const FVector& Force);
+
+	/**
+	 * Add an external force, given in the world coordinate frame, applied at a point specified in
+	 * the world coordinate frame, that will be affecting this body in the next solve. If the
+	 * location is different from the center of mass then a torque will be calculated and added as
+	 * well.
+	 *
+	 * This member function may only be called when a native AGX Dynamics representation has already
+	 * been created, i.e., HasNative() returns true;
+	 *
+	 * @param Force The force to add, given in the world coordinate frame.
+	 * @param Location The location in the world coordinate frame where the force should be applied.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void AddForceAtWorldLocation(const FVector& Force, const FVector& Location);
+
+	/**
+	 * Add an external force, given in the world coordinate frame, applied at a point specified in
+	 * the local coordinate frame, that will be affecting this body in the next solve. If the
+	 * location is different from the center of mass then a torque will be calculated and added as
+	 * well.
+	 *
+	 * This member function may only be called when a native AGX Dynamics representation has already
+	 * been created, i.e., HasNative() returns true;
+	 *
+	 * @param Force The force to add, given in world coordinate frame.
+	 * @param Location The location in the local coordinate frame where the force should be applied.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void AddForceAtLocalLocation(const FVector& Force, const FVector& Location);
+
+	/**
+	 * Get the external forces accumulated so far by the AddForce member functions, to be applied
+	 * to this body in the next solve.
+	 * @return The external forces for the next solve accumulated so far.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FVector GetForce() const;
+
+	/**
+	 * Add an external torque, given in the world coordinate frame, that will be affecting this body
+	 * in the next solve.
+	 *
+	 * @param Torque The torque to add, given in world coordinate frame.
+	 */
+	void AddWorldTorque(const FVector& Torque);
+
+	/**
+	 * Adds an external torque, given in center of mass coordinate frame, that will be affecting
+	 * this body in the next solve.
+	 * @param Torque The torque to add, given in center of mass coordinate frame.
+	 */
+	void AddCenterOfMassTorque(const FVector& Torque);
+
+	/**
+	 * Get the external torques accumulated so far by the AddTorque member function, to be applied
+	 * to this body in the next solve.
+	 * @return The external torques for the next solve accumulated so far.
+	 */
+	FVector GetTorque() const;
+
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FRigidBodyBarrier* GetOrCreateNative();
 
@@ -119,7 +191,7 @@ public:
 	FRigidBodyBarrier* GetNative();
 
 	/// Return true if the AGX Dynamics object has been created. False otherwise.
-	bool HasNative();
+	bool HasNative() const;
 
 	/**
 	 * Copy direct rigid body properties from the barrier to this component.

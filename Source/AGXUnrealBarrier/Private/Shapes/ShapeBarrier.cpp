@@ -75,7 +75,7 @@ const FGeometryAndShapeRef* FShapeBarrier::GetNative() const
 void FShapeBarrier::SetLocalPosition(const FVector& Position)
 {
 	check(HasNative());
-	NativeRef->NativeGeometry->setLocalPosition(ConvertVector(Position));
+	NativeRef->NativeGeometry->setLocalPosition(ConvertDisplacement(Position));
 }
 
 void FShapeBarrier::SetLocalRotation(const FQuat& Rotation)
@@ -280,5 +280,5 @@ std::tuple<FVector, FQuat> FShapeBarrier::GetLocalPositionAndRotation() const
 	const agx::AffineMatrix4x4& ShapeTransform = Iterator.getLocalTransform();
 	const agx::AffineMatrix4x4 ShapeRelativeBody = ShapeTransform * GeometryTransform;
 	return {
-		ConvertVector(ShapeRelativeBody.getTranslate()), Convert(ShapeRelativeBody.getRotate())};
+		ConvertDisplacement(ShapeRelativeBody.getTranslate()), Convert(ShapeRelativeBody.getRotate())};
 }

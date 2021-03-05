@@ -152,6 +152,27 @@ inline agx::Vec2 ConvertDistance(const FVector2D& V)
 
 // Three-dimensional vectors.
 
+/*
+ * There are a few different cases here, characterized by whether or not we convert cm <> m and
+ * whether or not we flip the Y axis, since Unreal Engine is left-handed and AGX Dynamics is
+ * right-handed.
+ *
+ *             Convert cm <> m
+ *       |     No    |    Yes       |
+ *     --|-----------|--------------|
+ *   F N |           | Convert      |
+ *   l o | Convert   | Distance     |
+ *   i   |           |              |
+ *   p --|-----------|--------------|
+ *     Y | Convert   | Convert      |
+ *   Y e | Vector    | Displacement |
+ *     s |           |              |
+ *     --|-----------|--------------|
+ *
+ *
+ * Angular velocity is a beast of its own with a big comment all to itself.
+ */
+
 inline FVector Convert(const agx::Vec3& V)
 {
 	return FVector(Convert(V.x()), Convert(V.y()), Convert(V.z()));
@@ -163,6 +184,12 @@ inline FVector ConvertDistance(const agx::Vec3& V)
 }
 
 inline FVector ConvertVector(const agx::Vec3& V)
+{
+	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
+	return FVector(Convert(V.x()), -Convert(V.y()), Convert(V.z()));
+}
+
+inline FVector ConvertDisplacement(const agx::Vec3& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return FVector(ConvertDistance(V.x()), -ConvertDistance(V.y()), ConvertDistance(V.z()));
@@ -183,7 +210,7 @@ inline FVector ConvertAngularVelocity(const agx::Vec3& V)
 	 * rotations also has a handedness. Imagine gripping the axis around which we rotate with your
 	 * thumb pointing towards increasing axis values and look at your (usually) four non-thumb
 	 * fingers. Their direction from the knuckles towards the finger tips define the direction of
-	 * positive rotation. If you switch hand then the direction of positive rotation is inverted. In
+	 * positive rotation. If you switch hand then the direction of positive rotation is inverted.
 	 * Unreal Engine, at least according to the rotation widget in the Details Panel, uses
 	 * right-handed rotations for the X and Y axes, and left-handed rotations for the Z axis.
 	 *
@@ -212,6 +239,11 @@ inline agx::Vec3 ConvertDistance(const FVector& V)
 }
 
 inline agx::Vec3 ConvertVector(const FVector& V)
+{
+	return agx::Vec3(Convert(V.X), -Convert(V.Y), Convert(V.Z));
+}
+
+inline agx::Vec3 ConvertDisplacement(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3(ConvertDistance(V.X), -ConvertDistance(V.Y), ConvertDistance(V.Z));
@@ -289,9 +321,9 @@ inline agx::Line ConvertDistance(const FTwoVectors& Vs)
 	return {ConvertDistance(Vs.v1), ConvertDistance(Vs.v2)};
 }
 
-inline agx::Line ConvertVector(const FTwoVectors& Vs)
+inline agx::Line ConvertDisplacement(const FTwoVectors& Vs)
 {
-	return {ConvertVector(Vs.v1), ConvertVector(Vs.v2)};
+	return {ConvertDisplacement(Vs.v1), ConvertDisplacement(Vs.v2)};
 }
 
 // Quaternions.
@@ -473,17 +505,18 @@ inline FTwoBodyTireBarrier::DeformationMode Convert(agxModel::TwoBodyTire::Defor
 inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& FrameRotation)
 {
 	return new agx::Frame(
-		agx::AffineMatrix4x4(Convert(FrameRotation), ConvertVector(FramePosition)));
+		agx::AffineMatrix4x4(Convert(FrameRotation), ConvertDisplacement(FramePosition)));
 }
 
 inline FTransform ConvertLocalFrame(const agx::Frame* Frame)
 {
-	return FTransform(Convert(Frame->getLocalRotate()), ConvertVector(Frame->getLocalTranslate()));
+	return FTransform(
+		Convert(Frame->getLocalRotate()), ConvertDisplacement(Frame->getLocalTranslate()));
 }
 
 inline agx::AffineMatrix4x4 ConvertMatrix(const FVector& FramePosition, const FQuat& FrameRotation)
 {
-	return agx::AffineMatrix4x4(Convert(FrameRotation), ConvertVector(FramePosition));
+	return agx::AffineMatrix4x4(Convert(FrameRotation), ConvertDisplacement(FramePosition));
 }
 
 inline uint32 StringTo32BitFnvHash(const FString& StringUnreal)

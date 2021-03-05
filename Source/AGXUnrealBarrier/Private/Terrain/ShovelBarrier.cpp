@@ -37,14 +37,14 @@ FShovelBarrier::~FShovelBarrier()
 void FShovelBarrier::SetTopEdge(const FTwoVectors& TopEdgeUnreal)
 {
 	check(HasNative());
-	agx::Line TopEdgeAGX = ConvertVector(TopEdgeUnreal);
+	agx::Line TopEdgeAGX = ConvertDisplacement(TopEdgeUnreal);
 	NativeRef->Native->setTopEdge(TopEdgeAGX);
 }
 
 void FShovelBarrier::SetCuttingEdge(const FTwoVectors& CuttingEdge)
 {
 	check(HasNative());
-	agx::Line CuttingEdgeAGX = ConvertVector(CuttingEdge);
+	agx::Line CuttingEdgeAGX = ConvertDisplacement(CuttingEdge);
 	NativeRef->Native->setCuttingEdge(CuttingEdgeAGX);
 }
 
@@ -108,9 +108,9 @@ void FShovelBarrier::AllocateNative(
 {
 	check(!HasNative());
 	agx::RigidBody* BodyAGX = Body.GetNative()->Native;
-	agx::Line TopEdgeAGX = ConvertVector(TopEdge);
-	agx::Line CuttingEdgeAGX = ConvertVector(CuttingEdge);
-	agx::Vec3 CuttingDirectionAGX = ConvertVector(CuttingDirection);
+	agx::Line TopEdgeAGX = ConvertDisplacement(TopEdge);
+	agx::Line CuttingEdgeAGX = ConvertDisplacement(CuttingEdge);
+	agx::Vec3 CuttingDirectionAGX = ConvertDisplacement(CuttingDirection);
 	NativeRef->Native =
 		new agxTerrain::Shovel(BodyAGX, TopEdgeAGX, CuttingEdgeAGX, CuttingDirectionAGX);
 }

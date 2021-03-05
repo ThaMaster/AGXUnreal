@@ -65,6 +65,15 @@ public:
 
 	void AddShape(FShapeBarrier* Shape);
 
+	void AddForceAtCenterOfMass(const FVector& Force);
+	void AddForceAtLocalLocation(const FVector& Force, const FVector& Location);
+	void AddForceAtWorldLocation(const FVector& Force, const FVector& Location);
+	FVector GetForce() const;
+
+	void AddWorldTorque(const FVector& Torque);
+	void AddCenterOfMassTorque(const FVector& Torque);
+	FVector GetTorque() const;
+
 	bool HasNative() const;
 	void AllocateNative();
 	FRigidBodyRef* GetNative();
