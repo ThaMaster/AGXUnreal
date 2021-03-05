@@ -161,6 +161,60 @@ void FRigidBodyBarrier::AddShape(FShapeBarrier* Shape)
 	NativeRef->Native->add(Shape->GetNative()->NativeGeometry);
 }
 
+void FRigidBodyBarrier::AddForceAtCenterOfMass(const FVector& Force)
+{
+	check(HasNative());
+	const agx::Vec3 ForceAGX = ConvertVector(Force);
+	NativeRef->Native->addForce(ForceAGX);
+}
+
+void FRigidBodyBarrier::AddForceAtLocalLocation(const FVector& Force, const FVector& Location)
+{
+	check(HasNative());
+	const agx::Vec3 ForceAGX = ConvertVector(Force);
+	const agx::Vec3 LocationAGX = ConvertDisplacement(Location);
+	NativeRef->Native->addForceAtLocalPosition(ForceAGX, LocationAGX);
+}
+
+void FRigidBodyBarrier::AddForceAtWorldLocation(const FVector& Force, const FVector& Location)
+{
+	check(HasNative());
+	const agx::Vec3 ForceAGX = ConvertVector(Force);
+	const agx::Vec3 LocationAGX = ConvertDisplacement(Location);
+	NativeRef->Native->addForceAtPosition(ForceAGX, LocationAGX);
+}
+
+FVector FRigidBodyBarrier::GetForce() const
+{
+	check(HasNative());
+	const agx::Vec3 ForceAGX = NativeRef->Native->getForce();
+	return ConvertVector(ForceAGX);
+}
+
+void FRigidBodyBarrier::AddWorldTorque(const FVector& Torque)
+{
+	check(HasNative());
+	/// \todo Is it correct to convert cm to m here?
+	const agx::Vec3 TorqueAGX = ConvertDisplacement(Torque);
+	NativeRef->Native->addTorque(TorqueAGX);
+}
+
+void FRigidBodyBarrier::AddCenterOfMassTorque(const FVector& Torque)
+{
+	check(HasNative());
+	/// \todo Is it correct to convert cm to m here?
+	const agx::Vec3 TorqueAGX = ConvertDisplacement(Torque);
+	NativeRef->Native->addLocalTorque(TorqueAGX);
+}
+
+FVector FRigidBodyBarrier::GetTorque() const
+{
+	check(HasNative());
+	const agx::Vec3 TorqueAGX = NativeRef->Native->getTorque();
+	/// \todo Is it correct to convert m to cm here?
+	return ConvertDisplacement(TorqueAGX);
+}
+
 bool FRigidBodyBarrier::HasNative() const
 {
 	return NativeRef->Native != nullptr;
