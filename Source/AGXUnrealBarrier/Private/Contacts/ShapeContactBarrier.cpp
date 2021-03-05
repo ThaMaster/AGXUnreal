@@ -127,7 +127,7 @@ TArray<FContactPointBarrier> FShapeContactBarrier::GetContactPoints() const
 			continue;
 		}
 
-		ContactPoints.Add(AGXBarrierFactories::CreateContactPointBarrier(&ContactPointAGX));
+		ContactPoints.Add(AGXBarrierFactories::CreateContactPointBarrier(ContactPointAGX));
 	}
 
 	return ContactPoints;

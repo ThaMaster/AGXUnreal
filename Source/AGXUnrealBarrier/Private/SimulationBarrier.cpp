@@ -293,7 +293,7 @@ TArray<FShapeContactBarrier> FSimulationBarrier::GetShapeContacts(const FShapeBa
 		{
 			continue;
 		}
-		Contacts.Add(AGXBarrierFactories::CreateShapeContactBarrier(ContactAGX));
+		Contacts.Add(AGXBarrierFactories::CreateShapeContactBarrier(*ContactAGX));
 	}
 
 	return Contacts;

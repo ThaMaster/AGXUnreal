@@ -103,15 +103,15 @@ FContactMaterialBarrier AGXBarrierFactories::CreateContactMaterialBarrier(
 }
 
 FShapeContactBarrier AGXBarrierFactories::CreateShapeContactBarrier(
-	agxCollide::GeometryContact* GeometryContact)
+	agxCollide::GeometryContact GeometryContact)
 {
-	return {std::make_unique<FShapeContactEntity>(*GeometryContact)};
+	return {std::make_unique<FShapeContactEntity>(GeometryContact)};
 }
 
 FContactPointBarrier AGXBarrierFactories::CreateContactPointBarrier(
-	agxCollide::ContactPoint* ContactPoint)
+	agxCollide::ContactPoint ContactPoint)
 {
-	return {std::make_unique<FContactPointEntity>(*ContactPoint)};
+	return {std::make_unique<FContactPointEntity>(ContactPoint)};
 }
 
 FTwoBodyTireBarrier AGXBarrierFactories::CreateTwoBodyTireBarrier(agxModel::TwoBodyTire* Tire)

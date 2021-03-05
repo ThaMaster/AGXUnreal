@@ -88,9 +88,9 @@ namespace AGXBarrierFactories
 
 	FContactMaterialBarrier CreateContactMaterialBarrier(agx::ContactMaterial* ContactMaterial);
 
-	FShapeContactBarrier CreateShapeContactBarrier(agxCollide::GeometryContact* GeometryContact);
+	FShapeContactBarrier CreateShapeContactBarrier(agxCollide::GeometryContact GeometryContact);
 
-	FContactPointBarrier CreateContactPointBarrier(agxCollide::ContactPoint* ContactPoint);
+	FContactPointBarrier CreateContactPointBarrier(agxCollide::ContactPoint ContactPoint);
 
 	FTwoBodyTireBarrier CreateTwoBodyTireBarrier(agxModel::TwoBodyTire* Tire);
 
