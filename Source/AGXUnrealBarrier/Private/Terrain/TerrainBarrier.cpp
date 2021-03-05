@@ -73,7 +73,7 @@ void FTerrainBarrier::ReleaseNative()
 void FTerrainBarrier::SetPosition(FVector PositionUnreal)
 {
 	check(HasNative());
-	agx::Vec3 PositionAGX = ConvertVector(PositionUnreal);
+	agx::Vec3 PositionAGX = ConvertDisplacement(PositionUnreal);
 	NativeRef->Native->setPosition(PositionAGX);
 }
 
@@ -81,7 +81,7 @@ FVector FTerrainBarrier::GetPosition() const
 {
 	check(HasNative());
 	agx::Vec3 PositionAGX = NativeRef->Native->getPosition();
-	FVector PositionUnreal = ConvertVector(PositionAGX);
+	FVector PositionUnreal = ConvertDisplacement(PositionAGX);
 	return PositionUnreal;
 }
 
@@ -276,7 +276,7 @@ TArray<FVector> FTerrainBarrier::GetParticlePositions() const
 	for (int32 i = 0; i < Positions.Num(); ++i)
 	{
 		const agx::Vec3 PositionAGX = GranularParticles[i].position();
-		const FVector Position = ConvertVector(PositionAGX);
+		const FVector Position = ConvertDisplacement(PositionAGX);
 		Positions[i] = Position;
 	}
 
