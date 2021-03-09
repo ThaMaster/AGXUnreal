@@ -68,12 +68,26 @@ public:
 	FVector GetTangentialForce() const;
 
 	/**
-	 * @return The contact force in the contact's local coordinate system, ordered Norma, Tangent U,
-	 * Tangent V.
+	 * @return The contact force in the contact's local coordinate system. Ordered Normal, Tangent
+	 * U, Tangent V.
 	 */
 	FVector GetLocalForce() const;
 
+	/**
+	 * Get witness location for the ith Shape.
+	 *
+	 * The location is in world coordinates and at time of collision detection. This means that
+	 * after the solve/step the geometries will most likely have moved.
+	 *
+	 * @param Index 0 for first Shape, 1 for second.
+	 * @return witness point for the ith Shape, in world coordinates at collision detection time.
+	 */
 	FVector GetWitnessPoint(int32 Index) const;
+
+	/**
+	 * Only non-zero when the contact material has contact area enabled.
+	 * @return The estimated area.
+	 */
 	float GetArea() const;
 
 private:
