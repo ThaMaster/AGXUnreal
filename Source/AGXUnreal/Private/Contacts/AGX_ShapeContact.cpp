@@ -17,7 +17,7 @@ bool FAGX_ShapeContact::HasNative() const
 
 namespace
 {
-	bool CheckHasNative(const FAGX_ShapeContact& ShapeContact, const TCHAR* AttributeName)
+	bool TestHasNative(const FAGX_ShapeContact& ShapeContact, const TCHAR* AttributeName)
 	{
 		if (ShapeContact.HasNative())
 		{
@@ -25,15 +25,16 @@ namespace
 		}
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Trying to get %s from a ShapeContact that doesn't have a native AGX Dynamics "
-				 "representation"));
+			TEXT("Cannot get %s from a ShapeContact that doesn't have a native AGX Dynamics "
+				 "representation"),
+			AttributeName);
 		return false;
 	}
 }
 
 bool FAGX_ShapeContact::IsEnabled() const
 {
-	if (!CheckHasNative(*this, TEXT("Enabled")))
+	if (!TestHasNative(*this, TEXT("Enabled")))
 	{
 		return false;
 	}
@@ -42,7 +43,7 @@ bool FAGX_ShapeContact::IsEnabled() const
 
 FRigidBodyBarrier FAGX_ShapeContact::GetBody1() const
 {
-	if (!CheckHasNative(*this, TEXT("First Body")))
+	if (!TestHasNative(*this, TEXT("First Body")))
 	{
 		return FRigidBodyBarrier();
 	}
@@ -51,7 +52,7 @@ FRigidBodyBarrier FAGX_ShapeContact::GetBody1() const
 
 FRigidBodyBarrier FAGX_ShapeContact::GetBody2() const
 {
-	if (!CheckHasNative(*this, TEXT("Second Body")))
+	if (!TestHasNative(*this, TEXT("Second Body")))
 	{
 		return FRigidBodyBarrier();
 	}
@@ -60,7 +61,7 @@ FRigidBodyBarrier FAGX_ShapeContact::GetBody2() const
 
 FEmptyShapeBarrier FAGX_ShapeContact::GetShape1() const
 {
-	if (!CheckHasNative(*this, TEXT("First Shape")))
+	if (!TestHasNative(*this, TEXT("First Shape")))
 	{
 		return FEmptyShapeBarrier();
 	}
@@ -69,7 +70,7 @@ FEmptyShapeBarrier FAGX_ShapeContact::GetShape1() const
 
 FEmptyShapeBarrier FAGX_ShapeContact::GetShape2() const
 {
-	if (!CheckHasNative(*this, TEXT("Second Shape")))
+	if (!TestHasNative(*this, TEXT("Second Shape")))
 	{
 		return FEmptyShapeBarrier();
 	}
@@ -78,7 +79,7 @@ FEmptyShapeBarrier FAGX_ShapeContact::GetShape2() const
 
 int32 FAGX_ShapeContact::GetNumContactPoints() const
 {
-	if (!CheckHasNative(*this, TEXT("Num Contact Points")))
+	if (!TestHasNative(*this, TEXT("Num Contact Points")))
 	{
 		return 0;
 	}
@@ -87,7 +88,7 @@ int32 FAGX_ShapeContact::GetNumContactPoints() const
 
 TArray<FAGX_ContactPoint> FAGX_ShapeContact::GetContactPoints() const
 {
-	if (!CheckHasNative(*this, TEXT("Contact Points")))
+	if (!TestHasNative(*this, TEXT("Contact Points")))
 	{
 		return TArray<FAGX_ContactPoint>();
 	}
@@ -103,7 +104,7 @@ TArray<FAGX_ContactPoint> FAGX_ShapeContact::GetContactPoints() const
 
 FAGX_ContactPoint FAGX_ShapeContact::GetContactPoint(int32 Index) const
 {
-	if (!CheckHasNative(*this, TEXT("Contact Point")))
+	if (!TestHasNative(*this, TEXT("Contact Point")))
 	{
 		return FAGX_ContactPoint();
 	}
@@ -112,7 +113,7 @@ FAGX_ContactPoint FAGX_ShapeContact::GetContactPoint(int32 Index) const
 
 int32 UAGX_ShapeContact_FL::GetNumContactPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef)
 {
-	if (!CheckHasNative(ShapeContactRef, TEXT("Num Contact Points")))
+	if (!TestHasNative(ShapeContactRef, TEXT("Num Contact Points")))
 	{
 		return 0;
 	}
@@ -144,7 +145,7 @@ namespace
 	bool CheckHasNativeAndValidPointIndex(
 		const FAGX_ShapeContact& ShapeContact, int32 PointIndex, const TCHAR* AttributeName)
 	{
-		return CheckHasNative(ShapeContact, AttributeName) &&
+		return TestHasNative(ShapeContact, AttributeName) &&
 			   IsValidPointIndex(ShapeContact, PointIndex, AttributeName);
 	}
 
@@ -187,7 +188,7 @@ namespace
 UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetFirstShape(UPARAM(ref)
 															 FAGX_ShapeContact& ShapeContactRef)
 {
-	if (!CheckHasNative(ShapeContactRef, TEXT("First Shape")))
+	if (!TestHasNative(ShapeContactRef, TEXT("First Shape")))
 	{
 		return nullptr;
 	}
@@ -197,7 +198,7 @@ UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetFirstShape(UPARAM(ref)
 UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetSecondShape(UPARAM(ref)
 															  FAGX_ShapeContact& ShapeContactRef)
 {
-	if (!CheckHasNative(ShapeContactRef, TEXT("Second Shape")))
+	if (!TestHasNative(ShapeContactRef, TEXT("Second Shape")))
 	{
 		return nullptr;
 	}
@@ -207,7 +208,7 @@ UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetSecondShape(UPARAM(ref)
 UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetFirstBody(UPARAM(ref)
 																FAGX_ShapeContact& ShapeContactRef)
 {
-	if (!CheckHasNative(ShapeContactRef, TEXT("First Body")))
+	if (!TestHasNative(ShapeContactRef, TEXT("First Body")))
 	{
 		return nullptr;
 	}
@@ -217,7 +218,7 @@ UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetFirstBody(UPARAM(ref)
 UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetSecondBody(UPARAM(ref)
 																 FAGX_ShapeContact& ShapeContactRef)
 {
-	if (!CheckHasNative(ShapeContactRef, TEXT("Second Body")))
+	if (!TestHasNative(ShapeContactRef, TEXT("Second Body")))
 	{
 		return nullptr;
 	}
