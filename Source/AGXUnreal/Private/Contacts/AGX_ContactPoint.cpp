@@ -23,26 +23,45 @@ bool FAGX_ContactPoint::HasNative() const
 	return Barrier.HasNative();
 }
 
+namespace
+{
+	bool TestHasNative(const FAGX_ContactPoint& ContactPoint, const TCHAR* AttributeName)
+	{
+		if (ContactPoint.HasNative())
+		{
+			return true;
+		}
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot get %s from a ContactPoint that doesn't have a native AGX Dynamics "
+				 "representation"),
+			AttributeName);
+		return false;
+	}
+}
+
 bool FAGX_ContactPoint::IsEnabled() const
 {
-	check(HasNative());
+	if (!TestHasNative(*this, TEXT("Enabled")))
+	{
+		return false;
+	}
 	return Barrier.IsEnabled();
 }
 
 float FAGX_ContactPoint::GetDepth() const
 {
-	check(HasNative());
+	if (!TestHasNative(*this, TEXT("Depth")))
+	{
+		return 0.0f;
+	}
 	return Barrier.GetDepth();
 }
 
 FVector FAGX_ContactPoint::GetLocation() const
 {
-	if (!HasNative())
+	if (!TestHasNative(*this, TEXT("Location")))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot get Point from contact point without a native AGX Dynamics "
-				 "representation."));
 		return FVector::ZeroVector;
 	}
 	return Barrier.GetLocation();
@@ -50,12 +69,8 @@ FVector FAGX_ContactPoint::GetLocation() const
 
 FVector FAGX_ContactPoint::GetNormal() const
 {
-	if (!HasNative())
+	if (!TestHasNative(*this, TEXT("Normal")))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot get Normal from contact point without a native AGX Dynamics "
-				 "representation."));
 		return FVector::ZeroVector;
 	}
 	return Barrier.GetNormal();
@@ -63,12 +78,8 @@ FVector FAGX_ContactPoint::GetNormal() const
 
 FVector FAGX_ContactPoint::GetTangentU() const
 {
-	if (!HasNative())
+	if (!TestHasNative(*this, TEXT("TangentU")))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot get TangentU from contact point without a native AGX Dynamics "
-				 "representation."));
 		return FVector::ZeroVector;
 	}
 	return Barrier.GetTangentU();
@@ -76,12 +87,8 @@ FVector FAGX_ContactPoint::GetTangentU() const
 
 FVector FAGX_ContactPoint::GetTangentV() const
 {
-	if (!HasNative())
+	if (!TestHasNative(*this, TEXT("TangentV")))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot get TangentV from contact point without a native AGX Dynamics "
-				 "representation."));
 		return FVector::ZeroVector;
 	}
 	return Barrier.GetTangentV();
@@ -89,12 +96,8 @@ FVector FAGX_ContactPoint::GetTangentV() const
 
 FVector FAGX_ContactPoint::GetForce() const
 {
-	if (!HasNative())
+	if (!TestHasNative(*this, TEXT("Force")))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot get Force from contact point without a native AGX Dynamics "
-				 "representation."));
 		return FVector::ZeroVector;
 	}
 	return Barrier.GetForce();
@@ -102,12 +105,8 @@ FVector FAGX_ContactPoint::GetForce() const
 
 FVector FAGX_ContactPoint::GetNormalForce() const
 {
-	if (!HasNative())
+	if (!TestHasNative(*this, TEXT("NormalForce")))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot get NormalForce from contact point without a native AGX Dynamics "
-				 "representation."));
 		return FVector::ZeroVector;
 	}
 	return Barrier.GetNormalForce();
@@ -115,12 +114,8 @@ FVector FAGX_ContactPoint::GetNormalForce() const
 
 FVector FAGX_ContactPoint::GetTangentialForce() const
 {
-	if (!HasNative())
+	if (!TestHasNative(*this, TEXT("TangentialForce")))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot get TangentialForce from contact point without a native AGX Dynamics "
-				 "representation."));
 		return FVector::ZeroVector;
 	}
 	return Barrier.GetTangentialForce();
@@ -128,12 +123,8 @@ FVector FAGX_ContactPoint::GetTangentialForce() const
 
 FVector FAGX_ContactPoint::GetLocalForce() const
 {
-	if (!HasNative())
+	if (!TestHasNative(*this, TEXT("LocalForce")))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot get LocalForce from contact point without a native AGX Dynamics "
-				 "representation."));
 		return FVector::ZeroVector;
 	}
 	return Barrier.GetLocalForce();
@@ -141,12 +132,8 @@ FVector FAGX_ContactPoint::GetLocalForce() const
 
 FVector FAGX_ContactPoint::GetVelocity() const
 {
-	if (!HasNative())
+	if (!TestHasNative(*this, TEXT("Velocity")))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot get Velocity from contact point without a native AGX Dynamics "
-				 "representation."));
 		return FVector::ZeroVector;
 	}
 	return Barrier.GetVelocity();
@@ -154,12 +141,8 @@ FVector FAGX_ContactPoint::GetVelocity() const
 
 FVector FAGX_ContactPoint::GetWitnessPoint(int32 Index) const
 {
-	if (!HasNative())
+	if (!TestHasNative(*this, TEXT("WitnessPoint")))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Cannot get WitnessPoint from contact point without a native AGX Dynamics "
-				 "representation."));
 		return FVector::ZeroVector;
 	}
 	return Barrier.GetWitnessPoint(Index);
@@ -167,10 +150,8 @@ FVector FAGX_ContactPoint::GetWitnessPoint(int32 Index) const
 
 float FAGX_ContactPoint::GetArea() const
 {
-	if (!HasNative())
+	if (!TestHasNative(*this, TEXT("Area")))
 	{
-		UE_LOG(LogAGX, Error, TEXT("Cannot get Area fron contact point without a native AGX Dynaics"
-								   "representation."));
 		return 0.0f;
 	}
 	return Barrier.GetArea();
