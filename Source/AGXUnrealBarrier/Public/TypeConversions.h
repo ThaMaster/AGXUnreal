@@ -141,14 +141,12 @@ inline agx::Int Convert(int32 I)
 
 inline agx::Real ConvertArea(float A)
 {
-	return static_cast<agx::Real>(A) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
-		   UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+	return ConvertDistance2(A);
 }
 
 inline float ConvertArea(agx::Real A)
 {
-	return static_cast<float>(
-		A * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
+	return ConvertDistance2(A);
 }
 
 // Two-dimensional vectors.
