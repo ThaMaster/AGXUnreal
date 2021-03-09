@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Utilities/AGX_Statistics.h"
+#include "Contacts/ShapeContactBarrier.h"
 
 // Unreal Engine includes.
 #include "Containers/UnrealString.h"
@@ -56,6 +57,8 @@ public:
 
 	void SetPointGravity(const FVector& Origin, float Magnitude);
 	FVector GetPointGravity(float& OutMagnitude) const;
+
+	TArray<FShapeContactBarrier> GetShapeContacts(const FShapeBarrier& Shape) const;
 
 	/**
 	 * Perform one simulation step, moving the time stamp forward by one time step duration.

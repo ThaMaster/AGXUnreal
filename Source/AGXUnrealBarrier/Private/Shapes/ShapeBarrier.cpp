@@ -43,7 +43,17 @@ FShapeBarrier& FShapeBarrier::operator=(FShapeBarrier&& Other) noexcept
 
 bool FShapeBarrier::HasNative() const
 {
-	return NativeRef->NativeGeometry != nullptr && NativeRef->NativeShape != nullptr;
+	return HasNativeGeometry() && HasNativeShape();
+}
+
+bool FShapeBarrier::HasNativeGeometry() const
+{
+	return NativeRef->NativeGeometry != nullptr;
+}
+
+bool FShapeBarrier::HasNativeShape() const
+{
+	return NativeRef->NativeShape != nullptr;
 }
 
 void FShapeBarrier::AllocateNative()
@@ -70,6 +80,24 @@ FGeometryAndShapeRef* FShapeBarrier::GetNative()
 const FGeometryAndShapeRef* FShapeBarrier::GetNative() const
 {
 	return NativeRef.get();
+}
+
+bool FShapeBarrier::GetIsSensorGeneratingContactData() const
+{
+	check(HasNative());
+	return NativeRef->NativeGeometry->isSensorGeneratingContactData();
+}
+
+void FShapeBarrier::SetIsSensor(bool IsSensor, bool GenerateContactData)
+{
+	check(HasNative());
+	NativeRef->NativeGeometry->setSensor(IsSensor, GenerateContactData);
+}
+
+bool FShapeBarrier::GetIsSensor() const
+{
+	check(HasNative());
+	return NativeRef->NativeGeometry->isSensor();
 }
 
 void FShapeBarrier::SetLocalPosition(const FVector& Position)
@@ -149,6 +177,18 @@ void FShapeBarrier::AddCollisionGroups(const TArray<FName>& GroupNames)
 	}
 }
 
+FGuid FShapeBarrier::GetShapeGuid() const
+{
+	check(HasNative());
+	return Convert(NativeRef->NativeShape->getUuid());
+}
+
+FGuid FShapeBarrier::GetGeometryGuid() const
+{
+	check(HasNative());
+	return Convert(NativeRef->NativeGeometry->getUuid());
+}
+
 TArray<FName> FShapeBarrier::GetCollisionGroups() const
 {
 	check(HasNative());
@@ -163,13 +203,6 @@ TArray<FName> FShapeBarrier::GetCollisionGroups() const
 		Result.Add(FName(*FString::FromInt(Id)));
 	}
 	return Result;
-}
-
-FGuid FShapeBarrier::GetGuid() const
-{
-	check(HasNative());
-	FGuid Guid = Convert(NativeRef->NativeShape->getUuid());
-	return Guid;
 }
 
 bool FShapeBarrier::HasRenderData() const

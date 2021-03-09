@@ -4,18 +4,21 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "Contacts/AGX_ShapeContact.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "Utilities/AGX_TextureUtilities.h"
 
 // Unreal Engine includes.
+#include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
 
 // Sets default values for this component's properties
 UAGX_ShapeComponent::UAGX_ShapeComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 bool UAGX_ShapeComponent::HasNative() const
@@ -49,6 +52,7 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 		return;
 
 	GetNative()->SetName(GetName());
+	GetNative()->SetIsSensor(bIsSensor, SensorType == EAGX_ShapeSensorType::ContactsSensor);
 
 	if (PhysicalMaterial)
 	{
@@ -72,17 +76,6 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	{
 		GetNative()->AddCollisionGroup(Group);
 	}
-}
-
-void UAGX_ShapeComponent::TickComponent(
-	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	/// \todo Do we need TickComponent on UAGX_ShapeComponent?
-
-	UE_LOG(
-		LogAGX, Log, TEXT("TickComponent for ShapeComponent.")); // Haven't seen this in the log ??
 }
 
 #if WITH_EDITOR
@@ -111,12 +104,27 @@ void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& Property
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-	FName PropertyName = GetFNameSafe(PropertyChangedEvent.Property);
-	FName MemberPropertyName = GetFNameSafe(PropertyChangedEvent.MemberProperty);
+	const FName PropertyName = GetFNameSafe(PropertyChangedEvent.Property);
+	const FName MemberPropertyName = GetFNameSafe(PropertyChangedEvent.MemberProperty);
 
 	if (DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName))
 	{
 		UpdateVisualMesh();
+	}
+
+	// @todo Follow the below pattern for all relevant UPROPERTIES to support live changes from
+	// the details panel in the Editor during play. Note that setting a UPROPERTY from c++ does not
+	// trigger the PostEditChangeProperty(), so no recursive loops will occur.
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bCanCollide))
+	{
+		SetCanCollide(bCanCollide);
+		return;
+	}
+
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bIsSensor))
+	{
+		SetIsSensor(bIsSensor);
+		return;
 	}
 }
 
@@ -170,6 +178,9 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 {
 	bCanCollide = Barrier.GetEnableCollisions();
+	bIsSensor = Barrier.GetIsSensor();
+	SensorType = Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactsSensor
+															: EAGX_ShapeSensorType::BooleanSensor;
 
 	FVector Position;
 	FQuat Rotation;
@@ -211,5 +222,110 @@ void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 		{
 			CollisionGroups.RemoveAt(Index);
 		}
+	}
+}
+
+void UAGX_ShapeComponent::SetCanCollide(bool CanCollide)
+{
+	if (HasNative())
+	{
+		GetNative()->SetEnableCollisions(CanCollide);
+	}
+
+	bCanCollide = CanCollide;
+}
+
+bool UAGX_ShapeComponent::GetCanCollide() const
+{
+	if (HasNative())
+	{
+		return GetNative()->GetEnableCollisions();
+	}
+
+	return bCanCollide;
+}
+
+void UAGX_ShapeComponent::SetIsSensor(bool IsSensor)
+{
+	if (HasNative())
+	{
+		GetNative()->SetIsSensor(IsSensor, SensorType == EAGX_ShapeSensorType::ContactsSensor);
+	}
+
+	bIsSensor = IsSensor;
+
+	IsSensor ? ApplySensorMaterial(*this) : RemoveSensorMaterial(*this);
+}
+
+bool UAGX_ShapeComponent::GetIsSensor() const
+{
+	if (HasNative())
+	{
+		return GetNative()->GetIsSensor();
+	}
+
+	return bIsSensor;
+}
+
+TArray<FAGX_ShapeContact> UAGX_ShapeComponent::GetShapeContacts() const
+{
+	if (!HasNative())
+	{
+		return TArray<FAGX_ShapeContact>();
+	}
+
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	if (!Simulation)
+	{
+		return TArray<FAGX_ShapeContact>();
+	}
+
+	TArray<FShapeContactBarrier> Barriers = Simulation->GetShapeContacts(*GetNative());
+	TArray<FAGX_ShapeContact> ShapeContacts;
+	ShapeContacts.Reserve(Barriers.Num());
+	for (FShapeContactBarrier& Barrier : Barriers)
+	{
+		ShapeContacts.Emplace(std::move(Barrier));
+	}
+	return ShapeContacts;
+}
+
+void UAGX_ShapeComponent::ApplySensorMaterial(UMeshComponent& Mesh)
+{
+	static const TCHAR* AssetPath =
+		TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'");
+	static UMaterial* SensorMaterial = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
+	if (SensorMaterial == nullptr)
+	{
+		return;
+	}
+
+	for (int32 I = 0; I < Mesh.GetNumMaterials(); ++I)
+	{
+		// Don't want to ruin the material setup of any mesh that has one so only setting the
+		// sensor material to empty material slots. The intention is that sensors usually aren't
+		// rendered at all in-game so their material slots should be empty.
+		if (Mesh.GetMaterial(I) != nullptr)
+		{
+			continue;
+		}
+		Mesh.SetMaterial(I, SensorMaterial);
+	}
+}
+
+void UAGX_ShapeComponent::RemoveSensorMaterial(UMeshComponent& Mesh)
+{
+	for (int32 I = 0; I < Mesh.GetNumMaterials(); ++I)
+	{
+		const UMaterialInterface* const Material = Mesh.GetMaterial(I);
+		if (Material == nullptr)
+		{
+			continue;
+		}
+		if (Material->GetName() != TEXT("M_SensorMaterial"))
+		{
+			continue;
+		}
+		Mesh.SetMaterial(I, nullptr);
 	}
 }

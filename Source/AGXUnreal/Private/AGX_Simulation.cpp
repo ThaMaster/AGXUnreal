@@ -6,6 +6,7 @@
 #include "AGX_Stepper.h"
 #include "AGX_LogCategory.h"
 #include "Shapes/AGX_ShapeComponent.h"
+#include "Shapes/ShapeBarrier.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_EnvironmentUtilities.h"
@@ -385,6 +386,16 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const UGameInstance* GameInstance)
 		return nullptr;
 
 	return GameInstance->GetSubsystem<UAGX_Simulation>();
+}
+
+TArray<FShapeContactBarrier> UAGX_Simulation::GetShapeContacts(const FShapeBarrier& Shape) const
+{
+	if (!HasNative())
+	{
+		return TArray<FShapeContactBarrier>();
+	}
+
+	return NativeBarrier.GetShapeContacts(Shape);
 }
 
 #if WITH_EDITOR

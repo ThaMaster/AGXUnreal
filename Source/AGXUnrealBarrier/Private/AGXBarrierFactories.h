@@ -12,6 +12,8 @@
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Constraints/DistanceJointBarrier.h"
 #include "Constraints/LockJointBarrier.h"
+#include "Contacts/ShapeContactBarrier.h"
+#include "Contacts/ContactPointBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/TerrainMaterialBarrier.h"
@@ -36,6 +38,9 @@ namespace agxCollide
 	class Cylinder;
 	class Capsule;
 	class Trimesh;
+
+	class GeometryContact;
+	class ContactPoint;
 }
 
 namespace agxModel
@@ -54,6 +59,8 @@ namespace agxModel
 namespace AGXBarrierFactories
 {
 	FRigidBodyBarrier CreateRigidBodyBarrier(agx::RigidBody* Body);
+
+	FEmptyShapeBarrier CreateEmptyShapeBarrier(agxCollide::Geometry* Geometry);
 
 	FSphereShapeBarrier CreateSphereShapeBarrier(agxCollide::Sphere* Sphere);
 
@@ -80,6 +87,10 @@ namespace AGXBarrierFactories
 	FShapeMaterialBarrier CreateShapeMaterialBarrier(agx::Material* Material);
 
 	FContactMaterialBarrier CreateContactMaterialBarrier(agx::ContactMaterial* ContactMaterial);
+
+	FShapeContactBarrier CreateShapeContactBarrier(agxCollide::GeometryContact GeometryContact);
+
+	FContactPointBarrier CreateContactPointBarrier(agxCollide::ContactPoint ContactPoint);
 
 	FTwoBodyTireBarrier CreateTwoBodyTireBarrier(agxModel::TwoBodyTire* Tire);
 

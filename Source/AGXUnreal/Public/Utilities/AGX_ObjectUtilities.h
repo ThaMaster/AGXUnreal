@@ -1,5 +1,6 @@
 #pragma once
 
+// Unreal Engine includes.
 #include "Containers/Array.h"
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
@@ -13,7 +14,7 @@ class AActor;
  *
  * There are also other, more specialized, AGX_.+Utilities.h collections.
  */
-class FAGX_ObjectUtilities
+class AGXUNREAL_API FAGX_ObjectUtilities
 {
 public:
 	/**

@@ -93,6 +93,9 @@ protected:
 	virtual bool DoesPropertyAffectVisualMesh(
 		const FName& PropertyName, const FName& MemberPropertyName) const;
 
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PreEditChange(FProperty* PropertyThatWillChange) override;
+
 	virtual bool CanEditChange(
 #if UE_VERSION_OLDER_THAN(4, 25, 0)
 		const UProperty* InProperty
@@ -112,6 +115,8 @@ private:
 	// BeginPlay/EndPlay is handled by the base class UAGX_ShapeComponent.
 
 	bool FindStaticMeshSource(UStaticMesh*& StaticMesh, FTransform* WorldTransform) const;
+	UMeshComponent* FindMeshComponent(
+		TEnumAsByte<EAGX_TrimeshSourceLocation> MeshSourceLocation) const;
 
 	/**
 	 * Uses data from the Static Mesh source asset to construct a simplified

@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "SimulationBarrier.h"
+#include "Contacts/ShapeContactBarrier.h"
 #include "AGX_SimulationEnums.h"
 
 // Unreal Engine includes.
@@ -20,6 +21,7 @@ class UAGX_MaterialBase;
 class AActor;
 class UActorComponent;
 class UWorld;
+class FShapeBarrier;
 
 /**
  * Manages an AGX simulation instance.
@@ -226,6 +228,8 @@ public: // Member functions.
 	static UAGX_Simulation* GetFrom(const UWorld* World);
 
 	static UAGX_Simulation* GetFrom(const UGameInstance* GameInstance);
+
+	TArray<FShapeContactBarrier> GetShapeContacts(const FShapeBarrier& Shape) const;
 
 #if WITH_EDITOR
 	virtual bool CanEditChange(

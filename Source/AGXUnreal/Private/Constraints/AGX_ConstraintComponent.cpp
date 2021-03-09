@@ -452,7 +452,7 @@ void UAGX_ConstraintComponent::PostLoad()
 				&BodyAttachment->FrameDefiningComponent;
 			ComponentReference->FallbackOwningActor = nullptr;
 			/// \todo Investigate the relationship between FName("") and NAME_None, and what an
-			/// emtpy text field in the Blueprint editor produces. Playing it safe for now and
+			/// empty text field in the Blueprint editor produces. Playing it safe for now and
 			/// checking for both.
 			if (ComponentReference->OwningActor == nullptr &&
 				(ComponentReference->SceneComponentName != "" &&

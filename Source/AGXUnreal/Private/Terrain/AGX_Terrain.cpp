@@ -584,7 +584,7 @@ void AAGX_Terrain::UpdateDisplacementMap()
 
 	uint32 BytesPerPixel = sizeof(FFloat16);
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
-	AGX_TextureUtilities::UpdateRenderTextureRegions(
+	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
 		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
@@ -615,7 +615,7 @@ void AAGX_Terrain::ClearDisplacementMap()
 		Displacement = FFloat16();
 	}
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
-	AGX_TextureUtilities::UpdateRenderTextureRegions(
+	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
 		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
@@ -794,7 +794,7 @@ void AAGX_Terrain::UpdateParticlesMap()
 	}
 
 	uint8* PixelData = reinterpret_cast<uint8*>(TerrainParticlesData.GetData());
-	AGX_TextureUtilities::UpdateRenderTextureRegions(
+	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*TerrainParticlesDataMap, 1, ParticlesDataMapRegions.GetData(),
 		ResolutionX * NumBytesPerPixel, NumBytesPerPixel, PixelData, false);
 }
@@ -826,7 +826,7 @@ void AAGX_Terrain::ClearParticlesMap()
 		Pixel = FFloat32();
 	}
 	uint8* PixelData = reinterpret_cast<uint8*>(TerrainParticlesData.GetData());
-	AGX_TextureUtilities::UpdateRenderTextureRegions(
+	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*TerrainParticlesDataMap, 1, ParticlesDataMapRegions.GetData(),
 		ResolutionX * NumBytesPerPixel, NumBytesPerPixel, PixelData, false);
 }

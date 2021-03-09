@@ -7,6 +7,7 @@
 #include "AgxAutomationCommon.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
+#include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
@@ -788,7 +789,7 @@ namespace
 namespace
 {
 	/// \todo These are also in AGX_ImportUtilities, but I get linker errors when using them even
-	/// though AGXUnrealEditor is in the modules list in AgxForUntealTest.Build.cs. Copying the
+	/// though AGXUnrealEditor is in the modules list in AGXUnrealTest.Build.cs. Copying the
 	/// code here for now.
 
 	FLinearColor SRGBToLinear(const FVector4& SRGB)
@@ -1088,7 +1089,7 @@ public:
 	FArchiveImporterToSingleActor_CollisionGroupsTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
 			  TEXT("FArchiveImporterToSingleActor_CollisionGroupsTest"),
-			  TEXT("AgxForUnreal.Editor.ArchiveImporterToSingleActor.CollisionGroups"))
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.CollisionGroups"))
 	{
 	}
 
@@ -1253,6 +1254,154 @@ bool FCheckCollisionGroupsImportedCommand::Update()
  * @return true when the clearing is complete. Never returns false.
  */
 bool FClearCollisionGroupsImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+	return true;
+}
+
+//
+// GeometrySensors test starts here.
+//
+
+class FArchiveImporterToSingleActor_GeometrySensorsTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckGeometrySensorsImportedCommand, FArchiveImporterToSingleActor_GeometrySensorsTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearGeometrySensorsImportedCommand, FArchiveImporterToSingleActor_GeometrySensorsTest&, Test);
+
+class FArchiveImporterToSingleActor_GeometrySensorsTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_GeometrySensorsTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_GeometrySensorsTest"),
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.GeometrySensors"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("geometry_sensors_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckGeometrySensorsImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearGeometrySensorsImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_GeometrySensorsTest
+		ArchiveImporterToSingleActor_GeometrySensorsTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script geometry_sensors.agxPy.
+ * @return true when the check is complete. Never returns false.
+ */
+bool FCheckGeometrySensorsImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import GeometrySensors test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// Three Rigid Bodies, three Geometries and one Default Scene Root.
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
+
+	UAGX_SphereShapeComponent* BoolSensor =
+		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("boolSensor"));
+
+	UAGX_CylinderShapeComponent* ContactsSensor =
+		GetByName<UAGX_CylinderShapeComponent>(Components, TEXT("contactsSensor"));
+
+	UAGX_BoxShapeComponent* NotASensor =
+		GetByName<UAGX_BoxShapeComponent>(Components, TEXT("notASensor"));
+
+	Test.TestNotNull(TEXT("boolSensor"), BoolSensor);
+	Test.TestNotNull(TEXT("contactsSensor"), ContactsSensor);
+	Test.TestNotNull(TEXT("notASensor"), NotASensor);
+
+	if (BoolSensor == nullptr || ContactsSensor == nullptr || NotASensor == nullptr)
+	{
+		Test.AddError(TEXT("At least one required object was nullptr, cannot continue."));
+		return true;
+	}
+
+	// Test the bIsSensor property.
+	Test.TestEqual(TEXT("Is Sensor property"), BoolSensor->bIsSensor, true);
+	Test.TestEqual(TEXT("Is Sensor property"), ContactsSensor->bIsSensor, true);
+	Test.TestEqual(TEXT("Is Sensor property"), NotASensor->bIsSensor, false);
+
+	// Test the SensorType property (only relevant for sensor geometries).
+	Test.TestEqual(
+		TEXT("Sensor type property"), BoolSensor->SensorType == EAGX_ShapeSensorType::BooleanSensor,
+		true);
+
+	Test.TestEqual(
+		TEXT("Sensor type property"),
+		ContactsSensor->SensorType == EAGX_ShapeSensorType::ContactsSensor, true);
+
+	// Test the Materials applied after import.
+	const auto BoolSensorMaterials = BoolSensor->GetMaterials();
+	Test.TestEqual(
+		TEXT("Sensor Material"),
+		(BoolSensorMaterials.Num() == 1 && BoolSensorMaterials[0] != nullptr &&
+		 BoolSensorMaterials[0]->GetName() == "M_SensorMaterial"),
+		true);
+
+	const auto ContactsSensorMaterials = ContactsSensor->GetMaterials();
+	Test.TestEqual(
+		TEXT("Sensor Material"),
+		(ContactsSensorMaterials.Num() == 1 && ContactsSensorMaterials[0] != nullptr &&
+		 ContactsSensorMaterials[0]->GetName() == "M_SensorMaterial"),
+		true);
+
+	const auto NotASensorMaterials = NotASensor->GetMaterials();
+	Test.TestEqual(
+		TEXT("Default Material"),
+		(NotASensorMaterials.Num() == 1 && NotASensorMaterials[0] != nullptr &&
+		 NotASensorMaterials[0]->GetName() == "M_ImportedBase"),
+		true);
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearGeometrySensorsImportedCommand::Update()
 {
 	if (Test.Contents == nullptr)
 	{

@@ -1,15 +1,19 @@
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_SimpleMeshComponent.h"
+#include "Contacts/AGX_ShapeContact.h"
+#include "Shapes/AGX_ShapeEnums.h"
+#include "Shapes/ShapeBarrier.h"
+
+// Unreal Engine includes.
 #include "Components/SceneComponent.h"
 #include "GameFramework/Actor.h"
 #include "CoreMinimal.h"
 
-#include "Shapes/ShapeBarrier.h"
-
-#include "AGX_SimpleMeshComponent.h"
-
 #include "AGX_ShapeComponent.generated.h"
 
+class UMaterial;
 class UAGX_ShapeMaterialBase;
 
 UCLASS(
@@ -37,11 +41,54 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Shape")
 	bool bCanCollide = true;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	void SetCanCollide(bool CanCollide);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	bool GetCanCollide() const;
+
 	/**
 	 * List of collision groups that this shape component is part of.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shape")
 	TArray<FName> CollisionGroups;
+
+	/**
+	 * Determines whether this shape should act as a sensor.
+	 *
+	 * A sensor participates in collision detection, but the contact data generated is not passed
+	 * to the solver and has no influence on the simulation. Set SensorType to control how much
+	 * contact data is generated for a sensor.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shape Contacts")
+	bool bIsSensor;
+
+	/**
+	 * Determines the sensor type. Only relevant if the Is Sensor property is checked.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shape Contacts", Meta = (EditCondition = "bIsSensor"))
+	TEnumAsByte<enum EAGX_ShapeSensorType> SensorType = EAGX_ShapeSensorType::ContactsSensor;
+
+	/**
+	 * Enable or disable this shape as a sensor.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	void SetIsSensor(bool IsSensor);
+
+	/**
+	 * Returns true if this shape is a sensor, otherwise false.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	bool GetIsSensor() const;
+
+	/**
+	 * Get all shape contacts for this shape.
+	 *
+	 * Important: The data returned is only valid during a single simulation step. This function
+	 * must therefore be called each tick that the contact data is accessed.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	TArray<FAGX_ShapeContact> GetShapeContacts() const;
 
 	UAGX_ShapeComponent();
 
@@ -71,11 +118,6 @@ public:
 	void AddCollisionGroup(const FName& GroupName);
 
 	void RemoveCollisionGroupIfExists(const FName& GroupName);
-
-public:
-	virtual void TickComponent(
-		float DeltaTime, ELevelTick TickType,
-		FActorComponentTickFunction* ThisTickFunction) override;
 
 #if WITH_EDITOR
 
@@ -108,6 +150,9 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 
 	virtual void ReleaseNative() PURE_VIRTUAL(UAGX_ShapeComponent::ReleaseNative, );
+
+	static void ApplySensorMaterial(UMeshComponent& Mesh);
+	static void RemoveSensorMaterial(UMeshComponent& Mesh);
 
 	/**
 	 * Copy properties from the given AGX Dynamics shape into this component.

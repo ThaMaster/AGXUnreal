@@ -94,6 +94,48 @@ bool UAGX_TrimeshShapeComponent::DoesPropertyAffectVisualMesh(
 			   GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceAsset);
 }
 
+void UAGX_TrimeshShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (PropertyChangedEvent.GetPropertyName().IsEqual(
+			GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bIsSensor)))
+	{
+		if (UMeshComponent* Mesh = FindMeshComponent(MeshSourceLocation))
+		{
+			bIsSensor ? ApplySensorMaterial(*Mesh) : RemoveSensorMaterial(*Mesh);
+		}
+	}
+	else if (PropertyChangedEvent.GetPropertyName().IsEqual(
+				 GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceLocation)))
+	{
+		if (UMeshComponent* Mesh = FindMeshComponent(MeshSourceLocation))
+		{
+			bIsSensor ? ApplySensorMaterial(*Mesh) : RemoveSensorMaterial(*Mesh);
+		}
+	}
+}
+
+void UAGX_TrimeshShapeComponent::PreEditChange(FProperty* PropertyThatWillChange)
+{
+	Super::PreEditChange(PropertyThatWillChange);
+
+	if (PropertyThatWillChange->GetName().Equals(
+			GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceLocation).ToString()))
+	{
+		if (!bIsSensor)
+		{
+			return;
+		}
+
+		// Clean up sensor material of the old source MeshComponent if applied.
+		if (UMeshComponent* Mesh = FindMeshComponent(MeshSourceLocation))
+		{
+			RemoveSensorMaterial(*Mesh);
+		}
+	}
+}
+
 bool UAGX_TrimeshShapeComponent::CanEditChange(
 #if UE_VERSION_OLDER_THAN(4, 25, 0)
 	const UProperty* InProperty
@@ -197,6 +239,45 @@ bool UAGX_TrimeshShapeComponent::FindStaticMeshSource(
 	if (WorldTransform)
 		*WorldTransform = FTransform::Identity;
 	return false;
+}
+
+UMeshComponent* UAGX_TrimeshShapeComponent::FindMeshComponent(
+	TEnumAsByte<EAGX_TrimeshSourceLocation> InMeshSourceLocation) const
+{
+	if (InMeshSourceLocation == TSL_CHILD_STATIC_MESH_COMPONENT)
+	{
+		TArray<USceneComponent*> Children;
+		GetChildrenComponents(/*bIncludeAllDescendants*/ false, Children);
+
+		for (int32 ChildIndex = 0; ChildIndex < Children.Num(); ++ChildIndex)
+		{
+			if (USceneComponent* Child = Children[ChildIndex])
+			{
+				if (Child->IsA(UStaticMeshComponent::StaticClass()))
+				{
+					return Cast<UStaticMeshComponent>(Child);
+				}
+			}
+		}
+	}
+	else if (InMeshSourceLocation == TSL_PARENT_STATIC_MESH_COMPONENT)
+	{
+		TArray<USceneComponent*> Ancestors;
+		GetParentComponents(Ancestors);
+
+		for (int32 AncestorIndex = 0; AncestorIndex < Ancestors.Num(); ++AncestorIndex)
+		{
+			if (USceneComponent* Ancestor = Ancestors[AncestorIndex])
+			{
+				if (Ancestor->IsA(UStaticMeshComponent::StaticClass()))
+				{
+					return Cast<UStaticMeshComponent>(Ancestor);
+				}
+			}
+		}
+	}
+
+	return nullptr;
 }
 
 static int32 AddCollisionVertex(
