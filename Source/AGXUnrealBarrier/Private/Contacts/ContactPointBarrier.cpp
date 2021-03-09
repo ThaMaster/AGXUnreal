@@ -52,14 +52,10 @@ float FContactPointBarrier::GetDepth() const
 	return ConvertDistance(NativeEntity->Native.depth());
 }
 
-/// @TODO: Check these agx::Vec3 -> FVector conversions once the AddForce/AddTorque branch has been
-/// merged to master and then to this branch. It contains changes to how these conversions are named
-/// and structured.
-
 FVector FContactPointBarrier::GetLocation() const
 {
 	check(HasNative());
-	return ConvertVector(NativeEntity->Native.point()); /// @TODO ConvertDisplacement?
+	return ConvertDisplacement(NativeEntity->Native.point());
 }
 
 FVector FContactPointBarrier::GetNormal() const
@@ -107,7 +103,7 @@ FVector FContactPointBarrier::GetLocalForce() const
 FVector FContactPointBarrier::GetWitnessPoint(int32 Index) const
 {
 	check(HasNative());
-	return ConvertVector(NativeEntity->Native.getWitnessPoint(Index)); /// @TODO ConvertDisplacement?
+	return ConvertDisplacement(NativeEntity->Native.getWitnessPoint(Index));
 }
 
 float FContactPointBarrier::GetArea() const
