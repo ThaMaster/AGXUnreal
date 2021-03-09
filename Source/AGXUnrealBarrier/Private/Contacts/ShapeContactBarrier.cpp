@@ -148,18 +148,11 @@ TArray<FContactPointBarrier> FShapeContactBarrier::GetContactPoints() const
 	ContactPoints.Reserve(NumContactPoints);
 	for (int32 I = 0; I < NumContactPoints; ++I)
 	{
-		agxCollide::ContactPoint ContactPointAGX = ContactPointsAGX[I];
-
-		// We're pessimizing the MaxAllowed limit since any invalid Contact Point will still count
-		// towards the limit. I don't think this will ever matter, but if it does simply don't
-		// truncate NumContacts, let I loop over all Geometry Contacts, and break when the TArray is
-		// full.
-		//if (!ContactPointAGX.isValid())
-		//{
-		//	continue;
-		//}
-
-		ContactPoints.Add(AGXBarrierFactories::CreateContactPointBarrier(ContactPointAGX));
+		// We add the contact point even if it is disabled or invalid because we want the contact
+		// point indices exposed to Unreal Engine to match the AGX Dynamics indices. Because there
+		// are index-based contact point accessor and helper functions that take a contact point
+		// index and it is important that everyone agrees on each contact point's index.
+		ContactPoints.Add(AGXBarrierFactories::CreateContactPointBarrier(ContactPointsAGX[I]));
 	}
 
 	return ContactPoints;
