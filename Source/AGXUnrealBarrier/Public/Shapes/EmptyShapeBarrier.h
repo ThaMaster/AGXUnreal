@@ -4,6 +4,10 @@
 
 #include <memory>
 
+/**
+ * A ShapeBarrier that represents a Shape that we don't know what shape it has. Used when we
+ * extract Geometries from AGX Dynamics from e.g., contacts.
+ */
 class AGXUNREALBARRIER_API FEmptyShapeBarrier : public FShapeBarrier
 {
 public:

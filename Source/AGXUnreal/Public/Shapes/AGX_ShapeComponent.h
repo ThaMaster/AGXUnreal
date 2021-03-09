@@ -55,6 +55,10 @@ public:
 
 	/**
 	 * Determines whether this shape should act as a sensor.
+	 *
+	 * A sensor participates in collision detection, but the contact data generated is not passed
+	 * to the solver and has no influence on the simulation. Set SensorType to control how much
+	 * contact data is generated for a sensor.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shape Contacts")
 	bool bIsSensor;
@@ -78,13 +82,11 @@ public:
 	bool GetIsSensor() const;
 
 	/**
-	 * Get all shape contacts for this shape. Important: The data returned is only valid during a
-	 * single simulation step. This function must therefore be called each time that the contact
-	 * data is accessed.
+	 * Get all shape contacts for this shape.
+	 *
+	 * Important: The data returned is only valid during a single simulation step. This function
+	 * must therefore be called each tick that the contact data is accessed.
 	 */
-	//UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
-	//TArray<FAGX_ShapeContact> GetShapeContacts() const;
-
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	TArray<FAGX_ShapeContact> GetShapeContacts() const;
 

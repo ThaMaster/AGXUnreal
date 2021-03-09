@@ -9,6 +9,9 @@
 
 struct FShapeContactEntity;
 
+/**
+ * A Barrier wrapping a ShapeContact, called a GeometryContact in AGX Dynamics.
+ */
 class AGXUNREALBARRIER_API FShapeContactBarrier
 {
 public:
@@ -34,9 +37,9 @@ public:
 	FContactMaterialBarrier GetContactMaterial() const;
 
 	int32 GetNumContactPoints() const;
-	TArray<FContactPointBarrier> GetContactPoints() const;
-
 	FContactPointBarrier GetContactPoint(int32 Index) const;
+
+	TArray<FContactPointBarrier> GetContactPoints() const;
 
 	bool HasNative() const;
 	FShapeContactEntity* GetNative();

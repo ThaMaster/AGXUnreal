@@ -1336,7 +1336,7 @@ bool FCheckGeometrySensorsImportedCommand::Update()
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
 
-	// 3 RigidBody's, 3 Geometry's and one Default Scene Root.
+	// Three Rigid Bodies, three Geometries and one Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
 
 	UAGX_SphereShapeComponent* BoolSensor =
@@ -1393,8 +1393,6 @@ bool FCheckGeometrySensorsImportedCommand::Update()
 		(NotASensorMaterials.Num() == 1 && NotASensorMaterials[0] != nullptr &&
 		 NotASensorMaterials[0]->GetName() == "M_ImportedBase"),
 		true);
-
-
 
 	return true;
 }
