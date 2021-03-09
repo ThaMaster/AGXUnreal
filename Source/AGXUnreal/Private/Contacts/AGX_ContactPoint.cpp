@@ -130,15 +130,6 @@ FVector FAGX_ContactPoint::GetLocalForce() const
 	return Barrier.GetLocalForce();
 }
 
-FVector FAGX_ContactPoint::GetVelocity() const
-{
-	if (!TestHasNative(*this, TEXT("Velocity")))
-	{
-		return FVector::ZeroVector;
-	}
-	return Barrier.GetVelocity();
-}
-
 FVector FAGX_ContactPoint::GetWitnessPoint(int32 Index) const
 {
 	if (!TestHasNative(*this, TEXT("WitnessPoint")))

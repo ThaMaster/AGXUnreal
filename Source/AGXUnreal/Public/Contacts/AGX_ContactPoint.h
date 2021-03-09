@@ -73,7 +73,6 @@ public:
 	 */
 	FVector GetLocalForce() const;
 
-	FVector GetVelocity() const;
 	FVector GetWitnessPoint(int32 Index) const;
 	float GetArea() const;
 

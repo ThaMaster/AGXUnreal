@@ -104,12 +104,6 @@ FVector FContactPointBarrier::GetLocalForce() const
 	return ConvertVector(NativeEntity->Native.localForce());
 }
 
-FVector FContactPointBarrier::GetVelocity() const
-{
-	check(HasNative());
-	return ConvertFloatVector(NativeEntity->Native.velocity()); /// @TODO ConvertDisplacement?
-}
-
 FVector FContactPointBarrier::GetWitnessPoint(int32 Index) const
 {
 	check(HasNative());
