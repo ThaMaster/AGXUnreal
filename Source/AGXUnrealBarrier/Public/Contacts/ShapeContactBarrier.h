@@ -29,6 +29,8 @@ public:
 	FEmptyShapeBarrier GetShape1() const;
 	FEmptyShapeBarrier GetShape2() const;
 
+	FVector CalculateRelativeVelocity(int32 PointIndex) const;
+
 	FContactMaterialBarrier GetContactMaterial() const;
 
 	int32 GetNumContactPoints() const;

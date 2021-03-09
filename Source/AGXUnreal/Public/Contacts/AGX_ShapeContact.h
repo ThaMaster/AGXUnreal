@@ -28,12 +28,12 @@ struct AGXUNREAL_API FAGX_ShapeContact
 	FAGX_ShapeContact(FShapeContactBarrier&& InBarrier);
 
 	/**
-	 * @return True iff this ShapeContact is backed by native AGX Dynamics data.
+	 * @return True if this ShapeContact is backed by native AGX Dynamics data.
 	 */
 	bool HasNative() const;
 
 	/**
-	 * @return True iff the Shape Contact is enabled, i.e., its ContactPoints are included in the
+	 * @return True if the Shape Contact is enabled, i.e., its ContactPoints are included in the
 	 * solve.
 	 */
 	bool IsEnabled() const;
@@ -43,6 +43,12 @@ struct AGXUNREAL_API FAGX_ShapeContact
 
 	FEmptyShapeBarrier GetShape1() const;
 	FEmptyShapeBarrier GetShape2() const;
+
+	/**
+	 * @param PointIndex The index of the contact point to calculate the relative velocity at.
+	 * @return The relative velocity at the contact point, in the world coordinate system.
+	 */
+	FVector CalculateRelativeVelocity(int32 PointIndex) const;
 
 	int32 GetNumContactPoints() const;
 
@@ -79,6 +85,10 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static UAGX_RigidBodyComponent* GetSecondBody(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	static FVector CalculateRelativeVelocity(
+		UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static int GetNumContactPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);

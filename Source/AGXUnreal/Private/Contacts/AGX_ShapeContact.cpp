@@ -77,6 +77,15 @@ FEmptyShapeBarrier FAGX_ShapeContact::GetShape2() const
 	return Barrier.GetShape2();
 }
 
+FVector FAGX_ShapeContact::CalculateRelativeVelocity(int32 PointIndex) const
+{
+	if (!TestHasNative(*this, TEXT("RelativeVelocity")))
+	{
+		return FVector::ZeroVector;
+	}
+	return Barrier.CalculateRelativeVelocity(PointIndex);
+}
+
 int32 FAGX_ShapeContact::GetNumContactPoints() const
 {
 	if (!TestHasNative(*this, TEXT("Num Contact Points")))
@@ -214,6 +223,16 @@ UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetSecondBody(UPARAM(ref)
 		return nullptr;
 	}
 	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContactRef.GetBody2().GetGuid());
+}
+
+FVector UAGX_ShapeContact_FL::CalculateRelativeVelocity(
+	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
+{
+	if (!TestHasNative(ShapeContactRef, TEXT("RelativeVelocity")))
+	{
+		return FVector::ZeroVector;
+	}
+	return ShapeContactRef.CalculateRelativeVelocity(PointIndex);
 }
 
 int32 UAGX_ShapeContact_FL::GetNumContactPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef)

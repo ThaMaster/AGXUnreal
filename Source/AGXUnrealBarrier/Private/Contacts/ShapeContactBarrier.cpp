@@ -2,8 +2,9 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "Contacts/ShapeContactEntity.h"
 #include "AGXBarrierFactories.h"
+#include "Contacts/ShapeContactEntity.h"
+#include "TypeConversions.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -101,6 +102,30 @@ int32 FShapeContactBarrier::GetNumContactPoints() const
 	}
 }
 
+FVector FShapeContactBarrier::CalculateRelativeVelocity(int32 PointIndex) const
+{
+	check(HasNative());
+	if (PointIndex < 0)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Negative index %d passed to FShapeContactBarrier::CalculateRelativeVelocity."),
+			PointIndex);
+		return FVector::ZeroVector;
+	}
+	const size_t PointIndexAGX = static_cast<size_t>(PointIndex);
+	const size_t NumPoints = NativeEntity->Native.points().size();
+	if (PointIndexAGX >= NumPoints)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Too large index passed to FShapeContactBarrier::CalculateRelativeVelocity. Given "
+				 "%zu but only have %zu contact points."),
+			PointIndexAGX, NumPoints);
+	}
+	return ConvertFloatVector(NativeEntity->Native.calculateRelativeVelocity(PointIndexAGX));
+}
+
 TArray<FContactPointBarrier> FShapeContactBarrier::GetContactPoints() const
 {
 	check(HasNative());
@@ -129,10 +154,10 @@ TArray<FContactPointBarrier> FShapeContactBarrier::GetContactPoints() const
 		// towards the limit. I don't think this will ever matter, but if it does simply don't
 		// truncate NumContacts, let I loop over all Geometry Contacts, and break when the TArray is
 		// full.
-		if (!ContactPointAGX.isValid())
-		{
-			continue;
-		}
+		//if (!ContactPointAGX.isValid())
+		//{
+		//	continue;
+		//}
 
 		ContactPoints.Add(AGXBarrierFactories::CreateContactPointBarrier(ContactPointAGX));
 	}
@@ -159,7 +184,8 @@ FContactPointBarrier FShapeContactBarrier::GetContactPoint(int32 Index) const
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Too large index passed to FShapeContactBarrier::GetContactPoint. Given %zu but "
-				 "only have %u contact points."), IndexAGX, Points.size());
+				 "only have %zu contact points."),
+			IndexAGX, Points.size());
 		return FContactPointBarrier();
 	}
 
