@@ -111,15 +111,6 @@ FAGX_ContactPoint FAGX_ShapeContact::GetContactPoint(int32 Index) const
 	return Barrier.GetContactPoint(Index);
 }
 
-int32 UAGX_ShapeContact_FL::GetNumContactPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef)
-{
-	if (!TestHasNative(ShapeContactRef, TEXT("Num Contact Points")))
-	{
-		return 0;
-	}
-	return ShapeContactRef.GetNumContactPoints();
-}
-
 /*
  * Function Library implementation starts here.
  */
@@ -223,6 +214,15 @@ UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetSecondBody(UPARAM(ref)
 		return nullptr;
 	}
 	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContactRef.GetBody2().GetGuid());
+}
+
+int32 UAGX_ShapeContact_FL::GetNumContactPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef)
+{
+	if (!TestHasNative(ShapeContactRef, TEXT("Num Contact Points")))
+	{
+		return 0;
+	}
+	return ShapeContactRef.GetNumContactPoints();
 }
 
 float UAGX_ShapeContact_FL::GetPointDepth(
