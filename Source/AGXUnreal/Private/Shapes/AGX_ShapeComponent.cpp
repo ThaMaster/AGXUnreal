@@ -287,27 +287,6 @@ TArray<FAGX_ShapeContact> UAGX_ShapeComponent::GetShapeContacts() const
 		ShapeContacts.Emplace(std::move(Barrier));
 	}
 	return ShapeContacts;
-
-#if 0
-	TArray<FAGX_ShapeContact> ShapeContacts;
-	if (!HasNative())
-	{
-		return ShapeContacts;
-	}
-
-	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	if (!Simulation)
-	{
-		return ShapeContacts;
-	}
-
-	for (FShapeContactData& Data : Simulation->GetShapeContactData(*GetNative()))
-	{
-		ShapeContacts.Add(FAGX_ShapeContact(std::move(Data)));
-	}
-
-	return ShapeContacts;
-#endif
 }
 
 void UAGX_ShapeComponent::ApplySensorMaterial(UMeshComponent& Mesh)
