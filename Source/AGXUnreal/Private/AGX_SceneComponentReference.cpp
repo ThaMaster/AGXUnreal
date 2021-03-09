@@ -36,13 +36,9 @@ USceneComponent* FAGX_SceneComponentReference::GetSceneComponent() const
 	{
 		return Cache;
 	}
-	else if (OwningActor.IsValid())
+	else if (IsValid(OwningActor))
 	{
-		return FindComponent(*OwningActor.Get(), SceneComponentName, bSearchChildActors);
-	}
-	else if (FallbackOwningActor != nullptr)
-	{
-		return FindComponent(*FallbackOwningActor, SceneComponentName, bSearchChildActors);
+		return FindComponent(*OwningActor, SceneComponentName, bSearchChildActors);
 	}
 	else
 	{
@@ -52,7 +48,7 @@ USceneComponent* FAGX_SceneComponentReference::GetSceneComponent() const
 
 AActor* FAGX_SceneComponentReference::GetOwningActor() const
 {
-	return OwningActor.Get();
+	return OwningActor;
 }
 
 void FAGX_SceneComponentReference::Set(AActor* InOwningActor, FName InSceneComponentName)
@@ -70,11 +66,11 @@ void FAGX_SceneComponentReference::Clear()
 void FAGX_SceneComponentReference::CacheCurrentSceneComponent()
 {
 	InvalidateCache();
-	if (!OwningActor.IsValid())
+	if (!IsValid(OwningActor))
 	{
 		return;
 	}
-	Cache = FindComponent(*OwningActor.Get(), SceneComponentName, bSearchChildActors);
+	Cache = FindComponent(*OwningActor, SceneComponentName, bSearchChildActors);
 }
 
 void FAGX_SceneComponentReference::InvalidateCache()

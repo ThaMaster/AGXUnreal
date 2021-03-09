@@ -17,6 +17,7 @@ UAGX_DistanceConstraintComponent::UAGX_DistanceConstraintComponent()
 {
 	/// \todo Determine if this is needed, or if the FAGX_ConstraintFrameComponent constructor
 	/// does what we want.
+	/// \todo What do we want? And why?
 	BodyAttachment1.FrameDefiningComponent.Clear();
 	BodyAttachment2.FrameDefiningComponent.Clear();
 }
