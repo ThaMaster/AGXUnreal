@@ -223,10 +223,11 @@ namespace
 
 			// By default the BodyAttachments are created with the OwningActor set to the owner of
 			// the RigidBodyComponents passed to CreateConstraintComponent. In this case the
-			// OwningActor points to the temporary template actor and Unreal doesn't update the
-			// pointers to instead point to the actor that is created when the Blueprint is
-			// instantiated. The best we can do is to set them to nullptr and rely on the body
-			// names only.
+			// OwningActor points to the temporary template Actor from which the Blueprint is
+			// created. By setting them to nullptr instead we restore the constructor / Class
+			// Default Object value which won't be serialized and PostInitProperties in the final
+			// ConstraintComponent will set OwningActor to GetTypedOuter<AActor>() which is correct
+			// in the Blueprint case.
 			Constraint->BodyAttachment1.RigidBody.OwningActor = nullptr;
 			Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
 		}

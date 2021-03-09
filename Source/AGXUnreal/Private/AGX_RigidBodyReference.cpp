@@ -27,13 +27,9 @@ UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody() const
 	{
 		return Cache;
 	}
-	else if (OwningActor.IsValid())
+	else if (IsValid(OwningActor))
 	{
-		return FindBody(OwningActor.Get(), BodyName, bSearchChildActors);
-	}
-	else if (FallbackOwningActor != nullptr)
-	{
-		return FindBody(FallbackOwningActor, BodyName, bSearchChildActors);
+		return FindBody(OwningActor, BodyName, bSearchChildActors);
 	}
 	else
 	{
@@ -43,17 +39,17 @@ UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody() const
 
 AActor* FAGX_RigidBodyReference::GetOwningActor() const
 {
-	return OwningActor.Get();
+	return OwningActor;
 }
 
 void FAGX_RigidBodyReference::CacheCurrentRigidBody()
 {
 	InvalidateCache();
-	if (!OwningActor.IsValid())
+	if (!IsValid(OwningActor))
 	{
 		return;
 	}
-	Cache = FindBody(OwningActor.Get(), BodyName, bSearchChildActors);
+	Cache = FindBody(OwningActor, BodyName, bSearchChildActors);
 }
 
 void FAGX_RigidBodyReference::InvalidateCache()

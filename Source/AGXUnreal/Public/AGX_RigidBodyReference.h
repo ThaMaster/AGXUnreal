@@ -4,49 +4,67 @@
 
 class UAGX_RigidBodyComponent;
 
+class AActor;
+
 /**
- * A reference to a UAGX_RigidBodyComponent.
+ * A reference to an UAGX_RigidBodyComponent.
  *
- * The intention is that it should be used much like Actor pointers can, but limitations in the
+ * The intention is that it should be used much like Actor pointers can be, but limitations in the
  * Unreal Editor forces us to do some tricks and workarounds. There is no Component picker, so the
  * user must first pick an Actor that owns the Component and then select the wanted component from a
- * combo box of body names. There is no actual pointer to the Component stored in the
- * FAGX_RigidBodyReference, only the name, so renaming the body will break the reference. This is a
- * serious limitation. Also, while building a Blueprint Actor in the Blueprint editor there is no
- * actual Actor yet, so the Actor picker cannot be used to select the Actor that will be created
- * when the Blueprint is instantiated. The RigidBodyReference provides a getter with an
- * InOwningActor parameter for this purpose.
+ * combo box of body names. Except for the cache, there is no actual pointer to the Component stored
+ * in the FAGX_RigidBodyReference, only the name, so renaming the body will break the reference.
+ * This is a serious limitation. Also, while building a Blueprint Actor in the Blueprint editor
+ * there is no actual Actor yet, so the Actor picker cannot be used to select the Actor that will be
+ * created when the Blueprint is instantiated. For this reason all Components that include a
+ * RigidBodyReference should set OwningActor to GetTypedOuter<AActor>() in PostInitProperties.
+ *
+ * void UMyComponent::PostInitProperties()
+ * {
+ *  	Super::PostInitProperties();
+ *  	MyRigidBodyReference.OwningActor = GetTypedOuter<AActor>();
+ * }
+ *
+ * This establishes the so-called local scope for the reference. Unless another OwningActor is
+ * specified, the reference will search within the Actor that the Component is contained within. The
+ * OwningActor set in PostInitProperties will we overwritten by deserialization if the object is
+ * created from something else, such as part of a Play-in-Editor session or loaded from disk as part
+ * of a cooked build.
  *
  * The RigidBodyReference supports caching of the RigidBodyComponent through the
  * CacheCurrentRigidBody member function. Only call this once the RigidBodyReference has been fully
  * formed, i.e., the OwningActor property set to the final Actor and when the referenced
- * RigidBodyComponent has been given its final name.
+ * RigidBodyComponent has been given its final name. BeginPlay is often a good choice.
  */
 USTRUCT()
 struct AGXUNREAL_API FAGX_RigidBodyReference
 {
 	GENERATED_BODY()
 
-	// Using a SoftObjectPtr instead of a raw pointer because we use FAGX_RigidBodyReference in the
-	// AGXUnreal Mode for constraint creation and Unreal Engine does not allow raw pointers to world
-	// objects being held by non-world objects. The constraint creation Mode is a non-world object.
-	// When used in a constraint that exists in the level the OwningActor should always point to an
-	// Actor in the same world as the constraint.
-	//
-	// A LazyObjectPtr could be used as well, I think. I don't know which of the two would be better
-	// in this case.
-	//
-	// The EditInstanceOnly specifier is passed because Actor Blueprints should be self-contained
-	// so all Actor references should implicitly point to the Actor that will be created when the
-	// Blueprint is instantiated in a level. I can imagine cases where the user want to create a
-	// Blueprint that is bound to a particular level and uses references to objects within the
-	// level, but that will not be supported at this stage.
+	/**
+	 * That Actor that owns the RigidBodyComponent that this RigidBodyReference references.
+	 *
+	 * The EditInstanceOnly specifier is set because Actor Blueprints should be self-contained,
+	 * all Actor references should point to the Actor that is created when the Blueprint is
+	 * instantiated in a level, which is achieved by not allowing a Blueprint to change the
+	 * OwningActor, which means that the GetTypedOuter<AActor>() fetched in PostInitProperties will
+	 * be the active OwningActor when instantiation is complete.
+	 *
+	 * Rules for OwningActor:
+	 *  - The OwningActor should be set to GetTypedOuter<AActor>() in PostInitProperties of the
+	 *    Component containing the RigidBodyReference to enable local scope lookup by default.
+	 *  - The OwningActor should be set to GetTypedOuter<AActor>() in PostEditChangeProperty of the
+	 *    Component containing the RigidBodyReference whenever OwningActor is changed to nullptr.
+	 *    This reenables the local scope state.
+	 */
+	UPROPERTY(
+		EditInstanceOnly, Category = "AGX Dynamics",
+		Meta = (Tooltip = "The Actor that owns the RigidBodyComponent."))
+	AActor* OwningActor;
+
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics",
-		meta = (Tooltip = "The Actor that owns the RigidBodyComponent."))
-	TSoftObjectPtr<AActor> OwningActor;
-
-	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+		Meta = (Tooltip = "The name of the RigidBodyComponent."))
 	FName BodyName;
 
 	/// \todo It may be possible to do this with a UAGX_RigidBodyComponent
@@ -59,26 +77,11 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 	UPROPERTY(EditAnywhere, Category = "Body reference")
 	uint8 bSearchChildActors : 1;
 
-	// A fallback owning Actor that can be used when we want to specify an Actor to search for
-	// RigidBodies in but don't want to expose it to the user and don't want to accidentally leak
-	// the Actor pointer into an actual game session. Used, for example, while building Blueprint
-	// Actors in the Blueprint editor during which the FallbackOwningActor points to the Blueprint
-	// itself.
-	//
-	// FallbackOwningActor is ignored while OwningActor is not nullptr.
-	// Should be cleared on BeginPlay in the object that holds this RigidBodyReference.
-	// Intentionally not a UPROPERTY.
-	AActor* FallbackOwningActor;
-
 	/**
 	 * Returns the cached body if there is one. Otherwise, performs a search to find and return the
 	 * RigidBody that this reference currently references. Can return nullptr. Will return nullptr
-	 * if both OwningActor and FallbackOwningActor is nullptr and if neither of them, and all of
-	 * their child actors if bSearchChildActors is true, contain a UAGX_RigidBodyComponent named
-	 * BodyName.
-	 *
-	 * FallbackOwningActor will not be searched if OwningActor is non-nullptr even if no matching
-	 * RigidBody is found in OwningActor.
+	 * if OwningActor is nullptr or if OwningActor, and all of its child Actors if
+	 * bSearchChildActors is true, does not contain a UAGX_RigidBodyComponent named BodyName.
 	 *
 	 * @return The UAGX_RigidBodyComponent that this FAGX_RigidBodyReference currently references.
 	 */
@@ -93,16 +96,10 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 	AActor* GetOwningActor() const;
 
 	/**
-	 * Forget the currently cached body, if any, and perform a new search through
-	 * OwningActor's components. The found RigidBody will be cached and future calls to GetRigidBody
-	 * will return the cached body even if the body is renamed or removed, or if OwningActor or
-	 * BodyName is changed, until either a new call to CacheCurrentRigidBody or InvalidateCache is
-	 * called.
-	 *
-	 * Will not search in FallbackOwningActor, only OwningActor.
-	 *
-	 * \todo The non-caching of FallbackOwningActor may make the Unreal Editor sluggish. We should
-	 * convince ourselves that we can keep the cache correct.
+	 * Forget the currently cached body, if any, and perform a new search through OwningActor's
+	 * components. The found RigidBody will be cached and future calls to GetRigidBody will return
+	 * the cached body even if the body is renamed or removed, or if OwningActor or BodyName is
+	 * changed, until either a new call to CacheCurrentRigidBody or InvalidateCache is made.
 	 */
 	void CacheCurrentRigidBody();
 

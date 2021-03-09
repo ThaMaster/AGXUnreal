@@ -171,7 +171,8 @@ void FSimulationBarrier::SetUniformGravity(const FVector& Gravity)
 {
 	check(HasNative());
 
-	agx::Vec3 GravityAgx = ConvertVector(Gravity);
+	// Convert Unreal Engine's cm/s^2 to AGX Dynamics' m/s^2.
+	agx::Vec3 GravityAgx = ConvertDisplacement(Gravity);
 	agx::UniformGravityFieldRef Field = new agx::UniformGravityField(GravityAgx);
 	NativeRef->Native->setGravityField(Field);
 }
@@ -197,14 +198,15 @@ FVector FSimulationBarrier::GetUniformGravity() const
 		return FVector();
 	}
 
-	return ConvertVector(UniformField->getGravity());
+	// Convert AGX Dynamics' m/s^2 to Unreal Engine's cm/s^2.
+	return ConvertDisplacement(UniformField->getGravity());
 }
 
 void FSimulationBarrier::SetPointGravity(const FVector& Origin, float Magnitude)
 {
 	// Magnitude from cm/s^2 to m/s^2.
 	agx::Real MagnitudeAgx = ConvertDistance(Magnitude);
-	agx::Vec3 OriginAgx = ConvertVector(Origin);
+	agx::Vec3 OriginAgx = ConvertDisplacement(Origin);
 
 	agx::PointGravityFieldRef Field = new agx::PointGravityField(OriginAgx, MagnitudeAgx);
 	NativeRef->Native->setGravityField(Field);
@@ -234,7 +236,7 @@ FVector FSimulationBarrier::GetPointGravity(float& OutMagnitude) const
 	}
 
 	OutMagnitude = Convert(PointField->getGravity());
-	return ConvertVector(PointField->getCenter());
+	return ConvertDisplacement(PointField->getCenter());
 }
 
 namespace

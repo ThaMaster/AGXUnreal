@@ -132,6 +132,25 @@ UAGX_ConstraintComponent::~UAGX_ConstraintComponent()
 #endif
 }
 
+void UAGX_ConstraintComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	// This code is run after the constructor and after InitProperties, where property values are
+	// copied from the Class Default Object, but before deserialization in cases where this object
+	// is created from another, such as at the start of a Play-in-Editor session or when loading
+	// a map in a cooked build (I hope).
+	//
+	// The intention is to provide by default a local scope that is the Actor outer that this
+	// Component is part of. If the OwningActor is set anywhere else, such as in the Details Panel,
+	// then that "else" should overwrite the value set here shortly.
+	//
+	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
+	// but there will always be an outer chain. This worry may be unfounded.
+	BodyAttachment1.RigidBody.OwningActor = GetTypedOuter<AActor>();
+	BodyAttachment2.RigidBody.OwningActor = GetTypedOuter<AActor>();
+}
+
 FConstraintBarrier* UAGX_ConstraintComponent::GetOrCreateNative()
 {
 	if (!HasNative())
@@ -331,18 +350,25 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 				ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
 			}
 
-			// Handle the Blueprint editor case, where it's not possible to select the Actor
-			// that will be created when the Blueprint is instantiated as the OwningActor in the
-			// RigidBodyReference and the SceneComponentReference. Here we set the Constraint's
-			// owner as the FallbackOwningActor, meaning that the  RigidBodyReference and the
-			// SceneComponentReference will reference something in the "local scope", i.e. the
-			// Actor that contains this ConstraintComponent. On PostLoad the FallbackOwningActor
-			// will be cleared and the OwningActor set to the current owner, unless already set to
-			// some other Actor.
+			// We must always have an OwningActor. The user clearing/setting OwningActor to
+			// None/nullptr really means "search the local scope", which we achieve by setting
+			// OwningActor to the closest AActor outer.
+			//
+			// This does not work when we are in the Blueprint Editor. In this case we don't have
+			// an AActor outer at all, and no Owner. The outer chain contains something like the
+			// following:
+			// - Hinge_GEN_VARIABLE of type AGX_HingeConstraintComponent
+			// - BP_Blueprint_C of type BlueprintGeneratedClass
+			// - /Game/BP_Blueprint of type Package
+			//
+			// The interesting piece here is BlueprintGeneratedClass, from which it may be possible
+			// to get a list of names of RigidBodyComponents. Possibly via the
+			// SimpleConstructionScript member and then GetAllNodes. Experimentation needed.
 			if (ModifiedBodyAttachment->RigidBody.OwningActor == nullptr)
 			{
-				ModifiedBodyAttachment->RigidBody.FallbackOwningActor = GetOwner();
+				ModifiedBodyAttachment->RigidBody.OwningActor = GetTypedOuter<AActor>();
 			}
+
 			if (ModifiedBodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::Other &&
 				ModifiedBodyAttachment->FrameDefiningComponent.OwningActor == nullptr)
 			{
@@ -418,20 +444,6 @@ void UAGX_ConstraintComponent::PostLoad()
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
 
-	// Provide a default owning actor, the owner of this component, if no owner has been specified
-	// for the RigidBodyReferences and FrameDefiningComponents. This is always the case when the
-	// constraint has been created as part of an Actor Blueprint.
-	for (FAGX_RigidBodyReference* BodyReference :
-		 {&BodyAttachment1.RigidBody, &BodyAttachment2.RigidBody})
-	{
-		BodyReference->FallbackOwningActor = nullptr;
-		if (BodyReference->OwningActor == nullptr)
-		{
-			BodyReference->OwningActor = GetOwner();
-			BodyReference->CacheCurrentRigidBody();
-		}
-	}
-
 	for (FAGX_ConstraintBodyAttachment* BodyAttachment : {&BodyAttachment1, &BodyAttachment2})
 	{
 		if (BodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::Other)
@@ -491,6 +503,8 @@ void UAGX_ConstraintComponent::DestroyComponent(bool bPromoteChildren)
 void UAGX_ConstraintComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	BodyAttachment1.RigidBody.CacheCurrentRigidBody();
+	BodyAttachment2.RigidBody.CacheCurrentRigidBody();
 	if (!HasNative())
 	{
 		CreateNative();

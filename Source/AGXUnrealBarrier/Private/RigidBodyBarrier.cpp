@@ -52,7 +52,7 @@ bool FRigidBodyBarrier::GetEnabled() const
 void FRigidBodyBarrier::SetPosition(FVector PositionUnreal)
 {
 	check(HasNative());
-	agx::Vec3 PositionAGX = ConvertVector(PositionUnreal);
+	agx::Vec3 PositionAGX = ConvertDisplacement(PositionUnreal);
 	NativeRef->Native->setPosition(PositionAGX);
 }
 
@@ -60,7 +60,7 @@ FVector FRigidBodyBarrier::GetPosition() const
 {
 	check(HasNative());
 	agx::Vec3 PositionAGX = NativeRef->Native->getPosition();
-	FVector PositionUnreal = ConvertVector(PositionAGX);
+	FVector PositionUnreal = ConvertDisplacement(PositionAGX);
 	return PositionUnreal;
 }
 
@@ -82,7 +82,7 @@ FQuat FRigidBodyBarrier::GetRotation() const
 void FRigidBodyBarrier::SetVelocity(FVector VelocityUnreal)
 {
 	check(HasNative());
-	agx::Vec3 VelocityAGX = ConvertVector(VelocityUnreal);
+	agx::Vec3 VelocityAGX = ConvertDisplacement(VelocityUnreal);
 	NativeRef->Native->setVelocity(VelocityAGX);
 }
 
@@ -90,7 +90,7 @@ FVector FRigidBodyBarrier::GetVelocity() const
 {
 	check(HasNative());
 	agx::Vec3 VelocityAGX = NativeRef->Native->getVelocity();
-	FVector VelocityUnreal = ConvertVector(VelocityAGX);
+	FVector VelocityUnreal = ConvertDisplacement(VelocityAGX);
 	return VelocityUnreal;
 }
 
@@ -159,6 +159,60 @@ void FRigidBodyBarrier::AddShape(FShapeBarrier* Shape)
 {
 	check(HasNative());
 	NativeRef->Native->add(Shape->GetNative()->NativeGeometry);
+}
+
+void FRigidBodyBarrier::AddForceAtCenterOfMass(const FVector& Force)
+{
+	check(HasNative());
+	const agx::Vec3 ForceAGX = ConvertVector(Force);
+	NativeRef->Native->addForce(ForceAGX);
+}
+
+void FRigidBodyBarrier::AddForceAtLocalLocation(const FVector& Force, const FVector& Location)
+{
+	check(HasNative());
+	const agx::Vec3 ForceAGX = ConvertVector(Force);
+	const agx::Vec3 LocationAGX = ConvertDisplacement(Location);
+	NativeRef->Native->addForceAtLocalPosition(ForceAGX, LocationAGX);
+}
+
+void FRigidBodyBarrier::AddForceAtWorldLocation(const FVector& Force, const FVector& Location)
+{
+	check(HasNative());
+	const agx::Vec3 ForceAGX = ConvertVector(Force);
+	const agx::Vec3 LocationAGX = ConvertDisplacement(Location);
+	NativeRef->Native->addForceAtPosition(ForceAGX, LocationAGX);
+}
+
+FVector FRigidBodyBarrier::GetForce() const
+{
+	check(HasNative());
+	const agx::Vec3 ForceAGX = NativeRef->Native->getForce();
+	return ConvertVector(ForceAGX);
+}
+
+void FRigidBodyBarrier::AddWorldTorque(const FVector& Torque)
+{
+	check(HasNative());
+	/// \todo Is it correct to convert cm to m here?
+	const agx::Vec3 TorqueAGX = ConvertDisplacement(Torque);
+	NativeRef->Native->addTorque(TorqueAGX);
+}
+
+void FRigidBodyBarrier::AddCenterOfMassTorque(const FVector& Torque)
+{
+	check(HasNative());
+	/// \todo Is it correct to convert cm to m here?
+	const agx::Vec3 TorqueAGX = ConvertDisplacement(Torque);
+	NativeRef->Native->addLocalTorque(TorqueAGX);
+}
+
+FVector FRigidBodyBarrier::GetTorque() const
+{
+	check(HasNative());
+	const agx::Vec3 TorqueAGX = NativeRef->Native->getTorque();
+	/// \todo Is it correct to convert m to cm here?
+	return ConvertDisplacement(TorqueAGX);
 }
 
 bool FRigidBodyBarrier::HasNative() const

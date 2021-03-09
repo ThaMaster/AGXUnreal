@@ -47,7 +47,7 @@ FRigidBodyBarrier* UAGX_RigidBodyComponent::GetNative()
 	return &NativeBarrier;
 }
 
-bool UAGX_RigidBodyComponent::HasNative()
+bool UAGX_RigidBodyComponent::HasNative() const
 {
 	return NativeBarrier.HasNative();
 }
@@ -538,4 +538,99 @@ TEnumAsByte<enum EAGX_MotionControl> UAGX_RigidBodyComponent::GetMotionControl()
 	}
 
 	return MotionControl;
+}
+
+void UAGX_RigidBodyComponent::AddForceAtCenterOfMass(const FVector& Force)
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Must have a native AGX Dynamics representation of RigidBody '%s' to call "
+				 "AddForce."),
+			*GetName());
+		return;
+	}
+
+	NativeBarrier.AddForceAtCenterOfMass(Force);
+}
+
+void UAGX_RigidBodyComponent::AddForceAtWorldLocation(const FVector& Force, const FVector& Location)
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Must have a native AGX Dynamics representation or RigidBody '%s' to call "
+				 "AddForce."),
+			*GetName());
+		return;
+	}
+
+	NativeBarrier.AddForceAtWorldLocation(Force, Location);
+}
+
+void UAGX_RigidBodyComponent::AddForceAtLocalLocation(const FVector& Force, const FVector& Location)
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Must have a native AGX Dynamics representation of RigidBody '%s' to call "
+				 "AddForce."),
+			*GetName());
+		return;
+	}
+
+	NativeBarrier.AddForceAtLocalLocation(Force, Location);
+}
+
+FVector UAGX_RigidBodyComponent::GetForce() const
+{
+	if (!HasNative())
+	{
+		return FVector::ZeroVector;
+	}
+
+	return NativeBarrier.GetForce();
+}
+
+void UAGX_RigidBodyComponent::AddWorldTorque(const FVector& Torque)
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Must have a native AGX Dynamics representation of RigidBody '%s' to call "
+				 "AddTorque."),
+			*GetName());
+		return;
+	}
+
+	NativeBarrier.AddWorldTorque(Torque);
+}
+
+void UAGX_RigidBodyComponent::AddCenterOfMassTorque(const FVector& Torque)
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Must have a native AGX Dynamics representation of RigidBody '%s' to call "
+				 "AddTorque."),
+			*GetName());
+		return;
+	}
+
+	NativeBarrier.AddCenterOfMassTorque(Torque);
+}
+
+FVector UAGX_RigidBodyComponent::GetTorque() const
+{
+	if (!HasNative())
+	{
+		return FVector::ZeroVector;
+	}
+
+	return NativeBarrier.GetTorque();
 }

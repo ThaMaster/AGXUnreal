@@ -70,6 +70,20 @@ public: // Constraint Creator
 	UPROPERTY()
 	UClass* ConstraintType;
 
+	/// \todo These RigidBodyReferences cannot be the regular FAGX_RigidBodyReference kind
+	/// because of:
+	///
+	///    Warning: Illegal TEXT reference to a private object in external package
+	///        (BP_Blueprint_C
+	///        /Game/Levels/OriginalLevel.OriginalLevel:PersistentLevel.BP_Blueprint_2)
+	///    from referencer
+	///        (AGX_AgxEdModeConstraints /Script/AGXUnrealEditor.Default__AGX_AgxEdModeConstraints).
+	///    Import failed...
+	///
+	/// What I believe this says is that we cannot have a reference from a Class Default Object to
+	/// an instance that lives in a level. It can be done with TSoftObjectPtr, so we should create
+	/// a RigidBodyReference variant that uses TSoftObjectPtr instead of regular UPROPERTY
+	/// pointers.
 	UPROPERTY(Transient, EditAnywhere, Category = "Constraint Creator")
 	FAGX_RigidBodyReference RigidBody1;
 

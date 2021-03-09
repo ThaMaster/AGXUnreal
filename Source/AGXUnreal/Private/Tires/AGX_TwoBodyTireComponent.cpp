@@ -8,8 +8,6 @@
 
 UAGX_TwoBodyTireComponent::UAGX_TwoBodyTireComponent()
 {
-	TireRigidBody.FallbackOwningActor = GetOwner();
-	HubRigidBody.FallbackOwningActor = GetOwner();
 }
 
 UAGX_RigidBodyComponent* UAGX_TwoBodyTireComponent::GetHubRigidBody() const
@@ -123,6 +121,13 @@ void UAGX_TwoBodyTireComponent::UpdateNativeProperties()
 	Barrier->SetImplicitFrictionMultiplier(ImplicitFrictionMultiplier);
 }
 
+void UAGX_TwoBodyTireComponent::BeginPlay()
+{
+	HubRigidBody.CacheCurrentRigidBody();
+	TireRigidBody.CacheCurrentRigidBody();
+	Super::BeginPlay();
+}
+
 void UAGX_TwoBodyTireComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
@@ -132,27 +137,24 @@ void UAGX_TwoBodyTireComponent::EndPlay(const EEndPlayReason::Type Reason)
 	}
 }
 
-#if WITH_EDITOR
-void UAGX_TwoBodyTireComponent::PostLoad()
+void UAGX_TwoBodyTireComponent::PostInitProperties()
 {
-	Super::PostLoad();
+	Super::PostInitProperties();
 
-	// PostLoad is run when this component is created in a Blueprint or when a Blueprint containing
-	// this component is instantiated in the level. This allows us to set the correct
-	// OwningActor even for the Blueprint case where these FallbackOwningActor pointers will
-	// point to the wrong object instances, even though they are set in the constructor. The reason
-	// why this happens is still not known.
-	for (FAGX_RigidBodyReference* BodyReference : {&TireRigidBody, &HubRigidBody})
-	{
-		BodyReference->FallbackOwningActor = nullptr;
-		if (BodyReference->OwningActor == nullptr)
-		{
-			BodyReference->OwningActor = GetOwner();
-			BodyReference->CacheCurrentRigidBody();
-		}
-	}
+	// This code is run after the constructor and after InitProperties, where property values are
+	// copied from the Class Default Object, but before deserialization in cases where this object
+	// is created from another, such as at the start of a Play-in-Editor session or when loading
+	// a map in a cooked build (I hope).
+	//
+	// The intention is to provide by default a local scope that is the Actor outer that this
+	// component is part of. If the OwningActor is set anywhere else, such as in the Details Panel,
+	// then that "else" should overwrite this value shortly.
+	//
+	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
+	// but there will always be an outer chain. This worry may be unfounded.
+	TireRigidBody.OwningActor = GetTypedOuter<AActor>();
+	HubRigidBody.OwningActor = GetTypedOuter<AActor>();
 }
-#endif
 
 FTwoBodyTireBarrier* UAGX_TwoBodyTireComponent::CreateTwoBodyTireBarrier()
 {

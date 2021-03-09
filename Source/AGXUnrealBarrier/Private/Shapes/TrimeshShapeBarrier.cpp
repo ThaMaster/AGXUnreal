@@ -239,7 +239,7 @@ TArray<FVector> FTrimeshShapeBarrier::GetVertexPositions() const
 	return ConvertCollisionBuffer<agx::Vec3, FVector>(
 		this, TEXT("fetch positions from"), TEXT("positions"),
 		[](const agxCollide::MeshData* Mesh) -> auto& { return Mesh->getVertices(); },
-		[](const agx::Vec3& Position) { return ConvertVector(Position); });
+		[](const agx::Vec3& Position) { return ConvertDisplacement(Position); });
 }
 
 TArray<uint32> FTrimeshShapeBarrier::GetVertexIndices() const
@@ -327,7 +327,7 @@ TArray<FVector> FTrimeshShapeBarrier::GetRenderDataPositions() const
 	return ConvertRenderBuffer<agx::Vec3, FVector>(
 		this, TEXT("fetch render data positions from"), TEXT("render data positions"),
 		[](const agxCollide::RenderData* Render) -> auto& { return Render->getVertexArray(); },
-		[](const agx::Vec3& Position) { return ConvertVector(Position); });
+		[](const agx::Vec3& Position) { return ConvertDisplacement(Position); });
 }
 
 TArray<FVector> FTrimeshShapeBarrier::GetRenderDataNormals() const
@@ -408,7 +408,7 @@ void FTrimeshShapeBarrier::AllocateNativeShape()
 
 	for (const FVector& Vertex : *Params->Vertices)
 	{
-		NativeVertices.push_back(ConvertVector(Vertex));
+		NativeVertices.push_back(ConvertDisplacement(Vertex));
 	}
 
 	agx::UInt32Vector NativeIndices;

@@ -4,7 +4,6 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SceneComponentReference.h"
 #include "AGX_LogCategory.h"
-#include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintFrameComponent.h"
 
 // Unreal Engine includes.
@@ -141,7 +140,7 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningComponentChanged(
 void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
 {
 	// This may be a problem. FrameDefiningComponent uses a TSoftObjectPtr to reference the
-	// SceneComponent. This is required for it to be usabel in the Mode Panel and Blueprint editors.
+	// SceneComponent. This is required for it to be usable in the Mode Panel and Blueprint editors.
 	// It is not legal to dereference a TSoftObjectPtr during  GarbageCollection, and OnDestroy is
 	// likely to be called during GarbageCollection. The assert message from Unreal Engine is
 	//     Illegal call to StaticFindObject() while collecting garbage!

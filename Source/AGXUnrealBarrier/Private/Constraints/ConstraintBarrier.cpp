@@ -200,7 +200,7 @@ FVector FConstraintBarrier::GetLocalLocation(int32 Index) const
 {
 	check(HasNative());
 	agx::Vec3 TranslateAGX = GetFrame(*NativeRef->Native, Index)->getLocalTranslate();
-	FVector TranslateUnreal = ConvertVector(TranslateAGX);
+	FVector TranslateUnreal = ConvertDisplacement(TranslateAGX);
 	return TranslateUnreal;
 }
 
