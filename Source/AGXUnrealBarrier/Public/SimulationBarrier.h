@@ -11,7 +11,6 @@
 #include <memory>
 
 struct FSimulationRef;
-struct FShapeContactData;
 
 class FRigidBodyBarrier;
 class FConstraintBarrier;
@@ -60,11 +59,6 @@ public:
 	FVector GetPointGravity(float& OutMagnitude) const;
 
 	TArray<FShapeContactBarrier> GetShapeContacts(const FShapeBarrier& Shape) const;
-
-#if 0
-	// Note: The sensor contact data is only valid during a single simulation time step.
-	TArray<FShapeContactData> GetShapeContactData(const FShapeBarrier& Shape) const;
-#endif
 
 	/**
 	 * Perform one simulation step, moving the time stamp forward by one time step duration.

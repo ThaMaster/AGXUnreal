@@ -5,7 +5,6 @@
 #include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
 #include "Constraints/ConstraintBarrier.h"
-#include "Contacts/ShapeContactData.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
@@ -298,54 +297,6 @@ TArray<FShapeContactBarrier> FSimulationBarrier::GetShapeContacts(const FShapeBa
 
 	return Contacts;
 }
-
-#if 0
-TArray<FShapeContactData> FSimulationBarrier::GetShapeContactData(const FShapeBarrier& Shape) const
-{
-	check(HasNative());
-	check(Shape.HasNative());
-
-	// Get the geometry contact information from AGX Dynamics.
-	agxCollide::GeometryContactPtrVector ContactsAgx;
-	NativeRef->Native->getSpace()->getGeometryContacts(
-		ContactsAgx, Shape.GetNative()->NativeGeometry);
-
-	TArray<FShapeContactData> ShapeContactDataArr;
-	ShapeContactDataArr.Reserve(ContactsAgx.size());
-
-	// Copy the geometry contact information.
-	for (const agxCollide::GeometryContact* Gc : ContactsAgx)
-	{
-		FShapeContactData ContactData;
-		ContactData.FirstShapeGuid = GetGuid<agxCollide::Geometry>(Gc->geometry(0));
-		ContactData.SecondShapeGuid = GetGuid<agxCollide::Geometry>(Gc->geometry(1));
-		ContactData.FirstBodyGuid = GetGuid<agx::RigidBody>(Gc->rigidBody(0));
-		ContactData.SecondBodyGuid = GetGuid<agx::RigidBody>(Gc->rigidBody(1));
-
-		if (Shape.GetIsSensorGeneratingContactData())
-		{
-			const agxCollide::ContactPointVector& Points = Gc->points();
-
-			// Copy contact points data.
-			ContactData.Points.Reserve(Points.size());
-			for (const agxCollide::ContactPoint& Point : Points)
-			{
-				FShapeContactPoint PointData;
-				PointData.Position = ConvertVector(Point.point());
-				PointData.Force = ConvertVector(Point.getForce());
-				PointData.NomalForce = ConvertVector(Point.getNormalForce());
-				PointData.Normal = ConvertFloatVector(Point.normal());
-				PointData.Depth = ConvertDistance(Point.depth());
-				PointData.Area = ConvertArea(Point.area());
-				ContactData.Points.Add(PointData);
-			}
-		}
-
-		ShapeContactDataArr.Add(ContactData);
-	}
-	return ShapeContactDataArr;
-}
-#endif
 
 void FSimulationBarrier::Step()
 {

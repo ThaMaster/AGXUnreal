@@ -7,7 +7,6 @@
 #include "AGX_LogCategory.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/ShapeBarrier.h"
-#include "Contacts/ShapeContactData.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_EnvironmentUtilities.h"

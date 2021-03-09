@@ -12,8 +12,6 @@
 
 #include "AGX_Simulation.generated.h"
 
-struct FShapeContactData;
-
 class AAGX_Terrain;
 class UAGX_RigidBodyComponent;
 class UAGX_StaticMeshComponent;
