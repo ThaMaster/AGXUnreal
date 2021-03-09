@@ -12,6 +12,7 @@
 #include "Utilities/AGX_TextureUtilities.h"
 
 // Unreal Engine includes.
+#include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
 
 // Sets default values for this component's properties
@@ -291,30 +292,40 @@ TArray<FAGX_ShapeContact> UAGX_ShapeComponent::GetShapeContacts() const
 
 void UAGX_ShapeComponent::ApplySensorMaterial(UMeshComponent& Mesh)
 {
-	const auto Materials = Mesh.GetMaterials();
-	if (Materials.Num() >= 1 && Materials[0] != nullptr)
-	{
-		// Only apply the sensor material if no material has been set for this shape.
-		return;
-	}
-
 	static const TCHAR* AssetPath =
 		TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'");
 	static UMaterial* SensorMaterial = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
-
 	if (SensorMaterial == nullptr)
 	{
 		return;
 	}
 
-	Mesh.SetMaterial(0, SensorMaterial);
+	for (int32 I = 0; I < Mesh.GetNumMaterials(); ++I)
+	{
+		// Don't want to ruin the material setup of any mesh that has one so only setting the
+		// sensor material to empty material slots. The intention is that sensors usually aren't
+		// rendered at all in-game so their material slots should be empty.
+		if (Mesh.GetMaterial(I) != nullptr)
+		{
+			continue;
+		}
+		Mesh.SetMaterial(I, SensorMaterial);
+	}
 }
 
 void UAGX_ShapeComponent::RemoveSensorMaterial(UMeshComponent& Mesh)
 {
-	const auto Materials = Mesh.GetMaterials();
-	if (Materials.Num() >= 1 && Materials[0] && Materials[0]->GetName() == "M_SensorMaterial")
+	for (int32 I = 0; I < Mesh.GetNumMaterials(); ++I)
 	{
-		Mesh.SetMaterial(0, nullptr);
+		const UMaterialInterface* const Material = Mesh.GetMaterial(I);
+		if (Material == nullptr)
+		{
+			continue;
+		}
+		if (Material->GetName() != TEXT("M_SensorMaterial"))
+		{
+			continue;
+		}
+		Mesh.SetMaterial(I, nullptr);
 	}
 }
