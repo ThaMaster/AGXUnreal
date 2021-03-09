@@ -232,10 +232,6 @@ public: // Member functions.
 	static UAGX_Simulation* GetFrom(const UGameInstance* GameInstance);
 
 	TArray<FShapeContactBarrier> GetShapeContacts(const FShapeBarrier& Shape) const;
-#if 0
-	// The sensor contact data is only valid during a single time step.
-	TArray<FShapeContactData> GetShapeContactData(const FShapeBarrier& Shape) const;
-#endif
 
 #if WITH_EDITOR
 	virtual bool CanEditChange(

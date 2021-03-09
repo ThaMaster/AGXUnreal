@@ -399,18 +399,6 @@ TArray<FShapeContactBarrier> UAGX_Simulation::GetShapeContacts(const FShapeBarri
 	return NativeBarrier.GetShapeContacts(Shape);
 }
 
-#if 0
-TArray<FShapeContactData> UAGX_Simulation::GetShapeContactData(const FShapeBarrier& Shape) const
-{
-	if (!HasNative())
-	{
-		return TArray<FShapeContactData>();
-	}
-
-	return NativeBarrier.GetShapeContactData(Shape);
-}
-#endif
-
 #if WITH_EDITOR
 bool UAGX_Simulation::CanEditChange(
 #if UE_VERSION_OLDER_THAN(4, 25, 0)
