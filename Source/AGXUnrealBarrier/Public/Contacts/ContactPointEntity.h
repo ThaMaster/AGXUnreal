@@ -9,7 +9,14 @@ struct FContactPointEntity
 {
 	agxCollide::ContactPoint Native;
 
-	FContactPointEntity() = default;
+	FContactPointEntity()
+		// Must explicitly pass empty ContactPointPtr because the default
+		// constructor creates a new entity in the current threads default
+		// storage.
+		: Native(agx::Physics::ContactPointPtr())
+	{
+	}
+
 	FContactPointEntity(agxCollide::ContactPoint InNative)
 		: Native(InNative)
 	{
