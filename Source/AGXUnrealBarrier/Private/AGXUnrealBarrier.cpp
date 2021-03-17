@@ -87,13 +87,14 @@ void FAGXUnrealBarrierModule::SetupUsePluginResourcesOnly()
 {
 	check(FAGX_EnvironmentUtilities::IsSetupEnvRun() == false);
 	const FString AgxResourcesPath = FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath();
-	const FString AgxBinPath = FPaths::Combine(AgxResourcesPath, FString("bin"));
 
 #if defined(_WIN64)
+	const FString AgxBinPath = FPaths::Combine(AgxResourcesPath, FString("bin"));
 	const FString VdbGridLibPath =
 		FPaths::Combine(AgxBinPath, FString("Win64"), FString("vdbgrid.dll"));
 #endif
 #if defined(__linux__)
+	const FString AgxBinPath = FPaths::Combine(AgxResourcesPath, FString("lib"));
 	const FString VdbGridLibPath =
 		FPaths::Combine(AgxBinPath, FString("Linux"), FString("libvdbgrid.so"));
 #endif
@@ -108,7 +109,8 @@ void FAGXUnrealBarrierModule::SetupUsePluginResourcesOnly()
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Tried to dynamically load %s but the loading failed. Some AGX Dynamics terrain "
-				 "features might not be available."));
+				 "features might not be available."),
+			*VdbGridLibPath);
 	}
 
 	FAGX_EnvironmentUtilities::EnsureAgxDynamicsEnvironmentIsSetup();
