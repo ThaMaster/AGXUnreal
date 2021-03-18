@@ -94,9 +94,9 @@ void FAGXUnrealBarrierModule::SetupUsePluginResourcesOnly()
 		FPaths::Combine(AgxBinPath, FString("Win64"), FString("vdbgrid.dll"));
 #endif
 #if defined(__linux__)
-	const FString AgxBinPath = FPaths::Combine(AgxResourcesPath, FString("lib"));
+	const FString AgxLibPath = FPaths::Combine(AgxResourcesPath, FString("lib"));
 	const FString VdbGridLibPath =
-		FPaths::Combine(AgxBinPath, FString("Linux"), FString("libvdbgrid.so"));
+		FPaths::Combine(AgxLibPath, FString("Linux"), FString("libvdbgrid.so"));
 #endif
 	// vdbgrid.dll is loaded dynamically at runtime by AGX Dynamics's Terrain module. The directory
 	// containing vdbgrid.dll must either be in PATH or it can be pre-loaded which is done here.
