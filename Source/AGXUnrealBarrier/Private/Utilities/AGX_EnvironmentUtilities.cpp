@@ -204,7 +204,12 @@ void FAGX_EnvironmentUtilities::EnsureAgxDynamicsEnvironmentIsSetup()
 	const FString AgxBinPath = FPaths::Combine(AgxResourcesPath, FString("bin"));
 	const FString AgxDataPath = FPaths::Combine(AgxResourcesPath, FString("data"));
 	const FString AgxCfgPath = FPaths::Combine(AgxDataPath, FString("cfg"));
-	const FString AgxPluginsPath = FPaths::Combine(AgxResourcesPath, FString("plugins"));
+	FString AgxPluginsPath = FPaths::Combine(AgxResourcesPath, FString("plugins"));
+
+	if (!FPaths::DirectoryExists(AgxPluginsPath))
+	{
+		AgxPluginsPath = FPaths::Combine(AgxBinPath, FString("plugins"));
+	}
 
 	UE_LOG(
 		LogAGX, Log,

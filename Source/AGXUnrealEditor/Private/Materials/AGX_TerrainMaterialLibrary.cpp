@@ -28,11 +28,7 @@ namespace AGX_TerrainMaterialLibrary_helpers
 		const FString PackagePath =
 			FString::Printf(TEXT("/AGXUnreal/Terrain/TerrainMaterialLibrary/%s"), *AssetName);
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
-
-// Not sure if or when this is needed or legal.
-#if 0
 		Package->FullyLoad();
-#endif
 
 		// Create the asset itself, reading data from the AGX Dynamics terrain material library.
 		FTerrainMaterialBarrier Material =
@@ -47,6 +43,7 @@ namespace AGX_TerrainMaterialLibrary_helpers
 		Asset->PostEditChange();
 		Asset->AddToRoot();
 		Package->SetDirtyFlag(true);
+		Package->FullyLoad();
 		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
 			PackagePath, FPackageName::GetAssetPackageExtension());
 		Package->GetMetaData();
@@ -59,6 +56,19 @@ namespace AGX_TerrainMaterialLibrary_helpers
 				TEXT("Could not create terrain library material %s: UPackage::SavePackage failed."),
 				*NameAGX);
 		}
+
+		// Must fully load the package or else project packaging will fail with:
+		//
+		//    Package /AGXUnreal/Terrain/TerrainMaterialLibrary/AGX_TM_gravel_1 supposed
+		//    to be fully loaded but isn't. RF_WasLoaded is set
+		//
+		//    Unable to cook package for platform because it is unable to be loaded:
+		//    <PATH>/AGXUnreal/Content/Terrain/TerrainMaterialLibrary/AGX_TM_gravel_1.uasset
+		//
+		// I'm not entirely sure where the FullyLoad call should be for it to
+		// take effect in all cases, so there are a few of them. Remove the
+		// uncessary ones once we know which can safely be removed.
+		Package->FullyLoad();
 	}
 }
 
