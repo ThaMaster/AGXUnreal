@@ -28,7 +28,6 @@ namespace AGX_TerrainMaterialLibrary_helpers
 		const FString PackagePath =
 			FString::Printf(TEXT("/AGXUnreal/Terrain/TerrainMaterialLibrary/%s"), *AssetName);
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
-
 		Package->FullyLoad();
 
 		// Create the asset itself, reading data from the AGX Dynamics terrain material library.
@@ -65,6 +64,10 @@ namespace AGX_TerrainMaterialLibrary_helpers
 		//
 		//    Unable to cook package for platform because it is unable to be loaded:
 		//    <PATH>/AGXUnreal/Content/Terrain/TerrainMaterialLibrary/AGX_TM_gravel_1.uasset
+		//
+		// I'm not entirely sure where the FullyLoad call should be for it to
+		// take effect in all cases, so there are a few of them. Remove the
+		// uncessary ones once we know which can safely be removed.
 		Package->FullyLoad();
 	}
 }
