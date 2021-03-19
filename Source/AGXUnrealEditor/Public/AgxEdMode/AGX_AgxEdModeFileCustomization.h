@@ -1,9 +1,10 @@
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
-#include "IDetailCustomization.h"
 #include "DetailCategoryBuilder.h"
 #include "DetailWidgetRow.h"
+#include "IDetailCustomization.h"
 #include "Widgets/Input/SButton.h"
 
 class IDetailLayoutBuilder;

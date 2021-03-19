@@ -1,11 +1,15 @@
 #include "AgxEdMode/AGX_AgxEdMode.h"
 
+// AGX Dynamics for Unreal includes.
 #include "AgxEdMode/AGX_AgxEdModeBodies.h"
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 #include "AgxEdMode/AGX_AgxEdModeDebug.h"
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
+#include "AgxEdMode/AGX_AgxEdModeTerrain.h"
 #include "AgxEdMode/AGX_AgxEdModeToolkit.h"
 #include "Toolkits/ToolkitManager.h"
+
+// Unreal Engine includes.
 #include "EditorModeManager.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_AgxEdMode"
@@ -17,6 +21,7 @@ FAGX_AgxEdMode::FAGX_AgxEdMode()
 	SubModes.Add(UAGX_AgxEdModeFile::GetInstance());
 	SubModes.Add(UAGX_AgxEdModeBodies::GetInstance());
 	SubModes.Add(UAGX_AgxEdModeConstraints::GetInstance());
+	SubModes.Add(UAGX_AgxEdModeTerrain::GetInstance());
 	SubModes.Add(UAGX_AgxEdModeDebug::GetInstance());
 
 	CurrentSubMode = SubModes[0];
