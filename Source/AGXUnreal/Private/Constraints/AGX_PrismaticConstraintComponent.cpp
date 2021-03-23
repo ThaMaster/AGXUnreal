@@ -33,5 +33,5 @@ void UAGX_PrismaticConstraintComponent::AllocateNative()
 	NativeBarrier.Reset(new FPrismaticBarrier());
 
 	FAGX_ConstraintUtilities::CreateNative(
-		GetNative(), BodyAttachment1, BodyAttachment2, GetFName());
+		GetNative(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
 }

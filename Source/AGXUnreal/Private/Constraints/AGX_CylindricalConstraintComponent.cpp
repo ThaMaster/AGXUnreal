@@ -34,5 +34,5 @@ void UAGX_CylindricalConstraintComponent::AllocateNative()
 	NativeBarrier.Reset(new FCylindricalJointBarrier());
 
 	FAGX_ConstraintUtilities::CreateNative(
-		GetNative(), BodyAttachment1, BodyAttachment2, GetFName());
+		GetNative(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
 }
