@@ -257,9 +257,8 @@ namespace FAGX_ConstraintUtilities_helpers
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("Constraint '%s' in Actor '%s' has Frame Defining Source set to Other but "
-					 "Frame Defining "
-					 "Component is not set to a valid Component. Constraint frames may be created "
-					 "incorrectly."),
+					 "Frame Defining Component is not set to a valid Component. Constraint frames "
+					 "may be created incorrectly."),
 				*ConstraintName.ToString(), *ActorName.ToString());
 		}
 
