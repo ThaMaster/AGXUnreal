@@ -149,6 +149,8 @@ void UAGX_ConstraintComponent::PostInitProperties()
 	// but there will always be an outer chain. This worry may be unfounded.
 	BodyAttachment1.RigidBody.OwningActor = GetTypedOuter<AActor>();
 	BodyAttachment2.RigidBody.OwningActor = GetTypedOuter<AActor>();
+	BodyAttachment1.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
+	BodyAttachment2.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 }
 
 FConstraintBarrier* UAGX_ConstraintComponent::GetOrCreateNative()
@@ -369,10 +371,10 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 				ModifiedBodyAttachment->RigidBody.OwningActor = GetTypedOuter<AActor>();
 			}
 
-			if (ModifiedBodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::Other &&
-				ModifiedBodyAttachment->FrameDefiningComponent.OwningActor == nullptr)
+			if (ModifiedBodyAttachment->FrameDefiningComponent.OwningActor == nullptr)
 			{
-				ModifiedBodyAttachment->FrameDefiningComponent.FallbackOwningActor = GetOwner();
+				ModifiedBodyAttachment->FrameDefiningComponent.OwningActor =
+					GetTypedOuter<AActor>();
 			}
 		}
 	}
@@ -443,29 +445,6 @@ void UAGX_ConstraintComponent::PostLoad()
 	Super::PostLoad();
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
-
-	for (FAGX_ConstraintBodyAttachment* BodyAttachment : {&BodyAttachment1, &BodyAttachment2})
-	{
-		if (BodyAttachment->FrameDefiningSource == EAGX_FrameDefiningSource::Other)
-		{
-			FAGX_SceneComponentReference* ComponentReference =
-				&BodyAttachment->FrameDefiningComponent;
-			ComponentReference->FallbackOwningActor = nullptr;
-			/// \todo Investigate the relationship between FName("") and NAME_None, and what an
-			/// empty text field in the Blueprint editor produces. Playing it safe for now and
-			/// checking for both.
-			if (ComponentReference->OwningActor == nullptr &&
-				(ComponentReference->SceneComponentName != "" &&
-				 ComponentReference->SceneComponentName != NAME_None))
-			{
-				// A nullptr FrameDefiningComponent actually means something (use the body as
-				// origin), so we shouldn't set it unconditionally. We use the name as a sign that
-				// an OwningActor should be set.
-				ComponentReference->OwningActor = GetOwner();
-				ComponentReference->CacheCurrentSceneComponent();
-			}
-		}
-	}
 }
 
 void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
@@ -505,6 +484,8 @@ void UAGX_ConstraintComponent::BeginPlay()
 	Super::BeginPlay();
 	BodyAttachment1.RigidBody.CacheCurrentRigidBody();
 	BodyAttachment2.RigidBody.CacheCurrentRigidBody();
+	BodyAttachment1.FrameDefiningComponent.CacheCurrentSceneComponent();
+	BodyAttachment2.FrameDefiningComponent.CacheCurrentSceneComponent();
 	if (!HasNative())
 	{
 		CreateNative();

@@ -35,5 +35,5 @@ void UAGX_HingeConstraintComponent::AllocateNative()
 	NativeBarrier.Reset(new FHingeBarrier());
 
 	FAGX_ConstraintUtilities::CreateNative(
-		GetNative(), BodyAttachment1, BodyAttachment2, GetFName());
+		GetNative(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
 }

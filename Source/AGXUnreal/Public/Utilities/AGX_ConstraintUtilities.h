@@ -101,7 +101,8 @@ public:
 
 	static void CreateNative(
 		FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& Attachment1,
-		FAGX_ConstraintBodyAttachment& Attachment2, const FName& ConstraintName);
+		FAGX_ConstraintBodyAttachment& Attachment2, const FName& ConstraintName,
+		const FName& ActorName = NAME_None);
 
 	/**
 	 * Get the Barrier object for the given Component.
