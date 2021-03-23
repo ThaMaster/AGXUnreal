@@ -54,14 +54,14 @@ USTRUCT() struct AGXUNREAL_API FAGX_SceneComponentReference
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics",
-		Meta = (Tooltip = "The name of the RigidBodyComponent."))
+		Meta = (Tooltip = "The name of the SceneComponent."))
 	FName SceneComponentName;
 
 	/**
 	 * If true, then search not only within OwningActor's Components, but also recursively through
 	 * ChildActorComponents as well.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Body reference")
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	uint8 bSearchChildActors : 1;
 
 	USceneComponent* GetSceneComponent() const;
