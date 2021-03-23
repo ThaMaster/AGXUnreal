@@ -23,6 +23,18 @@ public:
 	// Sets default values for this component's properties
 	UAGX_RigidBodyComponent();
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetPosition(const FVector& Position);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FVector GetPosition() const ;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetRotation(const FQuat& Rotation);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FQuat GetRotation() const;
+
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	bool bEnabled = true;
 
@@ -30,7 +42,7 @@ public:
 	void SetEnabled(bool InEnabled);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	bool GetEnabled();
+	bool GetEnabled() const;
 
 	/// Whether the mass should be computed automatically.
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
@@ -40,7 +52,7 @@ public:
 	void SetAutomaticMassProperties(bool InEnabled);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	bool GetAutomaticMassProperties();
+	bool GetAutomaticMassProperties() const;
 
 	/// The mass of the body.
 	UPROPERTY(
@@ -52,7 +64,7 @@ public:
 	void SetMass(float InMass);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	float GetMass();
+	float GetMass() const;
 
 	/// The three-component diagonal of the inertia tensor.
 	UPROPERTY(
@@ -61,19 +73,19 @@ public:
 	FVector PrincipalInertiae;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetPrincipalInertiae(FVector InPrincipalInertiae);
+	void SetPrincipalInertiae(const FVector& InPrincipalInertiae);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	FVector GetPrincipalInertiae();
+	FVector GetPrincipalInertiae() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	FVector Velocity;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetVelocity(FVector InVelocity);
+	void SetVelocity(const FVector& InVelocity);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	FVector GetVelocity();
+	FVector GetVelocity() const;
 
 	/**
 	 * In degrees per second and following the Unreal Editor rotation widget so that a positive
@@ -92,10 +104,10 @@ public:
 	FVector AngularVelocity;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetAngularVelocity(FVector InAngularVelocity);
+	void SetAngularVelocity(const FVector& InAngularVelocity);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	FVector GetAngularVelocity();
+	FVector GetAngularVelocity() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
@@ -104,7 +116,7 @@ public:
 	void SetMotionControl(TEnumAsByte<enum EAGX_MotionControl> InMotionControl);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	TEnumAsByte<enum EAGX_MotionControl> GetMotionControl();
+	TEnumAsByte<enum EAGX_MotionControl> GetMotionControl() const;
 
 	/**
 	 * Decide to where transformation updates from AGX Dynamics should be written.

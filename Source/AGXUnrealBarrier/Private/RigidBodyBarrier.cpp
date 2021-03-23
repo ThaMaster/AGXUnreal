@@ -49,7 +49,7 @@ bool FRigidBodyBarrier::GetEnabled() const
 	return NativeRef->Native->getEnable();
 }
 
-void FRigidBodyBarrier::SetPosition(FVector PositionUnreal)
+void FRigidBodyBarrier::SetPosition(const FVector& PositionUnreal)
 {
 	check(HasNative());
 	agx::Vec3 PositionAGX = ConvertDisplacement(PositionUnreal);
@@ -64,7 +64,7 @@ FVector FRigidBodyBarrier::GetPosition() const
 	return PositionUnreal;
 }
 
-void FRigidBodyBarrier::SetRotation(FQuat RotationUnreal)
+void FRigidBodyBarrier::SetRotation(const FQuat& RotationUnreal)
 {
 	check(HasNative());
 	agx::Quat RotationAGX = Convert(RotationUnreal);
@@ -79,7 +79,7 @@ FQuat FRigidBodyBarrier::GetRotation() const
 	return RotationUnreal;
 }
 
-void FRigidBodyBarrier::SetVelocity(FVector VelocityUnreal)
+void FRigidBodyBarrier::SetVelocity(const FVector& VelocityUnreal)
 {
 	check(HasNative());
 	agx::Vec3 VelocityAGX = ConvertDisplacement(VelocityUnreal);
@@ -94,7 +94,7 @@ FVector FRigidBodyBarrier::GetVelocity() const
 	return VelocityUnreal;
 }
 
-void FRigidBodyBarrier::SetAngularVelocity(FVector AngularVelocityUnreal)
+void FRigidBodyBarrier::SetAngularVelocity(const FVector& AngularVelocityUnreal)
 {
 	check(HasNative());
 	agx::Vec3 AngularVelocityAGX = ConvertAngularVelocity(AngularVelocityUnreal);

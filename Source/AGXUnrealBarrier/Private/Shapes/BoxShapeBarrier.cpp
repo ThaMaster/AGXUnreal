@@ -49,7 +49,7 @@ FBoxShapeBarrier::~FBoxShapeBarrier()
 	// not just the forward declaration, of FBoxShapeRef.
 }
 
-void FBoxShapeBarrier::SetHalfExtents(FVector HalfExtentsUnreal)
+void FBoxShapeBarrier::SetHalfExtents(const FVector& HalfExtentsUnreal)
 {
 	check(HasNative());
 	agx::Vec3 HalfExtentsAGX = ConvertDistance(HalfExtentsUnreal);

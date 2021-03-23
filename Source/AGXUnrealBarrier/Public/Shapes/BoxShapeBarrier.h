@@ -14,7 +14,7 @@ public:
 	FBoxShapeBarrier(FBoxShapeBarrier&& Other);
 	virtual ~FBoxShapeBarrier() override;
 
-	void SetHalfExtents(FVector NewHalfExtents);
+	void SetHalfExtents(const FVector& NewHalfExtents);
 	FVector GetHalfExtents() const;
 
 private:

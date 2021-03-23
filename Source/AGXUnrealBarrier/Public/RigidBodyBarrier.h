@@ -37,17 +37,17 @@ public:
 	void SetEnabled(bool Enabled);
 	bool GetEnabled() const;
 
-	void SetPosition(FVector Position);
+	void SetPosition(const FVector& Position);
 	FVector GetPosition() const;
 
-	void SetRotation(FQuat Rotation);
+	void SetRotation(const FQuat& Rotation);
 	FQuat GetRotation() const;
 
-	void SetVelocity(FVector Velocity);
+	void SetVelocity(const FVector& Velocity);
 	FVector GetVelocity() const;
 
 	// In degrees/s.
-	void SetAngularVelocity(FVector AngularVelocity);
+	void SetAngularVelocity(const FVector& AngularVelocity);
 
 	// In degrees/s.
 	FVector GetAngularVelocity() const;
