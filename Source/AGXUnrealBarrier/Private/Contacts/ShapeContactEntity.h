@@ -9,7 +9,13 @@ struct FShapeContactEntity
 {
 	agxCollide::GeometryContact Native;
 
-	FShapeContactEntity() = default;
+	FShapeContactEntity()
+		// Explicitly passing an empty GeometryContactPtr to ensure that an entity isn't created
+		// in the thread's default storage.
+		: Native(agx::Physics::GeometryContactPtr())
+	{
+	}
+
 	FShapeContactEntity(agxCollide::GeometryContact InNative)
 		: Native(InNative)
 	{

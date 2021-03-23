@@ -26,6 +26,8 @@
 #include "AgxEdMode/AGX_AgxEdModeConstraintsCustomization.h"
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 #include "AgxEdMode/AGX_AgxEdModeFileCustomization.h"
+#include "AgxEdMode/AGX_AgxEdModeTerrain.h"
+#include "AgxEdMode/AGX_AgxEdModeTerrainCustomization.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerActor.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponentCustomization.h"
@@ -202,6 +204,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_AgxEdModeFileCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
+		UAGX_AgxEdModeTerrain::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_AgxEdModeTerrainCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
 		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_CollisionGroupDisablerComponentCustomization::MakeInstance));
@@ -256,6 +263,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 		UAGX_AgxEdModeConstraints::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeFile::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeTerrain::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName());
