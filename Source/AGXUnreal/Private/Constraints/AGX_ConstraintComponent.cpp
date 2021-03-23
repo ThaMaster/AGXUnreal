@@ -149,19 +149,8 @@ void UAGX_ConstraintComponent::PostInitProperties()
 	// but there will always be an outer chain. This worry may be unfounded.
 	BodyAttachment1.RigidBody.OwningActor = GetTypedOuter<AActor>();
 	BodyAttachment2.RigidBody.OwningActor = GetTypedOuter<AActor>();
-
-	// A nullptr FrameDefiningComponent actually means something (use the body as
-	// origin), so we shouldn't set it unconditionally. We use the name as a sign that
-	// an OwningActor should be set.
-	/// \todo Doesn't FrameDefiningSource specify exactly this? Why check the name too?
-	if (BodyAttachment1.FrameDefiningComponent.SceneComponentName != NAME_None)
-	{
-		BodyAttachment1.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
-	}
-	if (BodyAttachment2.FrameDefiningComponent.SceneComponentName != NAME_None)
-	{
-		BodyAttachment2.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
-	}
+	BodyAttachment1.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
+	BodyAttachment2.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 }
 
 FConstraintBarrier* UAGX_ConstraintComponent::GetOrCreateNative()
