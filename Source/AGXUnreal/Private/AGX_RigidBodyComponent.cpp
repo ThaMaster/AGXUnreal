@@ -9,6 +9,8 @@
 // Unreal Engine includes.
 #include "Engine/GameInstance.h"
 #include "GameFramework/Actor.h"
+#include "Math/Rotator.h"
+#include "Math/Quat.h"
 #include "Misc/EngineVersionComparison.h"
 
 // Sets default values for this component's properties
@@ -432,6 +434,19 @@ FQuat UAGX_RigidBodyComponent::GetRotation() const
 	}
 
 	return GetComponentQuat();
+}
+
+void UAGX_RigidBodyComponent::SetRotator(const FRotator& Rotator)
+{
+	const FQuat Quat = Rotator.Quaternion();
+	SetRotation(Quat);
+}
+
+FRotator UAGX_RigidBodyComponent::GetRotator() const
+{
+	const FQuat Quat = GetRotation();
+	const FRotator Rotator = Quat.Rotator();
+	return Rotator;
 }
 
 void UAGX_RigidBodyComponent::SetEnabled(bool InEnabled)
