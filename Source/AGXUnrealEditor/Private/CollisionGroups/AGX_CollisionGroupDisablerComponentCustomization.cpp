@@ -1,12 +1,15 @@
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponentCustomization.h"
 
+// Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "ScopedTransaction.h"
 #include "Widgets/Input/SComboBox.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Text/STextBlock.h"
 
+// AGX Dynamics for Unreal includes.
 #include "Utilities/AGX_EditorUtilities.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 
@@ -48,33 +51,69 @@ void FAGX_CollisionGroupDisablerComponentCustomization::CustomizeDetails(
 		LOCTEXT("CollisionGroup2Name", "Collision Group 2"),
 		&CollisionGroupDisabler->GetSelectedGroup2());
 
-	// Add button for disabling collision of selected collision groups
-	CategoryBuilder.AddCustomRow(FText::GetEmpty())
-		[SNew(SHorizontalBox) +
-		 SHorizontalBox::Slot().AutoWidth()
-			 [SNew(SButton)
-				  .Text(LOCTEXT("CreateCollisionDisGroupButtonText", "Disable collision"))
-				  .ToolTipText(LOCTEXT(
-					  "CreateCollisionDisGroupButtonTooltip",
-					  "Disable collision between selected groups."))
-				  .OnClicked_Lambda([CollisionGroupDisabler]() {
-					  CollisionGroupDisabler->DisableSelectedCollisionGroupPairs();
-					  return FReply::Handled();
-				  })]];
+	// clang-format off
 
-	// Add button for re-enable collision of selected collision groups
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
-		[SNew(SHorizontalBox) +
-		 SHorizontalBox::Slot().AutoWidth()
-			 [SNew(SButton)
-				  .Text(LOCTEXT("CreateCollisionEnaGroupButtonText", "Re-enable collision"))
-				  .ToolTipText(LOCTEXT(
-					  "CreateCollisionEnaGroupButtonTooltip",
-					  "Re-enable collision between selected groups."))
-				  .OnClicked_Lambda([CollisionGroupDisabler]() {
-					  CollisionGroupDisabler->ReenableSelectedCollisionGroupPairs();
-					  return FReply::Handled();
-				  })]];
+	[
+		// Add button for disabling collision of selected collision groups
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("CreateCollisionDisGroupButtonText", "Disable collision"))
+			.ToolTipText(LOCTEXT(
+				"CreateCollisionDisGroupButtonTooltip",
+				"Disable collision between selected groups."))
+			.OnClicked_Lambda([CollisionGroupDisabler]() {
+				const FScopedTransaction Transaction(LOCTEXT("CreateCollisionDisGroupUndo", "Disable collision group pair"));
+				CollisionGroupDisabler->Modify();
+				CollisionGroupDisabler->DisableSelectedCollisionGroupPairs();
+				return FReply::Handled();
+			})
+		]
+
+		// Add button for re-enable collision of selected collision groups
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("CreateCollisionEnaGroupButtonText", "Re-enable collision"))
+			.ToolTipText(LOCTEXT(
+				"CreateCollisionEnaGroupButtonTooltip",
+				"Re-enable collision between selected groups."))
+			.OnClicked_Lambda([CollisionGroupDisabler]() {
+				const FScopedTransaction Transaction(LOCTEXT("CreateCollisionEnaGroupUndo", "Re-enable collision group pair"));
+				CollisionGroupDisabler->Modify();
+				CollisionGroupDisabler->ReenableSelectedCollisionGroupPairs();
+				return FReply::Handled();
+			})
+		]
+	];
+
+	// Add button for clearing invalid collision group pairs.
+	CategoryBuilder.AddCustomRow(FText::GetEmpty())
+	[
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("RemoveInvalidGroupsPairsButtonText", "Remove invalid group pairs"))
+			.ToolTipText(LOCTEXT(
+				"RemoveInvalidGroupPairsButtonTooltip",
+				"Remove all collision group pairs that contains collision groups that no shape has."))
+			.OnClicked_Lambda([CollisionGroupDisabler]() {
+				const FScopedTransaction Transaction(LOCTEXT("RemoveInvalidGroupPairsUndo", "Remove invalid group pairs"));
+				CollisionGroupDisabler->Modify();
+				CollisionGroupDisabler->UpdateAvailableCollisionGroupsFromWorld();
+				CollisionGroupDisabler->RemoveDeprecatedCollisionGroups();
+				return FReply::Handled();
+			})
+		]
+	];
+
+	// clang-format on
 
 	CategoryBuilder.AddProperty(DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(
 		UAGX_CollisionGroupDisablerComponent, DisabledCollisionGroupPairs)));

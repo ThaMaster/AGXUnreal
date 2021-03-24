@@ -49,6 +49,10 @@ public:
 
 	void UpdateAvailableCollisionGroups();
 
+	void UpdateAvailableCollisionGroupsFromWorld();
+
+	void RemoveDeprecatedCollisionGroups();
+
 	const TArray<FName>& GetAvailableCollisionGroups() const
 	{
 		return AvailableCollisionGroups;
@@ -72,10 +76,6 @@ protected:
 
 private:
 	void AddCollisionGroupPairsToSimulation();
-
-	void UpdateAvailableCollisionGroupsFromWorld();
-
-	void RemoveDeprecatedCollisionGroups();
 
 	bool IsCollisionGroupPairDisabled(
 		const FName& CollisionGroup1, const FName& CollisionGroup2, int& OutIndex) const;

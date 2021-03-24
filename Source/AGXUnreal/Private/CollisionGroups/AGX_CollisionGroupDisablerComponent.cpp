@@ -49,10 +49,6 @@ void UAGX_CollisionGroupDisablerComponent::UpdateAvailableCollisionGroups()
 	SelectedGroup2 = FName(TEXT(""));
 
 	UpdateAvailableCollisionGroupsFromWorld();
-
-	// Remove any disabled collision group pair that contains a collision
-	// group not present in the world any more.
-	RemoveDeprecatedCollisionGroups();
 }
 
 void UAGX_CollisionGroupDisablerComponent::DisableCollisionGroupPair(
@@ -164,10 +160,9 @@ void UAGX_CollisionGroupDisablerComponent::RemoveDeprecatedCollisionGroups()
 {
 	for (int i = 0; i < DisabledCollisionGroupPairs.Num();)
 	{
-		if (AvailableCollisionGroups.IndexOfByKey(DisabledCollisionGroupPairs[i].Group1) ==
-				INDEX_NONE ||
-			AvailableCollisionGroups.IndexOfByKey(DisabledCollisionGroupPairs[i].Group2) ==
-				INDEX_NONE)
+		const FAGX_CollisionGroupPair& Pair = DisabledCollisionGroupPairs[i];
+		if (AvailableCollisionGroups.IndexOfByKey(Pair.Group1) == INDEX_NONE ||
+			AvailableCollisionGroups.IndexOfByKey(Pair.Group2) == INDEX_NONE)
 		{
 			DisabledCollisionGroupPairs.RemoveAt(i);
 		}
