@@ -39,6 +39,7 @@ namespace
 		return static_cast<const FConstraint1DOFBarrier*>(Constraint.GetNative());
 	}
 
+#if WITH_EDITOR
 	void AddControllerPropertyCallbacks(
 		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher, const FName& Member,
 		FAGX_ConstraintController* Controller)
@@ -163,17 +164,19 @@ namespace
 				Controller->SetLockedAtZeroSpeed(Controller->bLockedAtZeroSpeed);
 			});
 	}
-
+#endif
 }
 
 void UAGX_Constraint1DofComponent::PostLoad()
 {
 	Super::PostLoad();
+#if WITH_EDITOR
 	AddElectricMotorControllerPropertyCallbacks(PropertyDispatcher, &ElectricMotorController);
 	AddFrictionControllerPropertyCallbacks(PropertyDispatcher, &FrictionController);
 	AddLockControllerPropertyCallbacks(PropertyDispatcher, &LockController);
 	AddRangeControllerPropertyCallbacks(PropertyDispatcher, &RangeController);
 	AddTargetSpeedControllerPropertyCallbacks(PropertyDispatcher, &TargetSpeedController);
+#endif
 }
 
 float UAGX_Constraint1DofComponent::GetAngle() const
