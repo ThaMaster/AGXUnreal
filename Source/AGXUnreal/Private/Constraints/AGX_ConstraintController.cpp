@@ -51,6 +51,91 @@ namespace FAGX_ConstraintController_helpers
 	}
 }
 
+void FAGX_ConstraintController::SetEnable(bool bInEnable)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetEnable(bInEnable);
+	}
+	bEnable = bInEnable;
+}
+
+bool FAGX_ConstraintController::GetEnable() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetEnable();
+	}
+	else
+	{
+		return bEnable;
+	}
+}
+
+void FAGX_ConstraintController::SetCompliance(double InCompliance)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetCompliance(InCompliance);
+	}
+	Compliance = InCompliance;
+}
+
+double FAGX_ConstraintController::GetCompliance() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetCompliance();
+	}
+	else
+	{
+		return Compliance;
+	}
+}
+
+
+void FAGX_ConstraintController::SetDamping(double InDamping)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetDamping(InDamping);
+	}
+	Damping = InDamping;
+}
+
+double FAGX_ConstraintController::GetDamping() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetDamping();
+	}
+	else
+	{
+		return Damping;
+	}
+}
+
+void FAGX_ConstraintController::SetForceRange(const FFloatInterval& InForceRange)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetForceRange(InForceRange);
+	}
+	ForceRange = InForceRange;
+}
+
+FFloatInterval FAGX_ConstraintController::GetForceRange() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetForceRange();
+	}
+	else
+	{
+		return ForceRange;
+	}
+}
+
 double FAGX_ConstraintController::GetForce()
 {
 	if (!HasNative())
@@ -67,6 +152,12 @@ bool FAGX_ConstraintController::HasNative() const
 }
 
 FConstraintControllerBarrier* FAGX_ConstraintController::GetNative()
+{
+	check(HasNative());
+	return NativeBarrier.Get();
+}
+
+const FConstraintControllerBarrier* FAGX_ConstraintController::GetNative() const
 {
 	check(HasNative());
 	return NativeBarrier.Get();

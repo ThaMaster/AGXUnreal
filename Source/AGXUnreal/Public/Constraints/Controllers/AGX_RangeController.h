@@ -28,6 +28,10 @@ struct AGXUNREAL_API FAGX_ConstraintRangeController : public FAGX_ConstraintCont
 	UPROPERTY(EditAnywhere, Category = "AGX Range Controller", Meta = (EditCondition = "bEnable"))
 	FFloatInterval Range;
 
+	void SetRange(const FFloatInterval& InRange);
+
+	FFloatInterval GetRange() const;
+
 public:
 	FAGX_ConstraintRangeController() = default;
 	FAGX_ConstraintRangeController(bool bRotational);
@@ -47,6 +51,25 @@ class AGXUNREAL_API UAGX_ConstraintRangeController_FL : public UBlueprintFunctio
 {
 	GENERATED_BODY()
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Range Controller")
+	static void SetRange(
+		UPARAM(ref) FAGX_ConstraintRangeController& Controller, float RangeMin, float RangeMax)
+	{
+		Controller.SetRange(FFloatInterval(RangeMin, RangeMax));
+	};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Range Controller")
+	static float GetRangeMax(UPARAM(ref) FAGX_ConstraintRangeController& Controller)
+	{
+		return Controller.GetRange().Max;
+	};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Range Controller")
+	static float GetRangeMin(UPARAM(ref) FAGX_ConstraintRangeController& Controller)
+	{
+		return Controller.GetRange().Min;
+	};
+
 	//~ Begin AGX_ConstraintController Blueprint Library interface.
 	// These are copy/pasted from FAGX_ConstraintController.h. See the comment in that file.
 
@@ -54,6 +77,60 @@ class AGXUNREAL_API UAGX_ConstraintRangeController_FL : public UBlueprintFunctio
 	static bool IsValid(UPARAM(ref) FAGX_ConstraintRangeController& ControllerRef)
 	{
 		return ControllerRef.HasNative();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetEnable(UPARAM(ref) FAGX_ConstraintRangeController& ControllerRef, bool Enable)
+	{
+		return ControllerRef.SetEnable(Enable);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static bool GetEnable(UPARAM(ref) FAGX_ConstraintRangeController& ControllerRef)
+	{
+		return ControllerRef.GetEnable();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetCompliance(UPARAM(ref) FAGX_ConstraintRangeController& Controller, float Compliance)
+	{
+		Controller.SetCompliance(static_cast<double>(Compliance));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetCompliance(UPARAM(ref) const FAGX_ConstraintRangeController& Controller)
+	{
+		return static_cast<float>(Controller.GetCompliance());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetDamping(UPARAM(ref) FAGX_ConstraintRangeController& Controller, float Damping)
+	{
+		Controller.SetDamping(static_cast<double>(Damping));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetDamping(UPARAM(ref) const FAGX_ConstraintRangeController& Controller)
+	{
+		return static_cast<float>(Controller.GetDamping());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetForceRange(UPARAM(ref) FAGX_ConstraintRangeController& Controller, float MinForce, float MaxForce)
+	{
+		Controller.SetForceRange(FFloatInterval(MinForce, MaxForce));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForceRangeMin(UPARAM(ref) const FAGX_ConstraintRangeController& Controller)
+	{
+		return Controller.GetForceRange().Min;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForceRangeMax(UPARAM(ref) const FAGX_ConstraintRangeController& Controller)
+	{
+		return Controller.GetForceRange().Max;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

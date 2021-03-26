@@ -23,6 +23,43 @@ namespace
 		// See comment in GetElectricMotorBarrier.
 		return static_cast<FRangeControllerBarrier*>(Controller.GetNative());
 	}
+
+	const FRangeControllerBarrier* GetRangeBarrier(const FAGX_ConstraintRangeController& Controller)
+	{
+		// See comment in GetElectricMotorBarrier.
+		return static_cast<const FRangeControllerBarrier*>(Controller.GetNative());
+	}
+}
+
+void FAGX_ConstraintRangeController::SetRange(const FFloatInterval& InRange)
+{
+	if (HasNative()) {
+		if (bRotational)
+		{
+			GetRangeBarrier(*this)->SetRangeRotational(InRange);
+		}
+		else
+		{
+			GetRangeBarrier(*this)->SetRangeTranslational(InRange);
+		}
+	}
+	Range = InRange;
+}
+
+FFloatInterval FAGX_ConstraintRangeController::GetRange() const
+{
+	if (HasNative())
+	{
+		if (bRotational)
+		{
+			return GetRangeBarrier(*this)->GetRangeRotational();
+		}
+		else
+		{
+			return GetRangeBarrier(*this)->GetRangeTranslational();
+		}
+	}
+	return Range;
 }
 
 void FAGX_ConstraintRangeController::UpdateNativePropertiesImpl()
