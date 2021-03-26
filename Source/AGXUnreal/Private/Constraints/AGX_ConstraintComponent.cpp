@@ -670,34 +670,44 @@ void UAGX_ConstraintComponent::UpdateNativeProperties()
 	}
 }
 
+namespace
+{
+	template <typename FFunction>
+	void UpdateNativePerDof(
+		bool bHasNative, const TMap<EGenericDofIndex, int32>& NativeDofIndexMap,
+		const FFunction& Callback)
+	{
+		if (!bHasNative)
+		{
+			return;
+		}
+
+		for (auto& Dof : NativeDofIndexMap)
+		{
+			EGenericDofIndex GenericDof = Dof.Key;
+			int32 NativeDof = Dof.Value;
+			if (GenericDof == EGenericDofIndex::AllDof)
+			{
+				continue;
+			}
+			Callback(GenericDof, NativeDof);
+		}
+	}
+}
+
 void UAGX_ConstraintComponent::UpdateNativeElasticity()
 {
-	if (!HasNative())
-	{
-		return;
-	}
-
-	for (auto& Dof : NativeDofIndexMap)
-	{
-		EGenericDofIndex GenericDof = Dof.Key;
-		int32 NativeDof = Dof.Value;
-		NativeBarrier->SetElasticity(Elasticity[GenericDof], NativeDof);
-	}
+	UpdateNativePerDof(
+		HasNative(), NativeDofIndexMap, [this](EGenericDofIndex GenericDof, int32 NativeDof) {
+			NativeBarrier->SetElasticity(Elasticity[GenericDof], NativeDof);
+		});
 }
 
 void UAGX_ConstraintComponent::UpdateNativeDamping()
 {
-	if (!HasNative())
-	{
-		return;
-	}
-
-	for (auto& Dof : NativeDofIndexMap)
-	{
-		EGenericDofIndex GenericDof = Dof.Key;
-		int32 NativeDof = Dof.Value;
+	UpdateNativePerDof(HasNative(), NativeDofIndexMap, [this](EGenericDofIndex GenericDof, int32 NativeDof) {
 		NativeBarrier->SetDamping(Damping[GenericDof], NativeDof);
-	}
+	});
 }
 
 #undef TRY_SET_DOF_VAlUE
