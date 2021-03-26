@@ -232,6 +232,11 @@ namespace
 	}
 }
 
+void UAGX_ConstraintComponent::SetElasticity(EGenericDofIndex Index, float InElasticity)
+{
+	SetElasticity(Index, static_cast<double>(InElasticity));
+}
+
 void UAGX_ConstraintComponent::SetElasticity(EGenericDofIndex Index, double InElasticity)
 {
 	SetOnBarrier(*this, Index, TEXT("SetElasticity"), [this, InElasticity](int32 NativeDof) {
@@ -240,11 +245,21 @@ void UAGX_ConstraintComponent::SetElasticity(EGenericDofIndex Index, double InEl
 	Elasticity[Index] = InElasticity;
 }
 
+float UAGX_ConstraintComponent::GetElasticityFloat(EGenericDofIndex Index) const
+{
+	return static_cast<float>(GetElasticity(Index));
+}
+
 double UAGX_ConstraintComponent::GetElasticity(EGenericDofIndex Index) const
 {
 	return GetFromBarrier(
 		*this, Index, TEXT("GetElasticity"), Elasticity[Index],
 		[this](int32 NativeDof) { return NativeBarrier->GetElasticity(NativeDof); });
+}
+
+void UAGX_ConstraintComponent::SetDamping(EGenericDofIndex Index, float InDamping)
+{
+	SetDamping(Index, static_cast<double>(InDamping));
 }
 
 void UAGX_ConstraintComponent::SetDamping(EGenericDofIndex Index, double InDamping)
@@ -255,11 +270,21 @@ void UAGX_ConstraintComponent::SetDamping(EGenericDofIndex Index, double InDampi
 	Damping[Index] = InDamping;
 }
 
+float UAGX_ConstraintComponent::GetDampingFloat(EGenericDofIndex Index) const
+{
+	return static_cast<float>(GetDamping(Index));
+}
+
 double UAGX_ConstraintComponent::GetDamping(EGenericDofIndex Index) const
 {
 	return GetFromBarrier(
 		*this, Index, TEXT("GetDamping"), Damping[Index],
 		[this](int32 NativeDof) { return NativeBarrier->GetDamping(NativeDof); });
+}
+
+void UAGX_ConstraintComponent::SetForceRange(EGenericDofIndex Index, float RangeMin, float RangeMax)
+{
+	SetForceRange(Index, FFloatInterval(RangeMin, RangeMax));
 }
 
 void UAGX_ConstraintComponent::SetForceRange(
@@ -269,6 +294,16 @@ void UAGX_ConstraintComponent::SetForceRange(
 		NativeBarrier->SetForceRange(InForceRange.Min, InForceRange.Max, NativeDof);
 	});
 	ForceRange[Index] = InForceRange;
+}
+
+float UAGX_ConstraintComponent::GetForceRangeMin(EGenericDofIndex Index) const
+{
+	return GetForceRange(Index).Min;
+}
+
+float UAGX_ConstraintComponent::GetForceRangeMax(EGenericDofIndex Index) const
+{
+	return GetForceRange(Index).Max;
 }
 
 FFloatInterval UAGX_ConstraintComponent::GetForceRange(EGenericDofIndex Index) const

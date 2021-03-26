@@ -72,26 +72,51 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	TEnumAsByte<enum EAGX_SolveType> SolveType;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
 	void SetSolveType(EAGX_SolveType InSolveType);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
 	EAGX_SolveType GetSolveType() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintDoublePropertyPerDof Elasticity;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	void SetElasticity(EGenericDofIndex Index, float InElasticity);
+
 	void SetElasticity(EGenericDofIndex Index, double InElasticity);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	float GetElasticityFloat(EGenericDofIndex Index) const;
+
 	double GetElasticity(EGenericDofIndex Index) const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintDoublePropertyPerDof Damping;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	void SetDamping(EGenericDofIndex Index, float InDamping);
+
 	void SetDamping(EGenericDofIndex Index, double InDamping);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	float GetDampingFloat(EGenericDofIndex Index) const;
+
 	double GetDamping(EGenericDofIndex Index) const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintRangePropertyPerDof ForceRange;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	void SetForceRange(EGenericDofIndex Index, float RangeMin, float RangeMax);
+
 	void SetForceRange(EGenericDofIndex Index, const FFloatInterval& InForceRange);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	float GetForceRangeMin(EGenericDofIndex Index) const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	float GetForceRangeMax(EGenericDofIndex Index) const;
 
 	FFloatInterval GetForceRange(EGenericDofIndex Index) const;
 
