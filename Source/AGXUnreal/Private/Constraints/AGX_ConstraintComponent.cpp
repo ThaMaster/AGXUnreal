@@ -153,6 +153,156 @@ void UAGX_ConstraintComponent::PostInitProperties()
 	BodyAttachment2.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 }
 
+void UAGX_ConstraintComponent::SetEnable(bool InEnabled)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetEnable(InEnabled);
+	}
+	bEnable = InEnabled;
+}
+
+bool UAGX_ConstraintComponent::GetEnable() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetEnable();
+	}
+	else
+	{
+		return bEnable;
+	}
+}
+
+namespace
+{
+	template <typename T>
+	void SetOnBarrier(
+		UAGX_ConstraintComponent& Component, EGenericDofIndex Index, const TCHAR* FunctionName,
+		const T& Callback)
+	{
+		if (!Component.HasNative())
+		{
+			return;
+		}
+
+		int32 NativeDof;
+		if (Component.ToNativeDof(Index, NativeDof))
+		{
+			Callback(NativeDof);
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Invalid degree of freedom for constraint type %s passed to %s on "
+					 "'%s' in '%s'."),
+				*Component.GetClass()->GetName(), FunctionName, *Component.GetName(),
+				(Component.GetOwner() != nullptr ? *Component.GetOwner()->GetName()
+												 : TEXT("(null)")));
+		}
+	}
+
+	template <typename T, typename Return>
+	Return GetFromBarrier(
+		const UAGX_ConstraintComponent& Component, EGenericDofIndex Index,
+		const TCHAR* FunctionName, const Return& Fallback, const T& Callback)
+	{
+		if (!Component.HasNative())
+		{
+			return Fallback;
+		}
+
+		int32 NativeDof;
+		if (Component.ToNativeDof(Index, NativeDof))
+		{
+			return Callback(NativeDof);
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Invalid degree of freedom for constraint type %s passed to %s on "
+					 "'%s' in '%s'."),
+				*Component.GetClass()->GetName(), FunctionName, *Component.GetName(),
+				(Component.GetOwner() != nullptr ? *Component.GetOwner()->GetName()
+												 : TEXT("(null)")));
+			return Fallback;
+		}
+	}
+}
+
+void UAGX_ConstraintComponent::SetElasticity(EGenericDofIndex Index, double InElasticity)
+{
+	SetOnBarrier(*this, Index, TEXT("SetElasticity"), [this, InElasticity](int32 NativeDof) {
+		NativeBarrier->SetElasticity(InElasticity, NativeDof);
+	});
+	Elasticity[Index] = InElasticity;
+}
+
+double UAGX_ConstraintComponent::GetElasticity(EGenericDofIndex Index) const
+{
+	return GetFromBarrier(
+		*this, Index, TEXT("GetElasticity"), Elasticity[Index],
+		[this](int32 NativeDof) { return NativeBarrier->GetElasticity(NativeDof); });
+}
+
+void UAGX_ConstraintComponent::SetDamping(EGenericDofIndex Index, double InDamping)
+{
+	SetOnBarrier(*this, Index, TEXT("SetDamping"), [this, InDamping](int32 NativeDof) {
+		NativeBarrier->SetDamping(InDamping, NativeDof);
+	});
+	Damping[Index] = InDamping;
+}
+
+double UAGX_ConstraintComponent::GetDamping(EGenericDofIndex Index) const
+{
+	return GetFromBarrier(
+		*this, Index, TEXT("GetDamping"), Damping[Index],
+		[this](int32 NativeDof) { return NativeBarrier->GetDamping(NativeDof); });
+}
+
+void UAGX_ConstraintComponent::SetForceRange(
+	EGenericDofIndex Index, const FFloatInterval& InForceRange)
+{
+	SetOnBarrier(*this, Index, TEXT("SetForceRange"), [this, InForceRange](int32 NativeDof) {
+		NativeBarrier->SetForceRange(InForceRange.Min, InForceRange.Max, NativeDof);
+	});
+	ForceRange[Index] = InForceRange;
+}
+
+FFloatInterval UAGX_ConstraintComponent::GetForceRange(EGenericDofIndex Index) const
+{
+	return GetFromBarrier(
+		*this, Index, TEXT("GetForceRange"), ForceRange[Index], [this](int32 NativeDof) {
+			double RangeMin, RangeMax;
+			NativeBarrier->GetForceRange(&RangeMin, &RangeMax, NativeDof);
+			return FFloatInterval(static_cast<float>(RangeMin), static_cast<float>(RangeMax));
+		});
+}
+
+void UAGX_ConstraintComponent::SetSolveType(EAGX_SolveType InSolveType)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetSolveType(InSolveType);
+	}
+	SolveType = InSolveType;
+}
+
+EAGX_SolveType UAGX_ConstraintComponent::GetSolveType() const
+{
+	if (HasNative())
+	{
+		/// \todo How should we do error checking here?
+		return static_cast<EAGX_SolveType>(NativeBarrier->GetSolveType());
+	}
+	else
+	{
+		return SolveType;
+	}
+}
+
 FConstraintBarrier* UAGX_ConstraintComponent::GetOrCreateNative()
 {
 	if (!HasNative())
@@ -304,21 +454,110 @@ namespace
 }
 
 #if WITH_EDITOR
+void UAGX_ConstraintComponent::InitPropertyDispatcher()
+{
+	UE_LOG(
+		LogAGX, Warning, TEXT("Constraint component '%s > %s' setting up property callbacks."),
+		(GetOwner() != nullptr ? *GetOwner()->GetName() : *FString("(null)")), *GetName());
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, bEnable), [](ThisClass* This) {
+			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'bEnable'."));
+			This->SetEnable(This->bEnable);
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, SolveType), [](ThisClass* This) {
+			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'SolveType'."));
+			This->SetSolveType(This->SolveType);
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, Elasticity), [](ThisClass* This) {
+			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'Elasticity'."));
+			This->UpdateNativeElasticity();
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, Damping), [](ThisClass* This) {
+			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'Damping'."));
+			This->UpdateNativeDamping();
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
+		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Translational_1),
+		[](ThisClass* This) {
+			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'ForceRange.Translational_1'."));
+			This->SetForceRange(EGenericDofIndex::Translational1, This->ForceRange.Translational_1);
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
+		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Translational_2),
+		[](ThisClass* This) {
+			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'ForceRange.Translational_2'."));
+			This->SetForceRange(EGenericDofIndex::Translational2, This->ForceRange.Translational_2);
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
+		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Translational_3),
+		[](ThisClass* This) {
+			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'ForceRange.Translational_3'."));
+			This->SetForceRange(EGenericDofIndex::Translational3, This->ForceRange.Translational_3);
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
+		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Rotational_1),
+		[](ThisClass* This) {
+			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'ForceRange.Rotational_1'."));
+			This->SetForceRange(EGenericDofIndex::Rotational1, This->ForceRange.Rotational_1);
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
+		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Rotational_2),
+		[](ThisClass* This) {
+			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'ForceRange.Rotational_2'."));
+			This->SetForceRange(EGenericDofIndex::Rotational2, This->ForceRange.Rotational_2);
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
+		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Rotational_3),
+		[](ThisClass* This) {
+			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'ForceRange.Rotational_3'."));
+			This->SetForceRange(EGenericDofIndex::Rotational3, This->ForceRange.Rotational_3);
+		});
+}
+
 void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-	// The leaf property that was changed. May be nested in a struct.
-	FName PropertyName = (PropertyChangedEvent.Property != NULL)
-							 ? PropertyChangedEvent.Property->GetFName()
+	// The root property that contains the property that was changed.
+	const FName Member = (PropertyChangedEvent.MemberProperty != NULL)
+							 ? PropertyChangedEvent.MemberProperty->GetFName()
 							 : NAME_None;
 
-	// The root property that contains the property that was changed.
-	FName MemberPropertyName = (PropertyChangedEvent.MemberProperty != NULL)
-								   ? PropertyChangedEvent.MemberProperty->GetFName()
-								   : NAME_None;
+	// The leaf property that was changed. May be nested in a struct.
+	const FName Property = (PropertyChangedEvent.Property != NULL)
+							   ? PropertyChangedEvent.Property->GetFName()
+							   : NAME_None;
 
-	if (MemberPropertyName == PropertyName)
+	UE_LOG(
+		LogAGX, Warning, TEXT("PostEditChangeProperty:\n  Member: %s\n  Property: %s"),
+		*Member.ToString(), *Property.ToString());
+
+	if (PropertyDispatcher.Trigger(Member, Property, this))
+	{
+		// No action required.
+		/// \todo Should we return?
+		UE_LOG(LogAGX, Warning, TEXT("  Handled by dispatcher."));
+	}
+	else if (Member == Property)
 	{
 		// Property of this class changed.
 	}
@@ -327,7 +566,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 		// Property of an aggregate struct changed.
 
 		FAGX_ConstraintBodyAttachment* ModifiedBodyAttachment =
-			SelectByName(MemberPropertyName, &BodyAttachment1, &BodyAttachment2);
+			SelectByName(Member, &BodyAttachment1, &BodyAttachment2);
 
 		if (ModifiedBodyAttachment)
 		{
@@ -342,11 +581,11 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			/// property change happened in the ModifiedBodyAttachment's RigidBody or its
 			/// FrameDefiningComponent. Assuming we have to update.
 			/// Consider doing this in PostEditChangeChainProperty instead.
-			if (PropertyName == GET_MEMBER_NAME_CHECKED(FAGX_SceneComponentReference, OwningActor))
+			if (Property == GET_MEMBER_NAME_CHECKED(FAGX_SceneComponentReference, OwningActor))
 			{
 				ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
 			}
-			if (PropertyName ==
+			if (Property ==
 				GET_MEMBER_NAME_CHECKED(FAGX_SceneComponentReference, SceneComponentName))
 			{
 				ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
@@ -378,6 +617,44 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			}
 		}
 	}
+}
+
+void UAGX_ConstraintComponent::PostEditChangeChainProperty(
+	struct FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	{
+		UE_LOG(LogAGX, Warning, TEXT("PostEditChangeChainProperty:"));
+		FEditPropertyChain::TDoubleLinkedListNode* Node =
+			PropertyChangedEvent.PropertyChain.GetHead();
+		while (Node != nullptr)
+		{
+			FName Name = Node->GetValue()->GetFName();
+			UE_LOG(LogAGX, Warning, TEXT("  %s"), *Name.ToString());
+			Node = Node->GetNextNode();
+		}
+		UE_LOG(LogAGX, Warning, TEXT("Passing event up to PropertyChangedEvent."));
+	}
+	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+
+	if (PropertyChangedEvent.PropertyChain.Num() < 3)
+	{
+		// These simple cases are handled by PostEditChangeProperty.
+		return;
+	}
+
+	FEditPropertyChain::TDoubleLinkedListNode* Node = PropertyChangedEvent.PropertyChain.GetHead();
+
+	FName Name1 = Node->GetValue()->GetFName();
+	Node = Node->GetNextNode();
+	FName Name2 = Node->GetValue()->GetFName();
+	Node = Node->GetNextNode();
+	// The name of Node 3 doesn't matter, we set all elements at that level each time.
+	// These are small objects such as FVector or FFloatInterval.
+
+	UE_LOG(
+		LogAGX, Warning, TEXT("This is a complex property, calling Trigger for '%s.%s'."),
+		*Name1.ToString(), *Name2.ToString());
+	PropertyDispatcher.Trigger(Name1, Name2, this);
 }
 #endif
 
@@ -436,6 +713,36 @@ void UAGX_ConstraintComponent::UpdateNativeProperties()
 	}
 }
 
+void UAGX_ConstraintComponent::UpdateNativeElasticity()
+{
+	if (!HasNative())
+	{
+		return;
+	}
+
+	for (auto& Dof : NativeDofIndexMap)
+	{
+		EGenericDofIndex GenericDof = Dof.Key;
+		int32 NativeDof = Dof.Value;
+		NativeBarrier->SetElasticity(Elasticity[GenericDof], NativeDof);
+	}
+}
+
+void UAGX_ConstraintComponent::UpdateNativeDamping()
+{
+	if (!HasNative())
+	{
+		return;
+	}
+
+	for (auto& Dof : NativeDofIndexMap)
+	{
+		EGenericDofIndex GenericDof = Dof.Key;
+		int32 NativeDof = Dof.Value;
+		NativeBarrier->SetDamping(Damping[GenericDof], NativeDof);
+	}
+}
+
 #undef TRY_SET_DOF_VAlUE
 #undef TRY_SET_DOF_RANGE
 
@@ -445,6 +752,7 @@ void UAGX_ConstraintComponent::PostLoad()
 	Super::PostLoad();
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
+	InitPropertyDispatcher();
 }
 
 void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
@@ -492,7 +800,7 @@ void UAGX_ConstraintComponent::BeginPlay()
 	}
 }
 
-bool UAGX_ConstraintComponent::ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof)
+bool UAGX_ConstraintComponent::ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof) const
 {
 	if (const int32* NativeDofPtr = NativeDofIndexMap.Find(GenericDof))
 	{
