@@ -57,6 +57,9 @@ public:
 
 	virtual void UpdateNativeProperties() override;
 
+	// ~ Begin UObject interface.
+	virtual void PostLoad() override;
+	// ~ End UObject interface.
 protected:
 	/**
 	 * Call AllocateNative and then bind the constraint controllers to their native representations
