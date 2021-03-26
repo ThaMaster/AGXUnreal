@@ -456,39 +456,26 @@ namespace
 #if WITH_EDITOR
 void UAGX_ConstraintComponent::InitPropertyDispatcher()
 {
-	UE_LOG(
-		LogAGX, Warning, TEXT("Constraint component '%s > %s' setting up property callbacks."),
-		(GetOwner() != nullptr ? *GetOwner()->GetName() : *FString("(null)")), *GetName());
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, bEnable),
+		[](ThisClass* This) { This->SetEnable(This->bEnable); });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, bEnable), [](ThisClass* This) {
-			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'bEnable'."));
-			This->SetEnable(This->bEnable);
-		});
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, SolveType),
+		[](ThisClass* This) { This->SetSolveType(This->SolveType); });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, SolveType), [](ThisClass* This) {
-			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'SolveType'."));
-			This->SetSolveType(This->SolveType);
-		});
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, Elasticity),
+		[](ThisClass* This) { This->UpdateNativeElasticity(); });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, Elasticity), [](ThisClass* This) {
-			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'Elasticity'."));
-			This->UpdateNativeElasticity();
-		});
-
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, Damping), [](ThisClass* This) {
-			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'Damping'."));
-			This->UpdateNativeDamping();
-		});
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, Damping),
+		[](ThisClass* This) { This->UpdateNativeDamping(); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Translational_1),
 		[](ThisClass* This) {
-			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'ForceRange.Translational_1'."));
 			This->SetForceRange(EGenericDofIndex::Translational1, This->ForceRange.Translational_1);
 		});
 
@@ -496,7 +483,6 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Translational_2),
 		[](ThisClass* This) {
-			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'ForceRange.Translational_2'."));
 			This->SetForceRange(EGenericDofIndex::Translational2, This->ForceRange.Translational_2);
 		});
 
@@ -504,7 +490,6 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Translational_3),
 		[](ThisClass* This) {
-			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'ForceRange.Translational_3'."));
 			This->SetForceRange(EGenericDofIndex::Translational3, This->ForceRange.Translational_3);
 		});
 
@@ -512,7 +497,6 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Rotational_1),
 		[](ThisClass* This) {
-			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'ForceRange.Rotational_1'."));
 			This->SetForceRange(EGenericDofIndex::Rotational1, This->ForceRange.Rotational_1);
 		});
 
@@ -520,7 +504,6 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Rotational_2),
 		[](ThisClass* This) {
-			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'ForceRange.Rotational_2'."));
 			This->SetForceRange(EGenericDofIndex::Rotational2, This->ForceRange.Rotational_2);
 		});
 
@@ -528,7 +511,6 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Rotational_3),
 		[](ThisClass* This) {
-			UE_LOG(LogAGX, Warning, TEXT("  Callback handling 'ForceRange.Rotational_3'."));
 			This->SetForceRange(EGenericDofIndex::Rotational3, This->ForceRange.Rotational_3);
 		});
 }
@@ -547,74 +529,68 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 							   ? PropertyChangedEvent.Property->GetFName()
 							   : NAME_None;
 
-	UE_LOG(
-		LogAGX, Warning, TEXT("PostEditChangeProperty:\n  Member: %s\n  Property: %s"),
-		*Member.ToString(), *Property.ToString());
-
 	if (PropertyDispatcher.Trigger(Member, Property, this))
 	{
-		// No action required.
-		/// \todo Should we return?
-		UE_LOG(LogAGX, Warning, TEXT("  Handled by dispatcher."));
+		// No action required when handled by PropertyDispacher callback.
+		return;
 	}
-	else if (Member == Property)
+
+	if (Member == Property)
 	{
 		// Property of this class changed.
+		// No action required yet.
+		return;
 	}
-	else
+
+	// Property of an aggregate struct changed.
+
+	FAGX_ConstraintBodyAttachment* ModifiedBodyAttachment =
+		SelectByName(Member, &BodyAttachment1, &BodyAttachment2);
+
+	if (ModifiedBodyAttachment)
 	{
-		// Property of an aggregate struct changed.
+		// TODO: Code below needs to be triggered also when modified through code!
+		// Editor-only probably OK though, since it is just for Editor convenience.
+		// See FCoreUObjectDelegates::OnObjectPropertyChanged.
+		// Or/additional add Refresh button to AAGX_ConstraintFrameActor's Details Panel
+		// that rebuilds the constraint usage list.
 
-		FAGX_ConstraintBodyAttachment* ModifiedBodyAttachment =
-			SelectByName(Member, &BodyAttachment1, &BodyAttachment2);
-
-		if (ModifiedBodyAttachment)
+		/// \todo This property is three levels deep instead of two for the FrameDefiningActor.
+		/// The middle layer is an FAGX_SceneComponentReference. Here we don't know if the
+		/// property change happened in the ModifiedBodyAttachment's RigidBody or its
+		/// FrameDefiningComponent. Assuming we have to update.
+		/// Consider doing this in PostEditChangeChainProperty instead.
+		if (Property == GET_MEMBER_NAME_CHECKED(FAGX_SceneComponentReference, OwningActor))
 		{
-			// TODO: Code below needs to be triggered also when modified through code!
-			// Editor-only probably OK though, since it is just for Editor convenience.
-			// See FCoreUObjectDelegates::OnObjectPropertyChanged.
-			// Or/additional add Refresh button to AAGX_ConstraintFrameActor's Details Panel
-			// that rebuilds the constraint usage list.
+			ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
+		}
+		if (Property == GET_MEMBER_NAME_CHECKED(FAGX_SceneComponentReference, SceneComponentName))
+		{
+			ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
+		}
 
-			/// \todo This property is three levels deep instead of two for the FrameDefiningActor.
-			/// The middle layer is an FAGX_SceneComponentReference. Here we don't know if the
-			/// property change happened in the ModifiedBodyAttachment's RigidBody or its
-			/// FrameDefiningComponent. Assuming we have to update.
-			/// Consider doing this in PostEditChangeChainProperty instead.
-			if (Property == GET_MEMBER_NAME_CHECKED(FAGX_SceneComponentReference, OwningActor))
-			{
-				ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
-			}
-			if (Property ==
-				GET_MEMBER_NAME_CHECKED(FAGX_SceneComponentReference, SceneComponentName))
-			{
-				ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
-			}
+		// We must always have an OwningActor. The user clearing/setting OwningActor to
+		// None/nullptr really means "search the local scope", which we achieve by setting
+		// OwningActor to the closest AActor outer.
+		//
+		// This does not work when we are in the Blueprint Editor. In this case we don't have
+		// an AActor outer at all, and no Owner. The outer chain contains something like the
+		// following:
+		// - Hinge_GEN_VARIABLE of type AGX_HingeConstraintComponent
+		// - BP_Blueprint_C of type BlueprintGeneratedClass
+		// - /Game/BP_Blueprint of type Package
+		//
+		// The interesting piece here is BlueprintGeneratedClass, from which it may be possible
+		// to get a list of names of RigidBodyComponents. Possibly via the
+		// SimpleConstructionScript member and then GetAllNodes. Experimentation needed.
+		if (ModifiedBodyAttachment->RigidBody.OwningActor == nullptr)
+		{
+			ModifiedBodyAttachment->RigidBody.OwningActor = GetTypedOuter<AActor>();
+		}
 
-			// We must always have an OwningActor. The user clearing/setting OwningActor to
-			// None/nullptr really means "search the local scope", which we achieve by setting
-			// OwningActor to the closest AActor outer.
-			//
-			// This does not work when we are in the Blueprint Editor. In this case we don't have
-			// an AActor outer at all, and no Owner. The outer chain contains something like the
-			// following:
-			// - Hinge_GEN_VARIABLE of type AGX_HingeConstraintComponent
-			// - BP_Blueprint_C of type BlueprintGeneratedClass
-			// - /Game/BP_Blueprint of type Package
-			//
-			// The interesting piece here is BlueprintGeneratedClass, from which it may be possible
-			// to get a list of names of RigidBodyComponents. Possibly via the
-			// SimpleConstructionScript member and then GetAllNodes. Experimentation needed.
-			if (ModifiedBodyAttachment->RigidBody.OwningActor == nullptr)
-			{
-				ModifiedBodyAttachment->RigidBody.OwningActor = GetTypedOuter<AActor>();
-			}
-
-			if (ModifiedBodyAttachment->FrameDefiningComponent.OwningActor == nullptr)
-			{
-				ModifiedBodyAttachment->FrameDefiningComponent.OwningActor =
-					GetTypedOuter<AActor>();
-			}
+		if (ModifiedBodyAttachment->FrameDefiningComponent.OwningActor == nullptr)
+		{
+			ModifiedBodyAttachment->FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 		}
 	}
 }
@@ -622,20 +598,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 void UAGX_ConstraintComponent::PostEditChangeChainProperty(
 	struct FPropertyChangedChainEvent& PropertyChangedEvent)
 {
-	{
-		UE_LOG(LogAGX, Warning, TEXT("PostEditChangeChainProperty:"));
-		FEditPropertyChain::TDoubleLinkedListNode* Node =
-			PropertyChangedEvent.PropertyChain.GetHead();
-		while (Node != nullptr)
-		{
-			FName Name = Node->GetValue()->GetFName();
-			UE_LOG(LogAGX, Warning, TEXT("  %s"), *Name.ToString());
-			Node = Node->GetNextNode();
-		}
-		UE_LOG(LogAGX, Warning, TEXT("Passing event up to PropertyChangedEvent."));
-	}
 	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-
 	if (PropertyChangedEvent.PropertyChain.Num() < 3)
 	{
 		// These simple cases are handled by PostEditChangeProperty.
@@ -643,18 +606,12 @@ void UAGX_ConstraintComponent::PostEditChangeChainProperty(
 	}
 
 	FEditPropertyChain::TDoubleLinkedListNode* Node = PropertyChangedEvent.PropertyChain.GetHead();
-
-	FName Name1 = Node->GetValue()->GetFName();
+	FName Member = Node->GetValue()->GetFName();
 	Node = Node->GetNextNode();
-	FName Name2 = Node->GetValue()->GetFName();
-	Node = Node->GetNextNode();
-	// The name of Node 3 doesn't matter, we set all elements at that level each time.
-	// These are small objects such as FVector or FFloatInterval.
-
-	UE_LOG(
-		LogAGX, Warning, TEXT("This is a complex property, calling Trigger for '%s.%s'."),
-		*Name1.ToString(), *Name2.ToString());
-	PropertyDispatcher.Trigger(Name1, Name2, this);
+	FName Property = Node->GetValue()->GetFName();
+	// The name of the rest of the nodes doesn't matter, we set all elements at level two each
+	// time. These are small objects such as FVector or FFloatInterval.
+	PropertyDispatcher.Trigger(Member, Property, this);
 }
 #endif
 
