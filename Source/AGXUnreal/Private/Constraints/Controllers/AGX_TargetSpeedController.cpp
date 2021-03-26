@@ -25,17 +25,66 @@ namespace
 		// See comment in GetElectricMotorController.
 		return static_cast<FTargetSpeedControllerBarrier*>(Controller.GetNative());
 	}
+
+	const FTargetSpeedControllerBarrier* GetSpeedBarrier(
+		const FAGX_ConstraintTargetSpeedController& Controller)
+	{
+		// See comment in GetElectricMotorController.
+		return static_cast<const FTargetSpeedControllerBarrier*>(Controller.GetNative());
+	}
 }
 
 void FAGX_ConstraintTargetSpeedController::SetSpeed(double InSpeed)
 {
+	if (HasNative())
+	{
+		if (bRotational)
+		{
+			GetSpeedBarrier(*this)->SetSpeedRotational(InSpeed);
+		}
+		else
+		{
+			GetSpeedBarrier(*this)->SetSpeedTranslational(InSpeed);
+		}
+	}
 	Speed = InSpeed;
-	Super::UpdateNativeProperties();
 }
 
 double FAGX_ConstraintTargetSpeedController::GetSpeed() const
 {
+	if (HasNative())
+	{
+		if (bRotational)
+		{
+			return GetSpeedBarrier(*this)->GetSpeedRotational();
+		}
+		else
+		{
+			return GetSpeedBarrier(*this)->GetSpeedTranslational();
+		}
+	}
 	return Speed;
+}
+
+void FAGX_ConstraintTargetSpeedController::SetLockedAtZeroSpeed(bool bInLockedAtZeroSpeed)
+{
+	if (HasNative())
+	{
+		GetSpeedBarrier(*this)->SetLockedAtZeroSpeed(bInLockedAtZeroSpeed);
+	}
+	bLockedAtZeroSpeed = bInLockedAtZeroSpeed;
+}
+
+bool FAGX_ConstraintTargetSpeedController::GetLockedAtZeroSpeed() const
+{
+	if (HasNative())
+	{
+		return GetSpeedBarrier(*this)->GetLockedAtZeroSpeed();
+	}
+	else
+	{
+		return bLockedAtZeroSpeed;
+	}
 }
 
 void FAGX_ConstraintTargetSpeedController::UpdateNativePropertiesImpl()

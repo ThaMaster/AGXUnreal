@@ -38,6 +38,75 @@ namespace
 		// this comment. Remove those if this comment is removed.
 		return static_cast<FElectricMotorControllerBarrier*>(Controller.GetNative());
 	}
+
+	const FElectricMotorControllerBarrier* GetElectricMotorBarrier(
+		const FAGX_ConstraintElectricMotorController& Controller)
+	{
+		return static_cast<const FElectricMotorControllerBarrier*>(Controller.GetNative());
+	}
+}
+
+void FAGX_ConstraintElectricMotorController::SetVoltage(double InVoltage)
+{
+	if (HasNative())
+	{
+		GetElectricMotorBarrier(*this)->SetVoltage(InVoltage);
+	}
+	Voltage = InVoltage;
+}
+
+double FAGX_ConstraintElectricMotorController::GetVoltage() const
+{
+	if (HasNative())
+	{
+		return GetElectricMotorBarrier(*this)->GetVoltage();
+	}
+	else
+	{
+		return Voltage;
+	}
+}
+
+void FAGX_ConstraintElectricMotorController::SetArmatureRestistance(double InArmatureResistance)
+{
+	if (HasNative())
+	{
+		GetElectricMotorBarrier(*this)->SetArmatureResistance(InArmatureResistance);
+	}
+	ArmatureResistance = InArmatureResistance;
+}
+
+double FAGX_ConstraintElectricMotorController::GetArmatureResistance() const
+{
+	if (HasNative())
+	{
+		return GetElectricMotorBarrier(*this)->GetArmatureResistance();
+	}
+	else
+	{
+		return ArmatureResistance;
+	}
+}
+
+void FAGX_ConstraintElectricMotorController::SetTorqueConstant(double InTorqueConstant)
+{
+	if (HasNative())
+	{
+		GetElectricMotorBarrier(*this)->SetTorqueConstant(InTorqueConstant);
+	}
+	TorqueConstant = InTorqueConstant;
+}
+
+double FAGX_ConstraintElectricMotorController::GetTorqueConstant() const
+{
+	if (HasNative())
+	{
+		return GetElectricMotorBarrier(*this)->GetTorqueConstant();
+	}
+	else
+	{
+		return TorqueConstant;
+	}
 }
 
 void FAGX_ConstraintElectricMotorController::UpdateNativePropertiesImpl()

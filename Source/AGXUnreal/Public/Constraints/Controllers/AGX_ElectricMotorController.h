@@ -29,6 +29,10 @@ struct AGXUNREAL_API FAGX_ConstraintElectricMotorController : public FAGX_Constr
 		Meta = (EditCondition = "bEnable"))
 	double Voltage;
 
+	void SetVoltage(double InVoltage);
+
+	double GetVoltage() const;
+
 	/**
 	 * Resistance in the armature circuit, in Ohm.
 	 */
@@ -36,6 +40,10 @@ struct AGXUNREAL_API FAGX_ConstraintElectricMotorController : public FAGX_Constr
 		EditAnywhere, Category = "AGX Electric Motor Controller",
 		Meta = (EditCondition = "bEnable"))
 	double ArmatureResistance;
+
+	void SetArmatureRestistance(double InArmatureResistance);
+
+	double GetArmatureResistance() const;
 
 	/**
 	 * Torque constant of this motor, in unit Torque Per Ampere. This value
@@ -45,6 +53,10 @@ struct AGXUNREAL_API FAGX_ConstraintElectricMotorController : public FAGX_Constr
 		EditAnywhere, Category = "AGX Electric Motor Controller",
 		Meta = (EditCondition = "bEnable"))
 	double TorqueConstant;
+
+	void SetTorqueConstant(double InTorqueConstant);
+
+	double GetTorqueConstant() const;
 
 public:
 	FAGX_ConstraintElectricMotorController() = default;
@@ -72,6 +84,67 @@ class AGXUNREAL_API UAGX_ConstraintElectricMotorController_FL : public UBlueprin
 	static bool IsValid(UPARAM(ref) FAGX_ConstraintElectricMotorController& ControllerRef)
 	{
 		return ControllerRef.HasNative();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetEnable(
+		UPARAM(ref) FAGX_ConstraintElectricMotorController& ControllerRef, bool Enable)
+	{
+		return ControllerRef.SetEnable(Enable);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static bool GetEnable(UPARAM(ref) FAGX_ConstraintElectricMotorController& ControllerRef)
+	{
+		return ControllerRef.GetEnable();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetCompliance(
+		UPARAM(ref) FAGX_ConstraintElectricMotorController& Controller, float Compliance)
+	{
+		Controller.SetCompliance(static_cast<double>(Compliance));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetCompliance(UPARAM(ref) const FAGX_ConstraintElectricMotorController& Controller)
+	{
+		return static_cast<float>(Controller.GetCompliance());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetDamping(
+		UPARAM(ref) FAGX_ConstraintElectricMotorController& Controller, float Damping)
+	{
+		Controller.SetDamping(static_cast<double>(Damping));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetDamping(UPARAM(ref) const FAGX_ConstraintElectricMotorController& Controller)
+	{
+		return static_cast<float>(Controller.GetDamping());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetForceRange(
+		UPARAM(ref) FAGX_ConstraintElectricMotorController& Controller, float MinForce,
+		float MaxForce)
+	{
+		Controller.SetForceRange(FFloatInterval(MinForce, MaxForce));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForceRangeMin(UPARAM(ref)
+									  const FAGX_ConstraintElectricMotorController& Controller)
+	{
+		return Controller.GetForceRange().Min;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForceRangeMax(UPARAM(ref)
+									  const FAGX_ConstraintElectricMotorController& Controller)
+	{
+		return Controller.GetForceRange().Max;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

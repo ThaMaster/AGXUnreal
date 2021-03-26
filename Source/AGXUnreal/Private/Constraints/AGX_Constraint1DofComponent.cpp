@@ -38,6 +38,145 @@ namespace
 	{
 		return static_cast<const FConstraint1DOFBarrier*>(Constraint.GetNative());
 	}
+
+#if WITH_EDITOR
+	void AddControllerPropertyCallbacks(
+		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher, const FName& Member,
+		FAGX_ConstraintController* Controller)
+	{
+		using Super = UAGX_Constraint1DofComponent::Super;
+		using ThisClass = UAGX_Constraint1DofComponent;
+
+		PropertyDispatcher.Add(
+			Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, bEnable),
+			[Controller](Super*) { Controller->SetEnable(Controller->bEnable); });
+
+		PropertyDispatcher.Add(
+			Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, Compliance),
+			[Controller](Super*) { Controller->SetCompliance(Controller->Compliance); });
+
+		PropertyDispatcher.Add(
+			Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, Damping),
+			[Controller](Super*) { Controller->SetDamping(Controller->Damping); });
+
+		PropertyDispatcher.Add(
+			Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, ForceRange),
+			[Controller](Super*) { Controller->SetForceRange(Controller->ForceRange); });
+	}
+
+	void AddElectricMotorControllerPropertyCallbacks(
+		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_ConstraintElectricMotorController* Controller)
+	{
+		FName Member =
+			GET_MEMBER_NAME_CHECKED(UAGX_Constraint1DofComponent, ElectricMotorController);
+
+		AddControllerPropertyCallbacks(PropertyDispatcher, Member, Controller);
+
+		PropertyDispatcher.Add(
+			Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintElectricMotorController, Voltage),
+			[Controller](UAGX_ConstraintComponent*) {
+				Controller->SetVoltage(Controller->Voltage);
+			});
+
+		PropertyDispatcher.Add(
+			Member,
+			GET_MEMBER_NAME_CHECKED(FAGX_ConstraintElectricMotorController, ArmatureResistance),
+			[Controller](UAGX_ConstraintComponent*) {
+				Controller->SetArmatureRestistance(Controller->ArmatureResistance);
+			});
+
+		PropertyDispatcher.Add(
+			Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintElectricMotorController, TorqueConstant),
+			[Controller](UAGX_ConstraintComponent*) {
+				Controller->SetTorqueConstant(Controller->TorqueConstant);
+			});
+	}
+
+	void AddFrictionControllerPropertyCallbacks(
+		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_ConstraintFrictionController* Controller)
+	{
+		FName Member = GET_MEMBER_NAME_CHECKED(UAGX_Constraint1DofComponent, FrictionController);
+
+		AddControllerPropertyCallbacks(PropertyDispatcher, Member, Controller);
+
+		PropertyDispatcher.Add(
+			Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintFrictionController, FrictionCoefficient),
+			[Controller](UAGX_ConstraintComponent*) {
+				Controller->SetFrictionCoefficient(Controller->FrictionCoefficient);
+			});
+
+		PropertyDispatcher.Add(
+			Member,
+			GET_MEMBER_NAME_CHECKED(
+				FAGX_ConstraintFrictionController, bEnableNonLinearDirectSolveUpdate),
+			[Controller](UAGX_ConstraintComponent*) {
+				Controller->SetEnableNonLinearDirectSolveUpdate(
+					Controller->bEnableNonLinearDirectSolveUpdate);
+			});
+	}
+
+	void AddLockControllerPropertyCallbacks(
+		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_ConstraintLockController* Controller)
+	{
+		FName Member = GET_MEMBER_NAME_CHECKED(UAGX_Constraint1DofComponent, LockController);
+
+		AddControllerPropertyCallbacks(PropertyDispatcher, Member, Controller);
+
+		PropertyDispatcher.Add(
+			Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintLockController, Position),
+			[Controller](UAGX_ConstraintComponent*) {
+				Controller->SetPosition(Controller->Position);
+			});
+	}
+
+	void AddRangeControllerPropertyCallbacks(
+		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_ConstraintRangeController* Controller)
+	{
+		FName Member = GET_MEMBER_NAME_CHECKED(UAGX_Constraint1DofComponent, RangeController);
+
+		AddControllerPropertyCallbacks(PropertyDispatcher, Member, Controller);
+
+		PropertyDispatcher.Add(
+			Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangeController, Range),
+			[Controller](UAGX_ConstraintComponent*) { Controller->SetRange(Controller->Range); });
+	}
+
+	void AddTargetSpeedControllerPropertyCallbacks(
+		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_ConstraintTargetSpeedController* Controller)
+	{
+		FName Member = GET_MEMBER_NAME_CHECKED(UAGX_Constraint1DofComponent, TargetSpeedController);
+
+		AddControllerPropertyCallbacks(PropertyDispatcher, Member, Controller);
+
+		PropertyDispatcher.Add(
+			Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintTargetSpeedController, Speed),
+			[Controller](UAGX_ConstraintComponent*) { Controller->SetSpeed(Controller->Speed); });
+
+		PropertyDispatcher.Add(
+			Member,
+			GET_MEMBER_NAME_CHECKED(FAGX_ConstraintTargetSpeedController, bLockedAtZeroSpeed),
+			[Controller](UAGX_ConstraintComponent*) {
+				Controller->SetLockedAtZeroSpeed(Controller->bLockedAtZeroSpeed);
+			});
+	}
+#endif
+}
+
+void UAGX_Constraint1DofComponent::PostLoad()
+{
+	Super::PostLoad();
+#if WITH_EDITOR
+	AddElectricMotorControllerPropertyCallbacks(PropertyDispatcher, &ElectricMotorController);
+	AddFrictionControllerPropertyCallbacks(PropertyDispatcher, &FrictionController);
+	AddLockControllerPropertyCallbacks(PropertyDispatcher, &LockController);
+	AddRangeControllerPropertyCallbacks(PropertyDispatcher, &RangeController);
+	AddTargetSpeedControllerPropertyCallbacks(PropertyDispatcher, &TargetSpeedController);
+#endif
 }
 
 float UAGX_Constraint1DofComponent::GetAngle() const

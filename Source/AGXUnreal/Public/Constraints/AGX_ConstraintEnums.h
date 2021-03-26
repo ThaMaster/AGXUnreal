@@ -40,10 +40,10 @@ enum EAGX_FrameDefiningSource
  * constraint - specific DOF indexes.
  */
 UENUM()
-enum class EGenericDofIndex
+enum class EGenericDofIndex : uint8
 {
 	/** All degrees of freedom */
-	AllDof = -1 UMETA(DisplayName = "All"),
+	AllDof = static_cast<uint8>(-1) UMETA(DisplayName = "All"),
 
 	/** DOF for the first translational axis */
 	Translational1 = 0 UMETA(DisplayName = "Translation1"),

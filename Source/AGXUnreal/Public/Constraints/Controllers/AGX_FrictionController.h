@@ -31,6 +31,10 @@ struct AGXUNREAL_API FAGX_ConstraintFrictionController : public FAGX_ConstraintC
 		EditAnywhere, Category = "AGX Friction Controller", Meta = (EditCondition = "bEnable"))
 	double FrictionCoefficient;
 
+	void SetFrictionCoefficient(double InFrictionCoefficient);
+
+	double GetFrictionCoefficient() const;
+
 	/**
 	 * Enable/disable non-linear update of the friction conditions given
 	 * current normal force from the direct solver. When enabled - this
@@ -43,6 +47,10 @@ struct AGXUNREAL_API FAGX_ConstraintFrictionController : public FAGX_ConstraintC
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Friction Controller", Meta = (EditCondition = "bEnable"))
 	bool bEnableNonLinearDirectSolveUpdate;
+
+	void SetEnableNonLinearDirectSolveUpdate(bool bInEnableNonLinearDirectSolveUpdate);
+
+	bool GetEnableNonLinearDirectSolveUpdate() const;
 
 public:
 	FAGX_ConstraintFrictionController() = default;
@@ -63,6 +71,33 @@ class AGXUNREAL_API UAGX_ConstraintFrictionController_FL : public UBlueprintFunc
 {
 	GENERATED_BODY()
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetFrictionCoefficient(
+		UPARAM(ref) FAGX_ConstraintFrictionController& Controller, float FrictionCoefficient)
+	{
+		Controller.SetFrictionCoefficient(static_cast<double>(FrictionCoefficient));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetFrictionCoefficient(UPARAM(ref) FAGX_ConstraintFrictionController& Controller)
+	{
+		return static_cast<float>(Controller.GetFrictionCoefficient());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetEnableNonLinearDirectSolveUpdate(
+		UPARAM(ref) FAGX_ConstraintFrictionController& Controller, bool bEnable)
+	{
+		Controller.SetEnableNonLinearDirectSolveUpdate(bEnable);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static bool GetEnableNonLinearDirectSolveUpdate(
+		UPARAM(ref) FAGX_ConstraintFrictionController& Controller)
+	{
+		return Controller.GetEnableNonLinearDirectSolveUpdate();
+	}
+
 	//~ Begin AGX_ConstraintController Blueprint Library interface.
 	// These are copy/pasted from FAGX_ConstraintController.h. See the comment in that file.
 
@@ -70,6 +105,62 @@ class AGXUNREAL_API UAGX_ConstraintFrictionController_FL : public UBlueprintFunc
 	static bool IsValid(UPARAM(ref) FAGX_ConstraintFrictionController& ControllerRef)
 	{
 		return ControllerRef.HasNative();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetEnable(UPARAM(ref) FAGX_ConstraintFrictionController& ControllerRef, bool Enable)
+	{
+		return ControllerRef.SetEnable(Enable);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static bool GetEnable(UPARAM(ref) FAGX_ConstraintFrictionController& ControllerRef)
+	{
+		return ControllerRef.GetEnable();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetCompliance(
+		UPARAM(ref) FAGX_ConstraintFrictionController& Controller, float Compliance)
+	{
+		Controller.SetCompliance(static_cast<double>(Compliance));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetCompliance(UPARAM(ref) const FAGX_ConstraintFrictionController& Controller)
+	{
+		return static_cast<float>(Controller.GetCompliance());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetDamping(UPARAM(ref) FAGX_ConstraintFrictionController& Controller, float Damping)
+	{
+		Controller.SetDamping(static_cast<double>(Damping));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetDamping(UPARAM(ref) const FAGX_ConstraintFrictionController& Controller)
+	{
+		return static_cast<float>(Controller.GetDamping());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetForceRange(
+		UPARAM(ref) FAGX_ConstraintFrictionController& Controller, float MinForce, float MaxForce)
+	{
+		Controller.SetForceRange(FFloatInterval(MinForce, MaxForce));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForceRangeMin(UPARAM(ref) const FAGX_ConstraintFrictionController& Controller)
+	{
+		return Controller.GetForceRange().Min;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForceRangeMax(UPARAM(ref) const FAGX_ConstraintFrictionController& Controller)
+	{
+		return Controller.GetForceRange().Max;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

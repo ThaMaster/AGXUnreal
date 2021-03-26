@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_UpropertyDispatcher.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
 #include "Constraints/AGX_ConstraintEnums.h"
 #include "Constraints/AGX_ConstraintPropertyPerDof.h"
@@ -53,7 +54,13 @@ public:
 	FAGX_ConstraintBodyAttachment BodyAttachment2;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
-	bool bEnable;
+	bool bEnable = true;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	void SetEnable(bool InEnable);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	bool GetEnable() const;
 
 	/**
 	 * Solve type for this constraint. Valid is DIRECT (default for non-iterative solvers),
@@ -65,14 +72,53 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	TEnumAsByte<enum EAGX_SolveType> SolveType;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	void SetSolveType(EAGX_SolveType InSolveType);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	EAGX_SolveType GetSolveType() const;
+
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintDoublePropertyPerDof Elasticity;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	void SetElasticity(EGenericDofIndex Index, float InElasticity);
+
+	void SetElasticity(EGenericDofIndex Index, double InElasticity);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	float GetElasticityFloat(EGenericDofIndex Index) const;
+
+	double GetElasticity(EGenericDofIndex Index) const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintDoublePropertyPerDof Damping;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	void SetDamping(EGenericDofIndex Index, float InDamping);
+
+	void SetDamping(EGenericDofIndex Index, double InDamping);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	float GetDampingFloat(EGenericDofIndex Index) const;
+
+	double GetDamping(EGenericDofIndex Index) const;
+
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintRangePropertyPerDof ForceRange;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	void SetForceRange(EGenericDofIndex Index, float RangeMin, float RangeMax);
+
+	void SetForceRange(EGenericDofIndex Index, const FFloatInterval& InForceRange);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	float GetForceRangeMin(EGenericDofIndex Index) const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	float GetForceRangeMax(EGenericDofIndex Index) const;
+
+	FFloatInterval GetForceRange(EGenericDofIndex Index) const;
 
 	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics1() const
 	{
@@ -114,12 +160,21 @@ public:
 	/** Subclasses that overrides this MUST invoke the parents version! */
 	virtual void UpdateNativeProperties();
 
+	void UpdateNativeElasticity();
+
+	void UpdateNativeDamping();
+
 	virtual void BeginPlay() override;
 
 	virtual void PostInitProperties() override;
 
+	bool ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof) const;
+
 #if WITH_EDITOR
+	void InitPropertyDispatcher();
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(
+		struct FPropertyChangedChainEvent& PropertyChangedEvent);
 #endif
 
 	/// \todo Determine which of these are needed, which are even available on USceneCompnent, and
@@ -150,8 +205,6 @@ protected:
 #endif
 
 protected:
-	bool ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof);
-
 	/**
 	 * Allocate a type-specific native constraint and point NativeBarrier to it. Perform any
 	 * constraint-specific configuration that may be necessary, such as binding secondary constraint
@@ -167,6 +220,10 @@ private:
 
 protected:
 	TUniquePtr<FConstraintBarrier> NativeBarrier;
+
+#if WITH_EDITOR
+	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent> PropertyDispatcher;
+#endif
 
 private:
 	const EDofFlag LockedDofsBitmask = static_cast<EDofFlag>(0);

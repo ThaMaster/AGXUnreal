@@ -29,6 +29,9 @@ struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController : public FAGX_Constrai
 		EditAnywhere, Category = "AGX Target Speed Controller", Meta = (EditCondition = "bEnable"))
 	double Speed;
 
+	void SetSpeed(double InSpeed);
+	double GetSpeed() const;
+
 	/**
 	 * Whether the controller should auto-lock whenever target speed is zero,
 	 * such that it will not drift away from that angle/position if the assigned
@@ -38,15 +41,15 @@ struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController : public FAGX_Constrai
 		EditAnywhere, Category = "AGX Target Speed Controller", Meta = (EditCondition = "bEnable"))
 	bool bLockedAtZeroSpeed;
 
+	void SetLockedAtZeroSpeed(bool bInLockedAtZeroSpeed);
+	bool GetLockedAtZeroSpeed() const;
+
 public:
 	FAGX_ConstraintTargetSpeedController() = default;
 	FAGX_ConstraintTargetSpeedController(bool bRotational);
 
 	void InitializeBarrier(TUniquePtr<FTargetSpeedControllerBarrier> Barrier);
 	void CopyFrom(const FTargetSpeedControllerBarrier& Source);
-
-	void SetSpeed(double InSpeed);
-	double GetSpeed() const;
 
 private:
 	virtual void UpdateNativePropertiesImpl() override;
@@ -62,30 +65,102 @@ class AGXUNREAL_API UAGX_ConstraintTargetSpeedController_FL : public UBlueprintF
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Target Speed Controller")
 	static void SetSpeed(
-		UPARAM(ref) FAGX_ConstraintTargetSpeedController& ControllerRef, const float Speed)
+		UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller, const float Speed)
 	{
-		ControllerRef.SetSpeed(static_cast<double>(Speed));
+		Controller.SetSpeed(static_cast<double>(Speed));
 	};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Target Speed Controller")
-	static float GetSpeed(UPARAM(ref) FAGX_ConstraintTargetSpeedController& ControllerRef)
+	static float GetSpeed(UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller)
 	{
-		return static_cast<float>(ControllerRef.GetSpeed());
+		return static_cast<float>(Controller.GetSpeed());
 	};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Target Speed Controller")
+	static void SetLockedAtZeroSpeed(UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller, bool bInLockedAtZeroSpeed)
+	{
+		Controller.SetLockedAtZeroSpeed(bInLockedAtZeroSpeed);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Target Speed Controller")
+	static bool GetLocedAtZeroSpeed(UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller)
+	{
+		return Controller.GetLockedAtZeroSpeed();
+	}
 
 	//~ Begin AGX_ConstraintController Blueprint Library interface.
 	// These are copy/pasted from FAGX_ConstraintController.h. See the comment in that file.
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static bool IsValid(UPARAM(ref) FAGX_ConstraintTargetSpeedController& ControllerRef)
+	static bool IsValid(UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller)
 	{
-		return ControllerRef.HasNative();
+		return Controller.HasNative();
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static float GetForce(UPARAM(ref) FAGX_ConstraintTargetSpeedController& ControllerRef)
+	static void SetEnable(UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller, bool Enable)
 	{
-		return static_cast<float>(ControllerRef.GetForce());
+		return Controller.SetEnable(Enable);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static bool GetEnable(UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller)
+	{
+		return Controller.GetEnable();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetCompliance(
+		UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller, float Compliance)
+	{
+		Controller.SetCompliance(static_cast<double>(Compliance));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetCompliance(UPARAM(ref) const FAGX_ConstraintTargetSpeedController& Controller)
+	{
+		return static_cast<float>(Controller.GetCompliance());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetDamping(
+		UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller, float Damping)
+	{
+		Controller.SetDamping(static_cast<double>(Damping));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetDamping(UPARAM(ref) const FAGX_ConstraintTargetSpeedController& Controller)
+	{
+		return static_cast<float>(Controller.GetDamping());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetForceRange(
+		UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller, float MinForce,
+		float MaxForce)
+	{
+		Controller.SetForceRange(FFloatInterval(MinForce, MaxForce));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForceRangeMin(UPARAM(ref)
+									  const FAGX_ConstraintTargetSpeedController& Controller)
+	{
+		return Controller.GetForceRange().Min;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForceRangeMax(UPARAM(ref)
+									  const FAGX_ConstraintTargetSpeedController& Controller)
+	{
+		return Controller.GetForceRange().Max;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForce(UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller)
+	{
+		return static_cast<float>(Controller.GetForce());
 	}
 
 	//~ End AGX_ConstraintController Blueprint Library interface.

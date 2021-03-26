@@ -28,15 +28,15 @@ struct AGXUNREAL_API FAGX_ConstraintLockController : public FAGX_ConstraintContr
 	UPROPERTY(EditAnywhere, Category = "AGX Lock Controller", Meta = (EditCondition = "bEnable"))
 	double Position;
 
+	void SetPosition(double InPosisiton);
+	double GetPosition();
+
 public:
 	FAGX_ConstraintLockController() = default;
 	FAGX_ConstraintLockController(bool bRotational);
 
 	void InitializeBarrier(TUniquePtr<FLockControllerBarrier> Barrier);
 	void CopyFrom(const FLockControllerBarrier& Source);
-
-	void SetPosition(double InPosisiton);
-	double GetPosition();
 
 protected:
 	virtual void UpdateNativePropertiesImpl() override;
@@ -70,6 +70,62 @@ class AGXUNREAL_API UAGX_ConstraintLockController_FL : public UBlueprintFunction
 	static bool IsValid(UPARAM(ref) FAGX_ConstraintLockController& ControllerRef)
 	{
 		return ControllerRef.HasNative();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetEnable(UPARAM(ref) FAGX_ConstraintLockController& ControllerRef, bool Enable)
+	{
+		return ControllerRef.SetEnable(Enable);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static bool GetEnable(UPARAM(ref) FAGX_ConstraintLockController& ControllerRef)
+	{
+		return ControllerRef.GetEnable();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetCompliance(
+		UPARAM(ref) FAGX_ConstraintLockController& Controller, float Compliance)
+	{
+		Controller.SetCompliance(static_cast<double>(Compliance));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetCompliance(UPARAM(ref) const FAGX_ConstraintLockController& Controller)
+	{
+		return static_cast<float>(Controller.GetCompliance());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetDamping(UPARAM(ref) FAGX_ConstraintLockController& Controller, float Damping)
+	{
+		Controller.SetDamping(static_cast<double>(Damping));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetDamping(UPARAM(ref) const FAGX_ConstraintLockController& Controller)
+	{
+		return static_cast<float>(Controller.GetDamping());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetForceRange(
+		UPARAM(ref) FAGX_ConstraintLockController& Controller, float MinForce, float MaxForce)
+	{
+		Controller.SetForceRange(FFloatInterval(MinForce, MaxForce));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForceRangeMin(UPARAM(ref) const FAGX_ConstraintLockController& Controller)
+	{
+		return Controller.GetForceRange().Min;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForceRangeMax(UPARAM(ref) const FAGX_ConstraintLockController& Controller)
+	{
+		return Controller.GetForceRange().Max;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

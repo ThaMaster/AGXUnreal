@@ -71,6 +71,22 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 		return (&Translational_1)[Index];
 	}
 
+	double operator[](EGenericDofIndex Index) const
+	{
+		return operator[](static_cast<int32>(Index));
+	}
+
+	double& operator[](int32 Index)
+	{
+		check(Index >= 0 && Index < 6);
+		return (&Translational_1)[Index];
+	}
+
+	double& operator[](EGenericDofIndex Index)
+	{
+		return operator[](static_cast<int32>(Index));
+	}
+
 private:
 	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
 	bool Translational_1_IsEditable;
@@ -148,11 +164,27 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 	{
 	}
 
+	FFloatInterval& operator[](int32 Index)
+	{
+		check(Index >= 0 && Index < 6);
+		return (&Translational_1)[Index];
+	}
+
+	FFloatInterval& operator[](EGenericDofIndex Index)
+	{
+		return operator[](static_cast<int32>(Index));
+	};
+
 	FFloatInterval operator[](int32 Index) const
 	{
 		check(Index >= 0 && Index < 6);
 		return (&Translational_1)[Index];
 	}
+
+	FFloatInterval operator[](EGenericDofIndex Index) const
+	{
+		return operator[](static_cast<int32>(Index));
+	};
 
 private:
 	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
