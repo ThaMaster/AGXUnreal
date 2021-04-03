@@ -10,10 +10,24 @@
 // Unreal Engine includes.
 #include "CanvasItem.h"
 #include "CanvasTypes.h"
+#include "Editor.h"
+#include "EditorViewportClient.h"
 #include "Engine.h"
 #include "SceneManagement.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintComponentVisualizer"
+
+struct HConstraintHitProxy : public HComponentVisProxy
+{
+	DECLARE_HIT_PROXY();
+
+	HConstraintHitProxy(const UActorComponent* InComponent)
+		: HComponentVisProxy(InComponent, HPP_Wireframe)
+	{
+	}
+};
+
+IMPLEMENT_HIT_PROXY(HConstraintHitProxy, HComponentVisProxy);
 
 namespace
 {
@@ -352,6 +366,57 @@ void FAGX_ConstraintComponentVisualizer::DrawVisualizationHUD(
 	DrawConstraintHUD(Constraint, Viewport, View, Canvas);
 }
 
+bool FAGX_ConstraintComponentVisualizer::VisProxyHandleClick(
+	FEditorViewportClient* InViewportClient, HComponentVisProxy* VisProxy,
+	const FViewportClick& Click)
+{
+	UActorComponent* Component = const_cast<UActorComponent*>(VisProxy->Component.Get());
+
+	// The Blueprint Editor behaves differently from the Level Editor. The Component we click on in
+	// the Viewport is not the same as the Component in the Components list, and selecting it causes
+	// a crash if the Component remain selected when the Blueprint Editor is closed.
+	//
+	// For these reasons we try to avoid doing anything at all when the selected Component is in the
+	// Blueprint Editor. One might think that `IsInBlueprint` would return true when in a Blueprint,
+	// but it does not.
+	//
+	// The best heuristic I have found for being in the Blueprint Editor is that the Owner isn't
+	// selected and/or the current UWorld is a preview world.
+	UWorld* World = Component->GetWorld();
+	if (!Component->IsOwnerSelected() || World == nullptr || World->IsPreviewWorld())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("This looks like a Blueprint Editor component and selections in the Blueprint "
+				 "Editor sometimes causes crashes. Ignoring the click."));
+		return false;
+	}
+
+	// Shift-click means unconditionally add to selection.
+	// Ctrl-click means toggle selection of this specific component.
+	// Shift-Ctrl-click is the same as Shift-click
+	// Unmodified click means select only this component.
+
+	if (Click.IsShiftDown())
+	{
+		// Unconditionally add to selection.
+		GEditor->SelectComponent(Component, true, true);
+	}
+	else if (Click.IsControlDown())
+	{
+		// Toggle selection of this Component.
+		GEditor->SelectComponent(Component, !Component->IsSelected(), true);
+	}
+	else
+	{
+		// No modifier, replace current selection.
+		GEditor->SelectNone(true, true);
+		GEditor->SelectActor(Component->GetOwner(), true, true);
+		GEditor->SelectComponent(Component, true, true);
+	}
+	return true;
+}
+
 void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	const UAGX_ConstraintComponent* Constraint, const FSceneView* View,
 	FPrimitiveDrawInterface* PDI)
@@ -387,8 +452,10 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 			PDI);
 	}
 
+	PDI->SetHitProxy(new HConstraintHitProxy(Constraint));
 	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment1, Violated);
 	RenderDofPrimitives(PDI, View, Constraint, Constraint->BodyAttachment2, Violated);
+	PDI->SetHitProxy(nullptr);
 
 	const float Distance = 100.0f;
 
