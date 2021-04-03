@@ -392,6 +392,7 @@ bool FAGX_ConstraintComponentVisualizer::VisProxyHandleClick(
 		return false;
 	}
 
+	// Selection behavior based on how selection works when clicking on the regular Component icons:
 	// Shift-click means unconditionally add to selection.
 	// Ctrl-click means toggle selection of this specific component.
 	// Shift-Ctrl-click is the same as Shift-click
