@@ -21,12 +21,19 @@ class AGXUNREALEDITOR_API FAGX_ConstraintComponentVisualizer : public FComponent
 {
 public:
 	//~ Begin FComponentVisualizer Interface
+
 	virtual void DrawVisualization(
 		const UActorComponent* Component, const FSceneView* View,
 		FPrimitiveDrawInterface* PDI) override;
+
 	virtual void DrawVisualizationHUD(
 		const UActorComponent* Component, const FViewport* Viewport, const FSceneView* View,
 		FCanvas* Canvas) override;
+
+	virtual bool VisProxyHandleClick(
+		FEditorViewportClient* InViewportClient, HComponentVisProxy* VisProxy,
+		const FViewportClick& Click) override;
+
 	//~ End FComponentVisualizer Interface
 
 	static void DrawConstraint(
