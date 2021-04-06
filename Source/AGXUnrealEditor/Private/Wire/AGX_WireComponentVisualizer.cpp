@@ -6,6 +6,7 @@
 
 // Unreal Engine includes.
 #include "SceneManagement.h"
+#include "UnrealEngine.h"
 
 class HNodeProxy : public HComponentVisProxy
 {
@@ -42,9 +43,10 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 	for (int32 I = 0; I < NumNodes; ++I)
 	{
 		const FVector Location = LocalToWorld.TransformPosition(Nodes[I].Location);
+		const FLinearColor Color = I == SelectedNodeIndex ? GEngine->GetSelectionOutlineColor() : FLinearColor::White;
 
 		PDI->SetHitProxy(new HNodeProxy(Wire, I));
-		PDI->DrawPoint(Location, FLinearColor::White, NodeHandleSize, SDPG_Foreground);
+		PDI->DrawPoint(Location, Color, NodeHandleSize, SDPG_Foreground);
 		PDI->SetHitProxy(nullptr);
 
 		if (I > 0)
@@ -68,6 +70,14 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 	{
 		//const UAGX_WireComponent* Wire = Cast<UAGX_WireComponent>(VisProxy->Component.Get());
 		UE_LOG(LogAGX, Warning, TEXT("Clicked node %d."), NodeProxy->NodeIndex);
+		if (NodeProxy->NodeIndex == SelectedNodeIndex)
+		{
+			SelectedNodeIndex = INDEX_NONE;
+		}
+		else
+		{
+			SelectedNodeIndex = NodeProxy->NodeIndex;
+		}
 		return true;
 	}
 	else

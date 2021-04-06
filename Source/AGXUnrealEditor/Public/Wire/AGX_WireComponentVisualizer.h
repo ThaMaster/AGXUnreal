@@ -5,6 +5,7 @@
 
 class AGXUNREALEDITOR_API FAGX_WireComponentVisualizer : public FComponentVisualizer
 {
+public:
 	//~ Begin FComponentVisualizer Interface
 
 	virtual void DrawVisualization(
@@ -16,4 +17,7 @@ class AGXUNREALEDITOR_API FAGX_WireComponentVisualizer : public FComponentVisual
 		const FViewportClick& Click) override;
 
 	//~ End FComponentVisualizer Interface
+
+private:
+	int32 SelectedNodeIndex = INDEX_NONE;
 };
