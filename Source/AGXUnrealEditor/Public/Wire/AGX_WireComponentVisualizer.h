@@ -16,6 +16,8 @@ public:
 		FEditorViewportClient* InViewportClient, HComponentVisProxy* VisProxy,
 		const FViewportClick& Click) override;
 
+	virtual void EndEditing() override;
+
 	//~ End FComponentVisualizer Interface
 
 private:

@@ -43,7 +43,8 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 	for (int32 I = 0; I < NumNodes; ++I)
 	{
 		const FVector Location = LocalToWorld.TransformPosition(Nodes[I].Location);
-		const FLinearColor Color = I == SelectedNodeIndex ? GEngine->GetSelectionOutlineColor() : FLinearColor::White;
+		const FLinearColor Color =
+			I == SelectedNodeIndex ? GEngine->GetSelectionOutlineColor() : FLinearColor::White;
 
 		PDI->SetHitProxy(new HNodeProxy(Wire, I));
 		PDI->DrawPoint(Location, Color, NodeHandleSize, SDPG_Foreground);
@@ -68,7 +69,7 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 
 	if (HNodeProxy* NodeProxy = HitProxyCast<HNodeProxy>(VisProxy))
 	{
-		//const UAGX_WireComponent* Wire = Cast<UAGX_WireComponent>(VisProxy->Component.Get());
+		// const UAGX_WireComponent* Wire = Cast<UAGX_WireComponent>(VisProxy->Component.Get());
 		UE_LOG(LogAGX, Warning, TEXT("Clicked node %d."), NodeProxy->NodeIndex);
 		if (NodeProxy->NodeIndex == SelectedNodeIndex)
 		{
@@ -84,4 +85,9 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 	{
 		return false;
 	}
+}
+
+void FAGX_WireComponentVisualizer::EndEditing()
+{
+	SelectedNodeIndex = INDEX_NONE;
 }
