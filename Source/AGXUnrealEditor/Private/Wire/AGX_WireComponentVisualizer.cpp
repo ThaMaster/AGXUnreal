@@ -62,7 +62,15 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 	FEditorViewportClient* InViewportClient, HComponentVisProxy* VisProxy,
 	const FViewportClick& Click)
 {
+#if 0
 	if (!VisProxy->Component.IsValid())
+	{
+		return false;
+	}
+#endif
+
+	const UAGX_WireComponent* Wire = Cast<const UAGX_WireComponent>(VisProxy->Component);
+	if (Wire == nullptr)
 	{
 		return false;
 	}
@@ -74,10 +82,16 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 		if (NodeProxy->NodeIndex == SelectedNodeIndex)
 		{
 			SelectedNodeIndex = INDEX_NONE;
+			SelectedWire = nullptr;
 		}
 		else
 		{
 			SelectedNodeIndex = NodeProxy->NodeIndex;
+			// Not sure what I'm supposed to do here. I want to store the wire so I can edit it
+			// later in HandleInputDelta. Is there a way to get a non-const pointer to the wire
+			// without having to const-cast here? SplineComponentVisualizer uses
+			// FComponentPropertyPath. I don't know what that is.
+			SelectedWire = const_cast<UAGX_WireComponent*>(Wire);
 		}
 		return true;
 	}
@@ -85,6 +99,23 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 	{
 		return false;
 	}
+}
+
+bool FAGX_WireComponentVisualizer::GetWidgetLocation(
+	const FEditorViewportClient* ViewportClient, FVector& OutLocation) const
+{
+	if (SelectedWire == nullptr)
+	{
+		return false;
+	}
+	if (!SelectedWire->Nodes.IsValidIndex(SelectedNodeIndex))
+	{
+		return false;
+	}
+
+	const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
+	OutLocation = LocalToWorld.TransformPosition(SelectedWire->Nodes[SelectedNodeIndex].Location);
+	return true;
 }
 
 void FAGX_WireComponentVisualizer::EndEditing()

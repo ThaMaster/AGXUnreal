@@ -3,6 +3,8 @@
 // Unreal Engine includes.
 #include "ComponentVisualizer.h"
 
+class UAGX_WireComponent;
+
 class AGXUNREALEDITOR_API FAGX_WireComponentVisualizer : public FComponentVisualizer
 {
 public:
@@ -16,10 +18,14 @@ public:
 		FEditorViewportClient* InViewportClient, HComponentVisProxy* VisProxy,
 		const FViewportClick& Click) override;
 
+	virtual bool GetWidgetLocation(
+		const FEditorViewportClient* ViewportClient, FVector& OutLocation) const override;
+
 	virtual void EndEditing() override;
 
 	//~ End FComponentVisualizer Interface
 
 private:
 	int32 SelectedNodeIndex = INDEX_NONE;
+	UAGX_WireComponent* SelectedWire;
 };
