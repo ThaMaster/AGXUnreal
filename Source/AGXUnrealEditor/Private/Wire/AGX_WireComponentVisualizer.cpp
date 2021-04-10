@@ -6,6 +6,7 @@
 
 // Unreal Engine includes.
 #include "Editor.h"
+#include "EditorViewportClient.h"
 #include "SceneManagement.h"
 #include "UnrealEngine.h"
 
@@ -139,24 +140,73 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		return false;
 	}
 
-	SelectedWire->Modify();
-
 	if (DeltaTranslate.IsZero())
 	{
 		return true;
 	}
 
-	const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
-	FWireNode& SelectedNode = SelectedWire->Nodes[SelectedNodeIndex];
-	const FVector CurrentLocalLocation = SelectedNode.Location;
-	const FVector CurrentWorldLocation = LocalToWorld.TransformPosition(CurrentLocalLocation);
-	const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
-	const FVector NewLocalLocation = LocalToWorld.InverseTransformPosition(NewWorldLocation);
-	SelectedNode.Location = NewLocalLocation;
+	SelectedWire->Modify();
+	TArray<FWireNode>& Nodes = SelectedWire->Nodes;
+
+	if (ViewportClient->IsAltPressed())
+	{
+		if (ViewportClient->GetWidgetMode() != FWidget::WM_Translate)
+		{
+			return false;
+		}
+
+		if (!bIsDuplicatingNode)
+		{
+			bIsDuplicatingNode = true;
+			int32 NewNodeIndex = SelectedNodeIndex + 1;
+			SelectedWire->Nodes.Insert(FWireNode(Nodes[SelectedNodeIndex]), NewNodeIndex);
+			SelectedNodeIndex = NewNodeIndex;
+			NotifyPropertyModified(
+				SelectedWire, FindFProperty<FProperty>(
+								  UAGX_WireComponent::StaticClass(),
+								  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, Nodes)));
+		}
+		else
+		{
+			const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
+			FWireNode& SelectedNode = SelectedWire->Nodes[SelectedNodeIndex];
+			const FVector CurrentLocalLocation = SelectedNode.Location;
+			const FVector CurrentWorldLocation =
+				LocalToWorld.TransformPosition(CurrentLocalLocation);
+			const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
+			const FVector NewLocalLocation =
+				LocalToWorld.InverseTransformPosition(NewWorldLocation);
+			SelectedNode.Location = NewLocalLocation;
+		}
+	}
+	else
+	{
+		const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
+		FWireNode& SelectedNode = SelectedWire->Nodes[SelectedNodeIndex];
+		const FVector CurrentLocalLocation = SelectedNode.Location;
+		const FVector CurrentWorldLocation = LocalToWorld.TransformPosition(CurrentLocalLocation);
+		const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
+		const FVector NewLocalLocation = LocalToWorld.InverseTransformPosition(NewWorldLocation);
+		SelectedNode.Location = NewLocalLocation;
+	}
 
 	GEditor->RedrawLevelEditingViewports();
 
 	return true;
+}
+
+bool FAGX_WireComponentVisualizer::HandleInputKey(
+	FEditorViewportClient* ViewportClient, FViewport* Viewport, FKey Key, EInputEvent Event)
+{
+	if (Key == EKeys::LeftMouseButton && Event == IE_Released)
+	{
+		bIsDuplicatingNode = false;
+		// Must return false here because we don't want to override the default LMB release code.
+		// Breaks the editor badly.
+		return false;
+	}
+
+	return false;
 }
 
 void FAGX_WireComponentVisualizer::EndEditing()

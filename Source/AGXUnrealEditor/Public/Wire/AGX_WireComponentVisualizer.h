@@ -25,11 +25,17 @@ public:
 		FEditorViewportClient* ViewportClient, FViewport* Viewport, FVector& DeltaTranslate,
 		FRotator& DeltaRotate, FVector& DeltaScale) override;
 
+	virtual bool HandleInputKey(
+		FEditorViewportClient* ViewportClient, FViewport* Viewport, FKey Key,
+		EInputEvent Event) override;
+
 	virtual void EndEditing() override;
 
 	//~ End FComponentVisualizer Interface
 
 private:
 	int32 SelectedNodeIndex = INDEX_NONE;
-	UAGX_WireComponent* SelectedWire;
+	UAGX_WireComponent* SelectedWire = nullptr;
+
+	bool bIsDuplicatingNode = false;
 };
