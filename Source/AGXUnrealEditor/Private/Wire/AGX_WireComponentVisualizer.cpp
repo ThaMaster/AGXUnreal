@@ -5,6 +5,7 @@
 #include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
+#include "Editor.h"
 #include "SceneManagement.h"
 #include "UnrealEngine.h"
 
@@ -78,7 +79,6 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 	if (HNodeProxy* NodeProxy = HitProxyCast<HNodeProxy>(VisProxy))
 	{
 		// const UAGX_WireComponent* Wire = Cast<UAGX_WireComponent>(VisProxy->Component.Get());
-		UE_LOG(LogAGX, Warning, TEXT("Clicked node %d."), NodeProxy->NodeIndex);
 		if (NodeProxy->NodeIndex == SelectedNodeIndex)
 		{
 			SelectedNodeIndex = INDEX_NONE;
@@ -118,7 +118,49 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	return true;
 }
 
+bool FAGX_WireComponentVisualizer::HandleInputDelta(
+	FEditorViewportClient* ViewportClient, FViewport* Viewport, FVector& DeltaTranslate,
+	FRotator& DeltaRotate, FVector& DeltaScale)
+{
+	if (SelectedWire == nullptr)
+	{
+		return false;
+	}
+
+	if (SelectedNodeIndex == INDEX_NONE)
+	{
+		return false;
+	}
+
+	if (!SelectedWire->Nodes.IsValidIndex(SelectedNodeIndex))
+	{
+		SelectedNodeIndex = INDEX_NONE;
+		SelectedWire = nullptr;
+		return false;
+	}
+
+	SelectedWire->Modify();
+
+	if (DeltaTranslate.IsZero())
+	{
+		return true;
+	}
+
+	const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
+	FWireNode& SelectedNode = SelectedWire->Nodes[SelectedNodeIndex];
+	const FVector CurrentLocalLocation = SelectedNode.Location;
+	const FVector CurrentWorldLocation = LocalToWorld.TransformPosition(CurrentLocalLocation);
+	const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
+	const FVector NewLocalLocation = LocalToWorld.InverseTransformPosition(NewWorldLocation);
+	SelectedNode.Location = NewLocalLocation;
+
+	GEditor->RedrawLevelEditingViewports();
+
+	return true;
+}
+
 void FAGX_WireComponentVisualizer::EndEditing()
 {
 	SelectedNodeIndex = INDEX_NONE;
+	SelectedWire = nullptr;
 }
