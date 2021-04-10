@@ -2,13 +2,17 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_RuntimeStyle.h"
 #include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
 #include "Editor.h"
 #include "EditorViewportClient.h"
 #include "SceneManagement.h"
+#include "ScopedTransaction.h"
 #include "UnrealEngine.h"
+
+#define LOCTEXT_NAMESPACE "AGX_WireComponentVisualizer"
 
 class HNodeProxy : public HComponentVisProxy
 {
@@ -24,6 +28,48 @@ class HNodeProxy : public HComponentVisProxy
 };
 
 IMPLEMENT_HIT_PROXY(HNodeProxy, HComponentVisProxy);
+
+class FAGX_WireComponentVisualizerCommands : public TCommands<FAGX_WireComponentVisualizerCommands>
+{
+public:
+	FAGX_WireComponentVisualizerCommands()
+		: TCommands<FAGX_WireComponentVisualizerCommands>(
+			  "AGX_WireComponentVisualizer",
+			  LOCTEXT("AGX_WireComponentVisualizer", "AGX Wire Component Visualizer"), NAME_None,
+			  FAGX_RuntimeStyle::GetStyleSetName())
+	{
+	}
+
+	virtual void RegisterCommands() override
+	{
+		UI_COMMAND(
+			DeleteKey, "Delete wire node.", "Delete the currently selected wire node",
+			EUserInterfaceActionType::Button, FInputChord(EKeys::Delete));
+	}
+
+	TSharedPtr<FUICommandInfo> DeleteKey;
+};
+
+FAGX_WireComponentVisualizer::FAGX_WireComponentVisualizer()
+{
+	FAGX_WireComponentVisualizerCommands::Register();
+	CommandList = MakeShareable(new FUICommandList());
+}
+
+FAGX_WireComponentVisualizer::~FAGX_WireComponentVisualizer()
+{
+	FAGX_WireComponentVisualizerCommands::Unregister();
+}
+
+void FAGX_WireComponentVisualizer::OnRegister()
+{
+	const auto& Commands = FAGX_WireComponentVisualizerCommands::Get();
+
+	CommandList->MapAction(
+		Commands.DeleteKey,
+		FExecuteAction::CreateSP(this, &FAGX_WireComponentVisualizer::OnDeleteKey),
+		FCanExecuteAction::CreateSP(this, &FAGX_WireComponentVisualizer::CanDeleteKey));
+}
 
 void FAGX_WireComponentVisualizer::DrawVisualization(
 	const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI)
@@ -201,9 +247,13 @@ bool FAGX_WireComponentVisualizer::HandleInputKey(
 	if (Key == EKeys::LeftMouseButton && Event == IE_Released)
 	{
 		bIsDuplicatingNode = false;
-		// Must return false here because we don't want to override the default LMB release code.
-		// Breaks the editor badly.
-		return false;
+		// Not retuning here. We're just detecting the event, not performing an action.
+	}
+
+	if (Event == IE_Pressed)
+	{
+		return CommandList->ProcessCommandBindings(
+			Key, FSlateApplication::Get().GetModifierKeys(), false);
 	}
 
 	return false;
@@ -214,3 +264,31 @@ void FAGX_WireComponentVisualizer::EndEditing()
 	SelectedNodeIndex = INDEX_NONE;
 	SelectedWire = nullptr;
 }
+
+void FAGX_WireComponentVisualizer::OnDeleteKey()
+{
+	if (SelectedWire == nullptr || !SelectedWire->Nodes.IsValidIndex(SelectedNodeIndex))
+	{
+		return;
+	}
+
+	const FScopedTransaction Transaction(LOCTEXT("DeleteWireNode", "Delete wire node"));
+
+	SelectedWire->Modify();
+	SelectedWire->Nodes.RemoveAt(SelectedNodeIndex);
+	SelectedNodeIndex = INDEX_NONE;
+
+	NotifyPropertyModified(
+		SelectedWire,
+		FindFProperty<FProperty>(
+			UAGX_WireComponent::StaticClass(), GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, Nodes)));
+
+	GEditor->RedrawLevelEditingViewports(true);
+}
+
+bool FAGX_WireComponentVisualizer::CanDeleteKey() const
+{
+	return SelectedWire != nullptr && SelectedWire->Nodes.IsValidIndex(SelectedNodeIndex);
+}
+
+#undef LOCTEXT_NAMESPACE

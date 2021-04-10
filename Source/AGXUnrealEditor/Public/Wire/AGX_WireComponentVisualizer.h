@@ -2,13 +2,19 @@
 
 // Unreal Engine includes.
 #include "ComponentVisualizer.h"
+#include "Framework/Commands/UICommandList.h"
 
 class UAGX_WireComponent;
 
 class AGXUNREALEDITOR_API FAGX_WireComponentVisualizer : public FComponentVisualizer
 {
 public:
+	FAGX_WireComponentVisualizer();
+	~FAGX_WireComponentVisualizer();
+
 	//~ Begin FComponentVisualizer Interface
+
+	virtual void OnRegister() override;
 
 	virtual void DrawVisualization(
 		const UActorComponent* Component, const FSceneView* View,
@@ -34,8 +40,14 @@ public:
 	//~ End FComponentVisualizer Interface
 
 private:
+	void OnDeleteKey();
+	bool CanDeleteKey() const;
+
+private:
 	int32 SelectedNodeIndex = INDEX_NONE;
 	UAGX_WireComponent* SelectedWire = nullptr;
 
 	bool bIsDuplicatingNode = false;
+
+	TSharedPtr<FUICommandList> CommandList;
 };
