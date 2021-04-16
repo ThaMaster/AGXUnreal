@@ -265,6 +265,16 @@ void FAGX_WireComponentVisualizer::EndEditing()
 	SelectedWire = nullptr;
 }
 
+UAGX_WireComponent* FAGX_WireComponentVisualizer::GetSelectedWire()
+{
+	return SelectedWire;
+}
+
+int32 FAGX_WireComponentVisualizer::GetSelectedNodeIndex()
+{
+	return SelectedNodeIndex;
+}
+
 void FAGX_WireComponentVisualizer::OnDeleteKey()
 {
 	if (SelectedWire == nullptr || !SelectedWire->Nodes.IsValidIndex(SelectedNodeIndex))

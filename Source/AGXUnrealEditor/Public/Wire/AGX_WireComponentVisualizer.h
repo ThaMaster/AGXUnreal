@@ -39,6 +39,9 @@ public:
 
 	//~ End FComponentVisualizer Interface
 
+	UAGX_WireComponent* GetSelectedWire();
+	int32 GetSelectedNodeIndex();
+
 private:
 	void OnDeleteKey();
 	bool CanDeleteKey() const;
