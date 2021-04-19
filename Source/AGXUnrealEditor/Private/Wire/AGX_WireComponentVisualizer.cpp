@@ -71,6 +71,22 @@ void FAGX_WireComponentVisualizer::OnRegister()
 		FCanExecuteAction::CreateSP(this, &FAGX_WireComponentVisualizer::CanDeleteKey));
 }
 
+TStaticArray<FLinearColor, 3> CreateWireNodeColors()
+{
+	TStaticArray<FLinearColor, 3> WireNodeColors;
+	WireNodeColors[0] = FLinearColor::Red;
+	WireNodeColors[1] = FLinearColor::Green;
+	WireNodeColors[2] = FLinearColor::Blue;
+	return WireNodeColors;
+}
+
+FLinearColor WireNodeTypeToColor(EWireNodeType Type)
+{
+	static TStaticArray<FLinearColor, 3> WireNodeColors = CreateWireNodeColors();
+	const uint32 I = static_cast<uint32>(Type);
+	return WireNodeColors[I];
+}
+
 void FAGX_WireComponentVisualizer::DrawVisualization(
 	const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI)
 {
@@ -91,8 +107,8 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 	for (int32 I = 0; I < NumNodes; ++I)
 	{
 		const FVector Location = LocalToWorld.TransformPosition(Nodes[I].Location);
-		const FLinearColor Color =
-			I == SelectedNodeIndex ? GEngine->GetSelectionOutlineColor() : FLinearColor::White;
+		const FLinearColor Color = I == SelectedNodeIndex ? GEngine->GetSelectionOutlineColor()
+														  : WireNodeTypeToColor(Nodes[I].NodeType);
 
 		PDI->SetHitProxy(new HNodeProxy(Wire, I));
 		PDI->DrawPoint(Location, Color, NodeHandleSize, SDPG_Foreground);

@@ -5,6 +5,14 @@
 
 #include "AGX_WireComponent.generated.h"
 
+/** Types of wire nodes we have */
+UENUM(BlueprintType)
+enum class EWireNodeType : uint8
+{
+	FreeNode,
+	EyeNode,
+	BodyFixedNode
+};
 
 USTRUCT(BlueprintType)
 struct FWireNode
@@ -12,15 +20,20 @@ struct FWireNode
 	GENERATED_BODY();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
+	EWireNodeType NodeType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
 	FVector Location;
 
 	FWireNode()
-		: Location(FVector::ZeroVector)
+		: NodeType(EWireNodeType::FreeNode)
+		, Location(FVector::ZeroVector)
 	{
 	}
 
 	FWireNode(const FVector& InLocation)
-		: Location(InLocation)
+		: NodeType(EWireNodeType::FreeNode)
+		, Location(InLocation)
 	{
 	}
 };

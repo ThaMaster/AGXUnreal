@@ -52,6 +52,14 @@ private:
 	/** Callback called when the Location widget is edited. */
 	void OnSetLocation(float NewValue, ETextCommit::Type CommitInfo, int32 Axis);
 
+	/** Called for each entry in WireNodeTypes, to generate the options for the combo box. */
+	TSharedRef<SWidget> OnGenerateComboWidget(TSharedPtr<FString> InComboString);
+
+	/** Called to generate the default (non-opened) view of the node type combo box. */
+	FText GetNodeType() const;
+
+	void OnNodeTypeChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo);
+
 private:
 	/** The currently selected Wire Component. This can change. */
 	UAGX_WireComponent* Wire;
@@ -74,6 +82,12 @@ private:
 	TOptional<float> LocationY;
 	TOptional<float> LocationZ;
 
+	// Backing storage for the selected node's type.
+	TOptional<EWireNodeType> NodeType;
+
+	// Backing storage for the node type combo box.
+	TArray<TSharedPtr<FString>> WireNodeTypes;
+
 	// Don't know what this is.
 	FSimpleDelegate OnRegenerateChildren;
 };
@@ -85,6 +99,14 @@ FWireNodeDetails::FWireNodeDetails(UAGX_WireComponent* InWire)
 	FComponentVisualizer* Visualizer = GUnrealEd->FindComponentVisualizer(Wire->GetClass()).Get();
 	WireVisualizer = (FAGX_WireComponentVisualizer*) Visualizer;
 	check(WireVisualizer);
+
+	UEnum* NodeTypesEnum = StaticEnum<EWireNodeType>();
+	check(NodeTypesEnum);
+	for (int32 EnumIndex = 0; EnumIndex < NodeTypesEnum->NumEnums() - 1; ++EnumIndex)
+	{
+		WireNodeTypes.Add(
+			MakeShareable(new FString(NodeTypesEnum->GetNameStringByIndex(EnumIndex))));
+	}
 }
 
 void FWireNodeDetails::GenerateHeaderRowContent(FDetailWidgetRow& NodeRow)
@@ -133,6 +155,25 @@ void FWireNodeDetails::GenerateChildContent(IDetailChildrenBuilder& ChildrenBuil
 		.OnZCommitted(this, &FWireNodeDetails::OnSetLocation, 2)
 	];
 
+	ChildrenBuilder.AddCustomRow(LOCTEXT("Type", "Type"))
+	.Visibility(TAttribute<EVisibility>(this, &FWireNodeDetails::WithSelection))
+	.NameContent()
+	[
+		SNew(STextBlock)
+		.Text(LOCTEXT("Type", "Type"))
+	]
+	.ValueContent()
+	[
+		SNew(SComboBox<TSharedPtr<FString>>)
+		.OptionsSource(&WireNodeTypes)
+		.OnGenerateWidget(this, &FWireNodeDetails::OnGenerateComboWidget)
+		.OnSelectionChanged(this, &FWireNodeDetails::OnNodeTypeChanged)
+		[
+			SNew(STextBlock)
+			.Text(this, &FWireNodeDetails::GetNodeType)
+		]
+	];
+
 	//clang-format on
 }
 
@@ -166,13 +207,16 @@ void FWireNodeDetails::UpdateValues()
 		LocationX.Reset();
 		LocationY.Reset();
 		LocationZ.Reset();
+		NodeType.Reset();
 		return;
 	}
 
-	const FVector Location = Wire->Nodes[SelectedNodeIndex].Location;
+	const FWireNode& Node = Wire->Nodes[SelectedNodeIndex];
+	const FVector Location = Node.Location;
 	LocationX = Location.X;
 	LocationY = Location.Y;
 	LocationZ = Location.Z;
+	NodeType = Node.NodeType;
 }
 
 EVisibility FWireNodeDetails::WithSelection() const
@@ -233,6 +277,49 @@ void FWireNodeDetails::OnSetLocation(float NewValue, ETextCommit::Type CommitInf
 		FindFProperty<FProperty>(
 			UAGX_WireComponent::StaticClass(), GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, Nodes)));
 
+	UpdateValues();
+}
+
+TSharedRef<SWidget> FWireNodeDetails::OnGenerateComboWidget(TSharedPtr<FString> InComboString)
+{
+	return SNew(STextBlock).Text(FText::FromString(*InComboString));
+}
+
+FText FWireNodeDetails::GetNodeType() const
+{
+	if (NodeType.IsSet())
+	{
+		const int32 EnumIndex = static_cast<int32>(NodeType.GetValue());
+		return FText::FromString(*WireNodeTypes[EnumIndex]);
+	}
+	else
+	{
+		return LOCTEXT("NoSelection", "(Nothing Selected)");
+	}
+}
+
+void FWireNodeDetails::OnNodeTypeChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo)
+{
+	if (Wire == nullptr || SelectedNodeIndex == INDEX_NONE)
+	{
+		return;
+	}
+
+	if (!Wire->Nodes.IsValidIndex(SelectedNodeIndex))
+	{
+		UpdateValues();
+		return;
+	}
+
+	const FScopedTransaction Transaction(LOCTEXT("SetWireNodeType", "Set wire node type"));
+	Wire->Modify();
+
+	const int32 EnumIndex = WireNodeTypes.Find(NewValue);
+	Wire->Nodes[SelectedNodeIndex].NodeType = static_cast<EWireNodeType>(EnumIndex);
+	FComponentVisualizer::NotifyPropertyModified(
+		Wire,
+		FindFProperty<FProperty>(
+			UAGX_WireComponent::StaticClass(), GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, Nodes)));
 	UpdateValues();
 }
 
