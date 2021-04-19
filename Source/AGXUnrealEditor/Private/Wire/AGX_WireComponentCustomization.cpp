@@ -280,9 +280,50 @@ void FWireNodeDetails::OnSetLocation(float NewValue, ETextCommit::Type CommitInf
 	UpdateValues();
 }
 
+
+/// @todo The color stuff is copy/paste from AGX_WireComponentVisualizer.cpp. Figure out how to have only one.
+#if 0
+TStaticArray<FLinearColor, 3> CreateWireNodeColors()
+{
+	TStaticArray<FLinearColor, 3> WireNodeColors;
+	WireNodeColors[0] = FLinearColor::Red;
+	WireNodeColors[1] = FLinearColor::Green;
+	WireNodeColors[2] = FLinearColor::Blue;
+	return WireNodeColors;
+}
+
+FLinearColor WireNodeTypeToColor(EWireNodeType Type)
+{
+	static TStaticArray<FLinearColor, 3> WireNodeColors = CreateWireNodeColors();
+	const uint32 I = static_cast<uint32>(Type);
+	return WireNodeColors[I];
+}
+#else
+FLinearColor WireNodeTypeToColor(EWireNodeType Type);
+#endif
+FLinearColor WireNodeTypeIndexToColor(int32 Type)
+{
+	return WireNodeTypeToColor(static_cast<EWireNodeType>(Type));
+}
+
 TSharedRef<SWidget> FWireNodeDetails::OnGenerateComboWidget(TSharedPtr<FString> InComboString)
 {
-	return SNew(STextBlock).Text(FText::FromString(*InComboString));
+	const int32 EnumIndex = WireNodeTypes.Find(InComboString);
+	const FLinearColor Color = WireNodeTypeIndexToColor(EnumIndex);
+	// clang-format off
+	return SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		[
+			SNew(STextBlock)
+			.Text(FText::FromString(*InComboString))
+		]
+		+ SHorizontalBox::Slot()
+		[
+			SNew(SColorBlock)
+			.Color(Color)
+			//.ColorAndOpacity(FSlateColor(Color))
+		];
+	// clang-format on
 }
 
 FText FWireNodeDetails::GetNodeType() const
