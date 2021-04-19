@@ -33,6 +33,13 @@ public:
 	FGeometryAndShapeRef* GetNative();
 	const FGeometryAndShapeRef* GetNative() const;
 
+	/// @return The address of the underlying AGX Dynamics object.
+	uintptr_t GetNativeAddress() const;
+
+	/// Re-assign this Barrier to the given native address. The address must be an existing AGX
+	/// Dynamics object.
+	void SetNativeAddress(uintptr_t NativeAddress);
+
 	void SetIsSensor(bool IsSensor, bool GenerateContactData);
 	bool GetIsSensor() const;
 	bool GetIsSensorGeneratingContactData() const;

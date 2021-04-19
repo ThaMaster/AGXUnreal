@@ -239,6 +239,32 @@ const FRigidBodyRef* FRigidBodyBarrier::GetNative() const
 	return NativeRef.get();
 }
 
+uintptr_t FRigidBodyBarrier::GetNativeAddress() const
+{
+	if (!HasNative())
+	{
+		return 0;
+	}
+
+	return reinterpret_cast<uintptr_t>(NativeRef->Native.get());
+}
+
+void FRigidBodyBarrier::SetNativeAddress(uintptr_t NativeAddress)
+{
+	if (NativeAddress == GetNativeAddress())
+	{
+		return;
+	}
+
+	if (HasNative())
+	{
+		this->ReleaseNative();
+	}
+
+	NativeRef->Native = reinterpret_cast<agx::RigidBody*>(NativeAddress);
+	MassProperties.BindTo(*NativeRef);
+}
+
 void FRigidBodyBarrier::ReleaseNative()
 {
 	NativeRef->Native = nullptr;
