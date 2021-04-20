@@ -42,6 +42,10 @@ public:
 protected:
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 
+	// ~Begin UAGX_ShapeComponent interface.
+	virtual FShapeBarrier* GetNativeBarrier() override;
+	// ~End UAGX_ShapeComponent interface.
+
 #if WITH_EDITOR
 	virtual bool DoesPropertyAffectVisualMesh(
 		const FName& PropertyName, const FName& MemberPropertyName) const override;

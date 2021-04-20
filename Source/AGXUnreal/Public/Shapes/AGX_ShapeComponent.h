@@ -149,6 +149,15 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 
+	/**
+	 * Get a pointer to the actual member Barrier object. This will never return nullptr. The
+	 * returned Barrier may be empty.
+	 *
+	 * @return Pointer to the member Barrier object.
+	 */
+	virtual FShapeBarrier* GetNativeBarrier()
+		PURE_VIRTUAL(UAGX_ShapeComponent::GetNativebarrier, return nullptr;);
+
 	virtual void ReleaseNative() PURE_VIRTUAL(UAGX_ShapeComponent::ReleaseNative, );
 
 	static void ApplySensorMaterial(UMeshComponent& Mesh);

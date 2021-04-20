@@ -41,6 +41,11 @@ const FShapeBarrier* UAGX_TrimeshShapeComponent::GetNative() const
 	return &NativeBarrier;
 }
 
+FShapeBarrier* UAGX_TrimeshShapeComponent::GetNativeBarrier()
+{
+	return &NativeBarrier;
+}
+
 FShapeBarrier* UAGX_TrimeshShapeComponent::GetOrCreateNative()
 {
 	if (!HasNative())
