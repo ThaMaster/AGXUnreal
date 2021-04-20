@@ -566,7 +566,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 
 	if (PropertyDispatcher.Trigger(Member, Property, this))
 	{
-		// No action required when handled by PropertyDispacher callback.
+		// No action required when handled by PropertyDispatcher callback.
 		return;
 	}
 
@@ -646,6 +646,7 @@ void UAGX_ConstraintComponent::PostEditChangeChainProperty(
 	FName Property = Node->GetValue()->GetFName();
 	// The name of the rest of the nodes doesn't matter, we set all elements at level two each
 	// time. These are small objects such as FVector or FFloatInterval.
+	// Some rewrite of FAGX_PropertyDispatcher will be required to support other types of nesting
 	PropertyDispatcher.Trigger(Member, Property, this);
 }
 #endif
