@@ -77,6 +77,13 @@ public:
 	FVector GetLocalLocation(int32 BodyIndex) const;
 	FQuat GetLocalRotation(int32 BodyIndex) const;
 
+	/// @return The address of the underlying AGX Dynamics object.
+	uintptr_t GetNativeAddress() const;
+
+	/// Re-assign this Barrier to the given native address. The address must be an existing AGX
+	/// Dynamics object of the correct type.
+	void SetNativeAddress(uintptr_t NativeAddress);
+
 private:
 	FConstraintBarrier(const FConstraintBarrier&) = delete;
 	void operator=(const FConstraintBarrier&) = delete;

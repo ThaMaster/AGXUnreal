@@ -13,6 +13,7 @@ UAGX_CylindricalConstraintComponent::UAGX_CylindricalConstraintComponent()
 		  /*bIsSecondaryConstraint1Rotational*/ false,
 		  /*bIsSecondaryConstraint2Rotational*/ true)
 {
+	NativeBarrier.Reset(new FCylindricalJointBarrier());
 }
 
 UAGX_CylindricalConstraintComponent::~UAGX_CylindricalConstraintComponent()
@@ -31,8 +32,6 @@ const FCylindricalJointBarrier* UAGX_CylindricalConstraintComponent::GetNativeCy
 
 void UAGX_CylindricalConstraintComponent::AllocateNative()
 {
-	NativeBarrier.Reset(new FCylindricalJointBarrier());
-
 	FAGX_ConstraintUtilities::CreateNative(
-		GetNative(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
 }

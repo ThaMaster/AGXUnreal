@@ -20,6 +20,8 @@ UAGX_DistanceConstraintComponent::UAGX_DistanceConstraintComponent()
 	/// \todo What do we want? And why?
 	BodyAttachment1.FrameDefiningComponent.Clear();
 	BodyAttachment2.FrameDefiningComponent.Clear();
+
+	NativeBarrier.Reset(new FDistanceJointBarrier());
 }
 
 UAGX_DistanceConstraintComponent::~UAGX_DistanceConstraintComponent()
@@ -38,8 +40,6 @@ const FDistanceJointBarrier* UAGX_DistanceConstraintComponent::GetNativeDistance
 
 void UAGX_DistanceConstraintComponent::AllocateNative()
 {
-	NativeBarrier.Reset(new FDistanceJointBarrier());
-
 	FAGX_ConstraintUtilities::CreateNative(
-		GetNative(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
 }

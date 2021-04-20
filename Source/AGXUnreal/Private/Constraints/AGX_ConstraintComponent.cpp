@@ -2,9 +2,11 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_ConstraintConstants.h"
+#include "CoreGlobals.h"
 #include "UObject/UObjectGlobals.h"
 
 /// \todo Determine which of these are really needed.
+#include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
@@ -338,42 +340,56 @@ EAGX_SolveType UAGX_ConstraintComponent::GetSolveType() const
 	}
 }
 
+bool UAGX_ConstraintComponent::HasNative() const
+{
+	return NativeBarrier->HasNative();
+}
+
+uint64 UAGX_ConstraintComponent::GetNativeAddress() const
+{
+	return static_cast<uint64>(NativeBarrier->GetNativeAddress());
+}
+
+void UAGX_ConstraintComponent::AssignNative(uint64 NativeAddress)
+{
+	check(!HasNative());
+	NativeBarrier->SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+}
+
 FConstraintBarrier* UAGX_ConstraintComponent::GetOrCreateNative()
 {
 	if (!HasNative())
 	{
+		checkf(
+			!GIsReconstructingBlueprintInstances,
+			TEXT("This is a bad situation. Someone need this Component's native but we're in the "
+				 "middle of a RerunConstructionScripts and this Component haven't been given its "
+				 "Native yet. We can't create a new one since we will be given the actual Native "
+				 "soon, but we also can't return the actual Native right now because it hasn't "
+				 "been restored from the UActorComponentInstanceData yet."));
+
 		CreateNative();
 	}
+
 	return GetNative();
 }
 
 FConstraintBarrier* UAGX_ConstraintComponent::GetNative()
 {
-	if (NativeBarrier)
-	{
-		return NativeBarrier.Get();
-	}
-	else
+	if (!HasNative())
 	{
 		return nullptr;
 	}
+	return NativeBarrier.Get();
 }
 
 const FConstraintBarrier* UAGX_ConstraintComponent::GetNative() const
 {
-	if (NativeBarrier)
-	{
-		return NativeBarrier.Get();
-	}
-	else
+	if (!HasNative())
 	{
 		return nullptr;
 	}
-}
-
-bool UAGX_ConstraintComponent::HasNative() const
-{
-	return NativeBarrier.Get() != nullptr && NativeBarrier->HasNative();
+	return NativeBarrier.Get();
 }
 
 bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString* OutMessage) const
@@ -552,8 +568,6 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 
 void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-
 	// The root property that contains the property that was changed.
 	const FName Member = (PropertyChangedEvent.MemberProperty != NULL)
 							 ? PropertyChangedEvent.MemberProperty->GetFName()
@@ -566,18 +580,12 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 
 	if (PropertyDispatcher.Trigger(Member, Property, this))
 	{
-		// No action required when handled by PropertyDispatcher callback.
+		// No custom handling required when handled by PropertyDispatcher callback.
+		Super::PostEditChangeProperty(PropertyChangedEvent);
 		return;
 	}
 
-	if (Member == Property)
-	{
-		// Property of this class changed.
-		// No action required yet.
-		return;
-	}
-
-	// Property of an aggregate struct changed.
+	// Add any custom property edited handling that may be required in the future here.
 
 	FAGX_ConstraintBodyAttachment* ModifiedBodyAttachment =
 		SelectByName(Member, &BodyAttachment1, &BodyAttachment2);
@@ -628,15 +636,22 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			ModifiedBodyAttachment->FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 		}
 	}
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
 
 void UAGX_ConstraintComponent::PostEditChangeChainProperty(
 	struct FPropertyChangedChainEvent& PropertyChangedEvent)
 {
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 	if (PropertyChangedEvent.PropertyChain.Num() < 3)
 	{
-		// These simple cases are handled by PostEditChangeProperty.
+		Super::PostEditChangeChainProperty(PropertyChangedEvent);
+
+		// These simple cases are handled by PostEditChangeProperty, which is called by UObject's
+		// PostEditChangeChainProperty.
 		return;
 	}
 
@@ -648,8 +663,23 @@ void UAGX_ConstraintComponent::PostEditChangeChainProperty(
 	// time. These are small objects such as FVector or FFloatInterval.
 	// Some rewrite of FAGX_PropertyDispatcher will be required to support other types of nesting
 	PropertyDispatcher.Trigger(Member, Property, this);
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 }
 #endif
+
+TStructOnScope<FActorComponentInstanceData> UAGX_ConstraintComponent::GetComponentInstanceData()
+	const
+{
+	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
+		this, this, [](UActorComponent* Component) {
+			UAGX_ConstraintComponent* AsConstraint = Cast<UAGX_ConstraintComponent>(Component);
+			return static_cast<IAGX_NativeOwner*>(AsConstraint);
+		});
+}
 
 #define TRY_SET_DOF_VALUE(SourceStruct, GenericDof, Func)         \
 	{                                                             \
@@ -793,12 +823,33 @@ void UAGX_ConstraintComponent::DestroyComponent(bool bPromoteChildren)
 void UAGX_ConstraintComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	BodyAttachment1.RigidBody.CacheCurrentRigidBody();
-	BodyAttachment2.RigidBody.CacheCurrentRigidBody();
-	BodyAttachment1.FrameDefiningComponent.CacheCurrentSceneComponent();
-	BodyAttachment2.FrameDefiningComponent.CacheCurrentSceneComponent();
-	if (!HasNative())
+
+	if (!HasNative() && !GIsReconstructingBlueprintInstances)
 	{
+		// This may be complicated. Normally, all the Components of an Actor exists when the first
+		// BeginPlay is called. Under those conditions it is possible to cache the the Component
+		// pointers.
+		//
+		// However, when editing Properties in the Details Panel during a Play In Editor session
+		// Unreal Engine creates and initializes one component at the time. Which means that this
+		// Constraint may get BeginPlay before the Rigid Bodies it is attached to even exists. So
+		// caching in BeginPlay is not possible while the GIsReconstructingBlueprintInstances flag
+		// is set.
+		//
+		// Not sure where else to do it. I don't know of any later startup callback. Should we skip
+		// caching all together, and do a search every time we need the Component? Should we use the
+		// OldToNew map passed to Component Instance Data to update the pointers? Set a flag in the
+		// RigidBody/Component Reference to indicate that it is allowed to cache the next time a
+		// look-up is done?
+		//
+		// Things are made even more complicated if the Rigid Body or Component we're referencing
+		// is in another Blueprint and that Blueprint is being recreated. Nothing in that Blueprint
+		// knows that this Constraint needs to be notified about the reconstruction.
+		BodyAttachment1.RigidBody.CacheCurrentRigidBody();
+		BodyAttachment2.RigidBody.CacheCurrentRigidBody();
+		BodyAttachment1.FrameDefiningComponent.CacheCurrentSceneComponent();
+		BodyAttachment2.FrameDefiningComponent.CacheCurrentSceneComponent();
+
 		CreateNative();
 	}
 }
@@ -821,6 +872,7 @@ void UAGX_ConstraintComponent::CreateNative()
 	/// \todo Verify that we are in-game!
 
 	check(!HasNative());
+	check(!GIsReconstructingBlueprintInstances);
 
 	CreateNativeImpl();
 
