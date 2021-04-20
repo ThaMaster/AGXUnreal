@@ -261,6 +261,13 @@ void FRigidBodyBarrier::SetNativeAddress(uintptr_t NativeAddress)
 		this->ReleaseNative();
 	}
 
+	if (NativeAddress == 0)
+	{
+		NativeRef->Native = nullptr;
+		MassProperties.BindTo(*NativeRef);
+		return;
+	}
+
 	NativeRef->Native = reinterpret_cast<agx::RigidBody*>(NativeAddress);
 	MassProperties.BindTo(*NativeRef);
 }
