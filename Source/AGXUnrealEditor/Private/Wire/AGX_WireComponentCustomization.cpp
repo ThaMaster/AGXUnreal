@@ -88,6 +88,8 @@ private:
 	// Backing storage for the node type combo box.
 	TArray<TSharedPtr<FString>> WireNodeTypes;
 
+	TSharedPtr<SComboBox<TSharedPtr<FString>>> NodeTypeComboBox;
+
 	// Don't know what this is.
 	FSimpleDelegate OnRegenerateChildren;
 };
@@ -155,6 +157,15 @@ void FWireNodeDetails::GenerateChildContent(IDetailChildrenBuilder& ChildrenBuil
 		.OnZCommitted(this, &FWireNodeDetails::OnSetLocation, 2)
 	];
 
+	NodeTypeComboBox = SNew(SComboBox<TSharedPtr<FString>>)
+		.OptionsSource(&WireNodeTypes)
+			.OnGenerateWidget(this, &FWireNodeDetails::OnGenerateComboWidget)
+			.OnSelectionChanged(this, &FWireNodeDetails::OnNodeTypeChanged)
+		[
+				SNew(STextBlock)
+				.Text(this, &FWireNodeDetails::GetNodeType)
+		];
+
 	ChildrenBuilder.AddCustomRow(LOCTEXT("Type", "Type"))
 	.Visibility(TAttribute<EVisibility>(this, &FWireNodeDetails::WithSelection))
 	.NameContent()
@@ -164,14 +175,7 @@ void FWireNodeDetails::GenerateChildContent(IDetailChildrenBuilder& ChildrenBuil
 	]
 	.ValueContent()
 	[
-		SNew(SComboBox<TSharedPtr<FString>>)
-		.OptionsSource(&WireNodeTypes)
-		.OnGenerateWidget(this, &FWireNodeDetails::OnGenerateComboWidget)
-		.OnSelectionChanged(this, &FWireNodeDetails::OnNodeTypeChanged)
-		[
-			SNew(STextBlock)
-			.Text(this, &FWireNodeDetails::GetNodeType)
-		]
+		NodeTypeComboBox.ToSharedRef()
 	];
 
 	//clang-format on
@@ -201,7 +205,6 @@ void FWireNodeDetails::UpdateValues()
 {
 	Wire = WireVisualizer->GetSelectedWire();
 	SelectedNodeIndex = WireVisualizer->GetSelectedNodeIndex();
-
 	if (Wire == nullptr || SelectedNodeIndex == INDEX_NONE)
 	{
 		LocationX.Reset();
@@ -217,6 +220,12 @@ void FWireNodeDetails::UpdateValues()
 	LocationY = Location.Y;
 	LocationZ = Location.Z;
 	NodeType = Node.NodeType;
+
+	const int32 EnumIndex = static_cast<int32>(NodeType.GetValue());
+	if (NodeTypeComboBox->GetSelectedItem() != WireNodeTypes[EnumIndex])
+	{
+		NodeTypeComboBox->SetSelectedItem(WireNodeTypes[EnumIndex]);
+	}
 }
 
 EVisibility FWireNodeDetails::WithSelection() const
