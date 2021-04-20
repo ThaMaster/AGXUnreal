@@ -286,7 +286,7 @@ void FAGX_ConstraintUtilities::CreateNative(
 	if (Barrier == nullptr)
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Create Native failed for Constraint %s, Barrier was nullptr"),
+			LogAGX, Error, TEXT("Create Native failed for Constraint '%s', Barrier was nullptr"),
 			*ConstraintName.ToString());
 		return;
 	}

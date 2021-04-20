@@ -212,11 +212,11 @@ public:
 
 	const FRigidBodyBarrier* GetNative() const;
 
-	// ~Begin IAGX_NativeObject interface.
+	// ~Begin IAGX_NativeOwner interface.
 	virtual bool HasNative() const override;
 	virtual uint64 GetNativeAddress() const override;
 	virtual void AssignNative(uint64 NativeAddress) override;
-	// ~End IAGX_NativeObject interface.
+	// ~End IAGX_NativeOwner interface.
 
 	// ~Begin UObject interface.
 	virtual void PostLoad() override;

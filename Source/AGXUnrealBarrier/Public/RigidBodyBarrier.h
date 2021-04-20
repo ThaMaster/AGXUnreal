@@ -83,7 +83,7 @@ public:
 	uintptr_t GetNativeAddress() const;
 
 	/// Re-assign this Barrier to the given native address. The address must be an existing AGX
-	/// Dynamics object.
+	/// Dynamics object of the correct type.
 	void SetNativeAddress(uintptr_t NativeAddress);
 
 	void ReleaseNative();

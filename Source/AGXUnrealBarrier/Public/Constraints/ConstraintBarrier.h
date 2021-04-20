@@ -98,7 +98,7 @@ private:
 		const FVector& FramePosition2, const FQuat& FrameRotation2) = 0;
 
 protected:
-	// NativeRef has the same lifetime as this object.
+	// NativeRef has equal lifetime as this object ie the FConstraintRef is created at construction.
 	// NativeRef->Native can be null.
 	// NativeRef->Native is created by the lowermost subclass when AllocateNative is invoked,
 	// and released when ReleaseNative is invoked.

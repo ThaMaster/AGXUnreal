@@ -113,6 +113,7 @@ FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
 				 "Native yet. We can't create a new one since we will be given the actual Native "
 				 "soon, but we also can't return the actual Native right now because it hasn't "
 				 "been restored from the UActorComponentInstanceData yet."));
+
 		InitializeNative();
 	}
 	check(HasNative()); /// \todo Consider better error handling than 'check'.
