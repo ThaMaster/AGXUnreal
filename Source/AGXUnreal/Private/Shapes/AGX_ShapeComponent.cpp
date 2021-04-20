@@ -19,10 +19,6 @@
 // Sets default values for this component's properties
 UAGX_ShapeComponent::UAGX_ShapeComponent()
 {
-	UE_LOG(
-		LogAGX, Warning, TEXT("UAGX_ShapeComponent 0x%llx created with Reconstruct flag %d."),
-		(void*) this, GIsReconstructingBlueprintInstances);
-
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
@@ -38,12 +34,6 @@ uint64 UAGX_ShapeComponent::GetNativeAddress() const
 
 void UAGX_ShapeComponent::AssignNative(uint64 NativeAddress)
 {
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("UAGX_ShapeComponent 0x%llx assigned native with address 0x%llx with Reconstruct "
-			 "flag %d."),
-		(void*) this, NativeAddress, GIsReconstructingBlueprintInstances);
-
 	check(!HasNative());
 	GetNativeBarrier()->SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
 }
@@ -169,10 +159,7 @@ void UAGX_ShapeComponent::PostLoad()
 void UAGX_ShapeComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
-
 	UpdateVisualMesh();
-
-	UE_LOG(LogAGX, Warning, TEXT("UAGX_ShapeComponent::PostInitProperties."));
 }
 
 void UAGX_ShapeComponent::OnComponentCreated()
@@ -215,29 +202,16 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 	if (GIsReconstructingBlueprintInstances)
 	{
 		// Another UAGX_ShapeComponent will inherit this one's Native, so don't wreck it.
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("UAGX_ShapeComponent::EndPlay, but GIsReconstructingBlueprintInstances is set so "
-				 "not doing much."));
 	}
 	else
 	{
-		// If this Shape is not part of a Rigid Body then remove it from the Simulation.
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("UAGX_ShapeComponent::EndPlay, should check if we are part of a RigidBody and "
-				 "remove the Native Geometry from the Simulation if not."));
+		/// @todo: If this Shape is not part of a Rigid Body then remove it from the Simulation.
 	}
 	ReleaseNative();
 }
 
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 {
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("UAGX_ShapeComponent::CopyFrom for 0x%llx. I expect there to be a shape-type-specific copy as well"),
-		(void*) this);
-
 	bCanCollide = Barrier.GetEnableCollisions();
 	bIsSensor = Barrier.GetIsSensor();
 	SensorType = Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactsSensor

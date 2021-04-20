@@ -18,10 +18,6 @@
 // Sets default values for this component's properties
 UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 {
-	UE_LOG(
-		LogAGX, Warning, TEXT("UAGX_RigidBodyComponent 0x%llx created with Reconstruct flag %d."),
-		(void*) this, GIsReconstructingBlueprintInstances);
-
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// We step the AGX Dynamics simulation in PrePhysics and read the new state
@@ -42,12 +38,6 @@ void UAGX_RigidBodyComponent::PostLoad()
 	InitPropertyDispatcher();
 }
 
-void UAGX_RigidBodyComponent::PostInitProperties()
-{
-	Super::PostInitProperties();
-	UE_LOG(LogAGX, Warning, TEXT("UAGX_RigidBodyComponent::PostInitProperties."));
-}
-
 void UAGX_RigidBodyComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	// The root property that contains the property that was changed.
@@ -60,15 +50,14 @@ void UAGX_RigidBodyComponent::PostEditChangeProperty(FPropertyChangedEvent& Prop
 							   ? PropertyChangedEvent.Property->GetFName()
 							   : NAME_None;
 
-	UE_LOG(
-		LogAGX, Warning, TEXT("UAGX_RigidBodyComponent::PostEditChangeProperty(\"%s\", \"%s\")"),
-		*Member.ToString(), *Property.ToString());
-
 	if (PropertyDispatcher.Trigger(Member, Property, this))
 	{
-		// No action required when handled by PropertyDispatcher callback.
+		// No custom handling required when handled by PropertyDispatcher callback.
+		Super::PostEditChangeProperty(PropertyChangedEvent);
 		return;
 	}
+
+	// Add any custom property edited handling that may be required in the future here.
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
@@ -105,9 +94,6 @@ void UAGX_RigidBodyComponent::PostEditChangeChainProperty(
 
 void UAGX_RigidBodyComponent::PostEditComponentMove(bool bFinished)
 {
-	UE_LOG(
-		LogAGX, Warning, TEXT("PostEditComponentMove with position %s."),
-		*GetComponentLocation().ToString());
 	if (NativeBarrier.HasNative())
 	{
 		// Not using the Set-functions here because we aren't editing a raw Property and don't want
@@ -145,12 +131,6 @@ uint64 UAGX_RigidBodyComponent::GetNativeAddress() const
 
 void UAGX_RigidBodyComponent::AssignNative(uint64 NativeAddress)
 {
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("UAGX_RigidBodyComponent 0x%llx assigned native with address 0x%llx with Reconstruct "
-			 "flag %d."),
-		(void*) this, NativeAddress, GIsReconstructingBlueprintInstances);
-
 	check(!HasNative());
 	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
 }
@@ -175,16 +155,12 @@ const FRigidBodyBarrier* UAGX_RigidBodyComponent::GetNative() const
 
 void UAGX_RigidBodyComponent::BeginPlay()
 {
-	UE_LOG(
-		LogAGX, Warning, TEXT("UAGX_RigidBodyComponent 0x%llx BeginPlay with Reconstruct flag %d."),
-		(void*) this, GIsReconstructingBlueprintInstances);
-
 	Super::BeginPlay();
 	if (!HasNative() && !GIsReconstructingBlueprintInstances)
 	{
 		// Not initializing a new Native if currently reconstructing Blueprint instances because
-		// if we should have a Native then one will be assigned to us by our
-		// FRigidBodyComponentInstanceData.
+		// if we should have a Native then one will be assigned to us by our Component Instance
+		// Data.
 		InitializeNative();
 		check(HasNative()); /// \todo Consider better error handling than 'check'.
 	}
@@ -201,11 +177,6 @@ void UAGX_RigidBodyComponent::BeginPlay()
 void UAGX_RigidBodyComponent::TickComponent(
 	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("UAGX_RigidBodyComponent 0x%llx TickComponent with Reconstruct flag %d."),
-		(void*) this, GIsReconstructingBlueprintInstances);
-
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	if (MotionControl != MC_STATIC)
 	{
@@ -217,22 +188,15 @@ void UAGX_RigidBodyComponent::TickComponent(
 
 void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
-	UE_LOG(
-		LogAGX, Warning, TEXT("UAGX_RigidBodyComponent 0x%llx EndPlay with Reconstruct flag %d."),
-		(void*) this, GIsReconstructingBlueprintInstances);
 	Super::EndPlay(Reason);
 
-	if (!GIsReconstructingBlueprintInstances)
+	if (GIsReconstructingBlueprintInstances)
 	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("  TODO: Remove the Native from the AGX Dynamics simulation."));
+		// Another UAGX_RigidBodyComponent will inherit this one's Native, so don't wreck it.
 	}
 	else
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("  TODO: We're in RerunConstructionScripts, so don't remove Native from the AGX "
-				 "Dynamics simulation"));
+		/// @todo Remove the native AGX Dynamics Rigid Body from the Simulation.
 	}
 	NativeBarrier.ReleaseNative();
 }
@@ -297,7 +261,7 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MotionControl),
 		[](ThisClass* This) { This->SetMotionControl(This->MotionControl); });
 
-/// @TODO Enable once we get UAGX_RigidBodyComponent::SetTransformTarget.
+/// @todo Enable once we get UAGX_RigidBodyComponent::SetTransformTarget.
 #if 0
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, TransformTarget),
@@ -307,19 +271,10 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 
 void UAGX_RigidBodyComponent::InitializeNative()
 {
-	UE_LOG(
-		LogAGX, Warning, TEXT("InitializeNative called with Reconstruct flag %d."),
-		GIsReconstructingBlueprintInstances);
-
 	check(!GIsReconstructingBlueprintInstances);
 	check(!HasNative());
 	NativeBarrier.AllocateNative();
 	check(HasNative()); /// \todo Consider better error handling than 'check'.
-
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("UAGX_RigidBodyComponent 0x%llx initializing native with address 0x%llx."),
-		(void*) this, NativeBarrier.GetNativeAddress());
 
 	WritePropertiesToNative();
 	WriteTransformToNative();
@@ -367,8 +322,6 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 
 void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 {
-	UE_LOG(LogAGX, Warning, TEXT("UAGX_RigidBodyComponent::CopyFrom for 0x%llx."), (void*) this);
-
 	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
 	Mass = MassProperties.GetMass();
 	PrincipalInertiae = MassProperties.GetPrincipalInertiae();
@@ -378,8 +331,9 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 	MotionControl = Barrier.GetMotionControl();
 	bEnabled = Barrier.GetEnabled();
 
-// This breaks the move widget in Unreal Editor. Static bodies within Actors that have been
-// imported from an AGX Dynamics archive does not move when the Actor is moved.
+// We want to do this, but it breaks the move widget in Unreal Editor. Static bodies within Actors
+// that have been imported from an AGX Dynamics archive does not move when the Actor is moved.
+// Figure out why and fix it.
 #if 0
 	switch (MotionControl)
 	{

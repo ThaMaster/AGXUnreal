@@ -10,17 +10,7 @@ FAGX_NativeOwnerInstanceData::FAGX_NativeOwnerInstanceData(
 	: FSceneComponentInstanceData(SourceComponent)
 	, Downcaster(InDowncaster)
 {
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("FAGX_NativeOwnerInstanceData created from NativeOwner 0x%llx under Reconstruct flag "
-			 "%d."),
-		(void*) NativeOwner, GIsReconstructingBlueprintInstances);
-
 	NativeAddress = NativeOwner->GetNativeAddress();
-
-	UE_LOG(
-		LogAGX, Warning, TEXT("FAGX_NativeOwnerInstanceData stored native address 0x%llx."),
-		NativeAddress);
 }
 
 void FAGX_NativeOwnerInstanceData::ApplyToComponent(
@@ -28,15 +18,6 @@ void FAGX_NativeOwnerInstanceData::ApplyToComponent(
 {
 	FSceneComponentInstanceData::ApplyToComponent(Component, CacheApplyPhase);
 
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("FAGX_NativeOwnerInstanceData with stored native address 0x%llx applying to "
-			 "component 0x%llx under Reconstruct flag %d."),
-		NativeAddress, Component, GIsReconstructingBlueprintInstances);
-
-	/// @todo Will this compile? IAGX_NativeOwner is not a subclass of UActorComponent.
-	// IAGX_NativeOwner* NativeOwner = static_cast<IAGX_NativeOwner*>(Component);
-	//IAGX_NativeOwner* NativeOwner = SourceNativeOwner->AsNativeOwner(Component);
 	IAGX_NativeOwner* NativeOwner = Downcaster(Component);
 	if (NativeOwner == nullptr)
 	{
@@ -47,10 +28,11 @@ void FAGX_NativeOwnerInstanceData::ApplyToComponent(
 		return;
 	}
 
+	// Unreal Engine calls ApplyToComponent twice, so detect that and do nothing the second time.
+	// But be aware that the first call happens before deserialization and the latter happens after,
+	// so if you need the actual Property values then wait for the second call.
 	if (NativeOwner->GetNativeAddress() == NativeAddress)
 	{
-		// Unreal Engine calls Apply twice, so detect that and do nothing the second time.
-		UE_LOG(LogAGX, Warning, TEXT("  NativeOwner already has the correct Native Address, doing nothing"));
 		return;
 	}
 
@@ -59,10 +41,6 @@ void FAGX_NativeOwnerInstanceData::ApplyToComponent(
 
 bool FAGX_NativeOwnerInstanceData::ContainsData() const
 {
-	UE_LOG(
-		LogAGX, Warning, TEXT("FAGX_NativeOwnerInstanceData ContainsData for address 0x%llx."),
-		NativeAddress);
-
 	// Extend with more tests once we store more data.
 	return Super::ContainsData() || HasNativeAddress();
 }
