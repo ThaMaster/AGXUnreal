@@ -697,43 +697,42 @@ TStructOnScope<FActorComponentInstanceData> UAGX_ConstraintComponent::GetCompone
 
 void UAGX_ConstraintComponent::UpdateNativeProperties()
 {
-	if (HasNative())
+	if (!HasNative())
 	{
-		NativeBarrier->SetEnable(bEnable);
-		NativeBarrier->SetSolveType(SolveType);
-
-		// TODO: Could just loop NativeDofIndexMap instead!!
-
-		TRY_SET_DOF_VALUE(
-			Elasticity, EGenericDofIndex::Translational1, NativeBarrier->SetElasticity);
-		TRY_SET_DOF_VALUE(
-			Elasticity, EGenericDofIndex::Translational2, NativeBarrier->SetElasticity);
-		TRY_SET_DOF_VALUE(
-			Elasticity, EGenericDofIndex::Translational3, NativeBarrier->SetElasticity);
-		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational1, NativeBarrier->SetElasticity);
-		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational2, NativeBarrier->SetElasticity);
-		TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational3, NativeBarrier->SetElasticity);
-
-		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Translational1, NativeBarrier->SetDamping);
-		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Translational2, NativeBarrier->SetDamping);
-		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Translational3, NativeBarrier->SetDamping);
-		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Rotational1, NativeBarrier->SetDamping);
-		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Rotational2, NativeBarrier->SetDamping);
-		TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Rotational3, NativeBarrier->SetDamping);
-
-		TRY_SET_DOF_RANGE_VALUE(
-			ForceRange, EGenericDofIndex::Translational1, NativeBarrier->SetForceRange);
-		TRY_SET_DOF_RANGE_VALUE(
-			ForceRange, EGenericDofIndex::Translational2, NativeBarrier->SetForceRange);
-		TRY_SET_DOF_RANGE_VALUE(
-			ForceRange, EGenericDofIndex::Translational3, NativeBarrier->SetForceRange);
-		TRY_SET_DOF_RANGE_VALUE(
-			ForceRange, EGenericDofIndex::Rotational1, NativeBarrier->SetForceRange);
-		TRY_SET_DOF_RANGE_VALUE(
-			ForceRange, EGenericDofIndex::Rotational2, NativeBarrier->SetForceRange);
-		TRY_SET_DOF_RANGE_VALUE(
-			ForceRange, EGenericDofIndex::Rotational3, NativeBarrier->SetForceRange);
+		return;
 	}
+
+	NativeBarrier->SetEnable(bEnable);
+	NativeBarrier->SetSolveType(SolveType);
+
+	// TODO: Could just loop NativeDofIndexMap instead!!
+
+	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Translational1, NativeBarrier->SetElasticity);
+	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Translational2, NativeBarrier->SetElasticity);
+	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Translational3, NativeBarrier->SetElasticity);
+	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational1, NativeBarrier->SetElasticity);
+	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational2, NativeBarrier->SetElasticity);
+	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational3, NativeBarrier->SetElasticity);
+
+	TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Translational1, NativeBarrier->SetDamping);
+	TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Translational2, NativeBarrier->SetDamping);
+	TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Translational3, NativeBarrier->SetDamping);
+	TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Rotational1, NativeBarrier->SetDamping);
+	TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Rotational2, NativeBarrier->SetDamping);
+	TRY_SET_DOF_VALUE(Damping, EGenericDofIndex::Rotational3, NativeBarrier->SetDamping);
+
+	TRY_SET_DOF_RANGE_VALUE(
+		ForceRange, EGenericDofIndex::Translational1, NativeBarrier->SetForceRange);
+	TRY_SET_DOF_RANGE_VALUE(
+		ForceRange, EGenericDofIndex::Translational2, NativeBarrier->SetForceRange);
+	TRY_SET_DOF_RANGE_VALUE(
+		ForceRange, EGenericDofIndex::Translational3, NativeBarrier->SetForceRange);
+	TRY_SET_DOF_RANGE_VALUE(
+		ForceRange, EGenericDofIndex::Rotational1, NativeBarrier->SetForceRange);
+	TRY_SET_DOF_RANGE_VALUE(
+		ForceRange, EGenericDofIndex::Rotational2, NativeBarrier->SetForceRange);
+	TRY_SET_DOF_RANGE_VALUE(
+		ForceRange, EGenericDofIndex::Rotational3, NativeBarrier->SetForceRange);
 }
 
 namespace
@@ -771,9 +770,10 @@ void UAGX_ConstraintComponent::UpdateNativeElasticity()
 
 void UAGX_ConstraintComponent::UpdateNativeDamping()
 {
-	UpdateNativePerDof(HasNative(), NativeDofIndexMap, [this](EGenericDofIndex GenericDof, int32 NativeDof) {
-		NativeBarrier->SetDamping(Damping[GenericDof], NativeDof);
-	});
+	UpdateNativePerDof(
+		HasNative(), NativeDofIndexMap, [this](EGenericDofIndex GenericDof, int32 NativeDof) {
+			NativeBarrier->SetDamping(Damping[GenericDof], NativeDof);
+		});
 }
 
 #undef TRY_SET_DOF_VAlUE
@@ -875,17 +875,15 @@ void UAGX_ConstraintComponent::CreateNative()
 	check(!GIsReconstructingBlueprintInstances);
 
 	CreateNativeImpl();
-
-	if (HasNative())
-	{
-		UpdateNativeProperties();
-		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-		Simulation->GetNative()->AddConstraint(NativeBarrier.Get());
-	}
-	else
+	if (!HasNative())
 	{
 		UE_LOG(
 			LogAGX, Error, TEXT("Constraint %s in %s: Unable to create constraint."),
 			*GetFName().ToString(), *GetOwner()->GetName());
+		return;
 	}
+
+	UpdateNativeProperties();
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	Simulation->GetNative()->AddConstraint(NativeBarrier.Get());
 }
