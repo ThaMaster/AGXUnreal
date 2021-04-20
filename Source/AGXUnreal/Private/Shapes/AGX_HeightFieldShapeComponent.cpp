@@ -83,6 +83,11 @@ FHeightFieldShapeBarrier* UAGX_HeightFieldShapeComponent::GetNativeHeightField()
 	return &NativeBarrier;
 }
 
+void UAGX_HeightFieldShapeComponent::CopyFrom(const FHeightFieldShapeBarrier& Barrier)
+{
+	Super::CopyFrom(Barrier);
+}
+
 void UAGX_HeightFieldShapeComponent::UpdateNativeProperties()
 {
 	if (!HasNative())

@@ -25,14 +25,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	float Radius;
 
+	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;
 	FShapeBarrier* GetOrCreateNative() override;
+	virtual void UpdateNativeProperties() override;
+	// ~End UAGX_ShapeComponent interface.
 
 	/// Get the native AGX Dynamics representation of this Capsule. May return nullptr.
 	FCapsuleShapeBarrier* GetNativeCapsule();
 
-	virtual void UpdateNativeProperties() override;
 
 	/**
 	 * Copy properties from the given AGX Dynamics Capsule into this component.
@@ -42,25 +44,21 @@ public:
 	void CopyFrom(const FCapsuleShapeBarrier& Barrier);
 
 protected:
-	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 
 	// ~Begin UAGX_ShapeComponent interface.
 	virtual FShapeBarrier* GetNativeBarrier() override;
-	// ~End UAGX_ShapeComponent interface.
-
+	virtual void ReleaseNative() override;
+	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 #if WITH_EDITOR
 	virtual bool DoesPropertyAffectVisualMesh(
 		const FName& PropertyName, const FName& MemberPropertyName) const;
 #endif
+	// ~End UAGX_ShapeComponent interface.
+
 
 private:
-	/// Create the AGX Dynamics objects owned by the FCapsuleShapeBarrier.
+	/// Create the AGX Dynamics object owned by this Capsule Shape Component.
 	void CreateNative();
-
-	// Tell the Barrier object to release its references to the AGX Dynamics objects.
-	virtual void ReleaseNative() override;
-
-	// BeginPlay/EndPlay is handled by the base class UAGX_ShapeComponent.
 
 private:
 	FCapsuleShapeBarrier NativeBarrier;

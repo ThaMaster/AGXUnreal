@@ -13,6 +13,7 @@ UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintS
 class AGXUNREAL_API UAGX_SphereShapeComponent final : public UAGX_ShapeComponent
 {
 	GENERATED_BODY()
+
 public:
 	UAGX_SphereShapeComponent();
 
@@ -20,37 +21,37 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	float Radius;
 
+	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;
 	FShapeBarrier* GetOrCreateNative() override;
+	virtual void UpdateNativeProperties() override;
+	// ~End UAGX_ShapeComponent interface.
 
 	FSphereShapeBarrier* GetNativeSphere();
-
-	virtual void UpdateNativeProperties() override;
 
 	/**
 	 * Copy properties from the given AGX Dynamics sphere into this component.
 	 * Will also copy properties inherited from UAGX_ShapeComponent.
+	 *
 	 * @param Barrier The AGX Dynamics sphere to copy from.
 	 */
 	void CopyFrom(const FSphereShapeBarrier& Barrier);
 
 protected:
-	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
-
 	// ~Begin UAGX_ShapeComponent interface.
 	virtual FShapeBarrier* GetNativeBarrier() override;
-	// ~End UAGX_ShapeComponent interface.
-
+	virtual void ReleaseNative() override;
+	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 #if WITH_EDITOR
 	virtual bool DoesPropertyAffectVisualMesh(
-		const FName& PropertyName, const FName& MemberPropertyName) const;
+		const FName& PropertyName, const FName& MemberPropertyName) const override;
 #endif
+	// ~End UAGX_ShapeComponent interface.
 
 private:
+	/// Create the AGX Dynamics object owned by this Sphere Shape Component.
 	void CreateNative();
-
-	virtual void ReleaseNative() override;
 
 private:
 	FSphereShapeBarrier NativeBarrier;
