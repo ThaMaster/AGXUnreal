@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_SimpleMeshComponent.h"
+#include "AGX_NativeOwner.h"
 #include "Contacts/AGX_ShapeContact.h"
 #include "Shapes/AGX_ShapeEnums.h"
 #include "Shapes/ShapeBarrier.h"
@@ -20,7 +21,7 @@ UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Abstract, NotPlaceable,
 	Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, Input, LOD, Physics, Replication))
-class AGXUNREAL_API UAGX_ShapeComponent : public UAGX_SimpleMeshComponent
+class AGXUNREAL_API UAGX_ShapeComponent : public UAGX_SimpleMeshComponent, public IAGX_NativeOwner
 {
 	GENERATED_BODY()
 
@@ -128,8 +129,16 @@ public:
 	 */
 	virtual FShapeBarrier* GetOrCreateNative()
 		PURE_VIRTUAL(UAGX_ShapeComponent::GetOrCreateNative, return nullptr;);
-	bool HasNative() const;
 
+	// ~Begin IAGX_NativeObject interface.
+	virtual bool HasNative() const override;
+	virtual uint64 GetNativeAddress() const override;
+	virtual void AssignNative(uint64 NativeAddress) override;
+	// ~End IAGX_NativeObject interface.
+
+	//~ Begin UActorComponent Interface
+	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
+	//~ End UActorComponent Interface
 
 	/**
 	 * Returns whether this shape needs have a visual mesh representation.
@@ -164,6 +173,9 @@ protected:
 	 */
 	virtual FShapeBarrier* GetNativeBarrier()
 		PURE_VIRTUAL(UAGX_ShapeComponent::GetNativebarrier, return nullptr;);
+
+	virtual const FShapeBarrier* GetNativeBarrier() const
+	PURE_VIRTUAL(UAGX_ShapeComponent::GetNativebarrier, return nullptr;);
 
 	/**
 	 * Clear the reference pointer held by this Shape Component. May only be called when there is a

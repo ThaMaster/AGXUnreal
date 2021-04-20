@@ -36,6 +36,11 @@ FShapeBarrier* UAGX_CapsuleShapeComponent::GetNativeBarrier()
 	return &NativeBarrier;
 }
 
+const FShapeBarrier* UAGX_CapsuleShapeComponent::GetNativeBarrier() const
+{
+	return &NativeBarrier;
+}
+
 FShapeBarrier* UAGX_CapsuleShapeComponent::GetOrCreateNative()
 {
 	if (!HasNative())

@@ -65,6 +65,11 @@ FShapeBarrier* UAGX_HeightFieldShapeComponent::GetNativeBarrier()
 	return &NativeBarrier;
 }
 
+const FShapeBarrier* UAGX_HeightFieldShapeComponent::GetNativeBarrier() const
+{
+	return &NativeBarrier;
+}
+
 FShapeBarrier* UAGX_HeightFieldShapeComponent::GetOrCreateNative()
 {
 	if (!HasNative())

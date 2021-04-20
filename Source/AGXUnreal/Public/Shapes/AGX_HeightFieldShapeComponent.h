@@ -56,6 +56,7 @@ protected:
 
 	// ~Begin UAGX_ShapeComponent interface.
 	virtual FShapeBarrier* GetNativeBarrier() override;
+	virtual const FShapeBarrier* GetNativeBarrier() const override;
 	virtual void ReleaseNative() override;
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 #if WITH_EDITOR

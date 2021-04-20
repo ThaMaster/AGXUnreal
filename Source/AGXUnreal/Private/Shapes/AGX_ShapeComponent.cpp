@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Contacts/AGX_ShapeContact.h"
@@ -18,12 +19,42 @@
 // Sets default values for this component's properties
 UAGX_ShapeComponent::UAGX_ShapeComponent()
 {
+	UE_LOG(
+		LogAGX, Warning, TEXT("UAGX_ShapeComponent 0x%llx created with Reconstruct flag %d."),
+		(void*) this, GIsReconstructingBlueprintInstances);
+
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
 bool UAGX_ShapeComponent::HasNative() const
 {
 	return GetNative() != nullptr;
+}
+
+uint64 UAGX_ShapeComponent::GetNativeAddress() const
+{
+	return static_cast<uint64>(GetNativeBarrier()->GetNativeAddress());
+}
+
+void UAGX_ShapeComponent::AssignNative(uint64 NativeAddress)
+{
+	UE_LOG(
+		LogAGX, Warning,
+		TEXT("UAGX_ShapeComponent 0x%llx assigned native with address 0x%llx with Reconstruct "
+			 "flag %d."),
+		(void*) this, NativeAddress, GIsReconstructingBlueprintInstances);
+
+	check(!HasNative());
+	GetNativeBarrier()->SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+}
+
+TStructOnScope<FActorComponentInstanceData> UAGX_ShapeComponent::GetComponentInstanceData() const
+{
+	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
+		this, this, [](UActorComponent* Component) {
+			UAGX_ShapeComponent* AsShape = Cast<UAGX_ShapeComponent>(Component);
+			return static_cast<IAGX_NativeOwner*>(AsShape);
+		});
 }
 
 void UAGX_ShapeComponent::UpdateVisualMesh()
@@ -140,6 +171,8 @@ void UAGX_ShapeComponent::PostInitProperties()
 	Super::PostInitProperties();
 
 	UpdateVisualMesh();
+
+	UE_LOG(LogAGX, Warning, TEXT("UAGX_ShapeComponent::PostInitProperties."));
 }
 
 void UAGX_ShapeComponent::OnComponentCreated()
@@ -154,6 +187,13 @@ void UAGX_ShapeComponent::OnComponentCreated()
 void UAGX_ShapeComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	if (GIsReconstructingBlueprintInstances)
+	{
+		// This Component will soon be given a Native Geometry and Shape from a
+		// FAGX_NativeOwnerInstanceData, so don't create a new one here.
+		return;
+	}
+
 	GetOrCreateNative();
 	UAGX_RigidBodyComponent* RigidBody =
 		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*this);
@@ -172,11 +212,32 @@ void UAGX_ShapeComponent::BeginPlay()
 void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
+	if (GIsReconstructingBlueprintInstances)
+	{
+		// Another UAGX_ShapeComponent will inherit this one's Native, so don't wreck it.
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_ShapeComponent::EndPlay, but GIsReconstructingBlueprintInstances is set so "
+				 "not doing much."));
+	}
+	else
+	{
+		// If this Shape is not part of a Rigid Body then remove it from the Simulation.
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_ShapeComponent::EndPlay, should check if we are part of a RigidBody and "
+				 "remove the Native Geometry from the Simulation if not."));
+	}
 	ReleaseNative();
 }
 
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 {
+	UE_LOG(
+		LogAGX, Warning,
+		TEXT("UAGX_ShapeComponent::CopyFrom for 0x%llx. I expect there to be a shape-type-specific copy as well"),
+		(void*) this);
+
 	bCanCollide = Barrier.GetEnableCollisions();
 	bIsSensor = Barrier.GetIsSensor();
 	SensorType = Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactsSensor

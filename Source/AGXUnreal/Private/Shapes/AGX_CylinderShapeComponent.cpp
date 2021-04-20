@@ -36,6 +36,11 @@ FShapeBarrier* UAGX_CylinderShapeComponent::GetNativeBarrier()
 	return &NativeBarrier;
 }
 
+const FShapeBarrier* UAGX_CylinderShapeComponent::GetNativeBarrier() const
+{
+	return &NativeBarrier;
+}
+
 FShapeBarrier* UAGX_CylinderShapeComponent::GetOrCreateNative()
 {
 	if (!HasNative())
