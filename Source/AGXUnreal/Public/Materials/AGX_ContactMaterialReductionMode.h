@@ -8,8 +8,8 @@
 /**
  * Specifies to what extent contact reduction will be used.
  */
-UENUM()
-enum class EAGX_ContactReductionMode
+UENUM(BlueprintType)
+enum class EAGX_ContactReductionMode : uint8
 {
 	/** No contact reduction enabled. */
 	None,
@@ -24,7 +24,7 @@ enum class EAGX_ContactReductionMode
 /**
  * Contact reduction mode properties of the AGX Contact Material.
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ContactMaterialReductionMode
 {
 	GENERATED_USTRUCT_BODY()

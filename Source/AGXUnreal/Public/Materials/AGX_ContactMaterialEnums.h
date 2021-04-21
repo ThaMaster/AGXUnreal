@@ -5,8 +5,8 @@
 /**
  * Specifies in what solvers the normal and friction equations will be calculated.
  */
-UENUM()
-enum class EAGX_ContactSolver
+UENUM(BlueprintType)
+enum class EAGX_ContactSolver : uint8
 {
 	NotDefined,
 
@@ -29,8 +29,8 @@ enum class EAGX_ContactSolver
 /**
  * Specifies in what way friction is modelled.
  */
-UENUM()
-enum class EAGX_FrictionModel
+UENUM(BlueprintType)
+enum class EAGX_FrictionModel : uint8
 {
 	NotDefined,
 
