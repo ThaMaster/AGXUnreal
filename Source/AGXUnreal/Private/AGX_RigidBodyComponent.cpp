@@ -243,6 +243,10 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetEnabled(This->bEnabled); });
 
 	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutomaticMassProperties),
+		[](ThisClass* This) { This->SetAutomaticMassProperties(This->bAutomaticMassProperties); });
+
+	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Mass),
 		[](ThisClass* This) { This->SetMass(This->Mass); });
 
@@ -663,6 +667,12 @@ void UAGX_RigidBodyComponent::SetAutomaticMassProperties(bool InEnabled)
 	{
 		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
 		MassProperties.SetAutoGenerate(InEnabled);
+		if (InEnabled)
+		{
+			NativeBarrier.UpdateMassProperties();
+			Mass = MassProperties.GetMass();
+			PrincipalInertiae = MassProperties.GetPrincipalInertiae();
+		}
 	}
 
 	bAutomaticMassProperties = InEnabled;

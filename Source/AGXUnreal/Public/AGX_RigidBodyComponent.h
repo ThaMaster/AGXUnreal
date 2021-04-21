@@ -220,13 +220,12 @@ public:
 
 	// ~Begin UObject interface.
 	virtual void PostLoad() override;
-	// ~End UObject interface.
-
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
+	// ~End UObject interface.
 
 	/**
 	 * Copy direct rigid body properties from the barrier to this component.

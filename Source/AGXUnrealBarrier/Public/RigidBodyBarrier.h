@@ -54,6 +54,7 @@ public:
 
 	FMassPropertiesBarrier& GetMassProperties();
 	const FMassPropertiesBarrier& GetMassProperties() const;
+	void UpdateMassProperties();
 
 	void SetName(const FString& NewName);
 	FString GetName() const;
