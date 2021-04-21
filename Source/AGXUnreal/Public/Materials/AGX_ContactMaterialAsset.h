@@ -21,16 +21,27 @@ class AGXUNREAL_API UAGX_ContactMaterialAsset : public UAGX_ContactMaterialBase
 
 	// Represents Contact Material properties as an in-Editor asset that can be serialized to disk.
 	//
-	// Has no connection with the actual native AGX Contact Material.Instead, its sibling class
+	// Has no connection with the actual native AGX Contact Material. Instead, its sibling class
 	// UAGX_ContactMaterialInstance handles all interaction with the actual native AGX Contact
-	// Material.Therefore, all in - game objects with Uproperty Contact Material pointers need to
-	// swap their pointers to in - game UAGX_ContactMaterialInstances using the static function
+	// Material. Therefore, all in-game objects with Uproperty Contact Material pointers need to
+	// swap their pointers to in-game UAGX_ContactMaterialInstances using the static function
 	// UAGX_ContactMaterialBase::GetOrCreateInstance.
 
 	GENERATED_BODY()
 
 public:
+	// ~Begin UAGX_ContactMaterialBase interface.
+	virtual UAGX_ContactMaterialInstance* GetInstance() override;
 	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld) override;
+	// ~End UAGX_ContactMaterialBase interface.
+
+
+	// ~Begin UObject interface.
+	void PostLoad();
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+	// ~End UObject interface.
 
 private:
 	virtual UAGX_ContactMaterialAsset* GetAsset() override;

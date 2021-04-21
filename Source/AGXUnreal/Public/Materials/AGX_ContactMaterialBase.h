@@ -13,32 +13,25 @@ class UAGX_MaterialBase;
 
 /**
  * Defines material properties for contacts between AGX Shapes with specific AGX Materials. This
- will override many
- * of their individual material properties (does for example not override ones effecting mass, such
- as density).
+ * will override many of their individual material properties (does for example not override ones
+ * effecting mass, such as density).
  *
  * ContactMaterials are created by the user in-Editor by creating a UAGX_ContactMaterialAsset.
- In-Editor they are
- * treated as assets and can be referenced by the Material Manager..
+ * In-Editor they are treated as assets and can be referenced by the Material Manager.
  *
  * When game begins playing, one UAGX_ContactMaterialInstance will be created for each
- UAGX_ContactMaterialAsset that
- * is referenced by the Material Manager. The UAGX_ContactMaterialInstance will create the actual
- native
- * AGX ContactMaterial and add it to the simulation. The in-game Material Manager that referenced
- the
- * UAGX_ContactMaterialAsset will swap its reference to the in-game created
- UAGX_ContactMaterialInstance instead. This
- * means that ultimately only UAGX_ContactMaterialInstances will be referenced in-game. When play
- stops the in-Editor
- * state will be returned.
+ * UAGX_ContactMaterialAsset that is referenced by the Material Manager. The
+ * UAGX_ContactMaterialInstance will create the actual native AGX ContactMaterial and add it to the
+ * simulation. The in-game Material Manager that referenced the UAGX_ContactMaterialAsset will swap
+ * its reference to the in-game created UAGX_ContactMaterialInstance instead. This means that
+ * ultimately only UAGX_ContactMaterialInstances will be referenced in-game. When play stops the
+ * in-Editor state will be returned.
  *
  * Note that this means that UAGX_ContactMaterialAssets that are not referenced the Material Manager
- will be inactive.
-
- * Note also that it is not allowed to replace the Materials properties after instance has been
- created.
+ * will be inactive.
  *
+ * Note also that it is not allowed to replace the Materials properties after instance has been
+ * created.
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", abstract,
@@ -67,6 +60,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Contacts Processing")
 	EAGX_ContactSolver ContactSolver;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetContactSolver(EAGX_ContactSolver InContactSolver);
+
 	/**
 	 * Whether contact reduction should be enabled and to what extent.
 	 *
@@ -75,6 +71,12 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "Contacts Processing")
 	FAGX_ContactMaterialReductionMode ContactReduction;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetContactReductionMode(EAGX_ContactReductionMode InReductionMode);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetContactReductionBinResolution(uint8 InBinResolution);
 
 	/**
 	 * AGX use by default a contact point based method for calculating the corresponding response
@@ -92,11 +94,23 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Contacts Processing")
 	FAGX_ContactMaterialMechanicsApproach MechanicsApproach;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetUseContactAreaApproach(bool bInUseContactAreaApproach);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetMinElasticRestLength(float InMinLength);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetMaxElasticRestLength(float InMaxLength);
+
 	/**
 	 * The friction model used when two objects with this contact material collides.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Friction")
 	EAGX_FrictionModel FrictionModel;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetFrictionModel(EAGX_FrictionModel InFrictionModel);
 
 	/**
 	 * Whether surface friction should be calculated in the solver for this Contact Material.
@@ -104,12 +118,18 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Friction")
 	bool bSurfaceFrictionEnabled;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetSurfaceFrictionEnabled(bool bInSurfaceFrictionEnabled);
+
 	/**
 	 * Friction in all directions if 'Secondary Friction Coefficient' is disable, else only in the
 	 * primary direction.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double FrictionCoefficient;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetFrictionCoefficient(float InFrictionCoefficient);
 
 	/*
 	 * Friction in the secondary direction, if enabled.
@@ -119,6 +139,9 @@ public:
 		Meta =
 			(ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondaryFrictionCoefficient"))
 	double SecondaryFrictionCoefficient;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetSecondaryFrictionCoefficient(float InSecondaryFrictionCoefficient);
 
 	/**
 	 * Whether it should be possible to define friction coefficient per each of the two
@@ -133,6 +156,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (InlineEditConditionToggle))
 	bool bUseSecondaryFrictionCoefficient;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetUseSecondaryFrictionCoefficient(bool bInUseSecondaryFrictionCoefficient);
+
 	/**
 	 * Surface viscosity, telling how 'wet' the friction is between the colliding materials.
 	 *
@@ -142,6 +168,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double SurfaceViscosity;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetSurfaceViscosity(float InSurfaceViscosity);
+
 	/**
 	 * Surface viscosity in the secondary direction, if enabled.
 	 */
@@ -149,6 +178,9 @@ public:
 		EditAnywhere, Category = "Friction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondarySurfaceViscosity"))
 	double SecondarySurfaceViscosity;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetSecondarySurfaceViscosity(float InSecondarySurfaceViscosity);
 
 	/**
 	 * Whether it should be possible to define surface viscosity per each of the two perpendicular
@@ -163,6 +195,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (InlineEditConditionToggle))
 	bool bUseSecondarySurfaceViscosity;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetUseSecondarySurfaceViscosity(bool bInUseSecondarySurfaceViscosity);
+
 	/**
 	 * Material restitution, i.e. how "bouncy" the normal collisions are.
 	 *
@@ -171,11 +206,17 @@ public:
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double Restitution;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetRestitution(float InRestitution);
+
 	/**
 	 * Young's modulus of the contact material. Same as spring coefficient k.
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double YoungsModulus;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetYoungsModulus(float InYoungsModulus);
 
 	/**
 	 * Damping factor which represents the time the contact constraint has to fulfill its violation.
@@ -183,11 +224,17 @@ public:
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double Damping;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetDamping(float InDamping);
+
 	/**
 	 * The attractive force between two colliding objects, in Netwon.
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double AdhesiveForce;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetAdhesiveForce(float InAdhesiveForce);
 
 	/**
 	 * Allowed overlap from surface for resting contact, in meters.
@@ -198,6 +245,9 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double AdhesiveOverlap;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetAdhesiveOverlap(float InAdhesiveOverlap);
 
 public:
 	/**
@@ -211,6 +261,9 @@ public:
 	UAGX_ContactMaterialBase();
 
 	virtual ~UAGX_ContactMaterialBase();
+
+	virtual UAGX_ContactMaterialInstance* GetInstance()
+	PURE_VIRTUAL(UAGX_ContactMaterialBase::GetInstance, return nullptr;);
 
 	/**
 	 * If PlayingWorld is an in-game World and this ContactMaterial is a UAGX_ContactMaterialAsset,
@@ -226,7 +279,7 @@ public:
 	 * UAGX_ContactMaterialAsset it was created from (if it still exists). Else returns null.
 	 */
 	virtual UAGX_ContactMaterialAsset* GetAsset()
-		PURE_VIRTUAL(UAGX_ContactMaterialBase::GetOrCreateInstance, return nullptr;);
+		PURE_VIRTUAL(UAGX_ContactMaterialBase::GetAsset, return nullptr;);
 
 	void CopyFrom(const UAGX_ContactMaterialBase* Source);
 	void CopyFrom(const FContactMaterialBarrier* Source);
