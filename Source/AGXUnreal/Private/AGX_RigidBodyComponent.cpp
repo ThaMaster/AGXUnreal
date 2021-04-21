@@ -35,7 +35,9 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 void UAGX_RigidBodyComponent::PostLoad()
 {
 	Super::PostLoad();
+#if WITH_EDITOR
 	InitPropertyDispatcher();
+#endif
 }
 
 void UAGX_RigidBodyComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
