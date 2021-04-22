@@ -60,6 +60,16 @@ const FShapeBarrier* UAGX_HeightFieldShapeComponent::GetNative() const
 	return &NativeBarrier;
 }
 
+FShapeBarrier* UAGX_HeightFieldShapeComponent::GetNativeBarrier()
+{
+	return &NativeBarrier;
+}
+
+const FShapeBarrier* UAGX_HeightFieldShapeComponent::GetNativeBarrier() const
+{
+	return &NativeBarrier;
+}
+
 FShapeBarrier* UAGX_HeightFieldShapeComponent::GetOrCreateNative()
 {
 	if (!HasNative())
@@ -76,6 +86,11 @@ FHeightFieldShapeBarrier* UAGX_HeightFieldShapeComponent::GetNativeHeightField()
 		return nullptr;
 	}
 	return &NativeBarrier;
+}
+
+void UAGX_HeightFieldShapeComponent::CopyFrom(const FHeightFieldShapeBarrier& Barrier)
+{
+	Super::CopyFrom(Barrier);
 }
 
 void UAGX_HeightFieldShapeComponent::UpdateNativeProperties()

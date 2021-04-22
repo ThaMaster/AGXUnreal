@@ -38,9 +38,31 @@ public:
 
 	void UpdateNativeProperties();
 
-private:
+	// ~Begin UAGX_ContactMaterialBase interface.
+	virtual void SetContactSolver(EAGX_ContactSolver InContactSolver) override;
+	virtual void SetContactReductionMode(EAGX_ContactReductionMode InReductionMode) override;
+	virtual void SetContactReductionBinResolution(uint8 InBinResolution) override;
+	virtual void SetUseContactAreaApproach(bool bInUseContactAreaApproach) override;
+	virtual void SetMinElasticRestLength(float InMinLength) override;
+	virtual void SetMaxElasticRestLength(float InMaxLength) override;
+	virtual void SetFrictionModel(EAGX_FrictionModel InFrictionModel) override;
+	virtual void SetSurfaceFrictionEnabled(bool bInSurfaceFrictionEnabled) override;
+	virtual void SetFrictionCoefficient(float InFrictionCoefficient) override;
+	virtual void SetSecondaryFrictionCoefficient(float InSecondaryFrictionCoefficient) override;
+	virtual void SetUseSecondaryFrictionCoefficient(bool bInUseSecondaryFrictionCoefficient) override;
+	virtual void SetSurfaceViscosity(float InSurfaceViscosity) override;
+	virtual void SetSecondarySurfaceViscosity(float InSecondarySurfaceViscosity) override;
+	virtual void SetUseSecondarySurfaceViscosity(bool bInUserSecondarySurfaceViscosity) override;
+	virtual void SetRestitution(float Restitution) override;
+	virtual void SetDamping(float Damping) override;
+	virtual void SetYoungsModulus(float YoungsModulus) override;
+	virtual void SetAdhesiveForce(float AdhesiveForce) override;
+	virtual void SetAdhesiveOverlap(float AdhesiveOverlap) override;
+	virtual UAGX_ContactMaterialInstance* GetInstance() override;
 	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld) override;
+	// ~End UAGX_ContactMaterialBase interface.
 
+private:
 	// Creates the native AGX Contact Material and adds it to the simulation.
 	void CreateNative(UWorld* PlayingWorld);
 

@@ -77,6 +77,13 @@ public:
 	FVector GetLocalLocation(int32 BodyIndex) const;
 	FQuat GetLocalRotation(int32 BodyIndex) const;
 
+	/// @return The address of the underlying AGX Dynamics object.
+	uintptr_t GetNativeAddress() const;
+
+	/// Re-assign this Barrier to the given native address. The address must be an existing AGX
+	/// Dynamics object of the correct type.
+	void SetNativeAddress(uintptr_t NativeAddress);
+
 private:
 	FConstraintBarrier(const FConstraintBarrier&) = delete;
 	void operator=(const FConstraintBarrier&) = delete;
@@ -98,7 +105,7 @@ private:
 		const FVector& FramePosition2, const FQuat& FrameRotation2) = 0;
 
 protected:
-	// NativeRef has the same lifetime as this object.
+	// NativeRef has equal lifetime as this object ie the FConstraintRef is created at construction.
 	// NativeRef->Native can be null.
 	// NativeRef->Native is created by the lowermost subclass when AllocateNative is invoked,
 	// and released when ReleaseNative is invoked.

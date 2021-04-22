@@ -12,6 +12,7 @@ UAGX_BallConstraintComponent::UAGX_BallConstraintComponent()
 		  {EDofFlag::DofFlagTranslational1, EDofFlag::DofFlagTranslational2,
 		   EDofFlag::DofFlagTranslational3})
 {
+	NativeBarrier.Reset(new FBallJointBarrier());
 }
 
 UAGX_BallConstraintComponent::~UAGX_BallConstraintComponent()
@@ -30,8 +31,6 @@ const FBallJointBarrier* UAGX_BallConstraintComponent::GetNativeBallJoint() cons
 
 void UAGX_BallConstraintComponent::CreateNativeImpl()
 {
-	NativeBarrier.Reset(new FBallJointBarrier());
-
 	FAGX_ConstraintUtilities::CreateNative(
-		GetNative(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
 }

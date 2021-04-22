@@ -18,6 +18,7 @@ UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintS
 class AGXUNREAL_API UAGX_HeightFieldShapeComponent : public UAGX_ShapeComponent
 {
 	GENERATED_BODY()
+
 public:
 	UAGX_HeightFieldShapeComponent();
 	virtual ~UAGX_HeightFieldShapeComponent();
@@ -25,45 +26,57 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
 	ALandscape* SourceLandscape = nullptr;
 
+	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;
 	FShapeBarrier* GetOrCreateNative() override;
+	virtual void UpdateNativeProperties() override;
+	// ~End UAGX_ShapeComponent interface.
 
 	/// Get the native AGX Dynamics representation of this HeightField. May return nullptr.
 	FHeightFieldShapeBarrier* GetNativeHeightField();
 
-	virtual void UpdateNativeProperties() override;
+	/**
+	 * Copy properties from the given AGX Dynamics Height Field into this component.
+	 * Will only copy properties inherited from UAGX_ShapeComponent, no changes to the Landscape
+	 * will be performed.
+	 *
+	 * @param Barrier The AGX Dynamics Height Field to copy from.
+	 */
+	void CopyFrom(const FHeightFieldShapeBarrier& Barrier);
 
+	// ~Begin UObject interface.
 #if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(
-		struct FPropertyChangedChainEvent& PropertyChangedEvent);
+		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
+	// ~End UObject interface.
 
 protected:
-	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 
+	// ~Begin UAGX_ShapeComponent interface.
+	virtual FShapeBarrier* GetNativeBarrier() override;
+	virtual const FShapeBarrier* GetNativeBarrier() const override;
+	virtual void ReleaseNative() override;
+	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 #if WITH_EDITOR
 	virtual bool DoesPropertyAffectVisualMesh(
 		const FName& PropertyName, const FName& MemberPropertyName) const override;
 #endif
+	// ~End UAGX_ShapeComponent interface.
 
 private:
 	/// Create the AGX Dynamics objects owned by the FBoxShapeBarrier.
 	void CreateNative();
 
-	// Tell the Barrier object to release its references to the AGX Dynamics objects.
-	virtual void ReleaseNative() override;
-
 	void OnSourceLandscapeChanged(UObject*, struct FPropertyChangedEvent&);
 
 	void RecenterActorOnLandscape();
 
-	// BeginPlay/EndPlay is handled by the base class UAGX_ShapeComponent.
-
 private:
 	FHeightFieldShapeBarrier NativeBarrier;
 
-#if WITH_EDITOR
+#if WITH_EDITORONLY_DATA
 	FCoreUObjectDelegates::FOnObjectPropertyChanged::FDelegate OnPropertyChangedHandle;
 	FDelegateHandle OnPropertyChangedHandleDelegateHandle;
 #endif

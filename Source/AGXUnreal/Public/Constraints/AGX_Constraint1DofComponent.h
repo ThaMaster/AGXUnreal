@@ -57,6 +57,10 @@ public:
 
 	virtual void UpdateNativeProperties() override;
 
+	// ~Begin IAGX_NativeOwner interface.
+	virtual void AssignNative(uint64 NativeAddress) override;
+	// ~End IAGX_NativeOwner interface.
+
 	// ~ Begin UObject interface.
 	virtual void PostLoad() override;
 	// ~ End UObject interface.

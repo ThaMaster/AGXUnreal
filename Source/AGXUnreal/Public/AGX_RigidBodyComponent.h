@@ -3,6 +3,8 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_RigidBodyEnums.h"
 #include "AGX_MotionControl.h"
+#include "AGX_NativeOwner.h"
+#include "AGX_UpropertyDispatcher.h"
 #include "RigidBodyBarrier.h"
 
 // Unreal Engine includes.
@@ -15,7 +17,7 @@
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
-class AGXUNREAL_API UAGX_RigidBodyComponent : public USceneComponent
+class AGXUNREAL_API UAGX_RigidBodyComponent : public USceneComponent, public IAGX_NativeOwner
 {
 	GENERATED_BODY()
 
@@ -27,7 +29,7 @@ public:
 	void SetPosition(const FVector& Position);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	FVector GetPosition() const ;
+	FVector GetPosition() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetRotation(const FQuat& Rotation);
@@ -208,8 +210,22 @@ public:
 	/// Return the native AGX Dynamics representation of this rigid body. May return nullptr.
 	FRigidBodyBarrier* GetNative();
 
-	/// Return true if the AGX Dynamics object has been created. False otherwise.
-	bool HasNative() const;
+	const FRigidBodyBarrier* GetNative() const;
+
+	// ~Begin IAGX_NativeOwner interface.
+	virtual bool HasNative() const override;
+	virtual uint64 GetNativeAddress() const override;
+	virtual void AssignNative(uint64 NativeAddress) override;
+	// ~End IAGX_NativeOwner interface.
+
+	// ~Begin UObject interface.
+	virtual void PostLoad() override;
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(
+		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
+	// ~End UObject interface.
 
 	/**
 	 * Copy direct rigid body properties from the barrier to this component.
@@ -224,21 +240,34 @@ public:
 	static TArray<UAGX_RigidBodyComponent*> GetFromActor(const AActor* Actor);
 	static UAGX_RigidBodyComponent* GetFirstFromActor(const AActor* Actor);
 
+	//~ Begin UActorComponent Interface
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+	virtual void TickComponent(
+		float DeltaTime, ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction) override;
+	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
+	//~ End UActorComponent Interface
+
+#if WITH_EDITOR
+	// ~Begin USceneComponent interface.
+	virtual void PostEditComponentMove(bool bFinished) override;
+	// ~End USceneComponent interface.
+#endif
+
 #if WITH_EDITOR
 	void OnComponentView();
 	bool TransformRootComponentAllowed() const;
 #endif
 
-public:
-	virtual void TickComponent(
-		float DeltaTime, ELevelTick TickType,
-		FActorComponentTickFunction* ThisTickFunction) override;
-
-protected:
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
-
 private:
+#if WITH_EDITOR
+	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each
+	// and every UPROPERTY in PostEditChangeProperty and PostEditChangeChainProperty.
+	void InitPropertyDispatcher();
+#endif
+
+	// Create the native AGX Dynamics object.
 	void InitializeNative();
 
 	// Set native's MotionControl and ensure Unreal has corresponding mobility.
@@ -253,6 +282,9 @@ private:
 	void ReadTransformFromNative();
 	void WriteTransformToNative();
 
+	/// A variant of WriteTransformToNative that only writes if we have a Native to write to.
+	void TryWriteTransformToNative();
+
 #if WITH_EDITOR
 #if UE_VERSION_OLDER_THAN(4, 25, 0)
 	virtual bool CanEditChange(const UProperty* InProperty) const override;
@@ -263,6 +295,10 @@ private:
 #endif
 
 private:
+#if WITH_EDITORONLY_DATA
+	FAGX_UpropertyDispatcher<UAGX_RigidBodyComponent> PropertyDispatcher;
+#endif
+
 	// The AGX Dynamics object only exists while simulating. Initialized in
 	// BeginPlay and released in EndPlay.
 	FRigidBodyBarrier NativeBarrier;

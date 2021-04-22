@@ -8,7 +8,7 @@
 /**
  * Contact mechanics approach properties of the AGX Contact Material.
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ContactMaterialMechanicsApproach
 {
 	GENERATED_USTRUCT_BODY()

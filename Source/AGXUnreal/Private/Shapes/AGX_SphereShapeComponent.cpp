@@ -26,6 +26,16 @@ const FShapeBarrier* UAGX_SphereShapeComponent::GetNative() const
 	return &NativeBarrier;
 }
 
+FShapeBarrier* UAGX_SphereShapeComponent::GetNativeBarrier()
+{
+	return &NativeBarrier;
+}
+
+const FShapeBarrier* UAGX_SphereShapeComponent::GetNativeBarrier() const
+{
+	return &NativeBarrier;
+}
+
 // Called by UAGX_ShapeComponent::BeginPlay.
 FShapeBarrier* UAGX_SphereShapeComponent::GetOrCreateNative()
 {

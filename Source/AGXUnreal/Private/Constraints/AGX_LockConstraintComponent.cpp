@@ -11,6 +11,7 @@ UAGX_LockConstraintComponent::UAGX_LockConstraintComponent()
 		   EDofFlag::DofFlagTranslational3, EDofFlag::DofFlagRotational1,
 		   EDofFlag::DofFlagRotational2, EDofFlag::DofFlagRotational3})
 {
+	NativeBarrier.Reset(new FLockJointBarrier());
 }
 
 UAGX_LockConstraintComponent::~UAGX_LockConstraintComponent()
@@ -29,8 +30,6 @@ const FLockJointBarrier* UAGX_LockConstraintComponent::GetNativeLock() const
 
 void UAGX_LockConstraintComponent::CreateNativeImpl()
 {
-	NativeBarrier.Reset(new FLockJointBarrier());
-
 	FAGX_ConstraintUtilities::CreateNative(
-		GetNative(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
 }

@@ -74,6 +74,8 @@ struct AGXUNREAL_API FAGX_UpropertyDispatcher
 public:
 	using UpdatePropertyFunction = TFunction<void(T*)>;
 
+	static FAGX_UpropertyDispatcher<T>& Get();
+
 	/**
 	 * Add a callback for a direct member property. The case where Member and Property have the same
 	 * value.
@@ -100,11 +102,20 @@ public:
 	 */
 	bool Trigger(const FName& Member, const FName& Property, T* Object);
 
+	bool IsInitialized() const;
+
 	UpdatePropertyFunction* GetFunction(const FName& Member, const FName& Property);
 
 private:
 	TMap<FAGX_NamePair, UpdatePropertyFunction> Functions;
 };
+
+template <typename T>
+FAGX_UpropertyDispatcher<T>& FAGX_UpropertyDispatcher<T>::Get()
+{
+	static FAGX_UpropertyDispatcher<T> Instance;
+	return Instance;
+}
 
 template <typename T>
 void FAGX_UpropertyDispatcher<T>::Add(
@@ -131,6 +142,12 @@ bool FAGX_UpropertyDispatcher<T>::Trigger(const FName& Member, const FName& Prop
 
 	(*Function)(Object);
 	return true;
+}
+
+template <typename T>
+bool FAGX_UpropertyDispatcher<T>::IsInitialized() const
+{
+	return Functions.Num() != 0;
 }
 
 template <typename T>

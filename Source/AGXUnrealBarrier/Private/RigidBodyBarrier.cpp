@@ -119,6 +119,12 @@ const FMassPropertiesBarrier& FRigidBodyBarrier::GetMassProperties() const
 	return MassProperties;
 }
 
+void FRigidBodyBarrier::UpdateMassProperties()
+{
+	check(HasNative());
+	NativeRef->Native->updateMassProperties();
+}
+
 void FRigidBodyBarrier::SetName(const FString& NameUnreal)
 {
 	check(HasNative());
@@ -237,6 +243,39 @@ const FRigidBodyRef* FRigidBodyBarrier::GetNative() const
 {
 	check(HasNative());
 	return NativeRef.get();
+}
+
+uintptr_t FRigidBodyBarrier::GetNativeAddress() const
+{
+	if (!HasNative())
+	{
+		return 0;
+	}
+
+	return reinterpret_cast<uintptr_t>(NativeRef->Native.get());
+}
+
+void FRigidBodyBarrier::SetNativeAddress(uintptr_t NativeAddress)
+{
+	if (NativeAddress == GetNativeAddress())
+	{
+		return;
+	}
+
+	if (HasNative())
+	{
+		this->ReleaseNative();
+	}
+
+	if (NativeAddress == 0)
+	{
+		NativeRef->Native = nullptr;
+		MassProperties.BindTo(*NativeRef);
+		return;
+	}
+
+	NativeRef->Native = reinterpret_cast<agx::RigidBody*>(NativeAddress);
+	MassProperties.BindTo(*NativeRef);
 }
 
 void FRigidBodyBarrier::ReleaseNative()
