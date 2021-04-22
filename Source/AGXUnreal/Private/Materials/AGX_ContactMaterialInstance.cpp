@@ -214,9 +214,9 @@ void UAGX_ContactMaterialInstance::SetUseSecondarySurfaceViscosity(bool bInUseSe
 	}
 }
 
-void UAGX_ContactMaterialInstance::SetRestitution(float Restitution)
+void UAGX_ContactMaterialInstance::SetRestitution(float InRestitution)
 {
-	Super::SetRestitution(Restitution);
+	Super::SetRestitution(InRestitution);
 	if (!HasNative())
 	{
 		return;
@@ -224,9 +224,9 @@ void UAGX_ContactMaterialInstance::SetRestitution(float Restitution)
 	NativeBarrier->SetRestitution(Restitution);
 }
 
-void UAGX_ContactMaterialInstance::SetDamping(float Damping)
+void UAGX_ContactMaterialInstance::SetDamping(float InDamping)
 {
-	Super::SetDamping(Damping);
+	Super::SetDamping(InDamping);
 	if (!HasNative())
 	{
 		return;
@@ -234,9 +234,9 @@ void UAGX_ContactMaterialInstance::SetDamping(float Damping)
 	NativeBarrier->SetDamping(Damping);
 }
 
-void UAGX_ContactMaterialInstance::SetYoungsModulus(float YoungsModulus)
+void UAGX_ContactMaterialInstance::SetYoungsModulus(float InYoungsModulus)
 {
-	Super::SetYoungsModulus(YoungsModulus);
+	Super::SetYoungsModulus(InYoungsModulus);
 	if (!HasNative())
 	{
 		return;
@@ -244,9 +244,9 @@ void UAGX_ContactMaterialInstance::SetYoungsModulus(float YoungsModulus)
 	NativeBarrier->SetYoungsModulus(YoungsModulus);
 }
 
-void UAGX_ContactMaterialInstance::SetAdhesiveForce(float AdhesiveForce)
+void UAGX_ContactMaterialInstance::SetAdhesiveForce(float InAdhesiveForce)
 {
-	Super::SetAdhesiveForce(AdhesiveForce);
+	Super::SetAdhesiveForce(InAdhesiveForce);
 	if (!HasNative())
 	{
 		return;
@@ -254,9 +254,9 @@ void UAGX_ContactMaterialInstance::SetAdhesiveForce(float AdhesiveForce)
 	NativeBarrier->SetAdhesion(AdhesiveForce, AdhesiveOverlap);
 }
 
-void UAGX_ContactMaterialInstance::SetAdhesiveOverlap(float AdhesiveOverlap)
+void UAGX_ContactMaterialInstance::SetAdhesiveOverlap(float InAdhesiveOverlap)
 {
-	Super::SetAdhesiveOverlap(AdhesiveOverlap);
+	Super::SetAdhesiveOverlap(InAdhesiveOverlap);
 	if (!HasNative())
 	{
 		return;
