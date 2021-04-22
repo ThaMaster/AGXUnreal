@@ -32,12 +32,11 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	TransformTarget = EAGX_TransformTarget::TT_SELF;
 }
 
+#if WITH_EDITOR
 void UAGX_RigidBodyComponent::PostLoad()
 {
 	Super::PostLoad();
-#if WITH_EDITOR
 	InitPropertyDispatcher();
-#endif
 }
 
 void UAGX_RigidBodyComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -103,6 +102,67 @@ void UAGX_RigidBodyComponent::PostEditComponentMove(bool bFinished)
 		WriteTransformToNative();
 	}
 }
+
+void UAGX_RigidBodyComponent::InitPropertyDispatcher()
+{
+	// Location and Rotation are not Properties, so they won't trigger PostEditChangeProperty. e.g.,
+	// when moving the Component using the Widget in the Level Viewport. They are instead handled in
+	// PostEditComponentMove. The local transformations, however, the ones at the top of the Details
+	// Panel, are properties and do end up here.
+	PropertyDispatcher.Add(this->GetRelativeLocationPropertyName(), [](ThisClass* This) {
+	  This->TryWriteTransformToNative();
+	});
+
+	PropertyDispatcher.Add(this->GetRelativeRotationPropertyName(), [](ThisClass* This) {
+	  This->TryWriteTransformToNative();
+	});
+
+	PropertyDispatcher.Add(this->GetAbsoluteLocationPropertyName(), [](ThisClass* This) {
+	  This->TryWriteTransformToNative();
+	});
+
+	PropertyDispatcher.Add(this->GetAbsoluteRotationPropertyName(), [](ThisClass* This) {
+	  This->TryWriteTransformToNative();
+	});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bEnabled),
+		[](ThisClass* This) { This->SetEnabled(This->bEnabled); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutomaticMassProperties),
+		[](ThisClass* This) { This->SetAutomaticMassProperties(This->bAutomaticMassProperties); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Mass),
+		[](ThisClass* This) { This->SetMass(This->Mass); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, PrincipalInertiae),
+		[](ThisClass* This) { This->SetPrincipalInertiae(This->PrincipalInertiae); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Velocity),
+		[](ThisClass* This) { This->SetVelocity(This->Velocity); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, AngularVelocity),
+		[](ThisClass* This) { This->SetAngularVelocity(This->Velocity); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MotionControl),
+		[](ThisClass* This) { This->SetMotionControl(This->MotionControl); });
+
+/// @todo Enable once we get UAGX_RigidBodyComponent::SetTransformTarget.
+#if 0
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, TransformTarget),
+		[](ThisClass* This) { This->SetTransformTarget(This->TransformTarget); });
+#endif
+}
+
+// End WITH_EDITOR.
+#endif
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
 {
@@ -216,64 +276,6 @@ namespace
 		/// UAGX_ShapeComponents.
 		return FAGX_ObjectUtilities::Filter<UAGX_ShapeComponent>(Body.GetAttachChildren());
 	}
-}
-
-void UAGX_RigidBodyComponent::InitPropertyDispatcher()
-{
-	// Location and Rotation are not Properties, so they won't trigger PostEditChangeProperty. e.g.,
-	// when moving the Component using the Widget in the Level Viewport. They are instead handled in
-	// PostEditComponentMove. The local transformations, however, the ones at the top of the Details
-	// Panel, are properties and do end up here.
-	PropertyDispatcher.Add(this->GetRelativeLocationPropertyName(), [](ThisClass* This) {
-		This->TryWriteTransformToNative();
-	});
-
-	PropertyDispatcher.Add(this->GetRelativeRotationPropertyName(), [](ThisClass* This) {
-		This->TryWriteTransformToNative();
-	});
-
-	PropertyDispatcher.Add(this->GetAbsoluteLocationPropertyName(), [](ThisClass* This) {
-		This->TryWriteTransformToNative();
-	});
-
-	PropertyDispatcher.Add(this->GetAbsoluteRotationPropertyName(), [](ThisClass* This) {
-		This->TryWriteTransformToNative();
-	});
-
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bEnabled),
-		[](ThisClass* This) { This->SetEnabled(This->bEnabled); });
-
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutomaticMassProperties),
-		[](ThisClass* This) { This->SetAutomaticMassProperties(This->bAutomaticMassProperties); });
-
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Mass),
-		[](ThisClass* This) { This->SetMass(This->Mass); });
-
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, PrincipalInertiae),
-		[](ThisClass* This) { This->SetPrincipalInertiae(This->PrincipalInertiae); });
-
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Velocity),
-		[](ThisClass* This) { This->SetVelocity(This->Velocity); });
-
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, AngularVelocity),
-		[](ThisClass* This) { This->SetAngularVelocity(This->Velocity); });
-
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MotionControl),
-		[](ThisClass* This) { This->SetMotionControl(This->MotionControl); });
-
-/// @todo Enable once we get UAGX_RigidBodyComponent::SetTransformTarget.
-#if 0
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, TransformTarget),
-		[](ThisClass* This) { This->SetTransformTarget(This->TransformTarget); });
-#endif
 }
 
 void UAGX_RigidBodyComponent::InitializeNative()

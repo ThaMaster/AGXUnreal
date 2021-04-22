@@ -219,8 +219,8 @@ public:
 	// ~End IAGX_NativeOwner interface.
 
 	// ~Begin UObject interface.
-	virtual void PostLoad() override;
 #if WITH_EDITOR
+	virtual void PostLoad() override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
@@ -241,26 +241,24 @@ public:
 	static UAGX_RigidBodyComponent* GetFirstFromActor(const AActor* Actor);
 
 	//~ Begin UActorComponent Interface
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+	virtual void TickComponent(
+		float DeltaTime, ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction) override;
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	//~ End UActorComponent Interface
 
+#if WITH_EDITOR
 	// ~Begin USceneComponent interface.
 	virtual void PostEditComponentMove(bool bFinished) override;
 	// ~End USceneComponent interface.
+#endif
 
 #if WITH_EDITOR
 	void OnComponentView();
 	bool TransformRootComponentAllowed() const;
 #endif
-
-public:
-	virtual void TickComponent(
-		float DeltaTime, ELevelTick TickType,
-		FActorComponentTickFunction* ThisTickFunction) override;
-
-protected:
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 
 private:
 #if WITH_EDITOR
