@@ -40,8 +40,6 @@ public:
 	 */
 	virtual void AssignNative(uint64 NativeAddress) = 0;
 
-	//virtual IAGX_NativeOwner* AsNativeOwner(UActorComponent* Component) const = 0;
-
 	virtual ~IAGX_NativeOwner() = default;
 };
 

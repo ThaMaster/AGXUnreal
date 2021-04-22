@@ -23,6 +23,16 @@ struct AGXUNREAL_API FAGX_NativeOwnerInstanceData : public FSceneComponentInstan
 
 	FAGX_NativeOwnerInstanceData() = default;
 
+	/**
+	 * Record the Native Address of the given Native Owner, i.e., the pointer address of the AGX
+	 * Dynamics object, or 0 if there is no AGX Dynamics object. For type system reasons the owner
+	 * is passed twice, once as a IAGX_NativeOwner and once a a USceneComponent. Cannot use the
+	 * Downcaster because of differences in const-ness
+	 *
+	 * @param NativeOwner The instance the owns an AGX Dynamics object.
+	 * @param SourceComponent The Native Owner as a USceneComponent.
+	 * @param InDowncaster Conversion function that casts a USceneComponent to a IAGX_NativeOwner.
+	 */
 	FAGX_NativeOwnerInstanceData(
 		const IAGX_NativeOwner* NativeOwner, const USceneComponent* SourceComponent,
 		TFunction<IAGX_NativeOwner*(UActorComponent*)> InDowncaster);
@@ -47,6 +57,5 @@ private:
 	UPROPERTY()
 	uint64 NativeAddress;
 
-	// const IAGX_NativeOwner* SourceNativeOwner = nullptr;
 	TFunction<IAGX_NativeOwner*(UActorComponent*)> Downcaster;
 };
