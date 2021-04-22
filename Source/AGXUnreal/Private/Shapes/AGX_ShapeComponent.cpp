@@ -148,11 +148,11 @@ void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& Property
 		return;
 	}
 }
+#endif
 
 void UAGX_ShapeComponent::PostLoad()
 {
 	Super::PostLoad();
-
 	UpdateVisualMesh();
 }
 
@@ -165,11 +165,8 @@ void UAGX_ShapeComponent::PostInitProperties()
 void UAGX_ShapeComponent::OnComponentCreated()
 {
 	Super::OnComponentCreated();
-
 	UpdateVisualMesh();
 }
-
-#endif
 
 void UAGX_ShapeComponent::BeginPlay()
 {

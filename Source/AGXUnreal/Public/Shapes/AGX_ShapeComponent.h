@@ -149,11 +149,12 @@ public:
 
 	void RemoveCollisionGroupIfExists(const FName& GroupName);
 
-#if WITH_EDITOR
 	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;
 	virtual void PostLoad() override; // When loaded in Editor or Game
+#if WITH_EDITOR
 	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 	// ~End UObject interface.
 
 	// ~Begin UActorComponent interface.
@@ -161,8 +162,6 @@ public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	// ~End UActorComponent interface.
-
-#endif
 
 protected:
 	/**
