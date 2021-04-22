@@ -35,6 +35,7 @@ void UAGX_ContactMaterialAsset::PostLoad()
 {
 	Super::PostLoad();
 
+#if WITH_EDITOR
 	// All Contact Materials share the same FAGX_UpropertyDispatcher so DO NOT use any captures or
 	// anything from the current 'this' in the Dispatcher callback. Only use the passed parameter,
 	// which is a pointer to the object that was changed.
@@ -172,6 +173,7 @@ void UAGX_ContactMaterialAsset::PostLoad()
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, AdhesiveOverlap),
 		[](ThisClass* Asset) { Asset->GetInstance()->SetAdhesiveOverlap(Asset->AdhesiveOverlap); });
+#endif
 }
 
 #if WITH_EDITOR
