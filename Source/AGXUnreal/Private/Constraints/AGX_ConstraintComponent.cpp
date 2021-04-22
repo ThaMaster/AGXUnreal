@@ -832,7 +832,7 @@ void UAGX_ConstraintComponent::BeginPlay()
 		//
 		// However, when editing Properties in the Details Panel during a Play In Editor session
 		// Unreal Engine creates and initializes one component at the time. Which means that this
-		// Constraint may get BeginPlay before the Rigid Bodies it is attached to even exists. So
+		// Constraint may get BeginPlay before the Rigid Body it is attached to even exists. So
 		// caching in BeginPlay is not possible while the GIsReconstructingBlueprintInstances flag
 		// is set.
 		//
