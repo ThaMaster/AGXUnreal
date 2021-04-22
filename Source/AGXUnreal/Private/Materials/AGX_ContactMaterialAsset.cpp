@@ -103,7 +103,7 @@ void UAGX_ContactMaterialAsset::PostLoad()
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, FrictionCoefficient),
 		[](ThisClass* Asset) {
-			Asset->GetInstance()->GetInstance()->SetFrictionCoefficient(Asset->FrictionCoefficient);
+			Asset->GetInstance()->SetFrictionCoefficient(Asset->FrictionCoefficient);
 		});
 
 	Dispatcher.Add(
