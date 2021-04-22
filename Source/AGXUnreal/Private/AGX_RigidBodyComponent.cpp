@@ -32,13 +32,15 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	TransformTarget = EAGX_TransformTarget::TT_SELF;
 }
 
-#if WITH_EDITOR
 void UAGX_RigidBodyComponent::PostLoad()
 {
 	Super::PostLoad();
+#if WITH_EDITOR
 	InitPropertyDispatcher();
+#endif
 }
 
+#if WITH_EDITOR
 void UAGX_RigidBodyComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	// The root property that contains the property that was changed.
@@ -95,12 +97,17 @@ void UAGX_RigidBodyComponent::PostEditChangeChainProperty(
 
 void UAGX_RigidBodyComponent::PostEditComponentMove(bool bFinished)
 {
-	if (NativeBarrier.HasNative())
+	Super::PostEditComponentMove(bFinished);
+
+	if (!NativeBarrier.HasNative())
 	{
-		// Not using the Set-functions here because we aren't editing a raw Property and don't want
-		// to trigger a bunch of Unreal Engine code. So go straight to the Barrier.
-		WriteTransformToNative();
+		return;
 	}
+
+	// Not using the Set-functions here because we aren't editing a raw Property and don't want
+	// to trigger a bunch of Unreal Engine code since we currently are in an Unreal Engine callback.
+	// So go straight to the Barrier.
+	WriteTransformToNative();
 }
 
 void UAGX_RigidBodyComponent::InitPropertyDispatcher()
@@ -110,19 +117,19 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 	// PostEditComponentMove. The local transformations, however, the ones at the top of the Details
 	// Panel, are properties and do end up here.
 	PropertyDispatcher.Add(this->GetRelativeLocationPropertyName(), [](ThisClass* This) {
-	  This->TryWriteTransformToNative();
+		This->TryWriteTransformToNative();
 	});
 
 	PropertyDispatcher.Add(this->GetRelativeRotationPropertyName(), [](ThisClass* This) {
-	  This->TryWriteTransformToNative();
+		This->TryWriteTransformToNative();
 	});
 
 	PropertyDispatcher.Add(this->GetAbsoluteLocationPropertyName(), [](ThisClass* This) {
-	  This->TryWriteTransformToNative();
+		This->TryWriteTransformToNative();
 	});
 
 	PropertyDispatcher.Add(this->GetAbsoluteRotationPropertyName(), [](ThisClass* This) {
-	  This->TryWriteTransformToNative();
+		This->TryWriteTransformToNative();
 	});
 
 	PropertyDispatcher.Add(
