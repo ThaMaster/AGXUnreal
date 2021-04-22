@@ -76,8 +76,7 @@ private:
 private:
 	FHeightFieldShapeBarrier NativeBarrier;
 
-/// @todo Should this be WITH_EDITOR_DATA?
-#if WITH_EDITOR
+#if WITH_EDITORONLY_DATA
 	FCoreUObjectDelegates::FOnObjectPropertyChanged::FDelegate OnPropertyChangedHandle;
 	FDelegateHandle OnPropertyChangedHandleDelegateHandle;
 #endif
