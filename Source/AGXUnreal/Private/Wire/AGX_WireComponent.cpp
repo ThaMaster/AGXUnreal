@@ -7,7 +7,9 @@
 UAGX_WireComponent::UAGX_WireComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+#if WITH_EDITORONLY_DATA
 	bVisualizeComponent = true;
+#endif
 }
 
 void UAGX_WireComponent::AddNode(const FWireNode& InNode)
