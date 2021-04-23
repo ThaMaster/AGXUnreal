@@ -19,6 +19,7 @@ class FShapeBarrier;
 class FShapeMaterialBarrier;
 class FTerrainBarrier;
 class FTireBarrier;
+class FWireBarrier;
 
 class AGXUNREALBARRIER_API FSimulationBarrier
 {
@@ -39,6 +40,9 @@ public:
 	void AddTerrain(FTerrainBarrier* Terrain);
 
 	void AddTire(FTireBarrier* Tire);
+
+	void AddWire(FWireBarrier& Wire);
+	void RemoveWire(FWireBarrier& Wire);
 
 	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);
 

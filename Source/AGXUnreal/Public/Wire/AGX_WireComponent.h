@@ -1,5 +1,8 @@
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Wire/WireBarrier.h"
+
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
 
@@ -124,13 +127,29 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void SetNodeLocation(int32 InIndex, const FVector& InLocation);
 
-	//~ Begin ActorComponent Interface.
+	bool HasNative() const;
+	FWireBarrier* GetOrCreateNative();
+	FWireBarrier* GetNative();
+	const FWireBarrier* GetNative() const;
+	void CopyFrom(const FWireBarrier& Barrier);
 
+
+	//~ Begin ActorComponent interface.
+	virtual void BeginPlay() override;
 	virtual void TickComponent(
 		float DeltaTime, ELevelTick TickType,
 		FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+	//~ End ActorComponent interface.
 
+protected:
+	// ~Begin UActorComponent interface.
 	virtual void OnRegister() override;
+	// ~End UActorComponent interface.
 
-	//~ End ActorComponent Interface.
+private:
+	void CreateNative();
+
+private:
+	FWireBarrier NativeBarrier;
 };

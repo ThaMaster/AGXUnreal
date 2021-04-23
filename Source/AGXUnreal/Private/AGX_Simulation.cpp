@@ -11,6 +11,7 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_EnvironmentUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
 #include "Engine/GameInstance.h"
@@ -76,6 +77,20 @@ void UAGX_Simulation::AddTerrain(AAGX_Terrain* Terrain)
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	NativeBarrier.AddTerrain(Terrain->GetNative());
+}
+
+void UAGX_Simulation::AddWire(UAGX_WireComponent& Wire)
+{
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+	check(Wire.HasNative());
+	NativeBarrier.AddWire(*Wire.GetNative());
+}
+
+void UAGX_Simulation::RemoveWire(UAGX_WireComponent& Wire)
+{
+	check(Wire.HasNative());
+	NativeBarrier.RemoveWire(*Wire.GetNative());
 }
 
 void UAGX_Simulation::SetEnableCollisionGroupPair(

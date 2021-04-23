@@ -17,6 +17,7 @@ class UAGX_RigidBodyComponent;
 class UAGX_StaticMeshComponent;
 class UAGX_ShapeComponent;
 class UAGX_MaterialBase;
+class UAGX_WireComponent;
 
 class AActor;
 class UActorComponent;
@@ -208,6 +209,10 @@ public: // Member functions.
 	void AddShape(UAGX_ShapeComponent* Shape);
 
 	void AddTerrain(AAGX_Terrain* Terrain);
+
+	void AddWire(UAGX_WireComponent& Wire);
+	void RemoveWire(UAGX_WireComponent& Wire);
+
 
 	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);
 
