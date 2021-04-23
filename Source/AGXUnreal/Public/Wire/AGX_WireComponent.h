@@ -5,6 +5,8 @@
 
 #include "AGX_WireComponent.generated.h"
 
+class UAGX_ShapeMaterialBase;
+
 /** Types of wire nodes we have */
 UENUM(BlueprintType)
 enum class EWireNodeType : uint8
@@ -53,6 +55,54 @@ public:
 public:
 	UAGX_WireComponent();
 
+	/**
+	 * The radius of the wire, in cm.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire",
+		Meta = (ClampMin = "0", UIMin = "0"))
+	float Radius = 1.5f;
+
+	/**
+	 * The maximum number of mass nodes per cm.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire",
+		Meta = (ClampMin = "0", UIMin = "0"))
+	float ResolutionPerUnitLength = 0.02;
+
+	/**
+	 * Velocity damping value of the wire.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire",
+		Meta = (ClampMin = "0", UIMin = "0"))
+	float LinearVelocityDamping;
+
+	/**
+	 * Value that indicates how likely it is that mass nodes appears along the wire. Higher value
+	 * means more likely.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire",
+		Meta = (ClampMin = "0", UIMin = "0"))
+	float ScaleConstant;
+
+	/**
+	 * The physical material of the wire.
+	 *
+	 * This determines things such as the density of the wire and how it behaves when in contact
+	 * with Shapes in the world.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
+	UAGX_ShapeMaterialBase* PhysicalMaterial;
+
+	/**
+	 * A list of nodes that are used to initialize the wire.
+	 *
+	 * At BeginPlay these nodes are used to create simulation nodes so the route nodes cannot be
+	 * used to track the motion of the wire.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire")
 	TArray<FWireNode> RouteNodes;
 
