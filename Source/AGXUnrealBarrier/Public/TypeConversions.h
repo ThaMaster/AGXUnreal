@@ -48,9 +48,9 @@ namespace
 
 // Scalars.
 
-inline float Convert(agx::Real V)
+inline float Convert(agx::Real S)
 {
-	return static_cast<float>(V);
+	return static_cast<float>(S);
 }
 
 inline float ConvertDistance(agx::Real D)
@@ -59,10 +59,16 @@ inline float ConvertDistance(agx::Real D)
 }
 
 // Convert a distance-squared unit, such as area or moment of inertia.
-inline float ConvertDistance2(agx::Real D)
+inline float ConvertDistance2(agx::Real D2)
 {
 	return static_cast<float>(
-		D * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
+		D2 * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
+}
+
+// Convert a distance-inverse unit, such as resolution.
+inline float ConvertDistanceInv(agx::Real DInv)
+{
+	return static_cast<float>(DInv / AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
 }
 
 template <typename T>
@@ -82,21 +88,27 @@ inline T ConvertAngleToUnreal(agx::Real A)
 	return static_cast<T>(FMath::RadiansToDegrees(A));
 }
 
-inline agx::Real Convert(float V)
+inline agx::Real Convert(float S)
 {
-	return static_cast<agx::Real>(V);
+	return static_cast<agx::Real>(S);
 }
 
-inline agx::Real ConvertDistance(float V)
+inline agx::Real ConvertDistance(float D)
 {
-	return static_cast<agx::Real>(V) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+	return static_cast<agx::Real>(D) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
 }
 
 // Convert a distance-squared unit, such as area or moment of inertia.
-inline agx::Real ConvertDistance2(float V)
+inline agx::Real ConvertDistance2(float D2)
 {
-	return static_cast<agx::Real>(V) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
+	return static_cast<agx::Real>(D2) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
 		   UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+}
+
+// Convert a distance-inverse unit, such as resolution.
+inline agx::Real ConvertDistanceInv(float DInv)
+{
+	return static_cast<agx::Real>(DInv) / UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
 }
 
 template <typename T>

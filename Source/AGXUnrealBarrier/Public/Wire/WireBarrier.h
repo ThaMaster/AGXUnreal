@@ -1,0 +1,28 @@
+#pragma once
+
+// System includes.
+#include <memory>
+
+struct FWireRef;
+
+class AGXUNREALBARRIER_API FWireBarrier
+{
+public:
+	FWireBarrier();
+	FWireBarrier(FWireBarrier&& Other);
+	FWireBarrier(std::unique_ptr<FWireRef>&& Native);
+	~FWireBarrier();
+
+	bool HasNative() const;
+	void AllocateNative(float Radius, float ResolutionPerUnitLength);
+	FWireRef* GetNative();
+	const FWireRef* GetNative() const;
+	void ReleaseNative();
+
+private:
+	FWireBarrier(const FWireBarrier&) = delete;
+	void operator=(const FWireBarrier&) = delete;
+
+private:
+	std::unique_ptr<FWireRef> NativeRef;
+};
