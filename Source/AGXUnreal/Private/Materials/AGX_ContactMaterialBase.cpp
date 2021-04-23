@@ -85,6 +85,101 @@ UAGX_ContactMaterialBase::~UAGX_ContactMaterialBase()
 {
 }
 
+void UAGX_ContactMaterialBase::SetContactSolver(EAGX_ContactSolver InContactSolver)
+{
+	ContactSolver = InContactSolver;
+}
+
+void UAGX_ContactMaterialBase::SetContactReductionMode(EAGX_ContactReductionMode InReductionMode)
+{
+	ContactReduction.Mode = InReductionMode;
+}
+
+void UAGX_ContactMaterialBase::SetContactReductionBinResolution(uint8 InBinResolution)
+{
+	ContactReduction.BinResolution = InBinResolution;
+}
+
+void UAGX_ContactMaterialBase::SetUseContactAreaApproach(bool bInUseContactAreaApproach)
+{
+	MechanicsApproach.bUseContactAreaApproach = bInUseContactAreaApproach;
+}
+
+void UAGX_ContactMaterialBase::SetMinElasticRestLength(float InMinLength)
+{
+	MechanicsApproach.MinElasticRestLength = InMinLength;
+}
+
+void UAGX_ContactMaterialBase::SetMaxElasticRestLength(float InMaxLength)
+{
+	MechanicsApproach.MaxElasticRestLength = InMaxLength;
+}
+
+void UAGX_ContactMaterialBase::SetFrictionModel(EAGX_FrictionModel InFrictionModel)
+{
+	FrictionModel = InFrictionModel;
+}
+
+void UAGX_ContactMaterialBase::SetSurfaceFrictionEnabled(bool bInSurfaceFrictionEnabled)
+{
+	bSurfaceFrictionEnabled = bInSurfaceFrictionEnabled;
+}
+
+void UAGX_ContactMaterialBase::SetFrictionCoefficient(float InFrictionCoefficient)
+{
+	FrictionCoefficient = static_cast<double>(InFrictionCoefficient);
+}
+
+void UAGX_ContactMaterialBase::SetSecondaryFrictionCoefficient(float InSecondaryFrictionCoefficient)
+{
+	SecondaryFrictionCoefficient = InSecondaryFrictionCoefficient;
+}
+
+void UAGX_ContactMaterialBase::SetUseSecondaryFrictionCoefficient(bool bInUseSecondaryFrictionCoefficient)
+{
+	bUseSecondaryFrictionCoefficient = bInUseSecondaryFrictionCoefficient;
+}
+
+void UAGX_ContactMaterialBase::SetSurfaceViscosity(float InSurfaceViscosity)
+{
+	SurfaceViscosity = InSurfaceViscosity;
+}
+
+void UAGX_ContactMaterialBase::SetSecondarySurfaceViscosity(float InSecondarySurfaceViscosity)
+{
+	SecondarySurfaceViscosity = InSecondarySurfaceViscosity;
+}
+
+void UAGX_ContactMaterialBase::SetUseSecondarySurfaceViscosity(bool bInUseSecondarySurfaceViscosity)
+{
+	bUseSecondarySurfaceViscosity = bInUseSecondarySurfaceViscosity;
+}
+
+void UAGX_ContactMaterialBase::SetRestitution(float InRestitution)
+{
+	Restitution = InRestitution;
+}
+
+void UAGX_ContactMaterialBase::SetYoungsModulus(float InYoungsModulus)
+{
+	YoungsModulus = InYoungsModulus;
+}
+
+void UAGX_ContactMaterialBase::SetDamping(float InDamping)
+{
+	Damping = InDamping;
+}
+
+void UAGX_ContactMaterialBase::SetAdhesiveForce(float InAdhesiveForce)
+{
+	AdhesiveForce = InAdhesiveForce;
+}
+
+void UAGX_ContactMaterialBase::SetAdhesiveOverlap(float InAdhesiveOverlap)
+{
+	AdhesiveOverlap = InAdhesiveOverlap;
+}
+
 #define COPY_MAT_PROPERTY(Source, Name) \
 	{                                   \
 		Name = Source->Name;            \

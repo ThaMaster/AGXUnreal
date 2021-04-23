@@ -67,7 +67,6 @@ void FShapeBarrier::AllocateNative()
 void FShapeBarrier::ReleaseNative()
 {
 	check(HasNative());
-	NativeRef->NativeGeometry->remove(NativeRef->NativeShape);
 	ReleaseNativeShape();
 	NativeRef->NativeGeometry = nullptr;
 }
@@ -80,6 +79,39 @@ FGeometryAndShapeRef* FShapeBarrier::GetNative()
 const FGeometryAndShapeRef* FShapeBarrier::GetNative() const
 {
 	return NativeRef.get();
+}
+
+uintptr_t FShapeBarrier::GetNativeAddress() const
+{
+	if (!HasNative())
+	{
+		return 0;
+	}
+
+	return reinterpret_cast<uintptr_t>(NativeRef->NativeShape.get());
+}
+
+void FShapeBarrier::SetNativeAddress(uintptr_t NativeAddress)
+{
+	if (NativeAddress == GetNativeAddress())
+	{
+		return;
+	}
+
+	if (HasNative())
+	{
+		this->ReleaseNative();
+	}
+
+	NativeRef->NativeShape = reinterpret_cast<agxCollide::Shape*>(NativeAddress);
+	if (NativeRef->NativeShape != nullptr)
+	{
+		NativeRef->NativeGeometry = NativeRef->NativeShape->getGeometry();
+	}
+	else
+	{
+		NativeRef->NativeGeometry = nullptr;
+	}
 }
 
 bool FShapeBarrier::GetIsSensorGeneratingContactData() const

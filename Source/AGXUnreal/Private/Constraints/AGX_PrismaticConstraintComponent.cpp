@@ -12,6 +12,7 @@ UAGX_PrismaticConstraintComponent::UAGX_PrismaticConstraintComponent()
 		   EDofFlag::DofFlagTranslational1, EDofFlag::DofFlagTranslational2},
 		  /*bIsSecondaryConstraintRotational*/ false)
 {
+	NativeBarrier.Reset(new FPrismaticBarrier());
 }
 
 UAGX_PrismaticConstraintComponent::~UAGX_PrismaticConstraintComponent()
@@ -30,8 +31,6 @@ const FPrismaticBarrier* UAGX_PrismaticConstraintComponent::GetNativePrismatic()
 
 void UAGX_PrismaticConstraintComponent::AllocateNative()
 {
-	NativeBarrier.Reset(new FPrismaticBarrier());
-
 	FAGX_ConstraintUtilities::CreateNative(
-		GetNative(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
 }

@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Contacts/AGX_ShapeContact.h"
@@ -24,6 +25,26 @@ UAGX_ShapeComponent::UAGX_ShapeComponent()
 bool UAGX_ShapeComponent::HasNative() const
 {
 	return GetNative() != nullptr;
+}
+
+uint64 UAGX_ShapeComponent::GetNativeAddress() const
+{
+	return static_cast<uint64>(GetNativeBarrier()->GetNativeAddress());
+}
+
+void UAGX_ShapeComponent::AssignNative(uint64 NativeAddress)
+{
+	check(!HasNative());
+	GetNativeBarrier()->SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+}
+
+TStructOnScope<FActorComponentInstanceData> UAGX_ShapeComponent::GetComponentInstanceData() const
+{
+	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
+		this, this, [](UActorComponent* Component) {
+			UAGX_ShapeComponent* AsShape = Cast<UAGX_ShapeComponent>(Component);
+			return static_cast<IAGX_NativeOwner*>(AsShape);
+		});
 }
 
 void UAGX_ShapeComponent::UpdateVisualMesh()
@@ -127,33 +148,36 @@ void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& Property
 		return;
 	}
 }
+#endif
 
 void UAGX_ShapeComponent::PostLoad()
 {
 	Super::PostLoad();
-
 	UpdateVisualMesh();
 }
 
 void UAGX_ShapeComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
-
 	UpdateVisualMesh();
 }
 
 void UAGX_ShapeComponent::OnComponentCreated()
 {
 	Super::OnComponentCreated();
-
 	UpdateVisualMesh();
 }
-
-#endif
 
 void UAGX_ShapeComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	if (GIsReconstructingBlueprintInstances)
+	{
+		// This Component will soon be given a Native Geometry and Shape from a
+		// FAGX_NativeOwnerInstanceData, so don't create a new one here.
+		return;
+	}
+
 	GetOrCreateNative();
 	UAGX_RigidBodyComponent* RigidBody =
 		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*this);
@@ -172,6 +196,14 @@ void UAGX_ShapeComponent::BeginPlay()
 void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
+	if (GIsReconstructingBlueprintInstances)
+	{
+		// Another UAGX_ShapeComponent will inherit this one's Native, so don't wreck it.
+	}
+	else
+	{
+		/// @todo: If this Shape is not part of a Rigid Body then remove it from the Simulation.
+	}
 	ReleaseNative();
 }
 

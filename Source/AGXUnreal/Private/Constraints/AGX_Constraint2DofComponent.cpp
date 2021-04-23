@@ -39,6 +39,31 @@ namespace
 	}
 }
 
+namespace AGX_Constraint2DofComponent_helpers
+{
+	void InitializeControllerBarriers(UAGX_Constraint2DofComponent& Constraint)
+	{
+		FConstraint2DOFBarrier* Barrier = Get2DofBarrier(Constraint);
+
+		EAGX_Constraint2DOFFreeDOF FIRST = EAGX_Constraint2DOFFreeDOF::FIRST;
+		EAGX_Constraint2DOFFreeDOF SECOND = EAGX_Constraint2DOFFreeDOF::SECOND;
+
+		Constraint.ElectricMotorController1.InitializeBarrier(Barrier->GetElectricMotorController(FIRST));
+		Constraint.FrictionController1.InitializeBarrier(Barrier->GetFrictionController(FIRST));
+		Constraint.LockController1.InitializeBarrier(Barrier->GetLockController(FIRST));
+		Constraint.RangeController1.InitializeBarrier(Barrier->GetRangeController(FIRST));
+		Constraint.TargetSpeedController1.InitializeBarrier(Barrier->GetTargetSpeedController(FIRST));
+
+		Constraint.ElectricMotorController2.InitializeBarrier(Barrier->GetElectricMotorController(SECOND));
+		Constraint.FrictionController2.InitializeBarrier(Barrier->GetFrictionController(SECOND));
+		Constraint.LockController2.InitializeBarrier(Barrier->GetLockController(SECOND));
+		Constraint.RangeController2.InitializeBarrier(Barrier->GetRangeController(SECOND));
+		Constraint.TargetSpeedController2.InitializeBarrier(Barrier->GetTargetSpeedController(SECOND));
+
+		Constraint.ScrewController.InitializeBarrier(Barrier->GetScrewController());
+	}
+}
+
 void UAGX_Constraint2DofComponent::CreateNativeImpl()
 {
 	AllocateNative();
@@ -47,21 +72,7 @@ void UAGX_Constraint2DofComponent::CreateNativeImpl()
 		return;
 	}
 
-	// Is there a less tedious, and error prone, way to write this?
-	EAGX_Constraint2DOFFreeDOF FIRST = EAGX_Constraint2DOFFreeDOF::FIRST;
-	EAGX_Constraint2DOFFreeDOF SECOND = EAGX_Constraint2DOFFreeDOF::SECOND;
-	FConstraint2DOFBarrier* Barrier = Get2DofBarrier(*this);
-	ElectricMotorController1.InitializeBarrier(Barrier->GetElectricMotorController(FIRST));
-	ElectricMotorController2.InitializeBarrier(Barrier->GetElectricMotorController(SECOND));
-	FrictionController1.InitializeBarrier(Barrier->GetFrictionController(FIRST));
-	FrictionController2.InitializeBarrier(Barrier->GetFrictionController(SECOND));
-	LockController1.InitializeBarrier(Barrier->GetLockController(FIRST));
-	LockController2.InitializeBarrier(Barrier->GetLockController(SECOND));
-	RangeController1.InitializeBarrier(Barrier->GetRangeController(FIRST));
-	RangeController2.InitializeBarrier(Barrier->GetRangeController(SECOND));
-	TargetSpeedController1.InitializeBarrier(Barrier->GetTargetSpeedController(FIRST));
-	TargetSpeedController2.InitializeBarrier(Barrier->GetTargetSpeedController(SECOND));
-	ScrewController.InitializeBarrier(Barrier->GetScrewController());
+	AGX_Constraint2DofComponent_helpers::InitializeControllerBarriers(*this);
 }
 
 void UAGX_Constraint2DofComponent::UpdateNativeProperties()
@@ -90,4 +101,15 @@ void UAGX_Constraint2DofComponent::UpdateNativeProperties()
 	TargetSpeedController1.UpdateNativeProperties();
 	TargetSpeedController2.UpdateNativeProperties();
 	ScrewController.UpdateNativeProperties();
+}
+
+void UAGX_Constraint2DofComponent::AssignNative(uint64 NativeAddress)
+{
+	Super::AssignNative(NativeAddress);
+	if (!HasNative())
+	{
+		return;
+	}
+
+	AGX_Constraint2DofComponent_helpers::InitializeControllerBarriers(*this);
 }

@@ -39,6 +39,16 @@ FShapeBarrier* UAGX_BoxShapeComponent::GetOrCreateNative()
 	return &NativeBarrier;
 }
 
+FShapeBarrier* UAGX_BoxShapeComponent::GetNativeBarrier()
+{
+	return &NativeBarrier;
+}
+
+const FShapeBarrier* UAGX_BoxShapeComponent::GetNativeBarrier() const
+{
+	return &NativeBarrier;
+}
+
 FBoxShapeBarrier* UAGX_BoxShapeComponent::GetNativeBox()
 {
 	if (!HasNative())

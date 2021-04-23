@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_NativeOwner.h"
 #include "AGX_UpropertyDispatcher.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
 #include "Constraints/AGX_ConstraintEnums.h"
@@ -26,7 +27,7 @@ class UAGX_ConstraintIconGraphicsComponent;
  *
  */
 UCLASS(Category = "AGX", ClassGroup = "AGX", NotPlaceable)
-class AGXUNREAL_API UAGX_ConstraintComponent : public USceneComponent
+class AGXUNREAL_API UAGX_ConstraintComponent : public USceneComponent, public IAGX_NativeOwner
 {
 	GENERATED_BODY()
 
@@ -145,6 +146,12 @@ public:
 
 	bool IsDofLocked(EDofFlag Dof) const;
 
+	// ~Begin IAGX_NativeOwner interface.
+	virtual bool HasNative() const override;
+	virtual uint64 GetNativeAddress() const override;
+	virtual void AssignNative(uint64 NativeAddress) override;
+	// ~End IAGX_NativeOwner interface.
+
 	/** Get the native AGX Dynamics representation of this constraint. Create it if necessary. */
 	FConstraintBarrier* GetOrCreateNative();
 
@@ -153,9 +160,6 @@ public:
 
 	/** Get the native AGX Dynamics representation of this constraint. May return nullptr. */
 	const FConstraintBarrier* GetNative() const;
-
-	/** Return true if the AGX Dynamics object has been created. False otherwise. */
-	bool HasNative() const;
 
 	/** Subclasses that overrides this MUST invoke the parents version! */
 	virtual void UpdateNativeProperties();
@@ -176,6 +180,10 @@ public:
 	virtual void PostEditChangeChainProperty(
 		struct FPropertyChangedChainEvent& PropertyChangedEvent);
 #endif
+
+	//~ Begin UActorComponent Interface
+	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
+	//~ End UActorComponent Interface
 
 	/// \todo Determine which of these are needed, which are even available on USceneCompnent, and
 	/// which must be hidden behind WITH_EDITOR.
@@ -219,9 +227,23 @@ private:
 	void CreateNative();
 
 protected:
+	/**
+	 * Pointer to the Barrier object that holds the FConstraintRef that holds the agx::ConstraintRef
+	 * that holds the agx::Constraint.
+	 *
+	 * Most Components hold the Barrier by-value but here we use a pointer because we need virtual
+	 * dispatch for AllocateNativeImpl, the member function that does the allocation of the AGX
+	 * Dynamics constraint, i.e., agx::Hinge, etc. There may be other ways to achieve the same goal
+	 * that doesn't require an extra indirection.
+	 *
+	 * NativeBarrier pointer is initialized in each specific Constraint Component subclass so a
+	 * Barrier object is always available, just like for the Components that store the Barrier
+	 * by-value, and just like them the Barrier may be empty, i.e., not had the AGX Dynamics object
+	 * created yet.
+	 */
 	TUniquePtr<FConstraintBarrier> NativeBarrier;
 
-#if WITH_EDITOR
+#if WITH_EDITORONLY_DATA
 	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent> PropertyDispatcher;
 #endif
 

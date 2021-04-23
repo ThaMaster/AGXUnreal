@@ -211,3 +211,34 @@ FQuat FConstraintBarrier::GetLocalRotation(int32 Index) const
 	FQuat RotateUnreal = Convert(RotateAGX);
 	return RotateUnreal;
 }
+
+uintptr_t FConstraintBarrier::GetNativeAddress() const
+{
+	if (!HasNative())
+	{
+		return 0;
+	}
+
+	return reinterpret_cast<uintptr_t>(NativeRef->Native.get());
+}
+
+void FConstraintBarrier::SetNativeAddress(uintptr_t NativeAddress)
+{
+	if (NativeAddress == GetNativeAddress())
+	{
+		return;
+	}
+
+	if (HasNative())
+	{
+		ReleaseNative();
+	}
+
+	if (NativeAddress == 0)
+	{
+		NativeRef->Native = nullptr;
+		return;
+	}
+
+	NativeRef->Native = reinterpret_cast<agx::Constraint*>(NativeAddress);
+}

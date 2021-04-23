@@ -81,6 +81,10 @@ public:
 
 	virtual void UpdateNativeProperties() override;
 
+	// ~Begin IAGX_NativeOwner interface.
+	virtual void AssignNative(uint64 NativeAddress) override;
+	// ~End IAGX_NativeOwner interface.
+
 protected:
 	/**
 	 * Call AllocateNative and then bind the constraint controllers to their native representations

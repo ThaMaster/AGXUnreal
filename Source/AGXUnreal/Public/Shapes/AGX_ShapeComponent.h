@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_SimpleMeshComponent.h"
+#include "AGX_NativeOwner.h"
 #include "Contacts/AGX_ShapeContact.h"
 #include "Shapes/AGX_ShapeEnums.h"
 #include "Shapes/ShapeBarrier.h"
@@ -20,11 +21,13 @@ UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Abstract, NotPlaceable,
 	Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, Input, LOD, Physics, Replication))
-class AGXUNREAL_API UAGX_ShapeComponent : public UAGX_SimpleMeshComponent
+class AGXUNREAL_API UAGX_ShapeComponent : public UAGX_SimpleMeshComponent, public IAGX_NativeOwner
 {
 	GENERATED_BODY()
 
 public:
+	UAGX_ShapeComponent();
+
 	/**
 	 * Defines physical properties of both the surface and the bulk of this shape.
 	 *
@@ -90,37 +93,96 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	TArray<FAGX_ShapeContact> GetShapeContacts() const;
 
-	UAGX_ShapeComponent();
-
-	virtual FShapeBarrier* GetNative()
-		PURE_VIRTUAL(UAGX_ShapeComponent::GetNative, return nullptr;);
-	virtual const FShapeBarrier* GetNative() const
-		PURE_VIRTUAL(UAGX_ShapeComponent::GetNative, return nullptr;);
-	virtual FShapeBarrier* GetOrCreateNative()
-		PURE_VIRTUAL(UAGX_ShapeComponent::GetOrCreateNative, return nullptr;);
-	bool HasNative() const;
-
 	/**
-	 * Re-creates (or destroys) the triangle mesh data for the visual representation
-	 * of the shape to match the physical definition of the shape.
+	 * Re-creates (or destroys) the triangle mesh data for the visual representation of the shape to
+	 * match the physical definition of the shape.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
 	void UpdateVisualMesh();
+
+	/**
+	 * Get the Native Barrier for this shape. Will return nullptr if this Shape doesn't have an
+	 * associated AGX Dynamics object yet.
+	 *
+	 * @return The Native Barrier for this shape, or nullptr if there is no native object.
+	 */
+	virtual FShapeBarrier* GetNative()
+		PURE_VIRTUAL(UAGX_ShapeComponent::GetNative, return nullptr;);
+
+	/**
+	 * Get the Native Barrier for this shape. Will return nullptr if this Shape doesn't have an
+	 * associated AGX Dynamics object yet.
+	 *
+	 * @return The Native Barrier for this shape, or nullptr if there is no native object.
+	 */
+	virtual const FShapeBarrier* GetNative() const
+		PURE_VIRTUAL(UAGX_ShapeComponent::GetNative, return nullptr;);
+
+	/** Subclasses that overrides this MUST invoke the parent's version! */
+	virtual void UpdateNativeProperties();
+
+	/**
+	 * Get the Native Barrier for this shape. Create the native AGX Dynamics object if it does not
+	 * already exist.
+	 *
+	 * @return The Native Barrier for this shape.
+	 */
+	virtual FShapeBarrier* GetOrCreateNative()
+		PURE_VIRTUAL(UAGX_ShapeComponent::GetOrCreateNative, return nullptr;);
+
+	// ~Begin IAGX_NativeObject interface.
+	virtual bool HasNative() const override;
+	virtual uint64 GetNativeAddress() const override;
+	virtual void AssignNative(uint64 NativeAddress) override;
+	// ~End IAGX_NativeObject interface.
+
+	//~ Begin UActorComponent Interface
+	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
+	//~ End UActorComponent Interface
 
 	/**
 	 * Returns whether this shape needs have a visual mesh representation.
 	 */
 	bool ShouldCreateVisualMesh() const;
 
-	/** Subclasses that overrides this MUST invoke the parents version! */
-	virtual void UpdateNativeProperties();
-
 	void AddCollisionGroup(const FName& GroupName);
 
 	void RemoveCollisionGroupIfExists(const FName& GroupName);
 
+	// ~Begin UObject interface.
+	virtual void PostInitProperties() override;
+	virtual void PostLoad() override; // When loaded in Editor or Game
 #if WITH_EDITOR
+	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+	// ~End UObject interface.
 
+	// ~Begin UActorComponent interface.
+	virtual void OnComponentCreated() override;
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+	// ~End UActorComponent interface.
+
+protected:
+	/**
+	 * Get a pointer to the actual member Barrier object. This will never return nullptr. The
+	 * returned Barrier may be empty.
+	 *
+	 * @return Pointer to the member Barrier object.
+	 */
+	virtual FShapeBarrier* GetNativeBarrier()
+		PURE_VIRTUAL(UAGX_ShapeComponent::GetNativebarrier, return nullptr;);
+
+	virtual const FShapeBarrier* GetNativeBarrier() const
+	PURE_VIRTUAL(UAGX_ShapeComponent::GetNativebarrier, return nullptr;);
+
+	/**
+	 * Clear the reference pointer held by this Shape Component. May only be called when there is a
+	 * Native to release.
+	 */
+	virtual void ReleaseNative() PURE_VIRTUAL(UAGX_ShapeComponent::ReleaseNative, );
+
+#if WITH_EDITOR
 	/**
 	 * Should be overridden by subclasses and return whether changing the
 	 * value of the specified property will need an update of the visual mesh.
@@ -134,25 +196,18 @@ public:
 	 */
 	virtual bool DoesPropertyAffectVisualMesh(
 		const FName& PropertyName, const FName& MemberPropertyName) const;
-
-	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-
-	virtual void PostLoad() override; // When loaded in Editor or Game
-
-	virtual void PostInitProperties() override;
-
-	virtual void OnComponentCreated() override;
-
 #endif
 
-protected:
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
-
-	virtual void ReleaseNative() PURE_VIRTUAL(UAGX_ShapeComponent::ReleaseNative, );
-
-	static void ApplySensorMaterial(UMeshComponent& Mesh);
-	static void RemoveSensorMaterial(UMeshComponent& Mesh);
+	/**
+	 * Defines triangles for a visual mesh to render in Unreal Engine. Whether
+	 * the mesh is always rendered or just for debug is for the user to decide.
+	 * The mesh should be in local coordinates relative to this component,
+	 * such that any inherited component transform (be aware of scale) that is
+	 * applied after results in a rendered mesh that is correctly placed.
+	 */
+	virtual void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
+	{
+	} // PURE_VIRTUAL(UAGX_ShapeComponent::CreateVisualMesh, );
 
 	/**
 	 * Copy properties from the given AGX Dynamics shape into this component.
@@ -179,16 +234,8 @@ protected:
 	 */
 	void UpdateNativeGlobalTransform();
 
-	/**
-	 * Defines triangles for a visual mesh to render in Unreal Engine. Whether
-	 * the mesh is always rendered or just for debug is for the user to decide.
-	 * The mesh should be in local coordinates relative to this component,
-	 * such that any inherited component transform (be aware of scale) that is
-	 * applied after results in a rendered mesh that is correctly placed.
-	 */
-	virtual void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
-	{
-	} // PURE_VIRTUAL(UAGX_ShapeComponent::CreateVisualMesh, );
+	static void ApplySensorMaterial(UMeshComponent& Mesh);
+	static void RemoveSensorMaterial(UMeshComponent& Mesh);
 
 private:
 	// UAGX_ShapeComponent does not own the Barrier object because it cannot

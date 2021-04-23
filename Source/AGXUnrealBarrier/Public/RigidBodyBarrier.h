@@ -54,6 +54,7 @@ public:
 
 	FMassPropertiesBarrier& GetMassProperties();
 	const FMassPropertiesBarrier& GetMassProperties() const;
+	void UpdateMassProperties();
 
 	void SetName(const FString& NewName);
 	FString GetName() const;
@@ -78,6 +79,14 @@ public:
 	void AllocateNative();
 	FRigidBodyRef* GetNative();
 	const FRigidBodyRef* GetNative() const;
+
+	/// @return The address of the underlying AGX Dynamics object.
+	uintptr_t GetNativeAddress() const;
+
+	/// Re-assign this Barrier to the given native address. The address must be an existing AGX
+	/// Dynamics object of the correct type.
+	void SetNativeAddress(uintptr_t NativeAddress);
+
 	void ReleaseNative();
 
 private:

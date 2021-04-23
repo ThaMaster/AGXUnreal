@@ -184,6 +184,19 @@ float UAGX_Constraint1DofComponent::GetAngle() const
 	return Get1DOFBarrier(*this)->GetAngle();
 }
 
+namespace AGX_Constraint1DofComponent_helpers
+{
+	void InitializeControllerBarriers(UAGX_Constraint1DofComponent& Constraint)
+	{
+		FConstraint1DOFBarrier* Barrier = Get1DOFBarrier(Constraint);
+		Constraint.ElectricMotorController.InitializeBarrier(Barrier->GetElectricMotorController());
+		Constraint.FrictionController.InitializeBarrier(Barrier->GetFrictionController());
+		Constraint.LockController.InitializeBarrier(Barrier->GetLockController());
+		Constraint.RangeController.InitializeBarrier(Barrier->GetRangeController());
+		Constraint.TargetSpeedController.InitializeBarrier(Barrier->GetTargetSpeedController());
+	}
+}
+
 void UAGX_Constraint1DofComponent::CreateNativeImpl()
 {
 	AllocateNative();
@@ -192,12 +205,7 @@ void UAGX_Constraint1DofComponent::CreateNativeImpl()
 		return;
 	}
 
-	FConstraint1DOFBarrier* Barrier = Get1DOFBarrier(*this);
-	ElectricMotorController.InitializeBarrier(Barrier->GetElectricMotorController());
-	FrictionController.InitializeBarrier(Barrier->GetFrictionController());
-	LockController.InitializeBarrier(Barrier->GetLockController());
-	RangeController.InitializeBarrier(Barrier->GetRangeController());
-	TargetSpeedController.InitializeBarrier(Barrier->GetTargetSpeedController());
+	AGX_Constraint1DofComponent_helpers::InitializeControllerBarriers(*this);
 }
 
 void UAGX_Constraint1DofComponent::UpdateNativeProperties()
@@ -219,4 +227,15 @@ void UAGX_Constraint1DofComponent::UpdateNativeProperties()
 	LockController.UpdateNativeProperties();
 	RangeController.UpdateNativeProperties();
 	TargetSpeedController.UpdateNativeProperties();
+}
+
+void UAGX_Constraint1DofComponent::AssignNative(uint64 NativeAddress)
+{
+	Super::AssignNative(NativeAddress);
+	if (!HasNative())
+	{
+		return;
+	}
+
+	AGX_Constraint1DofComponent_helpers::InitializeControllerBarriers(*this);
 }
