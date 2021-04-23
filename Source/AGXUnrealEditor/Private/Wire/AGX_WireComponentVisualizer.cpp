@@ -98,7 +98,7 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 
 	const float NodeHandleSize = 10.0f;
 	const FTransform& LocalToWorld = Wire->GetComponentTransform();
-	const TArray<FWireNode>& Nodes = Wire->Nodes;
+	const TArray<FWireNode>& Nodes = Wire->RouteNodes;
 	const int32 NumNodes = Nodes.Num();
 
 	// The Location of the previous drawn node. Used to draw the line.
@@ -171,13 +171,13 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	{
 		return false;
 	}
-	if (!SelectedWire->Nodes.IsValidIndex(SelectedNodeIndex))
+	if (!SelectedWire->RouteNodes.IsValidIndex(SelectedNodeIndex))
 	{
 		return false;
 	}
 
 	const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
-	OutLocation = LocalToWorld.TransformPosition(SelectedWire->Nodes[SelectedNodeIndex].Location);
+	OutLocation = LocalToWorld.TransformPosition(SelectedWire->RouteNodes[SelectedNodeIndex].Location);
 	return true;
 }
 
@@ -195,7 +195,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		return false;
 	}
 
-	if (!SelectedWire->Nodes.IsValidIndex(SelectedNodeIndex))
+	if (!SelectedWire->RouteNodes.IsValidIndex(SelectedNodeIndex))
 	{
 		SelectedNodeIndex = INDEX_NONE;
 		SelectedWire = nullptr;
@@ -208,7 +208,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	}
 
 	SelectedWire->Modify();
-	TArray<FWireNode>& Nodes = SelectedWire->Nodes;
+	TArray<FWireNode>& Nodes = SelectedWire->RouteNodes;
 
 	if (ViewportClient->IsAltPressed())
 	{
@@ -221,17 +221,17 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		{
 			bIsDuplicatingNode = true;
 			int32 NewNodeIndex = SelectedNodeIndex + 1;
-			SelectedWire->Nodes.Insert(FWireNode(Nodes[SelectedNodeIndex]), NewNodeIndex);
+			SelectedWire->RouteNodes.Insert(FWireNode(Nodes[SelectedNodeIndex]), NewNodeIndex);
 			SelectedNodeIndex = NewNodeIndex;
 			NotifyPropertyModified(
 				SelectedWire, FindFProperty<FProperty>(
 								  UAGX_WireComponent::StaticClass(),
-								  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, Nodes)));
+								  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
 		}
 		else
 		{
 			const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
-			FWireNode& SelectedNode = SelectedWire->Nodes[SelectedNodeIndex];
+			FWireNode& SelectedNode = SelectedWire->RouteNodes[SelectedNodeIndex];
 			const FVector CurrentLocalLocation = SelectedNode.Location;
 			const FVector CurrentWorldLocation =
 				LocalToWorld.TransformPosition(CurrentLocalLocation);
@@ -244,7 +244,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	else
 	{
 		const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
-		FWireNode& SelectedNode = SelectedWire->Nodes[SelectedNodeIndex];
+		FWireNode& SelectedNode = SelectedWire->RouteNodes[SelectedNodeIndex];
 		const FVector CurrentLocalLocation = SelectedNode.Location;
 		const FVector CurrentWorldLocation = LocalToWorld.TransformPosition(CurrentLocalLocation);
 		const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
@@ -293,7 +293,7 @@ int32 FAGX_WireComponentVisualizer::GetSelectedNodeIndex()
 
 void FAGX_WireComponentVisualizer::OnDeleteKey()
 {
-	if (SelectedWire == nullptr || !SelectedWire->Nodes.IsValidIndex(SelectedNodeIndex))
+	if (SelectedWire == nullptr || !SelectedWire->RouteNodes.IsValidIndex(SelectedNodeIndex))
 	{
 		return;
 	}
@@ -301,20 +301,20 @@ void FAGX_WireComponentVisualizer::OnDeleteKey()
 	const FScopedTransaction Transaction(LOCTEXT("DeleteWireNode", "Delete wire node"));
 
 	SelectedWire->Modify();
-	SelectedWire->Nodes.RemoveAt(SelectedNodeIndex);
+	SelectedWire->RouteNodes.RemoveAt(SelectedNodeIndex);
 	SelectedNodeIndex = INDEX_NONE;
 
 	NotifyPropertyModified(
 		SelectedWire,
 		FindFProperty<FProperty>(
-			UAGX_WireComponent::StaticClass(), GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, Nodes)));
+			UAGX_WireComponent::StaticClass(), GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
 
 	GEditor->RedrawLevelEditingViewports(true);
 }
 
 bool FAGX_WireComponentVisualizer::CanDeleteKey() const
 {
-	return SelectedWire != nullptr && SelectedWire->Nodes.IsValidIndex(SelectedNodeIndex);
+	return SelectedWire != nullptr && SelectedWire->RouteNodes.IsValidIndex(SelectedNodeIndex);
 }
 
 #undef LOCTEXT_NAMESPACE

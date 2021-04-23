@@ -12,32 +12,32 @@ UAGX_WireComponent::UAGX_WireComponent()
 
 void UAGX_WireComponent::AddNode(const FWireNode& InNode)
 {
-	Nodes.Add(InNode);
+	RouteNodes.Add(InNode);
 }
 
 void UAGX_WireComponent::AddNodeAtLocation(const FVector& InLocation)
 {
-	Nodes.Add(FWireNode(InLocation));
+	RouteNodes.Add(FWireNode(InLocation));
 }
 
 void UAGX_WireComponent::AddNodeAtIndex(const FWireNode& InNode, int32 InIndex)
 {
-	Nodes.Insert(InNode, InIndex);
+	RouteNodes.Insert(InNode, InIndex);
 }
 
 void UAGX_WireComponent::AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex)
 {
-	Nodes.Insert(FWireNode(InLocation), InIndex);
+	RouteNodes.Insert(FWireNode(InLocation), InIndex);
 }
 
 void UAGX_WireComponent::RemoveNode(int32 InIndex)
 {
-	Nodes.RemoveAt(InIndex);
+	RouteNodes.RemoveAt(InIndex);
 }
 
 void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocation)
 {
-	Nodes[InIndex].Location = InLocation;
+	RouteNodes[InIndex].Location = InLocation;
 }
 
 

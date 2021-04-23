@@ -53,6 +53,9 @@ public:
 public:
 	UAGX_WireComponent();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire")
+	TArray<FWireNode> RouteNodes;
+
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void AddNode(const FWireNode& InNode);
 
@@ -80,7 +83,4 @@ public:
 	virtual void OnRegister() override;
 
 	//~ End ActorComponent Interface.
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FWireNode> Nodes;
 };

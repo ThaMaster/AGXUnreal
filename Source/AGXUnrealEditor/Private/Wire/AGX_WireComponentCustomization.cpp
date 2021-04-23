@@ -214,7 +214,7 @@ void FWireNodeDetails::UpdateValues()
 		return;
 	}
 
-	const FWireNode& Node = Wire->Nodes[SelectedNodeIndex];
+	const FWireNode& Node = Wire->RouteNodes[SelectedNodeIndex];
 	const FVector Location = Node.Location;
 	LocationX = Location.X;
 	LocationY = Location.Y;
@@ -277,20 +277,20 @@ void FWireNodeDetails::OnSetLocation(float NewValue, ETextCommit::Type CommitInf
 	const FScopedTransaction Transaction(LOCTEXT("SetWireNodeLocation", "Set wire node location"));
 	Wire->Modify();
 
-	FVector Location = Wire->Nodes[SelectedNodeIndex].Location;
+	FVector Location = Wire->RouteNodes[SelectedNodeIndex].Location;
 	Location.Component(Axis) = NewValue;
-	Wire->Nodes[SelectedNodeIndex].Location = Location;
+	Wire->RouteNodes[SelectedNodeIndex].Location = Location;
 
 	FComponentVisualizer::NotifyPropertyModified(
-		Wire,
-		FindFProperty<FProperty>(
-			UAGX_WireComponent::StaticClass(), GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, Nodes)));
+		Wire, FindFProperty<FProperty>(
+				  UAGX_WireComponent::StaticClass(),
+				  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
 
 	UpdateValues();
 }
 
-
-/// @todo The color stuff is copy/paste from AGX_WireComponentVisualizer.cpp. Figure out how to have only one.
+/// @todo The color stuff is copy/paste from AGX_WireComponentVisualizer.cpp. Figure out how to have
+/// only one.
 #if 0
 TStaticArray<FLinearColor, 3> CreateWireNodeColors()
 {
@@ -355,7 +355,7 @@ void FWireNodeDetails::OnNodeTypeChanged(TSharedPtr<FString> NewValue, ESelectIn
 		return;
 	}
 
-	if (!Wire->Nodes.IsValidIndex(SelectedNodeIndex))
+	if (!Wire->RouteNodes.IsValidIndex(SelectedNodeIndex))
 	{
 		UpdateValues();
 		return;
@@ -365,11 +365,11 @@ void FWireNodeDetails::OnNodeTypeChanged(TSharedPtr<FString> NewValue, ESelectIn
 	Wire->Modify();
 
 	const int32 EnumIndex = WireNodeTypes.Find(NewValue);
-	Wire->Nodes[SelectedNodeIndex].NodeType = static_cast<EWireNodeType>(EnumIndex);
+	Wire->RouteNodes[SelectedNodeIndex].NodeType = static_cast<EWireNodeType>(EnumIndex);
 	FComponentVisualizer::NotifyPropertyModified(
 		Wire,
 		FindFProperty<FProperty>(
-			UAGX_WireComponent::StaticClass(), GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, Nodes)));
+			UAGX_WireComponent::StaticClass(), GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
 	UpdateValues();
 }
 
