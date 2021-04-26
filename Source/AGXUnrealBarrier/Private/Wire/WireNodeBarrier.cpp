@@ -1,0 +1,81 @@
+#include "Wire/WireNodeBarrier.h"
+
+// AGX Dynamics for Unreal include.
+#include "AGXRefs.h"
+#include "RigidBodyBarrier.h"
+#include "TypeConversions.h"
+#include "Wire/WireNodeRef.h"
+
+FWireNodeBarrier::FWireNodeBarrier()
+	: NativeRef {new FWireNodeRef()}
+{
+}
+
+FWireNodeBarrier::FWireNodeBarrier(FWireNodeBarrier&& Other)
+	: NativeRef {std::move(Other.NativeRef)}
+{
+	Other.NativeRef.reset();
+}
+
+FWireNodeBarrier::FWireNodeBarrier(std::unique_ptr<FWireNodeRef>&& Native)
+	: NativeRef {std::move(Native)}
+{
+	Native.reset();
+}
+
+FWireNodeBarrier::~FWireNodeBarrier()
+{
+	// Must provide a destructor implementation in the .cpp file because the
+	// std::unique_ptr NativeRef's destructor must be able to see the definition,
+	// not just the forward declaration, of FWireNodeRef.
+}
+
+bool FWireNodeBarrier::HasNative() const
+{
+	return NativeRef->Native != nullptr;
+}
+
+void FWireNodeBarrier::AllocateNativeFreeNode(const FVector& WorldLocation)
+{
+	check(!HasNative());
+	const agx::Vec3 WorldLocationAGX = ConvertDistance(WorldLocation);
+	NativeRef->Native = new agxWire::FreeNode(WorldLocationAGX);
+}
+
+void FWireNodeBarrier::AllocateNativeEyeNode(
+	FRigidBodyBarrier& RigidBody, const FVector& LocalLocation)
+{
+	check(!HasNative());
+	check(RigidBody.HasNative());
+	const agx::Vec3 LocalLocationAGX = ConvertDistance(LocalLocation);
+	agx::RigidBody* Body = RigidBody.GetNative()->Native;
+	NativeRef->Native = new agxWire::BodyFixedNode(Body, LocalLocationAGX);
+}
+
+void FWireNodeBarrier::AllocateNativeBodyFixedNode(
+	FRigidBodyBarrier& RigidBody, const FVector& LocalLocation)
+{
+	check(!HasNative());
+	check(RigidBody.HasNative());
+	const agx::Vec3 LocalLocationAGX = ConvertDistance(LocalLocation);
+	agx::RigidBody* Body = RigidBody.GetNative()->Native;
+	NativeRef->Native = new agxWire::BodyFixedNode(Body, LocalLocationAGX);
+}
+
+FWireNodeRef* FWireNodeBarrier::GetNative()
+{
+	check(HasNative());
+	return NativeRef.get();
+}
+
+const FWireNodeRef* FWireNodeBarrier::GetNative() const
+{
+	check(HasNative());
+	return NativeRef.get();
+}
+
+void FWireNodeBarrier::ReleaseNative()
+{
+	check(HasNative());
+	NativeRef->Native = nullptr;
+}
