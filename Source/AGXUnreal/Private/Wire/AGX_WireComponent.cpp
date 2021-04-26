@@ -2,7 +2,9 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "Wire/WireNodeBarrier.h"
 
 // Unreal Engine includes.
 #include "Components/BillboardComponent.h"
@@ -147,8 +149,46 @@ void UAGX_WireComponent::CreateNative()
 	check(HasNative()); /// @todo Consider better error handling than 'check'.
 
 	/// @todo Create AGX Dynamics route notes and initialize the wire.
+	for (int32 I = 0; I < RouteNodes.Num(); ++I)
+	{
+		FWireNode& RouteNode = RouteNodes[I];
+		FWireNodeBarrier NodeBarrier;
+		switch (RouteNode.NodeType)
+		{
+			case EWireNodeType::FreeNode:
+				NodeBarrier.AllocateNativeFreeNode(RouteNode.Location);
+				break;
+			case EWireNodeType::EyeNode:
+			{
+				UAGX_RigidBodyComponent* BodyComponent = RouteNode.RigidBody.GetRigidBody();
+				check(BodyComponent);
+				FRigidBodyBarrier* NativeBody = BodyComponent->GetOrCreateNative();
+				check(NativeBody);
+				const FTransform& Transform = BodyComponent->GetComponentTransform();
+				const FVector LocalLocation =
+					Transform.InverseTransformPosition(RouteNode.Location);
+				NodeBarrier.AllocateNativeEyeNode(*NativeBody, LocalLocation);
+				break;
+			}
+			case EWireNodeType::BodyFixedNode:
+			{
+				UAGX_RigidBodyComponent* BodyComponent = RouteNode.RigidBody.GetRigidBody();
+				check(BodyComponent);
+				FRigidBodyBarrier* NativeBody = BodyComponent->GetOrCreateNative();
+				check(NativeBody);
+				const FTransform& Transform = BodyComponent->GetComponentTransform();
+				const FVector LocalLocation =
+					Transform.InverseTransformPosition(RouteNode.Location);
+				NodeBarrier.AllocateNativeBodyFixedNode(*NativeBody, LocalLocation);
+				break;
+			}
+		}
+		NativeBarrier.AddRouteNode(NodeBarrier);
+	}
 
 	UAGX_Simulation::GetFrom(this)->AddWire(*this);
+	check(NativeBarrier.IsInitialized());
+	UE_LOG(LogAGX, Warning, TEXT("Created wire with length %f."), NativeBarrier.GetRestLength());
 }
 
 #undef LOCTEXT_NAMESPACE
