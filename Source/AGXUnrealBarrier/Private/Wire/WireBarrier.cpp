@@ -2,6 +2,8 @@
 
 // AGX Unreal includes.
 #include "TypeConversions.h"
+#include "Wire/WireNodeBarrier.h"
+#include "Wire/WireNodeRef.h"
 #include "Wire/WireRef.h"
 
 FWireBarrier::FWireBarrier()
@@ -57,4 +59,25 @@ void FWireBarrier::ReleaseNative()
 {
 	check(HasNative());
 	NativeRef->Native = nullptr;
+}
+
+void FWireBarrier::AddRouteNode(FWireNodeBarrier& RoutingNode)
+{
+	check(HasNative());
+	check(RoutingNode.HasNative());
+	NativeRef->Native->add(RoutingNode.GetNative()->Native);
+}
+
+bool FWireBarrier::IsInitialized() const
+{
+	check(HasNative());
+	return NativeRef->Native->initialized();
+}
+
+double FWireBarrier::GetRestLength() const
+{
+	check(HasNative());
+	agx::Real LengthAGX = NativeRef->Native->getRestLength();
+	double Length = ConvertDistanceToUnreal<double>(LengthAGX);
+	return Length;
 }

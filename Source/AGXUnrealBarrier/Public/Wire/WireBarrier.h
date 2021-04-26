@@ -4,6 +4,7 @@
 #include <memory>
 
 struct FWireRef;
+class FWireNodeBarrier;
 
 class AGXUNREALBARRIER_API FWireBarrier
 {
@@ -18,6 +19,10 @@ public:
 	FWireRef* GetNative();
 	const FWireRef* GetNative() const;
 	void ReleaseNative();
+
+	void AddRouteNode(FWireNodeBarrier& RoutingNode);
+	bool IsInitialized() const;
+	double GetRestLength() const;
 
 private:
 	FWireBarrier(const FWireBarrier&) = delete;
