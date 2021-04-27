@@ -1,6 +1,9 @@
 #include "AGX_WireComponentCustomization.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
+#include "Utilities/AGX_StringUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireComponentVisualizer.h"
 
@@ -9,9 +12,12 @@
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "IDetailChildrenBuilder.h"
+#include "IDetailGroup.h"
+#include "PropertyCustomizationHelpers.h"
 #include "ScopedTransaction.h"
 #include "UnrealEd.h"
 #include "Widgets/Input/SVectorInputBox.h"
+#include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "AGX_WireComponentCustomization"
@@ -44,6 +50,8 @@ public:
 	/** Widgets with this visibility is only shown when not wire node is selected. */
 	EVisibility WithoutSelection() const;
 
+	EVisibility NodeHasRigidBody() const;
+
 private:
 	TOptional<float> GetLocationX() const;
 	TOptional<float> GetLocationY() const;
@@ -58,7 +66,18 @@ private:
 	/** Called to generate the default (non-opened) view of the node type combo box. */
 	FText GetNodeType() const;
 
+	FText GetNodeActorName() const;
+
 	void OnNodeTypeChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo);
+
+	// These are callbacks used by the Actor picker.
+	bool OnShouldFilterActor(const AActor* Actor);
+	void OnActorSelected(AActor* Actor);
+	void OnActorSelectorClose();
+	void OnActorUseSelected();
+	void OnActorSelectedFromPicker(AActor* Actor);
+	void OnGetAllowedClasses(TArray<const UClass*>& AllowedClasses);
+	void OnGetActorFilters(TSharedPtr<SceneOutliner::FOutlinerFilters>& Filters);
 
 private:
 	/** The currently selected Wire Component. This can change. */
@@ -157,6 +176,7 @@ void FWireNodeDetails::GenerateChildContent(IDetailChildrenBuilder& ChildrenBuil
 		.OnZCommitted(this, &FWireNodeDetails::OnSetLocation, 2)
 	];
 
+	/// @todo Investigate SAssignNew.
 	NodeTypeComboBox = SNew(SComboBox<TSharedPtr<FString>>)
 		.OptionsSource(&WireNodeTypes)
 			.OnGenerateWidget(this, &FWireNodeDetails::OnGenerateComboWidget)
@@ -178,7 +198,128 @@ void FWireNodeDetails::GenerateChildContent(IDetailChildrenBuilder& ChildrenBuil
 		NodeTypeComboBox.ToSharedRef()
 	];
 
+// I would like to use a Property here, but I don't know how. We have an array of objects we switch
+// between and at this point in the program we don't know which
+#if 0
+	TSharedRef<FStructOnScope> VisualStructRef = MakeShared<FStructOnScope>(
+		FWireNode::StaticStruct(), (uint8*)&WHICH_OBJECT_I_DONT_KNOW.RigidBody);
+
+	ChildrenBuilder.AddExternalStructureProperty(VisualStructRef,
+		GET_MEMBER_NAME_CHECKED(FWireNode, RigidBody));
+#endif
+
+	IDetailGroup& RigidBody = ChildrenBuilder.AddGroup(
+		TEXT("RigidBodyTitle"), LOCTEXT("RigidBodyTitle", "RigidBody"));
+	RigidBody.AddWidgetRow()
+	.Visibility(TAttribute<EVisibility>(this, &FWireNodeDetails::NodeHasRigidBody))
+	.NameContent()
+	[
+		SNew(STextBlock)
+		.Text(LOCTEXT("OwningActor", "Owning Actor"))
+	]
+	.ValueContent()
+	[
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		[
+				SNew(STextBlock)
+				.Text(this, &FWireNodeDetails::GetNodeActorName)
+		]
+		+ SHorizontalBox::Slot()
+		[
+			SNew(SBox)
+			.MaxDesiredWidth(72)
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				[
+					// Creates a button that opens a menu with a list of actors in the level.
+					PropertyCustomizationHelpers::MakeActorPickerAnchorButton(
+						FOnGetActorFilters::CreateSP(this, &FWireNodeDetails::OnGetActorFilters),
+						FOnActorSelected::CreateSP(this, &FWireNodeDetails::OnActorSelectedFromPicker))
+				]
+				+ SHorizontalBox::Slot()
+				[
+					// This creates a picker-button what can be used to pick a single actor.
+					PropertyCustomizationHelpers::MakeInteractiveActorPicker(
+						FOnGetAllowedClasses::CreateSP(this, &FWireNodeDetails::OnGetAllowedClasses),
+						FOnShouldFilterActor::CreateSP(this, &FWireNodeDetails::OnShouldFilterActor),
+						FOnActorSelected::CreateSP(this, &FWireNodeDetails::OnActorSelectedFromPicker))
+				]
+			]
+		]
+	];
+
+	RigidBody.AddWidgetRow()
+	.Visibility(TAttribute<EVisibility>(this, &FWireNodeDetails::NodeHasRigidBody))
+	.NameContent()
+	[
+		SNew(STextBlock)
+		.Text(LOCTEXT("RigidBodyName", "Rigid Body Name"))
+	]
+	.ValueContent()
+	[
+		SNew(SEditableTextBox)
+	];
+
 	//clang-format on
+}
+
+bool FWireNodeDetails::OnShouldFilterActor(const AActor* Actor)
+{
+	UE_LOG(LogAGX, Warning, TEXT("Filtering Actor '%s'."), *Actor->GetName());
+	return true;
+}
+
+void FWireNodeDetails::OnActorSelected(AActor* Actor)
+{
+	UE_LOG(LogAGX, Warning, TEXT("Selected Actor '%s'."), *Actor->GetName());
+}
+
+void FWireNodeDetails::OnActorSelectorClose()
+{
+	UE_LOG(LogAGX, Warning, TEXT("OnActorSelectorClose"));
+}
+
+void FWireNodeDetails::OnActorUseSelected()
+{
+	UE_LOG(LogAGX, Warning, TEXT("OnActorUseSelected"));
+}
+
+void FWireNodeDetails::OnActorSelectedFromPicker(AActor* Actor)
+{
+	UE_LOG(LogAGX, Warning, TEXT("OnActorSelectedFromPicker: '%s'."), *Actor->GetActorLabel());
+
+	if (Wire == nullptr || SelectedNodeIndex == INDEX_NONE)
+	{
+		return;
+	}
+	if (!Wire->RouteNodes.IsValidIndex(SelectedNodeIndex))
+	{
+		UpdateValues();
+		return;
+	}
+
+	const FScopedTransaction Transaction(LOCTEXT("SetWireNodeBodyActor", "Set wire node body actor"));
+	Wire->Modify();
+
+	Wire->RouteNodes[SelectedNodeIndex].RigidBody.OwningActor = Actor;
+
+	FComponentVisualizer::NotifyPropertyModified(
+		Wire, FindFProperty<FProperty>(
+			UAGX_WireComponent::StaticClass(),
+			GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
+}
+
+void FWireNodeDetails::OnGetAllowedClasses(TArray<const UClass*>& AllowedClasses)
+{
+	UE_LOG(LogAGX, Warning, TEXT("OnGetAllowedClasses"));
+	AllowedClasses.Add(AActor::StaticClass());
+}
+
+void FWireNodeDetails::OnGetActorFilters(TSharedPtr<SceneOutliner::FOutlinerFilters>& Filters)
+{
+	/// @todo What should we do here?
 }
 
 bool FWireNodeDetails::InitiallyCollapsed() const
@@ -243,6 +384,29 @@ EVisibility FWireNodeDetails::WithSelection() const
 EVisibility FWireNodeDetails::WithoutSelection() const
 {
 	if (Wire == nullptr || SelectedNodeIndex == INDEX_NONE)
+	{
+		return EVisibility::Visible;
+	}
+	else
+	{
+		return EVisibility::Collapsed;
+	}
+}
+
+EVisibility FWireNodeDetails::NodeHasRigidBody() const
+{
+	if (Wire == nullptr || SelectedNodeIndex == INDEX_NONE)
+	{
+		return EVisibility::Collapsed;
+	}
+
+	if (!NodeType.IsSet())
+	{
+		return EVisibility::Collapsed;
+	}
+
+	if (NodeType.GetValue() == EWireNodeType::BodyFixedNode ||
+		NodeType.GetValue() == EWireNodeType::EyeNode)
 	{
 		return EVisibility::Visible;
 	}
@@ -346,6 +510,17 @@ FText FWireNodeDetails::GetNodeType() const
 	{
 		return LOCTEXT("NoSelection", "(Nothing Selected)");
 	}
+}
+
+FText FWireNodeDetails::GetNodeActorName() const
+{
+	if (Wire == nullptr || SelectedNodeIndex == INDEX_NONE)
+	{
+		return LOCTEXT("NoActor", "No Actor Selected");
+	}
+
+	const FString Label = GetLabelSafe(Wire->RouteNodes[SelectedNodeIndex].RigidBody.OwningActor);
+	return FText::FromString(Label);
 }
 
 void FWireNodeDetails::OnNodeTypeChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo)

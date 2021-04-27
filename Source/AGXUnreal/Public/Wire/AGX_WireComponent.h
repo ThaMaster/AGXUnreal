@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_RigidBodyReference.h"
 #include "AGX_WireRenderIterator.h"
 #include "Wire/WireBarrier.h"
 
@@ -31,6 +32,8 @@ struct FWireRoutingNode
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
 	FVector Location;
 
+	UPROPERTY(EditAnywhere, Category = "Wire")
+	FAGX_RigidBodyReference RigidBody;
 	FWireRoutingNode()
 		: NodeType(EWireNodeType::FreeNode)
 		, Location(FVector::ZeroVector)
