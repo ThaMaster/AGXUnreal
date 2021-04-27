@@ -4,6 +4,9 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "AGXUnrealBarrier.h"
+#include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 #include "Wire/WireNodeBarrier.h"
 
 // Unreal Engine includes.
@@ -168,6 +171,25 @@ void UAGX_WireComponent::OnRegister()
 #endif
 }
 
+namespace AGX_WireComponent_helpers
+{
+	class FAGXWireNotifyBuffer : public FAGXNotifyListener
+	{
+	public:
+		virtual void OnMessage(const FString& InMessage, ELogVerbosity::Type Verbosity) override
+		{
+			if (Message != "")
+			{
+				Message += "\n";
+			}
+			Message += InMessage;
+		}
+
+	public:
+		FString Message;
+	};
+}
+
 void UAGX_WireComponent::CreateNative()
 {
 	check(!HasNative());
@@ -217,9 +239,22 @@ void UAGX_WireComponent::CreateNative()
 		NativeBarrier.AddRouteNode(NodeBarrier);
 	}
 
-	UAGX_Simulation::GetFrom(this)->AddWire(*this);
-	check(NativeBarrier.IsInitialized());
-	UE_LOG(LogAGX, Warning, TEXT("Created wire with length %f."), NativeBarrier.GetRestLength());
+	{
+		using namespace AGX_WireComponent_helpers;
+		FAGXWireNotifyBuffer Messages;
+		UAGX_Simulation::GetFrom(this)->AddWire(*this);
+		if (!IsInitialized())
+		{
+			const FString WireName = GetName();
+			const FString OwnerName = GetLabelSafe(GetOwner());
+			const FString Message = FString::Printf(
+				TEXT("Invalid wire configuration for '%s' in '%s':\n%s"), *WireName, *OwnerName,
+				*Messages.Message);
+			/// @todo Consider other error reporting ways in shipping builds.
+			/// Unless we actually do want to show a dialog box to an end-end-user.
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
+		}
+	}
 }
 
 #undef LOCTEXT_NAMESPACE
