@@ -493,6 +493,28 @@ inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type Log
 	}
 }
 
+inline ELogVerbosity::Type ConvertLogLevelVerbosity(agx::Notify::NotifyLevel Level)
+{
+	switch (Level)
+	{
+		case agx::Notify::NOTIFY_DEBUG:
+			return ELogVerbosity::VeryVerbose;
+		case agx::Notify::NOTIFY_INFO:
+			return ELogVerbosity::Verbose;
+		case agx::Notify::NOTIFY_WARNING:
+			return ELogVerbosity::Warning;
+		case agx::Notify::NOTIFY_ERROR:
+			return ELogVerbosity::Error;
+
+		// The following are not actual verbosity levels.
+		case agx::Notify::NOTIFY_CLEAR:
+		case agx::Notify::NOTIFY_END:
+		case agx::Notify::NOTIFY_LOGONLY:
+		case agx::Notify::NOTIFY_PUSH:
+			return ELogVerbosity::VeryVerbose;
+	}
+}
+
 inline agxModel::TwoBodyTire::DeformationMode Convert(FTwoBodyTireBarrier::DeformationMode Mode)
 {
 	switch (Mode)
