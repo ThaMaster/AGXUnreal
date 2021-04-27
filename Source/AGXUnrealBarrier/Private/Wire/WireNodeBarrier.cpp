@@ -38,7 +38,7 @@ bool FWireNodeBarrier::HasNative() const
 void FWireNodeBarrier::AllocateNativeFreeNode(const FVector& WorldLocation)
 {
 	check(!HasNative());
-	const agx::Vec3 WorldLocationAGX = ConvertDistance(WorldLocation);
+	const agx::Vec3 WorldLocationAGX = ConvertDisplacement(WorldLocation);
 	NativeRef->Native = new agxWire::FreeNode(WorldLocationAGX);
 }
 
@@ -47,7 +47,7 @@ void FWireNodeBarrier::AllocateNativeEyeNode(
 {
 	check(!HasNative());
 	check(RigidBody.HasNative());
-	const agx::Vec3 LocalLocationAGX = ConvertDistance(LocalLocation);
+	const agx::Vec3 LocalLocationAGX = ConvertDisplacement(LocalLocation);
 	agx::RigidBody* Body = RigidBody.GetNative()->Native;
 	NativeRef->Native = new agxWire::BodyFixedNode(Body, LocalLocationAGX);
 }
@@ -57,7 +57,7 @@ void FWireNodeBarrier::AllocateNativeBodyFixedNode(
 {
 	check(!HasNative());
 	check(RigidBody.HasNative());
-	const agx::Vec3 LocalLocationAGX = ConvertDistance(LocalLocation);
+	const agx::Vec3 LocalLocationAGX = ConvertDisplacement(LocalLocation);
 	agx::RigidBody* Body = RigidBody.GetNative()->Native;
 	NativeRef->Native = new agxWire::BodyFixedNode(Body, LocalLocationAGX);
 }
