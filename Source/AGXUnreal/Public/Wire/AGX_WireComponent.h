@@ -14,13 +14,13 @@ class UAGX_ShapeMaterialBase;
 UENUM(BlueprintType)
 enum class EWireNodeType : uint8
 {
-	FreeNode,
+	FreeNode, /// \todo Make these match the AGX Dynamics enum, if there is one.
 	EyeNode,
 	BodyFixedNode
 };
 
 USTRUCT(BlueprintType)
-struct FWireNode
+struct FWireRoutingNode
 {
 	GENERATED_BODY();
 
@@ -30,13 +30,13 @@ struct FWireNode
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
 	FVector Location;
 
-	FWireNode()
+	FWireRoutingNode()
 		: NodeType(EWireNodeType::FreeNode)
 		, Location(FVector::ZeroVector)
 	{
 	}
 
-	FWireNode(const FVector& InLocation)
+	FWireRoutingNode(const FVector& InLocation)
 		: NodeType(EWireNodeType::FreeNode)
 		, Location(InLocation)
 	{
@@ -107,16 +107,16 @@ public:
 	 * used to track the motion of the wire.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire")
-	TArray<FWireNode> RouteNodes;
+	TArray<FWireRoutingNode> RouteNodes;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
-	void AddNode(const FWireNode& InNode);
+	void AddNode(const FWireRoutingNode& InNode);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void AddNodeAtLocation(const FVector& InLocation);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
-	void AddNodeAtIndex(const FWireNode& InNode, int32 InIndex);
+	void AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);

@@ -20,24 +20,24 @@ UAGX_WireComponent::UAGX_WireComponent()
 #endif
 }
 
-void UAGX_WireComponent::AddNode(const FWireNode& InNode)
+void UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
 {
 	RouteNodes.Add(InNode);
 }
 
 void UAGX_WireComponent::AddNodeAtLocation(const FVector& InLocation)
 {
-	RouteNodes.Add(FWireNode(InLocation));
+	RouteNodes.Add(FWireRoutingNode(InLocation));
 }
 
-void UAGX_WireComponent::AddNodeAtIndex(const FWireNode& InNode, int32 InIndex)
+void UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex)
 {
 	RouteNodes.Insert(InNode, InIndex);
 }
 
 void UAGX_WireComponent::AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex)
 {
-	RouteNodes.Insert(FWireNode(InLocation), InIndex);
+	RouteNodes.Insert(FWireRoutingNode(InLocation), InIndex);
 }
 
 void UAGX_WireComponent::RemoveNode(int32 InIndex)
@@ -151,7 +151,7 @@ void UAGX_WireComponent::CreateNative()
 	/// @todo Create AGX Dynamics route notes and initialize the wire.
 	for (int32 I = 0; I < RouteNodes.Num(); ++I)
 	{
-		FWireNode& RouteNode = RouteNodes[I];
+		FWireRoutingNode& RouteNode = RouteNodes[I];
 		FWireNodeBarrier NodeBarrier;
 		switch (RouteNode.NodeType)
 		{

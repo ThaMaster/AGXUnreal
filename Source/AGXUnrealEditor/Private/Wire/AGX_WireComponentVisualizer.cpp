@@ -208,7 +208,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	}
 
 	SelectedWire->Modify();
-	TArray<FWireNode>& Nodes = SelectedWire->RouteNodes;
+	TArray<FWireRoutingNode>& Nodes = SelectedWire->RouteNodes;
 
 	if (ViewportClient->IsAltPressed())
 	{
@@ -221,7 +221,8 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		{
 			bIsDuplicatingNode = true;
 			int32 NewNodeIndex = SelectedNodeIndex + 1;
-			SelectedWire->RouteNodes.Insert(FWireNode(Nodes[SelectedNodeIndex]), NewNodeIndex);
+			SelectedWire->RouteNodes.Insert(
+				FWireRoutingNode(Nodes[SelectedNodeIndex]), NewNodeIndex);
 			SelectedNodeIndex = NewNodeIndex;
 			NotifyPropertyModified(
 				SelectedWire, FindFProperty<FProperty>(
@@ -231,7 +232,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		else
 		{
 			const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
-			FWireNode& SelectedNode = SelectedWire->RouteNodes[SelectedNodeIndex];
+			FWireRoutingNode& SelectedNode = SelectedWire->RouteNodes[SelectedNodeIndex];
 			const FVector CurrentLocalLocation = SelectedNode.Location;
 			const FVector CurrentWorldLocation =
 				LocalToWorld.TransformPosition(CurrentLocalLocation);
@@ -244,7 +245,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	else
 	{
 		const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
-		FWireNode& SelectedNode = SelectedWire->RouteNodes[SelectedNodeIndex];
+		FWireRoutingNode& SelectedNode = SelectedWire->RouteNodes[SelectedNodeIndex];
 		const FVector CurrentLocalLocation = SelectedNode.Location;
 		const FVector CurrentWorldLocation = LocalToWorld.TransformPosition(CurrentLocalLocation);
 		const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;

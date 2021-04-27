@@ -214,7 +214,7 @@ void FWireNodeDetails::UpdateValues()
 		return;
 	}
 
-	const FWireNode& Node = Wire->RouteNodes[SelectedNodeIndex];
+	const FWireRoutingNode& Node = Wire->RouteNodes[SelectedNodeIndex];
 	const FVector Location = Node.Location;
 	LocationX = Location.X;
 	LocationY = Location.Y;
