@@ -50,6 +50,33 @@ void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocatio
 	RouteNodes[InIndex].Location = InLocation;
 }
 
+bool UAGX_WireComponent::IsInitialized() const
+{
+	if (!HasNative())
+	{
+		return false;
+	}
+	return NativeBarrier.IsInitialized();
+}
+
+FAGX_WireRenderIterator UAGX_WireComponent::GetRenderBeginIterator() const
+{
+	if (!HasNative())
+	{
+		return {};
+	}
+	return {NativeBarrier.GetRenderBeginIterator()};
+}
+
+FAGX_WireRenderIterator UAGX_WireComponent::GetRenderEndIterator() const
+{
+	if (!HasNative())
+	{
+		return {};
+	}
+	return {NativeBarrier.GetRenderEndIterator()};
+}
+
 bool UAGX_WireComponent::HasNative() const
 {
 	return NativeBarrier.HasNative();
@@ -156,8 +183,12 @@ void UAGX_WireComponent::CreateNative()
 		switch (RouteNode.NodeType)
 		{
 			case EWireNodeType::FreeNode:
-				NodeBarrier.AllocateNativeFreeNode(RouteNode.Location);
+			{
+				const FTransform& LocalToWorld = GetComponentTransform();
+				const FVector WorldLocation = LocalToWorld.TransformPosition(RouteNode.Location);
+				NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 				break;
+			}
 			case EWireNodeType::EyeNode:
 			{
 				UAGX_RigidBodyComponent* BodyComponent = RouteNode.RigidBody.GetRigidBody();

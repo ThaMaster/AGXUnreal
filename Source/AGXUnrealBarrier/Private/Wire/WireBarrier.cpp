@@ -81,3 +81,15 @@ double FWireBarrier::GetRestLength() const
 	double Length = ConvertDistanceToUnreal<double>(LengthAGX);
 	return Length;
 }
+
+FWireRenderIteratorBarrier FWireBarrier::GetRenderBeginIterator() const
+{
+	check(HasNative());
+	return {std::make_unique<agxWire::RenderIterator>(NativeRef->Native->getRenderBeginIterator())};
+}
+
+FWireRenderIteratorBarrier FWireBarrier::GetRenderEndIterator() const
+{
+	check(HasNative());
+	return {std::make_unique<agxWire::RenderIterator>(NativeRef->Native->getRenderEndIterator())};
+}

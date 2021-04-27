@@ -1,5 +1,8 @@
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Wire/WireRenderIteratorBarrier.h"
+
 // System includes.
 #include <memory>
 
@@ -23,6 +26,9 @@ public:
 	void AddRouteNode(FWireNodeBarrier& RoutingNode);
 	bool IsInitialized() const;
 	double GetRestLength() const;
+
+	FWireRenderIteratorBarrier GetRenderBeginIterator() const;
+	FWireRenderIteratorBarrier GetRenderEndIterator() const;
 
 private:
 	FWireBarrier(const FWireBarrier&) = delete;

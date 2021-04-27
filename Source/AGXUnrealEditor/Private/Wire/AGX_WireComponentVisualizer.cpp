@@ -4,6 +4,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RuntimeStyle.h"
 #include "Wire/AGX_WireComponent.h"
+#include "Wire/AGX_WireNode.h"
 
 // Unreal Engine includes.
 #include "Editor.h"
@@ -87,38 +88,86 @@ FLinearColor WireNodeTypeToColor(EWireNodeType Type)
 	return WireNodeColors[I];
 }
 
+namespace AGX_WireComponentVisualizer_helpers
+{
+	FVector DrawNode(
+		const UAGX_WireComponent& Wire, int32 NodeIndex, int32 SelectedNodeIndex,
+		EWireNodeType NodeType, const FVector& Location, const FVector& PrevLocation,
+		FPrimitiveDrawInterface* PDI)
+	{
+		const float NodeHandleSize = 10.0f;
+		const FLinearColor Color = NodeIndex == SelectedNodeIndex
+									   ? GEngine->GetSelectionOutlineColor()
+									   : WireNodeTypeToColor(NodeType);
+
+		PDI->SetHitProxy(new HNodeProxy(&Wire, NodeIndex));
+		PDI->DrawPoint(Location, Color, NodeHandleSize, SDPG_Foreground);
+		PDI->SetHitProxy(nullptr);
+
+		if (NodeIndex > 0)
+		{
+			PDI->DrawLine(PrevLocation, Location, FLinearColor::White, SDPG_Foreground);
+		}
+		return Location;
+	}
+
+	void DrawRoutingNodes(
+		const UAGX_WireComponent& Wire, int32 SelectedNodeIndex, FPrimitiveDrawInterface* PDI)
+	{
+		const FTransform& LocalToWorld = Wire.GetComponentTransform();
+		const TArray<FWireRoutingNode>& Nodes = Wire.RouteNodes;
+		const int32 NumNodes = Nodes.Num();
+
+		// The Location of the previous drawn node. Used to draw the line.
+		FVector PrevLocation;
+
+		for (int32 I = 0; I < NumNodes; ++I)
+		{
+			const FVector Location = LocalToWorld.TransformPosition(Nodes[I].Location);
+			PrevLocation = DrawNode(
+				Wire, I, SelectedNodeIndex, Nodes[I].NodeType, Location, PrevLocation, PDI);
+		}
+	}
+
+	void DrawWireNodes(
+		const UAGX_WireComponent& Wire, int32 SelectedNodeIndex, FPrimitiveDrawInterface* PDI)
+	{
+		int32 I = 0;
+		FVector PrevLocation;
+
+		/// \todo Investigate ranged-for.
+		for (auto It = Wire.GetRenderBeginIterator(), End = Wire.GetRenderEndIterator(); It != End;
+			 It.Inc())
+		{
+			FAGX_WireNode Node = It.Get();
+			EWireNodeType NodeType = EWireNodeType::FreeNode; /// \@todo Node.GetNodeType();
+			const FVector Location = Node.GetWorldLocation();
+			PrevLocation =
+				DrawNode(Wire, I, SelectedNodeIndex, NodeType, Location, PrevLocation, PDI);
+			I++;
+		}
+	}
+}
+
 void FAGX_WireComponentVisualizer::DrawVisualization(
 	const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI)
 {
+	using namespace AGX_WireComponentVisualizer_helpers;
+
+	UE_LOG(LogAGX, Warning, TEXT("WireComponentVisualizer::DrawVisualization"));
 	const UAGX_WireComponent* Wire = Cast<UAGX_WireComponent>(Component);
 	if (Wire == nullptr)
 	{
 		return;
 	}
 
-	const float NodeHandleSize = 10.0f;
-	const FTransform& LocalToWorld = Wire->GetComponentTransform();
-	const TArray<FWireNode>& Nodes = Wire->RouteNodes;
-	const int32 NumNodes = Nodes.Num();
-
-	// The Location of the previous drawn node. Used to draw the line.
-	FVector PrevLocation;
-
-	for (int32 I = 0; I < NumNodes; ++I)
+	if (Wire->IsInitialized())
 	{
-		const FVector Location = LocalToWorld.TransformPosition(Nodes[I].Location);
-		const FLinearColor Color = I == SelectedNodeIndex ? GEngine->GetSelectionOutlineColor()
-														  : WireNodeTypeToColor(Nodes[I].NodeType);
-
-		PDI->SetHitProxy(new HNodeProxy(Wire, I));
-		PDI->DrawPoint(Location, Color, NodeHandleSize, SDPG_Foreground);
-		PDI->SetHitProxy(nullptr);
-
-		if (I > 0)
-		{
-			PDI->DrawLine(PrevLocation, Location, FLinearColor::White, SDPG_Foreground);
-		}
-		PrevLocation = Location;
+		DrawWireNodes(*Wire, SelectedNodeIndex, PDI);
+	}
+	else
+	{
+		DrawRoutingNodes(*Wire, SelectedNodeIndex, PDI);
 	}
 }
 
@@ -177,7 +226,8 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	}
 
 	const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
-	OutLocation = LocalToWorld.TransformPosition(SelectedWire->RouteNodes[SelectedNodeIndex].Location);
+	OutLocation =
+		LocalToWorld.TransformPosition(SelectedWire->RouteNodes[SelectedNodeIndex].Location);
 	return true;
 }
 
@@ -306,9 +356,9 @@ void FAGX_WireComponentVisualizer::OnDeleteKey()
 	SelectedNodeIndex = INDEX_NONE;
 
 	NotifyPropertyModified(
-		SelectedWire,
-		FindFProperty<FProperty>(
-			UAGX_WireComponent::StaticClass(), GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
+		SelectedWire, FindFProperty<FProperty>(
+						  UAGX_WireComponent::StaticClass(),
+						  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
 
 	GEditor->RedrawLevelEditingViewports(true);
 }

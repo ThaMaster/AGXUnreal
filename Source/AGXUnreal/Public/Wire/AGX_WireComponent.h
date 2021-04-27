@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_WireRenderIterator.h"
 #include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
@@ -126,6 +127,21 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void SetNodeLocation(int32 InIndex, const FVector& InLocation);
+
+	/**
+	 * A wire is initialized when the AGX Dynamics object has been created and added to the AGX
+	 * Dynamics simulation. At this point that routing nodes become inactive and the node iterator
+	 * should be used to inspect the nodes.
+	 * @return
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	bool IsInitialized() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	FAGX_WireRenderIterator GetRenderBeginIterator() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	FAGX_WireRenderIterator GetRenderEndIterator() const;
 
 	bool HasNative() const;
 	FWireBarrier* GetOrCreateNative();

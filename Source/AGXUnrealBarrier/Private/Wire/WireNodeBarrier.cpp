@@ -11,6 +11,12 @@ FWireNodeBarrier::FWireNodeBarrier()
 {
 }
 
+FWireNodeBarrier::FWireNodeBarrier(const FWireNodeBarrier& Other)
+	: NativeRef (new FWireNodeRef())
+{
+	NativeRef->Native = Other.NativeRef->Native;
+}
+
 FWireNodeBarrier::FWireNodeBarrier(FWireNodeBarrier&& Other)
 	: NativeRef {std::move(Other.NativeRef)}
 {
@@ -28,6 +34,12 @@ FWireNodeBarrier::~FWireNodeBarrier()
 	// Must provide a destructor implementation in the .cpp file because the
 	// std::unique_ptr NativeRef's destructor must be able to see the definition,
 	// not just the forward declaration, of FWireNodeRef.
+}
+
+FWireNodeBarrier& FWireNodeBarrier::operator=(const FWireNodeBarrier& InOther)
+{
+	NativeRef->Native = InOther.NativeRef->Native;
+	return *this;
 }
 
 bool FWireNodeBarrier::HasNative() const
@@ -78,4 +90,11 @@ void FWireNodeBarrier::ReleaseNative()
 {
 	check(HasNative());
 	NativeRef->Native = nullptr;
+}
+
+
+FVector FWireNodeBarrier::GetWorldLocation() const
+{
+	check(HasNative());
+	return ConvertDisplacement(NativeRef->Native->getWorldPosition());
 }

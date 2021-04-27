@@ -13,9 +13,12 @@ class AGXUNREALBARRIER_API FWireNodeBarrier
 {
 public:
 	FWireNodeBarrier();
-	FWireNodeBarrier(FWireNodeBarrier&& Other);
-	FWireNodeBarrier(std::unique_ptr<FWireNodeRef>&& Native);
+	FWireNodeBarrier(const FWireNodeBarrier& InOther);
+	FWireNodeBarrier(FWireNodeBarrier&& InOther);
+	FWireNodeBarrier(std::unique_ptr<FWireNodeRef>&& InNative);
 	~FWireNodeBarrier();
+
+	FWireNodeBarrier& operator=(const FWireNodeBarrier& InOther);
 
 	bool HasNative() const;
 	void AllocateNativeFreeNode(const FVector& WorldLocation);
@@ -25,9 +28,7 @@ public:
 	const FWireNodeRef* GetNative() const;
 	void ReleaseNative();
 
-private:
-	FWireNodeBarrier(const FWireNodeBarrier&) = delete;
-	void operator=(const FWireNodeBarrier&) = delete;
+	FVector GetWorldLocation() const;
 
 private:
 	std::unique_ptr<FWireNodeRef> NativeRef;
