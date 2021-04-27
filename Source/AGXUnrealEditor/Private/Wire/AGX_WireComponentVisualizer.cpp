@@ -154,7 +154,6 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 {
 	using namespace AGX_WireComponentVisualizer_helpers;
 
-	UE_LOG(LogAGX, Warning, TEXT("WireComponentVisualizer::DrawVisualization"));
 	const UAGX_WireComponent* Wire = Cast<UAGX_WireComponent>(Component);
 	if (Wire == nullptr)
 	{
