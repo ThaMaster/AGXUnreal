@@ -69,7 +69,7 @@ inline uint32 GetTypeHash(const FAGX_NamePair& Pair)
  * passed to each callback.
  */
 template <typename T>
-struct AGXUNREAL_API FAGX_UpropertyDispatcher
+struct FAGX_UpropertyDispatcher
 {
 public:
 	using UpdatePropertyFunction = TFunction<void(T*)>;
