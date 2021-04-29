@@ -3,6 +3,7 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "HAL/Runnable.h"
+#include "HAL/RunnableThread.h"
 
 #include <memory>
 
