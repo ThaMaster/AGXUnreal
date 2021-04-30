@@ -61,7 +61,7 @@ void FWireNodeBarrier::AllocateNativeEyeNode(
 	check(RigidBody.HasNative());
 	const agx::Vec3 LocalLocationAGX = ConvertDisplacement(LocalLocation);
 	agx::RigidBody* Body = RigidBody.GetNative()->Native;
-	NativeRef->Native = new agxWire::BodyFixedNode(Body, LocalLocationAGX);
+	NativeRef->Native = new agxWire::EyeNode(Body, LocalLocationAGX);
 }
 
 void FWireNodeBarrier::AllocateNativeBodyFixedNode(
