@@ -188,10 +188,20 @@ namespace AGX_WireComponent_helpers
 	public:
 		FString Message;
 	};
+
+	FVector MoveLocationBetweenLocalTransforms(
+		const FTransform& SourceTransform, const FTransform& TargetTransform,
+		const FVector& LocalLocation)
+	{
+		FTransform SourceToTarget = SourceTransform.GetRelativeTransform(TargetTransform);
+		return SourceToTarget.TransformPosition(LocalLocation);
+	}
 }
 
 void UAGX_WireComponent::CreateNative()
 {
+	using namespace AGX_WireComponent_helpers;
+
 	check(!HasNative());
 	check(!GIsReconstructingBlueprintInstances);
 	NativeBarrier.AllocateNative(Radius, ResolutionPerUnitLength);
@@ -217,9 +227,9 @@ void UAGX_WireComponent::CreateNative()
 				check(BodyComponent);
 				FRigidBodyBarrier* NativeBody = BodyComponent->GetOrCreateNative();
 				check(NativeBody);
-				const FTransform& Transform = BodyComponent->GetComponentTransform();
-				const FVector LocalLocation =
-					Transform.InverseTransformPosition(RouteNode.Location);
+				const FVector LocalLocation = MoveLocationBetweenLocalTransforms(
+					GetComponentTransform(), BodyComponent->GetComponentTransform(),
+					RouteNode.Location);
 				NodeBarrier.AllocateNativeEyeNode(*NativeBody, LocalLocation);
 				break;
 			}
@@ -229,9 +239,9 @@ void UAGX_WireComponent::CreateNative()
 				check(BodyComponent);
 				FRigidBodyBarrier* NativeBody = BodyComponent->GetOrCreateNative();
 				check(NativeBody);
-				const FTransform& Transform = BodyComponent->GetComponentTransform();
-				const FVector LocalLocation =
-					Transform.InverseTransformPosition(RouteNode.Location);
+				const FVector LocalLocation = MoveLocationBetweenLocalTransforms(
+					GetComponentTransform(), BodyComponent->GetComponentTransform(),
+					RouteNode.Location);
 				NodeBarrier.AllocateNativeBodyFixedNode(*NativeBody, LocalLocation);
 				break;
 			}
@@ -240,7 +250,6 @@ void UAGX_WireComponent::CreateNative()
 	}
 
 	{
-		using namespace AGX_WireComponent_helpers;
 		FAGXWireNotifyBuffer Messages;
 		UAGX_Simulation::GetFrom(this)->AddWire(*this);
 		if (!IsInitialized())
