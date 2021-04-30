@@ -108,9 +108,6 @@ private:
 	/// Called to generate the default (non-opened) view of the node type combo box.
 	FText OnGetNodeTypeLabel() const;
 
-	/// Called for each entry in the RigidBody combo box, to generate the list entries.
-	TSharedRef<SWidget> OnGetRigidBodyEntryWidget(TSharedPtr<FString> InComboString);
-
 	// Setters.
 
 	/// Called when the end-user selects an entry in the node type combo box.
@@ -134,6 +131,9 @@ private:
 
 	/** Called to limit the set of Actors that can be selected as the rigid body owner. */
 	void OnGetActorFilters(TSharedPtr<SceneOutliner::FOutlinerFilters>& Filters);
+
+	/// Called for each entry in the RigidBody combo box, to generate the list entries.
+	TSharedRef<SWidget> OnGetRigidBodyEntryWidget(TSharedPtr<FString> InComboString);
 
 	// Setters.
 
@@ -186,7 +186,7 @@ private:
 	/**
 	 * @return true if we have a wire and a node index that is valid for that wire.
 	 */
-	bool HasWireAndNodeSelection();
+	bool HasWireAndNodeSelection() const;
 
 	/**
 	 * Update the Details Panel state from the selected wire and node.
@@ -504,9 +504,154 @@ namespace WireNodeDetails_helpers
 	}
 }
 
-bool FWireNodeDetails::HasWireAndNodeSelection()
+// Begin Location getters.
+
+TOptional<float> FWireNodeDetails::OnGetLocationX() const
 {
-	return Wire != nullptr && Wire->RouteNodes.IsValidIndex(SelectedNodeIndex);
+	return LocationX;
+}
+
+TOptional<float> FWireNodeDetails::OnGetLocationY() const
+{
+	return LocationY;
+}
+
+TOptional<float> FWireNodeDetails::OnGetLocationZ() const
+{
+	return LocationZ;
+}
+
+// Begin location setters.
+
+void FWireNodeDetails::OnSetLocation(float NewValue, ETextCommit::Type CommitInfo, int32 Axis)
+{
+	if (!HasWireAndNodeSelection())
+	{
+		return;
+	}
+
+	const FScopedTransaction Transaction(LOCTEXT("SetWireNodeLocation", "Set wire node location"));
+	Wire->Modify();
+
+	FVector Location = Wire->RouteNodes[SelectedNodeIndex].Location;
+	Location.Component(Axis) = NewValue;
+	Wire->RouteNodes[SelectedNodeIndex].Location = Location;
+
+	FComponentVisualizer::NotifyPropertyModified(
+		Wire, FindFProperty<FProperty>(
+			UAGX_WireComponent::StaticClass(),
+			GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
+}
+
+// Begin node type getters.
+
+/// @todo Hacky import from AGX_WireComponentVisualizer.cpp. Decide where to put this function.
+FLinearColor WireNodeTypeToColor(EWireNodeType Type);
+
+FLinearColor WireNodeTypeIndexToColor(int32 Type)
+{
+	return WireNodeTypeToColor(static_cast<EWireNodeType>(Type));
+}
+
+TSharedRef<SWidget> FWireNodeDetails::OnGetNodeTypeEntryWidget(TSharedPtr<FString> InComboString)
+{
+	UE_LOG(
+		LogAGX, Warning, TEXT("FWireNodeDetails::OnGetNodeTypeEntryWidget('%s')"), **InComboString);
+	const int32 EnumIndex = WireNodeTypes.Find(InComboString);
+	const FLinearColor Color = WireNodeTypeIndexToColor(EnumIndex);
+	// clang-format off
+	return SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		[
+			SNew(STextBlock)
+			.Text(FText::FromString(*InComboString))
+		]
+		+ SHorizontalBox::Slot()
+		[
+			SNew(SColorBlock)
+			.Color(Color)
+		];
+	// clang-format on
+}
+
+FText FWireNodeDetails::OnGetNodeTypeLabel() const
+{
+	if (NodeType.IsSet())
+	{
+		const int32 EnumIndex = static_cast<int32>(NodeType.GetValue());
+		return FText::FromString(*WireNodeTypes[EnumIndex]);
+	}
+	else
+	{
+		return LOCTEXT("NoSelection", "(Nothing Selected)");
+	}
+}
+
+// Begin node type setters.
+
+void FWireNodeDetails::OnSetNodeType(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo)
+{
+	using namespace WireNodeDetails_helpers;
+
+	if (bIsRunningCallback)
+	{
+		return;
+	}
+	TGuardValue<bool> GuardIsRunningCallback(bIsRunningCallback, true);
+
+	UE_LOG(LogAGX, Warning, TEXT("FWireNodeDetails::OnSetNodeType"));
+
+	if (!HasWireAndNodeSelection())
+	{
+		return;
+	}
+
+	FWireRoutingNode& Node = Wire->RouteNodes[SelectedNodeIndex];
+
+	const int32 EnumIndex = WireNodeTypes.Find(NewValue);
+	const EWireNodeType NewNodeType = static_cast<EWireNodeType>(EnumIndex);
+
+	const bool OldHadBody = NodeTypeHasBody(Node.NodeType);
+	const bool NewHasBody = NodeTypeHasBody(NewNodeType);
+	if (!OldHadBody && NewHasBody)
+	{
+		// The RigidBody selector is about to be shown. Prepare it's backing storage.
+		RebuildRigidBodyNamesComboBox2(
+			*BodyNameComboBox, RigidBodyNames, Node.RigidBody.BodyName.ToString(),
+			Node.RigidBody.OwningActor);
+	}
+
+	const FScopedTransaction Transaction(LOCTEXT("SetWireNodeType", "Set wire node type"));
+	Wire->Modify();
+
+	Wire->RouteNodes[SelectedNodeIndex].NodeType = NewNodeType;
+	FComponentVisualizer::NotifyPropertyModified(
+		Wire, FindFProperty<FProperty>(
+			UAGX_WireComponent::StaticClass(),
+			GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
+}
+
+// Begin rigid body getters.
+
+FText FWireNodeDetails::OnGetRigidBodyLabel() const
+{
+	if (!HasWireAndNodeSelection())
+	{
+		return LOCTEXT("NoSelection", "(Nothing Selected)");
+	}
+
+	return FText::FromName(Wire->RouteNodes[SelectedNodeIndex].RigidBody.BodyName);
+}
+
+FText FWireNodeDetails::OnGetRigidBodyOwnerLabel() const
+{
+	if (!HasWireAndNodeSelection())
+	{
+		return LOCTEXT("NoSelection", "(Nothing Selected)");
+	}
+
+	const FString Label = GetLabelSafe(Wire->RouteNodes[SelectedNodeIndex].RigidBody.OwningActor);
+	return FText::FromString(Label);
 }
 
 bool FWireNodeDetails::OnGetHasRigidBody(const AActor* Actor)
@@ -515,6 +660,64 @@ bool FWireNodeDetails::OnGetHasRigidBody(const AActor* Actor)
 		[](const UActorComponent* const C) { return C->IsA<UAGX_RigidBodyComponent>(); });
 
 	return It != nullptr;
+}
+
+void FWireNodeDetails::OnGetAllowedClasses(TArray<const UClass*>& AllowedClasses)
+{
+	AllowedClasses.Add(AActor::StaticClass());
+}
+
+void FWireNodeDetails::OnGetActorFilters(TSharedPtr<SceneOutliner::FOutlinerFilters>& Filters)
+{
+	UE_LOG(LogAGX, Warning, TEXT("FWireNodeDetails::OnGetActorFilters"));
+	/// @todo What should we do here?
+}
+
+TSharedRef<SWidget> FWireNodeDetails::OnGetRigidBodyEntryWidget(TSharedPtr<FString> InComboString)
+{
+	UE_LOG(
+		LogAGX, Warning, TEXT("FWireNodeDetails::OnGetRigidBodyEntryWidget('%s')"),
+		**InComboString);
+	return SNew(STextBlock).Text(FText::FromString(*InComboString));
+}
+
+// Begin rigid body setters.
+
+void FWireNodeDetails::OnSetRigidBody(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo)
+{
+	if (bIsRunningCallback)
+	{
+		return;
+	}
+	TGuardValue<bool> GuardIsRunningCallback(bIsRunningCallback, true);
+
+	if (!HasWireAndNodeSelection())
+	{
+		return;
+	}
+
+	FWireRoutingNode& Node = Wire->RouteNodes[SelectedNodeIndex];
+
+	FName NewName = NewValue.IsValid() ? FName(*NewValue) : NAME_None;
+	if (NewName == Node.RigidBody.BodyName)
+	{
+		return;
+	}
+
+	UE_LOG(LogAGX, Warning, TEXT("FWireNodeDetails::OnSetRigidBody"));
+
+	const FScopedTransaction Transaction(
+		LOCTEXT("SetWireNodeRigidBodyName", "Set Wire Node Rigid Body Name"));
+	Wire->Modify();
+
+	if (NewValue.IsValid())
+	{
+		Node.RigidBody.BodyName = FName(*NewValue);
+	}
+	else
+	{
+		Node.RigidBody.BodyName = NAME_None;
+	}
 }
 
 void FWireNodeDetails::OnSetRigidBodyOwner(AActor* Actor)
@@ -561,15 +764,9 @@ void FWireNodeDetails::OnSetRigidBodyOwner(AActor* Actor)
 				  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
 }
 
-void FWireNodeDetails::OnGetAllowedClasses(TArray<const UClass*>& AllowedClasses)
+bool FWireNodeDetails::HasWireAndNodeSelection() const
 {
-	AllowedClasses.Add(AActor::StaticClass());
-}
-
-void FWireNodeDetails::OnGetActorFilters(TSharedPtr<SceneOutliner::FOutlinerFilters>& Filters)
-{
-	UE_LOG(LogAGX, Warning, TEXT("FWireNodeDetails::OnGetActorFilters"));
-	/// @todo What should we do here?
+	return Wire != nullptr && Wire->RouteNodes.IsValidIndex(SelectedNodeIndex);
 }
 
 void FWireNodeDetails::UpdateValues()
@@ -680,221 +877,6 @@ EVisibility FWireNodeDetails::NodeHasRigidBody() const
 	else
 	{
 		return EVisibility::Collapsed;
-	}
-}
-
-TOptional<float> FWireNodeDetails::OnGetLocationX() const
-{
-	return LocationX;
-}
-
-TOptional<float> FWireNodeDetails::OnGetLocationY() const
-{
-	return LocationY;
-}
-
-TOptional<float> FWireNodeDetails::OnGetLocationZ() const
-{
-	return LocationZ;
-}
-
-void FWireNodeDetails::OnSetLocation(float NewValue, ETextCommit::Type CommitInfo, int32 Axis)
-{
-	if (!HasWireAndNodeSelection())
-	{
-		return;
-	}
-
-	const FScopedTransaction Transaction(LOCTEXT("SetWireNodeLocation", "Set wire node location"));
-	Wire->Modify();
-
-	FVector Location = Wire->RouteNodes[SelectedNodeIndex].Location;
-	Location.Component(Axis) = NewValue;
-	Wire->RouteNodes[SelectedNodeIndex].Location = Location;
-
-	FComponentVisualizer::NotifyPropertyModified(
-		Wire, FindFProperty<FProperty>(
-				  UAGX_WireComponent::StaticClass(),
-				  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
-}
-
-/// @todo The color stuff is copy/paste from AGX_WireComponentVisualizer.cpp. Figure out how to have
-/// only one.
-#if 0
-TStaticArray<FLinearColor, 3> CreateWireNodeColors()
-{
-	TStaticArray<FLinearColor, 3> WireNodeColors;
-	WireNodeColors[0] = FLinearColor::Red;
-	WireNodeColors[1] = FLinearColor::Green;
-	WireNodeColors[2] = FLinearColor::Blue;
-	return WireNodeColors;
-}
-
-FLinearColor WireNodeTypeToColor(EWireNodeType Type)
-{
-	static TStaticArray<FLinearColor, 3> WireNodeColors = CreateWireNodeColors();
-	const uint32 I = static_cast<uint32>(Type);
-	return WireNodeColors[I];
-}
-#else
-FLinearColor WireNodeTypeToColor(EWireNodeType Type);
-#endif
-FLinearColor WireNodeTypeIndexToColor(int32 Type)
-{
-	return WireNodeTypeToColor(static_cast<EWireNodeType>(Type));
-}
-
-TSharedRef<SWidget> FWireNodeDetails::OnGetNodeTypeEntryWidget(TSharedPtr<FString> InComboString)
-{
-	UE_LOG(
-		LogAGX, Warning, TEXT("FWireNodeDetails::OnGetNodeTypeEntryWidget('%s')"), **InComboString);
-	const int32 EnumIndex = WireNodeTypes.Find(InComboString);
-	const FLinearColor Color = WireNodeTypeIndexToColor(EnumIndex);
-	// clang-format off
-	return SNew(SHorizontalBox)
-		+ SHorizontalBox::Slot()
-		[
-			SNew(STextBlock)
-			.Text(FText::FromString(*InComboString))
-		]
-		+ SHorizontalBox::Slot()
-		[
-			SNew(SColorBlock)
-			.Color(Color)
-			//.ColorAndOpacity(FSlateColor(Color))
-		];
-	// clang-format on
-}
-
-TSharedRef<SWidget> FWireNodeDetails::OnGetRigidBodyEntryWidget(TSharedPtr<FString> InComboString)
-{
-	UE_LOG(
-		LogAGX, Warning, TEXT("FWireNodeDetails::OnGetRigidBodyEntryWidget('%s')"),
-		**InComboString);
-	return SNew(STextBlock).Text(FText::FromString(*InComboString));
-}
-
-FText FWireNodeDetails::OnGetNodeTypeLabel() const
-{
-	if (NodeType.IsSet())
-	{
-		const int32 EnumIndex = static_cast<int32>(NodeType.GetValue());
-		return FText::FromString(*WireNodeTypes[EnumIndex]);
-	}
-	else
-	{
-		return LOCTEXT("NoSelection", "(Nothing Selected)");
-	}
-}
-
-FText FWireNodeDetails::OnGetRigidBodyLabel() const
-{
-	if (Wire == nullptr || SelectedNodeIndex == INDEX_NONE)
-	{
-		return LOCTEXT("NoSelection", "(Nothing Selected)");
-	}
-
-	if (!Wire->RouteNodes.IsValidIndex(SelectedNodeIndex))
-	{
-		return LOCTEXT("NoSelection", "(Nothing Selected)");
-	}
-
-	return FText::FromName(Wire->RouteNodes[SelectedNodeIndex].RigidBody.BodyName);
-}
-
-FText FWireNodeDetails::OnGetRigidBodyOwnerLabel() const
-{
-	if (Wire == nullptr || SelectedNodeIndex == INDEX_NONE)
-	{
-		return LOCTEXT("NoSelection", "No wire node selected");
-	}
-
-	if (!Wire->RouteNodes.IsValidIndex(SelectedNodeIndex))
-	{
-		// The visibility attributes should prevent this form being seen by the end-user.
-		return LOCTEXT("InvalidSelection", "The wire node selection is invalid.");
-	}
-
-	const FString Label = GetLabelSafe(Wire->RouteNodes[SelectedNodeIndex].RigidBody.OwningActor);
-	return FText::FromString(Label);
-}
-
-void FWireNodeDetails::OnSetNodeType(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo)
-{
-	using namespace WireNodeDetails_helpers;
-
-	if (bIsRunningCallback)
-	{
-		return;
-	}
-	TGuardValue<bool> GuardIsRunningCallback(bIsRunningCallback, true);
-
-	UE_LOG(LogAGX, Warning, TEXT("FWireNodeDetails::OnSetNodeType"));
-
-	if (!HasWireAndNodeSelection())
-	{
-		return;
-	}
-
-	FWireRoutingNode& Node = Wire->RouteNodes[SelectedNodeIndex];
-
-	const int32 EnumIndex = WireNodeTypes.Find(NewValue);
-	const EWireNodeType NewNodeType = static_cast<EWireNodeType>(EnumIndex);
-
-	const bool OldHadBody = NodeTypeHasBody(Node.NodeType);
-	const bool NewHasBody = NodeTypeHasBody(NewNodeType);
-	if (!OldHadBody && NewHasBody)
-	{
-		// The RigidBody selector is about to be shown. Prepare it's backing storage.
-		RebuildRigidBodyNamesComboBox2(
-			*BodyNameComboBox, RigidBodyNames, Node.RigidBody.BodyName.ToString(),
-			Node.RigidBody.OwningActor);
-	}
-
-	const FScopedTransaction Transaction(LOCTEXT("SetWireNodeType", "Set wire node type"));
-	Wire->Modify();
-
-	Wire->RouteNodes[SelectedNodeIndex].NodeType = NewNodeType;
-	FComponentVisualizer::NotifyPropertyModified(
-		Wire, FindFProperty<FProperty>(
-				  UAGX_WireComponent::StaticClass(),
-				  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
-}
-
-void FWireNodeDetails::OnSetRigidBody(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo)
-{
-	if (bIsRunningCallback)
-	{
-		return;
-	}
-	TGuardValue<bool> GuardIsRunningCallback(bIsRunningCallback, true);
-
-	if (!HasWireAndNodeSelection())
-	{
-		return;
-	}
-
-	FWireRoutingNode& Node = Wire->RouteNodes[SelectedNodeIndex];
-
-	FName NewName = NewValue.IsValid() ? FName(*NewValue) : NAME_None;
-	if (NewName == Node.RigidBody.BodyName)
-	{
-		return;
-	}
-
-	UE_LOG(LogAGX, Warning, TEXT("FWireNodeDetails::OnSetRigidBody"));
-
-	const FScopedTransaction Transaction(
-		LOCTEXT("SetWireNodeRigidBodyName", "Set Wire Node Rigid Body Name"));
-	Wire->Modify();
-
-	if (NewValue.IsValid())
-	{
-		Node.RigidBody.BodyName = FName(*NewValue);
-	}
-	else
-	{
-		Node.RigidBody.BodyName = NAME_None;
 	}
 }
 
