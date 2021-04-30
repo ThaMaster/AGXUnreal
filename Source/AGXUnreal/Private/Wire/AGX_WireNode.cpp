@@ -20,3 +20,8 @@ FVector FAGX_WireNode::GetWorldLocation() const
 {
 	return Barrier.GetWorldLocation();
 }
+
+EWireNodeType FAGX_WireNode::GetType() const
+{
+	return Barrier.GetType();
+}

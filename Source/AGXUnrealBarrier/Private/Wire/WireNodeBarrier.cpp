@@ -98,3 +98,10 @@ FVector FWireNodeBarrier::GetWorldLocation() const
 	check(HasNative());
 	return ConvertDisplacement(NativeRef->Native->getWorldPosition());
 }
+
+EWireNodeType FWireNodeBarrier::GetType() const
+{
+	check(HasNative())
+	agxWire::Node::Type TypeAGX = NativeRef->Native->getType();
+	return Convert(TypeAGX);
+}

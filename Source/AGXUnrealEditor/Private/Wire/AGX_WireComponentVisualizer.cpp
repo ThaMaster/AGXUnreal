@@ -141,7 +141,8 @@ namespace AGX_WireComponentVisualizer_helpers
 			 It.Inc())
 		{
 			FAGX_WireNode Node = It.Get();
-			EWireNodeType NodeType = EWireNodeType::FreeNode; /// \@todo Node.GetNodeType();
+			EWireNodeType NodeType = Node.GetType();
+			//EWireNodeType NodeType = EWireNodeType::FreeNode; /// \@todo Node.OnGetNodeTypeLabel();
 			const FVector Location = Node.GetWorldLocation();
 			PrevLocation =
 				DrawNode(Wire, I, SelectedNodeIndex, NodeType, Location, PrevLocation, PDI);

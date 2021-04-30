@@ -1,5 +1,8 @@
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Wire/AGX_WireEnums.h"
+
 // Unreal Engine includes.
 #include "Math/Vector.h"
 
@@ -29,6 +32,7 @@ public:
 	void ReleaseNative();
 
 	FVector GetWorldLocation() const;
+	EWireNodeType GetType() const;
 
 private:
 	std::unique_ptr<FWireNodeRef> NativeRef;

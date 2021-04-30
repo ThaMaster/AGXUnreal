@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "Wire/AGX_WireEnums.h"
 #include "Wire/WireNodeBarrier.h"
 
 // Unreal Engine includes.
@@ -21,6 +22,7 @@ public:
 	FAGX_WireNode& operator=(const FAGX_WireNode& InOther);
 
 	FVector GetWorldLocation() const;
+	EWireNodeType GetType() const;
 
 private:
 	FWireNodeBarrier Barrier;
