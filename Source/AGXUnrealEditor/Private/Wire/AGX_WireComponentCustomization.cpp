@@ -132,8 +132,8 @@ private:
 	/// Called to limit the set of types that can be picked when selecting rigid body owner.
 	void OnGetAllowedClasses(TArray<const UClass*>& AllowedClasses);
 
-	/ Called to limit the set of Actors that can be selected as the rigid body owner.void
-		OnGetActorFilters(TSharedPtr<SceneOutliner::FOutlinerFilters>& Filters);
+	/// Called to limit the set of Actors that can be selected as the rigid body owner.
+	void OnGetActorFilters(TSharedPtr<SceneOutliner::FOutlinerFilters>& Filters);
 
 	/// Called for each entry in the RigidBody combo box, to generate the list entries.
 	TSharedRef<SWidget> OnGetRigidBodyEntryWidget(TSharedPtr<FString> InComboString);
@@ -143,8 +143,8 @@ private:
 	/// Called when the end-user selects an entry in the rigid body combo box.
 	void OnSetRigidBody(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo);
 
-	/ Called when the end -
-		user picks a rigid body owner Actor.void OnSetRigidBodyOwner(AActor* Actor);
+	/// Called when the end-ser picks a rigid body owner Actor.
+	void OnSetRigidBodyOwner(AActor* Actor);
 
 	/*
 	 * STORAGE
