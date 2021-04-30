@@ -117,31 +117,34 @@ private:
 
 	// Getters.
 
-	/** Called to generate the default (non-opened) view of the rigid body combo box. */
+	/// Called to generate the default (non-opened) view of the rigid body combo box.
 	FText OnGetRigidBodyLabel() const;
 
-	/** Called to generated the label identifying the currently selected body owning Actor. */
+	/// Called to get the color of the Rigid Body name. Used to highlight invalid selections.
+	FSlateColor OnGetRigidBodyNameColor() const;
+
+	/// Called to generated the label identifying the currently selected body owning Actor.
 	FText OnGetRigidBodyOwnerLabel() const;
 
-	/** Called to test if the Actor can be used as the body owner, i.e., if it has a rigid body. */
+	/// Called to test if the Actor can be used as the body owner, i.e., if it has a rigid body.
 	bool OnGetHasRigidBody(const AActor* Actor);
 
-	/** Called to limit the set of types that can be picked when selecting rigid body owner. */
+	/// Called to limit the set of types that can be picked when selecting rigid body owner.
 	void OnGetAllowedClasses(TArray<const UClass*>& AllowedClasses);
 
-	/** Called to limit the set of Actors that can be selected as the rigid body owner. */
-	void OnGetActorFilters(TSharedPtr<SceneOutliner::FOutlinerFilters>& Filters);
+	/ Called to limit the set of Actors that can be selected as the rigid body owner.void
+		OnGetActorFilters(TSharedPtr<SceneOutliner::FOutlinerFilters>& Filters);
 
 	/// Called for each entry in the RigidBody combo box, to generate the list entries.
 	TSharedRef<SWidget> OnGetRigidBodyEntryWidget(TSharedPtr<FString> InComboString);
 
 	// Setters.
 
-	/** Called when the end-user selects an entry in the rigid body combo box. */
+	/// Called when the end-user selects an entry in the rigid body combo box.
 	void OnSetRigidBody(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo);
 
-	/** Called when the end-user picks a rigid body owner Actor. */
-	void OnSetRigidBodyOwner(AActor* Actor);
+	/ Called when the end -
+		user picks a rigid body owner Actor.void OnSetRigidBodyOwner(AActor* Actor);
 
 	/*
 	 * STORAGE
@@ -236,6 +239,9 @@ FWireNodeDetails::FWireNodeDetails(UAGX_WireComponent* InWire)
 		WireNodeTypes.Add(
 			MakeShareable(new FString(NodeTypesEnum->GetNameStringByIndex(EnumIndex))));
 	}
+
+	// Should always have the emptry string entry in the body names list.
+	RigidBodyNames.Add(MakeShareable(new FString("")));
 
 	// Build initial state. Clearing Wire and SelectedNodeIndex to ensure that this first selection
 	// is seen as a new one.
@@ -380,6 +386,7 @@ void FWireNodeDetails::GenerateChildContent(IDetailChildrenBuilder& ChildrenBuil
 		[
 			SNew(STextBlock)
 			.Text(this, &FWireNodeDetails::OnGetRigidBodyLabel)
+			.ColorAndOpacity(this, &FWireNodeDetails::OnGetRigidBodyNameColor)
 		]
 	];
 
@@ -565,8 +572,8 @@ void FWireNodeDetails::OnSetLocation(float NewValue, ETextCommit::Type CommitInf
 
 	FComponentVisualizer::NotifyPropertyModified(
 		Wire, FindFProperty<FProperty>(
-			UAGX_WireComponent::StaticClass(),
-			GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
+				  UAGX_WireComponent::StaticClass(),
+				  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
 }
 
 // Begin node type getters.
@@ -656,8 +663,8 @@ void FWireNodeDetails::OnSetNodeType(TSharedPtr<FString> NewValue, ESelectInfo::
 
 	FComponentVisualizer::NotifyPropertyModified(
 		Wire, FindFProperty<FProperty>(
-			UAGX_WireComponent::StaticClass(),
-			GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
+				  UAGX_WireComponent::StaticClass(),
+				  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
 }
 
 // Begin rigid body getters.
@@ -670,6 +677,28 @@ FText FWireNodeDetails::OnGetRigidBodyLabel() const
 	}
 
 	return FText::FromName(Wire->RouteNodes[SelectedNodeIndex].RigidBody.BodyName);
+}
+
+FSlateColor FWireNodeDetails::OnGetRigidBodyNameColor() const
+{
+	// Here I would like to get the default text color so that the Rigid Body name looks just like
+	// it would if we hadn't had this callback in most cases. But I don't know how to do that, so
+	// defaulting to black for now.
+	const FLinearColor DefaultColor = FLinearColor::Black;
+	// The following are some of my attempts.
+	// FLinearColor DefaultColor = FSlateColor::UseForeground().GetColor(FWidgetStyle());
+	// FLinearColor DefaultColor = FCoreStyle::GetDefaultFont().Get()->GetColor(FWidgetStyle());
+
+	if (BodyNameComboBox->GetSelectedItem().IsValid() &&
+		BodyNameComboBox->GetSelectedItem() == RigidBodyNames[0])
+	{
+		// The first element of RigidBodyNames is the "unknown" marker. It is selected when the
+		// underlying node doesn't have a Rigid Body name, and when the name it does have doen't
+		// correspond to any Rigid Body in the Rigid Body owning Actor.
+		return FSlateColor(FLinearColor::Red);
+	}
+
+	return FSlateColor(DefaultColor);
 }
 
 FText FWireNodeDetails::OnGetRigidBodyOwnerLabel() const
