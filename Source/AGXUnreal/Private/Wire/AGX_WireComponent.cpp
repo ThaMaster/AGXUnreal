@@ -204,14 +204,14 @@ void UAGX_WireComponent::CreateNative()
 		FWireNodeBarrier NodeBarrier;
 		switch (RouteNode.NodeType)
 		{
-			case EWireNodeType::FreeNode:
+			case EWireNodeType::Free:
 			{
 				const FTransform& LocalToWorld = GetComponentTransform();
 				const FVector WorldLocation = LocalToWorld.TransformPosition(RouteNode.Location);
 				NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 				break;
 			}
-			case EWireNodeType::EyeNode:
+			case EWireNodeType::Eye:
 			{
 				UAGX_RigidBodyComponent* BodyComponent = RouteNode.RigidBody.GetRigidBody();
 				check(BodyComponent);
@@ -223,7 +223,7 @@ void UAGX_WireComponent::CreateNative()
 				NodeBarrier.AllocateNativeEyeNode(*NativeBody, LocalLocation);
 				break;
 			}
-			case EWireNodeType::BodyFixedNode:
+			case EWireNodeType::BodyFixed:
 			{
 				UAGX_RigidBodyComponent* BodyComponent = RouteNode.RigidBody.GetRigidBody();
 				check(BodyComponent);

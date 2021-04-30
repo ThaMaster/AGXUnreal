@@ -3,6 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_RigidBodyReference.h"
 #include "AGX_WireRenderIterator.h"
+#include "Wire/AGX_WireEnums.h"
 #include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
@@ -12,14 +13,6 @@
 
 class UAGX_ShapeMaterialBase;
 
-/** Types of wire nodes we have */
-UENUM(BlueprintType)
-enum class EWireNodeType : uint8
-{
-	FreeNode, /// \todo Make these match the AGX Dynamics enum, if there is one.
-	EyeNode,
-	BodyFixedNode
-};
 
 USTRUCT(BlueprintType)
 struct FWireRoutingNode
@@ -35,13 +28,13 @@ struct FWireRoutingNode
 	UPROPERTY(EditAnywhere, Category = "Wire")
 	FAGX_RigidBodyReference RigidBody;
 	FWireRoutingNode()
-		: NodeType(EWireNodeType::FreeNode)
+		: NodeType(EWireNodeType::Free)
 		, Location(FVector::ZeroVector)
 	{
 	}
 
 	FWireRoutingNode(const FVector& InLocation)
-		: NodeType(EWireNodeType::FreeNode)
+		: NodeType(EWireNodeType::Free)
 		, Location(InLocation)
 	{
 	}

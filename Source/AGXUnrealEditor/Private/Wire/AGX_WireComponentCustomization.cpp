@@ -6,6 +6,7 @@
 #include "Utilities/AGX_StringUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireComponentVisualizer.h"
+#include "Wire/AGX_WireEnums.h"
 
 // Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
@@ -424,7 +425,7 @@ namespace WireNodeDetails_helpers
 {
 	bool NodeTypeHasBody(EWireNodeType NodeType)
 	{
-		return NodeType == EWireNodeType::BodyFixedNode || NodeType == EWireNodeType::EyeNode;
+		return NodeType == EWireNodeType::BodyFixed || NodeType == EWireNodeType::Eye;
 	}
 
 	/**

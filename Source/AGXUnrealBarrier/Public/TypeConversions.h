@@ -9,6 +9,7 @@
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 #include "RigidBodyBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
+#include "Wire/AGX_WireEnums.h"
 
 // Unreal Engine includes.
 #include "Containers/UnrealString.h"
@@ -29,6 +30,7 @@
 #include <agx/Vec2.h>
 #include <agx/Vec3.h>
 #include <agxModel/TwoBodyTire.h>
+#include <agxWire/Node.h>
 #include "EndAGXIncludes.h"
 
 // Standard library includes.
@@ -595,4 +597,52 @@ inline uint32 StringTo32BitFnvHash(const FString& StringUnreal)
 	}
 
 	return hash;
+}
+
+inline EWireNodeType Convert(agxWire::Node::Type Type)
+{
+	switch (Type)
+	{
+		case agxWire::Node::FREE:
+			return EWireNodeType::Free;
+		case agxWire::Node::EYE:
+			return EWireNodeType::Eye;
+		case agxWire::Node::BODY_FIXED:
+			return EWireNodeType::BodyFixed;
+		case agxWire::Node::CONTACT:
+		case agxWire::Node::SHAPE_CONTACT:
+		case agxWire::Node::CONNECTING:
+		case agxWire::Node::STOP:
+		case agxWire::Node::MISSING:
+		case agxWire::Node::NOT_DEFINED:
+			return EWireNodeType::Other;
+	}
+}
+
+inline agxWire::Node::Type Convert(EWireNodeType Type)
+{
+	switch (Type)
+	{
+		case EWireNodeType::Free:
+			return agxWire::Node::FREE;
+		case EWireNodeType::Eye:
+			return agxWire::Node::EYE;
+		case EWireNodeType::BodyFixed:
+			return agxWire::Node::BODY_FIXED;
+		case EWireNodeType::Other:
+			return agxWire::Node::NOT_DEFINED;
+	}
+
+}
+
+inline EWireNodeNativeType ConvertNative(agxWire::Node::Type Type)
+{
+	// The values in EWireNodeNativeType must match those in agxWire::Node::Type.
+	return static_cast<EWireNodeNativeType>(Type);
+}
+
+inline agxWire::Node::Type ConvertNative(EWireNodeNativeType Type)
+{
+	// The values in EWireNodeNativeType must match those in agxWire::Node::Type.
+	return static_cast<agxWire::Node::Type>(Type);
 }
