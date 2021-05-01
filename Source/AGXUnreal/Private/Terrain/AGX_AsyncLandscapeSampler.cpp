@@ -22,7 +22,7 @@ void FAGX_AsyncLandscapeSampler::StartAsync()
 {
 	if (Thread != nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("StartAsync called with thread already running."));
+		UE_LOG(LogAGX, Error, TEXT("StartAsync called with thread already running."));
 		return;
 	}
 
@@ -53,7 +53,7 @@ const TArray<float>& FAGX_AsyncLandscapeSampler::GetHeights() const
 {
 	if (Thread != nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("GetHeights called while thread is running."));
+		UE_LOG(LogAGX, Error, TEXT("GetHeights called while thread is running."));
 	}
 
 	return Heights;
