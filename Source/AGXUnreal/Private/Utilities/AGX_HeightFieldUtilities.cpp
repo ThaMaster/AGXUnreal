@@ -15,7 +15,7 @@ namespace
 	TArray<float> GetHeights(ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
 	{
 		// One thread per Y-side vertex, but at most 4 threads.
-		const int32 NumThreads = FMath::Clamp(LandscapeSizeInfo.NumVerticesSideY, 1, 4);
+		const int32 NumThreads = FMath::Max(FPlatformMisc::NumberOfCores() - 1, 1);
 
 		// Split the Landscape up between the threads so that each thread gets an equal range of
 		// Y-side vertices, except for the last thread that also gets any remainder from the
