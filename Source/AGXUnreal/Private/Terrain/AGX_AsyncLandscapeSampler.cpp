@@ -137,6 +137,13 @@ namespace
 
 uint32 FAGX_AsyncLandscapeSampler::Run()
 {
+	if (SpanX.End <= SpanX.Start || SpanY.End <= SpanY.Start)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid VertexSpan in AsyncLandscapeSampler. The upper bound must be "
+			"greater than the lower bound."));
+		return 0;
+	}
+
 	const int32 NumVertices = (SpanX.End - SpanX.Start) * (SpanY.End - SpanY.Start);
 	check(NumVertices >= 0);
 
