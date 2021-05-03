@@ -23,6 +23,9 @@ public:
 	const FWireRef* GetNative() const;
 	void ReleaseNative();
 
+	void SetLinearVelocityDamping(double Damping);
+	double GetLinearVelocityDamping() const;
+
 	void AddRouteNode(FWireNodeBarrier& RoutingNode);
 	bool IsInitialized() const;
 	double GetRestLength() const;

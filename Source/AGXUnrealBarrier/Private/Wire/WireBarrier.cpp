@@ -61,6 +61,18 @@ void FWireBarrier::ReleaseNative()
 	NativeRef->Native = nullptr;
 }
 
+void FWireBarrier::SetLinearVelocityDamping(double Damping)
+{
+	check(HasNative());
+	NativeRef->Native->setLinearVelocityDamping(Damping);
+}
+
+double FWireBarrier::GetLinearVelocityDamping() const
+{
+	check(HasNative());
+	return NativeRef->Native->getLinearVelocityDamping();
+}
+
 void FWireBarrier::AddRouteNode(FWireNodeBarrier& RoutingNode)
 {
 	check(HasNative());

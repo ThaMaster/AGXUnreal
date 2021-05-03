@@ -207,6 +207,8 @@ void UAGX_WireComponent::CreateNative()
 	NativeBarrier.AllocateNative(Radius, ResolutionPerUnitLength);
 	check(HasNative()); /// @todo Consider better error handling than 'check'.
 
+	NativeBarrier.SetLinearVelocityDamping(LinearVelocityDamping);
+
 	/// @todo Not sure if we should expose Scale Constant or not.
 	// NativeBarrier.SetScaleConstant(ScaleConstant);
 
