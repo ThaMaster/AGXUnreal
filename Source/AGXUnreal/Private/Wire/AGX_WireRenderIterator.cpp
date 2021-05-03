@@ -35,6 +35,10 @@ bool FAGX_WireRenderIterator::operator!=(const FAGX_WireRenderIterator& InOther)
 
 FAGX_WireNode FAGX_WireRenderIterator::Get() const
 {
+	if (!HasNative())
+	{
+		return FAGX_WireNode();
+	}
 	return {Barrier.Get()};
 }
 

@@ -25,6 +25,8 @@ public:
 	FAGX_WireNode(const FAGX_WireNode& InOther);
 	FAGX_WireNode(FWireNodeBarrier&& InBarrier);
 
+	bool HasNative() const;
+
 	FAGX_WireNode& operator=(const FAGX_WireNode& InOther);
 
 	/// @return The world location of this node.

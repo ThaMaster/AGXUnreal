@@ -32,7 +32,11 @@ public:
 
 	/**
 	 * Get the Wire Node currently pointed to by this iterator. Must not be called when this
-	 * iterator compares equal to GetRenderEndIterator.
+	 * iterator compares equal to GetRenderEndIterator or when HasNative returns false. Iterators
+	 * fetched from an UAGX_WireComponent for which HasRenderNodes returns true i guaranteed to have
+	 * a native, and all iterators produced by Inc, Dec, Next, and Prev on such iterators will also
+	 * be guaranteed to have a native until an iterator comparing equal to the return value of
+	 * GetRenderEndIterator is reached.
 	 *
 	 * @return The Wire Node currently pointed to by this iterator.
 	 */

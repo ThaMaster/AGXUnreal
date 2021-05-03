@@ -10,6 +10,11 @@ FAGX_WireNode::FAGX_WireNode(FWireNodeBarrier&& InBarrier)
 {
 }
 
+bool FAGX_WireNode::HasNative() const
+{
+	return Barrier.HasNative();
+}
+
 FAGX_WireNode& FAGX_WireNode::operator=(const FAGX_WireNode& InOther)
 {
 	Barrier = InOther.Barrier;
