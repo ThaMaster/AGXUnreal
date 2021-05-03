@@ -629,6 +629,7 @@ inline agxWire::Node::Type Convert(EWireNodeType Type)
 			return agxWire::Node::EYE;
 		case EWireNodeType::BodyFixed:
 			return agxWire::Node::BODY_FIXED;
+		case EWireNodeType::NUM_USER_CREATABLE:
 		case EWireNodeType::Other:
 			return agxWire::Node::NOT_DEFINED;
 	}

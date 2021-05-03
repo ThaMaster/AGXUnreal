@@ -235,7 +235,7 @@ FWireNodeDetails::FWireNodeDetails(UAGX_WireComponent* InWire)
 	// Create backing storage for the node type combo box.
 	UEnum* NodeTypesEnum = StaticEnum<EWireNodeType>();
 	check(NodeTypesEnum);
-	for (int32 EnumIndex = 0; EnumIndex < NodeTypesEnum->NumEnums() - 1; ++EnumIndex)
+	for (int32 EnumIndex = 0; EnumIndex < (int32)EWireNodeType::NUM_USER_CREATABLE; ++EnumIndex)
 	{
 		WireNodeTypes.Add(
 			MakeShareable(new FString(NodeTypesEnum->GetNameStringByIndex(EnumIndex))));

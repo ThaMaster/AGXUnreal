@@ -13,6 +13,7 @@ enum class EWireNodeType : uint8
 	Free,
 	Eye,
 	BodyFixed,
+	NUM_USER_CREATABLE,
 	Other // Any node type in AGX Dynamics that we don't allow a user to create directly.
 };
 
