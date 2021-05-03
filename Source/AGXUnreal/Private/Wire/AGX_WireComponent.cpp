@@ -207,6 +207,9 @@ void UAGX_WireComponent::CreateNative()
 	NativeBarrier.AllocateNative(Radius, ResolutionPerUnitLength);
 	check(HasNative()); /// @todo Consider better error handling than 'check'.
 
+	/// @todo Not sure if we should expose Scale Constant or not.
+	// NativeBarrier.SetScaleConstant(ScaleConstant);
+
 	/// @todo Create AGX Dynamics route notes and initialize the wire.
 	for (int32 I = 0; I < RouteNodes.Num(); ++I)
 	{

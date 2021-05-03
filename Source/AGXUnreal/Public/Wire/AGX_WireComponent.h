@@ -13,20 +13,36 @@
 
 class UAGX_ShapeMaterialBase;
 
-
+/**
+ * Route nodes are used to specify the initial route of the wire. Each node has a location but
+ * no orientation. Some members are only used for some node types, such as RigidBody which is only
+ * used by Eye and BodyFixed nodes.
+ */
 USTRUCT(BlueprintType)
 struct FWireRoutingNode
 {
 	GENERATED_BODY();
 
+	/**
+	 * The type of wire node, e.g., Free, Eye, BodyFixed, etc.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
 	EWireNodeType NodeType;
 
+	/**
+	 * The location of this node relative to the Wire Component.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
 	FVector Location;
 
+	/**
+	 * The Rigid Body that an Eye or BodyFixed node should be attached to.
+	 *
+	 * Ignored for other node types.
+	 */
 	UPROPERTY(EditAnywhere, Category = "Wire")
 	FAGX_RigidBodyReference RigidBody;
+
 	FWireRoutingNode()
 		: NodeType(EWireNodeType::Free)
 		, Location(FVector::ZeroVector)
@@ -43,8 +59,10 @@ struct FWireRoutingNode
 /**
  * A Wire is a lumped element structure with dynamic resolution, the wire will adapt the resolution
  * so that no unwanted vibrations will occur. The Wire is initialized from a set of routing nodes
- * that the user places but during runtime nodes may be created and removed as necessary. There are
- * different types of nodes and some nodes are persistent.
+ * that the user places but during runtime nodes will be created and removed as necessary so the
+ * routing nodes cannot be used to inspect the current wire path. Instead use the render iterator
+ * to iterate over the wire, which will give access to FAGX_WireNode instances, which wrap the
+ * underlying AGX Dynamics wire nodes.
  */
 UCLASS(ClassGroup = "AGX", Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_WireComponent : public USceneComponent
@@ -64,7 +82,7 @@ public:
 	float Radius = 1.5f;
 
 	/**
-	 * The maximum number of mass nodes per cm.
+	 * The maximum number of mass nodes per cm during simulation.
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire",
@@ -77,16 +95,17 @@ public:
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire",
 		Meta = (ClampMin = "0", UIMin = "0"))
-	float LinearVelocityDamping;
+	float LinearVelocityDamping = 0.0f;
 
-	/**
-	 * Value that indicates how likely it is that mass nodes appears along the wire. Higher value
-	 * means more likely.
-	 */
-	UPROPERTY(
-		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire",
-		Meta = (ClampMin = "0", UIMin = "0"))
-	float ScaleConstant;
+	// Not sure what this is, or if we should expose it.
+	///**
+	// * Value that indicates how likely it is that mass nodes appears along the wire. Higher value
+	// * means more likely.
+	// */
+	// UPROPERTY(
+	//	EditAnywhere, BlueprintReadWrite, Category = "AGX Wire",
+	//	Meta = (ClampMin = "0", UIMin = "0"))
+	// float ScaleConstant = 0.35f;
 
 	/**
 	 * The physical material of the wire.
@@ -98,53 +117,114 @@ public:
 	UAGX_ShapeMaterialBase* PhysicalMaterial;
 
 	/**
-	 * A list of nodes that are used to initialize the wire.
+	 * An array of nodes that are used to initialize the wire.
 	 *
-	 * At BeginPlay these nodes are used to create simulation nodes so the route nodes cannot be
-	 * used to track the motion of the wire.
+	 * At BeginPlay these nodes are used to create simulation nodes and after that the route nodes
+	 * aren't used anymore. Use the render iterator to track the motion of the wire over time.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire")
 	TArray<FWireRoutingNode> RouteNodes;
 
+	/**
+	 * Add a new route node to the wire.
+	 *
+	 * This should be called before BeginPlay since route nodes are only used during initialization.
+	 *
+	 * @param InNode The node to add.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void AddNode(const FWireRoutingNode& InNode);
 
+	/**
+	 * Add a default-constructed route node at the designated local location to the end of the node
+	 * array.
+	 *
+	 * @param InLocation The location of the node, relative to the Wire Component.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void AddNodeAtLocation(const FVector& InLocation);
 
+	/**
+	 * Add a default-constructed route node at the designated index in the route array, pushing all
+	 * subsequent nodes one index.
+	 *
+	 * @param InNode The route node to add.
+	 * @param InIndex The place in the route node array to add the node at.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex);
 
+	/**
+	 * Add a default-constructed route node, placed at the given local location, at the designated
+	 * index in the route array, pushing all subsequent nodes one index..
+	 *
+	 * @param InLocation The location of the new node relative to the Wire Component.
+	 * @param InIndex The place in the route node array to add the new node at.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
 
+	/**
+	 * Remove the route node at the given index.
+	 * @param InIndex The index of the node to remove.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void RemoveNode(int32 InIndex);
 
+	/**
+	 * Set the locaion of the node at the given index. The location is relative to the wire
+	 * component.
+	 *
+	 * @param InIndex The index of the node to remove.
+	 * @param InLocation The new local location for the node.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void SetNodeLocation(int32 InIndex, const FVector& InLocation);
 
 	/**
 	 * A wire is initialized when the AGX Dynamics object has been created and added to the AGX
-	 * Dynamics simulation. At this point that routing nodes become inactive and the node iterator
-	 * should be used to inspect the nodes.
-	 * @return
+	 * Dynamics simulation, which happens in BeginPlay. At this point that routing nodes become
+	 * inactive and the render iterator should be used to inspect the simulation nodes.
+	 *
+	 * The initialization may fail, which will produce a wire for which HasNative is true but
+	 * IsInitialized is false.
+	 *
+	 * @return True if the wire has been initialized.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	bool IsInitialized() const;
 
+	/// @return An iterator pointing to the first FAGX_WireNode simulation node.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	FAGX_WireRenderIterator GetRenderBeginIterator() const;
 
+	/// @return An iterator pointing one-past-end of the simulation nodes.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	FAGX_WireRenderIterator GetRenderEndIterator() const;
 
+	/**
+	 * @return True if a native AGX Dynamics representation has been created for this Wire
+	 * Component.
+	 */
 	bool HasNative() const;
-	FWireBarrier* GetOrCreateNative();
-	FWireBarrier* GetNative();
-	const FWireBarrier* GetNative() const;
-	void CopyFrom(const FWireBarrier& Barrier);
 
+	/**
+	 * Return the Barrier object for this Wire Component, creating it if necessary. Should only be
+	 * called at or after BeginPlay has begun for the current level.
+	 *
+	 * @return The Barrier object for this Wire Component.
+	 */
+	FWireBarrier* GetOrCreateNative();
+
+	/// @return The Barrier object for this Wire Component, or nullptr if there is none.
+	FWireBarrier* GetNative();
+
+	/// @return The Barrier object for this Wire Component, or nullptr if there is none.
+	const FWireBarrier* GetNative() const;
+
+	/// Copy configuration from the given Barrier.
+	/// @note Not yet implemented.
+	void CopyFrom(const FWireBarrier& Barrier);
 
 	//~ Begin ActorComponent interface.
 	virtual void BeginPlay() override;
