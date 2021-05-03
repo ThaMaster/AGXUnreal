@@ -6,6 +6,16 @@
 
 class UAGX_WireComponent;
 
+/**
+ * The Wire Component Visualizer uses lines and points to produce a simple visualization of a wire,
+ * both its route nodes, while editing, and the simulation nodes, during a Play In Editor session.
+ *
+ * While in edit mode the Wire Component Visualizer provides functionality to duplicate, move, and
+ * delete nodes.
+ *
+ * The Wire Component Visualizer maintains a node selection state which can be used to provide
+ * additional manipulation operations on the node, such as from a Details Customization.
+ */
 class AGXUNREALEDITOR_API FAGX_WireComponentVisualizer : public FComponentVisualizer
 {
 public:
