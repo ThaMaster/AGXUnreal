@@ -17,8 +17,13 @@ public:
 
 	static FAGXUnrealBarrierModule& Get();
 
+	/// Add a Notify Listener that will be notified of log messages from AGX Dynamics.
 	void AddNotifyListener(FAGXNotifyListener* Listener);
+
+	/// Remove a Notify Listener.
 	void RemoveNotifyListener(FAGXNotifyListener* Listener);
+
+	/// Called by FAGXNotify when AGX Dynamics prints a log message.
 	void RelayNotifyMessage(const FString& Message, ELogVerbosity::Type Verbosity);
 
 private:
@@ -32,6 +37,9 @@ private:
 	TArray<FAGXNotifyListener*> NotifyListeners;
 };
 
+/**
+ * Base class for listening in on log messages from AGX Dynamics.
+ */
 class AGXUNREALBARRIER_API FAGXNotifyListener
 {
 public:
