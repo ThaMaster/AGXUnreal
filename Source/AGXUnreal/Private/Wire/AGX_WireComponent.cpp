@@ -23,33 +23,67 @@ UAGX_WireComponent::UAGX_WireComponent()
 #endif
 }
 
+namespace AGX_WireComponent_helpers
+{
+	void PrintNodeModifiedAlreadyInitializedWarning()
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Route node modification to already initialized wire. This route node will be ignored."));
+	}
+}
+
 void UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
 {
+	if (HasNative())
+	{
+		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
+	}
 	RouteNodes.Add(InNode);
 }
 
 void UAGX_WireComponent::AddNodeAtLocation(const FVector& InLocation)
 {
+	if (HasNative())
+	{
+		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
+	}
 	RouteNodes.Add(FWireRoutingNode(InLocation));
 }
 
 void UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex)
 {
+	if (HasNative())
+	{
+		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
+	}
 	RouteNodes.Insert(InNode, InIndex);
 }
 
 void UAGX_WireComponent::AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex)
 {
+	if (HasNative())
+	{
+		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
+	}
 	RouteNodes.Insert(FWireRoutingNode(InLocation), InIndex);
 }
 
 void UAGX_WireComponent::RemoveNode(int32 InIndex)
 {
+	if (HasNative())
+	{
+		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
+	}
 	RouteNodes.RemoveAt(InIndex);
 }
 
 void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocation)
 {
+	if (HasNative())
+	{
+		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
+	}
 	RouteNodes[InIndex].Location = InLocation;
 }
 
