@@ -10,6 +10,10 @@
 
 struct FAGX_WireNode;
 
+/**
+ * An iterator that iterates through the renderable nodes in a Wire Component. Instances are created
+ * by the Wire Component's GetRenderBeginIterator and GetRenderEndIterator member functions.
+ */
 USTRUCT(BlueprintType, Category = "AGX Dynamics")
 struct AGXUNREAL_API FAGX_WireRenderIterator
 {
@@ -24,10 +28,24 @@ public:
 	bool operator==(const FAGX_WireRenderIterator& InOther) const;
 	bool operator!=(const FAGX_WireRenderIterator& InOther) const;
 
+	/**
+	 * Get the Wire Node currently pointed to by this iterator. Must not be called when this
+	 * iterator compares equal to GetRenderEndIterator.
+	 *
+	 * @return The Wire Node currently pointed to by this iterator.
+	 */
 	FAGX_WireNode Get() const;
+
+	/// Move to the next Wire Node.
 	FAGX_WireRenderIterator& Inc();
+
+	/// Move to the previous Wire Node.
 	FAGX_WireRenderIterator& Dec();
+
+	/// Create an iterator to the next Wire Node.
 	FAGX_WireRenderIterator Next() const;
+
+	// Create an iterator to the previous Wire Node.
 	FAGX_WireRenderIterator Prev() const;
 
 private:
