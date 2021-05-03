@@ -29,6 +29,8 @@ public:
 	void SetLinearVelocityDamping(double Damping);
 	double GetLinearVelocityDamping() const;
 
+	bool GetRenderListEmpty() const;
+
 	void AddRouteNode(FWireNodeBarrier& RoutingNode);
 	bool IsInitialized() const;
 	double GetRestLength() const;

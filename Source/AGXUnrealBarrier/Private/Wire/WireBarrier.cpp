@@ -85,6 +85,12 @@ double FWireBarrier::GetLinearVelocityDamping() const
 	return NativeRef->Native->getLinearVelocityDamping();
 }
 
+bool FWireBarrier::GetRenderListEmpty() const
+{
+	check(HasNative());
+	return NativeRef->Native->getRenderListEmpty();
+}
+
 void FWireBarrier::AddRouteNode(FWireNodeBarrier& RoutingNode)
 {
 	check(HasNative());

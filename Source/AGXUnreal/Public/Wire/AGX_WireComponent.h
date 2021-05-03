@@ -194,11 +194,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	bool IsInitialized() const;
 
-	/// @return An iterator pointing to the first FAGX_WireNode simulation node.
+	/// @return True if this wire has at least one renderable simulation node.
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	bool HasRenderNodes() const;
+
+
+	/// @return True if there are no renderable simulation nodes.
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	bool GetRenderListEmpty() const;
+
+	/// @return An iterator pointing to the first renderable FAGX_WireNode simulation node.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	FAGX_WireRenderIterator GetRenderBeginIterator() const;
 
-	/// @return An iterator pointing one-past-end of the simulation nodes.
+	/// @return An iterator pointing one-past-end of the renderable simulation nodes.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	FAGX_WireRenderIterator GetRenderEndIterator() const;
 

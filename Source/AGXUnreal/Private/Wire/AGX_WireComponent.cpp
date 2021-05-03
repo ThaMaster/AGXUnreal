@@ -96,6 +96,24 @@ bool UAGX_WireComponent::IsInitialized() const
 	return NativeBarrier.IsInitialized();
 }
 
+bool UAGX_WireComponent::HasRenderNodes() const
+{
+	if (!HasNative())
+	{
+		return false;
+	}
+	return !NativeBarrier.GetRenderListEmpty();
+}
+
+bool UAGX_WireComponent::GetRenderListEmpty() const
+{
+	if (!HasNative())
+	{
+		return true;
+	}
+	return NativeBarrier.GetRenderListEmpty();
+}
+
 FAGX_WireRenderIterator UAGX_WireComponent::GetRenderBeginIterator() const
 {
 	if (!HasNative())
