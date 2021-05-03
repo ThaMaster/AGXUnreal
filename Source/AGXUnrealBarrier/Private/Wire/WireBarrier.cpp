@@ -61,6 +61,18 @@ void FWireBarrier::ReleaseNative()
 	NativeRef->Native = nullptr;
 }
 
+void FWireBarrier::SetScaleConstant(double ScaleConstant)
+{
+	check(HasNative());
+	NativeRef->Native->getParameterController()->setScaleConstant(ScaleConstant);
+}
+
+double FWireBarrier::GetScaleConstant() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParameterController()->getScaleConstant();
+}
+
 void FWireBarrier::SetLinearVelocityDamping(double Damping)
 {
 	check(HasNative());

@@ -23,6 +23,9 @@ public:
 	const FWireRef* GetNative() const;
 	void ReleaseNative();
 
+	void SetScaleConstant(double ScaleConstant);
+	double GetScaleConstant() const;
+
 	void SetLinearVelocityDamping(double Damping);
 	double GetLinearVelocityDamping() const;
 
