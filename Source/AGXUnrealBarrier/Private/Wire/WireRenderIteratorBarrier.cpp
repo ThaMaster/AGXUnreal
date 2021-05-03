@@ -1,7 +1,9 @@
 #include "Wire/WireRenderIteratorBarrier.h"
 
+// AGX Dynamics for Unreal includes.
 #include "Wire/WireNodeRef.h"
 
+// AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agxWire/RenderIterator.h>
 #include "EndAGXIncludes.h"
@@ -43,6 +45,10 @@ FWireRenderIteratorBarrier& FWireRenderIteratorBarrier::operator=(
 
 bool FWireRenderIteratorBarrier::operator==(const FWireRenderIteratorBarrier& Other) const
 {
+	if (Native == nullptr && Other.Native == nullptr)
+	{
+		return true;
+	}
 	if ((Native == nullptr) != (Other.Native == nullptr))
 	{
 		return false;
@@ -52,11 +58,7 @@ bool FWireRenderIteratorBarrier::operator==(const FWireRenderIteratorBarrier& Ot
 
 bool FWireRenderIteratorBarrier::operator!=(const FWireRenderIteratorBarrier& Other) const
 {
-	if ((Native == nullptr) != (Other.Native == nullptr))
-	{
-		return false;
-	}
-	return *Native != *Other.Native;
+	return !(*this == Other);
 }
 
 bool FWireRenderIteratorBarrier::HasNative() const
