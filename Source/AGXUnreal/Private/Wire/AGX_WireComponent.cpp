@@ -264,6 +264,18 @@ namespace AGX_WireComponent_helpers
 		FTransform SourceToTarget = SourceTransform.GetRelativeTransform(TargetTransform);
 		return SourceToTarget.TransformPosition(LocalLocation);
 	}
+
+	std::tuple<FRigidBodyBarrier*, FVector> GetBodyAndLocalLocation(
+		const FWireRoutingNode& RouteNode, const FTransform& WireTransform)
+	{
+		UAGX_RigidBodyComponent* BodyComponent = RouteNode.RigidBody.GetRigidBody();
+		check(BodyComponent);
+		FRigidBodyBarrier* NativeBody = BodyComponent->GetOrCreateNative();
+		check(NativeBody);
+		const FVector LocalLocation = MoveLocationBetweenLocalTransforms(
+			WireTransform, BodyComponent->GetComponentTransform(), RouteNode.Location);
+		return {NativeBody, LocalLocation};
+	}
 }
 
 void UAGX_WireComponent::CreateNative()
@@ -280,7 +292,9 @@ void UAGX_WireComponent::CreateNative()
 	/// @todo Not sure if we should expose Scale Constant or not.
 	// NativeBarrier.SetScaleConstant(ScaleConstant);
 
-	/// @todo Create AGX Dynamics route notes and initialize the wire.
+	const FTransform LocalToWorld = GetComponentTransform();
+
+	// Create AGX Dynamics simulation nodes and initialize the wire.
 	for (int32 I = 0; I < RouteNodes.Num(); ++I)
 	{
 		FWireRoutingNode& RouteNode = RouteNodes[I];
@@ -289,35 +303,33 @@ void UAGX_WireComponent::CreateNative()
 		{
 			case EWireNodeType::Free:
 			{
-				const FTransform& LocalToWorld = GetComponentTransform();
 				const FVector WorldLocation = LocalToWorld.TransformPosition(RouteNode.Location);
 				NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 				break;
 			}
 			case EWireNodeType::Eye:
 			{
-				UAGX_RigidBodyComponent* BodyComponent = RouteNode.RigidBody.GetRigidBody();
-				check(BodyComponent);
-				FRigidBodyBarrier* NativeBody = BodyComponent->GetOrCreateNative();
-				check(NativeBody);
-				const FVector LocalLocation = MoveLocationBetweenLocalTransforms(
-					GetComponentTransform(), BodyComponent->GetComponentTransform(),
-					RouteNode.Location);
-				NodeBarrier.AllocateNativeEyeNode(*NativeBody, LocalLocation);
+				FRigidBodyBarrier* Body;
+				FVector Location;
+				std::tie(Body, Location) = GetBodyAndLocalLocation(RouteNode, LocalToWorld);
+				NodeBarrier.AllocateNativeEyeNode(*Body, Location);
 				break;
 			}
 			case EWireNodeType::BodyFixed:
 			{
-				UAGX_RigidBodyComponent* BodyComponent = RouteNode.RigidBody.GetRigidBody();
-				check(BodyComponent);
-				FRigidBodyBarrier* NativeBody = BodyComponent->GetOrCreateNative();
-				check(NativeBody);
-				const FVector LocalLocation = MoveLocationBetweenLocalTransforms(
-					GetComponentTransform(), BodyComponent->GetComponentTransform(),
-					RouteNode.Location);
-				NodeBarrier.AllocateNativeBodyFixedNode(*NativeBody, LocalLocation);
+				FRigidBodyBarrier* Body;
+				FVector Location;
+				std::tie(Body, Location) = GetBodyAndLocalLocation(RouteNode, LocalToWorld);
+				NodeBarrier.AllocateNativeBodyFixedNode(*Body, Location);
 				break;
 			}
+			case EWireNodeType::Other:
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Found expected node type in wire '%s', part of actor '%s', at index %d. "
+						 "Node ignored."),
+					*GetName(), *GetLabelSafe(GetOwner()), I);
+				break;
 		}
 		NativeBarrier.AddRouteNode(NodeBarrier);
 	}
