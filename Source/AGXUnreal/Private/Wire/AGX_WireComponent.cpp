@@ -29,7 +29,8 @@ namespace AGX_WireComponent_helpers
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Route node modification to already initialized wire. This route node will be ignored."));
+			TEXT("Route node modification to already initialized wire. This route node will be "
+				 "ignored."));
 	}
 }
 
@@ -241,10 +242,25 @@ namespace AGX_WireComponent_helpers
 		FString Message;
 	};
 
+	/**
+	 * Given a location in one frame of reference, return the same world location relative to
+	 * another frame of reference.
+	 *
+	 * @param SourceTransform The frame of reference in which LocalLocation is given.
+	 * @param TargetTransform The frame of reference in which we want the same world location.
+	 * @param LocalLocation The location in the source frame of reference.
+	 * @return The location in the target frame of reference.
+	 */
 	FVector MoveLocationBetweenLocalTransforms(
 		const FTransform& SourceTransform, const FTransform& TargetTransform,
 		const FVector& LocalLocation)
 	{
+		// A.GetRelativeTransform(B) produces a transformation that goes from B to A. That is, it
+		// tells us where A is in relation to B. Transforming the zero vector with that transform
+		// will produce the vector pointing from B to A. Transforming any other vector will produce
+		// the vector pointing from B to the tip of the first vector when placed with its base at A.
+		// In our case we want the vector pointing from TargetTransform so that should be our B,
+		// i.e. the parameter.
 		FTransform SourceToTarget = SourceTransform.GetRelativeTransform(TargetTransform);
 		return SourceToTarget.TransformPosition(LocalLocation);
 	}
