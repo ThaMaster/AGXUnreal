@@ -141,11 +141,11 @@ private:
 
 	// Setters.
 
+	/// Called when the end-user picks a rigid body owner Actor.
+	void OnSetRigidBodyOwner(AActor* Actor);
+
 	/// Called when the end-user selects an entry in the rigid body combo box.
 	void OnSetRigidBody(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo);
-
-	/// Called when the end-ser picks a rigid body owner Actor.
-	void OnSetRigidBodyOwner(AActor* Actor);
 
 	/*
 	 * STORAGE
@@ -170,19 +170,19 @@ private:
 	 * OBJECTS
 	 */
 
-	/// The currently selected Wire Component.
-	UAGX_WireComponent* Wire;
-
 	/**
 	 * The currently active Wire Component Visualizer. Not sure how this works with multiple Detail
 	 * Panels, selections, and Viewports.
 	 */
 	FAGX_WireComponentVisualizer* WireVisualizer;
 
+	/// The currently selected Wire Component.
+	UAGX_WireComponent* Wire;
+
 	/**
 	 * The index of the currently selected node in the Wire Component Visualizer. This is the node
 	 * whose properties is shown in the widgets, and edits made in the widgets will be applied to
-	 * this node.
+	 * this node. Can be INDEX_NONE.
 	 */
 	int32 SelectedNodeIndex;
 
