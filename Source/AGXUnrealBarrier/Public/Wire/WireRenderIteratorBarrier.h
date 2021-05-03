@@ -24,8 +24,8 @@ public:
 	/**
 	 * Compare the native iterators for equality.
 	 *
-	 * Not that it's equality and not identity, so two separate Barrier with different pointed-to
-	 * Natives are equal if the identify the same underlying native Wire Node.
+	 * Not that it's equality and not identity, so two separate Barriers with different are still
+	 * considered equal if they identify the same underlying native Wire Node.
 	 *
 	 * @param Other The Render Iterator to compare against.
 	 * @return True if both Render Iterators point to the same native Wire Node.
@@ -35,8 +35,8 @@ public:
 	/**
 	 * Compare the native iterators for inequality.
 	 *
-	 * Not that it's equality and not identity, so two separate Barrier with different pointed-to
-	 * Natives are equal if the identify the same underlying native Wire Node.
+	 * Not that it's equality and not identity, so two separate Barriers with different are still
+	 * considered equal if they identify the same underlying native Wire Node.
 	 *
 	 * @param Other The Render Iterator to compare against.
 	 * @return True if the two Render Iterators point to different native Wire Nodes.
