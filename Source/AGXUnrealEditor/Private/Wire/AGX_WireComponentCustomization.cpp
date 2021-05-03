@@ -1,4 +1,4 @@
-#include "AGX_WireComponentCustomization.h"
+#include "Wire/AGX_WireComponentCustomization.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"

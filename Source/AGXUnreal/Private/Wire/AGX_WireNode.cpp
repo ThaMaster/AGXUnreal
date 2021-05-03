@@ -1,4 +1,4 @@
-#include "AGX_WireNode.h"
+#include "Wire/AGX_WireNode.h"
 
 FAGX_WireNode::FAGX_WireNode(const FAGX_WireNode& InOther)
 	: Barrier(InOther.Barrier)
