@@ -224,8 +224,6 @@ private:
 
 FWireNodeDetails::FWireNodeDetails(UAGX_WireComponent* InWire)
 {
-	UE_LOG(LogAGX, Warning, TEXT("FWireNodeDetails::FWireNodeDetails"));
-
 	// Get the Wire Component Visualizer for this type of wire.
 	check(InWire);
 	FComponentVisualizer* Visualizer = GUnrealEd->FindComponentVisualizer(InWire->GetClass()).Get();
@@ -261,8 +259,6 @@ void FWireNodeDetails::GenerateHeaderRowContent(FDetailWidgetRow& NodeRow)
 
 void FWireNodeDetails::GenerateChildContent(IDetailChildrenBuilder& ChildrenBuilder)
 {
-	UE_LOG(LogAGX, Warning, TEXT("FWireNodeDetails::GenerateChildContent"));
-
 	// clang-format off
 
 	// "No Selection" marker widget.
@@ -589,8 +585,6 @@ FLinearColor WireNodeTypeIndexToColor(int32 Type)
 
 TSharedRef<SWidget> FWireNodeDetails::OnGetNodeTypeEntryWidget(TSharedPtr<FString> InComboString)
 {
-	UE_LOG(
-		LogAGX, Warning, TEXT("FWireNodeDetails::OnGetNodeTypeEntryWidget('%s')"), **InComboString);
 	const int32 EnumIndex = WireNodeTypes.Find(InComboString);
 	const FLinearColor Color = WireNodeTypeIndexToColor(EnumIndex);
 	// clang-format off
@@ -632,8 +626,6 @@ void FWireNodeDetails::OnSetNodeType(TSharedPtr<FString> NewValue, ESelectInfo::
 		return;
 	}
 	TGuardValue<bool> GuardIsRunningCallback(bIsRunningCallback, true);
-
-	UE_LOG(LogAGX, Warning, TEXT("FWireNodeDetails::OnSetNodeType"));
 
 	if (!HasWireAndNodeSelection())
 	{
@@ -728,15 +720,11 @@ void FWireNodeDetails::OnGetAllowedClasses(TArray<const UClass*>& AllowedClasses
 
 void FWireNodeDetails::OnGetActorFilters(TSharedPtr<SceneOutliner::FOutlinerFilters>& Filters)
 {
-	UE_LOG(LogAGX, Warning, TEXT("FWireNodeDetails::OnGetActorFilters"));
 	/// @todo What should we do here?
 }
 
 TSharedRef<SWidget> FWireNodeDetails::OnGetRigidBodyEntryWidget(TSharedPtr<FString> InComboString)
 {
-	UE_LOG(
-		LogAGX, Warning, TEXT("FWireNodeDetails::OnGetRigidBodyEntryWidget('%s')"),
-		**InComboString);
 	return SNew(STextBlock).Text(FText::FromString(*InComboString));
 }
 
@@ -763,8 +751,6 @@ void FWireNodeDetails::OnSetRigidBody(TSharedPtr<FString> NewValue, ESelectInfo:
 		return;
 	}
 
-	UE_LOG(LogAGX, Warning, TEXT("FWireNodeDetails::OnSetRigidBody"));
-
 	const FScopedTransaction Transaction(
 		LOCTEXT("SetWireNodeRigidBodyName", "Set Wire Node Rigid Body Name"));
 	Wire->Modify();
@@ -789,8 +775,6 @@ void FWireNodeDetails::OnSetRigidBodyOwner(AActor* Actor)
 	}
 	TGuardValue<bool> GuardIsRunningCallback(bIsRunningCallback, true);
 
-	UE_LOG(LogAGX, Warning, TEXT("OnSetRigidBodyOwner: '%s'."), *Actor->GetActorLabel());
-
 	if (!HasWireAndNodeSelection())
 	{
 		return;
@@ -805,10 +789,6 @@ void FWireNodeDetails::OnSetRigidBodyOwner(AActor* Actor)
 	{
 		return;
 	}
-
-	UE_LOG(
-		LogAGX, Warning, TEXT("Selected actor with %d bodies. Current body is '%s'."),
-		RigidBodyNames.Num(), *Node.RigidBody.BodyName.ToString());
 
 	const FScopedTransaction Transaction(
 		LOCTEXT("SetWireNodeBodyActor", "Set wire node body actor"));
@@ -941,13 +921,11 @@ EVisibility FWireNodeDetails::NodeHasRigidBody() const
 
 TSharedRef<IDetailCustomization> FAGX_WireComponentCustomization::MakeInstance()
 {
-	UE_LOG(LogAGX, Warning, TEXT("WireComponentCustomization::MakeInstance"));
 	return MakeShareable(new FAGX_WireComponentCustomization());
 }
 
 void FAGX_WireComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
-	UE_LOG(LogAGX, Warning, TEXT("WireComponentCustomization::CustomizeDetails"));
 	IDetailCategoryBuilder& Category = DetailBuilder.EditCategory("Selected Node");
 
 	TArray<TWeakObjectPtr<UObject>> ObjectsBeingCustomized;
