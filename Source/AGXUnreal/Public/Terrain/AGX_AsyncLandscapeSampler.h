@@ -11,7 +11,7 @@ class ALandscape;
 struct FAGX_LandscapeSizeInfo;
 
 /**
- * The lifetime of the asynchronous task is bound to the lifetime of this object. Call Joint() to
+ * The lifetime of the asynchronous task is bound to the lifetime of this object. Call Join() to
  * ensure that the asynchronous task is completed.
  */
 class FAGX_AsyncLandscapeSampler : public FRunnable
