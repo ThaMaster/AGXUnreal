@@ -25,6 +25,8 @@ public:
 	FAGX_WireRenderIterator(FWireRenderIteratorBarrier&& InBarrier);
 	FAGX_WireRenderIterator& operator=(const FAGX_WireRenderIterator& InOther);
 
+	bool HasNative() const;
+
 	bool operator==(const FAGX_WireRenderIterator& InOther) const;
 	bool operator!=(const FAGX_WireRenderIterator& InOther) const;
 

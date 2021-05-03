@@ -18,6 +18,11 @@ FAGX_WireRenderIterator& FAGX_WireRenderIterator::operator=(const FAGX_WireRende
 	return *this;
 }
 
+bool FAGX_WireRenderIterator::HasNative() const
+{
+	return Barrier.HasNative();
+}
+
 bool FAGX_WireRenderIterator::operator==(const FAGX_WireRenderIterator& InOther) const
 {
 	return Barrier == InOther.Barrier;
