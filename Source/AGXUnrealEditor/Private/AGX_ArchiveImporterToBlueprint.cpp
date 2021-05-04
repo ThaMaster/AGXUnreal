@@ -39,6 +39,7 @@
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 
 // Unreal Engine includes.
 #include "ActorFactories/ActorFactoryEmptyActor.h"
@@ -289,10 +290,17 @@ namespace
 		AActor& BlueprintTemplate;
 	};
 
-	void AddComponentsFromArchive(AActor& ImportedActor, FAGX_ArchiveImporterHelper& Helper)
+	bool AddComponentsFromArchive(AActor& ImportedActor, FAGX_ArchiveImporterHelper& Helper)
 	{
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
-		FAGXArchiveReader::Read(Helper.ArchiveFilePath, Instantiator);
+		FSuccessOrError SuccessOrError =
+			FAGXArchiveReader::Read(Helper.ArchiveFilePath, Instantiator);
+		if (!SuccessOrError.Success)
+		{
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+				SuccessOrError.Error, "Import AGX Dynamics archive to Blueprint");
+		}
+		return SuccessOrError.Success;
 	}
 
 	AActor* CreateTemplate(FAGX_ArchiveImporterHelper& Helper)
@@ -329,7 +337,17 @@ namespace
 		RootActorContainer->SetRootComponent(ActorRootComponent);
 #endif
 
-		AddComponentsFromArchive(*RootActorContainer, Helper);
+		if (!AddComponentsFromArchive(*RootActorContainer, Helper))
+		{
+			/// @todo Is there some clean-up I need to do for RootActorContainer and/or
+			/// EmptyActorAsset here? I tried with MarkPendingKill but that caused
+			///    Assertion failed: !IsRooted()
+			//RootActorContainer->MarkPendingKill();
+			//EmptyActorAsset->MarkPendingKill();
+			return nullptr;
+		}
+
+		// Should the EmptyActorAsset be cleaned up somehow? MarkPendingKill?
 		return RootActorContainer;
 	}
 
@@ -363,6 +381,10 @@ UBlueprint* AGX_ArchiveImporterToBlueprint::ImportAGXArchive(const FString& Arch
 	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
 	UPackage* Package = GetPackage(BlueprintPackagePath);
 	AActor* Template = CreateTemplate(Helper);
+	if (Template == nullptr)
+	{
+		return nullptr;
+	}
 	UBlueprint* Blueprint = CreateBlueprint(Package, Template);
 	PostCreationTeardown(Template, Package, Blueprint, BlueprintPackagePath);
 	return Blueprint;
