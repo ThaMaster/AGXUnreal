@@ -1,8 +1,13 @@
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Utilities/SuccessOrError.h"
+
+// Unreal Engine includes.
 #include "Containers/UnrealString.h"
 #include "Containers/Array.h"
 
+// System includes.
 #include <memory>
 
 class FRigidBodyBarrier;
@@ -150,6 +155,8 @@ namespace FAGXArchiveReader
 	 * on the given 'Instantiator' or a handle returned from the 'Instantiator'.
 	 * @param Filename Path to the AGX Dynamics archive to read.
 	 * @param Instantiator Set of callback functions to call for each object read.
+	 * @return True if the archive was read successfully.
 	 */
-	AGXUNREALBARRIER_API void Read(const FString& Filename, FAGXArchiveInstantiator& Instantiator);
+	AGXUNREALBARRIER_API FSuccessOrError
+	Read(const FString& Filename, FAGXArchiveInstantiator& Instantiator);
 };
