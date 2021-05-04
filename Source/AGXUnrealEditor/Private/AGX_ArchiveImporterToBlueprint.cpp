@@ -369,8 +369,8 @@ namespace
 			PackagePath, FPackageName::GetAssetPackageExtension());
 
 		UPackage::SavePackage(
-			Package, Blueprint, RF_Public | RF_Standalone | RF_MarkAsRootSet, *PackageFilename,
-			GError, nullptr, true, true, SAVE_NoError);
+			Package, Blueprint, RF_Public | RF_Standalone, *PackageFilename, GError, nullptr, true,
+			true, SAVE_NoError);
 	}
 }
 
