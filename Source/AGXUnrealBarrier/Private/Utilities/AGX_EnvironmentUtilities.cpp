@@ -7,6 +7,7 @@
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/Runtime.h>
+#include <agx/version.h>
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
@@ -149,6 +150,11 @@ bool FAGX_EnvironmentUtilities::IsSetupEnvRun()
 		FAGX_EnvironmentUtilities::GetEnvironmentVariableEntries("AGX_DIR");
 
 	return AgxDepDirEntries.Num() > 0 && AgxDirEntries.Num() > 0;
+}
+
+FString FAGX_EnvironmentUtilities::GetAGXDynamicsVersion()
+{
+	return FString(agxGetVersion(false));
 }
 
 FString FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath()

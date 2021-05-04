@@ -24,6 +24,8 @@ public:
 
 	static bool IsSetupEnvRun();
 
+	static FString GetAGXDynamicsVersion();
+
 	static FString GetAgxDynamicsResourcesPath();
 
 	static void EnsureAgxDynamicsEnvironmentIsSetup();

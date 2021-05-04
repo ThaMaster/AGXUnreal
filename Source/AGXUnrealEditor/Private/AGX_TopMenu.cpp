@@ -373,6 +373,7 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 		"\n"
 		"AGX Dynamics for Unreal\n"
 		"Version: " + Version + "\n"
+		"AGX Dynamics version: " + FAGX_EnvironmentUtilities::GetAGXDynamicsVersion() + "\n"
 		"\n" +
 		LicenseText +
 		"\n"
