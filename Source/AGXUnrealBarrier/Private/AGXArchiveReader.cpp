@@ -358,3 +358,5 @@ FSuccessOrError FAGXArchiveReader::Read(
 
 	return FSuccessOrError(true);
 }
+
+#undef LOCTEXT_NAMESPACE
