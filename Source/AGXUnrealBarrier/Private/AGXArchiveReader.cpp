@@ -1,15 +1,15 @@
 #include "AGXArchiveReader.h"
 
 // AGXUnreal Includes.
+#include "AGX_LogCategory.h"
+#include "AGXBarrierFactories.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
 #include "TypeConversions.h"
 
-#include "AGXBarrierFactories.h"
-#include "AGX_LogCategory.h"
-
+// AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/RigidBody.h>
 #include <agx/Encoding.h>
@@ -311,14 +311,24 @@ namespace
 	}
 }
 
-void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& Instantiator)
+FSuccessOrError FAGXArchiveReader::Read(
+	const FString& Filename, FAGXArchiveInstantiator& Instantiator)
 {
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
-	size_t NumRead {Simulation->read(Convert(Filename))};
-	if (NumRead == 0)
+	try
 	{
-		UE_LOG(LogAGX, Log, TEXT("Could not read .agx file %s."), *Filename);
-		return;
+		size_t NumRead = Simulation->read(Convert(Filename));
+		if (NumRead == 0)
+		{
+			return FSuccessOrError(
+				FString::Printf(TEXT("Could not read .agx file '%s'."), *Filename));
+		}
+	}
+	catch (const std::runtime_error& Error)
+	{
+		FString What = Error.what();
+		return FSuccessOrError(
+			FString::Printf(TEXT("Could not read .agx file '%s':\n\n%s"), *Filename, *What));
 	}
 
 	::ReadMaterials(*Simulation, Instantiator);
@@ -326,4 +336,6 @@ void FAGXArchiveReader::Read(const FString& Filename, FAGXArchiveInstantiator& I
 	::ReadRigidBodies(*Simulation, Filename, Instantiator);
 	::ReadConstraints(*Simulation, Filename, Instantiator);
 	::ReadCollisionGroups(*Simulation, Instantiator);
+
+	return FSuccessOrError(true);
 }
