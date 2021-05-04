@@ -34,6 +34,11 @@
 #include <agxWire/Wire.h>
 #include "EndAGXIncludes.h"
 
+// Unreal Engine includes.
+#include "Misc/ScopedSlowTask.h"
+
+#define LOCTEXT_NAMESPACE "AGX_ARCHIVE_READER"
+
 namespace
 {
 	void InstantiateShapes(const agxCollide::ShapeRefVector& Shapes, FAGXArchiveBody& ArchiveBody)
@@ -331,11 +336,27 @@ FSuccessOrError FAGXArchiveReader::Read(
 			FString::Printf(TEXT("Could not read .agx file '%s':\n\n%s"), *Filename, *What));
 	}
 
+	const float AmountOfWork = 5.0f; // Keep up to date with the number of /Read.+/-calls.
+	FScopedSlowTask MyTask(
+		AmountOfWork, LOCTEXT("CreateAGXObjects", "Create AGX Dynamics for Unreal objects"), true);
+	MyTask.MakeDialog();
+
+	MyTask.EnterProgressFrame(1.0f);
 	::ReadMaterials(*Simulation, Instantiator);
+
+	MyTask.EnterProgressFrame(1.0f);
 	::ReadTireModels(*Simulation, Filename, Instantiator);
+
+	MyTask.EnterProgressFrame(1.0f);
 	::ReadRigidBodies(*Simulation, Filename, Instantiator);
+
+	MyTask.EnterProgressFrame(1.0f);
 	::ReadConstraints(*Simulation, Filename, Instantiator);
+
+	MyTask.EnterProgressFrame(1.0f);
 	::ReadCollisionGroups(*Simulation, Instantiator);
 
 	return FSuccessOrError(true);
 }
+
+#undef LOCTEXT_NAMESPACE
