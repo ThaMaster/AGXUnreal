@@ -16,6 +16,8 @@ public:
 	FRenderDataBarrier(std::unique_ptr<FRenderDataRef>&& InNativeRef);
 	~FRenderDataBarrier();
 
+	bool GetShouldRender() const;
+
 	int32 GetNumTriangles() const;
 	int32 GetNumIndices() const;
 

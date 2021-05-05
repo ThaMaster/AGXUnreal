@@ -83,6 +83,12 @@ namespace RenderDataBarrier_helpers
 	}
 }
 
+bool FRenderDataBarrier::GetShouldRender() const
+{
+	check(HasNative());
+	return NativeRef->Native->getShouldRender();
+}
+
 int32 FRenderDataBarrier::GetNumTriangles() const
 {
 	using namespace RenderDataBarrier_helpers;
