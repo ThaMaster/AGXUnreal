@@ -33,6 +33,7 @@
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Shapes/RenderDataBarrier.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
@@ -208,11 +209,70 @@ namespace
 		Component.SetMaterial(0, Material);
 	}
 
+	UStaticMesh* GetOrCreateStaticMeshAsset(
+		const FTrimeshShapeBarrier& Trimesh, const FString& FallbackName,
+		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName)
+	{
+		FGuid Guid = Trimesh.GetMeshDataGuid();
+
+		// If the GUID is invalid, try to create the mesh asset anyway but without adding it to the
+		// RestoredMeshes map.
+		if (!Guid.IsValid())
+		{
+			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+				Trimesh, DirectoryName, FallbackName);
+		}
+
+		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
+		{
+			return Asset;
+		}
+
+		UStaticMesh* Asset =
+			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryName, FallbackName);
+		RestoredMeshes.Add(Guid, Asset);
+		return Asset;
+	}
+
+	/**
+	 * Convert the Render Data to an Unreal Engine Static Mesh asset stored in the RenderMeshes
+	 * folder in the archive's folder in the ImportedAGXArchives folder.
+	 *
+	 * The created meshes are cached on GUID so asking for the same Render Data mesh again will
+	 * return the previously created Static Mesh asset.
+	 *
+	 * @param RenderData The Render Data Barrier containing the mesh to store.
+	 * @param RestoredMeshes Static Mesh cache.
+	 * @param DirectoryName The name of the folder where all assets for this import is stored.
+	 * @return
+	 */
+	UStaticMesh* GetOrCreateStaticMeshAsset(
+		const FRenderDataBarrier& RenderData, TMap<FGuid, UStaticMesh*>& RestoredMeshes,
+		const FString& DirectoryName)
+	{
+		FGuid Guid = RenderData.GetGuid();
+		if (!Guid.IsValid())
+		{
+			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
+		}
+
+		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
+		{
+			return Asset;
+		}
+
+		UStaticMesh* Asset =
+			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
+		RestoredMeshes.Add(Guid, Asset);
+		return Asset;
+	}
+
 	void FinalizeShape(
 		UAGX_ShapeComponent& Component, const FShapeBarrier& Barrier,
 		const TMap<FGuid, UAGX_ShapeMaterialAsset*>& RestoredShapeMaterials,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials,
-		const FString& DirectoryName, UMeshComponent* RenderMaterialReceiver)
+		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName,
+		UMeshComponent* RenderMaterialReceiver)
 	{
 		Component.UpdateVisualMesh();
 		Component.SetFlags(RF_Transactional);
@@ -230,6 +290,16 @@ namespace
 		{
 			FAGX_RenderData RenderData = Barrier.GetRenderData();
 			RenderMaterialReceiver->SetVisibility(RenderData.bShouldRender);
+		}
+
+		if (Barrier.HasRenderData())
+		{
+			FRenderDataBarrier RenderData = Barrier.GetRenderData2();
+			UStaticMesh* RenderDataMeshAsset =
+				GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
+			UStaticMeshComponent* MeshComponent = FAGX_EditorUtilities::CreateStaticMeshComponent(
+				*Component.GetOwner(), Component, *RenderDataMeshAsset);
+			RenderMaterialReceiver = MeshComponent;
 		}
 
 		// Create and assign render material, if possible.
@@ -290,8 +360,8 @@ UAGX_SphereShapeComponent* FAGX_ArchiveImporterHelper::InstantiateSphere(
 	}
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, DirectoryName,
-		Component);
+		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
+		DirectoryName, Component);
 	return Component;
 }
 
@@ -309,8 +379,8 @@ UAGX_BoxShapeComponent* FAGX_ArchiveImporterHelper::InstantiateBox(
 	}
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, DirectoryName,
-		Component);
+		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
+		DirectoryName, Component);
 	return Component;
 }
 
@@ -328,8 +398,8 @@ UAGX_CylinderShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCylinder(
 	}
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, DirectoryName,
-		Component);
+		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
+		DirectoryName, Component);
 	return Component;
 }
 
@@ -347,37 +417,13 @@ UAGX_CapsuleShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCapsule(
 	}
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, DirectoryName,
-		Component);
+		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
+		DirectoryName, Component);
 	return Component;
 }
 
 namespace
 {
-	UStaticMesh* GetOrCreateStaticMeshAsset(
-		const FTrimeshShapeBarrier& Barrier, const FString& FallbackName,
-		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName)
-	{
-		FGuid Guid = Barrier.GetMeshDataGuid();
-
-		// If the GUID is invalid, try to create the mesh asset anyway but without adding it to the
-		// RestoredMeshes map.
-		if (!Guid.IsValid())
-		{
-			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-				Barrier, DirectoryName, FallbackName);
-		}
-
-		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
-		{
-			return Asset;
-		}
-
-		UStaticMesh* Asset =
-			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Barrier, DirectoryName, FallbackName);
-		RestoredMeshes.Add(Guid, Asset);
-		return Asset;
-	}
 }
 
 UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
@@ -424,8 +470,8 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, DirectoryName,
-		MeshComponent);
+		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
+		DirectoryName, MeshComponent);
 	return Component;
 }
 
