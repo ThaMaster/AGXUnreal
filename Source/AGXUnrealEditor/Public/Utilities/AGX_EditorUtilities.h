@@ -9,11 +9,14 @@
 #include <tuple>
 
 // Shape classes.
+class FRenderDataBarrier;
+class FShapeMaterialBarrier;
+class FTrimeshShapeBarrier;
+class UAGX_BoxShapeComponent;
+class UAGX_CapsuleShapeComponent;
+class UAGX_CylinderShapeComponent;
 class UAGX_ShapeComponent;
 class UAGX_SphereShapeComponent;
-class UAGX_BoxShapeComponent;
-class UAGX_CylinderShapeComponent;
-class UAGX_CapsuleShapeComponent;
 class UAGX_TrimeshShapeComponent;
 
 // Constraint classes.
@@ -24,8 +27,6 @@ class UAGX_HingeConstraintComponent;
 class UAGX_PrismaticConstraintComponent;
 
 // Other AGXUnreal classes.
-class FTrimeshShapeBarrier;
-class FShapeMaterialBarrier;
 class FContactMaterialBarrier;
 class UAGX_RigidBodyComponent;
 
@@ -100,6 +101,8 @@ public:
 		AActor* Owner, USceneComponent* Outer, bool bRegister);
 
 	static FRawMesh CreateRawMeshFromTrimesh(const FTrimeshShapeBarrier& Trimesh);
+
+	static FRawMesh CreateRawMeshFromRenderData(const FRenderDataBarrier& RenderData);
 
 	/**
 	 * Apply the RawMesh data to the StaticMesh.

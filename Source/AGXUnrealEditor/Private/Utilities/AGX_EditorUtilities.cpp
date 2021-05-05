@@ -9,6 +9,7 @@
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
+#include "Shapes/RenderDataBarrier.h"
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
@@ -649,6 +650,71 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 	{
 		return CreateRawMeshFromCollisionData(Trimesh);
 	}
+}
+
+FRawMesh FAGX_EditorUtilities::CreateRawMeshFromRenderData(const FRenderDataBarrier& RenderData)
+{
+	// What we have:
+	//
+	// Data shared among triangles:
+	//    positions: [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+	//    normals:   [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+	//    tex coord: [Vec2, Vec2, Vec2, Vec2, Vec2, ... ]
+	//
+	// Data owned by each triangle:
+	//    indices:   | int, int, int | int, int, int | ... |
+	//               |  Triangle 0   |  Triangle 1   | ... |
+	//
+	//
+	// What we want:
+	//
+	// Data shared among triangles:
+	//   positions: [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+	//
+	// Data owned by each triangle:
+	//    indices:   | int,  int,  int  | int,  int,  int  | ... |
+	//    tangent x: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+	//    tangent y: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+	//    tangent z: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... |
+	//    tex coord: | Vec2, Vec2, Vec2 | Vec2, Vec2, Vec2 | ... |
+
+	FRawMesh RawMesh;
+
+	// A straight up copy of the vertex positions may be wasteful since the render data may
+	// contain duplicated positions with different normals or texture coordinates. If this
+	// becomes a serious concern, then find a way to remove duplicates and patch the WedgeIndies
+	// to point to the correct merged vertex position. Must use the render vertex indices in the
+	// per-index conversion loop below.
+	RawMesh.VertexPositions = RenderData.GetPositions();
+	RawMesh.WedgeIndices = RenderData.GetIndices();
+
+	const int32 NumTriangles = RenderData.GetNumTriangles();
+	const int32 NumIndices = RenderData.GetNumIndices();
+
+	RawMesh.WedgeTangentZ.Reserve(NumIndices);
+	RawMesh.WedgeColors.Reserve(NumIndices);
+	RawMesh.WedgeTexCoords[0].Reserve(NumIndices);
+
+	const TArray<FVector> RenderNormals = RenderData.GetNormals();
+	const TArray<FVector2D> RenderCoordinates = RenderData.GetTextureCoordinates();
+
+	for (int32 I = 0; I < NumIndices; ++I)
+	{
+		const int32 RenderI = RawMesh.WedgeIndices[I];
+		RawMesh.WedgeTangentZ.Add(RenderNormals[RenderI]);
+		RawMesh.WedgeTexCoords[0].Add(RenderCoordinates[RenderI]);
+		RawMesh.WedgeColors.Add(FColor(255, 255, 255));
+	}
+
+	RawMesh.FaceMaterialIndices.Reserve(NumTriangles);
+	RawMesh.FaceSmoothingMasks.Reserve(NumTriangles);
+	for (int32 I = 0; I < NumTriangles; ++I)
+	{
+		RawMesh.FaceMaterialIndices.Add(0);
+		RawMesh.FaceSmoothingMasks.Add(0xFFFFFFFF);
+	}
+
+	return RawMesh;
 }
 
 void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh* StaticMesh)
