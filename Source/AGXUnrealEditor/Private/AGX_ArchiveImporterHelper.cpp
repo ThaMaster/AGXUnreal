@@ -288,18 +288,19 @@ namespace
 
 		if (Barrier.HasRenderData())
 		{
-			FAGX_RenderData RenderData = Barrier.GetRenderData();
-			RenderMaterialReceiver->SetVisibility(RenderData.bShouldRender);
-		}
-
-		if (Barrier.HasRenderData())
-		{
 			FRenderDataBarrier RenderData = Barrier.GetRenderData2();
-			UStaticMesh* RenderDataMeshAsset =
-				GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
-			UStaticMeshComponent* MeshComponent = FAGX_EditorUtilities::CreateStaticMeshComponent(
-				*Component.GetOwner(), Component, *RenderDataMeshAsset);
-			RenderMaterialReceiver = MeshComponent;
+			if (RenderData.GetNumTriangles() > 0)
+			{
+				// The Shape has a render mesh that should be used instead of the primitive itself.
+				UStaticMesh* RenderDataMeshAsset =
+					GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
+				UStaticMeshComponent* MeshComponent =
+					FAGX_EditorUtilities::CreateStaticMeshComponent(
+						*Component.GetOwner(), Component, *RenderDataMeshAsset);
+				RenderMaterialReceiver->SetVisibility(false);
+				RenderMaterialReceiver = MeshComponent;
+			}
+			RenderMaterialReceiver->SetVisibility(RenderData.GetShouldRender());
 		}
 
 		// Create and assign render material, if possible.
@@ -420,10 +421,6 @@ UAGX_CapsuleShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCapsule(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
 		DirectoryName, Component);
 	return Component;
-}
-
-namespace
-{
 }
 
 UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
