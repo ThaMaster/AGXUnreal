@@ -288,6 +288,10 @@ namespace
 
 		if (Barrier.HasRenderData())
 		{
+			// Do not render Shapes that has Render Data, even if that Render Data doesn't have any
+			// triangles.
+			RenderMaterialReceiver->SetVisibility(false);
+
 			FRenderDataBarrier RenderData = Barrier.GetRenderData2();
 			if (RenderData.GetNumTriangles() > 0)
 			{
@@ -297,10 +301,9 @@ namespace
 				UStaticMeshComponent* MeshComponent =
 					FAGX_EditorUtilities::CreateStaticMeshComponent(
 						*Component.GetOwner(), Component, *RenderDataMeshAsset);
-				RenderMaterialReceiver->SetVisibility(false);
 				RenderMaterialReceiver = MeshComponent;
+				RenderMaterialReceiver->SetVisibility(RenderData.GetShouldRender());
 			}
-			RenderMaterialReceiver->SetVisibility(RenderData.GetShouldRender());
 		}
 
 		// Create and assign render material, if possible.
