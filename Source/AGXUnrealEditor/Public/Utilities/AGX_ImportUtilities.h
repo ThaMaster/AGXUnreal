@@ -8,6 +8,7 @@
 #include "Math/Color.h"
 
 class FTrimeshShapeBarrier;
+class FRenderDataBarrier;
 class FShapeBarrier;
 class FShapeMaterialBarrier;
 class FContactMaterialBarrier;
@@ -90,6 +91,9 @@ public:
 	static UStaticMesh* SaveImportedStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName,
 		const FString& FallbackName);
+
+	static UStaticMesh* SaveImportedStaticMeshAsset(
+		const FRenderDataBarrier& RenderData, const FString& DirectoryName);
 
 	/**
 	 * Store an AGX Dynamics Material imported from an AGX Dynamics archive as an

@@ -7,6 +7,7 @@
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
+#include "Shapes/RenderDataBarrier.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
@@ -116,6 +117,20 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	};
 	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
 		DirectoryName, Trimesh.GetSourceName(), FallbackName, TEXT("StaticMesh"), InitAsset);
+	return CreatedAsset;
+}
+
+UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+	const FRenderDataBarrier& RenderData, const FString& DirectoryName)
+{
+	auto InitAsset = [&](UStaticMesh& Asset) {
+		FRawMesh RawMesh = FAGX_EditorUtilities::CreateRawMeshFromRenderData(RenderData);
+		FAGX_EditorUtilities::AddRawMeshToStaticMesh(RawMesh, &Asset);
+		Asset.ImportVersion = EImportStaticMeshVersion::LastVersion;
+	};
+	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
+		DirectoryName, FString::Printf(TEXT("RenderData_%s"), *RenderData.GetGuid().ToString()),
+		TEXT("RenderData"), TEXT("StaticMesh"), InitAsset);
 	return CreatedAsset;
 }
 
