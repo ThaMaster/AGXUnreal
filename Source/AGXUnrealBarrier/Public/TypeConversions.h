@@ -119,7 +119,7 @@ inline agx::Real ConvertAngleToAgx(T A)
 
 static_assert(
 	std::numeric_limits<agx::Int>::max() >= std::numeric_limits<int32>::max(),
-	"Expecting agx::Int to hold all values that int32 can hold.");
+	"Expecting agx::Int to hold all positive values that int32 can hold.");
 
 inline int32 Convert(agx::Int I)
 {
@@ -132,6 +132,23 @@ inline int32 Convert(agx::Int I)
 		I = MaxAllowed;
 	}
 	return static_cast<int32>(I);
+}
+
+static_assert(
+	std::numeric_limits<std::size_t>::max() >= std::numeric_limits<int32>::max(),
+	"Expecting std::size_t to hold all positive values that int32 can hold.");
+
+inline int32 Convert(std::size_t S)
+{
+	std::size_t MaxAllowed = static_cast<std::size_t>(std::numeric_limits<int32>::max());
+	if (S > MaxAllowed)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Too large size_t being converted to int32, value is truncated."));
+		S = MaxAllowed;
+	}
+	return static_cast<int32>(S);
 }
 
 inline agx::Int Convert(int32 I)
