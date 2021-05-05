@@ -15,6 +15,8 @@
 struct FGeometryAndShapeRef;
 class FShapeMaterialBarrier;
 
+class FRenderDataBarrier;
+
 class AGXUNREALBARRIER_API FShapeBarrier
 {
 public:
@@ -101,6 +103,10 @@ public:
 	 * @return The render data associated with the shape.
 	 */
 	FAGX_RenderData GetRenderData() const;
+
+	FRenderDataBarrier GetRenderData2() const;
+
+
 
 	/**
 	 * @return True if the native shape contains render data and the render data has a render

@@ -1,11 +1,13 @@
 #include "Shapes/ShapeBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 #include "Materials/ShapeMaterialBarrier.h"
-#include "AGX_LogCategory.h"
+#include "Shapes/RenderDataBarrier.h"
+#include "Shapes/RenderDataRef.h"
 
 // AGX Dynamics includes.
 #include "agxCollide/CollisionGroupManager.h"
@@ -259,6 +261,19 @@ FAGX_RenderData FShapeBarrier::GetRenderData() const
 	RenderDataUnreal.Guid = Convert(RenderDataAgx->getUuid());
 	RenderDataUnreal.bShouldRender = RenderDataAgx->getShouldRender();
 	return RenderDataUnreal;
+}
+
+FRenderDataBarrier FShapeBarrier::GetRenderData2() const
+{
+	check(HasNative());
+
+	if (!HasRenderData())
+	{
+		return FRenderDataBarrier();
+	}
+
+	const agxCollide::RenderData* RenderDataAgx = NativeRef->NativeShape->getRenderData();
+	return FRenderDataBarrier(std::make_unique<FRenderDataRef>(RenderDataAgx));
 }
 
 bool FShapeBarrier::HasRenderMaterial() const
