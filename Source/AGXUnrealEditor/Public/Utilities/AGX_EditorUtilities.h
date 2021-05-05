@@ -196,6 +196,9 @@ public:
 	static UStaticMeshComponent* CreateStaticMeshComponent(
 		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset, bool bRegister);
 
+	static UStaticMeshComponent* CreateStaticMeshComponent(
+		AActor& Owner, USceneComponent& Outer, UStaticMesh& MeshAsset);
+
 	/**
 	 * Creates a new UAGX_ShapeMaterialAsset for a shape material and returns the shape material
 	 * asset path. Returns empty string if the asset could not be created.

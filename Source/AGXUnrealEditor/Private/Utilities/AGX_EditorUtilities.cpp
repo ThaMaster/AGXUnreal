@@ -776,6 +776,22 @@ UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
 	return StaticMeshComponent;
 }
 
+UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
+	AActor& Owner, USceneComponent& Outer, UStaticMesh& MeshAsset)
+{
+	UStaticMeshComponent* StaticMeshComponent =
+		NewObject<UStaticMeshComponent>(&Outer, FName(*MeshAsset.GetName()));
+	StaticMeshComponent->SetStaticMesh(&MeshAsset);
+	Owner.AddInstanceComponent(StaticMeshComponent);
+	StaticMeshComponent->RegisterComponent();
+	if (!StaticMeshComponent->AttachToComponent(
+		&Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale))
+	{
+
+	}
+	return StaticMeshComponent;
+}
+
 FString FAGX_EditorUtilities::CreateShapeMaterialAsset(
 	const FString& DirName, const FShapeMaterialBarrier& Material)
 {
