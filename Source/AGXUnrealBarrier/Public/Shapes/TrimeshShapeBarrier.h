@@ -59,32 +59,6 @@ public:
 	 */
 	TArray<FVector> GetTriangleNormals() const;
 
-	int32 GetNumRenderPositions() const;
-
-	int32 GetNumRenderIndices() const;
-
-	int32 GetNumRenderTriangles() const;
-
-	/**
-	 * Indices into the other render data arrays. Each three consecutive indices form a triangle.
-	 */
-	TArray<uint32> GetRenderDataIndices() const;
-
-	/**
-	 * Positions for each render data vertex.
-	 */
-	TArray<FVector> GetRenderDataPositions() const;
-
-	/**
-	 * Normals for each render data vertex.
-	 */
-	TArray<FVector> GetRenderDataNormals() const;
-
-	/**
-	 * Texture coordinates for each render data vertex.
-	 */
-	TArray<FVector2D> GetRenderDataTextureCoordinates() const;
-
 	/**
 	 * The source name is a user-provided string that is stored with the trimesh.
 	 * it can be the name of a file on disk from which the mesh data was read,
