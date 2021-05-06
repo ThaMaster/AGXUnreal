@@ -5,7 +5,6 @@
 #include "Shapes/RenderMaterial.h"
 #include "TypeConversions.h"
 
-
 FRenderDataBarrier::FRenderDataBarrier()
 	: NativeRef(new FRenderDataRef())
 {
@@ -31,12 +30,21 @@ namespace RenderDataBarrier_helpers
 		std::numeric_limits<std::size_t>::max() >= std::numeric_limits<int32>::max(),
 		"Expecting std::size_t to hold all positive values that int32 can hold.");
 
+	/// @return True if the given Size fit in an int32.
 	bool CheckSize(size_t Size)
 	{
 		const size_t MaxAllowed = static_cast<size_t>(std::numeric_limits<int32>::max());
 		return Size <= MaxAllowed;
 	}
 
+	/**
+	 * Like CheckSize(size_t) but also prints a warning when the size is too large.
+	 *
+	 * @param Size The size to check.
+	 * @param DataName The name of the data the size belong to.
+	 * @param Guid The GUID of the Render Data that the data is part of.
+	 * @return True if the given Size fit in an int32.
+	 */
 	bool CheckSize(size_t Size, const TCHAR* DataName, const FGuid& Guid)
 	{
 		bool Ok = CheckSize(Size);
@@ -50,6 +58,14 @@ namespace RenderDataBarrier_helpers
 		return Ok;
 	}
 
+	/**
+	 * Convert the given Size to an int32, clamping it to the largest possible int32 it too large.
+	 *
+	 * @param Size The Size to convert/clamp.
+	 * @param DataName The name of the data the size belong to.
+	 * @param Guid The GUID of the Render Data that the data is part of.
+	 * @return The Size as an int32, possible clamped.
+	 */
 	int32 CastWithSaturate(size_t Size, const TCHAR* DataName, const FGuid& Guid)
 	{
 		if (CheckSize(Size, DataName, Guid))
@@ -62,6 +78,19 @@ namespace RenderDataBarrier_helpers
 		}
 	}
 
+	/**
+	 * Convert an AGX Dynamics render buffer to the corresponding Unreal Engine render buffer.
+	 *
+	 * @tparam AGXType The element type of the AGX Dynamics source buffer.
+	 * @tparam UnrealType The element type of the Unreal Engine target buffer.
+	 * @tparam FGetAGXBuffer Function fetching the AGX Dynamics buffer from a Render Data Barrier.
+	 * @tparam FConvert Function converting an AGX Dynamics element to the Unreal Engine type.
+	 * @param Barrier The Render Data Barrier to fetch the AGX Dynamics buffer from.
+	 * @param DataName The name of the buffer being convert. Only for error reporting.
+	 * @param GetAgxBuffer Callback for getting the AGX Dynamics buffer from the Render Data.
+	 * @param Convert Callback for converting AGX Dynamics elements to the Unreal Engien type.
+	 * @return A TArray containing the render buffer in Unreal Engine format.
+	 */
 	template <typename AGXType, typename UnrealType, typename FGetAGXBuffer, typename FConvert>
 	TArray<UnrealType> ConvertRenderBuffer(
 		const FRenderDataBarrier& Barrier, const TCHAR* DataName, FGetAGXBuffer GetAgxBuffer,
@@ -157,7 +186,7 @@ TArray<FVector2D> FRenderDataBarrier::GetTextureCoordinates() const
 bool FRenderDataBarrier::HasMaterial() const
 {
 	check(HasNative());
-	return NativeRef->Native->getRenderMaterial() !=  nullptr;
+	return NativeRef->Native->getRenderMaterial() != nullptr;
 }
 
 FAGX_RenderMaterial FRenderDataBarrier::GetMaterial() const

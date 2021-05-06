@@ -9,6 +9,18 @@
 struct FRenderDataRef;
 struct FAGX_RenderMaterial;
 
+/**
+ * Barrier class that gives access to the Render Data stored per shape in AGX Dynamics.
+ *
+ * The render data may contain a mesh and may contain a material, independently. The mesh is
+ * provided as a set of Array getter functions. The material is provided as a struct containing
+ * material parameters compatible with the M_ImportedBase Material asset shipped with AGX Dynamics
+ * for Unreal.
+ *
+ * Multiple shapes may share the same Render Data, and multiple Render Data may share the same
+ * Render Material.
+ *
+ */
 class AGXUNREALBARRIER_API FRenderDataBarrier
 {
 public:
