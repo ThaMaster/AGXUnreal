@@ -176,8 +176,6 @@ UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsse
 UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	const FAGX_RenderMaterial& Imported, const FString& DirectoryName, const FString& MaterialName)
 {
-	// Implementation based on https://github.com/gildor2/UEViewer/issues/118.
-
 	UMaterial* Base = LoadObject<UMaterial>(
 		nullptr, TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'"));
 	if (Base == nullptr)
@@ -222,27 +220,20 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 		return Base;
 	}
 
-	auto ConvertSrgbToLinearColor = [](const FVector4& InSrgb) -> FLinearColor {
-		FColor Srgb(
-			static_cast<uint8>(InSrgb.X * 255.0f), static_cast<uint8>(InSrgb.Y * 255.0f),
-			static_cast<uint8>(InSrgb.Z * 255.0f), static_cast<uint8>(InSrgb.W * 255.0f));
-		return {Srgb};
-	};
-
 	if (Imported.bHasDiffuse)
 	{
 		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Diffuse")), ConvertSrgbToLinearColor(Imported.Diffuse));
+			FName(TEXT("Diffuse")), FAGX_RenderMaterial::ConvertToLinear(Imported.Diffuse));
 	}
 	if (Imported.bHasAmbient)
 	{
 		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Ambient")), ConvertSrgbToLinearColor(Imported.Ambient));
+			FName(TEXT("Ambient")), FAGX_RenderMaterial::ConvertToLinear(Imported.Ambient));
 	}
 	if (Imported.bHasEmissive)
 	{
 		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Emissive")), ConvertSrgbToLinearColor(Imported.Emissive));
+			FName(TEXT("Emissive")), FAGX_RenderMaterial::ConvertToLinear(Imported.Emissive));
 	}
 	if (Imported.bHasShininess)
 	{

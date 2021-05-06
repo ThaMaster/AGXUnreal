@@ -52,4 +52,12 @@ struct AGXUNREALBARRIER_API FAGX_RenderMaterial
 	FName Name;
 
 	FGuid Guid;
+
+	/**
+	 * Convert an sRGB 0..1 color, for example those stored in FAGX_RenderMaterial, to FLinearColor
+	 * for use in Unreal Engine Render Material parameters.
+	 *
+	 * @return The given color in the linear color space.
+	 */
+	static FLinearColor ConvertToLinear(const FVector4& SRGBColor);
 };
