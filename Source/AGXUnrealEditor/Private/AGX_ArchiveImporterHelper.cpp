@@ -154,6 +154,39 @@ AAGX_RigidBodyActor* FAGX_ArchiveImporterHelper::InstantiateBody(
 
 namespace
 {
+	UMaterialInterface* CreateRenderMaterialInstance(
+		const FAGX_RenderMaterial& RenderMaterial, const FString& DirectoryName,
+		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials)
+	{
+		FGuid Guid = RenderMaterial.Guid;
+
+		// Have we seen this render material before?
+		if (UMaterialInstanceConstant** It = RestoredMaterials.Find(Guid))
+		{
+			// Yes, used the cached Material Instance.
+			return *It;
+		}
+
+		// This is a new material. Save it as an asset and in the cache.
+		FString MaterialName = RenderMaterial.Name.IsNone()
+								   ? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
+								   : RenderMaterial.Name.ToString();
+
+		UMaterialInterface* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
+			RenderMaterial, DirectoryName, MaterialName);
+		if (Material == nullptr)
+		{
+			return nullptr;
+		}
+
+		if (UMaterialInstanceConstant* Instance = Cast<UMaterialInstanceConstant>(Material))
+		{
+			RestoredMaterials.Add(RenderMaterial.Guid, Instance);
+		}
+
+		return Material;
+	}
+
 	void CreateRenderMaterialInstance(
 		UMeshComponent& Component, const FAGX_RenderMaterial& RenderMaterial,
 		const FString& DirectoryName, TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials)
@@ -191,20 +224,33 @@ namespace
 		Component.SetMaterial(0, Material);
 	}
 
-	void SetDefaultRenderMaterial(UMeshComponent& Component, bool IsSensor)
+	UMaterial* GetDefaultRenderMaterial(bool bIsSensor)
 	{
 		const TCHAR* AssetPath =
-			IsSensor
+			bIsSensor
 				? TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'")
 				: TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'");
 		UMaterial* Material = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
 		if (Material == nullptr)
 		{
 			UE_LOG(
+				LogAGX, Warning, TEXT("Could not load default%s render material from '%s'."),
+				(bIsSensor ? TEXT(" sensor") : TEXT("")), AssetPath);
+		}
+		return Material;
+	}
+
+	void SetDefaultRenderMaterial(UMeshComponent& Component, bool bIsSensor)
+	{
+		UMaterial* Material = GetDefaultRenderMaterial(bIsSensor);
+		if (Material == nullptr)
+		{
+			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Could not set render material on imported shape '%s'. The asset '%s' is not "
-					 "a Material."),
-				*Component.GetName(), AssetPath);
+				TEXT("Could not set render material on imported shape '%s'. Could not load the "
+					 "default render material"),
+				*Component.GetName());
+			return;
 		}
 		Component.SetMaterial(0, Material);
 	}
@@ -267,12 +313,89 @@ namespace
 		return Asset;
 	}
 
+	/**
+	 * Apply the Barrier's Render Data. This will disable visibility for VisualMesh and instead
+	 * create a Static Mesh Component from the triangles, if any, in the Render Data. If there are
+	 * no triangles then no Static Mesh Component will be created and this Shape will be invisible.
+	 *
+	 * If the Render Data has a Render Material then that will be converted to an Unreal Engine
+	 * Render Material and applied to both VisualMesh and the newly created Static Mesh Component,
+	 * if any. This makes it possible to hide the Render Data mesh and instead use the collision
+	 * data also for rendering.
+	 *
+	 * @param RenderData The AGX Dynamics representation of the Render Data.
+	 * @param VisualMesh The default Component used for visualization. Often the Shape itself.
+	 */
+	void ApplyRenderingData(
+		const FRenderDataBarrier& RenderData, UAGX_ShapeComponent& Component,
+		UMeshComponent& VisualMesh, TMap<FGuid, UStaticMesh*>& RestoredMeshes,
+		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials, const FString& DirectoryName)
+	{
+		VisualMesh.SetVisibility(false);
+
+		// Convert Render Data Mesh, if there is one.
+		UStaticMeshComponent* RenderDataComponent = nullptr;
+		if (RenderData.HasMesh())
+		{
+			UStaticMesh* RenderDataMeshAsset =
+				GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
+			RenderDataComponent = FAGX_EditorUtilities::CreateStaticMeshComponent(
+				*Component.GetOwner(), Component, *RenderDataMeshAsset);
+			RenderDataComponent->SetVisibility(RenderData.GetShouldRender());
+		}
+
+		// Convert Render Data Material, if there is one. May fall back to our default Material, and
+		// may also fail completely, leaving this at nullptr.
+		UMaterialInterface* RenderDataMaterial = nullptr;
+		if (RenderData.HasMaterial() && GIsEditor)
+		{
+			RenderDataMaterial = CreateRenderMaterialInstance(
+				RenderData.GetMaterial(), DirectoryName, RestoredMaterials);
+		}
+		else
+		{
+			// Use our default render material if the Render Data didn't have one. Also use the
+			// default when not in the Editor since creating new Materials is a Editor only
+			// operation.
+			//
+			// We are only allowed to create new assets, such as a MaterialInstance, when running
+			// within the Unreal Editor.
+			/// @todo This is not true. It seems we are allowed to create StaticMeshes. What's the
+			/// difference between a StaticMesh and a MaterialInstance? Is it because we create
+			/// Constant Material Instances?
+			RenderDataMaterial = GetDefaultRenderMaterial(Component.bIsSensor);
+		}
+
+		// Apply the Material we got, either from the Render Data or the default one, to all the
+		// rendering meshes we have.
+		if (RenderDataMaterial != nullptr)
+		{
+			VisualMesh.SetMaterial(0, RenderDataMaterial);
+			if (RenderDataComponent != nullptr)
+			{
+				RenderDataComponent->SetMaterial(0, RenderDataMaterial);
+			}
+		}
+	}
+
+	/**
+	 * Do the configuration that is common for all shape types. This includes setting object flags,
+	 * Component renaming, and applying Physics and Rendering Materials.
+	 *
+	 * @param Component The Unreal Engine representation of the imported Shape.
+	 * @param Barrier The AGX Dynamics representation of the imported Shape.
+	 * @param RestoredShapeMaterials Cache of imported Shape Materials.
+	 * @param RestoredRenderMaterials Cache of imported Render Materials.
+	 * @param RestoredMeshes Cache of imported Meshes, both for collision detection and rendering.
+	 * @param DirectoryName The name of the directory where all the imported assets are stored.
+	 * @param VisualMesh The Mesh Component that contains the default rendering of the Shape
+	 */
 	void FinalizeShape(
 		UAGX_ShapeComponent& Component, const FShapeBarrier& Barrier,
 		const TMap<FGuid, UAGX_ShapeMaterialAsset*>& RestoredShapeMaterials,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials,
 		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName,
-		UMeshComponent* RenderMaterialReceiver)
+		UMeshComponent& VisualMesh)
 	{
 		Component.UpdateVisualMesh();
 		Component.SetFlags(RF_Transactional);
@@ -288,64 +411,13 @@ namespace
 
 		if (Barrier.HasRenderData())
 		{
-			// Do not render Shapes that has Render Data, even if that Render Data doesn't have any
-			// triangles.
-			RenderMaterialReceiver->SetVisibility(false);
-
-			FRenderDataBarrier RenderData = Barrier.GetRenderData2();
-			if (RenderData.GetNumTriangles() > 0)
-			{
-				// The Shape has a render mesh that should be used instead of the primitive itself.
-				UStaticMesh* RenderDataMeshAsset =
-					GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
-				UStaticMeshComponent* MeshComponent =
-					FAGX_EditorUtilities::CreateStaticMeshComponent(
-						*Component.GetOwner(), Component, *RenderDataMeshAsset);
-				RenderMaterialReceiver = MeshComponent;
-				RenderMaterialReceiver->SetVisibility(RenderData.GetShouldRender());
-			}
+			ApplyRenderingData(
+				Barrier.GetRenderData2(), Component, VisualMesh, RestoredMeshes,
+				RestoredRenderMaterials, DirectoryName);
 		}
-
-		// Create and assign render material, if possible.
-		const bool bHasSource = Barrier.HasRenderMaterial();
-		const bool bHasDestination = RenderMaterialReceiver != nullptr;
-		if (bHasSource && bHasDestination)
+		else
 		{
-			// We are only allowed to create new assets, such as a MaterialInstance, when running
-			// within the Unreal Editor.
-			/// @todo This is not true. It seems we are allowed to create StaticMeshs. What's the
-			/// difference between a StaticMesh and a MaterialInstance?
-			if (GIsEditor)
-			{
-				CreateRenderMaterialInstance(
-					*RenderMaterialReceiver, Barrier.GetRenderMaterial(), DirectoryName,
-					RestoredRenderMaterials);
-			}
-			else
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Cannot import render data for '%s' because Material Instances cannot be "
-						 "created in Game mode. Editor mode is required."),
-					*Component.GetName())
-				SetDefaultRenderMaterial(*RenderMaterialReceiver, Component.bIsSensor);
-			}
-		}
-		else if (bHasSource && !bHasDestination)
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Cannot create render material for '%s' because it doesn't have a "
-					 "UMeshComponent to set the render material on."),
-				*Component.GetName());
-		}
-		else if (!bHasSource && bHasDestination)
-		{
-			SetDefaultRenderMaterial(*RenderMaterialReceiver, Component.bIsSensor);
-		}
-		else if (!bHasSource && !bHasDestination)
-		{
-			// Nothing to do.
+			SetDefaultRenderMaterial(VisualMesh, Component.bIsSensor);
 		}
 	}
 }
@@ -365,7 +437,7 @@ UAGX_SphereShapeComponent* FAGX_ArchiveImporterHelper::InstantiateSphere(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, Component);
+		DirectoryName, *Component);
 	return Component;
 }
 
@@ -384,7 +456,7 @@ UAGX_BoxShapeComponent* FAGX_ArchiveImporterHelper::InstantiateBox(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, Component);
+		DirectoryName, *Component);
 	return Component;
 }
 
@@ -403,7 +475,7 @@ UAGX_CylinderShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCylinder(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, Component);
+		DirectoryName, *Component);
 	return Component;
 }
 
@@ -422,7 +494,7 @@ UAGX_CapsuleShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCapsule(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, Component);
+		DirectoryName, *Component);
 	return Component;
 }
 
@@ -471,7 +543,7 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, MeshComponent);
+		DirectoryName, *MeshComponent);
 	return Component;
 }
 
