@@ -129,8 +129,8 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 		Asset.ImportVersion = EImportStaticMeshVersion::LastVersion;
 	};
 	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
-		DirectoryName, FString::Printf(TEXT("RenderData_%s"), *RenderData.GetGuid().ToString()),
-		TEXT("RenderData"), TEXT("StaticMesh"), InitAsset);
+		DirectoryName, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
+		TEXT("RenderMesh"), TEXT("StaticMesh"), InitAsset);
 	return CreatedAsset;
 }
 
