@@ -89,6 +89,12 @@ bool FRenderDataBarrier::GetShouldRender() const
 	return NativeRef->Native->getShouldRender();
 }
 
+bool FRenderDataBarrier::HasMesh() const
+{
+	check(HasNative());
+	return GetNumTriangles() != 0;
+}
+
 int32 FRenderDataBarrier::GetNumTriangles() const
 {
 	using namespace RenderDataBarrier_helpers;

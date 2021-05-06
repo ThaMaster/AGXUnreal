@@ -18,6 +18,8 @@ public:
 
 	bool GetShouldRender() const;
 
+	bool HasMesh() const;
+
 	int32 GetNumTriangles() const;
 	int32 GetNumIndices() const;
 
