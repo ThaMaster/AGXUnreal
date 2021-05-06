@@ -56,11 +56,23 @@ namespace
 		return Trimesh;
 	}
 
+	static_assert(
+		std::numeric_limits<std::size_t>::max() >= std::numeric_limits<int32>::max(),
+		"Expecting std::size_t to hold all positive values that int32 can hold.");
+
+	/// @return True if the given Size can be converted to an int32.
 	bool CheckSize(size_t Size)
 	{
 		return Size <= static_cast<size_t>(std::numeric_limits<int32>::max());
 	}
 
+	/**
+	 * Check that the given Size can be converted to an int32 and print a warning if too large.
+	 *
+	 * @param Size The size to check.
+	 * @param DataName The name of the data the size is for. Included in the warning message.
+	 * @return True if the given size can be converted to an int32.
+	 */
 	bool CheckSize(size_t Size, const TCHAR* DataName)
 	{
 		bool Ok = CheckSize(Size);
@@ -74,6 +86,25 @@ namespace
 		return Ok;
 	}
 
+	/**
+
+
+	 */
+	/**
+	 *
+	 * Convert an AGX Dynamics render buffer to the corresponding Unreal Engine render buffer.
+	 *
+	 * @tparam AGXType The element type of the AGX Dynamics source buffer.
+	 * @tparam UnrealType The element type of the Unreal Engine target buffer.
+	 * @tparam FGetAGXBuffer Function fetching the AGX Dynamics buffer from a Render Data Barrier.
+	 * @tparam FConvert Function converting an AGX Dynamics element to the Unreal Engine type.
+	 * @param Barrier The Render Data Barrier to fetch the AGX Dynamics buffer from.
+	 * @param Operation The operation being performed. Only for error reporting.
+	 * @param DataName The name of the buffer being convert. Only for error reporting.
+	 * @param GetAgxBuffer Callback for getting the AGX Dynamics buffer from the Render Data.
+	 * @param Convert Callback for converting AGX Dynamics elements to the Unreal Engien type.
+	 * @return A TArray containing the render buffer in Unreal Engine format.
+	 */
 	template <typename AgxType, typename UnrealType, typename FGetAgxBuffer, typename FConvert>
 	TArray<UnrealType> ConvertCollisionBuffer(
 		const FTrimeshShapeBarrier* Barrier, const TCHAR* Operation, const TCHAR* DataName,
@@ -211,7 +242,8 @@ FString FTrimeshShapeBarrier::GetSourceName() const
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Cannot fetch triangle soure name from Trimesh barrier without a native Trimesh"));
+			TEXT(
+				"Cannot fetch triangle source name from Trimesh barrier without a native Trimesh"));
 		return SourceName;
 	}
 
