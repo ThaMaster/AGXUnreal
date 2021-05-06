@@ -7,6 +7,7 @@
 #include <memory>
 
 struct FRenderDataRef;
+struct FAGX_RenderMaterial;
 
 class AGXUNREALBARRIER_API FRenderDataBarrier
 {
@@ -28,6 +29,9 @@ public:
 	TArray<FVector> GetNormals() const;
 	TArray<FVector2D> GetTextureCoordinates() const;
 
+	bool HasMaterial() const;
+	FAGX_RenderMaterial GetMaterial() const;
+
 	FGuid GetGuid() const;
 
 	bool HasNative() const;
@@ -36,12 +40,7 @@ public:
 	void ReleaseNative();
 
 private:
-	// Implement these as needed, keep private/delete until the need has been
-	// demonstrated.
-
 	FRenderDataBarrier(const FRenderDataBarrier& Other) = delete;
-
-
 	FRenderDataBarrier& operator=(const FRenderDataBarrier& Other) = delete;
 	FRenderDataBarrier& operator=(FRenderDataRef&& Other) = delete;
 

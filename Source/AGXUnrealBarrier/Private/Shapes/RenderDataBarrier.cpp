@@ -2,7 +2,9 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Shapes/RenderDataRef.h"
+#include "Shapes/RenderMaterial.h"
 #include "TypeConversions.h"
+
 
 FRenderDataBarrier::FRenderDataBarrier()
 	: NativeRef(new FRenderDataRef())
@@ -150,6 +152,49 @@ TArray<FVector2D> FRenderDataBarrier::GetTextureCoordinates() const
 		*this, TEXT("texture coordinates"),
 		[](const agxCollide::RenderData* Data) -> auto& { return Data->getTexCoordArray(); },
 		[](const agx::Vec2& Vec2) { return Convert(Vec2); });
+}
+
+bool FRenderDataBarrier::HasMaterial() const
+{
+	check(HasNative());
+	return NativeRef->Native->getRenderMaterial() !=  nullptr;
+}
+
+FAGX_RenderMaterial FRenderDataBarrier::GetMaterial() const
+{
+	check(HasNative());
+	check(HasMaterial());
+
+	FAGX_RenderMaterial RenderMaterial;
+
+	const agxCollide::RenderData* RenderDataAgx = NativeRef->Native.get();
+	const agxCollide::RenderMaterial* RenderMaterialAgx = RenderDataAgx->getRenderMaterial();
+
+	RenderMaterial.Guid = Convert(RenderMaterialAgx->getUuid());
+	const agx::String& NameAgx = RenderMaterialAgx->getName();
+	RenderMaterial.Name = NameAgx.empty() ? NAME_None : FName(*Convert(NameAgx));
+
+	if ((RenderMaterial.bHasDiffuse = RenderMaterialAgx->hasDiffuseColor()) == true)
+	{
+		agx::Vec4 DiffuseAgx(RenderMaterialAgx->getDiffuseColor());
+		RenderMaterial.Diffuse = Convert(DiffuseAgx);
+	}
+	if ((RenderMaterial.bHasAmbient = RenderMaterialAgx->hasAmbientColor()) == true)
+	{
+		agx::Vec4 AmbientAgx(RenderMaterialAgx->getAmbientColor());
+		RenderMaterial.Ambient = Convert(AmbientAgx);
+	}
+	if ((RenderMaterial.bHasEmissive = RenderMaterialAgx->hasEmissiveColor()) == true)
+	{
+		agx::Vec4 EmissiveAgx(RenderMaterialAgx->getEmissiveColor());
+		RenderMaterial.Emissive = Convert(EmissiveAgx);
+	}
+	if ((RenderMaterial.bHasShininess = RenderMaterialAgx->hasShininess()) == true)
+	{
+		RenderMaterial.Shininess = RenderMaterialAgx->getShininess();
+	}
+
+	return RenderMaterial;
 }
 
 FGuid FRenderDataBarrier::GetGuid() const
