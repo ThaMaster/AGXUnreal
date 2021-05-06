@@ -562,48 +562,26 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 }
 
 UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
-	AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset,
+	AActor& Owner, USceneComponent& Outer, UStaticMesh& MeshAsset,
 	bool bRegisterComponent)
 {
-	if (!MeshAsset)
-	{
-		UE_LOG(LogAGX, Error, TEXT("CreateStaticMeshComponent: parameter MeshAsset was nullptr."));
-		return nullptr;
-	}
-
 	/// \todo Which EObjectFlags should be passed to NewObject?
-	UStaticMeshComponent* StaticMeshComponent =
-		NewObject<UStaticMeshComponent>(Outer, FName(*MeshAsset->GetName()));
-	StaticMeshComponent->SetStaticMesh(MeshAsset);
-	Owner->AddInstanceComponent(StaticMeshComponent);
-	if (bRegisterComponent)
-	{
-		StaticMeshComponent->RegisterComponent();
-	}
-	const bool Attached = StaticMeshComponent->AttachToComponent(
-		Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-	if (!Attached)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Failed to attach imported StaticMeshComponent '%s' to Actor '%s'."),
-			*StaticMeshComponent->GetName(), *Owner->GetName());
-	}
-	return StaticMeshComponent;
-}
-
-UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
-	AActor& Owner, USceneComponent& Outer, UStaticMesh& MeshAsset)
-{
 	UStaticMeshComponent* StaticMeshComponent =
 		NewObject<UStaticMeshComponent>(&Outer, FName(*MeshAsset.GetName()));
 	StaticMeshComponent->SetStaticMesh(&MeshAsset);
 	Owner.AddInstanceComponent(StaticMeshComponent);
-	StaticMeshComponent->RegisterComponent();
-	if (!StaticMeshComponent->AttachToComponent(
-		&Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale))
+	if (bRegisterComponent)
 	{
-
+		StaticMeshComponent->RegisterComponent();
+	}
+	if (!StaticMeshComponent->AttachToComponent(
+			&Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Failed to attach imported StaticMeshComponent '%s' to parent Component '%s' in "
+				 "Actor '%s'."),
+			*StaticMeshComponent->GetName(), *Outer.GetName(), *Owner.GetName());
 	}
 	return StaticMeshComponent;
 }

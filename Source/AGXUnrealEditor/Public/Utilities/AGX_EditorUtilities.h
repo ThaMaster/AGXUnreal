@@ -184,20 +184,16 @@ public:
 
 	/**
 	 * Create a new UStaticMeshComponent. The UStaticMeshComponent will be added as a child to the
-	 * given UAGX_TrimeshShapeComponent. The StaticMesh asset is assigned to the
-	 * UStaticMeshComponent's static mesh.
+	 * given USceneComponent.
 	 *
 	 * @param Owner The Actor to which the StaticMeshComponent should be added.
-	 * @param Outer The TrimeshShapeComponent that should use the mesh data.
+	 * @param Outer The USceneComponent that the StaticMeshComponent should be a child of.
 	 * @param MeshAsset The Mesh asset to assign the UStaticMeshComponent's static mesh to.
 	 * @param bRegister True if AActor::RegisterComponent should be called. Must be called later if
 	 * false.
 	 */
 	static UStaticMeshComponent* CreateStaticMeshComponent(
-		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset, bool bRegister);
-
-	static UStaticMeshComponent* CreateStaticMeshComponent(
-		AActor& Owner, USceneComponent& Outer, UStaticMesh& MeshAsset);
+		AActor& Owner, USceneComponent& Outer, UStaticMesh& MeshAsset, bool bRegister);
 
 	/**
 	 * Creates a new UAGX_ShapeMaterialAsset for a shape material and returns the shape material
