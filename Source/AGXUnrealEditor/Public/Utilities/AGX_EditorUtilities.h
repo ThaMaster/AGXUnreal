@@ -100,8 +100,25 @@ public:
 	static UAGX_TrimeshShapeComponent* CreateTrimeshShape(
 		AActor* Owner, USceneComponent* Outer, bool bRegister);
 
+	/**
+	 * Create an FRawMesh from the collision triangles in the given Trimesh Shape Barrier.
+	 *
+	 * The mesh created will be limited to the information stored in the Trimesh, so no texture
+	 * coordinates and only one normal per triangle.
+	 *
+	 * @param Trimesh The Ttrimesh holding the triangles to convert.
+	 * @return An FRawMesh containing the same triangles as the Trimesh.
+	 */
 	static FRawMesh CreateRawMeshFromTrimesh(const FTrimeshShapeBarrier& Trimesh);
 
+	/**
+	 * Create an FRawMesh from the render triangles in the given Render Data Barrier.
+	 *
+	 * Will return an empty FRawMesh if the Render Data doesn't have a mesh.
+	 *
+	 * @param RenderData Render Data holding the triangles to convert.
+	 * @return An FRawMesh containing the same triangles as the Render Data.
+	 */
 	static FRawMesh CreateRawMeshFromRenderData(const FRenderDataBarrier& RenderData);
 
 	/**
