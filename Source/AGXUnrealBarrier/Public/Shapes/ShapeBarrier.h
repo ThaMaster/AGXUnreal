@@ -1,7 +1,6 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "Shapes/RenderData.h"
 #include "Shapes/RenderMaterial.h"
 
 // Unreal Engine includes.
@@ -102,9 +101,7 @@ public:
 	 * Should only be called on Shapes for which HasRenderData returns true.
 	 * @return The render data associated with the shape.
 	 */
-	FAGX_RenderData GetRenderData() const;
-
-	FRenderDataBarrier GetRenderData2() const;
+	FRenderDataBarrier GetRenderData() const;
 
 
 

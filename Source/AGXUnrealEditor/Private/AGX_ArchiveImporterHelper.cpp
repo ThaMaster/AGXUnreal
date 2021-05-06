@@ -412,7 +412,7 @@ namespace
 		if (Barrier.HasRenderData())
 		{
 			ApplyRenderingData(
-				Barrier.GetRenderData2(), Component, VisualMesh, RestoredMeshes,
+				Barrier.GetRenderData(), Component, VisualMesh, RestoredMeshes,
 				RestoredRenderMaterials, DirectoryName);
 		}
 		else

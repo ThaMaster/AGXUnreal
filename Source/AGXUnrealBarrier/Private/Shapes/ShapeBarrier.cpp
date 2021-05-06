@@ -245,25 +245,7 @@ bool FShapeBarrier::HasRenderData() const
 	return NativeRef->NativeShape->getRenderData() != nullptr;
 }
 
-FAGX_RenderData FShapeBarrier::GetRenderData() const
-{
-	check(HasNative());
-
-	FAGX_RenderData RenderDataUnreal;
-	if (!HasRenderData())
-	{
-		/// \todo Decide what defaults should be returned here.
-		return RenderDataUnreal;
-	}
-
-	const agxCollide::RenderData* RenderDataAgx = NativeRef->NativeShape->getRenderData();
-
-	RenderDataUnreal.Guid = Convert(RenderDataAgx->getUuid());
-	RenderDataUnreal.bShouldRender = RenderDataAgx->getShouldRender();
-	return RenderDataUnreal;
-}
-
-FRenderDataBarrier FShapeBarrier::GetRenderData2() const
+FRenderDataBarrier FShapeBarrier::GetRenderData() const
 {
 	check(HasNative());
 
