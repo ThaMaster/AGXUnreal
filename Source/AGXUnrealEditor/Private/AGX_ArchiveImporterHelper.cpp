@@ -154,6 +154,17 @@ AAGX_RigidBodyActor* FAGX_ArchiveImporterHelper::InstantiateBody(
 
 namespace
 {
+	/**
+	 * Convert an AGX Dynamics Render Material to an Unreal Engine Render Material and store it
+	 * as an asset in the given directory. Will cache and reuse Render Materials if the same one
+	 * is passed multiple times. Will fall back to the default import material if asset creation
+	 * fails.
+	 *
+	 * @param RenderMaterial The AGX Dynamics Material to convert to an Unreal Engine Material
+	 * @param DirectoryName The name of the directory where this archive's assets are stored.
+	 * @param RestoredMaterials Cache of resotred Render Materials.
+	 * @return The Unreal Engine material for the AGX Dynamics material, or the default material.
+	 */
 	UMaterialInterface* CreateRenderMaterialInstance(
 		const FAGX_RenderMaterial& RenderMaterial, const FString& DirectoryName,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials)
@@ -171,57 +182,22 @@ namespace
 		FString MaterialName = RenderMaterial.Name.IsNone()
 								   ? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
 								   : RenderMaterial.Name.ToString();
-
 		UMaterialInterface* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 			RenderMaterial, DirectoryName, MaterialName);
 		if (Material == nullptr)
 		{
+			// Both asset creation and default material load failed. That's bad.
 			return nullptr;
 		}
 
+		// Check if we got a new Material Instance, or if we fell back to the default material.
 		if (UMaterialInstanceConstant* Instance = Cast<UMaterialInstanceConstant>(Material))
 		{
+			// This is a new Material Instance, store it in the cache.
 			RestoredMaterials.Add(RenderMaterial.Guid, Instance);
 		}
 
 		return Material;
-	}
-
-	void CreateRenderMaterialInstance(
-		UMeshComponent& Component, const FAGX_RenderMaterial& RenderMaterial,
-		const FString& DirectoryName, TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials)
-	{
-		FGuid Guid = RenderMaterial.Guid;
-
-		// Have we seen this render material before?
-		if (UMaterialInstanceConstant** It = RestoredMaterials.Find(Guid))
-		{
-			// Yes, use the cached Material Instance.
-			check(*It != nullptr); // Should never put nullptr into the table.
-			Component.SetMaterial(0, *It);
-			return;
-		}
-
-		// It's a new material, save it as an asset and in the cache.
-		FString MaterialName =
-			RenderMaterial.Name.IsNone() ? Component.GetName() : RenderMaterial.Name.ToString();
-		UMaterialInterface* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
-			RenderMaterial, DirectoryName, MaterialName);
-		if (Material == nullptr)
-		{
-			// Fallback to the default import material is done by SaveImportedRenderMaterialAsset,
-			// so no need to try and call SetDefaultRenderMaterial here.
-			UE_LOG(
-				LogAGX, Warning, TEXT("Could not set render material on imported shape '%s'."),
-				*Component.GetName());
-			return;
-		}
-		if (UMaterialInstanceConstant* Instance = Cast<UMaterialInstanceConstant>(Material))
-		{
-			// We don't get here if the save failed and we fell back to the default import material.
-			RestoredMaterials.Add(RenderMaterial.Guid, Instance);
-		}
-		Component.SetMaterial(0, Material);
 	}
 
 	UMaterial* GetDefaultRenderMaterial(bool bIsSensor)
@@ -255,25 +231,40 @@ namespace
 		Component.SetMaterial(0, Material);
 	}
 
+	/**
+	 * Convert the given Trimesh to an Unreal Engine Static Mesh asset stored in the StaticMeshes
+	 * folder in the archive's folder in the ImportedAGXArchives folder.
+	 *
+	 * The created meshes are cached on the Trimesh's Mesh Data GUID so asking for the same mesh
+	 * again will return the previously created Static Mesh asset.
+	 *
+	 * @param Trimesh The Trimesh containing the mesh to store.
+	 * @param FallbackName A name to give the asset in case the Trimesh doesn't have a valid name.
+	 * @param RestoredMeshes Static Mesh cache.
+	 * @param DirectoryName The name of the folder where all assets for this archive is stored.
+	 * @return
+	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& FallbackName,
 		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName)
 	{
 		FGuid Guid = Trimesh.GetMeshDataGuid();
 
-		// If the GUID is invalid, try to create the mesh asset anyway but without adding it to the
-		// RestoredMeshes map.
 		if (!Guid.IsValid())
 		{
+			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
+			// the RestoredMeshes cache.
 			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 				Trimesh, DirectoryName, FallbackName);
 		}
 
 		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
 		{
+			// We have seen this mesh before, use the one in the cache.
 			return Asset;
 		}
 
+		// This is a new mesh. Create the Static Mesh asset and add to the cache.
 		UStaticMesh* Asset =
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryName, FallbackName);
 		RestoredMeshes.Add(Guid, Asset);
@@ -289,7 +280,7 @@ namespace
 	 *
 	 * @param RenderData The Render Data Barrier containing the mesh to store.
 	 * @param RestoredMeshes Static Mesh cache.
-	 * @param DirectoryName The name of the folder where all assets for this import is stored.
+	 * @param DirectoryName The name of the folder where all assets for this archive is stored.
 	 * @return
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
@@ -299,14 +290,18 @@ namespace
 		FGuid Guid = RenderData.GetGuid();
 		if (!Guid.IsValid())
 		{
+			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
+			// the RestoredMeshes cache.
 			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
 		}
 
 		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
 		{
+			// We have seen this mesh before, use the one in the cache.
 			return Asset;
 		}
 
+		// This is a new mesh. Create the Static Mesh asset and add to the cache.
 		UStaticMesh* Asset =
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
 		RestoredMeshes.Add(Guid, Asset);
