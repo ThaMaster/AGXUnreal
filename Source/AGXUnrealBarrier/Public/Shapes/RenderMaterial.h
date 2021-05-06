@@ -7,6 +7,16 @@
 
 #include "RenderMaterial.generated.h"
 
+/**
+ * A set of parameters compatible with the M_ImportedBase Render Material shipped with AGX Dynamics
+ * for Unreal. Used during AGX Dynamics archive importing to convert Render Data Render Materials to
+ * Unreal Engine Render Materials.
+ *
+ * The data members may only be read if the corresponding bHas-bit has been set.
+ *
+ * The colors are in sRGB 0..1 format. To be used in a material they must be converted to the linear
+ * color space.
+ */
 USTRUCT()
 struct AGXUNREALBARRIER_API FAGX_RenderMaterial
 {
