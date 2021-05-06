@@ -245,6 +245,13 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	Material->SetFlags(RF_Standalone);
 	Material->MarkPackageDirty();
 	Material->PostEditChange();
+	UPackage* Package = Material->GetTypedOuter<UPackage>();
+	if (Package != nullptr)
+	{
+		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
+			PackagePath, FPackageName::GetAssetPackageExtension());
+		UPackage::SavePackage(Package, Material, RF_NoFlags, *PackageFilename);
+	}
 
 	return Material;
 }
