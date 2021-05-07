@@ -20,12 +20,19 @@ struct FTriIndices;
  * VertexIndices: TArray<uint32> - Three uint32s per triangle. Used to read from VertexPositions.
  * TriangleNormals: TArray<FVector> - One FVector per triangle.
  *
- * In addition to the collision data a trimesh may contain rendering data. The rendering data
- * contains  its own mesh which may be equivalent to the collision mesh, but may also be different.
- * The render data also store vertex positions, vertex indices, and normals, but also texture
- * coordinates. The normals are not stored per triangle but instead per vertex and should be
- * accessed via the vertex indices just like the positions. The same is true for the texture
- * coordinates.
+ * Data shared among triangles:
+ *   positions: [Vec3, Vec3, Vec3 Vec3, Vec3, ... ]
+ *
+ * Data owned by each triangle:
+ *               |  Triangle 0   |  Triangle 1   | ... |
+ *   indices:    | int, int, int | int, int, int | ... |
+ *   normals:    |     Vec3      |      Vec3     | ... |
+ *
+ * The mesh data is stored in a hidden Mesh Data class that can be shared between Trimeshes. Use
+ * GetMeshDataGuid to determine if this is the case.
+ *
+ * As with any shape, a trimesh may contain render data. The render mesh, if any, is separate from
+ * the collision mesh and uses a different storage format.
  */
 class AGXUNREALBARRIER_API FTrimeshShapeBarrier : public FShapeBarrier
 {
@@ -42,7 +49,7 @@ public:
 	int32 GetNumTriangles() const;
 
 	/**
-	 * One FVector per vertex location. Vertex positions can be shared between
+	 * One FVector per vertex position. Vertex positions can be shared between
 	 * triangles.
 	 */
 	TArray<FVector> GetVertexPositions() const;
@@ -59,40 +66,21 @@ public:
 	 */
 	TArray<FVector> GetTriangleNormals() const;
 
-	int32 GetNumRenderPositions() const;
-
-	int32 GetNumRenderIndices() const;
-
-	int32 GetNumRenderTriangles() const;
-
-	/**
-	 * Indices into the other render data arrays. Each three consecutive indices form a triangle.
-	 */
-	TArray<uint32> GetRenderDataIndices() const;
-
-	/**
-	 * Positions for each render data vertex.
-	 */
-	TArray<FVector> GetRenderDataPositions() const;
-
-	/**
-	 * Normals for each render data vertex.
-	 */
-	TArray<FVector> GetRenderDataNormals() const;
-
-	/**
-	 * Texture coordinates for each render data vertex.
-	 */
-	TArray<FVector2D> GetRenderDataTextureCoordinates() const;
-
 	/**
 	 * The source name is a user-provided string that is stored with the trimesh.
 	 * it can be the name of a file on disk from which the mesh data was read,
 	 * or some other form of description. May be the empty string.
+	 *
 	 * @return The source name that has been stored with the trimesh.
 	 */
 	FString GetSourceName() const;
 
+	/**
+	 * Get the GUID for the mesh data. This can be used to determine if two Trimeshes uses the same
+	 * mesh data and thus must be identical.
+	 *
+	 * @return The GUID for the mesh data.
+	 */
 	FGuid GetMeshDataGuid() const;
 
 	void AllocateNative(

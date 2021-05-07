@@ -9,11 +9,14 @@
 #include <tuple>
 
 // Shape classes.
+class FRenderDataBarrier;
+class FShapeMaterialBarrier;
+class FTrimeshShapeBarrier;
+class UAGX_BoxShapeComponent;
+class UAGX_CapsuleShapeComponent;
+class UAGX_CylinderShapeComponent;
 class UAGX_ShapeComponent;
 class UAGX_SphereShapeComponent;
-class UAGX_BoxShapeComponent;
-class UAGX_CylinderShapeComponent;
-class UAGX_CapsuleShapeComponent;
 class UAGX_TrimeshShapeComponent;
 
 // Constraint classes.
@@ -24,8 +27,6 @@ class UAGX_HingeConstraintComponent;
 class UAGX_PrismaticConstraintComponent;
 
 // Other AGXUnreal classes.
-class FTrimeshShapeBarrier;
-class FShapeMaterialBarrier;
 class FContactMaterialBarrier;
 class UAGX_RigidBodyComponent;
 
@@ -99,7 +100,26 @@ public:
 	static UAGX_TrimeshShapeComponent* CreateTrimeshShape(
 		AActor* Owner, USceneComponent* Outer, bool bRegister);
 
+	/**
+	 * Create an FRawMesh from the collision triangles in the given Trimesh Shape Barrier.
+	 *
+	 * The mesh created will be limited to the information stored in the Trimesh, so no texture
+	 * coordinates and only one normal per triangle.
+	 *
+	 * @param Trimesh The Trimesh holding the triangles to convert.
+	 * @return An FRawMesh containing the same triangles as the Trimesh.
+	 */
 	static FRawMesh CreateRawMeshFromTrimesh(const FTrimeshShapeBarrier& Trimesh);
+
+	/**
+	 * Create an FRawMesh from the render triangles in the given Render Data Barrier.
+	 *
+	 * Will return an empty FRawMesh if the Render Data doesn't have a mesh.
+	 *
+	 * @param RenderData Render Data holding the triangles to convert.
+	 * @return An FRawMesh containing the same triangles as the Render Data.
+	 */
+	static FRawMesh CreateRawMeshFromRenderData(const FRenderDataBarrier& RenderData);
 
 	/**
 	 * Apply the RawMesh data to the StaticMesh.
@@ -181,17 +201,16 @@ public:
 
 	/**
 	 * Create a new UStaticMeshComponent. The UStaticMeshComponent will be added as a child to the
-	 * given UAGX_TrimeshShapeComponent. The StaticMesh asset is assigned to the
-	 * UStaticMeshComponent's static mesh.
+	 * given USceneComponent.
 	 *
 	 * @param Owner The Actor to which the StaticMeshComponent should be added.
-	 * @param Outer The TrimeshShapeComponent that should use the mesh data.
+	 * @param Outer The USceneComponent that the StaticMeshComponent should be a child of.
 	 * @param MeshAsset The Mesh asset to assign the UStaticMeshComponent's static mesh to.
 	 * @param bRegister True if AActor::RegisterComponent should be called. Must be called later if
 	 * false.
 	 */
 	static UStaticMeshComponent* CreateStaticMeshComponent(
-		AActor* Owner, UAGX_TrimeshShapeComponent* Outer, UStaticMesh* MeshAsset, bool bRegister);
+		AActor& Owner, USceneComponent& Outer, UStaticMesh& MeshAsset, bool bRegister);
 
 	/**
 	 * Creates a new UAGX_ShapeMaterialAsset for a shape material and returns the shape material

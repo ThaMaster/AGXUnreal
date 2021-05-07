@@ -56,41 +56,23 @@ namespace
 		return Trimesh;
 	}
 
-	const agxCollide::RenderData* GetRenderData(
-		const FTrimeshShapeBarrier* Barrier, const TCHAR* Operation)
-	{
-		const agxCollide::Trimesh* Native = NativeTrimesh(Barrier, Operation);
-		if (Native == nullptr)
-		{
-			return nullptr;
-		}
+	static_assert(
+		std::numeric_limits<std::size_t>::max() >= std::numeric_limits<int32>::max(),
+		"Expecting std::size_t to hold all positive values that int32 can hold.");
 
-		const agxCollide::RenderData* RenderData = Native->getRenderData();
-		if (RenderData == nullptr)
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Cannot %s Trimesh barrier whose native Trimesh doesn't contain render data."),
-				Operation);
-			return nullptr;
-		}
-
-		return RenderData;
-	}
-
-	agxCollide::RenderData* GetRenderData(FTrimeshShapeBarrier* Barrier, const TCHAR* Operation)
-	{
-		const FTrimeshShapeBarrier* ConstBarrier = const_cast<const FTrimeshShapeBarrier*>(Barrier);
-		const agxCollide::RenderData* ConstRenderData = ::GetRenderData(ConstBarrier, Operation);
-		agxCollide::RenderData* RenderData = const_cast<agxCollide::RenderData*>(ConstRenderData);
-		return RenderData;
-	}
-
+	/// @return True if the given Size can be converted to an int32.
 	bool CheckSize(size_t Size)
 	{
 		return Size <= static_cast<size_t>(std::numeric_limits<int32>::max());
 	}
 
+	/**
+	 * Check that the given Size can be converted to an int32 and print a warning if too large.
+	 *
+	 * @param Size The size to check.
+	 * @param DataName The name of the data the size is for. Included in the warning message.
+	 * @return True if the given size can be converted to an int32.
+	 */
 	bool CheckSize(size_t Size, const TCHAR* DataName)
 	{
 		bool Ok = CheckSize(Size);
@@ -104,10 +86,24 @@ namespace
 		return Ok;
 	}
 
-	template <typename AgxType, typename UnrealType, typename FGetAgxBuffer, typename FConvert>
+	/**
+	 * Convert an AGX Dynamics render buffer to the corresponding Unreal Engine render buffer.
+	 *
+	 * @tparam AGXType The element type of the AGX Dynamics source buffer.
+	 * @tparam UnrealType The element type of the Unreal Engine target buffer.
+	 * @tparam FGetAGXBuffer Function fetching the AGX Dynamics buffer from a Render Data Barrier.
+	 * @tparam FConvert Function converting an AGX Dynamics element to the Unreal Engine type.
+	 * @param Barrier The Render Data Barrier to fetch the AGX Dynamics buffer from.
+	 * @param Operation The operation being performed. Only for error reporting.
+	 * @param DataName The name of the buffer being convert. Only for error reporting.
+	 * @param GetAGXBuffer Callback for getting the AGX Dynamics buffer from the Render Data.
+	 * @param Convert Callback for converting AGX Dynamics elements to the Unreal Engien type.
+	 * @return A TArray containing the render buffer in Unreal Engine format.
+	 */
+	template <typename AGXType, typename UnrealType, typename FGetAGXBuffer, typename FConvert>
 	TArray<UnrealType> ConvertCollisionBuffer(
 		const FTrimeshShapeBarrier* Barrier, const TCHAR* Operation, const TCHAR* DataName,
-		FGetAgxBuffer GetAgxBuffer, FConvert Convert)
+		FGetAGXBuffer GetAGXBuffer, FConvert Convert)
 	{
 		TArray<UnrealType> DataUnreal;
 		const agxCollide::Trimesh* Trimesh = NativeTrimesh(Barrier, Operation);
@@ -115,39 +111,15 @@ namespace
 		{
 			return DataUnreal;
 		}
-		const agx::VectorPOD<AgxType>& DataAgx = GetAgxBuffer(Trimesh->getMeshData());
-		if (!CheckSize(DataAgx.size(), DataName))
+		const agx::VectorPOD<AGXType>& DataAGX = GetAGXBuffer(Trimesh->getMeshData());
+		if (!CheckSize(DataAGX.size(), DataName))
 		{
 			return DataUnreal;
 		}
-		DataUnreal.Reserve(static_cast<int32>(DataAgx.size()));
-		for (AgxType DatumAgx : DataAgx)
+		DataUnreal.Reserve(static_cast<int32>(DataAGX.size()));
+		for (AGXType DatumAGX : DataAGX)
 		{
-			DataUnreal.Add(Convert(DatumAgx));
-		}
-		return DataUnreal;
-	}
-
-	template <typename AgxType, typename UnrealType, typename FGetAgxBuffer, typename FConvert>
-	TArray<UnrealType> ConvertRenderBuffer(
-		const FTrimeshShapeBarrier* Barrier, const TCHAR* Operation, const TCHAR* DataName,
-		FGetAgxBuffer GetAgxBuffer, FConvert Convert)
-	{
-		TArray<UnrealType> DataUnreal;
-		const agxCollide::RenderData* RenderData = ::GetRenderData(Barrier, Operation);
-		if (RenderData == nullptr)
-		{
-			return DataUnreal;
-		}
-		const agx::VectorPOD<AgxType>& DataAgx = GetAgxBuffer(RenderData);
-		if (!CheckSize(DataAgx.size(), DataName))
-		{
-			return DataUnreal;
-		}
-		DataUnreal.Reserve(static_cast<int32>(DataAgx.size()));
-		for (AgxType DatumAgx : DataAgx)
-		{
-			DataUnreal.Add(Convert(DatumAgx));
+			DataUnreal.Add(Convert(DatumAGX));
 		}
 		return DataUnreal;
 	}
@@ -258,94 +230,6 @@ TArray<FVector> FTrimeshShapeBarrier::GetTriangleNormals() const
 		[](const agx::Vec3& Normal) { return ConvertVector(Normal); });
 }
 
-int32 FTrimeshShapeBarrier::GetNumRenderPositions() const
-{
-	const agxCollide::RenderData* RenderData =
-		::GetRenderData(this, TEXT("fetch num render positions"));
-	if (RenderData == nullptr)
-	{
-		return -1;
-	}
-	const size_t NumPositions = RenderData->getVertexArray().size();
-	if (!CheckSize(NumPositions, TEXT("render positions")))
-	{
-		return -1;
-	}
-	return static_cast<int32>(NumPositions);
-}
-
-int32 FTrimeshShapeBarrier::GetNumRenderTriangles() const
-{
-	const agxCollide::RenderData* RenderData = ::GetRenderData(this, TEXT("fetch num triangles"));
-	if (RenderData == nullptr)
-	{
-		return -1;
-	}
-	const size_t NumIndices = RenderData->getIndexArray().size();
-	if (NumIndices % 3 != 0)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Trimesh '%s' has invalid render data. The number of vertex indices isn't a "
-				 "multiple of 3. The last triangle will be skipped."),
-			*GetSourceName())
-	}
-	const size_t NumTriangles = NumIndices / 3;
-	if (!CheckSize(NumTriangles, TEXT("render triangles")))
-	{
-		return -1;
-	}
-	return static_cast<int32>(NumTriangles);
-}
-
-int32 FTrimeshShapeBarrier::GetNumRenderIndices() const
-{
-	const agxCollide::RenderData* RenderData =
-		::GetRenderData(this, TEXT("fetch num render indices"));
-	if (RenderData == nullptr)
-	{
-		return -1;
-	}
-	const size_t NumIndices = RenderData->getIndexArray().size();
-	if (!CheckSize(NumIndices, TEXT("render indices")))
-	{
-		return -1;
-	}
-	return static_cast<int32>(NumIndices);
-}
-
-TArray<uint32> FTrimeshShapeBarrier::GetRenderDataIndices() const
-{
-	return ConvertRenderBuffer<agx::UInt32, uint32>(
-		this, TEXT("fetch render data indices from"), TEXT("render data indices"),
-		[](const agxCollide::RenderData* Render) -> auto& { return Render->getIndexArray(); },
-		[](const agx::UInt32 Index) { return static_cast<uint32>(Index); });
-}
-
-TArray<FVector> FTrimeshShapeBarrier::GetRenderDataPositions() const
-{
-	return ConvertRenderBuffer<agx::Vec3, FVector>(
-		this, TEXT("fetch render data positions from"), TEXT("render data positions"),
-		[](const agxCollide::RenderData* Render) -> auto& { return Render->getVertexArray(); },
-		[](const agx::Vec3& Position) { return ConvertDisplacement(Position); });
-}
-
-TArray<FVector> FTrimeshShapeBarrier::GetRenderDataNormals() const
-{
-	return ConvertRenderBuffer<agx::Vec3, FVector>(
-		this, TEXT("fetch render data normals"), TEXT("render data normals"),
-		[](const agxCollide::RenderData* Render) -> auto& { return Render->getNormalArray(); },
-		[](const agx::Vec3& Normal) { return ConvertVector(Normal); });
-}
-
-TArray<FVector2D> FTrimeshShapeBarrier::GetRenderDataTextureCoordinates() const
-{
-	return ConvertRenderBuffer<agx::Vec2, FVector2D>(
-		this, TEXT("fetch texture coordinates from"), TEXT("texture coordinates"),
-		[](const agxCollide::RenderData* Render) -> auto& { return Render->getTexCoordArray(); },
-		[](const agx::Vec2& Coordinate) { return Convert(Coordinate); });
-}
-
 FString FTrimeshShapeBarrier::GetSourceName() const
 {
 	FString SourceName;
@@ -353,7 +237,8 @@ FString FTrimeshShapeBarrier::GetSourceName() const
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Cannot fetch triangle soure name from Trimesh barrier without a native Trimesh"));
+			TEXT(
+				"Cannot fetch triangle source name from Trimesh barrier without a native Trimesh"));
 		return SourceName;
 	}
 

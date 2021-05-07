@@ -1,7 +1,6 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "Shapes/RenderData.h"
 #include "Shapes/RenderMaterial.h"
 
 // Unreal Engine includes.
@@ -15,6 +14,15 @@
 struct FGeometryAndShapeRef;
 class FShapeMaterialBarrier;
 
+class FRenderDataBarrier;
+
+/**
+ * Barrier class that gives access to an AGX Dynamics (Geometry, Shape) pair.
+ *
+ * There are subclasses for each shape type.
+ *
+ * A Shape may come with Render Data, which may contain a Render Mesh and/or a Render Material.
+ */
 class AGXUNREALBARRIER_API FShapeBarrier
 {
 public:
@@ -100,7 +108,9 @@ public:
 	 * Should only be called on Shapes for which HasRenderData returns true.
 	 * @return The render data associated with the shape.
 	 */
-	FAGX_RenderData GetRenderData() const;
+	FRenderDataBarrier GetRenderData() const;
+
+
 
 	/**
 	 * @return True if the native shape contains render data and the render data has a render

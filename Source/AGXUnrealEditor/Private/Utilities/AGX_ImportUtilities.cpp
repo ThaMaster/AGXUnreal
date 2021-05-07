@@ -7,6 +7,7 @@
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
+#include "Shapes/RenderDataBarrier.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
@@ -119,6 +120,20 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	return CreatedAsset;
 }
 
+UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+	const FRenderDataBarrier& RenderData, const FString& DirectoryName)
+{
+	auto InitAsset = [&](UStaticMesh& Asset) {
+		FRawMesh RawMesh = FAGX_EditorUtilities::CreateRawMeshFromRenderData(RenderData);
+		FAGX_EditorUtilities::AddRawMeshToStaticMesh(RawMesh, &Asset);
+		Asset.ImportVersion = EImportStaticMeshVersion::LastVersion;
+	};
+	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
+		DirectoryName, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
+		TEXT("RenderMesh"), TEXT("RenderMesh"), InitAsset);
+	return CreatedAsset;
+}
+
 UAGX_ShapeMaterialAsset* FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(
 	const FShapeMaterialBarrier& Material, const FString& DirectoryName)
 {
@@ -161,8 +176,6 @@ UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsse
 UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	const FAGX_RenderMaterial& Imported, const FString& DirectoryName, const FString& MaterialName)
 {
-	// Implementation based on https://github.com/gildor2/UEViewer/issues/118.
-
 	UMaterial* Base = LoadObject<UMaterial>(
 		nullptr, TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'"));
 	if (Base == nullptr)
@@ -207,27 +220,20 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 		return Base;
 	}
 
-	auto ConvertSrgbToLinearColor = [](const FVector4& InSrgb) -> FLinearColor {
-		FColor Srgb(
-			static_cast<uint8>(InSrgb.X * 255.0f), static_cast<uint8>(InSrgb.Y * 255.0f),
-			static_cast<uint8>(InSrgb.Z * 255.0f), static_cast<uint8>(InSrgb.W * 255.0f));
-		return {Srgb};
-	};
-
 	if (Imported.bHasDiffuse)
 	{
 		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Diffuse")), ConvertSrgbToLinearColor(Imported.Diffuse));
+			FName(TEXT("Diffuse")), FAGX_RenderMaterial::ConvertToLinear(Imported.Diffuse));
 	}
 	if (Imported.bHasAmbient)
 	{
 		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Ambient")), ConvertSrgbToLinearColor(Imported.Ambient));
+			FName(TEXT("Ambient")), FAGX_RenderMaterial::ConvertToLinear(Imported.Ambient));
 	}
 	if (Imported.bHasEmissive)
 	{
 		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Emissive")), ConvertSrgbToLinearColor(Imported.Emissive));
+			FName(TEXT("Emissive")), FAGX_RenderMaterial::ConvertToLinear(Imported.Emissive));
 	}
 	if (Imported.bHasShininess)
 	{
@@ -239,6 +245,13 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	Material->SetFlags(RF_Standalone);
 	Material->MarkPackageDirty();
 	Material->PostEditChange();
+	UPackage* Package = Material->GetTypedOuter<UPackage>();
+	if (Package != nullptr)
+	{
+		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
+			PackagePath, FPackageName::GetAssetPackageExtension());
+		UPackage::SavePackage(Package, Material, RF_NoFlags, *PackageFilename);
+	}
 
 	return Material;
 }

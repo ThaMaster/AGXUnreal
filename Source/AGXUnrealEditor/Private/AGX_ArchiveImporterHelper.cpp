@@ -33,6 +33,7 @@
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Shapes/RenderDataBarrier.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
@@ -153,66 +154,263 @@ AAGX_RigidBodyActor* FAGX_ArchiveImporterHelper::InstantiateBody(
 
 namespace
 {
-	void CreateRenderMaterialInstance(
-		UMeshComponent& Component, const FAGX_RenderMaterial& RenderMaterial,
-		const FString& DirectoryName, TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials)
+	/**
+	 * Convert an AGX Dynamics Render Material to an Unreal Engine Render Material and store it
+	 * as an asset in the given directory. Will cache and reuse Render Materials if the same one
+	 * is passed multiple times. Will fall back to the base import material if asset creation
+	 * fails. Will return nullptr if the base import material can't be loaded.
+	 *
+	 * If a new Render Material is created then it is created as a Material Instance Constant
+	 * from the base import material.
+	 *
+	 * @param RenderMaterial The AGX Dynamics Material to convert to an Unreal Engine Material.
+	 * @param DirectoryName The name of the directory where this archive's assets are stored.
+	 * @param RestoredMaterials Cache of restored Render Materials.
+	 * @return The Unreal Engine material for the AGX Dynamics material, or the base material, or
+	 * nullptr.
+	 */
+	UMaterialInterface* GetOrCreateRenderMaterialInstance(
+		const FAGX_RenderMaterial& RenderMaterial, const FString& DirectoryName,
+		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials)
 	{
-		FGuid Guid = RenderMaterial.Guid;
+		const FGuid Guid = RenderMaterial.Guid;
 
 		// Have we seen this render material before?
 		if (UMaterialInstanceConstant** It = RestoredMaterials.Find(Guid))
 		{
-			// Yes, use the cached Material Instance.
-			check(*It != nullptr); // Should never put nullptr into the table.
-			Component.SetMaterial(0, *It);
-			return;
+			// Yes, used the cached Material Instance.
+			return *It;
 		}
 
-		// It's a new material, save it as an asset and in the cache.
-		FString MaterialName =
-			RenderMaterial.Name.IsNone() ? Component.GetName() : RenderMaterial.Name.ToString();
+		// This is a new material. Save it as an asset and in the cache.
+		const FString MaterialName =
+			RenderMaterial.Name.IsNone()
+				? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
+				: RenderMaterial.Name.ToString();
 		UMaterialInterface* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 			RenderMaterial, DirectoryName, MaterialName);
 		if (Material == nullptr)
 		{
-			// Fallback to the default import material is done by SaveImportedRenderMaterialAsset,
-			// so no need to try and call SetDefaultRenderMaterial here.
-			UE_LOG(
-				LogAGX, Warning, TEXT("Could not set render material on imported shape '%s'."),
-				*Component.GetName());
-			return;
+			// Both asset creation and default material load failed. That's bad.
+			return nullptr;
 		}
+
+		// Check if we got a new Material Instance, or if we fell back to the default material.
 		if (UMaterialInstanceConstant* Instance = Cast<UMaterialInstanceConstant>(Material))
 		{
-			// We don't get here if the save failed and we fell back to the default import material.
-			RestoredMaterials.Add(RenderMaterial.Guid, Instance);
+			// This is a new Material Instance, store it in the cache.
+			RestoredMaterials.Add(Guid, Instance);
 		}
-		Component.SetMaterial(0, Material);
+
+		return Material;
 	}
 
-	void SetDefaultRenderMaterial(UMeshComponent& Component, bool IsSensor)
+	UMaterial* GetDefaultRenderMaterial(bool bIsSensor)
 	{
 		const TCHAR* AssetPath =
-			IsSensor
+			bIsSensor
 				? TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'")
 				: TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'");
 		UMaterial* Material = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
 		if (Material == nullptr)
 		{
 			UE_LOG(
+				LogAGX, Warning, TEXT("Could not load default%s render material from '%s'."),
+				(bIsSensor ? TEXT(" sensor") : TEXT("")), AssetPath);
+		}
+		return Material;
+	}
+
+	void SetDefaultRenderMaterial(UMeshComponent& Component, bool bIsSensor)
+	{
+		UMaterial* Material = GetDefaultRenderMaterial(bIsSensor);
+		if (Material == nullptr)
+		{
+			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Could not set render material on imported shape '%s'. The asset '%s' is not "
-					 "a Material."),
-				*Component.GetName(), AssetPath);
+				TEXT("Could not set render material on imported shape '%s'. Could not load the "
+					 "default render material"),
+				*Component.GetName());
+			return;
 		}
 		Component.SetMaterial(0, Material);
 	}
 
+	/**
+	 * Convert the given Trimesh to an Unreal Engine Static Mesh asset stored in the StaticMeshes
+	 * folder in the archive's folder in the ImportedAGXArchives folder.
+	 *
+	 * The created meshes are cached on the Trimesh's Mesh Data GUID so asking for the same mesh
+	 * again will return the previously created Static Mesh asset.
+	 *
+	 * @param Trimesh The Trimesh containing the mesh to store.
+	 * @param FallbackName A name to give the asset in case the Trimesh doesn't have a valid name.
+	 * @param RestoredMeshes Static Mesh cache.
+	 * @param DirectoryName The name of the folder where all assets for this archive is stored.
+	 * @return
+	 */
+	UStaticMesh* GetOrCreateStaticMeshAsset(
+		const FTrimeshShapeBarrier& Trimesh, const FString& FallbackName,
+		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName)
+	{
+		const FGuid Guid = Trimesh.GetMeshDataGuid();
+		if (!Guid.IsValid())
+		{
+			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
+			// the RestoredMeshes cache.
+			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+				Trimesh, DirectoryName, FallbackName);
+		}
+
+		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
+		{
+			// We have seen this mesh before, use the one in the cache.
+			return Asset;
+		}
+
+		// This is a new mesh. Create the Static Mesh asset and add to the cache.
+		UStaticMesh* Asset =
+			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryName, FallbackName);
+		if (Asset != nullptr)
+		{
+			RestoredMeshes.Add(Guid, Asset);
+		}
+		return Asset;
+	}
+
+	/**
+	 * Convert the given Render Data to an Unreal Engine Static Mesh asset stored in the
+	 * RenderMeshes folder in the archive's folder in the ImportedAGXArchives folder.
+	 *
+	 * The created meshes are cached on GUID so asking for the same Render Data mesh again will
+	 * return the previously created Static Mesh asset.
+	 *
+	 * @param RenderData The Render Data Barrier containing the mesh to store.
+	 * @param RestoredMeshes Static Mesh cache.
+	 * @param DirectoryName The name of the folder where all assets for this archive is stored.
+	 * @return The Static Mesh asset for the given Render Data.
+	 */
+	UStaticMesh* GetOrCreateStaticMeshAsset(
+		const FRenderDataBarrier& RenderData, TMap<FGuid, UStaticMesh*>& RestoredMeshes,
+		const FString& DirectoryName)
+	{
+		const FGuid Guid = RenderData.GetGuid();
+		if (!Guid.IsValid())
+		{
+			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
+			// the RestoredMeshes cache.
+			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
+		}
+
+		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
+		{
+			// We have seen this mesh before, use the one in the cache.
+			return Asset;
+		}
+
+		// This is a new mesh. Create the Static Mesh asset and add to the cache.
+		UStaticMesh* Asset =
+			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
+		if (Asset != nullptr)
+		{
+			RestoredMeshes.Add(Guid, Asset);
+		}
+		return Asset;
+	}
+
+	/**
+	 * Apply the Barrier's Render Data. This will disable visibility for VisualMesh and instead
+	 * create a Static Mesh Component from the triangles, if any, in the Render Data. If there are
+	 * no triangles then no Static Mesh Component will be created and this Shape will be invisible.
+	 *
+	 * If the Render Data has a Render Material then that will be converted to an Unreal Engine
+	 * Render Material and applied to both VisualMesh and the newly created Static Mesh Component,
+	 * if any. This makes it possible to hide the Render Data mesh and instead use the collision
+	 * data also for rendering.
+	 *
+	 * @param RenderData The AGX Dynamics representation of the Render Data.
+	 * @param VisualMesh The default Component used for visualization. Often the Shape itself.
+	 */
+	void ApplyRenderingData(
+		const FRenderDataBarrier& RenderData, UAGX_ShapeComponent& Component,
+		UMeshComponent& VisualMesh, TMap<FGuid, UStaticMesh*>& RestoredMeshes,
+		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials, const FString& DirectoryName)
+	{
+		VisualMesh.SetVisibility(false);
+
+		// Convert Render Data Mesh, if there is one.
+		UStaticMeshComponent* RenderDataComponent = nullptr;
+		if (RenderData.HasMesh())
+		{
+			UStaticMesh* RenderDataMeshAsset =
+				GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
+			if (RenderDataMeshAsset != nullptr)
+			{
+				// The new Static Mesh Component must be a child of the Visual Mesh and not the
+				// Shape Component because the Trimesh Shape Component assume that it only has a
+				// single child Static Mesh Component and will use the first one it finds to read
+				// collision triangles from. We do not want it to find the rendering mesh.
+				RenderDataComponent = FAGX_EditorUtilities::CreateStaticMeshComponent(
+					*Component.GetOwner(), VisualMesh, *RenderDataMeshAsset, true);
+				if (RenderDataComponent != nullptr)
+				{
+					RenderDataComponent->SetVisibility(RenderData.GetShouldRender());
+				}
+			}
+		}
+
+		// Convert Render Data Material, if there is one. May fall back to the base import Material,
+		// and may also fail completely, leaving RenderDataMaterial being nullptr.
+		UMaterialInterface* RenderDataMaterial = nullptr;
+		if (RenderData.HasMaterial() && GIsEditor)
+		{
+			RenderDataMaterial = GetOrCreateRenderMaterialInstance(
+				RenderData.GetMaterial(), DirectoryName, RestoredMaterials);
+		}
+		else
+		{
+			// Use base import material if the Render Data didn't have one. Also use the
+			// base when not in the Editor since creating new Materials is an Editor only
+			// operation.
+			//
+			// We are only allowed to create new assets, such as a MaterialInstance, when running
+			// within the Unreal Editor.
+			/// @todo This is not true. It seems we are allowed to create StaticMeshes. What's the
+			/// difference between a StaticMesh and a MaterialInstance? Is it because we create
+			/// Constant Material Instances?
+			RenderDataMaterial = GetDefaultRenderMaterial(Component.bIsSensor);
+		}
+
+		// Apply the Material we got, either from the Render Data or the base one, to all the
+		// rendering meshes we have.
+		if (RenderDataMaterial != nullptr)
+		{
+			VisualMesh.SetMaterial(0, RenderDataMaterial);
+			if (RenderDataComponent != nullptr)
+			{
+				RenderDataComponent->SetMaterial(0, RenderDataMaterial);
+			}
+		}
+	}
+
+	/**
+	 * Do the configuration that is common for all shape types. This includes setting object flags,
+	 * Component renaming, and applying Physics and Rendering Materials.
+	 *
+	 * @param Component The Unreal Engine representation of the imported Shape.
+	 * @param Barrier The AGX Dynamics representation of the imported Shape.
+	 * @param RestoredShapeMaterials Cache of imported Shape Materials.
+	 * @param RestoredRenderMaterials Cache of imported Render Materials.
+	 * @param RestoredMeshes Cache of imported Meshes, both for collision detection and rendering.
+	 * @param DirectoryName The name of the directory where all the imported assets are stored.
+	 * @param VisualMesh The Mesh Component that contains the default rendering of the Shape
+	 */
 	void FinalizeShape(
 		UAGX_ShapeComponent& Component, const FShapeBarrier& Barrier,
 		const TMap<FGuid, UAGX_ShapeMaterialAsset*>& RestoredShapeMaterials,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials,
-		const FString& DirectoryName, UMeshComponent* RenderMaterialReceiver)
+		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName,
+		UMeshComponent& VisualMesh)
 	{
 		Component.UpdateVisualMesh();
 		Component.SetFlags(RF_Transactional);
@@ -221,57 +419,20 @@ namespace
 		FShapeMaterialBarrier NativeMaterial = Barrier.GetMaterial();
 		if (NativeMaterial.HasNative())
 		{
-			FGuid Guid = NativeMaterial.GetGuid();
+			const FGuid Guid = NativeMaterial.GetGuid();
 			UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
 			Component.PhysicalMaterial = Material;
 		}
 
 		if (Barrier.HasRenderData())
 		{
-			FAGX_RenderData RenderData = Barrier.GetRenderData();
-			RenderMaterialReceiver->SetVisibility(RenderData.bShouldRender);
+			ApplyRenderingData(
+				Barrier.GetRenderData(), Component, VisualMesh, RestoredMeshes,
+				RestoredRenderMaterials, DirectoryName);
 		}
-
-		// Create and assign render material, if possible.
-		const bool bHasSource = Barrier.HasRenderMaterial();
-		const bool bHasDestination = RenderMaterialReceiver != nullptr;
-		if (bHasSource && bHasDestination)
+		else
 		{
-			// We are only allowed to create new assets, such as a MaterialInstance, when running
-			// within the Unreal Editor.
-			/// @todo This is not true. It seems we are allowed to create StaticMeshs. What's the
-			/// difference between a StaticMesh and a MaterialInstance?
-			if (GIsEditor)
-			{
-				CreateRenderMaterialInstance(
-					*RenderMaterialReceiver, Barrier.GetRenderMaterial(), DirectoryName,
-					RestoredRenderMaterials);
-			}
-			else
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Cannot import render data for '%s' because Material Instances cannot be "
-						 "created in Game mode. Editor mode is required."),
-					*Component.GetName())
-				SetDefaultRenderMaterial(*RenderMaterialReceiver, Component.bIsSensor);
-			}
-		}
-		else if (bHasSource && !bHasDestination)
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Cannot create render material for '%s' because it doesn't have a "
-					 "UMeshComponent to set the render material on."),
-				*Component.GetName());
-		}
-		else if (!bHasSource && bHasDestination)
-		{
-			SetDefaultRenderMaterial(*RenderMaterialReceiver, Component.bIsSensor);
-		}
-		else if (!bHasSource && !bHasDestination)
-		{
-			// Nothing to do.
+			SetDefaultRenderMaterial(VisualMesh, Component.bIsSensor);
 		}
 	}
 }
@@ -290,8 +451,8 @@ UAGX_SphereShapeComponent* FAGX_ArchiveImporterHelper::InstantiateSphere(
 	}
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, DirectoryName,
-		Component);
+		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
+		DirectoryName, *Component);
 	return Component;
 }
 
@@ -309,8 +470,8 @@ UAGX_BoxShapeComponent* FAGX_ArchiveImporterHelper::InstantiateBox(
 	}
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, DirectoryName,
-		Component);
+		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
+		DirectoryName, *Component);
 	return Component;
 }
 
@@ -328,8 +489,8 @@ UAGX_CylinderShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCylinder(
 	}
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, DirectoryName,
-		Component);
+		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
+		DirectoryName, *Component);
 	return Component;
 }
 
@@ -347,45 +508,32 @@ UAGX_CapsuleShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCapsule(
 	}
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, DirectoryName,
-		Component);
+		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
+		DirectoryName, *Component);
 	return Component;
-}
-
-namespace
-{
-	UStaticMesh* GetOrCreateStaticMeshAsset(
-		const FTrimeshShapeBarrier& Barrier, const FString& FallbackName,
-		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName)
-	{
-		FGuid Guid = Barrier.GetMeshDataGuid();
-
-		// If the GUID is invalid, try to create the mesh asset anyway but without adding it to the
-		// RestoredMeshes map.
-		if (!Guid.IsValid())
-		{
-			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-				Barrier, DirectoryName, FallbackName);
-		}
-
-		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
-		{
-			return Asset;
-		}
-
-		UStaticMesh* Asset =
-			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Barrier, DirectoryName, FallbackName);
-		RestoredMeshes.Add(Guid, Asset);
-		return Asset;
-	}
 }
 
 UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	const FTrimeshShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body)
 {
 	AActor* Owner = Body.GetOwner();
+	if (Owner == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Trimesh"), Barrier.GetName(), ArchiveFilePath,
+			TEXT("The parent Rigid Body does not have an owning Actor."));
+		return nullptr;
+	}
+
 	UAGX_TrimeshShapeComponent* Component =
 		FAGX_EditorUtilities::CreateTrimeshShape(Owner, &Body, false);
+	if (Component == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Trimesh"), Barrier.GetName(), ArchiveFilePath,
+			TEXT("Could not instantiate a new Trimesh Shape Component."));
+		return nullptr;
+	}
 	Component->MeshSourceLocation = EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 	UStaticMesh* MeshAsset =
 		GetOrCreateStaticMeshAsset(Barrier, Body.GetName(), RestoredMeshes, DirectoryName);
@@ -397,7 +545,7 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	}
 
 	UStaticMeshComponent* MeshComponent =
-		FAGX_EditorUtilities::CreateStaticMeshComponent(Owner, Component, MeshAsset, false);
+		FAGX_EditorUtilities::CreateStaticMeshComponent(*Owner, *Component, *MeshAsset, false);
 	FString SourceName = Barrier.GetSourceName();
 	FString MeshName = !SourceName.IsEmpty() ? SourceName : (Barrier.GetName() + TEXT("Mesh"));
 	if (MeshComponent == nullptr)
@@ -424,8 +572,8 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, DirectoryName,
-		MeshComponent);
+		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
+		DirectoryName, *MeshComponent);
 	return Component;
 }
 

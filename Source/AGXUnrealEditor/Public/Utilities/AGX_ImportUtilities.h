@@ -8,6 +8,7 @@
 #include "Math/Color.h"
 
 class FTrimeshShapeBarrier;
+class FRenderDataBarrier;
 class FShapeBarrier;
 class FShapeMaterialBarrier;
 class FContactMaterialBarrier;
@@ -75,21 +76,32 @@ public:
 	static void MakePackageAndAssetNameUnique(FString& PackageName, FString& AssetName);
 
 	/// \todo Determine if it's enough to return the asset created in the following few
-	/// functions, or if we must pack it in a struct together with the package path and/or asset
-	/// name.
+	/// /Save.+Asset/ functions, or if we must pack it in a struct together with the package path
+	/// and/or asset name.
 
 	/**
-	 * Store an AGX Dynamics Trimesh imported from an AGX Dynamics archive as a UStaticMesh
-	 * asset.
+	 * Store the given Trimesh imported from an AGX Dynamics archive as an UStaticMesh asset.
+	 *
 	 * @param Trimesh The imported trimesh to be saved.
 	 * @param DirectoryName The name of the directory where the archive's assets are collected.
 	 * @param FallbackName Name to give the asset in case the trimesh doesn't have a source
 	 * name.
-	 * @return The UStaticMesh asset.
+	 * @return The created UStaticMesh asset.
 	 */
 	static UStaticMesh* SaveImportedStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName,
 		const FString& FallbackName);
+
+	/**
+	 * Store the given Render Data Mesh imported from an AGX Dynamics archive as an UStaticMesh
+	 * asset.
+	 *
+	 * @param RenderData The Render Data holding the render mesh to store.
+	 * @param DirectoryName The name of the directory where the archive's assets are collected.
+	 * @return The create UStaticMesh asset.
+	 */
+	static UStaticMesh* SaveImportedStaticMeshAsset(
+		const FRenderDataBarrier& RenderData, const FString& DirectoryName);
 
 	/**
 	 * Store an AGX Dynamics Material imported from an AGX Dynamics archive as an
