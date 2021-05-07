@@ -1062,9 +1062,25 @@ bool FClearRenderMaterialImportedCommand::Update()
 	//
 	/// @todo The error is only printed sometimes, and not for the last three runs on GitLab.
 	/// Commenting it out for now. See GitLab issue #213.
-	// Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
 
-	TArray<const TCHAR*> ExpectedFiles = {TEXT("RenderMaterials")};
+	// Files that are created by the test and thus safe to remove. The GUID values may make this
+	// test cumbersome to update since they will change every time the AGX Dynamics archive is
+	// regenerated. Consider adding wildcard support to DeleteImportDirectory.
+	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("RenderMaterials"),
+		TEXT("RenderMaterial_0371489EAC6B66145E4DAEEFA9B4B6BC.uasset"),
+		TEXT("RenderMaterial_29524C99D524BAD2D65ED4EEA25BE374.uasset"),
+		TEXT("RenderMaterial_2C1C438F862A19CB2E1618C7B73F3D2E.uasset"),
+		TEXT("RenderMaterial_5928446AC6D455AF9FFF7C9BACFEA7B4.uasset"),
+		TEXT("RenderMaterial_61674EB1E1568AF222ED9F4C8840B70B.uasset"),
+		TEXT("RenderMaterial_87A0492CA6F19D8C434FCF80A8D8A9FF.uasset"),
+		TEXT("RenderMaterial_8DAE4BA30D3EA367D30FC0699240725B.uasset"),
+		TEXT("RenderMaterial_CF1F4CAD342CCF1863EFCC4093609BA4.uasset"),
+		TEXT("RenderMaterial_D28B4DA2420D497375E97FA4B5365ADC.uasset"),
+		TEXT("RenderMaterial_D4164CD0F7CD4A1706FC2B7E85ACE0F0.uasset"),
+		TEXT("RenderMaterial_F41041270F6DCA5B49388F72978AFC64.uasset")};
+
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_materials_build"), ExpectedFiles);
 
 	return true;
