@@ -41,13 +41,13 @@ namespace RenderDataBarrier_helpers
 	 * Like CheckSize(size_t) but also prints a warning when the size is too large.
 	 *
 	 * @param Size The size to check.
-	 * @param DataName The name of the data the size belong to.
-	 * @param Guid The GUID of the Render Data that the data is part of.
+	 * @param DataName The name of the data the size belong to. Only used for logging.
+	 * @param Guid The GUID of the Render Data that the data is part of. Only used for logging.
 	 * @return True if the given Size fit in an int32.
 	 */
 	bool CheckSize(size_t Size, const TCHAR* DataName, const FGuid& Guid)
 	{
-		bool Ok = CheckSize(Size);
+		const bool Ok = CheckSize(Size);
 		if (!Ok)
 		{
 			UE_LOG(
@@ -59,12 +59,12 @@ namespace RenderDataBarrier_helpers
 	}
 
 	/**
-	 * Convert the given Size to an int32, clamping it to the largest possible int32 it too large.
+	 * Convert the given Size to an int32, clamping it to the largest possible int32 if too large.
 	 *
 	 * @param Size The Size to convert/clamp.
-	 * @param DataName The name of the data the size belong to.
-	 * @param Guid The GUID of the Render Data that the data is part of.
-	 * @return The Size as an int32, possible clamped.
+	 * @param DataName The name of the data the size belong to. Only used for logging.
+	 * @param Guid The GUID of the Render Data that the data is part of. Only used for logging.
+	 * @return The Size as an int32, possibly clamped.
 	 */
 	int32 CastWithSaturate(size_t Size, const TCHAR* DataName, const FGuid& Guid)
 	{
@@ -86,14 +86,14 @@ namespace RenderDataBarrier_helpers
 	 * @tparam FGetAGXBuffer Function fetching the AGX Dynamics buffer from a Render Data Barrier.
 	 * @tparam FConvert Function converting an AGX Dynamics element to the Unreal Engine type.
 	 * @param Barrier The Render Data Barrier to fetch the AGX Dynamics buffer from.
-	 * @param DataName The name of the buffer being convert. Only for error reporting.
-	 * @param GetAgxBuffer Callback for getting the AGX Dynamics buffer from the Render Data.
-	 * @param Convert Callback for converting AGX Dynamics elements to the Unreal Engien type.
+	 * @param DataName The name of the buffer being converted. Only for error reporting.
+	 * @param GetAGXBuffer Callback for getting the AGX Dynamics buffer from the Render Data.
+	 * @param Convert Callback for converting AGX Dynamics elements to the Unreal Engine type.
 	 * @return A TArray containing the render buffer in Unreal Engine format.
 	 */
 	template <typename AGXType, typename UnrealType, typename FGetAGXBuffer, typename FConvert>
 	TArray<UnrealType> ConvertRenderBuffer(
-		const FRenderDataBarrier& Barrier, const TCHAR* DataName, FGetAGXBuffer GetAgxBuffer,
+		const FRenderDataBarrier& Barrier, const TCHAR* DataName, FGetAGXBuffer GetAGXBuffer,
 		FConvert Convert)
 	{
 		TArray<UnrealType> DataUnreal;
@@ -102,7 +102,7 @@ namespace RenderDataBarrier_helpers
 		{
 			return DataUnreal;
 		}
-		const agx::VectorPOD<AGXType>& DataAGX = GetAgxBuffer(RenderData);
+		const agx::VectorPOD<AGXType>& DataAGX = GetAGXBuffer(RenderData);
 		const size_t SizeAGX = DataAGX.size();
 		const int32 Size = CastWithSaturate(SizeAGX, DataName, Barrier.GetGuid());
 		DataUnreal.Reserve(Size);
@@ -196,31 +196,31 @@ FAGX_RenderMaterial FRenderDataBarrier::GetMaterial() const
 
 	FAGX_RenderMaterial RenderMaterial;
 
-	const agxCollide::RenderData* RenderDataAgx = NativeRef->Native.get();
-	const agxCollide::RenderMaterial* RenderMaterialAgx = RenderDataAgx->getRenderMaterial();
+	const agxCollide::RenderData* RenderDataAGX = NativeRef->Native.get();
+	const agxCollide::RenderMaterial* RenderMaterialAGX = RenderDataAGX->getRenderMaterial();
 
-	RenderMaterial.Guid = Convert(RenderMaterialAgx->getUuid());
-	const agx::String& NameAgx = RenderMaterialAgx->getName();
-	RenderMaterial.Name = NameAgx.empty() ? NAME_None : FName(*Convert(NameAgx));
+	RenderMaterial.Guid = Convert(RenderMaterialAGX->getUuid());
+	const agx::String& NameAGX = RenderMaterialAGX->getName();
+	RenderMaterial.Name = NameAGX.empty() ? NAME_None : FName(*Convert(NameAGX));
 
-	if ((RenderMaterial.bHasDiffuse = RenderMaterialAgx->hasDiffuseColor()) == true)
+	if ((RenderMaterial.bHasDiffuse = RenderMaterialAGX->hasDiffuseColor()) == true)
 	{
-		agx::Vec4 DiffuseAgx(RenderMaterialAgx->getDiffuseColor());
-		RenderMaterial.Diffuse = Convert(DiffuseAgx);
+		const agx::Vec4f DiffuseAGX = RenderMaterialAGX->getDiffuseColor();
+		RenderMaterial.Diffuse = Convert(DiffuseAGX);
 	}
-	if ((RenderMaterial.bHasAmbient = RenderMaterialAgx->hasAmbientColor()) == true)
+	if ((RenderMaterial.bHasAmbient = RenderMaterialAGX->hasAmbientColor()) == true)
 	{
-		agx::Vec4 AmbientAgx(RenderMaterialAgx->getAmbientColor());
-		RenderMaterial.Ambient = Convert(AmbientAgx);
+		const agx::Vec4f AmbientAGX = RenderMaterialAGX->getAmbientColor();
+		RenderMaterial.Ambient = Convert(AmbientAGX);
 	}
-	if ((RenderMaterial.bHasEmissive = RenderMaterialAgx->hasEmissiveColor()) == true)
+	if ((RenderMaterial.bHasEmissive = RenderMaterialAGX->hasEmissiveColor()) == true)
 	{
-		agx::Vec4 EmissiveAgx(RenderMaterialAgx->getEmissiveColor());
-		RenderMaterial.Emissive = Convert(EmissiveAgx);
+		const agx::Vec4f EmissiveAGX = RenderMaterialAGX->getEmissiveColor();
+		RenderMaterial.Emissive = Convert(EmissiveAGX);
 	}
-	if ((RenderMaterial.bHasShininess = RenderMaterialAgx->hasShininess()) == true)
+	if ((RenderMaterial.bHasShininess = RenderMaterialAGX->hasShininess()) == true)
 	{
-		RenderMaterial.Shininess = RenderMaterialAgx->getShininess();
+		RenderMaterial.Shininess = RenderMaterialAGX->getShininess();
 	}
 
 	return RenderMaterial;

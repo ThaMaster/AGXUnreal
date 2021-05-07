@@ -87,11 +87,6 @@ namespace
 	}
 
 	/**
-
-
-	 */
-	/**
-	 *
 	 * Convert an AGX Dynamics render buffer to the corresponding Unreal Engine render buffer.
 	 *
 	 * @tparam AGXType The element type of the AGX Dynamics source buffer.
@@ -101,14 +96,14 @@ namespace
 	 * @param Barrier The Render Data Barrier to fetch the AGX Dynamics buffer from.
 	 * @param Operation The operation being performed. Only for error reporting.
 	 * @param DataName The name of the buffer being convert. Only for error reporting.
-	 * @param GetAgxBuffer Callback for getting the AGX Dynamics buffer from the Render Data.
+	 * @param GetAGXBuffer Callback for getting the AGX Dynamics buffer from the Render Data.
 	 * @param Convert Callback for converting AGX Dynamics elements to the Unreal Engien type.
 	 * @return A TArray containing the render buffer in Unreal Engine format.
 	 */
-	template <typename AgxType, typename UnrealType, typename FGetAgxBuffer, typename FConvert>
+	template <typename AGXType, typename UnrealType, typename FGetAGXBuffer, typename FConvert>
 	TArray<UnrealType> ConvertCollisionBuffer(
 		const FTrimeshShapeBarrier* Barrier, const TCHAR* Operation, const TCHAR* DataName,
-		FGetAgxBuffer GetAgxBuffer, FConvert Convert)
+		FGetAGXBuffer GetAGXBuffer, FConvert Convert)
 	{
 		TArray<UnrealType> DataUnreal;
 		const agxCollide::Trimesh* Trimesh = NativeTrimesh(Barrier, Operation);
@@ -116,15 +111,15 @@ namespace
 		{
 			return DataUnreal;
 		}
-		const agx::VectorPOD<AgxType>& DataAgx = GetAgxBuffer(Trimesh->getMeshData());
-		if (!CheckSize(DataAgx.size(), DataName))
+		const agx::VectorPOD<AGXType>& DataAGX = GetAGXBuffer(Trimesh->getMeshData());
+		if (!CheckSize(DataAGX.size(), DataName))
 		{
 			return DataUnreal;
 		}
-		DataUnreal.Reserve(static_cast<int32>(DataAgx.size()));
-		for (AgxType DatumAgx : DataAgx)
+		DataUnreal.Reserve(static_cast<int32>(DataAGX.size()));
+		for (AGXType DatumAGX : DataAGX)
 		{
-			DataUnreal.Add(Convert(DatumAgx));
+			DataUnreal.Add(Convert(DatumAGX));
 		}
 		return DataUnreal;
 	}

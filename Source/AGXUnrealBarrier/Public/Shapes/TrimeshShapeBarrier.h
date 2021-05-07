@@ -24,9 +24,9 @@ struct FTriIndices;
  *   positions: [Vec3, Vec3, Vec3 Vec3, Vec3, ... ]
  *
  * Data owned by each triangle:
+ *               |  Triangle 0   |  Triangle 1   | ... |
  *   indices:    | int, int, int | int, int, int | ... |
  *   normals:    |     Vec3      |      Vec3     | ... |
- *               |  Triangle 0   |  Triangle 1   | ... |
  *
  * The mesh data is stored in a hidden Mesh Data class that can be shared between Trimeshes. Use
  * GetMeshDataGuid to determine if this is the case.

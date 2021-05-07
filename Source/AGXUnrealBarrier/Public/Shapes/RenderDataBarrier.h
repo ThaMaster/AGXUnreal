@@ -3,7 +3,7 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
-// System includes
+// System includes.
 #include <memory>
 
 struct FRenderDataRef;
@@ -17,9 +17,21 @@ struct FAGX_RenderMaterial;
  * material parameters compatible with the M_ImportedBase Material asset shipped with AGX Dynamics
  * for Unreal.
  *
+ * The mesh is stored as a collection of vertex attribute arrays and an index array where every
+ * three consecutive indices form a triangle using the vertex data pointed to by those three
+ * indices.
+ *
+ * Data shared among triangles:
+ *    positions:  [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+ *    normals:    [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+ *    tex coords: [Vec2, Vec2, Vec2, Vec2, Vec2, ... ]
+ *
+ * Data owned by each triangle:
+ *                |  Triangle 0   |  Triangle 1   | ... |
+ *    indices:    | int, int, int | int, int, int | ... |
+ *
  * Multiple shapes may share the same Render Data, and multiple Render Data may share the same
  * Render Material.
- *
  */
 class AGXUNREALBARRIER_API FRenderDataBarrier
 {

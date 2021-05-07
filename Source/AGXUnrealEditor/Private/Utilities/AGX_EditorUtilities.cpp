@@ -348,8 +348,9 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 	//
 	// The positions and indices can simply be copied over. The normals must be triplicated over
 	// all three vertices of each triangle. The other tangents are left unset and
-	// bRecomputeTangents enabled in the StaticMesh SourceModel settings. Texture coordinates
-	// are left empty since the Trimesh doesn't have any texture coordinates.
+	// bRecomputeTangents enabled in the StaticMesh SourceModel settings, see
+	// AddRawMeshToStaticMesh. Texture coordinates are set to (0, 0) since the Trimesh doesn't have
+	// any texture coordinates.
 
 	FRawMesh RawMesh;
 
@@ -373,17 +374,18 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 	for (int32 TIdx = 0; TIdx < NumTriangles; ++TIdx)
 	{
 		// I don't know how to compute the first two tangents, but bRecomputeTangents (not
-		// bRecomputeNormals) has been enabled on the StaticMesh SourceModel. Perhaps that's enough.
+		// bRecomputeNormals) has been enabled on the StaticMesh SourceModel in
+		// AddRawMeshToStaticMesh. Perhaps that's enough.
 
 		// Since we replicate the same normal for all vertices of a triangle we will get a
 		// flat-shaded mesh, should this mesh ever be used for rendering.
-		FVector Normal = TriangleNormals[TIdx];
+		const FVector Normal = TriangleNormals[TIdx];
 		RawMesh.WedgeTangentZ.Add(Normal);
 		RawMesh.WedgeTangentZ.Add(Normal);
 		RawMesh.WedgeTangentZ.Add(Normal);
 
 		// The collision mesh doesn't have color information, so just write white.
-		FColor Color(255, 255, 255);
+		const FColor Color(255, 255, 255);
 		RawMesh.WedgeColors.Add(Color);
 		RawMesh.WedgeColors.Add(Color);
 		RawMesh.WedgeColors.Add(Color);
@@ -391,18 +393,18 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 		// We must write something to the texture coordinates or else Unreal Engine crashes when
 		// processing this mesh later. We could try to do something clever here, but I think just
 		// writing zero everywhere is safest.
-		FVector2D TexCoord(0.0f, 0.0f);
+		const FVector2D TexCoord(0.0f, 0.0f);
 		RawMesh.WedgeTexCoords[0].Add(TexCoord);
 		RawMesh.WedgeTexCoords[0].Add(TexCoord);
 		RawMesh.WedgeTexCoords[0].Add(TexCoord);
 
-		// The collision mesh doesn't have material slot, so the best we can do is to provide a
+		// The collision mesh doesn't have material slots, so the best we can do is to provide a
 		// single material and apply it to every triangle.
 		RawMesh.FaceMaterialIndices.Add(0);
 
 		// Not entirely sure on the FaceSmoothingMasks, the documentation is a little vague:
 		//     Smoothing mask. Array[FaceId] = uint32
-		// But I believe the process is that Unreal Engine does bit-and between two neighboring
+		// But I believe the process is that Unreal Engine does bitwise-and between two neighboring
 		// faces and if the result comes out as non-zero then smoothing will happen along that
 		// edge. Not sure what is being smoothed though. Perhaps the vertex normals are merged
 		// if smoothing is on, and kept separate if smoothing is off. Also not sure how this
@@ -434,13 +436,13 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromRenderData(const FRenderDataBarr
 	// struct.
 	//
 	// Data shared among triangles:
-	//    positions: [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
-	//    normals:   [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
-	//    tex coord: [Vec2, Vec2, Vec2, Vec2, Vec2, ... ]
+	//    positions:  [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+	//    normals:    [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+	//    tex coords: [Vec2, Vec2, Vec2, Vec2, Vec2, ... ]
 	//
 	// Data owned by each triangle:
-	//               |  Triangle 0   |  Triangle 1   | ... |
-	//    indices:   | int, int, int | int, int, int | ... |
+	//                |  Triangle 0   |  Triangle 1   | ... |
+	//    indices:    | int, int, int | int, int, int | ... |
 	//
 	//
 	// What we want:

@@ -97,7 +97,7 @@ public:
 	 * asset.
 	 *
 	 * @param RenderData The Render Data holding the render mesh to store.
-	 * @param DirectoryName The name of the direcotry where the archive's assets are collected.
+	 * @param DirectoryName The name of the directory where the archive's assets are collected.
 	 * @return The create UStaticMesh asset.
 	 */
 	static UStaticMesh* SaveImportedStaticMeshAsset(

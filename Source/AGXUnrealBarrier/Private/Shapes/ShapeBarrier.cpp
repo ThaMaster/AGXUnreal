@@ -254,8 +254,8 @@ FRenderDataBarrier FShapeBarrier::GetRenderData() const
 		return FRenderDataBarrier();
 	}
 
-	const agxCollide::RenderData* RenderDataAgx = NativeRef->NativeShape->getRenderData();
-	return FRenderDataBarrier(std::make_unique<FRenderDataRef>(RenderDataAgx));
+	const agxCollide::RenderData* RenderDataAGX = NativeRef->NativeShape->getRenderData();
+	return FRenderDataBarrier(std::make_unique<FRenderDataRef>(RenderDataAGX));
 }
 
 bool FShapeBarrier::HasRenderMaterial() const

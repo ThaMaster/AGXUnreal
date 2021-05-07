@@ -106,7 +106,7 @@ public:
 	 * The mesh created will be limited to the information stored in the Trimesh, so no texture
 	 * coordinates and only one normal per triangle.
 	 *
-	 * @param Trimesh The Ttrimesh holding the triangles to convert.
+	 * @param Trimesh The Trimesh holding the triangles to convert.
 	 * @return An FRawMesh containing the same triangles as the Trimesh.
 	 */
 	static FRawMesh CreateRawMeshFromTrimesh(const FTrimeshShapeBarrier& Trimesh);

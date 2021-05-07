@@ -16,6 +16,13 @@ class FShapeMaterialBarrier;
 
 class FRenderDataBarrier;
 
+/**
+ * Barrier class that gives access to an AGX Dynamics (Geometry, Shape) pair.
+ *
+ * There are subclasses for each shape type.
+ *
+ * A Shape may come with Render Data, which may contain a Render Mesh and/or a Render Material.
+ */
 class AGXUNREALBARRIER_API FShapeBarrier
 {
 public:

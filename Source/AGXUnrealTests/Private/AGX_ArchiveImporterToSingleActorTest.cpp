@@ -1066,7 +1066,8 @@ bool FClearRenderMaterialImportedCommand::Update()
 
 	// Files that are created by the test and thus safe to remove. The GUID values may make this
 	// test cumbersome to update since they will change every time the AGX Dynamics archive is
-	// regenerated. Consider adding wildcard support to DeleteImportDirectory.
+	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
+	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
 		TEXT("RenderMaterials"),
 		TEXT("RenderMaterial_0371489EAC6B66145E4DAEEFA9B4B6BC.uasset"),

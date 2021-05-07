@@ -157,19 +157,23 @@ namespace
 	/**
 	 * Convert an AGX Dynamics Render Material to an Unreal Engine Render Material and store it
 	 * as an asset in the given directory. Will cache and reuse Render Materials if the same one
-	 * is passed multiple times. Will fall back to the default import material if asset creation
-	 * fails.
+	 * is passed multiple times. Will fall back to the base import material if asset creation
+	 * fails. Will return nullptr if the base import material can't be loaded.
 	 *
-	 * @param RenderMaterial The AGX Dynamics Material to convert to an Unreal Engine Material
+	 * If a new Render Material is created then it is created as a Material Instance Constant
+	 * from the base import material.
+	 *
+	 * @param RenderMaterial The AGX Dynamics Material to convert to an Unreal Engine Material.
 	 * @param DirectoryName The name of the directory where this archive's assets are stored.
-	 * @param RestoredMaterials Cache of resotred Render Materials.
-	 * @return The Unreal Engine material for the AGX Dynamics material, or the default material.
+	 * @param RestoredMaterials Cache of restored Render Materials.
+	 * @return The Unreal Engine material for the AGX Dynamics material, or the base material, or
+	 * nullptr.
 	 */
-	UMaterialInterface* CreateRenderMaterialInstance(
+	UMaterialInterface* GetOrCreateRenderMaterialInstance(
 		const FAGX_RenderMaterial& RenderMaterial, const FString& DirectoryName,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials)
 	{
-		FGuid Guid = RenderMaterial.Guid;
+		const FGuid Guid = RenderMaterial.Guid;
 
 		// Have we seen this render material before?
 		if (UMaterialInstanceConstant** It = RestoredMaterials.Find(Guid))
@@ -179,9 +183,10 @@ namespace
 		}
 
 		// This is a new material. Save it as an asset and in the cache.
-		FString MaterialName = RenderMaterial.Name.IsNone()
-								   ? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
-								   : RenderMaterial.Name.ToString();
+		const FString MaterialName =
+			RenderMaterial.Name.IsNone()
+				? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
+				: RenderMaterial.Name.ToString();
 		UMaterialInterface* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 			RenderMaterial, DirectoryName, MaterialName);
 		if (Material == nullptr)
@@ -194,7 +199,7 @@ namespace
 		if (UMaterialInstanceConstant* Instance = Cast<UMaterialInstanceConstant>(Material))
 		{
 			// This is a new Material Instance, store it in the cache.
-			RestoredMaterials.Add(RenderMaterial.Guid, Instance);
+			RestoredMaterials.Add(Guid, Instance);
 		}
 
 		return Material;
@@ -248,8 +253,7 @@ namespace
 		const FTrimeshShapeBarrier& Trimesh, const FString& FallbackName,
 		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName)
 	{
-		FGuid Guid = Trimesh.GetMeshDataGuid();
-
+		const FGuid Guid = Trimesh.GetMeshDataGuid();
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
@@ -267,13 +271,16 @@ namespace
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
 		UStaticMesh* Asset =
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryName, FallbackName);
-		RestoredMeshes.Add(Guid, Asset);
+		if (Asset != nullptr)
+		{
+			RestoredMeshes.Add(Guid, Asset);
+		}
 		return Asset;
 	}
 
 	/**
-	 * Convert the Render Data to an Unreal Engine Static Mesh asset stored in the RenderMeshes
-	 * folder in the archive's folder in the ImportedAGXArchives folder.
+	 * Convert the given Render Data to an Unreal Engine Static Mesh asset stored in the
+	 * RenderMeshes folder in the archive's folder in the ImportedAGXArchives folder.
 	 *
 	 * The created meshes are cached on GUID so asking for the same Render Data mesh again will
 	 * return the previously created Static Mesh asset.
@@ -281,13 +288,13 @@ namespace
 	 * @param RenderData The Render Data Barrier containing the mesh to store.
 	 * @param RestoredMeshes Static Mesh cache.
 	 * @param DirectoryName The name of the folder where all assets for this archive is stored.
-	 * @return
+	 * @return The Static Mesh asset for the given Render Data.
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FRenderDataBarrier& RenderData, TMap<FGuid, UStaticMesh*>& RestoredMeshes,
 		const FString& DirectoryName)
 	{
-		FGuid Guid = RenderData.GetGuid();
+		const FGuid Guid = RenderData.GetGuid();
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
@@ -304,7 +311,10 @@ namespace
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
 		UStaticMesh* Asset =
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
-		RestoredMeshes.Add(Guid, Asset);
+		if (Asset != nullptr)
+		{
+			RestoredMeshes.Add(Guid, Asset);
+		}
 		return Asset;
 	}
 
@@ -334,23 +344,29 @@ namespace
 		{
 			UStaticMesh* RenderDataMeshAsset =
 				GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
-			RenderDataComponent = FAGX_EditorUtilities::CreateStaticMeshComponent(
-				*Component.GetOwner(), Component, *RenderDataMeshAsset, true);
-			RenderDataComponent->SetVisibility(RenderData.GetShouldRender());
+			if (RenderDataMeshAsset != nullptr)
+			{
+				RenderDataComponent = FAGX_EditorUtilities::CreateStaticMeshComponent(
+					*Component.GetOwner(), Component, *RenderDataMeshAsset, true);
+				if (RenderDataComponent != nullptr)
+				{
+					RenderDataComponent->SetVisibility(RenderData.GetShouldRender());
+				}
+			}
 		}
 
-		// Convert Render Data Material, if there is one. May fall back to our default Material, and
-		// may also fail completely, leaving RenderDataMaterial with a nullptr.
+		// Convert Render Data Material, if there is one. May fall back to the base import Material,
+		// and may also fail completely, leaving RenderDataMaterial being nullptr.
 		UMaterialInterface* RenderDataMaterial = nullptr;
 		if (RenderData.HasMaterial() && GIsEditor)
 		{
-			RenderDataMaterial = CreateRenderMaterialInstance(
+			RenderDataMaterial = GetOrCreateRenderMaterialInstance(
 				RenderData.GetMaterial(), DirectoryName, RestoredMaterials);
 		}
 		else
 		{
-			// Use our default render material if the Render Data didn't have one. Also use the
-			// default when not in the Editor since creating new Materials is a Editor only
+			// Use base import material if the Render Data didn't have one. Also use the
+			// base when not in the Editor since creating new Materials is an Editor only
 			// operation.
 			//
 			// We are only allowed to create new assets, such as a MaterialInstance, when running
@@ -361,7 +377,7 @@ namespace
 			RenderDataMaterial = GetDefaultRenderMaterial(Component.bIsSensor);
 		}
 
-		// Apply the Material we got, either from the Render Data or the default one, to all the
+		// Apply the Material we got, either from the Render Data or the base one, to all the
 		// rendering meshes we have.
 		if (RenderDataMaterial != nullptr)
 		{
@@ -399,7 +415,7 @@ namespace
 		FShapeMaterialBarrier NativeMaterial = Barrier.GetMaterial();
 		if (NativeMaterial.HasNative())
 		{
-			FGuid Guid = NativeMaterial.GetGuid();
+			const FGuid Guid = NativeMaterial.GetGuid();
 			UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
 			Component.PhysicalMaterial = Material;
 		}

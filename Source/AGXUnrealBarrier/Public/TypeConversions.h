@@ -140,7 +140,7 @@ static_assert(
 
 inline int32 Convert(std::size_t S)
 {
-	std::size_t MaxAllowed = static_cast<std::size_t>(std::numeric_limits<int32>::max());
+	const std::size_t MaxAllowed = static_cast<std::size_t>(std::numeric_limits<int32>::max());
 	if (S > MaxAllowed)
 	{
 		UE_LOG(
@@ -311,9 +311,19 @@ inline FVector4 Convert(const agx::Vec4& V)
 	return FVector4(Convert(V.x()), Convert(V.y()), Convert(V.z()), Convert(V.w()));
 }
 
+inline FVector4 Convert(const agx::Vec4f& V)
+{
+	return FVector4(V.x(), V.y(), V.z(), V.w());
+}
+
 inline agx::Vec4 Convert(const FVector4& V)
 {
 	return agx::Vec4(Convert(V.X), Convert(V.Y), Convert(V.Z), Convert(V.W));
+}
+
+inline agx::Vec4f ConvertFloat(const FVector4& V)
+{
+	return agx::Vec4f(V.X, V.Y, V.Z, V.W);
 }
 
 // Interval/Range.
