@@ -346,8 +346,12 @@ namespace
 				GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
 			if (RenderDataMeshAsset != nullptr)
 			{
+				// The new Static Mesh Component must be a child of the Visual Mesh and not the
+				// Shape Component because the Trimesh Shape Component assume that it only has a
+				// single child Static Mesh Component and will use the first one it finds to read
+				// collision triangles from. We do not want it to find the rendering mesh.
 				RenderDataComponent = FAGX_EditorUtilities::CreateStaticMeshComponent(
-					*Component.GetOwner(), Component, *RenderDataMeshAsset, true);
+					*Component.GetOwner(), VisualMesh, *RenderDataMeshAsset, true);
 				if (RenderDataComponent != nullptr)
 				{
 					RenderDataComponent->SetVisibility(RenderData.GetShouldRender());
