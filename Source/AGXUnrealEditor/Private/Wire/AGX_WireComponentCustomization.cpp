@@ -34,7 +34,7 @@ class FWireNodeDetails : public IDetailCustomNodeBuilder, public TSharedFromThis
 	 * - Widgets. The pixels on the screen. Rendered very frame.
 	 * - Callbacks. Functions called by the widget.
 	 * - Storage. In-class backing storage read by the widget renderers.
-	 * - Objects. The actual objects that the widget and storage represents.
+	 * - Objects. The actual objects that the widgets and storage represents.
 	 *
 	 * When the widgets are created function pointers are passed and registered as callbacks. There
 	 * are callbacks both for getting the current value to be rendered, called a read callback, and
@@ -78,6 +78,7 @@ private:
 	TSharedPtr<SComboBox<TSharedPtr<FString>>> NodeTypeComboBox;
 
 	/// Used to select which body among those in an Actor that an Eye or BodyFixed should attach to.
+	/// Stored because it must be rebuilt when a new node is selected or the Rigid Body is changed.
 	TSharedPtr<SComboBox<TSharedPtr<FString>>> BodyNameComboBox;
 
 	/*
@@ -103,7 +104,7 @@ private:
 
 	// Getters.
 
-	/// Called for each entry in WireNodeTypes combo box, to generate the list entries.
+	/// Called for each entry in the WireNodeTypes combo box, to generate the list entries.
 	TSharedRef<SWidget> OnGetNodeTypeEntryWidget(TSharedPtr<FString> InComboString);
 
 	/// Called to generate the default (non-opened) view of the node type combo box.
@@ -197,7 +198,7 @@ private:
 	 *
 	 * Resets the wire and node selection if incompatible edits has been made elsewhere.
 	 *
-	 * Copy node properties from the selected node, if any, into backing storage.
+	 * Copy node properties from the selected node, if any, into the backing storage.
 	 */
 	void UpdateValues();
 
@@ -211,7 +212,7 @@ private:
 	EVisibility NodeHasRigidBody() const;
 
 private:
-	/// Delegate that the Slate system provides us. When executed a rebuild is triggered.
+	/// Delegate that the Slate system provides for us. When executed a rebuild is triggered.
 	FSimpleDelegate OnRegenerateChildren;
 
 	/// Some of the callbacks manipulate other widgets. In these cases the original callback is the
@@ -233,13 +234,14 @@ FWireNodeDetails::FWireNodeDetails(UAGX_WireComponent* InWire)
 	// Create backing storage for the node type combo box.
 	UEnum* NodeTypesEnum = StaticEnum<EWireNodeType>();
 	check(NodeTypesEnum);
-	for (int32 EnumIndex = 0; EnumIndex < (int32)EWireNodeType::NUM_USER_CREATABLE; ++EnumIndex)
+	for (int32 EnumIndex = 0; EnumIndex < (int32) EWireNodeType::NUM_USER_CREATABLE; ++EnumIndex)
 	{
 		WireNodeTypes.Add(
 			MakeShareable(new FString(NodeTypesEnum->GetNameStringByIndex(EnumIndex))));
 	}
 
-	// Should always have the emptry string entry in the body names list.
+	// Should always have the emptry string entry in the body names list, so that it's possible
+	// to select None.
 	RigidBodyNames.Add(MakeShareable(new FString("")));
 
 	// Build initial state. Clearing Wire and SelectedNodeIndex to ensure that this first selection
@@ -356,7 +358,7 @@ void FWireNodeDetails::GenerateChildContent(IDetailChildrenBuilder& ChildrenBuil
 				]
 				+ SHorizontalBox::Slot()
 				[
-					// This creates a picker-button what can be used to pick a single actor.
+					// Creates a button that enables the Actor Picker mode.
 					PropertyCustomizationHelpers::MakeInteractiveActorPicker(
 						FOnGetAllowedClasses::CreateSP(this, &FWireNodeDetails::OnGetAllowedClasses),
 						FOnShouldFilterActor::CreateSP(this, &FWireNodeDetails::OnGetHasRigidBody),
@@ -473,6 +475,8 @@ namespace WireNodeDetails_helpers
 	 * exist in the updated list.
 	 *
 	 * Call this when the Details Panel is being updated without changing the Node.
+	 * @see RebuildRigidBodyComboBox_Edit
+	 *
 	 *
 	 * @param BodyNameComboBox The Combo Box that displays the names.
 	 * @param RigidBodyNames List of names that is to be rebuilt.
@@ -504,8 +508,10 @@ namespace WireNodeDetails_helpers
 	 * Selects the ToSelect entry if it exists. Selects the first non-empty entry if ToSelect
 	 * doesn't exist. Selects the empty string entry if there is no non-empty entry.
 	 *
-	 * Call this when the Details Panel is being updated in response to a edit. The returned string
-	 * should be assigned to the node's Rigid Body name.
+	 * Call this when the Details Panel is being updated in response to am edit.
+	 * @see RebuildRigidBodyComboBox_View
+	 *
+	 * The returned string should be assigned to the node's Rigid Body name.
 	 *
 	 * @param BodyNameComboBox The Combo Box that displays the names.
 	 * @param RigidBodyNames List of names that is to be rebuilt.
@@ -526,8 +532,7 @@ namespace WireNodeDetails_helpers
 			// The rigid body name we had selected doesn't exist anymore. Select either the empty
 			// string, at index 0, or the first rigid body name, at index 1.
 			// RebuildRigidBodyNames guarantees that Num() - 1 will never be negative.
-			const int32 FallbackIndex = FMath::Min(RigidBodyNames.Num() - 1, 1);
-			Index = FallbackIndex;
+			Index = FMath::Min(RigidBodyNames.Num() - 1, 1);
 		}
 		BodyNameComboBox.SetSelectedItem(RigidBodyNames[Index]);
 		return *RigidBodyNames[Index];
@@ -596,6 +601,7 @@ TSharedRef<SWidget> FWireNodeDetails::OnGetNodeTypeEntryWidget(TSharedPtr<FStrin
 		]
 		+ SHorizontalBox::Slot()
 		[
+			/// @todo Put a SBox here to reduce the width of the Color Block. Try to make it square.
 			SNew(SColorBlock)
 			.Color(Color)
 		];
@@ -668,8 +674,8 @@ FText FWireNodeDetails::OnGetRigidBodyLabel() const
 	{
 		return LOCTEXT("NoSelection", "(Nothing Selected)");
 	}
-
-	return FText::FromName(Wire->RouteNodes[SelectedNodeIndex].RigidBody.BodyName);
+	FWireRoutingNode& Node = Wire->RouteNodes[SelectedNodeIndex];
+	return FText::FromName(Node.RigidBody.BodyName);
 }
 
 FSlateColor FWireNodeDetails::OnGetRigidBodyNameColor() const
@@ -700,8 +706,8 @@ FText FWireNodeDetails::OnGetRigidBodyOwnerLabel() const
 	{
 		return LOCTEXT("NoSelection", "(Nothing Selected)");
 	}
-
-	const FString Label = GetLabelSafe(Wire->RouteNodes[SelectedNodeIndex].RigidBody.OwningActor);
+	FWireRoutingNode& Node = Wire->RouteNodes[SelectedNodeIndex];
+	const FString Label = GetLabelSafe(Node.RigidBody.OwningActor);
 	return FText::FromString(Label);
 }
 
@@ -848,9 +854,9 @@ void FWireNodeDetails::UpdateValues()
 	LocationX = Location.X;
 	LocationY = Location.Y;
 	LocationZ = Location.Z;
-	NodeType = Node.NodeType;
 
 	// Read node type.
+	NodeType = Node.NodeType;
 	const int32 EnumIndex = static_cast<int32>(NodeType.GetValue());
 	if (!NodeTypeComboBox->GetSelectedItem().IsValid() ||
 		NodeTypeComboBox->GetSelectedItem() != WireNodeTypes[EnumIndex])
