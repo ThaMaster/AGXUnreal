@@ -98,62 +98,91 @@ namespace AGX_WireComponentVisualizer_helpers
 		return WireNodeColors[I];
 	}
 
-	FVector DrawNode(
-		const UAGX_WireComponent& Wire, int32 NodeIndex, int32 SelectedNodeIndex,
-		EWireNodeType NodeType, const FVector& Location, const FVector& PrevLocation,
-		FPrimitiveDrawInterface* PDI)
-	{
-		const float NodeHandleSize = 10.0f;
-		const FLinearColor Color = NodeIndex == SelectedNodeIndex
-									   ? GEngine->GetSelectionOutlineColor()
-									   : WireNodeTypeToColor(NodeType);
-
-		PDI->SetHitProxy(new HNodeProxy(&Wire, NodeIndex));
-		PDI->DrawPoint(Location, Color, NodeHandleSize, SDPG_Foreground);
-		PDI->SetHitProxy(nullptr);
-
-		if (NodeIndex > 0)
-		{
-			PDI->DrawLine(PrevLocation, Location, FLinearColor::White, SDPG_Foreground);
-		}
-		return Location;
-	}
-
-	void DrawRoutingNodes(
-		const UAGX_WireComponent& Wire, int32 SelectedNodeIndex, FPrimitiveDrawInterface* PDI)
+	template <typename FNodeColorFunc>
+	void DrawRouteNodes(
+		const UAGX_WireComponent& Wire, FPrimitiveDrawInterface* PDI, const FLinearColor& LineColor,
+		FNodeColorFunc NodeColorFunc)
 	{
 		const FTransform& LocalToWorld = Wire.GetComponentTransform();
 		const TArray<FWireRoutingNode>& Nodes = Wire.RouteNodes;
 		const int32 NumNodes = Nodes.Num();
 
-		// The Location of the previous drawn node. Used to draw the line.
 		FVector PrevLocation;
 
 		for (int32 I = 0; I < NumNodes; ++I)
 		{
-			const FVector Location = LocalToWorld.TransformPosition(Nodes[I].Location);
-			PrevLocation = DrawNode(
-				Wire, I, SelectedNodeIndex, Nodes[I].NodeType, Location, PrevLocation, PDI);
+			const FWireRoutingNode& Node = Nodes[I];
+			const float NodeHandleSize = 10.0f;
+			const FLinearColor NodeColor = NodeColorFunc(I, Node.NodeType);
+			const FVector Location = LocalToWorld.TransformPosition(Node.Location);
+
+			PDI->SetHitProxy(new HNodeProxy(&Wire, I));
+			PDI->DrawPoint(Location, NodeColor, NodeHandleSize, SDPG_Foreground);
+			PDI->SetHitProxy(nullptr);
+
+			if (I > 0)
+			{
+				PDI->DrawLine(PrevLocation, Location, LineColor, SDPG_Foreground);
+			}
+
+			PrevLocation = Location;
 		}
 	}
 
-	void DrawWireNodes(
+	void DrawRouteNodes(const UAGX_WireComponent& Wire, FPrimitiveDrawInterface* PDI)
+	{
+		FLinearColor LineColor = FLinearColor::White;
+		auto NodeColorFunc = [](int32 I, EWireNodeType NodeType) {
+			return WireNodeTypeToColor(NodeType);
+		};
+		DrawRouteNodes(Wire, PDI, LineColor, NodeColorFunc);
+	}
+
+	void DrawRouteNodes(
 		const UAGX_WireComponent& Wire, int32 SelectedNodeIndex, FPrimitiveDrawInterface* PDI)
 	{
-		int32 I = 0;
-		FVector PrevLocation;
+		FLinearColor LineColor = GEngine->GetSelectionOutlineColor();
+		auto NodeColorFunc = [SelectedNodeIndex](int32 I, EWireNodeType NodeType) {
+			return I == SelectedNodeIndex ? GEditor->GetSelectionOutlineColor()
+										  : WireNodeTypeToColor(NodeType);
+		};
+		DrawRouteNodes(Wire, PDI, LineColor, NodeColorFunc);
+	}
 
-		/// \todo Investigate ranged-for.
+	/**
+	 * Draw a single simulation node of a wire.
+	 */
+	FVector DrawSimulationNode(
+		const FAGX_WireRenderIterator& It, const FLinearColor& LineColor,
+		const TOptional<FVector>& PrevLocation, FPrimitiveDrawInterface* PDI)
+	{
+		const FAGX_WireNode Node = It.Get();
+		const EWireNodeType NodeType = Node.GetType();
+		const FLinearColor Color = WireNodeTypeToColor(NodeType);
+		const FVector Location = Node.GetWorldLocation();
+
+		const float NodeHandleSize = 10.0f;
+		PDI->DrawPoint(Location, Color, NodeHandleSize, SDPG_Foreground);
+		if (PrevLocation.IsSet())
+		{
+			PDI->DrawLine(*PrevLocation, Location, LineColor, SDPG_Foreground);
+		}
+		return Location;
+	}
+
+	/**
+	 * Draw the simulation nodes of the given Wire, including lines between them. Hit proxies
+	 * are not created when drawing simulation nodes.
+	 */
+	void DrawSimulationNodes(const UAGX_WireComponent& Wire, FPrimitiveDrawInterface* PDI)
+	{
+		int32 I = 0;
+		TOptional<FVector> PrevLocation;
+
 		for (auto It = Wire.GetRenderBeginIterator(), End = Wire.GetRenderEndIterator(); It != End;
 			 It.Inc())
 		{
-			FAGX_WireNode Node = It.Get();
-			EWireNodeType NodeType = Node.GetType();
-			//EWireNodeType NodeType = EWireNodeType::FreeNode; /// \@todo Node.OnGetNodeTypeLabel();
-			const FVector Location = Node.GetWorldLocation();
-			PrevLocation =
-				DrawNode(Wire, I, SelectedNodeIndex, NodeType, Location, PrevLocation, PDI);
-			I++;
+			PrevLocation = DrawSimulationNode(It, FLinearColor::White, PrevLocation, PDI);
 		}
 	}
 }
@@ -171,11 +200,18 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 
 	if (Wire->IsInitialized())
 	{
-		DrawWireNodes(*Wire, SelectedNodeIndex, PDI);
+		DrawSimulationNodes(*Wire, PDI);
 	}
 	else
 	{
-		DrawRoutingNodes(*Wire, SelectedNodeIndex, PDI);
+		if (Wire == SelectedWire)
+		{
+			DrawRouteNodes(*Wire, SelectedNodeIndex, PDI);
+		}
+		else
+		{
+			DrawRouteNodes(*Wire, PDI);
+		}
 	}
 }
 
