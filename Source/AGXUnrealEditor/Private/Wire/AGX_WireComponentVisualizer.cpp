@@ -193,6 +193,8 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 	const UAGX_WireComponent* Wire = Cast<const UAGX_WireComponent>(VisProxy->Component);
 	if (Wire == nullptr)
 	{
+		// Clicked something not a wire, deselect whatever we had selected before.
+		ClearSelection();
 		return false;
 	}
 
@@ -203,13 +205,14 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 			// Node selection is currently only for routing nodes. All node manipulation operations
 			// operate on the routing nodes, but when the wire is initialized what we're seeing is
 			// simulation nodes.
+			ClearSelection();
 			return false;
 		}
 
 		if (NodeProxy->NodeIndex == SelectedNodeIndex)
 		{
-			SelectedNodeIndex = INDEX_NONE;
-			SelectedWire = nullptr;
+			// Clicking a selected node deselects it.
+			ClearSelection();
 		}
 		else
 		{
@@ -231,11 +234,7 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	const FEditorViewportClient* ViewportClient, FVector& OutLocation) const
 {
-	if (SelectedWire == nullptr)
-	{
-		return false;
-	}
-	if (!SelectedWire->RouteNodes.IsValidIndex(SelectedNodeIndex))
+	if (HasValidSelection())
 	{
 		return false;
 	}
@@ -250,20 +249,9 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	FEditorViewportClient* ViewportClient, FViewport* Viewport, FVector& DeltaTranslate,
 	FRotator& DeltaRotate, FVector& DeltaScale)
 {
-	if (SelectedWire == nullptr)
+	if (!HasValidSelection())
 	{
-		return false;
-	}
-
-	if (SelectedNodeIndex == INDEX_NONE)
-	{
-		return false;
-	}
-
-	if (!SelectedWire->RouteNodes.IsValidIndex(SelectedNodeIndex))
-	{
-		SelectedNodeIndex = INDEX_NONE;
-		SelectedWire = nullptr;
+		ClearSelection();
 		return false;
 	}
 
@@ -343,8 +331,7 @@ bool FAGX_WireComponentVisualizer::HandleInputKey(
 
 void FAGX_WireComponentVisualizer::EndEditing()
 {
-	SelectedNodeIndex = INDEX_NONE;
-	SelectedWire = nullptr;
+	ClearSelection();
 }
 
 bool FAGX_WireComponentVisualizer::HasValidSelection() const
@@ -364,9 +351,16 @@ int32 FAGX_WireComponentVisualizer::GetSelectedNodeIndex() const
 	return SelectedNodeIndex;
 }
 
+void FAGX_WireComponentVisualizer::ClearSelection()
+{
+	bIsDuplicatingNode = false;
+	SelectedNodeIndex = INDEX_NONE;
+	SelectedWire = nullptr;
+}
+
 void FAGX_WireComponentVisualizer::OnDeleteKey()
 {
-	if (SelectedWire == nullptr || !SelectedWire->RouteNodes.IsValidIndex(SelectedNodeIndex))
+	if (!HasValidSelection())
 	{
 		return;
 	}
@@ -387,7 +381,7 @@ void FAGX_WireComponentVisualizer::OnDeleteKey()
 
 bool FAGX_WireComponentVisualizer::CanDeleteKey() const
 {
-	return SelectedWire != nullptr && SelectedWire->RouteNodes.IsValidIndex(SelectedNodeIndex);
+	return HasValidSelection();
 }
 
 #undef LOCTEXT_NAMESPACE

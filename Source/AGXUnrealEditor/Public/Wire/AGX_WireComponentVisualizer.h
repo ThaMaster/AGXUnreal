@@ -52,6 +52,7 @@ public:
 	bool HasValidSelection() const;
 	UAGX_WireComponent* GetSelectedWire() const;
 	int32 GetSelectedNodeIndex() const;
+	void ClearSelection();
 
 private:
 	void OnDeleteKey();
