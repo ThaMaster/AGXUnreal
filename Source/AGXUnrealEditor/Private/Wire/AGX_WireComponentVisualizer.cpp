@@ -335,12 +335,19 @@ void FAGX_WireComponentVisualizer::EndEditing()
 	SelectedWire = nullptr;
 }
 
-UAGX_WireComponent* FAGX_WireComponentVisualizer::GetSelectedWire()
+bool FAGX_WireComponentVisualizer::HasValidSelection() const
+{
+	return SelectedWire != nullptr &&
+		   !SelectedWire->IsInitialized() && // Node selection is currently only for routing nodes.
+		   SelectedWire->RouteNodes.IsValidIndex(SelectedNodeIndex);
+}
+
+UAGX_WireComponent* FAGX_WireComponentVisualizer::GetSelectedWire() const
 {
 	return SelectedWire;
 }
 
-int32 FAGX_WireComponentVisualizer::GetSelectedNodeIndex()
+int32 FAGX_WireComponentVisualizer::GetSelectedNodeIndex() const
 {
 	return SelectedNodeIndex;
 }

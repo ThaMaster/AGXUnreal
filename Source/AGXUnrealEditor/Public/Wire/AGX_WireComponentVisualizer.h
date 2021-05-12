@@ -49,8 +49,9 @@ public:
 
 	//~ End FComponentVisualizer Interface
 
-	UAGX_WireComponent* GetSelectedWire();
-	int32 GetSelectedNodeIndex();
+	bool HasValidSelection() const;
+	UAGX_WireComponent* GetSelectedWire() const;
+	int32 GetSelectedNodeIndex() const;
 
 private:
 	void OnDeleteKey();
