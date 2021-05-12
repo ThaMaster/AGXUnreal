@@ -12,6 +12,8 @@
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TireBarrier.h"
 #include "TypeConversions.h"
+#include "Wire/WireBarrier.h"
+#include "Wire/WireRef.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -97,6 +99,20 @@ void FSimulationBarrier::AddTire(FTireBarrier* Tire)
 	check(HasNative());
 	check(Tire->HasNative());
 	NativeRef->Native->add(Tire->GetNative()->Native);
+}
+
+void FSimulationBarrier::AddWire(FWireBarrier& Wire)
+{
+	check(HasNative());
+	check(Wire.HasNative());
+	NativeRef->Native->add(Wire.GetNative()->Native);
+}
+
+void FSimulationBarrier::RemoveWire(FWireBarrier& Wire)
+{
+	check(HasNative());
+	check(Wire.HasNative());
+	NativeRef->Native->remove(Wire.GetNative()->Native);
 }
 
 void FSimulationBarrier::SetEnableCollisionGroupPair(

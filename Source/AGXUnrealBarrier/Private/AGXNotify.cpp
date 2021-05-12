@@ -1,6 +1,8 @@
 #include "AGXNotify.h"
 
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGXUnrealBarrier.h"
 #include "TypeConversions.h"
 
 void FAGXNotify::StartAgxNotify(ELogVerbosity::Type LogVerbosity)
@@ -15,6 +17,11 @@ void FAGXNotify::StopAgxNotify()
 
 void FAGXNotify::message(const agx::String& msg, int notifyLevel)
 {
+	const FString Message = Convert(msg);
+	ELogVerbosity::Type Verbosity =
+		ConvertLogLevelVerbosity((agx::Notify::NotifyLevel) notifyLevel);
+	FAGXUnrealBarrierModule::Get().RelayNotifyMessage(Message, Verbosity);
+
 	// Convert log level verbosity from AGX to Unreal.
 	// A convert function is not possible to use due to the
 	// implementation of the UE_LOG macro.
@@ -26,16 +33,16 @@ void FAGXNotify::message(const agx::String& msg, int notifyLevel)
 	switch (notifyLevel)
 	{
 		case agx::Notify::NOTIFY_DEBUG:
-			UE_LOG(LogAGXDynamics, Verbose, TEXT("%s"), *Convert(msg));
+			UE_LOG(LogAGXDynamics, Verbose, TEXT("%s"), *Message);
 			break;
 		case agx::Notify::NOTIFY_INFO:
-			UE_LOG(LogAGXDynamics, Log, TEXT("%s"), *Convert(msg));
+			UE_LOG(LogAGXDynamics, Log, TEXT("%s"), *Message);
 			break;
 		case agx::Notify::NOTIFY_WARNING:
-			UE_LOG(LogAGXDynamics, Error, TEXT("%s"), *Convert(msg));
+			UE_LOG(LogAGXDynamics, Error, TEXT("%s"), *Message);
 			break;
 		case agx::Notify::NOTIFY_ERROR:
-			UE_LOG(LogAGXDynamics, Error, TEXT("%s"), *Convert(msg));
+			UE_LOG(LogAGXDynamics, Error, TEXT("%s"), *Message);
 			break;
 		default:
 			UE_LOG(
@@ -45,6 +52,6 @@ void FAGXNotify::message(const agx::String& msg, int notifyLevel)
 				notifyLevel);
 
 			// Use verbosity level 'Log' by default if unknown notifyLevel is given.
-			UE_LOG(LogAGXDynamics, Log, TEXT("%s"), *Convert(msg));
+			UE_LOG(LogAGXDynamics, Log, TEXT("%s"), *Message);
 	}
 }

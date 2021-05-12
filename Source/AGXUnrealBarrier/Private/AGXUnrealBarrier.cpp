@@ -13,6 +13,7 @@
 // Unreal Engine includes.
 #include "Misc/Paths.h"
 #include "GenericPlatform/GenericPlatformProcess.h"
+#include "Modules/ModuleManager.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealBarrierModule"
 
@@ -115,6 +116,40 @@ void FAGXUnrealBarrierModule::SetupUsePluginResourcesOnly()
 
 	FAGX_EnvironmentUtilities::EnsureAgxDynamicsEnvironmentIsSetup();
 }
+
+FAGXUnrealBarrierModule& FAGXUnrealBarrierModule::Get()
+{
+	return FModuleManager::GetModuleChecked<FAGXUnrealBarrierModule>("AGXUnrealBarrier");
+}
+
+void FAGXUnrealBarrierModule::AddNotifyListener(FAGXNotifyListener* Listener)
+{
+	NotifyListeners.Add(Listener);
+}
+
+void FAGXUnrealBarrierModule::RemoveNotifyListener(FAGXNotifyListener* Listener)
+{
+	NotifyListeners.Remove(Listener);
+}
+
+void FAGXUnrealBarrierModule::RelayNotifyMessage(const FString& Message, ELogVerbosity::Type Verbosity)
+{
+	for (auto& Listener : NotifyListeners)
+	{
+		Listener->OnMessage(Message, Verbosity);
+	}
+}
+
+FAGXNotifyListener::FAGXNotifyListener()
+{
+	FAGXUnrealBarrierModule::Get().AddNotifyListener(this);
+}
+
+FAGXNotifyListener::~FAGXNotifyListener()
+{
+	FAGXUnrealBarrierModule::Get().RemoveNotifyListener(this);
+}
+
 
 #undef LOCTEXT_NAMESPACE
 

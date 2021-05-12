@@ -61,6 +61,9 @@
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Tires/AGX_TwoBodyTireActor.h"
 #include "Tires/AGX_TwoBodyTireComponentCustomization.h"
+#include "Wire/AGX_WireComponent.h"
+#include "Wire/AGX_WireComponentVisualizer.h"
+#include "Wire/AGX_WireComponentCustomization.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -241,6 +244,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_TwoBodyTireComponentCustomization::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_WireComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_WireComponentCustomization::MakeInstance));
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -280,6 +288,9 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());
 
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		UAGX_WireComponent::StaticClass()->GetFName());
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -296,6 +307,10 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 	RegisterComponentVisualizer(
 		UAGX_TireComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_TireComponentVisualizer));
+
+	RegisterComponentVisualizer(
+		UAGX_WireComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_WireComponentVisualizer));
 }
 
 void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
@@ -303,6 +318,7 @@ void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
 	UnregisterComponentVisualizer(UAGX_ConstraintComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_TireComponent::StaticClass()->GetFName());
+	UnregisterComponentVisualizer(UAGX_WireComponent::StaticClass()->GetFName());
 }
 
 void FAGXUnrealEditorModule::RegisterComponentVisualizer(

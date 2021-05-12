@@ -9,6 +9,7 @@
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 #include "RigidBodyBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
+#include "Wire/AGX_WireEnums.h"
 
 // Unreal Engine includes.
 #include "Containers/UnrealString.h"
@@ -29,6 +30,7 @@
 #include <agx/Vec2.h>
 #include <agx/Vec3.h>
 #include <agxModel/TwoBodyTire.h>
+#include <agxWire/Node.h>
 #include "EndAGXIncludes.h"
 
 // Standard library includes.
@@ -48,9 +50,9 @@ namespace
 
 // Scalars.
 
-inline float Convert(agx::Real V)
+inline float Convert(agx::Real S)
 {
-	return static_cast<float>(V);
+	return static_cast<float>(S);
 }
 
 inline float ConvertDistance(agx::Real D)
@@ -59,10 +61,16 @@ inline float ConvertDistance(agx::Real D)
 }
 
 // Convert a distance-squared unit, such as area or moment of inertia.
-inline float ConvertDistance2(agx::Real D)
+inline float ConvertDistance2(agx::Real D2)
 {
 	return static_cast<float>(
-		D * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
+		D2 * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
+}
+
+// Convert a distance-inverse unit, such as resolution.
+inline float ConvertDistanceInv(agx::Real DInv)
+{
+	return static_cast<float>(DInv / AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
 }
 
 template <typename T>
@@ -82,21 +90,27 @@ inline T ConvertAngleToUnreal(agx::Real A)
 	return static_cast<T>(FMath::RadiansToDegrees(A));
 }
 
-inline agx::Real Convert(float V)
+inline agx::Real Convert(float S)
 {
-	return static_cast<agx::Real>(V);
+	return static_cast<agx::Real>(S);
 }
 
-inline agx::Real ConvertDistance(float V)
+inline agx::Real ConvertDistance(float D)
 {
-	return static_cast<agx::Real>(V) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+	return static_cast<agx::Real>(D) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
 }
 
 // Convert a distance-squared unit, such as area or moment of inertia.
-inline agx::Real ConvertDistance2(float V)
+inline agx::Real ConvertDistance2(float D2)
 {
-	return static_cast<agx::Real>(V) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
+	return static_cast<agx::Real>(D2) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
 		   UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+}
+
+// Convert a distance-inverse unit, such as resolution.
+inline agx::Real ConvertDistanceInv(float DInv)
+{
+	return static_cast<agx::Real>(DInv) / UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
 }
 
 template <typename T>
@@ -508,6 +522,28 @@ inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type Log
 	}
 }
 
+inline ELogVerbosity::Type ConvertLogLevelVerbosity(agx::Notify::NotifyLevel Level)
+{
+	switch (Level)
+	{
+		case agx::Notify::NOTIFY_DEBUG:
+			return ELogVerbosity::VeryVerbose;
+		case agx::Notify::NOTIFY_INFO:
+			return ELogVerbosity::Verbose;
+		case agx::Notify::NOTIFY_WARNING:
+			return ELogVerbosity::Warning;
+		case agx::Notify::NOTIFY_ERROR:
+			return ELogVerbosity::Error;
+
+		// The following are not actual verbosity levels.
+		case agx::Notify::NOTIFY_CLEAR:
+		case agx::Notify::NOTIFY_END:
+		case agx::Notify::NOTIFY_LOGONLY:
+		case agx::Notify::NOTIFY_PUSH:
+			return ELogVerbosity::VeryVerbose;
+	}
+}
+
 inline agxModel::TwoBodyTire::DeformationMode Convert(FTwoBodyTireBarrier::DeformationMode Mode)
 {
 	switch (Mode)
@@ -588,4 +624,53 @@ inline uint32 StringTo32BitFnvHash(const FString& StringUnreal)
 	}
 
 	return hash;
+}
+
+inline EWireNodeType Convert(agxWire::Node::Type Type)
+{
+	switch (Type)
+	{
+		case agxWire::Node::FREE:
+			return EWireNodeType::Free;
+		case agxWire::Node::EYE:
+			return EWireNodeType::Eye;
+		case agxWire::Node::BODY_FIXED:
+			return EWireNodeType::BodyFixed;
+		case agxWire::Node::CONTACT:
+		case agxWire::Node::SHAPE_CONTACT:
+		case agxWire::Node::CONNECTING:
+		case agxWire::Node::STOP:
+		case agxWire::Node::MISSING:
+		case agxWire::Node::NOT_DEFINED:
+			return EWireNodeType::Other;
+	}
+}
+
+inline agxWire::Node::Type Convert(EWireNodeType Type)
+{
+	switch (Type)
+	{
+		case EWireNodeType::Free:
+			return agxWire::Node::FREE;
+		case EWireNodeType::Eye:
+			return agxWire::Node::EYE;
+		case EWireNodeType::BodyFixed:
+			return agxWire::Node::BODY_FIXED;
+		case EWireNodeType::NUM_USER_CREATABLE:
+		case EWireNodeType::Other:
+		case EWireNodeType::NUM_NODE_TYPES:
+			return agxWire::Node::NOT_DEFINED;
+	}
+}
+
+inline EWireNodeNativeType ConvertNative(agxWire::Node::Type Type)
+{
+	// The values in EWireNodeNativeType must match those in agxWire::Node::Type.
+	return static_cast<EWireNodeNativeType>(Type);
+}
+
+inline agxWire::Node::Type ConvertNative(EWireNodeNativeType Type)
+{
+	// The values in EWireNodeNativeType must match those in agxWire::Node::Type.
+	return static_cast<agxWire::Node::Type>(Type);
 }
