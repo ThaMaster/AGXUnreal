@@ -150,27 +150,6 @@ namespace AGX_WireComponentVisualizer_helpers
 	}
 
 	/**
-	 * Draw a single simulation node of a wire.
-	 */
-	FVector DrawSimulationNode(
-		const FAGX_WireRenderIterator& It, const FLinearColor& LineColor,
-		const TOptional<FVector>& PrevLocation, FPrimitiveDrawInterface* PDI)
-	{
-		const FAGX_WireNode Node = It.Get();
-		const EWireNodeType NodeType = Node.GetType();
-		const FLinearColor Color = WireNodeTypeToColor(NodeType);
-		const FVector Location = Node.GetWorldLocation();
-
-		const float NodeHandleSize = 10.0f;
-		PDI->DrawPoint(Location, Color, NodeHandleSize, SDPG_Foreground);
-		if (PrevLocation.IsSet())
-		{
-			PDI->DrawLine(*PrevLocation, Location, LineColor, SDPG_Foreground);
-		}
-		return Location;
-	}
-
-	/**
 	 * Draw the simulation nodes of the given Wire, including lines between them. Hit proxies
 	 * are not created when drawing simulation nodes.
 	 */
@@ -182,7 +161,19 @@ namespace AGX_WireComponentVisualizer_helpers
 		for (auto It = Wire.GetRenderBeginIterator(), End = Wire.GetRenderEndIterator(); It != End;
 			 It.Inc())
 		{
-			PrevLocation = DrawSimulationNode(It, FLinearColor::White, PrevLocation, PDI);
+			const FAGX_WireNode Node = It.Get();
+			const EWireNodeType NodeType = Node.GetType();
+			const FLinearColor Color = WireNodeTypeToColor(NodeType);
+			const FVector Location = Node.GetWorldLocation();
+
+			const float NodeHandleSize = 10.0f;
+			PDI->DrawPoint(Location, Color, NodeHandleSize, SDPG_Foreground);
+			if (PrevLocation.IsSet())
+			{
+				PDI->DrawLine(*PrevLocation, Location, FLinearColor::White, SDPG_Foreground);
+			}
+
+			PrevLocation = Location;
 		}
 	}
 }
