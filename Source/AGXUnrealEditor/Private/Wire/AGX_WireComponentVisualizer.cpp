@@ -425,6 +425,7 @@ void FAGX_WireComponentVisualizer::OnDeleteKey()
 {
 	if (!HasValidSelection())
 	{
+		ClearSelection();
 		return;
 	}
 
@@ -433,6 +434,7 @@ void FAGX_WireComponentVisualizer::OnDeleteKey()
 	SelectedWire->Modify();
 	SelectedWire->RouteNodes.RemoveAt(SelectedNodeIndex);
 	SelectedNodeIndex = INDEX_NONE;
+	bIsDuplicatingNode = false;
 
 	NotifyPropertyModified(
 		SelectedWire, FindFProperty<FProperty>(
