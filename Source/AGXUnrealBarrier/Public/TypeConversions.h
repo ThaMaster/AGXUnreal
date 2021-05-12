@@ -631,9 +631,9 @@ inline agxWire::Node::Type Convert(EWireNodeType Type)
 			return agxWire::Node::BODY_FIXED;
 		case EWireNodeType::NUM_USER_CREATABLE:
 		case EWireNodeType::Other:
+		case EWireNodeType::NUM_NODE_TYPES:
 			return agxWire::Node::NOT_DEFINED;
 	}
-
 }
 
 inline EWireNodeNativeType ConvertNative(agxWire::Node::Type Type)

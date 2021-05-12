@@ -72,25 +72,27 @@ void FAGX_WireComponentVisualizer::OnRegister()
 		FCanExecuteAction::CreateSP(this, &FAGX_WireComponentVisualizer::CanDeleteKey));
 }
 
-TStaticArray<FLinearColor, 4> CreateWireNodeColors()
-{
-	TStaticArray<FLinearColor, 4> WireNodeColors;
-	WireNodeColors[(int)EWireNodeType::Free] = FLinearColor::Red;
-	WireNodeColors[(int)EWireNodeType::Eye] = FLinearColor::Green;
-	WireNodeColors[(int)EWireNodeType::BodyFixed] = FLinearColor::Blue;
-	WireNodeColors[(int)EWireNodeType::Other] = FLinearColor::White;
-	return WireNodeColors;
-}
-
-FLinearColor WireNodeTypeToColor(EWireNodeType Type)
-{
-	static TStaticArray<FLinearColor, 4> WireNodeColors = CreateWireNodeColors();
-	const uint32 I = static_cast<uint32>(Type);
-	return WireNodeColors[I];
-}
-
 namespace AGX_WireComponentVisualizer_helpers
 {
+	constexpr uint32 NUM_NODE_COLORS = (uint32) EWireNodeType::NUM_NODE_TYPES;
+
+	TStaticArray<FLinearColor, NUM_NODE_COLORS> CreateWireNodeColors()
+	{
+		TStaticArray<FLinearColor, (uint32) EWireNodeType::NUM_NODE_TYPES> WireNodeColors;
+		WireNodeColors[(int) EWireNodeType::Free] = FLinearColor::Red;
+		WireNodeColors[(int) EWireNodeType::Eye] = FLinearColor::Green;
+		WireNodeColors[(int) EWireNodeType::BodyFixed] = FLinearColor::Blue;
+		WireNodeColors[(int) EWireNodeType::Other] = FLinearColor::White;
+		return WireNodeColors;
+	}
+
+	FLinearColor WireNodeTypeToColor(EWireNodeType Type)
+	{
+		static TStaticArray<FLinearColor, NUM_NODE_COLORS> WireNodeColors = CreateWireNodeColors();
+		const uint32 I = static_cast<uint32>(Type);
+		return WireNodeColors[I];
+	}
+
 	FVector DrawNode(
 		const UAGX_WireComponent& Wire, int32 NodeIndex, int32 SelectedNodeIndex,
 		EWireNodeType NodeType, const FVector& Location, const FVector& PrevLocation,

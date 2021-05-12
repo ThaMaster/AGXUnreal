@@ -581,10 +581,14 @@ void FWireNodeDetails::OnSetLocation(float NewValue, ETextCommit::Type CommitInf
 // Begin node type getters.
 
 /// @todo Hacky import from AGX_WireComponentVisualizer.cpp. Decide where to put this function.
-FLinearColor WireNodeTypeToColor(EWireNodeType Type);
+namespace AGX_WireComponentVisualizer_helpers
+{
+	FLinearColor WireNodeTypeToColor(EWireNodeType Type);
+}
 
 FLinearColor WireNodeTypeIndexToColor(int32 Type)
 {
+	using namespace AGX_WireComponentVisualizer_helpers;
 	return WireNodeTypeToColor(static_cast<EWireNodeType>(Type));
 }
 
