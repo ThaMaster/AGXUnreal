@@ -15,6 +15,9 @@
 
 #define LOCTEXT_NAMESPACE "AGX_WireComponentVisualizer"
 
+/**
+ * Data associated with clickable node visualization elements.
+ */
 class HNodeProxy : public HComponentVisProxy
 {
 	DECLARE_HIT_PROXY();
@@ -25,11 +28,15 @@ class HNodeProxy : public HComponentVisProxy
 	{
 	}
 
+	// The index of the node that the visualization that this HNodeProxy is bound to represents.
 	int32 NodeIndex;
 };
 
 IMPLEMENT_HIT_PROXY(HNodeProxy, HComponentVisProxy);
 
+/**
+ * A collection of commands that can be triggered through the Wire Component Visualizer.
+ */
 class FAGX_WireComponentVisualizerCommands : public TCommands<FAGX_WireComponentVisualizerCommands>
 {
 public:
@@ -98,6 +105,9 @@ namespace AGX_WireComponentVisualizer_helpers
 		return WireNodeColors[I];
 	}
 
+	/**
+	 * Draw the route nodes in a wire, with hit proxies.
+	 */
 	template <typename FNodeColorFunc>
 	void DrawRouteNodes(
 		const UAGX_WireComponent& Wire, FPrimitiveDrawInterface* PDI, const FLinearColor& LineColor,
@@ -129,6 +139,9 @@ namespace AGX_WireComponentVisualizer_helpers
 		}
 	}
 
+	/**
+	 * Draw the route nodes in a wire that is not selected.
+	 */
 	void DrawRouteNodes(const UAGX_WireComponent& Wire, FPrimitiveDrawInterface* PDI)
 	{
 		FLinearColor LineColor = FLinearColor::White;
@@ -138,6 +151,9 @@ namespace AGX_WireComponentVisualizer_helpers
 		DrawRouteNodes(Wire, PDI, LineColor, NodeColorFunc);
 	}
 
+	/**
+	 * Draw the route nodes in a wire that is selected.
+	 */
 	void DrawRouteNodes(
 		const UAGX_WireComponent& Wire, int32 SelectedNodeIndex, FPrimitiveDrawInterface* PDI)
 	{
@@ -178,6 +194,7 @@ namespace AGX_WireComponentVisualizer_helpers
 	}
 }
 
+// Called by Unreal Editor when it's time to draw the visualization.
 void FAGX_WireComponentVisualizer::DrawVisualization(
 	const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI)
 {
@@ -206,6 +223,7 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 	}
 }
 
+// Called by Unreal Editor when an element with a hit proxy of the visualization is clicked.
 bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 	FEditorViewportClient* InViewportClient, HComponentVisProxy* VisProxy,
 	const FViewportClick& Click)
@@ -229,8 +247,8 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 	{
 		if (Wire->IsInitialized())
 		{
-			// Node selection is currently only for routing nodes. All node manipulation operations
-			// operate on the routing nodes, but when the wire is initialized what we're seeing is
+			// Node selection is currently only for route nodes. All node manipulation operations
+			// operate on the route nodes, but when the wire is initialized what we're seeing is
 			// simulation nodes.
 			ClearSelection();
 			return false;
@@ -243,6 +261,7 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 		}
 		else
 		{
+			// A new node became selected.
 			SelectedNodeIndex = NodeProxy->NodeIndex;
 			// Not sure what I'm supposed to do here. I want to store the wire so I can edit it
 			// later in HandleInputDelta. Is there a way to get a non-const pointer to the wire
@@ -252,12 +271,16 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 		}
 		return true;
 	}
+	// Add additional Proxy types here, when needed.
+	// Or add a virtual function, that could work as well.
 	else
 	{
 		return false;
 	}
 }
 
+// Called by Unreal Editor to decide where the transform widget should be rendered. We place it on
+// the selected node, if there is one.
 bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	const FEditorViewportClient* ViewportClient, FVector& OutLocation) const
 {
@@ -266,12 +289,14 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 		return false;
 	}
 
+	// Convert the wire-local location to a world location.
 	const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
 	OutLocation =
 		LocalToWorld.TransformPosition(SelectedWire->RouteNodes[SelectedNodeIndex].Location);
 	return true;
 }
 
+// Called by Unreal Editor when the transform widget is moved, rotated, or scaled.
 bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	FEditorViewportClient* ViewportClient, FViewport* Viewport, FVector& DeltaTranslate,
 	FRotator& DeltaRotate, FVector& DeltaScale)
@@ -287,6 +312,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		return true;
 	}
 
+	/// @todo Is this Modify necessary? Compare with SplineComponentVisualizer.
 	SelectedWire->Modify();
 	TArray<FWireRoutingNode>& Nodes = SelectedWire->RouteNodes;
 
@@ -297,8 +323,12 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 			return false;
 		}
 
+		// A drag with Alt held down means that the current node should be duplicated and the copy
+		// selected.
+
 		if (!bIsDuplicatingNode)
 		{
+			// This is the start of a duplication drag. Create the duplicate and select it.
 			bIsDuplicatingNode = true;
 			int32 NewNodeIndex = SelectedNodeIndex + 1;
 			SelectedWire->RouteNodes.Insert(
@@ -311,6 +341,8 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		}
 		else
 		{
+			// This is a continuation of a previously started duplication drag. Move the selected
+			// node, i.e., the copy.
 			const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
 			FWireRoutingNode& SelectedNode = SelectedWire->RouteNodes[SelectedNodeIndex];
 			const FVector CurrentLocalLocation = SelectedNode.Location;
@@ -324,6 +356,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	}
 	else
 	{
+		// This is a regular drag, move the selected node.
 		const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
 		FWireRoutingNode& SelectedNode = SelectedWire->RouteNodes[SelectedNodeIndex];
 		const FVector CurrentLocalLocation = SelectedNode.Location;
@@ -338,15 +371,17 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	return true;
 }
 
+// Called by Unreal Editor when a key is pressed or released while this Visualizer is active.
 bool FAGX_WireComponentVisualizer::HandleInputKey(
 	FEditorViewportClient* ViewportClient, FViewport* Viewport, FKey Key, EInputEvent Event)
 {
 	if (Key == EKeys::LeftMouseButton && Event == IE_Released)
 	{
 		bIsDuplicatingNode = false;
-		// Not retuning here. We're just detecting the event, not performing an action.
+		// Not returning here. We're just detecting the event, not performing an action.
 	}
 
+	// Pass press events on to our Command List.
 	if (Event == IE_Pressed)
 	{
 		return CommandList->ProcessCommandBindings(
@@ -356,6 +391,7 @@ bool FAGX_WireComponentVisualizer::HandleInputKey(
 	return false;
 }
 
+// I assume this is called by Unreal Editor, but not sure when, or what we should do here.
 void FAGX_WireComponentVisualizer::EndEditing()
 {
 	ClearSelection();
@@ -364,7 +400,7 @@ void FAGX_WireComponentVisualizer::EndEditing()
 bool FAGX_WireComponentVisualizer::HasValidSelection() const
 {
 	return SelectedWire != nullptr &&
-		   !SelectedWire->IsInitialized() && // Node selection is currently only for routing nodes.
+		   !SelectedWire->IsInitialized() && // Node selection is currently only for route nodes.
 		   SelectedWire->RouteNodes.IsValidIndex(SelectedNodeIndex);
 }
 

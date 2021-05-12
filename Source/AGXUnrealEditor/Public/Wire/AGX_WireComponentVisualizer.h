@@ -59,9 +59,13 @@ private:
 	bool CanDeleteKey() const;
 
 private:
+	/// The index of the currently selected node, if any. INDEX_NONE otherwise.
 	int32 SelectedNodeIndex = INDEX_NONE;
+
+	/// The Wire owning the currently selected node, if any. nullptr otherwise.
 	UAGX_WireComponent* SelectedWire = nullptr;
 
+	/// True while a node duplication move is in progress, so that we don't create a new each frame.
 	bool bIsDuplicatingNode = false;
 
 	TSharedPtr<FUICommandList> CommandList;
