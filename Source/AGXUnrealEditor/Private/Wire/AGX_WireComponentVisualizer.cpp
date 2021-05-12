@@ -198,7 +198,14 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 
 	if (HNodeProxy* NodeProxy = HitProxyCast<HNodeProxy>(VisProxy))
 	{
-		// const UAGX_WireComponent* Wire = Cast<UAGX_WireComponent>(VisProxy->Component.Get());
+		if (Wire->IsInitialized())
+		{
+			// Node selection is currently only for routing nodes. All node manipulation operations
+			// operate on the routing nodes, but when the wire is initialized what we're seeing is
+			// simulation nodes.
+			return false;
+		}
+
 		if (NodeProxy->NodeIndex == SelectedNodeIndex)
 		{
 			SelectedNodeIndex = INDEX_NONE;
