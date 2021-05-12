@@ -79,6 +79,11 @@ namespace AGX_WireComponentVisualizer_helpers
 	TStaticArray<FLinearColor, NUM_NODE_COLORS> CreateWireNodeColors()
 	{
 		TStaticArray<FLinearColor, (uint32) EWireNodeType::NUM_NODE_TYPES> WireNodeColors;
+		for (uint32 I = 0; I < NUM_NODE_COLORS; ++I)
+		{
+			// Fallback color for any node type not assigned below.
+			WireNodeColors[I] = FLinearColor::Gray;
+		}
 		WireNodeColors[(int) EWireNodeType::Free] = FLinearColor::Red;
 		WireNodeColors[(int) EWireNodeType::Eye] = FLinearColor::Green;
 		WireNodeColors[(int) EWireNodeType::BodyFixed] = FLinearColor::Blue;
