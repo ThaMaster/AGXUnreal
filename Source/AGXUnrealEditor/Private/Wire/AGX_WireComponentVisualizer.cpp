@@ -234,7 +234,7 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	const FEditorViewportClient* ViewportClient, FVector& OutLocation) const
 {
-	if (HasValidSelection())
+	if (!HasValidSelection())
 	{
 		return false;
 	}
