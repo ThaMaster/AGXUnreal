@@ -228,13 +228,6 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 	FEditorViewportClient* InViewportClient, HComponentVisProxy* VisProxy,
 	const FViewportClick& Click)
 {
-#if 0
-	if (!VisProxy->Component.IsValid())
-	{
-		return false;
-	}
-#endif
-
 	const UAGX_WireComponent* Wire = Cast<const UAGX_WireComponent>(VisProxy->Component);
 	if (Wire == nullptr)
 	{
@@ -291,8 +284,8 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 
 	// Convert the wire-local location to a world location.
 	const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
-	OutLocation =
-		LocalToWorld.TransformPosition(SelectedWire->RouteNodes[SelectedNodeIndex].Location);
+	const FVector NodeLocation = SelectedWire->RouteNodes[SelectedNodeIndex].Location;
+	OutLocation = LocalToWorld.TransformPosition(NodeLocation);
 	return true;
 }
 
