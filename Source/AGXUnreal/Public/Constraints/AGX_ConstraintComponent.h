@@ -46,6 +46,12 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies", Meta = (SkipUCSModifiedProperties))
 	FAGX_ConstraintBodyAttachment BodyAttachment1;
+	// SkipUCSModifiedProperties because we set OwningActor during creation but we still want to
+	// allow the user to override that default from the Details Panel. Normally, Properties set
+	// during creation become read-only.
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Bodies")
+	bool SetBody1(UAGX_RigidBodyComponent* Body);
 
 	/**
 	 * The second Rigid Body bound by this constraint, and its Attachment Frame definition.
@@ -53,6 +59,12 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies", Meta = (SkipUCSModifiedProperties))
 	FAGX_ConstraintBodyAttachment BodyAttachment2;
+	// SkipUCSModifiedProperties because we set OwningActor during creation but we still want to
+	// allow the user to override that default from the Details Panel. Normally, Properties set
+	// during creation become read-only.
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Bodies")
+	bool SetBody2(UAGX_RigidBodyComponent* Body);
 
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	bool bEnable = true;

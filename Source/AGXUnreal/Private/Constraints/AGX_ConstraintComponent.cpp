@@ -2,8 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_ConstraintConstants.h"
-#include "CoreGlobals.h"
-#include "UObject/UObjectGlobals.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 /// \todo Determine which of these are really needed.
 #include "AGX_NativeOwnerInstanceData.h"
@@ -16,6 +15,10 @@
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintIconGraphicsComponent.h"
 #include "Constraints/ConstraintBarrier.h"
+
+// Unreal Engine includes.
+#include "CoreGlobals.h"
+#include "UObject/UObjectGlobals.h"
 
 EDofFlag ConvertDofsArrayToBitmask(const TArray<EDofFlag>& LockedDofsOrdered)
 {
@@ -153,6 +156,50 @@ void UAGX_ConstraintComponent::PostInitProperties()
 	BodyAttachment2.RigidBody.OwningActor = GetTypedOuter<AActor>();
 	BodyAttachment1.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 	BodyAttachment2.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
+}
+
+namespace AGX_ConstraintComponent_helpers
+{
+	bool SetBody(
+		FAGX_ConstraintBodyAttachment& Attachment, UAGX_RigidBodyComponent* Body,
+		UAGX_ConstraintComponent& Outer)
+	{
+		if (Outer.HasNative())
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT(
+					"SetBody called on Constraint Component '%s', in Actor '%s', which has already "
+					"initialized the AGX Dynamics constraint. Cannot move initialized constraints "
+					"between bodies."),
+				*Outer.GetName(), *GetLabelSafe(Outer.GetOwner()));
+			return false;
+		}
+
+		Attachment.RigidBody.OwningActor = Body->GetOwner();
+		Attachment.RigidBody.BodyName = Body->GetFName();
+		return true;
+	}
+}
+
+bool UAGX_ConstraintComponent::SetBody1(UAGX_RigidBodyComponent* Body)
+{
+	if (Body == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Nullptr passed to SetBody1 on Constraint Component '%s' in Actor '%s'. The first "
+				 "body must always be a valid body."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return false;
+	}
+
+	return AGX_ConstraintComponent_helpers::SetBody(BodyAttachment1, Body, *this);
+}
+
+bool UAGX_ConstraintComponent::SetBody2(UAGX_RigidBodyComponent* Body)
+{
+	return AGX_ConstraintComponent_helpers::SetBody(BodyAttachment2, Body, *this);
 }
 
 void UAGX_ConstraintComponent::SetEnable(bool InEnabled)
