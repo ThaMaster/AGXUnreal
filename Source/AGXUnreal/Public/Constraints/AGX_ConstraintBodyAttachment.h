@@ -31,7 +31,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	GENERATED_USTRUCT_BODY()
 
 	FAGX_ConstraintBodyAttachment() = default;
-	FAGX_ConstraintBodyAttachment(USceneComponent* InOwner);
+	FAGX_ConstraintBodyAttachment(USceneComponent* InOuter);
 	FAGX_ConstraintBodyAttachment& operator=(const FAGX_ConstraintBodyAttachment& Other);
 
 	/// \todo Cannot assume a single body per actor. Should we change the UPROPERTY
@@ -142,9 +142,9 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 *
 	 * We would like this to be const, so that it can be set the constructor and then never changed
 	 * again, but Unreal Engine need to be able to create instances of this class using the default
-	 * constructor and we may want to update the Owner on such default created instances.
+	 * constructor and we may want to update the Outer on such default created instances.
 	 */
-	USceneComponent* Owner;
+	USceneComponent* Outer;
 
 #if WITH_EDITOR
 	/**
