@@ -38,6 +38,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
 	UAGX_ShapeMaterialBase* PhysicalMaterial;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	bool SetShapeMaterial(UAGX_ShapeMaterialBase* ShapeMaterial);
+
 	/**
 	 * Toggle to enable or disable collision generation against this shape.
 	 */

@@ -68,6 +68,7 @@ public:
 	void SetName(const FString& Name);
 	FString GetName() const;
 
+	void ClearMaterial();
 	void SetMaterial(const FShapeMaterialBarrier& Material);
 
 	/// \todo Should GetMaterial() create a new FShapeMaterialBarrier, or get an existing somehow?
