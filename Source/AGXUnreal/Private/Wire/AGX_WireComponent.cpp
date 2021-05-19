@@ -7,6 +7,7 @@
 #include "AGXUnrealBarrier.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "Wire/AGX_WireNode.h"
 #include "Wire/WireNodeBarrier.h"
 
 // Unreal Engine includes.
