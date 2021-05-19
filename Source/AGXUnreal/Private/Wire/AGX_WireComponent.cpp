@@ -269,7 +269,10 @@ namespace AGX_WireComponent_helpers
 		const FWireRoutingNode& RouteNode, const FTransform& WireTransform)
 	{
 		UAGX_RigidBodyComponent* BodyComponent = RouteNode.RigidBody.GetRigidBody();
-		check(BodyComponent);
+		if (BodyComponent == nullptr)
+		{
+			return {nullptr, FVector::ZeroVector};
+		}
 		FRigidBodyBarrier* NativeBody = BodyComponent->GetOrCreateNative();
 		check(NativeBody);
 		const FVector LocalLocation = MoveLocationBetweenLocalTransforms(
@@ -294,6 +297,8 @@ void UAGX_WireComponent::CreateNative()
 
 	const FTransform LocalToWorld = GetComponentTransform();
 
+	TArray<FString> ErrorMessages;
+
 	// Create AGX Dynamics simulation nodes and initialize the wire.
 	for (int32 I = 0; I < RouteNodes.Num(); ++I)
 	{
@@ -312,6 +317,15 @@ void UAGX_WireComponent::CreateNative()
 				FRigidBodyBarrier* Body;
 				FVector Location;
 				std::tie(Body, Location) = GetBodyAndLocalLocation(RouteNode, LocalToWorld);
+				if (Body == nullptr)
+				{
+					ErrorMessages.Add(
+						FString::Printf(TEXT("Wire node at index %d has invalid body."), I));
+					const FVector WorldLocation =
+						LocalToWorld.TransformPosition(RouteNode.Location);
+					NodeBarrier.AllocateNativeFreeNode(WorldLocation);
+					break;
+				}
 				NodeBarrier.AllocateNativeEyeNode(*Body, Location);
 				break;
 			}
@@ -320,6 +334,15 @@ void UAGX_WireComponent::CreateNative()
 				FRigidBodyBarrier* Body;
 				FVector Location;
 				std::tie(Body, Location) = GetBodyAndLocalLocation(RouteNode, LocalToWorld);
+				if (Body == nullptr)
+				{
+					ErrorMessages.Add(
+						FString::Printf(TEXT("Wire node at index %d has invalid body."), I));
+					const FVector WorldLocation =
+						LocalToWorld.TransformPosition(RouteNode.Location);
+					NodeBarrier.AllocateNativeFreeNode(WorldLocation);
+					break;
+				}
 				NodeBarrier.AllocateNativeBodyFixedNode(*Body, Location);
 				break;
 			}
@@ -332,6 +355,16 @@ void UAGX_WireComponent::CreateNative()
 				break;
 		}
 		NativeBarrier.AddRouteNode(NodeBarrier);
+	}
+
+	if (ErrorMessages.Num() > 0)
+	{
+		FString Message = FString::Printf(TEXT("Errors detected during wire initialization:\n"));
+		for (const FString& Line : ErrorMessages)
+		{
+			Message += Line + '\n';
+		}
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
 	}
 
 	{
