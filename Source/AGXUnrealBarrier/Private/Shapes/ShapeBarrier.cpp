@@ -344,3 +344,22 @@ std::tuple<FVector, FQuat> FShapeBarrier::GetLocalPositionAndRotation() const
 	return {
 		ConvertDisplacement(ShapeRelativeBody.getTranslate()), Convert(ShapeRelativeBody.getRotate())};
 }
+
+FTransform FShapeBarrier::GetGeometryToShapeTransform() const
+{
+	check(HasNative());
+	agxCollide::ShapeIterator Iterator =
+		FindShape(NativeRef->NativeGeometry, NativeRef->NativeShape);
+	if (!Iterator.isValid())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Found a FShapeBarrier whose native Geometry doesn't contain the native Shape. "
+				 "Cannot get geometry-to-shape transform."));
+		return FTransform();
+	}
+
+	const agx::AffineMatrix4x4& TransformAGX = Iterator.getLocalTransform();
+	const FTransform Transform = Convert(TransformAGX);
+	return Transform;
+}

@@ -329,11 +329,14 @@ namespace
 	 * data also for rendering.
 	 *
 	 * @param RenderData The AGX Dynamics representation of the Render Data.
+	 * @param RenderMeshTransform The local transform to give the render mesh Static Mesh Component.
+	 * @param Component The Shape Component that is being created.
 	 * @param VisualMesh The default Component used for visualization. Often the Shape itself.
 	 */
 	void ApplyRenderingData(
-		const FRenderDataBarrier& RenderData, UAGX_ShapeComponent& Component,
-		UMeshComponent& VisualMesh, TMap<FGuid, UStaticMesh*>& RestoredMeshes,
+		const FRenderDataBarrier& RenderData, const FTransform& RenderMeshTransform,
+		UAGX_ShapeComponent& Component, UMeshComponent& VisualMesh,
+		TMap<FGuid, UStaticMesh*>& RestoredMeshes,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials, const FString& DirectoryName)
 	{
 		VisualMesh.SetVisibility(false);
@@ -355,6 +358,7 @@ namespace
 				if (RenderDataComponent != nullptr)
 				{
 					RenderDataComponent->SetVisibility(RenderData.GetShouldRender());
+					RenderDataComponent->SetRelativeTransform(RenderMeshTransform);
 				}
 			}
 		}
@@ -426,8 +430,42 @@ namespace
 
 		if (Barrier.HasRenderData())
 		{
+			// The triangles in the AGX Dynamics render data are relative to the Geometry, but the
+			// Unreal Engine Component we create is placed at the position of the AGX Dynamics
+			// Shape. There is no Component for the Geometry. To get the triangles in the right
+			// place we need to offset the render data Component by the inverse of the
+			// Geometry-to-Shape transformation in the source AGX Dynamics data.
+			//
+			// In AGX Dynamics:
+			//
+			//   Geometry           Shape       A
+			//   origin             origin   triangle
+			//     X                  O         |
+			//     '-----------28-------------->'
+			//           The vertex position
+			//     '--------18------->'
+			//      The Shape position
+			//      relative to the
+			//      geometry
+			//
+			//
+			// In Unreal Engine:
+			//
+			//                      Shape       A
+			//                      origin   triangle
+			//                        O         |                  |
+			//                        '-------------28------------>'
+			//                         Where the triangle would end
+			//                         up if the vertex position is
+			//                         used as-is.
+			//                                  '<------18---------'
+			//                                   The inverse of the
+			//                                   Geometry-to-Shape
+			//                                   transformation.
+			const FTransform ShapeTransform = Barrier.GetGeometryToShapeTransform();
+			const FTransform ShapeInvTransform = ShapeTransform.Inverse();
 			ApplyRenderingData(
-				Barrier.GetRenderData(), Component, VisualMesh, RestoredMeshes,
+				Barrier.GetRenderData(), ShapeInvTransform, Component, VisualMesh, RestoredMeshes,
 				RestoredRenderMaterials, DirectoryName);
 		}
 		else
