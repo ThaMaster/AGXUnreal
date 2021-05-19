@@ -8,6 +8,7 @@
 
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "AGX_WireComponent.generated.h"
 
@@ -54,6 +55,18 @@ struct FWireRoutingNode
 		, Location(InLocation)
 	{
 	}
+};
+
+/**
+ * This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprints.
+ */
+UCLASS()
+class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node")
+	static bool SetBody(UPARAM(ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body);
 };
 
 /**

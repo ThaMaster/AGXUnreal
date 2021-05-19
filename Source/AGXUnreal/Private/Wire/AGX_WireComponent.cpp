@@ -7,6 +7,7 @@
 #include "AGXUnrealBarrier.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "Wire/AGX_WireNode.h"
 #include "Wire/WireNodeBarrier.h"
 
 // Unreal Engine includes.
@@ -14,6 +15,19 @@
 #include "CoreGlobals.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_WireComponent"
+
+bool UAGX_WireRouteNode_FL::SetBody(
+	UPARAM(ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body)
+{
+	if (Body == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Nullptr Rigid Body passed to SetBody on a Wire Route Node."));
+		return false;
+	}
+	WireNode.RigidBody.OwningActor = Body->GetOwner();
+	WireNode.RigidBody.BodyName = Body->GetFName();
+	return true;
+}
 
 UAGX_WireComponent::UAGX_WireComponent()
 {
