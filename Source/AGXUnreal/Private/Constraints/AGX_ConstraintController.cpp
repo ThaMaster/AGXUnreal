@@ -15,7 +15,7 @@ FAGX_ConstraintController::FAGX_ConstraintController()
 
 FAGX_ConstraintController::FAGX_ConstraintController(bool bInRotational)
 	: bEnable(false)
-	, Compliance(ConstraintConstants::DefaultCompliance())
+	, Elasticity(ConstraintConstants::DefaultElasticity())
 	, Damping(ConstraintConstants::DefaultDamping())
 	, ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
 	, bRotational(bInRotational)
@@ -31,7 +31,7 @@ FAGX_ConstraintController& FAGX_ConstraintController::operator=(
 	const FAGX_ConstraintController& Other)
 {
 	bEnable = Other.bEnable;
-	Compliance = Other.Compliance;
+	Elasticity = Other.Elasticity;
 	Damping = Other.Damping;
 	ForceRange = Other.ForceRange;
 	bRotational = Other.bRotational;
@@ -74,25 +74,34 @@ bool FAGX_ConstraintController::GetEnable() const
 
 void FAGX_ConstraintController::SetCompliance(double InCompliance)
 {
-	if (HasNative())
-	{
-		NativeBarrier->SetCompliance(InCompliance);
-	}
-	Compliance = InCompliance;
+	SetElasticity(1.0 / InCompliance);
 }
 
 double FAGX_ConstraintController::GetCompliance() const
 {
+	return 1.0 / GetElasticity();
+}
+
+void FAGX_ConstraintController::SetElasticity(double InElasticity)
+{
 	if (HasNative())
 	{
-		return NativeBarrier->GetCompliance();
+		NativeBarrier->SetElasticity(InElasticity);
+	}
+	Elasticity = InElasticity;
+}
+
+double FAGX_ConstraintController::GetElasticity() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetElasticity();
 	}
 	else
 	{
-		return Compliance;
+		return Elasticity;
 	}
 }
-
 
 void FAGX_ConstraintController::SetDamping(double InDamping)
 {
@@ -171,7 +180,7 @@ void FAGX_ConstraintController::UpdateNativeProperties()
 		return;
 	}
 	NativeBarrier->SetEnable(bEnable);
-	NativeBarrier->SetCompliance(Compliance);
+	NativeBarrier->SetElasticity(Elasticity);
 	NativeBarrier->SetDamping(Damping);
 	NativeBarrier->SetForceRange(ForceRange);
 	UpdateNativePropertiesImpl();
@@ -180,7 +189,7 @@ void FAGX_ConstraintController::UpdateNativeProperties()
 void FAGX_ConstraintController::CopyFrom(const FConstraintControllerBarrier& Source)
 {
 	bEnable = Source.GetEnable();
-	Compliance = Source.GetCompliance();
+	Elasticity = Source.GetElasticity();
 	Damping = Source.GetDamping();
 	ForceRange = Source.GetForceRange();
 }

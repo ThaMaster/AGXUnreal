@@ -62,6 +62,18 @@ double FConstraintControllerBarrier::GetCompliance() const
 	return NativeRef->Native->getCompliance();
 }
 
+void FConstraintControllerBarrier::SetElasticity(double Elasticity)
+{
+	check(HasNative());
+	NativeRef->Native->setElasticity(Elasticity);
+}
+
+double FConstraintControllerBarrier::GetElasticity() const
+{
+	check(HasNative());
+	return NativeRef->Native->getElasticity();
+}
+
 void FConstraintControllerBarrier::SetDamping(double Damping)
 {
 	check(HasNative());
@@ -412,6 +424,7 @@ bool FTargetSpeedControllerBarrier::GetLockedAtZeroSpeed() const
 	return GetController(*this)->getLockedAtZeroSpeed();
 }
 
+// Why is this giant block of disabled code here?
 #if 0
 void FElectricMotorControllerBarrier::ToNative(agx::ElectricMotorController* Native) const
 {

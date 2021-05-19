@@ -23,6 +23,9 @@ public:
 	void SetCompliance(double Compliance);
 	double GetCompliance() const;
 
+	void SetElasticity(double Elasticity);
+	double GetElasticity() const;
+
 	void SetDamping(double Damping);
 	double GetDamping() const;
 

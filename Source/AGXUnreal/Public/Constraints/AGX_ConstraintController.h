@@ -10,15 +10,22 @@
 class FConstraintControllerBarrier;
 
 /**
- * Target speed controller for secondary constraints (usually on one of the DOFs
- * that has not been primarily constrained by the AGX Constraint).
- * Disabled by default.
+ * Base struct for Constraint Controllers, also called secondary constraints. These are
+ * sub-constraints that act on a degree of freedom that is unconstrained by the constraint. For
+ * example, for a Hinge Constraint there is a free rotational axis around which the constrained
+ * bodies can rotate. A Constraint Controller add functionality to this degree of freedom. There
+ * are controllers that enforce a relative speed (Target Speed Controller), limiting it to a
+ * particular range (Range Controller), outright locking (Lock Controller), and more.
  */
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ConstraintController
 {
 	GENERATED_USTRUCT_BODY()
 
+	/**
+	 * Whether this Constraint Controller is active or not. A disabled Constraint Controller has
+	 * no effect on the simulation.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Controller")
 	bool bEnable;
 
@@ -26,10 +33,33 @@ struct AGXUNREAL_API FAGX_ConstraintController
 
 	bool GetEnable() const;
 
+	/**
+	 * The Elasticity measure the responsiveness/reactiveness of the Constraint Controller to
+	 * violations in its constraint. A higher Elasticity will cause a stronger force or torque to
+	 * be created to restore from the violation. A too high Elasticity will lead to instabilities in
+	 * the simulation. It is the inverse of Compliance. It is measured in unit force or torque per
+	 * unit violation, much like a spring constant, where the violation can be either a translation
+	 * or a rotation.
+	 *
+	 * The unit is currently in Newton per meter or Newtonmeter per radian, the native AGX Dynamics
+	 * units, but this may change to Newton per centimieter or Newtoncentimeter per degree, the
+	 * Unreal Engine units, in the future.
+	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
-	double Compliance;
+	double Elasticity;
 
+	void SetElasticity(double InElasticity);
+
+	double GetElasticity() const;
+
+	/**
+	 * Set the Compliance of the Constraint Controller.
+	 *
+	 * Compliance is stored as Elasticity = 1 / Compliance.
+	 *
+	 * @param InCompliance The new compliance.
+	 */
 	void SetCompliance(double InCompliance);
 
 	double GetCompliance() const;
@@ -140,6 +170,18 @@ class AGXUNREAL_API UAGX_ConstraintController_FL : public UBlueprintFunctionLibr
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetElasticity(UPARAM(ref) FAGX_ConstraintController& Controller, float Elasticity)
+	{
+		Controller.SetElasticity(static_cast<double>(Elasticity));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetElasticity(UPARAM(ref) const FAGX_ConstraintController& Controller)
+	{
+		return static_cast<float>(Controller.GetElasticity());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
 	static void SetDamping(UPARAM(ref) FAGX_ConstraintController& Controller, float Damping)
 	{
 		Controller.SetDamping(static_cast<double>(Damping));
@@ -213,6 +255,18 @@ class AGXUNREAL_API UAGX_ConstraintController_FL : public UBlueprintFunctionLibr
 	static float GetCompliance(UPARAM(ref) const FAGX_TYPE& Controller)
 	{
 		return static_cast<float>(Controller.GetCompliance());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetElasticity(UPARAM(ref) FAGX_ConstraintController& Controller, float Elasticity)
+	{
+		Controller.SetElasticity(static_cast<double>(Elasticity));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetElasticity(UPARAM(ref) const FAGX_ConstraintController& Controller)
+	{
+		return static_cast<float>(Controller.GetElasticity());
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
