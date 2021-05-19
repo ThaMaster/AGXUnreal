@@ -211,7 +211,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	bool HasRenderNodes() const;
 
-
 	/// @return True if there are no renderable simulation nodes.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	bool GetRenderListEmpty() const;
@@ -223,6 +222,9 @@ public:
 	/// @return An iterator pointing one-past-end of the renderable simulation nodes.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	FAGX_WireRenderIterator GetRenderEndIterator() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	TArray<FVector> GetRenderNodeLocations() const;
 
 	/**
 	 * @return True if a native AGX Dynamics representation has been created for this Wire
