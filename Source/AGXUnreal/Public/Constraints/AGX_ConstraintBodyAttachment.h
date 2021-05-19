@@ -32,6 +32,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 
 	FAGX_ConstraintBodyAttachment() = default;
 	FAGX_ConstraintBodyAttachment(USceneComponent* InOwner);
+	FAGX_ConstraintBodyAttachment& operator=(const FAGX_ConstraintBodyAttachment& Other);
 
 	/// \todo Cannot assume a single body per actor. Should we change the UPROPERTY
 	/// to be a UAGX_RigidBodyComponent instead, or should we keep the Actor
@@ -120,9 +121,29 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 */
 	FRigidBodyBarrier* GetOrCreateRigidBodyBarrier();
 
-	// This must be a UPROPERTY to work for built applications where this will point to the wrong
-	// instance if it is not.
-	UPROPERTY()
+	/**
+	 * The USceneComponent, often a subclass of UAGX_ConstraintComponent, that this Attachment is
+	 * part of. Used when FrameDefiningSource is set to Constraint, which will make this Attachment
+	 * relative to this Component's world location.
+	 *
+	 * This is organizational data and not part of the salient value of the type. It should
+	 * therefore not be modified by Unreal Engine in any way. This means that Object Initialization
+	 * shouldn't overwrite it with bytes from the Class Default Object and it should not be
+	 * serialized. Whatever object owns this Attachment should have full control over this pointer.
+	 *
+	 * This used to be a UPROPERTY in order to incentivize Unreal Engine to keep this pointer
+	 * up-to-date as objects are being duplicated during world setup. This worked in many cases,
+	 * but sometimes the update ofter a duplication would fail with incorrect constraint frames
+	 * as a result. Instead of having Unreal Engine update this pointer for us we now try really
+	 * hard to not have it change, ever, by not marking it with UPROPERTY and implementing operator=
+	 * in a way that doesn't copy it. We need operator= because during creation Unreal Engine
+	 * assigns from the Class Default Object to the new instance with operator=. We may also need to
+	 * implement the copy constructor, but that need hasn't been demonstrated yet.
+	 *
+	 * We would like this to be const, so that it can be set the constructor and then never changed
+	 * again, but Unreal Engine need to be able to create instances of this class using the default
+	 * constructor and we may want to update the Owner on such default created instances.
+	 */
 	USceneComponent* Owner;
 
 #if WITH_EDITOR

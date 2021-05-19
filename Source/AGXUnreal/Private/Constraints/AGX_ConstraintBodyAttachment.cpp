@@ -15,6 +15,31 @@ FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment(USceneComponent* In
 {
 }
 
+FAGX_ConstraintBodyAttachment& FAGX_ConstraintBodyAttachment::operator=(
+	const FAGX_ConstraintBodyAttachment& Other)
+{
+	// Copy all the user-visible configuration data.
+	RigidBody = Other.RigidBody;
+	FrameDefiningSource = Other.FrameDefiningSource;
+	FrameDefiningComponent = Other.FrameDefiningComponent;
+	LocalFrameLocation = Other.LocalFrameLocation;
+	LocalFrameRotation = Other.LocalFrameRotation;
+
+	// Deliberately not copying Owner because the Owner is intrinsically linked to the hierarchy,
+	// or nesting of objects, and copying a FAGX_ConstraintBodyAttachment from one USceneComponent
+	// to another should not drag the ownership along with it, the FAGX_ConstraintBodyAttachment
+	// that is being copied over should retain its initial Owner since it hasn't moved.
+
+	// Deliberately not copying RecentFrameDefiningActor because that Actor knows about the instance
+	// that is being copied from, but knows nothing about the instance being copied into. We may
+	// need to make it know in the future.
+
+	// For more information and rationale see the comment on the Owner declaration in
+	// AGX_ConstraintBodyAttachment.h.
+
+	return *this;
+}
+
 UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody() const
 {
 	return RigidBody.GetRigidBody();
