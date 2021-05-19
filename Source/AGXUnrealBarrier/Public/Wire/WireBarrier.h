@@ -18,7 +18,13 @@ public:
 	~FWireBarrier();
 
 	bool HasNative() const;
-	void AllocateNative(float Radius, float ResolutionPerUnitLength);
+
+	/** Damping and Young's modulus for demonstration/experimentation purposes. Will be replaced
+	 * with Wire Material shortly. */
+	void AllocateNative(
+		float Radius, float ResolutionPerUnitLength, float DampingBend, float DampingStretch,
+		float YoungsModulusBend, float YoungsModulusStretch);
+
 	FWireRef* GetNative();
 	const FWireRef* GetNative() const;
 	void ReleaseNative();

@@ -6,6 +6,11 @@
 #include "Wire/WireNodeRef.h"
 #include "Wire/WireRef.h"
 
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agx/Material.h>
+#include "EndAGXIncludes.h"
+
 FWireBarrier::FWireBarrier()
 	: NativeRef {new FWireRef()}
 {
@@ -35,12 +40,31 @@ bool FWireBarrier::HasNative() const
 	return NativeRef->Native != nullptr;
 }
 
-void FWireBarrier::AllocateNative(float Radius, float ResolutionPerUnitLength)
+/** Damping and Young's modulus for demonstration/experimentation purposes. Will be replaced
+ * with Wire Material shortly. */
+void FWireBarrier::AllocateNative(
+	float Radius, float ResolutionPerUnitLength, float DampingBend, float DampingStretch,
+	float YoungsModulusBend, float YoungsModulusStretch)
 {
 	check(!HasNative());
 	agx::Real RadiusAGX = ConvertDistance(Radius);
 	agx::Real ResolutionPerUnitLengthAGX = ConvertDistanceInv(ResolutionPerUnitLength);
 	NativeRef->Native = new agxWire::Wire(RadiusAGX, ResolutionPerUnitLengthAGX);
+
+/// @todo REMOVE THIS!
+/// This is only for testing.
+/// Add proper Wire Material support.
+#if 1
+	static int Counter = 0;
+	++Counter;
+	agx::MaterialRef Material = new agx::Material(agx::String::format("WireMaterial_%d", Counter));
+	agx::WireMaterial* WireMaterial = Material->getWireMaterial();
+	WireMaterial->setDampingBend(DampingBend);
+	WireMaterial->setDampingStretch(DampingStretch);
+	WireMaterial->setYoungsModulusBend(YoungsModulusBend);
+	WireMaterial->setYoungsModulusStretch(YoungsModulusStretch);
+	NativeRef->Native->setMaterial(Material);
+#endif
 }
 
 FWireRef* FWireBarrier::GetNative()
