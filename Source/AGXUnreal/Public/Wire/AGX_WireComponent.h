@@ -138,6 +138,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire")
 	TArray<FWireRoutingNode> RouteNodes;
 
+	/** For demonstration/experimentation purposes. Will be replaced with Wire Material shortly. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire|ToBeMovedToMaterial")
+	float DampingBend = 0.075f;
+
+	/** For demonstration/experimentation purposes. Will be replaced with Wire Material shortly. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire|ToBeMovedToMaterial")
+	float DampingStretch = 0.075f;
+
+	/** For demonstration/experimentation purposes. Will be replaced with Wire Material shortly. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire|ToBeMovedToMaterial")
+	float YoungsModulusBend = 6e10f;
+
+	/** For demonstration/experimentation purposes. Will be replaced with Wire Material shortly. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire|ToBeMovedToMaterial")
+	float YoungsModulusStretch = 6e10f;
+
 	/**
 	 * Add a new route node to the wire.
 	 *

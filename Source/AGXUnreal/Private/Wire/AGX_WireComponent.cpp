@@ -312,7 +312,12 @@ void UAGX_WireComponent::CreateNative()
 
 	check(!HasNative());
 	check(!GIsReconstructingBlueprintInstances);
-	NativeBarrier.AllocateNative(Radius, ResolutionPerUnitLength);
+
+	/** Damping and Young's modulus for demonstration/experimentation purposes. Will be replaced
+	 * with Wire Material shortly. */
+	NativeBarrier.AllocateNative(
+		Radius, ResolutionPerUnitLength, DampingBend, DampingStretch, YoungsModulusBend,
+		YoungsModulusStretch);
 	check(HasNative()); /// @todo Consider better error handling than 'check'.
 
 	NativeBarrier.SetLinearVelocityDamping(LinearVelocityDamping);
