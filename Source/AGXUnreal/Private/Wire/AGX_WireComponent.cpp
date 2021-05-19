@@ -133,6 +133,17 @@ FAGX_WireRenderIterator UAGX_WireComponent::GetRenderEndIterator() const
 	return {NativeBarrier.GetRenderEndIterator()};
 }
 
+TArray<FVector> UAGX_WireComponent::GetRenderNodeLocations() const
+{
+	TArray<FVector> Result;
+	for (auto It = GetRenderBeginIterator(), End = GetRenderEndIterator(); It != End; It.Inc())
+	{
+		const FAGX_WireNode Node = It.Get();
+		Result.Add(Node.GetWorldLocation());
+	}
+	return Result;
+}
+
 bool UAGX_WireComponent::HasNative() const
 {
 	return NativeBarrier.HasNative();
