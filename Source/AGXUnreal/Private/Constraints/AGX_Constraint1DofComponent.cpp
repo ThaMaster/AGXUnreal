@@ -52,8 +52,8 @@ namespace
 			[Controller](Super*) { Controller->SetEnable(Controller->bEnable); });
 
 		PropertyDispatcher.Add(
-			Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, Compliance),
-			[Controller](Super*) { Controller->SetCompliance(Controller->Compliance); });
+			Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, Elasticity),
+			[Controller](Super*) { Controller->SetElasticity(Controller->Elasticity); });
 
 		PropertyDispatcher.Add(
 			Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, Damping),
