@@ -257,6 +257,57 @@ void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 	}
 }
 
+bool UAGX_ShapeComponent::SetShapeMaterial(UAGX_ShapeMaterialBase* ShapeMaterial)
+{
+	if (ShapeMaterial == nullptr)
+	{
+		if (HasNative())
+		{
+			GetNative()->ClearMaterial();
+		}
+		PhysicalMaterial = nullptr;
+		return true;
+	}
+
+	if (!HasNative())
+	{
+		// Not initialized yet, so simply assign the material we're given.
+		PhysicalMaterial = ShapeMaterial;
+		return true;
+	}
+
+	// This Shape has already been initialized. Use the Instance version of the material, which
+	// may be ShapeMaterial itself.
+	UWorld* World = GetWorld();
+	UAGX_ShapeMaterialInstance* Instance =
+		static_cast<UAGX_ShapeMaterialInstance*>(ShapeMaterial->GetOrCreateInstance(World));
+	if (Instance == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Shape '%s', in Actor '%s', could not create Shape Material Instance for '%s'. "
+				 "Material not changed."),
+			*GetName(), *GetLabelSafe(GetOwner()), *ShapeMaterial->GetName());
+		return false;
+	}
+	PhysicalMaterial = Instance;
+
+	// Assign the new native Material to the native Shape.
+	FShapeMaterialBarrier* NativeMaterial = Instance->GetOrCreateShapeMaterialNative(World);
+	if (NativeMaterial == nullptr || !NativeMaterial->HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Could not create AGX Dynamics representation of Shape Material '%s' when "
+				 "assigned to Shape '%s' in Actor '%s'."),
+			*ShapeMaterial->GetName(), *GetName(), *GetLabelSafe(GetOwner()));
+		return false;
+	}
+	GetNative()->SetMaterial(*NativeMaterial);
+
+	return true;
+}
+
 void UAGX_ShapeComponent::SetCanCollide(bool CanCollide)
 {
 	if (HasNative())

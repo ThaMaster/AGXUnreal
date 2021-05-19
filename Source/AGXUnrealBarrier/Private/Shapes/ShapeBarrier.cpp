@@ -175,6 +175,12 @@ void FShapeBarrier::SetMaterial(const FShapeMaterialBarrier& Material)
 	NativeRef->NativeGeometry->setMaterial(Material.GetNative()->Native);
 }
 
+void FShapeBarrier::ClearMaterial()
+{
+	check(HasNative());
+	NativeRef->NativeGeometry->setMaterial(nullptr);
+}
+
 FShapeMaterialBarrier FShapeBarrier::GetMaterial() const
 {
 	check(HasNative());
