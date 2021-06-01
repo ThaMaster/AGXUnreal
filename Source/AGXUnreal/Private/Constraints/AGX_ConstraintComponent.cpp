@@ -166,6 +166,7 @@ namespace AGX_ConstraintComponent_helpers
 	{
 		if (Outer.HasNative())
 		{
+			// Too late to set body, the AGX Dynamics constraint has already been created.
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT(
@@ -176,6 +177,15 @@ namespace AGX_ConstraintComponent_helpers
 			return false;
 		}
 
+		if (Body == nullptr)
+		{
+			// Setting nullptr body, clear the attachment.
+			Attachment.RigidBody.OwningActor = nullptr;
+			Attachment.RigidBody.BodyName = NAME_None;
+			return true;
+		}
+
+		// Regular case, setup attachment to point to the given body.
 		Attachment.RigidBody.OwningActor = Body->GetOwner();
 		Attachment.RigidBody.BodyName = Body->GetFName();
 		return true;
