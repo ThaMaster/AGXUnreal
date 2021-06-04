@@ -9,6 +9,7 @@
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 #include "RigidBodyBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
+#include "Utilities/DoubleInterval.h"
 #include "Wire/AGX_WireEnums.h"
 
 // Unreal Engine includes.
@@ -36,8 +37,49 @@
 // Standard library includes.
 #include <limits>
 
-/// \note These functions assume that agx::Real and float are different types.
-/// They also assume that agx::Real has higher (or equal) precision than float.
+// These functions assume that agx::Real and float are different types.
+// They also assume that agx::Real has higher (or equal) precision than float.
+//
+// Naming conventions:
+//
+//
+// Convert
+//
+// The default conversion function is named Convert. It is overloaded on the parameter type and
+// detects if it is an AGX Dynamics type of an Unreal Engine type. double is considered an AGX
+// Dynamics type and float an Unreal Engine type. It converts to the other. The conversion is just a
+// cast, a plain Convert will never do any unit translations. It can do range checks, which when
+// failed will result in an error message being printed and the value truncated. Composite types,
+// such as Vector, calls Convert on its members.
+//
+//
+// ConvertDistance
+//
+// Acts like Convert except that AGX Dynamics types are multiplied by 100 before being converted to
+// the corresponding Unreal Engine type, and Unreal Engine types are divided by 100 after being
+// converted to the AGX Dynamics type. The unit conversion is always performed using the AGX
+// Dynamics types.
+//
+//
+// ConvertAngle
+//
+// Text... Degrees/radians.
+//
+//
+// Convert<UNIT>ToUnreal / Convert<UNIT>ToAgx
+//
+// Perform the same operation as Convert<UNIT>, where unit can be e.g., Distance or Angle, but with
+// caller control over the return type. Used, for example, when we want to convert from an AGX
+// Dynamics unit to an Unreal Engine unit but want the result as a double instead of a float. Also
+// used when we have a value in one unit-space stored in the other type-space, e.g., an AGX Dynamics
+// distance in an Unreal Engine type.
+//
+//
+// ConvertUNITFloat
+//
+// The Float-suffix is added when the parameter type based overload produces the correct unit
+// conversion but where the default conversion would produce a double, or double composite type, but
+// we need a float, or a float composite.
 
 namespace
 {
@@ -342,17 +384,34 @@ inline agx::Vec4f ConvertFloat(const FVector4& V)
 
 // Interval/Range.
 
-inline FFloatInterval Convert(const agx::RangeReal& R)
+inline FAGX_DoubleInterval Convert(const agx::RangeReal& R)
+{
+	return FAGX_DoubleInterval(R.lower(), R.upper());
+}
+
+inline FFloatInterval ConvertFloat(const agx::RangeReal& R)
 {
 	return FFloatInterval(Convert(R.lower()), Convert(R.upper()));
 }
 
-inline FFloatInterval ConvertDistance(const agx::RangeReal& R)
+inline FAGX_DoubleInterval ConvertDistance(const agx::RangeReal& R)
+{
+	return FAGX_DoubleInterval(
+		ConvertDistanceToUnreal<double>(R.lower()), ConvertDistanceToUnreal<double>(R.upper()));
+}
+
+inline FFloatInterval ConvertDistanceFloat(const agx::RangeReal& R)
 {
 	return FFloatInterval(ConvertDistance(R.lower()), ConvertDistance(R.upper()));
 }
 
-inline FFloatInterval ConvertAngle(const agx::RangeReal& R)
+inline FAGX_DoubleInterval ConvertAngle(const agx::RangeReal& R)
+{
+	return FAGX_DoubleInterval(
+		ConvertAngleToUnreal<double>(R.lower()), ConvertAngleToUnreal<double>(R.upper()));
+}
+
+inline FFloatInterval ConvertAngleFloat(const agx::RangeReal& R)
 {
 	return FFloatInterval(ConvertAngle(R.lower()), ConvertAngle(R.upper()));
 }
@@ -362,9 +421,24 @@ inline agx::RangeReal Convert(const FFloatInterval& I)
 	return agx::RangeReal(Convert(I.Min), Convert(I.Max));
 }
 
+inline agx::RangeReal Convert(const FAGX_DoubleInterval& I)
+{
+	return agx::RangeReal(I.Min, I.Max);
+}
+
 inline agx::RangeReal ConvertDistance(const FFloatInterval& I)
 {
 	return agx::RangeReal(ConvertDistance(I.Min), ConvertDistance(I.Max));
+}
+
+inline agx::RangeReal ConvertDistance(const FAGX_DoubleInterval& I)
+{
+	return agx::RangeReal(ConvertDistanceToAgx(I.Min), ConvertDistanceToAgx(I.Max));
+}
+
+inline agx::RangeReal ConvertAngle(const FAGX_DoubleInterval& I)
+{
+	return agx::RangeReal(ConvertAngleToAgx(I.Min), ConvertAngleToAgx(I.Max));
 }
 
 inline agx::RangeReal ConvertAngle(const FFloatInterval& I)
