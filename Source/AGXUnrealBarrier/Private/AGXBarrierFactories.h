@@ -18,6 +18,8 @@
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/TerrainMaterialBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
+#include "Wire/WireWinchBarrier.h" /// @todo Create a Wire Barrier Factory.
+#include "Wire/WireWinchRef.h"
 
 #include "AGXRefs.h"
 
@@ -46,6 +48,11 @@ namespace agxCollide
 namespace agxModel
 {
 	class TwoBodyTire;
+}
+
+namespace agxWire
+{
+	class WireWinchController;
 }
 
 /**
@@ -95,4 +102,6 @@ namespace AGXBarrierFactories
 	FTwoBodyTireBarrier CreateTwoBodyTireBarrier(agxModel::TwoBodyTire* Tire);
 
 	FTerrainMaterialBarrier CreateTerrainMaterialBarrier(agxTerrain::TerrainMaterial* Material);
+
+	FWireWinchBarrier CreateWireWinchBarrier(agxWire::WireWinchController* Winch);
 }
