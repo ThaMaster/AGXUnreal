@@ -17,6 +17,48 @@ class UActorComponent;
  * are serialized, destroyed, and then recreated. We store the address of the AGX Dynamics native
  * object in a Component Instance Data and then give it to the newly created replacement Component
  * instance when the Component Instance Data is applied to it.
+ *
+ * We do this because we're not able to (easily) recreate the AGX Dynamics state for a subset of
+ * the scene so instead of destroying and recreating the AGX Dynamics objects we let the new
+ * AGX Dynamics for Unreal objects inherit the existing AGX Dynamics objects, via the Component
+ * Instance Data.
+ *
+ * We use uint64 here since that is big enough for the platforms we support so far. It may be better
+ * to use UPTRINT, which is the unreal engine equivalent of the standard library uintptr_t. We
+ * currently don't because first we want to make really sure that these bits won't travel between
+ * machines somehow.
+ *
+ * The class implementing this interface may chose to do explicit reference counting of the AGX
+ * Dynamics object for the lifetime of the native address integer. This is needed because not all
+ * AGX Dynamics objects are guaranteed to be owned by some other AGX Dynamics object unaffected by
+ * the Blueprint reconstruction. The semantics is that the integer itself participates in the
+ * reference count. So GetNativeAddress may increment the reference count, as the Component Instance
+ * Data is in effect keeping the AGX Dynamics object alive, and SetNativeAddress may decrement the
+ * reference count, signaling that the Component Instance Data has transferred ownership of the AGX
+ * Dynamics object from itself to the Barrier.
+ *
+ * An example implementation:
+ *
+ *     bool UAGX_Example::HasNative() const
+ *     {
+ *         return NativeBarrier.HasNative();
+ *     }
+ *
+ *     uint64 UAGX_Example::GetNativeAddress() const
+ *     {
+ *         NativeBarrier.IncrementRefCount(); // This line is optional.
+ *         return static_cast<uint64>(NativeBarrier.GetNativeAddress());
+ *     }
+ *
+ *     void UAGX_Example::SetNativeAddress(uint64 NativeAddress)
+ *     {
+ *     	   NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+ *     	   NativeBarrier.DecrementRefCunt(); // This line is optional.
+ *     }
+ *
+ *  We may want to rename Get/SetNativeAddress to something that talks about ownership.
+ *  Lend/ReturnOwnership perhaps, or Take/ReturnOwnership. Member function names are often written
+ * from the perspective of the object itself, so it should probably not be take.
  */
 class IAGX_NativeOwner
 {
@@ -27,6 +69,7 @@ public:
 	/** \return The address of the currently owned native AGX Dynamics object, or 0. */
 	virtual uint64 GetNativeAddress() const = 0;
 
+	/// @todo Rename to SetNativeAddress, for symmetry with GetNativeAddress.
 	/**
 	 * Make this Native Owner the owner of the native AGX Dynamics object at the given address.
 	 *
@@ -47,4 +90,4 @@ public:
 static_assert(
 	std::numeric_limits<uint64>::max() >= std::numeric_limits<uintptr_t>::max(),
 	"The Unreal Engine type uint64 isn't large enough to hold a pointer address. We need an Unreal "
-	"Engine type for serialization to work.");
+	"Engine type for serialization to work. Consider using UPTRINT");
