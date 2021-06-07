@@ -263,6 +263,12 @@ void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 	if (GIsReconstructingBlueprintInstances)
 	{
 		// Another UAGX_RigidBodyComponent will inherit this one's Native, so don't wreck it.
+		// The call to NativeBarrier.ReleaseNative below is safe because the AGX Dynamics Simulation
+		// will retain a reference counted pointer to the AGX Dynamics Rigid Body.
+		//
+		// But what if the Rigid Body isn't currently part of any Simulation? Can we guarantee that
+		// something will keep the Rigid Body instance alive? Should we do explicit incref/decref
+		// on the Rigid Body in GetNativeAddress / SetNativeAddress?
 	}
 	else
 	{
