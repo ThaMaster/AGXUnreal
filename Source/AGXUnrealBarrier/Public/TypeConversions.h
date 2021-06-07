@@ -386,7 +386,7 @@ inline agx::Vec4f ConvertFloat(const FVector4& V)
 
 inline FAGX_DoubleInterval Convert(const agx::RangeReal& R)
 {
-	return FAGX_DoubleInterval(R.lower(), R.upper());
+	return FAGX_DoubleInterval{R.lower(), R.upper()};
 }
 
 inline FFloatInterval ConvertFloat(const agx::RangeReal& R)
@@ -396,8 +396,8 @@ inline FFloatInterval ConvertFloat(const agx::RangeReal& R)
 
 inline FAGX_DoubleInterval ConvertDistance(const agx::RangeReal& R)
 {
-	return FAGX_DoubleInterval(
-		ConvertDistanceToUnreal<double>(R.lower()), ConvertDistanceToUnreal<double>(R.upper()));
+	return FAGX_DoubleInterval{
+		ConvertDistanceToUnreal<double>(R.lower()), ConvertDistanceToUnreal<double>(R.upper())};
 }
 
 inline FFloatInterval ConvertDistanceFloat(const agx::RangeReal& R)
@@ -407,8 +407,8 @@ inline FFloatInterval ConvertDistanceFloat(const agx::RangeReal& R)
 
 inline FAGX_DoubleInterval ConvertAngle(const agx::RangeReal& R)
 {
-	return FAGX_DoubleInterval(
-		ConvertAngleToUnreal<double>(R.lower()), ConvertAngleToUnreal<double>(R.upper()));
+	return FAGX_DoubleInterval{
+		ConvertAngleToUnreal<double>(R.lower()), ConvertAngleToUnreal<double>(R.upper())};
 }
 
 inline FFloatInterval ConvertAngleFloat(const agx::RangeReal& R)
