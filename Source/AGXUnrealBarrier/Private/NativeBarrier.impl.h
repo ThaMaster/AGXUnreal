@@ -1,5 +1,13 @@
 #include "NativeBarrier.h"
 
+
+/*
+ * This code is in a .impl.h file for now because it contains a bunch of function templates. Learn
+ * about explicit template instantiation and try to move this to a .cpp file instead, if possible.
+ * Not sure how that would work though, where should the instantiation live?
+ */
+
+
 // AGX Dynamics for Unreal includes.
 #include <AGX_LogCategory.h>
 
@@ -37,19 +45,6 @@ bool FNativeBarrier<FNativeRef>::HasNative() const
 	check(NativeRef);
 	return NativeRef->Native != nullptr;
 }
-
-// See comment on member function declaration in the header file. Remove this if the declaration
-// has been removed.
-#if 0
-template <typename FNativeRef>
-void FNativeBarrier<FNativeRef>::AllocateNative()
-{
-	check(!HasNative());
-	PreNativeChanged();
-	DoAllocateNative();
-	PostNativeChanged();
-}
-#endif
 
 template <typename FNativeRef>
 FNativeRef* FNativeBarrier<FNativeRef>::GetNative()
@@ -100,6 +95,20 @@ void FNativeBarrier<FNativeRef>::SetNativeAddress(uintptr_t NativeAddress)
 	}
 
 	PostNativeChanged();
+}
+
+template <typename FNativeRef>
+void FNativeBarrier<FNativeRef>::IncrementRefCount() const
+{
+	check(HasNative());
+	NativeRef->Native->reference();
+}
+
+template <typename FNativeRef>
+void FNativeBarrier<FNativeRef>::DecrementRefCount() const
+{
+	check(HasNative());
+	NativeRef->Native->unreference();
 }
 
 template <typename FNativeRef>
