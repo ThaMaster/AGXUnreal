@@ -35,17 +35,36 @@ public:
 	/// body.
 	FVector GetLocalNormal() const;
 
+
+	void SetPulledInLength(double InPulledInLength);
+
+	/// The length of wire that the winch contains currently.
+	/// This will decrease during routing/initialization if Auto Feed is enabled.
+	double GetPulledInLength() const;
+
+	void SetAutoFeed(bool bAutoFeed);
+
+	bool GetAutoFeed() const;
+
 	/// Maximum force to push or pull the wire.
 	FAGX_DoubleInterval GetForceRange() const;
 
+	void SetForceRange(const FAGX_DoubleInterval& InForceRange);
+
 	/// The ability of the winch to slow down the wire when the brake is enabled.
 	FAGX_DoubleInterval GetBrakeForceRange() const;
+
+	void SetBrakeForceRange(const FAGX_DoubleInterval& InBrakeForceRange);
+
+	void SetBrakeEnabled(bool bBrakeEnabled);
 
 	/// Whether or not the winch is currently braking.
 	bool IsBrakeEnabled() const;
 
 	/// The speed that wire is being pulled in or payed out with.
-	double GetSpeed() const;
+	double GetTargetSpeed() const;
+
+	void SetTargetSpeed(double InTargetSpeed);
 
 	/// The current speed of the winch motor.
 	double GetCurrentSpeed() const;
@@ -53,17 +72,6 @@ public:
 	/// Whether route nodes should take wire from the winch,
 	//		or create new wire.
 	bool IsAutoFeed() const;
-
-// This was supposed to return the wire length passed when the winch was added to the wire.
-// I dont know how to read that from the AGX Dynamics API. We may not need this. Consider using
-// GetPulledInLength instead.
-#if 0
-	/// The length of wire that the winch contains initially.
-	double GetWireLength() const;
-#endif
-
-	/// The length of wire that the winch contains currently.
-	double GetPulledInLength() const;
 
 	FGuid GetGuid() const;
 

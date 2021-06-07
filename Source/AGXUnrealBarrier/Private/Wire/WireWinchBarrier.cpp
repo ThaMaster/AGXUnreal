@@ -6,6 +6,8 @@
 #include "Wire/WireWinchRef.h"
 #include "NativeBarrier.impl.h"
 
+template class AGXUNREALBARRIER_API FNativeBarrier<FWireWinchRef>;
+
 FWireWinchBarrier::FWireWinchBarrier()
 	: Super()
 {
@@ -51,11 +53,47 @@ FVector FWireWinchBarrier::GetLocalNormal() const
 	return ConvertVector(NativeRef->Native->getNormal());
 }
 
+void FWireWinchBarrier::SetPulledInLength(double InPulledInLength)
+{
+	check(HasNative());
+	NativeRef->Native->setPulledInWireLength(InPulledInLength);
+}
+
+double FWireWinchBarrier::GetPulledInLength() const
+{
+	check(HasNative());
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getPulledInWireLength());
+}
+
+void FWireWinchBarrier::SetAutoFeed(bool bAutoFeed)
+{
+	check(HasNative());
+	NativeRef->Native->setAutoFeed(bAutoFeed);
+}
+
+bool FWireWinchBarrier::GetAutoFeed() const
+{
+	check(HasNative());
+	return NativeRef->Native->getAutoFeed();
+}
+
+void FWireWinchBarrier::SetForceRange(const FAGX_DoubleInterval& InForceRange)
+{
+	check(HasNative());
+	NativeRef->Native->setForceRange(Convert(InForceRange));
+}
+
 /// Maximum force to push or pull the wire.
 FAGX_DoubleInterval FWireWinchBarrier::GetForceRange() const
 {
 	check(HasNative());
 	return Convert(NativeRef->Native->getForceRange());
+}
+
+void FWireWinchBarrier::SetBrakeForceRange(const FAGX_DoubleInterval& InBrakeForceRange)
+{
+	check(HasNative());
+	NativeRef->Native->setBrakeForceRange(Convert(InBrakeForceRange));
 }
 
 /// The ability of the winch to slow down the wire when the brake is enabled.
@@ -65,6 +103,12 @@ FAGX_DoubleInterval FWireWinchBarrier::GetBrakeForceRange() const
 	return Convert(NativeRef->Native->getBrakeForceRange());
 }
 
+void FWireWinchBarrier::SetBrakeEnabled(bool bBrakeEnabled)
+{
+	check(HasNative());
+	NativeRef->Native->setEnableForcedBrake(bBrakeEnabled);
+}
+
 /// Whether or not the winch is currently braking.
 bool FWireWinchBarrier::IsBrakeEnabled() const
 {
@@ -72,11 +116,23 @@ bool FWireWinchBarrier::IsBrakeEnabled() const
 	return NativeRef->Native->getEnableForcedBrake();
 }
 
+void FWireWinchBarrier::SetTargetSpeed(double InTargetSpeed)
+{
+	check(HasNative());
+	NativeRef->Native->setSpeed(InTargetSpeed);
+}
+
 /// The speed that wire is being pulled in or payed out with.
-double FWireWinchBarrier::GetSpeed() const
+double FWireWinchBarrier::GetTargetSpeed() const
 {
 	check(HasNative());
 	return ConvertDistanceToUnreal<double>(NativeRef->Native->getSpeed());
+}
+
+double FWireWinchBarrier::GetCurrentSpeed() const
+{
+	check(HasNative());
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getCurrentSpeed());
 }
 
 /// Whether route nodes should take wire from the winch,
@@ -85,24 +141,6 @@ bool FWireWinchBarrier::IsAutoFeed() const
 {
 	check(HasNative());
 	return NativeRef->Native->getAutoFeed();
-}
-
-// See commend on member function declaration in the header file. Remove this if the declaration
-// has been removed.
-#if 0
-/// The length of wire that the winch contains.
-double FWireWinchBarrier::GetWireLength() const
-{
-	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->get???());
-}
-#endif
-
-/// The length of wire that the winch contains currently.
-double FWireWinchBarrier::GetPulledInLength() const
-{
-	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getPulledInWireLength());
 }
 
 FGuid FWireWinchBarrier::GetGuid() const
