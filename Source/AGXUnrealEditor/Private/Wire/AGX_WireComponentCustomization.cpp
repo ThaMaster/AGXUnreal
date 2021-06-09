@@ -18,6 +18,7 @@
 #include "ScopedTransaction.h"
 #include "UnrealEd.h"
 #include "Widgets/Input/SVectorInputBox.h"
+#include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
 
@@ -84,6 +85,7 @@ private:
 	/*
 	 * CALLBACKS
 	 * I use OnSet for all write callbacks and OnGet for all read callbacks.
+	 * Button callbacks uses OnClicked.
 	 */
 
 	/* Selection. */
@@ -91,6 +93,11 @@ private:
 	// Getters.
 
 	FText OnGetSelectedNodeIndexText() const;
+
+	// Setters.
+
+	FReply OnClickedSelectFirstNode();
+
 	/* Location. */
 
 	// Getters.
@@ -275,6 +282,18 @@ void FWireNodeDetails::GenerateChildContent(IDetailChildrenBuilder& ChildrenBuil
 	[
 		SNew(STextBlock)
 		.Text(LOCTEXT("NoNodeSelection", "No node is selected"))
+	];
+
+ 	ChildrenBuilder.AddCustomRow(LOCTEXT("SelectFirstNode", "Select first node"))
+	.Visibility(TAttribute<EVisibility>(this, &FWireNodeDetails::WithoutSelection))
+	.WholeRowContent()
+	[
+		SNew(SButton)
+		.OnClicked(this, &FWireNodeDetails::OnClickedSelectFirstNode)
+		[
+			SNew(STextBlock)
+			.Text(LOCTEXT("SelectFirstNode", "Select First Node"))
+		]
 	];
 
 	// "Selected Node" title widget.
@@ -551,6 +570,20 @@ FText FWireNodeDetails::OnGetSelectedNodeIndexText() const
 	return FText::Format(
 		LOCTEXT("NodeIndexText", "Properties of the currently selected node. {0}"),
 		FText::AsNumber(SelectedNodeIndex));
+}
+
+// Begin selection click callbacks.
+
+FReply FWireNodeDetails::OnClickedSelectFirstNode()
+{
+	// While this does set the selected node index, if there is no active node selection then there
+	// is no selected wire either so setting a selected index doesn't really do anything. We would
+	// like to find the currently selected Wire Component in the selected Actor's Component list, the
+	// one above the Details Panel or in the My Components Panel for the Blueprint Editor, but I
+	// don't yet know how to do that.
+	WireVisualizer->SetSelectedNodeIndex(0);
+	UpdateValues();
+	return FReply::Handled();
 }
 
 // Begin Location getters.
