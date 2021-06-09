@@ -212,7 +212,7 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 	}
 	else
 	{
-		if (Wire == SelectedWire)
+		if (Wire == GetSelectedWire())
 		{
 			DrawRouteNodes(*Wire, SelectedNodeIndex, PDI);
 		}
@@ -236,6 +236,15 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 		return false;
 	}
 
+	AActor* OldOwningActor = WirePropertyPath.GetParentOwningActor();
+	AActor* NewOwningActor = Wire->GetOwner();
+
+	if (NewOwningActor != OldOwningActor)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("WireComponentVisualizer: Owning Actor changed."));
+		ClearSelection();
+	}
+
 	if (HNodeProxy* NodeProxy = HitProxyCast<HNodeProxy>(VisProxy))
 	{
 		if (Wire->IsInitialized())
@@ -256,11 +265,7 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 		{
 			// A new node became selected.
 			SelectedNodeIndex = NodeProxy->NodeIndex;
-			// Not sure what I'm supposed to do here. I want to store the wire so I can edit it
-			// later in HandleInputDelta. Is there a way to get a non-const pointer to the wire
-			// without having to const-cast here? SplineComponentVisualizer uses
-			// FComponentPropertyPath. I don't know what that is.
-			SelectedWire = const_cast<UAGX_WireComponent*>(Wire);
+			WirePropertyPath = FComponentPropertyPath(Wire);
 		}
 		return true;
 	}
@@ -283,8 +288,8 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	}
 
 	// Convert the wire-local location to a world location.
-	const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
-	const FVector NodeLocation = SelectedWire->RouteNodes[SelectedNodeIndex].Location;
+	const FTransform& LocalToWorld = GetSelectedWire()->GetComponentTransform();
+	const FVector NodeLocation = GetSelectedWire()->RouteNodes[SelectedNodeIndex].Location;
 	OutLocation = LocalToWorld.TransformPosition(NodeLocation);
 	return true;
 }
@@ -306,8 +311,8 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	}
 
 	/// @todo Is this Modify necessary? Compare with SplineComponentVisualizer.
-	SelectedWire->Modify();
-	TArray<FWireRoutingNode>& Nodes = SelectedWire->RouteNodes;
+	GetSelectedWire()->Modify();
+	TArray<FWireRoutingNode>& Nodes = GetSelectedWire()->RouteNodes;
 
 	if (ViewportClient->IsAltPressed())
 	{
@@ -324,11 +329,11 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 			// This is the start of a duplication drag. Create the duplicate and select it.
 			bIsDuplicatingNode = true;
 			int32 NewNodeIndex = SelectedNodeIndex + 1;
-			SelectedWire->RouteNodes.Insert(
+			GetSelectedWire()->RouteNodes.Insert(
 				FWireRoutingNode(Nodes[SelectedNodeIndex]), NewNodeIndex);
 			SelectedNodeIndex = NewNodeIndex;
 			NotifyPropertyModified(
-				SelectedWire, FindFProperty<FProperty>(
+				GetSelectedWire(), FindFProperty<FProperty>(
 								  UAGX_WireComponent::StaticClass(),
 								  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
 		}
@@ -336,8 +341,8 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		{
 			// This is a continuation of a previously started duplication drag. Move the selected
 			// node, i.e., the copy.
-			const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
-			FWireRoutingNode& SelectedNode = SelectedWire->RouteNodes[SelectedNodeIndex];
+			const FTransform& LocalToWorld = GetSelectedWire()->GetComponentTransform();
+			FWireRoutingNode& SelectedNode = GetSelectedWire()->RouteNodes[SelectedNodeIndex];
 			const FVector CurrentLocalLocation = SelectedNode.Location;
 			const FVector CurrentWorldLocation =
 				LocalToWorld.TransformPosition(CurrentLocalLocation);
@@ -350,8 +355,8 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	else
 	{
 		// This is a regular drag, move the selected node.
-		const FTransform& LocalToWorld = SelectedWire->GetComponentTransform();
-		FWireRoutingNode& SelectedNode = SelectedWire->RouteNodes[SelectedNodeIndex];
+		const FTransform& LocalToWorld = GetSelectedWire()->GetComponentTransform();
+		FWireRoutingNode& SelectedNode = GetSelectedWire()->RouteNodes[SelectedNodeIndex];
 		const FVector CurrentLocalLocation = SelectedNode.Location;
 		const FVector CurrentWorldLocation = LocalToWorld.TransformPosition(CurrentLocalLocation);
 		const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
@@ -392,14 +397,14 @@ void FAGX_WireComponentVisualizer::EndEditing()
 
 bool FAGX_WireComponentVisualizer::HasValidSelection() const
 {
-	return SelectedWire != nullptr &&
-		   !SelectedWire->IsInitialized() && // Node selection is currently only for route nodes.
-		   SelectedWire->RouteNodes.IsValidIndex(SelectedNodeIndex);
+	return GetSelectedWire() != nullptr &&
+		   !GetSelectedWire()->IsInitialized() && // Node selection is currently only for route nodes.
+		   GetSelectedWire()->RouteNodes.IsValidIndex(SelectedNodeIndex);
 }
 
 UAGX_WireComponent* FAGX_WireComponentVisualizer::GetSelectedWire() const
 {
-	return SelectedWire;
+	return Cast<UAGX_WireComponent>(WirePropertyPath.GetComponent());
 }
 
 int32 FAGX_WireComponentVisualizer::GetSelectedNodeIndex() const
@@ -411,7 +416,7 @@ void FAGX_WireComponentVisualizer::ClearSelection()
 {
 	bIsDuplicatingNode = false;
 	SelectedNodeIndex = INDEX_NONE;
-	SelectedWire = nullptr;
+	WirePropertyPath.Reset();
 }
 
 void FAGX_WireComponentVisualizer::OnDeleteKey()
@@ -424,13 +429,13 @@ void FAGX_WireComponentVisualizer::OnDeleteKey()
 
 	const FScopedTransaction Transaction(LOCTEXT("DeleteWireNode", "Delete wire node"));
 
-	SelectedWire->Modify();
-	SelectedWire->RouteNodes.RemoveAt(SelectedNodeIndex);
+	GetSelectedWire()->Modify();
+	GetSelectedWire()->RouteNodes.RemoveAt(SelectedNodeIndex);
 	SelectedNodeIndex = INDEX_NONE;
 	bIsDuplicatingNode = false;
 
 	NotifyPropertyModified(
-		SelectedWire, FindFProperty<FProperty>(
+		GetSelectedWire(), FindFProperty<FProperty>(
 						  UAGX_WireComponent::StaticClass(),
 						  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
 

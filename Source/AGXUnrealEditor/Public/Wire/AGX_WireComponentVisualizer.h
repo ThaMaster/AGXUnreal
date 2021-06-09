@@ -62,8 +62,12 @@ private:
 	/// The index of the currently selected node, if any. INDEX_NONE otherwise.
 	int32 SelectedNodeIndex = INDEX_NONE;
 
-	/// The Wire owning the currently selected node, if any. nullptr otherwise.
-	UAGX_WireComponent* SelectedWire = nullptr;
+	/**
+	 * Property path from the owning Actor to the Wire Component of the currently selected wire. We
+	 * must use a path instead of a UAGX_WireComponent* because during Blueprint Reconstruction
+	 * the Wire Component will be replaced by a new instance.
+	 */
+	FComponentPropertyPath WirePropertyPath;
 
 	/// True while a node duplication move is in progress, so that we don't create a new each frame.
 	bool bIsDuplicatingNode = false;
