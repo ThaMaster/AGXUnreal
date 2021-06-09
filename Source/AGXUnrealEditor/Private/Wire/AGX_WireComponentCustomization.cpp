@@ -86,6 +86,11 @@ private:
 	 * I use OnSet for all write callbacks and OnGet for all read callbacks.
 	 */
 
+	/* Selection. */
+
+	// Getters.
+
+	FText OnGetSelectedNodeIndexText() const;
 	/* Location. */
 
 	// Getters.
@@ -278,7 +283,7 @@ void FWireNodeDetails::GenerateChildContent(IDetailChildrenBuilder& ChildrenBuil
 	.WholeRowContent()
 	[
 		SNew(STextBlock)
-		.Text(LOCTEXT("SelectedNode", "Properties of the currently selected node"))
+		.Text(this, &FWireNodeDetails::OnGetSelectedNodeIndexText)
 	];
 
 	// Location widget.
@@ -537,6 +542,15 @@ namespace WireNodeDetails_helpers
 		BodyNameComboBox.SetSelectedItem(RigidBodyNames[Index]);
 		return *RigidBodyNames[Index];
 	}
+}
+
+// Begin selection getters.
+
+FText FWireNodeDetails::OnGetSelectedNodeIndexText() const
+{
+	return FText::Format(
+		LOCTEXT("NodeIndexText", "Properties of the currently selected node. {0}"),
+		FText::AsNumber(SelectedNodeIndex));
 }
 
 // Begin Location getters.
@@ -836,6 +850,8 @@ void FWireNodeDetails::UpdateValues()
 	// Get selections from the Wire Component Visualizer.
 	Wire = WireVisualizer->GetSelectedWire();
 	SelectedNodeIndex = WireVisualizer->GetSelectedNodeIndex();
+
+	// Reset and bail if we don't have a valid selection.
 	if (!HasWireAndNodeSelection())
 	{
 		// Clear all cached state related to the selection.
