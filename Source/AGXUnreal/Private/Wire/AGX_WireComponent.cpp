@@ -327,6 +327,10 @@ void UAGX_WireComponent::CreateNative()
 
 	const FTransform LocalToWorld = GetComponentTransform();
 
+	// Collection of error messages related to the wire setup/configuration that the user made.
+	// These are presented as a dialog box at the end of the initialization process.
+	// The intention is to add the equivalent edit-time checks and display in the wire's Details
+	// Panel so the user can be informed before clicking Play.
 	TArray<FString> ErrorMessages;
 
 	// Create AGX Dynamics simulation nodes and initialize the wire.
