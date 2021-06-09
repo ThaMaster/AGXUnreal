@@ -119,7 +119,8 @@ bool FWireWinchBarrier::IsBrakeEnabled() const
 void FWireWinchBarrier::SetTargetSpeed(double InTargetSpeed)
 {
 	check(HasNative());
-	NativeRef->Native->setSpeed(InTargetSpeed);
+	agx::Real TargetSpeedAGX = ConvertDistanceToAgx(InTargetSpeed);
+	NativeRef->Native->setSpeed(TargetSpeedAGX);
 }
 
 /// The speed that wire is being pulled in or payed out with.
