@@ -412,6 +412,11 @@ int32 FAGX_WireComponentVisualizer::GetSelectedNodeIndex() const
 	return SelectedNodeIndex;
 }
 
+void FAGX_WireComponentVisualizer::SetSelectedNodeIndex(int32 InIndex)
+{
+	SelectedNodeIndex = InIndex;
+}
+
 void FAGX_WireComponentVisualizer::ClearSelection()
 {
 	bIsDuplicatingNode = false;
