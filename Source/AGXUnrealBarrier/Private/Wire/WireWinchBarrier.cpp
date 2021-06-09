@@ -151,7 +151,7 @@ FGuid FWireWinchBarrier::GetGuid() const
 }
 
 void FWireWinchBarrier::AllocateNative(
-	const FRigidBodyBarrier* Body, const FVector& PositionInBody, const FVector& NormalInBody,
+	const FRigidBodyBarrier* Body, const FVector& LocalLocation, const FVector& LocalNormal,
 	double PulledInLength)
 {
 	PreNativeChanged();

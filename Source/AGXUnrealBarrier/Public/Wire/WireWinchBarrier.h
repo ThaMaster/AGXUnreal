@@ -18,7 +18,7 @@ public:
 	~FWireWinchBarrier();
 
 	void AllocateNative(
-		const FRigidBodyBarrier* Body, const FVector& PositionInBody, const FVector& NormalInBody,
+		const FRigidBodyBarrier* Body, const FVector& LocalLocation, const FVector& LocalNormal,
 		double PulledInLength);
 
 	/// The body that the winch is attached to. Will be empty when attached to the world.
