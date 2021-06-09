@@ -155,8 +155,17 @@ void FWireWinchBarrier::AllocateNative(
 	double PulledInLength)
 {
 	PreNativeChanged();
+	agx::RigidBody* NativeBody;
+	if (Body != nullptr && Body->HasNative())
+	{
+		NativeBody = Body->GetNative()->Native;
+	}
+	else
+	{
+		NativeBody = nullptr;
+	}
 	NativeRef->Native = new agxWire::WireWinchController(
-		Body->GetNative()->Native, ConvertDisplacement(PositionInBody), ConvertVector(NormalInBody),
+		NativeBody, ConvertDisplacement(LocalLocation), ConvertVector(LocalNormal),
 		PulledInLength);
 	PostNativeChanged();
 }
