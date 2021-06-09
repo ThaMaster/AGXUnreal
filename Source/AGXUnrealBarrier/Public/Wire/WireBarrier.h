@@ -8,6 +8,7 @@
 
 struct FWireRef;
 class FWireNodeBarrier;
+class FWireWinchBarrier;
 
 class AGXUNREALBARRIER_API FWireBarrier
 {
@@ -38,6 +39,7 @@ public:
 	bool GetRenderListEmpty() const;
 
 	void AddRouteNode(FWireNodeBarrier& RoutingNode);
+	void AddWinch(FWireWinchBarrier& Winch);
 	bool IsInitialized() const;
 	double GetRestLength() const;
 

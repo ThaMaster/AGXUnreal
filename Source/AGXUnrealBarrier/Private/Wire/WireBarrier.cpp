@@ -5,6 +5,8 @@
 #include "Wire/WireNodeBarrier.h"
 #include "Wire/WireNodeRef.h"
 #include "Wire/WireRef.h"
+#include "Wire/WireWinchBarrier.h"
+#include "Wire/WireWinchRef.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -120,6 +122,13 @@ void FWireBarrier::AddRouteNode(FWireNodeBarrier& RoutingNode)
 	check(HasNative());
 	check(RoutingNode.HasNative());
 	NativeRef->Native->add(RoutingNode.GetNative()->Native);
+}
+
+void FWireBarrier::AddWinch(FWireWinchBarrier& Winch)
+{
+	check(HasNative());
+	check(Winch.HasNative());
+	NativeRef->Native->add(Winch.GetNative()->Native);
 }
 
 bool FWireBarrier::IsInitialized() const
