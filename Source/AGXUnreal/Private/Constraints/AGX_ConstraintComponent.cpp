@@ -210,6 +210,11 @@ bool UAGX_ConstraintComponent::SetBody1(UAGX_RigidBodyComponent* Body)
 {
 	if (Body == nullptr)
 	{
+		/// \todo Consider removing this print. The body may be set to nullptr before being set to
+		/// the final body later. As long as it's set correctly before Begin Play it's all good.
+		/// This commonly happens when a Blueprint has a Body member that is assigned to the
+		/// Constraint in the Construction Script. While in the Blueprint Editor the Body will be
+		/// nullptr.
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Nullptr passed to SetBody1 on Constraint Component '%s' in Actor '%s'. The first "
