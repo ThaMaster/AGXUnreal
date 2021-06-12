@@ -59,6 +59,13 @@ void FSimulationBarrier::AddConstraint(FConstraintBarrier* Constraint)
 	NativeRef->Native->add(Constraint->GetNative()->Native);
 }
 
+bool FSimulationBarrier::RemoveConstraint(FConstraintBarrier& Constraint)
+{
+	check(HasNative());
+	check(Constraint.HasNative());
+	return NativeRef->Native->remove(Constraint.GetNative()->Native);
+}
+
 void FSimulationBarrier::AddShapeMaterial(FShapeMaterialBarrier* Material)
 {
 	check(HasNative());

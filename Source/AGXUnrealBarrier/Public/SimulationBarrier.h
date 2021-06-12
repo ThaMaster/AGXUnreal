@@ -29,7 +29,9 @@ public:
 
 	void AddRigidBody(FRigidBodyBarrier* Body);
 	void AddShape(FShapeBarrier* Shape);
+
 	void AddConstraint(FConstraintBarrier* Constraint);
+	bool RemoveConstraint(FConstraintBarrier& Constraint);
 
 	void AddShapeMaterial(FShapeMaterialBarrier* Material);
 	void RemoveShapeMaterial(FShapeMaterialBarrier* Material);

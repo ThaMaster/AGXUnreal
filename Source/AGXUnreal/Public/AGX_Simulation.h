@@ -13,10 +13,11 @@
 #include "AGX_Simulation.generated.h"
 
 class AAGX_Terrain;
+class UAGX_ConstraintComponent;
+class UAGX_MaterialBase;
 class UAGX_RigidBodyComponent;
 class UAGX_StaticMeshComponent;
 class UAGX_ShapeComponent;
-class UAGX_MaterialBase;
 class UAGX_WireComponent;
 
 class AActor;
@@ -207,6 +208,9 @@ public: // Member functions.
 	 * is responsible for adding its own shapes.
 	 */
 	void AddShape(UAGX_ShapeComponent* Shape);
+
+	bool AddConstraint(UAGX_ConstraintComponent& Constraint);
+	bool RemoveConstraint(UAGX_ConstraintComponent& Constraint);
 
 	void AddTerrain(AAGX_Terrain* Terrain);
 
