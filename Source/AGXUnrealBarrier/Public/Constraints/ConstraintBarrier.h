@@ -74,8 +74,12 @@ public:
 	FRigidBodyBarrier GetSecondBody() const;
 
 	/// \todo Consider creating a Barrier for agx::Attachment.
+	void SetLocalLocation(int32 BodyIndex, const FVector& LocalLocation);
+	void SetLocalRotation(int32 BodyIndex, const FQuat& LocalRotation);
+
 	FVector GetLocalLocation(int32 BodyIndex) const;
 	FQuat GetLocalRotation(int32 BodyIndex) const;
+
 
 	/// @return The address of the underlying AGX Dynamics object.
 	uintptr_t GetNativeAddress() const;

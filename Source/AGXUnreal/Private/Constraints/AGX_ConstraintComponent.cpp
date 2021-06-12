@@ -190,6 +190,20 @@ namespace AGX_ConstraintComponent_helpers
 		Attachment.RigidBody.BodyName = Body->GetFName();
 		return true;
 	}
+
+	void SetLocalLocation(
+		FAGX_ConstraintBodyAttachment& Attachment, const FVector& LocalLocation,
+		FConstraintBarrier& Barrier, int32 BodyIndex)
+	{
+		Attachment.LocalFrameLocation = LocalLocation;
+		if (Barrier.HasNative())
+		{
+			/// \todo Need to compute what the location is relative to the constraint body for the
+			/// cases where the FrameDefiningSource is anything other than
+			/// EAGX_FrameDefiningSource::RigidBody.
+			Barrier.SetLocalLocation(BodyIndex, LocalLocation);
+		}
+	}
 }
 
 bool UAGX_ConstraintComponent::SetBody1(UAGX_RigidBodyComponent* Body)
@@ -210,6 +224,18 @@ bool UAGX_ConstraintComponent::SetBody1(UAGX_RigidBodyComponent* Body)
 bool UAGX_ConstraintComponent::SetBody2(UAGX_RigidBodyComponent* Body)
 {
 	return AGX_ConstraintComponent_helpers::SetBody(BodyAttachment2, Body, *this);
+}
+
+void UAGX_ConstraintComponent::SetConstraintAttachmentLocation1(const FVector& LocalLocation)
+{
+	AGX_ConstraintComponent_helpers::SetLocalLocation(
+		BodyAttachment1, LocalLocation, *NativeBarrier, 0);
+}
+
+void UAGX_ConstraintComponent::SetConstraintAttachmentLocation2(const FVector& LocalLocation)
+{
+	AGX_ConstraintComponent_helpers::SetLocalLocation(
+		BodyAttachment2, LocalLocation, *NativeBarrier, 1);
 }
 
 void UAGX_ConstraintComponent::SetEnable(bool InEnabled)
