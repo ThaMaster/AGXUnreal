@@ -946,6 +946,26 @@ void UAGX_ConstraintComponent::BeginPlay()
 	}
 }
 
+void UAGX_ConstraintComponent::EndPlay(const EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+
+	if (GIsReconstructingBlueprintInstances)
+	{
+		// Another UAGX_RigidBodyComponent will inherit this one's Native, so don't wreck it.
+	}
+	else
+	{
+		/// @todo Remove the native AGX Dynamics Rigid Body from the Simulation.
+		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+		if (Simulation != nullptr)
+		{
+			Simulation->RemoveConstraint(*this);
+		}
+	}
+	NativeBarrier->ReleaseNative();
+}
+
 bool UAGX_ConstraintComponent::ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof) const
 {
 	if (const int32* NativeDofPtr = NativeDofIndexMap.Find(GenericDof))
