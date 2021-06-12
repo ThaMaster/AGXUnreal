@@ -952,15 +952,18 @@ void UAGX_ConstraintComponent::EndPlay(const EEndPlayReason::Type Reason)
 
 	if (GIsReconstructingBlueprintInstances)
 	{
-		// Another UAGX_RigidBodyComponent will inherit this one's Native, so don't wreck it.
+		// Another UAGX_ConstraintComponent will inherit this one's Native, so don't wreck it.
 	}
 	else
 	{
-		/// @todo Remove the native AGX Dynamics Rigid Body from the Simulation.
-		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-		if (Simulation != nullptr)
+		if (HasNative())
 		{
-			Simulation->RemoveConstraint(*this);
+			/// @todo Remove the native AGX Dynamics Rigid Body from the Simulation.
+			UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+			if (Simulation != nullptr)
+			{
+				Simulation->RemoveConstraint(*this);
+			}
 		}
 	}
 	NativeBarrier->ReleaseNative();
