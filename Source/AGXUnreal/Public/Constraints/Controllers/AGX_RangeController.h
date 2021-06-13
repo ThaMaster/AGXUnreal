@@ -104,6 +104,18 @@ class AGXUNREAL_API UAGX_ConstraintRangeController_FL : public UBlueprintFunctio
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetElasticity(UPARAM(ref) FAGX_ConstraintRangeController& Controller, float Elasticity)
+	{
+		Controller.SetElasticity(static_cast<double>(Elasticity));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetElasticity(UPARAM(ref) const FAGX_ConstraintRangeController& Controller)
+	{
+		return static_cast<float>(Controller.GetElasticity());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
 	static void SetDamping(UPARAM(ref) FAGX_ConstraintRangeController& Controller, float Damping)
 	{
 		Controller.SetDamping(static_cast<double>(Damping));
