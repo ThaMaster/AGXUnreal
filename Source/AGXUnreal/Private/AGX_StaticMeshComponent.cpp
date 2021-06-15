@@ -189,6 +189,8 @@ namespace AGX_StaticMeshComponent_helpers
 		Destination.SetRadius(Source.Radius);
 		Destination.SetHeight(Source.Length);
 		Destination.SetLocalPosition(Source.Center);
+		// Unreal Engine Sphyls are aligned along Z while AGX Dynamics capsules are aligned along Y.
+		// By rolling 90 degrees (tilt-right assuming X forward) we transform from one to the other.
 		Destination.SetLocalRotation((FRotator(0.0f, 0.0f, 90.0f) + Source.Rotation).Quaternion());
 	}
 
