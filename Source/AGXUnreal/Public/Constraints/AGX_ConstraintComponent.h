@@ -50,8 +50,11 @@ public:
 	// allow the user to override that default from the Details Panel. Normally, Properties set
 	// during creation become read-only.
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Bodies")
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Attachment")
 	bool SetBody1(UAGX_RigidBodyComponent* Body);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Attachment")
+	void SetConstraintAttachmentLocation1(const FVector& BodyLocalLocation);
 
 	/**
 	 * The second Rigid Body bound by this constraint, and its Attachment Frame definition.
@@ -63,8 +66,11 @@ public:
 	// allow the user to override that default from the Details Panel. Normally, Properties set
 	// during creation become read-only.
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Bodies")
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Attachment")
 	bool SetBody2(UAGX_RigidBodyComponent* Body);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Attachment")
+	void SetConstraintAttachmentLocation2(const FVector& BodyLocalLocation);
 
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	bool bEnable = true;
@@ -181,6 +187,7 @@ public:
 	void UpdateNativeDamping();
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 
 	virtual void PostInitProperties() override;
 

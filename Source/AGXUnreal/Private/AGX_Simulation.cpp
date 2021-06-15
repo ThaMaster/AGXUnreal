@@ -5,6 +5,7 @@
 #include "AGX_StaticMeshComponent.h"
 #include "AGX_Stepper.h"
 #include "AGX_LogCategory.h"
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/ShapeBarrier.h"
 #include "Terrain/AGX_Terrain.h"
@@ -69,6 +70,47 @@ void UAGX_Simulation::AddShape(UAGX_ShapeComponent* Shape)
 		return;
 	}
 	NativeBarrier.AddShape(Shape->GetNative());
+}
+
+bool UAGX_Simulation::AddConstraint(UAGX_ConstraintComponent& Constraint)
+{
+	if (!Constraint.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot add constraint '%s' without a native AGX Dynamics representation to the "
+				 "AGX Dynamics simulation."),
+			*Constraint.GetName())
+		return false;
+	}
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+	NativeBarrier.AddConstraint(Constraint.GetNative()); /// @todo Check return value.
+	return true;
+}
+
+bool UAGX_Simulation::RemoveConstraint(UAGX_ConstraintComponent& Constraint)
+{
+	if (!Constraint.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot remove constraint '%s' without a native AGX Dynamics representation from "
+				 "the AX Dynamics simulation."),
+			*Constraint.GetName());
+		return false;
+	}
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+	bool Success = NativeBarrier.RemoveConstraint(*Constraint.GetNative());
+	if (!Success)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("AGX Dynamics could not remove constraint '%s' from the simulation."),
+			*Constraint.GetName());
+	}
+	return Success;
 }
 
 void UAGX_Simulation::AddTerrain(AAGX_Terrain* Terrain)

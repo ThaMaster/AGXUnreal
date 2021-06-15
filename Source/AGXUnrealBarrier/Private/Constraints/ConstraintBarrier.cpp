@@ -196,6 +196,20 @@ namespace
 	}
 }
 
+void FConstraintBarrier::SetLocalLocation(int32 BodyIndex, const FVector& LocalLocation)
+{
+	check(HasNative());
+	const agx::Vec3 LocalLocationAGX = ConvertDisplacement(LocalLocation);
+	GetFrame(*NativeRef->Native, BodyIndex)->setLocalTranslate(LocalLocationAGX);
+}
+
+void FConstraintBarrier::SetLocalRotation(int32 BodyIndex, const FQuat& LocalRotation)
+{
+	check(HasNative());
+	const agx::Quat LocalRotationAGX = Convert(LocalRotation);
+	GetFrame(*NativeRef->Native, BodyIndex)->setLocalRotate(LocalRotationAGX);
+}
+
 FVector FConstraintBarrier::GetLocalLocation(int32 Index) const
 {
 	check(HasNative());

@@ -49,6 +49,6 @@ public:
 	bool IsLevelBoundsRelevant() const override;
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint Actor")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Constraint Actor")
 	UAGX_ConstraintComponent* ConstraintComponent;
 };
