@@ -4,6 +4,7 @@
 #include "RigidBodyBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
+#include "Shapes/CapsuleShapeBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -81,6 +82,12 @@ public: // Properties.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics|Shapes")
 	TArray<FAGX_Shape> Boxes;
 
+	/**
+	 * AGX Dynamics properties for each collision capsule.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics|Shapes")
+	TArray<FAGX_Shape> Capsules;
+
 public: // Public member functions.
 	bool HasNative() const;
 	FRigidBodyBarrier* GetNative();
@@ -123,4 +130,5 @@ private: // Private member variables.
 	FRigidBodyBarrier NativeBarrier;
 	TArray<FSphereShapeBarrier> SphereBarriers;
 	TArray<FBoxShapeBarrier> BoxBarriers;
+	TArray<FCapsuleShapeBarrier> CapsuleBarriers;
 };

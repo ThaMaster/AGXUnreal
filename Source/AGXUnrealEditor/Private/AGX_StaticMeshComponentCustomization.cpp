@@ -69,6 +69,10 @@ void FAGX_StaticMeshComponentCustomization::CustomizeDetails(IDetailLayoutBuilde
 		DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_StaticMeshComponent, Boxes));
 	AgxShapesCategory.AddPropertyRow(BoxesProperty);
 
+	TSharedRef<IPropertyHandle> CapsulesProperty =
+		DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_StaticMeshComponent, Capsules));
+	AgxShapesCategory.AddPropertyRow(CapsulesProperty);
+
 	// All properties in the Shapes category has been moved, so hide the category.
 	/// \todo This doesn't work, the category is still visible. The | separator doesn't work in the
 	// IDetailLayoutBuilder member function. Figure out what to do instead.
