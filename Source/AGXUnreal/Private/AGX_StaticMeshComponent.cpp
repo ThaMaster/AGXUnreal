@@ -184,6 +184,16 @@ namespace AGX_StaticMeshComponent_helpers
 		Destination.SetLocalRotation(Source.Rotation.Quaternion());
 	}
 
+	void CopyShapeData(FCapsuleShapeBarrier& Destination, const FKSphylElem& Source)
+	{
+		Destination.SetRadius(Source.Radius);
+		Destination.SetHeight(Source.Length);
+		Destination.SetLocalPosition(Source.Center);
+		// Unreal Engine Sphyls are aligned along Z while AGX Dynamics capsules are aligned along Y.
+		// By rolling 90 degrees (tilt-right assuming X forward) we transform from one to the other.
+		Destination.SetLocalRotation((FRotator(0.0f, 0.0f, 90.0f) + Source.Rotation).Quaternion());
+	}
+
 	template <typename FBarrier, typename FCollisionShape>
 	void CreateNativeShape(
 		FBarrier& Barrier, const FCollisionShape& Collision, const FAGX_Shape& AgxConfig,
@@ -226,6 +236,7 @@ void UAGX_StaticMeshComponent::AllocateNative()
 	check(!NativeBarrier.HasNative());
 	check(SphereBarriers.Num() == 0);
 	check(BoxBarriers.Num() == 0);
+	check(CapsuleBarriers.Num() == 0);
 
 	RefreshCollisionShapes();
 	NativeBarrier.AllocateNative();
@@ -238,6 +249,10 @@ void UAGX_StaticMeshComponent::AllocateNative()
 	for (auto& Box : Boxes)
 	{
 		SwapInMaterialInstance(Box, World);
+	}
+	for (auto& Capsule : Capsules)
+	{
+		SwapInMaterialInstance(Capsule, World);
 	}
 
 	if (GetStaticMesh() != nullptr)
@@ -269,6 +284,19 @@ void UAGX_StaticMeshComponent::AllocateNative()
 			NativeBarrier.AddShape(&Barrier);
 			BoxBarriers.Add(std::move(Barrier));
 		}
+
+		// Copy capsule data from the collision sphyls to the barrier capsules.
+		TArray<FKSphylElem>& CollisionSphyls = CollisionShapes.SphylElems;
+		CapsuleBarriers.Reserve(CollisionSphyls.Num());
+		for (int32 I = 0; I < CollisionSphyls.Num(); ++I)
+		{
+			FKSphylElem& Collision = CollisionSphyls[I];
+			FAGX_Shape& Shape = GetShape(Capsules, I, DefaultShape);
+			FCapsuleShapeBarrier Barrier;
+			CreateNativeShape(Barrier, Collision, Shape, World);
+			NativeBarrier.AddShape(&Barrier);
+			CapsuleBarriers.Add(std::move(Barrier));
+		}
 	}
 
 	WriteTransformToNative();
@@ -297,15 +325,18 @@ void UAGX_StaticMeshComponent::RefreshCollisionShapes()
 	{
 		Spheres.SetNum(0);
 		Boxes.SetNum(0);
+		Capsules.SetNum(0);
 		return;
 	}
 
 	FKAggregateGeom& CollisionShapes = GetStaticMesh()->BodySetup->AggGeom;
 	TArray<FKSphereElem>& CollisionSpheres = CollisionShapes.SphereElems;
 	TArray<FKBoxElem>& CollisionBoxes = CollisionShapes.BoxElems;
+	TArray<FKSphylElem>& CollisionSphyls = CollisionShapes.SphylElems;
 
 	ResizeShapeArray(Spheres, DefaultShape, CollisionSpheres.Num());
 	ResizeShapeArray(Boxes, DefaultShape, CollisionBoxes.Num());
+	ResizeShapeArray(Capsules, DefaultShape, CollisionSphyls.Num());
 }
 
 void UAGX_StaticMeshComponent::ReadTransformFromNative()
