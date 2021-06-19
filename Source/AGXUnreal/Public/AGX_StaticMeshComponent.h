@@ -1,6 +1,8 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_MotionControl.h"
+#include "AGX_NativeOwner.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
@@ -55,12 +57,30 @@ struct FAGX_Shape
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	HideCategories = ("Physics", "Collision"))
-class AGXUNREAL_API UAGX_StaticMeshComponent : public UStaticMeshComponent
+class AGXUNREAL_API UAGX_StaticMeshComponent : public UStaticMeshComponent, public IAGX_NativeOwner
 {
 	GENERATED_BODY()
 
 public: // Properties.
 	UAGX_StaticMeshComponent();
+
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	FVector Velocity;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetVelocity(const FVector& InVelocity);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FVector GetVelocity() const;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	TEnumAsByte<EAGX_MotionControl> MotionControl;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetMotionControl(TEnumAsByte<enum EAGX_MotionControl> InMotionControl);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	TEnumAsByte<enum EAGX_MotionControl> GetMotionControl() const;
 
 	/**
 	 * When a new collision shape is discovered the AGX Dynamics properties, i.e., the FAGX_Shape
@@ -88,28 +108,41 @@ public: // Properties.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics|Shapes")
 	TArray<FAGX_Shape> Capsules;
 
-public: // Public member functions.
-	bool HasNative() const;
+public:
 	FRigidBodyBarrier* GetNative();
 	const FRigidBodyBarrier* GetNative() const;
 	FRigidBodyBarrier* GetOrCreateNative();
 
-public: // Inherited interfaces.
+public:
+	// ~Begin IAGX_NativeOwner interface.
+	virtual bool HasNative() const override;
+	virtual uint64 GetNativeAddress() const override;
+	virtual void AssignNative(uint64 NativeAddress) override;
+	// ~End IAGX_NativeOwner interface.
+
 	//~ Begin public UActorComponent interface.
 	virtual void BeginPlay();
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	virtual void TickComponent(
 		float DeltaTime, ELevelTick TickType,
 		FActorComponentTickFunction* ThisTickFunction) override;
+	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	//~ End public UActorComponent interface.
 
-protected: // Inherited interfaces.
+	// ~Begin USceneComponent interface.
+#if WITH_EDITOR
+	virtual void PostEditComponentMove(bool bFinished) override;
+#endif
+	// ~End USceneComponent interface.
+
+protected:
 	//~ Begin protected UActorComponent interface.
 	virtual bool ShouldCreatePhysicsState() const override;
 	virtual void OnCreatePhysicsState() override;
 	//~ End protected UActorComponent interface.
 
 	//~ Begin protected UObject interface.
+	virtual void PostLoad() override;
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
 #endif
@@ -125,6 +158,7 @@ private: // Private member functions.
 	void AllocateNative();
 	void ReadTransformFromNative();
 	void WriteTransformToNative();
+	void TryWriteTransformToNative();
 
 private: // Private member variables.
 	FRigidBodyBarrier NativeBarrier;

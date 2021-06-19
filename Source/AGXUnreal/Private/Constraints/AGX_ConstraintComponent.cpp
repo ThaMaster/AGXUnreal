@@ -768,8 +768,8 @@ TStructOnScope<FActorComponentInstanceData> UAGX_ConstraintComponent::GetCompone
 		this, this,
 		[](UActorComponent* Component)
 		{
-			UAGX_ConstraintComponent* AsConstraint = Cast<UAGX_ConstraintComponent>(Component);
-			return static_cast<IAGX_NativeOwner*>(AsConstraint);
+			ThisClass* AsThisClass = Cast<ThisClass>(Component);
+			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
 }
 

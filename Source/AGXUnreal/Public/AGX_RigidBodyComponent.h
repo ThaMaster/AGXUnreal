@@ -249,11 +249,11 @@ public:
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	//~ End UActorComponent Interface
 
-#if WITH_EDITOR
 	// ~Begin USceneComponent interface.
+#if WITH_EDITOR
 	virtual void PostEditComponentMove(bool bFinished) override;
-	// ~End USceneComponent interface.
 #endif
+	// ~End USceneComponent interface.
 
 #if WITH_EDITOR
 	void OnComponentView();

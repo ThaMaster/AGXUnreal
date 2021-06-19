@@ -3,9 +3,12 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
+#include "AGX_NativeOwnerInstanceData.h"
+#include "AGX_UpropertyDispatcher.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
 #include "Materials/AGX_ShapeMaterialBase.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engien includes.
 #include "Engine/StaticMesh.h"
@@ -16,6 +19,49 @@ UAGX_StaticMeshComponent::UAGX_StaticMeshComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.TickGroup = TG_PostPhysics;
+	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
+}
+
+void UAGX_StaticMeshComponent::SetVelocity(const FVector& InVelocity)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetVelocity(InVelocity);
+	}
+
+	Velocity = InVelocity;
+}
+
+FVector UAGX_StaticMeshComponent::GetVelocity() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetVelocity();
+	}
+
+	return Velocity;
+}
+
+void UAGX_StaticMeshComponent::SetMotionControl(
+	TEnumAsByte<enum EAGX_MotionControl> InMotionControl)
+{
+	MotionControl = InMotionControl;
+	if (HasNative())
+	{
+		NativeBarrier.SetMotionControl(MotionControl);
+	}
+}
+
+TEnumAsByte<enum EAGX_MotionControl> UAGX_StaticMeshComponent::GetMotionControl() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetMotionControl();
+	}
+	else
+	{
+		return MotionControl;
+	}
 }
 
 bool UAGX_StaticMeshComponent::HasNative() const
@@ -23,13 +69,32 @@ bool UAGX_StaticMeshComponent::HasNative() const
 	return NativeBarrier.HasNative();
 }
 
+uint64 UAGX_StaticMeshComponent::GetNativeAddress() const
+{
+	return static_cast<uint64>(NativeBarrier.GetNativeAddress());
+}
+
+void UAGX_StaticMeshComponent::AssignNative(uint64 NativeAddress)
+{
+	check(!HasNative());
+	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+}
+
 FRigidBodyBarrier* UAGX_StaticMeshComponent::GetNative()
 {
+	if (!HasNative())
+	{
+		return nullptr;
+	}
 	return &NativeBarrier;
 }
 
 const FRigidBodyBarrier* UAGX_StaticMeshComponent::GetNative() const
 {
+	if (!HasNative())
+	{
+		return nullptr;
+	}
 	return &NativeBarrier;
 }
 
@@ -37,6 +102,14 @@ FRigidBodyBarrier* UAGX_StaticMeshComponent::GetOrCreateNative()
 {
 	if (!HasNative())
 	{
+		checkf(
+			!GIsReconstructingBlueprintInstances,
+			TEXT("This is a bad situation. Someone need this Component's native but we're in the "
+				 "middle of a RerunConstructionScripts and this Component haven't been given its "
+				 "Native yet. We can't create a new one since we will be given the actual Native "
+				 "soon, but we also can't return the actual Native right now because it hasn't "
+				 "been restored from the UActorComponentInstanceData yet."));
+
 		AllocateNative();
 	}
 	return GetNative();
@@ -45,8 +118,11 @@ FRigidBodyBarrier* UAGX_StaticMeshComponent::GetOrCreateNative()
 void UAGX_StaticMeshComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	if (!HasNative())
+	if (!HasNative() && !GIsReconstructingBlueprintInstances)
 	{
+		// Not allocating a new Native if currently reconstructing Blueprint instances because
+		// if we should have a Native then one will be assigned to us by our Component Instance
+		// Data.
 		AllocateNative();
 	}
 }
@@ -54,10 +130,16 @@ void UAGX_StaticMeshComponent::BeginPlay()
 void UAGX_StaticMeshComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
-	if (HasNative())
+	if (HasNative() && !GIsReconstructingBlueprintInstances)
 	{
-		GetNative()->ReleaseNative();
+		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+		if (Simulation != nullptr)
+		{
+			/// @todo Add UAGX_Simulation::RemoveRigidBody;
+			// Simulation->RemoveRigidBody();
+		}
 	}
+	GetNative()->ReleaseNative();
 }
 
 void UAGX_StaticMeshComponent::TickComponent(
@@ -65,6 +147,19 @@ void UAGX_StaticMeshComponent::TickComponent(
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	ReadTransformFromNative();
+	Velocity = NativeBarrier.GetVelocity();
+}
+
+TStructOnScope<FActorComponentInstanceData> UAGX_StaticMeshComponent::GetComponentInstanceData()
+	const
+{
+	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
+		this, this,
+		[](UActorComponent* Component)
+		{
+			ThisClass* AsThisClass = Cast<ThisClass>(Component);
+			return static_cast<IAGX_NativeOwner*>(AsThisClass);
+		});
 }
 
 namespace AGX_StaticMeshComponent_helpers
@@ -104,19 +199,87 @@ void UAGX_StaticMeshComponent::OnCreatePhysicsState()
 	bPhysicsStateCreated = true;
 }
 
+void UAGX_StaticMeshComponent::PostLoad()
+{
+	Super::PostLoad();
+#if WITH_EDITOR
+	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
+	if (Dispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	// These callbacks do not check the instance. It is the reponsibility of PostEditChangeProperty
+	// to only call FAGX_UpropertyDispatcher::Trigger when an instance is available.
+
+	Dispatcher.Add(
+		this->GetRelativeLocationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+
+	Dispatcher.Add(
+		this->GetRelativeRotationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+
+	Dispatcher.Add(
+		this->GetAbsoluteLocationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+
+	Dispatcher.Add(
+		this->GetAbsoluteRotationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_StaticMeshComponent, Velocity),
+		[](ThisClass* This) { This->SetVelocity(This->Velocity); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_StaticMeshComponent, MotionControl),
+		[](ThisClass* This) { This->SetMotionControl(This->MotionControl); });
+
+	Dispatcher.Add(
+		GetMemberNameChecked_StaticMesh(),
+		[](ThisClass* This)
+		{
+			// We have a new StaticMesh, replace the collision shapes for the old mesh with the  new
+			// ones.
+			/// \note This may not be necessary, it may be that OnCreatePhysicsState, which does the
+			/// same work, is called in all cases where PostEditChangeProperty (this function) is
+			/// called.
+			This->RefreshCollisionShapes();
+		});
+#endif
+}
+
 #if WITH_EDITOR
 void UAGX_StaticMeshComponent::PostEditChangeProperty(FPropertyChangedEvent& Event)
 {
+	const FName Member = GetFNameSafe(Event.MemberProperty);
+	const FName Property = GetFNameSafe(Event.Property);
+
+	// Trigger any change handling registered with the Property Change Dispatcher.
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Member, Property, this);
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
 	Super::PostEditChangeProperty(Event);
-	if (Event.GetPropertyName() == GetMemberNameChecked_StaticMesh())
+}
+#endif
+
+#if WITH_EDITOR
+void UAGX_StaticMeshComponent::PostEditComponentMove(bool bFinished)
+{
+	Super::PostEditComponentMove(bFinished);
+
+	if (!NativeBarrier.HasNative())
 	{
-		// We have a new StaticMesh, replace the collision shapes for the old mesh with the  new
-		// ones.
-		/// \note This may not be necessary, it may be that OnCreatePhysicsState, which does the
-		/// same work, is called in all cases where PostEditChangeProperty (this function) is
-		/// called.
-		RefreshCollisionShapes();
+		return;
 	}
+
+	// Not using the Set-functions here because we aren't editing a raw Property and don't want
+	// to trigger a bunch of Unreal Engine code since we currently are in an Unreal Engine callback.
+	// So go straight to the Barrier.
+	TryWriteTransformToNative();
 }
 #endif
 
@@ -233,6 +396,7 @@ void UAGX_StaticMeshComponent::AllocateNative()
 	UWorld& World = *GetWorld();
 
 	/// \todo Replace with early-out once we're confident that things work the way they should.
+	check(!GIsReconstructingBlueprintInstances);
 	check(!NativeBarrier.HasNative());
 	check(SphereBarriers.Num() == 0);
 	check(BoxBarriers.Num() == 0);
@@ -240,6 +404,9 @@ void UAGX_StaticMeshComponent::AllocateNative()
 
 	RefreshCollisionShapes();
 	NativeBarrier.AllocateNative();
+
+	NativeBarrier.SetVelocity(Velocity);
+	NativeBarrier.SetMotionControl(MotionControl);
 
 	SwapInMaterialInstance(DefaultShape, World);
 	for (auto& Sphere : Spheres)
@@ -357,4 +524,13 @@ void UAGX_StaticMeshComponent::WriteTransformToNative()
 	check(HasNative());
 	NativeBarrier.SetPosition(GetComponentLocation());
 	NativeBarrier.SetRotation(GetComponentQuat());
+}
+
+void UAGX_StaticMeshComponent::TryWriteTransformToNative()
+{
+	if (!HasNative())
+	{
+		return;
+	}
+	WriteTransformToNative();
 }
