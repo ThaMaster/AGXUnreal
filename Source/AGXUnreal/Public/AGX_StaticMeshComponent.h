@@ -115,6 +115,12 @@ public: // Inherited interfaces.
 		FActorComponentTickFunction* ThisTickFunction) override;
 	//~ End public UActorComponent interface.
 
+	// ~Begin USceneComponent interface.
+#if WITH_EDITOR
+	virtual void PostEditComponentMove(bool bFinished) override;
+#endif
+	// ~End USceneComponent interface.
+
 protected: // Inherited interfaces.
 	//~ Begin protected UActorComponent interface.
 	virtual bool ShouldCreatePhysicsState() const override;
@@ -122,6 +128,7 @@ protected: // Inherited interfaces.
 	//~ End protected UActorComponent interface.
 
 	//~ Begin protected UObject interface.
+	virtual void PostLoad() override;
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
 #endif
@@ -137,6 +144,7 @@ private: // Private member functions.
 	void AllocateNative();
 	void ReadTransformFromNative();
 	void WriteTransformToNative();
+	void TryWriteTransformToNative();
 
 private: // Private member variables.
 	FRigidBodyBarrier NativeBarrier;

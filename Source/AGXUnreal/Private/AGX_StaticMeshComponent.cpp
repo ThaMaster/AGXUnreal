@@ -3,9 +3,11 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
+#include "AGX_UpropertyDispatcher.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
 #include "Materials/AGX_ShapeMaterialBase.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engien includes.
 #include "Engine/StaticMesh.h"
@@ -148,19 +150,87 @@ void UAGX_StaticMeshComponent::OnCreatePhysicsState()
 	bPhysicsStateCreated = true;
 }
 
+void UAGX_StaticMeshComponent::PostLoad()
+{
+	Super::PostLoad();
+#if WITH_EDITOR
+	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
+	if (Dispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	// These callbacks do not check the instance. It is the reponsibility of PostEditChangeProperty
+	// to only call FAGX_UpropertyDispatcher::Trigger when an instance is available.
+
+	Dispatcher.Add(
+		this->GetRelativeLocationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+
+	Dispatcher.Add(
+		this->GetRelativeRotationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+
+	Dispatcher.Add(
+		this->GetAbsoluteLocationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+
+	Dispatcher.Add(
+		this->GetAbsoluteRotationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_StaticMeshComponent, Velocity),
+		[](ThisClass* This) { This->SetVelocity(This->Velocity); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_StaticMeshComponent, MotionControl),
+		[](ThisClass* This) { This->SetMotionControl(This->MotionControl); });
+
+	Dispatcher.Add(
+		GetMemberNameChecked_StaticMesh(),
+		[](ThisClass* This)
+		{
+			// We have a new StaticMesh, replace the collision shapes for the old mesh with the  new
+			// ones.
+			/// \note This may not be necessary, it may be that OnCreatePhysicsState, which does the
+			/// same work, is called in all cases where PostEditChangeProperty (this function) is
+			/// called.
+			This->RefreshCollisionShapes();
+		});
+#endif
+}
+
 #if WITH_EDITOR
 void UAGX_StaticMeshComponent::PostEditChangeProperty(FPropertyChangedEvent& Event)
 {
+	const FName Member = GetFNameSafe(Event.MemberProperty);
+	const FName Property = GetFNameSafe(Event.Property);
+
+	// Trigger any change handling registered with the Property Change Dispatcher.
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Member, Property, this);
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
 	Super::PostEditChangeProperty(Event);
-	if (Event.GetPropertyName() == GetMemberNameChecked_StaticMesh())
+}
+#endif
+
+#if WITH_EDITOR
+void UAGX_StaticMeshComponent::PostEditComponentMove(bool bFinished)
+{
+	Super::PostEditComponentMove(bFinished);
+
+	if (!NativeBarrier.HasNative())
 	{
-		// We have a new StaticMesh, replace the collision shapes for the old mesh with the  new
-		// ones.
-		/// \note This may not be necessary, it may be that OnCreatePhysicsState, which does the
-		/// same work, is called in all cases where PostEditChangeProperty (this function) is
-		/// called.
-		RefreshCollisionShapes();
+		return;
 	}
+
+	// Not using the Set-functions here because we aren't editing a raw Property and don't want
+	// to trigger a bunch of Unreal Engine code since we currently are in an Unreal Engine callback.
+	// So go straight to the Barrier.
+	TryWriteTransformToNative();
 }
 #endif
 
@@ -373,4 +443,13 @@ void UAGX_StaticMeshComponent::WriteTransformToNative()
 	check(HasNative());
 	NativeBarrier.SetPosition(GetComponentLocation());
 	NativeBarrier.SetRotation(GetComponentQuat());
+}
+
+void UAGX_StaticMeshComponent::TryWriteTransformToNative()
+{
+	if (!HasNative())
+	{
+		return;
+	}
+	WriteTransformToNative();
 }
