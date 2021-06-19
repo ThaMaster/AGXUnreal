@@ -16,6 +16,30 @@ UAGX_StaticMeshComponent::UAGX_StaticMeshComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.TickGroup = TG_PostPhysics;
+	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
+}
+
+
+void UAGX_StaticMeshComponent::SetMotionControl(
+	TEnumAsByte<enum EAGX_MotionControl> InMotionControl)
+{
+	MotionControl = InMotionControl;
+	if (HasNative())
+	{
+		NativeBarrier.SetMotionControl(MotionControl);
+	}
+}
+
+TEnumAsByte<enum EAGX_MotionControl> UAGX_StaticMeshComponent::GetMotionControl() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetMotionControl();
+	}
+	else
+	{
+		return MotionControl;
+	}
 }
 
 bool UAGX_StaticMeshComponent::HasNative() const
@@ -229,6 +253,8 @@ void UAGX_StaticMeshComponent::AllocateNative()
 
 	RefreshCollisionShapes();
 	NativeBarrier.AllocateNative();
+
+	NativeBarrier.SetMotionControl(MotionControl);
 
 	SwapInMaterialInstance(DefaultShape, World);
 	for (auto& Sphere : Spheres)

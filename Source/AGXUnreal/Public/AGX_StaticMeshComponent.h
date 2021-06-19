@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_MotionControl.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
@@ -60,6 +61,15 @@ class AGXUNREAL_API UAGX_StaticMeshComponent : public UStaticMeshComponent
 
 public: // Properties.
 	UAGX_StaticMeshComponent();
+
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	TEnumAsByte<EAGX_MotionControl> MotionControl;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetMotionControl(TEnumAsByte<enum EAGX_MotionControl> InMotionControl);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	TEnumAsByte<enum EAGX_MotionControl> GetMotionControl() const;
 
 	/**
 	 * When a new collision shape is discovered the AGX Dynamics properties, i.e., the FAGX_Shape
