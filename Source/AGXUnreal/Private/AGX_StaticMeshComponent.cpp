@@ -154,9 +154,11 @@ TStructOnScope<FActorComponentInstanceData> UAGX_StaticMeshComponent::GetCompone
 	const
 {
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
-		this, this, [](UActorComponent* Component) {
-			UAGX_StaticMeshComponent* AsRigidBody = Cast<UAGX_StaticMeshComponent>(Component);
-			return static_cast<IAGX_NativeOwner*>(AsRigidBody);
+		this, this,
+		[](UActorComponent* Component)
+		{
+			ThisClass* AsThisClass = Cast<ThisClass>(Component);
+			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
 }
 

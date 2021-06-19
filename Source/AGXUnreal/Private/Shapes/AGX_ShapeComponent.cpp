@@ -42,8 +42,8 @@ TStructOnScope<FActorComponentInstanceData> UAGX_ShapeComponent::GetComponentIns
 {
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
 		this, this, [](UActorComponent* Component) {
-			UAGX_ShapeComponent* AsShape = Cast<UAGX_ShapeComponent>(Component);
-			return static_cast<IAGX_NativeOwner*>(AsShape);
+			ThisClass* AsThisClass = Cast<ThisClass>(Component);
+			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
 }
 
