@@ -19,6 +19,25 @@ UAGX_StaticMeshComponent::UAGX_StaticMeshComponent()
 	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
 }
 
+void UAGX_StaticMeshComponent::SetVelocity(const FVector& InVelocity)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetVelocity(InVelocity);
+	}
+
+	Velocity = InVelocity;
+}
+
+FVector UAGX_StaticMeshComponent::GetVelocity() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetVelocity();
+	}
+
+	return Velocity;
+}
 
 void UAGX_StaticMeshComponent::SetMotionControl(
 	TEnumAsByte<enum EAGX_MotionControl> InMotionControl)
@@ -89,6 +108,7 @@ void UAGX_StaticMeshComponent::TickComponent(
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	ReadTransformFromNative();
+	Velocity = NativeBarrier.GetVelocity();
 }
 
 namespace AGX_StaticMeshComponent_helpers
@@ -254,6 +274,7 @@ void UAGX_StaticMeshComponent::AllocateNative()
 	RefreshCollisionShapes();
 	NativeBarrier.AllocateNative();
 
+	NativeBarrier.SetVelocity(Velocity);
 	NativeBarrier.SetMotionControl(MotionControl);
 
 	SwapInMaterialInstance(DefaultShape, World);

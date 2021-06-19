@@ -63,6 +63,15 @@ public: // Properties.
 	UAGX_StaticMeshComponent();
 
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	FVector Velocity;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetVelocity(const FVector& InVelocity);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FVector GetVelocity() const;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	TEnumAsByte<EAGX_MotionControl> MotionControl;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
