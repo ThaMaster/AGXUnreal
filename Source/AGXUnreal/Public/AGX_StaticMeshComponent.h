@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_MotionControl.h"
+#include "AGX_NativeOwner.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
@@ -55,7 +56,7 @@ struct FAGX_Shape
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	HideCategories = ("Physics", "Collision"))
-class AGXUNREAL_API UAGX_StaticMeshComponent : public UStaticMeshComponent
+class AGXUNREAL_API UAGX_StaticMeshComponent : public UStaticMeshComponent, public IAGX_NativeOwner
 {
 	GENERATED_BODY()
 
@@ -100,19 +101,25 @@ public: // Properties.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics|Shapes")
 	TArray<FAGX_Shape> Boxes;
 
-public: // Public member functions.
-	bool HasNative() const;
+public:
 	FRigidBodyBarrier* GetNative();
 	const FRigidBodyBarrier* GetNative() const;
 	FRigidBodyBarrier* GetOrCreateNative();
 
-public: // Inherited interfaces.
+public:
+	// ~Begin IAGX_NativeOwner interface.
+	virtual bool HasNative() const override;
+	virtual uint64 GetNativeAddress() const override;
+	virtual void AssignNative(uint64 NativeAddress) override;
+	// ~End IAGX_NativeOwner interface.
+
 	//~ Begin public UActorComponent interface.
 	virtual void BeginPlay();
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	virtual void TickComponent(
 		float DeltaTime, ELevelTick TickType,
 		FActorComponentTickFunction* ThisTickFunction) override;
+	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	//~ End public UActorComponent interface.
 
 	// ~Begin USceneComponent interface.
@@ -121,7 +128,7 @@ public: // Inherited interfaces.
 #endif
 	// ~End USceneComponent interface.
 
-protected: // Inherited interfaces.
+protected:
 	//~ Begin protected UActorComponent interface.
 	virtual bool ShouldCreatePhysicsState() const override;
 	virtual void OnCreatePhysicsState() override;

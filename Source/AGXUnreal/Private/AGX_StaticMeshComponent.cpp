@@ -3,6 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
+#include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_UpropertyDispatcher.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
 #include "Materials/AGX_ShapeMaterialBase.h"
@@ -68,13 +69,32 @@ bool UAGX_StaticMeshComponent::HasNative() const
 	return NativeBarrier.HasNative();
 }
 
+uint64 UAGX_StaticMeshComponent::GetNativeAddress() const
+{
+	return static_cast<uint64>(NativeBarrier.GetNativeAddress());
+}
+
+void UAGX_StaticMeshComponent::AssignNative(uint64 NativeAddress)
+{
+	check(!HasNative());
+	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+}
+
 FRigidBodyBarrier* UAGX_StaticMeshComponent::GetNative()
 {
+	if (!HasNative())
+	{
+		return nullptr;
+	}
 	return &NativeBarrier;
 }
 
 const FRigidBodyBarrier* UAGX_StaticMeshComponent::GetNative() const
 {
+	if (!HasNative())
+	{
+		return nullptr;
+	}
 	return &NativeBarrier;
 }
 
@@ -82,6 +102,14 @@ FRigidBodyBarrier* UAGX_StaticMeshComponent::GetOrCreateNative()
 {
 	if (!HasNative())
 	{
+		checkf(
+			!GIsReconstructingBlueprintInstances,
+			TEXT("This is a bad situation. Someone need this Component's native but we're in the "
+				 "middle of a RerunConstructionScripts and this Component haven't been given its "
+				 "Native yet. We can't create a new one since we will be given the actual Native "
+				 "soon, but we also can't return the actual Native right now because it hasn't "
+				 "been restored from the UActorComponentInstanceData yet."));
+
 		AllocateNative();
 	}
 	return GetNative();
@@ -90,8 +118,11 @@ FRigidBodyBarrier* UAGX_StaticMeshComponent::GetOrCreateNative()
 void UAGX_StaticMeshComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	if (!HasNative())
+	if (!HasNative() && !GIsReconstructingBlueprintInstances)
 	{
+		// Not allocating a new Native if currently reconstructing Blueprint instances because
+		// if we should have a Native then one will be assigned to us by our Component Instance
+		// Data.
 		AllocateNative();
 	}
 }
@@ -99,10 +130,16 @@ void UAGX_StaticMeshComponent::BeginPlay()
 void UAGX_StaticMeshComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
-	if (HasNative())
+	if (HasNative() && !GIsReconstructingBlueprintInstances)
 	{
-		GetNative()->ReleaseNative();
+		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+		if (Simulation != nullptr)
+		{
+			/// @todo Add UAGX_Simulation::RemoveRigidBody;
+			// Simulation->RemoveRigidBody();
+		}
 	}
+	GetNative()->ReleaseNative();
 }
 
 void UAGX_StaticMeshComponent::TickComponent(
@@ -111,6 +148,16 @@ void UAGX_StaticMeshComponent::TickComponent(
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	ReadTransformFromNative();
 	Velocity = NativeBarrier.GetVelocity();
+}
+
+TStructOnScope<FActorComponentInstanceData> UAGX_StaticMeshComponent::GetComponentInstanceData()
+	const
+{
+	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
+		this, this, [](UActorComponent* Component) {
+			UAGX_StaticMeshComponent* AsRigidBody = Cast<UAGX_StaticMeshComponent>(Component);
+			return static_cast<IAGX_NativeOwner*>(AsRigidBody);
+		});
 }
 
 namespace AGX_StaticMeshComponent_helpers
@@ -337,6 +384,7 @@ void UAGX_StaticMeshComponent::AllocateNative()
 	UWorld& World = *GetWorld();
 
 	/// \todo Replace with early-out once we're confident that things work the way they should.
+	check(!GIsReconstructingBlueprintInstances);
 	check(!NativeBarrier.HasNative());
 	check(SphereBarriers.Num() == 0);
 	check(BoxBarriers.Num() == 0);
