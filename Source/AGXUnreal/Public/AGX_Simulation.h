@@ -12,6 +12,7 @@
 
 #include "AGX_Simulation.generated.h"
 
+class AAGX_Stepper;
 class AAGX_Terrain;
 class UAGX_ConstraintComponent;
 class UAGX_MaterialBase;
@@ -269,11 +270,12 @@ private:
 private:
 	FSimulationBarrier NativeBarrier;
 
-	bool IsStepperCreated = false;
 	bool IsLicenseChecked = false;
 
 	/// Time that we couldn't step because DeltaTime was not an even multiple
 	/// of the AGX Dynamics step size. That fraction of a time step is carried
 	/// over to the next call to Step.
 	float LeftoverTime;
+
+	TWeakObjectPtr<AAGX_Stepper> Stepper;
 };
