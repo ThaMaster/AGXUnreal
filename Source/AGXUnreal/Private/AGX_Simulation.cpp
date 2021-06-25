@@ -479,14 +479,12 @@ void UAGX_Simulation::EnsureStepperCreated()
 	/// \todo Calling GetWorld() from UAX_Simulation::Initialize returns the wrong
 	/// world when running an executable using this plugin. The reason is not clear.
 	/// Therefore, the GetWorld()->SpawnActor call is made here, after Initialize has been run.
-	if (!IsStepperCreated)
+	if (!Stepper.IsValid())
 	{
-		GetWorld()->SpawnActor(AAGX_Stepper::StaticClass());
+		Stepper = GetWorld()->SpawnActor<AAGX_Stepper>();
 		/// \todo Instead of creating an Actor for Step triggering, one may use
 		///       FTickableObjectBase or FTickFunction. It's not clear to me how to
 		///       use these other classes.
-
-		IsStepperCreated = true;
 	}
 }
 
