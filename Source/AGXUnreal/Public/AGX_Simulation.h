@@ -52,9 +52,10 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 public: // Properties.
 	/** Step length of the integrator, in seconds. 0.0167 by default. */
 	UPROPERTY(
-		config, EditAnywhere, Category = "Solver",
+		config, EditAnywhere, BlueprintReadOnly, Category = "Solver",
 		meta = (ClampMin = "0.001", UIMin = "0.001", ClampMax = "1.0", UIMax = "1.0"))
 	float TimeStep = 1.0f / 60.0f;
+	// BlueprintReadOnly because will need to make UFunctions for proper Set/GetTimeStep.
 
 	/**
 	 * Set to true to override the AGX Dynamics default value for the number of Parallel Projected
@@ -217,7 +218,6 @@ public: // Member functions.
 
 	void AddWire(UAGX_WireComponent& Wire);
 	void RemoveWire(UAGX_WireComponent& Wire);
-
 
 	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);
 
