@@ -18,5 +18,11 @@ class AGXUNREALEDITOR_API FAGX_RigidBodyComponentCustomization : public IDetailC
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();
 
-	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
+	virtual void CustomizeDetails(IDetailLayoutBuilder& InDetailBuilder) override;
+
+private:
+	FText GetHasNativeText() const;
+
+private:
+	IDetailLayoutBuilder* DetailBuilder;
 };
