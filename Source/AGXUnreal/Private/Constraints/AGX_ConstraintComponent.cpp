@@ -953,6 +953,8 @@ void UAGX_ConstraintComponent::EndPlay(const EEndPlayReason::Type Reason)
 	if (GIsReconstructingBlueprintInstances)
 	{
 		// Another UAGX_ConstraintComponent will inherit this one's Native, so don't wreck it.
+		// It's still safe to release the native since the Simulation will hold a reference if
+		// necessary.
 	}
 	else
 	{
@@ -966,7 +968,11 @@ void UAGX_ConstraintComponent::EndPlay(const EEndPlayReason::Type Reason)
 			}
 		}
 	}
-	NativeBarrier->ReleaseNative();
+
+	if (HasNative())
+	{
+		NativeBarrier->ReleaseNative();
+	}
 }
 
 bool UAGX_ConstraintComponent::ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof) const

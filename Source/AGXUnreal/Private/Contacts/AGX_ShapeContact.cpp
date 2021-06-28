@@ -172,6 +172,13 @@ namespace
 	template <typename T>
 	T* GetFromGuid(const FGuid& Guid)
 	{
+		/// @todo Are we sure this will work? That is, are we guaranteed that it will find a T
+		/// within the same World as we got the GUID from? I don't think so. And it seems really
+		/// expensive to iterate all objects in the entire universe.
+		///
+		/// We should consider keeping a table of (GUID -> Unreal Engine class instances) instead,
+		/// alternatively store a pointer to the Unreal Engine class instance somewhere in the
+		/// AGX Dynamics object. For some things there is setCustomData, but not all things.
 		for (TObjectIterator<T> ObjectIt; ObjectIt; ++ObjectIt)
 		{
 			T* Obj = *ObjectIt;
@@ -192,6 +199,10 @@ UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetFirstShape(UPARAM(ref)
 	{
 		return nullptr;
 	}
+	if (!ShapeContactRef.GetShape1().HasNative())
+	{
+		return nullptr;
+	}
 	return GetFromGuid<UAGX_ShapeComponent>(ShapeContactRef.GetShape1().GetGeometryGuid());
 }
 
@@ -199,6 +210,10 @@ UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetSecondShape(UPARAM(ref)
 															  FAGX_ShapeContact& ShapeContactRef)
 {
 	if (!TestHasNative(ShapeContactRef, TEXT("Second Shape")))
+	{
+		return nullptr;
+	}
+	if (!ShapeContactRef.GetShape2().HasNative())
 	{
 		return nullptr;
 	}
@@ -212,6 +227,10 @@ UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetFirstBody(UPARAM(ref)
 	{
 		return nullptr;
 	}
+	if (!ShapeContactRef.GetBody1().HasNative())
+	{
+		return nullptr;
+	}
 	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContactRef.GetBody1().GetGuid());
 }
 
@@ -219,6 +238,10 @@ UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetSecondBody(UPARAM(ref)
 																 FAGX_ShapeContact& ShapeContactRef)
 {
 	if (!TestHasNative(ShapeContactRef, TEXT("Second Body")))
+	{
+		return nullptr;
+	}
+	if (!ShapeContactRef.GetBody2().HasNative())
 	{
 		return nullptr;
 	}
