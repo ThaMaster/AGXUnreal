@@ -7,6 +7,7 @@
 #include "AGXUnrealBarrier.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "AGX_UpropertyDispatcher.h"
 #include "Wire/AGX_WireNode.h"
 #include "Wire/AGX_WireWinchComponent.h"
 #include "Wire/WireNodeBarrier.h"
@@ -250,6 +251,52 @@ void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
 	UE_LOG(LogAGX, Error, TEXT("UAGX_WireComponent::CopyFrom not yet implemented."));
 }
 
+void UAGX_WireComponent::PostLoad()
+{
+	Super::PostLoad();
+#if WITH_EDITOR
+	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
+	if (Dispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength),
+		[](ThisClass* Wire)
+		{ Wire->OwnedBeginWinch.SetPulledInLength(Wire->OwnedBeginWinch.PulledInLength); });
+#endif
+}
+
+#if WITH_EDITOR
+void UAGX_WireComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+}
+
+void UAGX_WireComponent::PostEditChangeChainProperty(
+	struct FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	if (PropertyChangedEvent.PropertyChain.Num() > 2)
+	{
+		// The cases fewer chain elements are handled by PostEditChangeProperty, which is called by
+		// UObject's PostEditChangeChainProperty.
+		FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
+	}
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+}
+#endif
+
 void UAGX_WireComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -265,7 +312,22 @@ void UAGX_WireComponent::TickComponent(
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (!HasNative())
+	{
+		return;
+	}
+
+	if (OwnedBeginWinch.HasNative())
+	{
+		/// @todo Not sure how to handle this best. We usually don't sync all the Properties all the
+		/// time and instead read from the Native whenever the current value is needed. This
+		/// synchronization is done only for the Details Panel, so it would possibly be better to
+		/// move it to the Detail Customization.
+		OwnedBeginWinch.PulledInLength = OwnedBeginWinch.GetNative()->GetPulledInLength();
+	}
+
 	/// @todo Update simulation node list, once we have one.
+	/// Should we really?
 }
 
 void UAGX_WireComponent::EndPlay(const EEndPlayReason::Type Reason)

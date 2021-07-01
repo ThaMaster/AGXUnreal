@@ -328,6 +328,15 @@ public:
 	/// @note Not yet implemented.
 	void CopyFrom(const FWireBarrier& Barrier);
 
+	// ~Begin UObject interface.
+	virtual void PostLoad() override;
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(
+		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
+	// ~End UObject interface.
+
 	//~ Begin ActorComponent interface.
 	virtual void BeginPlay() override;
 	virtual void TickComponent(
