@@ -39,3 +39,34 @@ enum class EWireNodeNativeType : uint8
 	ShapeContact = (1<<7)
 };
 
+/**
+ * The type of Component that this Wire Winch is part of, or which type of Component this Wire Winch
+ * points to if we are currently modifying a Wire Component.
+ */
+UENUM()
+enum class EWireWinchOwnerType : uint8
+{
+	// No which.
+	None,
+
+	// When used as an Outer designator, the Wire Winch is on one of the two ends of a Wire
+	// Component. We are not editing an actual Wire Winch, but a reference to one.
+	//
+	// When used as a Target designator, a new Wire Winch instance should be created for the Wire
+	// Component.
+	Wire,
+
+	// When used as an Outer designator, the Wire Winch is on a Wire Winch Component.
+	//
+	// When used as a Target designator, the Wire should have a pointer to the Wire Winch inside a
+	// Wire Winch Component.
+	WireWinch,
+
+	// When used as an Outer designator, the Wire Winch is part of something that is neither a Wire
+	// Component nor a Wire Winch Component. Much of the Wire Winch Details functionality is
+	// disabled in this case.
+	//
+	// When used as a Target designator, the Wire relinquish all responsibility of the the Wire
+	// Winch settings setup and will use whatever UAGX_WireComponent::BorrowedBeginWinch points to.
+	Other
+};
