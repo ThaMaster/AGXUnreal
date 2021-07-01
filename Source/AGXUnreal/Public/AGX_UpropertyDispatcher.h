@@ -2,6 +2,9 @@
 
 #if WITH_EDITOR
 
+// AGX Dynamics for Unreal includes.
+#include "Utilities/AGX_StringUtilities.h"
+
 // Unreal Engine includes.
 #include "Containers/Map.h"
 #include "CoreMinimal.h"
@@ -77,6 +80,11 @@ public:
 	static FAGX_UpropertyDispatcher<T>& Get();
 
 	/**
+	 * @return True if any callbacks has been registered with this dispatcher.
+	 */
+	bool IsInitialized() const;
+
+	/**
 	 * Add a callback for a direct member property. The case where Member and Property have the same
 	 * value.
 	 * @param MemberAndProperty The name of the property.
@@ -93,6 +101,10 @@ public:
 	 */
 	void Add(const FName& Member, const FName& Property, UpdatePropertyFunction&& Function);
 
+	bool Trigger(FPropertyChangedEvent& Event, T* Object);
+
+	bool Trigger(struct FPropertyChangedChainEvent& Event, T* Object);
+
 	/**
 	 * Run the function associated with the property.
 	 * @param Member The name of the direct member that was changed.
@@ -101,8 +113,6 @@ public:
 	 * @return True if a function was run, false otherwise.
 	 */
 	bool Trigger(const FName& Member, const FName& Property, T* Object);
-
-	bool IsInitialized() const;
 
 	UpdatePropertyFunction* GetFunction(const FName& Member, const FName& Property);
 
@@ -129,6 +139,27 @@ void FAGX_UpropertyDispatcher<T>::Add(
 	const FName& Member, const FName& Property, UpdatePropertyFunction&& Function)
 {
 	Functions.Add(FAGX_NamePair {Member, Property}, std::move(Function));
+}
+
+template <typename T>
+bool FAGX_UpropertyDispatcher<T>::Trigger(FPropertyChangedEvent& Event, T* Object)
+{
+	const FName Property = GetFNameSafe(Event.Property);
+	const FName Member = GetFNameSafe(Event.MemberProperty);
+	return Trigger(Member, Property, Object);
+}
+
+template <typename T>
+bool FAGX_UpropertyDispatcher<T>::Trigger(struct FPropertyChangedChainEvent& Event, T* Object)
+{
+	FEditPropertyChain::TDoubleLinkedListNode* Node = Event.PropertyChain.GetHead();
+	FName Member = Node->GetValue()->GetFName();
+	Node = Node->GetNextNode();
+	FName Property = Node->GetValue()->GetFName();
+	// The name of the rest of the nodes doesn't matter, we set all elements at level two each
+	// time. These are small objects such as FVector or FFloatInterval.
+	// Some rewrite of FAGX_PropertyDispatcher will be required to support other types of nesting.
+	return Trigger(Member, Property, Object);
 }
 
 template <typename T>
