@@ -983,9 +983,46 @@ TSharedRef<IDetailCustomization> FAGX_WireComponentCustomization::MakeInstance()
 	return MakeShareable(new FAGX_WireComponentCustomization());
 }
 
+FText FAGX_WireComponentCustomization::OnGetCurrentSpeed() const
+{
+	if (!Wire->GetBeginWinch().HasNative())
+	{
+		return LOCTEXT("NoNative", "No Native");
+	}
+	return FText::AsNumber(Wire->GetBeginWinch().GetCurrentSpeed());
+}
+
+FText FAGX_WireComponentCustomization::OnGetCurrentPulledInLength() const
+{
+	if (!Wire->GetBeginWinch().HasNative())
+	{
+		return LOCTEXT("NoNative", "No Native");
+	}
+	return FText::AsNumber(Wire->GetBeginWinch().GetPulledInLength());
+}
+
+namespace WireDetails_helpers
+{
+	EVisibility VisibleIf(bool bVisible)
+	{
+		return bVisible ? EVisibility::Visible : EVisibility::Collapsed;
+	}
+}
+
+EVisibility FAGX_WireComponentCustomization::WithNative() const
+{
+	using namespace WireDetails_helpers;
+	return VisibleIf(Wire.IsValid() && Wire->HasNative());
+}
+
+EVisibility FAGX_WireComponentCustomization::WithoutNative() const
+{
+	using namespace WireDetails_helpers;
+	return VisibleIf(Wire.IsValid() && !Wire->HasNative());
+}
+
 void FAGX_WireComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
-	IDetailCategoryBuilder& Category = DetailBuilder.EditCategory("Selected Node");
 
 	TArray<TWeakObjectPtr<UObject>> ObjectsBeingCustomized;
 	DetailBuilder.GetObjectsBeingCustomized(ObjectsBeingCustomized);
@@ -994,14 +1031,63 @@ void FAGX_WireComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& Det
 		return;
 	}
 
-	UAGX_WireComponent* Wire = Cast<UAGX_WireComponent>(ObjectsBeingCustomized[0]);
+	Wire = Cast<UAGX_WireComponent>(ObjectsBeingCustomized[0].Get());
 	if (Wire == nullptr)
 	{
 		return;
 	}
 
-	TSharedRef<FWireNodeDetails> WireNodeDetails = MakeShareable(new FWireNodeDetails(Wire));
-	Category.AddCustomBuilder(WireNodeDetails);
+	// Configure winches.
+	{
+		IDetailCategoryBuilder& BeginWinch = DetailBuilder.EditCategory("AGX Wire Begin Winch");
+		TSharedRef<IPropertyHandle> BeginWinchType =
+			DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, BeginWinchType));
+		BeginWinch.AddProperty(BeginWinchType)
+			.Visibility(
+				TAttribute<EVisibility>(this, &FAGX_WireComponentCustomization::WithoutNative));
+
+		// clang-format off
+
+		IDetailGroup& BeginWinchRuntime = BeginWinch.AddGroup(TEXT("Runtime"), LOCTEXT("Runtime", "Runtime"));
+
+		// Current speed.
+		BeginWinchRuntime.AddWidgetRow()
+		.Visibility(TAttribute<EVisibility>(this, &FAGX_WireComponentCustomization::WithNative))
+		.NameContent()
+		[
+			SNew(STextBlock)
+			.Text(LOCTEXT("Speed", "Speed"))
+		]
+		.ValueContent()
+		[
+			SNew(STextBlock)
+			.Text(this, &FAGX_WireComponentCustomization::OnGetCurrentSpeed)
+		];
+
+		// Pulled-in
+		BeginWinchRuntime.AddWidgetRow()
+		.Visibility(TAttribute<EVisibility>(this, &FAGX_WireComponentCustomization::WithNative))
+		.NameContent()
+		[
+			SNew(STextBlock)
+			.Text(LOCTEXT("Pulled In Length", "Pulled In Length"))
+		]
+		.ValueContent()
+		[
+			SNew(STextBlock)
+			.Text(this, &FAGX_WireComponentCustomization::OnGetCurrentPulledInLength)
+		];
+
+		// clang-format on
+	}
+
+	// Configure route.
+	{
+		IDetailCategoryBuilder& Category = DetailBuilder.EditCategory("AGX Wire Route");
+		TSharedRef<FWireNodeDetails> WireNodeDetails =
+			MakeShareable(new FWireNodeDetails(Wire.Get()));
+		Category.AddCustomBuilder(WireNodeDetails);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE
