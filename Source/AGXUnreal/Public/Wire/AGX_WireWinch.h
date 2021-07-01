@@ -131,7 +131,7 @@ struct AGXUNREAL_API FAGX_WireWinch : public FAGX_WireWinchSettings
 
 public:
 	FAGX_WireWinch() = default;
-	
+
 	/**
 	 * Copy constructor that only copies the Properties seen by Unreal, does not copy the Native
 	 * Barrier Engine.

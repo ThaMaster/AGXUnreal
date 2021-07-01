@@ -268,9 +268,17 @@ void FAGX_WireWinch::CreateNative()
 {
 	check(!GIsReconstructingBlueprintInstances);
 	check(!HasNative());
+	FRigidBodyBarrier* Body = [this]() -> FRigidBodyBarrier*
+	{
+		UAGX_RigidBodyComponent* Body = BodyAttachment.GetRigidBody();
+		if (Body == nullptr)
+		{
+			return nullptr;
+		}
+		return Body->GetOrCreateNative();
+	}();
 	NativeBarrier.AllocateNative(
-		BodyAttachment.GetRigidBodyBarrier(), Location,
-		Rotation.RotateVector(FVector::ForwardVector), PulledInLength);
+		Body, Location, Rotation.RotateVector(FVector::ForwardVector), PulledInLength);
 	WritePropertiesToNative();
 }
 
@@ -315,7 +323,6 @@ void FAGX_WireWinch::WritePropertiesToNative()
 	NativeBarrier.SetBrakeEnabled(bBrakeEnabled);
 	NativeBarrier.SetBrakeForceRange(BrakeForceRange);
 }
-
 
 FAGX_WireWinch::FAGX_WireWinch(const FAGX_WireWinch& Other)
 	: FAGX_WireWinchSettings(Other)
