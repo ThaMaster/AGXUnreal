@@ -3,6 +3,9 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_RigidBodyComponent.h"
 
+// Unreal Engine includes.
+#include "CoreGlobals.h"
+
 bool FAGX_WireWinch::SetBodyAttachment(UAGX_RigidBodyComponent* Body)
 {
 	if (HasNative())
@@ -48,34 +51,46 @@ double FAGX_WireWinch::GetPulledInLength() const
 	return PulledInLength;
 }
 
+namespace AGX_WireWinch_helpers
+{
+	void SetMotorState(FAGX_WireWinch& Winch, bool bEnabled, const FAGX_DoubleInterval& ForceRange)
+	{
+		Winch.bMotorEnabled = bEnabled;
+		Winch.MotorForceRange = ForceRange;
+		if (Winch.HasNative())
+		{
+			Winch.NativeBarrier.SetForceRange(ForceRange);
+		}
+	}
+};
+
 void FAGX_WireWinch::EnableMotor()
 {
-	SetMotorEnabled(true);
+	if (bMotorEnabled)
+	{
+		return;
+	}
+	AGX_WireWinch_helpers::SetMotorState(*this, true, CachedMotorForceRange);
 }
 
 void FAGX_WireWinch::DisableMotor()
 {
-	SetMotorEnabled(false);
+	if (!bMotorEnabled)
+	{
+		return;
+	}
+	AGX_WireWinch_helpers::SetMotorState(*this, false, {0.0, 0.0});
 }
 
 void FAGX_WireWinch::SetMotorEnabled(bool bInEnable)
 {
-	if (bMotorEnabled == bInEnable)
-	{
-		return;
-	}
-
-	bMotorEnabled = bInEnable;
-
 	if (bInEnable)
 	{
-		SetMotorForceRange(CachedMotorForceRange);
-		CachedMotorForceRange = {0.0, 0.0};
+		EnableMotor();
 	}
 	else
 	{
-		CachedMotorForceRange = GetMotorForceRange();
-		SetMotorForceRange(0.0, 0.0);
+		DisableMotor();
 	}
 }
 
@@ -105,6 +120,7 @@ double FAGX_WireWinch::GetTargetSpeed() const
 void FAGX_WireWinch::SetMotorForceRange(const FAGX_DoubleInterval& InForceRange)
 {
 	MotorForceRange = InForceRange;
+	CachedMotorForceRange = InForceRange;
 	if (HasNative())
 	{
 		NativeBarrier.SetForceRange(MotorForceRange);
@@ -116,22 +132,14 @@ void FAGX_WireWinch::SetMotorForceRange(double InMin, double InMax)
 	SetMotorForceRange({InMin, InMax});
 }
 
-void FAGX_WireWinch::SetMotorForceRangeMin(double InForceRangeMin)
+void FAGX_WireWinch::SetMotorForceRangeMin(double InMin)
 {
-	MotorForceRange.Min = InForceRangeMin;
-	if (HasNative())
-	{
-		NativeBarrier.SetForceRange(MotorForceRange);
-	}
+	SetMotorForceRange({InMin, MotorForceRange.Max});
 }
 
-void FAGX_WireWinch::SetMotorForceRangeMax(double InForceRangeMax)
+void FAGX_WireWinch::SetMotorForceRangeMax(double InMax)
 {
-	MotorForceRange.Max = InForceRangeMax;
-	if (HasNative())
-	{
-		NativeBarrier.SetForceRange(MotorForceRange);
-	}
+	SetMotorForceRange({MotorForceRange.Min, InMax});
 }
 
 FAGX_DoubleInterval FAGX_WireWinch::GetMotorForceRange() const
@@ -195,22 +203,14 @@ void FAGX_WireWinch::SetBrakeForceRange(double InMin, double InMax)
 	SetBrakeForceRange({InMin, InMax});
 }
 
-void FAGX_WireWinch::SetBrakeForceRangeMin(double InForceRangeMin)
+void FAGX_WireWinch::SetBrakeForceRangeMin(double InMin)
 {
-	BrakeForceRange.Min = InForceRangeMin;
-	if (HasNative())
-	{
-		NativeBarrier.SetBrakeForceRange(BrakeForceRange);
-	}
+	SetBrakeForceRange({InMin, BrakeForceRange.Max});
 }
 
-void FAGX_WireWinch::SetBrakeForceRangeMax(double InForceRangeMax)
+void FAGX_WireWinch::SetBrakeForceRangeMax(double InMax)
 {
-	BrakeForceRange.Max = InForceRangeMax;
-	if (HasNative())
-	{
-		NativeBarrier.SetBrakeForceRange(BrakeForceRange);
-	}
+	SetBrakeForceRange({BrakeForceRange.Min, InMax});
 }
 
 FAGX_DoubleInterval FAGX_WireWinch::GetBrakeForceRange() const
@@ -224,20 +224,12 @@ FAGX_DoubleInterval FAGX_WireWinch::GetBrakeForceRange() const
 
 double FAGX_WireWinch::GetBrakeForceRangeMin() const
 {
-	if (HasNative())
-	{
-		return NativeBarrier.GetBrakeForceRange().Min;
-	}
-	return BrakeForceRange.Min;
+	return GetBrakeForceRange().Min;
 }
 
 double FAGX_WireWinch::GetBrakeForceRangeMax() const
 {
-	if (HasNative())
-	{
-		return NativeBarrier.GetBrakeForceRange().Max;
-	}
-	return BrakeForceRange.Max;
+	return GetBrakeForceRange().Max;
 }
 
 double FAGX_WireWinch::GetCurrentSpeed() const
@@ -272,21 +264,62 @@ void FAGX_WireWinch::AssignNative(uint64 NativeAddress)
 	NativeBarrier.DecrementRefCount();
 }
 
-void FAGX_WireWinch::BeginPlay()
+void FAGX_WireWinch::CreateNative()
 {
-	UE_LOG(LogAGX, Error, TEXT("NOT YET IMPLEMENTED: FAGX_WireWinch::BeginPlay."));
+	check(!GIsReconstructingBlueprintInstances);
+	check(!HasNative());
+	NativeBarrier.AllocateNative(
+		BodyAttachment.GetRigidBodyBarrier(), Location,
+		Rotation.RotateVector(FVector::ForwardVector), PulledInLength);
+	WritePropertiesToNative();
 }
 
-#if 0
-void FAGX_WireWinch::TickComponent(
-	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+FWireWinchBarrier* FAGX_WireWinch::GetNative()
 {
+	if (!HasNative())
+	{
+		return nullptr;
+	}
+	return &NativeBarrier;
 }
-#endif
 
-void FAGX_WireWinch::EndPlay(const EEndPlayReason::Type Reason)
+const FWireWinchBarrier* FAGX_WireWinch::GetNative() const
 {
-	UE_LOG(LogAGX, Error, TEXT("NOT YET IMPLEMENTED: FAGX_WireWinch::BeginPlay."));
+	if (!HasNative())
+	{
+		return nullptr;
+	}
+	return &NativeBarrier;
+}
+
+FWireWinchBarrier* FAGX_WireWinch::GetOrCreateNative()
+{
+	if (!HasNative())
+	{
+		CreateNative();
+	}
+	return GetNative();
+}
+
+void FAGX_WireWinch::WritePropertiesToNative()
+{
+	if (!HasNative())
+	{
+		UE_LOG(LogAGX, Error, TEXT(""));
+		return;
+	}
+	NativeBarrier.SetPulledInLength(PulledInLength);
+	NativeBarrier.SetAutoFeed(bAutoFeed);
+	NativeBarrier.SetTargetSpeed(TargetSpeed);
+	NativeBarrier.SetForceRange(MotorForceRange);
+	NativeBarrier.SetBrakeEnabled(bBrakeEnabled);
+	NativeBarrier.SetBrakeForceRange(BrakeForceRange);
+}
+
+
+FAGX_WireWinch::FAGX_WireWinch(const FAGX_WireWinch& Other)
+	: FAGX_WireWinchSettings(Other)
+{
 }
 
 FAGX_WireWinch& FAGX_WireWinch::operator=(const FAGX_WireWinch& Other)
@@ -302,8 +335,8 @@ bool UAGX_WireWinch_FL::SetBodyAttachment(
 {
 	return Winch.SetBodyAttachment(Body);
 }
-UAGX_RigidBodyComponent* UAGX_WireWinch_FL::GetBodyAttachment(
-	UPARAM(ref) const FAGX_WireWinch& Winch)
+UAGX_RigidBodyComponent* UAGX_WireWinch_FL::GetBodyAttachment(UPARAM(ref)
+																  const FAGX_WireWinch& Winch)
 {
 	return Winch.GetBodyAttachment();
 }

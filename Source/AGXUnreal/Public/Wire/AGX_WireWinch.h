@@ -15,7 +15,6 @@
 
 #include "AGX_WireWinch.generated.h"
 
-
 /**
  * Holds all the properties that make up the settings of a Wire Winch. The Barrier object and all
  * the functions are in FAGX_WireWinch, which inherits from this struct. We need this extra layer
@@ -94,10 +93,12 @@ public:
 	/**
 	 * The AGX Dynamics Winch doesn't have a motor on/off toggle. Instead it is disabled by setting
 	 * the force range to zero. We need to be able to restore the original force range when the
-	 * motor is enabled again so we cache a copy of it here.
+	 * motor is enabled again so we cache a copy of it here. This Property is ALWAYS the
+	 * user-supplied motor force range, while the Motor Force Range Property is zero while the
+	 * motor is disabled.
 	 */
 	UPROPERTY()
-	FAGX_DoubleInterval CachedMotorForceRange;
+	FAGX_DoubleInterval CachedMotorForceRange = MotorForceRange;
 
 	/**
 	 * Set to true to enable the brake.
@@ -117,7 +118,6 @@ public:
 		-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()};
 };
 
-
 /**
  * A Wire Winch is a carrier for the data required to create a Wire Winch along with the Barrier
  * object that houses the native AGX Dynamics instance. It is a simple struct, not any kind of
@@ -130,6 +130,20 @@ struct AGXUNREAL_API FAGX_WireWinch : public FAGX_WireWinchSettings
 	GENERATED_BODY()
 
 public:
+	FAGX_WireWinch() = default;
+	
+	/**
+	 * Copy constructor that only copies the Properties seen by Unreal, does not copy the Native
+	 * Barrier Engine.
+	 */
+	FAGX_WireWinch(const FAGX_WireWinch& Other);
+
+	/**
+	 * Assignment operator that only copies the Properties seen by Unreal, does not copy the Native
+	 * Barrier Engine.
+	 */
+	FAGX_WireWinch& operator=(const FAGX_WireWinch& Other);
+
 	bool SetBodyAttachment(UAGX_RigidBodyComponent* Body);
 	UAGX_RigidBodyComponent* GetBodyAttachment() const;
 
@@ -180,18 +194,11 @@ public:
 	void AssignNative(uint64 NativeAddress);
 	//~ End AGX_NativeOwner interface.
 
-	//~ Begin ActorComponent interface.
-	// We can't do actual inheritance, but we can at least expose the same member functions.
-	void BeginPlay();
-/// @todo Determine if Tick is required.
-#if 0
-	void Tick(
-		float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
-#endif
-	void EndPlay(const EEndPlayReason::Type Reason);
-	//~ End ActorComponent interface.
-
-	FAGX_WireWinch& operator=(const FAGX_WireWinch& Other);
+	void CreateNative();
+	FWireWinchBarrier* GetNative();
+	const FWireWinchBarrier* GetNative() const;
+	FWireWinchBarrier* GetOrCreateNative();
+	void WritePropertiesToNative();
 
 public:
 	FWireWinchBarrier NativeBarrier;
