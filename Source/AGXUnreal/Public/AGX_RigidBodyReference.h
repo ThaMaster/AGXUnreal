@@ -2,6 +2,7 @@
 
 #include "AGX_RigidBodyReference.generated.h"
 
+class FRigidBodyBarrier;
 class UAGX_RigidBodyComponent;
 
 class AActor;
@@ -86,6 +87,11 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 	 * @return The UAGX_RigidBodyComponent that this FAGX_RigidBodyReference currently references.
 	 */
 	UAGX_RigidBodyComponent* GetRigidBody() const;
+
+	/**
+	 * Returns the Barrier object for the referenced body, if there is one, otherwise nullptr.
+	 */
+	FRigidBodyBarrier* GetRigidBodyBarrier() const;
 
 	/**
 	 * Get the Actor that owns the RigidBody that this reference currently references. Can return

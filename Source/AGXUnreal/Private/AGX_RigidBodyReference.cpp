@@ -37,6 +37,16 @@ UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody() const
 	}
 }
 
+FRigidBodyBarrier* FAGX_RigidBodyReference::GetRigidBodyBarrier() const
+{
+	UAGX_RigidBodyComponent* Component = GetRigidBody();
+	if (Component == nullptr)
+	{
+		return nullptr;
+	}
+	return Component->GetNative();
+}
+
 AActor* FAGX_RigidBodyReference::GetOwningActor() const
 {
 	return OwningActor;
