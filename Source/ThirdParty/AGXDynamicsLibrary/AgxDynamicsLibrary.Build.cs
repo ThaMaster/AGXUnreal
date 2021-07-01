@@ -127,16 +127,33 @@ public class AGXDynamicsLibrary : ModuleRules
 	/// copied to the same directory as the executable file.
 	public AGXDynamicsLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
-		string PackagedAGXResoucesPath = GetPackagedAGXResourcesPath();
-		PackagedAGXResources =
-			new AGXResourcesInfo(Target, AGXResourcesLocation.PackagedAGX, PackagedAGXResoucesPath);
-		Type = ModuleType.External;
+		// At 4.25 we started getting warnings encouraging us to enable these
+		// settings. At or around 4.26 Unreal Engine makes these settings the
+		// default.
+		// bLegacyPublicIncludePaths adds all subdirectories to the list of
+		// include paths passed to the compiler. This makes it too big for many
+		// IDEs and compilers. Setting it to false reduces the list but makes
+		// it necessary to specify subdirectories in #include statements.
+		// PCHUsage has to do with Pre-Compiled Headers and include-what-you-use.
+		// See
+		// https://docs.unrealengine.com/4.26/en-US/ProductionPipelines/BuildTools/UnrealBuildTool/IWYU/
+		bLegacyPublicIncludePaths = false;
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		// Because the AGX Dynamics type system uses typeid and dynamic_cast.
 		bUseRTTI = true;
 
 		// Because AGX Dynamics uses exceptions.
 		bEnableExceptions = true;
+
+		// This marks this module as an external library, which means that the
+		// library binary already exists. There are no source files in this
+		// module.
+		Type = ModuleType.External;
+
+		string PackagedAGXResourcesPath = GetPackagedAGXResourcesPath();
+		PackagedAGXResources =
+			new AGXResourcesInfo(Target, AGXResourcesLocation.PackagedAGX, PackagedAGXResourcesPath);
 
 		// List of run-time libraries that we need. These will be added to the
 		// Unreal Engine RuntimeDependencies list. See
@@ -205,7 +222,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		else
 		{
 			Console.WriteLine("Skipping packaging of AGX Dynamics resources, packaged "
-				+ "resources already exists in: {0}", PackagedAGXResoucesPath);
+				+ "resources already exists in: {0}", PackagedAGXResourcesPath);
 		}
 
 		foreach (var RuntimeLibFile in RuntimeLibFiles)
