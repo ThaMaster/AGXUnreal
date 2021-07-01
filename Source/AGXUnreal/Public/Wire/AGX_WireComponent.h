@@ -4,6 +4,7 @@
 #include "AGX_RigidBodyReference.h"
 #include "AGX_WireRenderIterator.h"
 #include "Wire/AGX_WireEnums.h"
+#include "Wire/AGX_WireWinch.h"
 #include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
@@ -126,8 +127,14 @@ public:
 	 * This determines things such as the density of the wire and how it behaves when in contact
 	 * with Shapes in the world.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Wire")
 	UAGX_ShapeMaterialBase* PhysicalMaterial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire")
+	FAGX_WireWinch BeginWinch;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire")
+	FAGX_WireWinch EndWinch;
 
 	/**
 	 * An array of nodes that are used to initialize the wire.
