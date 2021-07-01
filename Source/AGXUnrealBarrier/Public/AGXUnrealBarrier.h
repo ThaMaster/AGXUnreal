@@ -10,6 +10,8 @@ class FAGXNotifyListener;
 class FAGXUnrealBarrierModule : public IModuleInterface
 {
 public:
+	~FAGXUnrealBarrierModule() = default;
+
 	// ~Begin IModuleInterface interface.
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
