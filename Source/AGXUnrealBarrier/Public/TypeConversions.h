@@ -386,7 +386,7 @@ inline agx::Vec4f ConvertFloat(const FVector4& V)
 
 inline FAGX_DoubleInterval Convert(const agx::RangeReal& R)
 {
-	return FAGX_DoubleInterval{R.lower(), R.upper()};
+	return FAGX_DoubleInterval {R.lower(), R.upper()};
 }
 
 inline FFloatInterval ConvertFloat(const agx::RangeReal& R)
@@ -396,7 +396,7 @@ inline FFloatInterval ConvertFloat(const agx::RangeReal& R)
 
 inline FAGX_DoubleInterval ConvertDistance(const agx::RangeReal& R)
 {
-	return FAGX_DoubleInterval{
+	return FAGX_DoubleInterval {
 		ConvertDistanceToUnreal<double>(R.lower()), ConvertDistanceToUnreal<double>(R.upper())};
 }
 
@@ -407,7 +407,7 @@ inline FFloatInterval ConvertDistanceFloat(const agx::RangeReal& R)
 
 inline FAGX_DoubleInterval ConvertAngle(const agx::RangeReal& R)
 {
-	return FAGX_DoubleInterval{
+	return FAGX_DoubleInterval {
 		ConvertAngleToUnreal<double>(R.lower()), ConvertAngleToUnreal<double>(R.upper())};
 }
 
@@ -616,6 +616,11 @@ inline ELogVerbosity::Type ConvertLogLevelVerbosity(agx::Notify::NotifyLevel Lev
 		case agx::Notify::NOTIFY_PUSH:
 			return ELogVerbosity::VeryVerbose;
 	}
+
+	UE_LOG(
+		LogAGX, Warning, TEXT("Unknown AGX Dynamics log verbosity %d. Defaulting to Warning."),
+		static_cast<int>(Level));
+	return ELogVerbosity::Warning;
 }
 
 inline agxModel::TwoBodyTire::DeformationMode Convert(FTwoBodyTireBarrier::DeformationMode Mode)
@@ -725,6 +730,11 @@ inline EWireNodeType Convert(agxWire::Node::Type Type)
 		case agxWire::Node::NOT_DEFINED:
 			return EWireNodeType::Other;
 	}
+
+	UE_LOG(
+		LogAGX, Warning, TEXT("Unknown AGX Dynamics wire node type %d. Defaulting to Other."),
+		static_cast<int>(Type));
+	return EWireNodeType::Other;
 }
 
 inline agxWire::Node::Type Convert(EWireNodeType Type)
