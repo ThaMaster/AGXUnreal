@@ -167,7 +167,7 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 	TSharedRef<SComboBox<TSharedPtr<FName>>> ComboBox =
 		SNew(SComboBox<TSharedPtr<FName>>)
 			.Visibility_Lambda([this]() {
-				return BodyNames.Num() == 0 ? EVisibility::Hidden : EVisibility::Visible;
+				return BodyNames.Num() == 0 ? EVisibility::Collapsed : EVisibility::Visible;
 			})
 			.OptionsSource(&BodyNames)
 			.OnGenerateWidget_Lambda([](TSharedPtr<FName> Item) {
@@ -195,7 +195,7 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 			.Text_Lambda([this]() { return FText::FromName(SelectedBody); })
 			.OnTextCommitted(this, &FAGX_RigidBodyReferenceCustomization::OnBodyNameCommited)
 			.Visibility_Lambda([this]() {
-				return BodyNames.Num() == 0 ? EVisibility::Visible : EVisibility::Hidden;
+				return BodyNames.Num() == 0 ? EVisibility::Visible : EVisibility::Collapsed;
 			});
 
 	NameRow.ValueContent()
