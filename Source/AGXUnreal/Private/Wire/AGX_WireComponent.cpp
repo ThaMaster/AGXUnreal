@@ -8,6 +8,7 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Wire/AGX_WireNode.h"
+#include "Wire/AGX_WireWinchComponent.h"
 #include "Wire/WireNodeBarrier.h"
 
 // Unreal Engine includes.
@@ -35,6 +36,50 @@ UAGX_WireComponent::UAGX_WireComponent()
 #if WITH_EDITORONLY_DATA
 	bVisualizeComponent = true;
 #endif
+}
+
+FAGX_WireWinch& UAGX_WireComponent::GetBeginWinch()
+{
+	// UFunctions cannot return a pointer to an FStruct, but it can return a reference to one.
+	// Sometimes we don't have a Wire Winch to return, in which case we return a reference to this
+	// static default constructed empty Wire Winch.
+	static FAGX_WireWinch InvalidWinch;
+
+	switch (BeginWinchType)
+	{
+		case EWireWinchOwnerType::Wire:
+			return OwnedBeginWinch;
+		case EWireWinchOwnerType::WireWinch:
+			return HasBeginWinchComponentWinch() ? *GetBeginWinchComponentWinch() : InvalidWinch;
+		case EWireWinchOwnerType::Other:
+			return BorrowedBeginWinch != nullptr ? *BorrowedBeginWinch : InvalidWinch;
+	}
+	return InvalidWinch;
+}
+
+UAGX_WireWinchComponent* UAGX_WireComponent::GetBeginWinchComponent()
+{
+	UActorComponent* ActorComponent = BeginWinchComponent.GetComponent(nullptr);
+	if (ActorComponent == nullptr)
+	{
+		return nullptr;
+	}
+	return Cast<UAGX_WireWinchComponent>(ActorComponent);
+}
+
+bool UAGX_WireComponent::HasBeginWinchComponentWinch()
+{
+	return GetBeginWinchComponent() != nullptr;
+}
+
+FAGX_WireWinch* UAGX_WireComponent::GetBeginWinchComponentWinch()
+{
+	UAGX_WireWinchComponent* WinchComponent = GetBeginWinchComponent();
+	if (WinchComponent == nullptr)
+	{
+		return nullptr;
+	}
+	return &WinchComponent->WireWinch;
 }
 
 namespace AGX_WireComponent_helpers
@@ -335,6 +380,68 @@ void UAGX_WireComponent::CreateNative()
 	// Panel so the user can be informed before clicking Play.
 	TArray<FString> ErrorMessages;
 
+	// Create Native for the begin winch.
+	FAGX_WireWinch* BeginWinch = nullptr;
+	switch (BeginWinchType)
+	{
+		case EWireWinchOwnerType::Wire:
+			BeginWinch = &OwnedBeginWinch;
+			break;
+		case EWireWinchOwnerType::WireWinch:
+			UActorComponent* WinchActorComponent = BeginWinchComponent.GetComponent(nullptr);
+			if (WinchActorComponent == nullptr)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Cannot create Begin Wire Winch: Begin Winch Component not set."));
+			}
+			else
+			{
+				UAGX_WireWinchComponent* WinchComponent =
+					Cast<UAGX_WireWinchComponent>(WinchActorComponent);
+				if (WinchComponent == nullptr)
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("Cannot create Begin Wire Winch: Begin Winch Component set to "
+							 "something not a Wire Winch Component"));
+				}
+				else
+				{
+					BeginWinch = &WinchComponent->WireWinch;
+				}
+				break;
+			}
+	}
+	if (BeginWinch != nullptr)
+	{
+		if (BeginWinch->GetBodyAttachment() == nullptr)
+		{
+			// The Wire Winch does not have a Rigid Body, which means that the Wire Winch will be
+			// attached to the world. Therefore, Location and Rotation should be in the global
+			// coordinate system when passed to AGX Dynamics. The Unreal Engine instance of the
+			// Wire Winch doesn't know about this, it only passes on whatever Location and Rotation
+			// it got, so here we transform from the Wire Component's local coordinate system to the
+			// global coordinate system ON THE GAME INSTANCE of the Wire Winch. This doesn't change
+			// the editor instance.
+			BeginWinch->Location = GetComponentTransform().TransformPosition(BeginWinch->Location);
+			BeginWinch->Rotation = GetComponentRotation() + BeginWinch->Rotation;
+		}
+		FWireWinchBarrier* WinchBarrier = BeginWinch->GetOrCreateNative();
+		if (WinchBarrier != nullptr)
+		{
+			NativeBarrier.AddWinch(*WinchBarrier);
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Failed to allocate AGX Dynamics instance for Begin Winch for Wire Component "
+					 "'%s' in Actor '%s'."),
+				*GetName(), *GetLabelSafe(GetOwner()));
+		}
+	}
+
 	// Create AGX Dynamics simulation nodes and initialize the wire.
 	for (int32 I = 0; I < RouteNodes.Num(); ++I)
 	{
@@ -385,8 +492,9 @@ void UAGX_WireComponent::CreateNative()
 			case EWireNodeType::Other:
 				UE_LOG(
 					LogAGX, Warning,
-					TEXT("Found expected node type in wire '%s', part of actor '%s', at index %d. "
-						 "Node ignored."),
+					TEXT(
+						"Found unexpected node type in wire '%s', part of actor '%s', at index %d. "
+						"Node ignored."),
 					*GetName(), *GetLabelSafe(GetOwner()), I);
 				break;
 		}

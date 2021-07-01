@@ -8,12 +8,14 @@
 #include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
+#include "Engine/EngineTypes.h"
 #include "Components/SceneComponent.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "AGX_WireComponent.generated.h"
 
 class UAGX_ShapeMaterialBase;
+class UAGX_WireWinchComponent;
 
 /**
  * Route nodes are used to specify the initial route of the wire. Each node has a location but
@@ -130,11 +132,64 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Wire")
 	UAGX_ShapeMaterialBase* PhysicalMaterial;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire")
-	FAGX_WireWinch BeginWinch;
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire Begin Winch",
+		Meta = (DisplayName = "Winch Type"))
+	EWireWinchOwnerType BeginWinchType = EWireWinchOwnerType::None;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire")
-	FAGX_WireWinch EndWinch;
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire Begin Winch",
+		Meta = (EditConditionHides, EditCondition = "BeginWinchType == EWireWinchOwnerType::Wire"))
+	FAGX_WireWinch OwnedBeginWinch;
+
+	/**
+	 * This is the Wire Winch that will be used when Begin Winch Type is set to Other. The code or
+	 * Visual Script that sets Begin Winch Type to Other is fully responsible for this pointer and
+	 * the FAGX_WireWinch that it points to.
+	 */
+	FAGX_WireWinch* BorrowedBeginWinch;
+
+	/// @todo The engine example, ULiveLinkComponentController, uses EditInstanceOnly here.
+	/// Determine if that is a requirement or not. Possibly related to Blueprint Editor
+	/// weirdness. FComponentReference is not supported by Blueprint, so we must provide some
+	/// other way to set the target from a Blueprint Visual Script.
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Wire Begin Winch",
+		Meta =
+			(UseComponentPicker, AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "",
+			 EditConditionHides,
+			 EditCondition = "BeginWinchType == EWireWinchOwnerType::WireWinch"))
+	FComponentReference BeginWinchComponent;
+
+	UFUNCTION(BlueprintCallable)
+	UAGX_WireWinchComponent* GetBeginWinchComponent();
+
+	bool HasBeginWinchComponentWinch();
+	FAGX_WireWinch* GetBeginWinchComponentWinch();
+
+	/**
+	 * Get the Wire Winch object that the begin side of this wire is attached to, if any.
+	 * @return The attached Wire Winch, or nullptr.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	FAGX_WireWinch& GetBeginWinch();
+
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire End Winch",
+		Meta = (DisplayName = "Winch Type"))
+	EWireWinchOwnerType EndWinchType = EWireWinchOwnerType::None;
+
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire End Winch",
+		Meta = (EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::Wire"))
+	FAGX_WireWinch OwnedEndWinch;
+
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Wire End Winch",
+		Meta =
+			(UseComponentPicker, AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "",
+			 EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::WireWinch"))
+	FComponentReference EndWinchComponent;
 
 	/**
 	 * An array of nodes that are used to initialize the wire.
@@ -142,7 +197,7 @@ public:
 	 * At BeginPlay these nodes are used to create simulation nodes and after that the route nodes
 	 * aren't used anymore. Use the render iterator to track the motion of the wire over time.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire Route")
 	TArray<FWireRoutingNode> RouteNodes;
 
 	/** For demonstration/experimentation purposes. Will be replaced with Wire Material shortly. */
