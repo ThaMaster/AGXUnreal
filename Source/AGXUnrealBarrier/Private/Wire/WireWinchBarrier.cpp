@@ -56,13 +56,15 @@ FVector FWireWinchBarrier::GetLocalNormal() const
 void FWireWinchBarrier::SetPulledInLength(double InPulledInLength)
 {
 	check(HasNative());
-	NativeRef->Native->setPulledInWireLength(InPulledInLength);
+	agx::Real PulledInLengthAGX = ConvertDistanceToAgx(InPulledInLength);
+	NativeRef->Native->setPulledInWireLength(PulledInLengthAGX);
 }
 
 double FWireWinchBarrier::GetPulledInLength() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getPulledInWireLength());
+	agx::Real PulledInLengthAGX = NativeRef->Native->getPulledInWireLength();
+	return ConvertDistanceToUnreal<double>(PulledInLengthAGX);
 }
 
 void FWireWinchBarrier::SetAutoFeed(bool bAutoFeed)
@@ -127,13 +129,15 @@ void FWireWinchBarrier::SetTargetSpeed(double InTargetSpeed)
 double FWireWinchBarrier::GetTargetSpeed() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getSpeed());
+	const agx::Real TargetSpeedAGX = NativeRef->Native->getSpeed();
+	return ConvertDistanceToUnreal<double>(TargetSpeedAGX);
 }
 
 double FWireWinchBarrier::GetCurrentSpeed() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getCurrentSpeed());
+	agx::Real CurrentSpeedAGX = NativeRef->Native->getCurrentSpeed();
+	return ConvertDistanceToUnreal<double>(CurrentSpeedAGX);
 }
 
 /// Whether route nodes should take wire from the winch,
