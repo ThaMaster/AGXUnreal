@@ -40,6 +40,10 @@ public:
 	void AddRouteNode(FWireNodeBarrier& RoutingNode);
 	void AddWinch(FWireWinchBarrier& Winch);
 	bool IsInitialized() const;
+
+	/**
+	 * @return The length of the wire not including wire inside any winches.
+	 */
 	double GetRestLength() const;
 
 	FWireRenderIteratorBarrier GetRenderBeginIterator() const;

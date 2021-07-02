@@ -117,7 +117,7 @@ bool FWireBarrier::IsInitialized() const
 double FWireBarrier::GetRestLength() const
 {
 	check(HasNative());
-	const agx::Real LengthAGX = NativeRef->Native->getRestLength();
+	const agx::Real LengthAGX = NativeRef->Native->getRestLength(false);
 	const double Length = ConvertDistanceToUnreal<double>(LengthAGX);
 	return Length;
 }
