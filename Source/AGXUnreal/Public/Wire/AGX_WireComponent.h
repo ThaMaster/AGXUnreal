@@ -346,6 +346,7 @@ public:
 	virtual void TickComponent(
 		float DeltaTime, ELevelTick TickType,
 		FActorComponentTickFunction* ThisTickFunction) override;
+	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	//~ End ActorComponent interface.
 

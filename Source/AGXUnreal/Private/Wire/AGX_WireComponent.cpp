@@ -8,6 +8,7 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "AGX_UpropertyDispatcher.h"
+#include "Wire/AGX_WireInstanceData.h"
 #include "Wire/AGX_WireNode.h"
 #include "Wire/AGX_WireWinchComponent.h"
 #include "Wire/WireNodeBarrier.h"
@@ -339,6 +340,11 @@ void UAGX_WireComponent::TickComponent(
 
 	/// @todo Update simulation node list, once we have one.
 	/// Should we really?
+}
+
+TStructOnScope<FActorComponentInstanceData> UAGX_WireComponent::GetComponentInstanceData() const
+{
+	return MakeStructOnScope<FActorComponentInstanceData, FAGX_WireInstanceData>(this);
 }
 
 void UAGX_WireComponent::EndPlay(const EEndPlayReason::Type Reason)
