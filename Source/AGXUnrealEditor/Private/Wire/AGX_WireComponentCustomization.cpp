@@ -7,6 +7,7 @@
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireComponentVisualizer.h"
 #include "Wire/AGX_WireEnums.h"
+#include "Wire/AGX_WireDetailsRuntimeBuilder.h"
 
 // Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
@@ -252,7 +253,7 @@ FWireNodeDetails::FWireNodeDetails(UAGX_WireComponent* InWire)
 			MakeShareable(new FString(NodeTypesEnum->GetNameStringByIndex(EnumIndex))));
 	}
 
-	// Should always have the emptry string entry in the body names list, so that it's possible
+	// Should always have the empty string entry in the body names list, so that it's possible
 	// to select None.
 	RigidBodyNames.Add(MakeShareable(new FString("")));
 
@@ -983,24 +984,6 @@ TSharedRef<IDetailCustomization> FAGX_WireComponentCustomization::MakeInstance()
 	return MakeShareable(new FAGX_WireComponentCustomization());
 }
 
-FText FAGX_WireComponentCustomization::OnGetCurrentSpeed() const
-{
-	if (!Wire->GetBeginWinch().HasNative())
-	{
-		return LOCTEXT("NoNative", "No Native");
-	}
-	return FText::AsNumber(Wire->GetBeginWinch().GetCurrentSpeed());
-}
-
-FText FAGX_WireComponentCustomization::OnGetCurrentPulledInLength() const
-{
-	if (!Wire->GetBeginWinch().HasNative())
-	{
-		return LOCTEXT("NoNative", "No Native");
-	}
-	return FText::AsNumber(Wire->GetBeginWinch().GetPulledInLength());
-}
-
 namespace WireDetails_helpers
 {
 	EVisibility VisibleIf(bool bVisible)
@@ -1023,7 +1006,6 @@ EVisibility FAGX_WireComponentCustomization::WithoutNative() const
 
 void FAGX_WireComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
-
 	TArray<TWeakObjectPtr<UObject>> ObjectsBeingCustomized;
 	DetailBuilder.GetObjectsBeingCustomized(ObjectsBeingCustomized);
 	if (ObjectsBeingCustomized.Num() != 1)
@@ -1046,39 +1028,10 @@ void FAGX_WireComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& Det
 			.Visibility(
 				TAttribute<EVisibility>(this, &FAGX_WireComponentCustomization::WithoutNative));
 
-		// clang-format off
-
-		IDetailGroup& BeginWinchRuntime = BeginWinch.AddGroup(TEXT("Runtime"), LOCTEXT("Runtime", "Runtime"));
-
-		// Current speed.
-		BeginWinchRuntime.AddWidgetRow()
-		.Visibility(TAttribute<EVisibility>(this, &FAGX_WireComponentCustomization::WithNative))
-		.NameContent()
-		[
-			SNew(STextBlock)
-			.Text(LOCTEXT("Speed", "Speed"))
-		]
-		.ValueContent()
-		[
-			SNew(STextBlock)
-			.Text(this, &FAGX_WireComponentCustomization::OnGetCurrentSpeed)
-		];
-
-		// Pulled-in
-		BeginWinchRuntime.AddWidgetRow()
-		.Visibility(TAttribute<EVisibility>(this, &FAGX_WireComponentCustomization::WithNative))
-		.NameContent()
-		[
-			SNew(STextBlock)
-			.Text(LOCTEXT("Pulled In Length", "Pulled In Length"))
-		]
-		.ValueContent()
-		[
-			SNew(STextBlock)
-			.Text(this, &FAGX_WireComponentCustomization::OnGetCurrentPulledInLength)
-		];
-
-		// clang-format on
+		IDetailCategoryBuilder& RuntimeCategory = DetailBuilder.EditCategory(TEXT("AGX Wire Runtime"));
+		TSharedRef<FAGX_WireDetailsRuntimeBuilder> WireRuntimeDetails =
+			MakeShareable(new FAGX_WireDetailsRuntimeBuilder(DetailBuilder, *this));
+		RuntimeCategory.AddCustomBuilder(WireRuntimeDetails);
 	}
 
 	// Configure route.

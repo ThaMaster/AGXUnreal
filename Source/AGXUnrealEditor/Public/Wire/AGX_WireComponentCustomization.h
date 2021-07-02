@@ -20,12 +20,10 @@ public:
 
 	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
 
-private:
-	FText OnGetCurrentSpeed() const;
-	FText OnGetCurrentPulledInLength() const;
-
+public:
 	EVisibility WithNative() const;
 	EVisibility WithoutNative() const;
 
+public:
 	TWeakObjectPtr<UAGX_WireComponent> Wire;
 };
