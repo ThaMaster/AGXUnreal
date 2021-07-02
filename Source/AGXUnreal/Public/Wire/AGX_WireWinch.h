@@ -86,7 +86,7 @@ public:
 	 * used when hauling in and the upper range when paying out. The lower end must be less than
 	 * zero and the upper range must be greater than zero.
 	 *
-	 * This actual force range on the Native is set to this value while the motor is enabled. When
+	 * The actual force range on the Native is set to this value while the motor is enabled. When
 	 * the motor is disabled the Native's motor force range is instead set to zero.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
