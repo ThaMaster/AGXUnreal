@@ -4,10 +4,10 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "AGX_UpropertyDispatcher.h"
 #include "AGXUnrealBarrier.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
-#include "AGX_UpropertyDispatcher.h"
 #include "Wire/AGX_WireInstanceData.h"
 #include "Wire/AGX_WireNode.h"
 #include "Wire/AGX_WireWinchComponent.h"
@@ -278,6 +278,44 @@ void UAGX_WireComponent::PostLoad()
 		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength),
 		[](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetPulledInLength(Wire->OwnedBeginWinch.PulledInLength); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bMotorEnabled),
+		[](ThisClass* Wire)
+		{ Wire->OwnedBeginWinch.SetMotorEnabled(Wire->OwnedBeginWinch.bMotorEnabled); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, TargetSpeed),
+		[](ThisClass* Wire)
+		{ Wire->OwnedBeginWinch.SetTargetSpeed(Wire->OwnedBeginWinch.TargetSpeed); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, MotorForceRange),
+		[](ThisClass* Wire)
+		{ Wire->OwnedBeginWinch.SetMotorForceRange(Wire->OwnedBeginWinch.MotorForceRange); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bBrakeEnabled),
+		[](ThisClass* Wire)
+		{ Wire->OwnedBeginWinch.SetBrakeEnabled(Wire->OwnedBeginWinch.bBrakeEnabled); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, BrakeForceRange),
+		[](ThisClass* Wire)
+		{ Wire->OwnedBeginWinch.SetBrakeForceRange(Wire->OwnedBeginWinch.BrakeForceRange); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bEmergencyBrakeEnabled),
+		[](ThisClass* Wire) {
+			Wire->OwnedBeginWinch.SetEmergencyBrakeEnabled(
+				Wire->OwnedBeginWinch.bEmergencyBrakeEnabled);
+		});
 #endif
 }
 
