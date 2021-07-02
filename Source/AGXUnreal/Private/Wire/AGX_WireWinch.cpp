@@ -359,7 +359,9 @@ void FAGX_WireWinch::WritePropertiesToNative()
 {
 	if (!HasNative())
 	{
-		UE_LOG(LogAGX, Error, TEXT(""));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("FAGX_WireWinch: Cannot read properties from native: Dont' have a native."));
 		return;
 	}
 	NativeBarrier.SetPulledInWireLength(PulledInLength);
@@ -383,6 +385,30 @@ void FAGX_WireWinch::WritePropertiesToNative()
 	}
 
 	NativeBarrier.SetEnableForcedBrake(bEmergencyBrakeEnabled);
+}
+
+void FAGX_WireWinch::ReadPropertiesFromNative()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("FAGX_WireWinch: Cannot read properties from native: Dont' have a native."));
+		return;
+	}
+
+	PulledInLength = NativeBarrier.GetPulledInWireLength();
+	bAutoFeed = NativeBarrier.GetAutoFeed();
+	TargetSpeed = NativeBarrier.GetSpeed();
+	if (bMotorEnabled)
+	{
+		MotorForceRange = NativeBarrier.GetForceRange();
+	}
+	if (bBrakeEnabled)
+	{
+		BrakeForceRange = NativeBarrier.GetBrakeForceRange();
+	}
+	bEmergencyBrakeEnabled = NativeBarrier.GetEnableForcedBrake();
 }
 
 FAGX_WireWinch::FAGX_WireWinch(const FAGX_WireWinch& Other)

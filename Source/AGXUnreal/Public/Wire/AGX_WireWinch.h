@@ -202,6 +202,7 @@ public:
 	const FWireWinchBarrier* GetNative() const;
 	FWireWinchBarrier* GetOrCreateNative();
 	void WritePropertiesToNative();
+	void ReadPropertiesFromNative();
 
 public:
 	FWireWinchBarrier NativeBarrier;
