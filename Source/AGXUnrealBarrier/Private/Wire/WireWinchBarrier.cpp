@@ -27,6 +27,27 @@ FWireWinchBarrier::~FWireWinchBarrier()
 {
 }
 
+void FWireWinchBarrier::AllocateNative(
+	const FRigidBodyBarrier* Body, const FVector& LocalLocation, const FVector& LocalNormal,
+	double PulledInLength)
+{
+	PreNativeChanged();
+	agx::RigidBody* NativeBody;
+	if (Body != nullptr && Body->HasNative())
+	{
+		NativeBody = Body->GetNative()->Native;
+	}
+	else
+	{
+		NativeBody = nullptr;
+	}
+
+	NativeRef->Native = new agxWire::WireWinchController(
+		NativeBody, ConvertDisplacement(LocalLocation), ConvertVector(LocalNormal),
+		ConvertDistanceToAgx(PulledInLength));
+	PostNativeChanged();
+}
+
 /// The body that the winch is attached to. Will be empty when attached to the world.
 FRigidBodyBarrier FWireWinchBarrier::GetRigidBody() const
 {
@@ -47,20 +68,20 @@ FVector FWireWinchBarrier::GetLocalPosition() const
 
 /// The direction of the winch on the body it's attached to, or in world space if there is no
 /// body.
-FVector FWireWinchBarrier::GetLocalNormal() const
+FVector FWireWinchBarrier::GetNormal() const
 {
 	check(HasNative());
 	return ConvertVector(NativeRef->Native->getNormal());
 }
 
-void FWireWinchBarrier::SetPulledInLength(double InPulledInLength)
+void FWireWinchBarrier::SetPulledInWireLength(double InPulledInLength)
 {
 	check(HasNative());
 	agx::Real PulledInLengthAGX = ConvertDistanceToAgx(InPulledInLength);
 	NativeRef->Native->setPulledInWireLength(PulledInLengthAGX);
 }
 
-double FWireWinchBarrier::GetPulledInLength() const
+double FWireWinchBarrier::GetPulledInWireLength() const
 {
 	check(HasNative());
 	agx::Real PulledInLengthAGX = NativeRef->Native->getPulledInWireLength();
@@ -105,20 +126,20 @@ FAGX_DoubleInterval FWireWinchBarrier::GetBrakeForceRange() const
 	return Convert(NativeRef->Native->getBrakeForceRange());
 }
 
-void FWireWinchBarrier::SetBrakeEnabled(bool bBrakeEnabled)
+void FWireWinchBarrier::SetEnableForcedBrake(bool bBrakeEnabled)
 {
 	check(HasNative());
 	NativeRef->Native->setEnableForcedBrake(bBrakeEnabled);
 }
 
 /// Whether or not the winch is currently braking.
-bool FWireWinchBarrier::IsBrakeEnabled() const
+bool FWireWinchBarrier::GetEnableForcedBrake() const
 {
 	check(HasNative());
 	return NativeRef->Native->getEnableForcedBrake();
 }
 
-void FWireWinchBarrier::SetTargetSpeed(double InTargetSpeed)
+void FWireWinchBarrier::SetSpeed(double InTargetSpeed)
 {
 	check(HasNative());
 	agx::Real TargetSpeedAGX = ConvertDistanceToAgx(InTargetSpeed);
@@ -126,7 +147,7 @@ void FWireWinchBarrier::SetTargetSpeed(double InTargetSpeed)
 }
 
 /// The speed that wire is being pulled in or payed out with.
-double FWireWinchBarrier::GetTargetSpeed() const
+double FWireWinchBarrier::GetSpeed() const
 {
 	check(HasNative());
 	const agx::Real TargetSpeedAGX = NativeRef->Native->getSpeed();
@@ -140,38 +161,22 @@ double FWireWinchBarrier::GetCurrentSpeed() const
 	return ConvertDistanceToUnreal<double>(CurrentSpeedAGX);
 }
 
-/// Whether route nodes should take wire from the winch,
-//		or create new wire.
-bool FWireWinchBarrier::IsAutoFeed() const
+double FWireWinchBarrier::GetCurrentForce() const
 {
 	check(HasNative());
-	return NativeRef->Native->getAutoFeed();
+	return NativeRef->Native->getCurrentForce();
+}
+
+double FWireWinchBarrier::GetCurrentBrakeForce() const
+{
+	check(HasNative());
+	return NativeRef->Native->getCurrentBrakeForce();
 }
 
 FGuid FWireWinchBarrier::GetGuid() const
 {
 	check(HasNative());
 	return Convert(NativeRef->Native->getUuid());
-}
-
-void FWireWinchBarrier::AllocateNative(
-	const FRigidBodyBarrier* Body, const FVector& LocalLocation, const FVector& LocalNormal,
-	double PulledInLength)
-{
-	PreNativeChanged();
-	agx::RigidBody* NativeBody;
-	if (Body != nullptr && Body->HasNative())
-	{
-		NativeBody = Body->GetNative()->Native;
-	}
-	else
-	{
-		NativeBody = nullptr;
-	}
-	NativeRef->Native = new agxWire::WireWinchController(
-		NativeBody, ConvertDisplacement(LocalLocation), ConvertVector(LocalNormal),
-		PulledInLength);
-	PostNativeChanged();
 }
 
 // See comment on declarations in header file. Remove these if the declarations has been removed.

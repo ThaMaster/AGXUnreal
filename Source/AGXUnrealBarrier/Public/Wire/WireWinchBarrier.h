@@ -15,7 +15,7 @@ public:
 	FWireWinchBarrier();
 	FWireWinchBarrier(std::unique_ptr<FWireWinchRef> Native);
 	FWireWinchBarrier(FWireWinchBarrier&& Other);
-	~FWireWinchBarrier();
+	virtual ~FWireWinchBarrier();
 
 	void AllocateNative(
 		const FRigidBodyBarrier* Body, const FVector& LocalLocation, const FVector& LocalNormal,
@@ -33,14 +33,14 @@ public:
 
 	/// The direction of the winch on the body it's attached to, or in world space if there is no
 	/// body.
-	FVector GetLocalNormal() const;
+	FVector GetNormal() const;
 
 
-	void SetPulledInLength(double InPulledInLength);
+	void SetPulledInWireLength(double InPulledInLength);
 
 	/// The length of wire that the winch contains currently.
 	/// This will decrease during routing/initialization if Auto Feed is enabled.
-	double GetPulledInLength() const;
+	double GetPulledInWireLength() const;
 
 	void SetAutoFeed(bool bAutoFeed);
 
@@ -56,27 +56,27 @@ public:
 
 	void SetBrakeForceRange(const FAGX_DoubleInterval& InBrakeForceRange);
 
-	void SetBrakeEnabled(bool bBrakeEnabled);
+	void SetEnableForcedBrake(bool bBrakeEnabled);
 
 	/// Whether or not the winch is currently braking.
-	bool IsBrakeEnabled() const;
+	bool GetEnableForcedBrake() const;
 
 	/// The speed that wire is being pulled in or payed out with.
-	double GetTargetSpeed() const;
+	double GetSpeed() const;
 
-	void SetTargetSpeed(double InTargetSpeed);
+	void SetSpeed(double InTargetSpeed);
 
 	/// The current speed of the winch motor.
 	double GetCurrentSpeed() const;
 
-	/// Whether route nodes should take wire from the winch,
-	//		or create new wire.
-	bool IsAutoFeed() const;
+	double GetCurrentForce() const;
+
+	double GetCurrentBrakeForce() const;
 
 	FGuid GetGuid() const;
 
 protected:
-/// @todo Determine if we need to override these
+/// @todo Determine if we need to override these.
 #if 0
 	virtual void PreNativeChanged() override;
 	virtual void PostNativeChanged() override;
