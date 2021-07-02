@@ -285,6 +285,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	bool IsInitialized() const;
 
+	double GetRestLength() const;
+
 	/// @return True if this wire has at least one renderable simulation node.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	bool HasRenderNodes() const;

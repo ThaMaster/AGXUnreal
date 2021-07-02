@@ -158,6 +158,16 @@ bool UAGX_WireComponent::IsInitialized() const
 	return NativeBarrier.IsInitialized();
 }
 
+double UAGX_WireComponent::GetRestLength() const
+{
+	if (!HasNative())
+	{
+		/// @todo Compute the length of the route.
+		return 0.0;
+	}
+	return NativeBarrier.GetRestLength();
+}
+
 bool UAGX_WireComponent::HasRenderNodes() const
 {
 	if (!HasNative())
