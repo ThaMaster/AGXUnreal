@@ -204,9 +204,26 @@ TArray<FVector> UAGX_WireComponent::GetRenderNodeLocations() const
 	return Result;
 }
 
+void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
+{
+	/// @todo Implement UAGX_WireComponent::CopyFrom.
+	UE_LOG(LogAGX, Error, TEXT("UAGX_WireComponent::CopyFrom not yet implemented."));
+}
+
 bool UAGX_WireComponent::HasNative() const
 {
 	return NativeBarrier.HasNative();
+}
+
+uint64 UAGX_WireComponent::GetNativeAddress() const
+{
+	return static_cast<uint64>(NativeBarrier.GetNativeAddress());
+}
+
+void UAGX_WireComponent::AssignNative(uint64 NativeAddress)
+{
+	check(!HasNative());
+	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
 }
 
 FWireBarrier* UAGX_WireComponent::GetOrCreateNative()
@@ -223,7 +240,7 @@ FWireBarrier* UAGX_WireComponent::GetOrCreateNative()
 
 		CreateNative();
 	}
-	check(HasNative());
+	check(HasNative()); /// \todo Consider better error handling than 'check'.
 	return &NativeBarrier;
 }
 
@@ -243,12 +260,6 @@ const FWireBarrier* UAGX_WireComponent::GetNative() const
 		return nullptr;
 	}
 	return &NativeBarrier;
-}
-
-void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
-{
-	/// @todo Implement UAGX_WireComponent::CopyFrom.
-	UE_LOG(LogAGX, Error, TEXT("UAGX_WireComponent::CopyFrom not yet implemented."));
 }
 
 void UAGX_WireComponent::PostLoad()

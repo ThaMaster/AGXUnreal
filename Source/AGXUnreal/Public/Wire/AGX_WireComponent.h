@@ -81,7 +81,7 @@ class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
  * underlying AGX Dynamics wire nodes.
  */
 UCLASS(ClassGroup = "AGX", Meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_WireComponent : public USceneComponent
+class AGXUNREAL_API UAGX_WireComponent : public USceneComponent, public IAGX_NativeOwner
 {
 public:
 	GENERATED_BODY()
@@ -304,11 +304,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	TArray<FVector> GetRenderNodeLocations() const;
 
+	/// Copy configuration from the given Barrier.
+	/// @note Not yet implemented.
+	void CopyFrom(const FWireBarrier& Barrier);
+
+	//~ Begin IAGX_NativeOwner interface.
 	/**
 	 * @return True if a native AGX Dynamics representation has been created for this Wire
 	 * Component.
 	 */
-	bool HasNative() const;
+	virtual bool HasNative() const override;
+	virtual uint64 GetNativeAddress() const override;
+	virtual void AssignNative(uint64 NativeAddress) override;
+	//~ End IAGX_NativeOwner interface.
 
 	/**
 	 * Return the Barrier object for this Wire Component, creating it if necessary. Should only be
@@ -323,10 +331,6 @@ public:
 
 	/// @return The Barrier object for this Wire Component, or nullptr if there is none.
 	const FWireBarrier* GetNative() const;
-
-	/// Copy configuration from the given Barrier.
-	/// @note Not yet implemented.
-	void CopyFrom(const FWireBarrier& Barrier);
 
 	// ~Begin UObject interface.
 	virtual void PostLoad() override;
