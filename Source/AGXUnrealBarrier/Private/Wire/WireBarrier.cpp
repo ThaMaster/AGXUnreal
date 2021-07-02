@@ -1,6 +1,7 @@
 #include "Wire/WireBarrier.h"
 
 // AGX Unreal includes.
+#include "NativeBarrier.impl.h"
 #include "TypeConversions.h"
 #include "Wire/WireNodeBarrier.h"
 #include "Wire/WireNodeRef.h"
@@ -13,33 +14,25 @@
 #include <agx/Material.h>
 #include "EndAGXIncludes.h"
 
+template class FNativeBarrier<FWireRef>;
+
 FWireBarrier::FWireBarrier()
-	: NativeRef {new FWireRef()}
+	: Super()
+{
+}
+
+FWireBarrier::FWireBarrier(std::unique_ptr<FWireRef>&& Native)
+	: Super(std::move(Native))
 {
 }
 
 FWireBarrier::FWireBarrier(FWireBarrier&& Other)
-	: NativeRef {std::move(Other.NativeRef)}
+	: Super(std::move(Other))
 {
-	Other.NativeRef.reset();
-}
-
-FWireBarrier::FWireBarrier(std::unique_ptr<FWireRef>&& Native)
-	: NativeRef {std::move(Native)}
-{
-	Native.reset();
 }
 
 FWireBarrier::~FWireBarrier()
 {
-	// Must provide a destructor implementation in the .cpp file because the
-	// std::unique_ptr NativeRef's destructor must be able to see the definition,
-	// not just the forward declaration, of FWireRef.
-}
-
-bool FWireBarrier::HasNative() const
-{
-	return NativeRef->Native != nullptr;
 }
 
 /** Damping and Young's modulus for demonstration/experimentation purposes. Will be replaced
@@ -49,9 +42,11 @@ void FWireBarrier::AllocateNative(
 	float YoungsModulusBend, float YoungsModulusStretch)
 {
 	check(!HasNative());
+	PreNativeChanged();
 	agx::Real RadiusAGX = ConvertDistance(Radius);
 	agx::Real ResolutionPerUnitLengthAGX = ConvertDistanceInv(ResolutionPerUnitLength);
 	NativeRef->Native = new agxWire::Wire(RadiusAGX, ResolutionPerUnitLengthAGX);
+	PostNativeChanged();
 
 /// @todo REMOVE THIS!
 /// This is only for testing.
@@ -67,24 +62,6 @@ void FWireBarrier::AllocateNative(
 	WireMaterial->setYoungsModulusStretch(YoungsModulusStretch);
 	NativeRef->Native->setMaterial(Material);
 #endif
-}
-
-FWireRef* FWireBarrier::GetNative()
-{
-	check(HasNative());
-	return NativeRef.get();
-}
-
-const FWireRef* FWireBarrier::GetNative() const
-{
-	check(HasNative());
-	return NativeRef.get();
-}
-
-void FWireBarrier::ReleaseNative()
-{
-	check(HasNative());
-	NativeRef->Native = nullptr;
 }
 
 void FWireBarrier::SetScaleConstant(double ScaleConstant)

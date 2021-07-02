@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "NativeBarrier.h"
 #include "Wire/WireRenderIteratorBarrier.h"
 
 // System includes.
@@ -10,25 +11,23 @@ struct FWireRef;
 class FWireNodeBarrier;
 class FWireWinchBarrier;
 
-class AGXUNREALBARRIER_API FWireBarrier
+extern template class AGXUNREALBARRIER_API FNativeBarrier<FWireRef>;
+
+class AGXUNREALBARRIER_API FWireBarrier : public FNativeBarrier<FWireRef>
 {
 public:
-	FWireBarrier();
-	FWireBarrier(FWireBarrier&& Other);
-	FWireBarrier(std::unique_ptr<FWireRef>&& Native);
-	~FWireBarrier();
+	using Super = FNativeBarrier<FWireRef>;
 
-	bool HasNative() const;
+	FWireBarrier();
+	FWireBarrier(std::unique_ptr<FWireRef>&& Native);
+	FWireBarrier(FWireBarrier&& Other);
+	virtual ~FWireBarrier();
 
 	/** Damping and Young's modulus for demonstration/experimentation purposes. Will be replaced
 	 * with Wire Material shortly. */
 	void AllocateNative(
 		float Radius, float ResolutionPerUnitLength, float DampingBend, float DampingStretch,
 		float YoungsModulusBend, float YoungsModulusStretch);
-
-	FWireRef* GetNative();
-	const FWireRef* GetNative() const;
-	void ReleaseNative();
 
 	void SetScaleConstant(double ScaleConstant);
 	double GetScaleConstant() const;
@@ -46,10 +45,12 @@ public:
 	FWireRenderIteratorBarrier GetRenderBeginIterator() const;
 	FWireRenderIteratorBarrier GetRenderEndIterator() const;
 
-private:
-	FWireBarrier(const FWireBarrier&) = delete;
-	void operator=(const FWireBarrier&) = delete;
-
-private:
-	std::unique_ptr<FWireRef> NativeRef;
+protected:
+	//~ Begin FNativeBarrier interface.
+/// @todo Determine if we need to override these
+#if 0
+	virtual void PreNativeChanged() override;
+	virtual void PostNativeChanged() override;
+#endif
+	//~ End FNativeBarrier interface.
 };
