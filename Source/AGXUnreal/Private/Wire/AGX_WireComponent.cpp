@@ -362,22 +362,7 @@ void UAGX_WireComponent::TickComponent(
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (!HasNative())
-	{
-		return;
-	}
-
-	if (OwnedBeginWinch.HasNative())
-	{
-		/// @todo Not sure how to handle this best. We usually don't sync all the Properties all the
-		/// time and instead read from the Native whenever the current value is needed. This
-		/// synchronization is done only for the Details Panel, so it would possibly be better to
-		/// move it to the Detail Customization.
-		OwnedBeginWinch.PulledInLength = OwnedBeginWinch.GetNative()->GetPulledInLength();
-	}
-
-	/// @todo Update simulation node list, once we have one.
-	/// Should we really?
+	/// @todo Do we need to do anything here?
 }
 
 TStructOnScope<FActorComponentInstanceData> UAGX_WireComponent::GetComponentInstanceData() const
