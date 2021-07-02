@@ -1,3 +1,5 @@
+#pragma once
+
 #include "NativeBarrier.h"
 
 
@@ -28,6 +30,7 @@ template <typename FNativeRef>
 FNativeBarrier<FNativeRef>::FNativeBarrier(FNativeBarrier&& Other)
 	: NativeRef {std::move(Other.NativeRef)}
 {
+	check(NativeRef);
 	Other.NativeRef.reset(new FNativeRef);
 }
 
