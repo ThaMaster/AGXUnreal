@@ -26,6 +26,11 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Interval")
 	double Max;
+
+	bool IsZero() const
+	{
+		return Min == 0.0 && Max == 0.0;
+	}
 };
 
 
