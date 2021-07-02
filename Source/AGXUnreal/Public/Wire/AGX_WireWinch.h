@@ -85,20 +85,13 @@ public:
 	 * The allowed force range when paying out and hauling in wire. The lower end of the range is
 	 * used when hauling in and the upper range when paying out. The lower end must be less than
 	 * zero and the upper range must be greater than zero.
+	 *
+	 * This actual force range on the Native is set to this value while the motor is enabled. When
+	 * the motor is disabled the Native's motor force range is instead set to zero.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
 	FAGX_DoubleInterval MotorForceRange = {
 		-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()};
-
-	/**
-	 * The AGX Dynamics Winch doesn't have a motor on/off toggle. Instead it is disabled by setting
-	 * the force range to zero. We need to be able to restore the original force range when the
-	 * motor is enabled again so we cache a copy of it here. This Property is ALWAYS the
-	 * user-supplied motor force range, while the Motor Force Range Property is zero while the
-	 * motor is disabled.
-	 */
-	UPROPERTY()
-	FAGX_DoubleInterval CachedMotorForceRange = MotorForceRange;
 
 	/**
 	 * Set to true to enable the brake.
@@ -116,6 +109,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
 	FAGX_DoubleInterval BrakeForceRange = {
 		-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()};
+
+	UPROPERTY(EditAnywhere, Category = "Wire Winch")
+	bool bEmergencyBrakeEnabled = false;
 };
 
 /**
@@ -181,11 +177,18 @@ public:
 	double GetBrakeForceRangeMin() const;
 	double GetBrakeForceRangeMax() const;
 
+	void EnableEmergencyBrake();
+	void DisableEmergencyBrake();
+	void SetEmergencyBrakeEnabled(bool bEnable);
+	bool IsEmergencyBrakeEnabled() const;
+
 	/**
 	 * @return The speed with which the wire is currently being hauled in, for negative speeds, or
 	 * payed out, for positive speeds.
 	 */
 	double GetCurrentSpeed() const;
+	double GetCurrentMotorForce() const;
+	double GetCurrentBrakeForce() const;
 
 	//~ Begin AGX_NativeOwner interface.
 	// We can't do actual inheritance, but we can at least expose the same member functions.
