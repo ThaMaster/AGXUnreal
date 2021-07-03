@@ -411,7 +411,7 @@ namespace AGX_WireComponent_helpers
 	class FAGXWireNotifyBuffer : public FAGXNotifyListener
 	{
 	public:
-		~FAGXWireNotifyBuffer() = default;
+		virtual ~FAGXWireNotifyBuffer() = default;
 
 		virtual void OnMessage(const FString& InMessage, ELogVerbosity::Type Verbosity) override
 		{

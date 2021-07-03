@@ -46,7 +46,7 @@ class AGXUNREALBARRIER_API FAGXNotifyListener
 {
 public:
 	FAGXNotifyListener();
-	~FAGXNotifyListener();
+	virtual ~FAGXNotifyListener();
 
 	virtual void OnMessage(const FString& Message, ELogVerbosity::Type Verbosity) = 0;
 };
