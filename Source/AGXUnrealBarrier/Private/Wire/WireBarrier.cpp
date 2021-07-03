@@ -14,7 +14,11 @@
 #include <agx/Material.h>
 #include "EndAGXIncludes.h"
 
+#if PLATFORM_LINUX
 template class FNativeBarrier<FWireRef>;
+#elif PLATFORM_WINDOWS
+template class AGXUNREALBARRIER_API FNativeBarrier<FWireRef>;
+#endif
 
 FWireBarrier::FWireBarrier()
 	: Super()

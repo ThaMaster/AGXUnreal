@@ -11,7 +11,26 @@ struct FWireRef;
 class FWireNodeBarrier;
 class FWireWinchBarrier;
 
+/*
+ * The goal here is to tell the compiler that there is a template instantiation of
+ * FNativeBarrier<FWireRef> somewhere, without actually triggering an instantiation here and now.
+ * The instantiation is instead done explicitly in the .cpp file. We do this because FWireRef is
+ * only declared, not defined, here in the header file since the type contains AGX Dynamics types
+ * that can't be named outside of the AGXUnrealBarrier module, and this header file is included in
+ * other modules.
+ *
+ * We need to separate the Linux and Windows and Linux declarations because Linux must have the
+ * visibility decorator here for the inherited member functions to be visible to users of
+ * FWireBarrier, while Visual Studio explicitly forbids it and instead require that the visibility
+ * decorator is on the actual instantiation in the .cpp file instead.
+ */
+#if PLATFORM_LINUX
 extern template class AGXUNREALBARRIER_API FNativeBarrier<FWireRef>;
+#elif PLATFORM_WINDOWS
+extern template class FNativeBarrier<FWireRef>;
+#else
+#pragma error("This platform is currently not supported.");
+#endif
 
 class AGXUNREALBARRIER_API FWireBarrier : public FNativeBarrier<FWireRef>
 {
