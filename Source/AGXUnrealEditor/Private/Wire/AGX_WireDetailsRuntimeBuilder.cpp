@@ -5,6 +5,7 @@
 
 // Unreal Engine includes.
 #include "IDetailChildrenBuilder.h"
+#include "IDetailGroup.h"
 #include "DetailWidgetRow.h"
 
 #define LOCTEXT_NAMESPACE "WireDetailsRuntimeBuilder"
@@ -68,31 +69,74 @@ namespace AGX_WireDetailsRuntimeBuilder_helpers
 		];
 		// clang-format on
 	}
+
+	template<typename FOnGet>
+	void CreateRuntimeDisplay(
+		FAGX_WireDetailsRuntimeBuilder& Details, IDetailGroup& Group, const FText& Name, FOnGet OnGet)
+	{
+		// clang-format off
+		Group.AddWidgetRow()
+		.Visibility(TAttribute<EVisibility>(
+			&Details.WireDetails, &FAGX_WireComponentCustomization::WithNative))
+		.NameContent()
+		[
+			SNew(STextBlock)
+			.Text(Name)
+		]
+		.ValueContent()
+		[
+			SNew(STextBlock)
+			.Text_Lambda(OnGet)
+		];
+		// clang-format on
+	}
 }
 
 void FAGX_WireDetailsRuntimeBuilder::GenerateChildContent(IDetailChildrenBuilder& ChildrenBuilder)
 {
 	using namespace AGX_WireDetailsRuntimeBuilder_helpers;
 
-	CreateRuntimeDisplay(
-		*this, ChildrenBuilder, LOCTEXT("RestLength", "RestLength"),
-		[this]() { return RestLength; });
+	IDetailGroup& WireGroup = ChildrenBuilder.AddGroup(TEXT("Wire"), LOCTEXT("Wire", "Wire"));
+	IDetailGroup& BeginWinchGroup =
+		ChildrenBuilder.AddGroup(TEXT("Begin Winch"), LOCTEXT("BeginWinch", "Begin Winch"));
+	IDetailGroup& EndWinchGroup =
+		ChildrenBuilder.AddGroup(TEXT("End Winch"), LOCTEXT("EndWinch", "End Winch"));
 
 	CreateRuntimeDisplay(
-		*this, ChildrenBuilder, LOCTEXT("CurrentSpeed", "CurrentSpeed"),
-		[this]() { return CurrentSpeed; });
+		*this, WireGroup, LOCTEXT("RestLength", "Rest Length"),
+		[this]() { return WireState.RestLength; });
 
 	CreateRuntimeDisplay(
-		*this, ChildrenBuilder, LOCTEXT("PulledInLength", "Pulled In Length"),
-		&FAGX_WireDetailsRuntimeBuilder::OnGetCurrentPulledInLength);
+		*this, BeginWinchGroup, LOCTEXT("CurrentSpeed", "Current Speed"),
+		[this]() { return BeginWinchState.Speed; });
 
 	CreateRuntimeDisplay(
-		*this, ChildrenBuilder, LOCTEXT("MotorForce", "Motor Force"),
-		&FAGX_WireDetailsRuntimeBuilder::OnGetCurrentMotorForce);
+		*this, BeginWinchGroup, LOCTEXT("PulledInLength", "Pulled In Length"),
+		[this]() { return BeginWinchState.PulledInLength; });
 
 	CreateRuntimeDisplay(
-		*this, ChildrenBuilder, LOCTEXT("BrakeForce", "Brake Force"),
-		&FAGX_WireDetailsRuntimeBuilder::OnGetCurrentBrakeForce);
+		*this, BeginWinchGroup, LOCTEXT("MotorForce", "Motor Force"),
+		[this]() { return BeginWinchState.MotorForce; });
+
+	CreateRuntimeDisplay(
+		*this, BeginWinchGroup, LOCTEXT("BrakeForce", "Brake Force"),
+		[this]() { return BeginWinchState.BrakeForce; });
+
+	CreateRuntimeDisplay(
+		*this, EndWinchGroup, LOCTEXT("CurrentSpeed", "Current Speed"),
+		[this]() { return EndWinchState.Speed; });
+
+	CreateRuntimeDisplay(
+		*this, EndWinchGroup, LOCTEXT("PulledInLength", "Pulled In Length"),
+		[this]() { return EndWinchState.PulledInLength; });
+
+	CreateRuntimeDisplay(
+		*this, EndWinchGroup, LOCTEXT("MotorForce", "Motor Force"),
+		[this]() { return EndWinchState.MotorForce; });
+
+	CreateRuntimeDisplay(
+		*this, EndWinchGroup, LOCTEXT("BrakeForce", "Brake Force"),
+		[this]() { return EndWinchState.BrakeForce; });
 }
 
 bool FAGX_WireDetailsRuntimeBuilder::InitiallyCollapsed() const
@@ -128,70 +172,78 @@ void FAGX_WireDetailsRuntimeBuilder::UpdateValues()
 	UAGX_WireComponent* Wire = WireDetails.Wire.Get();
 	if (Wire == nullptr)
 	{
-		RestLength = NoWire;
-		CurrentSpeed = NoWire;
-		CurrentPulledInLength = NoWire;
-		CurrentMotorForce = NoWire;
-		CurrentBrakeForce = NoWire;
+		WireState.SetAll(NoWire);
+		BeginWinchState.SetAll(NoWire);
+		EndWinchState.SetAll(NoWire);
 		return;
 	}
 
-	if (!Wire->HasNative())
+	if (Wire->HasNative())
 	{
-		RestLength = NoNative;
+		WireState.RestLength = FText::Format(
+			LOCTEXT("RestLengthValue", "{0} cm"), FText::AsNumber(Wire->GetRestLength()));
+	}
+	else
+	{
+		WireState.SetAll(NoNative);
 	}
 
-	if (!Wire->OwnedBeginWinch.HasNative())
+	if (Wire->OwnedBeginWinch.HasNative())
 	{
-		CurrentSpeed = NoNative;
-		CurrentPulledInLength = NoNative;
-		CurrentMotorForce = NoNative;
-		CurrentBrakeForce = NoNative;
-		return;
+		// We typically don't keep the entire Unreal Engine state up-to-date with the AGX Dynamics
+		// objects at all time. Here, however, the user is actively looking at a particular Wire and
+		// its winches so it makes sense to update them.
+		//
+		// To avoid the GUI having unintended side-effects on the state
+		Wire->OwnedBeginWinch.ReadPropertiesFromNative();
+
+		BeginWinchState.Speed = FText::Format(
+			LOCTEXT("SpeedValue", "{0} cm/s"),
+			FText::AsNumber(Wire->OwnedBeginWinch.GetCurrentSpeed()));
+		BeginWinchState.PulledInLength = FText::Format(
+			LOCTEXT("PulledInLengthValue", "{0} cm"),
+			FText::AsNumber(Wire->OwnedBeginWinch.GetPulledInLength()));
+		BeginWinchState.MotorForce = FText::Format(
+			LOCTEXT("MotorForceValue", "{0} N"),
+			FText::AsNumber(Wire->OwnedBeginWinch.GetCurrentMotorForce()));
+		BeginWinchState.BrakeForce = FText::Format(
+			LOCTEXT("BrakeForceValue", "{0} N"),
+			FText::AsNumber(Wire->OwnedBeginWinch.GetCurrentBrakeForce()));
+	}
+	else
+	{
+		BeginWinchState.SetAll(NoNative);
 	}
 
-	// We typically don't keep the entire Unreal Engine state up-to-date with the AGX Dynamics
-	// objects at all time. Here, however, the user is actively looking at a particular Wire and
-	// its winches so it makes sense to update them.
-	//
-	// To avoid the GUI having unintended side-effects on the state
-	Wire->OwnedBeginWinch.ReadPropertiesFromNative();
+	/// @TODO This is copy/paste from BeginWinch. Move to a helper function.
+	if (Wire->OwnedEndWinch.HasNative())
+	{
+		// We typically don't keep the entire Unreal Engine state up-to-date with the AGX Dynamics
+		// objects at all time. Here, however, the user is actively looking at a particular Wire and
+		// its winches so it makes sense to update them.
+		//
+		// To avoid the GUI having unintended side-effects on the state
+		Wire->OwnedEndWinch.ReadPropertiesFromNative();
 
-	RestLength = FText::Format(
-		LOCTEXT("RestLengthValue", "{0} cm"),
-		FText::AsNumber(Wire->GetRestLength()));
-	CurrentSpeed = FText::Format(
-		LOCTEXT("CurrentSpeedValue", "{0} cm/s"),
-		FText::AsNumber(Wire->OwnedBeginWinch.GetCurrentSpeed()));
-	CurrentPulledInLength = FText::Format(
-		LOCTEXT("CurrentPulledInLengthValue", "{0} cm"),
-		FText::AsNumber(Wire->OwnedBeginWinch.GetPulledInLength()));
-	CurrentMotorForce = FText::Format(
-		LOCTEXT("CurrentMotorForceValue", "{0} N"),
-		FText::AsNumber(Wire->OwnedBeginWinch.GetCurrentMotorForce()));
-	CurrentBrakeForce = FText::Format(
-		LOCTEXT("CurrentBrakeForceValue", "{0} N"),
-		FText::AsNumber(Wire->OwnedBeginWinch.GetCurrentBrakeForce()));
-}
+		EndWinchState.Speed = FText::Format(
+			LOCTEXT("SpeedValue", "{0} cm/s"),
+			FText::AsNumber(Wire->OwnedEndWinch.GetCurrentSpeed()));
+		EndWinchState.PulledInLength = FText::Format(
+			LOCTEXT("PulledInLengthValue", "{0} cm"),
+			FText::AsNumber(Wire->OwnedEndWinch.GetPulledInLength()));
+		EndWinchState.MotorForce = FText::Format(
+			LOCTEXT("MotorForceValue", "{0} N"),
+			FText::AsNumber(Wire->OwnedEndWinch.GetCurrentMotorForce()));
+		EndWinchState.BrakeForce = FText::Format(
+			LOCTEXT("BrakeForceValue", "{0} N"),
+			FText::AsNumber(Wire->OwnedEndWinch.GetCurrentBrakeForce()));
+	}
+	else
+	{
+		EndWinchState.SetAll(NoNative);
+	}
 
-FText FAGX_WireDetailsRuntimeBuilder::OnGetCurrentSpeed() const
-{
-	return CurrentSpeed;
-}
 
-FText FAGX_WireDetailsRuntimeBuilder::OnGetCurrentPulledInLength() const
-{
-	return CurrentPulledInLength;
-}
-
-FText FAGX_WireDetailsRuntimeBuilder::OnGetCurrentMotorForce() const
-{
-	return CurrentMotorForce;
-}
-
-FText FAGX_WireDetailsRuntimeBuilder::OnGetCurrentBrakeForce() const
-{
-	return CurrentBrakeForce;
 }
 
 #undef LOCTEXT_NAMESPACE

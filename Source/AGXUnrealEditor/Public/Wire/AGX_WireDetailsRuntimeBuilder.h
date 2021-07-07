@@ -27,17 +27,36 @@ public:
 	void UpdateValues();
 
 public:
-	FText OnGetCurrentSpeed() const;
-	FText OnGetCurrentPulledInLength() const;
-	FText OnGetCurrentMotorForce() const;
-	FText OnGetCurrentBrakeForce() const;
+	struct FWireRuntimeState
+	{
+		FText RestLength;
 
-public:
-	FText RestLength;
-	FText CurrentSpeed;
-	FText CurrentPulledInLength;
-	FText CurrentMotorForce;
-	FText CurrentBrakeForce;
+		void SetAll(const FText& Text)
+		{
+			RestLength = Text;
+		}
+	};
+
+	FWireRuntimeState WireState;
+
+	struct FWinchRuntimeState
+	{
+		FText Speed;
+		FText PulledInLength;
+		FText MotorForce;
+		FText BrakeForce;
+
+		void SetAll(const FText& Text)
+		{
+			Speed = Text;
+			PulledInLength = Text;
+			MotorForce = Text;
+			BrakeForce = Text;
+		}
+	};
+
+	FWinchRuntimeState BeginWinchState;
+	FWinchRuntimeState EndWinchState;
 
 public:
 	IDetailLayoutBuilder& DetailBuilder;
