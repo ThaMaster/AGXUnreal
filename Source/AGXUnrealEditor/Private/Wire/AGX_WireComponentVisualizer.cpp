@@ -139,6 +139,12 @@ namespace AGX_WireComponentVisualizer_helpers
 			case EWireSide::End:
 				return GetWinchLocalToWorld(Wire, Wire.OwnedEndWinch);
 		}
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("While getting winch-to-world transformation for wire '%s': Found invalid "
+				 "EWireSide."),
+			*Wire.GetName());
+		return Wire.GetComponentTransform();
 	}
 
 	/// Draw the Wire Winch visualization and return the world location of the winch.
