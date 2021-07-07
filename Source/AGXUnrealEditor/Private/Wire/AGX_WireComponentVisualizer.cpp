@@ -2,9 +2,11 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
 #include "AGX_RuntimeStyle.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireNode.h"
+#include "Wire/AGX_WireWinch.h"
 
 // Unreal Engine includes.
 #include "Editor.h"
@@ -14,6 +16,15 @@
 #include "UnrealEngine.h"
 
 #define LOCTEXT_NAMESPACE "AGX_WireComponentVisualizer"
+
+enum class EWireSide : uint8
+{
+	Begin,
+	End
+};
+
+/// @todo Rename the Hit Proxies to something wire-specific. Don't want name collisions, one
+/// definition rule violations, and undefined behavior.
 
 /**
  * Data associated with clickable node visualization elements.
@@ -33,6 +44,38 @@ class HNodeProxy : public HComponentVisProxy
 };
 
 IMPLEMENT_HIT_PROXY(HNodeProxy, HComponentVisProxy);
+
+class HWinchLocationProxy : public HComponentVisProxy
+{
+	DECLARE_HIT_PROXY();
+
+	HWinchLocationProxy(const UAGX_WireComponent* InWire, EWireSide InSide)
+		: HComponentVisProxy(InWire, HPP_Wireframe)
+		, Side(InSide)
+	{
+	}
+
+	// The side of the wire, begin or end, that this Wire Winch is located.
+	EWireSide Side;
+};
+
+IMPLEMENT_HIT_PROXY(HWinchLocationProxy, HComponentVisProxy);
+
+class HWinchDirectionProxy : public HComponentVisProxy
+{
+	DECLARE_HIT_PROXY()
+
+	HWinchDirectionProxy(const UAGX_WireComponent* InWire, EWireSide InSide)
+		: HComponentVisProxy(InWire, HPP_Wireframe)
+		, Side(InSide)
+	{
+	}
+
+	// The side of the wire, begin or end, that this Wire Winch is located.
+	EWireSide Side;
+};
+
+IMPLEMENT_HIT_PROXY(HWinchDirectionProxy, HComponentVisProxy);
 
 /**
  * A collection of commands that can be triggered through the Wire Component Visualizer.
@@ -81,6 +124,45 @@ void FAGX_WireComponentVisualizer::OnRegister()
 
 namespace AGX_WireComponentVisualizer_helpers
 {
+	/// Draw the Wire Winch visualization and return the world location of the winch.
+	FVector DrawBeginWinch(
+		const UAGX_WireComponent& Wire, const FAGX_WireWinch& WireWinch,
+		FPrimitiveDrawInterface* PDI)
+	{
+		FLinearColor Color = FLinearColor::Red;
+		float HandleSize = 10.0f;
+
+		/// @todo For Wire Winches attached to a body instead of the Wire, use the body's transform
+		/// here instead.
+		const FTransform& LocalToWorld = [&Wire, &WireWinch]()
+		{
+			UAGX_RigidBodyComponent* Body = WireWinch.GetBodyAttachment();
+			if (Body == nullptr)
+			{
+				return Wire.GetComponentTransform();
+			}
+			return Body->GetComponentTransform();
+		}();
+
+		const FVector LocalLocation = WireWinch.Location;
+		const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
+		PDI->SetHitProxy(new HWinchLocationProxy(&Wire, EWireSide::Begin));
+		PDI->DrawPoint(WorldLocation, Color, HandleSize, SDPG_Foreground);
+		PDI->SetHitProxy(nullptr);
+
+		const FRotator Rotation = WireWinch.Rotation;
+		const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
+		const FVector WorldDirection = LocalToWorld.TransformVector(LocalDirection);
+		const FVector WorldEndLocation = WorldLocation + (WorldDirection * 100);
+		PDI->SetHitProxy(new HWinchDirectionProxy(&Wire, EWireSide::Begin));
+		PDI->DrawPoint(WorldEndLocation, Color, HandleSize, SDPG_Foreground);
+		PDI->SetHitProxy(nullptr);
+
+		PDI->DrawLine(WorldLocation, WorldEndLocation, Color, SDPG_Foreground);
+
+		return WorldLocation;
+	}
+
 	constexpr uint32 NUM_NODE_COLORS = (uint32) EWireNodeType::NUM_NODE_TYPES;
 
 	TStaticArray<FLinearColor, NUM_NODE_COLORS> CreateWireNodeColors()
@@ -145,9 +227,8 @@ namespace AGX_WireComponentVisualizer_helpers
 	void DrawRouteNodes(const UAGX_WireComponent& Wire, FPrimitiveDrawInterface* PDI)
 	{
 		FLinearColor LineColor = FLinearColor::White;
-		auto NodeColorFunc = [](int32 I, EWireNodeType NodeType) {
-			return WireNodeTypeToColor(NodeType);
-		};
+		auto NodeColorFunc = [](int32 I, EWireNodeType NodeType)
+		{ return WireNodeTypeToColor(NodeType); };
 		DrawRouteNodes(Wire, PDI, LineColor, NodeColorFunc);
 	}
 
@@ -158,7 +239,8 @@ namespace AGX_WireComponentVisualizer_helpers
 		const UAGX_WireComponent& Wire, int32 SelectedNodeIndex, FPrimitiveDrawInterface* PDI)
 	{
 		FLinearColor LineColor = GEngine->GetSelectionOutlineColor();
-		auto NodeColorFunc = [SelectedNodeIndex](int32 I, EWireNodeType NodeType) {
+		auto NodeColorFunc = [SelectedNodeIndex](int32 I, EWireNodeType NodeType)
+		{
 			return I == SelectedNodeIndex ? GEditor->GetSelectionOutlineColor()
 										  : WireNodeTypeToColor(NodeType);
 		};
@@ -212,6 +294,18 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 	}
 	else
 	{
+		if (Wire->BeginWinchType == EWireWinchOwnerType::Wire)
+		{
+			FVector WinchLocation = DrawBeginWinch(*Wire, Wire->OwnedBeginWinch, PDI);
+			if (Wire->RouteNodes.Num() > 0)
+			{
+				/// @todo For nodes attached to a body, use the body's transformation instead.
+				const FTransform& LocalToWorld = Wire->GetComponentTransform();
+				const FVector LocalLocation = Wire->RouteNodes[0].Location;
+				const FVector EndLocation = LocalToWorld.TransformPosition(LocalLocation);
+				PDI->DrawLine(WinchLocation, EndLocation, FLinearColor::White, SDPG_Foreground);
+			}
+		}
 		if (Wire == GetSelectedWire())
 		{
 			DrawRouteNodes(*Wire, SelectedNodeIndex, PDI);
@@ -334,8 +428,8 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 			SelectedNodeIndex = NewNodeIndex;
 			NotifyPropertyModified(
 				GetSelectedWire(), FindFProperty<FProperty>(
-								  UAGX_WireComponent::StaticClass(),
-								  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
+									   UAGX_WireComponent::StaticClass(),
+									   GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
 		}
 		else
 		{
@@ -398,7 +492,8 @@ void FAGX_WireComponentVisualizer::EndEditing()
 bool FAGX_WireComponentVisualizer::HasValidSelection() const
 {
 	return GetSelectedWire() != nullptr &&
-		   !GetSelectedWire()->IsInitialized() && // Node selection is currently only for route nodes.
+		   !GetSelectedWire()
+				->IsInitialized() && // Node selection is currently only for route nodes.
 		   GetSelectedWire()->RouteNodes.IsValidIndex(SelectedNodeIndex);
 }
 
@@ -441,8 +536,8 @@ void FAGX_WireComponentVisualizer::OnDeleteKey()
 
 	NotifyPropertyModified(
 		GetSelectedWire(), FindFProperty<FProperty>(
-						  UAGX_WireComponent::StaticClass(),
-						  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
+							   UAGX_WireComponent::StaticClass(),
+							   GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
 
 	GEditor->RedrawLevelEditingViewports(true);
 }

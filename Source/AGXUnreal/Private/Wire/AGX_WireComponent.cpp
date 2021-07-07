@@ -40,6 +40,21 @@ UAGX_WireComponent::UAGX_WireComponent()
 #endif
 }
 
+bool UAGX_WireComponent::HasBeginWinch() const
+{
+	switch (BeginWinchType)
+	{
+		case EWireWinchOwnerType::Wire:
+			return true;
+		case EWireWinchOwnerType::WireWinch:
+			return HasBeginWinchComponentWinch();
+		case EWireWinchOwnerType::Other:
+			return BorrowedBeginWinch != nullptr;
+		default:
+			return false;
+	}
+}
+
 FAGX_WireWinch& UAGX_WireComponent::GetBeginWinch()
 {
 	// UFunctions cannot return a pointer to an FStruct, but it can return a reference to one.
@@ -61,7 +76,13 @@ FAGX_WireWinch& UAGX_WireComponent::GetBeginWinch()
 
 UAGX_WireWinchComponent* UAGX_WireComponent::GetBeginWinchComponent()
 {
-	UActorComponent* ActorComponent = BeginWinchComponent.GetComponent(nullptr);
+	return const_cast<UAGX_WireWinchComponent*>(
+		const_cast<const UAGX_WireComponent*>(this)->GetBeginWinchComponent());
+}
+
+const UAGX_WireWinchComponent* UAGX_WireComponent::GetBeginWinchComponent() const
+{
+	const UActorComponent* ActorComponent = BeginWinchComponent.GetComponent(nullptr);
 	if (ActorComponent == nullptr)
 	{
 		return nullptr;
@@ -69,14 +90,20 @@ UAGX_WireWinchComponent* UAGX_WireComponent::GetBeginWinchComponent()
 	return Cast<UAGX_WireWinchComponent>(ActorComponent);
 }
 
-bool UAGX_WireComponent::HasBeginWinchComponentWinch()
+bool UAGX_WireComponent::HasBeginWinchComponentWinch() const
 {
 	return GetBeginWinchComponent() != nullptr;
 }
 
 FAGX_WireWinch* UAGX_WireComponent::GetBeginWinchComponentWinch()
 {
-	UAGX_WireWinchComponent* WinchComponent = GetBeginWinchComponent();
+	return const_cast<FAGX_WireWinch*>(
+		const_cast<const UAGX_WireComponent*>(this)->GetBeginWinchComponentWinch());
+}
+
+const FAGX_WireWinch* UAGX_WireComponent::GetBeginWinchComponentWinch() const
+{
+	const UAGX_WireWinchComponent* WinchComponent = GetBeginWinchComponent();
 	if (WinchComponent == nullptr)
 	{
 		return nullptr;

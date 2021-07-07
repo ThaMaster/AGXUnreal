@@ -164,8 +164,20 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UAGX_WireWinchComponent* GetBeginWinchComponent();
 
-	bool HasBeginWinchComponentWinch();
+	const UAGX_WireWinchComponent* GetBeginWinchComponent() const;
+
+	bool HasBeginWinchComponentWinch() const;
 	FAGX_WireWinch* GetBeginWinchComponentWinch();
+	const FAGX_WireWinch* GetBeginWinchComponentWinch() const;
+
+	/**
+	 * Determine if this wire has any type of winch as the begin side. The winch can be eiter
+	 * owned by the wire, i.e., OwnedBeginWinch, owned by a Winch Component referenced through
+	 * BeginWinchComponent, or a borrowed winch pointed to by BorrowedBeginWinch.
+	 *
+	 * @return True if this wire has any type winch at the begin side.
+	 */
+	bool HasBeginWinch() const;
 
 	/**
 	 * Get the Wire Winch object that the begin side of this wire is attached to, if any.
