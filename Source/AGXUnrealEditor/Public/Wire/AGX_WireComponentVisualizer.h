@@ -1,5 +1,8 @@
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Wire/AGX_WireEnums.h"
+
 // Unreal Engine includes.
 #include "ComponentVisualizer.h"
 #include "Framework/Commands/UICommandList.h"
@@ -49,7 +52,8 @@ public:
 
 	//~ End FComponentVisualizer Interface
 
-	bool HasValidSelection() const;
+	bool HasValidNodeSelection() const;
+	bool HasValidWinchSelection() const;
 	UAGX_WireComponent* GetSelectedWire() const;
 	int32 GetSelectedNodeIndex() const;
 	void SetSelectedNodeIndex(int32 InIndex);
@@ -62,6 +66,9 @@ private:
 private:
 	/// The index of the currently selected node, if any. INDEX_NONE otherwise.
 	int32 SelectedNodeIndex = INDEX_NONE;
+
+	EWireSide SelectedWinch = EWireSide::None;
+	EWinchSide SelectedWinchSide = EWinchSide::None;
 
 	/**
 	 * Property path from the owning Actor to the Wire Component of the currently selected wire. We

@@ -17,12 +17,6 @@
 
 #define LOCTEXT_NAMESPACE "AGX_WireComponentVisualizer"
 
-enum class EWireSide : uint8
-{
-	Begin,
-	End
-};
-
 /// @todo Rename the Hit Proxies to something wire-specific. Don't want name collisions, one
 /// definition rule violations, and undefined behavior.
 
@@ -124,6 +118,29 @@ void FAGX_WireComponentVisualizer::OnRegister()
 
 namespace AGX_WireComponentVisualizer_helpers
 {
+	const FTransform& GetWinchLocalToWorld(UAGX_WireComponent& Wire, FAGX_WireWinch& Winch)
+	{
+		UAGX_RigidBodyComponent* Body = Winch.GetBodyAttachment();
+		if (Body == nullptr)
+		{
+			return Wire.GetComponentTransform();
+		}
+		return Body->GetComponentTransform();
+	}
+
+	const FTransform& GetWinchLocalToWorld(UAGX_WireComponent& Wire, EWireSide Side)
+	{
+		switch (Side)
+		{
+			case EWireSide::None:
+				return Wire.GetComponentTransform();
+			case EWireSide::Begin:
+				return GetWinchLocalToWorld(Wire, Wire.OwnedBeginWinch);
+			case EWireSide::End:
+				return GetWinchLocalToWorld(Wire, Wire.OwnedEndWinch);
+		}
+	}
+
 	/// Draw the Wire Winch visualization and return the world location of the winch.
 	FVector DrawBeginWinch(
 		const UAGX_WireComponent& Wire, const FAGX_WireWinch& WireWinch,
@@ -153,7 +170,7 @@ namespace AGX_WireComponentVisualizer_helpers
 		const FRotator Rotation = WireWinch.Rotation;
 		const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
 		const FVector WorldDirection = LocalToWorld.TransformVector(LocalDirection);
-		const FVector WorldEndLocation = WorldLocation + (WorldDirection * 100);
+		const FVector WorldEndLocation = WorldLocation + (WorldDirection * 100.0f);
 		PDI->SetHitProxy(new HWinchDirectionProxy(&Wire, EWireSide::Begin));
 		PDI->DrawPoint(WorldEndLocation, Color, HandleSize, SDPG_Foreground);
 		PDI->SetHitProxy(nullptr);
@@ -358,7 +375,54 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 		else
 		{
 			// A new node became selected.
+			SelectedWinch = EWireSide::None;
+			SelectedWinchSide = EWinchSide::None;
 			SelectedNodeIndex = NodeProxy->NodeIndex;
+			WirePropertyPath = FComponentPropertyPath(Wire);
+		}
+		return true;
+	}
+	else if (HWinchLocationProxy* WinchLocationProxy = HitProxyCast<HWinchLocationProxy>(VisProxy))
+	{
+		if (Wire->IsInitialized())
+		{
+			ClearSelection();
+			return false;
+		}
+		if (WinchLocationProxy->Side == SelectedWinch && SelectedWinchSide == EWinchSide::Location)
+		{
+			// Clicking a selected winch deselects it.
+			ClearSelection();
+		}
+		else
+		{
+			// A new winch became selected.
+			SelectedWinch = WinchLocationProxy->Side;
+			SelectedWinchSide = EWinchSide::Location;
+			SelectedNodeIndex = INDEX_NONE;
+			WirePropertyPath = FComponentPropertyPath(Wire);
+		}
+		return true;
+	}
+	else if (
+		HWinchDirectionProxy* WinchRotationProxy = HitProxyCast<HWinchDirectionProxy>(VisProxy))
+	{
+		if (Wire->IsInitialized())
+		{
+			ClearSelection();
+			return false;
+		}
+
+		if (WinchRotationProxy->Side == SelectedWinch && SelectedWinchSide == EWinchSide::Rotation)
+		{
+			// Clicking a selected
+			ClearSelection();
+		}
+		else
+		{
+			SelectedWinch = WinchRotationProxy->Side;
+			SelectedWinchSide = EWinchSide::Rotation;
+			SelectedNodeIndex = INDEX_NONE;
 			WirePropertyPath = FComponentPropertyPath(Wire);
 		}
 		return true;
@@ -376,16 +440,50 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	const FEditorViewportClient* ViewportClient, FVector& OutLocation) const
 {
-	if (!HasValidSelection())
+	if (HasValidNodeSelection())
 	{
-		return false;
+		// Convert the wire-local location to a world location.
+		const FTransform& LocalToWorld = GetSelectedWire()->GetComponentTransform();
+		const FVector NodeLocation = GetSelectedWire()->RouteNodes[SelectedNodeIndex].Location;
+		OutLocation = LocalToWorld.TransformPosition(NodeLocation);
+		return true;
+	}
+	else if (HasValidWinchSelection())
+	{
+		UAGX_WireComponent* Wire = GetSelectedWire();
+		FAGX_WireWinch* Winch =
+			SelectedWinch == EWireSide::Begin ? &Wire->OwnedBeginWinch : &Wire->OwnedEndWinch;
+		const FTransform& LocalToWorld = [&Wire, &Winch]()
+		{
+			UAGX_RigidBodyComponent* Body = Winch->GetBodyAttachment();
+			if (Body == nullptr)
+			{
+				return Wire->GetComponentTransform();
+			}
+			return Body->GetComponentTransform();
+		}();
+
+		if (SelectedWinchSide == EWinchSide::Location)
+		{
+			const FVector LocalLocation = Winch->Location;
+			const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
+			OutLocation = WorldLocation;
+			return true;
+		}
+		else if (SelectedWinchSide == EWinchSide::Rotation)
+		{
+			const FVector LocalLocation = Winch->Location;
+			const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
+			const FRotator Rotation = Winch->Rotation;
+			const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
+			const FVector WorldDirection = LocalToWorld.TransformVector(LocalDirection);
+			const FVector WorldEndLocation = WorldLocation + (WorldDirection * 100);
+			OutLocation = WorldEndLocation;
+			return true;
+		}
 	}
 
-	// Convert the wire-local location to a world location.
-	const FTransform& LocalToWorld = GetSelectedWire()->GetComponentTransform();
-	const FVector NodeLocation = GetSelectedWire()->RouteNodes[SelectedNodeIndex].Location;
-	OutLocation = LocalToWorld.TransformPosition(NodeLocation);
-	return true;
+	return false;
 }
 
 // Called by Unreal Editor when the transform widget is moved, rotated, or scaled.
@@ -393,48 +491,61 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	FEditorViewportClient* ViewportClient, FViewport* Viewport, FVector& DeltaTranslate,
 	FRotator& DeltaRotate, FVector& DeltaScale)
 {
-	if (!HasValidSelection())
-	{
-		ClearSelection();
-		return false;
-	}
+	using namespace AGX_WireComponentVisualizer_helpers;
 
-	if (DeltaTranslate.IsZero())
+	if (HasValidNodeSelection())
 	{
-		return true;
-	}
-
-	/// @todo Is this Modify necessary? Compare with SplineComponentVisualizer.
-	GetSelectedWire()->Modify();
-	TArray<FWireRoutingNode>& Nodes = GetSelectedWire()->RouteNodes;
-
-	if (ViewportClient->IsAltPressed())
-	{
-		if (ViewportClient->GetWidgetMode() != FWidget::WM_Translate)
+		if (DeltaTranslate.IsZero())
 		{
-			return false;
+			return true;
 		}
 
-		// A drag with Alt held down means that the current node should be duplicated and the copy
-		// selected.
+		/// @todo Is this Modify necessary? Compare with SplineComponentVisualizer.
+		GetSelectedWire()->Modify();
+		TArray<FWireRoutingNode>& Nodes = GetSelectedWire()->RouteNodes;
 
-		if (!bIsDuplicatingNode)
+		if (ViewportClient->IsAltPressed())
 		{
-			// This is the start of a duplication drag. Create the duplicate and select it.
-			bIsDuplicatingNode = true;
-			int32 NewNodeIndex = SelectedNodeIndex + 1;
-			GetSelectedWire()->RouteNodes.Insert(
-				FWireRoutingNode(Nodes[SelectedNodeIndex]), NewNodeIndex);
-			SelectedNodeIndex = NewNodeIndex;
-			NotifyPropertyModified(
-				GetSelectedWire(), FindFProperty<FProperty>(
-									   UAGX_WireComponent::StaticClass(),
-									   GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
+			if (ViewportClient->GetWidgetMode() != FWidget::WM_Translate)
+			{
+				return false;
+			}
+
+			// A drag with Alt held down means that the current node should be duplicated and the
+			// copy selected.
+
+			if (!bIsDuplicatingNode)
+			{
+				// This is the start of a duplication drag. Create the duplicate and select it.
+				bIsDuplicatingNode = true;
+				int32 NewNodeIndex = SelectedNodeIndex + 1;
+				GetSelectedWire()->RouteNodes.Insert(
+					FWireRoutingNode(Nodes[SelectedNodeIndex]), NewNodeIndex);
+				SelectedNodeIndex = NewNodeIndex;
+				NotifyPropertyModified(
+					GetSelectedWire(),
+					FindFProperty<FProperty>(
+						UAGX_WireComponent::StaticClass(),
+						GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
+			}
+			else
+			{
+				// This is a continuation of a previously started duplication drag. Move the
+				// selected node, i.e., the copy.
+				const FTransform& LocalToWorld = GetSelectedWire()->GetComponentTransform();
+				FWireRoutingNode& SelectedNode = GetSelectedWire()->RouteNodes[SelectedNodeIndex];
+				const FVector CurrentLocalLocation = SelectedNode.Location;
+				const FVector CurrentWorldLocation =
+					LocalToWorld.TransformPosition(CurrentLocalLocation);
+				const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
+				const FVector NewLocalLocation =
+					LocalToWorld.InverseTransformPosition(NewWorldLocation);
+				SelectedNode.Location = NewLocalLocation;
+			}
 		}
 		else
 		{
-			// This is a continuation of a previously started duplication drag. Move the selected
-			// node, i.e., the copy.
+			// This is a regular drag, move the selected node.
 			const FTransform& LocalToWorld = GetSelectedWire()->GetComponentTransform();
 			FWireRoutingNode& SelectedNode = GetSelectedWire()->RouteNodes[SelectedNodeIndex];
 			const FVector CurrentLocalLocation = SelectedNode.Location;
@@ -446,16 +557,53 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 			SelectedNode.Location = NewLocalLocation;
 		}
 	}
+	else if (HasValidWinchSelection())
+	{
+		UAGX_WireComponent& Wire = *GetSelectedWire();
+		FAGX_WireWinch& Winch =
+			SelectedWinch == EWireSide::Begin ? Wire.OwnedBeginWinch : Wire.OwnedEndWinch;
+		if (SelectedWinchSide == EWinchSide::Location)
+		{
+			if (!DeltaTranslate.IsZero())
+			{
+				const FTransform& LocalToWorld = GetWinchLocalToWorld(Wire, Winch);
+				const FVector LocalTranslate = LocalToWorld.InverseTransformVector(DeltaTranslate);
+				Winch.Location += LocalTranslate;
+			}
+			if (!DeltaRotate.IsZero())
+			{
+				// This doesn't work. Transform rotation doesn't work on relative rotations. Instead
+				// of giving me another small rotation, it's giving me a large rotation. Large on
+				// the scale of the rotation of the actor we're part of.
+				const FVector Direction = Winch.Rotation.RotateVector(FVector::ForwardVector);
+				const FTransform& LocalToWorld = GetWinchLocalToWorld(Wire, Winch);
+				const FVector WorldDirection = LocalToWorld.TransformVector(Direction);
+				const FVector NewWorldDirection = DeltaRotate.RotateVector(WorldDirection);
+				const FVector NewLocalDirection =
+					LocalToWorld.InverseTransformVector(NewWorldDirection);
+				const FRotator NewRotation =
+					FQuat::FindBetween(FVector::ForwardVector, NewLocalDirection).Rotator();
+				Winch.Rotation = NewRotation;
+			}
+		}
+		else if (SelectedWinchSide == EWinchSide::Rotation)
+		{
+			const FVector LocalBeginLocation = Winch.Location;
+			const FRotator Rotation = Winch.Rotation;
+			const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
+			const FVector LocalEndLocation = LocalBeginLocation + (LocalDirection * 100.0f);
+			const FTransform& LocalToWorld = GetWinchLocalToWorld(Wire, Winch);
+			const FVector LocalTranslate = LocalToWorld.InverseTransformVector(DeltaTranslate);
+			const FVector NewLocalEndLocation = LocalEndLocation + LocalTranslate;
+			const FVector NewDirection = NewLocalEndLocation - LocalBeginLocation;
+			const FRotator NewRotation =
+				FQuat::FindBetween(FVector::ForwardVector, NewDirection).Rotator();
+			Winch.Rotation = NewRotation;
+		}
+	}
 	else
 	{
-		// This is a regular drag, move the selected node.
-		const FTransform& LocalToWorld = GetSelectedWire()->GetComponentTransform();
-		FWireRoutingNode& SelectedNode = GetSelectedWire()->RouteNodes[SelectedNodeIndex];
-		const FVector CurrentLocalLocation = SelectedNode.Location;
-		const FVector CurrentWorldLocation = LocalToWorld.TransformPosition(CurrentLocalLocation);
-		const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
-		const FVector NewLocalLocation = LocalToWorld.InverseTransformPosition(NewWorldLocation);
-		SelectedNode.Location = NewLocalLocation;
+		ClearSelection();
 	}
 
 	GEditor->RedrawLevelEditingViewports();
@@ -489,12 +637,18 @@ void FAGX_WireComponentVisualizer::EndEditing()
 	ClearSelection();
 }
 
-bool FAGX_WireComponentVisualizer::HasValidSelection() const
+bool FAGX_WireComponentVisualizer::HasValidNodeSelection() const
 {
 	return GetSelectedWire() != nullptr &&
 		   !GetSelectedWire()
 				->IsInitialized() && // Node selection is currently only for route nodes.
 		   GetSelectedWire()->RouteNodes.IsValidIndex(SelectedNodeIndex);
+}
+
+bool FAGX_WireComponentVisualizer::HasValidWinchSelection() const
+{
+	return GetSelectedWire() != nullptr && !GetSelectedWire()->IsInitialized() &&
+		   SelectedWinch != EWireSide::None && SelectedWinchSide != EWinchSide::None;
 }
 
 UAGX_WireComponent* FAGX_WireComponentVisualizer::GetSelectedWire() const
@@ -516,12 +670,13 @@ void FAGX_WireComponentVisualizer::ClearSelection()
 {
 	bIsDuplicatingNode = false;
 	SelectedNodeIndex = INDEX_NONE;
+	SelectedWinch = EWireSide::None;
 	WirePropertyPath.Reset();
 }
 
 void FAGX_WireComponentVisualizer::OnDeleteKey()
 {
-	if (!HasValidSelection())
+	if (!HasValidNodeSelection())
 	{
 		ClearSelection();
 		return;
@@ -544,7 +699,7 @@ void FAGX_WireComponentVisualizer::OnDeleteKey()
 
 bool FAGX_WireComponentVisualizer::CanDeleteKey() const
 {
-	return HasValidSelection();
+	return HasValidNodeSelection();
 }
 
 #undef LOCTEXT_NAMESPACE

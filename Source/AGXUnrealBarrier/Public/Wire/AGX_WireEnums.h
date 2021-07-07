@@ -70,3 +70,28 @@ enum class EWireWinchOwnerType : uint8
 	// Winch settings setup and will use whatever UAGX_WireComponent::BorrowedBeginWinch points to.
 	Other
 };
+
+/**
+ * Used to select which side of a wire is being operator on. The Begin side is the side represented
+ * by the wire's first route node, while the end side is the on at the node last in the wires route
+ * nodes list.
+ */
+UENUM()
+enum class EWireSide : uint8
+{
+	None,
+	Begin,
+	End
+};
+
+/*
+ * Used to select either the location Hit Proxy or the rotation Hit Proxy when manipulating a Wire
+ * Winch using the Component Visualizer.
+ */
+UENUM()
+enum class EWinchSide : uint8
+{
+	None,
+	Location,
+	Rotation
+};
