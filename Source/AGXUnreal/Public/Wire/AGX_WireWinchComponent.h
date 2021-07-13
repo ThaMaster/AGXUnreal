@@ -38,6 +38,10 @@ public:
 	virtual void AssignNative(uint64 NativeAddress) override;
 	//~ End IAGX_NativeOwner interface.
 
+	//~ Begin ActorComponent interface.
+	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
+	//~ End ActorComponent interface.
+
 	// ~Begin UObject interface.
 	virtual void PostLoad() override;
 #if WITH_EDITOR

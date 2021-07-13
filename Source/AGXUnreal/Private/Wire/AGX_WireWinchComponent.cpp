@@ -3,6 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_UpropertyDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_NativeOwnerInstanceData.h"
 
 FVector UAGX_WireWinchComponent::ComputeBodyRelativeLocation()
 {
@@ -46,6 +47,17 @@ void UAGX_WireWinchComponent::AssignNative(uint64 NativeAddress)
 {
 	check(!HasNative());
 	WireWinch.AssignNative(static_cast<uintptr_t>(NativeAddress));
+}
+
+TStructOnScope<FActorComponentInstanceData> UAGX_WireWinchComponent::GetComponentInstanceData()
+	const
+{
+	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
+		this, this, [](UActorComponent* Component)
+		{
+			ThisClass* AsThisClass = Cast<ThisClass>(Component);
+			return static_cast<IAGX_NativeOwner*>(AsThisClass);
+		});
 }
 
 void UAGX_WireWinchComponent::PostLoad()
