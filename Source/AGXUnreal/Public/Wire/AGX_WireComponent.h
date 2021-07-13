@@ -17,6 +17,7 @@
 class UAGX_ShapeMaterialBase;
 class UAGX_WireWinchComponent;
 
+/// @todo Move FWireRoutingNode to a separate source file pair.
 /**
  * Route nodes are used to specify the initial route of the wire. Each node has a location but
  * no orientation. Some members are only used for some node types, such as RigidBody which is only
@@ -60,6 +61,7 @@ struct FWireRoutingNode
 	}
 };
 
+/// @todo Move UAGX_WireRouteNode_FL with FWireRoutingNode when it's moved.
 /**
  * This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprints.
  */
@@ -142,6 +144,46 @@ public:
 		Meta = (EditConditionHides, EditCondition = "BeginWinchType == EWireWinchOwnerType::Wire"))
 	FAGX_WireWinch OwnedBeginWinch;
 
+	/// @todo The engine example, ULiveLinkComponentController, uses EditInstanceOnly here.
+	/// Determine if that is a requirement or not. Possibly related to Blueprint Editor
+	/// weirdness. FComponentReference is not supported by Blueprint, so we must provide some
+	/// other way to set the target from a Blueprint Visual Script.
+	/// We would like to use the UseComponentPicker Meta Specifier as well, but that crashes the
+	/// editor. See internal issue 466.
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Wire Begin Winch",
+		Meta =
+			(AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "",
+			 AllowAnyActor, EditConditionHides,
+			 EditCondition = "BeginWinchType == EWireWinchOwnerType::WireWinch"))
+	FComponentReference BeginWinchComponent;
+
+	bool HasBeginWinchComponent() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetBeginWinchComponent(UAGX_WireWinchComponent* Winch);
+
+	UFUNCTION(BlueprintCallable)
+	UAGX_WireWinchComponent* GetBeginWinchComponent();
+
+	const UAGX_WireWinchComponent* GetBeginWinchComponent() const;
+
+	/**
+	 * Get a pointer to the FAGX_WireWinch object owned by the Winch Component pointed to by
+	 * BeginWinchComponent. Will return nullptr if BeginWinchComponent is unset or set to a Winch
+	 * Component that doesn't exist.
+	 *
+	 * This is the Wire Winch that will be used at the begin side of the wire if BeginWinchType is
+	 * set to Wire Winch.
+	 *
+	 * Note that this will point into a Component and that Components may be destroyed and/or
+	 * recreated at any time. Don't store this pointer.
+	 *
+	 * @return
+	 */
+	FAGX_WireWinch* GetBeginWinchComponentWinch();
+	const FAGX_WireWinch* GetBeginWinchComponentWinch() const;
+
 	/**
 	 * This is the Wire Winch that will be used when Begin Winch Type is set to Other. The code or
 	 * Visual Script that sets Begin Winch Type to Other is fully responsible for this pointer and
@@ -149,38 +191,28 @@ public:
 	 */
 	FAGX_WireWinch* BorrowedBeginWinch;
 
-	/// @todo The engine example, ULiveLinkComponentController, uses EditInstanceOnly here.
-	/// Determine if that is a requirement or not. Possibly related to Blueprint Editor
-	/// weirdness. FComponentReference is not supported by Blueprint, so we must provide some
-	/// other way to set the target from a Blueprint Visual Script.
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Wire Begin Winch",
-		Meta =
-			(UseComponentPicker, AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "",
-			 EditConditionHides,
-			 EditCondition = "BeginWinchType == EWireWinchOwnerType::WireWinch"))
-	FComponentReference BeginWinchComponent;
-
-	UFUNCTION(BlueprintCallable)
-	UAGX_WireWinchComponent* GetBeginWinchComponent();
-
-	const UAGX_WireWinchComponent* GetBeginWinchComponent() const;
-
-	bool HasBeginWinchComponentWinch() const;
-	FAGX_WireWinch* GetBeginWinchComponentWinch();
-	const FAGX_WireWinch* GetBeginWinchComponentWinch() const;
-
 	/**
-	 * Determine if this wire has any type of winch as the begin side. The winch can be eiter
+	 * Determine if this wire has any type of winch at the begin side. The winch can be eiter
 	 * owned by the wire, i.e., OwnedBeginWinch, owned by a Winch Component referenced through
 	 * BeginWinchComponent, or a borrowed winch pointed to by BorrowedBeginWinch.
 	 *
+	 * For this to return true BeginWinchType must be set to something other than None and the
+	 * Property corresponding to the Winch Type, as described in the previous paragraph, must be
+	 * set.
+	 *
 	 * @return True if this wire has any type winch at the begin side.
 	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	bool HasBeginWinch() const;
 
 	/**
-	 * Get the Wire Winch object that the begin side of this wire is attached to, if any.
+	 * Get the Wire Winch object that the begin side of this wire is attached to.
+	 *
+	 * Should only be called when HasBeginWinch returns true.
+	 *
+	 * This can be either the owned winch, a winch in a Wire Winch Component, or a borrowed begin
+	 * winch, depending on the value of BeginWinchType.
+	 *
 	 * @return The attached Wire Winch, or nullptr.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
@@ -199,9 +231,62 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire End Winch",
 		Meta =
-			(UseComponentPicker, AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "",
+			(AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "",
 			 EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::WireWinch"))
 	FComponentReference EndWinchComponent;
+
+	bool HasEndWinchComponent() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetEndWinchComponent(UAGX_WireWinchComponent* Winch);
+
+	UFUNCTION(BlueprintCallable)
+	UAGX_WireWinchComponent* GetEndWinchComponent();
+
+	const UAGX_WireWinchComponent* GetEndWinchComponent() const;
+
+	FAGX_WireWinch* GetEndWinchComponentWinch();
+	const FAGX_WireWinch* GetEndWinchComponentWinch() const;
+
+	/**
+	 * This is the Wire Winch that will be used when End Winch Type is set to Other. The code or
+	 * Visual Script that sets End Winch Type to Other is fully responsible for this pointer and
+	 * the FAGX_WireWinch that it points to.
+	 */
+	FAGX_WireWinch* BorrowedEndWinch;
+
+	/**
+	 * Determine if this wire has any type of winch at the End side. The winch can be eiter
+	 * owned by the wire, i.e., OwnedEndWinch, owned by a Winch Component referenced through
+	 * EndWinchComponent, or a borrowed winch pointed to by BorrowedEndWinch.
+	 *
+	 * For this to return true EndWinchType must be set to something other than None and the
+	 * Property corresponding to the Winch Type, as described in the previous paragraph, must be
+	 * set.
+	 *
+	 * @return True if this wire has any type winch at the End side.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	bool HasEndWinch() const;
+
+	/**
+	 * Get the Wire Winch object that the End side of this wire is attached to.
+	 *
+	 * Should only be called when HasEndWinch returns true.
+	 *
+	 * The returned winch can either be the owned winch, a winch in a Wire Winch Component, or a
+	 * borrowed winch, depending on the value of EndWinchType.
+	 *
+	 * @return The attached Wire Winch, or nullptr.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	FAGX_WireWinch& GetEndWinch();
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	bool HasWinch(EWireSide Side) const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	FAGX_WireWinch& GetWinch(EWireSide Side);
 
 	/**
 	 * An array of nodes that are used to initialize the wire.

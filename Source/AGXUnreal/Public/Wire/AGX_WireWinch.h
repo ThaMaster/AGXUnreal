@@ -192,6 +192,7 @@ public:
 
 	//~ Begin AGX_NativeOwner interface.
 	// We can't do actual inheritance, but we can at least expose the same member functions.
+	// Why can't we inherit from AGX_NativeOwner?
 	bool HasNative() const;
 	uint64 GetNativeAddress() const;
 	void AssignNative(uint64 NativeAddress);

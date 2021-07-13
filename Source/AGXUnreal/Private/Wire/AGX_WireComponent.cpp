@@ -8,6 +8,7 @@
 #include "AGXUnrealBarrier.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Wire/AGX_WireInstanceData.h"
 #include "Wire/AGX_WireNode.h"
 #include "Wire/AGX_WireWinchComponent.h"
@@ -40,59 +41,32 @@ UAGX_WireComponent::UAGX_WireComponent()
 #endif
 }
 
-bool UAGX_WireComponent::HasBeginWinch() const
+bool UAGX_WireComponent::HasBeginWinchComponent() const
 {
-	switch (BeginWinchType)
-	{
-		case EWireWinchOwnerType::Wire:
-			return true;
-		case EWireWinchOwnerType::WireWinch:
-			return HasBeginWinchComponentWinch();
-		case EWireWinchOwnerType::Other:
-			return BorrowedBeginWinch != nullptr;
-		default:
-			return false;
-	}
+	return GetBeginWinchComponent() != nullptr;
 }
 
-FAGX_WireWinch& UAGX_WireComponent::GetBeginWinch()
+void UAGX_WireComponent::SetBeginWinchComponent(UAGX_WireWinchComponent* Winch)
 {
-	// UFunctions cannot return a pointer to an FStruct, but it can return a reference to one.
-	// Sometimes we don't have a Wire Winch to return, in which case we return a reference to this
-	// static default constructed empty Wire Winch.
-	static FAGX_WireWinch InvalidWinch;
-
-	switch (BeginWinchType)
+	if (Winch == nullptr)
 	{
-		case EWireWinchOwnerType::Wire:
-			return OwnedBeginWinch;
-		case EWireWinchOwnerType::WireWinch:
-			return HasBeginWinchComponentWinch() ? *GetBeginWinchComponentWinch() : InvalidWinch;
-		case EWireWinchOwnerType::Other:
-			return BorrowedBeginWinch != nullptr ? *BorrowedBeginWinch : InvalidWinch;
+		BeginWinchComponent = FComponentReference();
+		return;
 	}
-	return InvalidWinch;
+
+	BeginWinchComponent.OtherActor = Winch->GetOwner();
+	BeginWinchComponent.ComponentProperty = Winch->GetFName();
 }
 
 UAGX_WireWinchComponent* UAGX_WireComponent::GetBeginWinchComponent()
 {
-	return const_cast<UAGX_WireWinchComponent*>(
-		const_cast<const UAGX_WireComponent*>(this)->GetBeginWinchComponent());
+	return FAGX_ObjectUtilities::Get<UAGX_WireWinchComponent>(BeginWinchComponent, GetOwner());
 }
 
 const UAGX_WireWinchComponent* UAGX_WireComponent::GetBeginWinchComponent() const
 {
-	const UActorComponent* ActorComponent = BeginWinchComponent.GetComponent(nullptr);
-	if (ActorComponent == nullptr)
-	{
-		return nullptr;
-	}
-	return Cast<UAGX_WireWinchComponent>(ActorComponent);
-}
-
-bool UAGX_WireComponent::HasBeginWinchComponentWinch() const
-{
-	return GetBeginWinchComponent() != nullptr;
+	return FAGX_ObjectUtilities::Get<const UAGX_WireWinchComponent>(
+		BeginWinchComponent, GetOwner());
 }
 
 FAGX_WireWinch* UAGX_WireComponent::GetBeginWinchComponentWinch()
@@ -109,6 +83,151 @@ const FAGX_WireWinch* UAGX_WireComponent::GetBeginWinchComponentWinch() const
 		return nullptr;
 	}
 	return &WinchComponent->WireWinch;
+}
+
+bool UAGX_WireComponent::HasBeginWinch() const
+{
+	switch (BeginWinchType)
+	{
+		case EWireWinchOwnerType::Wire:
+			return true;
+		case EWireWinchOwnerType::WireWinch:
+			return HasBeginWinchComponent();
+		case EWireWinchOwnerType::Other:
+			return BorrowedBeginWinch != nullptr;
+	}
+	return false;
+}
+
+FAGX_WireWinch& UAGX_WireComponent::GetBeginWinch()
+{
+	// UFunctions cannot return a pointer to an FStruct, but it can return a reference to one.
+	// Sometimes we don't have a Wire Winch to return, in which case we return a reference to this
+	// static default constructed empty Wire Winch. I don't know how the user is supposed to detect
+	// that this has occurred. They should guard the call to GetBeginWinch with HasBeginWinch.
+	static FAGX_WireWinch InvalidWinch;
+
+	switch (BeginWinchType)
+	{
+		case EWireWinchOwnerType::Wire:
+			return OwnedBeginWinch;
+		case EWireWinchOwnerType::WireWinch:
+			return HasBeginWinchComponent() ? *GetBeginWinchComponentWinch() : InvalidWinch;
+		case EWireWinchOwnerType::Other:
+			return BorrowedBeginWinch != nullptr ? *BorrowedBeginWinch : InvalidWinch;
+	}
+	return InvalidWinch;
+}
+
+bool UAGX_WireComponent::HasEndWinchComponent() const
+{
+	return GetEndWinchComponent() != nullptr;
+}
+
+void UAGX_WireComponent::SetEndWinchComponent(UAGX_WireWinchComponent* Winch)
+{
+	if (Winch == nullptr)
+	{
+		EndWinchComponent = FComponentReference();
+		return;
+	}
+
+	EndWinchComponent.OtherActor = Winch->GetOwner();
+	EndWinchComponent.ComponentProperty = Winch->GetFName();
+}
+
+UAGX_WireWinchComponent* UAGX_WireComponent::GetEndWinchComponent()
+{
+	return FAGX_ObjectUtilities::Get<UAGX_WireWinchComponent>(EndWinchComponent, GetOwner());
+}
+
+const UAGX_WireWinchComponent* UAGX_WireComponent::GetEndWinchComponent() const
+{
+	return FAGX_ObjectUtilities::Get<const UAGX_WireWinchComponent>(EndWinchComponent, GetOwner());
+}
+
+FAGX_WireWinch* UAGX_WireComponent::GetEndWinchComponentWinch()
+{
+	return const_cast<FAGX_WireWinch*>(
+		const_cast<const UAGX_WireComponent*>(this)->GetEndWinchComponentWinch());
+}
+
+const FAGX_WireWinch* UAGX_WireComponent::GetEndWinchComponentWinch() const
+{
+	const UAGX_WireWinchComponent* WinchComponent = GetEndWinchComponent();
+	if (WinchComponent == nullptr)
+	{
+		return nullptr;
+	}
+	return &WinchComponent->WireWinch;
+}
+
+bool UAGX_WireComponent::HasEndWinch() const
+{
+	switch (EndWinchType)
+	{
+		case EWireWinchOwnerType::Wire:
+			return true;
+		case EWireWinchOwnerType::WireWinch:
+			return HasEndWinchComponent();
+		case EWireWinchOwnerType::Other:
+			return BorrowedEndWinch != nullptr;
+	}
+	return false;
+}
+
+FAGX_WireWinch& UAGX_WireComponent::GetEndWinch()
+{
+	// UFunctions cannot return a pointer to an FStruct, but it can return a reference to one.
+	// Sometimes we don't have a Wire Winch to return, in which case we return a reference to this
+	// static default constructed empty Wire Winch.
+	static FAGX_WireWinch InvalidWinch;
+
+	switch (EndWinchType)
+	{
+		case EWireWinchOwnerType::Wire:
+			return OwnedEndWinch;
+		case EWireWinchOwnerType::WireWinch:
+			return HasEndWinchComponent() ? *GetEndWinchComponentWinch() : InvalidWinch;
+		case EWireWinchOwnerType::Other:
+			return BorrowedEndWinch != nullptr ? *BorrowedEndWinch : InvalidWinch;
+	}
+	return InvalidWinch;
+}
+
+
+bool UAGX_WireComponent::HasWinch(EWireSide Side) const
+{
+	switch (Side)
+	{
+		case EWireSide::None:
+			return false;
+		case EWireSide::Begin:
+			return HasBeginWinch();
+		case EWireSide::End:
+			return HasEndWinch();
+	}
+	return false;
+}
+
+FAGX_WireWinch& UAGX_WireComponent::GetWinch(EWireSide Side)
+{
+	// UFunctions cannot return a pointer to an FStruct, but it can return a reference to one.
+	// Sometimes we don't have a Wire Winch to return, in which case we return a reference to this
+	// static default constructed empty Wire Winch.
+	static FAGX_WireWinch InvalidWinch;
+
+	switch (Side)
+	{
+		case EWireSide::None:
+			return InvalidWinch;
+		case EWireSide::Begin:
+			return GetBeginWinch();
+		case EWireSide::End:
+			return GetEndWinch();
+	}
+
+	return InvalidWinch;
 }
 
 namespace AGX_WireComponent_helpers
@@ -310,6 +429,7 @@ void UAGX_WireComponent::PostLoad()
 		return;
 	}
 
+	// Begin Winch.
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
 		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength),
@@ -353,6 +473,55 @@ void UAGX_WireComponent::PostLoad()
 			Wire->OwnedBeginWinch.SetEmergencyBrakeEnabled(
 				Wire->OwnedBeginWinch.bEmergencyBrakeEnabled);
 		});
+
+	/// @todo Find ways to do attach/detach during runtime from the Details Panel.
+
+	// End Winch.
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength),
+		[](ThisClass* Wire)
+		{ Wire->OwnedEndWinch.SetPulledInLength(Wire->OwnedEndWinch.PulledInLength); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bMotorEnabled),
+		[](ThisClass* Wire)
+		{ Wire->OwnedEndWinch.SetMotorEnabled(Wire->OwnedEndWinch.bMotorEnabled); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, TargetSpeed),
+		[](ThisClass* Wire)
+		{ Wire->OwnedEndWinch.SetTargetSpeed(Wire->OwnedEndWinch.TargetSpeed); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, MotorForceRange),
+		[](ThisClass* Wire)
+		{ Wire->OwnedEndWinch.SetMotorForceRange(Wire->OwnedEndWinch.MotorForceRange); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bBrakeEnabled),
+		[](ThisClass* Wire)
+		{ Wire->OwnedEndWinch.SetBrakeEnabled(Wire->OwnedEndWinch.bBrakeEnabled); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, BrakeForceRange),
+		[](ThisClass* Wire)
+		{ Wire->OwnedEndWinch.SetBrakeForceRange(Wire->OwnedEndWinch.BrakeForceRange); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bEmergencyBrakeEnabled),
+		[](ThisClass* Wire) {
+			Wire->OwnedEndWinch.SetEmergencyBrakeEnabled(
+				Wire->OwnedEndWinch.bEmergencyBrakeEnabled);
+		});
+
+	/// @todo Find ways to do attach/detach during runtime from the Details Panel.
 #endif
 }
 
@@ -390,7 +559,7 @@ void UAGX_WireComponent::BeginPlay()
 	if (!HasNative() && !GIsReconstructingBlueprintInstances)
 	{
 		CreateNative();
-		check(HasNative());
+		check(HasNative()); /// @todo Consider better error handling than check.
 	}
 }
 
@@ -499,8 +668,10 @@ void UAGX_WireComponent::CreateNative()
 	check(!HasNative());
 	check(!GIsReconstructingBlueprintInstances);
 
-	/** Damping and Young's modulus for demonstration/experimentation purposes. Will be replaced
-	 * with Wire Material shortly. */
+	/*
+	 * Damping and Young's modulus for demonstration/experimentation purposes. Will be replaced
+	 * with Wire Material shortly.
+	 */
 	NativeBarrier.AllocateNative(
 		Radius, ResolutionPerUnitLength, DampingBend, DampingStretch, YoungsModulusBend,
 		YoungsModulusStretch);
@@ -525,11 +696,63 @@ void UAGX_WireComponent::CreateNative()
 	{
 		case EWireWinchOwnerType::Wire:
 			BeginWinch = &OwnedBeginWinch;
+			if (BeginWinch->GetBodyAttachment() == nullptr)
+			{
+				// The Wire Winch does not have a Rigid Body, which means that the Wire Winch will
+				// be attached to the world. Therefore, Location and Rotation should be in the
+				// global coordinate system when passed to AGX Dynamics. The Unreal Engine instance
+				// of the Wire Winch doesn't know about this, it only passes on whatever Location
+				// and Rotation it got, so here we transform from the Wire Component's local
+				// coordinate system to the global coordinate system ON THE GAME INSTANCE of the
+				// Wire Winch. This doesn't change the editor instance.
+				BeginWinch->Location =
+					GetComponentTransform().TransformPosition(BeginWinch->Location);
+				BeginWinch->Rotation = GetComponentRotation() + BeginWinch->Rotation;
+			}
 			break;
 		case EWireWinchOwnerType::WireWinch:
 			UActorComponent* WinchActorComponent = BeginWinchComponent.GetComponent(nullptr);
 			if (WinchActorComponent == nullptr)
 			{
+				TArray<UAGX_WireWinchComponent*> AllWireWinches;
+				AActor* SearchActor = BeginWinchComponent.OtherActor != nullptr
+										  ? BeginWinchComponent.OtherActor
+										  : GetOwner();
+				if (SearchActor == nullptr)
+				{
+					UE_LOG(
+						LogAGX, Error,
+						TEXT("Found a Wire Component that want a Wire Winch Component but didn't "
+							 "have an Actor to search in."));
+					UE_LOG(LogAGX, Fatal, TEXT("TODO: Handle this case somehow."));
+				}
+				SearchActor->GetComponents(AllWireWinches, false);
+				UAGX_WireWinchComponent** It = AllWireWinches.FindByPredicate(
+					[this](UAGX_WireWinchComponent* Winch) {
+						return Winch != nullptr &&
+							   Winch->GetFName() == BeginWinchComponent.ComponentProperty;
+					});
+				if (It == nullptr)
+				{
+					UE_LOG(
+						LogAGX, Error,
+						TEXT("Wire '%s' in '%s' did not find a Wire Winch named '%s' in '%s'."),
+						*GetName(), *GetLabelSafe(GetOwner()),
+						*BeginWinchComponent.ComponentProperty.ToString(),
+						*GetLabelSafe(SearchActor));
+				}
+				else
+				{
+					WinchActorComponent = *It;
+				}
+			}
+			if (WinchActorComponent == nullptr)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Could not find Begin Winch Component. Looked for '%s' in '%s'."),
+					*BeginWinchComponent.ComponentProperty.ToString(),
+					*GetLabelSafe(BeginWinchComponent.OtherActor));
 				UE_LOG(
 					LogAGX, Warning,
 					TEXT("Cannot create Begin Wire Winch: Begin Winch Component not set."));
@@ -548,24 +771,14 @@ void UAGX_WireComponent::CreateNative()
 				else
 				{
 					BeginWinch = &WinchComponent->WireWinch;
+					BeginWinch->Location = WinchComponent->ComputeBodyRelativeLocation();
+					BeginWinch->Rotation = WinchComponent->ComputeBodyRelativeRotation();
 				}
 				break;
 			}
 	}
 	if (BeginWinch != nullptr)
 	{
-		if (BeginWinch->GetBodyAttachment() == nullptr)
-		{
-			// The Wire Winch does not have a Rigid Body, which means that the Wire Winch will be
-			// attached to the world. Therefore, Location and Rotation should be in the global
-			// coordinate system when passed to AGX Dynamics. The Unreal Engine instance of the
-			// Wire Winch doesn't know about this, it only passes on whatever Location and Rotation
-			// it got, so here we transform from the Wire Component's local coordinate system to the
-			// global coordinate system ON THE GAME INSTANCE of the Wire Winch. This doesn't change
-			// the editor instance.
-			BeginWinch->Location = GetComponentTransform().TransformPosition(BeginWinch->Location);
-			BeginWinch->Rotation = GetComponentRotation() + BeginWinch->Rotation;
-		}
 		FWireWinchBarrier* WinchBarrier = BeginWinch->GetOrCreateNative();
 		if (WinchBarrier != nullptr)
 		{

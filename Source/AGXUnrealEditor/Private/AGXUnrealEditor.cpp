@@ -274,6 +274,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeTerrain::StaticClass()->GetFName());
 
+	PropertyModule.UnregisterCustomClassLayout(UAGX_WireComponent::StaticClass()->GetFName());
+
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName());
 
@@ -287,9 +289,6 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());
-
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		UAGX_WireComponent::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
