@@ -253,6 +253,9 @@ void UAGX_ShapeComponent::UpdateNativeLocalTransform(TNative& Native)
 	// This assumes that the Shape's parent is the UAGX_RigidBody. If we want
 	// to support other/deeper hierarchies then we need to find the total
 	// transformation from the UAGX_RigidBody to this shape.
+	// GetRelativeTransform may be a useful function.
+	//
+	// See related comment in RigidBodyComponents.cpp:GetShapes.
 	Native.SetLocalPosition(GetRelativeTransform().GetLocation());
 	Native.SetLocalRotation(GetRelativeTransform().GetRotation());
 }

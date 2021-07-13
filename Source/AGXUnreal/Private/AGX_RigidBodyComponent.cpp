@@ -282,12 +282,17 @@ namespace
 	TArray<UAGX_ShapeComponent*> GetShapes(const UAGX_RigidBodyComponent& Body)
 	{
 		/// \todo Do we want to search recursively? The user many build strange
-		/// hierarchives, bodies beneath bodies and such, and care must be taken to
+		/// hierarchies, bodies beneath bodies and such, and care must be taken to
 		/// get that right if we allow it. Only looking at immediate children
 		/// simplifies things, but makes it impossible to attach shapes relative to
-		/// each other. A middleground is to only search recursively within
+		/// each other. A middle-ground is to only search recursively within
 		/// UAGX_ShapeComponents.
-		return FAGX_ObjectUtilities::Filter<UAGX_ShapeComponent>(Body.GetAttachChildren());
+		///
+		/// To make this work properly we need to do something smarter in
+		/// ShapeComponent::UpdateNativeLocalTransform.
+		TArray<USceneComponent*> ChildShapes;
+		Body.GetChildrenComponents(true, ChildShapes);
+		return FAGX_ObjectUtilities::Filter<UAGX_ShapeComponent>(ChildShapes);
 	}
 }
 
