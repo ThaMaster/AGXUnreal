@@ -450,7 +450,8 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 				UE_LOG(
 					LogAGX, Warning,
 					TEXT("Begin Winch in Wire '%s' in '%s' is set to Wire Winch but no Wire Winch "
-						 "Component was found."));
+						 "Component was found."),
+					*Wire->GetName(), *GetLabelSafe(Wire->GetOwner()));
 			}
 		}
 		if (Wire == GetSelectedWire())
