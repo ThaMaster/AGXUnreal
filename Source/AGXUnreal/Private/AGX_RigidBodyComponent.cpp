@@ -386,11 +386,11 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("The Rigid Body Component \"%s\" has a RigidBody with Static AGX MotionControl "
-				 "but Non-Static Unreal Mobility. Unreal Mobility will automatically be changed to "
-				 "Static this game session, but should also be changed manually in the Editor to "
-				 "ensure best performance!"),
-			*GetName());
+			TEXT("The Rigid Body Component \"%s\" in \"%s\" has a RigidBody with Static AGX "
+				 "MotionControl but Non-Static Unreal Mobility. Unreal Mobility will automatically "
+				 "be changed to Static this game session, but should also be changed manually in "
+				 "the Editor to ensure best performance!"),
+			*GetName(), *GetLabelSafe(GetOwner()));
 
 		SetMobility(EComponentMobility::Type::Static);
 	}
@@ -398,11 +398,11 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("The Rigid Body Component \"%s\" has a RigidBody with Dynamic AGX MotionControl "
-				 "but Non-Movable Unreal Mobility. Unreal Mobility will automatically be changed "
-				 "to Movable this game session, but should also be changed manually in the Editor "
-				 "to avoid future problems!"),
-			*GetName());
+			TEXT("The Rigid Body Component \"%s\" \"%s\" has a RigidBody with Dynamic AGX "
+				 "MotionControl but Non-Movable Unreal Mobility. Unreal Mobility will "
+				 "automatically be changed to Movable this game session, but should also be "
+				 "changed manually in the Editor to avoid future problems!"),
+			*GetName(), *GetLabelSafe(GetOwner()));
 
 		SetMobility(EComponentMobility::Type::Movable);
 	}
