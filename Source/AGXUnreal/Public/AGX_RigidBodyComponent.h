@@ -183,19 +183,27 @@ public:
 	FVector GetForce() const;
 
 	/**
+	 * Adds an external torque, given in center of mass coordinate frame, that will be affecting
+	 * this body in the next solve.
+	 * @param Torque The torque to add, given in center of mass coordinate frame.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void AddTorqueAtCenterOfMass(const FVector& Torque);
+
+	/**
 	 * Add an external torque, given in the world coordinate frame, that will be affecting this body
 	 * in the next solve.
 	 *
 	 * @param Torque The torque to add, given in world coordinate frame.
 	 */
-	void AddWorldTorque(const FVector& Torque);
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void AddTorqueAtWorldLocation(const FVector& Torque, const FVector& Location);
 
-	/**
-	 * Adds an external torque, given in center of mass coordinate frame, that will be affecting
-	 * this body in the next solve.
-	 * @param Torque The torque to add, given in center of mass coordinate frame.
-	 */
-	void AddCenterOfMassTorque(const FVector& Torque);
+#if 0
+	// Need to learn how to transform torques before I can implement this.
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void AddTorqueAtLocalLocation(const FVector& Torque, const FVector& Location);
+#endif
 
 	/**
 	 * Get the external torques accumulated so far by the AddTorque member function, to be applied

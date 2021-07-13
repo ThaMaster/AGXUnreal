@@ -870,7 +870,23 @@ FVector UAGX_RigidBodyComponent::GetForce() const
 	return NativeBarrier.GetForce();
 }
 
-void UAGX_RigidBodyComponent::AddWorldTorque(const FVector& Torque)
+void UAGX_RigidBodyComponent::AddTorqueAtCenterOfMass(const FVector& Torque)
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Must have a native AGX Dynamics representation of RigidBody '%s' to call "
+				 "AddTorque."),
+			*GetName());
+		return;
+	}
+
+	NativeBarrier.AddCenterOfMassTorque(Torque);
+}
+
+void UAGX_RigidBodyComponent::AddTorqueAtWorldLocation(
+	const FVector& Torque, const FVector& Location)
 {
 	if (!HasNative())
 	{
@@ -885,7 +901,9 @@ void UAGX_RigidBodyComponent::AddWorldTorque(const FVector& Torque)
 	NativeBarrier.AddWorldTorque(Torque);
 }
 
-void UAGX_RigidBodyComponent::AddCenterOfMassTorque(const FVector& Torque)
+#if 0
+void UAGX_RigidBodyComponent::AddTorqueAtLocalLocation(
+	const FVector& Torque, const FVector& Location)
 {
 	if (!HasNative())
 	{
@@ -896,9 +914,12 @@ void UAGX_RigidBodyComponent::AddCenterOfMassTorque(const FVector& Torque)
 			*GetName());
 		return;
 	}
-
-	NativeBarrier.AddCenterOfMassTorque(Torque);
+	const FVector WorldLocation = GetComponentTransform().InverseTransformPosition(Location);
+	/// @todo How to I transform the local torque at Location to the corresponding toque at
+	/// WorldLocation?
+	NativeBarrier.AddWorldTorque(Torque);
 }
+#endif
 
 FVector UAGX_RigidBodyComponent::GetTorque() const
 {
