@@ -118,7 +118,8 @@ public:
  * A Wire Winch is a carrier for the data required to create a Wire Winch along with the Barrier
  * object that houses the native AGX Dynamics instance. It is a simple struct, not any kind of
  * UObject, which means that it can't do much of the work itself, it needs help from an owning
- * Component.
+ * Component. Most of the logic and customization required is performed by the UObject owning the
+ * Wire Winch.
  */
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_WireWinch : public FAGX_WireWinchSettings
@@ -209,6 +210,10 @@ public:
 	FWireWinchBarrier NativeBarrier;
 };
 
+/**
+ * Blueprint function library for the Wire Winch. Mostly conversions between float and double.
+ * Required because structs can't have Blueprint Callable functions.
+ */
 UCLASS()
 class AGXUNREAL_API UAGX_WireWinch_FL : public UBlueprintFunctionLibrary
 {
