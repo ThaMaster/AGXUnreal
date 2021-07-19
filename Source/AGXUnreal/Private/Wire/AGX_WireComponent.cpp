@@ -119,6 +119,21 @@ FAGX_WireWinch& UAGX_WireComponent::GetBeginWinch()
 	return InvalidWinch;
 }
 
+const FAGX_WireWinch* UAGX_WireComponent::GetBeginWinch() const
+{
+	switch (BeginWinchType)
+	{
+		case EWireWinchOwnerType::Wire:
+			return &OwnedBeginWinch;
+		case EWireWinchOwnerType::WireWinch:
+			return HasBeginWinchComponent() ? GetBeginWinchComponentWinch() : nullptr;
+		case EWireWinchOwnerType::Other:
+			return BorrowedBeginWinch;
+	}
+
+	return nullptr;
+}
+
 bool UAGX_WireComponent::HasEndWinchComponent() const
 {
 	return GetEndWinchComponent() != nullptr;
@@ -195,6 +210,19 @@ FAGX_WireWinch& UAGX_WireComponent::GetEndWinch()
 	return InvalidWinch;
 }
 
+const FAGX_WireWinch* UAGX_WireComponent::GetEndWinch() const
+{
+	switch (EndWinchType)
+	{
+		case EWireWinchOwnerType::Wire:
+			return &OwnedEndWinch;
+		case EWireWinchOwnerType::WireWinch:
+			return HasEndWinchComponent() ? GetEndWinchComponentWinch() : nullptr;
+		case EWireWinchOwnerType::Other:
+			return BorrowedEndWinch;
+	}
+	return nullptr;
+}
 
 bool UAGX_WireComponent::HasWinch(EWireSide Side) const
 {
@@ -226,8 +254,21 @@ FAGX_WireWinch& UAGX_WireComponent::GetWinch(EWireSide Side)
 		case EWireSide::End:
 			return GetEndWinch();
 	}
-
 	return InvalidWinch;
+}
+
+const FAGX_WireWinch* UAGX_WireComponent::GetWinch(EWireSide Side) const
+{
+	switch (Side)
+	{
+		case EWireSide::None:
+			return nullptr;
+		case EWireSide::Begin:
+			return GetBeginWinch();
+		case EWireSide::End:
+			return GetEndWinch();
+	}
+	return nullptr;
 }
 
 namespace AGX_WireComponent_helpers

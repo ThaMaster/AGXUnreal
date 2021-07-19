@@ -218,6 +218,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	FAGX_WireWinch& GetBeginWinch();
 
+	const FAGX_WireWinch* GetBeginWinch() const;
+
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire End Winch",
 		Meta = (DisplayName = "Winch Type"))
@@ -282,11 +284,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	FAGX_WireWinch& GetEndWinch();
 
+	const FAGX_WireWinch* GetEndWinch() const;
+
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	bool HasWinch(EWireSide Side) const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	FAGX_WireWinch& GetWinch(EWireSide Side);
+
+	const FAGX_WireWinch* GetWinch(EWireSide Side) const;
 
 	/**
 	 * An array of nodes that are used to initialize the wire.
