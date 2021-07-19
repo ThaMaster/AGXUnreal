@@ -5,6 +5,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_RuntimeStyle.h"
 #include "Wire/AGX_WireComponent.h"
+#include "Wire/AGX_WireHitProxies.h"
 #include "Wire/AGX_WireNode.h"
 #include "Wire/AGX_WireWinch.h"
 #include "Wire/AGX_WireWinchComponent.h"
@@ -17,60 +18,6 @@
 #include "UnrealEngine.h"
 
 #define LOCTEXT_NAMESPACE "AGX_WireComponentVisualizer"
-
-/// @todo Rename the Hit Proxies to something wire-specific. Don't want name collisions, one
-/// definition rule violations, and undefined behavior.
-
-/**
- * Data associated with clickable node visualization elements.
- */
-class HNodeProxy : public HComponentVisProxy
-{
-	DECLARE_HIT_PROXY();
-
-	HNodeProxy(const UAGX_WireComponent* InWire, int32 InNodeIndex)
-		: HComponentVisProxy(InWire, HPP_Wireframe)
-		, NodeIndex(InNodeIndex)
-	{
-	}
-
-	// The index of the node that the visualization that this HNodeProxy is bound to represents.
-	int32 NodeIndex;
-};
-
-IMPLEMENT_HIT_PROXY(HNodeProxy, HComponentVisProxy);
-
-class HWinchLocationProxy : public HComponentVisProxy
-{
-	DECLARE_HIT_PROXY();
-
-	HWinchLocationProxy(const UAGX_WireComponent* InWire, EWireSide InSide)
-		: HComponentVisProxy(InWire, HPP_Wireframe)
-		, Side(InSide)
-	{
-	}
-
-	// The side of the wire, begin or end, that this Wire Winch is located.
-	EWireSide Side;
-};
-
-IMPLEMENT_HIT_PROXY(HWinchLocationProxy, HComponentVisProxy);
-
-class HWinchDirectionProxy : public HComponentVisProxy
-{
-	DECLARE_HIT_PROXY()
-
-	HWinchDirectionProxy(const UAGX_WireComponent* InWire, EWireSide InSide)
-		: HComponentVisProxy(InWire, HPP_Wireframe)
-		, Side(InSide)
-	{
-	}
-
-	// The side of the wire, begin or end, that this Wire Winch is located.
-	EWireSide Side;
-};
-
-IMPLEMENT_HIT_PROXY(HWinchDirectionProxy, HComponentVisProxy);
 
 /**
  * A collection of commands that can be triggered through the Wire Component Visualizer.
@@ -192,73 +139,6 @@ namespace AGX_WireComponentVisualizer_helpers
 		return Wire.GetComponentTransform();
 	}
 
-	/// Draw the Wire Winch visualization and return the world location of the winch.
-#if 0
-	FVector DrawBeginWinch(
-		const UAGX_WireComponent& Wire, const FAGX_WireWinch& WireWinch,
-		const USceneComponent& WinchOwner, FPrimitiveDrawInterface* PDI)
-	{
-		FLinearColor Color = FLinearColor::Red;
-		float HandleSize = 10.0f;
-
-		/// @todo For Wire Winches attached to a body instead of the Wire, use the body's transform
-		/// here instead.
-		const FTransform& LocalToWorld = [&WinchOwner, &WireWinch]()
-		{
-			UAGX_RigidBodyComponent* Body = WireWinch.GetBodyAttachment();
-			if (Body == nullptr)
-			{
-				return WinchOwner.GetComponentTransform();
-			}
-			return Body->GetComponentTransform();
-		}();
-
-		const FVector LocalLocation = WireWinch.Location;
-		const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
-		PDI->SetHitProxy(new HWinchLocationProxy(&Wire, EWireSide::Begin));
-		PDI->DrawPoint(WorldLocation, Color, HandleSize, SDPG_Foreground);
-		PDI->SetHitProxy(nullptr);
-
-		const FRotator Rotation = WireWinch.Rotation;
-		const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
-		const FVector WorldDirection = LocalToWorld.TransformVector(LocalDirection);
-		const FVector WorldEndLocation = WorldLocation + (WorldDirection * 100.0f);
-		PDI->SetHitProxy(new HWinchDirectionProxy(&Wire, EWireSide::Begin));
-		PDI->DrawPoint(WorldEndLocation, Color, HandleSize, SDPG_Foreground);
-		PDI->SetHitProxy(nullptr);
-
-		PDI->DrawLine(WorldLocation, WorldEndLocation, Color, SDPG_Foreground);
-
-		return WorldLocation;
-	}
-#endif
-
-	FVector DrawBeginWinch(
-		const UAGX_WireComponent& Wire, const FAGX_WireWinch& Winch, const FTransform& LocalToWorld,
-		FPrimitiveDrawInterface* PDI)
-	{
-		FLinearColor Color = FLinearColor::Red;
-		float HandleSize = 10.0f;
-
-		const FVector LocalLocation = Winch.Location;
-		const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
-		PDI->SetHitProxy(new HWinchLocationProxy(&Wire, EWireSide::Begin));
-		PDI->DrawPoint(WorldLocation, Color, HandleSize, SDPG_Foreground);
-		PDI->SetHitProxy(nullptr);
-
-		const FRotator Rotation = Winch.Rotation;
-		const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
-		const FVector WorldDirection = LocalToWorld.TransformVector(LocalDirection);
-		const FVector WorldEndLocation = WorldLocation + (WorldDirection * 100.0f);
-		PDI->SetHitProxy(new HWinchDirectionProxy(&Wire, EWireSide::Begin));
-		PDI->DrawPoint(WorldEndLocation, Color, HandleSize, SDPG_Foreground);
-		PDI->SetHitProxy(nullptr);
-
-		PDI->DrawLine(WorldLocation, WorldEndLocation, Color, SDPG_Foreground);
-
-		return WorldLocation;
-	}
-
 	FVector DrawWireOwnedBeginWinch(
 		const UAGX_WireComponent& Wire, const FAGX_WireWinch& Winch, FPrimitiveDrawInterface* PDI)
 	{
@@ -275,15 +155,15 @@ namespace AGX_WireComponentVisualizer_helpers
 			}
 		}();
 
-		return DrawBeginWinch(Wire, Winch, LocalToWorld, PDI);
+		return AGX_WireVisualization_helpers::DrawWinch(&Wire, EWireSide::Begin, LocalToWorld, PDI);
 	}
 
 	FVector DrawWireWinchOwnedWinch(
 		const UAGX_WireComponent& Wire, const UAGX_WireWinchComponent& Winch,
 		FPrimitiveDrawInterface* PDI)
 	{
-		const FTransform& LocalToWorld = Winch.GetComponentTransform();
-		return DrawBeginWinch(Wire, Winch.WireWinch, LocalToWorld, PDI);
+		return AGX_WireVisualization_helpers::DrawWinch(
+			&Wire, EWireSide::Begin, Winch.GetComponentTransform(), PDI);
 	}
 
 	constexpr uint32 NUM_NODE_COLORS = (uint32) EWireNodeType::NUM_NODE_TYPES;
@@ -483,7 +363,8 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 
 	if (NewOwningActor != OldOwningActor)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("WireComponentVisualizer: Owning Actor changed."));
+		UE_LOG(LogAGX, Warning, TEXT("WireComponentVisualizer: Owning Actor changed from '%s' to '%s'."),
+			   *GetLabelSafe(OldOwningActor), *GetLabelSafe(NewOwningActor));
 		ClearSelection();
 	}
 
@@ -602,7 +483,7 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 			const FRotator Rotation = Winch.Rotation;
 			const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
 			const FVector WorldDirection = LocalToWorld.TransformVector(LocalDirection);
-			const FVector WorldEndLocation = WorldLocation + (WorldDirection * 100);
+			const FVector WorldEndLocation = WorldLocation + (WorldDirection * 100.0f);
 			OutLocation = WorldEndLocation;
 			return true;
 		}

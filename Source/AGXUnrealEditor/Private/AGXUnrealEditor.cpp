@@ -66,6 +66,7 @@
 #include "Wire/AGX_WireComponentCustomization.h"
 #include "Wire/AGX_WireWinchComponent.h"
 #include "Wire/AGX_WireWinchDetails.h"
+#include "Wire/AGX_WireWinchVisualizer.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -319,6 +320,10 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 	RegisterComponentVisualizer(
 		UAGX_WireComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_WireComponentVisualizer));
+
+	RegisterComponentVisualizer(
+		UAGX_WireWinchComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_WireWinchVisualizer));
 }
 
 void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
@@ -327,6 +332,7 @@ void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
 	UnregisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_TireComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_WireComponent::StaticClass()->GetFName());
+	UnregisterComponentVisualizer(UAGX_WireWinchComponent::StaticClass()->GetFName());
 }
 
 void FAGXUnrealEditorModule::RegisterComponentVisualizer(
