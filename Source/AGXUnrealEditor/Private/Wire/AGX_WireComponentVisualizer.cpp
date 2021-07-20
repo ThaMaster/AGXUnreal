@@ -469,7 +469,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		{
 			if (!DeltaTranslate.IsZero())
 			{
-				const FTransform& LocalToWorld = GetOwnedWinchLocalToWorld(Wire, *Winch);
+				const FTransform& LocalToWorld = GetWinchLocalToWorld(Wire, SelectedWinch);
 				const FVector LocalTranslate = LocalToWorld.InverseTransformVector(DeltaTranslate);
 				Winch->Location += LocalTranslate;
 			}
@@ -479,7 +479,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 				// of giving me another small rotation, it's giving me a large rotation. Large on
 				// the scale of the rotation of the actor we're part of.
 				const FVector Direction = Winch->Rotation.RotateVector(FVector::ForwardVector);
-				const FTransform& LocalToWorld = GetOwnedWinchLocalToWorld(Wire, *Winch);
+				const FTransform& LocalToWorld = GetWinchLocalToWorld(Wire, SelectedWinch);
 				const FVector WorldDirection = LocalToWorld.TransformVector(Direction);
 				const FVector NewWorldDirection = DeltaRotate.RotateVector(WorldDirection);
 				const FVector NewLocalDirection =
@@ -495,7 +495,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 			const FRotator Rotation = Winch->Rotation;
 			const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
 			const FVector LocalEndLocation = LocalBeginLocation + (LocalDirection * 100.0f);
-			const FTransform& LocalToWorld = GetOwnedWinchLocalToWorld(Wire, *Winch);
+			const FTransform& LocalToWorld = GetWinchLocalToWorld(Wire, SelectedWinch);
 			const FVector LocalTranslate = LocalToWorld.InverseTransformVector(DeltaTranslate);
 			const FVector NewLocalEndLocation = LocalEndLocation + LocalTranslate;
 			const FVector NewDirection = NewLocalEndLocation - LocalBeginLocation;
