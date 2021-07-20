@@ -5,6 +5,7 @@
 #include "Wire/AGX_WireHitProxies.h"
 
 // Unreal Engine includes.
+#include "Editor.h"
 #include "SceneManagement.h"
 
 FAGX_WireWinchVisualizer::FAGX_WireWinchVisualizer()
@@ -30,7 +31,6 @@ void FAGX_WireWinchVisualizer::DrawVisualization(
 	{
 		return;
 	}
-
 	AGX_WireVisualization_helpers::DrawWinch(*WinchComponent, PDI);
 }
 
@@ -100,7 +100,32 @@ bool FAGX_WireWinchVisualizer::HandleInputDelta(
 	FEditorViewportClient* ViewportClient, FViewport* Viewport, FVector& DeltaTranslate,
 	FRotator& DeltaRotate, FVector& DeltaScale)
 {
-	return false;
+	using namespace AGX_WireVisualization_helpers;
+
+	if (!HasValidWinchSelection())
+	{
+		return false;
+	}
+
+	UAGX_WireWinchComponent* WinchComponent = GetSelectedWinch();
+	const FTransform& WinchToWorld = WinchComponent->GetComponentTransform();
+	FAGX_WireWinch& Winch = WinchComponent->WireWinch;
+
+	switch (SelectedWinchSide)
+	{
+		case EWinchSide::Location:
+			TransformWinchLocation(Winch, WinchToWorld, DeltaTranslate, DeltaRotate);
+			break;
+		case EWinchSide::Rotation:
+			TransformWinchRotation(Winch, WinchToWorld, DeltaTranslate);
+			break;
+		case EWinchSide::None:
+			// Nothing to do here.
+			break;
+	}
+
+	GEditor->RedrawLevelEditingViewports();
+	return true;
 }
 
 bool FAGX_WireWinchVisualizer::HandleInputKey(

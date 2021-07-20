@@ -142,4 +142,11 @@ namespace AGX_WireVisualization_helpers
 
 	bool GetWidgetLocation(
 		const UAGX_WireWinchComponent& Winch, EWinchSide WinchSide, FVector& OutLocation);
+
+	void TransformWinchLocation(
+		FAGX_WireWinch& Winch, const FTransform& WinchToWorld, const FVector& DeltaTranslate,
+		const FRotator& DeltaRotate);
+
+	void TransformWinchRotation(
+		FAGX_WireWinch& Winch, const FTransform& WinchToWorld, const FVector& DeltaTranslate);
 }

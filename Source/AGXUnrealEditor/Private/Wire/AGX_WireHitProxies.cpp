@@ -192,3 +192,39 @@ bool AGX_WireVisualization_helpers::GetWidgetLocation(
 	const FAGX_WireWinch& WireWinch = Winch.WireWinch;
 	return GetWidgetLocation(WireWinch, WinchToWorld, WinchSide, OutLocation);
 }
+
+void AGX_WireVisualization_helpers::TransformWinchLocation(
+	FAGX_WireWinch& Winch, const FTransform& WinchToWorld, const FVector& DeltaTranslate,
+	const FRotator& DeltaRotate)
+{
+	if (!DeltaTranslate.IsZero())
+	{
+		const FVector LocalTranslate = WinchToWorld.InverseTransformVector(DeltaTranslate);
+		Winch.Location += LocalTranslate;
+	}
+
+	if (!DeltaRotate.IsZero())
+	{
+		const FVector Direction = Winch.Rotation.RotateVector(FVector::ForwardVector);
+		const FVector WorldDirection = WinchToWorld.TransformVector(Direction);
+		const FVector NewWorldDirection = DeltaRotate.RotateVector(WorldDirection);
+		const FVector NewLocalDirection = WinchToWorld.InverseTransformVector(NewWorldDirection);
+		const FRotator NewRotation =
+			FQuat::FindBetween(FVector::ForwardVector, NewLocalDirection).Rotator();
+		Winch.Rotation = NewRotation;
+	}
+}
+
+void AGX_WireVisualization_helpers::TransformWinchRotation(
+	FAGX_WireWinch& Winch, const FTransform& WinchToWorld, const FVector& DeltaTranslate)
+{
+	const FVector LocalBeginLocation = Winch.Location;
+	const FRotator Rotation = Winch.Rotation;
+	const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
+	const FVector LocalEndLocation = LocalBeginLocation + (LocalDirection * 100.0f);
+	const FVector LocalTranslate = WinchToWorld.InverseTransformVector(DeltaTranslate);
+	const FVector NewLocalEndLocation = LocalEndLocation + LocalTranslate;
+	const FVector NewDirection = NewLocalEndLocation - LocalBeginLocation;
+	const FRotator NewRotation = FQuat::FindBetween(FVector::ForwardVector, NewDirection).Rotator();
+	Winch.Rotation = NewRotation;
+}
