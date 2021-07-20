@@ -31,7 +31,7 @@ void FAGX_WireWinchVisualizer::DrawVisualization(
 		return;
 	}
 
-	AGX_WireVisualization_helpers::DrawWinch(WinchComponent, PDI);
+	AGX_WireVisualization_helpers::DrawWinch(*WinchComponent, PDI);
 }
 
 bool FAGX_WireWinchVisualizer::VisProxyHandleClick(
@@ -70,7 +70,7 @@ bool FAGX_WireWinchVisualizer::VisProxyHandleClick(
 	{
 		if (SelectedWinchSide == EWinchSide::Rotation)
 		{
-			//Clicking a selected handle deselects it.
+			// Clicking a selected handle deselects it.
 			ClearSelection();
 		}
 		else
@@ -92,31 +92,8 @@ bool FAGX_WireWinchVisualizer::GetWidgetLocation(
 		return false;
 	}
 
-	const UAGX_WireWinchComponent* WinchComponent = GetSelectedWinch();
-	const FTransform& LocalToWorld = WinchComponent->GetComponentTransform();
-	const FAGX_WireWinch& Winch = WinchComponent->WireWinch;
-	if (SelectedWinchSide == EWinchSide::Location)
-	{
-		const FVector LocalLocation = Winch.Location;
-		const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
-		OutLocation = WorldLocation;
-		return true;
-	}
-	else if (SelectedWinchSide == EWinchSide::Rotation)
-	{
-		const FVector LocalLocation = Winch.Location;
-		const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
-		const FRotator Rotation = Winch.Rotation;
-		const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
-		const FVector WorldDirection = LocalToWorld.TransformVector(LocalDirection);
-		const FVector WorldEndLocation = WorldLocation + (WorldDirection * 100.0f);
-		OutLocation = WorldEndLocation;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return AGX_WireVisualization_helpers::GetWidgetLocation(
+		*GetSelectedWinch(), SelectedWinchSide, OutLocation);
 }
 
 bool FAGX_WireWinchVisualizer::HandleInputDelta(

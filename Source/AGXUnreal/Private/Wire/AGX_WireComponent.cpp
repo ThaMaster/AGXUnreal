@@ -271,6 +271,40 @@ const FAGX_WireWinch* UAGX_WireComponent::GetWinch(EWireSide Side) const
 	return nullptr;
 }
 
+EWireWinchOwnerType UAGX_WireComponent::GetWinchOwnerType(EWireSide Side) const
+{
+	switch (Side)
+	{
+		case EWireSide::None:
+			return EWireWinchOwnerType::None;
+		case EWireSide::Begin:
+			return BeginWinchType;
+		case EWireSide::End:
+			return EndWinchType;
+	}
+	return EWireWinchOwnerType::None;
+}
+
+UAGX_WireWinchComponent* UAGX_WireComponent::GetWinchComponent(EWireSide Side)
+{
+	return const_cast<UAGX_WireWinchComponent*>(
+		const_cast<const UAGX_WireComponent*>(this)->GetWinchComponent(Side));
+}
+
+const UAGX_WireWinchComponent* UAGX_WireComponent::GetWinchComponent(EWireSide Side) const
+{
+	switch (Side)
+	{
+		case EWireSide::Begin:
+			return GetBeginWinchComponent();
+		case EWireSide::End:
+			return GetEndWinchComponent();
+		case EWireSide::None:
+			return nullptr;
+	}
+	return nullptr;
+}
+
 namespace AGX_WireComponent_helpers
 {
 	void PrintNodeModifiedAlreadyInitializedWarning()

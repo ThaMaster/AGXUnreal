@@ -10,6 +10,9 @@
 class UAGX_WireComponent;
 class UAGX_WireWinchComponent;
 
+/// @todo Rename this file to something less specific, but still indicating that it contains Wire
+/// and Wire Winch visualization helpers.
+
 /// @todo Rename the Hit Proxies to something wire-specific. Don't want name collisions, one
 /// definition rule violations, and undefined behavior.
 
@@ -72,14 +75,54 @@ class HWinchDirectionProxy : public HComponentVisProxy
 
 namespace AGX_WireVisualization_helpers
 {
+	/**
+	 * Return the transformation that converts the location and rotation of a wire-owned winch from
+	 * whatever space they are expressed in to the world coordinate system. For a winch with a body
+	 * this is the body's Component Transform. For a winch without a body this is the Wire's
+	 * Component Transform.
+	 *
+	 * @param Wire The Wire that owns the Wire Winch.
+	 * @param Winch The Wire Winch to get the transformation for.
+	 * @return A transformation that transforms from the Wire Winch's local space to world space.
+	 */
+	const FTransform& GetOwnedWinchLocalToWorld(
+		const UAGX_WireComponent& Wire, const FAGX_WireWinch& Winch);
+
+	/**
+	 * Return the transformation that converts the location and rotation of a wire-owned winch from
+	 * whatever space they are expressed in to the world coordinate system. For a winch with a body
+	 * this is the body's Component Transform. For a winch without a body this is the Wire's
+	 * Component Transform.
+	 *
+	 * @param Wire The Wire that owns the Wire Winch.
+	 * @param Side The side of the Wire where the Winch to get the transformation for is.
+	 * @return A transformation that transforms from the Wire Winch's local space to world space.
+	 */
+	const FTransform& GetOwnedWinchLocalToWorld(const UAGX_WireComponent& Wire, EWireSide Side);
+	const FTransform& GetWinchLocalToWorld(const UAGX_WireComponent& Wire, EWireSide Side);
+
 	FVector DrawWinch(
 		const FAGX_WireWinch& Winch, const FTransform& LocalToWorld,
 		HWinchLocationProxy* LocationProxy, HWinchDirectionProxy* DirectionProxy,
 		FPrimitiveDrawInterface* PDI);
 
 	FVector DrawWinch(
-		const UAGX_WireComponent* WinchOwner, EWireSide Side, const FTransform& LocalToWorld,
+		const UAGX_WireComponent& Wire, EWireSide Side, const FTransform& LocalToWorld,
 		FPrimitiveDrawInterface* PDI);
 
-	FVector DrawWinch(const UAGX_WireWinchComponent* Winch, FPrimitiveDrawInterface* PDI);
+	FVector DrawWinch(
+		const UAGX_WireComponent& Wire, EWireSide Side, FPrimitiveDrawInterface* PDI);
+
+	FVector DrawWinch(const UAGX_WireWinchComponent& Winch, FPrimitiveDrawInterface* PDI);
+
+	bool GetWidgetLocation(
+		const FAGX_WireWinch& Winch, const FTransform& WinchToWorld, EWinchSide WinchSide,
+		FVector& OutLocation);
+
+	bool GetWidgetLocation(
+		const UAGX_WireComponent& WinchOwner, EWireSide WireSide, EWinchSide WinchSide,
+		FVector& OutLocation);
+
+	bool GetWidgetLocation(
+		const UAGX_WireWinchComponent& Winch, EWinchSide WinchSide, FVector& OutLocation);
 }

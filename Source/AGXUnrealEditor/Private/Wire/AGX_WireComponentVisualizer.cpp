@@ -66,106 +66,6 @@ void FAGX_WireComponentVisualizer::OnRegister()
 
 namespace AGX_WireComponentVisualizer_helpers
 {
-	/**
-	 * Return the transformation that converts the location and rotation of a wire-owned winch from
-	 * whatever space they are expressed in to the world coordinate system. For a winch with a body
-	 * this is the body's Component Transform. For a winch without a body this is the Wire's
-	 * Component Transform.
-	 *
-	 * @param Wire The Wire that owns the Wire Winch.
-	 * @param Winch The Wire Winch to get the transformation for.
-	 * @return A transformation that transforms from the Wire Winch's local space to world space.
-	 */
-	const FTransform& GetWinchLocalToWorld(UAGX_WireComponent& Wire, FAGX_WireWinch& Winch)
-	{
-		/// @todo This function must be able to find the transform for any winch type, not just
-		/// wire-owned winches.
-
-		UAGX_RigidBodyComponent* Body = Winch.GetBodyAttachment();
-		if (Body == nullptr)
-		{
-			return Wire.GetComponentTransform();
-		}
-		return Body->GetComponentTransform();
-	}
-
-	const FTransform& GetWinchLocalToWorld(UAGX_WireComponent& Wire, EWireSide Side)
-	{
-		EWireWinchOwnerType OwnerType =
-			(Side == EWireSide::Begin) ? Wire.BeginWinchType : Wire.EndWinchType;
-
-		switch (OwnerType)
-		{
-			case EWireWinchOwnerType::Wire:
-			{
-				switch (Side)
-				{
-					case EWireSide::None:
-						return Wire.GetComponentTransform();
-					case EWireSide::Begin:
-						return GetWinchLocalToWorld(Wire, Wire.OwnedBeginWinch);
-					case EWireSide::End:
-						return GetWinchLocalToWorld(Wire, Wire.OwnedEndWinch);
-				}
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("While getting winch-to-world transformation for wire '%s' in '%s': Found "
-						 "invalid EWireSide."),
-					*Wire.GetName(), *GetLabelSafe(Wire.GetOwner()));
-				return Wire.GetComponentTransform();
-			}
-			case EWireWinchOwnerType::WireWinch:
-			{
-				return Wire.GetBeginWinchComponent()->GetComponentTransform();
-			}
-			case EWireWinchOwnerType::Other:
-			{
-				// We know nothing of these Wire Winches, so their location and rotation must be
-				// in the world coordinate system at all times.
-				return FTransform::Identity;
-			}
-			case EWireWinchOwnerType::None:
-			{
-				return FTransform::Identity;
-			}
-		}
-
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("While getting winch-to-world transformation for wire '%s' in '%s': Found invalid "
-				 "EWireWinchType."),
-			*Wire.GetName(), *GetLabelSafe(Wire.GetOwner()));
-
-		return Wire.GetComponentTransform();
-	}
-
-	FVector DrawWireOwnedBeginWinch(
-		const UAGX_WireComponent& Wire, const FAGX_WireWinch& Winch, FPrimitiveDrawInterface* PDI)
-	{
-		const FTransform& LocalToWorld = [&Wire, &Winch]()
-		{
-			UAGX_RigidBodyComponent* Body = Winch.GetBodyAttachment();
-			if (Body != nullptr)
-			{
-				return Body->GetComponentTransform();
-			}
-			else
-			{
-				return Wire.GetComponentTransform();
-			}
-		}();
-
-		return AGX_WireVisualization_helpers::DrawWinch(&Wire, EWireSide::Begin, LocalToWorld, PDI);
-	}
-
-	FVector DrawWireWinchOwnedWinch(
-		const UAGX_WireComponent& Wire, const UAGX_WireWinchComponent& Winch,
-		FPrimitiveDrawInterface* PDI)
-	{
-		return AGX_WireVisualization_helpers::DrawWinch(
-			&Wire, EWireSide::Begin, Winch.GetComponentTransform(), PDI);
-	}
-
 	constexpr uint32 NUM_NODE_COLORS = (uint32) EWireNodeType::NUM_NODE_TYPES;
 
 	TStaticArray<FLinearColor, NUM_NODE_COLORS> CreateWireNodeColors()
@@ -284,6 +184,7 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 	const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI)
 {
 	using namespace AGX_WireComponentVisualizer_helpers;
+	using namespace AGX_WireVisualization_helpers;
 
 	const UAGX_WireComponent* Wire = Cast<UAGX_WireComponent>(Component);
 	if (Wire == nullptr)
@@ -299,7 +200,7 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 	{
 		if (Wire->BeginWinchType == EWireWinchOwnerType::Wire)
 		{
-			FVector WinchLocation = DrawWireOwnedBeginWinch(*Wire, Wire->OwnedBeginWinch, PDI);
+			FVector WinchLocation = DrawWinch(*Wire, EWireSide::Begin, PDI);
 			if (Wire->RouteNodes.Num() > 0)
 			{
 				/// @todo For nodes attached to a body, use the body's transformation instead.
@@ -314,8 +215,8 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 			const UAGX_WireWinchComponent* WinchComponent = Wire->GetBeginWinchComponent();
 			if (WinchComponent != nullptr)
 			{
-				const FAGX_WireWinch* Winch = &WinchComponent->WireWinch;
-				FVector WinchLocation = DrawWireWinchOwnedWinch(*Wire, *WinchComponent, PDI);
+				const FTransform& WinchToWorld = WinchComponent->GetComponentTransform();
+				const FVector WinchLocation = DrawWinch(*Wire, EWireSide::Begin, WinchToWorld, PDI);
 				if (Wire->RouteNodes.Num() > 0)
 				{
 					/// @todo For nodes attached to a body, use the body's transformation instead.
@@ -363,8 +264,10 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 
 	if (NewOwningActor != OldOwningActor)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("WireComponentVisualizer: Owning Actor changed from '%s' to '%s'."),
-			   *GetLabelSafe(OldOwningActor), *GetLabelSafe(NewOwningActor));
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("WireComponentVisualizer: Owning Actor changed from '%s' to '%s'."),
+			*GetLabelSafe(OldOwningActor), *GetLabelSafe(NewOwningActor));
 		ClearSelection();
 	}
 
@@ -452,6 +355,8 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	const FEditorViewportClient* ViewportClient, FVector& OutLocation) const
 {
+	using namespace AGX_WireVisualization_helpers;
+
 	if (HasValidNodeSelection())
 	{
 		// Convert the wire-local location to a world location.
@@ -462,31 +367,8 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	}
 	else if (HasValidWinchSelection())
 	{
-		UAGX_WireComponent* Wire = GetSelectedWire();
-		AGX_WireComponentVisualizer_helpers::GetWinchLocalToWorld(*Wire, SelectedWinch);
-		FAGX_WireWinch& Winch = Wire->GetWinch(SelectedWinch);
-
-		const FTransform& LocalToWorld =
-			AGX_WireComponentVisualizer_helpers::GetWinchLocalToWorld(*Wire, SelectedWinch);
-
-		if (SelectedWinchSide == EWinchSide::Location)
-		{
-			const FVector LocalLocation = Winch.Location;
-			const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
-			OutLocation = WorldLocation;
-			return true;
-		}
-		else if (SelectedWinchSide == EWinchSide::Rotation)
-		{
-			const FVector LocalLocation = Winch.Location;
-			const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
-			const FRotator Rotation = Winch.Rotation;
-			const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
-			const FVector WorldDirection = LocalToWorld.TransformVector(LocalDirection);
-			const FVector WorldEndLocation = WorldLocation + (WorldDirection * 100.0f);
-			OutLocation = WorldEndLocation;
-			return true;
-		}
+		return AGX_WireVisualization_helpers::GetWidgetLocation(
+			*GetSelectedWire(), SelectedWinch, SelectedWinchSide, OutLocation);
 	}
 
 	return false;
@@ -497,6 +379,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	FEditorViewportClient* ViewportClient, FViewport* Viewport, FVector& DeltaTranslate,
 	FRotator& DeltaRotate, FVector& DeltaScale)
 {
+	using namespace AGX_WireVisualization_helpers;
 	using namespace AGX_WireComponentVisualizer_helpers;
 
 	if (HasValidNodeSelection())
@@ -586,7 +469,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		{
 			if (!DeltaTranslate.IsZero())
 			{
-				const FTransform& LocalToWorld = GetWinchLocalToWorld(Wire, *Winch);
+				const FTransform& LocalToWorld = GetOwnedWinchLocalToWorld(Wire, *Winch);
 				const FVector LocalTranslate = LocalToWorld.InverseTransformVector(DeltaTranslate);
 				Winch->Location += LocalTranslate;
 			}
@@ -596,7 +479,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 				// of giving me another small rotation, it's giving me a large rotation. Large on
 				// the scale of the rotation of the actor we're part of.
 				const FVector Direction = Winch->Rotation.RotateVector(FVector::ForwardVector);
-				const FTransform& LocalToWorld = GetWinchLocalToWorld(Wire, *Winch);
+				const FTransform& LocalToWorld = GetOwnedWinchLocalToWorld(Wire, *Winch);
 				const FVector WorldDirection = LocalToWorld.TransformVector(Direction);
 				const FVector NewWorldDirection = DeltaRotate.RotateVector(WorldDirection);
 				const FVector NewLocalDirection =
@@ -612,7 +495,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 			const FRotator Rotation = Winch->Rotation;
 			const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
 			const FVector LocalEndLocation = LocalBeginLocation + (LocalDirection * 100.0f);
-			const FTransform& LocalToWorld = GetWinchLocalToWorld(Wire, *Winch);
+			const FTransform& LocalToWorld = GetOwnedWinchLocalToWorld(Wire, *Winch);
 			const FVector LocalTranslate = LocalToWorld.InverseTransformVector(DeltaTranslate);
 			const FVector NewLocalEndLocation = LocalEndLocation + LocalTranslate;
 			const FVector NewDirection = NewLocalEndLocation - LocalBeginLocation;
