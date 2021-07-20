@@ -382,6 +382,12 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	using namespace AGX_WireVisualization_helpers;
 	using namespace AGX_WireComponentVisualizer_helpers;
 
+	UAGX_WireComponent* Wire = GetSelectedWire();
+	if (Wire == nullptr)
+	{
+		return false;
+	}
+
 	if (HasValidNodeSelection())
 	{
 		if (DeltaTranslate.IsZero())
@@ -390,8 +396,8 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		}
 
 		/// @todo Is this Modify necessary? Compare with SplineComponentVisualizer.
-		GetSelectedWire()->Modify();
-		TArray<FWireRoutingNode>& Nodes = GetSelectedWire()->RouteNodes;
+		Wire->Modify();
+		TArray<FWireRoutingNode>& Nodes = Wire->RouteNodes;
 
 		if (ViewportClient->IsAltPressed())
 		{
@@ -408,11 +414,11 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 				// This is the start of a duplication drag. Create the duplicate and select it.
 				bIsDuplicatingNode = true;
 				int32 NewNodeIndex = SelectedNodeIndex + 1;
-				GetSelectedWire()->RouteNodes.Insert(
+				Wire->RouteNodes.Insert(
 					FWireRoutingNode(Nodes[SelectedNodeIndex]), NewNodeIndex);
 				SelectedNodeIndex = NewNodeIndex;
 				NotifyPropertyModified(
-					GetSelectedWire(),
+					Wire,
 					FindFProperty<FProperty>(
 						UAGX_WireComponent::StaticClass(),
 						GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
@@ -421,8 +427,8 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 			{
 				// This is a continuation of a previously started duplication drag. Move the
 				// selected node, i.e., the copy.
-				const FTransform& LocalToWorld = GetSelectedWire()->GetComponentTransform();
-				FWireRoutingNode& SelectedNode = GetSelectedWire()->RouteNodes[SelectedNodeIndex];
+				const FTransform& LocalToWorld = Wire->GetComponentTransform();
+				FWireRoutingNode& SelectedNode = Wire->RouteNodes[SelectedNodeIndex];
 				const FVector CurrentLocalLocation = SelectedNode.Location;
 				const FVector CurrentWorldLocation =
 					LocalToWorld.TransformPosition(CurrentLocalLocation);
@@ -435,8 +441,8 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		else
 		{
 			// This is a regular drag, move the selected node.
-			const FTransform& LocalToWorld = GetSelectedWire()->GetComponentTransform();
-			FWireRoutingNode& SelectedNode = GetSelectedWire()->RouteNodes[SelectedNodeIndex];
+			const FTransform& LocalToWorld = Wire->GetComponentTransform();
+			FWireRoutingNode& SelectedNode = Wire->RouteNodes[SelectedNodeIndex];
 			const FVector CurrentLocalLocation = SelectedNode.Location;
 			const FVector CurrentWorldLocation =
 				LocalToWorld.TransformPosition(CurrentLocalLocation);
@@ -448,60 +454,19 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	}
 	else if (HasValidWinchSelection())
 	{
-		UAGX_WireComponent& Wire = *GetSelectedWire();
-		FAGX_WireWinch* Winch = [this, &Wire]()
+		FAGX_WireWinch& Winch = Wire->GetWinch(SelectedWinch);
+		const FTransform& WinchToWorld = GetWinchLocalToWorld(*Wire, SelectedWinch);
+		switch(SelectedWinchSide)
 		{
-			switch (Wire.BeginWinchType)
-			{
-				case EWireWinchOwnerType::Wire:
-					return (SelectedWinch == EWireSide::Begin) ? &Wire.OwnedBeginWinch
-															   : &Wire.OwnedEndWinch;
-				case EWireWinchOwnerType::WireWinch:
-					return Wire.GetBeginWinchComponentWinch();
-				case EWireWinchOwnerType::Other:
-					return Wire.BorrowedBeginWinch;
-				case EWireWinchOwnerType::None:
-					return static_cast<FAGX_WireWinch*>(nullptr);
-			}
-			return static_cast<FAGX_WireWinch*>(nullptr);
-		}();
-		if (Winch != nullptr && SelectedWinchSide == EWinchSide::Location)
-		{
-			if (!DeltaTranslate.IsZero())
-			{
-				const FTransform& LocalToWorld = GetWinchLocalToWorld(Wire, SelectedWinch);
-				const FVector LocalTranslate = LocalToWorld.InverseTransformVector(DeltaTranslate);
-				Winch->Location += LocalTranslate;
-			}
-			if (!DeltaRotate.IsZero())
-			{
-				// This doesn't work. Transform rotation doesn't work on relative rotations. Instead
-				// of giving me another small rotation, it's giving me a large rotation. Large on
-				// the scale of the rotation of the actor we're part of.
-				const FVector Direction = Winch->Rotation.RotateVector(FVector::ForwardVector);
-				const FTransform& LocalToWorld = GetWinchLocalToWorld(Wire, SelectedWinch);
-				const FVector WorldDirection = LocalToWorld.TransformVector(Direction);
-				const FVector NewWorldDirection = DeltaRotate.RotateVector(WorldDirection);
-				const FVector NewLocalDirection =
-					LocalToWorld.InverseTransformVector(NewWorldDirection);
-				const FRotator NewRotation =
-					FQuat::FindBetween(FVector::ForwardVector, NewLocalDirection).Rotator();
-				Winch->Rotation = NewRotation;
-			}
-		}
-		else if (Winch != nullptr && SelectedWinchSide == EWinchSide::Rotation)
-		{
-			const FVector LocalBeginLocation = Winch->Location;
-			const FRotator Rotation = Winch->Rotation;
-			const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
-			const FVector LocalEndLocation = LocalBeginLocation + (LocalDirection * 100.0f);
-			const FTransform& LocalToWorld = GetWinchLocalToWorld(Wire, SelectedWinch);
-			const FVector LocalTranslate = LocalToWorld.InverseTransformVector(DeltaTranslate);
-			const FVector NewLocalEndLocation = LocalEndLocation + LocalTranslate;
-			const FVector NewDirection = NewLocalEndLocation - LocalBeginLocation;
-			const FRotator NewRotation =
-				FQuat::FindBetween(FVector::ForwardVector, NewDirection).Rotator();
-			Winch->Rotation = NewRotation;
+			case EWinchSide::Location:
+				TransformWinchLocation(Winch, WinchToWorld, DeltaTranslate, DeltaRotate);
+				break;
+			case EWinchSide::Rotation:
+				TransformWinchRotation(Winch, WinchToWorld, DeltaTranslate);
+				break;
+			case EWinchSide::None:
+				// Nothing to do here.
+				break;
 		}
 	}
 	else
