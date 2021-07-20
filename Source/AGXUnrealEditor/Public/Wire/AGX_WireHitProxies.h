@@ -99,6 +99,24 @@ namespace AGX_WireVisualization_helpers
 	 * @return A transformation that transforms from the Wire Winch's local space to world space.
 	 */
 	const FTransform& GetOwnedWinchLocalToWorld(const UAGX_WireComponent& Wire, EWireSide Side);
+
+	/**
+	 * Get the local-to-world transformation for one of the winches in use by a wire. If there is no
+	 * winch in use at the given side then the identity transformation is returned. Determine if
+	 * there is a winch at a particular side with UAGX_WireComponent::HasWinch(EWireSide Side).
+	 *
+	 * The local-to-world transformation is used to transform the location and rotation properties
+	 * of the winch.
+	 *
+	 * The transformation returned depend on the type of winch. If the winch is owned by the Wire
+	 * and doesn't have a body then the Wire's transformation is returned. If a Wire-owned winch
+	 * have a body then the body's transformation is returned. If the winch is owned by a Wire Winch
+	 * then the Wire Winch's transformation is returned regardless of if there is a body or not.
+	 *
+	 * @param Wire The wire that the winch transformation should be found for.
+	 * @param Side The side of the wire where we should look for the winch.
+	 * @return The local-to-world transformation for the selected winch.
+	 */
 	const FTransform& GetWinchLocalToWorld(const UAGX_WireComponent& Wire, EWireSide Side);
 
 	FVector DrawWinch(
@@ -110,8 +128,7 @@ namespace AGX_WireVisualization_helpers
 		const UAGX_WireComponent& Wire, EWireSide Side, const FTransform& LocalToWorld,
 		FPrimitiveDrawInterface* PDI);
 
-	FVector DrawWinch(
-		const UAGX_WireComponent& Wire, EWireSide Side, FPrimitiveDrawInterface* PDI);
+	FVector DrawWinch(const UAGX_WireComponent& Wire, EWireSide Side, FPrimitiveDrawInterface* PDI);
 
 	FVector DrawWinch(const UAGX_WireWinchComponent& Winch, FPrimitiveDrawInterface* PDI);
 
