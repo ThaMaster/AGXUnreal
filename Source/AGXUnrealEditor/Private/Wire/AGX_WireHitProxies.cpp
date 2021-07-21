@@ -105,24 +105,17 @@ FVector AGX_WireVisualization_helpers::DrawWinch(
 }
 
 FVector AGX_WireVisualization_helpers::DrawWinch(
-	const UAGX_WireComponent& Wire, EWireSide Side, const FTransform& LocalToWorld,
-	FPrimitiveDrawInterface* PDI)
+	const UAGX_WireComponent& Wire, EWireSide Side, FPrimitiveDrawInterface* PDI)
 {
+	const FTransform& WinchToWorld = GetWinchLocalToWorld(Wire, Side);
 	const FAGX_WireWinch* Winch = Wire.GetWinch(Side);
 	if (Winch == nullptr)
 	{
 		return FVector::ZeroVector;
 	}
 	return DrawWinch(
-		*Winch, LocalToWorld, new HWinchLocationProxy(&Wire, EWireSide::Begin),
-		new HWinchDirectionProxy(&Wire, EWireSide::Begin), PDI);
-}
-
-FVector AGX_WireVisualization_helpers::DrawWinch(
-	const UAGX_WireComponent& Wire, EWireSide Side, FPrimitiveDrawInterface* PDI)
-{
-	const FTransform& WinchToWorld = GetOwnedWinchLocalToWorld(Wire, Side);
-	return DrawWinch(Wire, Side, WinchToWorld, PDI);
+		*Winch, WinchToWorld, new HWinchLocationProxy(&Wire, Side),
+		new HWinchDirectionProxy(&Wire, Side), PDI);
 }
 
 FVector AGX_WireVisualization_helpers::DrawWinch(

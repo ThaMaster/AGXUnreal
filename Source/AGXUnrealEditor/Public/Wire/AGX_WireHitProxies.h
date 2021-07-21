@@ -124,10 +124,6 @@ namespace AGX_WireVisualization_helpers
 		HWinchLocationProxy* LocationProxy, HWinchDirectionProxy* DirectionProxy,
 		FPrimitiveDrawInterface* PDI);
 
-	FVector DrawWinch(
-		const UAGX_WireComponent& Wire, EWireSide Side, const FTransform& LocalToWorld,
-		FPrimitiveDrawInterface* PDI);
-
 	FVector DrawWinch(const UAGX_WireComponent& Wire, EWireSide Side, FPrimitiveDrawInterface* PDI);
 
 	FVector DrawWinch(const UAGX_WireWinchComponent& Winch, FPrimitiveDrawInterface* PDI);

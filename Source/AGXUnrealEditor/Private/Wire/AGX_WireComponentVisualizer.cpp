@@ -198,43 +198,19 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 	}
 	else
 	{
-		if (Wire->BeginWinchType == EWireWinchOwnerType::Wire)
+		if (Wire->HasBeginWinch())
 		{
-			FVector WinchLocation = DrawWinch(*Wire, EWireSide::Begin, PDI);
+			const FVector WinchLocation = DrawWinch(*Wire, EWireSide::Begin, PDI);
 			if (Wire->RouteNodes.Num() > 0)
 			{
 				/// @todo For nodes attached to a body, use the body's transformation instead.
 				const FTransform& LocalToWorld = Wire->GetComponentTransform();
 				const FVector LocalLocation = Wire->RouteNodes[0].Location;
-				const FVector EndLocation = LocalToWorld.TransformPosition(LocalLocation);
-				PDI->DrawLine(WinchLocation, EndLocation, FLinearColor::White, SDPG_Foreground);
+				const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
+				PDI->DrawLine(WinchLocation, WorldLocation, FLinearColor::White, SDPG_Foreground);
 			}
 		}
-		else if (Wire->BeginWinchType == EWireWinchOwnerType::WireWinch)
-		{
-			const UAGX_WireWinchComponent* WinchComponent = Wire->GetBeginWinchComponent();
-			if (WinchComponent != nullptr)
-			{
-				const FTransform& WinchToWorld = WinchComponent->GetComponentTransform();
-				const FVector WinchLocation = DrawWinch(*Wire, EWireSide::Begin, WinchToWorld, PDI);
-				if (Wire->RouteNodes.Num() > 0)
-				{
-					/// @todo For nodes attached to a body, use the body's transformation instead.
-					const FTransform& LocalToWorld = Wire->GetComponentTransform();
-					const FVector LocalLocation = Wire->RouteNodes[0].Location;
-					const FVector EndLocation = LocalToWorld.TransformPosition(LocalLocation);
-					PDI->DrawLine(WinchLocation, EndLocation, FLinearColor::White, SDPG_Foreground);
-				}
-			}
-			else
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Begin Winch in Wire '%s' in '%s' is set to Wire Winch but no Wire Winch "
-						 "Component was found."),
-					*Wire->GetName(), *GetLabelSafe(Wire->GetOwner()));
-			}
-		}
+
 		if (Wire == GetSelectedWire())
 		{
 			DrawRouteNodes(*Wire, SelectedNodeIndex, PDI);
@@ -242,6 +218,19 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 		else
 		{
 			DrawRouteNodes(*Wire, PDI);
+		}
+
+		if (Wire->HasEndWinch())
+		{
+			const FVector& WinchLocation = DrawWinch(*Wire, EWireSide::End, PDI);
+			if (Wire->RouteNodes.Num() > 0)
+			{
+				/// @todo For nodes attached to a body, use the body's transformation instead.
+				const FTransform& LocalToWorld = Wire->GetComponentTransform();
+				const FVector LocalLocation = Wire->RouteNodes.Last().Location;
+				const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
+				PDI->DrawLine(WorldLocation, WinchLocation, FLinearColor::White, SDPG_Foreground);
+			}
 		}
 	}
 }
@@ -414,14 +403,12 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 				// This is the start of a duplication drag. Create the duplicate and select it.
 				bIsDuplicatingNode = true;
 				int32 NewNodeIndex = SelectedNodeIndex + 1;
-				Wire->RouteNodes.Insert(
-					FWireRoutingNode(Nodes[SelectedNodeIndex]), NewNodeIndex);
+				Wire->RouteNodes.Insert(FWireRoutingNode(Nodes[SelectedNodeIndex]), NewNodeIndex);
 				SelectedNodeIndex = NewNodeIndex;
 				NotifyPropertyModified(
-					Wire,
-					FindFProperty<FProperty>(
-						UAGX_WireComponent::StaticClass(),
-						GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
+					Wire, FindFProperty<FProperty>(
+							  UAGX_WireComponent::StaticClass(),
+							  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
 			}
 			else
 			{
@@ -456,7 +443,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	{
 		FAGX_WireWinch& Winch = Wire->GetWinch(SelectedWinch);
 		const FTransform& WinchToWorld = GetWinchLocalToWorld(*Wire, SelectedWinch);
-		switch(SelectedWinchSide)
+		switch (SelectedWinchSide)
 		{
 			case EWinchSide::Location:
 				TransformWinchLocation(Winch, WinchToWorld, DeltaTranslate, DeltaRotate);
