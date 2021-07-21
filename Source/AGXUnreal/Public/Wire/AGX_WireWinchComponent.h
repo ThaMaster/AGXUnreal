@@ -18,7 +18,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire Winch")
 	FAGX_WireWinch WireWinch;
 
-
+	/// @todo Rename these to something that doesn't mention the body explicitly, or at least makes
+	/// it obvious that the body is optional and what happens when there is no body.
 	/**
 	 * Compute the location of this winch relative to the body attachment, if any. If there is no
 	 * body attachment the the location will be computed relative to this Component instead.

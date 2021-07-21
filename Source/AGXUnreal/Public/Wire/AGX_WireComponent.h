@@ -299,6 +299,11 @@ public:
 	UAGX_WireWinchComponent* GetWinchComponent(EWireSide Side);
 	const UAGX_WireWinchComponent* GetWinchComponent(EWireSide Side) const;
 
+	FComponentReference* GetWinchComponentReference(EWireSide Side);
+
+	FAGX_WireWinch* GetBorrowedWinch(EWireSide Side);
+	const FAGX_WireWinch* GetBorrowedWinch(EWireSide Side) const;
+
 	/**
 	 * An array of nodes that are used to initialize the wire.
 	 *

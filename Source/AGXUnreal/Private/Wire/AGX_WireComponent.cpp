@@ -305,6 +305,48 @@ const UAGX_WireWinchComponent* UAGX_WireComponent::GetWinchComponent(EWireSide S
 	return nullptr;
 }
 
+FComponentReference* UAGX_WireComponent::GetWinchComponentReference(EWireSide Side)
+{
+	switch (Side)
+	{
+		case EWireSide::Begin:
+			return &BeginWinchComponent;
+		case EWireSide::End:
+			return &EndWinchComponent;
+		case EWireSide::None:
+			return nullptr;
+	}
+	return nullptr;
+}
+
+FAGX_WireWinch* UAGX_WireComponent::GetBorrowedWinch(EWireSide Side)
+{
+	switch (Side)
+	{
+		case EWireSide::Begin:
+			return BorrowedBeginWinch;
+		case EWireSide::End:
+			return BorrowedEndWinch;
+		case EWireSide::None:
+			return nullptr;
+	}
+	return nullptr;
+}
+
+const FAGX_WireWinch* UAGX_WireComponent::GetBorrowedWinch(EWireSide Side) const
+{
+	switch (Side)
+	{
+		case EWireSide::Begin:
+			return BorrowedBeginWinch;
+		case EWireSide::End:
+			return BorrowedEndWinch;
+		case EWireSide::None:
+			return nullptr;
+	}
+	return nullptr;
+}
+
 namespace AGX_WireComponent_helpers
 {
 	void PrintNodeModifiedAlreadyInitializedWarning()
@@ -736,6 +778,131 @@ namespace AGX_WireComponent_helpers
 	}
 }
 
+namespace AGX_WireComponent_helpers
+{
+	void CreateNativeWireOwnedWinch(UAGX_WireComponent& Wire, EWireSide Side)
+	{
+		FAGX_WireWinch& Winch = Wire.GetWinch(Side);
+		if (Winch.GetBodyAttachment() == nullptr)
+		{
+			// The Wire Winch does not have a Rigid Body, which means that the Wire Winch will
+			// be attached to the world. Therefore, Location and Rotation should be in the
+			// global coordinate system when passed to AGX Dynamics. The Unreal Engine instance
+			// of the Wire Winch doesn't know about this, it only passes on whatever Location
+			// and Rotation it got, so here we transform from the Wire Component's local
+			// coordinate system to the global coordinate system ON THE GAME INSTANCE of the
+			// Wire Winch. This doesn't change the editor instance.
+			Winch.Location = Wire.GetComponentTransform().TransformPosition(Winch.Location);
+			Winch.Rotation = Wire.GetComponentRotation() + Winch.Rotation;
+			FWireWinchBarrier* Barrier = Winch.GetOrCreateNative();
+			if (Barrier == nullptr)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Could not create AGX Dynamics instance for wire-owned winch on Wire '%s' "
+						 "in '%s'"),
+					*Wire.GetName(), *GetLabelSafe(Wire.GetOwner()));
+				return;
+			}
+
+			Wire.GetNative()->AddWinch(*Barrier);
+		}
+	}
+
+	void CreateNativeWireWinchOwnedWinch(UAGX_WireComponent& Wire, EWireSide Side)
+	{
+		if (Side == EWireSide::None)
+		{
+			return;
+		}
+
+		UAGX_WireWinchComponent* WinchComponent = Wire.GetWinchComponent(Side);
+		if (WinchComponent == nullptr)
+		{
+			const FComponentReference* Reference = Wire.GetWinchComponentReference(Side);
+			const FString WinchName = Reference->ComponentProperty.ToString();
+			const FString ActorName = GetLabelSafe(Reference->OtherActor);
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Wire '%s' in '%s' did not find a Wire Winch named '%s' in '%s'. AGX Dynamics "
+					 "instance will not be created."),
+				*Wire.GetName(), *GetLabelSafe(Wire.GetOwner()), *WinchName, *ActorName);
+			return;
+		}
+
+		FAGX_WireWinch& WinchData = WinchComponent->WireWinch;
+		WinchData.Location = WinchComponent->ComputeBodyRelativeLocation();
+		WinchData.Rotation = WinchComponent->ComputeBodyRelativeRotation();
+		FWireWinchBarrier* Barrier = WinchData.GetOrCreateNative();
+		if (Barrier == nullptr)
+		{
+			const FComponentReference* Reference = Wire.GetWinchComponentReference(Side);
+			const FString WinchName = Reference->ComponentProperty.ToString();
+			const FString ActorName = GetLabelSafe(Reference->OtherActor);
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Could not create AGX Dynamics instance for a winch on '%s' in '%s'. Winch is "
+					 "owned by '%s' in '%s'."),
+				*Wire.GetName(), *GetLabelSafe(Wire.GetOwner()), *WinchName, *ActorName);
+			return;
+		}
+
+		Wire.GetNative()->AddWinch(*Barrier);
+	}
+
+	void CreateNativeWireBorrowedWinch(UAGX_WireComponent& Wire, EWireSide Side)
+	{
+		if (Side == EWireSide::None)
+		{
+			return;
+		}
+
+		FAGX_WireWinch* Winch = Wire.GetBorrowedWinch(Side);
+		if (Winch == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Wire Winch Owner Type on '%s' in '%s' has been set to Other but no Wire "
+					 "Winch as been assigned to Borrowed Winch. No AGX Dynamics winch instance "
+					 "will be created."),
+				*Wire.GetName(), *GetLabelSafe(Wire.GetOwner()));
+			return;
+		}
+
+		FWireWinchBarrier* Barrier = Winch->GetOrCreateNative();
+		if (Barrier == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Could not create AGX Dynamics instance for a borrowed winch on '%s' in "
+					 "'%s'."),
+				*Wire.GetName(), *GetLabelSafe(Wire.GetOwner()));
+			return;
+		}
+
+		Wire.GetNative()->AddWinch(*Barrier);
+	}
+
+	void CreateNativeWinch(UAGX_WireComponent& Wire, EWireSide Side)
+	{
+		EWireWinchOwnerType WinchType = Wire.GetWinchOwnerType(Side);
+		switch (WinchType)
+		{
+			case EWireWinchOwnerType::Wire:
+				CreateNativeWireOwnedWinch(Wire, Side);
+				break;
+			case EWireWinchOwnerType::WireWinch:
+				CreateNativeWireWinchOwnedWinch(Wire, Side);
+				break;
+			case EWireWinchOwnerType::Other:
+				break;
+			case EWireWinchOwnerType::None:
+				// Nothing to do here.
+				break;
+		}
+	}
+}
+
 void UAGX_WireComponent::CreateNative()
 {
 	using namespace AGX_WireComponent_helpers;
@@ -765,108 +932,9 @@ void UAGX_WireComponent::CreateNative()
 	// Panel so the user can be informed before clicking Play.
 	TArray<FString> ErrorMessages;
 
-	// Create Native for the begin winch.
-	FAGX_WireWinch* BeginWinch = nullptr;
-	switch (BeginWinchType)
+	if (HasBeginWinch())
 	{
-		case EWireWinchOwnerType::Wire:
-			BeginWinch = &OwnedBeginWinch;
-			if (BeginWinch->GetBodyAttachment() == nullptr)
-			{
-				// The Wire Winch does not have a Rigid Body, which means that the Wire Winch will
-				// be attached to the world. Therefore, Location and Rotation should be in the
-				// global coordinate system when passed to AGX Dynamics. The Unreal Engine instance
-				// of the Wire Winch doesn't know about this, it only passes on whatever Location
-				// and Rotation it got, so here we transform from the Wire Component's local
-				// coordinate system to the global coordinate system ON THE GAME INSTANCE of the
-				// Wire Winch. This doesn't change the editor instance.
-				BeginWinch->Location =
-					GetComponentTransform().TransformPosition(BeginWinch->Location);
-				BeginWinch->Rotation = GetComponentRotation() + BeginWinch->Rotation;
-			}
-			break;
-		case EWireWinchOwnerType::WireWinch:
-			UActorComponent* WinchActorComponent = BeginWinchComponent.GetComponent(nullptr);
-			if (WinchActorComponent == nullptr)
-			{
-				TArray<UAGX_WireWinchComponent*> AllWireWinches;
-				AActor* SearchActor = BeginWinchComponent.OtherActor != nullptr
-										  ? BeginWinchComponent.OtherActor
-										  : GetOwner();
-				if (SearchActor == nullptr)
-				{
-					UE_LOG(
-						LogAGX, Error,
-						TEXT("Found a Wire Component that want a Wire Winch Component but didn't "
-							 "have an Actor to search in."));
-					UE_LOG(LogAGX, Fatal, TEXT("TODO: Handle this case somehow."));
-				}
-				SearchActor->GetComponents(AllWireWinches, false);
-				UAGX_WireWinchComponent** It = AllWireWinches.FindByPredicate(
-					[this](UAGX_WireWinchComponent* Winch) {
-						return Winch != nullptr &&
-							   Winch->GetFName() == BeginWinchComponent.ComponentProperty;
-					});
-				if (It == nullptr)
-				{
-					UE_LOG(
-						LogAGX, Error,
-						TEXT("Wire '%s' in '%s' did not find a Wire Winch named '%s' in '%s'."),
-						*GetName(), *GetLabelSafe(GetOwner()),
-						*BeginWinchComponent.ComponentProperty.ToString(),
-						*GetLabelSafe(SearchActor));
-				}
-				else
-				{
-					WinchActorComponent = *It;
-				}
-			}
-			if (WinchActorComponent == nullptr)
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Could not find Begin Winch Component. Looked for '%s' in '%s'."),
-					*BeginWinchComponent.ComponentProperty.ToString(),
-					*GetLabelSafe(BeginWinchComponent.OtherActor));
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Cannot create Begin Wire Winch: Begin Winch Component not set."));
-			}
-			else
-			{
-				UAGX_WireWinchComponent* WinchComponent =
-					Cast<UAGX_WireWinchComponent>(WinchActorComponent);
-				if (WinchComponent == nullptr)
-				{
-					UE_LOG(
-						LogAGX, Warning,
-						TEXT("Cannot create Begin Wire Winch: Begin Winch Component set to "
-							 "something not a Wire Winch Component"));
-				}
-				else
-				{
-					BeginWinch = &WinchComponent->WireWinch;
-					BeginWinch->Location = WinchComponent->ComputeBodyRelativeLocation();
-					BeginWinch->Rotation = WinchComponent->ComputeBodyRelativeRotation();
-				}
-				break;
-			}
-	}
-	if (BeginWinch != nullptr)
-	{
-		FWireWinchBarrier* WinchBarrier = BeginWinch->GetOrCreateNative();
-		if (WinchBarrier != nullptr)
-		{
-			NativeBarrier.AddWinch(*WinchBarrier);
-		}
-		else
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Failed to allocate AGX Dynamics instance for Begin Winch for Wire Component "
-					 "'%s' in Actor '%s'."),
-				*GetName(), *GetLabelSafe(GetOwner()));
-		}
+		AGX_WireComponent_helpers::CreateNativeWinch(*this, EWireSide::Begin);
 	}
 
 	// Create AGX Dynamics simulation nodes and initialize the wire.
@@ -926,6 +994,11 @@ void UAGX_WireComponent::CreateNative()
 				break;
 		}
 		NativeBarrier.AddRouteNode(NodeBarrier);
+	}
+
+	if (HasEndWinch())
+	{
+		AGX_WireComponent_helpers::CreateNativeWinch(*this, EWireSide::End);
 	}
 
 	if (ErrorMessages.Num() > 0)
