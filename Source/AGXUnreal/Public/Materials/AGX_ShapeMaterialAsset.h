@@ -17,7 +17,7 @@ class UAGX_ShapeMaterialInstance;
  * Since a contact involves two AGX Shapes, the final parameters used as input to the force
  * equations are a fusion of the two shape's AGX Materials. Though, the way the two material's
  * properties are combined might not be desirable in all scenarios. Therefore, there is another AGX
- * asset called AGX Contact Material that provides a well-defined and more detailed defintion over
+ * asset called AGX Contact Material that provides a well-defined and more detailed definition over
  * the parameters to use when two specific AGX Materials come in contact with each other.
  *
  * It is preferred to use AGX Contact Materials for superior simulation results!
@@ -31,10 +31,11 @@ class AGXUNREAL_API UAGX_ShapeMaterialAsset : public UAGX_ShapeMaterialBase
 	// This class represents material properties as an in-Editor asset that can be serialized to
 	// disk.
 	//
-	// It has no connection with the actual native AGX material.Instead, its sibling class
+	// It has no connection with the actual native AGX material. Instead, its sibling class
 	// UAGX_ShapeMaterialInstance handles all interaction with the actual native AGX
-	// material.Therefore, all in - game objects with Uproperty material pointers need to swap their
-	// pointers to in - game UAGX_ShapeMaterialInstances.
+	// material. Therefore, all in-game objects with Uproperty material pointers need to swap their
+	// pointers to in-game UAGX_ShapeMaterialInstances. For more details, see the comment in
+	// AGX_MaterialBase.h.
 
 	GENERATED_BODY()
 
@@ -50,6 +51,7 @@ private:
 
 	void WriteSurfacePropertyToInstance(const FName& PropertyName);
 	void WriteBulkPropertyToInstance(const FName& PropertyName);
+	void WriteWirePropertyToInstance(const FName& PropertyName);
 #endif
 
 	TWeakObjectPtr<UAGX_ShapeMaterialInstance> Instance;

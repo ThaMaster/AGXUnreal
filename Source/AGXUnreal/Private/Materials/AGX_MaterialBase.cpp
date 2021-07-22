@@ -59,5 +59,6 @@ void UAGX_MaterialBase::CopyShapeMaterialProperties(const UAGX_MaterialBase* Sou
 	{
 		Bulk = Source->Bulk;
 		Surface = Source->Surface;
+		Wire = Source->Wire;
 	}
 }

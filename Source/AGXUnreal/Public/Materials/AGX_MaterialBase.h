@@ -3,6 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Materials/AGX_ShapeMaterialBulkProperties.h"
 #include "Materials/AGX_ShapeMaterialSurfaceProperties.h"
+#include "Materials/AGX_ShapeMaterialWireProperties.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -13,26 +14,23 @@
 class FShapeMaterialBarrier;
 
 /**
- * Defines physical properties of AGX shapes, AGX terrains etc.
+ * Defines physical properties of AGX Shapes, AGX Terrains, AGX Wires, etc.
  *
  * Materials can exist in two different contexts: editing and play.
  *
- * Editing is the regular Unreal Editor mode, where we use the editor to set
- * properties and assign assets. In this case the material is an asset. New
- * materials are created and existing materials are edited in the Content
- * Browser. Material properties, such as on an UAGX_ShapeComponent, are pointers
- * to these assets.
+ * Editing is the regular Unreal Editor mode, where we use the editor to set properties and assign
+ * assets. In this case the material is an asset. New materials are created and existing materials
+ * are edited in the Content Browser. Material properties, such as on an UAGX_ShapeComponent, are
+ * pointers to these assets.
  *
- * During play things are a bit different. This is because we don't want changes
- * made during play to affect the on-disk assets. We therefore decouple edit-mode
- * assets from play session objects by creating clones of the edit mode assets
- * for use during the duration of the play session. The Instances are the only
- * classes that has a native AGX Dynamics object associated with it.
+ * During play things are a bit different. This is because we don't want changes made during play to
+ * affect the on-disk assets. We therefore decouple edit-mode assets from play session objects by
+ * creating clones of the edit mode assets for use during the duration of the play session. The
+ * Instances are the only classes that has a native AGX Dynamics object associated with it.
  *
- * Subclasses are used to differentiate between the two types, with the Asset
- * suffix being used for editing mode objects and the Instance suffix being used
- * for the play mode objects. The switch is done in BeginPlay of the class that
- * has the UPROPERTY. A short illustrative example:
+ * Subclasses are used to differentiate between the two types, with the Asset suffix being used for
+ * editing mode objects and the Instance suffix being used for the play mode objects. The switch is
+ * done in BeginPlay of the class that has the UPROPERTY. A short illustrative example:
  *
  *	UCLASS()
  *	class UMyClass : public UObject
@@ -56,14 +54,13 @@ class FShapeMaterialBarrier;
  *			MyMaterial = Instance;
  *		}
  * 	}
+ * There may be a bit more to it, depending on the type of material (see next paragraph) but
+ * something like that.
  *
- * There may be a bit more to it, depending on the type of material (see next
- * paragraph) but something like that.
- *
- * In addition to the Asset/Instance separation there are also multiple types
- * of materials, currently Shape and Terrain, each with their own Base, Asset,
- * and Instance classes. What they all have in common is that a contact material
- * may be created between any pair of materials, regardless of their types.
+ * In addition to the Asset/Instance separation there are also multiple types of materials,
+ * currently Shape and Terrain, each with their own Base, Asset, and Instance classes. What they all
+ * have in common is that a contact material may be created between any pair of materials,
+ * regardless of their types. Wires use Shape Material.
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", abstract, AutoExpandCategories = ("Material Properties"))
@@ -77,6 +74,14 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Material Properties")
 	FAGX_ShapeMaterialSurfaceProperties Surface;
+
+	UPROPERTY(EditAnywhere, Category = "Material Properties")
+	FAGX_ShapeMaterialWireProperties Wire;
+
+	// Setter and getter for surface properties. These can be here since they are shared by both
+	// Shape Materials and Terrain Materials. The Bulk properties differ between Shape and Terrain
+	// Materials so each material type have their own set of getters and setters for those. The
+	// Wire properties are Shape Material only, so they are in the Shape Material.
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
 	virtual void SetFrictionEnabled(bool Enabled);

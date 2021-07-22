@@ -6,7 +6,6 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
 
-
 void UAGX_ShapeMaterialInstance::SetDensity(float InDensity)
 {
 	if (HasNative())
@@ -91,7 +90,8 @@ void UAGX_ShapeMaterialInstance::SetMinMaxElasticRestLength(float InMin, float I
 {
 	if (HasNative())
 	{
-		NativeBarrier->SetMinMaxElasticRestLength(static_cast<double>(InMin), static_cast<double>(InMax));
+		NativeBarrier->SetMinMaxElasticRestLength(
+			static_cast<double>(InMin), static_cast<double>(InMax));
 	}
 
 	Bulk.MinElasticRestLength = InMin;
@@ -182,7 +182,8 @@ void UAGX_ShapeMaterialInstance::SetAdhesion(float AdhesiveForce, float Adhesive
 {
 	if (HasNative())
 	{
-		NativeBarrier->SetAdhesion(static_cast<double>(AdhesiveForce), static_cast<double>(AdhesiveOverlap));
+		NativeBarrier->SetAdhesion(
+			static_cast<double>(AdhesiveForce), static_cast<double>(AdhesiveOverlap));
 	}
 
 	Surface.AdhesiveForce = static_cast<double>(AdhesiveForce);
@@ -207,6 +208,78 @@ float UAGX_ShapeMaterialInstance::GetAdhesiveOverlap() const
 	}
 
 	return static_cast<float>(Surface.AdhesiveOverlap);
+}
+
+float UAGX_ShapeMaterialInstance::GetYoungsModulusStretch() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetYoungsModulus();
+	}
+	return Wire.YoungsModulusStretch;
+}
+
+void UAGX_ShapeMaterialInstance::SetYoungsModulusStretch(float InYoungsModulus)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetYoungsModulusStretch(InYoungsModulus);
+	}
+	Wire.YoungsModulusStretch = InYoungsModulus;
+}
+
+float UAGX_ShapeMaterialInstance::GetYoungsModulusBend() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetYoungsModulusBend();
+	}
+	return Wire.YoungsModulusBend;
+}
+
+void UAGX_ShapeMaterialInstance::SetYoungsModulusBend(float InYoungsModulus)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetYoungsModulusBend(InYoungsModulus);
+	}
+	Wire.YoungsModulusBend = InYoungsModulus;
+}
+
+float UAGX_ShapeMaterialInstance::GetDampingStretch() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetDampingStretch();
+	}
+	return Wire.DampingStretch;
+}
+
+void UAGX_ShapeMaterialInstance::SetDampingStretch(float InDamping)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetDampingStretch(InDamping);
+	}
+	Wire.DampingStretch = InDamping;
+}
+
+float UAGX_ShapeMaterialInstance::GetDampingBend() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetDampingBend();
+	}
+	return Wire.DampingBend;
+}
+
+void UAGX_ShapeMaterialInstance::SetDampingBend(float InDamping)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetDampingBend(InDamping);
+	}
+	Wire.DampingBend = InDamping;
 }
 
 UAGX_ShapeMaterialInstance* UAGX_ShapeMaterialInstance::CreateFromAsset(
@@ -268,6 +341,7 @@ void UAGX_ShapeMaterialInstance::UpdateNativeProperties()
 	{
 		NativeBarrier->SetName(TCHAR_TO_UTF8(*GetName()));
 
+		// Bulk properties.
 		NativeBarrier->SetDensity(Bulk.Density);
 		NativeBarrier->SetYoungsModulus(Bulk.YoungsModulus);
 		NativeBarrier->SetBulkViscosity(Bulk.Viscosity);
@@ -275,10 +349,17 @@ void UAGX_ShapeMaterialInstance::UpdateNativeProperties()
 		NativeBarrier->SetMinMaxElasticRestLength(
 			Bulk.MinElasticRestLength, Bulk.MaxElasticRestLength);
 
+		// Surface properties.
 		NativeBarrier->SetFrictionEnabled(Surface.bFrictionEnabled);
 		NativeBarrier->SetRoughness(Surface.Roughness);
 		NativeBarrier->SetSurfaceViscosity(Surface.Viscosity);
 		NativeBarrier->SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
+
+		// Wire properties.
+		NativeBarrier->SetYoungsModulusStretch(Wire.YoungsModulusStretch);
+		NativeBarrier->SetYoungsModulusBend(Wire.YoungsModulusBend);
+		NativeBarrier->SetDampingStretch(Wire.DampingStretch);
+		NativeBarrier->SetDampingBend(Wire.DampingBend);
 	}
 }
 

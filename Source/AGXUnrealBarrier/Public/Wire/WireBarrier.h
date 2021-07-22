@@ -7,6 +7,7 @@
 // System includes.
 #include <memory>
 
+class FShapeMaterialBarrier;
 struct FWireRef;
 class FWireNodeBarrier;
 class FWireWinchBarrier;
@@ -44,15 +45,15 @@ public:
 
 	/** Damping and Young's modulus for demonstration/experimentation purposes. Will be replaced
 	 * with Wire Material shortly. */
-	void AllocateNative(
-		float Radius, float ResolutionPerUnitLength, float DampingBend, float DampingStretch,
-		float YoungsModulusBend, float YoungsModulusStretch);
+	void AllocateNative(float Radius, float ResolutionPerUnitLength);
 
 	void SetScaleConstant(double ScaleConstant);
 	double GetScaleConstant() const;
 
 	void SetLinearVelocityDamping(double Damping);
 	double GetLinearVelocityDamping() const;
+
+	void SetMaterial(const FShapeMaterialBarrier& Material);
 
 	bool GetRenderListEmpty() const;
 

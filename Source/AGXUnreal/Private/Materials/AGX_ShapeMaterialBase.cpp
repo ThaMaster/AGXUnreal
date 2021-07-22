@@ -3,7 +3,6 @@
 // AGX Dynamics for Unreal includes.
 #include "Materials/ShapeMaterialBarrier.h"
 
-
 void UAGX_ShapeMaterialBase::SetDensity(float InDensity)
 {
 	Bulk.Density = static_cast<double>(InDensity);
@@ -58,6 +57,46 @@ float UAGX_ShapeMaterialBase::GetMinElasticRestLength() const
 float UAGX_ShapeMaterialBase::GetMaxElasticRestLength() const
 {
 	return static_cast<float>(Bulk.MaxElasticRestLength);
+}
+
+float UAGX_ShapeMaterialBase::GetYoungsModulusStretch() const
+{
+	return Wire.YoungsModulusStretch;
+}
+
+void UAGX_ShapeMaterialBase::SetYoungsModulusStretch(float InYoungsModulus)
+{
+	Wire.YoungsModulusStretch = InYoungsModulus;
+}
+
+float UAGX_ShapeMaterialBase::GetYoungsModulusBend() const
+{
+	return Wire.YoungsModulusBend;
+}
+
+void UAGX_ShapeMaterialBase::SetYoungsModulusBend(float InYoungsModulus)
+{
+	Wire.YoungsModulusBend = InYoungsModulus;
+}
+
+float UAGX_ShapeMaterialBase::GetDampingStretch() const
+{
+	return Wire.DampingStretch;
+}
+
+void UAGX_ShapeMaterialBase::SetDampingStretch(float InDamping)
+{
+	Wire.DampingStretch = InDamping;
+}
+
+float UAGX_ShapeMaterialBase::GetDampingBend() const
+{
+	return Wire.DampingBend;
+}
+
+void UAGX_ShapeMaterialBase::SetDampingBend(float InDamping)
+{
+	Wire.DampingBend = InDamping;
 }
 
 void UAGX_ShapeMaterialBase::CopyFrom(const FShapeMaterialBarrier* Source)

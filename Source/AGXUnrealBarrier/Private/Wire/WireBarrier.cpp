@@ -1,13 +1,16 @@
 #include "Wire/WireBarrier.h"
 
 // AGX Unreal includes.
+#include "Materials/ShapeMaterialBarrier.h"
 #include "NativeBarrier.impl.h"
+#include "AGXRefs.h"
 #include "TypeConversions.h"
 #include "Wire/WireNodeBarrier.h"
 #include "Wire/WireNodeRef.h"
 #include "Wire/WireRef.h"
 #include "Wire/WireWinchBarrier.h"
 #include "Wire/WireWinchRef.h"
+
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -41,9 +44,7 @@ FWireBarrier::~FWireBarrier()
 
 /** Damping and Young's modulus for demonstration/experimentation purposes. Will be replaced
  * with Wire Material shortly. */
-void FWireBarrier::AllocateNative(
-	float Radius, float ResolutionPerUnitLength, float DampingBend, float DampingStretch,
-	float YoungsModulusBend, float YoungsModulusStretch)
+void FWireBarrier::AllocateNative(float Radius, float ResolutionPerUnitLength)
 {
 	check(!HasNative());
 	PreNativeChanged();
@@ -51,21 +52,6 @@ void FWireBarrier::AllocateNative(
 	agx::Real ResolutionPerUnitLengthAGX = ConvertDistanceInv(ResolutionPerUnitLength);
 	NativeRef->Native = new agxWire::Wire(RadiusAGX, ResolutionPerUnitLengthAGX);
 	PostNativeChanged();
-
-/// @todo REMOVE THIS!
-/// This is only for testing.
-/// Add proper Wire Material support.
-#if 1
-	static int Counter = 0;
-	++Counter;
-	agx::MaterialRef Material = new agx::Material(agx::String::format("WireMaterial_%d", Counter));
-	agx::WireMaterial* WireMaterial = Material->getWireMaterial();
-	WireMaterial->setDampingBend(DampingBend);
-	WireMaterial->setDampingStretch(DampingStretch);
-	WireMaterial->setYoungsModulusBend(YoungsModulusBend);
-	WireMaterial->setYoungsModulusStretch(YoungsModulusStretch);
-	NativeRef->Native->setMaterial(Material);
-#endif
 }
 
 void FWireBarrier::SetScaleConstant(double ScaleConstant)
@@ -90,6 +76,13 @@ double FWireBarrier::GetLinearVelocityDamping() const
 {
 	check(HasNative());
 	return NativeRef->Native->getLinearVelocityDamping();
+}
+
+void FWireBarrier::SetMaterial(const FShapeMaterialBarrier& Material)
+{
+	check(HasNative());
+	check(Material.HasNative());
+	NativeRef->Native->setMaterial(Material.GetNative()->Native);
 }
 
 bool FWireBarrier::GetRenderListEmpty() const

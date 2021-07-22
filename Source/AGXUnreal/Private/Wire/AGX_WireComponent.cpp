@@ -6,6 +6,8 @@
 #include "AGX_Simulation.h"
 #include "AGX_UpropertyDispatcher.h"
 #include "AGXUnrealBarrier.h"
+#include "Materials/AGX_ShapeMaterialAsset.h"
+#include "Materials/AGX_ShapeMaterialInstance.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -675,6 +677,9 @@ void UAGX_WireComponent::BeginPlay()
 	Super::BeginPlay();
 	if (!HasNative() && !GIsReconstructingBlueprintInstances)
 	{
+		// Do not create a native AGX Dynamics object if GIsReconstructingBlueprintInstances is set.
+		// That means that we're being created as part of a Blueprint Reconstruction and we will
+		// soon be assigned the native that the reconstructed Wire Component had, if any.
 		CreateNative();
 		check(HasNative()); /// @todo Consider better error handling than check.
 	}
@@ -914,10 +919,24 @@ void UAGX_WireComponent::CreateNative()
 	 * Damping and Young's modulus for demonstration/experimentation purposes. Will be replaced
 	 * with Wire Material shortly.
 	 */
-	NativeBarrier.AllocateNative(
-		Radius, ResolutionPerUnitLength, DampingBend, DampingStretch, YoungsModulusBend,
-		YoungsModulusStretch);
+	NativeBarrier.AllocateNative(Radius, ResolutionPerUnitLength);
 	check(HasNative()); /// @todo Consider better error handling than 'check'.
+
+	if (PhysicalMaterial)
+	{
+		UWorld* World = GetWorld();
+		UAGX_ShapeMaterialInstance* MaterialInstance =
+			static_cast<UAGX_ShapeMaterialInstance*>(PhysicalMaterial->GetOrCreateInstance(World));
+		check(MaterialInstance);
+		if (MaterialInstance != PhysicalMaterial && World != nullptr && World->IsGameWorld())
+		{
+			PhysicalMaterial = MaterialInstance;
+		}
+		FShapeMaterialBarrier* MaterialBarrier =
+			MaterialInstance->GetOrCreateShapeMaterialNative(World);
+		check(MaterialBarrier);
+		NativeBarrier.SetMaterial(*MaterialBarrier);
+	}
 
 	NativeBarrier.SetLinearVelocityDamping(LinearVelocityDamping);
 
