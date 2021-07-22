@@ -153,8 +153,8 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire Begin Winch",
 		Meta =
-			(AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "",
-			 AllowAnyActor, EditConditionHides,
+			(AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "", AllowAnyActor,
+			 EditConditionHides,
 			 EditCondition = "BeginWinchType == EWireWinchOwnerType::WireWinch"))
 	FComponentReference BeginWinchComponent;
 
@@ -233,8 +233,8 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire End Winch",
 		Meta =
-			(AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "",
-			 EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::WireWinch"))
+			(AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "", EditConditionHides,
+			 EditCondition = "EndWinchType == EWireWinchOwnerType::WireWinch"))
 	FComponentReference EndWinchComponent;
 
 	bool HasEndWinchComponent() const;
@@ -323,7 +323,7 @@ public:
 
 	/** For demonstration/experimentation purposes. Will be replaced with Wire Material shortly. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire|ToBeMovedToMaterial")
-	float YoungsModulusBend = 6e10f;
+	float YoungsModulusBend = 6e6f;
 
 	/** For demonstration/experimentation purposes. Will be replaced with Wire Material shortly. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire|ToBeMovedToMaterial")
