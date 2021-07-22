@@ -41,7 +41,9 @@ void UAGX_ShapeComponent::AssignNative(uint64 NativeAddress)
 TStructOnScope<FActorComponentInstanceData> UAGX_ShapeComponent::GetComponentInstanceData() const
 {
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
-		this, this, [](UActorComponent* Component) {
+		this, this,
+		[](UActorComponent* Component)
+		{
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
