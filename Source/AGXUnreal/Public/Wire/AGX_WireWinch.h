@@ -230,53 +230,53 @@ class AGXUNREAL_API UAGX_WireWinch_FL : public UBlueprintFunctionLibrary
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
-	bool SetBodyAttachment(UPARAM(ref) FAGX_WireWinch& Winch, UAGX_RigidBodyComponent* Body);
+	static bool SetBodyAttachment(UPARAM(ref) FAGX_WireWinch& Winch, UAGX_RigidBodyComponent* Body);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	UAGX_RigidBodyComponent* GetBodyAttachment(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static UAGX_RigidBodyComponent* GetBodyAttachment(UPARAM(ref) const FAGX_WireWinch& Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	void SetPulledInLength(UPARAM(ref) FAGX_WireWinch& Winch, float InPulledInLength);
+	static void SetPulledInLength(UPARAM(ref) FAGX_WireWinch& Winch, float InPulledInLength);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	float GetPulledInLength(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetPulledInLength(UPARAM(ref) const FAGX_WireWinch& Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	void SetMotorEnabled(UPARAM(ref) FAGX_WireWinch& Winch, bool bMotorEnabled);
+	static void SetMotorEnabled(UPARAM(ref) FAGX_WireWinch& Winch, bool bMotorEnabled);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	bool IsMotorEnabled(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static bool IsMotorEnabled(UPARAM(ref) const FAGX_WireWinch& Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	void SetMotorForceRange(UPARAM(ref) FAGX_WireWinch& Winch, float Min, float Max);
+	static void SetMotorForceRange(UPARAM(ref) FAGX_WireWinch& Winch, float Min, float Max);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	float GetMotorForceRangeMin(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetMotorForceRangeMin(UPARAM(ref) const FAGX_WireWinch& Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	float GetMotorForceRangeMax(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetMotorForceRangeMax(UPARAM(ref) const FAGX_WireWinch& Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	void SetBrakeForceRange(UPARAM(ref) FAGX_WireWinch& Winch, float Min, float Max);
+	static void SetBrakeForceRange(UPARAM(ref) FAGX_WireWinch& Winch, float Min, float Max);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	float GetBrakeForceRangeMin(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetBrakeForceRangeMin(UPARAM(ref) const FAGX_WireWinch& Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	float GetBrakeForceRangeMax(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetBrakeForceRangeMax(UPARAM(ref) const FAGX_WireWinch& Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	void SetBrakeEnabled(UPARAM(ref) FAGX_WireWinch& Winch, bool bInBrakeEnabled);
+	static void SetBrakeEnabled(UPARAM(ref) FAGX_WireWinch& Winch, bool bInBrakeEnabled);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	bool IsBrakeEnabled(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static bool IsBrakeEnabled(UPARAM(ref) const FAGX_WireWinch& Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch", Meta = (DisplayName = "SetTargetSpeed"))
-	void SetTargetSpeed(UPARAM(ref) FAGX_WireWinch& Winch, float InTargetSpeed);
+	static void SetTargetSpeed(UPARAM(ref) FAGX_WireWinch& Winch, float InTargetSpeed);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch", Meta = (DisplayName = "GetTargetSpeed"))
-	float GetTargetSpeed(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetTargetSpeed(UPARAM(ref) const FAGX_WireWinch& Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch", Meta = (DisplayName = "GetCurrentSpeed"))
-	float GetCurrentSpeed(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetCurrentSpeed(UPARAM(ref) const FAGX_WireWinch& Winch);
 };
