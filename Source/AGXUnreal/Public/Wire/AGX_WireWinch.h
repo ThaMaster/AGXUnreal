@@ -54,6 +54,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
 	FAGX_RigidBodyReference BodyAttachment;
 
+	/**
+	 * The amount of wire that exists inside the winch. If auto feed is enabled then this value is
+	 * decreased by the length or the wire route on initialization.
+	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
 	double PulledInLength = 1000.0;
 
@@ -101,7 +105,7 @@ public:
 
 	/**
 	 * Set the desired brake force range. The lower end of the range is the force with which this
-	 * winch brake can hold the wire from hauling out and the upper end of the range is the force
+	 * winch brake can hold the wire from hauling in and the upper end of the range is the force
 	 * with which this winch brake can hold the wire from paying out.
 	 *
 	 * It's important that the lower value is less than zero and the upper larger than zero.
@@ -110,6 +114,11 @@ public:
 	FAGX_DoubleInterval BrakeForceRange = {
 		-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()};
 
+	/**
+	 * Enable or disable the emergency brake. This brake only prevents hauling in, it does not
+	 * affect pay out. The emergency brake is disabled when the speed is set to pay out, i.e., speed
+	 * > 0.
+	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
 	bool bEmergencyBrakeEnabled = false;
 };
