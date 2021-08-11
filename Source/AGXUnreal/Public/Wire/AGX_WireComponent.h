@@ -216,7 +216,7 @@ public:
 	 * @return The attached Wire Winch, or nullptr.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
-	FAGX_WireWinch& GetBeginWinch();
+	UPARAM(ref) FAGX_WireWinch& GetBeginWinch();
 
 	const FAGX_WireWinch* GetBeginWinch() const;
 
@@ -282,7 +282,7 @@ public:
 	 * @return The attached Wire Winch, or nullptr.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
-	FAGX_WireWinch& GetEndWinch();
+	UPARAM(ref) FAGX_WireWinch& GetEndWinch();
 
 	const FAGX_WireWinch* GetEndWinch() const;
 
