@@ -79,7 +79,7 @@ public:
 	 * the target speed because of force range limitations and resistance from the brake.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
-	double TargetSpeed = -10.0;
+	double TargetSpeed = 0.0;
 
 	/**
 	 * The allowed force range when paying out and hauling in wire. The lower end of the range is
