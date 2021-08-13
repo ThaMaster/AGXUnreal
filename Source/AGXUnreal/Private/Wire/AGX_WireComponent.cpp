@@ -490,6 +490,11 @@ double UAGX_WireComponent::GetTension() const
 	return NativeBarrier.GetTension();
 }
 
+float UAGX_WireComponent::GetTension_BP() const
+{
+	return static_cast<float>(GetTension());
+}
+
 bool UAGX_WireComponent::HasRenderNodes() const
 {
 	if (!HasNative())

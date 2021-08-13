@@ -504,6 +504,9 @@ public:
 	/// \todo What parameter to pass?
 	double GetTension() const;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire", Meta = (DisplayName = "Get Tension"))
+	float GetTension_BP() const;
+
 	/// @return True if this wire has at least one renderable simulation node.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	bool HasRenderNodes() const;
