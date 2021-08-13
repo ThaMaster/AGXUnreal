@@ -74,6 +74,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	float GetMass() const;
 
+	/**
+	 * Explicitly update mass properties.
+	 *
+	 * E.g., when the density is changed on a material which this rigid body depends on. This method
+	 * uses the current mass property update mask. I.e., if this rigid body has an explicitly
+	 * assigned mass, mass will not be updated during this call.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void UpdateMassProperties();
+
+	/**
+	 * Calculate the mass of this rigid body using the volume and density of added geometries.
+	 *
+	 * \note This calculated mass isn't necessary the same as getMassProperties()->getMass() since
+	 * the mass in mass properties could be assigned (i.e., explicit).
+	 *
+	 * @return The total mass of this rigid body, calculated given volume and density of added
+	 * geometries.
+	 */
+	double CalculateMass() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics", Meta = (DisplayName = "CalculateMass"))
+	float CalculateMass_BP() const;
+
 	/// The three-component diagonal of the inertia tensor.
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics",

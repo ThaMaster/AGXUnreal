@@ -738,6 +738,29 @@ float UAGX_RigidBodyComponent::GetMass() const
 	return Mass;
 }
 
+void UAGX_RigidBodyComponent::UpdateMassProperties()
+{
+	if (HasNative())
+	{
+		NativeBarrier.UpdateMassProperties();
+	}
+}
+
+double UAGX_RigidBodyComponent::CalculateMass() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.CalculateMass();
+	}
+
+	return 0.0;
+}
+
+float UAGX_RigidBodyComponent::CalculateMass_BP() const
+{
+	return static_cast<float>(CalculateMass());
+}
+
 void UAGX_RigidBodyComponent::SetPrincipalInertiae(const FVector& InPrincipalInertiae)
 {
 	if (HasNative())

@@ -125,6 +125,12 @@ void FRigidBodyBarrier::UpdateMassProperties()
 	NativeRef->Native->updateMassProperties();
 }
 
+double FRigidBodyBarrier::CalculateMass() const
+{
+	check(HasNative());
+	return NativeRef->Native->calculateMass();
+}
+
 void FRigidBodyBarrier::SetName(const FString& NameUnreal)
 {
 	check(HasNative());
