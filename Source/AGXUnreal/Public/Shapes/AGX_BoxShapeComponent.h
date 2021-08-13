@@ -24,6 +24,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	FVector HalfExtent;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	void SetHalfExtent(const FVector& InHalfExtent);
+
 	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;
