@@ -15,14 +15,19 @@
 
 #include "AGX_WireWinch.generated.h"
 
+/// \todo Should FAGX_WireWinchSettings and FAGX_WireWinch be BlueprintType, or only FAGX_WireApi?
+
 /**
  * Holds all the properties that make up the settings of a Wire Winch. The Barrier object and all
  * the functions are in FAGX_WireWinch, which inherits from this struct. We need this extra layer
  * because Unreal Engine require that all structs be copy assignable but our Barrier objects are
  * not copyable. By moving all the members that should be copied by the copy assignment operator
  * to a base class we make it safer to implement the operator.
+ *
+ * Access to these properties are provided by FAGX_WireWinch_BP and UAGX_WireWinch_FL because of
+ * limitations in how the Blueprint VM handles structs.
  */
-USTRUCT(BlueprintType)
+USTRUCT()
 struct AGXUNREAL_API FAGX_WireWinchSettings
 {
 	GENERATED_BODY()
@@ -33,7 +38,7 @@ public:
 	 *
 	 * Only used during setup, cannot be changed once Begin Play has been called.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire Winch")
+	UPROPERTY(EditAnywhere, Category = "Wire Winch")
 	FVector Location;
 
 	/**
@@ -43,7 +48,7 @@ public:
 	 *
 	 * Only used during setup, cannot be changed once Begin Play has been called.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire Winch")
+	UPROPERTY(EditAnywhere, Category = "Wire Winch")
 	FRotator Rotation;
 
 	// I would perhaps like to make this a BlueprintReadWrite property, but FAGX_RigidBodyReference
@@ -68,7 +73,7 @@ public:
 	 *
 	 * Only used during setup, cannot be changed once Begin Play has been called.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire Winch")
+	UPROPERTY(EditAnywhere, Category = "Wire Winch")
 	bool bAutoFeed = false;
 
 	/**
@@ -130,7 +135,7 @@ public:
  * Component. Most of the logic and customization required is performed by the UObject owning the
  * Wire Winch.
  */
-USTRUCT(BlueprintType)
+USTRUCT()
 struct AGXUNREAL_API FAGX_WireWinch : public FAGX_WireWinchSettings
 {
 	GENERATED_BODY()
@@ -220,6 +225,61 @@ public:
 };
 
 /**
+ * A Wire Winch is a device that can haul in and pay out a connected wire.
+ *
+ * You can get access to a particular Wire Component's begin or end winch by calling Get Begin Winch
+ * or Get End Winch on it. Wire Winch Components also contain a Wire Winch, but provide manipulator
+ * functions directly so direct access to the Wire Winch object is rarely necessary.
+ *
+ * This struct is only a handle to the actual Wire Winch and should only be used as a means to get
+ * access to the Wire Winch from a Blueprint Visual Script. It must not be stored past the end of
+ * the current Blueprint execution sequence! Re-fetch the Wire Winch from the Wire Component or the
+ * Wire Winch Component every time you need it.
+ */
+/*
+ * We need this extra level of indirection between the Blueprint VM and FAGX_WireWinch because the
+ * VM cannot handle references to structs returned from a function, such as GetBeginWinch, it always
+ * copies the struct into the VM's memory before calling whatever function the next Blueprint node
+ * along the wire is, typically one of the ones from UAGX_WireWinch_FL below. Also, Unreal Engine
+ * does not support UFunctions on structs. Combined is a problem because FAGX_WireWinch contains a
+ * non-copyable handle to the AGX Dynamics representation of the winch and thus the copy can't
+ * manipulate the AGX Dynamics winch state.
+ *
+ * Consider the following Visual Script example:
+ *
+ *   Wire Blueprint variable -> Get Begin Winch -> Set Target Speed
+ *
+ * Get Begin Winch could return a reference to the actual FAGX_WireWinch, but the VM would create a
+ * copy before calling Set Target Speed, which would therefore operate on an empty winch, one with
+ * an invalid Barrier.
+ *
+ * We work around the limitation with this extra layer of indirection. By retuning a struct
+ * containing a pointer to the FAGX_WireWinch the Blueprint VM can copy all it wants, and by
+ * unpacking the pointer in the Blueprint Function Library functions below we are able to manipulate
+ * the AGX Dynamics winch.
+ *
+ * An alternative approach would be to make the Barriers copyable, as opposed to just movable, but
+ * testing has showed that changes made to the Blueprint VM's copy by the Blueprint Function Library
+ * won't be copied back to the Wire Component's internal FAGX_WireWinch instance. This may be a bug
+ * or something we're not doing right.
+ */
+USTRUCT(BlueprintType, Meta = (DisplayName = "AGX Wire Winch"))
+struct AGXUNREAL_API FAGX_WireWinch_BP
+{
+	GENERATED_BODY()
+
+	FAGX_WireWinch_BP() = default;
+	FAGX_WireWinch_BP(FAGX_WireWinch* InWinch);
+
+	/**
+	 * @return True if there is a Wire Winch available.
+	 */
+	bool IsValid() const;
+
+	FAGX_WireWinch* Winch = nullptr;
+};
+
+/**
  * Blueprint function library for the Wire Winch. Mostly conversions between float and double.
  * Required because structs can't have Blueprint Callable functions.
  */
@@ -230,53 +290,53 @@ class AGXUNREAL_API UAGX_WireWinch_FL : public UBlueprintFunctionLibrary
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
-	static bool SetBodyAttachment(UPARAM(ref) FAGX_WireWinch& Winch, UAGX_RigidBodyComponent* Body);
+	static bool SetBodyAttachment(FAGX_WireWinch_BP Winch, UAGX_RigidBodyComponent* Body);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	static UAGX_RigidBodyComponent* GetBodyAttachment(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static UAGX_RigidBodyComponent* GetBodyAttachment(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	static void SetPulledInLength(UPARAM(ref) FAGX_WireWinch& Winch, float InPulledInLength);
+	static void SetPulledInLength(FAGX_WireWinch_BP Winch, float InPulledInLength);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	static float GetPulledInLength(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetPulledInLength(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	static void SetMotorEnabled(UPARAM(ref) FAGX_WireWinch& Winch, bool bMotorEnabled);
+	static void SetMotorEnabled(FAGX_WireWinch_BP Winch, bool bMotorEnabled);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	static bool IsMotorEnabled(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static bool IsMotorEnabled(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	static void SetMotorForceRange(UPARAM(ref) FAGX_WireWinch& Winch, float Min, float Max);
+	static void SetMotorForceRange(FAGX_WireWinch_BP Winch, float Min, float Max);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	static float GetMotorForceRangeMin(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetMotorForceRangeMin(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	static float GetMotorForceRangeMax(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetMotorForceRangeMax(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	static void SetBrakeForceRange(UPARAM(ref) FAGX_WireWinch& Winch, float Min, float Max);
+	static void SetBrakeForceRange(FAGX_WireWinch_BP Winch, float Min, float Max);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	static float GetBrakeForceRangeMin(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetBrakeForceRangeMin(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	static float GetBrakeForceRangeMax(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetBrakeForceRangeMax(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	static void SetBrakeEnabled(UPARAM(ref) FAGX_WireWinch& Winch, bool bInBrakeEnabled);
+	static void SetBrakeEnabled(FAGX_WireWinch_BP Winch, bool bInBrakeEnabled);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
-	static bool IsBrakeEnabled(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static bool IsBrakeEnabled(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch", Meta = (DisplayName = "SetTargetSpeed"))
-	static void SetTargetSpeed(UPARAM(ref) FAGX_WireWinch& Winch, float InTargetSpeed);
+	static void SetTargetSpeed(FAGX_WireWinch_BP Winch, float InTargetSpeed);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch", Meta = (DisplayName = "GetTargetSpeed"))
-	static float GetTargetSpeed(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetTargetSpeed(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch", Meta = (DisplayName = "GetCurrentSpeed"))
-	static float GetCurrentSpeed(UPARAM(ref) const FAGX_WireWinch& Winch);
+	static float GetCurrentSpeed(FAGX_WireWinch_BP Winch);
 };

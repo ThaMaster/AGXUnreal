@@ -76,7 +76,7 @@ enum class EWireWinchOwnerType : uint8
  * by the wire's first route node, while the end side is the on at the node last in the wires route
  * nodes list.
  */
-UENUM()
+UENUM(BlueprintType)
 enum class EWireSide : uint8
 {
 	None,

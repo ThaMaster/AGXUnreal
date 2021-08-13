@@ -91,6 +91,10 @@ public:
 public:
 	UAGX_WireComponent();
 
+	/*
+	 * Wire settings.
+	 */
+
 	/**
 	 * The radius of the wire, in cm.
 	 */
@@ -134,15 +138,50 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Wire")
 	UAGX_ShapeMaterialBase* PhysicalMaterial;
 
-	UPROPERTY(
-		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire Begin Winch",
-		Meta = (DisplayName = "Winch Type"))
+	/*
+	 * Begin winch.
+	 */
+
+	/// \todo Should this really be BlueprintReadWire?
+	/// It should if the variable is for initialization only, and becomes inactive after Begin Play.
+	/// It should not if changes to the variable should result in winch configuration changes during
+	/// Play.
+	///
+	/// Should there be a difference between Details Panel changes and Blueprint Visual Script
+	/// changes? I don't think so.
+	///
+	/// Connecting/disconnecting from a winch, or switching between winches, is a rather large
+	/// operation so perhaps it should have a dedicated function.
+	///
+	/// The same applies for the end winch as well.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire Begin Winch")
 	EWireWinchOwnerType BeginWinchType = EWireWinchOwnerType::None;
 
+/// \todo Ties in with the \todo above. Should we have this function or not? Should it be allowed
+/// during Play?
+#if 0
+	UFUNCTION(BlueprintCallable)
+	void SetBeginWinchType(EWireWinchOwnerType Type);
+#endif
+
+	/**
+	 * If BeginWinchType is set to Wire during Begin Play then the settings in this Wire Winch is
+	 * used to configure an AGX Dynamics Wire Winch at the begin side of the wire, and modifications
+	 * to this Wire Winch, such as enabling or disabling the motor, will be reflected in the
+	 * simulation.
+	 *
+	 * To edit this property from a Blueprint Visual Script, get a handle to it by calling Get Owned
+	 * Begin Winch.
+	 */
 	UPROPERTY(
-		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire Begin Winch",
+		EditAnywhere, Category = "AGX Wire Begin Winch",
 		Meta = (EditConditionHides, EditCondition = "BeginWinchType == EWireWinchOwnerType::Wire"))
 	FAGX_WireWinch OwnedBeginWinch;
+
+	UFUNCTION(
+		BlueprintPure, Category = "AGX Wire Begin Winch",
+		Meta = (DisplayName = "Get Owned Begin Winch"))
+	FAGX_WireWinch_BP GetOwnedBeginWinch_BP();
 
 	/// @todo The engine example, ULiveLinkComponentController, uses EditInstanceOnly here.
 	/// Determine if that is a requirement or not. Possibly related to Blueprint Editor
@@ -158,12 +197,13 @@ public:
 			 EditCondition = "BeginWinchType == EWireWinchOwnerType::WireWinch"))
 	FComponentReference BeginWinchComponent;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
 	bool HasBeginWinchComponent() const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
 	void SetBeginWinchComponent(UAGX_WireWinchComponent* Winch);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
 	UAGX_WireWinchComponent* GetBeginWinchComponent();
 
 	const UAGX_WireWinchComponent* GetBeginWinchComponent() const;
@@ -179,11 +219,17 @@ public:
 	 * Note that this will point into a Component and that Components may be destroyed and/or
 	 * recreated at any time. Don't store this pointer.
 	 *
-	 * @return
+	 * @return The Wire Winch owned by the associated Wire Winch Component.
 	 */
 	FAGX_WireWinch* GetBeginWinchComponentWinch();
 	const FAGX_WireWinch* GetBeginWinchComponentWinch() const;
 
+	UFUNCTION(
+		BlueprintPure, Category = "AGX Wire Begin Winch",
+		Meta = (DisplayName = "Get Begin Winch Component Winch"))
+	FAGX_WireWinch_BP GetBeginWinchComponentWinch_BP();
+
+	/// \todo Winch borrowing is just an idea, it might not work out.
 	/**
 	 * This is the Wire Winch that will be used when Begin Winch Type is set to Other. The code or
 	 * Visual Script that sets Begin Winch Type to Other is fully responsible for this pointer and
@@ -202,7 +248,7 @@ public:
 	 *
 	 * @return True if this wire has any type winch at the begin side.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
 	bool HasBeginWinch() const;
 
 	/**
@@ -215,41 +261,93 @@ public:
 	 *
 	 * @return The attached Wire Winch, or nullptr.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
-	UPARAM(ref) FAGX_WireWinch& GetBeginWinch();
-
+	FAGX_WireWinch* GetBeginWinch();
 	const FAGX_WireWinch* GetBeginWinch() const;
 
-	UPROPERTY(
-		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire End Winch",
-		Meta = (DisplayName = "Winch Type"))
+	UFUNCTION(
+		BlueprintPure, Category = "AGX Wire Begin Winch", Meta = (DisplayName = "Get Begin Winch"))
+	FAGX_WireWinch_BP GetBeginWinch_BP();
+
+	/*
+	 * End winch.
+	 */
+
+	/// \todo See \todo comment on BeginWinchType.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire End Winch")
 	EWireWinchOwnerType EndWinchType = EWireWinchOwnerType::None;
 
+	/// \todo Ties in with the \todo above. Should we have this function or not? Should it be
+	/// allowed during Play?
+#if 0
+	UFUNCTION(BlueprintCallable)
+	void SetEndWinchType(EWireWinchOwnerType Type);
+#endif
+
+	/**
+	 * If EndWinchType is set to Wire during Begin Play then the settings in this Wire Winch is
+	 * used to configure an AGX Dynamics Wire Winch at the end side of the wire, and modifications
+	 * to this Wire Winch, such as enabling or disabling the motor, will be reflected in the
+	 * simulation.
+	 *
+	 * To edit this property from a Blueprint Visual Script, get a handle to it by calling Get Owned
+	 * End Winch.
+	 */
 	UPROPERTY(
-		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire End Winch",
+		EditAnywhere, Category = "AGX Wire End Winch",
 		Meta = (EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::Wire"))
 	FAGX_WireWinch OwnedEndWinch;
 
+	UFUNCTION(
+		BlueprintPure, Category = "AGX Wire End Winch",
+		Meta = (DisplayName = "Get Owned End Winch"))
+	FAGX_WireWinch_BP GetOwnedEndWinch_BP();
+
+	/// @todo The engine example, ULiveLinkComponentController, uses EditInstanceOnly here.
+	/// Determine if that is a requirement or not. Possibly related to Blueprint Editor
+	/// weirdness. FComponentReference is not supported by Blueprint, so we must provide some
+	/// other way to set the target from a Blueprint Visual Script.
+	/// We would like to use the UseComponentPicker Meta Specifier as well, but that crashes the
+	/// editor. See internal issue 466.
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire End Winch",
 		Meta =
-			(AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "", EditConditionHides,
-			 EditCondition = "EndWinchType == EWireWinchOwnerType::WireWinch"))
+			(AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "", AllowAnyActor,
+			 EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::WireWinch"))
 	FComponentReference EndWinchComponent;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire End Winch")
 	bool HasEndWinchComponent() const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire End Winch")
 	void SetEndWinchComponent(UAGX_WireWinchComponent* Winch);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire End Winch")
 	UAGX_WireWinchComponent* GetEndWinchComponent();
 
 	const UAGX_WireWinchComponent* GetEndWinchComponent() const;
 
+	/**
+	 * Get a pointer to the FAGX_WireWinch object owned by the Winch Component pointed to by
+	 * EndWinchComponent. Will return nullptr if EndWinchComponent is unset or set to a Winch
+	 * Component that doesn't exist.
+	 *
+	 * This is the Wire Winch that will be used at the end side of the wire if EndWinchType is
+	 * set to Wire Winch.
+	 *
+	 * Note that this will point into a Component and that Components may be destroyed and/or
+	 * recreated at any time. Don't store this pointer.
+	 *
+	 * @return The Wire Winch owned by the associated Wire Winch Component.
+	 */
 	FAGX_WireWinch* GetEndWinchComponentWinch();
 	const FAGX_WireWinch* GetEndWinchComponentWinch() const;
 
+	UFUNCTION(
+		BlueprintPure, Category = "AGX Wire End Winch",
+		Meta = (DisplayName = "Get End Winch Component Winch"))
+	FAGX_WireWinch_BP GetEndWinchComponentWinch_BP();
+
+	/// \todo Winch borrowing is just an idea, it might not work out.
 	/**
 	 * This is the Wire Winch that will be used when End Winch Type is set to Other. The code or
 	 * Visual Script that sets End Winch Type to Other is fully responsible for this pointer and
@@ -268,7 +366,7 @@ public:
 	 *
 	 * @return True if this wire has any type winch at the End side.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire End Winch")
 	bool HasEndWinch() const;
 
 	/**
@@ -281,28 +379,43 @@ public:
 	 *
 	 * @return The attached Wire Winch, or nullptr.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
-	UPARAM(ref) FAGX_WireWinch& GetEndWinch();
-
+	FAGX_WireWinch* GetEndWinch();
 	const FAGX_WireWinch* GetEndWinch() const;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	UFUNCTION(
+		BlueprintPure, Category = "AGX Wire End Winch", Meta = (DisplayName = "Get End Winch"))
+	FAGX_WireWinch_BP GetEndWinch_BP();
+
+	/*
+	 * Side-agnostic winch.
+	 */
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
 	bool HasWinch(EWireSide Side) const;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
-	FAGX_WireWinch& GetWinch(EWireSide Side);
+	FAGX_WireWinch* GetWinch(EWireSide Side);
 
 	const FAGX_WireWinch* GetWinch(EWireSide Side) const;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch", Meta = (DisplayName = "Get Winch"))
+	FAGX_WireWinch_BP GetWinch_BP(EWireSide Side);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
 	EWireWinchOwnerType GetWinchOwnerType(EWireSide Side) const;
 
+	UFUNCTION(BlueprintPure, Category = "AGX Wire Winch")
 	UAGX_WireWinchComponent* GetWinchComponent(EWireSide Side);
+
 	const UAGX_WireWinchComponent* GetWinchComponent(EWireSide Side) const;
 
 	FComponentReference* GetWinchComponentReference(EWireSide Side);
 
 	FAGX_WireWinch* GetBorrowedWinch(EWireSide Side);
 	const FAGX_WireWinch* GetBorrowedWinch(EWireSide Side) const;
+
+	/*
+	 * Routing.
+	 */
 
 	/**
 	 * An array of nodes that are used to initialize the wire.
@@ -320,7 +433,7 @@ public:
 	 *
 	 * @param InNode The node to add.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	void AddNode(const FWireRoutingNode& InNode);
 
 	/**
@@ -329,7 +442,7 @@ public:
 	 *
 	 * @param InLocation The location of the node, relative to the Wire Component.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	void AddNodeAtLocation(const FVector& InLocation);
 
 	/**
@@ -339,7 +452,7 @@ public:
 	 * @param InNode The route node to add.
 	 * @param InIndex The place in the route node array to add the node at.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	void AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex);
 
 	/**
@@ -349,14 +462,14 @@ public:
 	 * @param InLocation The location of the new node relative to the Wire Component.
 	 * @param InIndex The place in the route node array to add the new node at.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	void AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
 
 	/**
 	 * Remove the route node at the given index.
 	 * @param InIndex The index of the node to remove.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	void RemoveNode(int32 InIndex);
 
 	/**
@@ -366,7 +479,7 @@ public:
 	 * @param InIndex The index of the node to remove.
 	 * @param InLocation The new local location for the node.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	void SetNodeLocation(int32 InIndex, const FVector& InLocation);
 
 	/*

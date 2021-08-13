@@ -15,7 +15,7 @@ class AGXUNREAL_API UAGX_WireWinchComponent : public USceneComponent, public IAG
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire Winch")
+	UPROPERTY(EditAnywhere, Category = "AGX Wire Winch")
 	FAGX_WireWinch WireWinch;
 
 	/// @todo Rename these to something that doesn't mention the body explicitly, or at least makes

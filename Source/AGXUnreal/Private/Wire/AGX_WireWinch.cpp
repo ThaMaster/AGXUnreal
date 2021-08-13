@@ -422,88 +422,184 @@ FAGX_WireWinch& FAGX_WireWinch::operator=(const FAGX_WireWinch& Other)
 	return *this;
 }
 
+/* Start of FAGX_WireWinch_BP. */
+
+FAGX_WireWinch_BP::FAGX_WireWinch_BP(FAGX_WireWinch* InWinch)
+	: Winch(InWinch)
+{
+}
+
+bool FAGX_WireWinch_BP::IsValid() const
+{
+	return Winch != nullptr;
+}
+
 /* Start of Blueprint Function Library. */
 
-bool UAGX_WireWinch_FL::SetBodyAttachment(
-	UPARAM(ref) FAGX_WireWinch& Winch, UAGX_RigidBodyComponent* Body)
+bool UAGX_WireWinch_FL::SetBodyAttachment(FAGX_WireWinch_BP Winch, UAGX_RigidBodyComponent* Body)
 {
-	return Winch.SetBodyAttachment(Body);
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to SetBodyAttachment."));
+		return false;
+	}
+	return Winch.Winch->SetBodyAttachment(Body);
 }
-UAGX_RigidBodyComponent* UAGX_WireWinch_FL::GetBodyAttachment(UPARAM(ref)
-																  const FAGX_WireWinch& Winch)
+UAGX_RigidBodyComponent* UAGX_WireWinch_FL::GetBodyAttachment(FAGX_WireWinch_BP Winch)
 {
-	return Winch.GetBodyAttachment();
-}
-
-void UAGX_WireWinch_FL::SetPulledInLength(UPARAM(ref) FAGX_WireWinch& Winch, float InPulledInLength)
-{
-	return Winch.SetPulledInLength(static_cast<double>(InPulledInLength));
-}
-
-float UAGX_WireWinch_FL::GetPulledInLength(UPARAM(ref) const FAGX_WireWinch& Winch)
-{
-	return static_cast<float>(Winch.GetPulledInLength());
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to GetBodyAttachment."));
+		return nullptr;
+	}
+	return Winch.Winch->GetBodyAttachment();
 }
 
-void UAGX_WireWinch_FL::SetMotorEnabled(UPARAM(ref) FAGX_WireWinch& Winch, bool bMotorEnabled)
+void UAGX_WireWinch_FL::SetPulledInLength(FAGX_WireWinch_BP Winch, float InPulledInLength)
 {
-	return Winch.SetMotorEnabled(bMotorEnabled);
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to SetPulledInLength."));
+		return;
+	}
+	return Winch.Winch->SetPulledInLength(static_cast<double>(InPulledInLength));
 }
 
-bool UAGX_WireWinch_FL::IsMotorEnabled(UPARAM(ref) const FAGX_WireWinch& Winch)
+float UAGX_WireWinch_FL::GetPulledInLength(FAGX_WireWinch_BP Winch)
 {
-	return Winch.IsMotorEnabled();
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to GetPulledInLength."));
+		return 0.0f;
+	}
+	return static_cast<float>(Winch.Winch->GetPulledInLength());
 }
 
-void UAGX_WireWinch_FL::SetMotorForceRange(UPARAM(ref) FAGX_WireWinch& Winch, float Min, float Max)
+void UAGX_WireWinch_FL::SetMotorEnabled(FAGX_WireWinch_BP Winch, bool bMotorEnabled)
 {
-	return Winch.SetMotorForceRange(static_cast<double>(Min), static_cast<double>(Max));
-}
-float UAGX_WireWinch_FL::GetMotorForceRangeMin(UPARAM(ref) const FAGX_WireWinch& Winch)
-{
-	return static_cast<float>(Winch.GetMotorForceRangeMin());
-}
-
-float UAGX_WireWinch_FL::GetMotorForceRangeMax(UPARAM(ref) const FAGX_WireWinch& Winch)
-{
-	return static_cast<float>(Winch.GetMotorForceRangeMax());
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to SetMotorEnabled."));
+		return;
+	}
+	return Winch.Winch->SetMotorEnabled(bMotorEnabled);
 }
 
-void UAGX_WireWinch_FL::SetBrakeForceRange(UPARAM(ref) FAGX_WireWinch& Winch, float Min, float Max)
+bool UAGX_WireWinch_FL::IsMotorEnabled(FAGX_WireWinch_BP Winch)
 {
-	return Winch.SetBrakeForceRange(static_cast<double>(Min), static_cast<double>(Max));
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to IsMotorEnabled."));
+		return false;
+	}
+	return Winch.Winch->IsMotorEnabled();
 }
 
-float UAGX_WireWinch_FL::GetBrakeForceRangeMin(UPARAM(ref) const FAGX_WireWinch& Winch)
+void UAGX_WireWinch_FL::SetMotorForceRange(FAGX_WireWinch_BP Winch, float Min, float Max)
 {
-	return static_cast<float>(Winch.GetBrakeForceRangeMin());
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to SetMotorForceRange."));
+		return;
+	}
+	return Winch.Winch->SetMotorForceRange(static_cast<double>(Min), static_cast<double>(Max));
+}
+float UAGX_WireWinch_FL::GetMotorForceRangeMin(FAGX_WireWinch_BP Winch)
+{
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to GetMotorForceRangeMin."));
+		return 0.0f;
+	}
+	return static_cast<float>(Winch.Winch->GetMotorForceRangeMin());
 }
 
-float UAGX_WireWinch_FL::GetBrakeForceRangeMax(UPARAM(ref) const FAGX_WireWinch& Winch)
+float UAGX_WireWinch_FL::GetMotorForceRangeMax(FAGX_WireWinch_BP Winch)
 {
-	return static_cast<float>(Winch.GetBrakeForceRangeMax());
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to GetMotorForceRangeMax."));
+		return 0.0f;
+	}
+	return static_cast<float>(Winch.Winch->GetMotorForceRangeMax());
 }
 
-void UAGX_WireWinch_FL::SetBrakeEnabled(UPARAM(ref) FAGX_WireWinch& Winch, bool bInBrakeEnabled)
+void UAGX_WireWinch_FL::SetBrakeForceRange(FAGX_WireWinch_BP Winch, float Min, float Max)
 {
-	return Winch.SetBrakeEnabled(bInBrakeEnabled);
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to SetBrakeForceRange."));
+		return;
+	}
+	return Winch.Winch->SetBrakeForceRange(static_cast<double>(Min), static_cast<double>(Max));
 }
 
-bool UAGX_WireWinch_FL::IsBrakeEnabled(UPARAM(ref) const FAGX_WireWinch& Winch)
+float UAGX_WireWinch_FL::GetBrakeForceRangeMin(FAGX_WireWinch_BP Winch)
 {
-	return Winch.IsBrakeEnabled();
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to GetBrakeForceRangeMin."));
+		return 0.0f;
+	}
+	return static_cast<float>(Winch.Winch->GetBrakeForceRangeMin());
 }
 
-void UAGX_WireWinch_FL::SetTargetSpeed(UPARAM(ref) FAGX_WireWinch& Winch, float InTargetSpeed)
+float UAGX_WireWinch_FL::GetBrakeForceRangeMax(FAGX_WireWinch_BP Winch)
 {
-	return Winch.SetTargetSpeed(static_cast<double>(InTargetSpeed));
-}
-float UAGX_WireWinch_FL::GetTargetSpeed(UPARAM(ref) const FAGX_WireWinch& Winch)
-{
-	return static_cast<float>(Winch.GetTargetSpeed());
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to GetBrakeForceRangeMax."));
+		return 0.0f;
+	}
+	return static_cast<float>(Winch.Winch->GetBrakeForceRangeMax());
 }
 
-float UAGX_WireWinch_FL::GetCurrentSpeed(UPARAM(ref) const FAGX_WireWinch& Winch)
+void UAGX_WireWinch_FL::SetBrakeEnabled(FAGX_WireWinch_BP Winch, bool bInBrakeEnabled)
 {
-	return static_cast<float>(Winch.GetCurrentSpeed());
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to SetBrakeEnabled."));
+		return;
+	}
+	return Winch.Winch->SetBrakeEnabled(bInBrakeEnabled);
+}
+
+bool UAGX_WireWinch_FL::IsBrakeEnabled(FAGX_WireWinch_BP Winch)
+{
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to IsBrakeEnabled."));
+		return false;
+	}
+	return Winch.Winch->IsBrakeEnabled();
+}
+
+void UAGX_WireWinch_FL::SetTargetSpeed(FAGX_WireWinch_BP Winch, float InTargetSpeed)
+{
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to SetTargetSpeed."));
+		return;
+	}
+	return Winch.Winch->SetTargetSpeed(static_cast<double>(InTargetSpeed));
+}
+
+float UAGX_WireWinch_FL::GetTargetSpeed(FAGX_WireWinch_BP Winch)
+{
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to GetTargetSpeed."));
+		return 0.0f;
+	}
+	return static_cast<float>(Winch.Winch->GetTargetSpeed());
+}
+
+float UAGX_WireWinch_FL::GetCurrentSpeed(FAGX_WireWinch_BP Winch)
+{
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to GetCurrentSpeed."));
+		return 0.0f;
+	}
+	return static_cast<float>(Winch.Winch->GetCurrentSpeed());
 }

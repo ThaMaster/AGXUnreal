@@ -441,7 +441,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	}
 	else if (HasValidWinchSelection())
 	{
-		FAGX_WireWinch& Winch = Wire->GetWinch(SelectedWinch);
+		FAGX_WireWinch& Winch = *Wire->GetWinch(SelectedWinch);
 		const FTransform& WinchToWorld = GetWinchLocalToWorld(*Wire, SelectedWinch);
 		switch (SelectedWinchSide)
 		{
