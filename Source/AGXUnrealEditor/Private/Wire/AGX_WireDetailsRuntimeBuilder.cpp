@@ -106,6 +106,11 @@ void FAGX_WireDetailsRuntimeBuilder::GenerateChildContent(IDetailChildrenBuilder
 		*this, WireGroup, LOCTEXT("RestLength", "Rest Length"),
 		[this]() { return WireState.RestLength; });
 
+
+	CreateRuntimeDisplay(
+		*this, WireGroup, LOCTEXT("Tension", "Tension"),
+		[this]() { return WireState.Tension; });
+
 	CreateRuntimeDisplay(
 		*this, BeginWinchGroup, LOCTEXT("CurrentSpeed", "Current Speed"),
 		[this]() { return BeginWinchState.Speed; });
@@ -182,6 +187,9 @@ void FAGX_WireDetailsRuntimeBuilder::UpdateValues()
 	{
 		WireState.RestLength = FText::Format(
 			LOCTEXT("RestLengthValue", "{0} cm"), FText::AsNumber(Wire->GetRestLength()));
+
+		WireState.Tension = FText::Format(
+			LOCTEXT("TensionValue", "{0} N"), FText::AsNumber(Wire->GetTension()));
 	}
 	else
 	{

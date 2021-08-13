@@ -119,6 +119,15 @@ double FWireBarrier::GetRestLength() const
 	return Length;
 }
 
+double FWireBarrier::GetTension() const
+{
+	check(HasNative());
+	agxWire::WireSegmentTensionData Data = NativeRef->Native->getTension(agx::Real(0.0));
+
+	/// \todo Do tension need conversion to Unreal units?
+	return Data.raw;
+}
+
 FWireRenderIteratorBarrier FWireBarrier::GetRenderBeginIterator() const
 {
 	check(HasNative());

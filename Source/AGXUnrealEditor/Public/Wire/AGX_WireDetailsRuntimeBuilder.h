@@ -30,10 +30,12 @@ public:
 	struct FWireRuntimeState
 	{
 		FText RestLength;
+		FText Tension;
 
 		void SetAll(const FText& Text)
 		{
 			RestLength = Text;
+			Tension = Text;
 		}
 	};
 

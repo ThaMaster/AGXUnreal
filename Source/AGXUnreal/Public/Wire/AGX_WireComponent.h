@@ -369,6 +369,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void SetNodeLocation(int32 InIndex, const FVector& InLocation);
 
+	/*
+	 * State inspection.
+	 */
+
 	/**
 	 * A wire is initialized when the AGX Dynamics object has been created and added to the AGX
 	 * Dynamics simulation, which happens in BeginPlay. At this point that routing nodes become
@@ -383,6 +387,9 @@ public:
 	bool IsInitialized() const;
 
 	double GetRestLength() const;
+
+	/// \todo What parameter to pass?
+	double GetTension() const;
 
 	/// @return True if this wire has at least one renderable simulation node.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")

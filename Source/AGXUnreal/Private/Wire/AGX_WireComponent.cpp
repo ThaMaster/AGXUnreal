@@ -433,6 +433,15 @@ double UAGX_WireComponent::GetRestLength() const
 	return NativeBarrier.GetRestLength();
 }
 
+double UAGX_WireComponent::GetTension() const
+{
+	if (!HasNative())
+	{
+		return 0.0;
+	}
+	return NativeBarrier.GetTension();
+}
+
 bool UAGX_WireComponent::HasRenderNodes() const
 {
 	if (!HasNative())
