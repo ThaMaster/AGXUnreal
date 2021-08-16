@@ -785,6 +785,7 @@ void UAGX_WireComponent::EndPlay(const EEndPlayReason::Type Reason)
 	{
 		UAGX_Simulation::GetFrom(this)->RemoveWire(*this);
 	}
+	NativeBarrier.ReleaseNative();
 }
 
 void UAGX_WireComponent::OnRegister()
