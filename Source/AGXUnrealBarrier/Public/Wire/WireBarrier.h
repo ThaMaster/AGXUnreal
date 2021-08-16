@@ -66,6 +66,8 @@ public:
 	 */
 	double GetRestLength() const;
 
+	double GetMass() const;
+
 	double GetTension() const;
 
 	FWireRenderIteratorBarrier GetRenderBeginIterator() const;

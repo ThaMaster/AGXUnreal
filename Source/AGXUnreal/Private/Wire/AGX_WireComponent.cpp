@@ -481,6 +481,22 @@ double UAGX_WireComponent::GetRestLength() const
 	return NativeBarrier.GetRestLength();
 }
 
+double UAGX_WireComponent::GetMass() const
+{
+	if (!HasNative())
+	{
+		/// @todo What is reasonable to return here? Estimate the mass from material density and
+		/// rest length?
+		return 0.0;
+	}
+	return NativeBarrier.GetMass();
+}
+
+float UAGX_WireComponent::GetMass_BP() const
+{
+	return static_cast<float>(GetMass());
+}
+
 double UAGX_WireComponent::GetTension() const
 {
 	if (!HasNative())

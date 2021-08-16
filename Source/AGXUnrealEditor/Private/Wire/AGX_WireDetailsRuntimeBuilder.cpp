@@ -102,14 +102,20 @@ void FAGX_WireDetailsRuntimeBuilder::GenerateChildContent(IDetailChildrenBuilder
 	IDetailGroup& EndWinchGroup =
 		ChildrenBuilder.AddGroup(TEXT("End Winch"), LOCTEXT("EndWinch", "End Winch"));
 
+	/* Wire. */
 	CreateRuntimeDisplay(
 		*this, WireGroup, LOCTEXT("RestLength", "Rest Length"),
 		[this]() { return WireState.RestLength; });
 
+	CreateRuntimeDisplay(
+		*this, WireGroup, LOCTEXT("Mass", "Mass"),
+		[this]() { return WireState.Mass; });
 
 	CreateRuntimeDisplay(
 		*this, WireGroup, LOCTEXT("Tension", "Tension"),
 		[this]() { return WireState.Tension; });
+
+	/* Begin winch. */
 
 	CreateRuntimeDisplay(
 		*this, BeginWinchGroup, LOCTEXT("CurrentSpeed", "Current Speed"),
@@ -126,6 +132,8 @@ void FAGX_WireDetailsRuntimeBuilder::GenerateChildContent(IDetailChildrenBuilder
 	CreateRuntimeDisplay(
 		*this, BeginWinchGroup, LOCTEXT("BrakeForce", "Brake Force"),
 		[this]() { return BeginWinchState.BrakeForce; });
+
+	/* End winch. */
 
 	CreateRuntimeDisplay(
 		*this, EndWinchGroup, LOCTEXT("CurrentSpeed", "Current Speed"),
@@ -187,6 +195,9 @@ void FAGX_WireDetailsRuntimeBuilder::UpdateValues()
 	{
 		WireState.RestLength = FText::Format(
 			LOCTEXT("RestLengthValue", "{0} cm"), FText::AsNumber(Wire->GetRestLength()));
+
+		WireState.Mass = FText::Format(
+			 LOCTEXT("MassValue", "{0} kg"), FText::AsNumber(Wire->GetMass()));
 
 		WireState.Tension = FText::Format(
 			LOCTEXT("TensionValue", "{0} N"), FText::AsNumber(Wire->GetTension()));

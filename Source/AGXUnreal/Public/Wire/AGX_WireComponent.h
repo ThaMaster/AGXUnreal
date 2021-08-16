@@ -501,6 +501,11 @@ public:
 
 	double GetRestLength() const;
 
+	double GetMass() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire", Meta = (DisplayName = "Get Mass"))
+	float GetMass_BP() const;
+
 	/// \todo What parameter to pass?
 	double GetTension() const;
 

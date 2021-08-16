@@ -119,6 +119,12 @@ double FWireBarrier::GetRestLength() const
 	return Length;
 }
 
+double FWireBarrier::GetMass() const
+{
+	check(HasNative());
+	return NativeRef->Native->getMass();
+}
+
 double FWireBarrier::GetTension() const
 {
 	check(HasNative());
