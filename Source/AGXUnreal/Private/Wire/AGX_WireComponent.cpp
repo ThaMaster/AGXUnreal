@@ -1039,6 +1039,14 @@ void UAGX_WireComponent::CreateNative()
 	{
 		FWireRoutingNode& RouteNode = RouteNodes[I];
 		FWireNodeBarrier NodeBarrier;
+
+		if (RouteNode.RigidBody.OwningActor == nullptr)
+		{
+			// Default route nodes to search for Rigid Bodies in the same Actor as the Wire is in,
+			// unless another owner has already been specified.
+			RouteNode.RigidBody.OwningActor = GetOwner();
+		}
+
 		switch (RouteNode.NodeType)
 		{
 			case EWireNodeType::Free:
