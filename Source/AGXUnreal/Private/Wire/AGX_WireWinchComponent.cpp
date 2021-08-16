@@ -5,6 +5,9 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_NativeOwnerInstanceData.h"
 
+// Unreal Engine includes.
+#include "CoreGlobals.h"
+
 FVector UAGX_WireWinchComponent::ComputeBodyRelativeLocation()
 {
 	FVector WorldLocation = GetComponentTransform().TransformPosition(WireWinch.Location);
@@ -49,11 +52,41 @@ void UAGX_WireWinchComponent::AssignNative(uint64 NativeAddress)
 	WireWinch.AssignNative(static_cast<uintptr_t>(NativeAddress));
 }
 
+void UAGX_WireWinchComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	if (!HasNative() && !GIsReconstructingBlueprintInstances)
+	{
+		// Do not create a native AGX Dynamics object if GIsReconstructingBlueprintInstances is set.
+		// That means that we're being created as part of a Blueprint Reconstruction and we will
+		// soon be assigned the native that the reconstructed Wire Winch Component had, if any.
+		CreateNative();
+		check(HasNative()); /// @todo Consider better error handling that check.
+	}
+}
+
+void UAGX_WireWinchComponent::EndPlay(const EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+	if (GIsReconstructingBlueprintInstances)
+	{
+		// Another Wire Winch will inherit this one's Native Barrier, so don't wreck it.
+	}
+	else
+	{
+		/// @todo What can we do here to remove this winch from the simulation? Would need to find
+		/// the wire and detach from it. However, with what I know of the AGX Dynamics API we can't
+		/// event determine if we are part of a wire or not. So for now we do nothing.
+	}
+	WireWinch.NativeBarrier.ReleaseNative();
+}
+
 TStructOnScope<FActorComponentInstanceData> UAGX_WireWinchComponent::GetComponentInstanceData()
 	const
 {
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
-		this, this, [](UActorComponent* Component)
+		this, this,
+		[](UActorComponent* Component)
 		{
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
@@ -138,3 +171,47 @@ void UAGX_WireWinchComponent::PostEditChangeChainProperty(
 	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 }
 #endif
+
+FWireWinchBarrier* UAGX_WireWinchComponent::GetNative()
+{
+	return WireWinch.GetNative();
+}
+
+const FWireWinchBarrier* UAGX_WireWinchComponent::GetNative() const
+{
+	return WireWinch.GetNative();
+}
+
+FWireWinchBarrier* UAGX_WireWinchComponent::GetOrCreateNative()
+{
+	if (HasNative())
+	{
+		return GetNative();
+	}
+
+	checkf(
+		!GIsReconstructingBlueprintInstances,
+		TEXT("Native instances should never be created while a Blueprint Reconstruction is in "
+			 "progress, the instances should be inherited via a Actor Component Instance Data."));
+	CreateNative();
+	checkf(HasNative(), TEXT("Failed to create a native Wire Winch instance."));
+	return GetNative();
+}
+
+void UAGX_WireWinchComponent::CreateNative()
+{
+	checkf(
+		!HasNative(),
+		TEXT("Create Native called on a Wire Winch Component that already has a native."));
+	checkf(
+		!GIsReconstructingBlueprintInstances,
+		TEXT("Create Native called on a Wire Winch Component while a Blueprint Reconstruction is "
+			 "in progress, the instances should be inherited via a Actor Component Instance Data"));
+
+	// The Location and Rotation properties in Unreal are relative to the Wire Winch Component, but
+	// in AGX Dynamics they are relative to the Rigid Body or, if there is no Rigid Body, the world.
+	// Here we do the swap, right before creating the Native.
+	WireWinch.Location = ComputeBodyRelativeLocation();
+	WireWinch.Rotation = ComputeBodyRelativeRotation();
+	WireWinch.CreateNative();
+}

@@ -910,10 +910,7 @@ namespace AGX_WireComponent_helpers
 			return;
 		}
 
-		FAGX_WireWinch& WinchData = WinchComponent->WireWinch;
-		WinchData.Location = WinchComponent->ComputeBodyRelativeLocation();
-		WinchData.Rotation = WinchComponent->ComputeBodyRelativeRotation();
-		FWireWinchBarrier* Barrier = WinchData.GetOrCreateNative();
+		FWireWinchBarrier* Barrier = WinchComponent->GetOrCreateNative();
 		if (Barrier == nullptr)
 		{
 			const FComponentReference* Reference = Wire.GetWinchComponentReference(Side);

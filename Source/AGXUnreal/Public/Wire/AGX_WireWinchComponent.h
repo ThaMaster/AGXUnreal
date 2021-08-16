@@ -40,6 +40,8 @@ public:
 	//~ End IAGX_NativeOwner interface.
 
 	//~ Begin ActorComponent interface.
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	//~ End ActorComponent interface.
 
@@ -51,4 +53,24 @@ public:
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
 	// ~End UObject interface.
+
+	/**
+	 * @return The Wire Winch Barrier for this Wire Winch Component, if one has been created, and
+	 * nullptr otherwise.
+	 */
+	FWireWinchBarrier* GetNative();
+
+	/**
+	 * @return The Wire Winch Barrier for this Wire Winch Component, if one has been created, and
+	 * nullptr otherwise.
+	 */
+	const FWireWinchBarrier* GetNative() const;
+
+	/**
+	 * @return The Wire Winch Barrier for this Wire Winch Component, creating it if necessary.
+	 */
+	FWireWinchBarrier* GetOrCreateNative();
+
+private:
+	void CreateNative();
 };
