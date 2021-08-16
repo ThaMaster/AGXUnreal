@@ -1084,7 +1084,9 @@ void UAGX_WireComponent::CreateNative()
 
 	if (ErrorMessages.Num() > 0)
 	{
-		FString Message = FString::Printf(TEXT("Errors detected during wire initialization:\n"));
+		FString Message = FString::Printf(
+			TEXT("Errors detected during initialization of wire %s in %s:\n"), *GetName(),
+			*GetNameSafe(GetOwner()));
 		for (const FString& Line : ErrorMessages)
 		{
 			Message += Line + '\n';
@@ -1094,7 +1096,15 @@ void UAGX_WireComponent::CreateNative()
 
 	{
 		FAGXWireNotifyBuffer Messages;
-		UAGX_Simulation::GetFrom(this)->AddWire(*this);
+		bool Added = UAGX_Simulation::GetFrom(this)->AddWire(*this);
+		if (!Added)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("AGX Dynamics rejected Wire '%s' in '%s'. See the LogAGXDynamics log channel "
+					 "for details."),
+				*GetName(), *GetNameSafe(GetOwner()));
+		}
 		if (!IsInitialized())
 		{
 			const FString WireName = GetName();

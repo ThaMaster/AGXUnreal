@@ -108,11 +108,11 @@ void FSimulationBarrier::AddTire(FTireBarrier* Tire)
 	NativeRef->Native->add(Tire->GetNative()->Native);
 }
 
-void FSimulationBarrier::AddWire(FWireBarrier& Wire)
+bool FSimulationBarrier::AddWire(FWireBarrier& Wire)
 {
 	check(HasNative());
 	check(Wire.HasNative());
-	NativeRef->Native->add(Wire.GetNative()->Native);
+	return NativeRef->Native->add(Wire.GetNative()->Native);
 }
 
 void FSimulationBarrier::RemoveWire(FWireBarrier& Wire)

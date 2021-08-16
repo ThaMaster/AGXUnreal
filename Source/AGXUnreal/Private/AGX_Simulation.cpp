@@ -121,12 +121,12 @@ void UAGX_Simulation::AddTerrain(AAGX_Terrain* Terrain)
 	NativeBarrier.AddTerrain(Terrain->GetNative());
 }
 
-void UAGX_Simulation::AddWire(UAGX_WireComponent& Wire)
+bool UAGX_Simulation::AddWire(UAGX_WireComponent& Wire)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	check(Wire.HasNative());
-	NativeBarrier.AddWire(*Wire.GetNative());
+	return NativeBarrier.AddWire(*Wire.GetNative());
 }
 
 void UAGX_Simulation::RemoveWire(UAGX_WireComponent& Wire)
