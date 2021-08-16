@@ -292,51 +292,51 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
 	static bool SetBodyAttachment(FAGX_WireWinch_BP Winch, UAGX_RigidBodyComponent* Body);
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
+	UFUNCTION(BlueprintPure, Category = "Wire Winch")
 	static UAGX_RigidBodyComponent* GetBodyAttachment(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
 	static void SetPulledInLength(FAGX_WireWinch_BP Winch, float InPulledInLength);
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
+	UFUNCTION(BlueprintPure, Category = "Wire Winch")
 	static float GetPulledInLength(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
 	static void SetMotorEnabled(FAGX_WireWinch_BP Winch, bool bMotorEnabled);
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
+	UFUNCTION(BlueprintPure, Category = "Wire Winch")
 	static bool IsMotorEnabled(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
 	static void SetMotorForceRange(FAGX_WireWinch_BP Winch, float Min, float Max);
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
+	UFUNCTION(BlueprintPure, Category = "Wire Winch")
 	static float GetMotorForceRangeMin(FAGX_WireWinch_BP Winch);
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
+	UFUNCTION(BlueprintPure, Category = "Wire Winch")
 	static float GetMotorForceRangeMax(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
 	static void SetBrakeForceRange(FAGX_WireWinch_BP Winch, float Min, float Max);
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
+	UFUNCTION(BlueprintPure, Category = "Wire Winch")
 	static float GetBrakeForceRangeMin(FAGX_WireWinch_BP Winch);
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
+	UFUNCTION(BlueprintPure, Category = "Wire Winch")
 	static float GetBrakeForceRangeMax(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
 	static void SetBrakeEnabled(FAGX_WireWinch_BP Winch, bool bInBrakeEnabled);
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
+	UFUNCTION(BlueprintPure, Category = "Wire Winch")
 	static bool IsBrakeEnabled(FAGX_WireWinch_BP Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch", Meta = (DisplayName = "SetTargetSpeed"))
 	static void SetTargetSpeed(FAGX_WireWinch_BP Winch, float InTargetSpeed);
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Winch", Meta = (DisplayName = "GetTargetSpeed"))
+	UFUNCTION(BlueprintPure, Category = "Wire Winch", Meta = (DisplayName = "GetTargetSpeed"))
 	static float GetTargetSpeed(FAGX_WireWinch_BP Winch);
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Winch", Meta = (DisplayName = "GetCurrentSpeed"))
+	UFUNCTION(BlueprintPure, Category = "Wire Winch", Meta = (DisplayName = "GetCurrentSpeed"))
 	static float GetCurrentSpeed(FAGX_WireWinch_BP Winch);
 };
