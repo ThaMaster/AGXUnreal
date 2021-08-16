@@ -113,8 +113,6 @@ bool UAGX_WireComponent::HasBeginWinch() const
 
 FAGX_WireWinch* UAGX_WireComponent::GetBeginWinch()
 {
-	// UE_LOG(LogAGX, Warning, TEXT("Getting Begin Winch from Wire Component %p."), this);
-
 #if 0
 	// UFunctions cannot return a pointer to an FStruct, but it can return a reference to one.
 	// Sometimes we don't have a Wire Winch to return, in which case we return a reference to this
@@ -126,7 +124,6 @@ FAGX_WireWinch* UAGX_WireComponent::GetBeginWinch()
 	switch (BeginWinchType)
 	{
 		case EWireWinchOwnerType::Wire:
-			//UE_LOG(LogAGX, Warning, TEXT("  Returning Owned Begin Winch %p"), &OwnedBeginWinch);
 			return &OwnedBeginWinch;
 		case EWireWinchOwnerType::WireWinch:
 			return HasBeginWinchComponent() ? GetBeginWinchComponentWinch() : nullptr;
