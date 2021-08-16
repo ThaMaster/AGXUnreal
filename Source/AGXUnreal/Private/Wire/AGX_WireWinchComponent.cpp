@@ -8,6 +8,11 @@
 // Unreal Engine includes.
 #include "CoreGlobals.h"
 
+FAGX_WireWinch_BP UAGX_WireWinchComponent::GetWinch_BP()
+{
+	return {&WireWinch};
+}
+
 FVector UAGX_WireWinchComponent::ComputeBodyRelativeLocation()
 {
 	FVector WorldLocation = GetComponentTransform().TransformPosition(WireWinch.Location);
