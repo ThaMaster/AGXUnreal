@@ -192,25 +192,27 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 		return;
 	}
 
+	if (Wire->HasBeginWinch())
+	{
+		const FVector WinchLocation = DrawWinch(*Wire, EWireSide::Begin, PDI);
+		if (Wire->RouteNodes.Num() > 0 && !Wire->IsInitialized())
+		{
+			// Do not render the implicit begin-winch-to-first-node line because the render iterator
+			// does provide that line along with all the other lines. The route nodes does not.
+			/// @todo For nodes attached to a body, use the body's transformation instead.
+			const FTransform& LocalToWorld = Wire->GetComponentTransform();
+			const FVector LocalLocation = Wire->RouteNodes[0].Location;
+			const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
+			PDI->DrawLine(WinchLocation, WorldLocation, FLinearColor::White, SDPG_Foreground);
+		}
+	}
+
 	if (Wire->IsInitialized())
 	{
 		DrawSimulationNodes(*Wire, PDI);
 	}
 	else
 	{
-		if (Wire->HasBeginWinch())
-		{
-			const FVector WinchLocation = DrawWinch(*Wire, EWireSide::Begin, PDI);
-			if (Wire->RouteNodes.Num() > 0)
-			{
-				/// @todo For nodes attached to a body, use the body's transformation instead.
-				const FTransform& LocalToWorld = Wire->GetComponentTransform();
-				const FVector LocalLocation = Wire->RouteNodes[0].Location;
-				const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
-				PDI->DrawLine(WinchLocation, WorldLocation, FLinearColor::White, SDPG_Foreground);
-			}
-		}
-
 		if (Wire == GetSelectedWire())
 		{
 			DrawRouteNodes(*Wire, SelectedNodeIndex, PDI);
@@ -219,18 +221,20 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 		{
 			DrawRouteNodes(*Wire, PDI);
 		}
+	}
 
-		if (Wire->HasEndWinch())
+	if (Wire->HasEndWinch())
+	{
+		const FVector& WinchLocation = DrawWinch(*Wire, EWireSide::End, PDI);
+		if (Wire->RouteNodes.Num() > 0 && !Wire->IsInitialized())
 		{
-			const FVector& WinchLocation = DrawWinch(*Wire, EWireSide::End, PDI);
-			if (Wire->RouteNodes.Num() > 0)
-			{
-				/// @todo For nodes attached to a body, use the body's transformation instead.
-				const FTransform& LocalToWorld = Wire->GetComponentTransform();
-				const FVector LocalLocation = Wire->RouteNodes.Last().Location;
-				const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
-				PDI->DrawLine(WorldLocation, WinchLocation, FLinearColor::White, SDPG_Foreground);
-			}
+			// Do not render the implicit begin-winch-to-first-node line because the render iterator
+			// does provide that line along with all the other lines. The route nodes does not.
+			/// @todo For nodes attached to a body, use the body's transformation instead.
+			const FTransform& LocalToWorld = Wire->GetComponentTransform();
+			const FVector LocalLocation = Wire->RouteNodes.Last().Location;
+			const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
+			PDI->DrawLine(WorldLocation, WinchLocation, FLinearColor::White, SDPG_Foreground);
 		}
 	}
 }
