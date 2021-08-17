@@ -135,8 +135,21 @@ FVector AGX_WireVisualization_helpers::DrawWinch(
 FVector AGX_WireVisualization_helpers::DrawWinch(
 	const UAGX_WireWinchComponent& Winch, FPrimitiveDrawInterface* PDI)
 {
+	const FTransform& WinchToWorld = [&Winch]() -> const FTransform&
+	{
+		UAGX_RigidBodyComponent* Body = Winch.WireWinch.BodyAttachment.GetRigidBody();
+		if (Winch.HasNative() && Body != nullptr)
+		{
+			return Body->GetComponentTransform();
+		}
+		else
+		{
+			return Winch.GetComponentTransform();
+		}
+	}();
+
 	return DrawWinch(
-		Winch.WireWinch, Winch.GetComponentTransform(), new HWinchLocationProxy(&Winch),
+		Winch.WireWinch, WinchToWorld, new HWinchLocationProxy(&Winch),
 		new HWinchDirectionProxy(&Winch), PDI);
 }
 
