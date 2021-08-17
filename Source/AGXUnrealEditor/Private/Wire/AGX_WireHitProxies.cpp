@@ -85,13 +85,13 @@ FVector AGX_WireVisualization_helpers::DrawWinch(
 	FLinearColor Color = FLinearColor::Red;
 	float HandleSize = 10.0f;
 
-	const FVector LocalLocation = Winch.Location;
+	const FVector LocalLocation = Winch.HasNative() ? Winch.LocationSim : Winch.Location;
 	const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
 	PDI->SetHitProxy(LocationProxy);
 	PDI->DrawPoint(WorldLocation, Color, HandleSize, SDPG_Foreground);
 	PDI->SetHitProxy(nullptr);
 
-	const FRotator Rotation = Winch.Rotation;
+	const FRotator Rotation = Winch.HasNative() ? Winch.RotationSim : Winch.Rotation;
 	const FVector LocalDirection = Rotation.RotateVector(FVector::ForwardVector);
 	const FVector WorldDirection = LocalToWorld.TransformVector(LocalDirection);
 	const FVector WorldEndLocation = WorldLocation + (WorldDirection * 100.0f);
