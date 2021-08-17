@@ -35,6 +35,20 @@ namespace AGX_WireVisualization_helpers
 const FTransform& AGX_WireVisualization_helpers::GetOwnedWinchLocalToWorld(
 	const UAGX_WireComponent& Wire, const FAGX_WireWinch& Winch)
 {
+	if (Winch.HasNative())
+	{
+		if (const UAGX_RigidBodyComponent* Body = Winch.GetBodyAttachment())
+		{
+			return Body->GetComponentTransform();
+		}
+		else
+		{
+			// During simulation DrawWinch will use the LocationSim and RotationSim FAGX_WireWinch
+			// members, which have already been transformed to the world coordinate system.
+			/// @todo Support body attachments here.
+			return FTransform::Identity;
+		}
+	}
 	const UAGX_RigidBodyComponent* Body = Winch.GetBodyAttachment();
 	const USceneComponent* Component = GetFirstValid(Body, &Wire);
 	if (Component == nullptr)
