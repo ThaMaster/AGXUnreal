@@ -164,6 +164,7 @@ bool AGX_WireVisualization_helpers::GetWidgetLocation(
 		case EWinchSide::None:
 			return false;
 	}
+	return false;
 }
 
 bool AGX_WireVisualization_helpers::GetWidgetLocation(
