@@ -863,8 +863,14 @@ namespace AGX_WireComponent_helpers
 {
 	void CreateNativeWireOwnedWinch(UAGX_WireComponent& Wire, EWireSide Side)
 	{
+		check(Wire.GetWinch(Side) != nullptr);
 		FAGX_WireWinch& Winch = *Wire.GetWinch(Side);
-		if (Winch.GetBodyAttachment() == nullptr)
+		if (UAGX_RigidBodyComponent* BodyAttachment = Winch.GetBodyAttachment())
+		{
+			Winch.LocationSim = Winch.Location;
+			Winch.RotationSim = Winch.Rotation;
+		}
+		else
 		{
 			// The Wire Winch does not have a Rigid Body, which means that the Wire Winch will
 			// be attached to the world. Therefore, Location and Rotation should be in the
@@ -873,21 +879,21 @@ namespace AGX_WireComponent_helpers
 			// and Rotation it got, so here we transform from the Wire Component's local
 			// coordinate system to the global coordinate system ON THE GAME INSTANCE of the
 			// Wire Winch. This doesn't change the editor instance.
-			Winch.Location = Wire.GetComponentTransform().TransformPosition(Winch.Location);
-			Winch.Rotation = Wire.GetComponentRotation() + Winch.Rotation;
-			FWireWinchBarrier* Barrier = Winch.GetOrCreateNative();
-			if (Barrier == nullptr)
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Could not create AGX Dynamics instance for wire-owned winch on Wire '%s' "
-						 "in '%s'"),
-					*Wire.GetName(), *GetLabelSafe(Wire.GetOwner()));
-				return;
-			}
-
-			Wire.GetNative()->AddWinch(*Barrier);
+			Winch.LocationSim = Wire.GetComponentTransform().TransformPosition(Winch.Location);
+			Winch.RotationSim = Wire.GetComponentRotation() + Winch.Rotation;
 		}
+		FWireWinchBarrier* Barrier = Winch.GetOrCreateNative();
+		if (Barrier == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Could not create AGX Dynamics instance for wire-owned winch on Wire '%s' "
+					 "in '%s'"),
+				*Wire.GetName(), *GetLabelSafe(Wire.GetOwner()));
+			return;
+		}
+
+		Wire.GetNative()->AddWinch(*Barrier);
 	}
 
 	void CreateNativeWireWinchOwnedWinch(UAGX_WireComponent& Wire, EWireSide Side)
@@ -988,10 +994,6 @@ void UAGX_WireComponent::CreateNative()
 	check(!HasNative());
 	check(!GIsReconstructingBlueprintInstances);
 
-	/*
-	 * Damping and Young's modulus for demonstration/experimentation purposes. Will be replaced
-	 * with Wire Material shortly.
-	 */
 	NativeBarrier.AllocateNative(Radius, ResolutionPerUnitLength);
 	check(HasNative()); /// @todo Consider better error handling than 'check'.
 

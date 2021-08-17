@@ -216,7 +216,7 @@ void UAGX_WireWinchComponent::CreateNative()
 	// The Location and Rotation properties in Unreal are relative to the Wire Winch Component, but
 	// in AGX Dynamics they are relative to the Rigid Body or, if there is no Rigid Body, the world.
 	// Here we do the swap, right before creating the Native.
-	WireWinch.Location = ComputeBodyRelativeLocation();
-	WireWinch.Rotation = ComputeBodyRelativeRotation();
+	WireWinch.LocationSim = ComputeBodyRelativeLocation();
+	WireWinch.RotationSim = ComputeBodyRelativeRotation();
 	WireWinch.CreateNative();
 }

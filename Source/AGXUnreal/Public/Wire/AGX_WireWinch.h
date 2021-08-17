@@ -33,23 +33,46 @@ struct AGXUNREAL_API FAGX_WireWinchSettings
 	GENERATED_BODY()
 public:
 	/**
-	 * The location of the winch. Either in the local coordinate system of the body that this winch
-	 * is attached to, or the world coordinate system if the winch isn't attached to any body.
+	 * The location of the winch relative to some parent object.
 	 *
-	 * Only used during setup, cannot be changed once Begin Play has been called.
+	 * For a Wire Component owned winch without a body attachment the parent is the Wire Component.
+	 * For a Wire Component owned winch with a body attachment the parent is the body.
+	 * For a Winch Component owned winch the parent is always the Winch Component.
+	 *
+	 * Only used during setup, cannot be changed after Begin Play.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
 	FVector Location;
 
 	/**
-	 * The orientation of the winch within the coordinate system of whatever it is attached to,
-	 * either a body or the world. With a zero rotation the winch will point the wire along the X
-	 * axis.
+	 * The orientation of the winch relative to some parent object.
+	 *
+	 * For a Wire Component owned winch without a body attachment the parent is the Wire Component.
+	 * For a Wire Component owned winch with a body attachment the parent is the body.
+	 * For a Winch Component owned winch the parent is always the Winch Component.
+	 *
+	 * With a zero rotation the winch will point the wire along the X axis.
 	 *
 	 * Only used during setup, cannot be changed once Begin Play has been called.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
 	FRotator Rotation;
+
+	/**
+	 * The location passed to AGX Dynamics when the native wire winch is created. It is computed
+	 * once by the owning Component's CreateNative function based on the Location UProperty and the
+	 * Location's parent object, according to the documentation for Location. It holds either the
+	 * world space or the body-relative location of the winch based on the Location UProperty.
+	 */
+	FVector LocationSim;
+
+	/**
+	 * The rotation passed to AGX Dynamics when the native wire winch is created. It is computed
+	 * once by the owning Component's CreateNative function based on the Rotation UProperty and the
+	 * Rotation's parent object, according to the documentation for Rotation. It holds either the
+	 * world space or the body-relative rotation of the winch based on the Rotation UProperty.
+	 */
+	FRotator RotationSim;
 
 	// I would perhaps like to make this a BlueprintReadWrite property, but FAGX_RigidBodyReference
 	// is currently not a BlueprintType. Should it be? We deliberately did not make it a Blueprint

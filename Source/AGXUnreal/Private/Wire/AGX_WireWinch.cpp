@@ -324,7 +324,7 @@ void FAGX_WireWinch::CreateNative()
 		return Body->GetOrCreateNative();
 	}();
 	NativeBarrier.AllocateNative(
-		Body, Location, Rotation.RotateVector(FVector::ForwardVector), PulledInLength);
+		Body, LocationSim, RotationSim.RotateVector(FVector::ForwardVector), PulledInLength);
 	WritePropertiesToNative();
 }
 
