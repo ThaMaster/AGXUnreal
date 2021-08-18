@@ -13,6 +13,7 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Wire/AGX_WireInstanceData.h"
 #include "Wire/AGX_WireNode.h"
+#include "Wire/AGX_WireUtilities.h"
 #include "Wire/AGX_WireWinchComponent.h"
 #include "Wire/WireNodeBarrier.h"
 
@@ -865,23 +866,7 @@ namespace AGX_WireComponent_helpers
 	{
 		check(Wire.GetWinch(Side) != nullptr);
 		FAGX_WireWinch& Winch = *Wire.GetWinch(Side);
-		if (UAGX_RigidBodyComponent* BodyAttachment = Winch.GetBodyAttachment())
-		{
-			Winch.LocationSim = Winch.Location;
-			Winch.RotationSim = Winch.Rotation;
-		}
-		else
-		{
-			// The Wire Winch does not have a Rigid Body, which means that the Wire Winch will
-			// be attached to the world. Therefore, Location and Rotation should be in the
-			// global coordinate system when passed to AGX Dynamics. The Unreal Engine instance
-			// of the Wire Winch doesn't know about this, it only passes on whatever Location
-			// and Rotation it got, so here we transform from the Wire Component's local
-			// coordinate system to the global coordinate system ON THE GAME INSTANCE of the
-			// Wire Winch. This doesn't change the editor instance.
-			Winch.LocationSim = Wire.GetComponentTransform().TransformPosition(Winch.Location);
-			Winch.RotationSim = Wire.GetComponentRotation() + Winch.Rotation;
-		}
+		FAGX_WireUtilities::ComputeSimulationPlacement(Wire, Winch);
 		FWireWinchBarrier* Barrier = Winch.GetOrCreateNative();
 		if (Barrier == nullptr)
 		{

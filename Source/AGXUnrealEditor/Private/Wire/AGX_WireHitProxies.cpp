@@ -4,6 +4,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireWinchComponent.h"
+#include "Wire/AGX_WireUtilities.h"
 
 // Unreal Engine includes.
 #include "SceneManagement.h"
@@ -121,35 +122,50 @@ FVector AGX_WireVisualization_helpers::DrawWinch(
 FVector AGX_WireVisualization_helpers::DrawWinch(
 	const UAGX_WireComponent& Wire, EWireSide Side, FPrimitiveDrawInterface* PDI)
 {
-	const FTransform& WinchToWorld = GetWinchLocalToWorld(Wire, Side);
 	const FAGX_WireWinch* Winch = Wire.GetWinch(Side);
 	if (Winch == nullptr)
 	{
 		return FVector::ZeroVector;
 	}
+
+	const FTransform& LocalToWorld = [&Wire, Winch, Side]()
+	{
+		switch (Wire.GetWinchOwnerType(Side))
+		{
+			case EWireWinchOwnerType::Wire:
+				return FAGX_WireUtilities::GetVisualizationTransform(Wire, *Winch);
+			case EWireWinchOwnerType::WireWinch:
+			{
+				const UAGX_WireWinchComponent* WinchComponent = Wire.GetWinchComponent(Side);
+				checkf(
+					WinchComponent, TEXT("DrawWinch called for a wire claiming to have a Winch "
+										 "Component, but it didn't."));
+				return FAGX_WireUtilities::GetVisualizationTransform(*WinchComponent, *Winch);
+			}
+			case EWireWinchOwnerType::Other:
+				// We know nothing of these Wire Winches, so their location and rotation must be
+				// in the world coordinate system at all times.
+				return FTransform::Identity;
+			case EWireWinchOwnerType::None:
+				return FTransform::Identity;
+		}
+		checkNoEntry();
+		return FTransform::Identity;
+	}();
+
 	return DrawWinch(
-		*Winch, WinchToWorld, new HWinchLocationProxy(&Wire, Side),
+		*Winch, LocalToWorld, new HWinchLocationProxy(&Wire, Side),
 		new HWinchDirectionProxy(&Wire, Side), PDI);
 }
 
 FVector AGX_WireVisualization_helpers::DrawWinch(
 	const UAGX_WireWinchComponent& Winch, FPrimitiveDrawInterface* PDI)
 {
-	const FTransform& WinchToWorld = [&Winch]() -> const FTransform&
-	{
-		UAGX_RigidBodyComponent* Body = Winch.WireWinch.BodyAttachment.GetRigidBody();
-		if (Winch.HasNative() && Body != nullptr)
-		{
-			return Body->GetComponentTransform();
-		}
-		else
-		{
-			return Winch.GetComponentTransform();
-		}
-	}();
+	const FTransform& LocalToWorld =
+		FAGX_WireUtilities::GetVisualizationTransform(Winch, Winch.WireWinch);
 
 	return DrawWinch(
-		Winch.WireWinch, WinchToWorld, new HWinchLocationProxy(&Winch),
+		Winch.WireWinch, LocalToWorld, new HWinchLocationProxy(&Winch),
 		new HWinchDirectionProxy(&Winch), PDI);
 }
 

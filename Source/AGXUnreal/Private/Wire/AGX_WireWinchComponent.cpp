@@ -4,6 +4,7 @@
 #include "AGX_UpropertyDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_NativeOwnerInstanceData.h"
+#include "Wire/AGX_WireUtilities.h"
 
 // Unreal Engine includes.
 #include "CoreGlobals.h"
@@ -213,10 +214,6 @@ void UAGX_WireWinchComponent::CreateNative()
 		TEXT("Create Native called on a Wire Winch Component while a Blueprint Reconstruction is "
 			 "in progress, the instances should be inherited via a Actor Component Instance Data"));
 
-	// The Location and Rotation properties in Unreal are relative to the Wire Winch Component, but
-	// in AGX Dynamics they are relative to the Rigid Body or, if there is no Rigid Body, the world.
-	// Here we do the swap, right before creating the Native.
-	WireWinch.LocationSim = ComputeBodyRelativeLocation();
-	WireWinch.RotationSim = ComputeBodyRelativeRotation();
+	FAGX_WireUtilities::ComputeSimulationPlacement(*this, WireWinch);
 	WireWinch.CreateNative();
 }
