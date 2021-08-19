@@ -404,6 +404,11 @@ public:
 	/// winch is active, i.e. owner set to owned, or not.
 	const FAGX_WireWinch* GetOwnedWinch(EWireSide Side) const;
 
+	/// @return The Wire owned winch, the one used when Winch Owner Type is set to Wire, on the give
+	/// side.
+	UFUNCTION(BlueprintPure, Category = "AGX Wire Winch", Meta = (DisplayName = "Get Owned Winch"))
+	FAGX_WireWinch_BP GetOwnedWinch_BP(EWireSide Side);
+
 	/// @return True if a Wire Winch exists at the given side with the owner type that has been
 	/// configured for that side.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")

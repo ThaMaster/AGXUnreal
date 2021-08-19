@@ -317,6 +317,11 @@ const FAGX_WireWinch* UAGX_WireComponent::GetOwnedWinch(EWireSide Side) const
 	return nullptr;
 }
 
+FAGX_WireWinch_BP UAGX_WireComponent::GetOwnedWinch_BP(EWireSide Side)
+{
+	return {GetOwnedWinch(Side)};
+}
+
 bool UAGX_WireComponent::HasWinch(EWireSide Side) const
 {
 	switch (Side)
