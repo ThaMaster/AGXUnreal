@@ -254,6 +254,48 @@ const FAGX_WireWinch* UAGX_WireComponent::GetEndWinch() const
  * Side-agnostic winch.
  */
 
+void UAGX_WireComponent::SetWinchType(EWireWinchOwnerType Type, EWireSide Side)
+{
+	switch (Side)
+	{
+		case EWireSide::Begin:
+			BeginWinchType = Type;
+			return;
+		case EWireSide::End:
+			EndWinchType = Type;
+			return;
+		case EWireSide::None:
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Wire side None passed to Set Winch Type for wire '%s' in '%s'. Doing "
+					 "nothing."),
+				*GetName(), *GetNameSafe(GetOwner()));
+			return;
+	}
+
+	checkNoEntry();
+}
+
+EWireWinchOwnerType UAGX_WireComponent::GetWinchType(EWireSide Side) const
+{
+	switch (Side)
+	{
+		case EWireSide::Begin:
+			return BeginWinchType;
+		case EWireSide::End:
+			return EndWinchType;
+		case EWireSide::None:
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Wire side None passed to Get Winch Type for wire '%s' in '%s'."), *GetName(),
+				*GetNameSafe(GetOwner()));
+			return EWireWinchOwnerType::None;
+	}
+
+	checkNoEntry();
+	return EWireWinchOwnerType::None;
+}
+
 FAGX_WireWinch* UAGX_WireComponent::GetOwnedWinch(EWireSide Side)
 {
 	return const_cast<FAGX_WireWinch*>(

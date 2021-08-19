@@ -390,6 +390,12 @@ public:
 	 * Side-agnostic winch.
 	 */
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
+	void SetWinchType(EWireWinchOwnerType Type, EWireSide Side);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
+	EWireWinchOwnerType GetWinchType(EWireSide Side) const;
+
 	/// @return A pointer to the owned winch at the given side, regardless of whether that winch is
 	/// active, i.e. owner set to owned, or not.
 	FAGX_WireWinch* GetOwnedWinch(EWireSide Side);
