@@ -76,80 +76,14 @@ class HWinchDirectionProxy : public HComponentVisProxy
 
 namespace AGX_WireVisualization_helpers
 {
-#if 0
-	/**
-	 * Return the transformation that converts the location and rotation of a wire-owned winch from
-	 * whatever space they are expressed in to the world coordinate system. For a winch with a body
-	 * this is the body's Component Transform. For a winch without a body this is the Wire's
-	 * Component Transform.
-	 *
-	 * @param Wire The Wire that owns the Wire Winch.
-	 * @param Winch The Wire Winch to get the transformation for.
-	 * @return A transformation that transforms from the Wire Winch's local space to world space.
-	 */
-	const FTransform& GetOwnedWinchLocalToWorld(
-		const UAGX_WireComponent& Wire, const FAGX_WireWinch& Winch);
-
-	/**
-	 * Return the transformation that converts the location and rotation of a wire-owned winch from
-	 * whatever space they are expressed in to the world coordinate system. For a winch with a body
-	 * this is the body's Component Transform. For a winch without a body this is the Wire's
-	 * Component Transform.
-	 *
-	 * @param Wire The Wire that owns the Wire Winch.
-	 * @param Side The side of the Wire where the Winch to get the transformation for is.
-	 * @return A transformation that transforms from the Wire Winch's local space to world space.
-	 */
-	const FTransform& GetOwnedWinchLocalToWorld(const UAGX_WireComponent& Wire, EWireSide Side);
-
-	/**
-	 * Get the local-to-world transformation for one of the winches in use by a wire. If there is no
-	 * winch in use at the given side then the identity transformation is returned. Determine if
-	 * there is a winch at a particular side with UAGX_WireComponent::HasWinch(EWireSide Side).
-	 *
-	 * The local-to-world transformation is used to transform the location and rotation properties
-	 * of the winch.
-	 *
-	 * The transformation returned depend on the type of winch. If the winch is owned by the Wire
-	 * and doesn't have a body then the Wire's transformation is returned. If a Wire-owned winch
-	 * have a body then the body's transformation is returned. If the winch is owned by a Wire Winch
-	 * then the Wire Winch's transformation is returned regardless of if there is a body or not.
-	 *
-	 * @param Wire The wire that the winch transformation should be found for.
-	 * @param Side The side of the wire where we should look for the winch.
-	 * @return The local-to-world transformation for the selected winch.
-	 */
-	const FTransform& GetWinchLocalToWorld(const UAGX_WireComponent& Wire, EWireSide Side);
-#endif
-
-#if 1
 	FVector DrawWinch(
 		const FAGX_WireWinch& Winch, const FAGX_WireWinchPose& WinchPose,
 		HWinchLocationProxy* LocationProxy, HWinchDirectionProxy* DirectionProxy,
 		FPrimitiveDrawInterface* PDI);
-#else
-	FVector DrawWinch(
-		const FAGX_WireWinch& Winch, const FTransform& LocalToWorld,
-		HWinchLocationProxy* LocationProxy, HWinchDirectionProxy* DirectionProxy,
-		FPrimitiveDrawInterface* PDI);
-#endif
 
 	FVector DrawWinch(const UAGX_WireComponent& Wire, EWireSide Side, FPrimitiveDrawInterface* PDI);
 
 	FVector DrawWinch(const UAGX_WireWinchComponent& Winch, FPrimitiveDrawInterface* PDI);
-
-#if 0
-	bool GetWidgetLocation(
-		const FAGX_WireWinch& Winch, const FTransform& WinchToWorld, EWinchSide WinchSide,
-		FVector& OutLocation);
-
-	bool GetWidgetLocation(
-		const UAGX_WireComponent& WinchOwner, EWireSide WireSide, EWinchSide WinchSide,
-		FVector& OutLocation);
-
-	bool GetWidgetLocation(
-		const UAGX_WireWinchComponent& Winch, EWinchSide WinchSide, FVector& OutLocation);
-#endif
 
 	bool GetWidgetLocation(
 		const FAGX_WireWinchPose& WinchPose, EWinchSide Side, FVector& OutLocation);

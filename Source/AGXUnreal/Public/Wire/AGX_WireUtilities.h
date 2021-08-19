@@ -46,29 +46,6 @@ public:
 	 */
 	static const FTransform& GetWinchLocalToWorld(const UAGX_WireWinchComponent& WireWinch);
 
-#if 0
-	/**
-	 * @return The transformation to use when rendering editor visualization for a winch owned by a
-	 * Wire Component.
-	 */
-	static const FTransform& GetVisualizationTransform(
-		const UAGX_WireComponent& Owner, const FAGX_WireWinch& Winch);
-
-	/**
-	 * @return The transformation to use when rendering editor visualization for a winch owned by a
-	 * Wire Winch Component.
-	 */
-	static const FTransform& GetVisualizationTransform(
-		const UAGX_WireWinchComponent& Owner, const FAGX_WireWinch& Winch);
-
-	/**
-	 * @return The transformation to use when rendering editor visualization for a winch used by a
-	 * wire. May be owned by the wire itself, but may also be owned by a Wire Winch Component.
-	 */
-	static const FTransform& GetVisualizationTransform(
-		const UAGX_WireComponent& Wire, EWireSide Side);
-#endif
-
 	/**
 	 * Compute the simulation time location and rotation on the given Wire owned Wire Winch,
 	 * expressing them in the coordinate frame expected by AGX Dynamics.

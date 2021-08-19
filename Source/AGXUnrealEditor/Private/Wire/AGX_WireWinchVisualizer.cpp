@@ -87,7 +87,6 @@ bool FAGX_WireWinchVisualizer::VisProxyHandleClick(
 bool FAGX_WireWinchVisualizer::GetWidgetLocation(
 	const FEditorViewportClient* ViewportClient, FVector& OutLocation) const
 {
-#if 1
 	if (!HasValidWinchSelection())
 	{
 		return false;
@@ -101,15 +100,6 @@ bool FAGX_WireWinchVisualizer::GetWidgetLocation(
 	FAGX_WireWinchPose WinchPose = FAGX_WireUtilities::GetWireWinchPose(*GetSelectedWinch());
 	return AGX_WireVisualization_helpers::GetWidgetLocation(
 		WinchPose, SelectedWinchSide, OutLocation);
-#else
-	if (!HasValidWinchSelection())
-	{
-		return false;
-	}
-
-	return AGX_WireVisualization_helpers::GetWidgetLocation(
-		*GetSelectedWinch(), SelectedWinchSide, OutLocation);
-#endif
 }
 
 bool FAGX_WireWinchVisualizer::HandleInputDelta(
@@ -127,23 +117,8 @@ bool FAGX_WireWinchVisualizer::HandleInputDelta(
 	const FTransform& WinchToWorld = FAGX_WireUtilities::GetWinchLocalToWorld(*WinchComponent);
 	FAGX_WireWinch& Winch = WinchComponent->WireWinch;
 
-#if 1
 	AGX_WireVisualization_helpers::TransformWinch(
 		Winch, WinchToWorld, SelectedWinchSide, DeltaTranslate, DeltaRotate);
-#else
-	switch (SelectedWinchSide)
-	{
-		case EWinchSide::Location:
-			TransformWinchLocation(Winch, WinchToWorld, DeltaTranslate, DeltaRotate);
-			break;
-		case EWinchSide::Rotation:
-			TransformWinchRotation(Winch, WinchToWorld, DeltaTranslate);
-			break;
-		case EWinchSide::None:
-			// Nothing to do here.
-			break;
-	}
-#endif
 
 	GEditor->RedrawLevelEditingViewports();
 	return true;

@@ -355,7 +355,6 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 		return false;
 	}
 
-#if 1
 	if (HasValidNodeSelection())
 	{
 		// Convert the wire-local location to a world location.
@@ -377,25 +376,6 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 			WinchPose, SelectedWinchSide, OutLocation);
 	}
 	return false;
-#else
-	using namespace AGX_WireVisualization_helpers;
-
-	if (HasValidNodeSelection())
-	{
-		// Convert the wire-local location to a world location.
-		const FTransform& LocalToWorld = GetSelectedWire()->GetComponentTransform();
-		const FVector NodeLocation = GetSelectedWire()->RouteNodes[SelectedNodeIndex].Location;
-		OutLocation = LocalToWorld.TransformPosition(NodeLocation);
-		return true;
-	}
-	else if (HasValidWinchSelection())
-	{
-		return AGX_WireVisualization_helpers::GetWidgetLocation(
-			*GetSelectedWire(), SelectedWinch, SelectedWinchSide, OutLocation);
-	}
-
-	return false;
-#endif
 }
 
 // Called by Unreal Editor when the transform widget is moved, rotated, or scaled.
@@ -484,23 +464,9 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		FAGX_WireWinch& Winch = *Wire->GetWinch(SelectedWinch);
 		const FTransform& WinchToWorld =
 			FAGX_WireUtilities::GetWinchLocalToWorld(*Wire, SelectedWinch);
-#if 1
+
 		AGX_WireVisualization_helpers::TransformWinch(
 			Winch, WinchToWorld, SelectedWinchSide, DeltaTranslate, DeltaRotate);
-#else
-		switch (SelectedWinchSide)
-		{
-			case EWinchSide::Location:
-				TransformWinchLocation(Winch, WinchToWorld, DeltaTranslate, DeltaRotate);
-				break;
-			case EWinchSide::Rotation:
-				TransformWinchRotation(Winch, WinchToWorld, DeltaTranslate);
-				break;
-			case EWinchSide::None:
-				// Nothing to do here.
-				break;
-		}
-#endif
 	}
 	else
 	{

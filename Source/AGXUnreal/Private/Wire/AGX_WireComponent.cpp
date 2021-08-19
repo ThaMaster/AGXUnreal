@@ -114,14 +114,6 @@ bool UAGX_WireComponent::HasBeginWinch() const
 
 FAGX_WireWinch* UAGX_WireComponent::GetBeginWinch()
 {
-#if 0
-	// UFunctions cannot return a pointer to an FStruct, but it can return a reference to one.
-	// Sometimes we don't have a Wire Winch to return, in which case we return a reference to this
-	// static default constructed empty Wire Winch. I don't know how the user is supposed to detect
-	// that this has occurred. They should guard the call to GetBeginWinch with HasBeginWinch.
-	static FAGX_WireWinch InvalidWinch;
-#endif
-
 	switch (BeginWinchType)
 	{
 		case EWireWinchOwnerType::Wire:
@@ -227,13 +219,6 @@ bool UAGX_WireComponent::HasEndWinch() const
 
 FAGX_WireWinch* UAGX_WireComponent::GetEndWinch()
 {
-#if 0
-	// UFunctions cannot return a pointer to an FStruct, but it can return a reference to one.
-	// Sometimes we don't have a Wire Winch to return, in which case we return a reference to this
-	// static default constructed empty Wire Winch.
-	static FAGX_WireWinch InvalidWinch;
-#endif
-
 	switch (EndWinchType)
 	{
 		case EWireWinchOwnerType::Wire:
@@ -306,13 +291,6 @@ bool UAGX_WireComponent::HasWinch(EWireSide Side) const
 
 FAGX_WireWinch* UAGX_WireComponent::GetWinch(EWireSide Side)
 {
-#if 0
-	// UFunctions cannot return a pointer to an FStruct, but it can return a reference to one.
-	// Sometimes we don't have a Wire Winch to return, in which case we return a reference to this
-	// static default constructed empty Wire Winch.
-	static FAGX_WireWinch InvalidWinch;
-#endif
-
 	switch (Side)
 	{
 		case EWireSide::None:
