@@ -313,6 +313,18 @@ class AGXUNREAL_API UAGX_WireWinch_FL : public UBlueprintFunctionLibrary
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
+	static void SetLocation(FAGX_WireWinch_BP Winch, const FVector& InLocation);
+
+	UFUNCTION(BlueprintPure, Category = "AGX Wire Winch")
+	static FVector GetLocation(FAGX_WireWinch_BP Winch);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
+	static void SetRotation(FAGX_WireWinch_BP Winch, const FRotator& InRotation);
+
+	UFUNCTION(BlueprintPure, Category = "AGX Wire Winch")
+	static FRotator GetRotation(FAGX_WireWinch_BP Winch);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
 	static bool SetBodyAttachment(FAGX_WireWinch_BP Winch, UAGX_RigidBodyComponent* Body);
 
 	UFUNCTION(BlueprintPure, Category = "Wire Winch")

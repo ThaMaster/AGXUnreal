@@ -436,6 +436,47 @@ bool FAGX_WireWinch_BP::IsValid() const
 
 /* Start of Blueprint Function Library. */
 
+void UAGX_WireWinch_FL::SetLocation(FAGX_WireWinch_BP Winch, const FVector& InLocation)
+{
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to SetLocation."));
+		return;
+	}
+	Winch.Winch->Location = InLocation;
+}
+
+FVector UAGX_WireWinch_FL::GetLocation(FAGX_WireWinch_BP Winch)
+{
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to GetLocation."));
+		return FVector();
+	}
+	return Winch.Winch->Location;
+}
+
+void UAGX_WireWinch_FL::SetRotation(FAGX_WireWinch_BP Winch, const FRotator& InRotation)
+{
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to SetRotation."));
+		return ;
+	}
+	Winch.Winch->Rotation = InRotation;
+}
+
+FRotator UAGX_WireWinch_FL::GetRotation(FAGX_WireWinch_BP Winch)
+{
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid WireWinchApi passed to ."));
+		return FRotator();
+	}
+	return Winch.Winch->Rotation;
+}
+
+
 bool UAGX_WireWinch_FL::SetBodyAttachment(FAGX_WireWinch_BP Winch, UAGX_RigidBodyComponent* Body)
 {
 	if (!Winch.IsValid())
