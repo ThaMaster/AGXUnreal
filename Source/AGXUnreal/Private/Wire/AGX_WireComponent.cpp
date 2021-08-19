@@ -265,6 +265,31 @@ const FAGX_WireWinch* UAGX_WireComponent::GetEndWinch() const
 	return nullptr;
 }
 
+/*
+ * Side-agnostic winch.
+ */
+
+FAGX_WireWinch* UAGX_WireComponent::GetOwnedWinch(EWireSide Side)
+{
+	return const_cast<FAGX_WireWinch*>(
+		const_cast<const UAGX_WireComponent*>(this)->GetOwnedWinch(Side));
+}
+
+const FAGX_WireWinch* UAGX_WireComponent::GetOwnedWinch(EWireSide Side) const
+{
+	switch (Side)
+	{
+		case EWireSide::Begin:
+			return &OwnedBeginWinch;
+		case EWireSide::End:
+			return &OwnedEndWinch;
+		case EWireSide::None:
+			return nullptr;
+	}
+	checkNoEntry();
+	return nullptr;
+}
+
 bool UAGX_WireComponent::HasWinch(EWireSide Side) const
 {
 	switch (Side)

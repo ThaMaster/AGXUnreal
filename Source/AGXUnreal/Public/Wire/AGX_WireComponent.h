@@ -390,6 +390,14 @@ public:
 	 * Side-agnostic winch.
 	 */
 
+	/// @return A pointer to the owned winch at the given side, regardless of whether that winch is
+	/// active, i.e. owner set to owned, or not.
+	FAGX_WireWinch* GetOwnedWinch(EWireSide Side);
+
+	/// @return A pointer to the owned Wire Winch at the given side, regardless of whether that
+	/// winch is active, i.e. owner set to owned, or not.
+	const FAGX_WireWinch* GetOwnedWinch(EWireSide Side) const;
+
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
 	bool HasWinch(EWireSide Side) const;
 
