@@ -87,6 +87,21 @@ bool FAGX_WireWinchVisualizer::VisProxyHandleClick(
 bool FAGX_WireWinchVisualizer::GetWidgetLocation(
 	const FEditorViewportClient* ViewportClient, FVector& OutLocation) const
 {
+#if 1
+	if (!HasValidWinchSelection())
+	{
+		return false;
+	}
+
+	const UAGX_WireWinchComponent* SelectedWinch = GetSelectedWinch();
+	checkf(
+		SelectedWinch != nullptr,
+		TEXT("HasValidWinchSelection has been checked but we still didn't get a winch."));
+
+	FAGX_WireWinchPose WinchPose = FAGX_WireUtilities::GetWireWinchPose(*GetSelectedWinch());
+	return AGX_WireVisualization_helpers::GetWidgetLocation(
+		WinchPose, SelectedWinchSide, OutLocation);
+#else
 	if (!HasValidWinchSelection())
 	{
 		return false;
@@ -94,6 +109,7 @@ bool FAGX_WireWinchVisualizer::GetWidgetLocation(
 
 	return AGX_WireVisualization_helpers::GetWidgetLocation(
 		*GetSelectedWinch(), SelectedWinchSide, OutLocation);
+#endif
 }
 
 bool FAGX_WireWinchVisualizer::HandleInputDelta(
@@ -108,9 +124,13 @@ bool FAGX_WireWinchVisualizer::HandleInputDelta(
 	}
 
 	UAGX_WireWinchComponent* WinchComponent = GetSelectedWinch();
-	const FTransform& WinchToWorld = WinchComponent->GetComponentTransform();
+	const FTransform& WinchToWorld = FAGX_WireUtilities::GetWinchLocalToWorld(*WinchComponent);
 	FAGX_WireWinch& Winch = WinchComponent->WireWinch;
 
+#if 1
+	AGX_WireVisualization_helpers::TransformWinch(
+		Winch, WinchToWorld, SelectedWinchSide, DeltaTranslate, DeltaRotate);
+#else
 	switch (SelectedWinchSide)
 	{
 		case EWinchSide::Location:
@@ -123,6 +143,7 @@ bool FAGX_WireWinchVisualizer::HandleInputDelta(
 			// Nothing to do here.
 			break;
 	}
+#endif
 
 	GEditor->RedrawLevelEditingViewports();
 	return true;

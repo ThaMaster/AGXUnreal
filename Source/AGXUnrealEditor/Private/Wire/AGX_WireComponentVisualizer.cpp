@@ -7,6 +7,7 @@
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireHitProxies.h"
 #include "Wire/AGX_WireNode.h"
+#include "Wire/AGX_WireUtilities.h"
 #include "Wire/AGX_WireWinch.h"
 #include "Wire/AGX_WireWinchComponent.h"
 
@@ -344,10 +345,39 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 }
 
 // Called by Unreal Editor to decide where the transform widget should be rendered. We place it on
-// the selected node, if there is one.
+// the selected node, if there is one, or on the selected winch handle, if there is one.
 bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	const FEditorViewportClient* ViewportClient, FVector& OutLocation) const
 {
+	UAGX_WireComponent* Wire = GetSelectedWire();
+	if (Wire == nullptr)
+	{
+		return false;
+	}
+
+#if 1
+	if (HasValidNodeSelection())
+	{
+		// Convert the wire-local location to a world location.
+		const FTransform& LocalToWorld = Wire->GetComponentTransform();
+		/// @todo Body Fixed and Eye should be relative to the body, not the wire.
+		const FVector LocalLocation = Wire->RouteNodes[SelectedNodeIndex].Location;
+		OutLocation = LocalToWorld.TransformPosition(LocalLocation);
+		return true;
+	}
+	else if (HasValidWinchSelection())
+	{
+		const FAGX_WireWinch* Winch = Wire->GetWinch(SelectedWinch);
+		checkf(
+			Winch != nullptr,
+			TEXT("HasValidWinchSelection has been checked but we still didn't get a winch."));
+
+		FAGX_WireWinchPose WinchPose = FAGX_WireUtilities::GetWireWinchPose(*Wire, SelectedWinch);
+		return AGX_WireVisualization_helpers::GetWidgetLocation(
+			WinchPose, SelectedWinchSide, OutLocation);
+	}
+	return false;
+#else
 	using namespace AGX_WireVisualization_helpers;
 
 	if (HasValidNodeSelection())
@@ -365,6 +395,7 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	}
 
 	return false;
+#endif
 }
 
 // Called by Unreal Editor when the transform widget is moved, rotated, or scaled.
@@ -378,6 +409,11 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	UAGX_WireComponent* Wire = GetSelectedWire();
 	if (Wire == nullptr)
 	{
+		return false;
+	}
+	if (Wire->HasNative())
+	{
+		// Currently only allow direct node editing at edit time, i.e., when not having a native.
 		return false;
 	}
 
@@ -446,7 +482,12 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	else if (HasValidWinchSelection())
 	{
 		FAGX_WireWinch& Winch = *Wire->GetWinch(SelectedWinch);
-		const FTransform& WinchToWorld = GetWinchLocalToWorld(*Wire, SelectedWinch);
+		const FTransform& WinchToWorld =
+			FAGX_WireUtilities::GetWinchLocalToWorld(*Wire, SelectedWinch);
+#if 1
+		AGX_WireVisualization_helpers::TransformWinch(
+			Winch, WinchToWorld, SelectedWinchSide, DeltaTranslate, DeltaRotate);
+#else
 		switch (SelectedWinchSide)
 		{
 			case EWinchSide::Location:
@@ -459,6 +500,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 				// Nothing to do here.
 				break;
 		}
+#endif
 	}
 	else
 	{

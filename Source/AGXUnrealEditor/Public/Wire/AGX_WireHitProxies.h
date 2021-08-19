@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Wire/AGX_WireComponent.h"
+#include "Wire/AGX_WireUtilities.h"
 #include "Wire/AGX_WireWinchComponent.h"
 
 // Unreal Engine includes.
@@ -75,6 +76,7 @@ class HWinchDirectionProxy : public HComponentVisProxy
 
 namespace AGX_WireVisualization_helpers
 {
+#if 0
 	/**
 	 * Return the transformation that converts the location and rotation of a wire-owned winch from
 	 * whatever space they are expressed in to the world coordinate system. For a winch with a body
@@ -118,16 +120,25 @@ namespace AGX_WireVisualization_helpers
 	 * @return The local-to-world transformation for the selected winch.
 	 */
 	const FTransform& GetWinchLocalToWorld(const UAGX_WireComponent& Wire, EWireSide Side);
+#endif
 
+#if 1
+	FVector DrawWinch(
+		const FAGX_WireWinch& Winch, const FAGX_WireWinchPose& WinchPose,
+		HWinchLocationProxy* LocationProxy, HWinchDirectionProxy* DirectionProxy,
+		FPrimitiveDrawInterface* PDI);
+#else
 	FVector DrawWinch(
 		const FAGX_WireWinch& Winch, const FTransform& LocalToWorld,
 		HWinchLocationProxy* LocationProxy, HWinchDirectionProxy* DirectionProxy,
 		FPrimitiveDrawInterface* PDI);
+#endif
 
 	FVector DrawWinch(const UAGX_WireComponent& Wire, EWireSide Side, FPrimitiveDrawInterface* PDI);
 
 	FVector DrawWinch(const UAGX_WireWinchComponent& Winch, FPrimitiveDrawInterface* PDI);
 
+#if 0
 	bool GetWidgetLocation(
 		const FAGX_WireWinch& Winch, const FTransform& WinchToWorld, EWinchSide WinchSide,
 		FVector& OutLocation);
@@ -138,6 +149,14 @@ namespace AGX_WireVisualization_helpers
 
 	bool GetWidgetLocation(
 		const UAGX_WireWinchComponent& Winch, EWinchSide WinchSide, FVector& OutLocation);
+#endif
+
+	bool GetWidgetLocation(
+		const FAGX_WireWinchPose& WinchPose, EWinchSide Side, FVector& OutLocation);
+
+	void TransformWinch(
+		FAGX_WireWinch& Winch, const FTransform& WinchToWorld, EWinchSide Side,
+		const FVector& DeltaTranslate, const FRotator& DeltaRotate);
 
 	void TransformWinchLocation(
 		FAGX_WireWinch& Winch, const FTransform& WinchToWorld, const FVector& DeltaTranslate,

@@ -28,8 +28,155 @@
  *  - Owner=Wire, Body=true: Both relative to body, no change necessary.
  *  - Owner=Winch, Body=false: Use Winch transform to convert rel. to Winch to rel. to World.
  *  - Owner=Winch, Body=true: Move from relative to Winch to relative to Body.
+ *
+ *  In plain english:
+ *
+ * At edit time, a winch owned by a Wire is placed relative to the Wire unless there is a body,
+ * then it is placed relative to the body.
+ * At edit time, a winch owned by a Wire Winch is always placed relative to the Wire Winch,
+ * regardless of if there is a body or not.
+ * At simulation time, a winch with a body is placed relative to that body regardless of what type
+ * the owner is.
+ * At simulation time, a winch without a body is placed relative to the world regardless of what
+ * type the owner is.
  */
 
+namespace AGX_WireUtilities_helpers
+{
+	/*
+	 * Implements the Owner=Wire part of the table above.
+	 */
+	FAGX_WireWinchPose GetWireWinchPose(const UAGX_WireComponent& Wire, const FAGX_WireWinch& Winch)
+	{
+		const UAGX_RigidBodyComponent* Body = Winch.GetBodyAttachment();
+		const bool bNative = Winch.HasNative();
+		const bool bBody = Body != nullptr;
+		if (!bNative && !bBody)
+		{
+			// Owner=Wire, Native=false, Body=false: Editor placement relative to Wire.
+			return {Wire.GetComponentTransform(), Winch.Location, Winch.Rotation};
+		}
+		else if (!bNative && bBody)
+		{
+			// Owner=Wire, Native=false, Body=true: Editor placement relative to Body.
+			return {Body->GetComponentTransform(), Winch.Location, Winch.Rotation};
+		}
+		else if (bNative && !bBody)
+		{
+			// Owner=Wire, Native=true, Body=false: Simulation placement relative to World.
+			return {FTransform::Identity, Winch.LocationSim, Winch.RotationSim};
+		}
+		else if (bNative && bBody)
+		{
+			// Owner=Wire, Native=true, Body=true: Simulation placement relative to Body.
+			return {Body->GetComponentTransform(), Winch.LocationSim, Winch.RotationSim};
+		}
+
+		// The above if-else chain is supposed to be exhaustive, should never get here.
+		checkNoEntry();
+		return {FTransform::Identity, FVector(), FRotator()};
+	}
+
+	/*
+	 * Implements the Owner=Winch part of the table above.
+	 */
+	FAGX_WireWinchPose GetWireWinchPose(const UAGX_WireWinchComponent& WireWinch)
+	{
+		const FAGX_WireWinch& Winch = WireWinch.WireWinch;
+		const UAGX_RigidBodyComponent* Body = WireWinch.WireWinch.GetBodyAttachment();
+		const bool bNative = Winch.HasNative();
+		const bool bBody = Body != nullptr;
+		if (!bNative && !bBody)
+		{
+			// Owner=Winch, Native=false, Body=false: Editor placement relative to Winch.
+			return {WireWinch.GetComponentTransform(), Winch.Location, Winch.Rotation};
+		}
+		else if (!bNative && bBody)
+		{
+			// Owner=Winch, Native=false, Body=true: Editor placement relative to Winch.
+			return {WireWinch.GetComponentTransform(), Winch.Location, Winch.Rotation};
+		}
+		else if (bNative && !bBody)
+		{
+			// Owner=Winch, Native=true, Body=false: Simulation placement relative to World.
+			return {FTransform::Identity, Winch.LocationSim, Winch.RotationSim};
+		}
+		else if (bNative && bBody)
+		{
+			// Owner=Winch, Native=true, Body=true: Simulation placement relative to Body.
+			return {Body->GetComponentTransform(), Winch.LocationSim, Winch.RotationSim};
+		}
+
+		// The above if-else chain is supposed to be exhaustive, should never get here.
+		checkNoEntry();
+		return {FTransform::Identity, FVector(), FRotator()};
+	}
+}
+
+FAGX_WireWinchPose FAGX_WireUtilities::GetWireWinchPose(
+	const UAGX_WireComponent& Wire, EWireSide Side)
+{
+	switch (Wire.GetWinchOwnerType(Side))
+	{
+		case EWireWinchOwnerType::Wire:
+		{
+			const FAGX_WireWinch* Winch = Wire.GetOwnedWinch(Side);
+			checkf(
+				Winch != nullptr, TEXT("Trying to get owned Wire Winch pose for a Wire Component "
+									   "with no Wire Winch."));
+			return AGX_WireUtilities_helpers::GetWireWinchPose(Wire, *Winch);
+		}
+		case EWireWinchOwnerType::WireWinch:
+		{
+			const UAGX_WireWinchComponent* WireWinch = Wire.GetWinchComponent(Side);
+			checkf(
+				WireWinch != nullptr, TEXT("Trying to get Wire Winch Component pose for a Wire "
+										   "Component with no Wire Winch."));
+			return AGX_WireUtilities_helpers::GetWireWinchPose(*WireWinch);
+		}
+		case EWireWinchOwnerType::Other:
+		{
+			// We know nothing of these Wire Winches, so their location and rotation must be
+			// in the world coordinate system at all times.
+			const FAGX_WireWinch* Winch = Wire.GetBorrowedWinch(Side);
+			check(Winch != nullptr);
+			if (Winch->HasNative())
+			{
+				return {FTransform::Identity, Winch->LocationSim, Winch->RotationSim};
+			}
+			else
+			{
+				return {FTransform::Identity, Winch->Location, Winch->Rotation};
+			}
+		}
+		case EWireWinchOwnerType::None:
+			// Should never ask for the pose of a winch that doesn't exist.
+			checkNoEntry();
+			break;
+	}
+
+	// The above switch statement is supposed to be exhaustive, should never get here.
+	checkNoEntry();
+	return {FTransform::Identity, FVector(), FRotator()};
+}
+
+FAGX_WireWinchPose FAGX_WireUtilities::GetWireWinchPose(const UAGX_WireWinchComponent& WireWinch)
+{
+	return AGX_WireUtilities_helpers::GetWireWinchPose(WireWinch);
+}
+
+const FTransform& FAGX_WireUtilities::GetWinchLocalToWorld(
+	const UAGX_WireComponent& Wire, EWireSide Side)
+{
+	return GetWireWinchPose(Wire, Side).LocalToWorld;
+}
+
+const FTransform& FAGX_WireUtilities::GetWinchLocalToWorld(const UAGX_WireWinchComponent& WireWinch)
+{
+	return GetWireWinchPose(WireWinch).LocalToWorld;
+}
+
+#if 0
 const FTransform& FAGX_WireUtilities::GetVisualizationTransform(
 	const UAGX_WireComponent& Owner, const FAGX_WireWinch& Winch)
 {
@@ -91,6 +238,38 @@ const FTransform& FAGX_WireUtilities::GetVisualizationTransform(
 	checkNoEntry();
 	return FTransform::Identity;
 }
+
+const FTransform& FAGX_WireUtilities::GetVisualizationTransform(
+	const UAGX_WireComponent& Wire, EWireSide Side)
+{
+	const FAGX_WireWinch* Winch = Wire.GetWinch(Side);
+	checkf(
+		Winch != nullptr, TEXT("GetVisualizationTransform should only be called on Wire Components "
+							   "that have a valid winch on the specified side."));
+
+	switch (Wire.GetWinchOwnerType(Side))
+	{
+		case EWireWinchOwnerType::Wire:
+			return FAGX_WireUtilities::GetVisualizationTransform(Wire, *Winch);
+		case EWireWinchOwnerType::WireWinch:
+		{
+			const UAGX_WireWinchComponent* WinchComponent = Wire.GetWinchComponent(Side);
+			checkf(
+				WinchComponent, TEXT("DrawWinch called for a wire claiming to have a Winch "
+									 "Component, but it didn't."));
+			return FAGX_WireUtilities::GetVisualizationTransform(*WinchComponent, *Winch);
+		}
+		case EWireWinchOwnerType::Other:
+			// We know nothing of these Wire Winches, so their location and rotation must be
+			// in the world coordinate system at all times.
+			return FTransform::Identity;
+		case EWireWinchOwnerType::None:
+			return FTransform::Identity;
+	}
+	checkNoEntry();
+	return FTransform::Identity;
+}
+#endif
 
 void FAGX_WireUtilities::ComputeSimulationPlacement(
 	const UAGX_WireComponent& Owner, FAGX_WireWinch& Winch)
