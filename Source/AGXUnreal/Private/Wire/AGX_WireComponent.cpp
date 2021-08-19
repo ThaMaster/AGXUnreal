@@ -403,6 +403,29 @@ const UAGX_WireWinchComponent* UAGX_WireComponent::GetWinchComponent(EWireSide S
 	return nullptr;
 }
 
+bool UAGX_WireComponent::SetWinchComponent(UAGX_WireWinchComponent* Winch, EWireSide Side)
+{
+	switch (Side)
+	{
+		case EWireSide::Begin:
+			SetBeginWinchComponent(Winch);
+			return true;
+		case EWireSide::End:
+			SetEndWinchComponent(Winch);
+			return true;
+		case EWireSide::None:
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Wire side None passed to Set Winch Component for wire '%s' in '%s'. Doing "
+					 "nothing."),
+				*GetName(), *GetNameSafe(GetOwner()));
+			return false;
+	}
+
+	checkNoEntry();
+	return false;
+}
+
 FComponentReference* UAGX_WireComponent::GetWinchComponentReference(EWireSide Side)
 {
 	switch (Side)

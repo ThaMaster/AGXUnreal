@@ -428,6 +428,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
 	EWireWinchOwnerType GetWinchOwnerType(EWireSide Side) const;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
+	bool SetWinchComponent(UAGX_WireWinchComponent* Winch, EWireSide Side);
+
 	/// @return The Wire Winch Component set for the given side, if there is one, regardless of
 	/// whether that winch is active, i.e. owner is set to Wire Winch,or not.
 	UFUNCTION(BlueprintPure, Category = "AGX Wire Winch")
