@@ -398,26 +398,40 @@ public:
 	/// winch is active, i.e. owner set to owned, or not.
 	const FAGX_WireWinch* GetOwnedWinch(EWireSide Side) const;
 
+	/// @return True if a Wire Winch exists at the given side with the owner type that has been
+	/// configured for that side.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
 	bool HasWinch(EWireSide Side) const;
 
+	/// @return The Wire Winch at the given side of the owner type configured for that side.
 	FAGX_WireWinch* GetWinch(EWireSide Side);
 
+	/// @return The Wire Winch at the given side of the owner type configured for that side.
 	const FAGX_WireWinch* GetWinch(EWireSide Side) const;
 
+	/// @return The Wire Winch at the given side of the owner type configured for that side.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch", Meta = (DisplayName = "Get Winch"))
 	FAGX_WireWinch_BP GetWinch_BP(EWireSide Side);
 
+	/// @return The owner type configured for the given side.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
 	EWireWinchOwnerType GetWinchOwnerType(EWireSide Side) const;
 
+	/// @return The Wire Winch Component set for the given side, if there is one, regardless of
+	/// whether that winch is active, i.e. owner is set to Wire Winch,or not.
 	UFUNCTION(BlueprintPure, Category = "AGX Wire Winch")
 	UAGX_WireWinchComponent* GetWinchComponent(EWireSide Side);
 
+	/// @return The Wire Winch Component set for the given side, if there is one, regardless of
+	/// whether that winch is active, i.e. owner is set to Wire Winch, or not.
 	const UAGX_WireWinchComponent* GetWinchComponent(EWireSide Side) const;
 
+	/// @return A pointer to the Component Reference used to identity the Wire Winch Component at
+	/// the given side.
 	FComponentReference* GetWinchComponentReference(EWireSide Side);
 
+	/// @return A pointer to the borrowed winch at the given side, regardless of whether that winch
+	/// is active, i.e. owner is set to Other, or not.
 	FAGX_WireWinch* GetBorrowedWinch(EWireSide Side);
 	const FAGX_WireWinch* GetBorrowedWinch(EWireSide Side) const;
 
