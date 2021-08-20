@@ -134,6 +134,19 @@ double FWireBarrier::GetTension() const
 	return Data.raw;
 }
 
+bool FWireBarrier::Attach(FWireWinchBarrier& Winch, bool bBegin)
+{
+	check(HasNative());
+	check(Winch.HasNative());
+	return NativeRef->Native->attach(Winch.GetNative()->Native, bBegin);
+}
+
+bool FWireBarrier::Detach(bool bBegin)
+{
+	check(HasNative());
+	return NativeRef->Native->detach(bBegin);
+}
+
 FWireRenderIteratorBarrier FWireBarrier::GetRenderBeginIterator() const
 {
 	check(HasNative());

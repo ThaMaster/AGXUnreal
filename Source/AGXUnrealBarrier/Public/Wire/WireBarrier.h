@@ -70,6 +70,26 @@ public:
 
 	double GetTension() const;
 
+	/**
+	 * Attach a winch to a free end of this wire.
+	 *
+	 * If an object is attached to begin, it will be detached, and this winch controller will be attached at this position instead.
+	 *
+	 * Parameters
+	 * @param Winch	Winch to attach.
+	 * @param bBegin True if the winch should be attached at begin, false at end.
+	 * @return True if the Winch was attached, false otherwise.
+	 */
+	bool Attach(FWireWinchBarrier& Winch, bool bBegin);
+
+	/**
+	 * Detach begin or end of this wire (if attached to something).
+	 *
+	 * @param bBegin If true begin of this wire will be detached, otherwise end.
+	 * @return True if a detach was performed, false otherwise.
+	 */
+	bool Detach(bool bBegin);
+
 	FWireRenderIteratorBarrier GetRenderBeginIterator() const;
 	FWireRenderIteratorBarrier GetRenderEndIterator() const;
 

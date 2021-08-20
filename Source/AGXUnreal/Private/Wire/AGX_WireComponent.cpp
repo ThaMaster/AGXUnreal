@@ -151,6 +151,36 @@ FAGX_WireWinchRef UAGX_WireComponent::GetBeginWinch_BP()
 	return {GetBeginWinch()};
 }
 
+bool UAGX_WireComponent::AttachOwnedBeginWinch()
+{
+	return AttachOwnedWinch(EWireSide::Begin);
+}
+
+bool UAGX_WireComponent::AttachBeginWinch(UAGX_WireWinchComponent* Winch)
+{
+	return AttachWinch(Winch, EWireSide::Begin);
+}
+
+bool UAGX_WireComponent::AttachBeginWinch(FAGX_WireWinchRef Winch)
+{
+	return AttachWinch(Winch, EWireSide::Begin);
+}
+
+bool UAGX_WireComponent::AttachBeginWinchToComponent(UAGX_WireWinchComponent* Winch)
+{
+	return AttachWinchToComponent(Winch, EWireSide::Begin);
+}
+
+bool UAGX_WireComponent::AttachBeginWinchToOther(FAGX_WireWinchRef Winch)
+{
+	return AttachWinchToOther(Winch, EWireSide::Begin);
+}
+
+bool UAGX_WireComponent::DetachBeginWinch()
+{
+	return DetachWinch(EWireSide::Begin);
+}
+
 /*
  * End Winch.
  */
@@ -208,6 +238,11 @@ const FAGX_WireWinch* UAGX_WireComponent::GetEndWinchComponentWinch() const
 	return &WinchComponent->WireWinch;
 }
 
+void UAGX_WireComponent::SetBorrowedEndWinch(FAGX_WireWinchRef Winch)
+{
+	BorrowedEndWinch = Winch.Winch;
+}
+
 bool UAGX_WireComponent::HasEndWinch() const
 {
 	switch (EndWinchType)
@@ -239,6 +274,36 @@ FAGX_WireWinch* UAGX_WireComponent::GetEndWinch()
 FAGX_WireWinchRef UAGX_WireComponent::GetEndWinch_BP()
 {
 	return {GetEndWinch()};
+}
+
+bool UAGX_WireComponent::AttachOwnedEndWinch()
+{
+	return AttachOwnedWinch(EWireSide::End);
+}
+
+bool UAGX_WireComponent::AttachEndWinch(UAGX_WireWinchComponent* Winch)
+{
+	return AttachWinch(Winch, EWireSide::End);
+}
+
+bool UAGX_WireComponent::AttachEndWinch(FAGX_WireWinchRef Winch)
+{
+	return AttachWinch(Winch, EWireSide::End);
+}
+
+bool UAGX_WireComponent::AttachEndWinchToComponent(UAGX_WireWinchComponent* Winch)
+{
+	return AttachWinchToComponent(Winch, EWireSide::End);
+}
+
+bool UAGX_WireComponent::AttachEndWinchToOther(FAGX_WireWinchRef Winch)
+{
+	return AttachWinchToOther(Winch, EWireSide::End);
+}
+
+bool UAGX_WireComponent::DetachEndWinch()
+{
+	return DetachWinch(EWireSide::End);
 }
 
 const FAGX_WireWinch* UAGX_WireComponent::GetEndWinch() const
@@ -327,6 +392,29 @@ FAGX_WireWinchRef UAGX_WireComponent::GetOwnedWinch_BP(EWireSide Side)
 	return {GetOwnedWinch(Side)};
 }
 
+bool UAGX_WireComponent::SetBorrowedWinch(FAGX_WireWinchRef Winch, EWireSide Side)
+{
+	switch (Side)
+	{
+		case EWireSide::Begin:
+			SetBorrowedBeginWinch(Winch);
+			return true;
+		case EWireSide::End:
+			SetBorrowedEndWinch(Winch);
+			return true;
+		case EWireSide::None:
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Wire side None passed to Set Borrowed Winch for wire '%s' in '%s'. Doing "
+					 "nothing."),
+				*GetName(), *GetNameSafe(GetOwner()));
+			return false;
+	}
+
+	checkNoEntry();
+	return false;
+}
+
 bool UAGX_WireComponent::HasWinch(EWireSide Side) const
 {
 	switch (Side)
@@ -372,6 +460,196 @@ const FAGX_WireWinch* UAGX_WireComponent::GetWinch(EWireSide Side) const
 FAGX_WireWinchRef UAGX_WireComponent::GetWinch_BP(EWireSide Side)
 {
 	return {GetWinch(Side)};
+}
+
+bool UAGX_WireComponent::AttachOwnedWinch(EWireSide Side)
+{
+	if (Side != EWireSide::Begin && Side != EWireSide::End)
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("Invalid Side passed to AttachOwnedWinch for Wire '%s' in '%s'."),
+			*GetName(), *GetNameSafe(GetOwner()));
+		return false;
+	}
+
+	FAGX_WireWinch& Winch = *GetOwnedWinch(Side);
+	SetWinchType(EWireWinchOwnerType::Wire, Side);
+	if (HasNative())
+	{
+		FAGX_WireUtilities::ComputeSimulationPlacement(*this, Winch);
+		FWireWinchBarrier* Barrier = Winch.GetOrCreateNative();
+		if (Barrier == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Cannot attach Wire '%s' in '%s' to it's owned %s winch because the AGX "
+					 "Dynamics instance of the winch could not be created."),
+				*GetName(), *GetNameSafe(GetOwner()),
+				*StaticEnum<EWireSide>()->GetNameStringByValue((int64) Side));
+			SetWinchType(EWireWinchOwnerType::None, Side);
+			return false;
+		}
+		bool bAttached = NativeBarrier.Attach(*Barrier, Side == EWireSide::Begin);
+		if (!bAttached)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("AGX Dynamics instance of Wire '%s' in '%s' could not attach %s side to "
+					 "owned Wire Winch. See LogAGXDynamics for details."),
+				*GetName(), *GetNameSafe(GetOwner()),
+				*StaticEnum<EWireSide>()->GetNameStringByValue((int64) Side));
+			SetWinchType(EWireWinchOwnerType::None, EWireSide::Begin);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool UAGX_WireComponent::AttachWinch(UAGX_WireWinchComponent* Winch, EWireSide Side)
+{
+	if (Side != EWireSide::Begin && Side != EWireSide::End)
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("Invalid Side passed to AttachWinch for Wire '%s' in '%s'."),
+			*GetName(), *GetNameSafe(GetOwner()));
+		return false;
+	}
+
+	if (Winch == nullptr)
+	{
+		SetWinchType(EWireWinchOwnerType::None, Side);
+		SetWinchComponent(nullptr, Side);
+		if (HasNative())
+		{
+			NativeBarrier.Detach(Side == EWireSide::Begin);
+		}
+		return true;
+	}
+
+	SetWinchType(EWireWinchOwnerType::WireWinch, Side);
+	SetWinchComponent(Winch, Side);
+
+	if (HasNative())
+	{
+		FWireWinchBarrier* Barrier = Winch->GetOrCreateNative();
+		if (Barrier == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Cannot attach Wire '%s' in '%s' to the Wire Winch '%s' in '%s' because the "
+					 "AGX Dynamics instance of the winch could not be created."),
+				*GetName(), *GetNameSafe(GetOwner()), *Winch->GetName(),
+				*GetNameSafe(Winch->GetOwner()));
+			SetWinchType(EWireWinchOwnerType::None, Side);
+			return false;
+		}
+		const bool bAttached = NativeBarrier.Attach(*Barrier, Side == EWireSide::Begin);
+		if (!bAttached)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("AGX Dynamics instance of Wire '%s' in '%s' could not attach %s side to "
+					 "Wire Winch Component. See LogAGXDynamics for details."),
+				*GetName(), *GetNameSafe(GetOwner()),
+				*StaticEnum<EWireSide>()->GetNameStringByValue((int64) Side));
+			SetWinchType(EWireWinchOwnerType::None, Side);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool UAGX_WireComponent::AttachWinch(FAGX_WireWinchRef Winch, EWireSide Side)
+{
+	if (Side != EWireSide::Begin && Side != EWireSide::End)
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("Invalid Side passed to AttachWinch for Wire '%s' in '%s'."),
+			*GetName(), *GetNameSafe(GetOwner()));
+		return false;
+	}
+
+	if (!Winch.IsValid())
+	{
+		SetWinchType(EWireWinchOwnerType::None, Side);
+		SetBorrowedWinch({nullptr}, Side);
+		if (HasNative())
+		{
+			NativeBarrier.Detach(Side == EWireSide::Begin);
+		}
+		return true;
+	}
+
+	SetWinchType(EWireWinchOwnerType::Other, Side);
+	SetBorrowedWinch(Winch, Side);
+	if (HasNative())
+	{
+		FAGX_WireUtilities::ComputeSimulationPlacement(*Winch.Winch);
+		FWireWinchBarrier* Barrier = Winch.Winch->GetOrCreateNative();
+		if (Barrier == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Cannot attach Wire '%s' in '%s' to custom Wire Winch because the AGX "
+					 "Dynamics instance of the winch could not be created."),
+				*GetName(), *GetNameSafe(GetOwner()));
+			SetWinchType(EWireWinchOwnerType::None, Side);
+			return false;
+		}
+		const bool bAttached = NativeBarrier.Attach(*Barrier, Side == EWireSide::Begin);
+		if (!bAttached)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("AGX Dynamics instance of Wire '%s' in '%s' could not attach %s side to "
+					 "custom Wire Winch. See LogAGXDynamics for details."),
+				*StaticEnum<EWireSide>()->GetNameStringByValue((int64) Side), *GetName(),
+				*GetNameSafe(GetOwner()));
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool UAGX_WireComponent::AttachWinchToComponent(UAGX_WireWinchComponent* Winch, EWireSide Side)
+{
+	return AttachWinch(Winch, Side);
+}
+
+bool UAGX_WireComponent::AttachWinchToOther(FAGX_WireWinchRef Winch, EWireSide Side)
+{
+	return AttachWinch(Winch, Side);
+}
+
+bool UAGX_WireComponent::DetachWinch(EWireSide Side)
+{
+	if (Side != EWireSide::Begin && Side != EWireSide::End)
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("Invalid Side passed to DetachWinch for Wire '%s' in '%s'."),
+			*GetName(), *GetNameSafe(GetOwner()));
+		return false;
+	}
+
+	SetWinchType(EWireWinchOwnerType::None, Side);
+	if (HasNative())
+	{
+		bool bDetached = NativeBarrier.Detach(Side == EWireSide::Begin);
+		if (!bDetached)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("AGX Dynamics instance of Wire '%s' in '%s' could not detach %s side. See "
+					 "LogAGXDynamics for details."),
+				*GetName(), *GetNameSafe(GetOwner()),
+				*StaticEnum<EWireSide>()->GetNameStringByValue((int64) Side));
+			return false;
+		}
+	}
+	return true;
 }
 
 EWireWinchOwnerType UAGX_WireComponent::GetWinchOwnerType(EWireSide Side) const
@@ -943,7 +1221,7 @@ namespace AGX_WireComponent_helpers
 	void CreateNativeWireOwnedWinch(UAGX_WireComponent& Wire, EWireSide Side)
 	{
 		check(Wire.GetWinch(Side) != nullptr);
-		FAGX_WireWinch& Winch = *Wire.GetWinch(Side);
+		FAGX_WireWinch& Winch = *Wire.GetOwnedWinch(Side);
 		FAGX_WireUtilities::ComputeSimulationPlacement(Wire, Winch);
 		FWireWinchBarrier* Barrier = Winch.GetOrCreateNative();
 		if (Barrier == nullptr)

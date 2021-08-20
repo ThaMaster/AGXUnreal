@@ -260,16 +260,87 @@ public:
 	 * Should only be called when HasBeginWinch returns true.
 	 *
 	 * This can be either the owned winch, a winch in a Wire Winch Component, or a borrowed begin
-	 * winch, depending on the value of BeginWinchType.
+	 * winch, depending on the value of BeginWinchType, or nullptr if there is no winch at the begin
+	 * side.
 	 *
 	 * @return The attached Wire Winch, or nullptr.
 	 */
 	FAGX_WireWinch* GetBeginWinch();
 	const FAGX_WireWinch* GetBeginWinch() const;
 
+	/**
+	 * Get a reference to the Wire Winch object that the begin side of this wire is attached to.
+	 *
+	 * Should only be called when HasBeginWinch returns true.
+	 *
+	 * This can be either the owned winch, a winch in a Wire Winch Component, or a borrowed begin
+	 * winch, depending on the value of BeginWinchType, ar an invalid winch reference if there is
+	 * no winch at the begin side.
+	 *
+	 * @return The attached begin Wire Winch, or an invalid Wire Winch if there is no winch at the
+	 * begin side.
+	 */
 	UFUNCTION(
 		BlueprintPure, Category = "AGX Wire Begin Winch", Meta = (DisplayName = "Get Begin Winch"))
 	FAGX_WireWinchRef GetBeginWinch_BP();
+
+	/**
+	 * Attach the begin side of the wire to the owned begin winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
+	bool AttachOwnedBeginWinch();
+
+	/**
+	 * Attach the begin side of the wire to the given Wire Winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	bool AttachBeginWinch(UAGX_WireWinchComponent* Winch);
+
+	/**
+	 * Attach the begin side of the wire to the given Wire Winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	bool AttachBeginWinch(FAGX_WireWinchRef Winch);
+
+	/**
+	 * Attach the begin side of the wire to the given Wire Winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
+	bool AttachBeginWinchToComponent(UAGX_WireWinchComponent* Winch);
+
+	/**
+	 * Attach the begin side of the wire to the given Wire Winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
+	bool AttachBeginWinchToOther(FAGX_WireWinchRef Winch);
+
+	/**
+	 * Detach the begin side of the wire from the winch it is currently attached to.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the detachment was successful, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
+	bool DetachBeginWinch();
 
 	/*
 	 * End winch.
@@ -358,6 +429,9 @@ public:
 	 */
 	FAGX_WireWinch* BorrowedEndWinch;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
+	void SetBorrowedEndWinch(FAGX_WireWinchRef Winch);
+
 	/**
 	 * Determine if this wire has any type of winch at the End side. The winch can be eiter
 	 * owned by the wire, i.e., OwnedEndWinch, owned by a Winch Component referenced through
@@ -389,6 +463,64 @@ public:
 		BlueprintPure, Category = "AGX Wire End Winch", Meta = (DisplayName = "Get End Winch"))
 	FAGX_WireWinchRef GetEndWinch_BP();
 
+	/**
+	 * Attach the End side of the wire to the owned end winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire End Winch")
+	bool AttachOwnedEndWinch();
+
+	/**
+	 * Attach the end side of the wire to the given Wire Winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	bool AttachEndWinch(UAGX_WireWinchComponent* Winch);
+
+	/**
+	 * Attach the end side of the wire to the given Wire Winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	bool AttachEndWinch(FAGX_WireWinchRef Winch);
+
+	/**
+	 * Attach the end side of the wire to the given Wire Winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire End Winch")
+	bool AttachEndWinchToComponent(UAGX_WireWinchComponent* Winch);
+
+	/**
+	 * Attach the end side of the wire to the given Wire Winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire End Winch")
+	bool AttachEndWinchToOther(FAGX_WireWinchRef Winch);
+
+	/**
+	 * Detach the end side of the wire from the winch it is currently attached to.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the detachment was successful, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire End Winch")
+	bool DetachEndWinch();
+
 	/*
 	 * Side-agnostic winch.
 	 */
@@ -412,6 +544,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "AGX Wire Winch", Meta = (DisplayName = "Get Owned Winch"))
 	FAGX_WireWinchRef GetOwnedWinch_BP(EWireSide Side);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
+	bool SetBorrowedWinch(FAGX_WireWinchRef Winch, EWireSide Side);
+
 	/// @return True if a Wire Winch exists at the given side with the owner type that has been
 	/// configured for that side.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
@@ -426,6 +561,64 @@ public:
 	/// @return The Wire Winch at the given side of the owner type configured for that side.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch", Meta = (DisplayName = "Get Winch"))
 	FAGX_WireWinchRef GetWinch_BP(EWireSide Side);
+
+	/**
+	 * Attach the End side of the wire to the owned end winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
+	bool AttachOwnedWinch(EWireSide Side);
+
+	/**
+	 * Attach the end side of the wire to the given Wire Winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	bool AttachWinch(UAGX_WireWinchComponent* Winch, EWireSide Side);
+
+	/**
+	 * Attach the end side of the wire to the given Wire Winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	bool AttachWinch(FAGX_WireWinchRef Winch, EWireSide Side);
+
+	/**
+	 * Attach the end side of the wire to the given Wire Winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
+	bool AttachWinchToComponent(UAGX_WireWinchComponent* Winch, EWireSide Side);
+
+	/**
+	 * Attach the end side of the wire to the given Wire Winch.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the attachment was successful, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
+	bool AttachWinchToOther(FAGX_WireWinchRef Winch, EWireSide Side);
+
+	/**
+	 * Detach the end side of the wire from the winch it is currently attached to.
+	 *
+	 * This can be done during runtime.
+	 *
+	 * @return True if the detachment was successful, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
+	bool DetachWinch(EWireSide Side);
 
 	/// @return The owner type configured for the given side.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")

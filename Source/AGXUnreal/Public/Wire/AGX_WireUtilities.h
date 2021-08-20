@@ -56,7 +56,7 @@ public:
 	static void ComputeSimulationPlacement(const UAGX_WireComponent& Owner, FAGX_WireWinch& Winch);
 
 	/**
-	 * Computer the simulation time location and rotation on the given Wire Winch owned Wire Winch,
+	 * Compute the simulation time location and rotation on the given Wire Winch owned Wire Winch,
 	 * expressing them in the coordinate frame expected by AGX Dynamics.
 	 *
 	 * If the Wire Winch does not have a body then the world coordinate system is used.
@@ -64,4 +64,15 @@ public:
 	 */
 	static void ComputeSimulationPlacement(
 		const UAGX_WireWinchComponent& Owner, FAGX_WireWinch& Winch);
+
+	/**
+	 * Compute the simulation time location and rotation of the given non-owned Wire Winch,
+	 * expressing them in the coordinate frame expected by AGX Dynamics.
+	 *
+	 * Since the winch doesn't have an owner there is no context to transform the location and
+	 * rotation in relation to. The transformation is therefore the identity function, i.e., the
+	 * LocationSim and RotationSim member variables become copies of the Location and Rotation
+	 * UProperties.
+	 */
+	static void ComputeSimulationPlacement(FAGX_WireWinch& Winch);
 };

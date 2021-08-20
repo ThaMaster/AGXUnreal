@@ -214,3 +214,9 @@ void FAGX_WireUtilities::ComputeSimulationPlacement(
 		Winch.RotationSim = WinchRotation + Winch.Rotation;
 	}
 }
+
+void FAGX_WireUtilities::ComputeSimulationPlacement(FAGX_WireWinch& Winch)
+{
+	Winch.LocationSim = Winch.Location;
+	Winch.RotationSim = Winch.Rotation;
+}
