@@ -44,7 +44,7 @@ UAGX_WireComponent::UAGX_WireComponent()
 #endif
 }
 
-FAGX_WireWinch_BP UAGX_WireComponent::GetOwnedBeginWinch_BP()
+FAGX_WireWinchRef UAGX_WireComponent::GetOwnedBeginWinch_BP()
 {
 	return {&OwnedBeginWinch};
 }
@@ -93,12 +93,12 @@ const FAGX_WireWinch* UAGX_WireComponent::GetBeginWinchComponentWinch() const
 	return &WinchComponent->WireWinch;
 }
 
-FAGX_WireWinch_BP UAGX_WireComponent::GetBeginWinchComponentWinch_BP()
+FAGX_WireWinchRef UAGX_WireComponent::GetBeginWinchComponentWinch_BP()
 {
 	return {GetBeginWinchComponentWinch()};
 }
 
-void UAGX_WireComponent::SetBorrowedBeginWinch(FAGX_WireWinch_BP Winch)
+void UAGX_WireComponent::SetBorrowedBeginWinch(FAGX_WireWinchRef Winch)
 {
 	BorrowedBeginWinch = Winch.Winch;
 }
@@ -146,7 +146,7 @@ const FAGX_WireWinch* UAGX_WireComponent::GetBeginWinch() const
 	return nullptr;
 }
 
-FAGX_WireWinch_BP UAGX_WireComponent::GetBeginWinch_BP()
+FAGX_WireWinchRef UAGX_WireComponent::GetBeginWinch_BP()
 {
 	return {GetBeginWinch()};
 }
@@ -155,7 +155,7 @@ FAGX_WireWinch_BP UAGX_WireComponent::GetBeginWinch_BP()
  * End Winch.
  */
 
-FAGX_WireWinch_BP UAGX_WireComponent::GetOwnedEndWinch_BP()
+FAGX_WireWinchRef UAGX_WireComponent::GetOwnedEndWinch_BP()
 {
 	return {&OwnedEndWinch};
 }
@@ -193,7 +193,7 @@ FAGX_WireWinch* UAGX_WireComponent::GetEndWinchComponentWinch()
 		const_cast<const UAGX_WireComponent*>(this)->GetEndWinchComponentWinch());
 }
 
-FAGX_WireWinch_BP UAGX_WireComponent::GetEndWinchComponentWinch_BP()
+FAGX_WireWinchRef UAGX_WireComponent::GetEndWinchComponentWinch_BP()
 {
 	return {GetEndWinchComponentWinch()};
 }
@@ -236,7 +236,7 @@ FAGX_WireWinch* UAGX_WireComponent::GetEndWinch()
 	return nullptr;
 }
 
-FAGX_WireWinch_BP UAGX_WireComponent::GetEndWinch_BP()
+FAGX_WireWinchRef UAGX_WireComponent::GetEndWinch_BP()
 {
 	return {GetEndWinch()};
 }
@@ -322,7 +322,7 @@ const FAGX_WireWinch* UAGX_WireComponent::GetOwnedWinch(EWireSide Side) const
 	return nullptr;
 }
 
-FAGX_WireWinch_BP UAGX_WireComponent::GetOwnedWinch_BP(EWireSide Side)
+FAGX_WireWinchRef UAGX_WireComponent::GetOwnedWinch_BP(EWireSide Side)
 {
 	return {GetOwnedWinch(Side)};
 }
@@ -369,7 +369,7 @@ const FAGX_WireWinch* UAGX_WireComponent::GetWinch(EWireSide Side) const
 	return nullptr;
 }
 
-FAGX_WireWinch_BP UAGX_WireComponent::GetWinch_BP(EWireSide Side)
+FAGX_WireWinchRef UAGX_WireComponent::GetWinch_BP(EWireSide Side)
 {
 	return {GetWinch(Side)};
 }

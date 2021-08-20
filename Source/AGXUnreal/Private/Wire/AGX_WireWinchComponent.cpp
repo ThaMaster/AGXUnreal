@@ -9,7 +9,7 @@
 // Unreal Engine includes.
 #include "CoreGlobals.h"
 
-FAGX_WireWinch_BP UAGX_WireWinchComponent::GetWinch_BP()
+FAGX_WireWinchRef UAGX_WireWinchComponent::GetWinch_BP()
 {
 	return {&WireWinch};
 }

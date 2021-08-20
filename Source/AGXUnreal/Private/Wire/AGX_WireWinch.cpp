@@ -424,24 +424,24 @@ FAGX_WireWinch& FAGX_WireWinch::operator=(const FAGX_WireWinch& Other)
 
 /* Start of FAGX_WireWinch_BP. */
 
-FAGX_WireWinch_BP::FAGX_WireWinch_BP(FAGX_WireWinch* InWinch)
+FAGX_WireWinchRef::FAGX_WireWinchRef(FAGX_WireWinch* InWinch)
 	: Winch(InWinch)
 {
 }
 
-bool FAGX_WireWinch_BP::IsValid() const
+bool FAGX_WireWinchRef::IsValid() const
 {
 	return Winch != nullptr;
 }
 
 /* Start of Blueprint Function Library. */
 
-FAGX_WireWinch_BP UAGX_WireWinch_FL::MakeRef(UPARAM(Ref) FAGX_WireWinch& Winch)
+FAGX_WireWinchRef UAGX_WireWinch_FL::MakeRef(UPARAM(Ref) FAGX_WireWinch& Winch)
 {
 	return {&Winch};
 }
 
-void UAGX_WireWinch_FL::SetLocation(FAGX_WireWinch_BP Winch, const FVector& InLocation)
+void UAGX_WireWinch_FL::SetLocation(FAGX_WireWinchRef Winch, const FVector& InLocation)
 {
 	if (!Winch.IsValid())
 	{
@@ -451,7 +451,7 @@ void UAGX_WireWinch_FL::SetLocation(FAGX_WireWinch_BP Winch, const FVector& InLo
 	Winch.Winch->Location = InLocation;
 }
 
-FVector UAGX_WireWinch_FL::GetLocation(FAGX_WireWinch_BP Winch)
+FVector UAGX_WireWinch_FL::GetLocation(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{
@@ -461,7 +461,7 @@ FVector UAGX_WireWinch_FL::GetLocation(FAGX_WireWinch_BP Winch)
 	return Winch.Winch->Location;
 }
 
-void UAGX_WireWinch_FL::SetRotation(FAGX_WireWinch_BP Winch, const FRotator& InRotation)
+void UAGX_WireWinch_FL::SetRotation(FAGX_WireWinchRef Winch, const FRotator& InRotation)
 {
 	if (!Winch.IsValid())
 	{
@@ -471,7 +471,7 @@ void UAGX_WireWinch_FL::SetRotation(FAGX_WireWinch_BP Winch, const FRotator& InR
 	Winch.Winch->Rotation = InRotation;
 }
 
-FRotator UAGX_WireWinch_FL::GetRotation(FAGX_WireWinch_BP Winch)
+FRotator UAGX_WireWinch_FL::GetRotation(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{
@@ -482,7 +482,7 @@ FRotator UAGX_WireWinch_FL::GetRotation(FAGX_WireWinch_BP Winch)
 }
 
 
-bool UAGX_WireWinch_FL::SetBodyAttachment(FAGX_WireWinch_BP Winch, UAGX_RigidBodyComponent* Body)
+bool UAGX_WireWinch_FL::SetBodyAttachment(FAGX_WireWinchRef Winch, UAGX_RigidBodyComponent* Body)
 {
 	if (!Winch.IsValid())
 	{
@@ -491,7 +491,7 @@ bool UAGX_WireWinch_FL::SetBodyAttachment(FAGX_WireWinch_BP Winch, UAGX_RigidBod
 	}
 	return Winch.Winch->SetBodyAttachment(Body);
 }
-UAGX_RigidBodyComponent* UAGX_WireWinch_FL::GetBodyAttachment(FAGX_WireWinch_BP Winch)
+UAGX_RigidBodyComponent* UAGX_WireWinch_FL::GetBodyAttachment(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{
@@ -501,7 +501,7 @@ UAGX_RigidBodyComponent* UAGX_WireWinch_FL::GetBodyAttachment(FAGX_WireWinch_BP 
 	return Winch.Winch->GetBodyAttachment();
 }
 
-void UAGX_WireWinch_FL::SetPulledInLength(FAGX_WireWinch_BP Winch, float InPulledInLength)
+void UAGX_WireWinch_FL::SetPulledInLength(FAGX_WireWinchRef Winch, float InPulledInLength)
 {
 	if (!Winch.IsValid())
 	{
@@ -511,7 +511,7 @@ void UAGX_WireWinch_FL::SetPulledInLength(FAGX_WireWinch_BP Winch, float InPulle
 	return Winch.Winch->SetPulledInLength(static_cast<double>(InPulledInLength));
 }
 
-float UAGX_WireWinch_FL::GetPulledInLength(FAGX_WireWinch_BP Winch)
+float UAGX_WireWinch_FL::GetPulledInLength(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{
@@ -521,7 +521,7 @@ float UAGX_WireWinch_FL::GetPulledInLength(FAGX_WireWinch_BP Winch)
 	return static_cast<float>(Winch.Winch->GetPulledInLength());
 }
 
-void UAGX_WireWinch_FL::SetMotorEnabled(FAGX_WireWinch_BP Winch, bool bMotorEnabled)
+void UAGX_WireWinch_FL::SetMotorEnabled(FAGX_WireWinchRef Winch, bool bMotorEnabled)
 {
 	if (!Winch.IsValid())
 	{
@@ -531,7 +531,7 @@ void UAGX_WireWinch_FL::SetMotorEnabled(FAGX_WireWinch_BP Winch, bool bMotorEnab
 	return Winch.Winch->SetMotorEnabled(bMotorEnabled);
 }
 
-bool UAGX_WireWinch_FL::IsMotorEnabled(FAGX_WireWinch_BP Winch)
+bool UAGX_WireWinch_FL::IsMotorEnabled(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{
@@ -541,7 +541,7 @@ bool UAGX_WireWinch_FL::IsMotorEnabled(FAGX_WireWinch_BP Winch)
 	return Winch.Winch->IsMotorEnabled();
 }
 
-void UAGX_WireWinch_FL::SetMotorForceRange(FAGX_WireWinch_BP Winch, float Min, float Max)
+void UAGX_WireWinch_FL::SetMotorForceRange(FAGX_WireWinchRef Winch, float Min, float Max)
 {
 	if (!Winch.IsValid())
 	{
@@ -550,7 +550,7 @@ void UAGX_WireWinch_FL::SetMotorForceRange(FAGX_WireWinch_BP Winch, float Min, f
 	}
 	return Winch.Winch->SetMotorForceRange(static_cast<double>(Min), static_cast<double>(Max));
 }
-float UAGX_WireWinch_FL::GetMotorForceRangeMin(FAGX_WireWinch_BP Winch)
+float UAGX_WireWinch_FL::GetMotorForceRangeMin(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{
@@ -560,7 +560,7 @@ float UAGX_WireWinch_FL::GetMotorForceRangeMin(FAGX_WireWinch_BP Winch)
 	return static_cast<float>(Winch.Winch->GetMotorForceRangeMin());
 }
 
-float UAGX_WireWinch_FL::GetMotorForceRangeMax(FAGX_WireWinch_BP Winch)
+float UAGX_WireWinch_FL::GetMotorForceRangeMax(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{
@@ -570,7 +570,7 @@ float UAGX_WireWinch_FL::GetMotorForceRangeMax(FAGX_WireWinch_BP Winch)
 	return static_cast<float>(Winch.Winch->GetMotorForceRangeMax());
 }
 
-void UAGX_WireWinch_FL::SetBrakeForceRange(FAGX_WireWinch_BP Winch, float Min, float Max)
+void UAGX_WireWinch_FL::SetBrakeForceRange(FAGX_WireWinchRef Winch, float Min, float Max)
 {
 	if (!Winch.IsValid())
 	{
@@ -580,7 +580,7 @@ void UAGX_WireWinch_FL::SetBrakeForceRange(FAGX_WireWinch_BP Winch, float Min, f
 	return Winch.Winch->SetBrakeForceRange(static_cast<double>(Min), static_cast<double>(Max));
 }
 
-float UAGX_WireWinch_FL::GetBrakeForceRangeMin(FAGX_WireWinch_BP Winch)
+float UAGX_WireWinch_FL::GetBrakeForceRangeMin(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{
@@ -590,7 +590,7 @@ float UAGX_WireWinch_FL::GetBrakeForceRangeMin(FAGX_WireWinch_BP Winch)
 	return static_cast<float>(Winch.Winch->GetBrakeForceRangeMin());
 }
 
-float UAGX_WireWinch_FL::GetBrakeForceRangeMax(FAGX_WireWinch_BP Winch)
+float UAGX_WireWinch_FL::GetBrakeForceRangeMax(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{
@@ -600,7 +600,7 @@ float UAGX_WireWinch_FL::GetBrakeForceRangeMax(FAGX_WireWinch_BP Winch)
 	return static_cast<float>(Winch.Winch->GetBrakeForceRangeMax());
 }
 
-void UAGX_WireWinch_FL::SetBrakeEnabled(FAGX_WireWinch_BP Winch, bool bInBrakeEnabled)
+void UAGX_WireWinch_FL::SetBrakeEnabled(FAGX_WireWinchRef Winch, bool bInBrakeEnabled)
 {
 	if (!Winch.IsValid())
 	{
@@ -610,7 +610,7 @@ void UAGX_WireWinch_FL::SetBrakeEnabled(FAGX_WireWinch_BP Winch, bool bInBrakeEn
 	return Winch.Winch->SetBrakeEnabled(bInBrakeEnabled);
 }
 
-bool UAGX_WireWinch_FL::IsBrakeEnabled(FAGX_WireWinch_BP Winch)
+bool UAGX_WireWinch_FL::IsBrakeEnabled(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{
@@ -620,7 +620,7 @@ bool UAGX_WireWinch_FL::IsBrakeEnabled(FAGX_WireWinch_BP Winch)
 	return Winch.Winch->IsBrakeEnabled();
 }
 
-void UAGX_WireWinch_FL::SetTargetSpeed(FAGX_WireWinch_BP Winch, float InTargetSpeed)
+void UAGX_WireWinch_FL::SetTargetSpeed(FAGX_WireWinchRef Winch, float InTargetSpeed)
 {
 	if (!Winch.IsValid())
 	{
@@ -630,7 +630,7 @@ void UAGX_WireWinch_FL::SetTargetSpeed(FAGX_WireWinch_BP Winch, float InTargetSp
 	return Winch.Winch->SetTargetSpeed(static_cast<double>(InTargetSpeed));
 }
 
-float UAGX_WireWinch_FL::GetTargetSpeed(FAGX_WireWinch_BP Winch)
+float UAGX_WireWinch_FL::GetTargetSpeed(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{
@@ -640,7 +640,7 @@ float UAGX_WireWinch_FL::GetTargetSpeed(FAGX_WireWinch_BP Winch)
 	return static_cast<float>(Winch.Winch->GetTargetSpeed());
 }
 
-float UAGX_WireWinch_FL::GetCurrentSpeed(FAGX_WireWinch_BP Winch)
+float UAGX_WireWinch_FL::GetCurrentSpeed(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{

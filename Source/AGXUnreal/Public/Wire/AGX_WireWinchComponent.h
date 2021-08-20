@@ -19,7 +19,7 @@ public:
 	FAGX_WireWinch WireWinch;
 
 	UFUNCTION(BlueprintPure, Category = "AGX Wire Winch", Meta = (DisplayName = "Get Winch"))
-	FAGX_WireWinch_BP GetWinch_BP();
+	FAGX_WireWinchRef GetWinch_BP();
 
 	/// @todo Rename these to something that doesn't mention the body explicitly, or at least makes
 	/// it obvious that the body is optional and what happens when there is no body.

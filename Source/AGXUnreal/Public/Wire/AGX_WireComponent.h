@@ -181,7 +181,7 @@ public:
 	UFUNCTION(
 		BlueprintPure, Category = "AGX Wire Begin Winch",
 		Meta = (DisplayName = "Get Owned Begin Winch"))
-	FAGX_WireWinch_BP GetOwnedBeginWinch_BP();
+	FAGX_WireWinchRef GetOwnedBeginWinch_BP();
 
 	/// @todo The engine example, ULiveLinkComponentController, uses EditInstanceOnly here.
 	/// Determine if that is a requirement or not. Possibly related to Blueprint Editor
@@ -227,7 +227,7 @@ public:
 	UFUNCTION(
 		BlueprintPure, Category = "AGX Wire Begin Winch",
 		Meta = (DisplayName = "Get Begin Winch Component Winch"))
-	FAGX_WireWinch_BP GetBeginWinchComponentWinch_BP();
+	FAGX_WireWinchRef GetBeginWinchComponentWinch_BP();
 
 	/// \todo Winch borrowing is just an idea, it might not work out.
 	/**
@@ -238,7 +238,7 @@ public:
 	FAGX_WireWinch* BorrowedBeginWinch;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
-	void SetBorrowedBeginWinch(FAGX_WireWinch_BP Winch);
+	void SetBorrowedBeginWinch(FAGX_WireWinchRef Winch);
 
 	/**
 	 * Determine if this wire has any type of winch at the begin side. The winch can be eiter
@@ -269,7 +269,7 @@ public:
 
 	UFUNCTION(
 		BlueprintPure, Category = "AGX Wire Begin Winch", Meta = (DisplayName = "Get Begin Winch"))
-	FAGX_WireWinch_BP GetBeginWinch_BP();
+	FAGX_WireWinchRef GetBeginWinch_BP();
 
 	/*
 	 * End winch.
@@ -303,7 +303,7 @@ public:
 	UFUNCTION(
 		BlueprintPure, Category = "AGX Wire End Winch",
 		Meta = (DisplayName = "Get Owned End Winch"))
-	FAGX_WireWinch_BP GetOwnedEndWinch_BP();
+	FAGX_WireWinchRef GetOwnedEndWinch_BP();
 
 	/// @todo The engine example, ULiveLinkComponentController, uses EditInstanceOnly here.
 	/// Determine if that is a requirement or not. Possibly related to Blueprint Editor
@@ -348,7 +348,7 @@ public:
 	UFUNCTION(
 		BlueprintPure, Category = "AGX Wire End Winch",
 		Meta = (DisplayName = "Get End Winch Component Winch"))
-	FAGX_WireWinch_BP GetEndWinchComponentWinch_BP();
+	FAGX_WireWinchRef GetEndWinchComponentWinch_BP();
 
 	/// \todo Winch borrowing is just an idea, it might not work out.
 	/**
@@ -387,7 +387,7 @@ public:
 
 	UFUNCTION(
 		BlueprintPure, Category = "AGX Wire End Winch", Meta = (DisplayName = "Get End Winch"))
-	FAGX_WireWinch_BP GetEndWinch_BP();
+	FAGX_WireWinchRef GetEndWinch_BP();
 
 	/*
 	 * Side-agnostic winch.
@@ -410,7 +410,7 @@ public:
 	/// @return The Wire owned winch, the one used when Winch Owner Type is set to Wire, on the give
 	/// side.
 	UFUNCTION(BlueprintPure, Category = "AGX Wire Winch", Meta = (DisplayName = "Get Owned Winch"))
-	FAGX_WireWinch_BP GetOwnedWinch_BP(EWireSide Side);
+	FAGX_WireWinchRef GetOwnedWinch_BP(EWireSide Side);
 
 	/// @return True if a Wire Winch exists at the given side with the owner type that has been
 	/// configured for that side.
@@ -425,7 +425,7 @@ public:
 
 	/// @return The Wire Winch at the given side of the owner type configured for that side.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch", Meta = (DisplayName = "Get Winch"))
-	FAGX_WireWinch_BP GetWinch_BP(EWireSide Side);
+	FAGX_WireWinchRef GetWinch_BP(EWireSide Side);
 
 	/// @return The owner type configured for the given side.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
