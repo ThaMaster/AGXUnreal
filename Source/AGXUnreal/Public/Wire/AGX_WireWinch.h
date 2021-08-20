@@ -158,7 +158,7 @@ public:
  * Component. Most of the logic and customization required is performed by the UObject owning the
  * Wire Winch.
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_WireWinch : public FAGX_WireWinchSettings
 {
 	GENERATED_BODY()
@@ -312,6 +312,9 @@ class AGXUNREAL_API UAGX_WireWinch_FL : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintPure, Category = "AGX Wire Winch")
+	static FAGX_WireWinch_BP MakeRef(UPARAM(Ref) FAGX_WireWinch& Winch);
+
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
 	static void SetLocation(FAGX_WireWinch_BP Winch, const FVector& InLocation);
 

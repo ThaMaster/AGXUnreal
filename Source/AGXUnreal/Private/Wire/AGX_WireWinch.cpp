@@ -436,6 +436,11 @@ bool FAGX_WireWinch_BP::IsValid() const
 
 /* Start of Blueprint Function Library. */
 
+FAGX_WireWinch_BP UAGX_WireWinch_FL::MakeRef(UPARAM(Ref) FAGX_WireWinch& Winch)
+{
+	return {&Winch};
+}
+
 void UAGX_WireWinch_FL::SetLocation(FAGX_WireWinch_BP Winch, const FVector& InLocation)
 {
 	if (!Winch.IsValid())
