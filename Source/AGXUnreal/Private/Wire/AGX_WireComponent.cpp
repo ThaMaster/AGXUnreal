@@ -98,6 +98,11 @@ FAGX_WireWinch_BP UAGX_WireComponent::GetBeginWinchComponentWinch_BP()
 	return {GetBeginWinchComponentWinch()};
 }
 
+void UAGX_WireComponent::SetBorrowedBeginWinch(FAGX_WireWinch_BP Winch)
+{
+	BorrowedBeginWinch = Winch.Winch;
+}
+
 bool UAGX_WireComponent::HasBeginWinch() const
 {
 	switch (BeginWinchType)

@@ -237,6 +237,9 @@ public:
 	 */
 	FAGX_WireWinch* BorrowedBeginWinch;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
+	void SetBorrowedBeginWinch(FAGX_WireWinch_BP Winch);
+
 	/**
 	 * Determine if this wire has any type of winch at the begin side. The winch can be eiter
 	 * owned by the wire, i.e., OwnedBeginWinch, owned by a Winch Component referenced through
