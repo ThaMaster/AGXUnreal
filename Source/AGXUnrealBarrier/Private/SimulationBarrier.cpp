@@ -326,7 +326,17 @@ TArray<FShapeContactBarrier> FSimulationBarrier::GetShapeContacts(const FShapeBa
 void FSimulationBarrier::Step()
 {
 	check(HasNative());
-	NativeRef->Native->stepForward();
+	try
+	{
+		NativeRef->Native->stepForward();
+	}
+	catch (const std::runtime_error& error)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Get exception from AGX Dynamics. The simulation state is now unreliable. The "
+				 "scene should be recreated."));
+	}
 }
 
 float FSimulationBarrier::GetTimeStamp() const
