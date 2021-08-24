@@ -1076,6 +1076,14 @@ void UAGX_WireComponent::PostLoad()
 #endif
 }
 
+
+void UAGX_WireComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+	OwnedBeginWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
+	OwnedEndWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
+}
+
 #if WITH_EDITOR
 void UAGX_WireComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {

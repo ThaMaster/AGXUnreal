@@ -32,6 +32,16 @@ class AActor;
  * created from something else, such as part of a Play-in-Editor session or loaded from disk as part
  * of a cooked build.
  *
+ * Unreal Editor detects changes made during construction, PostInitProperties is considered part of
+ * the construction phase, and will disable editing of UProperties with such changes. This can be
+ * disabled by adding the SkipUCSModifiedProperties Meta Specifier to the UProperty. That should be
+ * done for FAGX_RigidBodyReferences on which OwningActor is set during PostInitProperties, and
+ * recursively up any struct holding the FAGX_RigidBodyReference until a UObject UProperty is
+ * reached.
+ *
+ *   UPROPERTY(EditAnywhere, Category = "MyCategory", Meta = (SkipUCSModifiedProperties))
+ *   FAGX_RigidBodyReference MyRigidBodyReference;
+ *
  * The RigidBodyReference supports caching of the RigidBodyComponent through the
  * CacheCurrentRigidBody member function. Only call this once the RigidBodyReference has been fully
  * formed, i.e., the OwningActor property set to the final Actor and when the referenced

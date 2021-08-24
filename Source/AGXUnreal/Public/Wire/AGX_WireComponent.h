@@ -175,7 +175,8 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire Begin Winch",
-		Meta = (EditConditionHides, EditCondition = "BeginWinchType == EWireWinchOwnerType::Wire"))
+		Meta = (EditConditionHides, EditCondition = "BeginWinchType == EWireWinchOwnerType::Wire",
+		SkipUCSModifiedProperties))
 	FAGX_WireWinch OwnedBeginWinch;
 
 	UFUNCTION(
@@ -791,8 +792,9 @@ public:
 	/// @return The Barrier object for this Wire Component, or nullptr if there is none.
 	const FWireBarrier* GetNative() const;
 
-	// ~Begin UObject interface.
+	//~ Begin UObject interface.
 	virtual void PostLoad() override;
+	virtual void PostInitProperties() override;
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(

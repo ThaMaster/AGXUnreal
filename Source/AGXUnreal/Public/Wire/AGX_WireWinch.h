@@ -79,7 +79,7 @@ public:
 	// type previously because the type is a bit "special" and we didn't know what the implications
 	// of making it a BlueprintType would be. Do we know more now? Should it be made a
 	// BlueprintType? What operations on it should we support in Blueprint Visual Scripts?
-	UPROPERTY(EditAnywhere, Category = "Wire Winch")
+	UPROPERTY(EditAnywhere, Category = "Wire Winch", Meta = (SkipUCSModifiedProperties))
 	FAGX_RigidBodyReference BodyAttachment;
 
 	/**

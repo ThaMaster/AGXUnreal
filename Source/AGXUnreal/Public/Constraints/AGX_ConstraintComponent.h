@@ -189,7 +189,9 @@ public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 
+	//~ Begin UObject interface.
 	virtual void PostInitProperties() override;
+	//~ End UObject interface.
 
 	bool ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof) const;
 

@@ -150,6 +150,12 @@ void UAGX_WireWinchComponent::PostLoad()
 #endif
 }
 
+void UAGX_WireWinchComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+	WireWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
+}
+
 #if WITH_EDITOR
 void UAGX_WireWinchComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
