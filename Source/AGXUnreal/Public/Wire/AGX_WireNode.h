@@ -6,6 +6,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "AGX_WireNode.generated.h"
 
@@ -37,4 +38,18 @@ public:
 
 private:
 	FWireNodeBarrier Barrier;
+};
+
+
+UCLASS()
+class AGXUNREAL_API UAGX_WireNode_FL : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintPure, Category = "Wire Rendering")
+	static FVector GetWorldLocation(UPARAM(Ref) FAGX_WireNode& Node);
+
+	UFUNCTION(BlueprintPure, Category = "Wire Rendering")
+	static EWireNodeType GetType(UPARAM(Ref) FAGX_WireNode& Node);
 };

@@ -2,13 +2,13 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Wire/WireRenderIteratorBarrier.h"
+#include "Wire/AGX_WireNode.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "AGX_WireRenderIterator.generated.h"
-
-struct FAGX_WireNode;
 
 /**
  * An iterator that iterates through the renderable nodes in a Wire Component. Instances are created
@@ -56,4 +56,21 @@ public:
 
 private:
 	FWireRenderIteratorBarrier Barrier;
+};
+
+
+UCLASS()
+class AGXUNREAL_API UAGX_WireRenderIterator_FL : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintPure, Category = "AGX Wire Rendering")
+	static FAGX_WireNode Get(UPARAM(Ref) FAGX_WireRenderIterator& Iterator);
+
+	UFUNCTION(BlueprintPure, Category = "AGX Wire Rendering")
+	static FAGX_WireRenderIterator Next(UPARAM(Ref) FAGX_WireRenderIterator& Iterator);
+
+	UFUNCTION(BlueprintPure, Category = "AGX Wire Rendering")
+	static FAGX_WireRenderIterator Prev(UPARAM(Ref) FAGX_WireRenderIterator& Iterator);
 };
