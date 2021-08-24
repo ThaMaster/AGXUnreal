@@ -12,7 +12,9 @@ class UAGX_WireComponent;
 
 class IDetailLayoutBuilder;
 
-
+/**
+ * Not used.
+ */
 class FAGX_WireComponentCustomization : public IDetailCustomization
 {
 public:

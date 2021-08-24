@@ -32,11 +32,12 @@
 class FWireNodeDetails : public IDetailCustomNodeBuilder, public TSharedFromThis<FWireNodeDetails>
 {
 	/*
-	 * Slate functionality is organized in layers held and orchestrated by the owning class.
+	 * Slate functionality is organized in layers held and orchestrated by the owning class. The
+	 * layers are:
 	 * - Widgets. The pixels on the screen. Rendered very frame.
 	 * - Callbacks. Functions called by the widget.
-	 * - Storage. In-class backing storage read by the widget renderers.
-	 * - Objects. The actual objects that the widgets and storage represents.
+	 * - Storage. In-class backing storage read by the widget renderers through the callbacks.
+	 * - Objects. The actual objects that the widgets and storage represents. May be more than one.
 	 *
 	 * When the widgets are created function pointers are passed and registered as callbacks. There
 	 * are callbacks both for getting the current value to be rendered, called a read callback, and
