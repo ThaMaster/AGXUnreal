@@ -369,7 +369,8 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire End Winch",
-		Meta = (EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::Wire"))
+		Meta = (EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::Wire",
+		SkipUCSModifiedProperties))
 	FAGX_WireWinch OwnedEndWinch;
 
 	UFUNCTION(
