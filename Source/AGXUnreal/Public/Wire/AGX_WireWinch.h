@@ -228,6 +228,8 @@ public:
 	double GetCurrentMotorForce() const;
 	double GetCurrentBrakeForce() const;
 
+	bool HasWire() const;
+
 	//~ Begin AGX_NativeOwner interface.
 	// We can't do actual inheritance, but we can at least expose the same member functions.
 	// Why can't we inherit from AGX_NativeOwner?
@@ -377,4 +379,7 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Wire Winch", Meta = (DisplayName = "GetCurrentSpeed"))
 	static float GetCurrentSpeed(FAGX_WireWinchRef Winch);
+
+	UFUNCTION(BlueprintPure, Category = "Wire Winch")
+	static bool HasWire(FAGX_WireWinchRef Winch);
 };

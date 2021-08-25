@@ -90,6 +90,8 @@ public:
 	/// \return The force that the brake is currently applying.
 	double GetCurrentBrakeForce() const;
 
+	bool HasWire() const;
+
 	FGuid GetGuid() const;
 
 protected:

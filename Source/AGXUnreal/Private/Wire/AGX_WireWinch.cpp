@@ -287,6 +287,17 @@ double FAGX_WireWinch::GetCurrentBrakeForce() const
 	return NativeBarrier.GetCurrentBrakeForce();
 }
 
+bool FAGX_WireWinch::HasWire() const
+{
+	if (!HasNative())
+	{
+		/// @todo This is not true since a Wire may have a reference a Wire Winch that owns this
+		/// winch, but there is currently no way of knowing that.
+		return false;
+	}
+	return NativeBarrier.HasWire();
+}
+
 bool FAGX_WireWinch::HasNative() const
 {
 	return NativeBarrier.HasNative();
@@ -647,4 +658,15 @@ float UAGX_WireWinch_FL::GetCurrentSpeed(FAGX_WireWinchRef Winch)
 		return 0.0f;
 	}
 	return static_cast<float>(Winch.Winch->GetCurrentSpeed());
+}
+
+bool UAGX_WireWinch_FL::HasWire(FAGX_WireWinchRef Winch)
+{
+	if (!Winch.IsValid())
+	{
+		UE_LOG(LogAGX, Error, TEXT("Invalid Wire Winch Ref passed to Has Wire"));
+		return false;
+	}
+
+	return Winch.Winch->HasWire();
 }

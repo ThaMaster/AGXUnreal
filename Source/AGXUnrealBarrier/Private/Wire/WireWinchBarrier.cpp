@@ -173,6 +173,12 @@ double FWireWinchBarrier::GetCurrentBrakeForce() const
 	return NativeRef->Native->getCurrentBrakeForce();
 }
 
+bool FWireWinchBarrier::HasWire() const
+{
+	check(HasNative());
+	return NativeRef->Native->getConstraint() != nullptr;
+}
+
 FGuid FWireWinchBarrier::GetGuid() const
 {
 	check(HasNative());
