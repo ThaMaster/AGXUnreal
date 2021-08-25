@@ -21,3 +21,5 @@ void FAGX_WireDetails::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 	RuntimeCategory.AddCustomBuilder(
 		MakeShareable(new FAGX_WireDetailsRuntime(DetailBuilder)));
 }
+
+#undef LOCTEXT_NAMESPACE

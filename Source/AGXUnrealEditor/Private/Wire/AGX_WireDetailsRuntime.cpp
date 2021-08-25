@@ -192,3 +192,5 @@ void FAGX_WireDetailsRuntime::UpdateValues()
 	UpdateWinchState(Wire->GetBeginWinch(), BeginWinchState);
 	UpdateWinchState(Wire->GetEndWinch(), EndWinchState);
 }
+
+#undef LOCTEXT_NAMESPACE
