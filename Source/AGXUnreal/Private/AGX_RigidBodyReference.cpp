@@ -4,6 +4,11 @@
 
 #include "GameFramework/Actor.h"
 
+FAGX_RigidBodyReference::FAGX_RigidBodyReference()
+	: bSearchChildActors(false)
+{
+}
+
 namespace
 {
 	UAGX_RigidBodyComponent* FindBody(

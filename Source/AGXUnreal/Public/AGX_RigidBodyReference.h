@@ -52,6 +52,8 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 {
 	GENERATED_BODY()
 
+	FAGX_RigidBodyReference();
+
 	/**
 	 * That Actor that owns the RigidBodyComponent that this RigidBodyReference references.
 	 *
@@ -71,12 +73,12 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 	UPROPERTY(
 		EditInstanceOnly, Category = "AGX Dynamics",
 		Meta = (Tooltip = "The Actor that owns the RigidBodyComponent."))
-	AActor* OwningActor;
+	AActor* OwningActor = nullptr;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics",
 		Meta = (Tooltip = "The name of the RigidBodyComponent."))
-	FName BodyName;
+	FName BodyName = NAME_None;
 
 	/// \todo It may be possible to do this with a UAGX_RigidBodyComponent
 	/// property instead of the name. The idea is to have a PropertyChanged
@@ -126,5 +128,5 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 	void InvalidateCache();
 
 private:
-	UAGX_RigidBodyComponent* Cache;
+	UAGX_RigidBodyComponent* Cache = nullptr;
 };
