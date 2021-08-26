@@ -12,6 +12,7 @@
 #include "Wire/AGX_WireWinchComponent.h"
 
 // Unreal Engine includes.
+#include "ActorEditorUtils.h"
 #include "Editor.h"
 #include "EditorViewportClient.h"
 #include "SceneManagement.h"
@@ -496,6 +497,26 @@ bool FAGX_WireComponentVisualizer::HandleInputKey(
 	}
 
 	return false;
+}
+
+bool FAGX_WireComponentVisualizer::IsVisualizingArchetype() const
+{
+	/*
+	 * I have no idea what this is or why it's even a thing but for route node editing to work in
+	 * the Blueprint Editor it must be here because otherwise
+	 * FSCSEditorViewportClient::GetWidgetLocation never calls our GetWidgetLocation.
+	 */
+	UAGX_WireComponent* Wire = GetSelectedWire();
+	if (Wire == nullptr)
+	{
+		return false;
+	}
+	AActor* Owner = Wire->GetOwner();
+	if (Owner == nullptr)
+	{
+		return false;
+	}
+	return FActorEditorUtils::IsAPreviewOrInactiveActor(Owner);
 }
 
 // I assume this is called by Unreal Editor, but not sure when, or what we should do here.

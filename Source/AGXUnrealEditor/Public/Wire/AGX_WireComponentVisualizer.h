@@ -48,6 +48,8 @@ public:
 		FEditorViewportClient* ViewportClient, FViewport* Viewport, FKey Key,
 		EInputEvent Event) override;
 
+	virtual bool IsVisualizingArchetype() const override;
+
 	virtual void EndEditing() override;
 
 	//~ End FComponentVisualizer Interface
