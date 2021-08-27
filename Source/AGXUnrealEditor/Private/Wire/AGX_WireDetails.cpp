@@ -18,8 +18,7 @@ TSharedRef<IDetailCustomization> FAGX_WireDetails::MakeInstance()
 void FAGX_WireDetails::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	IDetailCategoryBuilder& RuntimeCategory = DetailBuilder.EditCategory("AGX Runtime");
-	RuntimeCategory.AddCustomBuilder(
-		MakeShareable(new FAGX_WireDetailsRuntime(DetailBuilder)));
+	RuntimeCategory.AddCustomBuilder(MakeShareable(new FAGX_WireDetailsRuntime(DetailBuilder)));
 }
 
 #undef LOCTEXT_NAMESPACE
