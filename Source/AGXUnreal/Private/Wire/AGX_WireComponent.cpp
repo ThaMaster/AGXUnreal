@@ -42,6 +42,10 @@ UAGX_WireComponent::UAGX_WireComponent()
 #if WITH_EDITORONLY_DATA
 	bVisualizeComponent = true;
 #endif
+
+	// Add a pair of default nodes to make initial editing easier.
+	AddNodeAtLocation(FVector::ZeroVector);
+	AddNodeAtLocation(FVector(100.0f, 0.0f, 0.0f));
 }
 
 FAGX_WireWinchRef UAGX_WireComponent::GetOwnedBeginWinch_BP()
