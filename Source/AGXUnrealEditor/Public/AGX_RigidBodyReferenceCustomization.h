@@ -66,15 +66,15 @@ private:
 	/// GUI widget for presenting body names and selecting which particular body in the owning
 	/// Actor that this reference should reference.
 	/// \todo Do not use raw pointer here. Either SharedPtr or WeakPtr.
-	SComboBox<TSharedPtr<FName>>* ComboBoxPtr;
+	SComboBox<TSharedPtr<FName>>* ComboBoxPtr = nullptr;
 
 	FSimpleDelegate RebuildComboBoxDelegate;
 
-	SEditableTextBox* ComponentNameBoxPtr;
+	SEditableTextBox* ComponentNameBoxPtr = nullptr;
 
 	// The RigidBodyReference being customized. Will be nullptr if none or multiple
 	// RigidBodyReferences are selected.
-	FAGX_RigidBodyReference* RigidBodyReference;
+	FAGX_RigidBodyReference* RigidBodyReference = nullptr;
 
 	TSharedPtr<IPropertyHandle> OwningActorHandle;
 	TSharedPtr<IPropertyHandle> BodyNameHandle;
