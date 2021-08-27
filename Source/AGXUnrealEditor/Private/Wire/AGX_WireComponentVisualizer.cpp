@@ -9,7 +9,6 @@
 #include "Wire/AGX_WireNode.h"
 #include "Wire/AGX_WireUtilities.h"
 #include "Wire/AGX_WireWinch.h"
-#include "Wire/AGX_WireWinchComponent.h"
 
 // Unreal Engine includes.
 #include "ActorEditorUtils.h"
@@ -48,6 +47,14 @@ public:
 FAGX_WireComponentVisualizer::FAGX_WireComponentVisualizer()
 {
 	FAGX_WireComponentVisualizerCommands::Register();
+	UClass* Class = UAGX_WireComponent::StaticClass();
+	RouteNodesProperty =
+		FindFProperty<FProperty>(Class, GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes));
+	BeginWinchProperty = FindFProperty<FProperty>(
+		Class, GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch));
+	EndWinchProperty =
+		FindFProperty<FProperty>(Class, GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch));
+
 	CommandList = MakeShareable(new FUICommandList());
 }
 
@@ -444,6 +451,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 				const FVector NewLocalLocation =
 					LocalToWorld.InverseTransformPosition(NewWorldLocation);
 				SelectedNode.Location = NewLocalLocation;
+				NotifyPropertyModified(Wire, RouteNodesProperty);
 			}
 		}
 		else
@@ -458,6 +466,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 			const FVector NewLocalLocation =
 				LocalToWorld.InverseTransformPosition(NewWorldLocation);
 			SelectedNode.Location = NewLocalLocation;
+			NotifyPropertyModified(Wire, RouteNodesProperty);
 		}
 	}
 	else if (HasValidWinchSelection())
@@ -465,12 +474,15 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		FAGX_WireWinch& Winch = *Wire->GetWinch(SelectedWinch);
 		const FTransform& WinchToWorld =
 			FAGX_WireUtilities::GetWinchLocalToWorld(*Wire, SelectedWinch);
-
 		AGX_WireVisualization_helpers::TransformWinch(
 			Winch, WinchToWorld, SelectedWinchSide, DeltaTranslate, DeltaRotate);
+		NotifyPropertyModified(
+			Wire, SelectedWinch == EWireSide::Begin ? BeginWinchProperty : EndWinchProperty);
 	}
 	else
 	{
+		// We got a move request but we have no valid selection so don't know what to move.
+		// Something's wrong, so reset the selection state.
 		ClearSelection();
 	}
 
@@ -535,6 +547,9 @@ bool FAGX_WireComponentVisualizer::HasValidNodeSelection() const
 
 bool FAGX_WireComponentVisualizer::HasValidWinchSelection() const
 {
+	/// \note Should we allow any type of winch or only owned winches? This will also accept Wire
+	/// Winch owned winches and freestanding borrowed winches. Can this be handled properly in
+	/// HandleInputDelta?
 	return GetSelectedWire() != nullptr && !GetSelectedWire()->IsInitialized() &&
 		   SelectedWinch != EWireSide::None && SelectedWinchSide != EWinchSide::None &&
 		   GetSelectedWire()->HasWinch(SelectedWinch);

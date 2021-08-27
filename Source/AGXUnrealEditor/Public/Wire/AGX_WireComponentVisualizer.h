@@ -79,6 +79,10 @@ private:
 	 */
 	FComponentPropertyPath WirePropertyPath;
 
+	FProperty* RouteNodesProperty = nullptr;
+	FProperty* BeginWinchProperty = nullptr;
+	FProperty* EndWinchProperty = nullptr;
+
 	/// True while a node duplication move is in progress, so that we don't create a new each frame.
 	bool bIsDuplicatingNode = false;
 
