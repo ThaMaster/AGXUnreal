@@ -635,14 +635,18 @@ namespace AGX_WireComponentVisualizer_helpers
 	FLinearColor WireNodeTypeToColor(EWireNodeType Type);
 }
 
-FLinearColor WireNodeTypeIndexToColor(int32 Type)
+namespace WireNodeDetails_helpers
 {
-	using namespace AGX_WireComponentVisualizer_helpers;
-	return WireNodeTypeToColor(static_cast<EWireNodeType>(Type));
+	FLinearColor WireNodeTypeIndexToColor(int32 Type)
+	{
+		using namespace AGX_WireComponentVisualizer_helpers;
+		return WireNodeTypeToColor(static_cast<EWireNodeType>(Type));
+	}
 }
 
 TSharedRef<SWidget> FWireNodeDetails::OnGetNodeTypeEntryWidget(TSharedPtr<FString> InComboString)
 {
+	using namespace WireNodeDetails_helpers;
 	const int32 EnumIndex = WireNodeTypes.Find(InComboString);
 	const FLinearColor Color = WireNodeTypeIndexToColor(EnumIndex);
 	// clang-format off
