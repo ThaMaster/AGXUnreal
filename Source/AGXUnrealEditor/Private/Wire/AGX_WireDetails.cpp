@@ -3,6 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireDetailsRuntime.h"
+#include "Wire/AGX_WireNodeDetails.h"
 
 // Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
@@ -19,6 +20,8 @@ void FAGX_WireDetails::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	IDetailCategoryBuilder& RuntimeCategory = DetailBuilder.EditCategory("AGX Runtime");
 	RuntimeCategory.AddCustomBuilder(MakeShareable(new FAGX_WireDetailsRuntime(DetailBuilder)));
+	IDetailCategoryBuilder& SelectedNodeCategory = DetailBuilder.EditCategory("Selected Node");
+	SelectedNodeCategory.AddCustomBuilder(MakeShareable(new FAGX_WireNodeDetails(DetailBuilder)));
 }
 
 #undef LOCTEXT_NAMESPACE
