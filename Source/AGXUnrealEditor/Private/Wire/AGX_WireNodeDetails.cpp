@@ -880,7 +880,13 @@ void FAGX_WireNodeDetails::UpdateValues()
 	NodeType = Node.NodeType;
 	const int32 EnumIndex = static_cast<int32>(NodeType.GetValue());
 	NodeTypeText = FText::FromString(*WireNodeTypes[EnumIndex]);
-	NodeTypeComboBox->SetSelectedItem(WireNodeTypes[EnumIndex]);
+	if (NodeTypeComboBox->GetSelectedItem() != WireNodeTypes[EnumIndex])
+	{
+		// Setting the selected item while the combo box is open causes it to close again. Setting
+		// it on every update makes it impossible to select anything since it closes immediately.
+		// So only change if we really have to.
+		NodeTypeComboBox->SetSelectedItem(WireNodeTypes[EnumIndex]);
+	}
 
 	if (bSelectionChanged)
 	{
