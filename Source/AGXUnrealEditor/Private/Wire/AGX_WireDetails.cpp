@@ -18,6 +18,16 @@ TSharedRef<IDetailCustomization> FAGX_WireDetails::MakeInstance()
 
 void FAGX_WireDetails::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
+	ECategoryPriority::Type Order = ECategoryPriority::TypeSpecific;
+	DetailBuilder.EditCategory("AGX Wire", LOCTEXT("AGXWire", "AGX Wire"), Order);
+	DetailBuilder.EditCategory(
+		"AGX Wire Begin Winch", LOCTEXT("AGXWireBeginWinch", "AGX Wire Begin Winch"), Order);
+	DetailBuilder.EditCategory(
+		"AGX Wire End Winch", LOCTEXT("AGXWireEndWinch", "AGX Wire End Winch"), Order);
+	DetailBuilder.EditCategory("AGX Wire Route", LOCTEXT("AGXWireRoute", "AGX Wire Route"), Order);
+	DetailBuilder.EditCategory("Selected Node", LOCTEXT("SelectedNode", "Selected Node"), Order);
+	DetailBuilder.EditCategory("AGX Runtime", LOCTEXT("AGXRuntime", "AGX Runtime"), Order);
+
 	IDetailCategoryBuilder& RuntimeCategory = DetailBuilder.EditCategory("AGX Runtime");
 	RuntimeCategory.AddCustomBuilder(MakeShareable(new FAGX_WireDetailsRuntime(DetailBuilder)));
 	IDetailCategoryBuilder& SelectedNodeCategory = DetailBuilder.EditCategory("Selected Node");
