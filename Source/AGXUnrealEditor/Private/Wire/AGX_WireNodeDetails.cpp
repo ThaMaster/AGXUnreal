@@ -498,6 +498,7 @@ void FAGX_WireNodeDetails::OnSetLocation(float NewValue, ETextCommit::Type Commi
 	Wire->Modify();
 	Wire->RouteNodes[NodeIndex].Location.Component(Axis) = NewValue;
 	FComponentVisualizer::NotifyPropertyModified(Wire, RouteNodesProperty);
+	UpdateValues();
 }
 
 // Begin node type getters.
@@ -589,6 +590,7 @@ void FAGX_WireNodeDetails::OnSetNodeType(TSharedPtr<FString> NewValue, ESelectIn
 	Node.NodeType = NewNodeType;
 	Node.RigidBody.BodyName = FName(*NewBodyName);
 	FComponentVisualizer::NotifyPropertyModified(Wire, RouteNodesProperty);
+	UpdateValues();
 }
 
 // Begin rigid body getters.
@@ -685,6 +687,7 @@ void FAGX_WireNodeDetails::OnSetRigidBody(
 	Wire->Modify();
 	Node.RigidBody.BodyName = NewName;
 	FComponentVisualizer::NotifyPropertyModified(Wire, RouteNodesProperty);
+	UpdateValues();
 }
 
 void FAGX_WireNodeDetails::OnSetRigidBodyOwner(AActor* Actor)
@@ -725,6 +728,7 @@ void FAGX_WireNodeDetails::OnSetRigidBodyOwner(AActor* Actor)
 	Node.RigidBody.OwningActor = Actor;
 	Node.RigidBody.BodyName = NewBodyName;
 	FComponentVisualizer::NotifyPropertyModified(Wire, RouteNodesProperty);
+	UpdateValues();
 }
 
 UAGX_WireComponent* FAGX_WireNodeDetails::GetWire() const
