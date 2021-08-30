@@ -31,27 +31,45 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeHeader(
 	TSharedRef<IPropertyHandle> BodyReferenceHandle, FDetailWidgetRow& HeaderRow,
 	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
+#if 1
+	RefreshStoreReferences(BodyReferenceHandle);
+#else
 	RefreshStoreReferences(BodyReferenceHandle.Get());
+#endif
 
-	HeaderRow.NameContent()[BodyReferenceHandle->CreatePropertyNameWidget()];
-
+/// @note I'm not so sure about this check anymore. Binding a Details Panel to a particular instance
+/// seems to be a bad idea in general, and a terrible idea for the Blueprint Editor in particular.
+/// Instead, we should ignore the object as much as possible and work as far as possible with
+/// Property Handles.
+#if 0
+	FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
 	if (RigidBodyReference == nullptr)
 	{
 		// Fall back to default value widget when unable to get a single RigidBodyReference.
 		HeaderRow.ValueContent()[BodyReferenceHandle->CreatePropertyValueWidget()];
 		return;
 	}
+#endif
 
 	/// \todo Is there a better way to make the text field a bit wider? I want to fill the available
 	/// space.
+
+	// clang-format off
 	HeaderRow
-		.ValueContent() //
+	.NameContent()
+	[
+		BodyReferenceHandle->CreatePropertyNameWidget()
+	]
+	.ValueContent()
+	.MinDesiredWidth(250.0f) // 250 from SPropertyEditorAsset::GetDesiredWidth.
+	[
+		SNew(STextBlock)
+	 	.Text(this, &FAGX_RigidBodyReferenceCustomization::GetHeaderText)
+		.ToolTipText(this, &FAGX_RigidBodyReferenceCustomization::GetHeaderText)
+		.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
 		.MinDesiredWidth(250.0f) // 250 from SPropertyEditorAsset::GetDesiredWidth.
-			[SNew(STextBlock)
-				 .Text(this, &FAGX_RigidBodyReferenceCustomization::GetHeaderText)
-				 .ToolTipText(this, &FAGX_RigidBodyReferenceCustomization::GetHeaderText)
-				 .Font(IPropertyTypeCustomizationUtils::GetRegularFont())
-				 .MinDesiredWidth(250.0f)]; // 250 from SPropertyEditorAsset::GetDesiredWidth.
+	];
+	// clang-format on
 }
 
 /**
@@ -129,10 +147,24 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 	TSharedRef<IPropertyHandle> BodyReferenceHandle, IDetailChildrenBuilder& StructBuilder,
 	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
+#if 1
+	RefreshStoreReferences(BodyReferenceHandle);
+#else
 	RefreshStoreReferences(BodyReferenceHandle.Get());
+#endif
 
-	if (RigidBodyReference == nullptr || !OwningActorHandle.IsValid() ||
-		!BodyNameHandle.IsValid() || !SearchChildActorsHandle.IsValid())
+	FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
+	if (RigidBodyReference == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("RigidBodyReferenceCustomization::CustomizeChildren got nullptr Rigid Body "
+				 "Reference. Maybe not a real problem, but bailing for now."));
+		return;
+	}
+
+	if (!OwningActorHandle.IsValid() || !BodyNameHandle.IsValid() ||
+		!SearchChildActorsHandle.IsValid())
 	{
 		return;
 	}
@@ -166,17 +198,15 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 
 	TSharedRef<SComboBox<TSharedPtr<FName>>> ComboBox =
 		SNew(SComboBox<TSharedPtr<FName>>)
-			.Visibility_Lambda([this]() {
-				return BodyNames.Num() == 0 ? EVisibility::Collapsed : EVisibility::Visible;
-			})
+			.Visibility_Lambda(
+				[this]()
+				{ return BodyNames.Num() == 0 ? EVisibility::Collapsed : EVisibility::Visible; })
 			.OptionsSource(&BodyNames)
-			.OnGenerateWidget_Lambda([](TSharedPtr<FName> Item) {
-				return SNew(STextBlock).Text(FText::FromName(*Item));
-			})
+			.OnGenerateWidget_Lambda([](TSharedPtr<FName> Item)
+									 { return SNew(STextBlock).Text(FText::FromName(*Item)); })
 			.OnSelectionChanged(this, &FAGX_RigidBodyReferenceCustomization::OnComboBoxChanged)
-			.Content()[SNew(STextBlock).Text_Lambda([this]() {
-				return FText::FromName(SelectedBody);
-			})];
+			.Content()[SNew(STextBlock)
+						   .Text_Lambda([this]() { return FText::FromName(SelectedBody); })];
 	for (TSharedPtr<FName>& BodyName : BodyNames)
 	{
 		if (*BodyName == SelectedBody)
@@ -193,10 +223,10 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 	TSharedRef<SEditableTextBox> NameBox =
 		SNew(SEditableTextBox)
 			.Text_Lambda([this]() { return FText::FromName(SelectedBody); })
-			.OnTextCommitted(this, &FAGX_RigidBodyReferenceCustomization::OnBodyNameCommited)
-			.Visibility_Lambda([this]() {
-				return BodyNames.Num() == 0 ? EVisibility::Visible : EVisibility::Collapsed;
-			});
+			.OnTextCommitted(this, &FAGX_RigidBodyReferenceCustomization::OnBodyNameCommitted)
+			.Visibility_Lambda(
+				[this]()
+				{ return BodyNames.Num() == 0 ? EVisibility::Visible : EVisibility::Collapsed; });
 
 	NameRow.ValueContent()
 		[SNew(SVerticalBox) + SVerticalBox::Slot()[ComboBox] + SVerticalBox::Slot()[NameBox]];
@@ -205,10 +235,16 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 	ComponentNameBoxPtr = &NameBox.Get();
 }
 
-void FAGX_RigidBodyReferenceCustomization::OnBodyNameCommited(
-	const FText& NewName, ETextCommit::Type InCommitType)
+void FAGX_RigidBodyReferenceCustomization::OnBodyNameCommitted(
+	const FText& InText, ETextCommit::Type InCommitType)
 {
-	SelectedBody = FName(*NewName.ToString());
+	SelectedBody = FName(*InText.ToString());
+	if (BodyNameHandle.IsValid() && BodyNameHandle->IsValidHandle())
+	{
+		BodyNameHandle->SetValue(SelectedBody);
+	}
+
+	FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
 	if (RigidBodyReference != nullptr)
 	{
 		/// \todo A write to RigidBodyReference->BodyName is not the same as
@@ -217,21 +253,34 @@ void FAGX_RigidBodyReferenceCustomization::OnBodyNameCommited(
 		/// being customized here. Then how should we handle cache invalidation?
 		/// Is there a way to get the actual RigidBodyReference from the BodyNameHandle?
 		/// Should we invalidate all caches on BeginPlay?
-		BodyNameHandle->SetValue(SelectedBody);
 		RigidBodyReference->InvalidateCache();
 	}
 }
 
+#if 1
+void FAGX_RigidBodyReferenceCustomization::RefreshStoreReferences(
+	TSharedRef<IPropertyHandle> BodyReferenceHandle)
+{
+	RigidBodyReferenceHandle = BodyReferenceHandle;
+	OwningActorHandle = BodyReferenceHandle->GetChildHandle(
+		GET_MEMBER_NAME_CHECKED(FAGX_RigidBodyReference, OwningActor));
+	BodyNameHandle = BodyReferenceHandle->GetChildHandle(
+		GET_MEMBER_NAME_CHECKED(FAGX_RigidBodyReference, BodyName));
+	SearchChildActorsHandle = BodyReferenceHandle->GetChildHandle(
+		GET_MEMBER_NAME_CHECKED(FAGX_RigidBodyReference, bSearchChildActors));
+}
+#else
 void FAGX_RigidBodyReferenceCustomization::RefreshStoreReferences(
 	IPropertyHandle& BodyReferenceHandle)
 {
-	ComboBoxPtr = nullptr;
 	RigidBodyReference = nullptr;
+	ComboBoxPtr = nullptr;
 	OwningActorHandle = nullptr;
 	BodyNameHandle = nullptr;
 	SearchChildActorsHandle = nullptr;
 
-	RigidBodyReference = [&BodyReferenceHandle]() -> FAGX_RigidBodyReference* {
+	RigidBodyReference = [&BodyReferenceHandle]() -> FAGX_RigidBodyReference*
+	{
 		void* UntypedPointer = nullptr;
 		FPropertyAccess::Result Result = BodyReferenceHandle.GetValueData(UntypedPointer);
 		if (Result != FPropertyAccess::Success)
@@ -252,9 +301,17 @@ void FAGX_RigidBodyReferenceCustomization::RefreshStoreReferences(
 	SearchChildActorsHandle = BodyReferenceHandle.GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_RigidBodyReference, bSearchChildActors));
 }
+#endif
 
 FText FAGX_RigidBodyReferenceCustomization::GetHeaderText() const
 {
+	FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
+	if (RigidBodyReference == nullptr)
+	{
+		return LOCTEXT(
+			"NoRigidBodyReference",
+			"Rigid Body Reference Customization does not have a valid Rigid Body Reference.");
+	}
 	AActor* OwningActor = RigidBodyReference->GetOwningActor();
 	FName BodyName = RigidBodyReference->BodyName;
 	FName ActorName = OwningActor ? OwningActor->GetFName() : NAME_None;
@@ -299,13 +356,82 @@ void FAGX_RigidBodyReferenceCustomization::OnComboBoxChanged(
 	TSharedPtr<FName> NewSelection, ESelectInfo::Type SelectionInfo)
 {
 	SelectedBody = NewSelection.IsValid() ? *NewSelection : NAME_None;
+	BodyNameHandle->SetValue(SelectedBody);
+
+	FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
+	if (RigidBodyReference == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("RigidBodyReferenceCustomization: OnComboBoxChanged got nullptr "
+				 "RigidBodyReference."));
+		return;
+	}
+
 	RigidBodyReference->BodyName = SelectedBody;
 	RigidBodyReference->InvalidateCache();
 }
 
 AActor* FAGX_RigidBodyReferenceCustomization::GetOwningActor()
 {
+	FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
+	if (RigidBodyReference == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT(
+				"RigidBodyReferenceCustomization: GetOwningActor got nullptr RigidBodyReference."));
+		return nullptr;
+	}
 	return RigidBodyReference->GetOwningActor();
+}
+
+FAGX_RigidBodyReference* FAGX_RigidBodyReferenceCustomization::GetRigidBodyReference() const
+{
+#if 1
+	if (!RigidBodyReferenceHandle.IsValid())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("RigidBodyReferenceCustomization: The RigidBodyReferenceHandle is not valid."))
+		return nullptr;
+	}
+	if (!RigidBodyReferenceHandle->IsValidHandle())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("RigidBodyReferenceCustomization: The RigidBodyReferenceHandle is not a valid "
+				 "handle."));
+		return nullptr;
+	}
+
+	void* UntypedPointer = nullptr;
+	FPropertyAccess::Result Result = RigidBodyReferenceHandle->GetValueData(UntypedPointer);
+	if (Result != FPropertyAccess::Success)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("RigidBodyReferenceCustomization: Failed to read value data from Property "
+				 "Handle."));
+		return nullptr;
+	}
+	if (UntypedPointer == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_RigidBodyReferenceCustomization got nullptr Rigid Body Reference from the "
+				 "handle."));
+	}
+	return static_cast<FAGX_RigidBodyReference*>(UntypedPointer);
+#else
+	if (RigidBodyReference == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_RigidBodyReferenceCustomization has nullptr Rigid Body Reference."));
+	}
+	return RigidBodyReference;
+#endif
 }
 
 #undef LOCTEXT_NAMESPACE
