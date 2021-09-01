@@ -932,47 +932,6 @@ void AGX_MeshUtilities::MakeCapsule(
 		UvCoordinateScaler(0.f, 1.f, VspanHalfSphere + VspanTube, 1.f), false);
 }
 
-namespace
-{
-	FVector CalcConeVert(float Angle1, float Angle2, float AzimuthAngle)
-	{
-		float ang1 = FMath::Clamp<float>(Angle1, 0.01f, (float) PI - 0.01f);
-		float ang2 = FMath::Clamp<float>(Angle2, 0.01f, (float) PI - 0.01f);
-
-		float sinX_2 = FMath::Sin(0.5f * ang1);
-		float sinY_2 = FMath::Sin(0.5f * ang2);
-
-		float sinSqX_2 = sinX_2 * sinX_2;
-		float sinSqY_2 = sinY_2 * sinY_2;
-
-		float tanX_2 = FMath::Tan(0.5f * ang1);
-		float tanY_2 = FMath::Tan(0.5f * ang2);
-
-		float phi =
-			FMath::Atan2(FMath::Sin(AzimuthAngle) * sinY_2, FMath::Cos(AzimuthAngle) * sinX_2);
-		float sinPhi = FMath::Sin(phi);
-		float cosPhi = FMath::Cos(phi);
-		float sinSqPhi = sinPhi * sinPhi;
-		float cosSqPhi = cosPhi * cosPhi;
-
-		float rSq, r, Sqr, alpha, beta;
-
-		rSq = sinSqX_2 * sinSqY_2 / (sinSqX_2 * sinSqPhi + sinSqY_2 * cosSqPhi);
-		r = FMath::Sqrt(rSq);
-		Sqr = FMath::Sqrt(1 - rSq);
-		alpha = r * cosPhi;
-		beta = r * sinPhi;
-
-		FVector ConeVert;
-
-		ConeVert.X = (1 - 2 * rSq);
-		ConeVert.Y = 2 * Sqr * alpha;
-		ConeVert.Z = 2 * Sqr * beta;
-
-		return ConeVert;
-	}
-}
-
 void AGX_MeshUtilities::MakeCone(
 	float Angle1, float Angle2, float Scale, float XOffset, uint32 NumSides,
 	TArray<FDynamicMeshVertex>& OutVerts, TArray<uint32>& OutIndices)
