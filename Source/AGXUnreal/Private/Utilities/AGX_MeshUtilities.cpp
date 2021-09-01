@@ -1,12 +1,16 @@
 #include "Utilities/AGX_MeshUtilities.h"
 
-#include <limits>
-#include <algorithm>
-
-#include "Math/UnrealMathUtility.h"
-
+// AGX Dynamics for Unreal includes.
 #include "AGX_SimpleMeshComponent.h"
 #include "AGX_LogCategory.h"
+
+// Unreal Engine includes.
+#include "Math/UnrealMathUtility.h"
+#include "SceneManagement.h"
+
+// Standard library includes.
+#include <limits>
+#include <algorithm>
 
 #define CONE_SINGULARITY
 
