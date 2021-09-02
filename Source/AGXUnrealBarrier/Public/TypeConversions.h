@@ -752,6 +752,11 @@ inline agxWire::Node::Type Convert(EWireNodeType Type)
 		case EWireNodeType::NUM_NODE_TYPES:
 			return agxWire::Node::NOT_DEFINED;
 	}
+
+	UE_LOG(
+		LogAGX, Warning, TEXT("Unknown Unreal Engine wire node type %d. Defaulting to NOT_DEFINED."),
+		static_cast<int>(Type));
+	return agxWire::Node::NOT_DEFINED;
 }
 
 inline EWireNodeNativeType ConvertNative(agxWire::Node::Type Type)
