@@ -38,7 +38,7 @@ FVector AGX_WireVisualization_helpers::DrawWinch(
 	HWinchLocationProxy* LocationProxy, HWinchDirectionProxy* DirectionProxy,
 	FPrimitiveDrawInterface* PDI)
 {
-	FLinearColor Color = FLinearColor::Red;
+	FLinearColor Color = FLinearColor::Yellow;
 	float HandleSize = 10.0f;
 
 	// Render winch location marker.
