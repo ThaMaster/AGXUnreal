@@ -42,7 +42,6 @@ struct FWireRoutingNode
 
 	/**
 	 * The Rigid Body that an Eye or BodyFixed node should be attached to.
-	 *
 	 * Ignored for other node types.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire")
@@ -96,7 +95,7 @@ public:
 	 */
 
 	/**
-	 * The radius of the wire, in cm.
+	 * The radius of the wire [cm].
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire",
@@ -112,7 +111,10 @@ public:
 	float ResolutionPerUnitLength = 0.02;
 
 	/**
-	 * Velocity damping value of the wire.
+	 * Velocity damping value of the wire [kg/s].
+	 *
+	 * This damping will be applied to all bodies that make up the lumped element model of the
+	 * simulated wire.
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire",
@@ -175,8 +177,9 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire Begin Winch",
-		Meta = (EditConditionHides, EditCondition = "BeginWinchType == EWireWinchOwnerType::Wire",
-		SkipUCSModifiedProperties))
+		Meta =
+			(EditConditionHides, EditCondition = "BeginWinchType == EWireWinchOwnerType::Wire",
+			 SkipUCSModifiedProperties))
 	FAGX_WireWinch OwnedBeginWinch;
 
 	UFUNCTION(
@@ -369,8 +372,9 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire End Winch",
-		Meta = (EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::Wire",
-		SkipUCSModifiedProperties))
+		Meta =
+			(EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::Wire",
+			 SkipUCSModifiedProperties))
 	FAGX_WireWinch OwnedEndWinch;
 
 	UFUNCTION(
