@@ -214,7 +214,7 @@ float UAGX_ShapeMaterialInstance::GetYoungsModulusStretch() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier->GetYoungsModulus();
+		return NativeBarrier->GetYoungsModulusStretch();
 	}
 	return Wire.YoungsModulusStretch;
 }
