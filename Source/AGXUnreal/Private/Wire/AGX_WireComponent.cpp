@@ -48,6 +48,25 @@ UAGX_WireComponent::UAGX_WireComponent()
 	AddNodeAtLocation(FVector(100.0f, 0.0f, 0.0f));
 }
 
+void UAGX_WireComponent::SetRadius(float InRadius)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetRadius(InRadius);
+	}
+	Radius = InRadius;
+}
+
+void UAGX_WireComponent::SetMinSegmentLength(float InMinSegmentLength)
+{
+	if (HasNative())
+	{
+		const float ResolutionPerUnitLength = 1.0f / InMinSegmentLength;
+		NativeBarrier.SetResolutionPerUnitLength(ResolutionPerUnitLength);
+	}
+	MinSegmentLength = InMinSegmentLength;
+}
+
 FAGX_WireWinchRef UAGX_WireComponent::GetOwnedBeginWinch_BP()
 {
 	return {&OwnedBeginWinch};
@@ -984,7 +1003,21 @@ void UAGX_WireComponent::PostLoad()
 		return;
 	}
 
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, Radius),
+		[](ThisClass* Wire) { Wire->SetRadius(Wire->Radius); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, MinSegmentLength),
+		[](ThisClass* Wire) { Wire->SetMinSegmentLength(Wire->MinSegmentLength); });
+
 	// Begin Winch.
+
+#if 0
+	Add Begin Winch Type here, and do our best to handle it.
+	Alternatively, disable that setting in the Detail Panel during runtime.
+#endif
+
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
 		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength),
@@ -1030,6 +1063,11 @@ void UAGX_WireComponent::PostLoad()
 		});
 
 	/// @todo Find ways to do attach/detach during runtime from the Details Panel.
+
+#if 0
+	Add End Winch Type here, and do our best to handle it.
+	Alternatively, disable that setting in the Detail Panel during runtime.
+#endif
 
 	// End Winch.
 	Dispatcher.Add(
@@ -1079,7 +1117,6 @@ void UAGX_WireComponent::PostLoad()
 	/// @todo Find ways to do attach/detach during runtime from the Details Panel.
 #endif
 }
-
 
 void UAGX_WireComponent::PostInitProperties()
 {

@@ -74,12 +74,12 @@ class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
 };
 
 /**
- * A Wire is a lumped element structure with dynamic resolution, the wire will adapt the resolution
- * so that no unwanted vibrations will occur. The Wire is initialized from a set of routing nodes
- * that the user places but during runtime nodes will be created and removed as necessary so the
- * routing nodes cannot be used to inspect the current wire path. Instead use the render iterator
- * to iterate over the wire, which will give access to FAGX_WireNode instances, which wrap the
- * underlying AGX Dynamics wire nodes.
+ * A Wire is a lumped element structure with dynamic resolution, the wire will adapt the resolution,
+ * i.e., lumped element segment lengths, so that no unwanted vibrations will occur. The Wire is
+ * initialized from a set of routing nodes that the user places but during runtime nodes will be
+ * created and removed as necessary so the routing nodes cannot be used to inspect the current wire
+ * path. Instead use the render iterator to iterate over the wire, which will give access to
+ * FAGX_WireNode instances, which wrap the underlying AGX Dynamics wire nodes.
  */
 UCLASS(ClassGroup = "AGX", Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_WireComponent : public USceneComponent, public IAGX_NativeOwner
@@ -102,13 +102,22 @@ public:
 		Meta = (ClampMin = "0", UIMin = "0"))
 	float Radius = 1.5f;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	void SetRadius(float InRadius);
+
 	/**
-	 * The maximum number of mass nodes per cm during simulation.
+	 * The shortest a lumped segment is allowed to become [cm].
+	 *
+	 * Sets an upper bound on the number of simulation nodes a certain length of
+	 * wire can consist of.
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire",
 		Meta = (ClampMin = "0", UIMin = "0"))
 	float MinSegmentLength = 50.0f;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	void SetMinSegmentLength(float InMinSegmentLength);
 
 	/**
 	 * Velocity damping value of the wire [kg/s].

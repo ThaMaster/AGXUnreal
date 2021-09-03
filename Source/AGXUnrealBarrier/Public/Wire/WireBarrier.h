@@ -47,6 +47,12 @@ public:
 	 * with Wire Material shortly. */
 	void AllocateNative(float Radius, float ResolutionPerUnitLength);
 
+	void SetRadius(float Radius);
+	float GetRadius() const;
+
+	void SetResolutionPerUnitLength(float InResolution);
+	float GetResolutionPerUnitLength() const;
+
 	void SetScaleConstant(double ScaleConstant);
 	double GetScaleConstant() const;
 

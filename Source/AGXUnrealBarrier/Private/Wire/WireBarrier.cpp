@@ -54,6 +54,36 @@ void FWireBarrier::AllocateNative(float Radius, float ResolutionPerUnitLength)
 	PostNativeChanged();
 }
 
+void FWireBarrier::SetRadius(float Radius)
+{
+	check(HasNative());
+	const agx::Real RadiusAGX = ConvertDistanceToAgx(Radius);
+	NativeRef->Native->setRadius(RadiusAGX);
+}
+
+float FWireBarrier::GetRadius() const
+{
+	check(HasNative());
+	const agx::Real RadiusAGX = NativeRef->Native->getRadius();
+	const float Radius = ConvertDistance(RadiusAGX);
+	return Radius;
+}
+
+void FWireBarrier::SetResolutionPerUnitLength(float InResolution)
+{
+	check(HasNative());
+	const agx::Real ResolutionAGX = ConvertDistanceInv(InResolution);
+	NativeRef->Native->setResolutionPerUnitLength(ResolutionAGX);
+}
+
+float FWireBarrier::GetResolutionPerUnitLength() const
+{
+	check(HasNative());
+	const agx::Real ResolutionAGX = NativeRef->Native->getResolutionPerUnitLength();
+	const float Resolution = ConvertDistanceInv(ResolutionAGX);
+	return Resolution;
+}
+
 void FWireBarrier::SetScaleConstant(double ScaleConstant)
 {
 	check(HasNative());
