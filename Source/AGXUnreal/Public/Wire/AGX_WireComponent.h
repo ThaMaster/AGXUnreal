@@ -108,7 +108,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire",
 		Meta = (ClampMin = "0", UIMin = "0"))
-	float ResolutionPerUnitLength = 0.02;
+	float MinSegmentLength = 50.0f;
 
 	/**
 	 * Velocity damping value of the wire [kg/s].

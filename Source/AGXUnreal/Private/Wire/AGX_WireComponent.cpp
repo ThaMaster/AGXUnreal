@@ -1347,6 +1347,7 @@ void UAGX_WireComponent::CreateNative()
 	check(!HasNative());
 	check(!GIsReconstructingBlueprintInstances);
 
+	const float ResolutionPerUnitLength = 1.0f / MinSegmentLength;
 	NativeBarrier.AllocateNative(Radius, ResolutionPerUnitLength);
 	check(HasNative()); /// @todo Consider better error handling than 'check'.
 
