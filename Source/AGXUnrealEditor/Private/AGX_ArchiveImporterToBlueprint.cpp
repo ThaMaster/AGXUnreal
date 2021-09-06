@@ -69,7 +69,7 @@ namespace
 			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
 		FString ParentAssetName = Helper.ArchiveFileName; /// \todo Why is this never used?
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
-		UPackage* ParentPackage = CreatePackage(nullptr, *ParentPackagePath);
+		UPackage* ParentPackage = CreatePackage(*ParentPackagePath);
 		FString Path = FPaths::GetPath(ParentPackage->GetName());
 
 		UE_LOG(
@@ -101,7 +101,7 @@ namespace
 
 	UPackage* GetPackage(const FString& BlueprintPackagePath)
 	{
-		UPackage* Package = CreatePackage(nullptr, *BlueprintPackagePath);
+		UPackage* Package = CreatePackage(*BlueprintPackagePath);
 		check(Package != nullptr);
 		Package->FullyLoad();
 		return Package;

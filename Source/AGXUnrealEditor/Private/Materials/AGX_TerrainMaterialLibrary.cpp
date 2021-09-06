@@ -27,7 +27,7 @@ namespace AGX_TerrainMaterialLibrary_helpers
 		const FString AssetName = FString::Printf(TEXT("AGX_TM_%s"), *Name);
 		const FString PackagePath =
 			FString::Printf(TEXT("/AGXUnreal/Terrain/TerrainMaterialLibrary/%s"), *AssetName);
-		UPackage* Package = CreatePackage(nullptr, *PackagePath);
+		UPackage* Package = CreatePackage(*PackagePath);
 		Package->FullyLoad();
 
 		// Create the asset itself, reading data from the AGX Dynamics terrain material library.

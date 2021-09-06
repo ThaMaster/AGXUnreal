@@ -32,7 +32,7 @@ namespace
 		FString PackagePath =
 			FAGX_ImportUtilities::CreateArchivePackagePath(DirectoryName, AssetType);
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
-		UPackage* Package = CreatePackage(nullptr, *PackagePath);
+		UPackage* Package = CreatePackage(*PackagePath);
 #if 0
 		/// \todo Unclear if this is needed or not. Leaving it out for now but
 		/// test with it restored if there are problems.

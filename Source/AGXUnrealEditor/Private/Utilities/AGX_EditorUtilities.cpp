@@ -572,7 +572,7 @@ FString FAGX_EditorUtilities::CreateShapeMaterialAsset(
 	AssetTools.CreateUniqueAssetName(PackagePath, MaterialName, PackagePath, MaterialName);
 
 	// Create the package that will hold our shape material asset.
-	UPackage* Package = CreatePackage(nullptr, *PackagePath);
+	UPackage* Package = CreatePackage(*PackagePath);
 #if 0
 		/// \todo Unclear if this is needed or not. Leaving it out for now but
 		/// test with it restored if there are problems.
