@@ -18,6 +18,7 @@
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "RawMesh.h"
+#include "Kismet2/ComponentEditorUtils.h"
 
 namespace
 {
@@ -153,6 +154,28 @@ namespace
 		}
 		return Material->GetName();
 	}
+
+	/**
+	 * Checks whether the component name is valid, and if not, generates a valid name and sets it to
+	 * the component.
+	 */
+	void FinalizeComponentName(UActorComponent& Component)
+	{
+		if (Component.GetOwner() == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Could not find the owning actor of Actor Component: %s during name finalization."),
+				*Component.GetName());
+			return;
+		}
+
+		if (!FComponentEditorUtils::IsValidVariableNameString(&Component, Component.GetName()))
+		{
+			Component.Rename(*FComponentEditorUtils::GenerateValidVariableName(
+				Component.GetClass(), Component.GetOwner()));
+		}
+	}
 }
 
 UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
@@ -275,6 +298,12 @@ void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)
 			*Object.GetClass()->GetName(), *Name, *NewName.ToString());
 		Object.Rename(*NewName.ToString(), nullptr, REN_DontCreateRedirectors);
 	}
+}
+
+void FAGX_ImportUtilities::Rename(UActorComponent& Component, const FString& Name)
+{
+	Rename(static_cast<UObject&>(Component), Name);
+	FinalizeComponentName(Component);
 }
 
 FLinearColor FAGX_ImportUtilities::SRGBToLinear(const FVector4& SRGB)

@@ -152,6 +152,12 @@ public:
 	static void Rename(UObject& Object, const FString& Name);
 
 	/**
+	 * Handles the case of renaming Actor Components, where an extra name validation occurs compared
+	 * to the more general Rename(UObject&, ...) version of this function.
+	 */
+	static void Rename(UActorComponent& Component, const FString& Name);
+
+	/**
 	 * Convert an sRGB space float channels color, as used in AGX Dynamics' render materials, to a
 	 * linear space float channels color, as used by Unreal Engine's render materials.
 	 *
