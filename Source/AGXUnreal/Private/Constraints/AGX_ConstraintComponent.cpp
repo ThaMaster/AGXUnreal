@@ -400,12 +400,29 @@ FFloatInterval UAGX_ConstraintComponent::GetForceRange(EGenericDofIndex Index) c
 {
 	return GetFromBarrier(
 		*this, Index, TEXT("GetForceRange"), ForceRange[Index],
-		[this](int32 NativeDof)
+		[this](int32 NativeDof) { return NativeBarrier->GetForceRange(NativeDof); });
+}
+
+void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
+{
+	bEnable = Barrier.GetEnable();
+	SolveType = static_cast<EAGX_SolveType>(Barrier.GetSolveType());
+
+	const static TArray<EGenericDofIndex> Dofs {
+		EGenericDofIndex::Translational1, EGenericDofIndex::Translational2,
+		EGenericDofIndex::Translational3, EGenericDofIndex::Rotational1,
+		EGenericDofIndex::Rotational2,	  EGenericDofIndex::Rotational3};
+
+	for (const auto& Dof : Dofs)
+	{
+		if (const int32* NativeDofPtr = NativeDofIndexMap.Find(Dof))
 		{
-			double RangeMin, RangeMax;
-			NativeBarrier->GetForceRange(&RangeMin, &RangeMax, NativeDof);
-			return FFloatInterval(static_cast<float>(RangeMin), static_cast<float>(RangeMax));
-		});
+			const int32 NativeDof = *NativeDofPtr;
+			Elasticity[Dof] = Barrier.GetElasticity(NativeDof);
+			Damping[Dof] = Barrier.GetDamping(NativeDof);
+			ForceRange[Dof] = Barrier.GetForceRange(NativeDof);
+		}
+	}
 }
 
 void UAGX_ConstraintComponent::SetSolveType(EAGX_SolveType InSolveType)
