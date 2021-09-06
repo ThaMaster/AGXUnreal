@@ -136,7 +136,14 @@ bool UAGX_WireComponent::HasBeginWinch() const
 			return HasBeginWinchComponent();
 		case EWireWinchOwnerType::Other:
 			return BorrowedBeginWinch != nullptr;
+		case EWireWinchOwnerType::None:
+			return false;
 	}
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid Begin Winch Type found in Wire '%s' in '%s'. Cannot determine presence of "
+			 "begin winch."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return false;
 }
 
@@ -150,7 +157,13 @@ FAGX_WireWinch* UAGX_WireComponent::GetBeginWinch()
 			return HasBeginWinchComponent() ? GetBeginWinchComponentWinch() : nullptr;
 		case EWireWinchOwnerType::Other:
 			return BorrowedBeginWinch != nullptr ? BorrowedBeginWinch : nullptr;
+		case EWireWinchOwnerType::None:
+			return nullptr;
 	}
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid Begin Winch Type found in Wire '%s' in '%s'. Cannot get begin winch."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return nullptr;
 }
 
@@ -164,8 +177,13 @@ const FAGX_WireWinch* UAGX_WireComponent::GetBeginWinch() const
 			return HasBeginWinchComponent() ? GetBeginWinchComponentWinch() : nullptr;
 		case EWireWinchOwnerType::Other:
 			return BorrowedBeginWinch;
+		case EWireWinchOwnerType::None:
+			return nullptr;
 	}
-
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid Begin Winch Type found in Wire '%s' in '%s'. Cannot get begin winch."),
+		*GetName(), *GetLabelSafe(GetOwner()))
 	return nullptr;
 }
 
@@ -276,7 +294,14 @@ bool UAGX_WireComponent::HasEndWinch() const
 			return HasEndWinchComponent();
 		case EWireWinchOwnerType::Other:
 			return BorrowedEndWinch != nullptr;
+		case EWireWinchOwnerType::None:
+			return false;
 	}
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid End Winch Type found in Wire '%s' in '%s'. Cannot determine presence of end "
+			 "winch."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return false;
 }
 
@@ -290,7 +315,33 @@ FAGX_WireWinch* UAGX_WireComponent::GetEndWinch()
 			return HasEndWinchComponent() ? GetEndWinchComponentWinch() : nullptr;
 		case EWireWinchOwnerType::Other:
 			return BorrowedEndWinch != nullptr ? BorrowedEndWinch : nullptr;
+		case EWireWinchOwnerType::None:
+			return nullptr;
 	}
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid End Winch Type found in Wire '%s' in '%s'. Cannot get end winch."),
+		*GetName(), *GetLabelSafe(GetOwner()));
+	return nullptr;
+}
+
+const FAGX_WireWinch* UAGX_WireComponent::GetEndWinch() const
+{
+	switch (EndWinchType)
+	{
+		case EWireWinchOwnerType::Wire:
+			return &OwnedEndWinch;
+		case EWireWinchOwnerType::WireWinch:
+			return HasEndWinchComponent() ? GetEndWinchComponentWinch() : nullptr;
+		case EWireWinchOwnerType::Other:
+			return BorrowedEndWinch;
+		case EWireWinchOwnerType::None:
+			return nullptr;
+	}
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid End Winch Type found in Wire '%s' in '%s'. Cannot get end winch."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return nullptr;
 }
 
@@ -329,20 +380,6 @@ bool UAGX_WireComponent::DetachEndWinch()
 	return DetachWinch(EWireSide::End);
 }
 
-const FAGX_WireWinch* UAGX_WireComponent::GetEndWinch() const
-{
-	switch (EndWinchType)
-	{
-		case EWireWinchOwnerType::Wire:
-			return &OwnedEndWinch;
-		case EWireWinchOwnerType::WireWinch:
-			return HasEndWinchComponent() ? GetEndWinchComponentWinch() : nullptr;
-		case EWireWinchOwnerType::Other:
-			return BorrowedEndWinch;
-	}
-	return nullptr;
-}
-
 /*
  * Side-agnostic winch.
  */
@@ -360,13 +397,16 @@ void UAGX_WireComponent::SetWinchType(EWireWinchOwnerType Type, EWireSide Side)
 		case EWireSide::None:
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Wire side None passed to Set Winch Type for wire '%s' in '%s'. Doing "
+				TEXT("Wire side None passed to Set Winch Type for Wire '%s' in '%s'. Doing "
 					 "nothing."),
 				*GetName(), *GetNameSafe(GetOwner()));
 			return;
 	}
-
-	checkNoEntry();
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed to Set Winch Type for Wire '%s' in '%s'. Cannot set winch "
+			 "type."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 }
 
 EWireWinchOwnerType UAGX_WireComponent::GetWinchType(EWireSide Side) const
@@ -380,12 +420,15 @@ EWireWinchOwnerType UAGX_WireComponent::GetWinchType(EWireSide Side) const
 		case EWireSide::None:
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Wire side None passed to Get Winch Type for wire '%s' in '%s'."), *GetName(),
+				TEXT("Wire side None passed to Get Winch Type for Wire '%s' in '%s'."), *GetName(),
 				*GetNameSafe(GetOwner()));
 			return EWireWinchOwnerType::None;
 	}
-
-	checkNoEntry();
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed to Get Winch Type for Wire '%s' in '%s'. Cannot determine "
+			 "winch type."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return EWireWinchOwnerType::None;
 }
 
@@ -406,7 +449,11 @@ const FAGX_WireWinch* UAGX_WireComponent::GetOwnedWinch(EWireSide Side) const
 		case EWireSide::None:
 			return nullptr;
 	}
-	checkNoEntry();
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed to Get Owned Winch for Wire '%s' in '%s'. Cannot determine "
+			 "owned winch to return."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return nullptr;
 }
 
@@ -428,13 +475,16 @@ bool UAGX_WireComponent::SetBorrowedWinch(FAGX_WireWinchRef Winch, EWireSide Sid
 		case EWireSide::None:
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Wire side None passed to Set Borrowed Winch for wire '%s' in '%s'. Doing "
+				TEXT("Wire side None passed to Set Borrowed Winch for Wire '%s' in '%s'. Doing "
 					 "nothing."),
 				*GetName(), *GetNameSafe(GetOwner()));
 			return false;
 	}
-
-	checkNoEntry();
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed to Set Borrowed Winch for Wire '%s' in '%s'. Cannot set "
+			 "winch."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return false;
 }
 
@@ -442,13 +492,18 @@ bool UAGX_WireComponent::HasWinch(EWireSide Side) const
 {
 	switch (Side)
 	{
-		case EWireSide::None:
-			return false;
 		case EWireSide::Begin:
 			return HasBeginWinch();
 		case EWireSide::End:
 			return HasEndWinch();
+		case EWireSide::None:
+			return false;
 	}
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed to Has Winch for Wire '%s' in '%s'. Cannot determine winch "
+			 "presence."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return false;
 }
 
@@ -456,13 +511,17 @@ FAGX_WireWinch* UAGX_WireComponent::GetWinch(EWireSide Side)
 {
 	switch (Side)
 	{
-		case EWireSide::None:
-			return nullptr;
 		case EWireSide::Begin:
 			return GetBeginWinch();
 		case EWireSide::End:
 			return GetEndWinch();
+		case EWireSide::None:
+			return nullptr;
 	}
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed to Get Winch for Wire '%s' in '%s'. Cannot get winch."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return nullptr;
 }
 
@@ -470,13 +529,17 @@ const FAGX_WireWinch* UAGX_WireComponent::GetWinch(EWireSide Side) const
 {
 	switch (Side)
 	{
-		case EWireSide::None:
-			return nullptr;
 		case EWireSide::Begin:
 			return GetBeginWinch();
 		case EWireSide::End:
 			return GetEndWinch();
+		case EWireSide::None:
+			return nullptr;
 	}
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed to Get Winch for Wire '%s' in '%s'. Cannot get winch."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return nullptr;
 }
 
@@ -679,13 +742,18 @@ EWireWinchOwnerType UAGX_WireComponent::GetWinchOwnerType(EWireSide Side) const
 {
 	switch (Side)
 	{
-		case EWireSide::None:
-			return EWireWinchOwnerType::None;
 		case EWireSide::Begin:
 			return BeginWinchType;
 		case EWireSide::End:
 			return EndWinchType;
+		case EWireSide::None:
+			return EWireWinchOwnerType::None;
 	}
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed to Get Winch Owner Type for Wire '%s' in '%s'. Cannot get "
+			 "winch owner type."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return EWireWinchOwnerType::None;
 }
 
@@ -706,6 +774,11 @@ const UAGX_WireWinchComponent* UAGX_WireComponent::GetWinchComponent(EWireSide S
 		case EWireSide::None:
 			return nullptr;
 	}
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed to Get Winch Component for Wire '%s' in '%s'. Cannot get "
+			 "winch component."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return nullptr;
 }
 
@@ -722,13 +795,16 @@ bool UAGX_WireComponent::SetWinchComponent(UAGX_WireWinchComponent* Winch, EWire
 		case EWireSide::None:
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Wire side None passed to Set Winch Component for wire '%s' in '%s'. Doing "
+				TEXT("Wire side None passed to Set Winch Component for Wire '%s' in '%s'. Doing "
 					 "nothing."),
 				*GetName(), *GetNameSafe(GetOwner()));
 			return false;
 	}
-
-	checkNoEntry();
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed to Set Winch Component for Wire '%s' in '%s'. Cannot set "
+			 "winch component."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return false;
 }
 
@@ -743,6 +819,11 @@ FComponentReference* UAGX_WireComponent::GetWinchComponentReference(EWireSide Si
 		case EWireSide::None:
 			return nullptr;
 	}
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed Get Winch Component Reference for Wire '%s' in '%s'. Cannot "
+			 "get winch component reference."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return nullptr;
 }
 
@@ -757,6 +838,11 @@ FAGX_WireWinch* UAGX_WireComponent::GetBorrowedWinch(EWireSide Side)
 		case EWireSide::None:
 			return nullptr;
 	}
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed to Get Borrowed Winch for Wire '%s' in '%s'. Cannot get "
+			 "borrowed winch."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return nullptr;
 }
 
@@ -771,6 +857,11 @@ const FAGX_WireWinch* UAGX_WireComponent::GetBorrowedWinch(EWireSide Side) const
 		case EWireSide::None:
 			return nullptr;
 	}
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed to Get Borrowed Winch for Wire '%s' in '%s'. Cannot get "
+			 "borrowed winch."),
+		*GetName(), *GetLabelSafe(GetOwner()));
 	return nullptr;
 }
 
@@ -1481,7 +1572,7 @@ void UAGX_WireComponent::CreateNative()
 				UE_LOG(
 					LogAGX, Warning,
 					TEXT(
-						"Found unexpected node type in wire '%s', part of actor '%s', at index %d. "
+						"Found unexpected node type in Wire '%s', part of actor '%s', at index %d. "
 						"Node ignored."),
 					*GetName(), *GetLabelSafe(GetOwner()), I);
 				break;
