@@ -48,6 +48,21 @@ float FMassPropertiesBarrier::GetMass() const
 	return MassUnreal;
 }
 
+void FMassPropertiesBarrier::SetInertiaTensor(const FMatrix& InertiaTensor)
+{
+	check(HasNative());
+	agx::SPDMatrix3x3 InertiaTensorAGX = ConvertSPDMatrix(InertiaTensor);
+	NativePtr->Native->setInertiaTensor(InertiaTensorAGX);
+}
+
+FMatrix FMassPropertiesBarrier::GetInertiaTensor() const
+{
+	check(HasNative());
+	agx::SPDMatrix3x3 InertiaTensorAGX = NativePtr->Native->getInertiaTensor();
+	FMatrix InertiaTensor = ConvertSPDMatrix(InertiaTensorAGX);
+	return InertiaTensor;
+}
+
 void FMassPropertiesBarrier::SetPrincipalInertiae(const FVector& InertiaUnreal)
 {
 	check(HasNative());
@@ -63,6 +78,65 @@ FVector FMassPropertiesBarrier::GetPrincipalInertiae() const
 	return InertiaUnreal;
 }
 
+#if 1
+namespace MassPropertiesBarrier_helpers
+{
+	void SetAutoGenerateFlag(agx::MassProperties& MassProperties, agx::Int32 Flag)
+	{
+		agx::UInt32 Mask = MassProperties.getAutoGenerateMask();
+		Mask &= Flag;
+		MassProperties.setAutoGenerateMask(Mask);
+	}
+
+	bool GetAutoGenerateFlag(const agx::MassProperties& MassProperties, agx::Int32 Flag)
+	{
+		const agx::UInt32 Mask = MassProperties.getAutoGenerateMask();
+		return (Mask & Flag) != 0;
+	}
+}
+
+void FMassPropertiesBarrier::SetAutoGenerateMass(bool bAuto)
+{
+	check(HasNative());
+	MassPropertiesBarrier_helpers::SetAutoGenerateFlag(
+		*NativePtr->Native, agx::MassProperties::MASS);
+}
+
+bool FMassPropertiesBarrier::GetAutoGenerateMass() const
+{
+	check(HasNative());
+	return MassPropertiesBarrier_helpers::GetAutoGenerateFlag(
+		*NativePtr->Native, agx::MassProperties::MASS);
+}
+
+void FMassPropertiesBarrier::SetAutoGenerateCenterOfMassOffset(bool bAuto)
+{
+	check(HasNative());
+	MassPropertiesBarrier_helpers::SetAutoGenerateFlag(
+		*NativePtr->Native, agx::MassProperties::CM_OFFSET);
+}
+
+bool FMassPropertiesBarrier::GetAutoGenerateCenterOfMassOffset() const
+{
+	check(HasNative());
+	return MassPropertiesBarrier_helpers::GetAutoGenerateFlag(
+		*NativePtr->Native, agx::MassProperties::CM_OFFSET);
+}
+
+void FMassPropertiesBarrier::SetAutoGenerateInertiaTensor(bool bAuto)
+{
+	check(HasNative());
+	return MassPropertiesBarrier_helpers::SetAutoGenerateFlag(
+		*NativePtr->Native, agx::MassProperties::INERTIA);
+}
+
+bool FMassPropertiesBarrier::GetAutoGenerateInertiaTensor() const
+{
+	check(HasNative());
+	return MassPropertiesBarrier_helpers::GetAutoGenerateFlag(
+		*NativePtr->Native, agx::MassProperties::INERTIA);
+}
+#else
 namespace MassPropertiesBarrier_helpers
 {
 	constexpr agx::UInt32 EnableMask = agx::MassProperties::AutoGenerateFlags::AUTO_GENERATE_ALL;
@@ -98,6 +172,7 @@ bool FMassPropertiesBarrier::GetAutoGenerate() const
 		return true;
 	}
 }
+#endif
 
 bool FMassPropertiesBarrier::HasNative() const
 {

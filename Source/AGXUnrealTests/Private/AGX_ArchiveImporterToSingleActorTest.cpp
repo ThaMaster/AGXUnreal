@@ -352,7 +352,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	// Inertia tensor diagonal.
 	{
-		FVector Actual = SphereBody->PrincipalInertiae;
+		FVector Actual = SphereBody->GetPrincipalInertiae();
 		FVector Expected(
 			1.00000000000000000000e+02f, 2.00000000000000000000e+02f, 3.00000000000000000000e+02f);
 		Test.TestEqual(TEXT("Sphere inertia tensor diagonal"), Actual, Expected);

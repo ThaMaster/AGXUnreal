@@ -6,6 +6,7 @@
 
 // Unreal Engine includes.
 #include "Containers/UnrealString.h"
+#include "Math/Matrix.h"
 #include "Math/Vector.h"
 #include "Math/Quat.h"
 
@@ -55,6 +56,9 @@ public:
 	FMassPropertiesBarrier& GetMassProperties();
 	const FMassPropertiesBarrier& GetMassProperties() const;
 	void UpdateMassProperties();
+
+	void SetCenterOfMassOffset(const FVector& Offset);
+	FVector GetCenterOfMassOffset() const;
 
 	void SetName(const FString& NewName);
 	FString GetName() const;

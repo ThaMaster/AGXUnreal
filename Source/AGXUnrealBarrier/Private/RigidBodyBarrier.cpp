@@ -125,6 +125,21 @@ void FRigidBodyBarrier::UpdateMassProperties()
 	NativeRef->Native->updateMassProperties();
 }
 
+void FRigidBodyBarrier::SetCenterOfMassOffset(const FVector& Offset)
+{
+	check(HasNative());
+	const agx::Vec3 OffsetAGX = ConvertDisplacement(Offset);
+	NativeRef->Native->setCmLocalTranslate(OffsetAGX);
+}
+
+FVector FRigidBodyBarrier::GetCenterOfMassOffset() const
+{
+	check(HasNative());
+	const agx::Vec3 OffsetAGX = NativeRef->Native->getCmLocalTranslate();
+	const FVector Offset = ConvertDisplacement(OffsetAGX);
+	return Offset;
+}
+
 void FRigidBodyBarrier::SetName(const FString& NameUnreal)
 {
 	check(HasNative());

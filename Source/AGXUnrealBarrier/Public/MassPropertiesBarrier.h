@@ -2,6 +2,8 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Math/Matrix.h"
+#include "Math/Vector.h"
 
 // System includes.
 #include <memory>
@@ -33,6 +35,11 @@ public:
 	 */
 	float GetMass() const;
 
+#if 1
+	void SetInertiaTensor(const FMatrix& InertiaTensor);
+	FMatrix GetInertiaTensor() const;
+#endif
+
 	/**
 	 * Set the diagonal of the body's inertia matrix.
 	 *
@@ -42,6 +49,16 @@ public:
 
 	FVector GetPrincipalInertiae() const;
 
+#if 1
+	void SetAutoGenerateMass(bool bAuto);
+	bool GetAutoGenerateMass() const;
+
+	void SetAutoGenerateCenterOfMassOffset(bool bAuto);
+	bool GetAutoGenerateCenterOfMassOffset() const;
+
+	void SetAutoGenerateInertiaTensor(bool bAuto);
+	bool GetAutoGenerateInertiaTensor() const;
+#else
 	/**
 	 * Enable or disable auto-generation of mass and inertia tensor.
 	 *
@@ -51,6 +68,7 @@ public:
 	 */
 	void SetAutoGenerate(bool bAutoGenerate);
 	bool GetAutoGenerate() const;
+#endif
 
 	bool HasNative() const;
 	FMassPropertiesPtr* GetNative();
