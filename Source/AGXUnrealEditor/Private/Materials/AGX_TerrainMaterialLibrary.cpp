@@ -11,6 +11,7 @@
 #include "AssetRegistryModule.h"
 #include "Modules/ModuleManager.h"
 #include "PackageTools.h"
+#include "Misc/EngineVersionComparison.h"
 
 // Naming convention:
 //   Name: dirt_1
@@ -27,7 +28,11 @@ namespace AGX_TerrainMaterialLibrary_helpers
 		const FString AssetName = FString::Printf(TEXT("AGX_TM_%s"), *Name);
 		const FString PackagePath =
 			FString::Printf(TEXT("/AGXUnreal/Terrain/TerrainMaterialLibrary/%s"), *AssetName);
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
+#else
+		UPackage* Package = CreatePackage(*PackagePath);
+#endif
 		Package->FullyLoad();
 
 		// Create the asset itself, reading data from the AGX Dynamics terrain material library.

@@ -1,12 +1,15 @@
 #include "Utilities/AGX_MeshUtilities.h"
 
-#include <limits>
-#include <algorithm>
-
-#include "Math/UnrealMathUtility.h"
-
+// AGX Dynamics for Unreal includes.
 #include "AGX_SimpleMeshComponent.h"
 #include "AGX_LogCategory.h"
+
+// Unreal Engine includes.
+#include "Math/UnrealMathUtility.h"
+
+// Standard library includes.
+#include <limits>
+#include <algorithm>
 
 #define CONE_SINGULARITY
 
@@ -932,8 +935,11 @@ void AGX_MeshUtilities::MakeCapsule(
 		UvCoordinateScaler(0.f, 1.f, VspanHalfSphere + VspanTube, 1.f), false);
 }
 
-namespace
+namespace AGX_Cone_Helpers
 {
+	/// @note This function can be completely replaced by the built in CalcConeVert located in
+	/// SceneManagement.h when Engine version 4.25 is no longer supported by the plugin. The
+	/// CalcConeVert can be accessed in Engine versions newer than 4.25.
 	FVector CalcConeVert(float Angle1, float Angle2, float AzimuthAngle)
 	{
 		float ang1 = FMath::Clamp<float>(Angle1, 0.01f, (float) PI - 0.01f);
@@ -984,7 +990,8 @@ void AGX_MeshUtilities::MakeCone(
 	{
 		float Fraction = (float) i / (float) (NumSides);
 		float Azi = 2.f * PI * Fraction;
-		ConeVerts[i] = (CalcConeVert(Angle1, Angle2, Azi) * Scale) + FVector(XOffset, 0, 0);
+		ConeVerts[i] =
+			(AGX_Cone_Helpers::CalcConeVert(Angle1, Angle2, Azi) * Scale) + FVector(XOffset, 0, 0);
 	}
 
 	for (uint32 i = 0; i < NumSides; i++)

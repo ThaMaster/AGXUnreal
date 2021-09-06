@@ -51,6 +51,7 @@
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
 #include "Kismet2/KismetEditorUtilities.h"
+#include "Misc/EngineVersionComparison.h"
 #include "UObject/Package.h"
 #include "PackageTools.h"
 
@@ -69,7 +70,13 @@ namespace
 			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
 		FString ParentAssetName = Helper.ArchiveFileName; /// \todo Why is this never used?
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
+
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UPackage* ParentPackage = CreatePackage(nullptr, *ParentPackagePath);
+#else
+		UPackage* ParentPackage = CreatePackage(*ParentPackagePath);
+#endif
+		
 		FString Path = FPaths::GetPath(ParentPackage->GetName());
 
 		UE_LOG(
@@ -101,7 +108,11 @@ namespace
 
 	UPackage* GetPackage(const FString& BlueprintPackagePath)
 	{
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UPackage* Package = CreatePackage(nullptr, *BlueprintPackagePath);
+#else
+		UPackage* Package = CreatePackage(*BlueprintPackagePath);
+#endif
 		check(Package != nullptr);
 		Package->FullyLoad();
 		return Package;
@@ -353,8 +364,20 @@ namespace
 
 	UBlueprint* CreateBlueprint(UPackage* Package, AActor* Template)
 	{
+		static constexpr bool ReplaceInWorld = false;
+		static constexpr bool KeepMobility = true;
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UBlueprint* Blueprint = FKismetEditorUtilities::CreateBlueprintFromActor(
-			Package->GetName(), Template, false, true);
+			Package->GetName(), Template, ReplaceInWorld, KeepMobility);
+#else
+		FKismetEditorUtilities::FCreateBlueprintFromActorParams Params;
+		Params.bReplaceActor = ReplaceInWorld;
+		Params.bKeepMobility = KeepMobility;
+
+		UBlueprint* Blueprint =
+			FKismetEditorUtilities::CreateBlueprintFromActor(Package->GetName(), Template, Params);
+#endif
+		
 		check(Blueprint);
 		return Blueprint;
 	}
