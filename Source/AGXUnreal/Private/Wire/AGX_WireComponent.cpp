@@ -941,23 +941,39 @@ bool UAGX_WireComponent::IsInitialized() const
 
 double UAGX_WireComponent::GetRestLength() const
 {
-	if (!HasNative())
+	if (HasNative())
 	{
-		/// @todo Compute the length of the route.
+		return NativeBarrier.GetRestLength();
+	}
+	if (RouteNodes.Num() <= 1)
+	{
 		return 0.0;
 	}
-	return NativeBarrier.GetRestLength();
+	double Length = 0.0;
+	for (int32 I = 1; I < RouteNodes.Num(); ++I)
+	{
+		Length += FVector::Distance(RouteNodes[I - 1].Location, RouteNodes[I].Location);
+	}
+	return Length;
 }
 
 double UAGX_WireComponent::GetMass() const
 {
-	if (!HasNative())
+	if (HasNative())
 	{
-		/// @todo What is reasonable to return here? Estimate the mass from material density and
-		/// rest length?
+		return NativeBarrier.GetMass();
+	}
+	if (PhysicalMaterial == nullptr)
+	{
+		/// @note Can we find the density that AGX Dynamics will use for wires that don't have an
+		/// explicit material set?
 		return 0.0;
 	}
-	return NativeBarrier.GetMass();
+	const double Area = M_PI * Radius * Radius; // Assume circular cross-section.
+	const double Length = GetRestLength();
+	const double Density = PhysicalMaterial->Bulk.Density;
+	const double Mass = Area * Length * Density;
+	return Mass;
 }
 
 float UAGX_WireComponent::GetMass_BP() const
