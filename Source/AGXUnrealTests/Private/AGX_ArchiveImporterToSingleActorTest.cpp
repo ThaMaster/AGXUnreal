@@ -10,6 +10,7 @@
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 
@@ -1419,6 +1420,148 @@ bool FCheckGeometrySensorsImportedCommand::Update()
  * @return true when the clearing is complete. Never returns false.
  */
 bool FClearGeometrySensorsImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+	return true;
+}
+
+//
+// Constraint Dynamic Parameters test starts here.
+//
+
+class FArchiveImporterToSingleActor_ConstraintDynamicParametersTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckConstraintDynamicParametersImportedCommand,
+	FArchiveImporterToSingleActor_ConstraintDynamicParametersTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearConstraintDynamicParametersImportedCommand,
+	FArchiveImporterToSingleActor_ConstraintDynamicParametersTest&, Test);
+
+class FArchiveImporterToSingleActor_ConstraintDynamicParametersTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_ConstraintDynamicParametersTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_ConstraintDynamicParametersTest"),
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.ConstraintDynamicParameters"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(FImportArchiveSingleActorCommand(
+			TEXT("constraint_dynamic_parameters_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckConstraintDynamicParametersImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearConstraintDynamicParametersImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_ConstraintDynamicParametersTest
+		ArchiveImporterToSingleActor_ConstraintDynamicParametersTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script constraint_dynamic_parameters.agxPy.
+ * @return true when the check is complete. Never returns false.
+ */
+bool FCheckConstraintDynamicParametersImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(
+			TEXT("Could not import ConstraintDynamicParameters test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// Two Rigid Bodies, one Hinge constraint with two DofGraphicsComponent's and one
+	// DofGraphicsComponent and one Default Scene Root.
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
+
+	UAGX_ConstraintComponent* Constraint =
+		GetByName<UAGX_ConstraintComponent>(Components, TEXT("constraint"));
+
+	// Elasticity.
+	Test.TestEqual(TEXT("Translational 1 elasticity"), Constraint->Elasticity.Translational_1, 100.0);
+	Test.TestEqual(TEXT("Translational 2 elasticity"), Constraint->Elasticity.Translational_2, 101.0);
+	Test.TestEqual(TEXT("Translational 2 elasticity"), Constraint->Elasticity.Translational_3, 102.0);
+	Test.TestEqual(TEXT("Rotational 1 elasticity"), Constraint->Elasticity.Rotational_1, 103.0);
+	Test.TestEqual(TEXT("Rotational 2 elasticity"), Constraint->Elasticity.Rotational_2, 104.0);
+	// Rotational 3 is not supported for AGX::Hinge.
+
+	// Damping.
+	Test.TestEqual(TEXT("Translational 1 damping"), Constraint->Damping.Translational_1, 200.0);
+	Test.TestEqual(TEXT("Translational 2 damping"), Constraint->Damping.Translational_2, 201.0);
+	Test.TestEqual(TEXT("Translational 2 damping"), Constraint->Damping.Translational_3, 202.0);
+	Test.TestEqual(TEXT("Rotational 1 damping"), Constraint->Damping.Rotational_1, 203.0);
+	Test.TestEqual(TEXT("Rotational 2 damping"), Constraint->Damping.Rotational_2, 204.0);
+	// Rotational 3 is not supported for AGX::Hinge.
+
+	//Force range.
+	Test.TestEqual(
+		TEXT("Translational 1 force range min"), Constraint->ForceRange.Translational_1.Min, 300.f);
+	Test.TestEqual(
+		TEXT("Translational 1 force range max"), Constraint->ForceRange.Translational_1.Max, 301.f);
+	Test.TestEqual(
+		TEXT("Translational 2 force range min"), Constraint->ForceRange.Translational_2.Min, 302.f);
+	Test.TestEqual(
+		TEXT("Translational 2 force range max"), Constraint->ForceRange.Translational_2.Max, 303.f);
+	Test.TestEqual(
+		TEXT("Translational 3 force range min"), Constraint->ForceRange.Translational_3.Min, 304.f);
+	Test.TestEqual(
+		TEXT("Translational 3 force range max"), Constraint->ForceRange.Translational_3.Max, 305.f);
+	Test.TestEqual(
+		TEXT("Rotational 1 force range min"), Constraint->ForceRange.Rotational_1.Min, 306.f);
+	Test.TestEqual(
+		TEXT("Rotational 1 force range min"), Constraint->ForceRange.Rotational_1.Max, 307.f);
+	Test.TestEqual(
+		TEXT("Rotational 2 force range min"), Constraint->ForceRange.Rotational_2.Min, 308.f);
+	Test.TestEqual(
+		TEXT("Rotational 2 force range min"), Constraint->ForceRange.Rotational_2.Max, 309.f);
+	// Rotational 3 is not supported for AGX::Hinge.
+
+	Test.TestEqual(TEXT("Solve type"), Constraint->SolveType, EAGX_SolveType::StDirectAndIterative);
+	Test.TestEqual(TEXT("Enabled"), Constraint->bEnable, true);
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearConstraintDynamicParametersImportedCommand::Update()
 {
 	if (Test.Contents == nullptr)
 	{
