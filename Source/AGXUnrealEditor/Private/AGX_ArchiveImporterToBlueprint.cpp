@@ -353,8 +353,12 @@ namespace
 
 	UBlueprint* CreateBlueprint(UPackage* Package, AActor* Template)
 	{
+		FKismetEditorUtilities::FCreateBlueprintFromActorParams Params;
+		Params.bReplaceActor = false;
+		Params.bKeepMobility = true;
+
 		UBlueprint* Blueprint = FKismetEditorUtilities::CreateBlueprintFromActor(
-			Package->GetName(), Template, false, true);
+			Package->GetName(), Template, Params);
 		check(Blueprint);
 		return Blueprint;
 	}
