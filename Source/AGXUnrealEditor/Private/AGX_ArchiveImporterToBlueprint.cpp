@@ -364,12 +364,20 @@ namespace
 
 	UBlueprint* CreateBlueprint(UPackage* Package, AActor* Template)
 	{
-		FKismetEditorUtilities::FCreateBlueprintFromActorParams Params;
-		Params.bReplaceActor = false;
-		Params.bKeepMobility = true;
-
+		static constexpr bool ReplaceInWorld = false;
+		static constexpr bool KeepMobility = true;
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UBlueprint* Blueprint = FKismetEditorUtilities::CreateBlueprintFromActor(
-			Package->GetName(), Template, Params);
+			Package->GetName(), Template, ReplaceInWorld, KeepMobility);
+#else
+		FKismetEditorUtilities::FCreateBlueprintFromActorParams Params;
+		Params.bReplaceActor = ReplaceInWorld;
+		Params.bKeepMobility = KeepMobility;
+
+		UBlueprint* Blueprint =
+			FKismetEditorUtilities::CreateBlueprintFromActor(Package->GetName(), Template, Params);
+#endif
+		
 		check(Blueprint);
 		return Blueprint;
 	}
