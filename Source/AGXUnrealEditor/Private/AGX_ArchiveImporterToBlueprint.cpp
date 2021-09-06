@@ -51,6 +51,7 @@
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
 #include "Kismet2/KismetEditorUtilities.h"
+#include "Misc/EngineVersionComparison.h"
 #include "UObject/Package.h"
 #include "PackageTools.h"
 
@@ -69,7 +70,13 @@ namespace
 			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
 		FString ParentAssetName = Helper.ArchiveFileName; /// \todo Why is this never used?
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
+
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
+		UPackage* ParentPackage = CreatePackage(nullptr, *ParentPackagePath);
+#else
 		UPackage* ParentPackage = CreatePackage(*ParentPackagePath);
+#endif
+		
 		FString Path = FPaths::GetPath(ParentPackage->GetName());
 
 		UE_LOG(
@@ -101,7 +108,11 @@ namespace
 
 	UPackage* GetPackage(const FString& BlueprintPackagePath)
 	{
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
+		UPackage* Package = CreatePackage(nullptr, *BlueprintPackagePath);
+#else
 		UPackage* Package = CreatePackage(*BlueprintPackagePath);
+#endif
 		check(Package != nullptr);
 		Package->FullyLoad();
 		return Package;

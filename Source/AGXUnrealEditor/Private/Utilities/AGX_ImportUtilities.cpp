@@ -17,6 +17,7 @@
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceConstant.h"
+#include "Misc/EngineVersionComparison.h"
 #include "RawMesh.h"
 
 namespace
@@ -32,7 +33,12 @@ namespace
 		FString PackagePath =
 			FAGX_ImportUtilities::CreateArchivePackagePath(DirectoryName, AssetType);
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
+		UPackage* Package = CreatePackage(nullptr, *PackagePath);
+#else
 		UPackage* Package = CreatePackage(*PackagePath);
+#endif
+
 #if 0
 		/// \todo Unclear if this is needed or not. Leaving it out for now but
 		/// test with it restored if there are problems.
