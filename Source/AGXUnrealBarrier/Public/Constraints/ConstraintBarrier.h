@@ -63,7 +63,7 @@ public:
 	double GetDamping(int32 Dof) const;
 
 	void SetForceRange(double Min, double Max, int32 Dof);
-	void GetForceRange(double* Min, double* Max, int32 Dof) const;
+	FFloatInterval GetForceRange(int32 Dof) const;
 
 	FGuid GetGuid() const;
 
