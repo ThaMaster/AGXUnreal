@@ -329,10 +329,9 @@ void UAGX_ConstraintComponent::SetElasticity(EGenericDofIndex Index, float InEla
 
 void UAGX_ConstraintComponent::SetElasticity(EGenericDofIndex Index, double InElasticity)
 {
-	SetOnBarrier(
-		*this, Index, TEXT("SetElasticity"),
-		[this, InElasticity](int32 NativeDof)
-		{ NativeBarrier->SetElasticity(InElasticity, NativeDof); });
+	SetOnBarrier(*this, Index, TEXT("SetElasticity"), [this, InElasticity](int32 NativeDof) {
+		NativeBarrier->SetElasticity(InElasticity, NativeDof);
+	});
 	Elasticity[Index] = InElasticity;
 }
 
@@ -355,9 +354,9 @@ void UAGX_ConstraintComponent::SetDamping(EGenericDofIndex Index, float InDampin
 
 void UAGX_ConstraintComponent::SetDamping(EGenericDofIndex Index, double InDamping)
 {
-	SetOnBarrier(
-		*this, Index, TEXT("SetDamping"),
-		[this, InDamping](int32 NativeDof) { NativeBarrier->SetDamping(InDamping, NativeDof); });
+	SetOnBarrier(*this, Index, TEXT("SetDamping"), [this, InDamping](int32 NativeDof) {
+		NativeBarrier->SetDamping(InDamping, NativeDof);
+	});
 	Damping[Index] = InDamping;
 }
 
@@ -381,10 +380,9 @@ void UAGX_ConstraintComponent::SetForceRange(EGenericDofIndex Index, float Range
 void UAGX_ConstraintComponent::SetForceRange(
 	EGenericDofIndex Index, const FFloatInterval& InForceRange)
 {
-	SetOnBarrier(
-		*this, Index, TEXT("SetForceRange"),
-		[this, InForceRange](int32 NativeDof)
-		{ NativeBarrier->SetForceRange(InForceRange.Min, InForceRange.Max, NativeDof); });
+	SetOnBarrier(*this, Index, TEXT("SetForceRange"), [this, InForceRange](int32 NativeDof) {
+		NativeBarrier->SetForceRange(InForceRange.Min, InForceRange.Max, NativeDof);
+	});
 	ForceRange[Index] = InForceRange;
 }
 
