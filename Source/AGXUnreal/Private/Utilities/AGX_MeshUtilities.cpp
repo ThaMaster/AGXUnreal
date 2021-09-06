@@ -937,6 +937,9 @@ void AGX_MeshUtilities::MakeCapsule(
 
 namespace AGX_Cone_Helpers
 {
+	/// @note This function can be completely replaced by the built in CalcConeVert located in
+	/// SceneManagement.h when Engine version 4.25 is no longer supported by the plugin. The
+	/// CalcConeVert can be accessed in Engine versions newer than 4.25.
 	FVector CalcConeVert(float Angle1, float Angle2, float AzimuthAngle)
 	{
 		float ang1 = FMath::Clamp<float>(Angle1, 0.01f, (float) PI - 0.01f);
