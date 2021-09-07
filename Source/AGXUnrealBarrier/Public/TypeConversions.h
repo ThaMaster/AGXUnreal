@@ -682,22 +682,3 @@ inline agxWire::Node::Type ConvertNative(EWireNodeNativeType Type)
 	// The values in EWireNodeNativeType must match those in agxWire::Node::Type.
 	return static_cast<agxWire::Node::Type>(Type);
 }
-
-inline FMatrix ConvertSPDMatrix(const agx::SPDMatrix3x3& M)
-{
-	const FVector X = Convert(agx::Vec3(M.at(0, 0), M.at(0, 1), M.at(0, 2)));
-	const FVector Y = Convert(agx::Vec3(M.at(1, 0), M.at(1, 1), M.at(1, 2)));
-	const FVector Z = Convert(agx::Vec3(M.at(2, 0), M.at(2, 1), M.at(2, 2)));
-	const FVector W(0.0f, 0.0f, 0.0f);
-	return FMatrix(X, Y, Z, W);
-}
-
-inline agx::SPDMatrix3x3 ConvertSPDMatrix(const FMatrix& M)
-{
-	// clang-format off
-	return agx::SPDMatrix3x3(
-		Convert(M.M[0][0]), Convert(M.M[0][1]), Convert(M.M[0][2]),
-		Convert(M.M[1][0]), Convert(M.M[1][1]), Convert(M.M[1][2]),
-		Convert(M.M[2][0]), Convert(M.M[2][1]), Convert(M.M[2][2]));
-	// clang-format on.
-}
