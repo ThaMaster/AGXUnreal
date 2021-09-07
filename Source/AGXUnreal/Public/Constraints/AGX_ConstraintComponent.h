@@ -139,6 +139,8 @@ public:
 
 	FFloatInterval GetForceRange(EGenericDofIndex Index) const;
 
+	void CopyFrom(const FConstraintBarrier& Barrier);
+
 	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics1() const
 	{
 		return DofGraphicsComponent1;

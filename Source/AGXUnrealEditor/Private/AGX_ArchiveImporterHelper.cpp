@@ -667,6 +667,7 @@ namespace
 			return nullptr;
 		}
 
+		Component->CopyFrom(Barrier);
 		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 			Barrier, *Component, Bodies.first, Bodies.second);
 		FAGX_ConstraintUtilities::CopyControllersFrom(*Component, Barrier);
@@ -699,6 +700,7 @@ namespace
 			Bodies.first, Bodies.second, false, false, false);
 		/// \todo Check for nullptr;
 
+		Actor->GetConstraintComponent()->CopyFrom(Barrier);
 		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 			Barrier, *Actor->GetConstraintComponent(), Bodies.first, Bodies.second);
 
