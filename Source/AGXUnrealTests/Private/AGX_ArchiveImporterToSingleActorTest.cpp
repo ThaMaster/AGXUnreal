@@ -1513,9 +1513,12 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
 		GetByName<UAGX_ConstraintComponent>(Components, TEXT("constraint"));
 
 	// Elasticity.
-	Test.TestEqual(TEXT("Translational 1 elasticity"), Constraint->Elasticity.Translational_1, 100.0);
-	Test.TestEqual(TEXT("Translational 2 elasticity"), Constraint->Elasticity.Translational_2, 101.0);
-	Test.TestEqual(TEXT("Translational 2 elasticity"), Constraint->Elasticity.Translational_3, 102.0);
+	Test.TestEqual(
+		TEXT("Translational 1 elasticity"), Constraint->Elasticity.Translational_1, 100.0);
+	Test.TestEqual(
+		TEXT("Translational 2 elasticity"), Constraint->Elasticity.Translational_2, 101.0);
+	Test.TestEqual(
+		TEXT("Translational 2 elasticity"), Constraint->Elasticity.Translational_3, 102.0);
 	Test.TestEqual(TEXT("Rotational 1 elasticity"), Constraint->Elasticity.Rotational_1, 103.0);
 	Test.TestEqual(TEXT("Rotational 2 elasticity"), Constraint->Elasticity.Rotational_2, 104.0);
 	// Rotational 3 is not supported for AGX::Hinge.
@@ -1528,7 +1531,7 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
 	Test.TestEqual(TEXT("Rotational 2 damping"), Constraint->Damping.Rotational_2, 204.0);
 	// Rotational 3 is not supported for AGX::Hinge.
 
-	//Force range.
+	// Force range.
 	Test.TestEqual(
 		TEXT("Translational 1 force range min"), Constraint->ForceRange.Translational_1.Min, 300.f);
 	Test.TestEqual(
