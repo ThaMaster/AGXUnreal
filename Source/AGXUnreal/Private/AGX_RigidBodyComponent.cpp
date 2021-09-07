@@ -796,7 +796,7 @@ void UAGX_RigidBodyComponent::SetPrincipalInertia(const FVector& InPrincipalIner
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetMassProperties().SetPrincipalInertia(InPrincipalInertia);
+		NativeBarrier.GetMassProperties().SetPrincipalInertia(InPrincipalInertia);
 	}
 	PrincipalInertia = InPrincipalInertia;
 }
