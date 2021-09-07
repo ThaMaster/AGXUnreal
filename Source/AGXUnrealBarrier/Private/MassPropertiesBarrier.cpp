@@ -68,7 +68,7 @@ namespace MassPropertiesBarrier_helpers
 	void SetAutoGenerateFlag(agx::MassProperties& MassProperties, agx::Int32 Flag)
 	{
 		agx::UInt32 Mask = MassProperties.getAutoGenerateMask();
-		Mask &= Flag;
+		Mask |= Flag;
 		MassProperties.setAutoGenerateMask(Mask);
 	}
 
