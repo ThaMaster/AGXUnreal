@@ -117,21 +117,21 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 	// when moving the Component using the Widget in the Level Viewport. They are instead handled in
 	// PostEditComponentMove. The local transformations, however, the ones at the top of the Details
 	// Panel, are properties and do end up here.
-	PropertyDispatcher.Add(this->GetRelativeLocationPropertyName(), [](ThisClass* This) {
-		This->TryWriteTransformToNative();
-	});
+	PropertyDispatcher.Add(
+		this->GetRelativeLocationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
 
-	PropertyDispatcher.Add(this->GetRelativeRotationPropertyName(), [](ThisClass* This) {
-		This->TryWriteTransformToNative();
-	});
+	PropertyDispatcher.Add(
+		this->GetRelativeRotationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
 
-	PropertyDispatcher.Add(this->GetAbsoluteLocationPropertyName(), [](ThisClass* This) {
-		This->TryWriteTransformToNative();
-	});
+	PropertyDispatcher.Add(
+		this->GetAbsoluteLocationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
 
-	PropertyDispatcher.Add(this->GetAbsoluteRotationPropertyName(), [](ThisClass* This) {
-		This->TryWriteTransformToNative();
-	});
+	PropertyDispatcher.Add(
+		this->GetAbsoluteRotationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bEnabled),
@@ -151,9 +151,8 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGenerateCenterOfMassOffset),
-		[](ThisClass* This) {
-			This->SetAutoGenerateCenterOfMassOffset(This->bAutoGenerateCenterOfMassOffset);
-		});
+		[](ThisClass* This)
+		{ This->SetAutoGenerateCenterOfMassOffset(This->bAutoGenerateCenterOfMassOffset); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, PrincipalInertia),
@@ -161,9 +160,8 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGeneratePrincipalInertia),
-		[](ThisClass* This) {
-			This->SetAutoGeneratePrincipalInertia(This->bAutoGeneratePrincipalInertia);
-		});
+		[](ThisClass* This)
+		{ This->SetAutoGeneratePrincipalInertia(This->bAutoGeneratePrincipalInertia); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Velocity),
@@ -439,13 +437,15 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 	const FVector NewLocation = NativeBarrier.GetPosition();
 	const FQuat NewRotation = NativeBarrier.GetRotation();
 
-	auto TransformSelf = [this, &NewLocation, &NewRotation]() {
+	auto TransformSelf = [this, &NewLocation, &NewRotation]()
+	{
 		const FVector OldLocation = GetComponentLocation();
 		const FVector LocationDelta = NewLocation - OldLocation;
 		MoveComponent(LocationDelta, NewRotation, false);
 	};
 
-	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor) {
+	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor)
+	{
 		// Where Ancestor is relative to RigidBodyComponent, i.e., how the AGX Dynamics
 		// transformation should be changed in order to be applicable to Ancestor.
 		const FTransform AncestorRelativeToBody =
@@ -466,8 +466,9 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 		Ancestor.SetWorldTransform(NewTransform);
 	};
 
-	auto TryTransformAncestor = [this, &NewLocation, &NewRotation,
-								 &TransformAncestor](USceneComponent* Ancestor) {
+	auto TryTransformAncestor =
+		[this, &NewLocation, &NewRotation, &TransformAncestor](USceneComponent* Ancestor)
+	{
 		if (Ancestor == nullptr)
 		{
 			UE_LOG(
@@ -579,7 +580,9 @@ TStructOnScope<FActorComponentInstanceData> UAGX_RigidBodyComponent::GetComponen
 	const
 {
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
-		this, this, [](UActorComponent* Component) {
+		this, this,
+		[](UActorComponent* Component)
+		{
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
