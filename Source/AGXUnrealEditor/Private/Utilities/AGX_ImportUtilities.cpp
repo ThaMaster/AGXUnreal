@@ -17,7 +17,9 @@
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceConstant.h"
+#include "Misc/EngineVersionComparison.h"
 #include "RawMesh.h"
+#include "Kismet2/ComponentEditorUtils.h"
 
 namespace
 {
@@ -32,7 +34,12 @@ namespace
 		FString PackagePath =
 			FAGX_ImportUtilities::CreateArchivePackagePath(DirectoryName, AssetType);
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
+#else
+		UPackage* Package = CreatePackage(*PackagePath);
+#endif
+
 #if 0
 		/// \todo Unclear if this is needed or not. Leaving it out for now but
 		/// test with it restored if there are problems.
@@ -152,6 +159,28 @@ namespace
 			return TEXT("Default");
 		}
 		return Material->GetName();
+	}
+
+	/**
+	 * Checks whether the component name is valid, and if not, generates a valid name and sets it to
+	 * the component.
+	 */
+	void FinalizeComponentName(UActorComponent& Component)
+	{
+		if (Component.GetOwner() == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Could not find the owning actor of Actor Component: %s during name finalization."),
+				*Component.GetName());
+			return;
+		}
+
+		if (!FComponentEditorUtils::IsValidVariableNameString(&Component, Component.GetName()))
+		{
+			Component.Rename(*FComponentEditorUtils::GenerateValidVariableName(
+				Component.GetClass(), Component.GetOwner()));
+		}
 	}
 }
 
@@ -275,6 +304,12 @@ void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)
 			*Object.GetClass()->GetName(), *Name, *NewName.ToString());
 		Object.Rename(*NewName.ToString(), nullptr, REN_DontCreateRedirectors);
 	}
+}
+
+void FAGX_ImportUtilities::Rename(UActorComponent& Component, const FString& Name)
+{
+	Rename(static_cast<UObject&>(Component), Name);
+	FinalizeComponentName(Component);
 }
 
 FLinearColor FAGX_ImportUtilities::SRGBToLinear(const FVector4& SRGB)

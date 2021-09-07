@@ -64,6 +64,7 @@ public:
 
 	void SetForceRange(double Min, double Max, int32 Dof);
 	void GetForceRange(double* Min, double* Max, int32 Dof) const;
+	FFloatInterval GetForceRange(int32 Dof) const;
 
 	FGuid GetGuid() const;
 
@@ -79,7 +80,6 @@ public:
 
 	FVector GetLocalLocation(int32 BodyIndex) const;
 	FQuat GetLocalRotation(int32 BodyIndex) const;
-
 
 	/// @return The address of the underlying AGX Dynamics object.
 	uintptr_t GetNativeAddress() const;
