@@ -10,7 +10,6 @@
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
-#include "Math/Matrix.h"
 #include "Misc/EngineVersionComparison.h"
 
 #include "AGX_RigidBodyComponent.generated.h"
@@ -53,25 +52,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	bool GetEnabled() const;
 
-#if 0
-	/// Whether the mass should be computed automatically.
-	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
-	bool bAutomaticMassProperties = true;
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetAutomaticMassProperties(bool InEnabled);
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	bool GetAutomaticMassProperties() const;
-#endif
-
 	/// The mass of the body.
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics", Meta = (EditCondition = "!bAutoGenerateMass"))
 	float Mass;
-#if 0
-		Meta = (EditCondition = "!bAutomaticMassProperties"),
-#endif
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetMass(float InMass);
@@ -79,7 +63,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	float GetMass() const;
 
-#if 1
 	/// Whether the mass should be computed automatically.
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	bool bAutoGenerateMass = true;
@@ -89,9 +72,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	bool GetAutoGenerateMass() const;
-#endif
 
-#if 1
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics",
 		Meta = (EditCondition = "!bAutoGenerateCenterOfMassOffset"))
@@ -111,41 +92,27 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	bool GetAutoGenerateCenterOfMassOffset() const;
-#endif
 
-#if 1
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Dynamics",
-		Meta = (EditCondition = "!bAutoGenerateInertiaTensor"))
-	FMatrix InertiaTensor;
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetInertiaTensor(const FMatrix& InInertiaTensor);
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	FMatrix GetInertiaTensor() const;
-
-	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
-	bool bAutoGenerateInertiaTensor = true;
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetAutoGenerateInertiaTensor(bool bInAuto);
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	bool GetAutoGenerateInertiaTensor() const;
-#else
 	/// The three-component diagonal of the inertia tensor.
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics",
-		Meta = (EditCondition = "!bAutomaticMassProperties"))
-	FVector PrincipalInertiae;
-#endif
+		Meta = (EditCondition = "!bAutoGeneratePrincipalInertia"))
+	FVector PrincipalInertia;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetPrincipalInertiae(const FVector& InPrincipalInertiae);
+	void SetPrincipalInertia(const FVector& InPrincipalInertia);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	FVector GetPrincipalInertiae() const;
+	FVector GetPrincipalInertia() const;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	bool bAutoGeneratePrincipalInertia = true;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetAutoGeneratePrincipalInertia(bool bInAuto);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	bool GetAutoGeneratePrincipalInertia() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	FVector Velocity;

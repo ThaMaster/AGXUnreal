@@ -27,12 +27,8 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	PrimaryComponentTick.TickGroup = TG_PostPhysics;
 
 	Mass = 1.0f;
-#if 1
 	CenterOfMassOffset = FVector(0.0f, 0.0f, 0.0f);
-	InertiaTensor.SetIdentity();
-#else
-	PrincipalInertiae = FVector(1.f, 1.f, 1.f);
-#endif
+	PrincipalInertia = FVector(1.f, 1.f, 1.f);
 	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
 	TransformTarget = EAGX_TransformTarget::TT_SELF;
 }
@@ -121,37 +117,30 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 	// when moving the Component using the Widget in the Level Viewport. They are instead handled in
 	// PostEditComponentMove. The local transformations, however, the ones at the top of the Details
 	// Panel, are properties and do end up here.
-	PropertyDispatcher.Add(
-		this->GetRelativeLocationPropertyName(),
-		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+	PropertyDispatcher.Add(this->GetRelativeLocationPropertyName(), [](ThisClass* This) {
+		This->TryWriteTransformToNative();
+	});
 
-	PropertyDispatcher.Add(
-		this->GetRelativeRotationPropertyName(),
-		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+	PropertyDispatcher.Add(this->GetRelativeRotationPropertyName(), [](ThisClass* This) {
+		This->TryWriteTransformToNative();
+	});
 
-	PropertyDispatcher.Add(
-		this->GetAbsoluteLocationPropertyName(),
-		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+	PropertyDispatcher.Add(this->GetAbsoluteLocationPropertyName(), [](ThisClass* This) {
+		This->TryWriteTransformToNative();
+	});
 
-	PropertyDispatcher.Add(
-		this->GetAbsoluteRotationPropertyName(),
-		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+	PropertyDispatcher.Add(this->GetAbsoluteRotationPropertyName(), [](ThisClass* This) {
+		This->TryWriteTransformToNative();
+	});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bEnabled),
 		[](ThisClass* This) { This->SetEnabled(This->bEnabled); });
 
-#if 0
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutomaticMassProperties),
-		[](ThisClass* This) { This->SetAutomaticMassProperties(This->bAutomaticMassProperties); });
-#endif
-
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Mass),
 		[](ThisClass* This) { This->SetMass(This->Mass); });
 
-#if 1
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGenerateMass),
 		[](ThisClass* This) { This->SetAutoGenerateMass(This->bAutoGenerateMass); });
@@ -162,22 +151,19 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGenerateCenterOfMassOffset),
-		[](ThisClass* This)
-		{ This->SetAutoGenerateCenterOfMassOffset(This->bAutoGenerateCenterOfMassOffset); });
+		[](ThisClass* This) {
+			This->SetAutoGenerateCenterOfMassOffset(This->bAutoGenerateCenterOfMassOffset);
+		});
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, InertiaTensor),
-		[](ThisClass* This) { This->SetInertiaTensor(This->InertiaTensor); });
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, PrincipalInertia),
+		[](ThisClass* This) { This->SetPrincipalInertia(This->PrincipalInertia); });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGenerateInertiaTensor),
-		[](ThisClass* This)
-		{ This->SetAutoGenerateInertiaTensor(This->bAutoGenerateInertiaTensor); });
-#else
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, PrincipalInertiae),
-		[](ThisClass* This) { This->SetPrincipalInertiae(This->PrincipalInertiae); });
-#endif
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGeneratePrincipalInertia),
+		[](ThisClass* This) {
+			This->SetAutoGeneratePrincipalInertia(This->bAutoGeneratePrincipalInertia);
+		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Velocity),
@@ -337,7 +323,6 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	Simulation->AddRigidBody(this);
 
-#if 1
 	if (bAutoGenerateMass)
 	{
 		Mass = NativeBarrier.GetMassProperties().GetMass();
@@ -346,17 +331,10 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	{
 		CenterOfMassOffset = NativeBarrier.GetCenterOfMassOffset();
 	}
-	if (bAutoGenerateInertiaTensor)
+	if (bAutoGeneratePrincipalInertia)
 	{
-		InertiaTensor = NativeBarrier.GetMassProperties().GetInertiaTensor();
+		PrincipalInertia = NativeBarrier.GetMassProperties().GetPrincipalInertia();
 	}
-#else
-	if (bAutomaticMassProperties)
-	{
-		Mass = NativeBarrier.GetMassProperties().GetMass();
-		PrincipalInertiae = NativeBarrier.GetMassProperties().GetPrincipalInertiae();
-	}
-#endif
 }
 
 void UAGX_RigidBodyComponent::WritePropertiesToNative()
@@ -366,10 +344,9 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 		return;
 	}
 	FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
-#if 1
 	MassProperties.SetAutoGenerateMass(bAutoGenerateMass);
 	MassProperties.SetAutoGenerateCenterOfMassOffset(bAutoGenerateCenterOfMassOffset);
-	MassProperties.SetAutoGenerateInertiaTensor(bAutoGenerateInertiaTensor);
+	MassProperties.SetAutoGeneratePrincipalInertia(bAutoGeneratePrincipalInertia);
 
 	if (!bAutoGenerateMass)
 	{
@@ -379,21 +356,11 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	{
 		NativeBarrier.SetCenterOfMassOffset(CenterOfMassOffset);
 	}
-	if (!bAutoGenerateInertiaTensor)
+	if (!bAutoGeneratePrincipalInertia)
 	{
-		MassProperties.SetInertiaTensor(InertiaTensor);
+		MassProperties.SetPrincipalInertia(PrincipalInertia);
 	}
-#else
-	if (bAutomaticMassProperties)
-	{
-		MassProperties.SetAutoGenerate(bAutomaticMassProperties);
-	}
-	else
-	{
-		MassProperties.SetMass(Mass);
-		MassProperties.SetPrincipalInertiae(PrincipalInertiae);
-	}
-#endif
+
 	NativeBarrier.SetVelocity(Velocity);
 	NativeBarrier.SetAngularVelocity(AngularVelocity);
 	NativeBarrier.SetName(GetName());
@@ -405,16 +372,12 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 {
 	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
 	Mass = MassProperties.GetMass();
-#if 1
+
 	bAutoGenerateMass = MassProperties.GetAutoGenerateMass();
 	bAutoGenerateCenterOfMassOffset = MassProperties.GetAutoGenerateCenterOfMassOffset();
-	bAutoGenerateInertiaTensor = MassProperties.GetAutoGenerateInertiaTensor();
+	bAutoGeneratePrincipalInertia = MassProperties.GetAutoGeneratePrincipalInertia();
 	CenterOfMassOffset = Barrier.GetCenterOfMassOffset();
-	InertiaTensor = MassProperties.GetInertiaTensor();
-#else
-	PrincipalInertiae = MassProperties.GetPrincipalInertiae();
-	bAutomaticMassProperties = MassProperties.GetAutoGenerate();
-#endif
+	PrincipalInertia = MassProperties.GetPrincipalInertia();
 	Velocity = Barrier.GetVelocity();
 	AngularVelocity = Barrier.GetAngularVelocity();
 	MotionControl = Barrier.GetMotionControl();
@@ -476,15 +439,13 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 	const FVector NewLocation = NativeBarrier.GetPosition();
 	const FQuat NewRotation = NativeBarrier.GetRotation();
 
-	auto TransformSelf = [this, &NewLocation, &NewRotation]()
-	{
+	auto TransformSelf = [this, &NewLocation, &NewRotation]() {
 		const FVector OldLocation = GetComponentLocation();
 		const FVector LocationDelta = NewLocation - OldLocation;
 		MoveComponent(LocationDelta, NewRotation, false);
 	};
 
-	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor)
-	{
+	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor) {
 		// Where Ancestor is relative to RigidBodyComponent, i.e., how the AGX Dynamics
 		// transformation should be changed in order to be applicable to Ancestor.
 		const FTransform AncestorRelativeToBody =
@@ -505,9 +466,8 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 		Ancestor.SetWorldTransform(NewTransform);
 	};
 
-	auto TryTransformAncestor =
-		[this, &NewLocation, &NewRotation, &TransformAncestor](USceneComponent* Ancestor)
-	{
+	auto TryTransformAncestor = [this, &NewLocation, &NewRotation,
+								 &TransformAncestor](USceneComponent* Ancestor) {
 		if (Ancestor == nullptr)
 		{
 			UE_LOG(
@@ -619,9 +579,7 @@ TStructOnScope<FActorComponentInstanceData> UAGX_RigidBodyComponent::GetComponen
 	const
 {
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
-		this, this,
-		[](UActorComponent* Component)
-		{
+		this, this, [](UActorComponent* Component) {
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
@@ -750,36 +708,6 @@ bool UAGX_RigidBodyComponent::GetEnabled() const
 	return bEnabled;
 }
 
-#if 0
-void UAGX_RigidBodyComponent::SetAutomaticMassProperties(bool InEnabled)
-{
-	if (HasNative())
-	{
-		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
-		MassProperties.SetAutoGenerate(InEnabled);
-		if (InEnabled)
-		{
-			NativeBarrier.UpdateMassProperties();
-			Mass = MassProperties.GetMass();
-			PrincipalInertiae = MassProperties.GetPrincipalInertiae();
-		}
-	}
-
-	bAutomaticMassProperties = InEnabled;
-}
-
-bool UAGX_RigidBodyComponent::GetAutomaticMassProperties() const
-{
-	if (HasNative())
-	{
-		const FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
-		return MassProperties.GetAutoGenerate();
-	}
-
-	return bAutomaticMassProperties;
-}
-#endif
-
 void UAGX_RigidBodyComponent::SetMass(float InMass)
 {
 	if (HasNative())
@@ -864,74 +792,45 @@ bool UAGX_RigidBodyComponent::GetAutoGenerateCenterOfMassOffset() const
 	}
 }
 
-void UAGX_RigidBodyComponent::SetInertiaTensor(const FMatrix& InInertiaTensor)
+void UAGX_RigidBodyComponent::SetPrincipalInertia(const FVector& InPrincipalInertia)
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetMassProperties().SetInertiaTensor(InInertiaTensor);
+		return NativeBarrier.GetMassProperties().SetPrincipalInertia(InPrincipalInertia);
 	}
-	InertiaTensor = InInertiaTensor;
+	PrincipalInertia = InPrincipalInertia;
 }
 
-FMatrix UAGX_RigidBodyComponent::GetInertiaTensor() const
+FVector UAGX_RigidBodyComponent::GetPrincipalInertia() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetMassProperties().GetInertiaTensor();
+		return NativeBarrier.GetMassProperties().GetPrincipalInertia();
 	}
 	else
 	{
-		return InertiaTensor;
+		return PrincipalInertia;
 	}
 }
 
-void UAGX_RigidBodyComponent::SetAutoGenerateInertiaTensor(bool bInAuto)
+void UAGX_RigidBodyComponent::SetAutoGeneratePrincipalInertia(bool bInAuto)
 {
 	if (HasNative())
 	{
-		NativeBarrier.GetMassProperties().SetAutoGenerateInertiaTensor(bInAuto);
+		NativeBarrier.GetMassProperties().SetAutoGeneratePrincipalInertia(bInAuto);
 	}
-	bAutoGenerateInertiaTensor = bInAuto;
+	bAutoGeneratePrincipalInertia = bInAuto;
 }
 
-bool UAGX_RigidBodyComponent::GetAutoGenerateInertiaTensor() const
+bool UAGX_RigidBodyComponent::GetAutoGeneratePrincipalInertia() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetMassProperties().GetAutoGenerateInertiaTensor();
+		return NativeBarrier.GetMassProperties().GetAutoGeneratePrincipalInertia();
 	}
 	else
 	{
-		return bAutoGenerateInertiaTensor;
-	}
-}
-
-void UAGX_RigidBodyComponent::SetPrincipalInertiae(const FVector& InPrincipalInertiae)
-{
-	if (HasNative())
-	{
-		NativeBarrier.GetMassProperties().SetPrincipalInertiae(InPrincipalInertiae);
-	}
-
-#if 1
-	InertiaTensor.SetIdentity();
-	InertiaTensor.M[0][0] = InPrincipalInertiae.X;
-	InertiaTensor.M[1][1] = InPrincipalInertiae.Y;
-	InertiaTensor.M[2][2] = InPrincipalInertiae.Z;
-#else
-	PrincipalInertiae = InPrincipalInertiae;
-#endif
-}
-
-FVector UAGX_RigidBodyComponent::GetPrincipalInertiae() const
-{
-	if (HasNative())
-	{
-		return NativeBarrier.GetMassProperties().GetPrincipalInertiae();
-	}
-	else
-	{
-		return FVector(InertiaTensor.M[0][0], InertiaTensor.M[1][1], InertiaTensor.M[2][2]);
+		return bAutoGeneratePrincipalInertia;
 	}
 }
 
