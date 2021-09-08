@@ -1673,9 +1673,7 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 	{
 		FRotator Actual = SphereBody->GetComponentRotation();
 		// The rotation, in AGX Dynamics' units, that was given to the sphere when created.
-		FVector ExpectedAgx(
-			1.01770284974289526581e+00f, -2.65482457436691521302e-01f,
-			-1.54866776461627897454e+00f);
+		FVector ExpectedAgx(0.1f, 0.2f, 0.3f);
 		FRotator Expected = AgxToUnrealEulerAngles(ExpectedAgx);
 		TestEqual(Test, TEXT("Sphere rotation"), Actual, Expected);
 	}
@@ -1684,8 +1682,7 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 	{
 		FVector Actual = SphereBody->Velocity;
 		// The velocity, in AGX Dynamics' units, that was given to the sphere when created.
-		FVector ExpectedAgx(
-			1.00000000000000000000e+00f, 2.00000000000000000000e+00f, 3.00000000000000000000e+00f);
+		FVector ExpectedAgx(1.f, 2.f, 3.f);
 		FVector Expected = AgxToUnrealVector(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere linear velocity"), Actual, Expected);
 	}
@@ -1694,15 +1691,14 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 	{
 		FVector Actual = SphereBody->AngularVelocity;
 		// The angular velocity, in AGX Dynamics' units, that was given to the sphere when created.
-		FVector ExpectedAgx(
-			1.10000000000000000000e+01f, 1.20000000000000000000e+01f, 1.30000000000000000000e+01f);
+		FVector ExpectedAgx(1.1f, 1.2f, 1.3f);
 		FVector Expected = AgxToUnrealAngularVelocity(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere angular velocity"), Actual, Expected);
 	}
 
 	// Mass.
 	{
-		Test.TestEqual(TEXT("Sphere mass"), SphereBody->Mass, 5.00000000000000000000e+02f);
+		Test.TestEqual(TEXT("Sphere mass"), SphereBody->Mass, 500.f);
 	}
 
 	// Mass properties automatic generation.
@@ -1715,8 +1711,7 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 	// Inertia tensor diagonal.
 	{
 		FVector Actual = SphereBody->GetPrincipalInertia();
-		FVector Expected(
-			1.00000000000000000000e+02f, 2.00000000000000000000e+02f, 3.00000000000000000000e+02f);
+		FVector Expected(100.f, 200.f, 300.f);
 		Test.TestEqual(TEXT("Sphere inertia tensor diagonal"), Actual, Expected);
 	}
 
