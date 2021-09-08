@@ -56,6 +56,9 @@ public:
 	const FMassPropertiesBarrier& GetMassProperties() const;
 	void UpdateMassProperties();
 
+	void SetCenterOfMassOffset(const FVector& Offset);
+	FVector GetCenterOfMassOffset() const;
+
 	void SetName(const FString& NewName);
 	FString GetName() const;
 

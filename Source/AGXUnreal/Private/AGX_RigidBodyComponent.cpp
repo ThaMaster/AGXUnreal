@@ -27,7 +27,8 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	PrimaryComponentTick.TickGroup = TG_PostPhysics;
 
 	Mass = 1.0f;
-	PrincipalInertiae = FVector(1.f, 1.f, 1.f);
+	CenterOfMassOffset = FVector(0.0f, 0.0f, 0.0f);
+	PrincipalInertia = FVector(1.f, 1.f, 1.f);
 	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
 	TransformTarget = EAGX_TransformTarget::TT_SELF;
 }
@@ -137,16 +138,30 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetEnabled(This->bEnabled); });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutomaticMassProperties),
-		[](ThisClass* This) { This->SetAutomaticMassProperties(This->bAutomaticMassProperties); });
-
-	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Mass),
 		[](ThisClass* This) { This->SetMass(This->Mass); });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, PrincipalInertiae),
-		[](ThisClass* This) { This->SetPrincipalInertiae(This->PrincipalInertiae); });
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGenerateMass),
+		[](ThisClass* This) { This->SetAutoGenerateMass(This->bAutoGenerateMass); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, CenterOfMassOffset),
+		[](ThisClass* This) { This->SetCenterOfMassOffset(This->CenterOfMassOffset); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGenerateCenterOfMassOffset),
+		[](ThisClass* This)
+		{ This->SetAutoGenerateCenterOfMassOffset(This->bAutoGenerateCenterOfMassOffset); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, PrincipalInertia),
+		[](ThisClass* This) { This->SetPrincipalInertia(This->PrincipalInertia); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGeneratePrincipalInertia),
+		[](ThisClass* This)
+		{ This->SetAutoGeneratePrincipalInertia(This->bAutoGeneratePrincipalInertia); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Velocity),
@@ -306,10 +321,17 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	Simulation->AddRigidBody(this);
 
-	if (bAutomaticMassProperties)
+	if (bAutoGenerateMass)
 	{
 		Mass = NativeBarrier.GetMassProperties().GetMass();
-		PrincipalInertiae = NativeBarrier.GetMassProperties().GetPrincipalInertiae();
+	}
+	if (bAutoGenerateCenterOfMassOffset)
+	{
+		CenterOfMassOffset = NativeBarrier.GetCenterOfMassOffset();
+	}
+	if (bAutoGeneratePrincipalInertia)
+	{
+		PrincipalInertia = NativeBarrier.GetMassProperties().GetPrincipalInertia();
 	}
 }
 
@@ -320,15 +342,23 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 		return;
 	}
 	FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
-	if (bAutomaticMassProperties)
-	{
-		MassProperties.SetAutoGenerate(bAutomaticMassProperties);
-	}
-	else
+	MassProperties.SetAutoGenerateMass(bAutoGenerateMass);
+	MassProperties.SetAutoGenerateCenterOfMassOffset(bAutoGenerateCenterOfMassOffset);
+	MassProperties.SetAutoGeneratePrincipalInertia(bAutoGeneratePrincipalInertia);
+
+	if (!bAutoGenerateMass)
 	{
 		MassProperties.SetMass(Mass);
-		MassProperties.SetPrincipalInertiae(PrincipalInertiae);
 	}
+	if (!bAutoGenerateCenterOfMassOffset)
+	{
+		NativeBarrier.SetCenterOfMassOffset(CenterOfMassOffset);
+	}
+	if (!bAutoGeneratePrincipalInertia)
+	{
+		MassProperties.SetPrincipalInertia(PrincipalInertia);
+	}
+
 	NativeBarrier.SetVelocity(Velocity);
 	NativeBarrier.SetAngularVelocity(AngularVelocity);
 	NativeBarrier.SetName(GetName());
@@ -340,8 +370,12 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 {
 	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
 	Mass = MassProperties.GetMass();
-	PrincipalInertiae = MassProperties.GetPrincipalInertiae();
-	bAutomaticMassProperties = MassProperties.GetAutoGenerate();
+
+	bAutoGenerateMass = MassProperties.GetAutoGenerateMass();
+	bAutoGenerateCenterOfMassOffset = MassProperties.GetAutoGenerateCenterOfMassOffset();
+	bAutoGeneratePrincipalInertia = MassProperties.GetAutoGeneratePrincipalInertia();
+	CenterOfMassOffset = Barrier.GetCenterOfMassOffset();
+	PrincipalInertia = MassProperties.GetPrincipalInertia();
 	Velocity = Barrier.GetVelocity();
 	AngularVelocity = Barrier.GetAngularVelocity();
 	MotionControl = Barrier.GetMotionControl();
@@ -677,42 +711,12 @@ bool UAGX_RigidBodyComponent::GetEnabled() const
 	return bEnabled;
 }
 
-void UAGX_RigidBodyComponent::SetAutomaticMassProperties(bool InEnabled)
-{
-	if (HasNative())
-	{
-		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
-		MassProperties.SetAutoGenerate(InEnabled);
-		if (InEnabled)
-		{
-			NativeBarrier.UpdateMassProperties();
-			Mass = MassProperties.GetMass();
-			PrincipalInertiae = MassProperties.GetPrincipalInertiae();
-		}
-	}
-
-	bAutomaticMassProperties = InEnabled;
-}
-
-bool UAGX_RigidBodyComponent::GetAutomaticMassProperties() const
-{
-	if (HasNative())
-	{
-		const FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
-		return MassProperties.GetAutoGenerate();
-	}
-
-	return bAutomaticMassProperties;
-}
-
 void UAGX_RigidBodyComponent::SetMass(float InMass)
 {
 	if (HasNative())
 	{
-		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
-		MassProperties.SetMass(InMass);
+		NativeBarrier.GetMassProperties().SetMass(InMass);
 	}
-
 	Mass = InMass;
 }
 
@@ -720,33 +724,117 @@ float UAGX_RigidBodyComponent::GetMass() const
 {
 	if (HasNative())
 	{
-		const FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
-		return MassProperties.GetMass();
+		return NativeBarrier.GetMassProperties().GetMass();
 	}
-
-	return Mass;
+	else
+	{
+		return Mass;
+	}
 }
 
-void UAGX_RigidBodyComponent::SetPrincipalInertiae(const FVector& InPrincipalInertiae)
+void UAGX_RigidBodyComponent::SetAutoGenerateMass(bool bInAuto)
 {
 	if (HasNative())
 	{
-		FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
-		MassProperties.SetPrincipalInertiae(InPrincipalInertiae);
+		NativeBarrier.GetMassProperties().SetAutoGenerateMass(bInAuto);
 	}
-
-	PrincipalInertiae = InPrincipalInertiae;
+	bAutoGenerateMass = bInAuto;
 }
 
-FVector UAGX_RigidBodyComponent::GetPrincipalInertiae() const
+bool UAGX_RigidBodyComponent::GetAutoGenerateMass() const
 {
 	if (HasNative())
 	{
-		const FMassPropertiesBarrier& MassProperties = NativeBarrier.GetMassProperties();
-		return MassProperties.GetPrincipalInertiae();
+		return NativeBarrier.GetMassProperties().GetAutoGenerateMass();
 	}
+	else
+	{
+		return bAutoGenerateMass;
+	}
+}
 
-	return PrincipalInertiae;
+void UAGX_RigidBodyComponent::SetCenterOfMassOffset(const FVector& InCoMOffset)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetCenterOfMassOffset(InCoMOffset);
+	}
+	CenterOfMassOffset = InCoMOffset;
+}
+
+FVector UAGX_RigidBodyComponent::GetCenterOfMassOffset() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetCenterOfMassOffset();
+	}
+	else
+	{
+		return CenterOfMassOffset;
+	}
+}
+
+void UAGX_RigidBodyComponent::SetAutoGenerateCenterOfMassOffset(bool bInAuto)
+{
+	if (HasNative())
+	{
+		NativeBarrier.GetMassProperties().SetAutoGenerateCenterOfMassOffset(bInAuto);
+	}
+	bAutoGenerateCenterOfMassOffset = bInAuto;
+}
+
+bool UAGX_RigidBodyComponent::GetAutoGenerateCenterOfMassOffset() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetMassProperties().GetAutoGenerateCenterOfMassOffset();
+	}
+	else
+	{
+		return bAutoGenerateCenterOfMassOffset;
+	}
+}
+
+void UAGX_RigidBodyComponent::SetPrincipalInertia(const FVector& InPrincipalInertia)
+{
+	if (HasNative())
+	{
+		NativeBarrier.GetMassProperties().SetPrincipalInertia(InPrincipalInertia);
+	}
+	PrincipalInertia = InPrincipalInertia;
+}
+
+FVector UAGX_RigidBodyComponent::GetPrincipalInertia() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetMassProperties().GetPrincipalInertia();
+	}
+	else
+	{
+		return PrincipalInertia;
+	}
+}
+
+void UAGX_RigidBodyComponent::SetAutoGeneratePrincipalInertia(bool bInAuto)
+{
+	if (HasNative())
+	{
+		NativeBarrier.GetMassProperties().SetAutoGeneratePrincipalInertia(bInAuto);
+	}
+	bAutoGeneratePrincipalInertia = bInAuto;
+}
+
+bool UAGX_RigidBodyComponent::GetAutoGeneratePrincipalInertia() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetMassProperties().GetAutoGeneratePrincipalInertia();
+	}
+	else
+	{
+		return bAutoGeneratePrincipalInertia;
+	}
 }
 
 void UAGX_RigidBodyComponent::SetVelocity(const FVector& InVelocity)

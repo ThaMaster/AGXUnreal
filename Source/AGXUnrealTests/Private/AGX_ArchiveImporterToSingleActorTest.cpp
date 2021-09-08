@@ -353,7 +353,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	// Inertia tensor diagonal.
 	{
-		FVector Actual = SphereBody->PrincipalInertiae;
+		FVector Actual = SphereBody->GetPrincipalInertia();
 		FVector Expected(
 			1.00000000000000000000e+02f, 2.00000000000000000000e+02f, 3.00000000000000000000e+02f);
 		Test.TestEqual(TEXT("Sphere inertia tensor diagonal"), Actual, Expected);
@@ -1063,7 +1063,7 @@ bool FClearRenderMaterialImportedCommand::Update()
 	//
 	/// @todo The error is only printed sometimes, and not for the last three runs on GitLab.
 	/// Commenting it out for now. See GitLab issue #213.
-	//Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+	// Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
 
 	// Files that are created by the test and thus safe to remove. The GUID values may make this
 	// test cumbersome to update since they will change every time the AGX Dynamics archive is
@@ -1565,6 +1565,178 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
  * @return true when the clearing is complete. Never returns false.
  */
 bool FClearConstraintDynamicParametersImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+	return true;
+}
+
+//
+// Rigid Body properties test starts here.
+//
+
+class FArchiveImporterToSingleActor_RigidBodyPropertiesTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckRigidBodyPropertiesImportedCommand,
+	FArchiveImporterToSingleActor_RigidBodyPropertiesTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearRigidBodyPropertiesImportedCommand,
+	FArchiveImporterToSingleActor_RigidBodyPropertiesTest&, Test);
+
+class FArchiveImporterToSingleActor_RigidBodyPropertiesTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_RigidBodyPropertiesTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_RigidBodyPropertiesTest"),
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.RigidBodyProperties"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(FImportArchiveSingleActorCommand(
+			TEXT("rigidbody_properties_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckRigidBodyPropertiesImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearRigidBodyPropertiesImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_RigidBodyPropertiesTest
+		ArchiveImporterToSingleActor_RigidBodyPropertiesTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script rigidbody_properties.agxPy.
+ * @return true when the check is complete. Never returns false.
+ */
+bool FCheckRigidBodyPropertiesImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import RigidBodyProperties test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// One Rigid Bodies, one Geometry and one Default Scene Root.
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
+
+	UAGX_RigidBodyComponent* SphereBody =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("SphereBody"));
+
+	// Name.
+	{
+		Test.TestEqual("Sphere name", SphereBody->GetFName(), FName(TEXT("SphereBody")));
+	}
+
+	// Position.
+	{
+		FVector Actual = SphereBody->GetComponentLocation();
+		// The position, in AGX Dynamics' units, that was given to the sphere when created.
+		FVector ExpectedAgx(10.f, 20.f, 30.f);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere position"), Actual, Expected);
+	}
+
+	// Rotation.
+	{
+		FRotator Actual = SphereBody->GetComponentRotation();
+		// The rotation, in AGX Dynamics' units, that was given to the sphere when created.
+		FVector ExpectedAgx(0.1f, 0.2f, 0.3f);
+		FRotator Expected = AgxToUnrealEulerAngles(ExpectedAgx);
+		TestEqual(Test, TEXT("Sphere rotation"), Actual, Expected);
+	}
+
+	// Velocity.
+	{
+		FVector Actual = SphereBody->Velocity;
+		// The velocity, in AGX Dynamics' units, that was given to the sphere when created.
+		FVector ExpectedAgx(1.f, 2.f, 3.f);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere linear velocity"), Actual, Expected);
+	}
+
+	// Angular velocity.
+	{
+		FVector Actual = SphereBody->AngularVelocity;
+		// The angular velocity, in AGX Dynamics' units, that was given to the sphere when created.
+		FVector ExpectedAgx(1.1f, 1.2f, 1.3f);
+		FVector Expected = AgxToUnrealAngularVelocity(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere angular velocity"), Actual, Expected);
+	}
+
+	// Mass.
+	{
+		Test.TestEqual(TEXT("Sphere mass"), SphereBody->Mass, 500.f);
+	}
+
+	// Mass properties automatic generation.
+	{
+		Test.TestEqual(TEXT("Auto generate mass"), SphereBody->GetAutoGenerateMass(), false);
+		Test.TestEqual(TEXT("Auto generate CoM offset"), SphereBody->GetAutoGenerateCenterOfMassOffset(), true);
+		Test.TestEqual(TEXT("Auto generate inertia"), SphereBody->GetAutoGeneratePrincipalInertia(), false);
+	}
+
+	// Inertia tensor diagonal.
+	{
+		FVector Actual = SphereBody->GetPrincipalInertia();
+		FVector Expected(100.f, 200.f, 300.f);
+		Test.TestEqual(TEXT("Sphere inertia tensor diagonal"), Actual, Expected);
+	}
+
+	// Motion control.
+	{
+		EAGX_MotionControl Actual = SphereBody->MotionControl;
+		EAGX_MotionControl Expected = EAGX_MotionControl::MC_DYNAMICS;
+		Test.TestEqual(TEXT("Sphere motion control"), Actual, Expected);
+	}
+
+	// Transform root component.
+	{
+		Test.TestEqual(
+			TEXT("Sphere transform target"), SphereBody->TransformTarget,
+			EAGX_TransformTarget::TT_SELF);
+	}
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearRigidBodyPropertiesImportedCommand::Update()
 {
 	if (Test.Contents == nullptr)
 	{

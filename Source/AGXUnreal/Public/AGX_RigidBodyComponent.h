@@ -52,20 +52,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	bool GetEnabled() const;
 
-	/// Whether the mass should be computed automatically.
-	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
-	bool bAutomaticMassProperties = true;
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetAutomaticMassProperties(bool InEnabled);
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	bool GetAutomaticMassProperties() const;
-
-	/// The mass of the body.
+	/// The mass of the body [kg].
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Dynamics",
-		Meta = (EditCondition = "!bAutomaticMassProperties"))
+		EditAnywhere, Category = "AGX Dynamics", Meta = (EditCondition = "!bAutoGenerateMass"))
 	float Mass;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
@@ -74,18 +63,61 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	float GetMass() const;
 
+	/// Whether the mass should be computed automatically.
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	bool bAutoGenerateMass = true;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetAutoGenerateMass(bool bInAuto);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	bool GetAutoGenerateMass() const;
+
+	/// Center of mass offset [cm].
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Dynamics",
+		Meta = (EditCondition = "!bAutoGenerateCenterOfMassOffset"))
+	FVector CenterOfMassOffset;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetCenterOfMassOffset(const FVector& InCoMOffset);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FVector GetCenterOfMassOffset() const;
+
+	/// Whether the center of mass offset should be computed automatically.
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	bool bAutoGenerateCenterOfMassOffset = true;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetAutoGenerateCenterOfMassOffset(bool bInAuto);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	bool GetAutoGenerateCenterOfMassOffset() const;
+
 	/// The three-component diagonal of the inertia tensor.
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics",
-		Meta = (EditCondition = "!bAutomaticMassProperties"))
-	FVector PrincipalInertiae;
+		Meta = (EditCondition = "!bAutoGeneratePrincipalInertia"))
+	FVector PrincipalInertia;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetPrincipalInertiae(const FVector& InPrincipalInertiae);
+	void SetPrincipalInertia(const FVector& InPrincipalInertia);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	FVector GetPrincipalInertiae() const;
+	FVector GetPrincipalInertia() const;
 
+	/// Whether the principal inertia should be computed automatically.
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	bool bAutoGeneratePrincipalInertia = true;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetAutoGeneratePrincipalInertia(bool bInAuto);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	bool GetAutoGeneratePrincipalInertia() const;
+
+	/// The velocity of the body [cm/s].
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	FVector Velocity;
 

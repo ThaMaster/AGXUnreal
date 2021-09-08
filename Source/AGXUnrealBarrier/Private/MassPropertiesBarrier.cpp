@@ -48,14 +48,14 @@ float FMassPropertiesBarrier::GetMass() const
 	return MassUnreal;
 }
 
-void FMassPropertiesBarrier::SetPrincipalInertiae(const FVector& InertiaUnreal)
+void FMassPropertiesBarrier::SetPrincipalInertia(const FVector& InertiaUnreal)
 {
 	check(HasNative());
 	agx::Vec3 InertiaAgx = Convert(InertiaUnreal);
 	NativePtr->Native->setInertiaTensor(InertiaAgx);
 }
 
-FVector FMassPropertiesBarrier::GetPrincipalInertiae() const
+FVector FMassPropertiesBarrier::GetPrincipalInertia() const
 {
 	check(HasNative());
 	agx::Vec3 InertiaAgx = NativePtr->Native->getPrincipalInertiae();
@@ -65,38 +65,60 @@ FVector FMassPropertiesBarrier::GetPrincipalInertiae() const
 
 namespace MassPropertiesBarrier_helpers
 {
-	constexpr agx::UInt32 EnableMask = agx::MassProperties::AutoGenerateFlags::AUTO_GENERATE_ALL;
-	constexpr agx::UInt32 DisableMask = agx::MassProperties::AutoGenerateFlags::CM_OFFSET;
+	void SetAutoGenerateFlag(agx::MassProperties& MassProperties, agx::Int32 Flag)
+	{
+		agx::UInt32 Mask = MassProperties.getAutoGenerateMask();
+		Mask |= Flag;
+		MassProperties.setAutoGenerateMask(Mask);
+	}
+
+	bool GetAutoGenerateFlag(const agx::MassProperties& MassProperties, agx::Int32 Flag)
+	{
+		const agx::UInt32 Mask = MassProperties.getAutoGenerateMask();
+		return (Mask & Flag) != 0;
+	}
 }
 
-void FMassPropertiesBarrier::SetAutoGenerate(bool bAutoGenerate)
+void FMassPropertiesBarrier::SetAutoGenerateMass(bool bAuto)
 {
-	using namespace MassPropertiesBarrier_helpers;
 	check(HasNative());
-	const agx::UInt32 Mask = bAutoGenerate ? EnableMask : DisableMask;
-	NativePtr->Native->setAutoGenerateMask(Mask);
+	MassPropertiesBarrier_helpers::SetAutoGenerateFlag(
+		*NativePtr->Native, agx::MassProperties::MASS);
 }
 
-bool FMassPropertiesBarrier::GetAutoGenerate() const
+bool FMassPropertiesBarrier::GetAutoGenerateMass() const
 {
-	using namespace MassPropertiesBarrier_helpers;
 	check(HasNative());
-	const agx::UInt32 Mask = NativePtr->Native->getAutoGenerateMask();
-	if (Mask == EnableMask)
-	{
-		return true;
-	}
-	else if (Mask == DisableMask)
-	{
-		return false;
-	}
-	else
-	{
-		UE_LOG(LogAGX, Warning, TEXT("Found MassProperty with inconclusive AutoGenerate mask."));
-		/// @todo What is a sane return value here? Is there some other way to handle the whole
-		/// thing?
-		return true;
-	}
+	return MassPropertiesBarrier_helpers::GetAutoGenerateFlag(
+		*NativePtr->Native, agx::MassProperties::MASS);
+}
+
+void FMassPropertiesBarrier::SetAutoGenerateCenterOfMassOffset(bool bAuto)
+{
+	check(HasNative());
+	MassPropertiesBarrier_helpers::SetAutoGenerateFlag(
+		*NativePtr->Native, agx::MassProperties::CM_OFFSET);
+}
+
+bool FMassPropertiesBarrier::GetAutoGenerateCenterOfMassOffset() const
+{
+	check(HasNative());
+	return MassPropertiesBarrier_helpers::GetAutoGenerateFlag(
+		*NativePtr->Native, agx::MassProperties::CM_OFFSET);
+}
+
+void FMassPropertiesBarrier::SetAutoGeneratePrincipalInertia(bool bAuto)
+{
+	check(HasNative());
+	return MassPropertiesBarrier_helpers::SetAutoGenerateFlag(
+		*NativePtr->Native, agx::MassProperties::INERTIA);
+}
+
+bool FMassPropertiesBarrier::GetAutoGeneratePrincipalInertia() const
+{
+	check(HasNative());
+	return MassPropertiesBarrier_helpers::GetAutoGenerateFlag(
+		*NativePtr->Native, agx::MassProperties::INERTIA);
 }
 
 bool FMassPropertiesBarrier::HasNative() const
