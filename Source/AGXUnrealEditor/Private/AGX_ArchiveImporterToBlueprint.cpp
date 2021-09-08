@@ -279,6 +279,11 @@ namespace
 			return ArchiveBodies;
 		}
 
+		virtual void InstantiateWire(const FWireBarrier& Barrier) override
+		{
+			Helper.InstantiateWire(Barrier, BlueprintTemplate);
+		}
+
 		virtual ~FBlueprintInstantiator() = default;
 
 	private:

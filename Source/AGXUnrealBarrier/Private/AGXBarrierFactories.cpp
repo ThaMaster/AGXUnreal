@@ -19,6 +19,8 @@
 #include <agxCollide/Trimesh.h>
 #include <agxModel/TwoBodyTire.h>
 #include <agxTerrain/TerrainMaterial.h>
+#include <agxWire/Wire.h>
+#include <agxWire/Node.h>
 #include <agxWire/WireWinchController.h>
 #include <EndAGXIncludes.h>
 
@@ -124,6 +126,16 @@ FTerrainMaterialBarrier AGXBarrierFactories::CreateTerrainMaterialBarrier(
 	agxTerrain::TerrainMaterial* Material)
 {
 	return {std::make_unique<FTerrainMaterialRef>(Material)};
+}
+
+FWireBarrier AGXBarrierFactories::CreateWireBarrier(agxWire::Wire* Wire)
+{
+	return {std::make_unique<FWireRef>(Wire)};
+}
+
+FWireNodeBarrier AGXBarrierFactories::CreateWireNodeBarrier(agxWire::Node* Node)
+{
+	return {std::make_unique<FWireNodeRef>(Node)};
 }
 
 FWireWinchBarrier AGXBarrierFactories::CreateWireWinchBarrier(agxWire::WireWinchController* Winch)

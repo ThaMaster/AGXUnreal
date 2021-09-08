@@ -14,10 +14,13 @@ enum class EWireNodeType : uint8
 	Eye,
 	BodyFixed,
 	NUM_USER_CREATABLE UMETA(HIDDEN),
-	Other UMETA(HIDDEN), // Any node type in AGX Dynamics that we don't allow a user to create directly.
-	NUM_NODE_TYPES UMETA(HIDDEN)
+	Connecting UMETA(HIDDEN),
+	Stop UMETA(HIDDEN), // Internal node created by Wire Winch.
+	Contact UMETA(HIDDEN), // Internal node created by dynamics contacts.
+	ShapeContact UMETA(HIDDEN), // Internal node created by dynamics contacts.
+	Other UMETA(HIDDEN), // Any other node type that we don't allow a user to create directly.
+	NUM_NODE_TYPES UMETA(HIDDEN) // Include NUM_USER_CREATABLE so that all can be used as an index.
 };
-
 
 /**
  * All wire node types in AGX Dynamics for Unreal.
@@ -29,14 +32,14 @@ enum class EWireNodeNativeType : uint8
 {
 	// These much match the values of agxWire::Node::Type in agxWire/Node.h.
 	NOT_DEFINED = 0,
-	Eye = (1<<0),
-	Missing = (1<<1),
-	Connecting = (1<<2),
-	Free = (1<<3),
-	Contact = (1<<4),
-	BodyFixed = (1<<5),
-	Stop = (1<<6),
-	ShapeContact = (1<<7)
+	Eye = (1 << 0),
+	Missing = (1 << 1),
+	Connecting = (1 << 2),
+	Free = (1 << 3),
+	Contact = (1 << 4),
+	BodyFixed = (1 << 5),
+	Stop = (1 << 6),
+	ShapeContact = (1 << 7)
 };
 
 /**

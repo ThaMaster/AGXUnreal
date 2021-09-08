@@ -74,6 +74,14 @@ FVector FWireWinchBarrier::GetNormal() const
 	return ConvertVector(NativeRef->Native->getNormal());
 }
 
+FVector FWireWinchBarrier::GetLocation() const
+{
+	check(HasNative());
+	const agx::Vec3 LocationAGX = NativeRef->Native->getStopNode()->getTranslate();
+	const FVector Location = ConvertDisplacement(LocationAGX);
+	return Location;
+}
+
 void FWireWinchBarrier::SetPulledInWireLength(double InPulledInLength)
 {
 	check(HasNative());

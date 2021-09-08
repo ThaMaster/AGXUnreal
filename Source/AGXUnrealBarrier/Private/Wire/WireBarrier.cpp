@@ -1,9 +1,10 @@
 #include "Wire/WireBarrier.h"
 
 // AGX Unreal includes.
+#include "AGXBarrierFactories.h"
+#include "AGXRefs.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "NativeBarrier.impl.h"
-#include "AGXRefs.h"
 #include "TypeConversions.h"
 #include "Wire/WireNodeBarrier.h"
 #include "Wire/WireNodeRef.h"
@@ -115,6 +116,13 @@ void FWireBarrier::SetMaterial(const FShapeMaterialBarrier& Material)
 	NativeRef->Native->setMaterial(Material.GetNative()->Native);
 }
 
+FShapeMaterialBarrier FWireBarrier::GetMaterial() const
+{
+	check(HasNative());
+	agx::Material* Material = NativeRef->Native->getMaterial();
+	return AGXBarrierFactories::CreateShapeMaterialBarrier(Material);
+}
+
 bool FWireBarrier::GetRenderListEmpty() const
 {
 	check(HasNative());
@@ -133,6 +141,47 @@ void FWireBarrier::AddWinch(FWireWinchBarrier& Winch)
 	check(HasNative());
 	check(Winch.HasNative());
 	NativeRef->Native->add(Winch.GetNative()->Native);
+}
+
+FWireNodeBarrier FWireBarrier::GetFirstNode() const
+{
+	check(HasNative());
+	return AGXBarrierFactories::CreateWireNodeBarrier(NativeRef->Native->getFirstNode());
+}
+
+FWireNodeBarrier FWireBarrier::GetLastNode() const
+{
+	check(HasNative());
+	return AGXBarrierFactories::CreateWireNodeBarrier(NativeRef->Native->getLastNode());
+}
+
+FWireWinchBarrier FWireBarrier::GetBeginWinch() const
+{
+	check(HasNative());
+	agxWire::WireWinchController* Winch = NativeRef->Native->getWinchController(0);
+	return AGXBarrierFactories::CreateWireWinchBarrier(Winch);
+}
+
+FWireWinchBarrier FWireBarrier::GetEndWinch() const
+{
+	check(HasNative());
+	agxWire::WireWinchController* Winch = NativeRef->Native->getWinchController(1);
+	return AGXBarrierFactories::CreateWireWinchBarrier(Winch);
+}
+
+FWireWinchBarrier FWireBarrier::GetWinch(EWireSide Side) const
+{
+	switch (Side)
+	{
+		case EWireSide::Begin:
+			return GetBeginWinch();
+		case EWireSide::End:
+			return GetEndWinch();
+		case EWireSide::None:
+			return FWireWinchBarrier();
+	}
+	UE_LOG(LogAGX, Error, TEXT("Invalid wire side passed to FWireBarrier::GetWinch."));
+	return FWireWinchBarrier();
 }
 
 bool FWireBarrier::IsInitialized() const
@@ -187,4 +236,36 @@ FWireRenderIteratorBarrier FWireBarrier::GetRenderEndIterator() const
 {
 	check(HasNative());
 	return {std::make_unique<agxWire::RenderIterator>(NativeRef->Native->getRenderEndIterator())};
+}
+
+bool FWireBarrier::IsLumpedNode(const FWireNodeBarrier& Node) const
+{
+	check(HasNative());
+	if (!Node.HasNative())
+	{
+		return false;
+	}
+	const agx::RigidBody* Body = Node.GetNative()->Native->getRigidBody();
+	return NativeRef->Native->isLumpedNode(Body);
+}
+
+bool FWireBarrier::IsLumpedNode(const FWireRenderIteratorBarrier& It) const
+{
+	return IsLumpedNode(It.Get());
+}
+
+FString FWireBarrier::GetName() const
+{
+	check(HasNative());
+	const agx::Name& NameAGX = NativeRef->Native->getName();
+	const FString Name = Convert(NameAGX);
+	return Name;
+}
+
+FGuid FWireBarrier::GetGuid() const
+{
+	check(HasNative());
+	const agx::Uuid UuidAGX = NativeRef->Native->getUuid();
+	FGuid Guid = Convert(UuidAGX);
+	return Guid;
 }

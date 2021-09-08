@@ -5,6 +5,7 @@
 
 // Unreal Engine includes.
 #include "CoreGlobals.h"
+#include "Kismet/KismetMathLibrary.h"
 
 bool FAGX_WireWinch::SetBodyAttachment(UAGX_RigidBodyComponent* Body)
 {
@@ -296,6 +297,31 @@ bool FAGX_WireWinch::HasWire() const
 		return false;
 	}
 	return NativeBarrier.HasWire();
+}
+
+void FAGX_WireWinch::CopyFrom(const FWireWinchBarrier& Barrier)
+{
+	Location = Barrier.GetLocation();
+	Rotation = Barrier.GetNormal().Rotation();
+	// Not entirely certain that the rotation computation is correct.
+	// An alternative is to use UKismetMathLibrary::MakeRotFromX.
+	// They give very similar, but not identical, results.
+	// For the winch normal agx.Vec3(0.696526, 0.398015, 0.597022).normal()
+	// .Rotation() produces    P=36.656910 Y=-29.744896 R=0.000000 and
+	// MakeRotFromX() produces P=36.656910 Y=-29.744896 R=-0.000003.
+	//                                                            ^
+
+	// Body Attachment not set here since this is a pure data copy.
+	// For AGX Dynamics archive import the Body Attachment is set by AGX_ArchiveImporterHelper.
+
+	PulledInLength = Barrier.GetPulledInWireLength();
+	bAutoFeed = Barrier.GetAutoFeed();
+	bMotorEnabled = !Barrier.GetForceRange().IsZero();
+	TargetSpeed = Barrier.GetSpeed();
+	MotorForceRange = Barrier.GetForceRange();
+	bBrakeEnabled = !Barrier.GetBrakeForceRange().IsZero();
+	BrakeForceRange = Barrier.GetBrakeForceRange();
+	bEmergencyBrakeEnabled = Barrier.GetEnableForcedBrake();
 }
 
 bool FAGX_WireWinch::HasNative() const

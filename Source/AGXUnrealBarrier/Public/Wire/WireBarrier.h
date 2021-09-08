@@ -47,10 +47,16 @@ public:
 	 * with Wire Material shortly. */
 	void AllocateNative(float Radius, float ResolutionPerUnitLength);
 
+	/** Set the radius of the wire [cm]. */
 	void SetRadius(float Radius);
+
+	/** Get the radius of the wire [cm]. */
 	float GetRadius() const;
 
+	/** Get the maximum resolution of the wire [nodes/cm]. */
 	void SetResolutionPerUnitLength(float InResolution);
+
+	/** Set the maximum resolution of the wire [nodes/cm]. */
 	float GetResolutionPerUnitLength() const;
 
 	void SetScaleConstant(double ScaleConstant);
@@ -61,25 +67,47 @@ public:
 
 	void SetMaterial(const FShapeMaterialBarrier& Material);
 
+	FShapeMaterialBarrier GetMaterial() const;
+
 	bool GetRenderListEmpty() const;
 
 	void AddRouteNode(FWireNodeBarrier& RoutingNode);
 	void AddWinch(FWireWinchBarrier& Winch);
+
+	/**
+	 * Get the very first node in the wire. This may be before the node pointed to by Get Render
+	 * Begin Iterator, for example when the begin side of the wire is attached to a winch.
+	 */
+	FWireNodeBarrier GetFirstNode() const;
+
+	/**
+	 * Get the very last node in the wire. This may be after last node reachable from the Get Render
+	 * Begin Iterator, for example when the end side of the wire is attached to a winch.
+	 */
+	FWireNodeBarrier GetLastNode() const;
+
+	FWireWinchBarrier GetBeginWinch() const;
+	FWireWinchBarrier GetEndWinch() const;
+	FWireWinchBarrier GetWinch(EWireSide Side) const;
+
 	bool IsInitialized() const;
 
 	/**
-	 * @return The length of the wire not including wire inside any winches.
+	 * @return The length of the wire not including wire inside any winches [cm].
 	 */
 	double GetRestLength() const;
 
+	/** @return The mass of the wire [kg]. */
 	double GetMass() const;
 
+	/** Get the tension at the begin side of the wire [N] */
 	double GetTension() const;
 
 	/**
 	 * Attach a winch to a free end of this wire.
 	 *
-	 * If an object is attached to begin, it will be detached, and this winch controller will be attached at this position instead.
+	 * If an object is attached to begin, it will be detached, and this winch controller will be
+	 * attached at this position instead.
 	 *
 	 * Parameters
 	 * @param Winch	Winch to attach.
@@ -98,6 +126,13 @@ public:
 
 	FWireRenderIteratorBarrier GetRenderBeginIterator() const;
 	FWireRenderIteratorBarrier GetRenderEndIterator() const;
+
+	bool IsLumpedNode(const FWireNodeBarrier& Node) const;
+	bool IsLumpedNode(const FWireRenderIteratorBarrier& Node) const;
+
+	FString GetName() const;
+
+	FGuid GetGuid() const;
 
 protected:
 	//~ Begin FNativeBarrier interface.

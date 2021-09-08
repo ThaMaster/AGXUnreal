@@ -23,17 +23,23 @@
 
 #define LOCTEXT_NAMESPACE "UAGX_WireComponent"
 
-bool UAGX_WireRouteNode_FL::SetBody(
-	UPARAM(ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body)
+void FWireRoutingNode::SetBody(UAGX_RigidBodyComponent* Body)
 {
 	if (Body == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Nullptr Rigid Body passed to SetBody on a Wire Route Node."));
-		return false;
+		RigidBody.OwningActor = nullptr;
+		RigidBody.BodyName = NAME_None;
+		return;
 	}
-	WireNode.RigidBody.OwningActor = Body->GetOwner();
-	WireNode.RigidBody.BodyName = Body->GetFName();
-	return true;
+
+	RigidBody.OwningActor = Body->GetOwner();
+	RigidBody.BodyName = Body->GetFName();
+}
+
+void UAGX_WireRouteNode_FL::SetBody(
+	UPARAM(ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body)
+{
+	WireNode.SetBody(Body);
 }
 
 UAGX_WireComponent::UAGX_WireComponent()
@@ -70,6 +76,11 @@ void UAGX_WireComponent::SetMinSegmentLength(float InMinSegmentLength)
 FAGX_WireWinchRef UAGX_WireComponent::GetOwnedBeginWinch_BP()
 {
 	return {&OwnedBeginWinch};
+}
+
+bool UAGX_WireComponent::HasOwnedBeginWinch() const
+{
+	return BeginWinchType == EWireWinchOwnerType::Wire;
 }
 
 bool UAGX_WireComponent::HasBeginWinchComponent() const
@@ -229,6 +240,11 @@ bool UAGX_WireComponent::DetachBeginWinch()
 FAGX_WireWinchRef UAGX_WireComponent::GetOwnedEndWinch_BP()
 {
 	return {&OwnedEndWinch};
+}
+
+bool UAGX_WireComponent::HasOwnedEndWinch() const
+{
+	return EndWinchType == EWireWinchOwnerType::Wire;
 }
 
 bool UAGX_WireComponent::HasEndWinchComponent() const
@@ -738,6 +754,28 @@ bool UAGX_WireComponent::DetachWinch(EWireSide Side)
 	return true;
 }
 
+bool UAGX_WireComponent::SetWinchOwnerType(EWireSide Side, EWireWinchOwnerType Type)
+{
+	switch (Side)
+	{
+		case EWireSide::Begin:
+			BeginWinchType = Type;
+			return true;
+		case EWireSide::End:
+			EndWinchType = Type;
+			return true;
+		case EWireSide::None:
+			return true;
+	}
+
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Invalid wire side passed to Set Winch Owner Type for Wire '%s' in '%s'. Cannot set "
+			 "winch owner type."),
+		*GetName(), *GetLabelSafe(GetOwner()));
+	return false;
+}
+
 EWireWinchOwnerType UAGX_WireComponent::GetWinchOwnerType(EWireSide Side) const
 {
 	switch (Side)
@@ -930,6 +968,16 @@ void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocatio
 	RouteNodes[InIndex].Location = InLocation;
 }
 
+bool UAGX_WireComponent::IsLumpedNode(const FAGX_WireNode& Node)
+{
+	if (!HasNative() || !Node.HasNative())
+	{
+		return false;
+	}
+
+	return NativeBarrier.IsLumpedNode(*Node.GetNative());
+}
+
 bool UAGX_WireComponent::IsInitialized() const
 {
 	if (!HasNative())
@@ -1044,8 +1092,12 @@ TArray<FVector> UAGX_WireComponent::GetRenderNodeLocations() const
 
 void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
 {
-	/// @todo Implement UAGX_WireComponent::CopyFrom.
-	UE_LOG(LogAGX, Error, TEXT("UAGX_WireComponent::CopyFrom not yet implemented."));
+	Radius = Barrier.GetRadius();
+	MinSegmentLength = 1.0f / Barrier.GetResolutionPerUnitLength();
+	LinearVelocityDamping = static_cast<float>(Barrier.GetLinearVelocityDamping());
+
+	// Physical material, winches, and route nodes not set here since this is a pure data copy. For
+	// AGX Dynamics archive import these are set by AGX_ArchiveImporterHelper.
 }
 
 bool UAGX_WireComponent::HasNative() const

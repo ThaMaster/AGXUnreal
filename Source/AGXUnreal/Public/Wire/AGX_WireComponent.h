@@ -24,7 +24,7 @@ class UAGX_WireWinchComponent;
  * used by Eye and BodyFixed nodes.
  */
 USTRUCT(BlueprintType)
-struct FWireRoutingNode
+struct AGXUNREAL_API FWireRoutingNode
 {
 	GENERATED_BODY();
 
@@ -58,6 +58,8 @@ struct FWireRoutingNode
 		, Location(InLocation)
 	{
 	}
+
+	void SetBody(UAGX_RigidBodyComponent* Body);
 };
 
 /// @todo Move UAGX_WireRouteNode_FL with FWireRoutingNode when it's moved.
@@ -70,7 +72,7 @@ class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node")
-	static bool SetBody(UPARAM(ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body);
+	static void SetBody(UPARAM(ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body);
 };
 
 /**
@@ -195,6 +197,12 @@ public:
 		BlueprintPure, Category = "AGX Wire Begin Winch",
 		Meta = (DisplayName = "Get Owned Begin Winch"))
 	FAGX_WireWinchRef GetOwnedBeginWinch_BP();
+
+	/**
+	 * @return True if the begin side of the wire is attached to the owned winch.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
+	bool HasOwnedBeginWinch() const;
 
 	/// @todo The engine example, ULiveLinkComponentController, uses EditInstanceOnly here.
 	/// Determine if that is a requirement or not. Possibly related to Blueprint Editor
@@ -390,6 +398,12 @@ public:
 		BlueprintPure, Category = "AGX Wire End Winch",
 		Meta = (DisplayName = "Get Owned End Winch"))
 	FAGX_WireWinchRef GetOwnedEndWinch_BP();
+
+	/**
+	 * @return True if the end side of the wire is attached to the owned winch.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire End Winch")
+	bool HasOwnedEndWinch() const;
 
 	/// @todo The engine example, ULiveLinkComponentController, uses EditInstanceOnly here.
 	/// Determine if that is a requirement or not. Possibly related to Blueprint Editor
@@ -635,6 +649,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
 	bool DetachWinch(EWireSide Side);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
+	bool SetWinchOwnerType(EWireSide Side, EWireWinchOwnerType Type);
+
 	/// @return The owner type configured for the given side.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
 	EWireWinchOwnerType GetWinchOwnerType(EWireSide Side) const;
@@ -734,6 +751,12 @@ public:
 	 */
 
 	/**
+	 * Determine if the given node is a lumped node or not. Lump nodes only exist during simulation
+	 * so true can only be returned if an AGX Dynamics native has been created for this wire.
+	 */
+	bool IsLumpedNode(const FAGX_WireNode& Node);
+
+	/**
 	 * A wire is initialized when the AGX Dynamics object has been created and added to the AGX
 	 * Dynamics simulation, which happens in BeginPlay. At this point that routing nodes become
 	 * inactive and the render iterator should be used to inspect the simulation nodes.
@@ -778,8 +801,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	TArray<FVector> GetRenderNodeLocations() const;
 
-	/// Copy configuration from the given Barrier.
-	/// @note Not yet implemented.
+	/*
+	 * Copy configuration from the given Barrier.
+	 * Only the basic properties, such as Radius and MinSegmentLength, are copied. More complicated
+	 * properties, such as winch setup and route nodes, must be handled elsewhere. During AGX
+	 * Dynamics archive import those are handled by Archive Importer Helper.
+	 */
 	void CopyFrom(const FWireBarrier& Barrier);
 
 	//~ Begin IAGX_NativeOwner interface.

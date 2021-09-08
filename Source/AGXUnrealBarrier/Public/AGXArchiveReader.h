@@ -25,6 +25,7 @@ class FLockJointBarrier;
 class FShapeMaterialBarrier;
 class FContactMaterialBarrier;
 class FTwoBodyTireBarrier;
+class FWireBarrier;
 
 /*
 The separation between the Unreal part and the AGX Dynamics part of the plugin
@@ -99,6 +100,8 @@ public:
 		const TArray<std::pair<FString, FString>>& DisabledGroups) = 0;
 
 	virtual FTwoBodyTireArchiveBodies InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Tire) = 0;
+
+	virtual void InstantiateWire(const FWireBarrier& Wire) = 0;
 
 	virtual ~FAGXArchiveInstantiator() = default;
 };

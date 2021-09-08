@@ -32,6 +32,7 @@
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
 #include "GameFramework/Actor.h"
@@ -180,6 +181,11 @@ namespace
 
 			Helper.InstantiateTwoBodyTire(Barrier, Actor);
 			return ArchiveBodies;
+		}
+
+		virtual void InstantiateWire(const FWireBarrier& Barrier) override
+		{
+			Helper.InstantiateWire(Barrier, Actor);
 		}
 
 	private:

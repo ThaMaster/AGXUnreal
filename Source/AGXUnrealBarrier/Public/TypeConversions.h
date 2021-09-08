@@ -722,10 +722,14 @@ inline EWireNodeType Convert(agxWire::Node::Type Type)
 			return EWireNodeType::Eye;
 		case agxWire::Node::BODY_FIXED:
 			return EWireNodeType::BodyFixed;
-		case agxWire::Node::CONTACT:
-		case agxWire::Node::SHAPE_CONTACT:
 		case agxWire::Node::CONNECTING:
+			return EWireNodeType::Connecting;
 		case agxWire::Node::STOP:
+			return EWireNodeType::Stop;
+		case agxWire::Node::CONTACT:
+			return EWireNodeType::Contact;
+		case agxWire::Node::SHAPE_CONTACT:
+			return EWireNodeType::ShapeContact;
 		case agxWire::Node::MISSING:
 		case agxWire::Node::NOT_DEFINED:
 			return EWireNodeType::Other;
@@ -747,9 +751,16 @@ inline agxWire::Node::Type Convert(EWireNodeType Type)
 			return agxWire::Node::EYE;
 		case EWireNodeType::BodyFixed:
 			return agxWire::Node::BODY_FIXED;
-		case EWireNodeType::NUM_USER_CREATABLE:
+		case EWireNodeType::Connecting:
+			return agxWire::Node::CONNECTING;
+		case EWireNodeType::Stop:
+			return agxWire::Node::STOP;
+		case EWireNodeType::Contact:
+			return agxWire::Node::CONTACT;
+		case EWireNodeType::ShapeContact:
+			return agxWire::Node::SHAPE_CONTACT;
 		case EWireNodeType::Other:
-		case EWireNodeType::NUM_NODE_TYPES:
+		case EWireNodeType::NUM_USER_CREATABLE:
 			return agxWire::Node::NOT_DEFINED;
 	}
 

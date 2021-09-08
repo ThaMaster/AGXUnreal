@@ -32,7 +32,9 @@ public:
 	void ReleaseNative();
 
 	FVector GetWorldLocation() const;
+	FVector GetTranslate() const;
 	EWireNodeType GetType() const;
+	FRigidBodyBarrier GetRigidBody() const;
 
 private:
 	std::unique_ptr<FWireNodeRef> NativeRef;

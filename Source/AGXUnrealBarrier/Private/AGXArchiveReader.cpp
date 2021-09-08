@@ -1,6 +1,6 @@
 #include "AGXArchiveReader.h"
 
-// AGXUnreal Includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGXBarrierFactories.h"
 #include "RigidBodyBarrier.h"
@@ -11,15 +11,17 @@
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
-#include <agx/RigidBody.h>
-#include <agx/Encoding.h>
-#include <agx/Hinge.h>
-#include <agx/Prismatic.h>
 #include <agx/BallJoint.h>
+#include <agxCollide/Geometry.h>
+#include <agxCollide/Box.h>
+#include <agxCollide/Trimesh.h>
 #include <agx/CylindricalJoint.h>
 #include <agx/DistanceJoint.h>
+#include <agx/Encoding.h>
+#include <agx/Hinge.h>
 #include <agx/LockJoint.h>
-#include <agxModel/TwoBodyTire.h>
+#include <agx/Prismatic.h>
+#include <agx/RigidBody.h>
 
 // In 2.28 including Cable.h causes a preprocessor macro named DEPRECATED to be defined. This
 // conflicts with a macro with the same name in Unreal. Undeffing the Unreal one.
@@ -27,9 +29,7 @@
 #undef DEPRECATED
 #include <agxCable/Cable.h>
 
-#include <agxCollide/Geometry.h>
-#include <agxCollide/Box.h>
-#include <agxCollide/Trimesh.h>
+#include <agxModel/TwoBodyTire.h>
 #include <agxSDK/Simulation.h>
 #include <agxWire/Wire.h>
 #include "EndAGXIncludes.h"
@@ -154,8 +154,8 @@ namespace
 			return;
 		}
 
-		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire,
-							const FString& Description) {
+		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire, const FString& Description)
+		{
 			if (Body == nullptr)
 			{
 				UE_LOG(
@@ -287,7 +287,8 @@ namespace
 
 	void ReadCollisionGroups(agxSDK::Simulation& Simulation, FAGXArchiveInstantiator& Instantiator)
 	{
-		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString {
+		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString
+		{
 			FString Str = Convert(Cg.name());
 
 			// If the CollisionGroup was stored as an Id (uint32), then it will contain no name
@@ -314,6 +315,23 @@ namespace
 		}
 		Instantiator.DisabledCollisionGroups(DisabledGroups);
 	}
+
+	void ReadWires(
+		agxSDK::Simulation& Simulation, const FString& Filename,
+		FAGXArchiveInstantiator& Instantiator)
+	{
+		agxWire::WirePtrVector Wires = agxWire::Wire::findAll(&Simulation);
+		for (agxWire::Wire* Wire : Wires)
+		{
+			if (Wire == nullptr)
+			{
+				continue;
+			}
+
+			FWireBarrier Barrier = AGXBarrierFactories::CreateWireBarrier(Wire);
+			Instantiator.InstantiateWire(Barrier);
+		}
+	}
 }
 
 FSuccessOrError FAGXArchiveReader::Read(
@@ -336,7 +354,7 @@ FSuccessOrError FAGXArchiveReader::Read(
 			FString::Printf(TEXT("Could not read .agx file '%s':\n\n%s"), *Filename, *What));
 	}
 
-	const float AmountOfWork = 5.0f; // Keep up to date with the number of /Read.+/-calls.
+	const float AmountOfWork = 6.0f; // Keep up to date with the number of /Read.+/-calls.
 	FScopedSlowTask MyTask(
 		AmountOfWork, LOCTEXT("CreateAGXObjects", "Create AGX Dynamics for Unreal objects"), true);
 	MyTask.MakeDialog();
@@ -355,6 +373,9 @@ FSuccessOrError FAGXArchiveReader::Read(
 
 	MyTask.EnterProgressFrame(1.0f);
 	::ReadCollisionGroups(*Simulation, Instantiator);
+
+	MyTask.EnterProgressFrame(1.0f);
+	::ReadWires(*Simulation, Filename, Instantiator);
 
 	return FSuccessOrError(true);
 }

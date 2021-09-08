@@ -28,13 +28,27 @@ public:
 
 	bool HasNative() const;
 
+	FWireNodeBarrier* GetNative();
+	const FWireNodeBarrier* GetNative() const;
+
 	FAGX_WireNode& operator=(const FAGX_WireNode& InOther);
 
 	/// @return The world location of this node.
 	FVector GetWorldLocation() const;
 
+	/// @return The location of this node relative to the body, or the world if there is no body.
+	FVector GetLocalLocation() const;
+
 	/// @return The type of this node.
 	EWireNodeType GetType() const;
+
+	/**
+	 * Get the Rigid Body this node is attached to. Sometimes this is a body implicitly created by
+	 * the wire and sometimes it is a body explicitly set on e.g. a Body Fixed or an Eye node.
+	 *
+	 * @return The Rigid Body that this node is attached to.
+	 */
+	FRigidBodyBarrier GetRigidBody() const;
 
 private:
 	FWireNodeBarrier Barrier;

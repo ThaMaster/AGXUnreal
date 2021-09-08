@@ -31,9 +31,16 @@ public:
 	FVector GetLocalPosition() const;
 #endif
 
-	/// The direction of the winch on the body it's attached to, or in world space if there is no
-	/// body.
+	/**
+	 * @return The direction of the winch on the body it's attached to, or in world space if there
+	 * is no body.
+	 */
 	FVector GetNormal() const;
+
+	/**
+	 * @return The location of the winch in the body's frame, or world space if there is no body.
+	 */
+	FVector GetLocation() const;
 
 	/// Set the length of wire that is held inside the winch. This will create new wire, not move
 	/// free wire into the winch.
