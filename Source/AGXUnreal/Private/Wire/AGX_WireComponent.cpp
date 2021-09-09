@@ -1429,7 +1429,7 @@ namespace AGX_WireComponent_helpers
 {
 	void CreateNativeWireOwnedWinch(UAGX_WireComponent& Wire, EWireSide Side)
 	{
-		check(Wire.GetWinch(Side) != nullptr);
+		check(Wire.GetOwnedWinch(Side) != nullptr);
 		FAGX_WireWinch& Winch = *Wire.GetOwnedWinch(Side);
 		FAGX_WireUtilities::ComputeSimulationPlacement(Wire, Winch);
 		FWireWinchBarrier* Barrier = Winch.GetOrCreateNative();
