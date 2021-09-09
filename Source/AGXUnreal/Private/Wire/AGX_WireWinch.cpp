@@ -129,7 +129,7 @@ FAGX_DoubleInterval FAGX_WireWinch::GetMotorForceRange() const
 	{
 		return NativeBarrier.GetForceRange();
 	}
-	return bMotorEnabled ? MotorForceRange : FAGX_DoubleInterval();
+	return bMotorEnabled ? MotorForceRange : FAGX_DoubleInterval(0.0, 0.0);
 }
 
 double FAGX_WireWinch::GetMotorForceRangeMin() const
