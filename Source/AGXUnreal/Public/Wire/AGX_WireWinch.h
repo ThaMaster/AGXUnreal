@@ -82,8 +82,10 @@ public:
 	FAGX_RigidBodyReference BodyAttachment;
 
 	/**
-	 * The amount of wire that exists inside the winch. If auto feed is enabled then this value is
-	 * decreased by the length or the wire route on initialization.
+	 * The amount of wire that exists inside the winch [cm].
+	 *
+	 * If auto feed is enabled then this value is decreased by the length of the wire route on
+	 * initialization.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
 	double PulledInLength = 1000.0;
@@ -106,16 +108,19 @@ public:
 	bool bMotorEnabled = true;
 
 	/**
-	 * The speed at which this winch is trying to haul in or pay out wire. It may be unable to reach
-	 * the target speed because of force range limitations and resistance from the brake.
+	 * The speed at which this winch is trying to haul in or pay out wire [cm/s].
+	 *
+	 * It may be unable to reach the target speed because of force range limitations and resistance
+	 * from the brake.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
 	double TargetSpeed = 0.0;
 
 	/**
-	 * The allowed force range when paying out and hauling in wire. The lower end of the range is
-	 * used when hauling in and the upper range when paying out. The lower end must be less than
-	 * zero and the upper range must be greater than zero.
+	 * The allowed force range when paying out and hauling in wire [N].
+	 *
+	 * The lower end of the range is used when hauling in and the upper range when paying out. The
+	 * lower end must be less than zero and the upper range must be greater than zero.
 	 *
 	 * The actual force range on the Native is set to this value while the motor is enabled. When
 	 * the motor is disabled the Native's motor force range is instead set to zero.
@@ -131,9 +136,11 @@ public:
 	bool bBrakeEnabled = false;
 
 	/**
-	 * Set the desired brake force range. The lower end of the range is the force with which this
-	 * winch brake can hold the wire from hauling in and the upper end of the range is the force
-	 * with which this winch brake can hold the wire from paying out.
+	 * Set the desired brake force range [N].
+	 *
+	 * The lower end of the range is the force with which this winch brake can hold the wire from
+	 * hauling in and the upper end of the range is the force with which this winch brake can hold
+	 * the wire from paying out.
 	 *
 	 * It's important that the lower value is less than zero and the upper larger than zero.
 	 */
