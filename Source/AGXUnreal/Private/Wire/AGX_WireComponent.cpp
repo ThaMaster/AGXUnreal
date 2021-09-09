@@ -1497,7 +1497,7 @@ namespace AGX_WireComponent_helpers
 		if (Winch == nullptr)
 		{
 			UE_LOG(
-				LogAGX, Warning,
+				LogAGX, Error,
 				TEXT("Wire Winch Owner Type on '%s' in '%s' has been set to Other but no Wire "
 					 "Winch as been assigned to Borrowed Winch. No AGX Dynamics winch instance "
 					 "will be created."),
@@ -1509,7 +1509,7 @@ namespace AGX_WireComponent_helpers
 		if (Barrier == nullptr)
 		{
 			UE_LOG(
-				LogAGX, Warning,
+				LogAGX, Error,
 				TEXT("Could not create AGX Dynamics instance for a borrowed winch on '%s' in "
 					 "'%s'."),
 				*Wire.GetName(), *GetLabelSafe(Wire.GetOwner()));
