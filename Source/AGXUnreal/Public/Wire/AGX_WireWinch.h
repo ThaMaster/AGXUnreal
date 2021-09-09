@@ -2,7 +2,6 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_NativeOwner.h"
-#include "AGX_LogCategory.h"
 #include "Utilities/DoubleInterval.h"
 #include "AGX_RigidBodyReference.h"
 #include "Wire/WireWinchBarrier.h"
