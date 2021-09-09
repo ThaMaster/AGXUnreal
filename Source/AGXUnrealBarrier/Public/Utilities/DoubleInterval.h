@@ -22,14 +22,45 @@ struct AGXUNREALBARRIER_API FAGX_DoubleInterval
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, Category = "Interval")
-	double Min;
+	double Min = 0.0;
 
 	UPROPERTY(EditAnywhere, Category = "Interval")
-	double Max;
+	double Max = 0.0;
+
+	FAGX_DoubleInterval() = default;
+
+	FAGX_DoubleInterval(double InMin, double InMax)
+		: Min(InMin)
+		, Max(InMax)
+	{
+		Sort();
+	}
+
+	explicit FAGX_DoubleInterval(double MinAndMax)
+		: Min(-MinAndMax)
+		, Max(MinAndMax)
+	{
+		Sort();
+	}
+
+	explicit FAGX_DoubleInterval(const double (&MinAndMax)[2])
+		: Min(MinAndMax[0])
+		, Max(MinAndMax[1])
+	{
+		Sort();
+	}
 
 	bool IsZero() const
 	{
 		return Min == 0.0 && Max == 0.0;
+	}
+
+	void Sort()
+	{
+		if (Min > Max)
+		{
+			std::swap(Min, Max);
+		}
 	}
 };
 
