@@ -1671,7 +1671,7 @@ void UAGX_WireComponent::CreateNative()
 
 	{
 		FAGXWireNotifyBuffer Messages;
-		bool Added = UAGX_Simulation::GetFrom(this)->AddWire(*this);
+		const bool Added = UAGX_Simulation::GetFrom(this)->AddWire(*this);
 		if (!Added)
 		{
 			UE_LOG(
