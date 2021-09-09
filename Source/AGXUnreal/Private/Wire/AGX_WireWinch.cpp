@@ -73,14 +73,7 @@ void FAGX_WireWinch::DisableMotor()
 
 void FAGX_WireWinch::SetMotorEnabled(bool bInEnable)
 {
-	if (bInEnable)
-	{
-		EnableMotor();
-	}
-	else
-	{
-		DisableMotor();
-	}
+	bInEnable ? EnableMotor() : DisableMotor();
 }
 
 bool FAGX_WireWinch::IsMotorEnabled() const
