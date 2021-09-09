@@ -9,7 +9,7 @@ class UAGX_WireWinchComponent;
 
 struct FAGX_WireWinchPose
 {
-	const FTransform& LocalToWorld;
+	const FTransform& LocalToWorld; // Will reference into object that owns the winch.
 	const FVector LocalLocation;
 	const FRotator LocalRotation;
 };
