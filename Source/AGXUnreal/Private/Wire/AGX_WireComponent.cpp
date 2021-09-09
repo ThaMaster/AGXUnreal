@@ -574,6 +574,7 @@ bool UAGX_WireComponent::AttachOwnedWinch(EWireSide Side)
 		return false;
 	}
 
+	checkf(GetOwnedWinch(Side) != nullptr, TEXT("Did not get a winch despite valid side."));
 	FAGX_WireWinch& Winch = *GetOwnedWinch(Side);
 	SetWinchType(EWireWinchOwnerType::Wire, Side);
 	if (HasNative())
