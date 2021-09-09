@@ -1531,6 +1531,7 @@ namespace AGX_WireComponent_helpers
 				CreateNativeWireWinchOwnedWinch(Wire, Side);
 				break;
 			case EWireWinchOwnerType::Other:
+				CreateNativeWireBorrowedWinch(Wire, Side);
 				break;
 			case EWireWinchOwnerType::None:
 				// Nothing to do here.
