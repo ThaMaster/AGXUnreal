@@ -1436,7 +1436,7 @@ namespace AGX_WireComponent_helpers
 		if (Barrier == nullptr)
 		{
 			UE_LOG(
-				LogAGX, Warning,
+				LogAGX, Error,
 				TEXT("Could not create AGX Dynamics instance for wire-owned winch on Wire '%s' "
 					 "in '%s'"),
 				*Wire.GetName(), *GetLabelSafe(Wire.GetOwner()));
