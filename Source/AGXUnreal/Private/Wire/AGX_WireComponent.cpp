@@ -1453,31 +1453,33 @@ namespace AGX_WireComponent_helpers
 			return;
 		}
 
-		UAGX_WireWinchComponent* WinchComponent = Wire.GetWinchComponent(Side);
-		if (WinchComponent == nullptr)
+		// Message must contain four %s ordered as Wire name, Wire owner name, Winch name, Winch
+		// owner name.
+		auto LogError = [&Wire, Side](auto& Message)
 		{
 			const FComponentReference* Reference = Wire.GetWinchComponentReference(Side);
 			const FString WinchName = Reference->ComponentProperty.ToString();
 			const FString ActorName = GetLabelSafe(Reference->OtherActor);
 			UE_LOG(
-				LogAGX, Error,
+				LogAGX, Error, Message, *Wire.GetName(), *GetLabelSafe(Wire.GetOwner()), *WinchName,
+				*ActorName);
+		};
+
+		UAGX_WireWinchComponent* WinchComponent = Wire.GetWinchComponent(Side);
+		if (WinchComponent == nullptr)
+		{
+			LogError(
 				TEXT("Wire '%s' in '%s' did not find a Wire Winch named '%s' in '%s'. AGX Dynamics "
-					 "instance will not be created."),
-				*Wire.GetName(), *GetLabelSafe(Wire.GetOwner()), *WinchName, *ActorName);
+					 "instance will not be created."));
 			return;
 		}
 
 		FWireWinchBarrier* Barrier = WinchComponent->GetOrCreateNative();
 		if (Barrier == nullptr)
 		{
-			const FComponentReference* Reference = Wire.GetWinchComponentReference(Side);
-			const FString WinchName = Reference->ComponentProperty.ToString();
-			const FString ActorName = GetLabelSafe(Reference->OtherActor);
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Could not create AGX Dynamics instance for a winch on '%s' in '%s'. Winch is "
-					 "owned by '%s' in '%s'."),
-				*Wire.GetName(), *GetLabelSafe(Wire.GetOwner()), *WinchName, *ActorName);
+			LogError(
+				TEXT("Wire '%s' in '%s' could not create AGX Dynamics instance for Wire Winch '%s' "
+					 "in '%s'."));
 			return;
 		}
 
