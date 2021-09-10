@@ -261,7 +261,7 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 				"Cannot delete import directory for archive '%s': Directory '%s' contains "
 				"unexpected files or directories. Expected %d files and directories but found %d."),
 			ArchiveName, *ImportsAbsolute, ExpectedFileAndDirectoryNames.Num(),
-			DirectoryContents.Num())
+			DirectoryContents.Num());
 		return false;
 	}
 	for (const FString& Entry : DirectoryContents)
@@ -274,10 +274,18 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 				LogAGX, Error,
 				TEXT("Cannot delete import directory for archive '%s': Directory '%s' contains "
 					 "unexpected files or directories. Found unexpected file or directory '%s'."),
-				ArchiveName, *ImportsAbsolute, *Name)
+				ArchiveName, *ImportsAbsolute, *Name);
 			return false;
 		}
 	}
+
+	// TODO: REMOVE THIS BEFORE MERGE START
+	UE_LOG(
+		LogAGX, Warning,
+		TEXT("trying to delete dir '%s'. Exists: %d"), *ImportsAbsolute,
+		IFileManager::Get().DirectoryExists(*ImportsAbsolute));
+	// TODO: REMOVE THIS BEFORE MERGE END
+
 	return IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true);
 
 #if 0
