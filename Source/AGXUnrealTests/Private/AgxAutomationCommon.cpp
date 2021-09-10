@@ -9,6 +9,7 @@
 #include "Engine/EngineTypes.h"
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
+#include "EditorAssetLibrary.h"
 
 UWorld* AgxAutomationCommon::GetTestWorld()
 {
@@ -286,7 +287,7 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 		IFileManager::Get().DirectoryExists(*ImportsAbsolute));
 	// TODO: REMOVE THIS BEFORE MERGE END
 
-	bool res = IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true);
+	bool res = UEditorAssetLibrary::DeleteDirectory("/Game/" + ImportsLocal);
 
 		// TODO: REMOVE THIS BEFORE MERGE START
 	UE_LOG(

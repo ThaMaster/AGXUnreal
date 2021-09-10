@@ -6,7 +6,7 @@ public class AGXUnrealTests : ModuleRules
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		PrivateDependencyModuleNames.AddRange(new string[] {
-			"Core", "Engine", "CoreUObject", "AGXUnreal", "AGXUnrealBarrier", "AGXUnrealEditor"
+			"Core", "Engine", "CoreUObject", "EditorScriptingUtilities", "AGXUnreal", "AGXUnrealBarrier", "AGXUnrealEditor"
 		});
 	}
 }
