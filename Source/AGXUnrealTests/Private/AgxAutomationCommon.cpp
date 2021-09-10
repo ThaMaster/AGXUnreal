@@ -286,7 +286,14 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 		IFileManager::Get().DirectoryExists(*ImportsAbsolute));
 	// TODO: REMOVE THIS BEFORE MERGE END
 
-	return IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true);
+	bool res = IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true);
+
+		// TODO: REMOVE THIS BEFORE MERGE START
+	UE_LOG(
+		LogAGX, Warning, TEXT("deletion complete. res: %d"), res);
+	// TODO: REMOVE THIS BEFORE MERGE END
+
+	return res;
 
 #if 0
 	// An attempt at deleting the StaticMesh asset.
