@@ -117,7 +117,7 @@ namespace
 				return new NopEditorBody();
 			}
 			NewActor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
-			return new EditorBody(*NewActor->RigidBodyComponent, Helper);
+			return new FEditorBody(*NewActor->RigidBodyComponent, Helper);
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
@@ -154,6 +154,70 @@ namespace
 		{
 			AAGX_LockConstraintActor* Actor = Helper.InstantiateLockJoint(Barrier);
 			FinalizeConstraint(Actor);
+		}
+
+		virtual void InstantiateSphere(
+			const FSphereShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateSphere(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateSphere(Barrier, ImportedRoot);
+			}
+		}
+
+		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateBox(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateBox(Barrier, ImportedRoot);
+			}
+		}
+
+		virtual void InstantiateCylinder(
+			const FCylinderShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateCylinder(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateCylinder(Barrier, ImportedRoot);
+			}
+		}
+
+		virtual void InstantiateCapsule(
+			const FCapsuleShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateCapsule(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateCapsule(Barrier, ImportedRoot);
+			}
+		}
+
+		virtual void InstantiateTrimesh(
+			const FTrimeshShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateTrimesh(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateTrimesh(Barrier, ImportedRoot);
+			}
 		}
 
 		void FinalizeConstraint(AAGX_ConstraintActor* Actor)
@@ -202,8 +266,8 @@ namespace
 
 			Actor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
 			return FTwoBodyTireArchiveBodies(
-				new EditorBody(*Actor->TireRigidBodyComponent, Helper),
-				new EditorBody(*Actor->HubRigidBodyComponent, Helper));
+				new FEditorBody(*Actor->TireRigidBodyComponent, Helper),
+				new FEditorBody(*Actor->HubRigidBodyComponent, Helper));
 		}
 
 		virtual ~EditorInstantiator() = default;

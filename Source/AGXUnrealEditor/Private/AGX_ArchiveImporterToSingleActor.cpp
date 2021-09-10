@@ -103,7 +103,7 @@ namespace
 			{
 				return new NopEditorBody();
 			}
-			return new SingleActorBody(*Component, Helper);
+			return new FSingleActorBody(*Component, Helper);
 		}
 
 		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
@@ -136,6 +136,69 @@ namespace
 			Helper.InstantiateLockJoint(Barrier, Actor);
 		}
 
+		virtual void InstantiateSphere(
+			const FSphereShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateSphere(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateSphere(Barrier, Actor);
+			}
+		}
+
+		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateBox(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateBox(Barrier, Actor);
+			}
+		}
+
+		virtual void InstantiateCylinder(
+			const FCylinderShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateCylinder(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateCylinder(Barrier, Actor);
+			}
+		}
+
+		virtual void InstantiateCapsule(
+			const FCapsuleShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateCapsule(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateCapsule(Barrier, Actor);
+			}
+		}
+
+		virtual void InstantiateTrimesh(
+			const FTrimeshShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateTrimesh(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateTrimesh(Barrier, Actor);
+			}
+		}
 		virtual void DisabledCollisionGroups(
 			const TArray<std::pair<FString, FString>>& DisabledPairs) override
 		{
