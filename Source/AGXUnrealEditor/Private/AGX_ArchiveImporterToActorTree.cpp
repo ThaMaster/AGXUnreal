@@ -59,10 +59,10 @@ namespace
 {
 	// Archive instantiator that creates sub-objects under RigidBody. Knows how
 	// to create various subclasses of AGX_ShapesComponent in Unreal Editor.
-	class EditorBody final : public FAGXArchiveBody
+	class FEditorBody final : public FAGXArchiveBody
 	{
 	public:
-		EditorBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
+		FEditorBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
 			: Helper(InHelper)
 			, Body(InBody)
 		{
@@ -70,27 +70,27 @@ namespace
 
 		virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateSphere(Barrier, Body);
+			Helper.InstantiateSphere(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateBox(Barrier, Body);
+			Helper.InstantiateBox(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateCylinder(const FCylinderShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateCylinder(Barrier, Body);
+			Helper.InstantiateCylinder(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateCapsule(const FCapsuleShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateCapsule(Barrier, Body);
+			Helper.InstantiateCapsule(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateTrimesh(Barrier, Body);
+			Helper.InstantiateTrimesh(Barrier, *Body.GetOwner(), &Body);
 		}
 
 	private:
