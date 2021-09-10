@@ -167,6 +167,18 @@ public:
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_WireWinch : public FAGX_WireWinchSettings
 {
+	/*
+	 * I would like to have this class implement the IAGX_NativeOwner interface. Unreal Header Tool
+	 * doesn't allow UStructs inheriting from non-UStructs, but that can be worked around by
+	 * guarding that inheritance behind #if CPP. However, simply adding a virtual destructor to this
+	 * class and marking the native-address-related member functions, named identical to the
+	 * IAGX_NativeOwner member functions, causes Unreal Editor to crash due to a segmentation fault
+	 * during Blueprint Reconstruction while the editor is starting if there is a Wire in the level
+	 * being loaded. I have no idea why, or how to fix it. I don't know if we're doing something
+	 * illegal, or if it's because of incompatible state restored from disk. So for now this class
+	 * is a Native Owner despite not implementing the interface.
+	 */
+
 	GENERATED_BODY()
 
 public:
@@ -239,8 +251,8 @@ public:
 	void CopyFrom(const FWireWinchBarrier& Barrier);
 
 	//~ Begin AGX_NativeOwner interface.
-	// We can't do actual inheritance, but we can at least expose the same member functions.
-	// Why can't we inherit from AGX_NativeOwner?
+	// We can't do actual inheritance, see comment at the top of the class, but we can at least
+	// expose the same member functions.
 	bool HasNative() const;
 	uint64 GetNativeAddress() const;
 	void SetNativeAddress(uint64 NativeAddress);
