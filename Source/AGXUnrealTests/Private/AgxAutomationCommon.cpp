@@ -290,7 +290,8 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 
 		// TODO: REMOVE THIS BEFORE MERGE START
 	UE_LOG(
-		LogAGX, Warning, TEXT("deletion complete. res: %d"), res);
+		LogAGX, Warning, TEXT("deletion complete. res: %d, exists: %d"), res,
+		IFileManager::Get().DirectoryExists(*ImportsAbsolute));
 	// TODO: REMOVE THIS BEFORE MERGE END
 
 	return res;
