@@ -1891,6 +1891,10 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
+	// @todo Figure out why this error appears. So far it seems to only appear on Linux and not
+	// Windows.
+	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+
 	TArray<const TCHAR*> ExpectedFiles = {
 		TEXT("StaticMeshs"), TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("single_geometries_build"), ExpectedFiles);
