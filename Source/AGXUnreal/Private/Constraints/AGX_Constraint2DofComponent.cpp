@@ -103,9 +103,9 @@ void UAGX_Constraint2DofComponent::UpdateNativeProperties()
 	ScrewController.UpdateNativeProperties();
 }
 
-void UAGX_Constraint2DofComponent::AssignNative(uint64 NativeAddress)
+void UAGX_Constraint2DofComponent::SetNativeAddress(uint64 NativeAddress)
 {
-	Super::AssignNative(NativeAddress);
+	Super::SetNativeAddress(NativeAddress);
 	if (!HasNative())
 	{
 		return;

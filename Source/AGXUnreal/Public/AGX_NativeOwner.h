@@ -76,12 +76,12 @@ public:
 	 * The given address must designate a valid AGX Dynamics object of the correct type for the
 	 * actual type implementing this interface. The intention is that Unreal Engine's transaction
 	 * system is responsible for maintaining the association between the instance GetNativeAddress
-	 * is called on and the instance that AssignNative is called on to guarantee type equality.
+	 * is called on and the instance that SetNativeAddress is called on to guarantee type equality.
 	 *
 	 * @param NativeAddress The address of the native AGX Dynamics object that this Native Owner
 	 * should own.
 	 */
-	virtual void AssignNative(uint64 NativeAddress) = 0;
+	virtual void SetNativeAddress(uint64 NativeAddress) = 0;
 
 	virtual ~IAGX_NativeOwner() = default;
 };

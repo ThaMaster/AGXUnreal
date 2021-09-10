@@ -167,7 +167,7 @@ public:
 	// ~Begin IAGX_NativeOwner interface.
 	virtual bool HasNative() const override;
 	virtual uint64 GetNativeAddress() const override;
-	virtual void AssignNative(uint64 NativeAddress) override;
+	virtual void SetNativeAddress(uint64 NativeAddress) override;
 	// ~End IAGX_NativeOwner interface.
 
 	/** Get the native AGX Dynamics representation of this constraint. Create it if necessary. */

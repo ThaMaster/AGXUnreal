@@ -52,10 +52,10 @@ uint64 UAGX_WireWinchComponent::GetNativeAddress() const
 	return static_cast<uint64>(WireWinch.GetNativeAddress());
 }
 
-void UAGX_WireWinchComponent::AssignNative(uint64 NativeAddress)
+void UAGX_WireWinchComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
-	WireWinch.AssignNative(static_cast<uintptr_t>(NativeAddress));
+	WireWinch.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
 }
 
 void UAGX_WireWinchComponent::BeginPlay()

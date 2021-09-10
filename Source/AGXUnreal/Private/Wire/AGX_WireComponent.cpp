@@ -1111,7 +1111,7 @@ uint64 UAGX_WireComponent::GetNativeAddress() const
 	return static_cast<uint64>(NativeBarrier.GetNativeAddress());
 }
 
-void UAGX_WireComponent::AssignNative(uint64 NativeAddress)
+void UAGX_WireComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));

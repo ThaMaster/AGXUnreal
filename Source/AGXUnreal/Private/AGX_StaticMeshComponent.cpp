@@ -74,7 +74,7 @@ uint64 UAGX_StaticMeshComponent::GetNativeAddress() const
 	return static_cast<uint64>(NativeBarrier.GetNativeAddress());
 }
 
-void UAGX_StaticMeshComponent::AssignNative(uint64 NativeAddress)
+void UAGX_StaticMeshComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));

@@ -243,7 +243,7 @@ public:
 	// Why can't we inherit from AGX_NativeOwner?
 	bool HasNative() const;
 	uint64 GetNativeAddress() const;
-	void AssignNative(uint64 NativeAddress);
+	void SetNativeAddress(uint64 NativeAddress);
 	//~ End AGX_NativeOwner interface.
 
 	void CreateNative();

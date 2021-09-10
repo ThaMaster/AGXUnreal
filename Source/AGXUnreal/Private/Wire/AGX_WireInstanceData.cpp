@@ -1,6 +1,7 @@
 #include "Wire/AGX_WireInstanceData.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "Wire/AGX_WireComponent.h"
 
 FAGX_WireInstanceData::FAGX_WireInstanceData(const UAGX_WireComponent* Wire)
@@ -38,17 +39,17 @@ void FAGX_WireInstanceData::ApplyToComponent(
 
 	if (Wire->GetNativeAddress() != NativeWireAddress)
 	{
-		Wire->AssignNative(NativeWireAddress);
+		Wire->SetNativeAddress(NativeWireAddress);
 	}
 
 	if (Wire->OwnedBeginWinch.GetNativeAddress() != NativeBeginWinchAddress)
 	{
-		Wire->OwnedBeginWinch.AssignNative(NativeBeginWinchAddress);
+		Wire->OwnedBeginWinch.SetNativeAddress(NativeBeginWinchAddress);
 	}
 
 	if (Wire->OwnedEndWinch.GetNativeAddress() != NativeEndWinchAddress)
 	{
-		Wire->OwnedEndWinch.AssignNative(NativeEndWinchAddress);
+		Wire->OwnedEndWinch.SetNativeAddress(NativeEndWinchAddress);
 	}
 }
 

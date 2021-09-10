@@ -327,7 +327,7 @@ uint64 FAGX_WireWinch::GetNativeAddress() const
 }
 
 /// @todo Rename to SetNativeAddress.
-void FAGX_WireWinch::AssignNative(uint64 NativeAddress)
+void FAGX_WireWinch::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));

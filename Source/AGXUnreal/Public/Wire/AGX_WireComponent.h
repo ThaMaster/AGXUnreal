@@ -816,7 +816,7 @@ public:
 	 */
 	virtual bool HasNative() const override;
 	virtual uint64 GetNativeAddress() const override;
-	virtual void AssignNative(uint64 NativeAddress) override;
+	virtual void SetNativeAddress(uint64 NativeAddress) override;
 	//~ End IAGX_NativeOwner interface.
 
 	/**

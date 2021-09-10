@@ -36,7 +36,7 @@ void FAGX_NativeOwnerInstanceData::ApplyToComponent(
 		return;
 	}
 
-	NativeOwner->AssignNative(NativeAddress);
+	NativeOwner->SetNativeAddress(NativeAddress);
 }
 
 bool FAGX_NativeOwnerInstanceData::ContainsData() const

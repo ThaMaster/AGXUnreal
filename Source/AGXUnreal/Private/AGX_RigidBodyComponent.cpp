@@ -214,7 +214,7 @@ uint64 UAGX_RigidBodyComponent::GetNativeAddress() const
 	return static_cast<uint64>(NativeBarrier.GetNativeAddress());
 }
 
-void UAGX_RigidBodyComponent::AssignNative(uint64 NativeAddress)
+void UAGX_RigidBodyComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));

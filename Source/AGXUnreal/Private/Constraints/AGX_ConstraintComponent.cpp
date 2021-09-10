@@ -442,7 +442,7 @@ uint64 UAGX_ConstraintComponent::GetNativeAddress() const
 	return static_cast<uint64>(NativeBarrier->GetNativeAddress());
 }
 
-void UAGX_ConstraintComponent::AssignNative(uint64 NativeAddress)
+void UAGX_ConstraintComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier->SetNativeAddress(static_cast<uintptr_t>(NativeAddress));

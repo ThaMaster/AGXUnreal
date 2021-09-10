@@ -32,7 +32,7 @@ uint64 UAGX_ShapeComponent::GetNativeAddress() const
 	return static_cast<uint64>(GetNativeBarrier()->GetNativeAddress());
 }
 
-void UAGX_ShapeComponent::AssignNative(uint64 NativeAddress)
+void UAGX_ShapeComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	GetNativeBarrier()->SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
