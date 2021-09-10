@@ -41,10 +41,10 @@
 
 namespace
 {
-	class SingleActorBody final : public FAGXArchiveBody
+	class FSingleActorBody final : public FAGXArchiveBody
 	{
 	public:
-		SingleActorBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
+		FSingleActorBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
 			: Body(InBody)
 			, Helper(InHelper)
 		{
@@ -52,27 +52,27 @@ namespace
 
 		virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateSphere(Barrier, Body);
+			Helper.InstantiateSphere(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateBox(Barrier, Body);
+			Helper.InstantiateBox(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateCylinder(const FCylinderShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateCylinder(Barrier, Body);
+			Helper.InstantiateCylinder(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateCapsule(const FCapsuleShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateCapsule(Barrier, Body);
+			Helper.InstantiateCapsule(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateTrimesh(Barrier, Body);
+			Helper.InstantiateTrimesh(Barrier, *Body.GetOwner(), &Body);
 		}
 
 	private:
