@@ -12,6 +12,7 @@
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/RigidBody.h>
+#include <agxCollide/Geometry.h>
 #include <agx/Encoding.h>
 #include <agx/Hinge.h>
 #include <agx/Prismatic.h>
@@ -41,7 +42,9 @@
 
 namespace
 {
-	void InstantiateShapes(const agxCollide::ShapeRefVector& Shapes, FAGXArchiveBody& ArchiveBody)
+	void InstantiateShapes(
+		const agxCollide::ShapeRefVector& Shapes, FAGXArchiveInstantiator& Instantiator,
+		FAGXArchiveBody* ArchiveBody = nullptr)
 	{
 		for (const agxCollide::ShapeRef& Shape : Shapes)
 		{
@@ -50,48 +53,50 @@ namespace
 				case agxCollide::Shape::SPHERE:
 				{
 					agxCollide::Sphere* Sphere {Shape->as<agxCollide::Sphere>()};
-					ArchiveBody.InstantiateSphere(
-						AGXBarrierFactories::CreateSphereShapeBarrier(Sphere));
+					Instantiator.InstantiateSphere(
+						AGXBarrierFactories::CreateSphereShapeBarrier(Sphere), ArchiveBody);
 					break;
 				}
 				case agxCollide::Shape::BOX:
 				{
 					agxCollide::Box* Box {Shape->as<agxCollide::Box>()};
-					ArchiveBody.InstantiateBox(AGXBarrierFactories::CreateBoxShapeBarrier(Box));
+					Instantiator.InstantiateBox(
+						AGXBarrierFactories::CreateBoxShapeBarrier(Box), ArchiveBody);
 					break;
 				}
 				case agxCollide::Shape::CYLINDER:
 				{
 					agxCollide::Cylinder* Cylinder {Shape->as<agxCollide::Cylinder>()};
-					ArchiveBody.InstantiateCylinder(
-						AGXBarrierFactories::CreateCylinderShapeBarrier(Cylinder));
+					Instantiator.InstantiateCylinder(
+						AGXBarrierFactories::CreateCylinderShapeBarrier(Cylinder), ArchiveBody);
 					break;
 				}
 				case agxCollide::Shape::CAPSULE:
 				{
 					agxCollide::Capsule* Capsule {Shape->as<agxCollide::Capsule>()};
-					ArchiveBody.InstantiateCapsule(
-						AGXBarrierFactories::CreateCapsuleShapeBarrier(Capsule));
+					Instantiator.InstantiateCapsule(
+						AGXBarrierFactories::CreateCapsuleShapeBarrier(Capsule), ArchiveBody);
 					break;
 				}
 				case agxCollide::Shape::TRIMESH:
 				{
 					agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
-					ArchiveBody.InstantiateTrimesh(
-						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh));
+					Instantiator.InstantiateTrimesh(
+						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh), ArchiveBody);
 					break;
 				}
 				case agxCollide::Shape::GROUP:
 				{
 					agxCollide::ShapeGroup* Group {Shape->as<agxCollide::ShapeGroup>()};
-					InstantiateShapes(Group->getChildren(), ArchiveBody);
+					InstantiateShapes(Group->getChildren(), Instantiator, ArchiveBody);
 					break;
 				}
 			}
 		}
 	}
 
-	void InstantiateShapes(agx::RigidBody* Body, FAGXArchiveBody& ArchiveBody)
+	void InstantiateShapesInBody(
+		agx::RigidBody* Body, FAGXArchiveBody& ArchiveBody, FAGXArchiveInstantiator& Instantiator)
 	{
 		if (Body == nullptr)
 		{
@@ -101,7 +106,7 @@ namespace
 		const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
 		for (const agxCollide::GeometryRef& Geometry : Geometries)
 		{
-			::InstantiateShapes(Geometry->getShapes(), ArchiveBody);
+			::InstantiateShapes(Geometry->getShapes(), Instantiator, &ArchiveBody);
 		}
 	}
 }
@@ -187,12 +192,14 @@ namespace
 
 			if (ArchiveBodies.TireBodyArchive)
 			{
-				::InstantiateShapes(Tire->getTireRigidBody(), *ArchiveBodies.TireBodyArchive);
+				::InstantiateShapesInBody(
+					Tire->getTireRigidBody(), *ArchiveBodies.TireBodyArchive, Instantiator);
 			}
 
 			if (ArchiveBodies.HubBodyArchive)
 			{
-				::InstantiateShapes(Tire->getHubRigidBody(), *ArchiveBodies.HubBodyArchive);
+				::InstantiateShapesInBody(
+					Tire->getHubRigidBody(), *ArchiveBodies.HubBodyArchive, Instantiator);
 			}
 		}
 	}
@@ -225,8 +232,31 @@ namespace
 
 			if (ArchiveBody)
 			{
-				::InstantiateShapes(Body, *ArchiveBody);
+				::InstantiateShapesInBody(Body, *ArchiveBody, Instantiator);
 			}
+		}
+	}
+
+	// Reads and instantiates all Geometries not owned by a RigidBody.
+	void ReadBodilessGeometries(
+		agxSDK::Simulation& Simulation, const FString& Filename,
+		FAGXArchiveInstantiator& Instantiator)
+	{
+		const agxCollide::GeometryRefVector& Geometries = Simulation.getGeometries();
+		if (Geometries.size() > size_t(std::numeric_limits<int32>::max()))
+		{ /// \todo Are there checks really necessary?
+			UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many geometries."), *Filename);
+			return;
+		}
+
+		for (const agxCollide::GeometryRef& Geometry : Geometries)
+		{
+			if (Geometry == nullptr || Geometry->getRigidBody() != nullptr)
+			{
+				continue;
+			}
+
+			::InstantiateShapes(Geometry->getShapes(), Instantiator);
 		}
 	}
 
@@ -336,7 +366,7 @@ FSuccessOrError FAGXArchiveReader::Read(
 			FString::Printf(TEXT("Could not read .agx file '%s':\n\n%s"), *Filename, *What));
 	}
 
-	const float AmountOfWork = 5.0f; // Keep up to date with the number of /Read.+/-calls.
+	const float AmountOfWork = 6.0f; // Keep up to date with the number of /Read.+/-calls.
 	FScopedSlowTask MyTask(
 		AmountOfWork, LOCTEXT("CreateAGXObjects", "Create AGX Dynamics for Unreal objects"), true);
 	MyTask.MakeDialog();
@@ -349,6 +379,9 @@ FSuccessOrError FAGXArchiveReader::Read(
 
 	MyTask.EnterProgressFrame(1.0f);
 	::ReadRigidBodies(*Simulation, Filename, Instantiator);
+
+	MyTask.EnterProgressFrame(1.0f);
+	::ReadBodilessGeometries(*Simulation, Filename, Instantiator);
 
 	MyTask.EnterProgressFrame(1.0f);
 	::ReadConstraints(*Simulation, Filename, Instantiator);
