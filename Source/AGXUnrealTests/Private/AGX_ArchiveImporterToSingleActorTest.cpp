@@ -1752,5 +1752,150 @@ bool FClearRigidBodyPropertiesImportedCommand::Update()
 	return true;
 }
 
+//
+// Simple geometries test starts here.
+//
+
+class FArchiveImporterToSingleActor_SimpleGeometriesTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckSimpleGeometriesImportedCommand, FArchiveImporterToSingleActor_SimpleGeometriesTest&,
+	Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearSimpleGeometriesImportedCommand, FArchiveImporterToSingleActor_SimpleGeometriesTest&,
+	Test);
+
+class FArchiveImporterToSingleActor_SimpleGeometriesTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_SimpleGeometriesTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_SimpleGeometriesTest"),
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.SimpleGeometries"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("single_geometries_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckSimpleGeometriesImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearSimpleGeometriesImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_SimpleGeometriesTest
+		ArchiveImporterToSingleActor_SimpleGeometriesTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script single_geometries.agxPy.
+ * @return true when the check is complete. Never returns false.
+ */
+bool FCheckSimpleGeometriesImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import SimpleGeometries test scene: No content created."));
+		return true;
+	}
+
+	auto testShape = [this](USceneComponent* c, const FVector& ExpectedAGXWorldPos)
+	{
+		Test.TestNotNull(TEXT("Component exists"), c);
+		const FVector ExpectedUnrealPos = AgxToUnrealVector(ExpectedAGXWorldPos);
+		Test.TestEqual(TEXT("Component position"), c->GetComponentLocation(), ExpectedUnrealPos);
+	};
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// 5 Rigid Bodies, 10 Geometries, 2 Static Meshes and 1 Default Scene Root.
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 18);
+
+	testShape(
+		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("sphereGeometry")),
+		FVector(0.f, 0.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_BoxShapeComponent>(Components, TEXT("boxGeometry")), FVector(2.f, 0.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_CylinderShapeComponent>(Components, TEXT("cylinderGeometry")),
+		FVector(4.f, 0.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_CapsuleShapeComponent>(Components, TEXT("capsuleGeometry")),
+		FVector(6.f, 0.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("trimeshGeometry")),
+		FVector(8.f, 0.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("sphereGeometryFree")),
+		FVector(0.f, 2.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_BoxShapeComponent>(Components, TEXT("boxGeometryFree")),
+		FVector(2.f, 2.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_CylinderShapeComponent>(Components, TEXT("cylinderGeometryFree")),
+		FVector(4.f, 2.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_CapsuleShapeComponent>(Components, TEXT("capsuleGeometryFree")),
+		FVector(6.f, 2.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("trimeshGeometryFree")),
+		FVector(8.f, 2.f, 0.f));
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearSimpleGeometriesImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+	TArray<const TCHAR*> ExpectedFiles = {TEXT("StaticMeshs"), TEXT("trimeshShape.uasset"),
+										  TEXT("trimeshShapeFree.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("single_geometries_build"), ExpectedFiles);
+
+	return true;
+}
+
 // WITH_DEV_AUTOMATION_TESTS
 #endif
