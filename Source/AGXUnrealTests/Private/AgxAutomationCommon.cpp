@@ -9,7 +9,6 @@
 #include "Engine/EngineTypes.h"
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
-#include "EditorAssetLibrary.h"
 
 UWorld* AgxAutomationCommon::GetTestWorld()
 {
@@ -206,21 +205,81 @@ FString AgxAutomationCommon::GetArchivePath(const FString& ArchiveName)
 	return GetArchivePath(*ArchiveName);
 }
 
-bool AgxAutomationCommon::DeleteImportDirectory(const FString& ArchiveName)
+bool AgxAutomationCommon::DeleteImportDirectory(
+	const TCHAR* ArchiveName, const TArray<const TCHAR*>& ExpectedFileAndDirectoryNames)
 {
-	if (ArchiveName.Contains("/") || ArchiveName.Contains("\\"))
+	/// @todo There is probably a correct way to delete assets but I haven't been able to get it to
+	/// work. See attempts below. For now we just delete the files.
+
+	// The is the sledgehammer appraoch. I don't expect Unreal Engine to like this.
+	// I have tried a few variantes (see below) to do this cleanly via the Engine API but I don't
+	// know what I'm doing and it always crashes. Doing filesystem delete for now. Nothing is
+	// referencing theses assets and nothing ever will again, and the engine will shut down shortly,
+	// at least if the tests are being run from the command line.
+	//
+	// I'm just worried that the wrong directory may be deleted in some circumstances.
+
+	const FString Root = FPaths::ProjectContentDir();
+	const FString ImportsLocal = FPaths::Combine(TEXT("ImportedAgxArchives"), ArchiveName);
+	const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
+	const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
+	if (ImportsFull == Root)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Archive name %s includes '/' or '\' which is not allowed."),
-			*ArchiveName);
+			TEXT("Cannot delete import directory for archive '%s': Directory path is the same as "
+				 "the project content directory."),
+			ArchiveName)
+		return false;
+	}
+	if (ImportsAbsolute.IsEmpty())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot delete import directory for archive '%s': Directory path is the empty "
+				 "string."),
+			ArchiveName);
+		return false;
+	}
+	if (!FPaths::DirectoryExists(ImportsAbsolute))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot delete import directory for archive '%s': Directory '%s' does not exist."),
+			ArchiveName, *ImportsAbsolute)
 		return false;
 	}
 
-	const FString ImportsLocal = FPaths::Combine(TEXT("ImportedAgxArchives"), ArchiveName);
-	const FString ArchivePath = "/Game/" + ImportsLocal;
+	TArray<FString> DirectoryContents;
+	IFileManager::Get().FindFilesRecursive(
+		DirectoryContents, *ImportsAbsolute, TEXT("*"), true, true);
+	if (DirectoryContents.Num() != ExpectedFileAndDirectoryNames.Num())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT(
+				"Cannot delete import directory for archive '%s': Directory '%s' contains "
+				"unexpected files or directories. Expected %d files and directories but found %d."),
+			ArchiveName, *ImportsAbsolute, ExpectedFileAndDirectoryNames.Num(),
+			DirectoryContents.Num())
+		return false;
+	}
+	for (const FString& Entry : DirectoryContents)
+	{
+		const FString Name = FPaths::GetCleanFilename(Entry);
+		if (!ExpectedFileAndDirectoryNames.ContainsByPredicate(
+				[&Name](const TCHAR* E) { return Name == E; }))
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Cannot delete import directory for archive '%s': Directory '%s' contains "
+					 "unexpected files or directories. Found unexpected file or directory '%s'."),
+				ArchiveName, *ImportsAbsolute, *Name)
+			return false;
+		}
+	}
+	return IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true);
 
-	return UEditorAssetLibrary::DeleteDirectory(ArchivePath);
 #if 0
 	// An attempt at deleting the StaticMesh asset.
 	// Crashes on GEditor->Something because GEditor is nullptr.

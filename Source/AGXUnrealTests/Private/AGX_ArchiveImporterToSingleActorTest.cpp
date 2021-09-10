@@ -739,7 +739,7 @@ bool FClearSimpleTrimeshImportedCommand::Update()
 	Test.World->DestroyActor(Test.Contents);
 
 	TArray<const TCHAR*> ExpectedFiles = {TEXT("StaticMeshs"), TEXT("simple_trimesh.uasset")};
-	AgxAutomationCommon::DeleteImportDirectory(TEXT("simple_trimesh_build"));
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("simple_trimesh_build"), ExpectedFiles);
 
 	return true;
 }
@@ -1084,7 +1084,7 @@ bool FClearRenderMaterialImportedCommand::Update()
 		TEXT("RenderMaterial_D4164CD0F7CD4A1706FC2B7E85ACE0F0.uasset"),
 		TEXT("RenderMaterial_F41041270F6DCA5B49388F72978AFC64.uasset")};
 
-	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_materials_build"));
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_materials_build"), ExpectedFiles);
 
 	return true;
 }
@@ -1891,7 +1891,9 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
-	AgxAutomationCommon::DeleteImportDirectory(TEXT("single_geometries_build"));
+	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("StaticMeshs"), TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("single_geometries_build"), ExpectedFiles);
 
 	return true;
 }

@@ -117,7 +117,8 @@ namespace AgxAutomationCommon
 	 * the directory.
 	 * @return True if the directory was deleted. False otherwise.
 	 */
-	bool DeleteImportDirectory(const FString& ArchiveName);
+	bool DeleteImportDirectory(
+		const TCHAR* ArchiveName, const TArray<const TCHAR*>& ExpectedFileAndDirectoryNames);
 
 	template <typename T>
 	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
