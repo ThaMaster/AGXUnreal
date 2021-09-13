@@ -208,7 +208,7 @@ FVector FSimulationBarrier::GetUniformGravity() const
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("GetUniformGravity failed, native Simulation does not have a gravity field."));
-		return FVector();
+		return FVector(ForceInit);
 	}
 
 	agx::UniformGravityField* UniformField = dynamic_cast<agx::UniformGravityField*>(GravityField);
@@ -218,7 +218,7 @@ FVector FSimulationBarrier::GetUniformGravity() const
 			LogAGX, Error,
 			TEXT("GetUniformGravity called on Simulation with a Gravity Field that is not a "
 				 "UniformGravityField."));
-		return FVector();
+		return FVector(ForceInit);
 	}
 
 	// Convert AGX Dynamics' m/s^2 to Unreal Engine's cm/s^2.
@@ -244,7 +244,7 @@ FVector FSimulationBarrier::GetPointGravity(float& OutMagnitude) const
 			LogAGX, Error,
 			TEXT("GetPointGravity failed, native Simulation does not have a gravity field."));
 		OutMagnitude = 0.f;
-		return FVector();
+		return FVector(ForceInit);
 	}
 
 	agx::PointGravityField* PointField = dynamic_cast<agx::PointGravityField*>(GravityField);
@@ -255,7 +255,7 @@ FVector FSimulationBarrier::GetPointGravity(float& OutMagnitude) const
 			TEXT("GetPointGravity called on Simulation with a Gravity Field that is not a "
 				 "PointGravityField."));
 		OutMagnitude = 0.f;
-		return FVector();
+		return FVector(ForceInit);
 	}
 
 	OutMagnitude = Convert(PointField->getGravity());

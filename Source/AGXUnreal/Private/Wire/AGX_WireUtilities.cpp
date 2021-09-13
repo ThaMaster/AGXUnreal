@@ -74,7 +74,7 @@ namespace AGX_WireUtilities_helpers
 
 		// The above if-else chain is supposed to be exhaustive, should never get here.
 		checkNoEntry();
-		return {FTransform::Identity, FVector(), FRotator()};
+		return {FTransform::Identity, FVector(ForceInit), FRotator(ForceInit)};
 	}
 
 	/*
@@ -109,7 +109,7 @@ namespace AGX_WireUtilities_helpers
 
 		// The above if-else chain is supposed to be exhaustive, should never get here.
 		checkNoEntry();
-		return {FTransform::Identity, FVector(), FRotator()};
+		return {FTransform::Identity, FVector(ForceInit), FRotator(ForceInit)};
 	}
 }
 
@@ -157,7 +157,7 @@ FAGX_WireWinchPose FAGX_WireUtilities::GetWireWinchPose(
 
 	// The above switch statement is supposed to be exhaustive, should never get here.
 	checkNoEntry();
-	return {FTransform::Identity, FVector(), FRotator()};
+	return {FTransform::Identity, FVector(ForceInit), FRotator(ForceInit)};
 }
 
 FAGX_WireWinchPose FAGX_WireUtilities::GetWireWinchPose(const UAGX_WireWinchComponent& WireWinch)

@@ -480,7 +480,7 @@ FVector UAGX_WireWinch_FL::GetLocation(FAGX_WireWinchRef Winch)
 	if (!Winch.IsValid())
 	{
 		UE_LOG(LogAGX, Error, TEXT("Invalid Wire Winch Ref passed to GetLocation."));
-		return FVector();
+		return FVector(ForceInit);
 	}
 	return Winch.Winch->Location;
 }
@@ -500,7 +500,7 @@ FRotator UAGX_WireWinch_FL::GetRotation(FAGX_WireWinchRef Winch)
 	if (!Winch.IsValid())
 	{
 		UE_LOG(LogAGX, Error, TEXT("Invalid Wire Winch Ref passed to GetRotation."));
-		return FRotator();
+		return FRotator(ForceInit);
 	}
 	return Winch.Winch->Rotation;
 }
