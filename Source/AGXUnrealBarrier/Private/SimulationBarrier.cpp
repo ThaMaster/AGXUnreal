@@ -332,8 +332,8 @@ void FSimulationBarrier::Step()
 	}
 	catch (const std::runtime_error& error)
 	{
-		/// @todo We really need to do something here. Should at least prevent the simulation to step
-		/// again as that will likely not
+		/// @todo We really need to do something here. Should at least prevent the simulation from
+		/// stepping again as that will likely not end well.
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Got exception from AGX Dynamics. The simulation state is now unreliable. The "
