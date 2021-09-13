@@ -76,6 +76,7 @@ void FAGX_WireComponentVisualizer::OnRegister()
 namespace AGX_WireComponentVisualizer_helpers
 {
 	constexpr uint32 NUM_NODE_COLORS = (uint32) EWireNodeType::NUM_NODE_TYPES;
+	constexpr float NodeHandleSize = 10.0f;
 
 	TStaticArray<FLinearColor, NUM_NODE_COLORS> CreateWireNodeColors()
 	{
@@ -116,7 +117,6 @@ namespace AGX_WireComponentVisualizer_helpers
 		for (int32 I = 0; I < NumNodes; ++I)
 		{
 			const FWireRoutingNode& Node = Nodes[I];
-			const float NodeHandleSize = 10.0f;
 			const FLinearColor NodeColor = NodeColorFunc(I, Node.NodeType);
 			const FVector Location = LocalToWorld.TransformPosition(Node.Location);
 
@@ -176,7 +176,6 @@ namespace AGX_WireComponentVisualizer_helpers
 			const FLinearColor Color = WireNodeTypeToColor(NodeType);
 			const FVector Location = Node.GetWorldLocation();
 
-			const float NodeHandleSize = 10.0f;
 			PDI->DrawPoint(Location, Color, NodeHandleSize, SDPG_Foreground);
 			if (PrevLocation.IsSet())
 			{
