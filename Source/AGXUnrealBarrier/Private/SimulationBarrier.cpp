@@ -338,7 +338,10 @@ void FSimulationBarrier::Step()
 			LogAGX, Error,
 			TEXT("Got exception from AGX Dynamics. The simulation state is now unreliable. The "
 				 "scene should be recreated."));
-		UE_LOG(LogAGX, Error, TEXT("LogAGXDynamics may contain additional information."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("The LogAGXDynamics log category may contain additional information, see either "
+				 "the Output Log panel in Unreal Editor or the log file."));
 		UE_LOG(LogAGX, Error, TEXT("Error message: %s"), UTF8_TO_TCHAR(error.what()));
 	}
 }
