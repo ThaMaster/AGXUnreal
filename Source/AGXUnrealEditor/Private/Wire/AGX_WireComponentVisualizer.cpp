@@ -100,6 +100,83 @@ public:
 		Visualizer.SelectedNodeIndex = INDEX_NONE;
 		Visualizer.WirePropertyPath = FComponentPropertyPath(&Wire);
 	}
+
+	static void NodeProxyDragged(
+		FAGX_WireComponentVisualizer& Visualizer, UAGX_WireComponent& Wire,
+		FEditorViewportClient& ViewportClient, const FVector& DeltaTranslate)
+	{
+
+		if (DeltaTranslate.IsZero() || ViewportClient.GetWidgetMode() != FWidget::WM_Translate)
+		{
+			return;
+		}
+
+		/// @todo Is this Modify necessary? Compare with SplineComponentVisualizer.
+		Wire.Modify();
+
+		if (ViewportClient.IsAltPressed())
+		{
+			// A drag with Alt held down means that the current node should be duplicated and the
+			// copy selected.
+
+			if (!Visualizer.bIsDuplicatingNode)
+			{
+				// This is the start of a duplication drag. Create the duplicate and select it.
+				DuplicateNode(Visualizer, Wire);
+			}
+			else
+			{
+				// This is a continuation of a previously started duplication drag. Move the
+				// selected node, i.e., the copy.
+				MoveNode(Visualizer, Wire, DeltaTranslate);
+			}
+		}
+		else
+		{
+			// This is a regular drag, move the selected node.
+			MoveNode(Visualizer, Wire, DeltaTranslate);
+		}
+	}
+
+	static void DuplicateNode(FAGX_WireComponentVisualizer& Visualizer, UAGX_WireComponent& Wire)
+	{
+		Visualizer.bIsDuplicatingNode = true;
+		int32 NewNodeIndex = Visualizer.SelectedNodeIndex + 1;
+		FWireRoutingNode Clone = FWireRoutingNode(Wire.RouteNodes[Visualizer.SelectedNodeIndex]);
+		Wire.RouteNodes.Insert(Clone, NewNodeIndex);
+		Visualizer.SelectedNodeIndex = NewNodeIndex;
+		Visualizer.NotifyPropertyModified(&Wire, Visualizer.RouteNodesProperty);
+	}
+
+	static void MoveNode(
+		FAGX_WireComponentVisualizer& Visualizer, UAGX_WireComponent& Wire,
+		const FVector& DeltaTranslate)
+	{
+		const FTransform& LocalToWorld = Wire.GetComponentTransform();
+		FWireRoutingNode& SelectedNode = Wire.RouteNodes[Visualizer.SelectedNodeIndex];
+		const FVector CurrentLocalLocation = SelectedNode.Location;
+		const FVector CurrentWorldLocation = LocalToWorld.TransformPosition(CurrentLocalLocation);
+		const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
+		const FVector NewLocalLocation = LocalToWorld.InverseTransformPosition(NewWorldLocation);
+		SelectedNode.Location = NewLocalLocation;
+		Visualizer.NotifyPropertyModified(&Wire, Visualizer.RouteNodesProperty);
+	}
+
+	static void WinchProxyDragged(
+		FAGX_WireComponentVisualizer& Visualizer, UAGX_WireComponent& Wire,
+		const FVector& DeltaTranslate, const FRotator& DeltaRotate)
+	{
+		FAGX_WireWinch& Winch = *Wire.GetWinch(Visualizer.SelectedWinch);
+		const FTransform& WinchToWorld =
+			FAGX_WireUtilities::GetWinchLocalToWorld(Wire, Visualizer.SelectedWinch);
+		AGX_WireVisualization_helpers::TransformWinch(
+			Winch, WinchToWorld, Visualizer.SelectedWinchSide, DeltaTranslate, DeltaRotate);
+
+		FProperty* EditedProperty = Visualizer.SelectedWinch == EWireSide::Begin
+										? Visualizer.BeginWinchProperty
+										: Visualizer.EndWinchProperty;
+		Visualizer.NotifyPropertyModified(&Wire, EditedProperty);
+	}
 };
 
 /**
@@ -426,77 +503,11 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 
 	if (HasValidNodeSelection())
 	{
-		if (DeltaTranslate.IsZero())
-		{
-			return true;
-		}
-
-		/// @todo Is this Modify necessary? Compare with SplineComponentVisualizer.
-		Wire->Modify();
-		TArray<FWireRoutingNode>& Nodes = Wire->RouteNodes;
-
-		if (ViewportClient->IsAltPressed())
-		{
-			if (ViewportClient->GetWidgetMode() != FWidget::WM_Translate)
-			{
-				return false;
-			}
-
-			// A drag with Alt held down means that the current node should be duplicated and the
-			// copy selected.
-
-			if (!bIsDuplicatingNode)
-			{
-				// This is the start of a duplication drag. Create the duplicate and select it.
-				bIsDuplicatingNode = true;
-				int32 NewNodeIndex = SelectedNodeIndex + 1;
-				Wire->RouteNodes.Insert(FWireRoutingNode(Nodes[SelectedNodeIndex]), NewNodeIndex);
-				SelectedNodeIndex = NewNodeIndex;
-				NotifyPropertyModified(
-					Wire, FindFProperty<FProperty>(
-							  UAGX_WireComponent::StaticClass(),
-							  GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
-			}
-			else
-			{
-				// This is a continuation of a previously started duplication drag. Move the
-				// selected node, i.e., the copy.
-				const FTransform& LocalToWorld = Wire->GetComponentTransform();
-				FWireRoutingNode& SelectedNode = Wire->RouteNodes[SelectedNodeIndex];
-				const FVector CurrentLocalLocation = SelectedNode.Location;
-				const FVector CurrentWorldLocation =
-					LocalToWorld.TransformPosition(CurrentLocalLocation);
-				const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
-				const FVector NewLocalLocation =
-					LocalToWorld.InverseTransformPosition(NewWorldLocation);
-				SelectedNode.Location = NewLocalLocation;
-				NotifyPropertyModified(Wire, RouteNodesProperty);
-			}
-		}
-		else
-		{
-			// This is a regular drag, move the selected node.
-			const FTransform& LocalToWorld = Wire->GetComponentTransform();
-			FWireRoutingNode& SelectedNode = Wire->RouteNodes[SelectedNodeIndex];
-			const FVector CurrentLocalLocation = SelectedNode.Location;
-			const FVector CurrentWorldLocation =
-				LocalToWorld.TransformPosition(CurrentLocalLocation);
-			const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
-			const FVector NewLocalLocation =
-				LocalToWorld.InverseTransformPosition(NewWorldLocation);
-			SelectedNode.Location = NewLocalLocation;
-			NotifyPropertyModified(Wire, RouteNodesProperty);
-		}
+		FWireVisualizerOperations::NodeProxyDragged(*this, *Wire, *ViewportClient, DeltaTranslate);
 	}
 	else if (HasValidWinchSelection())
 	{
-		FAGX_WireWinch& Winch = *Wire->GetWinch(SelectedWinch);
-		const FTransform& WinchToWorld =
-			FAGX_WireUtilities::GetWinchLocalToWorld(*Wire, SelectedWinch);
-		AGX_WireVisualization_helpers::TransformWinch(
-			Winch, WinchToWorld, SelectedWinchSide, DeltaTranslate, DeltaRotate);
-		NotifyPropertyModified(
-			Wire, SelectedWinch == EWireSide::Begin ? BeginWinchProperty : EndWinchProperty);
+		FWireVisualizerOperations::WinchProxyDragged(*this, *Wire, DeltaTranslate, DeltaRotate);
 	}
 	else
 	{
@@ -612,10 +623,7 @@ void FAGX_WireComponentVisualizer::OnDeleteKey()
 	SelectedNodeIndex = INDEX_NONE;
 	bIsDuplicatingNode = false;
 
-	NotifyPropertyModified(
-		GetSelectedWire(), FindFProperty<FProperty>(
-							   UAGX_WireComponent::StaticClass(),
-							   GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes)));
+	NotifyPropertyModified(GetSelectedWire(), RouteNodesProperty);
 
 	GEditor->RedrawLevelEditingViewports(true);
 }
