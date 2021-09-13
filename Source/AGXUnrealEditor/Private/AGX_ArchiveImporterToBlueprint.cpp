@@ -129,27 +129,27 @@ namespace
 
 		virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateSphere(Barrier, Body);
+			Helper.InstantiateSphere(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateBox(Barrier, Body);
+			Helper.InstantiateBox(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateCylinder(const FCylinderShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateCylinder(Barrier, Body);
+			Helper.InstantiateCylinder(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateCapsule(const FCapsuleShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateCapsule(Barrier, Body);
+			Helper.InstantiateCapsule(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateTrimesh(Barrier, Body);
+			Helper.InstantiateTrimesh(Barrier, *Body.GetOwner(), &Body);
 		}
 
 	private:
@@ -224,6 +224,71 @@ namespace
 			UAGX_ConstraintComponent* Constraint =
 				Helper.InstantiateLockJoint(Barrier, BlueprintTemplate);
 			ClearOwningActors(Constraint);
+		}
+
+		virtual void InstantiateSphere(
+			const FSphereShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateSphere(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateSphere(Barrier, BlueprintTemplate);
+			}
+		}
+
+		virtual void InstantiateBox(
+			const FBoxShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateBox(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateBox(Barrier, BlueprintTemplate);
+			}
+		}
+
+		virtual void InstantiateCylinder(
+			const FCylinderShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateCylinder(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateCylinder(Barrier, BlueprintTemplate);
+			}
+		}
+
+		virtual void InstantiateCapsule(
+			const FCapsuleShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateCapsule(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateCapsule(Barrier, BlueprintTemplate);
+			}
+		}
+
+		virtual void InstantiateTrimesh(
+			const FTrimeshShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateTrimesh(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateTrimesh(Barrier, BlueprintTemplate);
+			}
 		}
 
 		void ClearOwningActors(UAGX_ConstraintComponent* Constraint)
@@ -353,8 +418,8 @@ namespace
 			/// @todo Is there some clean-up I need to do for RootActorContainer and/or
 			/// EmptyActorAsset here? I tried with MarkPendingKill but that caused
 			///    Assertion failed: !IsRooted()
-			//RootActorContainer->MarkPendingKill();
-			//EmptyActorAsset->MarkPendingKill();
+			// RootActorContainer->MarkPendingKill();
+			// EmptyActorAsset->MarkPendingKill();
 			return nullptr;
 		}
 

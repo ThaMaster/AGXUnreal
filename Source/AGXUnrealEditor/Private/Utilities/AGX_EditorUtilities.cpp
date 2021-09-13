@@ -96,9 +96,12 @@ namespace
 		{
 			Shape->RegisterComponent();
 		}
-		const bool Attached = Shape->AttachToComponent(
-			Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-		check(Attached);
+		if (Outer)
+		{
+			const bool Attached = Shape->AttachToComponent(
+				Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			check(Attached);
+		}
 		return Shape;
 	}
 
