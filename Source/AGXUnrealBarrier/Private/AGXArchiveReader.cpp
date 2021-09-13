@@ -11,16 +11,15 @@
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
-#include <agx/RigidBody.h>
-#include <agxCollide/Geometry.h>
-#include <agx/Encoding.h>
-#include <agx/Hinge.h>
-#include <agx/Prismatic.h>
 #include <agx/BallJoint.h>
 #include <agx/CylindricalJoint.h>
 #include <agx/DistanceJoint.h>
+
+#include <agx/Encoding.h>
+#include <agx/Hinge.h>
 #include <agx/LockJoint.h>
-#include <agxModel/TwoBodyTire.h>
+#include <agx/Prismatic.h>
+#include <agx/RigidBody.h>
 
 // In 2.28 including Cable.h causes a preprocessor macro named DEPRECATED to be defined. This
 // conflicts with a macro with the same name in Unreal. Undeffing the Unreal one.
@@ -28,9 +27,10 @@
 #undef DEPRECATED
 #include <agxCable/Cable.h>
 
-#include <agxCollide/Geometry.h>
 #include <agxCollide/Box.h>
+#include <agxCollide/Geometry.h>
 #include <agxCollide/Trimesh.h>
+#include <agxModel/TwoBodyTire.h>
 #include <agxSDK/Simulation.h>
 #include <agxWire/Wire.h>
 #include "EndAGXIncludes.h"
