@@ -2,6 +2,7 @@
 
 // Unreal Engine includes.
 #include "Math/Interval.h"
+#include "Math/UnrealMathUtility.h"
 
 #include "DoubleInterval.generated.h"
 
@@ -50,6 +51,11 @@ public:
 		Sort();
 	}
 
+	bool IsNearlyZero(double Tolerance = SMALL_NUMBER) const
+	{
+		return FMath::IsNearlyZero(Min, Tolerance) && FMath::IsNearlyZero(Max, Tolerance);
+	}
+
 	bool IsZero() const
 	{
 		return Min == 0.0 && Max == 0.0;
@@ -63,6 +69,5 @@ public:
 		}
 	}
 };
-
 
 #endif
