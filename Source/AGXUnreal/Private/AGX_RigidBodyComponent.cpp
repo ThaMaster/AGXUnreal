@@ -913,61 +913,45 @@ FVector UAGX_RigidBodyComponent::GetForce() const
 	return NativeBarrier.GetForce();
 }
 
-void UAGX_RigidBodyComponent::AddTorqueAtCenterOfMass(const FVector& Torque)
+void UAGX_RigidBodyComponent::AddTorqueLocal(const FVector& Torque)
 {
 	if (!HasNative())
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Must have a native AGX Dynamics representation of RigidBody '%s' to call "
-				 "AddTorque."),
+				 "AddTorqueLocal."),
 			*GetName());
 		return;
 	}
 
-	NativeBarrier.AddCenterOfMassTorque(Torque);
+	NativeBarrier.AddTorqueLocal(Torque);
 }
 
-void UAGX_RigidBodyComponent::AddTorqueAtWorldLocation(
-	const FVector& Torque, const FVector& Location)
+void UAGX_RigidBodyComponent::AddTorqueWorld(const FVector& Torque)
 {
 	if (!HasNative())
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Must have a native AGX Dynamics representation of RigidBody '%s' to call "
-				 "AddTorque."),
+				 "AddTorqueWorld."),
 			*GetName());
 		return;
 	}
 
-	NativeBarrier.AddWorldTorque(Torque);
+	NativeBarrier.AddTorqueWorld(Torque);
 }
-
-#if 0
-void UAGX_RigidBodyComponent::AddTorqueAtLocalLocation(
-	const FVector& Torque, const FVector& Location)
-{
-	if (!HasNative())
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Must have a native AGX Dynamics representation of RigidBody '%s' to call "
-				 "AddTorque."),
-			*GetName());
-		return;
-	}
-	const FVector WorldLocation = GetComponentTransform().InverseTransformPosition(Location);
-	/// @todo How to I transform the local torque at Location to the corresponding toque at
-	/// WorldLocation?
-	NativeBarrier.AddWorldTorque(Torque);
-}
-#endif
 
 FVector UAGX_RigidBodyComponent::GetTorque() const
 {
 	if (!HasNative())
 	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Must have a native AGX Dynamics representation of RigidBody '%s' to call "
+				 "GetTorque."),
+			*GetName());
 		return FVector::ZeroVector;
 	}
 

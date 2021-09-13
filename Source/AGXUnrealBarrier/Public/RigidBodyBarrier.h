@@ -73,8 +73,8 @@ public:
 	void AddForceAtWorldLocation(const FVector& Force, const FVector& Location);
 	FVector GetForce() const;
 
-	void AddWorldTorque(const FVector& Torque);
-	void AddCenterOfMassTorque(const FVector& Torque);
+	void AddTorqueWorld(const FVector& Torque);
+	void AddTorqueLocal(const FVector& Torque);
 	FVector GetTorque() const;
 
 	bool HasNative() const;
