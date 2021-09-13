@@ -20,6 +20,88 @@
 
 #define LOCTEXT_NAMESPACE "AGX_WireComponentVisualizer"
 
+class FWireVisualizerOperations
+{
+public:
+	static bool NodeProxyClicked(
+		FAGX_WireComponentVisualizer& Visualizer, const UAGX_WireComponent& Wire, HNodeProxy& Proxy)
+	{
+		if (Wire.IsInitialized())
+		{
+			// Node selection is currently only for route nodes. All node manipulation operations
+			// operate on the route nodes, but when the wire is initialized what we're seeing is
+			// simulation nodes.
+			Visualizer.ClearSelection();
+			return false;
+		}
+		if (Proxy.NodeIndex == Visualizer.SelectedNodeIndex)
+		{
+			// Clicking a selected node deselects it.
+			Visualizer.ClearSelection();
+			return true;
+		}
+		// A new node became selected.
+		SelectNode(Visualizer, Wire, Proxy.NodeIndex);
+		return true;
+	}
+
+	static void SelectNode(
+		FAGX_WireComponentVisualizer& Visualizer, const UAGX_WireComponent& Wire, int32 NodeIndex)
+	{
+		Visualizer.SelectedWinch = EWireSide::None;
+		Visualizer.SelectedWinchSide = EWinchSide::None;
+		Visualizer.SelectedNodeIndex = NodeIndex;
+		Visualizer.WirePropertyPath = FComponentPropertyPath(&Wire);
+	}
+
+	static bool WinchLocationProxyClicked(
+		FAGX_WireComponentVisualizer& Visualizer, const UAGX_WireComponent& Wire,
+		HWinchLocationProxy& Proxy)
+	{
+		return WinchProxyClicked(Visualizer, Wire, Proxy.Side, EWinchSide::Location);
+	}
+
+	static bool WinchDirectionProxyClicked(
+		FAGX_WireComponentVisualizer& Visualizer, const UAGX_WireComponent& Wire,
+		HWinchDirectionProxy& Proxy)
+	{
+		return WinchProxyClicked(Visualizer, Wire, Proxy.Side, EWinchSide::Rotation);
+	}
+
+	static bool WinchProxyClicked(
+		FAGX_WireComponentVisualizer& Visualizer, const UAGX_WireComponent& Wire,
+		EWireSide& WireSide, EWinchSide WinchSide)
+	{
+		if (Wire.IsInitialized())
+		{
+			/// @todo Figure out how, if possible, one can move/orient an AGX Dynamics Wire Winch
+			/// Controller during runtime. For now we don't allow editing a Wire Winch after the
+			/// simulation has started.
+			Visualizer.ClearSelection();
+			return false;
+		}
+		if (Visualizer.SelectedWinch == WireSide && Visualizer.SelectedWinchSide == WinchSide)
+		{
+			// Clicking a selected winch deselects it.
+			Visualizer.ClearSelection();
+			return true;
+		}
+		// A new winch became selected.
+		SelectWinch(Visualizer, Wire, WireSide, WinchSide);
+		return true;
+	}
+
+	static void SelectWinch(
+		FAGX_WireComponentVisualizer& Visualizer, const UAGX_WireComponent& Wire,
+		EWireSide WireSide, EWinchSide WinchSide)
+	{
+		Visualizer.SelectedWinch = WireSide;
+		Visualizer.SelectedWinchSide = WinchSide;
+		Visualizer.SelectedNodeIndex = INDEX_NONE;
+		Visualizer.WirePropertyPath = FComponentPropertyPath(&Wire);
+	}
+};
+
 /**
  * A collection of commands that can be triggered through the Wire Component Visualizer.
  */
@@ -265,90 +347,28 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 
 	if (NewOwningActor != OldOwningActor)
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("WireComponentVisualizer: Owning Actor changed from '%s' to '%s'."),
-			*GetLabelSafe(OldOwningActor), *GetLabelSafe(NewOwningActor));
+		// Don't reuse selection data between Actors. It's completely different wires.
 		ClearSelection();
 	}
 
-	if (HNodeProxy* NodeProxy = HitProxyCast<HNodeProxy>(VisProxy))
+	if (HNodeProxy* Proxy = HitProxyCast<HNodeProxy>(VisProxy))
 	{
-		if (Wire->IsInitialized())
-		{
-			// Node selection is currently only for route nodes. All node manipulation operations
-			// operate on the route nodes, but when the wire is initialized what we're seeing is
-			// simulation nodes.
-			ClearSelection();
-			return false;
-		}
+		return FWireVisualizerOperations::NodeProxyClicked(*this, *Wire, *Proxy);
+	}
+	if (HWinchLocationProxy* Proxy = HitProxyCast<HWinchLocationProxy>(VisProxy))
+	{
+		return FWireVisualizerOperations::WinchLocationProxyClicked(*this, *Wire, *Proxy);
+	}
+	if (HWinchDirectionProxy* Proxy = HitProxyCast<HWinchDirectionProxy>(VisProxy))
+	{
+		return FWireVisualizerOperations::WinchDirectionProxyClicked(*this, *Wire, *Proxy);
+	}
 
-		if (NodeProxy->NodeIndex == SelectedNodeIndex)
-		{
-			// Clicking a selected node deselects it.
-			ClearSelection();
-		}
-		else
-		{
-			// A new node became selected.
-			SelectedWinch = EWireSide::None;
-			SelectedWinchSide = EWinchSide::None;
-			SelectedNodeIndex = NodeProxy->NodeIndex;
-			WirePropertyPath = FComponentPropertyPath(Wire);
-		}
-		return true;
-	}
-	else if (HWinchLocationProxy* WinchLocationProxy = HitProxyCast<HWinchLocationProxy>(VisProxy))
-	{
-		if (Wire->IsInitialized())
-		{
-			ClearSelection();
-			return false;
-		}
-		if (WinchLocationProxy->Side == SelectedWinch && SelectedWinchSide == EWinchSide::Location)
-		{
-			// Clicking a selected winch deselects it.
-			ClearSelection();
-		}
-		else
-		{
-			// A new winch became selected.
-			SelectedWinch = WinchLocationProxy->Side;
-			SelectedWinchSide = EWinchSide::Location;
-			SelectedNodeIndex = INDEX_NONE;
-			WirePropertyPath = FComponentPropertyPath(Wire);
-		}
-		return true;
-	}
-	else if (
-		HWinchDirectionProxy* WinchRotationProxy = HitProxyCast<HWinchDirectionProxy>(VisProxy))
-	{
-		if (Wire->IsInitialized())
-		{
-			ClearSelection();
-			return false;
-		}
-
-		if (WinchRotationProxy->Side == SelectedWinch && SelectedWinchSide == EWinchSide::Rotation)
-		{
-			// Clicking a selected node deselects it.
-			ClearSelection();
-		}
-		else
-		{
-			SelectedWinch = WinchRotationProxy->Side;
-			SelectedWinchSide = EWinchSide::Rotation;
-			SelectedNodeIndex = INDEX_NONE;
-			WirePropertyPath = FComponentPropertyPath(Wire);
-		}
-		return true;
-	}
-	// Add additional Proxy types here, when needed.
+	// Add additional Proxy types here when needed.
 	// Or add a virtual function, that could work as well.
-	else
-	{
-		return false;
-	}
+
+	// The give proxy isn't one of ours, return false to pass on to the next handler in line.
+	return false;
 }
 
 // Called by Unreal Editor to decide where the transform widget should be rendered. We place it on

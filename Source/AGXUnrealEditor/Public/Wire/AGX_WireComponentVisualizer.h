@@ -87,4 +87,7 @@ private:
 	bool bIsDuplicatingNode = false;
 
 	TSharedPtr<FUICommandList> CommandList;
+
+	/// A library of helper function manipulating the private state of FAGX_WireComponentVisualizer.
+	friend class FWireVisualizerOperations;
 };
