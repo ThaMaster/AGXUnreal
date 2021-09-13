@@ -499,7 +499,7 @@ FRotator UAGX_WireWinch_FL::GetRotation(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{
-		UE_LOG(LogAGX, Error, TEXT("Invalid Wire Winch Ref passed to ."));
+		UE_LOG(LogAGX, Error, TEXT("Invalid Wire Winch Ref passed to GetRotation."));
 		return FRotator();
 	}
 	return Winch.Winch->Rotation;
