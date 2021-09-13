@@ -483,7 +483,7 @@ namespace WireNodeDetails_helpers
 		const FString& RigidBodyName, const TArray<TSharedPtr<FString>>& RigidBodyNames)
 	{
 		const TSharedPtr<FString>* Element =
-			RigidBodyNames.FindByPredicate([RigidBodyName](const TSharedPtr<FString>& Element) {
+			RigidBodyNames.FindByPredicate([&RigidBodyName](const TSharedPtr<FString>& Element) {
 				return *Element == RigidBodyName;
 			});
 		if (Element == nullptr)
