@@ -39,14 +39,13 @@ FVector AGX_WireVisualization_helpers::DrawWinch(
 	FPrimitiveDrawInterface* PDI)
 {
 	FLinearColor Color = FLinearColor::Yellow;
-	float HandleSize = 10.0f;
 
 	// Render winch location marker.
 	const FTransform& LocalToWorld = WinchPose.LocalToWorld;
 	const FVector LocalLocation = WinchPose.LocalLocation;
 	const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
 	PDI->SetHitProxy(LocationProxy);
-	PDI->DrawPoint(WorldLocation, Color, HandleSize, SDPG_Foreground);
+	PDI->DrawPoint(WorldLocation, Color, FAGX_WireUtilities::NodeHandleSize, SDPG_Foreground);
 	PDI->SetHitProxy(nullptr);
 
 	// Render winch direction marker.
@@ -55,7 +54,7 @@ FVector AGX_WireVisualization_helpers::DrawWinch(
 	const FVector WorldDirection = LocalToWorld.TransformVector(LocalDirection);
 	const FVector WorldEndLocation = WorldLocation + (WorldDirection * 100.0f);
 	PDI->SetHitProxy(DirectionProxy);
-	PDI->DrawPoint(WorldEndLocation, Color, HandleSize, SDPG_Foreground);
+	PDI->DrawPoint(WorldEndLocation, Color, FAGX_WireUtilities::NodeHandleSize, SDPG_Foreground);
 	PDI->SetHitProxy(nullptr);
 
 	// Draw a line between the two markers.

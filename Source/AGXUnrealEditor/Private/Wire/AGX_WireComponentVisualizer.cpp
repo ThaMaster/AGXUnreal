@@ -105,7 +105,6 @@ public:
 		FAGX_WireComponentVisualizer& Visualizer, UAGX_WireComponent& Wire,
 		FEditorViewportClient& ViewportClient, const FVector& DeltaTranslate)
 	{
-
 		if (DeltaTranslate.IsZero() || ViewportClient.GetWidgetMode() != FWidget::WM_Translate)
 		{
 			return;
@@ -235,7 +234,6 @@ void FAGX_WireComponentVisualizer::OnRegister()
 namespace AGX_WireComponentVisualizer_helpers
 {
 	constexpr uint32 NumNodeColors = (uint32) EWireNodeType::NUM_NODE_TYPES;
-	constexpr float NodeHandleSize = 10.0f;
 
 	TStaticArray<FLinearColor, NumNodeColors> CreateWireNodeColors()
 	{
@@ -280,7 +278,8 @@ namespace AGX_WireComponentVisualizer_helpers
 			const FVector Location = LocalToWorld.TransformPosition(Node.Location);
 
 			PDI->SetHitProxy(new HNodeProxy(&Wire, I));
-			PDI->DrawPoint(Location, NodeColor, NodeHandleSize, SDPG_Foreground);
+			PDI->DrawPoint(
+				Location, NodeColor, FAGX_WireUtilities::NodeHandleSize, SDPG_Foreground);
 			PDI->SetHitProxy(nullptr);
 
 			if (I > 0)
@@ -335,7 +334,7 @@ namespace AGX_WireComponentVisualizer_helpers
 			const FLinearColor Color = WireNodeTypeToColor(NodeType);
 			const FVector Location = Node.GetWorldLocation();
 
-			PDI->DrawPoint(Location, Color, NodeHandleSize, SDPG_Foreground);
+			PDI->DrawPoint(Location, Color, FAGX_WireUtilities::NodeHandleSize, SDPG_Foreground);
 			if (PrevLocation.IsSet())
 			{
 				PDI->DrawLine(*PrevLocation, Location, FLinearColor::White, SDPG_Foreground);

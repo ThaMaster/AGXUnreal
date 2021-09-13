@@ -75,4 +75,8 @@ public:
 	 * UProperties.
 	 */
 	static void ComputeSimulationPlacement(FAGX_WireWinch& Winch);
+
+	// The size of Hit Proxies created by the various Wire-related Visualizers we have.
+	// This may become a configurable setting in the future.
+	static constexpr float NodeHandleSize = 10.0f;
 };
