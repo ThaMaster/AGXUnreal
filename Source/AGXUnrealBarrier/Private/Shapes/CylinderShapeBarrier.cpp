@@ -111,7 +111,7 @@ namespace CylinderShapeBarrier_helpers
 		if (Properties == nullptr || !Properties->hasPropertyBool(Property))
 		{
 			// Not having any properties or not having a particular property is the same as having
-			// the property set to false, so need to do anything more.
+			// the property set to false, so no need to do anything more.
 			return;
 		}
 		Properties->removePropertyBool("Pulley");
