@@ -445,7 +445,7 @@ void FWireNodeDetails::Tick(float DeltaTime)
 
 //~ End IDetailCustomNodeBuilder interface
 
-namespace WireNodeDetails_helpers
+namespace WireDetails_helpers
 {
 	bool NodeTypeHasBody(EWireNodeType NodeType)
 	{
@@ -635,7 +635,7 @@ namespace AGX_WireComponentVisualizer_helpers
 	FLinearColor WireNodeTypeToColor(EWireNodeType Type);
 }
 
-namespace WireNodeDetails_helpers
+namespace WireDetails_helpers
 {
 	FLinearColor WireNodeTypeIndexToColor(int32 Type)
 	{
@@ -646,7 +646,7 @@ namespace WireNodeDetails_helpers
 
 TSharedRef<SWidget> FWireNodeDetails::OnGetNodeTypeEntryWidget(TSharedPtr<FString> InComboString)
 {
-	using namespace WireNodeDetails_helpers;
+	using namespace WireDetails_helpers;
 	const int32 EnumIndex = WireNodeTypes.Find(InComboString);
 	const FLinearColor Color = WireNodeTypeIndexToColor(EnumIndex);
 	// clang-format off
@@ -682,7 +682,7 @@ FText FWireNodeDetails::OnGetNodeTypeLabel() const
 
 void FWireNodeDetails::OnSetNodeType(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo)
 {
-	using namespace WireNodeDetails_helpers;
+	using namespace WireDetails_helpers;
 
 	if (bIsRunningCallback)
 	{
@@ -830,7 +830,7 @@ void FWireNodeDetails::OnSetRigidBody(TSharedPtr<FString> NewValue, ESelectInfo:
 
 void FWireNodeDetails::OnSetRigidBodyOwner(AActor* Actor)
 {
-	using namespace WireNodeDetails_helpers;
+	using namespace WireDetails_helpers;
 
 	if (bIsRunningCallback)
 	{
@@ -873,7 +873,7 @@ bool FWireNodeDetails::HasWireAndNodeSelection() const
 
 void FWireNodeDetails::UpdateValues()
 {
-	using namespace WireNodeDetails_helpers;
+	using namespace WireDetails_helpers;
 
 	// Sometimes Tick is called before GenerateChildContent, meaning that Unreal Editor is trying
 	// to update an empty FWireNodeDetails. We detect this by checking for the presence of the
@@ -931,64 +931,6 @@ void FWireNodeDetails::UpdateValues()
 	}
 }
 
-EVisibility FWireNodeDetails::WithSelection() const
-{
-	if (Wire != nullptr && SelectedNodeIndex != INDEX_NONE)
-	{
-		return EVisibility::Visible;
-	}
-	else
-	{
-		return EVisibility::Collapsed;
-	}
-}
-
-EVisibility FWireNodeDetails::WithoutSelection() const
-{
-	if (Wire == nullptr || SelectedNodeIndex == INDEX_NONE)
-	{
-		return EVisibility::Visible;
-	}
-	else
-	{
-		return EVisibility::Collapsed;
-	}
-}
-
-EVisibility FWireNodeDetails::NodeHasRigidBody() const
-{
-	using namespace WireNodeDetails_helpers;
-
-	if (Wire == nullptr || SelectedNodeIndex == INDEX_NONE)
-	{
-		return EVisibility::Collapsed;
-	}
-
-	if (!Wire->RouteNodes.IsValidIndex(SelectedNodeIndex))
-	{
-		return EVisibility::Collapsed;
-	}
-
-	if (!NodeType.IsSet())
-	{
-		return EVisibility::Collapsed;
-	}
-
-	if (NodeTypeHasBody(NodeType.GetValue()))
-	{
-		return EVisibility::Visible;
-	}
-	else
-	{
-		return EVisibility::Collapsed;
-	}
-}
-
-TSharedRef<IDetailCustomization> FAGX_WireComponentCustomization::MakeInstance()
-{
-	return MakeShareable(new FAGX_WireComponentCustomization());
-}
-
 namespace WireDetails_helpers
 {
 	EVisibility VisibleIf(bool bVisible)
@@ -997,16 +939,41 @@ namespace WireDetails_helpers
 	}
 }
 
-EVisibility FAGX_WireComponentCustomization::WithNative() const
+EVisibility FWireNodeDetails::WithSelection() const
+{
+	return WireDetails_helpers::VisibleIf(Wire != nullptr && SelectedNodeIndex != INDEX_NONE);
+}
+
+EVisibility FWireNodeDetails::WithoutSelection() const
+{
+	return WireDetails_helpers::VisibleIf(Wire == nullptr || SelectedNodeIndex == INDEX_NONE);
+}
+
+EVisibility FWireNodeDetails::NodeHasRigidBody() const
 {
 	using namespace WireDetails_helpers;
-	return VisibleIf(Wire.IsValid() && Wire->HasNative());
+	if (Wire == nullptr || SelectedNodeIndex == INDEX_NONE ||
+		!Wire->RouteNodes.IsValidIndex(SelectedNodeIndex) || !NodeType.IsSet())
+	{
+		return EVisibility::Collapsed;
+	}
+	EWireNodeType Type = NodeType.GetValue();
+	return VisibleIf(NodeTypeHasBody(Type));
+}
+
+TSharedRef<IDetailCustomization> FAGX_WireComponentCustomization::MakeInstance()
+{
+	return MakeShareable(new FAGX_WireComponentCustomization());
+}
+
+EVisibility FAGX_WireComponentCustomization::WithNative() const
+{
+	return WireDetails_helpers::VisibleIf(Wire.IsValid() && Wire->HasNative());
 }
 
 EVisibility FAGX_WireComponentCustomization::WithoutNative() const
 {
-	using namespace WireDetails_helpers;
-	return VisibleIf(Wire.IsValid() && !Wire->HasNative());
+	return WireDetails_helpers::VisibleIf(Wire.IsValid() && !Wire->HasNative());
 }
 
 void FAGX_WireComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
