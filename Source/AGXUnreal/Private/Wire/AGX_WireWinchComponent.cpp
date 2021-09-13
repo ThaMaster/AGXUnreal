@@ -82,7 +82,7 @@ void UAGX_WireWinchComponent::EndPlay(const EEndPlayReason::Type Reason)
 	{
 		/// @todo What can we do here to remove this winch from the simulation? Would need to find
 		/// the wire and detach from it. However, with what I know of the AGX Dynamics API we can't
-		/// event determine if we are part of a wire or not. So for now we do nothing.
+		/// even determine if we are part of a wire or not. So for now we do nothing.
 	}
 	WireWinch.NativeBarrier.ReleaseNative();
 }
