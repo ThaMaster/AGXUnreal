@@ -113,6 +113,19 @@ namespace
 
 namespace
 {
+	bool VerifyImportSize(size_t Actual, size_t Limit, const FString& Filename, const FString& Type)
+	{
+		if (Actual > Limit)
+		{
+			UE_LOG(
+				LogAGX, Error, TEXT("AGX Dynamics archive '%s' contains too many %s."), *Filename,
+				*Type);
+			return false;
+		}
+
+		return true;
+	}
+
 	bool IsRegularBody(agx::RigidBody& Body)
 	{
 		return !Body.isPowerlineBody() && agxWire::Wire::getWire(&Body) == nullptr &&
@@ -149,18 +162,14 @@ namespace
 		FAGXArchiveInstantiator& Instantiator)
 	{
 		const agxSDK::AssemblyHash& Assemblies = Simulation.getAssemblies();
-		if (Assemblies.size() > size_t(std::numeric_limits<int32>::max()))
+		if (!VerifyImportSize(
+				Assemblies.size(), std::numeric_limits<int32>::max(), Filename, "assemblies"))
 		{
-			UE_LOG(
-				LogAGX, Log,
-				TEXT(
-					".agx file %s contains too many assemblies. Tire models will not be imported."),
-				*Filename);
 			return;
 		}
 
-		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire,
-							const FString& Description) {
+		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire, const FString& Description)
+		{
 			if (Body == nullptr)
 			{
 				UE_LOG(
@@ -209,10 +218,9 @@ namespace
 		FAGXArchiveInstantiator& Instantiator)
 	{
 		agx::RigidBodyRefVector& Bodies {Simulation.getRigidBodies()};
-		if (Bodies.size() > size_t(std::numeric_limits<int32>::max()))
-		{ /// \todo Are there checks really necessary?
-			UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many bodies."), *Filename);
-			return; /// \todo Should we bail, or restore as many bodies as we can?
+		if (!VerifyImportSize(Bodies.size(), std::numeric_limits<int32>::max(), Filename, "bodies"))
+		{
+			return;
 		}
 
 		for (agx::RigidBodyRef& Body : Bodies)
@@ -243,9 +251,9 @@ namespace
 		FAGXArchiveInstantiator& Instantiator)
 	{
 		const agxCollide::GeometryRefVector& Geometries = Simulation.getGeometries();
-		if (Geometries.size() > size_t(std::numeric_limits<int32>::max()))
-		{ /// \todo Are there checks really necessary?
-			UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many geometries."), *Filename);
+		if (!VerifyImportSize(
+				Geometries.size(), std::numeric_limits<int32>::max(), Filename, "geometries"))
+		{
 			return;
 		}
 
@@ -265,12 +273,10 @@ namespace
 		FAGXArchiveInstantiator& Instantiator)
 	{
 		agx::ConstraintRefSetVector& Constraints = Simulation.getConstraints();
-		if (Constraints.size() > size_t(std::numeric_limits<int32>::max()))
+		if (!VerifyImportSize(
+				Constraints.size(), std::numeric_limits<int32>::max(), Filename, "constraints"))
 		{
-			UE_LOG(LogAGX, Log, TEXT(".agx file %s contains too many constraints."), *Filename);
-			return; /// \todo Should we bail, or restore as many constraints as we can?
-			/// \todo Should we do as much error checking as possible first, before
-			/// creating any Editor instances?
+			return;
 		}
 
 		for (agx::ConstraintRef& Constraint : Constraints)
