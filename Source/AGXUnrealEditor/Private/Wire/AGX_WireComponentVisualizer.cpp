@@ -75,13 +75,13 @@ void FAGX_WireComponentVisualizer::OnRegister()
 
 namespace AGX_WireComponentVisualizer_helpers
 {
-	constexpr uint32 NUM_NODE_COLORS = (uint32) EWireNodeType::NUM_NODE_TYPES;
+	constexpr uint32 NumNodeColors = (uint32) EWireNodeType::NUM_NODE_TYPES;
 	constexpr float NodeHandleSize = 10.0f;
 
-	TStaticArray<FLinearColor, NUM_NODE_COLORS> CreateWireNodeColors()
+	TStaticArray<FLinearColor, NumNodeColors> CreateWireNodeColors()
 	{
 		TStaticArray<FLinearColor, (uint32) EWireNodeType::NUM_NODE_TYPES> WireNodeColors;
-		for (uint32 I = 0; I < NUM_NODE_COLORS; ++I)
+		for (uint32 I = 0; I < NumNodeColors; ++I)
 		{
 			// Fallback color for any node type not assigned below.
 			WireNodeColors[I] = FLinearColor::Gray;
@@ -95,7 +95,7 @@ namespace AGX_WireComponentVisualizer_helpers
 
 	FLinearColor WireNodeTypeToColor(EWireNodeType Type)
 	{
-		static TStaticArray<FLinearColor, NUM_NODE_COLORS> WireNodeColors = CreateWireNodeColors();
+		static TStaticArray<FLinearColor, NumNodeColors> WireNodeColors = CreateWireNodeColors();
 		const uint32 I = static_cast<uint32>(Type);
 		return WireNodeColors[I];
 	}
