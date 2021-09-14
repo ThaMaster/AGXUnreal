@@ -20,11 +20,7 @@ namespace AGX_WireWinchDetail_helpers
 	FAGX_WireWinch* WinchGetter(UObject* Object)
 	{
 		UAGX_WireWinchComponent* Winch = Cast<UAGX_WireWinchComponent>(Object);
-		if (Winch == nullptr)
-		{
-			return nullptr;
-		}
-		return &Winch->WireWinch;
+		return Winch != nullptr ? &Winch->WireWinch : nullptr;
 	}
 }
 
