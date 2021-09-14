@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireComponentVisualizer.h"
 
@@ -906,39 +907,18 @@ void FAGX_WireNodeDetails::UpdateValues()
 
 EVisibility FAGX_WireNodeDetails::WithSelection() const
 {
-	if (PreviousWire != nullptr)
-	{
-		return EVisibility::Visible;
-	}
-	else
-	{
-		return EVisibility::Collapsed;
-	}
+	return FAGX_EditorUtilities::VisibleIf(PreviousWire != nullptr);
 }
 
 EVisibility FAGX_WireNodeDetails::WithoutSelection() const
 {
-	if (PreviousWire == nullptr)
-	{
-		return EVisibility::Visible;
-	}
-	else
-	{
-		return EVisibility::Collapsed;
-	}
+	return FAGX_EditorUtilities::VisibleIf(PreviousWire == nullptr);
 }
 
 EVisibility FAGX_WireNodeDetails::NodeHasRigidBody() const
 {
 	using namespace AGX_WireNodeDetails_helpers;
-	if (NodeType.IsSet() && NodeTypeHasBody(NodeType.GetValue()))
-	{
-		return EVisibility::Visible;
-	}
-	else
-	{
-		return EVisibility::Collapsed;
-	}
+	return FAGX_EditorUtilities::VisibleIf(NodeType.IsSet() && NodeTypeHasBody(NodeType.GetValue()));
 }
 
 #undef LOCTEXT_NAMESPACE

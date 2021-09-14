@@ -4,6 +4,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireComponentVisualizer.h"
 #include "Wire/AGX_WireEnums.h"
@@ -931,22 +932,14 @@ void FWireNodeDetails::UpdateValues()
 	}
 }
 
-namespace WireDetails_helpers
-{
-	EVisibility VisibleIf(bool bVisible)
-	{
-		return bVisible ? EVisibility::Visible : EVisibility::Collapsed;
-	}
-}
-
 EVisibility FWireNodeDetails::WithSelection() const
 {
-	return WireDetails_helpers::VisibleIf(Wire != nullptr && SelectedNodeIndex != INDEX_NONE);
+	return FAGX_EditorUtilities::VisibleIf(Wire != nullptr && SelectedNodeIndex != INDEX_NONE);
 }
 
 EVisibility FWireNodeDetails::WithoutSelection() const
 {
-	return WireDetails_helpers::VisibleIf(Wire == nullptr || SelectedNodeIndex == INDEX_NONE);
+	return FAGX_EditorUtilities::VisibleIf(Wire == nullptr || SelectedNodeIndex == INDEX_NONE);
 }
 
 EVisibility FWireNodeDetails::NodeHasRigidBody() const
@@ -958,7 +951,7 @@ EVisibility FWireNodeDetails::NodeHasRigidBody() const
 		return EVisibility::Collapsed;
 	}
 	EWireNodeType Type = NodeType.GetValue();
-	return VisibleIf(NodeTypeHasBody(Type));
+	return FAGX_EditorUtilities::VisibleIf(NodeTypeHasBody(Type));
 }
 
 TSharedRef<IDetailCustomization> FAGX_WireComponentCustomization::MakeInstance()
@@ -968,12 +961,12 @@ TSharedRef<IDetailCustomization> FAGX_WireComponentCustomization::MakeInstance()
 
 EVisibility FAGX_WireComponentCustomization::WithNative() const
 {
-	return WireDetails_helpers::VisibleIf(Wire.IsValid() && Wire->HasNative());
+	return FAGX_EditorUtilities::VisibleIf(Wire.IsValid() && Wire->HasNative());
 }
 
 EVisibility FAGX_WireComponentCustomization::WithoutNative() const
 {
-	return WireDetails_helpers::VisibleIf(Wire.IsValid() && !Wire->HasNative());
+	return FAGX_EditorUtilities::VisibleIf(Wire.IsValid() && !Wire->HasNative());
 }
 
 void FAGX_WireComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
