@@ -179,6 +179,8 @@ private:
 	FText RigidBodyNameText;
 	FText RigidBodyOwnerLabelText;
 
+	void ClearStorage();
+
 public:
 
 	/*

@@ -1,6 +1,7 @@
 #include "Wire/AGX_WireNodeDetails.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireComponentVisualizer.h"
 
@@ -731,6 +732,21 @@ void FAGX_WireNodeDetails::OnSetRigidBodyOwner(AActor* Actor)
 	UpdateValues();
 }
 
+void FAGX_WireNodeDetails::ClearStorage()
+{
+	using namespace AGX_WireNodeDetails_helpers;
+	static const FText NoSelection = LOCTEXT("NoNodeSelected", "No node selected.");
+	SelectedNodeIndexText = NoSelection;
+	LocationX.Reset();
+	LocationY.Reset();
+	LocationZ.Reset();
+	NodeType.Reset();
+	NodeTypeText = NoSelection;
+	RebuildRigidBodyComboBox_View(*BodyNameComboBox, RigidBodyNames, TEXT(""), nullptr);
+	RigidBodyNameText = NoSelection;
+	RigidBodyOwnerLabelText = NoSelection;
+}
+
 UAGX_WireComponent* FAGX_WireNodeDetails::GetWire() const
 {
 	UAGX_WireComponent* BuilderWire = [this]() -> UAGX_WireComponent*
@@ -851,18 +867,7 @@ void FAGX_WireNodeDetails::UpdateValues()
 	// Reset and bail if we don't have a valid selection.
 	if (!bValidSelection)
 	{
-		static const FText NoSelection = LOCTEXT("NoNodeSelected", "No node selected.");
-		// Clear all cached state related to the selection.
-		/// @todo Consider moving these to a Clear function.
-		SelectedNodeIndexText = NoSelection;
-		LocationX.Reset();
-		LocationY.Reset();
-		LocationZ.Reset();
-		NodeType.Reset();
-		NodeTypeText = NoSelection;
-		RebuildRigidBodyComboBox_View(*BodyNameComboBox, RigidBodyNames, TEXT(""), nullptr);
-		RigidBodyNameText = NoSelection;
-		RigidBodyOwnerLabelText = NoSelection;
+		ClearStorage();
 		return;
 	}
 
