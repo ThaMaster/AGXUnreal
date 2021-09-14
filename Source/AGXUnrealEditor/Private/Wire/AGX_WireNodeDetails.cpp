@@ -737,11 +737,7 @@ UAGX_WireComponent* FAGX_WireNodeDetails::GetWire() const
 	{
 		TArray<TWeakObjectPtr<UObject>> Objects;
 		DetailBuilder.GetObjectsBeingCustomized(Objects);
-		if (Objects.Num() < 1)
-		{
-			return nullptr;
-		}
-		if (Objects.Num() > 1)
+		if (Objects.Num() != 1)
 		{
 			return nullptr;
 		}
