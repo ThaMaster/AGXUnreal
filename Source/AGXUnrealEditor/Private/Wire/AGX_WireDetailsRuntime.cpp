@@ -4,10 +4,11 @@
 #include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
-#include "IDetailChildrenBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "IDetailChildrenBuilder.h"
 #include "IDetailGroup.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "AGX_WireDetailsRuntime"
 
