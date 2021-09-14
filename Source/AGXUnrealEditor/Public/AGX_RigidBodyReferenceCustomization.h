@@ -76,15 +76,8 @@ private:
 
 	SEditableTextBox* ComponentNameBoxPtr = nullptr;
 
-#if 1
 	FAGX_RigidBodyReference* GetRigidBodyReference() const;
 	TSharedPtr<IPropertyHandle> RigidBodyReferenceHandle;
-#else
-	// The RigidBodyReference being customized. Will be nullptr if none or multiple
-	// RigidBodyReferences are selected.
-	FAGX_RigidBodyReference* RigidBodyReference = nullptr;
-	FAGX_RigidBodyReference* GetRigidBodyReference() const;
-#endif
 
 	TSharedPtr<IPropertyHandle> OwningActorHandle;
 	TSharedPtr<IPropertyHandle> BodyNameHandle;

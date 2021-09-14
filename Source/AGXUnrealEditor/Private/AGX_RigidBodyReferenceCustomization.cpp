@@ -31,28 +31,7 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeHeader(
 	TSharedRef<IPropertyHandle> BodyReferenceHandle, FDetailWidgetRow& HeaderRow,
 	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
-#if 1
 	RefreshStoreReferences(BodyReferenceHandle);
-#else
-	RefreshStoreReferences(BodyReferenceHandle.Get());
-#endif
-
-/// @note I'm not so sure about this check anymore. Binding a Details Panel to a particular instance
-/// seems to be a bad idea in general, and a terrible idea for the Blueprint Editor in particular.
-/// Instead, we should ignore the object as much as possible and work as far as possible with
-/// Property Handles.
-#if 0
-	FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
-	if (RigidBodyReference == nullptr)
-	{
-		// Fall back to default value widget when unable to get a single RigidBodyReference.
-		HeaderRow.ValueContent()[BodyReferenceHandle->CreatePropertyValueWidget()];
-		return;
-	}
-#endif
-
-	/// \todo Is there a better way to make the text field a bit wider? I want to fill the available
-	/// space.
 
 	// clang-format off
 	HeaderRow
@@ -61,6 +40,8 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeHeader(
 		BodyReferenceHandle->CreatePropertyNameWidget()
 	]
 	.ValueContent()
+	/// \todo Is there a better way to make the text field a bit wider? I want to fill the available
+	/// space.
 	.MinDesiredWidth(250.0f) // 250 from SPropertyEditorAsset::GetDesiredWidth.
 	[
 		SNew(STextBlock)
@@ -147,11 +128,7 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 	TSharedRef<IPropertyHandle> BodyReferenceHandle, IDetailChildrenBuilder& StructBuilder,
 	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
-#if 1
 	RefreshStoreReferences(BodyReferenceHandle);
-#else
-	RefreshStoreReferences(BodyReferenceHandle.Get());
-#endif
 
 	FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
 	if (RigidBodyReference == nullptr)
@@ -257,7 +234,6 @@ void FAGX_RigidBodyReferenceCustomization::OnBodyNameCommitted(
 	}
 }
 
-#if 1
 void FAGX_RigidBodyReferenceCustomization::RefreshStoreReferences(
 	TSharedRef<IPropertyHandle> BodyReferenceHandle)
 {
@@ -269,39 +245,6 @@ void FAGX_RigidBodyReferenceCustomization::RefreshStoreReferences(
 	SearchChildActorsHandle = BodyReferenceHandle->GetChildHandle(
 		GET_MEMBER_NAME_CHECKED(FAGX_RigidBodyReference, bSearchChildActors));
 }
-#else
-void FAGX_RigidBodyReferenceCustomization::RefreshStoreReferences(
-	IPropertyHandle& BodyReferenceHandle)
-{
-	RigidBodyReference = nullptr;
-	ComboBoxPtr = nullptr;
-	OwningActorHandle = nullptr;
-	BodyNameHandle = nullptr;
-	SearchChildActorsHandle = nullptr;
-
-	RigidBodyReference = [&BodyReferenceHandle]() -> FAGX_RigidBodyReference*
-	{
-		void* UntypedPointer = nullptr;
-		FPropertyAccess::Result Result = BodyReferenceHandle.GetValueData(UntypedPointer);
-		if (Result != FPropertyAccess::Success)
-		{
-			return nullptr;
-		}
-		return static_cast<FAGX_RigidBodyReference*>(UntypedPointer);
-	}();
-	if (RigidBodyReference == nullptr)
-	{
-		return;
-	}
-
-	OwningActorHandle = BodyReferenceHandle.GetChildHandle(
-		GET_MEMBER_NAME_CHECKED(FAGX_RigidBodyReference, OwningActor));
-	BodyNameHandle = BodyReferenceHandle.GetChildHandle(
-		GET_MEMBER_NAME_CHECKED(FAGX_RigidBodyReference, BodyName));
-	SearchChildActorsHandle = BodyReferenceHandle.GetChildHandle(
-		GET_MEMBER_NAME_CHECKED(FAGX_RigidBodyReference, bSearchChildActors));
-}
-#endif
 
 FText FAGX_RigidBodyReferenceCustomization::GetHeaderText() const
 {
@@ -388,7 +331,6 @@ AActor* FAGX_RigidBodyReferenceCustomization::GetOwningActor()
 
 FAGX_RigidBodyReference* FAGX_RigidBodyReferenceCustomization::GetRigidBodyReference() const
 {
-#if 1
 	if (!RigidBodyReferenceHandle.IsValid())
 	{
 		UE_LOG(
@@ -423,15 +365,6 @@ FAGX_RigidBodyReference* FAGX_RigidBodyReferenceCustomization::GetRigidBodyRefer
 				 "handle."));
 	}
 	return static_cast<FAGX_RigidBodyReference*>(UntypedPointer);
-#else
-	if (RigidBodyReference == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("FAGX_RigidBodyReferenceCustomization has nullptr Rigid Body Reference."));
-	}
-	return RigidBodyReference;
-#endif
 }
 
 #undef LOCTEXT_NAMESPACE
