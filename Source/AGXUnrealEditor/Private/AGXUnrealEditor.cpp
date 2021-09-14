@@ -61,9 +61,11 @@
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Tires/AGX_TwoBodyTireActor.h"
 #include "Tires/AGX_TwoBodyTireComponentCustomization.h"
+#include "Wire/AGX_WireActor.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireComponentVisualizer.h"
 #include "Wire/AGX_WireDetails.h"
+#include "Wire/AGX_WireWinchActor.h"
 #include "Wire/AGX_WireWinchComponent.h"
 #include "Wire/AGX_WireWinchDetails.h"
 #include "Wire/AGX_WireWinchVisualizer.h"
@@ -396,6 +398,8 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 	RegisterPlaceableItem(AAGX_CollisionGroupDisablerActor::StaticClass());
 	RegisterPlaceableItem(AAGX_RigidBodyActor::StaticClass());
 	RegisterPlaceableItem(AAGX_TwoBodyTireActor::StaticClass());
+	RegisterPlaceableItem(AAGX_WireActor::StaticClass());
+	RegisterPlaceableItem(AAGX_WireWinchActor::StaticClass());
 }
 
 void FAGXUnrealEditorModule::UnregisterPlacementCategory()
