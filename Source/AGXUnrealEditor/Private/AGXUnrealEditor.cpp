@@ -63,7 +63,6 @@
 #include "Tires/AGX_TwoBodyTireComponentCustomization.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireComponentVisualizer.h"
-//#include "Wire/AGX_WireComponentCustomization.h" Use AGX_WireDetails.h instead.
 #include "Wire/AGX_WireDetails.h"
 #include "Wire/AGX_WireWinchComponent.h"
 #include "Wire/AGX_WireWinchDetails.h"
@@ -248,17 +247,10 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_TwoBodyTireComponentCustomization::MakeInstance));
 
-#if 1
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_WireComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_WireDetails::MakeInstance));
-#else
-	PropertyModule.RegisterCustomClassLayout(
-		UAGX_WireComponent::StaticClass()->GetFName(),
-		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_WireComponentCustomization::MakeInstance));
-#endif
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_WireWinchComponent::StaticClass()->GetFName(),
