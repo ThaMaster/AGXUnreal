@@ -20,6 +20,7 @@
 // Unreal Engine includes.
 #include "Components/BillboardComponent.h"
 #include "CoreGlobals.h"
+#include "Math/UnrealMathUtility.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_WireComponent"
 
@@ -1018,7 +1019,7 @@ double UAGX_WireComponent::GetMass() const
 		/// explicit material set?
 		return 0.0;
 	}
-	const double Area = M_PI * Radius * Radius; // Assume circular cross-section.
+	const double Area = PI * Radius * Radius; // Assume circular cross-section.
 	const double Length = GetRestLength();
 	const double Density = PhysicalMaterial->Bulk.Density;
 	const double Mass = Area * Length * Density;
