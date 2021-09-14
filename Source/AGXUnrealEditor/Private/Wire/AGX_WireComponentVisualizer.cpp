@@ -252,7 +252,7 @@ namespace AGX_WireComponentVisualizer_helpers
 
 	FLinearColor WireNodeTypeToColor(EWireNodeType Type)
 	{
-		static TStaticArray<FLinearColor, NumNodeColors> WireNodeColors = CreateWireNodeColors();
+		static const TStaticArray<FLinearColor, NumNodeColors> WireNodeColors = CreateWireNodeColors();
 		const uint32 I = static_cast<uint32>(Type);
 		return WireNodeColors[I];
 	}
