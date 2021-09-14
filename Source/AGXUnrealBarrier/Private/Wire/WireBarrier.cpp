@@ -226,6 +226,27 @@ bool FWireBarrier::Detach(bool bBegin)
 	return NativeRef->Native->detach(bBegin);
 }
 
+bool FWireBarrier::Detach(FWireWinchBarrier& Winch)
+{
+	check(HasNative());
+	if (!Winch.HasNative())
+	{
+		return false;
+	}
+	agxWire::Wire* NativeWire = NativeRef->Native;
+	agxWire::WireWinchController* NativeWinch = Winch.GetNative()->Native;
+	bool Detached = false;
+	if (NativeWire->getWinchController(0) == NativeWinch)
+	{
+		Detached &= NativeWire->detach(true);
+	}
+	if (NativeWire->getWinchController(1) == NativeWinch)
+	{
+		Detached &= NativeWire->detach(false);
+	}
+	return Detached;
+}
+
 FWireRenderIteratorBarrier FWireBarrier::GetRenderBeginIterator() const
 {
 	check(HasNative());

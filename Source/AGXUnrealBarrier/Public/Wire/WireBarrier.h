@@ -124,6 +124,8 @@ public:
 	 */
 	bool Detach(bool bBegin);
 
+	bool Detach(FWireWinchBarrier& Winch);
+
 	FWireRenderIteratorBarrier GetRenderBeginIterator() const;
 	FWireRenderIteratorBarrier GetRenderEndIterator() const;
 

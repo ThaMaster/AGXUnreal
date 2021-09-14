@@ -5,6 +5,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "Wire/AGX_WireUtilities.h"
+#include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreGlobals.h"
@@ -76,14 +77,32 @@ void UAGX_WireWinchComponent::EndPlay(const EEndPlayReason::Type Reason)
 	Super::EndPlay(Reason);
 	if (GIsReconstructingBlueprintInstances)
 	{
-		// Another Wire Winch will inherit this one's Native Barrier, so don't wreck it.
+		// Nothing to do in this case since another Wire Winch will inherit this one's Native as
+		// part of the Blueprint Reconstruction. The AGX Dynamics object should remain in the
+		// simulation.
 	}
 	else
 	{
-		/// @todo What can we do here to remove this winch from the simulation? Would need to find
-		/// the wire and detach from it. However, with what I know of the AGX Dynamics API we can't
-		/// even determine if we are part of a wire or not. So for now we do nothing.
+/// @todo Enable this once WireWinchBarrier::GetWire has been implemented.
+#if 0
+		// Normally we would remove the corresponding AGX Dynamics object from the simulation
+		// here, but Wire Winches aren't simply added to the simulation like most objects. Instead
+		// they are added to a Wire. So the best we can do is to remove it from the wire.
+		//
+		// This won't update the Begin/End Winch Type UProperty of the Unreal Engine representation
+		// of the wire. I don't even know how we would find the Wire Component in question.
+		if (HasNative())
+		{
+			FWireBarrier Wire = GetNative()->GetWire();
+			if (Wire.HasNative())
+			{
+				Wire.Detach(GetNative());
+			}
+		}
+#endif
 	}
+
+	// This Wire Winch Component is no longer the owner of the AGX Dynamics object.
 	WireWinch.NativeBarrier.ReleaseNative();
 }
 

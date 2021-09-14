@@ -5,6 +5,7 @@
 #include "Utilities/DoubleInterval.h" /// @todo Use Unreal Engine double interval once they have it.
 
 class FRigidBodyBarrier;
+class FWireBarrier;
 struct FWireWinchRef;
 
 class AGXUNREALBARRIER_API FWireWinchBarrier : public FNativeBarrier<FWireWinchRef>
@@ -98,6 +99,11 @@ public:
 	double GetCurrentBrakeForce() const;
 
 	bool HasWire() const;
+
+// Not yet implemented.
+#if 0
+	FWireBarrier GetWire() const;
+#endif
 
 	FGuid GetGuid() const;
 

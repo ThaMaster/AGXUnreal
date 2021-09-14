@@ -187,6 +187,26 @@ bool FWireWinchBarrier::HasWire() const
 	return NativeRef->Native->getConstraint() != nullptr;
 }
 
+/// @todo Figure out how to find the wire a winch is attached to. The below doesn't always work.
+#if 0
+FWireBarrier FWireWinchBarrier::GetWire() const
+{
+	check(HasNative());
+	agxWire::WireWinchController* Winch = NativeRef->Native;
+	agxWire::Node* Nodes[] {Winch->getStopNode(), Winch->getFixedNode()};
+	for (agxWire::Node* Node : Nodes)
+	{
+		agx::RigidBody* Body = Node->getRigidBody();
+		agxWire::Wire* Wire = agxWire::Wire::getWire(Body);
+		if (Wire != nullptr)
+		{
+			return AGXBarrierFactories::CreateWireBarrier(Wire);
+		}
+	}
+	return FWireBarrier();
+}
+#endif
+
 FGuid FWireWinchBarrier::GetGuid() const
 {
 	check(HasNative());
