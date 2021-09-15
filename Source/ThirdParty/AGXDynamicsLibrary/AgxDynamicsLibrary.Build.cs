@@ -197,7 +197,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
 			RuntimeLibFiles.Add("ot2?-OpenThreads", LibSource.Dependencies);
-			if (TargetAGXVersion.IsOlderThan(new AGXVersion(2, 31, 2, 0)))
+			if (TargetAGXVersion.IsOlderThan(2, 31, 2, 0))
 			{
 				RuntimeLibFiles.Add("glew", LibSource.Dependencies);
 			}
@@ -675,6 +675,11 @@ public class AGXDynamicsLibrary : ModuleRules
 
 			// Both versions are identical.
 			return false;
+		}
+
+		public bool IsOlderThan(int Generation, int Major, int Minor, int Patch)
+		{
+			return IsOlderThan(new AGXVersion(Generation, Major, Minor, Patch));
 		}
 
 		public List<int> ToList()
