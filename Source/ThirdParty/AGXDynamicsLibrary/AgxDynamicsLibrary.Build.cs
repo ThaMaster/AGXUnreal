@@ -138,6 +138,9 @@ public class AGXDynamicsLibrary : ModuleRules
 		// Because AGX Dynamics uses exceptions.
 		bEnableExceptions = true;
 
+		// The AGX Dynamics version we are currently building against.
+		AGXVersion TargetAGXVersion = GetAGXVersion();
+
 		// List of run-time libraries that we need. These will be added to the
 		// Unreal Engine RuntimeDependencies list. See
 		// https://docs.unrealengine.com/en-US/ProductionPipelines/BuildTools/UnrealBuildTool/ThirdPartyLibraries/index.html
@@ -288,6 +291,45 @@ public class AGXDynamicsLibrary : ModuleRules
 	private void AddIncludePath(LibSource Src)
 	{
 		PublicIncludePaths.Add(PackagedAGXResources.IncludePath(Src));
+	}
+
+	AGXVersion GetAGXVersion()
+	{
+		string VersionHeaderPath = GetAgxVersionHeaderPath();
+		if (String.IsNullOrEmpty(VersionHeaderPath))
+		{
+			// Logging done in GetAgxVersionHeaderPath.
+			return new AGXVersion();
+		}
+
+		List<string> Defines = new List<string>
+		{"AGX_GENERATION_VERSION", "AGX_MAJOR_VERSION", "AGX_MINOR_VERSION", "AGX_PATCH_VERSION" };
+		string[] Lines;
+
+		try
+		{
+			Lines = File.ReadAllLines(VersionHeaderPath);
+		}
+		catch (Exception e)
+		{
+			Console.Error.WriteLine("Error: GetAGXVersion failed. " +
+				"Unable to read file {0}. Exception: {1}", VersionHeaderPath, e.Message);
+			return new AGXVersion();
+		}
+
+		int? GenerationVer = ParseDefineDirectiveValue(Lines, "AGX_GENERATION_VERSION");
+		int? MajorVer = ParseDefineDirectiveValue(Lines, "AGX_MAJOR_VERSION");
+		int? MinorVer = ParseDefineDirectiveValue(Lines, "AGX_MINOR_VERSION");
+		int? PatchVer = ParseDefineDirectiveValue(Lines, "AGX_PATCH_VERSION");
+
+		if (!GenerationVer.HasValue || !MajorVer.HasValue || !MinorVer.HasValue || !PatchVer.HasValue)
+		{
+			Console.Error.WriteLine("Error: GetAGXVersion failed. " +
+				"Unable to parse define directives in {0}", VersionHeaderPath);
+			return new AGXVersion();
+		}
+
+		return new AGXVersion(GenerationVer.Value, MajorVer.Value, MinorVer.Value, PatchVer.Value);
 	}
 
 
@@ -535,6 +577,45 @@ public class AGXDynamicsLibrary : ModuleRules
 		return ProjectName.Equals("AGXUnrealDev") || ProjectName.Equals("HostProject");
 	}
 
+	private int? ParseDefineDirectiveValue(string[] HeaderFileLines, string Identifier)
+	{
+		foreach (var Line in HeaderFileLines)
+		{
+			string[] Words = Line.Split(' ');
+			if (Words.Length == 3 && Words[0].Equals("#define") && Words[1].Equals(Identifier))
+			{
+				int Val = 0;
+				if (Int32.TryParse(Words[2], out Val))
+				{
+					return Val;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private string GetAgxVersionHeaderPath()
+	{
+		if (IsAGXResourcesPackaged())
+		{
+			return Path.Combine(PackagedAGXResources.IncludePath(LibSource.AGX), "agx", "agx_version.h");
+		}
+
+		// If the AGX Dynamics resources has not yet been packaged with the plugin, an AGX Dynamics
+		// environment must be set up, so we can get the header file from there.
+		if (!Heuristics.IsAGXSetupEnvCalled())
+		{
+			Console.Error.WriteLine("Error: GetAgxVersionHeaderPath failed. AGX Dynamics resources are not " +
+			"packaged with the plugin and no AGX Dynamics environment has been setup. Please ensure that " +
+			"setup_env has been called.");
+			return string.Empty;
+		}
+
+		AGXResourcesInfo InstalledAGXResources = new AGXResourcesInfo(Target, AGXResourcesLocation.InstalledAGX);
+		return Path.Combine(InstalledAGXResources.IncludePath(LibSource.AGX), "agx", "agx_version.h");
+	}
+
 	private class Heuristics
 	{
 		public static bool IsAGXSetupEnvCalled()
@@ -543,7 +624,66 @@ public class AGXDynamicsLibrary : ModuleRules
 		}
 	}
 
+	private class AGXVersion
+	{
+		public int GenerationVersion;
+		public int MajorVersion;
+		public int MinorVersion;
+		public int PatchVersion;
+		public bool IsInitialized = false;
 
+		public AGXVersion(int Generation, int Major, int Minor, int Patch)
+		{
+			GenerationVersion = Generation;
+			MajorVersion = Major;
+			MinorVersion = Minor;
+			PatchVersion = Patch;
+			IsInitialized = true;
+		}
+
+		public AGXVersion()
+		{
+			IsInitialized = false;
+		}
+
+		public bool IsOlderThan(AGXVersion Other)
+		{
+			if (!IsInitialized || !Other.IsInitialized)
+			{
+				Console.Error.WriteLine("Error: IsOlderThan called on or with uninitialized AGXVersion object.");
+				return false;
+			}
+
+			List<int> Ver = ToList();
+			List<int> OtherVer = Other.ToList();
+
+			for (int I = 0; I < Ver.Count; I++)
+			{
+				if (Ver[I] < OtherVer[I])
+				{
+					return true;
+				}
+
+				if (Ver[I] > OtherVer[I])
+				{
+					return false;
+				}
+			}
+
+			// Both versions are identical.
+			return false;
+		}
+
+		public bool IsOlderThan(int Generation, int Major, int Minor, int Patch)
+		{
+			return IsOlderThan(new AGXVersion(Generation, Major, Minor, Patch));
+		}
+
+		public List<int> ToList()
+		{
+			return new List<int> { GenerationVersion, MajorVersion, MinorVersion, PatchVersion };
+		}
+	}
 
 	///
 	private class AGXResourcesInfo
