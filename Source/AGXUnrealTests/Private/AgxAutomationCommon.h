@@ -123,9 +123,9 @@ namespace AgxAutomationCommon
 	template <typename T>
 	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
 	{
-		UActorComponent** Match = Components.FindByPredicate([Name](UActorComponent* Component) {
-			return Cast<T>(Component) && Component->GetName() == Name;
-		});
+		UActorComponent** Match = Components.FindByPredicate(
+			[Name](UActorComponent* Component)
+			{ return Cast<T>(Component) && Component->GetName() == Name; });
 
 		return Match != nullptr ? Cast<T>(*Match) : nullptr;
 	}
@@ -134,6 +134,30 @@ namespace AgxAutomationCommon
 	void GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name, T*& Out)
 	{
 		Out = GetByName<T>(Components, Name);
+	}
+
+	inline bool IsAnyNullptr()
+	{
+		// Base case. The elements are or'd so false won't make the entre expression false.
+		return false;
+	}
+
+	template <typename T>
+	T MeterToCentimeter(T Meter)
+	{
+		return Meter * T{100};
+	}
+
+	template <typename T>
+	T CentimeterToMeter(T Centimeter)
+	{
+		return Centimeter / T{100};
+	}
+
+	template <typename T, typename... Ts>
+	bool IsAnyNullptr(T* Head, Ts*... Tail)
+	{
+		return Head == nullptr || IsAnyNullptr(Tail...);
 	}
 
 	/**
