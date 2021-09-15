@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_UpropertyDispatcher.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/CylinderShapeBarrier.h"
 
@@ -24,9 +25,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	float Height;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	void SetHeight(float InHeight);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	float GetHeight() const;
+
 	/// The distance from the center of the cylinder to the cylindrical surface.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	float Radius;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	void SetRadius(float InRadius);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	float GetRadius() const;
 
 	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
@@ -63,6 +76,17 @@ private:
 	/// Create the AGX Dynamics object owned by this Cylinder Shape Component.
 	void CreateNative();
 
-private:
+	#if WITH_EDITOR
+	virtual void PostLoad() override;
+	void InitPropertyDispatcher();
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(
+		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
+
+#if WITH_EDITORONLY_DATA
+	FAGX_UpropertyDispatcher<UAGX_CylinderShapeComponent> PropertyDispatcher;
+#endif
+
 	FCylinderShapeBarrier NativeBarrier;
 };

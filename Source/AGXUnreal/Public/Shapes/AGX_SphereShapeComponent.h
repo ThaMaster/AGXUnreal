@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_UpropertyDispatcher.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/SphereShapeBarrier.h"
 
@@ -20,6 +21,12 @@ public:
 	/// The distance from the center of the sphere to its surface.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	float Radius;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	void SetRadius(float InRadius);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	float GetRadius() const;
 
 	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
@@ -56,4 +63,16 @@ private:
 
 private:
 	FSphereShapeBarrier NativeBarrier;
+
+#if WITH_EDITOR
+	virtual void PostLoad() override;
+	void InitPropertyDispatcher();
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(
+		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
+
+#if WITH_EDITORONLY_DATA
+	FAGX_UpropertyDispatcher<UAGX_SphereShapeComponent> PropertyDispatcher;
+#endif
 };

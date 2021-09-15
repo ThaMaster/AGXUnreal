@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_UpropertyDispatcher.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/BoxShapeBarrier.h"
 
@@ -23,6 +24,12 @@ public:
 	/// The distance from the center of the box to its surface along the three cardinal axes.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	FVector HalfExtent;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	void SetHalfExtent(FVector InHalfExtent);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	FVector GetHalfExtent() const;
 
 	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
@@ -57,6 +64,17 @@ protected:
 private:
 	/// Create the AGX Dynamics objects owned by this Box Shape Component.
 	void CreateNative();
+#if WITH_EDITOR
+	virtual void PostLoad() override;
+	void InitPropertyDispatcher();
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(
+		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
+
+#if WITH_EDITORONLY_DATA
+	FAGX_UpropertyDispatcher<UAGX_BoxShapeComponent> PropertyDispatcher;
+#endif
 
 private:
 	FBoxShapeBarrier NativeBarrier;
