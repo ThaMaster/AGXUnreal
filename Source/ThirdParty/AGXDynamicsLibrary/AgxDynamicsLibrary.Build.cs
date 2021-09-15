@@ -197,7 +197,10 @@ public class AGXDynamicsLibrary : ModuleRules
 			RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
 			RuntimeLibFiles.Add("ot2?-OpenThreads", LibSource.Dependencies);
-			RuntimeLibFiles.Add("glew", LibSource.Dependencies);
+			if (TargetAGXVersion.IsOlderThan(2, 31, 2, 0))
+			{
+				RuntimeLibFiles.Add("glew", LibSource.Dependencies);
+			}
 		}
 
 		// Package AGX Dynamics resources in plugin if no packaged resources exists.
