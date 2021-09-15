@@ -1375,6 +1375,9 @@ void UAGX_WireComponent::OnRegister()
 #if WITH_EDITORONLY_DATA
 	if (SpriteComponent)
 	{
+		FName NewName = MakeUniqueObjectName(
+			SpriteComponent->GetOuter(), SpriteComponent->GetClass(), TEXT("WireIcon"));
+		SpriteComponent->Rename(*NewName.ToString(), nullptr, REN_DontCreateRedirectors);
 		SpriteComponent->SetSprite(
 			LoadObject<UTexture2D>(nullptr, TEXT("/AGXUnreal/Editor/Icons/T_AGX_Wire.T_AGX_Wire")));
 	}
