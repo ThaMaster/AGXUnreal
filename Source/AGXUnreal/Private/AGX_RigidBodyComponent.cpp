@@ -33,15 +33,13 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 	TransformTarget = EAGX_TransformTarget::TT_SELF;
 }
 
+#if WITH_EDITOR
 void UAGX_RigidBodyComponent::PostLoad()
 {
 	Super::PostLoad();
-#if WITH_EDITOR
 	InitPropertyDispatcher();
-#endif
 }
 
-#if WITH_EDITOR
 void UAGX_RigidBodyComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	// The root property that contains the property that was changed.
