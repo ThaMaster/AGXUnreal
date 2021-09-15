@@ -118,7 +118,7 @@ bool UAGX_ShapeComponent::DoesPropertyAffectVisualMesh(
 	FName VisibleName(TEXT("bVisible"));
 	FName RelativeScale3DName(TEXT("RelativeScale3D"));
 #endif
-	return PropertyName == VisibleName || PropertyName == RelativeScale3DName;
+	return PropertyName == VisibleName || MemberPropertyName == RelativeScale3DName;
 }
 
 void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
