@@ -199,7 +199,7 @@ public:
 	void InitPropertyDispatcher();
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(
-		struct FPropertyChangedChainEvent& PropertyChangedEvent);
+		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
 
 	//~ Begin UActorComponent Interface
