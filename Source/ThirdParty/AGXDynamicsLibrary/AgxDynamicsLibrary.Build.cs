@@ -674,6 +674,11 @@ public class AGXDynamicsLibrary : ModuleRules
 			return false;
 		}
 
+		public bool IsOlderThan(int Generation, int Major, int Minor, int Patch)
+		{
+			return IsOlderThan(new AGXVersion(Generation, Major, Minor, Patch));
+		}
+
 		public List<int> ToList()
 		{
 			return new List<int> { GenerationVersion, MajorVersion, MinorVersion, PatchVersion };
