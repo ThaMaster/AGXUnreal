@@ -20,3 +20,17 @@ enum EAGX_ShapeSensorType
 	 */
 	BooleanSensor
 };
+
+/** Specifies from where to get the triangle data. */
+UENUM()
+enum EAGX_StaticMeshSourceLocation
+{
+	/** Static Mesh from the first child component that is a Static Mesh Component. */
+	TSL_CHILD_STATIC_MESH_COMPONENT UMETA(DisplayName = "Child Component"),
+
+	/** Static Mesh from the first ancestor that is a Static Mesh Component. */
+	TSL_PARENT_STATIC_MESH_COMPONENT UMETA(DisplayName = "Parent Component"),
+
+	/** Directly from explicitly chosen Static Mesh Asset. */
+	TSL_STATIC_MESH_ASSET UMETA(DisplayName = "Asset")
+};
