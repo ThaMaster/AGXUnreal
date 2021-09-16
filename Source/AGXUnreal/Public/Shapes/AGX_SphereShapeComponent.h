@@ -64,10 +64,13 @@ private:
 	FSphereShapeBarrier NativeBarrier;
 
 #if WITH_EDITOR
+	// ~Begin UObject interface.
 	virtual void PostLoad() override;
-	void InitPropertyDispatcher();
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+	// ~End UObject interface.
+
+	void InitPropertyDispatcher();
 #endif
 };

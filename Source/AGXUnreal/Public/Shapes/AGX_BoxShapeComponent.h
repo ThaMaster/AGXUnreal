@@ -55,19 +55,23 @@ protected:
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 #if WITH_EDITOR
 	virtual bool DoesPropertyAffectVisualMesh(
-		const FName& PropertyName, const FName& MemberPropertyName) const;
+		const FName& PropertyName, const FName& MemberPropertyName) const override;
 #endif
 	// ~End UAGX_ShapeComponent interface.
 
 private:
 	/// Create the AGX Dynamics objects owned by this Box Shape Component.
 	void CreateNative();
+
 #if WITH_EDITOR
+	// ~Begin UObject interface.
 	virtual void PostLoad() override;
-	void InitPropertyDispatcher();
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+	// ~End UObject interface.
+
+	void InitPropertyDispatcher();
 #endif
 
 private:
