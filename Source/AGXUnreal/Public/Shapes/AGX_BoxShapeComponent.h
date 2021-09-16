@@ -24,6 +24,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	FVector HalfExtent;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	void SetHalfExtent(FVector InHalfExtent);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	FVector GetHalfExtent() const;
+
 	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;
@@ -42,7 +48,6 @@ public:
 	void CopyFrom(const FBoxShapeBarrier& Barrier);
 
 protected:
-
 	// ~Begin UAGX_ShapeComponent interface.
 	virtual FShapeBarrier* GetNativeBarrier() override;
 	virtual const FShapeBarrier* GetNativeBarrier() const override;
@@ -50,13 +55,24 @@ protected:
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
 #if WITH_EDITOR
 	virtual bool DoesPropertyAffectVisualMesh(
-		const FName& PropertyName, const FName& MemberPropertyName) const;
+		const FName& PropertyName, const FName& MemberPropertyName) const override;
 #endif
 	// ~End UAGX_ShapeComponent interface.
 
 private:
 	/// Create the AGX Dynamics objects owned by this Box Shape Component.
 	void CreateNative();
+
+#if WITH_EDITOR
+	// ~Begin UObject interface.
+	virtual void PostLoad() override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(
+		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+	// ~End UObject interface.
+
+	void InitPropertyDispatcher();
+#endif
 
 private:
 	FBoxShapeBarrier NativeBarrier;
