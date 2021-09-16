@@ -47,7 +47,6 @@ public:
 	/// Get the native AGX Dynamics representation of this Capsule. May return nullptr.
 	FCapsuleShapeBarrier* GetNativeCapsule();
 
-
 	/**
 	 * Copy properties from the given AGX Dynamics Capsule into this component.
 	 * Will also copy properties inherited from UAGX_ShapeComponent.
@@ -56,7 +55,6 @@ public:
 	void CopyFrom(const FCapsuleShapeBarrier& Barrier);
 
 protected:
-
 	// ~Begin UAGX_ShapeComponent interface.
 	virtual FShapeBarrier* GetNativeBarrier() override;
 	virtual const FShapeBarrier* GetNativeBarrier() const override;
@@ -67,7 +65,6 @@ protected:
 		const FName& PropertyName, const FName& MemberPropertyName) const;
 #endif
 	// ~End UAGX_ShapeComponent interface.
-
 
 private:
 	/// Create the AGX Dynamics object owned by this Capsule Shape Component.

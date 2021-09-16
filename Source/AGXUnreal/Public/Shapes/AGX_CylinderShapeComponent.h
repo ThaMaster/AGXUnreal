@@ -50,7 +50,6 @@ public:
 	/// Get the native AGX Dynamics representation of this Cylinder. May return nullptr.
 	FCylinderShapeBarrier* GetNativeCylinder();
 
-
 	/**
 	 * Copy properties from the given AGX Dynamics cylinder into this component.
 	 * Will also copy properties inherited from UAGX_ShapeComponent.
@@ -59,7 +58,6 @@ public:
 	void CopyFrom(const FCylinderShapeBarrier& Barrier);
 
 protected:
-
 	// ~Begin UAGX_ShapeComponent interface.
 	virtual FShapeBarrier* GetNativeBarrier() override;
 	virtual const FShapeBarrier* GetNativeBarrier() const override;
@@ -75,7 +73,7 @@ private:
 	/// Create the AGX Dynamics object owned by this Cylinder Shape Component.
 	void CreateNative();
 
-	#if WITH_EDITOR
+#if WITH_EDITOR
 	virtual void PostLoad() override;
 	void InitPropertyDispatcher();
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

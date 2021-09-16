@@ -48,7 +48,6 @@ public:
 	void CopyFrom(const FBoxShapeBarrier& Barrier);
 
 protected:
-
 	// ~Begin UAGX_ShapeComponent interface.
 	virtual FShapeBarrier* GetNativeBarrier() override;
 	virtual const FShapeBarrier* GetNativeBarrier() const override;

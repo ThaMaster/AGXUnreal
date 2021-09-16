@@ -70,5 +70,4 @@ private:
 	virtual void PostEditChangeChainProperty(
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
-
 };
