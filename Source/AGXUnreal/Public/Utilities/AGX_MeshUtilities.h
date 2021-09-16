@@ -1,5 +1,9 @@
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Shapes/AGX_ShapeEnums.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "DynamicMeshBuilder.h"
 
@@ -281,4 +285,21 @@ public:
 	static void MakeDiskArray(
 		FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer,
 		uint32& NextFreeVertex, uint32& NextFreeIndex, const DiskArrayConstructionData& Data);
+
+	static bool FindStaticMeshRelativeToComponent(
+		const USceneComponent& Component,
+		TEnumAsByte<EAGX_StaticMeshSourceLocation> MeshSourceLocation, UStaticMesh* MeshSourceAsset,
+		UStaticMesh*& OutStaticMesh, FTransform* OutWorldTransform = nullptr);
+
+	/**
+	 * Uses data from the Static Mesh to construct a simplified
+	 * vertex and index buffer. The simplification is mainly due to the fact that
+	 * the source render mesh might need multiple vertices with same position but
+	 * different normals, texture coordinates, etc, while the collision mesh can
+	 * share vertices between triangles more aggressively.
+	 */
+	static bool GetStaticMeshCollisionData(
+		const UStaticMesh& StaticMesh, const FTransform& MeshWorldTransform,
+		const FTransform& RelativeTo, TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices,
+		const uint32* LodIndexOverride = nullptr);
 };

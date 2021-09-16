@@ -44,7 +44,7 @@ public:
 	 * Specifies from where should the Static Mesh triangle data be read.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shape")
-	TEnumAsByte<EAGX_TrimeshSourceLocation> MeshSourceLocation;
+	TEnumAsByte<EAGX_StaticMeshSourceLocation> MeshSourceLocation;
 
 	/**
 	 * Only used if Mesh Source Location is set to Static Mesh Asset. Specifies
@@ -117,18 +117,10 @@ private:
 	/// Create the AGX Dynamics object owned by this Trimesh Shape Component.
 	void CreateNative();
 
-	bool FindStaticMeshSource(UStaticMesh*& StaticMesh, FTransform* WorldTransform) const;
-	UMeshComponent* FindMeshComponent(
-		TEnumAsByte<EAGX_TrimeshSourceLocation> MeshSourceLocation) const;
+	bool GetStaticMeshCollisionData(TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices) const;
 
-	/**
-	 * Uses data from the Static Mesh source asset to construct a simplified
-	 * vertex and index buffer. The simplification is mainly due to the fact that
-	 * the source render mesh might need multiple vertices with same position but
-	 * different normals, texture coordinates, etc, while the collision mesh can
-	 * share vertices between triangles more aggresively.
-	 */
-	bool GetStaticMeshCollisionData(TArray<FVector>& Vertices, TArray<FTriIndices>& Indices) const;
+	UMeshComponent* FindMeshComponent(
+		TEnumAsByte<EAGX_StaticMeshSourceLocation> MeshSourceLocation) const;
 
 private:
 	FTrimeshShapeBarrier NativeBarrier;
