@@ -1,8 +1,10 @@
 #include "Shapes/AGX_BoxShapeComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "AGX_UpropertyDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_ShapeUtilities.h"
 
 UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 {
@@ -91,6 +93,22 @@ void UAGX_BoxShapeComponent::UpdateNativeProperties()
 	UpdateNativeLocalTransform(NativeBarrier);
 
 	NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale());
+}
+
+void UAGX_BoxShapeComponent::AutoFit(const TArray<FVector>& Vertices)
+{
+	FVector HalfExtentsBounding;
+	FTransform TransformBounding;
+	if(!FAGX_ShapeUtilities::ComputeOrientedBox(Vertices, HalfExtentsBounding, TransformBounding))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Auto-fit on %s failed. Could not compute oriented box with given vertices."),
+			*GetName());
+		return;
+	}
+
+	SetHalfExtent(HalfExtentsBounding);
 }
 
 void UAGX_BoxShapeComponent::CopyFrom(const FBoxShapeBarrier& Barrier)
