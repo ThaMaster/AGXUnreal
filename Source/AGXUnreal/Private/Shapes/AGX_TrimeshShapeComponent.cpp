@@ -242,6 +242,10 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 	if(!AGX_MeshUtilities::FindStaticMeshRelativeToComponent(
 		*this, MeshSourceLocation, MeshSourceAsset, StaticMesh, &StaticMeshWorldTransform))
 	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("GetStaticMeshCollisionData failed in %s. Unable to find static Mesh."),
+			*GetName());
 		return false;
 	}
 
