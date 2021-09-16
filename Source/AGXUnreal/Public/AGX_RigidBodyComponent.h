@@ -240,7 +240,7 @@ public:
 
 	/**
 	 * Adds an external torque, given in center of mass coordinate frame, that will be affecting
-	 * this body in the next solve [N cm].
+	 * this body in the next solve [Nm].
 	 *
 	 * @param Torque The torque to add, given in center of mass coordinate frame.
 	 */
@@ -249,7 +249,7 @@ public:
 
 	/**
 	 * Add an external torque, given in the world coordinate frame, that will be affecting this body
-	 * in the next solve [N cm].
+	 * in the next solve [Nm].
 	 *
 	 * @param Torque The torque to add, given in world coordinate frame.
 	 */
