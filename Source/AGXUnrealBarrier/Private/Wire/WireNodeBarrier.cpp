@@ -1,6 +1,7 @@
 #include "Wire/WireNodeBarrier.h"
 
 // AGX Dynamics for Unreal include.
+#include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
@@ -12,7 +13,7 @@ FWireNodeBarrier::FWireNodeBarrier()
 }
 
 FWireNodeBarrier::FWireNodeBarrier(const FWireNodeBarrier& Other)
-	: NativeRef (new FWireNodeRef())
+	: NativeRef(new FWireNodeRef())
 {
 	NativeRef->Native = Other.NativeRef->Native;
 }
@@ -92,16 +93,28 @@ void FWireNodeBarrier::ReleaseNative()
 	NativeRef->Native = nullptr;
 }
 
-
 FVector FWireNodeBarrier::GetWorldLocation() const
 {
 	check(HasNative());
 	return ConvertDisplacement(NativeRef->Native->getWorldPosition());
 }
 
+FVector FWireNodeBarrier::GetTranslate() const
+{
+	check(HasNative());
+	return ConvertDisplacement(NativeRef->Native->getTranslate());
+}
+
 EWireNodeType FWireNodeBarrier::GetType() const
 {
-	check(HasNative())
+	check(HasNative());
 	agxWire::Node::Type TypeAGX = NativeRef->Native->getType();
 	return Convert(TypeAGX);
+}
+
+FRigidBodyBarrier FWireNodeBarrier::GetRigidBody() const
+{
+	check(HasNative());
+	agx::RigidBody* Body = NativeRef->Native->getRigidBody();
+	return AGXBarrierFactories::CreateRigidBodyBarrier(Body);
 }

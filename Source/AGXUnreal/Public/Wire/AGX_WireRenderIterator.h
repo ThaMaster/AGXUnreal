@@ -2,13 +2,13 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Wire/WireRenderIteratorBarrier.h"
+#include "Wire/AGX_WireNode.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "AGX_WireRenderIterator.generated.h"
-
-struct FAGX_WireNode;
 
 /**
  * An iterator that iterates through the renderable nodes in a Wire Component. Instances are created
@@ -33,9 +33,9 @@ public:
 	/**
 	 * Get the Wire Node currently pointed to by this iterator. Must not be called when this
 	 * iterator compares equal to GetRenderEndIterator or when HasNative returns false. Iterators
-	 * fetched from an UAGX_WireComponent for which HasRenderNodes returns true i guaranteed to have
-	 * a native, and all iterators produced by Inc, Dec, Next, and Prev on such iterators will also
-	 * be guaranteed to have a native until an iterator comparing equal to the return value of
+	 * fetched from an UAGX_WireComponent for which HasRenderNodes returns true is guaranteed to
+	 * have a native, and all iterators produced by Inc, Dec, Next, and Prev on such iterators will
+	 * also be guaranteed to have a native until an iterator comparing equal to the return value of
 	 * GetRenderEndIterator is reached.
 	 *
 	 * @return The Wire Node currently pointed to by this iterator.
@@ -56,4 +56,20 @@ public:
 
 private:
 	FWireRenderIteratorBarrier Barrier;
+};
+
+UCLASS()
+class AGXUNREAL_API UAGX_WireRenderIterator_FL : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintPure, Category = "AGX Wire Rendering")
+	static FAGX_WireNode Get(UPARAM(Ref) FAGX_WireRenderIterator& Iterator);
+
+	UFUNCTION(BlueprintPure, Category = "AGX Wire Rendering")
+	static FAGX_WireRenderIterator Next(UPARAM(Ref) FAGX_WireRenderIterator& Iterator);
+
+	UFUNCTION(BlueprintPure, Category = "AGX Wire Rendering")
+	static FAGX_WireRenderIterator Prev(UPARAM(Ref) FAGX_WireRenderIterator& Iterator);
 };

@@ -95,6 +95,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	bool GetAutoGenerateCenterOfMassOffset() const;
 
+	/**
+	 * Explicitly update mass properties.
+	 *
+	 * E.g., when the density is changed on a material which this rigid body depends on. This method
+	 * uses the current mass property update mask. I.e., if this rigid body has an explicitly
+	 * assigned mass, mass will not be updated during this call.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void UpdateMassProperties();
+
+	/**
+	 * Calculate the mass of this rigid body using the volume and density of added geometries.
+	 *
+	 * \note This calculated mass isn't necessary the same as getMassProperties()->getMass() since
+	 * the mass in mass properties could be assigned (i.e., explicit).
+	 *
+	 * @return The total mass of this rigid body, calculated given volume and density of added
+	 * geometries.
+	 */
+	double CalculateMass() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics", Meta = (DisplayName = "CalculateMass"))
+	float CalculateMass_BP() const;
+
 	/// The three-component diagonal of the inertia tensor.
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics",
@@ -215,23 +239,27 @@ public:
 	FVector GetForce() const;
 
 	/**
+	 * Adds an external torque, given in center of mass coordinate frame, that will be affecting
+	 * this body in the next solve [Nm].
+	 *
+	 * @param Torque The torque to add, given in center of mass coordinate frame.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void AddTorqueLocal(const FVector& Torque);
+
+	/**
 	 * Add an external torque, given in the world coordinate frame, that will be affecting this body
-	 * in the next solve.
+	 * in the next solve [Nm].
 	 *
 	 * @param Torque The torque to add, given in world coordinate frame.
 	 */
-	void AddWorldTorque(const FVector& Torque);
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void AddTorqueWorld(const FVector& Torque);
 
 	/**
-	 * Adds an external torque, given in center of mass coordinate frame, that will be affecting
-	 * this body in the next solve.
-	 * @param Torque The torque to add, given in center of mass coordinate frame.
-	 */
-	void AddCenterOfMassTorque(const FVector& Torque);
-
-	/**
-	 * Get the external torques accumulated so far by the AddTorque member function, to be applied
+	 * Get the external torques accumulated so far by the AddTorque member functions, to be applied
 	 * to this body in the next solve.
+	 *
 	 * @return The external torques for the next solve accumulated so far.
 	 */
 	FVector GetTorque() const;
@@ -247,7 +275,7 @@ public:
 	// ~Begin IAGX_NativeOwner interface.
 	virtual bool HasNative() const override;
 	virtual uint64 GetNativeAddress() const override;
-	virtual void AssignNative(uint64 NativeAddress) override;
+	virtual void SetNativeAddress(uint64 NativeAddress) override;
 	// ~End IAGX_NativeOwner interface.
 
 	// ~Begin UObject interface.

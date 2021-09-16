@@ -37,7 +37,7 @@ public:
 	/**
 	 * The terrain material instance can spawn both a TerrainMaterialBarrier (affecting the bulk
 	 * properties of the terrain) and a ShapeMaterialBarrier (affecting the surface properties).
-	 * This translates directly to AGX's native types TerrainMaterial and Material.
+	 * This translates directly to AGX Dynamics' native types TerrainMaterial and Material.
 	 */
 
 	GENERATED_BODY()

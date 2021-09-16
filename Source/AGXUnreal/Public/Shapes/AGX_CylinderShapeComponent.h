@@ -40,6 +40,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
 	float GetRadius() const;
 
+	/**
+	 * Set to true to enable the Pulley property on this cylinder.
+	 *
+	 * When enabled contact points with wires will only be created on the center line of the
+	 * cylinder perimeter, preventing the wire from slipping off the cylinder.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Wire", Meta = (EditCondition = "!bGypsy"))
+	bool bPulley = false;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	void SetPulley(bool bInPulley);
+
+	/**
+	 * Set to true to enable the Gypsy property on this cylinder.
+	 *
+	 * When enabled contact points with wires will only be created on the center line of the
+	 * cylinder perimeter, preventing the wire from slipping off of the Cylinder.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Wire", Meta = (EditCondition = "!bPulley"))
+	bool bGypsy = false;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	void SetGypsy(bool bInGypsy);
+
 	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;

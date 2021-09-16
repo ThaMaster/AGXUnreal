@@ -61,9 +61,14 @@
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Tires/AGX_TwoBodyTireActor.h"
 #include "Tires/AGX_TwoBodyTireComponentCustomization.h"
+#include "Wire/AGX_WireActor.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireComponentVisualizer.h"
-#include "Wire/AGX_WireComponentCustomization.h"
+#include "Wire/AGX_WireDetails.h"
+#include "Wire/AGX_WireWinchActor.h"
+#include "Wire/AGX_WireWinchComponent.h"
+#include "Wire/AGX_WireWinchDetails.h"
+#include "Wire/AGX_WireWinchVisualizer.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -247,7 +252,12 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_WireComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_WireComponentCustomization::MakeInstance));
+			&FAGX_WireDetails::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_WireWinchComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_WireWinchDetails::MakeInstance));
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
@@ -274,6 +284,10 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeTerrain::StaticClass()->GetFName());
 
+	PropertyModule.UnregisterCustomClassLayout(UAGX_WireComponent::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomClassLayout(UAGX_WireWinchComponent::StaticClass()->GetFName());
+
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName());
 
@@ -287,9 +301,6 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());
-
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		UAGX_WireComponent::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
@@ -311,6 +322,10 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 	RegisterComponentVisualizer(
 		UAGX_WireComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_WireComponentVisualizer));
+
+	RegisterComponentVisualizer(
+		UAGX_WireWinchComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_WireWinchVisualizer));
 }
 
 void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
@@ -319,6 +334,7 @@ void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
 	UnregisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_TireComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_WireComponent::StaticClass()->GetFName());
+	UnregisterComponentVisualizer(UAGX_WireWinchComponent::StaticClass()->GetFName());
 }
 
 void FAGXUnrealEditorModule::RegisterComponentVisualizer(
@@ -382,6 +398,8 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 	RegisterPlaceableItem(AAGX_CollisionGroupDisablerActor::StaticClass());
 	RegisterPlaceableItem(AAGX_RigidBodyActor::StaticClass());
 	RegisterPlaceableItem(AAGX_TwoBodyTireActor::StaticClass());
+	RegisterPlaceableItem(AAGX_WireActor::StaticClass());
+	RegisterPlaceableItem(AAGX_WireWinchActor::StaticClass());
 }
 
 void FAGXUnrealEditorModule::UnregisterPlacementCategory()

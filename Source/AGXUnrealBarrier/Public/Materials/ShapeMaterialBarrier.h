@@ -28,6 +28,8 @@ public:
 	void SetName(const FString& Name);
 	FString GetName() const;
 
+	// Bulk properties.
+
 	void SetDensity(double Density);
 	double GetDensity() const;
 
@@ -44,6 +46,8 @@ public:
 	double GetMinElasticRestLength() const;
 	double GetMaxElasticRestLength() const;
 
+	// Surface properties.
+
 	void SetFrictionEnabled(bool bEnabled);
 	bool GetFrictionEnabled() const;
 
@@ -56,6 +60,20 @@ public:
 	void SetAdhesion(double AdhesiveForce, double AdhesiveOverlap);
 	double GetAdhesiveForce() const;
 	double GetAdhesiveOverlap() const;
+
+	// Wire properties.
+
+	double GetYoungsModulusStretch() const;
+	void SetYoungsModulusStretch(double YoungsModulus) const;
+
+	double GetYoungsModulusBend() const;
+	void SetYoungsModulusBend(double YoungsModulus) const;
+
+	double GetDampingStretch() const;
+	void SetDampingStretch(double Damping) const;
+
+	double GetDampingBend() const;
+	void SetDampingBend(double Damping) const;
 
 	FGuid GetGuid() const;
 

@@ -45,6 +45,7 @@
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
+#include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
@@ -847,7 +848,8 @@ UAGX_TwoBodyTireComponent* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 		return nullptr;
 	}
 
-	auto SetRigidBody = [&](UAGX_RigidBodyComponent* Body, FAGX_RigidBodyReference& BodyRef) {
+	auto SetRigidBody = [&](UAGX_RigidBodyComponent* Body, FAGX_RigidBodyReference& BodyRef)
+	{
 		if (Body == nullptr)
 		{
 			WriteImportErrorMessage(
@@ -896,7 +898,8 @@ AAGX_TwoBodyTireActor* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 	NewActor->TwoBodyTireComponent->CopyFrom(Barrier);
 
 	// Setup TireRigidBody and HubRigidBody.
-	auto SetupBody = [&](const FRigidBodyBarrier& BodyBarrier, UAGX_RigidBodyComponent* Body) {
+	auto SetupBody = [&](const FRigidBodyBarrier& BodyBarrier, UAGX_RigidBodyComponent* Body)
+	{
 		if (BodyBarrier.HasNative() == false)
 		{
 			WriteImportErrorMessage(
@@ -960,6 +963,197 @@ AAGX_CollisionGroupDisablerActor* FAGX_ArchiveImporterHelper::InstantiateCollisi
 	return NewActor;
 }
 
+UAGX_WireComponent* FAGX_ArchiveImporterHelper::InstantiateWire(
+	const FWireBarrier& Barrier, AActor& Owner)
+{
+	UAGX_WireComponent* Component = NewObject<UAGX_WireComponent>(&Owner);
+	if (Component == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Wire"), Barrier.GetName(), ArchiveFilePath,
+			TEXT("Could not create new AGX_WireComponent"));
+		return nullptr;
+	}
+
+	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
+
+	// Copy simple properties such as radius and segment length. More complicated properties, such
+	// as physical material, winches and route nodes, are handled below.
+	Component->CopyFrom(Barrier);
+
+	// Find and assign the physical material asset.
+	FShapeMaterialBarrier NativeMaterial = Barrier.GetMaterial();
+	if (NativeMaterial.HasNative())
+	{
+		const FGuid Guid = NativeMaterial.GetGuid();
+		UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
+		Component->PhysicalMaterial = Material;
+	}
+
+	// Configure winches.
+	auto ConfigureWinch = [this, &Barrier](EWireSide Side, UAGX_WireComponent& Wire) -> bool
+	{
+		FWireWinchBarrier WinchBarrier = Barrier.GetWinch(Side);
+		if (WinchBarrier.HasNative())
+		{
+			FAGX_WireWinch* Winch = Wire.GetOwnedWinch(Side);
+			// Get Owned Winch can never return nullptr when a valid Side is passed.
+			Winch->CopyFrom(WinchBarrier);
+			FRigidBodyBarrier WinchBodyBarrier = WinchBarrier.GetRigidBody();
+			UAGX_RigidBodyComponent* WinchBodyComponent = GetBody(WinchBodyBarrier);
+			// Ok for WinchBodyComponent to be nullptr. Means attached to the world.
+			Winch->SetBodyAttachment(WinchBodyComponent);
+			Wire.SetWinchOwnerType(Side, EWireWinchOwnerType::Wire);
+			return true;
+		}
+		else
+		{
+			Wire.SetWinchOwnerType(Side, EWireWinchOwnerType::None);
+			return false;
+		}
+	};
+	bool bHaveBeginWinch = ConfigureWinch(EWireSide::Begin, *Component);
+	bool bHaveEndWinch = ConfigureWinch(EWireSide::End, *Component);
+
+	TArray<FWireRoutingNode>& Route = Component->RouteNodes;
+	Route.Empty();
+
+	// Helper function to create Body Fixed nodes.
+	auto TryCreateBodyFixedNode = [this, &Route](FWireNodeBarrier NodeBarrier)
+	{
+		if (NodeBarrier.GetType() != EWireNodeType::BodyFixed)
+		{
+			return;
+		}
+		FRigidBodyBarrier NodeBodyBarrier = NodeBarrier.GetRigidBody();
+		if (!NodeBodyBarrier.HasNative())
+		{
+			/// @todo Is it OK to have a Body Fixed Node without a body?
+			return;
+		}
+		UAGX_RigidBodyComponent* Body = GetBody(NodeBodyBarrier);
+		if (Body == nullptr)
+		{
+			/// @todo Is it OK to have a Body Fixed Node without a body?
+			return;
+		}
+
+		if (Route.Num() > 0 && Route[0].NodeType == EWireNodeType::Free)
+		{
+			// In an initialized wire there may be a Free node right on top of the Body Fixe node.
+			// The Body Fixed node represents the body itself, while the Free node represents the
+			// part of the wire that approaches the body. While routing we only need the Body Fixed
+			// node, it represents both concepts.
+			Route.Pop();
+		}
+
+		FWireRoutingNode RouteNode;
+		RouteNode.NodeType = EWireNodeType::BodyFixed;
+		/// @todo This should be changed to GetLocation once route nodes with a body have their
+		/// location relative to the body instead of the wire.
+		RouteNode.Location = NodeBarrier.GetWorldLocation();
+		RouteNode.SetBody(Body);
+		Route.Add(RouteNode);
+	};
+
+	if (!bHaveBeginWinch)
+	{
+		// Configure initial Body Fixe node. Some Body Fixed nodes are owned by the winch on that
+		// side, do not create an explicit Body Fixed node in that case.
+		TryCreateBodyFixedNode(Barrier.GetFirstNode());
+	}
+
+	// Configure "normal" route nodes.
+	for (auto It = Barrier.GetRenderBeginIterator(), End = Barrier.GetRenderEndIterator();
+		 It != End; It.Inc())
+	{
+		const FAGX_WireNode NodeAGX = It.Get();
+		const EWireNodeType NodeType = [&NodeAGX, &Barrier, &It]() -> EWireNodeType
+		{
+			if (Barrier.IsLumpedNode(It))
+			{
+				// Lumped nodes are special somehow, and should be created as free nodes.
+				return EWireNodeType::Free;
+			}
+			switch (NodeAGX.GetType())
+			{
+				case EWireNodeType::Free:
+					// Free nodes can be routed as-is.
+					return EWireNodeType::Free;
+				case EWireNodeType::Eye:
+					// Eye nodes can be routed as-is.
+					return EWireNodeType::Eye;
+				case EWireNodeType::BodyFixed:
+					// A Body Fixed node found by the render iterator is an implicitly created node
+					// and should be routed as a Free node. It should not be attached to any of the
+					// Rigid Bodies in the Component list.
+					return EWireNodeType::Free;
+				case EWireNodeType::Stop:
+					// Stop nodes are used by winches, which we detect with GetWinch instead.
+					return EWireNodeType::Other;
+				default:
+					// Any other node type is routed as a Free node for now. Special handling may
+					// be needed in the future, if routing with additional node types become
+					// supported.
+					return EWireNodeType::Free;
+			}
+		}();
+
+		if (NodeType == EWireNodeType::Other)
+		{
+			// Other nodes are used to signal "skip this node".
+			continue;
+		}
+
+		FWireRoutingNode RouteNode;
+		RouteNode.NodeType = NodeType;
+		/// @todo This should be changed to GetLocation for nodes with a body once route nodes with
+		/// a body have their location relative to the body instead of the wire.
+		RouteNode.Location = NodeAGX.GetWorldLocation();
+
+		if (NodeType == EWireNodeType::Eye)
+		{
+			FRigidBodyBarrier BodyBarrier = NodeAGX.GetRigidBody();
+			UAGX_RigidBodyComponent* BodyComponent = GetBody(BodyBarrier);
+			if (BodyComponent != nullptr)
+			{
+				RouteNode.SetBody(BodyComponent);
+			}
+		}
+
+		Route.Add(RouteNode);
+	}
+
+	if (!bHaveEndWinch)
+	{
+		// Configure ending Body Fixed node. Some Body Fixed nodes are owned by the winch on that
+		//	side, do not create an explicit Body Fixed node in that case.
+		TryCreateBodyFixedNode(Barrier.GetLastNode());
+	}
+
+	Component->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Component);
+	Component->RegisterComponent();
+	Component->PostEditChange();
+	// May chose to store a table of all imported wires. If so, add this wire to the table here.
+	return Component;
+}
+
+AActor* FAGX_ArchiveImporterHelper::InstantiateWire(const FWireBarrier& Barrier, UWorld& World)
+{
+	// We don't have a dedicated Wire Actor, so create a plain Actor and add a Wire Component to it.
+	AActor* NewActor = World.SpawnActor<AActor>(AActor::StaticClass(), FTransform::Identity);
+	if (NewActor == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Wire"), Barrier.GetName(), ArchiveFilePath,
+			TEXT("Could not create Actor to hold Wire Component"));
+		return nullptr;
+	}
+	InstantiateWire(Barrier, *NewActor);
+	return NewActor;
+}
+
 UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(
 	const FRigidBodyBarrier& Barrier, bool LogErrorIfNotFound)
 {
@@ -1020,7 +1214,8 @@ namespace
 	{
 		FString BasePath = FAGX_ImportUtilities::CreateArchivePackagePath(ArchiveName);
 
-		auto PackageExists = [&](const FString& DirPath) {
+		auto PackageExists = [&](const FString& DirPath)
+		{
 			/// @todo Is this check necessary? Can it be something less crashy? It was copied from
 			/// somewhere, where?
 			check(!FEditorFileUtils::IsMapPackageAsset(DirPath));

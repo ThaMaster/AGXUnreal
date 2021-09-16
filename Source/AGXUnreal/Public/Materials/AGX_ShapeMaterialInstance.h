@@ -39,7 +39,7 @@ public:
 	virtual float GetMinElasticRestLength() const override;
 	virtual float GetMaxElasticRestLength() const override;
 
-	// Surface properties
+	// Surface properties.
 	virtual void SetFrictionEnabled(bool Enabled) override;
 	virtual bool GetFrictionEnabled() const override;
 
@@ -52,6 +52,19 @@ public:
 	virtual void SetAdhesion(float AdhesiveForce, float AdhesiveOverlap) override;
 	virtual float GetAdhesiveForce() const override;
 	virtual float GetAdhesiveOverlap() const override;
+
+	// Wire properties.
+	virtual float GetYoungsModulusStretch() const;
+	virtual void SetYoungsModulusStretch(float InYoungsModulus);
+
+	virtual float GetYoungsModulusBend() const;
+	virtual void SetYoungsModulusBend(float InYoungsModulus);
+
+	virtual float GetDampingStretch() const;
+	virtual void SetDampingStretch(float InDamping);
+
+	virtual float GetDampingBend() const;
+	virtual void SetDampingBend(float InDamping);
 
 	static UAGX_ShapeMaterialInstance* CreateFromAsset(UWorld* PlayingWorld, UAGX_ShapeMaterialAsset* Source);
 

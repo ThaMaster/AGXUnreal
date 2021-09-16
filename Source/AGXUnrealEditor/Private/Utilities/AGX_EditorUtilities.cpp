@@ -978,4 +978,9 @@ bool FAGX_EditorUtilities::ApplyShapeMaterial(
 	return true;
 }
 
+EVisibility FAGX_EditorUtilities::VisibleIf(bool bVisible)
+{
+	return bVisible ? EVisibility::Visible : EVisibility::Collapsed;
+}
+
 #undef LOCTEXT_NAMESPACE

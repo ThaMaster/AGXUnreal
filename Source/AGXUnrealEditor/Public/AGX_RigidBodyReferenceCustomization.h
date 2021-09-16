@@ -31,7 +31,11 @@ private:
 	 * Re-fetch the pointers/handles to the underlying data stores.
 	 * This should be called at the start of every Customize.+ function.
 	 */
+#if 1
+	void RefreshStoreReferences(TSharedRef<IPropertyHandle> BodyReferenceHandle);
+#else
 	void RefreshStoreReferences(IPropertyHandle& StructPropertyHandle);
+#endif
 
 	FText GetHeaderText() const;
 
@@ -47,7 +51,7 @@ private:
 	 */
 	void OnComboBoxChanged(TSharedPtr<FName> NewSelection, ESelectInfo::Type SelectionInfo);
 
-	void OnBodyNameCommited(const FText& InText, ETextCommit::Type InCommitType);
+	void OnBodyNameCommitted(const FText& InText, ETextCommit::Type InCommitType);
 
 	/**
 	 * Return the the currently selected body-owning Actor, if exactly one RigidBodyReference is
@@ -66,15 +70,14 @@ private:
 	/// GUI widget for presenting body names and selecting which particular body in the owning
 	/// Actor that this reference should reference.
 	/// \todo Do not use raw pointer here. Either SharedPtr or WeakPtr.
-	SComboBox<TSharedPtr<FName>>* ComboBoxPtr;
+	SComboBox<TSharedPtr<FName>>* ComboBoxPtr = nullptr;
 
 	FSimpleDelegate RebuildComboBoxDelegate;
 
-	SEditableTextBox* ComponentNameBoxPtr;
+	SEditableTextBox* ComponentNameBoxPtr = nullptr;
 
-	// The RigidBodyReference being customized. Will be nullptr if none or multiple
-	// RigidBodyReferences are selected.
-	FAGX_RigidBodyReference* RigidBodyReference;
+	FAGX_RigidBodyReference* GetRigidBodyReference() const;
+	TSharedPtr<IPropertyHandle> RigidBodyReferenceHandle;
 
 	TSharedPtr<IPropertyHandle> OwningActorHandle;
 	TSharedPtr<IPropertyHandle> BodyNameHandle;

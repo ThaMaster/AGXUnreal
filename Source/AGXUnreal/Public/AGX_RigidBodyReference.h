@@ -2,6 +2,7 @@
 
 #include "AGX_RigidBodyReference.generated.h"
 
+class FRigidBodyBarrier;
 class UAGX_RigidBodyComponent;
 
 class AActor;
@@ -31,6 +32,16 @@ class AActor;
  * created from something else, such as part of a Play-in-Editor session or loaded from disk as part
  * of a cooked build.
  *
+ * Unreal Editor detects changes made during construction, PostInitProperties is considered part of
+ * the construction phase, and will disable editing of UProperties with such changes. This can be
+ * disabled by adding the SkipUCSModifiedProperties Meta Specifier to the UProperty. That should be
+ * done for FAGX_RigidBodyReferences on which OwningActor is set during PostInitProperties, and
+ * recursively up any struct holding the FAGX_RigidBodyReference until a UObject UProperty is
+ * reached.
+ *
+ *   UPROPERTY(EditAnywhere, Category = "MyCategory", Meta = (SkipUCSModifiedProperties))
+ *   FAGX_RigidBodyReference MyRigidBodyReference;
+ *
  * The RigidBodyReference supports caching of the RigidBodyComponent through the
  * CacheCurrentRigidBody member function. Only call this once the RigidBodyReference has been fully
  * formed, i.e., the OwningActor property set to the final Actor and when the referenced
@@ -40,6 +51,8 @@ USTRUCT()
 struct AGXUNREAL_API FAGX_RigidBodyReference
 {
 	GENERATED_BODY()
+
+	FAGX_RigidBodyReference();
 
 	/**
 	 * That Actor that owns the RigidBodyComponent that this RigidBodyReference references.
@@ -60,12 +73,12 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 	UPROPERTY(
 		EditInstanceOnly, Category = "AGX Dynamics",
 		Meta = (Tooltip = "The Actor that owns the RigidBodyComponent."))
-	AActor* OwningActor;
+	AActor* OwningActor = nullptr;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics",
 		Meta = (Tooltip = "The name of the RigidBodyComponent."))
-	FName BodyName;
+	FName BodyName = NAME_None;
 
 	/// \todo It may be possible to do this with a UAGX_RigidBodyComponent
 	/// property instead of the name. The idea is to have a PropertyChanged
@@ -86,6 +99,11 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 	 * @return The UAGX_RigidBodyComponent that this FAGX_RigidBodyReference currently references.
 	 */
 	UAGX_RigidBodyComponent* GetRigidBody() const;
+
+	/**
+	 * Returns the Barrier object for the referenced body, if there is one, otherwise nullptr.
+	 */
+	FRigidBodyBarrier* GetRigidBodyBarrier() const;
 
 	/**
 	 * Get the Actor that owns the RigidBody that this reference currently references. Can return
@@ -110,5 +128,5 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 	void InvalidateCache();
 
 private:
-	UAGX_RigidBodyComponent* Cache;
+	UAGX_RigidBodyComponent* Cache = nullptr;
 };

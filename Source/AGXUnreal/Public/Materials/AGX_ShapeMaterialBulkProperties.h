@@ -1,7 +1,9 @@
 ﻿#pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+
 #include "AGX_ShapeMaterialBulkProperties.generated.h"
 
 /**

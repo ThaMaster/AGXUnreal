@@ -43,6 +43,7 @@
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Tires/AGX_TwoBodyTireActor.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
@@ -268,6 +269,12 @@ namespace
 			return FTwoBodyTireArchiveBodies(
 				new FEditorBody(*Actor->TireRigidBodyComponent, Helper),
 				new FEditorBody(*Actor->HubRigidBodyComponent, Helper));
+		}
+
+		virtual void InstantiateWire(const FWireBarrier& Barrier) override
+		{
+			AActor* Actor = Helper.InstantiateWire(Barrier, World);
+			Actor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
 		}
 
 		virtual ~EditorInstantiator() = default;

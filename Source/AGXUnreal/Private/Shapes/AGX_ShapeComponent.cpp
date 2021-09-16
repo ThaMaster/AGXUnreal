@@ -32,7 +32,7 @@ uint64 UAGX_ShapeComponent::GetNativeAddress() const
 	return static_cast<uint64>(GetNativeBarrier()->GetNativeAddress());
 }
 
-void UAGX_ShapeComponent::AssignNative(uint64 NativeAddress)
+void UAGX_ShapeComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	GetNativeBarrier()->SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
@@ -41,7 +41,9 @@ void UAGX_ShapeComponent::AssignNative(uint64 NativeAddress)
 TStructOnScope<FActorComponentInstanceData> UAGX_ShapeComponent::GetComponentInstanceData() const
 {
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
-		this, this, [](UActorComponent* Component) {
+		this, this,
+		[](UActorComponent* Component)
+		{
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});

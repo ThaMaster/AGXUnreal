@@ -1,15 +1,19 @@
 #pragma once
 
 // Unreal Engine includes.
-#include "CoreMinimal.h"
 #include "IDetailCustomization.h"
 
-class IDetailLayoutBuilder;
+class UAGX_WireComponent;
 
-class FAGX_WireComponentCustomization : public IDetailCustomization
+class FAGX_WireDetails : public IDetailCustomization
 {
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();
 
+	//~ Begin IDetailCustomization interface.
 	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
+	//~ End IDetailCustomization interface.
+
+public:
+	TWeakObjectPtr<UAGX_WireComponent> Wire;
 };

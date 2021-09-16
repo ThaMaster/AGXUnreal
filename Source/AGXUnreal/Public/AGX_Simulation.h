@@ -216,7 +216,7 @@ public: // Member functions.
 
 	void AddTerrain(AAGX_Terrain* Terrain);
 
-	void AddWire(UAGX_WireComponent& Wire);
+	bool AddWire(UAGX_WireComponent& Wire);
 	void RemoveWire(UAGX_WireComponent& Wire);
 
 	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);

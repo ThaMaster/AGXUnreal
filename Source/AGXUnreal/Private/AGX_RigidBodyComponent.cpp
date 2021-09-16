@@ -6,6 +6,7 @@
 #include "AGX_Simulation.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/GameInstance.h"
@@ -188,13 +189,27 @@ FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
 {
 	if (!HasNative())
 	{
-		checkf(
-			!GIsReconstructingBlueprintInstances,
-			TEXT("This is a bad situation. Someone need this Component's native but we're in the "
-				 "middle of a RerunConstructionScripts and this Component haven't been given its "
-				 "Native yet. We can't create a new one since we will be given the actual Native "
-				 "soon, but we also can't return the actual Native right now because it hasn't "
-				 "been restored from the UActorComponentInstanceData yet."));
+		if (GIsReconstructingBlueprintInstances)
+		{
+			// We're in a very bad situation. Someone need this Component's native but if we're in
+			// the middle of a RerunConstructionScripts and this Component haven't been given its
+			// Native yet then there isn't much we can do. We can't create a new one since we will
+			// be given the actual Native soon, but we also can't return the actual Native right now
+			// because it hasn't been restored from the Component Instance Data yet.
+			//
+			// For now we simply die in non-shipping (checkNoEntry is active) so unit tests will
+			// detect this situation, and log error and return nullptr otherwise, so that the
+			// application can at least keep running. It is unlikely that the simulation will behave
+			// as intended.
+			checkNoEntry();
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("A request for the AGX Dynamics instance for Rigid Body '%s' in '%s' was made "
+					 "but we are in the middle of a Blueprint Reconstruction and the requested "
+					 "instance has not yet been restored. The instance cannot be returned, which "
+					 "may lead to incorrect scene configuration."));
+			return nullptr;
+		}
 
 		InitializeNative();
 	}
@@ -212,7 +227,7 @@ uint64 UAGX_RigidBodyComponent::GetNativeAddress() const
 	return static_cast<uint64>(NativeBarrier.GetNativeAddress());
 }
 
-void UAGX_RigidBodyComponent::AssignNative(uint64 NativeAddress)
+void UAGX_RigidBodyComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
@@ -276,6 +291,12 @@ void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 	if (GIsReconstructingBlueprintInstances)
 	{
 		// Another UAGX_RigidBodyComponent will inherit this one's Native, so don't wreck it.
+		// The call to NativeBarrier.ReleaseNative below is safe because the AGX Dynamics Simulation
+		// will retain a reference counted pointer to the AGX Dynamics Rigid Body.
+		//
+		// But what if the Rigid Body isn't currently part of any Simulation? Can we guarantee that
+		// something will keep the Rigid Body instance alive? Should we do explicit incref/decref
+		// on the Rigid Body in GetNativeAddress / SetNativeAddress?
 	}
 	else
 	{
@@ -422,11 +443,11 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("The Rigid Body Component \"%s\" has a RigidBody with Static AGX MotionControl "
-				 "but Non-Static Unreal Mobility. Unreal Mobility will automatically be changed to "
-				 "Static this game session, but should also be changed manually in the Editor to "
-				 "ensure best performance!"),
-			*GetName());
+			TEXT("The Rigid Body Component \"%s\" in \"%s\" has a RigidBody with Static AGX "
+				 "MotionControl but Non-Static Unreal Mobility. Unreal Mobility will automatically "
+				 "be changed to Static this game session, but should also be changed manually in "
+				 "the Editor to ensure best performance!"),
+			*GetName(), *GetLabelSafe(GetOwner()));
 
 		SetMobility(EComponentMobility::Type::Static);
 	}
@@ -434,11 +455,11 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("The Rigid Body Component \"%s\" has a RigidBody with Dynamic AGX MotionControl "
-				 "but Non-Movable Unreal Mobility. Unreal Mobility will automatically be changed "
-				 "to Movable this game session, but should also be changed manually in the Editor "
-				 "to avoid future problems!"),
-			*GetName());
+			TEXT("The Rigid Body Component \"%s\" \"%s\" has a RigidBody with Dynamic AGX "
+				 "MotionControl but Non-Movable Unreal Mobility. Unreal Mobility will "
+				 "automatically be changed to Movable this game session, but should also be "
+				 "changed manually in the Editor to avoid future problems!"),
+			*GetName(), *GetLabelSafe(GetOwner()));
 
 		SetMobility(EComponentMobility::Type::Movable);
 	}
@@ -850,6 +871,29 @@ bool UAGX_RigidBodyComponent::GetAutoGeneratePrincipalInertia() const
 	}
 }
 
+void UAGX_RigidBodyComponent::UpdateMassProperties()
+{
+	if (HasNative())
+	{
+		NativeBarrier.UpdateMassProperties();
+	}
+}
+
+double UAGX_RigidBodyComponent::CalculateMass() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.CalculateMass();
+	}
+
+	return 0.0;
+}
+
+float UAGX_RigidBodyComponent::CalculateMass_BP() const
+{
+	return static_cast<float>(CalculateMass());
+}
+
 void UAGX_RigidBodyComponent::SetVelocity(const FVector& InVelocity)
 {
 	if (HasNative())
@@ -965,40 +1009,45 @@ FVector UAGX_RigidBodyComponent::GetForce() const
 	return NativeBarrier.GetForce();
 }
 
-void UAGX_RigidBodyComponent::AddWorldTorque(const FVector& Torque)
+void UAGX_RigidBodyComponent::AddTorqueLocal(const FVector& Torque)
 {
 	if (!HasNative())
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Must have a native AGX Dynamics representation of RigidBody '%s' to call "
-				 "AddTorque."),
+				 "AddTorqueLocal."),
 			*GetName());
 		return;
 	}
 
-	NativeBarrier.AddWorldTorque(Torque);
+	NativeBarrier.AddTorqueLocal(Torque);
 }
 
-void UAGX_RigidBodyComponent::AddCenterOfMassTorque(const FVector& Torque)
+void UAGX_RigidBodyComponent::AddTorqueWorld(const FVector& Torque)
 {
 	if (!HasNative())
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Must have a native AGX Dynamics representation of RigidBody '%s' to call "
-				 "AddTorque."),
+				 "AddTorqueWorld."),
 			*GetName());
 		return;
 	}
 
-	NativeBarrier.AddCenterOfMassTorque(Torque);
+	NativeBarrier.AddTorqueWorld(Torque);
 }
 
 FVector UAGX_RigidBodyComponent::GetTorque() const
 {
 	if (!HasNative())
 	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Must have a native AGX Dynamics representation of RigidBody '%s' to call "
+				 "GetTorque."),
+			*GetName());
 		return FVector::ZeroVector;
 	}
 
