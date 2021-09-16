@@ -35,6 +35,7 @@ class UAGX_TwoBodyTireComponent;
 class AAGX_TwoBodyTireActor;
 class AAGX_CollisionGroupDisablerActor;
 class UAGX_CollisionGroupDisablerComponent;
+class UAGX_WireComponent;
 
 // Unreal Engine classes.
 class AActor;
@@ -117,6 +118,10 @@ public:
 
 	AAGX_CollisionGroupDisablerActor* InstantiateCollisionGroupDisabler(
 		UWorld& World, const TArray<std::pair<FString, FString>>& DisabledPairs);
+
+	UAGX_WireComponent* InstantiateWire(const FWireBarrier& Barrier, AActor& Owner);
+
+	AActor* InstantiateWire(const FWireBarrier& Barrier, UWorld& World);
 
 	UAGX_RigidBodyComponent* GetBody(
 		const FRigidBodyBarrier& Barrier, bool LogErrorIfNotFound = true);

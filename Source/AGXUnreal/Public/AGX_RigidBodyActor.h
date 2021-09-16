@@ -1,7 +1,9 @@
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
 #include "AGX_RigidBodyActor.generated.h"
 
 class UAGX_RigidBodyComponent;

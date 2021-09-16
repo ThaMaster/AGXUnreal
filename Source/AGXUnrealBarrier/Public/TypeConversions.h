@@ -9,6 +9,7 @@
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 #include "RigidBodyBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
+#include "Utilities/DoubleInterval.h"
 #include "Wire/AGX_WireEnums.h"
 
 // Unreal Engine includes.
@@ -37,8 +38,49 @@
 // Standard library includes.
 #include <limits>
 
-/// \note These functions assume that agx::Real and float are different types.
-/// They also assume that agx::Real has higher (or equal) precision than float.
+// These functions assume that agx::Real and float are different types.
+// They also assume that agx::Real has higher (or equal) precision than float.
+//
+// Naming conventions:
+//
+//
+// Convert
+//
+// The default conversion function is named Convert. It is overloaded on the parameter type and
+// detects if it is an AGX Dynamics type of an Unreal Engine type. double is considered an AGX
+// Dynamics type and float an Unreal Engine type. It converts to the other. The conversion is just a
+// cast, a plain Convert will never do any unit translations. It can do range checks, which when
+// failed will result in an error message being printed and the value truncated. Composite types,
+// such as Vector, calls Convert on its members.
+//
+//
+// ConvertDistance
+//
+// Acts like Convert except that AGX Dynamics types are multiplied by 100 before being converted to
+// the corresponding Unreal Engine type, and Unreal Engine types are divided by 100 after being
+// converted to the AGX Dynamics type. The unit conversion is always performed using the AGX
+// Dynamics types.
+//
+//
+// ConvertAngle
+//
+// Text... Degrees/radians.
+//
+//
+// Convert<UNIT>ToUnreal / Convert<UNIT>ToAgx
+//
+// Perform the same operation as Convert<UNIT>, where unit can be e.g., Distance or Angle, but with
+// caller control over the return type. Used, for example, when we want to convert from an AGX
+// Dynamics unit to an Unreal Engine unit but want the result as a double instead of a float. Also
+// used when we have a value in one unit-space stored in the other type-space, e.g., an AGX Dynamics
+// distance in an Unreal Engine type.
+//
+//
+// ConvertUNITFloat
+//
+// The Float-suffix is added when the parameter type based overload produces the correct unit
+// conversion but where the default conversion would produce a double, or double composite type, but
+// we need a float, or a float composite.
 
 namespace
 {
@@ -284,6 +326,15 @@ inline FVector ConvertAngularVelocity(const agx::Vec3& V)
 		FMath::RadiansToDegrees(-Convert(V.z())));
 }
 
+inline FVector ConvertTorque(const agx::Vec3& V)
+{
+	/*
+	 * Following a similar logic as ConvertAngularVelocity for the axis directions, but no unit
+	 * conversion since we use Nm in both AGX Dynamics and Unreal Engine.
+	 */
+	return {Convert(V.x()), -Convert(V.y()), -Convert(V.z())};
+}
+
 inline agx::Vec3 Convert(const FVector& V)
 {
 	return agx::Vec3(Convert(V.X), Convert(V.Y), Convert(V.Z));
@@ -319,6 +370,15 @@ inline agx::Vec3 ConvertAngularVelocity(const FVector& V)
 		-Convert(FMath::DegreesToRadians(V.Z)));
 }
 
+inline agx::Vec3 ConvertTorque(const FVector& V)
+{
+	/*
+	 * Following a similar logic as ConvertAngularVelocity for the axis directions, but no unit
+	 * conversion since we use Nm in both AGX Dynamics and Unreal Engine.
+	 */
+	return {Convert(V.X), -Convert(V.Y), -Convert(V.Z)};
+}
+
 // Four-dimensional vectors.
 
 inline FVector4 Convert(const agx::Vec4& V)
@@ -343,17 +403,34 @@ inline agx::Vec4f ConvertFloat(const FVector4& V)
 
 // Interval/Range.
 
-inline FFloatInterval Convert(const agx::RangeReal& R)
+inline FAGX_DoubleInterval Convert(const agx::RangeReal& R)
+{
+	return FAGX_DoubleInterval {R.lower(), R.upper()};
+}
+
+inline FFloatInterval ConvertFloat(const agx::RangeReal& R)
 {
 	return FFloatInterval(Convert(R.lower()), Convert(R.upper()));
 }
 
-inline FFloatInterval ConvertDistance(const agx::RangeReal& R)
+inline FAGX_DoubleInterval ConvertDistance(const agx::RangeReal& R)
+{
+	return FAGX_DoubleInterval {
+		ConvertDistanceToUnreal<double>(R.lower()), ConvertDistanceToUnreal<double>(R.upper())};
+}
+
+inline FFloatInterval ConvertDistanceFloat(const agx::RangeReal& R)
 {
 	return FFloatInterval(ConvertDistance(R.lower()), ConvertDistance(R.upper()));
 }
 
-inline FFloatInterval ConvertAngle(const agx::RangeReal& R)
+inline FAGX_DoubleInterval ConvertAngle(const agx::RangeReal& R)
+{
+	return FAGX_DoubleInterval {
+		ConvertAngleToUnreal<double>(R.lower()), ConvertAngleToUnreal<double>(R.upper())};
+}
+
+inline FFloatInterval ConvertAngleFloat(const agx::RangeReal& R)
 {
 	return FFloatInterval(ConvertAngle(R.lower()), ConvertAngle(R.upper()));
 }
@@ -363,9 +440,24 @@ inline agx::RangeReal Convert(const FFloatInterval& I)
 	return agx::RangeReal(Convert(I.Min), Convert(I.Max));
 }
 
+inline agx::RangeReal Convert(const FAGX_DoubleInterval& I)
+{
+	return agx::RangeReal(I.Min, I.Max);
+}
+
 inline agx::RangeReal ConvertDistance(const FFloatInterval& I)
 {
 	return agx::RangeReal(ConvertDistance(I.Min), ConvertDistance(I.Max));
+}
+
+inline agx::RangeReal ConvertDistance(const FAGX_DoubleInterval& I)
+{
+	return agx::RangeReal(ConvertDistanceToAgx(I.Min), ConvertDistanceToAgx(I.Max));
+}
+
+inline agx::RangeReal ConvertAngle(const FAGX_DoubleInterval& I)
+{
+	return agx::RangeReal(ConvertAngleToAgx(I.Min), ConvertAngleToAgx(I.Max));
 }
 
 inline agx::RangeReal ConvertAngle(const FFloatInterval& I)
@@ -543,6 +635,11 @@ inline ELogVerbosity::Type ConvertLogLevelVerbosity(agx::Notify::NotifyLevel Lev
 		case agx::Notify::NOTIFY_PUSH:
 			return ELogVerbosity::VeryVerbose;
 	}
+
+	UE_LOG(
+		LogAGX, Warning, TEXT("Unknown AGX Dynamics log verbosity %d. Defaulting to Warning."),
+		static_cast<int>(Level));
+	return ELogVerbosity::Warning;
 }
 
 inline agxModel::TwoBodyTire::DeformationMode Convert(FTwoBodyTireBarrier::DeformationMode Mode)
@@ -644,14 +741,23 @@ inline EWireNodeType Convert(agxWire::Node::Type Type)
 			return EWireNodeType::Eye;
 		case agxWire::Node::BODY_FIXED:
 			return EWireNodeType::BodyFixed;
-		case agxWire::Node::CONTACT:
-		case agxWire::Node::SHAPE_CONTACT:
 		case agxWire::Node::CONNECTING:
+			return EWireNodeType::Connecting;
 		case agxWire::Node::STOP:
+			return EWireNodeType::Stop;
+		case agxWire::Node::CONTACT:
+			return EWireNodeType::Contact;
+		case agxWire::Node::SHAPE_CONTACT:
+			return EWireNodeType::ShapeContact;
 		case agxWire::Node::MISSING:
 		case agxWire::Node::NOT_DEFINED:
 			return EWireNodeType::Other;
 	}
+
+	UE_LOG(
+		LogAGX, Warning, TEXT("Unknown AGX Dynamics wire node type %d. Defaulting to Other."),
+		static_cast<int>(Type));
+	return EWireNodeType::Other;
 }
 
 inline agxWire::Node::Type Convert(EWireNodeType Type)
@@ -664,11 +770,23 @@ inline agxWire::Node::Type Convert(EWireNodeType Type)
 			return agxWire::Node::EYE;
 		case EWireNodeType::BodyFixed:
 			return agxWire::Node::BODY_FIXED;
-		case EWireNodeType::NUM_USER_CREATABLE:
+		case EWireNodeType::Connecting:
+			return agxWire::Node::CONNECTING;
+		case EWireNodeType::Stop:
+			return agxWire::Node::STOP;
+		case EWireNodeType::Contact:
+			return agxWire::Node::CONTACT;
+		case EWireNodeType::ShapeContact:
+			return agxWire::Node::SHAPE_CONTACT;
 		case EWireNodeType::Other:
-		case EWireNodeType::NUM_NODE_TYPES:
+		case EWireNodeType::NUM_USER_CREATABLE:
 			return agxWire::Node::NOT_DEFINED;
 	}
+
+	UE_LOG(
+		LogAGX, Warning, TEXT("Unknown Unreal Engine wire node type %d. Defaulting to NOT_DEFINED."),
+		static_cast<int>(Type));
+	return agxWire::Node::NOT_DEFINED;
 }
 
 inline EWireNodeNativeType ConvertNative(agxWire::Node::Type Type)

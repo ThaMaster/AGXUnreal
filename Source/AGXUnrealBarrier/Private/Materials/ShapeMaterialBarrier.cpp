@@ -190,6 +190,57 @@ double FShapeMaterialBarrier::GetAdhesiveOverlap() const
 	return NativeRef->Native->getSurfaceMaterial()->getAdhesiveOverlap();
 }
 
+// Wire properties.
+
+double FShapeMaterialBarrier::GetYoungsModulusStretch() const
+{
+	check(HasNative());
+	return NativeRef->Native->getWireMaterial()->getYoungsModulusStretch();
+}
+
+void FShapeMaterialBarrier::SetYoungsModulusStretch(double YoungsModulus) const
+{
+	check(HasNative());
+	NativeRef->Native->getWireMaterial()->setYoungsModulusStretch(YoungsModulus);
+}
+
+double FShapeMaterialBarrier::GetYoungsModulusBend() const
+{
+	check(HasNative());
+	return NativeRef->Native->getWireMaterial()->getYoungsModulusBend();
+}
+
+void FShapeMaterialBarrier::SetYoungsModulusBend(double YoungsModulus) const
+{
+	check(HasNative());
+	NativeRef->Native->getWireMaterial()->setYoungsModulusBend(YoungsModulus);
+}
+
+double FShapeMaterialBarrier::GetDampingStretch() const
+{
+	check(HasNative());
+	return NativeRef->Native->getWireMaterial()->getDampingStretch();
+}
+
+void FShapeMaterialBarrier::SetDampingStretch(double Damping) const
+{
+	check(HasNative());
+	NativeRef->Native->getWireMaterial()->setDampingStretch(Damping);
+}
+
+double FShapeMaterialBarrier::GetDampingBend() const
+{
+	check(HasNative());
+	return NativeRef->Native->getWireMaterial()->getDampingBend();
+}
+
+void FShapeMaterialBarrier::SetDampingBend(double Damping) const
+{
+	check(HasNative());
+	NativeRef->Native->getWireMaterial()->setDampingBend(Damping);
+}
+
+
 FGuid FShapeMaterialBarrier::GetGuid() const
 {
 	check(HasNative());

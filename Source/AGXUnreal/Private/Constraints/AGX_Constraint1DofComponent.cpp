@@ -229,9 +229,9 @@ void UAGX_Constraint1DofComponent::UpdateNativeProperties()
 	TargetSpeedController.UpdateNativeProperties();
 }
 
-void UAGX_Constraint1DofComponent::AssignNative(uint64 NativeAddress)
+void UAGX_Constraint1DofComponent::SetNativeAddress(uint64 NativeAddress)
 {
-	Super::AssignNative(NativeAddress);
+	Super::SetNativeAddress(NativeAddress);
 	if (!HasNative())
 	{
 		return;

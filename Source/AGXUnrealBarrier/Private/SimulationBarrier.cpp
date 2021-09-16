@@ -108,11 +108,11 @@ void FSimulationBarrier::AddTire(FTireBarrier* Tire)
 	NativeRef->Native->add(Tire->GetNative()->Native);
 }
 
-void FSimulationBarrier::AddWire(FWireBarrier& Wire)
+bool FSimulationBarrier::AddWire(FWireBarrier& Wire)
 {
 	check(HasNative());
 	check(Wire.HasNative());
-	NativeRef->Native->add(Wire.GetNative()->Native);
+	return NativeRef->Native->add(Wire.GetNative()->Native);
 }
 
 void FSimulationBarrier::RemoveWire(FWireBarrier& Wire)
@@ -208,7 +208,7 @@ FVector FSimulationBarrier::GetUniformGravity() const
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("GetUniformGravity failed, native Simulation does not have a gravity field."));
-		return FVector();
+		return FVector(ForceInit);
 	}
 
 	agx::UniformGravityField* UniformField = dynamic_cast<agx::UniformGravityField*>(GravityField);
@@ -218,7 +218,7 @@ FVector FSimulationBarrier::GetUniformGravity() const
 			LogAGX, Error,
 			TEXT("GetUniformGravity called on Simulation with a Gravity Field that is not a "
 				 "UniformGravityField."));
-		return FVector();
+		return FVector(ForceInit);
 	}
 
 	// Convert AGX Dynamics' m/s^2 to Unreal Engine's cm/s^2.
@@ -244,7 +244,7 @@ FVector FSimulationBarrier::GetPointGravity(float& OutMagnitude) const
 			LogAGX, Error,
 			TEXT("GetPointGravity failed, native Simulation does not have a gravity field."));
 		OutMagnitude = 0.f;
-		return FVector();
+		return FVector(ForceInit);
 	}
 
 	agx::PointGravityField* PointField = dynamic_cast<agx::PointGravityField*>(GravityField);
@@ -255,7 +255,7 @@ FVector FSimulationBarrier::GetPointGravity(float& OutMagnitude) const
 			TEXT("GetPointGravity called on Simulation with a Gravity Field that is not a "
 				 "PointGravityField."));
 		OutMagnitude = 0.f;
-		return FVector();
+		return FVector(ForceInit);
 	}
 
 	OutMagnitude = Convert(PointField->getGravity());
@@ -326,7 +326,24 @@ TArray<FShapeContactBarrier> FSimulationBarrier::GetShapeContacts(const FShapeBa
 void FSimulationBarrier::Step()
 {
 	check(HasNative());
-	NativeRef->Native->stepForward();
+	try
+	{
+		NativeRef->Native->stepForward();
+	}
+	catch (const std::runtime_error& error)
+	{
+		/// @todo We really need to do something here. Should at least prevent the simulation from
+		/// stepping again as that will likely not end well.
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Got exception from AGX Dynamics. The simulation state is now unreliable. The "
+				 "scene should be recreated."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("The LogAGXDynamics log category may contain additional information, see either "
+				 "the Output Log panel in Unreal Editor or the log file."));
+		UE_LOG(LogAGX, Error, TEXT("Error message: %s"), UTF8_TO_TCHAR(error.what()));
+	}
 }
 
 float FSimulationBarrier::GetTimeStamp() const

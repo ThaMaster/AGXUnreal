@@ -41,6 +41,10 @@ void UAGX_ShapeMaterialAsset::PostEditChangeProperty(FPropertyChangedEvent& Prop
 	{
 		WriteBulkPropertyToInstance(PropertyName);
 	}
+	else if (MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Wire))
+	{
+		WriteWirePropertyToInstance(PropertyName);
+	}
 }
 
 void UAGX_ShapeMaterialAsset::WriteSurfacePropertyToInstance(const FName& PropertyName)
@@ -82,6 +86,7 @@ void UAGX_ShapeMaterialAsset::WriteSurfacePropertyToInstance(const FName& Proper
 			*PropertyName.ToString());
 	}
 }
+
 void UAGX_ShapeMaterialAsset::WriteBulkPropertyToInstance(const FName& PropertyName)
 {
 	if (Instance == nullptr)
@@ -118,6 +123,40 @@ void UAGX_ShapeMaterialAsset::WriteBulkPropertyToInstance(const FName& PropertyN
 		Instance->SetMinMaxElasticRestLength(
 			static_cast<float>(Bulk.MinElasticRestLength),
 			static_cast<float>(Bulk.MaxElasticRestLength));
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Property: %s changed but not written to the ShapeMaterialInstance."),
+			*PropertyName.ToString());
+	}
+}
+
+void UAGX_ShapeMaterialAsset::WriteWirePropertyToInstance(const FName& PropertyName)
+{
+	if (Instance == nullptr)
+	{
+		return;
+	}
+
+	typedef FAGX_ShapeMaterialWireProperties WireProperties;
+
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(WireProperties, YoungsModulusStretch))
+	{
+		Instance->SetYoungsModulusStretch(Wire.YoungsModulusStretch);
+	}
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(WireProperties, YoungsModulusBend))
+	{
+		Instance->SetYoungsModulusBend(Wire.YoungsModulusBend);
+	}
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(WireProperties, DampingStretch))
+	{
+		Instance->SetDampingStretch(Wire.DampingStretch);
+	}
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(WireProperties, DampingBend))
+	{
+		Instance->SetDampingBend(Wire.DampingBend);
 	}
 	else
 	{

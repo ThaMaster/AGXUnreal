@@ -125,6 +125,12 @@ void FRigidBodyBarrier::UpdateMassProperties()
 	NativeRef->Native->updateMassProperties();
 }
 
+double FRigidBodyBarrier::CalculateMass() const
+{
+	check(HasNative());
+	return NativeRef->Native->calculateMass();
+}
+
 void FRigidBodyBarrier::SetCenterOfMassOffset(const FVector& Offset)
 {
 	check(HasNative());
@@ -212,19 +218,17 @@ FVector FRigidBodyBarrier::GetForce() const
 	return ConvertVector(ForceAGX);
 }
 
-void FRigidBodyBarrier::AddWorldTorque(const FVector& Torque)
+void FRigidBodyBarrier::AddTorqueWorld(const FVector& Torque)
 {
 	check(HasNative());
-	/// \todo Is it correct to convert cm to m here?
-	const agx::Vec3 TorqueAGX = ConvertDisplacement(Torque);
+	const agx::Vec3 TorqueAGX = ConvertTorque(Torque);
 	NativeRef->Native->addTorque(TorqueAGX);
 }
 
-void FRigidBodyBarrier::AddCenterOfMassTorque(const FVector& Torque)
+void FRigidBodyBarrier::AddTorqueLocal(const FVector& Torque)
 {
 	check(HasNative());
-	/// \todo Is it correct to convert cm to m here?
-	const agx::Vec3 TorqueAGX = ConvertDisplacement(Torque);
+	const agx::Vec3 TorqueAGX = ConvertTorque(Torque);
 	NativeRef->Native->addLocalTorque(TorqueAGX);
 }
 
@@ -232,8 +236,7 @@ FVector FRigidBodyBarrier::GetTorque() const
 {
 	check(HasNative());
 	const agx::Vec3 TorqueAGX = NativeRef->Native->getTorque();
-	/// \todo Is it correct to convert m to cm here?
-	return ConvertDisplacement(TorqueAGX);
+	return ConvertTorque(TorqueAGX);
 }
 
 bool FRigidBodyBarrier::HasNative() const

@@ -12,7 +12,7 @@ UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 	HalfExtent = FVector(50.0f, 50.0f, 50.0f);
 }
 
-void UAGX_BoxShapeComponent::SetHalfExtent(FVector InHalfExtent)
+void UAGX_BoxShapeComponent::SetHalfExtent(const FVector& InHalfExtent)
 {
 	if (HasNative())
 	{

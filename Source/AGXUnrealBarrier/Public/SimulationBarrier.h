@@ -43,7 +43,7 @@ public:
 
 	void AddTire(FTireBarrier* Tire);
 
-	void AddWire(FWireBarrier& Wire);
+	bool AddWire(FWireBarrier& Wire);
 	void RemoveWire(FWireBarrier& Wire);
 
 	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);

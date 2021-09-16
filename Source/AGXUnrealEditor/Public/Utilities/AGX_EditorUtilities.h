@@ -333,6 +333,11 @@ public:
 	 * name.
 	 */
 	static bool ApplyShapeMaterial(UAGX_ShapeComponent* Shape, const FString& ShapeMaterialAsset);
+
+	/**
+	 * Convert a bool to a Slate visibility flag. True means visible, false means Collapsed (not Hidden).
+	 */
+	static EVisibility VisibleIf(bool bVisible);
 };
 
 template <typename T>

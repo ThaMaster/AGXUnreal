@@ -1,3 +1,9 @@
+// AGX Dynamics require the AgX-Wires license for wire import. Our GitLab CI
+// runtime environment currently doesn't have an AGX Dynamics license so the
+// wire import test always fails. For now the test is disabled through this
+// preprocessor flag. See internal issue 495. Remove the preprocessor guards
+// once the GitLab CI runtime has an AGX Dynamics license.
+#define AGX_TEST_WIRE_IMPORT 0
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ArchiveImporterToSingleActor.h"
@@ -7,13 +13,16 @@
 #include "AgxAutomationCommon.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
-#include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_CapsuleShapeComponent.h"
+#include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#if AGX_TEST_WIRE_IMPORT
+#include "Wire/AGX_WireComponent.h"
+#endif
 
 // Unreal Engine includes.
 #include "Engine/Engine.h"
@@ -55,7 +64,7 @@ bool FImportArchiveSingleActorCommand::Update()
 	FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(ArchiveName);
 	if (ArchiveFilePath.IsEmpty())
 	{
-		Test.AddError(FString::Printf(TEXT("Did not find an archive name '%s'."), *ArchiveName));
+		Test.AddError(FString::Printf(TEXT("Did not find an archive named '%s'."), *ArchiveName));
 		return true;
 	}
 	Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
@@ -1159,7 +1168,8 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 
 	auto GetBox = [&Components](
 					  const TCHAR* Name,
-					  TArray<UAGX_BoxShapeComponent*>& OutArr) -> UAGX_BoxShapeComponent* {
+					  TArray<UAGX_BoxShapeComponent*>& OutArr) -> UAGX_BoxShapeComponent*
+	{
 		UAGX_BoxShapeComponent* Box = GetByName<UAGX_BoxShapeComponent>(Components, Name);
 		OutArr.Add(Box);
 		return Box;
@@ -1167,7 +1177,8 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 
 	auto GetBody = [&Components](
 					   const TCHAR* Name,
-					   TArray<UAGX_RigidBodyComponent*>& OutArr) -> UAGX_RigidBodyComponent* {
+					   TArray<UAGX_RigidBodyComponent*>& OutArr) -> UAGX_RigidBodyComponent*
+	{
 		UAGX_RigidBodyComponent* Rb = GetByName<UAGX_RigidBodyComponent>(Components, Name);
 		OutArr.Add(Rb);
 		return Rb;
@@ -1435,6 +1446,211 @@ bool FClearGeometrySensorsImportedCommand::Update()
 
 	return true;
 }
+
+
+#if AGX_TEST_WIRE_IMPORT
+//
+// Wire test starts here.
+//
+
+class FArchiveImporterToSingleActor_WireTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckWireImportedCommand, FArchiveImporterToSingleActor_WireTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearWireImportedCommand, FArchiveImporterToSingleActor_WireTest&, Test);
+
+class FArchiveImporterToSingleActor_WireTest final : public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_WireTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_WireTest"),
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.Wire"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("wire_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckWireImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearWireImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_WireTest ArchiveImporterToSingleActor_WireTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script wire.agxPy.
+ *
+ * @return True when the check is complete. Never returns false.
+ */
+bool FCheckWireImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import Wire test scene: No content created"));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// A Wire (1) and its icon (2), three Rigid Bodies (5), three Shapes (8), a Collision Group
+	// Disabler (9), and a Default Scene Root (10).
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 10);
+	if (Components.Num() != 10)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Found the following components:"));
+		for (auto Component : Components)
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("  %s: %s"), *Component->GetName(),
+				*Component->GetClass()->GetName());
+		}
+	}
+
+	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(Components, TEXT("Wire"));
+	UAGX_RigidBodyComponent* WinchBody =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("Winch Body"));
+	UAGX_CylinderShapeComponent* WinchShape =
+		GetByName<UAGX_CylinderShapeComponent>(Components, TEXT("Winch Shape"));
+	UAGX_RigidBodyComponent* EyeBody =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("Eye Body"));
+	UAGX_SphereShapeComponent* EyeShape =
+		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("Eye Shape"));
+	UAGX_RigidBodyComponent* BeadBody =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("Bead Body"));
+	UAGX_CapsuleShapeComponent* BeadShape =
+		GetByName<UAGX_CapsuleShapeComponent>(Components, TEXT("Bead Shape"));
+
+	Test.TestNotNull(TEXT("Wire"), Wire);
+	Test.TestNotNull(TEXT("Winch Body"), WinchBody);
+	Test.TestNotNull(TEXT("Winch Shape"), WinchShape);
+	Test.TestNotNull(TEXT("Eye Body"), EyeBody);
+	Test.TestNotNull(TEXT("Eye Shape"), EyeShape);
+	Test.TestNotNull(TEXT("Bead Body"), BeadBody);
+	Test.TestNotNull(TEXT("Bead Shape"), BeadShape);
+
+	if (IsAnyNullptr(Wire, WinchBody, WinchShape, EyeBody, EyeShape, BeadBody, BeadShape))
+	{
+		Test.AddError(TEXT("At least one required object was nullptr, cannot continue."));
+		return true;
+	}
+
+	const float Radius = CentimeterToMeter(Wire->Radius);
+	const float Resolution = 1.0f / CentimeterToMeter(Wire->MinSegmentLength);
+	FAGX_WireWinch& Winch = Wire->OwnedBeginWinch;
+	const double PulledInLength = CentimeterToMeter(Winch.GetPulledInLength());
+	const double Speed = CentimeterToMeter(Winch.GetTargetSpeed());
+	const FVector WinchLocation {
+		CentimeterToMeter(Winch.Location.X), CentimeterToMeter(Winch.Location.Y),
+		CentimeterToMeter(Winch.Location.Z)};
+
+	// Note negated Y, since AGX Dynamics is right-handed and Unreal Engine is left-handed.
+	const FVector ExpectedDirection = FVector(0.696526, -0.398015, 0.597022).GetUnsafeNormal();
+	const FRotator ExpectedRotation = ExpectedDirection.Rotation();
+
+	Test.TestEqual(TEXT("Radius"), Radius, 0.05f);
+	Test.TestEqual(TEXT("Resolution"), Resolution, 3.0f);
+	Test.TestEqual(TEXT("Begin winch type"), Wire->BeginWinchType, EWireWinchOwnerType::Wire);
+	Test.TestEqual(TEXT("Pulled in length"), PulledInLength, 10.0);
+	Test.TestEqual(TEXT("Speed"), Speed, 0.5);
+	Test.TestEqual(TEXT("Num route nodes"), Wire->RouteNodes.Num(), 23);
+
+	Test.TestEqual(TEXT("GetMotorForceRangeMin"), Winch.GetMotorForceRangeMin(), -10.0);
+	Test.TestEqual(TEXT("GetMotorForceRangeMax"), Winch.GetMotorForceRangeMax(), 20.0);
+	Test.TestEqual(TEXT("GetBrakeForceRangeMin"), Winch.GetBrakeForceRangeMin(), -100.0);
+	Test.TestEqual(TEXT("GetBrakeForceRangeMax"), Winch.GetBrakeForceRangeMax(), 200.0);
+	Test.TestEqual(TEXT("IsMotorEnabled"), Winch.IsMotorEnabled(), true);
+	Test.TestEqual(TEXT("IsBrakeEnabled"), Winch.IsBrakeEnabled(), true);
+	Test.TestEqual(TEXT("Location"), WinchLocation, FVector(0.6f, 0.0f, 0.0f));
+	// Somewhat unclear why we need such a big tolerance here. The value is created through
+	// computation, both in Python, during import, and in this test, but still 1e-3 is very big.
+	AgxAutomationCommon::TestEqual(Test, TEXT("Rotation"), Winch.Rotation, ExpectedRotation, 1e-3f);
+	Test.TestEqual(TEXT("bAutoFeed"), Winch.bAutoFeed, false);
+
+	auto RangeHasType =
+		[this, &Nodes = Wire->RouteNodes](int32 Begin, int32 End, EWireNodeType Type)
+	{
+		for (int32 I = Begin; I < End; ++I)
+		{
+			Test.TestEqual(TEXT("NodeType"), Nodes[I].NodeType, Type);
+		}
+	};
+
+	// The original route nodes created by the Python script were lost during the wire
+	// initialization right before the scene was stored to the AGX Dynamics archive. We can only see
+	// the initialized nodes.
+	RangeHasType(0, 11, EWireNodeType::Free);
+	RangeHasType(11, 12, EWireNodeType::Eye);
+	RangeHasType(12, 22, EWireNodeType::Free);
+	RangeHasType(22, 23, EWireNodeType::BodyFixed);
+
+	UAGX_RigidBodyComponent* WinchBodyRef = Winch.BodyAttachment.GetRigidBody();
+	Test.TestEqual(TEXT("Winch Body"), WinchBodyRef, WinchBody);
+
+	auto RangeHasBody =
+		[this, &Nodes = Wire->RouteNodes](int32 Begin, int32 End, UAGX_RigidBodyComponent* Body)
+	{
+		for (int32 I = Begin; I < End; ++I)
+		{
+			UAGX_RigidBodyComponent* NodeBodyRef = Nodes[I].RigidBody.GetRigidBody();
+			Test.TestEqual(TEXT("NodeBody"), NodeBodyRef, Body);
+		}
+	};
+
+	RangeHasBody(0, 11, nullptr);
+	RangeHasBody(11, 12, EyeBody);
+	RangeHasBody(12, 22, nullptr);
+	RangeHasBody(22, 23, BeadBody);
+
+	return true;
+}
+
+/**
+ * Remove eveything created by the archive import.
+ *
+ * @return True when the clearing is complete. Never returns false.
+ */
+bool FClearWireImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("ShapeMaterials"), TEXT("defaultWireMaterial_57.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("wire_build"), ExpectedFiles);
+
+	return true;
+}
+#endif
 
 //
 // Constraint Dynamic Parameters test starts here.
@@ -1705,8 +1921,11 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 	// Mass properties automatic generation.
 	{
 		Test.TestEqual(TEXT("Auto generate mass"), SphereBody->GetAutoGenerateMass(), false);
-		Test.TestEqual(TEXT("Auto generate CoM offset"), SphereBody->GetAutoGenerateCenterOfMassOffset(), true);
-		Test.TestEqual(TEXT("Auto generate inertia"), SphereBody->GetAutoGeneratePrincipalInertia(), false);
+		Test.TestEqual(
+			TEXT("Auto generate CoM offset"), SphereBody->GetAutoGenerateCenterOfMassOffset(),
+			true);
+		Test.TestEqual(
+			TEXT("Auto generate inertia"), SphereBody->GetAutoGeneratePrincipalInertia(), false);
 	}
 
 	// Inertia tensor diagonal.

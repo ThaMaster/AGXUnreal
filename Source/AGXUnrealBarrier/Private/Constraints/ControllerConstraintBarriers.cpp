@@ -100,7 +100,7 @@ FFloatInterval FConstraintControllerBarrier::GetForceRange() const
 {
 	check(HasNative());
 	const agx::RangeReal ForceRangeAGX = NativeRef->Native->getForceRange();
-	return Convert(ForceRangeAGX);
+	return ConvertFloat(ForceRangeAGX);
 }
 
 double FConstraintControllerBarrier::GetForce() const
@@ -308,7 +308,7 @@ FFloatInterval FRangeControllerBarrier::GetRangeTranslational() const
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = GetController(*this)->getRange();
-	FFloatInterval RangeUnreal = ConvertDistance(RangeAGX);
+	FFloatInterval RangeUnreal = ConvertDistanceFloat(RangeAGX);
 	return RangeUnreal;
 }
 
@@ -323,7 +323,7 @@ FFloatInterval FRangeControllerBarrier::GetRangeRotational() const
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = GetController(*this)->getRange();
-	FFloatInterval RangeUnreal = ConvertAngle(RangeAGX);
+	FFloatInterval RangeUnreal = ConvertAngleFloat(RangeAGX);
 	return RangeUnreal;
 }
 

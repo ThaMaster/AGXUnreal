@@ -169,7 +169,7 @@ public:
 	// ~Begin IAGX_NativeOwner interface.
 	virtual bool HasNative() const override;
 	virtual uint64 GetNativeAddress() const override;
-	virtual void AssignNative(uint64 NativeAddress) override;
+	virtual void SetNativeAddress(uint64 NativeAddress) override;
 	// ~End IAGX_NativeOwner interface.
 
 	/** Get the native AGX Dynamics representation of this constraint. Create it if necessary. */
@@ -191,7 +191,9 @@ public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 
+	//~ Begin UObject interface.
 	virtual void PostInitProperties() override;
+	//~ End UObject interface.
 
 	bool ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof) const;
 

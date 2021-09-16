@@ -10,7 +10,7 @@ class IAGX_NativeOwner;
 /**
  * Component Instance Data for AGX Dynamics for Unreal subclasses of SceneComponent that owns an
  * AGX Dynamics native object. Will store the address of the native object in the transaction, and
- * call AssignNative on the new owner when the transaction data is applied to a new Component
+ * call SetNativeAddress on the new owner when the transaction data is applied to a new Component
  * instance.
  *
  * This Instance Data may ONLY be used by Components that inherit from USceneComponent AND implement

@@ -5,6 +5,7 @@
 #include "Misc/EngineVersionComparison.h"
 
 /// @todo Consider making these not FORCEINLINE, wrapped in a namespace, and move to .cpp.
+/// @note There may be native Unreal Engine versions of these. Use those instead, where available.
 
 FORCEINLINE FName GetFNameSafe(const UObjectBase* Object)
 {

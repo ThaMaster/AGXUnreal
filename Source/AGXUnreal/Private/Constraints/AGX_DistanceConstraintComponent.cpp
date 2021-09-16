@@ -21,6 +21,9 @@ UAGX_DistanceConstraintComponent::UAGX_DistanceConstraintComponent()
 	BodyAttachment1.FrameDefiningComponent.Clear();
 	BodyAttachment2.FrameDefiningComponent.Clear();
 
+	// The AGX Dynamics distance constraint need the Lock to be enabled to function.
+	LockController.bEnable = true;
+
 	NativeBarrier.Reset(new FDistanceJointBarrier());
 }
 

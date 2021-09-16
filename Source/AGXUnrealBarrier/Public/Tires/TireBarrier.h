@@ -2,6 +2,7 @@
 
 #include <memory>
 
+class FString;
 struct FTireRef;
 
 /**
@@ -18,8 +19,8 @@ class AGXUNREALBARRIER_API FTireBarrier
 {
 public:
 	FTireBarrier();
-	FTireBarrier(FTireBarrier&& Other) = default;
-	FTireBarrier(std::unique_ptr<FTireRef> Native);
+	FTireBarrier(std::unique_ptr<FTireRef>&& Native);
+	FTireBarrier(FTireBarrier&& Other);
 	virtual ~FTireBarrier();
 
 	bool HasNative() const;

@@ -6,6 +6,7 @@
 
 struct FWireRef
 {
+	using NativeType = agxWire::Wire;
 	agxWire::WireRef Native;
 
 	FWireRef() = default;

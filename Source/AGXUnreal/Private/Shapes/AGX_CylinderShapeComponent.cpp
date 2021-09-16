@@ -53,6 +53,24 @@ float UAGX_CylinderShapeComponent::GetHeight() const
 	return Height;
 }
 
+void UAGX_CylinderShapeComponent::SetPulley(bool bInPulley)
+{
+	bPulley = bInPulley;
+	if (HasNative())
+	{
+		NativeBarrier.SetPulleyProperty(bPulley);
+	}
+}
+
+void UAGX_CylinderShapeComponent::SetGypsy(bool bInGypsy)
+{
+	bGypsy = bInGypsy;
+	if (HasNative())
+	{
+		NativeBarrier.SetGypsyProperty(bGypsy);
+	}
+}
+
 FShapeBarrier* UAGX_CylinderShapeComponent::GetNative()
 {
 	if (!NativeBarrier.HasNative())
@@ -114,6 +132,9 @@ void UAGX_CylinderShapeComponent::UpdateNativeProperties()
 
 	NativeBarrier.SetHeight(Height * GetComponentScale().Y);
 	NativeBarrier.SetRadius(Radius * GetComponentScale().X);
+
+	NativeBarrier.SetPulleyProperty(bPulley);
+	NativeBarrier.SetGypsyProperty(bGypsy);
 }
 
 void UAGX_CylinderShapeComponent::CopyFrom(const FCylinderShapeBarrier& Barrier)
@@ -121,6 +142,9 @@ void UAGX_CylinderShapeComponent::CopyFrom(const FCylinderShapeBarrier& Barrier)
 	Super::CopyFrom(Barrier);
 	Height = Barrier.GetHeight();
 	Radius = Barrier.GetRadius();
+
+	bPulley = Barrier.GetPulleyProperty();
+	bGypsy = Barrier.GetGypsyProperty();
 }
 
 void UAGX_CylinderShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)

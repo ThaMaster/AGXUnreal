@@ -63,3 +63,22 @@ FAGX_WireRenderIterator FAGX_WireRenderIterator::Prev() const
 {
 	return {Barrier.Prev()};
 }
+
+/* Start of Blueprint Function Library. */
+
+FAGX_WireNode UAGX_WireRenderIterator_FL::Get(UPARAM(Ref) FAGX_WireRenderIterator& Iterator)
+{
+	return Iterator.Get();
+}
+
+FAGX_WireRenderIterator UAGX_WireRenderIterator_FL::Next(UPARAM(Ref)
+															 FAGX_WireRenderIterator& Iterator)
+{
+	return Iterator.Next();
+}
+
+FAGX_WireRenderIterator UAGX_WireRenderIterator_FL::Prev(UPARAM(Ref)
+															 FAGX_WireRenderIterator& Iterator)
+{
+	return Iterator.Prev();
+}

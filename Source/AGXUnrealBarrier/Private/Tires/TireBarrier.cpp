@@ -9,8 +9,13 @@ FTireBarrier::FTireBarrier()
 {
 }
 
-FTireBarrier::FTireBarrier(std::unique_ptr<FTireRef> Native)
+FTireBarrier::FTireBarrier(std::unique_ptr<FTireRef>&& Native)
 	: NativeRef(std::move(Native))
+{
+}
+
+FTireBarrier::FTireBarrier(FTireBarrier&& Other)
+	: NativeRef(std::move(Other.NativeRef))
 {
 }
 
