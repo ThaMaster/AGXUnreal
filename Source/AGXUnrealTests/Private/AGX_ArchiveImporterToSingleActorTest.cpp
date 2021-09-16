@@ -1,3 +1,9 @@
+// AGX Dynamics require the AgX-Wires license for wire import. Our GitLab CI
+// runtime environment currently doesn't have an AGX Dynamics license so the
+// wire import test always fails. For now the test is disabled through this
+// preprocessor flag. See internal issue 495. Remove the preprocessor guards
+// once the GitLab CI runtime has an AGX Dynamics license.
+#define AGX_TEST_WIRE_IMPORT 0
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ArchiveImporterToSingleActor.h"
@@ -14,7 +20,9 @@
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#if AGX_TEST_WIRE_IMPORT
 #include "Wire/AGX_WireComponent.h"
+#endif
 
 // Unreal Engine includes.
 #include "Engine/Engine.h"
@@ -1439,6 +1447,8 @@ bool FClearGeometrySensorsImportedCommand::Update()
 	return true;
 }
 
+
+#if AGX_TEST_WIRE_IMPORT
 //
 // Wire test starts here.
 //
@@ -1640,6 +1650,7 @@ bool FClearWireImportedCommand::Update()
 
 	return true;
 }
+#endif
 
 //
 // Constraint Dynamic Parameters test starts here.
