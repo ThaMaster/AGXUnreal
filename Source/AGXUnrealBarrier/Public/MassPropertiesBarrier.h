@@ -2,6 +2,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Math/Vector.h"
 
 // System includes.
 #include <memory>
@@ -36,21 +37,22 @@ public:
 	/**
 	 * Set the diagonal of the body's inertia matrix.
 	 *
-	 * @param NewPrincipalInertiae
+	 * @param NewPrincipalInertia
 	 */
-	void SetPrincipalInertiae(const FVector& NewPrincipalInertiae);
-
-	FVector GetPrincipalInertiae() const;
-
+	void SetPrincipalInertia(const FVector& NewPrincipalInertia);
 	/**
-	 * Enable or disable auto-generation of mass and inertia tensor.
-	 *
-	 * Center of mass offset is always auto-generated.
-	 *
-	 * @param bAutoGenerate
+	 * @return Principal Inertia of the rigid body as an FVector.
 	 */
-	void SetAutoGenerate(bool bAutoGenerate);
-	bool GetAutoGenerate() const;
+	FVector GetPrincipalInertia() const;
+
+	void SetAutoGenerateMass(bool bAuto);
+	bool GetAutoGenerateMass() const;
+
+	void SetAutoGenerateCenterOfMassOffset(bool bAuto);
+	bool GetAutoGenerateCenterOfMassOffset() const;
+
+	void SetAutoGeneratePrincipalInertia(bool bAuto);
+	bool GetAutoGeneratePrincipalInertia() const;
 
 	bool HasNative() const;
 	FMassPropertiesPtr* GetNative();

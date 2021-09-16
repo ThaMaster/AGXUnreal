@@ -51,6 +51,7 @@
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
 #include "Kismet2/KismetEditorUtilities.h"
+#include "Misc/EngineVersionComparison.h"
 #include "UObject/Package.h"
 #include "PackageTools.h"
 
@@ -69,7 +70,13 @@ namespace
 			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
 		FString ParentAssetName = Helper.ArchiveFileName; /// \todo Why is this never used?
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
+
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UPackage* ParentPackage = CreatePackage(nullptr, *ParentPackagePath);
+#else
+		UPackage* ParentPackage = CreatePackage(*ParentPackagePath);
+#endif
+		
 		FString Path = FPaths::GetPath(ParentPackage->GetName());
 
 		UE_LOG(
@@ -101,7 +108,11 @@ namespace
 
 	UPackage* GetPackage(const FString& BlueprintPackagePath)
 	{
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UPackage* Package = CreatePackage(nullptr, *BlueprintPackagePath);
+#else
+		UPackage* Package = CreatePackage(*BlueprintPackagePath);
+#endif
 		check(Package != nullptr);
 		Package->FullyLoad();
 		return Package;
@@ -118,27 +129,27 @@ namespace
 
 		virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateSphere(Barrier, Body);
+			Helper.InstantiateSphere(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateBox(Barrier, Body);
+			Helper.InstantiateBox(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateCylinder(const FCylinderShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateCylinder(Barrier, Body);
+			Helper.InstantiateCylinder(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateCapsule(const FCapsuleShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateCapsule(Barrier, Body);
+			Helper.InstantiateCapsule(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateTrimesh(Barrier, Body);
+			Helper.InstantiateTrimesh(Barrier, *Body.GetOwner(), &Body);
 		}
 
 	private:
@@ -213,6 +224,71 @@ namespace
 			UAGX_ConstraintComponent* Constraint =
 				Helper.InstantiateLockJoint(Barrier, BlueprintTemplate);
 			ClearOwningActors(Constraint);
+		}
+
+		virtual void InstantiateSphere(
+			const FSphereShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateSphere(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateSphere(Barrier, BlueprintTemplate);
+			}
+		}
+
+		virtual void InstantiateBox(
+			const FBoxShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateBox(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateBox(Barrier, BlueprintTemplate);
+			}
+		}
+
+		virtual void InstantiateCylinder(
+			const FCylinderShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateCylinder(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateCylinder(Barrier, BlueprintTemplate);
+			}
+		}
+
+		virtual void InstantiateCapsule(
+			const FCapsuleShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateCapsule(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateCapsule(Barrier, BlueprintTemplate);
+			}
+		}
+
+		virtual void InstantiateTrimesh(
+			const FTrimeshShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		{
+			if (Body != nullptr)
+			{
+				Body->InstantiateTrimesh(Barrier);
+			}
+			else
+			{
+				Helper.InstantiateTrimesh(Barrier, BlueprintTemplate);
+			}
 		}
 
 		void ClearOwningActors(UAGX_ConstraintComponent* Constraint)
@@ -347,8 +423,8 @@ namespace
 			/// @todo Is there some clean-up I need to do for RootActorContainer and/or
 			/// EmptyActorAsset here? I tried with MarkPendingKill but that caused
 			///    Assertion failed: !IsRooted()
-			//RootActorContainer->MarkPendingKill();
-			//EmptyActorAsset->MarkPendingKill();
+			// RootActorContainer->MarkPendingKill();
+			// EmptyActorAsset->MarkPendingKill();
 			return nullptr;
 		}
 
@@ -358,8 +434,20 @@ namespace
 
 	UBlueprint* CreateBlueprint(UPackage* Package, AActor* Template)
 	{
+		static constexpr bool ReplaceInWorld = false;
+		static constexpr bool KeepMobility = true;
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UBlueprint* Blueprint = FKismetEditorUtilities::CreateBlueprintFromActor(
-			Package->GetName(), Template, false, true);
+			Package->GetName(), Template, ReplaceInWorld, KeepMobility);
+#else
+		FKismetEditorUtilities::FCreateBlueprintFromActorParams Params;
+		Params.bReplaceActor = ReplaceInWorld;
+		Params.bKeepMobility = KeepMobility;
+
+		UBlueprint* Blueprint =
+			FKismetEditorUtilities::CreateBlueprintFromActor(Package->GetName(), Template, Params);
+#endif
+		
 		check(Blueprint);
 		return Blueprint;
 	}

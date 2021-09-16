@@ -68,45 +68,6 @@ struct FTwoBodyTireArchiveBodies
 };
 
 /**
- * Instantiator base class for top-level objects.
- */
-class AGXUNREALBARRIER_API FAGXArchiveInstantiator
-{
-public:
-	/**
-	 * Create a new RigidBody corresponding to the given FRigidBodyBarrier.
-	 * @param RigidBody The body for which a persistent representation should be made.
-	 * @return A handle to the persistent object through which shapes can be added.
-	 */
-	virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& RigidBody) = 0;
-
-	virtual void InstantiateHinge(const FHingeBarrier& Hinge) = 0;
-
-	virtual void InstantiatePrismatic(const FPrismaticBarrier& Prismatic) = 0;
-
-	virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) = 0;
-
-	virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& CylindricalJoint) = 0;
-
-	virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& DistanceJoint) = 0;
-
-	virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) = 0;
-
-	virtual void InstantiateShapeMaterial(const FShapeMaterialBarrier& ShapeMaterial) = 0;
-
-	virtual void InstantiateContactMaterial(const FContactMaterialBarrier& ContactMaterial) = 0;
-
-	virtual void DisabledCollisionGroups(
-		const TArray<std::pair<FString, FString>>& DisabledGroups) = 0;
-
-	virtual FTwoBodyTireArchiveBodies InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Tire) = 0;
-
-	virtual void InstantiateWire(const FWireBarrier& Wire) = 0;
-
-	virtual ~FAGXArchiveInstantiator() = default;
-};
-
-/**
  * Instantiator for sub-objects of RigidBody.
  */
 class AGXUNREALBARRIER_API FAGXArchiveBody
@@ -148,6 +109,61 @@ public:
 	virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) = 0;
 
 	virtual ~FAGXArchiveBody() = default;
+};
+
+/**
+ * Instantiator base class for top-level objects.
+ */
+class AGXUNREALBARRIER_API FAGXArchiveInstantiator
+{
+public:
+	/**
+	 * Create a new RigidBody corresponding to the given FRigidBodyBarrier.
+	 * @param RigidBody The body for which a persistent representation should be made.
+	 * @return A handle to the persistent object through which shapes can be added.
+	 */
+	virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& RigidBody) = 0;
+
+	virtual void InstantiateHinge(const FHingeBarrier& Hinge) = 0;
+
+	virtual void InstantiatePrismatic(const FPrismaticBarrier& Prismatic) = 0;
+
+	virtual void InstantiateBallJoint(const FBallJointBarrier& BallJoint) = 0;
+
+	virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& CylindricalJoint) = 0;
+
+	virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& DistanceJoint) = 0;
+
+	virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) = 0;
+
+	virtual void InstantiateSphere(
+		const FSphereShapeBarrier& Sphere, FAGXArchiveBody* Body = nullptr) = 0;
+
+	virtual void InstantiateBox(
+		const FBoxShapeBarrier& Box, FAGXArchiveBody* Body = nullptr) = 0;
+
+	virtual void InstantiateCylinder(
+		const FCylinderShapeBarrier& Cylinder, FAGXArchiveBody* Body = nullptr) = 0;
+
+	virtual void InstantiateCapsule(
+		const FCapsuleShapeBarrier& Capsule, FAGXArchiveBody* Body = nullptr) = 0;
+
+	virtual void InstantiateTrimesh(
+		const FTrimeshShapeBarrier& Trimesh, FAGXArchiveBody* Body = nullptr) = 0;
+
+	virtual void InstantiateShapeMaterial(const FShapeMaterialBarrier& ShapeMaterial) = 0;
+
+	virtual void InstantiateContactMaterial(const FContactMaterialBarrier& ContactMaterial) = 0;
+
+	virtual void DisabledCollisionGroups(
+		const TArray<std::pair<FString, FString>>& DisabledGroups) = 0;
+
+	virtual FTwoBodyTireArchiveBodies InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Tire) = 0;
+
+	virtual void InstantiateWire(const FWireBarrier& Wire) = 0;
+
+
+	virtual ~FAGXArchiveInstantiator() = default;
 };
 
 namespace FAGXArchiveReader

@@ -139,6 +139,8 @@ public:
 
 	FFloatInterval GetForceRange(EGenericDofIndex Index) const;
 
+	void CopyFrom(const FConstraintBarrier& Barrier);
+
 	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics1() const
 	{
 		return DofGraphicsComponent1;
@@ -199,7 +201,7 @@ public:
 	void InitPropertyDispatcher();
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(
-		struct FPropertyChangedChainEvent& PropertyChangedEvent);
+		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
 
 	//~ Begin UActorComponent Interface

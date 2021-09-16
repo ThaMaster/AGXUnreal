@@ -11,6 +11,7 @@
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Wire/AGX_WireComponent.h"
@@ -354,7 +355,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	// Inertia tensor diagonal.
 	{
-		FVector Actual = SphereBody->PrincipalInertiae;
+		FVector Actual = SphereBody->GetPrincipalInertia();
 		FVector Expected(
 			1.00000000000000000000e+02f, 2.00000000000000000000e+02f, 3.00000000000000000000e+02f);
 		Test.TestEqual(TEXT("Sphere inertia tensor diagonal"), Actual, Expected);
@@ -1624,8 +1625,474 @@ bool FClearWireImportedCommand::Update()
 	}
 
 	TArray<const TCHAR*> ExpectedFiles {
-		TEXT("ShapeMaterials"), TEXT("defaultWireMaterial_52.uasset")};
+		TEXT("ShapeMaterials"), TEXT("defaultWireMaterial_57.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("wire_build"), ExpectedFiles);
+
+	return true;
+}
+
+//
+// Constraint Dynamic Parameters test starts here.
+//
+
+class FArchiveImporterToSingleActor_ConstraintDynamicParametersTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckConstraintDynamicParametersImportedCommand,
+	FArchiveImporterToSingleActor_ConstraintDynamicParametersTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearConstraintDynamicParametersImportedCommand,
+	FArchiveImporterToSingleActor_ConstraintDynamicParametersTest&, Test);
+
+class FArchiveImporterToSingleActor_ConstraintDynamicParametersTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_ConstraintDynamicParametersTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_ConstraintDynamicParametersTest"),
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.ConstraintDynamicParameters"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(FImportArchiveSingleActorCommand(
+			TEXT("constraint_dynamic_parameters_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckConstraintDynamicParametersImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearConstraintDynamicParametersImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_ConstraintDynamicParametersTest
+		ArchiveImporterToSingleActor_ConstraintDynamicParametersTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script constraint_dynamic_parameters.agxPy.
+ * @return true when the check is complete. Never returns false.
+ */
+bool FCheckConstraintDynamicParametersImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(
+			TEXT("Could not import ConstraintDynamicParameters test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// Two Rigid Bodies, one Hinge constraint with two DofGraphicsComponent's and one
+	// DofGraphicsComponent and one Default Scene Root.
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
+
+	UAGX_ConstraintComponent* Constraint =
+		GetByName<UAGX_ConstraintComponent>(Components, TEXT("constraint"));
+
+	// Elasticity.
+	Test.TestEqual(
+		TEXT("Translational 1 elasticity"), Constraint->Elasticity.Translational_1, 100.0);
+	Test.TestEqual(
+		TEXT("Translational 2 elasticity"), Constraint->Elasticity.Translational_2, 101.0);
+	Test.TestEqual(
+		TEXT("Translational 2 elasticity"), Constraint->Elasticity.Translational_3, 102.0);
+	Test.TestEqual(TEXT("Rotational 1 elasticity"), Constraint->Elasticity.Rotational_1, 103.0);
+	Test.TestEqual(TEXT("Rotational 2 elasticity"), Constraint->Elasticity.Rotational_2, 104.0);
+	// Rotational 3 is not supported for AGX::Hinge.
+
+	// Damping.
+	Test.TestEqual(TEXT("Translational 1 damping"), Constraint->Damping.Translational_1, 200.0);
+	Test.TestEqual(TEXT("Translational 2 damping"), Constraint->Damping.Translational_2, 201.0);
+	Test.TestEqual(TEXT("Translational 2 damping"), Constraint->Damping.Translational_3, 202.0);
+	Test.TestEqual(TEXT("Rotational 1 damping"), Constraint->Damping.Rotational_1, 203.0);
+	Test.TestEqual(TEXT("Rotational 2 damping"), Constraint->Damping.Rotational_2, 204.0);
+	// Rotational 3 is not supported for AGX::Hinge.
+
+	// Force range.
+	Test.TestEqual(
+		TEXT("Translational 1 force range min"), Constraint->ForceRange.Translational_1.Min, 300.f);
+	Test.TestEqual(
+		TEXT("Translational 1 force range max"), Constraint->ForceRange.Translational_1.Max, 301.f);
+	Test.TestEqual(
+		TEXT("Translational 2 force range min"), Constraint->ForceRange.Translational_2.Min, 302.f);
+	Test.TestEqual(
+		TEXT("Translational 2 force range max"), Constraint->ForceRange.Translational_2.Max, 303.f);
+	Test.TestEqual(
+		TEXT("Translational 3 force range min"), Constraint->ForceRange.Translational_3.Min, 304.f);
+	Test.TestEqual(
+		TEXT("Translational 3 force range max"), Constraint->ForceRange.Translational_3.Max, 305.f);
+	Test.TestEqual(
+		TEXT("Rotational 1 force range min"), Constraint->ForceRange.Rotational_1.Min, 306.f);
+	Test.TestEqual(
+		TEXT("Rotational 1 force range min"), Constraint->ForceRange.Rotational_1.Max, 307.f);
+	Test.TestEqual(
+		TEXT("Rotational 2 force range min"), Constraint->ForceRange.Rotational_2.Min, 308.f);
+	Test.TestEqual(
+		TEXT("Rotational 2 force range min"), Constraint->ForceRange.Rotational_2.Max, 309.f);
+	// Rotational 3 is not supported for AGX::Hinge.
+
+	Test.TestEqual(TEXT("Solve type"), Constraint->SolveType, EAGX_SolveType::StDirectAndIterative);
+	Test.TestEqual(TEXT("Enabled"), Constraint->bEnable, true);
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearConstraintDynamicParametersImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+	return true;
+}
+
+//
+// Rigid Body properties test starts here.
+//
+
+class FArchiveImporterToSingleActor_RigidBodyPropertiesTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckRigidBodyPropertiesImportedCommand,
+	FArchiveImporterToSingleActor_RigidBodyPropertiesTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearRigidBodyPropertiesImportedCommand,
+	FArchiveImporterToSingleActor_RigidBodyPropertiesTest&, Test);
+
+class FArchiveImporterToSingleActor_RigidBodyPropertiesTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_RigidBodyPropertiesTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_RigidBodyPropertiesTest"),
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.RigidBodyProperties"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(FImportArchiveSingleActorCommand(
+			TEXT("rigidbody_properties_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckRigidBodyPropertiesImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearRigidBodyPropertiesImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_RigidBodyPropertiesTest
+		ArchiveImporterToSingleActor_RigidBodyPropertiesTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script rigidbody_properties.agxPy.
+ * @return true when the check is complete. Never returns false.
+ */
+bool FCheckRigidBodyPropertiesImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import RigidBodyProperties test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// One Rigid Bodies, one Geometry and one Default Scene Root.
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
+
+	UAGX_RigidBodyComponent* SphereBody =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("SphereBody"));
+
+	// Name.
+	{
+		Test.TestEqual("Sphere name", SphereBody->GetFName(), FName(TEXT("SphereBody")));
+	}
+
+	// Position.
+	{
+		FVector Actual = SphereBody->GetComponentLocation();
+		// The position, in AGX Dynamics' units, that was given to the sphere when created.
+		FVector ExpectedAgx(10.f, 20.f, 30.f);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere position"), Actual, Expected);
+	}
+
+	// Rotation.
+	{
+		FRotator Actual = SphereBody->GetComponentRotation();
+		// The rotation, in AGX Dynamics' units, that was given to the sphere when created.
+		FVector ExpectedAgx(0.1f, 0.2f, 0.3f);
+		FRotator Expected = AgxToUnrealEulerAngles(ExpectedAgx);
+		TestEqual(Test, TEXT("Sphere rotation"), Actual, Expected);
+	}
+
+	// Velocity.
+	{
+		FVector Actual = SphereBody->Velocity;
+		// The velocity, in AGX Dynamics' units, that was given to the sphere when created.
+		FVector ExpectedAgx(1.f, 2.f, 3.f);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere linear velocity"), Actual, Expected);
+	}
+
+	// Angular velocity.
+	{
+		FVector Actual = SphereBody->AngularVelocity;
+		// The angular velocity, in AGX Dynamics' units, that was given to the sphere when created.
+		FVector ExpectedAgx(1.1f, 1.2f, 1.3f);
+		FVector Expected = AgxToUnrealAngularVelocity(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere angular velocity"), Actual, Expected);
+	}
+
+	// Mass.
+	{
+		Test.TestEqual(TEXT("Sphere mass"), SphereBody->Mass, 500.f);
+	}
+
+	// Mass properties automatic generation.
+	{
+		Test.TestEqual(TEXT("Auto generate mass"), SphereBody->GetAutoGenerateMass(), false);
+		Test.TestEqual(TEXT("Auto generate CoM offset"), SphereBody->GetAutoGenerateCenterOfMassOffset(), true);
+		Test.TestEqual(TEXT("Auto generate inertia"), SphereBody->GetAutoGeneratePrincipalInertia(), false);
+	}
+
+	// Inertia tensor diagonal.
+	{
+		FVector Actual = SphereBody->GetPrincipalInertia();
+		FVector Expected(100.f, 200.f, 300.f);
+		Test.TestEqual(TEXT("Sphere inertia tensor diagonal"), Actual, Expected);
+	}
+
+	// Motion control.
+	{
+		EAGX_MotionControl Actual = SphereBody->MotionControl;
+		EAGX_MotionControl Expected = EAGX_MotionControl::MC_DYNAMICS;
+		Test.TestEqual(TEXT("Sphere motion control"), Actual, Expected);
+	}
+
+	// Transform root component.
+	{
+		Test.TestEqual(
+			TEXT("Sphere transform target"), SphereBody->TransformTarget,
+			EAGX_TransformTarget::TT_SELF);
+	}
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearRigidBodyPropertiesImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+	return true;
+}
+
+//
+// Simple geometries test starts here.
+//
+
+class FArchiveImporterToSingleActor_SimpleGeometriesTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckSimpleGeometriesImportedCommand, FArchiveImporterToSingleActor_SimpleGeometriesTest&,
+	Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearSimpleGeometriesImportedCommand, FArchiveImporterToSingleActor_SimpleGeometriesTest&,
+	Test);
+
+class FArchiveImporterToSingleActor_SimpleGeometriesTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_SimpleGeometriesTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_SimpleGeometriesTest"),
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.SimpleGeometries"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("single_geometries_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckSimpleGeometriesImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearSimpleGeometriesImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_SimpleGeometriesTest
+		ArchiveImporterToSingleActor_SimpleGeometriesTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script single_geometries.agxPy.
+ * @return true when the check is complete. Never returns false.
+ */
+bool FCheckSimpleGeometriesImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import SimpleGeometries test scene: No content created."));
+		return true;
+	}
+
+	auto testShape = [this](USceneComponent* c, const FVector& ExpectedAGXWorldPos)
+	{
+		Test.TestNotNull(TEXT("Component exists"), c);
+		const FVector ExpectedUnrealPos = AgxToUnrealVector(ExpectedAGXWorldPos);
+		Test.TestEqual(TEXT("Component position"), c->GetComponentLocation(), ExpectedUnrealPos);
+	};
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// 5 Rigid Bodies, 10 Geometries, 2 Static Meshes and 1 Default Scene Root.
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 18);
+
+	testShape(
+		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("sphereGeometry")),
+		FVector(0.f, 0.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_BoxShapeComponent>(Components, TEXT("boxGeometry")), FVector(2.f, 0.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_CylinderShapeComponent>(Components, TEXT("cylinderGeometry")),
+		FVector(4.f, 0.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_CapsuleShapeComponent>(Components, TEXT("capsuleGeometry")),
+		FVector(6.f, 0.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("trimeshGeometry")),
+		FVector(8.f, 0.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("sphereGeometryFree")),
+		FVector(0.f, 2.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_BoxShapeComponent>(Components, TEXT("boxGeometryFree")),
+		FVector(2.f, 2.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_CylinderShapeComponent>(Components, TEXT("cylinderGeometryFree")),
+		FVector(4.f, 2.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_CapsuleShapeComponent>(Components, TEXT("capsuleGeometryFree")),
+		FVector(6.f, 2.f, 0.f));
+
+	testShape(
+		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("trimeshGeometryFree")),
+		FVector(8.f, 2.f, 0.f));
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearSimpleGeometriesImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+	// @todo Figure out why this error appears. So far it seems to only appear on Linux and not
+	// Windows.
+	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+
+	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("StaticMeshs"), TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("single_geometries_build"), ExpectedFiles);
 
 	return true;
 }

@@ -16,6 +16,7 @@
 #include "Containers/UnrealString.h"
 #include "Logging/LogVerbosity.h"
 #include "Math/Interval.h"
+#include "Math/Matrix.h"
 #include "Math/Vector.h"
 #include "Math/Vector2D.h"
 #include "Math/Quat.h"

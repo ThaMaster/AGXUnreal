@@ -56,19 +56,22 @@ public:
 	AAGX_RigidBodyActor* InstantiateBody(const FRigidBodyBarrier& Barrier, UWorld& World);
 
 	UAGX_SphereShapeComponent* InstantiateSphere(
-		const FSphereShapeBarrier& Sphere, UAGX_RigidBodyComponent& Body);
+		const FSphereShapeBarrier& Sphere, AActor& Owner, UAGX_RigidBodyComponent* Body = nullptr);
 
 	UAGX_BoxShapeComponent* InstantiateBox(
-		const FBoxShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body);
+		const FBoxShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body = nullptr);
 
 	UAGX_CylinderShapeComponent* InstantiateCylinder(
-		const FCylinderShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body);
+		const FCylinderShapeBarrier& Barrier, AActor& Owner,
+		UAGX_RigidBodyComponent* Body = nullptr);
 
 	UAGX_CapsuleShapeComponent* InstantiateCapsule(
-		const FCapsuleShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body);
+		const FCapsuleShapeBarrier& Barrier, AActor& Owner,
+		UAGX_RigidBodyComponent* Body = nullptr);
 
 	UAGX_TrimeshShapeComponent* InstantiateTrimesh(
-		const FTrimeshShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body);
+		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
+		UAGX_RigidBodyComponent* Body = nullptr);
 
 	UAGX_ShapeMaterialAsset* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 

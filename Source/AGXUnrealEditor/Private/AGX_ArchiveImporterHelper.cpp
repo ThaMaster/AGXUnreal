@@ -477,10 +477,9 @@ namespace
 }
 
 UAGX_SphereShapeComponent* FAGX_ArchiveImporterHelper::InstantiateSphere(
-	const FSphereShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body)
+	const FSphereShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
 {
-	UAGX_SphereShapeComponent* Component =
-		FAGX_EditorUtilities::CreateSphereShape(Body.GetOwner(), &Body);
+	UAGX_SphereShapeComponent* Component = FAGX_EditorUtilities::CreateSphereShape(&Owner, Body);
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
@@ -496,10 +495,9 @@ UAGX_SphereShapeComponent* FAGX_ArchiveImporterHelper::InstantiateSphere(
 }
 
 UAGX_BoxShapeComponent* FAGX_ArchiveImporterHelper::InstantiateBox(
-	const FBoxShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body)
+	const FBoxShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
 {
-	UAGX_BoxShapeComponent* Component =
-		FAGX_EditorUtilities::CreateBoxShape(Body.GetOwner(), &Body);
+	UAGX_BoxShapeComponent* Component = FAGX_EditorUtilities::CreateBoxShape(&Owner, Body);
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
@@ -515,10 +513,10 @@ UAGX_BoxShapeComponent* FAGX_ArchiveImporterHelper::InstantiateBox(
 }
 
 UAGX_CylinderShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCylinder(
-	const FCylinderShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body)
+	const FCylinderShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
 {
 	UAGX_CylinderShapeComponent* Component =
-		FAGX_EditorUtilities::CreateCylinderShape(Body.GetOwner(), &Body);
+		FAGX_EditorUtilities::CreateCylinderShape(&Owner, Body);
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
@@ -534,10 +532,9 @@ UAGX_CylinderShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCylinder(
 }
 
 UAGX_CapsuleShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCapsule(
-	const FCapsuleShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body)
+	const FCapsuleShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
 {
-	UAGX_CapsuleShapeComponent* Component =
-		FAGX_EditorUtilities::CreateCapsuleShape(Body.GetOwner(), &Body);
+	UAGX_CapsuleShapeComponent* Component = FAGX_EditorUtilities::CreateCapsuleShape(&Owner, Body);
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
@@ -553,19 +550,10 @@ UAGX_CapsuleShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCapsule(
 }
 
 UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
-	const FTrimeshShapeBarrier& Barrier, UAGX_RigidBodyComponent& Body)
+	const FTrimeshShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
 {
-	AActor* Owner = Body.GetOwner();
-	if (Owner == nullptr)
-	{
-		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Trimesh"), Barrier.GetName(), ArchiveFilePath,
-			TEXT("The parent Rigid Body does not have an owning Actor."));
-		return nullptr;
-	}
-
 	UAGX_TrimeshShapeComponent* Component =
-		FAGX_EditorUtilities::CreateTrimeshShape(Owner, &Body, false);
+		FAGX_EditorUtilities::CreateTrimeshShape(&Owner, Body, false);
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
@@ -574,8 +562,9 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 		return nullptr;
 	}
 	Component->MeshSourceLocation = EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
+	const FString FallbackName = Body != nullptr ? Body->GetName() : Owner.GetName();
 	UStaticMesh* MeshAsset =
-		GetOrCreateStaticMeshAsset(Barrier, Body.GetName(), RestoredMeshes, DirectoryName);
+		GetOrCreateStaticMeshAsset(Barrier, FallbackName, RestoredMeshes, DirectoryName);
 	if (MeshAsset == nullptr)
 	{
 		// No point in continuing further. Logging handled in GetOrCreateStaticMeshAsset.
@@ -584,15 +573,14 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	}
 
 	UStaticMeshComponent* MeshComponent =
-		FAGX_EditorUtilities::CreateStaticMeshComponent(*Owner, *Component, *MeshAsset, false);
+		FAGX_EditorUtilities::CreateStaticMeshComponent(Owner, *Component, *MeshAsset, false);
 	FString SourceName = Barrier.GetSourceName();
 	FString MeshName = !SourceName.IsEmpty() ? SourceName : (Barrier.GetName() + TEXT("Mesh"));
 	if (MeshComponent == nullptr)
 	{
 		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Could not create MeshComponent for imported trimesh '%s' in body '%s'."),
-			*MeshName, *Body.GetName());
+			LogAGX, Warning, TEXT("Could not create MeshComponent for imported trimesh '%s'."),
+			*MeshName);
 	}
 	if (MeshComponent != nullptr)
 	{
@@ -668,6 +656,7 @@ namespace
 			return nullptr;
 		}
 
+		Component->CopyFrom(Barrier);
 		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 			Barrier, *Component, Bodies.first, Bodies.second);
 		FAGX_ConstraintUtilities::CopyControllersFrom(*Component, Barrier);
@@ -700,6 +689,7 @@ namespace
 			Bodies.first, Bodies.second, false, false, false);
 		/// \todo Check for nullptr;
 
+		Actor->GetConstraintComponent()->CopyFrom(Barrier);
 		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 			Barrier, *Actor->GetConstraintComponent(), Bodies.first, Bodies.second);
 

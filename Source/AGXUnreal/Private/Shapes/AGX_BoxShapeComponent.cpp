@@ -1,5 +1,7 @@
 #include "Shapes/AGX_BoxShapeComponent.h"
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_UpropertyDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
@@ -10,11 +12,23 @@ UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 
 void UAGX_BoxShapeComponent::SetHalfExtent(const FVector& InHalfExtent)
 {
-	HalfExtent = InHalfExtent;
-	if (NativeBarrier.HasNative())
+	if (HasNative())
 	{
-		NativeBarrier.SetHalfExtents(HalfExtent);
+		NativeBarrier.SetHalfExtents(InHalfExtent);
 	}
+
+	HalfExtent = InHalfExtent;
+	UpdateVisualMesh();
+}
+
+FVector UAGX_BoxShapeComponent::GetHalfExtent() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetHalfExtents();
+	}
+
+	return HalfExtent;
 }
 
 FShapeBarrier* UAGX_BoxShapeComponent::GetNative()
@@ -97,8 +111,11 @@ void UAGX_BoxShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 bool UAGX_BoxShapeComponent::DoesPropertyAffectVisualMesh(
 	const FName& PropertyName, const FName& MemberPropertyName) const
 {
-	return Super::DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName) ||
-		   MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_BoxShapeComponent, HalfExtent);
+	// Note: halfExtent is intentionally ignored here since the SetHalfExtent function is
+	// responsible to call the UpdateVisualMesh. This is done since calling e.g.
+	// SetHalfExtent from a Blueprint will NOT trigger the PostEditChangeProperty where the
+	// UpdateVisualMesh is usually called from.
+	return Super::DoesPropertyAffectVisualMesh(PropertyName, MemberPropertyName);
 }
 
 #endif
@@ -109,6 +126,82 @@ void UAGX_BoxShapeComponent::CreateNative()
 	NativeBarrier.AllocateNative();
 	UpdateNativeProperties();
 }
+
+#if WITH_EDITOR
+void UAGX_BoxShapeComponent::PostLoad()
+{
+	Super::PostLoad();
+	InitPropertyDispatcher();
+}
+
+void UAGX_BoxShapeComponent::InitPropertyDispatcher()
+{
+	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
+	if (Dispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_BoxShapeComponent, HalfExtent),
+		[](ThisClass* This) { This->SetHalfExtent(This->HalfExtent); });
+}
+
+void UAGX_BoxShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	// The root property that contains the property that was changed.
+	const FName Member = (PropertyChangedEvent.MemberProperty != NULL)
+							 ? PropertyChangedEvent.MemberProperty->GetFName()
+							 : NAME_None;
+
+	// The leaf property that was changed. May be nested in a struct.
+	const FName Property = (PropertyChangedEvent.Property != NULL)
+							   ? PropertyChangedEvent.Property->GetFName()
+							   : NAME_None;
+
+	if (FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Member, Property, this))
+	{
+		// No custom handling required when handled by Dispatcher callback.
+		Super::PostEditChangeProperty(PropertyChangedEvent);
+		return;
+	}
+
+	// Add any custom property edited handling that may be required in the future here.
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+}
+
+void UAGX_BoxShapeComponent::PostEditChangeChainProperty(
+	struct FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	if (PropertyChangedEvent.PropertyChain.Num() < 3)
+	{
+		Super::PostEditChangeChainProperty(PropertyChangedEvent);
+
+		// These simple cases are handled by PostEditChangeProperty, which is called by UObject's
+		// PostEditChangeChainProperty.
+		return;
+	}
+
+	FEditPropertyChain::TDoubleLinkedListNode* Node = PropertyChangedEvent.PropertyChain.GetHead();
+	FName Member = Node->GetValue()->GetFName();
+	Node = Node->GetNextNode();
+	FName Property = Node->GetValue()->GetFName();
+
+	// The name of the rest of the nodes doesn't matter, we set all elements at level two each
+	// time. These are small objects such as FVector or FFloatInterval.
+	// Some rewrite of FAGX_PropertyDispatcher will be required to support other types of nesting
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Member, Property, this);
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+}
+#endif
 
 void UAGX_BoxShapeComponent::ReleaseNative()
 {

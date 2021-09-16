@@ -58,6 +58,9 @@ public:
 
 	double CalculateMass() const;
 
+	void SetCenterOfMassOffset(const FVector& Offset);
+	FVector GetCenterOfMassOffset() const;
+
 	void SetName(const FString& NewName);
 	FString GetName() const;
 

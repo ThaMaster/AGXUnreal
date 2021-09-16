@@ -96,9 +96,12 @@ namespace
 		{
 			Shape->RegisterComponent();
 		}
-		const bool Attached = Shape->AttachToComponent(
-			Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-		check(Attached);
+		if (Outer)
+		{
+			const bool Attached = Shape->AttachToComponent(
+				Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			check(Attached);
+		}
 		return Shape;
 	}
 
@@ -572,7 +575,12 @@ FString FAGX_EditorUtilities::CreateShapeMaterialAsset(
 	AssetTools.CreateUniqueAssetName(PackagePath, MaterialName, PackagePath, MaterialName);
 
 	// Create the package that will hold our shape material asset.
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
 	UPackage* Package = CreatePackage(nullptr, *PackagePath);
+#else
+	UPackage* Package = CreatePackage(*PackagePath);
+#endif
+
 #if 0
 		/// \todo Unclear if this is needed or not. Leaving it out for now but
 		/// test with it restored if there are problems.

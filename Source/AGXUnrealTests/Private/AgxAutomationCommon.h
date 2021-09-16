@@ -276,7 +276,9 @@ namespace AgxAutomationCommon
 
 	inline FVector AgxToUnrealAngularVelocity(const FVector& Agx)
 	{
-		return FVector(Agx.X, -Agx.Y, -Agx.Z);
+		return FVector(
+			FMath::RadiansToDegrees(Agx.X), FMath::RadiansToDegrees(-Agx.Y),
+			FMath::RadiansToDegrees(-Agx.Z));
 	}
 }
 

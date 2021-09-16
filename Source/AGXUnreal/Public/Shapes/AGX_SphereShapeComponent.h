@@ -21,6 +21,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	float Radius;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	void SetRadius(float InRadius);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	float GetRadius() const;
+
 	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;
@@ -56,4 +62,15 @@ private:
 
 private:
 	FSphereShapeBarrier NativeBarrier;
+
+#if WITH_EDITOR
+	// ~Begin UObject interface.
+	virtual void PostLoad() override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(
+		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+	// ~End UObject interface.
+
+	void InitPropertyDispatcher();
+#endif
 };
