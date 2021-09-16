@@ -1,5 +1,7 @@
 #include "Shapes/AGX_SphereShapeComponent.h"
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_UpropertyDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 UAGX_SphereShapeComponent::UAGX_SphereShapeComponent()
@@ -135,7 +137,13 @@ void UAGX_SphereShapeComponent::PostLoad()
 
 void UAGX_SphereShapeComponent::InitPropertyDispatcher()
 {
-	PropertyDispatcher.Add(
+	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
+	if (Dispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_SphereShapeComponent, Radius),
 		[](ThisClass* This) { This->SetRadius(This->Radius); });
 }
@@ -152,7 +160,7 @@ void UAGX_SphereShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& Pr
 							   ? PropertyChangedEvent.Property->GetFName()
 							   : NAME_None;
 
-	if (PropertyDispatcher.Trigger(Member, Property, this))
+	if (FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Member, Property, this))
 	{
 		// No custom handling required when handled by PropertyDispatcher callback.
 		Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -186,7 +194,7 @@ void UAGX_SphereShapeComponent::PostEditChangeChainProperty(
 	// The name of the rest of the nodes doesn't matter, we set all elements at level two each
 	// time. These are small objects such as FVector or FFloatInterval.
 	// Some rewrite of FAGX_PropertyDispatcher will be required to support other types of nesting
-	PropertyDispatcher.Trigger(Member, Property, this);
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Member, Property, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that his object will be removed from the Actor and destroyed. We want to

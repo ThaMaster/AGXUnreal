@@ -1,7 +1,6 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_UpropertyDispatcher.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/CapsuleShapeBarrier.h"
 
@@ -81,10 +80,6 @@ private:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
-#endif
-
-#if WITH_EDITORONLY_DATA
-	FAGX_UpropertyDispatcher<UAGX_CapsuleShapeComponent> PropertyDispatcher;
 #endif
 
 	FCapsuleShapeBarrier NativeBarrier;

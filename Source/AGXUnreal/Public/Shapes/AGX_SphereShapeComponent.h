@@ -1,7 +1,6 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_UpropertyDispatcher.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/SphereShapeBarrier.h"
 
@@ -72,7 +71,4 @@ private:
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
 
-#if WITH_EDITORONLY_DATA
-	FAGX_UpropertyDispatcher<UAGX_SphereShapeComponent> PropertyDispatcher;
-#endif
 };

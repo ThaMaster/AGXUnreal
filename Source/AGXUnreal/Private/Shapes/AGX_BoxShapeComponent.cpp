@@ -1,5 +1,7 @@
 #include "Shapes/AGX_BoxShapeComponent.h"
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_UpropertyDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
@@ -134,7 +136,13 @@ void UAGX_BoxShapeComponent::PostLoad()
 
 void UAGX_BoxShapeComponent::InitPropertyDispatcher()
 {
-	PropertyDispatcher.Add(
+	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
+	if (Dispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_BoxShapeComponent, HalfExtent),
 		[](ThisClass* This) { This->SetHalfExtent(This->HalfExtent); });
 }
@@ -151,9 +159,9 @@ void UAGX_BoxShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& Prope
 							   ? PropertyChangedEvent.Property->GetFName()
 							   : NAME_None;
 
-	if (PropertyDispatcher.Trigger(Member, Property, this))
+	if (FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Member, Property, this))
 	{
-		// No custom handling required when handled by PropertyDispatcher callback.
+		// No custom handling required when handled by Dispatcher callback.
 		Super::PostEditChangeProperty(PropertyChangedEvent);
 		return;
 	}
@@ -182,10 +190,11 @@ void UAGX_BoxShapeComponent::PostEditChangeChainProperty(
 	FName Member = Node->GetValue()->GetFName();
 	Node = Node->GetNextNode();
 	FName Property = Node->GetValue()->GetFName();
+
 	// The name of the rest of the nodes doesn't matter, we set all elements at level two each
 	// time. These are small objects such as FVector or FFloatInterval.
 	// Some rewrite of FAGX_PropertyDispatcher will be required to support other types of nesting
-	PropertyDispatcher.Trigger(Member, Property, this);
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Member, Property, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
