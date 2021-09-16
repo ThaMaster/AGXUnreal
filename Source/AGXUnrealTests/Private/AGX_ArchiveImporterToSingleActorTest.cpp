@@ -1507,6 +1507,16 @@ bool FCheckWireImportedCommand::Update()
 	// A Wire (1) and its icon (2), three Rigid Bodies (5), three Shapes (8), a Collision Group
 	// Disabler (9), and a Default Scene Root (10).
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 10);
+	if (Components.Num() != 10)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Found the following components:"));
+		for (auto Component : Components)
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("  %s: %s"), *Component->GetName(),
+				*Component->GetClass()->GetName());
+		}
+	}
 
 	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(Components, TEXT("Wire"));
 	UAGX_RigidBodyComponent* WinchBody =
@@ -1900,8 +1910,11 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 	// Mass properties automatic generation.
 	{
 		Test.TestEqual(TEXT("Auto generate mass"), SphereBody->GetAutoGenerateMass(), false);
-		Test.TestEqual(TEXT("Auto generate CoM offset"), SphereBody->GetAutoGenerateCenterOfMassOffset(), true);
-		Test.TestEqual(TEXT("Auto generate inertia"), SphereBody->GetAutoGeneratePrincipalInertia(), false);
+		Test.TestEqual(
+			TEXT("Auto generate CoM offset"), SphereBody->GetAutoGenerateCenterOfMassOffset(),
+			true);
+		Test.TestEqual(
+			TEXT("Auto generate inertia"), SphereBody->GetAutoGeneratePrincipalInertia(), false);
 	}
 
 	// Inertia tensor diagonal.
