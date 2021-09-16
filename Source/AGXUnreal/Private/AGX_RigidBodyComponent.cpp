@@ -286,15 +286,30 @@ void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 
 namespace
 {
+	// Searches recursively, but does not search further if a child component is another Rigid Body
+	// Component.
+	void GetShapesRecursive(
+		const USceneComponent& Parent, TArray<UAGX_ShapeComponent*>& OutFoundShapes)
+	{
+		TArray<USceneComponent*> AttachChildren = Parent.GetAttachChildren();
+		OutFoundShapes.Append(FAGX_ObjectUtilities::Filter<UAGX_ShapeComponent>(AttachChildren));
+
+		for (const auto C : AttachChildren)
+		{
+			if (Cast<UAGX_RigidBodyComponent>(C) != nullptr)
+			{
+				continue;
+			}
+
+			GetShapesRecursive(*C, OutFoundShapes);
+		}
+	}
+
 	TArray<UAGX_ShapeComponent*> GetShapes(const UAGX_RigidBodyComponent& Body)
 	{
-		/// \todo Do we want to search recursively? The user many build strange
-		/// hierarchives, bodies beneath bodies and such, and care must be taken to
-		/// get that right if we allow it. Only looking at immediate children
-		/// simplifies things, but makes it impossible to attach shapes relative to
-		/// each other. A middleground is to only search recursively within
-		/// UAGX_ShapeComponents.
-		return FAGX_ObjectUtilities::Filter<UAGX_ShapeComponent>(Body.GetAttachChildren());
+		TArray<UAGX_ShapeComponent*> FoundShapes;
+		GetShapesRecursive(Body, FoundShapes);
+		return FoundShapes;
 	}
 }
 
