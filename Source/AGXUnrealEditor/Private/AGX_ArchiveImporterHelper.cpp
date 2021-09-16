@@ -560,7 +560,7 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 			TEXT("Could not instantiate a new Trimesh Shape Component."));
 		return nullptr;
 	}
-	Component->MeshSourceLocation = EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
+	Component->MeshSourceLocation = EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 	const FString FallbackName = Body != nullptr ? Body->GetName() : Owner.GetName();
 	UStaticMesh* MeshAsset =
 		GetOrCreateStaticMeshAsset(Barrier, FallbackName, RestoredMeshes, DirectoryName);
