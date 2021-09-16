@@ -220,34 +220,6 @@ double FAGX_WireWinch::GetBrakeForceRangeMax() const
 	return GetBrakeForceRange().Max;
 }
 
-void FAGX_WireWinch::EnableEmergencyBrake()
-{
-	SetEmergencyBrakeEnabled(true);
-}
-
-void FAGX_WireWinch::DisableEmergencyBrake()
-{
-	SetEmergencyBrakeEnabled(false);
-}
-
-void FAGX_WireWinch::SetEmergencyBrakeEnabled(bool bEnable)
-{
-	bEmergencyBrakeEnabled = bEnable;
-	if (HasNative())
-	{
-		NativeBarrier.SetEnableForcedBrake(bEnable);
-	}
-}
-
-bool FAGX_WireWinch::IsEmergencyBrakeEnabled() const
-{
-	if (HasNative())
-	{
-		return NativeBarrier.GetEnableForcedBrake();
-	}
-	return bEmergencyBrakeEnabled;
-}
-
 double FAGX_WireWinch::GetCurrentSpeed() const
 {
 	if (!HasNative())
@@ -308,7 +280,6 @@ void FAGX_WireWinch::CopyFrom(const FWireWinchBarrier& Barrier)
 	MotorForceRange = Barrier.GetForceRange();
 	bBrakeEnabled = !Barrier.GetBrakeForceRange().IsZero();
 	BrakeForceRange = Barrier.GetBrakeForceRange();
-	bEmergencyBrakeEnabled = Barrier.GetEnableForcedBrake();
 }
 
 bool FAGX_WireWinch::HasNative() const
@@ -407,8 +378,6 @@ void FAGX_WireWinch::WritePropertiesToNative()
 	{
 		NativeBarrier.SetBrakeForceRange({0.0, 0.0});
 	}
-
-	NativeBarrier.SetEnableForcedBrake(bEmergencyBrakeEnabled);
 }
 
 void FAGX_WireWinch::ReadPropertiesFromNative()
@@ -432,7 +401,6 @@ void FAGX_WireWinch::ReadPropertiesFromNative()
 	{
 		BrakeForceRange = NativeBarrier.GetBrakeForceRange();
 	}
-	bEmergencyBrakeEnabled = NativeBarrier.GetEnableForcedBrake();
 }
 
 FAGX_WireWinch::FAGX_WireWinch(const FAGX_WireWinch& Other)

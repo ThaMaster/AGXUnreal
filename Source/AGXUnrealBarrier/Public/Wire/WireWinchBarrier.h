@@ -70,13 +70,6 @@ public:
 
 	void SetBrakeForceRange(const FAGX_DoubleInterval& InBrakeForceRange);
 
-	/// Enable or disable forced brake. Will only prevent haul in, does not affect pay out.
-	/// Is disabled when speed is set to pay out, i.e, speed > 0.
-	void SetEnableForcedBrake(bool bBrakeEnabled);
-
-	/// Whether or not the winch is currently braking.
-	bool GetEnableForcedBrake() const;
-
 	/// The speed that the winch tries to haul in or pay out wire with.
 	/// Positive values is paying out.
 	/// Negative values is hauling in.

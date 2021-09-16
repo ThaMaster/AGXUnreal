@@ -160,12 +160,6 @@ void UAGX_WireWinchComponent::PostLoad()
 		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, BrakeForceRange),
 		[](ThisClass* Winch)
 		{ Winch->WireWinch.SetBrakeForceRange(Winch->WireWinch.BrakeForceRange); });
-
-	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_WireWinchComponent, WireWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bEmergencyBrakeEnabled),
-		[](ThisClass* Winch)
-		{ Winch->WireWinch.SetEmergencyBrakeEnabled(Winch->WireWinch.bEmergencyBrakeEnabled); });
 #endif
 }
 

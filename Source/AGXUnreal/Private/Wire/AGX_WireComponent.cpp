@@ -1229,14 +1229,6 @@ void UAGX_WireComponent::PostLoad()
 		[](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetBrakeForceRange(Wire->OwnedBeginWinch.BrakeForceRange); });
 
-	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bEmergencyBrakeEnabled),
-		[](ThisClass* Wire) {
-			Wire->OwnedBeginWinch.SetEmergencyBrakeEnabled(
-				Wire->OwnedBeginWinch.bEmergencyBrakeEnabled);
-		});
-
 	/// @todo Find ways to do attach/detach during runtime from the Details Panel.
 
 #if 0
@@ -1280,14 +1272,6 @@ void UAGX_WireComponent::PostLoad()
 		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, BrakeForceRange),
 		[](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetBrakeForceRange(Wire->OwnedEndWinch.BrakeForceRange); });
-
-	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bEmergencyBrakeEnabled),
-		[](ThisClass* Wire) {
-			Wire->OwnedEndWinch.SetEmergencyBrakeEnabled(
-				Wire->OwnedEndWinch.bEmergencyBrakeEnabled);
-		});
 
 	/// @todo Find ways to do attach/detach during runtime from the Details Panel.
 #endif

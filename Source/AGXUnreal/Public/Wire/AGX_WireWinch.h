@@ -147,14 +147,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
 	FAGX_DoubleInterval BrakeForceRange = {
 		-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()};
-
-	/**
-	 * Enable or disable the emergency brake. This brake only prevents hauling in, it does not
-	 * affect pay out. The emergency brake is disabled when the speed is set to pay out, i.e., speed
-	 * > 0.
-	 */
-	UPROPERTY(EditAnywhere, Category = "Wire Winch")
-	bool bEmergencyBrakeEnabled = false;
 };
 
 /**
@@ -232,11 +224,6 @@ public:
 	FAGX_DoubleInterval GetBrakeForceRange() const;
 	double GetBrakeForceRangeMin() const;
 	double GetBrakeForceRangeMax() const;
-
-	void EnableEmergencyBrake();
-	void DisableEmergencyBrake();
-	void SetEmergencyBrakeEnabled(bool bEnable);
-	bool IsEmergencyBrakeEnabled() const;
 
 	/**
 	 * @return The speed with which the wire is currently being hauled in, for negative speeds, or

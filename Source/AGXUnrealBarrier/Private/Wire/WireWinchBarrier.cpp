@@ -134,19 +134,6 @@ FAGX_DoubleInterval FWireWinchBarrier::GetBrakeForceRange() const
 	return Convert(NativeRef->Native->getBrakeForceRange());
 }
 
-void FWireWinchBarrier::SetEnableForcedBrake(bool bBrakeEnabled)
-{
-	check(HasNative());
-	NativeRef->Native->setEnableForcedBrake(bBrakeEnabled);
-}
-
-/// Whether or not the winch is currently braking.
-bool FWireWinchBarrier::GetEnableForcedBrake() const
-{
-	check(HasNative());
-	return NativeRef->Native->getEnableForcedBrake();
-}
-
 void FWireWinchBarrier::SetSpeed(double InTargetSpeed)
 {
 	check(HasNative());
