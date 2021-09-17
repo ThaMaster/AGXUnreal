@@ -2,7 +2,6 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "AGX_UpropertyDispatcher.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
@@ -24,8 +23,6 @@ struct FAGX_ConstraintLockController;
 struct FAGX_ConstraintRangeController;
 struct FAGX_ConstraintTargetSpeedController;
 
-// I do not understand why we sometimes need this forward declaration, we include the header above.
-// I assume there is an include loop somewhere but I don't see it.
 template <typename>
 struct FAGX_UpropertyDispatcher;
 
@@ -96,6 +93,7 @@ public:
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
 		EAGX_Constraint2DOFFreeDOF Dof);
 
+#if WITH_EDITOR
 	static void AddControllerPropertyCallbacks(
 		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 		FAGX_ConstraintController* Controller, const FName& Member);
@@ -123,6 +121,7 @@ public:
 	static void AddScrewControllerPropertyCallbacks(
 		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 		FAGX_ConstraintScrewController* ScrewController, const FName& Member);
+#endif
 
 	/**
 	 * Sets up the constraint 'Component' and its BodyAttachments in accordance with
