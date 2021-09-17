@@ -52,19 +52,19 @@ class AGXUNREAL_API UAGX_ConstraintScrenController_FL : public UBlueprintFunctio
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Screw Controller")
 	static void SetLead(
-		UPARAM(ref) FAGX_ConstraintScrewController& Controller, const float Lead)
+		UPARAM(Ref) FAGX_ConstraintScrewController& Controller, const float Lead)
 	{
 		Controller.SetLead(static_cast<double>(Lead));
 	};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lead Controller")
-	static float GetLead(UPARAM(ref) FAGX_ConstraintScrewController& Controller)
+	static float GetLead(UPARAM(Ref) FAGX_ConstraintScrewController& Controller)
 	{
 		return static_cast<float>(Controller.GetLead());
 	};
 
 	//~ Begin AGX_ConstraintController Blueprint Library interface.
-	// These are copy/pasted from FAGX_ConstraintController.h. See the comment in that file.
+	// These are copy/pasted from AGX_ConstraintController.h. See the comment in that file.
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
 	static bool IsValid(UPARAM(ref) FAGX_ConstraintScrewController& ControllerRef)
@@ -73,9 +73,75 @@ class AGXUNREAL_API UAGX_ConstraintScrenController_FL : public UBlueprintFunctio
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetEnable(UPARAM(ref) FAGX_ConstraintScrewController& ControllerRef, bool Enable)
+	{
+		return ControllerRef.SetEnable(Enable);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static bool GetEnable(UPARAM(ref) FAGX_ConstraintScrewController& ControllerRef)
+	{
+		return ControllerRef.GetEnable();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetCompliance(UPARAM(ref) FAGX_ConstraintScrewController& Controller, float Compliance)
+	{
+		Controller.SetCompliance(static_cast<double>(Compliance));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetCompliance(UPARAM(ref) const FAGX_ConstraintScrewController& Controller)
+	{
+		return static_cast<float>(Controller.GetCompliance());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetElasticity(UPARAM(ref) FAGX_ConstraintController& Controller, float Elasticity)
+	{
+		Controller.SetElasticity(static_cast<double>(Elasticity));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetElasticity(UPARAM(ref) const FAGX_ConstraintController& Controller)
+	{
+		return static_cast<float>(Controller.GetElasticity());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetDamping(UPARAM(ref) FAGX_ConstraintScrewController& Controller, float Damping)
+	{
+		Controller.SetDamping(static_cast<double>(Damping));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetDamping(UPARAM(ref) const FAGX_ConstraintScrewController& Controller)
+	{
+		return static_cast<float>(Controller.GetDamping());
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static void SetForceRange(
+		UPARAM(ref) FAGX_ConstraintScrewController& Controller, float MinForce, float MaxForce)
+	{
+		Controller.SetForceRange(FFloatInterval(MinForce, MaxForce));
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForceRangeMin(UPARAM(ref) const FAGX_ConstraintScrewController& Controller)
+	{
+		return Controller.GetForceRange().Min;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
+	static float GetForceRangeMax(UPARAM(ref) const FAGX_ConstraintScrewController& Controller)
+	{
+		return Controller.GetForceRange().Max;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
 	static float GetForce(UPARAM(ref) FAGX_ConstraintScrewController& ControllerRef)
 	{
-		// ScrewControllers
 		return static_cast<float>(ControllerRef.GetForce());
 	}
 
