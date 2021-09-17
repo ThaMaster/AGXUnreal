@@ -213,18 +213,15 @@ void UAGX_StaticMeshComponent::OnCreatePhysicsState()
 	bPhysicsStateCreated = true;
 }
 
-void UAGX_StaticMeshComponent::PostLoad()
-{
-	Super::PostLoad();
 #if WITH_EDITOR
+void UAGX_StaticMeshComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
 	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
 	}
-
-	// These callbacks do not check the instance. It is the reponsibility of PostEditChangeProperty
-	// to only call FAGX_UpropertyDispatcher::Trigger when an instance is available.
 
 	Dispatcher.Add(
 		this->GetRelativeLocationPropertyName(),
@@ -261,10 +258,8 @@ void UAGX_StaticMeshComponent::PostLoad()
 			/// called.
 			This->RefreshCollisionShapes();
 		});
-#endif
 }
 
-#if WITH_EDITOR
 void UAGX_StaticMeshComponent::PostEditChangeProperty(FPropertyChangedEvent& Event)
 {
 	const FName Member = GetFNameSafe(Event.MemberProperty);
@@ -278,9 +273,23 @@ void UAGX_StaticMeshComponent::PostEditChangeProperty(FPropertyChangedEvent& Eve
 	// apply all our changes before that so that they are carried over to the copy.
 	Super::PostEditChangeProperty(Event);
 }
-#endif
 
-#if WITH_EDITOR
+void UAGX_StaticMeshComponent::PostEditChangeChainProperty(
+	struct FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	if (PropertyChangedEvent.PropertyChain.Num() > 2)
+	{
+		// The cases fewer chain elements are handled by PostEditChangeProperty, which is called by
+		// UObject's PostEditChangeChainProperty.
+		FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
+	}
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+}
+
 void UAGX_StaticMeshComponent::PostEditComponentMove(bool bFinished)
 {
 	Super::PostEditComponentMove(bFinished);
