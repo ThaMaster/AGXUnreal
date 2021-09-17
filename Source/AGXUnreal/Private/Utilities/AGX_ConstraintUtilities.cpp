@@ -1,6 +1,7 @@
 #include "Utilities/AGX_ConstraintUtilities.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_UpropertyDispatcher.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
