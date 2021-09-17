@@ -57,8 +57,10 @@ void UAGX_RigidBodyComponent::PostEditChangeChainProperty(
 {
 	if (PropertyChangedEvent.PropertyChain.Num() > 2)
 	{
-		// The cases fewer chain elements are handled by PostEditChangeProperty, which is called by
-		// UObject's PostEditChangeChainProperty.
+		// The cases with fewer chain elements are handled by PostEditChangeProperty, which is
+		// called by UObject's PostEditChangeChainProperty. When there are more than two in the
+		// chain then PostEditChangeProperty only sees the first and last, but we typically register
+		// Property Dispatcher callbacks for the top of the chain.
 		FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
 	}
 
