@@ -156,6 +156,8 @@ void UAGX_ConstraintComponent::PostInitProperties()
 	BodyAttachment2.RigidBody.OwningActor = GetTypedOuter<AActor>();
 	BodyAttachment1.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 	BodyAttachment2.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
+
+	InitPropertyDispatcher();
 }
 
 namespace AGX_ConstraintComponent_helpers
@@ -908,7 +910,6 @@ void UAGX_ConstraintComponent::PostLoad()
 	Super::PostLoad();
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
-	InitPropertyDispatcher();
 }
 
 void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
