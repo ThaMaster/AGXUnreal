@@ -28,6 +28,9 @@ struct AGXUNREAL_API FAGX_ConstraintScrewController : public FAGX_ConstraintCont
 	UPROPERTY(EditAnywhere, Category = "AGX Screw Controller", Meta = (EditCondition = "bEnable"))
 	double Lead;
 
+	void SetLead(double InLead);
+	double GetLead() const;
+
 public:
 	FAGX_ConstraintScrewController() = default;
 	FAGX_ConstraintScrewController(bool bRotational);
@@ -46,6 +49,19 @@ UCLASS()
 class AGXUNREAL_API UAGX_ConstraintScrenController_FL : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Screw Controller")
+	static void SetLead(
+		UPARAM(ref) FAGX_ConstraintScrewController& Controller, const float Lead)
+	{
+		Controller.SetLead(static_cast<double>(Lead));
+	};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lead Controller")
+	static float GetLead(UPARAM(ref) FAGX_ConstraintScrewController& Controller)
+	{
+		return static_cast<float>(Controller.GetLead());
+	};
 
 	//~ Begin AGX_ConstraintController Blueprint Library interface.
 	// These are copy/pasted from FAGX_ConstraintController.h. See the comment in that file.

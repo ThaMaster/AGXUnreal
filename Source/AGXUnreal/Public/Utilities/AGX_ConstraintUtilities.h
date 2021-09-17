@@ -90,6 +90,34 @@ public:
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
 		EAGX_Constraint2DOFFreeDOF Dof);
 
+	static void AddControllerPropertyCallbacks(
+		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_ConstraintController* Controller, const FName& Member);
+
+	static void AddElectricMotorControllerPropertyCallbacks(
+		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_ConstraintElectricMotorController* Controller, const FName& Member);
+
+	static void AddFrictionControllerPropertyCallbacks(
+		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_ConstraintFrictionController* Controller, const FName& Member);
+
+	static void AddLockControllerPropertyCallbacks(
+		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_ConstraintLockController* Controller, const FName& Member);
+
+	static void AddRangeControllerPropertyCallbacks(
+		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_ConstraintRangeController* Controller, const FName& Member);
+
+	static void AddTargetSpeedControllerPropertyCallbacks(
+		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_ConstraintTargetSpeedController* Controller, const FName& Member);
+
+	static void AddScrewControllerPropertyCallbacks(
+		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_ConstraintScrewController* ScrewController, const FName& Member);
+
 	/**
 	 * Sets up the constraint 'Component' and its BodyAttachments in accordance with
 	 * FrameDefiningSource = Constraint, given an FConstraintBarrier and the constrained

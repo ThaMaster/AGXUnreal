@@ -267,6 +267,8 @@ protected:
 	TUniquePtr<FConstraintBarrier> NativeBarrier;
 
 #if WITH_EDITORONLY_DATA
+	// We cannot use the static (class shared) Property Dispatcher because our Constraint Controller
+	// callbacks store a pointer to the particular controller in the lambda capture.
 	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent> PropertyDispatcher;
 #endif
 
