@@ -4,7 +4,6 @@
 #include "AGX_RigidBodyEnums.h"
 #include "AGX_MotionControl.h"
 #include "AGX_NativeOwner.h"
-#include "AGX_UpropertyDispatcher.h"
 #include "RigidBodyBarrier.h"
 
 // Unreal Engine includes.
@@ -280,7 +279,7 @@ public:
 
 	// ~Begin UObject interface.
 #if WITH_EDITOR
-	virtual void PostLoad() override;
+	virtual void PostInitProperties() override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
@@ -355,10 +354,6 @@ private:
 #endif
 
 private:
-#if WITH_EDITORONLY_DATA
-	FAGX_UpropertyDispatcher<UAGX_RigidBodyComponent> PropertyDispatcher;
-#endif
-
 	// The AGX Dynamics object only exists while simulating. Initialized in
 	// BeginPlay and released in EndPlay.
 	FRigidBodyBarrier NativeBarrier;
