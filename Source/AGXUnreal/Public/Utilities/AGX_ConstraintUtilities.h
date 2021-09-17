@@ -24,6 +24,11 @@ struct FAGX_ConstraintLockController;
 struct FAGX_ConstraintRangeController;
 struct FAGX_ConstraintTargetSpeedController;
 
+// I do not understand why we sometimes need this forward declaration, we include the header above.
+// I assume there is an include loop somewhere but I don't see it.
+template <typename>
+struct FAGX_UpropertyDispatcher;
+
 class AGXUNREAL_API FAGX_ConstraintUtilities
 {
 public:
