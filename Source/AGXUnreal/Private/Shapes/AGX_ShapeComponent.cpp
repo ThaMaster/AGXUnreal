@@ -158,32 +158,25 @@ void UAGX_ShapeComponent::PostLoad()
 	UpdateVisualMesh();
 }
 
-namespace AGX_ShapeComponent_helpers
-{
-	void InitPropertyDispatcher()
-	{
-		using ThisClass = UAGX_ShapeComponent;
-		FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
-			FAGX_UpropertyDispatcher<ThisClass>::Get();
-		if (PropertyDispatcher.IsInitialized())
-		{
-			return;
-		}
-
-		PropertyDispatcher.Add(
-			GET_MEMBER_NAME_CHECKED(ThisClass, bCanCollide),
-			[](ThisClass* This) { This->SetCanCollide(This->bCanCollide); });
-
-		PropertyDispatcher.Add(
-			GET_MEMBER_NAME_CHECKED(ThisClass, bIsSensor),
-			[](ThisClass* This) { This->SetIsSensor(This->bIsSensor); });
-	}
-}
-
 void UAGX_ShapeComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
 	UpdateVisualMesh();
+
+	FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_UpropertyDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bCanCollide),
+		[](ThisClass* This) { This->SetCanCollide(This->bCanCollide); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bIsSensor),
+		[](ThisClass* This) { This->SetIsSensor(This->bIsSensor); });
 }
 
 void UAGX_ShapeComponent::OnComponentCreated()
