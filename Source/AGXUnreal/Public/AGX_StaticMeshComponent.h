@@ -138,12 +138,9 @@ public:
 	// ~Begin UObject interface.
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
-	virtual void PostEditChangeChainProperty(
-		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event) override;
 #endif
 	// ~End UObject interface.
-
 
 protected:
 	//~ Begin protected UActorComponent interface.

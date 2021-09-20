@@ -260,34 +260,14 @@ void UAGX_StaticMeshComponent::PostInitProperties()
 		});
 }
 
-void UAGX_StaticMeshComponent::PostEditChangeProperty(FPropertyChangedEvent& Event)
+void UAGX_StaticMeshComponent::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event)
 {
-	const FName Member = GetFNameSafe(Event.MemberProperty);
-	const FName Property = GetFNameSafe(Event.Property);
-
-	// Trigger any change handling registered with the Property Change Dispatcher.
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Member, Property, this);
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeProperty(Event);
-}
-
-void UAGX_StaticMeshComponent::PostEditChangeChainProperty(
-	struct FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	if (PropertyChangedEvent.PropertyChain.Num() > 2)
-	{
-		// The cases fewer chain elements are handled by PostEditChangeProperty, which is called by
-		// UObject's PostEditChangeChainProperty.
-		FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
-	}
-
-	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
-	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	Super::PostEditChangeChainProperty(Event);
 }
 
 void UAGX_StaticMeshComponent::PostEditComponentMove(bool bFinished)
