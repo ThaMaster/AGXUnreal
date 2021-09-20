@@ -36,38 +36,21 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 }
 
 #if WITH_EDITOR
+
 void UAGX_RigidBodyComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
 	InitPropertyDispatcher();
 }
 
-void UAGX_RigidBodyComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+void UAGX_RigidBodyComponent::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event)
 {
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-}
-
-void UAGX_RigidBodyComponent::PostEditChangeChainProperty(
-	struct FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	if (PropertyChangedEvent.PropertyChain.Num() > 2)
-	{
-		// The cases with fewer chain elements are handled by PostEditChangeProperty, which is
-		// called by UObject's PostEditChangeChainProperty. When there are more than two in the
-		// chain then PostEditChangeProperty only sees the first and last, but we typically register
-		// Property Dispatcher callbacks for the top of the chain.
-		FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
-	}
-
-	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
-	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	Super::PostEditChangeChainProperty(Event);
 }
 
 void UAGX_RigidBodyComponent::PostEditComponentMove(bool bFinished)
@@ -164,7 +147,6 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 #endif
 }
 
-// End WITH_EDITOR.
 #endif
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
