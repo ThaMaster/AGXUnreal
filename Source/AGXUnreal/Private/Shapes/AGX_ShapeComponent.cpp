@@ -163,6 +163,7 @@ void UAGX_ShapeComponent::PostInitProperties()
 	Super::PostInitProperties();
 	UpdateVisualMesh();
 
+#if WITH_EDITOR
 	FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
 		FAGX_UpropertyDispatcher<ThisClass>::Get();
 	if (PropertyDispatcher.IsInitialized())
@@ -177,6 +178,7 @@ void UAGX_ShapeComponent::PostInitProperties()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, bIsSensor),
 		[](ThisClass* This) { This->SetIsSensor(This->bIsSensor); });
+#endif
 }
 
 void UAGX_ShapeComponent::OnComponentCreated()
