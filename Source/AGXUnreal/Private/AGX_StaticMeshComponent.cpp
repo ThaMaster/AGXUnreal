@@ -260,7 +260,7 @@ void UAGX_StaticMeshComponent::PostInitProperties()
 		});
 }
 
-void UAGX_StaticMeshComponent::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event)
+void UAGX_StaticMeshComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
 

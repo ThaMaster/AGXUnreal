@@ -166,7 +166,7 @@ void UAGX_WireWinchComponent::PostInitProperties()
 }
 
 #if WITH_EDITOR
-void UAGX_WireWinchComponent::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event)
+void UAGX_WireWinchComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
 

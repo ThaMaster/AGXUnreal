@@ -66,7 +66,7 @@ private:
 #if WITH_EDITOR
 	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;
-	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event) override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 	// ~End UObject interface.
 
 	void InitPropertyDispatcher();

@@ -836,7 +836,7 @@ public:
 	//~ Begin UObject interface.
 	virtual void PostInitProperties() override;
 #if WITH_EDITOR
-	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event) override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
 	// ~End UObject interface.
 

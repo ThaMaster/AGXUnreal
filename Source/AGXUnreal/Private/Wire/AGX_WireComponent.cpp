@@ -1287,7 +1287,7 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 	/// @todo Find ways to do attach/detach during runtime from the Details Panel.
 }
 
-void UAGX_WireComponent::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event)
+void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
 

@@ -43,7 +43,7 @@ void UAGX_RigidBodyComponent::PostInitProperties()
 	InitPropertyDispatcher();
 }
 
-void UAGX_RigidBodyComponent::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event)
+void UAGX_RigidBodyComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
 

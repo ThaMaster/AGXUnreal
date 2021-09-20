@@ -150,7 +150,7 @@ void UAGX_BoxShapeComponent::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetHalfExtent(This->HalfExtent); });
 }
 
-void UAGX_BoxShapeComponent::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event)
+void UAGX_BoxShapeComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
 

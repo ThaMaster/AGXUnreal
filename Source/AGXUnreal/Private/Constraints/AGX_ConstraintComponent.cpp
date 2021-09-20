@@ -760,7 +760,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
 
-void UAGX_ConstraintComponent::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event)
+void UAGX_ConstraintComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	PropertyDispatcher.Trigger(Event, this);
 
