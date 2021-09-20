@@ -156,7 +156,8 @@ public:
 	virtual void PostInitProperties() override;
 	virtual void PostLoad() override; // When loaded in Editor or Game
 #if WITH_EDITOR
-	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
+	void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
 	// ~End UObject interface.
 
