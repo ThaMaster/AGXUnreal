@@ -57,7 +57,7 @@ class AGXUNREAL_API UAGX_ConstraintScrenController_FL : public UBlueprintFunctio
 		Controller.SetLead(static_cast<double>(Lead));
 	};
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lead Controller")
+	UFUNCTION(BlueprintCallable, Category = "AGX Screw Controller")
 	static float GetLead(UPARAM(Ref) FAGX_ConstraintScrewController& Controller)
 	{
 		return static_cast<float>(Controller.GetLead());
