@@ -9,20 +9,47 @@ FAGX_ConstraintScrewController::FAGX_ConstraintScrewController(bool bRotational)
 {
 }
 
+namespace
+{
+	FScrewControllerBarrier* GetScrewBarrier(FAGX_ConstraintScrewController& Controller)
+	{
+		// See comment in GetElectricMotorBarrier in AGX_GetElectricMotorController.cpp
+		return static_cast<FScrewControllerBarrier*>(Controller.GetNative());
+	}
+
+	const FScrewControllerBarrier* GetScrewBarrier(const FAGX_ConstraintScrewController& Controller)
+	{
+		// See comment in GetElectricMotorBarrier in AGX_GetElectricMotorController.cpp
+		return static_cast<const FScrewControllerBarrier*>(Controller.GetNative());
+	}
+}
+
+void FAGX_ConstraintScrewController::SetLead(double InLead)
+{
+	Lead = InLead;
+	if (HasNative())
+	{
+		GetScrewBarrier(*this)->SetLead(Lead);
+	}
+}
+
+double FAGX_ConstraintScrewController::GetLead() const
+{
+	if (HasNative())
+	{
+		return GetScrewBarrier(*this)->GetLead();
+	}
+	else
+	{
+		return Lead;
+	}
+}
+
 void FAGX_ConstraintScrewController::InitializeBarrier(TUniquePtr<FScrewControllerBarrier> Barrier)
 {
 	check(!HasNative());
 	NativeBarrier = std::move(Barrier);
 	check(HasNative());
-}
-
-namespace
-{
-	FScrewControllerBarrier* GetScrewBarrier(FAGX_ConstraintScrewController& Controller)
-	{
-		// See comment in GetElectricMotorController.
-		return static_cast<FScrewControllerBarrier*>(Controller.GetNative());
-	}
 }
 
 void FAGX_ConstraintScrewController::UpdateNativePropertiesImpl()

@@ -12,7 +12,7 @@
 #include <agx/RigidBody.h>
 #include "EndAGXIncludes.h"
 
-class AGXUNREALBARRIER_API FAGX_ConstraintUtilities
+class AGXUNREALBARRIER_API FAGX_BarrierConstraintUtilities
 {
 public:
 	/**

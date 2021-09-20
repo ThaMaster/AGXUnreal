@@ -2,7 +2,7 @@
 
 #include "AGXRefs.h"
 #include "RigidBodyBarrier.h"
-#include "Utilities/AGX_ConstraintUtilities.h"
+#include "Utilities/AGX_BarrierConstraintUtilities.h"
 
 #include "BeginAGXIncludes.h"
 #include <agx/BallJoint.h>
@@ -33,7 +33,7 @@ void FBallJointBarrier::AllocateNativeImpl(
 	agx::FrameRef NativeFrame1 = nullptr;
 	agx::FrameRef NativeFrame2 = nullptr;
 
-	FAGX_ConstraintUtilities::ConvertConstraintBodiesAndFrames(
+	FAGX_BarrierConstraintUtilities::ConvertConstraintBodiesAndFrames(
 		RigidBody1, FramePosition1, FrameRotation1, RigidBody2, FramePosition2, FrameRotation2,
 		NativeRigidBody1, NativeFrame1, NativeRigidBody2, NativeFrame2);
 

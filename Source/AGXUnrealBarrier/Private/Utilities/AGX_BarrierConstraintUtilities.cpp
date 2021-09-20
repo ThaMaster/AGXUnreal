@@ -1,10 +1,10 @@
-#include "AGX_ConstraintUtilities.h"
+#include "AGX_BarrierConstraintUtilities.h"
 
 #include "TypeConversions.h"
 #include "AGXRefs.h"
 #include "AGX_AgxDynamicsObjectsAccess.h"
 
-void FAGX_ConstraintUtilities::ConvertConstraintBodiesAndFrames(
+void FAGX_BarrierConstraintUtilities::ConvertConstraintBodiesAndFrames(
 	const FRigidBodyBarrier& RigidBody1, const FVector& FramePosition1, const FQuat& FrameRotation1,
 	const FRigidBodyBarrier* RigidBody2, const FVector& FramePosition2, const FQuat& FrameRotation2,
 	agx::RigidBody*& OutNativeRigidBody1, agx::FrameRef& OutNativeFrame1,
@@ -30,7 +30,7 @@ void FAGX_ConstraintUtilities::ConvertConstraintBodiesAndFrames(
 	OutNativeFrame2 = ConvertFrame(FramePosition2, FrameRotation2);
 }
 
-void FAGX_ConstraintUtilities::ConvertConstraintBodyAndFrame(
+void FAGX_BarrierConstraintUtilities::ConvertConstraintBodyAndFrame(
 	const FRigidBodyBarrier& Body, const FVector& FramePosition, const FQuat& FrameRotation,
 	agx::RigidBody*& OutNativeBody, agx::FrameRef& OutNativeFrame)
 {
