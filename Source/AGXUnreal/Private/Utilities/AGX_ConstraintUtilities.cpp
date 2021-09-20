@@ -1,6 +1,7 @@
 #include "Utilities/AGX_ConstraintUtilities.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_UpropertyDispatcher.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
@@ -123,6 +124,8 @@ void FAGX_ConstraintUtilities::StoreTargetSpeedController(
 	Controller.CopyFrom(*Barrier.GetTargetSpeedController(Dof));
 }
 
+#if WITH_EDITOR
+
 void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks(
 	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 	FAGX_ConstraintController* Controller, const FName& Member)
@@ -237,6 +240,8 @@ void FAGX_ConstraintUtilities::AddScrewControllerPropertyCallbacks(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintScrewController, Lead),
 		[Controller](UAGX_ConstraintComponent*) { Controller->SetLead(Controller->Lead); });
 }
+
+#endif
 
 namespace
 {

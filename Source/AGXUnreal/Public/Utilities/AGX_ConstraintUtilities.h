@@ -23,6 +23,9 @@ struct FAGX_ConstraintLockController;
 struct FAGX_ConstraintRangeController;
 struct FAGX_ConstraintTargetSpeedController;
 
+template <typename>
+struct FAGX_UpropertyDispatcher;
+
 class AGXUNREAL_API FAGX_ConstraintUtilities
 {
 public:
@@ -90,6 +93,7 @@ public:
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
 		EAGX_Constraint2DOFFreeDOF Dof);
 
+#if WITH_EDITOR
 	static void AddControllerPropertyCallbacks(
 		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 		FAGX_ConstraintController* Controller, const FName& Member);
@@ -117,6 +121,7 @@ public:
 	static void AddScrewControllerPropertyCallbacks(
 		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 		FAGX_ConstraintScrewController* ScrewController, const FName& Member);
+#endif
 
 	/**
 	 * Sets up the constraint 'Component' and its BodyAttachments in accordance with
