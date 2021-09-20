@@ -34,6 +34,13 @@ public:
 	virtual void UpdateNativeProperties() override;
 	// ~End UAGX_ShapeComponent interface.
 
+	// ~Begin UObject interface.
+#if WITH_EDITOR
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event) override;
+#endif
+	// ~End UObject interface.
+
 	FSphereShapeBarrier* GetNativeSphere();
 
 	/**
@@ -62,15 +69,4 @@ private:
 
 private:
 	FSphereShapeBarrier NativeBarrier;
-
-#if WITH_EDITOR
-	// ~Begin UObject interface.
-	virtual void PostLoad() override;
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-	virtual void PostEditChangeChainProperty(
-		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
-	// ~End UObject interface.
-
-	void InitPropertyDispatcher();
-#endif
 };
