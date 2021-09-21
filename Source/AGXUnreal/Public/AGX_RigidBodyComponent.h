@@ -12,6 +12,8 @@
 #include "CoreMinimal.h"
 #include "Misc/EngineVersionComparison.h"
 
+class UAGX_ShapeComponent;
+
 #include "AGX_RigidBodyComponent.generated.h"
 
 UCLASS(
@@ -94,6 +96,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	bool GetAutoGenerateCenterOfMassOffset() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	TArray<UAGX_ShapeComponent*> GetShapes() const;
 
 	/**
 	 * Explicitly update mass properties.

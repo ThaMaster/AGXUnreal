@@ -325,13 +325,6 @@ namespace
 			GetShapesRecursive(*C, OutFoundShapes);
 		}
 	}
-
-	TArray<UAGX_ShapeComponent*> GetShapes(const UAGX_RigidBodyComponent& Body)
-	{
-		TArray<UAGX_ShapeComponent*> FoundShapes;
-		GetShapesRecursive(Body, FoundShapes);
-		return FoundShapes;
-	}
 }
 
 void UAGX_RigidBodyComponent::InitializeNative()
@@ -344,7 +337,7 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	WritePropertiesToNative();
 	WriteTransformToNative();
 
-	for (UAGX_ShapeComponent* Shape : GetShapes(*this))
+	for (UAGX_ShapeComponent* Shape : GetShapes())
 	{
 		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
 		/// \todo Should not crash on this. HeightField easy to get wrong.
@@ -827,6 +820,13 @@ bool UAGX_RigidBodyComponent::GetAutoGenerateCenterOfMassOffset() const
 	{
 		return bAutoGenerateCenterOfMassOffset;
 	}
+}
+
+TArray<UAGX_ShapeComponent*> UAGX_RigidBodyComponent::GetShapes() const
+{
+	TArray<UAGX_ShapeComponent*> FoundShapes;
+	GetShapesRecursive(*this, FoundShapes);
+	return FoundShapes;
 }
 
 void UAGX_RigidBodyComponent::SetPrincipalInertia(const FVector& InPrincipalInertia)
