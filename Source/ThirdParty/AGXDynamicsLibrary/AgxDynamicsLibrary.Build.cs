@@ -209,7 +209,10 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			RuntimeLibFiles.Add("msvcp140", LibSource.AGX);
 			RuntimeLibFiles.Add("vcruntime140", LibSource.AGX);
-            RuntimeLibFiles.Add("agx-assimp-vc*-mt", LibSource.AGX);
+			if (TargetAGXVersion.IsNewerOrEqualTo(2, 30, 0, 0))
+			{
+				RuntimeLibFiles.Add("agx-assimp-vc*-mt", LibSource.AGX);
+			}
 
 			RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
@@ -690,6 +693,17 @@ public class AGXDynamicsLibrary : ModuleRules
 
 			// Both versions are identical.
 			return false;
+		}
+
+		public bool IsNewerOrEqualTo(int Generation, int Major, int Minor, int Patch)
+		{
+			if (!IsInitialized)
+			{
+				Console.Error.WriteLine("Error: IsNewerOrEqualTo called on uninitialized AGXVersion object.");
+				return false;
+			}
+
+			return !IsOlderThan(Generation, Major, Minor, Patch);
 		}
 
 		public bool IsOlderThan(int Generation, int Major, int Minor, int Patch)
