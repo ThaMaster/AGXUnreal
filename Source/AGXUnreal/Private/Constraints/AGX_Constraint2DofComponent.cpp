@@ -188,7 +188,7 @@ void UAGX_Constraint2DofComponent::PostEditChangeChainProperty(
 	}
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
 	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 }
