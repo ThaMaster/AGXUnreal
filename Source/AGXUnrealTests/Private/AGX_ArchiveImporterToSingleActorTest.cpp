@@ -1169,7 +1169,7 @@ bool FCheckRenderDataImportedCommand::Update()
 	UAGX_SphereShapeComponent* Sphere =
 		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("Render Data Geometry"));
 	UStaticMeshComponent* Mesh = GetByName<UStaticMeshComponent>(
-		Components, TEXT("RenderMesh_E81A4AA9A88C93E007E187D8A7D960BB"));
+		Components, TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764"));
 
 	Test.TestNotNull(TEXT("Sphere"), Sphere);
 	Test.TestNotNull(TEXT("Mesh"), Mesh);
@@ -1210,7 +1210,7 @@ bool FClearRenderDataImportedCommand::Update()
 	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("RenderMeshs"), TEXT("RenderMesh_E81A4AA9A88C93E007E187D8A7D960BB.uasset")};
+		TEXT("RenderMeshs"), TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764.uasset")};
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_data_build"), ExpectedFiles);
 
