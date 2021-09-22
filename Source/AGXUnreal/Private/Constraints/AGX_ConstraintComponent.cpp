@@ -1016,5 +1016,5 @@ void UAGX_ConstraintComponent::CreateNative()
 
 	UpdateNativeProperties();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	Simulation->GetNative()->AddConstraint(NativeBarrier.Get());
+	Simulation->GetNative()->Add(*NativeBarrier.Get());
 }

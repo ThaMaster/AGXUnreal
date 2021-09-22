@@ -42,7 +42,7 @@ void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
 	check(Body != nullptr);
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	NativeBarrier.AddRigidBody(Body->GetNative());
+	NativeBarrier.Add(*Body->GetNative());
 }
 
 void UAGX_Simulation::AddRigidBody(UAGX_StaticMeshComponent* Body)
@@ -50,7 +50,7 @@ void UAGX_Simulation::AddRigidBody(UAGX_StaticMeshComponent* Body)
 	check(Body != nullptr);
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	NativeBarrier.AddRigidBody(Body->GetNative());
+	NativeBarrier.Add(*Body->GetNative());
 }
 
 void UAGX_Simulation::AddShape(UAGX_ShapeComponent* Shape)
@@ -69,7 +69,7 @@ void UAGX_Simulation::AddShape(UAGX_ShapeComponent* Shape)
 			*Shape->GetName(), *OwningBody->GetName());
 		return;
 	}
-	NativeBarrier.AddShape(Shape->GetNative());
+	NativeBarrier.Add(*Shape->GetNative());
 }
 
 bool UAGX_Simulation::AddConstraint(UAGX_ConstraintComponent& Constraint)
@@ -85,7 +85,7 @@ bool UAGX_Simulation::AddConstraint(UAGX_ConstraintComponent& Constraint)
 	}
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	NativeBarrier.AddConstraint(Constraint.GetNative()); /// @todo Check return value.
+	NativeBarrier.Add(*Constraint.GetNative()); /// @todo Check return value.
 	return true;
 }
 
@@ -102,7 +102,7 @@ bool UAGX_Simulation::RemoveConstraint(UAGX_ConstraintComponent& Constraint)
 	}
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	bool Success = NativeBarrier.RemoveConstraint(*Constraint.GetNative());
+	bool Success = NativeBarrier.Remove(*Constraint.GetNative());
 	if (!Success)
 	{
 		UE_LOG(
@@ -118,7 +118,7 @@ void UAGX_Simulation::AddTerrain(AAGX_Terrain* Terrain)
 	check(Terrain != nullptr);
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	NativeBarrier.AddTerrain(Terrain->GetNative());
+	NativeBarrier.Add(*Terrain->GetNative());
 }
 
 bool UAGX_Simulation::AddWire(UAGX_WireComponent& Wire)
@@ -126,13 +126,13 @@ bool UAGX_Simulation::AddWire(UAGX_WireComponent& Wire)
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	check(Wire.HasNative());
-	return NativeBarrier.AddWire(*Wire.GetNative());
+	return NativeBarrier.Add(*Wire.GetNative());
 }
 
 void UAGX_Simulation::RemoveWire(UAGX_WireComponent& Wire)
 {
 	check(Wire.HasNative());
-	NativeBarrier.RemoveWire(*Wire.GetNative());
+	NativeBarrier.Remove(*Wire.GetNative());
 }
 
 void UAGX_Simulation::SetEnableCollisionGroupPair(

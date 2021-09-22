@@ -119,7 +119,7 @@ bool FSimulationBarrier::Remove(FShapeBarrier& Shape)
 {
 	check(HasNative());
 	check(Shape.HasNative());
-	return NativeRef->Native->remove(Shape.GetNative()->Native);
+	return NativeRef->Native->remove(Shape.GetNative()->NativeGeometry);
 }
 
 bool FSimulationBarrier::Remove(FShapeMaterialBarrier& Material)

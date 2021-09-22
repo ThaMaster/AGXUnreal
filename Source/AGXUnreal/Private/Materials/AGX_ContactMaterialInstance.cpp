@@ -397,5 +397,5 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(PlayingWorld);
 	check(Simulation);
 
-	Simulation->GetNative()->AddContactMaterial(NativeBarrier.Get());
+	Simulation->GetNative()->Add(*NativeBarrier.Get());
 }

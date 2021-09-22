@@ -72,5 +72,5 @@ void UAGX_TireComponent::CreateNative()
 
 	UpdateNativeProperties();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	Simulation->GetNative()->AddTire(NativeBarrier.Get());
+	Simulation->GetNative()->Add(*NativeBarrier.Get());
 }
