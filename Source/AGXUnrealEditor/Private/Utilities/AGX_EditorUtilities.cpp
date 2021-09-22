@@ -489,13 +489,21 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromRenderData(const FRenderDataBarr
 	RawMesh.WedgeTexCoords[0].Reserve(NumIndices);
 
 	const TArray<FVector> RenderNormals = RenderData.GetNormals();
-	const TArray<FVector2D> RenderCoordinates = RenderData.GetTextureCoordinates();
+	const TArray<FVector2D> RenderTexCoords = RenderData.GetTextureCoordinates();
 
 	for (int32 I = 0; I < NumIndices; ++I)
 	{
 		const int32 RenderI = RawMesh.WedgeIndices[I];
 		RawMesh.WedgeTangentZ.Add(RenderNormals[RenderI]);
-		RawMesh.WedgeTexCoords[0].Add(RenderCoordinates[RenderI]);
+		// Not all Render Data has texture coordinates.
+		if (RenderTexCoords.Num() > I)
+		{
+			RawMesh.WedgeTexCoords[0].Add(RenderTexCoords[RenderI]);
+		}
+		else
+		{
+			RawMesh.WedgeTexCoords[0].Add(FVector2D(0.0f, 0.0f));
+		}
 		RawMesh.WedgeColors.Add(FColor(255, 255, 255));
 	}
 
