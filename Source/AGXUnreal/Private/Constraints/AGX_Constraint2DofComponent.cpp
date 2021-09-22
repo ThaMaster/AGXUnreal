@@ -167,14 +167,14 @@ void UAGX_Constraint2DofComponent::PostInitProperties()
 }
 
 void UAGX_Constraint2DofComponent::PostEditChangeChainProperty(
-	struct FPropertyChangedChainEvent& PropertyChangedEvent)
+	struct FPropertyChangedChainEvent& Event)
 {
-	PropertyDispatcher.Trigger(PropertyChangedEvent, this);
+	PropertyDispatcher.Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	Super::PostEditChangeChainProperty(Event);
 }
 
 #endif
