@@ -4,6 +4,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_Simulation.h"
+#include "AGX_UpropertyDispatcher.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -35,64 +36,21 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 }
 
 #if WITH_EDITOR
-void UAGX_RigidBodyComponent::PostLoad()
+
+void UAGX_RigidBodyComponent::PostInitProperties()
 {
-	Super::PostLoad();
+	Super::PostInitProperties();
 	InitPropertyDispatcher();
 }
 
-void UAGX_RigidBodyComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+void UAGX_RigidBodyComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	// The root property that contains the property that was changed.
-	const FName Member = (PropertyChangedEvent.MemberProperty != NULL)
-							 ? PropertyChangedEvent.MemberProperty->GetFName()
-							 : NAME_None;
-
-	// The leaf property that was changed. May be nested in a struct.
-	const FName Property = (PropertyChangedEvent.Property != NULL)
-							   ? PropertyChangedEvent.Property->GetFName()
-							   : NAME_None;
-
-	if (PropertyDispatcher.Trigger(Member, Property, this))
-	{
-		// No custom handling required when handled by PropertyDispatcher callback.
-		Super::PostEditChangeProperty(PropertyChangedEvent);
-		return;
-	}
-
-	// Add any custom property edited handling that may be required in the future here.
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-}
-
-void UAGX_RigidBodyComponent::PostEditChangeChainProperty(
-	struct FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	if (PropertyChangedEvent.PropertyChain.Num() < 3)
-	{
-		Super::PostEditChangeChainProperty(PropertyChangedEvent);
-
-		// These simple cases are handled by PostEditChangeProperty, which is called by UObject's
-		// PostEditChangeChainProperty.
-		return;
-	}
-
-	FEditPropertyChain::TDoubleLinkedListNode* Node = PropertyChangedEvent.PropertyChain.GetHead();
-	FName Member = Node->GetValue()->GetFName();
-	Node = Node->GetNextNode();
-	FName Property = Node->GetValue()->GetFName();
-	// The name of the rest of the nodes doesn't matter, we set all elements at level two each
-	// time. These are small objects such as FVector or FFloatInterval.
-	// Some rewrite of FAGX_PropertyDispatcher will be required to support other types of nesting
-	PropertyDispatcher.Trigger(Member, Property, this);
-
-	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
-	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	Super::PostEditChangeChainProperty(Event);
 }
 
 void UAGX_RigidBodyComponent::PostEditComponentMove(bool bFinished)
@@ -112,6 +70,13 @@ void UAGX_RigidBodyComponent::PostEditComponentMove(bool bFinished)
 
 void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 {
+	FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_UpropertyDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
 	// Location and Rotation are not Properties, so they won't trigger PostEditChangeProperty. e.g.,
 	// when moving the Component using the Widget in the Level Viewport. They are instead handled in
 	// PostEditComponentMove. The local transformations, however, the ones at the top of the Details
@@ -182,7 +147,6 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 #endif
 }
 
-// End WITH_EDITOR.
 #endif
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()

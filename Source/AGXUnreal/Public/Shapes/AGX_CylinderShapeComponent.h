@@ -10,7 +10,12 @@
 #include "AGX_CylinderShapeComponent.generated.h"
 
 /**
+ * A cylindrical collision shape. Can be used to give a Rigid Body a collision shape by
+ * attaching the Cylinder as a child to the Rigid Body.
  *
+ * It is common that wires are routed around cylinders. To make such constructions more stable
+ * one can mark the cylinder as being either a Pulley or a Gypsy. This simulates a groove along
+ * the Cylinder's perimeter that the wire can't slide off of.
  */
 UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_CylinderShapeComponent final : public UAGX_ShapeComponent
@@ -71,6 +76,13 @@ public:
 	virtual void UpdateNativeProperties() override;
 	// ~End UAGX_ShapeComponent interface.
 
+#if WITH_EDITOR
+	// ~Begin UObject interface.
+	virtual void PostInitProperties() override;
+	void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event);
+	// ~End UObject interface.
+#endif
+
 	/// Get the native AGX Dynamics representation of this Cylinder. May return nullptr.
 	FCylinderShapeBarrier* GetNativeCylinder();
 
@@ -98,13 +110,6 @@ private:
 	void CreateNative();
 
 #if WITH_EDITOR
-	// ~Begin UObject interface.
-	virtual void PostLoad() override;
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-	virtual void PostEditChangeChainProperty(
-		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
-	// ~End UObject interface.
-
 	void InitPropertyDispatcher();
 #endif
 

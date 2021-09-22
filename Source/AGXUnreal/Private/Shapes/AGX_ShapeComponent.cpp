@@ -3,6 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
+#include "AGX_UpropertyDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Contacts/AGX_ShapeContact.h"
@@ -125,8 +126,6 @@ bool UAGX_ShapeComponent::DoesPropertyAffectVisualMesh(
 
 void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-
 	const FName PropertyName = GetFNameSafe(PropertyChangedEvent.Property);
 	const FName MemberPropertyName = GetFNameSafe(PropertyChangedEvent.MemberProperty);
 
@@ -135,21 +134,22 @@ void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& Property
 		UpdateVisualMesh();
 	}
 
-	// @todo Follow the below pattern for all relevant UPROPERTIES to support live changes from
-	// the details panel in the Editor during play. Note that setting a UPROPERTY from c++ does not
-	// trigger the PostEditChangeProperty(), so no recursive loops will occur.
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bCanCollide))
-	{
-		SetCanCollide(bCanCollide);
-		return;
-	}
-
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bIsSensor))
-	{
-		SetIsSensor(bIsSensor);
-		return;
-	}
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
+
+void UAGX_ShapeComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
+{
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeChainProperty(Event);
+}
+
 #endif
 
 void UAGX_ShapeComponent::PostLoad()
@@ -162,6 +162,23 @@ void UAGX_ShapeComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
 	UpdateVisualMesh();
+
+#if WITH_EDITOR
+	FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_UpropertyDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bCanCollide),
+		[](ThisClass* This) { This->SetCanCollide(This->bCanCollide); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bIsSensor),
+		[](ThisClass* This) { This->SetIsSensor(This->bIsSensor); });
+#endif
 }
 
 void UAGX_ShapeComponent::OnComponentCreated()

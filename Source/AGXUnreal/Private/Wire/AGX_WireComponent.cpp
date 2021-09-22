@@ -1168,10 +1168,21 @@ const FWireBarrier* UAGX_WireComponent::GetNative() const
 	return &NativeBarrier;
 }
 
-void UAGX_WireComponent::PostLoad()
+void UAGX_WireComponent::PostInitProperties()
 {
-	Super::PostLoad();
+	Super::PostInitProperties();
+	OwnedBeginWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
+	OwnedEndWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
+
 #if WITH_EDITOR
+	InitPropertyDispatcher();
+#endif
+}
+
+#if WITH_EDITOR
+
+void UAGX_WireComponent::InitPropertyDispatcher()
+{
 	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
@@ -1274,42 +1285,18 @@ void UAGX_WireComponent::PostLoad()
 		{ Wire->OwnedEndWinch.SetBrakeForceRange(Wire->OwnedEndWinch.BrakeForceRange); });
 
 	/// @todo Find ways to do attach/detach during runtime from the Details Panel.
-#endif
 }
 
-void UAGX_WireComponent::PostInitProperties()
+void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	Super::PostInitProperties();
-	OwnedBeginWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
-	OwnedEndWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
-}
-
-#if WITH_EDITOR
-void UAGX_WireComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeProperty(PropertyChangedEvent);
+	Super::PostEditChangeChainProperty(Event);
 }
 
-void UAGX_WireComponent::PostEditChangeChainProperty(
-	struct FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	if (PropertyChangedEvent.PropertyChain.Num() > 2)
-	{
-		// The cases fewer chain elements are handled by PostEditChangeProperty, which is called by
-		// UObject's PostEditChangeChainProperty.
-		FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
-	}
-
-	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
-	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-}
 #endif
 
 void UAGX_WireComponent::BeginPlay()

@@ -834,12 +834,9 @@ public:
 	const FWireBarrier* GetNative() const;
 
 	//~ Begin UObject interface.
-	virtual void PostLoad() override;
 	virtual void PostInitProperties() override;
 #if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-	virtual void PostEditChangeChainProperty(
-		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
 	// ~End UObject interface.
 
@@ -858,6 +855,10 @@ protected:
 	// ~End UActorComponent interface.
 
 private:
+#if WITH_EDITOR
+	void InitPropertyDispatcher();
+#endif
+
 	void CreateNative();
 
 private:

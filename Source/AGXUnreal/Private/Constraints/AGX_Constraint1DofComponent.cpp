@@ -67,31 +67,15 @@ void UAGX_Constraint1DofComponent::PostInitProperties()
 		GET_MEMBER_NAME_CHECKED(ThisClass, TargetSpeedController));
 }
 
-void UAGX_Constraint1DofComponent::PostEditChangeProperty(
-	FPropertyChangedEvent& PropertyChangedEvent)
-{
-	PropertyDispatcher.Trigger(PropertyChangedEvent, this);
-
-	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
-	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-}
-
 void UAGX_Constraint1DofComponent::PostEditChangeChainProperty(
-	struct FPropertyChangedChainEvent& PropertyChangedEvent)
+	struct FPropertyChangedChainEvent& Event)
 {
-	if (PropertyChangedEvent.PropertyChain.Num() > 2)
-	{
-		// The cases fewer chain elements are handled by PostEditChangeProperty, which is called by
-		// UObject's PostEditChangeChainProperty.
-		PropertyDispatcher.Trigger(PropertyChangedEvent, this);
-	}
+	PropertyDispatcher.Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	Super::PostEditChangeChainProperty(Event);
 }
 #endif
 

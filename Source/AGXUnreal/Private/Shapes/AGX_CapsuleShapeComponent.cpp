@@ -162,14 +162,13 @@ void UAGX_CapsuleShapeComponent::ReleaseNative()
 }
 
 #if WITH_EDITOR
-void UAGX_CapsuleShapeComponent::PostLoad()
-{
-	Super::PostLoad();
-	InitPropertyDispatcher();
-}
 
-void UAGX_CapsuleShapeComponent::InitPropertyDispatcher()
+void UAGX_CapsuleShapeComponent::PostInitProperties()
 {
+	Super::PostInitProperties();
+
+	// Cannot use the UAGX_ShapeComponent Property Dispatcher because there are name collisions for
+	// Shape-specific UProperty names, for example Radius is in both Sphere and Cylinder.
 	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
@@ -185,57 +184,15 @@ void UAGX_CapsuleShapeComponent::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetHeight(This->Height); });
 }
 
-void UAGX_CapsuleShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	// The root property that contains the property that was changed.
-	const FName Member = (PropertyChangedEvent.MemberProperty != NULL)
-							 ? PropertyChangedEvent.MemberProperty->GetFName()
-							 : NAME_None;
-
-	// The leaf property that was changed. May be nested in a struct.
-	const FName Property = (PropertyChangedEvent.Property != NULL)
-							   ? PropertyChangedEvent.Property->GetFName()
-							   : NAME_None;
-
-	if (FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Member, Property, this))
-	{
-		// No custom handling required when handled by PropertyDispatcher callback.
-		Super::PostEditChangeProperty(PropertyChangedEvent);
-		return;
-	}
-
-	// Add any custom property edited handling that may be required in the future here.
-
-	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
-	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-}
-
 void UAGX_CapsuleShapeComponent::PostEditChangeChainProperty(
-	struct FPropertyChangedChainEvent& PropertyChangedEvent)
+	struct FPropertyChangedChainEvent& Event)
 {
-	if (PropertyChangedEvent.PropertyChain.Num() < 3)
-	{
-		Super::PostEditChangeChainProperty(PropertyChangedEvent);
-
-		// These simple cases are handled by PostEditChangeProperty, which is called by UObject's
-		// PostEditChangeChainProperty.
-		return;
-	}
-
-	FEditPropertyChain::TDoubleLinkedListNode* Node = PropertyChangedEvent.PropertyChain.GetHead();
-	FName Member = Node->GetValue()->GetFName();
-	Node = Node->GetNextNode();
-	FName Property = Node->GetValue()->GetFName();
-	// The name of the rest of the nodes doesn't matter, we set all elements at level two each
-	// time. These are small objects such as FVector or FFloatInterval.
-	// Some rewrite of FAGX_PropertyDispatcher will be required to support other types of nesting
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Member, Property, this);
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	Super::PostEditChangeChainProperty(Event);
 }
+
 #endif

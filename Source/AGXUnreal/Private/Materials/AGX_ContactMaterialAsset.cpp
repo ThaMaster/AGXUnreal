@@ -31,11 +31,11 @@ UAGX_ContactMaterialAsset* UAGX_ContactMaterialAsset::GetAsset()
 	return this;
 }
 
-void UAGX_ContactMaterialAsset::PostLoad()
-{
-	Super::PostLoad();
-
 #if WITH_EDITOR
+void UAGX_ContactMaterialAsset::PostInitProperties()
+{
+	Super::PostInitProperties();
+
 	// All Contact Materials share the same FAGX_UpropertyDispatcher so DO NOT use any captures or
 	// anything from the current 'this' in the Dispatcher callback. Only use the passed parameter,
 	// which is a pointer to the object that was changed.
@@ -45,8 +45,9 @@ void UAGX_ContactMaterialAsset::PostLoad()
 		return;
 	}
 
-	// These callbacks do not check the instance. It is the responsibility of PostEditChangeProperty
-	// to only call FAGX_UpropertyDispatcher::Trigger when an instance is available.
+	// These callbacks do not check the return value from GetInstance, it is the responsibility of
+	// PostEditChangeProperty to only call FAGX_UpropertyDispatcher::Trigger when an instance is
+	// available.
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, ContactSolver),
@@ -54,9 +55,9 @@ void UAGX_ContactMaterialAsset::PostLoad()
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, ContactReduction),
-		GET_MEMBER_NAME_CHECKED(FAGX_ContactMaterialReductionMode, Mode), [](ThisClass* Asset) {
-			Asset->GetInstance()->SetContactReductionMode(Asset->ContactReduction.Mode);
-		});
+		GET_MEMBER_NAME_CHECKED(FAGX_ContactMaterialReductionMode, Mode),
+		[](ThisClass* Asset)
+		{ Asset->GetInstance()->SetContactReductionMode(Asset->ContactReduction.Mode); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, ContactReduction),
@@ -69,7 +70,8 @@ void UAGX_ContactMaterialAsset::PostLoad()
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, MechanicsApproach),
 		GET_MEMBER_NAME_CHECKED(FAGX_ContactMaterialMechanicsApproach, bUseContactAreaApproach),
-		[](ThisClass* Asset) {
+		[](ThisClass* Asset)
+		{
 			Asset->GetInstance()->SetUseContactAreaApproach(
 				Asset->MechanicsApproach.bUseContactAreaApproach);
 		});
@@ -96,19 +98,18 @@ void UAGX_ContactMaterialAsset::PostLoad()
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, bSurfaceFrictionEnabled),
-		[](ThisClass* Asset) {
-			Asset->GetInstance()->SetSurfaceFrictionEnabled(Asset->bSurfaceFrictionEnabled);
-		});
+		[](ThisClass* Asset)
+		{ Asset->GetInstance()->SetSurfaceFrictionEnabled(Asset->bSurfaceFrictionEnabled); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, FrictionCoefficient),
-		[](ThisClass* Asset) {
-			Asset->GetInstance()->SetFrictionCoefficient(Asset->FrictionCoefficient);
-		});
+		[](ThisClass* Asset)
+		{ Asset->GetInstance()->SetFrictionCoefficient(Asset->FrictionCoefficient); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, SecondaryFrictionCoefficient),
-		[](ThisClass* Asset) {
+		[](ThisClass* Asset)
+		{
 			// When using InlineEditConditionToggle on the bool Unreal Editor triggers the value
 			// callback, instead of the bool callback, when toggling the bool. So we don't know
 			// which it is. Setting both.
@@ -120,7 +121,8 @@ void UAGX_ContactMaterialAsset::PostLoad()
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, bUseSecondaryFrictionCoefficient),
-		[](ThisClass* Asset) {
+		[](ThisClass* Asset)
+		{
 			// This is currently (Unreal Engine 4.25) never called because Unreal Engine calls the
 			// value callback when toggling the InlineEditConditionToggle. Leaving it here in case
 			// that's changed in later versions.
@@ -129,13 +131,13 @@ void UAGX_ContactMaterialAsset::PostLoad()
 		});
 
 	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, SurfaceViscosity), [](ThisClass* Asset) {
-			Asset->GetInstance()->GetInstance()->SetSurfaceViscosity(Asset->SurfaceViscosity);
-		});
+		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, SurfaceViscosity), [](ThisClass* Asset)
+		{ Asset->GetInstance()->GetInstance()->SetSurfaceViscosity(Asset->SurfaceViscosity); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, SecondarySurfaceViscosity),
-		[](ThisClass* Asset) {
+		[](ThisClass* Asset)
+		{
 			// When using InlineEditConditionToggle on the bool Unreal Editor triggers the value
 			// callback, instead of the bool callback, when toggling the bool. So we don't know
 			// which it is. Setting both.
@@ -146,7 +148,8 @@ void UAGX_ContactMaterialAsset::PostLoad()
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, bUseSecondarySurfaceViscosity),
-		[](ThisClass* Asset) {
+		[](ThisClass* Asset)
+		{
 			// This is currently (Unreal Engine 4.25) never called because Unreal Engine calls the
 			// value callback when toggling the InlineEditConditionToggle. Leaving it here in case
 			// that's changed in later versions.
@@ -173,15 +176,13 @@ void UAGX_ContactMaterialAsset::PostLoad()
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, AdhesiveOverlap),
 		[](ThisClass* Asset) { Asset->GetInstance()->SetAdhesiveOverlap(Asset->AdhesiveOverlap); });
-#endif
 }
 
-#if WITH_EDITOR
 void UAGX_ContactMaterialAsset::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	// UAGX_ContactMaterialAsset is not a Component and will not be destroyed and recreated during
-	// RerunConstructionScript. It is therefore safe to call the base class implementation
-	// immediately, to make sure we don't forget it on some future return branch.
+	// UAGX_ContactMaterialAsset is not a Component and will not be destroyed and recreated
+	// during RerunConstructionScript. It is therefore safe to call the base class
+	// implementation immediately.
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
 	if (Instance == nullptr)
@@ -190,21 +191,7 @@ void UAGX_ContactMaterialAsset::PostEditChangeProperty(FPropertyChangedEvent& Pr
 		return;
 	}
 
-	// The root property that contains the property that was changed.
-	const FName Member = (PropertyChangedEvent.MemberProperty != NULL)
-							 ? PropertyChangedEvent.MemberProperty->GetFName()
-							 : NAME_None;
-
-	// The leaf property that was changed. May be nested in a struct.
-	const FName Property = (PropertyChangedEvent.Property != NULL)
-							   ? PropertyChangedEvent.Property->GetFName()
-							   : NAME_None;
-
-	if (FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Member, Property, this))
-	{
-		return;
-	}
-
-	// Any custom handling/updates not handled by the Property Dispatcher can be added here.
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
 }
+
 #endif
