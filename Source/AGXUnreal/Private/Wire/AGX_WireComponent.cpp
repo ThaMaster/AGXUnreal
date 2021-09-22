@@ -1335,7 +1335,7 @@ void UAGX_WireComponent::EndPlay(const EEndPlayReason::Type Reason)
 	}
 	else if (HasNative())
 	{
-		UAGX_Simulation::GetFrom(this)->RemoveWire(*this);
+		UAGX_Simulation::GetFrom(this)->Remove(*this);
 	}
 	NativeBarrier.ReleaseNative();
 }
@@ -1660,15 +1660,7 @@ void UAGX_WireComponent::CreateNative()
 
 	{
 		FAGXWireNotifyBuffer Messages;
-		const bool Added = UAGX_Simulation::GetFrom(this)->AddWire(*this);
-		if (!Added)
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("AGX Dynamics rejected Wire '%s' in '%s'. See the LogAGXDynamics log channel "
-					 "for details."),
-				*GetName(), *GetNameSafe(GetOwner()));
-		}
+		UAGX_Simulation::GetFrom(this)->Add(*this);
 		if (!IsInitialized())
 		{
 			const FString WireName = GetName();

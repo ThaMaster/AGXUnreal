@@ -974,7 +974,7 @@ void UAGX_ConstraintComponent::EndPlay(const EEndPlayReason::Type Reason)
 			UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 			if (Simulation != nullptr)
 			{
-				Simulation->RemoveConstraint(*this);
+				Simulation->Remove(*this);
 			}
 		}
 	}
@@ -1016,5 +1016,14 @@ void UAGX_ConstraintComponent::CreateNative()
 
 	UpdateNativeProperties();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	Simulation->GetNative()->Add(*NativeBarrier.Get());
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("%s tried to get Simulation, but UAGX_Simulation::GetFrom returned nullptr."),
+			*GetName());
+		return;
+	}
+
+	Simulation->Add(*this);
 }
