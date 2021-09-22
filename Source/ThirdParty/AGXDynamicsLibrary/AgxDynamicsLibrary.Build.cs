@@ -209,7 +209,10 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			RuntimeLibFiles.Add("msvcp140", LibSource.AGX);
 			RuntimeLibFiles.Add("vcruntime140", LibSource.AGX);
-            RuntimeLibFiles.Add("agx-assimp-vc*-mt", LibSource.AGX);
+			if (TargetAGXVersion.IsOlderThan(2, 30, 0, 0) == false)
+			{
+				RuntimeLibFiles.Add("agx-assimp-vc*-mt", LibSource.AGX);
+			}
 
 			RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
