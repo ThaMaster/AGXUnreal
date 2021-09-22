@@ -42,7 +42,7 @@ bool FSimulationBarrier::Add(FConstraintBarrier& Constraint)
 {
 	check(HasNative());
 	check(Constraint.HasNative());
-	NativeRef->Native->add(Constraint.GetNative()->Native);
+	return NativeRef->Native->add(Constraint.GetNative()->Native);
 }
 
 bool FSimulationBarrier::Add(FContactMaterialBarrier& ContactMaterial)
