@@ -10,12 +10,12 @@
 #include "AGX_CylinderShapeComponent.generated.h"
 
 /**
- * A Cylinder is used to give a Rigid Body a collision shape. Attach the Cylinder as a child to the
- * Rigid Body.
+ * A cylindrical collision shape. Can be used to give a Rigid Body a collision shape by
+ * attaching the Cylinder as a child to the Rigid Body.
  *
- * It is common that wires are routed around cylinders. To make such constructions more stable one
- * can mark the cylinder as being either a Pulley or a Gypsy. This simulates a groove along the
- * Cylinder's perimeter that the wire can't slide off of.
+ * It is common that wires are routed around cylinders. To make such constructions more stable
+ * one can mark the cylinder as being either a Pulley or a Gypsy. This simulates a groove along
+ * the Cylinder's perimeter that the wire can't slide off of.
  */
 UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_CylinderShapeComponent final : public UAGX_ShapeComponent
