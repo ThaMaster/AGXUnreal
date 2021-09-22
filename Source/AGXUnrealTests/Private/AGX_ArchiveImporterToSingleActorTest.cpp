@@ -1073,7 +1073,7 @@ bool FClearRenderMaterialImportedCommand::Update()
 	//
 	/// @todo The error is only printed sometimes, and not for the last three runs on GitLab.
 	/// Commenting it out for now. See GitLab issue #213.
-	// Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
 
 	// Files that are created by the test and thus safe to remove. The GUID values may make this
 	// test cumbersome to update since they will change every time the AGX Dynamics archive is
@@ -1094,6 +1094,125 @@ bool FClearRenderMaterialImportedCommand::Update()
 		TEXT("RenderMaterial_F41041270F6DCA5B49388F72978AFC64.uasset")};
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_materials_build"), ExpectedFiles);
+
+	return true;
+}
+
+//
+// Render Data test starts here.
+//
+
+class FArchiveImporterToSingleActor_RenderDataTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckRenderDataImportedCommand, FArchiveImporterToSingleActor_RenderDataTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearRenderDataImportedCommand, FArchiveImporterToSingleActor_RenderDataTest&, Test);
+
+class FArchiveImporterToSingleActor_RenderDataTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_RenderDataTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_RenderDataTest"),
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.RenderData"))
+	{
+	}
+
+public:
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("render_data_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckRenderDataImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearRenderDataImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_RenderDataTest ArchiveImporterToSingleActor_RenderDataTest;
+}
+
+bool FCheckRenderDataImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import RenderMaterial test scene: No content created."));
+		return true;
+	}
+
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+	// Root(1), Rigid Body(2), Shape(3), Static Mesh(4).
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
+
+	// Enable this to see the names of the components that was imported. Useful when adding new
+	// stuff to the archive.
+#if 1
+	UE_LOG(LogAGX, Warning, TEXT("Imported the following components:"));
+	for (const UActorComponent* Component : Components)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("  %s"), *Component->GetName());
+	}
+#endif
+
+	UAGX_SphereShapeComponent* Sphere =
+		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("Render Data Geometry"));
+	UStaticMeshComponent* Mesh = GetByName<UStaticMeshComponent>(
+		Components, TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764"));
+
+	Test.TestNotNull(TEXT("Sphere"), Sphere);
+	Test.TestNotNull(TEXT("Mesh"), Mesh);
+
+	if (IsAnyNullptr(Sphere, Mesh))
+	{
+		Test.AddError(TEXT("At least one required object was nullptr, cannot continue."));
+		return true;
+	}
+
+	Test.TestTrue(
+		TEXT("The mesh should be a child of the sphere"), Mesh->GetAttachParent() == Sphere);
+
+	return true;
+}
+
+bool FClearRenderDataImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+	// The error message that is printed when folders are deleted from under the editor.
+	//
+	/// @todo The error is only printed sometimes, and not for the last three runs on GitLab.
+	/// Commenting it out for now. See GitLab issue #213.
+	// Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+
+	// Files that are created by the test and thus safe to remove. The GUID values may make this
+	// test cumbersome to update since they will change every time the AGX Dynamics archive is
+	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
+	// names to the render materials in the source .agxPy file.
+	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("RenderMeshs"), TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764.uasset")};
+
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_data_build"), ExpectedFiles);
 
 	return true;
 }
@@ -1446,7 +1565,6 @@ bool FClearGeometrySensorsImportedCommand::Update()
 
 	return true;
 }
-
 
 #if AGX_TEST_WIRE_IMPORT
 //
