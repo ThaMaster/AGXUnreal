@@ -159,17 +159,6 @@ void UAGX_Simulation::Add(UAGX_ShapeComponent& Shape)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	UAGX_RigidBodyComponent* OwningBody =
-		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(Shape);
-	if (OwningBody != nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Shape '%s' is owned by RigidBody '%s'. It should not be directly added to the "
-				 "simulation."),
-			*Shape.GetName(), *OwningBody->GetName());
-		return;
-	}
 	AGX_Simulation_helpers::Add(*this, Shape);
 }
 
@@ -283,19 +272,6 @@ void UAGX_Simulation::Remove(UAGX_ShapeComponent& Shape)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-
-	UAGX_RigidBodyComponent* OwningBody =
-		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(Shape);
-	if (OwningBody != nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT(
-				"Shape '%s' is owned by RigidBody '%s'. It should not be directly removed from the "
-				"simulation."),
-			*Shape.GetName(), *OwningBody->GetName());
-		return;
-	}
 	AGX_Simulation_helpers::Remove(*this, Shape);
 }
 
