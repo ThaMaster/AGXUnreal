@@ -1335,7 +1335,10 @@ void UAGX_WireComponent::EndPlay(const EEndPlayReason::Type Reason)
 	}
 	else if (HasNative())
 	{
-		UAGX_Simulation::GetFrom(this)->Remove(*this);
+		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
+		{
+			Simulation->Remove(*this);
+		}
 	}
 	NativeBarrier.ReleaseNative();
 }
@@ -1660,7 +1663,18 @@ void UAGX_WireComponent::CreateNative()
 
 	{
 		FAGXWireNotifyBuffer Messages;
-		UAGX_Simulation::GetFrom(this)->Add(*this);
+		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+		if (Simulation == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("%s tried to get Simulation, but UAGX_Simulation::GetFrom returned nullptr."),
+				*GetName());
+			return;
+		}
+
+		Simulation->Add(*this);
+
 		if (!IsInitialized())
 		{
 			const FString WireName = GetName();
