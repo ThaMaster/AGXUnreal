@@ -1,12 +1,16 @@
 #include "Materials/AGX_MaterialManager.h"
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
+#include "AGX_Simulation.h"
+#include "Materials/AGX_ContactMaterialBase.h"
+#include "Materials/AGX_ContactMaterialInstance.h"
+
+// Unreal Engine includes.
 #include "Components/BillboardComponent.h"
 #include "Engine/Texture2D.h"
 #include "UObject/ConstructorHelpers.h"
 
-#include "Materials/AGX_ContactMaterialBase.h"
-#include "Materials/AGX_ContactMaterialInstance.h"
-#include "AGX_LogCategory.h"
 
 #define LOCTEXT_NAMESPACE "AAGX_MaterialManager"
 
@@ -70,6 +74,51 @@ void AAGX_MaterialManager::BeginPlay()
 
 		UAGX_ContactMaterialInstance* Instance =
 			UAGX_ContactMaterialBase::GetOrCreateInstance(GetWorld(), ContactMaterial);
+	}
+}
+
+void AAGX_MaterialManager::EndPlay(const EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+
+	for (UAGX_ContactMaterialBase*& ContactMaterial : ContactMaterials)
+	{
+		if (!ContactMaterial)
+		{
+			continue;
+		}
+
+		RemoveContactMaterial(ContactMaterial->GetInstance(), Reason);
+	}
+}
+
+void AAGX_MaterialManager::RemoveContactMaterial(
+	UAGX_ContactMaterialInstance* Instance, EEndPlayReason::Type Reason)
+{
+	if (Instance == nullptr)
+	{
+		return;
+	}
+
+	if (GIsReconstructingBlueprintInstances)
+	{
+		// Another UAGX_ContactMaterialInstance will inherit this one's Native, so don't wreck it.
+		// The call to ReleaseNative below is safe because the AGX Dynamics
+		// Simulation will retain a reference counted pointer to the AGX Dynamics object.
+	}
+	else if (
+		Instance->HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
+		Reason != EEndPlayReason::Quit)
+	{
+		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
+		{
+			Sim->Remove(*Instance);
+		}
+	}
+
+	if (Instance->HasNative())
+	{
+		Instance->GetNative()->ReleaseNative();
 	}
 }
 
