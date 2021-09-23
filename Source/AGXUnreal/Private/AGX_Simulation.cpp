@@ -118,6 +118,15 @@ void UAGX_Simulation::Add(UAGX_ContactMaterialInstance& Material)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
+
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Remove was called in a UAGX_Simulation that does not have a native."));
+		return;
+	}
+
 	if (!Material.HasNative())
 	{
 		UE_LOG(
