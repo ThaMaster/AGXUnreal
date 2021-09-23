@@ -309,6 +309,14 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	WritePropertiesToNative();
 	WriteTransformToNative();
 
+	for (UAGX_ShapeComponent* Shape : GetShapes())
+	{
+		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
+		/// \todo Should not crash on this. HeightField easy to get wrong.
+		check(NativeShape && NativeShape->HasNative());
+		NativeBarrier.AddShape(NativeShape);
+	}
+
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
 	{
