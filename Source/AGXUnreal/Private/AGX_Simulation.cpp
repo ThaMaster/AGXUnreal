@@ -174,6 +174,15 @@ void UAGX_Simulation::Add(UAGX_ShapeMaterialInstance& Shape)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
+
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Remove was called in a UAGX_Simulation that does not have a native."));
+		return;
+	}
+
 	if (!Shape.HasNative())
 	{
 		UE_LOG(
@@ -231,6 +240,15 @@ void UAGX_Simulation::Remove(UAGX_ContactMaterialInstance& Material)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
+
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Remove was called in a UAGX_Simulation that does not have a native."));
+		return;
+	}
+
 	if (!Material.HasNative())
 	{
 		UE_LOG(
@@ -281,6 +299,15 @@ void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
+
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Remove was called in a UAGX_Simulation that does not have a native."));
+		return;
+	}
+
 	if (!Shape.HasNative())
 	{
 		UE_LOG(

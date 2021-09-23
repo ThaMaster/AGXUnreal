@@ -970,7 +970,6 @@ void UAGX_ConstraintComponent::EndPlay(const EEndPlayReason::Type Reason)
 	{
 		if (HasNative())
 		{
-			/// @todo Remove the native AGX Dynamics Rigid Body from the Simulation.
 			UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 			if (Simulation != nullptr)
 			{
