@@ -40,7 +40,7 @@ FAGX_Statistics UAGX_Simulation::GetStatistics()
 	return NativeBarrier.GetStatistics();
 }
 
-namespace Add_Remove_Helpers
+namespace AGX_Simulation_helpers
 {
 	template <typename T>
 	void Add(UAGX_Simulation& Sim, T& ActorOrComponent)
@@ -113,7 +113,7 @@ void UAGX_Simulation::Add(UAGX_ConstraintComponent& Constraint)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	Add_Remove_Helpers::Add(*this, Constraint);
+	AGX_Simulation_helpers::Add(*this, Constraint);
 }
 
 void UAGX_Simulation::Add(UAGX_ContactMaterialInstance& Material)
@@ -152,7 +152,7 @@ void UAGX_Simulation::Add(UAGX_RigidBodyComponent& Body)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	Add_Remove_Helpers::Add(*this, Body);
+	AGX_Simulation_helpers::Add(*this, Body);
 }
 
 void UAGX_Simulation::Add(UAGX_ShapeComponent& Shape)
@@ -170,7 +170,7 @@ void UAGX_Simulation::Add(UAGX_ShapeComponent& Shape)
 			*Shape.GetName(), *OwningBody->GetName());
 		return;
 	}
-	Add_Remove_Helpers::Add(*this, Shape);
+	AGX_Simulation_helpers::Add(*this, Shape);
 }
 
 void UAGX_Simulation::Add(UAGX_ShapeMaterialInstance& Shape)
@@ -209,35 +209,35 @@ void UAGX_Simulation::Add(UAGX_StaticMeshComponent& Body)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	Add_Remove_Helpers::Add(*this, Body);
+	AGX_Simulation_helpers::Add(*this, Body);
 }
 
 void UAGX_Simulation::Add(AAGX_Terrain& Terrain)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	Add_Remove_Helpers::Add(*this, Terrain);
+	AGX_Simulation_helpers::Add(*this, Terrain);
 }
 
 void UAGX_Simulation::Add(UAGX_TireComponent& Tire)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	Add_Remove_Helpers::Add(*this, Tire);
+	AGX_Simulation_helpers::Add(*this, Tire);
 }
 
 void UAGX_Simulation::Add(UAGX_WireComponent& Wire)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	Add_Remove_Helpers::Add(*this, Wire);
+	AGX_Simulation_helpers::Add(*this, Wire);
 }
 
 void UAGX_Simulation::Remove(UAGX_ConstraintComponent& Constraint)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	Add_Remove_Helpers::Remove(*this, Constraint);
+	AGX_Simulation_helpers::Remove(*this, Constraint);
 }
 
 void UAGX_Simulation::Remove(UAGX_ContactMaterialInstance& Material)
@@ -276,7 +276,7 @@ void UAGX_Simulation::Remove(UAGX_RigidBodyComponent& Body)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	Add_Remove_Helpers::Remove(*this, Body);
+	AGX_Simulation_helpers::Remove(*this, Body);
 }
 
 void UAGX_Simulation::Remove(UAGX_ShapeComponent& Shape)
@@ -296,7 +296,7 @@ void UAGX_Simulation::Remove(UAGX_ShapeComponent& Shape)
 			*Shape.GetName(), *OwningBody->GetName());
 		return;
 	}
-	Add_Remove_Helpers::Remove(*this, Shape);
+	AGX_Simulation_helpers::Remove(*this, Shape);
 }
 
 void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
@@ -336,28 +336,28 @@ void UAGX_Simulation::Remove(UAGX_StaticMeshComponent& Body)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	Add_Remove_Helpers::Remove(*this, Body);
+	AGX_Simulation_helpers::Remove(*this, Body);
 }
 
 void UAGX_Simulation::Remove(AAGX_Terrain& Terrain)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	Add_Remove_Helpers::Remove(*this, Terrain);
+	AGX_Simulation_helpers::Remove(*this, Terrain);
 }
 
 void UAGX_Simulation::Remove(UAGX_TireComponent& Tire)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	Add_Remove_Helpers::Remove(*this, Tire);
+	AGX_Simulation_helpers::Remove(*this, Tire);
 }
 
 void UAGX_Simulation::Remove(UAGX_WireComponent& Wire)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	Add_Remove_Helpers::Remove(*this, Wire);
+	AGX_Simulation_helpers::Remove(*this, Wire);
 }
 
 void UAGX_Simulation::SetEnableCollisionGroupPair(
@@ -474,7 +474,7 @@ const FSimulationBarrier* UAGX_Simulation::GetNative() const
 	return &NativeBarrier;
 }
 
-namespace agx_simulation_helpers
+namespace AGX_Simulation_helpers
 {
 	void WriteInitialStateArchive(const FString& ExportPath, UAGX_Simulation& Simulation)
 	{
@@ -515,7 +515,7 @@ namespace agx_simulation_helpers
 
 void UAGX_Simulation::Step(float DeltaTime)
 {
-	using namespace agx_simulation_helpers;
+	using namespace AGX_Simulation_helpers;
 #if WITH_EDITORONLY_DATA
 	if (bExportInitialState)
 	{
