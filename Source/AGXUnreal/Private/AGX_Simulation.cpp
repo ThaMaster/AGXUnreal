@@ -57,7 +57,7 @@ namespace Add_Remove_Helpers
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Tried to add %s in %s that does not have a native, to the UAGX_Simulation."),
+				TEXT("Tried to add '%s' in '%s' that does not have a native to the UAGX_Simulation."),
 				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
 			return;
 		}
@@ -67,7 +67,7 @@ namespace Add_Remove_Helpers
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Failed to add %s in %s to the simulation. FSimulationBarrier::Add returned "
+				TEXT("Failed to add '%s' in '%s' to the simulation. FSimulationBarrier::Add returned "
 					 "false."),
 				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
 		}
@@ -88,7 +88,7 @@ namespace Add_Remove_Helpers
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Tried to remove %s in %s that does not have a native, from the "
+				TEXT("Tried to remove '%s' in '%s' that does not have a native from the "
 					 "UAGX_Simulation."),
 				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
 			return;
@@ -99,7 +99,7 @@ namespace Add_Remove_Helpers
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Failed to remove %s in %s to the simulation. FSimulationBarrier::Remove "
+				TEXT("Failed to remove '%s' in '%s' to the simulation. FSimulationBarrier::Remove "
 					 "returned "
 					 "false."),
 				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
