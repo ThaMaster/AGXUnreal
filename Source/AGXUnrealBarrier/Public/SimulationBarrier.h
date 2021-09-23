@@ -29,7 +29,12 @@ public:
 
 	bool Add(FConstraintBarrier& Constraint);
 	bool Add(FContactMaterialBarrier& ContactMaterial);
-	bool Add(FRigidBodyBarrier& Body, bool AddShapes = true);
+
+		/**
+	 * Note that Shapes that are child of the passed Rigid Body are NOT added to the simulation
+	 * when calling this function.
+	 */
+	bool Add(FRigidBodyBarrier& Body);
 	bool Add(FShapeBarrier& Shape);
 	bool Add(FShapeMaterialBarrier& Material);
 	bool Add(FTerrainBarrier& Terrain);
@@ -38,7 +43,12 @@ public:
 
 	bool Remove(FConstraintBarrier& Constraint);
 	bool Remove(FContactMaterialBarrier& ContactMaterial);
-	bool Remove(FRigidBodyBarrier& Body, bool RemoveShapes =  true);
+
+		/**
+	 * Note that Shapes that are child of the passed Rigid Body are NOT removed from the simulation
+	 * when calling this function.
+	 */
+	bool Remove(FRigidBodyBarrier& Body);
 	bool Remove(FShapeBarrier& Shape);
 	bool Remove(FShapeMaterialBarrier& Material);
 	bool Remove(FTerrainBarrier& Terrain);

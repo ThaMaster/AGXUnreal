@@ -205,19 +205,19 @@ void UAGX_ShapeComponent::BeginPlay()
 		// This shape doesn't have a parent body so the native shape's local transform will become
 		// its world transform. Push the entire Unreal world transform down into the native shape.
 		UpdateNativeGlobalTransform();
-
-		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-		if (Simulation == nullptr)
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("%s tried to get Simulation, but UAGX_Simulation::GetFrom returned nullptr."),
-				*GetName());
-			return;
-		}
-
-		Simulation->Add(*this);
 	}
+
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("%s tried to get Simulation, but UAGX_Simulation::GetFrom returned nullptr."),
+			*GetName());
+		return;
+	}
+
+	Simulation->Add(*this);
 	UpdateVisualMesh();
 }
 
@@ -227,12 +227,27 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 	if (GIsReconstructingBlueprintInstances)
 	{
 		// Another UAGX_ShapeComponent will inherit this one's Native, so don't wreck it.
+		// It's still safe to release the native since the Simulation will hold a reference if
+		// necessary.
 	}
-	else
+	else if (
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
 	{
-		/// @todo: If this Shape is not part of a Rigid Body then remove it from the Simulation.
+		RemoveFromSimulation();
 	}
 	ReleaseNative();
+}
+
+void UAGX_ShapeComponent::RemoveFromSimulation()
+{
+	// @todo Figure out how to handle removal of Shape Materials from the Simulation. They can be
+	// shared between many Shape Components, so some kind of reference counting might be needed.
+
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	if (Simulation != nullptr)
+	{
+		Simulation->Remove(*this);
+	}
 }
 
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)

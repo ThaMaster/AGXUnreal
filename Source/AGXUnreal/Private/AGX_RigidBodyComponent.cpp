@@ -262,11 +262,19 @@ void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// something will keep the Rigid Body instance alive? Should we do explicit incref/decref
 		// on the Rigid Body in GetNativeAddress / SetNativeAddress?
 	}
-	else
+	else if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor && 
+		Reason != EEndPlayReason::Quit)
 	{
-		/// @todo Remove the native AGX Dynamics Rigid Body from the Simulation.
+		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
+		{
+			Sim->Remove(*this);
+		}
 	}
-	NativeBarrier.ReleaseNative();
+
+	if (HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
 }
 
 namespace
@@ -300,14 +308,6 @@ void UAGX_RigidBodyComponent::InitializeNative()
 
 	WritePropertiesToNative();
 	WriteTransformToNative();
-
-	for (UAGX_ShapeComponent* Shape : GetShapes())
-	{
-		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
-		/// \todo Should not crash on this. HeightField easy to get wrong.
-		check(NativeShape && NativeShape->HasNative());
-		NativeBarrier.AddShape(NativeShape);
-	}
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
