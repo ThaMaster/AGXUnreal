@@ -473,11 +473,28 @@ void UAGX_ShapeComponent::OnUpdateTransform(
 	// This Shape's transform was updated and it was not because of a parent moving. This should be
 	// propagated to the native to keep the AGX Dynamics state in line with the Unreal state.
 	// This also covers cases where the Shape is e.g. detached from a parent and its transform
-	// is changed.
-	// @todo When detaching during runtime using a Blueprint and the DetachFromComponent function,
-	// the "keep world" case does not trigger this function with
-	// UpdateTransformFags != PropagateFromParent until the component is selected (highlighted)
-	// in the level. This should be worked around or fixed somehow.
+	// is changed, except for the corner-case where the detachment is done from a Blueprint using
+	// the DetachFromComponent function with Keep World settings, because that case will not trigger
+	// this function with EUpdateTransformFlags != PropagateFromParent since it is not actuallt
+	// moved. This corner-case is instead directly handled in
+	// UAGX_ShapeComponent::OnAttachmentChanged.
+	GetNative()->SetWorldPosition(GetComponentLocation());
+	GetNative()->SetWorldRotation(GetComponentQuat());
+}
+
+void UAGX_ShapeComponent::OnAttachmentChanged()
+{
+	if (!HasNative())
+	{
+		return;
+	}
+	// This is somewhat of a hack, but it works. This Shape's parent has changed, so this
+	// Unreal object might get a new world transform depending on how it was detached.  Ideally,
+	// this would be fully handled by UAGX_ShapeComponent::OnUpdateTransform, but that function is
+	// not triggered if the detachment was made using the Blueprint function DetachFromComponent
+	// with Keep World settings. Therefore we handle that here. Note that this will mean writing to
+	// the native twice when detaching in other ways. However, writing the world transform to
+	// the natives world transform is generally considered safe since they should always be in sync.
 	GetNative()->SetWorldPosition(GetComponentLocation());
 	GetNative()->SetWorldRotation(GetComponentQuat());
 }
