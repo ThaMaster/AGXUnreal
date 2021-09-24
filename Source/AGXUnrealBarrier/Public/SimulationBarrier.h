@@ -27,24 +27,23 @@ public:
 	FSimulationBarrier();
 	~FSimulationBarrier();
 
-	void AddRigidBody(FRigidBodyBarrier* Body);
-	void AddShape(FShapeBarrier* Shape);
+	bool Add(FConstraintBarrier& Constraint);
+	bool Add(FContactMaterialBarrier& ContactMaterial);
+	bool Add(FRigidBodyBarrier& Body, bool AddShapes = true);
+	bool Add(FShapeBarrier& Shape);
+	bool Add(FShapeMaterialBarrier& Material);
+	bool Add(FTerrainBarrier& Terrain);
+	bool Add(FTireBarrier& Tire);
+	bool Add(FWireBarrier& Wire);
 
-	void AddConstraint(FConstraintBarrier* Constraint);
-	bool RemoveConstraint(FConstraintBarrier& Constraint);
-
-	void AddShapeMaterial(FShapeMaterialBarrier* Material);
-	void RemoveShapeMaterial(FShapeMaterialBarrier* Material);
-
-	void AddContactMaterial(FContactMaterialBarrier* ContactMaterial);
-	void RemoveContactMaterial(FContactMaterialBarrier* ContactMaterial);
-
-	void AddTerrain(FTerrainBarrier* Terrain);
-
-	void AddTire(FTireBarrier* Tire);
-
-	bool AddWire(FWireBarrier& Wire);
-	void RemoveWire(FWireBarrier& Wire);
+	bool Remove(FConstraintBarrier& Constraint);
+	bool Remove(FContactMaterialBarrier& ContactMaterial);
+	bool Remove(FRigidBodyBarrier& Body, bool RemoveShapes =  true);
+	bool Remove(FShapeBarrier& Shape);
+	bool Remove(FShapeMaterialBarrier& Material);
+	bool Remove(FTerrainBarrier& Terrain);
+	bool Remove(FTireBarrier& Tire);
+	bool Remove(FWireBarrier& Wire);
 
 	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);
 

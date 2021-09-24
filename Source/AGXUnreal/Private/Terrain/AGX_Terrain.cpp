@@ -12,6 +12,7 @@
 #include "Terrain/AGX_LandscapeSizeInfo.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
 #include "Utilities/AGX_HeightFieldUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
 
 // AGXUnrealBarrier includes.
@@ -292,8 +293,18 @@ void AAGX_Terrain::CreateNativeTerrain()
 	// Note that the AGX Dynamics Terrain messes with the solver parameters on add, parameters that
 	// our user may have set explicitly. If so, re-set the user-provided settings.
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+				LogAGX, Error,
+				TEXT("Terrain '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				"returned nullptr."),
+				*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+
 	int32 NumIterations = Simulation->GetNumPpgsIterations();
-	Simulation->AddTerrain(this);
+	Simulation->Add(*this);
 	if (Simulation->bOverridePPGSIterations)
 	{
 		// We must check the override flag and not blindly re-set the value we read a few lines up

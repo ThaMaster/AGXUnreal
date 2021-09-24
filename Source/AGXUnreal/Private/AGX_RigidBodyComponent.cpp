@@ -310,7 +310,17 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	}
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	Simulation->AddRigidBody(this);
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Rigid Body '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				 "returned nullptr."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+
+	Simulation->Add(*this);
 
 	if (bAutoGenerateMass)
 	{

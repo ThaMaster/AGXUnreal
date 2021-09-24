@@ -970,11 +970,10 @@ void UAGX_ConstraintComponent::EndPlay(const EEndPlayReason::Type Reason)
 	{
 		if (HasNative())
 		{
-			/// @todo Remove the native AGX Dynamics Rigid Body from the Simulation.
 			UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 			if (Simulation != nullptr)
 			{
-				Simulation->RemoveConstraint(*this);
+				Simulation->Remove(*this);
 			}
 		}
 	}
@@ -1016,5 +1015,15 @@ void UAGX_ConstraintComponent::CreateNative()
 
 	UpdateNativeProperties();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	Simulation->GetNative()->AddConstraint(NativeBarrier.Get());
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+				LogAGX, Error,
+				TEXT("Constraint '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				"returned nullptr."),
+				*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+
+	Simulation->Add(*this);
 }

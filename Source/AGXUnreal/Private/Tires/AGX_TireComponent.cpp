@@ -3,6 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 UAGX_TireComponent::UAGX_TireComponent()
 {
@@ -72,5 +73,14 @@ void UAGX_TireComponent::CreateNative()
 
 	UpdateNativeProperties();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	Simulation->GetNative()->AddTire(NativeBarrier.Get());
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+				LogAGX, Error,
+				TEXT("Tire '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				"returned nullptr."),
+				*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+	Simulation->Add(*this);
 }

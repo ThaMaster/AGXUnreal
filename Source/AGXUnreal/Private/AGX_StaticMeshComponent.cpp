@@ -471,7 +471,17 @@ void UAGX_StaticMeshComponent::AllocateNative()
 
 	WriteTransformToNative();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	Simulation->AddRigidBody(this);
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Static Mesh '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				 "returned nullptr."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+
+	Simulation->Add(*this);
 }
 
 namespace AGX_StaticMeshComponent_helpers

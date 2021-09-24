@@ -6,9 +6,12 @@
 #include "AGX_Stepper.h"
 #include "AGX_LogCategory.h"
 #include "Constraints/AGX_ConstraintComponent.h"
+#include "Materials/AGX_ContactMaterialInstance.h"
+#include "Materials/AGX_ShapeMaterialInstance.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/ShapeBarrier.h"
 #include "Terrain/AGX_Terrain.h"
+#include "Tires/AGX_TireComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_EnvironmentUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -37,102 +40,330 @@ FAGX_Statistics UAGX_Simulation::GetStatistics()
 	return NativeBarrier.GetStatistics();
 }
 
-void UAGX_Simulation::AddRigidBody(UAGX_RigidBodyComponent* Body)
+namespace AGX_Simulation_helpers
 {
-	check(Body != nullptr);
-	EnsureLicenseChecked();
-	EnsureStepperCreated();
-	NativeBarrier.AddRigidBody(Body->GetNative());
+	template <typename T>
+	void Add(UAGX_Simulation& Sim, T& ActorOrComponent)
+	{
+		if (!Sim.HasNative())
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Tried to add '%s' in '%s' to Simulation that does not have a native."),
+				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
+			return;
+		}
+
+		if (!ActorOrComponent.HasNative())
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Tried to add '%s' in '%s' that does not have a native to Simulation."),
+				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
+			return;
+		}
+
+		const bool Result = Sim.GetNative()->Add(*ActorOrComponent.GetNative());
+		if (!Result)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Failed to add '%s' in '%s' to Simulation. FSimulationBarrier::Add returned "
+					 "false. The Log category AGXDynamicsLog may contain more information about "
+					 "the failure."),
+				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
+		}
+	}
+
+	template <typename T>
+	void Remove(UAGX_Simulation& Sim, T& ActorOrComponent)
+	{
+		if (!Sim.HasNative())
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Tried to remove '%s' in '%s' from Simulation that does not have a native."),
+				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
+			return;
+		}
+
+		if (!ActorOrComponent.HasNative())
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Tried to remove '%s' in '%s' that does not have a native from Simulation "),
+				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
+			return;
+		}
+
+		const bool Result = Sim.GetNative()->Remove(*ActorOrComponent.GetNative());
+		if (!Result)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Failed to remove '%s' in '%s' from Simulation. FSimulationBarrier::Remove "
+					 "returned false. The Log category AGXDynamicsLog may contain more information "
+					 "about the failure."),
+				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
+		}
+	}
 }
 
-void UAGX_Simulation::AddRigidBody(UAGX_StaticMeshComponent* Body)
+void UAGX_Simulation::Add(UAGX_ConstraintComponent& Constraint)
 {
-	check(Body != nullptr);
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	NativeBarrier.AddRigidBody(Body->GetNative());
+	AGX_Simulation_helpers::Add(*this, Constraint);
 }
 
-void UAGX_Simulation::AddShape(UAGX_ShapeComponent* Shape)
+void UAGX_Simulation::Add(UAGX_ContactMaterialInstance& Material)
 {
-	check(Shape != nullptr);
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+
+	if (!HasNative())
+	{
+		UE_LOG(
+				LogAGX, Error,
+				TEXT("Tried to add Contact Material '%s' to Simulation that does not have a native."),
+				*Material.GetName());
+		return;
+	}
+
+	if (!Material.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to add Contact Material '%s' to Simulation but the Contact Material does "
+			"not have a native."), *Material.GetName());
+		return;
+	}
+
+	if (!GetNative()->Add(*Material.GetNative()))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to add Contact Material '%s' to Simulation but FSimulationBarrier::Add "
+				 "returned false. The Log category AGXDynamicsLog may contain more information "
+				 "about the failure."));
+	}
+}
+
+void UAGX_Simulation::Add(UAGX_RigidBodyComponent& Body)
+{
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+	AGX_Simulation_helpers::Add(*this, Body);
+}
+
+void UAGX_Simulation::Add(UAGX_ShapeComponent& Shape)
+{
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	UAGX_RigidBodyComponent* OwningBody =
-		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*Shape);
+		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(Shape);
 	if (OwningBody != nullptr)
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Shape '%s' is owned by RigidBody '%s'. It should not be directly added to the "
 				 "simulation."),
-			*Shape->GetName(), *OwningBody->GetName());
+			*Shape.GetName(), *OwningBody->GetName());
 		return;
 	}
-	NativeBarrier.AddShape(Shape->GetNative());
+	AGX_Simulation_helpers::Add(*this, Shape);
 }
 
-bool UAGX_Simulation::AddConstraint(UAGX_ConstraintComponent& Constraint)
+void UAGX_Simulation::Add(UAGX_ShapeMaterialInstance& Shape)
 {
-	if (!Constraint.HasNative())
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+
+	if (!HasNative())
+	{
+		UE_LOG(
+				LogAGX, Error,
+				TEXT("Tried to add Shape Material '%s' to Simulation that does not have a native."),
+				*Shape.GetName());
+		return;
+	}
+
+	if (!Shape.HasNative())
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Cannot add constraint '%s' without a native AGX Dynamics representation to the "
-				 "AGX Dynamics simulation."),
-			*Constraint.GetName())
-		return false;
+			TEXT("Tried to add Shape Material '%s' to Simulation but the Shape Material does not have a native."),
+			*Shape.GetName());
+		return;
 	}
-	EnsureLicenseChecked();
-	EnsureStepperCreated();
-	NativeBarrier.AddConstraint(Constraint.GetNative()); /// @todo Check return value.
-	return true;
-}
 
-bool UAGX_Simulation::RemoveConstraint(UAGX_ConstraintComponent& Constraint)
-{
-	if (!Constraint.HasNative())
+	if (!GetNative()->Add(*Shape.GetNative()))
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Cannot remove constraint '%s' without a native AGX Dynamics representation from "
-				 "the AX Dynamics simulation."),
-			*Constraint.GetName());
-		return false;
+			TEXT("Tried to add Shape Material '%s' to Simulation but FSimulationBarrier::Add "
+				 "returned false. The Log category AGXDynamicsLog may contain more information "
+				 "about the failure."));
 	}
+}
+
+void UAGX_Simulation::Add(UAGX_StaticMeshComponent& Body)
+{
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	bool Success = NativeBarrier.RemoveConstraint(*Constraint.GetNative());
-	if (!Success)
+	AGX_Simulation_helpers::Add(*this, Body);
+}
+
+void UAGX_Simulation::Add(AAGX_Terrain& Terrain)
+{
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+	AGX_Simulation_helpers::Add(*this, Terrain);
+}
+
+void UAGX_Simulation::Add(UAGX_TireComponent& Tire)
+{
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+	AGX_Simulation_helpers::Add(*this, Tire);
+}
+
+void UAGX_Simulation::Add(UAGX_WireComponent& Wire)
+{
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+	AGX_Simulation_helpers::Add(*this, Wire);
+}
+
+void UAGX_Simulation::Remove(UAGX_ConstraintComponent& Constraint)
+{
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+	AGX_Simulation_helpers::Remove(*this, Constraint);
+}
+
+void UAGX_Simulation::Remove(UAGX_ContactMaterialInstance& Material)
+{
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+
+	if (!HasNative())
+	{
+		UE_LOG(
+				LogAGX, Error,
+				TEXT("Tried to remove Contact Material '%s' from Simulation that does not have a native."),
+				*Material.GetName());
+		return;
+	}
+
+	if (!Material.HasNative())
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("AGX Dynamics could not remove constraint '%s' from the simulation."),
-			*Constraint.GetName());
+			TEXT("Tried to remove Contact Material '%s' from Simulation but the Contact Material does not "
+				 "have a native."),
+			*Material.GetName());
+		return;
 	}
-	return Success;
+
+	if (!GetNative()->Remove(*Material.GetNative()))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to remove Contact Material '%s' from Simulation but FSimulationBarrier::Remove "
+				 "returned false. The Log category AGXDynamicsLog may contain more information "
+				 "about the failure."),
+			*Material.GetName());
+	}
 }
 
-void UAGX_Simulation::AddTerrain(AAGX_Terrain* Terrain)
+void UAGX_Simulation::Remove(UAGX_RigidBodyComponent& Body)
 {
-	check(Terrain != nullptr);
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	NativeBarrier.AddTerrain(Terrain->GetNative());
+	AGX_Simulation_helpers::Remove(*this, Body);
 }
 
-bool UAGX_Simulation::AddWire(UAGX_WireComponent& Wire)
+void UAGX_Simulation::Remove(UAGX_ShapeComponent& Shape)
 {
 	EnsureLicenseChecked();
 	EnsureStepperCreated();
-	check(Wire.HasNative());
-	return NativeBarrier.AddWire(*Wire.GetNative());
+
+	UAGX_RigidBodyComponent* OwningBody =
+		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(Shape);
+	if (OwningBody != nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT(
+				"Shape '%s' is owned by RigidBody '%s'. It should not be directly removed from the "
+				"simulation."),
+			*Shape.GetName(), *OwningBody->GetName());
+		return;
+	}
+	AGX_Simulation_helpers::Remove(*this, Shape);
 }
 
-void UAGX_Simulation::RemoveWire(UAGX_WireComponent& Wire)
+void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
 {
-	check(Wire.HasNative());
-	NativeBarrier.RemoveWire(*Wire.GetNative());
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+
+	if (!HasNative())
+	{
+		UE_LOG(
+				LogAGX, Error,
+				TEXT("Tried to remove Shape Material '%s' from a Simulation that does not have a native."),
+				*Shape.GetName());
+		return;
+	}
+
+	if (!Shape.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to remove Shape Material '%s' from Simulation but the Shape Material does not "
+				 "have a native."),
+			*Shape.GetName());
+		return;
+	}
+
+	if (!GetNative()->Remove(*Shape.GetNative()))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to remove Shape Material '%s' from Simulation but FSimulationBarrier::Remove "
+				 "returned false. The Log category AGXDynamicsLog may contain more information "
+				 "about the failure."));
+	}
+}
+
+void UAGX_Simulation::Remove(UAGX_StaticMeshComponent& Body)
+{
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+	AGX_Simulation_helpers::Remove(*this, Body);
+}
+
+void UAGX_Simulation::Remove(AAGX_Terrain& Terrain)
+{
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+	AGX_Simulation_helpers::Remove(*this, Terrain);
+}
+
+void UAGX_Simulation::Remove(UAGX_TireComponent& Tire)
+{
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+	AGX_Simulation_helpers::Remove(*this, Tire);
+}
+
+void UAGX_Simulation::Remove(UAGX_WireComponent& Wire)
+{
+	EnsureLicenseChecked();
+	EnsureStepperCreated();
+	AGX_Simulation_helpers::Remove(*this, Wire);
 }
 
 void UAGX_Simulation::SetEnableCollisionGroupPair(
@@ -249,7 +480,7 @@ const FSimulationBarrier* UAGX_Simulation::GetNative() const
 	return &NativeBarrier;
 }
 
-namespace agx_simulation_helpers
+namespace AGX_Simulation_helpers
 {
 	void WriteInitialStateArchive(const FString& ExportPath, UAGX_Simulation& Simulation)
 	{
@@ -290,7 +521,7 @@ namespace agx_simulation_helpers
 
 void UAGX_Simulation::Step(float DeltaTime)
 {
-	using namespace agx_simulation_helpers;
+	using namespace AGX_Simulation_helpers;
 #if WITH_EDITORONLY_DATA
 	if (bExportInitialState)
 	{
