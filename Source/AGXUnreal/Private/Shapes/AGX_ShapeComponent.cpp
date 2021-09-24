@@ -474,6 +474,10 @@ void UAGX_ShapeComponent::OnUpdateTransform(
 	// propagated to the native to keep the AGX Dynamics state in line with the Unreal state.
 	// This also covers cases where the Shape is e.g. detached from a parent and its transform
 	// is changed.
+	// @todo When detaching during runtime using a Blueprint and the DetachFromComponent function,
+	// the "keep world" case does not trigger this function with
+	// UpdateTransformFags != PropagateFromParent until the component is selected (highlighted)
+	// in the level. This should be worked around or fixed somehow.
 	GetNative()->SetWorldPosition(GetComponentLocation());
 	GetNative()->SetWorldRotation(GetComponentQuat());
 }
