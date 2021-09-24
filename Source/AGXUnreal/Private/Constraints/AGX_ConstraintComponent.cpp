@@ -1015,9 +1015,10 @@ void UAGX_ConstraintComponent::CreateNative()
 	if (Simulation == nullptr)
 	{
 		UE_LOG(
-			LogAGX, Error,
-			TEXT("%s tried to get Simulation, but UAGX_Simulation::GetFrom returned nullptr."),
-			*GetName());
+				LogAGX, Error,
+				TEXT("Constraint '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				"returned nullptr."),
+				*GetName(), *GetLabelSafe(GetOwner()));
 		return;
 	}
 

@@ -475,8 +475,9 @@ void UAGX_StaticMeshComponent::AllocateNative()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("%s tried to get Simulation, but UAGX_Simulation::GetFrom returned nullptr."),
-			*GetName());
+			TEXT("Static Mesh '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				 "returned nullptr."),
+			*GetName(), *GetLabelSafe(GetOwner()));
 		return;
 	}
 

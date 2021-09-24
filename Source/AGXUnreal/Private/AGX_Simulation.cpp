@@ -49,7 +49,8 @@ namespace AGX_Simulation_helpers
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Add was called in a UAGX_Simulation that does not have a native."));
+				TEXT("Tried to add '%s' in '%s' to Simulation that does not have a native."),
+				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
 			return;
 		}
 
@@ -57,8 +58,7 @@ namespace AGX_Simulation_helpers
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Tried to add '%s' in '%s' that does not have a native to the "
-					 "UAGX_Simulation."),
+				TEXT("Tried to add '%s' in '%s' that does not have a native to Simulation."),
 				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
 			return;
 		}
@@ -68,7 +68,7 @@ namespace AGX_Simulation_helpers
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Failed to add '%s' in '%s' to the simulation. FSimulationBarrier::Add returned "
+				TEXT("Failed to add '%s' in '%s' to Simulation. FSimulationBarrier::Add returned "
 					 "false. The Log category AGXDynamicsLog may contain more information about "
 					 "the failure."),
 				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
@@ -82,7 +82,8 @@ namespace AGX_Simulation_helpers
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Remove was called in a UAGX_Simulation that does not have a native."));
+				TEXT("Tried to remove '%s' in '%s' from Simulation that does not have a native."),
+				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
 			return;
 		}
 
@@ -90,8 +91,7 @@ namespace AGX_Simulation_helpers
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Tried to remove '%s' in '%s' that does not have a native from the "
-					 "UAGX_Simulation."),
+				TEXT("Tried to remove '%s' in '%s' that does not have a native from Simulation "),
 				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
 			return;
 		}
@@ -101,7 +101,7 @@ namespace AGX_Simulation_helpers
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Failed to remove '%s' in '%s' to the simulation. FSimulationBarrier::Remove "
+				TEXT("Failed to remove '%s' in '%s' from Simulation. FSimulationBarrier::Remove "
 					 "returned false. The Log category AGXDynamicsLog may contain more information "
 					 "about the failure."),
 				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
@@ -124,8 +124,9 @@ void UAGX_Simulation::Add(UAGX_ContactMaterialInstance& Material)
 	if (!HasNative())
 	{
 		UE_LOG(
-			LogAGX, Error,
-			TEXT("Remove was called in a UAGX_Simulation that does not have a native."));
+				LogAGX, Error,
+				TEXT("Tried to add Contact Material '%s' to Simulation that does not have a native."),
+				*Material.GetName());
 		return;
 	}
 
@@ -133,8 +134,8 @@ void UAGX_Simulation::Add(UAGX_ContactMaterialInstance& Material)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tried to add Contact Material '%s' to simulation but it does not have a native."),
-			*Material.GetName());
+			TEXT("Tried to add Contact Material '%s' to Simulation but the Contact Material does "
+			"not have a native."), *Material.GetName());
 		return;
 	}
 
@@ -142,7 +143,7 @@ void UAGX_Simulation::Add(UAGX_ContactMaterialInstance& Material)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tried to add Contact Material '%s' to simulation but FSimulationBarrier::Add "
+			TEXT("Tried to add Contact Material '%s' to Simulation but FSimulationBarrier::Add "
 				 "returned false. The Log category AGXDynamicsLog may contain more information "
 				 "about the failure."));
 	}
@@ -170,8 +171,9 @@ void UAGX_Simulation::Add(UAGX_ShapeMaterialInstance& Shape)
 	if (!HasNative())
 	{
 		UE_LOG(
-			LogAGX, Error,
-			TEXT("Remove was called in a UAGX_Simulation that does not have a native."));
+				LogAGX, Error,
+				TEXT("Tried to add Shape Material '%s' to Simulation that does not have a native."),
+				*Shape.GetName());
 		return;
 	}
 
@@ -179,7 +181,7 @@ void UAGX_Simulation::Add(UAGX_ShapeMaterialInstance& Shape)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tried to add Shape Material '%s' to simulation but it does not have a native."),
+			TEXT("Tried to add Shape Material '%s' to Simulation but the Shape Material does not have a native."),
 			*Shape.GetName());
 		return;
 	}
@@ -188,7 +190,7 @@ void UAGX_Simulation::Add(UAGX_ShapeMaterialInstance& Shape)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tried to add Shape Material '%s' to simulation but FSimulationBarrier::Add "
+			TEXT("Tried to add Shape Material '%s' to Simulation but FSimulationBarrier::Add "
 				 "returned false. The Log category AGXDynamicsLog may contain more information "
 				 "about the failure."));
 	}
@@ -237,8 +239,9 @@ void UAGX_Simulation::Remove(UAGX_ContactMaterialInstance& Material)
 	if (!HasNative())
 	{
 		UE_LOG(
-			LogAGX, Error,
-			TEXT("Remove was called in a UAGX_Simulation that does not have a native."));
+				LogAGX, Error,
+				TEXT("Tried to remove Contact Material '%s' from Simulation that does not have a native."),
+				*Material.GetName());
 		return;
 	}
 
@@ -246,7 +249,8 @@ void UAGX_Simulation::Remove(UAGX_ContactMaterialInstance& Material)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tried to remove Contact Material '%s' from simulation but it does not have a native."),
+			TEXT("Tried to remove Contact Material '%s' from Simulation but the Contact Material does not "
+				 "have a native."),
 			*Material.GetName());
 		return;
 	}
@@ -255,9 +259,10 @@ void UAGX_Simulation::Remove(UAGX_ContactMaterialInstance& Material)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tried to remove Contact Material '%s' from simulation but FSimulationBarrier::Remove"
-				 "returned false. The Log category AGXDynamicsLog may contain more information about "
-				 "the failure."));
+			TEXT("Tried to remove Contact Material '%s' from Simulation but FSimulationBarrier::Remove "
+				 "returned false. The Log category AGXDynamicsLog may contain more information "
+				 "about the failure."),
+			*Material.GetName());
 	}
 }
 
@@ -283,8 +288,9 @@ void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
 	if (!HasNative())
 	{
 		UE_LOG(
-			LogAGX, Error,
-			TEXT("Remove was called in a UAGX_Simulation that does not have a native."));
+				LogAGX, Error,
+				TEXT("Tried to remove Shape Material '%s' from a Simulation that does not have a native."),
+				*Shape.GetName());
 		return;
 	}
 
@@ -292,8 +298,8 @@ void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tried to remove Shape Material '%s' from simulation but it does not have a "
-				 "native."),
+			TEXT("Tried to remove Shape Material '%s' from Simulation but the Shape Material does not "
+				 "have a native."),
 			*Shape.GetName());
 		return;
 	}
@@ -302,9 +308,9 @@ void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tried to remove Shape Material '%s' from simulation but FSimulationBarrier::Remove "
-				 "returned false. The Log category AGXDynamicsLog may contain more information about the "
-				 "failure."));
+			TEXT("Tried to remove Shape Material '%s' from Simulation but FSimulationBarrier::Remove "
+				 "returned false. The Log category AGXDynamicsLog may contain more information "
+				 "about the failure."));
 	}
 }
 

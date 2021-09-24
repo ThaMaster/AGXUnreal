@@ -207,14 +207,18 @@ void UAGX_ShapeComponent::BeginPlay()
 		UpdateNativeGlobalTransform();
 	}
 
-	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	if (Simulation == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("%s tried to get Simulation, but UAGX_Simulation::GetFrom returned nullptr."),
-			*GetName());
-		return;
+		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+		if (Simulation == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Shape '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				"returned nullptr."),
+				*GetName(), *GetLabelSafe(GetOwner()));
+			return;
+		}
+
+		Simulation->Add(*this);
 	}
 
 	Simulation->Add(*this);
