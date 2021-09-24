@@ -243,8 +243,7 @@ void UAGX_ShapeComponent::RemoveFromSimulation()
 	// @todo Figure out how to handle removal of Shape Materials from the Simulation. They can be
 	// shared between many Shape Components, so some kind of reference counting might be needed.
 
-	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	if (Simulation != nullptr)
+	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 	{
 		Simulation->Remove(*this);
 	}
