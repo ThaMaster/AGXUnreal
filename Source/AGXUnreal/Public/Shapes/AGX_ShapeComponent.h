@@ -144,7 +144,7 @@ public:
 	//~ End UActorComponent Interface
 
 	//~ Begin USceneComponent Interface
-	virtual void DetachFromComponent(const FDetachmentTransformRules& DetachmentRules) override;
+	virtual void OnUpdateTransform(EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport) override;
 	//~ End USceneComponent Interface
 
 	/**

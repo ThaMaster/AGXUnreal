@@ -456,15 +456,24 @@ void UAGX_ShapeComponent::RemoveSensorMaterial(UMeshComponent& Mesh)
 	}
 }
 
-void UAGX_ShapeComponent::DetachFromComponent(const FDetachmentTransformRules& DetachmentRules)
+void UAGX_ShapeComponent::OnUpdateTransform(
+	EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
 {
-	Super::DetachFromComponent(DetachmentRules);
-	// This Shape has been detached from its parent. Depending on the FDetachmentTransformRules,
-	// this Shape's native might need an update of its position to match the Shape Component seen
-	// in Unreal engine.
+	Super::OnUpdateTransform(UpdateTransformFlags, Teleport);
+	if (UpdateTransformFlags == EUpdateTransformFlags::PropagateFromParent)
+	{
+		return;
+	}
 
-	UAGX_RigidBodyComponent* OwningBody =
-		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*this);
+	if (!HasNative())
+	{
+		return;
+	}
 
-	// TODO: impl
+	// This Shape's transform was updated and it was not because of a parent moving. This should be
+	// propagated to the native to keep the AGX Dynamics state in line with the Unreal state.
+	// This also covers cases where the Shape is e.g. detached from a parent and its transform
+	// is changed.
+	GetNative()->SetWorldPosition(GetComponentLocation());
+	GetNative()->SetWorldRotation(GetComponentQuat());
 }
