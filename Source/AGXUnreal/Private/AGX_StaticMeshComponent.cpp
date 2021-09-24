@@ -144,16 +144,26 @@ void UAGX_StaticMeshComponent::BeginPlay()
 void UAGX_StaticMeshComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
-	if (HasNative() && !GIsReconstructingBlueprintInstances)
+
+	if (GIsReconstructingBlueprintInstances)
 	{
-		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-		if (Simulation != nullptr)
+		// Another Static Mesh will inherit this one's Native, so don't wreck it.
+		// It's still safe to release the native since the Simulation will hold a reference if
+		// necessary.
+	}
+	else if (
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+	{
+		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 		{
-			/// @todo Add UAGX_Simulation::RemoveRigidBody;
-			// Simulation->RemoveRigidBody();
+			Simulation->Remove(*this);
 		}
 	}
-	GetNative()->ReleaseNative();
+
+	if (HasNative())
+	{
+		GetNative()->ReleaseNative();
+	}
 }
 
 void UAGX_StaticMeshComponent::TickComponent(
