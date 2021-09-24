@@ -72,6 +72,11 @@ void UAGX_RigidBodyComponent::OnChildDetached(USceneComponent* Child)
 {
 	Super::OnChildDetached(Child);
 
+	if (!HasNative())
+	{
+		return;
+	}
+
 	// @todo This does not get triggered if a child deeper down in the hierarchy is detached.
 	// This means that Shapes detached from this Rigid Body that are not direct children will not
 	// be removed from the Rigid Body.
@@ -81,10 +86,9 @@ void UAGX_RigidBodyComponent::OnChildDetached(USceneComponent* Child)
 	// it cannot (easily) know which Rigid Body that was.
 	if (UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Child))
 	{
-		if (HasNative() && Shape->HasNative())
+		if (Shape->HasNative())
 		{
 			NativeBarrier.RemoveShape(Shape->GetNative());
-			//Shape->GetNative()->SetLocalPosition(Shape->GetComponentLocation());
 		}
 	}
 }
@@ -93,11 +97,16 @@ void UAGX_RigidBodyComponent::OnChildAttached(USceneComponent* Child)
 {
 	Super::OnChildAttached(Child);
 
+	if (!HasNative())
+	{
+		return;
+	}
+
 	// @todo This does not get triggered if a child deeper down in the hierarchy is attached.
 	// See comment in UAGX_RigidBodyComponent::OnChildDetached.
 	if (UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Child))
 	{
-		if (HasNative() && Shape->HasNative())
+		if (Shape->HasNative())
 		{
 			NativeBarrier.AddShape(Shape->GetNative());
 		}
