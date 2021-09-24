@@ -35,7 +35,10 @@ public:
 protected:
 	TUniquePtr<FTireBarrier> NativeBarrier;
 
+	// ~Begin UActorComponent interface.
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+	// ~End UActorComponent interface.
 
 	virtual void AllocateNative() PURE_VIRTUAL(UAGX_TireComponent::CreateNativeImpl, );
 
