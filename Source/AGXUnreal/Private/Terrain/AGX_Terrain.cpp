@@ -12,6 +12,7 @@
 #include "Terrain/AGX_LandscapeSizeInfo.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
 #include "Utilities/AGX_HeightFieldUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
 
 // AGXUnrealBarrier includes.
@@ -295,9 +296,10 @@ void AAGX_Terrain::CreateNativeTerrain()
 	if (Simulation == nullptr)
 	{
 		UE_LOG(
-			LogAGX, Error,
-			TEXT("%s tried to get Simulation, but UAGX_Simulation::GetFrom returned nullptr."),
-			*GetName());
+				LogAGX, Error,
+				TEXT("Terrain '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				"returned nullptr."),
+				*GetName(), *GetLabelSafe(GetOwner()));
 		return;
 	}
 

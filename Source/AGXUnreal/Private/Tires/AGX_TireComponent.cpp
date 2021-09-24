@@ -3,6 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 UAGX_TireComponent::UAGX_TireComponent()
 {
@@ -75,9 +76,10 @@ void UAGX_TireComponent::CreateNative()
 	if (Simulation == nullptr)
 	{
 		UE_LOG(
-			LogAGX, Error,
-			TEXT("%s tried to get Simulation, but UAGX_Simulation::GetFrom returned nullptr."),
-			*GetName());
+				LogAGX, Error,
+				TEXT("Tire '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				"returned nullptr."),
+				*GetName(), *GetLabelSafe(GetOwner()));
 		return;
 	}
 	Simulation->Add(*this);

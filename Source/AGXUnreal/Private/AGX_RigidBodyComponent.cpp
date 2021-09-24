@@ -314,8 +314,9 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("%s tried to get Simulation, but UAGX_Simulation::GetFrom returned nullptr."),
-			*GetName());
+			TEXT("Rigid Body '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				 "returned nullptr."),
+			*GetName(), *GetLabelSafe(GetOwner()));
 		return;
 	}
 

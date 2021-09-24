@@ -385,7 +385,8 @@ void UAGX_ShapeMaterialInstance::CreateNative(UWorld* PlayingWorld)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("%s tried to get Simulation, but UAGX_Simulation::GetFrom returned nullptr."),
+			TEXT("Shape Material '%s' tried to get Simulation, but UAGX_Simulation::GetFrom returned "
+			"nullptr."),
 			*GetName());
 		return;
 	}

@@ -211,8 +211,9 @@ void UAGX_ShapeComponent::BeginPlay()
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("%s tried to get Simulation, but UAGX_Simulation::GetFrom returned nullptr."),
-				*GetName());
+				TEXT("Shape '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				"returned nullptr."),
+				*GetName(), *GetLabelSafe(GetOwner()));
 			return;
 		}
 

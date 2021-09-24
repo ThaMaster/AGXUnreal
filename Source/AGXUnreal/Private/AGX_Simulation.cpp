@@ -83,7 +83,7 @@ namespace AGX_Simulation_helpers
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Tried to remove '%s' in '%s' from Simulation that does not have a native."),
-				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner());
+				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
 			return;
 		}
 
