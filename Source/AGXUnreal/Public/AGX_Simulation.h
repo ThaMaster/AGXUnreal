@@ -206,7 +206,7 @@ public: // Member functions.
 	void Add(UAGX_ContactMaterialInstance& Material);
 
 	/**
-	 * Note that Shapes that are child of the passed Rigid Body are NOT added to the simulation 
+	 * Note that Shapes that are child of the passed Rigid Body are NOT added to the simulation
 	 * when calling this function.
 	 */
 	void Add(UAGX_RigidBodyComponent& Body);
@@ -219,14 +219,8 @@ public: // Member functions.
 
 	void Remove(UAGX_ConstraintComponent& Constraint);
 	void Remove(UAGX_ContactMaterialInstance& Material);
-
-	/**
-	 * Note that Shapes that are child of the passed Rigid Body are NOT removed from the simulation
-	 * when calling this function.
-	 */
 	void Remove(UAGX_RigidBodyComponent& Body);
 	void Remove(UAGX_ShapeComponent& Shape);
-
 	void Remove(UAGX_ShapeMaterialInstance& Shape);
 	void Remove(UAGX_StaticMeshComponent& Body);
 	void Remove(AAGX_Terrain& Terrain);

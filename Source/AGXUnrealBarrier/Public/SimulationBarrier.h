@@ -30,7 +30,7 @@ public:
 	bool Add(FConstraintBarrier& Constraint);
 	bool Add(FContactMaterialBarrier& ContactMaterial);
 
-		/**
+	/**
 	 * Note that Shapes that are child of the passed Rigid Body are NOT added to the simulation
 	 * when calling this function.
 	 */
@@ -44,9 +44,9 @@ public:
 	bool Remove(FConstraintBarrier& Constraint);
 	bool Remove(FContactMaterialBarrier& ContactMaterial);
 
-		/**
-	 * Note that Shapes that are child of the passed Rigid Body are NOT removed from the simulation
-	 * when calling this function.
+	/**
+	 * Note that agx::Simulation::remove(agx::RigidBody*, bool) is called with RemoveGeometries =
+	 * false.
 	 */
 	bool Remove(FRigidBodyBarrier& Body);
 	bool Remove(FShapeBarrier& Shape);
