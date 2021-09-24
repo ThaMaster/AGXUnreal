@@ -472,12 +472,14 @@ void UAGX_ShapeComponent::OnUpdateTransform(
 
 	// This Shape's transform was updated and it was not because of a parent moving. This should be
 	// propagated to the native to keep the AGX Dynamics state in line with the Unreal state.
-	// This also covers cases where the Shape is e.g. detached from a parent and its transform
-	// is changed, except for the corner-case where the detachment is done from a Blueprint using
-	// the DetachFromComponent function with Keep World settings, because that case will not trigger
-	// this function with EUpdateTransformFlags != PropagateFromParent since it is not actuallt
-	// moved. This corner-case is instead directly handled in
-	// UAGX_ShapeComponent::OnAttachmentChanged.
+	// This can for example be due to the user manually changing the transform of the Shape during
+	// play by dragging it around in the world, or setting new values via the Details Panel or
+	// Blueprint functions. This also covers cases where the Shape is detached from a parent
+	// Component and its transform is changed. One exception to this is when the detachment is done
+	// from a Blueprint using the DetachFromComponent function with Keep World settings. In that
+	// case his function is not triggered with EUpdateTransformFlags != PropagateFromParent until
+	// this Shape Component is selected (highlighted) in the Details Panel. Unclear why. This
+	// corner-case is instead directly handled in UAGX_ShapeComponent::OnAttachmentChanged.
 	GetNative()->SetWorldPosition(GetComponentLocation());
 	GetNative()->SetWorldRotation(GetComponentQuat());
 }
@@ -493,8 +495,9 @@ void UAGX_ShapeComponent::OnAttachmentChanged()
 	// this would be fully handled by UAGX_ShapeComponent::OnUpdateTransform, but that function is
 	// not triggered if the detachment was made using the Blueprint function DetachFromComponent
 	// with Keep World settings. Therefore we handle that here. Note that this will mean writing to
-	// the native twice when detaching in other ways. However, writing the world transform to
-	// the natives world transform is generally considered safe since they should always be in sync.
+	// the native twice when detaching in other ways (both this function and OnUpdateTransform is
+	// triggered). However, setting the world transform of this Component to the natives world
+	// transform is generally considered safe since they should always be in sync.
 	GetNative()->SetWorldPosition(GetComponentLocation());
 	GetNative()->SetWorldRotation(GetComponentQuat());
 }
