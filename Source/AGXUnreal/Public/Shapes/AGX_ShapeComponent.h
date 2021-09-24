@@ -143,6 +143,10 @@ public:
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	//~ End UActorComponent Interface
 
+	//~ Begin USceneComponent Interface
+	virtual void DetachFromComponent(const FDetachmentTransformRules& DetachmentRules) override;
+	//~ End USceneComponent Interface
+
 	/**
 	 * Returns whether this shape needs have a visual mesh representation.
 	 */

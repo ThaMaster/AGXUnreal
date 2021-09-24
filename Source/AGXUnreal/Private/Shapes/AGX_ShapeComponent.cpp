@@ -455,3 +455,16 @@ void UAGX_ShapeComponent::RemoveSensorMaterial(UMeshComponent& Mesh)
 		Mesh.SetMaterial(I, nullptr);
 	}
 }
+
+void UAGX_ShapeComponent::DetachFromComponent(const FDetachmentTransformRules& DetachmentRules)
+{
+	Super::DetachFromComponent(DetachmentRules);
+	// This Shape has been detached from its parent. Depending on the FDetachmentTransformRules,
+	// this Shape's native might need an update of its position to match the Shape Component seen
+	// in Unreal engine.
+
+	UAGX_RigidBodyComponent* OwningBody =
+		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*this);
+
+	// TODO: impl
+}

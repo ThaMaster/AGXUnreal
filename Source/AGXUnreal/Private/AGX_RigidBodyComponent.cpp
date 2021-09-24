@@ -68,6 +68,42 @@ void UAGX_RigidBodyComponent::PostEditComponentMove(bool bFinished)
 	WriteTransformToNative();
 }
 
+void UAGX_RigidBodyComponent::OnChildDetached(USceneComponent* Child)
+{
+	Super::OnChildDetached(Child);
+
+	// @todo This does not get triggered if a child deeper down in the hierarchy is detached.
+	// This means that Shapes detached from this Rigid Body that are not direct children will not
+	// be removed from the Rigid Body.
+	// An alternative would be to use OnAttachmentChanged() in the Shape Component, but that
+	// function has the drawback of not giving information about the old parent, so the Shape cannot
+	// easily notify the previous parent Rigid Body that it has been detached from it, simply because
+	// it cannot (easily) know which Rigid Body that was.
+	if (UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Child))
+	{
+		if (HasNative() && Shape->HasNative())
+		{
+			NativeBarrier.RemoveShape(Shape->GetNative());
+			//Shape->GetNative()->SetLocalPosition(Shape->GetComponentLocation());
+		}
+	}
+}
+
+void UAGX_RigidBodyComponent::OnChildAttached(USceneComponent* Child)
+{
+	Super::OnChildAttached(Child);
+
+	// @todo This does not get triggered if a child deeper down in the hierarchy is attached.
+	// See comment in UAGX_RigidBodyComponent::OnChildDetached.
+	if (UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Child))
+	{
+		if (HasNative() && Shape->HasNative())
+		{
+			NativeBarrier.AddShape(Shape->GetNative());
+		}
+	}
+}
+
 void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 {
 	FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
