@@ -236,7 +236,11 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 	{
 		RemoveFromSimulation();
 	}
-	ReleaseNative();
+
+	if (HasNative())
+	{
+		ReleaseNative();
+	}
 }
 
 void UAGX_ShapeComponent::RemoveFromSimulation()
