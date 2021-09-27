@@ -81,7 +81,7 @@ void AAGX_MaterialManager::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
 
-	for (UAGX_ContactMaterialBase*& ContactMaterial : ContactMaterials)
+	for (UAGX_ContactMaterialBase* ContactMaterial : ContactMaterials)
 	{
 		if (!ContactMaterial)
 		{
