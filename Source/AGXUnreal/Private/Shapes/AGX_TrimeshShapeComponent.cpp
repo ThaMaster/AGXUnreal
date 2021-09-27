@@ -87,9 +87,8 @@ void UAGX_TrimeshShapeComponent::CopyFrom(const FTrimeshShapeBarrier& Barrier)
 
 void UAGX_TrimeshShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& /*OutMeshData*/)
 {
-	// Visualized by the Static Mesh.. But maybe we should visualize the
-	// internal triangle data anyway, for debug purposes? Especially since
-	// we can use lower LOD levels of the Static Mesh for collisions.
+	// @todo Visualize the mesh in the Viewport. Currently the triangle data are only passed to
+	// AGX Dynamics and can be used for collisions, but nothing is rendered.
 }
 
 #if WITH_EDITOR
