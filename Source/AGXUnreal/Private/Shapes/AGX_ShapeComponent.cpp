@@ -234,23 +234,18 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 	else if (
 		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
 	{
-		RemoveFromSimulation();
+		// @todo Figure out how to handle removal of Shape Materials from the Simulation. They can
+		// be shared between many Shape Components, so some kind of reference counting might be
+		// needed.
+		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
+		{
+			Simulation->Remove(*this);
+		}
 	}
 
 	if (HasNative())
 	{
 		ReleaseNative();
-	}
-}
-
-void UAGX_ShapeComponent::RemoveFromSimulation()
-{
-	// @todo Figure out how to handle removal of Shape Materials from the Simulation. They can be
-	// shared between many Shape Components, so some kind of reference counting might be needed.
-
-	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
-	{
-		Simulation->Remove(*this);
 	}
 }
 
