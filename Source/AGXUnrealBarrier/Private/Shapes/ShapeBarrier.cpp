@@ -365,11 +365,13 @@ void FShapeBarrier::SetWorldRotation(const FQuat& Rotation)
 
 FVector FShapeBarrier::GetWorldPosition() const
 {
+	check(HasNative());
 	return ConvertDisplacement(NativeRef->NativeGeometry->getPosition());
 }
 
 FQuat FShapeBarrier::GetWorldRotation() const
 {
+	check(HasNative());
 	return Convert(NativeRef->NativeGeometry->getRotation());
 }
 
