@@ -100,14 +100,7 @@ void AAGX_MaterialManager::RemoveContactMaterial(
 		return;
 	}
 
-	if (GIsReconstructingBlueprintInstances)
-	{
-		// Another UAGX_ContactMaterialInstance will inherit this one's Native, so don't wreck it.
-		// The call to ReleaseNative below is safe because the AGX Dynamics
-		// Simulation will retain a reference counted pointer to the AGX Dynamics object.
-	}
-	else if (
-		Instance->HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
+	if (Instance->HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
 		Reason != EEndPlayReason::Quit)
 	{
 		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
