@@ -63,11 +63,28 @@ namespace
 		FString Filename = Filenames[0];
 		return Filename;
 	}
+
+	FString SelectExistingDirectory(const FString& DialogTitle, bool AllowNoneSelected = false)
+	{
+		// For a discussion on window handles see
+		// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html
+		FString DirectoryPath("");
+		bool DirectorySelected = FDesktopPlatformModule::Get()->OpenDirectoryDialog(
+			nullptr, DialogTitle, TEXT("DefaultPath"), DirectoryPath);
+
+		if (!AllowNoneSelected && (!DirectorySelected || DirectoryPath.IsEmpty()))
+		{
+			UE_LOG(LogAGX, Log, TEXT("No directory selected. Doing nothing."));
+			return NONE_SELECTED;
+		}
+
+		return DirectoryPath;
+	}
 }
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor()
 {
-	const FString Filename = SelectExistingAgxArchive();
+	const FString Filename = SelectExistingFile("AGX Dynamics Archive", ".agx");
 	if (Filename == NONE_SELECTED)
 	{
 		return;
@@ -77,7 +94,7 @@ void UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor()
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToActorTree()
 {
-	const FString Filename = SelectExistingAgxArchive();
+	const FString Filename = SelectExistingFile("AGX Dynamics Archive", ".agx");
 	if (Filename == NONE_SELECTED)
 	{
 		return;
@@ -87,7 +104,7 @@ void UAGX_AgxEdModeFile::ImportAgxArchiveToActorTree()
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()
 {
-	const FString Filename = SelectExistingAgxArchive();
+	const FString Filename = SelectExistingFile("AGX Dynamics Archive", ".agx");
 	if (Filename == NONE_SELECTED)
 	{
 		return;
