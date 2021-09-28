@@ -31,18 +31,20 @@ namespace
 {
 	static const FString NONE_SELECTED("");
 
-	FString SelectExistingAgxArchive()
+	FString SelectExistingFile(const FString& FileDescription, const FString& FileExtension)
 	{
+		const FString DialogTitle =
+			FString("Select an ") + FileDescription + FString(" to import");
+		const FString FileTypes = FileDescription + FString("|*") + FileExtension;
 		// For a discussion on window handles see
 		// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html
 		TArray<FString> Filenames;
 		bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
-			nullptr, TEXT("Select an AGX Archive to import"), TEXT("DefaultPath"),
-			TEXT("DefaultFile"), TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None,
-			Filenames);
+			nullptr, DialogTitle, TEXT("DefaultPath"), TEXT("DefaultFile"), FileTypes,
+			EFileDialogFlags::None, Filenames);
 		if (!FileSelected || Filenames.Num() == 0)
 		{
-			UE_LOG(LogAGX, Log, TEXT("No .agx file selected. Doing nothing."));
+			UE_LOG(LogAGX, Log, TEXT("No %s file selected. Doing nothing."), *FileExtension);
 			return NONE_SELECTED;
 		}
 		if (Filenames.Num() > 1)
@@ -53,7 +55,7 @@ namespace
 					"Multiple files selected but we only support single file import for now. Doing "
 					"nothing."));
 			FAGX_EditorUtilities::ShowNotification(LOCTEXT(
-				"Multiple .agx",
+				"Multiple files",
 				"Multiple files selected but we only support single files for now. Doing "
 				"nothing."));
 			return NONE_SELECTED;
