@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ArchiveImporterHelper.h"
+#include "AGX_UrdfImporterHelper.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGXArchiveReader.h"
@@ -384,7 +385,22 @@ namespace
 		return SuccessOrError.Success;
 	}
 
-	AActor* CreateTemplate(FAGX_ArchiveImporterHelper& Helper)
+	bool AddComponentsFromUrdf(AActor& ImportedActor, FAGX_ArchiveImporterHelper& Helper)
+	{
+		FAGX_UrdfImporterHelper* HelperUrdf = static_cast<FAGX_UrdfImporterHelper*>(&Helper);
+
+		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
+		FSuccessOrError SuccessOrError =
+			FAGXArchiveReader::ReadUrdf(HelperUrdf->ArchiveFilePath, HelperUrdf->UrdfPackagePath, Instantiator);
+		if (!SuccessOrError.Success)
+		{
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+				SuccessOrError.Error, "Import URDF model to Blueprint");
+		}
+		return SuccessOrError.Success;
+	}
+
+	AActor* CreateTemplate(FAGX_ArchiveImporterHelper& Helper, bool ImportFromUrdf = false)
 	{
 		UActorFactory* Factory =
 			GEditor->FindActorFactoryByClass(UActorFactoryEmptyActor::StaticClass());
@@ -418,7 +434,10 @@ namespace
 		RootActorContainer->SetRootComponent(ActorRootComponent);
 #endif
 
-		if (!AddComponentsFromArchive(*RootActorContainer, Helper))
+		const bool Result = ImportFromUrdf ? AddComponentsFromUrdf(*RootActorContainer, Helper)
+										   : AddComponentsFromArchive(*RootActorContainer, Helper);
+
+		if (!Result)
 		{
 			/// @todo Is there some clean-up I need to do for RootActorContainer and/or
 			/// EmptyActorAsset here? I tried with MarkPendingKill but that caused
@@ -474,6 +493,23 @@ UBlueprint* AGX_ArchiveImporterToBlueprint::ImportAGXArchive(const FString& Arch
 	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
 	UPackage* Package = GetPackage(BlueprintPackagePath);
 	AActor* Template = CreateTemplate(Helper);
+	if (Template == nullptr)
+	{
+		return nullptr;
+	}
+	UBlueprint* Blueprint = CreateBlueprint(Package, Template);
+	PostCreationTeardown(Template, Package, Blueprint, BlueprintPackagePath);
+	return Blueprint;
+}
+
+UBlueprint* AGX_ArchiveImporterToBlueprint::ImportURDF(
+	const FString& UrdfFilePath, const FString& UrdfPackagePath)
+{
+	FAGX_UrdfImporterHelper Helper(UrdfFilePath, UrdfPackagePath);
+	PreCreationSetup();
+	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
+	UPackage* Package = GetPackage(BlueprintPackagePath);
+	AActor* Template = CreateTemplate(Helper, true);
 	if (Template == nullptr)
 	{
 		return nullptr;

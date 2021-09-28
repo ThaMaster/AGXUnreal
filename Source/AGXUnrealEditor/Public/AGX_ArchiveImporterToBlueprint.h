@@ -13,4 +13,6 @@ namespace AGX_ArchiveImporterToBlueprint
 	 * @return An Actor Blueprint containing the read objects.
 	 */
 	UBlueprint* ImportAGXArchive(const FString& ArchivePath);
+
+	UBlueprint* ImportURDF(const FString& UrdfFilePath, const FString& UrdfPackagePath);
 }
