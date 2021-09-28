@@ -68,6 +68,51 @@ void UAGX_RigidBodyComponent::PostEditComponentMove(bool bFinished)
 	WriteTransformToNative();
 }
 
+void UAGX_RigidBodyComponent::OnChildDetached(USceneComponent* Child)
+{
+	Super::OnChildDetached(Child);
+
+	if (!HasNative())
+	{
+		return;
+	}
+
+	// @todo This does not get triggered if a child deeper down in the hierarchy is detached.
+	// This means that Shapes detached from this Rigid Body that are not direct children will not
+	// be removed from the Rigid Body.
+	// An alternative would be to use OnAttachmentChanged() in the Shape Component, but that
+	// function has the drawback of not giving information about the old parent, so the Shape cannot
+	// easily notify the previous parent Rigid Body that it has been detached from it, simply because
+	// it cannot (easily) know which Rigid Body that was.
+	if (UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Child))
+	{
+		if (Shape->HasNative())
+		{
+			NativeBarrier.RemoveShape(Shape->GetNative());
+		}
+	}
+}
+
+void UAGX_RigidBodyComponent::OnChildAttached(USceneComponent* Child)
+{
+	Super::OnChildAttached(Child);
+
+	if (!HasNative())
+	{
+		return;
+	}
+
+	// @todo This does not get triggered if a child deeper down in the hierarchy is attached.
+	// See comment in UAGX_RigidBodyComponent::OnChildDetached.
+	if (UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Child))
+	{
+		if (Shape->HasNative())
+		{
+			NativeBarrier.AddShape(Shape->GetNative());
+		}
+	}
+}
+
 void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 {
 	FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
@@ -262,11 +307,19 @@ void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// something will keep the Rigid Body instance alive? Should we do explicit incref/decref
 		// on the Rigid Body in GetNativeAddress / SetNativeAddress?
 	}
-	else
+	else if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor && 
+		Reason != EEndPlayReason::Quit)
 	{
-		/// @todo Remove the native AGX Dynamics Rigid Body from the Simulation.
+		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
+		{
+			Sim->Remove(*this);
+		}
 	}
-	NativeBarrier.ReleaseNative();
+
+	if (HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
 }
 
 namespace

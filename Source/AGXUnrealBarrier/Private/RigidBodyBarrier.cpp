@@ -188,6 +188,12 @@ void FRigidBodyBarrier::AddShape(FShapeBarrier* Shape)
 	NativeRef->Native->add(Shape->GetNative()->NativeGeometry);
 }
 
+void FRigidBodyBarrier::RemoveShape(FShapeBarrier* Shape)
+{
+	check(HasNative());
+	NativeRef->Native->remove(Shape->GetNative()->NativeGeometry);
+}
+
 void FRigidBodyBarrier::AddForceAtCenterOfMass(const FVector& Force)
 {
 	check(HasNative());

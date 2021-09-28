@@ -5,6 +5,7 @@
 #include "AGX_MaterialManager.generated.h"
 
 class UAGX_ContactMaterialBase;
+class UAGX_ContactMaterialInstance;
 
 /**
  * Defines which AGX Contact Materials should be used by the owning level.
@@ -26,5 +27,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Material Manager")
 	TArray<UAGX_ContactMaterialBase*> ContactMaterials;
 
+	// ~ Begin AActor Interface
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+	// ~ End AActor Interface
+
+private:
+	void RemoveContactMaterial(UAGX_ContactMaterialInstance* Instance, EEndPlayReason::Type Reason);
 };

@@ -314,6 +314,8 @@ public:
 	// ~Begin USceneComponent interface.
 #if WITH_EDITOR
 	virtual void PostEditComponentMove(bool bFinished) override;
+	virtual void OnChildDetached(USceneComponent* Child) override;
+	virtual void OnChildAttached(USceneComponent* Child) override;
 #endif
 	// ~End USceneComponent interface.
 

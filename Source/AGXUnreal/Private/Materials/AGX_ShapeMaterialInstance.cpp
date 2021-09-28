@@ -369,7 +369,7 @@ void UAGX_ShapeMaterialInstance::UpdateNativeProperties()
 UAGX_MaterialBase* UAGX_ShapeMaterialInstance::GetOrCreateInstance(UWorld* PlayingWorld)
 {
 	return this;
-};
+}
 
 void UAGX_ShapeMaterialInstance::CreateNative(UWorld* PlayingWorld)
 {

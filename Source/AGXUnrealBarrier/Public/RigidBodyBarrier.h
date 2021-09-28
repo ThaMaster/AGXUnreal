@@ -70,6 +70,7 @@ public:
 	FGuid GetGuid() const;
 
 	void AddShape(FShapeBarrier* Shape);
+	void RemoveShape(FShapeBarrier* Shape);
 
 	void AddForceAtCenterOfMass(const FVector& Force);
 	void AddForceAtLocalLocation(const FVector& Force, const FVector& Location);

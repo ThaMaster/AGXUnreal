@@ -175,11 +175,29 @@ void AAGX_Terrain::BeginPlay()
 	}
 }
 
-void AAGX_Terrain::EndPlay(const EEndPlayReason::Type EndPlayReason)
+void AAGX_Terrain::EndPlay(const EEndPlayReason::Type Reason)
 {
-	Super::EndPlay(EndPlayReason);
+	Super::EndPlay(Reason);
+
 	ClearDisplacementMap();
 	ClearParticlesMap();
+
+	if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+	{
+		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
+		{
+			// @todo Figure out how to handle Terrain Materials. A Terrain Material can be
+			// shared between many Terrains in theory. We only want to remove the Terrain
+			// Material from the simulation if this Terrain is the last one using it. Some
+			// reference counting may be needed.
+			Simulation->Remove(*this);
+		}
+	}
+
+	if (HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
 }
 
 // Called every frame

@@ -57,6 +57,31 @@ void UAGX_TireComponent::BeginPlay()
 	}
 }
 
+void UAGX_TireComponent::EndPlay(const EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+
+	if (GIsReconstructingBlueprintInstances)
+	{
+		// Another Tire will inherit this one's Native, so don't wreck it.
+		// It's still safe to release the native since the Simulation will hold a reference if
+		// necessary.
+	}
+	else if (
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+	{
+		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
+		{
+			Simulation->Remove(*this);
+		}
+	}
+
+	if (HasNative())
+	{
+		NativeBarrier->ReleaseNative();
+	}
+}
+
 void UAGX_TireComponent::CreateNative()
 {
 	check(!HasNative());

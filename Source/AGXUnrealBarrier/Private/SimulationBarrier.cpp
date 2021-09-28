@@ -52,11 +52,11 @@ bool FSimulationBarrier::Add(FContactMaterialBarrier& ContactMaterial)
 	return NativeRef->Native->add(ContactMaterial.GetNative()->Native);
 }
 
-bool FSimulationBarrier::Add(FRigidBodyBarrier& Body, bool AddShapes)
+bool FSimulationBarrier::Add(FRigidBodyBarrier& Body)
 {
 	check(HasNative());
 	check(Body.HasNative());
-	return NativeRef->Native->add(Body.GetNative()->Native, AddShapes);
+	return NativeRef->Native->add(Body.GetNative()->Native, /*addGeometries*/ false);
 }
 
 bool FSimulationBarrier::Add(FShapeBarrier& Shape)
@@ -108,11 +108,11 @@ bool FSimulationBarrier::Remove(FContactMaterialBarrier& ContactMaterial)
 	return NativeRef->Native->remove(ContactMaterial.GetNative()->Native);
 }
 
-bool FSimulationBarrier::Remove(FRigidBodyBarrier& Body, bool RemoveShapes)
+bool FSimulationBarrier::Remove(FRigidBodyBarrier& Body)
 {
 	check(HasNative());
 	check(Body.HasNative());
-	return NativeRef->Native->remove(Body.GetNative()->Native, RemoveShapes);
+	return NativeRef->Native->remove(Body.GetNative()->Native, /*removeGeometries*/ false);
 }
 
 bool FSimulationBarrier::Remove(FShapeBarrier& Shape)

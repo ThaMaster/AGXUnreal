@@ -966,15 +966,12 @@ void UAGX_ConstraintComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// It's still safe to release the native since the Simulation will hold a reference if
 		// necessary.
 	}
-	else
+	else if (
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
 	{
-		if (HasNative())
+		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 		{
-			UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-			if (Simulation != nullptr)
-			{
-				Simulation->Remove(*this);
-			}
+			Simulation->Remove(*this);
 		}
 	}
 
