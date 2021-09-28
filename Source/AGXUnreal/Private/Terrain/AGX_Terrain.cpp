@@ -179,28 +179,18 @@ void AAGX_Terrain::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
 
-	if (GIsReconstructingBlueprintInstances)
-	{
-		// Another Terrain will inherit this one's Native, so don't wreck it.
-		// It's still safe to release the native since the Simulation will hold a reference if
-		// necessary.
-	}
-	else
-	{
-		ClearDisplacementMap();
-		ClearParticlesMap();
+	ClearDisplacementMap();
+	ClearParticlesMap();
 
-		if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
-			Reason != EEndPlayReason::Quit)
+	if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+	{
+		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 		{
-			if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
-			{
-				// @todo Figure out how to handle Terrain Materials. A Terrain Material can be
-				// shared between many Terrains in theory. We only want to remove the Terrain
-				// Material from the simulation if this Terrain is the last one using it. Some
-				// reference counting may be needed.
-				Simulation->Remove(*this);
-			}
+			// @todo Figure out how to handle Terrain Materials. A Terrain Material can be
+			// shared between many Terrains in theory. We only want to remove the Terrain
+			// Material from the simulation if this Terrain is the last one using it. Some
+			// reference counting may be needed.
+			Simulation->Remove(*this);
 		}
 	}
 
@@ -208,7 +198,6 @@ void AAGX_Terrain::EndPlay(const EEndPlayReason::Type Reason)
 	{
 		NativeBarrier.ReleaseNative();
 	}
-
 }
 
 // Called every frame
