@@ -1210,6 +1210,12 @@ namespace
 		return FAGX_EditorUtilities::SanitizeName(ArchiveFilename, TEXT("ImportedAgxArchive"));
 	}
 
+	FString MakeUrdfName(FString ArchiveFilename)
+	{
+		ArchiveFilename.RemoveFromEnd(TEXT(".urdf"));
+		return FAGX_EditorUtilities::SanitizeName(ArchiveFilename, TEXT("ImportedUrdfModels"));
+	}
+
 	FString MakeDirectoryName(const FString ArchiveName)
 	{
 		FString BasePath = FAGX_ImportUtilities::CreateArchivePackagePath(ArchiveName);
@@ -1242,10 +1248,11 @@ namespace
 	}
 }
 
-FAGX_ArchiveImporterHelper::FAGX_ArchiveImporterHelper(const FString& InArchiveFilePath)
+FAGX_ArchiveImporterHelper::FAGX_ArchiveImporterHelper(
+	const FString& InArchiveFilePath, bool isUrdf)
 	: ArchiveFilePath(InArchiveFilePath)
 	, ArchiveFileName(FPaths::GetBaseFilename(InArchiveFilePath))
-	, ArchiveName(MakeArchiveName(ArchiveFileName))
+	, ArchiveName(isUrdf ? MakeUrdfName(ArchiveFileName) : MakeArchiveName(ArchiveFileName))
 	, DirectoryName(MakeDirectoryName(ArchiveName))
 {
 }

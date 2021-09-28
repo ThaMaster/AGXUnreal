@@ -134,7 +134,7 @@ public:
 	using FShapeMaterialPair = std::pair<UAGX_ShapeMaterialAsset*, UAGX_ShapeMaterialAsset*>;
 	FShapeMaterialPair GetShapeMaterials(const FContactMaterialBarrier& ContactMaterial);
 
-	explicit FAGX_ArchiveImporterHelper(const FString& ArchiveFilePath);
+	explicit FAGX_ArchiveImporterHelper(const FString& ArchiveFilePath, bool isUrdf = false);
 
 	const FString ArchiveFilePath;
 	const FString ArchiveFileName;
