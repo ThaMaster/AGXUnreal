@@ -33,6 +33,7 @@
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Trimesh.h>
 #include <agxModel/TwoBodyTire.h>
+#include <agxModel/UrdfReader.h>
 #include <agxSDK/Simulation.h>
 #include <agxWire/Wire.h>
 #include "EndAGXIncludes.h"
@@ -370,6 +371,41 @@ namespace
 			Instantiator.InstantiateWire(Barrier);
 		}
 	}
+
+	void ReadAll(
+		agxSDK::Simulation& Simulation, const FString& Filename,
+		FAGXArchiveInstantiator& Instantiator)
+	{
+		const float AmountOfWork = 7.0f; // Keep up to date with the number of /Read.+/-calls.
+		FScopedSlowTask MyTask(
+			AmountOfWork, LOCTEXT("CreateAGXObjects", "Create AGX Dynamics for Unreal objects"),
+			true);
+		MyTask.MakeDialog();
+
+		// TODO BEFORE MERGE: add return type indicating success or fail and return it from this
+		// function.
+
+		MyTask.EnterProgressFrame(1.0f);
+		ReadMaterials(Simulation, Instantiator);
+
+		MyTask.EnterProgressFrame(1.0f);
+		ReadTireModels(Simulation, Filename, Instantiator);
+
+		MyTask.EnterProgressFrame(1.0f);
+		ReadRigidBodies(Simulation, Filename, Instantiator);
+
+		MyTask.EnterProgressFrame(1.0f);
+		ReadBodilessGeometries(Simulation, Filename, Instantiator);
+
+		MyTask.EnterProgressFrame(1.0f);
+		ReadConstraints(Simulation, Filename, Instantiator);
+
+		MyTask.EnterProgressFrame(1.0f);
+		ReadCollisionGroups(Simulation, Instantiator);
+
+		MyTask.EnterProgressFrame(1.0f);
+		ReadWires(Simulation, Filename, Instantiator);
+	}
 }
 
 FSuccessOrError FAGXArchiveReader::Read(
@@ -392,32 +428,7 @@ FSuccessOrError FAGXArchiveReader::Read(
 			FString::Printf(TEXT("Could not read .agx file '%s':\n\n%s"), *Filename, *What));
 	}
 
-	const float AmountOfWork = 7.0f; // Keep up to date with the number of /Read.+/-calls.
-	FScopedSlowTask MyTask(
-		AmountOfWork, LOCTEXT("CreateAGXObjects", "Create AGX Dynamics for Unreal objects"), true);
-	MyTask.MakeDialog();
-
-	MyTask.EnterProgressFrame(1.0f);
-	::ReadMaterials(*Simulation, Instantiator);
-
-	MyTask.EnterProgressFrame(1.0f);
-	::ReadTireModels(*Simulation, Filename, Instantiator);
-
-	MyTask.EnterProgressFrame(1.0f);
-	::ReadRigidBodies(*Simulation, Filename, Instantiator);
-
-	MyTask.EnterProgressFrame(1.0f);
-	::ReadBodilessGeometries(*Simulation, Filename, Instantiator);
-
-	MyTask.EnterProgressFrame(1.0f);
-	::ReadConstraints(*Simulation, Filename, Instantiator);
-
-	MyTask.EnterProgressFrame(1.0f);
-	::ReadCollisionGroups(*Simulation, Instantiator);
-
-	MyTask.EnterProgressFrame(1.0f);
-	::ReadWires(*Simulation, Filename, Instantiator);
-
+	::ReadAll(*Simulation, Filename, Instantiator);
 	return FSuccessOrError(true);
 }
 
@@ -425,7 +436,22 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXArchiveReader::ReadUrdf(
 	const FString& UrdfFilePath, const FString& UrdfPackagePath,
 	FAGXArchiveInstantiator& Instantiator)
 {
-	// todo implement
+	agxSDK::AssemblyRef Model =
+		agxModel::UrdfReader::read(Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);
+
+	if (Model == nullptr)
+	{
+		return FSuccessOrError(FString::Printf(
+			TEXT("Could not read URDF file '%s'. The Log category LogAGXDynamics may include more "
+				 "details."),
+			*UrdfFilePath));
+	}
+
+	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
+	Simulation->add(Model);
+
+	::ReadAll(*Simulation, UrdfFilePath, Instantiator);
+
 	return FSuccessOrError(true);
 }
 
