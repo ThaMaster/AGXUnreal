@@ -178,4 +178,8 @@ namespace FAGXArchiveReader
 	 */
 	AGXUNREALBARRIER_API FSuccessOrError
 	Read(const FString& Filename, FAGXArchiveInstantiator& Instantiator);
+
+	AGXUNREALBARRIER_API FSuccessOrError ReadUrdf(
+		const FString& UrdfFilePath, const FString& UrdfPackagePath,
+		FAGXArchiveInstantiator& Instantiator);
 };

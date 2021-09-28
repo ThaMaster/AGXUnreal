@@ -421,4 +421,12 @@ FSuccessOrError FAGXArchiveReader::Read(
 	return FSuccessOrError(true);
 }
 
+AGXUNREALBARRIER_API FSuccessOrError FAGXArchiveReader::ReadUrdf(
+	const FString& UrdfFilePath, const FString& UrdfPackagePath,
+	FAGXArchiveInstantiator& Instantiator)
+{
+	// todo implement
+	return FSuccessOrError(true);
+}
+
 #undef LOCTEXT_NAMESPACE
