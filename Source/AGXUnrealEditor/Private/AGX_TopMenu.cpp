@@ -272,6 +272,16 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 			"Import an AGX Dynamics archive to a Blueprint."),
 		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint(); });
 
+	// Import URDF model to blueprint menu item.
+	AddFileMenuEntry(
+		Builder,
+		LOCTEXT(
+			"FileMEnuEntryLabelImportUrdfBluePrint", "Import URDF model to a Blueprint..."),
+		LOCTEXT(
+			"FileMenuEntryhTooltopImportUrdfBluePrint",
+			"Import a URDF model to a Blueprint."),
+		[]() { UAGX_AgxEdModeFile::ImportUrdfToBlueprint(); });
+
 	// Export AGX Archive menu item
 	AddFileMenuEntry(
 		Builder,
