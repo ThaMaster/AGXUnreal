@@ -113,6 +113,19 @@ void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()
 	AGX_ArchiveImporterToBlueprint::ImportAGXArchive(Filename);
 }
 
+void UAGX_AgxEdModeFile::ImportUrdfToBlueprint()
+{
+	const FString UrdfFilePath = SelectExistingFile("URDF file", ".urdf");
+	if (UrdfFilePath == NONE_SELECTED)
+	{
+		return;
+	}
+
+	const FString UrdfPackagePath = SelectExistingDirectory("(Optional) Select URDF package directory", true);
+
+	AGX_ArchiveImporterToBlueprint::ImportURDF(UrdfFilePath, UrdfPackagePath);
+}
+
 void UAGX_AgxEdModeFile::ExportAgxArchive()
 {
 	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
