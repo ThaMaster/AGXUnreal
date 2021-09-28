@@ -32,7 +32,9 @@ public:
 
 	/**
 	 * Note that Shapes that are child of the passed Rigid Body are NOT added to the simulation
-	 * when calling this function.
+	 * when calling this function. All Shapes, whether child to a Rigid Body or a free Shape, are
+	 * responsible for adding themselves to the Simulation. This makes it easier to handle e.g.
+	 * changes in the Component attachment hierarchy during Play.
 	 */
 	bool Add(FRigidBodyBarrier& Body);
 	bool Add(FShapeBarrier& Shape);
