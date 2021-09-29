@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ArchiveImporterHelper.h"
+#include "AGX_ImportEnums.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyComponent.h"
@@ -310,7 +311,7 @@ AActor* AGX_ArchiveImporterToActorTree::ImportAGXArchive(const FString& ArchiveP
 	FString Filename = FPaths::GetBaseFilename(ArchivePath);
 	ImportGroup->SetActorLabel(Filename);
 
-	FAGX_ArchiveImporterHelper Helper(ArchivePath);
+	FAGX_ArchiveImporterHelper Helper(ArchivePath, EAGX_ImportType::Agx);
 	EditorInstantiator Instantiator(*ImportGroup, *World, Helper);
 	FAGXArchiveReader::Read(ArchivePath, Instantiator);
 

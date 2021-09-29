@@ -2,9 +2,10 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ArchiveImporterHelper.h"
-#include "AGX_UrdfImporterHelper.h"
+#include "AGX_ImportEnums.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_UrdfImporterHelper.h"
 #include "AGXArchiveReader.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
@@ -63,12 +64,12 @@ namespace
 		GEditor->SelectNone(false, false);
 	}
 
-	FString CreateBlueprintPackagePath(FAGX_ArchiveImporterHelper& Helper)
+	FString CreateBlueprintPackagePath(FAGX_ArchiveImporterHelper& Helper, EAGX_ImportType ImportType)
 	{
 		// Create directory for this archive and a "Blueprints" directory inside of that.
 		/// \todo I think this is more complicated than it needs to be. What are all the pieces for?
 		FString ParentPackagePath =
-			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
+			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.DirectoryName, TEXT("Blueprint"), ImportType);
 		FString ParentAssetName = Helper.ArchiveFileName; /// \todo Why is this never used?
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
 
@@ -400,7 +401,7 @@ namespace
 		return SuccessOrError.Success;
 	}
 
-	AActor* CreateTemplate(FAGX_ArchiveImporterHelper& Helper, bool ImportFromUrdf = false)
+	AActor* CreateTemplate(FAGX_ArchiveImporterHelper& Helper, EAGX_ImportType ImportType)
 	{
 		UActorFactory* Factory =
 			GEditor->FindActorFactoryByClass(UActorFactoryEmptyActor::StaticClass());
@@ -434,7 +435,7 @@ namespace
 		RootActorContainer->SetRootComponent(ActorRootComponent);
 #endif
 
-		const bool Result = ImportFromUrdf ? AddComponentsFromUrdf(*RootActorContainer, Helper)
+		const bool Result = ImportType == EAGX_ImportType::Urdf ? AddComponentsFromUrdf(*RootActorContainer, Helper)
 										   : AddComponentsFromArchive(*RootActorContainer, Helper);
 
 		if (!Result)
@@ -488,11 +489,11 @@ namespace
 
 UBlueprint* AGX_ArchiveImporterToBlueprint::ImportAGXArchive(const FString& ArchivePath)
 {
-	FAGX_ArchiveImporterHelper Helper(ArchivePath);
+	FAGX_ArchiveImporterHelper Helper(ArchivePath, EAGX_ImportType::Agx);
 	PreCreationSetup();
-	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
+	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper, EAGX_ImportType::Agx);
 	UPackage* Package = GetPackage(BlueprintPackagePath);
-	AActor* Template = CreateTemplate(Helper);
+	AActor* Template = CreateTemplate(Helper, EAGX_ImportType::Agx);
 	if (Template == nullptr)
 	{
 		return nullptr;
@@ -507,9 +508,9 @@ UBlueprint* AGX_ArchiveImporterToBlueprint::ImportURDF(
 {
 	FAGX_UrdfImporterHelper Helper(UrdfFilePath, UrdfPackagePath);
 	PreCreationSetup();
-	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
+	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper, EAGX_ImportType::Urdf);
 	UPackage* Package = GetPackage(BlueprintPackagePath);
-	AActor* Template = CreateTemplate(Helper, true);
+	AActor* Template = CreateTemplate(Helper, EAGX_ImportType::Urdf);
 	if (Template == nullptr)
 	{
 		return nullptr;

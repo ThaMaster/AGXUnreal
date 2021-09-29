@@ -172,7 +172,7 @@ namespace
 	 */
 	UMaterialInterface* GetOrCreateRenderMaterialInstance(
 		const FAGX_RenderMaterial& RenderMaterial, const FString& DirectoryName,
-		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials)
+		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials, EAGX_ImportType ImportType)
 	{
 		const FGuid Guid = RenderMaterial.Guid;
 
@@ -189,7 +189,7 @@ namespace
 				? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
 				: RenderMaterial.Name.ToString();
 		UMaterialInterface* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
-			RenderMaterial, DirectoryName, MaterialName);
+			RenderMaterial, DirectoryName, MaterialName, ImportType);
 		if (Material == nullptr)
 		{
 			// Both asset creation and default material load failed. That's bad.
@@ -252,7 +252,7 @@ namespace
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& FallbackName,
-		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName)
+		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName, EAGX_ImportType ImportType)
 	{
 		const FGuid Guid = Trimesh.GetMeshDataGuid();
 		if (!Guid.IsValid())
@@ -260,7 +260,7 @@ namespace
 			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
 			// the RestoredMeshes cache.
 			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-				Trimesh, DirectoryName, FallbackName);
+				Trimesh, DirectoryName, FallbackName, ImportType);
 		}
 
 		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
@@ -271,7 +271,7 @@ namespace
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
 		UStaticMesh* Asset =
-			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryName, FallbackName);
+			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryName, FallbackName, ImportType);
 		if (Asset != nullptr)
 		{
 			RestoredMeshes.Add(Guid, Asset);
@@ -293,14 +293,15 @@ namespace
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FRenderDataBarrier& RenderData, TMap<FGuid, UStaticMesh*>& RestoredMeshes,
-		const FString& DirectoryName)
+		const FString& DirectoryName, EAGX_ImportType ImportType)
 	{
 		const FGuid Guid = RenderData.GetGuid();
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
 			// the RestoredMeshes cache.
-			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
+			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+				RenderData, DirectoryName, ImportType);
 		}
 
 		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
@@ -311,7 +312,7 @@ namespace
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
 		UStaticMesh* Asset =
-			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
+			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName, ImportType);
 		if (Asset != nullptr)
 		{
 			RestoredMeshes.Add(Guid, Asset);
@@ -338,7 +339,7 @@ namespace
 		const FRenderDataBarrier& RenderData, const FTransform& RenderMeshTransform,
 		UAGX_ShapeComponent& Component, UMeshComponent& VisualMesh,
 		TMap<FGuid, UStaticMesh*>& RestoredMeshes,
-		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials, const FString& DirectoryName)
+		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials, const FString& DirectoryName, EAGX_ImportType ImportType)
 	{
 		VisualMesh.SetVisibility(false);
 
@@ -347,7 +348,7 @@ namespace
 		if (RenderData.HasMesh())
 		{
 			UStaticMesh* RenderDataMeshAsset =
-				GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
+				GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName, ImportType);
 			if (RenderDataMeshAsset != nullptr)
 			{
 				// The new Static Mesh Component must be a child of the Visual Mesh and not the
@@ -370,7 +371,7 @@ namespace
 		if (RenderData.HasMaterial() && GIsEditor)
 		{
 			RenderDataMaterial = GetOrCreateRenderMaterialInstance(
-				RenderData.GetMaterial(), DirectoryName, RestoredMaterials);
+				RenderData.GetMaterial(), DirectoryName, RestoredMaterials, ImportType);
 		}
 		else
 		{
@@ -415,7 +416,7 @@ namespace
 		const TMap<FGuid, UAGX_ShapeMaterialAsset*>& RestoredShapeMaterials,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials,
 		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName,
-		UMeshComponent& VisualMesh)
+		UMeshComponent& VisualMesh, EAGX_ImportType ImportType)
 	{
 		Component.UpdateVisualMesh();
 		Component.SetFlags(RF_Transactional);
@@ -467,7 +468,7 @@ namespace
 			const FTransform ShapeInvTransform = ShapeTransform.Inverse();
 			ApplyRenderingData(
 				Barrier.GetRenderData(), ShapeInvTransform, Component, VisualMesh, RestoredMeshes,
-				RestoredRenderMaterials, DirectoryName);
+				RestoredRenderMaterials, DirectoryName, ImportType);
 		}
 		else
 		{
@@ -490,7 +491,7 @@ UAGX_SphereShapeComponent* FAGX_ArchiveImporterHelper::InstantiateSphere(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, ImportType);
 	return Component;
 }
 
@@ -508,7 +509,7 @@ UAGX_BoxShapeComponent* FAGX_ArchiveImporterHelper::InstantiateBox(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, ImportType);
 	return Component;
 }
 
@@ -527,7 +528,7 @@ UAGX_CylinderShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCylinder(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, ImportType);
 	return Component;
 }
 
@@ -545,7 +546,7 @@ UAGX_CapsuleShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCapsule(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, ImportType);
 	return Component;
 }
 
@@ -564,7 +565,7 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	Component->MeshSourceLocation = EAGX_TrimeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 	const FString FallbackName = Body != nullptr ? Body->GetName() : Owner.GetName();
 	UStaticMesh* MeshAsset =
-		GetOrCreateStaticMeshAsset(Barrier, FallbackName, RestoredMeshes, DirectoryName);
+		GetOrCreateStaticMeshAsset(Barrier, FallbackName, RestoredMeshes, DirectoryName, ImportType);
 	if (MeshAsset == nullptr)
 	{
 		// No point in continuing further. Logging handled in GetOrCreateStaticMeshAsset.
@@ -600,7 +601,7 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *MeshComponent);
+		DirectoryName, *MeshComponent, ImportType);
 	return Component;
 }
 
@@ -609,7 +610,7 @@ UAGX_ShapeMaterialAsset* FAGX_ArchiveImporterHelper::InstantiateShapeMaterial(
 {
 	/// \todo Do we need any special handling of the default material?
 	UAGX_ShapeMaterialAsset* Asset =
-		FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(Barrier, DirectoryName);
+		FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(Barrier, DirectoryName, ImportType);
 	RestoredShapeMaterials.Add(Barrier.GetGuid(), Asset);
 	return Asset;
 }
@@ -619,7 +620,7 @@ UAGX_ContactMaterialAsset* FAGX_ArchiveImporterHelper::InstantiateContactMateria
 {
 	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
 	UAGX_ContactMaterialAsset* Asset = FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
-		Barrier, Materials.first, Materials.second, DirectoryName);
+		Barrier, Materials.first, Materials.second, DirectoryName, ImportType);
 	return Asset;
 }
 
@@ -1204,21 +1205,30 @@ FAGX_ArchiveImporterHelper::FShapeMaterialPair FAGX_ArchiveImporterHelper::GetSh
 
 namespace
 {
-	FString MakeArchiveName(FString ArchiveFilename)
+	FString MakeArchiveName(FString ArchiveFilename, EAGX_ImportType ImportType)
 	{
-		ArchiveFilename.RemoveFromEnd(TEXT(".agx"));
-		return FAGX_EditorUtilities::SanitizeName(ArchiveFilename, TEXT("ImportedAgxArchive"));
+		if (ImportType == EAGX_ImportType::Agx)
+		{
+			ArchiveFilename.RemoveFromEnd(TEXT(".agx"));
+			return FAGX_EditorUtilities::SanitizeName(ArchiveFilename, TEXT("ImportedAgxArchive"));
+		}
+		else if (ImportType == EAGX_ImportType::Urdf)
+		{
+			ArchiveFilename.RemoveFromEnd(TEXT(".urdf"));
+			return FAGX_EditorUtilities::SanitizeName(ArchiveFilename, TEXT("ImportedUrdfModels"));
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Invalid or unknown ImportType '%d' passed to MakeArchiveName."), ImportType);
+			return "";
+		}
 	}
 
-	FString MakeUrdfName(FString ArchiveFilename)
+	FString MakeDirectoryName(const FString ArchiveName, EAGX_ImportType ImportType)
 	{
-		ArchiveFilename.RemoveFromEnd(TEXT(".urdf"));
-		return FAGX_EditorUtilities::SanitizeName(ArchiveFilename, TEXT("ImportedUrdfModels"));
-	}
-
-	FString MakeDirectoryName(const FString ArchiveName)
-	{
-		FString BasePath = FAGX_ImportUtilities::CreateArchivePackagePath(ArchiveName);
+		FString BasePath = FAGX_ImportUtilities::CreateArchivePackagePath(ArchiveName, ImportType);
 
 		auto PackageExists = [&](const FString& DirPath)
 		{
@@ -1249,10 +1259,11 @@ namespace
 }
 
 FAGX_ArchiveImporterHelper::FAGX_ArchiveImporterHelper(
-	const FString& InArchiveFilePath, bool isUrdf)
+	const FString& InArchiveFilePath, EAGX_ImportType InImportType)
 	: ArchiveFilePath(InArchiveFilePath)
 	, ArchiveFileName(FPaths::GetBaseFilename(InArchiveFilePath))
-	, ArchiveName(isUrdf ? MakeUrdfName(ArchiveFileName) : MakeArchiveName(ArchiveFileName))
-	, DirectoryName(MakeDirectoryName(ArchiveName))
+	, ArchiveName(MakeArchiveName(ArchiveFileName, InImportType))
+	, DirectoryName(MakeDirectoryName(ArchiveName, InImportType))
+	, ImportType(InImportType)
 {
 }

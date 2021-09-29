@@ -28,11 +28,11 @@ namespace
 	template <typename UAsset, typename FInitAssetCallback>
 	UAsset* SaveImportedAsset(
 		const FString& DirectoryName, FString AssetName, const FString& FallbackName,
-		const FString& AssetType, FInitAssetCallback InitAsset)
+		const FString& AssetType, FInitAssetCallback InitAsset, EAGX_ImportType ImportType)
 	{
 		AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, FallbackName, AssetType);
 		FString PackagePath =
-			FAGX_ImportUtilities::CreateArchivePackagePath(DirectoryName, AssetType);
+			FAGX_ImportUtilities::CreateArchivePackagePath(DirectoryName, AssetType, ImportType);
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
@@ -60,9 +60,26 @@ namespace
 		}
 		return Asset;
 	}
+
+	FString ImportTypeToImportDir(EAGX_ImportType ImportType)
+	{
+		switch (ImportType)
+		{
+			case EAGX_ImportType::Agx:
+				return "ImportedAgxArchives";
+			case EAGX_ImportType::Urdf:
+				return "ImportedUrdfModels";
+			default:
+				UE_LOG(
+					LogAGX, Error, TEXT("Unknown or invalid Import Type %d passed to ImportTypeToRootDir."),
+					ImportType);
+				return "";
+		}
+	}
 }
 
-FString FAGX_ImportUtilities::CreateArchivePackagePath(FString ArchiveName, FString AssetType)
+FString FAGX_ImportUtilities::CreateArchivePackagePath(
+	FString ArchiveName, FString AssetType, EAGX_ImportType ImportType)
 {
 	ArchiveName = FAGX_EditorUtilities::SanitizeName(ArchiveName);
 	AssetType = FAGX_EditorUtilities::SanitizeName(AssetType);
@@ -70,17 +87,21 @@ FString FAGX_ImportUtilities::CreateArchivePackagePath(FString ArchiveName, FStr
 	{
 		return FString();
 	}
-	return FString::Printf(TEXT("/Game/ImportedAgxArchives/%s/%ss/"), *ArchiveName, *AssetType);
+
+	const FString ImportDir = ImportTypeToImportDir(ImportType);
+	return FString::Printf(TEXT("/Game/%s/%s/%ss/"), *ImportDir, *ArchiveName, *AssetType);
 }
 
-FString FAGX_ImportUtilities::CreateArchivePackagePath(FString ArchiveName)
+FString FAGX_ImportUtilities::CreateArchivePackagePath(
+	FString ArchiveName, EAGX_ImportType ImportType)
 {
 	ArchiveName = FAGX_EditorUtilities::SanitizeName(ArchiveName);
 	if (ArchiveName.IsEmpty())
 	{
 		return FString();
 	}
-	return FString::Printf(TEXT("/Game/ImportedAgxArchives/%s"), *ArchiveName);
+	const FString ImportDir = ImportTypeToImportDir(ImportType);
+	return FString::Printf(TEXT("/Game/%s/%s"), *ImportDir, *ArchiveName);
 }
 
 FString FAGX_ImportUtilities::CreateAssetName(
@@ -115,7 +136,8 @@ void FAGX_ImportUtilities::MakePackageAndAssetNameUnique(FString& PackageName, F
 }
 
 UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName, const FString& FallbackName)
+	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName, const FString& FallbackName,
+	EAGX_ImportType ImportType)
 {
 	auto InitAsset = [&](UStaticMesh& Asset) {
 		FRawMesh RawMesh = FAGX_EditorUtilities::CreateRawMeshFromTrimesh(Trimesh);
@@ -123,12 +145,13 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 		Asset.ImportVersion = EImportStaticMeshVersion::LastVersion;
 	};
 	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
-		DirectoryName, Trimesh.GetSourceName(), FallbackName, TEXT("StaticMesh"), InitAsset);
+		DirectoryName, Trimesh.GetSourceName(), FallbackName, TEXT("StaticMesh"), InitAsset, ImportType);
 	return CreatedAsset;
 }
 
 UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-	const FRenderDataBarrier& RenderData, const FString& DirectoryName)
+	const FRenderDataBarrier& RenderData, const FString& DirectoryName,
+	EAGX_ImportType ImportType)
 {
 	auto InitAsset = [&](UStaticMesh& Asset) {
 		FRawMesh RawMesh = FAGX_EditorUtilities::CreateRawMeshFromRenderData(RenderData);
@@ -137,16 +160,17 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	};
 	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
 		DirectoryName, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
-		TEXT("RenderMesh"), TEXT("RenderMesh"), InitAsset);
+		TEXT("RenderMesh"), TEXT("RenderMesh"), InitAsset, ImportType);
 	return CreatedAsset;
 }
 
 UAGX_ShapeMaterialAsset* FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(
-	const FShapeMaterialBarrier& Material, const FString& DirectoryName)
+	const FShapeMaterialBarrier& Material, const FString& DirectoryName,
+	EAGX_ImportType ImportType)
 {
 	auto InitAsset = [&](UAGX_ShapeMaterialAsset& Asset) { Asset.CopyFrom(&Material); };
 	UAGX_ShapeMaterialAsset* CreatedAsset = SaveImportedAsset<UAGX_ShapeMaterialAsset>(
-		DirectoryName, Material.GetName(), TEXT(""), TEXT("ShapeMaterial"), InitAsset);
+		DirectoryName, Material.GetName(), TEXT(""), TEXT("ShapeMaterial"), InitAsset, ImportType);
 	return CreatedAsset;
 }
 
@@ -186,7 +210,8 @@ namespace
 
 UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
 	const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterialAsset* Material1,
-	UAGX_ShapeMaterialAsset* Material2, const FString& DirectoryName)
+	UAGX_ShapeMaterialAsset* Material2, const FString& DirectoryName,
+	EAGX_ImportType ImportType)
 {
 	const FString Name = TEXT("CM") + GetName(Material1) + GetName(Material2);
 
@@ -197,13 +222,14 @@ UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsse
 	};
 
 	UAGX_ContactMaterialAsset* Asset = SaveImportedAsset<UAGX_ContactMaterialAsset>(
-		DirectoryName, Name, TEXT(""), TEXT("ContactMaterial"), InitAsset);
+		DirectoryName, Name, TEXT(""), TEXT("ContactMaterial"), InitAsset, ImportType);
 
 	return Asset;
 }
 
 UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
-	const FAGX_RenderMaterial& Imported, const FString& DirectoryName, const FString& MaterialName)
+	const FAGX_RenderMaterial& Imported, const FString& DirectoryName, const FString& MaterialName,
+	EAGX_ImportType ImportType)
 {
 	UMaterial* Base = LoadObject<UMaterial>(
 		nullptr, TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'"));
@@ -219,8 +245,8 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 
 	FString AssetName = FAGX_ImportUtilities::CreateAssetName(
 		MaterialName, TEXT("ImportedAGXDynamicsMaterial"), TEXT("RenderMaterial"));
-	FString PackagePath =
-		FAGX_ImportUtilities::CreateArchivePackagePath(DirectoryName, TEXT("RenderMaterial"));
+	FString PackagePath = FAGX_ImportUtilities::CreateArchivePackagePath(
+		DirectoryName, TEXT("RenderMaterial"), ImportType);
 
 	IAssetTools& AssetTools =
 		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
