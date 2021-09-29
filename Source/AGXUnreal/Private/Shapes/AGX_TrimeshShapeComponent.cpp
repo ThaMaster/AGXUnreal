@@ -376,45 +376,47 @@ namespace
 		OutPositions.Reserve(NumPositions);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		([&](FRHICommandListImmediate& RHICmdList) {
-			// Copy vertex buffer.
-			auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
-			const uint32 NumPositionBytes = PositionRHI->GetSize();
-			FVector* PositionData = static_cast<FVector*>(
-				RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
-			for (uint32 I = 0; I < NumPositions; I++)
+		(
+			[&](FRHICommandListImmediate& RHICmdList)
 			{
-				OutPositions.Add(PositionData[I]);
-			}
-			RHIUnlockVertexBuffer(PositionRHI);
+				// Copy vertex buffer.
+				auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
+				const uint32 NumPositionBytes = PositionRHI->GetSize();
+				FVector* PositionData = static_cast<FVector*>(
+					RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
+				for (uint32 I = 0; I < NumPositions; I++)
+				{
+					OutPositions.Add(PositionData[I]);
+				}
+				RHIUnlockVertexBuffer(PositionRHI);
 
-			// Copy index buffer.
-			auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
-			if (IndexRHI->GetStride() == 2)
-			{
-				// Two byte index size.
-				uint16* IndexData = static_cast<uint16*>(
-					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-				for (uint32 i = 0; i < NumIndices; i++)
+				// Copy index buffer.
+				auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
+				if (IndexRHI->GetStride() == 2)
 				{
-					check(IndexData[i] < NumPositions);
-					OutIndices.Add(static_cast<uint32>(IndexData[i]));
+					// Two byte index size.
+					uint16* IndexData = static_cast<uint16*>(
+						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+					for (uint32 i = 0; i < NumIndices; i++)
+					{
+						check(IndexData[i] < NumPositions);
+						OutIndices.Add(static_cast<uint32>(IndexData[i]));
+					}
 				}
-			}
-			else
-			{
-				// Four byte index size (stride must be either 2 or 4).
-				check(IndexRHI->GetStride() == 4);
-				uint32* IndexData = static_cast<uint32*>(
-					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-				for (uint32 i = 0; i < NumIndices; i++)
+				else
 				{
-					check(IndexData[i] < NumPositions);
-					OutIndices.Add(IndexData[i]);
+					// Four byte index size (stride must be either 2 or 4).
+					check(IndexRHI->GetStride() == 4);
+					uint32* IndexData = static_cast<uint32*>(
+						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+					for (uint32 i = 0; i < NumIndices; i++)
+					{
+						check(IndexData[i] < NumPositions);
+						OutIndices.Add(IndexData[i]);
+					}
 				}
-			}
-			RHIUnlockIndexBuffer(IndexRHI);
-		});
+				RHIUnlockIndexBuffer(IndexRHI);
+			});
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();
@@ -498,40 +500,42 @@ namespace
 		RenderIndices.Reserve(NumIndices);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		([&](FRHICommandListImmediate& RHICmdList) {
-			// Copy position buffer.
-			FVector* PositionData = static_cast<FVector*>(
-				RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
-			for (uint32 i = 0; i < NumPositions; i++)
+		(
+			[&](FRHICommandListImmediate& RHICmdList)
 			{
-				RenderPositions.Add(PositionData[i]);
-			}
-			RHIUnlockVertexBuffer(PositionRhi);
+				// Copy position buffer.
+				FVector* PositionData = static_cast<FVector*>(
+					RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+				for (uint32 i = 0; i < NumPositions; i++)
+				{
+					RenderPositions.Add(PositionData[i]);
+				}
+				RHIUnlockVertexBuffer(PositionRhi);
 
-			// Copy index buffer.
-			if (IndexRhi->GetStride() == 2)
-			{
-				// Two byte index size.
-				uint16* IndexBufferData = static_cast<uint16*>(
-					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-				for (int32 i = 0; i < NumIndices; i++)
+				// Copy index buffer.
+				if (IndexRhi->GetStride() == 2)
 				{
-					RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
+					// Two byte index size.
+					uint16* IndexBufferData = static_cast<uint16*>(
+						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+					for (int32 i = 0; i < NumIndices; i++)
+					{
+						RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
+					}
 				}
-			}
-			else
-			{
-				// Four byte index size (stride must be either 2 or 4).
-				check(IndexRhi->GetStride() == 4);
-				uint32* IndexData = static_cast<uint32*>(
-					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-				for (int32 i = 0; i < NumIndices; i++)
+				else
 				{
-					RenderIndices.Add(IndexData[i]);
+					// Four byte index size (stride must be either 2 or 4).
+					check(IndexRhi->GetStride() == 4);
+					uint32* IndexData = static_cast<uint32*>(
+						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+					for (int32 i = 0; i < NumIndices; i++)
+					{
+						RenderIndices.Add(IndexData[i]);
+					}
 				}
-			}
-			RHIUnlockIndexBuffer(IndexRhi);
-		});
+				RHIUnlockIndexBuffer(IndexRhi);
+			});
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();
