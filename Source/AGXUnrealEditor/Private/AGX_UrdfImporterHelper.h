@@ -1,8 +1,8 @@
 #pragma once
 
-#include "AGX_ArchiveImporterHelper.h"
+#include "AGX_SimObjectsImporterHelper.h"
 
-struct FAGX_UrdfImporterHelper : public FAGX_ArchiveImporterHelper
+struct FAGX_UrdfImporterHelper : public FAGX_SimObjectsImporterHelper
 {
 	explicit FAGX_UrdfImporterHelper(const FString& InUrdfFilePath, const FString& InUrdfPackagePath);
 

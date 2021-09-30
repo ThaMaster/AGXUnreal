@@ -1,7 +1,7 @@
 #include "AGX_ImporterToSingleActor.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ArchiveImporterHelper.h"
+#include "AGX_SimObjectsImporterHelper.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGXSimObjectsReader.h"
@@ -45,7 +45,7 @@ namespace
 	class FSingleActorBody final : public FAGXSimObjectBody
 	{
 	public:
-		FSingleActorBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
+		FSingleActorBody(UAGX_RigidBodyComponent& InBody, FAGX_SimObjectsImporterHelper& InHelper)
 			: Body(InBody)
 			, Helper(InHelper)
 		{
@@ -78,7 +78,7 @@ namespace
 
 	private:
 		UAGX_RigidBodyComponent& Body;
-		FAGX_ArchiveImporterHelper& Helper;
+		FAGX_SimObjectsImporterHelper& Helper;
 	};
 
 	/**
@@ -239,8 +239,8 @@ namespace
 			}
 
 			FTwoBodyTireSimObjectBodies ArchiveBodies;
-			ArchiveBodies.TireBodyArchive.reset(InstantiateBody(TireBody));
-			ArchiveBodies.HubBodyArchive.reset(InstantiateBody(HubBody));
+			ArchiveBodies.TireBodySimObject.reset(InstantiateBody(TireBody));
+			ArchiveBodies.HubBodySimObject.reset(InstantiateBody(HubBody));
 
 			Helper.InstantiateTwoBodyTire(Barrier, Actor);
 			return ArchiveBodies;
@@ -252,7 +252,7 @@ namespace
 		}
 
 	private:
-		FAGX_ArchiveImporterHelper Helper;
+		FAGX_SimObjectsImporterHelper Helper;
 		UWorld& World;
 		AActor& Actor;
 		USceneComponent& Root;

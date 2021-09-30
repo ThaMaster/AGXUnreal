@@ -1,7 +1,7 @@
 #include "AGX_ImporterToActorTree.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ArchiveImporterHelper.h"
+#include "AGX_SimObjectsImporterHelper.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyComponent.h"
@@ -63,7 +63,7 @@ namespace
 	class FEditorBody final : public FAGXSimObjectBody
 	{
 	public:
-		FEditorBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
+		FEditorBody(UAGX_RigidBodyComponent& InBody, FAGX_SimObjectsImporterHelper& InHelper)
 			: Helper(InHelper)
 			, Body(InBody)
 		{
@@ -95,7 +95,7 @@ namespace
 		}
 
 	private:
-		FAGX_ArchiveImporterHelper& Helper;
+		FAGX_SimObjectsImporterHelper& Helper;
 		UAGX_RigidBodyComponent& Body;
 	};
 
@@ -103,7 +103,7 @@ namespace
 	{
 	public:
 		EditorInstantiator(
-			AActor& InImportedRoot, UWorld& InWorld, FAGX_ArchiveImporterHelper& InHelper)
+			AActor& InImportedRoot, UWorld& InWorld, FAGX_SimObjectsImporterHelper& InHelper)
 			: Helper(InHelper)
 			, ImportedRoot(InImportedRoot)
 			, World(InWorld)
@@ -280,7 +280,7 @@ namespace
 		virtual ~EditorInstantiator() = default;
 
 	private:
-		FAGX_ArchiveImporterHelper Helper;
+		FAGX_SimObjectsImporterHelper Helper;
 		AActor& ImportedRoot;
 		UWorld& World;
 	};
@@ -310,7 +310,7 @@ AActor* AGX_ImporterToActorTree::ImportAGXArchive(const FString& ArchivePath)
 	FString Filename = FPaths::GetBaseFilename(ArchivePath);
 	ImportGroup->SetActorLabel(Filename);
 
-	FAGX_ArchiveImporterHelper Helper(ArchivePath);
+	FAGX_SimObjectsImporterHelper Helper(ArchivePath);
 	EditorInstantiator Instantiator(*ImportGroup, *World, Helper);
 	FAGXSimObjectsReader::Read(ArchivePath, Instantiator);
 

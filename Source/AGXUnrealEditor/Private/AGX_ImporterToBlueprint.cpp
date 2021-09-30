@@ -1,7 +1,7 @@
 #include "AGX_ImporterToBlueprint.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ArchiveImporterHelper.h"
+#include "AGX_SimObjectsImporterHelper.h"
 #include "AGX_ImportEnums.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
@@ -64,7 +64,7 @@ namespace
 		GEditor->SelectNone(false, false);
 	}
 
-	FString CreateBlueprintPackagePath(FAGX_ArchiveImporterHelper& Helper)
+	FString CreateBlueprintPackagePath(FAGX_SimObjectsImporterHelper& Helper)
 	{
 		// Create directory for this archive and a "Blueprints" directory inside of that.
 		/// \todo I think this is more complicated than it needs to be. What are all the pieces for?
@@ -123,7 +123,7 @@ namespace
 	class FBlueprintBody final : public FAGXSimObjectBody
 	{
 	public:
-		FBlueprintBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
+		FBlueprintBody(UAGX_RigidBodyComponent& InBody, FAGX_SimObjectsImporterHelper& InHelper)
 			: Body(InBody)
 			, Helper(InHelper)
 		{
@@ -156,13 +156,13 @@ namespace
 
 	private:
 		UAGX_RigidBodyComponent& Body;
-		FAGX_ArchiveImporterHelper& Helper;
+		FAGX_SimObjectsImporterHelper& Helper;
 	};
 
 	class FBlueprintInstantiator final : public FAGXSimObjectsInstantiator
 	{
 	public:
-		FBlueprintInstantiator(AActor& InBlueprintTemplate, FAGX_ArchiveImporterHelper& InHelper)
+		FBlueprintInstantiator(AActor& InBlueprintTemplate, FAGX_SimObjectsImporterHelper& InHelper)
 			: Helper(InHelper)
 			, BlueprintTemplate(InBlueprintTemplate)
 		{
@@ -350,8 +350,8 @@ namespace
 			}
 
 			FTwoBodyTireSimObjectBodies ArchiveBodies;
-			ArchiveBodies.TireBodyArchive.reset(InstantiateBody(TireBody));
-			ArchiveBodies.HubBodyArchive.reset(InstantiateBody(HubBody));
+			ArchiveBodies.TireBodySimObject.reset(InstantiateBody(TireBody));
+			ArchiveBodies.HubBodySimObject.reset(InstantiateBody(HubBody));
 
 			Helper.InstantiateTwoBodyTire(Barrier, BlueprintTemplate, true);
 			return ArchiveBodies;
@@ -369,11 +369,11 @@ namespace
 		using FShapeMaterialPair = std::pair<UAGX_ShapeMaterialAsset*, UAGX_ShapeMaterialAsset*>;
 
 	private:
-		FAGX_ArchiveImporterHelper Helper;
+		FAGX_SimObjectsImporterHelper Helper;
 		AActor& BlueprintTemplate;
 	};
 
-	bool AddComponentsFromArchive(AActor& ImportedActor, FAGX_ArchiveImporterHelper& Helper)
+	bool AddComponentsFromArchive(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
 		FSuccessOrError SuccessOrError =
@@ -386,7 +386,7 @@ namespace
 		return SuccessOrError.Success;
 	}
 
-	bool AddComponentsFromUrdf(AActor& ImportedActor, FAGX_ArchiveImporterHelper& Helper)
+	bool AddComponentsFromUrdf(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
 		FAGX_UrdfImporterHelper* HelperUrdf = static_cast<FAGX_UrdfImporterHelper*>(&Helper);
 
@@ -401,7 +401,7 @@ namespace
 		return SuccessOrError.Success;
 	}
 
-	AActor* CreateTemplate(FAGX_ArchiveImporterHelper& Helper, EAGX_ImportType ImportType)
+	AActor* CreateTemplate(FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType)
 	{
 		UActorFactory* Factory =
 			GEditor->FindActorFactoryByClass(UActorFactoryEmptyActor::StaticClass());
@@ -489,7 +489,7 @@ namespace
 
 UBlueprint* AGX_ImporterToBlueprint::ImportAGXArchive(const FString& ArchivePath)
 {
-	FAGX_ArchiveImporterHelper Helper(ArchivePath);
+	FAGX_SimObjectsImporterHelper Helper(ArchivePath);
 	PreCreationSetup();
 	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
 	UPackage* Package = GetPackage(BlueprintPackagePath);

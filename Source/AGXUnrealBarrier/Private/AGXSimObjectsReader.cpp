@@ -202,16 +202,16 @@ namespace
 			FTwoBodyTireSimObjectBodies ArchiveBodies = Instantiator.InstantiateTwoBodyTire(
 				AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
 
-			if (ArchiveBodies.TireBodyArchive)
+			if (ArchiveBodies.TireBodySimObject)
 			{
 				::InstantiateShapesInBody(
-					Tire->getTireRigidBody(), *ArchiveBodies.TireBodyArchive, Instantiator);
+					Tire->getTireRigidBody(), *ArchiveBodies.TireBodySimObject, Instantiator);
 			}
 
-			if (ArchiveBodies.HubBodyArchive)
+			if (ArchiveBodies.HubBodySimObject)
 			{
 				::InstantiateShapesInBody(
-					Tire->getHubRigidBody(), *ArchiveBodies.HubBodyArchive, Instantiator);
+					Tire->getHubRigidBody(), *ArchiveBodies.HubBodySimObject, Instantiator);
 			}
 		}
 	}

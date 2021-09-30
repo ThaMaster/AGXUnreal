@@ -47,7 +47,7 @@ class UStaticMesh;
  * An Unreal Engine side helper that creates `[UA]AGX_.*` objects from Barrier objects read from an
  * AGX Dynamics archive.
  */
-struct FAGX_ArchiveImporterHelper
+struct FAGX_SimObjectsImporterHelper
 {
 public:
 	/** Create a new UAGX_RigidBodyComponent in the given actor. */
@@ -135,7 +135,7 @@ public:
 	using FShapeMaterialPair = std::pair<UAGX_ShapeMaterialAsset*, UAGX_ShapeMaterialAsset*>;
 	FShapeMaterialPair GetShapeMaterials(const FContactMaterialBarrier& ContactMaterial);
 
-	explicit FAGX_ArchiveImporterHelper(const FString& ArchiveFilePath);
+	explicit FAGX_SimObjectsImporterHelper(const FString& ArchiveFilePath);
 
 	const FString ArchiveFilePath;
 	const FString ArchiveFileName;

@@ -1,4 +1,4 @@
-#include "AGX_ArchiveImporterHelper.h"
+#include "AGX_SimObjectsImporterHelper.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
@@ -67,7 +67,7 @@ namespace
 	}
 };
 
-UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::InstantiateBody(
+UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 	const FRigidBodyBarrier& Barrier, AActor& Actor)
 {
 	// Only instantiate body if it has not already been instantiated. It might have been
@@ -125,7 +125,7 @@ UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::InstantiateBody(
 	return Component;
 }
 
-AAGX_RigidBodyActor* FAGX_ArchiveImporterHelper::InstantiateBody(
+AAGX_RigidBodyActor* FAGX_SimObjectsImporterHelper::InstantiateBody(
 	const FRigidBodyBarrier& Barrier, UWorld& World)
 {
 	// Only instantiate body if it has not already been instantiated. It might have been
@@ -476,7 +476,7 @@ namespace
 	}
 }
 
-UAGX_SphereShapeComponent* FAGX_ArchiveImporterHelper::InstantiateSphere(
+UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 	const FSphereShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
 {
 	UAGX_SphereShapeComponent* Component = FAGX_EditorUtilities::CreateSphereShape(&Owner, Body);
@@ -494,7 +494,7 @@ UAGX_SphereShapeComponent* FAGX_ArchiveImporterHelper::InstantiateSphere(
 	return Component;
 }
 
-UAGX_BoxShapeComponent* FAGX_ArchiveImporterHelper::InstantiateBox(
+UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 	const FBoxShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
 {
 	UAGX_BoxShapeComponent* Component = FAGX_EditorUtilities::CreateBoxShape(&Owner, Body);
@@ -512,7 +512,7 @@ UAGX_BoxShapeComponent* FAGX_ArchiveImporterHelper::InstantiateBox(
 	return Component;
 }
 
-UAGX_CylinderShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCylinder(
+UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 	const FCylinderShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
 {
 	UAGX_CylinderShapeComponent* Component =
@@ -531,7 +531,7 @@ UAGX_CylinderShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCylinder(
 	return Component;
 }
 
-UAGX_CapsuleShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCapsule(
+UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 	const FCapsuleShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
 {
 	UAGX_CapsuleShapeComponent* Component = FAGX_EditorUtilities::CreateCapsuleShape(&Owner, Body);
@@ -549,7 +549,7 @@ UAGX_CapsuleShapeComponent* FAGX_ArchiveImporterHelper::InstantiateCapsule(
 	return Component;
 }
 
-UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
+UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	const FTrimeshShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
 {
 	UAGX_TrimeshShapeComponent* Component =
@@ -604,7 +604,7 @@ UAGX_TrimeshShapeComponent* FAGX_ArchiveImporterHelper::InstantiateTrimesh(
 	return Component;
 }
 
-UAGX_ShapeMaterialAsset* FAGX_ArchiveImporterHelper::InstantiateShapeMaterial(
+UAGX_ShapeMaterialAsset* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
 	/// \todo Do we need any special handling of the default material?
@@ -614,7 +614,7 @@ UAGX_ShapeMaterialAsset* FAGX_ArchiveImporterHelper::InstantiateShapeMaterial(
 	return Asset;
 }
 
-UAGX_ContactMaterialAsset* FAGX_ArchiveImporterHelper::InstantiateContactMaterial(
+UAGX_ContactMaterialAsset* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
 	const FContactMaterialBarrier& Barrier)
 {
 	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
@@ -627,7 +627,7 @@ namespace
 {
 	template <typename UComponent, typename FBarrier>
 	UComponent* InstantiateConstraint(
-		const FBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper,
+		const FBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
 		const TArray<FGuid>& IgnoreList)
 	{
 		if (IgnoreList.Contains(Barrier.GetGuid()))
@@ -637,7 +637,7 @@ namespace
 			return nullptr;
 		}
 
-		FAGX_ArchiveImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
+		FAGX_SimObjectsImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
 		if (Bodies.first == nullptr)
 		{
 			// Not having a second body is fine, means that the first body is constrained to the
@@ -666,7 +666,7 @@ namespace
 
 	template <typename UActor, typename FBarrier>
 	UActor* InstantiateConstraint(
-		const FBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper,
+		const FBarrier& Barrier, FAGX_SimObjectsImporterHelper& Helper,
 		const TArray<FGuid>& IgnoreList)
 	{
 		if (IgnoreList.Contains(Barrier.GetGuid()))
@@ -676,7 +676,7 @@ namespace
 			return nullptr;
 		}
 
-		FAGX_ArchiveImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
+		FAGX_SimObjectsImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
 		if (Bodies.first == nullptr)
 		{
 			WriteImportErrorMessage(
@@ -709,7 +709,7 @@ namespace
 
 	template <typename UComponent>
 	UComponent* InstantiateConstraint1Dof(
-		const FConstraint1DOFBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper,
+		const FConstraint1DOFBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
 		const TArray<FGuid>& IgnoreList)
 	{
 		return InstantiateConstraint<UComponent>(Barrier, Owner, Helper, IgnoreList);
@@ -717,7 +717,7 @@ namespace
 
 	template <typename UActor>
 	UActor* InstantiateConstraint1Dof(
-		const FConstraint1DOFBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper,
+		const FConstraint1DOFBarrier& Barrier, FAGX_SimObjectsImporterHelper& Helper,
 		const TArray<FGuid>& IgnoreList)
 	{
 		UActor* Actor = InstantiateConstraint<UActor>(Barrier, Helper, IgnoreList);
@@ -732,7 +732,7 @@ namespace
 
 	template <typename UConstraint>
 	UConstraint* InstantiateConstraint2Dof(
-		const FConstraint2DOFBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper,
+		const FConstraint2DOFBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
 		const TArray<FGuid>& IgnoreList)
 	{
 		return InstantiateConstraint<UConstraint>(Barrier, Owner, Helper, IgnoreList);
@@ -740,7 +740,7 @@ namespace
 
 	template <typename UActor>
 	UActor* InstantiateConstraint2Dof(
-		const FConstraint2DOFBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper,
+		const FConstraint2DOFBarrier& Barrier, FAGX_SimObjectsImporterHelper& Helper,
 		const TArray<FGuid>& IgnoreList)
 	{
 		UActor* Actor = InstantiateConstraint<UActor>(Barrier, Helper, IgnoreList);
@@ -754,89 +754,89 @@ namespace
 	}
 }
 
-AAGX_HingeConstraintActor* FAGX_ArchiveImporterHelper::InstantiateHinge(
+AAGX_HingeConstraintActor* FAGX_SimObjectsImporterHelper::InstantiateHinge(
 	const FHingeBarrier& Barrier)
 {
 	return ::InstantiateConstraint1Dof<AAGX_HingeConstraintActor>(
 		Barrier, *this, ConstraintIgnoreList);
 }
 
-UAGX_HingeConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateHinge(
+UAGX_HingeConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateHinge(
 	const FHingeBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_HingeConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-AAGX_PrismaticConstraintActor* FAGX_ArchiveImporterHelper::InstantiatePrismatic(
+AAGX_PrismaticConstraintActor* FAGX_SimObjectsImporterHelper::InstantiatePrismatic(
 	const FPrismaticBarrier& Barrier)
 {
 	return ::InstantiateConstraint1Dof<AAGX_PrismaticConstraintActor>(
 		Barrier, *this, ConstraintIgnoreList);
 }
 
-UAGX_PrismaticConstraintComponent* FAGX_ArchiveImporterHelper::InstantiatePrismatic(
+UAGX_PrismaticConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiatePrismatic(
 	const FPrismaticBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_PrismaticConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-AAGX_BallConstraintActor* FAGX_ArchiveImporterHelper::InstantiateBallJoint(
+AAGX_BallConstraintActor* FAGX_SimObjectsImporterHelper::InstantiateBallJoint(
 	const FBallJointBarrier& Barrier)
 {
 	return ::InstantiateConstraint<AAGX_BallConstraintActor>(Barrier, *this, ConstraintIgnoreList);
 }
 
-UAGX_BallConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateBallJoint(
+UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallJoint(
 	const FBallJointBarrier& Barrier, AActor& Owner)
 {
 	return InstantiateConstraint<UAGX_BallConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-AAGX_CylindricalConstraintActor* FAGX_ArchiveImporterHelper::InstantiateCylindricalJoint(
+AAGX_CylindricalConstraintActor* FAGX_SimObjectsImporterHelper::InstantiateCylindricalJoint(
 	const FCylindricalJointBarrier& Barrier)
 {
 	return ::InstantiateConstraint2Dof<AAGX_CylindricalConstraintActor>(
 		Barrier, *this, ConstraintIgnoreList);
 }
 
-UAGX_CylindricalConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateCylindricalJoint(
+UAGX_CylindricalConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateCylindricalJoint(
 	const FCylindricalJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint2Dof<UAGX_CylindricalConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-AAGX_DistanceConstraintActor* FAGX_ArchiveImporterHelper::InstantiateDistanceJoint(
+AAGX_DistanceConstraintActor* FAGX_SimObjectsImporterHelper::InstantiateDistanceJoint(
 	const FDistanceJointBarrier& Barrier)
 {
 	return ::InstantiateConstraint1Dof<AAGX_DistanceConstraintActor>(
 		Barrier, *this, ConstraintIgnoreList);
 }
 
-UAGX_DistanceConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateDistanceJoint(
+UAGX_DistanceConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateDistanceJoint(
 	const FDistanceJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_DistanceConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-AAGX_LockConstraintActor* FAGX_ArchiveImporterHelper::InstantiateLockJoint(
+AAGX_LockConstraintActor* FAGX_SimObjectsImporterHelper::InstantiateLockJoint(
 	const FLockJointBarrier& Barrier)
 {
 	return ::InstantiateConstraint<AAGX_LockConstraintActor>(Barrier, *this, ConstraintIgnoreList);
 }
 
-UAGX_LockConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateLockJoint(
+UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockJoint(
 	const FLockJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint<UAGX_LockConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-UAGX_TwoBodyTireComponent* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
+UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire(
 	const FTwoBodyTireBarrier& Barrier, AActor& Owner, bool IsBlueprintOwner)
 {
 	UAGX_TwoBodyTireComponent* Component = NewObject<UAGX_TwoBodyTireComponent>(&Owner);
@@ -880,7 +880,7 @@ UAGX_TwoBodyTireComponent* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 	return Component;
 }
 
-AAGX_TwoBodyTireActor* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
+AAGX_TwoBodyTireActor* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire(
 	const FTwoBodyTireBarrier& Barrier, UWorld& World)
 {
 	AAGX_TwoBodyTireActor* NewActor =
@@ -923,7 +923,7 @@ AAGX_TwoBodyTireActor* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 	return NewActor;
 }
 
-UAGX_CollisionGroupDisablerComponent* FAGX_ArchiveImporterHelper::InstantiateCollisionGroupDisabler(
+UAGX_CollisionGroupDisablerComponent* FAGX_SimObjectsImporterHelper::InstantiateCollisionGroupDisabler(
 	AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs)
 {
 	UAGX_CollisionGroupDisablerComponent* Component =
@@ -941,7 +941,7 @@ UAGX_CollisionGroupDisablerComponent* FAGX_ArchiveImporterHelper::InstantiateCol
 	return Component;
 }
 
-AAGX_CollisionGroupDisablerActor* FAGX_ArchiveImporterHelper::InstantiateCollisionGroupDisabler(
+AAGX_CollisionGroupDisablerActor* FAGX_SimObjectsImporterHelper::InstantiateCollisionGroupDisabler(
 	UWorld& World, const TArray<std::pair<FString, FString>>& DisabledPairs)
 {
 	AAGX_CollisionGroupDisablerActor* NewActor = World.SpawnActor<AAGX_CollisionGroupDisablerActor>(
@@ -963,7 +963,7 @@ AAGX_CollisionGroupDisablerActor* FAGX_ArchiveImporterHelper::InstantiateCollisi
 	return NewActor;
 }
 
-UAGX_WireComponent* FAGX_ArchiveImporterHelper::InstantiateWire(
+UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	const FWireBarrier& Barrier, AActor& Owner)
 {
 	UAGX_WireComponent* Component = NewObject<UAGX_WireComponent>(&Owner);
@@ -1139,7 +1139,7 @@ UAGX_WireComponent* FAGX_ArchiveImporterHelper::InstantiateWire(
 	return Component;
 }
 
-AActor* FAGX_ArchiveImporterHelper::InstantiateWire(const FWireBarrier& Barrier, UWorld& World)
+AActor* FAGX_SimObjectsImporterHelper::InstantiateWire(const FWireBarrier& Barrier, UWorld& World)
 {
 	// We don't have a dedicated Wire Actor, so create a plain Actor and add a Wire Component to it.
 	AActor* NewActor = World.SpawnActor<AActor>(AActor::StaticClass(), FTransform::Identity);
@@ -1154,7 +1154,7 @@ AActor* FAGX_ArchiveImporterHelper::InstantiateWire(const FWireBarrier& Barrier,
 	return NewActor;
 }
 
-UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(
+UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::GetBody(
 	const FRigidBodyBarrier& Barrier, bool LogErrorIfNotFound)
 {
 	/// \todo Callers cannot differentiate between a nullptr return because the Barrier really
@@ -1182,19 +1182,19 @@ UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(
 	return Component;
 }
 
-FAGX_ArchiveImporterHelper::FBodyPair FAGX_ArchiveImporterHelper::GetBodies(
+FAGX_SimObjectsImporterHelper::FBodyPair FAGX_SimObjectsImporterHelper::GetBodies(
 	const FConstraintBarrier& Barrier)
 {
 	return {GetBody(Barrier.GetFirstBody()), GetBody(Barrier.GetSecondBody())};
 }
 
-UAGX_ShapeMaterialAsset* FAGX_ArchiveImporterHelper::GetShapeMaterial(
+UAGX_ShapeMaterialAsset* FAGX_SimObjectsImporterHelper::GetShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
 	return RestoredShapeMaterials.FindRef(Barrier.GetGuid());
 }
 
-FAGX_ArchiveImporterHelper::FShapeMaterialPair FAGX_ArchiveImporterHelper::GetShapeMaterials(
+FAGX_SimObjectsImporterHelper::FShapeMaterialPair FAGX_SimObjectsImporterHelper::GetShapeMaterials(
 	const FContactMaterialBarrier& ContactMaterial)
 {
 	return {
@@ -1241,7 +1241,7 @@ namespace
 	}
 }
 
-FAGX_ArchiveImporterHelper::FAGX_ArchiveImporterHelper(
+FAGX_SimObjectsImporterHelper::FAGX_SimObjectsImporterHelper(
 	const FString& InArchiveFilePath)
 	: ArchiveFilePath(InArchiveFilePath)
 	, ArchiveFileName(FPaths::GetBaseFilename(InArchiveFilePath))
