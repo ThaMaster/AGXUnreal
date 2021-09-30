@@ -199,7 +199,7 @@ namespace
 				continue;
 			}
 
-			FTwoBodyTireArchiveBodies ArchiveBodies = Instantiator.InstantiateTwoBodyTire(
+			FTwoBodyTireSimObjectBodies ArchiveBodies = Instantiator.InstantiateTwoBodyTire(
 				AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
 
 			if (ArchiveBodies.TireBodyArchive)

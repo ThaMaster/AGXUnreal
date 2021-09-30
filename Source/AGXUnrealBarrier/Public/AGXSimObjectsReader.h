@@ -29,8 +29,8 @@ class FWireBarrier;
 
 /*
 The separation between the Unreal part and the AGX Dynamics part of the plugin
-makes reading .agx archives a bit complicated. The reader consists of two
-parts, one that reads and traverses the AGX Dynamics objects and one that
+makes reading .agx archives or URDF files a bit complicated. The reader consists
+of two parts, one that reads and traverses the AGX Dynamics objects and one that
 creates AGXUnreal objects corresponding to the AGX Dynamics objects. An object
 oriented approach is used where a set of abstract classes and pure virtual
 member functions define the interface that the AGX Dynamics side of the reader
@@ -39,32 +39,32 @@ implementation of the member functions creates the corresponding AGXUnreal
 objects.
 
 The main abstract base class is FAGXSimObjectsInstantiator. An instance of this
-class must be passed when reading an AGX Dynamics archive. The Instantiator is
-notified of top level objects, such as RigidBodies, found in the AGX Dynamics
-archive and the Instantiator is expected to create a persistent representation
-of that top level object. A handle, FAGXSimObjectBody for a RigidBody, to the
-created object is returned to the archive reader. The object handle is notified
-of sub-objects, such as shapes, that are found in the top level object. Barrier
-objects are used to pass the AGX Dynamics state from the reader part to the
-AGXUnreal part. The Barrier objects are short-lived and should only be used for
-the duration of the notification call.
+class must be passed when reading an AGX Dynamics archive or URDF file. The 
+Instantiator is notified of top level objects, such as RigidBodies, found in the 
+file  and the Instantiator is expected to create a persistent representation of 
+that top level object. A handle, FAGXSimObjectBody for a RigidBody, to the created 
+object is returned to the SimObjectsReader. The object handle is notified of 
+sub-objects, such as shapes, that are found in the top level object. Barrier objects
+ are used to pass the AGX Dynamics state from the reader part to the AGXUnreal part. 
+The Barrier objects are short-lived and should only be used for the duration of
+the notification call.
 */
 
 class FAGXSimObjectBody;
 
 /**
- * Struct for holding Rigid Body Archives of TwoBodyTire.
+ * Struct for holding Rigid Body Simulation Objects of TwoBodyTire.
  */
-struct FTwoBodyTireArchiveBodies
+struct FTwoBodyTireSimObjectBodies
 {
-	FTwoBodyTireArchiveBodies() = default;
-	FTwoBodyTireArchiveBodies(FAGXSimObjectBody* InTire, FAGXSimObjectBody* InHub)
-		: TireBodyArchive {InTire}
-		, HubBodyArchive {InHub}
+	FTwoBodyTireSimObjectBodies() = default;
+	FTwoBodyTireSimObjectBodies(FAGXSimObjectBody* InTire, FAGXSimObjectBody* InHub)
+		: TireBodySimObject {InTire}
+		, HubBodySimObject {InHub}
 	{
 	}
-	std::unique_ptr<FAGXSimObjectBody> TireBodyArchive;
-	std::unique_ptr<FAGXSimObjectBody> HubBodyArchive;
+	std::unique_ptr<FAGXSimObjectBody> TireBodySimObject;
+	std::unique_ptr<FAGXSimObjectBody> HubBodySimObject;
 };
 
 /**
@@ -158,7 +158,7 @@ public:
 	virtual void DisabledCollisionGroups(
 		const TArray<std::pair<FString, FString>>& DisabledGroups) = 0;
 
-	virtual FTwoBodyTireArchiveBodies InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Tire) = 0;
+	virtual FTwoBodyTireSimObjectBodies InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Tire) = 0;
 
 	virtual void InstantiateWire(const FWireBarrier& Wire) = 0;
 
@@ -169,12 +169,12 @@ public:
 namespace FAGXSimObjectsReader
 {
 	/**
-	 * Read the AGX Dynamics archive pointed to by 'Filename' and for each
+	 * Read the file pointed to by 'Filename' and for each
 	 * supported object found call the corresponding Instantiate member function
 	 * on the given 'Instantiator' or a handle returned from the 'Instantiator'.
-	 * @param Filename Path to the AGX Dynamics archive to read.
+	 * @param Filename Path to the file (usually a .agx or .urdf) to read.
 	 * @param Instantiator Set of callback functions to call for each object read.
-	 * @return True if the archive was read successfully.
+	 * @return True if the file was read successfully.
 	 */
 	AGXUNREALBARRIER_API FSuccessOrError
 	Read(const FString& Filename, FAGXSimObjectsInstantiator& Instantiator);

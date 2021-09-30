@@ -332,7 +332,7 @@ namespace
 			Helper.InstantiateContactMaterial(Barrier);
 		}
 
-		virtual FTwoBodyTireArchiveBodies InstantiateTwoBodyTire(
+		virtual FTwoBodyTireSimObjectBodies InstantiateTwoBodyTire(
 			const FTwoBodyTireBarrier& Barrier) override
 		{
 			// Instantiate the Tire and Hub Rigid Bodies. This adds them to the RestoredBodies TMap
@@ -346,10 +346,10 @@ namespace
 					TEXT("At lest one of the Rigid Bodies referenced by the TwoBodyTire %s did not "
 						 "have a native Rigid Body. The TwoBodyTire will not be instantiated."),
 					*Barrier.GetName());
-				return FTwoBodyTireArchiveBodies(new NopEditorBody(), new NopEditorBody());
+				return FTwoBodyTireSimObjectBodies(new NopEditorBody(), new NopEditorBody());
 			}
 
-			FTwoBodyTireArchiveBodies ArchiveBodies;
+			FTwoBodyTireSimObjectBodies ArchiveBodies;
 			ArchiveBodies.TireBodyArchive.reset(InstantiateBody(TireBody));
 			ArchiveBodies.HubBodyArchive.reset(InstantiateBody(HubBody));
 

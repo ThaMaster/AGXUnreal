@@ -256,17 +256,17 @@ namespace
 			Helper.InstantiateContactMaterial(Barrier);
 		}
 
-		virtual FTwoBodyTireArchiveBodies InstantiateTwoBodyTire(
+		virtual FTwoBodyTireSimObjectBodies InstantiateTwoBodyTire(
 			const FTwoBodyTireBarrier& Barrier) override
 		{
 			AAGX_TwoBodyTireActor* Actor = Helper.InstantiateTwoBodyTire(Barrier, World);
 			if (Actor == nullptr)
 			{
-				return FTwoBodyTireArchiveBodies(new NopEditorBody, new NopEditorBody);
+				return FTwoBodyTireSimObjectBodies(new NopEditorBody, new NopEditorBody);
 			}
 
 			Actor->AttachToActor(&ImportedRoot, FAttachmentTransformRules::KeepWorldTransform);
-			return FTwoBodyTireArchiveBodies(
+			return FTwoBodyTireSimObjectBodies(
 				new FEditorBody(*Actor->TireRigidBodyComponent, Helper),
 				new FEditorBody(*Actor->HubRigidBodyComponent, Helper));
 		}
