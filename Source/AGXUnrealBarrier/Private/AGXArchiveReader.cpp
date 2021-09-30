@@ -47,7 +47,7 @@ namespace
 {
 	void InstantiateShapes(
 		const agxCollide::ShapeRefVector& Shapes, FAGXArchiveInstantiator& Instantiator,
-		FAGXSimObjectBody* ArchiveBody = nullptr)
+		FAGXSimObjectBody* SimObjBody = nullptr)
 	{
 		for (const agxCollide::ShapeRef& Shape : Shapes)
 		{
@@ -57,41 +57,41 @@ namespace
 				{
 					agxCollide::Sphere* Sphere {Shape->as<agxCollide::Sphere>()};
 					Instantiator.InstantiateSphere(
-						AGXBarrierFactories::CreateSphereShapeBarrier(Sphere), ArchiveBody);
+						AGXBarrierFactories::CreateSphereShapeBarrier(Sphere), SimObjBody);
 					break;
 				}
 				case agxCollide::Shape::BOX:
 				{
 					agxCollide::Box* Box {Shape->as<agxCollide::Box>()};
 					Instantiator.InstantiateBox(
-						AGXBarrierFactories::CreateBoxShapeBarrier(Box), ArchiveBody);
+						AGXBarrierFactories::CreateBoxShapeBarrier(Box), SimObjBody);
 					break;
 				}
 				case agxCollide::Shape::CYLINDER:
 				{
 					agxCollide::Cylinder* Cylinder {Shape->as<agxCollide::Cylinder>()};
 					Instantiator.InstantiateCylinder(
-						AGXBarrierFactories::CreateCylinderShapeBarrier(Cylinder), ArchiveBody);
+						AGXBarrierFactories::CreateCylinderShapeBarrier(Cylinder), SimObjBody);
 					break;
 				}
 				case agxCollide::Shape::CAPSULE:
 				{
 					agxCollide::Capsule* Capsule {Shape->as<agxCollide::Capsule>()};
 					Instantiator.InstantiateCapsule(
-						AGXBarrierFactories::CreateCapsuleShapeBarrier(Capsule), ArchiveBody);
+						AGXBarrierFactories::CreateCapsuleShapeBarrier(Capsule), SimObjBody);
 					break;
 				}
 				case agxCollide::Shape::TRIMESH:
 				{
 					agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
 					Instantiator.InstantiateTrimesh(
-						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh), ArchiveBody);
+						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh), SimObjBody);
 					break;
 				}
 				case agxCollide::Shape::GROUP:
 				{
 					agxCollide::ShapeGroup* Group {Shape->as<agxCollide::ShapeGroup>()};
-					InstantiateShapes(Group->getChildren(), Instantiator, ArchiveBody);
+					InstantiateShapes(Group->getChildren(), Instantiator, SimObjBody);
 					break;
 				}
 			}
@@ -99,7 +99,7 @@ namespace
 	}
 
 	void InstantiateShapesInBody(
-		agx::RigidBody* Body, FAGXSimObjectBody& ArchiveBody, FAGXArchiveInstantiator& Instantiator)
+		agx::RigidBody* Body, FAGXSimObjectBody& SimObjBody, FAGXArchiveInstantiator& Instantiator)
 	{
 		if (Body == nullptr)
 		{
@@ -109,7 +109,7 @@ namespace
 		const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
 		for (const agxCollide::GeometryRef& Geometry : Geometries)
 		{
-			::InstantiateShapes(Geometry->getShapes(), Instantiator, &ArchiveBody);
+			::InstantiateShapes(Geometry->getShapes(), Instantiator, &SimObjBody);
 		}
 	}
 }
@@ -238,12 +238,12 @@ namespace
 			}
 
 			FRigidBodyBarrier BodyBarrier {AGXBarrierFactories::CreateRigidBodyBarrier(Body)};
-			std::unique_ptr<FAGXSimObjectBody> ArchiveBody {
+			std::unique_ptr<FAGXSimObjectBody> SimObjBody {
 				Instantiator.InstantiateBody(BodyBarrier)};
 
-			if (ArchiveBody)
+			if (SimObjBody)
 			{
-				::InstantiateShapesInBody(Body, *ArchiveBody, Instantiator);
+				::InstantiateShapesInBody(Body, *SimObjBody, Instantiator);
 			}
 		}
 	}
