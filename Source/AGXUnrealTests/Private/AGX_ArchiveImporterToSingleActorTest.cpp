@@ -1071,13 +1071,10 @@ bool FClearRenderMaterialImportedCommand::Update()
 
 	// The error message that is printed when folders are deleted from under the editor.
 	//
-	// @todo The error is only printed sometimes. See GitLab issue #213. It is never printed
-	// on Windows, so we must add the error ourselves to ensure it has been encountered at least
-	// once which is demanded when using AddExpectedError.
-	// Passing 0 means it must be seen at least once with no upper limit.
-	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"),
-		EAutomationExpectedErrorFlags::Contains, 0);
-	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#if defined(__linux__)
+	// @todo The error is only printed sometimes. See GitLab issue #213.
+	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
 	// Files that are created by the test and thus safe to remove. The GUID values may make this
 	// test cumbersome to update since they will change every time the AGX Dynamics archive is
@@ -2232,14 +2229,10 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
-	// @todo The error is only printed sometimes. See GitLab issue #213. It is never printed
-	// on Windows, so we must add the error ourselves to ensure it has been encountered at least
-	// once which is demanded when using AddExpectedError.
-	// Passing 0 means it must be seen at least once with no upper limit.
-	Test.AddExpectedError(
-		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
-		0);
-	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#if defined(__linux__)
+	// @todo The error is only printed sometimes. See GitLab issue #213.
+	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
 	TArray<const TCHAR*> ExpectedFiles = {
 		TEXT("StaticMeshs"), TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
