@@ -4,7 +4,7 @@
 #include "AGX_ArchiveImporterHelper.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
-#include "AGXArchiveReader.h"
+#include "AGXSimObjectsReader.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_BallConstraintComponent.h"
@@ -284,6 +284,6 @@ AActor* AGX_ArchiveImporterToSingleActor::ImportAGXArchive(const FString& Archiv
 	NewActor->SetActorLabel(Filename);
 
 	SingleActorInstantiator Instantiator(*World, *NewActor, *NewRoot, ArchivePath);
-	FAGXArchiveReader::Read(ArchivePath, Instantiator);
+	FAGXSimObjectsReader::Read(ArchivePath, Instantiator);
 	return NewActor;
 }

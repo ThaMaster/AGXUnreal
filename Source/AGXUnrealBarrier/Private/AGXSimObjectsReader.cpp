@@ -1,4 +1,4 @@
-#include "AGXArchiveReader.h"
+#include "AGXSimObjectsReader.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
@@ -408,7 +408,7 @@ namespace
 	}
 }
 
-FSuccessOrError FAGXArchiveReader::Read(
+FSuccessOrError FAGXSimObjectsReader::Read(
 	const FString& Filename, FAGXArchiveInstantiator& Instantiator)
 {
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
@@ -432,7 +432,7 @@ FSuccessOrError FAGXArchiveReader::Read(
 	return FSuccessOrError(true);
 }
 
-AGXUNREALBARRIER_API FSuccessOrError FAGXArchiveReader::ReadUrdf(
+AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 	const FString& UrdfFilePath, const FString& UrdfPackagePath,
 	FAGXArchiveInstantiator& Instantiator)
 {

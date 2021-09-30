@@ -6,7 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_UrdfImporterHelper.h"
-#include "AGXArchiveReader.h"
+#include "AGXSimObjectsReader.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
@@ -377,7 +377,7 @@ namespace
 	{
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
 		FSuccessOrError SuccessOrError =
-			FAGXArchiveReader::Read(Helper.ArchiveFilePath, Instantiator);
+			FAGXSimObjectsReader::Read(Helper.ArchiveFilePath, Instantiator);
 		if (!SuccessOrError.Success)
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
@@ -392,7 +392,7 @@ namespace
 
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
 		FSuccessOrError SuccessOrError =
-			FAGXArchiveReader::ReadUrdf(HelperUrdf->ArchiveFilePath, HelperUrdf->UrdfPackagePath, Instantiator);
+			FAGXSimObjectsReader::ReadUrdf(HelperUrdf->ArchiveFilePath, HelperUrdf->UrdfPackagePath, Instantiator);
 		if (!SuccessOrError.Success)
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(

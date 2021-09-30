@@ -5,7 +5,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyComponent.h"
-#include "AGXArchiveReader.h"
+#include "AGXSimObjectsReader.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerActor.h"
 /// \todo Creating constraint actors for now, but will switch to creating
 /// components when we do import to Blueprint.
@@ -312,7 +312,7 @@ AActor* AGX_ArchiveImporterToActorTree::ImportAGXArchive(const FString& ArchiveP
 
 	FAGX_ArchiveImporterHelper Helper(ArchivePath);
 	EditorInstantiator Instantiator(*ImportGroup, *World, Helper);
-	FAGXArchiveReader::Read(ArchivePath, Instantiator);
+	FAGXSimObjectsReader::Read(ArchivePath, Instantiator);
 
 	return ImportGroup;
 }

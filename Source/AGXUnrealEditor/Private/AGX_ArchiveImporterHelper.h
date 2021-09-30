@@ -1,7 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGXArchiveReader.h"
+#include "AGXSimObjectsReader.h"
 #include "AGX_ImportEnums.h"
 
 // Unreal Engine includes.

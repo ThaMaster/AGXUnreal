@@ -166,7 +166,7 @@ public:
 	virtual ~FAGXArchiveInstantiator() = default;
 };
 
-namespace FAGXArchiveReader
+namespace FAGXSimObjectsReader
 {
 	/**
 	 * Read the AGX Dynamics archive pointed to by 'Filename' and for each
