@@ -152,13 +152,13 @@ public:
 	TArray<FGuid> ConstraintIgnoreList;
 };
 
-/// \todo Consider creating a FEditorBody inheriting from FAGXArchiveBody that has a Body and a
+/// \todo Consider creating a FEditorBody inheriting from FAGXSimObjectBody that has a Body and a
 /// Helper and simply forwards each call to the helper.
 
 /**
- * An ArchiveBody that creates nothing. Used when the Unreal object couldn't be created.
+ * A SimObjectBody that creates nothing. Used when the Unreal object couldn't be created.
  */
-class NopEditorBody final : public FAGXArchiveBody
+class NopEditorBody final : public FAGXSimObjectBody
 {
 	virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
 	{

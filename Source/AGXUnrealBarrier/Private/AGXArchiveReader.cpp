@@ -47,7 +47,7 @@ namespace
 {
 	void InstantiateShapes(
 		const agxCollide::ShapeRefVector& Shapes, FAGXArchiveInstantiator& Instantiator,
-		FAGXArchiveBody* ArchiveBody = nullptr)
+		FAGXSimObjectBody* ArchiveBody = nullptr)
 	{
 		for (const agxCollide::ShapeRef& Shape : Shapes)
 		{
@@ -99,7 +99,7 @@ namespace
 	}
 
 	void InstantiateShapesInBody(
-		agx::RigidBody* Body, FAGXArchiveBody& ArchiveBody, FAGXArchiveInstantiator& Instantiator)
+		agx::RigidBody* Body, FAGXSimObjectBody& ArchiveBody, FAGXArchiveInstantiator& Instantiator)
 	{
 		if (Body == nullptr)
 		{
@@ -238,7 +238,7 @@ namespace
 			}
 
 			FRigidBodyBarrier BodyBarrier {AGXBarrierFactories::CreateRigidBodyBarrier(Body)};
-			std::unique_ptr<FAGXArchiveBody> ArchiveBody {
+			std::unique_ptr<FAGXSimObjectBody> ArchiveBody {
 				Instantiator.InstantiateBody(BodyBarrier)};
 
 			if (ArchiveBody)

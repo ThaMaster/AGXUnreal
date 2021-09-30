@@ -60,7 +60,7 @@ namespace
 {
 	// Archive instantiator that creates sub-objects under RigidBody. Knows how
 	// to create various subclasses of AGX_ShapesComponent in Unreal Editor.
-	class FEditorBody final : public FAGXArchiveBody
+	class FEditorBody final : public FAGXSimObjectBody
 	{
 	public:
 		FEditorBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
@@ -110,7 +110,7 @@ namespace
 		{
 		}
 
-		virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
+		virtual FAGXSimObjectBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
 		{
 			AAGX_RigidBodyActor* NewActor = Helper.InstantiateBody(Barrier, World);
 			if (NewActor == nullptr)
@@ -158,7 +158,7 @@ namespace
 		}
 
 		virtual void InstantiateSphere(
-			const FSphereShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FSphereShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -170,7 +170,7 @@ namespace
 			}
 		}
 
-		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -183,7 +183,7 @@ namespace
 		}
 
 		virtual void InstantiateCylinder(
-			const FCylinderShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FCylinderShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -196,7 +196,7 @@ namespace
 		}
 
 		virtual void InstantiateCapsule(
-			const FCapsuleShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FCapsuleShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -209,7 +209,7 @@ namespace
 		}
 
 		virtual void InstantiateTrimesh(
-			const FTrimeshShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FTrimeshShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{

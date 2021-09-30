@@ -42,7 +42,7 @@ The main abstract base class is FAGXArchiveInstantiator. An instance of this
 class must be passed when reading an AGX Dynamics archive. The Instantiator is
 notified of top level objects, such as RigidBodies, found in the AGX Dynamics
 archive and the Instantiator is expected to create a persistent representation
-of that top level object. A handle, FAGXArchiveBody for a RigidBody, to the
+of that top level object. A handle, FAGXSimObjectBody for a RigidBody, to the
 created object is returned to the archive reader. The object handle is notified
 of sub-objects, such as shapes, that are found in the top level object. Barrier
 objects are used to pass the AGX Dynamics state from the reader part to the
@@ -50,7 +50,7 @@ AGXUnreal part. The Barrier objects are short-lived and should only be used for
 the duration of the notification call.
 */
 
-class FAGXArchiveBody;
+class FAGXSimObjectBody;
 
 /**
  * Struct for holding Rigid Body Archives of TwoBodyTire.
@@ -58,19 +58,19 @@ class FAGXArchiveBody;
 struct FTwoBodyTireArchiveBodies
 {
 	FTwoBodyTireArchiveBodies() = default;
-	FTwoBodyTireArchiveBodies(FAGXArchiveBody* InTire, FAGXArchiveBody* InHub)
+	FTwoBodyTireArchiveBodies(FAGXSimObjectBody* InTire, FAGXSimObjectBody* InHub)
 		: TireBodyArchive {InTire}
 		, HubBodyArchive {InHub}
 	{
 	}
-	std::unique_ptr<FAGXArchiveBody> TireBodyArchive;
-	std::unique_ptr<FAGXArchiveBody> HubBodyArchive;
+	std::unique_ptr<FAGXSimObjectBody> TireBodyArchive;
+	std::unique_ptr<FAGXSimObjectBody> HubBodyArchive;
 };
 
 /**
  * Instantiator for sub-objects of RigidBody.
  */
-class AGXUNREALBARRIER_API FAGXArchiveBody
+class AGXUNREALBARRIER_API FAGXSimObjectBody
 {
 public:
 	/**
@@ -108,7 +108,7 @@ public:
 	 */
 	virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) = 0;
 
-	virtual ~FAGXArchiveBody() = default;
+	virtual ~FAGXSimObjectBody() = default;
 };
 
 /**
@@ -122,7 +122,7 @@ public:
 	 * @param RigidBody The body for which a persistent representation should be made.
 	 * @return A handle to the persistent object through which shapes can be added.
 	 */
-	virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& RigidBody) = 0;
+	virtual FAGXSimObjectBody* InstantiateBody(const FRigidBodyBarrier& RigidBody) = 0;
 
 	virtual void InstantiateHinge(const FHingeBarrier& Hinge) = 0;
 
@@ -137,19 +137,19 @@ public:
 	virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) = 0;
 
 	virtual void InstantiateSphere(
-		const FSphereShapeBarrier& Sphere, FAGXArchiveBody* Body = nullptr) = 0;
+		const FSphereShapeBarrier& Sphere, FAGXSimObjectBody* Body = nullptr) = 0;
 
 	virtual void InstantiateBox(
-		const FBoxShapeBarrier& Box, FAGXArchiveBody* Body = nullptr) = 0;
+		const FBoxShapeBarrier& Box, FAGXSimObjectBody* Body = nullptr) = 0;
 
 	virtual void InstantiateCylinder(
-		const FCylinderShapeBarrier& Cylinder, FAGXArchiveBody* Body = nullptr) = 0;
+		const FCylinderShapeBarrier& Cylinder, FAGXSimObjectBody* Body = nullptr) = 0;
 
 	virtual void InstantiateCapsule(
-		const FCapsuleShapeBarrier& Capsule, FAGXArchiveBody* Body = nullptr) = 0;
+		const FCapsuleShapeBarrier& Capsule, FAGXSimObjectBody* Body = nullptr) = 0;
 
 	virtual void InstantiateTrimesh(
-		const FTrimeshShapeBarrier& Trimesh, FAGXArchiveBody* Body = nullptr) = 0;
+		const FTrimeshShapeBarrier& Trimesh, FAGXSimObjectBody* Body = nullptr) = 0;
 
 	virtual void InstantiateShapeMaterial(const FShapeMaterialBarrier& ShapeMaterial) = 0;
 

@@ -120,7 +120,7 @@ namespace
 		return Package;
 	}
 
-	class FBlueprintBody final : public FAGXArchiveBody
+	class FBlueprintBody final : public FAGXSimObjectBody
 	{
 	public:
 		FBlueprintBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
@@ -168,7 +168,7 @@ namespace
 		{
 		}
 
-		virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
+		virtual FAGXSimObjectBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
 		{
 			UAGX_RigidBodyComponent* Component = Helper.InstantiateBody(Barrier, BlueprintTemplate);
 			if (Component == nullptr)
@@ -229,7 +229,7 @@ namespace
 		}
 
 		virtual void InstantiateSphere(
-			const FSphereShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FSphereShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -242,7 +242,7 @@ namespace
 		}
 
 		virtual void InstantiateBox(
-			const FBoxShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FBoxShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -255,7 +255,7 @@ namespace
 		}
 
 		virtual void InstantiateCylinder(
-			const FCylinderShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FCylinderShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -268,7 +268,7 @@ namespace
 		}
 
 		virtual void InstantiateCapsule(
-			const FCapsuleShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FCapsuleShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -281,7 +281,7 @@ namespace
 		}
 
 		virtual void InstantiateTrimesh(
-			const FTrimeshShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FTrimeshShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
