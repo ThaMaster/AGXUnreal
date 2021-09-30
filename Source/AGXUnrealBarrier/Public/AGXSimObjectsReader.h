@@ -38,7 +38,7 @@ uses, while the AGXUnreal side inherits from the abstract classes and in the
 implementation of the member functions creates the corresponding AGXUnreal
 objects.
 
-The main abstract base class is FAGXArchiveInstantiator. An instance of this
+The main abstract base class is FAGXSimObjectsInstantiator. An instance of this
 class must be passed when reading an AGX Dynamics archive. The Instantiator is
 notified of top level objects, such as RigidBodies, found in the AGX Dynamics
 archive and the Instantiator is expected to create a persistent representation
@@ -114,7 +114,7 @@ public:
 /**
  * Instantiator base class for top-level objects.
  */
-class AGXUNREALBARRIER_API FAGXArchiveInstantiator
+class AGXUNREALBARRIER_API FAGXSimObjectsInstantiator
 {
 public:
 	/**
@@ -163,7 +163,7 @@ public:
 	virtual void InstantiateWire(const FWireBarrier& Wire) = 0;
 
 
-	virtual ~FAGXArchiveInstantiator() = default;
+	virtual ~FAGXSimObjectsInstantiator() = default;
 };
 
 namespace FAGXSimObjectsReader
@@ -177,9 +177,9 @@ namespace FAGXSimObjectsReader
 	 * @return True if the archive was read successfully.
 	 */
 	AGXUNREALBARRIER_API FSuccessOrError
-	Read(const FString& Filename, FAGXArchiveInstantiator& Instantiator);
+	Read(const FString& Filename, FAGXSimObjectsInstantiator& Instantiator);
 
 	AGXUNREALBARRIER_API FSuccessOrError ReadUrdf(
 		const FString& UrdfFilePath, const FString& UrdfPackagePath,
-		FAGXArchiveInstantiator& Instantiator);
+		FAGXSimObjectsInstantiator& Instantiator);
 };

@@ -159,7 +159,7 @@ namespace
 		FAGX_ArchiveImporterHelper& Helper;
 	};
 
-	class FBlueprintInstantiator final : public FAGXArchiveInstantiator
+	class FBlueprintInstantiator final : public FAGXSimObjectsInstantiator
 	{
 	public:
 		FBlueprintInstantiator(AActor& InBlueprintTemplate, FAGX_ArchiveImporterHelper& InHelper)

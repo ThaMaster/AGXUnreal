@@ -99,7 +99,7 @@ namespace
 		UAGX_RigidBodyComponent& Body;
 	};
 
-	class EditorInstantiator final : public FAGXArchiveInstantiator
+	class EditorInstantiator final : public FAGXSimObjectsInstantiator
 	{
 	public:
 		EditorInstantiator(

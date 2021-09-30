@@ -84,7 +84,7 @@ namespace
 	/**
 	 * An archive instantiator that creates all objects as Components in a given Actor.
 	 */
-	class SingleActorInstantiator final : public FAGXArchiveInstantiator
+	class SingleActorInstantiator final : public FAGXSimObjectsInstantiator
 	{
 	public:
 		SingleActorInstantiator(

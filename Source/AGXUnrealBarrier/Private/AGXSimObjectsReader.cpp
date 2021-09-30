@@ -46,7 +46,7 @@
 namespace
 {
 	void InstantiateShapes(
-		const agxCollide::ShapeRefVector& Shapes, FAGXArchiveInstantiator& Instantiator,
+		const agxCollide::ShapeRefVector& Shapes, FAGXSimObjectsInstantiator& Instantiator,
 		FAGXSimObjectBody* SimObjBody = nullptr)
 	{
 		for (const agxCollide::ShapeRef& Shape : Shapes)
@@ -99,7 +99,7 @@ namespace
 	}
 
 	void InstantiateShapesInBody(
-		agx::RigidBody* Body, FAGXSimObjectBody& SimObjBody, FAGXArchiveInstantiator& Instantiator)
+		agx::RigidBody* Body, FAGXSimObjectBody& SimObjBody, FAGXSimObjectsInstantiator& Instantiator)
 	{
 		if (Body == nullptr)
 		{
@@ -139,7 +139,7 @@ namespace
 	 * Get all materials and create one shape material asset for each. Each agx::Material have a
 	 * unique name. Several agx::Geometries may use the same agx::Material.
 	 */
-	void ReadMaterials(agxSDK::Simulation& Simulation, FAGXArchiveInstantiator& Instantiator)
+	void ReadMaterials(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
 		const agxSDK::StringMaterialRefTable& MaterialsTable =
 			Simulation.getMaterialManager()->getMaterials();
@@ -162,7 +162,7 @@ namespace
 
 	void ReadTireModels(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXArchiveInstantiator& Instantiator)
+		FAGXSimObjectsInstantiator& Instantiator)
 	{
 		const agxSDK::AssemblyHash& Assemblies = Simulation.getAssemblies();
 		if (!VerifyImportSize(
@@ -218,7 +218,7 @@ namespace
 
 	void ReadRigidBodies(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXArchiveInstantiator& Instantiator)
+		FAGXSimObjectsInstantiator& Instantiator)
 	{
 		agx::RigidBodyRefVector& Bodies {Simulation.getRigidBodies()};
 		if (!VerifyImportSize(Bodies.size(), std::numeric_limits<int32>::max(), Filename, "bodies"))
@@ -251,7 +251,7 @@ namespace
 	// Reads and instantiates all Geometries not owned by a RigidBody.
 	void ReadBodilessGeometries(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXArchiveInstantiator& Instantiator)
+		FAGXSimObjectsInstantiator& Instantiator)
 	{
 		const agxCollide::GeometryRefVector& Geometries = Simulation.getGeometries();
 		if (!VerifyImportSize(
@@ -273,7 +273,7 @@ namespace
 
 	void ReadConstraints(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXArchiveInstantiator& Instantiator)
+		FAGXSimObjectsInstantiator& Instantiator)
 	{
 		agx::ConstraintRefSetVector& Constraints = Simulation.getConstraints();
 		if (!VerifyImportSize(
@@ -324,7 +324,7 @@ namespace
 		}
 	}
 
-	void ReadCollisionGroups(agxSDK::Simulation& Simulation, FAGXArchiveInstantiator& Instantiator)
+	void ReadCollisionGroups(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
 		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString
 		{
@@ -357,7 +357,7 @@ namespace
 
 	void ReadWires(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXArchiveInstantiator& Instantiator)
+		FAGXSimObjectsInstantiator& Instantiator)
 	{
 		agxWire::WirePtrVector Wires = agxWire::Wire::findAll(&Simulation);
 		for (agxWire::Wire* Wire : Wires)
@@ -374,7 +374,7 @@ namespace
 
 	void ReadAll(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXArchiveInstantiator& Instantiator)
+		FAGXSimObjectsInstantiator& Instantiator)
 	{
 		const float AmountOfWork = 7.0f; // Keep up to date with the number of /Read.+/-calls.
 		FScopedSlowTask MyTask(
@@ -409,7 +409,7 @@ namespace
 }
 
 FSuccessOrError FAGXSimObjectsReader::Read(
-	const FString& Filename, FAGXArchiveInstantiator& Instantiator)
+	const FString& Filename, FAGXSimObjectsInstantiator& Instantiator)
 {
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
 	try
@@ -434,7 +434,7 @@ FSuccessOrError FAGXSimObjectsReader::Read(
 
 AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 	const FString& UrdfFilePath, const FString& UrdfPackagePath,
-	FAGXArchiveInstantiator& Instantiator)
+	FAGXSimObjectsInstantiator& Instantiator)
 {
 	agxSDK::AssemblyRef Model =
 		agxModel::UrdfReader::read(Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);
