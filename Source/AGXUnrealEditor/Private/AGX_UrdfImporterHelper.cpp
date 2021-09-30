@@ -2,7 +2,7 @@
 
 FAGX_UrdfImporterHelper::FAGX_UrdfImporterHelper(
 	const FString& InUrdfFilePath, const FString& InUrdfPackagePath)
-	: FAGX_ArchiveImporterHelper(InUrdfFilePath, EAGX_ImportType::Urdf)
+	: FAGX_ArchiveImporterHelper(InUrdfFilePath)
 	, UrdfPackagePath(InUrdfPackagePath)
 {
 }

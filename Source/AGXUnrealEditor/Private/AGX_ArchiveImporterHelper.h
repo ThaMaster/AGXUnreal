@@ -135,13 +135,12 @@ public:
 	using FShapeMaterialPair = std::pair<UAGX_ShapeMaterialAsset*, UAGX_ShapeMaterialAsset*>;
 	FShapeMaterialPair GetShapeMaterials(const FContactMaterialBarrier& ContactMaterial);
 
-	explicit FAGX_ArchiveImporterHelper(const FString& ArchiveFilePath, EAGX_ImportType InImportType);
+	explicit FAGX_ArchiveImporterHelper(const FString& ArchiveFilePath);
 
 	const FString ArchiveFilePath;
 	const FString ArchiveFileName;
 	const FString ArchiveName;
 	const FString DirectoryName;
-	const EAGX_ImportType ImportType;
 	TMap<FGuid, UStaticMesh*> RestoredMeshes;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterialAsset*> RestoredShapeMaterials;

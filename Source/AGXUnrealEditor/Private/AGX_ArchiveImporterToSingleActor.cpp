@@ -2,7 +2,6 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ArchiveImporterHelper.h"
-#include "AGX_ImportEnums.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGXArchiveReader.h"
@@ -91,7 +90,7 @@ namespace
 		SingleActorInstantiator(
 			UWorld& InWorld, AActor& InActor, USceneComponent& InRoot,
 			const FString& InArchiveFilePath)
-			: Helper(InArchiveFilePath, EAGX_ImportType::Agx)
+			: Helper(InArchiveFilePath)
 			, World(InWorld)
 			, Actor(InActor)
 			, Root(InRoot)

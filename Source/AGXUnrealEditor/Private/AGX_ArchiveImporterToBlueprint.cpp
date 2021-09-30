@@ -64,12 +64,12 @@ namespace
 		GEditor->SelectNone(false, false);
 	}
 
-	FString CreateBlueprintPackagePath(FAGX_ArchiveImporterHelper& Helper, EAGX_ImportType ImportType)
+	FString CreateBlueprintPackagePath(FAGX_ArchiveImporterHelper& Helper)
 	{
 		// Create directory for this archive and a "Blueprints" directory inside of that.
 		/// \todo I think this is more complicated than it needs to be. What are all the pieces for?
 		FString ParentPackagePath =
-			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.DirectoryName, TEXT("Blueprint"), ImportType);
+			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
 		FString ParentAssetName = Helper.ArchiveFileName; /// \todo Why is this never used?
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
 
@@ -489,9 +489,9 @@ namespace
 
 UBlueprint* AGX_ArchiveImporterToBlueprint::ImportAGXArchive(const FString& ArchivePath)
 {
-	FAGX_ArchiveImporterHelper Helper(ArchivePath, EAGX_ImportType::Agx);
+	FAGX_ArchiveImporterHelper Helper(ArchivePath);
 	PreCreationSetup();
-	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper, EAGX_ImportType::Agx);
+	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
 	UPackage* Package = GetPackage(BlueprintPackagePath);
 	AActor* Template = CreateTemplate(Helper, EAGX_ImportType::Agx);
 	if (Template == nullptr)
@@ -508,7 +508,7 @@ UBlueprint* AGX_ArchiveImporterToBlueprint::ImportURDF(
 {
 	FAGX_UrdfImporterHelper Helper(UrdfFilePath, UrdfPackagePath);
 	PreCreationSetup();
-	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper, EAGX_ImportType::Urdf);
+	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
 	UPackage* Package = GetPackage(BlueprintPackagePath);
 	AActor* Template = CreateTemplate(Helper, EAGX_ImportType::Urdf);
 	if (Template == nullptr)
