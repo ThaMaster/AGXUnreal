@@ -3,7 +3,7 @@
 class UBlueprint;
 class FString;
 
-namespace AGX_ArchiveImporterToBlueprint
+namespace AGX_ImporterToBlueprint
 {
 	/**
 	 * Read simulation objects from the .agx archive pointed to by 'ArchivePath` and create an Actor

@@ -1,4 +1,4 @@
-#include "AGX_ArchiveImporterToBlueprint.h"
+#include "AGX_ImporterToBlueprint.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ArchiveImporterHelper.h"
@@ -487,7 +487,7 @@ namespace
 	}
 }
 
-UBlueprint* AGX_ArchiveImporterToBlueprint::ImportAGXArchive(const FString& ArchivePath)
+UBlueprint* AGX_ImporterToBlueprint::ImportAGXArchive(const FString& ArchivePath)
 {
 	FAGX_ArchiveImporterHelper Helper(ArchivePath);
 	PreCreationSetup();
@@ -503,7 +503,7 @@ UBlueprint* AGX_ArchiveImporterToBlueprint::ImportAGXArchive(const FString& Arch
 	return Blueprint;
 }
 
-UBlueprint* AGX_ArchiveImporterToBlueprint::ImportURDF(
+UBlueprint* AGX_ImporterToBlueprint::ImportURDF(
 	const FString& UrdfFilePath, const FString& UrdfPackagePath)
 {
 	FAGX_UrdfImporterHelper Helper(UrdfFilePath, UrdfPackagePath);

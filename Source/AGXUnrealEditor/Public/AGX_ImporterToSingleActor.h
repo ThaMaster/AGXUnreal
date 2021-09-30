@@ -6,7 +6,7 @@
 class AActor;
 class FString;
 
-class AGXUNREALEDITOR_API AGX_ArchiveImporterToSingleActor
+class AGXUNREALEDITOR_API AGX_ImporterToSingleActor
 {
 public:
 	/**

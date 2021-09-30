@@ -1,4 +1,4 @@
-#include "AGX_ArchiveImporterToActorTree.h"
+#include "AGX_ImporterToActorTree.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ArchiveImporterHelper.h"
@@ -287,7 +287,7 @@ namespace
 
 }
 
-AActor* AGX_ArchiveImporterToActorTree::ImportAGXArchive(const FString& ArchivePath)
+AActor* AGX_ImporterToActorTree::ImportAGXArchive(const FString& ArchivePath)
 {
 	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
 	if (World == nullptr)

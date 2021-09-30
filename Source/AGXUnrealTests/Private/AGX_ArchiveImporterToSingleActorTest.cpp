@@ -6,7 +6,7 @@
 #define AGX_TEST_WIRE_IMPORT 0
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ArchiveImporterToSingleActor.h"
+#include "AGX_ImporterToSingleActor.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
@@ -36,7 +36,7 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
 /*
- * This file contains a set of tests for AGX_ArchiveImporterToSingleActor, which imports an AGX
+ * This file contains a set of tests for AGX_ImporterToSingleActor, which imports an AGX
  * Dynamics archive into the current world as a single Actor that contains ActorComponents for each
  * imported object.
  *
@@ -67,7 +67,7 @@ bool FImportArchiveSingleActorCommand::Update()
 		Test.AddError(FString::Printf(TEXT("Did not find an archive named '%s'."), *ArchiveName));
 		return true;
 	}
-	Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
+	Contents = AGX_ImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
 }

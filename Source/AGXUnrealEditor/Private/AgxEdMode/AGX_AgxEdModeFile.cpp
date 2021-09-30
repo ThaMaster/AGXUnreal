@@ -1,9 +1,9 @@
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ArchiveImporterToSingleActor.h"
-#include "AGX_ArchiveImporterToActorTree.h"
-#include "AGX_ArchiveImporterToBlueprint.h"
+#include "AGX_ImporterToSingleActor.h"
+#include "AGX_ImporterToActorTree.h"
+#include "AGX_ImporterToBlueprint.h"
 #include "AGX_ArchiveExporter.h"
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
@@ -89,7 +89,7 @@ void UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor()
 	{
 		return;
 	}
-	AGX_ArchiveImporterToSingleActor::ImportAGXArchive(Filename);
+	AGX_ImporterToSingleActor::ImportAGXArchive(Filename);
 }
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToActorTree()
@@ -99,7 +99,7 @@ void UAGX_AgxEdModeFile::ImportAgxArchiveToActorTree()
 	{
 		return;
 	}
-	AGX_ArchiveImporterToActorTree::ImportAGXArchive(Filename);
+	AGX_ImporterToActorTree::ImportAGXArchive(Filename);
 }
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()
@@ -110,7 +110,7 @@ void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()
 		return;
 	}
 
-	AGX_ArchiveImporterToBlueprint::ImportAGXArchive(Filename);
+	AGX_ImporterToBlueprint::ImportAGXArchive(Filename);
 }
 
 void UAGX_AgxEdModeFile::ImportUrdfToBlueprint()
@@ -123,7 +123,7 @@ void UAGX_AgxEdModeFile::ImportUrdfToBlueprint()
 
 	const FString UrdfPackagePath = SelectExistingDirectory("(Optional) Select URDF package directory", true);
 
-	AGX_ArchiveImporterToBlueprint::ImportURDF(UrdfFilePath, UrdfPackagePath);
+	AGX_ImporterToBlueprint::ImportURDF(UrdfFilePath, UrdfPackagePath);
 }
 
 void UAGX_AgxEdModeFile::ExportAgxArchive()
