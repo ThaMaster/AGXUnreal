@@ -150,7 +150,8 @@ FAGX_TopMenu::~FAGX_TopMenu()
 		LOCTEXT("FileMenuLabel", "File"),
 		LOCTEXT(
 			"FileMenuTooltip",
-			"Interoperability with external file formats, such AGX simulation files (.agx)."),
+			"Interoperability with external file formats, such AGX Dynamics files (.agx) "
+			"or URDF files (.urdf)."),
 		FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillFileMenu));
 
 	Builder.AddMenuSeparator();

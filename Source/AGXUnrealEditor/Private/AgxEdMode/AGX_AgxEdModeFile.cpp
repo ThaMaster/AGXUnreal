@@ -202,7 +202,8 @@ FText UAGX_AgxEdModeFile::GetDisplayName() const
 FText UAGX_AgxEdModeFile::GetTooltip() const
 {
 	return LOCTEXT(
-		"Tooltip", "Interoperability with external file formats, such AGX simulation files (.agx)");
+		"Tooltip", "Interoperability with external file formats, such AGX simulation files (.agx) "
+		"or URDF (.urdf) files.");
 }
 
 #undef LOCTEXT_NAMESPACE
