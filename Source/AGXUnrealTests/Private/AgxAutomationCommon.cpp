@@ -220,7 +220,7 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 	// I'm just worried that the wrong directory may be deleted in some circumstances.
 
 	const FString Root = FPaths::ProjectContentDir();
-	const FString ImportsLocal = FPaths::Combine(TEXT("ImportedAgxArchives"), ArchiveName);
+	const FString ImportsLocal = FPaths::Combine(TEXT("ImportedAGXModels"), ArchiveName);
 	const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
 	const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
 	if (ImportsFull == Root)
@@ -286,7 +286,7 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 	/// @todo The path for this particular run may be different, may have a _# suffix. How do I find
 	/// the path for this particular run?
 	const TCHAR* MeshPath = TEXT(
-								"StaticMesh'/Game/ImportedAgxArchives/simple_trimesh_build/StaticMeshs/"
+								"StaticMesh'/Game/ImportedAGXModels/simple_trimesh_build/StaticMeshs/"
 								"simple_trimesh.simple_trimesh'");
 	UObject* Asset = StaticLoadObject(UStaticMesh::StaticClass(), nullptr, MeshPath);
 	if (Asset == nullptr)
@@ -306,7 +306,7 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 	/// @todo The path for this particular run may be different, may have a _# suffix. How do I find
 	/// the path for this particular run?
 	const TCHAR* MeshPath = TEXT(
-		"StaticMesh'/Game/ImportedAgxArchives/simple_trimesh_build/StaticMeshs/"
+		"StaticMesh'/Game/ImportedAGXModels/simple_trimesh_build/StaticMeshs/"
 		"simple_trimesh.simple_trimesh'");
 	UObject* Asset = StaticLoadObject(UStaticMesh::StaticClass(), nullptr, MeshPath);
 	if (Asset == nullptr)

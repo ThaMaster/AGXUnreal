@@ -70,7 +70,7 @@ FString FAGX_ImportUtilities::CreatePackagePath(FString FileName, FString AssetT
 	{
 		return FString();
 	}
-	return FString::Printf(TEXT("/Game/ImportedAgxModels/%s/%ss/"), *FileName, *AssetType);
+	return FString::Printf(TEXT("/Game/ImportedAGXModels/%s/%ss/"), *FileName, *AssetType);
 }
 
 FString FAGX_ImportUtilities::CreatePackagePath(FString FileName)
@@ -80,7 +80,7 @@ FString FAGX_ImportUtilities::CreatePackagePath(FString FileName)
 	{
 		return FString();
 	}
-	return FString::Printf(TEXT("/Game/ImportedAgxModels/%s"), *FileName);
+	return FString::Printf(TEXT("/Game/ImportedAGXModels/%s"), *FileName);
 }
 
 FString FAGX_ImportUtilities::CreateAssetName(

@@ -28,7 +28,7 @@ class FAGX_ImportUtilities
 public:
 	/**
 	 * Create a package path for an asset of the given type. The returned path is the sanitized
-	 * version of "/Game/ImportedAgxModels/{FileName}/{AssetType}s/".
+	 * version of "/Game/ImportedAGXModels/{FileName}/{AssetType}s/".
 	 * @param FileName The name of the source file from which the asset was read.
 	 * @param AssetType The type of the asset.
 	 * @return A package path for the asset, or the empty string if the names are invalid.
@@ -39,7 +39,7 @@ public:
 	 * Create a package path for imported simulation objects with the given name.
 	 *
 	 * The given name is sanitized and the returned package path will then be
-	 * "/Game/ImportedAgxModels/{FileName}".
+	 * "/Game/ImportedAGXModels/{FileName}".
 	 *
 	 * No check is made for already existing packages with the same name.
 	 *
