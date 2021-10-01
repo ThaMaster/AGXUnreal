@@ -278,7 +278,7 @@ namespace
 			::InstantiateShapes(Geometry->getShapes(), Instantiator);
 		}
 
-		return false;
+		return true;
 	}
 
 	bool ReadConstraints(
