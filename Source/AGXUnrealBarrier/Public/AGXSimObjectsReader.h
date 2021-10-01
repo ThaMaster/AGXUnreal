@@ -139,8 +139,7 @@ public:
 	virtual void InstantiateSphere(
 		const FSphereShapeBarrier& Sphere, FAGXSimObjectBody* Body = nullptr) = 0;
 
-	virtual void InstantiateBox(
-		const FBoxShapeBarrier& Box, FAGXSimObjectBody* Body = nullptr) = 0;
+	virtual void InstantiateBox(const FBoxShapeBarrier& Box, FAGXSimObjectBody* Body = nullptr) = 0;
 
 	virtual void InstantiateCylinder(
 		const FCylinderShapeBarrier& Cylinder, FAGXSimObjectBody* Body = nullptr) = 0;
@@ -162,23 +161,33 @@ public:
 
 	virtual void InstantiateWire(const FWireBarrier& Wire) = 0;
 
-
 	virtual ~FAGXSimObjectsInstantiator() = default;
 };
 
 namespace FAGXSimObjectsReader
 {
 	/**
-	 * Read the file pointed to by 'Filename' and for each
+	 * Read the AGX Archive file pointed to by 'Filename' and for each
 	 * supported object found call the corresponding Instantiate member function
 	 * on the given 'Instantiator' or a handle returned from the 'Instantiator'.
-	 * @param Filename Path to the file (usually a .agx or .urdf) to read.
+	 * @param Filename Path to the .agx file to read.
 	 * @param Instantiator Set of callback functions to call for each object read.
 	 * @return True if the file was read successfully.
 	 */
 	AGXUNREALBARRIER_API FSuccessOrError
 	Read(const FString& Filename, FAGXSimObjectsInstantiator& Instantiator);
 
+	/**
+	 * Read the URDF file pointed to by 'Filename' and for each
+	 * supported object found call the corresponding Instantiate member function
+	 * on the given 'Instantiator' or a handle returned from the 'Instantiator'.
+	 * @param UrdfFilePath - The path to the URDF file to read.
+	 * @param UrdfPackagePath - The path to the package directory. Corresponds to the `package://`
+	 * part of any filepath in the .urdf file, typically used for pointing at mesh files. Can be
+	 * left empty if the URDF file does not have any file paths in it.
+	 * @param Instantiator Set of callback functions to call for each object read.
+	 * @return True if the file was read successfully.
+	 */
 	AGXUNREALBARRIER_API FSuccessOrError ReadUrdf(
 		const FString& UrdfFilePath, const FString& UrdfPackagePath,
 		FAGXSimObjectsInstantiator& Instantiator);
