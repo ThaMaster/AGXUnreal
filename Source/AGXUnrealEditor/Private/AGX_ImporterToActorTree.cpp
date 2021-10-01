@@ -58,7 +58,7 @@
 
 namespace
 {
-	// Archive instantiator that creates sub-objects under RigidBody. Knows how
+	// Simulation objects instantiator that creates sub-objects under RigidBody. Knows how
 	// to create various subclasses of AGX_ShapesComponent in Unreal Editor.
 	class FEditorBody final : public FAGXSimObjectBody
 	{

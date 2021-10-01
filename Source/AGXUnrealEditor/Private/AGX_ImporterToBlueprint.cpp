@@ -66,10 +66,10 @@ namespace
 
 	FString CreateBlueprintPackagePath(FAGX_SimObjectsImporterHelper& Helper)
 	{
-		// Create directory for this archive and a "Blueprints" directory inside of that.
+		// Create directory for this import and a "Blueprints" directory inside of that.
 		/// \todo I think this is more complicated than it needs to be. What are all the pieces for?
 		FString ParentPackagePath =
-			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
+			FAGX_ImportUtilities::CreatePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
 		FString ParentAssetName = Helper.ArchiveFileName; /// \todo Why is this never used?
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
 

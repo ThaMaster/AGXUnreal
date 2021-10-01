@@ -28,33 +28,33 @@ class FAGX_ImportUtilities
 public:
 	/**
 	 * Create a package path for an asset of the given type. The returned path is the sanitized
-	 * version of "/Game/ImportedAgxArchives/{ArchiveName}/{AssetType}s/".
-	 * @param ArchiveName The name of the archive from which the asset was read.
+	 * version of "/Game/ImportedAgxModels/{FileName}/{AssetType}s/".
+	 * @param FileName The name of the source file from which the asset was read.
 	 * @param AssetType The type of the asset.
 	 * @return A package path for the asset, or the empty string if the names are invalid.
 	 */
-	static FString CreateArchivePackagePath(FString ArchiveName, FString AssetType);
+	static FString CreatePackagePath(FString FileName, FString AssetType);
 
 	/**
-	 * Create a package path for an imported AGX Dynamics archive with the given name.
+	 * Create a package path for imported simulation objects with the given name.
 	 *
 	 * The given name is sanitized and the returned package path will then be
-	 * "/Game/ImportedAgxArchives/{ArchiveName}".
+	 * "/Game/ImportedAgxModels/{FileName}".
 	 *
 	 * No check is made for already existing packages with the same name.
 	 *
-	 * @param ArchiveName The name of the AGX Dynamics archive to create a package path for.
-	 * @return The package path for the AGX Dynamics archive.
+	 * @param FileName The name of the source file to create a package path for.
+	 * @return The package path for the imported asset.
 	 */
-	static FString CreateArchivePackagePath(FString ArchiveName);
+	static FString CreatePackagePath(FString FileName);
 
 	/**
-	 * Pick a name for an imported asset. NativeName and ArchiveName will be sanitized and the first
+	 * Pick a name for an imported asset. NativeName and FileName will be sanitized and the first
 	 * non-empty of the two is returned. If both sanitize to the empty string then AssetType is
 	 * returned unchanged. Even though the name returned will be valid, it may not be unique and may
 	 * therefore not be the final asset name.
 	 * @param NativeName The name of the restored object.
-	 * @param ArchiveName The of the archive from which the native object was read.
+	 * @param FileName The name of the source file from which the asset was read.
 	 * @param AssetType The type of the asset.
 	 * @return A safe name for the asset.
 	 */
@@ -80,10 +80,10 @@ public:
 	/// and/or asset name.
 
 	/**
-	 * Store the given Trimesh imported from an AGX Dynamics archive as an UStaticMesh asset.
+	 * Store the imported Trimesh as an UStaticMesh asset.
 	 *
 	 * @param Trimesh The imported trimesh to be saved.
-	 * @param DirectoryName The name of the directory where the archive's assets are collected.
+	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @param FallbackName Name to give the asset in case the trimesh doesn't have a source
 	 * name.
 	 * @return The created UStaticMesh asset.
@@ -93,33 +93,31 @@ public:
 		const FString& FallbackName);
 
 	/**
-	 * Store the given Render Data Mesh imported from an AGX Dynamics archive as an UStaticMesh
+	 * Store the imported Render Data Mesh as an UStaticMesh
 	 * asset.
 	 *
 	 * @param RenderData The Render Data holding the render mesh to store.
-	 * @param DirectoryName The name of the directory where the archive's assets are collected.
+	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @return The create UStaticMesh asset.
 	 */
 	static UStaticMesh* SaveImportedStaticMeshAsset(
 		const FRenderDataBarrier& RenderData, const FString& DirectoryName);
 
 	/**
-	 * Store an AGX Dynamics Material imported from an AGX Dynamics archive as an
-	 * UAGX_ShapeMaterialAsset.
+	 * Store an imported AGX Dynamics Material as an UAGX_ShapeMaterialAsset.
 	 * @param Material The imported material to be saved.
-	 * @param DirectoryName The name of the archive from which the material was read.
+	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @return The created ShapeMaterialAsset.
 	 */
 	static UAGX_ShapeMaterialAsset* SaveImportedShapeMaterialAsset(
 		const FShapeMaterialBarrier& Material, const FString& DirectoryName);
 
 	/**
-	 * Store an AGX Dynamics ContactMaterial imported from an AGX Dynamics archive as an
-	 * UAGX_ContactMaterialAsset.
+	 * Store an imported AGX Dynamics ContactMaterial as an UAGX_ContactMaterialAsset.
 	 * @param ContactMaterial The imported contact material to be saved.
 	 * @param Material1 The AGXUnreal ShapeMaterial for the first AGX Dynamics material.
 	 * @param Material2 The AGXUnreal ShapeMaterial for the second AGX Dynamics material.
-	 * @param DirectoryName The Name of the archive from which the material was read.
+	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @return The created ContactMaterialAsset.
 	 */
 	static UAGX_ContactMaterialAsset* SaveImportedContactMaterialAsset(
@@ -135,8 +133,8 @@ public:
 	 * possible, but a sequence number is added, using IAssetTools::CreateUniqueAssetName, in case
 	 * of a name conflict.
 	 * @param Imported AGX Dynamics Render Material parameters.
-	 * @param DirectoryName Name where assets for the imported AGX Dynamics archive should be
-	 * stored. Often the same as the archive itself.
+	 * @param DirectoryName Name where assets for the imported assets should be
+	 * stored. Often the same as the source filename itself.
 	 * @param MaterialName The name to give to the new Material Instance. A sequence number will be
 	 * added in case of a conflict
 	 * @return A new Material Instance if one could be created, or the base material, or

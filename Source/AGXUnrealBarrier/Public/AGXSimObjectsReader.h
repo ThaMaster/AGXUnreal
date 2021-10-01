@@ -39,13 +39,13 @@ implementation of the member functions creates the corresponding AGXUnreal
 objects.
 
 The main abstract base class is FAGXSimObjectsInstantiator. An instance of this
-class must be passed when reading an AGX Dynamics archive or URDF file. The 
-Instantiator is notified of top level objects, such as RigidBodies, found in the 
-file  and the Instantiator is expected to create a persistent representation of 
-that top level object. A handle, FAGXSimObjectBody for a RigidBody, to the created 
-object is returned to the SimObjectsReader. The object handle is notified of 
+class must be passed when reading an AGX Dynamics archive or URDF file. The
+Instantiator is notified of top level objects, such as RigidBodies, found in the
+file  and the Instantiator is expected to create a persistent representation of
+that top level object. A handle, FAGXSimObjectBody for a RigidBody, to the created
+object is returned to the SimObjectsReader. The object handle is notified of
 sub-objects, such as shapes, that are found in the top level object. Barrier objects
- are used to pass the AGX Dynamics state from the reader part to the AGXUnreal part. 
+ are used to pass the AGX Dynamics state from the reader part to the AGXUnreal part.
 The Barrier objects are short-lived and should only be used for the duration of
 the notification call.
 */

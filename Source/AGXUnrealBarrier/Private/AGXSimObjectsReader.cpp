@@ -41,7 +41,7 @@
 // Unreal Engine includes.
 #include "Misc/ScopedSlowTask.h"
 
-#define LOCTEXT_NAMESPACE "AGX_ARCHIVE_READER"
+#define LOCTEXT_NAMESPACE "AGX_SIM_OBJECTS_READER"
 
 namespace
 {
@@ -199,19 +199,19 @@ namespace
 				continue;
 			}
 
-			FTwoBodyTireSimObjectBodies ArchiveBodies = Instantiator.InstantiateTwoBodyTire(
+			FTwoBodyTireSimObjectBodies TireSimObject = Instantiator.InstantiateTwoBodyTire(
 				AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
 
-			if (ArchiveBodies.TireBodySimObject)
+			if (TireSimObject.TireBodySimObject)
 			{
 				::InstantiateShapesInBody(
-					Tire->getTireRigidBody(), *ArchiveBodies.TireBodySimObject, Instantiator);
+					Tire->getTireRigidBody(), *TireSimObject.TireBodySimObject, Instantiator);
 			}
 
-			if (ArchiveBodies.HubBodySimObject)
+			if (TireSimObject.HubBodySimObject)
 			{
 				::InstantiateShapesInBody(
-					Tire->getHubRigidBody(), *ArchiveBodies.HubBodySimObject, Instantiator);
+					Tire->getHubRigidBody(), *TireSimObject.HubBodySimObject, Instantiator);
 			}
 		}
 	}
