@@ -70,7 +70,7 @@ namespace
 		/// \todo I think this is more complicated than it needs to be. What are all the pieces for?
 		FString ParentPackagePath =
 			FAGX_ImportUtilities::CreatePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
-		FString ParentAssetName = Helper.ArchiveFileName; /// \todo Why is this never used?
+		FString ParentAssetName = Helper.SourceFileName; /// \todo Why is this never used?
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
 
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
@@ -82,8 +82,8 @@ namespace
 		FString Path = FPaths::GetPath(ParentPackage->GetName());
 
 		UE_LOG(
-			LogAGX, Display, TEXT("Archive '%s' imported to package '%s', path '%s'"),
-			*Helper.ArchiveFileName, *ParentPackagePath, *Path);
+			LogAGX, Display, TEXT("Model '%s' imported to package '%s', path '%s'"),
+			*Helper.SourceFileName, *ParentPackagePath, *Path);
 
 		// Create a known unique name for the Blueprint package, but don't create the actual
 		// package yet.
@@ -349,9 +349,9 @@ namespace
 				return FTwoBodyTireSimObjectBodies(new NopEditorBody(), new NopEditorBody());
 			}
 
-			FTwoBodyTireSimObjectBodies ArchiveBodies;
-			ArchiveBodies.TireBodySimObject.reset(InstantiateBody(TireBody));
-			ArchiveBodies.HubBodySimObject.reset(InstantiateBody(HubBody));
+			FTwoBodyTireSimObjectBodies TireBodies;
+			TireBodies.TireBodySimObject.reset(InstantiateBody(TireBody));
+			TireBodies.HubBodySimObject.reset(InstantiateBody(HubBody));
 
 			Helper.InstantiateTwoBodyTire(Barrier, BlueprintTemplate, true);
 			return ArchiveBodies;
@@ -373,11 +373,11 @@ namespace
 		AActor& BlueprintTemplate;
 	};
 
-	bool AddComponentsFromArchive(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
+	bool AddComponentsFromAGXArchive(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
 		FSuccessOrError SuccessOrError =
-			FAGXSimObjectsReader::Read(Helper.ArchiveFilePath, Instantiator);
+			FAGXSimObjectsReader::Read(Helper.SourceFilePath, Instantiator);
 		if (!SuccessOrError.Success)
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
@@ -391,8 +391,8 @@ namespace
 		FAGX_UrdfImporterHelper* HelperUrdf = static_cast<FAGX_UrdfImporterHelper*>(&Helper);
 
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
-		FSuccessOrError SuccessOrError =
-			FAGXSimObjectsReader::ReadUrdf(HelperUrdf->ArchiveFilePath, HelperUrdf->UrdfPackagePath, Instantiator);
+		FSuccessOrError SuccessOrError = FAGXSimObjectsReader::ReadUrdf(
+			HelperUrdf->SourceFilePath, HelperUrdf->UrdfPackagePath, Instantiator);
 		if (!SuccessOrError.Success)
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
@@ -436,7 +436,7 @@ namespace
 #endif
 
 		const bool Result = ImportType == EAGX_ImportType::Urdf ? AddComponentsFromUrdf(*RootActorContainer, Helper)
-										   : AddComponentsFromArchive(*RootActorContainer, Helper);
+								: AddComponentsFromAGXArchive(*RootActorContainer, Helper);
 
 		if (!Result)
 		{

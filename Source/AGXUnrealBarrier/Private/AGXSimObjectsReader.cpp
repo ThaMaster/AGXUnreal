@@ -121,7 +121,7 @@ namespace
 		if (Actual > Limit)
 		{
 			UE_LOG(
-				LogAGX, Error, TEXT("AGX Dynamics archive '%s' contains too many %s."), *Filename,
+				LogAGX, Error, TEXT("Import source file '%s' contains too many %s."), *Filename,
 				*Type);
 			return false;
 		}
