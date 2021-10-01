@@ -383,6 +383,11 @@ namespace
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 				SuccessOrError.Error, "Import AGX Dynamics archive to Blueprint");
 		}
+		else if (SuccessOrError.HasWarning)
+		{
+			FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(
+				SuccessOrError.Warning, "Import AGX Dynamics archive to Blueprint");
+		}
 		return SuccessOrError.Success;
 	}
 
@@ -397,6 +402,11 @@ namespace
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 				SuccessOrError.Error, "Import URDF model to Blueprint");
+		}
+		else if (SuccessOrError.HasWarning)
+		{
+			FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(
+				SuccessOrError.Warning, "Import URDF model to Blueprint");
 		}
 		return SuccessOrError.Success;
 	}

@@ -139,7 +139,7 @@ namespace
 	 * Get all materials and create one shape material asset for each. Each agx::Material have a
 	 * unique name. Several agx::Geometries may use the same agx::Material.
 	 */
-	void ReadMaterials(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
+	bool ReadMaterials(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
 		const agxSDK::StringMaterialRefTable& MaterialsTable =
 			Simulation.getMaterialManager()->getMaterials();
@@ -158,9 +158,11 @@ namespace
 			Instantiator.InstantiateContactMaterial(
 				AGXBarrierFactories::CreateContactMaterialBarrier(ContMat));
 		}
+
+		return true;
 	}
 
-	void ReadTireModels(
+	bool ReadTireModels(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FAGXSimObjectsInstantiator& Instantiator)
 	{
@@ -168,7 +170,7 @@ namespace
 		if (!VerifyImportSize(
 				Assemblies.size(), std::numeric_limits<int32>::max(), Filename, "assemblies"))
 		{
-			return;
+			return false;
 		}
 
 		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire, const FString& Description)
@@ -185,6 +187,7 @@ namespace
 			return true;
 		};
 
+		bool IssueEncountered = false;
 		for (const auto& Assembly : Assemblies)
 		{
 			agxModel::TwoBodyTire* Tire = dynamic_cast<agxModel::TwoBodyTire*>(Assembly.first);
@@ -196,6 +199,7 @@ namespace
 			if (!CheckBody(Tire->getTireRigidBody(), Tire, FString("Tire Rigid Body")) ||
 				!CheckBody(Tire->getHubRigidBody(), Tire, FString("Hub Rigid Body")))
 			{
+				IssueEncountered = true;
 				continue;
 			}
 
@@ -214,16 +218,18 @@ namespace
 					Tire->getHubRigidBody(), *TireSimObject.HubBodySimObject, Instantiator);
 			}
 		}
+
+		return !IssueEncountered;
 	}
 
-	void ReadRigidBodies(
+	bool ReadRigidBodies(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FAGXSimObjectsInstantiator& Instantiator)
 	{
 		agx::RigidBodyRefVector& Bodies {Simulation.getRigidBodies()};
 		if (!VerifyImportSize(Bodies.size(), std::numeric_limits<int32>::max(), Filename, "bodies"))
 		{
-			return;
+			return false;
 		}
 
 		for (agx::RigidBodyRef& Body : Bodies)
@@ -246,10 +252,12 @@ namespace
 				::InstantiateShapesInBody(Body, *SimObjBody, Instantiator);
 			}
 		}
+
+		return true;
 	}
 
 	// Reads and instantiates all Geometries not owned by a RigidBody.
-	void ReadBodilessGeometries(
+	bool ReadBodilessGeometries(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FAGXSimObjectsInstantiator& Instantiator)
 	{
@@ -257,7 +265,7 @@ namespace
 		if (!VerifyImportSize(
 				Geometries.size(), std::numeric_limits<int32>::max(), Filename, "geometries"))
 		{
-			return;
+			return false;
 		}
 
 		for (const agxCollide::GeometryRef& Geometry : Geometries)
@@ -269,9 +277,11 @@ namespace
 
 			::InstantiateShapes(Geometry->getShapes(), Instantiator);
 		}
+
+		return false;
 	}
 
-	void ReadConstraints(
+	bool ReadConstraints(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FAGXSimObjectsInstantiator& Instantiator)
 	{
@@ -279,7 +289,7 @@ namespace
 		if (!VerifyImportSize(
 				Constraints.size(), std::numeric_limits<int32>::max(), Filename, "constraints"))
 		{
-			return;
+			return false;
 		}
 
 		for (agx::ConstraintRef& Constraint : Constraints)
@@ -322,9 +332,11 @@ namespace
 					*Convert(Constraint->getName()));
 			}
 		}
+
+		return true;
 	}
 
-	void ReadCollisionGroups(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
+	bool ReadCollisionGroups(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
 		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString
 		{
@@ -353,9 +365,11 @@ namespace
 			DisabledGroups.Add({Group1, Group2});
 		}
 		Instantiator.DisabledCollisionGroups(DisabledGroups);
+
+		return true;
 	}
 
-	void ReadWires(
+	bool ReadWires(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FAGXSimObjectsInstantiator& Instantiator)
 	{
@@ -370,9 +384,11 @@ namespace
 			FWireBarrier Barrier = AGXBarrierFactories::CreateWireBarrier(Wire);
 			Instantiator.InstantiateWire(Barrier);
 		}
+
+		return true;
 	}
 
-	void ReadAll(
+	bool ReadAll(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FAGXSimObjectsInstantiator& Instantiator)
 	{
@@ -382,29 +398,29 @@ namespace
 			true);
 		MyTask.MakeDialog();
 
-		// TODO BEFORE MERGE: add return type indicating success or fail and return it from this
-		// function.
+		bool Result = true;
+		MyTask.EnterProgressFrame(1.0f);
+		Result &= ReadMaterials(Simulation, Instantiator);
 
 		MyTask.EnterProgressFrame(1.0f);
-		ReadMaterials(Simulation, Instantiator);
+		Result &= ReadTireModels(Simulation, Filename, Instantiator);
 
 		MyTask.EnterProgressFrame(1.0f);
-		ReadTireModels(Simulation, Filename, Instantiator);
+		Result &= ReadRigidBodies(Simulation, Filename, Instantiator);
 
 		MyTask.EnterProgressFrame(1.0f);
-		ReadRigidBodies(Simulation, Filename, Instantiator);
+		Result &= ReadBodilessGeometries(Simulation, Filename, Instantiator);
 
 		MyTask.EnterProgressFrame(1.0f);
-		ReadBodilessGeometries(Simulation, Filename, Instantiator);
+		Result &= ReadConstraints(Simulation, Filename, Instantiator);
 
 		MyTask.EnterProgressFrame(1.0f);
-		ReadConstraints(Simulation, Filename, Instantiator);
+		Result &= ReadCollisionGroups(Simulation, Instantiator);
 
 		MyTask.EnterProgressFrame(1.0f);
-		ReadCollisionGroups(Simulation, Instantiator);
+		Result &= ReadWires(Simulation, Filename, Instantiator);
 
-		MyTask.EnterProgressFrame(1.0f);
-		ReadWires(Simulation, Filename, Instantiator);
+		return Result;
 	}
 }
 
@@ -428,7 +444,14 @@ FSuccessOrError FAGXSimObjectsReader::Read(
 			FString::Printf(TEXT("Could not read .agx file '%s':\n\n%s"), *Filename, *What));
 	}
 
-	::ReadAll(*Simulation, Filename, Instantiator);
+	if(::ReadAll(*Simulation, Filename, Instantiator) == false)
+	{
+		FSuccessOrError Result(true);
+		Result.AddWarning("The import is complete but some unexpected issue occurred. Please check the "
+			"log for more information.");
+		return Result;
+	}
+
 	return FSuccessOrError(true);
 }
 
@@ -450,7 +473,15 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
 	Simulation->add(Model);
 
-	::ReadAll(*Simulation, UrdfFilePath, Instantiator);
+	if (::ReadAll(*Simulation, UrdfFilePath, Instantiator) == false)
+	{
+		FSuccessOrError Result(true);
+		Result.AddWarning(
+			"The import is complete but some unexpected issue occurred. Please check the "
+			"log for more information.");
+		return Result;
+	}
+	
 
 	return FSuccessOrError(true);
 }
