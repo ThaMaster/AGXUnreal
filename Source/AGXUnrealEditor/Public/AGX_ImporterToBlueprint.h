@@ -14,5 +14,15 @@ namespace AGX_ImporterToBlueprint
 	 */
 	UBlueprint* ImportAGXArchive(const FString& ArchivePath);
 
-	UBlueprint* ImportURDF(const FString& UrdfFilePath, const FString& UrdfPackagePath);
+	/**
+	 * Read simulation objects from the .urdf file pointed to by 'UrdfFilePath` and create an Actor
+	 * Blueprint populated with corresponding AGXUnreal objects.
+	 *
+	 * @param UrdfFilePath - The path to the URDF file to read.
+	 * @param UrdfPackagePath - The path to the package directory. Corresponds to the `package://`
+	 * part of any filepath in the .urdf file, typically used for pointing at mesh files. Can be
+	 * left empty if the URDF file does not have any file paths in it.
+	 * @return An Actor Blueprint containing the read objects.
+	 */
+	UBlueprint* ImportURDF(const FString& UrdfFilePath, const FString& UrdfPackagePath = "");
 }

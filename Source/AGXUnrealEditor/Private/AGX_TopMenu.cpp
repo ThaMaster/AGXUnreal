@@ -244,10 +244,10 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 		Builder,
 		LOCTEXT(
 			"FileMenuEntryLabelImportSingleActor",
-			"Import AGX Dynamics model to level as a single actor..."),
+			"Import AGX Dynamics Archive to level as a single actor..."),
 		LOCTEXT(
 			"FileMenuEntryTooTipImportSingleActor",
-			"Import an AGX Dynamics model into the current level as a single actor"),
+			"Import an AGX Dynamics Archive into the current level as a single actor"),
 		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor(); });
 
 	// Import AGX archive to in-level actor tree menu item.
@@ -255,10 +255,10 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 		Builder,
 		LOCTEXT(
 			"FileMenuEntryLabelImportActorTree",
-			"Import AGX Dynamics model to level as an actor tree..."),
+			"Import AGX Dynamics Archive to level as an actor tree..."),
 		LOCTEXT(
 			"FileMenuEntryToolTipImportActorTree",
-			"Import an AGX Dynamics model into the current level as a tree of actors."),
+			"Import an AGX Dynamics Archive into the current level as a tree of actors."),
 		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToActorTree(); });
 #endif
 
@@ -266,10 +266,10 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 	AddFileMenuEntry(
 		Builder,
 		LOCTEXT(
-			"FileMEnuEntryLabelImportBluePrint", "Import AGX Dynamics model to a Blueprint..."),
+			"FileMEnuEntryLabelImportBluePrint", "Import AGX Dynamics Archive to a Blueprint..."),
 		LOCTEXT(
 			"FileMenuEntryhTooltopImportBluePrint",
-			"Import an AGX Dynamics model to a Blueprint."),
+			"Import an AGX Dynamics Archive to a Blueprint."),
 		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint(); });
 
 	// Import URDF model to blueprint menu item.
@@ -289,7 +289,7 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 			"FileMenuEntryLabelEx", "Export Play-In-Editor Session to an AGX Dynamics Archive..."),
 		LOCTEXT(
 			"FileMenuEntryToolTipEx",
-			"Export an AGX model from the Editor. A Play-In-Editor session must be active."),
+			"Export an AGX Archive from the Editor. A Play-In-Editor session must be active."),
 		[]() { UAGX_AgxEdModeFile::ExportAgxArchive(); });
 }
 

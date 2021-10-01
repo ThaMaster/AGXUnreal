@@ -354,7 +354,7 @@ namespace
 			TireBodies.HubBodySimObject.reset(InstantiateBody(HubBody));
 
 			Helper.InstantiateTwoBodyTire(Barrier, BlueprintTemplate, true);
-			return ArchiveBodies;
+			return TireBodies;
 		}
 
 		virtual void InstantiateWire(const FWireBarrier& Barrier) override
