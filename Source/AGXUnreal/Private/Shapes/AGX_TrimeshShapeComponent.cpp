@@ -376,45 +376,47 @@ namespace
 		OutPositions.Reserve(NumPositions);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		([&](FRHICommandListImmediate& RHICmdList) {
-			// Copy vertex buffer.
-			auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
-			const uint32 NumPositionBytes = PositionRHI->GetSize();
-			FVector* PositionData = static_cast<FVector*>(
-				RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
-			for (uint32 I = 0; I < NumPositions; I++)
+		(
+			[&](FRHICommandListImmediate& RHICmdList)
 			{
-				OutPositions.Add(PositionData[I]);
-			}
-			RHIUnlockVertexBuffer(PositionRHI);
+				// Copy vertex buffer.
+				auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
+				const uint32 NumPositionBytes = PositionRHI->GetSize();
+				FVector* PositionData = static_cast<FVector*>(
+					RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
+				for (uint32 I = 0; I < NumPositions; I++)
+				{
+					OutPositions.Add(PositionData[I]);
+				}
+				RHIUnlockVertexBuffer(PositionRHI);
 
-			// Copy index buffer.
-			auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
-			if (IndexRHI->GetStride() == 2)
-			{
-				// Two byte index size.
-				uint16* IndexData = static_cast<uint16*>(
-					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-				for (uint32 i = 0; i < NumIndices; i++)
+				// Copy index buffer.
+				auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
+				if (IndexRHI->GetStride() == 2)
 				{
-					check(IndexData[i] < NumPositions);
-					OutIndices.Add(static_cast<uint32>(IndexData[i]));
+					// Two byte index size.
+					uint16* IndexData = static_cast<uint16*>(
+						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+					for (uint32 i = 0; i < NumIndices; i++)
+					{
+						check(IndexData[i] < NumPositions);
+						OutIndices.Add(static_cast<uint32>(IndexData[i]));
+					}
 				}
-			}
-			else
-			{
-				// Four byte index size (stride must be either 2 or 4).
-				check(IndexRHI->GetStride() == 4);
-				uint32* IndexData = static_cast<uint32*>(
-					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-				for (uint32 i = 0; i < NumIndices; i++)
+				else
 				{
-					check(IndexData[i] < NumPositions);
-					OutIndices.Add(IndexData[i]);
+					// Four byte index size (stride must be either 2 or 4).
+					check(IndexRHI->GetStride() == 4);
+					uint32* IndexData = static_cast<uint32*>(
+						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+					for (uint32 i = 0; i < NumIndices; i++)
+					{
+						check(IndexData[i] < NumPositions);
+						OutIndices.Add(IndexData[i]);
+					}
 				}
-			}
-			RHIUnlockIndexBuffer(IndexRHI);
-		});
+				RHIUnlockIndexBuffer(IndexRHI);
+			});
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();
@@ -498,40 +500,42 @@ namespace
 		RenderIndices.Reserve(NumIndices);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		([&](FRHICommandListImmediate& RHICmdList) {
-			// Copy position buffer.
-			FVector* PositionData = static_cast<FVector*>(
-				RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
-			for (uint32 i = 0; i < NumPositions; i++)
+		(
+			[&](FRHICommandListImmediate& RHICmdList)
 			{
-				RenderPositions.Add(PositionData[i]);
-			}
-			RHIUnlockVertexBuffer(PositionRhi);
+				// Copy position buffer.
+				FVector* PositionData = static_cast<FVector*>(
+					RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+				for (uint32 i = 0; i < NumPositions; i++)
+				{
+					RenderPositions.Add(PositionData[i]);
+				}
+				RHIUnlockVertexBuffer(PositionRhi);
 
-			// Copy index buffer.
-			if (IndexRhi->GetStride() == 2)
-			{
-				// Two byte index size.
-				uint16* IndexBufferData = static_cast<uint16*>(
-					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-				for (int32 i = 0; i < NumIndices; i++)
+				// Copy index buffer.
+				if (IndexRhi->GetStride() == 2)
 				{
-					RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
+					// Two byte index size.
+					uint16* IndexBufferData = static_cast<uint16*>(
+						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+					for (int32 i = 0; i < NumIndices; i++)
+					{
+						RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
+					}
 				}
-			}
-			else
-			{
-				// Four byte index size (stride must be either 2 or 4).
-				check(IndexRhi->GetStride() == 4);
-				uint32* IndexData = static_cast<uint32*>(
-					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-				for (int32 i = 0; i < NumIndices; i++)
+				else
 				{
-					RenderIndices.Add(IndexData[i]);
+					// Four byte index size (stride must be either 2 or 4).
+					check(IndexRhi->GetStride() == 4);
+					uint32* IndexData = static_cast<uint32*>(
+						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+					for (int32 i = 0; i < NumIndices; i++)
+					{
+						RenderIndices.Add(IndexData[i]);
+					}
 				}
-			}
-			RHIUnlockIndexBuffer(IndexRhi);
-		});
+				RHIUnlockIndexBuffer(IndexRhi);
+			});
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();
@@ -599,7 +603,31 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 	// Copy the Index and Vertex buffers from the mesh.
 	TArray<uint32> IndexBuffer;
 	TArray<FVector> VertexBuffer;
-	CopyMeshBuffers(Mesh, VertexBuffer, IndexBuffer);
+
+	// Depending on if the triangle data has been pinned to host memory or not, either directly copy
+	// from host memory with the current thread, assumed to be the game thread, or dispatch through
+	// CopyMeshBuffers which will do either game thread copying or render thread copying depending
+	// on if we are in the editor or not.
+	//
+	// This can probably be done better, but the only reason we check Allow CPU Access here is
+	// that the render thread copying produces garbage on Linux. We should solve that and remove
+	// this check. See internal issue 292. But on the other hand, why copy from GPU when the data
+	// is already next to the CPU? We expect that Allow CPU Access will be false most of the time,
+	// and we don't want to require the end-user to check the checkbox on every mesh they want to
+	// create a Trimesh from. Should the Trimesh set the flag on the Static Mesh asset? Can it?
+	// Doing it here is too late since we're now in Begin Play, we need to set the flag on the
+	// Editor instance, not the Play instance. The state handling of the flag will be complicated
+	// since we don't want to leave them checked on Static Mesh assets that are no longer used by
+	// any Trimesh, and we don't want to disable it on a Static Mesh asset on which the end-user
+	// enabled it on themselves.
+	if (StaticMesh->bAllowCPUAccess)
+	{
+		CopyMeshBuffersGameThread(Mesh, VertexBuffer, IndexBuffer);
+	}
+	else
+	{
+		CopyMeshBuffers(Mesh, VertexBuffer, IndexBuffer);
+	}
 	if (IndexBuffer.Num() == 0 || VertexBuffer.Num() == 0)
 	{
 		return false;

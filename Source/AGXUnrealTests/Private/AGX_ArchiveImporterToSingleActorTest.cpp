@@ -1071,9 +1071,10 @@ bool FClearRenderMaterialImportedCommand::Update()
 
 	// The error message that is printed when folders are deleted from under the editor.
 	//
-	/// @todo The error is only printed sometimes, and not for the last three runs on GitLab.
-	/// Commenting it out for now. See GitLab issue #213.
+#if defined(__linux__)
+	// @todo The error is only printed sometimes. See GitLab issue #213.
 	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
 	// Files that are created by the test and thus safe to remove. The GUID values may make this
 	// test cumbersome to update since they will change every time the AGX Dynamics archive is
@@ -2228,9 +2229,10 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
-	// @todo Figure out why this error appears. So far it seems to only appear on Linux and not
-	// Windows.
+#if defined(__linux__)
+	// @todo The error is only printed sometimes. See GitLab issue #213.
 	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
 	TArray<const TCHAR*> ExpectedFiles = {
 		TEXT("StaticMeshs"), TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
