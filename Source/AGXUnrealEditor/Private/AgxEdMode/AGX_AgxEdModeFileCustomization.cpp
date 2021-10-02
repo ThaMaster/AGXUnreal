@@ -52,14 +52,14 @@ void FAGX_AgxEdModeFileCustomization::CustomizeFileImporterCategory(
 #endif
 
 	AddCustomButton(
-		CategoryBuilder, LOCTEXT("CreateButtonTextImportBP", "Import AGX Archive to Blueprint..."),
+		CategoryBuilder, LOCTEXT("CreateButtonTextImportBP", "Import AGX Archive to a Blueprint..."),
 		[&]() {
 			UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint();
 			return FReply::Handled();
 		});
 
 	AddCustomButton(
-		CategoryBuilder, LOCTEXT("CreateButtonTextImportURDFBP", "Import URDF model to Blueprint..."),
+		CategoryBuilder, LOCTEXT("CreateButtonTextImportURDFBP", "Import URDF model to a Blueprint..."),
 		[&]() {
 			UAGX_AgxEdModeFile::ImportUrdfToBlueprint();
 			return FReply::Handled();
