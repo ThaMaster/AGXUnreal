@@ -83,18 +83,18 @@ namespace AgxAutomationCommon
 	NoWorldTestsReason CanRunWorldTests();
 
 	/**
-	 * Get the file system path to an AGX Dynamcis archive intended for Automation testing.
-	 * @param ArchiveName The name of the AGX Dynamics archive to find.
-	 * @return File system path to the AGX Dynamics archive.
+	 * Get the file system path to an AGX Dynamics archive or URDF file intended for Automation testing.
+	 * @param SceneName The name of the AGX Dynamics archive or URDF file to find.
+	 * @return File system path to the test scene.
 	 */
-	FString GetArchivePath(const TCHAR* ArchiveName);
+	FString GetTestScenePath(const TCHAR* SceneName);
 
 	/**
-	 * Get the file system path to an AGX Dynamcis archive intended for Automation testing.
-	 * @param ArchiveName The name of the AGX Dynamics archive to find.
-	 * @return File system path to the AGX Dynamics archive.
+	 * Get the file system path to an AGX Dynamics archive or URDF file intended for Automation testing.
+	 * @param ArchiveName The name of the AGX Dynamics archive or UDF file to find.
+	 * @return File system path to the test scene.
 	 */
-	FString GetArchivePath(const FString& ArchiveName);
+	FString GetTestScenePath(const FString& SceneName);
 
 	/**
 	 * Delete all assets created when the given archive was imported.

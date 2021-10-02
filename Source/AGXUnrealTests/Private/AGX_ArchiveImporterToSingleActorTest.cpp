@@ -1,4 +1,4 @@
-// AGX Dynamics require the AgX-Wires license for wire import. Our GitLab CI
+// AGX Dynamics require the AGX-Wires license for wire import. Our GitLab CI
 // runtime environment currently doesn't have an AGX Dynamics license so the
 // wire import test always fails. For now the test is disabled through this
 // preprocessor flag. See internal issue 495. Remove the preprocessor guards
@@ -61,7 +61,7 @@ bool FImportArchiveSingleActorCommand::Update()
 		Test.AddError(TEXT("FImportArchiveSingleActorCommand not given an archive to import."));
 		return true;
 	}
-	FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(ArchiveName);
+	FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(ArchiveName);
 	if (ArchiveFilePath.IsEmpty())
 	{
 		Test.AddError(FString::Printf(TEXT("Did not find an archive named '%s'."), *ArchiveName));

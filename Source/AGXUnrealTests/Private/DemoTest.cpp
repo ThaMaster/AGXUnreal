@@ -258,7 +258,7 @@ void FArchiveImporterToSingleActor_EmptySceneSpec::Define()
 
 		BeforeEach([this]() {
 			FString ArchiveName = TEXT("empty_scene.agx");
-			FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(ArchiveName);
+			FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(ArchiveName);
 			Contents = AGX_ImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
 			UE_LOG(LogAGX, Warning, TEXT("Imported archive '%s'."), *ArchiveFilePath);
 		});
@@ -317,7 +317,7 @@ void FArchiveImporterToSingleAcgor_SingleSphereSpec::Define()
 
 		// Import archive.
 		BeforeEach([this]() {
-			FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(ArchiveName);
+			FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(ArchiveName);
 			Contents = AGX_ImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
 			TestNotNull(TEXT("Contents"), Contents);
 			TArray<UActorComponent*> Components;

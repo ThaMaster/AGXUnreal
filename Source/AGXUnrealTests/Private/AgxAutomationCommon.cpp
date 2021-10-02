@@ -178,31 +178,31 @@ AgxAutomationCommon::NoWorldTestsReason AgxAutomationCommon::CanRunWorldTests()
 	return NoWorldTestsReason::NoReason;
 }
 
-FString AgxAutomationCommon::GetArchivePath(const TCHAR* ArchiveName)
+FString AgxAutomationCommon::GetTestScenePath(const TCHAR* SceneName)
 {
 	FString ProjectDir = FPaths::ProjectDir();
 	FPaths::CollapseRelativeDirectories(ProjectDir);
 	ProjectDir = FPaths::ConvertRelativePathToFull(ProjectDir);
-	const FString ArchivesDir = ProjectDir.Replace(
-		TEXT("/AGXUnrealDev/"), TEXT("/AGX_Dynamics_scenes/"), ESearchCase::CaseSensitive);
-	const FString ArchivePath = FPaths::Combine(ArchivesDir, ArchiveName);
-	if (FPaths::FileExists(ArchivePath))
+	const FString SceneDir = ProjectDir.Replace(
+		TEXT("/AGXUnrealDev/"), TEXT("/TestScenes/"), ESearchCase::CaseSensitive);
+	const FString ScenePath = FPaths::Combine(SceneDir, SceneName);
+	if (FPaths::FileExists(ScenePath))
 	{
-		return ArchivePath;
+		return ScenePath;
 	}
 	else
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Did not find full path for AGX Dynamics archive '%s'. Searched in '%s'."),
-			ArchiveName, *ArchivesDir)
+			TEXT("Did not find full path for test scene '%s'. Searched in '%s'."),
+			SceneName, *SceneDir)
 		return FString();
 	}
 }
 
-FString AgxAutomationCommon::GetArchivePath(const FString& ArchiveName)
+FString AgxAutomationCommon::GetTestScenePath(const FString& SceneName)
 {
-	return GetArchivePath(*ArchiveName);
+	return GetTestScenePath(*SceneName);
 }
 
 bool AgxAutomationCommon::DeleteImportDirectory(
