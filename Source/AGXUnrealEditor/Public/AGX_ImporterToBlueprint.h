@@ -1,5 +1,8 @@
 #pragma once
 
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
 class UBlueprint;
 class FString;
 
@@ -12,7 +15,7 @@ namespace AGX_ImporterToBlueprint
 	 * @param ArchivePath - The path to the AGX Dynamics archive to read.
 	 * @return An Actor Blueprint containing the read objects.
 	 */
-	UBlueprint* ImportAGXArchive(const FString& ArchivePath);
+	AGXUNREALEDITOR_API UBlueprint* ImportAGXArchive(const FString& ArchivePath);
 
 	/**
 	 * Read simulation objects from the .urdf file pointed to by 'UrdfFilePath` and create an Actor
@@ -24,5 +27,6 @@ namespace AGX_ImporterToBlueprint
 	 * left empty if the URDF file does not have any file paths in it.
 	 * @return An Actor Blueprint containing the read objects.
 	 */
-	UBlueprint* ImportURDF(const FString& UrdfFilePath, const FString& UrdfPackagePath = "");
+	AGXUNREALEDITOR_API UBlueprint* ImportURDF(
+		const FString& UrdfFilePath, const FString& UrdfPackagePath = "");
 }
