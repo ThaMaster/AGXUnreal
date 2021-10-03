@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
@@ -205,6 +206,29 @@ FString AgxAutomationCommon::GetTestScenePath(const FString& SceneName)
 	return GetTestScenePath(*SceneName);
 }
 
+FString AgxAutomationCommon::GetTestSceneDirPath(const FString& SubDir)
+{
+	FString ProjectDir = FPaths::ProjectDir();
+	FPaths::CollapseRelativeDirectories(ProjectDir);
+	ProjectDir = FPaths::ConvertRelativePathToFull(ProjectDir);
+	const FString SceneDir = ProjectDir.Replace(
+		TEXT("/AGXUnrealDev/"), TEXT("/TestScenes/"), ESearchCase::CaseSensitive);
+	const FString SceneDirPath = FPaths::Combine(SceneDir, SubDir);
+
+	if (FPaths::DirectoryExists(SceneDirPath))
+	{
+		return SceneDirPath;
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Did not find full path for test scene dir '%s'. Searched in '%s'."), *SceneDirPath,
+			*SceneDir)
+		return FString();
+	}
+}
+
 bool AgxAutomationCommon::DeleteImportDirectory(
 	const TCHAR* ArchiveName, const TArray<const TCHAR*>& ExpectedFileAndDirectoryNames)
 {
@@ -319,6 +343,32 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 	}
 	Asset->MarkPendingKill();
 #endif
+}
+
+TArray<FString> AgxAutomationCommon::GetReferencedStaticMeshAssets(
+	const TArray<UActorComponent*>& Components)
+{
+	TArray<FString> Assets;
+
+	for (const UActorComponent* Component : Components)
+	{
+		if (const UAGX_TrimeshShapeComponent* Trimesh = Cast<UAGX_TrimeshShapeComponent>(Component))
+		{
+			if (Trimesh->MeshSourceAsset != nullptr)
+			{
+				Assets.AddUnique(Trimesh->MeshSourceAsset->GetName() + ".uasset");
+			}
+		}
+		else if (const UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Component))
+		{
+			if (Mesh->GetStaticMesh() != nullptr)
+			{
+				Assets.AddUnique(Mesh->GetStaticMesh()->GetName() + +".uasset");
+			}
+		}
+	}
+
+	return Assets;
 }
 
 bool AgxAutomationCommon::FLogWarningAgxCommand::Update()

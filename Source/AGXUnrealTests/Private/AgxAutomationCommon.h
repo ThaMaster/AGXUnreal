@@ -97,6 +97,13 @@ namespace AgxAutomationCommon
 	FString GetTestScenePath(const FString& SceneName);
 
 	/**
+	 * Get the absolute path to a directory within the TestScenes directory.
+	 * @param SubDir Optional sub directory. Leave empty to get the Test Scene directory.
+	 * @return Absolute path to a directory within the TestScenes directory.
+	 */
+	FString GetTestSceneDirPath(const FString& SubDir = "");
+
+	/**
 	 * Delete all assets created when the given archive was imported.
 	 *
 	 * Will do a file system delete of the entire import directory.
@@ -119,6 +126,14 @@ namespace AgxAutomationCommon
 	 */
 	bool DeleteImportDirectory(
 		const TCHAR* ArchiveName, const TArray<const TCHAR*>& ExpectedFileAndDirectoryNames);
+
+	/**
+	 * Get the name (including file extension) of Static Mesh Assets referenced by Trimesh
+	 * Components or Static Mesh Components.
+	 * @param Components The Components to look through for referenced Static Mesh Assets.
+	 * @return Array of (unique) referenced Static Mesh Asset names.
+	 */
+	TArray<FString> GetReferencedStaticMeshAssets(const TArray<UActorComponent*>& Components);
 
 	template <typename T>
 	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
