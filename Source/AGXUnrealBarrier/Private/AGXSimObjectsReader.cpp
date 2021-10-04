@@ -424,7 +424,7 @@ namespace
 	}
 }
 
-FSuccessOrError FAGXSimObjectsReader::Read(
+FSuccessOrError FAGXSimObjectsReader::ReadAGXArchive(
 	const FString& Filename, FAGXSimObjectsInstantiator& Instantiator)
 {
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};

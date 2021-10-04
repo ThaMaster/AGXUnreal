@@ -284,6 +284,6 @@ AActor* AGX_ImporterToSingleActor::ImportAGXArchive(const FString& ArchivePath)
 	NewActor->SetActorLabel(Filename);
 
 	SingleActorInstantiator Instantiator(*World, *NewActor, *NewRoot, ArchivePath);
-	FAGXSimObjectsReader::Read(ArchivePath, Instantiator);
+	FAGXSimObjectsReader::ReadAGXArchive(ArchivePath, Instantiator);
 	return NewActor;
 }

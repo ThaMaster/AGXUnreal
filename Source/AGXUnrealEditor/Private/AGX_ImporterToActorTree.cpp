@@ -312,7 +312,7 @@ AActor* AGX_ImporterToActorTree::ImportAGXArchive(const FString& ArchivePath)
 
 	FAGX_SimObjectsImporterHelper Helper(ArchivePath);
 	EditorInstantiator Instantiator(*ImportGroup, *World, Helper);
-	FAGXSimObjectsReader::Read(ArchivePath, Instantiator);
+	FAGXSimObjectsReader::ReadAGXArchive(ArchivePath, Instantiator);
 
 	return ImportGroup;
 }

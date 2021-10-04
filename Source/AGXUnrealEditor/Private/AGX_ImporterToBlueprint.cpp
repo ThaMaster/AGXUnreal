@@ -377,7 +377,7 @@ namespace
 	{
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
 		FSuccessOrError SuccessOrError =
-			FAGXSimObjectsReader::Read(Helper.SourceFilePath, Instantiator);
+			FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, Instantiator);
 		if (!SuccessOrError.Success)
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(

@@ -175,7 +175,7 @@ namespace FAGXSimObjectsReader
 	 * @return True if the file was read successfully.
 	 */
 	AGXUNREALBARRIER_API FSuccessOrError
-	Read(const FString& Filename, FAGXSimObjectsInstantiator& Instantiator);
+	ReadAGXArchive(const FString& Filename, FAGXSimObjectsInstantiator& Instantiator);
 
 	/**
 	 * Read the URDF file pointed to by 'Filename' and for each
