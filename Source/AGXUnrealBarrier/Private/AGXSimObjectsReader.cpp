@@ -402,7 +402,7 @@ namespace
 		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Materials"));
 		Result &= ReadMaterials(Simulation, Instantiator);
 
-		MyTask.EnterProgressFrame(5.0f, FText::FromString("Importing Tire Models"));
+		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Tire Models"));
 		Result &= ReadTireModels(Simulation, Filename, Instantiator);
 
 		MyTask.EnterProgressFrame(15.0f, FText::FromString("Importing Rigid Bodies and Geometries"));
@@ -411,13 +411,13 @@ namespace
 		MyTask.EnterProgressFrame(80.0f, FText::FromString("Importing bodiless Geometries"));
 		Result &= ReadBodilessGeometries(Simulation, Filename, Instantiator);
 
-		MyTask.EnterProgressFrame(90.0f, FText::FromString("Importing Constraints"));
+		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Constraints"));
 		Result &= ReadConstraints(Simulation, Filename, Instantiator);
 
-		MyTask.EnterProgressFrame(92.0f, FText::FromString("Importing Collision Groups"));
+		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Collision Groups"));
 		Result &= ReadCollisionGroups(Simulation, Instantiator);
 
-		MyTask.EnterProgressFrame(95.0f, FText::FromString("Importing Wires"));
+		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Wires"));
 		Result &= ReadWires(Simulation, Filename, Instantiator);
 
 		return Result;
