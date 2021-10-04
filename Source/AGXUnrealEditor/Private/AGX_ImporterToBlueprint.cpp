@@ -495,37 +495,32 @@ namespace
 			Package, Blueprint, RF_Public | RF_Standalone, *PackageFilename, GError, nullptr, true,
 			true, SAVE_NoError);
 	}
+
+	UBlueprint* ImportToBlueprint(FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType)
+	{
+		PreCreationSetup();
+		FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
+		UPackage* Package = GetPackage(BlueprintPackagePath);
+		AActor* Template = CreateTemplate(Helper, ImportType);
+		if (Template == nullptr)
+		{
+			return nullptr;
+		}
+		UBlueprint* Blueprint = CreateBlueprint(Package, Template);
+		PostCreationTeardown(Template, Package, Blueprint, BlueprintPackagePath);
+		return Blueprint;
+	}
 }
 
 UBlueprint* AGX_ImporterToBlueprint::ImportAGXArchive(const FString& ArchivePath)
 {
 	FAGX_SimObjectsImporterHelper Helper(ArchivePath);
-	PreCreationSetup();
-	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
-	UPackage* Package = GetPackage(BlueprintPackagePath);
-	AActor* Template = CreateTemplate(Helper, EAGX_ImportType::Agx);
-	if (Template == nullptr)
-	{
-		return nullptr;
-	}
-	UBlueprint* Blueprint = CreateBlueprint(Package, Template);
-	PostCreationTeardown(Template, Package, Blueprint, BlueprintPackagePath);
-	return Blueprint;
+	return ImportToBlueprint(Helper, EAGX_ImportType::Agx);
 }
 
 UBlueprint* AGX_ImporterToBlueprint::ImportURDF(
 	const FString& UrdfFilePath, const FString& UrdfPackagePath)
 {
 	FAGX_UrdfImporterHelper Helper(UrdfFilePath, UrdfPackagePath);
-	PreCreationSetup();
-	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
-	UPackage* Package = GetPackage(BlueprintPackagePath);
-	AActor* Template = CreateTemplate(Helper, EAGX_ImportType::Urdf);
-	if (Template == nullptr)
-	{
-		return nullptr;
-	}
-	UBlueprint* Blueprint = CreateBlueprint(Package, Template);
-	PostCreationTeardown(Template, Package, Blueprint, BlueprintPackagePath);
-	return Blueprint;
+	return ImportToBlueprint(Helper, EAGX_ImportType::Urdf);
 }
