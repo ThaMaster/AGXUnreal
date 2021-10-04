@@ -392,32 +392,32 @@ namespace
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FAGXSimObjectsInstantiator& Instantiator)
 	{
-		const float AmountOfWork = 7.0f; // Keep up to date with the number of /Read.+/-calls.
+		const float AmountOfWork = 100.0f;
 		FScopedSlowTask MyTask(
 			AmountOfWork, LOCTEXT("CreateAGXObjects", "Create AGX Dynamics for Unreal objects"),
 			true);
 		MyTask.MakeDialog();
 
 		bool Result = true;
-		MyTask.EnterProgressFrame(1.0f);
+		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Materials"));
 		Result &= ReadMaterials(Simulation, Instantiator);
 
-		MyTask.EnterProgressFrame(1.0f);
+		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Tire Models"));
 		Result &= ReadTireModels(Simulation, Filename, Instantiator);
 
-		MyTask.EnterProgressFrame(1.0f);
+		MyTask.EnterProgressFrame(80.0f, FText::FromString("Importing Rigid Bodies and Geometries"));
 		Result &= ReadRigidBodies(Simulation, Filename, Instantiator);
 
-		MyTask.EnterProgressFrame(1.0f);
+		MyTask.EnterProgressFrame(15.0f, FText::FromString("Importing bodiless Geometries"));
 		Result &= ReadBodilessGeometries(Simulation, Filename, Instantiator);
 
-		MyTask.EnterProgressFrame(1.0f);
+		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Constraints"));
 		Result &= ReadConstraints(Simulation, Filename, Instantiator);
 
-		MyTask.EnterProgressFrame(1.0f);
+		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Collision Groups"));
 		Result &= ReadCollisionGroups(Simulation, Instantiator);
 
-		MyTask.EnterProgressFrame(1.0f);
+		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Wires"));
 		Result &= ReadWires(Simulation, Filename, Instantiator);
 
 		return Result;
