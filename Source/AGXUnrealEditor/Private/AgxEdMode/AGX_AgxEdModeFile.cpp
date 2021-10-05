@@ -34,8 +34,7 @@ namespace
 
 	FString SelectExistingFile(const FString& FileDescription, const FString& FileExtension)
 	{
-		const FString DialogTitle =
-			FString("Select an ") + FileDescription + FString(" to import");
+		const FString DialogTitle = FString("Select an ") + FileDescription + FString(" to import");
 		const FString FileTypes = FileDescription + FString("|*") + FileExtension;
 		// For a discussion on window handles see
 		// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html
@@ -81,6 +80,18 @@ namespace
 
 		return DirectoryPath;
 	}
+
+	bool UrdfHasFilenameAttribute(const FString& FilePath)
+	{
+		FString Content;
+		if(!FFileHelper::LoadFileToString(Content, *FilePath))
+		{
+			UE_LOG(LogAGX, Warning, TEXT("Unable to read file '%s'"), *FilePath);
+			return false;
+		}
+
+		return Content.Contains("filename", ESearchCase::IgnoreCase);
+	}
 }
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor()
@@ -122,7 +133,18 @@ void UAGX_AgxEdModeFile::ImportUrdfToBlueprint()
 		return;
 	}
 
-	const FString UrdfPackagePath = SelectExistingDirectory("(Optional) Select URDF package directory", true);
+	const FString UrdfPackagePath = [&UrdfFilePath]()
+	{
+		if (UrdfHasFilenameAttribute(UrdfFilePath))
+		{
+			return SelectExistingDirectory("(Optional) Select URDF package directory", true);
+		}
+		else
+		{
+			return FString();
+		}
+	}();
+
 
 	AGX_ImporterToBlueprint::ImportURDF(UrdfFilePath, UrdfPackagePath);
 }
@@ -203,7 +225,8 @@ FText UAGX_AgxEdModeFile::GetDisplayName() const
 FText UAGX_AgxEdModeFile::GetTooltip() const
 {
 	return LOCTEXT(
-		"Tooltip", "Interoperability with external file formats, such AGX simulation files (.agx) "
+		"Tooltip",
+		"Interoperability with external file formats, such AGX simulation files (.agx) "
 		"or URDF (.urdf) files.");
 }
 
