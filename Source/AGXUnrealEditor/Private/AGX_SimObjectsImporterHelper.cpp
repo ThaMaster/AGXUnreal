@@ -62,7 +62,7 @@ namespace
 		const TCHAR* Message)
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Could not import %s '%s' from '%s': %s."), ObjectType, *Name,
+			LogAGX, Error, TEXT("Could not import '%s' '%s' from file '%s': %s."), ObjectType, *Name,
 			*FilePath, Message);
 	}
 };
