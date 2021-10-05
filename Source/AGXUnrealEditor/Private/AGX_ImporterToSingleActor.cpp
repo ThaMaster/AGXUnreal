@@ -1,9 +1,10 @@
 #include "AGX_ImporterToSingleActor.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_SimObjectsImporterHelper.h"
+#include "AGX_ImportEnums.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_SimObjectsImporterHelper.h"
 #include "AGXSimObjectsReader.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
@@ -82,7 +83,7 @@ namespace
 	};
 
 	/**
-	 * An archive instantiator that creates all objects as Components in a given Actor.
+	 * An simulation objects instantiator that creates all objects as Components in a given Actor.
 	 */
 	class SingleActorInstantiator final : public FAGXSimObjectsInstantiator
 	{
@@ -150,7 +151,8 @@ namespace
 			}
 		}
 
-		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
+		virtual void InstantiateBox(
+			const FBoxShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -238,12 +240,12 @@ namespace
 				return FTwoBodyTireSimObjectBodies(new NopEditorBody(), new NopEditorBody());
 			}
 
-			FTwoBodyTireSimObjectBodies ArchiveBodies;
-			ArchiveBodies.TireBodySimObject.reset(InstantiateBody(TireBody));
-			ArchiveBodies.HubBodySimObject.reset(InstantiateBody(HubBody));
+			FTwoBodyTireSimObjectBodies TireBodies;
+			TireBodies.TireBodySimObject.reset(InstantiateBody(TireBody));
+			TireBodies.HubBodySimObject.reset(InstantiateBody(HubBody));
 
 			Helper.InstantiateTwoBodyTire(Barrier, Actor);
-			return ArchiveBodies;
+			return TireBodies;
 		}
 
 		virtual void InstantiateWire(const FWireBarrier& Barrier) override
@@ -257,33 +259,77 @@ namespace
 		AActor& Actor;
 		USceneComponent& Root;
 	};
+
+	struct InstantiatorCreationData
+	{
+		AActor* NewActor = nullptr;
+		USceneComponent* NewRoot = nullptr;
+		UWorld* World = nullptr;
+
+		bool IsValid()
+		{
+			return NewActor != nullptr && NewRoot != nullptr && World != nullptr;
+		}
+	};
+
+	InstantiatorCreationData GenerateInstantiatorCreationData(const FString& FilePath,
+		EAGX_ImportType ImportType)
+	{
+		UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
+		if (World == nullptr)
+		{
+			UE_LOG(LogAGX, Error, TEXT("No world available, cannot import file '%s'."), *FilePath);
+			return InstantiatorCreationData();
+		}
+
+		AActor* NewActor;
+		USceneComponent* NewRoot;
+		std::tie(NewActor, NewRoot) =
+			FAGX_EditorUtilities::CreateEmptyActor(FTransform::Identity, World);
+		if (NewActor == nullptr || NewRoot == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Cannot import file '%s' because new actors cannot be created."), *FilePath);
+			return InstantiatorCreationData();
+		}
+
+		FString Filename = FPaths::GetBaseFilename(FilePath);
+		NewActor->SetActorLabel(Filename);
+		return {NewActor, NewRoot, World};
+	}
 }
 
 AActor* AGX_ImporterToSingleActor::ImportAGXArchive(const FString& ArchivePath)
 {
-	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
-	if (World == nullptr)
+	InstantiatorCreationData Data =
+		GenerateInstantiatorCreationData(ArchivePath, EAGX_ImportType::Agx);
+
+	if (!Data.IsValid())
 	{
-		UE_LOG(LogAGX, Warning, TEXT("No world available cannot import AGX Dynamics archive."));
+		// Logging done in GenerateInstantiatorCreationData.
 		return nullptr;
 	}
 
-	AActor* NewActor;
-	USceneComponent* NewRoot;
-	std::tie(NewActor, NewRoot) =
-		FAGX_EditorUtilities::CreateEmptyActor(FTransform::Identity, World);
-	if (NewActor == nullptr || NewRoot == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Cannot import AGX Dynamics archive because new actors cannot be created."));
-		return nullptr;
-	}
-
-	FString Filename = FPaths::GetBaseFilename(ArchivePath);
-	NewActor->SetActorLabel(Filename);
-
-	SingleActorInstantiator Instantiator(*World, *NewActor, *NewRoot, ArchivePath);
+	SingleActorInstantiator Instantiator(*Data.World, *Data.NewActor, *Data.NewRoot, ArchivePath);
 	FAGXSimObjectsReader::ReadAGXArchive(ArchivePath, Instantiator);
-	return NewActor;
+	return Data.NewActor;
+}
+
+AActor* AGX_ImporterToSingleActor::ImportURDF(
+	const FString& UrdfFilePath, const FString& UrdfPackagePath)
+{
+	InstantiatorCreationData Data =
+		GenerateInstantiatorCreationData(UrdfFilePath, EAGX_ImportType::Urdf);
+
+	if (!Data.IsValid())
+	{
+		// Logging done in GenerateInstantiatorCreationData.
+		return nullptr;
+	}
+
+	SingleActorInstantiator Instantiator(
+			*Data.World, *Data.NewActor, *Data.NewRoot, UrdfFilePath);
+	FAGXSimObjectsReader::ReadUrdf(UrdfFilePath, UrdfPackagePath, Instantiator);
+	return Data.NewActor;
 }
