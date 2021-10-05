@@ -1,10 +1,10 @@
 #include "AGX_ImporterToBlueprint.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_SimObjectsImporterHelper.h"
 #include "AGX_ImportEnums.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_SimObjectsImporterHelper.h"
 #include "AGX_UrdfImporterHelper.h"
 #include "AGXSimObjectsReader.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
