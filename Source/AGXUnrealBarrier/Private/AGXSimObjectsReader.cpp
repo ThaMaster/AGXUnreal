@@ -187,7 +187,7 @@ namespace
 			return true;
 		};
 
-		bool IssueEncountered = false;
+		int32 IssuesEncountered = 0;
 		for (const auto& Assembly : Assemblies)
 		{
 			agxModel::TwoBodyTire* Tire = dynamic_cast<agxModel::TwoBodyTire*>(Assembly.first);
@@ -199,7 +199,7 @@ namespace
 			if (!CheckBody(Tire->getTireRigidBody(), Tire, FString("Tire Rigid Body")) ||
 				!CheckBody(Tire->getHubRigidBody(), Tire, FString("Hub Rigid Body")))
 			{
-				IssueEncountered = true;
+				IssuesEncountered++;
 				continue;
 			}
 
@@ -219,7 +219,7 @@ namespace
 			}
 		}
 
-		return !IssueEncountered;
+		return IssuesEncountered == 0;
 	}
 
 	bool ReadRigidBodies(
