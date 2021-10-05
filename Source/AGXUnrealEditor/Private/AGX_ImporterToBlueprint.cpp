@@ -70,7 +70,7 @@ namespace
 		/// \todo I think this is more complicated than it needs to be. What are all the pieces for?
 		FString ParentPackagePath =
 			FAGX_ImportUtilities::CreatePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
-		FString ParentAssetName = Helper.SourceFileName; /// \todo Why is this never used?
+		FString ParentAssetName = Helper.SourceFileName;
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
 
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
