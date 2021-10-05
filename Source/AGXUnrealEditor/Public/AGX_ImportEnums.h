@@ -6,7 +6,7 @@
 UENUM()
 enum EAGX_ImportType
 {
-	/** Imported type none. */
+	/** Imported type is Invalid. */
 	Invalid,
 
 	/** Imported type is AGX Dynamics Archive. */
