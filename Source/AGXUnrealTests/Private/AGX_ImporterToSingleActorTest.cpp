@@ -2254,7 +2254,7 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 
 	return true;
 }
-
+#if 0
 //
 // URDF link with meshes test starts here.
 //
@@ -2384,7 +2384,7 @@ bool FClearURDFLinkWithMeshesImportedCommand::Update()
 
 	return true;
 }
-
+#endif
 //
 // URDF links geometries constraints test starts here.
 //
