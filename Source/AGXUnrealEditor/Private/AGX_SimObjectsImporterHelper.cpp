@@ -239,7 +239,7 @@ namespace
 
 	/**
 	 * Convert the given Trimesh to an Unreal Engine Static Mesh asset stored in the StaticMeshes
-	 * folder in the model's folder in the ImportedAGXModels folder.
+	 * folder in the imported model's folder in the ImportedAGXModels folder.
 	 *
 	 * The created meshes are cached on the Trimesh's Mesh Data GUID so asking for the same mesh
 	 * again will return the previously created Static Mesh asset.
@@ -281,7 +281,7 @@ namespace
 
 	/**
 	 * Convert the given Render Data to an Unreal Engine Static Mesh asset stored in the
-	 * RenderMeshes folder in the model's folder in the ImportedAGXModels folder.
+	 * RenderMeshes folder in the imported model's folder in the ImportedAGXModels folder.
 	 *
 	 * The created meshes are cached on GUID so asking for the same Render Data mesh again will
 	 * return the previously created Static Mesh asset.
