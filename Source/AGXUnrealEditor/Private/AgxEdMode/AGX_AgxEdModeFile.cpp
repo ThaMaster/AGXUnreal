@@ -137,7 +137,7 @@ void UAGX_AgxEdModeFile::ImportUrdfToBlueprint()
 	{
 		if (UrdfHasFilenameAttribute(UrdfFilePath))
 		{
-			return SelectExistingDirectory("(Optional) Select URDF package directory", true);
+			return SelectExistingDirectory("Select URDF package directory", true);
 		}
 		else
 		{
