@@ -82,7 +82,7 @@ namespace
 		FString Path = FPaths::GetPath(ParentPackage->GetName());
 
 		UE_LOG(
-			LogAGX, Display, TEXT("Model '%s' imported to package '%s', path '%s'"),
+			LogAGX, Display, TEXT("File '%s' imported to package '%s', path '%s'"),
 			*Helper.SourceFileName, *ParentPackagePath, *Path);
 
 		// Create a known unique name for the Blueprint package, but don't create the actual
