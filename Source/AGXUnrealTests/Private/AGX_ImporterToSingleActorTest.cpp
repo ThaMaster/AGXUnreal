@@ -774,7 +774,7 @@ bool FClearSimpleTrimeshImportedCommand::Update()
 	}
 	Test.World->DestroyActor(Test.Contents);
 
-	TArray<const TCHAR*> ExpectedFiles = {TEXT("StaticMeshs"), TEXT("simple_trimesh.uasset")};
+	TArray<const TCHAR*> ExpectedFiles = {TEXT("StaticMesh"), TEXT("simple_trimesh.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("simple_trimesh_build"), ExpectedFiles);
 
 	return true;
@@ -1107,7 +1107,7 @@ bool FClearRenderMaterialImportedCommand::Update()
 	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("RenderMaterials"),
+		TEXT("RenderMaterial"),
 		TEXT("RenderMaterial_0371489EAC6B66145E4DAEEFA9B4B6BC.uasset"),
 		TEXT("RenderMaterial_29524C99D524BAD2D65ED4EEA25BE374.uasset"),
 		TEXT("RenderMaterial_2C1C438F862A19CB2E1618C7B73F3D2E.uasset"),
@@ -1236,7 +1236,7 @@ bool FClearRenderDataImportedCommand::Update()
 	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("RenderMeshs"), TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764.uasset")};
+		TEXT("RenderMesh"), TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764.uasset")};
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_data_build"), ExpectedFiles);
 
@@ -1782,7 +1782,7 @@ bool FClearWireImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
-	TArray<const TCHAR*> ExpectedFiles {TEXT("ShapeMaterials"),
+	TArray<const TCHAR*> ExpectedFiles {TEXT("ShapeMaterial"),
 										TEXT("defaultWireMaterial_57.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("wire_build"), ExpectedFiles);
 
@@ -2248,7 +2248,7 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
-	TArray<const TCHAR*> ExpectedFiles = {TEXT("StaticMeshs"), TEXT("trimeshShape.uasset"),
+	TArray<const TCHAR*> ExpectedFiles = {TEXT("StaticMesh"), TEXT("trimeshShape.uasset"),
 										  TEXT("trimeshShapeFree.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("single_geometries_build"), ExpectedFiles);
 
@@ -2362,8 +2362,8 @@ bool FClearURDFLinkWithMeshesImportedCommand::Update()
 	}
 
 	TArray<const TCHAR*> FilesAndDirsToRemove;
-	FilesAndDirsToRemove.Add(TEXT("RenderMeshs"));
-	FilesAndDirsToRemove.Add(TEXT("StaticMeshs"));
+	FilesAndDirsToRemove.Add(TEXT("RenderMesh"));
+	FilesAndDirsToRemove.Add(TEXT("StaticMesh"));
 	for (const FString& Asset : Assets)
 	{
 		FilesAndDirsToRemove.Add(*Asset);
