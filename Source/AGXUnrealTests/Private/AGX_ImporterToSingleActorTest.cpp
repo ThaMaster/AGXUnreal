@@ -1312,7 +1312,8 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 
 	auto GetBox = [&Components](
 					  const TCHAR* Name,
-					  TArray<UAGX_BoxShapeComponent*>& OutArr) -> UAGX_BoxShapeComponent* {
+					  TArray<UAGX_BoxShapeComponent*>& OutArr) -> UAGX_BoxShapeComponent*
+	{
 		UAGX_BoxShapeComponent* Box = GetByName<UAGX_BoxShapeComponent>(Components, Name);
 		OutArr.Add(Box);
 		return Box;
@@ -1320,7 +1321,8 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 
 	auto GetBody = [&Components](
 					   const TCHAR* Name,
-					   TArray<UAGX_RigidBodyComponent*>& OutArr) -> UAGX_RigidBodyComponent* {
+					   TArray<UAGX_RigidBodyComponent*>& OutArr) -> UAGX_RigidBodyComponent*
+	{
 		UAGX_RigidBodyComponent* Rb = GetByName<UAGX_RigidBodyComponent>(Components, Name);
 		OutArr.Add(Rb);
 		return Rb;
@@ -1701,9 +1703,9 @@ bool FCheckWireImportedCommand::Update()
 	FAGX_WireWinch& Winch = Wire->OwnedBeginWinch;
 	const double PulledInLength = CentimeterToMeter(Winch.GetPulledInLength());
 	const double Speed = CentimeterToMeter(Winch.GetTargetSpeed());
-	const FVector WinchLocation {CentimeterToMeter(Winch.Location.X),
-								 CentimeterToMeter(Winch.Location.Y),
-								 CentimeterToMeter(Winch.Location.Z)};
+	const FVector WinchLocation {
+		CentimeterToMeter(Winch.Location.X), CentimeterToMeter(Winch.Location.Y),
+		CentimeterToMeter(Winch.Location.Z)};
 
 	// Note negated Y, since AGX Dynamics is right-handed and Unreal Engine is left-handed.
 	const FVector ExpectedDirection = FVector(0.696526, -0.398015, 0.597022).GetUnsafeNormal();
@@ -1728,8 +1730,9 @@ bool FCheckWireImportedCommand::Update()
 	AgxAutomationCommon::TestEqual(Test, TEXT("Rotation"), Winch.Rotation, ExpectedRotation, 1e-3f);
 	Test.TestEqual(TEXT("bAutoFeed"), Winch.bAutoFeed, false);
 
-	auto RangeHasType = [this, &Nodes = Wire->RouteNodes](
-							int32 Begin, int32 End, EWireNodeType Type) {
+	auto RangeHasType =
+		[this, &Nodes = Wire->RouteNodes](int32 Begin, int32 End, EWireNodeType Type)
+	{
 		for (int32 I = Begin; I < End; ++I)
 		{
 			Test.TestEqual(TEXT("NodeType"), Nodes[I].NodeType, Type);
@@ -1747,8 +1750,9 @@ bool FCheckWireImportedCommand::Update()
 	UAGX_RigidBodyComponent* WinchBodyRef = Winch.BodyAttachment.GetRigidBody();
 	Test.TestEqual(TEXT("Winch Body"), WinchBodyRef, WinchBody);
 
-	auto RangeHasBody = [this, &Nodes = Wire->RouteNodes](
-							int32 Begin, int32 End, UAGX_RigidBodyComponent* Body) {
+	auto RangeHasBody =
+		[this, &Nodes = Wire->RouteNodes](int32 Begin, int32 End, UAGX_RigidBodyComponent* Body)
+	{
 		for (int32 I = Begin; I < End; ++I)
 		{
 			UAGX_RigidBodyComponent* NodeBodyRef = Nodes[I].RigidBody.GetRigidBody();
@@ -1782,8 +1786,8 @@ bool FClearWireImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
-	TArray<const TCHAR*> ExpectedFiles {TEXT("ShapeMaterial"),
-										TEXT("defaultWireMaterial_57.uasset")};
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("ShapeMaterial"), TEXT("defaultWireMaterial_57.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("wire_build"), ExpectedFiles);
 
 	return true;
@@ -2171,7 +2175,8 @@ bool FCheckSimpleGeometriesImportedCommand::Update()
 		return true;
 	}
 
-	auto testShape = [this](USceneComponent* c, const FVector& ExpectedAGXWorldPos) {
+	auto testShape = [this](USceneComponent* c, const FVector& ExpectedAGXWorldPos)
+	{
 		Test.TestNotNull(TEXT("Component exists"), c);
 		const FVector ExpectedUnrealPos = AgxToUnrealVector(ExpectedAGXWorldPos);
 		Test.TestEqual(TEXT("Component position"), c->GetComponentLocation(), ExpectedUnrealPos);
@@ -2248,8 +2253,8 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
-	TArray<const TCHAR*> ExpectedFiles = {TEXT("StaticMesh"), TEXT("trimeshShape.uasset"),
-										  TEXT("trimeshShapeFree.uasset")};
+	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("StaticMesh"), TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("single_geometries_build"), ExpectedFiles);
 
 	return true;
@@ -2454,7 +2459,8 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
 
-	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components and 2 Constraints with 3 Graphics components each.
+	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components and 2 Constraints with 3 Graphics
+	// components each.
 	Test.TestEqual("Number of components", Components.Num(), 17);
 
 	UAGX_RigidBodyComponent* Boxlink =
