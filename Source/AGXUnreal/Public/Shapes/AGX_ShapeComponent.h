@@ -143,6 +143,11 @@ public:
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	//~ End UActorComponent Interface
 
+	//~ Begin USceneComponent Interface
+	virtual void OnUpdateTransform(EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport) override;
+	virtual void OnAttachmentChanged() override;
+	//~ End USceneComponent Interface
+
 	/**
 	 * Returns whether this shape needs have a visual mesh representation.
 	 */
@@ -156,7 +161,8 @@ public:
 	virtual void PostInitProperties() override;
 	virtual void PostLoad() override; // When loaded in Editor or Game
 #if WITH_EDITOR
-	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
+	void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
 	// ~End UObject interface.
 

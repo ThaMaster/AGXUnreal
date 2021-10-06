@@ -62,7 +62,10 @@ public:
 	// ~End IAGX_NativeOwner interface.
 
 	// ~ Begin UObject interface.
-	virtual void PostLoad() override;
+#if WITH_EDITOR
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event) override;
+#endif
 	// ~ End UObject interface.
 protected:
 	/**

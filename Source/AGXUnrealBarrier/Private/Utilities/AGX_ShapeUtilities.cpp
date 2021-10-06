@@ -22,12 +22,12 @@ bool FAGX_ShapeUtilities::ComputeOrientedBox(
 
 	agx::Vec3 halfExtentsAGX;
 	agx::AffineMatrix4x4 transformAGX;
-
+	#if 0 // IF agx-version > 2.31
 	if(!agxUtil::computeOrientedBox(VerticesAGX, halfExtentsAGX, transformAGX))
 	{
 		return false;
 	}
-
+	#endif
 	OutHalfExtents = ConvertDisplacement(halfExtentsAGX);
 	OutTransform = Convert(transformAGX);
 	return true;

@@ -1,10 +1,13 @@
 #include "Materials/AGX_ShapeMaterialInstance.h"
 
-#include "Engine/World.h"
-
+// AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
-#include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
+#include "Materials/ShapeMaterialBarrier.h"
+
+// Unreal Engine includes.
+#include "Engine/World.h"
 
 void UAGX_ShapeMaterialInstance::SetDensity(float InDensity)
 {
@@ -366,7 +369,7 @@ void UAGX_ShapeMaterialInstance::UpdateNativeProperties()
 UAGX_MaterialBase* UAGX_ShapeMaterialInstance::GetOrCreateInstance(UWorld* PlayingWorld)
 {
 	return this;
-};
+}
 
 void UAGX_ShapeMaterialInstance::CreateNative(UWorld* PlayingWorld)
 {
@@ -378,7 +381,15 @@ void UAGX_ShapeMaterialInstance::CreateNative(UWorld* PlayingWorld)
 	UpdateNativeProperties();
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(PlayingWorld);
-	check(Simulation);
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Shape Material '%s' tried to get Simulation, but UAGX_Simulation::GetFrom returned "
+			"nullptr."),
+			*GetName());
+		return;
+	}
 
-	Simulation->GetNative()->AddShapeMaterial(NativeBarrier.Get());
+	Simulation->Add(*this);
 }

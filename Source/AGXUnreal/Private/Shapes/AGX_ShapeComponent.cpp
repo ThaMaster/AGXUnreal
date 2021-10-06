@@ -3,6 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
+#include "AGX_UpropertyDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Contacts/AGX_ShapeContact.h"
@@ -125,8 +126,6 @@ bool UAGX_ShapeComponent::DoesPropertyAffectVisualMesh(
 
 void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-
 	const FName PropertyName = GetFNameSafe(PropertyChangedEvent.Property);
 	const FName MemberPropertyName = GetFNameSafe(PropertyChangedEvent.MemberProperty);
 
@@ -135,21 +134,22 @@ void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& Property
 		UpdateVisualMesh();
 	}
 
-	// @todo Follow the below pattern for all relevant UPROPERTIES to support live changes from
-	// the details panel in the Editor during play. Note that setting a UPROPERTY from c++ does not
-	// trigger the PostEditChangeProperty(), so no recursive loops will occur.
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bCanCollide))
-	{
-		SetCanCollide(bCanCollide);
-		return;
-	}
-
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, bIsSensor))
-	{
-		SetIsSensor(bIsSensor);
-		return;
-	}
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
+
+void UAGX_ShapeComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
+{
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeChainProperty(Event);
+}
+
 #endif
 
 void UAGX_ShapeComponent::PostLoad()
@@ -162,6 +162,23 @@ void UAGX_ShapeComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
 	UpdateVisualMesh();
+
+#if WITH_EDITOR
+	FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_UpropertyDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bCanCollide),
+		[](ThisClass* This) { This->SetCanCollide(This->bCanCollide); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bIsSensor),
+		[](ThisClass* This) { This->SetIsSensor(This->bIsSensor); });
+#endif
 }
 
 void UAGX_ShapeComponent::OnComponentCreated()
@@ -188,10 +205,20 @@ void UAGX_ShapeComponent::BeginPlay()
 		// This shape doesn't have a parent body so the native shape's local transform will become
 		// its world transform. Push the entire Unreal world transform down into the native shape.
 		UpdateNativeGlobalTransform();
-
-		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-		Simulation->AddShape(this);
 	}
+
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Shape '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				 "returned nullptr."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+
+	Simulation->Add(*this);
 	UpdateVisualMesh();
 }
 
@@ -201,12 +228,25 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 	if (GIsReconstructingBlueprintInstances)
 	{
 		// Another UAGX_ShapeComponent will inherit this one's Native, so don't wreck it.
+		// It's still safe to release the native since the Simulation will hold a reference if
+		// necessary.
 	}
-	else
+	else if (
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
 	{
-		/// @todo: If this Shape is not part of a Rigid Body then remove it from the Simulation.
+		// @todo Figure out how to handle removal of Shape Materials from the Simulation. They can
+		// be shared between many Shape Components, so some kind of reference counting might be
+		// needed.
+		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
+		{
+			Simulation->Remove(*this);
+		}
 	}
-	ReleaseNative();
+
+	if (HasNative())
+	{
+		ReleaseNative();
+	}
 }
 
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
@@ -413,4 +453,50 @@ void UAGX_ShapeComponent::RemoveSensorMaterial(UMeshComponent& Mesh)
 		}
 		Mesh.SetMaterial(I, nullptr);
 	}
+}
+
+void UAGX_ShapeComponent::OnUpdateTransform(
+	EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
+{
+	Super::OnUpdateTransform(UpdateTransformFlags, Teleport);
+	if (UpdateTransformFlags == EUpdateTransformFlags::PropagateFromParent)
+	{
+		return;
+	}
+
+	if (!HasNative())
+	{
+		return;
+	}
+
+	// This Shape's transform was updated and it was not because of a parent moving. This should be
+	// propagated to the native to keep the AGX Dynamics state in line with the Unreal state.
+	// This can for example be due to the user manually changing the transform of the Shape during
+	// play by dragging it around in the world, or setting new values via the Details Panel or
+	// Blueprint functions. This also covers cases where the Shape is detached from a parent
+	// Component and its transform is changed. One exception to this is when the detachment is done
+	// from a Blueprint using the DetachFromComponent function with Keep World settings. In that
+	// case his function is not triggered with EUpdateTransformFlags != PropagateFromParent until
+	// this Shape Component is selected (highlighted) in the Details Panel. Unclear why. This
+	// corner-case is instead directly handled in UAGX_ShapeComponent::OnAttachmentChanged.
+	GetNative()->SetWorldPosition(GetComponentLocation());
+	GetNative()->SetWorldRotation(GetComponentQuat());
+}
+
+void UAGX_ShapeComponent::OnAttachmentChanged()
+{
+	if (!HasNative())
+	{
+		return;
+	}
+	// This is somewhat of a hack, but it works. This Shape's parent has changed, so this
+	// Unreal object might get a new world transform depending on how it was detached.  Ideally,
+	// this would be fully handled by UAGX_ShapeComponent::OnUpdateTransform, but that function is
+	// not triggered if the detachment was made using the Blueprint function DetachFromComponent
+	// with Keep World settings. Therefore we handle that here. Note that this will mean writing to
+	// the native twice when detaching in other ways (both this function and OnUpdateTransform is
+	// triggered). However, setting the world transform of this Component to the natives world
+	// transform is generally considered safe since they should always be in sync.
+	GetNative()->SetWorldPosition(GetComponentLocation());
+	GetNative()->SetWorldRotation(GetComponentQuat());
 }

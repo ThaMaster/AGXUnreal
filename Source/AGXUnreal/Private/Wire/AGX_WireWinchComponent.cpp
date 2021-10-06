@@ -118,9 +118,11 @@ TStructOnScope<FActorComponentInstanceData> UAGX_WireWinchComponent::GetComponen
 		});
 }
 
-void UAGX_WireWinchComponent::PostLoad()
+void UAGX_WireWinchComponent::PostInitProperties()
 {
-	Super::PostLoad();
+	Super::PostInitProperties();
+	WireWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
+
 #if WITH_EDITOR
 	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
@@ -163,37 +165,15 @@ void UAGX_WireWinchComponent::PostLoad()
 #endif
 }
 
-void UAGX_WireWinchComponent::PostInitProperties()
-{
-	Super::PostInitProperties();
-	WireWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
-}
-
 #if WITH_EDITOR
-void UAGX_WireWinchComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+void UAGX_WireWinchComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-}
-
-void UAGX_WireWinchComponent::PostEditChangeChainProperty(
-	struct FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	if (PropertyChangedEvent.PropertyChain.Num() > 2)
-	{
-		// The cases fewer chain elements are handled by PostEditChangeProperty, which is called by
-		// UObject's PostEditChangeChainProperty.
-		FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
-	}
-
-	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
-	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	Super::PostEditChangeChainProperty(Event);
 }
 #endif
 

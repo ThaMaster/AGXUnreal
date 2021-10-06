@@ -44,6 +44,14 @@ public:
 	virtual void UpdateNativeProperties() override;
 	// ~End UAGX_ShapeComponent interface.
 
+	// ~Begin UObject interface.
+#if WITH_EDITOR
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(
+		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
+	// ~End UObject interface.
+
 	/// Get the native AGX Dynamics representation of this Capsule. May return nullptr.
 	FCapsuleShapeBarrier* GetNativeCapsule();
 
@@ -71,16 +79,5 @@ private:
 	void CreateNative();
 
 private:
-#if WITH_EDITOR
-	// ~Begin UObject interface.
-	virtual void PostLoad() override;
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-	virtual void PostEditChangeChainProperty(
-		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
-	// ~End UObject interface.
-
-	void InitPropertyDispatcher();
-#endif
-
 	FCapsuleShapeBarrier NativeBarrier;
 };

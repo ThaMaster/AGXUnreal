@@ -128,15 +128,6 @@ void UAGX_TwoBodyTireComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UAGX_TwoBodyTireComponent::EndPlay(const EEndPlayReason::Type Reason)
-{
-	Super::EndPlay(Reason);
-	if (NativeBarrier->HasNative())
-	{
-		NativeBarrier->ReleaseNative();
-	}
-}
-
 void UAGX_TwoBodyTireComponent::PostInitProperties()
 {
 	Super::PostInitProperties();

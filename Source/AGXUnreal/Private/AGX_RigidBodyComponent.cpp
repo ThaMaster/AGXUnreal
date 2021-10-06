@@ -4,6 +4,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_Simulation.h"
+#include "AGX_UpropertyDispatcher.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -35,64 +36,21 @@ UAGX_RigidBodyComponent::UAGX_RigidBodyComponent()
 }
 
 #if WITH_EDITOR
-void UAGX_RigidBodyComponent::PostLoad()
+
+void UAGX_RigidBodyComponent::PostInitProperties()
 {
-	Super::PostLoad();
+	Super::PostInitProperties();
 	InitPropertyDispatcher();
 }
 
-void UAGX_RigidBodyComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+void UAGX_RigidBodyComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	// The root property that contains the property that was changed.
-	const FName Member = (PropertyChangedEvent.MemberProperty != NULL)
-							 ? PropertyChangedEvent.MemberProperty->GetFName()
-							 : NAME_None;
-
-	// The leaf property that was changed. May be nested in a struct.
-	const FName Property = (PropertyChangedEvent.Property != NULL)
-							   ? PropertyChangedEvent.Property->GetFName()
-							   : NAME_None;
-
-	if (PropertyDispatcher.Trigger(Member, Property, this))
-	{
-		// No custom handling required when handled by PropertyDispatcher callback.
-		Super::PostEditChangeProperty(PropertyChangedEvent);
-		return;
-	}
-
-	// Add any custom property edited handling that may be required in the future here.
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-}
-
-void UAGX_RigidBodyComponent::PostEditChangeChainProperty(
-	struct FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	if (PropertyChangedEvent.PropertyChain.Num() < 3)
-	{
-		Super::PostEditChangeChainProperty(PropertyChangedEvent);
-
-		// These simple cases are handled by PostEditChangeProperty, which is called by UObject's
-		// PostEditChangeChainProperty.
-		return;
-	}
-
-	FEditPropertyChain::TDoubleLinkedListNode* Node = PropertyChangedEvent.PropertyChain.GetHead();
-	FName Member = Node->GetValue()->GetFName();
-	Node = Node->GetNextNode();
-	FName Property = Node->GetValue()->GetFName();
-	// The name of the rest of the nodes doesn't matter, we set all elements at level two each
-	// time. These are small objects such as FVector or FFloatInterval.
-	// Some rewrite of FAGX_PropertyDispatcher will be required to support other types of nesting
-	PropertyDispatcher.Trigger(Member, Property, this);
-
-	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
-	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	Super::PostEditChangeChainProperty(Event);
 }
 
 void UAGX_RigidBodyComponent::PostEditComponentMove(bool bFinished)
@@ -110,8 +68,60 @@ void UAGX_RigidBodyComponent::PostEditComponentMove(bool bFinished)
 	WriteTransformToNative();
 }
 
+void UAGX_RigidBodyComponent::OnChildDetached(USceneComponent* Child)
+{
+	Super::OnChildDetached(Child);
+
+	if (!HasNative())
+	{
+		return;
+	}
+
+	// @todo This does not get triggered if a child deeper down in the hierarchy is detached.
+	// This means that Shapes detached from this Rigid Body that are not direct children will not
+	// be removed from the Rigid Body.
+	// An alternative would be to use OnAttachmentChanged() in the Shape Component, but that
+	// function has the drawback of not giving information about the old parent, so the Shape cannot
+	// easily notify the previous parent Rigid Body that it has been detached from it, simply because
+	// it cannot (easily) know which Rigid Body that was.
+	if (UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Child))
+	{
+		if (Shape->HasNative())
+		{
+			NativeBarrier.RemoveShape(Shape->GetNative());
+		}
+	}
+}
+
+void UAGX_RigidBodyComponent::OnChildAttached(USceneComponent* Child)
+{
+	Super::OnChildAttached(Child);
+
+	if (!HasNative())
+	{
+		return;
+	}
+
+	// @todo This does not get triggered if a child deeper down in the hierarchy is attached.
+	// See comment in UAGX_RigidBodyComponent::OnChildDetached.
+	if (UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Child))
+	{
+		if (Shape->HasNative())
+		{
+			NativeBarrier.AddShape(Shape->GetNative());
+		}
+	}
+}
+
 void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 {
+	FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_UpropertyDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
 	// Location and Rotation are not Properties, so they won't trigger PostEditChangeProperty. e.g.,
 	// when moving the Component using the Widget in the Level Viewport. They are instead handled in
 	// PostEditComponentMove. The local transformations, however, the ones at the top of the Details
@@ -182,7 +192,6 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 #endif
 }
 
-// End WITH_EDITOR.
 #endif
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetOrCreateNative()
@@ -298,11 +307,19 @@ void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// something will keep the Rigid Body instance alive? Should we do explicit incref/decref
 		// on the Rigid Body in GetNativeAddress / SetNativeAddress?
 	}
-	else
+	else if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor && 
+		Reason != EEndPlayReason::Quit)
 	{
-		/// @todo Remove the native AGX Dynamics Rigid Body from the Simulation.
+		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
+		{
+			Sim->Remove(*this);
+		}
 	}
-	NativeBarrier.ReleaseNative();
+
+	if (HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
 }
 
 namespace
@@ -325,13 +342,6 @@ namespace
 			GetShapesRecursive(*C, OutFoundShapes);
 		}
 	}
-
-	TArray<UAGX_ShapeComponent*> GetShapes(const UAGX_RigidBodyComponent& Body)
-	{
-		TArray<UAGX_ShapeComponent*> FoundShapes;
-		GetShapesRecursive(Body, FoundShapes);
-		return FoundShapes;
-	}
 }
 
 void UAGX_RigidBodyComponent::InitializeNative()
@@ -344,7 +354,7 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	WritePropertiesToNative();
 	WriteTransformToNative();
 
-	for (UAGX_ShapeComponent* Shape : GetShapes(*this))
+	for (UAGX_ShapeComponent* Shape : GetShapes())
 	{
 		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
 		/// \todo Should not crash on this. HeightField easy to get wrong.
@@ -353,7 +363,17 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	}
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	Simulation->AddRigidBody(this);
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Rigid Body '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				 "returned nullptr."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+
+	Simulation->Add(*this);
 
 	if (bAutoGenerateMass)
 	{
@@ -827,6 +847,13 @@ bool UAGX_RigidBodyComponent::GetAutoGenerateCenterOfMassOffset() const
 	{
 		return bAutoGenerateCenterOfMassOffset;
 	}
+}
+
+TArray<UAGX_ShapeComponent*> UAGX_RigidBodyComponent::GetShapes() const
+{
+	TArray<UAGX_ShapeComponent*> FoundShapes;
+	GetShapesRecursive(*this, FoundShapes);
+	return FoundShapes;
 }
 
 void UAGX_RigidBodyComponent::SetPrincipalInertia(const FVector& InPrincipalInertia)

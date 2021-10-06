@@ -15,6 +15,7 @@
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintIconGraphicsComponent.h"
 #include "Constraints/ConstraintBarrier.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
 #include "CoreGlobals.h"
@@ -156,6 +157,10 @@ void UAGX_ConstraintComponent::PostInitProperties()
 	BodyAttachment2.RigidBody.OwningActor = GetTypedOuter<AActor>();
 	BodyAttachment1.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 	BodyAttachment2.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
+
+#if WITH_EDITOR
+	InitPropertyDispatcher();
+#endif
 }
 
 namespace AGX_ConstraintComponent_helpers
@@ -629,6 +634,7 @@ namespace
 }
 
 #if WITH_EDITOR
+
 void UAGX_ConstraintComponent::InitPropertyDispatcher()
 {
 	PropertyDispatcher.Add(
@@ -689,37 +695,27 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 
 void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	// The root property that contains the property that was changed.
-	const FName Member = (PropertyChangedEvent.MemberProperty != NULL)
-							 ? PropertyChangedEvent.MemberProperty->GetFName()
-							 : NAME_None;
+	// The root property that contains the property that was changed, i.e., the member of this
+	// class.
+	const FName Member = GetFNameSafe(PropertyChangedEvent.MemberProperty);
 
 	// The leaf property that was changed. May be nested in a struct.
-	const FName Property = (PropertyChangedEvent.Property != NULL)
-							   ? PropertyChangedEvent.Property->GetFName()
-							   : NAME_None;
+	const FName Property = GetFNameSafe(PropertyChangedEvent.Property);
 
-	if (PropertyDispatcher.Trigger(Member, Property, this))
-	{
-		// No custom handling required when handled by PropertyDispatcher callback.
-		Super::PostEditChangeProperty(PropertyChangedEvent);
-		return;
-	}
-
-	// Add any custom property edited handling that may be required in the future here.
+	/// @todo Consider rewriting these as Property Dispatcher callbacks, for consistency.
 
 	FAGX_ConstraintBodyAttachment* ModifiedBodyAttachment =
 		SelectByName(Member, &BodyAttachment1, &BodyAttachment2);
 
 	if (ModifiedBodyAttachment)
 	{
-		// TODO: Code below needs to be triggered also when modified through code!
-		// Editor-only probably OK though, since it is just for Editor convenience.
-		// See FCoreUObjectDelegates::OnObjectPropertyChanged.
-		// Or/additional add Refresh button to AAGX_ConstraintFrameActor's Details Panel
-		// that rebuilds the constraint usage list.
+		/// @todo Code below needs to be triggered also when modified through code!
+		/// Editor-only probably OK though, since it is just for Editor convenience.
+		/// See FCoreUObjectDelegates::OnObjectPropertyChanged.
+		/// Or/additional add Refresh button to AAGX_ConstraintFrameActor's Details Panel
+		/// that rebuilds the constraint usage list.
 
-		/// \todo This property is three levels deep instead of two for the FrameDefiningActor.
+		/// @todo This property is three levels deep instead of two for the FrameDefiningActor.
 		/// The middle layer is an FAGX_SceneComponentReference. Here we don't know if the
 		/// property change happened in the ModifiedBodyAttachment's RigidBody or its
 		/// FrameDefiningComponent. Assuming we have to update.
@@ -759,37 +755,21 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 	}
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
 
-void UAGX_ConstraintComponent::PostEditChangeChainProperty(
-	struct FPropertyChangedChainEvent& PropertyChangedEvent)
+void UAGX_ConstraintComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	if (PropertyChangedEvent.PropertyChain.Num() < 3)
-	{
-		Super::PostEditChangeChainProperty(PropertyChangedEvent);
-
-		// These simple cases are handled by PostEditChangeProperty, which is called by UObject's
-		// PostEditChangeChainProperty.
-		return;
-	}
-
-	FEditPropertyChain::TDoubleLinkedListNode* Node = PropertyChangedEvent.PropertyChain.GetHead();
-	FName Member = Node->GetValue()->GetFName();
-	Node = Node->GetNextNode();
-	FName Property = Node->GetValue()->GetFName();
-	// The name of the rest of the nodes doesn't matter, we set all elements at level two each
-	// time. These are small objects such as FVector or FFloatInterval.
-	// Some rewrite of FAGX_PropertyDispatcher will be required to support other types of nesting
-	PropertyDispatcher.Trigger(Member, Property, this);
+	PropertyDispatcher.Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	Super::PostEditChangeChainProperty(Event);
 }
+
 #endif
 
 TStructOnScope<FActorComponentInstanceData> UAGX_ConstraintComponent::GetComponentInstanceData()
@@ -908,7 +888,6 @@ void UAGX_ConstraintComponent::PostLoad()
 	Super::PostLoad();
 	BodyAttachment1.OnFrameDefiningComponentChanged(this);
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
-	InitPropertyDispatcher();
 }
 
 void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
@@ -987,16 +966,12 @@ void UAGX_ConstraintComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// It's still safe to release the native since the Simulation will hold a reference if
 		// necessary.
 	}
-	else
+	else if (
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
 	{
-		if (HasNative())
+		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 		{
-			/// @todo Remove the native AGX Dynamics Rigid Body from the Simulation.
-			UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-			if (Simulation != nullptr)
-			{
-				Simulation->RemoveConstraint(*this);
-			}
+			Simulation->Remove(*this);
 		}
 	}
 
@@ -1037,5 +1012,15 @@ void UAGX_ConstraintComponent::CreateNative()
 
 	UpdateNativeProperties();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	Simulation->GetNative()->AddConstraint(NativeBarrier.Get());
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+				LogAGX, Error,
+				TEXT("Constraint '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				"returned nullptr."),
+				*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+
+	Simulation->Add(*this);
 }

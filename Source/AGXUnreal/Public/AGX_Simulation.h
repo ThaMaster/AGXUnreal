@@ -15,10 +15,13 @@
 class AAGX_Stepper;
 class AAGX_Terrain;
 class UAGX_ConstraintComponent;
+class UAGX_ContactMaterialInstance;
 class UAGX_MaterialBase;
 class UAGX_RigidBodyComponent;
+class UAGX_ShapeMaterialInstance;
 class UAGX_StaticMeshComponent;
 class UAGX_ShapeComponent;
+class UAGX_TireComponent;
 class UAGX_WireComponent;
 
 class AActor;
@@ -199,25 +202,30 @@ public: // Member functions.
 	UFUNCTION(BlueprintCallable, Category = "Simulation")
 	void SetTimeStamp(float NewTimeStamp);
 
-	void AddRigidBody(UAGX_RigidBodyComponent* Body);
-
-	void AddRigidBody(UAGX_StaticMeshComponent* Body);
+	void Add(UAGX_ConstraintComponent& Constraint);
+	void Add(UAGX_ContactMaterialInstance& Material);
 
 	/**
-	 * Add a stand-alone shape to the simulation.
-	 *
-	 * Should not be called with Shapes that are part of a RigidBody, the body
-	 * is responsible for adding its own shapes.
+	 * Note that Shapes that are child of the passed Rigid Body are NOT added to the simulation
+	 * when calling this function.
 	 */
-	void AddShape(UAGX_ShapeComponent* Shape);
+	void Add(UAGX_RigidBodyComponent& Body);
+	void Add(UAGX_ShapeComponent& Shape);
+	void Add(UAGX_ShapeMaterialInstance& Shape);
+	void Add(UAGX_StaticMeshComponent& Body);
+	void Add(AAGX_Terrain& Terrain);
+	void Add(UAGX_TireComponent& Tire);
+	void Add(UAGX_WireComponent& Wire);
 
-	bool AddConstraint(UAGX_ConstraintComponent& Constraint);
-	bool RemoveConstraint(UAGX_ConstraintComponent& Constraint);
-
-	void AddTerrain(AAGX_Terrain* Terrain);
-
-	bool AddWire(UAGX_WireComponent& Wire);
-	void RemoveWire(UAGX_WireComponent& Wire);
+	void Remove(UAGX_ConstraintComponent& Constraint);
+	void Remove(UAGX_ContactMaterialInstance& Material);
+	void Remove(UAGX_RigidBodyComponent& Body);
+	void Remove(UAGX_ShapeComponent& Shape);
+	void Remove(UAGX_ShapeMaterialInstance& Shape);
+	void Remove(UAGX_StaticMeshComponent& Body);
+	void Remove(AAGX_Terrain& Terrain);
+	void Remove(UAGX_TireComponent& Tire);
+	void Remove(UAGX_WireComponent& Wire);
 
 	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);
 
@@ -226,7 +234,6 @@ public: // Member functions.
 	bool HasNative() const;
 
 	FSimulationBarrier* GetNative();
-
 	const FSimulationBarrier* GetNative() const;
 
 	void Step(float DeltaTime);

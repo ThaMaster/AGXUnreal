@@ -4,13 +4,14 @@
 #include "AGX_RigidBodyEnums.h"
 #include "AGX_MotionControl.h"
 #include "AGX_NativeOwner.h"
-#include "AGX_UpropertyDispatcher.h"
 #include "RigidBodyBarrier.h"
 
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
 #include "Misc/EngineVersionComparison.h"
+
+class UAGX_ShapeComponent;
 
 #include "AGX_RigidBodyComponent.generated.h"
 
@@ -94,6 +95,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	bool GetAutoGenerateCenterOfMassOffset() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	TArray<UAGX_ShapeComponent*> GetShapes() const;
 
 	/**
 	 * Explicitly update mass properties.
@@ -280,10 +284,8 @@ public:
 
 	// ~Begin UObject interface.
 #if WITH_EDITOR
-	virtual void PostLoad() override;
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-	virtual void PostEditChangeChainProperty(
-		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
 	// ~End UObject interface.
 
@@ -312,6 +314,8 @@ public:
 	// ~Begin USceneComponent interface.
 #if WITH_EDITOR
 	virtual void PostEditComponentMove(bool bFinished) override;
+	virtual void OnChildDetached(USceneComponent* Child) override;
+	virtual void OnChildAttached(USceneComponent* Child) override;
 #endif
 	// ~End USceneComponent interface.
 
@@ -355,10 +359,6 @@ private:
 #endif
 
 private:
-#if WITH_EDITORONLY_DATA
-	FAGX_UpropertyDispatcher<UAGX_RigidBodyComponent> PropertyDispatcher;
-#endif
-
 	// The AGX Dynamics object only exists while simulating. Initialized in
 	// BeginPlay and released in EndPlay.
 	FRigidBodyBarrier NativeBarrier;

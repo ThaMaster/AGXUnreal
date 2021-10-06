@@ -135,18 +135,18 @@ public:
 #endif
 	// ~End USceneComponent interface.
 
+	// ~Begin UObject interface.
+#if WITH_EDITOR
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+#endif
+	// ~End UObject interface.
+
 protected:
 	//~ Begin protected UActorComponent interface.
 	virtual bool ShouldCreatePhysicsState() const override;
 	virtual void OnCreatePhysicsState() override;
 	//~ End protected UActorComponent interface.
-
-	//~ Begin protected UObject interface.
-	virtual void PostLoad() override;
-#if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
-#endif
-	//~ End UObject interface.
 
 private: // Private member functions.
 	/**

@@ -65,6 +65,12 @@ public:
 	FQuat GetLocalRotation() const;
 	std::tuple<FVector, FQuat> GetLocalPositionAndRotation() const;
 
+	void SetWorldPosition(const FVector& Position);
+	void SetWorldRotation(const FQuat& Rotation);
+
+	FVector GetWorldPosition() const;
+	FQuat GetWorldRotation() const;
+
 	FTransform GetGeometryToShapeTransform() const;
 
 	void SetName(const FString& Name);

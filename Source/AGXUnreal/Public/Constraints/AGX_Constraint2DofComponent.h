@@ -85,6 +85,13 @@ public:
 	virtual void SetNativeAddress(uint64 NativeAddress) override;
 	// ~End IAGX_NativeOwner interface.
 
+	// ~ Begin UObject interface.
+#if WITH_EDITOR
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event) override;
+#endif
+	// ~ End UObject interface.
+
 protected:
 	/**
 	 * Call AllocateNative and then bind the constraint controllers to their native representations

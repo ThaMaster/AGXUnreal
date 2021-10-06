@@ -1,13 +1,15 @@
 #include "Materials/AGX_ContactMaterialInstance.h"
 
-#include "Engine/World.h"
-
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Materials/AGX_MaterialBase.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
 #include "Materials/ShapeMaterialBarrier.h"
+
+// Unreal Engine includes.
+#include "Engine/World.h"
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::CreateFromAsset(
 	UWorld* PlayingWorld, UAGX_ContactMaterialAsset* Source)
@@ -123,7 +125,7 @@ void UAGX_ContactMaterialInstance::SetFrictionModel(EAGX_FrictionModel InFrictio
 void UAGX_ContactMaterialInstance::SetSurfaceFrictionEnabled(bool bInSurfaceFrictionEnabled)
 {
 	Super::SetSurfaceFrictionEnabled(bInSurfaceFrictionEnabled);
-	if  (!HasNative())
+	if (!HasNative())
 	{
 		return;
 	}
@@ -141,7 +143,8 @@ void UAGX_ContactMaterialInstance::SetFrictionCoefficient(float InFrictionCoeffi
 		FrictionCoefficient, true, !bUseSecondaryFrictionCoefficient);
 }
 
-void UAGX_ContactMaterialInstance::SetSecondaryFrictionCoefficient(float InSecondaryFrictionCoefficient)
+void UAGX_ContactMaterialInstance::SetSecondaryFrictionCoefficient(
+	float InSecondaryFrictionCoefficient)
 {
 	Super::SetSecondaryFrictionCoefficient(InSecondaryFrictionCoefficient);
 	if (!HasNative())
@@ -154,7 +157,8 @@ void UAGX_ContactMaterialInstance::SetSecondaryFrictionCoefficient(float InSecon
 	}
 }
 
-void UAGX_ContactMaterialInstance::SetUseSecondaryFrictionCoefficient(bool bInUseSecondaryFrictionCoefficient)
+void UAGX_ContactMaterialInstance::SetUseSecondaryFrictionCoefficient(
+	bool bInUseSecondaryFrictionCoefficient)
 {
 	Super::SetUseSecondaryFrictionCoefficient(bInUseSecondaryFrictionCoefficient);
 	if (!HasNative())
@@ -179,8 +183,7 @@ void UAGX_ContactMaterialInstance::SetSurfaceViscosity(float InSurfaceViscosity)
 	{
 		return;
 	}
-	NativeBarrier->SetSurfaceViscosity(
-		SurfaceViscosity, true, !bUseSecondarySurfaceViscosity);
+	NativeBarrier->SetSurfaceViscosity(SurfaceViscosity, true, !bUseSecondarySurfaceViscosity);
 }
 
 void UAGX_ContactMaterialInstance::SetSecondarySurfaceViscosity(float InSecondarySurfaceViscosity)
@@ -196,7 +199,8 @@ void UAGX_ContactMaterialInstance::SetSecondarySurfaceViscosity(float InSecondar
 	}
 }
 
-void UAGX_ContactMaterialInstance::SetUseSecondarySurfaceViscosity(bool bInUseSecondarySurfaceViscosity)
+void UAGX_ContactMaterialInstance::SetUseSecondarySurfaceViscosity(
+	bool bInUseSecondarySurfaceViscosity)
 {
 	Super::SetUseSecondarySurfaceViscosity(bInUseSecondarySurfaceViscosity);
 	if (!HasNative())
@@ -263,7 +267,6 @@ void UAGX_ContactMaterialInstance::SetAdhesiveOverlap(float InAdhesiveOverlap)
 	}
 	NativeBarrier->SetAdhesion(AdhesiveForce, AdhesiveOverlap);
 }
-
 
 FContactMaterialBarrier* UAGX_ContactMaterialInstance::GetOrCreateNative(UWorld* PlayingWorld)
 {
@@ -395,7 +398,15 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 	UpdateNativeProperties();
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(PlayingWorld);
-	check(Simulation);
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Contact Material '%s' tried to get Simulation, but UAGX_Simulation::GetFrom returned "
+			"nullptr."),
+			*GetName());
+		return;
+	}
 
-	Simulation->GetNative()->AddContactMaterial(NativeBarrier.Get());
+	Simulation->Add(*this);
 }

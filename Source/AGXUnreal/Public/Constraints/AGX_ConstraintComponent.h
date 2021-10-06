@@ -188,52 +188,41 @@ public:
 
 	void UpdateNativeDamping();
 
+	// ~Begin UActorComponent interface.
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+	// ~End UActorComponent interface.
 
 	//~ Begin UObject interface.
+	// Shortly after construction, before deserialization.
 	virtual void PostInitProperties() override;
-	//~ End UObject interface.
-
-	bool ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof) const;
 
 #if WITH_EDITOR
-	void InitPropertyDispatcher();
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-	virtual void PostEditChangeChainProperty(
-		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
-#endif
-
-	//~ Begin UActorComponent Interface
-	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
-	//~ End UActorComponent Interface
-
-	/// \todo Determine which of these are needed, which are even available on USceneCompnent, and
-	/// which must be hidden behind WITH_EDITOR.
-protected:
-#if WITH_EDITOR
-	// When loaded in Editor/Game.
+	// When loaded in Editor/Game. Not called when creating a new object from the Place Mode.
 	virtual void PostLoad() override;
 
 	// When copied in Editor.
 	virtual void PostDuplicate(bool bDuplicateForPIE) override;
+
+	// When a property is changed from the Details Panel, and possibly other situations.
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(
+		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 
 	// When destroyed in Game.
 	virtual void BeginDestroy() override;
 
 	// When destroyed in Editor.
 	virtual void DestroyComponent(bool bPromoteChildren) override;
-
-/// \note The Actor version of constraints had this following callbacks.
-/// Components don't have it. Does it matter? Do we need it?
-#if 0
-	// When Loaded or Spawned in Editor, or Spawned in Game
-	virtual void OnConstruction(const FTransform& Transform) override;
-
-	// When destroyed in Editor.
-	virtual void Destroyed() override;
 #endif
-#endif
+
+	//~ End UObject interface.
+
+	bool ToNativeDof(EGenericDofIndex GenericDof, int32& NativeDof) const;
+
+	//~ Begin UActorComponent Interface
+	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
+	//~ End UActorComponent Interface
 
 protected:
 	/**
@@ -244,6 +233,8 @@ protected:
 	virtual void CreateNativeImpl() PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl, );
 
 private:
+	void InitPropertyDispatcher();
+
 	/**
 	 * Invokes CreateNativeImpl, then adds the native to the simulation.
 	 */
@@ -267,6 +258,8 @@ protected:
 	TUniquePtr<FConstraintBarrier> NativeBarrier;
 
 #if WITH_EDITORONLY_DATA
+	// We cannot use the static (class shared) Property Dispatcher because our Constraint Controller
+	// callbacks store a pointer to the particular controller in the lambda capture.
 	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent> PropertyDispatcher;
 #endif
 

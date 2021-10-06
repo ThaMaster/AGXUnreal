@@ -27,24 +27,35 @@ public:
 	FSimulationBarrier();
 	~FSimulationBarrier();
 
-	void AddRigidBody(FRigidBodyBarrier* Body);
-	void AddShape(FShapeBarrier* Shape);
+	bool Add(FConstraintBarrier& Constraint);
+	bool Add(FContactMaterialBarrier& ContactMaterial);
 
-	void AddConstraint(FConstraintBarrier* Constraint);
-	bool RemoveConstraint(FConstraintBarrier& Constraint);
+	/**
+	 * Note that Shapes that are child of the passed Rigid Body are NOT added to the simulation
+	 * when calling this function. All Shapes, whether child to a Rigid Body or a free Shape, are
+	 * responsible for adding themselves to the Simulation. This makes it easier to handle e.g.
+	 * changes in the Component attachment hierarchy during Play.
+	 */
+	bool Add(FRigidBodyBarrier& Body);
+	bool Add(FShapeBarrier& Shape);
+	bool Add(FShapeMaterialBarrier& Material);
+	bool Add(FTerrainBarrier& Terrain);
+	bool Add(FTireBarrier& Tire);
+	bool Add(FWireBarrier& Wire);
 
-	void AddShapeMaterial(FShapeMaterialBarrier* Material);
-	void RemoveShapeMaterial(FShapeMaterialBarrier* Material);
+	bool Remove(FConstraintBarrier& Constraint);
+	bool Remove(FContactMaterialBarrier& ContactMaterial);
 
-	void AddContactMaterial(FContactMaterialBarrier* ContactMaterial);
-	void RemoveContactMaterial(FContactMaterialBarrier* ContactMaterial);
-
-	void AddTerrain(FTerrainBarrier* Terrain);
-
-	void AddTire(FTireBarrier* Tire);
-
-	bool AddWire(FWireBarrier& Wire);
-	void RemoveWire(FWireBarrier& Wire);
+	/**
+	 * Note that agx::Simulation::remove(agx::RigidBody*, bool) is called with RemoveGeometries =
+	 * false.
+	 */
+	bool Remove(FRigidBodyBarrier& Body);
+	bool Remove(FShapeBarrier& Shape);
+	bool Remove(FShapeMaterialBarrier& Material);
+	bool Remove(FTerrainBarrier& Terrain);
+	bool Remove(FTireBarrier& Tire);
+	bool Remove(FWireBarrier& Wire);
 
 	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);
 

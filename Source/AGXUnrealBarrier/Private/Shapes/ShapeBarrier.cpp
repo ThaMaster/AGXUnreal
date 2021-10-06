@@ -351,6 +351,30 @@ std::tuple<FVector, FQuat> FShapeBarrier::GetLocalPositionAndRotation() const
 		ConvertDisplacement(ShapeRelativeBody.getTranslate()), Convert(ShapeRelativeBody.getRotate())};
 }
 
+void FShapeBarrier::SetWorldPosition(const FVector& Position)
+{
+	check(HasNative());
+	NativeRef->NativeGeometry->setPosition(ConvertDisplacement(Position));
+}
+
+void FShapeBarrier::SetWorldRotation(const FQuat& Rotation)
+{
+	check(HasNative());
+	NativeRef->NativeGeometry->setRotation(Convert(Rotation));
+}
+
+FVector FShapeBarrier::GetWorldPosition() const
+{
+	check(HasNative());
+	return ConvertDisplacement(NativeRef->NativeGeometry->getPosition());
+}
+
+FQuat FShapeBarrier::GetWorldRotation() const
+{
+	check(HasNative());
+	return Convert(NativeRef->NativeGeometry->getRotation());
+}
+
 FTransform FShapeBarrier::GetGeometryToShapeTransform() const
 {
 	check(HasNative());

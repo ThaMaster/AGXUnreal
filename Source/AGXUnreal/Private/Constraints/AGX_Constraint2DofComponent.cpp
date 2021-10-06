@@ -4,6 +4,7 @@
 #include "AGX_LogCategory.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "Constraints/Constraint2DOFBarrier.h"
+#include "Utilities/AGX_ConstraintUtilities.h"
 
 UAGX_Constraint2DofComponent::UAGX_Constraint2DofComponent()
 {
@@ -48,17 +49,21 @@ namespace AGX_Constraint2DofComponent_helpers
 		EAGX_Constraint2DOFFreeDOF FIRST = EAGX_Constraint2DOFFreeDOF::FIRST;
 		EAGX_Constraint2DOFFreeDOF SECOND = EAGX_Constraint2DOFFreeDOF::SECOND;
 
-		Constraint.ElectricMotorController1.InitializeBarrier(Barrier->GetElectricMotorController(FIRST));
+		Constraint.ElectricMotorController1.InitializeBarrier(
+			Barrier->GetElectricMotorController(FIRST));
 		Constraint.FrictionController1.InitializeBarrier(Barrier->GetFrictionController(FIRST));
 		Constraint.LockController1.InitializeBarrier(Barrier->GetLockController(FIRST));
 		Constraint.RangeController1.InitializeBarrier(Barrier->GetRangeController(FIRST));
-		Constraint.TargetSpeedController1.InitializeBarrier(Barrier->GetTargetSpeedController(FIRST));
+		Constraint.TargetSpeedController1.InitializeBarrier(
+			Barrier->GetTargetSpeedController(FIRST));
 
-		Constraint.ElectricMotorController2.InitializeBarrier(Barrier->GetElectricMotorController(SECOND));
+		Constraint.ElectricMotorController2.InitializeBarrier(
+			Barrier->GetElectricMotorController(SECOND));
 		Constraint.FrictionController2.InitializeBarrier(Barrier->GetFrictionController(SECOND));
 		Constraint.LockController2.InitializeBarrier(Barrier->GetLockController(SECOND));
 		Constraint.RangeController2.InitializeBarrier(Barrier->GetRangeController(SECOND));
-		Constraint.TargetSpeedController2.InitializeBarrier(Barrier->GetTargetSpeedController(SECOND));
+		Constraint.TargetSpeedController2.InitializeBarrier(
+			Barrier->GetTargetSpeedController(SECOND));
 
 		Constraint.ScrewController.InitializeBarrier(Barrier->GetScrewController());
 	}
@@ -113,3 +118,63 @@ void UAGX_Constraint2DofComponent::SetNativeAddress(uint64 NativeAddress)
 
 	AGX_Constraint2DofComponent_helpers::InitializeControllerBarriers(*this);
 }
+
+#if WITH_EDITOR
+void UAGX_Constraint2DofComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks(
+		PropertyDispatcher, &ElectricMotorController1,
+		GET_MEMBER_NAME_CHECKED(ThisClass, ElectricMotorController1));
+
+	FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks(
+		PropertyDispatcher, &ElectricMotorController2,
+		GET_MEMBER_NAME_CHECKED(ThisClass, ElectricMotorController2));
+
+	FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks(
+		PropertyDispatcher, &FrictionController1,
+		GET_MEMBER_NAME_CHECKED(ThisClass, FrictionController1));
+
+	FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks(
+		PropertyDispatcher, &FrictionController2,
+		GET_MEMBER_NAME_CHECKED(ThisClass, FrictionController2));
+
+	FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks(
+		PropertyDispatcher, &LockController1, GET_MEMBER_NAME_CHECKED(ThisClass, LockController1));
+
+	FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks(
+		PropertyDispatcher, &LockController2, GET_MEMBER_NAME_CHECKED(ThisClass, LockController2));
+
+	FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
+		PropertyDispatcher, &RangeController1,
+		GET_MEMBER_NAME_CHECKED(ThisClass, RangeController1));
+
+	FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
+		PropertyDispatcher, &RangeController2,
+		GET_MEMBER_NAME_CHECKED(ThisClass, RangeController2));
+
+	FAGX_ConstraintUtilities::AddTargetSpeedControllerPropertyCallbacks(
+		PropertyDispatcher, &TargetSpeedController1,
+		GET_MEMBER_NAME_CHECKED(ThisClass, TargetSpeedController1));
+
+	FAGX_ConstraintUtilities::AddTargetSpeedControllerPropertyCallbacks(
+		PropertyDispatcher, &TargetSpeedController2,
+		GET_MEMBER_NAME_CHECKED(ThisClass, TargetSpeedController2));
+
+	FAGX_ConstraintUtilities::AddScrewControllerPropertyCallbacks(
+		PropertyDispatcher, &ScrewController, GET_MEMBER_NAME_CHECKED(ThisClass, ScrewController));
+}
+
+void UAGX_Constraint2DofComponent::PostEditChangeChainProperty(
+	struct FPropertyChangedChainEvent& Event)
+{
+	PropertyDispatcher.Trigger(Event, this);
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeChainProperty(Event);
+}
+
+#endif

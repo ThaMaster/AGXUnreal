@@ -38,88 +38,116 @@ FSimulationBarrier::~FSimulationBarrier()
 	// not just the forward declaration, of FSimulationRef.
 }
 
-void FSimulationBarrier::AddRigidBody(FRigidBodyBarrier* Body)
-{
-	check(HasNative());
-	check(Body->HasNative());
-	NativeRef->Native->add(Body->GetNative()->Native);
-}
-
-void FSimulationBarrier::AddShape(FShapeBarrier* Shape)
-{
-	check(HasNative());
-	check(Shape->HasNative());
-	NativeRef->Native->add(Shape->GetNative()->NativeGeometry);
-}
-
-void FSimulationBarrier::AddConstraint(FConstraintBarrier* Constraint)
-{
-	check(HasNative());
-	check(Constraint->HasNative());
-	NativeRef->Native->add(Constraint->GetNative()->Native);
-}
-
-bool FSimulationBarrier::RemoveConstraint(FConstraintBarrier& Constraint)
+bool FSimulationBarrier::Add(FConstraintBarrier& Constraint)
 {
 	check(HasNative());
 	check(Constraint.HasNative());
-	return NativeRef->Native->remove(Constraint.GetNative()->Native);
+	return NativeRef->Native->add(Constraint.GetNative()->Native);
 }
 
-void FSimulationBarrier::AddShapeMaterial(FShapeMaterialBarrier* Material)
+bool FSimulationBarrier::Add(FContactMaterialBarrier& ContactMaterial)
 {
 	check(HasNative());
-	check(Material->HasNative());
-	NativeRef->Native->add(Material->GetNative()->Native);
+	check(ContactMaterial.HasNative());
+	return NativeRef->Native->add(ContactMaterial.GetNative()->Native);
 }
 
-void FSimulationBarrier::RemoveShapeMaterial(FShapeMaterialBarrier* Material)
+bool FSimulationBarrier::Add(FRigidBodyBarrier& Body)
 {
 	check(HasNative());
-	check(Material->HasNative());
-	NativeRef->Native->remove(Material->GetNative()->Native);
+	check(Body.HasNative());
+	return NativeRef->Native->add(Body.GetNative()->Native, /*addGeometries*/ false);
 }
 
-void FSimulationBarrier::AddContactMaterial(FContactMaterialBarrier* ContactMaterial)
+bool FSimulationBarrier::Add(FShapeBarrier& Shape)
 {
 	check(HasNative());
-	check(ContactMaterial->HasNative());
-	NativeRef->Native->add(ContactMaterial->GetNative()->Native);
+	check(Shape.HasNative());
+	return NativeRef->Native->add(Shape.GetNative()->NativeGeometry);
 }
 
-void FSimulationBarrier::RemoveContactMaterial(FContactMaterialBarrier* ContactMaterial)
+bool FSimulationBarrier::Add(FShapeMaterialBarrier& Material)
 {
 	check(HasNative());
-	check(ContactMaterial->HasNative());
-	NativeRef->Native->remove(ContactMaterial->GetNative()->Native);
+	check(Material.HasNative());
+	return NativeRef->Native->add(Material.GetNative()->Native);
 }
 
-void FSimulationBarrier::AddTerrain(FTerrainBarrier* Terrain)
+bool FSimulationBarrier::Add(FTerrainBarrier& Terrain)
 {
 	check(HasNative());
-	check(Terrain->HasNative());
-	NativeRef->Native->add(Terrain->GetNative()->Native);
+	check(Terrain.HasNative());
+	return NativeRef->Native->add(Terrain.GetNative()->Native);
 }
 
-void FSimulationBarrier::AddTire(FTireBarrier* Tire)
+bool FSimulationBarrier::Add(FTireBarrier& Tire)
 {
 	check(HasNative());
-	check(Tire->HasNative());
-	NativeRef->Native->add(Tire->GetNative()->Native);
+	check(Tire.HasNative());
+	return NativeRef->Native->add(Tire.GetNative()->Native);
 }
 
-bool FSimulationBarrier::AddWire(FWireBarrier& Wire)
+bool FSimulationBarrier::Add(FWireBarrier& Wire)
 {
 	check(HasNative());
 	check(Wire.HasNative());
 	return NativeRef->Native->add(Wire.GetNative()->Native);
 }
 
-void FSimulationBarrier::RemoveWire(FWireBarrier& Wire)
+bool FSimulationBarrier::Remove(FConstraintBarrier& Constraint)
+{
+	check(HasNative());
+	check(Constraint.HasNative());
+	return NativeRef->Native->remove(Constraint.GetNative()->Native);
+}
+
+bool FSimulationBarrier::Remove(FContactMaterialBarrier& ContactMaterial)
+{
+	check(HasNative());
+	check(ContactMaterial.HasNative());
+	return NativeRef->Native->remove(ContactMaterial.GetNative()->Native);
+}
+
+bool FSimulationBarrier::Remove(FRigidBodyBarrier& Body)
+{
+	check(HasNative());
+	check(Body.HasNative());
+	return NativeRef->Native->remove(Body.GetNative()->Native, /*removeGeometries*/ false);
+}
+
+bool FSimulationBarrier::Remove(FShapeBarrier& Shape)
+{
+	check(HasNative());
+	check(Shape.HasNative());
+	return NativeRef->Native->remove(Shape.GetNative()->NativeGeometry);
+}
+
+bool FSimulationBarrier::Remove(FShapeMaterialBarrier& Material)
+{
+	check(HasNative());
+	check(Material.HasNative());
+	return NativeRef->Native->remove(Material.GetNative()->Native);
+}
+
+bool FSimulationBarrier::Remove(FTerrainBarrier& Terrain)
+{
+	check(HasNative());
+	check(Terrain.HasNative());
+	return NativeRef->Native->remove(Terrain.GetNative()->Native);
+}
+
+bool FSimulationBarrier::Remove(FTireBarrier& Tire)
+{
+	check(HasNative());
+	check(Tire.HasNative());
+	return NativeRef->Native->remove(Tire.GetNative()->Native);
+}
+
+bool FSimulationBarrier::Remove(FWireBarrier& Wire)
 {
 	check(HasNative());
 	check(Wire.HasNative());
-	NativeRef->Native->remove(Wire.GetNative()->Native);
+	return NativeRef->Native->remove(Wire.GetNative()->Native);
 }
 
 void FSimulationBarrier::SetEnableCollisionGroupPair(

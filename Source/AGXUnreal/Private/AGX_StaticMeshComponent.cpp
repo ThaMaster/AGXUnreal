@@ -144,16 +144,26 @@ void UAGX_StaticMeshComponent::BeginPlay()
 void UAGX_StaticMeshComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
-	if (HasNative() && !GIsReconstructingBlueprintInstances)
+
+	if (GIsReconstructingBlueprintInstances)
 	{
-		UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-		if (Simulation != nullptr)
+		// Another Static Mesh will inherit this one's Native, so don't wreck it.
+		// It's still safe to release the native since the Simulation will hold a reference if
+		// necessary.
+	}
+	else if (
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+	{
+		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 		{
-			/// @todo Add UAGX_Simulation::RemoveRigidBody;
-			// Simulation->RemoveRigidBody();
+			Simulation->Remove(*this);
 		}
 	}
-	GetNative()->ReleaseNative();
+
+	if (HasNative())
+	{
+		GetNative()->ReleaseNative();
+	}
 }
 
 void UAGX_StaticMeshComponent::TickComponent(
@@ -213,18 +223,15 @@ void UAGX_StaticMeshComponent::OnCreatePhysicsState()
 	bPhysicsStateCreated = true;
 }
 
-void UAGX_StaticMeshComponent::PostLoad()
-{
-	Super::PostLoad();
 #if WITH_EDITOR
+void UAGX_StaticMeshComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
 	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
 	}
-
-	// These callbacks do not check the instance. It is the reponsibility of PostEditChangeProperty
-	// to only call FAGX_UpropertyDispatcher::Trigger when an instance is available.
 
 	Dispatcher.Add(
 		this->GetRelativeLocationPropertyName(),
@@ -261,26 +268,18 @@ void UAGX_StaticMeshComponent::PostLoad()
 			/// called.
 			This->RefreshCollisionShapes();
 		});
-#endif
 }
 
-#if WITH_EDITOR
-void UAGX_StaticMeshComponent::PostEditChangeProperty(FPropertyChangedEvent& Event)
+void UAGX_StaticMeshComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	const FName Member = GetFNameSafe(Event.MemberProperty);
-	const FName Property = GetFNameSafe(Event.Property);
-
-	// Trigger any change handling registered with the Property Change Dispatcher.
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Member, Property, this);
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that his object will be removed from the Actor and destroyed. We want to
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeProperty(Event);
+	Super::PostEditChangeChainProperty(Event);
 }
-#endif
 
-#if WITH_EDITOR
 void UAGX_StaticMeshComponent::PostEditComponentMove(bool bFinished)
 {
 	Super::PostEditComponentMove(bFinished);
@@ -482,7 +481,17 @@ void UAGX_StaticMeshComponent::AllocateNative()
 
 	WriteTransformToNative();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
-	Simulation->AddRigidBody(this);
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Static Mesh '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				 "returned nullptr."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+
+	Simulation->Add(*this);
 }
 
 namespace AGX_StaticMeshComponent_helpers

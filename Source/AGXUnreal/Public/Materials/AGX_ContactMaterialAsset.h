@@ -37,8 +37,8 @@ public:
 
 
 	// ~Begin UObject interface.
-	void PostLoad();
 #if WITH_EDITOR
+	void PostInitProperties();
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 	// ~End UObject interface.

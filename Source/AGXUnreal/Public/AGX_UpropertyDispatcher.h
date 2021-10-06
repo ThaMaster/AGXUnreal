@@ -152,13 +152,17 @@ bool FAGX_UpropertyDispatcher<T>::Trigger(FPropertyChangedEvent& Event, T* Objec
 template <typename T>
 bool FAGX_UpropertyDispatcher<T>::Trigger(struct FPropertyChangedChainEvent& Event, T* Object)
 {
+	if (Event.PropertyChain.Num() == 0)
+	{
+		return false;
+	}
 	FEditPropertyChain::TDoubleLinkedListNode* Node = Event.PropertyChain.GetHead();
 	FName Member = Node->GetValue()->GetFName();
 	Node = Node->GetNextNode();
-	FName Property = Node->GetValue()->GetFName();
+	FName Property = Node != nullptr ? Node->GetValue()->GetFName() : Member;
 	// The name of the rest of the nodes doesn't matter, we set all elements at level two each
-	// time. These are small objects such as FVector or FFloatInterval.
-	// Some rewrite of FAGX_PropertyDispatcher will be required to support other types of nesting.
+	// time. These are small objects such as FVector or FFloatInterval. Some rewrite of
+	// FAGX_PropertyDispatcher will be required to support other types of nesting.
 	return Trigger(Member, Property, Object);
 }
 
