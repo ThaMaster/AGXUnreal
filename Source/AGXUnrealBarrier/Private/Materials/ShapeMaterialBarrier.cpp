@@ -216,25 +216,25 @@ void FShapeMaterialBarrier::SetYoungsModulusBend(double YoungsModulus) const
 	NativeRef->Native->getWireMaterial()->setYoungsModulusBend(YoungsModulus);
 }
 
-double FShapeMaterialBarrier::GetDampingStretch() const
+double FShapeMaterialBarrier::GetSpookDampingStretch() const
 {
 	check(HasNative());
 	return NativeRef->Native->getWireMaterial()->getDampingStretch();
 }
 
-void FShapeMaterialBarrier::SetDampingStretch(double Damping) const
+void FShapeMaterialBarrier::SetSpookDampingStretch(double Damping) const
 {
 	check(HasNative());
 	NativeRef->Native->getWireMaterial()->setDampingStretch(Damping);
 }
 
-double FShapeMaterialBarrier::GetDampingBend() const
+double FShapeMaterialBarrier::GetSpookDampingBend() const
 {
 	check(HasNative());
 	return NativeRef->Native->getWireMaterial()->getDampingBend();
 }
 
-void FShapeMaterialBarrier::SetDampingBend(double Damping) const
+void FShapeMaterialBarrier::SetSpookDampingBend(double Damping) const
 {
 	check(HasNative());
 	NativeRef->Native->getWireMaterial()->setDampingBend(Damping);

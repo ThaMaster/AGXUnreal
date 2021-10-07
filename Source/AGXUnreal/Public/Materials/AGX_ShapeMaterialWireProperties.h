@@ -11,25 +11,39 @@ struct AGXUNREAL_API FAGX_ShapeMaterialWireProperties
 	GENERATED_BODY()
 
 public:
+
+	/**
+	 * Young's modulus when stretching the wire [Pa].
+	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Wire Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double YoungsModulusStretch;
 
+	/**
+	 * Damping (spook) when stretching the wire [s].
+	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Wire Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double DampingStretch;
+	double SpookDampingStretch;
 
+	/**
+	 * Young's modulus when bending the wire [Pa].
+	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Wire Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double YoungsModulusBend;
 
+
+	/**
+	 * Damping (spook) when bending the wire [s].
+	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Wire Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double DampingBend;
+	double SpookDampingBend;
 
 public:
 	FAGX_ShapeMaterialWireProperties();

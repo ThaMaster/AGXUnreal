@@ -88,16 +88,16 @@ public:
 	virtual void SetYoungsModulusBend(float InYoungsModulus);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	virtual float GetDampingStretch() const;
+	virtual float GetSpookDampingStretch() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	virtual void SetDampingStretch(float InDamping);
+	virtual void SetSpookDampingStretch(float InDamping);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	virtual float GetDampingBend() const;
+	virtual float GetSpookDampingBend() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	virtual void SetDampingBend(float InDamping);
+	virtual void SetSpookDampingBend(float InDamping);
 
 	void CopyFrom(const FShapeMaterialBarrier* Source);
 };

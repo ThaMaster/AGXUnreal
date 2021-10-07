@@ -60,11 +60,11 @@ public:
 	virtual float GetYoungsModulusBend() const;
 	virtual void SetYoungsModulusBend(float InYoungsModulus);
 
-	virtual float GetDampingStretch() const;
-	virtual void SetDampingStretch(float InDamping);
+	virtual float GetSpookDampingStretch() const;
+	virtual void SetSpookDampingStretch(float InDamping);
 
-	virtual float GetDampingBend() const;
-	virtual void SetDampingBend(float InDamping);
+	virtual float GetSpookDampingBend() const;
+	virtual void SetSpookDampingBend(float InDamping);
 
 	static UAGX_ShapeMaterialInstance* CreateFromAsset(UWorld* PlayingWorld, UAGX_ShapeMaterialAsset* Source);
 

@@ -150,13 +150,13 @@ void UAGX_ShapeMaterialAsset::WriteWirePropertyToInstance(const FName& PropertyN
 	{
 		Instance->SetYoungsModulusBend(Wire.YoungsModulusBend);
 	}
-	else if (PropertyName == GET_MEMBER_NAME_CHECKED(WireProperties, DampingStretch))
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(WireProperties, SpookDampingStretch))
 	{
-		Instance->SetDampingStretch(Wire.DampingStretch);
+		Instance->SetSpookDampingStretch(Wire.SpookDampingStretch);
 	}
-	else if (PropertyName == GET_MEMBER_NAME_CHECKED(WireProperties, DampingBend))
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(WireProperties, SpookDampingBend))
 	{
-		Instance->SetDampingBend(Wire.DampingBend);
+		Instance->SetSpookDampingBend(Wire.SpookDampingBend);
 	}
 	else
 	{

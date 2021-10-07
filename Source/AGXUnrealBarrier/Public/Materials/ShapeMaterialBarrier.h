@@ -69,11 +69,11 @@ public:
 	double GetYoungsModulusBend() const;
 	void SetYoungsModulusBend(double YoungsModulus) const;
 
-	double GetDampingStretch() const;
-	void SetDampingStretch(double Damping) const;
+	double GetSpookDampingStretch() const;
+	void SetSpookDampingStretch(double Damping) const;
 
-	double GetDampingBend() const;
-	void SetDampingBend(double Damping) const;
+	double GetSpookDampingBend() const;
+	void SetSpookDampingBend(double Damping) const;
 
 	FGuid GetGuid() const;
 

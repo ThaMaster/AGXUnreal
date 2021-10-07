@@ -23,7 +23,7 @@ public:
 	double AdhesionOverlapFactor;
 
 	/**
-	 * Sets the bulk cohesion (Pa) of the bulk material.
+	 * Sets the bulk cohesion of the bulk material [Pa].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Bulk",
@@ -31,7 +31,7 @@ public:
 	double Cohesion;
 
 	/**
-	 * Density of the terrain bulk, in kg/m^2.
+	 * Density of the terrain bulk [kg/m^3].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Bulk",
@@ -39,19 +39,19 @@ public:
 	double Density;
 
 	/**
-	 * Sets the dilatancy angle (deg) of the bulk material.
+	 * Sets the dilatancy angle of the bulk material [deg].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Bulk")
 	double DilatancyAngle;
 
 	/**
-	 * Sets the internal friction angle (deg) of the bulk material.
+	 * Sets the internal friction angle of the bulk material [deg].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Bulk")
 	double FrictionAngle;
 
 	/**
-	 * Sets the maximum density (kg/m^3) of the bulk material.
+	 * Sets the maximum density of the bulk material [kg/m^3].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Bulk",
@@ -76,7 +76,7 @@ public:
 	double SwellFactor;
 
 	/**
-	 * Sets the bulk Young's modulus (Pa) of the bulk material.
+	 * Sets the bulk Young's modulus of the bulk material [Pa].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Bulk",

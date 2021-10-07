@@ -62,7 +62,7 @@ public:
 
 	/**
 	 * Sets the stress at which the soil in the default state was compressed in, i.e when it has
-	 * nominal compaction 1.0.
+	 * nominal compaction 1.0 [Pa].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Compaction",

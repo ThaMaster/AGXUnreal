@@ -2,8 +2,8 @@
 
 FAGX_ShapeMaterialWireProperties::FAGX_ShapeMaterialWireProperties()
 	: YoungsModulusStretch(6E10)
-	, DampingStretch(0.05)
+	, SpookDampingStretch(0.05)
 	, YoungsModulusBend(6E10)
-	, DampingBend(0.10)
+	, SpookDampingBend(0.10)
 {
 }

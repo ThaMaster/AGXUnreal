@@ -79,24 +79,24 @@ void UAGX_ShapeMaterialBase::SetYoungsModulusBend(float InYoungsModulus)
 	Wire.YoungsModulusBend = InYoungsModulus;
 }
 
-float UAGX_ShapeMaterialBase::GetDampingStretch() const
+float UAGX_ShapeMaterialBase::GetSpookDampingStretch() const
 {
-	return Wire.DampingStretch;
+	return Wire.SpookDampingStretch;
 }
 
-void UAGX_ShapeMaterialBase::SetDampingStretch(float InDamping)
+void UAGX_ShapeMaterialBase::SetSpookDampingStretch(float InSpookDamping)
 {
-	Wire.DampingStretch = InDamping;
+	Wire.SpookDampingStretch = InSpookDamping;
 }
 
-float UAGX_ShapeMaterialBase::GetDampingBend() const
+float UAGX_ShapeMaterialBase::GetSpookDampingBend() const
 {
-	return Wire.DampingBend;
+	return Wire.SpookDampingBend;
 }
 
-void UAGX_ShapeMaterialBase::SetDampingBend(float InDamping)
+void UAGX_ShapeMaterialBase::SetSpookDampingBend(float InSpookDamping)
 {
-	Wire.DampingBend = InDamping;
+	Wire.SpookDampingStretch = InSpookDamping;
 }
 
 void UAGX_ShapeMaterialBase::CopyFrom(const FShapeMaterialBarrier* Source)
