@@ -237,7 +237,7 @@ public:
 	virtual void SetAdhesiveForce(float InAdhesiveForce);
 
 	/**
-	 * Allowed overlap from surface for resting contact, in meters.
+	 * Allowed overlap from surface for resting contact [cm].
 	 *
 	 * At lower overlap, the adhesion force will take effect.
 	 * At this overlap, no adhesive force is applied.

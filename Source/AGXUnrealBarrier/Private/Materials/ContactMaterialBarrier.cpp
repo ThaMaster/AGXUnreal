@@ -4,6 +4,7 @@
 #include "AGXRefs.h"
 #include "AGXBarrierFactories.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "TypeConversions.h"
 
 #include <Misc/AssertionMacros.h>
 
@@ -274,7 +275,8 @@ double FContactMaterialBarrier::GetSurfaceViscosity(
 void FContactMaterialBarrier::SetAdhesion(double AdhesiveForce, double AdhesiveOverlap)
 {
 	check(HasNative());
-	NativeRef->Native->setAdhesion(AdhesiveForce, AdhesiveOverlap);
+	const double AdhesiveOverlapAGX = UNREAL_TO_AGX_DISTANCE_FACTOR<double> * AdhesiveOverlap;
+	NativeRef->Native->setAdhesion(AdhesiveForce, AdhesiveOverlapAGX);
 }
 
 double FContactMaterialBarrier::GetAdhesiveForce() const
@@ -286,7 +288,8 @@ double FContactMaterialBarrier::GetAdhesiveForce() const
 double FContactMaterialBarrier::GetAdhesiveOverlap() const
 {
 	check(HasNative());
-	return NativeRef->Native->getAdhesiveOverlap();
+	const double AdhesiveOverlapAGX = NativeRef->Native->getAdhesiveOverlap();
+	return AGX_TO_UNREAL_DISTANCE_FACTOR<double> * AdhesiveOverlapAGX;
 }
 
 void FContactMaterialBarrier::SetYoungsModulus(double YoungsModulus)
@@ -317,19 +320,23 @@ void FContactMaterialBarrier::SetMinMaxElasticRestLength(
 	double MinElasticRestLength, double MaxElasticRestLength)
 {
 	check(HasNative());
-	NativeRef->Native->setMinMaxElasticRestLength(MinElasticRestLength, MaxElasticRestLength);
+	constexpr double UtA = UNREAL_TO_AGX_DISTANCE_FACTOR<double>;
+	NativeRef->Native->setMinMaxElasticRestLength(
+		UtA * MinElasticRestLength, UtA * MaxElasticRestLength);
 }
 
 double FContactMaterialBarrier::GetMinElasticRestLength() const
 {
 	check(HasNative());
-	return NativeRef->Native->getMinElasticRestLength();
+	constexpr double AtU = AGX_TO_UNREAL_DISTANCE_FACTOR<double>;
+	return AtU * NativeRef->Native->getMinElasticRestLength();
 }
 
 double FContactMaterialBarrier::GetMaxElasticRestLength() const
 {
 	check(HasNative());
-	return NativeRef->Native->getMaxElasticRestLength();
+	constexpr double AtU = AGX_TO_UNREAL_DISTANCE_FACTOR<double>;
+	return AtU * NativeRef->Native->getMaxElasticRestLength();
 }
 
 void FContactMaterialBarrier::SetContactReductionMode(int32 ReductionMode)

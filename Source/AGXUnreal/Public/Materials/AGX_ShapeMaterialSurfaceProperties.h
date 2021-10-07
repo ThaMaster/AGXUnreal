@@ -40,7 +40,7 @@ public:
 	double Viscosity;
 
 	/**
-	 * The attractive force between two colliding objects, in Newtons.
+	 * The attractive force between two colliding objects [N].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Surface Properties",
@@ -48,7 +48,7 @@ public:
 	double AdhesiveForce;
 
 	/**
-	 * Allowed overlap from surface for resting contact, in meters.
+	 * Allowed overlap from surface for resting contact [cm].
 	 *
 	 * At lower overlap, the adhesion force will take effect.
 	 * At this overlap, no adhesive force is applied.

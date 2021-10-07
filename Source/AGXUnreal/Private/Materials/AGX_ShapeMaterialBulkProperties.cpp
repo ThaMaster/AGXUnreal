@@ -5,7 +5,7 @@ FAGX_ShapeMaterialBulkProperties::FAGX_ShapeMaterialBulkProperties()
 	, YoungsModulus(2.0 / 5.0E-9)
 	, Viscosity(0.5)
 	, Damping(4.5 / 60.0)
-	, MinElasticRestLength(0.0005)
-	, MaxElasticRestLength(0.05)
+	, MinElasticRestLength(0.05)
+	, MaxElasticRestLength(5)
 {
 }
