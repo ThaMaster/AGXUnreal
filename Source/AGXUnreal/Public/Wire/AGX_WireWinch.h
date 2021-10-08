@@ -32,7 +32,7 @@ struct AGXUNREAL_API FAGX_WireWinchSettings
 	GENERATED_BODY()
 public:
 	/**
-	 * The location of the winch relative to some parent object.
+	 * The location of the winch relative to some parent object [cm].
 	 *
 	 * For a Wire Component owned winch without a body attachment the parent is the Wire Component.
 	 * For a Wire Component owned winch with a body attachment the parent is the body.
@@ -44,7 +44,7 @@ public:
 	FVector Location;
 
 	/**
-	 * The orientation of the winch relative to some parent object.
+	 * The orientation of the winch relative to some parent object [deg].
 	 *
 	 * For a Wire Component owned winch without a body attachment the parent is the Wire Component.
 	 * For a Wire Component owned winch with a body attachment the parent is the body.

@@ -35,7 +35,7 @@ struct AGXUNREAL_API FWireRoutingNode
 	EWireNodeType NodeType;
 
 	/**
-	 * The location of this node relative to the Wire Component.
+	 * The location of this node relative to the Wire Component [cm].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
 	FVector Location;

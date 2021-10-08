@@ -22,8 +22,8 @@ struct AGXUNREAL_API FAGX_ConstraintRangeController : public FAGX_ConstraintCont
 	GENERATED_USTRUCT_BODY()
 
 	/**
-	 * Range in Degrees if controller is on a Rotational Degree-Of-Freedom,
-	 * else in Centimeters.
+	 * Range in Degrees [deg] if controller is on a Rotational Degree-Of-Freedom,
+	 * else in Centimeters [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Range Controller", Meta = (EditCondition = "bEnable"))
 	FFloatInterval Range;

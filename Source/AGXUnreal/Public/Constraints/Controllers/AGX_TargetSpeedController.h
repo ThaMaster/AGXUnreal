@@ -22,8 +22,8 @@ struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController : public FAGX_Constrai
 	GENERATED_USTRUCT_BODY()
 
 	/**
-	 * Target Speed in Degrees Per Second if controller is on a Rotational DOF,
-	 * else in Centimeters Per Second.
+	 * Target Speed in Degrees Per Second [deg/s] if controller is on a Rotational DOF,
+	 * else in Centimeters Per Second [cm/s].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Target Speed Controller", Meta = (EditCondition = "bEnable"))

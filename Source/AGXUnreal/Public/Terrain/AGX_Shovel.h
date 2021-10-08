@@ -33,14 +33,14 @@ struct AGXUNREAL_API FAGX_Shovel
 
 	/**
 	 * Vertical distance under the blade cutting edge that the soil is allowed
-	 * to instantly merge up to, in centimeters.
+	 * to instantly merge up to [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
 	double VerticalBladeSoilMergeDistance = 40.0f;
 
 	/**
 	 * Extension outside the shovel bounding box where soil particle merging
-	 * is forbidden, in centimeters.
+	 * is forbidden [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
 	double NoMergeExtensionDistance = 50.0f;

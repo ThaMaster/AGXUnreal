@@ -22,7 +22,7 @@ struct AGXUNREAL_API FAGX_ConstraintElectricMotorController : public FAGX_Constr
 	GENERATED_USTRUCT_BODY()
 
 	/**
-	 * Available voltage or voltage drop across the terminals of this motor, in Volt.
+	 * Available voltage or voltage drop across the terminals of this motor [V].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Electric Motor Controller",
@@ -34,7 +34,7 @@ struct AGXUNREAL_API FAGX_ConstraintElectricMotorController : public FAGX_Constr
 	double GetVoltage() const;
 
 	/**
-	 * Resistance in the armature circuit, in Ohm.
+	 * Resistance in the armature circuit [Ohm].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Electric Motor Controller",
@@ -46,8 +46,8 @@ struct AGXUNREAL_API FAGX_ConstraintElectricMotorController : public FAGX_Constr
 	double GetArmatureResistance() const;
 
 	/**
-	 * Torque constant of this motor, in unit Torque Per Ampere. This value
-	 * couples the torque out to current in.
+	 * Torque constant of this motor, in unit Torque Per Ampere [Nm/A].
+	 * This value couples the torque out to current in.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Electric Motor Controller",

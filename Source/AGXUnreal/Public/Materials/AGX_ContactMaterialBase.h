@@ -210,7 +210,7 @@ public:
 	virtual void SetRestitution(float InRestitution);
 
 	/**
-	 * Young's modulus of the contact material. Same as spring coefficient k.
+	 * Young's modulus of the contact material. Same as spring coefficient k [Pa].
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double YoungsModulus;
@@ -219,7 +219,8 @@ public:
 	virtual void SetYoungsModulus(float InYoungsModulus);
 
 	/**
-	 * SpookDamping factor which represents the time the contact constraint has to fulfill its violation.
+	 * Damping (spook) which represents the time the contact constraint has to fulfill its violation
+	 * [s].
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double SpookDamping;
@@ -228,7 +229,7 @@ public:
 	virtual void SetSpookDamping(float InSpookDamping);
 
 	/**
-	 * The attractive force between two colliding objects, in Netwon.
+	 * The attractive force between two colliding objects [N].
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double AdhesiveForce;

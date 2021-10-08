@@ -53,7 +53,9 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 	GENERATED_BODY()
 
 public: // Properties.
-	/** Step length of the integrator, in seconds. 0.0167 by default. */
+	/**
+	 * Step length of the integrator [s].
+	 */
 	UPROPERTY(
 		config, EditAnywhere, BlueprintReadOnly, Category = "Solver",
 		meta = (ClampMin = "0.001", UIMin = "0.001", ClampMax = "1.0", UIMax = "1.0"))
@@ -85,15 +87,14 @@ public: // Properties.
 	UPROPERTY(Config, EditAnywhere, Category = "Gravity")
 	TEnumAsByte<enum EAGX_GravityModel> GravityModel = EAGX_GravityModel::Uniform;
 
-	/** Specifies the gravity vector when using Uniform Gravity Field with magnitude given in
-	 * [cm/s^2]. */
+	/** Specifies the gravity vector when using Uniform Gravity Field with magnitude [cm/s^2]. */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "Gravity",
 		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Uniform"))
 	FVector UniformGravity = FVector(0.0f, 0.0f, -980.665f);
 
 	/** Specifies the world location towards which the gravity field is directed when using Point
-	 * Gravity Field. */
+	 * Gravity Field [cm]. */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "Gravity",
 		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Point"))
@@ -112,7 +113,7 @@ public: // Properties.
 	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
 	TEnumAsByte<enum EAGX_StepMode> StepMode = SmCatchUpImmediately;
 
-	/** Maximum time lag in seconds for the Catch up over time Capped step mode before dropping. */
+	/** Maximum time lag for the Catch up over time Capped step mode before dropping [s]. */
 	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
 	float TimeLagCap = 1.0;
 

@@ -97,6 +97,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
 	EAGX_SolveType GetSolveType() const;
 
+	/**
+	 * The elasticity of the Constraint [N/m].
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintDoublePropertyPerDof Elasticity;
 
@@ -110,6 +113,10 @@ public:
 
 	double GetElasticity(EGenericDofIndex Index) const;
 
+		/**
+	 * The damping (spook) of the Constraint [s].
+	 * The value is the time the constraint has to fulfill its violation.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintDoublePropertyPerDof SpookDamping;
 
@@ -123,6 +130,9 @@ public:
 
 	double GetSpookDamping(EGenericDofIndex Index) const;
 
+	/**
+	 * The force range of the Constraint [N].
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintRangePropertyPerDof ForceRange;
 

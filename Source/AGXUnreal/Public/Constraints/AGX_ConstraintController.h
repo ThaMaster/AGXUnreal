@@ -34,9 +34,10 @@ struct AGXUNREAL_API FAGX_ConstraintController
 	bool GetEnable() const;
 
 	/**
-	 * The Elasticity measure the responsiveness/reactiveness of the Constraint Controller to
-	 * violations in its constraint. A higher Elasticity will cause a stronger force or torque to
-	 * be created to restore from the violation. A too high Elasticity will lead to instabilities in
+	 * The elasticity of the Constraint Controller [N/m].
+	 * The elasticity measure the responsiveness/reactiveness of the Constraint Controller to
+	 * violations in its constraint. A higher elasticity will cause a stronger force or torque to
+	 * be created to restore from the violation. A too high elasticity will lead to instabilities in
 	 * the simulation. It is the inverse of Compliance. It is measured in unit force or torque per
 	 * unit violation, much like a spring constant, where the violation can be either a translation
 	 * or a rotation.
@@ -54,7 +55,7 @@ struct AGXUNREAL_API FAGX_ConstraintController
 	double GetElasticity() const;
 
 	/**
-	 * Set the Compliance of the Constraint Controller.
+	 * Set the Compliance of the Constraint Controller [m/N].
 	 *
 	 * Compliance is stored as Elasticity = 1 / Compliance.
 	 *
@@ -72,12 +73,8 @@ struct AGXUNREAL_API FAGX_ConstraintController
 
 	double GetSpookDamping() const;
 
-	/// \todo Should this be in N (Nm) or some cm-based unit?
-	/// Cannot be TInterval<double> because that type is not listed in
-	/// Math/Interval.h
 	/**
-	 * The minimum an maximum force that the constraint controller can produce.
-	 * In newtons, i.e., kg m s^-2.
+	 * The minimum an maximum force that the constraint controller can produce [N].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
