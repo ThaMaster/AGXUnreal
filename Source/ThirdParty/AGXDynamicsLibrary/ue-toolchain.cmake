@@ -24,12 +24,21 @@
 
 
 
+# Disable implicit NO_POLICY_SCOPE.
+#
+# CMake used to have `cmake_policy` settings set in a sub-scripts propagate
+# into the caller. CMake 3.10 warns on this, By setting this policy to NEW we
+# enable policy scoping and the caller regain control over its own policies.
+cmake_policy(SET CMP0011 NEW)
+
+
 
 # Enable the 'IN_LIST' operator.
 #
 # I don't know why I need to explicitly specify this all of a sudden. I didn't
 # before and IN_LIST has existed for ages, at least since CMake 3.3.
 cmake_policy(SET CMP0057 NEW)
+
 
 
 
@@ -55,13 +64,13 @@ endif()
 # The long-term solution is to always use the compiler shipped with Unreal Engine.
 #
 # Pick one:
-#set(CONFIG_COMPILER "UNREAL")
+set(CONFIG_COMPILER "UNREAL")
 #set(CONFIG_COMPILER "UNREAL_WITH_SYSROOT")
-set(CONFIG_COMPILER "SYSTEM")
+#set(CONFIG_COMPILER "SYSTEM")
 
 # When CONFIG_COMPILER is set to 'SYSTEM', this is the compiler that will be used.
-set(CONFIG_COMPILER_SYSTEM_C "clang-7")
-set(CONFIG_COMPILER_SYSTEM_CXX "clang++-7")
+set(CONFIG_COMPILER_SYSTEM_C "clang-9")
+set(CONFIG_COMPILER_SYSTEM_CXX "clang++-9")
 
 set(CONFIG_OPTIONS_COMPILER "UNREAL" "UNREAL_WITH_SYSROOT" "SYSTEM") #
 if(NOT "${CONFIG_COMPILER}" IN_LIST CONFIG_OPTIONS_COMPILER)
@@ -80,8 +89,8 @@ endif()
 # according to the language of the library being built.
 #
 # Pick one:
-set(CONFIG_COMPILER_FLAGS "C")
-#set(CONFIG_COMPILER_FLAGS "CXX")
+#set(CONFIG_COMPILER_FLAGS "C")
+set(CONFIG_COMPILER_FLAGS "CXX")
 
 set(CONFIG_OPTIONS_COMPILER_FLAGS "C" "CXX")
 if(NOT "${CONFIG_COMPILER_FLAGS}" IN_LIST CONFIG_OPTIONS_COMPILER_FLAGS)
@@ -113,8 +122,8 @@ endif()
 # directories. That's where we have 'm', 'c', 'rt', and such.
 #
 # Pick one:
-#set(CONFIG_UE_LIBS_TO_LINKER "ON")
-set(CONFIG_UE_LIBS_TO_LINKER "OFF")
+set(CONFIG_UE_LIBS_TO_LINKER "ON")
+#set(CONFIG_UE_LIBS_TO_LINKER "OFF")
 
 set(CONFIG_OPTIONS_UE_LIBS_TO_LINKER "ON" "OFF")
 if(NOT "${CONFIG_UE_LIBS_TO_LINKER}" IN_LIST CONFIG_OPTIONS_UE_LIBS_TO_LINKER)
