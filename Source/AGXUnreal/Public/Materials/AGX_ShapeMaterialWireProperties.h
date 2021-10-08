@@ -22,6 +22,7 @@ public:
 
 	/**
 	 * Damping (spook) when stretching the wire [s].
+	 * The value is the time the constraint has to fulfill its violation.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Wire Properties",
@@ -39,6 +40,7 @@ public:
 
 	/**
 	 * Damping (spook) when bending the wire [s].
+	 * The value is the time the constraint has to fulfill its violation.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Wire Properties",

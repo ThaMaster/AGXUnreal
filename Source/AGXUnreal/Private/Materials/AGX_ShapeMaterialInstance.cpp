@@ -69,24 +69,24 @@ float UAGX_ShapeMaterialInstance::GetBulkViscosity() const
 	return Bulk.Viscosity;
 }
 
-void UAGX_ShapeMaterialInstance::SetDamping(float InDamping)
+void UAGX_ShapeMaterialInstance::SetSpookDamping(float InSpookDamping)
 {
 	if (HasNative())
 	{
-		NativeBarrier->SetDamping(static_cast<double>(InDamping));
+		NativeBarrier->SetSpookDamping(static_cast<double>(InSpookDamping));
 	}
 
-	Bulk.Damping = InDamping;
+	Bulk.SpookDamping = InSpookDamping;
 }
 
-float UAGX_ShapeMaterialInstance::GetDamping() const
+float UAGX_ShapeMaterialInstance::GetSpookDamping() const
 {
 	if (HasNative())
 	{
-		return static_cast<float>(NativeBarrier->GetDamping());
+		return static_cast<float>(NativeBarrier->GetSpookDamping());
 	}
 
-	return Bulk.Damping;
+	return Bulk.SpookDamping;
 }
 
 void UAGX_ShapeMaterialInstance::SetMinMaxElasticRestLength(float InMin, float InMax)
@@ -258,13 +258,13 @@ float UAGX_ShapeMaterialInstance::GetSpookDampingStretch() const
 	return Wire.SpookDampingStretch;
 }
 
-void UAGX_ShapeMaterialInstance::SetSpookDampingStretch(float InDamping)
+void UAGX_ShapeMaterialInstance::SetSpookDampingStretch(float InSpookDamping)
 {
 	if (HasNative())
 	{
-		NativeBarrier->SetSpookDampingStretch(InDamping);
+		NativeBarrier->SetSpookDampingStretch(InSpookDamping);
 	}
-	Wire.SpookDampingStretch = InDamping;
+	Wire.SpookDampingStretch = InSpookDamping;
 }
 
 float UAGX_ShapeMaterialInstance::GetSpookDampingBend() const
@@ -276,13 +276,13 @@ float UAGX_ShapeMaterialInstance::GetSpookDampingBend() const
 	return Wire.SpookDampingBend;
 }
 
-void UAGX_ShapeMaterialInstance::SetSpookDampingBend(float InDamping)
+void UAGX_ShapeMaterialInstance::SetSpookDampingBend(float InSpookDamping)
 {
 	if (HasNative())
 	{
-		NativeBarrier->SetSpookDampingBend(InDamping);
+		NativeBarrier->SetSpookDampingBend(InSpookDamping);
 	}
-	Wire.SpookDampingBend = InDamping;
+	Wire.SpookDampingBend = InSpookDamping;
 }
 
 UAGX_ShapeMaterialInstance* UAGX_ShapeMaterialInstance::CreateFromAsset(
@@ -348,7 +348,7 @@ void UAGX_ShapeMaterialInstance::UpdateNativeProperties()
 		NativeBarrier->SetDensity(Bulk.Density);
 		NativeBarrier->SetYoungsModulus(Bulk.YoungsModulus);
 		NativeBarrier->SetBulkViscosity(Bulk.Viscosity);
-		NativeBarrier->SetDamping(Bulk.Damping);
+		NativeBarrier->SetSpookDamping(Bulk.SpookDamping);
 		NativeBarrier->SetMinMaxElasticRestLength(
 			Bulk.MinElasticRestLength, Bulk.MaxElasticRestLength);
 

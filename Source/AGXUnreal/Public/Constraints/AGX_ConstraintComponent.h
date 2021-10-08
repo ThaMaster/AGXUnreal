@@ -111,17 +111,17 @@ public:
 	double GetElasticity(EGenericDofIndex Index) const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
-	FAGX_ConstraintDoublePropertyPerDof Damping;
+	FAGX_ConstraintDoublePropertyPerDof SpookDamping;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
-	void SetDamping(EGenericDofIndex Index, float InDamping);
+	void SetSpookDamping(EGenericDofIndex Index, float InSpookDamping);
 
-	void SetDamping(EGenericDofIndex Index, double InDamping);
+	void SetSpookDamping(EGenericDofIndex Index, double InSpookDamping);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
-	float GetDampingFloat(EGenericDofIndex Index) const;
+	float GetSpookDampingFloat(EGenericDofIndex Index) const;
 
-	double GetDamping(EGenericDofIndex Index) const;
+	double GetSpookDamping(EGenericDofIndex Index) const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintRangePropertyPerDof ForceRange;
@@ -186,7 +186,7 @@ public:
 
 	void UpdateNativeElasticity();
 
-	void UpdateNativeDamping();
+	void UpdateNativeSpookDamping();
 
 	// ~Begin UActorComponent interface.
 	virtual void BeginPlay() override;

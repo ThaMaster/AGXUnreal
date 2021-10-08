@@ -113,16 +113,16 @@ class AGXUNREAL_API UAGX_ConstraintElectricMotorController_FL : public UBlueprin
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetDamping(
-		UPARAM(ref) FAGX_ConstraintElectricMotorController& Controller, float Damping)
+	static void SetSpookDamping(
+		UPARAM(ref) FAGX_ConstraintElectricMotorController& Controller, float SpookDamping)
 	{
-		Controller.SetDamping(static_cast<double>(Damping));
+		Controller.SetSpookDamping(static_cast<double>(SpookDamping));
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static float GetDamping(UPARAM(ref) const FAGX_ConstraintElectricMotorController& Controller)
+	static float GetSpookDamping(UPARAM(ref) const FAGX_ConstraintElectricMotorController& Controller)
 	{
-		return static_cast<float>(Controller.GetDamping());
+		return static_cast<float>(Controller.GetSpookDamping());
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

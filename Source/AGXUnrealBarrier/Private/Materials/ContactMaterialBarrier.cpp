@@ -304,13 +304,13 @@ double FContactMaterialBarrier::GetYoungsModulus() const
 	return NativeRef->Native->getYoungsModulus();
 }
 
-void FContactMaterialBarrier::SetDamping(double Damping)
+void FContactMaterialBarrier::SetSpookDamping(double SpookDamping)
 {
 	check(HasNative());
-	NativeRef->Native->setDamping(Damping);
+	NativeRef->Native->setDamping(SpookDamping);
 }
 
-double FContactMaterialBarrier::GetDamping() const
+double FContactMaterialBarrier::GetSpookDamping() const
 {
 	check(HasNative());
 	return NativeRef->Native->getDamping();

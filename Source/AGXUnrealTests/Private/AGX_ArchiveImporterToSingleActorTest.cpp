@@ -1859,12 +1859,13 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
 	Test.TestEqual(TEXT("Rotational 2 elasticity"), Constraint->Elasticity.Rotational_2, 104.0);
 	// Rotational 3 is not supported for AGX::Hinge.
 
-	// Damping.
-	Test.TestEqual(TEXT("Translational 1 damping"), Constraint->Damping.Translational_1, 200.0);
-	Test.TestEqual(TEXT("Translational 2 damping"), Constraint->Damping.Translational_2, 201.0);
-	Test.TestEqual(TEXT("Translational 2 damping"), Constraint->Damping.Translational_3, 202.0);
-	Test.TestEqual(TEXT("Rotational 1 damping"), Constraint->Damping.Rotational_1, 203.0);
-	Test.TestEqual(TEXT("Rotational 2 damping"), Constraint->Damping.Rotational_2, 204.0);
+	// SpookDamping.
+	Test.TestEqual(TEXT("Translational 1 damping"), Constraint->SpookDamping.Translational_1, 200.0);
+	Test.TestEqual(TEXT("Translational 2 damping"), Constraint->SpookDamping.Translational_2, 201.0);
+	Test.TestEqual(
+		TEXT("Translational 2 damping"), Constraint->SpookDamping.Translational_3, 202.0);
+	Test.TestEqual(TEXT("Rotational 1 damping"), Constraint->SpookDamping.Rotational_1, 203.0);
+	Test.TestEqual(TEXT("Rotational 2 damping"), Constraint->SpookDamping.Rotational_2, 204.0);
 	// Rotational 3 is not supported for AGX::Hinge.
 
 	// Force range.

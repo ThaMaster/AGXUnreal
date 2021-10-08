@@ -228,14 +228,14 @@ void UAGX_ContactMaterialInstance::SetRestitution(float InRestitution)
 	NativeBarrier->SetRestitution(Restitution);
 }
 
-void UAGX_ContactMaterialInstance::SetDamping(float InDamping)
+void UAGX_ContactMaterialInstance::SetSpookDamping(float InSpookDamping)
 {
-	Super::SetDamping(InDamping);
+	Super::SetSpookDamping(InSpookDamping);
 	if (!HasNative())
 	{
 		return;
 	}
-	NativeBarrier->SetDamping(Damping);
+	NativeBarrier->SetSpookDamping(SpookDamping);
 }
 
 void UAGX_ContactMaterialInstance::SetYoungsModulus(float InYoungsModulus)
@@ -338,7 +338,7 @@ void UAGX_ContactMaterialInstance::UpdateNativeProperties()
 		{
 			NativeBarrier->SetRestitution(Restitution);
 			NativeBarrier->SetYoungsModulus(YoungsModulus);
-			NativeBarrier->SetDamping(Damping);
+			NativeBarrier->SetSpookDamping(SpookDamping);
 			NativeBarrier->SetAdhesion(AdhesiveForce, AdhesiveOverlap);
 		}
 	}

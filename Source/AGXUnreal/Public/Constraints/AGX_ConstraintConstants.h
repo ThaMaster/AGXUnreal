@@ -27,7 +27,7 @@ public:
 		return 1.0 / StrongCompliance();
 	};
 
-	static constexpr double DefaultDamping()
+	static constexpr double DefaultSpookDamping()
 	{
 		return 2.0 / 60.0;
 	}

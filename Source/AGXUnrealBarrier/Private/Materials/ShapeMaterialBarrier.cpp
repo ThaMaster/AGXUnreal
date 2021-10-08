@@ -104,13 +104,13 @@ double FShapeMaterialBarrier::GetBulkViscosity() const
 	return NativeRef->Native->getBulkMaterial()->getViscosity();
 }
 
-void FShapeMaterialBarrier::SetDamping(double Damping)
+void FShapeMaterialBarrier::SetSpookDamping(double SpookDamping)
 {
 	check(HasNative());
-	NativeRef->Native->getBulkMaterial()->setDamping(Damping);
+	NativeRef->Native->getBulkMaterial()->setDamping(SpookDamping);
 }
 
-double FShapeMaterialBarrier::GetDamping() const
+double FShapeMaterialBarrier::GetSpookDamping() const
 {
 	check(HasNative());
 	return NativeRef->Native->getBulkMaterial()->getDamping();
@@ -227,10 +227,10 @@ double FShapeMaterialBarrier::GetSpookDampingStretch() const
 	return NativeRef->Native->getWireMaterial()->getDampingStretch();
 }
 
-void FShapeMaterialBarrier::SetSpookDampingStretch(double Damping) const
+void FShapeMaterialBarrier::SetSpookDampingStretch(double SpookDamping) const
 {
 	check(HasNative());
-	NativeRef->Native->getWireMaterial()->setDampingStretch(Damping);
+	NativeRef->Native->getWireMaterial()->setDampingStretch(SpookDamping);
 }
 
 double FShapeMaterialBarrier::GetSpookDampingBend() const
@@ -239,10 +239,10 @@ double FShapeMaterialBarrier::GetSpookDampingBend() const
 	return NativeRef->Native->getWireMaterial()->getDampingBend();
 }
 
-void FShapeMaterialBarrier::SetSpookDampingBend(double Damping) const
+void FShapeMaterialBarrier::SetSpookDampingBend(double SpookDamping) const
 {
 	check(HasNative());
-	NativeRef->Native->getWireMaterial()->setDampingBend(Damping);
+	NativeRef->Native->getWireMaterial()->setDampingBend(SpookDamping);
 }
 
 

@@ -39,8 +39,8 @@ public:
 	void SetBulkViscosity(double Viscosity);
 	double GetBulkViscosity() const;
 
-	void SetDamping(double Damping);
-	double GetDamping() const;
+	void SetSpookDamping(double SpookDamping);
+	double GetSpookDamping() const;
 
 	void SetMinMaxElasticRestLength(double MinElasticRestLength, double MaxElasticRestLength);
 	double GetMinElasticRestLength() const;

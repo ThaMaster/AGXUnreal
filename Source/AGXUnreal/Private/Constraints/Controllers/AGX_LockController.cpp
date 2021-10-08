@@ -91,7 +91,7 @@ void FAGX_ConstraintLockController::ToBarrier(FLockControllerBarrier* Barrier) c
 
 	Barrier->bEnable = bEnable;
 	Barrier->Elasticity = Elasticity;
-	Barrier->Damping = Damping;
+	Barrier->SpookDamping = SpookDamping;
 	Barrier->ForceRangeMin = ForceRange.Min;
 	Barrier->ForceRangeMax = ForceRange.Max;
 
@@ -104,7 +104,7 @@ void FAGX_ConstraintLockController::FromBarrier(FLockControllerBarrier& Barrier)
 {
 	bEnable = Barrier.bEnable;
 	Elasticity = Barrier.Elasticity;
-	Damping = Barrier.Damping;
+	SpookDamping = Barrier.SpookDamping;
 	ForceRange.Min = Barrier.ForceRangeMin;
 	ForceRange.Max = Barrier.ForceRangeMax;
 

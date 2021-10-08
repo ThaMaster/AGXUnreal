@@ -66,11 +66,11 @@ struct AGXUNREAL_API FAGX_ConstraintController
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
-	double Damping;
+	double SpookDamping;
 
-	void SetDamping(double InDamping);
+	void SetSpookDamping(double InSpookDamping);
 
-	double GetDamping() const;
+	double GetSpookDamping() const;
 
 	/// \todo Should this be in N (Nm) or some cm-based unit?
 	/// Cannot be TInterval<double> because that type is not listed in
@@ -182,15 +182,16 @@ class AGXUNREAL_API UAGX_ConstraintController_FL : public UBlueprintFunctionLibr
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetDamping(UPARAM(ref) FAGX_ConstraintController& Controller, float Damping)
+	static void SetSpookDamping(
+		UPARAM(ref) FAGX_ConstraintController& Controller, float SpookDamping)
 	{
-		Controller.SetDamping(static_cast<double>(Damping));
+		Controller.SetSpookDamping(static_cast<double>(SpookDamping));
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static float GetDamping(UPARAM(ref) const FAGX_ConstraintController& Controller)
+	static float GetSpookDamping(UPARAM(ref) const FAGX_ConstraintController& Controller)
 	{
-		return static_cast<float>(Controller.GetDamping());
+		return static_cast<float>(Controller.GetSpookDamping());
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
@@ -270,15 +271,15 @@ class AGXUNREAL_API UAGX_ConstraintController_FL : public UBlueprintFunctionLibr
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetDamping(UPARAM(ref) FAGX_TYPE& Controller, float Damping)
+	static void SetSpookDamping(UPARAM(ref) FAGX_TYPE& Controller, float SpookDamping)
 	{
-		Controller.SetDamping(static_cast<double>(Damping));
+		Controller.SetSpookDamping(static_cast<double>(SpookDamping));
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static float GetDamping(UPARAM(ref) const FAGX_TYPE& Controller)
+	static float GetSpookDamping(UPARAM(ref) const FAGX_TYPE& Controller)
 	{
-		return static_cast<float>(Controller.GetDamping());
+		return static_cast<float>(Controller.GetSpookDamping());
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

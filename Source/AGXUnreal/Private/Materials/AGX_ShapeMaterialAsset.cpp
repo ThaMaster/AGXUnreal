@@ -108,9 +108,9 @@ void UAGX_ShapeMaterialAsset::WriteBulkPropertyToInstance(const FName& PropertyN
 	{
 		Instance->SetBulkViscosity(static_cast<float>(Bulk.Viscosity));
 	}
-	else if (PropertyName == GET_MEMBER_NAME_CHECKED(BulkProperties, Damping))
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(BulkProperties, SpookDamping))
 	{
-		Instance->SetDamping(static_cast<float>(Bulk.Damping));
+		Instance->SetSpookDamping(static_cast<float>(Bulk.SpookDamping));
 	}
 	else if (PropertyName == GET_MEMBER_NAME_CHECKED(BulkProperties, MinElasticRestLength))
 	{

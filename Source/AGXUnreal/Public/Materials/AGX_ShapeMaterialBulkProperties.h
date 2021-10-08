@@ -16,7 +16,7 @@ struct AGXUNREAL_API FAGX_ShapeMaterialBulkProperties
 
 public:
 	/**
-	 * Density of Shapes using the material [kg/m^3].
+	 * Density of Shapes using the material [kg/m³].
 	 * The density can be used for automatic calculation of total mass and inertia of the Rigid Body
 	 * (see mass options of Rigid Body Component).
 	 */
@@ -48,7 +48,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Bulk Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double Damping;
+	double SpookDamping;
 
 	/**
 	 * Minimum elastic rest length of the contact material [cm].

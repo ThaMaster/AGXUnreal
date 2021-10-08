@@ -219,13 +219,13 @@ public:
 	virtual void SetYoungsModulus(float InYoungsModulus);
 
 	/**
-	 * Damping factor which represents the time the contact constraint has to fulfill its violation.
+	 * SpookDamping factor which represents the time the contact constraint has to fulfill its violation.
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double Damping;
+	double SpookDamping;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
-	virtual void SetDamping(float InDamping);
+	virtual void SetSpookDamping(float InSpookDamping);
 
 	/**
 	 * The attractive force between two colliding objects, in Netwon.
