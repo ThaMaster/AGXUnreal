@@ -696,8 +696,6 @@ namespace
 		/// \todo Make CopyControllersFrom a virtual member function of UAGX_ConstraintComponent.
 		/// Then we won't need the code duplication in the functions calling this one.
 
-		// This is where AttachToActor was. Now it's in the ToActorTree class.
-
 		FAGX_ImportUtilities::Rename(*Actor, Barrier.GetName());
 		/// \todo Should we call SetActorLabel here?
 

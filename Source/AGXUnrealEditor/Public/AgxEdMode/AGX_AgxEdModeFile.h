@@ -25,7 +25,6 @@ public:
 
 public:
 	static void ImportAgxArchiveToSingleActor();
-	static void ImportAgxArchiveToActorTree();
 	static void ImportAgxArchiveToBlueprint();
 	static void ExportAgxArchive();
 };
