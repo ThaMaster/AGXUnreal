@@ -1,8 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Info.h"
-#include "AGX_MaterialManager.generated.h"
+#include "GameFramework/Actor.h"
+
+#include "AGX_ContactMaterialRegistrarActor.generated.h"
 
 class UAGX_ContactMaterialBase;
 class UAGX_ContactMaterialInstance;
@@ -14,11 +15,13 @@ class UAGX_ContactMaterialInstance;
  *
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", HideCategories = (Cooking, LOD, Replication))
-class AGXUNREAL_API AAGX_MaterialManager : public AInfo
+class AGXUNREAL_API AAGX_ContactMaterialRegistrarActor : public AActor
 {
-	GENERATED_UCLASS_BODY()
+	GENERATED_BODY()
 
 public:
+	AAGX_ContactMaterialRegistrarActor();
+
 	/**
 	 * User defined AGX Contact Materials to use in this level.
 	 *

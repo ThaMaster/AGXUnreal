@@ -1,4 +1,4 @@
-#include "Materials/AGX_MaterialManager.h"
+#include "Materials/AGX_ContactMaterialRegistrarActor.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
@@ -14,39 +14,12 @@
 
 #define LOCTEXT_NAMESPACE "AAGX_MaterialManager"
 
-AAGX_MaterialManager::AAGX_MaterialManager(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+AAGX_ContactMaterialRegistrarActor::AAGX_ContactMaterialRegistrarActor()
 {
-#if WITH_EDITORONLY_DATA
-	if (!IsRunningCommandlet())
-	{
-		// Structure to hold one-time initialization
-		struct FConstructorStatics
-		{
-			ConstructorHelpers::FObjectFinderOptional<UTexture2D> ViewportIconTextureObject;
-			FName Id;
-			FText Name;
-
-			FConstructorStatics()
-				: ViewportIconTextureObject(TEXT("/Engine/EditorResources/S_Note"))
-				, Id(TEXT("AGX_MaterialManager"))
-				, Name(LOCTEXT("ViewportIcon", "AGX Material Manager"))
-			{
-			}
-		};
-		static FConstructorStatics ConstructorStatics;
-
-		if (GetSpriteComponent())
-		{
-			GetSpriteComponent()->Sprite = ConstructorStatics.ViewportIconTextureObject.Get();
-			GetSpriteComponent()->SpriteInfo.Category = ConstructorStatics.Id;
-			GetSpriteComponent()->SpriteInfo.DisplayName = ConstructorStatics.Name;
-		}
-	}
-#endif // WITH_EDITORONLY_DATA
+	PrimaryActorTick.bCanEverTick = false;
 }
 
-void AAGX_MaterialManager::BeginPlay()
+void AAGX_ContactMaterialRegistrarActor::BeginPlay()
 {
 	// Convert all contact material pointers to point to initialized contact material instances.
 	for (UAGX_ContactMaterialBase*& ContactMaterial : ContactMaterials)
@@ -77,7 +50,7 @@ void AAGX_MaterialManager::BeginPlay()
 	}
 }
 
-void AAGX_MaterialManager::EndPlay(const EEndPlayReason::Type Reason)
+void AAGX_ContactMaterialRegistrarActor::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
 
@@ -92,7 +65,7 @@ void AAGX_MaterialManager::EndPlay(const EEndPlayReason::Type Reason)
 	}
 }
 
-void AAGX_MaterialManager::RemoveContactMaterial(
+void AAGX_ContactMaterialRegistrarActor::RemoveContactMaterial(
 	UAGX_ContactMaterialInstance* Instance, EEndPlayReason::Type Reason)
 {
 	if (Instance == nullptr)
