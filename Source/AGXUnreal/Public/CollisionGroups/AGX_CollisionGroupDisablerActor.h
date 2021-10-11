@@ -1,8 +1,5 @@
 #pragma once
 
-// AGX Dynamics for Unreal includes.
-#include "CollisionGroups/AGX_CollisionGroupPair.h"
-
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"

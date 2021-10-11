@@ -5,8 +5,7 @@
 
 #include "AGX_ContactMaterialRegistrarActor.generated.h"
 
-class UAGX_ContactMaterialBase;
-class UAGX_ContactMaterialInstance;
+class UAGX_ContactMaterialRegistrarComponent;
 
 /**
  * Defines which AGX Contact Materials should be used by the owning level.
@@ -22,19 +21,6 @@ class AGXUNREAL_API AAGX_ContactMaterialRegistrarActor : public AActor
 public:
 	AAGX_ContactMaterialRegistrarActor();
 
-	/**
-	 * User defined AGX Contact Materials to use in this level.
-	 *
-	 * It is not allowed to modify this array in-game.
-	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Material Manager")
-	TArray<UAGX_ContactMaterialBase*> ContactMaterials;
-
-	// ~ Begin AActor Interface
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
-	// ~ End AActor Interface
-
-private:
-	void RemoveContactMaterial(UAGX_ContactMaterialInstance* Instance, EEndPlayReason::Type Reason);
+	UPROPERTY(Category = "AGX Dynamics", VisibleAnywhere, BlueprintReadOnly)
+	UAGX_ContactMaterialRegistrarComponent* ContactMaterialRegistrarComponent;
 };
