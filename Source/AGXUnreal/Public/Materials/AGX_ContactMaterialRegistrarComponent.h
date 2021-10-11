@@ -15,7 +15,9 @@ class UAGX_ContactMaterialInstance;
  * Note that this Component does not yet support in-game changes to the Contact Materials array.
  *
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent), HideCategories = (Cooking, LOD, Replication))
+UCLASS(
+	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
+	HideCategories = (Cooking, LOD, Replication))
 class AGXUNREAL_API UAGX_ContactMaterialRegistrarComponent : public UActorComponent
 {
 	GENERATED_BODY()
