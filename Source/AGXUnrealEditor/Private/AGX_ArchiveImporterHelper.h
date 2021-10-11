@@ -35,6 +35,7 @@ class UAGX_TwoBodyTireComponent;
 class AAGX_TwoBodyTireActor;
 class AAGX_CollisionGroupDisablerActor;
 class UAGX_CollisionGroupDisablerComponent;
+class UAGX_ContactMaterialRegistrarComponent;
 class UAGX_WireComponent;
 
 // Unreal Engine classes.
@@ -75,7 +76,8 @@ public:
 
 	UAGX_ShapeMaterialAsset* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
-	UAGX_ContactMaterialAsset* InstantiateContactMaterial(const FContactMaterialBarrier& Barrier);
+	UAGX_ContactMaterialAsset* InstantiateContactMaterial(
+		const FContactMaterialBarrier& Barrier, AActor& Owner);
 
 	AAGX_HingeConstraintActor* InstantiateHinge(const FHingeBarrier& Barrier);
 
@@ -140,6 +142,8 @@ public:
 	const FString ArchiveFileName;
 	const FString ArchiveName;
 	const FString DirectoryName;
+
+private:
 	TMap<FGuid, UStaticMesh*> RestoredMeshes;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterialAsset*> RestoredShapeMaterials;
