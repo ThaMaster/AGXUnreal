@@ -2,22 +2,15 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyComponent.h"
 #include "RigidBodyBarrier.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_BallConstraintComponent.h"
-#include "Constraints/AGX_BallConstraintActor.h"
-#include "Constraints/AGX_CylindricalConstraintActor.h"
 #include "Constraints/AGX_CylindricalConstraintComponent.h"
-#include "Constraints/AGX_DistanceConstraintActor.h"
 #include "Constraints/AGX_DistanceConstraintComponent.h"
-#include "Constraints/AGX_HingeConstraintActor.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
-#include "Constraints/AGX_LockConstraintActor.h"
 #include "Constraints/AGX_LockConstraintComponent.h"
-#include "Constraints/AGX_PrismaticConstraintActor.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "Constraints/Constraint1DOFBarrier.h"
@@ -39,8 +32,6 @@
 #include "Materials/ContactMaterialBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
-#include "Tires/AGX_TwoBodyTireActor.h"
-#include "CollisionGroups/AGX_CollisionGroupDisablerActor.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
@@ -123,34 +114,6 @@ UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::InstantiateBody(
 	Component->PostEditChange();
 	RestoredBodies.Add(Barrier.GetGuid(), Component);
 	return Component;
-}
-
-AAGX_RigidBodyActor* FAGX_ArchiveImporterHelper::InstantiateBody(
-	const FRigidBodyBarrier& Barrier, UWorld& World)
-{
-	// Only instantiate body if it has not already been instantiated. It might have been
-	// instantiated already during import of e.g. Tire model.
-	if (GetBody(Barrier, false) != nullptr)
-	{
-		return nullptr;
-	}
-
-	FTransform Transform(Barrier.GetRotation(), Barrier.GetPosition());
-	AAGX_RigidBodyActor* NewActor =
-		World.SpawnActor<AAGX_RigidBodyActor>(AAGX_RigidBodyActor::StaticClass(), Transform);
-	if (NewActor == nullptr)
-	{
-		WriteImportErrorMessage(
-			TEXT("AGX Dynamics RigidBody"), Barrier.GetName(), ArchiveFilePath,
-			TEXT("Could not create new AGX_RigidBodyActor"));
-		return nullptr;
-	}
-	FAGX_ImportUtilities::Rename(*NewActor, Barrier.GetName());
-	NewActor->SetActorLabel(NewActor->GetName());
-	NewActor->RigidBodyComponent->CopyFrom(Barrier);
-	RestoredBodies.Add(Barrier.GetGuid(), NewActor->RigidBodyComponent);
-	/// \todo Do we need to do any additional configuration here?
-	return NewActor;
 }
 
 namespace
@@ -664,44 +627,6 @@ namespace
 		return Component;
 	}
 
-	template <typename UActor, typename FBarrier>
-	UActor* InstantiateConstraint(
-		const FBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper,
-		const TArray<FGuid>& IgnoreList)
-	{
-		if (IgnoreList.Contains(Barrier.GetGuid()))
-		{
-			// Don't instantiate the Constraint if it is in the ignore list. This might be the case
-			// for e.g. the Hinge constraint owned by a native TwoBodyTire object.
-			return nullptr;
-		}
-
-		FAGX_ArchiveImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
-		if (Bodies.first == nullptr)
-		{
-			WriteImportErrorMessage(
-				TEXT("Hinge"), Barrier.GetName(), Helper.ArchiveFilePath,
-				TEXT("The constraint contains a reference to an unknown body"));
-			return nullptr;
-		}
-
-		UActor* Actor = FAGX_EditorUtilities::CreateConstraintActor<UActor>(
-			Bodies.first, Bodies.second, false, false, false);
-		/// \todo Check for nullptr;
-
-		Actor->GetConstraintComponent()->CopyFrom(Barrier);
-		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
-			Barrier, *Actor->GetConstraintComponent(), Bodies.first, Bodies.second);
-
-		/// \todo Make CopyControllersFrom a virtual member function of UAGX_ConstraintComponent.
-		/// Then we won't need the code duplication in the functions calling this one.
-
-		FAGX_ImportUtilities::Rename(*Actor, Barrier.GetName());
-		/// \todo Should we call SetActorLabel here?
-
-		return Actor;
-	}
-
 	/// \todo Consider removing the 1Dof and 2Dof instantiatior functions. Does not seem to be
 	/// needed, just call the generic InstantiateConstraint immediately.
 
@@ -713,21 +638,6 @@ namespace
 		return InstantiateConstraint<UComponent>(Barrier, Owner, Helper, IgnoreList);
 	}
 
-	template <typename UActor>
-	UActor* InstantiateConstraint1Dof(
-		const FConstraint1DOFBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper,
-		const TArray<FGuid>& IgnoreList)
-	{
-		UActor* Actor = InstantiateConstraint<UActor>(Barrier, Helper, IgnoreList);
-		if (Actor == nullptr)
-		{
-			// No need to log here, done by InstantiateConstraint.
-			return nullptr;
-		}
-		FAGX_ConstraintUtilities::CopyControllersFrom(*Actor->Get1DofComponent(), Barrier);
-		return Actor;
-	}
-
 	template <typename UConstraint>
 	UConstraint* InstantiateConstraint2Dof(
 		const FConstraint2DOFBarrier& Barrier, AActor& Owner, FAGX_ArchiveImporterHelper& Helper,
@@ -735,28 +645,6 @@ namespace
 	{
 		return InstantiateConstraint<UConstraint>(Barrier, Owner, Helper, IgnoreList);
 	}
-
-	template <typename UActor>
-	UActor* InstantiateConstraint2Dof(
-		const FConstraint2DOFBarrier& Barrier, FAGX_ArchiveImporterHelper& Helper,
-		const TArray<FGuid>& IgnoreList)
-	{
-		UActor* Actor = InstantiateConstraint<UActor>(Barrier, Helper, IgnoreList);
-		if (Actor == nullptr)
-		{
-			// No need to log here, done by InstantiateConstraint.
-			return nullptr;
-		}
-		FAGX_ConstraintUtilities::CopyControllersFrom(*Actor->Get2DofComponent(), Barrier);
-		return Actor;
-	}
-}
-
-AAGX_HingeConstraintActor* FAGX_ArchiveImporterHelper::InstantiateHinge(
-	const FHingeBarrier& Barrier)
-{
-	return ::InstantiateConstraint1Dof<AAGX_HingeConstraintActor>(
-		Barrier, *this, ConstraintIgnoreList);
 }
 
 UAGX_HingeConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateHinge(
@@ -766,24 +654,11 @@ UAGX_HingeConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateHinge(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-AAGX_PrismaticConstraintActor* FAGX_ArchiveImporterHelper::InstantiatePrismatic(
-	const FPrismaticBarrier& Barrier)
-{
-	return ::InstantiateConstraint1Dof<AAGX_PrismaticConstraintActor>(
-		Barrier, *this, ConstraintIgnoreList);
-}
-
 UAGX_PrismaticConstraintComponent* FAGX_ArchiveImporterHelper::InstantiatePrismatic(
 	const FPrismaticBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_PrismaticConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
-}
-
-AAGX_BallConstraintActor* FAGX_ArchiveImporterHelper::InstantiateBallJoint(
-	const FBallJointBarrier& Barrier)
-{
-	return ::InstantiateConstraint<AAGX_BallConstraintActor>(Barrier, *this, ConstraintIgnoreList);
 }
 
 UAGX_BallConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateBallJoint(
@@ -793,13 +668,6 @@ UAGX_BallConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateBallJoint(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-AAGX_CylindricalConstraintActor* FAGX_ArchiveImporterHelper::InstantiateCylindricalJoint(
-	const FCylindricalJointBarrier& Barrier)
-{
-	return ::InstantiateConstraint2Dof<AAGX_CylindricalConstraintActor>(
-		Barrier, *this, ConstraintIgnoreList);
-}
-
 UAGX_CylindricalConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateCylindricalJoint(
 	const FCylindricalJointBarrier& Barrier, AActor& Owner)
 {
@@ -807,24 +675,11 @@ UAGX_CylindricalConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateCyli
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-AAGX_DistanceConstraintActor* FAGX_ArchiveImporterHelper::InstantiateDistanceJoint(
-	const FDistanceJointBarrier& Barrier)
-{
-	return ::InstantiateConstraint1Dof<AAGX_DistanceConstraintActor>(
-		Barrier, *this, ConstraintIgnoreList);
-}
-
 UAGX_DistanceConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateDistanceJoint(
 	const FDistanceJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_DistanceConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
-}
-
-AAGX_LockConstraintActor* FAGX_ArchiveImporterHelper::InstantiateLockJoint(
-	const FLockJointBarrier& Barrier)
-{
-	return ::InstantiateConstraint<AAGX_LockConstraintActor>(Barrier, *this, ConstraintIgnoreList);
 }
 
 UAGX_LockConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateLockJoint(
@@ -878,49 +733,6 @@ UAGX_TwoBodyTireComponent* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
 	return Component;
 }
 
-AAGX_TwoBodyTireActor* FAGX_ArchiveImporterHelper::InstantiateTwoBodyTire(
-	const FTwoBodyTireBarrier& Barrier, UWorld& World)
-{
-	AAGX_TwoBodyTireActor* NewActor =
-		World.SpawnActor<AAGX_TwoBodyTireActor>(AAGX_TwoBodyTireActor::StaticClass());
-	if (NewActor == nullptr)
-	{
-		WriteImportErrorMessage(
-			TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ArchiveFilePath,
-			TEXT("Could not create new AGX_TwoBodyTireActor"));
-		return nullptr;
-	}
-
-	FAGX_ImportUtilities::Rename(*NewActor, Barrier.GetName());
-	NewActor->SetActorLabel(NewActor->GetName());
-	NewActor->TwoBodyTireComponent->CopyFrom(Barrier);
-
-	// Setup TireRigidBody and HubRigidBody.
-	auto SetupBody = [&](const FRigidBodyBarrier& BodyBarrier, UAGX_RigidBodyComponent* Body)
-	{
-		if (BodyBarrier.HasNative() == false)
-		{
-			WriteImportErrorMessage(
-				TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ArchiveFilePath,
-				TEXT("The referenced Rigid Body did not have a native Rigid Body allocated. The "
-					 "TwoBodyTire might not work as expected."));
-			return;
-		}
-
-		Body->CopyFrom(BodyBarrier);
-		RestoredBodies.Add(BodyBarrier.GetGuid(), Body);
-	};
-
-	SetupBody(Barrier.GetTireRigidBody(), NewActor->TireRigidBodyComponent);
-	SetupBody(Barrier.GetHubRigidBody(), NewActor->HubRigidBodyComponent);
-
-	// The internal constraint owned by the TwoBodyTire should not be imported, but is created after
-	// BeginPlay by the native TwoBodyTire.
-	ConstraintIgnoreList.Add(Barrier.GetHingeGuid());
-
-	return NewActor;
-}
-
 UAGX_CollisionGroupDisablerComponent* FAGX_ArchiveImporterHelper::InstantiateCollisionGroupDisabler(
 	AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs)
 {
@@ -937,28 +749,6 @@ UAGX_CollisionGroupDisablerComponent* FAGX_ArchiveImporterHelper::InstantiateCol
 	}
 
 	return Component;
-}
-
-AAGX_CollisionGroupDisablerActor* FAGX_ArchiveImporterHelper::InstantiateCollisionGroupDisabler(
-	UWorld& World, const TArray<std::pair<FString, FString>>& DisabledPairs)
-{
-	AAGX_CollisionGroupDisablerActor* NewActor = World.SpawnActor<AAGX_CollisionGroupDisablerActor>(
-		AAGX_CollisionGroupDisablerActor::StaticClass());
-	if (NewActor == nullptr)
-	{
-		WriteImportErrorMessage(
-			TEXT("AGX Dynamics CollisionGroupDisabler"), "", ArchiveFilePath,
-			TEXT("Could not create new AGX_CollisionGroupDisablerActor"));
-		return nullptr;
-	}
-
-	for (const std::pair<FString, FString>& DisabledPair : DisabledPairs)
-	{
-		NewActor->CollisionGroupDisablerComponent->DisableCollisionGroupPair(
-			FName(*DisabledPair.first), FName(*DisabledPair.second));
-	}
-
-	return NewActor;
 }
 
 UAGX_WireComponent* FAGX_ArchiveImporterHelper::InstantiateWire(
@@ -1135,21 +925,6 @@ UAGX_WireComponent* FAGX_ArchiveImporterHelper::InstantiateWire(
 	Component->PostEditChange();
 	// May chose to store a table of all imported wires. If so, add this wire to the table here.
 	return Component;
-}
-
-AActor* FAGX_ArchiveImporterHelper::InstantiateWire(const FWireBarrier& Barrier, UWorld& World)
-{
-	// We don't have a dedicated Wire Actor, so create a plain Actor and add a Wire Component to it.
-	AActor* NewActor = World.SpawnActor<AActor>(AActor::StaticClass(), FTransform::Identity);
-	if (NewActor == nullptr)
-	{
-		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Wire"), Barrier.GetName(), ArchiveFilePath,
-			TEXT("Could not create Actor to hold Wire Component"));
-		return nullptr;
-	}
-	InstantiateWire(Barrier, *NewActor);
-	return NewActor;
 }
 
 UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(
