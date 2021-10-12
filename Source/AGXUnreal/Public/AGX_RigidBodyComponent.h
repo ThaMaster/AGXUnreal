@@ -170,7 +170,7 @@ public:
 	FVector GetVelocity() const;
 
 	/**
-	 * The angular velocity of the Rigid Body [rad/s].
+	 * The angular velocity of the Rigid Body [deg/s].
 	 * Following the Unreal Editor rotation widget so that a positive
 	 * angular velocity about some axis produces increasing rotation values in the editor widget.
 	 *
