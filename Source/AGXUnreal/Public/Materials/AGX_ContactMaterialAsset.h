@@ -35,6 +35,12 @@ public:
 	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld) override;
 	// ~End UAGX_ContactMaterialBase interface.
 
+	/*
+	* This function does not call Instance->ReleaseNative() and does not remove the Instance from
+	* any Simulation. It simply clears the TWeakObjectPtr owned by this class pointing to the
+	* Instance. Any cleanup needed must be handled by the caller of this function.
+	*/
+	void ClearInstancePtr();
 
 	// ~Begin UObject interface.
 #if WITH_EDITOR
