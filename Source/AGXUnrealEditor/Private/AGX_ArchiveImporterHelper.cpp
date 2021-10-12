@@ -389,7 +389,7 @@ namespace
 		{
 			const FGuid Guid = NativeMaterial.GetGuid();
 			UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
-			Component.PhysicalMaterial = Material;
+			Component.ShapeMaterial = Material;
 		}
 
 		if (Barrier.HasRenderData())
@@ -775,7 +775,7 @@ UAGX_WireComponent* FAGX_ArchiveImporterHelper::InstantiateWire(
 	{
 		const FGuid Guid = NativeMaterial.GetGuid();
 		UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
-		Component->PhysicalMaterial = Material;
+		Component->ShapeMaterial = Material;
 	}
 
 	// Configure winches.
