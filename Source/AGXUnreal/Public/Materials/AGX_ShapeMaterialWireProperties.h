@@ -21,7 +21,7 @@ public:
 	double YoungsModulusStretch;
 
 	/**
-	 * Damping (spook) when stretching the wire [s].
+	 * Spook Damping when stretching the wire [s].
 	 * The value is the time the constraint has to fulfill its violation.
 	 */
 	UPROPERTY(
@@ -39,7 +39,7 @@ public:
 
 
 	/**
-	 * Damping (spook) when bending the wire [s].
+	 * Spook Damping when bending the wire [s].
 	 * The value is the time the constraint has to fulfill its violation.
 	 */
 	UPROPERTY(

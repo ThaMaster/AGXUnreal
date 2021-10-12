@@ -42,7 +42,7 @@ public:
 	double Viscosity;
 
 	/**
-	 * Damping (spook) used by the contact constraint [s].
+	 * Spook Damping used by the contact constraint [s].
 	 * The value is the time the contact constraint has to fulfill its violation.
 	 */
 	UPROPERTY(

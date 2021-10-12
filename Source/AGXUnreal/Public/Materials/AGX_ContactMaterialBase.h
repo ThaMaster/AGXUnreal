@@ -219,7 +219,7 @@ public:
 	virtual void SetYoungsModulus(float InYoungsModulus);
 
 	/**
-	 * Damping (spook) which represents the time the contact constraint has to fulfill its violation
+	 * Spook Damping which represents the time the contact constraint has to fulfill its violation
 	 * [s].
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
