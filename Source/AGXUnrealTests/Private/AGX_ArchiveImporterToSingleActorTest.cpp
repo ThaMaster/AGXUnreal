@@ -1076,10 +1076,7 @@ bool FClearRenderMaterialImportedCommand::Update()
 	//
 #if defined(__linux__)
 	// @todo The error is only printed sometimes. See GitLab issue #213.
-	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"), 0);
-
-	// This guarantees at least one occurrence of the error.
-	Test.AddError("inotify_rm_watch cannot remove descriptor");
+	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
 	// Files that are created by the test and thus safe to remove. The GUID values may make this
@@ -2389,11 +2386,6 @@ bool FClearContactMaterialsImportedCommand::Update()
 	{
 		World->DestroyActor(Test.Contents);
 	}
-
-#if defined(__linux__)
-	// @todo The error is only printed sometimes. See GitLab issue #213.
-	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
-#endif
 
 	TArray<const TCHAR*> ExpectedFiles = {TEXT("ContactMaterials"),	 TEXT("CMMat1Mat2.uasset"),
 										  TEXT("CMMat3Mat4.uasset"), TEXT("ShapeMaterials"),
