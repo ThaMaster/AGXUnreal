@@ -29,7 +29,7 @@ void UAGX_ContactMaterialRegistrarComponent::BeginPlay()
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Contact material %s has at least one material that has not been set."),
+				TEXT("Contact Material '%s' has at least one material that has not been set."),
 				*ContactMaterial->GetName());
 
 			continue;
@@ -43,6 +43,19 @@ void UAGX_ContactMaterialRegistrarComponent::BeginPlay()
 
 		UAGX_ContactMaterialInstance* Instance =
 			UAGX_ContactMaterialBase::GetOrCreateInstance(GetWorld(), ContactMaterial);
+
+		if (Instance == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Could not create a Contact Material Instance for Contact Material '%s'."),
+				*ContactMaterial->GetName());
+			return;
+		}
+
+		// The Contact Material assets in the ContactMaterials TArray are swapped to Instances
+		// during play.
+		ContactMaterial = Instance;
 	}
 }
 
