@@ -3,6 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
+#include "Materials/AGX_ContactMaterialAsset.h"
 #include "Materials/AGX_ContactMaterialBase.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
 
@@ -11,6 +12,91 @@
 UAGX_ContactMaterialRegistrarComponent::UAGX_ContactMaterialRegistrarComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+}
+
+void UAGX_ContactMaterialRegistrarComponent::RemoveContactMaterial(
+	UAGX_ContactMaterialBase* ContactMaterial)
+{
+	if (ContactMaterial == nullptr)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+
+	if (!World->IsGameWorld())
+	{
+		// We assume that the ContactMaterials TArray is filled only with Assets (not Instances).
+		if (ContactMaterial->GetAsset() == nullptr)
+		{
+			return;
+		}
+		ContactMaterials.Remove(ContactMaterial->GetAsset());
+	}
+	else
+	{
+		// We assume that the ContactMaterials TArray is filled only with Instances (not Assets).
+		UAGX_ContactMaterialInstance* Instance =
+			ContactMaterial->GetInstance();
+		if (Instance == nullptr)
+		{
+			return;
+		}
+		ContactMaterials.Remove(Instance);
+		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
+		{
+			Sim->Remove(*Instance);
+		}
+
+		if (UAGX_ContactMaterialAsset* Asset = ContactMaterial->GetAsset())
+		{
+			Asset->ClearInstancePtr();
+		}
+	}
+}
+
+void UAGX_ContactMaterialRegistrarComponent::AddContactMaterial(
+	UAGX_ContactMaterialBase* ContactMaterial)
+{
+	if (ContactMaterial == nullptr)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+
+	if (!World->IsGameWorld())
+	{
+		// We assume that the ContactMaterials TArray is filled only with Assets (not Instances).
+		if (ContactMaterial->GetAsset() == nullptr)
+		{
+			return;
+		}
+
+		ContactMaterials.Add(ContactMaterial->GetAsset());
+	}
+	else
+	{
+		// We assume that the ContactMaterials TArray is filled only with Instances (not Assets).
+
+		// Note: calling GetOrCreateInstance adds the Instance to the Simulation.
+		UAGX_ContactMaterialInstance* Instance =
+			UAGX_ContactMaterialBase::GetOrCreateInstance(GetWorld(), ContactMaterial);
+		if (Instance == nullptr)
+		{
+			return;
+		}
+
+		ContactMaterials.Add(Instance);
+	}
 }
 
 void UAGX_ContactMaterialRegistrarComponent::BeginPlay()

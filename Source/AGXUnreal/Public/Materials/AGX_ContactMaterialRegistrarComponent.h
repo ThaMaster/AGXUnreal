@@ -11,9 +11,6 @@ class UAGX_ContactMaterialInstance;
 
 /**
  * Defines which AGX Contact Materials should be used by the owning level.
- *
- * Note that this Component does not yet support in-game changes to the Contact Materials array.
- *
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
@@ -27,11 +24,15 @@ public:
 
 	/**
 	 * User defined AGX Contact Materials to use in this level.
-	 *
-	 * It is not allowed to modify this array in-game.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Material Manager")
+	UPROPERTY(EditAnywhere, Category = "AGX Contact Material Registrar")
 	TArray<UAGX_ContactMaterialBase*> ContactMaterials;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material Registrar")
+	void RemoveContactMaterial(UAGX_ContactMaterialBase* ContactMaterial);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material Registrar")
+	void AddContactMaterial(UAGX_ContactMaterialBase* ContactMaterial);
 
 	// ~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
