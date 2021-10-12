@@ -98,7 +98,8 @@ public:
 	EAGX_SolveType GetSolveType() const;
 
 	/**
-	 * The elasticity of the Constraint [N/m].
+	 * The elasticity in a certain DOF. Measured in [N/m] for translational DOFs and [Nm/rad] for
+	 * rotational DOFs.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintDoublePropertyPerDof Elasticity;

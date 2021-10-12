@@ -34,7 +34,8 @@ struct AGXUNREAL_API FAGX_ConstraintController
 	bool GetEnable() const;
 
 	/**
-	 * The elasticity of the Constraint Controller [N/m].
+	 * The elasticity in a certain DOF. Measured in [N/m] for translational DOFs and [Nm/rad] for
+	 * rotational DOFs.
 	 * The elasticity measure the responsiveness/reactiveness of the Constraint Controller to
 	 * violations in its constraint. A higher elasticity will cause a stronger force or torque to
 	 * be created to restore from the violation. A too high elasticity will lead to instabilities in
