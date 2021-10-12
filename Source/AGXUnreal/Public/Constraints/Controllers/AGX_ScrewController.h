@@ -22,8 +22,8 @@ struct AGXUNREAL_API FAGX_ConstraintScrewController : public FAGX_ConstraintCont
 	GENERATED_USTRUCT_BODY()
 
 	/**
-	 * The distance, in centimeters along the screw's axis, that is covered by
-	 * one complete rotation of the screw (360 degrees).
+	 * The distance along the screw's axis, that is covered by one complete rotation of the screw
+	 * [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Screw Controller", Meta = (EditCondition = "bEnable"))
 	double Lead;
@@ -109,15 +109,15 @@ class AGXUNREAL_API UAGX_ConstraintScrenController_FL : public UBlueprintFunctio
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetDamping(UPARAM(ref) FAGX_ConstraintScrewController& Controller, float Damping)
+	static void SetSpookDamping(UPARAM(ref) FAGX_ConstraintScrewController& Controller, float SpookDamping)
 	{
-		Controller.SetDamping(static_cast<double>(Damping));
+		Controller.SetSpookDamping(static_cast<double>(SpookDamping));
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static float GetDamping(UPARAM(ref) const FAGX_ConstraintScrewController& Controller)
+	static float GetSpookDamping(UPARAM(ref) const FAGX_ConstraintScrewController& Controller)
 	{
-		return static_cast<float>(Controller.GetDamping());
+		return static_cast<float>(Controller.GetSpookDamping());
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

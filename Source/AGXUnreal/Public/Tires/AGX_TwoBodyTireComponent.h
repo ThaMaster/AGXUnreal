@@ -52,13 +52,13 @@ public:
 	FAGX_RigidBodyReference HubRigidBody;
 
 	/**
-	 * Tire relative location from Tire Rigid Body.
+	 * Tire relative location from Tire Rigid Body [cm].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire")
 	FVector LocalLocation;
 
 	/**
-	 * Tire relative rotation from Tire Rigid Body.
+	 * Tire relative rotation from Tire Rigid Body [deg].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire")
 	FRotator LocalRotation;

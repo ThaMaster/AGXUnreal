@@ -33,14 +33,14 @@ float UAGX_ShapeMaterialBase::GetBulkViscosity() const
 	return static_cast<float>(Bulk.Viscosity);
 }
 
-void UAGX_ShapeMaterialBase::SetDamping(float InDamping)
+void UAGX_ShapeMaterialBase::SetSpookDamping(float InSpookDamping)
 {
-	Bulk.Damping = static_cast<double>(InDamping);
+	Bulk.SpookDamping = static_cast<double>(InSpookDamping);
 }
 
-float UAGX_ShapeMaterialBase::GetDamping() const
+float UAGX_ShapeMaterialBase::GetSpookDamping() const
 {
-	return static_cast<float>(Bulk.Damping);
+	return static_cast<float>(Bulk.SpookDamping);
 }
 
 void UAGX_ShapeMaterialBase::SetMinMaxElasticRestLength(float InMin, float InMax)
@@ -79,24 +79,24 @@ void UAGX_ShapeMaterialBase::SetYoungsModulusBend(float InYoungsModulus)
 	Wire.YoungsModulusBend = InYoungsModulus;
 }
 
-float UAGX_ShapeMaterialBase::GetDampingStretch() const
+float UAGX_ShapeMaterialBase::GetSpookDampingStretch() const
 {
-	return Wire.DampingStretch;
+	return Wire.SpookDampingStretch;
 }
 
-void UAGX_ShapeMaterialBase::SetDampingStretch(float InDamping)
+void UAGX_ShapeMaterialBase::SetSpookDampingStretch(float InSpookDamping)
 {
-	Wire.DampingStretch = InDamping;
+	Wire.SpookDampingStretch = InSpookDamping;
 }
 
-float UAGX_ShapeMaterialBase::GetDampingBend() const
+float UAGX_ShapeMaterialBase::GetSpookDampingBend() const
 {
-	return Wire.DampingBend;
+	return Wire.SpookDampingBend;
 }
 
-void UAGX_ShapeMaterialBase::SetDampingBend(float InDamping)
+void UAGX_ShapeMaterialBase::SetSpookDampingBend(float InSpookDamping)
 {
-	Wire.DampingBend = InDamping;
+	Wire.SpookDampingStretch = InSpookDamping;
 }
 
 void UAGX_ShapeMaterialBase::CopyFrom(const FShapeMaterialBarrier* Source)
@@ -108,7 +108,7 @@ void UAGX_ShapeMaterialBase::CopyFrom(const FShapeMaterialBarrier* Source)
 		Bulk.Density = Source->GetDensity();
 		Bulk.YoungsModulus = Source->GetYoungsModulus();
 		Bulk.Viscosity = Source->GetBulkViscosity();
-		Bulk.Damping = Source->GetDamping();
+		Bulk.SpookDamping = Source->GetSpookDamping();
 		Bulk.MinElasticRestLength = Source->GetMinElasticRestLength();
 		Bulk.MaxElasticRestLength = Source->GetMaxElasticRestLength();
 

@@ -22,8 +22,8 @@ struct AGXUNREAL_API FAGX_ConstraintRangeController : public FAGX_ConstraintCont
 	GENERATED_USTRUCT_BODY()
 
 	/**
-	 * Range in Degrees if controller is on a Rotational Degree-Of-Freedom,
-	 * else in Centimeters.
+	 * Range in Degrees [deg] if controller is on a Rotational Degree-Of-Freedom,
+	 * else in Centimeters [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Range Controller", Meta = (EditCondition = "bEnable"))
 	FFloatInterval Range;
@@ -116,15 +116,15 @@ class AGXUNREAL_API UAGX_ConstraintRangeController_FL : public UBlueprintFunctio
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetDamping(UPARAM(ref) FAGX_ConstraintRangeController& Controller, float Damping)
+	static void SetSpookDamping(UPARAM(ref) FAGX_ConstraintRangeController& Controller, float SpookDamping)
 	{
-		Controller.SetDamping(static_cast<double>(Damping));
+		Controller.SetSpookDamping(static_cast<double>(SpookDamping));
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static float GetDamping(UPARAM(ref) const FAGX_ConstraintRangeController& Controller)
+	static float GetSpookDamping(UPARAM(ref) const FAGX_ConstraintRangeController& Controller)
 	{
-		return static_cast<float>(Controller.GetDamping());
+		return static_cast<float>(Controller.GetSpookDamping());
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
