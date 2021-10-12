@@ -2305,13 +2305,6 @@ bool FCheckContactMaterialsImportedCommand::Update()
 		return true;
 	}
 
-	auto testShape = [this](USceneComponent* c, const FVector& ExpectedAGXWorldPos)
-	{
-		Test.TestNotNull(TEXT("Component exists"), c);
-		const FVector ExpectedUnrealPos = AgxToUnrealVector(ExpectedAGXWorldPos);
-		Test.TestEqual(TEXT("Component position"), c->GetComponentLocation(), ExpectedUnrealPos);
-	};
-
 	// Get all the imported components.
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
