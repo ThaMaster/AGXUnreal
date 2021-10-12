@@ -2,7 +2,6 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ArchiveImporterToSingleActor.h"
-#include "AGX_ArchiveImporterToActorTree.h"
 #include "AGX_ArchiveImporterToBlueprint.h"
 #include "AGX_ArchiveExporter.h"
 #include "AGX_LogCategory.h"
@@ -71,16 +70,6 @@ void UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor()
 		return;
 	}
 	AGX_ArchiveImporterToSingleActor::ImportAGXArchive(Filename);
-}
-
-void UAGX_AgxEdModeFile::ImportAgxArchiveToActorTree()
-{
-	const FString Filename = SelectExistingAgxArchive();
-	if (Filename == NONE_SELECTED)
-	{
-		return;
-	}
-	AGX_ArchiveImporterToActorTree::ImportAGXArchive(Filename);
 }
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()

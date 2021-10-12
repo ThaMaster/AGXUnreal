@@ -249,17 +249,6 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 			"FileMenuEntryTooTipImportSingleActor",
 			"Import an AGX Dynamics archive into the current level as a single actor"),
 		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor(); });
-
-	// Import AGX archive to in-level actor tree menu item.
-	AddFileMenuEntry(
-		Builder,
-		LOCTEXT(
-			"FileMenuEntryLabelImportActorTree",
-			"Import AGX Dynamics archive to level as an actor tree..."),
-		LOCTEXT(
-			"FileMenuEntryToolTipImportActorTree",
-			"Import an AGX Dynamics Archive into the current level as a tree of actors."),
-		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToActorTree(); });
 #endif
 
 	// Import AGX Dynamics archive to blueprint menu item.
