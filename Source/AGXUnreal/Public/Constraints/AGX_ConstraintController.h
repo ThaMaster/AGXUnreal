@@ -56,7 +56,8 @@ struct AGXUNREAL_API FAGX_ConstraintController
 	double GetElasticity() const;
 
 	/**
-	 * Set the Compliance of the Constraint Controller [m/N].
+	 * Set the Compliance in a certain DOF. Measured in [m/N] for translational DOFs and [rad/Nm]
+	 * for rotational DOFs.
 	 *
 	 * Compliance is stored as Elasticity = 1 / Compliance.
 	 *
