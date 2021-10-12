@@ -113,7 +113,7 @@ public:
 
 	double GetElasticity(EGenericDofIndex Index) const;
 
-		/**
+	/**
 	 * The damping (spook) of the Constraint [s].
 	 * The value is the time the constraint has to fulfill its violation.
 	 */
@@ -131,7 +131,8 @@ public:
 	double GetSpookDamping(EGenericDofIndex Index) const;
 
 	/**
-	 * The force range of the Constraint [N].
+	 * The force range in a certain DOF. Measured in [N] for translational DOFs and [Nm] for
+	 * rotational DOFs.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
 	FAGX_ConstraintRangePropertyPerDof ForceRange;
