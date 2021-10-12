@@ -120,23 +120,26 @@ void FShapeMaterialBarrier::SetMinMaxElasticRestLength(
 	double MinElasticRestLength, double MaxElasticRestLength)
 {
 	check(HasNative());
-	constexpr double UtA = UNREAL_TO_AGX_DISTANCE_FACTOR<double>;
+
 	NativeRef->Native->getBulkMaterial()->setMinMaxElasticRestLength(
-		UtA * MinElasticRestLength, UtA * MaxElasticRestLength);
+		ConvertDistanceToAgx<agx::Real>(MinElasticRestLength),
+		ConvertDistanceToAgx<agx::Real>(MaxElasticRestLength));
 }
 
 double FShapeMaterialBarrier::GetMinElasticRestLength() const
 {
 	check(HasNative());
-	constexpr double AtU = AGX_TO_UNREAL_DISTANCE_FACTOR<double>;
-	return AtU * NativeRef->Native->getBulkMaterial()->getMinElasticRestLength();
+
+	return ConvertDistanceToUnreal<double>(
+		NativeRef->Native->getBulkMaterial()->getMinElasticRestLength());
 }
 
 double FShapeMaterialBarrier::GetMaxElasticRestLength() const
 {
 	check(HasNative());
-	constexpr double AtU = AGX_TO_UNREAL_DISTANCE_FACTOR<double>;
-	return AtU * NativeRef->Native->getBulkMaterial()->getMaxElasticRestLength();
+
+	return ConvertDistanceToUnreal<double>(
+		NativeRef->Native->getBulkMaterial()->getMaxElasticRestLength());
 }
 
 void FShapeMaterialBarrier::SetFrictionEnabled(bool bEnabled)
@@ -178,8 +181,8 @@ double FShapeMaterialBarrier::GetSurfaceViscosity() const
 void FShapeMaterialBarrier::SetAdhesion(double AdhesiveForce, double AdhesiveOverlap)
 {
 	check(HasNative());
-	const double AdhesiveOverlapAGX = UNREAL_TO_AGX_DISTANCE_FACTOR<double> * AdhesiveOverlap;
-	NativeRef->Native->getSurfaceMaterial()->setAdhesion(AdhesiveForce, AdhesiveOverlapAGX);
+	NativeRef->Native->getSurfaceMaterial()->setAdhesion(
+		AdhesiveForce, ConvertDistanceToAgx<agx::Real>(AdhesiveOverlap));
 }
 
 double FShapeMaterialBarrier::GetAdhesiveForce() const
@@ -191,8 +194,9 @@ double FShapeMaterialBarrier::GetAdhesiveForce() const
 double FShapeMaterialBarrier::GetAdhesiveOverlap() const
 {
 	check(HasNative());
-	const double AdhesiveOverlapAGX = NativeRef->Native->getSurfaceMaterial()->getAdhesiveOverlap();
-	return AGX_TO_UNREAL_DISTANCE_FACTOR<double> * AdhesiveOverlapAGX;
+
+	return ConvertDistanceToUnreal<double>(
+		NativeRef->Native->getSurfaceMaterial()->getAdhesiveOverlap());
 }
 
 // Wire properties.
@@ -244,7 +248,6 @@ void FShapeMaterialBarrier::SetSpookDampingBend(double SpookDamping) const
 	check(HasNative());
 	NativeRef->Native->getWireMaterial()->setDampingBend(SpookDamping);
 }
-
 
 FGuid FShapeMaterialBarrier::GetGuid() const
 {

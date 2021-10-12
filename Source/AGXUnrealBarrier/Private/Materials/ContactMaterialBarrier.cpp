@@ -275,8 +275,7 @@ double FContactMaterialBarrier::GetSurfaceViscosity(
 void FContactMaterialBarrier::SetAdhesion(double AdhesiveForce, double AdhesiveOverlap)
 {
 	check(HasNative());
-	const double AdhesiveOverlapAGX = UNREAL_TO_AGX_DISTANCE_FACTOR<double> * AdhesiveOverlap;
-	NativeRef->Native->setAdhesion(AdhesiveForce, AdhesiveOverlapAGX);
+	NativeRef->Native->setAdhesion(AdhesiveForce, ConvertDistanceToAgx<agx::Real>(AdhesiveOverlap));
 }
 
 double FContactMaterialBarrier::GetAdhesiveForce() const
@@ -288,8 +287,7 @@ double FContactMaterialBarrier::GetAdhesiveForce() const
 double FContactMaterialBarrier::GetAdhesiveOverlap() const
 {
 	check(HasNative());
-	const double AdhesiveOverlapAGX = NativeRef->Native->getAdhesiveOverlap();
-	return AGX_TO_UNREAL_DISTANCE_FACTOR<double> * AdhesiveOverlapAGX;
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getAdhesiveOverlap());
 }
 
 void FContactMaterialBarrier::SetYoungsModulus(double YoungsModulus)
@@ -320,23 +318,22 @@ void FContactMaterialBarrier::SetMinMaxElasticRestLength(
 	double MinElasticRestLength, double MaxElasticRestLength)
 {
 	check(HasNative());
-	constexpr double UtA = UNREAL_TO_AGX_DISTANCE_FACTOR<double>;
+
 	NativeRef->Native->setMinMaxElasticRestLength(
-		UtA * MinElasticRestLength, UtA * MaxElasticRestLength);
+		ConvertDistanceToAgx<agx::Real>(MinElasticRestLength),
+		ConvertDistanceToAgx<agx::Real>(MaxElasticRestLength));
 }
 
 double FContactMaterialBarrier::GetMinElasticRestLength() const
 {
 	check(HasNative());
-	constexpr double AtU = AGX_TO_UNREAL_DISTANCE_FACTOR<double>;
-	return AtU * NativeRef->Native->getMinElasticRestLength();
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getMinElasticRestLength());
 }
 
 double FContactMaterialBarrier::GetMaxElasticRestLength() const
 {
 	check(HasNative());
-	constexpr double AtU = AGX_TO_UNREAL_DISTANCE_FACTOR<double>;
-	return AtU * NativeRef->Native->getMaxElasticRestLength();
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getMaxElasticRestLength());
 }
 
 void FContactMaterialBarrier::SetContactReductionMode(int32 ReductionMode)
