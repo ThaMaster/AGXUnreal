@@ -31,11 +31,6 @@ UAGX_ContactMaterialAsset* UAGX_ContactMaterialAsset::GetAsset()
 	return this;
 }
 
-void UAGX_ContactMaterialAsset::ClearInstancePtr()
-{
-	Instance.Reset();
-}
-
 #if WITH_EDITOR
 void UAGX_ContactMaterialAsset::PostInitProperties()
 {

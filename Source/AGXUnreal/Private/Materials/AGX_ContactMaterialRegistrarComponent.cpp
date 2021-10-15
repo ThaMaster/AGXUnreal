@@ -23,25 +23,10 @@ void UAGX_ContactMaterialRegistrarComponent::RemoveContactMaterial(
 	}
 
 	UWorld* World = GetWorld();
-	if (World == nullptr)
-	{
-		return;
-	}
-
-	if (!World->IsGameWorld())
-	{
-		// We assume that the ContactMaterials TArray is filled only with Assets (not Instances).
-		if (ContactMaterial->GetAsset() == nullptr)
-		{
-			return;
-		}
-		ContactMaterials.Remove(ContactMaterial->GetAsset());
-	}
-	else
+	if (World != nullptr && World->IsGameWorld())
 	{
 		// We assume that the ContactMaterials TArray is filled only with Instances (not Assets).
-		UAGX_ContactMaterialInstance* Instance =
-			ContactMaterial->GetInstance();
+		UAGX_ContactMaterialInstance* Instance = ContactMaterial->GetInstance();
 		if (Instance == nullptr)
 		{
 			return;
@@ -49,13 +34,17 @@ void UAGX_ContactMaterialRegistrarComponent::RemoveContactMaterial(
 		ContactMaterials.Remove(Instance);
 		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
 		{
-			Sim->Remove(*Instance);
+			Sim->Unregister(*Instance);
 		}
-
-		if (UAGX_ContactMaterialAsset* Asset = ContactMaterial->GetAsset())
+	}
+	else
+	{
+		// We assume that the ContactMaterials TArray is filled only with Assets (not Instances).
+		if (ContactMaterial->GetAsset() == nullptr)
 		{
-			Asset->ClearInstancePtr();
+			return;
 		}
+		ContactMaterials.Remove(ContactMaterial->GetAsset());
 	}
 }
 
@@ -68,26 +57,9 @@ void UAGX_ContactMaterialRegistrarComponent::AddContactMaterial(
 	}
 
 	UWorld* World = GetWorld();
-	if (World == nullptr)
-	{
-		return;
-	}
-
-	if (!World->IsGameWorld())
-	{
-		// We assume that the ContactMaterials TArray is filled only with Assets (not Instances).
-		if (ContactMaterial->GetAsset() == nullptr)
-		{
-			return;
-		}
-
-		ContactMaterials.Add(ContactMaterial->GetAsset());
-	}
-	else
+	if (World != nullptr && World->IsGameWorld())
 	{
 		// We assume that the ContactMaterials TArray is filled only with Instances (not Assets).
-
-		// Note: calling GetOrCreateInstance adds the Instance to the Simulation.
 		UAGX_ContactMaterialInstance* Instance =
 			UAGX_ContactMaterialBase::GetOrCreateInstance(GetWorld(), ContactMaterial);
 		if (Instance == nullptr)
@@ -96,12 +68,27 @@ void UAGX_ContactMaterialRegistrarComponent::AddContactMaterial(
 		}
 
 		ContactMaterials.Add(Instance);
+		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
+		{
+			Sim->Register(*Instance);
+		}
+	}
+	else
+	{
+		// We assume that the ContactMaterials TArray is filled only with Assets (not Instances).
+		if (ContactMaterial->GetAsset() == nullptr)
+		{
+			return;
+		}
+		ContactMaterials.Add(ContactMaterial->GetAsset());
 	}
 }
 
 void UAGX_ContactMaterialRegistrarComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Note: BeginPlay is called on Component copy as well if the Component is copied during play.
 
 	// Convert all contact material pointers to point to initialized contact material instances.
 	for (UAGX_ContactMaterialBase*& ContactMaterial : ContactMaterials)
@@ -118,14 +105,9 @@ void UAGX_ContactMaterialRegistrarComponent::BeginPlay()
 				TEXT("Contact Material '%s' has at least one material that has not been set."),
 				*ContactMaterial->GetName());
 
+			ContactMaterial = nullptr;
 			continue;
 		}
-
-		// This will create the UAGX_ContactMaterialInstance if it did not already exist, initialize
-		// its AGX native, and add it to the simulation.
-
-		// It will also replace the passed in UAGX_ContactMaterialBase pointer with the new
-		// instance, and return it.
 
 		UAGX_ContactMaterialInstance* Instance =
 			UAGX_ContactMaterialBase::GetOrCreateInstance(GetWorld(), ContactMaterial);
@@ -136,51 +118,83 @@ void UAGX_ContactMaterialRegistrarComponent::BeginPlay()
 				LogAGX, Warning,
 				TEXT("Could not create a Contact Material Instance for Contact Material '%s'."),
 				*ContactMaterial->GetName());
+
+			ContactMaterial = nullptr;
 			return;
 		}
 
 		// The Contact Material assets in the ContactMaterials TArray are swapped to Instances
 		// during play.
 		ContactMaterial = Instance;
+
+		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
+		{
+			Sim->Register(*Instance);
+		}
 	}
 }
 
 void UAGX_ContactMaterialRegistrarComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
-
-	for (UAGX_ContactMaterialBase* ContactMaterial : ContactMaterials)
-	{
-		if (!ContactMaterial)
-		{
-			continue;
-		}
-
-		RemoveContactMaterial(ContactMaterial->GetInstance(), Reason);
-	}
+	ClearAll();
 }
 
-void UAGX_ContactMaterialRegistrarComponent::RemoveContactMaterial(
-	UAGX_ContactMaterialInstance* Instance, EEndPlayReason::Type Reason)
+void UAGX_ContactMaterialRegistrarComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
-	if (Instance == nullptr)
-	{
-		return;
-	}
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
 
-	if (Instance->HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
-		Reason != EEndPlayReason::Quit)
+	// Note: EndPlay is not always called, for example when deleting the Component from the Details
+	// Panel during play. Therefore we call ClearAll from here also.
+	ClearAll();
+}
+
+void UAGX_ContactMaterialRegistrarComponent::ClearAll()
+{
+	if (GetWorld() && GetWorld()->IsGameWorld())
 	{
-		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
+		for (UAGX_ContactMaterialBase* ContactMaterial : ContactMaterials)
 		{
-			Sim->Remove(*Instance);
+			if (!ContactMaterial)
+			{
+				continue;
+			}
+
+			if (UAGX_ContactMaterialInstance* Instance = ContactMaterial->GetInstance())
+			{
+				if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(GetWorld()))
+				{
+					Sim->Unregister(*Instance);
+				}
+			}
 		}
 	}
 
-	if (Instance->HasNative())
-	{
-		Instance->GetNative()->ReleaseNative();
-	}
+	ContactMaterials.Empty();
 }
+
+#if WITH_EDITOR
+bool UAGX_ContactMaterialRegistrarComponent::CanEditChange(
+#if UE_VERSION_OLDER_THAN(4, 25, 0)
+	const UProperty* InProperty
+#else
+	const FProperty* InProperty
+#endif
+) const
+{
+	// Editing the Contact Materials array from the Details Panel during play is not supported.
+	// This is because it has proven difficult to keep track of removed array elements since it
+	// is too late when PostEditChangeProperty is called (the element is already removed).
+	// Elements can still be added/removed during play by using the Add/Remove UFUNCTIONS.
+	if (InProperty->GetFName().IsEqual(
+			GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialRegistrarComponent, ContactMaterials)))
+	{
+		UWorld* World = GetWorld();
+		return World == nullptr || !World->IsGameWorld();
+	}
+
+	return Super::CanEditChange(InProperty);
+}
+#endif
 
 #undef LOCTEXT_NAMESPACE

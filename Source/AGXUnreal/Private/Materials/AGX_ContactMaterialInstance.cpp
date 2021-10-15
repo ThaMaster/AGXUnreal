@@ -396,17 +396,4 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 	check(HasNative());
 
 	UpdateNativeProperties();
-
-	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(PlayingWorld);
-	if (Simulation == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Contact Material '%s' tried to get Simulation, but UAGX_Simulation::GetFrom returned "
-			"nullptr."),
-			*GetName());
-		return;
-	}
-
-	Simulation->Add(*this);
 }
