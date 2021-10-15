@@ -42,20 +42,28 @@ void UAGX_CollisionGroupDisablerComponent::UpdateAvailableCollisionGroups()
 }
 
 void UAGX_CollisionGroupDisablerComponent::DisableCollisionGroupPair(
-	const FName& Group1, const FName& Group2)
+	const FName& Group1, const FName& Group2, bool HideWarnings)
 {
 	if (Group1.IsNone() || Group2.IsNone())
 	{
-		LogErrorWithMessageBoxInEditor(
-			"A selected collision group may not be 'None'. Please select valid collision groups.",
-			GetWorld());
+		if (!HideWarnings)
+		{
+			LogErrorWithMessageBoxInEditor(
+				"A selected collision group may not be 'None'. Please select valid collision "
+				"groups.",
+				GetWorld());
+		}
 		return;
 	}
 
 	if (IsCollisionGroupPairDisabled(Group1, Group2))
 	{
-		LogErrorWithMessageBoxInEditor(
-			"Collision has already been disabled for the selected collision groups.", GetWorld());
+		if (!HideWarnings)
+		{
+			LogErrorWithMessageBoxInEditor(
+				"Collision has already been disabled for the selected collision groups.",
+				GetWorld());
+		}
 		return;
 	}
 
@@ -63,7 +71,7 @@ void UAGX_CollisionGroupDisablerComponent::DisableCollisionGroupPair(
 
 	// For the non-game world case, the groups are added to the simulation in BeginPlay().
 	UWorld* World = GetWorld();
-	if (!World || !World->IsGameWorld())
+	if (!World || !World->IsGameWorld() || HasAnyFlags(RF_ArchetypeObject))
 	{
 		return;
 	}
@@ -75,13 +83,17 @@ void UAGX_CollisionGroupDisablerComponent::DisableCollisionGroupPair(
 }
 
 void UAGX_CollisionGroupDisablerComponent::EnableCollisionGroupPair(
-	const FName& Group1, const FName& Group2)
+	const FName& Group1, const FName& Group2, bool HideWarnings)
 {
 	if (Group1.IsNone() || Group2.IsNone())
 	{
-		LogErrorWithMessageBoxInEditor(
-			"A selected collision group may not be 'None'. Please select valid collision groups.",
-			GetWorld());
+		if (!HideWarnings)
+		{
+			LogErrorWithMessageBoxInEditor(
+				"A selected collision group may not be 'None'. Please select valid collision "
+				"groups.",
+				GetWorld());
+		}
 		return;
 	}
 
@@ -95,7 +107,7 @@ void UAGX_CollisionGroupDisablerComponent::EnableCollisionGroupPair(
 
 	// For the non-game world case, the groups are added to the simulation in BeginPlay().
 	UWorld* World = GetWorld();
-	if (!World || !World->IsGameWorld())
+	if (!World || !World->IsGameWorld() || HasAnyFlags(RF_ArchetypeObject))
 	{
 		return;
 	}
