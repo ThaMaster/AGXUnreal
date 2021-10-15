@@ -126,7 +126,7 @@ T* FAGX_ObjectUtilities::Get(const FComponentReference& Reference, const AActor*
 }
 
 template <typename T>
-static TArray<T*> FAGX_ObjectUtilities::GetArchetypeInstances(T& Object)
+TArray<T*> FAGX_ObjectUtilities::GetArchetypeInstances(T& Object)
 {
 	TArray<T*> Arr;
 	if (!Object.HasAnyFlags(RF_ArchetypeObject))
