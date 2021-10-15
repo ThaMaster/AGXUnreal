@@ -44,6 +44,12 @@ public:
 	template <typename T>
 	static T* Get(const FComponentReference& Reference, const AActor* FallbackOwner);
 
+	/*
+	 * Returns any Archetype instances of the passed object.
+	 */
+	template <typename T>
+	static TArray<T*> GetArchetypeInstances(T& Object);
+
 private:
 	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);
 };
@@ -117,4 +123,29 @@ T* FAGX_ObjectUtilities::Get(const FComponentReference& Reference, const AActor*
 		return nullptr;
 	}
 	return *It;
+}
+
+template <typename T>
+static TArray<T*> FAGX_ObjectUtilities::GetArchetypeInstances(T& Object)
+{
+	TArray<T*> Arr;
+	if (!Object.HasAnyFlags(RF_ArchetypeObject))
+	{
+		return Arr;
+	}
+
+	TArray<UObject*> ArchetypeInstances;
+	Object.GetArchetypeInstances(ArchetypeInstances);
+	for (UObject* Obj : ArchetypeInstances)
+	{
+		T* Instance = Cast<T>(Obj);
+		if (Instance == nullptr)
+		{
+			continue;
+		}
+
+		Arr.Add(Instance);
+	}
+
+	return Arr;
 }
