@@ -105,7 +105,7 @@ endif()
 
 
 #
-# CONFIGURATION POINT: compiler.
+# CONFIGURATION POINT: Compiler.
 #
 # We can choose to either use the system compiler or the one shipped with Unreal
 # Engine. When using the the Unreal Engine compiler one can also set sysroot.
@@ -145,6 +145,7 @@ endif()
 #
 # The C system libraries are stored in various subdirectories of
 #  ${UE_ROOT}/Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64/v16_clang-9.0.1-centos7/x86_64-unknown-linux-gnu/
+# We sometimes refer to this directory as `UE_CLANG`.
 #
 # Pick one:
 #set(CONFIG_UE_C_LIBS_TO_CMAKE "ON")
@@ -182,18 +183,29 @@ endif()
 
 
 
+# Print a summary of the current configuration settings.
+message(STATUS "Unreal Engine CMake toolchain configuration for C projects:")
+message(STATUS "  CONFIG_COMPILER: ${CONFIG_COMPILER}")
+message(STATUS "  CONFIG_COMPILER_SYSTEM_C: ${CONFIG_COMPILER_SYSTEM_C}")
+message(STATUS "  CONFIG_COMPILER_SYSTEM_CXX: ${CONFIG_COMPILER_SYSTEM_CXX}")
+#message(STATUS "  CONFIG_CXX_PROJECT: ${CONFIG_CXX_PROJECT}")
+message(STATUS "  CONFIG_UE_C_LIBS_TO_CMAKE: ${CONFIG_UE_C_LIBS_TO_CMAKE}")
+message(STATUS "  CONFIG_UE_C_LIBS_TO_LINKER: ${CONFIG_UE_C_LIBS_TO_LINKER}")
+
+
 # Construct paths to various directories within the Unreal Engine installation.
 #
 # ue_compiler_list_dir:
 #    Contains a list of compiler installations in subdirectories.
 #    We assume, for now, that there is only one.
-#
-# ue_compiler_dir:
-#     The root directory for a particular Clang installation.
-#     Contains `bin`, `include`, `lib`, `lib64`, `share`, and `usr` for that compiler.
-#     This is the path that will be set when as sysroot when CONFIG_COMPILER is UNREAL_WITH_SYSROOT.
-#     Subdirectories of this is passed to CMAKE_PREFIX_PATH when CONFIG_UE_C_LIBS_TO_CMAKE in ON.
 set(ue_compiler_list_dir "${UE_ROOT}/Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64")
+
+# ue_compiler_dir:
+#    The root directory for a particular Clang installation.
+#    Contains `bin`, `include`, `lib`, `lib64`, `share`, and `usr` for that compiler.
+#    This is the path that will be set when as sysroot when CONFIG_COMPILER is UNREAL_WITH_SYSROOT.
+#    Subdirectories of this is passed to CMAKE_PREFIX_PATH when CONFIG_UE_C_LIBS_TO_CMAKE in ON.
+#    Sometimes referred to as `UE_CLANG` in text.
 file(GLOB ue_compiler_name
       LIST_DIRECTORIES true
       RELATIVE "${ue_compiler_list_dir}"
@@ -213,15 +225,7 @@ set(ue_compiler_dir "${ue_compiler_list_dir}/${ue_compiler_name}/x86_64-unknown-
 # This part tells CMake where to look for files with `find_package`,
 # `find_file`, find_library` and the like.
 #
-# This bit is not necessary when using SYSROOT.
-#
-# This entire thing has me worried. ue4cli only mentions C++ paths in
-# /Engine/Source/ThirdParty/Linux/LibCxx/, it never talks about the C paths in
-# Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64/v16_clang-9.0.1-centos7/x86_64-unknown-linux-gnu,
-# called `ue_compiler_dir` in the code below.
-#
-# Perhaps ue4cli assume either that we build from a C-compatible host system, or
-# that sysroot is used.
+# This bit is not necessary when using SYSROOT. I hope.
 if("${CONFIG_UE_C_LIBS_TO_CMAKE}" STREQUAL "ON")
   list(APPEND CMAKE_PREFIX_PATH
     "${ue_compiler_dir}"
@@ -287,7 +291,13 @@ endif()
 
 # Disable linking with the system standard library and setup linker directories
 # to the Unreal Engine paths instead.
-set(ue_linker_flags "-nodefaultlibs")
+#
+# What does it mean to pass -nodefaultlibs to a C compiler? We want to use the C default libraries, right?
+# It's only the C++ standard library we want to avoid. https://libcxx.llvm.org//UsingLibcxx.html#id4 says
+# that -nodefaultlibs is a GCC, not a Clang, flag and that when using it one must also restore a bunch
+# of system libraries: -lc++ -lc++abi -lm -lc -lgcc_s -lgcc. We do this, the C part at least, below.
+# So all well and good?
+set(ue_linker_flags "-nodefaultlibs -lm -lc -lgcc_s -lgcc -lpthread")
 
 if("${CONFIG_UE_C_LIBS_TO_LINKER}" STREQUAL "ON")
   # Enabling CONFIG_UE_C_LIBS_TO_CMAKE passes more directories to CMake. Should this as well?
@@ -299,17 +309,25 @@ else()
 endif()
 
 
+set(CMAKE_C_STANDARD_LIBRARIES  "${ue_linker_flags}" CACHE INTERNAL "")
+
+# Not sure which is better, CMAKE_C_STANDARD_LIBRARIES or add_link_option. We
+# currently use CMAKE_C_STANDARD_LIBRARIES because the C++ version of this file
+# can't use add_link_options because of a CMake bug. See ue-toolchain-cpp.cmake.
+#add_link_options("$<$<COMPILE_LANGUAGE:C>:${ue_linker_flags}>")
+
+
 # The MATCHES check is to prevent adding these flags multiple times.
 # Is that really needed? Can we do something with REMOVE_DUPLICATES instead if we really need to do something?
-if(NOT CMAKE_EXE_LINKER_FLAGS MATCHES "-nodefaultlibs")
-  set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${ue_linker_flags}" CACHE INTERNAL "")
-endif()
-if(NOT CMAKE_MODULE_LINKER_FLAGS MATCHES "-nodefaultlibs")
-  set(CMAKE_MODULE_LINKER_FLAGS  "${CMAKE_MODULE_LINKER_FLAGS} ${ue_linker_flags}" CACHE INTERNAL "")
-endif()
-if(NOT CMAKE_SHARED_LINKER_FLAGS MATCHES "-nodefaultlibs")
-  set(CMAKE_SHARED_LINKER_FLAGS  "${CMAKE_SHARED_LINKER_FLAGS} ${ue_linker_flags}" CACHE INTERNAL "")
-endif()
+#if(NOT CMAKE_EXE_LINKER_FLAGS MATCHES "-nodefaultlibs")
+#  set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${ue_linker_flags}" CACHE INTERNAL "")
+#endif()
+#if(NOT CMAKE_MODULE_LINKER_FLAGS MATCHES "-nodefaultlibs")
+#  set(CMAKE_MODULE_LINKER_FLAGS  "${CMAKE_MODULE_LINKER_FLAGS} ${ue_linker_flags}" CACHE INTERNAL "")
+#endif()
+#if(NOT CMAKE_SHARED_LINKER_FLAGS MATCHES "-nodefaultlibs")
+#  set(CMAKE_SHARED_LINKER_FLAGS  "${CMAKE_SHARED_LINKER_FLAGS} ${ue_linker_flags}" CACHE INTERNAL "")
+#endif()
 
 
 # Including static libraries here causes `-nodefaultlibs` to be passed to `ar`,
@@ -322,20 +340,12 @@ endif()
 
 
 
-# Enable usage of the Unreal Engine standard libraries.
-#
-# Not sure if these should go to CMAKE_C_STANDARD_LIBRARIES or via ue_linker_flags to CMAKE_*_LINKER_FLAGS.
-set(c_libraries "-lm -lc -lgcc_s -lgcc -lpthread")
-set(CMAKE_C_STANDARD_LIBRARIES  "${c_libraries}" CACHE INTERNAL "")
-
-
-
 ###
 ### OTHER
 ###
 
 # I don't know why, but CMake fails to detect CMAKE_SIZEOF_VOID_P and it ends up
 # being the empty string. Here we assume that we are building with 8-byte
-# pointers, i.e., 64-bit mode.
+# pointers, i.e. in 64-bit mode.
 set(CMAKE_SIZEOF_VOID_P 8 CACHE INTERNAL "")
 

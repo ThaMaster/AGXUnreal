@@ -168,7 +168,7 @@ endif()
 
 # This part is buggy. I want to enable C++ flags for C++ sources only, but on
 # CMake < 3.12 the COMPILE_LANGUAGE:CXX throws an error because for C-only
-# libraries the CXX language isn't loaded. I therefore added the
+# projects the CXX language isn't loaded. I therefore added the
 # CMAKE_CXX_COMPILER_LOADED check so that we only check for CXX when we know
 # about the language. This also fails because while enabling CXX, which is what
 # we're currently doing, CXX hasn't yet been loaded so the check is always
@@ -177,7 +177,7 @@ endif()
 # C++ right now.  See https://gitlab.kitware.com/cmake/cmake/-/issues/17952
 #
 # Cannot use CMAKE_CXX_FLAGS because those flags are also passed to the linker
-# and we don't want that.
+# and we don't want that. (Are they really?)
 #
 # I don't rember why we can't just pass the C++ flags to all compilers,
 # i.e. also for C files. For now I just comment all of this out and provide a

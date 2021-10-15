@@ -105,7 +105,7 @@ endif()
 
 
 #
-# CONFIGURATION POINT: compiler.
+# CONFIGURATION POINT: Compiler.
 #
 # We can choose to either use the system compiler or the one shipped with Unreal
 # Engine. When using the the Unreal Engine compiler one can also set sysroot.
@@ -130,6 +130,28 @@ if(NOT "${CONFIG_COMPILER}" IN_LIST CONFIG_OPTIONS_COMPILER)
 endif()
 
 
+
+###
+### The following configuration point, C++ project is not needed anymore since we
+### now have two separate CMake configuration files. Any project that uses this
+### file instead of the C version must be a C++ project.
+###
+
+#
+# CONFIGURATION POINT: C++ project
+#
+# Because of a bug in CMake < 3.12 we need to know if we are about to configure
+# a C++ project or a pure C project. Search for the configuration variable in
+# this file to find a description of why.
+#
+# Pick one:
+set(CONFIG_CXX_PROJECT "ON")
+#set(CONFIG_CXX_PROJECT "OFF")
+#
+#set(CONFIG_OPTIONS_CXX_PROJECT "ON" "OFF")
+#if(NOT "${CONFIG_CXX_PROJECT}" IN_LIST CONFIG_OPTIONS_CXX_PROJECT)
+#  message(FATAL_ERROR "CONFIG_CXX_PROJECT must be one of ${CONFIG_OPTIONS_CXX_PROJECT}.")
+#endif()
 
 
 #
@@ -184,19 +206,29 @@ endif()
 
 
 
-# Construct paths to various directories within the Unreal Engine installation.
+# Print a summary of the current configuration settings.
+message(STATUS "Unreal Engine CMake toolchain configuration for C++ projects:")
+message(STATUS "  CONFIG_COMPILER: ${CONFIG_COMPILER}")
+message(STATUS "  CONFIG_COMPILER_SYSTEM_C: ${CONFIG_COMPILER_SYSTEM_C}")
+message(STATUS "  CONFIG_COMPILER_SYSTEM_CXX: ${CONFIG_COMPILER_SYSTEM_CXX}")
+#message(STATUS "  CONFIG_CXX_PROJECT: ${CONFIG_CXX_PROJECT}")
+message(STATUS "  CONFIG_UE_C_LIBS_TO_CMAKE: ${CONFIG_UE_C_LIBS_TO_CMAKE}")
+message(STATUS "  CONFIG_UE_C_LIBS_TO_LINKER: ${CONFIG_UE_C_LIBS_TO_LINKER}")
 
+
+# Construct paths to various directories within the Unreal Engine installation.
+#
 # ue_compiler_list_dir:
-#   Contains a list of compiler installations in subdirectories.
-#   We assume, for now, that there is only one.
+#    Contains a list of compiler installations in subdirectories.
+#    We assume, for now, that there is only one.
 set(ue_compiler_list_dir "${UE_ROOT}/Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64")
 
 # ue_compiler_dir:
-#   The root directory for a particular Clang installation.
-#   Contains `bin`, `include`, `lib`, `lib64`, `share`, and `usr` for that compiler.
-#   This is the path that will be set when as sysroot when CONFIG_COMPILER is UNREAL_WITH_SYSROOT.
-#   Subdirectories of this is passed to CMAKE_PREFIX_PATH when CONFIG_UE_C_LIBS_TO_CMAKE in ON.
-#   Sometimes referred to as `UE_CLANG` in text.
+#    The root directory for a particular Clang installation.
+#    Contains `bin`, `include`, `lib`, `lib64`, `share`, and `usr` for that compiler.
+#    This is the path that will be set when as sysroot when CONFIG_COMPILER is UNREAL_WITH_SYSROOT.
+#    Subdirectories of this is passed to CMAKE_PREFIX_PATH when CONFIG_UE_C_LIBS_TO_CMAKE in ON.
+#    Sometimes referred to as `UE_CLANG` in text.
 file(GLOB ue_compiler_name
       LIST_DIRECTORIES true
       RELATIVE "${ue_compiler_list_dir}"
@@ -315,8 +347,24 @@ endif()
 #   -I${UE_LIBCXX}/include/c++/v1
 #   -fPIC
 #   -nostdinc++
-set(ue_compiler_flags -fPIC -nostdinc++ -I${ue_libcxx_incdir} -I${ue_libcxx_incdir}/c++/v1)
-add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${ue_compiler_flags}>")
+#
+# This part is buggy. I want to enable C++ flags for C++ sources only, but on
+# CMake < 3.12 the COMPILE_LANGUAGE:CXX throws an error because for C-only
+# projects the CXX language isn't loaded. I therefore added the
+# CMAKE_CXX_COMPILER_LOADED check so that we only check for CXX when we know
+# about the language. This also fails because while enabling CXX, which is what
+# we're currently doing, CXX hasn't yet been loaded so the check is always
+# false. One might think that an 'enable_language(CXX)' call would fixed that,
+# but that's not legal to call here because we may be in the process or enabling
+# C++ right now.  See https://gitlab.kitware.com/cmake/cmake/-/issues/17952
+#
+# Cannot use CMAKE_CXX_FLAGS because those flags are also passed to the linker
+# and we don't want that. (Are they really?)
+if("${CONFIG_CXX_PROJECT}" STREQUAL "ON")
+  set(ue_compiler_flags -fPIC -nostdinc++ -I${ue_libcxx_incdir} -I${ue_libcxx_incdir}/c++/v1)
+  add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${ue_compiler_flags}>")
+endif()
+
 
 
 
@@ -325,10 +373,6 @@ add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${ue_compiler_flags}>")
 ###
 ### This section sets varaibles controlling flags passed to the link step.
 ###
-
-# This variable is filled according to the configuration settings and then
-# passed to the various CMAKE_*_LINKER_FLAGS variables.
-set(ue_linker_flags "")
 
 # We base the compiler flags on the output from `ue4 ldflags libc++`:
 #   -nodefaultlibs
@@ -339,7 +383,7 @@ set(ue_linker_flags "")
 #   -lc
 #   -lgcc_s
 #   -lgcc
-set(ue_linker_flags "-nodefaultlibs -L${ue_libcxx_libdir} ${ue_libcxx_libdir}/libc++.a ${ue_libcxx_libdir}/libc++abi.a -lm -lc -lgcc_s -lgcc")
+set(ue_common_linker_flags "-nodefaultlibs -lm -lc -lgcc_s -lgcc -lpthread")
 
 if("${CONFIG_UE_C_LIBS_TO_LINKER}" STREQUAL "ON")
   # Enabling CONFIG_UE_C_LIBS_TO_CMAKE passes more directories to CMake. Should this as well?
@@ -350,18 +394,19 @@ else()
   message(FATAL_ERROR "Unknown Unreal Engine libraries to linker selection: '${CONFIG_UE_C_LIBS_TO_LINKER}'.")
 endif()
 
+set(ue_c_linker_flags   "${ue_common_linker_flags}")
+set(ue_cxx_linker_flags "${ue_common_linker_flags} -L${ue_libcxx_libdir} ${ue_libcxx_libdir}/libc++.a ${ue_libcxx_libdir}/libc++abi.a")
 
-
-set(CMAKE_C_STANDARD_LIBRARIES  "-nodefaultlibs -lc -lgcc_s -lgcc" CACHE INTERNAL "")
-set(CMAKE_CXX_STANDARD_LIBRARIES  "${ue_linker_flags}" CACHE INTERNAL "")
+set(CMAKE_C_STANDARD_LIBRARIES    "${ue_c_linker_flags}"   CACHE INTERNAL "")
+set(CMAKE_CXX_STANDARD_LIBRARIES  "${ue_cxx_linker_flags}" CACHE INTERNAL "")
 
 ###
 ### This block has been disabled because it require CMake 3.13 and I only have
 ### 3.10. Not sure which approach is better, `add_link_options` with a generator
 ### expression or `CMAKE_*_STANDARD_LIBRARIES` used above.
 ###
-#  add_link_options("$<$<COMPILE_LANGUAGE:CXX>:${ue_linker_flags}>")
-#  add_link_options("$<$<COMPILE_LANGUAGE:C>:-nodefaultlibs>")
+#add_link_options("$<$<COMPILE_LANGUAGE:CXX>:${ue_linker_flags}>")
+#add_link_options("$<$<COMPILE_LANGUAGE:C>:-nodefaultlibs>")
 
 ###
 ### This block has been disabled because it send the linker flags to both C and
@@ -382,24 +427,15 @@ set(CMAKE_CXX_STANDARD_LIBRARIES  "${ue_linker_flags}" CACHE INTERNAL "")
 #  if(NOT CMAKE_SHARED_LINKER_FLAGS MATCHES "-nodefaultlibs")
 #    set(CMAKE_SHARED_LINKER_FLAGS  "${CMAKE_SHARED_LINKER_FLAGS} ${ue_linker_flags}" CACHE INTERNAL "")
 #  endif()
-
-
-# Including static libraries here causes `-nodefaultlibs` to be passed to `ar`,
-# which errors out because it dosn't have a `-n` parameter. Static libraries
-# doesn't really have a proper link stage, so the linker flags doesn't really
-# make sense.
+#
+#
+## Including static libraries here causes `-nodefaultlibs` to be passed to `ar`,
+## which errors out because it dosn't have a `-n` parameter. Static libraries
+## doesn't really have a proper link stage, so the linker flags doesn't really
+## make sense.
 # if(NOT CMAKE_STATIC_LINKER_FLAGS MATCHES "-nodefaultlibs")
 #   set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} ${ue_linker_flags}" CACHE INTERNAL "")
 # endif()
-
-
-
-# Enable usage of the Unreal Engine standard libraries.
-#
-# Not sure if these should go to CMAKE_C_STANDARD_LIBRARIES or via ue_linker_flags to CMAKE_*_LINKER_FLAGS.
-# Disabled where while they are set to ue_linker_flags.
-#set(c_libraries "-lm -lc -lgcc_s -lgcc -lpthread")
-#set(CMAKE_C_STANDARD_LIBRARIES  "${c_libraries}" CACHE INTERNAL "")
 
 
 
@@ -409,6 +445,6 @@ set(CMAKE_CXX_STANDARD_LIBRARIES  "${ue_linker_flags}" CACHE INTERNAL "")
 
 # I don't know why, but CMake fails to detect CMAKE_SIZEOF_VOID_P and it ends up
 # being the empty string. Here we assume that we are building with 8-byte
-# pointers, i.e., 64-bit mode.
+# pointers, i.e. in 64-bit mode.
 set(CMAKE_SIZEOF_VOID_P 8 CACHE INTERNAL "")
 
