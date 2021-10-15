@@ -45,7 +45,8 @@ public:
 	static T* Get(const FComponentReference& Reference, const AActor* FallbackOwner);
 
 	/*
-	 * Returns any Archetype instances of the passed object.
+	 * Returns any Archetype instances of the passed object. If the passed object is not an
+	 * archetype, an empty TArray is returned.
 	 */
 	template <typename T>
 	static TArray<T*> GetArchetypeInstances(T& Object);
