@@ -31,16 +31,6 @@ UAGX_CollisionGroupDisablerComponent::UAGX_CollisionGroupDisablerComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 };
 
-void UAGX_CollisionGroupDisablerComponent::DisableSelectedCollisionGroupPairs()
-{
-	DisableCollisionGroupPair(SelectedGroup1, SelectedGroup2);
-}
-
-void UAGX_CollisionGroupDisablerComponent::ReenableSelectedCollisionGroupPairs()
-{
-	EnableCollisionGroupPair(SelectedGroup1, SelectedGroup2);
-}
-
 void UAGX_CollisionGroupDisablerComponent::UpdateAvailableCollisionGroups()
 {
 	// Reset selected collision groups to none. They may not be present

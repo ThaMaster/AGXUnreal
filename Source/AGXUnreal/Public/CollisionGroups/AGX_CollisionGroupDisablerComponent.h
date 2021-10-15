@@ -41,11 +41,6 @@ public:
 	 * (Re-)Enable collision between two given collision groups.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Collision Group Pairs")
-	void EnableCollisionGroupPair(const FName& Group1, const FName& Group2);
-
-	void DisableSelectedCollisionGroupPairs();
-
-	void ReenableSelectedCollisionGroupPairs();
 
 	void UpdateAvailableCollisionGroups();
 
