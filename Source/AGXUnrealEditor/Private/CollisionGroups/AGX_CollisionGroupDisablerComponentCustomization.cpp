@@ -43,8 +43,6 @@ namespace
 			DisabledPairsHandle->NotifyPreChange();
 		}
 
-		const FScopedTransaction Transaction(
-			LOCTEXT("CreateCollisionDisGroupUndo", "Disable collision group pair"));
 		const FName Selected1 = CollisionGroupDisabler->GetSelectedGroup1();
 		const FName Selected2 = CollisionGroupDisabler->GetSelectedGroup2();
 		CollisionGroupDisabler->DisableCollisionGroupPair(Selected1, Selected2);
@@ -85,8 +83,6 @@ namespace
 			DisabledPairsHandle->NotifyPreChange();
 		}
 
-		const FScopedTransaction Transaction(
-			LOCTEXT("CreateCollisionEnaGroupUndo", "Re-enable collision group pair"));
 		const FName Selected1 = CollisionGroupDisabler->GetSelectedGroup1();
 		const FName Selected2 = CollisionGroupDisabler->GetSelectedGroup2();
 		CollisionGroupDisabler->EnableCollisionGroupPair(Selected1, Selected2);
