@@ -1,5 +1,10 @@
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponentCustomization.h"
 
+// AGX Dynamics for Unreal includes.
+#include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
+
 // Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
@@ -9,15 +14,70 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Text/STextBlock.h"
 
-// AGX Dynamics for Unreal includes.
-#include "Utilities/AGX_EditorUtilities.h"
-#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
-
 #define LOCTEXT_NAMESPACE "FAGX_CollisionGroupDisablerComponentCustomization"
 
 TSharedRef<IDetailCustomization> FAGX_CollisionGroupDisablerComponentCustomization::MakeInstance()
 {
 	return MakeShareable(new FAGX_CollisionGroupDisablerComponentCustomization);
+}
+
+namespace
+{
+	FReply OnDisableCollisionButtonClicked(IDetailLayoutBuilder& DetailBuilder)
+	{
+		UAGX_CollisionGroupDisablerComponent* CollisionGroupDisabler =
+			FAGX_EditorUtilities::GetSingleObjectBeingCustomized<
+				UAGX_CollisionGroupDisablerComponent>(DetailBuilder);
+
+		if (!CollisionGroupDisabler)
+		{
+			return FReply::Handled();
+		}
+
+		const FScopedTransaction Transaction(
+			LOCTEXT("CreateCollisionDisGroupUndo", "Disable collision group pair"));
+		const FName Selected1 = CollisionGroupDisabler->GetSelectedGroup1();
+		const FName Selected2 = CollisionGroupDisabler->GetSelectedGroup2();
+		CollisionGroupDisabler->DisableCollisionGroupPair(Selected1, Selected2);
+
+		// If this is an Archetype, we have to propagate this change to all instances that have this
+		// Component as their Archetype.
+		for (UAGX_CollisionGroupDisablerComponent* Instance :
+			 FAGX_ObjectUtilities::GetArchetypeInstances(*CollisionGroupDisabler))
+		{
+			Instance->DisableCollisionGroupPair(Selected1, Selected2, true);
+		}
+
+		return FReply::Handled();
+	}
+
+	FReply OnEnableCollisionButtonClicked(IDetailLayoutBuilder& DetailBuilder)
+	{
+		UAGX_CollisionGroupDisablerComponent* CollisionGroupDisabler =
+			FAGX_EditorUtilities::GetSingleObjectBeingCustomized<
+				UAGX_CollisionGroupDisablerComponent>(DetailBuilder);
+
+		if (!CollisionGroupDisabler)
+		{
+			return FReply::Handled();
+		}
+
+		const FScopedTransaction Transaction(
+			LOCTEXT("CreateCollisionEnaGroupUndo", "Re-enable collision group pair"));
+		const FName Selected1 = CollisionGroupDisabler->GetSelectedGroup1();
+		const FName Selected2 = CollisionGroupDisabler->GetSelectedGroup2();
+		CollisionGroupDisabler->EnableCollisionGroupPair(Selected1, Selected2);
+
+		// If this is an Archetype, we have to propagate this change to all instances that have this
+		// Component as their Archetype.
+		for (UAGX_CollisionGroupDisablerComponent* Instance :
+			 FAGX_ObjectUtilities::GetArchetypeInstances(*CollisionGroupDisabler))
+		{
+			Instance->EnableCollisionGroupPair(Selected1, Selected2, true);
+		}
+
+		return FReply::Handled();
+	}
 }
 
 void FAGX_CollisionGroupDisablerComponentCustomization::CustomizeDetails(
@@ -65,11 +125,8 @@ void FAGX_CollisionGroupDisablerComponentCustomization::CustomizeDetails(
 			.ToolTipText(LOCTEXT(
 				"CreateCollisionDisGroupButtonTooltip",
 				"Disable collision between selected groups."))
-			.OnClicked_Lambda([CollisionGroupDisabler]() {
-				const FScopedTransaction Transaction(LOCTEXT("CreateCollisionDisGroupUndo", "Disable collision group pair"));
-				CollisionGroupDisabler->Modify();
-				CollisionGroupDisabler->DisableSelectedCollisionGroupPairs();
-				return FReply::Handled();
+			.OnClicked_Lambda([&DetailBuilder]() {
+				return OnDisableCollisionButtonClicked(DetailBuilder);
 			})
 		]
 
@@ -82,11 +139,8 @@ void FAGX_CollisionGroupDisablerComponentCustomization::CustomizeDetails(
 			.ToolTipText(LOCTEXT(
 				"CreateCollisionEnaGroupButtonTooltip",
 				"Re-enable collision between selected groups."))
-			.OnClicked_Lambda([CollisionGroupDisabler]() {
-				const FScopedTransaction Transaction(LOCTEXT("CreateCollisionEnaGroupUndo", "Re-enable collision group pair"));
-				CollisionGroupDisabler->Modify();
-				CollisionGroupDisabler->ReenableSelectedCollisionGroupPairs();
-				return FReply::Handled();
+			.OnClicked_Lambda([&DetailBuilder]() {
+				return OnEnableCollisionButtonClicked(DetailBuilder);
 			})
 		]
 	];
