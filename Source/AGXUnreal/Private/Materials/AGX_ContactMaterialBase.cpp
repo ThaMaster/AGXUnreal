@@ -52,7 +52,7 @@ void UAGX_ContactMaterialBase::CopyFrom(const FContactMaterialBarrier* Source)
 		bUseSecondarySurfaceViscosity = SurfaceViscosity != SecondarySurfaceViscosity;
 		Restitution = Source->GetRestitution();
 		YoungsModulus = Source->GetYoungsModulus();
-		Damping = Source->GetDamping();
+		SpookDamping = Source->GetSpookDamping();
 		AdhesiveForce = Source->GetAdhesiveForce();
 		AdhesiveOverlap = Source->GetAdhesiveOverlap();
 	}
@@ -74,7 +74,7 @@ UAGX_ContactMaterialBase::UAGX_ContactMaterialBase()
 	, bUseSecondarySurfaceViscosity(false)
 	, Restitution(0.5)
 	, YoungsModulus(2.0 / 5.0E-9)
-	, Damping(4.5 / 60.0)
+	, SpookDamping(4.5 / 60.0)
 	, AdhesiveForce(0.0)
 	, AdhesiveOverlap(0.0)
 {
@@ -165,9 +165,9 @@ void UAGX_ContactMaterialBase::SetYoungsModulus(float InYoungsModulus)
 	YoungsModulus = InYoungsModulus;
 }
 
-void UAGX_ContactMaterialBase::SetDamping(float InDamping)
+void UAGX_ContactMaterialBase::SetSpookDamping(float InSpookDamping)
 {
-	Damping = InDamping;
+	SpookDamping = InSpookDamping;
 }
 
 void UAGX_ContactMaterialBase::SetAdhesiveForce(float InAdhesiveForce)
@@ -209,7 +209,7 @@ void UAGX_ContactMaterialBase::CopyFrom(const UAGX_ContactMaterialBase* Source)
 
 		COPY_MAT_PROPERTY(Source, Restitution);
 		COPY_MAT_PROPERTY(Source, YoungsModulus);
-		COPY_MAT_PROPERTY(Source, Damping);
+		COPY_MAT_PROPERTY(Source, SpookDamping);
 		COPY_MAT_PROPERTY(Source, AdhesiveForce);
 		COPY_MAT_PROPERTY(Source, AdhesiveOverlap);
 	}

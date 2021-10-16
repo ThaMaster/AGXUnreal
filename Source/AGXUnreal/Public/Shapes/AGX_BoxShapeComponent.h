@@ -21,7 +21,9 @@ class AGXUNREAL_API UAGX_BoxShapeComponent final : public UAGX_AutoFitShapeCompo
 public:
 	UAGX_BoxShapeComponent();
 
-	/// The distance from the center of the box to its surface along the three cardinal axes.
+	/**
+	 * The distance from the center of the box to its surface along the three cardinal axes [cm].
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	FVector HalfExtent;
 

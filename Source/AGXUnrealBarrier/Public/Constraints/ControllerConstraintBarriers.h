@@ -26,8 +26,8 @@ public:
 	void SetElasticity(double Elasticity);
 	double GetElasticity() const;
 
-	void SetDamping(double Damping);
-	double GetDamping() const;
+	void SetSpookDamping(double SpookDamping);
+	double GetSpookDamping() const;
 
 	void SetForceRange(FFloatInterval ForceRange);
 	FFloatInterval GetForceRange() const;

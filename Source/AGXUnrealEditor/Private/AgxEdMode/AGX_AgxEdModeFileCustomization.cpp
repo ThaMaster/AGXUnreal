@@ -40,15 +40,6 @@ void FAGX_AgxEdModeFileCustomization::CustomizeFileImporterCategory(
 			UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor();
 			return FReply::Handled();
 		});
-	AddCustomButton(
-		CategoryBuilder,
-		LOCTEXT(
-			"CreateButtonTextImportLevelActorTree",
-			"Import AGX Archive to level as a tree of actors..."),
-		[&]() {
-			UAGX_AgxEdModeFile::ImportAgxArchiveToActorTree();
-			return FReply::Handled();
-		});
 #endif
 
 	AddCustomButton(

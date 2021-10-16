@@ -16,7 +16,7 @@ FAGX_ConstraintController::FAGX_ConstraintController()
 FAGX_ConstraintController::FAGX_ConstraintController(bool bInRotational)
 	: bEnable(false)
 	, Elasticity(ConstraintConstants::DefaultElasticity())
-	, Damping(ConstraintConstants::DefaultDamping())
+	, SpookDamping(ConstraintConstants::DefaultSpookDamping())
 	, ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
 	, bRotational(bInRotational)
 	, NativeBarrier(nullptr)
@@ -32,7 +32,7 @@ FAGX_ConstraintController& FAGX_ConstraintController::operator=(
 {
 	bEnable = Other.bEnable;
 	Elasticity = Other.Elasticity;
-	Damping = Other.Damping;
+	SpookDamping = Other.SpookDamping;
 	ForceRange = Other.ForceRange;
 	bRotational = Other.bRotational;
 	return *this;
@@ -103,24 +103,24 @@ double FAGX_ConstraintController::GetElasticity() const
 	}
 }
 
-void FAGX_ConstraintController::SetDamping(double InDamping)
+void FAGX_ConstraintController::SetSpookDamping(double InSpookDamping)
 {
 	if (HasNative())
 	{
-		NativeBarrier->SetDamping(InDamping);
+		NativeBarrier->SetSpookDamping(InSpookDamping);
 	}
-	Damping = InDamping;
+	SpookDamping = InSpookDamping;
 }
 
-double FAGX_ConstraintController::GetDamping() const
+double FAGX_ConstraintController::GetSpookDamping() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier->GetDamping();
+		return NativeBarrier->GetSpookDamping();
 	}
 	else
 	{
-		return Damping;
+		return SpookDamping;
 	}
 }
 
@@ -181,7 +181,7 @@ void FAGX_ConstraintController::UpdateNativeProperties()
 	}
 	NativeBarrier->SetEnable(bEnable);
 	NativeBarrier->SetElasticity(Elasticity);
-	NativeBarrier->SetDamping(Damping);
+	NativeBarrier->SetSpookDamping(SpookDamping);
 	NativeBarrier->SetForceRange(ForceRange);
 	UpdateNativePropertiesImpl();
 }
@@ -190,6 +190,6 @@ void FAGX_ConstraintController::CopyFrom(const FConstraintControllerBarrier& Sou
 {
 	bEnable = Source.GetEnable();
 	Elasticity = Source.GetElasticity();
-	Damping = Source.GetDamping();
+	SpookDamping = Source.GetSpookDamping();
 	ForceRange = Source.GetForceRange();
 }

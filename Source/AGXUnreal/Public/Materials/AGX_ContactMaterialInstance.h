@@ -54,7 +54,7 @@ public:
 	virtual void SetSecondarySurfaceViscosity(float InSecondarySurfaceViscosity) override;
 	virtual void SetUseSecondarySurfaceViscosity(bool bInUserSecondarySurfaceViscosity) override;
 	virtual void SetRestitution(float Restitution) override;
-	virtual void SetDamping(float Damping) override;
+	virtual void SetSpookDamping(float SpookDamping) override;
 	virtual void SetYoungsModulus(float YoungsModulus) override;
 	virtual void SetAdhesiveForce(float AdhesiveForce) override;
 	virtual void SetAdhesiveOverlap(float AdhesiveOverlap) override;

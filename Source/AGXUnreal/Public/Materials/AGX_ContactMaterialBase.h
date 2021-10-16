@@ -210,7 +210,7 @@ public:
 	virtual void SetRestitution(float InRestitution);
 
 	/**
-	 * Young's modulus of the contact material. Same as spring coefficient k.
+	 * Young's modulus of the contact material. Same as spring coefficient k [Pa].
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double YoungsModulus;
@@ -219,16 +219,17 @@ public:
 	virtual void SetYoungsModulus(float InYoungsModulus);
 
 	/**
-	 * Damping factor which represents the time the contact constraint has to fulfill its violation.
+	 * Spook Damping which represents the time the contact constraint has to fulfill its violation
+	 * [s].
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double Damping;
+	double SpookDamping;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
-	virtual void SetDamping(float InDamping);
+	virtual void SetSpookDamping(float InSpookDamping);
 
 	/**
-	 * The attractive force between two colliding objects, in Netwon.
+	 * The attractive force between two colliding objects [N].
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double AdhesiveForce;
@@ -237,7 +238,7 @@ public:
 	virtual void SetAdhesiveForce(float InAdhesiveForce);
 
 	/**
-	 * Allowed overlap from surface for resting contact, in meters.
+	 * Allowed overlap from surface for resting contact [cm].
 	 *
 	 * At lower overlap, the adhesion force will take effect.
 	 * At this overlap, no adhesive force is applied.
