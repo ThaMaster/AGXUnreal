@@ -88,6 +88,11 @@ void UAGX_ContactMaterialRegistrarComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (GIsReconstructingBlueprintInstances)
+	{
+		return;
+	}
+
 	// Note: BeginPlay is called on Component copy as well if the Component is copied during play.
 
 	// Convert all contact material pointers to point to initialized contact material instances.
@@ -137,12 +142,22 @@ void UAGX_ContactMaterialRegistrarComponent::BeginPlay()
 void UAGX_ContactMaterialRegistrarComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
+	if (GIsReconstructingBlueprintInstances)
+	{
+		return;
+	}
+
 	ClearAll();
 }
 
 void UAGX_ContactMaterialRegistrarComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
 	Super::OnComponentDestroyed(bDestroyingHierarchy);
+
+	if (GIsReconstructingBlueprintInstances)
+	{
+		return;
+	}
 
 	// Note: EndPlay is not always called, for example when deleting the Component from the Details
 	// Panel during play. Therefore we call ClearAll from here also.
