@@ -110,15 +110,13 @@ void FetchBodyNamesFromBlueprint(
 		return;
 	}
 
-	UE_LOG(
-		LogAGX, Warning, TEXT("Reading body names from Blueprint named '%s'. Have %d components."),
-		*Blueprint->GetName(), Blueprint->ComponentTemplates.Num());
-
 	for (USCS_Node* Node : Blueprint->SimpleConstructionScript->GetAllNodes())
 	{
-		if (UAGX_RigidBodyComponent* RigidBody = Cast<UAGX_RigidBodyComponent>(Node->ComponentTemplate))
+		if (UAGX_RigidBodyComponent* RigidBody =
+				Cast<UAGX_RigidBodyComponent>(Node->ComponentTemplate))
 		{
-			const FString Name = [RigidBody, Blueprint]() {
+			const FString Name = [RigidBody, Blueprint]()
+			{
 				FString N = RigidBody->GetName();
 				N.RemoveFromEnd(Blueprint->SimpleConstructionScript->ComponentTemplateNameSuffix);
 				return N;
