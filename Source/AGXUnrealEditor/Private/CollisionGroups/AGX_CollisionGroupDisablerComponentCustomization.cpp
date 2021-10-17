@@ -45,15 +45,21 @@ namespace
 
 		const FName Selected1 = CollisionGroupDisabler->GetSelectedGroup1();
 		const FName Selected2 = CollisionGroupDisabler->GetSelectedGroup2();
-		CollisionGroupDisabler->DisableCollisionGroupPair(Selected1, Selected2);
 
 		// If this is an Archetype, we have to propagate this change to all instances that have this
 		// Component as their Archetype.
 		for (UAGX_CollisionGroupDisablerComponent* Instance :
 			 FAGX_ObjectUtilities::GetArchetypeInstances(*CollisionGroupDisabler))
 		{
-			Instance->DisableCollisionGroupPair(Selected1, Selected2, true);
+			// Only write to the Archetype Instances if they are currently in sync with this template.
+			if (Instance->DisabledCollisionGroupPairs ==
+				CollisionGroupDisabler->DisabledCollisionGroupPairs)
+			{
+				Instance->DisableCollisionGroupPair(Selected1, Selected2, true);
+			}
 		}
+
+		CollisionGroupDisabler->DisableCollisionGroupPair(Selected1, Selected2);
 
 		if (DisabledPairsHandle->IsValidHandle())
 		{
