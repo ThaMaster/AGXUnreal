@@ -141,6 +141,7 @@ public:
 
 	//~ Begin UActorComponent Interface
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
+	virtual void OnRegister() override;
 	//~ End UActorComponent Interface
 
 	//~ Begin USceneComponent Interface
