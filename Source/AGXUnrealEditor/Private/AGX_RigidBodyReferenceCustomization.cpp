@@ -87,14 +87,6 @@ void FetchBodyNamesFromOwner(
 void FetchBodyNamesFromBlueprint(
 	TArray<TSharedPtr<FName>>& BodyNames, IPropertyHandle& BodyReferenceHandle)
 {
-	/*
-	 The purpose of this function is to collect the names of all RigidBodyComponents in the
-	 currently open Blueprint so that they can be used to populate a ComboBox in e.g. the constraint
-	 details panel. For some reason the number of components is always zero. Not even the Component
-	 currently being customized shows up and it is be definition included in the Blueprint.
-	 Something is wrong.
-	 */
-
 	BodyNames.Empty();
 
 	UAGX_ConstraintComponent* Constraint = Cast<UAGX_ConstraintComponent>(
