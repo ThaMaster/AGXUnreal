@@ -21,7 +21,7 @@ TSharedRef<IDetailCustomization> FAGX_CollisionGroupDisablerComponentCustomizati
 	return MakeShareable(new FAGX_CollisionGroupDisablerComponentCustomization);
 }
 
-namespace
+namespace AGX_CollisionGroupDisablerComponentCustomization_helpers
 {
 	FReply OnDisableCollisionButtonClicked(IDetailLayoutBuilder& DetailBuilder)
 	{
@@ -156,7 +156,8 @@ void FAGX_CollisionGroupDisablerComponentCustomization::CustomizeDetails(
 				"CreateCollisionDisGroupButtonTooltip",
 				"Disable collision between selected groups."))
 			.OnClicked_Lambda([&DetailBuilder]() {
-				return OnDisableCollisionButtonClicked(DetailBuilder);
+				return AGX_CollisionGroupDisablerComponentCustomization_helpers::
+					OnDisableCollisionButtonClicked(DetailBuilder);
 			})
 		]
 
@@ -170,7 +171,8 @@ void FAGX_CollisionGroupDisablerComponentCustomization::CustomizeDetails(
 				"CreateCollisionEnaGroupButtonTooltip",
 				"Re-enable collision between selected groups."))
 			.OnClicked_Lambda([&DetailBuilder]() {
-				return OnEnableCollisionButtonClicked(DetailBuilder);
+				return AGX_CollisionGroupDisablerComponentCustomization_helpers::
+					OnEnableCollisionButtonClicked(DetailBuilder);
 			})
 		]
 	];
