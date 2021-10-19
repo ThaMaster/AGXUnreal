@@ -61,7 +61,7 @@ void UAGX_ContactMaterialRegistrarComponent::AddContactMaterial(
 	{
 		// We assume that the ContactMaterials TArray is filled only with Instances (not Assets).
 		UAGX_ContactMaterialInstance* Instance =
-			UAGX_ContactMaterialBase::GetOrCreateInstance(GetWorld(), ContactMaterial);
+			UAGX_ContactMaterialBase::GetOrCreateInstance(World, ContactMaterial);
 		if (Instance == nullptr)
 		{
 			return;
