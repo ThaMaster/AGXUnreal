@@ -34,6 +34,10 @@ namespace AGX_CollisionGroupDisablerComponentCustomization_helpers
 			return FReply::Handled();
 		}
 
+		const FScopedTransaction Transaction(
+			LOCTEXT("CreateCollisionDisGroupUndo", "Disable collision group pair"));
+		CollisionGroupDisabler->Modify();
+
 		// Trigger Pre/PostEditChangeProperty function in case the Component overrides those.
 		TSharedRef<IPropertyHandle> DisabledPairsHandle =
 			DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(
@@ -55,6 +59,7 @@ namespace AGX_CollisionGroupDisablerComponentCustomization_helpers
 			if (Instance->DisabledCollisionGroupPairs ==
 				CollisionGroupDisabler->DisabledCollisionGroupPairs)
 			{
+				Instance->Modify();
 				Instance->DisableCollisionGroupPair(Selected1, Selected2, true);
 			}
 		}
@@ -80,6 +85,11 @@ namespace AGX_CollisionGroupDisablerComponentCustomization_helpers
 			return FReply::Handled();
 		}
 
+		const FScopedTransaction Transaction(
+			LOCTEXT("CreateCollisionEnaGroupUndo", "Enable collision group pair"));
+		CollisionGroupDisabler->Modify();
+
+
 		// Trigger Pre/PostEditChangeProperty function in case the Component overrides those.
 		TSharedRef<IPropertyHandle> DisabledPairsHandle =
 			DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(
@@ -98,6 +108,7 @@ namespace AGX_CollisionGroupDisablerComponentCustomization_helpers
 		for (UAGX_CollisionGroupDisablerComponent* Instance :
 			 FAGX_ObjectUtilities::GetArchetypeInstances(*CollisionGroupDisabler))
 		{
+			Instance->Modify();
 			Instance->EnableCollisionGroupPair(Selected1, Selected2, true);
 		}
 
