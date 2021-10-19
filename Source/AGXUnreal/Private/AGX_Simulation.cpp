@@ -107,17 +107,6 @@ namespace AGX_Simulation_helpers
 				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
 		}
 	}
-
-	template <typename T>
-	void InitZeroIfNonExisting(TMap<T*, int32>& Map, T* Object)
-	{
-		if (Map.Contains(Object))
-		{
-			return;
-		}
-
-		Map.Add(Object, 0);
-	}
 }
 
 void UAGX_Simulation::Add(UAGX_ConstraintComponent& Constraint)
@@ -310,18 +299,20 @@ void UAGX_Simulation::Register(UAGX_ContactMaterialInstance& Material)
 		return;
 	}
 
-	AGX_Simulation_helpers::InitZeroIfNonExisting<UAGX_ContactMaterialInstance>(
-		ContactMaterials, &Material);
-	ContactMaterials[&Material]++;
+	const int32 Count = ++ContactMaterials.FindOrAdd(&Material);
+	check(Count > 0);
 
 	// When the count goes from 0 to 1, we add the Contact Material to the Simulation.
-	if (ContactMaterials[&Material] == 1 && !GetNative()->Add(*Material.GetNative()))
+	if (Count == 1)
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Tried to add Contact Material '%s' to Simulation but FSimulationBarrier::Add "
-				 "returned false. The Log category AGXDynamicsLog may contain more information "
-				 "about the failure."));
+		if (!GetNative()->Add(*Material.GetNative()))
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Tried to add Contact Material '%s' to Simulation but FSimulationBarrier::Add "
+					 "returned false. The Log category AGXDynamicsLog may contain more information "
+					 "about the failure."));
+		}
 	}
 }
 
@@ -360,18 +351,22 @@ void UAGX_Simulation::Unregister(UAGX_ContactMaterialInstance& Material)
 		return;
 	}
 
-	ContactMaterials[&Material]--;
+	const int32 Count = --ContactMaterials[&Material];
+	check(Count >= 0);
 
 	// When the count goes down to 0, we remove the Contact Material to the Simulation.
-	if (ContactMaterials[&Material] == 0 && !GetNative()->Remove(*Material.GetNative()))
+	if (Count == 0)
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Tried to remove Contact Material '%s' from Simulation but "
-				 "FSimulationBarrier::Remove "
-				 "returned false. The Log category AGXDynamicsLog may contain more information "
-				 "about the failure."),
-			*Material.GetName());
+		if (!GetNative()->Remove(*Material.GetNative()))
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Tried to remove Contact Material '%s' from Simulation but "
+					 "FSimulationBarrier::Remove "
+					 "returned false. The Log category AGXDynamicsLog may contain more information "
+					 "about the failure."),
+				*Material.GetName());
+		}
 	}
 }
 
