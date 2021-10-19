@@ -36,7 +36,6 @@ namespace AGX_CollisionGroupDisablerComponentCustomization_helpers
 
 		const FScopedTransaction Transaction(
 			LOCTEXT("CreateCollisionDisGroupUndo", "Disable collision group pair"));
-		CollisionGroupDisabler->Modify();
 
 		// Trigger Pre/PostEditChangeProperty function in case the Component overrides those.
 		TSharedRef<IPropertyHandle> DisabledPairsHandle =
@@ -64,6 +63,7 @@ namespace AGX_CollisionGroupDisablerComponentCustomization_helpers
 			}
 		}
 
+		CollisionGroupDisabler->Modify();
 		CollisionGroupDisabler->DisableCollisionGroupPair(Selected1, Selected2);
 
 		if (DisabledPairsHandle->IsValidHandle())
@@ -87,8 +87,6 @@ namespace AGX_CollisionGroupDisablerComponentCustomization_helpers
 
 		const FScopedTransaction Transaction(
 			LOCTEXT("CreateCollisionEnaGroupUndo", "Enable collision group pair"));
-		CollisionGroupDisabler->Modify();
-
 
 		// Trigger Pre/PostEditChangeProperty function in case the Component overrides those.
 		TSharedRef<IPropertyHandle> DisabledPairsHandle =
@@ -101,16 +99,22 @@ namespace AGX_CollisionGroupDisablerComponentCustomization_helpers
 
 		const FName Selected1 = CollisionGroupDisabler->GetSelectedGroup1();
 		const FName Selected2 = CollisionGroupDisabler->GetSelectedGroup2();
-		CollisionGroupDisabler->EnableCollisionGroupPair(Selected1, Selected2);
 
 		// If this is an Archetype, we have to propagate this change to all instances that have this
 		// Component as their Archetype.
 		for (UAGX_CollisionGroupDisablerComponent* Instance :
 			 FAGX_ObjectUtilities::GetArchetypeInstances(*CollisionGroupDisabler))
 		{
-			Instance->Modify();
-			Instance->EnableCollisionGroupPair(Selected1, Selected2, true);
+			if (Instance->DisabledCollisionGroupPairs ==
+				CollisionGroupDisabler->DisabledCollisionGroupPairs)
+			{
+				Instance->Modify();
+				Instance->EnableCollisionGroupPair(Selected1, Selected2, true);
+			}
 		}
+
+		CollisionGroupDisabler->Modify();
+		CollisionGroupDisabler->EnableCollisionGroupPair(Selected1, Selected2);
 
 		if (DisabledPairsHandle->IsValidHandle())
 		{
