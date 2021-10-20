@@ -55,7 +55,7 @@ public:
 
 private:
 	/*
-	* Clears the ContactMaterials array and unregisteres all instances with the Simulation if one 
+	* Clears the ContactMaterials array and unregisteres all instances with the Simulation if one
 	* exists.
 	*/
 	void ClearAll();
