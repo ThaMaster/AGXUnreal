@@ -17,6 +17,12 @@ public:
 	static void ShowDialogBoxWithLogLog(const FString& Text, const FString& Title = "");
 
 	/**
+	 * Displays a dialog box with an OK button and adds a warning log message with the text. If a
+	 * title is not specified, 'AGX Dynamics for Unreal' is used.
+	 */
+	static void ShowDialogBoxWithWarningLog(const FString& Text, const FString& Title = "");
+
+	/**
 	 * Displays a dialog box with an OK button and add an error log message with the text. If a
 	 * title is not specified, 'AGX Dynamics for Unreal' is used.
 	 */

@@ -22,6 +22,13 @@ void FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(const FString& Text, co
 	ShowDialogBox(Text, Title);
 }
 
+void FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(
+	const FString& Text, const FString& Title)
+{
+	UE_LOG(LogAGX, Warning, TEXT("%s"), *Text);
+	ShowDialogBox(Text, Title);
+}
+
 void FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 	const FString& Text, const FString& Title)
 {
