@@ -1638,63 +1638,41 @@ void AGX_MeshUtilities::MakeDiskArray(
 	check(NextFreeIndex - FirstIndex == Data.Indices);
 }
 
-bool AGX_MeshUtilities::FindStaticMeshRelativeToComponent(
-	const USceneComponent& Component, TEnumAsByte<EAGX_StaticMeshSourceLocation> MeshSourceLocation,
-	UStaticMesh* MeshSourceAsset, UStaticMesh*& OutStaticMesh, FTransform* OutWorldTransform)
+FAGX_MeshWithTransform AGX_MeshUtilities::FindFirstChildMesh(const USceneComponent& Component)
 {
-	if (MeshSourceLocation == TSL_CHILD_STATIC_MESH_COMPONENT)
-	{
-		TArray<USceneComponent*> Children;
-		Component.GetChildrenComponents(/*bIncludeAllDescendants*/ false, Children);
+	TArray<USceneComponent*> Children;
+	Component.GetChildrenComponents(/*bIncludeAllDescendants*/ false, Children);
 
-		for (int32 ChildIndex = 0; ChildIndex < Children.Num(); ++ChildIndex)
+	for (USceneComponent* Child : Children)
+	{
+		if (UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(Child))
 		{
-			if (USceneComponent* Child = Children[ChildIndex])
-			{
-				if (Child->IsA(UStaticMeshComponent::StaticClass()))
-				{
-					OutStaticMesh = Cast<UStaticMeshComponent>(Child)->GetStaticMesh();
-					if (OutWorldTransform)
-						*OutWorldTransform = Child->GetComponentTransform();
-					return true;
-				}
-			}
+			return FAGX_MeshWithTransform(
+				MeshComponent->GetStaticMesh(), MeshComponent->GetComponentTransform());
 		}
 	}
-	else if (MeshSourceLocation == TSL_PARENT_STATIC_MESH_COMPONENT)
-	{
-		TArray<USceneComponent*> Ancestors;
-		Component.GetParentComponents(Ancestors);
 
-		for (int32 AncestorIndex = 0; AncestorIndex < Ancestors.Num(); ++AncestorIndex)
-		{
-			if (USceneComponent* Ancestor = Ancestors[AncestorIndex])
-			{
-				if (Ancestor->IsA(UStaticMeshComponent::StaticClass()))
-				{
-					OutStaticMesh = Cast<UStaticMeshComponent>(Ancestor)->GetStaticMesh();
-					if (OutWorldTransform)
-						*OutWorldTransform = Ancestor->GetComponentTransform();
-					return true;
-				}
-			}
-		}
-	}
-	else if (MeshSourceLocation == TSL_STATIC_MESH_ASSET && MeshSourceAsset != nullptr)
-	{
-		OutStaticMesh = MeshSourceAsset;
-		if (OutWorldTransform)
-			*OutWorldTransform = Component.GetComponentTransform();
-		return true;
-	}
-
-	OutStaticMesh = nullptr;
-	if (OutWorldTransform)
-		*OutWorldTransform = FTransform::Identity;
-	return false;
+	return FAGX_MeshWithTransform();
 }
 
-namespace Collision_Data_Helpers
+FAGX_MeshWithTransform AGX_MeshUtilities::FindFirstParentMesh(const USceneComponent& Component)
+{
+	TArray<USceneComponent*> Ancestors;
+	Component.GetParentComponents(Ancestors);
+
+	for (USceneComponent* Ancestor : Ancestors)
+	{
+		if (UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(Ancestor))
+		{
+			return FAGX_MeshWithTransform(
+				MeshComponent->GetStaticMesh(), MeshComponent->GetComponentTransform());
+		}
+	}
+
+	return FAGX_MeshWithTransform();
+}
+
+namespace AGX_MeshUtilities_helpers
 {
 	/**
 	 * Read triangle mesh data directly from the Static Mesh asset.
@@ -1973,10 +1951,14 @@ namespace Collision_Data_Helpers
 }
 
 bool AGX_MeshUtilities::GetStaticMeshCollisionData(
-	const UStaticMesh& StaticMesh, const FTransform& MeshWorldTransform,
-	const FTransform& RelativeTo, TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices,
-	const uint32* LodIndexOverride)
+	const FAGX_MeshWithTransform& InMesh, const FTransform& RelativeTo,
+	TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices, const uint32* LodIndexOverride)
 {
+	if (!InMesh.IsValid())
+	{
+		return false;
+	}
+
 	// NOTE: Code below is very similar to UStaticMesh::GetPhysicsTriMeshData,
 	// only with some simplifications, so one can check that implementation for reference.
 	// One important difference is that we hash on vertex position instead of index because we
@@ -1985,7 +1967,8 @@ bool AGX_MeshUtilities::GetStaticMeshCollisionData(
 	// Final vertex positions will be given relative to RelativeTo,
 	// and any scale needs to be baked into the positions, because AGX
 	// does not support scale.
-	const FTransform RelativeTransform = MeshWorldTransform.GetRelativeTransform(RelativeTo);
+	const FTransform RelativeTransform = InMesh.Transform.GetRelativeTransform(RelativeTo);
+	const UStaticMesh& StaticMesh = *InMesh.Mesh.Get();
 
 	const uint32 LodIndex = FMath::Clamp<int32>(
 		LodIndexOverride != nullptr ? *LodIndexOverride : StaticMesh.LODForCollision, 0,
@@ -2000,7 +1983,7 @@ bool AGX_MeshUtilities::GetStaticMeshCollisionData(
 	// Copy the Index and Vertex buffers from the mesh.
 	TArray<uint32> IndexBuffer;
 	TArray<FVector> VertexBuffer;
-	Collision_Data_Helpers::CopyMeshBuffers(Mesh, VertexBuffer, IndexBuffer);
+	AGX_MeshUtilities_helpers::CopyMeshBuffers(Mesh, VertexBuffer, IndexBuffer);
 	if (IndexBuffer.Num() == 0 || VertexBuffer.Num() == 0)
 	{
 		return false;
@@ -2027,13 +2010,13 @@ bool AGX_MeshUtilities::GetStaticMeshCollisionData(
 			const uint32 IndexThird = IndexBuffer[Index + 2];
 			FTriIndices Triangle;
 
-			Triangle.v0 = Collision_Data_Helpers::AddCollisionVertex(
+			Triangle.v0 = AGX_MeshUtilities_helpers::AddCollisionVertex(
 				VertexBuffer[IndexFirst], RelativeTransform, OutVertices,
 				MeshToCollisionVertexIndices);
-			Triangle.v1 = Collision_Data_Helpers::AddCollisionVertex(
+			Triangle.v1 = AGX_MeshUtilities_helpers::AddCollisionVertex(
 				VertexBuffer[IndexSecond], RelativeTransform, OutVertices,
 				MeshToCollisionVertexIndices);
-			Triangle.v2 = Collision_Data_Helpers::AddCollisionVertex(
+			Triangle.v2 = AGX_MeshUtilities_helpers::AddCollisionVertex(
 				VertexBuffer[IndexThird], RelativeTransform, OutVertices,
 				MeshToCollisionVertexIndices);
 

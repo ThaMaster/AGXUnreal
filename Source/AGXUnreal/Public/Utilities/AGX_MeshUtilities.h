@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_MeshWithTransform.h"
 #include "Shapes/AGX_ShapeEnums.h"
 
 // Unreal Engine includes.
@@ -286,10 +287,8 @@ public:
 		FStaticMeshVertexBuffers& VertexBuffers, FDynamicMeshIndexBuffer32& IndexBuffer,
 		uint32& NextFreeVertex, uint32& NextFreeIndex, const DiskArrayConstructionData& Data);
 
-	static bool FindStaticMeshRelativeToComponent(
-		const USceneComponent& Component,
-		TEnumAsByte<EAGX_StaticMeshSourceLocation> MeshSourceLocation, UStaticMesh* MeshSourceAsset,
-		UStaticMesh*& OutStaticMesh, FTransform* OutWorldTransform = nullptr);
+	static FAGX_MeshWithTransform FindFirstChildMesh(const USceneComponent& Component);
+	static FAGX_MeshWithTransform FindFirstParentMesh(const USceneComponent& Component);
 
 	/**
 	 * Uses data from the Static Mesh to construct a simplified
@@ -299,7 +298,7 @@ public:
 	 * share vertices between triangles more aggressively.
 	 */
 	static bool GetStaticMeshCollisionData(
-		const UStaticMesh& StaticMesh, const FTransform& MeshWorldTransform,
-		const FTransform& RelativeTo, TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices,
+		const FAGX_MeshWithTransform& InMesh, const FTransform& RelativeTo,
+		TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices,
 		const uint32* LodIndexOverride = nullptr);
 };

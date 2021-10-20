@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_MeshWithTransform.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 // Unreal Engine includes.
@@ -235,23 +236,34 @@ UMeshComponent* UAGX_TrimeshShapeComponent::FindMeshComponent(
 bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 	TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices) const
 {
-	UStaticMesh* StaticMesh = nullptr;
-	FTransform StaticMeshWorldTransform;
+	FAGX_MeshWithTransform Mesh;
 
-	if(!AGX_MeshUtilities::FindStaticMeshRelativeToComponent(
-		*this, MeshSourceLocation, MeshSourceAsset, StaticMesh, &StaticMeshWorldTransform))
+	switch (MeshSourceLocation)
+	{
+		case EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT:
+			Mesh = AGX_MeshUtilities::FindFirstChildMesh(*this);
+			break;
+		case EAGX_StaticMeshSourceLocation::TSL_PARENT_STATIC_MESH_COMPONENT:
+			Mesh = AGX_MeshUtilities::FindFirstParentMesh(*this);
+			break;
+		case EAGX_StaticMeshSourceLocation::TSL_STATIC_MESH_ASSET:
+			if (MeshSourceAsset != nullptr)
+			{
+				Mesh = FAGX_MeshWithTransform(MeshSourceAsset, GetComponentTransform());
+			}
+			break;
+	}
+
+	if(!Mesh.IsValid())
 	{
 		UE_LOG(
-			LogAGX, Warning,
-			TEXT("GetStaticMeshCollisionData failed in %s. Unable to find static Mesh."),
+			LogAGX, Error,
+			TEXT("GetStaticMeshCollisionData failed in '%s'. Unable to find static Mesh."),
 			*GetName());
 		return false;
 	}
 
-	check(StaticMesh != nullptr);
-	const FTransform ComponentTransform(GetComponentRotation(), GetComponentLocation());
 	const uint32* LodIndex = bOverrideMeshSourceLodIndex ? &MeshSourceLodIndex : nullptr;
 	return AGX_MeshUtilities::GetStaticMeshCollisionData(
-		*StaticMesh, StaticMeshWorldTransform, ComponentTransform, OutVertices, OutIndices,
-		LodIndex);
+		Mesh, GetComponentTransform(), OutVertices, OutIndices, LodIndex);
 }
