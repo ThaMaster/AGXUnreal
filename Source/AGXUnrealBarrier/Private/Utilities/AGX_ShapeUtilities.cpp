@@ -67,3 +67,25 @@ bool FAGX_ShapeUtilities::ComputeOrientedCylinder(
 	return true;
 #endif
 }
+
+bool FAGX_ShapeUtilities::ComputeOrientedCapsule(
+	const TArray<FVector>& Vertices, float& OutRadius, float& OutHeight, FTransform& OutTransform)
+{
+	agx::Vec3Vector VerticesAGX = AGX_ShapeUtilities_helpers::ToAGX(Vertices);
+
+#if AGX_GENERATION_VERSION < 3 && AGX_MAJOR_VERSION < 31
+	// AGX Dynamics version is less than 2.31.0.0, bounding volumes not supported.
+	return false;
+#else
+	agx::Vec2 radiusHeightAGX;
+	agx::AffineMatrix4x4 transformAGX;
+	if (!agxUtil::computeOrientedCapsule(VerticesAGX, radiusHeightAGX, transformAGX))
+	{
+		return false;
+	}
+	OutRadius = ConvertDistance(radiusHeightAGX.x());
+	OutHeight = ConvertDistance(radiusHeightAGX.y());
+	OutTransform = Convert(transformAGX);
+	return true;
+#endif
+}

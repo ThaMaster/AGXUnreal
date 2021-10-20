@@ -10,4 +10,8 @@ public:
 
 	static bool ComputeOrientedCylinder(
 		const TArray<FVector>& Vertices, float& OutRadius, float& OutHeight, FTransform& OutTransform);
+
+	static bool ComputeOrientedCapsule(
+		const TArray<FVector>& Vertices, float& OutRadius, float& OutHeight,
+		FTransform& OutTransform);
 };

@@ -1,8 +1,13 @@
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "AGX_UpropertyDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_ShapeUtilities.h"
+
+// Unreal Engine includes.
+#include "Engine/StaticMeshActor.h"
 
 UAGX_CapsuleShapeComponent::UAGX_CapsuleShapeComponent()
 {
@@ -30,6 +35,31 @@ float UAGX_CapsuleShapeComponent::GetRadius() const
 	}
 
 	return Radius;
+}
+
+UAGX_CapsuleShapeComponent* UAGX_CapsuleShapeComponent::CreateFromMeshActors(
+	AActor* Parent, TArray<AStaticMeshActor*> InMeshes)
+{
+	if (Parent == nullptr)
+	{
+		return nullptr;
+	}
+
+	TArray<FAGX_MeshWithTransform> Meshes = AGX_MeshUtilities::ToMeshWithTransformArray(InMeshes);
+
+	UAGX_CapsuleShapeComponent* Capsule = NewObject<UAGX_CapsuleShapeComponent>(
+		Parent, UAGX_CapsuleShapeComponent::StaticClass(), "AGX_CapsuleShape", RF_Transient);
+	const bool Result = Capsule->AutoFit(Meshes);
+	if (!Result)
+	{
+		// Logging done in AutoFit.
+		Capsule->DestroyComponent();
+		return nullptr;
+	}
+
+	Parent->AddInstanceComponent(Capsule);
+	Capsule->RegisterComponent();
+	return Capsule;
 }
 
 void UAGX_CapsuleShapeComponent::SetHeight(float InHeight)
@@ -92,6 +122,28 @@ FShapeBarrier* UAGX_CapsuleShapeComponent::GetOrCreateNative()
 		CreateNative();
 	}
 	return &NativeBarrier;
+}
+
+bool UAGX_CapsuleShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vertices)
+{
+	float RadiusBounding;
+	float HeightBounding;
+	FTransform TransformBounding;
+	if (!FAGX_ShapeUtilities::ComputeOrientedCapsule(
+			Vertices, RadiusBounding, HeightBounding, TransformBounding))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Auto-fit on '%s' failed. Could not compute oriented capsule with given "
+				 "vertices."),
+			*GetName());
+		return false;
+	}
+
+	SetRadius(RadiusBounding);
+	SetHeight(HeightBounding);
+	SetWorldTransform(TransformBounding);
+	return true;
 }
 
 FCapsuleShapeBarrier* UAGX_CapsuleShapeComponent::GetNativeCapsule()
