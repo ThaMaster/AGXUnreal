@@ -35,7 +35,7 @@ namespace AGX_AutoFitShapeComponent_helpers
 	}
 }
 
-void UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
+bool UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 {
 	if (!FAGX_EnvironmentUtilities::IsAGXDynamicsVersionNewerOrEqualTo(2, 31, 0, 0))
 	{
@@ -46,7 +46,7 @@ void UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 					 "be at least 2.31.0.0."),
 				*GetName()),
 			GetWorld());
-		return;
+		return false;
 	}
 
 	TArray<FVector> Vertices;
@@ -55,9 +55,9 @@ void UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 	{
 		TArray<FVector> MeshVertices;
 		TArray<FTriIndices> MeshIndices;
-		const bool Result = AGX_MeshUtilities::GetStaticMeshCollisionData(
+		const bool CollisionDataResult = AGX_MeshUtilities::GetStaticMeshCollisionData(
 			Mesh, FTransform::Identity, MeshVertices, MeshIndices);
-		if (Result)
+		if (CollisionDataResult)
 		{
 			Vertices.Append(MeshVertices);
 		}
@@ -74,17 +74,27 @@ void UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 					 "extracted."),
 				*GetName()),
 			GetWorld());
-		return;
+		return false;
 	}
 	else if (numWarnings > 0)
 	{
 		AGX_AutoFitShapeComponent_helpers::LogWarningWithMessageBoxInEditor(
-			"At least one warning was detected during the Auto-Fit process. The log may contain "
+			"At least one warning was detected during the auto-fit process. The Log may contain "
 			"more details.",
 			GetWorld());
 	}
 
-	AutoFitFromVertices(Vertices);
+	const bool Result = AutoFitFromVertices(Vertices);
+	if (!Result)
+	{
+		AGX_AutoFitShapeComponent_helpers::LogErrorWithMessageBoxInEditor(
+			FString::Printf(
+				TEXT("Could not auto-fit '%s' to meshes. The Log may contain more details."),
+				*GetName()),
+			GetWorld());
+	}
+
+	return Result;
 }
 
 bool UAGX_AutoFitShapeComponent::GetStaticMeshCollisionData(

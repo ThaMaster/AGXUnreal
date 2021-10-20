@@ -30,10 +30,10 @@ public:
 	UStaticMesh* MeshSourceAsset;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Auto-fit")
-	void AutoFit(TArray<FAGX_MeshWithTransform> Meshes);
+	bool AutoFit(TArray<FAGX_MeshWithTransform> Meshes);
 
-	virtual void AutoFitFromVertices(const TArray<FVector>& Vertices)
-		PURE_VIRTUAL(UAGX_AutoFitShapeComponent::AutoFit, return;);
+	virtual bool AutoFitFromVertices(const TArray<FVector>& Vertices)
+		PURE_VIRTUAL(UAGX_AutoFitShapeComponent::AutoFit, return false;);
 
 private:
 	bool GetStaticMeshCollisionData(

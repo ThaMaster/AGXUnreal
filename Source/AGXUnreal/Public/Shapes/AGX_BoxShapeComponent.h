@@ -1,9 +1,8 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "Shapes/AGX_ShapeComponent.h"
-#include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/AGX_AutoFitShapeComponent.h"
+#include "Shapes/BoxShapeBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -47,7 +46,7 @@ public:
 	// ~End UAGX_ShapeComponent interface.
 
 	// ~Begin AGX_AutoFitShapeComponent interface.
-	virtual void AutoFitFromVertices(const TArray<FVector>& Vertices) override;
+	virtual bool AutoFitFromVertices(const TArray<FVector>& Vertices) override;
 	// ~End AGX_AutoFitShapeComponent interface.
 
 	/// Get the native AGX Dynamics representation of this Box. May return nullptr.

@@ -45,32 +45,20 @@ UAGX_BoxShapeComponent* UAGX_BoxShapeComponent::CreateFromMeshActors(
 		return nullptr;
 	}
 
-	TArray<FAGX_MeshWithTransform> Meshes;
-	for (AStaticMeshActor* M : InMeshes)
-	{
-		if (M->GetStaticMeshComponent() == nullptr)
-		{
-			continue;
-		}
-
-		if (UStaticMesh* StaticMesh = M->GetStaticMeshComponent()->GetStaticMesh())
-		{
-			FAGX_MeshWithTransform MeshWithTransfom(
-				StaticMesh, M->GetStaticMeshComponent()->GetComponentTransform());
-			Meshes.Add(MeshWithTransfom);
-		}
-	}
-
-	if (Meshes.Num() == 0)
-	{
-		// TODO Print error (in msg box)
-	}
+	TArray<FAGX_MeshWithTransform> Meshes = AGX_MeshUtilities::ToMeshWithTransformArray(InMeshes);
 
 	UAGX_BoxShapeComponent* Box = NewObject<UAGX_BoxShapeComponent>(
 		Parent, UAGX_BoxShapeComponent::StaticClass(), "AGX_BoxShape", RF_Transient);
+	const bool Result = Box->AutoFit(Meshes);
+	if (!Result)
+	{
+		// Logging done in AutoFit.
+		Box->DestroyComponent();
+		return nullptr;
+	}
+
 	Parent->AddInstanceComponent(Box);
 	Box->RegisterComponent();
-	Box->AutoFit(Meshes);
 	return Box;
 }
 
@@ -136,7 +124,7 @@ void UAGX_BoxShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale());
 }
 
-void UAGX_BoxShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vertices)
+bool UAGX_BoxShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vertices)
 {
 	FVector HalfExtentsBounding;
 	FTransform TransformBounding;
@@ -146,10 +134,12 @@ void UAGX_BoxShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vertices
 			LogAGX, Error,
 			TEXT("Auto-fit on '%s' failed. Could not compute oriented box with given vertices."),
 			*GetName());
-		return;
+		return false;
 	}
 
 	SetHalfExtent(HalfExtentsBounding);
+	SetWorldTransform(TransformBounding);
+	return true;
 }
 
 void UAGX_BoxShapeComponent::CopyFrom(const FBoxShapeBarrier& Barrier)

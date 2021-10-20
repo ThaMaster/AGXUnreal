@@ -5,6 +5,7 @@
 #include "AGX_LogCategory.h"
 
 // Unreal Engine includes.
+#include "Engine/StaticMeshActor.h"
 #include "Math/UnrealMathUtility.h"
 #include "Rendering/PositionVertexBuffer.h"
 #include "RenderingThread.h"
@@ -2025,4 +2026,26 @@ bool AGX_MeshUtilities::GetStaticMeshCollisionData(
 	}
 
 	return OutVertices.Num() > 0 && OutIndices.Num() > 0;
+}
+
+TArray<FAGX_MeshWithTransform> AGX_MeshUtilities::ToMeshWithTransformArray(
+	const TArray<AStaticMeshActor*> Actors)
+{
+	TArray<FAGX_MeshWithTransform> Meshes;
+	for (AStaticMeshActor* M : Actors)
+	{
+		if (M->GetStaticMeshComponent() == nullptr)
+		{
+			continue;
+		}
+
+		if (UStaticMesh* StaticMesh = M->GetStaticMeshComponent()->GetStaticMesh())
+		{
+			FAGX_MeshWithTransform MeshWithTransfom(
+				StaticMesh, M->GetStaticMeshComponent()->GetComponentTransform());
+			Meshes.Add(MeshWithTransfom);
+		}
+	}
+
+	return Meshes;
 }
