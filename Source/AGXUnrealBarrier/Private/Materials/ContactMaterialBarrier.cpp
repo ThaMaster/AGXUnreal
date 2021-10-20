@@ -4,6 +4,7 @@
 #include "AGXRefs.h"
 #include "AGXBarrierFactories.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "TypeConversions.h"
 
 #include <Misc/AssertionMacros.h>
 
@@ -41,13 +42,15 @@ namespace
 		{
 			return 1;
 		}
+		else if (dynamic_cast<const agx::IterativeProjectedConeFriction*>(FrictionModel))
+		{
+			// Since IterativeProjectedConeFriction inherits from ScaleBoxFrictionModel, we must try
+			// casting to IterativeProjectedConeFriction before ScaleBoxFrictionModel.
+			return 3;
+		}
 		else if (dynamic_cast<const agx::ScaleBoxFrictionModel*>(FrictionModel))
 		{
 			return 2;
-		}
-		else if (dynamic_cast<const agx::IterativeProjectedConeFriction*>(FrictionModel))
-		{
-			return 3;
 		}
 		else
 		{
@@ -274,7 +277,7 @@ double FContactMaterialBarrier::GetSurfaceViscosity(
 void FContactMaterialBarrier::SetAdhesion(double AdhesiveForce, double AdhesiveOverlap)
 {
 	check(HasNative());
-	NativeRef->Native->setAdhesion(AdhesiveForce, AdhesiveOverlap);
+	NativeRef->Native->setAdhesion(AdhesiveForce, ConvertDistanceToAgx<agx::Real>(AdhesiveOverlap));
 }
 
 double FContactMaterialBarrier::GetAdhesiveForce() const
@@ -286,7 +289,7 @@ double FContactMaterialBarrier::GetAdhesiveForce() const
 double FContactMaterialBarrier::GetAdhesiveOverlap() const
 {
 	check(HasNative());
-	return NativeRef->Native->getAdhesiveOverlap();
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getAdhesiveOverlap());
 }
 
 void FContactMaterialBarrier::SetYoungsModulus(double YoungsModulus)
@@ -301,13 +304,13 @@ double FContactMaterialBarrier::GetYoungsModulus() const
 	return NativeRef->Native->getYoungsModulus();
 }
 
-void FContactMaterialBarrier::SetDamping(double Damping)
+void FContactMaterialBarrier::SetSpookDamping(double SpookDamping)
 {
 	check(HasNative());
-	NativeRef->Native->setDamping(Damping);
+	NativeRef->Native->setDamping(SpookDamping);
 }
 
-double FContactMaterialBarrier::GetDamping() const
+double FContactMaterialBarrier::GetSpookDamping() const
 {
 	check(HasNative());
 	return NativeRef->Native->getDamping();
@@ -317,19 +320,22 @@ void FContactMaterialBarrier::SetMinMaxElasticRestLength(
 	double MinElasticRestLength, double MaxElasticRestLength)
 {
 	check(HasNative());
-	NativeRef->Native->setMinMaxElasticRestLength(MinElasticRestLength, MaxElasticRestLength);
+
+	NativeRef->Native->setMinMaxElasticRestLength(
+		ConvertDistanceToAgx<agx::Real>(MinElasticRestLength),
+		ConvertDistanceToAgx<agx::Real>(MaxElasticRestLength));
 }
 
 double FContactMaterialBarrier::GetMinElasticRestLength() const
 {
 	check(HasNative());
-	return NativeRef->Native->getMinElasticRestLength();
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getMinElasticRestLength());
 }
 
 double FContactMaterialBarrier::GetMaxElasticRestLength() const
 {
 	check(HasNative());
-	return NativeRef->Native->getMaxElasticRestLength();
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getMaxElasticRestLength());
 }
 
 void FContactMaterialBarrier::SetContactReductionMode(int32 ReductionMode)

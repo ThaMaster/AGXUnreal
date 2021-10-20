@@ -25,7 +25,9 @@ class AGXUNREAL_API UAGX_CylinderShapeComponent final : public UAGX_ShapeCompone
 public:
 	UAGX_CylinderShapeComponent();
 
-	/// The distance from the the surface of one of its end disks to the other.
+	/**
+	 * The distance from the the surface of one of its end disks to the other [cm].
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	float Height;
 
@@ -35,7 +37,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
 	float GetHeight() const;
 
-	/// The distance from the center of the cylinder to the cylindrical surface.
+	/**
+	 * The distance from the center of the cylinder to the cylindrical surface [cm].
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	float Radius;
 

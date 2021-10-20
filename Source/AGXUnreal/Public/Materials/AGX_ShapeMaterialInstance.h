@@ -32,8 +32,8 @@ public:
 	virtual void SetBulkViscosity(float InBulkViscosity) override;
 	virtual float GetBulkViscosity() const override;
 
-	virtual void SetDamping(float InDamping) override;
-	virtual float GetDamping() const override;
+	virtual void SetSpookDamping(float InSpookDamping) override;
+	virtual float GetSpookDamping() const override;
 
 	virtual void SetMinMaxElasticRestLength(float InMin, float InMax) override;
 	virtual float GetMinElasticRestLength() const override;
@@ -60,11 +60,11 @@ public:
 	virtual float GetYoungsModulusBend() const;
 	virtual void SetYoungsModulusBend(float InYoungsModulus);
 
-	virtual float GetDampingStretch() const;
-	virtual void SetDampingStretch(float InDamping);
+	virtual float GetSpookDampingStretch() const;
+	virtual void SetSpookDampingStretch(float InSpookDamping);
 
-	virtual float GetDampingBend() const;
-	virtual void SetDampingBend(float InDamping);
+	virtual float GetSpookDampingBend() const;
+	virtual void SetSpookDampingBend(float InSpookDamping);
 
 	static UAGX_ShapeMaterialInstance* CreateFromAsset(UWorld* PlayingWorld, UAGX_ShapeMaterialAsset* Source);
 

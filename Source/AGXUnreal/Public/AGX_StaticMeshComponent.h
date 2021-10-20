@@ -64,6 +64,9 @@ class AGXUNREAL_API UAGX_StaticMeshComponent : public UStaticMeshComponent, publ
 public: // Properties.
 	UAGX_StaticMeshComponent();
 
+	/**
+	 * The velocity of the AGX Static Mesh [cm/s].
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	FVector Velocity;
 

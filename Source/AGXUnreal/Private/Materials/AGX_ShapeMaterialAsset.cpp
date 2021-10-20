@@ -108,9 +108,9 @@ void UAGX_ShapeMaterialAsset::WriteBulkPropertyToInstance(const FName& PropertyN
 	{
 		Instance->SetBulkViscosity(static_cast<float>(Bulk.Viscosity));
 	}
-	else if (PropertyName == GET_MEMBER_NAME_CHECKED(BulkProperties, Damping))
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(BulkProperties, SpookDamping))
 	{
-		Instance->SetDamping(static_cast<float>(Bulk.Damping));
+		Instance->SetSpookDamping(static_cast<float>(Bulk.SpookDamping));
 	}
 	else if (PropertyName == GET_MEMBER_NAME_CHECKED(BulkProperties, MinElasticRestLength))
 	{
@@ -150,13 +150,13 @@ void UAGX_ShapeMaterialAsset::WriteWirePropertyToInstance(const FName& PropertyN
 	{
 		Instance->SetYoungsModulusBend(Wire.YoungsModulusBend);
 	}
-	else if (PropertyName == GET_MEMBER_NAME_CHECKED(WireProperties, DampingStretch))
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(WireProperties, SpookDampingStretch))
 	{
-		Instance->SetDampingStretch(Wire.DampingStretch);
+		Instance->SetSpookDampingStretch(Wire.SpookDampingStretch);
 	}
-	else if (PropertyName == GET_MEMBER_NAME_CHECKED(WireProperties, DampingBend))
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(WireProperties, SpookDampingBend))
 	{
-		Instance->SetDampingBend(Wire.DampingBend);
+		Instance->SetSpookDampingBend(Wire.SpookDampingBend);
 	}
 	else
 	{

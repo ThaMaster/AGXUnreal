@@ -16,8 +16,8 @@ struct AGXUNREAL_API FAGX_ShapeMaterialBulkProperties
 
 public:
 	/**
-	 * Density of Shapes using the material, in kg/m². The density can be used
-	 * for automatic calculation of total mass and inertia of the Rigid Body
+	 * Density of Shapes using the material [kg/m^3].
+	 * The density can be used for automatic calculation of total mass and inertia of the Rigid Body
 	 * (see mass options of Rigid Body Component).
 	 */
 	UPROPERTY(
@@ -26,7 +26,7 @@ public:
 	double Density;
 
 	/**
-	 * Young's modulus of the material. Same as spring coefficient k.
+	 * Young's modulus of the material, same as spring coefficient k [Pa].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Bulk Properties",
@@ -42,16 +42,16 @@ public:
 	double Viscosity;
 
 	/**
-	 * Damping factor used by the contact constraint. The value is the time the
-	 * contact constraint has to fulfill its violation.
+	 * Spook Damping used by the contact constraint [s].
+	 * The value is the time the contact constraint has to fulfill its violation.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Bulk Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double Damping;
+	double SpookDamping;
 
 	/**
-	 * Minimum elastic rest length of the contact material, in meters.
+	 * Minimum elastic rest length of the contact material [cm].
 	 *
 	 * This is only used if the contact area approach is used if the 'Use Contact Area Approach' is
 	 * enabled.
@@ -60,7 +60,7 @@ public:
 	double MinElasticRestLength;
 
 	/**
-	 * Maximum elastic rest length of the contact material, in meters.
+	 * Maximum elastic rest length of the contact material [cm].
 	 *
 	 * This is only used if the contact area approach is used if the 'Use Contact Area Approach' is
 	 * enabled.

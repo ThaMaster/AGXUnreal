@@ -1013,7 +1013,7 @@ double UAGX_WireComponent::GetMass() const
 	{
 		return NativeBarrier.GetMass();
 	}
-	if (PhysicalMaterial == nullptr)
+	if (ShapeMaterial == nullptr)
 	{
 		/// @note Can we find the density that AGX Dynamics will use for wires that don't have an
 		/// explicit material set?
@@ -1021,7 +1021,7 @@ double UAGX_WireComponent::GetMass() const
 	}
 	const double Area = PI * Radius * Radius; // Assume circular cross-section.
 	const double Length = GetRestLength();
-	const double Density = PhysicalMaterial->Bulk.Density;
+	const double Density = ShapeMaterial->Bulk.Density;
 	const double Mass = Area * Length * Density;
 	return Mass;
 }
@@ -1548,15 +1548,15 @@ void UAGX_WireComponent::CreateNative()
 	NativeBarrier.AllocateNative(Radius, ResolutionPerUnitLength);
 	check(HasNative()); /// @todo Consider better error handling than 'check'.
 
-	if (PhysicalMaterial)
+	if (ShapeMaterial)
 	{
 		UWorld* World = GetWorld();
 		UAGX_ShapeMaterialInstance* MaterialInstance =
-			static_cast<UAGX_ShapeMaterialInstance*>(PhysicalMaterial->GetOrCreateInstance(World));
+			static_cast<UAGX_ShapeMaterialInstance*>(ShapeMaterial->GetOrCreateInstance(World));
 		check(MaterialInstance);
-		if (MaterialInstance != PhysicalMaterial && World != nullptr && World->IsGameWorld())
+		if (MaterialInstance != ShapeMaterial && World != nullptr && World->IsGameWorld())
 		{
-			PhysicalMaterial = MaterialInstance;
+			ShapeMaterial = MaterialInstance;
 		}
 		FShapeMaterialBarrier* MaterialBarrier =
 			MaterialInstance->GetOrCreateShapeMaterialNative(World);

@@ -6,6 +6,7 @@
 #include "AGX_SimulationEnums.h"
 
 // Unreal Engine includes.
+#include "Containers/Map.h"
 #include "CoreMinimal.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Subsystems/GameInstanceSubsystem.h"
@@ -53,7 +54,9 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 	GENERATED_BODY()
 
 public: // Properties.
-	/** Step length of the integrator, in seconds. 0.0167 by default. */
+	/**
+	 * Step length of the integrator [s].
+	 */
 	UPROPERTY(
 		config, EditAnywhere, BlueprintReadOnly, Category = "Solver",
 		meta = (ClampMin = "0.001", UIMin = "0.001", ClampMax = "1.0", UIMax = "1.0"))
@@ -85,15 +88,14 @@ public: // Properties.
 	UPROPERTY(Config, EditAnywhere, Category = "Gravity")
 	TEnumAsByte<enum EAGX_GravityModel> GravityModel = EAGX_GravityModel::Uniform;
 
-	/** Specifies the gravity vector when using Uniform Gravity Field with magnitude given in
-	 * [cm/s^2]. */
+	/** Specifies the gravity vector when using Uniform Gravity Field with magnitude [cm/s^2]. */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "Gravity",
 		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Uniform"))
 	FVector UniformGravity = FVector(0.0f, 0.0f, -980.665f);
 
 	/** Specifies the world location towards which the gravity field is directed when using Point
-	 * Gravity Field. */
+	 * Gravity Field [cm]. */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "Gravity",
 		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Point"))
@@ -112,7 +114,7 @@ public: // Properties.
 	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
 	TEnumAsByte<enum EAGX_StepMode> StepMode = SmCatchUpImmediately;
 
-	/** Maximum time lag in seconds for the Catch up over time Capped step mode before dropping. */
+	/** Maximum time lag for the Catch up over time Capped step mode before dropping [s]. */
 	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
 	float TimeLagCap = 1.0;
 
@@ -203,7 +205,6 @@ public: // Member functions.
 	void SetTimeStamp(float NewTimeStamp);
 
 	void Add(UAGX_ConstraintComponent& Constraint);
-	void Add(UAGX_ContactMaterialInstance& Material);
 
 	/**
 	 * Note that Shapes that are child of the passed Rigid Body are NOT added to the simulation
@@ -218,7 +219,6 @@ public: // Member functions.
 	void Add(UAGX_WireComponent& Wire);
 
 	void Remove(UAGX_ConstraintComponent& Constraint);
-	void Remove(UAGX_ContactMaterialInstance& Material);
 	void Remove(UAGX_RigidBodyComponent& Body);
 	void Remove(UAGX_ShapeComponent& Shape);
 	void Remove(UAGX_ShapeMaterialInstance& Shape);
@@ -226,6 +226,9 @@ public: // Member functions.
 	void Remove(AAGX_Terrain& Terrain);
 	void Remove(UAGX_TireComponent& Tire);
 	void Remove(UAGX_WireComponent& Wire);
+
+	void Register(UAGX_ContactMaterialInstance& Material);
+	void Unregister(UAGX_ContactMaterialInstance& Material);
 
 	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);
 
@@ -285,4 +288,8 @@ private:
 	float LeftoverTime;
 
 	TWeakObjectPtr<AAGX_Stepper> Stepper;
+
+	// Record for keeping track of the number of times any Contact Material has been
+	// registered/unregistered. Value is incremented on Register() and decremented on Unregister().
+	TMap<UAGX_ContactMaterialInstance*, int32> ContactMaterials;
 };

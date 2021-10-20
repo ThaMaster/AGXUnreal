@@ -22,8 +22,8 @@ struct AGXUNREAL_API FAGX_ConstraintLockController : public FAGX_ConstraintContr
 	GENERATED_USTRUCT_BODY()
 
 	/**
-	 * Target position in Degrees if controller is on a Rotational
-	 * Degree-Of-Freedom, else in Centimeters.
+	 * Target position in degrees [deg] if controller is on a Rotational
+	 * Degree-Of-Freedom, else in centimeters[cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Lock Controller", Meta = (EditCondition = "bEnable"))
 	double Position;
@@ -98,15 +98,15 @@ class AGXUNREAL_API UAGX_ConstraintLockController_FL : public UBlueprintFunction
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetDamping(UPARAM(ref) FAGX_ConstraintLockController& Controller, float Damping)
+	static void SetSpookDamping(UPARAM(ref) FAGX_ConstraintLockController& Controller, float SpookDamping)
 	{
-		Controller.SetDamping(static_cast<double>(Damping));
+		Controller.SetSpookDamping(static_cast<double>(SpookDamping));
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static float GetDamping(UPARAM(ref) const FAGX_ConstraintLockController& Controller)
+	static float GetSpookDamping(UPARAM(ref) const FAGX_ConstraintLockController& Controller)
 	{
-		return static_cast<float>(Controller.GetDamping());
+		return static_cast<float>(Controller.GetSpookDamping());
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

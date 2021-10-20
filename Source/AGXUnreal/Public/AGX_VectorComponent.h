@@ -19,6 +19,9 @@ class AGXUNREAL_API UAGX_VectorComponent : public UPrimitiveComponent
 {
 	GENERATED_BODY()
 public:
+	/**
+	 * The length of the arrow [cm].
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Vector")
 	float ArrowSize = 100.0f;
 

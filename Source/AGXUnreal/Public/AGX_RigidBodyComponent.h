@@ -53,7 +53,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	bool GetEnabled() const;
 
-	/// The mass of the body [kg].
+	/**
+	 * The mass of the Rigid Body [kg].
+	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics", Meta = (EditCondition = "!bAutoGenerateMass"))
 	float Mass;
@@ -64,7 +66,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	float GetMass() const;
 
-	/// Whether the mass should be computed automatically.
+	/**
+	 * Whether the mass should be computed automatically.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	bool bAutoGenerateMass = true;
 
@@ -74,7 +78,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	bool GetAutoGenerateMass() const;
 
-	/// Center of mass offset [cm].
+	/**
+	 * Center of mass offset [cm].
+	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics",
 		Meta = (EditCondition = "!bAutoGenerateCenterOfMassOffset"))
@@ -86,7 +92,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FVector GetCenterOfMassOffset() const;
 
-	/// Whether the center of mass offset should be computed automatically.
+	/**
+	 * Whether the center of mass offset should be computed automatically.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	bool bAutoGenerateCenterOfMassOffset = true;
 
@@ -123,7 +131,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics", Meta = (DisplayName = "CalculateMass"))
 	float CalculateMass_BP() const;
 
-	/// The three-component diagonal of the inertia tensor.
+	/**
+	 * The three-component diagonal of the inertia tensor [kgm^2].
+	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Dynamics",
 		Meta = (EditCondition = "!bAutoGeneratePrincipalInertia"))
@@ -135,7 +145,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FVector GetPrincipalInertia() const;
 
-	/// Whether the principal inertia should be computed automatically.
+	/**
+	 * Whether the principal inertia should be computed automatically.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	bool bAutoGeneratePrincipalInertia = true;
 
@@ -145,7 +157,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	bool GetAutoGeneratePrincipalInertia() const;
 
-	/// The velocity of the body [cm/s].
+	/**
+	 * The velocity of the body [cm/s].
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	FVector Velocity;
 
@@ -156,7 +170,8 @@ public:
 	FVector GetVelocity() const;
 
 	/**
-	 * In degrees per second and following the Unreal Editor rotation widget so that a positive
+	 * The angular velocity of the Rigid Body [deg/s].
+	 * Following the Unreal Editor rotation widget so that a positive
 	 * angular velocity about some axis produces increasing rotation values in the editor widget.
 	 *
 	 * A positive X angular velocity rotates the Z axis towards the Y axis, i.e., roll right. A
@@ -187,7 +202,7 @@ public:
 	TEnumAsByte<enum EAGX_MotionControl> GetMotionControl() const;
 
 	/**
-	 * Decide to where transformation updates from AGX Dynamics should be written.
+	 * Decides to where transformation updates from AGX Dynamics should be written during Play.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_TransformTarget> TransformTarget;

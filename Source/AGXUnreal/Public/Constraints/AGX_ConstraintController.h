@@ -34,9 +34,11 @@ struct AGXUNREAL_API FAGX_ConstraintController
 	bool GetEnable() const;
 
 	/**
-	 * The Elasticity measure the responsiveness/reactiveness of the Constraint Controller to
-	 * violations in its constraint. A higher Elasticity will cause a stronger force or torque to
-	 * be created to restore from the violation. A too high Elasticity will lead to instabilities in
+	 * The elasticity in a certain DOF. Measured in [N/m] for translational DOFs and [Nm/rad] for
+	 * rotational DOFs.
+	 * The elasticity measure the responsiveness/reactiveness of the Constraint Controller to
+	 * violations in its constraint. A higher elasticity will cause a stronger force or torque to
+	 * be created to restore from the violation. A too high elasticity will lead to instabilities in
 	 * the simulation. It is the inverse of Compliance. It is measured in unit force or torque per
 	 * unit violation, much like a spring constant, where the violation can be either a translation
 	 * or a rotation.
@@ -54,7 +56,8 @@ struct AGXUNREAL_API FAGX_ConstraintController
 	double GetElasticity() const;
 
 	/**
-	 * Set the Compliance of the Constraint Controller.
+	 * Set the Compliance in a certain DOF. Measured in [m/N] for translational DOFs and [rad/Nm]
+	 * for rotational DOFs.
 	 *
 	 * Compliance is stored as Elasticity = 1 / Compliance.
 	 *
@@ -66,18 +69,14 @@ struct AGXUNREAL_API FAGX_ConstraintController
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
-	double Damping;
+	double SpookDamping;
 
-	void SetDamping(double InDamping);
+	void SetSpookDamping(double InSpookDamping);
 
-	double GetDamping() const;
+	double GetSpookDamping() const;
 
-	/// \todo Should this be in N (Nm) or some cm-based unit?
-	/// Cannot be TInterval<double> because that type is not listed in
-	/// Math/Interval.h
 	/**
-	 * The minimum an maximum force that the constraint controller can produce.
-	 * In newtons, i.e., kg m s^-2.
+	 * The minimum an maximum force that the constraint controller can produce [N].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
@@ -182,15 +181,16 @@ class AGXUNREAL_API UAGX_ConstraintController_FL : public UBlueprintFunctionLibr
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetDamping(UPARAM(ref) FAGX_ConstraintController& Controller, float Damping)
+	static void SetSpookDamping(
+		UPARAM(ref) FAGX_ConstraintController& Controller, float SpookDamping)
 	{
-		Controller.SetDamping(static_cast<double>(Damping));
+		Controller.SetSpookDamping(static_cast<double>(SpookDamping));
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static float GetDamping(UPARAM(ref) const FAGX_ConstraintController& Controller)
+	static float GetSpookDamping(UPARAM(ref) const FAGX_ConstraintController& Controller)
 	{
-		return static_cast<float>(Controller.GetDamping());
+		return static_cast<float>(Controller.GetSpookDamping());
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
@@ -270,15 +270,15 @@ class AGXUNREAL_API UAGX_ConstraintController_FL : public UBlueprintFunctionLibr
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetDamping(UPARAM(ref) FAGX_TYPE& Controller, float Damping)
+	static void SetSpookDamping(UPARAM(ref) FAGX_TYPE& Controller, float SpookDamping)
 	{
-		Controller.SetDamping(static_cast<double>(Damping));
+		Controller.SetSpookDamping(static_cast<double>(SpookDamping));
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static float GetDamping(UPARAM(ref) const FAGX_TYPE& Controller)
+	static float GetSpookDamping(UPARAM(ref) const FAGX_TYPE& Controller)
 	{
-		return static_cast<float>(Controller.GetDamping());
+		return static_cast<float>(Controller.GetSpookDamping());
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

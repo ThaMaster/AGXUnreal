@@ -133,15 +133,15 @@ class AGXUNREAL_API UAGX_ConstraintFrictionController_FL : public UBlueprintFunc
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetDamping(UPARAM(ref) FAGX_ConstraintFrictionController& Controller, float Damping)
+	static void SetSpookDamping(UPARAM(ref) FAGX_ConstraintFrictionController& Controller, float SpookDamping)
 	{
-		Controller.SetDamping(static_cast<double>(Damping));
+		Controller.SetSpookDamping(static_cast<double>(SpookDamping));
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static float GetDamping(UPARAM(ref) const FAGX_ConstraintFrictionController& Controller)
+	static float GetSpookDamping(UPARAM(ref) const FAGX_ConstraintFrictionController& Controller)
 	{
-		return static_cast<float>(Controller.GetDamping());
+		return static_cast<float>(Controller.GetSpookDamping());
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

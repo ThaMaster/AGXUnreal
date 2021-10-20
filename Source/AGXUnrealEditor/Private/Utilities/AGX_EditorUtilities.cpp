@@ -982,7 +982,7 @@ bool FAGX_EditorUtilities::ApplyShapeMaterial(
 		return false;
 	}
 
-	Shape->PhysicalMaterial = MaterialAsset;
+	Shape->ShapeMaterial = MaterialAsset;
 	return true;
 }
 

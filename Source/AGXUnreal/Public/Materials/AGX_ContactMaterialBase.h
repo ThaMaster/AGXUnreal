@@ -17,18 +17,20 @@ class UAGX_MaterialBase;
  * effecting mass, such as density).
  *
  * ContactMaterials are created by the user in-Editor by creating a UAGX_ContactMaterialAsset.
- * In-Editor they are treated as assets and can be referenced by the Material Manager.
+ * In-Editor they are treated as assets and can be referenced by a Contact Material Registrar
+ * Component.
  *
  * When game begins playing, one UAGX_ContactMaterialInstance will be created for each
- * UAGX_ContactMaterialAsset that is referenced by the Material Manager. The
+ * UAGX_ContactMaterialAsset that is referenced by a Contact Material Registrar Component. The
  * UAGX_ContactMaterialInstance will create the actual native AGX ContactMaterial and add it to the
- * simulation. The in-game Material Manager that referenced the UAGX_ContactMaterialAsset will swap
- * its reference to the in-game created UAGX_ContactMaterialInstance instead. This means that
- * ultimately only UAGX_ContactMaterialInstances will be referenced in-game. When play stops the
- * in-Editor state will be returned.
+ * simulation. The in-game Contact Material Registrar Component that referenced the
+ * UAGX_ContactMaterialAsset will swap its reference to the in-game created
+ * UAGX_ContactMaterialInstance instead. This means that ultimately only
+ * UAGX_ContactMaterialInstances will be referenced in-game. When play stops the in-Editor state
+ * will be returned.
  *
- * Note that this means that UAGX_ContactMaterialAssets that are not referenced the Material Manager
- * will be inactive.
+ * Note that this means that UAGX_ContactMaterialAssets that are not referenced a Contact Material
+ * Registrar Component will be inactive.
  *
  * Note also that it is not allowed to replace the Materials properties after instance has been
  * created.
@@ -210,7 +212,7 @@ public:
 	virtual void SetRestitution(float InRestitution);
 
 	/**
-	 * Young's modulus of the contact material. Same as spring coefficient k.
+	 * Young's modulus of the contact material. Same as spring coefficient k [Pa].
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double YoungsModulus;
@@ -219,16 +221,17 @@ public:
 	virtual void SetYoungsModulus(float InYoungsModulus);
 
 	/**
-	 * Damping factor which represents the time the contact constraint has to fulfill its violation.
+	 * Spook Damping which represents the time the contact constraint has to fulfill its violation
+	 * [s].
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double Damping;
+	double SpookDamping;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
-	virtual void SetDamping(float InDamping);
+	virtual void SetSpookDamping(float InSpookDamping);
 
 	/**
-	 * The attractive force between two colliding objects, in Netwon.
+	 * The attractive force between two colliding objects [N].
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	double AdhesiveForce;
@@ -237,7 +240,7 @@ public:
 	virtual void SetAdhesiveForce(float InAdhesiveForce);
 
 	/**
-	 * Allowed overlap from surface for resting contact, in meters.
+	 * Allowed overlap from surface for resting contact [cm].
 	 *
 	 * At lower overlap, the adhesion force will take effect.
 	 * At this overlap, no adhesive force is applied.
