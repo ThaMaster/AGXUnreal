@@ -354,7 +354,7 @@ void UAGX_Simulation::Unregister(UAGX_ContactMaterialInstance& Material)
 	const int32 Count = --ContactMaterials[&Material];
 	check(Count >= 0);
 
-	// When the count goes down to 0, we remove the Contact Material to the Simulation.
+	// When the count goes down to 0, we remove the Contact Material from the Simulation.
 	if (Count == 0)
 	{
 		if (!GetNative()->Remove(*Material.GetNative()))
