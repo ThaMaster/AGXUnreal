@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_MeshWithTransform.h"
 #include "Shapes/AGX_ShapeComponent.h"
 
 // Unreal Engine includes.
@@ -8,7 +9,8 @@
 
 #include "AGX_AutoFitShapeComponent.generated.h"
 
-UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", NotPlaceable)
+UCLASS(
+	ClassGroup = "AGX_Shape", Category = "AGX", NotPlaceable, Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_AutoFitShapeComponent : public UAGX_ShapeComponent
 {
 	GENERATED_BODY()
@@ -28,9 +30,9 @@ public:
 	UStaticMesh* MeshSourceAsset;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Auto-fit")
-	void AutoFitToMesh();
+	void AutoFit(TArray<FAGX_MeshWithTransform> Meshes);
 
-	virtual void AutoFit(const TArray<FVector>& Vertices)
+	virtual void AutoFitFromVertices(const TArray<FVector>& Vertices)
 		PURE_VIRTUAL(UAGX_AutoFitShapeComponent::AutoFit, return;);
 
 private:

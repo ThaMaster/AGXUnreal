@@ -2,9 +2,13 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_MeshWithTransform.h"
 #include "AGX_UpropertyDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ShapeUtilities.h"
+
+// Unreal Engine includes.
+#include "Engine/StaticMeshActor.h"
 
 UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 {
@@ -31,6 +35,43 @@ FVector UAGX_BoxShapeComponent::GetHalfExtent() const
 	}
 
 	return HalfExtent;
+}
+
+UAGX_BoxShapeComponent* UAGX_BoxShapeComponent::CreateFromMeshActors(
+	AActor* Parent, TArray<AStaticMeshActor*> InMeshes)
+{
+	if (Parent == nullptr)
+	{
+		return nullptr;
+	}
+
+	TArray<FAGX_MeshWithTransform> Meshes;
+	for (AStaticMeshActor* M : InMeshes)
+	{
+		if (M->GetStaticMeshComponent() == nullptr)
+		{
+			continue;
+		}
+
+		if (UStaticMesh* StaticMesh = M->GetStaticMeshComponent()->GetStaticMesh())
+		{
+			FAGX_MeshWithTransform MeshWithTransfom(
+				StaticMesh, M->GetStaticMeshComponent()->GetComponentTransform());
+			Meshes.Add(MeshWithTransfom);
+		}
+	}
+
+	if (Meshes.Num() == 0)
+	{
+		// TODO Print error (in msg box)
+	}
+
+	UAGX_BoxShapeComponent* Box = NewObject<UAGX_BoxShapeComponent>(
+		Parent, UAGX_BoxShapeComponent::StaticClass(), "AGX_BoxShape", RF_Transient);
+	Parent->AddInstanceComponent(Box);
+	Box->RegisterComponent();
+	Box->AutoFit(Meshes);
+	return Box;
 }
 
 FShapeBarrier* UAGX_BoxShapeComponent::GetNative()
@@ -95,15 +136,15 @@ void UAGX_BoxShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale());
 }
 
-void UAGX_BoxShapeComponent::AutoFit(const TArray<FVector>& Vertices)
+void UAGX_BoxShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vertices)
 {
 	FVector HalfExtentsBounding;
 	FTransform TransformBounding;
-	if(!FAGX_ShapeUtilities::ComputeOrientedBox(Vertices, HalfExtentsBounding, TransformBounding))
+	if (!FAGX_ShapeUtilities::ComputeOrientedBox(Vertices, HalfExtentsBounding, TransformBounding))
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Auto-fit on %s failed. Could not compute oriented box with given vertices."),
+			TEXT("Auto-fit on '%s' failed. Could not compute oriented box with given vertices."),
 			*GetName());
 		return;
 	}

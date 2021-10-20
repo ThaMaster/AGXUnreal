@@ -10,6 +10,8 @@
 
 #include "AGX_BoxShapeComponent.generated.h"
 
+class AStaticMeshActor;
+
 /**
  *
  */
@@ -33,6 +35,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
 	FVector GetHalfExtent() const;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Auto-fit")
+	static UAGX_BoxShapeComponent* CreateFromMeshActors(
+		AActor* Parent, TArray<AStaticMeshActor*> Meshes);
+
 	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;
@@ -41,7 +47,7 @@ public:
 	// ~End UAGX_ShapeComponent interface.
 
 	// ~Begin AGX_AutoFitShapeComponent interface.
-	virtual void AutoFit(const TArray<FVector>& Vertices) override;
+	virtual void AutoFitFromVertices(const TArray<FVector>& Vertices) override;
 	// ~End AGX_AutoFitShapeComponent interface.
 
 	/// Get the native AGX Dynamics representation of this Box. May return nullptr.

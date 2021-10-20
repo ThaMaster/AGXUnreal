@@ -2,42 +2,127 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_EnvironmentUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 
-void UAGX_AutoFitShapeComponent::AutoFitToMesh()
+namespace AGX_AutoFitShapeComponent_helpers
 {
-	TArray<FVector>Vertices;
-	TArray<FTriIndices> Indices;
-	if (!GetStaticMeshCollisionData(Vertices, Indices))
+	void LogErrorWithMessageBoxInEditor(const FString& Msg, UWorld* World)
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Could not auto-fit %s to mesh because no collision data could be extracted."),
-			*GetName());
+		if (World && World->IsGameWorld())
+		{
+			// Write only to the log during Play.
+			UE_LOG(LogAGX, Error, TEXT("%s"), *Msg);
+		}
+		else
+		{
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Msg);
+		}
+	}
+
+	void LogWarningWithMessageBoxInEditor(const FString& Msg, UWorld* World)
+	{
+		if (World && World->IsGameWorld())
+		{
+			// Write only to the log during Play.
+			UE_LOG(LogAGX, Warning, TEXT("%s"), *Msg);
+		}
+		else
+		{
+			FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(Msg);
+		}
+	}
+}
+
+void UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
+{
+	if (!FAGX_EnvironmentUtilities::IsAGXDynamicsVersionNewerOrEqualTo(2, 31, 0, 0))
+	{
+		// @todo Why can't I call GetWorld() from here, this is an UActorComponent!?
+		UWorld* World = GetWorldFromShapeComponent();
+		AGX_AutoFitShapeComponent_helpers::LogErrorWithMessageBoxInEditor(
+			FString::Printf(
+				TEXT("Could not auto-fit '%s' to meshes because the AGX Dynamics version used by "
+					 "the AGX Dynamics for Unreal plugin is too old. The AGX Dynamics version must "
+					 "be at least 2.31.0.0."),
+				*GetName()),
+			World);
 		return;
 	}
 
-	AutoFit(Vertices);
+	TArray<FVector> Vertices;
+	int32 numWarnings = 0;
+	for (const FAGX_MeshWithTransform& Mesh : Meshes)
+	{
+		TArray<FVector> MeshVertices;
+		TArray<FTriIndices> MeshIndices;
+		const bool Result = AGX_MeshUtilities::GetStaticMeshCollisionData(
+			Mesh, FTransform::Identity, MeshVertices, MeshIndices);
+		if (Result)
+		{
+			Vertices.Append(MeshVertices);
+		}
+		else
+		{
+			numWarnings++;
+		}
+	}
+
+	if (Vertices.Num() == 0)
+	{
+		// @todo Why can't I call GetWorld() from here, this is an UActorComponent!?
+		UWorld* World = GetWorldFromShapeComponent();
+		AGX_AutoFitShapeComponent_helpers::LogErrorWithMessageBoxInEditor(
+			FString::Printf(
+				TEXT("Could not auto-fit '%s' to meshes because no collision data could be "
+					 "extracted."),
+				*GetName()),
+			World);
+		return;
+	}
+	else if (numWarnings > 0)
+	{
+		// @todo Why can't I call GetWorld() from here, this is an UActorComponent!?
+		UWorld* World = GetWorldFromShapeComponent();
+		AGX_AutoFitShapeComponent_helpers::LogWarningWithMessageBoxInEditor(
+			"At least one warning was detected during the Auto-Fit process. The log may contain "
+			"more details.",
+			World);
+	}
+
+	AutoFitFromVertices(Vertices);
 }
 
 bool UAGX_AutoFitShapeComponent::GetStaticMeshCollisionData(
 	TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices) const
 {
-	UStaticMesh* StaticMesh = nullptr;
-	FTransform StaticMeshWorldTransform;
+	FAGX_MeshWithTransform Mesh;
+	switch (MeshSourceLocation)
+	{
+		case EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT:
+			Mesh = AGX_MeshUtilities::FindFirstChildMesh(*this);
+			break;
+		case EAGX_StaticMeshSourceLocation::TSL_PARENT_STATIC_MESH_COMPONENT:
+			Mesh = AGX_MeshUtilities::FindFirstParentMesh(*this);
+			break;
+		case EAGX_StaticMeshSourceLocation::TSL_STATIC_MESH_ASSET:
+			if (MeshSourceAsset != nullptr)
+			{
+				Mesh = FAGX_MeshWithTransform(MeshSourceAsset, GetComponentTransform());
+			}
+			break;
+	}
 
-	if (!AGX_MeshUtilities::FindStaticMeshRelativeToComponent(
-			*this, MeshSourceLocation, MeshSourceAsset, StaticMesh, &StaticMeshWorldTransform))
+	if (!Mesh.IsValid())
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("GetStaticMeshCollisionData failed in %s. Unable to find static Mesh."),
+			TEXT("GetStaticMeshCollisionData failed for '%s'. Unable to find static Mesh."),
 			*GetName());
 		return false;
 	}
 
-	check(StaticMesh != nullptr);
-	const FTransform ComponentTransform(GetComponentRotation(), GetComponentLocation());
 	return AGX_MeshUtilities::GetStaticMeshCollisionData(
-		*StaticMesh, StaticMeshWorldTransform, ComponentTransform, OutVertices, OutIndices);
+		Mesh, GetComponentTransform(), OutVertices, OutIndices);
 }
