@@ -17,18 +17,20 @@ class UAGX_MaterialBase;
  * effecting mass, such as density).
  *
  * ContactMaterials are created by the user in-Editor by creating a UAGX_ContactMaterialAsset.
- * In-Editor they are treated as assets and can be referenced by the Material Manager.
+ * In-Editor they are treated as assets and can be referenced by a Contact Material Registrar
+ * Component.
  *
  * When game begins playing, one UAGX_ContactMaterialInstance will be created for each
- * UAGX_ContactMaterialAsset that is referenced by the Material Manager. The
+ * UAGX_ContactMaterialAsset that is referenced by a Contact Material Registrar Component. The
  * UAGX_ContactMaterialInstance will create the actual native AGX ContactMaterial and add it to the
- * simulation. The in-game Material Manager that referenced the UAGX_ContactMaterialAsset will swap
- * its reference to the in-game created UAGX_ContactMaterialInstance instead. This means that
- * ultimately only UAGX_ContactMaterialInstances will be referenced in-game. When play stops the
- * in-Editor state will be returned.
+ * simulation. The in-game Contact Material Registrar Component that referenced the
+ * UAGX_ContactMaterialAsset will swap its reference to the in-game created
+ * UAGX_ContactMaterialInstance instead. This means that ultimately only
+ * UAGX_ContactMaterialInstances will be referenced in-game. When play stops the in-Editor state
+ * will be returned.
  *
- * Note that this means that UAGX_ContactMaterialAssets that are not referenced the Material Manager
- * will be inactive.
+ * Note that this means that UAGX_ContactMaterialAssets that are not referenced a Contact Material
+ * Registrar Component will be inactive.
  *
  * Note also that it is not allowed to replace the Materials properties after instance has been
  * created.

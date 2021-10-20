@@ -27,9 +27,11 @@
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Shapes/RenderDataBarrier.h"
+#include "Materials/AGX_ContactMaterialAsset.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
-#include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
+#include "Materials/ShapeMaterialBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
@@ -437,6 +439,26 @@ namespace
 			SetDefaultRenderMaterial(VisualMesh, Component.bIsSensor);
 		}
 	}
+
+	UAGX_ContactMaterialRegistrarComponent* GetOrCreateContactMaterialRegistrar(AActor& Owner)
+	{
+		UAGX_ContactMaterialRegistrarComponent* Component =
+			Owner.FindComponentByClass<UAGX_ContactMaterialRegistrarComponent>();
+
+		if (Component != nullptr)
+		{
+			return Component;
+		}
+
+		// No UAGX_ContactMaterialRegistrarComponent exists in Owner. Create and add one.
+		Component = NewObject<UAGX_ContactMaterialRegistrarComponent>(
+			&Owner, TEXT("AGX_ContactMaterialRegistrar"));
+
+		Component->SetFlags(RF_Transactional);
+		Owner.AddInstanceComponent(Component);
+		Component->RegisterComponent();
+		return Component;
+	}
 }
 
 UAGX_SphereShapeComponent* FAGX_ArchiveImporterHelper::InstantiateSphere(
@@ -578,11 +600,25 @@ UAGX_ShapeMaterialAsset* FAGX_ArchiveImporterHelper::InstantiateShapeMaterial(
 }
 
 UAGX_ContactMaterialAsset* FAGX_ArchiveImporterHelper::InstantiateContactMaterial(
-	const FContactMaterialBarrier& Barrier)
+	const FContactMaterialBarrier& Barrier, AActor& Owner)
 {
 	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
 	UAGX_ContactMaterialAsset* Asset = FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
 		Barrier, Materials.first, Materials.second, DirectoryName);
+
+	UAGX_ContactMaterialRegistrarComponent* CMRegistrar =
+		GetOrCreateContactMaterialRegistrar(Owner);
+	if (CMRegistrar == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Contact Material Registrar could not be added to '%s' during import."),
+			*Owner.GetName());
+		return Asset;
+	}
+
+	CMRegistrar->ContactMaterials.Add(Asset);
+
 	return Asset;
 }
 

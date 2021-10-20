@@ -26,6 +26,7 @@ class UAGX_LockConstraintComponent;
 class FTwoBodyTireBarrier;
 class UAGX_TwoBodyTireComponent;
 class UAGX_CollisionGroupDisablerComponent;
+class UAGX_ContactMaterialRegistrarComponent;
 class UAGX_WireComponent;
 
 // Unreal Engine classes.
@@ -63,7 +64,8 @@ public:
 
 	UAGX_ShapeMaterialAsset* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
-	UAGX_ContactMaterialAsset* InstantiateContactMaterial(const FContactMaterialBarrier& Barrier);
+	UAGX_ContactMaterialAsset* InstantiateContactMaterial(
+		const FContactMaterialBarrier& Barrier, AActor& Owner);
 
 	UAGX_HingeConstraintComponent* InstantiateHinge(const FHingeBarrier& Barrier, AActor& Owner);
 
@@ -107,6 +109,8 @@ public:
 	const FString ArchiveFileName;
 	const FString ArchiveName;
 	const FString DirectoryName;
+
+private:
 	TMap<FGuid, UStaticMesh*> RestoredMeshes;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterialAsset*> RestoredShapeMaterials;
