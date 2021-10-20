@@ -500,8 +500,3 @@ void UAGX_ShapeComponent::OnAttachmentChanged()
 	GetNative()->SetWorldPosition(GetComponentLocation());
 	GetNative()->SetWorldRotation(GetComponentQuat());
 }
-
-UWorld* UAGX_ShapeComponent::GetWorldFromShapeComponent() const
-{
-	return GetWorld();
-}

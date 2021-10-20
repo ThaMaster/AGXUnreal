@@ -173,8 +173,6 @@ public:
 	// ~End UActorComponent interface.
 
 protected:
-	UWorld* GetWorldFromShapeComponent() const;
-
 	/**
 	 * Get a pointer to the actual member Barrier object. This will never return nullptr. The
 	 * returned Barrier may be empty.

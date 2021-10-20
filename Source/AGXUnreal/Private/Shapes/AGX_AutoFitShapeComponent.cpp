@@ -39,15 +39,13 @@ void UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 {
 	if (!FAGX_EnvironmentUtilities::IsAGXDynamicsVersionNewerOrEqualTo(2, 31, 0, 0))
 	{
-		// @todo Why can't I call GetWorld() from here, this is an UActorComponent!?
-		UWorld* World = GetWorldFromShapeComponent();
 		AGX_AutoFitShapeComponent_helpers::LogErrorWithMessageBoxInEditor(
 			FString::Printf(
 				TEXT("Could not auto-fit '%s' to meshes because the AGX Dynamics version used by "
 					 "the AGX Dynamics for Unreal plugin is too old. The AGX Dynamics version must "
 					 "be at least 2.31.0.0."),
 				*GetName()),
-			World);
+			GetWorld());
 		return;
 	}
 
@@ -68,27 +66,22 @@ void UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 			numWarnings++;
 		}
 	}
-
 	if (Vertices.Num() == 0)
 	{
-		// @todo Why can't I call GetWorld() from here, this is an UActorComponent!?
-		UWorld* World = GetWorldFromShapeComponent();
 		AGX_AutoFitShapeComponent_helpers::LogErrorWithMessageBoxInEditor(
 			FString::Printf(
 				TEXT("Could not auto-fit '%s' to meshes because no collision data could be "
 					 "extracted."),
 				*GetName()),
-			World);
+			GetWorld());
 		return;
 	}
 	else if (numWarnings > 0)
 	{
-		// @todo Why can't I call GetWorld() from here, this is an UActorComponent!?
-		UWorld* World = GetWorldFromShapeComponent();
 		AGX_AutoFitShapeComponent_helpers::LogWarningWithMessageBoxInEditor(
 			"At least one warning was detected during the Auto-Fit process. The log may contain "
 			"more details.",
-			World);
+			GetWorld());
 	}
 
 	AutoFitFromVertices(Vertices);
