@@ -2337,9 +2337,9 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Cm1 surface viscosity", (*Cm1)->SurfaceViscosity, 0.12);
 	Test.TestEqual("Cm1 restitution", (*Cm1)->Restitution, 0.13);
 	Test.TestEqual("Cm1 youngs modulus", (*Cm1)->YoungsModulus, 123451234.0);
-	Test.TestEqual("Cm1 damping", (*Cm1)->Damping, 0.14);
+	Test.TestEqual("Cm1 damping", (*Cm1)->SpookDamping, 0.14);
 	Test.TestEqual("Cm1 adhesive force", (*Cm1)->AdhesiveForce, 0.15);
-	Test.TestEqual("Cm1 adhesive overlap", (*Cm1)->AdhesiveOverlap, 0.16);
+	Test.TestEqual("Cm1 adhesive overlap", (float)(*Cm1)->AdhesiveOverlap, AgxToUnrealDistance(0.16));
 
 	UAGX_ContactMaterialBase** Cm2 = Registrar->ContactMaterials.FindByPredicate(
 		[](UAGX_ContactMaterialBase* Cm) { return Cm->GetName() == "CMMat3Mat4"; });
@@ -2356,9 +2356,9 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Cm2 surface viscosity", (*Cm2)->SurfaceViscosity, 0.22);
 	Test.TestEqual("Cm2 restitution", (*Cm2)->Restitution, 0.23);
 	Test.TestEqual("Cm2 youngs modulus", (*Cm2)->YoungsModulus, 101010101.0);
-	Test.TestEqual("Cm2 damping", (*Cm2)->Damping, 0.24);
+	Test.TestEqual("Cm2 damping", (*Cm2)->SpookDamping, 0.24);
 	Test.TestEqual("Cm2 adhesive force", (*Cm2)->AdhesiveForce, 0.25);
-	Test.TestEqual("Cm2 adhesive overlap", (*Cm2)->AdhesiveOverlap, 0.26);
+	Test.TestEqual("Cm2 adhesive overlap", (float)(*Cm2)->AdhesiveOverlap, AgxToUnrealDistance(0.26));
 
 	return true;
 }
