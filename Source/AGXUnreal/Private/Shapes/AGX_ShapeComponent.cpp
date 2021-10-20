@@ -500,3 +500,9 @@ void UAGX_ShapeComponent::OnAttachmentChanged()
 	GetNative()->SetWorldPosition(GetComponentLocation());
 	GetNative()->SetWorldRotation(GetComponentQuat());
 }
+
+void UAGX_ShapeComponent::OnRegister()
+{
+	Super::OnRegister();
+	UpdateVisualMesh();
+}
