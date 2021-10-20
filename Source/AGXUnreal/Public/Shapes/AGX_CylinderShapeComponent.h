@@ -1,13 +1,15 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "Shapes/AGX_ShapeComponent.h"
+#include "Shapes/AGX_AutoFitShapeComponent.h"
 #include "Shapes/CylinderShapeBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
 #include "AGX_CylinderShapeComponent.generated.h"
+
+class AStaticMeshActor;
 
 /**
  * A cylindrical collision shape. Can be used to give a Rigid Body a collision shape by
@@ -18,7 +20,7 @@
  * the Cylinder's perimeter that the wire can't slide off of.
  */
 UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_CylinderShapeComponent final : public UAGX_ShapeComponent
+class AGXUNREAL_API UAGX_CylinderShapeComponent final : public UAGX_AutoFitShapeComponent
 {
 	GENERATED_BODY()
 
@@ -73,6 +75,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void SetGypsy(bool bInGypsy);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Auto-fit")
+	static UAGX_CylinderShapeComponent* CreateFromMeshActors(
+		AActor* Parent, TArray<AStaticMeshActor*> Meshes);
+
 	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;
@@ -86,6 +92,10 @@ public:
 	void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event);
 	// ~End UObject interface.
 #endif
+
+	// ~Begin AGX_AutoFitShapeComponent interface.
+	virtual bool AutoFitFromVertices(const TArray<FVector>& Vertices) override;
+	// ~End AGX_AutoFitShapeComponent interface.
 
 	/// Get the native AGX Dynamics representation of this Cylinder. May return nullptr.
 	FCylinderShapeBarrier* GetNativeCylinder();

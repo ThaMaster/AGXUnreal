@@ -8,6 +8,7 @@
 #include "CoreMinimal.h"
 #include "DynamicMeshBuilder.h"
 
+class AStaticMeshActor;
 class FDynamicMeshIndexBuffer32;
 struct FStaticMeshVertexBuffers;
 struct FAGX_SimpleMeshTriangle;
@@ -301,4 +302,7 @@ public:
 		const FAGX_MeshWithTransform& InMesh, const FTransform& RelativeTo,
 		TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices,
 		const uint32* LodIndexOverride = nullptr);
+
+	static TArray<FAGX_MeshWithTransform> ToMeshWithTransformArray(
+		const TArray<AStaticMeshActor*> Actors);
 };
