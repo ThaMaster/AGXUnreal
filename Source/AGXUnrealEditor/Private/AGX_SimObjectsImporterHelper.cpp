@@ -599,7 +599,7 @@ UAGX_ShapeMaterialAsset* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial
 	return Asset;
 }
 
-UAGX_ContactMaterialAsset* FAGX_ArchiveImporterHelper::InstantiateContactMaterial(
+UAGX_ContactMaterialAsset* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
 	const FContactMaterialBarrier& Barrier, AActor& Owner)
 {
 	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
@@ -690,35 +690,35 @@ UAGX_HingeConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateHinge(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-UAGX_PrismaticConstraintComponent* FAGX_ArchiveImporterHelper::InstantiatePrismatic(
+UAGX_PrismaticConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiatePrismatic(
 	const FPrismaticBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_PrismaticConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-UAGX_BallConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateBallJoint(
+UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallJoint(
 	const FBallJointBarrier& Barrier, AActor& Owner)
 {
 	return InstantiateConstraint<UAGX_BallConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-UAGX_CylindricalConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateCylindricalJoint(
+UAGX_CylindricalConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateCylindricalJoint(
 	const FCylindricalJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint2Dof<UAGX_CylindricalConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-UAGX_DistanceConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateDistanceJoint(
+UAGX_DistanceConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateDistanceJoint(
 	const FDistanceJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_DistanceConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-UAGX_LockConstraintComponent* FAGX_ArchiveImporterHelper::InstantiateLockJoint(
+UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockJoint(
 	const FLockJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint<UAGX_LockConstraintComponent>(
@@ -769,7 +769,7 @@ UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire
 	return Component;
 }
 
-UAGX_CollisionGroupDisablerComponent* FAGX_ArchiveImporterHelper::InstantiateCollisionGroupDisabler(
+UAGX_CollisionGroupDisablerComponent* FAGX_SimObjectsImporterHelper::InstantiateCollisionGroupDisabler(
 	AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs)
 {
 	UAGX_CollisionGroupDisablerComponent* Component =
@@ -787,7 +787,7 @@ UAGX_CollisionGroupDisablerComponent* FAGX_ArchiveImporterHelper::InstantiateCol
 	return Component;
 }
 
-UAGX_WireComponent* FAGX_ArchiveImporterHelper::InstantiateWire(
+UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	const FWireBarrier& Barrier, AActor& Owner)
 {
 	UAGX_WireComponent* Component = NewObject<UAGX_WireComponent>(&Owner);
@@ -963,7 +963,7 @@ UAGX_WireComponent* FAGX_ArchiveImporterHelper::InstantiateWire(
 	return Component;
 }
 
-UAGX_RigidBodyComponent* FAGX_ArchiveImporterHelper::GetBody(
+UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::GetBody(
 	const FRigidBodyBarrier& Barrier, bool LogErrorIfNotFound)
 {
 	/// \todo Callers cannot differentiate between a nullptr return because the Barrier really
