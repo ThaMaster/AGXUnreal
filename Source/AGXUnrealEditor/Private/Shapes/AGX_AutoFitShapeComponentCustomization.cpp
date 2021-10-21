@@ -131,18 +131,23 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 			return Children;
 		}
 
-		TArray<USCS_Node*> Nodes = Blueprint->SimpleConstructionScript->GetAllNodes();
-		USCS_Node** ComponentNode = Nodes.FindByPredicate(
-			[Component](USCS_Node* Node) { return Node->ComponentTemplate == Component; });
-		if (ComponentNode == nullptr || *ComponentNode == nullptr)
+		USCS_Node* ComponentNode = GetSCSNodeFromComponent(Component, Blueprint);
+		if (ComponentNode == nullptr)
 		{
 			return Children;
 		}
 
-		TArray<USCS_Node*> ChildNodes = (*ComponentNode)->GetChildNodes();
+		TArray<USCS_Node*> ChildNodes = ComponentNode->GetChildNodes();
 		for (USCS_Node* Child : ChildNodes)
 		{
 			if (Child == nullptr)
+			{
+				continue;
+			}
+
+			// Only include immediate children.
+			USCS_Node* Parent = Blueprint->SimpleConstructionScript->FindParentNode(Child);
+			if (Parent != ComponentNode)
 			{
 				continue;
 			}
