@@ -1656,6 +1656,25 @@ FAGX_MeshWithTransform AGX_MeshUtilities::FindFirstChildMesh(const USceneCompone
 	return FAGX_MeshWithTransform();
 }
 
+TArray<FAGX_MeshWithTransform> AGX_MeshUtilities::FindImmediateChildrenMeshes(
+	const USceneComponent& Component)
+{
+	TArray<USceneComponent*> Children;
+	TArray<FAGX_MeshWithTransform> Meshes;
+	Component.GetChildrenComponents(/*bIncludeAllDescendants*/ false, Children);
+
+	for (USceneComponent* Child : Children)
+	{
+		if (UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(Child))
+		{
+			Meshes.Add(FAGX_MeshWithTransform(
+				MeshComponent->GetStaticMesh(), MeshComponent->GetComponentTransform()));
+		}
+	}
+
+	return Meshes;
+}
+
 FAGX_MeshWithTransform AGX_MeshUtilities::FindFirstParentMesh(const USceneComponent& Component)
 {
 	TArray<USceneComponent*> Ancestors;

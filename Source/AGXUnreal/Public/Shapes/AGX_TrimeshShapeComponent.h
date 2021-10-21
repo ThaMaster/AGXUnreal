@@ -36,7 +36,10 @@ public:
 	 * Only used if Mesh Source Location is set to Static Mesh Asset. Specifies
 	 * which Static Mesh Asset to use.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shape")
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Shape",
+		Meta = (EditCondition =
+		"MeshSourceLocation == EAGX_StaticMeshSourceLocation::TSL_STATIC_MESH_ASSET"))
 	UStaticMesh* MeshSourceAsset;
 
 	/**

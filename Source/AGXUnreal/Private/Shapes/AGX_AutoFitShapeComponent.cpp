@@ -97,35 +97,30 @@ bool UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 	return Result;
 }
 
-bool UAGX_AutoFitShapeComponent::GetStaticMeshCollisionData(
-	TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices) const
+bool UAGX_AutoFitShapeComponent::AutoFitFromSelection()
 {
-	FAGX_MeshWithTransform Mesh;
+	TArray<FAGX_MeshWithTransform> Meshes = GetSelectedStaticMeshes();
+	return AutoFit(Meshes);
+}
+
+TArray<FAGX_MeshWithTransform> UAGX_AutoFitShapeComponent::GetSelectedStaticMeshes() const
+{
+	TArray<FAGX_MeshWithTransform> Meshes;
 	switch (MeshSourceLocation)
 	{
 		case EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT:
-			Mesh = AGX_MeshUtilities::FindFirstChildMesh(*this);
+			Meshes = AGX_MeshUtilities::FindImmediateChildrenMeshes(*this);
 			break;
 		case EAGX_StaticMeshSourceLocation::TSL_PARENT_STATIC_MESH_COMPONENT:
-			Mesh = AGX_MeshUtilities::FindFirstParentMesh(*this);
+			Meshes.Add(AGX_MeshUtilities::FindFirstParentMesh(*this));
 			break;
 		case EAGX_StaticMeshSourceLocation::TSL_STATIC_MESH_ASSET:
 			if (MeshSourceAsset != nullptr)
 			{
-				Mesh = FAGX_MeshWithTransform(MeshSourceAsset, GetComponentTransform());
+				Meshes.Add(FAGX_MeshWithTransform(MeshSourceAsset, GetComponentTransform()));
 			}
 			break;
 	}
 
-	if (!Mesh.IsValid())
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("GetStaticMeshCollisionData failed for '%s'. Unable to find static Mesh."),
-			*GetName());
-		return false;
-	}
-
-	return AGX_MeshUtilities::GetStaticMeshCollisionData(
-		Mesh, GetComponentTransform(), OutVertices, OutIndices);
+	return Meshes;
 }

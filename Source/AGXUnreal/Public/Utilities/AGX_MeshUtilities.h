@@ -289,6 +289,8 @@ public:
 		uint32& NextFreeVertex, uint32& NextFreeIndex, const DiskArrayConstructionData& Data);
 
 	static FAGX_MeshWithTransform FindFirstChildMesh(const USceneComponent& Component);
+	static TArray<FAGX_MeshWithTransform> FindImmediateChildrenMeshes(
+		const USceneComponent& Component);
 	static FAGX_MeshWithTransform FindFirstParentMesh(const USceneComponent& Component);
 
 	/**

@@ -26,16 +26,28 @@ public:
 	 * Only used if Mesh Source Location is set to Static Mesh Asset. Specifies
 	 * which Static Mesh Asset to use.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shape Auto-fit")
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Shape Auto-fit",
+		Meta =
+			(EditCondition =
+				 "MeshSourceLocation == EAGX_StaticMeshSourceLocation::TSL_STATIC_MESH_ASSET"))
 	UStaticMesh* MeshSourceAsset;
 
+	/*
+	 * Auto-fits to the collection of FAGX_MeshWithTransforms.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Auto-fit")
 	bool AutoFit(TArray<FAGX_MeshWithTransform> Meshes);
+
+	/*
+	 * Auto-fits to whichever Static Mesh(es) are pointed out by MeshSourceLocation.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Auto-fit")
+	bool AutoFitFromSelection();
 
 	virtual bool AutoFitFromVertices(const TArray<FVector>& Vertices)
 		PURE_VIRTUAL(UAGX_AutoFitShapeComponent::AutoFit, return false;);
 
 private:
-	bool GetStaticMeshCollisionData(
-		TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices) const;
+	TArray<FAGX_MeshWithTransform> GetSelectedStaticMeshes() const;
 };
