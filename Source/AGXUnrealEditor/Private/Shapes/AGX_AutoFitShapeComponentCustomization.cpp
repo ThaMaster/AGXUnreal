@@ -193,9 +193,11 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		}
 	}
 
-	void AutoFitBox(UAGX_BoxShapeComponent* Component, const TArray<FAGX_MeshWithTransform>& Meshes)
+	void AutoFitBox(
+		UAGX_BoxShapeComponent* Component, UBlueprintGeneratedClass* Blueprint,
+		const TArray<FAGX_MeshWithTransform>& Meshes)
 	{
-		if (Component == nullptr)
+		if (Component == nullptr || Blueprint == nullptr)
 		{
 			return;
 		}
@@ -206,6 +208,15 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 
 		Component->Modify();
 		Component->AutoFit(Meshes);
+
+		// The following is a little ugly, but necessary. Component->AutoFit will set a new world
+		// transform on the Component, but world transform is not handled correctly by template
+		// components inside a Blueprint. In actuality, SetWorldTransform will behave as if the
+		// component is in world origin, i.e. the same way as SetRelativeTransform. Therefore, we
+		// use the SetBlueprintComponentWorldTransform which correctly handles the world transform
+		// of template components.
+		SetBlueprintComponentWorldTransform(
+			Component, Blueprint, Component->GetComponentTransform());
 
 		// Update any archetype instance in need of update.
 		for (UAGX_BoxShapeComponent* Instance :
@@ -229,9 +240,10 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 	}
 
 	void AutoFitCylinder(
-		UAGX_CylinderShapeComponent* Component, const TArray<FAGX_MeshWithTransform>& Meshes)
+		UAGX_CylinderShapeComponent* Component, UBlueprintGeneratedClass* Blueprint,
+		const TArray<FAGX_MeshWithTransform>& Meshes)
 	{
-		if (Component == nullptr)
+		if (Component == nullptr || Blueprint == nullptr)
 		{
 			return;
 		}
@@ -243,6 +255,10 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 
 		Component->Modify();
 		Component->AutoFit(Meshes);
+
+		// See comment in AutoFitBox.
+		SetBlueprintComponentWorldTransform(
+			Component, Blueprint, Component->GetComponentTransform());
 
 		// Update any archetype instance in need of update.
 		for (UAGX_CylinderShapeComponent* Instance :
@@ -267,9 +283,10 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 	}
 
 	void AutoFitCapsule(
-		UAGX_CapsuleShapeComponent* Component, const TArray<FAGX_MeshWithTransform>& Meshes)
+		UAGX_CapsuleShapeComponent* Component, UBlueprintGeneratedClass* Blueprint,
+		const TArray<FAGX_MeshWithTransform>& Meshes)
 	{
-		if (Component == nullptr)
+		if (Component == nullptr || Blueprint == nullptr)
 		{
 			return;
 		}
@@ -281,6 +298,10 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 
 		Component->Modify();
 		Component->AutoFit(Meshes);
+
+		// See comment in AutoFitBox.
+		SetBlueprintComponentWorldTransform(
+			Component, Blueprint, Component->GetComponentTransform());
 
 		// Update any archetype instance in need of update.
 		for (UAGX_CapsuleShapeComponent* Instance :
@@ -301,6 +322,40 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 				Instance->SetRelativeLocation_Direct(Component->GetRelativeLocation());
 				Instance->SetRelativeRotation_Direct(Component->GetRelativeRotation());
 			}
+		}
+	}
+
+	bool AutoFitAny(
+		UAGX_AutoFitShapeComponent* Component, UBlueprintGeneratedClass* Blueprint,
+		const TArray<FAGX_MeshWithTransform>& Meshes)
+	{
+		if (Component == nullptr || Blueprint == nullptr)
+		{
+			return true;
+		}
+
+		if (UAGX_BoxShapeComponent* Box = Cast<UAGX_BoxShapeComponent>(Component))
+		{
+			AutoFitBox(Box, Blueprint, Meshes);
+			return true;
+		}
+		else if (
+			UAGX_CylinderShapeComponent* Cylinder = Cast<UAGX_CylinderShapeComponent>(Component))
+		{
+			AutoFitCylinder(Cylinder, Blueprint, Meshes);
+			return true;
+		}
+		else if (UAGX_CapsuleShapeComponent* Capsule = Cast<UAGX_CapsuleShapeComponent>(Component))
+		{
+			AutoFitCapsule(Capsule, Blueprint, Meshes);
+			return false;
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unknown Auto Fit Shape Component type passed to AutoFitToChildInBlueprint."));
+			return false;
 		}
 	}
 
@@ -338,24 +393,9 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		const FScopedTransaction Transaction(
 			LOCTEXT("AutoFitChildrenBPUndo", "Undo Auto-fit operation"));
 
-		if (UAGX_BoxShapeComponent* Box = Cast<UAGX_BoxShapeComponent>(Component))
+		if (!AutoFitAny(Component, Blueprint, MeshesWithTransform))
 		{
-			AutoFitBox(Box, MeshesWithTransform);
-		}
-		else if (
-			UAGX_CylinderShapeComponent* Cylinder = Cast<UAGX_CylinderShapeComponent>(Component))
-		{
-			AutoFitCylinder(Cylinder, MeshesWithTransform);
-		}
-		else if (UAGX_CapsuleShapeComponent* Capsule = Cast<UAGX_CapsuleShapeComponent>(Component))
-		{
-			AutoFitCapsule(Capsule, MeshesWithTransform);
-		}
-		else
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Unknown Auto Fit Shape Component type passed to AutoFitToChildInBlueprint."));
+			// Logging done in AutoFitAny.
 			return FReply::Handled();
 		}
 
