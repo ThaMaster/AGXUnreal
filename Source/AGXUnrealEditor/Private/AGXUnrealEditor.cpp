@@ -50,7 +50,7 @@
 #include "Constraints/AGX_PrismaticConstraintActor.h"
 #include "Materials/AGX_ContactMaterialAssetTypeActions.h"
 #include "Materials/AGX_MaterialBase.h"
-#include "Materials/AGX_MaterialManager.h"
+#include "Materials/AGX_ContactMaterialRegistrarActor.h"
 #include "Materials/AGX_ShapeMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialCustomization.h"
@@ -396,7 +396,7 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 			MakeShareable(new FPlaceableItem(nullptr, FAssetData(Class))));
 	};
 
-	RegisterPlaceableItem(AAGX_MaterialManager::StaticClass());
+	RegisterPlaceableItem(AAGX_ContactMaterialRegistrarActor::StaticClass());
 	RegisterPlaceableItem(AAGX_ConstraintFrameActor::StaticClass());
 	RegisterPlaceableItem(AAGX_BallConstraintActor::StaticClass());
 	RegisterPlaceableItem(AAGX_CylindricalConstraintActor::StaticClass());

@@ -35,7 +35,6 @@ public:
 	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld) override;
 	// ~End UAGX_ContactMaterialBase interface.
 
-
 	// ~Begin UObject interface.
 #if WITH_EDITOR
 	void PostInitProperties();

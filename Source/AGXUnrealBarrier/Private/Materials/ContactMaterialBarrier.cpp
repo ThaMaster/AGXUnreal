@@ -42,13 +42,15 @@ namespace
 		{
 			return 1;
 		}
+		else if (dynamic_cast<const agx::IterativeProjectedConeFriction*>(FrictionModel))
+		{
+			// Since IterativeProjectedConeFriction inherits from ScaleBoxFrictionModel, we must try
+			// casting to IterativeProjectedConeFriction before ScaleBoxFrictionModel.
+			return 3;
+		}
 		else if (dynamic_cast<const agx::ScaleBoxFrictionModel*>(FrictionModel))
 		{
 			return 2;
-		}
-		else if (dynamic_cast<const agx::IterativeProjectedConeFriction*>(FrictionModel))
-		{
-			return 3;
 		}
 		else
 		{
