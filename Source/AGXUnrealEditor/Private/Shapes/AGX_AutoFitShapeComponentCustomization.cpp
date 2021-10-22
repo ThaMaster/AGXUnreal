@@ -129,13 +129,13 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		}
 	}
 
-	void AutoFitBox(
+	bool AutoFitBox(
 		UAGX_BoxShapeComponent* Component, UBlueprintGeneratedClass* Blueprint,
 		const TArray<FAGX_MeshWithTransform>& Meshes)
 	{
 		if (Component == nullptr || Blueprint == nullptr)
 		{
-			return;
+			return false;
 		}
 
 		const FVector OrigRelLocation = Component->GetRelativeLocation();
@@ -143,7 +143,11 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		const FVector OrigHalfExtent = Component->GetHalfExtent();
 
 		Component->Modify();
-		Component->AutoFit(Meshes);
+		if (!Component->AutoFit(Meshes))
+		{
+			// Logging done in AutoFit.
+			return false;
+		}
 
 		// The following is a little ugly, but necessary. Component->AutoFit will set a new world
 		// transform on the Component, but world transform is not handled correctly by template
@@ -173,15 +177,17 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 				Instance->SetRelativeRotation_Direct(Component->GetRelativeRotation());
 			}
 		}
+
+		return true;
 	}
 
-	void AutoFitCylinder(
+	bool AutoFitCylinder(
 		UAGX_CylinderShapeComponent* Component, UBlueprintGeneratedClass* Blueprint,
 		const TArray<FAGX_MeshWithTransform>& Meshes)
 	{
 		if (Component == nullptr || Blueprint == nullptr)
 		{
-			return;
+			return false;
 		}
 
 		const FVector OrigRelLocation = Component->GetRelativeLocation();
@@ -190,7 +196,11 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		const float OrigHeight = Component->GetHeight();
 
 		Component->Modify();
-		Component->AutoFit(Meshes);
+		if (!Component->AutoFit(Meshes))
+		{
+			// Logging done in AutoFit.
+			return false;
+		}
 
 		// See comment in AutoFitBox.
 		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
@@ -216,15 +226,17 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 				Instance->SetRelativeRotation_Direct(Component->GetRelativeRotation());
 			}
 		}
+
+		return true;
 	}
 
-	void AutoFitCapsule(
+	bool AutoFitCapsule(
 		UAGX_CapsuleShapeComponent* Component, UBlueprintGeneratedClass* Blueprint,
 		const TArray<FAGX_MeshWithTransform>& Meshes)
 	{
 		if (Component == nullptr || Blueprint == nullptr)
 		{
-			return;
+			return false;
 		}
 
 		const FVector OrigRelLocation = Component->GetRelativeLocation();
@@ -233,7 +245,11 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		const float OrigHeight = Component->GetHeight();
 
 		Component->Modify();
-		Component->AutoFit(Meshes);
+		if (!Component->AutoFit(Meshes))
+		{
+			// Logging done in AutoFit.
+			return false;
+		}
 
 		// See comment in AutoFitBox.
 		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
@@ -259,35 +275,38 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 				Instance->SetRelativeRotation_Direct(Component->GetRelativeRotation());
 			}
 		}
+
+		return true;
 	}
 
-	void AutoFitAny(
+	bool AutoFitAny(
 		UAGX_AutoFitShapeComponent* Component, UBlueprintGeneratedClass* Blueprint,
 		const TArray<FAGX_MeshWithTransform>& Meshes)
 	{
 		if (Component == nullptr || Blueprint == nullptr)
 		{
-			return;
+			return false;
 		}
 
 		if (UAGX_BoxShapeComponent* Box = Cast<UAGX_BoxShapeComponent>(Component))
 		{
-			AutoFitBox(Box, Blueprint, Meshes);
+			return AutoFitBox(Box, Blueprint, Meshes);
 		}
 		else if (
 			UAGX_CylinderShapeComponent* Cylinder = Cast<UAGX_CylinderShapeComponent>(Component))
 		{
-			AutoFitCylinder(Cylinder, Blueprint, Meshes);
+			return AutoFitCylinder(Cylinder, Blueprint, Meshes);
 		}
 		else if (UAGX_CapsuleShapeComponent* Capsule = Cast<UAGX_CapsuleShapeComponent>(Component))
 		{
-			AutoFitCapsule(Capsule, Blueprint, Meshes);
+			return AutoFitCapsule(Capsule, Blueprint, Meshes);
 		}
 		else
 		{
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Unknown Auto Fit Shape Component type passed to AutoFitToChildInBlueprint."));
+			return false;
 		}
 	}
 
