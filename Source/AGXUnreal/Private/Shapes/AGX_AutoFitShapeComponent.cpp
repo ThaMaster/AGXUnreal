@@ -76,13 +76,6 @@ bool UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 			GetWorld());
 		return false;
 	}
-	else if (numWarnings > 0)
-	{
-		AGX_AutoFitShapeComponent_helpers::LogWarningWithMessageBoxInEditor(
-			"At least one warning was detected during the auto-fit process. The Log may contain "
-			"more details.",
-			GetWorld());
-	}
 
 	const bool Result = AutoFitFromVertices(Vertices);
 	if (!Result)
@@ -92,9 +85,18 @@ bool UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 				TEXT("Could not auto-fit '%s' to meshes. The Log may contain more details."),
 				*GetName()),
 			GetWorld());
+		return false;
 	}
 
-	return Result;
+	if (numWarnings > 0)
+	{
+		AGX_AutoFitShapeComponent_helpers::LogWarningWithMessageBoxInEditor(
+			"At least one warning was detected during the auto-fit process. The Log may contain "
+			"more details.",
+			GetWorld());
+	}
+
+	return true;
 }
 
 bool UAGX_AutoFitShapeComponent::AutoFitFromSelection()
