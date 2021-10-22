@@ -129,7 +129,7 @@ bool UAGX_AutoFitShapeComponent::AutoFitToChildrenFromSelection()
 		}
 	}
 
-	const bool Result = AutoFit(GetSelectedStaticMeshes());
+	const bool Result = AutoFit(AGX_MeshUtilities::FindImmediateChildrenMeshes(*this));
 	if (!Result)
 	{
 		return false;
