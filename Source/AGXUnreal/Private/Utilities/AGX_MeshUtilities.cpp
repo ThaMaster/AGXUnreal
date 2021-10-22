@@ -1659,16 +1659,32 @@ FAGX_MeshWithTransform AGX_MeshUtilities::FindFirstChildMesh(const USceneCompone
 TArray<FAGX_MeshWithTransform> AGX_MeshUtilities::FindImmediateChildrenMeshes(
 	const USceneComponent& Component)
 {
-	TArray<USceneComponent*> Children;
+	TArray<UStaticMeshComponent*> MeshComponents = FindImmediateChildrenMeshComponents(Component);
 	TArray<FAGX_MeshWithTransform> Meshes;
+
+	for (UStaticMeshComponent* Comp : MeshComponents)
+	{
+		if (UStaticMesh* S = Comp->GetStaticMesh())
+		{
+			Meshes.Add(FAGX_MeshWithTransform(S, Comp->GetComponentTransform()));
+		}
+	}
+
+	return Meshes;
+}
+
+TArray<UStaticMeshComponent*> AGX_MeshUtilities::FindImmediateChildrenMeshComponents(
+	const USceneComponent& Component)
+{
+	TArray<USceneComponent*> Children;
+	TArray<UStaticMeshComponent*> Meshes;
 	Component.GetChildrenComponents(/*bIncludeAllDescendants*/ false, Children);
 
 	for (USceneComponent* Child : Children)
 	{
 		if (UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(Child))
 		{
-			Meshes.Add(FAGX_MeshWithTransform(
-				MeshComponent->GetStaticMesh(), MeshComponent->GetComponentTransform()));
+			Meshes.Add(MeshComponent);
 		}
 	}
 

@@ -291,6 +291,8 @@ public:
 	static FAGX_MeshWithTransform FindFirstChildMesh(const USceneComponent& Component);
 	static TArray<FAGX_MeshWithTransform> FindImmediateChildrenMeshes(
 		const USceneComponent& Component);
+	static TArray<UStaticMeshComponent*> FindImmediateChildrenMeshComponents(
+		const USceneComponent& Component);
 	static FAGX_MeshWithTransform FindFirstParentMesh(const USceneComponent& Component);
 
 	/**

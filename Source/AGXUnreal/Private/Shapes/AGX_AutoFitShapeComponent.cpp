@@ -99,8 +99,48 @@ bool UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 
 bool UAGX_AutoFitShapeComponent::AutoFitFromSelection()
 {
+	// The TSL_CHILD_STATIC_MESH_COMPONENT is a special case where care must be taken to restore
+	// the original world transform of the children components.
+	if (MeshSourceLocation == EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT)
+	{
+		return AutoFitToChildrenFromSelection();
+	}
+
 	TArray<FAGX_MeshWithTransform> Meshes = GetSelectedStaticMeshes();
 	return AutoFit(Meshes);
+}
+
+bool UAGX_AutoFitShapeComponent::AutoFitToChildrenFromSelection()
+{
+	// Store away the world transforms of the Static Mesh Components so that we can restore them
+	// after the auto-fit procedure.
+	TArray<UStaticMeshComponent*> ChildComponents =
+		AGX_MeshUtilities::FindImmediateChildrenMeshComponents(*this);
+	TMap<UStaticMeshComponent*, FTransform> OrigChildWorldTransforms;
+	for (UStaticMeshComponent* S : ChildComponents)
+	{
+		if (S != nullptr)
+		{
+			OrigChildWorldTransforms.Add(S, S->GetComponentTransform());
+		}
+	}
+
+	const bool Result = AutoFit(GetSelectedStaticMeshes());
+	if (!Result)
+	{
+		return false;
+	}
+
+	// Finally, we restore the original world transform of the children Static Mesh components.
+	for (UStaticMeshComponent* S : ChildComponents)
+	{
+		if (S != nullptr)
+		{
+			S->SetWorldTransform(OrigChildWorldTransforms[S]);
+		}
+	}
+
+	return true;
 }
 
 TArray<FAGX_MeshWithTransform> UAGX_AutoFitShapeComponent::GetSelectedStaticMeshes() const

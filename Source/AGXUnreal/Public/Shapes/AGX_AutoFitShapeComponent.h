@@ -49,5 +49,7 @@ public:
 		PURE_VIRTUAL(UAGX_AutoFitShapeComponent::AutoFit, return false;);
 
 private:
+	bool AutoFitToChildrenFromSelection();
+
 	TArray<FAGX_MeshWithTransform> GetSelectedStaticMeshes() const;
 };
