@@ -122,6 +122,32 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		Component->SetRelativeTransform(NewRelTransform);
 	}
 
+	UStaticMeshComponent* GetParentMeshComponent(
+		UAGX_AutoFitShapeComponent* Component, UBlueprintGeneratedClass* Blueprint)
+	{
+		if (Blueprint == nullptr || Component == nullptr)
+		{
+			return nullptr;
+		}
+
+		USCS_Node* Current = GetSCSNodeFromComponent(Component, Blueprint);
+		if (Current == nullptr)
+		{
+			return nullptr;
+		}
+
+		while (USCS_Node* Parent = Blueprint->SimpleConstructionScript->FindParentNode(Current))
+		{
+			if (UStaticMeshComponent* S = Cast<UStaticMeshComponent>(Parent->ComponentTemplate))
+			{
+				return S;
+			}
+			Current = Parent;
+		}
+
+		return nullptr;
+	}
+
 	TArray<UStaticMeshComponent*> GetChildrenMeshComponents(
 		UAGX_AutoFitShapeComponent* Component, UBlueprintGeneratedClass* Blueprint)
 	{
@@ -364,6 +390,60 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		}
 	}
 
+	FReply AutoFitToAssetInBlueprint(
+		UAGX_AutoFitShapeComponent* Component, UBlueprintGeneratedClass* Blueprint)
+	{
+		if (Blueprint == nullptr || Component == nullptr)
+		{
+			return FReply::Handled();
+		}
+
+		UStaticMesh* Asset = Component->MeshSourceAsset;
+		if (Asset == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Could not find any Static Meshes from the current selection."));
+			return FReply::Handled();
+		}
+
+		const FTransform WorldTransform =
+			GetBlueprintComponentWorldTransform(Component, Blueprint);
+		FAGX_MeshWithTransform Mesh(Asset, WorldTransform);
+
+		const FScopedTransaction Transaction(
+			LOCTEXT("AutoFitAssetBPUndo", "Undo Auto-fit operation"));
+		AutoFitAny(Component, Blueprint, {Mesh});
+		return FReply::Handled();
+	}
+
+	FReply AutoFitToParentInBlueprint(
+		UAGX_AutoFitShapeComponent* Component, UBlueprintGeneratedClass* Blueprint)
+	{
+		if (Blueprint == nullptr || Component == nullptr)
+		{
+			return FReply::Handled();
+		}
+
+		UStaticMeshComponent* MeshParent = GetParentMeshComponent(Component, Blueprint);
+		if (MeshParent == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Could not find any Static Meshes from the current selection."));
+			return FReply::Handled();
+		}
+
+		const FTransform WorldTransform =
+			GetBlueprintComponentWorldTransform(MeshParent, Blueprint);
+		FAGX_MeshWithTransform Mesh(MeshParent->GetStaticMesh(), WorldTransform);
+
+		const FScopedTransaction Transaction(
+			LOCTEXT("AutoFitParentBPUndo", "Undo Auto-fit operation"));
+		AutoFitAny(Component, Blueprint, {Mesh});
+		return FReply::Handled();
+	}
+
 	FReply AutoFitToChildInBlueprint(
 		UAGX_AutoFitShapeComponent* Component, UBlueprintGeneratedClass* Blueprint)
 	{
@@ -387,7 +467,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 			}
 		}
 
-		if (MeshOrigTransform.Num() == 0)
+		if (MeshesWithTransform.Num() == 0)
 		{
 			UE_LOG(
 				LogAGX, Error,
@@ -432,13 +512,11 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		switch (Component->MeshSourceLocation)
 		{
 			case EAGX_StaticMeshSourceLocation::TSL_PARENT_STATIC_MESH_COMPONENT:
-				// TODO: impl
-				return FReply::Handled();
+				return AutoFitToParentInBlueprint(Component, Blueprint);
 			case EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT:
 				return AutoFitToChildInBlueprint(Component, Blueprint);
 			case EAGX_StaticMeshSourceLocation::TSL_STATIC_MESH_ASSET:
-				// TODO: impl
-				return FReply::Handled();
+				return AutoFitToAssetInBlueprint(Component, Blueprint);
 		}
 
 		UE_LOG(LogAGX, Error, TEXT("Unknown MeshSourceLocation given to AutoFitInBlueprint."));

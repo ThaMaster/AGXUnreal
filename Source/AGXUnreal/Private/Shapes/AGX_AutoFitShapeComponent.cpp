@@ -122,6 +122,8 @@ bool UAGX_AutoFitShapeComponent::AutoFitToChildrenFromSelection()
 		if (S != nullptr)
 		{
 			OrigChildWorldTransforms.Add(S, S->GetComponentTransform());
+			// Call Modify on the child component so that Undo/Redo works as expected.
+			S->Modify();
 		}
 	}
 
