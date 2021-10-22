@@ -261,37 +261,33 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		}
 	}
 
-	bool AutoFitAny(
+	void AutoFitAny(
 		UAGX_AutoFitShapeComponent* Component, UBlueprintGeneratedClass* Blueprint,
 		const TArray<FAGX_MeshWithTransform>& Meshes)
 	{
 		if (Component == nullptr || Blueprint == nullptr)
 		{
-			return true;
+			return;
 		}
 
 		if (UAGX_BoxShapeComponent* Box = Cast<UAGX_BoxShapeComponent>(Component))
 		{
 			AutoFitBox(Box, Blueprint, Meshes);
-			return true;
 		}
 		else if (
 			UAGX_CylinderShapeComponent* Cylinder = Cast<UAGX_CylinderShapeComponent>(Component))
 		{
 			AutoFitCylinder(Cylinder, Blueprint, Meshes);
-			return true;
 		}
 		else if (UAGX_CapsuleShapeComponent* Capsule = Cast<UAGX_CapsuleShapeComponent>(Component))
 		{
 			AutoFitCapsule(Capsule, Blueprint, Meshes);
-			return true;
 		}
 		else
 		{
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Unknown Auto Fit Shape Component type passed to AutoFitToChildInBlueprint."));
-			return false;
 		}
 	}
 
@@ -319,6 +315,8 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		const FScopedTransaction Transaction(
 			LOCTEXT("AutoFitAssetBPUndo", "Undo Auto-fit operation"));
 		AutoFitAny(Component, Blueprint, {Mesh});
+
+		// Logging done in AutoFitAny.
 		return FReply::Handled();
 	}
 
@@ -346,6 +344,8 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		const FScopedTransaction Transaction(
 			LOCTEXT("AutoFitParentBPUndo", "Undo Auto-fit operation"));
 		AutoFitAny(Component, Blueprint, {Mesh});
+
+		// Logging done in AutoFitAny.
 		return FReply::Handled();
 	}
 
@@ -442,6 +442,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 
 		if (AutoFitShapeComponent->IsInBlueprint())
 		{
+			// Logging done in AutoFitInBlueprint.
 			return AutoFitInBlueprint(
 				AutoFitShapeComponent,
 				Cast<UBlueprintGeneratedClass>(AutoFitShapeComponent->GetOuter()));
@@ -451,6 +452,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		AutoFitShapeComponent->Modify();
 		AutoFitShapeComponent->AutoFitFromSelection();
 
+		// Logging done in AutoFitFromSelection.
 		return FReply::Handled();
 	}
 }
