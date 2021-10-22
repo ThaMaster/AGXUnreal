@@ -6,6 +6,7 @@
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_CapsuleShapeComponent.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
@@ -26,102 +27,6 @@ TSharedRef<IDetailCustomization> FAGX_AutoFitShapeComponentCustomization::MakeIn
 
 namespace AGX_AutoFitShapeComponentCustomization_helpers
 {
-	USCS_Node* GetSCSNodeFromComponent(
-		USceneComponent* Component, UBlueprintGeneratedClass* Blueprint)
-	{
-		if (Blueprint == nullptr || Component == nullptr)
-		{
-			return nullptr;
-		}
-
-		TArray<USCS_Node*> Nodes = Blueprint->SimpleConstructionScript->GetAllNodes();
-		USCS_Node** ComponentNode = Nodes.FindByPredicate(
-			[Component](USCS_Node* Node) { return Node->ComponentTemplate == Component; });
-		if (ComponentNode == nullptr)
-		{
-			return nullptr;
-		}
-
-		return *ComponentNode;
-	}
-
-	FTransform GetBlueprintComponentWorldTransform(
-		USceneComponent* Component, UBlueprintGeneratedClass* Blueprint)
-	{
-		if (Blueprint == nullptr || Component == nullptr)
-		{
-			return FTransform::Identity;
-		}
-
-		USCS_Node* ComponentNode = GetSCSNodeFromComponent(Component, Blueprint);
-		if (ComponentNode == nullptr)
-		{
-			return FTransform::Identity;
-		}
-
-		// Build a chain of USCS_Nodes starting from root and going down to the Component's
-		// USCS_Node.
-		TArray<USCS_Node*> RootToComponentChain;
-		USCS_Node* CurrentNode = ComponentNode;
-		RootToComponentChain.Insert(CurrentNode, 0);
-		while (USCS_Node* Parent = Blueprint->SimpleConstructionScript->FindParentNode(CurrentNode))
-		{
-			RootToComponentChain.Insert(Parent, 0);
-			CurrentNode = Parent;
-		}
-
-		FTransform WorldTransform = FTransform::Identity;
-		for (USCS_Node* Node : RootToComponentChain)
-		{
-			if (Node == nullptr || Node->ComponentTemplate == nullptr)
-			{
-				continue;
-			}
-			if (USceneComponent* SceneComponent = Cast<USceneComponent>(Node->ComponentTemplate))
-			{
-				const FTransform RelativeTransform = SceneComponent->GetRelativeTransform();
-				FTransform::Multiply(&WorldTransform, &RelativeTransform, &WorldTransform);
-			}
-		}
-
-		return WorldTransform;
-	}
-
-	void SetBlueprintComponentWorldTransform(
-		USceneComponent* Component, UBlueprintGeneratedClass* Blueprint,
-		const FTransform& Transform)
-	{
-		if (Blueprint == nullptr || Component == nullptr)
-		{
-			return;
-		}
-
-		USCS_Node* ComponentNode = GetSCSNodeFromComponent(Component, Blueprint);
-		if (ComponentNode == nullptr)
-		{
-			return;
-		}
-
-		USCS_Node* ParentNode = Blueprint->SimpleConstructionScript->FindParentNode(ComponentNode);
-		if (ParentNode == nullptr || ParentNode->ComponentTemplate == nullptr)
-		{
-			return;
-		}
-
-		USceneComponent* ParentSceneComponent =
-			Cast<USceneComponent>(ParentNode->ComponentTemplate);
-		if (ParentSceneComponent == nullptr)
-		{
-			return;
-		}
-
-		const FTransform ParentWorldTransform =
-			GetBlueprintComponentWorldTransform(ParentSceneComponent, Blueprint);
-		const FTransform NewRelTransform = Transform.GetRelativeTransform(ParentWorldTransform);
-		Component->Modify();
-		Component->SetRelativeTransform(NewRelTransform);
-	}
-
 	UStaticMeshComponent* GetParentMeshComponent(
 		UAGX_AutoFitShapeComponent* Component, UBlueprintGeneratedClass* Blueprint)
 	{
@@ -130,7 +35,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 			return nullptr;
 		}
 
-		USCS_Node* Current = GetSCSNodeFromComponent(Component, Blueprint);
+		USCS_Node* Current = FAGX_BlueprintUtilities::GetSCSNodeFromComponent(Component);
 		if (Current == nullptr)
 		{
 			return nullptr;
@@ -157,7 +62,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 			return Children;
 		}
 
-		USCS_Node* ComponentNode = GetSCSNodeFromComponent(Component, Blueprint);
+		USCS_Node* ComponentNode = FAGX_BlueprintUtilities::GetSCSNodeFromComponent(Component);
 		if (ComponentNode == nullptr)
 		{
 			return Children;
@@ -244,10 +149,10 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		// transform on the Component, but world transform is not handled correctly by template
 		// components inside a Blueprint. In actuality, SetWorldTransform will behave as if the
 		// component is in world origin, i.e. the same way as SetRelativeTransform. Therefore, we
-		// use the SetBlueprintComponentWorldTransform which correctly handles the world transform
+		// use the SetTemplateComponentWorldTransform which correctly handles the world transform
 		// of template components.
-		SetBlueprintComponentWorldTransform(
-			Component, Blueprint, Component->GetComponentTransform());
+		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
+			Component, Component->GetComponentTransform(), false);
 
 		// Update any archetype instance in need of update.
 		for (UAGX_BoxShapeComponent* Instance :
@@ -288,8 +193,8 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		Component->AutoFit(Meshes);
 
 		// See comment in AutoFitBox.
-		SetBlueprintComponentWorldTransform(
-			Component, Blueprint, Component->GetComponentTransform());
+		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
+			Component, Component->GetComponentTransform(), false);
 
 		// Update any archetype instance in need of update.
 		for (UAGX_CylinderShapeComponent* Instance :
@@ -331,8 +236,8 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		Component->AutoFit(Meshes);
 
 		// See comment in AutoFitBox.
-		SetBlueprintComponentWorldTransform(
-			Component, Blueprint, Component->GetComponentTransform());
+		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
+			Component, Component->GetComponentTransform(), false);
 
 		// Update any archetype instance in need of update.
 		for (UAGX_CapsuleShapeComponent* Instance :
@@ -379,7 +284,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		else if (UAGX_CapsuleShapeComponent* Capsule = Cast<UAGX_CapsuleShapeComponent>(Component))
 		{
 			AutoFitCapsule(Capsule, Blueprint, Meshes);
-			return false;
+			return true;
 		}
 		else
 		{
@@ -408,7 +313,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		}
 
 		const FTransform WorldTransform =
-			GetBlueprintComponentWorldTransform(Component, Blueprint);
+			FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(Component);
 		FAGX_MeshWithTransform Mesh(Asset, WorldTransform);
 
 		const FScopedTransaction Transaction(
@@ -435,7 +340,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		}
 
 		const FTransform WorldTransform =
-			GetBlueprintComponentWorldTransform(MeshParent, Blueprint);
+			FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(MeshParent);
 		FAGX_MeshWithTransform Mesh(MeshParent->GetStaticMesh(), WorldTransform);
 
 		const FScopedTransaction Transaction(
@@ -461,7 +366,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 			if (Mesh != nullptr)
 			{
 				const FTransform WorldTransform =
-					GetBlueprintComponentWorldTransform(Mesh, Blueprint);
+					FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(Mesh);
 				MeshOrigTransform.Add(Mesh, WorldTransform);
 				MeshesWithTransform.Add({Mesh->GetStaticMesh(), WorldTransform});
 			}
@@ -494,7 +399,8 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 
 			const FVector MeshOrigLocation = MeshChild->GetRelativeLocation();
 			const FRotator MeshOrigRotation = MeshChild->GetRelativeRotation();
-			SetBlueprintComponentWorldTransform(MeshChild, Blueprint, MeshOrigTransform[MeshChild]);
+			FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
+				MeshChild, MeshOrigTransform[MeshChild], false);
 			UpdateTransformOfArchiveInstances(MeshChild, MeshOrigLocation, MeshOrigRotation);
 		}
 
