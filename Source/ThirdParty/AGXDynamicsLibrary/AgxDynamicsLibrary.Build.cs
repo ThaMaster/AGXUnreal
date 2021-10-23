@@ -260,9 +260,12 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		// Ensure all runtime deps are copied to target.
 		string ResourcePath = GetPackagedAGXResourcesPath();
+
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "bin", "*"));
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "data", "*"));
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "plugins", "*"));
+		RuntimeDependencies.Add(Path.Combine(ResourcePath, "include", "*"));
+		RuntimeDependencies.Add(Path.Combine(ResourcePath, "lib", "*"));
 
 		//foreach (var RuntimeLibFile in RuntimeLibFiles)
 		//{
