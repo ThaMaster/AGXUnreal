@@ -29,13 +29,7 @@ public:
 	void RelayNotifyMessage(const FString& Message, ELogVerbosity::Type Verbosity);
 
 private:
-	void SetupAgxEnvironment();
-	void SetupUsePluginResourcesOnly();
-
-private:
 	FNotifyBarrier NotifyBarrier;
-	void* VdbGridLibHandle;
-
 	TArray<FAGXNotifyListener*> NotifyListeners;
 };
 

@@ -151,6 +151,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		// module.
 		Type = ModuleType.External;
 
+		Console.WriteLine("**** AGx Dynamics Libray build.cs was called.");
+
 		string PackagedAGXResourcesPath = GetPackagedAGXResourcesPath();
 		PackagedAGXResources =
 			new AGXResourcesInfo(Target, AGXResourcesLocation.PackagedAGX, PackagedAGXResourcesPath);
@@ -209,7 +211,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			RuntimeLibFiles.Add("msvcp140", LibSource.AGX);
 			RuntimeLibFiles.Add("vcruntime140", LibSource.AGX);
-			if (TargetAGXVersion.IsNewerOrEqualTo(2, 30, 0, 0))
+			if (TargetAGXVersion.IsNewerOrEqualTo(2, 30, 0, 0) && TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
 				RuntimeLibFiles.Add("agx-assimp-vc*-mt", LibSource.AGX);
 			}
@@ -217,7 +219,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
 			RuntimeLibFiles.Add("ot2?-OpenThreads", LibSource.Dependencies);
-			if (TargetAGXVersion.IsOlderThan(2, 31, 2, 0))
+			if (TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
 				RuntimeLibFiles.Add("glew", LibSource.Dependencies);
 			}
@@ -234,11 +236,6 @@ public class AGXDynamicsLibrary : ModuleRules
 				+ "resources already exists in: {0}", PackagedAGXResourcesPath);
 		}
 
-		foreach (var RuntimeLibFile in RuntimeLibFiles)
-		{
-			AddRuntimeDependency(RuntimeLibFile.Key, RuntimeLibFile.Value, Target);
-		}
-
 		foreach (var LinkLibFile in LinkLibFiles)
 		{
 			AddLinkLibrary(LinkLibFile.Key, LinkLibFile.Value);
@@ -248,6 +245,39 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			AddIncludePath(HeaderPath);
 		}
+
+
+		// Delay-load testing starts here.
+
+
+		// Delay-load the DLL, so we can load it from the right place first
+		AddDelayLoadDependency("agxPhysics", LibSource.AGX, Target);
+		AddDelayLoadDependency("agxCore", LibSource.AGX, Target);
+		AddDelayLoadDependency("agxSabre", LibSource.AGX, Target);
+		AddDelayLoadDependency("agxTerrain", LibSource.AGX, Target);
+		AddDelayLoadDependency("agxCable", LibSource.AGX, Target);
+		AddDelayLoadDependency("agxModel", LibSource.AGX, Target);
+
+		// Ensure all runtime deps are copied to target.
+		string ResourcePath = GetPackagedAGXResourcesPath();
+		RuntimeDependencies.Add(Path.Combine(ResourcePath, "bin", "*"));
+		RuntimeDependencies.Add(Path.Combine(ResourcePath, "data", "*"));
+		RuntimeDependencies.Add(Path.Combine(ResourcePath, "plugins", "*"));
+
+		//foreach (var RuntimeLibFile in RuntimeLibFiles)
+		//{
+		//	AddRuntimeDependency(RuntimeLibFile.Key, RuntimeLibFile.Value, Target);
+		//}
+
+		// 	// Ensure that the DLL is staged along with the executable
+		//RuntimeDependencies.Add("$(PluginDir)/Binaries/ThirdParty/agx/bin/Win64/agxTerrain.dll");
+		//RuntimeDependencies.Add("$(PluginDir)/Binaries/ThirdParty/agx/bin/Win64/smile.png");
+	}
+
+	private void AddDelayLoadDependency(string Name, LibSource Src, ReadOnlyTargetRules Target)
+	{
+		string FileName = PackagedAGXResources.RuntimeLibraryFileName(Name);
+		PublicDelayLoadDLLs.Add(FileName);
 	}
 
 	// The runtime dependency file is copied to the target binaries directory.
@@ -269,22 +299,7 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		foreach (string FilePath in FilesToAdd)
 		{
-			// This is a temporary work-around to fix the issue where dll/so
-			// files are copied to the Binaries directory of any project that
-			// are built that uses this plugin, which should not happen. See
-			// internal issue 282.
-			//
-			// @todo Figure out how to properly copy the dll/so files for all
-			// build scenarios.
-			if (ShouldCopyBinFiles(Target))
-			{
-				string Dest = Path.Combine("$(BinaryOutputDir)", Path.GetFileName(FilePath));
-				RuntimeDependencies.Add(Dest, FilePath);
-			}
-			else
-			{
-				RuntimeDependencies.Add(FilePath);
-			}
+			RuntimeDependencies.Add(FilePath);
 		}
 	}
 
@@ -356,7 +371,9 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private string GetPackagedAGXResourcesPath()
 	{
-		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries", "ThirdParty", "agx"));
+		string P = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries", "ThirdParty", "agx"));
+		Console.WriteLine("**** GetPackagedAGXResourcesPath returned: " + P);
+		return P;
 	}
 
 

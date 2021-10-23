@@ -7,7 +7,8 @@
 
 void FAGXUnrealModule::StartupModule()
 {
-	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealModule::StartupModule()"));
+
+	UE_LOG(LogAGX, Log, TEXT("**** FAGXUnrealModule::StartupModule() entry point."));
 
 	FAGX_RuntimeStyle::Initialize();
 	FAGX_RuntimeStyle::ReloadTextures();

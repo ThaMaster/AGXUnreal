@@ -13,7 +13,8 @@
 #include "Terrain/AGX_Terrain.h"
 #include "Tires/AGX_TireComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
-#include "Utilities/AGX_EnvironmentUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
+#include "AGX_Environment.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 
@@ -728,17 +729,17 @@ namespace
 	void InvalidLicenseMessageBox()
 	{
 		FString Status;
-		if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&Status) == false)
+		if (FAGX_Environment::GetInstance().IsAgxDynamicsLicenseValid(&Status) == false)
 		{
 			FString Message =
 				"Invalid AGX Dynamics license. Status: " + Status +
 				"\n\nIt will not be possible to run simulations using the AGX "
 				"Dynamics for Unreal plugin.\n\nTo get your license, visit us at www.algoryx.se";
 
-			if (!FAGX_EnvironmentUtilities::IsSetupEnvRun())
+			if (!FAGX_Environment::IsSetupEnvRun())
 			{
 				const FString ResourcesPath =
-					FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath();
+					FAGX_Environment::GetAgxDynamicsResourcesPath();
 				Message += "\n\nThe AGX Dynamics license file should be placed in: " +
 						   FPaths::Combine(ResourcesPath, FString("data"), FString("cfg"));
 			}

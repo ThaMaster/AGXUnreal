@@ -1,4 +1,6 @@
 using UnrealBuildTool;
+using System.IO;
+using System;
 
 public class AGXUnrealEditor : ModuleRules
 {
@@ -18,6 +20,8 @@ public class AGXUnrealEditor : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PrecompileForTargets = PrecompileTargetsType.Any;
+
+		Console.WriteLine("**** AGx Dynamics Editor build.cs was called.");
 
 		/// \todo Copied from the prototype plugin. Not sure if all of these are
 		///       required.

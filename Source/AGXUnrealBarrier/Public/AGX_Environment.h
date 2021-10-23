@@ -2,9 +2,15 @@
 
 #include "CoreMinimal.h"
 
-class AGXUNREALBARRIER_API FAGX_EnvironmentUtilities
+class AGXUNREALBARRIER_API FAGX_Environment
 {
 public:
+	~FAGX_Environment();
+
+	static FAGX_Environment& GetInstance();
+
+	bool IsAgxDynamicsLicenseValid(FString* OutStatus = nullptr);
+
 	static FString GetPluginPath();
 
 	static FString GetPluginBinariesPath();
@@ -28,7 +34,15 @@ public:
 
 	static FString GetAgxDynamicsResourcesPath();
 
-	static void EnsureAgxDynamicsEnvironmentIsSetup();
+	FAGX_Environment(const FAGX_Environment&) = delete;
+	FAGX_Environment operator=(const FAGX_Environment&) = delete;
 
-	static bool IsAgxDynamicsLicenseValid(FString* OutStatus = nullptr);
+private:
+	FAGX_Environment();
+
+	void Init();
+	void SetupAGXDynamicsEnvironment();
+	void LoadDynamicLibraries();
+
+	TArray<void*> DynamicLibraryHandles;
 };

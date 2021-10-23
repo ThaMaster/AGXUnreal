@@ -1,4 +1,6 @@
 using UnrealBuildTool;
+using System.IO;
+using System;
 
 public class AGXUnrealBarrier : ModuleRules
 {
@@ -29,6 +31,8 @@ public class AGXUnrealBarrier : ModuleRules
 		bEnableExceptions = true;
 
 		PrecompileForTargets = PrecompileTargetsType.Any;
+
+		Console.WriteLine("**** AGx Dynamics Barrier build.cs was called.");
 
 		// TODO: Determine which of these are really need and why.
 		PublicDependencyModuleNames.AddRange(new string[] {

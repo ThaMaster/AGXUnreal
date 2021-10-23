@@ -1,7 +1,7 @@
 #include "AGX_Stepper.h"
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
-#include "Utilities/AGX_EnvironmentUtilities.h"
+#include "AGX_Environment.h"
 
 #include "Engine/GameInstance.h"
 
@@ -13,7 +13,7 @@ AAGX_Stepper::AAGX_Stepper()
 	///       to see the new state for this tick.
 
 	// Only tick if the AGX Dynamics license is valid.
-	PrimaryActorTick.bCanEverTick = FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid();
+	PrimaryActorTick.bCanEverTick = FAGX_Environment::GetInstance().IsAgxDynamicsLicenseValid();
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
 }
 
