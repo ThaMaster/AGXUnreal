@@ -93,6 +93,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 	}
 
 	void UpdateTransformOfArchiveInstances(
+	void UpdateTransformOfArchetypeInstances(
 		USceneComponent* Component, const FVector& OrigRelLocation, const FRotator& OrigRelRotation)
 	{
 		if (Component == nullptr)
