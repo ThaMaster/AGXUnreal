@@ -89,7 +89,7 @@ FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(USceneCom
 }
 
 bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
-	USceneComponent* Component, const FTransform& Transform, bool UpdateArchiveInstances)
+	USceneComponent* Component, const FTransform& Transform, bool UpdateArchetypeInstances)
 {
 	using namespace AGX_BlueprintUtilities_helpers;
 	if (Component == nullptr)
@@ -130,7 +130,7 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 	Component->Modify();
 	Component->SetRelativeTransform(NewRelTransform);
 
-	if (!UpdateArchiveInstances)
+	if (!UpdateArchetypeInstances)
 	{
 		// We are done.
 		return true;

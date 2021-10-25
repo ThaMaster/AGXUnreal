@@ -28,5 +28,5 @@ public:
 	 */
 	static bool SetTemplateComponentWorldTransform(
 		USceneComponent* Component, const FTransform& Transform,
-		bool UpdateArchiveInstances = true);
+		bool UpdateArchetypeInstances = true);
 };
