@@ -6,40 +6,11 @@
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 
-namespace AGX_AutoFitShapeComponent_helpers
-{
-	void LogErrorWithMessageBoxInEditor(const FString& Msg, UWorld* World)
-	{
-		if (World && World->IsGameWorld())
-		{
-			// Write only to the log during Play.
-			UE_LOG(LogAGX, Error, TEXT("%s"), *Msg);
-		}
-		else
-		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Msg);
-		}
-	}
-
-	void LogWarningWithMessageBoxInEditor(const FString& Msg, UWorld* World)
-	{
-		if (World && World->IsGameWorld())
-		{
-			// Write only to the log during Play.
-			UE_LOG(LogAGX, Warning, TEXT("%s"), *Msg);
-		}
-		else
-		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(Msg);
-		}
-	}
-}
-
 bool UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 {
 	if (!FAGX_EnvironmentUtilities::IsAGXDynamicsVersionNewerOrEqualTo(2, 31, 0, 0))
 	{
-		AGX_AutoFitShapeComponent_helpers::LogErrorWithMessageBoxInEditor(
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
 			FString::Printf(
 				TEXT("Could not auto-fit '%s' to meshes because the AGX Dynamics version used by "
 					 "the AGX Dynamics for Unreal plugin is too old. The AGX Dynamics version must "
@@ -68,7 +39,7 @@ bool UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 	}
 	if (Vertices.Num() == 0)
 	{
-		AGX_AutoFitShapeComponent_helpers::LogErrorWithMessageBoxInEditor(
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
 			FString::Printf(
 				TEXT("Could not auto-fit '%s' to meshes because no collision data could be "
 					 "extracted."),
@@ -80,7 +51,7 @@ bool UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 	const bool Result = AutoFitFromVertices(Vertices);
 	if (!Result)
 	{
-		AGX_AutoFitShapeComponent_helpers::LogErrorWithMessageBoxInEditor(
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
 			FString::Printf(
 				TEXT("Could not auto-fit '%s' to meshes. The Log may contain more details."),
 				*GetName()),
@@ -90,7 +61,7 @@ bool UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 
 	if (numWarnings > 0)
 	{
-		AGX_AutoFitShapeComponent_helpers::LogWarningWithMessageBoxInEditor(
+		FAGX_NotificationUtilities::ShowDialogBoxWithWarningLogInEditor(
 			"At least one warning was detected during the auto-fit process. The Log may contain "
 			"more details.",
 			GetWorld());
