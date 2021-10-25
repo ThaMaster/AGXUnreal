@@ -10,12 +10,12 @@ bool UAGX_AutoFitShapeComponent::AutoFit(TArray<FAGX_MeshWithTransform> Meshes)
 {
 	if (!FAGX_EnvironmentUtilities::IsAGXDynamicsVersionNewerOrEqualTo(2, 31, 0, 0))
 	{
+		const FString AGXVersion = FAGX_EnvironmentUtilities::GetAGXDynamicsVersion();
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
 			FString::Printf(
-				TEXT("Could not auto-fit '%s' to meshes because the AGX Dynamics version used by "
-					 "the AGX Dynamics for Unreal plugin is too old. The AGX Dynamics version must "
-					 "be at least 2.31.0.0."),
-				*GetName()),
+				TEXT("Could not auto-fit '%s' to meshes. Auto-fit requires AGX Dynamics version "
+					 "2.31.0.0. Current version is %s"),
+				*GetName(), *AGXVersion),
 			GetWorld());
 		return false;
 	}
