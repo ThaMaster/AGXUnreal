@@ -92,44 +92,6 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		return Children;
 	}
 
-	void UpdateTransformOfArchiveInstances(
-	void UpdateTransformOfArchetypeInstances(
-		USceneComponent* Component, const FVector& OrigRelLocation, const FRotator& OrigRelRotation)
-	{
-		if (Component == nullptr)
-		{
-			return;
-		}
-
-		// Note: Using SetWorldTransform fails here because that function internally uses the
-		// transform of the attach-parent to calculate a new relative transform and sets that. When
-		// dealing with objects inside a Blueprint, the attach-parent is not set. Therefore we must
-		// stick to using only RelativeLocation/Rotation.
-		for (USceneComponent* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*Component))
-		{
-			// Only write to the Archetype Instances if they are currently in sync with this
-			// template.
-			if (Instance->GetRelativeLocation() == OrigRelLocation &&
-				Instance->GetRelativeRotation() == OrigRelRotation)
-			{
-				Instance->Modify();
-				Instance->SetRelativeLocation(Component->GetRelativeLocation());
-				Instance->SetRelativeRotation(Component->GetRelativeRotation());
-
-				// The purpose of this function is to make sure the Instances get exactly the same
-				// relative transform as the Archetype. However, SetRelativeLocation/Rotation does
-				// some transformation calculations internally which in some cases result in (small)
-				// rounding errors, which is enough to break the state in the Blueprint. We call the
-				// Set..._Direct functions here to ensure that the RelativeLocation/Rotation matches
-				// exactly with the archetype. The above calls are still needed because those make
-				// sure the component is updated in the viewport without the need to recompile the
-				// Blueprint.
-				Instance->SetRelativeLocation_Direct(Component->GetRelativeLocation());
-				Instance->SetRelativeRotation_Direct(Component->GetRelativeRotation());
-			}
-		}
-	}
-
 	bool AutoFitBox(
 		UAGX_BoxShapeComponent* Component, UBlueprintGeneratedClass* Blueprint,
 		const TArray<FAGX_MeshWithTransform>& Meshes)
@@ -173,7 +135,14 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 				Instance->SetRelativeLocation(Component->GetRelativeLocation());
 				Instance->SetRelativeRotation(Component->GetRelativeRotation());
 
-				// See comment in UpdateTransformOfArchiveInstances.
+				// The purpose of this for-loop is to make sure the Instances get exactly the same
+				// relative transform as the archetype. However, SetRelativeLocation/Rotation does
+				// some transformation calculations internally which in some cases result in (small)
+				// rounding errors, which is enough to break the state in the Blueprint. We call the
+				// Set..._Direct functions here to ensure that the RelativeLocation/Rotation matches
+				// exactly with the archetype. The above calls are still needed because those make
+				// sure the component is updated in the viewport without the need to recompile the
+				// Blueprint.
 				Instance->SetRelativeLocation_Direct(Component->GetRelativeLocation());
 				Instance->SetRelativeRotation_Direct(Component->GetRelativeRotation());
 			}
@@ -222,7 +191,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 				Instance->SetRelativeLocation(Component->GetRelativeLocation());
 				Instance->SetRelativeRotation(Component->GetRelativeRotation());
 
-				// See comment in UpdateTransformOfArchiveInstances.
+				// See comment in AutoFitBox.
 				Instance->SetRelativeLocation_Direct(Component->GetRelativeLocation());
 				Instance->SetRelativeRotation_Direct(Component->GetRelativeRotation());
 			}
@@ -271,7 +240,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 				Instance->SetRelativeLocation(Component->GetRelativeLocation());
 				Instance->SetRelativeRotation(Component->GetRelativeRotation());
 
-				// See comment in UpdateTransformOfArchiveInstances.
+				// See comment in AutoFitBox.
 				Instance->SetRelativeLocation_Direct(Component->GetRelativeLocation());
 				Instance->SetRelativeRotation_Direct(Component->GetRelativeRotation());
 			}
@@ -420,8 +389,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 			const FVector MeshOrigLocation = MeshChild->GetRelativeLocation();
 			const FRotator MeshOrigRotation = MeshChild->GetRelativeRotation();
 			FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
-				MeshChild, MeshOrigTransform[MeshChild], false);
-			UpdateTransformOfArchiveInstances(MeshChild, MeshOrigLocation, MeshOrigRotation);
+				MeshChild, MeshOrigTransform[MeshChild]);
 		}
 
 		return FReply::Handled();
