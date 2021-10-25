@@ -48,7 +48,9 @@ public:
 	virtual bool AutoFitFromVertices(const TArray<FVector>& Vertices)
 		PURE_VIRTUAL(UAGX_AutoFitShapeComponent::AutoFit, return false;);
 
-private:
+	TArray<UStaticMeshComponent*> FindImmediateChildrenMeshComponents();
+		
+private :
 	bool AutoFitToChildrenFromSelection();
 
 	TArray<FAGX_MeshWithTransform> GetSelectedStaticMeshes() const;

@@ -469,6 +469,22 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 
 		const FScopedTransaction Transaction(LOCTEXT("AutoFitUndo", "Undo Auto-fit operation"));
 		AutoFitShapeComponent->Modify();
+
+		// Call Modify on children meshes if TSL_CHILD_STATIC_MESH_COMPONENT is used, to support
+		// undo/redo.
+		if (AutoFitShapeComponent->MeshSourceLocation ==
+			EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT)
+		{
+			for (UStaticMeshComponent* Child :
+				 AutoFitShapeComponent->FindImmediateChildrenMeshComponents())
+			{
+				if (Child == nullptr)
+				{
+					continue;
+				}
+				Child->Modify();
+			}
+		}
 		AutoFitShapeComponent->AutoFitFromSelection();
 
 		// Logging done in AutoFitFromSelection.

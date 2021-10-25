@@ -87,16 +87,13 @@ bool UAGX_AutoFitShapeComponent::AutoFitToChildrenFromSelection()
 {
 	// Store away the world transforms of the Static Mesh Components so that we can restore them
 	// after the auto-fit procedure.
-	TArray<UStaticMeshComponent*> ChildComponents =
-		AGX_MeshUtilities::FindImmediateChildrenMeshComponents(*this);
+	TArray<UStaticMeshComponent*> ChildComponents = FindImmediateChildrenMeshComponents();
 	TMap<UStaticMeshComponent*, FTransform> OrigChildWorldTransforms;
 	for (UStaticMeshComponent* S : ChildComponents)
 	{
 		if (S != nullptr)
 		{
 			OrigChildWorldTransforms.Add(S, S->GetComponentTransform());
-			// Call Modify on the child component so that Undo/Redo works as expected.
-			S->Modify();
 		}
 	}
 
@@ -138,4 +135,9 @@ TArray<FAGX_MeshWithTransform> UAGX_AutoFitShapeComponent::GetSelectedStaticMesh
 	}
 
 	return Meshes;
+}
+
+TArray<UStaticMeshComponent*> UAGX_AutoFitShapeComponent::FindImmediateChildrenMeshComponents()
+{
+	return AGX_MeshUtilities::FindImmediateChildrenMeshComponents(*this);
 }
