@@ -2036,13 +2036,13 @@ bool AGX_MeshUtilities::GetStaticMeshCollisionData(
 	// since we don't want to leave them checked on Static Mesh assets that are no longer used by
 	// any Trimesh, and we don't want to disable it on a Static Mesh asset on which the end-user
 	// enabled it on themselves.
-	if (StaticMesh->bAllowCPUAccess)
+	if (StaticMesh.bAllowCPUAccess)
 	{
-		CopyMeshBuffersGameThread(Mesh, VertexBuffer, IndexBuffer);
+		AGX_MeshUtilities_helpers::CopyMeshBuffersGameThread(Mesh, VertexBuffer, IndexBuffer);
 	}
 	else
 	{
-		CopyMeshBuffers(Mesh, VertexBuffer, IndexBuffer);
+		AGX_MeshUtilities_helpers::CopyMeshBuffers(Mesh, VertexBuffer, IndexBuffer);
 	}
 
 	if (IndexBuffer.Num() == 0 || VertexBuffer.Num() == 0)
