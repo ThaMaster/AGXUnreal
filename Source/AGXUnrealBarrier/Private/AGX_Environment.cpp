@@ -119,7 +119,10 @@ void FAGX_Environment::LoadDynamicLibraries()
 				TEXT("Tried to dynamically load '%s' but the loading failed. Some AGX "
 					 "Dynamics features might not be available."),
 				*FullFilePath);
+			continue;
 		}
+
+		DynamicLibraryHandles.Add(Handle);
 	}
 	FPlatformProcess::PopDllDirectory(*DependecyDir);
 
