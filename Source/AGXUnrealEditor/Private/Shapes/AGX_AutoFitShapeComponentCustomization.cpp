@@ -301,10 +301,6 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 			FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(Component);
 		FAGX_MeshWithTransform Mesh(Asset, WorldTransform);
 
-		const FScopedTransaction Transaction(
-			LOCTEXT("AutoFitAssetBPUndo", "Undo Auto-fit operation"));
-		AutoFitAny(Component, Blueprint, {Mesh});
-
 		// Logging done in AutoFitAny.
 		return FReply::Handled();
 	}
@@ -329,10 +325,6 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		const FTransform WorldTransform =
 			FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(MeshParent);
 		FAGX_MeshWithTransform Mesh(MeshParent->GetStaticMesh(), WorldTransform);
-
-		const FScopedTransaction Transaction(
-			LOCTEXT("AutoFitParentBPUndo", "Undo Auto-fit operation"));
-		AutoFitAny(Component, Blueprint, {Mesh});
 
 		// Logging done in AutoFitAny.
 		return FReply::Handled();
@@ -368,9 +360,6 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 				TEXT("Could not find any Static Meshes from the current selection."));
 			return FReply::Handled();
 		}
-
-		const FScopedTransaction Transaction(
-			LOCTEXT("AutoFitChildrenBPUndo", "Undo Auto-fit operation"));
 
 		if (!AutoFitAny(Component, Blueprint, MeshesWithTransform))
 		{
@@ -417,6 +406,41 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		return FReply::Handled();
 	}
 
+	struct FScopedProperyNotify
+	{
+		FScopedProperyNotify() = delete;
+		FScopedProperyNotify(TArray<TSharedRef<IPropertyHandle>>& InProperties)
+			: Properties(InProperties)
+		{
+			for (TSharedRef<IPropertyHandle> Handle : Properties)
+			{
+				if (!Handle->IsValidHandle())
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("FScopedProperyNotify was given an invalid propery handle."));
+					continue;
+				}
+
+				Handle->NotifyPreChange();
+			}
+		}
+
+		~FScopedProperyNotify()
+		{
+			for (TSharedRef<IPropertyHandle> Handle : Properties)
+			{
+				if (Handle->IsValidHandle())
+				{
+					Handle->NotifyPostChange();
+				}
+			}
+		}
+
+		private:
+		const TArray<TSharedRef<IPropertyHandle>>& Properties;
+	};
+
 	FReply OnAutoFitButtonClicked(IDetailLayoutBuilder& DetailBuilder)
 	{
 		UAGX_AutoFitShapeComponent* AutoFitShapeComponent =
@@ -428,6 +452,14 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 			return FReply::Handled();
 		}
 
+		TArray<TSharedRef<IPropertyHandle>> Properties;
+		Properties.Add(
+			DetailBuilder.GetProperty(FName("RelativeLocation"), USceneComponent::StaticClass()));
+		Properties.Add(
+			DetailBuilder.GetProperty(FName("RelativeRotation"), USceneComponent::StaticClass()));
+		const FScopedProperyNotify PropertyNotify(Properties);
+		const FScopedTransaction Transaction(LOCTEXT("AutoFitUndo", "Undo Auto-fit operation"));
+
 		if (AutoFitShapeComponent->IsInBlueprint())
 		{
 			// Logging done in AutoFitInBlueprint.
@@ -435,9 +467,6 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 				AutoFitShapeComponent,
 				Cast<UBlueprintGeneratedClass>(AutoFitShapeComponent->GetOuter()));
 		}
-
-		const FScopedTransaction Transaction(LOCTEXT("AutoFitUndo", "Undo Auto-fit operation"));
-		AutoFitShapeComponent->Modify();
 
 		// Call Modify on children meshes if TSL_CHILD_STATIC_MESH_COMPONENT is used, to support
 		// undo/redo.
@@ -454,6 +483,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 				Child->Modify();
 			}
 		}
+		AutoFitShapeComponent->Modify();
 		AutoFitShapeComponent->AutoFitFromSelection();
 
 		// Logging done in AutoFitFromSelection.
