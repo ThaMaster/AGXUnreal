@@ -140,6 +140,13 @@ void FAGX_Environment::LoadDynamicLibraries()
 	}
 	FPlatformProcess::PopDllDirectory(*DependecyDir);
 
+	if (DynamicLibraryHandles.Num() == 0)
+	{
+		UE_LOG(
+				LogAGX, Error,
+				TEXT("Dynamic loading of AGX Dynamics failed. The AGX Dynamics for Unreal plugin "
+				"will not function as expected."));
+	}
 }
 
 void FAGX_Environment::SetupAGXDynamicsEnvironment()
