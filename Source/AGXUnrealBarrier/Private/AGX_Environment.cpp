@@ -202,6 +202,12 @@ FAGX_Environment& FAGX_Environment::GetInstance()
 	return Instance;
 }
 
+bool FAGX_Environment::EnsureEnvironmentSetup()
+{
+	// Environment setup is done from the constructor, i.e. at this point it has already been done.
+	return true;
+}
+
 // May return empty FString if plugin path is not found.
 FString FAGX_Environment::GetPluginPath()
 {

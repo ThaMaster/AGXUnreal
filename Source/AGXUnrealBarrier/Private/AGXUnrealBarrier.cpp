@@ -33,13 +33,15 @@ namespace
 
 void FAGXUnrealBarrierModule::StartupModule()
 {
-	LogAgxDynamicsLicenseStatus();
+	FAGX_Environment::GetInstance().EnsureEnvironmentSetup();
 
 	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::StartupModule(). Calling agx::init."));
 	agx::init();
 
 	// Start AGX logging.
 	NotifyBarrier.StartAgxNotify(ELogVerbosity::Log);
+
+	LogAgxDynamicsLicenseStatus();
 }
 
 void FAGXUnrealBarrierModule::ShutdownModule()

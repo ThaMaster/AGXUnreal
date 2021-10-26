@@ -11,6 +11,8 @@ public:
 
 	bool IsAgxDynamicsLicenseValid(FString* OutStatus = nullptr);
 
+	bool EnsureEnvironmentSetup();
+
 	static FString GetPluginPath();
 
 	static FString GetPluginBinariesPath();
