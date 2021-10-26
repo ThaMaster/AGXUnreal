@@ -1,6 +1,5 @@
 using UnrealBuildTool;
-using System.IO;
-using System;
+
 public class AGXUnreal : ModuleRules
 {
 	public AGXUnreal(ReadOnlyTargetRules Target) : base(Target)
@@ -19,8 +18,6 @@ public class AGXUnreal : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PrecompileForTargets = PrecompileTargetsType.Any;
-
-		Console.WriteLine("**** AGx Dynamics AGXUnreal build.cs was called.");
 
 		// TODO: Determine which of these are really need and why.
 		PublicDependencyModuleNames.AddRange(new string[] {

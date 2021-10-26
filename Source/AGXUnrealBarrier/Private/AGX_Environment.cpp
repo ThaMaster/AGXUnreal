@@ -30,6 +30,7 @@ struct FCurrentPlatformMisc : public FLinuxPlatformMisc
 {
 };
 #else
+//Unsupported platform.
 static_assert(false);
 #endif
 
@@ -60,15 +61,19 @@ void FAGX_Environment::Init()
 			 "AGXUnreal plugin at: %s"),
 		*AgxDynamicsResoucePath);
 
+#if defined(_WIN64)
 	LoadDynamicLibraries();
+#endif
 	SetupAGXDynamicsEnvironment();
 }
 
 void FAGX_Environment::LoadDynamicLibraries()
 {
+#if defined(_WIN64)
 	check(DynamicLibraryHandles.Num() == 0);
 	check(IsSetupEnvRun() == false);
 	const FString AgxResourcesPath = GetAgxDynamicsResourcesPath();
+	UE_LOG(LogAGX, Log, TEXT("About to load AGX Dynamics as dynamic libraries."));
 
 	// Dynamically load AGX Dynamics dependencies.
 	// clang-format off
@@ -90,52 +95,30 @@ void FAGX_Environment::LoadDynamicLibraries()
 		"IlmThread-2_2",
 		"openvdb",
 		"tbb",
-#if defined(__linux__)
-		"png"
-#endif
-#if defined(_WIN64)
 		"msvcp140",
 		"vcruntime140",
 		"websockets",
 		"libpng",
 		"ot21-OpenThreads"
-#endif
 	};
 	// clang-format on
 
-#if defined(__linux__)
-	const FString DependecyDir =
-		FPaths::Combine(AgxResourcesPath, FString("lib"), FString("Linux"));
-#endif
-#if defined(_WIN64)
 	const FString DependecyDir =
 		FPaths::Combine(AgxResourcesPath, FString("bin"), FString("Win64"));
-#endif
-
 	FPlatformProcess::PushDllDirectory(*DependecyDir);
+
 	for (const FString& FileName : AGXDynamicsDependencyFileNames)
 	{
-#if defined(__linux__)
-		const FString FileNameWExtension = FileName + FString(".so");
-#endif
-#if defined(_WIN64)
 		const FString FileNameWExtension = FileName + FString(".dll");
-#endif
 		const FString FullFilePath = FPaths::Combine(DependecyDir, FileNameWExtension);
 		void* Handle = FPlatformProcess::GetDllHandle(*FileNameWExtension);
 		if (Handle == nullptr)
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("***** Tried to dynamically load '%s' but the loading failed. Some AGX "
-					 "Dynamics "
-					 "features might not be available."),
+				TEXT("Tried to dynamically load '%s' but the loading failed. Some AGX "
+					 "Dynamics features might not be available."),
 				*FullFilePath);
-		}
-		else
-		{
-			UE_LOG(LogAGX, Log, TEXT("***** Successfully loaded '%s' dynamically."), *FullFilePath);
-			DynamicLibraryHandles.Add(Handle);
 		}
 	}
 	FPlatformProcess::PopDllDirectory(*DependecyDir);
@@ -147,6 +130,13 @@ void FAGX_Environment::LoadDynamicLibraries()
 				TEXT("Dynamic loading of AGX Dynamics failed. The AGX Dynamics for Unreal plugin "
 				"will not function as expected."));
 	}
+
+#elif defined(__linux__)
+	// LoadDynamicLibraries not necessary on Linux.
+#else
+	// Unsupported platform.
+	static_assert(false);
+#endif
 }
 
 void FAGX_Environment::SetupAGXDynamicsEnvironment()

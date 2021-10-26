@@ -33,10 +33,6 @@ namespace
 
 void FAGXUnrealBarrierModule::StartupModule()
 {
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("***** FAGXUnrealBarrierModule::StartupModule() entry point."));
-
 	LogAgxDynamicsLicenseStatus();
 
 	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::StartupModule(). Calling agx::init."));

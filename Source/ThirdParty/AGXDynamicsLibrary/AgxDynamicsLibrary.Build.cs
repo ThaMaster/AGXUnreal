@@ -151,8 +151,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		// module.
 		Type = ModuleType.External;
 
-		Console.WriteLine("**** AGx Dynamics Libray build.cs was called.");
-
 		string PackagedAGXResourcesPath = GetPackagedAGXResourcesPath();
 		PackagedAGXResources =
 			new AGXResourcesInfo(Target, AGXResourcesLocation.PackagedAGX, PackagedAGXResourcesPath);
