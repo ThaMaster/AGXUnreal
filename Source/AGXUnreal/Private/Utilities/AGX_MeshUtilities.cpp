@@ -2019,7 +2019,32 @@ bool AGX_MeshUtilities::GetStaticMeshCollisionData(
 	// Copy the Index and Vertex buffers from the mesh.
 	TArray<uint32> IndexBuffer;
 	TArray<FVector> VertexBuffer;
-	AGX_MeshUtilities_helpers::CopyMeshBuffers(Mesh, VertexBuffer, IndexBuffer);
+
+	// Depending on if the triangle data has been pinned to host memory or not, either directly copy
+	// from host memory with the current thread, assumed to be the game thread, or dispatch through
+	// CopyMeshBuffers which will do either game thread copying or render thread copying depending
+	// on if we are in the editor or not.
+	//
+	// This can probably be done better, but the only reason we check Allow CPU Access here is
+	// that the render thread copying produces garbage on Linux. We should solve that and remove
+	// this check. See internal issue 292. But on the other hand, why copy from GPU when the data
+	// is already next to the CPU? We expect that Allow CPU Access will be false most of the time,
+	// and we don't want to require the end-user to check the checkbox on every mesh they want to
+	// create a Trimesh from. Should the Trimesh set the flag on the Static Mesh asset? Can it?
+	// Doing it here is too late since we're now in Begin Play, we need to set the flag on the
+	// Editor instance, not the Play instance. The state handling of the flag will be complicated
+	// since we don't want to leave them checked on Static Mesh assets that are no longer used by
+	// any Trimesh, and we don't want to disable it on a Static Mesh asset on which the end-user
+	// enabled it on themselves.
+	if (StaticMesh->bAllowCPUAccess)
+	{
+		CopyMeshBuffersGameThread(Mesh, VertexBuffer, IndexBuffer);
+	}
+	else
+	{
+		CopyMeshBuffers(Mesh, VertexBuffer, IndexBuffer);
+	}
+
 	if (IndexBuffer.Num() == 0 || VertexBuffer.Num() == 0)
 	{
 		return false;
