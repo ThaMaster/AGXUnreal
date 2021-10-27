@@ -63,13 +63,13 @@ namespace
 		return Filename;
 	}
 
-	FString SelectExistingDirectory(const FString& DialogTitle, bool AllowNoneSelected = false)
+	FString SelectExistingDirectory(
+		const FString& DialogTitle, const FString& InStartDir = "", bool AllowNoneSelected = false)
 	{
-		// For a discussion on window handles see
-		// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html
+		const FString StartDir = InStartDir.IsEmpty() ? FString("DefaultPath") : InStartDir;
 		FString DirectoryPath("");
 		bool DirectorySelected = FDesktopPlatformModule::Get()->OpenDirectoryDialog(
-			nullptr, DialogTitle, TEXT("DefaultPath"), DirectoryPath);
+			nullptr, DialogTitle, StartDir, DirectoryPath);
 
 		if (!AllowNoneSelected && (!DirectorySelected || DirectoryPath.IsEmpty()))
 		{
@@ -83,7 +83,7 @@ namespace
 	bool UrdfHasFilenameAttribute(const FString& FilePath)
 	{
 		FString Content;
-		if(!FFileHelper::LoadFileToString(Content, *FilePath))
+		if (!FFileHelper::LoadFileToString(Content, *FilePath))
 		{
 			UE_LOG(LogAGX, Warning, TEXT("Unable to read file '%s'"), *FilePath);
 			return false;
@@ -126,14 +126,15 @@ void UAGX_AgxEdModeFile::ImportUrdfToBlueprint()
 	{
 		if (UrdfHasFilenameAttribute(UrdfFilePath))
 		{
-			return SelectExistingDirectory("Select URDF package directory", true);
+			const FString UrdfDir = FPaths::GetPath(UrdfFilePath);
+			const FString StartDir = FPaths::DirectoryExists(UrdfDir) ? UrdfDir : FString("");
+			return SelectExistingDirectory("Select URDF package directory", StartDir, true);
 		}
 		else
 		{
 			return FString();
 		}
 	}();
-
 
 	AGX_ImporterToBlueprint::ImportURDF(UrdfFilePath, UrdfPackagePath);
 }
