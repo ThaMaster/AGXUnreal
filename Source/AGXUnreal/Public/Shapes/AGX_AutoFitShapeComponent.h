@@ -50,7 +50,7 @@ public:
 
 	TArray<UStaticMeshComponent*> FindImmediateChildrenMeshComponents();
 		
-private :
+private:
 	bool AutoFitToChildrenFromSelection();
 
 	TArray<FAGX_MeshWithTransform> GetSelectedStaticMeshes() const;
