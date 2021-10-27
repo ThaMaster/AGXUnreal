@@ -137,9 +137,8 @@ bool UAGX_BoxShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vertices
 		return false;
 	}
 
-	SetHalfExtent(HalfExtentsBounding);
 	SetWorldTransform(TransformBounding);
-	UpdateVisualMesh();
+	SetHalfExtent(HalfExtentsBounding);
 	return true;
 }
 

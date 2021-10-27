@@ -158,10 +158,9 @@ bool UAGX_CylinderShapeComponent::AutoFitFromVertices(const TArray<FVector>& Ver
 		return false;
 	}
 
+	SetWorldTransform(TransformBounding);
 	SetRadius(RadiusBounding);
 	SetHeight(HeightBounding);
-	SetWorldTransform(TransformBounding);
-	UpdateVisualMesh();
 	return true;
 }
 

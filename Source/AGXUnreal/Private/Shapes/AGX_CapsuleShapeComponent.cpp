@@ -140,10 +140,9 @@ bool UAGX_CapsuleShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vert
 		return false;
 	}
 
+	SetWorldTransform(TransformBounding);
 	SetRadius(RadiusBounding);
 	SetHeight(HeightBounding);
-	SetWorldTransform(TransformBounding);
-	UpdateVisualMesh();
 	return true;
 }
 
