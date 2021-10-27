@@ -197,8 +197,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		// OS specific dependencies.
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
-			//RuntimeLibFiles.Add("png", LibSource.Dependencies);
-
 			IncludePaths.Add(LibSource.Components);
 			IncludePaths.Add(LibSource.Config);
 			IncludePaths.Add(LibSource.Dependencies);
