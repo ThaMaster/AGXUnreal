@@ -453,10 +453,11 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		}
 
 		TArray<TSharedRef<IPropertyHandle>> Properties;
-		Properties.Add(
-			DetailBuilder.GetProperty(FName("RelativeLocation"), USceneComponent::StaticClass()));
-		Properties.Add(
-			DetailBuilder.GetProperty(FName("RelativeRotation"), USceneComponent::StaticClass()));
+		Properties.Add(DetailBuilder.GetProperty(
+			USceneComponent::GetRelativeLocationPropertyName(), USceneComponent::StaticClass()));
+		Properties.Add(DetailBuilder.GetProperty(
+			USceneComponent::GetRelativeRotationPropertyName(), USceneComponent::StaticClass()));
+
 		const FScopedProperyNotify PropertyNotify(Properties);
 		const FScopedTransaction Transaction(LOCTEXT("AutoFitUndo", "Undo Auto-fit operation"));
 
