@@ -506,8 +506,3 @@ void UAGX_ShapeComponent::OnRegister()
 	Super::OnRegister();
 	UpdateVisualMesh();
 }
-
-UWorld* UAGX_ShapeComponent::GetWorld_Temp()
-{
-	return GetWorld();
-}

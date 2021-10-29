@@ -124,8 +124,6 @@ public:
 	/** Subclasses that overrides this MUST invoke the parent's version! */
 	virtual void UpdateNativeProperties();
 
-	UWorld* GetWorld_Temp();
-
 	/**
 	 * Get the Native Barrier for this shape. Create the native AGX Dynamics object if it does not
 	 * already exist.

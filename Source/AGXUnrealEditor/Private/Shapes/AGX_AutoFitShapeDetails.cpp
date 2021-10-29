@@ -286,7 +286,7 @@ FReply FAGX_AutoFitShapeDetails::OnAutoFitButtonClicked()
 			CurrentlySelectedMeshLocation->MeshLocation == EAGX_MeshLocation::AnyChildren;
 		AutoFitShape->AutoFitToChildren(
 			AGX_MeshUtilities::FindChildrenMeshComponents(*Shape, Recursive),
-			Shape->GetWorld_Temp(), Shape->GetName());
+			Shape->GetWorld(), Shape->GetName());
 	}
 	else
 	{
