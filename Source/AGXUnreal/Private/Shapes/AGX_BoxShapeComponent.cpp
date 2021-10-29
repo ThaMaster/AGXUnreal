@@ -49,7 +49,7 @@ UAGX_BoxShapeComponent* UAGX_BoxShapeComponent::CreateFromMeshActors(
 
 	UAGX_BoxShapeComponent* Box = NewObject<UAGX_BoxShapeComponent>(
 		Parent, UAGX_BoxShapeComponent::StaticClass(), "AGX_BoxShape", RF_Transient);
-	const bool Result = Box->AutoFit(Meshes);
+	const bool Result = Box->AutoFit(Meshes, Parent->GetWorld(), Box->GetName());
 	if (!Result)
 	{
 		// Logging done in AutoFit.

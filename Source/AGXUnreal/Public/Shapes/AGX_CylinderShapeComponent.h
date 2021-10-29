@@ -1,7 +1,8 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "Shapes/AGX_AutoFitShapeComponent.h"
+#include "Shapes/AGX_AutoFitShape.h"
+#include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/CylinderShapeBarrier.h"
 
 // Unreal Engine includes.
@@ -20,7 +21,8 @@ class AStaticMeshActor;
  * the Cylinder's perimeter that the wire can't slide off of.
  */
 UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_CylinderShapeComponent final : public UAGX_AutoFitShapeComponent
+class AGXUNREAL_API UAGX_CylinderShapeComponent final : public UAGX_ShapeComponent,
+														public AGX_AutoFitShape
 {
 	GENERATED_BODY()
 
@@ -93,9 +95,9 @@ public:
 	// ~End UObject interface.
 #endif
 
-	// ~Begin AGX_AutoFitShapeComponent interface.
+	// ~Begin AGX_AutoFitShape interface.
 	virtual bool AutoFitFromVertices(const TArray<FVector>& Vertices) override;
-	// ~End AGX_AutoFitShapeComponent interface.
+	// ~End AGX_AutoFitShape interface.
 
 	/// Get the native AGX Dynamics representation of this Cylinder. May return nullptr.
 	FCylinderShapeBarrier* GetNativeCylinder();

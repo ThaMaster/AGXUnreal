@@ -49,7 +49,7 @@ UAGX_CapsuleShapeComponent* UAGX_CapsuleShapeComponent::CreateFromMeshActors(
 
 	UAGX_CapsuleShapeComponent* Capsule = NewObject<UAGX_CapsuleShapeComponent>(
 		Parent, UAGX_CapsuleShapeComponent::StaticClass(), "AGX_CapsuleShape", RF_Transient);
-	const bool Result = Capsule->AutoFit(Meshes);
+	const bool Result = Capsule->AutoFit(Meshes, Parent->GetWorld(), Capsule->GetName());
 	if (!Result)
 	{
 		// Logging done in AutoFit.

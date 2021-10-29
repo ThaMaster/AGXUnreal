@@ -88,7 +88,7 @@ UAGX_CylinderShapeComponent* UAGX_CylinderShapeComponent::CreateFromMeshActors(
 
 	UAGX_CylinderShapeComponent* Cylinder = NewObject<UAGX_CylinderShapeComponent>(
 		Parent, UAGX_CylinderShapeComponent::StaticClass(), "AGX_CylinderShape", RF_Transient);
-	const bool Result = Cylinder->AutoFit(Meshes);
+	const bool Result = Cylinder->AutoFit(Meshes, Parent->GetWorld(), Cylinder->GetName());
 	if (!Result)
 	{
 		// Logging done in AutoFit.
