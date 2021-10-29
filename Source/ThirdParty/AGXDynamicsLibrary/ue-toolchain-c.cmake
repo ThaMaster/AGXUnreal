@@ -55,7 +55,7 @@
 #
 # Linker flags
 #
-# The flags that are passed when a build target is being linked.This incldues
+# The flags that are passed when a build target is being linked. This includes
 # things like dependency libraries and directories in which to search for them.
 # We may want to add the `lib` directory for the Clang installation in the
 # Unreal Engine installation.
@@ -187,8 +187,6 @@ endif()
 message(STATUS "Unreal Engine CMake toolchain configuration for C projects:")
 message(STATUS "  CONFIG_COMPILER: ${CONFIG_COMPILER}")
 message(STATUS "  CONFIG_COMPILER_SYSTEM_C: ${CONFIG_COMPILER_SYSTEM_C}")
-message(STATUS "  CONFIG_COMPILER_SYSTEM_CXX: ${CONFIG_COMPILER_SYSTEM_CXX}")
-#message(STATUS "  CONFIG_CXX_PROJECT: ${CONFIG_CXX_PROJECT}")
 message(STATUS "  CONFIG_UE_C_LIBS_TO_CMAKE: ${CONFIG_UE_C_LIBS_TO_CMAKE}")
 message(STATUS "  CONFIG_UE_C_LIBS_TO_LINKER: ${CONFIG_UE_C_LIBS_TO_LINKER}")
 
@@ -203,7 +201,7 @@ set(ue_compiler_list_dir "${UE_ROOT}/Engine/Extras/ThirdPartyNotUE/SDKs/HostLinu
 # ue_compiler_dir:
 #    The root directory for a particular Clang installation.
 #    Contains `bin`, `include`, `lib`, `lib64`, `share`, and `usr` for that compiler.
-#    This is the path that will be set when as sysroot when CONFIG_COMPILER is UNREAL_WITH_SYSROOT.
+#    This is the path that will be set as sysroot when CONFIG_COMPILER is UNREAL_WITH_SYSROOT.
 #    Subdirectories of this is passed to CMAKE_PREFIX_PATH when CONFIG_UE_C_LIBS_TO_CMAKE in ON.
 #    Sometimes referred to as `UE_CLANG` in text.
 file(GLOB ue_compiler_name
