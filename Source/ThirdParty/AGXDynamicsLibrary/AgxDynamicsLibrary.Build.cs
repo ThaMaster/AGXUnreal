@@ -170,7 +170,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("agxModel", LibSource.AGX);
 		RuntimeLibFiles.Add("vdbgrid", LibSource.AGX);
 		RuntimeLibFiles.Add("colamd", LibSource.AGX);
-		RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
 		RuntimeLibFiles.Add("Half", LibSource.TerrainDependencies);
 		RuntimeLibFiles.Add("Iex-2_2", LibSource.TerrainDependencies);
 		RuntimeLibFiles.Add("Imath-2_2", LibSource.TerrainDependencies);
@@ -214,6 +213,7 @@ public class AGXDynamicsLibrary : ModuleRules
 				RuntimeLibFiles.Add("agx-assimp-vc*-mt", LibSource.AGX);
 			}
 
+			RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
 			RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
 			RuntimeLibFiles.Add("ot2?-OpenThreads", LibSource.Dependencies);
@@ -244,35 +244,24 @@ public class AGXDynamicsLibrary : ModuleRules
 			AddIncludePath(HeaderPath);
 		}
 
+		if (Target.Platform == UnrealTargetPlatform.Win64)
+		{
+			// Delay-load the DLL, so we can load it from the right place first
+			AddDelayLoadDependency("agxPhysics", LibSource.AGX, Target);
+			AddDelayLoadDependency("agxCore", LibSource.AGX, Target);
+			AddDelayLoadDependency("agxSabre", LibSource.AGX, Target);
+			AddDelayLoadDependency("agxTerrain", LibSource.AGX, Target);
+			AddDelayLoadDependency("agxCable", LibSource.AGX, Target);
+			AddDelayLoadDependency("agxModel", LibSource.AGX, Target);
+		}
 
-		// Delay-load testing starts here.
-
-
-		// Delay-load the DLL, so we can load it from the right place first
-		AddDelayLoadDependency("agxPhysics", LibSource.AGX, Target);
-		AddDelayLoadDependency("agxCore", LibSource.AGX, Target);
-		AddDelayLoadDependency("agxSabre", LibSource.AGX, Target);
-		AddDelayLoadDependency("agxTerrain", LibSource.AGX, Target);
-		AddDelayLoadDependency("agxCable", LibSource.AGX, Target);
-		AddDelayLoadDependency("agxModel", LibSource.AGX, Target);
-
-		// Ensure all runtime deps are copied to target.
+		// Ensure all runtime dependencies are copied to target.
 		string ResourcePath = GetPackagedAGXResourcesPath();
-
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "bin", "*"));
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "data", "*"));
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "plugins", "*"));
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "include", "*"));
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "lib", "*"));
-
-		//foreach (var RuntimeLibFile in RuntimeLibFiles)
-		//{
-		//	AddRuntimeDependency(RuntimeLibFile.Key, RuntimeLibFile.Value, Target);
-		//}
-
-		// 	// Ensure that the DLL is staged along with the executable
-		//RuntimeDependencies.Add("$(PluginDir)/Binaries/ThirdParty/agx/bin/Win64/agxTerrain.dll");
-		//RuntimeDependencies.Add("$(PluginDir)/Binaries/ThirdParty/agx/bin/Win64/smile.png");
 	}
 
 	private void AddDelayLoadDependency(string Name, LibSource Src, ReadOnlyTargetRules Target)
