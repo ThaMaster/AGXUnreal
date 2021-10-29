@@ -75,7 +75,6 @@ namespace AGX_AutoFitShapeDetals_helpers
 			return Children;
 		}
 
-
 		if (Recursive)
 		{
 			GetChildNodesRecursive(Node, Children);
@@ -492,22 +491,23 @@ namespace AGX_AutoFitShapeDetals_helpers
 FAGX_AutoFitShapeDetails::FAGX_AutoFitShapeDetails(IDetailLayoutBuilder& InDetailBuilder)
 	: DetailBuilder(InDetailBuilder)
 {
-	MeshLocations.Add(
-		MakeShareable(new FAutoFitMeshLocation("Any Children",
+	MeshLocations.Add(MakeShareable(new FAutoFitMeshLocation(
+		"Any Children",
 		"Searches recursively for all Static Mesh Components that are children of this component.",
 		EAGX_MeshLocation::AnyChildren)));
 
-	MeshLocations.Add(MakeShareable(new FAutoFitMeshLocation("Immediate Children",
+	MeshLocations.Add(MakeShareable(new FAutoFitMeshLocation(
+		"Immediate Children",
 		"Searches for all Static Mesh Components that are immediate children of this component.",
 		EAGX_MeshLocation::ImmediateChildren)));
 
-	MeshLocations.Add(MakeShareable(new FAutoFitMeshLocation("Parent",
+	MeshLocations.Add(MakeShareable(new FAutoFitMeshLocation(
+		"Parent",
 		"Searches for the first ancestor of this component that is a Static Mesh Component.",
 		EAGX_MeshLocation::Parent)));
 
-	MeshLocations.Add(MakeShareable(new FAutoFitMeshLocation("Asset",
-		"Uses an explicitly chosen Static Mesh Asset.",
-		EAGX_MeshLocation::Asset)));
+	MeshLocations.Add(MakeShareable(new FAutoFitMeshLocation(
+		"Asset", "Uses an explicitly chosen Static Mesh Asset.", EAGX_MeshLocation::Asset)));
 
 	CurrentlySelectedMeshLocation = MeshLocations[0];
 }
@@ -643,7 +643,7 @@ FReply FAGX_AutoFitShapeDetails::OnAutoFitButtonClicked()
 	UAGX_ShapeComponent* Shape =
 		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_ShapeComponent>(DetailBuilder);
 
-	if (Shape ==nullptr)
+	if (Shape == nullptr)
 	{
 		return FReply::Handled();
 	}

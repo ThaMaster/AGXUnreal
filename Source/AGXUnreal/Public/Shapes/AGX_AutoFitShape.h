@@ -17,8 +17,8 @@ public:
 	bool AutoFit(TArray<FAGX_MeshWithTransform> Meshes, UWorld* World, const FString& ShapeName);
 
 	/*
-	 * Auto-fits to the collection of UStaticMeshComponen Children. Ensures the original world transform
-	 * of the Children is preserved.
+	 * Auto-fits to the collection of UStaticMeshComponen Children. Ensures the original world
+	 * transform of the Children is preserved.
 	 */
 	bool AutoFitToChildren(
 		TArray<UStaticMeshComponent*> Children, UWorld* World, const FString& ShapeName);

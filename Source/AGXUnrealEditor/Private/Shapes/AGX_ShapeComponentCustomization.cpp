@@ -19,7 +19,6 @@
 
 #define LOCTEXT_NAMESPACE "FAGX_ShapeComponentCustomization"
 
-
 namespace AGX_ShapeComponentCustomization_helpers
 {
 	bool SupportsAutoFit(UAGX_ShapeComponent* Shape)
@@ -48,8 +47,7 @@ TSharedRef<IDetailCustomization> FAGX_ShapeComponentCustomization::MakeInstance(
 void FAGX_ShapeComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	UAGX_ShapeComponent* ShapeComponent =
-		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_ShapeComponent>(
-			DetailBuilder);
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_ShapeComponent>(DetailBuilder);
 
 	if (!ShapeComponent)
 	{

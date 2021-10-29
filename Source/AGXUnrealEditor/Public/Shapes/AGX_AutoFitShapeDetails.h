@@ -22,7 +22,8 @@ enum EAGX_MeshLocation
 
 struct FAutoFitMeshLocation
 {
-	FAutoFitMeshLocation(const FString& InName, const FString& InToolTip,
+	FAutoFitMeshLocation(
+		const FString& InName, const FString& InToolTip,
 		TEnumAsByte<enum EAGX_MeshLocation> InMeshLocation)
 		: Name(InName)
 		, ToolTip(InToolTip)
@@ -35,9 +36,8 @@ struct FAutoFitMeshLocation
 	const TEnumAsByte<enum EAGX_MeshLocation> MeshLocation;
 };
 
-
 class FAGX_AutoFitShapeDetails : public IDetailCustomNodeBuilder,
-							 public TSharedFromThis<FAGX_AutoFitShapeDetails>
+								 public TSharedFromThis<FAGX_AutoFitShapeDetails>
 {
 public:
 	FAGX_AutoFitShapeDetails(IDetailLayoutBuilder& InDetailBuilder);
@@ -60,12 +60,12 @@ private:
 	FReply OnAutoFitButtonClicked();
 	void OnMeshLocationComboBoxChanged(
 		TSharedPtr<FAutoFitMeshLocation> NewMeshLocation, ESelectInfo::Type InSeletionInfo);
-	
+
 	EVisibility GetAssetPickerVisibility() const;
 	UStaticMesh* GetSelectedStaticMeshAsset() const;
 	TArray<FAGX_MeshWithTransform> GetSelectedStaticMeshes(USceneComponent* Shape) const;
 
-	TArray <TSharedPtr<FAutoFitMeshLocation>> MeshLocations;
+	TArray<TSharedPtr<FAutoFitMeshLocation>> MeshLocations;
 	TSharedPtr<FAutoFitMeshLocation> CurrentlySelectedMeshLocation;
 	FAssetData CurrentlySelectedAsset;
 	IDetailLayoutBuilder& DetailBuilder;
