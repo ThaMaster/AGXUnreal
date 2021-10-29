@@ -436,23 +436,6 @@ namespace AGX_AutoFitShapeDetals_helpers
 		return FReply::Handled();
 	}
 
-	bool SupportsAutoFit(UAGX_ShapeComponent* Shape)
-	{
-		if (Cast<UAGX_BoxShapeComponent>(Shape))
-		{
-			return true;
-		}
-		if (Cast<UAGX_CapsuleShapeComponent>(Shape))
-		{
-			return true;
-		}
-		if (Cast<UAGX_CylinderShapeComponent>(Shape))
-		{
-			return true;
-		}
-		return false;
-	}
-
 	AGX_AutoFitShape* ToAutoFitShape(UAGX_ShapeComponent* Shape)
 	{
 		if (UAGX_BoxShapeComponent* Box = Cast<UAGX_BoxShapeComponent>(Shape))
@@ -660,7 +643,7 @@ FReply FAGX_AutoFitShapeDetails::OnAutoFitButtonClicked()
 	UAGX_ShapeComponent* Shape =
 		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_ShapeComponent>(DetailBuilder);
 
-	if (!Shape || !SupportsAutoFit(Shape))
+	if (Shape ==nullptr)
 	{
 		return FReply::Handled();
 	}
