@@ -55,8 +55,8 @@
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialCustomization.h"
 #include "Materials/AGX_TerrainMaterialLibrary.h"
-#include "Shapes/AGX_AutoFitShapeComponent.h"
-#include "Shapes/AGX_AutoFitShapeComponentCustomization.h"
+#include "Shapes/AGX_ShapeComponent.h"
+#include "Shapes/AGX_ShapeComponentCustomization.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Tires/AGX_TireComponentVisualizer.h"
 #include "Tires/AGX_TireComponent.h"
@@ -247,9 +247,9 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_TerrainMaterialCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
-		UAGX_AutoFitShapeComponent::StaticClass()->GetFName(),
+		UAGX_ShapeComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_AutoFitShapeComponentCustomization::MakeInstance));
+			&FAGX_ShapeComponentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_TwoBodyTireComponent::StaticClass()->GetFName(),
@@ -310,7 +310,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		UAGX_AutoFitShapeComponent::StaticClass()->GetFName());
+		UAGX_ShapeComponent::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
