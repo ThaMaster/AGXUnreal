@@ -14,29 +14,25 @@ class UStaticMesh;
 UENUM()
 enum EAGX_MeshLocation
 {
-	/** Static Mesh from the any child component that is a Static Mesh Component. */
-	AnyChildren UMETA(DisplayName = "Any Child Components"),
-
-	/** Static Mesh from the any immediate child component that is a Static Mesh Component. */
-	ImmediateChildren UMETA(DisplayName = "Immediate Child Components"),
-
-	/** Static Mesh from the first ancestor that is a Static Mesh Component. */
-	Parent UMETA(DisplayName = "Parent Component"),
-
-	/** Directly from explicitly chosen Static Mesh Asset. */
-	Asset UMETA(DisplayName = "Asset")
+	AnyChildren,
+	ImmediateChildren,
+	Parent,
+	Asset
 };
 
 struct FAutoFitMeshLocation
 {
-	FAutoFitMeshLocation(const FString& InName, TEnumAsByte<enum EAGX_MeshLocation> InMeshLocation)
+	FAutoFitMeshLocation(const FString& InName, const FString& InToolTip,
+		TEnumAsByte<enum EAGX_MeshLocation> InMeshLocation)
 		: Name(InName)
+		, ToolTip(InToolTip)
 		, MeshLocation(InMeshLocation)
 	{
 	}
 
-	FString Name;
-	TEnumAsByte<enum EAGX_MeshLocation> MeshLocation;
+	const FString Name;
+	const FString ToolTip;
+	const TEnumAsByte<enum EAGX_MeshLocation> MeshLocation;
 };
 
 
