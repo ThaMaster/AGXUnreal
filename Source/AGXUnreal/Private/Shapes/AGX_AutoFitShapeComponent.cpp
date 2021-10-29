@@ -1,7 +1,6 @@
 #include "Shapes/AGX_AutoFitShapeComponent.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_LogCategory.h"
 #include "Utilities/AGX_EnvironmentUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -97,7 +96,7 @@ bool UAGX_AutoFitShapeComponent::AutoFitToChildrenFromSelection()
 		}
 	}
 
-	const bool Result = AutoFit(AGX_MeshUtilities::FindImmediateChildrenMeshes(*this));
+	const bool Result = AutoFit(AGX_MeshUtilities::FindChildrenMeshes(*this, false));
 	if (!Result)
 	{
 		return false;
@@ -121,7 +120,7 @@ TArray<FAGX_MeshWithTransform> UAGX_AutoFitShapeComponent::GetSelectedStaticMesh
 	switch (MeshSourceLocation)
 	{
 		case EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT:
-			Meshes = AGX_MeshUtilities::FindImmediateChildrenMeshes(*this);
+			Meshes = AGX_MeshUtilities::FindChildrenMeshes(*this, false);
 			break;
 		case EAGX_StaticMeshSourceLocation::TSL_PARENT_STATIC_MESH_COMPONENT:
 			Meshes.Add(AGX_MeshUtilities::FindFirstParentMesh(*this));
@@ -139,5 +138,5 @@ TArray<FAGX_MeshWithTransform> UAGX_AutoFitShapeComponent::GetSelectedStaticMesh
 
 TArray<UStaticMeshComponent*> UAGX_AutoFitShapeComponent::FindImmediateChildrenMeshComponents()
 {
-	return AGX_MeshUtilities::FindImmediateChildrenMeshComponents(*this);
+	return AGX_MeshUtilities::FindChildrenMeshComponents(*this, false);
 }

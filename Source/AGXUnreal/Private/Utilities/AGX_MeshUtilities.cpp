@@ -1656,10 +1656,10 @@ FAGX_MeshWithTransform AGX_MeshUtilities::FindFirstChildMesh(const USceneCompone
 	return FAGX_MeshWithTransform();
 }
 
-TArray<FAGX_MeshWithTransform> AGX_MeshUtilities::FindImmediateChildrenMeshes(
-	const USceneComponent& Component)
+TArray<FAGX_MeshWithTransform> AGX_MeshUtilities::FindChildrenMeshes(
+	const USceneComponent& Component, bool Recursive)
 {
-	TArray<UStaticMeshComponent*> MeshComponents = FindImmediateChildrenMeshComponents(Component);
+	TArray<UStaticMeshComponent*> MeshComponents = FindChildrenMeshComponents(Component, Recursive);
 	TArray<FAGX_MeshWithTransform> Meshes;
 
 	for (UStaticMeshComponent* Comp : MeshComponents)
@@ -1673,12 +1673,12 @@ TArray<FAGX_MeshWithTransform> AGX_MeshUtilities::FindImmediateChildrenMeshes(
 	return Meshes;
 }
 
-TArray<UStaticMeshComponent*> AGX_MeshUtilities::FindImmediateChildrenMeshComponents(
-	const USceneComponent& Component)
+TArray<UStaticMeshComponent*> AGX_MeshUtilities::FindChildrenMeshComponents(
+	const USceneComponent& Component, bool Recursive)
 {
 	TArray<USceneComponent*> Children;
 	TArray<UStaticMeshComponent*> Meshes;
-	Component.GetChildrenComponents(/*bIncludeAllDescendants*/ false, Children);
+	Component.GetChildrenComponents(Recursive, Children);
 
 	for (USceneComponent* Child : Children)
 	{

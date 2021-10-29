@@ -106,7 +106,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		const FVector OrigHalfExtent = Component->GetHalfExtent();
 
 		Component->Modify();
-		if (!Component->AutoFit(Meshes))
+		if (!Component->AutoFit(Meshes, Component->GetWorld(), Component->GetName()))
 		{
 			// Logging done in AutoFit.
 			return false;
@@ -166,7 +166,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		const float OrigHeight = Component->GetHeight();
 
 		Component->Modify();
-		if (!Component->AutoFit(Meshes))
+		if (!Component->AutoFit(Meshes, Component->GetWorld_Temp(), Component->GetName()))
 		{
 			// Logging done in AutoFit.
 			return false;
@@ -215,7 +215,7 @@ namespace AGX_AutoFitShapeComponentCustomization_helpers
 		const float OrigHeight = Component->GetHeight();
 
 		Component->Modify();
-		if (!Component->AutoFit(Meshes))
+		if (!Component->AutoFit(Meshes, Component->GetWorld_Temp(), Component->GetName()))
 		{
 			// Logging done in AutoFit.
 			return false;
