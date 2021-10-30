@@ -362,7 +362,6 @@ public class AGXDynamicsLibrary : ModuleRules
 	private string GetPackagedAGXResourcesPath()
 	{
 		string P = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries", "ThirdParty", "agx"));
-		Console.WriteLine("**** GetPackagedAGXResourcesPath returned: " + P);
 		return P;
 	}
 
