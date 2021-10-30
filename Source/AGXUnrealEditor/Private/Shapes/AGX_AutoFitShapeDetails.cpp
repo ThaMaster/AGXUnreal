@@ -530,7 +530,6 @@ void FAGX_AutoFitShapeDetails::GenerateChildContent(IDetailChildrenBuilder& Chil
 		.ValueContent()
 		[
 			SNew(SComboBox<TSharedPtr<FAutoFitMeshLocation>>)
-				//.ContentPadding(2)
 				.OptionsSource(&MeshLocations)
 				.OnGenerateWidget_Lambda([=](TSharedPtr<FAutoFitMeshLocation> Item)
 				{
