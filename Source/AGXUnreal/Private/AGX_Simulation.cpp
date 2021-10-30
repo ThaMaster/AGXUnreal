@@ -738,10 +738,9 @@ namespace
 
 			if (!FAGX_Environment::IsSetupEnvRun())
 			{
-				const FString ResourcesPath =
-					FAGX_Environment::GetAgxDynamicsResourcesPath();
+				const FString ResourcesPath = FAGX_Environment::GetAgxDynamicsResourcesPath();
 				Message += "\n\nThe AGX Dynamics license file should be placed in: " +
-						   FPaths::Combine(ResourcesPath, FString("data"), FString("cfg"));
+						   FPaths::Combine(ResourcesPath, FString("license"));
 			}
 
 #if WITH_EDITOR

@@ -30,7 +30,7 @@ struct FCurrentPlatformMisc : public FLinuxPlatformMisc
 {
 };
 #else
-//Unsupported platform.
+// Unsupported platform.
 static_assert(false);
 #endif
 
@@ -129,9 +129,9 @@ void FAGX_Environment::LoadDynamicLibraries()
 	if (DynamicLibraryHandles.Num() == 0)
 	{
 		UE_LOG(
-				LogAGX, Error,
-				TEXT("Dynamic loading of AGX Dynamics failed. The AGX Dynamics for Unreal plugin "
-				"will not function as expected."));
+			LogAGX, Error,
+			TEXT("Dynamic loading of AGX Dynamics failed. The AGX Dynamics for Unreal plugin "
+				 "will not function as expected."));
 	}
 
 #elif defined(__linux__)
@@ -197,6 +197,14 @@ void FAGX_Environment::SetupAGXDynamicsEnvironment()
 	AGX_ENVIRONMENT()
 		.getFilePath(agxIO::Environment::RESOURCE_PATH)
 		.pushbackPath(Convert(AgxCfgPath));
+
+	const FString AgxLicensePath = FPaths::Combine(AgxResourcesPath, FString("license"));
+	if (FPaths::DirectoryExists(AgxLicensePath))
+	{
+		AGX_ENVIRONMENT()
+			.getFilePath(agxIO::Environment::RESOURCE_PATH)
+			.pushbackPath(Convert(AgxLicensePath));
+	}
 }
 
 FAGX_Environment& FAGX_Environment::GetInstance()
