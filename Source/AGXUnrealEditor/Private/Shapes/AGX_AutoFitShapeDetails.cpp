@@ -17,11 +17,9 @@
 #include "Engine/SCS_Node.h"
 #include "Engine/StaticMesh.h"
 #include "IDetailChildrenBuilder.h"
-#include "IDetailGroup.h"
 #include "IPropertyUtilities.h"
 #include "PropertyCustomizationHelpers.h"
 #include "ScopedTransaction.h"
-#include "UObject/UObjectGlobals.h"
 
 #define LOCTEXT_NAMESPACE "AGX_AutoFitShapeDetails"
 
