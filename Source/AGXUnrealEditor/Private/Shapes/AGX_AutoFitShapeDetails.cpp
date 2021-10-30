@@ -591,9 +591,7 @@ void FAGX_AutoFitShapeDetails::GenerateChildContent(IDetailChildrenBuilder& Chil
 					.ToolTipText(LOCTEXT(
 						"AutoFitButtonTooltip",
 						"Auto-fit this Shape to the Static Meshs(es) given by the current Mesh Location."))
-					.OnClicked_Lambda([this]() {
-						return OnAutoFitButtonClicked();
-					})
+					.OnClicked(this, &FAGX_AutoFitShapeDetails::OnAutoFitButtonClicked)
 			]
 	];
 
