@@ -51,12 +51,12 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	//~ End IDetailCustomNodeBuilder.
 
-protected:
-	void OnAssetSelected(const FAssetData& AssetData);
-	FString GetCurrentAssetPath() const;
-
 private:
+	
+	FString GetCurrentAssetPath() const;
+	void OnAssetSelected(const FAssetData& AssetData);
 	FReply OnAutoFitButtonClicked();
+
 	void OnMeshLocationComboBoxChanged(
 		TSharedPtr<FAutoFitMeshLocation> NewMeshLocation, ESelectInfo::Type InSeletionInfo);
 
