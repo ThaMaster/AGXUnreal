@@ -23,8 +23,7 @@ enum EAGX_MeshLocation
 struct FAutoFitMeshLocation
 {
 	FAutoFitMeshLocation(
-		const FString& InName, const FString& InToolTip,
-		TEnumAsByte<enum EAGX_MeshLocation> InMeshLocation)
+		const FString& InName, const FString& InToolTip, enum EAGX_MeshLocation InMeshLocation)
 		: Name(InName)
 		, ToolTip(InToolTip)
 		, MeshLocation(InMeshLocation)
@@ -33,7 +32,7 @@ struct FAutoFitMeshLocation
 
 	const FString Name;
 	const FString ToolTip;
-	const TEnumAsByte<enum EAGX_MeshLocation> MeshLocation;
+	const enum EAGX_MeshLocation MeshLocation;
 };
 
 class FAGX_AutoFitShapeDetails : public IDetailCustomNodeBuilder,
