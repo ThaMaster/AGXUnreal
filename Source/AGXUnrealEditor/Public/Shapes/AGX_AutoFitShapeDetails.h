@@ -14,7 +14,7 @@ class UStaticMesh;
 UENUM()
 enum EAGX_MeshLocation
 {
-	AnyChildren,
+	AllChildren,
 	ImmediateChildren,
 	Parent,
 	Asset

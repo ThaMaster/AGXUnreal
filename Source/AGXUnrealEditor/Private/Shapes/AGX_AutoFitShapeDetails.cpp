@@ -419,7 +419,7 @@ namespace AGX_AutoFitShapeDetals_helpers
 
 		switch (MeshLocation)
 		{
-			case EAGX_MeshLocation::AnyChildren:
+			case EAGX_MeshLocation::AllChildren:
 				return AutoFitToChildInBlueprint(Component, Blueprint, true);
 			case EAGX_MeshLocation::ImmediateChildren:
 				return AutoFitToChildInBlueprint(Component, Blueprint, false);
@@ -490,9 +490,9 @@ FAGX_AutoFitShapeDetails::FAGX_AutoFitShapeDetails(IDetailLayoutBuilder& InDetai
 	: DetailBuilder(InDetailBuilder)
 {
 	MeshLocations.Add(MakeShareable(new FAutoFitMeshLocation(
-		"Any Children",
+		"All Children",
 		"Searches recursively for all Static Mesh Components that are children of this component.",
-		EAGX_MeshLocation::AnyChildren)));
+		EAGX_MeshLocation::AllChildren)));
 
 	MeshLocations.Add(MakeShareable(new FAutoFitMeshLocation(
 		"Immediate Children",
@@ -665,11 +665,11 @@ FReply FAGX_AutoFitShapeDetails::OnAutoFitButtonClicked()
 
 	// Call Modify on children meshes if EAGX_MeshLocation::Children is used, to support
 	// undo/redo.
-	if (CurrentlySelectedMeshLocation->MeshLocation == EAGX_MeshLocation::AnyChildren ||
+	if (CurrentlySelectedMeshLocation->MeshLocation == EAGX_MeshLocation::AllChildren ||
 		CurrentlySelectedMeshLocation->MeshLocation == EAGX_MeshLocation::ImmediateChildren)
 	{
 		const bool Recursive =
-			CurrentlySelectedMeshLocation->MeshLocation == EAGX_MeshLocation::AnyChildren;
+			CurrentlySelectedMeshLocation->MeshLocation == EAGX_MeshLocation::AllChildren;
 
 		for (UStaticMeshComponent* Child :
 			 AGX_MeshUtilities::FindChildrenMeshComponents(*Shape, Recursive))
@@ -685,11 +685,11 @@ FReply FAGX_AutoFitShapeDetails::OnAutoFitButtonClicked()
 	Shape->Modify();
 	AGX_AutoFitShape* AutoFitShape = ToAutoFitShape(Shape);
 	check(AutoFitShape);
-	if (CurrentlySelectedMeshLocation->MeshLocation == EAGX_MeshLocation::AnyChildren ||
+	if (CurrentlySelectedMeshLocation->MeshLocation == EAGX_MeshLocation::AllChildren ||
 		CurrentlySelectedMeshLocation->MeshLocation == EAGX_MeshLocation::ImmediateChildren)
 	{
 		const bool Recursive =
-			CurrentlySelectedMeshLocation->MeshLocation == EAGX_MeshLocation::AnyChildren;
+			CurrentlySelectedMeshLocation->MeshLocation == EAGX_MeshLocation::AllChildren;
 		AutoFitShape->AutoFitToChildren(
 			AGX_MeshUtilities::FindChildrenMeshComponents(*Shape, Recursive), Shape->GetWorld(),
 			Shape->GetName());
@@ -737,7 +737,7 @@ TArray<FAGX_MeshWithTransform> FAGX_AutoFitShapeDetails::GetSelectedStaticMeshes
 
 	switch (CurrentlySelectedMeshLocation->MeshLocation)
 	{
-		case EAGX_MeshLocation::AnyChildren:
+		case EAGX_MeshLocation::AllChildren:
 			Meshes = AGX_MeshUtilities::FindChildrenMeshes(*Shape, true);
 			break;
 		case EAGX_MeshLocation::ImmediateChildren:
