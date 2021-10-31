@@ -513,6 +513,15 @@ public class AGXDynamicsLibrary : ModuleRules
 			}
 		}
 
+		// Create an empty 'license' directory for the user to put the license file in.
+		{
+			string LicenseDir = Path.Combine(ResourcePath, "license");
+			if (!Directory.Exists(LicenseDir))
+			{
+				Directory.CreateDirectory(LicenseDir);
+			}
+		}
+
 		Console.WriteLine("Packaging AGX Dynamics resources complete.");
 	}
 
