@@ -61,26 +61,39 @@ void FAGX_Environment::Init()
 			 "AGXUnreal plugin at: %s"),
 		*AgxDynamicsResoucePath);
 
-#if defined(_WIN64)
 	LoadDynamicLibraries();
-#endif
 	SetupAGXDynamicsEnvironment();
 }
 
+// All AGX Dynamics dlls are loaded by using GetDllHandle on Windows. On Linux, most AGX Dynamics
+// libraries are found by the OS without the need for GetDllHandle.
 void FAGX_Environment::LoadDynamicLibraries()
 {
-#if defined(_WIN64)
 	check(DynamicLibraryHandles.Num() == 0);
 	check(IsSetupEnvRun() == false);
 	const FString AgxResourcesPath = GetAgxDynamicsResourcesPath();
-	UE_LOG(LogAGX, Log, TEXT("About to load AGX Dynamics as dynamic libraries."));
-
-	const FString LibraryNameList = PREPROCESSOR_TO_STRING(AGX_DYNAMICS_DELAY_LOAD_LIBRARY_NAMES);
 	TArray<FString> AGXDynamicsDependencyFileNames;
-	LibraryNameList.ParseIntoArray(AGXDynamicsDependencyFileNames, TEXT(" "), false);
 
+#if defined(_WIN64)
+	const FString LibraryNameList = PREPROCESSOR_TO_STRING(AGX_DYNAMICS_DELAY_LOAD_LIBRARY_NAMES);
+	LibraryNameList.ParseIntoArray(AGXDynamicsDependencyFileNames, TEXT(" "), false);
 	const FString DependecyDir =
 		FPaths::Combine(AgxResourcesPath, FString("bin"), FString("Win64"));
+
+	// vdbgrid must always be loaded to be found by agxTerrain during runtime.
+	AGXDynamicsDependencyFileNames.Add("vdbgrid.dll");
+#elif defined(__linux__)
+	const FString DependecyDir =
+		FPaths::Combine(AgxResourcesPath, FString("lib"), FString("Linux"));
+
+	// vdbgrid must always be loaded to be found by agxTerrain during runtime.
+	AGXDynamicsDependencyFileNames.Add("vdbgrid.so");
+#else
+	// Unsupported platform.
+	static_assert(false);
+#endif
+
+	UE_LOG(LogAGX, Log, TEXT("About to load dynamic libraries."));
 	FPlatformProcess::PushDllDirectory(*DependecyDir);
 
 	for (const FString& FileName : AGXDynamicsDependencyFileNames)
@@ -92,7 +105,7 @@ void FAGX_Environment::LoadDynamicLibraries()
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Tried to dynamically load '%s' but the loading failed. Some AGX "
-					 "Dynamics features might not be available."),
+					 "Dynamics for Unreal features might not be available."),
 				*FullFilePath);
 			continue;
 		}
@@ -103,22 +116,15 @@ void FAGX_Environment::LoadDynamicLibraries()
 
 	if (AGXDynamicsDependencyFileNames.Num() == DynamicLibraryHandles.Num())
 	{
-		UE_LOG(LogAGX, Log, TEXT("Successfully loaded all AGX Dynamics dynamic libraries."));
+		UE_LOG(LogAGX, Log, TEXT("Successfully loaded all dynamic libraries."));
 	}
 	else
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("At least one AGX Dynamics dynamic library failed to load. The AGX Dynamics for Unreal "
+			TEXT("At least one dynamic library failed to load. The AGX Dynamics for Unreal "
 				 "plugin will likely not function as expected."));
 	}
-
-#elif defined(__linux__)
-	// LoadDynamicLibraries not necessary on Linux.
-#else
-	// Unsupported platform.
-	static_assert(false);
-#endif
 }
 
 void FAGX_Environment::SetupAGXDynamicsEnvironment()
