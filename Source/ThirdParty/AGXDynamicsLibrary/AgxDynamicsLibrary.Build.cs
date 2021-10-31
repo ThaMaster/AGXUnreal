@@ -116,15 +116,6 @@ public class AGXDynamicsLibrary : ModuleRules
 	/// build-time, setup_env must have been called prior to performing the
 	/// build. The recommended procedure is to build once within a setup_env'd
 	/// environment leave the setup_env'd environment after that.
-	///
-	/// Important note: Currently no reliable way of copying the AGX Dynamics
-	/// resources to the correct location when building an executable from a
-	/// project using this plugin has been found. It is therefore recommended to
-	/// manually copy the 'agx' directory located in
-	/// AGXUnreal/Binaries/Thirdparty and place it in the same directory as the
-	/// executable file. Also, all files inside
-	/// AGXUnreal/Binaries/Thirdparty/agx/bin/PLATFORM should be manually
-	/// copied to the same directory as the executable file.
 	public AGXDynamicsLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
 		// At 4.25 we started getting warnings encouraging us to enable these
