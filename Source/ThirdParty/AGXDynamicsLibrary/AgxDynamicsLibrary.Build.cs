@@ -118,6 +118,12 @@ public class AGXDynamicsLibrary : ModuleRules
 	/// environment leave the setup_env'd environment after that.
 	public AGXDynamicsLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
+		// CAUTION: Setting bCopyLicenseFileToTarget to 'true' means the AGX Dynamics license file will
+		// be copied to the build target location, including cooked builds. An exception is when doing
+		// shipping builds, for those cases the license file is never copied to the target.
+		// Use with care, make sure the license file is never distributed.
+		bool bCopyLicenseFileToTarget = false;
+
 		// At 4.25 we started getting warnings encouraging us to enable these
 		// settings. At or around 4.26 Unreal Engine makes these settings the
 		// default.
@@ -253,6 +259,14 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "plugins", "*"));
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "include", "*"));
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "lib", "*"));
+		if (bCopyLicenseFileToTarget && Target.Configuration != UnrealTargetConfiguration.Shipping)
+		{
+			string LicenseDir = Path.Combine(ResourcePath, "license");
+			if (Directory.Exists(LicenseDir))
+			{
+				RuntimeDependencies.Add(Path.Combine(LicenseDir, "*"));
+			}
+		}
 	}
 
 	private void AddDelayLoadDependency(string Name, LibSource Src, ReadOnlyTargetRules Target)
