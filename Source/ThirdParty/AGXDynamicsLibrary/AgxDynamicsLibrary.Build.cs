@@ -275,29 +275,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		PublicDelayLoadDLLs.Add(FileName);
 	}
 
-	// The runtime dependency file is copied to the target binaries directory.
-	private void AddRuntimeDependency(string Name, LibSource Src, ReadOnlyTargetRules Target)
-	{
-		string Dir = BundledAGXResources.RuntimeLibraryDirectory(Src);
-		string FileName = BundledAGXResources.RuntimeLibraryFileName(Name);
-
-		// File name and/or extension may include search patterns such as '*' or
-		// '?'. Resolve all these.
-		string[] FilesToAdd = Directory.GetFiles(Dir, FileName);
-
-		if (FilesToAdd.Length == 0)
-		{
-			Console.Error.WriteLine("Error: File {0} did not match any file in {1}. The dependency " +
-				"will not be added in the build.", FileName, Dir);
-			return;
-		}
-
-		foreach (string FilePath in FilesToAdd)
-		{
-			RuntimeDependencies.Add(FilePath);
-		}
-	}
-
 	private void AddLinkLibrary(string Name, LibSource Src)
 	{
 		string Dir = BundledAGXResources.LinkLibraryDirectory(Src);
@@ -319,7 +296,6 @@ public class AGXDynamicsLibrary : ModuleRules
 			PublicAdditionalLibraries.Add(FilePath);
 		}
 	}
-
 
 	private void AddIncludePath(LibSource Src)
 	{
@@ -515,7 +491,7 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		// Create an empty 'license' directory for the user to put the license file in.
 		{
-			string LicenseDir = Path.Combine(ResourcePath, "license");
+			string LicenseDir = Path.Combine(GetBundledAGXResourcesPath(), "license");
 			if (!Directory.Exists(LicenseDir))
 			{
 				Directory.CreateDirectory(LicenseDir);
@@ -604,18 +580,6 @@ public class AGXDynamicsLibrary : ModuleRules
 			return;
 		}
 		Console.WriteLine("Cleaning bundled AGX Dynamics resources complete.");
-	}
-
-	// This is a temporary work-around to fix the issue where dll/so files are copied to the
-	// Binaries directory of any project that are built that uses this plugin, which should not happen.
-	// See internal issue 282.
-	// @todo Figure out how to properly copy the dll/so files for all build scenarios.
-	private bool ShouldCopyBinFiles(ReadOnlyTargetRules Target)
-	{
-		string ProjectName = Path.GetFileNameWithoutExtension(Target.ProjectFile.ToString());
-
-		// When building an executable, the project name will be set to 'HostProject'.
-		return ProjectName.Equals("AGXUnrealDev") || ProjectName.Equals("HostProject");
 	}
 
 	private int? ParseDefineDirectiveValue(string[] HeaderFileLines, string Identifier)
