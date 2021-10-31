@@ -74,7 +74,6 @@
 
 void FAGXUnrealEditorModule::StartupModule()
 {
-	UE_LOG(LogAGX, Log, TEXT("***** FAGXUnrealEditorModule::StartupModule() entry point."));
 	FAGX_EditorStyle::Initialize();
 	FAGX_EditorStyle::ReloadTextures();
 
