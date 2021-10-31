@@ -20,7 +20,7 @@ namespace
 	void LogAgxDynamicsLicenseStatus()
 	{
 		FString Status;
-		if (FAGX_Environment::GetInstance().IsAgxDynamicsLicenseValid(&Status) == false)
+		if (FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid(&Status) == false)
 		{
 			UE_LOG(LogAGX, Error, TEXT("AGX Dynamics license is invalid. Status: %s"), *Status);
 		}

@@ -162,7 +162,7 @@ void FAGX_Environment::SetupAGXDynamicsEnvironment()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("AGX Dynamics resources are not packaged with the AGXUnreal plugin. The "
+			TEXT("AGX Dynamics resources are not bundled with the AGXUnreal plugin. The "
 				 "plugin will not be able to load AGX Dynamics. The resources where expected "
 				 "to be at: %s"),
 			*AgxResourcesPath);
@@ -363,7 +363,7 @@ FString FAGX_Environment::GetAgxDynamicsResourcesPath()
 	}
 	else
 	{
-		// Get and return path to AGX Dynamics resources when packaged with the plugin.
+		// Get and return path to AGX Dynamics resources when bundled with the plugin.
 		const FString BinariesPath = FAGX_Environment::GetPluginBinariesPath();
 		const FString AgxResourcesPath =
 			FPaths::Combine(BinariesPath, FString("ThirdParty"), FString("agx"));
@@ -372,20 +372,65 @@ FString FAGX_Environment::GetAgxDynamicsResourcesPath()
 	}
 }
 
-bool FAGX_Environment::IsAgxDynamicsLicenseValid(FString* OutStatus)
+bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
 {
-	bool LicenseValid = false;
-	if (agx::Runtime* AgxRuntime = agx::Runtime::instance())
+	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	if (AgxRuntime == nullptr)
 	{
-		LicenseValid = AgxRuntime->isValid();
+		return false;
+	}
+
+	if (AgxRuntime->isValid())
+	{
 		if (OutStatus)
 		{
-			const FString Status = Convert(AgxRuntime->getStatus());
-			*OutStatus = Status;
+			*OutStatus = Convert(AgxRuntime->getStatus());
 		}
+		return true;
+	}
+
+	// License is not valid. Attempt to unlock using a license file in the bundled AGX
+	// Dynamics resources that might have been put there recently by the user.
+	TryActivateAgxDynamicsLicense();
+
+	const bool LicenseValid = AgxRuntime->isValid();
+	if (OutStatus)
+	{
+		*OutStatus = Convert(AgxRuntime->getStatus());
 	}
 
 	return LicenseValid;
+}
+
+void FAGX_Environment::TryActivateAgxDynamicsLicense()
+{
+	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	if (AgxRuntime == nullptr)
+	{
+		return;
+	}
+
+	const FString AgxLicensePath =
+		FPaths::Combine(GetAgxDynamicsResourcesPath(), FString("license"), FString("agx.lic"));
+	if (!FPaths::FileExists(AgxLicensePath))
+	{
+		return;
+	}
+
+	FString License;
+	FFileHelper::LoadFileToString(License, *AgxLicensePath);
+	if (License.IsEmpty())
+	{
+		return;
+	}
+
+	if (AgxRuntime->unlock(Convert(License)))
+	{
+		UE_LOG(
+			LogAGX, Log,
+			TEXT("Successfully unlocked AGX Dynamics license using license file located at: %s"),
+			*AgxLicensePath);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE
