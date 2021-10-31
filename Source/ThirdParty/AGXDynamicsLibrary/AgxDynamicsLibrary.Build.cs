@@ -10,9 +10,9 @@ using UnrealBuildTool;
 public class AGXDynamicsLibrary : ModuleRules
 {
 
-	/// Information about how AGX Dynamics is packaged and used on the current
+	/// Information about how AGX Dynamics is bundled and used on the current
 	/// platform.
-	private AGXResourcesInfo PackagedAGXResources;
+	private AGXResourcesInfo BundledAGXResources;
 
 	/// The various dependency sources we have. Each come with an include path,
 	/// a linker path and a runtime path. The include path contains the header
@@ -82,7 +82,7 @@ public class AGXDynamicsLibrary : ModuleRules
 	}
 
 	/// Whether an AGXResourcesInfo references into a separate AGX Dynamics
-	/// installation or an AGX Dynamics packaged into the plugin.
+	/// installation or an AGX Dynamics bundled into the plugin.
 	/// AGXResourcesInfo use this to determine where relative to the base path
 	/// and/or the setup_env environment variables that various parts of the
 	/// AGX Dynamics installation are stored.
@@ -96,8 +96,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		/// build target or by an AGX Dynamics installer.
 		InstalledAGX,
 
-		/// An AGX Dynamics installation that has been packaged into the plugin.
-		PackagedAGX
+		/// An AGX Dynamics installation that has been bundled into the plugin.
+		BundledAGX
 	}
 
 	/// All needed AGX Dynamics runtime and build-time resources are located in
@@ -142,9 +142,9 @@ public class AGXDynamicsLibrary : ModuleRules
 		// module.
 		Type = ModuleType.External;
 
-		string PackagedAGXResourcesPath = GetPackagedAGXResourcesPath();
-		PackagedAGXResources =
-			new AGXResourcesInfo(Target, AGXResourcesLocation.PackagedAGX, PackagedAGXResourcesPath);
+		string BundledAGXResourcesPath = GetBundledAGXResourcesPath();
+		BundledAGXResources =
+			new AGXResourcesInfo(Target, AGXResourcesLocation.BundledAGX, BundledAGXResourcesPath);
 
 		// The AGX Dynamics version we are currently building against.
 		AGXVersion TargetAGXVersion = GetAGXVersion();
@@ -214,15 +214,15 @@ public class AGXDynamicsLibrary : ModuleRules
 			}
 		}
 
-		// Package AGX Dynamics resources in plugin if no packaged resources exists.
-		if (!IsAGXResourcesPackaged())
+		// Bundle AGX Dynamics resources in plugin if no bundled resources exists.
+		if (!IsAGXResourcesBundled())
 		{
-			PackageAGXResources(Target, RuntimeLibFiles, LinkLibFiles, IncludePaths);
+			BundleAGXResources(Target, RuntimeLibFiles, LinkLibFiles, IncludePaths);
 		}
 		else
 		{
-			Console.WriteLine("Skipping packaging of AGX Dynamics resources, packaged "
-				+ "resources already exists in: {0}", PackagedAGXResourcesPath);
+			Console.WriteLine("Skipping packaging of AGX Dynamics resources, bundled "
+				+ "resources already exists in: {0}", BundledAGXResourcesPath);
 		}
 
 		foreach (var LinkLibFile in LinkLibFiles)
@@ -247,7 +247,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		}
 
 		// Ensure all runtime dependencies are copied to target.
-		string ResourcePath = GetPackagedAGXResourcesPath();
+		string ResourcePath = GetBundledAGXResourcesPath();
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "bin", "*"));
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "data", "*"));
 		RuntimeDependencies.Add(Path.Combine(ResourcePath, "plugins", "*"));
@@ -257,15 +257,15 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private void AddDelayLoadDependency(string Name, LibSource Src, ReadOnlyTargetRules Target)
 	{
-		string FileName = PackagedAGXResources.RuntimeLibraryFileName(Name);
+		string FileName = BundledAGXResources.RuntimeLibraryFileName(Name);
 		PublicDelayLoadDLLs.Add(FileName);
 	}
 
 	// The runtime dependency file is copied to the target binaries directory.
 	private void AddRuntimeDependency(string Name, LibSource Src, ReadOnlyTargetRules Target)
 	{
-		string Dir = PackagedAGXResources.RuntimeLibraryDirectory(Src);
-		string FileName = PackagedAGXResources.RuntimeLibraryFileName(Name);
+		string Dir = BundledAGXResources.RuntimeLibraryDirectory(Src);
+		string FileName = BundledAGXResources.RuntimeLibraryFileName(Name);
 
 		// File name and/or extension may include search patterns such as '*' or
 		// '?'. Resolve all these.
@@ -286,8 +286,8 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private void AddLinkLibrary(string Name, LibSource Src)
 	{
-		string Dir = PackagedAGXResources.LinkLibraryDirectory(Src);
-		string FileName = PackagedAGXResources.LinkLibraryFileName(Name);
+		string Dir = BundledAGXResources.LinkLibraryDirectory(Src);
+		string FileName = BundledAGXResources.LinkLibraryFileName(Name);
 
 		// File name and/or extension may include search patterns such as '*' or '?'. Resolve all these.
 		string[] FilesToAdd = Directory.GetFiles(Dir, FileName);
@@ -309,7 +309,7 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private void AddIncludePath(LibSource Src)
 	{
-		PublicIncludePaths.Add(PackagedAGXResources.IncludePath(Src));
+		PublicIncludePaths.Add(BundledAGXResources.IncludePath(Src));
 	}
 
 	AGXVersion GetAGXVersion()
@@ -350,27 +350,27 @@ public class AGXDynamicsLibrary : ModuleRules
 	}
 
 
-	private string GetPackagedAGXResourcesPath()
+	private string GetBundledAGXResourcesPath()
 	{
 		string P = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries", "ThirdParty", "agx"));
 		return P;
 	}
 
 
-	/// Returns true if AGX Dynamics resources are currently packaged with the plugin.
+	/// Returns true if AGX Dynamics resources are currently bundled with the plugin.
 	/// Returns false otherwise.
-	private bool IsAGXResourcesPackaged()
+	private bool IsAGXResourcesBundled()
 	{
-		return Directory.Exists(GetPackagedAGXResourcesPath());
+		return Directory.Exists(GetBundledAGXResourcesPath());
 	}
 
 
-	private void PackageAGXResources(ReadOnlyTargetRules Target, Dictionary<string, LibSource> RuntimeLibFiles,
+	private void BundleAGXResources(ReadOnlyTargetRules Target, Dictionary<string, LibSource> RuntimeLibFiles,
 		Dictionary<string, LibSource> LinkLibFiles, List<LibSource> IncludePaths)
 	{
 		if (!Heuristics.IsAGXSetupEnvCalled())
 		{
-			Console.Error.WriteLine("Error: Could not package AGX Dynamics resources because no AGX Dynamics installation "
+			Console.Error.WriteLine("Error: Could not bundle AGX Dynamics resources because no AGX Dynamics installation "
 				+ "was found. Please ensure that setup_env has been called.");
 			return;
 		}
@@ -390,19 +390,19 @@ public class AGXDynamicsLibrary : ModuleRules
 			{
 				Console.Error.WriteLine("Error: File {0} did not match any file in {1}. Packaging " +
 					"of AGX Dynamics resources failed.", FileName, Dir);
-				CleanPackagedAGXDynamicsResources();
+				CleanBundledAGXDynamicsResources();
 				return;
 			}
 
 			foreach (string FilePath in FilesToCopy)
 			{
-				// Note: the PackagedAGXResources.RuntimeLibraryPath() function cannot be used here since
+				// Note: the BundledAGXResources.RuntimeLibraryPath() function cannot be used here since
 				// the file name may have an added prefix that would then be added once again.
 				string Dest = Path.Combine(
-					PackagedAGXResources.RuntimeLibraryDirectory(RuntimeLibFile.Value), Path.GetFileName(FilePath));
+					BundledAGXResources.RuntimeLibraryDirectory(RuntimeLibFile.Value), Path.GetFileName(FilePath));
 				if (!CopyFile(FilePath, Dest))
 				{
-					CleanPackagedAGXDynamicsResources();
+					CleanBundledAGXDynamicsResources();
 					return;
 				}
 			}
@@ -420,19 +420,19 @@ public class AGXDynamicsLibrary : ModuleRules
 			{
 				Console.Error.WriteLine("Error: File {0} did not match any file in {1}. Packaging " +
 					"of AGX Dynamics resources failed.", FileName, Dir);
-				CleanPackagedAGXDynamicsResources();
+				CleanBundledAGXDynamicsResources();
 				return;
 			}
 
 			foreach (string FilePath in FilesToCopy)
 			{
-				// Note: the PackagedAGXResources.LinkLibraryPath() function cannot be used here since
+				// Note: the BundledAGXResources.LinkLibraryPath() function cannot be used here since
 				// the file name may have an added prefix that would then be added once again.
 				string Dest = Path.Combine(
-					PackagedAGXResources.LinkLibraryDirectory(LinkLibFile.Value), Path.GetFileName(FilePath));
+					BundledAGXResources.LinkLibraryDirectory(LinkLibFile.Value), Path.GetFileName(FilePath));
 				if (!CopyFile(FilePath, Dest))
 				{
-					CleanPackagedAGXDynamicsResources();
+					CleanBundledAGXDynamicsResources();
 					return;
 				}
 			}
@@ -442,10 +442,10 @@ public class AGXDynamicsLibrary : ModuleRules
 		foreach (var IncludePath in IncludePaths)
 		{
 			string Source = InstalledAGXResources.IncludePath(IncludePath);
-			string Dest = PackagedAGXResources.IncludePath(IncludePath);
+			string Dest = BundledAGXResources.IncludePath(IncludePath);
 			if(!CopyDirectoryRecursively(Source, Dest))
 			{
-				CleanPackagedAGXDynamicsResources();
+				CleanBundledAGXDynamicsResources();
 				return;
 			}
 		}
@@ -453,10 +453,10 @@ public class AGXDynamicsLibrary : ModuleRules
 		// Copy AGX Dynamics cfg directory.
 		{
 			string Source = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Cfg, true);
-			string Dest = PackagedAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Cfg, true);
+			string Dest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Cfg, true);
 			if (!CopyDirectoryRecursively(Source, Dest))
 			{
-				CleanPackagedAGXDynamicsResources();
+				CleanBundledAGXDynamicsResources();
 				return;
 			}
 		}
@@ -464,7 +464,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		// Copy Terrain Material Library.
 		{
 			string Source = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
-			string Dest = PackagedAGXResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
+			string Dest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
 
 			// We don't yet include the Terrain Material Library in the Docker images.
 			// Remove this check once the images has been rebuilt.
@@ -472,7 +472,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			{
 				if (!CopyDirectoryRecursively(Source, Dest))
 				{
-					CleanPackagedAGXDynamicsResources();
+					CleanBundledAGXDynamicsResources();
 					return;
 				}
 			}
@@ -481,20 +481,20 @@ public class AGXDynamicsLibrary : ModuleRules
 		// Copy AGX Dynamics Components/agx/Physics directory and Components/agx/Referenced.agxEntity file.
 		{
 			string ComponentsDirSource = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
-			string ComponentsDirDest = PackagedAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
+			string ComponentsDirDest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
 			string PhysicsDirSource = Path.Combine(ComponentsDirSource, "agx", "Physics");
 			string PhysicsDirDest = Path.Combine(ComponentsDirDest, "agx", "Physics");
 
 			if (!CopyDirectoryRecursively(PhysicsDirSource, PhysicsDirDest))
 			{
-				CleanPackagedAGXDynamicsResources();
+				CleanBundledAGXDynamicsResources();
 				return;
 			}
 
 			// Copy all single files in the Components/agx directory.
 			if (!CopyFilesNonRecursive(Path.Combine(ComponentsDirSource, "agx"), Path.Combine(ComponentsDirDest, "agx")))
 			{
-				CleanPackagedAGXDynamicsResources();
+				CleanBundledAGXDynamicsResources();
 				return;
 			}
 		}
@@ -563,24 +563,24 @@ public class AGXDynamicsLibrary : ModuleRules
 		return true;
 	}
 
-	private void CleanPackagedAGXDynamicsResources()
+	private void CleanBundledAGXDynamicsResources()
 	{
-		Console.WriteLine("Cleaning packaged AGX Dynamics resources started...");
-		string PackagedAGXResourcesPath = GetPackagedAGXResourcesPath();
+		Console.WriteLine("Cleaning bundled AGX Dynamics resources started...");
+		string BundledAGXResourcesPath = GetBundledAGXResourcesPath();
 		try
 		{
-			if (Directory.Exists(PackagedAGXResourcesPath))
+			if (Directory.Exists(BundledAGXResourcesPath))
 			{
-				Directory.Delete(PackagedAGXResourcesPath, true);
+				Directory.Delete(BundledAGXResourcesPath, true);
 			}
 		}
 		catch (Exception e)
 		{
 			Console.Error.WriteLine("Error: Unable to delete directory {0}. Exception: {1}",
-				PackagedAGXResourcesPath, e.Message);
+				BundledAGXResourcesPath, e.Message);
 			return;
 		}
-		Console.WriteLine("Cleaning packaged AGX Dynamics resources complete.");
+		Console.WriteLine("Cleaning bundled AGX Dynamics resources complete.");
 	}
 
 	// This is a temporary work-around to fix the issue where dll/so files are copied to the
@@ -615,17 +615,17 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private string GetAgxVersionHeaderPath()
 	{
-		if (IsAGXResourcesPackaged())
+		if (IsAGXResourcesBundled())
 		{
-			return Path.Combine(PackagedAGXResources.IncludePath(LibSource.AGX), "agx", "agx_version.h");
+			return Path.Combine(BundledAGXResources.IncludePath(LibSource.AGX), "agx", "agx_version.h");
 		}
 
-		// If the AGX Dynamics resources has not yet been packaged with the plugin, an AGX Dynamics
+		// If the AGX Dynamics resources has not yet been bundled with the plugin, an AGX Dynamics
 		// environment must be set up, so we can get the header file from there.
 		if (!Heuristics.IsAGXSetupEnvCalled())
 		{
 			Console.Error.WriteLine("Error: GetAgxVersionHeaderPath failed. AGX Dynamics resources are not " +
-			"packaged with the plugin and no AGX Dynamics environment has been setup. Please ensure that " +
+			"bundled with the plugin and no AGX Dynamics environment has been setup. Please ensure that " +
 			"setup_env has been called.");
 			return string.Empty;
 		}
@@ -882,9 +882,9 @@ public class AGXDynamicsLibrary : ModuleRules
 
 
 
-		private void InitializeLinuxPackagedAGX(string PackagedAGXResourcesPath)
+		private void InitializeLinuxBundledAGX(string BundledAGXResourcesPath)
 		{
-			string BaseDir = PackagedAGXResourcesPath;
+			string BaseDir = BundledAGXResourcesPath;
 
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
@@ -960,9 +960,9 @@ public class AGXDynamicsLibrary : ModuleRules
 		}
 
 
-		private void InitializeWindowsPackagedAGX(string PackagedAGXResourcesPath)
+		private void InitializeWindowsBundledAGX(string BundledAGXResourcesPath)
 		{
-			string BaseDir = PackagedAGXResourcesPath;
+			string BaseDir = BundledAGXResourcesPath;
 
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
@@ -997,7 +997,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		}
 
 		public AGXResourcesInfo(
-			ReadOnlyTargetRules Target, AGXResourcesLocation AGXLocation, string PackagedAGXResourcesPath = "")
+			ReadOnlyTargetRules Target, AGXResourcesLocation AGXLocation, string BundledAGXResourcesPath = "")
 		{
 			LibSources = new Dictionary<LibSource, LibSourceInfo>();
 			if (Target.Platform == UnrealTargetPlatform.Linux)
@@ -1025,9 +1025,9 @@ public class AGXDynamicsLibrary : ModuleRules
 						InitializeLinuxInstalledAGX();
 						break;
 					}
-					case AGXResourcesLocation.PackagedAGX:
+					case AGXResourcesLocation.BundledAGX:
 					{
-						InitializeLinuxPackagedAGX(PackagedAGXResourcesPath);
+						InitializeLinuxBundledAGX(BundledAGXResourcesPath);
 						break;
 					}
 				}
@@ -1054,9 +1054,9 @@ public class AGXDynamicsLibrary : ModuleRules
 						InitializeWindowsInstalledAGX();
 						break;
 					}
-					case AGXResourcesLocation.PackagedAGX:
+					case AGXResourcesLocation.BundledAGX:
 					{
-						InitializeWindowsPackagedAGX(PackagedAGXResourcesPath);
+						InitializeWindowsBundledAGX(BundledAGXResourcesPath);
 						break;
 					}
 				}
