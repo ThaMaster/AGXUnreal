@@ -231,6 +231,14 @@ public class AGXDynamicsLibrary : ModuleRules
 				+ "resources already exists in: {0}", BundledAGXResourcesPath);
 		}
 
+		string MisplacedLicensePath;
+		if (MisplacedLicenseFileExists(out MisplacedLicensePath))
+		{
+			Console.Error.WriteLine("Error: Found misplaced AGX Dynamics license file at: {0} Please "
+				+ "remove the license file and start the build process again.", MisplacedLicensePath);
+			return;
+		}
+
 		foreach (var LinkLibFile in LinkLibFiles)
 		{
 			AddLinkLibrary(LinkLibFile.Key, LinkLibFile.Value);
@@ -580,6 +588,33 @@ public class AGXDynamicsLibrary : ModuleRules
 			return;
 		}
 		Console.WriteLine("Cleaning bundled AGX Dynamics resources complete.");
+	}
+
+	// Within the bundled AGX Dynamics resources, an AGX Dynamics license files may only exist
+	// within the specified 'license' directory.
+	private bool MisplacedLicenseFileExists(out string MisplacedLicensePath)
+	{
+		MisplacedLicensePath = String.Empty;
+		string ResourcesDir = GetBundledAGXResourcesPath();
+		foreach (string DirPath in Directory.GetDirectories(ResourcesDir, "*", SearchOption.TopDirectoryOnly))
+		{
+			DirectoryInfo DirInfo = new DirectoryInfo(DirPath);
+			if (DirInfo.Name.Equals("license"))
+			{
+				continue;
+			}
+
+			foreach (string FilePath in Directory.GetFiles(DirPath, "*", SearchOption.AllDirectories))
+			{
+				if (Path.GetExtension(FilePath).Equals(".lic"))
+				{
+					MisplacedLicensePath = FilePath;
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	private int? ParseDefineDirectiveValue(string[] HeaderFileLines, string Identifier)
