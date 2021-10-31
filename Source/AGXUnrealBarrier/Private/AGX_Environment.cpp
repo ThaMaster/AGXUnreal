@@ -75,33 +75,9 @@ void FAGX_Environment::LoadDynamicLibraries()
 	const FString AgxResourcesPath = GetAgxDynamicsResourcesPath();
 	UE_LOG(LogAGX, Log, TEXT("About to load AGX Dynamics as dynamic libraries."));
 
-	// Dynamically load AGX Dynamics dependencies.
-	// clang-format off
-	TArray<FString> AGXDynamicsDependencyFileNames =
-	{
-		"agxPhysics",
-		"agxCore",
-		"agxSabre",
-		"agxTerrain",
-		"agxCable",
-		"agxModel",
-		"vdbgrid",
-		"colamd",
-		"zlib",
-		"Half",
-		"Iex-2_2",
-		"Imath-2_2",
-		"IlmImf-2_2",
-		"IlmThread-2_2",
-		"openvdb",
-		"tbb",
-		"msvcp140",
-		"vcruntime140",
-		"websockets",
-		"libpng",
-		"ot21-OpenThreads"
-	};
-	// clang-format on
+	const FString LibraryNameList = PREPROCESSOR_TO_STRING(AGX_DYNAMICS_DELAY_LOAD_LIBRARY_NAMES);
+	TArray<FString> AGXDynamicsDependencyFileNames;
+	LibraryNameList.ParseIntoArray(AGXDynamicsDependencyFileNames, TEXT(" "), false);
 
 	const FString DependecyDir =
 		FPaths::Combine(AgxResourcesPath, FString("bin"), FString("Win64"));
@@ -109,9 +85,8 @@ void FAGX_Environment::LoadDynamicLibraries()
 
 	for (const FString& FileName : AGXDynamicsDependencyFileNames)
 	{
-		const FString FileNameWExtension = FileName + FString(".dll");
-		const FString FullFilePath = FPaths::Combine(DependecyDir, FileNameWExtension);
-		void* Handle = FPlatformProcess::GetDllHandle(*FileNameWExtension);
+		const FString FullFilePath = FPaths::Combine(DependecyDir, FileName);
+		void* Handle = FPlatformProcess::GetDllHandle(*FileName);
 		if (Handle == nullptr)
 		{
 			UE_LOG(
@@ -126,12 +101,16 @@ void FAGX_Environment::LoadDynamicLibraries()
 	}
 	FPlatformProcess::PopDllDirectory(*DependecyDir);
 
-	if (DynamicLibraryHandles.Num() == 0)
+	if (AGXDynamicsDependencyFileNames.Num() == DynamicLibraryHandles.Num())
+	{
+		UE_LOG(LogAGX, Log, TEXT("Successfully loaded all AGX Dynamics dynamic libraries."));
+	}
+	else
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Dynamic loading of AGX Dynamics failed. The AGX Dynamics for Unreal plugin "
-				 "will not function as expected."));
+			TEXT("At least one AGX Dynamics dynamic library failed to load. The AGX Dynamics for Unreal "
+				 "plugin will likely not function as expected."));
 	}
 
 #elif defined(__linux__)

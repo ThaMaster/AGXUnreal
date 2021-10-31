@@ -251,13 +251,15 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-			// Delay-load the DLL, so we can load it from the right place first
-			AddDelayLoadDependency("agxPhysics", LibSource.AGX, Target);
-			AddDelayLoadDependency("agxCore", LibSource.AGX, Target);
-			AddDelayLoadDependency("agxSabre", LibSource.AGX, Target);
-			AddDelayLoadDependency("agxTerrain", LibSource.AGX, Target);
-			AddDelayLoadDependency("agxCable", LibSource.AGX, Target);
-			AddDelayLoadDependency("agxModel", LibSource.AGX, Target);
+			Dictionary<string, LibSource> DelayLoadLibraries = new Dictionary<string, LibSource>();
+			DelayLoadLibraries.Add("agxPhysics", LibSource.AGX);
+			DelayLoadLibraries.Add("agxCore", LibSource.AGX);
+			DelayLoadLibraries.Add("agxSabre", LibSource.AGX);
+			DelayLoadLibraries.Add("agxTerrain", LibSource.AGX);
+			DelayLoadLibraries.Add("agxCable", LibSource.AGX);
+			DelayLoadLibraries.Add("agxModel", LibSource.AGX);
+
+			AddDelayLoadDependencies(DelayLoadLibraries);
 		}
 
 		// Ensure all runtime dependencies are copied to target.
@@ -277,10 +279,19 @@ public class AGXDynamicsLibrary : ModuleRules
 		}
 	}
 
-	private void AddDelayLoadDependency(string Name, LibSource Src, ReadOnlyTargetRules Target)
+	private void AddDelayLoadDependencies(Dictionary<string, LibSource> DelayLoadLibraries)
 	{
-		string FileName = BundledAGXResources.RuntimeLibraryFileName(Name);
-		PublicDelayLoadDLLs.Add(FileName);
+		string PreprocessorDynamicLibraryNames = "";
+		foreach (var Library in DelayLoadLibraries)
+		{
+			string FileName = BundledAGXResources.RuntimeLibraryFileName(Library.Key);
+			PublicDelayLoadDLLs.Add(FileName);
+			PreprocessorDynamicLibraryNames += FileName + " ";
+		}
+
+		// Add the list of library names as a preprocessor definition so that it can be used at runtime
+		// to find and load the dynamic libraries.
+		PublicDefinitions.Add("AGX_DYNAMICS_DELAY_LOAD_LIBRARY_NAMES=" + PreprocessorDynamicLibraryNames);
 	}
 
 	private void AddLinkLibrary(string Name, LibSource Src)
