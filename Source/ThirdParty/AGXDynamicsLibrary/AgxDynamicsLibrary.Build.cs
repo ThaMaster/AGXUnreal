@@ -522,6 +522,15 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private bool CopyFile(string Source, string Dest)
 	{
+		string RelativePath = Dest.Replace(GetBundledAGXResourcesPath(), "");
+		bool IllegalPath = Path.GetDirectoryName(RelativePath).IndexOf("win32", StringComparison.OrdinalIgnoreCase) >= 0;
+		if (IllegalPath)
+		{
+			Console.WriteLine("Path {0} contains instances of 'win32' which is not allowed. "
+					+ "The file will not be copied.", Dest);
+			return true; // We allow the build to continue.
+		}
+
 		try
 		{
 			string DestDir = Path.GetDirectoryName(Dest);
