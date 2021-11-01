@@ -552,11 +552,6 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private bool CopyDirectoryRecursively(string SourceDir, string DestDir)
 	{
-		foreach (string DirPath in Directory.GetDirectories(SourceDir, "*", SearchOption.AllDirectories))
-		{
-			Directory.CreateDirectory(DirPath.Replace(SourceDir, DestDir));
-		}
-
 		foreach (string FilePath in Directory.GetFiles(SourceDir, "*", SearchOption.AllDirectories))
 		{
 			// Do not copy license files.
