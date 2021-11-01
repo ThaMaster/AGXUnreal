@@ -13,6 +13,7 @@
 // Unreal Engine includes.
 #include "GenericPlatform/GenericPlatformProcess.h"
 #include "Interfaces/IPluginManager.h"
+#include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EnvironmentUtilities"
