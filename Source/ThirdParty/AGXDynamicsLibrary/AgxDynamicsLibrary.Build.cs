@@ -316,9 +316,11 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private void SetLicenseForCopySafe(ReadOnlyTargetRules Target)
 	{
-		if (Target.Configuration == UnrealTargetConfiguration.Shipping)
+		if (Target.Configuration != UnrealTargetConfiguration.Development &&
+			Target.Configuration != UnrealTargetConfiguration.Debug &&
+			Target.Configuration != UnrealTargetConfiguration.DebugGame)
 		{
-			// Never copy license files for shipping builds.
+			// Never copy license files for other than Development and Debug builds.
 			return;
 		}
 
