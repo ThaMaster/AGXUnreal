@@ -274,17 +274,17 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private void AddDelayLoadDependencies(Dictionary<string, LibSource> DelayLoadLibraries)
 	{
-		string PreprocessorDynamicLibraryNames = "";
+		string PreprocessorDynamicLibraries = "";
 		foreach (var Library in DelayLoadLibraries)
 		{
 			string FileName = BundledAGXResources.RuntimeLibraryFileName(Library.Key);
 			PublicDelayLoadDLLs.Add(FileName);
-			PreprocessorDynamicLibraryNames += FileName + " ";
+			PreprocessorDynamicLibraries += FileName + " ";
 		}
 
 		// Add the list of library names as a preprocessor definition so that it can be used at runtime
 		// to find and load the dynamic libraries.
-		PublicDefinitions.Add("AGX_DYNAMICS_DELAY_LOAD_LIBRARY_NAMES=" + PreprocessorDynamicLibraryNames);
+		PublicDefinitions.Add("AGXUNREAL_DELAY_LOAD_LIBRARY_NAMES=" + PreprocessorDynamicLibraries);
 	}
 
 	private void AddLinkLibrary(string Name, LibSource Src)
@@ -324,7 +324,8 @@ public class AGXDynamicsLibrary : ModuleRules
 			return;
 		}
 
-		string LicenseCopyEnvVariableVal = Environment.GetEnvironmentVariable("AGX_COPY_LICENSE_FILE_TO_TARGET");
+		string LicenseCopyEnvVariableVal =
+			Environment.GetEnvironmentVariable("AGXUNREAL_COPY_LICENSE_FILE_TO_TARGET");
 		bool bLicenseCopyEnvVariableSet = !String.IsNullOrEmpty(LicenseCopyEnvVariableVal) &&
 			LicenseCopyEnvVariableVal.Equals("true", StringComparison.OrdinalIgnoreCase);
 

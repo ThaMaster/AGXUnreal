@@ -75,7 +75,7 @@ void FAGX_Environment::LoadDynamicLibraries()
 	TArray<FString> AGXDynamicsDependencyFileNames;
 
 #if defined(_WIN64)
-	const FString LibraryNameList = PREPROCESSOR_TO_STRING(AGX_DYNAMICS_DELAY_LOAD_LIBRARY_NAMES);
+	const FString LibraryNameList = PREPROCESSOR_TO_STRING(AGXUNREAL_DELAY_LOAD_LIBRARY_NAMES);
 	LibraryNameList.ParseIntoArray(AGXDynamicsDependencyFileNames, TEXT(" "), false);
 	const FString DependecyDir =
 		FPaths::Combine(AgxResourcesPath, FString("bin"), FString("Win64"));
