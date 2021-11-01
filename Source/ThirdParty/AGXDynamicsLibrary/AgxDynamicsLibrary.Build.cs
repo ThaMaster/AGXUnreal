@@ -15,8 +15,8 @@ public class AGXDynamicsLibrary : ModuleRules
 	private AGXResourcesInfo BundledAGXResources;
 
 	// CAUTION: Setting bCopyLicenseFileToTarget to 'true' means the AGX Dynamics license file will
-	// be copied to the build target location, including cooked builds. An exception is when doing
-	// shipping builds, for those cases the license file is never copied to the target.
+	// be copied to the build target location. This is true even for cooked builds. An exception is
+	// when doing shipping builds, for those cases the license file is never copied to the target.
 	// Use with care, make sure the license file is never distributed.
 	bool bCopyLicenseFileToTarget = false;
 
