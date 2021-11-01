@@ -84,6 +84,16 @@ float UAGX_Constraint1DofComponent::GetAngle() const
 	return Get1DOFBarrier(*this)->GetAngle();
 }
 
+double UAGX_Constraint1DofComponent::GetSpeed() const
+{
+	return Get1DOFBarrier(*this)->GetSpeed();
+}
+
+float UAGX_Constraint1DofComponent::GetSpeed_BP() const
+{
+	return static_cast<float>(Get1DOFBarrier(*this)->GetSpeed());
+}
+
 namespace AGX_Constraint1DofComponent_helpers
 {
 	void InitializeControllerBarriers(UAGX_Constraint1DofComponent& Constraint)

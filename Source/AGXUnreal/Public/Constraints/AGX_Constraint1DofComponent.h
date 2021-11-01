@@ -47,6 +47,13 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Constraint")
 	float GetAngle() const;
 
+	double GetSpeed() const;
+
+	UFUNCTION(
+		BlueprintCallable, BlueprintPure, Category = "AGX Constraint",
+		Meta = (DisplayName = "Get Speed"))
+	float GetSpeed_BP() const;
+
 	UAGX_Constraint1DofComponent();
 
 	UAGX_Constraint1DofComponent(

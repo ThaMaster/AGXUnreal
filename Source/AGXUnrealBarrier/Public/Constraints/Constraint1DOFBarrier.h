@@ -33,6 +33,14 @@ public:
 	 */
 	float GetAngle() const;
 
+	/**
+	 * This methods return the current speed for the 1D constraint.
+	 *
+	 * For a prismatic this is the linear velocity along the axis, if it is a hinge, then it is the
+	 * current angular rotation around the hinge axis.
+	 */
+	double GetSpeed() const;
+
 	TUniquePtr<FElectricMotorControllerBarrier> GetElectricMotorController();
 	TUniquePtr<FFrictionControllerBarrier> GetFrictionController();
 	TUniquePtr<FLockControllerBarrier> GetLockController();

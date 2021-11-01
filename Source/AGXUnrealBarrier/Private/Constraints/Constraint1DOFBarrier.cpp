@@ -29,9 +29,19 @@ namespace
 		return dynamic_cast<agx::Constraint1DOF*>(NativeRef->Native.get());
 	}
 
+	agx::Constraint1DOF* Get1DOF(FConstraintRef& NativeRef)
+	{
+		return dynamic_cast<agx::Constraint1DOF*>(NativeRef.Native.get());
+	}
+
 	agx::Constraint1DOF* Get1DOF(const std::unique_ptr<FConstraintRef>& NativeRef)
 	{
 		return dynamic_cast<agx::Constraint1DOF*>(NativeRef->Native.get());
+	}
+
+	agx::Constraint1DOF* Get1DOF(const FConstraintRef& NativeRef)
+	{
+		return dynamic_cast<agx::Constraint1DOF*>(NativeRef.Native.get());
 	}
 
 	template <typename Barrier>
@@ -39,6 +49,29 @@ namespace
 	{
 		return TUniquePtr<Barrier>(
 			new Barrier(std::make_unique<FConstraintControllerRef>(Controller)));
+	}
+
+	agx::Angle::Type GetDofType(const FConstraint1DOFBarrier& Constraint)
+	{
+		const agx::Constraint1DOF* ConstraintAGX = Get1DOF(*Constraint.GetNative());
+		if (ConstraintAGX == nullptr)
+		{
+			/// \todo Can we do better error handling here?
+			return agx::Angle::Type::ROTATIONAL;
+		}
+		const agx::Motor1D* Motor = ConstraintAGX->getMotor1D();
+		if (Motor == nullptr)
+		{
+			/// \todo Can we do better error handling here?
+			return agx::Angle::Type::ROTATIONAL;
+		}
+		const agx::Angle* Angle = Motor->getData().getAngle();
+		if (Angle == nullptr)
+		{
+			/// \todo Can we do better error handling here?
+			return agx::Angle::Type::ROTATIONAL;
+		}
+		return Angle->getType();
 	}
 }
 
@@ -70,6 +103,24 @@ float FConstraint1DOFBarrier::GetAngle() const
 			ConvertDistance(NativeAngle);
 		default:
 			return NativeAngle;
+	}
+}
+
+double FConstraint1DOFBarrier::GetSpeed() const
+{
+	check(HasNative());
+
+	const agx::Constraint1DOF* Constraint = Get1DOF(NativeRef);
+	const agx::Real SpeedAGX = Constraint->getCurrentSpeed();
+	const agx::Angle::Type DofType = GetDofType(*this);
+	switch (DofType)
+	{
+		case agx::Angle::ROTATIONAL:
+			return ConvertAngleToUnreal<double>(SpeedAGX);
+		case agx::Angle::TRANSLATIONAL:
+			return ConvertDistanceToUnreal<double>(SpeedAGX);
+		default:
+			return SpeedAGX;
 	}
 }
 
