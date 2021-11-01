@@ -753,3 +753,5 @@ TArray<FAGX_MeshWithTransform> FAGX_AutoFitShapeDetails::GetSelectedStaticMeshes
 
 	return Meshes;
 }
+
+#undef LOCTEXT_NAMESPAC
