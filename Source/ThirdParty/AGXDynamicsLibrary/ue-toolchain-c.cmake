@@ -278,14 +278,10 @@ endif()
 ###
 
 
-# Disable linking with the system standard library and setup linker directories
-# to the Unreal Engine paths instead.
-#
-# What does it mean to pass -nodefaultlibs to a C compiler? We want to use the C default libraries, right?
-# It's only the C++ standard library we want to avoid. https://libcxx.llvm.org//UsingLibcxx.html#id4 says
-# that -nodefaultlibs is a GCC, not a Clang, flag and that when using it one must also restore a bunch
-# of system libraries: -lc++ -lc++abi -lm -lc -lgcc_s -lgcc. We do this, the C part at least, below.
-# So all well and good?
+# Disable linking with the system standard library and setup Unreal Engine
+# libraries and linker directories instead. We list all the C system libraries
+# again because https://libcxx.llvm.org//UsingLibcxx.html#id4 says that we
+# should.
 set(ue_linker_flags "-nodefaultlibs -lm -lc -lgcc_s -lgcc -lpthread")
 
 if("${CONFIG_UE_C_LIBS_TO_LINKER}" STREQUAL "ON")
