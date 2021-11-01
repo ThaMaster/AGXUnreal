@@ -539,7 +539,7 @@ public class AGXDynamicsLibrary : ModuleRules
 				Directory.CreateDirectory(DestDir);
 			}
 
-			File.Copy(Source, Dest, true);
+			File.Copy(Source, Dest, false);
 		}
 		catch (Exception e)
 		{
