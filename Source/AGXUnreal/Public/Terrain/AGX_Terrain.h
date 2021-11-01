@@ -92,9 +92,10 @@ public:
 	float GetPenetrationForceVelocityScaling() const;
 
 	/**
-	 * The maximum depth of the terrain, in centimeters from local origin. Should at least be
-	 * deeper than the lowest height of the initial Landscape. Note that depth is defined in the
-	 * direction of the inverted Z-axis, which means that usually positive values are used.
+	 * The maximum depth of the terrain, from local origin [cm].
+	 * Should at least be deeper than the lowest height of the initial Landscape. Note that depth is
+	 * defined in the direction of the inverted Z-axis, which means that usually positive values are
+	 * used.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain",

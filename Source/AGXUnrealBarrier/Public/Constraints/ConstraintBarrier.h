@@ -59,8 +59,8 @@ public:
 	void SetCompliance(double Compliance, int32 Dof);
 	double GetCompliance(int32 Dof) const;
 
-	void SetDamping(double Damping, int32 Dof);
-	double GetDamping(int32 Dof) const;
+	void SetSpookDamping(double SpookDamping, int32 Dof);
+	double GetSpookDamping(int32 Dof) const;
 
 	void SetForceRange(double Min, double Max, int32 Dof);
 	void GetForceRange(double* Min, double* Max, int32 Dof) const;

@@ -17,7 +17,9 @@ class AGXUNREAL_API UAGX_CapsuleShapeComponent final : public UAGX_ShapeComponen
 public:
 	UAGX_CapsuleShapeComponent();
 
-	/// The distance from the centers of the capsule's half-spheres at each end.
+	/**
+	 * The distance from the centers of the capsule's half-spheres at each end. [cm].
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	float Height;
 
@@ -27,7 +29,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
 	float GetHeight() const;
 
-	/// The distance from the center of any the two half-spheres at each end to their surface.
+	/**
+	 * The distance from the center of any the two half-spheres at each end to their surface [cm].
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	float Radius;
 

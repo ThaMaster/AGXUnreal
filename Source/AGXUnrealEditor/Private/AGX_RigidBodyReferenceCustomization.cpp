@@ -11,6 +11,7 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailWidgetRow.h"
 #include "Engine/BlueprintGeneratedClass.h"
+#include "Engine/SCS_Node.h"
 #include "GameFramework/Actor.h"
 #include "IDetailChildrenBuilder.h"
 #include "IDetailPropertyRow.h"
@@ -86,14 +87,6 @@ void FetchBodyNamesFromOwner(
 void FetchBodyNamesFromBlueprint(
 	TArray<TSharedPtr<FName>>& BodyNames, IPropertyHandle& BodyReferenceHandle)
 {
-	/*
-	 The purpose of this function is to collect the names of all RigidBodyComponents in the
-	 currently open Blueprint so that they can be used to populate a ComboBox in e.g. the constraint
-	 details panel. For some reason the number of components is always zero. Not even the Component
-	 currently being customized shows up and it is be definition included in the Blueprint.
-	 Something is wrong.
-	 */
-
 	BodyNames.Empty();
 
 	UAGX_ConstraintComponent* Constraint = Cast<UAGX_ConstraintComponent>(
@@ -109,17 +102,19 @@ void FetchBodyNamesFromBlueprint(
 		return;
 	}
 
-	UE_LOG(
-		LogAGX, Warning, TEXT("Reading body names from Blueprint named '%s'. Have %d components."),
-		*Blueprint->GetName(), Blueprint->ComponentTemplates.Num());
-
-	for (UActorComponent* Component : Blueprint->ComponentTemplates)
+	for (USCS_Node* Node : Blueprint->SimpleConstructionScript->GetAllNodes())
 	{
-		UE_LOG(LogAGX, Warning, TEXT("  Checking component '%s'."), *Component->GetName());
-		if (UAGX_RigidBodyComponent* RigidBody = Cast<UAGX_RigidBodyComponent>(Component))
+		if (UAGX_RigidBodyComponent* RigidBody =
+				Cast<UAGX_RigidBodyComponent>(Node->ComponentTemplate))
 		{
-			UE_LOG(LogAGX, Warning, TEXT("  Is a body, adding."));
-			BodyNames.Add(MakeShareable(new FName(RigidBody->GetFName())));
+			const FString Name = [RigidBody, Blueprint]()
+			{
+				FString N = RigidBody->GetName();
+				N.RemoveFromEnd(Blueprint->SimpleConstructionScript->ComponentTemplateNameSuffix);
+				return N;
+			}();
+
+			BodyNames.Add(MakeShareable(new FName(*Name)));
 		}
 	}
 }
@@ -158,9 +153,7 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 	}
 	else
 	{
-		// @todo FetchBodyNamesFromBlueprint currently always fails. Find some way to fix this. For
-		// now the call is commented out since it floods the log with warning messages.
-		// FetchBodyNamesFromBlueprint(BodyNames, BodyReferenceHandle.Get());
+		FetchBodyNamesFromBlueprint(BodyNames, BodyReferenceHandle.Get());
 	}
 
 	StructBuilder.AddProperty(OwningActorHandle.ToSharedRef());

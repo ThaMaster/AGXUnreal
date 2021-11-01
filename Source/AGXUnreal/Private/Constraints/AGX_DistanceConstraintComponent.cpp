@@ -11,9 +11,7 @@ UAGX_DistanceConstraintComponent::UAGX_DistanceConstraintComponent()
 		  TArray<EDofFlag> {
 			  // All common DOFs are free.
 		  },
-		  /*bIsSecondaryConstraintRotational*/ false,
-		  /*bIsLockControllerEditable*/ false) // disable because the native impl uses Lock
-											   // Controller implicitly!
+		  /*bIsSecondaryConstraintRotational*/ false)
 {
 	/// \todo Determine if this is needed, or if the FAGX_ConstraintFrameComponent constructor
 	/// does what we want.

@@ -113,13 +113,13 @@ double FConstraintBarrier::GetCompliance(int32 Dof) const
 	return NativeRef->Native->getCompliance(Dof);
 }
 
-void FConstraintBarrier::SetDamping(double Damping, int32 Dof)
+void FConstraintBarrier::SetSpookDamping(double SpookDamping, int32 Dof)
 {
 	check(HasNative());
-	NativeRef->Native->setDamping(Damping, Dof);
+	NativeRef->Native->setDamping(SpookDamping, Dof);
 }
 
-double FConstraintBarrier::GetDamping(int32 Dof) const
+double FConstraintBarrier::GetSpookDamping(int32 Dof) const
 {
 	check(HasNative());
 	return NativeRef->Native->getDamping(Dof);

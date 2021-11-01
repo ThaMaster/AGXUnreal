@@ -74,13 +74,13 @@ double FConstraintControllerBarrier::GetElasticity() const
 	return NativeRef->Native->getElasticity();
 }
 
-void FConstraintControllerBarrier::SetDamping(double Damping)
+void FConstraintControllerBarrier::SetSpookDamping(double SpookDamping)
 {
 	check(HasNative());
-	NativeRef->Native->setDamping(Damping);
+	NativeRef->Native->setDamping(SpookDamping);
 }
 
-double FConstraintControllerBarrier::GetDamping() const
+double FConstraintControllerBarrier::GetSpookDamping() const
 {
 	check(HasNative());
 	return NativeRef->Native->getDamping();
@@ -457,7 +457,7 @@ void FFrictionControllerBarrier::ToNative(agx::FrictionController* Native) const
 	// Common controller variables.
 	Native->setEnable(bEnable);
 	Native->setElasticity(Elasticity);
-	Native->setDamping(Damping);
+	Native->setDamping(SpookDamping);
 	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
 
 	// Special controller variables.
@@ -470,7 +470,7 @@ void FFrictionControllerBarrier::FromNative(const agx::FrictionController& Nativ
 	// Common controller variables.
 	bEnable = Native.getEnable();
 	Elasticity = Native.getElasticity();
-	Damping = Native.getDamping();
+	SpookDamping = Native.getDamping();
 	agx::RangeReal ForceRange = Native.getForceRange();
 	ForceRangeMin = ForceRange.lower();
 	ForceRangeMax = ForceRange.upper();
@@ -485,7 +485,7 @@ void FLockControllerBarrier::ToNative(agx::LockController* Native) const
 	// Common controller variables.
 	Native->setEnable(bEnable);
 	Native->setElasticity(Elasticity);
-	Native->setDamping(Damping);
+	Native->setDamping(SpookDamping);
 	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
 
 	// Special controller variables.
@@ -497,7 +497,7 @@ void FLockControllerBarrier::FromNative(const agx::LockController& Native)
 	// Common controller variables.
 	bEnable = Native.getEnable();
 	Elasticity = Native.getElasticity();
-	Damping = Native.getDamping();
+	SpookDamping = Native.getDamping();
 	agx::RangeReal ForceRange = Native.getForceRange();
 	ForceRangeMin = ForceRange.lower();
 	ForceRangeMax = ForceRange.upper();
@@ -512,7 +512,7 @@ void FRangeControllerBarrier::ToNative(agx::RangeController* Native) const
 	// Common controller variables.
 	Native->setEnable(bEnable);
 	Native->setElasticity(Elasticity);
-	Native->setDamping(Damping);
+	Native->setDamping(SpookDamping);
 	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
 
 	// Special controller variables.
@@ -526,7 +526,7 @@ void FRangeControllerBarrier::FromNative(const agx::RangeController& Native)
 	// Common controller variables.
 	bEnable = Native.getEnable();
 	Elasticity = Native.getElasticity();
-	Damping = Native.getDamping();
+	SpookDamping = Native.getDamping();
 	agx::RangeReal ForceRange = Native.getForceRange();
 	ForceRangeMin = ForceRange.lower();
 	ForceRangeMax = ForceRange.upper();
@@ -542,7 +542,7 @@ void FScrewControllerBarrier::ToNative(agx::ScrewController* Native) const
 	// Common controller variables.
 	Native->setEnable(bEnable);
 	Native->setElasticity(Elasticity);
-	Native->setDamping(Damping);
+	Native->setDamping(SpookDamping);
 	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
 
 	// Special controller variables.
@@ -554,7 +554,7 @@ void FScrewControllerBarrier::FromNative(const agx::ScrewController& Native)
 	// Common controller variables.
 	bEnable = Native.getEnable();
 	Elasticity = Native.getElasticity();
-	Damping = Native.getDamping();
+	SpookDamping = Native.getDamping();
 	agx::RangeReal ForceRange = Native.getForceRange();
 	ForceRangeMin = ForceRange.lower();
 	ForceRangeMax = ForceRange.upper();
@@ -568,7 +568,7 @@ void FTargetSpeedControllerBarrier::ToNative(agx::TargetSpeedController* Native)
 	// Common controller variables.
 	Native->setEnable(bEnable);
 	Native->setElasticity(Elasticity);
-	Native->setDamping(Damping);
+	Native->setDamping(SpookDamping);
 	Native->setForceRange(agx::RangeReal(ForceRangeMin, ForceRangeMax));
 
 	// Special controller variables.
@@ -581,7 +581,7 @@ void FTargetSpeedControllerBarrier::FromNative(const agx::TargetSpeedController&
 	// Common controller variables.
 	bEnable = Native.getEnable();
 	Elasticity = Native.getElasticity();
-	Damping = Native.getDamping();
+	SpookDamping = Native.getDamping();
 	agx::RangeReal ForceRange = Native.getForceRange();
 	ForceRangeMin = ForceRange.lower();
 	ForceRangeMax = ForceRange.upper();

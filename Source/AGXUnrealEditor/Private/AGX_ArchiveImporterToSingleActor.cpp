@@ -218,7 +218,7 @@ namespace
 
 		virtual void InstantiateContactMaterial(const FContactMaterialBarrier& Barrier) override
 		{
-			Helper.InstantiateContactMaterial(Barrier);
+			Helper.InstantiateContactMaterial(Barrier, Actor);
 		}
 
 		virtual FTwoBodyTireArchiveBodies InstantiateTwoBodyTire(

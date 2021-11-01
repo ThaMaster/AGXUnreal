@@ -59,10 +59,10 @@ public:
 	virtual float GetBulkViscosity() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
-	virtual void SetDamping(float InDamping);
+	virtual void SetSpookDamping(float InSpookDamping);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
-	virtual float GetDamping() const;
+	virtual float GetSpookDamping() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
 	virtual void SetMinMaxElasticRestLength(float InMin, float InMax);
@@ -88,16 +88,16 @@ public:
 	virtual void SetYoungsModulusBend(float InYoungsModulus);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	virtual float GetDampingStretch() const;
+	virtual float GetSpookDampingStretch() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	virtual void SetDampingStretch(float InDamping);
+	virtual void SetSpookDampingStretch(float InSpookDamping);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	virtual float GetDampingBend() const;
+	virtual float GetSpookDampingBend() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	virtual void SetDampingBend(float InDamping);
+	virtual void SetSpookDampingBend(float InSpookDamping);
 
 	void CopyFrom(const FShapeMaterialBarrier* Source);
 };

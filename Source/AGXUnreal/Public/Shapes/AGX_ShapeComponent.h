@@ -36,10 +36,10 @@ public:
 	 * Bulk properties have impact on collision forces but also on Rigid Body mass.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
-	UAGX_ShapeMaterialBase* PhysicalMaterial;
+	UAGX_ShapeMaterialBase* ShapeMaterial;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
-	bool SetShapeMaterial(UAGX_ShapeMaterialBase* ShapeMaterial);
+	bool SetShapeMaterial(UAGX_ShapeMaterialBase* InShapeMaterial);
 
 	/**
 	 * Toggle to enable or disable collision generation against this shape.
@@ -141,6 +141,7 @@ public:
 
 	//~ Begin UActorComponent Interface
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
+	virtual void OnRegister() override;
 	//~ End UActorComponent Interface
 
 	//~ Begin USceneComponent Interface

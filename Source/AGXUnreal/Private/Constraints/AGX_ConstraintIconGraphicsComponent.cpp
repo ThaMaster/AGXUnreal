@@ -30,9 +30,6 @@
 #include "UObject/ConstructorHelpers.h"
 #include "VertexFactory.h"
 
-// Standard library includes.
-#include <optional>
-
 /**
  * Holds vertex and index buffers for rendering.
  */

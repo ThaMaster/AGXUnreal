@@ -35,7 +35,7 @@ struct AGXUNREAL_API FWireRoutingNode
 	EWireNodeType NodeType;
 
 	/**
-	 * The location of this node relative to the Wire Component.
+	 * The location of this node relative to the Wire Component [cm].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
 	FVector Location;
@@ -143,13 +143,13 @@ public:
 	// float ScaleConstant = 0.35f;
 
 	/**
-	 * The physical material of the wire.
+	 * Defines physical properties of the wire.
 	 *
 	 * This determines things such as the density of the wire and how it behaves when in contact
 	 * with Shapes in the world.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Wire")
-	UAGX_ShapeMaterialBase* PhysicalMaterial;
+	UAGX_ShapeMaterialBase* ShapeMaterial;
 
 	/*
 	 * Begin winch.

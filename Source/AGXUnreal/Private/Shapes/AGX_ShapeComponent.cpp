@@ -78,15 +78,15 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	GetNative()->SetName(GetName());
 	GetNative()->SetIsSensor(bIsSensor, SensorType == EAGX_ShapeSensorType::ContactsSensor);
 
-	if (PhysicalMaterial)
+	if (ShapeMaterial)
 	{
 		UAGX_ShapeMaterialInstance* MaterialInstance = static_cast<UAGX_ShapeMaterialInstance*>(
-			PhysicalMaterial->GetOrCreateInstance(GetWorld()));
+			ShapeMaterial->GetOrCreateInstance(GetWorld()));
 		check(MaterialInstance);
 		UWorld* PlayingWorld = GetWorld();
-		if (MaterialInstance != PhysicalMaterial && PlayingWorld && PlayingWorld->IsGameWorld())
+		if (MaterialInstance != ShapeMaterial && PlayingWorld && PlayingWorld->IsGameWorld())
 		{
-			PhysicalMaterial = MaterialInstance;
+			ShapeMaterial = MaterialInstance;
 		}
 		FShapeMaterialBarrier* MaterialBarrier =
 			MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
@@ -299,22 +299,22 @@ void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 	}
 }
 
-bool UAGX_ShapeComponent::SetShapeMaterial(UAGX_ShapeMaterialBase* ShapeMaterial)
+bool UAGX_ShapeComponent::SetShapeMaterial(UAGX_ShapeMaterialBase* InShapeMaterial)
 {
-	if (ShapeMaterial == nullptr)
+	if (InShapeMaterial == nullptr)
 	{
 		if (HasNative())
 		{
 			GetNative()->ClearMaterial();
 		}
-		PhysicalMaterial = nullptr;
+		ShapeMaterial = nullptr;
 		return true;
 	}
 
 	if (!HasNative())
 	{
 		// Not initialized yet, so simply assign the material we're given.
-		PhysicalMaterial = ShapeMaterial;
+		ShapeMaterial = InShapeMaterial;
 		return true;
 	}
 
@@ -322,17 +322,17 @@ bool UAGX_ShapeComponent::SetShapeMaterial(UAGX_ShapeMaterialBase* ShapeMaterial
 	// may be ShapeMaterial itself.
 	UWorld* World = GetWorld();
 	UAGX_ShapeMaterialInstance* Instance =
-		static_cast<UAGX_ShapeMaterialInstance*>(ShapeMaterial->GetOrCreateInstance(World));
+		static_cast<UAGX_ShapeMaterialInstance*>(InShapeMaterial->GetOrCreateInstance(World));
 	if (Instance == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Shape '%s', in Actor '%s', could not create Shape Material Instance for '%s'. "
 				 "Material not changed."),
-			*GetName(), *GetLabelSafe(GetOwner()), *ShapeMaterial->GetName());
+			*GetName(), *GetLabelSafe(GetOwner()), *InShapeMaterial->GetName());
 		return false;
 	}
-	PhysicalMaterial = Instance;
+	ShapeMaterial = Instance;
 
 	// Assign the new native Material to the native Shape.
 	FShapeMaterialBarrier* NativeMaterial = Instance->GetOrCreateShapeMaterialNative(World);
@@ -342,7 +342,7 @@ bool UAGX_ShapeComponent::SetShapeMaterial(UAGX_ShapeMaterialBase* ShapeMaterial
 			LogAGX, Warning,
 			TEXT("Could not create AGX Dynamics representation of Shape Material '%s' when "
 				 "assigned to Shape '%s' in Actor '%s'."),
-			*ShapeMaterial->GetName(), *GetName(), *GetLabelSafe(GetOwner()));
+			*InShapeMaterial->GetName(), *GetName(), *GetLabelSafe(GetOwner()));
 		return false;
 	}
 	GetNative()->SetMaterial(*NativeMaterial);
@@ -499,4 +499,10 @@ void UAGX_ShapeComponent::OnAttachmentChanged()
 	// transform is generally considered safe since they should always be in sync.
 	GetNative()->SetWorldPosition(GetComponentLocation());
 	GetNative()->SetWorldRotation(GetComponentQuat());
+}
+
+void UAGX_ShapeComponent::OnRegister()
+{
+	Super::OnRegister();
+	UpdateVisualMesh();
 }

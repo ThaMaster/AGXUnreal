@@ -162,8 +162,8 @@ void UAGX_ContactMaterialAsset::PostInitProperties()
 		[](ThisClass* Asset) { Asset->GetInstance()->SetRestitution(Asset->Restitution); });
 
 	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, Damping),
-		[](ThisClass* Asset) { Asset->GetInstance()->SetDamping(Asset->Damping); });
+		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, SpookDamping),
+		[](ThisClass* Asset) { Asset->GetInstance()->SetSpookDamping(Asset->SpookDamping); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, YoungsModulus),

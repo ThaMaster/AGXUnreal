@@ -605,7 +605,7 @@ void UAGX_TerrainMaterialInstance::UpdateShapeMaterialNativeProperties()
 		ShapeMaterialNativeBarrier->SetDensity(Bulk.Density);
 		ShapeMaterialNativeBarrier->SetYoungsModulus(Bulk.YoungsModulus);
 		ShapeMaterialNativeBarrier->SetBulkViscosity(Bulk.Viscosity);
-		ShapeMaterialNativeBarrier->SetDamping(Bulk.Damping);
+		ShapeMaterialNativeBarrier->SetSpookDamping(Bulk.SpookDamping);
 		ShapeMaterialNativeBarrier->SetMinMaxElasticRestLength(
 			Bulk.MinElasticRestLength, Bulk.MaxElasticRestLength);
 

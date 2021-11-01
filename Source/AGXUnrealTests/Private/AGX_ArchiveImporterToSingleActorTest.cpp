@@ -11,13 +11,16 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "AgxAutomationCommon.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
+#include "Constraints/AGX_ConstraintComponent.h"
+#include "Materials/AGX_ContactMaterialBase.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponent.h"
+#include "Materials/AGX_MaterialBase.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
-#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
-#include "Constraints/AGX_ConstraintComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #if AGX_TEST_WIRE_IMPORT
@@ -1200,11 +1203,10 @@ bool FClearRenderDataImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
-	// The error message that is printed when folders are deleted from under the editor.
-	//
-	/// @todo The error is only printed sometimes, and not for the last three runs on GitLab.
-	/// Commenting it out for now. See GitLab issue #213.
-	// Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#if defined(__linux__)
+	// @todo The error is only printed sometimes. See GitLab issue #213.
+	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
 	// Files that are created by the test and thus safe to remove. The GUID values may make this
 	// test cumbersome to update since they will change every time the AGX Dynamics archive is
@@ -1854,17 +1856,18 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
 	Test.TestEqual(
 		TEXT("Translational 2 elasticity"), Constraint->Elasticity.Translational_2, 101.0);
 	Test.TestEqual(
-		TEXT("Translational 2 elasticity"), Constraint->Elasticity.Translational_3, 102.0);
+		TEXT("Translational 3 elasticity"), Constraint->Elasticity.Translational_3, 102.0);
 	Test.TestEqual(TEXT("Rotational 1 elasticity"), Constraint->Elasticity.Rotational_1, 103.0);
 	Test.TestEqual(TEXT("Rotational 2 elasticity"), Constraint->Elasticity.Rotational_2, 104.0);
 	// Rotational 3 is not supported for AGX::Hinge.
 
-	// Damping.
-	Test.TestEqual(TEXT("Translational 1 damping"), Constraint->Damping.Translational_1, 200.0);
-	Test.TestEqual(TEXT("Translational 2 damping"), Constraint->Damping.Translational_2, 201.0);
-	Test.TestEqual(TEXT("Translational 2 damping"), Constraint->Damping.Translational_3, 202.0);
-	Test.TestEqual(TEXT("Rotational 1 damping"), Constraint->Damping.Rotational_1, 203.0);
-	Test.TestEqual(TEXT("Rotational 2 damping"), Constraint->Damping.Rotational_2, 204.0);
+	// SpookDamping.
+	Test.TestEqual(TEXT("Translational 1 damping"), Constraint->SpookDamping.Translational_1, 200.0);
+	Test.TestEqual(TEXT("Translational 2 damping"), Constraint->SpookDamping.Translational_2, 201.0);
+	Test.TestEqual(
+		TEXT("Translational 3 damping"), Constraint->SpookDamping.Translational_3, 202.0);
+	Test.TestEqual(TEXT("Rotational 1 damping"), Constraint->SpookDamping.Rotational_1, 203.0);
+	Test.TestEqual(TEXT("Rotational 2 damping"), Constraint->SpookDamping.Rotational_2, 204.0);
 	// Rotational 3 is not supported for AGX::Hinge.
 
 	// Force range.
@@ -2237,6 +2240,151 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 	TArray<const TCHAR*> ExpectedFiles = {
 		TEXT("StaticMeshs"), TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("single_geometries_build"), ExpectedFiles);
+
+	return true;
+}
+
+//
+// Contact materials test starts here.
+//
+
+class FArchiveImporterToSingleActor_ContactMaterialsTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckContactMaterialsImportedCommand, FArchiveImporterToSingleActor_ContactMaterialsTest&,
+	Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearContactMaterialsImportedCommand, FArchiveImporterToSingleActor_ContactMaterialsTest&,
+	Test);
+
+class FArchiveImporterToSingleActor_ContactMaterialsTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_ContactMaterialsTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImporterToSingleActor_ContactMaterialsTest"),
+			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.ContactMaterials"))
+	{
+	}
+
+public:
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("contact_materials_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckContactMaterialsImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearContactMaterialsImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_ContactMaterialsTest
+		ArchiveImporterToSingleActor_ContactMaterialsTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script contact_materials.agxPy.
+ * @return true when the check is complete. Never returns false.
+ */
+bool FCheckContactMaterialsImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import ContactMaterials test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// 4 Rigid Bodies, 4 Geometries, 1 Contact Material Registrar and 1 Default Scene Root.
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 10);
+
+	UAGX_ContactMaterialRegistrarComponent* Registrar =
+		GetByName<UAGX_ContactMaterialRegistrarComponent>(
+			Components, TEXT("AGX_ContactMaterialRegistrar"));
+
+	Test.TestNotNull("Contact Material Registrar", Registrar);
+	Test.TestEqual("Num Contact Materials in Registrar", Registrar->ContactMaterials.Num(), 2);
+
+	UAGX_ContactMaterialBase** Cm1 = Registrar->ContactMaterials.FindByPredicate(
+		[](UAGX_ContactMaterialBase* Cm) { return Cm->GetName() == "CMMat1Mat2"; });
+	Test.TestNotNull("Cm1", Cm1);
+	Test.TestNotNull("Cm1 Material1", (*Cm1)->Material1);
+	Test.TestNotNull("Cm1 Material2", (*Cm1)->Material2);
+	Test.TestEqual("Cm1 Material1 name", (*Cm1)->Material1->GetName(), "Mat1");
+	Test.TestEqual("Cm1 Material2 name", (*Cm1)->Material2->GetName(), "Mat2");
+	Test.TestEqual("Cm1 contact solver", (*Cm1)->ContactSolver, EAGX_ContactSolver::Iterative);
+	Test.TestEqual(
+		"Cm1 friction model", (*Cm1)->FrictionModel,
+		EAGX_FrictionModel::IterativeProjectedConeFriction);
+	Test.TestEqual(
+		"Cm1 contact reduction bin resolution", (*Cm1)->ContactReduction.BinResolution, 2);
+	Test.TestEqual("Cm1 friction coefficient", (*Cm1)->FrictionCoefficient, 0.11);
+	Test.TestEqual("Cm1 surface viscosity", (*Cm1)->SurfaceViscosity, 0.12);
+	Test.TestEqual("Cm1 restitution", (*Cm1)->Restitution, 0.13);
+	Test.TestEqual("Cm1 youngs modulus", (*Cm1)->YoungsModulus, 123451234.0);
+	Test.TestEqual("Cm1 damping", (*Cm1)->SpookDamping, 0.14);
+	Test.TestEqual("Cm1 adhesive force", (*Cm1)->AdhesiveForce, 0.15);
+	Test.TestEqual("Cm1 adhesive overlap", (float)(*Cm1)->AdhesiveOverlap, AgxToUnrealDistance(0.16));
+
+	UAGX_ContactMaterialBase** Cm2 = Registrar->ContactMaterials.FindByPredicate(
+		[](UAGX_ContactMaterialBase* Cm) { return Cm->GetName() == "CMMat3Mat4"; });
+	Test.TestNotNull("Cm2", Cm2);
+	Test.TestNotNull("Cm2 Material1", (*Cm2)->Material1);
+	Test.TestNotNull("Cm2 Material2", (*Cm2)->Material2);
+	Test.TestEqual("Cm2 Material1 name", (*Cm2)->Material1->GetName(), "Mat3");
+	Test.TestEqual("Cm2 Material2 name", (*Cm2)->Material2->GetName(), "Mat4");
+	Test.TestEqual("Cm2 contact solver", (*Cm2)->ContactSolver, EAGX_ContactSolver::Direct);
+	Test.TestEqual("Cm2 friction model", (*Cm2)->FrictionModel, EAGX_FrictionModel::BoxFriction);
+	Test.TestEqual(
+		"Cm2 contact reduction bin resolution", (*Cm2)->ContactReduction.BinResolution, 3);
+	Test.TestEqual("Cm2 friction coefficient", (*Cm2)->FrictionCoefficient, 0.21);
+	Test.TestEqual("Cm2 surface viscosity", (*Cm2)->SurfaceViscosity, 0.22);
+	Test.TestEqual("Cm2 restitution", (*Cm2)->Restitution, 0.23);
+	Test.TestEqual("Cm2 youngs modulus", (*Cm2)->YoungsModulus, 101010101.0);
+	Test.TestEqual("Cm2 damping", (*Cm2)->SpookDamping, 0.24);
+	Test.TestEqual("Cm2 adhesive force", (*Cm2)->AdhesiveForce, 0.25);
+	Test.TestEqual("Cm2 adhesive overlap", (float)(*Cm2)->AdhesiveOverlap, AgxToUnrealDistance(0.26));
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearContactMaterialsImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+	TArray<const TCHAR*> ExpectedFiles = {TEXT("ContactMaterials"),	 TEXT("CMMat1Mat2.uasset"),
+										  TEXT("CMMat3Mat4.uasset"), TEXT("ShapeMaterials"),
+										  TEXT("Mat1.uasset"),		 TEXT("Mat2.uasset"),
+										  TEXT("Mat3.uasset"),		 TEXT("Mat4.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("contact_materials_build"), ExpectedFiles);
 
 	return true;
 }

@@ -29,9 +29,12 @@ public:
 		meta = (Tooltip = "Key to trigger forward motion of the constraint."))
 	FKey ForwardKey;
 
+	/**
+	 * The Constraint speed forward [cm/s] or [deg/s].
+	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Speed Input",
-		meta = (Tooltip = "The constraint speed forward. cm/s or degrees/s."))
+		meta = (Tooltip = "The constraint speed forward [cm/s] or [deg/s]."))
 	float ForwardSpeed;
 
 	UPROPERTY(
@@ -39,9 +42,12 @@ public:
 		meta = (Tooltip = "Key to trigger backward motion of the constraint."))
 	FKey BackwardKey;
 
+	/**
+	 * The Constraint speed backward [cm/s] or [deg/s].
+	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Speed Input",
-		meta = (Tooltip = "The constraint speed backward. cm/s or degrees/s."))
+		meta = (Tooltip = "The constraint speed backward [cm/s] or [deg/s]."))
 	float BackwardSpeed;
 
 	UPROPERTY(

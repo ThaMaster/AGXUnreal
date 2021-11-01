@@ -54,7 +54,7 @@ public:
 	virtual void SetSecondarySurfaceViscosity(float InSecondarySurfaceViscosity) override;
 	virtual void SetUseSecondarySurfaceViscosity(bool bInUserSecondarySurfaceViscosity) override;
 	virtual void SetRestitution(float Restitution) override;
-	virtual void SetDamping(float Damping) override;
+	virtual void SetSpookDamping(float SpookDamping) override;
 	virtual void SetYoungsModulus(float YoungsModulus) override;
 	virtual void SetAdhesiveForce(float AdhesiveForce) override;
 	virtual void SetAdhesiveOverlap(float AdhesiveOverlap) override;
@@ -63,7 +63,8 @@ public:
 	// ~End UAGX_ContactMaterialBase interface.
 
 private:
-	// Creates the native AGX Contact Material and adds it to the simulation.
+	// Creates the native AGX Contact Material. This function does not add the Native to the
+	// Simulation.
 	void CreateNative(UWorld* PlayingWorld);
 
 	/// \todo This member is probably not necessary.. Remove it?
