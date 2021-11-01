@@ -11,15 +11,6 @@
 # where RCL, an Epic Games employee, describe how to build third-party libraries,
 # and from the output of [ue4cli](https://docs.adamrehn.com/ue4cli/overview/introduction-to-ue4cli).
 
-# Unreal Engine 4.25 added BuildCMakeLib to the Unreal Automation Tool, UAT,
-# which may be what we actually need. Read the release notes at
-# https://docs.unrealengine.com/en-US/Support/Builds/ReleaseNotes/4_25/index.html
-# to learn more.
-#
-# I had a look it I couldn't see that it does the necessary configuration. To
-# me it looks like it assumes that it is being run on a compatible host system,
-# i.e., that the system compilers and libraries are Unreal Engine compatible.
-
 # We use the UE_ROOT environment variable to find the compiler and standard
 # libraries to use. This variable must have been set before running CMake.
 # Altenatively, it can be passed on the CMake command line as
