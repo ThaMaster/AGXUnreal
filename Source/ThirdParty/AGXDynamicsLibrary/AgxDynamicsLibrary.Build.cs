@@ -194,8 +194,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		// OS specific dependencies.
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
-			RuntimeLibFiles.Add("png", LibSource.Dependencies);
-
 			IncludePaths.Add(LibSource.Components);
 			IncludePaths.Add(LibSource.Config);
 			IncludePaths.Add(LibSource.Dependencies);
@@ -203,6 +201,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
+			RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
 			RuntimeLibFiles.Add("msvcp140", LibSource.AGX);
 			RuntimeLibFiles.Add("vcruntime140", LibSource.AGX);
 			if (TargetAGXVersion.IsNewerOrEqualTo(2, 30, 0, 0) && TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
