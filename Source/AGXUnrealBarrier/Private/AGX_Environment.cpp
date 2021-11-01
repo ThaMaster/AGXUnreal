@@ -376,7 +376,7 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
 
 	// License is not valid. Attempt to unlock using a license file in the bundled AGX
 	// Dynamics resources that might have been put there recently by the user.
-	TryActivateAgxDynamicsLicense();
+	TryUnlockAgxDynamicsLicense();
 
 	const bool LicenseValid = AgxRuntime->isValid();
 	if (OutStatus)
@@ -387,7 +387,7 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
 	return LicenseValid;
 }
 
-void FAGX_Environment::TryActivateAgxDynamicsLicense()
+void FAGX_Environment::TryUnlockAgxDynamicsLicense()
 {
 	agx::Runtime* AgxRuntime = agx::Runtime::instance();
 	if (AgxRuntime == nullptr)

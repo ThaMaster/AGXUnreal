@@ -50,7 +50,7 @@ private:
 	void Init();
 	void SetupAGXDynamicsEnvironment();
 	void LoadDynamicLibraries();
-	void TryActivateAgxDynamicsLicense();
+	void TryUnlockAgxDynamicsLicense();
 
 	TArray<void*> DynamicLibraryHandles;
 };
