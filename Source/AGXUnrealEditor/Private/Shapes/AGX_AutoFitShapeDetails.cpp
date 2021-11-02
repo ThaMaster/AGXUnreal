@@ -21,7 +21,7 @@
 #include "PropertyCustomizationHelpers.h"
 #include "ScopedTransaction.h"
 
-#define LOCTEXT_NAMESPACE "AGX_AutoFitShapeDetails"
+#define LOCTEXT_NAMESPACE "FAGX_AutoFitShapeDetails"
 
 namespace AGX_AutoFitShapeDetals_helpers
 {
@@ -754,4 +754,4 @@ TArray<FAGX_MeshWithTransform> FAGX_AutoFitShapeDetails::GetSelectedStaticMeshes
 	return Meshes;
 }
 
-#undef LOCTEXT_NAMESPAC
+#undef LOCTEXT_NAMESPACE
