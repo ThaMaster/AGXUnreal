@@ -166,88 +166,82 @@ bool FConstraintBarrier::GetEnableComputeForces() const
 	return NativeRef->Native->getEnableComputeForces();
 }
 
+namespace ConstraintBarrier_helpers
+{
+	struct FLastForce
+	{
+		agx::Vec3 ForceAGX;
+		agx::Vec3 TorqueAGX;
+
+		FVector& OutForce;
+		FVector& OutTorque;
+
+		FLastForce(FVector& InForce, FVector& InTorque)
+			: OutForce(InForce)
+			, OutTorque(InTorque)
+		{
+		}
+
+		void Write(bool bGotForces)
+		{
+			if (bGotForces)
+			{
+				OutForce = ConvertVector(ForceAGX);
+				OutTorque = ConvertTorque(TorqueAGX);
+			}
+			else
+			{
+				OutForce = FVector::ZeroVector;
+				OutTorque = FVector::ZeroVector;
+			}
+		}
+	};
+}
+
 bool FConstraintBarrier::GetLastForce(
 	int32 BodyIndex, FVector& OutForce, FVector& OutTorque, bool bForceAtCm)
 {
 	check(HasNative());
-	agx::Vec3 ForceAGX;
-	agx::Vec3 TorqueAGX;
-	const bool bGotForces =
-		NativeRef->Native->getLastForce(BodyIndex, ForceAGX, TorqueAGX, bForceAtCm);
-	if (!bGotForces)
-	{
-		OutForce = FVector::ZeroVector;
-		OutTorque = FVector::ZeroVector;
-		return false;
-	}
-	OutForce = ConvertVector(ForceAGX);
-	OutTorque = ConvertTorque(TorqueAGX);
-	return true;
+	ConstraintBarrier_helpers::FLastForce LastForce(OutForce, OutTorque);
+	const bool bGotForces = NativeRef->Native->getLastForce(
+		BodyIndex, LastForce.ForceAGX, LastForce.TorqueAGX, bForceAtCm);
+	LastForce.Write(bGotForces);
+	return bGotForces;
 }
 
 bool FConstraintBarrier::GetLastForce(
 	const FRigidBodyBarrier* Body, FVector& OutForce, FVector& OutTorque, bool bForceAtCm)
 {
 	check(HasNative());
-
-	const agx::RigidBody* BodyAGX = Body != nullptr && Body->HasNative()
-								  ? FAGX_AgxDynamicsObjectsAccess::GetFrom(Body)
-								  : nullptr;
-	agx::Vec3 ForceAGX;
-	agx::Vec3 TorqueAGX;
-	const bool bGotForces =
-		NativeRef->Native->getLastForce(BodyAGX, ForceAGX, TorqueAGX, bForceAtCm);
-	if (!bGotForces)
-	{
-		OutForce = FVector::ZeroVector;
-		OutTorque = FVector::ZeroVector;
-		return false;
-	}
-	OutForce = ConvertVector(ForceAGX);
-	OutTorque = ConvertTorque(TorqueAGX);
-	return true;
+	ConstraintBarrier_helpers::FLastForce LastForce(OutForce, OutTorque);
+	const agx::RigidBody* BodyAGX = FAGX_AgxDynamicsObjectsAccess::TryGetFrom(Body);
+	const bool bGotForces = NativeRef->Native->getLastForce(
+		BodyAGX, LastForce.ForceAGX, LastForce.TorqueAGX, bForceAtCm);
+	LastForce.Write(bGotForces);
+	return bGotForces;
 }
 
 bool FConstraintBarrier::GetLastLocalForce(
 	int32 BodyIndex, FVector& OutForce, FVector& OutTorque, bool bForceAtCm)
 {
 	check(HasNative());
-	agx::Vec3 ForceAGX;
-	agx::Vec3 TorqueAGX;
-	const bool bGotForces =
-		NativeRef->Native->getLastLocalForce(BodyIndex, ForceAGX, TorqueAGX, bForceAtCm);
-	if (!bGotForces)
-	{
-		OutForce = FVector::ZeroVector;
-		OutTorque = FVector::ZeroVector;
-		return false;
-	}
-	OutForce = ConvertVector(ForceAGX);
-	OutTorque = ConvertTorque(TorqueAGX);
-	return true;
+	ConstraintBarrier_helpers::FLastForce LastForce(OutForce, OutTorque);
+	const bool bGotForces = NativeRef->Native->getLastLocalForce(
+		BodyIndex, LastForce.ForceAGX, LastForce.TorqueAGX, bForceAtCm);
+	LastForce.Write(bGotForces);
+	return bGotForces;
 }
 
 bool FConstraintBarrier::GetLastLocalForce(
 	const FRigidBodyBarrier* Body, FVector& OutForce, FVector& OutTorque, bool bForceAtCm)
 {
 	check(HasNative());
-
-	const agx::RigidBody* BodyAGX = Body != nullptr && Body->HasNative()
-										? FAGX_AgxDynamicsObjectsAccess::GetFrom(Body)
-										: nullptr;
-	agx::Vec3 ForceAGX;
-	agx::Vec3 TorqueAGX;
-	const bool bGotForces =
-		NativeRef->Native->getLastLocalForce(BodyAGX, ForceAGX, TorqueAGX, bForceAtCm);
-	if (!bGotForces)
-	{
-		OutForce = FVector::ZeroVector;
-		OutTorque = FVector::ZeroVector;
-		return false;
-	}
-	OutForce = ConvertVector(ForceAGX);
-	OutTorque = ConvertTorque(TorqueAGX);
-	return true;
+	ConstraintBarrier_helpers::FLastForce LastForce(OutForce, OutTorque);
+	const agx::RigidBody* BodyAGX = FAGX_AgxDynamicsObjectsAccess::TryGetFrom(Body);
+	const bool bGotForces = NativeRef->Native->getLastLocalForce(
+		BodyAGX, LastForce.ForceAGX, LastForce.TorqueAGX, bForceAtCm);
+	LastForce.Write(bGotForces);
+	return bGotForces;
 }
 
 FGuid FConstraintBarrier::GetGuid() const
