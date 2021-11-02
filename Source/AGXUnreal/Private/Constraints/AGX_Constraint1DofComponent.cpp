@@ -79,9 +79,24 @@ void UAGX_Constraint1DofComponent::PostEditChangeChainProperty(
 }
 #endif
 
-float UAGX_Constraint1DofComponent::GetAngle() const
+double UAGX_Constraint1DofComponent::GetAngle() const
 {
 	return Get1DOFBarrier(*this)->GetAngle();
+}
+
+float UAGX_Constraint1DofComponent::GetAngle_BP() const
+{
+	return static_cast<float>(GetAngle());
+}
+
+double UAGX_Constraint1DofComponent::GetSpeed() const
+{
+	return Get1DOFBarrier(*this)->GetSpeed();
+}
+
+float UAGX_Constraint1DofComponent::GetSpeed_BP() const
+{
+	return static_cast<float>(GetSpeed());
 }
 
 namespace AGX_Constraint1DofComponent_helpers
