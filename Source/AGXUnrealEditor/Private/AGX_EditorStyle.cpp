@@ -9,6 +9,8 @@
 TSharedPtr<FSlateStyleSet> FAGX_EditorStyle::StyleInstance = nullptr;
 const FName FAGX_EditorStyle::AgxIcon("AgxIcon");
 const FName FAGX_EditorStyle::AgxIconSmall("AgxIcon.Small");
+const FName FAGX_EditorStyle::JointIcon("JointIcon");
+const FName FAGX_EditorStyle::JointIconSmall("JointIcon.Small");
 
 void FAGX_EditorStyle::Initialize()
 {
@@ -76,6 +78,8 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 
 	Style->Set(AgxIcon, new IMAGE_BRUSH("Icons/T_Icon_A_Light_776", IconSize40));
 	Style->Set(AgxIconSmall, new IMAGE_BRUSH("Icons/T_Icon_A_Light_776", IconSize16));
+	Style->Set(JointIcon, new IMAGE_BRUSH("Icons/T_Icon_Joint_200", IconSize40));
+	Style->Set(JointIconSmall, new IMAGE_BRUSH("Icons/T_Icon_Joint_200", IconSize16));
 	Style->Set("ClassIcon.AGX_RigidBodyComponent", new IMAGE_BRUSH("Icons/T_Icon_A_Light_776", IconSize16));
 	Style->Set("ClassIcon.AGX_RigidBodyActor", new IMAGE_BRUSH("Icons/T_Icon_A_Light_776", IconSize16));
 	Style->Set("ClassIcon.AGX_BoxShapeComponent", new IMAGE_BRUSH("Icons/T_Icon_Box_200", IconSize16));

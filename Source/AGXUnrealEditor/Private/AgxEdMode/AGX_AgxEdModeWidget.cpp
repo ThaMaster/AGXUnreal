@@ -1,5 +1,11 @@
 #include "AgxEdMode/AGX_AgxEdModeWidget.h"
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_EditorStyle.h"
+#include "AgxEdMode/AGX_AgxEdModeSubMode.h"
+#include "AgxEdMode/AGX_AgxEdMode.h"
+
+// Unreal Engine includes.
 #include "Framework/Application/SlateApplication.h"
 #include "EditorFontGlyphs.h"
 #include "IDetailsView.h"
@@ -17,16 +23,14 @@
 #include "Widgets/Layout/SScaleBox.h"
 #include "Widgets/SBoxPanel.h"
 
-#include "AgxEdMode/AGX_AgxEdModeSubMode.h"
-#include "AgxEdMode/AGX_AgxEdMode.h"
-
 #define LOCTEXT_NAMESPACE "SAGX_AgxEdModeWidget"
 
 void SAGX_AgxEdModeWidget::Construct(const FArguments& InArgs, FAGX_AgxEdMode* InAgxEdMode)
 {
 	AgxEdMode = InAgxEdMode;
 
-	auto GetCurrentSubModeName = [AgxEdMode = AgxEdMode]() {
+	auto GetCurrentSubModeName = [AgxEdMode = AgxEdMode]()
+	{
 		check(AgxEdMode);
 		UAGX_AgxEdModeSubMode* SubMode = AgxEdMode->GetCurrentSubMode();
 		return SubMode ? SubMode->GetDisplayName() : FText::GetEmpty();
@@ -105,16 +109,20 @@ TSharedRef<SWidget> SAGX_AgxEdModeWidget::CreateSubModesToolbar()
 
 		for (UAGX_AgxEdModeSubMode* SubMode : SubModes)
 		{
+			TAttribute<FSlateIcon> SubModeIcon;
+			SubModeIcon.Bind(TAttribute<FSlateIcon>::FGetter::CreateLambda(
+				[SubMode]() { return SubMode->GetIcon(); }));
+
 			ToolBar.AddToolBarButton(
 				FUIAction(
 					FExecuteAction::CreateRaw(
 						AgxEdMode, &FAGX_AgxEdMode::SetCurrentSubMode, SubMode),
 					FCanExecuteAction(),
-					FIsActionChecked::CreateLambda([AgxEdMode = AgxEdMode, SubMode]() {
-						return AgxEdMode->GetCurrentSubMode() == SubMode;
-					})),
-				NAME_None, SubMode->GetDisplayName(), SubMode->GetTooltip(),
-				TAttribute<FSlateIcon>(), EUserInterfaceActionType::RadioButton,
+					FIsActionChecked::CreateLambda(
+						[AgxEdMode = AgxEdMode, SubMode]()
+						{ return AgxEdMode->GetCurrentSubMode() == SubMode; })),
+				NAME_None, SubMode->GetDisplayName(), SubMode->GetTooltip(), SubModeIcon,
+				EUserInterfaceActionType::RadioButton,
 				/*InTutorialHighlightName*/ NAME_None);
 		}
 	}

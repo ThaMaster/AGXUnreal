@@ -1,6 +1,7 @@
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_EditorStyle.h"
 #include "AGX_ArchiveImporterToSingleActor.h"
 #include "AGX_ArchiveImporterToBlueprint.h"
 #include "AGX_ArchiveExporter.h"
@@ -9,6 +10,7 @@
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
+#include "Textures/SlateIcon.h"
 #include "DesktopPlatformModule.h"
 #include "Misc/Paths.h"
 
@@ -160,6 +162,14 @@ FText UAGX_AgxEdModeFile::GetTooltip() const
 {
 	return LOCTEXT(
 		"Tooltip", "Interoperability with external file formats, such AGX simulation files (.agx)");
+}
+
+FSlateIcon UAGX_AgxEdModeFile::GetIcon() const
+{
+	static FSlateIcon Icon(
+		FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIcon,
+		FAGX_EditorStyle::AgxIconSmall);
+	return Icon;
 }
 
 #undef LOCTEXT_NAMESPACE

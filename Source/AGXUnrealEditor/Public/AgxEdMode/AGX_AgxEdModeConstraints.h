@@ -65,6 +65,7 @@ public:
 public:
 	virtual FText GetDisplayName() const override;
 	virtual FText GetTooltip() const override;
+	virtual FSlateIcon GetIcon() const override;
 
 public: // Constraint Creator
 	UPROPERTY()
