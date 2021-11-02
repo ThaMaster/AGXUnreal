@@ -74,13 +74,13 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 
 	// Define icons and stuff here.
 
-	Style->Set(AgxIcon, new IMAGE_BRUSH("Icons/T_AgxIcon47", IconSize40));
-	Style->Set(AgxIconSmall, new IMAGE_BRUSH("Icons/T_AgxIcon47", IconSize16));
-	Style->Set("ClassIcon.AGX_RigidBodyComponent", new IMAGE_BRUSH("Icons/T_AgxIcon47", IconSize16));
-	Style->Set("ClassIcon.AGX_RigidBodyActor", new IMAGE_BRUSH("Icons/T_AgxIcon47", IconSize16));
-	Style->Set("ClassIcon.AGX_BoxShapeComponent", new IMAGE_BRUSH("Icons/T_BoxIcon", IconSize16));
-	Style->Set("ClassIcon.AGX_CylinderShapeComponent", new IMAGE_BRUSH("Icons/T_CylinderIcon", IconSize16));
-	Style->Set("ClassIcon.AGX_CapsuleShapeComponent", new IMAGE_BRUSH("Icons/T_CapsuleIcon", IconSize16));
+	Style->Set(AgxIcon, new IMAGE_BRUSH("Icons/T_Icon_A_Light_776", IconSize40));
+	Style->Set(AgxIconSmall, new IMAGE_BRUSH("Icons/T_Icon_A_Light_776", IconSize16));
+	Style->Set("ClassIcon.AGX_RigidBodyComponent", new IMAGE_BRUSH("Icons/T_Icon_A_Light_776", IconSize16));
+	Style->Set("ClassIcon.AGX_RigidBodyActor", new IMAGE_BRUSH("Icons/T_Icon_A_Light_776", IconSize16));
+	Style->Set("ClassIcon.AGX_BoxShapeComponent", new IMAGE_BRUSH("Icons/T_Icon_Box_200", IconSize16));
+	Style->Set("ClassIcon.AGX_CylinderShapeComponent", new IMAGE_BRUSH("Icons/T_Icon_Cylinder_200", IconSize16));
+	Style->Set("ClassIcon.AGX_CapsuleShapeComponent", new IMAGE_BRUSH("Icons/T_Icon_Capsule_200", IconSize16));
 
 	return Style;
 };
