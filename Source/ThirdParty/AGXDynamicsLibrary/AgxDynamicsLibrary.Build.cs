@@ -170,7 +170,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("agxModel", LibSource.AGX);
 		RuntimeLibFiles.Add("vdbgrid", LibSource.AGX);
 		RuntimeLibFiles.Add("colamd", LibSource.AGX);
-		RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
 		RuntimeLibFiles.Add("Half", LibSource.TerrainDependencies);
 		RuntimeLibFiles.Add("Iex-2_2", LibSource.TerrainDependencies);
 		RuntimeLibFiles.Add("Imath-2_2", LibSource.TerrainDependencies);
@@ -198,8 +197,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		// OS specific dependencies.
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
-			RuntimeLibFiles.Add("png", LibSource.Dependencies);
-
 			IncludePaths.Add(LibSource.Components);
 			IncludePaths.Add(LibSource.Config);
 			IncludePaths.Add(LibSource.Dependencies);
@@ -207,9 +204,10 @@ public class AGXDynamicsLibrary : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
+			RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
 			RuntimeLibFiles.Add("msvcp140", LibSource.AGX);
 			RuntimeLibFiles.Add("vcruntime140", LibSource.AGX);
-			if (TargetAGXVersion.IsNewerOrEqualTo(2, 30, 0, 0))
+			if (TargetAGXVersion.IsNewerOrEqualTo(2, 30, 0, 0) && TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
 				RuntimeLibFiles.Add("agx-assimp-vc*-mt", LibSource.AGX);
 			}
@@ -217,7 +215,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
 			RuntimeLibFiles.Add("ot2?-OpenThreads", LibSource.Dependencies);
-			if (TargetAGXVersion.IsOlderThan(2, 31, 2, 0))
+			if (TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
 				RuntimeLibFiles.Add("glew", LibSource.Dependencies);
 			}

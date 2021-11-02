@@ -26,6 +26,12 @@ public:
 
 	static FString GetAGXDynamicsVersion();
 
+	static void GetAGXDynamicsVersion(
+		int32& OutGeneration, int32& OutMajor, int32& OutMinor, int32& OutPatch);
+
+	static bool IsAGXDynamicsVersionNewerOrEqualTo(
+		int32 Generation, int32 Major, int32 Minor, int32 Patch);
+
 	static FString GetAgxDynamicsResourcesPath();
 
 	static void EnsureAgxDynamicsEnvironmentIsSetup();

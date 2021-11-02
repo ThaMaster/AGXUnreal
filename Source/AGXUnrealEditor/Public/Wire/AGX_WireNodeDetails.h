@@ -25,12 +25,12 @@ class FAGX_WireNodeDetails : public IDetailCustomNodeBuilder,
 	/*
 	 * Slate functionality is organized in layers held and orchestrated by the owning class. The
 	 * layers are:
-	 * - Widgets. The pixels on the screen. Rendered very frame.
+	 * - Widgets. The pixels on the screen. Rendered every frame.
 	 * - Callbacks. Functions called by the widget. Either every frame or when interacted with.
 	 * - Storage. In-class backing storage read by the widget renderers through the callbacks.
 	 * - Objects. The actual objects that the widgets and storage represents. May be more than one.
 	 *
-	 * When the widgets are created function pointers are passed and registered as callbacks. There
+	 * When the widgets are created, function pointers are passed and registered as callbacks. There
 	 * are callbacks both for getting the current value to be rendered, called a read callback, and
 	 * for performing some action when the end-user interacts with the widget, called a write
 	 * callback.

@@ -1,8 +1,14 @@
 #include "Shapes/AGX_BoxShapeComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
+#include "AGX_MeshWithTransform.h"
 #include "AGX_UpropertyDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_ShapeUtilities.h"
+
+// Unreal Engine includes.
+#include "Engine/StaticMeshActor.h"
 
 UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 {
@@ -29,6 +35,31 @@ FVector UAGX_BoxShapeComponent::GetHalfExtent() const
 	}
 
 	return HalfExtent;
+}
+
+UAGX_BoxShapeComponent* UAGX_BoxShapeComponent::CreateFromMeshActors(
+	AActor* Parent, TArray<AStaticMeshActor*> InMeshes)
+{
+	if (Parent == nullptr)
+	{
+		return nullptr;
+	}
+
+	TArray<FAGX_MeshWithTransform> Meshes = AGX_MeshUtilities::ToMeshWithTransformArray(InMeshes);
+
+	UAGX_BoxShapeComponent* Box = NewObject<UAGX_BoxShapeComponent>(
+		Parent, UAGX_BoxShapeComponent::StaticClass(), "AGX_BoxShape", RF_Transient);
+	const bool Result = Box->AutoFit(Meshes, Parent->GetWorld(), Box->GetName());
+	if (!Result)
+	{
+		// Logging done in AutoFit.
+		Box->DestroyComponent();
+		return nullptr;
+	}
+
+	Parent->AddInstanceComponent(Box);
+	Box->RegisterComponent();
+	return Box;
 }
 
 FShapeBarrier* UAGX_BoxShapeComponent::GetNative()
@@ -91,6 +122,24 @@ void UAGX_BoxShapeComponent::UpdateNativeProperties()
 	UpdateNativeLocalTransform(NativeBarrier);
 
 	NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale());
+}
+
+bool UAGX_BoxShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vertices)
+{
+	FVector HalfExtentsBounding;
+	FTransform TransformBounding;
+	if (!FAGX_ShapeUtilities::ComputeOrientedBox(Vertices, HalfExtentsBounding, TransformBounding))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Auto-fit on '%s' failed. Could not compute oriented box with given vertices."),
+			*GetName());
+		return false;
+	}
+
+	SetWorldTransform(TransformBounding);
+	SetHalfExtent(HalfExtentsBounding);
+	return true;
 }
 
 void UAGX_BoxShapeComponent::CopyFrom(const FBoxShapeBarrier& Barrier)
