@@ -307,7 +307,7 @@ inline FVector ConvertAngularVelocity(const agx::Vec3& V)
 	 * coordinate system, meaning that thumb=X, index=Y, middle=Z matches the left hand. Normally,
 	 * rotations also has a handedness. Imagine gripping the axis around which we rotate with your
 	 * thumb pointing towards increasing axis values and look at your (usually) four non-thumb
-	 * fingers. Their direction from the knuckles towards the finger tips define the direction of
+	 * fingers. Their direction from the knuckles towards the fingertips define the direction of
 	 * positive rotation. If you switch hand then the direction of positive rotation is inverted.
 	 * Unreal Engine, at least according to the rotation widget in the Details Panel, uses
 	 * right-handed rotations for the X and Y axes, and left-handed rotations for the Z axis.
@@ -318,8 +318,8 @@ inline FVector ConvertAngularVelocity(const agx::Vec3& V)
 	 * both cases and is right-handed in both cases, so we pass it through untouched. The Y axis
 	 * should be negated because of the right-to-left switch of the coordinate system, but the
 	 * rotations are right-handed in both cases so one negation is enough. The Z axis point in the
-	 * same direction in both cases, so no negation there, but the handedness of rotations around X
-	 * is different so so we must negate it for that reason.
+	 * same direction in both cases, so no negation there, but the handedness of rotations around Z
+	 * is different so we must negate it for that reason.
 	 */
 	return FVector(
 		FMath::RadiansToDegrees(Convert(V.x())), FMath::RadiansToDegrees(-Convert(V.y())),

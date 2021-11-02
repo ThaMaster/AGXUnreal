@@ -69,6 +69,17 @@ namespace AgxDynamicsObjectAccess_Helper
 	}
 
 	template <typename AgxType, typename BarrierType>
+	AgxType* TryGetFrom(const BarrierType* Barrier)
+	{
+		if (Barrier == nullptr || !Barrier->HasNative())
+		{
+			return nullptr;
+		}
+
+		return Barrier->GetNative()->Native.get();
+	}
+
+	template <typename AgxType, typename BarrierType>
 	AgxType* GetFromAs(const BarrierType* Barrier)
 	{
 		if (!CheckAgxDynamicsObject(Barrier))
@@ -88,6 +99,16 @@ agx::RigidBody* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FRigidBodyBarrier* 
 agx::RigidBody* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FRigidBodyBarrier& Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agx::RigidBody>(&Barrier);
+}
+
+agx::RigidBody* FAGX_AgxDynamicsObjectsAccess::TryGetFrom(const FRigidBodyBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::TryGetFrom<agx::RigidBody>(Barrier);
+}
+
+agx::RigidBody* FAGX_AgxDynamicsObjectsAccess::TryGetFrom(const FRigidBodyBarrier& Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::TryGetFrom<agx::RigidBody>(&Barrier);
 }
 
 agxSDK::Simulation* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FSimulationBarrier* Barrier)

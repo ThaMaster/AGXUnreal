@@ -66,6 +66,18 @@ public:
 	void GetForceRange(double* Min, double* Max, int32 Dof) const;
 	FFloatInterval GetForceRange(int32 Dof) const;
 
+	void SetEnableComputeForces(bool bEnable);
+	bool GetEnableComputeForces() const;
+
+	bool GetLastForce(
+		int32 BodyIndex, FVector& OutForce, FVector& OutTorque, bool bForceAtCm = false);
+	bool GetLastForce(
+		const FRigidBodyBarrier* Body, FVector& OutForce, FVector& OutTorque, bool bForceAtCm = false);
+	bool GetLastLocalForce(
+		int32 BodyIndex, FVector& OutForce, FVector& OutTorque, bool bForceAtCm = false);
+	bool GetLastLocalForce(
+		const FRigidBodyBarrier* Body, FVector& OutForce, FVector& OutTorque, bool bForceAtCm = false);
+
 	FGuid GetGuid() const;
 
 	bool HasFirstBody() const;
