@@ -44,14 +44,37 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Secondary Constraint")
 	FAGX_ConstraintTargetSpeedController TargetSpeedController;
 
+	/**
+	 * Get the current angle or position of the free degree of freedom. If this is a translational
+	 * constraint then the position is in [cm], if this is a rotational constraint then the angle
+	 * is in [deg].
+	 * @return The angle [deg] or position [cm] of the free degree of freedom.
+	 */
 	double GetAngle() const;
 
+	/**
+	 * Get the current angle or position of the free degree of freedom. If this is a translational
+	 * constraint then the position is in [cm], if this is a rotational constraint then the angle
+	 * is in [deg].
+	 * @return The angle [deg] or position [cm] of the free degree of freedom.
+	 */
 	UFUNCTION(
 		BlueprintCallable, BlueprintPure, Category = "AGX Constraint",
 		META = (DisplayName = "GetAngle"))
 	float GetAngle_BP() const;
+
+	/**
+	 * Get the current speed in the free degree of freedom. If this is a translational constraint
+	 * then the speed is in [cm/s], if it is a rotational constraint then the speed is in [deg/s].
+	 * @return The speed, either [cm/s] or [rad/s].
+	 */
 	double GetSpeed() const;
 
+	/**
+	 * Get the current speed in the free degree of freedom. If this is a translational constraint
+	 * then the speed is in [cm/s], if it is a rotational constraint then the speed is in [deg/s].
+	 * @return The speed, either [cm/s] or [rad/s].
+	 */
 	UFUNCTION(
 		BlueprintCallable, BlueprintPure, Category = "AGX Constraint",
 		Meta = (DisplayName = "Get Speed"))
