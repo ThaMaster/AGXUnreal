@@ -1,8 +1,13 @@
 #include "Shapes/AGX_CylinderShapeComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "AGX_UpropertyDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_ShapeUtilities.h"
+
+// Unreal Engine includes.
+#include "Engine/StaticMeshActor.h"
 
 UAGX_CylinderShapeComponent::UAGX_CylinderShapeComponent()
 {
@@ -71,6 +76,31 @@ void UAGX_CylinderShapeComponent::SetGypsy(bool bInGypsy)
 	}
 }
 
+UAGX_CylinderShapeComponent* UAGX_CylinderShapeComponent::CreateFromMeshActors(
+	AActor* Parent, TArray<AStaticMeshActor*> InMeshes)
+{
+	if (Parent == nullptr)
+	{
+		return nullptr;
+	}
+
+	TArray<FAGX_MeshWithTransform> Meshes = AGX_MeshUtilities::ToMeshWithTransformArray(InMeshes);
+
+	UAGX_CylinderShapeComponent* Cylinder = NewObject<UAGX_CylinderShapeComponent>(
+		Parent, UAGX_CylinderShapeComponent::StaticClass(), "AGX_CylinderShape", RF_Transient);
+	const bool Result = Cylinder->AutoFit(Meshes, Parent->GetWorld(), Cylinder->GetName());
+	if (!Result)
+	{
+		// Logging done in AutoFit.
+		Cylinder->DestroyComponent();
+		return nullptr;
+	}
+
+	Parent->AddInstanceComponent(Cylinder);
+	Cylinder->RegisterComponent();
+	return Cylinder;
+}
+
 FShapeBarrier* UAGX_CylinderShapeComponent::GetNative()
 {
 	if (!NativeBarrier.HasNative())
@@ -110,6 +140,28 @@ FShapeBarrier* UAGX_CylinderShapeComponent::GetOrCreateNative()
 		CreateNative();
 	}
 	return &NativeBarrier;
+}
+
+bool UAGX_CylinderShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vertices)
+{
+	float RadiusBounding;
+	float HeightBounding;
+	FTransform TransformBounding;
+	if (!FAGX_ShapeUtilities::ComputeOrientedCylinder(
+			Vertices, RadiusBounding, HeightBounding, TransformBounding))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Auto-fit on '%s' failed. Could not compute oriented cylinder with given "
+				 "vertices."),
+			*GetName());
+		return false;
+	}
+
+	SetWorldTransform(TransformBounding);
+	SetRadius(RadiusBounding);
+	SetHeight(HeightBounding);
+	return true;
 }
 
 FCylinderShapeBarrier* UAGX_CylinderShapeComponent::GetNativeCylinder()
