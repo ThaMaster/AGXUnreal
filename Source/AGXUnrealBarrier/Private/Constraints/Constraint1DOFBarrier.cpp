@@ -51,57 +51,44 @@ namespace
 			new Barrier(std::make_unique<FConstraintControllerRef>(Controller)));
 	}
 
+	// Let's hope -1 is never used for a valid angle type.
+	constexpr agx::Angle::Type InvalidAngleType = agx::Angle::Type(-1);
+
 	agx::Angle::Type GetDofType(const FConstraint1DOFBarrier& Constraint)
 	{
 		const agx::Constraint1DOF* ConstraintAGX = Get1DOF(*Constraint.GetNative());
 		if (ConstraintAGX == nullptr)
 		{
-			/// \todo Can we do better error handling here?
-			return agx::Angle::Type::ROTATIONAL;
+			return InvalidAngleType;
 		}
 		const agx::Motor1D* Motor = ConstraintAGX->getMotor1D();
 		if (Motor == nullptr)
 		{
-			/// \todo Can we do better error handling here?
-			return agx::Angle::Type::ROTATIONAL;
+			return InvalidAngleType;
 		}
 		const agx::Angle* Angle = Motor->getData().getAngle();
 		if (Angle == nullptr)
 		{
-			/// \todo Can we do better error handling here?
-			return agx::Angle::Type::ROTATIONAL;
+			return InvalidAngleType;
 		}
 		return Angle->getType();
 	}
 }
 
-float FConstraint1DOFBarrier::GetAngle() const
+double FConstraint1DOFBarrier::GetAngle() const
 {
-	/// @TODO Convert from AGX Dynamics units to Unreal Engine units. Difficult because we could
-	/// be a constraint with either a free rotational degree of freedom or a free translational
-	/// degree of freedom.
 	check(HasNative());
-
 	const agx::Constraint1DOF* Constraint = Get1DOF(NativeRef);
 	const agx::Real NativeAngle = Constraint->getAngle();
-	const agx::Motor1D* Motor = Constraint->getMotor1D();
-	if (Motor == nullptr)
-	{
-		return NativeAngle;
-	}
-	const agx::Angle* AngleType = Motor->getData().getAngle();
-	if (AngleType == nullptr)
-	{
-		return NativeAngle;
-	}
-	const agx::Angle::Type DofType = AngleType->getType();
+	agx::Angle::Type DofType = GetDofType(*this);
 	switch (DofType)
 	{
 		case agx::Angle::ROTATIONAL:
 			return ConvertAngle(NativeAngle);
 		case agx::Angle::TRANSLATIONAL:
-			ConvertDistance(NativeAngle);
+			return ConvertDistance(NativeAngle);
 		default:
+			// Don't know the type, so pass the value unchanged to the caller.
 			return NativeAngle;
 	}
 }
@@ -120,6 +107,7 @@ double FConstraint1DOFBarrier::GetSpeed() const
 		case agx::Angle::TRANSLATIONAL:
 			return ConvertDistanceToUnreal<double>(SpeedAGX);
 		default:
+			// Don't know the type, so pass the value unchanged to the caller.
 			return SpeedAGX;
 	}
 }

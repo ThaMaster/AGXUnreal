@@ -31,7 +31,7 @@ public:
 	 * centimeters.
 	 * @return The current angle of the free degree of freedom.
 	 */
-	float GetAngle() const;
+	double GetAngle() const;
 
 	/**
 	 * This methods return the current speed for the 1D constraint.
