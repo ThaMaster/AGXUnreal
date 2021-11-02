@@ -1221,11 +1221,6 @@ bool FClearRenderDataImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
-#if defined(__linux__)
-	// @todo The error is only printed sometimes. See GitLab issue #213.
-	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
-#endif
-
 	// Files that are created by the test and thus safe to remove. The GUID values may make this
 	// test cumbersome to update since they will change every time the AGX Dynamics archive is
 	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
