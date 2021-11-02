@@ -194,9 +194,9 @@ public:
 	bool GetEnableComputeForces() const;
 
 	/**
-	 * If Compute Forces is enabled, returns the last force and torque applied by this constraint on
-	 * the body at \p BodyIndex. The force is given in world coordinates and is the one applied
-	 * at the anchor position of this constraint.
+	 * If Compute Forces is enabled, returns the last force [N] and torque [Nm] applied by this
+	 * constraint on the body at \p BodyIndex. The force is given in world coordinates and is the
+	 * one applied at the anchor position of this constraint.
 	 *
 	 * The result includes force and torque from this constraint including all enabled controllers
 	 * such as motors, locks, and ranges.
@@ -221,9 +221,9 @@ public:
 		int32 BodyIndex, FVector& OutForce, FVector& OutTorque, bool bForceAtCm = false) const;
 
 	/**
-	 * If Compute Forces is enabled, returns the last force and torque applied by this constraint
-	 * on the body \p Body. The force is given in world coordinates and is the one applied at the
-	 * anchor position of this constraint.
+	 * If Compute Forces is enabled, returns the last force [N] and torque [Nm] applied by this
+	 * constraint on the body \p Body. The force is given in world coordinates and is the one
+	 * applied at the anchor position of this constraint.
 	 *
 	 * The result includes force and torque from this constraint including all enabled controllers
 	 * such as motors, locks, and ranges.
@@ -247,8 +247,8 @@ public:
 		bool bForceAtCm = false) const;
 
 	/**
-	 * If Compute Forces is enabled, returns the last force and torque applied by this constraint
-	 * on the body at \p BodyIndex. The force is given in the frame of the constraint.
+	 * If Compute Forces is enabled, returns the last force [N] and torque [Nm] applied by this
+	 * constraint on the body at \p BodyIndex. The force is given in the frame of the constraint.
 	 *
 	 * The result includes force and torque from this constraint including all enabled controllers
 	 * such as motors, locks, and ranges.
@@ -271,7 +271,7 @@ public:
 		int32 BodyIndex, FVector& OutForce, FVector& OutTorque, bool bForceAtCm = false) const;
 
 	/**
-	 * If Compute Forces is enabled, returns the last force and torque applied by this
+	 * If Compute Forces is enabled, returns the last force [N] and torque [Nm] applied by this
 	 * constraint on the body \p Body. The force is given in the frame of the constraint.
 	 *
 	 * The result includes force and torque from this constraint including all enabled controllers
