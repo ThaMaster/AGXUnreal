@@ -1,9 +1,12 @@
 #include "Constraints/ConstraintBarrier.h"
 
+// AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
 #include "AGXBarrierFactories.h"
+#include "AGX_AgxDynamicsObjectsAccess.h"
 #include "TypeConversions.h"
 
+// Unreal Engine includes.
 #include <Misc/AssertionMacros.h>
 
 FConstraintBarrier::FConstraintBarrier()
@@ -149,6 +152,102 @@ FFloatInterval FConstraintBarrier::GetForceRange(int32 Dof) const
 	agx::RangeReal Range = NativeRef->Native->getForceRange(Dof);
 
 	return FFloatInterval(static_cast<float>(Range.lower()), static_cast<float>(Range.upper()));
+}
+
+void FConstraintBarrier::SetEnableComputeForces(bool bEnable)
+{
+	check(HasNative());
+	NativeRef->Native->setEnableComputeForces(bEnable);
+}
+
+bool FConstraintBarrier::GetEnableComputeForces() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnableComputeForces();
+}
+
+bool FConstraintBarrier::GetLastForce(
+	int32 BodyIndex, FVector& OutForce, FVector& OutTorque, bool bForceAtCm)
+{
+	check(HasNative());
+	agx::Vec3 ForceAGX;
+	agx::Vec3 TorqueAGX;
+	const bool bGotForces =
+		NativeRef->Native->getLastForce(BodyIndex, ForceAGX, TorqueAGX, bForceAtCm);
+	if (!bGotForces)
+	{
+		OutForce = FVector::ZeroVector;
+		OutTorque = FVector::ZeroVector;
+		return false;
+	}
+	OutForce = ConvertVector(ForceAGX);
+	OutTorque = ConvertTorque(TorqueAGX);
+	return true;
+}
+
+bool FConstraintBarrier::GetLastForce(
+	const FRigidBodyBarrier* Body, FVector& OutForce, FVector& OutTorque, bool bForceAtCm)
+{
+	check(HasNative());
+
+	const agx::RigidBody* BodyAGX = Body != nullptr && Body->HasNative()
+								  ? FAGX_AgxDynamicsObjectsAccess::GetFrom(Body)
+								  : nullptr;
+	agx::Vec3 ForceAGX;
+	agx::Vec3 TorqueAGX;
+	const bool bGotForces =
+		NativeRef->Native->getLastForce(BodyAGX, ForceAGX, TorqueAGX, bForceAtCm);
+	if (!bGotForces)
+	{
+		OutForce = FVector::ZeroVector;
+		OutTorque = FVector::ZeroVector;
+		return false;
+	}
+	OutForce = ConvertVector(ForceAGX);
+	OutTorque = ConvertTorque(TorqueAGX);
+	return true;
+}
+
+bool FConstraintBarrier::GetLastLocalForce(
+	int32 BodyIndex, FVector& OutForce, FVector& OutTorque, bool bForceAtCm)
+{
+	check(HasNative());
+	agx::Vec3 ForceAGX;
+	agx::Vec3 TorqueAGX;
+	const bool bGotForces =
+		NativeRef->Native->getLastLocalForce(BodyIndex, ForceAGX, TorqueAGX, bForceAtCm);
+	if (!bGotForces)
+	{
+		OutForce = FVector::ZeroVector;
+		OutTorque = FVector::ZeroVector;
+		return false;
+	}
+	OutForce = ConvertVector(ForceAGX);
+	OutTorque = ConvertTorque(TorqueAGX);
+	return true;
+}
+
+bool FConstraintBarrier::GetLastLocalForce(
+	const FRigidBodyBarrier* Body, FVector& OutForce, FVector& OutTorque, bool bForceAtCm)
+{
+	check(HasNative());
+
+	const agx::RigidBody* BodyAGX = Body != nullptr && Body->HasNative()
+										? FAGX_AgxDynamicsObjectsAccess::GetFrom(Body)
+										: nullptr;
+	agx::Vec3 ForceAGX;
+	agx::Vec3 TorqueAGX;
+	const bool bGotForces =
+		NativeRef->Native->getLastLocalForce(BodyAGX, ForceAGX, TorqueAGX, bForceAtCm);
+	if (!bGotForces)
+	{
+		OutForce = FVector::ZeroVector;
+		OutTorque = FVector::ZeroVector;
+		return false;
+	}
+	OutForce = ConvertVector(ForceAGX);
+	OutTorque = ConvertTorque(TorqueAGX);
+	return true;
 }
 
 FGuid FConstraintBarrier::GetGuid() const

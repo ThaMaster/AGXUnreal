@@ -361,9 +361,10 @@ void UAGX_ConstraintComponent::SetSpookDamping(EGenericDofIndex Index, float InS
 
 void UAGX_ConstraintComponent::SetSpookDamping(EGenericDofIndex Index, double InSpookDamping)
 {
-	SetOnBarrier(*this, Index, TEXT("SetSpookDamping"), [this, InSpookDamping](int32 NativeDof) {
-		NativeBarrier->SetSpookDamping(InSpookDamping, NativeDof);
-	});
+	SetOnBarrier(
+		*this, Index, TEXT("SetSpookDamping"),
+		[this, InSpookDamping](int32 NativeDof)
+		{ NativeBarrier->SetSpookDamping(InSpookDamping, NativeDof); });
 	SpookDamping[Index] = InSpookDamping;
 }
 
@@ -409,6 +410,84 @@ FFloatInterval UAGX_ConstraintComponent::GetForceRange(EGenericDofIndex Index) c
 	return GetFromBarrier(
 		*this, Index, TEXT("GetForceRange"), ForceRange[Index],
 		[this](int32 NativeDof) { return NativeBarrier->GetForceRange(NativeDof); });
+}
+
+void UAGX_ConstraintComponent::SetComputeForces(bool bInComputeForces)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetEnableComputeForces(bInComputeForces);
+	}
+
+	bComputeForces = bInComputeForces;
+}
+
+bool UAGX_ConstraintComponent::GetComputeForces() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetEnableComputeForces();
+	}
+	else
+	{
+		return bComputeForces;
+	}
+}
+
+void UAGX_ConstraintComponent::SetEnableComputeForces(bool bInEnable)
+{
+	SetComputeForces(bInEnable);
+}
+
+bool UAGX_ConstraintComponent::GetEnableComputeForces() const
+{
+	return GetComputeForces();
+}
+
+bool UAGX_ConstraintComponent::GetLastForceIndex(
+	int32 BodyIndex, FVector& OutForce, FVector& OutTorque, bool bForceAtCm) const
+{
+	if (!HasNative())
+	{
+		return false;
+	}
+
+	return NativeBarrier->GetLastForce(BodyIndex, OutForce, OutTorque, bForceAtCm);
+}
+
+bool UAGX_ConstraintComponent::GetLastForceBody(
+	const UAGX_RigidBodyComponent* Body, FVector& OutForce, FVector& OutTorque,
+	bool bForceAtCm) const
+{
+	if (!HasNative())
+	{
+		return false;
+	}
+
+	return NativeBarrier->GetLastForce(Body->GetNative(), OutForce, OutTorque, bForceAtCm);
+}
+
+bool UAGX_ConstraintComponent::GetLastLocalForceIndex(
+	int32 BodyIndex, FVector& OutForce, FVector& OutTorque, bool bForceAtCm) const
+{
+	if (!HasNative())
+	{
+		return false;
+	}
+
+	return NativeBarrier->GetLastLocalForce(BodyIndex, OutForce, OutTorque, bForceAtCm);
+}
+
+bool UAGX_ConstraintComponent::GetLastLocalForceBody(
+	const UAGX_RigidBodyComponent* Body, FVector& OutForce, FVector& OutTorque,
+	bool bForceAtCm) const
+{
+	if (!HasNative())
+	{
+		return false;
+	}
+
+	return NativeBarrier->GetLastLocalForce(Body->GetNative(), OutForce, OutTorque, bForceAtCm);
 }
 
 void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
@@ -692,6 +771,10 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Rotational_3),
 		[](ThisClass* This)
 		{ This->SetForceRange(EGenericDofIndex::Rotational3, This->ForceRange.Rotational_3); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, bComputeForces),
+		[](ThisClass* This) { This->SetComputeForces(This->bComputeForces); });
 }
 
 void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -818,9 +901,12 @@ void UAGX_ConstraintComponent::UpdateNativeProperties()
 	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational2, NativeBarrier->SetElasticity);
 	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational3, NativeBarrier->SetElasticity);
 
-	TRY_SET_DOF_VALUE(SpookDamping, EGenericDofIndex::Translational1, NativeBarrier->SetSpookDamping);
-	TRY_SET_DOF_VALUE(SpookDamping, EGenericDofIndex::Translational2, NativeBarrier->SetSpookDamping);
-	TRY_SET_DOF_VALUE(SpookDamping, EGenericDofIndex::Translational3, NativeBarrier->SetSpookDamping);
+	TRY_SET_DOF_VALUE(
+		SpookDamping, EGenericDofIndex::Translational1, NativeBarrier->SetSpookDamping);
+	TRY_SET_DOF_VALUE(
+		SpookDamping, EGenericDofIndex::Translational2, NativeBarrier->SetSpookDamping);
+	TRY_SET_DOF_VALUE(
+		SpookDamping, EGenericDofIndex::Translational3, NativeBarrier->SetSpookDamping);
 	TRY_SET_DOF_VALUE(SpookDamping, EGenericDofIndex::Rotational1, NativeBarrier->SetSpookDamping);
 	TRY_SET_DOF_VALUE(SpookDamping, EGenericDofIndex::Rotational2, NativeBarrier->SetSpookDamping);
 	TRY_SET_DOF_VALUE(SpookDamping, EGenericDofIndex::Rotational3, NativeBarrier->SetSpookDamping);
@@ -837,6 +923,8 @@ void UAGX_ConstraintComponent::UpdateNativeProperties()
 		ForceRange, EGenericDofIndex::Rotational2, NativeBarrier->SetForceRange);
 	TRY_SET_DOF_RANGE_VALUE(
 		ForceRange, EGenericDofIndex::Rotational3, NativeBarrier->SetForceRange);
+
+	NativeBarrier->SetEnableComputeForces(bComputeForces);
 }
 
 namespace
@@ -1016,10 +1104,10 @@ void UAGX_ConstraintComponent::CreateNative()
 	if (Simulation == nullptr)
 	{
 		UE_LOG(
-				LogAGX, Error,
-				TEXT("Constraint '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
-				"returned nullptr."),
-				*GetName(), *GetLabelSafe(GetOwner()));
+			LogAGX, Error,
+			TEXT("Constraint '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				 "returned nullptr."),
+			*GetName(), *GetLabelSafe(GetOwner()));
 		return;
 	}
 

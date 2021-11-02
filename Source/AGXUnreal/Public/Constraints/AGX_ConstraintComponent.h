@@ -151,6 +151,151 @@ public:
 
 	FFloatInterval GetForceRange(EGenericDofIndex Index) const;
 
+	/**
+	 * Enable or disable computation of the forces applied to the dynamic bodies in this constraint.
+	 * This adds the cost of a matrix-vector operation to compute the forces after solve.
+	 * @see GetLastForce
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
+	bool bComputeForces = false;
+
+	/**
+	 * Enable or disable computation of the forces applied to the dynamic bodies in this constraint.
+	 * This adds the cost of a matrix-vector operation to compute the forces after solve.
+	 * @see GetLastForce
+	 * @param bInComputeForces True to enable force computation, false to disable it.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	void SetComputeForces(bool bInComputeForces);
+
+	/**
+	 * @return True if this constraint has been enabled to compute the forces applied to its bodies,
+	 * false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	bool GetComputeForces() const;
+
+	/**
+	 * Enable or disable computation of the forces applied to the dynamic bodies in this constraint.
+	 * This adds the cost of a matrix-vector operation to compute the forces after solve.
+	 * Alias provided for API compatibility with AGX Dynamics.
+	 * @see SetComputeForces.
+	 * @see GetLastForce
+	 * @param bInComputeForces True to enable force computation, false to disable it.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	void SetEnableComputeForces(bool bInEnable);
+
+	/**
+	 * @return True if this constraint has been enabled to compute the forces applied to its bodies,
+	 * false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	bool GetEnableComputeForces() const;
+
+	/**
+	 * If Compute Forces is enabled, returns the last force and torque applied by this constraint on
+	 * the body at \p BodyIndex. The force is given in world coordinates and is the one applied
+	 * at the anchor position of this constraint.
+	 *
+	 * The result includes force and torque from this constraint including all enabled controllers
+	 * such as motors, locks, and ranges.
+	 *
+	 * \see SetComputeForces
+	 * \param BodyIndex Index of body, if number of bodies = 1 and bodyIndex = 1, the force and
+	 * torque applied to "the world body" is returned.
+	 * \param OutForce The force applied by this constraint on body at \p bodyIndex at the last
+	 * solve.
+	 * \param OutTorque The torque applied by this constraint on body at \p bodyIndex last
+	 * solve.
+	 * \param bForceAtCm This parameter affects the resulting torque. The default behavior
+	 * (bForceAtCm = false) calculates the force applied by this constraint at the anchor
+	 * position. Setting bForceAtCm = true, the force will be applied at center of mass,
+	 * affecting the torque as \f$ T_{new} = T - r \times F \f$ where r is the vector from the
+	 * anchor point to the center of mass of the body.
+	 * \return True if resulting force and torque was written to \p OutForce and \p OutTorque, false
+	 * otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	bool GetLastForceIndex(
+		int32 BodyIndex, FVector& OutForce, FVector& OutTorque, bool bForceAtCm = false) const;
+
+	/**
+	 * If Compute Forces is enabled, returns the last force and torque applied by this constraint
+	 * on the body \p Body. The force is given in world coordinates and is the one applied at the
+	 * anchor position of this constraint.
+	 *
+	 * The result includes force and torque from this constraint including all enabled controllers
+	 * such as motors, locks, and ranges.
+	 *
+	 * \see SetComputeForces
+	 * \param Body Body in this constraint. If this constraint is attached in world, nullptr can be
+	 * used.
+	 * \param OutForce The force applied by this constraint on body \p Body at the last solve.
+	 * \param OutTorque The torque applied by this constraint on body \p Body at the last solve.
+	 * \param bForceAtCm This parameter affects the resulting torque. The default behavior
+	 * (bForceAtCm = false) calculates the force applied by this constraint at the anchor
+	 * position. Setting bForceAtCm = true, the force will be applied at center of mass,
+	 * affecting the torque as \f$T_{new} = T - r \times F\f$ where r is the vector from the anchor
+	 * point to the center of mass of the body.
+	 * \return true if resulting force and torque was written to \p OutForce and \p OutTorque, false
+	 * otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	bool GetLastForceBody(
+		const UAGX_RigidBodyComponent* Body, FVector& OutForce, FVector& OutTorque,
+		bool bForceAtCm = false) const;
+
+	/**
+	 * If Compute Forces is enabled, returns the last force and torque applied by this constraint
+	 * on the body at \p BodyIndex. The force is given in the frame of the constraint.
+	 *
+	 * The result includes force and torque from this constraint including all enabled controllers
+	 * such as motors, locks, and ranges.
+	 *
+	 * \see setComputeForces
+	 * \param BodyIndex Index of body, if number of bodies = 1 and bodyIndex = 1, the force and
+	 * torque applied to "the world body" is returned.
+	 * \param OutForce The force applied by this constraint on body at \p BodyIndex last solve.
+	 * \param OutTorque The torque applied by this constraint on body at \p BodyIndex last solve.
+	 * \param bForceAtCm This parameter affects the resulting torque. The default behavior
+	 * (bForceAtCm = false) calculates the force applied by this constraint at the anchor
+	 * position. Setting bForceAtCm = true, the force will be applied at center of mass,
+	 * affecting the torque as \f$T_{new} = T - r \times F\f$ where r is the vector from the anchor
+	 * point to the center of mass of the body.
+	 * \return True if resulting force and torque was written to \p OutForce and \p OutTorque, false
+	 * otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	bool GetLastLocalForceIndex(
+		int32 BodyIndex, FVector& OutForce, FVector& OutTorque, bool bForceAtCm = false) const;
+
+	/**
+	 * If Compute Forces is enabled, returns the last force and torque applied by this
+	 * constraint on the body \p Body. The force is given in the frame of the constraint.
+	 *
+	 * The result includes force and torque from this constraint including all enabled controllers
+	 * such as motors, locks, and ranges.
+	 *
+	 * \see setEnableComputeForces
+	 *
+	 * \param Body Body in this constraint. If this constraint is attached in world, nullptr can be
+	 * used.
+	 * \param OutForce The force applied by this constraint on body \p Body at the last solve.
+	 * \param OutTorque The torque applied by this constraint on body \p Body at the last solve.
+	 * \param bForceAtCm This parameter affects the resulting torque. The
+	 * default behavior (bForceAtCm = false) calculates the force applied by this constraint at
+	 * the anchor position. Setting bForceAtCm = true, the force will be applied at center of
+	 * mass, affecting the torque as \f$T_{new} = T - r \times F\f$ where r is the vector from the
+	 * anchor point to the center of mass of the body.
+	 * \return True if resulting force and torque was written to \p OutForce and \p OutTorque, false
+	 * otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	bool GetLastLocalForceBody(
+		const UAGX_RigidBodyComponent* Body, FVector& OutForce, FVector& OutTorque,
+		bool bForceAtCm = false) const;
+
 	void CopyFrom(const FConstraintBarrier& Barrier);
 
 	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics1() const
