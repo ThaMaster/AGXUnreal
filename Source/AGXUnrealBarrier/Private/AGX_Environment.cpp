@@ -16,7 +16,7 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
-#define LOCTEXT_NAMESPACE "FAGX_EnvironmentUtilities"
+#define LOCTEXT_NAMESPACE "FAGX_Environment"
 
 // Create a current-platform-specific version of the OS utilities.
 /// \note Something like this should be built into Unreal. Find it.
@@ -234,9 +234,7 @@ FString FAGX_Environment::GetPluginPath()
 	}
 	else
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("AGX_EnvironmentUtilities::GetPluginPath unable to get plugin path."));
+		UE_LOG(LogAGX, Error, TEXT("FAGX_Environment::GetPluginPath unable to get plugin path."));
 	}
 
 	return AgxPluginPath;
@@ -270,7 +268,7 @@ FString FAGX_Environment::GetPluginVersion()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("AGX_EnvironmentUtilities::GetPluginVersion unable to get plugin version."));
+			TEXT("FAGX_Environment::GetPluginVersion unable to get plugin version."));
 		return FString();
 	}
 }
@@ -281,7 +279,7 @@ void FAGX_Environment::AddEnvironmentVariableEntry(const FString& EnvVarName, co
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("FAGX_EnvironmentUtilities::AddEnvironmentVariableEntry parameter Entry was "
+			TEXT("FAGX_Environment::AddEnvironmentVariableEntry parameter Entry was "
 				 "empty."));
 		return;
 	}
@@ -305,7 +303,7 @@ void FAGX_Environment::RemoveEnvironmentVariableEntry(
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("FAGX_EnvironmentUtilities::RemoveEnvironmentVariableEntry parameter Entry was "
+			TEXT("FAGX_Environment::RemoveEnvironmentVariableEntry parameter Entry was "
 				 "empty."));
 		return;
 	}
@@ -346,7 +344,7 @@ FString FAGX_Environment::GetAGXDynamicsVersion()
 	return FString(agxGetVersion(false));
 }
 
-void FAGX_EnvironmentUtilities::GetAGXDynamicsVersion(
+void FAGX_Environment::GetAGXDynamicsVersion(
 	int32& OutGeneration, int32& OutMajor, int32& OutMinor, int32& OutPatch)
 {
 	OutGeneration = AGX_GENERATION_VERSION;
@@ -355,7 +353,7 @@ void FAGX_EnvironmentUtilities::GetAGXDynamicsVersion(
 	OutPatch = AGX_PATCH_VERSION;
 }
 
-bool FAGX_EnvironmentUtilities::IsAGXDynamicsVersionNewerOrEqualTo(
+bool FAGX_Environment::IsAGXDynamicsVersionNewerOrEqualTo(
 	int32 InGeneration, int32 InMajor, int32 InMinor, int32 InPatch)
 {
 	int32 Generation, Major, Minor, Patch;
@@ -381,7 +379,7 @@ bool FAGX_EnvironmentUtilities::IsAGXDynamicsVersionNewerOrEqualTo(
 	return true;
 }
 
-FString FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath()
+FString FAGX_Environment::GetAgxDynamicsResourcesPath()
 {
 	if (IsSetupEnvRun())
 	{
@@ -391,7 +389,7 @@ FString FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath()
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath environment variable "
+				TEXT("FAGX_Environment::GetAgxDynamicsResourcesPath environment variable "
 					 "AGX_DIR not set when expecting setup_env to have be called. Returning empty "
 					 "string."));
 			return FString("");
