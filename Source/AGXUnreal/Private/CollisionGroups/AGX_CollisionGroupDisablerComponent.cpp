@@ -10,22 +10,6 @@
 // Unreal Engine includes.
 #include "Engine/World.h"
 
-namespace
-{
-	void LogErrorWithMessageBoxInEditor(const FString& Msg, UWorld* World)
-	{
-		if (World && World->IsGameWorld())
-		{
-			// Write only to the log during Play.
-			UE_LOG(LogAGX, Error, TEXT("%s"), *Msg);
-		}
-		else
-		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Msg);
-		}
-	}
-}
-
 UAGX_CollisionGroupDisablerComponent::UAGX_CollisionGroupDisablerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -48,7 +32,7 @@ void UAGX_CollisionGroupDisablerComponent::DisableCollisionGroupPair(
 	{
 		if (!HideWarnings)
 		{
-			LogErrorWithMessageBoxInEditor(
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
 				"A selected collision group may not be 'None'. Please select valid collision "
 				"groups.",
 				GetWorld());
@@ -60,7 +44,7 @@ void UAGX_CollisionGroupDisablerComponent::DisableCollisionGroupPair(
 	{
 		if (!HideWarnings)
 		{
-			LogErrorWithMessageBoxInEditor(
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
 				"Collision has already been disabled for the selected collision groups.",
 				GetWorld());
 		}
@@ -89,7 +73,7 @@ void UAGX_CollisionGroupDisablerComponent::EnableCollisionGroupPair(
 	{
 		if (!HideWarnings)
 		{
-			LogErrorWithMessageBoxInEditor(
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
 				"A selected collision group may not be 'None'. Please select valid collision "
 				"groups.",
 				GetWorld());

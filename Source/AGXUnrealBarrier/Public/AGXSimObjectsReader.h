@@ -29,8 +29,8 @@ class FWireBarrier;
 
 /*
 The separation between the Unreal part and the AGX Dynamics part of the plugin
-makes reading .agx archives a bit complicated. The reader consists of two
-parts, one that reads and traverses the AGX Dynamics objects and one that
+makes reading .agx archives or URDF files a bit complicated. The reader consists
+of two parts, one that reads and traverses the AGX Dynamics objects and one that
 creates AGXUnreal objects corresponding to the AGX Dynamics objects. An object
 oriented approach is used where a set of abstract classes and pure virtual
 member functions define the interface that the AGX Dynamics side of the reader
@@ -38,39 +38,39 @@ uses, while the AGXUnreal side inherits from the abstract classes and in the
 implementation of the member functions creates the corresponding AGXUnreal
 objects.
 
-The main abstract base class is FAGXArchiveInstantiator. An instance of this
-class must be passed when reading an AGX Dynamics archive. The Instantiator is
-notified of top level objects, such as RigidBodies, found in the AGX Dynamics
-archive and the Instantiator is expected to create a persistent representation
-of that top level object. A handle, FAGXArchiveBody for a RigidBody, to the
-created object is returned to the archive reader. The object handle is notified
-of sub-objects, such as shapes, that are found in the top level object. Barrier
-objects are used to pass the AGX Dynamics state from the reader part to the
-AGXUnreal part. The Barrier objects are short-lived and should only be used for
-the duration of the notification call.
+The main abstract base class is FAGXSimObjectsInstantiator. An instance of this
+class must be passed when reading an AGX Dynamics archive or URDF file. The
+Instantiator is notified of top level objects, such as RigidBodies, found in the
+file  and the Instantiator is expected to create a persistent representation of
+that top level object. A handle, FAGXSimObjectBody for a RigidBody, to the created
+object is returned to the SimObjectsReader. The object handle is notified of
+sub-objects, such as shapes, that are found in the top level object. Barrier objects
+ are used to pass the AGX Dynamics state from the reader part to the AGXUnreal part.
+The Barrier objects are short-lived and should only be used for the duration of
+the notification call.
 */
 
-class FAGXArchiveBody;
+class FAGXSimObjectBody;
 
 /**
- * Struct for holding Rigid Body Archives of TwoBodyTire.
+ * Struct for holding Rigid Body Simulation Objects of TwoBodyTire.
  */
-struct FTwoBodyTireArchiveBodies
+struct FTwoBodyTireSimObjectBodies
 {
-	FTwoBodyTireArchiveBodies() = default;
-	FTwoBodyTireArchiveBodies(FAGXArchiveBody* InTire, FAGXArchiveBody* InHub)
-		: TireBodyArchive {InTire}
-		, HubBodyArchive {InHub}
+	FTwoBodyTireSimObjectBodies() = default;
+	FTwoBodyTireSimObjectBodies(FAGXSimObjectBody* InTire, FAGXSimObjectBody* InHub)
+		: TireBodySimObject {InTire}
+		, HubBodySimObject {InHub}
 	{
 	}
-	std::unique_ptr<FAGXArchiveBody> TireBodyArchive;
-	std::unique_ptr<FAGXArchiveBody> HubBodyArchive;
+	std::unique_ptr<FAGXSimObjectBody> TireBodySimObject;
+	std::unique_ptr<FAGXSimObjectBody> HubBodySimObject;
 };
 
 /**
  * Instantiator for sub-objects of RigidBody.
  */
-class AGXUNREALBARRIER_API FAGXArchiveBody
+class AGXUNREALBARRIER_API FAGXSimObjectBody
 {
 public:
 	/**
@@ -108,13 +108,13 @@ public:
 	 */
 	virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Trimesh) = 0;
 
-	virtual ~FAGXArchiveBody() = default;
+	virtual ~FAGXSimObjectBody() = default;
 };
 
 /**
  * Instantiator base class for top-level objects.
  */
-class AGXUNREALBARRIER_API FAGXArchiveInstantiator
+class AGXUNREALBARRIER_API FAGXSimObjectsInstantiator
 {
 public:
 	/**
@@ -122,7 +122,7 @@ public:
 	 * @param RigidBody The body for which a persistent representation should be made.
 	 * @return A handle to the persistent object through which shapes can be added.
 	 */
-	virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& RigidBody) = 0;
+	virtual FAGXSimObjectBody* InstantiateBody(const FRigidBodyBarrier& RigidBody) = 0;
 
 	virtual void InstantiateHinge(const FHingeBarrier& Hinge) = 0;
 
@@ -137,19 +137,18 @@ public:
 	virtual void InstantiateLockJoint(const FLockJointBarrier& LockJoint) = 0;
 
 	virtual void InstantiateSphere(
-		const FSphereShapeBarrier& Sphere, FAGXArchiveBody* Body = nullptr) = 0;
+		const FSphereShapeBarrier& Sphere, FAGXSimObjectBody* Body = nullptr) = 0;
 
-	virtual void InstantiateBox(
-		const FBoxShapeBarrier& Box, FAGXArchiveBody* Body = nullptr) = 0;
+	virtual void InstantiateBox(const FBoxShapeBarrier& Box, FAGXSimObjectBody* Body = nullptr) = 0;
 
 	virtual void InstantiateCylinder(
-		const FCylinderShapeBarrier& Cylinder, FAGXArchiveBody* Body = nullptr) = 0;
+		const FCylinderShapeBarrier& Cylinder, FAGXSimObjectBody* Body = nullptr) = 0;
 
 	virtual void InstantiateCapsule(
-		const FCapsuleShapeBarrier& Capsule, FAGXArchiveBody* Body = nullptr) = 0;
+		const FCapsuleShapeBarrier& Capsule, FAGXSimObjectBody* Body = nullptr) = 0;
 
 	virtual void InstantiateTrimesh(
-		const FTrimeshShapeBarrier& Trimesh, FAGXArchiveBody* Body = nullptr) = 0;
+		const FTrimeshShapeBarrier& Trimesh, FAGXSimObjectBody* Body = nullptr) = 0;
 
 	virtual void InstantiateShapeMaterial(const FShapeMaterialBarrier& ShapeMaterial) = 0;
 
@@ -158,24 +157,38 @@ public:
 	virtual void DisabledCollisionGroups(
 		const TArray<std::pair<FString, FString>>& DisabledGroups) = 0;
 
-	virtual FTwoBodyTireArchiveBodies InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Tire) = 0;
+	virtual FTwoBodyTireSimObjectBodies InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Tire) = 0;
 
 	virtual void InstantiateWire(const FWireBarrier& Wire) = 0;
 
-
-	virtual ~FAGXArchiveInstantiator() = default;
+	virtual ~FAGXSimObjectsInstantiator() = default;
 };
 
-namespace FAGXArchiveReader
+namespace FAGXSimObjectsReader
 {
 	/**
-	 * Read the AGX Dynamics archive pointed to by 'Filename' and for each
+	 * Read the AGX Archive file pointed to by 'Filename' and for each
 	 * supported object found call the corresponding Instantiate member function
 	 * on the given 'Instantiator' or a handle returned from the 'Instantiator'.
-	 * @param Filename Path to the AGX Dynamics archive to read.
+	 * @param Filename Path to the .agx file to read.
 	 * @param Instantiator Set of callback functions to call for each object read.
-	 * @return True if the archive was read successfully.
+	 * @return True if the file was read successfully.
 	 */
 	AGXUNREALBARRIER_API FSuccessOrError
-	Read(const FString& Filename, FAGXArchiveInstantiator& Instantiator);
+	ReadAGXArchive(const FString& Filename, FAGXSimObjectsInstantiator& Instantiator);
+
+	/**
+	 * Read the URDF file pointed to by 'Filename' and for each
+	 * supported object found call the corresponding Instantiate member function
+	 * on the given 'Instantiator' or a handle returned from the 'Instantiator'.
+	 * @param UrdfFilePath - The path to the URDF file to read.
+	 * @param UrdfPackagePath - The path to the package directory. Corresponds to the `package://`
+	 * part of any filepath in the .urdf file, typically used for pointing at mesh files. Can be
+	 * left empty if the URDF file does not have any file paths in it.
+	 * @param Instantiator Set of callback functions to call for each object read.
+	 * @return True if the file was read successfully.
+	 */
+	AGXUNREALBARRIER_API FSuccessOrError ReadUrdf(
+		const FString& UrdfFilePath, const FString& UrdfPackagePath,
+		FAGXSimObjectsInstantiator& Instantiator);
 };

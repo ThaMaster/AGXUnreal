@@ -1,7 +1,8 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGXArchiveReader.h"
+#include "AGXSimObjectsReader.h"
+#include "AGX_ImportEnums.h"
 
 // Unreal Engine includes.
 #include "Containers/Map.h"
@@ -36,9 +37,9 @@ class UStaticMesh;
 
 /**
  * An Unreal Engine side helper that creates `[UA]AGX_.*` objects from Barrier objects read from an
- * AGX Dynamics archive.
+ * AGX Dynamics archive or URDF file.
  */
-struct FAGX_ArchiveImporterHelper
+struct FAGX_SimObjectsImporterHelper
 {
 public:
 	/** Create a new UAGX_RigidBodyComponent in the given actor. */
@@ -103,11 +104,11 @@ public:
 	using FShapeMaterialPair = std::pair<UAGX_ShapeMaterialAsset*, UAGX_ShapeMaterialAsset*>;
 	FShapeMaterialPair GetShapeMaterials(const FContactMaterialBarrier& ContactMaterial);
 
-	explicit FAGX_ArchiveImporterHelper(const FString& ArchiveFilePath);
+	explicit FAGX_SimObjectsImporterHelper(const FString& InSourceFilePath);
 
-	const FString ArchiveFilePath;
-	const FString ArchiveFileName;
-	const FString ArchiveName;
+	const FString SourceFilePath;
+	const FString SourceFileName;
+	const FString ModelName;
 	const FString DirectoryName;
 
 private:
@@ -122,13 +123,13 @@ private:
 	TArray<FGuid> ConstraintIgnoreList;
 };
 
-/// \todo Consider creating a FEditorBody inheriting from FAGXArchiveBody that has a Body and a
+/// \todo Consider creating a FEditorBody inheriting from FAGXSimObjectBody that has a Body and a
 /// Helper and simply forwards each call to the helper.
 
 /**
- * An ArchiveBody that creates nothing. Used when the Unreal object couldn't be created.
+ * A SimObjectBody that creates nothing. Used when the Unreal object couldn't be created.
  */
-class NopEditorBody final : public FAGXArchiveBody
+class NopEditorBody final : public FAGXSimObjectBody
 {
 	virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
 	{

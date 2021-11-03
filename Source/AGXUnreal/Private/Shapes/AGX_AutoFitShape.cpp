@@ -1,0 +1,109 @@
+#include "Shapes/AGX_AutoFitShape.h"
+
+// AGX Dynamics for Unreal includes.
+#include "Utilities/AGX_EnvironmentUtilities.h"
+#include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
+
+// Unreal Engine includes.
+#include "Engine/World.h"
+
+bool AGX_AutoFitShape::AutoFit(
+	TArray<FAGX_MeshWithTransform> Meshes, UWorld* World, const FString& ShapeName)
+{
+	if (!FAGX_EnvironmentUtilities::IsAGXDynamicsVersionNewerOrEqualTo(2, 31, 0, 0))
+	{
+		const FString AGXVersion = FAGX_EnvironmentUtilities::GetAGXDynamicsVersion();
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
+			FString::Printf(
+				TEXT("Could not auto-fit '%s' to meshes. Auto-fit requires AGX Dynamics version "
+					 "2.31.0.0. Current version is %s"),
+				*ShapeName, *AGXVersion),
+			World);
+		return false;
+	}
+
+	TArray<FVector> Vertices;
+	int32 numWarnings = 0;
+	for (const FAGX_MeshWithTransform& Mesh : Meshes)
+	{
+		TArray<FVector> MeshVertices;
+		TArray<FTriIndices> MeshIndices;
+		const bool CollisionDataResult = AGX_MeshUtilities::GetStaticMeshCollisionData(
+			Mesh, FTransform::Identity, MeshVertices, MeshIndices);
+		if (CollisionDataResult)
+		{
+			Vertices.Append(MeshVertices);
+		}
+		else
+		{
+			numWarnings++;
+		}
+	}
+	if (Vertices.Num() == 0)
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
+			FString::Printf(
+				TEXT("Could not auto-fit '%s' to meshes because no collision data could be "
+					 "extracted."),
+				*ShapeName),
+			World);
+		return false;
+	}
+
+	const bool Result = AutoFitFromVertices(Vertices);
+	if (!Result)
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
+			FString::Printf(
+				TEXT("Could not auto-fit '%s' to meshes. The Log may contain more details."),
+				*ShapeName),
+			World);
+		return false;
+	}
+
+	if (numWarnings > 0)
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithWarningLogInEditor(
+			"At least one warning was detected during the auto-fit process. The Log may contain "
+			"more details.",
+			World);
+	}
+
+	return true;
+}
+
+bool AGX_AutoFitShape::AutoFitToChildren(
+	TArray<UStaticMeshComponent*> ChildComponents, UWorld* World, const FString& ShapeName)
+{
+	// Store away the world transforms of the Static Mesh Components so that we can restore them
+	// after the auto-fit procedure. Also construct an Array of FAGX_MeshWithTransforms from the
+	// ChildComponents.
+	TMap<UStaticMeshComponent*, FTransform> OrigChildWorldTransforms;
+	TArray<FAGX_MeshWithTransform> Meshes;
+	for (UStaticMeshComponent* S : ChildComponents)
+	{
+		if (S != nullptr)
+		{
+			OrigChildWorldTransforms.Add(S, S->GetComponentTransform());
+			Meshes.Add(FAGX_MeshWithTransform(S->GetStaticMesh(), S->GetComponentTransform()));
+		}
+	}
+
+	const bool Result = AutoFit(Meshes, World, ShapeName);
+	if (!Result)
+	{
+		return false;
+	}
+
+	// Finally, we restore the original world transform of the children Static Mesh components.
+	for (UStaticMeshComponent* S : ChildComponents)
+	{
+		if (S != nullptr)
+		{
+			S->SetWorldTransform(OrigChildWorldTransforms[S]);
+		}
+	}
+
+	return true;
+}

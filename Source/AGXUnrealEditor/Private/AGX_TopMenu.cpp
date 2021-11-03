@@ -150,7 +150,8 @@ FAGX_TopMenu::~FAGX_TopMenu()
 		LOCTEXT("FileMenuLabel", "File"),
 		LOCTEXT(
 			"FileMenuTooltip",
-			"Interoperability with external file formats, such AGX simulation files (.agx)."),
+			"Interoperability with external file formats, such AGX Dynamics files (.agx) "
+			"or URDF files (.urdf)."),
 		FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillFileMenu));
 
 	Builder.AddMenuSeparator();
@@ -244,10 +245,10 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 		Builder,
 		LOCTEXT(
 			"FileMenuEntryLabelImportSingleActor",
-			"Import AGX Dynamics archive to level as a single actor..."),
+			"Import AGX Dynamics Archive to level as a single actor..."),
 		LOCTEXT(
 			"FileMenuEntryTooTipImportSingleActor",
-			"Import an AGX Dynamics archive into the current level as a single actor"),
+			"Import an AGX Dynamics Archive into the current level as a single actor"),
 		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor(); });
 #endif
 
@@ -255,11 +256,21 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 	AddFileMenuEntry(
 		Builder,
 		LOCTEXT(
-			"FileMEnuEntryLabelImportBluePrint", "Import AGX Dynamics archive to a Blueprint..."),
+			"FileMEnuEntryLabelImportBluePrint", "Import AGX Dynamics Archive to a Blueprint..."),
 		LOCTEXT(
 			"FileMenuEntryhTooltopImportBluePrint",
-			"Import an AGX Dynamics archive to a Blueprint."),
+			"Import an AGX Dynamics Archive to a Blueprint."),
 		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint(); });
+
+	// Import URDF model to blueprint menu item.
+	AddFileMenuEntry(
+		Builder,
+		LOCTEXT(
+			"FileMEnuEntryLabelImportUrdfBluePrint", "Import URDF model to a Blueprint..."),
+		LOCTEXT(
+			"FileMenuEntryhTooltopImportUrdfBluePrint",
+			"Import a URDF model to a Blueprint."),
+		[]() { UAGX_AgxEdModeFile::ImportUrdfToBlueprint(); });
 
 	// Export AGX Archive menu item
 	AddFileMenuEntry(

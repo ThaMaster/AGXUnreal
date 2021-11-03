@@ -24,7 +24,7 @@ void FAGX_AgxEdModeFileCustomization::CustomizeFileImporterCategory(
 	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder.EditCategory("AGX File Importer");
 	CategoryBuilder.InitiallyCollapsed(false);
 
-	// Create AGX Archive import Buttons.
+	// Create import Buttons.
 
 	// For now the two to-level import entries are hidden. Usability tests have shown that having
 	// three options is too complicated for new users and we recommend using the to-Blueprint
@@ -35,7 +35,7 @@ void FAGX_AgxEdModeFileCustomization::CustomizeFileImporterCategory(
 		CategoryBuilder,
 		LOCTEXT(
 			"CreateButtonTextImportLevelSingleActor",
-			"Import AGX Dynamics archive to level as a single actor..."),
+			"Import AGX Dynamics Archive to level as a single actor..."),
 		[&]() {
 			UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor();
 			return FReply::Handled();
@@ -43,9 +43,16 @@ void FAGX_AgxEdModeFileCustomization::CustomizeFileImporterCategory(
 #endif
 
 	AddCustomButton(
-		CategoryBuilder, LOCTEXT("CreateButtonTextImportBP", "Import AGX Archive to Blueprint..."),
+		CategoryBuilder, LOCTEXT("CreateButtonTextImportBP", "Import AGX Archive to a Blueprint..."),
 		[&]() {
 			UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint();
+			return FReply::Handled();
+		});
+
+	AddCustomButton(
+		CategoryBuilder, LOCTEXT("CreateButtonTextImportURDFBP", "Import URDF model to a Blueprint..."),
+		[&]() {
+			UAGX_AgxEdModeFile::ImportUrdfToBlueprint();
 			return FReply::Handled();
 		});
 }

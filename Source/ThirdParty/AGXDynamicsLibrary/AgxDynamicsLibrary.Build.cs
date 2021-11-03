@@ -207,7 +207,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
 			RuntimeLibFiles.Add("msvcp140", LibSource.AGX);
 			RuntimeLibFiles.Add("vcruntime140", LibSource.AGX);
-			if (TargetAGXVersion.IsNewerOrEqualTo(2, 30, 0, 0))
+			if (TargetAGXVersion.IsNewerOrEqualTo(2, 30, 0, 0) && TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
 				RuntimeLibFiles.Add("agx-assimp-vc*-mt", LibSource.AGX);
 			}
@@ -215,7 +215,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
 			RuntimeLibFiles.Add("ot2?-OpenThreads", LibSource.Dependencies);
-			if (TargetAGXVersion.IsOlderThan(2, 31, 2, 0))
+			if (TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
 				RuntimeLibFiles.Add("glew", LibSource.Dependencies);
 			}

@@ -9,7 +9,7 @@
 
 /**
  * A set of parameters compatible with the M_ImportedBase Render Material shipped with AGX Dynamics
- * for Unreal. Used during AGX Dynamics archive importing to convert Render Data Render Materials to
+ * for Unreal. Used during importing of e.g. .agx files to convert Render Data Render Materials to
  * Unreal Engine Render Materials.
  *
  * The data members may only be read if the corresponding bHas-bit has been set.

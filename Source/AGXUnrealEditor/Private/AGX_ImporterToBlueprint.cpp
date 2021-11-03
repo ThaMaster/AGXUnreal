@@ -1,10 +1,12 @@
-#include "AGX_ArchiveImporterToBlueprint.h"
+#include "AGX_ImporterToBlueprint.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ArchiveImporterHelper.h"
+#include "AGX_ImportEnums.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
-#include "AGXArchiveReader.h"
+#include "AGX_SimObjectsImporterHelper.h"
+#include "AGX_UrdfImporterHelper.h"
+#include "AGXSimObjectsReader.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
@@ -62,13 +64,13 @@ namespace
 		GEditor->SelectNone(false, false);
 	}
 
-	FString CreateBlueprintPackagePath(FAGX_ArchiveImporterHelper& Helper)
+	FString CreateBlueprintPackagePath(FAGX_SimObjectsImporterHelper& Helper)
 	{
-		// Create directory for this archive and a "Blueprints" directory inside of that.
+		// Create directory for this import and a "Blueprints" directory inside of that.
 		/// \todo I think this is more complicated than it needs to be. What are all the pieces for?
 		FString ParentPackagePath =
-			FAGX_ImportUtilities::CreateArchivePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
-		FString ParentAssetName = Helper.ArchiveFileName; /// \todo Why is this never used?
+			FAGX_ImportUtilities::CreatePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
+		FString ParentAssetName = Helper.SourceFileName;
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
 
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
@@ -80,8 +82,8 @@ namespace
 		FString Path = FPaths::GetPath(ParentPackage->GetName());
 
 		UE_LOG(
-			LogAGX, Display, TEXT("Archive '%s' imported to package '%s', path '%s'"),
-			*Helper.ArchiveFileName, *ParentPackagePath, *Path);
+			LogAGX, Display, TEXT("File '%s' imported to package '%s', path '%s'"),
+			*Helper.SourceFileName, *ParentPackagePath, *Path);
 
 		// Create a known unique name for the Blueprint package, but don't create the actual
 		// package yet.
@@ -118,10 +120,10 @@ namespace
 		return Package;
 	}
 
-	class FBlueprintBody final : public FAGXArchiveBody
+	class FBlueprintBody final : public FAGXSimObjectBody
 	{
 	public:
-		FBlueprintBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
+		FBlueprintBody(UAGX_RigidBodyComponent& InBody, FAGX_SimObjectsImporterHelper& InHelper)
 			: Body(InBody)
 			, Helper(InHelper)
 		{
@@ -154,19 +156,19 @@ namespace
 
 	private:
 		UAGX_RigidBodyComponent& Body;
-		FAGX_ArchiveImporterHelper& Helper;
+		FAGX_SimObjectsImporterHelper& Helper;
 	};
 
-	class FBlueprintInstantiator final : public FAGXArchiveInstantiator
+	class FBlueprintInstantiator final : public FAGXSimObjectsInstantiator
 	{
 	public:
-		FBlueprintInstantiator(AActor& InBlueprintTemplate, FAGX_ArchiveImporterHelper& InHelper)
+		FBlueprintInstantiator(AActor& InBlueprintTemplate, FAGX_SimObjectsImporterHelper& InHelper)
 			: Helper(InHelper)
 			, BlueprintTemplate(InBlueprintTemplate)
 		{
 		}
 
-		virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
+		virtual FAGXSimObjectBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
 		{
 			UAGX_RigidBodyComponent* Component = Helper.InstantiateBody(Barrier, BlueprintTemplate);
 			if (Component == nullptr)
@@ -227,7 +229,7 @@ namespace
 		}
 
 		virtual void InstantiateSphere(
-			const FSphereShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FSphereShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -240,7 +242,7 @@ namespace
 		}
 
 		virtual void InstantiateBox(
-			const FBoxShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FBoxShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -253,7 +255,7 @@ namespace
 		}
 
 		virtual void InstantiateCylinder(
-			const FCylinderShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FCylinderShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -266,7 +268,7 @@ namespace
 		}
 
 		virtual void InstantiateCapsule(
-			const FCapsuleShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FCapsuleShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -279,7 +281,7 @@ namespace
 		}
 
 		virtual void InstantiateTrimesh(
-			const FTrimeshShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FTrimeshShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -330,7 +332,7 @@ namespace
 			Helper.InstantiateContactMaterial(Barrier, BlueprintTemplate);
 		}
 
-		virtual FTwoBodyTireArchiveBodies InstantiateTwoBodyTire(
+		virtual FTwoBodyTireSimObjectBodies InstantiateTwoBodyTire(
 			const FTwoBodyTireBarrier& Barrier) override
 		{
 			// Instantiate the Tire and Hub Rigid Bodies. This adds them to the RestoredBodies TMap
@@ -344,15 +346,15 @@ namespace
 					TEXT("At lest one of the Rigid Bodies referenced by the TwoBodyTire %s did not "
 						 "have a native Rigid Body. The TwoBodyTire will not be instantiated."),
 					*Barrier.GetName());
-				return FTwoBodyTireArchiveBodies(new NopEditorBody(), new NopEditorBody());
+				return FTwoBodyTireSimObjectBodies(new NopEditorBody(), new NopEditorBody());
 			}
 
-			FTwoBodyTireArchiveBodies ArchiveBodies;
-			ArchiveBodies.TireBodyArchive.reset(InstantiateBody(TireBody));
-			ArchiveBodies.HubBodyArchive.reset(InstantiateBody(HubBody));
+			FTwoBodyTireSimObjectBodies TireBodies;
+			TireBodies.TireBodySimObject.reset(InstantiateBody(TireBody));
+			TireBodies.HubBodySimObject.reset(InstantiateBody(HubBody));
 
 			Helper.InstantiateTwoBodyTire(Barrier, BlueprintTemplate, true);
-			return ArchiveBodies;
+			return TireBodies;
 		}
 
 		virtual void InstantiateWire(const FWireBarrier& Barrier) override
@@ -367,24 +369,49 @@ namespace
 		using FShapeMaterialPair = std::pair<UAGX_ShapeMaterialAsset*, UAGX_ShapeMaterialAsset*>;
 
 	private:
-		FAGX_ArchiveImporterHelper Helper;
+		FAGX_SimObjectsImporterHelper Helper;
 		AActor& BlueprintTemplate;
 	};
 
-	bool AddComponentsFromArchive(AActor& ImportedActor, FAGX_ArchiveImporterHelper& Helper)
+	bool AddComponentsFromAGXArchive(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
 		FSuccessOrError SuccessOrError =
-			FAGXArchiveReader::Read(Helper.ArchiveFilePath, Instantiator);
+			FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, Instantiator);
 		if (!SuccessOrError.Success)
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 				SuccessOrError.Error, "Import AGX Dynamics archive to Blueprint");
 		}
+		else if (SuccessOrError.HasWarning)
+		{
+			FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(
+				SuccessOrError.Warning, "Import AGX Dynamics archive to Blueprint");
+		}
 		return SuccessOrError.Success;
 	}
 
-	AActor* CreateTemplate(FAGX_ArchiveImporterHelper& Helper)
+	bool AddComponentsFromUrdf(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
+	{
+		FAGX_UrdfImporterHelper* HelperUrdf = static_cast<FAGX_UrdfImporterHelper*>(&Helper);
+
+		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
+		FSuccessOrError SuccessOrError = FAGXSimObjectsReader::ReadUrdf(
+			HelperUrdf->SourceFilePath, HelperUrdf->UrdfPackagePath, Instantiator);
+		if (!SuccessOrError.Success)
+		{
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+				SuccessOrError.Error, "Import URDF model to Blueprint");
+		}
+		else if (SuccessOrError.HasWarning)
+		{
+			FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(
+				SuccessOrError.Warning, "Import URDF model to Blueprint");
+		}
+		return SuccessOrError.Success;
+	}
+
+	AActor* CreateTemplate(FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType)
 	{
 		UActorFactory* Factory =
 			GEditor->FindActorFactoryByClass(UActorFactoryEmptyActor::StaticClass());
@@ -418,7 +445,10 @@ namespace
 		RootActorContainer->SetRootComponent(ActorRootComponent);
 #endif
 
-		if (!AddComponentsFromArchive(*RootActorContainer, Helper))
+		const bool Result = ImportType == EAGX_ImportType::Urdf ? AddComponentsFromUrdf(*RootActorContainer, Helper)
+								: AddComponentsFromAGXArchive(*RootActorContainer, Helper);
+
+		if (!Result)
 		{
 			/// @todo Is there some clean-up I need to do for RootActorContainer and/or
 			/// EmptyActorAsset here? I tried with MarkPendingKill but that caused
@@ -465,20 +495,32 @@ namespace
 			Package, Blueprint, RF_Public | RF_Standalone, *PackageFilename, GError, nullptr, true,
 			true, SAVE_NoError);
 	}
+
+	UBlueprint* ImportToBlueprint(FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType)
+	{
+		PreCreationSetup();
+		FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
+		UPackage* Package = GetPackage(BlueprintPackagePath);
+		AActor* Template = CreateTemplate(Helper, ImportType);
+		if (Template == nullptr)
+		{
+			return nullptr;
+		}
+		UBlueprint* Blueprint = CreateBlueprint(Package, Template);
+		PostCreationTeardown(Template, Package, Blueprint, BlueprintPackagePath);
+		return Blueprint;
+	}
 }
 
-UBlueprint* AGX_ArchiveImporterToBlueprint::ImportAGXArchive(const FString& ArchivePath)
+UBlueprint* AGX_ImporterToBlueprint::ImportAGXArchive(const FString& ArchivePath)
 {
-	FAGX_ArchiveImporterHelper Helper(ArchivePath);
-	PreCreationSetup();
-	FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
-	UPackage* Package = GetPackage(BlueprintPackagePath);
-	AActor* Template = CreateTemplate(Helper);
-	if (Template == nullptr)
-	{
-		return nullptr;
-	}
-	UBlueprint* Blueprint = CreateBlueprint(Package, Template);
-	PostCreationTeardown(Template, Package, Blueprint, BlueprintPackagePath);
-	return Blueprint;
+	FAGX_SimObjectsImporterHelper Helper(ArchivePath);
+	return ImportToBlueprint(Helper, EAGX_ImportType::Agx);
+}
+
+UBlueprint* AGX_ImporterToBlueprint::ImportURDF(
+	const FString& UrdfFilePath, const FString& UrdfPackagePath)
+{
+	FAGX_UrdfImporterHelper Helper(UrdfFilePath, UrdfPackagePath);
+	return ImportToBlueprint(Helper, EAGX_ImportType::Urdf);
 }

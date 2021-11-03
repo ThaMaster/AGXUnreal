@@ -1,10 +1,11 @@
-#include "AGX_ArchiveImporterToSingleActor.h"
+#include "AGX_ImporterToSingleActor.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ArchiveImporterHelper.h"
+#include "AGX_ImportEnums.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
-#include "AGXArchiveReader.h"
+#include "AGX_SimObjectsImporterHelper.h"
+#include "AGXSimObjectsReader.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_BallConstraintComponent.h"
@@ -42,10 +43,10 @@
 
 namespace
 {
-	class FSingleActorBody final : public FAGXArchiveBody
+	class FSingleActorBody final : public FAGXSimObjectBody
 	{
 	public:
-		FSingleActorBody(UAGX_RigidBodyComponent& InBody, FAGX_ArchiveImporterHelper& InHelper)
+		FSingleActorBody(UAGX_RigidBodyComponent& InBody, FAGX_SimObjectsImporterHelper& InHelper)
 			: Body(InBody)
 			, Helper(InHelper)
 		{
@@ -78,13 +79,13 @@ namespace
 
 	private:
 		UAGX_RigidBodyComponent& Body;
-		FAGX_ArchiveImporterHelper& Helper;
+		FAGX_SimObjectsImporterHelper& Helper;
 	};
 
 	/**
-	 * An archive instantiator that creates all objects as Components in a given Actor.
+	 * An simulation objects instantiator that creates all objects as Components in a given Actor.
 	 */
-	class SingleActorInstantiator final : public FAGXArchiveInstantiator
+	class SingleActorInstantiator final : public FAGXSimObjectsInstantiator
 	{
 	public:
 		SingleActorInstantiator(
@@ -97,7 +98,7 @@ namespace
 		{
 		}
 
-		virtual FAGXArchiveBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
+		virtual FAGXSimObjectBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
 		{
 			UAGX_RigidBodyComponent* Component = Helper.InstantiateBody(Barrier, Actor);
 			if (Component == nullptr)
@@ -138,7 +139,7 @@ namespace
 		}
 
 		virtual void InstantiateSphere(
-			const FSphereShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FSphereShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -150,7 +151,8 @@ namespace
 			}
 		}
 
-		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+		virtual void InstantiateBox(
+			const FBoxShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -163,7 +165,7 @@ namespace
 		}
 
 		virtual void InstantiateCylinder(
-			const FCylinderShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FCylinderShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -176,7 +178,7 @@ namespace
 		}
 
 		virtual void InstantiateCapsule(
-			const FCapsuleShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FCapsuleShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -189,7 +191,7 @@ namespace
 		}
 
 		virtual void InstantiateTrimesh(
-			const FTrimeshShapeBarrier& Barrier, FAGXArchiveBody* Body) override
+			const FTrimeshShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
 		{
 			if (Body != nullptr)
 			{
@@ -221,7 +223,7 @@ namespace
 			Helper.InstantiateContactMaterial(Barrier, Actor);
 		}
 
-		virtual FTwoBodyTireArchiveBodies InstantiateTwoBodyTire(
+		virtual FTwoBodyTireSimObjectBodies InstantiateTwoBodyTire(
 			const FTwoBodyTireBarrier& Barrier) override
 		{
 			// Instantiate the Tire and Hub Rigid Bodies. This adds them to the RestoredBodies TMap
@@ -235,15 +237,15 @@ namespace
 					TEXT("At lest one of the Rigid Bodies referenced by the TwoBodyTire %s did not "
 						 "have a native Rigid Body. The TwoBodyTire will not be instantiated."),
 					*Barrier.GetName());
-				return FTwoBodyTireArchiveBodies(new NopEditorBody(), new NopEditorBody());
+				return FTwoBodyTireSimObjectBodies(new NopEditorBody(), new NopEditorBody());
 			}
 
-			FTwoBodyTireArchiveBodies ArchiveBodies;
-			ArchiveBodies.TireBodyArchive.reset(InstantiateBody(TireBody));
-			ArchiveBodies.HubBodyArchive.reset(InstantiateBody(HubBody));
+			FTwoBodyTireSimObjectBodies TireBodies;
+			TireBodies.TireBodySimObject.reset(InstantiateBody(TireBody));
+			TireBodies.HubBodySimObject.reset(InstantiateBody(HubBody));
 
 			Helper.InstantiateTwoBodyTire(Barrier, Actor);
-			return ArchiveBodies;
+			return TireBodies;
 		}
 
 		virtual void InstantiateWire(const FWireBarrier& Barrier) override
@@ -252,38 +254,82 @@ namespace
 		}
 
 	private:
-		FAGX_ArchiveImporterHelper Helper;
+		FAGX_SimObjectsImporterHelper Helper;
 		UWorld& World;
 		AActor& Actor;
 		USceneComponent& Root;
 	};
+
+	struct InstantiatorCreationData
+	{
+		AActor* NewActor = nullptr;
+		USceneComponent* NewRoot = nullptr;
+		UWorld* World = nullptr;
+
+		bool IsValid()
+		{
+			return NewActor != nullptr && NewRoot != nullptr && World != nullptr;
+		}
+	};
+
+	InstantiatorCreationData GenerateInstantiatorCreationData(const FString& FilePath,
+		EAGX_ImportType ImportType)
+	{
+		UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
+		if (World == nullptr)
+		{
+			UE_LOG(LogAGX, Error, TEXT("No world available, cannot import file '%s'."), *FilePath);
+			return InstantiatorCreationData();
+		}
+
+		AActor* NewActor;
+		USceneComponent* NewRoot;
+		std::tie(NewActor, NewRoot) =
+			FAGX_EditorUtilities::CreateEmptyActor(FTransform::Identity, World);
+		if (NewActor == nullptr || NewRoot == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Cannot import file '%s' because new actors cannot be created."), *FilePath);
+			return InstantiatorCreationData();
+		}
+
+		FString Filename = FPaths::GetBaseFilename(FilePath);
+		NewActor->SetActorLabel(Filename);
+		return {NewActor, NewRoot, World};
+	}
 }
 
-AActor* AGX_ArchiveImporterToSingleActor::ImportAGXArchive(const FString& ArchivePath)
+AActor* AGX_ImporterToSingleActor::ImportAGXArchive(const FString& ArchivePath)
 {
-	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
-	if (World == nullptr)
+	InstantiatorCreationData Data =
+		GenerateInstantiatorCreationData(ArchivePath, EAGX_ImportType::Agx);
+
+	if (!Data.IsValid())
 	{
-		UE_LOG(LogAGX, Warning, TEXT("No world available cannot import AGX Dynamics archive."));
+		// Logging done in GenerateInstantiatorCreationData.
 		return nullptr;
 	}
 
-	AActor* NewActor;
-	USceneComponent* NewRoot;
-	std::tie(NewActor, NewRoot) =
-		FAGX_EditorUtilities::CreateEmptyActor(FTransform::Identity, World);
-	if (NewActor == nullptr || NewRoot == nullptr)
+	SingleActorInstantiator Instantiator(*Data.World, *Data.NewActor, *Data.NewRoot, ArchivePath);
+	FAGXSimObjectsReader::ReadAGXArchive(ArchivePath, Instantiator);
+	return Data.NewActor;
+}
+
+AActor* AGX_ImporterToSingleActor::ImportURDF(
+	const FString& UrdfFilePath, const FString& UrdfPackagePath)
+{
+	InstantiatorCreationData Data =
+		GenerateInstantiatorCreationData(UrdfFilePath, EAGX_ImportType::Urdf);
+
+	if (!Data.IsValid())
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Cannot import AGX Dynamics archive because new actors cannot be created."));
+		// Logging done in GenerateInstantiatorCreationData.
 		return nullptr;
 	}
 
-	FString Filename = FPaths::GetBaseFilename(ArchivePath);
-	NewActor->SetActorLabel(Filename);
-
-	SingleActorInstantiator Instantiator(*World, *NewActor, *NewRoot, ArchivePath);
-	FAGXArchiveReader::Read(ArchivePath, Instantiator);
-	return NewActor;
+	SingleActorInstantiator Instantiator(
+			*Data.World, *Data.NewActor, *Data.NewRoot, UrdfFilePath);
+	FAGXSimObjectsReader::ReadUrdf(UrdfFilePath, UrdfPackagePath, Instantiator);
+	return Data.NewActor;
 }
