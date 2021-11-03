@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "Shapes/AGX_AutoFitShape.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/BoxShapeBarrier.h"
 
@@ -9,11 +10,14 @@
 
 #include "AGX_BoxShapeComponent.generated.h"
 
+class AStaticMeshActor;
+
 /**
  *
  */
 UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_BoxShapeComponent final : public UAGX_ShapeComponent
+class AGXUNREAL_API UAGX_BoxShapeComponent final : public UAGX_ShapeComponent,
+												   public AGX_AutoFitShape
 {
 	GENERATED_BODY()
 
@@ -32,12 +36,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
 	FVector GetHalfExtent() const;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Auto-fit")
+	static UAGX_BoxShapeComponent* CreateFromMeshActors(
+		AActor* Parent, TArray<AStaticMeshActor*> Meshes);
+
 	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;
 	FShapeBarrier* GetOrCreateNative() override;
 	virtual void UpdateNativeProperties() override;
 	// ~End UAGX_ShapeComponent interface.
+
+	// ~Begin AGX_AutoFitShape interface.
+	virtual bool AutoFitFromVertices(const TArray<FVector>& Vertices) override;
+	// ~End AGX_AutoFitShape interface.
 
 	/// Get the native AGX Dynamics representation of this Box. May return nullptr.
 	FBoxShapeBarrier* GetNativeBox();

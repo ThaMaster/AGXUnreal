@@ -22,9 +22,58 @@ void FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(const FString& Text, co
 	ShowDialogBox(Text, Title);
 }
 
+void FAGX_NotificationUtilities::ShowDialogBoxWithLogLogInEditor(
+	const FString& Text, UWorld* World, const FString& Title)
+{
+	if (World && World->IsGameWorld())
+	{
+		// Write only to the log during Play.
+		UE_LOG(LogAGX, Log, TEXT("%s"), *Text);
+	}
+	else
+	{
+		ShowDialogBoxWithLogLog(Text, Title);
+	}
+}
+
+void FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(
+	const FString& Text, const FString& Title)
+{
+	UE_LOG(LogAGX, Warning, TEXT("%s"), *Text);
+	ShowDialogBox(Text, Title);
+}
+
+void FAGX_NotificationUtilities::ShowDialogBoxWithWarningLogInEditor(
+	const FString& Text, UWorld* World, const FString& Title)
+{
+	if (World && World->IsGameWorld())
+	{
+		// Write only to the log during Play.
+		UE_LOG(LogAGX, Warning, TEXT("%s"), *Text);
+	}
+	else
+	{
+		ShowDialogBoxWithWarningLog(Text, Title);
+	}
+}
+
 void FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 	const FString& Text, const FString& Title)
 {
 	UE_LOG(LogAGX, Error, TEXT("%s"), *Text);
 	ShowDialogBox(Text, Title);
+}
+
+void FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
+	const FString& Text, UWorld* World, const FString& Title)
+{
+	if (World && World->IsGameWorld())
+	{
+		// Write only to the log during Play.
+		UE_LOG(LogAGX, Error, TEXT("%s"), *Text);
+	}
+	else
+	{
+		ShowDialogBoxWithErrorLog(Text, Title);
+	}
 }

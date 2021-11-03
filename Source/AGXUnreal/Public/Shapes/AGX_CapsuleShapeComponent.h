@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "Shapes/AGX_AutoFitShape.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/CapsuleShapeBarrier.h"
 
@@ -9,8 +10,11 @@
 
 #include "AGX_CapsuleShapeComponent.generated.h"
 
+class AStaticMeshActor;
+
 UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_CapsuleShapeComponent final : public UAGX_ShapeComponent
+class AGXUNREAL_API UAGX_CapsuleShapeComponent final : public UAGX_ShapeComponent,
+													   public AGX_AutoFitShape
 {
 	GENERATED_BODY()
 
@@ -41,6 +45,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
 	float GetRadius() const;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Auto-fit")
+	static UAGX_CapsuleShapeComponent* CreateFromMeshActors(
+		AActor* Parent, TArray<AStaticMeshActor*> Meshes);
+
 	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
 	const FShapeBarrier* GetNative() const override;
@@ -55,6 +63,10 @@ public:
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
 	// ~End UObject interface.
+
+	// ~Begin AGX_AutoFitShape interface.
+	virtual bool AutoFitFromVertices(const TArray<FVector>& Vertices) override;
+	// ~End AGX_AutoFitShape interface.
 
 	/// Get the native AGX Dynamics representation of this Capsule. May return nullptr.
 	FCapsuleShapeBarrier* GetNativeCapsule();

@@ -82,8 +82,8 @@ void UAGX_RigidBodyComponent::OnChildDetached(USceneComponent* Child)
 	// be removed from the Rigid Body.
 	// An alternative would be to use OnAttachmentChanged() in the Shape Component, but that
 	// function has the drawback of not giving information about the old parent, so the Shape cannot
-	// easily notify the previous parent Rigid Body that it has been detached from it, simply because
-	// it cannot (easily) know which Rigid Body that was.
+	// easily notify the previous parent Rigid Body that it has been detached from it, simply
+	// because it cannot (easily) know which Rigid Body that was.
 	if (UAGX_ShapeComponent* Shape = Cast<UAGX_ShapeComponent>(Child))
 	{
 		if (Shape->HasNative())
@@ -307,8 +307,8 @@ void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// something will keep the Rigid Body instance alive? Should we do explicit incref/decref
 		// on the Rigid Body in GetNativeAddress / SetNativeAddress?
 	}
-	else if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor && 
-		Reason != EEndPlayReason::Quit)
+	else if (
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
 	{
 		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
 		{

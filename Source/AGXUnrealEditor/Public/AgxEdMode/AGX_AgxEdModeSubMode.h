@@ -1,6 +1,9 @@
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Textures/SlateIcon.h"
+
 #include "AGX_AgxEdModeSubMode.generated.h"
 
 /**
@@ -17,8 +20,11 @@ class AGXUNREALEDITOR_API UAGX_AgxEdModeSubMode : public UObject
 
 public:
 	virtual FText GetDisplayName() const
-		PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl, return FText(););
+		PURE_VIRTUAL(UAGX_AgxEdModeSubMode::GetDisplayName, return FText(););
 
 	virtual FText GetTooltip() const
-		PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl, return FText(););
+		PURE_VIRTUAL(UAGX_AgxEdModeSubMode::GetTooltip, return FText(););
+
+	virtual FSlateIcon GetIcon() const
+		PURE_VIRTUAL(UAGX_AgxEdModeSubMode::GetIcon, return FSlateIcon(););
 };

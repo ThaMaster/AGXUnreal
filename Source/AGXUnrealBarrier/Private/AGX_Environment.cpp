@@ -346,7 +346,42 @@ FString FAGX_Environment::GetAGXDynamicsVersion()
 	return FString(agxGetVersion(false));
 }
 
-FString FAGX_Environment::GetAgxDynamicsResourcesPath()
+void FAGX_EnvironmentUtilities::GetAGXDynamicsVersion(
+	int32& OutGeneration, int32& OutMajor, int32& OutMinor, int32& OutPatch)
+{
+	OutGeneration = AGX_GENERATION_VERSION;
+	OutMajor = AGX_MAJOR_VERSION;
+	OutMinor = AGX_MINOR_VERSION;
+	OutPatch = AGX_PATCH_VERSION;
+}
+
+bool FAGX_EnvironmentUtilities::IsAGXDynamicsVersionNewerOrEqualTo(
+	int32 InGeneration, int32 InMajor, int32 InMinor, int32 InPatch)
+{
+	int32 Generation, Major, Minor, Patch;
+	GetAGXDynamicsVersion(Generation, Major, Minor, Patch);
+
+	const TArray<int32> InVer {InGeneration, InMajor, InMinor, InPatch};
+	const TArray<int32> AGXVer {Generation, Major, Minor, Patch};
+
+	for (int I = 0; I < InVer.Num(); I++)
+	{
+		if (InVer[I] < AGXVer[I])
+		{
+			return true;
+		}
+
+		if (InVer[I] > AGXVer[I])
+		{
+			return false;
+		}
+	}
+
+	// Both versions are identical.
+	return true;
+}
+
+FString FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath()
 {
 	if (IsSetupEnvRun())
 	{

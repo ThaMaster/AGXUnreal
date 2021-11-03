@@ -342,7 +342,7 @@ std::tuple<FVector, FQuat> FShapeBarrier::GetLocalPositionAndRotation() const
 
 	// The ShapeTransform is always Identity when the Native objects have been
 	// created from AGXUnreal objects. However, it can be a non-Identity transform
-	// during import from a .agx archive. Split this implementation if this step
+	// during import from e.g. an .agx archive. Split this implementation if this step
 	// is shown to be a performance problem.
 	const agx::AffineMatrix4x4& GeometryTransform = NativeRef->NativeGeometry->getLocalTransform();
 	const agx::AffineMatrix4x4& ShapeTransform = Iterator.getLocalTransform();

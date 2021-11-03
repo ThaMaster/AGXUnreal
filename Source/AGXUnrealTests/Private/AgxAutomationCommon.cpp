@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
@@ -178,31 +179,54 @@ AgxAutomationCommon::NoWorldTestsReason AgxAutomationCommon::CanRunWorldTests()
 	return NoWorldTestsReason::NoReason;
 }
 
-FString AgxAutomationCommon::GetArchivePath(const TCHAR* ArchiveName)
+FString AgxAutomationCommon::GetTestScenePath(const TCHAR* SceneName)
 {
 	FString ProjectDir = FPaths::ProjectDir();
 	FPaths::CollapseRelativeDirectories(ProjectDir);
 	ProjectDir = FPaths::ConvertRelativePathToFull(ProjectDir);
-	const FString ArchivesDir = ProjectDir.Replace(
-		TEXT("/AGXUnrealDev/"), TEXT("/AGX_Dynamics_scenes/"), ESearchCase::CaseSensitive);
-	const FString ArchivePath = FPaths::Combine(ArchivesDir, ArchiveName);
-	if (FPaths::FileExists(ArchivePath))
+	const FString SceneDir = ProjectDir.Replace(
+		TEXT("/AGXUnrealDev/"), TEXT("/TestScenes/"), ESearchCase::CaseSensitive);
+	const FString ScenePath = FPaths::Combine(SceneDir, SceneName);
+	if (FPaths::FileExists(ScenePath))
 	{
-		return ArchivePath;
+		return ScenePath;
 	}
 	else
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Did not find full path for AGX Dynamics archive '%s'. Searched in '%s'."),
-			ArchiveName, *ArchivesDir)
+			TEXT("Did not find full path for test scene '%s'. Searched in '%s'."),
+			SceneName, *SceneDir)
 		return FString();
 	}
 }
 
-FString AgxAutomationCommon::GetArchivePath(const FString& ArchiveName)
+FString AgxAutomationCommon::GetTestScenePath(const FString& SceneName)
 {
-	return GetArchivePath(*ArchiveName);
+	return GetTestScenePath(*SceneName);
+}
+
+FString AgxAutomationCommon::GetTestSceneDirPath(const FString& SubDir)
+{
+	FString ProjectDir = FPaths::ProjectDir();
+	FPaths::CollapseRelativeDirectories(ProjectDir);
+	ProjectDir = FPaths::ConvertRelativePathToFull(ProjectDir);
+	const FString SceneDir = ProjectDir.Replace(
+		TEXT("/AGXUnrealDev/"), TEXT("/TestScenes/"), ESearchCase::CaseSensitive);
+	const FString SceneDirPath = FPaths::Combine(SceneDir, SubDir);
+
+	if (FPaths::DirectoryExists(SceneDirPath))
+	{
+		return SceneDirPath;
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Did not find full path for test scene dir '%s'. Searched in '%s'."), *SceneDirPath,
+			*SceneDir)
+		return FString();
+	}
 }
 
 bool AgxAutomationCommon::DeleteImportDirectory(
@@ -220,7 +244,7 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 	// I'm just worried that the wrong directory may be deleted in some circumstances.
 
 	const FString Root = FPaths::ProjectContentDir();
-	const FString ImportsLocal = FPaths::Combine(TEXT("ImportedAgxArchives"), ArchiveName);
+	const FString ImportsLocal = FPaths::Combine(TEXT("ImportedAGXModels"), ArchiveName);
 	const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
 	const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
 	if (ImportsFull == Root)
@@ -286,7 +310,7 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 	/// @todo The path for this particular run may be different, may have a _# suffix. How do I find
 	/// the path for this particular run?
 	const TCHAR* MeshPath = TEXT(
-								"StaticMesh'/Game/ImportedAgxArchives/simple_trimesh_build/StaticMeshs/"
+								"StaticMesh'/Game/ImportedAGXModels/simple_trimesh_build/StaticMeshs/"
 								"simple_trimesh.simple_trimesh'");
 	UObject* Asset = StaticLoadObject(UStaticMesh::StaticClass(), nullptr, MeshPath);
 	if (Asset == nullptr)
@@ -306,7 +330,7 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 	/// @todo The path for this particular run may be different, may have a _# suffix. How do I find
 	/// the path for this particular run?
 	const TCHAR* MeshPath = TEXT(
-		"StaticMesh'/Game/ImportedAgxArchives/simple_trimesh_build/StaticMeshs/"
+		"StaticMesh'/Game/ImportedAGXModels/simple_trimesh_build/StaticMeshs/"
 		"simple_trimesh.simple_trimesh'");
 	UObject* Asset = StaticLoadObject(UStaticMesh::StaticClass(), nullptr, MeshPath);
 	if (Asset == nullptr)
@@ -319,6 +343,32 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 	}
 	Asset->MarkPendingKill();
 #endif
+}
+
+TArray<FString> AgxAutomationCommon::GetReferencedStaticMeshAssets(
+	const TArray<UActorComponent*>& Components)
+{
+	TArray<FString> Assets;
+
+	for (const UActorComponent* Component : Components)
+	{
+		if (const UAGX_TrimeshShapeComponent* Trimesh = Cast<UAGX_TrimeshShapeComponent>(Component))
+		{
+			if (Trimesh->MeshSourceAsset != nullptr)
+			{
+				Assets.AddUnique(Trimesh->MeshSourceAsset->GetName() + ".uasset");
+			}
+		}
+		else if (const UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Component))
+		{
+			if (Mesh->GetStaticMesh() != nullptr)
+			{
+				Assets.AddUnique(Mesh->GetStaticMesh()->GetName() + +".uasset");
+			}
+		}
+	}
+
+	return Assets;
 }
 
 bool AgxAutomationCommon::FLogWarningAgxCommand::Update()

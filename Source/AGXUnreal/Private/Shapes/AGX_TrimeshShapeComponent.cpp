@@ -2,13 +2,12 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_MeshWithTransform.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/StaticMesh.h"
 #include "Components/StaticMeshComponent.h"
-#include "Rendering/PositionVertexBuffer.h"
-#include "RenderingThread.h"
 
 UAGX_TrimeshShapeComponent::UAGX_TrimeshShapeComponent()
 {
@@ -195,63 +194,8 @@ void UAGX_TrimeshShapeComponent::ReleaseNative()
 	NativeBarrier.ReleaseNative();
 }
 
-bool UAGX_TrimeshShapeComponent::FindStaticMeshSource(
-	UStaticMesh*& StaticMesh, FTransform* WorldTransform) const
-{
-	if (MeshSourceLocation == TSL_CHILD_STATIC_MESH_COMPONENT)
-	{
-		TArray<USceneComponent*> Children;
-		GetChildrenComponents(/*bIncludeAllDescendants*/ false, Children);
-
-		for (int32 ChildIndex = 0; ChildIndex < Children.Num(); ++ChildIndex)
-		{
-			if (USceneComponent* Child = Children[ChildIndex])
-			{
-				if (Child->IsA(UStaticMeshComponent::StaticClass()))
-				{
-					StaticMesh = Cast<UStaticMeshComponent>(Child)->GetStaticMesh();
-					if (WorldTransform)
-						*WorldTransform = Child->GetComponentTransform();
-					return true;
-				}
-			}
-		}
-	}
-	else if (MeshSourceLocation == TSL_PARENT_STATIC_MESH_COMPONENT)
-	{
-		TArray<USceneComponent*> Ancestors;
-		GetParentComponents(Ancestors);
-
-		for (int32 AncestorIndex = 0; AncestorIndex < Ancestors.Num(); ++AncestorIndex)
-		{
-			if (USceneComponent* Ancestor = Ancestors[AncestorIndex])
-			{
-				if (Ancestor->IsA(UStaticMeshComponent::StaticClass()))
-				{
-					StaticMesh = Cast<UStaticMeshComponent>(Ancestor)->GetStaticMesh();
-					if (WorldTransform)
-						*WorldTransform = Ancestor->GetComponentTransform();
-					return true;
-				}
-			}
-		}
-	}
-	else if (MeshSourceLocation == TSL_STATIC_MESH_ASSET)
-	{
-		StaticMesh = MeshSourceAsset;
-		if (WorldTransform)
-			*WorldTransform = GetComponentTransform();
-		return true;
-	}
-
-	StaticMesh = nullptr;
-	if (WorldTransform)
-		*WorldTransform = FTransform::Identity;
-	return false;
-}
-
 UMeshComponent* UAGX_TrimeshShapeComponent::FindMeshComponent(
-	TEnumAsByte<EAGX_TrimeshSourceLocation> InMeshSourceLocation) const
+	TEnumAsByte<EAGX_StaticMeshSourceLocation> InMeshSourceLocation) const
 {
 	if (InMeshSourceLocation == TSL_CHILD_STATIC_MESH_COMPONENT)
 	{
@@ -289,384 +233,37 @@ UMeshComponent* UAGX_TrimeshShapeComponent::FindMeshComponent(
 	return nullptr;
 }
 
-static int32 AddCollisionVertex(
-	const FVector& VertexPosition, const FTransform& Transform, TArray<FVector>& CollisionVertices,
-	TMap<FVector, int32>& MeshToCollisionVertexIndices)
-{
-	if (int32* CollisionVertexIndexPtr = MeshToCollisionVertexIndices.Find(VertexPosition))
-	{
-		// Already been added once, so just return the index.
-		return *CollisionVertexIndexPtr;
-	}
-	else
-	{
-		// Copy position from mesh to collision data.
-		int CollisionVertexIndex =
-			CollisionVertices.Add(Transform.TransformPosition(VertexPosition));
-
-		// Add collision index to map.
-		MeshToCollisionVertexIndices.Add(VertexPosition, CollisionVertexIndex);
-
-		return CollisionVertexIndex;
-	}
-}
-
-namespace
-{
-	/**
-	 * Read triangle mesh data directly from the Static Mesh asset.
-	 *
-	 * This only works in Editor builds, and for meshes that has the Allow CPU Access flag set. In
-	 * particular, it does not work for cooked builds.
-	 *
-	 * If neither of the above is true then the mesh data must be read using
-	 * CopyMeshBuffesRenderThread.
-	 *
-	 * @param Mesh The mesh to read triangles from.
-	 * @param OutPositions Array to which the vertex locations are written.
-	 * @param OutIndices Array to which the vertex indices are written.
-	 */
-	void CopyMeshBuffersGameThread(
-		const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions,
-		TArray<uint32>& OutIndices)
-	{
-		// Copy positions.
-		const FPositionVertexBuffer& MeshPositions = Mesh.VertexBuffers.PositionVertexBuffer;
-		const uint32 NumPositions = static_cast<uint32>(MeshPositions.GetNumVertices());
-		OutPositions.Reserve(NumPositions);
-		for (uint32 I = 0; I < NumPositions; ++I)
-		{
-			OutPositions.Add(MeshPositions.VertexPosition(I));
-		}
-
-		// Copy indices.
-		const FIndexArrayView MeshIndices = Mesh.IndexBuffer.GetArrayView();
-		const int32 NumIndices = MeshIndices.Num();
-		check(MeshIndices.Num() == Mesh.IndexBuffer.GetNumIndices()); /// \todo Remove this line.
-		OutIndices.Reserve(NumIndices);
-		for (int32 I = 0; I < NumIndices; ++I)
-		{
-			check(MeshIndices[I] < NumPositions);
-			OutIndices.Add(MeshIndices[I]);
-		}
-	}
-
-	/**
-	 * Enqueue, and wait for the completion of, a render command to copy the triangle mesh data from
-	 * graphics memory to host memory.
-	 *
-	 * This approach is required for cooked builds unless the Static Mesh asset has the Allow CPU
-	 * Access flag set.
-	 *
-	 * @todo This doesn't work on Linux. We get indices that point outside of the vertex buffer,
-	 * which should never happen.
-	 *
-	 * @param Mesh The mesh to read triangle mesh data from.
-	 * @param OutPositions Array to which the vertex positions are written.
-	 * @param OutIndices Array to which the vertex indices are written.
-	 */
-	void CopyMeshBuffersRenderThread(
-		const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions,
-		TArray<uint32>& OutIndices)
-	{
-		const uint32 NumIndices = static_cast<uint32>(Mesh.IndexBuffer.GetNumIndices());
-		OutIndices.Reserve(NumIndices);
-
-		const uint32 NumPositions = Mesh.VertexBuffers.PositionVertexBuffer.GetNumVertices();
-		OutPositions.Reserve(NumPositions);
-
-		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		(
-			[&](FRHICommandListImmediate& RHICmdList)
-			{
-				// Copy vertex buffer.
-				auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
-				const uint32 NumPositionBytes = PositionRHI->GetSize();
-				FVector* PositionData = static_cast<FVector*>(
-					RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
-				for (uint32 I = 0; I < NumPositions; I++)
-				{
-					OutPositions.Add(PositionData[I]);
-				}
-				RHIUnlockVertexBuffer(PositionRHI);
-
-				// Copy index buffer.
-				auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
-				if (IndexRHI->GetStride() == 2)
-				{
-					// Two byte index size.
-					uint16* IndexData = static_cast<uint16*>(
-						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-					for (uint32 i = 0; i < NumIndices; i++)
-					{
-						check(IndexData[i] < NumPositions);
-						OutIndices.Add(static_cast<uint32>(IndexData[i]));
-					}
-				}
-				else
-				{
-					// Four byte index size (stride must be either 2 or 4).
-					check(IndexRHI->GetStride() == 4);
-					uint32* IndexData = static_cast<uint32*>(
-						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-					for (uint32 i = 0; i < NumIndices; i++)
-					{
-						check(IndexData[i] < NumPositions);
-						OutIndices.Add(IndexData[i]);
-					}
-				}
-				RHIUnlockIndexBuffer(IndexRHI);
-			});
-
-		// Wait for rendering thread to finish.
-		FlushRenderingCommands();
-	}
-
-	void CopyMeshBuffers(
-		const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions,
-		TArray<uint32>& OutIndices)
-	{
-#if WITH_EDITOR
-		CopyMeshBuffersGameThread(Mesh, OutPositions, OutIndices);
-#else
-		CopyMeshBuffersRenderThread(Mesh, OutPositions, OutIndices);
-#endif
-	}
-
-	/**
-	 * Check that CopyMeshBuffersGameThread and CopyMeshBuffersRenderThread produces the same
-	 * result. On Linux it doesn't, which is bad.
-	 *
-	 * @param Mesh The mesh to read trimesh data from.
-	 */
-	void CheckMeshBufferValidity(const FStaticMeshLODResources& Mesh)
-	{
-		// We trust the game thread version, so just call it.
-		TArray<FVector> GamePositions;
-		TArray<uint32> GameIndices;
-		CopyMeshBuffersGameThread(Mesh, GamePositions, GameIndices);
-
-		const int32 TrueNumIndices = GameIndices.Num();
-		const int32 TrueNumPositions = GamePositions.Num();
-
-		// We don't trust the render thread version, so copy-pasted into here with some additional
-		// test/verification code.
-
-		auto& PositionBuffer = Mesh.VertexBuffers.PositionVertexBuffer;
-
-		const uint32 NumPositions = PositionBuffer.GetNumVertices();
-		if (NumPositions != TrueNumPositions)
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Got wrong number of locations from "
-					 "Mesh.VertexBuffers.PositionVertexBuffer.GetNumVertices()."));
-		}
-
-		auto& PositionRhi = PositionBuffer.VertexBufferRHI;
-		uint32 PositionRhiSize = PositionRhi->GetSize();
-		uint32 PositionRhiCount = PositionRhiSize / sizeof(FVector);
-		if (PositionRhiCount != TrueNumPositions)
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT(
-					"Got wrong number of locations from PositionRhi->GetSize() / sizeof(FVector)."))
-		}
-
-		TArray<FVector> RenderPositions;
-		RenderPositions.Reserve(NumPositions);
-
-		auto& IndexBuffer = Mesh.IndexBuffer;
-		const int32 NumIndices = IndexBuffer.GetNumIndices();
-		if (NumIndices != TrueNumIndices)
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Got wrong number of indices from Mesh.IndexBuffer.GetNumIndices()."));
-		}
-
-		auto& IndexRhi = Mesh.IndexBuffer.IndexBufferRHI;
-		uint32 IndexRhiSize = IndexRhi->GetSize();
-		uint32 IndexRhiCount = IndexRhiSize / IndexRhi->GetStride();
-		if (IndexRhiCount != TrueNumIndices)
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Got wrong number of indices from IndexRhi->GetSize() / sizeof(uint16)."));
-		}
-
-		TArray<uint32> RenderIndices;
-		RenderIndices.Reserve(NumIndices);
-
-		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		(
-			[&](FRHICommandListImmediate& RHICmdList)
-			{
-				// Copy position buffer.
-				FVector* PositionData = static_cast<FVector*>(
-					RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
-				for (uint32 i = 0; i < NumPositions; i++)
-				{
-					RenderPositions.Add(PositionData[i]);
-				}
-				RHIUnlockVertexBuffer(PositionRhi);
-
-				// Copy index buffer.
-				if (IndexRhi->GetStride() == 2)
-				{
-					// Two byte index size.
-					uint16* IndexBufferData = static_cast<uint16*>(
-						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-					for (int32 i = 0; i < NumIndices; i++)
-					{
-						RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
-					}
-				}
-				else
-				{
-					// Four byte index size (stride must be either 2 or 4).
-					check(IndexRhi->GetStride() == 4);
-					uint32* IndexData = static_cast<uint32*>(
-						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-					for (int32 i = 0; i < NumIndices; i++)
-					{
-						RenderIndices.Add(IndexData[i]);
-					}
-				}
-				RHIUnlockIndexBuffer(IndexRhi);
-			});
-
-		// Wait for rendering thread to finish.
-		FlushRenderingCommands();
-
-		// Check if the render thread copy got the same data as the game thread copy.
-		int32 NumIndexMismatch {0};
-		for (int I = 0; I < FMath::Min(TrueNumIndices, NumIndices); ++I)
-		{
-			uint32 TrueIndex = GameIndices[I];
-			uint32 Index = RenderIndices[I];
-			if (TrueIndex != Index)
-			{
-				++NumIndexMismatch;
-			}
-		}
-		if (NumIndexMismatch > 0)
-		{
-			UE_LOG(LogAGX, Error, TEXT("Got %d mismatched indices."), NumIndexMismatch);
-		}
-
-		if (GameIndices != RenderIndices)
-		{
-			UE_LOG(LogAGX, Error, TEXT("Error reading vertex indices from GPU memory."));
-		}
-		if (GamePositions != RenderPositions)
-		{
-			UE_LOG(LogAGX, Error, TEXT("Error reading vertex positions from GPU memory."));
-		}
-	}
-}
-
 bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
-	TArray<FVector>& Vertices, TArray<FTriIndices>& Indices) const
+	TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices) const
 {
-	// NOTE: Code below is very similar to UStaticMesh::GetPhysicsTriMeshData,
-	// only with some simplifications, so one can check that implementation for reference.
-	// One important difference is that we hash on vertex position instead of index because we
-	// want to re-merge vertices that has been split in the rendering data.
+	FAGX_MeshWithTransform Mesh;
 
-	UStaticMesh* StaticMesh = nullptr;
-	FTransform MeshWorldTransform;
-
-	if (!FindStaticMeshSource(StaticMesh, &MeshWorldTransform))
-		return false;
-
-	const FTransform ComponentTransformNoScale =
-		FTransform(GetComponentRotation(), GetComponentLocation());
-
-	// Final vertex positions need to be relative to this Agx Geometry,
-	// and any scale needs to be baked into the positions, because AGX
-	// does not support scale.
-	const FTransform RelativeTransform =
-		MeshWorldTransform.GetRelativeTransform(ComponentTransformNoScale);
-
-	const uint32 LodIndex = FMath::Clamp<int32>(
-		bOverrideMeshSourceLodIndex ? MeshSourceLodIndex : StaticMesh->LODForCollision, 0,
-		StaticMesh->GetNumLODs() - 1);
-
-	if (!StaticMesh->HasValidRenderData(/*bCheckLODForVerts*/ true, LodIndex))
-		return false;
-
-	const FStaticMeshLODResources& Mesh = StaticMesh->GetLODForExport(LodIndex);
-	TMap<FVector, int32> MeshToCollisionVertexIndices;
-
-	// Copy the Index and Vertex buffers from the mesh.
-	TArray<uint32> IndexBuffer;
-	TArray<FVector> VertexBuffer;
-
-	// Depending on if the triangle data has been pinned to host memory or not, either directly copy
-	// from host memory with the current thread, assumed to be the game thread, or dispatch through
-	// CopyMeshBuffers which will do either game thread copying or render thread copying depending
-	// on if we are in the editor or not.
-	//
-	// This can probably be done better, but the only reason we check Allow CPU Access here is
-	// that the render thread copying produces garbage on Linux. We should solve that and remove
-	// this check. See internal issue 292. But on the other hand, why copy from GPU when the data
-	// is already next to the CPU? We expect that Allow CPU Access will be false most of the time,
-	// and we don't want to require the end-user to check the checkbox on every mesh they want to
-	// create a Trimesh from. Should the Trimesh set the flag on the Static Mesh asset? Can it?
-	// Doing it here is too late since we're now in Begin Play, we need to set the flag on the
-	// Editor instance, not the Play instance. The state handling of the flag will be complicated
-	// since we don't want to leave them checked on Static Mesh assets that are no longer used by
-	// any Trimesh, and we don't want to disable it on a Static Mesh asset on which the end-user
-	// enabled it on themselves.
-	if (StaticMesh->bAllowCPUAccess)
+	switch (MeshSourceLocation)
 	{
-		CopyMeshBuffersGameThread(Mesh, VertexBuffer, IndexBuffer);
-	}
-	else
-	{
-		CopyMeshBuffers(Mesh, VertexBuffer, IndexBuffer);
-	}
-	if (IndexBuffer.Num() == 0 || VertexBuffer.Num() == 0)
-	{
-		return false;
-	}
-
-	check(Mesh.IndexBuffer.GetNumIndices() == IndexBuffer.Num());
-	check(Mesh.VertexBuffers.PositionVertexBuffer.GetNumVertices() == VertexBuffer.Num());
-
-	const uint32 NumIndices = static_cast<uint32>(IndexBuffer.Num());
-	for (int32 SectionIndex = 0; SectionIndex < Mesh.Sections.Num(); ++SectionIndex)
-	{
-		const FStaticMeshSection& Section = Mesh.Sections[SectionIndex];
-		const uint32 OnePastLastIndex = Section.FirstIndex + Section.NumTriangles * 3;
-
-		for (uint32 Index = Section.FirstIndex; Index < OnePastLastIndex; Index += 3)
-		{
-			if (Index + 2 >= NumIndices)
+		case EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT:
+			Mesh = AGX_MeshUtilities::FindFirstChildMesh(*this);
+			break;
+		case EAGX_StaticMeshSourceLocation::TSL_PARENT_STATIC_MESH_COMPONENT:
+			Mesh = AGX_MeshUtilities::FindFirstParentMesh(*this);
+			break;
+		case EAGX_StaticMeshSourceLocation::TSL_STATIC_MESH_ASSET:
+			if (MeshSourceAsset != nullptr)
 			{
-				break;
+				Mesh = FAGX_MeshWithTransform(MeshSourceAsset, GetComponentTransform());
 			}
-
-			const uint32 IndexFirst = IndexBuffer[Index];
-			const uint32 IndexSecond = IndexBuffer[Index + 1];
-			const uint32 IndexThird = IndexBuffer[Index + 2];
-			FTriIndices Triangle;
-
-			Triangle.v0 = AddCollisionVertex(
-				VertexBuffer[IndexFirst], RelativeTransform, Vertices,
-				MeshToCollisionVertexIndices);
-			Triangle.v1 = AddCollisionVertex(
-				VertexBuffer[IndexSecond], RelativeTransform, Vertices,
-				MeshToCollisionVertexIndices);
-			Triangle.v2 = AddCollisionVertex(
-				VertexBuffer[IndexThird], RelativeTransform, Vertices,
-				MeshToCollisionVertexIndices);
-
-			Indices.Add(Triangle);
-		}
+			break;
 	}
 
-	return Vertices.Num() > 0 && Indices.Num() > 0;
+	if(!Mesh.IsValid())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("GetStaticMeshCollisionData failed in '%s'. Unable to find static Mesh."),
+			*GetName());
+		return false;
+	}
+
+	const uint32* LodIndex = bOverrideMeshSourceLodIndex ? &MeshSourceLodIndex : nullptr;
+	return AGX_MeshUtilities::GetStaticMeshCollisionData(
+		Mesh, GetComponentTransform(), OutVertices, OutIndices, LodIndex);
 }
