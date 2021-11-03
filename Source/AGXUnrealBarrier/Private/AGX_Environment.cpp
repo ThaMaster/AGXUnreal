@@ -90,7 +90,7 @@ void FAGX_Environment::LoadDynamicLibraries()
 	// vdbgrid must always be loaded to be found by agxTerrain during runtime.
 	// On Linux, we give GetDllHandle the full path, because otherwise it seems to look in the wrong
 	// place.
-	AGXDynamicsDependencyFileNames.Add(FPaths::Combine(DependecyDir, "libvdbgrid.so"));
+	AGXDynamicsDependencyFileNames.Add(FPaths::Combine(DependecyDir, TEXT("libvdbgrid.so")));
 #else
 	// Unsupported platform.
 	static_assert(false);
