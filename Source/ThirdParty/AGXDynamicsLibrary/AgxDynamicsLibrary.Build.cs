@@ -315,30 +315,29 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private void SetLicenseForCopySafe(ReadOnlyTargetRules Target)
 	{
-		if (Target.Configuration != UnrealTargetConfiguration.Development &&
-			Target.Configuration != UnrealTargetConfiguration.Debug &&
-			Target.Configuration != UnrealTargetConfiguration.DebugGame)
-		{
-			// Never copy license files for other than Development and Debug builds.
-			return;
-		}
+		// License copying is only allowed for Development and Debug builds.
+		bool bAllowedConfiguration = Target.Configuration == UnrealTargetConfiguration.Development ||
+			Target.Configuration == UnrealTargetConfiguration.Debug ||
+			Target.Configuration == UnrealTargetConfiguration.DebugGame;
 
 		string LicenseCopyEnvVariableVal =
 			Environment.GetEnvironmentVariable("AGXUNREAL_COPY_LICENSE_FILE_TO_TARGET");
 		bool bLicenseCopyEnvVariableSet = !String.IsNullOrEmpty(LicenseCopyEnvVariableVal) &&
 			LicenseCopyEnvVariableVal.Equals("true", StringComparison.OrdinalIgnoreCase);
+		string LicenseDir = Path.Combine(GetBundledAGXResourcesPath(), "license");
 
-		if (bCopyLicenseFileToTarget || bLicenseCopyEnvVariableSet)
+		if (bAllowedConfiguration && (bCopyLicenseFileToTarget || bLicenseCopyEnvVariableSet))
 		{
-			string LicenseDir = Path.Combine(GetBundledAGXResourcesPath(), "license");
-			if (Directory.Exists(LicenseDir))
-			{
-				Console.WriteLine("AGX Dynamics license file will be copied to the build target with "
-					+ "bCopyLicenseFileToTarget = {0} and bLicenseCopyEnvVariableSet = {1}",
-					bCopyLicenseFileToTarget, bLicenseCopyEnvVariableSet);
+			Console.WriteLine("AGX Dynamics license file will be copied to the build target with "
+				+ "bCopyLicenseFileToTarget = {0} and bLicenseCopyEnvVariableSet = {1}",
+				bCopyLicenseFileToTarget, bLicenseCopyEnvVariableSet);
 
-				RuntimeDependencies.Add(Path.Combine(LicenseDir, "*"));
-			}
+			RuntimeDependencies.Add(Path.Combine(LicenseDir, "*"));
+		}
+		else
+		{
+			// Note the lack of '*'here. We copy only the README file, not all files.
+			RuntimeDependencies.Add(Path.Combine(LicenseDir, "README.md"));
 		}
 	}
 
@@ -529,13 +528,13 @@ public class AGXDynamicsLibrary : ModuleRules
 			}
 		}
 
-		// Create an empty 'license' directory for the user to put the license file in.
+		// Create the 'license' directory for the user to put the license file in with a README inside.
 		{
 			string LicenseDir = Path.Combine(GetBundledAGXResourcesPath(), "license");
-			if (!Directory.Exists(LicenseDir))
-			{
-				Directory.CreateDirectory(LicenseDir);
-			}
+			Directory.CreateDirectory(LicenseDir);
+			string ReadMeContent = "The AGX Dynamics license file should be placed in this directory.\n"
+				+ "This directory should never be manually removed.";
+			File.WriteAllText(Path.Combine(LicenseDir, "README.md"), ReadMeContent);
 		}
 
 		Console.WriteLine("Packaging AGX Dynamics resources complete.");
