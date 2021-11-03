@@ -88,14 +88,19 @@ void FAGX_Environment::LoadDynamicLibraries()
 		FPaths::Combine(AgxResourcesPath, FString("lib"), FString("Linux"));
 
 	// vdbgrid must always be loaded to be found by agxTerrain during runtime.
-	AGXDynamicsDependencyFileNames.Add("vdbgrid.so");
+	// On Linux, we give GetDllHandle the full path, because otherwise it seems to look in the wrong
+	// place.
+	AGXDynamicsDependencyFileNames.Add(FPaths::Combine(DependecyDir, "libvdbgrid.so"));
 #else
 	// Unsupported platform.
 	static_assert(false);
 #endif
 
 	UE_LOG(LogAGX, Log, TEXT("About to load dynamic libraries."));
+
+#if defined(_WIN64)
 	FPlatformProcess::PushDllDirectory(*DependecyDir);
+#endif
 
 	for (const FString& FileName : AGXDynamicsDependencyFileNames)
 	{
@@ -103,17 +108,29 @@ void FAGX_Environment::LoadDynamicLibraries()
 		void* Handle = FPlatformProcess::GetDllHandle(*FileName);
 		if (Handle == nullptr)
 		{
+#if defined(_WIN64)
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Tried to dynamically load '%s' but the loading failed. Some AGX "
 					 "Dynamics for Unreal features might not be available."),
 				*FullFilePath);
+#endif
+#if defined(__linux__)
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Tried to dynamically load '%s' but the loading failed. Some AGX "
+					 "Dynamics for Unreal features might not be available."),
+				*FileName);
+#endif
 			continue;
 		}
 
 		DynamicLibraryHandles.Add(Handle);
 	}
+
+#if defined(_WIN64)
 	FPlatformProcess::PopDllDirectory(*DependecyDir);
+#endif
 
 	if (AGXDynamicsDependencyFileNames.Num() == DynamicLibraryHandles.Num())
 	{
