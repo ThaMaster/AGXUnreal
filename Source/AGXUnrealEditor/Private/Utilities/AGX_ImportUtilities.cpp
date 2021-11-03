@@ -18,6 +18,7 @@
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/Paths.h"
 #include "RawMesh.h"
 #include "Kismet2/ComponentEditorUtils.h"
 
@@ -122,8 +123,15 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 		FAGX_EditorUtilities::AddRawMeshToStaticMesh(RawMesh, &Asset);
 		Asset.ImportVersion = EImportStaticMeshVersion::LastVersion;
 	};
+
+	FString TrimeshSourceName = Trimesh.GetSourceName();
+	if (TrimeshSourceName.Contains("\\") || TrimeshSourceName.Contains("/"))
+	{
+		TrimeshSourceName = FPaths::GetBaseFilename(TrimeshSourceName);
+	}
+
 	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
-		DirectoryName, Trimesh.GetSourceName(), FallbackName, TEXT("StaticMesh"), InitAsset);
+		DirectoryName, TrimeshSourceName, FallbackName, TEXT("StaticMesh"), InitAsset);
 	return CreatedAsset;
 }
 

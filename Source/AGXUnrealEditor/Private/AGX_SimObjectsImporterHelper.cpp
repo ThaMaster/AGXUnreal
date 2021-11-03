@@ -46,6 +46,7 @@
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
 #include "Materials/MaterialInstanceConstant.h"
+#include "Misc/Paths.h"
 #include "UObject/UObjectGlobals.h"
 
 namespace
@@ -560,6 +561,11 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	UStaticMeshComponent* MeshComponent =
 		FAGX_EditorUtilities::CreateStaticMeshComponent(Owner, *Component, *MeshAsset, false);
 	FString SourceName = Barrier.GetSourceName();
+	if (SourceName.Contains("\\") || SourceName.Contains("/"))
+	{
+		SourceName = FPaths::GetBaseFilename(SourceName);
+	}
+
 	FString MeshName = !SourceName.IsEmpty() ? SourceName : (Barrier.GetName() + TEXT("Mesh"));
 	if (MeshComponent == nullptr)
 	{
