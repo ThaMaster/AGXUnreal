@@ -471,7 +471,9 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			string Source = InstalledAGXResources.IncludePath(IncludePath);
 			string Dest = BundledAGXResources.IncludePath(IncludePath);
-			if(!CopyDirectoryRecursively(Source, Dest))
+			List<string> FilesToIgnore = new List<string>
+				{ "GraphicsHandleWin32", "GraphicsWindowWin32", "PixelBufferWin32" };
+			if(!CopyDirectoryRecursively(Source, Dest, FilesToIgnore))
 			{
 				CleanBundledAGXDynamicsResources();
 				return;
@@ -512,8 +514,9 @@ public class AGXDynamicsLibrary : ModuleRules
 			string ComponentsDirDest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
 			string PhysicsDirSource = Path.Combine(ComponentsDirSource, "agx", "Physics");
 			string PhysicsDirDest = Path.Combine(ComponentsDirDest, "agx", "Physics");
-
-			if (!CopyDirectoryRecursively(PhysicsDirSource, PhysicsDirDest))
+			List<string> FilesToIgnore = new List<string>
+				{ "GenerateLinesFromJacobians.agxKernel", "RenderJacobians.agxTask" };
+			if (!CopyDirectoryRecursively(PhysicsDirSource, PhysicsDirDest, FilesToIgnore))
 			{
 				CleanBundledAGXDynamicsResources();
 				return;
@@ -541,15 +544,6 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private bool CopyFile(string Source, string Dest)
 	{
-		string RelativePath = Dest.Replace(GetBundledAGXResourcesPath(), "");
-		bool IllegalPath = Path.GetDirectoryName(RelativePath).IndexOf("win32", StringComparison.OrdinalIgnoreCase) >= 0;
-		if (IllegalPath)
-		{
-			Console.WriteLine("Path {0} contains instances of 'win32' which is not allowed. "
-					+ "The file will not be copied.", Dest);
-			return true; // We allow the build to continue.
-		}
-
 		try
 		{
 			string DestDir = Path.GetDirectoryName(Dest);
@@ -569,10 +563,15 @@ public class AGXDynamicsLibrary : ModuleRules
 		return true;
 	}
 
-	private bool CopyDirectoryRecursively(string SourceDir, string DestDir)
+	private bool CopyDirectoryRecursively(string SourceDir, string DestDir, List<string> FilesToIgnore = null)
 	{
 		foreach (string FilePath in Directory.GetFiles(SourceDir, "*", SearchOption.AllDirectories))
 		{
+			if (FilesToIgnore != null && FilesToIgnore.Contains(Path.GetFileName(FilePath)))
+			{
+				continue;
+			}
+
 			// Do not copy license files.
 			if (Path.GetExtension(FilePath).Equals(".lic"))
 			{
