@@ -579,7 +579,9 @@ public class AGXDynamicsLibrary : ModuleRules
 				continue;
 			}
 
-			if (!CopyFile(FilePath, FilePath.Replace(SourceDir, DestDir)))
+			string DestFilePath = Path.GetFullPath(FilePath).Replace(
+				Path.GetFullPath(SourceDir), Path.GetFullPath(DestDir));
+			if (!CopyFile(FilePath, DestFilePath))
 			{
 				return false;
 			}
