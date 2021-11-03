@@ -2,12 +2,16 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_EditorStyle.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
+
+// Unreal Engine includes.
+#include "Textures/SlateIcon.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_AgxEdModeConstraints"
 
@@ -31,6 +35,14 @@ FText UAGX_AgxEdModeConstraints::GetDisplayName() const
 FText UAGX_AgxEdModeConstraints::GetTooltip() const
 {
 	return LOCTEXT("Tooltip", "Contains tools to quickly create and manage AGX Constraints");
+}
+
+FSlateIcon UAGX_AgxEdModeConstraints::GetIcon() const
+{
+	static FSlateIcon Icon(
+		FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::JointIcon,
+		FAGX_EditorStyle::JointIconSmall);
+	return Icon;
 }
 
 AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const

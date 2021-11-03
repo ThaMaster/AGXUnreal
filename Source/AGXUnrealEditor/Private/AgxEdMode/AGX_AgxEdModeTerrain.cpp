@@ -1,5 +1,11 @@
 #include "AgxEdMode/AGX_AgxEdModeTerrain.h"
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_EditorStyle.h"
+
+// Unreal Engine includes.
+#include "Textures/SlateIcon.h"
+
 #define LOCTEXT_NAMESPACE "UAGX_AgxEdModeTerrain"
 
 UAGX_AgxEdModeTerrain* UAGX_AgxEdModeTerrain::GetInstance()
@@ -21,6 +27,14 @@ FText UAGX_AgxEdModeTerrain::GetTooltip() const
 {
 	return LOCTEXT(
 		"Tooltip", "Management of AGX Terrain assets.");
+}
+
+FSlateIcon UAGX_AgxEdModeTerrain::GetIcon() const
+{
+	static FSlateIcon Icon(
+		FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIcon,
+		FAGX_EditorStyle::AgxIconSmall);
+	return Icon;
 }
 
 #undef LOCTEXT_NAMESPACE

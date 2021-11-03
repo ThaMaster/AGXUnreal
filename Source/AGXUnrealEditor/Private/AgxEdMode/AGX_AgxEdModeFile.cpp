@@ -3,12 +3,14 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImporterToSingleActor.h"
 #include "AGX_ImporterToBlueprint.h"
+#include "AGX_EditorStyle.h"
 #include "AGX_ArchiveExporter.h"
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
+#include "Textures/SlateIcon.h"
 #include "DesktopPlatformModule.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -218,6 +220,14 @@ FText UAGX_AgxEdModeFile::GetTooltip() const
 		"Tooltip",
 		"Interoperability with external file formats, such AGX simulation files (.agx) "
 		"or URDF (.urdf) files.");
+}
+
+FSlateIcon UAGX_AgxEdModeFile::GetIcon() const
+{
+	static FSlateIcon Icon(
+		FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIcon,
+		FAGX_EditorStyle::AgxIconSmall);
+	return Icon;
 }
 
 #undef LOCTEXT_NAMESPACE
