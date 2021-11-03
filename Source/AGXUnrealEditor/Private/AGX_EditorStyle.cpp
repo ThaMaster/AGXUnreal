@@ -76,7 +76,7 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 
 	// Define icons and stuff here.
 
-	Style->Set(AgxIcon, new IMAGE_BRUSH("Icons/T_Icon_A_Light_776", IconSize40));
+	Style->Set(AgxIcon, new IMAGE_BRUSH("Icons/T_Icon_A_Light_128", IconSize40));
 	Style->Set(AgxIconSmall, new IMAGE_BRUSH("Icons/T_Icon_A_Light_776", IconSize16));
 	Style->Set(JointIcon, new IMAGE_BRUSH("Icons/T_Icon_Joint_200", IconSize40));
 	Style->Set(JointIconSmall, new IMAGE_BRUSH("Icons/T_Icon_Joint_200", IconSize16));
