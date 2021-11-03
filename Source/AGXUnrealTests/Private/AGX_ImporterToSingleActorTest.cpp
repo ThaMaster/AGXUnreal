@@ -1,4 +1,6 @@
-// AGX Dynamics require the AgX-Wires license for wire import. Our GitLab CI
+#if WITH_DEV_AUTOMATION_TESTS
+
+// AGX Dynamics require the AGX-Wires license for wire import. Our GitLab CI
 // runtime environment currently doesn't have an AGX Dynamics license so the
 // wire import test always fails. For now the test is disabled through this
 // preprocessor flag. See internal issue 495. Remove the preprocessor guards
@@ -6,7 +8,7 @@
 #define AGX_TEST_WIRE_IMPORT 0
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ArchiveImporterToSingleActor.h"
+#include "AGX_ImporterToSingleActor.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
@@ -36,10 +38,8 @@
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
 
-#if WITH_DEV_AUTOMATION_TESTS
-
 /*
- * This file contains a set of tests for AGX_ArchiveImporterToSingleActor, which imports an AGX
+ * This file contains a set of tests for AGX_ImporterToSingleActor, which imports an AGX
  * Dynamics archive into the current world as a single Actor that contains ActorComponents for each
  * imported object.
  *
@@ -64,13 +64,42 @@ bool FImportArchiveSingleActorCommand::Update()
 		Test.AddError(TEXT("FImportArchiveSingleActorCommand not given an archive to import."));
 		return true;
 	}
-	FString ArchiveFilePath = AgxAutomationCommon::GetArchivePath(ArchiveName);
+	FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(ArchiveName);
 	if (ArchiveFilePath.IsEmpty())
 	{
 		Test.AddError(FString::Printf(TEXT("Did not find an archive named '%s'."), *ArchiveName));
 		return true;
 	}
-	Contents = AGX_ArchiveImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
+	Contents = AGX_ImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
+	Test.TestNotNull(TEXT("Contents"), Contents);
+	return true;
+}
+
+/**
+ * Latent Command that imports an URDF model into a single actor. A pointer to the Actor
+ * created to hold the imported objects is stored in the Contents parameter.
+ * @param FileName The URDF file to import.
+ * @param Contents Pointer set to point to the Actor containing the imported objects.
+ * @param Test The Automation test that contains this Latent Command.
+ */
+DEFINE_LATENT_AUTOMATION_COMMAND_FOUR_PARAMETER(
+	FImportURDFSingleActorCommand, FString, FileName, FString, PackagePath, AActor*&, Contents,
+	FAutomationTestBase&, Test);
+
+bool FImportURDFSingleActorCommand::Update()
+{
+	if (FileName.IsEmpty())
+	{
+		Test.AddError(TEXT("FImportURDFSingleActorCommand not given a file to import."));
+		return true;
+	}
+	FString UrdfFilePath = AgxAutomationCommon::GetTestScenePath(FileName);
+	if (UrdfFilePath.IsEmpty())
+	{
+		Test.AddError(FString::Printf(TEXT("Did not find an URDF file named '%s'."), *FileName));
+		return true;
+	}
+	Contents = AGX_ImporterToSingleActor::ImportURDF(UrdfFilePath, PackagePath);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
 }
@@ -141,14 +170,13 @@ bool FClearEmptySceneImportedCommand::Update()
  * Test that an empty AGX Dynamics archive can be imported, that the archive Actor root is created
  * as it should, and that it is added to the world.
  */
-class FArchiveImporterToSingleActor_EmptySceneTest final
-	: public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToSingleActor_EmptySceneTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_EmptySceneTest()
+	FImporterToSingleActor_EmptySceneTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_EmptySceneTest"),
-			  TEXT("AGXUnreal.Game.ArchiveImporterToSingleActor.EmptyScene"))
+			  TEXT("FImporterToSingleActor_EmptySceneTest"),
+			  TEXT("AGXUnreal.Game.ImporterToSingleActor.EmptyScene"))
 	{
 	}
 
@@ -185,38 +213,37 @@ private:
 
 namespace
 {
-	FArchiveImporterToSingleActor_EmptySceneTest ArchiveImporterToSingleActor_EmptySceneTest;
+	FImporterToSingleActor_EmptySceneTest ImporterToSingleActor_EmptySceneTest;
 }
 
 //
 // SingleSphere test starts here.
 //
 
-class FArchiveImporterToSingleActor_SingleSphereTest;
+class FImporterToSingleActor_SingleSphereTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckSingleSphereImportedCommand, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
+	FCheckSingleSphereImportedCommand, FImporterToSingleActor_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FStoreInitialTimes, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
+	FStoreInitialTimes, FImporterToSingleActor_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FStoreResultingTimes, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
+	FStoreResultingTimes, FImporterToSingleActor_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckSphereHasMoved, FArchiveImporterToSingleActor_SingleSphereTest&, Test);
+	FCheckSphereHasMoved, FImporterToSingleActor_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FClearSingleSphereImportedCommand, AActor*&, Contents);
 
-class FArchiveImporterToSingleActor_SingleSphereTest final
-	: public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToSingleActor_SingleSphereTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_SingleSphereTest()
+	FImporterToSingleActor_SingleSphereTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_SingleSphereTest"),
-			  TEXT("AGXUnreal.Game.ArchiveImporterToSingleActor.SingleSphere"))
+			  TEXT("FImporterToSingleActor_SingleSphereTest"),
+			  TEXT("AGXUnreal.Game.ImporterToSingleActor.SingleSphere"))
 	{
 	}
 
@@ -249,7 +276,7 @@ protected:
 			AddError(TEXT("Do not have a simulation, cannot test SingleSphere import."));
 		}
 
-		// See comment in FArchiveImporterToSingleActor_EmptySceneTest.
+		// See comment in FImporterToSingleActor_EmptySceneTest.
 		// In short, loading a map stops world ticking.
 #if 0
 		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
@@ -272,7 +299,7 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_SingleSphereTest ArchiveImporterToSingleActor_SingleSphereTest;
+	FImporterToSingleActor_SingleSphereTest ImporterToSingleActor_SingleSphereTest;
 }
 
 /*
@@ -489,22 +516,22 @@ bool FClearSingleSphereImportedCommand::Update()
 // MotionControl test starts here.
 //
 
-class FArchiveImporterToSingleActor_MotionControlTest;
+class FImporterToSingleActor_MotionControlTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckMotionControlImportedCommand, FArchiveImporterToSingleActor_MotionControlTest&, Test);
+	FCheckMotionControlImportedCommand, FImporterToSingleActor_MotionControlTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearMotionControlImportedCommand, FArchiveImporterToSingleActor_MotionControlTest&, Test);
+	FClearMotionControlImportedCommand, FImporterToSingleActor_MotionControlTest&, Test);
 
-class FArchiveImporterToSingleActor_MotionControlTest final
+class FImporterToSingleActor_MotionControlTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_MotionControlTest()
+	FImporterToSingleActor_MotionControlTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_MotionControlTest"),
-			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.MotionControl"))
+			  TEXT("FImporterToSingleActor_MotionControlTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.MotionControl"))
 	{
 	}
 
@@ -524,7 +551,7 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_MotionControlTest FArchiveImporterToSingleActor_MotionControlTest;
+	FImporterToSingleActor_MotionControlTest FImporterToSingleActor_MotionControlTest;
 }
 
 bool FCheckMotionControlImportedCommand::Update()
@@ -620,22 +647,22 @@ bool FClearMotionControlImportedCommand::Update()
 // SimpleTrimesh test starts here.
 //
 
-class FArchiveImporterToSingleActor_SimpleTrimeshTest;
+class FImporterToSingleActor_SimpleTrimeshTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckSimpleTrimeshImportedCommand, FArchiveImporterToSingleActor_SimpleTrimeshTest&, Test);
+	FCheckSimpleTrimeshImportedCommand, FImporterToSingleActor_SimpleTrimeshTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearSimpleTrimeshImportedCommand, FArchiveImporterToSingleActor_SimpleTrimeshTest&, Test);
+	FClearSimpleTrimeshImportedCommand, FImporterToSingleActor_SimpleTrimeshTest&, Test);
 
-class FArchiveImporterToSingleActor_SimpleTrimeshTest final
+class FImporterToSingleActor_SimpleTrimeshTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_SimpleTrimeshTest()
+	FImporterToSingleActor_SimpleTrimeshTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_SimpleTrimeshTest"),
-			  TEXT("AGXUnreal.Game.ArchiveImporterToSingleActor.SimpleTrimesh"))
+			  TEXT("FImporterToSingleActor_SimpleTrimeshTest"),
+			  TEXT("AGXUnreal.Game.ImporterToSingleActor.SimpleTrimesh"))
 	{
 	}
 
@@ -654,7 +681,7 @@ protected:
 		World = AgxAutomationCommon::GetTestWorld();
 		Simulation = UAGX_Simulation::GetFrom(World);
 
-		// See comment in FArchiveImporterToSingleActor_EmptySceneTest.
+		// See comment in FImporterToSingleActor_EmptySceneTest.
 		// In short, loading a map stops world ticking.
 #if 0
 		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
@@ -671,7 +698,7 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_SimpleTrimeshTest ArchiveImporterToSingleActor_SimpleTrimeshTest;
+	FImporterToSingleActor_SimpleTrimeshTest ImporterToSingleActor_SimpleTrimeshTest;
 }
 
 /**
@@ -750,7 +777,7 @@ bool FClearSimpleTrimeshImportedCommand::Update()
 	}
 	Test.World->DestroyActor(Test.Contents);
 
-	TArray<const TCHAR*> ExpectedFiles = {TEXT("StaticMeshs"), TEXT("simple_trimesh.uasset")};
+	TArray<const TCHAR*> ExpectedFiles = {TEXT("StaticMesh"), TEXT("simple_trimesh.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("simple_trimesh_build"), ExpectedFiles);
 
 	return true;
@@ -760,22 +787,22 @@ bool FClearSimpleTrimeshImportedCommand::Update()
 // RenderMaterial test starts here.
 //
 
-class FArchiveImporterToSingleActor_RenderMaterialTest;
+class FImporterToSingleActor_RenderMaterialTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckRenderMaterialImportedCommand, FArchiveImporterToSingleActor_RenderMaterialTest&, Test);
+	FCheckRenderMaterialImportedCommand, FImporterToSingleActor_RenderMaterialTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearRenderMaterialImportedCommand, FArchiveImporterToSingleActor_RenderMaterialTest&, Test);
+	FClearRenderMaterialImportedCommand, FImporterToSingleActor_RenderMaterialTest&, Test);
 
-class FArchiveImporterToSingleActor_RenderMaterialTest final
+class FImporterToSingleActor_RenderMaterialTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_RenderMaterialTest()
+	FImporterToSingleActor_RenderMaterialTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_RenderMaterialTest"),
-			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.RenderMaterial"))
+			  TEXT("FImporterToSingleActor_RenderMaterialTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.RenderMaterial"))
 	{
 	}
 
@@ -796,8 +823,7 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_RenderMaterialTest
-		ArchiveImporterToSingleActor_RenderMaterialTest;
+	FImporterToSingleActor_RenderMaterialTest ImporterToSingleActor_RenderMaterialTest;
 }
 
 namespace
@@ -1072,11 +1098,14 @@ bool FClearRenderMaterialImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
-	// The error message that is printed when folders are deleted from under the editor.
-	//
 #if defined(__linux__)
 	// @todo The error is only printed sometimes. See GitLab issue #213.
-	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+
+	// Guarantee trigger at least once. Needed since this test sometimes does not get this error.
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
 	// Files that are created by the test and thus safe to remove. The GUID values may make this
@@ -1084,7 +1113,7 @@ bool FClearRenderMaterialImportedCommand::Update()
 	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("RenderMaterials"),
+		TEXT("RenderMaterial"),
 		TEXT("RenderMaterial_0371489EAC6B66145E4DAEEFA9B4B6BC.uasset"),
 		TEXT("RenderMaterial_29524C99D524BAD2D65ED4EEA25BE374.uasset"),
 		TEXT("RenderMaterial_2C1C438F862A19CB2E1618C7B73F3D2E.uasset"),
@@ -1106,22 +1135,21 @@ bool FClearRenderMaterialImportedCommand::Update()
 // Render Data test starts here.
 //
 
-class FArchiveImporterToSingleActor_RenderDataTest;
+class FImporterToSingleActor_RenderDataTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckRenderDataImportedCommand, FArchiveImporterToSingleActor_RenderDataTest&, Test);
+	FCheckRenderDataImportedCommand, FImporterToSingleActor_RenderDataTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearRenderDataImportedCommand, FArchiveImporterToSingleActor_RenderDataTest&, Test);
+	FClearRenderDataImportedCommand, FImporterToSingleActor_RenderDataTest&, Test);
 
-class FArchiveImporterToSingleActor_RenderDataTest final
-	: public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToSingleActor_RenderDataTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_RenderDataTest()
+	FImporterToSingleActor_RenderDataTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_RenderDataTest"),
-			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.RenderData"))
+			  TEXT("FImporterToSingleActor_RenderDataTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.RenderData"))
 	{
 	}
 
@@ -1142,7 +1170,7 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_RenderDataTest ArchiveImporterToSingleActor_RenderDataTest;
+	FImporterToSingleActor_RenderDataTest ImporterToSingleActor_RenderDataTest;
 }
 
 bool FCheckRenderDataImportedCommand::Update()
@@ -1203,17 +1231,12 @@ bool FClearRenderDataImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
-#if defined(__linux__)
-	// @todo The error is only printed sometimes. See GitLab issue #213.
-	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
-#endif
-
 	// Files that are created by the test and thus safe to remove. The GUID values may make this
 	// test cumbersome to update since they will change every time the AGX Dynamics archive is
 	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("RenderMeshs"), TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764.uasset")};
+		TEXT("RenderMesh"), TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764.uasset")};
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_data_build"), ExpectedFiles);
 
@@ -1224,22 +1247,22 @@ bool FClearRenderDataImportedCommand::Update()
 // CollisionGroups test starts here.
 //
 
-class FArchiveImporterToSingleActor_CollisionGroupsTest;
+class FImporterToSingleActor_CollisionGroupsTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckCollisionGroupsImportedCommand, FArchiveImporterToSingleActor_CollisionGroupsTest&, Test);
+	FCheckCollisionGroupsImportedCommand, FImporterToSingleActor_CollisionGroupsTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearCollisionGroupsImportedCommand, FArchiveImporterToSingleActor_CollisionGroupsTest&, Test);
+	FClearCollisionGroupsImportedCommand, FImporterToSingleActor_CollisionGroupsTest&, Test);
 
-class FArchiveImporterToSingleActor_CollisionGroupsTest final
+class FImporterToSingleActor_CollisionGroupsTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_CollisionGroupsTest()
+	FImporterToSingleActor_CollisionGroupsTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_CollisionGroupsTest"),
-			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.CollisionGroups"))
+			  TEXT("FImporterToSingleActor_CollisionGroupsTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.CollisionGroups"))
 	{
 	}
 
@@ -1263,8 +1286,7 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_CollisionGroupsTest
-		ArchiveImporterToSingleActor_CollisionGroupsTest;
+	FImporterToSingleActor_CollisionGroupsTest ImporterToSingleActor_CollisionGroupsTest;
 }
 
 /**
@@ -1425,22 +1447,22 @@ bool FClearCollisionGroupsImportedCommand::Update()
 // GeometrySensors test starts here.
 //
 
-class FArchiveImporterToSingleActor_GeometrySensorsTest;
+class FImporterToSingleActor_GeometrySensorsTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckGeometrySensorsImportedCommand, FArchiveImporterToSingleActor_GeometrySensorsTest&, Test);
+	FCheckGeometrySensorsImportedCommand, FImporterToSingleActor_GeometrySensorsTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearGeometrySensorsImportedCommand, FArchiveImporterToSingleActor_GeometrySensorsTest&, Test);
+	FClearGeometrySensorsImportedCommand, FImporterToSingleActor_GeometrySensorsTest&, Test);
 
-class FArchiveImporterToSingleActor_GeometrySensorsTest final
+class FImporterToSingleActor_GeometrySensorsTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_GeometrySensorsTest()
+	FImporterToSingleActor_GeometrySensorsTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_GeometrySensorsTest"),
-			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.GeometrySensors"))
+			  TEXT("FImporterToSingleActor_GeometrySensorsTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.GeometrySensors"))
 	{
 	}
 
@@ -1464,8 +1486,7 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_GeometrySensorsTest
-		ArchiveImporterToSingleActor_GeometrySensorsTest;
+	FImporterToSingleActor_GeometrySensorsTest ImporterToSingleActor_GeometrySensorsTest;
 }
 
 /**
@@ -1574,21 +1595,21 @@ bool FClearGeometrySensorsImportedCommand::Update()
 // Wire test starts here.
 //
 
-class FArchiveImporterToSingleActor_WireTest;
+class FImporterToSingleActor_WireTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckWireImportedCommand, FArchiveImporterToSingleActor_WireTest&, Test);
+	FCheckWireImportedCommand, FImporterToSingleActor_WireTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearWireImportedCommand, FArchiveImporterToSingleActor_WireTest&, Test);
+	FClearWireImportedCommand, FImporterToSingleActor_WireTest&, Test);
 
-class FArchiveImporterToSingleActor_WireTest final : public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToSingleActor_WireTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_WireTest()
+	FImporterToSingleActor_WireTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_WireTest"),
-			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.Wire"))
+			  TEXT("FImporterToSingleActor_WireTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.Wire"))
 	{
 	}
 
@@ -1611,7 +1632,7 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_WireTest ArchiveImporterToSingleActor_WireTest;
+	FImporterToSingleActor_WireTest ImporterToSingleActor_WireTest;
 }
 
 /**
@@ -1766,7 +1787,7 @@ bool FClearWireImportedCommand::Update()
 	}
 
 	TArray<const TCHAR*> ExpectedFiles {
-		TEXT("ShapeMaterials"), TEXT("defaultWireMaterial_57.uasset")};
+		TEXT("ShapeMaterial"), TEXT("defaultWireMaterial_57.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("wire_build"), ExpectedFiles);
 
 	return true;
@@ -1777,24 +1798,24 @@ bool FClearWireImportedCommand::Update()
 // Constraint Dynamic Parameters test starts here.
 //
 
-class FArchiveImporterToSingleActor_ConstraintDynamicParametersTest;
+class FImporterToSingleActor_ConstraintDynamicParametersTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FCheckConstraintDynamicParametersImportedCommand,
-	FArchiveImporterToSingleActor_ConstraintDynamicParametersTest&, Test);
+	FImporterToSingleActor_ConstraintDynamicParametersTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FClearConstraintDynamicParametersImportedCommand,
-	FArchiveImporterToSingleActor_ConstraintDynamicParametersTest&, Test);
+	FImporterToSingleActor_ConstraintDynamicParametersTest&, Test);
 
-class FArchiveImporterToSingleActor_ConstraintDynamicParametersTest final
+class FImporterToSingleActor_ConstraintDynamicParametersTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_ConstraintDynamicParametersTest()
+	FImporterToSingleActor_ConstraintDynamicParametersTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_ConstraintDynamicParametersTest"),
-			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.ConstraintDynamicParameters"))
+			  TEXT("FImporterToSingleActor_ConstraintDynamicParametersTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.ConstraintDynamicParameters"))
 	{
 	}
 
@@ -1818,8 +1839,8 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_ConstraintDynamicParametersTest
-		ArchiveImporterToSingleActor_ConstraintDynamicParametersTest;
+	FImporterToSingleActor_ConstraintDynamicParametersTest
+		ImporterToSingleActor_ConstraintDynamicParametersTest;
 }
 
 /**
@@ -1923,24 +1944,24 @@ bool FClearConstraintDynamicParametersImportedCommand::Update()
 // Rigid Body properties test starts here.
 //
 
-class FArchiveImporterToSingleActor_RigidBodyPropertiesTest;
+class FImporterToSingleActor_RigidBodyPropertiesTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckRigidBodyPropertiesImportedCommand,
-	FArchiveImporterToSingleActor_RigidBodyPropertiesTest&, Test);
+	FCheckRigidBodyPropertiesImportedCommand, FImporterToSingleActor_RigidBodyPropertiesTest&,
+	Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearRigidBodyPropertiesImportedCommand,
-	FArchiveImporterToSingleActor_RigidBodyPropertiesTest&, Test);
+	FClearRigidBodyPropertiesImportedCommand, FImporterToSingleActor_RigidBodyPropertiesTest&,
+	Test);
 
-class FArchiveImporterToSingleActor_RigidBodyPropertiesTest final
+class FImporterToSingleActor_RigidBodyPropertiesTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_RigidBodyPropertiesTest()
+	FImporterToSingleActor_RigidBodyPropertiesTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_RigidBodyPropertiesTest"),
-			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.RigidBodyProperties"))
+			  TEXT("FImporterToSingleActor_RigidBodyPropertiesTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.RigidBodyProperties"))
 	{
 	}
 
@@ -1964,8 +1985,7 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_RigidBodyPropertiesTest
-		ArchiveImporterToSingleActor_RigidBodyPropertiesTest;
+	FImporterToSingleActor_RigidBodyPropertiesTest ImporterToSingleActor_RigidBodyPropertiesTest;
 }
 
 /**
@@ -2098,24 +2118,22 @@ bool FClearRigidBodyPropertiesImportedCommand::Update()
 // Simple geometries test starts here.
 //
 
-class FArchiveImporterToSingleActor_SimpleGeometriesTest;
+class FImporterToSingleActor_SimpleGeometriesTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckSimpleGeometriesImportedCommand, FArchiveImporterToSingleActor_SimpleGeometriesTest&,
-	Test);
+	FCheckSimpleGeometriesImportedCommand, FImporterToSingleActor_SimpleGeometriesTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearSimpleGeometriesImportedCommand, FArchiveImporterToSingleActor_SimpleGeometriesTest&,
-	Test);
+	FClearSimpleGeometriesImportedCommand, FImporterToSingleActor_SimpleGeometriesTest&, Test);
 
-class FArchiveImporterToSingleActor_SimpleGeometriesTest final
+class FImporterToSingleActor_SimpleGeometriesTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_SimpleGeometriesTest()
+	FImporterToSingleActor_SimpleGeometriesTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_SimpleGeometriesTest"),
-			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.SimpleGeometries"))
+			  TEXT("FImporterToSingleActor_SimpleGeometriesTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.SimpleGeometries"))
 	{
 	}
 
@@ -2139,8 +2157,7 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_SimpleGeometriesTest
-		ArchiveImporterToSingleActor_SimpleGeometriesTest;
+	FImporterToSingleActor_SimpleGeometriesTest ImporterToSingleActor_SimpleGeometriesTest;
 }
 
 /**
@@ -2238,7 +2255,7 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("StaticMeshs"), TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
+		TEXT("StaticMesh"), TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("single_geometries_build"), ExpectedFiles);
 
 	return true;
@@ -2339,7 +2356,8 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Cm1 youngs modulus", (*Cm1)->YoungsModulus, 123451234.0);
 	Test.TestEqual("Cm1 damping", (*Cm1)->SpookDamping, 0.14);
 	Test.TestEqual("Cm1 adhesive force", (*Cm1)->AdhesiveForce, 0.15);
-	Test.TestEqual("Cm1 adhesive overlap", (float)(*Cm1)->AdhesiveOverlap, AgxToUnrealDistance(0.16));
+	Test.TestEqual(
+		"Cm1 adhesive overlap", (float) (*Cm1)->AdhesiveOverlap, AgxToUnrealDistance(0.16));
 
 	UAGX_ContactMaterialBase** Cm2 = Registrar->ContactMaterials.FindByPredicate(
 		[](UAGX_ContactMaterialBase* Cm) { return Cm->GetName() == "CMMat3Mat4"; });
@@ -2358,7 +2376,8 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Cm2 youngs modulus", (*Cm2)->YoungsModulus, 101010101.0);
 	Test.TestEqual("Cm2 damping", (*Cm2)->SpookDamping, 0.24);
 	Test.TestEqual("Cm2 adhesive force", (*Cm2)->AdhesiveForce, 0.25);
-	Test.TestEqual("Cm2 adhesive overlap", (float)(*Cm2)->AdhesiveOverlap, AgxToUnrealDistance(0.26));
+	Test.TestEqual(
+		"Cm2 adhesive overlap", (float) (*Cm2)->AdhesiveOverlap, AgxToUnrealDistance(0.26));
 
 	return true;
 }
@@ -2385,6 +2404,271 @@ bool FClearContactMaterialsImportedCommand::Update()
 										  TEXT("Mat1.uasset"),		 TEXT("Mat2.uasset"),
 										  TEXT("Mat3.uasset"),		 TEXT("Mat4.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("contact_materials_build"), ExpectedFiles);
+
+	return true;
+}
+
+//
+// URDF link with meshes test starts here.
+//
+
+class FImporterToSingleActor_URDFLinkWithMeshesTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckURDFLinkWithMeshesImportedCommand, FImporterToSingleActor_URDFLinkWithMeshesTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearURDFLinkWithMeshesImportedCommand, FImporterToSingleActor_URDFLinkWithMeshesTest&, Test);
+
+class FImporterToSingleActor_URDFLinkWithMeshesTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FImporterToSingleActor_URDFLinkWithMeshesTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FImporterToSingleActor_URDFLinkWithMeshesTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.URDFLinkWithMeshes"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(FImportURDFSingleActorCommand(
+			TEXT("link_with_meshes.urdf"), AgxAutomationCommon::GetTestSceneDirPath(), Contents,
+			*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckURDFLinkWithMeshesImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearURDFLinkWithMeshesImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FImporterToSingleActor_URDFLinkWithMeshesTest ImporterToSingleActor_URDFLinkWithMeshesTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script link_with_meshes.agxPy.
+ * @return true when the check is complete. Never returns false.
+ */
+bool FCheckURDFLinkWithMeshesImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import URDFLinkWithMeshes test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// One DefaultSceneRoot, one Rigid Body, one Trimesh with a render mesh and a collision mesh
+	// and one Trimesh with only one collision mesh.
+	Test.TestEqual("Number of components", Components.Num(), 7);
+
+	UAGX_TrimeshShapeComponent* Urdfmeshvisual =
+		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("urdfmeshvisual"));
+	UAGX_TrimeshShapeComponent* Urdfmeshcollision =
+		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("urdfmeshcollision"));
+
+	Test.TestNotNull(TEXT("Urdfmeshvisual"), Urdfmeshvisual);
+	Test.TestNotNull(TEXT("Urdfmeshcollision"), Urdfmeshcollision);
+
+	Test.TestFalse("Urdfmeshvisual collide", Urdfmeshvisual->bCanCollide);
+	Test.TestTrue("Urdfmeshcollision collide", Urdfmeshcollision->bCanCollide);
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearURDFLinkWithMeshesImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+	TArray<FString> Assets = GetReferencedStaticMeshAssets(Components);
+	if (Assets.Num() != 3)
+	{
+		Test.AddError(TEXT("Unexpected number of assets found."));
+		return true;
+	}
+
+	TArray<const TCHAR*> FilesAndDirsToRemove;
+	FilesAndDirsToRemove.Add(TEXT("RenderMesh"));
+	FilesAndDirsToRemove.Add(TEXT("StaticMesh"));
+	for (const FString& Asset : Assets)
+	{
+		FilesAndDirsToRemove.Add(*Asset);
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+#if defined(__linux__)
+	// @todo The error is only printed sometimes. See GitLab issue #213.
+	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("link_with_meshes"), FilesAndDirsToRemove);
+
+	return true;
+}
+
+//
+// URDF links geometries constraints test starts here.
+//
+
+class FImporterToSingleActor_URDFLinksGeometriesConstraintsTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckURDFLinksGeometriesConstraintsImportedCommand,
+	FImporterToSingleActor_URDFLinksGeometriesConstraintsTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearURDFLinksGeometriesConstraintsImportedCommand,
+	FImporterToSingleActor_URDFLinksGeometriesConstraintsTest&, Test);
+
+class FImporterToSingleActor_URDFLinksGeometriesConstraintsTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FImporterToSingleActor_URDFLinksGeometriesConstraintsTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FImporterToSingleActor_URDFLinksGeometriesConstraintsTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.URDFLinksGeometriesConstraints"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(FImportURDFSingleActorCommand(
+			TEXT("links_geometries_constraints.urdf"), "", Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckURDFLinksGeometriesConstraintsImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearURDFLinksGeometriesConstraintsImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FImporterToSingleActor_URDFLinksGeometriesConstraintsTest
+		ImporterToSingleActor_URDFLinksGeometriesConstraintsTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script links_geometries_constraints.agxPy.
+ * @return true when the check is complete. Never returns false.
+ */
+bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT(
+			"Could not import URDFLinksGeometriesConstraints test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components and 2 Constraints with 3 Graphics
+	// components each.
+	Test.TestEqual("Number of components", Components.Num(), 17);
+
+	UAGX_RigidBodyComponent* Boxlink =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("boxlink"));
+	UAGX_RigidBodyComponent* Shperelink =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("spherelink"));
+	UAGX_RigidBodyComponent* Cylinderlink =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("cylinderlink"));
+	UAGX_RigidBodyComponent* Freefallinglink =
+		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("freefallinglink"));
+
+	Test.TestNotNull(TEXT("Boxlink"), Boxlink);
+	Test.TestNotNull(TEXT("Shperelink"), Shperelink);
+	Test.TestNotNull(TEXT("Cylinderlink"), Cylinderlink);
+	Test.TestNotNull(TEXT("Freefallinglink"), Freefallinglink);
+
+	if (Boxlink == nullptr || Shperelink == nullptr || Cylinderlink == nullptr ||
+		Freefallinglink == nullptr)
+	{
+		Test.AddError("At least one Rigid Body was nullptr, cannot continue.");
+		return true;
+	}
+
+	Test.TestEqual(
+		TEXT("Boxlink position"), Boxlink->GetComponentLocation(),
+		AgxToUnrealVector({0.f, 0.f, 0.f}));
+
+	Test.TestEqual(
+		TEXT("Shperelink position"), Shperelink->GetComponentLocation(),
+		AgxToUnrealVector({1.f, 0.f, 0.f}));
+
+	Test.TestEqual(
+		TEXT("Cylinderlink position"), Cylinderlink->GetComponentLocation(),
+		AgxToUnrealVector({2.f, 0.f, 0.f}));
+
+	Test.TestEqual(
+		TEXT("Freefallinglink position"), Freefallinglink->GetComponentLocation(),
+		AgxToUnrealVector({0.f, 0.f, 0.f}));
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearURDFLinksGeometriesConstraintsImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
 
 	return true;
 }

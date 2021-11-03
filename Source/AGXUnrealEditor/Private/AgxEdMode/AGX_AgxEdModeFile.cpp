@@ -1,8 +1,8 @@
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ArchiveImporterToSingleActor.h"
-#include "AGX_ArchiveImporterToBlueprint.h"
+#include "AGX_ImporterToSingleActor.h"
+#include "AGX_ImporterToBlueprint.h"
 #include "AGX_ArchiveExporter.h"
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
@@ -10,6 +10,7 @@
 
 // Unreal Engine includes.
 #include "DesktopPlatformModule.h"
+#include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_AgxEdModeFile"
@@ -30,18 +31,19 @@ namespace
 {
 	static const FString NONE_SELECTED("");
 
-	FString SelectExistingAgxArchive()
+	FString SelectExistingFile(const FString& FileDescription, const FString& FileExtension)
 	{
+		const FString DialogTitle = FString("Select an ") + FileDescription + FString(" to import");
+		const FString FileTypes = FileDescription + FString("|*") + FileExtension;
 		// For a discussion on window handles see
 		// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html
 		TArray<FString> Filenames;
 		bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
-			nullptr, TEXT("Select an AGX Archive to import"), TEXT("DefaultPath"),
-			TEXT("DefaultFile"), TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None,
-			Filenames);
+			nullptr, DialogTitle, TEXT("DefaultPath"), TEXT("DefaultFile"), FileTypes,
+			EFileDialogFlags::None, Filenames);
 		if (!FileSelected || Filenames.Num() == 0)
 		{
-			UE_LOG(LogAGX, Log, TEXT("No .agx file selected. Doing nothing."));
+			UE_LOG(LogAGX, Log, TEXT("No %s file selected. Doing nothing."), *FileExtension);
 			return NONE_SELECTED;
 		}
 		if (Filenames.Num() > 1)
@@ -52,7 +54,7 @@ namespace
 					"Multiple files selected but we only support single file import for now. Doing "
 					"nothing."));
 			FAGX_EditorUtilities::ShowNotification(LOCTEXT(
-				"Multiple .agx",
+				"Multiple files",
 				"Multiple files selected but we only support single files for now. Doing "
 				"nothing."));
 			return NONE_SELECTED;
@@ -60,27 +62,81 @@ namespace
 		FString Filename = Filenames[0];
 		return Filename;
 	}
+
+	FString SelectExistingDirectory(
+		const FString& DialogTitle, const FString& InStartDir = "", bool AllowNoneSelected = false)
+	{
+		const FString StartDir = InStartDir.IsEmpty() ? FString("DefaultPath") : InStartDir;
+		FString DirectoryPath("");
+		bool DirectorySelected = FDesktopPlatformModule::Get()->OpenDirectoryDialog(
+			nullptr, DialogTitle, StartDir, DirectoryPath);
+
+		if (!AllowNoneSelected && (!DirectorySelected || DirectoryPath.IsEmpty()))
+		{
+			UE_LOG(LogAGX, Log, TEXT("No directory selected. Doing nothing."));
+			return NONE_SELECTED;
+		}
+
+		return DirectoryPath;
+	}
+
+	bool UrdfHasFilenameAttribute(const FString& FilePath)
+	{
+		FString Content;
+		if (!FFileHelper::LoadFileToString(Content, *FilePath))
+		{
+			UE_LOG(LogAGX, Warning, TEXT("Unable to read file '%s'"), *FilePath);
+			return false;
+		}
+
+		return Content.Contains("filename", ESearchCase::IgnoreCase);
+	}
 }
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor()
 {
-	const FString Filename = SelectExistingAgxArchive();
+	const FString Filename = SelectExistingFile("AGX Dynamics Archive", ".agx");
 	if (Filename == NONE_SELECTED)
 	{
 		return;
 	}
-	AGX_ArchiveImporterToSingleActor::ImportAGXArchive(Filename);
+	AGX_ImporterToSingleActor::ImportAGXArchive(Filename);
 }
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()
 {
-	const FString Filename = SelectExistingAgxArchive();
+	const FString Filename = SelectExistingFile("AGX Dynamics Archive", ".agx");
 	if (Filename == NONE_SELECTED)
 	{
 		return;
 	}
 
-	AGX_ArchiveImporterToBlueprint::ImportAGXArchive(Filename);
+	AGX_ImporterToBlueprint::ImportAGXArchive(Filename);
+}
+
+void UAGX_AgxEdModeFile::ImportUrdfToBlueprint()
+{
+	const FString UrdfFilePath = SelectExistingFile("URDF file", ".urdf");
+	if (UrdfFilePath == NONE_SELECTED)
+	{
+		return;
+	}
+
+	const FString UrdfPackagePath = [&UrdfFilePath]()
+	{
+		if (UrdfHasFilenameAttribute(UrdfFilePath))
+		{
+			const FString UrdfDir = FPaths::GetPath(UrdfFilePath);
+			const FString StartDir = FPaths::DirectoryExists(UrdfDir) ? UrdfDir : FString("");
+			return SelectExistingDirectory("Select URDF package directory", StartDir, true);
+		}
+		else
+		{
+			return FString();
+		}
+	}();
+
+	AGX_ImporterToBlueprint::ImportURDF(UrdfFilePath, UrdfPackagePath);
 }
 
 void UAGX_AgxEdModeFile::ExportAgxArchive()
@@ -159,7 +215,9 @@ FText UAGX_AgxEdModeFile::GetDisplayName() const
 FText UAGX_AgxEdModeFile::GetTooltip() const
 {
 	return LOCTEXT(
-		"Tooltip", "Interoperability with external file formats, such AGX simulation files (.agx)");
+		"Tooltip",
+		"Interoperability with external file formats, such AGX simulation files (.agx) "
+		"or URDF (.urdf) files.");
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -9,7 +9,7 @@
 #include "AGX_AgxEdModeFile.generated.h"
 
 /**
- * Sub-mode for AgxEdMode. Used to import/export .agx files.
+ * Sub-mode for AgxEdMode. Used to import/export .agx and .urdf files.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", config = EditorPerProjectUserSettings)
 class AGXUNREALEDITOR_API UAGX_AgxEdModeFile : public UAGX_AgxEdModeSubMode
@@ -26,5 +26,6 @@ public:
 public:
 	static void ImportAgxArchiveToSingleActor();
 	static void ImportAgxArchiveToBlueprint();
+	static void ImportUrdfToBlueprint();
 	static void ExportAgxArchive();
 };

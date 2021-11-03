@@ -1,5 +1,8 @@
 #include "AGX_MeshWithTransform.h"
 
+// Unreal Engine includes.
+#include "Engine/StaticMesh.h"
+
 FAGX_MeshWithTransform::FAGX_MeshWithTransform(
 	const UStaticMesh* InMesh, const FTransform& InTransform)
 	: Mesh(InMesh)

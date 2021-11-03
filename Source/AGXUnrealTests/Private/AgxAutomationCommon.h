@@ -83,18 +83,25 @@ namespace AgxAutomationCommon
 	NoWorldTestsReason CanRunWorldTests();
 
 	/**
-	 * Get the file system path to an AGX Dynamcis archive intended for Automation testing.
-	 * @param ArchiveName The name of the AGX Dynamics archive to find.
-	 * @return File system path to the AGX Dynamics archive.
+	 * Get the file system path to an AGX Dynamics archive or URDF file intended for Automation testing.
+	 * @param SceneName The name of the AGX Dynamics archive or URDF file to find.
+	 * @return File system path to the test scene.
 	 */
-	FString GetArchivePath(const TCHAR* ArchiveName);
+	FString GetTestScenePath(const TCHAR* SceneName);
 
 	/**
-	 * Get the file system path to an AGX Dynamcis archive intended for Automation testing.
-	 * @param ArchiveName The name of the AGX Dynamics archive to find.
-	 * @return File system path to the AGX Dynamics archive.
+	 * Get the file system path to an AGX Dynamics archive or URDF file intended for Automation testing.
+	 * @param ArchiveName The name of the AGX Dynamics archive or UDF file to find.
+	 * @return File system path to the test scene.
 	 */
-	FString GetArchivePath(const FString& ArchiveName);
+	FString GetTestScenePath(const FString& SceneName);
+
+	/**
+	 * Get the absolute path to a directory within the TestScenes directory.
+	 * @param SubDir Optional sub directory. Leave empty to get the Test Scene directory.
+	 * @return Absolute path to a directory within the TestScenes directory.
+	 */
+	FString GetTestSceneDirPath(const FString& SubDir = "");
 
 	/**
 	 * Delete all assets created when the given archive was imported.
@@ -119,6 +126,14 @@ namespace AgxAutomationCommon
 	 */
 	bool DeleteImportDirectory(
 		const TCHAR* ArchiveName, const TArray<const TCHAR*>& ExpectedFileAndDirectoryNames);
+
+	/**
+	 * Get the name (including file extension) of Static Mesh Assets referenced by Trimesh
+	 * Components or Static Mesh Components.
+	 * @param Components The Components to look through for referenced Static Mesh Assets.
+	 * @return Array of (unique) referenced Static Mesh Asset names.
+	 */
+	TArray<FString> GetReferencedStaticMeshAssets(const TArray<UActorComponent*>& Components);
 
 	template <typename T>
 	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)

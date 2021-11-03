@@ -805,7 +805,7 @@ public:
 	 * Copy configuration from the given Barrier.
 	 * Only the basic properties, such as Radius and MinSegmentLength, are copied. More complicated
 	 * properties, such as winch setup and route nodes, must be handled elsewhere. During AGX
-	 * Dynamics archive import those are handled by Archive Importer Helper.
+	 * Dynamics archive import those are handled by Sim Objects Importer Helper.
 	 */
 	void CopyFrom(const FWireBarrier& Barrier);
 

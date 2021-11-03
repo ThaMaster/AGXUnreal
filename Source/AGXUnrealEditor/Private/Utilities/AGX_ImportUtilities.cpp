@@ -32,7 +32,7 @@ namespace
 	{
 		AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, FallbackName, AssetType);
 		FString PackagePath =
-			FAGX_ImportUtilities::CreateArchivePackagePath(DirectoryName, AssetType);
+			FAGX_ImportUtilities::CreatePackagePath(DirectoryName, AssetType);
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
@@ -49,7 +49,7 @@ namespace
 		if (!Asset)
 		{
 			UE_LOG(
-				LogAGX, Error, TEXT("Could not create asset '%s' from archive '%s'."), *AssetName,
+				LogAGX, Error, TEXT("Could not create asset '%s' from '%s'."), *AssetName,
 				*DirectoryName);
 			return nullptr;
 		}
@@ -62,25 +62,25 @@ namespace
 	}
 }
 
-FString FAGX_ImportUtilities::CreateArchivePackagePath(FString ArchiveName, FString AssetType)
+FString FAGX_ImportUtilities::CreatePackagePath(FString FileName, FString AssetType)
 {
-	ArchiveName = FAGX_EditorUtilities::SanitizeName(ArchiveName);
+	FileName = FAGX_EditorUtilities::SanitizeName(FileName);
 	AssetType = FAGX_EditorUtilities::SanitizeName(AssetType);
-	if (ArchiveName.IsEmpty() || AssetType.IsEmpty())
+	if (FileName.IsEmpty() || AssetType.IsEmpty())
 	{
 		return FString();
 	}
-	return FString::Printf(TEXT("/Game/ImportedAgxArchives/%s/%ss/"), *ArchiveName, *AssetType);
+	return FString::Printf(TEXT("/Game/ImportedAGXModels/%s/%s/"), *FileName, *AssetType);
 }
 
-FString FAGX_ImportUtilities::CreateArchivePackagePath(FString ArchiveName)
+FString FAGX_ImportUtilities::CreatePackagePath(FString FileName)
 {
-	ArchiveName = FAGX_EditorUtilities::SanitizeName(ArchiveName);
-	if (ArchiveName.IsEmpty())
+	FileName = FAGX_EditorUtilities::SanitizeName(FileName);
+	if (FileName.IsEmpty())
 	{
 		return FString();
 	}
-	return FString::Printf(TEXT("/Game/ImportedAgxArchives/%s"), *ArchiveName);
+	return FString::Printf(TEXT("/Game/ImportedAGXModels/%s"), *FileName);
 }
 
 FString FAGX_ImportUtilities::CreateAssetName(
@@ -220,7 +220,7 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	FString AssetName = FAGX_ImportUtilities::CreateAssetName(
 		MaterialName, TEXT("ImportedAGXDynamicsMaterial"), TEXT("RenderMaterial"));
 	FString PackagePath =
-		FAGX_ImportUtilities::CreateArchivePackagePath(DirectoryName, TEXT("RenderMaterial"));
+		FAGX_ImportUtilities::CreatePackagePath(DirectoryName, TEXT("RenderMaterial"));
 
 	IAssetTools& AssetTools =
 		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
