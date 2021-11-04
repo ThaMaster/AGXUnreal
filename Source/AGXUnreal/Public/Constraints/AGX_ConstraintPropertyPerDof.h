@@ -1,6 +1,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Real.h"
 #include "Constraints/AGX_ConstraintEnums.h"
 
 // Unreal Engine includes.
@@ -16,37 +17,37 @@
 USTRUCT()
 struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Translational_1_IsEditable"))
-	double Translational_1;
+	FAGX_Real Translational_1;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Translational_2_IsEditable"))
-	double Translational_2;
+	FAGX_Real Translational_2;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Translational_3_IsEditable"))
-	double Translational_3;
+	FAGX_Real Translational_3;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Rotational_1_IsEditable"))
-	double Rotational_1;
+	FAGX_Real Rotational_1;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Rotational_2_IsEditable"))
-	double Rotational_2;
+	FAGX_Real Rotational_2;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Rotational_3_IsEditable"))
-	double Rotational_3;
+	FAGX_Real Rotational_3;
 
 	FAGX_ConstraintDoublePropertyPerDof(
 		double DefaultValue = 0.0, EDofFlag EditableDofs = EDofFlag::DOF_FLAG_ALL)
