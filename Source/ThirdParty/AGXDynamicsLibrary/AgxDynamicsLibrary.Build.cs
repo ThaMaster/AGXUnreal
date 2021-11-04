@@ -471,6 +471,10 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			string Source = InstalledAGXResources.IncludePath(IncludePath);
 			string Dest = BundledAGXResources.IncludePath(IncludePath);
+
+			// The three ____Win32 files are ignored because they are located in a directory with name
+			// Win32. That directory name is not allowed by UAT during the staging phase and gives build
+			// errors during cook builds.
 			List<string> FilesToIgnore = new List<string>
 				{ "GraphicsHandleWin32", "GraphicsWindowWin32", "PixelBufferWin32" };
 			if(!CopyDirectoryRecursively(Source, Dest, FilesToIgnore))
@@ -514,6 +518,9 @@ public class AGXDynamicsLibrary : ModuleRules
 			string ComponentsDirDest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
 			string PhysicsDirSource = Path.Combine(ComponentsDirSource, "agx", "Physics");
 			string PhysicsDirDest = Path.Combine(ComponentsDirDest, "agx", "Physics");
+
+			// The two .agxKernel files are not used and have given issues because of too long file paths on
+			// Windows since they are located in a very deep directory tree branch.
 			List<string> FilesToIgnore = new List<string>
 				{ "GenerateLinesFromJacobians.agxKernel", "RenderJacobians.agxTask" };
 			if (!CopyDirectoryRecursively(PhysicsDirSource, PhysicsDirDest, FilesToIgnore))
