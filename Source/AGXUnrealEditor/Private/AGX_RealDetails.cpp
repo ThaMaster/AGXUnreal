@@ -7,6 +7,8 @@
 // Unreal Engine includes.
 #include "DetailWidgetRow.h"
 #include "DetailLayoutBuilder.h"
+#include "EditorSupportDelegates.h"
+#include "Kismet2/ComponentEditorUtils.h"
 #include "PropertyHandle.h"
 #include "UObject/NameTypes.h"
 #include "Widgets/Text/STextBlock.h"
@@ -15,6 +17,7 @@
 
 // System includes.
 #include <limits>
+
 
 #define LOCTEXT_NAMESPACE "FAGX_RealDetails"
 
@@ -258,10 +261,73 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 		return;
 	}
 
+#if 1
+	TArray<UObject*> Objects;
+	ValueHandle->GetOuterObjects(Objects);
+	FProperty* Property = ValueHandle->GetProperty();
+
+	for (UObject* Object : Objects)
+	{
+		Object->PreEditChange(Property);
+	}
+
+	TArray<double> OldValues;
+	TArray<void*> PropertyData;
+	ValueHandle->AccessRawData(PropertyData);
+	for (void* PropertyDatum : PropertyData)
+	{
+		double* RawProperty = static_cast<double*>(PropertyDatum);
+		OldValues.Add(*RawProperty);
+		*RawProperty = NewValue;
+	}
+
+	check(Objects.Num() == OldValues.Num());
+	check(Objects.Num() == PropertyData.Num());
+
+	FPropertyChangedEvent ChangedEvent(Property);
+	for (int32 I = 0; I < Objects.Num(); ++I)
+	{
+		UObject* Object = Objects[I];
+		Object->PostEditChangeProperty(ChangedEvent);
+		if (Object->IsTemplate())
+		{
+			/// @todo What about all the UObjects that aren't USceneComponent?
+			if (USceneComponent* AsScene = Cast<USceneComponent>(Object))
+			{
+				double OldValue = OldValues[I];
+				TSet<USceneComponent*> UpdatedInstances;
+				FComponentEditorUtils::PropagateDefaultValueChange(AsScene, Property, OldValue, NewValue, UpdatedInstances);
+			}
+		}
+	}
+
+	FEditorSupportDelegates::RedrawAllViewports.Broadcast();
+	FEditorSupportDelegates::RefreshPropertyWindows.Broadcast();
+
+#elif 0
+	// This doesn't work because it does
+	//   MyDoubleProperty = ParseFloat(Printf("%f", NewValue));
+	FPropertyAccess::Result AccessResult = ValueHandle->SetValue(NewValue);
+#elif 0
+	// This doesn't work. The edited object is updated but not instances. It does
+	//  void WriteIfCurrentSameAsOld(
+	//      UObject* Template, UObject* Instance, FString NewValue = "1e-11", double PreviousValue = 1e-10)
+	//  {
+	//      FString PreviousValueStr = FloatToString(PreviousValue);  // "0.000000".
+	//      double Temp = ParseFloat(PreviousValue); // 0.0.
+	//      if (Instance->MyDoubleProperty == Temp) // 1e-10 == 0.0.
+	//      {
+	//          Instance->MyDoubleProperty = StringToDouble(NewValue); 1e-11 = StringToDouble("1e-11").
+	//      }
+	//  }
 	FString NewValueAsString =
 		AGX_RealDetails_helpers::FAGX_RealInterface::StaticToString(NewValue);
 	FPropertyAccess::Result AccessResult = ValueHandle->SetValueFromFormattedString(
 		NewValueAsString, EPropertyValueSetFlags::InteractiveChange);
+#endif
+
+// Make sure this is enable when using any of the ValueHandle->SetValue.+ variants.
+#if 0
 	switch (AccessResult)
 	{
 		case FPropertyAccess::Success:
@@ -281,6 +347,7 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 					 "value."));
 			break;
 	}
+#endif
 }
 
 void FAGX_RealDetails::OnTextChanged(const FText& NewText)
@@ -311,8 +378,10 @@ void FAGX_RealDetails::OnTextCommitted(const FText& NewText, ETextCommit::Type C
 			*NewText.ToString());
 		return;
 	}
-	FPropertyAccess::Result AccessResult =
-		ValueHandle->SetValue(NewValue.GetValue(), EPropertyValueSetFlags::InteractiveChange);
+	FString NewValueAsString =
+		AGX_RealDetails_helpers::FAGX_RealInterface::StaticToString(NewValue.GetValue());
+	FPropertyAccess::Result AccessResult = ValueHandle->SetValueFromFormattedString(
+		NewValueAsString, EPropertyValueSetFlags::InteractiveChange);
 	switch (AccessResult)
 	{
 		case FPropertyAccess::Success:
