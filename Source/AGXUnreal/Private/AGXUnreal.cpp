@@ -25,7 +25,8 @@ void FAGXUnrealModule::ShutdownModule()
 void FAGXUnrealModule::RegisterCoreRedirects()
 {
 	// This is used to handle name changes of UFUNCTIONs, UPROPERTYs and UObjects (backward
-	// compatibility).
+	// compatibility). See
+	// https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/Assets/CoreRedirects/
 
 	// Uncomment below once the first Core Redirect is added. Remove this comment when that happens.
 
