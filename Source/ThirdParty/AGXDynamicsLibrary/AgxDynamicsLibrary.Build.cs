@@ -261,13 +261,25 @@ public class AGXDynamicsLibrary : ModuleRules
 		}
 
 		// Ensure all runtime dependencies are copied to target.
-		string ResourcePath = GetBundledAGXResourcesPath();
-		RuntimeDependencies.Add(Path.Combine(ResourcePath, "bin", "*"));
-		RuntimeDependencies.Add(Path.Combine(ResourcePath, "data", "*"));
-		RuntimeDependencies.Add(Path.Combine(ResourcePath, "plugins", "*"));
-		RuntimeDependencies.Add(Path.Combine(ResourcePath, "include", "*"));
-		RuntimeDependencies.Add(Path.Combine(ResourcePath, "lib", "*"));
+		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "bin", "*"));
+		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "data", "*"));
+		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "plugins", "*"));
+		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "include", "*"));
+		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "lib", "*"));
 		SetLicenseForCopySafe(Target);
+
+		// This is a work-around for Linux which ensures the .so files are always copied to the target's
+		// binaries directory (next to the executable if this is a cooked build). The reason why
+		// this is needed is that RPATH of the module's .so files points to the wrong location otherwise.
+		// Really, we would like those .so files' RPATH to point to the ThirdParty/agx/Lib/Linux directory
+		// but we have not managed to find a way to do that yet.
+		if (Target.Platform == UnrealTargetPlatform.Linux)
+		{
+			foreach (var RuntimeLibFile in RuntimeLibFiles)
+			{
+				AddRuntimeDependencyCopyToBinariesDirectory(RuntimeLibFile.Key, RuntimeLibFile.Value, Target);
+			}
+		}
 	}
 
 	private void AddDelayLoadDependencies(Dictionary<string, LibSource> DelayLoadLibraries)
@@ -310,6 +322,29 @@ public class AGXDynamicsLibrary : ModuleRules
 	private void AddIncludePath(LibSource Src)
 	{
 		PublicIncludePaths.Add(BundledAGXResources.IncludePath(Src));
+	}
+
+	private void AddRuntimeDependencyCopyToBinariesDirectory(string Name, LibSource Src, ReadOnlyTargetRules Target)
+	{
+		string Dir = BundledAGXResources.RuntimeLibraryDirectory(Src);
+		string FileName = BundledAGXResources.RuntimeLibraryFileName(Name);
+
+		// File name and/or extension may include search patterns such as '*' or
+		// '?'. Resolve all these.
+		string[] FilesToAdd = Directory.GetFiles(Dir, FileName);
+
+		if (FilesToAdd.Length == 0)
+		{
+			Console.Error.WriteLine("Error: File {0} did not match any file in {1}. The dependency " +
+				"will not be added in the build.", FileName, Dir);
+			return;
+		}
+
+		foreach (string FilePath in FilesToAdd)
+		{
+			string Dest = Path.Combine("$(BinaryOutputDir)", Path.GetFileName(FilePath));
+			RuntimeDependencies.Add(Dest, FilePath);
+		}
 	}
 
 	private void SetLicenseForCopySafe(ReadOnlyTargetRules Target)
@@ -380,8 +415,7 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private string GetBundledAGXResourcesPath()
 	{
-		string P = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries", "ThirdParty", "agx"));
-		return P;
+		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries", "ThirdParty", "agx"));
 	}
 
 
