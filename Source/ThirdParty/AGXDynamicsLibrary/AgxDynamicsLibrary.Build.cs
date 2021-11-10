@@ -277,6 +277,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			foreach (var RuntimeLibFile in RuntimeLibFiles)
 			{
+				CopyLinuxSoFromBundleToPluginBinaries();
 				AddRuntimeDependencyCopyToBinariesDirectory(RuntimeLibFile.Key, RuntimeLibFile.Value, Target);
 			}
 		}
@@ -322,6 +323,21 @@ public class AGXDynamicsLibrary : ModuleRules
 	private void AddIncludePath(LibSource Src)
 	{
 		PublicIncludePaths.Add(BundledAGXResources.IncludePath(Src));
+	}
+
+	private void CopyLinuxSoFromBundleToPluginBinaries()
+	{
+		string SoFilesDirSource = Path.Combine(GetBundledAGXResourcesPath(), "lib", "Linux");
+		string[] FilesToCopy = Directory.GetFiles(SoFilesDirSource);
+		string DestDir = Path.Combine(GetPluginBinariesPath(), "Linux");
+		foreach (string FileToCopy in FilesToCopy)
+		{
+			string DestFilePath = Path.Combine(DestDir, Path.GetFileName(FileToCopy));
+			if (!File.Exists(DestFilePath))
+			{
+				CopyFile(FileToCopy, DestFilePath);
+			}
+		}
 	}
 
 	private void AddRuntimeDependencyCopyToBinariesDirectory(string Name, LibSource Src, ReadOnlyTargetRules Target)
@@ -412,12 +428,15 @@ public class AGXDynamicsLibrary : ModuleRules
 		return new AGXVersion(GenerationVer.Value, MajorVer.Value, MinorVer.Value, PatchVer.Value);
 	}
 
-
 	private string GetBundledAGXResourcesPath()
 	{
 		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries", "ThirdParty", "agx"));
 	}
 
+	private string GetPluginBinariesPath()
+	{
+		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries"));
+	}
 
 	/// Returns true if AGX Dynamics resources are currently bundled with the plugin.
 	/// Returns false otherwise.
