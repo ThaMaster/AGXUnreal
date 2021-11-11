@@ -459,8 +459,21 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 	const FString& UrdfFilePath, const FString& UrdfPackagePath,
 	FAGXSimObjectsInstantiator& Instantiator)
 {
-	agxSDK::AssemblyRef Model =
-		agxModel::UrdfReader::read(Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);
+	agxSDK::AssemblyRef Model = nullptr;
+	{
+		// The agxModel::UrdfReader is sometimes slow to read a model depending on the type of meshes used.
+		// Add a FScopedSlowTask dialog to give the user some feedback that the import has started.
+		const float AmountOfWork = 100.0f;
+		FScopedSlowTask MyTask(
+			AmountOfWork, LOCTEXT("ReadUrdfFile", "Read URDF file"), true);
+		MyTask.MakeDialog();
+		MyTask.EnterProgressFrame(50.0f, FText::FromString("Reading URDF file"));
+
+		agxSDK::AssemblyRef Model =
+			agxModel::UrdfReader::read(Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);
+	
+		MyTask.EnterProgressFrame(50.0f, FText::FromString("Finalizing reading URDF file"));
+	}
 
 	if (Model == nullptr)
 	{
