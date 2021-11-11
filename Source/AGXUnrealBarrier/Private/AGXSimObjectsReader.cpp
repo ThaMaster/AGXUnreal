@@ -434,7 +434,7 @@ FSuccessOrError FAGXSimObjectsReader::ReadAGXArchive(
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
 	const float WorkTot = 100.0f;
 	const float WorkRead = 0.05f * WorkTot;
-	FScopedSlowTask ImportTask(WorkTot, LOCTEXT("ReadAGXArchive", "Read AGX archive"), true);
+	FScopedSlowTask ImportTask(WorkTot, LOCTEXT("ReadAGXArchive", "Reading AGX archive"), true);
 	ImportTask.MakeDialog();
 	ImportTask.EnterProgressFrame(WorkRead, FText::FromString("Reading AGX Dynamics archive"));
 	try
@@ -471,7 +471,7 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 {
 	const float WorkTot = 100.0f;
 	const float WorkRead = 0.05f * WorkTot;
-	FScopedSlowTask ImportTask(WorkTot, LOCTEXT("ReadUrdfFile", "Read URDF file"), true);
+	FScopedSlowTask ImportTask(WorkTot, LOCTEXT("ReadUrdfFile", "Reading URDF file"), true);
 	ImportTask.MakeDialog();
 	ImportTask.EnterProgressFrame(WorkRead, FText::FromString("Reading URDF file"));
 
