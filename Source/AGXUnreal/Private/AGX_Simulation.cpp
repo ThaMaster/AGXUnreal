@@ -706,9 +706,9 @@ namespace
 
 		if (!FAGX_Environment::IsSetupEnvRun())
 		{
-			const FString ResourcesPath = FAGX_Environment::GetAgxDynamicsResourcesPath();
+			const FString LicensePath = FAGX_Environment::GetPluginLicenseDirPath();
 			Message += "\n\nThe AGX Dynamics license file should be placed in the directory: " +
-					   FPaths::Combine(ResourcesPath, FString("license"));
+				LicensePath;
 		}
 
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);

@@ -201,7 +201,7 @@ void FAGX_Environment::SetupAGXDynamicsEnvironment()
 		.getFilePath(agxIO::Environment::RESOURCE_PATH)
 		.pushbackPath(Convert(AgxCfgPath));
 
-	const FString AgxLicensePath = FPaths::Combine(AgxResourcesPath, FString("license"));
+	const FString AgxLicensePath = GetPluginLicenseDirPath();
 	if (FPaths::DirectoryExists(AgxLicensePath))
 	{
 		AGX_ENVIRONMENT()
@@ -246,6 +246,12 @@ FString FAGX_Environment::GetPluginBinariesPath()
 	const FString PluginBinPath = FPaths::Combine(PluginPath, FString("Binaries"));
 
 	return PluginBinPath;
+}
+
+FString FAGX_Environment::GetPluginLicenseDirPath()
+{
+	const FString PluginPath = GetPluginPath();
+	return FPaths::Combine(PluginPath, FString("license"));
 }
 
 FString FAGX_Environment::GetProjectBinariesPath()
@@ -425,8 +431,8 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
 		return true;
 	}
 
-	// License is not valid. Attempt to unlock using a license file in the bundled AGX
-	// Dynamics resources that might have been put there recently by the user.
+	// License is not valid. Attempt to unlock using a license file in the plugin's
+	// license directory that might have been put there recently by the user.
 	TryUnlockAgxDynamicsLicense();
 
 	const bool LicenseValid = AgxRuntime->isValid();
@@ -447,7 +453,7 @@ void FAGX_Environment::TryUnlockAgxDynamicsLicense()
 	}
 
 	const FString AgxLicensePath =
-		FPaths::Combine(GetAgxDynamicsResourcesPath(), FString("license"), FString("agx.lic"));
+		FPaths::Combine(GetPluginLicenseDirPath(), FString("agx.lic"));
 	if (!FPaths::FileExists(AgxLicensePath))
 	{
 		return;

@@ -229,6 +229,9 @@ public class AGXDynamicsLibrary : ModuleRules
 				+ "resources already exists in: {0}", BundledAGXResourcesPath);
 		}
 
+		// Create a license directory at the right place if non exists.
+		EnsureLicenseDirCreated();
+
 		string MisplacedLicensePath;
 		if (MisplacedLicenseFileExists(out MisplacedLicensePath))
 		{
@@ -374,7 +377,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			Environment.GetEnvironmentVariable("AGXUNREAL_COPY_LICENSE_FILE_TO_TARGET");
 		bool bLicenseCopyEnvVariableSet = !String.IsNullOrEmpty(LicenseCopyEnvVariableVal) &&
 			LicenseCopyEnvVariableVal.Equals("true", StringComparison.OrdinalIgnoreCase);
-		string LicenseDir = Path.Combine(GetBundledAGXResourcesPath(), "license");
+		string LicenseDir = GetPluginLicensePath();
 
 		if (bAllowedConfiguration && (bCopyLicenseFileToTarget || bLicenseCopyEnvVariableSet))
 		{
@@ -387,6 +390,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		else
 		{
 			// Note the lack of '*'here. We copy only the README file, not all files.
+			Console.WriteLine("AGX Dynamics license file will not be copied to build target.");
 			RuntimeDependencies.Add(Path.Combine(LicenseDir, "README.md"));
 		}
 	}
@@ -430,12 +434,22 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private string GetBundledAGXResourcesPath()
 	{
-		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries", "ThirdParty", "agx"));
+		return Path.Combine(GetPluginBinariesPath(), "ThirdParty", "agx");
 	}
 
 	private string GetPluginBinariesPath()
 	{
-		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", "Binaries"));
+		return Path.Combine(GetPluginRootPath(), "Binaries");
+	}
+
+	private string GetPluginLicensePath()
+	{
+		return Path.Combine(GetPluginRootPath(), "license");
+	}
+
+	private string GetPluginRootPath()
+	{
+		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", ".."));
 	}
 
 	/// Returns true if AGX Dynamics resources are currently bundled with the plugin.
@@ -590,15 +604,6 @@ public class AGXDynamicsLibrary : ModuleRules
 			}
 		}
 
-		// Create the 'license' directory for the user to put the license file in with a README inside.
-		{
-			string LicenseDir = Path.Combine(GetBundledAGXResourcesPath(), "license");
-			Directory.CreateDirectory(LicenseDir);
-			string ReadMeContent = "The AGX Dynamics license file should be placed in this directory.\n"
-				+ "This directory should never be manually removed.";
-			File.WriteAllText(Path.Combine(LicenseDir, "README.md"), ReadMeContent);
-		}
-
 		Console.WriteLine("Packaging AGX Dynamics resources complete.");
 	}
 
@@ -685,16 +690,34 @@ public class AGXDynamicsLibrary : ModuleRules
 		Console.WriteLine("Cleaning bundled AGX Dynamics resources complete.");
 	}
 
-	// Within the bundled AGX Dynamics resources, an AGX Dynamics license files may only exist
-	// within the specified 'license' directory.
+	private void EnsureLicenseDirCreated()
+	{
+		string LicenseDir = GetPluginLicensePath();
+		if (!Directory.Exists(LicenseDir))
+		{
+			Directory.CreateDirectory(LicenseDir);
+		}
+
+		string ReadMePath = Path.Combine(LicenseDir, "README.md");
+		if (!File.Exists(ReadMePath))
+		{
+			string ReadMeContent = "The AGX Dynamics license file should be placed in this directory.\n"
+			+ "This directory should never be manually removed.";
+			File.WriteAllText(ReadMePath, ReadMeContent);
+		}
+	}
+
+	// Within the plugin, an AGX Dynamics license files may only exist within the specified 'license'
+	// directory; in AGXUnreal/license.
 	private bool MisplacedLicenseFileExists(out string MisplacedLicensePath)
 	{
 		MisplacedLicensePath = String.Empty;
-		string ResourcesDir = GetBundledAGXResourcesPath();
-		foreach (string DirPath in Directory.GetDirectories(ResourcesDir, "*", SearchOption.TopDirectoryOnly))
+		string RootDir = GetPluginRootPath();
+		string licenseDirName = new DirectoryInfo(GetPluginLicensePath()).Name;
+		foreach (string DirPath in Directory.GetDirectories(RootDir, "*", SearchOption.TopDirectoryOnly))
 		{
 			DirectoryInfo DirInfo = new DirectoryInfo(DirPath);
-			if (DirInfo.Name.Equals("license"))
+			if (DirInfo.Name.Equals(licenseDirName))
 			{
 				continue;
 			}

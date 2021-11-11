@@ -24,6 +24,8 @@ public:
 
 	static FString GetProjectBinariesPath();
 
+	static FString GetPluginLicenseDirPath();
+
 	static FString GetPluginVersion();
 
 	static void AddEnvironmentVariableEntry(const FString& EnvVarName, const FString& Entry);
