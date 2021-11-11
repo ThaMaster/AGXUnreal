@@ -99,7 +99,8 @@ namespace
 	}
 
 	void InstantiateShapesInBody(
-		agx::RigidBody* Body, FAGXSimObjectBody& SimObjBody, FAGXSimObjectsInstantiator& Instantiator)
+		agx::RigidBody* Body, FAGXSimObjectBody& SimObjBody,
+		FAGXSimObjectsInstantiator& Instantiator)
 	{
 		if (Body == nullptr)
 		{
@@ -336,7 +337,8 @@ namespace
 		return true;
 	}
 
-	bool ReadCollisionGroups(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
+	bool ReadCollisionGroups(
+		agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
 		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString
 		{
@@ -405,7 +407,8 @@ namespace
 		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Tire Models"));
 		Result &= ReadTireModels(Simulation, Filename, Instantiator);
 
-		MyTask.EnterProgressFrame(15.0f, FText::FromString("Importing Rigid Bodies and Geometries"));
+		MyTask.EnterProgressFrame(
+			15.0f, FText::FromString("Importing Rigid Bodies and Geometries"));
 		Result &= ReadRigidBodies(Simulation, Filename, Instantiator);
 
 		MyTask.EnterProgressFrame(80.0f, FText::FromString("Importing bodiless Geometries"));
@@ -428,26 +431,37 @@ FSuccessOrError FAGXSimObjectsReader::ReadAGXArchive(
 	const FString& Filename, FAGXSimObjectsInstantiator& Instantiator)
 {
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
-	try
+
 	{
-		size_t NumRead = Simulation->read(Convert(Filename));
-		if (NumRead == 0)
+		// Simulation->read may take a few moments to complete depending on the model being
+		// imported. Add a FScopedSlowTask dialog to give the user some feedback that the import has
+		// started.
+		const float AmountOfWork = 100.0f;
+		FScopedSlowTask MyTask(AmountOfWork, LOCTEXT("ReadAGXArchive", "Read AGX archive"), true);
+		MyTask.MakeDialog();
+		MyTask.EnterProgressFrame(50.0f, FText::FromString("Reading AGX Dynamics archive"));
+		try
 		{
+			size_t NumRead = Simulation->read(Convert(Filename));
+			if (NumRead == 0)
+			{
+				return FSuccessOrError(
+					FString::Printf(TEXT("Could not read .agx file '%s'."), *Filename));
+			}
+		}
+		catch (const std::runtime_error& Error)
+		{
+			FString What = Error.what();
 			return FSuccessOrError(
-				FString::Printf(TEXT("Could not read .agx file '%s'."), *Filename));
+				FString::Printf(TEXT("Could not read .agx file '%s':\n\n%s"), *Filename, *What));
 		}
 	}
-	catch (const std::runtime_error& Error)
-	{
-		FString What = Error.what();
-		return FSuccessOrError(
-			FString::Printf(TEXT("Could not read .agx file '%s':\n\n%s"), *Filename, *What));
-	}
 
-	if(::ReadAll(*Simulation, Filename, Instantiator) == false)
+	if (::ReadAll(*Simulation, Filename, Instantiator) == false)
 	{
 		FSuccessOrError Result(true);
-		Result.AddWarning("The import is complete but some unexpected issue occurred. Please check the "
+		Result.AddWarning(
+			"The import is complete but some unexpected issue occurred. Please check the "
 			"log for more information.");
 		return Result;
 	}
@@ -461,18 +475,15 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 {
 	agxSDK::AssemblyRef Model = nullptr;
 	{
-		// The agxModel::UrdfReader is sometimes slow to read a model depending on the type of meshes used.
+		// UrdfReader::read may take a few moments to complete depending on the model being imported.
 		// Add a FScopedSlowTask dialog to give the user some feedback that the import has started.
 		const float AmountOfWork = 100.0f;
-		FScopedSlowTask MyTask(
-			AmountOfWork, LOCTEXT("ReadUrdfFile", "Read URDF file"), true);
+		FScopedSlowTask MyTask(AmountOfWork, LOCTEXT("ReadUrdfFile", "Read URDF file"), true);
 		MyTask.MakeDialog();
 		MyTask.EnterProgressFrame(50.0f, FText::FromString("Reading URDF file"));
 
-		agxSDK::AssemblyRef Model =
-			agxModel::UrdfReader::read(Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);
-	
-		MyTask.EnterProgressFrame(50.0f, FText::FromString("Finalizing reading URDF file"));
+		Model = agxModel::UrdfReader::read(
+			Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);
 	}
 
 	if (Model == nullptr)
@@ -494,7 +505,6 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 			"log for more information.");
 		return Result;
 	}
-	
 
 	return FSuccessOrError(true);
 }
