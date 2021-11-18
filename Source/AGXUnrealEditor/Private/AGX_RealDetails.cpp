@@ -257,7 +257,6 @@ void FAGX_RealDetails::OnSpinChanged(double NewValue)
 
 void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type CommitInfo)
 {
-	// UE_LOG(LogAGX, Warning, TEXT("OnSpinCommitted: %g"), NewValue);
 	if (!StructHandle->IsValidHandle())
 	{
 		UE_LOG(
@@ -266,20 +265,12 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 		return;
 	}
 
+	// This is a user-level interaction, so start a new undo/redo transaction. Any object that we
+	// call Modify or PreEditChange on until this object goes out of scope will be included in a
+	// single undo/redo step.
 	FScopedTransaction Transaction(FText::Format(
 		LOCTEXT("SpinTransaction", "Edit {0}"), StructHandle->GetPropertyDisplayName()));
 
-#if 1
-	// Implementation based on https://git.algoryx.se/algoryx/agxunreal/-/issues/499#note_98909. The
-	// idea is to use IPropertyHandle::GeneratePathToProperty and repeated calls to
-	// IPropertyHandle::GetChildHandle to generate a chain from the UObject to the leaf FProperty,
-	// at which point we will have something we can write to, even for template instances.
-	//
-	// The instruction:
-	// > In that case, you can probably call IPropertyHandle::GeneratePathToProperty(), split that,
-	// > and then get your FProperty* chain from repeatedly calling
-	// > IPropertyHandle::GetChildHandle() - that method can deal with array indices as well, in
-	// > case you ever want to have these in containers.
 	const FString ValuePath = ValueHandle->GeneratePathToProperty();
 #if 0
 	/// @todo Learn when we are allowed to cache the value path and when not.
@@ -386,17 +377,6 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 	/// @todo PostEditChangeChainProperty here.
 
 	/// @tod Archetype instances here.
-
-	// UE_LOG(LogAGX, Warning, )
-	// IPropertyHandle* HandleIt = ValueHandle.Get();
-	// while (HandleIt != nullptr)
-	// {
-	//	UE_LOG(LogAGX, Warning, )
-	// }
-	// ValueHandle
-	//	->GetParentHandle()
-#endif
-
 
 	// Let the various parts of the editor know about the change. I have no idea what I'm
 	// supposed to call here.
