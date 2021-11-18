@@ -280,33 +280,45 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 	// > and then get your FProperty* chain from repeatedly calling
 	// > IPropertyHandle::GetChildHandle() - that method can deal with array indices as well, in
 	// > case you ever want to have these in containers.
+	const FString ValuePath = ValueHandle->GeneratePathToProperty();
+#if 0
+	/// @todo Learn when we are allowed to cache the value path and when not.
+	/// Passing it both to GetPropertyValue and SetPropertyValue for both the selected objects and
+	/// template instances causes a crash due to a failed assert.
+	///     LogCore: Assertion failed:
+	///     InContainer == InPropertyPath.GetCachedContainer()
+	///     File:Runtime/PropertyPath/Public/PropertyPathHelpers.h
+	///     Line: 354
+	/// I assume that means the cached path was used in a context where it shouldn't.
+	FCachedPropertyPath CachedValuePath(ValuePath);
+#endif
+	UE_LOG(LogAGX, Warning, TEXT("Path to value: '%s'."), *ValuePath);
 
-	FString PathToValue = ValueHandle->GeneratePathToProperty();
-	UE_LOG(LogAGX, Warning, TEXT("Path to value: '%s'."), *PathToValue);
-
-	// Consider creating a FCachedPropertyPath here. Is that shareable between objects, or specific
-	// to a particular instance? Does it matter if the two objects is of the same class or not?
 
 	TArray<UObject*> SelectedObjects;
 	ValueHandle->GetOuterObjects(SelectedObjects);
 
 	/// @todo PreEditChange here.
 
-	// Store the current values so that we can compare them against values in template instances.
+	// Store the current values in the selected objects so that we can compare them against values
+	// in template instances later.
 	TArray<double> OldValues;
 	OldValues.Reserve(SelectedObjects.Num());
 	for (UObject* SelectedObject : SelectedObjects)
 	{
 		double OldValue;
-		PropertyPathHelpers::GetPropertyValue(SelectedObject, PathToValue, OldValue);
+		PropertyPathHelpers::GetPropertyValue(SelectedObject, ValuePath, OldValue);
 		OldValues.Add(OldValue);
 	}
 
+	// Write the new value to each selected object.
 	for (UObject* SelectedObject : SelectedObjects)
 	{
-		PropertyPathHelpers::SetPropertyValue(SelectedObject, PathToValue, NewValue);
+		PropertyPathHelpers::SetPropertyValue(SelectedObject, ValuePath, NewValue);
 	}
 
+	// For any selected template, propagate the change to all template instances that has the same
+	// value as the selected object had.
 	for (int32 I = 0; I < SelectedObjects.Num(); ++I)
 	{
 		UObject* SelectedObject = SelectedObjects[I];
@@ -322,10 +334,10 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 		for (UObject* Instance : Instances)
 		{
 			double CurrentValue;
-			PropertyPathHelpers::GetPropertyValue(Instance, PathToValue, CurrentValue);
+			PropertyPathHelpers::GetPropertyValue(Instance, ValuePath, CurrentValue);
 			if (CurrentValue == OldValue)
 			{
-				PropertyPathHelpers::SetPropertyValue(Instance, PathToValue, NewValue);
+				PropertyPathHelpers::SetPropertyValue(Instance, ValuePath, NewValue);
 			}
 		}
 	}
