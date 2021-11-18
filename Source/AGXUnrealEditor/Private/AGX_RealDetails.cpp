@@ -294,11 +294,17 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 #endif
 	UE_LOG(LogAGX, Warning, TEXT("Path to value: '%s'."), *ValuePath);
 
+	FProperty* ValueProperty = ValueHandle->GetProperty();
 
 	TArray<UObject*> SelectedObjects;
 	ValueHandle->GetOuterObjects(SelectedObjects);
 
-	/// @todo PreEditChange here.
+	// Let the selected objects know that we are about to modify them, which will include them in
+	// the current undo/redo transaction.
+	for (UObject* SelectedObject : SelectedObjects)
+	{
+		SelectedObject->PreEditChange(ValueProperty);
+	}
 
 	// Store the current values in the selected objects so that we can compare them against values
 	// in template instances later.
@@ -337,6 +343,7 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 			PropertyPathHelpers::GetPropertyValue(Instance, ValuePath, CurrentValue);
 			if (CurrentValue == OldValue)
 			{
+				Instance->PreEditChange(ValueProperty);
 				PropertyPathHelpers::SetPropertyValue(Instance, ValuePath, NewValue);
 			}
 		}
