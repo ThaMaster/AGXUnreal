@@ -299,6 +299,11 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 	TArray<UObject*> SelectedObjects;
 	ValueHandle->GetOuterObjects(SelectedObjects);
 
+	if (SelectedObjects.Num() == 0)
+	{
+		return;
+	}
+
 	// Let the selected objects know that we are about to modify them, which will include them in
 	// the current undo/redo transaction.
 	for (UObject* SelectedObject : SelectedObjects)
@@ -323,6 +328,34 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 		PropertyPathHelpers::SetPropertyValue(SelectedObject, ValuePath, NewValue);
 	}
 
+	// Let selected objects know that we are done modifying them.
+	FPropertyChangedEvent ChangedEvent(
+		ValueProperty, EPropertyChangeType::ValueSet, MakeArrayView(SelectedObjects));
+	FEditPropertyChain PropertyChain;
+	TArray<FString> PropertyChainNames;
+	ValuePath.ParseIntoArray(PropertyChainNames, TEXT("."));
+	UClass* SelectedClass = SelectedObjects[0]->GetClass();
+	for (const FString& PropertyChainName : PropertyChainNames)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("  %s"), *PropertyChainName);
+		FName Name(*PropertyChainName);
+
+		/// @todo Can only pass SelectedClass for the first iteration, after that we must pass the
+		/// UStruct for the most recent FProperty.
+		FProperty* PathProperty = FindFProperty<FProperty>(SelectedClass, Name);
+		if (PathProperty == nullptr)
+		{
+			UE_LOG(LogAGX, Warning, TEXT(""))
+		}
+		PropertyChain.AddHead(PathProperty);
+	}
+
+	FPropertyChangedChainEvent ChainEvent(PropertyChain, ChangedEvent);
+	for (UObject* SelectedObject : SelectedObjects)
+	{
+		SelectedObject->PostEditChangeChainProperty(ChainEvent);
+	}
+
 	// For any selected template, propagate the change to all template instances that has the same
 	// value as the selected object had.
 	for (int32 I = 0; I < SelectedObjects.Num(); ++I)
@@ -345,6 +378,7 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 			{
 				Instance->PreEditChange(ValueProperty);
 				PropertyPathHelpers::SetPropertyValue(Instance, ValuePath, NewValue);
+				Instance->PostEditChangeChainProperty(ChainEvent);
 			}
 		}
 	}
