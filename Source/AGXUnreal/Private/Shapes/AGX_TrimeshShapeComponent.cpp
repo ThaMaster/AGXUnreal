@@ -263,7 +263,10 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 		return false;
 	}
 
+	const FTransform ComponentTransformNoScale =
+		FTransform(GetComponentRotation(), GetComponentLocation());
 	const uint32* LodIndex = bOverrideMeshSourceLodIndex ? &MeshSourceLodIndex : nullptr;
+
 	return AGX_MeshUtilities::GetStaticMeshCollisionData(
-		Mesh, GetComponentTransform(), OutVertices, OutIndices, LodIndex);
+		Mesh, ComponentTransformNoScale, OutVertices, OutIndices, LodIndex);
 }
