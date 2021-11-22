@@ -13,6 +13,7 @@
 #include "PropertyHandle.h"
 #include "PropertyPathHelpers.h"
 #include "ScopedTransaction.h"
+#include "UObject/Class.h"
 #include "UObject/NameTypes.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/NumericTypeInterface.h"
@@ -260,16 +261,10 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 	if (!StructHandle->IsValidHandle())
 	{
 		UE_LOG(
-			LogAGX, Warning,
+			LogAGX, Error,
 			TEXT("Cannot commit new Spin value to AGX Real, the handle is invalid."));
 		return;
 	}
-
-	// This is a user-level interaction, so start a new undo/redo transaction. Any object that we
-	// call Modify or PreEditChange on until this object goes out of scope will be included in a
-	// single undo/redo step.
-	FScopedTransaction Transaction(FText::Format(
-		LOCTEXT("SpinTransaction", "Edit {0}"), StructHandle->GetPropertyDisplayName()));
 
 	const FString ValuePath = ValueHandle->GeneratePathToProperty();
 #if 0
@@ -281,19 +276,27 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 	///     File:Runtime/PropertyPath/Public/PropertyPathHelpers.h
 	///     Line: 354
 	/// I assume that means the cached path was used in a context where it shouldn't.
+	/// Worst-case scenario is that a cached path is only valid for a single UObject, which makes
+	/// it mostly usesless here.
 	FCachedPropertyPath CachedValuePath(ValuePath);
 #endif
-	UE_LOG(LogAGX, Warning, TEXT("Path to value: '%s'."), *ValuePath);
 
 	FProperty* ValueProperty = ValueHandle->GetProperty();
 
+	// Get the selected objects. These are the objects that we should manipulate directly.
 	TArray<UObject*> SelectedObjects;
 	ValueHandle->GetOuterObjects(SelectedObjects);
-
 	if (SelectedObjects.Num() == 0)
 	{
+		// If nothing is selected then nothing will be changed, so we don't need to do anything.
 		return;
 	}
+
+	// This is a user-level interaction, so start a new undo/redo transaction. Any object that we
+	// call Modify or PreEditChange on until this object goes out of scope will be included in a
+	// single undo/redo step.
+	FScopedTransaction Transaction(FText::Format(
+		LOCTEXT("SpinTransaction", "Edit {0}"), StructHandle->GetPropertyDisplayName()));
 
 	// Let the selected objects know that we are about to modify them, which will include them in
 	// the current undo/redo transaction.
@@ -309,14 +312,31 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 	for (UObject* SelectedObject : SelectedObjects)
 	{
 		double OldValue;
-		PropertyPathHelpers::GetPropertyValue(SelectedObject, ValuePath, OldValue);
+		const bool bOldValueValid =
+			PropertyPathHelpers::GetPropertyValue(SelectedObject, ValuePath, OldValue);
+		if (!bOldValueValid)
+		{
+			/// @todo Is there something better we can do here?
+			UE_LOG(
+				LogAGX, Error, TEXT("Could not current '%s' value from '%s'. Assuming 0.0."),
+				*ValuePath, *SelectedObject->GetName());
+			OldValue = 0.0;
+		}
 		OldValues.Add(OldValue);
 	}
 
 	// Write the new value to each selected object.
 	for (UObject* SelectedObject : SelectedObjects)
 	{
-		PropertyPathHelpers::SetPropertyValue(SelectedObject, ValuePath, NewValue);
+		const bool bNewValueSet =
+			PropertyPathHelpers::SetPropertyValue(SelectedObject, ValuePath, NewValue);
+		if (!bNewValueSet)
+		{
+			/// @todo Is there something better we can do here?
+			UE_LOG(
+				LogAGX, Error, TEXT("Could not set '%s' on '%s'. Value remain unchanged."),
+				*ValuePath, *SelectedObject->GetName());
+		}
 	}
 
 	// Let selected objects know that we are done modifying them.
@@ -325,20 +345,62 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 	FEditPropertyChain PropertyChain;
 	TArray<FString> PropertyChainNames;
 	ValuePath.ParseIntoArray(PropertyChainNames, TEXT("."));
-	UClass* SelectedClass = SelectedObjects[0]->GetClass();
+	// What will happen if we have objects of different classes selected?
+	UStruct* OuterClass = SelectedObjects[0]->GetClass();
 	for (const FString& PropertyChainName : PropertyChainNames)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("  %s"), *PropertyChainName);
-		FName Name(*PropertyChainName);
-
-		/// @todo Can only pass SelectedClass for the first iteration, after that we must pass the
-		/// UStruct for the most recent FProperty.
-		FProperty* PathProperty = FindFProperty<FProperty>(SelectedClass, Name);
-		if (PathProperty == nullptr)
+		// Build a list of Properties along the ValuePath from one of the UObjects down to the
+		// double inside the FAGX_Real. Each step need to know the type that the next Property
+		// is inside in order to find it, so we keep OuterClass between loop iterations.
+		//
+		// If OuterClass is nullptr then that means that we hit an intermediate Property that wasn't
+		// a struct, which is an unsupported case for now.
+		check(OuterClass);
+		if (OuterClass == nullptr)
 		{
-			UE_LOG(LogAGX, Warning, TEXT(""))
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("When constructing Property chain for '%s', could not determine outer class "
+					 "for '%s'. Property changed callbacks may not be triggered correctly."),
+				*ValuePath, *PropertyChainName);
+			/// @todo Unclear what we should do here. We can chose to just break and let the rest of
+			/// the function continue executing. This will cause an incomplete path to be passed to
+			/// PostEditChangeChainProperty. Better than nothing, I guess, since we've already
+			/// modified the value, but any logic that depend on the path being correct will not
+			/// trigger in response to the new value. That's bad. Should we generate this path first
+			/// and do nothing if we fail?
+			break;
 		}
-		PropertyChain.AddHead(PathProperty);
+
+		FName Name(*PropertyChainName);
+		FFieldVariant NextField = FindFProperty<FProperty>(OuterClass, Name);
+		FProperty* NextProperty = NextField.Get<FProperty>();
+		if (NextProperty == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("Got no Property for '%s' in '%s'."), *PropertyChainName,
+				*ValuePath);
+			/// @todo Unclear what we should do here. We can chose to just break and let the rest of
+			/// the function continue executing. This will cause an incomplete path to be passed to
+			/// PostEditChangeChainProperty. Better than nothing, I guess, since we've already
+			/// modified the value, but any logic that depend on the path being correct will not
+			/// trigger in response to the new value. That's bad. Should we generate this path first
+			/// and do nothing if we fail?
+			break;
+		}
+
+		PropertyChain.AddTail(NextProperty);
+
+		if (FStructProperty* StructProp = CastField<FStructProperty>(NextProperty))
+		{
+			OuterClass = StructProp->Struct;
+		}
+		else
+		{
+			// This better be the very last link in the chain. Otherwise, the next iteration of this
+			// loop will terminate prematurely with an error message.
+			OuterClass = nullptr;
+		}
 	}
 
 	FPropertyChangedChainEvent ChainEvent(PropertyChain, ChangedEvent);
@@ -374,12 +436,8 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 		}
 	}
 
-	/// @todo PostEditChangeChainProperty here.
-
-	/// @tod Archetype instances here.
-
-	// Let the various parts of the editor know about the change. I have no idea what I'm
-	// supposed to call here.
+	// Let the various parts of the editor know about the change. I have no idea what we're
+	// supposed to call here. Is anything missing? Should something be removed?
 	FEditorSupportDelegates::RedrawAllViewports.Broadcast();
 	FEditorSupportDelegates::RefreshPropertyWindows.Broadcast();
 }
