@@ -1,7 +1,7 @@
 #include "Shapes/AGX_AutoFitShape.h"
 
 // AGX Dynamics for Unreal includes.
-#include "Utilities/AGX_EnvironmentUtilities.h"
+#include "AGX_Environment.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 
@@ -11,9 +11,9 @@
 bool AGX_AutoFitShape::AutoFit(
 	TArray<FAGX_MeshWithTransform> Meshes, UWorld* World, const FString& ShapeName)
 {
-	if (!FAGX_EnvironmentUtilities::IsAGXDynamicsVersionNewerOrEqualTo(2, 31, 0, 0))
+	if (!FAGX_Environment::IsAGXDynamicsVersionNewerOrEqualTo(2, 31, 0, 0))
 	{
-		const FString AGXVersion = FAGX_EnvironmentUtilities::GetAGXDynamicsVersion();
+		const FString AGXVersion = FAGX_Environment::GetAGXDynamicsVersion();
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
 			FString::Printf(
 				TEXT("Could not auto-fit '%s' to meshes. Auto-fit requires AGX Dynamics version "

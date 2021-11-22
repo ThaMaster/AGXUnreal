@@ -13,7 +13,7 @@
 #include "Constraints/AGX_LockConstraintActor.h"
 #include "Constraints/AGX_PrismaticConstraintActor.h"
 #include "Utilities/AGX_EditorUtilities.h"
-#include "Utilities/AGX_EnvironmentUtilities.h"
+#include "AGX_Environment.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 
 // Unreal Engine includes.
@@ -351,17 +351,16 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 void FAGX_TopMenu::OnOpenAboutDialogClicked()
 {
 	const FString Title = "About AGX Dynamics for Unreal";
-	const FString Version = FAGX_EnvironmentUtilities::GetPluginVersion();
+	const FString Version = FAGX_Environment::GetPluginVersion();
 
 	FString LicenseText;
 	FString LicenseStatus;
-	if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&LicenseStatus) == false)
+	if (FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid(&LicenseStatus) == false)
 	{
 		LicenseText =
 			"AGX Dynamics license: Invalid\n"
 			"Status: " +
-			LicenseStatus + "\n\n" +
-			"Note that the Unreal Editor must be restarted after adding the license file.\n";
+			LicenseStatus + "\n\n";
 	}
 	else
 	{
@@ -373,7 +372,7 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 		"\n"
 		"AGX Dynamics for Unreal\n"
 		"Version: " + Version + "\n"
-		"AGX Dynamics version: " + FAGX_EnvironmentUtilities::GetAGXDynamicsVersion() + "\n"
+		"AGX Dynamics version: " + FAGX_Environment::GetAGXDynamicsVersion() + "\n"
 		"\n" +
 		LicenseText +
 		"\n"

@@ -263,7 +263,6 @@ public: // Member functions.
 
 private:
 	void Initialize(FSubsystemCollectionBase& Collection) override;
-
 	void Deinitialize() override;
 
 private:
@@ -273,14 +272,12 @@ private:
 	void StepDropImmediately(float DeltaTime);
 
 	void EnsureStepperCreated();
-	void EnsureLicenseChecked();
+	void EnsureValidLicense();
 
 	void SetGravity();
 
 private:
 	FSimulationBarrier NativeBarrier;
-
-	bool IsLicenseChecked = false;
 
 	/// Time that we couldn't step because DeltaTime was not an even multiple
 	/// of the AGX Dynamics step size. That fraction of a time step is carried

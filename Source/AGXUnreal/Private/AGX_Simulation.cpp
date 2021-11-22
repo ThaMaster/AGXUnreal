@@ -13,7 +13,8 @@
 #include "Terrain/AGX_Terrain.h"
 #include "Tires/AGX_TireComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
-#include "Utilities/AGX_EnvironmentUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
+#include "AGX_Environment.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 
@@ -111,28 +112,24 @@ namespace AGX_Simulation_helpers
 
 void UAGX_Simulation::Add(UAGX_ConstraintComponent& Constraint)
 {
-	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	AGX_Simulation_helpers::Add(*this, Constraint);
 }
 
 void UAGX_Simulation::Add(UAGX_RigidBodyComponent& Body)
 {
-	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	AGX_Simulation_helpers::Add(*this, Body);
 }
 
 void UAGX_Simulation::Add(UAGX_ShapeComponent& Shape)
 {
-	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	AGX_Simulation_helpers::Add(*this, Shape);
 }
 
 void UAGX_Simulation::Add(UAGX_ShapeMaterialInstance& Shape)
 {
-	EnsureLicenseChecked();
 	EnsureStepperCreated();
 
 	if (!HasNative())
@@ -165,58 +162,45 @@ void UAGX_Simulation::Add(UAGX_ShapeMaterialInstance& Shape)
 
 void UAGX_Simulation::Add(UAGX_StaticMeshComponent& Body)
 {
-	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	AGX_Simulation_helpers::Add(*this, Body);
 }
 
 void UAGX_Simulation::Add(AAGX_Terrain& Terrain)
 {
-	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	AGX_Simulation_helpers::Add(*this, Terrain);
 }
 
 void UAGX_Simulation::Add(UAGX_TireComponent& Tire)
 {
-	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	AGX_Simulation_helpers::Add(*this, Tire);
 }
 
 void UAGX_Simulation::Add(UAGX_WireComponent& Wire)
 {
-	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	AGX_Simulation_helpers::Add(*this, Wire);
 }
 
 void UAGX_Simulation::Remove(UAGX_ConstraintComponent& Constraint)
 {
-	EnsureLicenseChecked();
-	EnsureStepperCreated();
 	AGX_Simulation_helpers::Remove(*this, Constraint);
 }
 
 void UAGX_Simulation::Remove(UAGX_RigidBodyComponent& Body)
 {
-	EnsureLicenseChecked();
-	EnsureStepperCreated();
 	AGX_Simulation_helpers::Remove(*this, Body);
 }
 
 void UAGX_Simulation::Remove(UAGX_ShapeComponent& Shape)
 {
-	EnsureLicenseChecked();
-	EnsureStepperCreated();
 	AGX_Simulation_helpers::Remove(*this, Shape);
 }
 
 void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
 {
-	EnsureLicenseChecked();
-	EnsureStepperCreated();
-
 	if (!HasNative())
 	{
 		UE_LOG(
@@ -248,35 +232,26 @@ void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
 
 void UAGX_Simulation::Remove(UAGX_StaticMeshComponent& Body)
 {
-	EnsureLicenseChecked();
-	EnsureStepperCreated();
 	AGX_Simulation_helpers::Remove(*this, Body);
 }
 
 void UAGX_Simulation::Remove(AAGX_Terrain& Terrain)
 {
-	EnsureLicenseChecked();
-	EnsureStepperCreated();
 	AGX_Simulation_helpers::Remove(*this, Terrain);
 }
 
 void UAGX_Simulation::Remove(UAGX_TireComponent& Tire)
 {
-	EnsureLicenseChecked();
-	EnsureStepperCreated();
 	AGX_Simulation_helpers::Remove(*this, Tire);
 }
 
 void UAGX_Simulation::Remove(UAGX_WireComponent& Wire)
 {
-	EnsureLicenseChecked();
-	EnsureStepperCreated();
 	AGX_Simulation_helpers::Remove(*this, Wire);
 }
 
 void UAGX_Simulation::Register(UAGX_ContactMaterialInstance& Material)
 {
-	EnsureLicenseChecked();
 	EnsureStepperCreated();
 
 	if (!HasNative())
@@ -318,9 +293,6 @@ void UAGX_Simulation::Register(UAGX_ContactMaterialInstance& Material)
 
 void UAGX_Simulation::Unregister(UAGX_ContactMaterialInstance& Material)
 {
-	EnsureLicenseChecked();
-	EnsureStepperCreated();
-
 	if (!HasNative())
 	{
 		UE_LOG(
@@ -373,7 +345,6 @@ void UAGX_Simulation::Unregister(UAGX_ContactMaterialInstance& Material)
 void UAGX_Simulation::SetEnableCollisionGroupPair(
 	const FName& Group1, const FName& Group2, bool CanCollide)
 {
-	EnsureLicenseChecked();
 	EnsureStepperCreated();
 	NativeBarrier.SetEnableCollisionGroupPair(Group1, Group2, CanCollide);
 }
@@ -399,6 +370,7 @@ int32 UAGX_Simulation::GetNumPpgsIterations()
 void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
+	EnsureValidLicense();
 
 	NativeBarrier.AllocateNative();
 	check(HasNative()); /// \todo Consider better error handling.
@@ -725,42 +697,40 @@ void UAGX_Simulation::EnsureStepperCreated()
 
 namespace
 {
-	void InvalidLicenseMessageBox()
+	void InvalidLicenseMessage(const FString& Status)
 	{
-		FString Status;
-		if (FAGX_EnvironmentUtilities::IsAgxDynamicsLicenseValid(&Status) == false)
+		FString Message =
+			"Invalid AGX Dynamics license. Status: " + Status +
+			"\n\nIt will not be possible to run simulations using the AGX "
+			"Dynamics for Unreal plugin.\n\nTo get your license, visit us at www.algoryx.se";
+
+		if (!FAGX_Environment::IsSetupEnvRun())
 		{
-			FString Message =
-				"Invalid AGX Dynamics license. Status: " + Status +
-				"\n\nIt will not be possible to run simulations using the AGX "
-				"Dynamics for Unreal plugin.\n\nTo get your license, visit us at www.algoryx.se";
-
-			if (!FAGX_EnvironmentUtilities::IsSetupEnvRun())
-			{
-				const FString ResourcesPath =
-					FAGX_EnvironmentUtilities::GetAgxDynamicsResourcesPath();
-				Message += "\n\nThe AGX Dynamics license file should be placed in: " +
-						   FPaths::Combine(ResourcesPath, FString("data"), FString("cfg"));
-			}
-
-#if WITH_EDITOR
-			Message +=
-				"\n\nNote that the Unreal Editor must be restarted after adding the license file.";
-#endif
-
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
+			const FString LicensePath = FAGX_Environment::GetPluginLicenseDirPath();
+			Message += "\n\nThe AGX Dynamics license file should be placed in the directory: " +
+				LicensePath;
 		}
+
+#if defined(__linux__) && !WITH_EDITOR
+		// On Linux, the message box sometimes end up behind the full-screen view in cooked builds.
+		// Therefore we print the message directly to the screen for that case.
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(INDEX_NONE, 100.f, FColor::Red, Message);
+		}
+		UE_LOG(LogAGX, Error, TEXT("%s"), *Message);
+#else
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
+#endif
 	}
 }
 
-void UAGX_Simulation::EnsureLicenseChecked()
+void UAGX_Simulation::EnsureValidLicense()
 {
-	// This function provides a mechanism for showing a message box to the user exactly one time in
-	// case the AGX Dynamics license is invalid.
-	if (!IsLicenseChecked)
+	FString Status;
+	if (FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid(&Status) == false)
 	{
-		InvalidLicenseMessageBox();
-		IsLicenseChecked = true;
+		InvalidLicenseMessage(Status);
 	}
 }
 
