@@ -30,8 +30,6 @@ private:
 	void OnTextChanged(const FText& NewText);
 	void OnTextCommitted(const FText& NewText, ETextCommit::Type CommitInfo);
 
-	void OnValueChanged();
-
 private:
 	TSharedPtr<IPropertyHandle> StructHandle;
 	TSharedPtr<IPropertyHandle> ValueHandle;

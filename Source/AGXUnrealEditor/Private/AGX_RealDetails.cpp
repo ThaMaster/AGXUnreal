@@ -242,7 +242,11 @@ FText FAGX_RealDetails::GetTextValue() const
 	switch (Status)
 	{
 		case FPropertyAccess::Success:
-			return FText::FromString(FString::Printf(TEXT("%g"), Value));
+			// Don't expect we will ever get here since the spin box, and not the text field, is
+			// shown when only a single object is selected. Perhaps we get here if all selected
+			// objects have the same value.
+			return FText::FromString(
+				AGX_RealDetails_helpers::FAGX_RealInterface::StaticToString(Value));
 		case FPropertyAccess::MultipleValues:
 			// The Editable Text will not be displayed while there are multiple
 			// objects selected, so it doesn't matter what we return here.
@@ -253,14 +257,16 @@ FText FAGX_RealDetails::GetTextValue() const
 	}
 }
 
-void FAGX_RealDetails::OnSpinChanged(double NewValue)
+namespace AGX_RealDetails_helpers
 {
-	// UE_LOG(LogAGX, Warning, TEXT("OnSpinChanged: %g"), NewValue);
-
-	/// @todo Consider doing input validation here, and make the background red if invalid.
+	void NewValueSet(
+		double NewValue, TSharedPtr<IPropertyHandle> StructHandle,
+		TSharedPtr<IPropertyHandle> ValueHandle);
 }
 
-void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type CommitInfo)
+void AGX_RealDetails_helpers::NewValueSet(
+	double NewValue, TSharedPtr<IPropertyHandle> StructHandle,
+	TSharedPtr<IPropertyHandle> ValueHandle)
 {
 	if (!StructHandle->IsValidHandle())
 	{
@@ -446,24 +452,23 @@ void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type Commit
 	FEditorSupportDelegates::RefreshPropertyWindows.Broadcast();
 }
 
+void FAGX_RealDetails::OnSpinChanged(double NewValue)
+{
+	// Consider doing input validation here, and make the background red if invalid.
+}
+
+void FAGX_RealDetails::OnSpinCommitted(double NewValue, ETextCommit::Type CommitInfo)
+{
+	AGX_RealDetails_helpers::NewValueSet(NewValue, StructHandle, ValueHandle);
+}
+
 void FAGX_RealDetails::OnTextChanged(const FText& NewText)
 {
-	// UE_LOG(LogAGX, Warning, TEXT("OnTextChanged"));
-
-	/// @todo Consider doing input validation here, and make the background red if invalid.
+	// Consider doing input validation here, and make the background red if invalid.
 }
 
 void FAGX_RealDetails::OnTextCommitted(const FText& NewText, ETextCommit::Type CommitInfo)
 {
-	// UE_LOG(LogAGX, Warning, TEXT("OnTextCommitted"));
-	if (!ValueHandle->IsValidHandle())
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Cannot commit new Text value to AGX Real, the handle is invalid."));
-		return;
-	}
-
 	TOptional<double> NewValue =
 		AGX_RealDetails_helpers::FAGX_RealInterface::StaticFromString(NewText.ToString());
 	if (!NewValue.IsSet())
@@ -474,64 +479,7 @@ void FAGX_RealDetails::OnTextCommitted(const FText& NewText, ETextCommit::Type C
 			*NewText.ToString());
 		return;
 	}
-	FString NewValueAsString =
-		AGX_RealDetails_helpers::FAGX_RealInterface::StaticToString(NewValue.GetValue());
-	FPropertyAccess::Result AccessResult = ValueHandle->SetValueFromFormattedString(
-		NewValueAsString, EPropertyValueSetFlags::InteractiveChange);
-	switch (AccessResult)
-	{
-		case FPropertyAccess::Success:
-			// All good.
-			// UE_LOG(
-			//	LogAGX, Warning, TEXT("New value %g committed to AGX Real value."),
-			//	NewValue.GetValue());
-			break;
-		case FPropertyAccess::MultipleValues:
-			// All good, I think.
-			// UE_LOG(
-			//	LogAGX, Warning, TEXT("New value %g committed to multiple AGX Real values."),
-			//	NewValue.GetValue());
-			break;
-		case FPropertyAccess::Fail:
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Cannot commit new Text value to AGX Real, the handle failed to set the new "
-					 "value."));
-			break;
-	}
-}
-
-void FAGX_RealDetails::OnValueChanged()
-{
-#if 1
-	// Do we need to do anything here?
-	return;
-#else
-	if (!ValueHandle->IsValidHandle())
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("FAGX_RealDetails::OnValueChanged called without a valid handle. Surprising"));
-		return;
-	}
-
-	double Value;
-	FPropertyAccess::Result AccessStatus = ValueHandle->GetValue(Value);
-	switch (AccessStatus)
-	{
-		case FPropertyAccess::Success:
-			UE_LOG(LogAGX, Warning, TEXT("AGX_Real Property changed to %g."), Value);
-			break;
-		case FPropertyAccess::MultipleValues:
-			UE_LOG(LogAGX, Warning, TEXT("AGX_Real Property changed to multiple values."), Value);
-			break;
-		case FPropertyAccess::Fail:
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("AGX_Real Property changed but failed to read the new value."), Value);
-			break;
-	}
-#endif
+	AGX_RealDetails_helpers::NewValueSet(NewValue.GetValue(), StructHandle, ValueHandle);
 }
 
 #undef LOCTEXT_NAMESPACE
