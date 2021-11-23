@@ -206,7 +206,7 @@ EVisibility FAGX_RealDetails::VisibleWhenNoSelectionOrInvalidHandle() const
 
 double FAGX_RealDetails::GetDoubleValue() const
 {
-	if (!ValueHandle->IsValidHandle())
+	if (!ValueHandle.IsValid() || !ValueHandle->IsValidHandle())
 	{
 		// The Spin Box will not be displayed while the handle is invalid, so
 		// it doesn't matter what we return here.
@@ -230,12 +230,13 @@ double FAGX_RealDetails::GetDoubleValue() const
 
 FText FAGX_RealDetails::GetTextValue() const
 {
-	if (!ValueHandle->IsValidHandle())
+	if (!ValueHandle.IsValid() || !ValueHandle->IsValidHandle())
 	{
 		// The Editable Text will not be displayed while the handle is invalid,
 		// so it doesn't matter what we return here.
-		return LOCTEXT("", "");
+		return LOCTEXT("NothingSelected", "Nothing Selected");
 	}
+
 	double Value = 0.0;
 	FPropertyAccess::Result Status = ValueHandle->GetValue(Value);
 	switch (Status)
