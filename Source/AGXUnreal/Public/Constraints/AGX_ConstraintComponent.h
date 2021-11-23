@@ -101,7 +101,9 @@ public:
 	 * The elasticity in a certain DOF. Measured in [N/m] for translational DOFs and [Nm/rad] for
 	 * rotational DOFs.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Dynamics",
+		Meta = (SliderMin = "1", SliderMax = "1e10", SliderExponent = "10000"))
 	FAGX_ConstraintDoublePropertyPerDof Elasticity;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
@@ -118,7 +120,9 @@ public:
 	 * The damping (spook) of the Constraint [s].
 	 * The value is the time the constraint has to fulfill its violation.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Constraint Dynamics",
+		Meta = (SliderMin = "1e-2", SliderMax = "5.0", SliderExponent = "2"))
 	FAGX_ConstraintDoublePropertyPerDof SpookDamping;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")

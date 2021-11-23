@@ -107,12 +107,123 @@ namespace AGX_RealDetails_helpers
 	};
 }
 
+namespace AGX_RealDetails_helpers
+{
+	TArray<FProperty*> MakePropertyChain(const TSharedPtr<IPropertyHandle>& Handle);
+}
+
+TArray<FProperty*> AGX_RealDetails_helpers::MakePropertyChain(
+	const TSharedPtr<IPropertyHandle>& Handle)
+{
+	TArray<FProperty*> PropertyChain;
+
+	TArray<UObject*> SelectedObjects;
+	Handle->GetOuterObjects(SelectedObjects);
+	if (SelectedObjects.Num() == 0)
+	{
+		// If nothing is selected then nothing will be changed, so we don't need to do anything.
+		return PropertyChain;
+	}
+
+	const FString ValuePath = Handle->GeneratePathToProperty();
+	TArray<FString> PropertyChainNames;
+	ValuePath.ParseIntoArray(PropertyChainNames, TEXT("."));
+	UStruct* OuterClass = SelectedObjects[0]->GetClass();
+	for (const FString& PropertyChainName : PropertyChainNames)
+	{
+		// Build a list of Properties along the ValuePath from one of the UObjects down to the
+		// double inside the FAGX_Real. Each step need to know the type that the next Property
+		// is inside in order to find it, so we keep OuterClass between loop iterations.
+		//
+		// If OuterClass is nullptr then that means that we hit an intermediate Property that wasn't
+		// a struct, which is an unsupported case for now.
+		check(OuterClass != nullptr);
+		if (OuterClass == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("When constructing Property chain for '%s', could not determine outer class "
+					 "for '%s'. Property changed callbacks may not be triggered correctly."),
+				*ValuePath, *PropertyChainName);
+			/// @todo Unclear what we should do here. We can chose to just break and let the rest of
+			/// the function continue executing. This will cause an incomplete path to be passed to
+			/// PostEditChangeChainProperty. Better than nothing, I guess, since we've already
+			/// modified the value, but any logic that depend on the path being correct will not
+			/// trigger in response to the new value. That's bad. Should we generate this path first
+			/// and do nothing if we fail?
+			break;
+		}
+
+		FName Name(*PropertyChainName);
+		FFieldVariant NextField = FindFProperty<FProperty>(OuterClass, Name);
+		FProperty* NextProperty = NextField.Get<FProperty>();
+		if (NextProperty == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("Got no Property for '%s' in '%s'."), *PropertyChainName,
+				*ValuePath);
+			/// @todo Unclear what we should do here. We can chose to just break and let the rest of
+			/// the function continue executing. This will cause an incomplete path to be passed to
+			/// PostEditChangeChainProperty. Better than nothing, I guess, since we've already
+			/// modified the value, but any logic that depend on the path being correct will not
+			/// trigger in response to the new value. That's bad. Should we generate this path first
+			/// and do nothing if we fail?
+			break;
+		}
+
+		PropertyChain.Add(NextProperty);
+
+		if (FStructProperty* StructProp = CastField<FStructProperty>(NextProperty))
+		{
+			OuterClass = StructProp->Struct;
+		}
+		else
+		{
+			// This better be the very last link in the chain. Otherwise, the next iteration of this
+			// loop will terminate prematurely with an error message.
+			OuterClass = nullptr;
+		}
+	}
+
+	return PropertyChain;
+}
+
+namespace AGX_RealDetails_helpers
+{
+	double MetaDataOrDefault(
+		const TSharedPtr<IPropertyHandle>& Handle, const FName& Key, double Default);
+}
+
+double AGX_RealDetails_helpers::MetaDataOrDefault(
+	const TSharedPtr<IPropertyHandle>& Handle, const FName& Key, double Default)
+{
+	TArray<FProperty*> PropertyChain = MakePropertyChain(Handle);
+	for (int32 I = PropertyChain.Num() - 1; I >= 0; --I)
+	{
+		FProperty* Property = PropertyChain[I];
+		if (Property->HasMetaData(Key))
+		{
+			const FString& MetaData = Property->GetMetaData(Key);
+			double Value = FCString::Atod(*MetaData); // Is there any error checking we can do here?
+			return Value;
+		}
+	}
+
+	return Default;
+}
+
 void FAGX_RealDetails::CustomizeHeader(
 	TSharedRef<IPropertyHandle> InRealHandle, FDetailWidgetRow& InHeaderRow,
 	IPropertyTypeCustomizationUtils& InStructCustomizationUtils)
 {
+	using namespace AGX_RealDetails_helpers;
+
 	StructHandle = InRealHandle;
 	ValueHandle = StructHandle->GetChildHandle(TEXT("Value"));
+
+	const float SliderMin = MetaDataOrDefault(StructHandle, TEXT("SliderMin"), 0.0f);
+	const float SliderMax = MetaDataOrDefault(StructHandle, TEXT("SliderMax"), 100.0);
+	const float SliderExponent = MetaDataOrDefault(StructHandle, TEXT("SliderExponent"), 1.0f);
 
 	// clang-format off
 	InHeaderRow
@@ -132,10 +243,10 @@ void FAGX_RealDetails::CustomizeHeader(
 			SNew(SSpinBox<double>)
 			.TypeInterface(MakeShareable(new AGX_RealDetails_helpers::FAGX_RealInterface))
 			.MinValue(0.0)
-			.MinSliderValue(0.0)
+			.MinSliderValue(SliderMin)
 			.MaxValue(std::numeric_limits<double>::max())
-			.MaxSliderValue(1e10)
-			.SliderExponent(1.0f)
+			.MaxSliderValue(SliderMax)
+			.SliderExponent(SliderExponent)
 			.OnValueChanged(this, &FAGX_RealDetails::OnSpinChanged)
 			.OnValueCommitted(this, &FAGX_RealDetails::OnSpinCommitted)
 			.Value(this, &FAGX_RealDetails::GetDoubleValue)
@@ -352,67 +463,12 @@ void AGX_RealDetails_helpers::NewValueSet(
 	// Let selected objects know that we are done modifying them.
 	FPropertyChangedEvent ChangedEvent(
 		ValueProperty, EPropertyChangeType::ValueSet, MakeArrayView(SelectedObjects));
+	TArray<FProperty*> PropertyChainArray = MakePropertyChain(ValueHandle);
 	FEditPropertyChain PropertyChain;
-	TArray<FString> PropertyChainNames;
-	ValuePath.ParseIntoArray(PropertyChainNames, TEXT("."));
-	// What will happen if we have objects of different classes selected?
-	UStruct* OuterClass = SelectedObjects[0]->GetClass();
-	for (const FString& PropertyChainName : PropertyChainNames)
+	for (FProperty* PropertyChainLink : PropertyChainArray)
 	{
-		// Build a list of Properties along the ValuePath from one of the UObjects down to the
-		// double inside the FAGX_Real. Each step need to know the type that the next Property
-		// is inside in order to find it, so we keep OuterClass between loop iterations.
-		//
-		// If OuterClass is nullptr then that means that we hit an intermediate Property that wasn't
-		// a struct, which is an unsupported case for now.
-		check(OuterClass);
-		if (OuterClass == nullptr)
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("When constructing Property chain for '%s', could not determine outer class "
-					 "for '%s'. Property changed callbacks may not be triggered correctly."),
-				*ValuePath, *PropertyChainName);
-			/// @todo Unclear what we should do here. We can chose to just break and let the rest of
-			/// the function continue executing. This will cause an incomplete path to be passed to
-			/// PostEditChangeChainProperty. Better than nothing, I guess, since we've already
-			/// modified the value, but any logic that depend on the path being correct will not
-			/// trigger in response to the new value. That's bad. Should we generate this path first
-			/// and do nothing if we fail?
-			break;
-		}
-
-		FName Name(*PropertyChainName);
-		FFieldVariant NextField = FindFProperty<FProperty>(OuterClass, Name);
-		FProperty* NextProperty = NextField.Get<FProperty>();
-		if (NextProperty == nullptr)
-		{
-			UE_LOG(
-				LogAGX, Warning, TEXT("Got no Property for '%s' in '%s'."), *PropertyChainName,
-				*ValuePath);
-			/// @todo Unclear what we should do here. We can chose to just break and let the rest of
-			/// the function continue executing. This will cause an incomplete path to be passed to
-			/// PostEditChangeChainProperty. Better than nothing, I guess, since we've already
-			/// modified the value, but any logic that depend on the path being correct will not
-			/// trigger in response to the new value. That's bad. Should we generate this path first
-			/// and do nothing if we fail?
-			break;
-		}
-
-		PropertyChain.AddTail(NextProperty);
-
-		if (FStructProperty* StructProp = CastField<FStructProperty>(NextProperty))
-		{
-			OuterClass = StructProp->Struct;
-		}
-		else
-		{
-			// This better be the very last link in the chain. Otherwise, the next iteration of this
-			// loop will terminate prematurely with an error message.
-			OuterClass = nullptr;
-		}
+		PropertyChain.AddTail(PropertyChainLink);
 	}
-
 	FPropertyChangedChainEvent ChainEvent(PropertyChain, ChangedEvent);
 	for (UObject* SelectedObject : SelectedObjects)
 	{
