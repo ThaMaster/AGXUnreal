@@ -99,7 +99,8 @@ namespace
 	}
 
 	void InstantiateShapesInBody(
-		agx::RigidBody* Body, FAGXSimObjectBody& SimObjBody, FAGXSimObjectsInstantiator& Instantiator)
+		agx::RigidBody* Body, FAGXSimObjectBody& SimObjBody,
+		FAGXSimObjectsInstantiator& Instantiator)
 	{
 		if (Body == nullptr)
 		{
@@ -336,7 +337,8 @@ namespace
 		return true;
 	}
 
-	bool ReadCollisionGroups(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
+	bool ReadCollisionGroups(
+		agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
 		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString
 		{
@@ -390,34 +392,36 @@ namespace
 
 	bool ReadAll(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXSimObjectsInstantiator& Instantiator)
+		FAGXSimObjectsInstantiator& Instantiator, FScopedSlowTask& ImportTask, float WorkLeft)
 	{
-		const float AmountOfWork = 100.0f;
-		FScopedSlowTask MyTask(
-			AmountOfWork, LOCTEXT("CreateAGXObjects", "Create AGX Dynamics for Unreal objects"),
-			true);
-		MyTask.MakeDialog();
-
 		bool Result = true;
-		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Materials"));
+
+		// The sum of all fractions multiplied with WorkLeft below should equal to 1.
+		ImportTask.EnterProgressFrame(
+			0.01f * WorkLeft, FText::FromString("Importing Materials"));
 		Result &= ReadMaterials(Simulation, Instantiator);
 
-		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Tire Models"));
+		ImportTask.EnterProgressFrame(
+			0.01f * WorkLeft, FText::FromString("Importing Tire Models"));
 		Result &= ReadTireModels(Simulation, Filename, Instantiator);
 
-		MyTask.EnterProgressFrame(15.0f, FText::FromString("Importing Rigid Bodies and Geometries"));
+		ImportTask.EnterProgressFrame(
+			0.15f * WorkLeft, FText::FromString("Importing Rigid Bodies and Geometries"));
 		Result &= ReadRigidBodies(Simulation, Filename, Instantiator);
 
-		MyTask.EnterProgressFrame(80.0f, FText::FromString("Importing bodiless Geometries"));
+		ImportTask.EnterProgressFrame(
+			0.8f * WorkLeft, FText::FromString("Importing bodiless Geometries"));
 		Result &= ReadBodilessGeometries(Simulation, Filename, Instantiator);
 
-		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Constraints"));
+		ImportTask.EnterProgressFrame(
+			0.01f * WorkLeft, FText::FromString("Importing Constraints"));
 		Result &= ReadConstraints(Simulation, Filename, Instantiator);
 
-		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Collision Groups"));
+		ImportTask.EnterProgressFrame(
+			0.01f * WorkLeft, FText::FromString("Importing Collision Groups"));
 		Result &= ReadCollisionGroups(Simulation, Instantiator);
 
-		MyTask.EnterProgressFrame(1.0f, FText::FromString("Importing Wires"));
+		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Wires"));
 		Result &= ReadWires(Simulation, Filename, Instantiator);
 
 		return Result;
@@ -428,6 +432,11 @@ FSuccessOrError FAGXSimObjectsReader::ReadAGXArchive(
 	const FString& Filename, FAGXSimObjectsInstantiator& Instantiator)
 {
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
+	const float WorkTot = 100.0f;
+	const float WorkRead = 0.05f * WorkTot;
+	FScopedSlowTask ImportTask(WorkTot, LOCTEXT("ReadAGXArchive", "Reading AGX archive"), true);
+	ImportTask.MakeDialog();
+	ImportTask.EnterProgressFrame(WorkRead, FText::FromString("Reading AGX Dynamics archive"));
 	try
 	{
 		size_t NumRead = Simulation->read(Convert(Filename));
@@ -444,10 +453,11 @@ FSuccessOrError FAGXSimObjectsReader::ReadAGXArchive(
 			FString::Printf(TEXT("Could not read .agx file '%s':\n\n%s"), *Filename, *What));
 	}
 
-	if(::ReadAll(*Simulation, Filename, Instantiator) == false)
+	if (::ReadAll(*Simulation, Filename, Instantiator, ImportTask, WorkTot - WorkRead) == false)
 	{
 		FSuccessOrError Result(true);
-		Result.AddWarning("The import is complete but some unexpected issue occurred. Please check the "
+		Result.AddWarning(
+			"The import is complete but some unexpected issue occurred. Please check the "
 			"log for more information.");
 		return Result;
 	}
@@ -459,8 +469,14 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 	const FString& UrdfFilePath, const FString& UrdfPackagePath,
 	FAGXSimObjectsInstantiator& Instantiator)
 {
-	agxSDK::AssemblyRef Model =
-		agxModel::UrdfReader::read(Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);
+	const float WorkTot = 100.0f;
+	const float WorkRead = 0.05f * WorkTot;
+	FScopedSlowTask ImportTask(WorkTot, LOCTEXT("ReadUrdfFile", "Reading URDF file"), true);
+	ImportTask.MakeDialog();
+	ImportTask.EnterProgressFrame(WorkRead, FText::FromString("Reading URDF file"));
+
+	agxSDK::AssemblyRef Model = agxModel::UrdfReader::read(
+		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);
 
 	if (Model == nullptr)
 	{
@@ -473,7 +489,7 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
 	Simulation->add(Model);
 
-	if (::ReadAll(*Simulation, UrdfFilePath, Instantiator) == false)
+	if (::ReadAll(*Simulation, UrdfFilePath, Instantiator, ImportTask, WorkTot - WorkRead) == false)
 	{
 		FSuccessOrError Result(true);
 		Result.AddWarning(
@@ -481,7 +497,6 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 			"log for more information.");
 		return Result;
 	}
-	
 
 	return FSuccessOrError(true);
 }
