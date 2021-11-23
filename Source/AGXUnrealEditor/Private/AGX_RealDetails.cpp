@@ -336,6 +336,9 @@ double FAGX_RealDetails::GetDoubleValue() const
 		case FPropertyAccess::Fail:
 			// Can we do any error handling here?
 			return -3.0;
+		default:
+			// Should never get here.
+			return -4.0;
 	}
 }
 
@@ -365,6 +368,9 @@ FText FAGX_RealDetails::GetTextValue() const
 		case FPropertyAccess::Fail:
 			// Can we do any error handling here?
 			return LOCTEXT("CouldNotReadValue", "<could not read value>");
+		default:
+			// Should never get here.
+			return LOCTEXT("UnknownPropertyAccessStatus", "<unknown property access status>");
 	}
 }
 
