@@ -172,33 +172,37 @@ void FAGX_RealDetails::CustomizeChildren(
 	TSharedRef<IPropertyHandle> RealHandle, IDetailChildrenBuilder& StructBuilder,
 	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
+
+namespace AGX_RealDetails_helpers
+{
+	template <typename TCmp>
+	EVisibility VisibleWhenNumSelected(const TSharedPtr<IPropertyHandle>& Handle, TCmp Cmp)
+	{
+		if (!Handle.IsValid() || !Handle->IsValidHandle())
+		{
+			return EVisibility::Collapsed;
+		}
+		const int32 Num = Handle->GetNumPerObjectValues();
+		return FAGX_EditorUtilities::VisibleIf(Cmp(Num));
+	}
 }
 
 EVisibility FAGX_RealDetails::VisibleWhenSingleSelection() const
 {
-	if (!StructHandle->IsValidHandle())
-	{
-		return EVisibility::Collapsed;
-	}
-	return FAGX_EditorUtilities::VisibleIf(StructHandle->GetNumPerObjectValues() == 1);
+	return AGX_RealDetails_helpers::VisibleWhenNumSelected(
+		StructHandle, [](int32 Num) { return Num == 1; });
 }
 
 EVisibility FAGX_RealDetails::VisibleWhenMultiSelection() const
 {
-	if (!StructHandle->IsValidHandle())
-	{
-		return EVisibility::Collapsed;
-	}
-	return FAGX_EditorUtilities::VisibleIf(StructHandle->GetNumPerObjectValues() > 1);
+	return AGX_RealDetails_helpers::VisibleWhenNumSelected(
+		StructHandle, [](int32 Num) { return Num > 1; });
 }
 
 EVisibility FAGX_RealDetails::VisibleWhenNoSelectionOrInvalidHandle() const
 {
-	if (!StructHandle->IsValidHandle())
-	{
-		return EVisibility::Collapsed;
-	}
-	return FAGX_EditorUtilities::VisibleIf(StructHandle->GetNumPerObjectValues() == 0);
+	return AGX_RealDetails_helpers::VisibleWhenNumSelected(
+		StructHandle, [](int32 Num) { return Num == 0; });
 }
 
 double FAGX_RealDetails::GetDoubleValue() const
