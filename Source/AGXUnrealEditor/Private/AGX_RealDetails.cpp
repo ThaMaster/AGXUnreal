@@ -128,6 +128,7 @@ void FAGX_RealDetails::CustomizeHeader(
 		SNew(SOverlay)
 		+ SOverlay::Slot()
 		[
+			// The spin box is the main way the user interacts with an FAGX_Real in the Details Panel.
 			SNew(SSpinBox<double>)
 			.TypeInterface(MakeShareable(new AGX_RealDetails_helpers::FAGX_RealInterface))
 			.MinValue(0.0)
@@ -142,6 +143,7 @@ void FAGX_RealDetails::CustomizeHeader(
 		]
 		+ SOverlay::Slot()
 		[
+			// Fallback text box used when multiple FAGX_Reals are selected.
 			SNew(SEditableText)
 			.OnTextChanged(this, &FAGX_RealDetails::OnTextChanged)
 			.OnTextCommitted(this, &FAGX_RealDetails::OnTextCommitted)
@@ -152,6 +154,7 @@ void FAGX_RealDetails::CustomizeHeader(
 		]
 		+ SOverlay::Slot()
 		[
+			// Fallback text box used when no FAGX_Real is selected.
 			SNew(SEditableText)
 			.IsReadOnly(true)
 			.Text(LOCTEXT("NoSelection", "NoSelection"))
@@ -165,6 +168,9 @@ void FAGX_RealDetails::CustomizeChildren(
 	TSharedRef<IPropertyHandle> RealHandle, IDetailChildrenBuilder& StructBuilder,
 	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
+	// By having no children we only occupy a single row in the Details Panel, just like regular
+	// double Properties.
+}
 
 namespace AGX_RealDetails_helpers
 {
