@@ -31,36 +31,29 @@ TSharedRef<IPropertyTypeCustomization> FAGX_RealDetails::MakeInstance()
 
 namespace AGX_RealDetails_helpers
 {
+	/**
+	 * A INumericTypeInterface is responsible for converting between string representations and
+	 * numeric representations in a widget. This one has support for scientific notation.
+	 */
 	class FAGX_RealInterface : public INumericTypeInterface<double>
 	{
 	public:
 		static FString StaticToString(const double& Value)
 		{
 			FString Result = FString::Printf(TEXT("%g"), Value);
-			// UE_LOG(
-			//	LogAGX, Warning, TEXT("FAGX_RealInterface converted double '%g' to string '%s'."),
-			//	Value, *Result);
 			return Result;
 		}
 
 		static TOptional<double> StaticFromString(const FString& InString)
 		{
 			TOptional<double> Result = FCString::Atod(*InString);
-			// if (Result.IsSet())
-			//{
-			//	UE_LOG(
-			//		LogAGX, Warning,
-			//		TEXT("FAGX_RealInterface converted string '%s' to double '%g'."), *InString,
-			//		Result.GetValue());
-			// }
-			// else
-			//{
-			//	UE_LOG(
-			//		LogAGX, Warning,
-			//		TEXT("FAGX_RealInterface tried to convert string '%s' to double, but Atod "
-			//			 "failed."),
-			//		*InString);
-			// }
+			if (!Result.IsSet())
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("FAGX_Real tried to convert string '%s' to double, but Atod failed."),
+					*InString);
+			}
 			return Result;
 		}
 
@@ -77,8 +70,7 @@ namespace AGX_RealDetails_helpers
 
 		virtual bool IsCharacterValid(TCHAR InChar) const override
 		{
-			auto IsValidLocalizedCharacter = [InChar]() -> bool
-			{
+			auto IsValidLocalizedCharacter = [InChar]() -> bool {
 				const FDecimalNumberFormattingRules& NumberFormattingRules =
 					ExpressionParser::GetLocalizedNumberFormattingRules();
 				return InChar == NumberFormattingRules.GroupingSeparatorCharacter ||
@@ -91,20 +83,24 @@ namespace AGX_RealDetails_helpers
 				   (ValidChars.GetCharArray().Contains(InChar) || IsValidLocalizedCharacter());
 		}
 
+		/// Min Fractional Digits is not used by this Numeric Type Interface.
 		virtual int32 GetMinFractionalDigits() const
 		{
 			return 0;
 		}
 
+		/// Max Fractional Digits is not used by this Numeric Type Interface.
 		virtual int32 GetMaxFractionalDigits() const
 		{
 			return 0;
 		}
 
+		/// Min Fractional Digits is not used by this Numeric Type Interface.
 		virtual void SetMinFractionalDigits(const TAttribute<TOptional<int32>>& NewValue)
 		{
 		}
 
+		/// Max Fractional Digits is not used by this Numeric Type Interface.
 		virtual void SetMaxFractionalDigits(const TAttribute<TOptional<int32>>& NewValue)
 		{
 		}
@@ -117,9 +113,6 @@ void FAGX_RealDetails::CustomizeHeader(
 {
 	StructHandle = InRealHandle;
 	ValueHandle = StructHandle->GetChildHandle(TEXT("Value"));
-
-	ValueHandle->SetOnPropertyValueChanged(
-		FSimpleDelegate::CreateSP(SharedThis(this), &FAGX_RealDetails::OnValueChanged));
 
 	// clang-format off
 	InHeaderRow
