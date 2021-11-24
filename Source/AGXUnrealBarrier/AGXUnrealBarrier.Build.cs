@@ -1,7 +1,14 @@
+using System;
 using UnrealBuildTool;
 
 public class AGXUnrealBarrier : ModuleRules
 {
+	/// Set to true to enable runtime checks that we only want in our testing
+	/// and continuous integration pipelines. Any public release should have
+	/// this set to false. Can be overridden by setting the AGXUNREAL_CHECK
+	/// environment variable to 'true' or 'false'.
+	bool bEnableAGXCheck = false;
+
 	public AGXUnrealBarrier(ReadOnlyTargetRules Target) : base(Target)
 	{
 		// At 4.25 we started getting warnings encouraging us to enable these
@@ -29,6 +36,17 @@ public class AGXUnrealBarrier : ModuleRules
 		bEnableExceptions = true;
 
 		PrecompileForTargets = PrecompileTargetsType.Any;
+
+		string EnableAGXCheckEnv = Environment.GetEnvironmentVariable("AGXUNREAL_CHECK");
+		if (!String.IsNullOrEmpty(EnableAGXCheckEnv))
+		{
+			bEnableAGXCheck = EnableAGXCheckEnv.Equals("true", StringComparison.OrdinalIgnoreCase);
+		}
+		if (bEnableAGXCheck)
+		{
+			PublicDefinitions.Add("AGXUNREAL_CHECK=1");
+		}
+
 
 		// TODO: Determine which of these are really need and why.
 		PublicDependencyModuleNames.AddRange(new string[] {

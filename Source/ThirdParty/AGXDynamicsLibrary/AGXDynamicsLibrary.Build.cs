@@ -51,7 +51,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		/// depend on.
 		Dependencies,
 
-		/// The AGX Terrain depdendencies. Procides libraries that AGX Terrain
+		/// The AGX Terrain depdendencies. Provides libraries that AGX Terrain
 		/// depend on.
 		TerrainDependencies,
 
