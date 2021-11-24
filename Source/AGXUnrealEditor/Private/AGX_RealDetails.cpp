@@ -334,10 +334,18 @@ double FAGX_RealDetails::GetDoubleValue() const
 			// objects selected, so it doesn't matter what we return here.
 			return -2.0;
 		case FPropertyAccess::Fail:
-			// Can we do any error handling here?
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Failed to read value for '%s', Details Panel may show incorrect data."),
+				*ValueHandle->GeneratePathToProperty());
 			return -3.0;
 		default:
 			// Should never get here.
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unknown property access status from IPropertyHandle::GetValue for '%s'. "
+					 "Details Panel may show incorrect data."),
+				*ValueHandle->GeneratePathToProperty());
 			return -4.0;
 	}
 }
@@ -366,10 +374,18 @@ FText FAGX_RealDetails::GetTextValue() const
 			// objects selected, so it doesn't matter what we return here.
 			return LOCTEXT("MultipleValues", "Multiple Values");
 		case FPropertyAccess::Fail:
-			// Can we do any error handling here?
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Failed to read value for '%s', Details Panel may show incorrect data."),
+				*ValueHandle->GeneratePathToProperty());
 			return LOCTEXT("CouldNotReadValue", "<could not read value>");
 		default:
 			// Should never get here.
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unknown property access status from IPropertyHandle::GetValue for '%s'. "
+					 "Details Panel may show incorrect data."),
+				*ValueHandle->GeneratePathToProperty());
 			return LOCTEXT("UnknownPropertyAccessStatus", "<unknown property access status>");
 	}
 }
