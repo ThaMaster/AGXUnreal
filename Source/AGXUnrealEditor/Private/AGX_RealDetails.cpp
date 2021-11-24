@@ -242,7 +242,7 @@ void FAGX_RealDetails::CustomizeHeader(
 			// The spin box is the main way the user interacts with an FAGX_Real in the Details Panel.
 			SNew(SSpinBox<double>)
 			.TypeInterface(MakeShareable(new AGX_RealDetails_helpers::FAGX_RealInterface))
-			.MinValue(0.0)
+			.MinValue(std::numeric_limits<double>::lowest())
 			.MinSliderValue(SliderMin)
 			.MaxValue(std::numeric_limits<double>::max())
 			.MaxSliderValue(SliderMax)
