@@ -507,7 +507,7 @@ void AGX_RealDetails_helpers::NewValueSet(
 			continue;
 		}
 
-		double OldValue = OldValues[I];
+		const double OldValue = OldValues[I];
 
 		TArray<UObject*> Instances;
 		SelectedObject->GetArchetypeInstances(Instances);
