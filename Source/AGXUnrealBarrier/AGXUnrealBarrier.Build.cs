@@ -1,3 +1,4 @@
+using System;
 using UnrealBuildTool;
 
 public class AGXUnrealBarrier : ModuleRules
