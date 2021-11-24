@@ -70,7 +70,8 @@ namespace AGX_RealDetails_helpers
 
 		virtual bool IsCharacterValid(TCHAR InChar) const override
 		{
-			auto IsValidLocalizedCharacter = [InChar]() -> bool {
+			auto IsValidLocalizedCharacter = [InChar]() -> bool
+			{
 				const FDecimalNumberFormattingRules& NumberFormattingRules =
 					ExpressionParser::GetLocalizedNumberFormattingRules();
 				return InChar == NumberFormattingRules.GroupingSeparatorCharacter ||
@@ -319,8 +320,8 @@ double FAGX_RealDetails::GetDoubleValue() const
 {
 	if (!ValueHandle.IsValid() || !ValueHandle->IsValidHandle())
 	{
-		// The Spin Box will not be displayed while the handle is invalid, so
-		// it doesn't matter what we return here.
+		// The Spin Box will not be displayed while the handle is invalid, so it doesn't matter what
+		// we return here.
 		return -1.0;
 	}
 	double Value;
@@ -330,8 +331,8 @@ double FAGX_RealDetails::GetDoubleValue() const
 		case FPropertyAccess::Success:
 			return Value;
 		case FPropertyAccess::MultipleValues:
-			// The Spin Box will not be displayed while there are multiple
-			// objects selected, so it doesn't matter what we return here.
+			// The Spin Box will not be displayed while there are multiple objects selected, so it
+			// doesn't matter what we return here.
 			return -2.0;
 		case FPropertyAccess::Fail:
 			UE_LOG(
