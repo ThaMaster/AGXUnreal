@@ -17,6 +17,8 @@
 #include "AGX_RigidBodyReferenceCustomization.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_RigidBodyComponentCustomization.h"
+#include "AGX_Real.h"
+#include "AGX_RealDetails.h"
 #include "AGX_Simulation.h"
 #include "AGX_StaticMeshComponent.h"
 #include "AGX_StaticMeshComponentCustomization.h"
@@ -185,6 +187,14 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 	FPropertyEditorModule& PropertyModule =
 		FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
+	/*
+	 * Property customizations.
+	 */
+
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_Real::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FAGX_RealDetails::MakeInstance));
+
 	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
@@ -194,6 +204,10 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FAGX_RigidBodyReference::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_RigidBodyReferenceCustomization::MakeInstance));
+
+	/*
+	 * Class customizations.
+	 */
 
 	/// \todo I don't know if this should be AAGX_ConstraintActor or
 	/// UAGX_ConstraintComponent. Should we have one for each? Which should be
@@ -258,13 +272,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_WireComponent::StaticClass()->GetFName(),
-		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_WireDetails::MakeInstance));
+		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_WireDetails::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_WireWinchComponent::StaticClass()->GetFName(),
-		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_WireWinchDetails::MakeInstance));
+		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_WireWinchDetails::MakeInstance));
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
@@ -274,11 +286,21 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	FPropertyEditorModule& PropertyModule =
 		FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
+	/*
+	 * Property customizations.
+	 */
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_Real::StaticStruct()->GetFName());
+
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		FAGX_RigidBodyReference::StaticStruct()->GetFName());
+
+	/*
+	 * Class Customizations.
+	 */
 
 	/// \todo Not sure if this should be AAGX_ConstraintActor,
 	/// UAGX_ConstraintComponent, or both.

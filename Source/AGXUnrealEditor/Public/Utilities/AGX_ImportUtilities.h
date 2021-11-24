@@ -1,8 +1,5 @@
 #pragma once
 
-// AGX Dynamics for Unreal includes.
-#include "Utilities/AGX_EditorUtilities.h"
-
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Math/Color.h"
