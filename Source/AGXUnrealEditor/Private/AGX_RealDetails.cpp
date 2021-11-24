@@ -84,24 +84,24 @@ namespace AGX_RealDetails_helpers
 		}
 
 		/// Min Fractional Digits is not used by this Numeric Type Interface.
-		virtual int32 GetMinFractionalDigits() const
+		virtual int32 GetMinFractionalDigits() const override
 		{
 			return 0;
 		}
 
 		/// Max Fractional Digits is not used by this Numeric Type Interface.
-		virtual int32 GetMaxFractionalDigits() const
+		virtual int32 GetMaxFractionalDigits() const override
 		{
 			return 0;
 		}
 
 		/// Min Fractional Digits is not used by this Numeric Type Interface.
-		virtual void SetMinFractionalDigits(const TAttribute<TOptional<int32>>& NewValue)
+		virtual void SetMinFractionalDigits(const TAttribute<TOptional<int32>>& NewValue) override
 		{
 		}
 
 		/// Max Fractional Digits is not used by this Numeric Type Interface.
-		virtual void SetMaxFractionalDigits(const TAttribute<TOptional<int32>>& NewValue)
+		virtual void SetMaxFractionalDigits(const TAttribute<TOptional<int32>>& NewValue) override
 		{
 		}
 	};
