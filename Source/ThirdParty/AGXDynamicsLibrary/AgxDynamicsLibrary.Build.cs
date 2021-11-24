@@ -20,6 +20,12 @@ public class AGXDynamicsLibrary : ModuleRules
 	// Use with care, make sure the license file is never distributed.
 	bool bCopyLicenseFileToTarget = false;
 
+	/// Set to true to enable runtime checks that we only want in our testing
+	/// and continuous integration pipelines. Any public release should have
+	/// this set to false. Can be overridden by setting the AGXUNREAL_CHECK
+	/// environment variable to 'true' or 'false'.
+	bool bEnableAGXCheck = false;
+
 	/// The various dependency sources we have. Each come with an include path,
 	/// a linker path and a runtime path. The include path contains the header
 	/// files (.h) needed to compile source files using the dependency. The
@@ -51,7 +57,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		/// depend on.
 		Dependencies,
 
-		/// The AGX Terrain depdendencies. Procides libraries that AGX Terrain
+		/// The AGX Terrain depdendencies. Provides libraries that AGX Terrain
 		/// depend on.
 		TerrainDependencies,
 
@@ -147,6 +153,17 @@ public class AGXDynamicsLibrary : ModuleRules
 		// library binary already exists. There are no source files in this
 		// module.
 		Type = ModuleType.External;
+
+
+		string EnableAGXCheckEnv = Environment.GetEnvironmentVariable("AGXUNREAL_CHECK");
+		if (!String.IsNullOrEmpty(EnableAGXCheckEnv))
+		{
+			bEnableAGXCheck = EnableAGXCheckEnv.Equals("true", StringComparison.OrdinalIgnoreCase);
+		}
+		if (bEnableAGXCheck)
+		{
+			PublicDefinitions.Add("AGXUNREAL_CHECK=1");
+		}
 
 		string BundledAGXResourcesPath = GetBundledAGXResourcesPath();
 		BundledAGXResources =

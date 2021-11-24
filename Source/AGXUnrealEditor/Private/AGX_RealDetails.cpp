@@ -1,6 +1,7 @@
 #include "AGX_RealDetails.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_Real.h"
 #include "Utilities/AGX_EditorUtilities.h"
@@ -138,7 +139,7 @@ TArray<FProperty*> AGX_RealDetails_helpers::MakePropertyChain(
 		//
 		// If OuterClass is nullptr then that means that we hit an intermediate Property that wasn't
 		// a struct, which is an unsupported case for now.
-		check(OuterClass != nullptr);
+		AGX_CHECK(OuterClass != nullptr);
 		if (OuterClass == nullptr)
 		{
 			UE_LOG(
