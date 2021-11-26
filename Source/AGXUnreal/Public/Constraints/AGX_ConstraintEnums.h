@@ -37,7 +37,7 @@ enum EAGX_FrameDefiningSource
 /**
  * Constraint type independent index of Degree of Freedom(DOF).Does never change
  * index order layout, even in derived constraints, contrary to the AGX's native
- * constraint - specific DOF indexes.
+ * constraint-specific DOF indexes.
  */
 UENUM()
 enum class EGenericDofIndex : uint8
@@ -62,7 +62,11 @@ enum class EGenericDofIndex : uint8
 
 	/** DOF for rotation around Z-axis */
 	Rotational3 = 5 UMETA(DisplayName = "Rotation3"),
+
+	NumDofs = 6 UMETA(Hidden)
 };
+
+static constexpr int32 NumGenericDofs = (int32) EGenericDofIndex::NumDofs;
 
 /**
  * Flags used to be able to identify DOFs and combine them into a bitmask.

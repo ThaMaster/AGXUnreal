@@ -18,6 +18,8 @@ struct FAGX_CustomVersion
 		// Before any version changes were made.
 		BeforeCustomVersionWasAdded = 0,
 
+		ConstraintsStoreComplianceInsteadOfElasticity,
+
 		// < -----new versions can be added above this line----->
 		VersionPlusOne,
 

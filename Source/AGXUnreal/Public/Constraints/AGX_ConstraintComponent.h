@@ -98,20 +98,30 @@ public:
 	EAGX_SolveType GetSolveType() const;
 
 	/**
-	 * The elasticity in a certain DOF. Measured in [N/m] for translational DOFs and [Nm/rad] for
+	 * The compliance in a certain DOF. Measured in [m/N] for translational DOFs and [rad/Nm] for
 	 * rotational DOFs.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Dynamics",
-		Meta = (SliderMin = "1", SliderMax = "1e10", SliderExponent = "10000"))
-	FAGX_ConstraintDoublePropertyPerDof Elasticity;
+		Meta = (SliderMin = "0", SliderMax = "1", SliderExponent = "10000"))
+	FAGX_ConstraintDoublePropertyPerDof Compliance;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	void SetCompliance(EGenericDofIndex Index, float InCompliance);
+
+	void SetCompliance(EGenericDofIndex Index, double InCompliance);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics", Meta = (DisplayName = "Get Compliance"))
+	float GetComplianceFloat(EGenericDofIndex Index) const;
+
+	double GetCompliance(EGenericDofIndex Index) const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
 	void SetElasticity(EGenericDofIndex Index, float InElasticity);
 
 	void SetElasticity(EGenericDofIndex Index, double InElasticity);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics", Meta = (DisplayName = "Get Elasticity"))
 	float GetElasticityFloat(EGenericDofIndex Index) const;
 
 	double GetElasticity(EGenericDofIndex Index) const;
@@ -130,7 +140,7 @@ public:
 
 	void SetSpookDamping(EGenericDofIndex Index, double InSpookDamping);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics", Meta = (DisplayName = "Get Spook Damping"))
 	float GetSpookDampingFloat(EGenericDofIndex Index) const;
 
 	double GetSpookDamping(EGenericDofIndex Index) const;
@@ -345,7 +355,7 @@ public:
 	/** Subclasses that overrides this MUST invoke the parents version! */
 	virtual void UpdateNativeProperties();
 
-	void UpdateNativeElasticity();
+	void UpdateNativeCompliance();
 
 	void UpdateNativeSpookDamping();
 
@@ -376,6 +386,8 @@ public:
 	// When destroyed in Editor.
 	virtual void DestroyComponent(bool bPromoteChildren) override;
 #endif
+
+	virtual void Serialize(FArchive& Archive) override;
 
 	//~ End UObject interface.
 
@@ -423,6 +435,17 @@ protected:
 	// callbacks store a pointer to the particular controller in the lambda capture.
 	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent> PropertyDispatcher;
 #endif
+
+private: // Deprecated functionality.
+	/**
+	 * The elasticity in a certain DOF. Measured in [N/m] for translational DOFs and [Nm/rad] for
+	 * rotational DOFs.
+	 */
+	UPROPERTY()
+	FAGX_ConstraintDoublePropertyPerDof Elasticity_DEPRECATED;
+	// Deprecated because AGX Dynamics uses compliance, not elasticity, and we now have support for
+	// setting and displaying small numbers in the Details Panel.
+
 
 private:
 	const EDofFlag LockedDofsBitmask = static_cast<EDofFlag>(0);

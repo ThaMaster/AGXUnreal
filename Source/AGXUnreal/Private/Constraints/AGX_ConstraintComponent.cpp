@@ -1,6 +1,7 @@
 #include "Constraints/AGX_ConstraintComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_CustomVersion.h"
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -79,13 +80,15 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	, BodyAttachment2(this)
 	, bEnable(true)
 	, SolveType(EAGX_SolveType::StDirect)
-	, Elasticity(
-		  ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
+	, Compliance(
+		  ConstraintConstants::DefaultCompliance(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, SpookDamping(
 		  ConstraintConstants::DefaultSpookDamping(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, ForceRange(
 		  ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax(),
 		  ConvertDofsArrayToBitmask(LockedDofsOrdered))
+	, Elasticity_DEPRECATED(
+		  ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, LockedDofsBitmask(ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, LockedDofs(LockedDofsOrdered)
 	, NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
@@ -328,6 +331,32 @@ namespace
 	}
 }
 
+void UAGX_ConstraintComponent::SetCompliance(EGenericDofIndex Index, float InCompliance)
+{
+	SetCompliance(Index, static_cast<double>(InCompliance));
+}
+
+void UAGX_ConstraintComponent::SetCompliance(EGenericDofIndex Index, double InCompliance)
+{
+	SetOnBarrier(
+		*this, Index, TEXT("SetCompliance"),
+		[this, InCompliance](int32 NativeDof)
+		{ NativeBarrier->SetCompliance(InCompliance, NativeDof); });
+	Compliance[Index] = InCompliance;
+}
+
+float UAGX_ConstraintComponent::GetComplianceFloat(EGenericDofIndex Index) const
+{
+	return static_cast<float>(GetCompliance(Index));
+}
+
+double UAGX_ConstraintComponent::GetCompliance(EGenericDofIndex Index) const
+{
+	return GetFromBarrier(
+		*this, Index, TEXT("GetCompliance"), Compliance[Index],
+		[this](int32 NativeDof) { return NativeBarrier->GetCompliance(NativeDof); });
+}
+
 void UAGX_ConstraintComponent::SetElasticity(EGenericDofIndex Index, float InElasticity)
 {
 	SetElasticity(Index, static_cast<double>(InElasticity));
@@ -335,11 +364,7 @@ void UAGX_ConstraintComponent::SetElasticity(EGenericDofIndex Index, float InEla
 
 void UAGX_ConstraintComponent::SetElasticity(EGenericDofIndex Index, double InElasticity)
 {
-	SetOnBarrier(
-		*this, Index, TEXT("SetElasticity"),
-		[this, InElasticity](int32 NativeDof)
-		{ NativeBarrier->SetElasticity(InElasticity, NativeDof); });
-	Elasticity[Index] = InElasticity;
+	SetCompliance(Index, 1.0 / InElasticity);
 }
 
 float UAGX_ConstraintComponent::GetElasticityFloat(EGenericDofIndex Index) const
@@ -349,9 +374,7 @@ float UAGX_ConstraintComponent::GetElasticityFloat(EGenericDofIndex Index) const
 
 double UAGX_ConstraintComponent::GetElasticity(EGenericDofIndex Index) const
 {
-	return GetFromBarrier(
-		*this, Index, TEXT("GetElasticity"), Elasticity[Index],
-		[this](int32 NativeDof) { return NativeBarrier->GetElasticity(NativeDof); });
+	return 1.0 / GetCompliance(Index);
 }
 
 void UAGX_ConstraintComponent::SetSpookDamping(EGenericDofIndex Index, float InSpookDamping)
@@ -505,7 +528,7 @@ void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
 		if (const int32* NativeDofPtr = NativeDofIndexMap.Find(Dof))
 		{
 			const int32 NativeDof = *NativeDofPtr;
-			Elasticity[Dof] = Barrier.GetElasticity(NativeDof);
+			Compliance[Dof] = Barrier.GetCompliance(NativeDof);
 			SpookDamping[Dof] = Barrier.GetSpookDamping(NativeDof);
 			ForceRange[Dof] = Barrier.GetForceRange(NativeDof);
 		}
@@ -726,8 +749,8 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetSolveType(This->SolveType); });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, Elasticity),
-		[](ThisClass* This) { This->UpdateNativeElasticity(); });
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, Compliance),
+		[](ThisClass* This) { This->UpdateNativeCompliance(); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, SpookDamping),
@@ -894,12 +917,12 @@ void UAGX_ConstraintComponent::UpdateNativeProperties()
 
 	// TODO: Could just loop NativeDofIndexMap instead!!
 
-	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Translational1, NativeBarrier->SetElasticity);
-	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Translational2, NativeBarrier->SetElasticity);
-	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Translational3, NativeBarrier->SetElasticity);
-	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational1, NativeBarrier->SetElasticity);
-	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational2, NativeBarrier->SetElasticity);
-	TRY_SET_DOF_VALUE(Elasticity, EGenericDofIndex::Rotational3, NativeBarrier->SetElasticity);
+	TRY_SET_DOF_VALUE(Compliance, EGenericDofIndex::Translational1, NativeBarrier->SetCompliance);
+	TRY_SET_DOF_VALUE(Compliance, EGenericDofIndex::Translational2, NativeBarrier->SetCompliance);
+	TRY_SET_DOF_VALUE(Compliance, EGenericDofIndex::Translational3, NativeBarrier->SetCompliance);
+	TRY_SET_DOF_VALUE(Compliance, EGenericDofIndex::Rotational1, NativeBarrier->SetCompliance);
+	TRY_SET_DOF_VALUE(Compliance, EGenericDofIndex::Rotational2, NativeBarrier->SetCompliance);
+	TRY_SET_DOF_VALUE(Compliance, EGenericDofIndex::Rotational3, NativeBarrier->SetCompliance);
 
 	TRY_SET_DOF_VALUE(
 		SpookDamping, EGenericDofIndex::Translational1, NativeBarrier->SetSpookDamping);
@@ -952,12 +975,12 @@ namespace
 	}
 }
 
-void UAGX_ConstraintComponent::UpdateNativeElasticity()
+void UAGX_ConstraintComponent::UpdateNativeCompliance()
 {
 	UpdateNativePerDof(
 		HasNative(), NativeDofIndexMap,
 		[this](EGenericDofIndex GenericDof, int32 NativeDof)
-		{ NativeBarrier->SetElasticity(Elasticity[GenericDof], NativeDof); });
+		{ NativeBarrier->SetCompliance(Compliance[GenericDof], NativeDof); });
 }
 
 void UAGX_ConstraintComponent::UpdateNativeSpookDamping()
@@ -1067,6 +1090,25 @@ void UAGX_ConstraintComponent::EndPlay(const EEndPlayReason::Type Reason)
 	if (HasNative())
 	{
 		NativeBarrier->ReleaseNative();
+	}
+}
+
+void UAGX_ConstraintComponent::Serialize(FArchive& Archive)
+{
+	Super::Serialize(Archive);
+	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
+	if (Archive.IsLoading())
+	{
+		if (Archive.CustomVer(FAGX_CustomVersion::GUID) <
+			FAGX_CustomVersion::ConstraintsStoreComplianceInsteadOfElasticity)
+		{
+			for (int32 I = 0; I < NumGenericDofs; ++I)
+			{
+				const double E = Elasticity_DEPRECATED[I];
+				const double C = 1.0 / E;
+				Compliance[I] = C;
+			}
+		}
 	}
 }
 

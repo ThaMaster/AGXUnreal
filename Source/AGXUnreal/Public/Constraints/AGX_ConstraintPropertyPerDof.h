@@ -68,7 +68,7 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 
 	double operator[](int32 Index) const
 	{
-		check(Index >= 0 && Index < 6);
+		check(Index >= 0 && Index < NumGenericDofs);
 		return (&Translational_1)[Index];
 	}
 
@@ -79,7 +79,7 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 
 	double& operator[](int32 Index)
 	{
-		check(Index >= 0 && Index < 6);
+		check(Index >= 0 && Index < NumGenericDofs);
 		return (&Translational_1)[Index];
 	}
 
