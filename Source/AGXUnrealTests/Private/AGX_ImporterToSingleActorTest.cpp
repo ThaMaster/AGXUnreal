@@ -777,6 +777,14 @@ bool FClearSimpleTrimeshImportedCommand::Update()
 	}
 	Test.World->DestroyActor(Test.Contents);
 
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
 	TArray<const TCHAR*> ExpectedFiles = {TEXT("StaticMesh"), TEXT("simple_trimesh.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("simple_trimesh_build"), ExpectedFiles);
 
@@ -1099,12 +1107,10 @@ bool FClearRenderMaterialImportedCommand::Update()
 	}
 
 #if defined(__linux__)
-	// @todo The error is only printed sometimes. See GitLab issue #213.
+	/// @todo Workaround for internal issue #213.
 	Test.AddExpectedError(
 		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
 		0);
-
-	// Guarantee trigger at least once. Needed since this test sometimes does not get this error.
 	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
@@ -1230,6 +1236,14 @@ bool FClearRenderDataImportedCommand::Update()
 	{
 		World->DestroyActor(Test.Contents);
 	}
+
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
 	// Files that are created by the test and thus safe to remove. The GUID values may make this
 	// test cumbersome to update since they will change every time the AGX Dynamics archive is
@@ -1786,6 +1800,14 @@ bool FClearWireImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
 	TArray<const TCHAR*> ExpectedFiles {
 		TEXT("ShapeMaterial"), TEXT("defaultWireMaterial_57.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("wire_build"), ExpectedFiles);
@@ -2259,8 +2281,11 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 	}
 
 #if defined(__linux__)
-	// @todo The error is only printed sometimes. See GitLab issue #213.
-	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles = {
@@ -2408,6 +2433,14 @@ bool FClearContactMaterialsImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
 	TArray<const TCHAR*> ExpectedFiles = {TEXT("ContactMaterial"),	 TEXT("CMMat1Mat2.uasset"),
 										  TEXT("CMMat3Mat4.uasset"), TEXT("ShapeMaterial"),
 										  TEXT("Mat1.uasset"),		 TEXT("Mat2.uasset"),
@@ -2538,8 +2571,11 @@ bool FClearURDFLinkWithMeshesImportedCommand::Update()
 	}
 
 #if defined(__linux__)
-	// @todo The error is only printed sometimes. See GitLab issue #213.
-	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("link_with_meshes"), FilesAndDirsToRemove);
