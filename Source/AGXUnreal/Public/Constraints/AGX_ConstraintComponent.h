@@ -436,17 +436,6 @@ protected:
 	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent> PropertyDispatcher;
 #endif
 
-private: // Deprecated functionality.
-	/**
-	 * The elasticity in a certain DOF. Measured in [N/m] for translational DOFs and [Nm/rad] for
-	 * rotational DOFs.
-	 */
-	UPROPERTY()
-	FAGX_ConstraintDoublePropertyPerDof Elasticity_DEPRECATED;
-	// Deprecated because AGX Dynamics uses compliance, not elasticity, and we now have support for
-	// setting and displaying small numbers in the Details Panel.
-
-
 private:
 	const EDofFlag LockedDofsBitmask = static_cast<EDofFlag>(0);
 
@@ -469,4 +458,16 @@ private:
 
 	UPROPERTY()
 	UAGX_ConstraintDofGraphicsComponent* DofGraphicsComponent2;
+
+private: // Deprecated functionality.
+	/**
+	 * The elasticity in a certain DOF. Measured in [N/m] for translational DOFs and [Nm/rad] for
+	 * rotational DOFs.
+	 */
+	UPROPERTY()
+	FAGX_ConstraintDoublePropertyPerDof Elasticity_DEPRECATED;
+	// Deprecated because AGX Dynamics uses Compliance, which is the inverse of Elasticity. We
+	// switched to Elasticity in AGX Dynamics for Unreal because Unreal Engine can't handle small
+	// numbers and Compliance is typically small. Now that we have FAGX_Real to help with small
+	// numbers we can switch back to Compliance again.
 };

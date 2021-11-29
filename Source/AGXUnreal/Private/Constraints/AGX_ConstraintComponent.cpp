@@ -87,11 +87,11 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	, ForceRange(
 		  ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax(),
 		  ConvertDofsArrayToBitmask(LockedDofsOrdered))
-	, Elasticity_DEPRECATED(
-		  ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, LockedDofsBitmask(ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, LockedDofs(LockedDofsOrdered)
 	, NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
+	, Elasticity_DEPRECATED(
+		  ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
 {
 	// Using an AGX_ConstraintComponent in a blueprint instance has in some cases caused crashes
 	// during project startup. It seems to happen for one of the 'behind-the-scenes' created objects
@@ -915,7 +915,7 @@ void UAGX_ConstraintComponent::UpdateNativeProperties()
 	NativeBarrier->SetEnable(bEnable);
 	NativeBarrier->SetSolveType(SolveType);
 
-	// TODO: Could just loop NativeDofIndexMap instead!!
+	/// @todo Could just loop NativeDofIndexMap instead!!
 
 	TRY_SET_DOF_VALUE(Compliance, EGenericDofIndex::Translational1, NativeBarrier->SetCompliance);
 	TRY_SET_DOF_VALUE(Compliance, EGenericDofIndex::Translational2, NativeBarrier->SetCompliance);
