@@ -1871,21 +1871,21 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
 	UAGX_ConstraintComponent* Constraint =
 		GetByName<UAGX_ConstraintComponent>(Components, TEXT("constraint"));
 
-	// Elasticity.
+	// Compliance.
 	Test.TestEqual(
-		TEXT("Translational 1 elasticity"),
-		Constraint->GetElasticity(EGenericDofIndex::Translational1), 100.0);
+		TEXT("Translational 1 compliance"),
+		Constraint->GetCompliance(EGenericDofIndex::Translational1), 100.0);
 	Test.TestEqual(
-		TEXT("Translational 2 elasticity"),
-		Constraint->GetElasticity(EGenericDofIndex::Translational2), 101.0);
+		TEXT("Translational 2 compliance"),
+		Constraint->GetCompliance(EGenericDofIndex::Translational2), 101.0);
 	Test.TestEqual(
-		TEXT("Translational 3 elasticity"),
-		Constraint->GetElasticity(EGenericDofIndex::Translational3), 102.0);
+		TEXT("Translational 3 compliance"),
+		Constraint->GetCompliance(EGenericDofIndex::Translational3), 102.0);
 	Test.TestEqual(
-		TEXT("Rotational 1 elasticity"), Constraint->GetElasticity(EGenericDofIndex::Rotational1),
+		TEXT("Rotational 1 compliance"), Constraint->GetCompliance(EGenericDofIndex::Rotational1),
 		103.0);
 	Test.TestEqual(
-		TEXT("Rotational 2 elasticity"), Constraint->GetElasticity(EGenericDofIndex::Rotational2),
+		TEXT("Rotational 2 compliance"), Constraint->GetCompliance(EGenericDofIndex::Rotational2),
 		104.0);
 	// Rotational 3 is not supported for AGX::Hinge.
 
@@ -2291,7 +2291,7 @@ public:
 	FArchiveImporterToSingleActor_ContactMaterialsTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
 			  TEXT("FArchiveImporterToSingleActor_ContactMaterialsTest"),
-			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.ContactMaterials"))
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.ContactMaterials"))
 	{
 	}
 
