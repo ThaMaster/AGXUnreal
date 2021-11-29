@@ -9,6 +9,7 @@
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
 
 // Unreal Engine includes.
+#include "Containers/StaticArray.h"
 #include "CoreMinimal.h"
 
 #include "AGX_Constraint1DofComponent.generated.h"
@@ -90,6 +91,8 @@ public:
 
 	virtual void UpdateNativeProperties() override;
 
+	TStaticArray<FAGX_ConstraintController*, 5> GetAllControllers();
+
 	// ~Begin IAGX_NativeOwner interface.
 	virtual void SetNativeAddress(uint64 NativeAddress) override;
 	// ~End IAGX_NativeOwner interface.
@@ -99,7 +102,9 @@ public:
 	virtual void PostInitProperties() override;
 	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event) override;
 #endif
+	virtual void Serialize(FArchive& Archive) override;
 	// ~ End UObject interface.
+
 protected:
 	/**
 	 * Call AllocateNative and then bind the constraint controllers to their native representations

@@ -14,6 +14,7 @@
 
 #include "AGX_ConstraintComponent.generated.h"
 
+struct FAGX_ConstraintController;
 class FConstraintBarrier;
 class UAGX_ConstraintDofGraphicsComponent;
 class UAGX_ConstraintIconGraphicsComponent;

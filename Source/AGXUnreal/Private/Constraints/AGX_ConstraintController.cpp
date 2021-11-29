@@ -1,6 +1,7 @@
 #include "Constraints/AGX_ConstraintController.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
@@ -154,6 +155,15 @@ double FAGX_ConstraintController::GetForce()
 		return 0.0f;
 	}
 	return NativeBarrier->GetForce();
+}
+
+void FAGX_ConstraintController::Serialize(FArchive& Archive)
+{
+	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
+	if (ShouldUpgradeTo(Archive, FAGX_CustomVersion::ConstraintsStoreComplianceInsteadOfElasticity))
+	{
+		Compliance = 1.0 / Elasticity_DEPRECATED;
+	}
 }
 
 bool FAGX_ConstraintController::HasNative() const

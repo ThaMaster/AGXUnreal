@@ -1097,17 +1097,11 @@ void UAGX_ConstraintComponent::Serialize(FArchive& Archive)
 {
 	Super::Serialize(Archive);
 	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
-	if (Archive.IsLoading())
+	if (ShouldUpgradeTo(Archive, FAGX_CustomVersion::ConstraintsStoreComplianceInsteadOfElasticity))
 	{
-		if (Archive.CustomVer(FAGX_CustomVersion::GUID) <
-			FAGX_CustomVersion::ConstraintsStoreComplianceInsteadOfElasticity)
+		for (int32 I = 0; I < NumGenericDofs; ++I)
 		{
-			for (int32 I = 0; I < NumGenericDofs; ++I)
-			{
-				const double E = Elasticity_DEPRECATED[I];
-				const double C = 1.0 / E;
-				Compliance[I] = C;
-			}
+			Compliance[I] = 1.0 / Elasticity_DEPRECATED[I];
 		}
 	}
 }

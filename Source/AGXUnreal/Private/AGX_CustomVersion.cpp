@@ -1,6 +1,7 @@
 #include "AGX_CustomVersion.h"
 
 // Unreal Engine includes.
+#include "Serialization/Archive.h"
 #include "Serialization/CustomVersion.h"
 
 // Important: Do not change the value of this GUID. Doing so will break any backward compatibility
@@ -14,3 +15,9 @@ const FGuid FAGX_CustomVersion::GUID(0x9A157FFA, 0x909A4B69, 0xBE1B12A0, 0x51B6F
 // Register the custom version with core
 FCustomVersionRegistration GRegisterAGXUnrealCustomVersion(
 	FAGX_CustomVersion::GUID, FAGX_CustomVersion::LatestVersion, TEXT("AGXUnrealVer"));
+
+
+bool ShouldUpgradeTo(const FArchive& Archive, FAGX_CustomVersion::Type Version)
+{
+	return Archive.IsLoading() && Archive.CustomVer(FAGX_CustomVersion::GUID) < Version;
+}

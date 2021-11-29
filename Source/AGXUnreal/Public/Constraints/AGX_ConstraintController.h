@@ -83,6 +83,13 @@ struct AGXUNREAL_API FAGX_ConstraintController
 
 	double GetForce();
 
+	/**
+	 * Handle serialization backwards compatibility. May be overridden by subclasses as long as they
+	 * call Super::Serialize.
+	 * @param Archive Archive to read from or write to.
+	 */
+	virtual void Serialize(FArchive& Archive);
+
 protected:
 	// Would like to have this const but Unreal provides default copy operations
 	// that don't compile when USTRUCT structs contains constant members.

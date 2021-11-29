@@ -1,6 +1,8 @@
 #include "Constraints/AGX_Constraint2DofComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
+#include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "Constraints/Constraint2DOFBarrier.h"
@@ -108,6 +110,25 @@ void UAGX_Constraint2DofComponent::UpdateNativeProperties()
 	ScrewController.UpdateNativeProperties();
 }
 
+TStaticArray<FAGX_ConstraintController*, 11> UAGX_Constraint2DofComponent::GetAllControllers()
+{
+	TStaticArray<FAGX_ConstraintController*, 11> Controllers;
+	int32 I = 0;
+	Controllers[I++] = &ElectricMotorController1;
+	Controllers[I++] = &ElectricMotorController2;
+	Controllers[I++] = &FrictionController1;
+	Controllers[I++] = &FrictionController2;
+	Controllers[I++] = &LockController1;
+	Controllers[I++] = &LockController2;
+	Controllers[I++] = &RangeController1;
+	Controllers[I++] = &RangeController2;
+	Controllers[I++] = &TargetSpeedController1;
+	Controllers[I++] = &TargetSpeedController2;
+	Controllers[I++] = &ScrewController;
+	AGX_CHECK(I == Controllers.Num());
+	return Controllers;
+}
+
 void UAGX_Constraint2DofComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	Super::SetNativeAddress(NativeAddress);
@@ -175,6 +196,15 @@ void UAGX_Constraint2DofComponent::PostEditChangeChainProperty(
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
 	Super::PostEditChangeChainProperty(Event);
+}
+
+void UAGX_Constraint2DofComponent::Serialize(FArchive& Archive)
+{
+	Super::Serialize(Archive);
+	for (FAGX_ConstraintController* Controller : GetAllControllers())
+	{
+		Controller->Serialize(Archive);
+	}
 }
 
 #endif
