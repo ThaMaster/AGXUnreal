@@ -4,6 +4,8 @@
 #include "CoreMinimal.h"
 #include "Misc/Guid.h"
 
+class FArchive;
+
 struct FAGX_CustomVersion
 {
 	// Important: Do not remove or change the order of enum literals if those have been released
@@ -18,6 +20,8 @@ struct FAGX_CustomVersion
 		// Before any version changes were made.
 		BeforeCustomVersionWasAdded = 0,
 
+		ConstraintsStoreComplianceInsteadOfElasticity,
+
 		// < -----new versions can be added above this line----->
 		VersionPlusOne,
 
@@ -31,3 +35,14 @@ private:
 	{
 	}
 };
+
+/**
+ * Determine if we are loading from an archive that is older than the given version, which means
+ * that we should perform any transformations necessary to bring the state from the pre-version
+ * format to the post-version format.
+ *
+ * @param Archive The archive we're serializing from/to.
+ * @param Version The version to compare with.
+ * @return True if we should do an upgrade.
+ */
+bool ShouldUpgradeTo(const FArchive& Archive, FAGX_CustomVersion::Type Version);

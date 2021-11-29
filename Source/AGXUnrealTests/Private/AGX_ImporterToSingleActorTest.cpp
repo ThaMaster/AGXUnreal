@@ -777,6 +777,14 @@ bool FClearSimpleTrimeshImportedCommand::Update()
 	}
 	Test.World->DestroyActor(Test.Contents);
 
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
 	TArray<const TCHAR*> ExpectedFiles = {TEXT("StaticMesh"), TEXT("simple_trimesh.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("simple_trimesh_build"), ExpectedFiles);
 
@@ -1099,12 +1107,10 @@ bool FClearRenderMaterialImportedCommand::Update()
 	}
 
 #if defined(__linux__)
-	// @todo The error is only printed sometimes. See GitLab issue #213.
+	/// @todo Workaround for internal issue #213.
 	Test.AddExpectedError(
 		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
 		0);
-
-	// Guarantee trigger at least once. Needed since this test sometimes does not get this error.
 	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
@@ -1230,6 +1236,14 @@ bool FClearRenderDataImportedCommand::Update()
 	{
 		World->DestroyActor(Test.Contents);
 	}
+
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
 	// Files that are created by the test and thus safe to remove. The GUID values may make this
 	// test cumbersome to update since they will change every time the AGX Dynamics archive is
@@ -1786,6 +1800,14 @@ bool FClearWireImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
 	TArray<const TCHAR*> ExpectedFiles {
 		TEXT("ShapeMaterial"), TEXT("defaultWireMaterial_57.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("wire_build"), ExpectedFiles);
@@ -1871,20 +1893,29 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
 	UAGX_ConstraintComponent* Constraint =
 		GetByName<UAGX_ConstraintComponent>(Components, TEXT("constraint"));
 
-	// Elasticity.
+	// Compliance.
 	Test.TestEqual(
-		TEXT("Translational 1 elasticity"), Constraint->Elasticity.Translational_1, 100.0);
+		TEXT("Translational 1 compliance"),
+		Constraint->GetCompliance(EGenericDofIndex::Translational1), 100.0);
 	Test.TestEqual(
-		TEXT("Translational 2 elasticity"), Constraint->Elasticity.Translational_2, 101.0);
+		TEXT("Translational 2 compliance"),
+		Constraint->GetCompliance(EGenericDofIndex::Translational2), 101.0);
 	Test.TestEqual(
-		TEXT("Translational 3 elasticity"), Constraint->Elasticity.Translational_3, 102.0);
-	Test.TestEqual(TEXT("Rotational 1 elasticity"), Constraint->Elasticity.Rotational_1, 103.0);
-	Test.TestEqual(TEXT("Rotational 2 elasticity"), Constraint->Elasticity.Rotational_2, 104.0);
+		TEXT("Translational 3 compliance"),
+		Constraint->GetCompliance(EGenericDofIndex::Translational3), 102.0);
+	Test.TestEqual(
+		TEXT("Rotational 1 compliance"), Constraint->GetCompliance(EGenericDofIndex::Rotational1),
+		103.0);
+	Test.TestEqual(
+		TEXT("Rotational 2 compliance"), Constraint->GetCompliance(EGenericDofIndex::Rotational2),
+		104.0);
 	// Rotational 3 is not supported for AGX::Hinge.
 
 	// SpookDamping.
-	Test.TestEqual(TEXT("Translational 1 damping"), Constraint->SpookDamping.Translational_1, 200.0);
-	Test.TestEqual(TEXT("Translational 2 damping"), Constraint->SpookDamping.Translational_2, 201.0);
+	Test.TestEqual(
+		TEXT("Translational 1 damping"), Constraint->SpookDamping.Translational_1, 200.0);
+	Test.TestEqual(
+		TEXT("Translational 2 damping"), Constraint->SpookDamping.Translational_2, 201.0);
 	Test.TestEqual(
 		TEXT("Translational 3 damping"), Constraint->SpookDamping.Translational_3, 202.0);
 	Test.TestEqual(TEXT("Rotational 1 damping"), Constraint->SpookDamping.Rotational_1, 203.0);
@@ -2250,8 +2281,11 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 	}
 
 #if defined(__linux__)
-	// @todo The error is only printed sometimes. See GitLab issue #213.
-	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles = {
@@ -2282,7 +2316,7 @@ public:
 	FArchiveImporterToSingleActor_ContactMaterialsTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
 			  TEXT("FArchiveImporterToSingleActor_ContactMaterialsTest"),
-			  TEXT("AGXUnreal.Editor.ArchiveImporterToSingleActor.ContactMaterials"))
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.ContactMaterials"))
 	{
 	}
 
@@ -2399,8 +2433,16 @@ bool FClearContactMaterialsImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
-	TArray<const TCHAR*> ExpectedFiles = {TEXT("ContactMaterials"),	 TEXT("CMMat1Mat2.uasset"),
-										  TEXT("CMMat3Mat4.uasset"), TEXT("ShapeMaterials"),
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
+	TArray<const TCHAR*> ExpectedFiles = {TEXT("ContactMaterial"),	 TEXT("CMMat1Mat2.uasset"),
+										  TEXT("CMMat3Mat4.uasset"), TEXT("ShapeMaterial"),
 										  TEXT("Mat1.uasset"),		 TEXT("Mat2.uasset"),
 										  TEXT("Mat3.uasset"),		 TEXT("Mat4.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("contact_materials_build"), ExpectedFiles);
@@ -2529,8 +2571,11 @@ bool FClearURDFLinkWithMeshesImportedCommand::Update()
 	}
 
 #if defined(__linux__)
-	// @todo The error is only printed sometimes. See GitLab issue #213.
-	Test.AddExpectedError(TEXT("inotify_rm_watch cannot remove descriptor"));
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("link_with_meshes"), FilesAndDirsToRemove);

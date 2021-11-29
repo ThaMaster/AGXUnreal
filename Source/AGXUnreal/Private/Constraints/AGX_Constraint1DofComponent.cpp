@@ -1,6 +1,8 @@
 #include "Constraints/AGX_Constraint1DofComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
+#include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
 #include "AGX_UpropertyDispatcher.h"
 #include "Constraints/ControllerConstraintBarriers.h"
@@ -79,6 +81,15 @@ void UAGX_Constraint1DofComponent::PostEditChangeChainProperty(
 }
 #endif
 
+void UAGX_Constraint1DofComponent::Serialize(FArchive& Archive)
+{
+	Super::Serialize(Archive);
+	for (FAGX_ConstraintController* Controller : GetAllControllers())
+	{
+		Controller->Serialize(Archive);
+	}
+}
+
 double UAGX_Constraint1DofComponent::GetAngle() const
 {
 	return Get1DOFBarrier(*this)->GetAngle();
@@ -142,6 +153,19 @@ void UAGX_Constraint1DofComponent::UpdateNativeProperties()
 	LockController.UpdateNativeProperties();
 	RangeController.UpdateNativeProperties();
 	TargetSpeedController.UpdateNativeProperties();
+}
+
+TStaticArray<FAGX_ConstraintController*, 5> UAGX_Constraint1DofComponent::GetAllControllers()
+{
+	TStaticArray<FAGX_ConstraintController*, 5> Controllers;
+	int32 I = 0;
+	Controllers[I++] = &ElectricMotorController;
+	Controllers[I++] = &FrictionController;
+	Controllers[I++] = &LockController;
+	Controllers[I++] = &RangeController;
+	Controllers[I++] = &TargetSpeedController;
+	AGX_CHECK(I == Controllers.Num());
+	return Controllers;
 }
 
 void UAGX_Constraint1DofComponent::SetNativeAddress(uint64 NativeAddress)

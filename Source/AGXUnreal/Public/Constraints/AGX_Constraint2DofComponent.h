@@ -11,6 +11,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Containers/StaticArray.h"
 
 #include "AGX_Constraint2DofComponent.generated.h"
 
@@ -81,6 +82,8 @@ public:
 
 	virtual void UpdateNativeProperties() override;
 
+	TStaticArray<FAGX_ConstraintController*, 11> GetAllControllers();
+
 	// ~Begin IAGX_NativeOwner interface.
 	virtual void SetNativeAddress(uint64 NativeAddress) override;
 	// ~End IAGX_NativeOwner interface.
@@ -90,6 +93,7 @@ public:
 	virtual void PostInitProperties() override;
 	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event) override;
 #endif
+	virtual void Serialize(FArchive& Archive) override;
 	// ~ End UObject interface.
 
 protected:

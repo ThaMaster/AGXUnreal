@@ -82,34 +82,3 @@ void FAGX_ConstraintLockController::CopyFrom(const FLockControllerBarrier& Sourc
 		Position = Source.GetPositionTranslational();
 	}
 }
-
-#if 0
-void FAGX_ConstraintLockController::ToBarrier(FLockControllerBarrier* Barrier) const
-{
-	if (!Barrier)
-		return;
-
-	Barrier->bEnable = bEnable;
-	Barrier->Elasticity = Elasticity;
-	Barrier->SpookDamping = SpookDamping;
-	Barrier->ForceRangeMin = ForceRange.Min;
-	Barrier->ForceRangeMax = ForceRange.Max;
-
-	Barrier->bRotational = bRotational;
-
-	Barrier->Position = bRotational ? FMath::DegreesToRadians(Position) : Position;
-}
-
-void FAGX_ConstraintLockController::FromBarrier(FLockControllerBarrier& Barrier)
-{
-	bEnable = Barrier.bEnable;
-	Elasticity = Barrier.Elasticity;
-	SpookDamping = Barrier.SpookDamping;
-	ForceRange.Min = Barrier.ForceRangeMin;
-	ForceRange.Max = Barrier.ForceRangeMax;
-
-	bRotational = Barrier.bRotational;
-
-	Position = bRotational ? FMath::RadiansToDegrees(Barrier.Position) : Barrier.Position;
-}
-#endif

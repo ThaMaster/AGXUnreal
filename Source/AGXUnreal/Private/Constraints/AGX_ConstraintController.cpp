@@ -1,6 +1,7 @@
 #include "Constraints/AGX_ConstraintController.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
@@ -15,11 +16,12 @@ FAGX_ConstraintController::FAGX_ConstraintController()
 
 FAGX_ConstraintController::FAGX_ConstraintController(bool bInRotational)
 	: bEnable(false)
-	, Elasticity(ConstraintConstants::DefaultElasticity())
+	, Compliance(ConstraintConstants::DefaultCompliance())
 	, SpookDamping(ConstraintConstants::DefaultSpookDamping())
 	, ForceRange(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
 	, bRotational(bInRotational)
 	, NativeBarrier(nullptr)
+	, Elasticity_DEPRECATED(ConstraintConstants::DefaultElasticity())
 {
 }
 
@@ -31,7 +33,7 @@ FAGX_ConstraintController& FAGX_ConstraintController::operator=(
 	const FAGX_ConstraintController& Other)
 {
 	bEnable = Other.bEnable;
-	Elasticity = Other.Elasticity;
+	Compliance = Other.Compliance;
 	SpookDamping = Other.SpookDamping;
 	ForceRange = Other.ForceRange;
 	bRotational = Other.bRotational;
@@ -74,33 +76,33 @@ bool FAGX_ConstraintController::GetEnable() const
 
 void FAGX_ConstraintController::SetCompliance(double InCompliance)
 {
-	SetElasticity(1.0 / InCompliance);
+	if (HasNative())
+	{
+		NativeBarrier->SetCompliance(InCompliance);
+	}
+	Compliance = InCompliance;
 }
 
 double FAGX_ConstraintController::GetCompliance() const
 {
-	return 1.0 / GetElasticity();
+	if (HasNative())
+	{
+		return NativeBarrier->GetCompliance();
+	}
+	else
+	{
+		return Compliance;
+	}
 }
 
 void FAGX_ConstraintController::SetElasticity(double InElasticity)
 {
-	if (HasNative())
-	{
-		NativeBarrier->SetElasticity(InElasticity);
-	}
-	Elasticity = InElasticity;
+	SetCompliance(1.0 / InElasticity);
 }
 
 double FAGX_ConstraintController::GetElasticity() const
 {
-	if (HasNative())
-	{
-		return NativeBarrier->GetElasticity();
-	}
-	else
-	{
-		return Elasticity;
-	}
+	return 1.0 / GetCompliance();
 }
 
 void FAGX_ConstraintController::SetSpookDamping(double InSpookDamping)
@@ -155,6 +157,15 @@ double FAGX_ConstraintController::GetForce()
 	return NativeBarrier->GetForce();
 }
 
+void FAGX_ConstraintController::Serialize(FArchive& Archive)
+{
+	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
+	if (ShouldUpgradeTo(Archive, FAGX_CustomVersion::ConstraintsStoreComplianceInsteadOfElasticity))
+	{
+		Compliance = 1.0 / Elasticity_DEPRECATED;
+	}
+}
+
 bool FAGX_ConstraintController::HasNative() const
 {
 	return NativeBarrier.IsValid() && NativeBarrier->HasNative();
@@ -180,7 +191,7 @@ void FAGX_ConstraintController::UpdateNativeProperties()
 		return;
 	}
 	NativeBarrier->SetEnable(bEnable);
-	NativeBarrier->SetElasticity(Elasticity);
+	NativeBarrier->SetCompliance(Compliance);
 	NativeBarrier->SetSpookDamping(SpookDamping);
 	NativeBarrier->SetForceRange(ForceRange);
 	UpdateNativePropertiesImpl();
@@ -189,7 +200,7 @@ void FAGX_ConstraintController::UpdateNativeProperties()
 void FAGX_ConstraintController::CopyFrom(const FConstraintControllerBarrier& Source)
 {
 	bEnable = Source.GetEnable();
-	Elasticity = Source.GetElasticity();
+	Compliance = Source.GetCompliance();
 	SpookDamping = Source.GetSpookDamping();
 	ForceRange = Source.GetForceRange();
 }
