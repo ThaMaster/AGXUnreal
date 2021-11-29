@@ -1,5 +1,8 @@
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_Real.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
@@ -10,7 +13,7 @@
 class FConstraintControllerBarrier;
 
 /**
- * Base struct for Constraint Controllers, also called secondary constraints. These are
+ * Base struct for Constraint Controllers, also called Secondary Constraints. These are
  * sub-constraints that act on a degree of freedom that is unconstrained by the constraint. For
  * example, for a Hinge Constraint there is a free rotational axis around which the constrained
  * bodies can rotate. A Constraint Controller add functionality to this degree of freedom. There
@@ -34,38 +37,30 @@ struct AGXUNREAL_API FAGX_ConstraintController
 	bool GetEnable() const;
 
 	/**
-	 * The elasticity in a certain DOF. Measured in [N/m] for translational DOFs and [Nm/rad] for
+	 * The compliance in a certain DOF. Measured in [m/N] for translational DOFs and [rad/Nm] for
 	 * rotational DOFs.
-	 * The elasticity measure the responsiveness/reactiveness of the Constraint Controller to
-	 * violations in its constraint. A higher elasticity will cause a stronger force or torque to
-	 * be created to restore from the violation. A too high elasticity will lead to instabilities in
-	 * the simulation. It is the inverse of Compliance. It is measured in unit force or torque per
-	 * unit violation, much like a spring constant, where the violation can be either a translation
-	 * or a rotation.
 	 *
-	 * The unit is currently in Newton per meter or Newtonmeter per radian, the native AGX Dynamics
-	 * units, but this may change to Newton per centimieter or Newtoncentimeter per degree, the
-	 * Unreal Engine units, in the future.
+	 * The compliance measure the inverse of stiffness of the Constraint Controller. A smaller
+	 * compliance will cause a stronger force or torque to be created to restore from the violation.
+	 * A too small compliance will lead to instabilities in the simulation.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
-	double Elasticity;
+		EditAnywhere, Category = "AGX Constraint Controller",
+		Meta =
+			(EditCondition = "bEnable", SliderMin = "1e-10", SliderMax = "1", SliderExponent = "100000"))
+	FAGX_Real Compliance;
 
-	void SetElasticity(double InElasticity);
-
-	double GetElasticity() const;
-
-	/**
-	 * Set the Compliance in a certain DOF. Measured in [m/N] for translational DOFs and [rad/Nm]
-	 * for rotational DOFs.
-	 *
-	 * Compliance is stored as Elasticity = 1 / Compliance.
-	 *
-	 * @param InCompliance The new compliance.
-	 */
 	void SetCompliance(double InCompliance);
 
 	double GetCompliance() const;
+
+	/**
+	 * Elasticity is defined as the inverse of compliance, so setting the compliance will modify
+	 * the compliance. [N/m] or [Nm/rad]
+	 */
+	void SetElasticity(double InElasticity);
+
+	double GetElasticity() const;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
@@ -76,7 +71,7 @@ struct AGXUNREAL_API FAGX_ConstraintController
 	double GetSpookDamping() const;
 
 	/**
-	 * The minimum an maximum force that the constraint controller can produce [N].
+	 * The minimum and maximum force that the constraint controller can produce [N].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
@@ -128,6 +123,28 @@ protected:
 	void CopyFrom(const FConstraintControllerBarrier& Source);
 
 	TUniquePtr<FConstraintControllerBarrier> NativeBarrier;
+
+private: // Deprecated functionality.
+	/**
+	 * The elasticity in a certain DOF. Measured in [N/m] for translational DOFs and [Nm/rad] for
+	 * rotational DOFs.
+	 * The elasticity measure the responsiveness/reactiveness of the Constraint Controller to
+	 * violations in its constraint. A higher elasticity will cause a stronger force or torque to
+	 * be created to restore from the violation. A too high elasticity will lead to instabilities in
+	 * the simulation. It is the inverse of Compliance. It is measured in unit force or torque per
+	 * unit violation, much like a spring constant, where the violation can be either a translation
+	 * or a rotation.
+	 *
+	 * The unit is currently in Newton per meter or Newtonmeter per radian, the native AGX Dynamics
+	 * units, but this may change to Newton per centimieter or Newtoncentimeter per degree, the
+	 * Unreal Engine units, in the future.
+	 */
+	UPROPERTY()
+	double Elasticity_DEPRECATED;
+	// Deprecated because AGX Dynamics uses Compliance, which is the inverse of Elasticity. We
+	// switched to Elasticity in AGX Dynamics for Unreal because Unreal Engine can't handle small
+	// numbers and Compliance is typically small. Now that we have FAGX_Real to help with small
+	// numbers we can switch back to Compliance again.
 };
 
 /**

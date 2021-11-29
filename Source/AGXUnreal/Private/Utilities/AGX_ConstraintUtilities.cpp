@@ -137,8 +137,8 @@ void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks(
 		[Controller](ThisClass*) { Controller->SetEnable(Controller->bEnable); });
 
 	PropertyDispatcher.Add(
-		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, Elasticity),
-		[Controller](ThisClass*) { Controller->SetElasticity(Controller->Elasticity); });
+		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, Compliance),
+		[Controller](ThisClass*) { Controller->SetCompliance(Controller->Compliance); });
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, SpookDamping),
