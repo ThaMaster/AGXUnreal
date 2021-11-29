@@ -2408,8 +2408,8 @@ bool FClearContactMaterialsImportedCommand::Update()
 		World->DestroyActor(Test.Contents);
 	}
 
-	TArray<const TCHAR*> ExpectedFiles = {TEXT("ContactMaterials"),	 TEXT("CMMat1Mat2.uasset"),
-										  TEXT("CMMat3Mat4.uasset"), TEXT("ShapeMaterials"),
+	TArray<const TCHAR*> ExpectedFiles = {TEXT("ContactMaterial"),	 TEXT("CMMat1Mat2.uasset"),
+										  TEXT("CMMat3Mat4.uasset"), TEXT("ShapeMaterial"),
 										  TEXT("Mat1.uasset"),		 TEXT("Mat2.uasset"),
 										  TEXT("Mat3.uasset"),		 TEXT("Mat4.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("contact_materials_build"), ExpectedFiles);
