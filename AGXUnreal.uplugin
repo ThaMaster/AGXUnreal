@@ -23,8 +23,7 @@
 				"Linux"
 			],
 			"BlacklistPlatforms": [
-				"IOS",
-				"Win32"
+				"IOS"
 			]
 		},
 		{
@@ -36,8 +35,7 @@
 				"Linux"
 			],
 			"BlacklistPlatforms": [
-				"IOS",
-				"Win32"
+				"IOS"
 			]
 		},
 		{
@@ -49,8 +47,7 @@
 				"Linux"
 			],
 			"BlacklistPlatforms": [
-				"IOS",
-				"Win32"
+				"IOS"
 			]
 		},
 		{
@@ -62,8 +59,7 @@
 				"Linux"
 			],
 			"BlacklistPlatforms": [
-				"IOS",
-				"Win32"
+				"IOS"
 			]
 		}
 	],
