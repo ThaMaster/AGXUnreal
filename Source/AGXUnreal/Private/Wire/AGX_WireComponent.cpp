@@ -1358,7 +1358,7 @@ void UAGX_WireComponent::OnRegister()
 			SpriteComponent->GetOuter(), SpriteComponent->GetClass(), TEXT("WireIcon"));
 		SpriteComponent->Rename(*NewName.ToString(), nullptr, REN_DontCreateRedirectors);
 		SpriteComponent->SetSprite(
-			LoadObject<UTexture2D>(nullptr, TEXT("/AGXUnreal/Editor/Icons/T_Icon_Wire_150.T_Icon_Wire_150")));
+			LoadObject<UTexture2D>(nullptr, TEXT("/AGXUnreal/Editor/Icons/wire_64x64")));
 	}
 #endif
 }

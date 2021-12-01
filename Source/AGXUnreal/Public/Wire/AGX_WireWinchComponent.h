@@ -15,6 +15,8 @@ class AGXUNREAL_API UAGX_WireWinchComponent : public USceneComponent, public IAG
 	GENERATED_BODY()
 
 public:
+	UAGX_WireWinchComponent();
+
 	UPROPERTY(EditAnywhere, Category = "AGX Wire Winch", Meta = (SkipUCSModifiedProperties))
 	FAGX_WireWinch WireWinch;
 
@@ -71,6 +73,11 @@ public:
 	 * @return The Wire Winch Barrier for this Wire Winch Component, creating it if necessary.
 	 */
 	FWireWinchBarrier* GetOrCreateNative();
+
+protected:
+	// ~Begin UActorComponent interface.
+	virtual void OnRegister() override;
+	// ~End UActorComponent interface.
 
 private:
 	void CreateNative();
