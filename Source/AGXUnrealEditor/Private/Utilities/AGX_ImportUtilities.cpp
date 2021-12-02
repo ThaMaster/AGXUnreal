@@ -114,11 +114,13 @@ void FAGX_ImportUtilities::MakePackageAndAssetNameUnique(FString& PackageName, F
 	}
 }
 
-UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName, const FString& FallbackName)
+namespace AGX_ImportUtilities_helpers
 {
-	auto InitAsset = [&](UStaticMesh& Asset) {
-		FRawMesh RawMesh = FAGX_EditorUtilities::CreateRawMeshFromTrimesh(Trimesh);
+	template <typename FMeshFactory, typename FMeshDescription>
+	void InitStaticMesh(
+		FMeshFactory MeshFactory, const FMeshDescription& MeshDescription, UStaticMesh& Asset)
+	{
+		FRawMesh RawMesh = MeshFactory(MeshDescription);
 		FAGX_EditorUtilities::AddRawMeshToStaticMesh(RawMesh, &Asset);
 		Asset.ImportVersion = EImportStaticMeshVersion::LastVersion;
 		// Reading triangle data from a Static Mesh asset in a cooked build produces garbage on
@@ -129,6 +131,15 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 		// It comes with a memory cost, so once we have fixed the GPU copy problem the following
 		// line should be removed.
 		Asset.bAllowCPUAccess = true;
+	}
+}
+
+UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName, const FString& FallbackName)
+{
+	auto InitAsset = [&](UStaticMesh& Asset) {
+		AGX_ImportUtilities_helpers::InitStaticMesh(
+			&FAGX_EditorUtilities::CreateRawMeshFromTrimesh, Trimesh, Asset);
 	};
 
 	FString TrimeshSourceName = Trimesh.GetSourceName();
@@ -146,18 +157,10 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	const FRenderDataBarrier& RenderData, const FString& DirectoryName)
 {
 	auto InitAsset = [&](UStaticMesh& Asset) {
-		FRawMesh RawMesh = FAGX_EditorUtilities::CreateRawMeshFromRenderData(RenderData);
-		FAGX_EditorUtilities::AddRawMeshToStaticMesh(RawMesh, &Asset);
-		Asset.ImportVersion = EImportStaticMeshVersion::LastVersion;
-		// Reading triangle data from a Static Mesh asset in a cooked build produces garbage on
-		// Linux, which makes it impossible to create the corresponding AGX Dynamics Trimesh shape.
-		// By setting this flag Unreal Engine will keep a copy of the triangle data in CPU memory
-		// which we can read and create the Trimesh from.
-		//
-		// It comes with a memory cost, so once we have fixed the GPU copy problem the following
-		// line should be removed.
-		Asset.bAllowCPUAccess = true;
+		AGX_ImportUtilities_helpers::InitStaticMesh(
+			&FAGX_EditorUtilities::CreateRawMeshFromRenderData, RenderData, Asset);
 	};
+
 	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
 		DirectoryName, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
 		TEXT("RenderMesh"), TEXT("RenderMesh"), InitAsset);
