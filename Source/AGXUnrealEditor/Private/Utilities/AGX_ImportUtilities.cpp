@@ -32,8 +32,7 @@ namespace
 		const FString& AssetType, FInitAssetCallback InitAsset)
 	{
 		AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, FallbackName, AssetType);
-		FString PackagePath =
-			FAGX_ImportUtilities::CreatePackagePath(DirectoryName, AssetType);
+		FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryName, AssetType);
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
@@ -122,6 +121,14 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 		FRawMesh RawMesh = FAGX_EditorUtilities::CreateRawMeshFromTrimesh(Trimesh);
 		FAGX_EditorUtilities::AddRawMeshToStaticMesh(RawMesh, &Asset);
 		Asset.ImportVersion = EImportStaticMeshVersion::LastVersion;
+		// Reading triangle data from a Static Mesh asset in a cooked build produces garbage on
+		// Linux, which makes it impossible to create the corresponding AGX Dynamics Trimesh shape.
+		// By setting this flag Unreal Engine will keep a copy of the triangle data in CPU memory
+		// which we can read and create the Trimesh from.
+		//
+		// It comes with a memory cost, so once we have fixed the GPU copy problem the following
+		// line should be removed.
+		Asset.bAllowCPUAccess = true;
 	};
 
 	FString TrimeshSourceName = Trimesh.GetSourceName();
@@ -142,6 +149,14 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 		FRawMesh RawMesh = FAGX_EditorUtilities::CreateRawMeshFromRenderData(RenderData);
 		FAGX_EditorUtilities::AddRawMeshToStaticMesh(RawMesh, &Asset);
 		Asset.ImportVersion = EImportStaticMeshVersion::LastVersion;
+		// Reading triangle data from a Static Mesh asset in a cooked build produces garbage on
+		// Linux, which makes it impossible to create the corresponding AGX Dynamics Trimesh shape.
+		// By setting this flag Unreal Engine will keep a copy of the triangle data in CPU memory
+		// which we can read and create the Trimesh from.
+		//
+		// It comes with a memory cost, so once we have fixed the GPU copy problem the following
+		// line should be removed.
+		Asset.bAllowCPUAccess = true;
 	};
 	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
 		DirectoryName, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
@@ -179,7 +194,8 @@ namespace
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Could not find the owning actor of Actor Component: %s during name finalization."),
+				TEXT("Could not find the owning actor of Actor Component: %s during name "
+					 "finalization."),
 				*Component.GetName());
 			return;
 		}
