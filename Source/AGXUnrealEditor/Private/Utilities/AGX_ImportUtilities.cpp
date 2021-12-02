@@ -118,7 +118,7 @@ namespace AGX_ImportUtilities_helpers
 {
 	template <typename FMeshFactory, typename FMeshDescription>
 	void InitStaticMesh(
-		FMeshFactory MeshFactory, const FMeshDescription& MeshDescription, UStaticMesh& Asset)
+		FMeshFactory MeshFactory, const FMeshDescription& MeshDescription, UStaticMesh& Asset, bool bAllowCPUAccess)
 	{
 		FRawMesh RawMesh = MeshFactory(MeshDescription);
 		FAGX_EditorUtilities::AddRawMeshToStaticMesh(RawMesh, &Asset);
@@ -130,7 +130,7 @@ namespace AGX_ImportUtilities_helpers
 		//
 		// It comes with a memory cost, so once we have fixed the GPU copy problem the following
 		// line should be removed.
-		Asset.bAllowCPUAccess = true;
+		Asset.bAllowCPUAccess = bAllowCPUAccess;
 	}
 }
 
@@ -139,7 +139,7 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 {
 	auto InitAsset = [&](UStaticMesh& Asset) {
 		AGX_ImportUtilities_helpers::InitStaticMesh(
-			&FAGX_EditorUtilities::CreateRawMeshFromTrimesh, Trimesh, Asset);
+			&FAGX_EditorUtilities::CreateRawMeshFromTrimesh, Trimesh, Asset, true);
 	};
 
 	FString TrimeshSourceName = Trimesh.GetSourceName();
@@ -158,7 +158,7 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 {
 	auto InitAsset = [&](UStaticMesh& Asset) {
 		AGX_ImportUtilities_helpers::InitStaticMesh(
-			&FAGX_EditorUtilities::CreateRawMeshFromRenderData, RenderData, Asset);
+			&FAGX_EditorUtilities::CreateRawMeshFromRenderData, RenderData, Asset, false);
 	};
 
 	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
