@@ -771,6 +771,9 @@ public:
 
 	double GetRestLength() const;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire", Meta = (DisplayName = "Get Rest Length"))
+	float GetRestLength_BP() const;
+
 	double GetMass() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire", Meta = (DisplayName = "Get Mass"))

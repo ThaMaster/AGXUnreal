@@ -1007,6 +1007,11 @@ double UAGX_WireComponent::GetRestLength() const
 	return Length;
 }
 
+float UAGX_WireComponent::GetRestLength_BP() const
+{
+	return static_cast<float>(GetRestLength());
+}
+
 double UAGX_WireComponent::GetMass() const
 {
 	if (HasNative())
