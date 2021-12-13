@@ -8,8 +8,9 @@
 	"CreatedBy": "Algoryx Simulation",
 	"CreatedByURL": "www.algoryx.se",
 	"DocsURL": "https://www.algoryx.se/documentation/complete/AGXUnreal/beta-0.11/index.html",
-    "MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/41605aa41cbf47549d678c910f56dc29"
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/41605aa41cbf47549d678c910f56dc29"
 	"SupportURL": "support@algoryx.se",
+	"EngineVersion": "4.25.0",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"Installed": false,
