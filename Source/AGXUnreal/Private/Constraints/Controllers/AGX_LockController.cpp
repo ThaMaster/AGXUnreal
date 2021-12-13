@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Constraints/Controllers/AGX_LockController.h"
 
 #include "Constraints/ControllerConstraintBarriers.h"

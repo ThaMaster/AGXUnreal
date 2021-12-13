@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Terrain/AGX_AsyncLandscapeSampler.h"
 
 // AGX Dynamics for Unreal includes.

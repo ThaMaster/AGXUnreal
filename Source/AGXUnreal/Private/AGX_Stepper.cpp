@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "AGX_Stepper.h"
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"

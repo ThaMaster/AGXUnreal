@@ -1,4 +1,7 @@
-﻿#pragma once
+// Copyright 2021, Algoryx Simulation AB.
+
+
+#pragma once
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"

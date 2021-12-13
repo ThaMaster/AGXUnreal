@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "AgxEdMode/AGX_AgxEdModeTerrain.h"
 
 // AGX Dynamics for Unreal includes.

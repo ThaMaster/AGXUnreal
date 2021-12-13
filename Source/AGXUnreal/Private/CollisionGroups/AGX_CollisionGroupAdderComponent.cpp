@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "CollisionGroups/AGX_CollisionGroupAdderComponent.h"
 
 #include "Shapes/AGX_ShapeComponent.h"

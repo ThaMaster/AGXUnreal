@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Tires/TwoBodyTireBarrier.h"
 
 // AGX Dynamics for Unreal includes.

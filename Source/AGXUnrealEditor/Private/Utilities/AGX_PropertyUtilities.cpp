@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Utilities/AGX_PropertyUtilities.h"
 
 // Unreal Engine includes.

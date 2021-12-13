@@ -1,4 +1,7 @@
-﻿#pragma once
+// Copyright 2021, Algoryx Simulation AB.
+
+
+#pragma once
 
 // AGX Dynamics for Unreal includes.
 #include "Materials/AGX_ShapeMaterialBulkProperties.h"

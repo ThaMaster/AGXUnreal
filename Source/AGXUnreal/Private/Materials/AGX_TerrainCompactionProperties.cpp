@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Materials/AGX_TerrainCompactionProperties.h"
 
 FAGX_TerrainCompactionProperties::FAGX_TerrainCompactionProperties()

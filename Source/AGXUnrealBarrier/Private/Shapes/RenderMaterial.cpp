@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Shapes/RenderMaterial.h"
 
 FLinearColor FAGX_RenderMaterial::ConvertToLinear(const FVector4& SRGBColor)

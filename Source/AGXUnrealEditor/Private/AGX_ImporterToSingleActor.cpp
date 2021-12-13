@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "AGX_ImporterToSingleActor.h"
 
 // AGX Dynamics for Unreal includes.

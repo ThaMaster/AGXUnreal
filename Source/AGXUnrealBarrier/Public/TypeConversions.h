@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #pragma once
 
 /// \todo This may become a header file with lots of includes, which will make
