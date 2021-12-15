@@ -15,7 +15,6 @@
 #include "CanvasTypes.h"
 #include "Editor.h"
 #include "EditorViewportClient.h"
-#include "Engine.h"
 #include "SceneManagement.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintComponentVisualizer"
