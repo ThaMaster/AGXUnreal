@@ -202,7 +202,7 @@ public:
 
 	virtual ~FAGX_ConstraintIconGraphicsProxy()
 	{
-		for (const TSharedPtr<FAGX_ConstraintIconGraphicsGeometry> Geometry : Geometries)
+		for (const TSharedPtr<FAGX_ConstraintIconGraphicsGeometry>& Geometry : Geometries)
 		{
 			Geometry->VertexBuffers.PositionVertexBuffer.ReleaseResource();
 			Geometry->VertexBuffers.StaticMeshVertexBuffer.ReleaseResource();
@@ -395,7 +395,7 @@ private:
 
 		Collector.RegisterOneFrameMaterialProxy(WireframeMaterialInstance);
 
-		for (const TSharedPtr<FAGX_ConstraintIconGraphicsSection> Section : Sections)
+		for (const TSharedPtr<FAGX_ConstraintIconGraphicsSection>& Section : Sections)
 		{
 			FMaterialRenderProxy* MaterialProxy =
 				bWireframe ? WireframeMaterialInstance : Section->Material->GetRenderProxy();
