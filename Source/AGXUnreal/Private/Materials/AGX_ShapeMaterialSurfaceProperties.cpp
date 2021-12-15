@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Materials/AGX_ShapeMaterialSurfaceProperties.h"
 
 FAGX_ShapeMaterialSurfaceProperties::FAGX_ShapeMaterialSurfaceProperties()

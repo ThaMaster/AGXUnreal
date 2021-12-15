@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Materials/AGX_ShapeMaterialBulkProperties.h"
 
 FAGX_ShapeMaterialBulkProperties::FAGX_ShapeMaterialBulkProperties()

@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Wire/AGX_WireActor.h"
 
 // AGX Dynamics for Unreal include.s

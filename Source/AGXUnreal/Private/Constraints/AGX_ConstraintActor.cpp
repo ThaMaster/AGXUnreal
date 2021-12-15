@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Constraints/AGX_ConstraintActor.h"
 
 // AGX Dynamics for Unreal includes.

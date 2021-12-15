@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Shapes/CylinderShapeBarrier.h"
 
 #include "AGXRefs.h"

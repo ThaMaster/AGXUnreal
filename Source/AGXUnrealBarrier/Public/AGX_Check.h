@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #pragma once
 
 #if defined(AGXUNREAL_CHECK) && AGXUNREAL_CHECK == 1

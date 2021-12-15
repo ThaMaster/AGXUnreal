@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Constraints/DistanceJointBarrier.h"
 
 #include "AGXRefs.h"

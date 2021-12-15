@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "AGX_RuntimeStyle.h"
 
 #include "Runtime/Projects/Public/Interfaces/IPluginManager.h"

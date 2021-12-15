@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 
 // This header file should only be included from source files built as part of AGXUnrealBarrier.
 

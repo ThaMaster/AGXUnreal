@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Shapes/AGX_SphereShapeComponent.h"
 
 // AGX Dynamics for Unreal includes.

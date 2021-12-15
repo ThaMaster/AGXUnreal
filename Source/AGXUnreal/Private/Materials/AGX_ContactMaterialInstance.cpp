@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Materials/AGX_ContactMaterialInstance.h"
 
 // AGX Dynamics for Unreal includes.

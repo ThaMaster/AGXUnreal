@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #pragma once
 
 #include "AGX_RigidBodyReference.generated.h"

@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "AGX_RigidBodyReference.h"
 
 #include "AGX_RigidBodyComponent.h"

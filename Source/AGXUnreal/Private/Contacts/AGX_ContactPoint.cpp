@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 #include "Contacts/AGX_ContactPoint.h"
 
 #include "AGX_LogCategory.h"
