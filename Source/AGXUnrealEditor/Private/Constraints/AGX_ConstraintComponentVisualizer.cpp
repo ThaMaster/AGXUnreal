@@ -513,7 +513,7 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraintHUD(
 // violated. While that information is useful, simply printing it to screen at a hard-coded location
 // isn't the best way to go about it. Sometimes the constraints are intentionally violated, and
 // sometimes multiple constraints are printed at the same time, which makes the text unreadable.
-// Find a better way to provide this information.
+// Find a better way to provide this information, see internal GitLab issue 270.
 #if 0
 	FString Message;
 	if (Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER, &Message))
