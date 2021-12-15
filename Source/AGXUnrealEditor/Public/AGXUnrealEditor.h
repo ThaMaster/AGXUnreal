@@ -7,7 +7,6 @@
 #include "Containers/Array.h"
 #include "Modules/ModuleInterface.h"
 #include "Modules/ModuleManager.h"
-#include "UnrealEd.h"
 
 class FComponentVisualizer;
 class FToolBarBuilder;

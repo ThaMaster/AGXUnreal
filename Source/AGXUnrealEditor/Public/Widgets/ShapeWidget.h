@@ -5,7 +5,6 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
-#include "SlateCore.h"
 #include "PhysicsEngine/ShapeElem.h"
 #include "Widgets/SCompoundWidget.h"
 

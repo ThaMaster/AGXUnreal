@@ -17,7 +17,8 @@
 #include "Misc/Attribute.h"
 #include "PropertyCustomizationHelpers.h"
 #include "ScopedTransaction.h"
-#include "UnrealEd.h"
+#include "UnrealEdGlobals.h"
+#include "Widgets/Colors/SColorBlock.h"
 #include "Widgets/Input/SVectorInputBox.h"
 
 #define LOCTEXT_NAMESPACE "AGX_WireNodeDetails"
