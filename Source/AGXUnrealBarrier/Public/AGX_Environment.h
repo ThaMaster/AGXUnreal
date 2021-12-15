@@ -22,6 +22,8 @@ public:
 
 	static FString GetPluginBinariesPath();
 
+	static FString GetPluginSourcePath();
+
 	static FString GetProjectBinariesPath();
 
 	static FString GetPluginLicenseDirPath();
@@ -47,7 +49,7 @@ public:
 	static bool IsAGXDynamicsVersionNewerOrEqualTo(
 		int32 InGeneration, int32 InMajor, int32 InMinor, int32 InPatch);
 
-	static FString GetAgxDynamicsResourcesPath();
+	static FString GetAGXDynamicsResourcesPath();
 
 	FAGX_Environment(const FAGX_Environment&) = delete;
 	FAGX_Environment operator=(const FAGX_Environment&) = delete;

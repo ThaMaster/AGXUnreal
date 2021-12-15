@@ -46,7 +46,7 @@ FAGX_Environment::~FAGX_Environment()
 
 void FAGX_Environment::Init()
 {
-	const FString AgxDynamicsResoucePath = GetAgxDynamicsResourcesPath();
+	const FString AgxDynamicsResoucePath = GetAGXDynamicsResourcesPath();
 	if (FAGX_Environment::IsSetupEnvRun())
 	{
 		UE_LOG(
@@ -72,7 +72,7 @@ void FAGX_Environment::LoadDynamicLibraries()
 {
 	check(DynamicLibraryHandles.Num() == 0);
 	check(IsSetupEnvRun() == false);
-	const FString AgxResourcesPath = GetAgxDynamicsResourcesPath();
+	const FString AgxResourcesPath = GetAGXDynamicsResourcesPath();
 	TArray<FString> AGXDynamicsDependencyFileNames;
 
 #if defined(_WIN64)
@@ -147,7 +147,7 @@ void FAGX_Environment::LoadDynamicLibraries()
 
 void FAGX_Environment::SetupAGXDynamicsEnvironment()
 {
-	const FString AgxResourcesPath = GetAgxDynamicsResourcesPath();
+	const FString AgxResourcesPath = GetAGXDynamicsResourcesPath();
 	const FString AgxBinPath = FPaths::Combine(AgxResourcesPath, FString("bin"));
 	const FString AgxDataPath = FPaths::Combine(AgxResourcesPath, FString("data"));
 	const FString AgxCfgPath = FPaths::Combine(AgxDataPath, FString("cfg"));
@@ -246,6 +246,14 @@ FString FAGX_Environment::GetPluginBinariesPath()
 	const FString PluginBinPath = FPaths::Combine(PluginPath, FString("Binaries"));
 
 	return PluginBinPath;
+}
+
+FString FAGX_Environment::GetPluginSourcePath()
+{
+	const FString PluginPath = GetPluginPath();
+	const FString PluginSrcPath = FPaths::Combine(PluginPath, FString("Source"));
+
+	return PluginSrcPath;
 }
 
 FString FAGX_Environment::GetPluginLicenseDirPath()
@@ -385,7 +393,7 @@ bool FAGX_Environment::IsAGXDynamicsVersionNewerOrEqualTo(
 	return true;
 }
 
-FString FAGX_Environment::GetAgxDynamicsResourcesPath()
+FString FAGX_Environment::GetAGXDynamicsResourcesPath()
 {
 	if (IsSetupEnvRun())
 	{
@@ -395,7 +403,7 @@ FString FAGX_Environment::GetAgxDynamicsResourcesPath()
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("FAGX_Environment::GetAgxDynamicsResourcesPath environment variable "
+				TEXT("FAGX_Environment::GetAGXDynamicsResourcesPath environment variable "
 					 "AGX_DIR not set when expecting setup_env to have be called. Returning empty "
 					 "string."));
 			return FString("");
@@ -406,11 +414,11 @@ FString FAGX_Environment::GetAgxDynamicsResourcesPath()
 	else
 	{
 		// Get and return path to AGX Dynamics resources when bundled with the plugin.
-		const FString BinariesPath = FAGX_Environment::GetPluginBinariesPath();
-		const FString AgxResourcesPath =
-			FPaths::Combine(BinariesPath, FString("ThirdParty"), FString("agx"));
+		const FString SourcePath = FAGX_Environment::GetPluginSourcePath();
+		const FString AGXResourcesPath =
+			FPaths::Combine(SourcePath, FString("ThirdParty"), FString("agx"));
 
-		return AgxResourcesPath;
+		return AGXResourcesPath;
 	}
 }
 
