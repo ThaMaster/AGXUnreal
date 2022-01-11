@@ -670,6 +670,16 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private void FixSymlinks(string LibraryDirectory)
 	{
+		/// @fixme Sometimes Unreal Build Tool doesn't copy symlinks at all
+		/// when building with "RunUAT.sh BuildPlugin". We can still run
+		/// Blueprint projects without them, but C++ projects that contains
+		/// AGX Dynamics Barrier modules cannot link. For now we don't create
+		/// symlinks and let the file duplicates remain instead. Figure out
+		/// how to properly make symlinks survive through Unreal Build Tool.
+		return;
+
+
+
 		// Linux libraries uses symlinks for version management. We have not
 		// been able to figure out how to have these symlinks survive the
 		// file copy done above, so here we simply replace the file
@@ -684,7 +694,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		// A related problem is that Unreal Build Tool's RuntimeDependencies
 		// also doesn't understand symlinks so in some cases the symlink we
 		// create here get replaced by a full file later. Don't know what to do
-		// about that.
+		// about that. Also, sometimes the symlinks are ignored which leads to
+		// missing files in the export directory.
 		string VersionSuffix = "." + BundledAGXResources.GetAGXVersion().ToString();
 		string[] BundledAGXLibraries = Directory.GetFiles(LibraryDirectory, "lib*.so" + VersionSuffix);
 		foreach (string Library in BundledAGXLibraries)
