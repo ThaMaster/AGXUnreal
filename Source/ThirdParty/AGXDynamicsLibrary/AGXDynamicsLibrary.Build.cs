@@ -696,25 +696,25 @@ public class AGXDynamicsLibrary : ModuleRules
 		// create here get replaced by a full file later. Don't know what to do
 		// about that. Also, sometimes the symlinks are ignored which leads to
 		// missing files in the export directory.
-		string VersionSuffix = "." + BundledAGXResources.GetAGXVersion().ToString();
-		string[] BundledAGXLibraries = Directory.GetFiles(LibraryDirectory, "lib*.so" + VersionSuffix);
-		foreach (string Library in BundledAGXLibraries)
-		{
-			string FileName = Path.GetFileName(Library);
-			string LinkName = FileName.Substring(0, FileName.Length - VersionSuffix.Length);
-			string LinkPath = Path.Combine(LibraryDirectory, LinkName);
-			string LinkTarget = FileName;
-			string LinkArguments = String.Format("-s \"{0}\" \"{1}\"", LinkTarget, LinkPath);
-
-			// Delete the file that should be a symlink.
-			File.Delete(LinkPath);
-
-			// Create the symlink.
-			var LinkInfo = new ProcessStartInfo("ln", LinkArguments);
-			LinkInfo.CreateNoWindow = true;
-			LinkInfo.UseShellExecute = false;
-			Process.Start(LinkInfo).WaitForExit();
-		}
+		//string VersionSuffix = "." + BundledAGXResources.GetAGXVersion().ToString();
+		//string[] BundledAGXLibraries = Directory.GetFiles(LibraryDirectory, "lib*.so" + VersionSuffix);
+		//foreach (string Library in BundledAGXLibraries)
+		//{
+		//	string FileName = Path.GetFileName(Library);
+		//	string LinkName = FileName.Substring(0, FileName.Length - VersionSuffix.Length);
+		//	string LinkPath = Path.Combine(LibraryDirectory, LinkName);
+		//	string LinkTarget = FileName;
+		//	string LinkArguments = String.Format("-s \"{0}\" \"{1}\"", LinkTarget, LinkPath);
+		//
+		//	// Delete the file that should be a symlink.
+		//	File.Delete(LinkPath);
+		//
+		//	// Create the symlink.
+		//	var LinkInfo = new ProcessStartInfo("ln", LinkArguments);
+		//	LinkInfo.CreateNoWindow = true;
+		//	LinkInfo.UseShellExecute = false;
+		//	Process.Start(LinkInfo).WaitForExit();
+		//}
 	}
 
 	private void CleanBundledAGXDynamicsResources()
