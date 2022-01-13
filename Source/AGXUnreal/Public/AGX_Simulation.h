@@ -115,7 +115,7 @@ public: // Properties.
 	 * up with real-time.
 	 */
 	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
-	TEnumAsByte<enum EAGX_StepMode> StepMode = SmCatchUpImmediately;
+	TEnumAsByte<enum EAGX_StepMode> StepMode = SmDropImmediately;
 
 	/** Maximum time lag for the Catch up over time Capped step mode before dropping [s]. */
 	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
