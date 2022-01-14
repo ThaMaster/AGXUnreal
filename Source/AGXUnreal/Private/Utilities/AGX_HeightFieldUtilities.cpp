@@ -93,8 +93,6 @@ namespace
 	TArray<float> GetHeightsUsingRayCasts(
 		ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
 	{
-		return GetHeigtsUsingApi(Landscape, LandscapeSizeInfo);
-
 		const int32 NumThreads =
 			FMath::Clamp(FPlatformMisc::NumberOfCores() - 1, 1, LandscapeSizeInfo.NumVerticesSideY);
 
