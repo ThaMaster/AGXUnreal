@@ -1,4 +1,4 @@
-// Copyright 2021, Algoryx Simulation AB.
+// Copyright 2022, Algoryx Simulation AB.
 
 
 #include "Constraints/AGX_ConstraintActor.h"

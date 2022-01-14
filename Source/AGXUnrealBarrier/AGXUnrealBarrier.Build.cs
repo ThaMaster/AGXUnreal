@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 using System;
 using UnrealBuildTool;
 

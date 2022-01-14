@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -231,9 +234,12 @@ public class AGXDynamicsLibrary : ModuleRules
 			{
 				RuntimeLibFiles.Add("agx-assimp-vc*-mt", LibSource.AGX);
 			}
+            if (TargetAGXVersion.IsOlderThan(2, 31, 1, 0))
+            {
+				RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
+			}
 
-			RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
-			RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
+            RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
 			RuntimeLibFiles.Add("ot2?-OpenThreads", LibSource.Dependencies);
 			if (TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
