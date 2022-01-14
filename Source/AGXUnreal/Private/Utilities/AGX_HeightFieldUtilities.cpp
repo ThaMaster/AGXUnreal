@@ -10,60 +10,78 @@
 // Unreal Engine includes.
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "Landscape.h"
-#include "LandscapeHeightfieldCollisionComponent.h"
-#include "LandscapeProxy.h"
-#include "LandscapeInfo.h"
-#include "Misc/Optional.h"
 
 #include <limits>
 
 namespace
 {
+	// This function should only be used if the landscape is not rotated around world x or y axis.
+	// The reason for this is that the Landscape.GetHeightAtLocaion does not handle that case. It
+	// will measure along the world z-axis (instead of the Landscapes local z-axis as it should)
+	// such that sharp peaks will be cut off and tilted.
 	TArray<float> GetHeigtsUsingApi(
 		ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("About to test"));
-
-		const FAGX_AsyncLandscapeSampler::VertexSpan SpanX(0, LandscapeSizeInfo.NumVerticesSideX);
-		const FAGX_AsyncLandscapeSampler::VertexSpan SpanY(0, LandscapeSizeInfo.NumVerticesSideY);
-
-		const int32 NumVertices = (SpanX.End - SpanX.Start) * (SpanY.End - SpanY.Start);
-		check(NumVertices >= 0);
+		UE_LOG(LogAGX, Log, TEXT("About to read Landscape heights using Landscape API."));
 
 		TArray<float> Heights;
+		const int32 NumVertices =
+			LandscapeSizeInfo.NumVerticesSideX * LandscapeSizeInfo.NumVerticesSideY;
+		if (NumVertices <= 0)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("GetHeightsUsingAPI got zero sized landscape. Cannot read landscape heights "
+					 "from landscape '%s'."),
+				*Landscape.GetName());
+		}
+
 		Heights.Reserve(NumVertices);
+		const int32 LastVertIndexX = LandscapeSizeInfo.NumVerticesSideX - 1;
+		const int32 LastVertIndexY = LandscapeSizeInfo.NumVerticesSideY - 1;
+		const float EdgeNudgeDistanceX = LandscapeSizeInfo.QuadSideSizeX / 1000.0f;
+		const float EdgeNudgeDistanceY = LandscapeSizeInfo.QuadSideSizeY / 1000.0f;
 
 		// AGX terrains Y axis goes in the opposite direction from Unreal's Y axis (flipped).
-		for (int32 Y = SpanY.End - 1; Y >= SpanY.Start; Y--)
+		for (int32 Y = LastVertIndexY; Y >= 0; Y--)
 		{
-			for (int32 X = SpanX.Start; X < SpanX.End; X++)
+			for (int32 X = 0; X <= LastVertIndexX; X++)
 			{
 				// Vertex position in the landscapes local coordinate system.
-				float Xlocal = static_cast<float>(X) * LandscapeSizeInfo.QuadSideSizeX;
-				float Ylocal = static_cast<float>(Y) * LandscapeSizeInfo.QuadSideSizeY;
+				const float Xlocal = [&]()
+				{
+					float Xl = static_cast<float>(X) * LandscapeSizeInfo.QuadSideSizeX;
+					// Measurements right at the edge of the landscape fails for some reason. Nudge
+					// the measurement point slightly towards center at edges as a workaround.
+					if (X == 0)
+					{
+						Xl += EdgeNudgeDistanceX;
+					}
+					else if (X == LastVertIndexX)
+					{
+						Xl -= EdgeNudgeDistanceX;
+					}
+					return Xl;
+				}();
 
-				if (X == 0)
+				const float Ylocal = [&]()
 				{
-					Xlocal += 0.1f;
-				}
-				if (X == SpanX.End - 1)
-				{
-					Xlocal -= 0.1f;
-				}
-
-				if (Y == 0)
-				{
-					Ylocal += 0.1f;
-				}
-				if (Y == SpanY.End - 1)
-				{
-					Ylocal -= 0.1f;
-				}
+					float Yl = static_cast<float>(Y) * LandscapeSizeInfo.QuadSideSizeY;
+					// Measurements right at the edge of the landscape fails for some reason. Nudge
+					// the measurement point slightly towards center at edges as a workaround.
+					if (Y == 0)
+					{
+						Yl += EdgeNudgeDistanceY;
+					}
+					else if (Y == LastVertIndexY)
+					{
+						Yl -= EdgeNudgeDistanceY;
+					}
+					return Yl;
+				}();
 
 				FVector LocationGlobal =
 					Landscape.GetTransform().TransformPositionNoScale(FVector(Xlocal, Ylocal, 0));
-				LocationGlobal.Z = 0; // Always set z to zero.
-
 				TOptional<float> Height = Landscape.GetHeightAtLocation(LocationGlobal);
 				if (Height.IsSet())
 				{
@@ -77,10 +95,10 @@ namespace
 				{
 					UE_LOG(
 						LogAGX, Error,
-						TEXT("Unexpected error: reading height from Landscape at location %f, %f, "
-							 "%f failed during AGX Heightfield initialization."),
-						LocationGlobal.X, LocationGlobal.Y, LocationGlobal.Z);
-					Heights.Add(-300.f);
+						TEXT("Unexpected error: reading height from Landscape '%s' at location %f, "
+							 "%f, %f failed during AGX Heightfield initialization."),
+						*Landscape.GetName(), LocationGlobal.X, LocationGlobal.Y, LocationGlobal.Z);
+					Heights.Add(0.f);
 				}
 			}
 		}
@@ -95,6 +113,9 @@ namespace
 	{
 		const int32 NumThreads =
 			FMath::Clamp(FPlatformMisc::NumberOfCores() - 1, 1, LandscapeSizeInfo.NumVerticesSideY);
+
+		UE_LOG(LogAGX, Log, TEXT("About to read Landscape heights with ray casting using %d "
+			"threads."), NumThreads);
 
 		// Split the Landscape up between the threads so that each thread gets an equal range of
 		// Y-side vertices, except for the last thread that also gets any remainder from the
