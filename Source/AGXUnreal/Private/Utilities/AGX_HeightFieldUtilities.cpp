@@ -10,6 +10,7 @@
 // Unreal Engine includes.
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "Landscape.h"
+#include "Math/UnrealMathUtility.h"
 
 #include <limits>
 
@@ -179,7 +180,8 @@ namespace
 TArray<float> GetHeights(ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
 {
 	const FRotator LandsapeRotation = Landscape.GetActorRotation();
-	if (LandsapeRotation.Roll == 0 && LandsapeRotation.Pitch == 0)
+	if (FMath::IsNearlyZero(LandsapeRotation.Roll, KINDA_SMALL_NUMBER) &&
+		FMath::IsNearlyZero(LandsapeRotation.Pitch, KINDA_SMALL_NUMBER))
 	{
 		// If the Landscape is not rotated around x or y, we can use the Landscape API to read the
 		// heights which is much faster than ray-casting.
