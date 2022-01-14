@@ -1,6 +1,5 @@
 // Copyright 2021, Algoryx Simulation AB.
 
-
 #include "Utilities/AGX_HeightFieldUtilities.h"
 
 // AGX Dynamics for Unreal includes.
@@ -11,13 +10,91 @@
 // Unreal Engine includes.
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "Landscape.h"
+#include "LandscapeHeightfieldCollisionComponent.h"
+#include "LandscapeProxy.h"
+#include "LandscapeInfo.h"
+#include "Misc/Optional.h"
 
 #include <limits>
 
 namespace
 {
-	TArray<float> GetHeights(ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
+	TArray<float> GetHeigtsUsingApi(
+		ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
 	{
+		UE_LOG(LogAGX, Warning, TEXT("About to test"));
+
+		const FAGX_AsyncLandscapeSampler::VertexSpan SpanX(0, LandscapeSizeInfo.NumVerticesSideX);
+		const FAGX_AsyncLandscapeSampler::VertexSpan SpanY(0, LandscapeSizeInfo.NumVerticesSideY);
+
+		const int32 NumVertices = (SpanX.End - SpanX.Start) * (SpanY.End - SpanY.Start);
+		check(NumVertices >= 0);
+
+		TArray<float> Heights;
+		Heights.Reserve(NumVertices);
+
+		// AGX terrains Y axis goes in the opposite direction from Unreal's Y axis (flipped).
+		for (int32 Y = SpanY.End - 1; Y >= SpanY.Start; Y--)
+		{
+			for (int32 X = SpanX.Start; X < SpanX.End; X++)
+			{
+				// Vertex position in the landscapes local coordinate system.
+				float Xlocal = static_cast<float>(X) * LandscapeSizeInfo.QuadSideSizeX;
+				float Ylocal = static_cast<float>(Y) * LandscapeSizeInfo.QuadSideSizeY;
+
+				if (X == 0)
+				{
+					Xlocal += 0.1f;
+				}
+				if (X == SpanX.End - 1)
+				{
+					Xlocal -= 0.1f;
+				}
+
+				if (Y == 0)
+				{
+					Ylocal += 0.1f;
+				}
+				if (Y == SpanY.End - 1)
+				{
+					Ylocal -= 0.1f;
+				}
+
+				FVector LocationGlobal =
+					Landscape.GetTransform().TransformPositionNoScale(FVector(Xlocal, Ylocal, 0));
+				LocationGlobal.Z = 0; // Always set z to zero.
+
+				TOptional<float> Height = Landscape.GetHeightAtLocation(LocationGlobal);
+				if (Height.IsSet())
+				{
+					// Position of height measurement in Landscapes local coordinate system.
+					FVector HeightPointLocal =
+						Landscape.GetTransform().InverseTransformPositionNoScale(
+							FVector(LocationGlobal.X, LocationGlobal.Y, *Height));
+					Heights.Add(HeightPointLocal.Z);
+				}
+				else
+				{
+					UE_LOG(
+						LogAGX, Error,
+						TEXT("Unexpected error: reading height from Landscape at location %f, %f, "
+							 "%f failed during AGX Heightfield initialization."),
+						LocationGlobal.X, LocationGlobal.Y, LocationGlobal.Z);
+					Heights.Add(-300.f);
+				}
+			}
+		}
+
+		check(NumVertices == Heights.Num());
+
+		return Heights;
+	}
+
+	TArray<float> GetHeightsUsingRayCasts(
+		ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
+	{
+		return GetHeigtsUsingApi(Landscape, LandscapeSizeInfo);
+
 		const int32 NumThreads =
 			FMath::Clamp(FPlatformMisc::NumberOfCores() - 1, 1, LandscapeSizeInfo.NumVerticesSideY);
 
@@ -77,6 +154,21 @@ namespace
 		}
 
 		return Heights;
+	}
+}
+
+TArray<float> GetHeights(ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
+{
+	const FRotator LandsapeRotation = Landscape.GetActorRotation();
+	if (LandsapeRotation.Roll == 0 && LandsapeRotation.Pitch == 0)
+	{
+		// If the Landscape is not rotated around x or y, we can use the Landscape API to read the
+		// heights which is much faster than ray-casting.
+		return GetHeigtsUsingApi(Landscape, LandscapeSizeInfo);
+	}
+	else
+	{
+		return GetHeightsUsingRayCasts(Landscape, LandscapeSizeInfo);
 	}
 }
 
