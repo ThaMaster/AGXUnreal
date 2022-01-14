@@ -1,3 +1,6 @@
+// Copyright 2021, Algoryx Simulation AB.
+
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
