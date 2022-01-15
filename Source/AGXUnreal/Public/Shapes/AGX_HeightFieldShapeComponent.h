@@ -61,7 +61,8 @@ protected:
 	virtual FShapeBarrier* GetNativeBarrier() override;
 	virtual const FShapeBarrier* GetNativeBarrier() const override;
 	virtual void ReleaseNative() override;
-	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
+	virtual void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
+	virtual void UpdateNativeGlobalTransform() override;
 #if WITH_EDITOR
 	virtual bool DoesPropertyAffectVisualMesh(
 		const FName& PropertyName, const FName& MemberPropertyName) const override;
