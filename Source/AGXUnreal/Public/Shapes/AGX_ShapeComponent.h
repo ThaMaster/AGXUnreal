@@ -245,7 +245,7 @@ protected:
 	 * This should be used only for body-less stand-alone shapes for which the native parent frame
 	 * is the world coordinate system.
 	 */
-	void UpdateNativeGlobalTransform();
+	virtual void UpdateNativeGlobalTransform();
 
 	static void ApplySensorMaterial(UMeshComponent& Mesh);
 	static void RemoveSensorMaterial(UMeshComponent& Mesh);
