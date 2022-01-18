@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Utilities/AGX_HeightFieldUtilities.h"
 
 // AGX Dynamics for Unreal includes.
@@ -11,15 +10,113 @@
 // Unreal Engine includes.
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "Landscape.h"
+#include "Math/UnrealMathUtility.h"
 
 #include <limits>
 
 namespace
 {
-	TArray<float> GetHeights(ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
+	// This function should only be used if the landscape is not rotated around world x or y axis.
+	// The reason for this is that the Landscape.GetHeightAtLocaion does not handle that case. It
+	// will measure along the world z-axis (instead of the Landscapes local z-axis as it should)
+	// such that sharp peaks will be cut off and tilted.
+	TArray<float> GetHeigtsUsingApi(
+		ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
+	{
+		UE_LOG(LogAGX, Log, TEXT("About to read Landscape heights using Landscape API."));
+
+		TArray<float> Heights;
+		const int32 NumVertices =
+			LandscapeSizeInfo.NumVerticesSideX * LandscapeSizeInfo.NumVerticesSideY;
+		if (NumVertices <= 0)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("GetHeightsUsingAPI got zero sized landscape. Cannot read landscape heights "
+					 "from landscape '%s'."),
+				*Landscape.GetName());
+		}
+
+		Heights.Reserve(NumVertices);
+		const int32 LastVertIndexX = LandscapeSizeInfo.NumVerticesSideX - 1;
+		const int32 LastVertIndexY = LandscapeSizeInfo.NumVerticesSideY - 1;
+		const float EdgeNudgeDistanceX = LandscapeSizeInfo.QuadSideSizeX / 1000.0f;
+		const float EdgeNudgeDistanceY = LandscapeSizeInfo.QuadSideSizeY / 1000.0f;
+
+		// AGX terrains Y axis goes in the opposite direction from Unreal's Y axis (flipped).
+		for (int32 Y = LastVertIndexY; Y >= 0; Y--)
+		{
+			for (int32 X = 0; X <= LastVertIndexX; X++)
+			{
+				// Vertex position in the landscapes local coordinate system.
+				const float Xlocal = [&]()
+				{
+					float Xl = static_cast<float>(X) * LandscapeSizeInfo.QuadSideSizeX;
+					// Measurements right at the edge of the landscape fails for some reason. Nudge
+					// the measurement point slightly towards center at edges as a workaround.
+					if (X == 0)
+					{
+						Xl += EdgeNudgeDistanceX;
+					}
+					else if (X == LastVertIndexX)
+					{
+						Xl -= EdgeNudgeDistanceX;
+					}
+					return Xl;
+				}();
+
+				const float Ylocal = [&]()
+				{
+					float Yl = static_cast<float>(Y) * LandscapeSizeInfo.QuadSideSizeY;
+					// Measurements right at the edge of the landscape fails for some reason. Nudge
+					// the measurement point slightly towards center at edges as a workaround.
+					if (Y == 0)
+					{
+						Yl += EdgeNudgeDistanceY;
+					}
+					else if (Y == LastVertIndexY)
+					{
+						Yl -= EdgeNudgeDistanceY;
+					}
+					return Yl;
+				}();
+
+				FVector LocationGlobal =
+					Landscape.GetTransform().TransformPositionNoScale(FVector(Xlocal, Ylocal, 0));
+				TOptional<float> Height = Landscape.GetHeightAtLocation(LocationGlobal);
+				if (Height.IsSet())
+				{
+					// Position of height measurement in Landscapes local coordinate system.
+					FVector HeightPointLocal =
+						Landscape.GetTransform().InverseTransformPositionNoScale(
+							FVector(LocationGlobal.X, LocationGlobal.Y, *Height));
+					Heights.Add(HeightPointLocal.Z);
+				}
+				else
+				{
+					UE_LOG(
+						LogAGX, Error,
+						TEXT("Unexpected error: reading height from Landscape '%s' at location %f, "
+							 "%f, %f failed during AGX Heightfield initialization."),
+						*Landscape.GetName(), LocationGlobal.X, LocationGlobal.Y, LocationGlobal.Z);
+					Heights.Add(0.f);
+				}
+			}
+		}
+
+		check(NumVertices == Heights.Num());
+
+		return Heights;
+	}
+
+	TArray<float> GetHeightsUsingRayCasts(
+		ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
 	{
 		const int32 NumThreads =
 			FMath::Clamp(FPlatformMisc::NumberOfCores() - 1, 1, LandscapeSizeInfo.NumVerticesSideY);
+
+		UE_LOG(LogAGX, Log, TEXT("About to read Landscape heights with ray casting using %d "
+			"threads."), NumThreads);
 
 		// Split the Landscape up between the threads so that each thread gets an equal range of
 		// Y-side vertices, except for the last thread that also gets any remainder from the
@@ -77,6 +174,22 @@ namespace
 		}
 
 		return Heights;
+	}
+}
+
+TArray<float> GetHeights(ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
+{
+	const FRotator LandsapeRotation = Landscape.GetActorRotation();
+	if (FMath::IsNearlyZero(LandsapeRotation.Roll, KINDA_SMALL_NUMBER) &&
+		FMath::IsNearlyZero(LandsapeRotation.Pitch, KINDA_SMALL_NUMBER))
+	{
+		// If the Landscape is not rotated around x or y, we can use the Landscape API to read the
+		// heights which is much faster than ray-casting.
+		return GetHeigtsUsingApi(Landscape, LandscapeSizeInfo);
+	}
+	else
+	{
+		return GetHeightsUsingRayCasts(Landscape, LandscapeSizeInfo);
 	}
 }
 
