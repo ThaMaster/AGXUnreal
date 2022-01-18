@@ -211,8 +211,14 @@ void AAGX_Terrain::Tick(float DeltaTime)
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::Tick"));
 	Super::Tick(DeltaTime);
-	UpdateDisplacementMap();
-	UpdateParticlesMap();
+	if (bEnableDisplacementRendering)
+	{
+		UpdateDisplacementMap();
+	}
+	if (bEnableParticleRendering)
+	{
+		UpdateParticlesMap();
+	}
 }
 
 namespace
@@ -482,8 +488,14 @@ void AAGX_Terrain::SetInitialTransform()
 
 void AAGX_Terrain::InitializeRendering()
 {
-	InitializeDisplacementMap();
-	ParticleSystemInitialized = InitializeParticleSystem();
+	if (bEnableDisplacementRendering)
+	{
+		InitializeDisplacementMap();
+	}
+	if (bEnableParticleRendering)
+	{
+		ParticleSystemInitialized = InitializeParticleSystem();
+	}
 }
 
 void AAGX_Terrain::CreateTerrainMaterial()
