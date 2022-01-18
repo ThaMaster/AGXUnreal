@@ -116,6 +116,16 @@ void UAGX_HeightFieldShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMe
 	// HalfExtent);
 }
 
+void UAGX_HeightFieldShapeComponent::UpdateNativeGlobalTransform()
+{
+	// We override this function because the parents class' version of it does not allow HasNative to
+	// be false, which is common for a Hight Field Component.
+	if (HasNative())
+	{
+		UAGX_ShapeComponent::UpdateNativeGlobalTransform();
+	}
+}
+
 #if WITH_EDITOR
 void UAGX_HeightFieldShapeComponent::PostEditChangeChainProperty(
 	struct FPropertyChangedChainEvent& PropertyChangedEvent)
