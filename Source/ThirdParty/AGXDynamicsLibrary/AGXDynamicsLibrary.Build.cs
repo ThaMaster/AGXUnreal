@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 using UnrealBuildTool;
 
@@ -532,12 +533,27 @@ public class AGXDynamicsLibrary : ModuleRules
 			string Source = InstalledAGXResources.IncludePath(IncludePath);
 			string Dest = BundledAGXResources.IncludePath(IncludePath);
 
-			// The three ____Win32 files are ignored because they are located in a directory with name
-			// Win32. That directory name is not allowed by UAT during the staging phase and gives build
-			// errors during cook builds.
-			List<string> FilesToIgnore = new List<string>
-				{ "GraphicsHandleWin32", "GraphicsWindowWin32", "PixelBufferWin32" };
-			if(!CopyDirectoryRecursively(Source, Dest, FilesToIgnore))
+            // Filter out several include files since they are not used by AGXUnreal.
+
+            List<string> FilesToIgnore = new List<string>
+				{ "OIS.h", "OISConfig.h", "OISEffect.h", "OISEvents.h", "OISException.h",
+				"OISFactoryCreator.h", "OISForceFeedback.h", "OISInputManager.h", "OISInterface.h",
+				"OISJoyStick.h", "OISKeyboard.h", "OISMouse.h", "OISMultiTouch.h", "OISObject.h",
+				"OISPrereqs.h"};
+
+            List<string> DirsToIgnore = new List<string>
+			{ 
+				Path.Combine(Source, "tbb"),
+				Path.Combine(Source, "OpenEXR"),
+				Path.Combine(Source, "osg"),
+				Path.Combine(Source, "openvdb"),
+				Path.Combine(Source, "agxOSG"),
+				Path.Combine(Source, "agxQt"),
+				Path.Combine(Source, "external", "delegates"),
+				Path.Combine(Source, "external", "fmi"),
+				Path.Combine(Source, "external", "tiny-process-library")
+			};
+			if(!CopyDirectoryRecursively(Source, Dest, FilesToIgnore, DirsToIgnore))
 			{
 				CleanBundledAGXDynamicsResources();
 				return;
@@ -632,12 +648,18 @@ public class AGXDynamicsLibrary : ModuleRules
 		return true;
 	}
 
-	private bool CopyDirectoryRecursively(string SourceDir, string DestDir, List<string> FilesToIgnore = null)
+	private bool CopyDirectoryRecursively(string SourceDir, string DestDir,
+		List<string> FilesToIgnore = null, List<string> DirsToIgnore = null)
 	{
 		foreach (string FilePath in Directory.GetFiles(SourceDir, "*", SearchOption.AllDirectories))
 		{
 			if (FilesToIgnore != null && FilesToIgnore.Contains(Path.GetFileName(FilePath)))
 			{
+				continue;
+			}
+
+			if (DirsToIgnore != null && DirsToIgnore.Any(s => FilePath.ToLower().Contains(s.ToLower())))
+            {
 				continue;
 			}
 
