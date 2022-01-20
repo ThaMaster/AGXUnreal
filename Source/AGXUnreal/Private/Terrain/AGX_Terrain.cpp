@@ -402,7 +402,7 @@ void AAGX_Terrain::CreateNativeShovels()
 		FTwoVectors TopEdgeLine = TopEdge->GetInLocal(WorldToBody);
 		FTwoVectors CuttingEdgeLine = CuttingEdge->GetInLocal(WorldToBody);
 		FVector CuttingDirectionVector =
-			WorldToBody.TransformVector(CuttingDirection->GetVectorDirectionNormalized());
+			WorldToBody.TransformVector(CuttingDirection->GetVectorDirection());
 		ShovelBarrier.AllocateNative(
 			*BodyBarrier, TopEdgeLine, CuttingEdgeLine, CuttingDirectionVector);
 
