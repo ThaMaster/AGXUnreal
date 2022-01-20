@@ -403,8 +403,14 @@ void AAGX_Terrain::CreateNativeShovels()
 		FTwoVectors CuttingEdgeLine = CuttingEdge->GetInLocal(WorldToBody);
 
 		// AGX Dynamics always expects a normalized Cutting Direction vector.
-		const FVector CuttingDirectionVector =
-			WorldToBody.TransformVector(CuttingDirection->GetVectorDirectionNormalized());
+		const FVector CuttingDirectionVector = [&]()
+		{ 
+			FVector C =
+				WorldToBody.TransformVector(CuttingDirection->GetVectorDirection());
+			C.Normalize();
+			return C;
+		}();
+			
 		ShovelBarrier.AllocateNative(
 			*BodyBarrier, TopEdgeLine, CuttingEdgeLine, CuttingDirectionVector);
 
