@@ -113,14 +113,7 @@ void FShovelBarrier::AllocateNative(
 	agx::RigidBody* BodyAGX = Body.GetNative()->Native;
 	const agx::Line TopEdgeAGX = ConvertDisplacement(TopEdge);
 	const agx::Line CuttingEdgeAGX = ConvertDisplacement(CuttingEdge);
-	const agx::Vec3 CuttingDirectionAGX = [&CuttingDirection]()
-	{
-		auto C = ConvertDisplacement(CuttingDirection);
-
-		// AGX Dynamics always expects a normalized Cutting Direction vector.
-		C.normalize();
-		return C;
-	}();
+	const agx::Vec3 CuttingDirectionAGX = ConvertVector(CuttingDirection);
 	NativeRef->Native =
 		new agxTerrain::Shovel(BodyAGX, TopEdgeAGX, CuttingEdgeAGX, CuttingDirectionAGX);
 }
