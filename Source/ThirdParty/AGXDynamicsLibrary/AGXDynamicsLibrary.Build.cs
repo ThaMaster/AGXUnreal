@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
 using UnrealBuildTool;
 
@@ -663,7 +662,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		}
 		catch (Exception e)
 		{
-			Console.Error.WriteLine("Error: Unable to copy file {0} to {1}. Exception: {2}", Source, Dest, e.Message);
+			Console.Error.WriteLine("Error: Unable to copy file {0} to {1}. Exception: {2}",
+				Source, Dest, e.Message);
 			return false;
 		}
 
@@ -671,17 +671,12 @@ public class AGXDynamicsLibrary : ModuleRules
 	}
 
 	private bool CopyDirectoryRecursively(string SourceDir, string DestDir,
-		List<string> FilesToIgnore = null, List<string> DirsToIgnore = null)
+		List<string> FilesToIgnore = null)
 	{
 		foreach (string FilePath in Directory.GetFiles(SourceDir, "*", SearchOption.AllDirectories))
 		{
 			if (FilesToIgnore != null && FilesToIgnore.Contains(Path.GetFileName(FilePath)))
 			{
-				continue;
-			}
-
-			if (DirsToIgnore != null && DirsToIgnore.Any(s => FilePath.ToLower().Contains(s.ToLower())))
-            {
 				continue;
 			}
 
