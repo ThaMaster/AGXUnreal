@@ -532,31 +532,54 @@ public class AGXDynamicsLibrary : ModuleRules
 			string Source = InstalledAGXResources.IncludePath(IncludePath);
 			string Dest = BundledAGXResources.IncludePath(IncludePath);
 
-            // Filter out several include files since they are not used by AGXUnreal.
-
-            List<string> FilesToIgnore = new List<string>
-				{ "OIS.h", "OISConfig.h", "OISEffect.h", "OISEvents.h", "OISException.h",
-				"OISFactoryCreator.h", "OISForceFeedback.h", "OISInputManager.h", "OISInterface.h",
-				"OISJoyStick.h", "OISKeyboard.h", "OISMouse.h", "OISMultiTouch.h", "OISObject.h",
-				"OISPrereqs.h"};
-
-            List<string> DirsToIgnore = new List<string>
+			// Directories to include containing header files.
+            List<string> HeaderFileDirs = new List<string>
 			{ 
-				Path.Combine(Source, "tbb"),
-				Path.Combine(Source, "OpenEXR"),
-				Path.Combine(Source, "osg"),
-				Path.Combine(Source, "openvdb"),
-				Path.Combine(Source, "agxOSG"),
-				Path.Combine(Source, "agxQt"),
-				Path.Combine(Source, "external", "delegates"),
-				Path.Combine(Source, "external", "fmi"),
-				Path.Combine(Source, "external", "tiny-process-library")
+				"agx",
+				"agxCable",
+				"agxCollide",
+				"agxControl",
+				"agxData",
+				"agxDriveTrain",
+				"agxHydraulics",
+				"agxIO",
+				"agxModel",
+				"agxPlot",
+				"agxPowerLine",
+				"agxRender",
+				"agxSDK",
+				"agxStream",
+				"agxTerrain",
+				"agxUtil",
+				"agxWire",
+				Path.Combine("external", "hedley"),
+				Path.Combine("external", "json"),
+				Path.Combine("external", "pystring")
 			};
-			if(!CopyDirectoryRecursively(Source, Dest, FilesToIgnore, DirsToIgnore))
+
+			// Single header files to include.
+			List<string> HeaderFiles = new List<string>
 			{
-				CleanBundledAGXDynamicsResources();
-				return;
-			}
+				"HashImplementationSwitcher.h"
+			};
+
+			foreach (var Dir in HeaderFileDirs)
+            {
+                if (!CopyDirectoryRecursively(Path.Combine(Source, Dir), Path.Combine(Dest, Dir)))
+                {
+                    CleanBundledAGXDynamicsResources();
+                    return;
+                }
+            }
+
+			foreach (var File in HeaderFiles)
+            {
+                if (!CopyFile(Path.Combine(Source, File), Path.Combine(Dest, File)))
+                {
+					CleanBundledAGXDynamicsResources();
+					return;
+                }
+            }
 		}
 
 		// Copy AGX Dynamics cfg directory.
