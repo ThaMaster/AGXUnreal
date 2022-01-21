@@ -188,10 +188,12 @@ public class AGXDynamicsLibrary : ModuleRules
 		Dictionary<string, LibSource> RuntimeLibFiles = new Dictionary<string, LibSource>();
 		RuntimeLibFiles.Add("agxPhysics", LibSource.AGX);
 		RuntimeLibFiles.Add("agxCore", LibSource.AGX);
+		RuntimeLibFiles.Add("agxHydraulics", LibSource.AGX);
 		RuntimeLibFiles.Add("agxSabre", LibSource.AGX);
 		RuntimeLibFiles.Add("agxTerrain", LibSource.AGX);
 		RuntimeLibFiles.Add("agxCable", LibSource.AGX);
 		RuntimeLibFiles.Add("agxModel", LibSource.AGX);
+		RuntimeLibFiles.Add("agxVehicle", LibSource.AGX);
 		RuntimeLibFiles.Add("vdbgrid", LibSource.AGX);
 		RuntimeLibFiles.Add("colamd", LibSource.AGX);
 		RuntimeLibFiles.Add("Half", LibSource.TerrainDependencies);
