@@ -550,6 +550,7 @@ public class AGXDynamicsLibrary : ModuleRules
 				"agxStream",
 				"agxTerrain",
 				"agxUtil",
+				"agxVehicle",
 				"agxWire",
 				Path.Combine("external", "hedley"),
 				Path.Combine("external", "json"),
