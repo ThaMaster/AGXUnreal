@@ -548,6 +548,7 @@ public class AGXDynamicsLibrary : ModuleRules
 				"agxPlot",
 				"agxPowerLine",
 				"agxRender",
+				"agxSabre",
 				"agxSDK",
 				"agxStream",
 				"agxTerrain",
