@@ -188,10 +188,12 @@ public class AGXDynamicsLibrary : ModuleRules
 		Dictionary<string, LibSource> RuntimeLibFiles = new Dictionary<string, LibSource>();
 		RuntimeLibFiles.Add("agxPhysics", LibSource.AGX);
 		RuntimeLibFiles.Add("agxCore", LibSource.AGX);
+		RuntimeLibFiles.Add("agxHydraulics", LibSource.AGX);
 		RuntimeLibFiles.Add("agxSabre", LibSource.AGX);
 		RuntimeLibFiles.Add("agxTerrain", LibSource.AGX);
 		RuntimeLibFiles.Add("agxCable", LibSource.AGX);
 		RuntimeLibFiles.Add("agxModel", LibSource.AGX);
+		RuntimeLibFiles.Add("agxVehicle", LibSource.AGX);
 		RuntimeLibFiles.Add("vdbgrid", LibSource.AGX);
 		RuntimeLibFiles.Add("colamd", LibSource.AGX);
 		RuntimeLibFiles.Add("Half", LibSource.TerrainDependencies);
@@ -241,7 +243,6 @@ public class AGXDynamicsLibrary : ModuleRules
 
             RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
-			RuntimeLibFiles.Add("ot2?-OpenThreads", LibSource.Dependencies);
 			if (TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
 				RuntimeLibFiles.Add("glew", LibSource.Dependencies);
@@ -532,16 +533,56 @@ public class AGXDynamicsLibrary : ModuleRules
 			string Source = InstalledAGXResources.IncludePath(IncludePath);
 			string Dest = BundledAGXResources.IncludePath(IncludePath);
 
-			// The three ____Win32 files are ignored because they are located in a directory with name
-			// Win32. That directory name is not allowed by UAT during the staging phase and gives build
-			// errors during cook builds.
-			List<string> FilesToIgnore = new List<string>
-				{ "GraphicsHandleWin32", "GraphicsWindowWin32", "PixelBufferWin32" };
-			if(!CopyDirectoryRecursively(Source, Dest, FilesToIgnore))
+			// Directories to include containing header files.
+            List<string> HeaderFileDirs = new List<string>
+			{ 
+				"agx",
+				"agxCable",
+				"agxCollide",
+				"agxControl",
+				"agxData",
+				"agxDriveTrain",
+				"agxHydraulics",
+				"agxIO",
+				"agxModel",
+				"agxPlot",
+				"agxPowerLine",
+				"agxRender",
+				"agxSabre",
+				"agxSDK",
+				"agxStream",
+				"agxTerrain",
+				"agxUtil",
+				"agxVehicle",
+				"agxWire",
+				Path.Combine("external", "hedley"),
+				Path.Combine("external", "json"),
+				Path.Combine("external", "pystring")
+			};
+
+			// Single header files to include.
+			List<string> HeaderFiles = new List<string>
 			{
-				CleanBundledAGXDynamicsResources();
-				return;
-			}
+				"HashImplementationSwitcher.h"
+			};
+
+			foreach (var Dir in HeaderFileDirs)
+            {
+                if (!CopyDirectoryRecursively(Path.Combine(Source, Dir), Path.Combine(Dest, Dir)))
+                {
+                    CleanBundledAGXDynamicsResources();
+                    return;
+                }
+            }
+
+			foreach (var File in HeaderFiles)
+            {
+                if (!CopyFile(Path.Combine(Source, File), Path.Combine(Dest, File)))
+                {
+					CleanBundledAGXDynamicsResources();
+					return;
+                }
+            }
 		}
 
 		// Copy AGX Dynamics cfg directory.
@@ -625,14 +666,16 @@ public class AGXDynamicsLibrary : ModuleRules
 		}
 		catch (Exception e)
 		{
-			Console.Error.WriteLine("Error: Unable to copy file {0} to {1}. Exception: {2}", Source, Dest, e.Message);
+			Console.Error.WriteLine("Error: Unable to copy file {0} to {1}. Exception: {2}",
+				Source, Dest, e.Message);
 			return false;
 		}
 
 		return true;
 	}
 
-	private bool CopyDirectoryRecursively(string SourceDir, string DestDir, List<string> FilesToIgnore = null)
+	private bool CopyDirectoryRecursively(string SourceDir, string DestDir,
+		List<string> FilesToIgnore = null)
 	{
 		foreach (string FilePath in Directory.GetFiles(SourceDir, "*", SearchOption.AllDirectories))
 		{
