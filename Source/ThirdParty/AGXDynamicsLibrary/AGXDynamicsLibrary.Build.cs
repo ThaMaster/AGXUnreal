@@ -535,7 +535,7 @@ public class AGXDynamicsLibrary : ModuleRules
 
 			// Directories to include containing header files.
             List<string> HeaderFileDirs = new List<string>
-			{ 
+			{
 				"agx",
 				"agxCable",
 				"agxCollide",
@@ -632,6 +632,17 @@ public class AGXDynamicsLibrary : ModuleRules
 
 			// Copy all single files in the Components/agx directory.
 			if (!CopyFilesNonRecursive(Path.Combine(ComponentsDirSource, "agx"), Path.Combine(ComponentsDirDest, "agx")))
+			{
+				CleanBundledAGXDynamicsResources();
+				return;
+			}
+		}
+
+		// Copy AGX Dynamics LICENSE.txt, the license text for both the physics engine and its dependencies.
+		{
+			string Source = InstalledAGXResources.LicenseTextPath;
+			string Destination = BundledAGXResources.LicenseTextPath;
+			if (!CopyFile(Source, Destination))
 			{
 				CleanBundledAGXDynamicsResources();
 				return;
@@ -925,6 +936,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		public string RuntimeLibraryPrefix;
 		public string RuntimeLibraryPostfix;
 
+		public string LicenseTextPath;
+
 		Dictionary<LibSource, LibSourceInfo> LibSources;
 
 		AGXVersion Version;
@@ -1011,6 +1024,8 @@ public class AGXDynamicsLibrary : ModuleRules
 			string DependenciesDir = Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR");
 			string TerrainDependenciesDir = Environment.GetEnvironmentVariable("AGXTERRAIN_DEPENDENCIES_DIR");
 
+			LicenseTextPath = Path.Combine(SourceDir, "LICENSE.TXT");
+
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(SourceDir, "include"),
 				Path.Combine(BuildDir, "lib"),
@@ -1050,6 +1065,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			string BaseDir = Environment.GetEnvironmentVariable("AGX_DIR");
 
+			LicenseTextPath = Path.Combine(BaseDir, "LICENSE.TXT");
+
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
 				Path.Combine(BaseDir, "lib"),
@@ -1087,6 +1104,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		private void InitializeLinuxBundledAGX(string BundledAGXResourcesPath)
 		{
 			string BaseDir = BundledAGXResourcesPath;
+
+			LicenseTextPath = Path.Combine(BaseDir, "LICENSE.TXT");
 
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
@@ -1129,6 +1148,8 @@ public class AGXDynamicsLibrary : ModuleRules
 			string PluginDir = Environment.GetEnvironmentVariable("AGX_PLUGIN_PATH");
 			string DataDir = Environment.GetEnvironmentVariable("AGX_DATA_DIR");
 
+			LicenseTextPath = Path.Combine(BaseDir, "LICENSE.TXT");
+
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
 				Path.Combine(BaseDir, "lib", "x64"),
@@ -1164,6 +1185,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		private void InitializeWindowsBundledAGX(string BundledAGXResourcesPath)
 		{
 			string BaseDir = BundledAGXResourcesPath;
+
+			LicenseTextPath = Path.Combine(BaseDir, "LICENSE.TXT");
 
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
