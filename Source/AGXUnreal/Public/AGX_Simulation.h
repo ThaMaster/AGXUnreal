@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -269,10 +268,10 @@ private:
 	void Deinitialize() override;
 
 private:
-	void StepCatchUpImmediately(float DeltaTime);
-	void StepCatchUpOverTime(float DeltaTime);
-	void StepCatchUpOverTimeCapped(float DeltaTime);
-	void StepDropImmediately(float DeltaTime);
+	int32 StepCatchUpImmediately(float DeltaTime);
+	int32 StepCatchUpOverTime(float DeltaTime);
+	int32 StepCatchUpOverTimeCapped(float DeltaTime);
+	int32 StepDropImmediately(float DeltaTime);
 
 	void EnsureStepperCreated();
 	void EnsureValidLicense();
@@ -286,6 +285,9 @@ private:
 	/// of the AGX Dynamics step size. That fraction of a time step is carried
 	/// over to the next call to Step.
 	float LeftoverTime;
+
+	// The time it took to do a frame's stepping the last frame we actually took a step.
+	double LastTotalStepTime {0.0};
 
 	TWeakObjectPtr<AAGX_Stepper> Stepper;
 
