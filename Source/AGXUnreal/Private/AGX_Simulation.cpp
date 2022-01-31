@@ -567,7 +567,7 @@ void UAGX_Simulation::Step(float DeltaTime)
 
 	const uint64 StartCycle = FPlatformTime::Cycles64();
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:UAGX_Simulation::Step"));
-	int32 NumSteps;
+	int32 NumSteps = 0;
 	switch (StepMode)
 	{
 		case SmCatchUpImmediately:
