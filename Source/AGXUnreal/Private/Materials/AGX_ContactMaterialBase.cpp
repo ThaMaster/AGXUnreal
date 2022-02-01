@@ -184,20 +184,6 @@ void UAGX_ContactMaterialBase::SetAdhesiveOverlap(float InAdhesiveOverlap)
 	AdhesiveOverlap = InAdhesiveOverlap;
 }
 
-void UAGX_ContactMaterialBase::Serialize(FArchive& Archive)
-{
-	Super::Serialize(Archive);
-	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
-	if (Archive.IsLoading())
-	{
-		if (Archive.CustomVer(FAGX_CustomVersion::GUID) <
-			FAGX_CustomVersion::ScientificNotationInMaterials)
-		{
-			FrictionCoefficient = FrictionCoefficient_DEPRECATED;
-		}
-	}
-}
-
 #define COPY_MAT_PROPERTY(Source, Name) \
 	{                                   \
 		Name = Source->Name;            \

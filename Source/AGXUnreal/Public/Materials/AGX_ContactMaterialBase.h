@@ -259,10 +259,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetAdhesiveOverlap(float InAdhesiveOverlap);
 
-	// ~Begin UObject interface.
-	virtual void Serialize(FArchive& Archive) override;
-	// ~End UObject interface.
-
 public:
 	/**
 	 * Invokes the member function GetOrCreateInstance() on ContactMaterial pointed to by Property,
@@ -297,8 +293,4 @@ public:
 
 	void CopyFrom(const UAGX_ContactMaterialBase* Source);
 	void CopyFrom(const FContactMaterialBarrier* Source);
-
-private:
-	UPROPERTY()
-	double FrictionCoefficient_DEPRECATED;
 };
