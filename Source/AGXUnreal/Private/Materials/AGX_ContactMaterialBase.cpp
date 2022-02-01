@@ -1,9 +1,9 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Materials/AGX_ContactMaterialBase.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
 #include "Materials/ContactMaterialBarrier.h"
@@ -138,7 +138,8 @@ void UAGX_ContactMaterialBase::SetSecondaryFrictionCoefficient(float InSecondary
 	SecondaryFrictionCoefficient = InSecondaryFrictionCoefficient;
 }
 
-void UAGX_ContactMaterialBase::SetUseSecondaryFrictionCoefficient(bool bInUseSecondaryFrictionCoefficient)
+void UAGX_ContactMaterialBase::SetUseSecondaryFrictionCoefficient(
+	bool bInUseSecondaryFrictionCoefficient)
 {
 	bUseSecondaryFrictionCoefficient = bInUseSecondaryFrictionCoefficient;
 }
@@ -181,6 +182,20 @@ void UAGX_ContactMaterialBase::SetAdhesiveForce(float InAdhesiveForce)
 void UAGX_ContactMaterialBase::SetAdhesiveOverlap(float InAdhesiveOverlap)
 {
 	AdhesiveOverlap = InAdhesiveOverlap;
+}
+
+void UAGX_ContactMaterialBase::Serialize(FArchive& Archive)
+{
+	Super::Serialize(Archive);
+	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
+	if (Archive.IsLoading())
+	{
+		if (Archive.CustomVer(FAGX_CustomVersion::GUID) <
+			FAGX_CustomVersion::ScientificNotationInMaterials)
+		{
+			FrictionCoefficient = FrictionCoefficient_DEPRECATED;
+		}
+	}
 }
 
 #define COPY_MAT_PROPERTY(Source, Name) \

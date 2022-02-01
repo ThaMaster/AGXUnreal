@@ -1,12 +1,16 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
-#include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
+// AGX Dynamics for Unreal includes.
+#include "AGX_Real.h"
 #include "Materials/AGX_ContactMaterialMechanicsApproach.h"
 #include "Materials/AGX_ContactMaterialReductionMode.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
+
 #include "AGX_ContactMaterialBase.generated.h"
 
 class UAGX_ContactMaterialAsset;
@@ -131,7 +135,7 @@ public:
 	 * primary direction.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double FrictionCoefficient;
+	FAGX_Real FrictionCoefficient;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetFrictionCoefficient(float InFrictionCoefficient);
@@ -255,6 +259,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetAdhesiveOverlap(float InAdhesiveOverlap);
 
+	// ~Begin UObject interface.
+	virtual void Serialize(FArchive& Archive) override;
+	// ~End UObject interface.
+
 public:
 	/**
 	 * Invokes the member function GetOrCreateInstance() on ContactMaterial pointed to by Property,
@@ -269,7 +277,7 @@ public:
 	virtual ~UAGX_ContactMaterialBase();
 
 	virtual UAGX_ContactMaterialInstance* GetInstance()
-	PURE_VIRTUAL(UAGX_ContactMaterialBase::GetInstance, return nullptr;);
+		PURE_VIRTUAL(UAGX_ContactMaterialBase::GetInstance, return nullptr;);
 
 	/**
 	 * If PlayingWorld is an in-game World and this ContactMaterial is a UAGX_ContactMaterialAsset,
@@ -289,4 +297,8 @@ public:
 
 	void CopyFrom(const UAGX_ContactMaterialBase* Source);
 	void CopyFrom(const FContactMaterialBarrier* Source);
+
+private:
+	UPROPERTY()
+	double FrictionCoefficient_DEPRECATED;
 };

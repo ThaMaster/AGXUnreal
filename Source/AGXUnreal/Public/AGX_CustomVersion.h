@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // Unreal Engine includes.
@@ -24,6 +23,10 @@ struct FAGX_CustomVersion
 		BeforeCustomVersionWasAdded = 0,
 
 		ConstraintsStoreComplianceInsteadOfElasticity,
+
+		// To better support large and small number we replace float/double with FAGX_Real in Shape-
+		// and ContactMaterial.
+		ScientificNotationInMaterials,
 
 		// < -----new versions can be added above this line----->
 		VersionPlusOne,
