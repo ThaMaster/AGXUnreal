@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "SimulationBarrier.h"
 
 // AGX Dynamics for Unreal includes.
@@ -196,6 +195,18 @@ float FSimulationBarrier::GetTimeStep() const
 {
 	check(HasNative());
 	return Convert(NativeRef->Native->getTimeStep());
+}
+
+void FSimulationBarrier::SetEnableContactWarmstarting(bool bEnable)
+{
+	check(HasNative());
+	return NativeRef->Native->getDynamicsSystem()->setEnableContactWarmstarting(bEnable);
+}
+
+bool FSimulationBarrier::GetEnableContactWarmstarting() const
+{
+	check(HasNative());
+	return NativeRef->Native->getDynamicsSystem()->getEnableContactWarmstarting();
 }
 
 void FSimulationBarrier::SetNumPpgsIterations(int32 NumIterations)
