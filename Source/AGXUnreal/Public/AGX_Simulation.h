@@ -293,12 +293,14 @@ private:
 	virtual void Deinitialize() override;
 	// ~End USubsystem interface.
 
+#if WITH_EDITOR
 	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 	// ~End UObject interface.
 
 	void InitPropertyDispatcher();
+#endif
 
 private:
 	int32 StepCatchUpImmediately(float DeltaTime);

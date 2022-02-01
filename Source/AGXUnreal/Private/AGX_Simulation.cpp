@@ -453,6 +453,8 @@ void UAGX_Simulation::Deinitialize()
 	NativeBarrier.ReleaseNative();
 }
 
+#if WITH_EDITOR
+
 void UAGX_Simulation::PostInitProperties()
 {
 	Super::PostInitProperties();
@@ -478,6 +480,8 @@ void UAGX_Simulation::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bContactWarmstarting), [](ThisClass* This)
 		{ This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
 }
+
+#endif
 
 bool UAGX_Simulation::WriteAGXArchive(const FString& Filename) const
 {
