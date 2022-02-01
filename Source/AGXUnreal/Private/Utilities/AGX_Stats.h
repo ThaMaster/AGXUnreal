@@ -16,7 +16,7 @@ DECLARE_DWORD_COUNTER_STAT(TEXT("Num. Steps"), STAT_AGXU_NumSteps, STATGROUP_AGX
 // Timers read from AGX Dynamics, last step in a frame only. So timer spikes in non-last frames will
 // not be visible. Use the FRAME stats to detect those.
 // These are enabled with 'stat AGXDynamicsStepTimers' in the console
-DECLARE_STATS_GROUP(TEXT("AGX Dynamics timers last Step Forward"), STATGROUP_AGXDynamicsStepTimers, STATCAT_Advanced);
+DECLARE_STATS_GROUP(TEXT("AGX Dynamics Timers Last Step Forward"), STATGROUP_AGXDynamicsStepTimers, STATCAT_Advanced);
 DECLARE_FLOAT_COUNTER_STAT(TEXT("Step Forward Time"), STAT_AGXD_StepForward_STEP, STATGROUP_AGXDynamicsStepTimers);
 DECLARE_FLOAT_COUNTER_STAT(TEXT("Space Update Time"), STAT_AGXD_SpaceUpdate_STEP, STATGROUP_AGXDynamicsStepTimers);
 DECLARE_FLOAT_COUNTER_STAT(TEXT("Dynamics Update Time"), STAT_AGXD_DynamicsUpdate_STEP, STATGROUP_AGXDynamicsStepTimers);
@@ -30,7 +30,7 @@ DECLARE_FLOAT_COUNTER_STAT(TEXT("The rest"), STAT_AGXD_Unaccounted_STEP, STATGRO
 
 // Timers read from AGX Dynamics accumulated over a frame.
 // These are enabled with 'stat AGXDynamicsFrameTimers' in the console
-DECLARE_STATS_GROUP(TEXT("AGX Dynamics timers entire frame"), STATGROUP_AGXDynamicsFrameTimers, STATCAT_Advanced);
+DECLARE_STATS_GROUP(TEXT("AGX Dynamics Timers Entire Frame"), STATGROUP_AGXDynamicsFrameTimers, STATCAT_Advanced);
 DECLARE_FLOAT_COUNTER_STAT(TEXT("Step Forward Time"), STAT_AGXD_StepForward_FRAME, STATGROUP_AGXDynamicsFrameTimers);
 DECLARE_FLOAT_COUNTER_STAT(TEXT("Space Update Time"), STAT_AGXD_SpaceUpdate_FRAME, STATGROUP_AGXDynamicsFrameTimers);
 DECLARE_FLOAT_COUNTER_STAT(TEXT("Dynamics Update Time"), STAT_AGXD_DynamicsUpdate_FRAME, STATGROUP_AGXDynamicsFrameTimers);
@@ -45,7 +45,7 @@ DECLARE_FLOAT_COUNTER_STAT(TEXT("The rest"), STAT_AGXD_Unaccounted_FRAME, STATGR
 // Counters read from AGX Dynamics. These are only reported for the last Step Forward in a frame,
 // so if the numbers vary during that frame then only the last frame's number will be reported.
 // These are enabled with 'stat AGXDynamicsCounts' in the console
-DECLARE_STATS_GROUP(TEXT("AGXDCounts"), STATGROUP_AGXDynamicsCounts, STATCAT_Advanced);
+DECLARE_STATS_GROUP(TEXT("AGX Dynamics Counts"), STATGROUP_AGXDynamicsCounts, STATCAT_Advanced);
 DECLARE_DWORD_COUNTER_STAT(TEXT("Num. Bodies"), STAT_AGXD_NumBodies, STATGROUP_AGXDynamicsCounts);
 DECLARE_DWORD_COUNTER_STAT(TEXT("Num. Constraints"), STAT_AGXD_NumConstraints, STATGROUP_AGXDynamicsCounts);
 DECLARE_DWORD_COUNTER_STAT(TEXT("Num. Contact Constraints"), STAT_AGXD_NumContactConstraints, STATGROUP_AGXDynamicsCounts);
