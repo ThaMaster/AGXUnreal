@@ -2,8 +2,6 @@
 
 #include <AGX_Real.h>
 
-#include <AGX_LogCategory.h>
-
 bool FAGX_Real::SerializeFromMismatchedTag(
 	struct FPropertyTag const& Tag, FStructuredArchive::FSlot Slot)
 {

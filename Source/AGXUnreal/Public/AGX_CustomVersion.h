@@ -28,7 +28,7 @@ struct FAGX_CustomVersion
 		// and ContactMaterial.
 		ScientificNotationInMaterials,
 
-		// < -----new versions can be added above this line----->
+		// <----- New versions can be added above this line. ----->
 		VersionPlusOne,
 
 		LatestVersion = VersionPlusOne - 1
