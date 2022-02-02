@@ -3,6 +3,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include <AGX_Real.h>
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -26,7 +29,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Bulk Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double Density;
+	FAGX_Real Density;
 
 	/**
 	 * Young's modulus of the material, same as spring coefficient k [Pa].
@@ -34,7 +37,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Bulk Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double YoungsModulus;
+	FAGX_Real YoungsModulus;
 
 	/**
 	 * Bulk viscosity coefficient of the material (1.0 - restitution coefficient).
@@ -42,7 +45,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Bulk Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double Viscosity;
+	FAGX_Real Viscosity;
 
 	/**
 	 * Spook Damping used by the contact constraint [s].
@@ -51,7 +54,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Bulk Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double SpookDamping;
+	FAGX_Real SpookDamping;
 
 	/**
 	 * Minimum elastic rest length of the contact material [cm].
@@ -60,7 +63,7 @@ public:
 	 * enabled.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Material Bulk Properties")
-	double MinElasticRestLength;
+	FAGX_Real MinElasticRestLength;
 
 	/**
 	 * Maximum elastic rest length of the contact material [cm].
@@ -69,7 +72,7 @@ public:
 	 * enabled.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Material Bulk Properties")
-	double MaxElasticRestLength;
+	FAGX_Real MaxElasticRestLength;
 
 public:
 	FAGX_ShapeMaterialBulkProperties();
