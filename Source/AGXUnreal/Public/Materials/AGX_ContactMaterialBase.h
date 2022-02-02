@@ -147,7 +147,7 @@ public:
 		EditAnywhere, Category = "Friction",
 		Meta =
 			(ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondaryFrictionCoefficient"))
-	double SecondaryFrictionCoefficient;
+	FAGX_Real SecondaryFrictionCoefficient;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetSecondaryFrictionCoefficient(float InSecondaryFrictionCoefficient);
@@ -175,7 +175,7 @@ public:
 	 * the primary direction.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double SurfaceViscosity;
+	FAGX_Real SurfaceViscosity;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetSurfaceViscosity(float InSurfaceViscosity);
@@ -186,7 +186,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "Friction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondarySurfaceViscosity"))
-	double SecondarySurfaceViscosity;
+	FAGX_Real SecondarySurfaceViscosity;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetSecondarySurfaceViscosity(float InSecondarySurfaceViscosity);
@@ -213,7 +213,7 @@ public:
 	 * A value of 1.0 means that the body does not lose energy during normal-collisions.
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double Restitution;
+	FAGX_Real Restitution;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetRestitution(float InRestitution);
@@ -222,7 +222,7 @@ public:
 	 * Young's modulus of the contact material. Same as spring coefficient k [Pa].
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double YoungsModulus;
+	FAGX_Real YoungsModulus;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetYoungsModulus(float InYoungsModulus);
@@ -232,7 +232,7 @@ public:
 	 * [s].
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double SpookDamping;
+	FAGX_Real SpookDamping;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetSpookDamping(float InSpookDamping);
@@ -241,7 +241,7 @@ public:
 	 * The attractive force between two colliding objects [N].
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double AdhesiveForce;
+	FAGX_Real AdhesiveForce;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetAdhesiveForce(float InAdhesiveForce);
@@ -254,7 +254,7 @@ public:
 	 * At higher overlap, the (usual) contact force is applied.
 	 */
 	UPROPERTY(EditAnywhere, Category = "General", Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double AdhesiveOverlap;
+	FAGX_Real AdhesiveOverlap;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetAdhesiveOverlap(float InAdhesiveOverlap);
