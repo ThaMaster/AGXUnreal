@@ -8,7 +8,7 @@
 
 class FArchive;
 
-struct FAGX_CustomVersion
+struct AGXUNREAL_API FAGX_CustomVersion
 {
 	// Important: Do not remove or change the order of enum literals if those have been released
 	// publicly. Doing so will break backward compatibility for anyone using that release.
