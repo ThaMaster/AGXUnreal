@@ -148,7 +148,7 @@ namespace RealInMaterialsBackwardsCompatibilitySpec_helpers
  */
 BEGIN_DEFINE_SPEC(
 	FFAGX_RealInMaterialsBackwardsCompatibilitySpec,
-	"AGXUnreal.BackwardsCompatibility.FAGX_RealInMaterials", AgxAutomationCommon::DefaultTestFlags)
+	"AGXUnreal.Editor.BackwardsCompatibility.FAGX_RealInMaterials", AgxAutomationCommon::DefaultTestFlags)
 END_DEFINE_SPEC(FFAGX_RealInMaterialsBackwardsCompatibilitySpec)
 
 void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
