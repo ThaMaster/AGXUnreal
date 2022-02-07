@@ -582,6 +582,9 @@ void UAGX_Simulation::Step(float DeltaTime)
 		case SmDropImmediately:
 			NumSteps = StepDropImmediately(DeltaTime);
 			break;
+		case SmNone:
+			NumSteps = 0;
+			break;
 		default:
 			UE_LOG(LogAGX, Error, TEXT("Unknown step mode: %d"), StepMode);
 	}
