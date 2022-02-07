@@ -24,6 +24,8 @@ enum EAGX_StepMode
 	/** Step the AGX simulation up to one time per Unreal step. May result in simulation appearing
 	   to run in slow-motion. */
 	SmDropImmediately UMETA(DisplayName = "Drop immediately"),
+
+	SmNone UMETA(DisplayName = "Do not step")
 };
 
 UENUM()
