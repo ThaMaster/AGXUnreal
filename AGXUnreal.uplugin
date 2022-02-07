@@ -20,8 +20,8 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [
-				"Win64",
-				"Linux"
+				"Linux",
+				"Win64"
 			],
 			"BlacklistPlatforms": [
 				"IOS",
@@ -33,8 +33,8 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [
-				"Win64",
-				"Linux"
+				"Linux",
+				"Win64"
 			],
 			"BlacklistPlatforms": [
 				"IOS",
@@ -46,8 +46,8 @@
 			"Type": "Editor",
 			"LoadingPhase": "PostEngineInit",
 			"WhitelistPlatforms": [
-				"Win64",
-				"Linux"
+				"Linux",
+				"Win64"
 			],
 			"BlacklistPlatforms": [
 				"IOS",
@@ -59,8 +59,8 @@
 			"Type": "Editor",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [
-				"Win64",
-				"Linux"
+				"Linux",
+				"Win64"
 			],
 			"BlacklistPlatforms": [
 				"IOS",
@@ -73,9 +73,9 @@
 			"Name": "Niagara",
 			"Enabled": true
 		},
-                {
-                        "Name": "EditorScriptingUtilities",
-                        "Enabled": true
-                 }
+		{
+			"Name": "EditorScriptingUtilities",
+			"Enabled": true
+		}
 	]
 }
