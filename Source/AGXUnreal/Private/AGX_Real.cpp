@@ -10,6 +10,13 @@ bool FAGX_Real::SerializeFromMismatchedTag(
 		Slot << Value;
 		return true;
 	}
+	if (Tag.Type == NAME_FloatProperty)
+	{
+		float Restored;
+		Slot << Restored;
+		Value = static_cast<double>(Restored);
+		return true;
+	}
 	else
 	{
 		return false;
