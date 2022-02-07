@@ -17,6 +17,7 @@
 #include "SceneManagement.h"
 #include "ScopedTransaction.h"
 #include "UnrealEngine.h"
+#include "UnrealWidget.h"
 
 #define LOCTEXT_NAMESPACE "AGX_WireComponentVisualizer"
 
@@ -105,7 +106,11 @@ public:
 		FAGX_WireComponentVisualizer& Visualizer, UAGX_WireComponent& Wire,
 		FEditorViewportClient& ViewportClient, const FVector& DeltaTranslate)
 	{
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 		if (DeltaTranslate.IsZero() || ViewportClient.GetWidgetMode() != FWidget::WM_Translate)
+#else
+		if (DeltaTranslate.IsZero() || ViewportClient.GetWidgetMode() != UE::Widget::WM_Translate)
+#endif
 		{
 			return;
 		}

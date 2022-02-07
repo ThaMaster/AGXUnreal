@@ -54,8 +54,9 @@
 #include "GameFramework/Actor.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/EngineVersionComparison.h"
-#include "UObject/Package.h"
 #include "PackageTools.h"
+#include "UObject/Package.h"
+#include "UObject/SavePackage.h"
 
 namespace
 {
@@ -78,7 +79,7 @@ namespace
 #else
 		UPackage* ParentPackage = CreatePackage(*ParentPackagePath);
 #endif
-		
+
 		FString Path = FPaths::GetPath(ParentPackage->GetName());
 
 		UE_LOG(
@@ -477,7 +478,7 @@ namespace
 		UBlueprint* Blueprint =
 			FKismetEditorUtilities::CreateBlueprintFromActor(Package->GetName(), Template, Params);
 #endif
-		
+
 		check(Blueprint);
 		return Blueprint;
 	}
@@ -491,9 +492,22 @@ namespace
 		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
 			PackagePath, FPackageName::GetAssetPackageExtension());
 
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 		UPackage::SavePackage(
 			Package, Blueprint, RF_Public | RF_Standalone, *PackageFilename, GError, nullptr, true,
 			true, SAVE_NoError);
+#else
+		FSavePackageArgs SaveArgs;
+		// SaveArgs.TargetPlatform = ???; // I think we can leave this at the default: not cooking.
+		SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
+		// SaveArgs.SaveFlags = ???; // I think we can leave this at the default: None.
+		// SaveArgs.bForceByteSwapping = ???; // I think we can leave this at the default: false.
+		// SaveArgs.bWarnOfLongFilename = ???; // I think we can leave this at the default: true.
+		// SaveArgs.bSlowTask = ???; // I think we can leave this at the default: true.
+		// SaveArgs.Error = ???; // I think we can leave this at the default: GError.
+		// SaveArgs.SavePAckageContext = ???; // I think we can leave this at the default: nullptr.
+		UPackage::SavePackage(Package, Blueprint, *PackageFilename, SaveArgs);
+#endif
 	}
 
 	UBlueprint* ImportToBlueprint(FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType)

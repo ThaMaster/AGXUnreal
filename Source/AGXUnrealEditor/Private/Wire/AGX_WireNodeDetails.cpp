@@ -3,6 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireComponentVisualizer.h"
 
@@ -106,7 +107,9 @@ void FAGX_WireNodeDetails::GenerateChildContent(IDetailChildrenBuilder& Children
 		.X(this, &FAGX_WireNodeDetails::OnGetLocationX)
 		.Y(this, &FAGX_WireNodeDetails::OnGetLocationY)
 		.Z(this, &FAGX_WireNodeDetails::OnGetLocationZ)
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 		.AllowResponsiveLayout(true)
+#endif
 		.AllowSpin(false)
 		.OnXCommitted(this, &FAGX_WireNodeDetails::OnSetLocation, 0)
 		.OnYCommitted(this, &FAGX_WireNodeDetails::OnSetLocation, 1)
@@ -642,10 +645,19 @@ void FAGX_WireNodeDetails::OnGetAllowedClasses(TArray<const UClass*>& AllowedCla
 	AllowedClasses.Add(AActor::StaticClass());
 }
 
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 void FAGX_WireNodeDetails::OnGetActorFilters(TSharedPtr<SceneOutliner::FOutlinerFilters>& Filters)
 {
 	/// @todo What should we do here?
 }
+#else
+void FAGX_WireNodeDetails::OnGetActorFilters(TSharedPtr<FSceneOutlinerFilters>& OutFilters)
+{
+	/// @todo Compare with
+	/// void FPropertyEditor::OnGetActorFiltersForSceneOutliner( TSharedPtr<FSceneOutlinerFilters>& OutFilters )
+	/// in Engine/Source/Editor/PropertyEditor/Private/Presentation/PropertyEditor/PropertyEditor.cpp.
+}
+#endif
 
 TSharedRef<SWidget> FAGX_WireNodeDetails::OnGetRigidBodyEntryWidget(
 	TSharedPtr<FString> InComboString)

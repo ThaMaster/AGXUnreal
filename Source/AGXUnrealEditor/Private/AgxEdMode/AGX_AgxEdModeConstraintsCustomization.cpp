@@ -13,6 +13,7 @@
 #include "IDetailPropertyRow.h"
 #include "Misc/Attribute.h"
 #include "Modules/ModuleManager.h"
+#include "SceneOutlinerFilters.h"
 #include "SceneOutlinerModule.h"
 #include "SceneOutlinerPublicTypes.h"
 #include "UObject/MetaData.h"
@@ -291,15 +292,23 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserCategory(
 void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(
 	IDetailCategoryBuilder& CategoryBuilder, UAGX_AgxEdModeConstraints* ConstraintsSubMode)
 {
+// TSceneOutlinerPredicateFilter is no longer a thing in Unreal Engine 5.
+// There may be hints to what to do instead in Engine/Source/Editor/SceneOutliner/Private/ActorBrowsingMode.cpp.
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 	using namespace SceneOutliner;
+
 
 	FSceneOutlinerModule& SceneOutlinerModule =
 		FModuleManager::LoadModuleChecked<FSceneOutlinerModule>("SceneOutliner");
 
-	FActorFilterPredicate ActorFilter =
-		FActorFilterPredicate::CreateLambda([](const AActor* const Actor) {
-			return Actor->IsA(AAGX_ConstraintActor::StaticClass()); // only show constraints
-		});
+	using FActorFilter = TSceneOutlinerPredicateFilter<FActorTreeItem>;
+	TSharedPtr<FActorFilter> ActorFilter =
+		MakeShared<FActorFilter>(
+			FActorTreeItem::FFilterPredicate::CreateStatic([](const AActor* Actor) {
+				return Actor->IsA(AAGX_ConstraintActor::StaticClass())}),
+			FSceneOutlinerFilter::EDefaultBehavior::Pass,
+			FActorTreeItem::FFilterPredicate::CreateLambda([](const AActor* Actor) {
+				return Actor->IsA(UAGX_ConstraintActor::StaticClass());}));
 
 	FCustomSceneOutlinerDeleteDelegate DeleteAction =
 		FCustomSceneOutlinerDeleteDelegate::CreateLambda(
@@ -324,6 +333,7 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(
 
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
 		.WholeRowContent()[SNew(SScrollBox) + SScrollBox::Slot().Padding(0)[SceneOutliner]];
+#endif
 }
 
 #undef LOCTEXT_NAMESPACE

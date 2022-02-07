@@ -137,7 +137,7 @@ public:
 		CreateRotationalArrows(Component);
 
 		// Enqueue initialization of render resource
-		for (const TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry : Geometries)
+		for (const TSharedPtr<FAGX_ConstraintDofGraphicsGeometry>& Geometry : Geometries)
 		{
 			ENQUEUE_RENDER_COMMAND(FAGX_ConstraintDofGraphicsVertexBuffersInit)
 			([Geometry = Geometry.Get()](FRHICommandListImmediate& RHICmdList) {
@@ -166,7 +166,7 @@ public:
 
 	virtual ~FAGX_ConstraintDofGraphicsProxy()
 	{
-		for (const TSharedPtr<FAGX_ConstraintDofGraphicsGeometry> Geometry : Geometries)
+		for (const TSharedPtr<FAGX_ConstraintDofGraphicsGeometry>& Geometry : Geometries)
 		{
 			Geometry->VertexBuffers.PositionVertexBuffer.ReleaseResource();
 			Geometry->VertexBuffers.StaticMeshVertexBuffer.ReleaseResource();
@@ -473,7 +473,7 @@ private:
 
 		Collector.RegisterOneFrameMaterialProxy(WireframeMaterialInstance);
 
-		for (const TSharedPtr<FAGX_ConstraintDofGraphicsSection> Section : Sections)
+		for (const TSharedPtr<FAGX_ConstraintDofGraphicsSection>& Section : Sections)
 		{
 			FMaterialRenderProxy* MaterialProxy = SelectMaterial(*Section);
 			for (int32 ViewIndex = 0; ViewIndex < Views.Num(); ViewIndex++)

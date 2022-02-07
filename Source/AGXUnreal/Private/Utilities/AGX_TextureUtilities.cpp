@@ -14,7 +14,7 @@ bool FAGX_TextureUtilities::UpdateRenderTextureRegions(
 	uint32 SourcePitch, uint32 SourceBitsPerPixel, uint8* SourceData, bool bFreeData)
 {
 	FTextureRenderTarget2DResource* Resource =
-		(FTextureRenderTarget2DResource*) (RenderTarget.Resource);
+		(FTextureRenderTarget2DResource*) (RenderTarget.GetResource());
 	if (Resource == nullptr)
 	{
 		UE_LOG(LogAGX, Error, TEXT("TextureRenderTarget doesn't have a resource."));

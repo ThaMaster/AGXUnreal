@@ -437,7 +437,7 @@ void UAGX_StaticMeshComponent::AllocateNative()
 
 	if (GetStaticMesh() != nullptr)
 	{
-		FKAggregateGeom& CollisionShapes = GetStaticMesh()->BodySetup->AggGeom;
+		FKAggregateGeom& CollisionShapes = GetStaticMesh()->GetBodySetup()->AggGeom;
 
 		// Copy sphere data from the collision spheres to the barrier spheres.
 		TArray<FKSphereElem>& CollisionSpheres = CollisionShapes.SphereElems;
@@ -519,7 +519,7 @@ void UAGX_StaticMeshComponent::RefreshCollisionShapes()
 		return;
 	}
 
-	FKAggregateGeom& CollisionShapes = GetStaticMesh()->BodySetup->AggGeom;
+	FKAggregateGeom& CollisionShapes = GetStaticMesh()->GetBodySetup()->AggGeom;
 	TArray<FKSphereElem>& CollisionSpheres = CollisionShapes.SphereElems;
 	TArray<FKBoxElem>& CollisionBoxes = CollisionShapes.BoxElems;
 	TArray<FKSphylElem>& CollisionSphyls = CollisionShapes.SphylElems;

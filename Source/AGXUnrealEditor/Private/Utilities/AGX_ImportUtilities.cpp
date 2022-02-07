@@ -21,6 +21,7 @@
 #include "Misc/Paths.h"
 #include "RawMesh.h"
 #include "Kismet2/ComponentEditorUtils.h"
+#include "UObject/SavePackage.h"
 
 namespace
 {
@@ -287,7 +288,11 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	{
 		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
 			PackagePath, FPackageName::GetAssetPackageExtension());
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 		UPackage::SavePackage(Package, Material, RF_NoFlags, *PackageFilename);
+#else
+		UPackage::SavePackage(Package, Material, *PackageFilename, FSavePackageArgs());
+#endif
 	}
 
 	return Material;

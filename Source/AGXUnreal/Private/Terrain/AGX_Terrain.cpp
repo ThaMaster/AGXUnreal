@@ -659,7 +659,9 @@ namespace
 	int32 CalculateTextureBaseSize(int32 minNumItems, int32 PixelsPerItem)
 	{
 		const int32 maxSize = 8192;
-		for (int32 base = FMath::Sqrt(minNumItems * PixelsPerItem); base <= maxSize; ++base)
+		const int32 num_pixels = minNumItems * PixelsPerItem;
+		const int32 side = static_cast<int32>(FMath::Sqrt(static_cast<double>(num_pixels)));
+		for (int32 base = side; base <= maxSize; ++base)
 		{
 			if ((base % PixelsPerItem == 0) && (base * base >= minNumItems * PixelsPerItem))
 				return base;

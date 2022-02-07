@@ -35,6 +35,7 @@
 #include "Misc/Char.h"
 #include "Misc/EngineVersionComparison.h"
 #include "RawMesh.h"
+#include "UObject/SavePackage.h"
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectGlobals.h"
 #include "Widgets/Notifications/SNotificationList.h"
@@ -276,8 +277,20 @@ bool FAGX_EditorUtilities::FinalizeAndSavePackage(
 	// The error message sometimes printed while within UPackage::SavePackage called below is:
 	// Illegal call to StaticFindObjectFast() while serializing object data or garbage collecting!
 	Package->GetMetaData();
-
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 	bool bSaved = UPackage::SavePackage(Package, Asset, RF_NoFlags, *PackageFilename);
+#else
+	FSavePackageArgs SaveArgs;
+	// SaveArgs.TargetPlatform = ???; // I think we can leave this at the default: not cooking.
+	SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
+	// SaveArgs.SaveFlags = ???; // I think we can leave this at the default: None.
+	// SaveArgs.bForceByteSwapping = ???; // I think we can leave this at the default: false.
+	// SaveArgs.bWarnOfLongFilename = ???; // I think we can leave this at the default: true.
+	// SaveArgs.bSlowTask = ???; // I think we can leave this at the default: true.
+	// SaveArgs.Error = ???; // I think we can leave this at the default: GError.
+	// SaveArgs.SavePAckageContext = ???; // I think we can leave this at the default: nullptr.
+	bool bSaved = UPackage::SavePackage(Package, Asset, *PackageFilename, SaveArgs);
+#endif
 	if (!bSaved)
 	{
 		UE_LOG(
@@ -357,7 +370,17 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 
 	FRawMesh RawMesh;
 
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 	RawMesh.VertexPositions = Trimesh.GetVertexPositions();
+#else
+	const TArray<FVector>& TrimeshVertexPositions = Trimesh.GetVertexPositions();
+	RawMesh.VertexPositions.SetNum(TrimeshVertexPositions.Num());
+	for (int32 I = 0; I < TrimeshVertexPositions.Num(); ++I)
+	{
+		// May do a double -> float conversion, depending on the UE_LARGE_WORLD_COORDINATES_DISABLED preprocessor macro.
+		RawMesh.VertexPositions[I] = TrimeshVertexPositions[I];
+	}
+#endif
 	RawMesh.WedgeIndices = Trimesh.GetVertexIndices();
 
 	const int32 NumTriangles = Trimesh.GetNumTriangles();
@@ -478,7 +501,17 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromRenderData(const FRenderDataBarr
 	// with useless position duplicates. If this becomes a serious concern, then find a way to
 	// remove duplicates and patch the WedgeIndies to point to the correct merged vertex position.
 	// Must use the render vertex indices in the per-index conversion loop below.
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 	RawMesh.VertexPositions = RenderData.GetPositions();
+#else
+	const TArray<FVector>& TrimeshVertexPositions = RenderData.GetPositions();
+	RawMesh.VertexPositions.SetNum(TrimeshVertexPositions.Num());
+	for (int32 I = 0; I < TrimeshVertexPositions.Num(); ++I)
+	{
+		// May do a double -> float conversion, depending on the UE_LARGE_WORLD_COORDINATES_DISABLED preprocessor macro.
+		RawMesh.VertexPositions[I] = TrimeshVertexPositions[I];
+	}
+#endif
 	RawMesh.WedgeIndices = RenderData.GetIndices();
 
 	const int32 NumTriangles = RenderData.GetNumTriangles();
@@ -520,13 +553,15 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromRenderData(const FRenderDataBarr
 
 void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh* StaticMesh)
 {
-	StaticMesh->StaticMaterials.Add(FStaticMaterial());
+	StaticMesh->GetStaticMaterials().Add(FStaticMaterial());
 #if UE_VERSION_OLDER_THAN(4, 23, 0)
 	StaticMesh->SourceModels.Emplace();
 	FStaticMeshSourceModel& SourceModel = StaticMesh->SourceModels.Last();
-#else
+#elif UE_VERSION_OLDER_THAN(5, 0, 0)
 	StaticMesh->GetSourceModels().Emplace();
 	FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModels().Last();
+#else
+	FStaticMeshSourceModel& SourceModel = StaticMesh->AddSourceModel();
 #endif
 
 	// There is a SaveRawMesh on the source model as well, but calling that causes a failed assert.
@@ -540,7 +575,9 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 	BuildSettings.bRecomputeTangents = true;
 	BuildSettings.bUseMikkTSpace = true;
 	BuildSettings.bGenerateLightmapUVs = true;
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 	BuildSettings.bBuildAdjacencyBuffer = false;
+#endif
 	BuildSettings.bBuildReversedIndexBuffer = false;
 	BuildSettings.bUseFullPrecisionUVs = false;
 	BuildSettings.bUseHighPrecisionTangentBasis = false;

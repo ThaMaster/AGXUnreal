@@ -10,6 +10,7 @@
 #include "EditorFontGlyphs.h"
 #include "IDetailsView.h"
 #include "IPropertyTypeCustomization.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Modules/ModuleManager.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "PropertyCustomizationHelpers.h"
@@ -84,7 +85,11 @@ TSharedRef<IDetailsView> SAGX_AgxEdModeWidget::CreateSubModeDetailsView()
 	Args.bLockable = false;
 	Args.bHideSelectionTip = true; /// \todo True or false?
 	Args.bAllowSearch = false;
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 	Args.bShowActorLabel = false;
+#else
+	Args.bShowObjectLabel = false;
+#endif
 	Args.NameAreaSettings = FDetailsViewArgs::HideNameArea;
 
 	FPropertyEditorModule& PropertyModule =
