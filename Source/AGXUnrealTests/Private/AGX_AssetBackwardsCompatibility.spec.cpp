@@ -155,9 +155,9 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 {
 	using namespace RealInMaterialsBackwardsCompatibilitySpec_helpers;
 
-	Describe("Loading Shape Materials with parameters stored as doubles", [this]()
+	Describe("Loading Shape Materials with doubles", [this]()
 	{
-		It("should read each stored double value into the corresponding FAGX_Real member", [this]()
+		It("should convert double to FAGX_Real", [this]()
 		{
 			const FString ObjectName {TEXT("AGX_SM_PreAGXReal")};
 			const FString PackagePath =
@@ -213,9 +213,9 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 		});
 	});
 
-	Describe("Loading Contact Materials with parameters stored as doubles", [this]()
+	Describe("Loading Contact Materials with doubles", [this]()
 	{
-		It("should read each stored double value into the corresponding FAGX_Real member", [this]()
+		It("should convert double to FAGX_Real", [this]()
 		{
 			const FString ObjectName {TEXT("AGX_CM_PreAGXReal")};
 			const FString PackagePath =
@@ -257,9 +257,9 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 		});
 	});
 
-	Describe("Loading Terrain Materials with parameters stored as doubles", [this]()
+	Describe("Loading Terrain Materials with doubles", [this]()
 	{
-		It("should read each stored obule value into the corresponding FAGX_Real member", [this]()
+		It("should convert double to FAGX_Real", [this]()
 		{
 			const FString ObjectName {TEXT("AGX_TM_PreAGXReal")};
 			const FString PackagePath =
