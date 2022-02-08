@@ -200,7 +200,7 @@ float FSimulationBarrier::GetTimeStep() const
 void FSimulationBarrier::SetEnableContactWarmstarting(bool bEnable)
 {
 	check(HasNative());
-	return NativeRef->Native->getDynamicsSystem()->setEnableContactWarmstarting(bEnable);
+	NativeRef->Native->getDynamicsSystem()->setEnableContactWarmstarting(bEnable);
 }
 
 bool FSimulationBarrier::GetEnableContactWarmstarting() const
