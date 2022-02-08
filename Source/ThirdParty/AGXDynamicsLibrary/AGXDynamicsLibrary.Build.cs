@@ -730,13 +730,59 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private void FixSymlinks(string LibraryDirectory)
 	{
+		// This function is still work-in-progress and contains a few
+		// alternatives with commends describing pros and cons of each.
+
+		// Replace the library symlinks with linker scripts doing INPUT on the
+		// linked-to file. Unreal Build Tool does not support symlinks and
+		// will ignore them, and a regular file copy will produce duplicates
+		// of all library files since the symlinks will be copied as the
+		// pointed-to file. This wasts disk space.
+		//
+		// As an alternative to symlinks we can use linker scripts that include
+		// the pointed-to file.
+		string VersionSuffix = "." + BundledAGXResources.GetAGXVersion().ToString();
+		string[] BundledAGXLibraries = Directory.GetFiles(LibraryDirectory, "lib*.so" + VersionSuffix);
+		foreach (string Library in BundledAGXLibraries)
+		{
+			if (Library.Contains("vdbgrid"))
+			{
+				// Unfortunately, linker scripts only work at link time. For the
+				// libraries we do dlopen on we must have an actual library and
+				// not a linker script. A symlink would be fine, but those don't
+				// survive Unreal Build Tool. In some cases we can patch the
+				// dlopen call to open the larget of the link instead, but for
+				// the following we cannot do that. The following list should
+				// match the Contains check above. By doing continue here we
+				// will copy the file twice.
+				//
+				// vdbgrid:
+				// The dlopen call is done by AGX Dynamics, not the plugin,
+				// and it has been hard-coded to open libvdbgrid.so.
+				continue;
+			}
+			string FileName = Path.GetFileName(Library);
+			string LinkName = FileName.Substring(0, FileName.Length - VersionSuffix.Length);
+			string LinkPath = Path.Combine(LibraryDirectory, LinkName);
+			string LinkTarget =  FileName;
+
+			// Delete the file that should be a linker script instead.
+			File.Delete(LinkPath);
+
+			// Create the linker script.
+			using (StreamWriter LinkFile = new StreamWriter(LinkPath))
+			{
+				LinkFile.WriteLine("INPUT ({0})", LinkTarget);
+			}
+		}
+
 		/// @fixme Sometimes Unreal Build Tool doesn't copy symlinks at all
 		/// when building with "RunUAT.sh BuildPlugin". We can still run
 		/// Blueprint projects without them, but C++ projects that contains
 		/// AGX Dynamics Barrier modules cannot link. For now we don't create
 		/// symlinks and let the file duplicates remain instead. Figure out
 		/// how to properly make symlinks survive through Unreal Build Tool.
-		return;
+		// return;
 
 
 
