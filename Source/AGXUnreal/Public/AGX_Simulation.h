@@ -113,7 +113,7 @@ public: // Properties.
 	 * Simulation stepping mode. This controls what happens when the simulation is unable to keep
 	 * up with real-time.
 	 */
-	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Simulation Stepping Mode")
 	TEnumAsByte<enum EAGX_StepMode> StepMode = SmDropImmediately;
 
 	/** Maximum time lag for the Catch up over time Capped step mode before dropping [s]. */
@@ -258,6 +258,7 @@ public: // Member functions.
 	 * control over when the simulation is stepped. Does not do any delta time tracking so mixing
 	 * automatic frame stepping, i.e. Step Mode != None, and StepOnce may step more than intended.
 	 */
+	UFUNCTION(BlueprintCallable, Category = "Simulation")
 	void StepOnce();
 
 	static UAGX_Simulation* GetFrom(const UActorComponent* Component);
