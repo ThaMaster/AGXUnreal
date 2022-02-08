@@ -288,7 +288,7 @@ void UAGX_RigidBodyComponent::TickComponent(
 	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (MotionControl != MC_STATIC && UAGX_Simulation::GetFrom(this)->StepMode != SmNone)
+	if (MotionControl != MC_STATIC)
 	{
 		ReadTransformFromNative();
 		Velocity = NativeBarrier.GetVelocity();
