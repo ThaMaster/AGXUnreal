@@ -582,6 +582,9 @@ void UAGX_Simulation::Step(float DeltaTime)
 		case SmDropImmediately:
 			NumSteps = StepDropImmediately(DeltaTime);
 			break;
+		case SmNone:
+			NumSteps = 0;
+			break;
 		default:
 			UE_LOG(LogAGX, Error, TEXT("Unknown step mode: %d"), StepMode);
 	}
@@ -720,6 +723,37 @@ int32 UAGX_Simulation::StepDropImmediately(float DeltaTime)
 	// Keep LeftoverTime updated in case the information is needed in the future.
 	LeftoverTime = DeltaTime;
 	return NumSteps;
+}
+
+void UAGX_Simulation::StepOnce()
+{
+	using namespace AGX_Simulation_helpers;
+#if WITH_EDITORONLY_DATA
+	if (bExportInitialState)
+	{
+		// Is there a suitable callback we can use instead of checking before every step?
+		bExportInitialState = false;
+		WriteInitialStateArchive(ExportPath, *this);
+	}
+#endif
+
+	const uint64 StartCycle = FPlatformTime::Cycles64();
+	{
+		TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
+		NativeBarrier.Step();
+	}
+	INC_DWORD_STAT(STAT_AGXU_NumSteps);
+	const uint64 EndCycle = FPlatformTime::Cycles64();
+	const double StepTime = FPlatformTime::ToMilliseconds64(EndCycle - StartCycle);
+	INC_FLOAT_STAT_BY(STAT_AGXU_StepTime, StepTime);
+	if (bEnableStatistics)
+	{
+		FAGX_Statistics Statistics = GetStatistics();
+		AccumulateFrameStatistics(Statistics);
+		// We don't know if there are going to be more steps taken this frame or not, so we report
+		// step statistics every time just in case.
+		ReportStepStatistics(Statistics);
+	}
 }
 
 float UAGX_Simulation::GetTimeStamp() const
