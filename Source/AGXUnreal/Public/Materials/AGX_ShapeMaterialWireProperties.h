@@ -3,6 +3,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include <AGX_Real.h>
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
@@ -21,7 +24,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Wire Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double YoungsModulusStretch;
+	FAGX_Real YoungsModulusStretch;
 
 	/**
 	 * Spook Damping when stretching the wire [s].
@@ -30,7 +33,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Wire Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double SpookDampingStretch;
+	FAGX_Real SpookDampingStretch;
 
 	/**
 	 * Young's modulus when bending the wire [Pa].
@@ -38,7 +41,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Wire Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double YoungsModulusBend;
+	FAGX_Real YoungsModulusBend;
 
 
 	/**
@@ -48,7 +51,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Wire Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double SpookDampingBend;
+	FAGX_Real SpookDampingBend;
 
 public:
 	FAGX_ShapeMaterialWireProperties();

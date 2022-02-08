@@ -3,6 +3,10 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include <AGX_Real.h>
+
+// Unreal Engine includes
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "AGX_ShapeMaterialSurfaceProperties.generated.h"
@@ -30,7 +34,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Surface Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bFrictionEnabled"))
-	double Roughness;
+	FAGX_Real Roughness;
 
 	/**
 	 * Surface viscosity parameter telling how dry/wet the surface is. For larger values,
@@ -40,7 +44,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Surface Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double Viscosity;
+	FAGX_Real Viscosity;
 
 	/**
 	 * The attractive force between two colliding objects [N].
@@ -48,7 +52,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Surface Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double AdhesiveForce;
+	FAGX_Real AdhesiveForce;
 
 	/**
 	 * Allowed overlap from surface for resting contact [cm].
@@ -60,7 +64,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Material Surface Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double AdhesiveOverlap;
+	FAGX_Real AdhesiveOverlap;
 
 public:
 	FAGX_ShapeMaterialSurfaceProperties();

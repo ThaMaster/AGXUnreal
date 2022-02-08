@@ -1,9 +1,9 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Materials/AGX_ContactMaterialBase.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
 #include "Materials/ContactMaterialBarrier.h"
@@ -138,7 +138,8 @@ void UAGX_ContactMaterialBase::SetSecondaryFrictionCoefficient(float InSecondary
 	SecondaryFrictionCoefficient = InSecondaryFrictionCoefficient;
 }
 
-void UAGX_ContactMaterialBase::SetUseSecondaryFrictionCoefficient(bool bInUseSecondaryFrictionCoefficient)
+void UAGX_ContactMaterialBase::SetUseSecondaryFrictionCoefficient(
+	bool bInUseSecondaryFrictionCoefficient)
 {
 	bUseSecondaryFrictionCoefficient = bInUseSecondaryFrictionCoefficient;
 }
