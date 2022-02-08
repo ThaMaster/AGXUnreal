@@ -7,6 +7,7 @@
 #include "AGX_StaticMeshComponent.h"
 #include "AGX_Stepper.h"
 #include "AGX_LogCategory.h"
+#include "AGX_UpropertyDispatcher.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
@@ -355,6 +356,27 @@ void UAGX_Simulation::SetEnableCollisionGroupPair(
 	NativeBarrier.SetEnableCollisionGroupPair(Group1, Group2, CanCollide);
 }
 
+void UAGX_Simulation::SetEnableContactWarmstarting(bool bEnable)
+{
+	bContactWarmstarting = bEnable;
+	if (HasNative())
+	{
+		NativeBarrier.SetEnableContactWarmstarting(bEnable);
+	}
+}
+
+bool UAGX_Simulation::GetEnableContactWarmstarting() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetEnableContactWarmstarting();
+	}
+	else
+	{
+		return bContactWarmstarting;
+	}
+}
+
 void UAGX_Simulation::SetNumPpgsIterations(int32 NumIterations)
 {
 	NumPpgsIterations = NumIterations;
@@ -381,7 +403,9 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	NativeBarrier.AllocateNative();
 	check(HasNative()); /// \todo Consider better error handling.
 
-	/// \todo Set time step here.
+	NativeBarrier.SetTimeStep(TimeStep);
+
+	NativeBarrier.SetEnableContactWarmstarting(bContactWarmstarting);
 
 	if (bOverridePPGSIterations)
 	{
@@ -411,7 +435,6 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 
 	SetGravity();
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
-	NativeBarrier.SetTimeStep(TimeStep);
 
 	if (bRemoteDebugging)
 	{
@@ -429,6 +452,36 @@ void UAGX_Simulation::Deinitialize()
 	NativeBarrier.SetStatisticsEnabled(false);
 	NativeBarrier.ReleaseNative();
 }
+
+#if WITH_EDITOR
+
+void UAGX_Simulation::PostInitProperties()
+{
+	Super::PostInitProperties();
+	InitPropertyDispatcher();
+}
+
+void UAGX_Simulation::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
+{
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
+	Super::PostEditChangeChainProperty(Event);
+}
+
+void UAGX_Simulation::InitPropertyDispatcher()
+{
+	FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_UpropertyDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bContactWarmstarting), [](ThisClass* This)
+		{ This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
+}
+
+#endif
 
 bool UAGX_Simulation::WriteAGXArchive(const FString& Filename) const
 {

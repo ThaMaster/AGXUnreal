@@ -60,10 +60,27 @@ public: // Properties.
 	 * Step length of the integrator [s].
 	 */
 	UPROPERTY(
-		config, EditAnywhere, BlueprintReadOnly, Category = "Solver",
-		meta = (ClampMin = "0.001", UIMin = "0.001", ClampMax = "1.0", UIMax = "1.0"))
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Solver",
+		Meta = (ClampMin = "0.001", UIMin = "0.001", ClampMax = "1.0", UIMax = "1.0"))
 	float TimeStep = 1.0f / 60.0f;
 	// BlueprintReadOnly because will need to make UFunctions for proper Set/GetTimeStep.
+
+	/**
+	 * Contact warmstarting adds an extra step to the solver where the previous timesteps contact
+	 * data is matched to the current timesteps data so the previous forces can be used by the
+	 * solver to find a solution faster when direct friction is used.
+	 *
+	 * If using auto-generated ContactMaterials and default settings, enabling this is not
+	 * recommended and will just add some overhead. But if a FrictionModel with DIRECT solvetype is
+	 * used, enabling this is recommended.
+	 *
+	 * The state data used to match contacts for warmstarting is not serialized. This means that
+	 * storing and then restoring the simulation can give slightly different trajectories compared
+	 * to running the simulation non-stop.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Solver")
+	bool bContactWarmstarting = false;
 
 	/**
 	 * Set to true to override the AGX Dynamics default value for the number of Parallel Projected
@@ -160,6 +177,12 @@ public: // Properties.
 	int16 RemoteDebuggingPort;
 
 public: // Member functions.
+	UFUNCTION(BlueprintCallable, Category = "Solver")
+	void SetEnableContactWarmstarting(bool bEnable);
+
+	UFUNCTION(BlueprintCallable, Category = "Solver")
+	bool GetEnableContactWarmstarting() const;
+
 	/**
 	 * Set the number of solver resting iterations to use for the Parallel Projected Gauss-Seidel
 	 * (PPGS) solver. This value influences the accuracy and computation cost of e.g. terrain
@@ -282,8 +305,20 @@ public: // Member functions.
 #endif
 
 private:
-	void Initialize(FSubsystemCollectionBase& Collection) override;
-	void Deinitialize() override;
+
+	// ~Begin USubsystem interface.
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
+	// ~End USubsystem interface.
+
+#if WITH_EDITOR
+	// ~Begin UObject interface.
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	// ~End UObject interface.
+
+	void InitPropertyDispatcher();
+#endif
 
 private:
 	int32 StepCatchUpImmediately(float DeltaTime);

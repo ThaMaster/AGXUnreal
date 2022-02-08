@@ -69,6 +69,9 @@ public:
 	void SetTimeStep(float TimeStep);
 	float GetTimeStep() const;
 
+	void SetEnableContactWarmstarting(bool bEnable);
+	bool GetEnableContactWarmstarting() const;
+
 	void SetNumPpgsIterations(int32 NumIterations);
 	int32 GetNumPpgsIterations() const;
 
