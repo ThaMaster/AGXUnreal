@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -770,6 +773,9 @@ public:
 	bool IsInitialized() const;
 
 	double GetRestLength() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire", Meta = (DisplayName = "Get Rest Length"))
+	float GetRestLength_BP() const;
 
 	double GetMass() const;
 

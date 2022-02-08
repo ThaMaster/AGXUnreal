@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "AGX_ArchiveExporter.h"
 
 #include "Utilities/AGX_EditorUtilities.h"

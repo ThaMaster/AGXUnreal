@@ -1,23 +1,38 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+
 using UnrealBuildTool;
 
 
-/// The AGXDynamicsLibrary is the portal from AGXUnrealBarrier to AGX Dynamics.
-/// This is where we list the include paths and linker requirements to build an
+/// AGXDynamicsLibrary is the portal from AGXUnrealBarrier to AGX Dynamics. This
+/// is where we list the include paths and linker requirements to build an
 /// Unreal Engine plugin that uses AGX Dynamics.
 public class AGXDynamicsLibrary : ModuleRules
 {
-
 	/// Information about how AGX Dynamics is bundled and used on the current
 	/// platform.
 	private AGXResourcesInfo BundledAGXResources;
 
-	// CAUTION: Setting bCopyLicenseFileToTarget to 'true' means the AGX Dynamics license file will
-	// be copied to the build target location. This is true even for cooked builds. An exception is
-	// when doing shipping builds, for those cases the license file is never copied to the target.
-	// Use with care, make sure the license file is never distributed.
+	/// Information about the currently setup_env'd AGX Dynamics. Will be null
+	/// if setup_env hasn't been run. This AGXResourcesInfo must be valid the
+	/// first time project files are generated, since it must be known from
+	/// where to bundle AGX Dynamics into the plugin.
+	private AGXResourcesInfo InstalledAGXResources;
+
+	/// Setting bCopyLicenseFileToTarget to 'true' means the AGX Dynamics
+	/// license file will be copied to the build target location. This is true
+	/// even for cooked builds. An exception is when doing shipping builds, for
+	/// those cases the license file is never copied to the target. Use with
+	/// care, make sure the license file is never distributed.
+	///
+	/// An alternative is to set the AGXUNREAL_COPY_LICENSE_FILE_TO_TARGET
+	/// environment variable to the string "true" without the quotes, that will
+	/// have the same effect as setting this variable to true.
 	bool bCopyLicenseFileToTarget = false;
 
 	/// The various dependency sources we have. Each come with an include path,
@@ -44,14 +59,14 @@ public class AGXDynamicsLibrary : ModuleRules
 		Config,
 
 		/// A non-library dependency which points to the Components directory,
-		/// the one that contains the entities, kernels, shaderes, and such.
+		/// the one that contains the entities, kernels, shaders, and such.
 		Components,
 
 		/// The AGX Dynamics dependencies. Provides libraries that AGX Dynamics
 		/// depend on.
 		Dependencies,
 
-		/// The AGX Terrain depdendencies. Provides libraries that AGX Terrain
+		/// The AGX Terrain dependencies. Provides libraries that AGX Terrain
 		/// depend on.
 		TerrainDependencies,
 
@@ -107,21 +122,21 @@ public class AGXDynamicsLibrary : ModuleRules
 	}
 
 	/// All needed AGX Dynamics runtime and build-time resources are located in
-	/// the directory AGXUnreal/Binaries/Thirdparty/agx within this plugin. When
+	/// the directory AGXUnreal/Source/ThirdParty/agx within this plugin. When
 	/// compiling/packaging the AGX Dynamics for Unreal plugin, the AGX Dynamics
-	/// resources found in AGXUnreal/Binaries/Thirdparty/agx are used. This
+	/// resources found in AGXUnreal/Source/ThirdParty/agx are used. This
 	/// directory also contain all needed AGX Dynamics runtime files. That means
 	/// this plugin can be built and used without the need to call AGX Dynamic's
 	/// setup_env as long as these resources are available.
 	///
 	/// If the AGX Dynamics resources are not available in the directory
-	/// AGXUnreal/Binaries/Thirdparty/agx, then they are automatically copied
+	/// AGXUnreal/Source/ThirdParty/agx, then they are automatically copied
 	/// from the AGX Dynamics installation in which setup_env has been called as
 	/// part of the build process. Note that this means that if the AGX Dynamics
-	/// resources are not available in AGXUnreal/Binaries/Thirdparty/agx at
+	/// resources are not available in AGXUnreal/Source/ThirdParty/agx at
 	/// build-time, setup_env must have been called prior to performing the
 	/// build. The recommended procedure is to build once within a setup_env'd
-	/// environment leave the setup_env'd environment after that.
+	/// environment and leave the setup_env'd environment after that.
 	public AGXDynamicsLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
 		// At 4.25 we started getting warnings encouraging us to enable these
@@ -148,12 +163,24 @@ public class AGXDynamicsLibrary : ModuleRules
 		// module.
 		Type = ModuleType.External;
 
+		if (!IsAGXResourcesBundled() && !IsAGXSetupEnvCalled())
+		{
+			Console.Error.WriteLine(
+				"\n\nError: No AGX Dynamics bundled with the plugin and no AGX Dynamics environment " +
+				"has been setup. Please ensure that setup_env has been run.\n\n");
+			return;
+		}
+
 		string BundledAGXResourcesPath = GetBundledAGXResourcesPath();
+
 		BundledAGXResources =
 			new AGXResourcesInfo(Target, AGXResourcesLocation.BundledAGX, BundledAGXResourcesPath);
+		InstalledAGXResources =
+			IsAGXSetupEnvCalled() ? new AGXResourcesInfo(Target, AGXResourcesLocation.InstalledAGX) : null;
 
 		// The AGX Dynamics version we are currently building against.
-		AGXVersion TargetAGXVersion = GetAGXVersion();
+		AGXVersion TargetAGXVersion =
+			IsAGXResourcesBundled() ? BundledAGXResources.GetAGXVersion() : InstalledAGXResources.GetAGXVersion();
 
 		// List of run-time libraries that we need. These will be added to the
 		// Unreal Engine RuntimeDependencies list. See
@@ -161,10 +188,12 @@ public class AGXDynamicsLibrary : ModuleRules
 		Dictionary<string, LibSource> RuntimeLibFiles = new Dictionary<string, LibSource>();
 		RuntimeLibFiles.Add("agxPhysics", LibSource.AGX);
 		RuntimeLibFiles.Add("agxCore", LibSource.AGX);
+		RuntimeLibFiles.Add("agxHydraulics", LibSource.AGX);
 		RuntimeLibFiles.Add("agxSabre", LibSource.AGX);
 		RuntimeLibFiles.Add("agxTerrain", LibSource.AGX);
 		RuntimeLibFiles.Add("agxCable", LibSource.AGX);
 		RuntimeLibFiles.Add("agxModel", LibSource.AGX);
+		RuntimeLibFiles.Add("agxVehicle", LibSource.AGX);
 		RuntimeLibFiles.Add("vdbgrid", LibSource.AGX);
 		RuntimeLibFiles.Add("colamd", LibSource.AGX);
 		RuntimeLibFiles.Add("Half", LibSource.TerrainDependencies);
@@ -207,11 +236,13 @@ public class AGXDynamicsLibrary : ModuleRules
 			{
 				RuntimeLibFiles.Add("agx-assimp-vc*-mt", LibSource.AGX);
 			}
+            if (TargetAGXVersion.IsOlderThan(2, 31, 1, 0))
+            {
+				RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
+			}
 
-			RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
-			RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
+            RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
-			RuntimeLibFiles.Add("ot2?-OpenThreads", LibSource.Dependencies);
 			if (TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
 				RuntimeLibFiles.Add("glew", LibSource.Dependencies);
@@ -222,11 +253,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		if (!IsAGXResourcesBundled())
 		{
 			BundleAGXResources(Target, RuntimeLibFiles, LinkLibFiles, IncludePaths);
-		}
-		else
-		{
-			Console.WriteLine("Skipping packaging of AGX Dynamics resources, bundled "
-				+ "resources already exists in: {0}", BundledAGXResourcesPath);
 		}
 
 		// Create a license directory at the right place if non exists.
@@ -271,16 +297,19 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "lib", "*"));
 		SetLicenseForCopySafe(Target);
 
-		// This is a work-around for Linux which ensures the .so files are always copied to the target's
-		// binaries directory (next to the executable if this is a cooked build). The reason why
-		// this is needed is that RPATH of the module's .so files points to the wrong location otherwise.
-		// Really, we would like those .so files' RPATH to point to the ThirdParty/agx/Lib/Linux directory
-		// but we have not managed to find a way to do that yet.
+		// This is a work-around for Linux which ensures that the .so files are
+		// always copied to the target's Binaries directory, next to the
+		// executable if this is a cooked build. The reason why this is needed
+		// is that RPATH of the module's .so files points to the wrong location.
+		// We would like to have those .so files' RPATH to point to the
+		// ThirdParty/agx/Lib/Linux directory but we have not managed to find a
+		// way to do that yet. There is an ongoing UDN question about this, see
+		// internal GitLab issue 548.
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
+			CopyLinuxSoFromBundleToPluginBinaries();
 			foreach (var RuntimeLibFile in RuntimeLibFiles)
 			{
-				CopyLinuxSoFromBundleToPluginBinaries();
 				AddRuntimeDependencyCopyToBinariesDirectory(RuntimeLibFile.Key, RuntimeLibFile.Value, Target);
 			}
 		}
@@ -341,6 +370,8 @@ public class AGXDynamicsLibrary : ModuleRules
 				CopyFile(FileToCopy, DestFilePath);
 			}
 		}
+
+		FixSymlinks(DestDir);
 	}
 
 	private void AddRuntimeDependencyCopyToBinariesDirectory(string Name, LibSource Src, ReadOnlyTargetRules Target)
@@ -369,7 +400,8 @@ public class AGXDynamicsLibrary : ModuleRules
 	private void SetLicenseForCopySafe(ReadOnlyTargetRules Target)
 	{
 		// License copying is only allowed for Development and Debug builds.
-		bool bAllowedConfiguration = Target.Configuration == UnrealTargetConfiguration.Development ||
+		bool bAllowedConfiguration =
+			Target.Configuration == UnrealTargetConfiguration.Development ||
 			Target.Configuration == UnrealTargetConfiguration.Debug ||
 			Target.Configuration == UnrealTargetConfiguration.DebugGame;
 
@@ -381,65 +413,28 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		if (bAllowedConfiguration && (bCopyLicenseFileToTarget || bLicenseCopyEnvVariableSet))
 		{
-			Console.WriteLine("AGX Dynamics license file will be copied to the build target with "
-				+ "bCopyLicenseFileToTarget = {0} and bLicenseCopyEnvVariableSet = {1}",
-				bCopyLicenseFileToTarget, bLicenseCopyEnvVariableSet);
-
 			RuntimeDependencies.Add(Path.Combine(LicenseDir, "*"));
 		}
 		else
 		{
 			// Note the lack of '*'here. We copy only the README file, not all files.
-			Console.WriteLine("AGX Dynamics license file will not be copied to build target.");
 			RuntimeDependencies.Add(Path.Combine(LicenseDir, "README.md"));
 		}
 	}
 
-	AGXVersion GetAGXVersion()
-	{
-		string VersionHeaderPath = GetAgxVersionHeaderPath();
-		if (String.IsNullOrEmpty(VersionHeaderPath))
-		{
-			// Logging done in GetAgxVersionHeaderPath.
-			return new AGXVersion();
-		}
-
-		string[] Lines;
-
-		try
-		{
-			Lines = File.ReadAllLines(VersionHeaderPath);
-		}
-		catch (Exception e)
-		{
-			Console.Error.WriteLine("Error: GetAGXVersion failed. " +
-				"Unable to read file {0}. Exception: {1}", VersionHeaderPath, e.Message);
-			return new AGXVersion();
-		}
-
-		int? GenerationVer = ParseDefineDirectiveValue(Lines, "AGX_GENERATION_VERSION");
-		int? MajorVer = ParseDefineDirectiveValue(Lines, "AGX_MAJOR_VERSION");
-		int? MinorVer = ParseDefineDirectiveValue(Lines, "AGX_MINOR_VERSION");
-		int? PatchVer = ParseDefineDirectiveValue(Lines, "AGX_PATCH_VERSION");
-
-		if (!GenerationVer.HasValue || !MajorVer.HasValue || !MinorVer.HasValue || !PatchVer.HasValue)
-		{
-			Console.Error.WriteLine("Error: GetAGXVersion failed. " +
-				"Unable to parse define directives in {0}", VersionHeaderPath);
-			return new AGXVersion();
-		}
-
-		return new AGXVersion(GenerationVer.Value, MajorVer.Value, MinorVer.Value, PatchVer.Value);
-	}
-
 	private string GetBundledAGXResourcesPath()
 	{
-		return Path.Combine(GetPluginBinariesPath(), "ThirdParty", "agx");
+		return Path.Combine(GetPluginSourcePath(), "ThirdParty", "agx");
 	}
 
 	private string GetPluginBinariesPath()
 	{
 		return Path.Combine(GetPluginRootPath(), "Binaries");
+	}
+
+	private string GetPluginSourcePath()
+	{
+		return Path.Combine(GetPluginRootPath(), "Source");
 	}
 
 	private string GetPluginLicensePath()
@@ -463,21 +458,20 @@ public class AGXDynamicsLibrary : ModuleRules
 	private void BundleAGXResources(ReadOnlyTargetRules Target, Dictionary<string, LibSource> RuntimeLibFiles,
 		Dictionary<string, LibSource> LinkLibFiles, List<LibSource> IncludePaths)
 	{
-		if (!Heuristics.IsAGXSetupEnvCalled())
+		if (!IsAGXSetupEnvCalled())
 		{
 			Console.Error.WriteLine("Error: Could not bundle AGX Dynamics resources because no AGX Dynamics installation "
 				+ "was found. Please ensure that setup_env has been called.");
 			return;
 		}
 
-		Console.WriteLine("Packaging AGX Dynamics resources starting...");
-		AGXResourcesInfo InstalledAGXResources = new AGXResourcesInfo(Target, AGXResourcesLocation.InstalledAGX);
-
 		// Copy AGX Dynamics runtime library files.
 		foreach (var RuntimeLibFile in RuntimeLibFiles)
 		{
-			string Dir = InstalledAGXResources.RuntimeLibraryDirectory(RuntimeLibFile.Value);
-			string FileName = InstalledAGXResources.RuntimeLibraryFileName(RuntimeLibFile.Key);
+			string LibraryName = RuntimeLibFile.Key;
+			LibSource LibrarySource = RuntimeLibFile.Value;
+			string Dir = InstalledAGXResources.RuntimeLibraryDirectory(LibrarySource);
+			string FileName = InstalledAGXResources.RuntimeLibraryFileName(LibraryName);
 
 			// File name and/or extension may include search patterns such as '*' or '?'. Resolve all these.
 			string[] FilesToCopy = Directory.GetFiles(Dir, FileName);
@@ -539,16 +533,56 @@ public class AGXDynamicsLibrary : ModuleRules
 			string Source = InstalledAGXResources.IncludePath(IncludePath);
 			string Dest = BundledAGXResources.IncludePath(IncludePath);
 
-			// The three ____Win32 files are ignored because they are located in a directory with name
-			// Win32. That directory name is not allowed by UAT during the staging phase and gives build
-			// errors during cook builds.
-			List<string> FilesToIgnore = new List<string>
-				{ "GraphicsHandleWin32", "GraphicsWindowWin32", "PixelBufferWin32" };
-			if(!CopyDirectoryRecursively(Source, Dest, FilesToIgnore))
+			// Directories to include containing header files.
+            List<string> HeaderFileDirs = new List<string>
 			{
-				CleanBundledAGXDynamicsResources();
-				return;
-			}
+				"agx",
+				"agxCable",
+				"agxCollide",
+				"agxControl",
+				"agxData",
+				"agxDriveTrain",
+				"agxHydraulics",
+				"agxIO",
+				"agxModel",
+				"agxPlot",
+				"agxPowerLine",
+				"agxRender",
+				"agxSabre",
+				"agxSDK",
+				"agxStream",
+				"agxTerrain",
+				"agxUtil",
+				"agxVehicle",
+				"agxWire",
+				Path.Combine("external", "hedley"),
+				Path.Combine("external", "json"),
+				Path.Combine("external", "pystring")
+			};
+
+			// Single header files to include.
+			List<string> HeaderFiles = new List<string>
+			{
+				"HashImplementationSwitcher.h"
+			};
+
+			foreach (var Dir in HeaderFileDirs)
+            {
+                if (!CopyDirectoryRecursively(Path.Combine(Source, Dir), Path.Combine(Dest, Dir)))
+                {
+                    CleanBundledAGXDynamicsResources();
+                    return;
+                }
+            }
+
+			foreach (var File in HeaderFiles)
+            {
+                if (!CopyFile(Path.Combine(Source, File), Path.Combine(Dest, File)))
+                {
+					CleanBundledAGXDynamicsResources();
+					return;
+                }
+            }
 		}
 
 		// Copy AGX Dynamics cfg directory.
@@ -604,7 +638,29 @@ public class AGXDynamicsLibrary : ModuleRules
 			}
 		}
 
-		Console.WriteLine("Packaging AGX Dynamics resources complete.");
+		// Copy AGX Dynamics LICENSE.txt, the license text for both the physics engine and its dependencies.
+		{
+			string Source = InstalledAGXResources.LicenseTextPath;
+			string Destination = BundledAGXResources.LicenseTextPath;
+			if (!CopyFile(Source, Destination))
+			{
+				CleanBundledAGXDynamicsResources();
+				return;
+			}
+		}
+
+		BundledAGXResources.ParseAGXVersion();
+
+
+		if (Target.Platform == UnrealTargetPlatform.Linux)
+		{
+			FixSymlinks(BundledAGXResources.RuntimeLibraryDirectory(LibSource.AGX));
+		}
+
+
+		Console.WriteLine(
+			"\nAGX Dynamics resources bundled from {0} to {1}.",
+			Environment.GetEnvironmentVariable("AGX_DIR"), GetBundledAGXResourcesPath());
 	}
 
 	private bool CopyFile(string Source, string Dest)
@@ -621,14 +677,16 @@ public class AGXDynamicsLibrary : ModuleRules
 		}
 		catch (Exception e)
 		{
-			Console.Error.WriteLine("Error: Unable to copy file {0} to {1}. Exception: {2}", Source, Dest, e.Message);
+			Console.Error.WriteLine("Error: Unable to copy file {0} to {1}. Exception: {2}",
+				Source, Dest, e.Message);
 			return false;
 		}
 
 		return true;
 	}
 
-	private bool CopyDirectoryRecursively(string SourceDir, string DestDir, List<string> FilesToIgnore = null)
+	private bool CopyDirectoryRecursively(string SourceDir, string DestDir,
+		List<string> FilesToIgnore = null)
 	{
 		foreach (string FilePath in Directory.GetFiles(SourceDir, "*", SearchOption.AllDirectories))
 		{
@@ -670,9 +728,57 @@ public class AGXDynamicsLibrary : ModuleRules
 		return true;
 	}
 
+	private void FixSymlinks(string LibraryDirectory)
+	{
+		/// @fixme Sometimes Unreal Build Tool doesn't copy symlinks at all
+		/// when building with "RunUAT.sh BuildPlugin". We can still run
+		/// Blueprint projects without them, but C++ projects that contains
+		/// AGX Dynamics Barrier modules cannot link. For now we don't create
+		/// symlinks and let the file duplicates remain instead. Figure out
+		/// how to properly make symlinks survive through Unreal Build Tool.
+		return;
+
+
+
+		// Linux libraries uses symlinks for version management. We have not
+		// been able to figure out how to have these symlinks survive the
+		// file copy done above, so here we simply replace the file
+		// duplicate with a symlink manually. It's a hack.
+		/// @todo Figure out how to copy a symlink.
+		//
+		// We would like to use System.IO.CreateSymbolicLink, assuming it
+		// does the right thing on Linux, but it isn't available on the .Net
+		// runtime used by Unreal Engine, so falling back to external
+		// process for now.
+		//
+		// A related problem is that Unreal Build Tool's RuntimeDependencies
+		// also doesn't understand symlinks so in some cases the symlink we
+		// create here get replaced by a full file later. Don't know what to do
+		// about that. Also, sometimes the symlinks are ignored which leads to
+		// missing files in the export directory.
+		//string VersionSuffix = "." + BundledAGXResources.GetAGXVersion().ToString();
+		//string[] BundledAGXLibraries = Directory.GetFiles(LibraryDirectory, "lib*.so" + VersionSuffix);
+		//foreach (string Library in BundledAGXLibraries)
+		//{
+		//	string FileName = Path.GetFileName(Library);
+		//	string LinkName = FileName.Substring(0, FileName.Length - VersionSuffix.Length);
+		//	string LinkPath = Path.Combine(LibraryDirectory, LinkName);
+		//	string LinkTarget = FileName;
+		//	string LinkArguments = String.Format("-s \"{0}\" \"{1}\"", LinkTarget, LinkPath);
+		//
+		//	// Delete the file that should be a symlink.
+		//	File.Delete(LinkPath);
+		//
+		//	// Create the symlink.
+		//	var LinkInfo = new ProcessStartInfo("ln", LinkArguments);
+		//	LinkInfo.CreateNoWindow = true;
+		//	LinkInfo.UseShellExecute = false;
+		//	Process.Start(LinkInfo).WaitForExit();
+		//}
+	}
+
 	private void CleanBundledAGXDynamicsResources()
 	{
-		Console.WriteLine("Cleaning bundled AGX Dynamics resources started...");
 		string BundledAGXResourcesPath = GetBundledAGXResourcesPath();
 		try
 		{
@@ -687,7 +793,6 @@ public class AGXDynamicsLibrary : ModuleRules
 				BundledAGXResourcesPath, e.Message);
 			return;
 		}
-		Console.WriteLine("Cleaning bundled AGX Dynamics resources complete.");
 	}
 
 	private void EnsureLicenseDirCreated()
@@ -735,59 +840,20 @@ public class AGXDynamicsLibrary : ModuleRules
 		return false;
 	}
 
-	private int? ParseDefineDirectiveValue(string[] HeaderFileLines, string Identifier)
+	public bool IsAGXSetupEnvCalled()
 	{
-		foreach (var Line in HeaderFileLines)
-		{
-			string[] Words = Line.Split(' ');
-			if (Words.Length == 3 && Words[0].Equals("#define") && Words[1].Equals(Identifier))
-			{
-				int Val = 0;
-				if (Int32.TryParse(Words[2], out Val))
-				{
-					return Val;
-				}
-			}
-		}
-
-		return null;
+		return Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR") != null;
 	}
 
-	private string GetAgxVersionHeaderPath()
-	{
-		if (IsAGXResourcesBundled())
-		{
-			return Path.Combine(BundledAGXResources.IncludePath(LibSource.AGX), "agx", "agx_version.h");
-		}
-
-		// If the AGX Dynamics resources has not yet been bundled with the plugin, an AGX Dynamics
-		// environment must be set up, so we can get the header file from there.
-		if (!Heuristics.IsAGXSetupEnvCalled())
-		{
-			Console.Error.WriteLine("Error: GetAgxVersionHeaderPath failed. AGX Dynamics resources are not " +
-			"bundled with the plugin and no AGX Dynamics environment has been setup. Please ensure that " +
-			"setup_env has been called.");
-			return string.Empty;
-		}
-
-		AGXResourcesInfo InstalledAGXResources = new AGXResourcesInfo(Target, AGXResourcesLocation.InstalledAGX);
-		return Path.Combine(InstalledAGXResources.IncludePath(LibSource.AGX), "agx", "agx_version.h");
-	}
-
-	private class Heuristics
-	{
-		public static bool IsAGXSetupEnvCalled()
-		{
-			return Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR") != null;
-		}
-	}
-
+	/// The version of the AGX Dynamics installation or bundling that an
+	/// AGXResourcesInfo describes.
 	private class AGXVersion
 	{
 		public int GenerationVersion;
 		public int MajorVersion;
 		public int MinorVersion;
 		public int PatchVersion;
+
 		public bool IsInitialized = false;
 
 		public AGXVersion(int Generation, int Major, int Minor, int Patch)
@@ -852,9 +918,16 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			return new List<int> { GenerationVersion, MajorVersion, MinorVersion, PatchVersion };
 		}
+
+		public override string ToString()
+		{
+			return String.Format("{0}.{1}.{2}.{3}", GenerationVersion, MajorVersion, MinorVersion, PatchVersion);
+		}
 	}
 
-	///
+	/// Information about a particular AGX Dynamics installation or bundling. It
+	/// is platform-specific so it knows about file structure layout and file
+	/// name conventions.
 	private class AGXResourcesInfo
 	{
 		public string LinkLibraryPrefix;
@@ -863,7 +936,11 @@ public class AGXDynamicsLibrary : ModuleRules
 		public string RuntimeLibraryPrefix;
 		public string RuntimeLibraryPostfix;
 
+		public string LicenseTextPath;
+
 		Dictionary<LibSource, LibSourceInfo> LibSources;
+
+		AGXVersion Version;
 
 		public string LinkLibraryFileName(string LibraryName)
 		{
@@ -947,6 +1024,8 @@ public class AGXDynamicsLibrary : ModuleRules
 			string DependenciesDir = Environment.GetEnvironmentVariable("AGX_DEPENDENCIES_DIR");
 			string TerrainDependenciesDir = Environment.GetEnvironmentVariable("AGXTERRAIN_DEPENDENCIES_DIR");
 
+			LicenseTextPath = Path.Combine(SourceDir, "LICENSE.TXT");
+
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(SourceDir, "include"),
 				Path.Combine(BuildDir, "lib"),
@@ -986,6 +1065,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			string BaseDir = Environment.GetEnvironmentVariable("AGX_DIR");
 
+			LicenseTextPath = Path.Combine(BaseDir, "LICENSE.TXT");
+
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
 				Path.Combine(BaseDir, "lib"),
@@ -1020,11 +1101,11 @@ public class AGXDynamicsLibrary : ModuleRules
 			));
 		}
 
-
-
 		private void InitializeLinuxBundledAGX(string BundledAGXResourcesPath)
 		{
 			string BaseDir = BundledAGXResourcesPath;
+
+			LicenseTextPath = Path.Combine(BaseDir, "LICENSE.TXT");
 
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
@@ -1067,6 +1148,8 @@ public class AGXDynamicsLibrary : ModuleRules
 			string PluginDir = Environment.GetEnvironmentVariable("AGX_PLUGIN_PATH");
 			string DataDir = Environment.GetEnvironmentVariable("AGX_DATA_DIR");
 
+			LicenseTextPath = Path.Combine(BaseDir, "LICENSE.TXT");
+
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
 				Path.Combine(BaseDir, "lib", "x64"),
@@ -1099,10 +1182,11 @@ public class AGXDynamicsLibrary : ModuleRules
 			));
 		}
 
-
 		private void InitializeWindowsBundledAGX(string BundledAGXResourcesPath)
 		{
 			string BaseDir = BundledAGXResourcesPath;
+
+			LicenseTextPath = Path.Combine(BaseDir, "LICENSE.TXT");
 
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
@@ -1134,6 +1218,84 @@ public class AGXDynamicsLibrary : ModuleRules
 				null, null,
 				Path.Combine(BaseDir, "data", "TerrainMaterials")
 			));
+		}
+
+		public AGXVersion GetAGXVersion()
+		{
+			return Version;
+		}
+
+		public void ParseAGXVersion()
+		{
+			Version = null;
+
+			string VersionHeaderPath = GetAGXVersionHeaderPath();
+			if (String.IsNullOrEmpty(VersionHeaderPath))
+			{
+				// Logging done in GetAgxVersionHeaderPath.
+				return;
+			}
+
+			if (!File.Exists(VersionHeaderPath))
+			{
+				// Either we are trying to read the AGX Dynamics version from an
+				// improperly configured installed AGX Dynamics, or from a
+				// bundled AGX Dynamics that has not yet been bundled. The
+				// former is reported elsewhere, and the later will be handled
+				// when the bundling is performed. Nothing to do here, leave the
+				// Version unset.
+				return;
+			}
+
+			string[] Lines;
+
+			try
+			{
+				Lines = File.ReadAllLines(VersionHeaderPath);
+			}
+			catch (Exception e)
+			{
+				Console.Error.WriteLine("Error: ParseAGXVersion failed. " +
+					"Unable to read file {0}. Exception: {1}", VersionHeaderPath, e.Message);
+				return;
+			}
+
+			int? GenerationVer = ParseDefineDirectiveValue(Lines, "AGX_GENERATION_VERSION");
+			int? MajorVer = ParseDefineDirectiveValue(Lines, "AGX_MAJOR_VERSION");
+			int? MinorVer = ParseDefineDirectiveValue(Lines, "AGX_MINOR_VERSION");
+			int? PatchVer = ParseDefineDirectiveValue(Lines, "AGX_PATCH_VERSION");
+
+			if (!GenerationVer.HasValue || !MajorVer.HasValue || !MinorVer.HasValue || !PatchVer.HasValue)
+			{
+				Console.Error.WriteLine("Error: GetAGXVersion failed. " +
+					"Unable to parse define directives in {0}", VersionHeaderPath);
+				return;
+			}
+
+			Version = new AGXVersion(GenerationVer.Value, MajorVer.Value, MinorVer.Value, PatchVer.Value);
+		}
+
+		private string GetAGXVersionHeaderPath()
+		{
+			return Path.Combine(IncludePath(LibSource.AGX), "agx", "agx_version.h");
+		}
+
+		private int? ParseDefineDirectiveValue(string[] HeaderFileLines, string Identifier)
+		{
+			foreach (var Line in HeaderFileLines)
+			{
+				string[] Words = Line.Split(' ');
+				if (Words.Length == 3 && Words[0].Equals("#define") && Words[1].Equals(Identifier))
+				{
+					int Val = 0;
+					if (Int32.TryParse(Words[2], out Val))
+					{
+						return Val;
+					}
+				}
+			}
+
+			return null;
 		}
 
 		public AGXResourcesInfo(
@@ -1201,6 +1363,8 @@ public class AGXDynamicsLibrary : ModuleRules
 					}
 				}
 			}
+
+			ParseAGXVersion();
 
 			if (Target.Configuration == UnrealTargetConfiguration.Debug)
 			{

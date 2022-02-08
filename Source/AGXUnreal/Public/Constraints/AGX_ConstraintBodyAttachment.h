@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -164,7 +167,7 @@ private:
 	 * whenever Frame Defining Actor is set to another actor.
 	 */
 	UPROPERTY(Transient)
-	mutable AActor* RecentFrameDefiningActor;
+	mutable AActor* RecentFrameDefiningActor = nullptr;
 	USceneComponent* PreviousFrameDefiningComponent;
 
 	// Returns the currently active FrameDefiningComponent given the FrameDefiningSource selected.

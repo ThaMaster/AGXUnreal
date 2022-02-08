@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Wire/AGX_WireWinchComponent.h"
 
 // AGX Dynamics for Unreal includes.
@@ -8,7 +11,15 @@
 #include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
+#include "Components/BillboardComponent.h"
 #include "CoreGlobals.h"
+
+UAGX_WireWinchComponent::UAGX_WireWinchComponent()
+{
+#if WITH_EDITORONLY_DATA
+	bVisualizeComponent = true;
+#endif
+}
 
 FAGX_WireWinchRef UAGX_WireWinchComponent::GetWinch_BP()
 {
@@ -215,4 +226,19 @@ void UAGX_WireWinchComponent::CreateNative()
 
 	FAGX_WireUtilities::ComputeSimulationPlacement(*this, WireWinch);
 	WireWinch.CreateNative();
+}
+
+void UAGX_WireWinchComponent::OnRegister()
+{
+	Super::OnRegister();
+#if WITH_EDITORONLY_DATA
+	if (SpriteComponent)
+	{
+		FName NewName = MakeUniqueObjectName(
+			SpriteComponent->GetOuter(), SpriteComponent->GetClass(), TEXT("WireWinchIcon"));
+		SpriteComponent->Rename(*NewName.ToString(), nullptr, REN_DontCreateRedirectors);
+		SpriteComponent->SetSprite(
+			LoadObject<UTexture2D>(nullptr, TEXT("/AGXUnreal/Editor/Icons/wire_winch_64x64")));
+	}
+#endif
 }

@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Constraints/Controllers/AGX_ScrewController.h"
 
 #include "Constraints/AGX_ConstraintConstants.h"

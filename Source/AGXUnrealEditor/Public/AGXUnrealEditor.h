@@ -1,10 +1,12 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Containers/Array.h"
 #include "Modules/ModuleInterface.h"
 #include "Modules/ModuleManager.h"
-#include "UnrealEd.h"
 
 class FComponentVisualizer;
 class FToolBarBuilder;

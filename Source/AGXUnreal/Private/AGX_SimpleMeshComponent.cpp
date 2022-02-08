@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "AGX_SimpleMeshComponent.h"
 #include "RenderingThread.h"
 #include "RenderResource.h"

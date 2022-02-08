@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Shapes/AGX_HeightFieldShapeComponent.h"
 
 // AGX Dynamics for Unreal includes.
@@ -111,6 +114,16 @@ void UAGX_HeightFieldShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMe
 	/// \todo What is the height field equivalent of this?
 	// AGX_MeshUtilities::MakeCube(OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices,
 	// HalfExtent);
+}
+
+void UAGX_HeightFieldShapeComponent::UpdateNativeGlobalTransform()
+{
+	// We override this function because the parents class' version of it does not allow HasNative to
+	// be false, which is common for a Hight Field Component.
+	if (HasNative())
+	{
+		UAGX_ShapeComponent::UpdateNativeGlobalTransform();
+	}
 }
 
 #if WITH_EDITOR

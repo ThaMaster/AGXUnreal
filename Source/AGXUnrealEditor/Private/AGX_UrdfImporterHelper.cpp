@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "AGX_UrdfImporterHelper.h"
 
 FAGX_UrdfImporterHelper::FAGX_UrdfImporterHelper(

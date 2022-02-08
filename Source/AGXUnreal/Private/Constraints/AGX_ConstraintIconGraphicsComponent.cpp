@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 /// \todo Reduce includes!
 #include "Constraints/AGX_ConstraintIconGraphicsComponent.h"
 

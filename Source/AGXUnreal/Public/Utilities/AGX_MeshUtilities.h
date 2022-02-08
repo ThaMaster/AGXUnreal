@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -6,6 +9,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Interface_CollisionDataProviderCore.h"
 #include "DynamicMeshBuilder.h"
 
 class AStaticMeshActor;

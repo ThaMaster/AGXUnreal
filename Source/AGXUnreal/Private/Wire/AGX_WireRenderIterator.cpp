@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Wire/AGX_WireRenderIterator.h"
 
 #include "Wire/AGX_WireNode.h"

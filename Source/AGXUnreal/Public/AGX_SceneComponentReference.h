@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #pragma once
 
 #include "AGX_SceneComponentReference.generated.h"
@@ -46,7 +49,7 @@ USTRUCT() struct AGXUNREAL_API FAGX_SceneComponentReference
 	UPROPERTY(
 		EditInstanceOnly, Category = "AGX Dynamics",
 		meta = (Tooltip = "The Actor that owns the SceneComponent"))
-	AActor* OwningActor;
+	AActor* OwningActor = nullptr;
 
 	/**
 	 * The name of the SceneComponent that we should find within OwningActor. Setting this to

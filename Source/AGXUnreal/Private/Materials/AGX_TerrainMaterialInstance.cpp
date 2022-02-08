@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Materials/AGX_TerrainMaterialInstance.h"
 
 #include "Engine/World.h"

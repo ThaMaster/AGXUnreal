@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 
 // This test is disabled because including it leads to
 //    Warning: dlopen failed: libUE4Editor-AGXUnrealBarrier.so: undefined symbol: "typeinfo for

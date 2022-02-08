@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Wire/AGX_WireComponent.h"
 
 // AGX Dynamics for Unreal includes.
@@ -1007,6 +1010,11 @@ double UAGX_WireComponent::GetRestLength() const
 	return Length;
 }
 
+float UAGX_WireComponent::GetRestLength_BP() const
+{
+	return static_cast<float>(GetRestLength());
+}
+
 double UAGX_WireComponent::GetMass() const
 {
 	if (HasNative())
@@ -1358,7 +1366,7 @@ void UAGX_WireComponent::OnRegister()
 			SpriteComponent->GetOuter(), SpriteComponent->GetClass(), TEXT("WireIcon"));
 		SpriteComponent->Rename(*NewName.ToString(), nullptr, REN_DontCreateRedirectors);
 		SpriteComponent->SetSprite(
-			LoadObject<UTexture2D>(nullptr, TEXT("/AGXUnreal/Editor/Icons/T_Icon_Wire_150.T_Icon_Wire_150")));
+			LoadObject<UTexture2D>(nullptr, TEXT("/AGXUnreal/Editor/Icons/wire_64x64")));
 	}
 #endif
 }

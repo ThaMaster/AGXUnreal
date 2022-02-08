@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Wire/AGX_WireWinchVisualizer.h"
 
 // AGX Dynamics for Unreal includes.

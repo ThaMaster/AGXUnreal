@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -26,7 +29,7 @@ struct AGXUNREAL_API FAGX_Shovel
 	 * in addition to the usual Rigid Body and Shape components.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
-	AActor* RigidBodyActor;
+	AActor* RigidBodyActor = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
 	FString BodyName;

@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Wire/AGX_WireNodeDetails.h"
 
 // AGX Dynamics for Unreal includes.
@@ -15,7 +18,8 @@
 #include "Misc/Attribute.h"
 #include "PropertyCustomizationHelpers.h"
 #include "ScopedTransaction.h"
-#include "UnrealEd.h"
+#include "UnrealEdGlobals.h"
+#include "Widgets/Colors/SColorBlock.h"
 #include "Widgets/Input/SVectorInputBox.h"
 
 #define LOCTEXT_NAMESPACE "AGX_WireNodeDetails"

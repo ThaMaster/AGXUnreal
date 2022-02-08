@@ -1,14 +1,20 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "AGXUnrealEditor.h"
 
 // Unreal Engine includes.
 #include "AssetToolsModule.h"
 #include "AssetTypeCategories.h"
+#include "Editor/UnrealEdEngine.h"
 #include "IAssetTools.h"
 #include "IAssetTypeActions.h"
 #include "IPlacementModeModule.h"
 #include "ISettingsModule.h"
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
+#include "UnrealEdGlobals.h"
+
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_EditorStyle.h"

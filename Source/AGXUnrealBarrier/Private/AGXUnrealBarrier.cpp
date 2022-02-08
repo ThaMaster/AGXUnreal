@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "AGXUnrealBarrier.h"
 
 // AGX Dynamics for Unreal includes.
@@ -22,7 +25,7 @@ namespace
 		FString Status;
 		if (FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid(&Status) == false)
 		{
-			UE_LOG(LogAGX, Error, TEXT("AGX Dynamics license is invalid. Status: %s"), *Status);
+			UE_LOG(LogAGX, Warning, TEXT("AGX Dynamics license is invalid. Status: %s"), *Status);
 		}
 		else
 		{

@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #pragma once
 
 #include "Constraints/Constraint1DOFBarrier.h"

@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Utilities/AGX_MeshUtilities.h"
 
 // AGX Dynamics for Unreal includes.
@@ -5,11 +8,13 @@
 #include "AGX_LogCategory.h"
 
 // Unreal Engine includes.
+#include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshActor.h"
 #include "Math/UnrealMathUtility.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Rendering/PositionVertexBuffer.h"
 #include "RenderingThread.h"
+#include "StaticMeshResources.h"
 
 // Standard library includes.
 #include <limits>
@@ -559,8 +564,7 @@ void AGX_MeshUtilities::MakeCylinder(
 	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
 	TArray<FVector2D>& TexCoords, const CylinderConstructionData& Data)
 {
-	auto LogConstructionError = [](const FString& Msg)
-	{
+	auto LogConstructionError = [](const FString& Msg) {
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("AGX_MeshUtilities::MakeCylinder(): Invalid CylinderConstructionData: %s."), *Msg);
@@ -877,8 +881,7 @@ void AGX_MeshUtilities::MakeCapsule(
 	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
 	TArray<FVector2D>& TexCoords, const CapsuleConstructionData& Data)
 {
-	auto LogConstructionError = [](const FString& Msg)
-	{
+	auto LogConstructionError = [](const FString& Msg) {
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("AGX_MeshUtilities::MakeCapsule(): Invalid CapsuleConstructionData: %s."), *Msg);
@@ -1774,9 +1777,7 @@ namespace AGX_MeshUtilities_helpers
 		OutPositions.Reserve(NumPositions);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		(
-			[&](FRHICommandListImmediate& RHICmdList)
-			{
+		([&](FRHICommandListImmediate& RHICmdList) {
 				// Copy vertex buffer.
 				auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
 				const uint32 NumPositionBytes = PositionRHI->GetSize();
@@ -1797,10 +1798,10 @@ namespace AGX_MeshUtilities_helpers
 				RHIUnlockBuffer(PositionRHI);
 #endif
 
-				// Copy index buffer.
-				auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
-				if (IndexRHI->GetStride() == 2)
-				{
+			// Copy index buffer.
+			auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
+			if (IndexRHI->GetStride() == 2)
+			{
 					// Two byte index size.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 					uint16* IndexData = static_cast<uint16*>(
@@ -1815,8 +1816,10 @@ namespace AGX_MeshUtilities_helpers
 						OutIndices.Add(static_cast<uint32>(IndexData[i]));
 					}
 				}
-				else
-				{
+			}
+			else
+			{
+
 					// Four byte index size (stride must be either 2 or 4).
 					check(IndexRHI->GetStride() == 4);
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
@@ -1910,9 +1913,7 @@ namespace AGX_MeshUtilities_helpers
 		RenderIndices.Reserve(NumIndices);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		(
-			[&](FRHICommandListImmediate& RHICmdList)
-			{
+		([&](FRHICommandListImmediate& RHICmdList) {
 				// Copy position buffer.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 				FVector* PositionData = static_cast<FVector*>(
@@ -1931,9 +1932,9 @@ namespace AGX_MeshUtilities_helpers
 				RHIUnlockBuffer(PositionRhi);
 #endif
 
-				// Copy index buffer.
-				if (IndexRhi->GetStride() == 2)
-				{
+			// Copy index buffer.
+			if (IndexRhi->GetStride() == 2)
+			{
 					// Two byte index size.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 					uint16* IndexBufferData = static_cast<uint16*>(
@@ -1947,8 +1948,9 @@ namespace AGX_MeshUtilities_helpers
 						RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
 					}
 				}
-				else
-				{
+			}
+			else
+			{
 					// Four byte index size (stride must be either 2 or 4).
 					check(IndexRhi->GetStride() == 4);
 #if UE_VERSION_OLDER_THAN(5, 0, 0)

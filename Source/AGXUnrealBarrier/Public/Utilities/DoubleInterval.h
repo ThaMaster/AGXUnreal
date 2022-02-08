@@ -1,8 +1,14 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #pragma once
 
 // Unreal Engine includes.
 #include "Math/Interval.h"
 #include "Math/UnrealMathUtility.h"
+
+// Standard library includes.
+#include <algorithm>
 
 #include "DoubleInterval.generated.h"
 

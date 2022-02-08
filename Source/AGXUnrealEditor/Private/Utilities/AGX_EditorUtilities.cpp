@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Utilities/AGX_EditorUtilities.h"
 
 // AGX Dynamics for Unreal includes.
@@ -553,7 +556,13 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromRenderData(const FRenderDataBarr
 
 void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh* StaticMesh)
 {
+#if UE_VERSION_OLDER_THAN(4, 27, 0)
+	StaticMesh->StaticMaterials.Add(FStaticMaterial());
+#else
 	StaticMesh->GetStaticMaterials().Add(FStaticMaterial());
+#endif
+
+
 #if UE_VERSION_OLDER_THAN(4, 23, 0)
 	StaticMesh->SourceModels.Emplace();
 	FStaticMeshSourceModel& SourceModel = StaticMesh->SourceModels.Last();

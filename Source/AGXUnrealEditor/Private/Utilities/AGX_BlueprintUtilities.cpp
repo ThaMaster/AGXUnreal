@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Utilities/AGX_BlueprintUtilities.h"
 
 // AGX Dynamics for Unreal includes.

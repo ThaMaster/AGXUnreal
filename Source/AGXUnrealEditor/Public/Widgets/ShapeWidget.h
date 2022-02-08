@@ -1,8 +1,10 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #pragma once
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
-#include "SlateCore.h"
 #include "PhysicsEngine/ShapeElem.h"
 #include "Widgets/SCompoundWidget.h"
 

@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 
 // AGX Dynamics for Unreal includes.
@@ -225,8 +228,8 @@ FText UAGX_AgxEdModeFile::GetTooltip() const
 FSlateIcon UAGX_AgxEdModeFile::GetIcon() const
 {
 	static FSlateIcon Icon(
-		FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIcon,
-		FAGX_EditorStyle::AgxIconSmall);
+		FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::FileIcon,
+		FAGX_EditorStyle::FileIconSmall);
 	return Icon;
 }
 

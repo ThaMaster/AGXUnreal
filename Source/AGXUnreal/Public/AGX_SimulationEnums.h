@@ -1,3 +1,5 @@
+// Copyright 2022, Algoryx Simulation AB.
+
 #pragma once
 
 // Unreal Engine includes.
@@ -21,6 +23,10 @@ enum EAGX_StepMode
 	/** Step the AGX simulation up to one time per Unreal step. May result in simulation appearing
 	   to run in slow-motion. */
 	SmDropImmediately UMETA(DisplayName = "Drop immediately"),
+
+	/** Do not step the AGX Dynamics simulation automatically during tick. Instead call
+	   UAGX_Simulation::StepOnce to explicitly step the simulation when needed. */
+	SmNone UMETA(DisplayName = "Do not step")
 };
 
 UENUM()

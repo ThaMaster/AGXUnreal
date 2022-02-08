@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Materials/AGX_ShapeMaterialWireProperties.h"
 
 FAGX_ShapeMaterialWireProperties::FAGX_ShapeMaterialWireProperties()

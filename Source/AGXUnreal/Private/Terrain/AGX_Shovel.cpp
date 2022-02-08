@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Terrain/AGX_Shovel.h"
 
 #include "Terrain/ShovelBarrier.h"

@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Constraints/AGX_ConstraintComponentVisualizer.h"
 
 // AGX Dynamics for Unreal includes.
@@ -12,7 +15,6 @@
 #include "CanvasTypes.h"
 #include "Editor.h"
 #include "EditorViewportClient.h"
-#include "Engine.h"
 #include "SceneManagement.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintComponentVisualizer"
@@ -509,6 +511,12 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraintHUD(
 		return;
 	}
 
+// The purpose of this code is to alert the user of the fact that the current constraint is
+// violated. While that information is useful, simply printing it to screen at a hard-coded location
+// isn't the best way to go about it. Sometimes the constraints are intentionally violated, and
+// sometimes multiple constraints are printed at the same time, which makes the text unreadable.
+// Find a better way to provide this information, see internal GitLab issue 270.
+#if 0
 	FString Message;
 	if (Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER, &Message))
 	{
@@ -521,6 +529,7 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraintHUD(
 
 		Canvas->DrawItem(CanvasText);
 	}
+#endif
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -1,3 +1,5 @@
+// Copyright 2022, Algoryx Simulation AB.
+
 #include "AGX_Simulation.h"
 
 // AGX Dynamics for Unreal includes.
@@ -16,11 +18,13 @@
 #include "Utilities/AGX_StringUtilities.h"
 #include "AGX_Environment.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_Stats.h"
 #include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
+#include "HAL/PlatformTime.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/Paths.h"
 
@@ -135,9 +139,9 @@ void UAGX_Simulation::Add(UAGX_ShapeMaterialInstance& Shape)
 	if (!HasNative())
 	{
 		UE_LOG(
-				LogAGX, Error,
-				TEXT("Tried to add Shape Material '%s' to Simulation that does not have a native."),
-				*Shape.GetName());
+			LogAGX, Error,
+			TEXT("Tried to add Shape Material '%s' to Simulation that does not have a native."),
+			*Shape.GetName());
 		return;
 	}
 
@@ -145,7 +149,8 @@ void UAGX_Simulation::Add(UAGX_ShapeMaterialInstance& Shape)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tried to add Shape Material '%s' to Simulation but the Shape Material does not have a native."),
+			TEXT("Tried to add Shape Material '%s' to Simulation but the Shape Material does not "
+				 "have a native."),
 			*Shape.GetName());
 		return;
 	}
@@ -204,9 +209,10 @@ void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
 	if (!HasNative())
 	{
 		UE_LOG(
-				LogAGX, Error,
-				TEXT("Tried to remove Shape Material '%s' from a Simulation that does not have a native."),
-				*Shape.GetName());
+			LogAGX, Error,
+			TEXT("Tried to remove Shape Material '%s' from a Simulation that does not have a "
+				 "native."),
+			*Shape.GetName());
 		return;
 	}
 
@@ -214,8 +220,8 @@ void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tried to remove Shape Material '%s' from Simulation but the Shape Material does not "
-				 "have a native."),
+			TEXT("Tried to remove Shape Material '%s' from Simulation but the Shape Material does "
+				 "not have a native."),
 			*Shape.GetName());
 		return;
 	}
@@ -224,9 +230,9 @@ void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Tried to remove Shape Material '%s' from Simulation but FSimulationBarrier::Remove "
-				 "returned false. The Log category AGXDynamicsLog may contain more information "
-				 "about the failure."));
+			TEXT("Tried to remove Shape Material '%s' from Simulation but "
+				 "FSimulationBarrier::Remove returned false. The Log category AGXDynamicsLog may "
+				 "contain more information about the failure."));
 	}
 }
 
@@ -493,6 +499,58 @@ namespace AGX_Simulation_helpers
 			Simulation.WriteAGXArchive(FullPath);
 		}
 	}
+
+	void ReportStepStatistics(const FAGX_Statistics& Statistics)
+	{
+		// Last step only timers.
+		SET_FLOAT_STAT(STAT_AGXD_StepForward_STEP, Statistics.StepForwardTime);
+		double Unaccounted = Statistics.StepForwardTime;
+		SET_FLOAT_STAT(STAT_AGXD_SpaceUpdate_STEP, Statistics.SpaceTime);
+		Unaccounted -= Statistics.SpaceTime;
+		SET_FLOAT_STAT(STAT_AGXD_DynamicsUpdate_STEP, Statistics.DynamicsSystemTime);
+		Unaccounted -= Statistics.DynamicsSystemTime;
+		SET_FLOAT_STAT(STAT_AGXD_PreCollide_STEP, Statistics.PreCollideTime);
+		Unaccounted -= Statistics.PreCollideTime;
+		SET_FLOAT_STAT(STAT_AGXD_ContactEvents_STEP, Statistics.ContactEventsTime);
+		Unaccounted -= Statistics.ContactEventsTime;
+		SET_FLOAT_STAT(STAT_AGXD_PreStep_STEP, Statistics.PreStepTime);
+		Unaccounted -= Statistics.PreStepTime;
+		SET_FLOAT_STAT(STAT_AGXD_PostStep_STEP, Statistics.PostStepTime);
+		Unaccounted -= Statistics.PostStepTime;
+		SET_FLOAT_STAT(STAT_AGXD_LastStep_STEP, Statistics.LastStepTime);
+		Unaccounted -= Statistics.LastStepTime;
+		SET_FLOAT_STAT(STAT_AGXD_Unaccounted_STEP, Unaccounted);
+
+		// Counters.
+		SET_DWORD_STAT(STAT_AGXD_NumBodies, Statistics.NumBodies);
+		SET_DWORD_STAT(STAT_AGXD_NumConstraints, Statistics.NumConstraints);
+		SET_DWORD_STAT(STAT_AGXD_NumContactConstraints, Statistics.NumContacts);
+		SET_DWORD_STAT(STAT_AGXD_NumParticles, Statistics.NumParticles);
+	}
+
+	void AccumulateFrameStatistics(const FAGX_Statistics& Statistics)
+	{
+		// Entire frame timers.
+		INC_FLOAT_STAT_BY(STAT_AGXD_StepForward_FRAME, Statistics.StepForwardTime);
+		double Unaccounted = Statistics.StepForwardTime;
+		INC_FLOAT_STAT_BY(STAT_AGXD_SpaceUpdate_FRAME, Statistics.SpaceTime);
+		Unaccounted -= Statistics.SpaceTime;
+		INC_FLOAT_STAT_BY(STAT_AGXD_DynamicsUpdate_FRAME, Statistics.DynamicsSystemTime);
+		Unaccounted -= Statistics.DynamicsSystemTime;
+		INC_FLOAT_STAT_BY(STAT_AGXD_PreCollide_FRAME, Statistics.PreCollideTime);
+		Unaccounted -= Statistics.PreCollideTime;
+		INC_FLOAT_STAT_BY(STAT_AGXD_ContactEvents_FRAME, Statistics.ContactEventsTime);
+		Unaccounted -= Statistics.ContactEventsTime;
+		INC_FLOAT_STAT_BY(STAT_AGXD_PreStep_FRAME, Statistics.PreStepTime);
+		Unaccounted -= Statistics.PreStepTime;
+		INC_FLOAT_STAT_BY(STAT_AGXD_PostStep_FRAME, Statistics.PostStepTime);
+		Unaccounted -= Statistics.PostStepTime;
+		INC_FLOAT_STAT_BY(STAT_AGXD_LastStep_FRAME, Statistics.LastStepTime);
+		Unaccounted -= Statistics.LastStepTime;
+		INC_FLOAT_STAT_BY(STAT_AGXD_Unaccounted_FRAME, Unaccounted);
+
+		// Counters should not be incremented every step, only once per frame.
+	}
 }
 
 void UAGX_Simulation::Step(float DeltaTime)
@@ -507,93 +565,195 @@ void UAGX_Simulation::Step(float DeltaTime)
 	}
 #endif
 
+	const uint64 StartCycle = FPlatformTime::Cycles64();
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:UAGX_Simulation::Step"));
+	int32 NumSteps = 0;
 	switch (StepMode)
 	{
 		case SmCatchUpImmediately:
-			StepCatchUpImmediately(DeltaTime);
+			NumSteps = StepCatchUpImmediately(DeltaTime);
 			break;
 		case SmCatchUpOverTime:
-			StepCatchUpOverTime(DeltaTime);
+			NumSteps = StepCatchUpOverTime(DeltaTime);
 			break;
 		case SmCatchUpOverTimeCapped:
-			StepCatchUpOverTimeCapped(DeltaTime);
+			NumSteps = StepCatchUpOverTimeCapped(DeltaTime);
 			break;
 		case SmDropImmediately:
-			StepDropImmediately(DeltaTime);
+			NumSteps = StepDropImmediately(DeltaTime);
+			break;
+		case SmNone:
+			NumSteps = 0;
 			break;
 		default:
 			UE_LOG(LogAGX, Error, TEXT("Unknown step mode: %d"), StepMode);
 	}
+
+	SET_DWORD_STAT(STAT_AGXU_NumSteps, NumSteps);
+
+	// Unreal Engine will zero the stat counters every frame. If we can run the game loop faster
+	// than the step-forward time then some frames won't do any stepping. That is, the above switch
+	// will be a no-op and run in basically zero time. In those cases we want to report the time it
+	// took to step the most recent frame we actually did some stepping in.
+	if (NumSteps > 0)
+	{
+		// We did take a step, the time value is useful.
+		const uint64 EndCycle = FPlatformTime::Cycles64();
+		const double TotalStepTime = FPlatformTime::ToMilliseconds64(EndCycle - StartCycle);
+		SET_FLOAT_STAT(STAT_AGXU_StepTime, TotalStepTime);
+		LastTotalStepTime = TotalStepTime;
+	}
+	else
+	{
+		// We did not take a step, the time value is nearly zero and not useful.
+		SET_FLOAT_STAT(STAT_AGXU_StepTime, LastTotalStepTime);
+	}
+
+	// Statistics will always hold the data for most recent Step Forward, so we can always report
+	// it. Note that we do not call the frame accumulation version. This means that the frame timers
+	// will be zero when no stepping was made. This makes it possible to see that no step was made
+	// in a frame.
+	if (bEnableStatistics)
+	{
+		FAGX_Statistics AGXStatistics = GetStatistics();
+		ReportStepStatistics(AGXStatistics);
+	}
 }
 
-void UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
+int32 UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
 {
 	DeltaTime += LeftoverTime;
 	LeftoverTime = 0.0f;
 
+	int32 NumSteps = 0;
 	while (DeltaTime >= TimeStep)
 	{
-		TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
-		NativeBarrier.Step();
+		{
+			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
+			NativeBarrier.Step();
+		}
+		++NumSteps;
 		DeltaTime -= TimeStep;
+		if (bEnableStatistics)
+		{
+			AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
+		}
 	}
 	LeftoverTime = DeltaTime;
+	return NumSteps;
 }
 
-void UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
+int32 UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
 {
 	DeltaTime += LeftoverTime;
 	LeftoverTime = 0.0f;
 
+	int32 NumSteps = 0;
 	// Step up to two times.
 	for (int i = 0; i < 2; i++)
 	{
 		if (DeltaTime >= TimeStep)
 		{
-			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
-			NativeBarrier.Step();
+			{
+				TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
+				NativeBarrier.Step();
+			}
+			++NumSteps;
 			DeltaTime -= TimeStep;
+			if (bEnableStatistics)
+			{
+				AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
+			}
 		}
 	}
 
 	LeftoverTime = DeltaTime;
+	return NumSteps;
 }
 
-void UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
+int32 UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
 {
 	DeltaTime += LeftoverTime;
 	LeftoverTime = 0.0f;
 
+	int32 NumSteps = 0;
 	// Step up to two times.
 	for (int i = 0; i < 2; i++)
 	{
 		if (DeltaTime >= TimeStep)
 		{
-			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
-			NativeBarrier.Step();
+			{
+				TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
+				NativeBarrier.Step();
+			}
+			++NumSteps;
 			DeltaTime -= TimeStep;
+			if (bEnableStatistics)
+			{
+				AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
+			}
 		}
 	}
 
 	// Cap the LeftoverTime according to the TimeLagCap.
 	LeftoverTime = std::min(DeltaTime, TimeLagCap);
+	return NumSteps;
 }
 
-void UAGX_Simulation::StepDropImmediately(float DeltaTime)
+int32 UAGX_Simulation::StepDropImmediately(float DeltaTime)
 {
 	DeltaTime += LeftoverTime;
 	LeftoverTime = 0.0f;
 
+	int32 NumSteps = 0;
 	if (DeltaTime >= TimeStep)
 	{
-		TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
-		NativeBarrier.Step();
+		{
+			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
+			NativeBarrier.Step();
+		}
+		++NumSteps;
 		DeltaTime -= TimeStep;
+		if (bEnableStatistics)
+		{
+			AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
+		}
 	}
 
 	// Keep LeftoverTime updated in case the information is needed in the future.
 	LeftoverTime = DeltaTime;
+	return NumSteps;
+}
+
+void UAGX_Simulation::StepOnce()
+{
+	using namespace AGX_Simulation_helpers;
+#if WITH_EDITORONLY_DATA
+	if (bExportInitialState)
+	{
+		// Is there a suitable callback we can use instead of checking before every step?
+		bExportInitialState = false;
+		WriteInitialStateArchive(ExportPath, *this);
+	}
+#endif
+
+	const uint64 StartCycle = FPlatformTime::Cycles64();
+	{
+		TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
+		NativeBarrier.Step();
+	}
+	INC_DWORD_STAT(STAT_AGXU_NumSteps);
+	const uint64 EndCycle = FPlatformTime::Cycles64();
+	const double StepTime = FPlatformTime::ToMilliseconds64(EndCycle - StartCycle);
+	INC_FLOAT_STAT_BY(STAT_AGXU_StepTime, StepTime);
+	if (bEnableStatistics)
+	{
+		FAGX_Statistics Statistics = GetStatistics();
+		AccumulateFrameStatistics(Statistics);
+		// We don't know if there are going to be more steps taken this frame or not, so we report
+		// step statistics every time just in case.
+		ReportStepStatistics(Statistics);
+	}
 }
 
 float UAGX_Simulation::GetTimeStamp() const
@@ -708,7 +868,7 @@ namespace
 		{
 			const FString LicensePath = FAGX_Environment::GetPluginLicenseDirPath();
 			Message += "\n\nThe AGX Dynamics license file should be placed in the directory: " +
-				LicensePath;
+					   LicensePath;
 		}
 
 #if defined(__linux__) && !WITH_EDITOR

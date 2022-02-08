@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -12,6 +15,10 @@ public: // Names of common resources
 	static const FName AgxIconSmall;
 	static const FName JointIcon;
 	static const FName JointIconSmall;
+	static const FName FileIcon;
+	static const FName FileIconSmall;
+	static const FName TerrainIcon;
+	static const FName TerrainIconSmall;
 
 public:
 	static void Initialize();

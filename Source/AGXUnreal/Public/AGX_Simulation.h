@@ -1,3 +1,5 @@
+// Copyright 2022, Algoryx Simulation AB.
+
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -111,8 +113,8 @@ public: // Properties.
 	 * Simulation stepping mode. This controls what happens when the simulation is unable to keep
 	 * up with real-time.
 	 */
-	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
-	TEnumAsByte<enum EAGX_StepMode> StepMode = SmCatchUpImmediately;
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Simulation Stepping Mode")
+	TEnumAsByte<enum EAGX_StepMode> StepMode = SmDropImmediately;
 
 	/** Maximum time lag for the Catch up over time Capped step mode before dropping [s]. */
 	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
@@ -239,7 +241,25 @@ public: // Member functions.
 	FSimulationBarrier* GetNative();
 	const FSimulationBarrier* GetNative() const;
 
+	/**
+	 * Perform a number of steps, possibly zero, in response to the elapsed Unreal Engine time
+	 * according to the rules of the selected Step Mode.
+	 *
+	 * This member function is typically called automatically by an AAGX_Stepper instance. If you
+	 * need precise control over stepping then set the Step Mode to None and call StepOnce to
+	 * perform a step.
+	 *
+	 * @param DeltaTime The Unreal Engine time that has passed since the last frame.
+	 */
 	void Step(float DeltaTime);
+
+	/**
+	 * Step the AGX Dynamics simulation once. Typically used with the 'None' Step Mode to have full
+	 * control over when the simulation is stepped. Does not do any delta time tracking so mixing
+	 * automatic frame stepping, i.e. Step Mode != None, and StepOnce may step more than intended.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Simulation")
+	void StepOnce();
 
 	static UAGX_Simulation* GetFrom(const UActorComponent* Component);
 
@@ -266,10 +286,10 @@ private:
 	void Deinitialize() override;
 
 private:
-	void StepCatchUpImmediately(float DeltaTime);
-	void StepCatchUpOverTime(float DeltaTime);
-	void StepCatchUpOverTimeCapped(float DeltaTime);
-	void StepDropImmediately(float DeltaTime);
+	int32 StepCatchUpImmediately(float DeltaTime);
+	int32 StepCatchUpOverTime(float DeltaTime);
+	int32 StepCatchUpOverTimeCapped(float DeltaTime);
+	int32 StepDropImmediately(float DeltaTime);
 
 	void EnsureStepperCreated();
 	void EnsureValidLicense();
@@ -283,6 +303,9 @@ private:
 	/// of the AGX Dynamics step size. That fraction of a time step is carried
 	/// over to the next call to Step.
 	float LeftoverTime;
+
+	// The time it took to do a frame's stepping the last frame we actually took a step.
+	double LastTotalStepTime {0.0};
 
 	TWeakObjectPtr<AAGX_Stepper> Stepper;
 

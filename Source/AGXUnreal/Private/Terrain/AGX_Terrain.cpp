@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Terrain/AGX_Terrain.h"
 
 // AGX Dynamics for Unreal includes.
@@ -28,6 +31,9 @@
 #include "Misc/EngineVersionComparison.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+
+// Standard library includes.
+#include <algorithm>
 
 AAGX_Terrain::AAGX_Terrain()
 {
@@ -205,8 +211,14 @@ void AAGX_Terrain::Tick(float DeltaTime)
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::Tick"));
 	Super::Tick(DeltaTime);
-	UpdateDisplacementMap();
-	UpdateParticlesMap();
+	if (bEnableDisplacementRendering)
+	{
+		UpdateDisplacementMap();
+	}
+	if (bEnableParticleRendering)
+	{
+		UpdateParticlesMap();
+	}
 }
 
 namespace
@@ -386,11 +398,14 @@ void AAGX_Terrain::CreateNativeShovels()
 
 		FShovelBarrier ShovelBarrier;
 		FRigidBodyBarrier* BodyBarrier = Body->GetOrCreateNative();
-		FTransform const WorldToBody = Body->GetComponentTransform().Inverse();
+		const FTransform WorldToBody = Body->GetComponentTransform().Inverse();
 		FTwoVectors TopEdgeLine = TopEdge->GetInLocal(WorldToBody);
 		FTwoVectors CuttingEdgeLine = CuttingEdge->GetInLocal(WorldToBody);
-		FVector CuttingDirectionVector =
-			WorldToBody.TransformVector(CuttingDirection->GetVectorDirectionNormalized());
+
+		// AGX Dynamics always expects a normalized Cutting Direction vector.
+		const FVector CuttingDirectionVector =
+			WorldToBody.TransformVector(CuttingDirection->GetVectorDirection()).GetSafeNormal();
+			
 		ShovelBarrier.AllocateNative(
 			*BodyBarrier, TopEdgeLine, CuttingEdgeLine, CuttingDirectionVector);
 
@@ -476,8 +491,14 @@ void AAGX_Terrain::SetInitialTransform()
 
 void AAGX_Terrain::InitializeRendering()
 {
-	InitializeDisplacementMap();
-	ParticleSystemInitialized = InitializeParticleSystem();
+	if (bEnableDisplacementRendering)
+	{
+		InitializeDisplacementMap();
+	}
+	if (bEnableParticleRendering)
+	{
+		ParticleSystemInitialized = InitializeParticleSystem();
+	}
 }
 
 void AAGX_Terrain::CreateTerrainMaterial()

@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "AGX_RigidBodyReferenceCustomization.h"
 
 // AGX Dynamics for Unreal includes.

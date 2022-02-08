@@ -1,4 +1,7 @@
-﻿#pragma once
+// Copyright 2022, Algoryx Simulation AB.
+
+
+#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"

@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Materials/AGX_ShapeMaterialAsset.h"
 
 // AGX Dynamics for Unreal includes.

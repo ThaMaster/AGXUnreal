@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Constraints/AGX_ConstraintBodyAttachmentCustomization.h"
 
 // AGX Dynamics for Unreal includes.

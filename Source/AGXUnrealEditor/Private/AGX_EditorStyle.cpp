@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "AGX_EditorStyle.h"
 
 #include "Runtime/Projects/Public/Interfaces/IPluginManager.h"
@@ -11,6 +14,10 @@ const FName FAGX_EditorStyle::AgxIcon("AgxIcon");
 const FName FAGX_EditorStyle::AgxIconSmall("AgxIcon.Small");
 const FName FAGX_EditorStyle::JointIcon("JointIcon");
 const FName FAGX_EditorStyle::JointIconSmall("JointIcon.Small");
+const FName FAGX_EditorStyle::FileIcon("FileIcon");
+const FName FAGX_EditorStyle::FileIconSmall("FileIcon.Small");
+const FName FAGX_EditorStyle::TerrainIcon("TerrainIcon");
+const FName FAGX_EditorStyle::TerrainIconSmall("TerrainIcon.Small");
 
 void FAGX_EditorStyle::Initialize()
 {
@@ -64,7 +71,9 @@ FName FAGX_EditorStyle::GetStyleSetName()
 namespace
 {
 	const FVector2D IconSize16(16.0f, 16.0f);
+	const FVector2D IconSize32(32.0f, 32.0f);
 	const FVector2D IconSize40(40.0f, 40.0f);
+	const FVector2D IconSize64(64.0f, 64.0f);
 	const FVector2D IconSize128(128.0f, 128.0f);
 }
 
@@ -76,15 +85,99 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 
 	// Define icons and stuff here.
 
-	Style->Set(AgxIcon, new IMAGE_BRUSH("Icons/T_Icon_A_Light_128", IconSize40));
-	Style->Set(AgxIconSmall, new IMAGE_BRUSH("Icons/T_Icon_A_Light_776", IconSize16));
-	Style->Set(JointIcon, new IMAGE_BRUSH("Icons/T_Icon_Constraint_200", IconSize40));
-	Style->Set(JointIconSmall, new IMAGE_BRUSH("Icons/T_Icon_Constraint_200", IconSize16));
-	Style->Set("ClassIcon.AGX_RigidBodyComponent", new IMAGE_BRUSH("Icons/T_Icon_A_Light_776", IconSize16));
-	Style->Set("ClassIcon.AGX_RigidBodyActor", new IMAGE_BRUSH("Icons/T_Icon_A_Light_776", IconSize16));
-	Style->Set("ClassIcon.AGX_BoxShapeComponent", new IMAGE_BRUSH("Icons/T_Icon_Box_200", IconSize16));
-	Style->Set("ClassIcon.AGX_CylinderShapeComponent", new IMAGE_BRUSH("Icons/T_Icon_Cylinder_200", IconSize16));
-	Style->Set("ClassIcon.AGX_CapsuleShapeComponent", new IMAGE_BRUSH("Icons/T_Icon_Capsule_200", IconSize16));
+	Style->Set(AgxIcon, new IMAGE_BRUSH("Icons/symbol_white_64x64", IconSize64));
+	Style->Set(AgxIconSmall, new IMAGE_BRUSH("Icons/symbol_white_32x32", IconSize32));
+	Style->Set(JointIcon, new IMAGE_BRUSH("Icons/constraint_64x64", IconSize64));
+	Style->Set(JointIconSmall, new IMAGE_BRUSH("Icons/constraint_32x32", IconSize32));
+	Style->Set(FileIcon, new IMAGE_BRUSH("Icons/file_64x64", IconSize64));
+	Style->Set(FileIconSmall, new IMAGE_BRUSH("Icons/file_32x32", IconSize32));
+	Style->Set(TerrainIcon, new IMAGE_BRUSH("Icons/Terrain_64x64", IconSize64));
+	Style->Set(TerrainIconSmall, new IMAGE_BRUSH("Icons/Terrain_32x32", IconSize32));
+
+	// Component icons, visible in the Components list/hierarchy of an Actor and in the Add
+	// Component dialog / list. Bodies.
+	Style->Set(
+		"ClassIcon.AGX_RigidBodyComponent", new IMAGE_BRUSH("Icons/rigid_body_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_StaticMeshComponent",
+		new IMAGE_BRUSH("Icons/static_mesh_32x32", IconSize16));
+	// Collisions
+	Style->Set(
+		"ClassIcon.AGX_CollisionGroupAdderComponent",
+		new IMAGE_BRUSH("Icons/collision_group_disable_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_CollisionGroupDisablerComponent",
+		new IMAGE_BRUSH("Icons/collision_group_disable_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_ContactMaterialRegistrarComponent",
+		new IMAGE_BRUSH("Icons/contact_material_register_32x32", IconSize16));
+	// Constraints.
+	Style->Set(
+		"ClassIcon.AGX_Constraint1DofComponent",
+		new IMAGE_BRUSH("Icons/constraint_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_Constraint2DofComponent",
+		new IMAGE_BRUSH("Icons/constraint_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_ConstraintComponent", new IMAGE_BRUSH("Icons/constraint_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_ConstraintFrameComponent",
+		new IMAGE_BRUSH("Icons/constraint_frame_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_CylindricalConstraintComponent",
+		new IMAGE_BRUSH("Icons/constraint_cylindrical_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_DistanceConstraintComponent",
+		new IMAGE_BRUSH("Icons/constraint_distance_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_HingeConstraintComponent", new IMAGE_BRUSH("Icons/hinge_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_LockConstraintComponent",
+		new IMAGE_BRUSH("Icons/constraint_lock_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_PrismaticConstraintComponent",
+		new IMAGE_BRUSH("Icons/constraint_prismatic_32x32", IconSize16));
+	// Shapes.
+	Style->Set(
+		"ClassIcon.AGX_BoxShapeComponent", new IMAGE_BRUSH("Icons/box_shape_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_CapsuleShapeComponent",
+		new IMAGE_BRUSH("Icons/capsule_shape_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_CylinderShapeComponent",
+		new IMAGE_BRUSH("Icons/cylinder_shape_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_HeightFieldShapeComponent",
+		new IMAGE_BRUSH("Icons/height_field_shape_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_SphereShapeComponent",
+		new IMAGE_BRUSH("Icons/sphere_shape_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_TrimeshShapeComponent",
+		new IMAGE_BRUSH("Icons/trimesh_shape_32x32", IconSize16));
+	// Tire.
+	Style->Set(
+		"ClassIcon.AGX_TwoBodyTireComponent",
+		new IMAGE_BRUSH("Icons/two_wheel_tire_32x32", IconSize16));
+	// Terrain.
+	Style->Set(
+		"ClassIcon.AGX_CuttingDirectionComponent",
+		new IMAGE_BRUSH("Icons/cutting_direction_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_CuttingEdgeComponent",
+		new IMAGE_BRUSH("Icons/cutting_edge_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_TopEdgeComponent", new IMAGE_BRUSH("Icons/cutting_top_32x32", IconSize16));
+	// Wire.
+	Style->Set("ClassIcon.AGX_WireComponent", new IMAGE_BRUSH("Icons/wire_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_WireWinchComponent", new IMAGE_BRUSH("Icons/wire_winch_32x32", IconSize16));
+
+	// Actor icons, visiable in the Place Actors panel.
+	/// @todo The intention was that these should set icons on the Place Actors entries. Doesn't
+	/// work.
+	Style->Set(
+		"ClassIcon.AGX_RigidBodyActor", new IMAGE_BRUSH("Icons/rigid_body_64x64", IconSize16));
 
 	return Style;
 };

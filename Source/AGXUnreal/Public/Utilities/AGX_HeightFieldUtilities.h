@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #pragma once
 
 #include "Shapes/HeightFieldShapeBarrier.h"

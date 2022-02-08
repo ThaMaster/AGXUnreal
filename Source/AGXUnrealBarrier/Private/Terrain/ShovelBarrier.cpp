@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Terrain/ShovelBarrier.h"
 
 // AGXUnrealBarrier includes.
@@ -108,9 +111,9 @@ void FShovelBarrier::AllocateNative(
 {
 	check(!HasNative());
 	agx::RigidBody* BodyAGX = Body.GetNative()->Native;
-	agx::Line TopEdgeAGX = ConvertDisplacement(TopEdge);
-	agx::Line CuttingEdgeAGX = ConvertDisplacement(CuttingEdge);
-	agx::Vec3 CuttingDirectionAGX = ConvertDisplacement(CuttingDirection);
+	const agx::Line TopEdgeAGX = ConvertDisplacement(TopEdge);
+	const agx::Line CuttingEdgeAGX = ConvertDisplacement(CuttingEdge);
+	const agx::Vec3 CuttingDirectionAGX = ConvertVector(CuttingDirection);
 	NativeRef->Native =
 		new agxTerrain::Shovel(BodyAGX, TopEdgeAGX, CuttingEdgeAGX, CuttingDirectionAGX);
 }

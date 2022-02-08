@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "Tires/AGX_TireComponent.h"
 
 // AGX Dynamics for Unreal includes.

@@ -1,3 +1,6 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+
 #include "CoreMinimal.h"
 
 THIRD_PARTY_INCLUDES_START
