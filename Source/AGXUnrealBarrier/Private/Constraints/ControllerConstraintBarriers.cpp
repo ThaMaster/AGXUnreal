@@ -253,7 +253,7 @@ FLockControllerBarrier::FLockControllerBarrier(std::unique_ptr<FConstraintContro
 void FLockControllerBarrier::SetPositionTranslational(double Position)
 {
 	check(HasNative());
-	const agx::Real PositionAGX = ConvertDistanceToAgx(Position);
+	const agx::Real PositionAGX = ConvertDistanceToAGX(Position);
 	GetController(*this)->setPosition(PositionAGX);
 }
 
@@ -353,7 +353,7 @@ FScrewControllerBarrier::FScrewControllerBarrier(std::unique_ptr<FConstraintCont
 void FScrewControllerBarrier::SetLead(double Lead)
 {
 	check(HasNative());
-	agx::Real LeadAGX = ConvertDistanceToAgx(Lead);
+	agx::Real LeadAGX = ConvertDistanceToAGX(Lead);
 	GetController(*this)->setLead(LeadAGX);
 }
 
@@ -388,7 +388,7 @@ FTargetSpeedControllerBarrier::FTargetSpeedControllerBarrier(
 void FTargetSpeedControllerBarrier::SetSpeedTranslational(double Speed)
 {
 	check(HasNative());
-	const agx::Real SpeedAGX = ConvertDistanceToAgx(Speed);
+	const agx::Real SpeedAGX = ConvertDistanceToAGX(Speed);
 	GetController(*this)->setSpeed(SpeedAGX);
 }
 

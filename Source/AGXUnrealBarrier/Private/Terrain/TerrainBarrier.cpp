@@ -236,7 +236,7 @@ TArray<float> FTerrainBarrier::GetHeights() const
 	{
 		for (int32 X = 0; X < SizeX; ++X)
 		{
-			Heights.Add(ConvertDistance(HeightField->getHeight(X, Y)));
+			Heights.Add(ConvertDistanceToUnreal<float>(HeightField->getHeight(X, Y)));
 		}
 	}
 	return Heights;
@@ -294,7 +294,7 @@ TArray<float> FTerrainBarrier::GetParticleRadii() const
 	for (int32 i = 0; i < Radii.Num(); ++i)
 	{
 		const agx::Real RadiusAGX = GranularParticles[i].radius();
-		const float Radius = ConvertDistance(RadiusAGX);
+		const float Radius = ConvertDistanceToUnreal<float>(RadiusAGX);
 		Radii[i] = Radius;
 	}
 	return Radii;

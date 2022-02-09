@@ -39,7 +39,7 @@ FMassPropertiesBarrier::~FMassPropertiesBarrier()
 void FMassPropertiesBarrier::SetMass(float MassUnreal)
 {
 	check(HasNative());
-	agx::Real MassAgx = Convert(MassUnreal);
+	agx::Real MassAgx = ConvertToAGX(MassUnreal);
 	NativePtr->Native->setMass(MassAgx);
 }
 
@@ -47,7 +47,7 @@ float FMassPropertiesBarrier::GetMass() const
 {
 	check(HasNative());
 	agx::Real MassAgx = NativePtr->Native->getMass();
-	float MassUnreal = Convert(MassAgx);
+	float MassUnreal = ConvertToUnreal<float>(MassAgx);
 	return MassUnreal;
 }
 

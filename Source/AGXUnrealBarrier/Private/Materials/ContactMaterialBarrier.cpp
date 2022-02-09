@@ -280,7 +280,7 @@ double FContactMaterialBarrier::GetSurfaceViscosity(
 void FContactMaterialBarrier::SetAdhesion(double AdhesiveForce, double AdhesiveOverlap)
 {
 	check(HasNative());
-	NativeRef->Native->setAdhesion(AdhesiveForce, ConvertDistanceToAgx<agx::Real>(AdhesiveOverlap));
+	NativeRef->Native->setAdhesion(AdhesiveForce, ConvertDistanceToAGX<agx::Real>(AdhesiveOverlap));
 }
 
 double FContactMaterialBarrier::GetAdhesiveForce() const
@@ -325,8 +325,8 @@ void FContactMaterialBarrier::SetMinMaxElasticRestLength(
 	check(HasNative());
 
 	NativeRef->Native->setMinMaxElasticRestLength(
-		ConvertDistanceToAgx<agx::Real>(MinElasticRestLength),
-		ConvertDistanceToAgx<agx::Real>(MaxElasticRestLength));
+		ConvertDistanceToAGX<agx::Real>(MinElasticRestLength),
+		ConvertDistanceToAGX<agx::Real>(MaxElasticRestLength));
 }
 
 double FContactMaterialBarrier::GetMinElasticRestLength() const

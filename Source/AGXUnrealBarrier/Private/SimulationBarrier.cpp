@@ -189,13 +189,13 @@ void FSimulationBarrier::EnableRemoteDebugging(int16 Port)
 void FSimulationBarrier::SetTimeStep(float TimeStep)
 {
 	check(HasNative());
-	NativeRef->Native->setTimeStep(Convert(TimeStep));
+	NativeRef->Native->setTimeStep(ConvertToAGX(TimeStep));
 }
 
 float FSimulationBarrier::GetTimeStep() const
 {
 	check(HasNative());
-	return Convert(NativeRef->Native->getTimeStep());
+	return ConvertToUnreal<float>(NativeRef->Native->getTimeStep());
 }
 
 void FSimulationBarrier::SetNumPpgsIterations(int32 NumIterations)
@@ -259,7 +259,7 @@ FVector FSimulationBarrier::GetUniformGravity() const
 void FSimulationBarrier::SetPointGravity(const FVector& Origin, float Magnitude)
 {
 	// Magnitude from cm/s^2 to m/s^2.
-	agx::Real MagnitudeAgx = ConvertDistance(Magnitude);
+	agx::Real MagnitudeAgx = ConvertDistanceToAGX(Magnitude);
 	agx::Vec3 OriginAgx = ConvertDisplacement(Origin);
 
 	agx::PointGravityFieldRef Field = new agx::PointGravityField(OriginAgx, MagnitudeAgx);
@@ -289,7 +289,7 @@ FVector FSimulationBarrier::GetPointGravity(float& OutMagnitude) const
 		return FVector(ForceInit);
 	}
 
-	OutMagnitude = Convert(PointField->getGravity());
+	OutMagnitude = ConvertToUnreal<float>(PointField->getGravity());
 	return ConvertDisplacement(PointField->getCenter());
 }
 
@@ -380,13 +380,13 @@ void FSimulationBarrier::Step()
 float FSimulationBarrier::GetTimeStamp() const
 {
 	check(HasNative());
-	return Convert(NativeRef->Native->getTimeStamp());
+	return ConvertToUnreal<float>(NativeRef->Native->getTimeStamp());
 }
 
 void FSimulationBarrier::SetTimeStamp(float TimeStamp)
 {
 	check(HasNative());
-	NativeRef->Native->setTimeStamp(Convert(TimeStamp));
+	NativeRef->Native->setTimeStamp(ConvertToAGX(TimeStamp));
 }
 
 void FSimulationBarrier::SetStatisticsEnabled(bool bEnabled)
@@ -409,7 +409,7 @@ namespace
 			//	UTF8_TO_TCHAR(Name));
 			return -1.0f;
 		}
-		return Convert(Entry->value());
+		return ConvertToUnreal<float>(Entry->value());
 	}
 
 	int32 GetStatisticsCount(void* Instance, const char* Name)

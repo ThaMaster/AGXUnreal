@@ -55,7 +55,7 @@ void FShovelBarrier::SetVerticalBladeSoilMergeDistance(double VerticalBladeSoilM
 {
 	check(HasNative());
 	NativeRef->Native->setVerticalBladeSoilMergeDistance(
-		ConvertDistanceToAgx(VerticalBladeSoilMergeDistance));
+		ConvertDistanceToAGX(VerticalBladeSoilMergeDistance));
 }
 
 double FShovelBarrier::GetVerticalBladeSoilMergeDistance() const
@@ -67,7 +67,7 @@ double FShovelBarrier::GetVerticalBladeSoilMergeDistance() const
 void FShovelBarrier::SetNoMergeExtensionDistance(double NoMergeExtensionDistance)
 {
 	check(HasNative());
-	NativeRef->Native->setNoMergeExtensionDistance(ConvertDistanceToAgx(NoMergeExtensionDistance));
+	NativeRef->Native->setNoMergeExtensionDistance(ConvertDistanceToAGX(NoMergeExtensionDistance));
 }
 
 double FShovelBarrier::GetNoMergeExtensionDistance() const

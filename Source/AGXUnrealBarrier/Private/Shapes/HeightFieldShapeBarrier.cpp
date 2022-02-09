@@ -52,8 +52,8 @@ void FHeightFieldShapeBarrier::AllocateNativeHeightField(
 	check(!HasNative());
 	check(Heights.Num() >= 0);
 
-	agx::Real SizeXAGX = ConvertDistance(SizeX);
-	agx::Real SizeYAGX = ConvertDistance(SizeY);
+	agx::Real SizeXAGX = ConvertDistanceToAGX(SizeX);
+	agx::Real SizeYAGX = ConvertDistanceToAGX(SizeY);
 
 	NativeRef->NativeShape = new agxCollide::HeightField(
 		static_cast<size_t>(NumVerticesX), static_cast<size_t>(NumVerticesY), SizeXAGX, SizeYAGX);
@@ -63,7 +63,7 @@ void FHeightFieldShapeBarrier::AllocateNativeHeightField(
 
 	for (auto& Height : Heights)
 	{
-		HeightsAGX.push_back(ConvertDistance(Height));
+		HeightsAGX.push_back(ConvertDistanceToAGX(Height));
 	}
 
 	NativeHeightField(this)->setHeights(HeightsAGX);

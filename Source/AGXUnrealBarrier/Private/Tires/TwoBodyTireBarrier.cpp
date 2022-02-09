@@ -40,8 +40,8 @@ void FTwoBodyTireBarrier::AllocateNative(
 	agx::RigidBody* HubBody = FAGX_AgxDynamicsObjectsAccess::GetFrom(HubRigidBody);
 	agx::AffineMatrix4x4 LocalTransform = ConvertMatrix(LocalLocation, LocalRotation);
 
-	agx::Real OuterRadiusAgx = ConvertDistanceToAgx<agx::Real>(OuterRadius);
-	agx::Real InnerRadiusAgx = ConvertDistanceToAgx<agx::Real>(InnerRadius);
+	agx::Real OuterRadiusAgx = ConvertDistanceToAGX<agx::Real>(OuterRadius);
+	agx::Real InnerRadiusAgx = ConvertDistanceToAGX<agx::Real>(InnerRadius);
 
 	agxModel::TwoBodyTireRef Tire = new agxModel::TwoBodyTire(
 		TireBody, OuterRadiusAgx, HubBody, InnerRadiusAgx, LocalTransform);
@@ -136,7 +136,7 @@ void FTwoBodyTireBarrier::SetDamping(float Damping, DeformationMode Mode)
 		return;
 	}
 
-	Tire->setDampingCoefficient(Convert(Damping), Convert(Mode));
+	Tire->setDampingCoefficient(ConvertToAGX(Damping), Convert(Mode));
 }
 
 float FTwoBodyTireBarrier::GetDamping(DeformationMode Mode) const
@@ -151,7 +151,7 @@ float FTwoBodyTireBarrier::GetDamping(DeformationMode Mode) const
 	}
 
 	agx::Real DampingAgx = Tire->getDampingCoefficient(Convert(Mode));
-	return Convert(DampingAgx);
+	return ConvertToUnreal<float>(DampingAgx);
 }
 
 void FTwoBodyTireBarrier::SetStiffness(float Stiffness, DeformationMode Mode)
@@ -166,7 +166,7 @@ void FTwoBodyTireBarrier::SetStiffness(float Stiffness, DeformationMode Mode)
 		return;
 	}
 
-	Tire->setStiffness(Convert(Stiffness), Convert(Mode));
+	Tire->setStiffness(ConvertToAGX(Stiffness), Convert(Mode));
 }
 
 float FTwoBodyTireBarrier::GetStiffness(DeformationMode Mode) const
@@ -182,7 +182,7 @@ float FTwoBodyTireBarrier::GetStiffness(DeformationMode Mode) const
 	}
 
 	agx::Real StiffnessAgx = Tire->getStiffness(Convert(Mode));
-	return Convert(StiffnessAgx);
+	return ConvertToUnreal<float>(StiffnessAgx);
 }
 
 void FTwoBodyTireBarrier::SetImplicitFrictionMultiplier(const FVector2D& Multiplier)

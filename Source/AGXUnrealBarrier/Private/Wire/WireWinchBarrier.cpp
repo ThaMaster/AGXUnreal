@@ -47,7 +47,7 @@ void FWireWinchBarrier::AllocateNative(
 
 	NativeRef->Native = new agxWire::WireWinchController(
 		NativeBody, ConvertDisplacement(LocalLocation), ConvertVector(LocalNormal),
-		ConvertDistanceToAgx(PulledInLength));
+		ConvertDistanceToAGX(PulledInLength));
 	PostNativeChanged();
 }
 
@@ -88,7 +88,7 @@ FVector FWireWinchBarrier::GetLocation() const
 void FWireWinchBarrier::SetPulledInWireLength(double InPulledInLength)
 {
 	check(HasNative());
-	agx::Real PulledInLengthAGX = ConvertDistanceToAgx(InPulledInLength);
+	agx::Real PulledInLengthAGX = ConvertDistanceToAGX(InPulledInLength);
 	NativeRef->Native->setPulledInWireLength(PulledInLengthAGX);
 }
 
@@ -140,7 +140,7 @@ FAGX_DoubleInterval FWireWinchBarrier::GetBrakeForceRange() const
 void FWireWinchBarrier::SetSpeed(double InTargetSpeed)
 {
 	check(HasNative());
-	agx::Real TargetSpeedAGX = ConvertDistanceToAgx(InTargetSpeed);
+	agx::Real TargetSpeedAGX = ConvertDistanceToAGX(InTargetSpeed);
 	NativeRef->Native->setSpeed(TargetSpeedAGX);
 }
 

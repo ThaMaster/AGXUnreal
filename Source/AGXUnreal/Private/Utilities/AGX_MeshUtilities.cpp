@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Utilities/AGX_MeshUtilities.h"
 
 // AGX Dynamics for Unreal includes.
@@ -564,7 +563,8 @@ void AGX_MeshUtilities::MakeCylinder(
 	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
 	TArray<FVector2D>& TexCoords, const CylinderConstructionData& Data)
 {
-	auto LogConstructionError = [](const FString& Msg) {
+	auto LogConstructionError = [](const FString& Msg)
+	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("AGX_MeshUtilities::MakeCylinder(): Invalid CylinderConstructionData: %s."), *Msg);
@@ -881,7 +881,8 @@ void AGX_MeshUtilities::MakeCapsule(
 	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
 	TArray<FVector2D>& TexCoords, const CapsuleConstructionData& Data)
 {
-	auto LogConstructionError = [](const FString& Msg) {
+	auto LogConstructionError = [](const FString& Msg)
+	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("AGX_MeshUtilities::MakeCapsule(): Invalid CapsuleConstructionData: %s."), *Msg);
@@ -1777,7 +1778,9 @@ namespace AGX_MeshUtilities_helpers
 		OutPositions.Reserve(NumPositions);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		([&](FRHICommandListImmediate& RHICmdList) {
+		(
+			[&](FRHICommandListImmediate& RHICmdList)
+			{
 				// Copy vertex buffer.
 				auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
 				const uint32 NumPositionBytes = PositionRHI->GetSize();
@@ -1798,11 +1801,11 @@ namespace AGX_MeshUtilities_helpers
 				RHIUnlockBuffer(PositionRHI);
 #endif
 
-			// Copy index buffer.
-			auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
-			if (IndexRHI->GetStride() == 2)
-			{
-					// Two byte index size.
+				// Copy index buffer.
+				auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
+				if (IndexRHI->GetStride() == 2)
+				{
+				// Two byte index size.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 					uint16* IndexData = static_cast<uint16*>(
 						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
@@ -1816,10 +1819,8 @@ namespace AGX_MeshUtilities_helpers
 						OutIndices.Add(static_cast<uint32>(IndexData[i]));
 					}
 				}
-			}
-			else
-			{
-
+				else
+				{
 					// Four byte index size (stride must be either 2 or 4).
 					check(IndexRHI->GetStride() == 4);
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
@@ -1914,125 +1915,123 @@ namespace AGX_MeshUtilities_helpers
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
 		([&](FRHICommandListImmediate& RHICmdList) {
-				// Copy position buffer.
+		// Copy position buffer.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-				FVector* PositionData = static_cast<FVector*>(
-					RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+			FVector* PositionData = static_cast<FVector*>(
+				RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
 #else
-				FVector* PositionData = static_cast<FVector*>(
-					RHILockBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+			FVector* PositionData = static_cast<FVector*>(
+				RHILockBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
 #endif
-				for (uint32 i = 0; i < NumPositions; i++)
-				{
-					RenderPositions.Add(PositionData[i]);
-				}
+			for (uint32 i = 0; i < NumPositions; i++)
+			{
+				RenderPositions.Add(PositionData[i]);
+			}
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-				RHIUnlockVertexBuffer(PositionRhi);
+			RHIUnlockVertexBuffer(PositionRhi);
 #else
-				RHIUnlockBuffer(PositionRhi);
+			RHIUnlockBuffer(PositionRhi);
 #endif
 
 			// Copy index buffer.
 			if (IndexRhi->GetStride() == 2)
 			{
-					// Two byte index size.
+				// Two byte index size.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-					uint16* IndexBufferData = static_cast<uint16*>(
-						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+				uint16* IndexBufferData = static_cast<uint16*>(
+					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #else
-					uint16* IndexBufferData = static_cast<uint16*>(
-						RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+				uint16* IndexBufferData = static_cast<uint16*>(
+					RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #endif
-					for (int32 i = 0; i < NumIndices; i++)
-					{
-						RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
-					}
+				for (int32 i = 0; i < NumIndices; i++)
+				{
+					RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
 				}
 			}
 			else
 			{
-					// Four byte index size (stride must be either 2 or 4).
-					check(IndexRhi->GetStride() == 4);
+			// Four byte index size (stride must be either 2 or 4).
+			check(IndexRhi->GetStride() == 4);
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-					uint32* IndexData = static_cast<uint32*>(
-						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+			uint32* IndexData = static_cast<uint32*>(
+				RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #else
-					uint32* IndexData = static_cast<uint32*>(
-						RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+			uint32* IndexData =
+				static_cast<uint32*>(RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #endif
-					for (int32 i = 0; i < NumIndices; i++)
-					{
-						RenderIndices.Add(IndexData[i]);
-					}
+			for (int32 i = 0; i < NumIndices; i++)
+			{
+				RenderIndices.Add(IndexData[i]);
+			}
 				}
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 				RHIUnlockIndexBuffer(IndexRhi);
 #else
 				RHIUnlockBuffer(IndexRhi);
 #endif
-			});
+	});
 
-		// Wait for rendering thread to finish.
-		FlushRenderingCommands();
+	// Wait for rendering thread to finish.
+	FlushRenderingCommands();
 
-		// Check if the render thread copy got the same data as the game thread copy.
-		int32 NumIndexMismatch {0};
-		for (int I = 0; I < FMath::Min(TrueNumIndices, NumIndices); ++I)
+	// Check if the render thread copy got the same data as the game thread copy.
+	int32 NumIndexMismatch {0};
+	for (int I = 0; I < FMath::Min(TrueNumIndices, NumIndices); ++I)
+	{
+		uint32 TrueIndex = GameIndices[I];
+		uint32 Index = RenderIndices[I];
+		if (TrueIndex != Index)
 		{
-			uint32 TrueIndex = GameIndices[I];
-			uint32 Index = RenderIndices[I];
-			if (TrueIndex != Index)
-			{
-				++NumIndexMismatch;
-			}
-		}
-		if (NumIndexMismatch > 0)
-		{
-			UE_LOG(LogAGX, Error, TEXT("Got %d mismatched indices."), NumIndexMismatch);
-		}
-
-		if (GameIndices != RenderIndices)
-		{
-			UE_LOG(LogAGX, Error, TEXT("Error reading vertex indices from GPU memory."));
-		}
-		if (GamePositions != RenderPositions)
-		{
-			UE_LOG(LogAGX, Error, TEXT("Error reading vertex positions from GPU memory."));
+			++NumIndexMismatch;
 		}
 	}
-
-	void CopyMeshBuffers(
-		const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions,
-		TArray<uint32>& OutIndices)
+	if (NumIndexMismatch > 0)
 	{
+		UE_LOG(LogAGX, Error, TEXT("Got %d mismatched indices."), NumIndexMismatch);
+	}
+
+	if (GameIndices != RenderIndices)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Error reading vertex indices from GPU memory."));
+	}
+	if (GamePositions != RenderPositions)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Error reading vertex positions from GPU memory."));
+	}
+}
+
+void CopyMeshBuffers(
+	const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions, TArray<uint32>& OutIndices)
+{
 #if WITH_EDITOR
-		CopyMeshBuffersGameThread(Mesh, OutPositions, OutIndices);
+	CopyMeshBuffersGameThread(Mesh, OutPositions, OutIndices);
 #else
-		CopyMeshBuffersRenderThread(Mesh, OutPositions, OutIndices);
+	CopyMeshBuffersRenderThread(Mesh, OutPositions, OutIndices);
 #endif
-	}
+}
 
-	static int32 AddCollisionVertex(
-		const FVector& VertexPosition, const FTransform& Transform,
-		TArray<FVector>& CollisionVertices, TMap<FVector, int32>& MeshToCollisionVertexIndices)
+static int32 AddCollisionVertex(
+	const FVector& VertexPosition, const FTransform& Transform, TArray<FVector>& CollisionVertices,
+	TMap<FVector, int32>& MeshToCollisionVertexIndices)
+{
+	if (int32* CollisionVertexIndexPtr = MeshToCollisionVertexIndices.Find(VertexPosition))
 	{
-		if (int32* CollisionVertexIndexPtr = MeshToCollisionVertexIndices.Find(VertexPosition))
-		{
-			// Already been added once, so just return the index.
-			return *CollisionVertexIndexPtr;
-		}
-		else
-		{
-			// Copy position from mesh to collision data.
-			int CollisionVertexIndex =
-				CollisionVertices.Add(Transform.TransformPosition(VertexPosition));
-
-			// Add collision index to map.
-			MeshToCollisionVertexIndices.Add(VertexPosition, CollisionVertexIndex);
-
-			return CollisionVertexIndex;
-		}
+		// Already been added once, so just return the index.
+		return *CollisionVertexIndexPtr;
 	}
+	else
+	{
+		// Copy position from mesh to collision data.
+		int CollisionVertexIndex =
+			CollisionVertices.Add(Transform.TransformPosition(VertexPosition));
+
+		// Add collision index to map.
+		MeshToCollisionVertexIndices.Add(VertexPosition, CollisionVertexIndex);
+
+		return CollisionVertexIndex;
+	}
+}
 }
 
 bool AGX_MeshUtilities::GetStaticMeshCollisionData(
