@@ -422,10 +422,9 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 		// We must write something to the texture coordinates or else Unreal Engine crashes when
 		// processing this mesh later. We could try to do something clever here, but I think just
 		// writing zero everywhere is safest.
-		const FVector2D TexCoord(0.0f, 0.0f);
-		RawMesh.WedgeTexCoords[0].Add(TexCoord);
-		RawMesh.WedgeTexCoords[0].Add(TexCoord);
-		RawMesh.WedgeTexCoords[0].Add(TexCoord);
+		RawMesh.WedgeTexCoords[0].Add({0.0f, 0.0f});
+		RawMesh.WedgeTexCoords[0].Add({0.0f, 0.0f});
+		RawMesh.WedgeTexCoords[0].Add({0.0f, 0.0f});
 
 		// The collision mesh doesn't have material slots, so the best we can do is to provide a
 		// single material and apply it to every triangle.
@@ -525,7 +524,7 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromRenderData(const FRenderDataBarr
 	RawMesh.WedgeTexCoords[0].Reserve(NumIndices);
 
 	const TArray<FVector> RenderNormals = RenderData.GetNormals();
-	const TArray<FVector2D> RenderTexCoords = RenderData.GetTextureCoordinates();
+	const auto RenderTexCoords = RenderData.GetTextureCoordinates();
 
 	for (int32 I = 0; I < NumIndices; ++I)
 	{
@@ -534,11 +533,15 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromRenderData(const FRenderDataBarr
 		// Not all Render Data has texture coordinates.
 		if (RenderTexCoords.Num() > I)
 		{
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 			RawMesh.WedgeTexCoords[0].Add(RenderTexCoords[RenderI]);
+#else
+			RawMesh.WedgeTexCoords[0].Add(FVector2f{(float)RenderTexCoords[RenderI].X, (float)RenderTexCoords[RenderI].Y});
+#endif
 		}
 		else
 		{
-			RawMesh.WedgeTexCoords[0].Add(FVector2D(0.0f, 0.0f));
+			RawMesh.WedgeTexCoords[0].Add({0.0f, 0.0f});
 		}
 		RawMesh.WedgeColors.Add(FColor(255, 255, 255));
 	}

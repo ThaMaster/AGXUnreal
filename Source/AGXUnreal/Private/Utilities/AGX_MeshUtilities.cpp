@@ -494,7 +494,7 @@ void AGX_MeshUtilities::MakeSphere(
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color;
-			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, {(float)TexCoord.X, (float)TexCoord.Y});
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 				NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -701,7 +701,8 @@ void AGX_MeshUtilities::MakeCylinder(
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
-			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
+				NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 				NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -794,7 +795,7 @@ void AGX_MeshUtilities::MakeCylinder(
 		FDynamicMeshVertex MeshVertex;
 
 		MeshVertex.Position = Vertex - TopOffset;
-		MeshVertex.TextureCoordinate[0] = TC;
+		MeshVertex.TextureCoordinate[0] = {(float)TC.X, (float)TC.Y};
 
 		MeshVertex.SetTangents(-ZAxis, (-ZAxis) ^ Normal, Normal);
 
@@ -819,7 +820,7 @@ void AGX_MeshUtilities::MakeCylinder(
 		FDynamicMeshVertex MeshVertex;
 
 		MeshVertex.Position = Vertex + TopOffset;
-		MeshVertex.TextureCoordinate[0] = TC;
+		MeshVertex.TextureCoordinate[0] = {(float) TC.X, (float) TC.Y};
 
 		MeshVertex.SetTangents(-ZAxis, (-ZAxis) ^ Normal, Normal);
 
@@ -1246,7 +1247,8 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
-			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
+				NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 				NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -1427,7 +1429,8 @@ void AGX_MeshUtilities::MakeBendableArrow(
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
-			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
+				NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 				NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -1600,7 +1603,8 @@ void AGX_MeshUtilities::MakeDiskArray(
 				// Fill actual buffers
 				VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 				VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
-				VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+				VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
+					NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
 				VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 					NextFreeVertex, TangentX, TangentY, TangentZ);
 
