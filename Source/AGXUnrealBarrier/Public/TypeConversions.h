@@ -122,17 +122,34 @@ inline TU ConvertDistanceToUnreal(agx::Real D)
 	}
 }
 
-// Convert a distance-squared unit, such as area or moment of inertia.
-inline float ConvertDistance2(agx::Real D2)
+template <typename TU>
+inline TU ConvertAreaToUnreal(agx::Real D2)
 {
-	return static_cast<float>(
-		D2 * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
+	if constexpr (std::is_same<TU, agx::Real>::value)
+	{
+		return D2 * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> *
+			AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>;
+	}
+	else
+	{
+		return static_cast<TU>(
+			D2 * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> *
+			AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
+	}
+	
 }
 
-// Convert a distance-inverse unit, such as resolution.
-inline float ConvertDistanceInv(agx::Real DInv)
+template <typename TU>
+inline TU ConvertDistanceInvToUnreal(agx::Real DInv)
 {
-	return static_cast<float>(DInv / AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
+	if constexpr (std::is_same<TU, agx::Real>::value)
+	{
+		return DInv / AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>;
+	}
+	else
+	{
+		return static_cast<TU>(DInv / AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
+	}	
 }
 
 template <typename TU>
@@ -161,11 +178,6 @@ inline agx::Real ConvertToAGX(TU D)
 	}
 }
 
-// inline agx::Real ConvertDistance(float D)
-//{
-//	return static_cast<agx::Real>(D) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
-//}
-
 template <typename TU>
 inline agx::Real ConvertDistanceToAGX(TU D)
 {
@@ -179,21 +191,36 @@ inline agx::Real ConvertDistanceToAGX(TU D)
 	}
 }
 
-// Convert a distance-squared unit, such as area or moment of inertia.
-inline agx::Real ConvertDistance2(float D2)
+template <typename TU>
+inline agx::Real ConvertAreaToAGX(TU D2)
 {
-	return static_cast<agx::Real>(D2) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
-		   UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+	if constexpr (std::is_same<TU, agx::Real>::value)
+	{
+		return D2 * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
+			   UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+	}
+	else
+	{
+		return static_cast<agx::Real>(D2) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
+			   UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+	}
 }
 
-// Convert a distance-inverse unit, such as resolution.
-inline agx::Real ConvertDistanceInv(float DInv)
+template <typename TU>
+inline agx::Real ConvertDistanceInvToAGX(TU DInv)
 {
-	return static_cast<agx::Real>(DInv) / UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+	if constexpr (std::is_same<TU, agx::Real>::value)
+	{
+		return DInv / UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+	}
+	else
+	{
+		return static_cast<agx::Real>(DInv) / UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+	}
 }
 
-template <typename T>
-inline agx::Real ConvertAngleToAgx(T A)
+template <typename TU>
+inline agx::Real ConvertAngleToAGX(TU A)
 {
 	return FMath::DegreesToRadians(static_cast<agx::Real>(A));
 }
@@ -235,16 +262,6 @@ inline int32 Convert(std::size_t S)
 inline agx::Int Convert(int32 I)
 {
 	return static_cast<agx::Int>(I);
-}
-
-inline agx::Real ConvertArea(float A)
-{
-	return ConvertDistance2(A);
-}
-
-inline float ConvertArea(agx::Real A)
-{
-	return ConvertDistance2(A);
 }
 
 // Two-dimensional vectors.
@@ -520,12 +537,12 @@ inline agx::RangeReal ConvertDistance(const FAGX_DoubleInterval& I)
 
 inline agx::RangeReal ConvertAngle(const FAGX_DoubleInterval& I)
 {
-	return agx::RangeReal(ConvertAngleToAgx(I.Min), ConvertAngleToAgx(I.Max));
+	return agx::RangeReal(ConvertAngleToAGX(I.Min), ConvertAngleToAGX(I.Max));
 }
 
 inline agx::RangeReal ConvertAngle(const FFloatInterval& I)
 {
-	return agx::RangeReal(ConvertAngleToAgx<agx::Real>(I.Min), ConvertAngleToAgx<agx::Real>(I.Max));
+	return agx::RangeReal(ConvertAngleToAGX<agx::Real>(I.Min), ConvertAngleToAGX<agx::Real>(I.Max));
 }
 
 // TwoVectors/Line.

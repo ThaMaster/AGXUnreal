@@ -268,7 +268,7 @@ double FLockControllerBarrier::GetPositionTranslational() const
 void FLockControllerBarrier::SetPositionRotational(double Degrees)
 {
 	check(HasNative());
-	const agx::Real Radians = ConvertAngleToAgx(Degrees);
+	const agx::Real Radians = ConvertAngleToAGX(Degrees);
 	GetController(*this)->setPosition(Radians);
 }
 
@@ -403,7 +403,7 @@ double FTargetSpeedControllerBarrier::GetSpeedTranslational() const
 void FTargetSpeedControllerBarrier::SetSpeedRotational(double Speed)
 {
 	check(HasNative());
-	const agx::Real SpeedAGX = ConvertAngleToAgx(Speed);
+	const agx::Real SpeedAGX = ConvertAngleToAGX(Speed);
 	GetController(*this)->setSpeed(SpeedAGX);
 }
 
