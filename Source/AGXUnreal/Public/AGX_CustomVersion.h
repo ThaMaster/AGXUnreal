@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // Unreal Engine includes.
@@ -9,7 +8,7 @@
 
 class FArchive;
 
-struct FAGX_CustomVersion
+struct AGXUNREAL_API FAGX_CustomVersion
 {
 	// Important: Do not remove or change the order of enum literals if those have been released
 	// publicly. Doing so will break backward compatibility for anyone using that release.
@@ -25,7 +24,11 @@ struct FAGX_CustomVersion
 
 		ConstraintsStoreComplianceInsteadOfElasticity,
 
-		// < -----new versions can be added above this line----->
+		// To better support large and small number we replace float/double with FAGX_Real in Shape-
+		// and ContactMaterial.
+		ScientificNotationInMaterials,
+
+		// <----- New versions can be added above this line. ----->
 		VersionPlusOne,
 
 		LatestVersion = VersionPlusOne - 1

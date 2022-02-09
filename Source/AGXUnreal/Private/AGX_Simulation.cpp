@@ -7,6 +7,7 @@
 #include "AGX_StaticMeshComponent.h"
 #include "AGX_Stepper.h"
 #include "AGX_LogCategory.h"
+#include "AGX_UpropertyDispatcher.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
@@ -355,6 +356,27 @@ void UAGX_Simulation::SetEnableCollisionGroupPair(
 	NativeBarrier.SetEnableCollisionGroupPair(Group1, Group2, CanCollide);
 }
 
+void UAGX_Simulation::SetEnableContactWarmstarting(bool bEnable)
+{
+	bContactWarmstarting = bEnable;
+	if (HasNative())
+	{
+		NativeBarrier.SetEnableContactWarmstarting(bEnable);
+	}
+}
+
+bool UAGX_Simulation::GetEnableContactWarmstarting() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetEnableContactWarmstarting();
+	}
+	else
+	{
+		return bContactWarmstarting;
+	}
+}
+
 void UAGX_Simulation::SetNumPpgsIterations(int32 NumIterations)
 {
 	NumPpgsIterations = NumIterations;
@@ -381,7 +403,9 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	NativeBarrier.AllocateNative();
 	check(HasNative()); /// \todo Consider better error handling.
 
-	/// \todo Set time step here.
+	NativeBarrier.SetTimeStep(TimeStep);
+
+	NativeBarrier.SetEnableContactWarmstarting(bContactWarmstarting);
 
 	if (bOverridePPGSIterations)
 	{
@@ -411,7 +435,6 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 
 	SetGravity();
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
-	NativeBarrier.SetTimeStep(TimeStep);
 
 	if (bRemoteDebugging)
 	{
@@ -429,6 +452,36 @@ void UAGX_Simulation::Deinitialize()
 	NativeBarrier.SetStatisticsEnabled(false);
 	NativeBarrier.ReleaseNative();
 }
+
+#if WITH_EDITOR
+
+void UAGX_Simulation::PostInitProperties()
+{
+	Super::PostInitProperties();
+	InitPropertyDispatcher();
+}
+
+void UAGX_Simulation::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
+{
+	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
+	Super::PostEditChangeChainProperty(Event);
+}
+
+void UAGX_Simulation::InitPropertyDispatcher()
+{
+	FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_UpropertyDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bContactWarmstarting), [](ThisClass* This)
+		{ This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
+}
+
+#endif
 
 bool UAGX_Simulation::WriteAGXArchive(const FString& Filename) const
 {
@@ -582,6 +635,9 @@ void UAGX_Simulation::Step(float DeltaTime)
 		case SmDropImmediately:
 			NumSteps = StepDropImmediately(DeltaTime);
 			break;
+		case SmNone:
+			NumSteps = 0;
+			break;
 		default:
 			UE_LOG(LogAGX, Error, TEXT("Unknown step mode: %d"), StepMode);
 	}
@@ -720,6 +776,37 @@ int32 UAGX_Simulation::StepDropImmediately(float DeltaTime)
 	// Keep LeftoverTime updated in case the information is needed in the future.
 	LeftoverTime = DeltaTime;
 	return NumSteps;
+}
+
+void UAGX_Simulation::StepOnce()
+{
+	using namespace AGX_Simulation_helpers;
+#if WITH_EDITORONLY_DATA
+	if (bExportInitialState)
+	{
+		// Is there a suitable callback we can use instead of checking before every step?
+		bExportInitialState = false;
+		WriteInitialStateArchive(ExportPath, *this);
+	}
+#endif
+
+	const uint64 StartCycle = FPlatformTime::Cycles64();
+	{
+		TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
+		NativeBarrier.Step();
+	}
+	INC_DWORD_STAT(STAT_AGXU_NumSteps);
+	const uint64 EndCycle = FPlatformTime::Cycles64();
+	const double StepTime = FPlatformTime::ToMilliseconds64(EndCycle - StartCycle);
+	INC_FLOAT_STAT_BY(STAT_AGXU_StepTime, StepTime);
+	if (bEnableStatistics)
+	{
+		FAGX_Statistics Statistics = GetStatistics();
+		AccumulateFrameStatistics(Statistics);
+		// We don't know if there are going to be more steps taken this frame or not, so we report
+		// step statistics every time just in case.
+		ReportStepStatistics(Statistics);
+	}
 }
 
 float UAGX_Simulation::GetTimeStamp() const

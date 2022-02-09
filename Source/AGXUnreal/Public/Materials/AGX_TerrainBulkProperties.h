@@ -3,6 +3,10 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include <AGX_Real.h>
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 
 #include "AGX_TerrainBulkProperties.generated.h"
@@ -23,7 +27,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double AdhesionOverlapFactor;
+	FAGX_Real AdhesionOverlapFactor;
 
 	/**
 	 * Sets the bulk cohesion of the bulk material [Pa].
@@ -31,7 +35,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double Cohesion;
+	FAGX_Real Cohesion;
 
 	/**
 	 * Density of the terrain bulk [kg/m^3].
@@ -39,19 +43,19 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double Density;
+	FAGX_Real Density;
 
 	/**
 	 * Sets the dilatancy angle of the bulk material [deg].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Bulk")
-	double DilatancyAngle;
+	FAGX_Real DilatancyAngle;
 
 	/**
 	 * Sets the internal friction angle of the bulk material [deg].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Bulk")
-	double FrictionAngle;
+	FAGX_Real FrictionAngle;
 
 	/**
 	 * Sets the maximum density of the bulk material [kg/m^3].
@@ -59,7 +63,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double MaxDensity;
+	FAGX_Real MaxDensity;
 
 	/**
 	 * Sets the Poisson's ratio of the bulk material.
@@ -67,7 +71,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double PoissonsRatio;
+	FAGX_Real PoissonsRatio;
 
 	/**
 	 * Sets the swell factor of the material, i.e how much the material will expand during
@@ -76,7 +80,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double SwellFactor;
+	FAGX_Real SwellFactor;
 
 	/**
 	 * Sets the bulk Young's modulus of the bulk material [Pa].
@@ -84,7 +88,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Bulk",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	double YoungsModulus;
+	FAGX_Real YoungsModulus;
 
 public:
 	FAGX_TerrainBulkProperties();
