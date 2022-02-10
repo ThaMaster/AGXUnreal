@@ -17,7 +17,7 @@ class ALandscape;
 /**
  *
  */
-UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_HeightFieldShapeComponent : public UAGX_ShapeComponent
 {
 	GENERATED_BODY()
