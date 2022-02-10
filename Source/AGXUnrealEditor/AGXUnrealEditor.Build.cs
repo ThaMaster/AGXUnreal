@@ -33,10 +33,14 @@ public class AGXUnrealEditor : ModuleRules
 		///       required.
 		PrivateDependencyModuleNames.AddRange(new string[] {
 			"AGXUnrealBarrier", "AGXDynamicsLibrary", "AssetTools", "CoreUObject",
-			"DesktopPlatform", "EditorFramework", "EditorStyle", "Engine", "InputCore", "Json",
+			"DesktopPlatform", "EditorStyle", "Engine", "InputCore", "Json",
 			"LevelEditor", "PlacementMode", "Projects", "PropertyEditor", "PropertyPath",
 			"RenderCore","RHI", "Slate", "SlateCore", "SlateCore", "UnrealEd",
 			"SceneOutliner"
 		});
-    }
+
+#if UE_5_0_OR_LATER
+		PrivateDependencyModuleNames.Add("EditorFramework");
+#endif
+	}
 }
