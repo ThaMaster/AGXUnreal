@@ -269,14 +269,14 @@ inline agx::Int Convert(int32 I)
 inline FVector2D Convert(const agx::Vec2& V)
 {
 	return FVector2D(
-		ConvertToUnreal<FVector2D::FReal>(V.x()), ConvertToUnreal<FVector2D::FReal>(V.y()));
+		ConvertToUnreal<decltype(FVector2D::X)>(V.x()), ConvertToUnreal<decltype(FVector2D::X)>(V.y()));
 }
 
 inline FVector2D ConvertDistance(const agx::Vec2& V)
 {
 	return FVector2D(
-		ConvertDistanceToUnreal<FVector2D::FReal>(V.x()),
-		ConvertDistanceToUnreal<FVector2D::FReal>(V.y()));
+		ConvertDistanceToUnreal<decltype(FVector2D::X)>(V.x()),
+		ConvertDistanceToUnreal<decltype(FVector2D::X)>(V.y()));
 }
 
 // No ConvertVector for two-dimensional vectors because there is no handedness here, so it would be
@@ -284,13 +284,13 @@ inline FVector2D ConvertDistance(const agx::Vec2& V)
 
 inline agx::Vec2 Convert(const FVector2D& V)
 {
-	return agx::Vec2(ConvertToAGX<FVector2D::FReal>(V.X), ConvertToAGX<FVector2D::FReal>(V.Y));
+	return agx::Vec2(ConvertToAGX<decltype(FVector2D::X)>(V.X), ConvertToAGX<decltype(FVector2D::X)>(V.Y));
 }
 
 inline agx::Vec2 ConvertDistance(const FVector2D& V)
 {
 	return agx::Vec2(
-		ConvertDistanceToAGX<FVector2D::FReal>(V.X), ConvertDistanceToAGX<FVector2D::FReal>(V.Y));
+		ConvertDistanceToAGX<decltype(FVector2D::X)>(V.X), ConvertDistanceToAGX<decltype(FVector2D::X)>(V.Y));
 }
 
 // Three-dimensional vectors.
@@ -319,42 +319,42 @@ inline agx::Vec2 ConvertDistance(const FVector2D& V)
 inline FVector Convert(const agx::Vec3& V)
 {
 	return FVector(
-		ConvertToUnreal<FVector::FReal>(V.x()), ConvertToUnreal<FVector::FReal>(V.y()),
-		ConvertToUnreal<FVector::FReal>(V.z()));
+		ConvertToUnreal<decltype(FVector::X)>(V.x()), ConvertToUnreal<decltype(FVector::X)>(V.y()),
+		ConvertToUnreal<decltype(FVector::X)>(V.z()));
 }
 
 inline FVector ConvertDistance(const agx::Vec3& V)
 {
 	return FVector(
-		ConvertDistanceToUnreal<FVector::FReal>(V.x()),
-		ConvertDistanceToUnreal<FVector::FReal>(V.y()),
-		ConvertDistanceToUnreal<FVector::FReal>(V.z()));
+		ConvertDistanceToUnreal<decltype(FVector::X)>(V.x()),
+		ConvertDistanceToUnreal<decltype(FVector::X)>(V.y()),
+		ConvertDistanceToUnreal<decltype(FVector::X)>(V.z()));
 }
 
 inline FVector ConvertVector(const agx::Vec3& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return FVector(
-		ConvertToUnreal<FVector::FReal>(V.x()), -ConvertToUnreal<FVector::FReal>(V.y()),
-		ConvertToUnreal<FVector::FReal>(V.z()));
+		ConvertToUnreal<decltype(FVector::X)>(V.x()), -ConvertToUnreal<decltype(FVector::X)>(V.y()),
+		ConvertToUnreal<decltype(FVector::X)>(V.z()));
 }
 
 inline FVector ConvertDisplacement(const agx::Vec3& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return FVector(
-		ConvertDistanceToUnreal<FVector::FReal>(V.x()),
-		-ConvertDistanceToUnreal<FVector::FReal>(V.y()),
-		ConvertDistanceToUnreal<FVector::FReal>(V.z()));
+		ConvertDistanceToUnreal<decltype(FVector::X)>(V.x()),
+		-ConvertDistanceToUnreal<decltype(FVector::X)>(V.y()),
+		ConvertDistanceToUnreal<decltype(FVector::X)>(V.z()));
 }
 
 inline FVector ConvertFloatVector(const agx::Vec3f& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return FVector(
-		ConvertDistanceToUnreal<FVector::FReal>(V.x()),
-		-ConvertDistanceToUnreal<FVector::FReal>(V.y()),
-		ConvertDistanceToUnreal<FVector::FReal>(V.z()));
+		ConvertDistanceToUnreal<decltype(FVector::X)>(V.x()),
+		-ConvertDistanceToUnreal<decltype(FVector::X)>(V.y()),
+		ConvertDistanceToUnreal<decltype(FVector::X)>(V.z()));
 }
 
 inline FVector ConvertAngularVelocity(const agx::Vec3& V)
@@ -380,9 +380,9 @@ inline FVector ConvertAngularVelocity(const agx::Vec3& V)
 	 * is different so we must negate it for that reason.
 	 */
 	return FVector(
-		FMath::RadiansToDegrees(ConvertToUnreal<FVector::FReal>(V.x())),
-		FMath::RadiansToDegrees(-ConvertToUnreal<FVector::FReal>(V.y())),
-		FMath::RadiansToDegrees(-ConvertToUnreal<FVector::FReal>(V.z())));
+		FMath::RadiansToDegrees(ConvertToUnreal<decltype(FVector::X)>(V.x())),
+		FMath::RadiansToDegrees(-ConvertToUnreal<decltype(FVector::X)>(V.y())),
+		FMath::RadiansToDegrees(-ConvertToUnreal<decltype(FVector::X)>(V.z())));
 }
 
 inline FVector ConvertTorque(const agx::Vec3& V)
@@ -392,52 +392,52 @@ inline FVector ConvertTorque(const agx::Vec3& V)
 	 * conversion since we use Nm in both AGX Dynamics and Unreal Engine.
 	 */
 	return {
-		ConvertToUnreal<FVector::FReal>(V.x()), -ConvertToUnreal<FVector::FReal>(V.y()),
-		-ConvertToUnreal<FVector::FReal>(V.z())};
+		ConvertToUnreal<decltype(FVector::X)>(V.x()), -ConvertToUnreal<decltype(FVector::X)>(V.y()),
+		-ConvertToUnreal<decltype(FVector::X)>(V.z())};
 }
 
 inline agx::Vec3 Convert(const FVector& V)
 {
-	return agx::Vec3(ConvertToAGX<FVector::FReal>(V.X), ConvertToAGX(V.Y), ConvertToAGX(V.Z));
+	return agx::Vec3(ConvertToAGX<decltype(FVector::X)>(V.X), ConvertToAGX(V.Y), ConvertToAGX(V.Z));
 }
 
 inline agx::Vec3 ConvertDistance(const FVector& V)
 {
 	return agx::Vec3(
-		ConvertDistanceToAGX<FVector::FReal>(V.X), ConvertDistanceToAGX<FVector::FReal>(V.Y),
-		ConvertDistanceToAGX<FVector::FReal>(V.Z));
+		ConvertDistanceToAGX<decltype(FVector::X)>(V.X), ConvertDistanceToAGX<decltype(FVector::X)>(V.Y),
+		ConvertDistanceToAGX<decltype(FVector::X)>(V.Z));
 }
 
 inline agx::Vec3 ConvertVector(const FVector& V)
 {
 	return agx::Vec3(
-		ConvertToAGX<FVector::FReal>(V.X), -ConvertToAGX<FVector::FReal>(V.Y),
-		ConvertToAGX<FVector::FReal>(V.Z));
+		ConvertToAGX<decltype(FVector::X)>(V.X), -ConvertToAGX<decltype(FVector::X)>(V.Y),
+		ConvertToAGX<decltype(FVector::X)>(V.Z));
 }
 
 inline agx::Vec3 ConvertDisplacement(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3(
-		ConvertDistanceToAGX<FVector::FReal>(V.X), -ConvertDistanceToAGX<FVector::FReal>(V.Y),
-		ConvertDistanceToAGX<FVector::FReal>(V.Z));
+		ConvertDistanceToAGX<decltype(FVector::X)>(V.X), -ConvertDistanceToAGX<decltype(FVector::X)>(V.Y),
+		ConvertDistanceToAGX<decltype(FVector::X)>(V.Z));
 }
 
 inline agx::Vec3f ConvertFloatVector(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3f(
-		ConvertDistanceToAGX<FVector::FReal>(V.X), -ConvertDistanceToAGX<FVector::FReal>(V.Y),
-		ConvertDistanceToAGX<FVector::FReal>(V.Z));
+		ConvertDistanceToAGX<decltype(FVector::X)>(V.X), -ConvertDistanceToAGX<decltype(FVector::X)>(V.Y),
+		ConvertDistanceToAGX<decltype(FVector::X)>(V.Z));
 }
 
 inline agx::Vec3 ConvertAngularVelocity(const FVector& V)
 {
 	// See comment in the AGX-to-Unreal version of this function.
 	return agx::Vec3(
-		ConvertToAGX<FVector::FReal>(FMath::DegreesToRadians(V.X)),
-		-ConvertToAGX<FVector::FReal>(FMath::DegreesToRadians(V.Y)),
-		-ConvertToAGX<FVector::FReal>(FMath::DegreesToRadians(V.Z)));
+		ConvertToAGX<decltype(FVector::X)>(FMath::DegreesToRadians(V.X)),
+		-ConvertToAGX<decltype(FVector::X)>(FMath::DegreesToRadians(V.Y)),
+		-ConvertToAGX<decltype(FVector::X)>(FMath::DegreesToRadians(V.Z)));
 }
 
 inline agx::Vec3 ConvertTorque(const FVector& V)
@@ -447,8 +447,8 @@ inline agx::Vec3 ConvertTorque(const FVector& V)
 	 * conversion since we use Nm in both AGX Dynamics and Unreal Engine.
 	 */
 	return {
-		ConvertToAGX<FVector::FReal>(V.X), -ConvertToAGX<FVector::FReal>(V.Y),
-		-ConvertToAGX<FVector::FReal>(V.Z)};
+		ConvertToAGX<decltype(FVector::X)>(V.X), -ConvertToAGX<decltype(FVector::X)>(V.Y),
+		-ConvertToAGX<decltype(FVector::X)>(V.Z)};
 }
 
 // Four-dimensional vectors.
@@ -456,22 +456,22 @@ inline agx::Vec3 ConvertTorque(const FVector& V)
 inline FVector4 Convert(const agx::Vec4& V)
 {
 	return FVector4(
-		ConvertToUnreal<FVector4::FReal>(V.x()), ConvertToUnreal<FVector4::FReal>(V.y()),
-		ConvertToUnreal<FVector4::FReal>(V.z()), ConvertToUnreal<FVector4::FReal>(V.w()));
+		ConvertToUnreal<decltype(FVector4::X)>(V.x()), ConvertToUnreal<decltype(FVector4::X)>(V.y()),
+		ConvertToUnreal<decltype(FVector4::X)>(V.z()), ConvertToUnreal<decltype(FVector4::X)>(V.w()));
 }
 
 inline FVector4 Convert(const agx::Vec4f& V)
 {
 	return FVector4(
-		ConvertToUnreal<FVector4::FReal>(V.x()), ConvertToUnreal<FVector4::FReal>(V.y()),
-		ConvertToUnreal<FVector4::FReal>(V.z()), ConvertToUnreal<FVector4::FReal>(V.w()));
+		ConvertToUnreal<decltype(FVector4::X)>(V.x()), ConvertToUnreal<decltype(FVector4::X)>(V.y()),
+		ConvertToUnreal<decltype(FVector4::X)>(V.z()), ConvertToUnreal<decltype(FVector4::X)>(V.w()));
 }
 
 inline agx::Vec4 Convert(const FVector4& V)
 {
 	return agx::Vec4(
-		ConvertToAGX<FVector4::FReal>(V.X), ConvertToAGX<FVector4::FReal>(V.Y),
-		ConvertToAGX<FVector4::FReal>(V.Z), ConvertToAGX<FVector4::FReal>(V.W));
+		ConvertToAGX<decltype(FVector4::X)>(V.X), ConvertToAGX<decltype(FVector4::X)>(V.Y),
+		ConvertToAGX<decltype(FVector4::X)>(V.Z), ConvertToAGX<decltype(FVector4::X)>(V.W));
 }
 
 inline agx::Vec4f ConvertFloat(const FVector4& V)
@@ -569,15 +569,15 @@ inline agx::Line ConvertDisplacement(const FTwoVectors& Vs)
 inline FQuat Convert(const agx::Quat& V)
 {
 	return FQuat(
-		ConvertToUnreal<FQuat::FReal>(V.x()), -ConvertToUnreal<FQuat::FReal>(V.y()),
-		ConvertToUnreal<FQuat::FReal>(V.z()), -ConvertToUnreal<FQuat::FReal>(V.w()));
+		ConvertToUnreal<decltype(FQuat::X)>(V.x()), -ConvertToUnreal<decltype(FQuat::X)>(V.y()),
+		ConvertToUnreal<decltype(FQuat::X)>(V.z()), -ConvertToUnreal<decltype(FQuat::X)>(V.w()));
 }
 
 inline agx::Quat Convert(const FQuat& V)
 {
 	return agx::Quat(
-		ConvertToAGX<FQuat::FReal>(V.X), -ConvertToAGX<FQuat::FReal>(V.Y),
-		ConvertToAGX<FQuat::FReal>(V.Z), -ConvertToAGX<FQuat::FReal>(V.W));
+		ConvertToAGX<decltype(FQuat::X)>(V.X), -ConvertToAGX<decltype(FQuat::X)>(V.Y),
+		ConvertToAGX<decltype(FQuat::X)>(V.Z), -ConvertToAGX<decltype(FQuat::X)>(V.W));
 }
 
 // Text.
