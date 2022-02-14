@@ -18,7 +18,7 @@ struct FRotator;
 #else
 // Forward declaration not possible because FVector is a typedef of a specialization of a template class in Unreal Engine 5.
 // error: definition of type 'FVector' conflicts with typedef of the same name
-// Is there some way to avoid including the entire headers?
+// @todo [UE5] Is there some way to avoid including the entire headers?
 #include "Math/Vector.h"
 #include "Math/Rotator.h"
 #endif

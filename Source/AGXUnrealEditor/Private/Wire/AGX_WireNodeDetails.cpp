@@ -657,7 +657,7 @@ void FAGX_WireNodeDetails::OnGetActorFilters(TSharedPtr<SceneOutliner::FOutliner
 #else
 void FAGX_WireNodeDetails::OnGetActorFilters(TSharedPtr<FSceneOutlinerFilters>& OutFilters)
 {
-	/// @todo Compare with
+	/// @todo [UE5] Compare with
 	/// void FPropertyEditor::OnGetActorFiltersForSceneOutliner( TSharedPtr<FSceneOutlinerFilters>& OutFilters )
 	/// in Engine/Source/Editor/PropertyEditor/Private/Presentation/PropertyEditor/PropertyEditor.cpp.
 }
