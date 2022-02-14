@@ -494,7 +494,12 @@ void AGX_MeshUtilities::MakeSphere(
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color;
-			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, {(float)TexCoord.X, (float)TexCoord.Y});
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+#else
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
+				NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
+#endif
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 				NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -701,8 +706,12 @@ void AGX_MeshUtilities::MakeCylinder(
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+#else
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
 				NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
+#endif
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 				NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -795,8 +804,11 @@ void AGX_MeshUtilities::MakeCylinder(
 		FDynamicMeshVertex MeshVertex;
 
 		MeshVertex.Position = Vertex - TopOffset;
-		MeshVertex.TextureCoordinate[0] = {(float)TC.X, (float)TC.Y};
-
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+		MeshVertex.TextureCoordinate[0] = TC;
+#else
+		MeshVertex.TextureCoordinate[0] = {(float) TC.X, (float) TC.Y};
+#endif
 		MeshVertex.SetTangents(-ZAxis, (-ZAxis) ^ Normal, Normal);
 
 		OutVerts.Add(MeshVertex); // Add bottom vertex
@@ -820,7 +832,11 @@ void AGX_MeshUtilities::MakeCylinder(
 		FDynamicMeshVertex MeshVertex;
 
 		MeshVertex.Position = Vertex + TopOffset;
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+		MeshVertex.TextureCoordinate[0] = TC;
+#else
 		MeshVertex.TextureCoordinate[0] = {(float) TC.X, (float) TC.Y};
+#endif
 
 		MeshVertex.SetTangents(-ZAxis, (-ZAxis) ^ Normal, Normal);
 
@@ -1247,8 +1263,12 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+#else
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
 				NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
+#endif
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 				NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -1429,8 +1449,12 @@ void AGX_MeshUtilities::MakeBendableArrow(
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+#else
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
 				NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
+#endif
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 				NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -1603,8 +1627,12 @@ void AGX_MeshUtilities::MakeDiskArray(
 				// Fill actual buffers
 				VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 				VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+				VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+#else
 				VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
 					NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
+#endif
 				VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 					NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -1918,124 +1946,127 @@ namespace AGX_MeshUtilities_helpers
 		RenderIndices.Reserve(NumIndices);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		([&](FRHICommandListImmediate& RHICmdList) {
+		(
+			[&](FRHICommandListImmediate& RHICmdList)
+			{
 		// Copy position buffer.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-			FVector* PositionData = static_cast<FVector*>(
-				RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+				FVector* PositionData = static_cast<FVector*>(
+					RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
 #else
-			FVector* PositionData = static_cast<FVector*>(
-				RHILockBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+				FVector* PositionData = static_cast<FVector*>(
+					RHILockBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
 #endif
-			for (uint32 i = 0; i < NumPositions; i++)
-			{
-				RenderPositions.Add(PositionData[i]);
-			}
+				for (uint32 i = 0; i < NumPositions; i++)
+				{
+					RenderPositions.Add(PositionData[i]);
+				}
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-			RHIUnlockVertexBuffer(PositionRhi);
+				RHIUnlockVertexBuffer(PositionRhi);
 #else
-			RHIUnlockBuffer(PositionRhi);
+				RHIUnlockBuffer(PositionRhi);
 #endif
 
-			// Copy index buffer.
-			if (IndexRhi->GetStride() == 2)
-			{
+				// Copy index buffer.
+				if (IndexRhi->GetStride() == 2)
+				{
 				// Two byte index size.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-				uint16* IndexBufferData = static_cast<uint16*>(
-					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+					uint16* IndexBufferData = static_cast<uint16*>(
+						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #else
-				uint16* IndexBufferData = static_cast<uint16*>(
-					RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+					uint16* IndexBufferData = static_cast<uint16*>(
+						RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #endif
-				for (int32 i = 0; i < NumIndices; i++)
-				{
-					RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
+					for (int32 i = 0; i < NumIndices; i++)
+					{
+						RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
+					}
 				}
-			}
-			else
-			{
-			// Four byte index size (stride must be either 2 or 4).
-			check(IndexRhi->GetStride() == 4);
+				else
+				{
+					// Four byte index size (stride must be either 2 or 4).
+					check(IndexRhi->GetStride() == 4);
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-			uint32* IndexData = static_cast<uint32*>(
-				RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+					uint32* IndexData = static_cast<uint32*>(
+						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #else
-			uint32* IndexData =
-				static_cast<uint32*>(RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+					uint32* IndexData = static_cast<uint32*>(
+						RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #endif
-			for (int32 i = 0; i < NumIndices; i++)
-			{
-				RenderIndices.Add(IndexData[i]);
-			}
+					for (int32 i = 0; i < NumIndices; i++)
+					{
+						RenderIndices.Add(IndexData[i]);
+					}
 				}
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 				RHIUnlockIndexBuffer(IndexRhi);
 #else
 				RHIUnlockBuffer(IndexRhi);
 #endif
-	});
+			});
 
-	// Wait for rendering thread to finish.
-	FlushRenderingCommands();
+		// Wait for rendering thread to finish.
+		FlushRenderingCommands();
 
-	// Check if the render thread copy got the same data as the game thread copy.
-	int32 NumIndexMismatch {0};
-	for (int I = 0; I < FMath::Min(TrueNumIndices, NumIndices); ++I)
-	{
-		uint32 TrueIndex = GameIndices[I];
-		uint32 Index = RenderIndices[I];
-		if (TrueIndex != Index)
+		// Check if the render thread copy got the same data as the game thread copy.
+		int32 NumIndexMismatch {0};
+		for (int I = 0; I < FMath::Min(TrueNumIndices, NumIndices); ++I)
 		{
-			++NumIndexMismatch;
+			uint32 TrueIndex = GameIndices[I];
+			uint32 Index = RenderIndices[I];
+			if (TrueIndex != Index)
+			{
+				++NumIndexMismatch;
+			}
+		}
+		if (NumIndexMismatch > 0)
+		{
+			UE_LOG(LogAGX, Error, TEXT("Got %d mismatched indices."), NumIndexMismatch);
+		}
+
+		if (GameIndices != RenderIndices)
+		{
+			UE_LOG(LogAGX, Error, TEXT("Error reading vertex indices from GPU memory."));
+		}
+		if (GamePositions != RenderPositions)
+		{
+			UE_LOG(LogAGX, Error, TEXT("Error reading vertex positions from GPU memory."));
 		}
 	}
-	if (NumIndexMismatch > 0)
-	{
-		UE_LOG(LogAGX, Error, TEXT("Got %d mismatched indices."), NumIndexMismatch);
-	}
 
-	if (GameIndices != RenderIndices)
+	void CopyMeshBuffers(
+		const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions,
+		TArray<uint32>& OutIndices)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Error reading vertex indices from GPU memory."));
-	}
-	if (GamePositions != RenderPositions)
-	{
-		UE_LOG(LogAGX, Error, TEXT("Error reading vertex positions from GPU memory."));
-	}
-}
-
-void CopyMeshBuffers(
-	const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions, TArray<uint32>& OutIndices)
-{
 #if WITH_EDITOR
-	CopyMeshBuffersGameThread(Mesh, OutPositions, OutIndices);
+		CopyMeshBuffersGameThread(Mesh, OutPositions, OutIndices);
 #else
-	CopyMeshBuffersRenderThread(Mesh, OutPositions, OutIndices);
+		CopyMeshBuffersRenderThread(Mesh, OutPositions, OutIndices);
 #endif
-}
-
-static int32 AddCollisionVertex(
-	const FVector& VertexPosition, const FTransform& Transform, TArray<FVector>& CollisionVertices,
-	TMap<FVector, int32>& MeshToCollisionVertexIndices)
-{
-	if (int32* CollisionVertexIndexPtr = MeshToCollisionVertexIndices.Find(VertexPosition))
-	{
-		// Already been added once, so just return the index.
-		return *CollisionVertexIndexPtr;
 	}
-	else
+
+	static int32 AddCollisionVertex(
+		const FVector& VertexPosition, const FTransform& Transform,
+		TArray<FVector>& CollisionVertices, TMap<FVector, int32>& MeshToCollisionVertexIndices)
 	{
-		// Copy position from mesh to collision data.
-		int CollisionVertexIndex =
-			CollisionVertices.Add(Transform.TransformPosition(VertexPosition));
+		if (int32* CollisionVertexIndexPtr = MeshToCollisionVertexIndices.Find(VertexPosition))
+		{
+			// Already been added once, so just return the index.
+			return *CollisionVertexIndexPtr;
+		}
+		else
+		{
+			// Copy position from mesh to collision data.
+			int CollisionVertexIndex =
+				CollisionVertices.Add(Transform.TransformPosition(VertexPosition));
 
-		// Add collision index to map.
-		MeshToCollisionVertexIndices.Add(VertexPosition, CollisionVertexIndex);
+			// Add collision index to map.
+			MeshToCollisionVertexIndices.Add(VertexPosition, CollisionVertexIndex);
 
-		return CollisionVertexIndex;
+			return CollisionVertexIndex;
+		}
 	}
-}
 }
 
 bool AGX_MeshUtilities::GetStaticMeshCollisionData(
