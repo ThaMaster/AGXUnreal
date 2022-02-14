@@ -23,7 +23,6 @@
 #include "Math/Vector2D.h"
 #include "Math/Quat.h"
 #include "Math/TwoVectors.h"
-#include "Misc/EngineVersionComparison.h"
 
 // AGX Dynamics includes
 #include "BeginAGXIncludes.h"
@@ -99,124 +98,57 @@ namespace
 template <typename TU>
 inline TU ConvertToUnreal(agx::Real D)
 {
-	if constexpr (std::is_same<TU, agx::Real>::value)
-	{
-		return D;
-	}
-	else
-	{
-		return static_cast<TU>(D);
-	}
+	return static_cast<TU>(D);
 }
 
 template <typename TU>
 inline TU ConvertDistanceToUnreal(agx::Real D)
 {
-	if constexpr (std::is_same<TU, agx::Real>::value)
-	{
-		return D * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>;
-	}
-	else
-	{
-		return static_cast<TU>(D * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
-	}
+	return static_cast<TU>(D * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
 }
 
 template <typename TU>
 inline TU ConvertAreaToUnreal(agx::Real D2)
 {
-	if constexpr (std::is_same<TU, agx::Real>::value)
-	{
-		return D2 * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> *
-			AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>;
-	}
-	else
-	{
-		return static_cast<TU>(
-			D2 * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> *
-			AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
-	}
-	
+	return static_cast<TU>(
+		D2 * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
 }
 
 template <typename TU>
 inline TU ConvertDistanceInvToUnreal(agx::Real DInv)
 {
-	if constexpr (std::is_same<TU, agx::Real>::value)
-	{
-		return DInv / AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>;
-	}
-	else
-	{
-		return static_cast<TU>(DInv / AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
-	}	
+	return static_cast<TU>(DInv / AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
 }
 
 template <typename TU>
 inline TU ConvertAngleToUnreal(agx::Real A)
 {
-	if constexpr (std::is_same<TU, agx::Real>::value)
-	{
-		return FMath::RadiansToDegrees(A);
-	}
-	else
-	{
-		return static_cast<TU>(FMath::RadiansToDegrees(A));
-	}
+	return static_cast<TU>(FMath::RadiansToDegrees(A));
 }
 
 template <typename TU>
 inline agx::Real ConvertToAGX(TU D)
 {
-	if constexpr (std::is_same<TU, agx::Real>::value)
-	{
-		return D;
-	}
-	else
-	{
-		return static_cast<agx::Real>(D);
-	}
+	return static_cast<agx::Real>(D);
 }
 
 template <typename TU>
 inline agx::Real ConvertDistanceToAGX(TU D)
 {
-	if constexpr (std::is_same<TU, agx::Real>::value)
-	{
-		return D * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
-	}
-	else
-	{
-		return static_cast<agx::Real>(D) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
-	}
+	return static_cast<agx::Real>(D) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
 }
 
 template <typename TU>
 inline agx::Real ConvertAreaToAGX(TU D2)
 {
-	if constexpr (std::is_same<TU, agx::Real>::value)
-	{
-		return D2 * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
-			   UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
-	}
-	else
-	{
-		return static_cast<agx::Real>(D2) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
-			   UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
-	}
+	return static_cast<agx::Real>(D2) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
+		   UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
 }
 
 template <typename TU>
 inline agx::Real ConvertDistanceInvToAGX(TU DInv)
 {
-	if constexpr (std::is_same<TU, agx::Real>::value)
-	{
-		return DInv / UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
-	}
-	else
-	{
-		return static_cast<agx::Real>(DInv) / UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
-	}
+	return static_cast<agx::Real>(DInv) / UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
 }
 
 template <typename TU>
@@ -269,7 +201,8 @@ inline agx::Int Convert(int32 I)
 inline FVector2D Convert(const agx::Vec2& V)
 {
 	return FVector2D(
-		ConvertToUnreal<decltype(FVector2D::X)>(V.x()), ConvertToUnreal<decltype(FVector2D::X)>(V.y()));
+		ConvertToUnreal<decltype(FVector2D::X)>(V.x()),
+		ConvertToUnreal<decltype(FVector2D::X)>(V.y()));
 }
 
 inline FVector2D ConvertDistance(const agx::Vec2& V)
@@ -284,13 +217,15 @@ inline FVector2D ConvertDistance(const agx::Vec2& V)
 
 inline agx::Vec2 Convert(const FVector2D& V)
 {
-	return agx::Vec2(ConvertToAGX<decltype(FVector2D::X)>(V.X), ConvertToAGX<decltype(FVector2D::X)>(V.Y));
+	return agx::Vec2(
+		ConvertToAGX<decltype(FVector2D::X)>(V.X), ConvertToAGX<decltype(FVector2D::X)>(V.Y));
 }
 
 inline agx::Vec2 ConvertDistance(const FVector2D& V)
 {
 	return agx::Vec2(
-		ConvertDistanceToAGX<decltype(FVector2D::X)>(V.X), ConvertDistanceToAGX<decltype(FVector2D::X)>(V.Y));
+		ConvertDistanceToAGX<decltype(FVector2D::X)>(V.X),
+		ConvertDistanceToAGX<decltype(FVector2D::X)>(V.Y));
 }
 
 // Three-dimensional vectors.
@@ -404,7 +339,8 @@ inline agx::Vec3 Convert(const FVector& V)
 inline agx::Vec3 ConvertDistance(const FVector& V)
 {
 	return agx::Vec3(
-		ConvertDistanceToAGX<decltype(FVector::X)>(V.X), ConvertDistanceToAGX<decltype(FVector::X)>(V.Y),
+		ConvertDistanceToAGX<decltype(FVector::X)>(V.X),
+		ConvertDistanceToAGX<decltype(FVector::X)>(V.Y),
 		ConvertDistanceToAGX<decltype(FVector::X)>(V.Z));
 }
 
@@ -419,7 +355,8 @@ inline agx::Vec3 ConvertDisplacement(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3(
-		ConvertDistanceToAGX<decltype(FVector::X)>(V.X), -ConvertDistanceToAGX<decltype(FVector::X)>(V.Y),
+		ConvertDistanceToAGX<decltype(FVector::X)>(V.X),
+		-ConvertDistanceToAGX<decltype(FVector::X)>(V.Y),
 		ConvertDistanceToAGX<decltype(FVector::X)>(V.Z));
 }
 
@@ -427,7 +364,8 @@ inline agx::Vec3f ConvertFloatVector(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3f(
-		ConvertDistanceToAGX<decltype(FVector::X)>(V.X), -ConvertDistanceToAGX<decltype(FVector::X)>(V.Y),
+		ConvertDistanceToAGX<decltype(FVector::X)>(V.X),
+		-ConvertDistanceToAGX<decltype(FVector::X)>(V.Y),
 		ConvertDistanceToAGX<decltype(FVector::X)>(V.Z));
 }
 
@@ -456,15 +394,19 @@ inline agx::Vec3 ConvertTorque(const FVector& V)
 inline FVector4 Convert(const agx::Vec4& V)
 {
 	return FVector4(
-		ConvertToUnreal<decltype(FVector4::X)>(V.x()), ConvertToUnreal<decltype(FVector4::X)>(V.y()),
-		ConvertToUnreal<decltype(FVector4::X)>(V.z()), ConvertToUnreal<decltype(FVector4::X)>(V.w()));
+		ConvertToUnreal<decltype(FVector4::X)>(V.x()),
+		ConvertToUnreal<decltype(FVector4::X)>(V.y()),
+		ConvertToUnreal<decltype(FVector4::X)>(V.z()),
+		ConvertToUnreal<decltype(FVector4::X)>(V.w()));
 }
 
 inline FVector4 Convert(const agx::Vec4f& V)
 {
 	return FVector4(
-		ConvertToUnreal<decltype(FVector4::X)>(V.x()), ConvertToUnreal<decltype(FVector4::X)>(V.y()),
-		ConvertToUnreal<decltype(FVector4::X)>(V.z()), ConvertToUnreal<decltype(FVector4::X)>(V.w()));
+		ConvertToUnreal<decltype(FVector4::X)>(V.x()),
+		ConvertToUnreal<decltype(FVector4::X)>(V.y()),
+		ConvertToUnreal<decltype(FVector4::X)>(V.z()),
+		ConvertToUnreal<decltype(FVector4::X)>(V.w()));
 }
 
 inline agx::Vec4 Convert(const FVector4& V)
