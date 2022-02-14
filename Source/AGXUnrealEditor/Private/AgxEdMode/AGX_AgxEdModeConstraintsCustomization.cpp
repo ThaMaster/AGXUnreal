@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AgxEdMode/AGX_AgxEdModeConstraintsCustomization.h"
 
 // AGX Dynamics for Unreal includes.
@@ -95,11 +94,14 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintCreatorCategory(
 
 		 + SHorizontalBox::Slot().AutoWidth()[SNew(SButton)
 												  .Text(LOCTEXT("CreateButtonText", "Create"))
-												  .OnClicked_Lambda([ConstraintsSubMode]() {
-													  if (ConstraintsSubMode)
-														  ConstraintsSubMode->CreateConstraint();
-													  return FReply::Handled();
-												  })]];
+												  .OnClicked_Lambda(
+													  [ConstraintsSubMode]()
+													  {
+														  if (ConstraintsSubMode)
+															  ConstraintsSubMode
+																  ->CreateConstraint();
+														  return FReply::Handled();
+													  })]];
 }
 
 void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintTypeComboBox(
@@ -112,7 +114,8 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintTypeComboBox(
 	}
 
 	// Function for getting a shorter display name per constraint type
-	auto GetShortName = [](UClass* ConstraintClass) -> FText {
+	auto GetShortName = [](UClass* ConstraintClass) -> FText
+	{
 		if (!ConstraintClass)
 		{
 			return FText::GetEmpty();
@@ -124,7 +127,8 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintTypeComboBox(
 		return FText::FromString(DisplayName);
 	};
 
-	auto GetToolTip = [](UClass* ConstraintClass) -> FText {
+	auto GetToolTip = [](UClass* ConstraintClass) -> FText
+	{
 		if (!ConstraintClass)
 		{
 			return FText::GetEmpty();
@@ -141,23 +145,24 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintTypeComboBox(
 			[SNew(SComboBox<UClass*>)
 				 .ContentPadding(2)
 				 .OptionsSource(&ConstraintClasses)
-				 .OnGenerateWidget_Lambda([=](UClass* Item) // content for each item in combo box
-										  {
-											  return SNew(STextBlock)
-												  .Text(GetShortName(Item))
-												  .ToolTipText(GetToolTip(Item));
-										  })
+				 .OnGenerateWidget_Lambda(
+					 [=](UClass* Item) // content for each item in combo box
+					 {
+						 return SNew(STextBlock)
+							 .Text(GetShortName(Item))
+							 .ToolTipText(GetToolTip(Item));
+					 })
 				 .OnSelectionChanged(
 					 this, &FAGX_AgxEdModeConstraintsCustomization::OnConstraintTypeComboBoxChanged,
 					 ConstraintsSubMode)
-				 .ToolTipText_Lambda([=]() {
-					 return GetToolTip(ConstraintsSubMode->ConstraintType);
-				 }) // header tooltip
+				 .ToolTipText_Lambda(
+					 [=]()
+					 { return GetToolTip(ConstraintsSubMode->ConstraintType); }) // header tooltip
 				 .Content() // header content (i.e. showing selected item, even while combo box is
 							// closed)
 					 [SNew(STextBlock)
-						  .Text_Lambda(
-							  [=]() { return GetShortName(ConstraintsSubMode->ConstraintType); })
+						  .Text_Lambda([=]()
+									   { return GetShortName(ConstraintsSubMode->ConstraintType); })
 						  .Font(IDetailLayoutBuilder::GetDetailFont())]];
 }
 
@@ -245,11 +250,13 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateFrameSourceRadioButtons(
 					   .Style(FEditorStyle::Get(), "RadioButton")
 					   .Padding(FMargin(4.0f, 0.0f))
 					   .ToolTipText(FrameSourceEnum->GetToolTipTextByIndex(EnumIndex))
-					   .IsChecked_Lambda([ConstraintsSubMode, EnumValue]() {
-						   return ConstraintsSubMode->AttachmentFrameSource == EnumValue
-									  ? ECheckBoxState::Checked
-									  : ECheckBoxState::Unchecked;
-					   })
+					   .IsChecked_Lambda(
+						   [ConstraintsSubMode, EnumValue]()
+						   {
+							   return ConstraintsSubMode->AttachmentFrameSource == EnumValue
+										  ? ECheckBoxState::Checked
+										  : ECheckBoxState::Unchecked;
+						   })
 					   .OnCheckStateChanged(
 						   this,
 						   &FAGX_AgxEdModeConstraintsCustomization::OnFrameSourceRadioButtonChanged,
@@ -295,9 +302,45 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserCategory(
 void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(
 	IDetailCategoryBuilder& CategoryBuilder, UAGX_AgxEdModeConstraints* ConstraintsSubMode)
 {
-// TSceneOutlinerPredicateFilter is no longer a thing in Unreal Engine 5.
-// There may be hints to what to do instead in Engine/Source/Editor/SceneOutliner/Private/ActorBrowsingMode.cpp.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
+	using namespace SceneOutliner;
+
+	FSceneOutlinerModule& SceneOutlinerModule =
+		FModuleManager::LoadModuleChecked<FSceneOutlinerModule>("SceneOutliner");
+
+	FActorFilterPredicate ActorFilter = FActorFilterPredicate::CreateLambda(
+		[](const AActor* const Actor)
+		{
+			return Actor->IsA(AAGX_ConstraintActor::StaticClass()); // only show constraints
+		});
+
+	FCustomSceneOutlinerDeleteDelegate DeleteAction =
+		FCustomSceneOutlinerDeleteDelegate::CreateLambda(
+			[](const TArray<TWeakObjectPtr<AActor>>& Actors) {}); // no delete
+
+	FInitializationOptions Options;
+	Options.Mode = ESceneOutlinerMode::ActorBrowsing;
+	Options.bShowHeaderRow = true;
+	Options.bShowParentTree = false;
+	Options.bShowSearchBox = false;
+	Options.bFocusSearchBoxWhenOpened = false;
+	Options.bShowTransient = true;
+	Options.bShowCreateNewFolder = false;
+	Options.ColumnMap.Add(FBuiltInColumnTypes::Label(), FColumnInfo(EColumnVisibility::Visible, 0));
+	Options.ColumnMap.Add(
+		FBuiltInColumnTypes::ActorInfo(), FColumnInfo(EColumnVisibility::Visible, 10));
+	Options.CustomDelete = DeleteAction;
+	Options.Filters->AddFilterPredicate(ActorFilter);
+
+	TSharedRef<SWidget> SceneOutliner =
+		SceneOutlinerModule.CreateSceneOutliner(Options, FOnActorPicked());
+
+	CategoryBuilder.AddCustomRow(FText::GetEmpty())
+		.WholeRowContent()[SNew(SScrollBox) + SScrollBox::Slot().Padding(0)[SceneOutliner]];
+#else
+#if 0 // @todo[UE5], figure out how to properly do this in ue5 and then remove the # if 0.
+	// TSceneOutlinerPredicateFilter is no longer a thing in Unreal Engine 5.
+	// There may be hints to what to do instead in Engine/Source/Editor/SceneOutliner/Private/ActorBrowsingMode.cpp.
 	using namespace SceneOutliner;
 
 
@@ -336,6 +379,7 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(
 
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
 		.WholeRowContent()[SNew(SScrollBox) + SScrollBox::Slot().Padding(0)[SceneOutliner]];
+#endif
 #endif
 }
 
