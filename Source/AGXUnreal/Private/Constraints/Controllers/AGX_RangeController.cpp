@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Constraints/Controllers/AGX_RangeController.h"
 
 #include "Constraints/AGX_ConstraintConstants.h"
@@ -36,7 +35,8 @@ namespace
 
 void FAGX_ConstraintRangeController::SetRange(const FFloatInterval& InRange)
 {
-	if (HasNative()) {
+	if (HasNative())
+	{
 		if (bRotational)
 		{
 			GetRangeBarrier(*this)->SetRangeRotational(InRange);

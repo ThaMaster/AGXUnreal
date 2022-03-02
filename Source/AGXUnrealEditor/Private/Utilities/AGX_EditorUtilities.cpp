@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Utilities/AGX_EditorUtilities.h"
 
 // AGX Dynamics for Unreal includes.
@@ -380,7 +379,8 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 	RawMesh.VertexPositions.SetNum(TrimeshVertexPositions.Num());
 	for (int32 I = 0; I < TrimeshVertexPositions.Num(); ++I)
 	{
-		// May do a double -> float conversion, depending on the UE_LARGE_WORLD_COORDINATES_DISABLED preprocessor macro.
+		// May do a double -> float conversion, depending on the UE_LARGE_WORLD_COORDINATES_DISABLED
+		// preprocessor macro.
 		RawMesh.VertexPositions[I] = TrimeshVertexPositions[I];
 	}
 #endif
@@ -510,7 +510,8 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromRenderData(const FRenderDataBarr
 	RawMesh.VertexPositions.SetNum(TrimeshVertexPositions.Num());
 	for (int32 I = 0; I < TrimeshVertexPositions.Num(); ++I)
 	{
-		// May do a double -> float conversion, depending on the UE_LARGE_WORLD_COORDINATES_DISABLED preprocessor macro.
+		// May do a double -> float conversion, depending on the UE_LARGE_WORLD_COORDINATES_DISABLED
+		// preprocessor macro.
 		RawMesh.VertexPositions[I] = TrimeshVertexPositions[I];
 	}
 #endif
@@ -536,7 +537,8 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromRenderData(const FRenderDataBarr
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 			RawMesh.WedgeTexCoords[0].Add(RenderTexCoords[RenderI]);
 #else
-			RawMesh.WedgeTexCoords[0].Add(FVector2f{(float)RenderTexCoords[RenderI].X, (float)RenderTexCoords[RenderI].Y});
+			RawMesh.WedgeTexCoords[0].Add(
+				FVector2f {(float) RenderTexCoords[RenderI].X, (float) RenderTexCoords[RenderI].Y});
 #endif
 		}
 		else
@@ -564,7 +566,6 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 #else
 	StaticMesh->GetStaticMaterials().Add(FStaticMaterial());
 #endif
-
 
 #if UE_VERSION_OLDER_THAN(4, 23, 0)
 	StaticMesh->SourceModels.Emplace();
@@ -877,7 +878,8 @@ void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
 
 	// Assigns to first available of OutActor1 and OutActor2, and returns whether
 	// at least one of them is afterwards still available for assignment.
-	auto AssignOutActors = [OutActor1, OutActor2](AActor* RigidBodyActor) {
+	auto AssignOutActors = [OutActor1, OutActor2](AActor* RigidBodyActor)
+	{
 		if (OutActor1 && *OutActor1 == nullptr)
 		{
 			*OutActor1 = RigidBodyActor;

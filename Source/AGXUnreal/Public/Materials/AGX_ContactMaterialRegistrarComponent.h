@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // Unreal Engine includes.
@@ -58,8 +57,8 @@ public:
 
 private:
 	/*
-	* Clears the ContactMaterials array and unregisteres all instances with the Simulation if one
-	* exists.
-	*/
+	 * Clears the ContactMaterials array and unregisteres all instances with the Simulation if one
+	 * exists.
+	 */
 	void ClearAll();
 };

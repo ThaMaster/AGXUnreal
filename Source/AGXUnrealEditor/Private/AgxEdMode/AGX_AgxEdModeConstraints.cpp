@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 
 // AGX Dynamics for Unreal includes.

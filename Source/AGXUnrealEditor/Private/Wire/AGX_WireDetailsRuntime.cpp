@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Wire/AGX_WireDetailsRuntime.h"
 
 // AGX Dynamics for Unreal includes.
@@ -49,8 +48,7 @@ namespace AGX_WireDetailsRuntime_helpers
 	}
 }
 
-void FAGX_WireDetailsRuntime::GenerateChildContent(
-	IDetailChildrenBuilder& ChildrenBuilder)
+void FAGX_WireDetailsRuntime::GenerateChildContent(IDetailChildrenBuilder& ChildrenBuilder)
 {
 	using namespace AGX_WireDetailsRuntime_helpers;
 

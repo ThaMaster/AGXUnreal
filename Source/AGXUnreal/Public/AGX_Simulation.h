@@ -78,8 +78,7 @@ public: // Properties.
 	 * storing and then restoring the simulation can give slightly different trajectories compared
 	 * to running the simulation non-stop.
 	 */
-	UPROPERTY(
-		Config, EditAnywhere, BlueprintReadOnly, Category = "Solver")
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Solver")
 	bool bContactWarmstarting = false;
 
 	/**
@@ -305,7 +304,6 @@ public: // Member functions.
 #endif
 
 private:
-
 	// ~Begin USubsystem interface.
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;

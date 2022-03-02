@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -179,7 +178,6 @@ private:
 	TArray<TSharedPtr<FString>> WireNodeTypes;
 	FText NodeTypeText;
 
-
 	/// @todo Consider making this a FName array instead.
 	// Backing storage for the rigid body name.
 	TArray<TSharedPtr<FString>> RigidBodyNames;
@@ -189,7 +187,6 @@ private:
 	void ClearStorage();
 
 public:
-
 	/*
 	 * OBJECTS
 	 * Functions and variables related to getting the actual object we're displaying the state for

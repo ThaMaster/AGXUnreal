@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -40,7 +39,6 @@ class AGXUNREAL_API UAGX_ShapeMaterialBase : public UAGX_MaterialBase
 	GENERATED_BODY()
 
 public:
-
 	// Setters and getters for bulk properties.
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")

@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 /// \todo Reduce includes!
 #include "Constraints/AGX_ConstraintIconGraphicsComponent.h"
 
@@ -176,27 +175,29 @@ public:
 		for (const TSharedPtr<FAGX_ConstraintIconGraphicsGeometry>& Geometry : Geometries)
 		{
 			ENQUEUE_RENDER_COMMAND(FAGX_ConstraintIconGraphicsVertexBuffersInit)
-			([Geometry = Geometry.Get()](FRHICommandListImmediate& RHICmdList) {
-				Geometry->VertexBuffers.PositionVertexBuffer.InitResource();
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.InitResource();
-				Geometry->VertexBuffers.ColorVertexBuffer.InitResource();
+			(
+				[Geometry = Geometry.Get()](FRHICommandListImmediate& RHICmdList)
+				{
+					Geometry->VertexBuffers.PositionVertexBuffer.InitResource();
+					Geometry->VertexBuffers.StaticMeshVertexBuffer.InitResource();
+					Geometry->VertexBuffers.ColorVertexBuffer.InitResource();
 
-				FLocalVertexFactory::FDataType Data;
-				Geometry->VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(
-					&Geometry->VertexFactory, Data);
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(
-					&Geometry->VertexFactory, Data);
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
-					&Geometry->VertexFactory, Data);
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
-					&Geometry->VertexFactory, Data, /*LightMapIndex*/ 0);
-				Geometry->VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(
-					&Geometry->VertexFactory, Data);
-				Geometry->VertexFactory.SetData(Data);
+					FLocalVertexFactory::FDataType Data;
+					Geometry->VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(
+						&Geometry->VertexFactory, Data);
+					Geometry->VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(
+						&Geometry->VertexFactory, Data);
+					Geometry->VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
+						&Geometry->VertexFactory, Data);
+					Geometry->VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
+						&Geometry->VertexFactory, Data, /*LightMapIndex*/ 0);
+					Geometry->VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(
+						&Geometry->VertexFactory, Data);
+					Geometry->VertexFactory.SetData(Data);
 
-				Geometry->VertexFactory.InitResource();
-				Geometry->IndexBuffer.InitResource();
-			});
+					Geometry->VertexFactory.InitResource();
+					Geometry->IndexBuffer.InitResource();
+				});
 		}
 	}
 
@@ -703,9 +704,8 @@ void UAGX_ConstraintIconGraphicsComponent::SendRenderDynamicData_Concurrent()
 		FAGX_ConstraintIconGraphicsProxy* CastProxy =
 			static_cast<FAGX_ConstraintIconGraphicsProxy*>(SceneProxy);
 		ENQUEUE_RENDER_COMMAND(FSendConstraintIconGraphicsDynamicData)
-		([CastProxy, Frame1, Frame2](FRHICommandListImmediate& RHICmdList) {
-			CastProxy->SetAttachmentFrameTransforms(Frame1, Frame2);
-		});
+		([CastProxy, Frame1, Frame2](FRHICommandListImmediate& RHICmdList)
+		 { CastProxy->SetAttachmentFrameTransforms(Frame1, Frame2); });
 	}
 }
 

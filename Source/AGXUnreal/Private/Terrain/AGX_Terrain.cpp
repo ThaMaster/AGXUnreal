@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Terrain/AGX_Terrain.h"
 
 // AGX Dynamics for Unreal includes.
@@ -246,7 +245,8 @@ namespace
 	template <typename TPtr>
 	TPtr GetShovelComponent(UAGX_RigidBodyComponent& Body, const TCHAR* TerrainName)
 	{
-		auto RecursiveFind = [](const TArray<USceneComponent*>& Components, auto& recurse) {
+		auto RecursiveFind = [](const TArray<USceneComponent*>& Components, auto& recurse)
+		{
 			for (USceneComponent* Component : Components)
 			{
 				if (TPtr Match = Cast<std::remove_pointer_t<TPtr>>(Component))
@@ -326,10 +326,10 @@ void AAGX_Terrain::CreateNativeTerrain()
 	if (Simulation == nullptr)
 	{
 		UE_LOG(
-				LogAGX, Error,
-				TEXT("Terrain '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
-				"returned nullptr."),
-				*GetName(), *GetLabelSafe(GetOwner()));
+			LogAGX, Error,
+			TEXT("Terrain '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				 "returned nullptr."),
+			*GetName(), *GetLabelSafe(GetOwner()));
 		return;
 	}
 
@@ -405,7 +405,7 @@ void AAGX_Terrain::CreateNativeShovels()
 		// AGX Dynamics always expects a normalized Cutting Direction vector.
 		const FVector CuttingDirectionVector =
 			WorldToBody.TransformVector(CuttingDirection->GetVectorDirection()).GetSafeNormal();
-			
+
 		ShovelBarrier.AllocateNative(
 			*BodyBarrier, TopEdgeLine, CuttingEdgeLine, CuttingDirectionVector);
 

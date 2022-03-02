@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Materials/AGX_TerrainBulkProperties.h"
 
 FAGX_TerrainBulkProperties::FAGX_TerrainBulkProperties()

@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AGX_MeshWithTransform.h"
 
 // Unreal Engine includes.

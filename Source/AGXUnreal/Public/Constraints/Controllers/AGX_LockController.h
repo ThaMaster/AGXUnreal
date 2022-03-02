@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -101,7 +100,8 @@ class AGXUNREAL_API UAGX_ConstraintLockController_FL : public UBlueprintFunction
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetSpookDamping(UPARAM(ref) FAGX_ConstraintLockController& Controller, float SpookDamping)
+	static void SetSpookDamping(
+		UPARAM(ref) FAGX_ConstraintLockController& Controller, float SpookDamping)
 	{
 		Controller.SetSpookDamping(static_cast<double>(SpookDamping));
 	}

@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AGXUnrealBarrier.h"
 
 // AGX Dynamics for Unreal includes.
@@ -56,7 +55,6 @@ void FAGXUnrealBarrierModule::ShutdownModule()
 	agx::shutdown();
 }
 
-
 FAGXUnrealBarrierModule& FAGXUnrealBarrierModule::Get()
 {
 	return FModuleManager::GetModuleChecked<FAGXUnrealBarrierModule>("AGXUnrealBarrier");
@@ -72,7 +70,8 @@ void FAGXUnrealBarrierModule::RemoveNotifyListener(FAGXNotifyListener* Listener)
 	NotifyListeners.Remove(Listener);
 }
 
-void FAGXUnrealBarrierModule::RelayNotifyMessage(const FString& Message, ELogVerbosity::Type Verbosity)
+void FAGXUnrealBarrierModule::RelayNotifyMessage(
+	const FString& Message, ELogVerbosity::Type Verbosity)
 {
 	for (auto& Listener : NotifyListeners)
 	{
@@ -89,7 +88,6 @@ FAGXNotifyListener::~FAGXNotifyListener()
 {
 	FAGXUnrealBarrierModule::Get().RemoveNotifyListener(this);
 }
-
 
 #undef LOCTEXT_NAMESPACE
 

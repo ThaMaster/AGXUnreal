@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Materials/AGX_TerrainMaterialBase.h"
 
 // AGX Dynamics for Unreal includes.
@@ -103,7 +102,8 @@ float UAGX_TerrainMaterialBase::GetYoungsModulus() const
 // Compaction properties.
 void UAGX_TerrainMaterialBase::SetAngleOfReposeCompactionRate(float AngleOfReposeCompactionRate)
 {
-	TerrainCompaction.AngleOfReposeCompactionRate = static_cast<double>(AngleOfReposeCompactionRate);
+	TerrainCompaction.AngleOfReposeCompactionRate =
+		static_cast<double>(AngleOfReposeCompactionRate);
 }
 
 float UAGX_TerrainMaterialBase::GetAngleOfReposeCompactionRate() const
@@ -113,8 +113,7 @@ float UAGX_TerrainMaterialBase::GetAngleOfReposeCompactionRate() const
 
 void UAGX_TerrainMaterialBase::SetBankStatePhi(float Phi0)
 {
-	TerrainCompaction.Phi0 =
-		static_cast<double>(Phi0);
+	TerrainCompaction.Phi0 = static_cast<double>(Phi0);
 }
 
 float UAGX_TerrainMaterialBase::GetBankStatePhi() const
@@ -122,7 +121,8 @@ float UAGX_TerrainMaterialBase::GetBankStatePhi() const
 	return static_cast<float>(TerrainCompaction.Phi0);
 }
 
-void UAGX_TerrainMaterialBase::SetCompactionTimeRelaxationConstant(float CompactionTimeRelaxationConstant)
+void UAGX_TerrainMaterialBase::SetCompactionTimeRelaxationConstant(
+	float CompactionTimeRelaxationConstant)
 {
 	TerrainCompaction.CompactionTimeRelaxationConstant =
 		static_cast<double>(CompactionTimeRelaxationConstant);
@@ -135,8 +135,7 @@ float UAGX_TerrainMaterialBase::GetCompactionTimeRelaxationConstant() const
 
 void UAGX_TerrainMaterialBase::SetCompressionIndex(float CompressionIndex)
 {
-	TerrainCompaction.CompressionIndex =
-		static_cast<double>(CompressionIndex);
+	TerrainCompaction.CompressionIndex = static_cast<double>(CompressionIndex);
 }
 
 float UAGX_TerrainMaterialBase::GetCompressionIndex() const
@@ -146,8 +145,7 @@ float UAGX_TerrainMaterialBase::GetCompressionIndex() const
 
 void UAGX_TerrainMaterialBase::SetHardeningConstantKe(float K_e)
 {
-	TerrainCompaction.K_e =
-		static_cast<double>(K_e);
+	TerrainCompaction.K_e = static_cast<double>(K_e);
 }
 
 float UAGX_TerrainMaterialBase::GetHardeningConstantKe() const
@@ -157,8 +155,7 @@ float UAGX_TerrainMaterialBase::GetHardeningConstantKe() const
 
 void UAGX_TerrainMaterialBase::SetHardeningConstantNe(float N_e)
 {
-	TerrainCompaction.N_e =
-		static_cast<double>(N_e);
+	TerrainCompaction.N_e = static_cast<double>(N_e);
 }
 
 float UAGX_TerrainMaterialBase::GetHardeningConstantNe() const
@@ -168,8 +165,7 @@ float UAGX_TerrainMaterialBase::GetHardeningConstantNe() const
 
 void UAGX_TerrainMaterialBase::SetPreconsolidationStress(float PreconsolidationStress)
 {
-	TerrainCompaction.PreconsolidationStress =
-		static_cast<double>(PreconsolidationStress);
+	TerrainCompaction.PreconsolidationStress = static_cast<double>(PreconsolidationStress);
 }
 
 float UAGX_TerrainMaterialBase::GetPreconsolidationStress() const
@@ -179,8 +175,7 @@ float UAGX_TerrainMaterialBase::GetPreconsolidationStress() const
 
 void UAGX_TerrainMaterialBase::SetStressCutOffFraction(float StressCutOffFraction)
 {
-	TerrainCompaction.StressCutOffFraction =
-		static_cast<double>(StressCutOffFraction);
+	TerrainCompaction.StressCutOffFraction = static_cast<double>(StressCutOffFraction);
 }
 
 float UAGX_TerrainMaterialBase::GetStressCutOffFraction() const
@@ -204,7 +199,8 @@ void UAGX_TerrainMaterialBase::CopyFrom(const FTerrainMaterialBarrier& Source)
 	TerrainCompaction = FAGX_TerrainCompactionProperties();
 	TerrainCompaction.AngleOfReposeCompactionRate = Source.GetAngleOfReposeCompactionRate();
 	TerrainCompaction.Phi0 = Source.GetBankStatePhi();
-	TerrainCompaction.CompactionTimeRelaxationConstant = Source.GetCompactionTimeRelaxationConstant();
+	TerrainCompaction.CompactionTimeRelaxationConstant =
+		Source.GetCompactionTimeRelaxationConstant();
 	TerrainCompaction.CompressionIndex = Source.GetCompressionIndex();
 	TerrainCompaction.K_e = Source.GetHardeningConstantKE();
 	TerrainCompaction.N_e = Source.GetHardeningConstantNE();

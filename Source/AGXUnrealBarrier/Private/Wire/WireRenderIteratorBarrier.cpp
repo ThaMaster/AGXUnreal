@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Wire/WireRenderIteratorBarrier.h"
 
 // AGX Dynamics for Unreal includes.
@@ -18,7 +17,6 @@ FWireRenderIteratorBarrier::FWireRenderIteratorBarrier()
 FWireRenderIteratorBarrier::FWireRenderIteratorBarrier(const FWireRenderIteratorBarrier& InOther)
 	: Native(std::make_unique<agxWire::RenderIterator>(*InOther.Native))
 {
-
 }
 
 FWireRenderIteratorBarrier::FWireRenderIteratorBarrier(

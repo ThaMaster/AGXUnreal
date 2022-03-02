@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Wire/WireBarrier.h"
 
 // AGX Unreal includes.
@@ -14,7 +13,6 @@
 #include "Wire/WireRef.h"
 #include "Wire/WireWinchBarrier.h"
 #include "Wire/WireWinchRef.h"
-
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"

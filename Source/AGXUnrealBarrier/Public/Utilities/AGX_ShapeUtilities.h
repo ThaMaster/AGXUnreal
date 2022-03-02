@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -12,7 +11,8 @@ public:
 		const TArray<FVector>& Vertices, FVector& OutHalfExtents, FTransform& OutTransform);
 
 	static bool ComputeOrientedCylinder(
-		const TArray<FVector>& Vertices, float& OutRadius, float& OutHeight, FTransform& OutTransform);
+		const TArray<FVector>& Vertices, float& OutRadius, float& OutHeight,
+		FTransform& OutTransform);
 
 	static bool ComputeOrientedCapsule(
 		const TArray<FVector>& Vertices, float& OutRadius, float& OutHeight,

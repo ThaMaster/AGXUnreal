@@ -1,7 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
-
 #pragma once
 
 // Unreal Engine includes.
@@ -16,8 +14,9 @@ struct FLinearColor;
 struct FVector;
 struct FRotator;
 #else
-// Forward declaration not possible because FVector is a typedef of a specialization of a template class in Unreal Engine 5.
-// error: definition of type 'FVector' conflicts with typedef of the same name
+// Forward declaration not possible because FVector is a typedef of a specialization of a template
+// class in Unreal Engine 5. error: definition of type 'FVector' conflicts with typedef of the same
+// name
 // @todo [UE5] Is there some way to avoid including the entire headers?
 #include "Math/Vector.h"
 #include "Math/Rotator.h"
@@ -95,14 +94,16 @@ namespace AgxAutomationCommon
 	NoWorldTestsReason CanRunWorldTests();
 
 	/**
-	 * Get the file system path to an AGX Dynamics archive or URDF file intended for Automation testing.
+	 * Get the file system path to an AGX Dynamics archive or URDF file intended for Automation
+	 * testing.
 	 * @param SceneName The name of the AGX Dynamics archive or URDF file to find.
 	 * @return File system path to the test scene.
 	 */
 	FString GetTestScenePath(const TCHAR* SceneName);
 
 	/**
-	 * Get the file system path to an AGX Dynamics archive or URDF file intended for Automation testing.
+	 * Get the file system path to an AGX Dynamics archive or URDF file intended for Automation
+	 * testing.
 	 * @param ArchiveName The name of the AGX Dynamics archive or UDF file to find.
 	 * @return File system path to the test scene.
 	 */
@@ -172,13 +173,13 @@ namespace AgxAutomationCommon
 	template <typename T>
 	T MeterToCentimeter(T Meter)
 	{
-		return Meter * T{100};
+		return Meter * T {100};
 	}
 
 	template <typename T>
 	T CentimeterToMeter(T Centimeter)
 	{
-		return Centimeter / T{100};
+		return Centimeter / T {100};
 	}
 
 	template <typename T, typename... Ts>

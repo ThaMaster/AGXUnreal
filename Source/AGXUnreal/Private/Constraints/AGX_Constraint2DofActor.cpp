@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Constraints/AGX_Constraint2DofActor.h"
 
 // AGX Dynamics for Unreal includes.

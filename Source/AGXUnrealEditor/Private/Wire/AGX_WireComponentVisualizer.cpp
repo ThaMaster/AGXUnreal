@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Wire/AGX_WireComponentVisualizer.h"
 
 // AGX Dynamics for Unreal includes.
@@ -260,7 +259,8 @@ namespace AGX_WireComponentVisualizer_helpers
 
 	FLinearColor WireNodeTypeToColor(EWireNodeType Type)
 	{
-		static const TStaticArray<FLinearColor, NumNodeColors> WireNodeColors = CreateWireNodeColors();
+		static const TStaticArray<FLinearColor, NumNodeColors> WireNodeColors =
+			CreateWireNodeColors();
 		const uint32 I = static_cast<uint32>(Type);
 		return WireNodeColors[I];
 	}

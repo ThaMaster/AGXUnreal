@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -21,8 +20,7 @@ class UMaterial;
 class UAGX_ShapeMaterialBase;
 
 UCLASS(
-	ClassGroup = "AGX", Category = "AGX", Abstract,
-	Meta = (BlueprintSpawnableComponent),
+	ClassGroup = "AGX", Category = "AGX", Abstract, Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, Input, LOD, Physics, Replication))
 class AGXUNREAL_API UAGX_ShapeComponent : public UAGX_SimpleMeshComponent, public IAGX_NativeOwner
 {
@@ -148,7 +146,8 @@ public:
 	//~ End UActorComponent Interface
 
 	//~ Begin USceneComponent Interface
-	virtual void OnUpdateTransform(EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport) override;
+	virtual void OnUpdateTransform(
+		EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport) override;
 	virtual void OnAttachmentChanged() override;
 	//~ End USceneComponent Interface
 
@@ -187,7 +186,7 @@ protected:
 		PURE_VIRTUAL(UAGX_ShapeComponent::GetNativebarrier, return nullptr;);
 
 	virtual const FShapeBarrier* GetNativeBarrier() const
-	PURE_VIRTUAL(UAGX_ShapeComponent::GetNativebarrier, return nullptr;);
+		PURE_VIRTUAL(UAGX_ShapeComponent::GetNativebarrier, return nullptr;);
 
 	/**
 	 * Clear the reference pointer held by this Shape Component. May only be called when there is a

@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AGX_CustomVersion.h"
 
 // Unreal Engine includes.
@@ -18,7 +17,6 @@ const FGuid FAGX_CustomVersion::GUID(0x9A157FFA, 0x909A4B69, 0xBE1B12A0, 0x51B6F
 // Register the custom version with core
 FCustomVersionRegistration GRegisterAGXUnrealCustomVersion(
 	FAGX_CustomVersion::GUID, FAGX_CustomVersion::LatestVersion, TEXT("AGXUnrealVer"));
-
 
 bool ShouldUpgradeTo(const FArchive& Archive, FAGX_CustomVersion::Type Version)
 {

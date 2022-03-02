@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 #include "Shapes/ShapeBarrier.h"
@@ -30,7 +29,6 @@ public:
 	void SetGypsyProperty(bool bInGypsy);
 	bool GetGypsyProperty() const;
 	void RemoveGypsyProperty();
-
 
 private:
 	virtual void AllocateNativeShape() override;

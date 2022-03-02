@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AGX_SceneComponentReference.h"
 
 // Unreal Engine includes.
@@ -21,9 +20,8 @@ namespace
 			TArray<USceneComponent*> Components;
 			OwningActor.GetComponents(Components, bSearchChildActors);
 			USceneComponent** It =
-				Components.FindByPredicate([ComponentName](USceneComponent* SceneComponent) {
-					return ComponentName == SceneComponent->GetFName();
-				});
+				Components.FindByPredicate([ComponentName](USceneComponent* SceneComponent)
+										   { return ComponentName == SceneComponent->GetFName(); });
 			if (It == nullptr)
 			{
 				return nullptr;

@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AgxAutomationCommon.h"
 
 // AGX Dynamics for Unreal includes.
@@ -197,8 +196,7 @@ FString AgxAutomationCommon::GetTestScenePath(const TCHAR* SceneName)
 	else
 	{
 		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Did not find full path for test scene '%s'. Searched in '%s'."),
+			LogAGX, Warning, TEXT("Did not find full path for test scene '%s'. Searched in '%s'."),
 			SceneName, *SceneDir)
 		return FString();
 	}
@@ -226,8 +224,8 @@ FString AgxAutomationCommon::GetTestSceneDirPath(const FString& SubDir)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Did not find full path for test scene dir '%s'. Searched in '%s'."), *SceneDirPath,
-			*SceneDir)
+			TEXT("Did not find full path for test scene dir '%s'. Searched in '%s'."),
+			*SceneDirPath, *SceneDir)
 		return FString();
 	}
 }
@@ -294,8 +292,8 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 	for (const FString& Entry : DirectoryContents)
 	{
 		const FString Name = FPaths::GetCleanFilename(Entry);
-		if (!ExpectedFileAndDirectoryNames.ContainsByPredicate(
-				[&Name](const TCHAR* E) { return Name == E; }))
+		if (!ExpectedFileAndDirectoryNames.ContainsByPredicate([&Name](const TCHAR* E)
+															   { return Name == E; }))
 		{
 			UE_LOG(
 				LogAGX, Error,

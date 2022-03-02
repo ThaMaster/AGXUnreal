@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -54,8 +53,7 @@ class AGXUNREAL_API UAGX_ConstraintScrenController_FL : public UBlueprintFunctio
 	GENERATED_BODY()
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Screw Controller")
-	static void SetLead(
-		UPARAM(Ref) FAGX_ConstraintScrewController& Controller, const float Lead)
+	static void SetLead(UPARAM(Ref) FAGX_ConstraintScrewController& Controller, const float Lead)
 	{
 		Controller.SetLead(static_cast<double>(Lead));
 	};
@@ -88,7 +86,8 @@ class AGXUNREAL_API UAGX_ConstraintScrenController_FL : public UBlueprintFunctio
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetCompliance(UPARAM(ref) FAGX_ConstraintScrewController& Controller, float Compliance)
+	static void SetCompliance(
+		UPARAM(ref) FAGX_ConstraintScrewController& Controller, float Compliance)
 	{
 		Controller.SetCompliance(static_cast<double>(Compliance));
 	}
@@ -112,7 +111,8 @@ class AGXUNREAL_API UAGX_ConstraintScrenController_FL : public UBlueprintFunctio
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetSpookDamping(UPARAM(ref) FAGX_ConstraintScrewController& Controller, float SpookDamping)
+	static void SetSpookDamping(
+		UPARAM(ref) FAGX_ConstraintScrewController& Controller, float SpookDamping)
 	{
 		Controller.SetSpookDamping(static_cast<double>(SpookDamping));
 	}

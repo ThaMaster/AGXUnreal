@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -14,7 +13,8 @@ class IDetailCategoryBuilder;
 /**
  * Defines the design of the Collision Group component in the Editor.
  */
-class AGXUNREALEDITOR_API FAGX_CollisionGroupAdderComponentCustomization : public IDetailCustomization
+class AGXUNREALEDITOR_API FAGX_CollisionGroupAdderComponentCustomization
+	: public IDetailCustomization
 {
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();

@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Contacts/ShapeContactBarrier.h"
 
 // AGX Dynamics for Unreal includes.

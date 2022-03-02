@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AgxEdMode/AGX_AgxEdModeTerrain.h"
 
 // AGX Dynamics for Unreal includes.
@@ -28,8 +27,7 @@ FText UAGX_AgxEdModeTerrain::GetDisplayName() const
 
 FText UAGX_AgxEdModeTerrain::GetTooltip() const
 {
-	return LOCTEXT(
-		"Tooltip", "Management of AGX Terrain assets.");
+	return LOCTEXT("Tooltip", "Management of AGX Terrain assets.");
 }
 
 FSlateIcon UAGX_AgxEdModeTerrain::GetIcon() const

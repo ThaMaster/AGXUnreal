@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Wire/AGX_WireComponent.h"
 
 // AGX Dynamics for Unreal includes.
@@ -1681,8 +1680,9 @@ void UAGX_WireComponent::CreateNative()
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Wire '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom returned "
-				"nullptr."),
+				TEXT("Wire '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+					 "returned "
+					 "nullptr."),
 				*GetName(), *GetLabelSafe(GetOwner()));
 			return;
 		}

@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -80,7 +79,8 @@ class AGXUNREAL_API UAGX_ConstraintTargetSpeedController_FL : public UBlueprintF
 	};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Target Speed Controller")
-	static void SetLockedAtZeroSpeed(UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller, bool bInLockedAtZeroSpeed)
+	static void SetLockedAtZeroSpeed(
+		UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller, bool bInLockedAtZeroSpeed)
 	{
 		Controller.SetLockedAtZeroSpeed(bInLockedAtZeroSpeed);
 	}

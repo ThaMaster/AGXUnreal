@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -41,8 +40,9 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Shape",
-		Meta = (EditCondition =
-		"MeshSourceLocation == EAGX_StaticMeshSourceLocation::TSL_STATIC_MESH_ASSET"))
+		Meta =
+			(EditCondition =
+				 "MeshSourceLocation == EAGX_StaticMeshSourceLocation::TSL_STATIC_MESH_ASSET"))
 	UStaticMesh* MeshSourceAsset;
 
 	/**
@@ -109,7 +109,8 @@ private:
 	/// Create the AGX Dynamics object owned by this Trimesh Shape Component.
 	void CreateNative();
 
-	bool GetStaticMeshCollisionData(TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices) const;
+	bool GetStaticMeshCollisionData(
+		TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices) const;
 
 	UMeshComponent* FindMeshComponent(
 		TEnumAsByte<EAGX_StaticMeshSourceLocation> MeshSourceLocation) const;

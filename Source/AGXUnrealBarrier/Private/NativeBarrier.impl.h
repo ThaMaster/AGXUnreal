@@ -1,17 +1,14 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 #include "NativeBarrier.h"
-
 
 /*
  * This code is in a .impl.h file for now because it contains a bunch of function templates. Learn
  * about explicit template instantiation and try to move this to a .cpp file instead, if possible.
  * Not sure how that would work though, where should the instantiation live?
  */
-
 
 // AGX Dynamics for Unreal includes.
 #include <AGX_LogCategory.h>

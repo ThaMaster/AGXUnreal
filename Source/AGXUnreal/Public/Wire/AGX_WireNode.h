@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -56,7 +55,6 @@ public:
 private:
 	FWireNodeBarrier Barrier;
 };
-
 
 UCLASS()
 class AGXUNREAL_API UAGX_WireNode_FL : public UBlueprintFunctionLibrary

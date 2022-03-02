@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Materials/AGX_TerrainMaterialInstance.h"
 
 #include "Engine/World.h"
@@ -106,13 +105,13 @@ float UAGX_TerrainMaterialInstance::GetAdhesiveOverlap() const
 	return static_cast<float>(Surface.AdhesiveOverlap);
 }
 
-
 // Bulk properties.
 void UAGX_TerrainMaterialInstance::SetAdhesionOverlapFactor(float AdhesionOverlapFactor)
 {
 	if (HasTerrainMaterialNative())
 	{
-		TerrainMaterialNativeBarrier->SetAdhesionOverlapFactor(static_cast<double>(AdhesionOverlapFactor));
+		TerrainMaterialNativeBarrier->SetAdhesionOverlapFactor(
+			static_cast<double>(AdhesionOverlapFactor));
 	}
 
 	TerrainBulk.AdhesionOverlapFactor = static_cast<double>(AdhesionOverlapFactor);
@@ -132,8 +131,7 @@ void UAGX_TerrainMaterialInstance::SetCohesion(float Cohesion)
 {
 	if (HasTerrainMaterialNative())
 	{
-		TerrainMaterialNativeBarrier->SetCohesion(
-			static_cast<double>(Cohesion));
+		TerrainMaterialNativeBarrier->SetCohesion(static_cast<double>(Cohesion));
 	}
 
 	TerrainBulk.Cohesion = static_cast<double>(Cohesion);
@@ -153,8 +151,7 @@ void UAGX_TerrainMaterialInstance::SetDensity(float Density)
 {
 	if (HasTerrainMaterialNative())
 	{
-		TerrainMaterialNativeBarrier->SetDensity(
-			static_cast<double>(Density));
+		TerrainMaterialNativeBarrier->SetDensity(static_cast<double>(Density));
 	}
 
 	TerrainBulk.Density = static_cast<double>(Density);
@@ -174,8 +171,7 @@ void UAGX_TerrainMaterialInstance::SetDilatancyAngle(float DilatancyAngle)
 {
 	if (HasTerrainMaterialNative())
 	{
-		TerrainMaterialNativeBarrier->SetDilatancyAngle(
-			static_cast<double>(DilatancyAngle));
+		TerrainMaterialNativeBarrier->SetDilatancyAngle(static_cast<double>(DilatancyAngle));
 	}
 
 	TerrainBulk.DilatancyAngle = static_cast<double>(DilatancyAngle);
@@ -195,8 +191,7 @@ void UAGX_TerrainMaterialInstance::SetFrictionAngle(float FrictionAngle)
 {
 	if (HasTerrainMaterialNative())
 	{
-		TerrainMaterialNativeBarrier->SetFrictionAngle(
-			static_cast<double>(FrictionAngle));
+		TerrainMaterialNativeBarrier->SetFrictionAngle(static_cast<double>(FrictionAngle));
 	}
 
 	TerrainBulk.FrictionAngle = static_cast<double>(FrictionAngle);
@@ -216,8 +211,7 @@ void UAGX_TerrainMaterialInstance::SetMaxDensity(float MaxDensity)
 {
 	if (HasTerrainMaterialNative())
 	{
-		TerrainMaterialNativeBarrier->SetMaximumDensity(
-			static_cast<double>(MaxDensity));
+		TerrainMaterialNativeBarrier->SetMaximumDensity(static_cast<double>(MaxDensity));
 	}
 
 	TerrainBulk.MaxDensity = static_cast<double>(MaxDensity);
@@ -237,8 +231,7 @@ void UAGX_TerrainMaterialInstance::SetPoissonsRatio(float PoissonsRatio)
 {
 	if (HasTerrainMaterialNative())
 	{
-		TerrainMaterialNativeBarrier->SetPoissonsRatio(
-			static_cast<double>(PoissonsRatio));
+		TerrainMaterialNativeBarrier->SetPoissonsRatio(static_cast<double>(PoissonsRatio));
 	}
 
 	TerrainBulk.PoissonsRatio = static_cast<double>(PoissonsRatio);
@@ -258,8 +251,7 @@ void UAGX_TerrainMaterialInstance::SetSwellFactor(float SwellFactor)
 {
 	if (HasTerrainMaterialNative())
 	{
-		TerrainMaterialNativeBarrier->SetSwellFactor(
-			static_cast<double>(SwellFactor));
+		TerrainMaterialNativeBarrier->SetSwellFactor(static_cast<double>(SwellFactor));
 	}
 
 	TerrainBulk.SwellFactor = static_cast<double>(SwellFactor);
@@ -279,8 +271,7 @@ void UAGX_TerrainMaterialInstance::SetYoungsModulus(float YoungsModulus)
 {
 	if (HasTerrainMaterialNative())
 	{
-		TerrainMaterialNativeBarrier->SetYoungsModulus(
-			static_cast<double>(YoungsModulus));
+		TerrainMaterialNativeBarrier->SetYoungsModulus(static_cast<double>(YoungsModulus));
 	}
 
 	TerrainBulk.YoungsModulus = static_cast<double>(YoungsModulus);
@@ -301,10 +292,12 @@ void UAGX_TerrainMaterialInstance::SetAngleOfReposeCompactionRate(float AngleOfR
 {
 	if (HasTerrainMaterialNative())
 	{
-		TerrainMaterialNativeBarrier->SetAngleOfReposeCompactionRate(static_cast<double>(AngleOfReposeCompactionRate));
+		TerrainMaterialNativeBarrier->SetAngleOfReposeCompactionRate(
+			static_cast<double>(AngleOfReposeCompactionRate));
 	}
 
-	TerrainCompaction.AngleOfReposeCompactionRate = static_cast<double>(AngleOfReposeCompactionRate);
+	TerrainCompaction.AngleOfReposeCompactionRate =
+		static_cast<double>(AngleOfReposeCompactionRate);
 }
 
 float UAGX_TerrainMaterialInstance::GetAngleOfReposeCompactionRate() const
@@ -337,21 +330,25 @@ float UAGX_TerrainMaterialInstance::GetBankStatePhi() const
 	return static_cast<float>(TerrainCompaction.Phi0);
 }
 
-void UAGX_TerrainMaterialInstance::SetCompactionTimeRelaxationConstant(float CompactionTimeRelaxationConstant)
+void UAGX_TerrainMaterialInstance::SetCompactionTimeRelaxationConstant(
+	float CompactionTimeRelaxationConstant)
 {
 	if (HasTerrainMaterialNative())
 	{
-		TerrainMaterialNativeBarrier->SetCompactionTimeRelaxationConstant(static_cast<double>(CompactionTimeRelaxationConstant));
+		TerrainMaterialNativeBarrier->SetCompactionTimeRelaxationConstant(
+			static_cast<double>(CompactionTimeRelaxationConstant));
 	}
 
-	TerrainCompaction.CompactionTimeRelaxationConstant = static_cast<double>(CompactionTimeRelaxationConstant);
+	TerrainCompaction.CompactionTimeRelaxationConstant =
+		static_cast<double>(CompactionTimeRelaxationConstant);
 }
 
 float UAGX_TerrainMaterialInstance::GetCompactionTimeRelaxationConstant() const
 {
 	if (HasTerrainMaterialNative())
 	{
-		return static_cast<float>(TerrainMaterialNativeBarrier->GetCompactionTimeRelaxationConstant());
+		return static_cast<float>(
+			TerrainMaterialNativeBarrier->GetCompactionTimeRelaxationConstant());
 	}
 
 	return static_cast<float>(TerrainCompaction.CompactionTimeRelaxationConstant);
@@ -421,7 +418,8 @@ void UAGX_TerrainMaterialInstance::SetPreconsolidationStress(float Preconsolidat
 {
 	if (HasTerrainMaterialNative())
 	{
-		TerrainMaterialNativeBarrier->SetPreconsolidationStress(static_cast<double>(PreconsolidationStress));
+		TerrainMaterialNativeBarrier->SetPreconsolidationStress(
+			static_cast<double>(PreconsolidationStress));
 	}
 
 	TerrainCompaction.PreconsolidationStress = static_cast<double>(PreconsolidationStress);
@@ -441,7 +439,8 @@ void UAGX_TerrainMaterialInstance::SetStressCutOffFraction(float StressCutOffFra
 {
 	if (HasTerrainMaterialNative())
 	{
-		TerrainMaterialNativeBarrier->SetStressCutOffFraction(static_cast<double>(StressCutOffFraction));
+		TerrainMaterialNativeBarrier->SetStressCutOffFraction(
+			static_cast<double>(StressCutOffFraction));
 	}
 
 	TerrainCompaction.StressCutOffFraction = static_cast<double>(StressCutOffFraction);

@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Wire/WireNodeBarrier.h"
 
 // AGX Dynamics for Unreal include.
