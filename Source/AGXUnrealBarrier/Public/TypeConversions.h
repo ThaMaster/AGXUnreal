@@ -217,15 +217,12 @@ inline FVector2D ConvertDistance(const agx::Vec2& V)
 
 inline agx::Vec2 Convert(const FVector2D& V)
 {
-	return agx::Vec2(
-		ConvertToAGX<decltype(FVector2D::X)>(V.X), ConvertToAGX<decltype(FVector2D::X)>(V.Y));
+	return agx::Vec2(ConvertToAGX(V.X), ConvertToAGX(V.Y));
 }
 
 inline agx::Vec2 ConvertDistance(const FVector2D& V)
 {
-	return agx::Vec2(
-		ConvertDistanceToAGX<decltype(FVector2D::X)>(V.X),
-		ConvertDistanceToAGX<decltype(FVector2D::X)>(V.Y));
+	return agx::Vec2(ConvertDistanceToAGX(V.X), ConvertDistanceToAGX(V.Y));
 }
 
 // Three-dimensional vectors.
@@ -333,49 +330,47 @@ inline FVector ConvertTorque(const agx::Vec3& V)
 
 inline agx::Vec3 Convert(const FVector& V)
 {
-	return agx::Vec3(ConvertToAGX<decltype(FVector::X)>(V.X), ConvertToAGX(V.Y), ConvertToAGX(V.Z));
+	return agx::Vec3(ConvertToAGX(V.X), ConvertToAGX(V.Y), ConvertToAGX(V.Z));
 }
 
 inline agx::Vec3 ConvertDistance(const FVector& V)
 {
 	return agx::Vec3(
-		ConvertDistanceToAGX<decltype(FVector::X)>(V.X),
-		ConvertDistanceToAGX<decltype(FVector::X)>(V.Y),
-		ConvertDistanceToAGX<decltype(FVector::X)>(V.Z));
+		ConvertDistanceToAGX(V.X),
+		ConvertDistanceToAGX(V.Y),
+		ConvertDistanceToAGX(V.Z));
 }
 
 inline agx::Vec3 ConvertVector(const FVector& V)
 {
-	return agx::Vec3(
-		ConvertToAGX<decltype(FVector::X)>(V.X), -ConvertToAGX<decltype(FVector::X)>(V.Y),
-		ConvertToAGX<decltype(FVector::X)>(V.Z));
+	return agx::Vec3(ConvertToAGX(V.X), -ConvertToAGX(V.Y), ConvertToAGX(V.Z));
 }
 
 inline agx::Vec3 ConvertDisplacement(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3(
-		ConvertDistanceToAGX<decltype(FVector::X)>(V.X),
-		-ConvertDistanceToAGX<decltype(FVector::X)>(V.Y),
-		ConvertDistanceToAGX<decltype(FVector::X)>(V.Z));
+		ConvertDistanceToAGX(V.X),
+		-ConvertDistanceToAGX(V.Y),
+		ConvertDistanceToAGX(V.Z));
 }
 
 inline agx::Vec3f ConvertFloatVector(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3f(
-		ConvertDistanceToAGX<decltype(FVector::X)>(V.X),
-		-ConvertDistanceToAGX<decltype(FVector::X)>(V.Y),
-		ConvertDistanceToAGX<decltype(FVector::X)>(V.Z));
+		ConvertDistanceToAGX(V.X),
+		-ConvertDistanceToAGX(V.Y),
+		ConvertDistanceToAGX(V.Z));
 }
 
 inline agx::Vec3 ConvertAngularVelocity(const FVector& V)
 {
 	// See comment in the AGX-to-Unreal version of this function.
 	return agx::Vec3(
-		ConvertToAGX<decltype(FVector::X)>(FMath::DegreesToRadians(V.X)),
-		-ConvertToAGX<decltype(FVector::X)>(FMath::DegreesToRadians(V.Y)),
-		-ConvertToAGX<decltype(FVector::X)>(FMath::DegreesToRadians(V.Z)));
+		ConvertToAGX(FMath::DegreesToRadians(V.X)),
+		-ConvertToAGX(FMath::DegreesToRadians(V.Y)),
+		-ConvertToAGX(FMath::DegreesToRadians(V.Z)));
 }
 
 inline agx::Vec3 ConvertTorque(const FVector& V)
@@ -385,8 +380,8 @@ inline agx::Vec3 ConvertTorque(const FVector& V)
 	 * conversion since we use Nm in both AGX Dynamics and Unreal Engine.
 	 */
 	return {
-		ConvertToAGX<decltype(FVector::X)>(V.X), -ConvertToAGX<decltype(FVector::X)>(V.Y),
-		-ConvertToAGX<decltype(FVector::X)>(V.Z)};
+		ConvertToAGX(V.X), -ConvertToAGX(V.Y),
+		-ConvertToAGX(V.Z)};
 }
 
 // Four-dimensional vectors.
