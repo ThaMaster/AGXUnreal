@@ -1820,7 +1820,7 @@ namespace AGX_MeshUtilities_helpers
 				FVector* PositionData = static_cast<FVector*>(
 					RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
 #else
-				FVector* PositionData = static_cast<FVector*>(
+				FVector3f* PositionData = static_cast<FVector3f*>(
 					RHILockBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
 #endif
 				for (uint32 I = 0; I < NumPositions; I++)
