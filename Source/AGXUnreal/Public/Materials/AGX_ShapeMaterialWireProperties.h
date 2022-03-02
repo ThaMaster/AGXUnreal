@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -17,7 +16,6 @@ struct AGXUNREAL_API FAGX_ShapeMaterialWireProperties
 	GENERATED_BODY()
 
 public:
-
 	/**
 	 * Young's modulus when stretching the wire [Pa].
 	 */
@@ -42,7 +40,6 @@ public:
 		EditAnywhere, Category = "AGX Material Wire Properties",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	FAGX_Real YoungsModulusBend;
-
 
 	/**
 	 * Spook Damping when bending the wire [s].

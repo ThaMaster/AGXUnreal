@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -50,7 +49,8 @@ struct AGXUNREAL_API FAGX_ConstraintController
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Controller",
 		Meta =
-			(EditCondition = "bEnable", SliderMin = "1e-10", SliderMax = "1", SliderExponent = "100000"))
+			(EditCondition = "bEnable", SliderMin = "1e-10", SliderMax = "1",
+			 SliderExponent = "100000"))
 	FAGX_Real Compliance;
 
 	void SetCompliance(double InCompliance);

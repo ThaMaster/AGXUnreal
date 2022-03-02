@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Wire/AGX_WireNodeDetails.h"
 
 // AGX Dynamics for Unreal includes.
@@ -572,8 +571,7 @@ void FAGX_WireNodeDetails::OnSetNodeType(TSharedPtr<FString> NewValue, ESelectIn
 	if (!bValidSelection)
 	{
 		UE_LOG(
-			LogAGX, Warning, TEXT("Wire node type edited without a valid selection: '%s'"),
-			Error);
+			LogAGX, Warning, TEXT("Wire node type edited without a valid selection: '%s'"), Error);
 		UE_LOG(LogAGX, Warning, TEXT("  The new value is discarded."));
 		return;
 	}
@@ -658,8 +656,9 @@ void FAGX_WireNodeDetails::OnGetActorFilters(TSharedPtr<SceneOutliner::FOutliner
 void FAGX_WireNodeDetails::OnGetActorFilters(TSharedPtr<FSceneOutlinerFilters>& OutFilters)
 {
 	/// @todo [UE5] Compare with
-	/// void FPropertyEditor::OnGetActorFiltersForSceneOutliner( TSharedPtr<FSceneOutlinerFilters>& OutFilters )
-	/// in Engine/Source/Editor/PropertyEditor/Private/Presentation/PropertyEditor/PropertyEditor.cpp.
+	/// void FPropertyEditor::OnGetActorFiltersForSceneOutliner( TSharedPtr<FSceneOutlinerFilters>&
+	/// OutFilters ) in
+	/// Engine/Source/Editor/PropertyEditor/Private/Presentation/PropertyEditor/PropertyEditor.cpp.
 }
 #endif
 
@@ -934,7 +933,8 @@ EVisibility FAGX_WireNodeDetails::WithoutSelection() const
 EVisibility FAGX_WireNodeDetails::NodeHasRigidBody() const
 {
 	using namespace AGX_WireNodeDetails_helpers;
-	return FAGX_EditorUtilities::VisibleIf(NodeType.IsSet() && NodeTypeHasBody(NodeType.GetValue()));
+	return FAGX_EditorUtilities::VisibleIf(
+		NodeType.IsSet() && NodeTypeHasBody(NodeType.GetValue()));
 }
 
 #undef LOCTEXT_NAMESPACE

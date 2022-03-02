@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Tires/AGX_TireComponent.h"
 
 // AGX Dynamics for Unreal includes.
@@ -104,10 +103,10 @@ void UAGX_TireComponent::CreateNative()
 	if (Simulation == nullptr)
 	{
 		UE_LOG(
-				LogAGX, Error,
-				TEXT("Tire '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
-				"returned nullptr."),
-				*GetName(), *GetLabelSafe(GetOwner()));
+			LogAGX, Error,
+			TEXT("Tire '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				 "returned nullptr."),
+			*GetName(), *GetLabelSafe(GetOwner()));
 		return;
 	}
 	Simulation->Add(*this);

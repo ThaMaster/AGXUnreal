@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Materials/TerrainMaterialLibraryBarrier.h"
 
 // AGX Dynamics for Unreal includes.
@@ -15,7 +14,8 @@
 
 TArray<FString> AGX_TerrainMaterialLibraryBarrier::GetAvailableLibraryMaterials()
 {
-	const agx::StringVector NamesAGX = agxTerrain::TerrainMaterialLibrary::getAvailableLibraryMaterials();
+	const agx::StringVector NamesAGX =
+		agxTerrain::TerrainMaterialLibrary::getAvailableLibraryMaterials();
 	TArray<FString> NamesUnreal;
 	NamesUnreal.Reserve(NamesAGX.size());
 	for (const agx::String& NameAGX : NamesAGX)

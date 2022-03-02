@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Utilities/AGX_TextureUtilities.h"
 
 // AGX Dynamics for Unreal includes.
@@ -31,7 +30,8 @@ bool FAGX_TextureUtilities::UpdateRenderTextureRegions(
 	}
 
 	auto WriteTexture = [Resource, NumRegions, Regions, SourcePitch, SourceBitsPerPixel, SourceData,
-						 bFreeData](FRHICommandListImmediate& RHICmdList) {
+						 bFreeData](FRHICommandListImmediate& RHICmdList)
+	{
 		FRHITexture2D* Texture = Resource->GetTextureRHI();
 		for (uint32 RegionIndex = 0; RegionIndex < NumRegions; ++RegionIndex)
 		{

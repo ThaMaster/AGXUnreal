@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AGXUnrealEditor.h"
 
 // Unreal Engine includes.
@@ -14,7 +13,6 @@
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
 #include "UnrealEdGlobals.h"
-
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_EditorStyle.h"
@@ -418,7 +416,8 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 	FPlacementCategoryInfo PlacementCategory(LOCTEXT("DisplayName", "AGX"), "AGX", TEXT("PMAGX"));
 	IPlacementModeModule::Get().RegisterPlacementCategory(PlacementCategory);
 
-	auto RegisterPlaceableItem = [&](UClass* Class) {
+	auto RegisterPlaceableItem = [&](UClass* Class)
+	{
 		IPlacementModeModule::Get().RegisterPlaceableItem(
 			PlacementCategory.UniqueHandle,
 			MakeShareable(new FPlaceableItem(nullptr, FAssetData(Class))));

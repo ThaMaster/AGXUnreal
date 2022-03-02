@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Materials/ContactMaterialBarrier.h"
 
 // AGX Dynamics for Unreal includes.

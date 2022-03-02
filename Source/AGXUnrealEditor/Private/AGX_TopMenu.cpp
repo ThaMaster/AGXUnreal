@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AGX_TopMenu.h"
 
 // AGX Dynamics for Unreal includes.
@@ -126,20 +125,22 @@ FAGX_TopMenu::~FAGX_TopMenu()
 	// (e.g. cannot change name or position of the AGX Top Menu).
 	//
 
-	FNewMenuDelegate NewMenuDelegate = FNewMenuDelegate::CreateLambda([](FMenuBuilder& Builder) {
-		UE_LOG(LogAGX, Log, TEXT("NewMenuDelegate"));
-
-		if (FAGXUnrealEditorModule* AGXUnrealEditorModule =
-				FModuleManager::GetModulePtr<FAGXUnrealEditorModule>("AGXUnrealEditor"))
+	FNewMenuDelegate NewMenuDelegate = FNewMenuDelegate::CreateLambda(
+		[](FMenuBuilder& Builder)
 		{
-			if (TSharedPtr<FAGX_TopMenu> AgxTopMenu = AGXUnrealEditorModule->GetAgxTopMenu())
-			{
-				UE_LOG(LogAGX, Log, TEXT("&AgxTopMenu = %p"), AgxTopMenu.Get());
+			UE_LOG(LogAGX, Log, TEXT("NewMenuDelegate"));
 
-				AgxTopMenu->FillTopMenu(Builder);
+			if (FAGXUnrealEditorModule* AGXUnrealEditorModule =
+					FModuleManager::GetModulePtr<FAGXUnrealEditorModule>("AGXUnrealEditor"))
+			{
+				if (TSharedPtr<FAGX_TopMenu> AgxTopMenu = AGXUnrealEditorModule->GetAgxTopMenu())
+				{
+					UE_LOG(LogAGX, Log, TEXT("&AgxTopMenu = %p"), AgxTopMenu.Get());
+
+					AgxTopMenu->FillTopMenu(Builder);
+				}
 			}
-		}
-	});
+		});
 
 	Builder.AddPullDownMenu(
 		LOCTEXT("TopMenuLabel", "AGX"), LOCTEXT("TopMenuToolTip", "Open the AGX top menu"),
@@ -181,9 +182,8 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 			"CreateBallConstraintTooltip",
 			"Create Ball Constraint. \n\nInitially setup using currently selected Rigid Body "
 			"Actors, or empty."),
-		[&]() {
-			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_BallConstraintActor::StaticClass());
-		});
+		[&]()
+		{ FAGX_TopMenu::OnCreateConstraintClicked(AAGX_BallConstraintActor::StaticClass()); });
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("CreateCylindricalConstraintLabel", "Create Cylindrical Constraint"),
@@ -201,9 +201,8 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 			"CreateDistanceConstraintTooltip",
 			"Create Distance Constraint. \n\nInitially setup using currently selected Rigid Body "
 			"Actors, or empty."),
-		[&]() {
-			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_DistanceConstraintActor::StaticClass());
-		});
+		[&]()
+		{ FAGX_TopMenu::OnCreateConstraintClicked(AAGX_DistanceConstraintActor::StaticClass()); });
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("CreateHingeConstraintLabel", "Create Hinge Constraint"),
@@ -211,9 +210,8 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 			"CreateHingeConstraintTooltip",
 			"Create Hinge Constraint. \n\nInitially setup using currently selected Rigid Body "
 			"Actors, or empty."),
-		[&]() {
-			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_HingeConstraintActor::StaticClass());
-		});
+		[&]()
+		{ FAGX_TopMenu::OnCreateConstraintClicked(AAGX_HingeConstraintActor::StaticClass()); });
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("CreateLockConstraintLabel", "Create Lock Constraint"),
@@ -221,9 +219,8 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 			"CreateLockConstraintTooltip",
 			"Create Lock Constraint. \n\nInitially setup using currently selected Rigid Body "
 			"Actors, or empty."),
-		[&]() {
-			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_LockConstraintActor::StaticClass());
-		});
+		[&]()
+		{ FAGX_TopMenu::OnCreateConstraintClicked(AAGX_LockConstraintActor::StaticClass()); });
 
 	AddFileMenuEntry(
 		Builder, LOCTEXT("CreatePrismaticConstraintLabel", "Create Prismatic Constraint"),
@@ -231,9 +228,8 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 			"CreatePrismaticConstraintTooltip",
 			"Create Prismatic Constraint. \n\nInitially setup using currently selected Rigid Body "
 			"Actors, or empty."),
-		[&]() {
-			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_PrismaticConstraintActor::StaticClass());
-		});
+		[&]()
+		{ FAGX_TopMenu::OnCreateConstraintClicked(AAGX_PrismaticConstraintActor::StaticClass()); });
 }
 
 void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
@@ -268,11 +264,8 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 	// Import URDF model to blueprint menu item.
 	AddFileMenuEntry(
 		Builder,
-		LOCTEXT(
-			"FileMEnuEntryLabelImportUrdfBluePrint", "Import URDF model to a Blueprint..."),
-		LOCTEXT(
-			"FileMenuEntryhTooltopImportUrdfBluePrint",
-			"Import a URDF model to a Blueprint."),
+		LOCTEXT("FileMEnuEntryLabelImportUrdfBluePrint", "Import URDF model to a Blueprint..."),
+		LOCTEXT("FileMenuEntryhTooltopImportUrdfBluePrint", "Import a URDF model to a Blueprint."),
 		[]() { UAGX_AgxEdModeFile::ImportUrdfToBlueprint(); });
 
 	// Export AGX Archive menu item

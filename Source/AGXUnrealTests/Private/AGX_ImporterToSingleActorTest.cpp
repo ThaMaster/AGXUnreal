@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #if WITH_DEV_AUTOMATION_TESTS
 
 // AGX Dynamics require the AGX-Wires license for wire import. Our GitLab CI

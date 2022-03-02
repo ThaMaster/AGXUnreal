@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Shapes/HeightFieldShapeBarrier.h"
 
 #include "AGXRefs.h"
@@ -41,9 +40,9 @@ FHeightFieldShapeBarrier::~FHeightFieldShapeBarrier()
 void FHeightFieldShapeBarrier::AllocateNative(
 	int32 NumVerticesX, int32 NumVerticesY, float SizeX, float SizeY, const TArray<float>& Heights)
 {
-	FShapeBarrier::AllocateNative([=, &Heights]() {
-		this->AllocateNativeHeightField(NumVerticesX, NumVerticesY, SizeX, SizeY, Heights);
-	});
+	FShapeBarrier::AllocateNative(
+		[=, &Heights]()
+		{ this->AllocateNativeHeightField(NumVerticesX, NumVerticesY, SizeX, SizeY, Heights); });
 }
 
 void FHeightFieldShapeBarrier::AllocateNativeHeightField(

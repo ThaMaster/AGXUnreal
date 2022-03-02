@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -115,7 +114,9 @@ public:
 
 	void SetCompliance(EGenericDofIndex Index, double InCompliance);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics", Meta = (DisplayName = "Get Compliance"))
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint Dynamics",
+		Meta = (DisplayName = "Get Compliance"))
 	float GetComplianceFloat(EGenericDofIndex Index) const;
 
 	double GetCompliance(EGenericDofIndex Index) const;
@@ -125,7 +126,9 @@ public:
 
 	void SetElasticity(EGenericDofIndex Index, double InElasticity);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics", Meta = (DisplayName = "Get Elasticity"))
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint Dynamics",
+		Meta = (DisplayName = "Get Elasticity"))
 	float GetElasticityFloat(EGenericDofIndex Index) const;
 
 	double GetElasticity(EGenericDofIndex Index) const;
@@ -144,7 +147,9 @@ public:
 
 	void SetSpookDamping(EGenericDofIndex Index, double InSpookDamping);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics", Meta = (DisplayName = "Get Spook Damping"))
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint Dynamics",
+		Meta = (DisplayName = "Get Spook Damping"))
 	float GetSpookDampingFloat(EGenericDofIndex Index) const;
 
 	double GetSpookDamping(EGenericDofIndex Index) const;

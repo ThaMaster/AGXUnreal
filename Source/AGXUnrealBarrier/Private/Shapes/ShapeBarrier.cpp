@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Shapes/ShapeBarrier.h"
 
 // AGX Dynamics for Unreal includes.
@@ -351,7 +350,8 @@ std::tuple<FVector, FQuat> FShapeBarrier::GetLocalPositionAndRotation() const
 	const agx::AffineMatrix4x4& ShapeTransform = Iterator.getLocalTransform();
 	const agx::AffineMatrix4x4 ShapeRelativeBody = ShapeTransform * GeometryTransform;
 	return {
-		ConvertDisplacement(ShapeRelativeBody.getTranslate()), Convert(ShapeRelativeBody.getRotate())};
+		ConvertDisplacement(ShapeRelativeBody.getTranslate()),
+		Convert(ShapeRelativeBody.getRotate())};
 }
 
 void FShapeBarrier::SetWorldPosition(const FVector& Position)

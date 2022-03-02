@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AGXSimObjectsReader.h"
 
 // AGX Dynamics for Unreal includes.
@@ -400,12 +399,10 @@ namespace
 		bool Result = true;
 
 		// The sum of all fractions multiplied with WorkLeft below should equal to 1.
-		ImportTask.EnterProgressFrame(
-			0.01f * WorkLeft, FText::FromString("Importing Materials"));
+		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Materials"));
 		Result &= ReadMaterials(Simulation, Instantiator);
 
-		ImportTask.EnterProgressFrame(
-			0.01f * WorkLeft, FText::FromString("Importing Tire Models"));
+		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Tire Models"));
 		Result &= ReadTireModels(Simulation, Filename, Instantiator);
 
 		ImportTask.EnterProgressFrame(
@@ -416,8 +413,7 @@ namespace
 			0.8f * WorkLeft, FText::FromString("Importing bodiless Geometries"));
 		Result &= ReadBodilessGeometries(Simulation, Filename, Instantiator);
 
-		ImportTask.EnterProgressFrame(
-			0.01f * WorkLeft, FText::FromString("Importing Constraints"));
+		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Constraints"));
 		Result &= ReadConstraints(Simulation, Filename, Instantiator);
 
 		ImportTask.EnterProgressFrame(

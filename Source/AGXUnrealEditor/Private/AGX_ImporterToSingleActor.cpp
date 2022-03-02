@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AGX_ImporterToSingleActor.h"
 
 // AGX Dynamics for Unreal includes.
@@ -275,8 +274,8 @@ namespace
 		}
 	};
 
-	InstantiatorCreationData GenerateInstantiatorCreationData(const FString& FilePath,
-		EAGX_ImportType ImportType)
+	InstantiatorCreationData GenerateInstantiatorCreationData(
+		const FString& FilePath, EAGX_ImportType ImportType)
 	{
 		UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
 		if (World == nullptr)
@@ -331,8 +330,7 @@ AActor* AGX_ImporterToSingleActor::ImportURDF(
 		return nullptr;
 	}
 
-	SingleActorInstantiator Instantiator(
-			*Data.World, *Data.NewActor, *Data.NewRoot, UrdfFilePath);
+	SingleActorInstantiator Instantiator(*Data.World, *Data.NewActor, *Data.NewRoot, UrdfFilePath);
 	FAGXSimObjectsReader::ReadUrdf(UrdfFilePath, UrdfPackagePath, Instantiator);
 	return Data.NewActor;
 }

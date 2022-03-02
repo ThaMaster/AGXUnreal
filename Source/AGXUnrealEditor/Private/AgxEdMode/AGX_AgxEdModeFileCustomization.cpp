@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AgxEdMode/AGX_AgxEdModeFileCustomization.h"
 
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
@@ -46,15 +45,19 @@ void FAGX_AgxEdModeFileCustomization::CustomizeFileImporterCategory(
 #endif
 
 	AddCustomButton(
-		CategoryBuilder, LOCTEXT("CreateButtonTextImportBP", "Import AGX Archive to a Blueprint..."),
-		[&]() {
+		CategoryBuilder,
+		LOCTEXT("CreateButtonTextImportBP", "Import AGX Archive to a Blueprint..."),
+		[&]()
+		{
 			UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint();
 			return FReply::Handled();
 		});
 
 	AddCustomButton(
-		CategoryBuilder, LOCTEXT("CreateButtonTextImportURDFBP", "Import URDF model to a Blueprint..."),
-		[&]() {
+		CategoryBuilder,
+		LOCTEXT("CreateButtonTextImportURDFBP", "Import URDF model to a Blueprint..."),
+		[&]()
+		{
 			UAGX_AgxEdModeFile::ImportUrdfToBlueprint();
 			return FReply::Handled();
 		});
@@ -68,10 +71,13 @@ void FAGX_AgxEdModeFileCustomization::CustomizeFileExporterCategory(
 	CategoryBuilder.InitiallyCollapsed(false);
 
 	/** Create AGX Archive export Button */
-	AddCustomButton(CategoryBuilder, LOCTEXT("CreateButtonTextEx", "Export AGX Archive..."), [&]() {
-		UAGX_AgxEdModeFile::ExportAgxArchive();
-		return FReply::Handled();
-	});
+	AddCustomButton(
+		CategoryBuilder, LOCTEXT("CreateButtonTextEx", "Export AGX Archive..."),
+		[&]()
+		{
+			UAGX_AgxEdModeFile::ExportAgxArchive();
+			return FReply::Handled();
+		});
 }
 
 #undef LOCTEXT_NAMESPACE

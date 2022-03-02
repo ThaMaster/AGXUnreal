@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -58,7 +57,7 @@ public:
 		// Unreal Header Tool does not support line breaks in Property Specifier strings.
 		// clang-format off
 		meta = (Tooltip = "If checked the constraint will move freely when no key is held. If unchecked the constraint will be stopped when no key is held."))
-		// clang-format on
+	// clang-format on
 	bool bDisableOnRelease;
 
 	UPROPERTY(

@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
 
 #include "Constraints/AGX_ConstraintConstants.h"

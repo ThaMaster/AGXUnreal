@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Terrain/AGX_LandscapeSizeInfo.h"
 
 #include "LandscapeComponent.h"

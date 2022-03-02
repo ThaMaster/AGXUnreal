@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 
 // AGX Dynamics for Unreal includes.
@@ -257,7 +256,7 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 			break;
 	}
 
-	if(!Mesh.IsValid())
+	if (!Mesh.IsValid())
 	{
 		UE_LOG(
 			LogAGX, Error,

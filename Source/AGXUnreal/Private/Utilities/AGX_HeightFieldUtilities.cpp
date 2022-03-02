@@ -211,7 +211,6 @@ namespace AGX_HeightFieldUtilities_helpers
 			}
 		}
 
-
 		check(Heights.Num() == LandscapeSizeInfo.NumVertices);
 		if (LineTraceMisses > 0)
 		{

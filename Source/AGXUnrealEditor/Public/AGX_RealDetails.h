@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // Unreal Engine includes.
@@ -13,8 +12,7 @@ public:
 	static TSharedRef<IPropertyTypeCustomization> MakeInstance();
 
 	virtual void CustomizeHeader(
-		TSharedRef<class IPropertyHandle> StructPropertyHandle,
-		class FDetailWidgetRow& HeaderRow,
+		TSharedRef<class IPropertyHandle> StructPropertyHandle, class FDetailWidgetRow& HeaderRow,
 		IPropertyTypeCustomizationUtils& StructCustomizationUtils) override;
 
 	virtual void CustomizeChildren(

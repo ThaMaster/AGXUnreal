@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AgxEdMode/AGX_AgxEdModeToolkit.h"
 
 #include "Engine/Selection.h"

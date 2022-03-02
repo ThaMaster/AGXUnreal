@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -95,7 +94,8 @@ class AGXUNREAL_API UAGX_ConstraintRangeController_FL : public UBlueprintFunctio
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetCompliance(UPARAM(ref) FAGX_ConstraintRangeController& Controller, float Compliance)
+	static void SetCompliance(
+		UPARAM(ref) FAGX_ConstraintRangeController& Controller, float Compliance)
 	{
 		Controller.SetCompliance(static_cast<double>(Compliance));
 	}
@@ -107,7 +107,8 @@ class AGXUNREAL_API UAGX_ConstraintRangeController_FL : public UBlueprintFunctio
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetElasticity(UPARAM(ref) FAGX_ConstraintRangeController& Controller, float Elasticity)
+	static void SetElasticity(
+		UPARAM(ref) FAGX_ConstraintRangeController& Controller, float Elasticity)
 	{
 		Controller.SetElasticity(static_cast<double>(Elasticity));
 	}
@@ -119,7 +120,8 @@ class AGXUNREAL_API UAGX_ConstraintRangeController_FL : public UBlueprintFunctio
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetSpookDamping(UPARAM(ref) FAGX_ConstraintRangeController& Controller, float SpookDamping)
+	static void SetSpookDamping(
+		UPARAM(ref) FAGX_ConstraintRangeController& Controller, float SpookDamping)
 	{
 		Controller.SetSpookDamping(static_cast<double>(SpookDamping));
 	}
@@ -131,7 +133,8 @@ class AGXUNREAL_API UAGX_ConstraintRangeController_FL : public UBlueprintFunctio
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")
-	static void SetForceRange(UPARAM(ref) FAGX_ConstraintRangeController& Controller, float MinForce, float MaxForce)
+	static void SetForceRange(
+		UPARAM(ref) FAGX_ConstraintRangeController& Controller, float MinForce, float MaxForce)
 	{
 		Controller.SetForceRange(FFloatInterval(MinForce, MaxForce));
 	}

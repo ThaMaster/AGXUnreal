@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "NotifyBarrier.h"
 
 #include "BeginAGXIncludes.h"

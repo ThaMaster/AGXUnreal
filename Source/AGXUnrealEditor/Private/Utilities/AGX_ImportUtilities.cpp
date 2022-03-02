@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Utilities/AGX_ImportUtilities.h"
 
 // AGX Dynamics for Unreal includes.
@@ -122,7 +121,8 @@ namespace AGX_ImportUtilities_helpers
 {
 	template <typename FMeshFactory, typename FMeshDescription>
 	void InitStaticMesh(
-		FMeshFactory MeshFactory, const FMeshDescription& MeshDescription, UStaticMesh& Asset, bool bAllowCPUAccess)
+		FMeshFactory MeshFactory, const FMeshDescription& MeshDescription, UStaticMesh& Asset,
+		bool bAllowCPUAccess)
 	{
 		FRawMesh RawMesh = MeshFactory(MeshDescription);
 		FAGX_EditorUtilities::AddRawMeshToStaticMesh(RawMesh, &Asset);
@@ -141,7 +141,8 @@ namespace AGX_ImportUtilities_helpers
 UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName, const FString& FallbackName)
 {
-	auto InitAsset = [&](UStaticMesh& Asset) {
+	auto InitAsset = [&](UStaticMesh& Asset)
+	{
 		AGX_ImportUtilities_helpers::InitStaticMesh(
 			&FAGX_EditorUtilities::CreateRawMeshFromTrimesh, Trimesh, Asset, true);
 	};
@@ -160,7 +161,8 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	const FRenderDataBarrier& RenderData, const FString& DirectoryName)
 {
-	auto InitAsset = [&](UStaticMesh& Asset) {
+	auto InitAsset = [&](UStaticMesh& Asset)
+	{
 		AGX_ImportUtilities_helpers::InitStaticMesh(
 			&FAGX_EditorUtilities::CreateRawMeshFromRenderData, RenderData, Asset, false);
 	};
@@ -221,7 +223,8 @@ UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsse
 {
 	const FString Name = TEXT("CM") + GetName(Material1) + GetName(Material2);
 
-	auto InitAsset = [&](UAGX_ContactMaterialAsset& Asset) {
+	auto InitAsset = [&](UAGX_ContactMaterialAsset& Asset)
+	{
 		Asset.CopyFrom(&ContactMaterial);
 		Asset.Material1 = Material1;
 		Asset.Material2 = Material2;

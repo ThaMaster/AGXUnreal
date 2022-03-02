@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -52,7 +51,8 @@ public:
 	virtual void SetSurfaceFrictionEnabled(bool bInSurfaceFrictionEnabled) override;
 	virtual void SetFrictionCoefficient(float InFrictionCoefficient) override;
 	virtual void SetSecondaryFrictionCoefficient(float InSecondaryFrictionCoefficient) override;
-	virtual void SetUseSecondaryFrictionCoefficient(bool bInUseSecondaryFrictionCoefficient) override;
+	virtual void SetUseSecondaryFrictionCoefficient(
+		bool bInUseSecondaryFrictionCoefficient) override;
 	virtual void SetSurfaceViscosity(float InSurfaceViscosity) override;
 	virtual void SetSecondarySurfaceViscosity(float InSecondarySurfaceViscosity) override;
 	virtual void SetUseSecondarySurfaceViscosity(bool bInUserSecondarySurfaceViscosity) override;

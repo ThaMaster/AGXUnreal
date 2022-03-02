@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -121,8 +120,6 @@ public:
 	 * @return The render data associated with the shape.
 	 */
 	FRenderDataBarrier GetRenderData() const;
-
-
 
 	/**
 	 * @return True if the native shape contains render data and the render data has a render

@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Materials/ShapeMaterialBarrier.h"
 
 // AGX Dynamics for Unreal includes.

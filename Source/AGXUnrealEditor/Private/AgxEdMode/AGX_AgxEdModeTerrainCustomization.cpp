@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AgxEdMode/AGX_AgxEdModeTerrainCustomization.h"
 
 // AGX Dynamics includes.
@@ -20,7 +19,6 @@ TSharedRef<IDetailCustomization> FAGX_AgxEdModeTerrainCustomization::MakeInstanc
 {
 	return MakeShareable(new FAGX_AgxEdModeTerrainCustomization);
 }
-
 
 namespace FAGX_AgxEdModeTerrainCustomization_helpers
 {
@@ -54,8 +52,5 @@ void FAGX_AgxEdModeTerrainCustomization::CustomizeDetails(IDetailLayoutBuilder& 
 	];
 	// clang-format on
 }
-
-
-
 
 #undef LOCTEXT_NAMESPACE

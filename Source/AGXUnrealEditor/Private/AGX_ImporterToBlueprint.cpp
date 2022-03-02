@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AGX_ImporterToBlueprint.h"
 
 // AGX Dynamics for Unreal includes.
@@ -95,7 +94,8 @@ namespace
 		FString BasePackagePath = UPackageTools::SanitizePackageName(Path + "/" + BlueprintName);
 		FString PackagePath = BasePackagePath;
 
-		auto PackageExists = [](const FString& PackagePath) {
+		auto PackageExists = [](const FString& PackagePath)
+		{
 			check(!FEditorFileUtils::IsMapPackageAsset(PackagePath));
 			return FPackageName::DoesPackageExist(PackagePath) ||
 				   FindObject<UPackage>(nullptr, *PackagePath) != nullptr;
@@ -449,7 +449,8 @@ namespace
 		RootActorContainer->SetRootComponent(ActorRootComponent);
 #endif
 
-		const bool Result = ImportType == EAGX_ImportType::Urdf ? AddComponentsFromUrdf(*RootActorContainer, Helper)
+		const bool Result = ImportType == EAGX_ImportType::Urdf
+								? AddComponentsFromUrdf(*RootActorContainer, Helper)
 								: AddComponentsFromAGXArchive(*RootActorContainer, Helper);
 
 		if (!Result)

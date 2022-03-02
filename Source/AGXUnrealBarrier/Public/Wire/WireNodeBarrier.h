@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 // AGX Dynamics for Unreal includes.
@@ -42,4 +41,3 @@ public:
 private:
 	std::unique_ptr<FWireNodeRef> NativeRef;
 };
-

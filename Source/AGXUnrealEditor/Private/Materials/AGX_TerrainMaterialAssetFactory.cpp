@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Materials/AGX_TerrainMaterialAssetFactory.h"
 
 #include "Materials/AGX_TerrainMaterialAsset.h"

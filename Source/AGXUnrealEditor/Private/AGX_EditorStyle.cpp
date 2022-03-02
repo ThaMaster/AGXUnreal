@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AGX_EditorStyle.h"
 
 #include "Runtime/Projects/Public/Interfaces/IPluginManager.h"

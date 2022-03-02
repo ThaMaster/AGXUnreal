@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Wire/AGX_WireWinchDetailsRuntime.h"
 
 // AGX Dynamics for Unreal includes.
@@ -50,8 +49,7 @@ namespace AGX_WireWinchDetailsRuntime_helpers
 	}
 }
 
-void FAGX_WireWinchDetailsRuntime::GenerateChildContent(
-	IDetailChildrenBuilder& ChildrenBuilder)
+void FAGX_WireWinchDetailsRuntime::GenerateChildContent(IDetailChildrenBuilder& ChildrenBuilder)
 {
 	IDetailGroup& Group =
 		ChildrenBuilder.AddGroup(TEXT("Wire winch"), LOCTEXT("WireWinch", "Wire Winch"));
@@ -71,8 +69,7 @@ bool FAGX_WireWinchDetailsRuntime::InitiallyCollapsed() const
 	return false;
 }
 
-void FAGX_WireWinchDetailsRuntime::SetOnRebuildChildren(
-	FSimpleDelegate InOnRegenerateChildren)
+void FAGX_WireWinchDetailsRuntime::SetOnRebuildChildren(FSimpleDelegate InOnRegenerateChildren)
 {
 	OnRegenerateChildren = InOnRegenerateChildren;
 }

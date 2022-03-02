@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Materials/AGX_TerrainMaterialLibrary.h"
 
 // AGX Dynamics for Unreal includes.
@@ -62,7 +61,8 @@ namespace AGX_TerrainMaterialLibrary_helpers
 		const bool bSaved = UPackage::SavePackage(Package, Asset, RF_NoFlags, *PackageFilename);
 #else
 		/// @todo [UE5] Really no save args here?
-		const bool bSaved = UPackage::SavePackage(Package, Asset, *PackageFilename, FSavePackageArgs());
+		const bool bSaved =
+			UPackage::SavePackage(Package, Asset, *PackageFilename, FSavePackageArgs());
 #endif
 		if (!bSaved)
 		{

@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -24,7 +23,6 @@ class AGXUNREAL_API UAGX_ShapeMaterialInstance : public UAGX_ShapeMaterialBase
 	GENERATED_BODY()
 
 public:
-
 	// Bulk properties.
 	virtual void SetDensity(float InDensity) override;
 	virtual float GetDensity() const override;
@@ -69,7 +67,8 @@ public:
 	virtual float GetSpookDampingBend() const;
 	virtual void SetSpookDampingBend(float InSpookDamping);
 
-	static UAGX_ShapeMaterialInstance* CreateFromAsset(UWorld* PlayingWorld, UAGX_ShapeMaterialAsset* Source);
+	static UAGX_ShapeMaterialInstance* CreateFromAsset(
+		UWorld* PlayingWorld, UAGX_ShapeMaterialAsset* Source);
 
 	virtual ~UAGX_ShapeMaterialInstance();
 

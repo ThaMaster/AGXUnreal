@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AGX_SimObjectsImporterHelper.h"
 
 // AGX Dynamics for Unreal includes.
@@ -55,12 +54,11 @@
 namespace
 {
 	void WriteImportErrorMessage(
-		const TCHAR* ObjectType, const FString& Name, const FString& FilePath,
-		const TCHAR* Message)
+		const TCHAR* ObjectType, const FString& Name, const FString& FilePath, const TCHAR* Message)
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Could not import '%s' '%s' from file '%s': %s."), ObjectType, *Name,
-			*FilePath, Message);
+			LogAGX, Error, TEXT("Could not import '%s' '%s' from file '%s': %s."), ObjectType,
+			*Name, *FilePath, Message);
 	}
 };
 
@@ -216,7 +214,8 @@ namespace
 	 * @param Trimesh The Trimesh containing the mesh to store.
 	 * @param FallbackName A name to give the asset in case the Trimesh doesn't have a valid name.
 	 * @param RestoredMeshes Static Mesh cache.
-	 * @param DirectoryName The name of the folder where all assets for this imported model is stored.
+	 * @param DirectoryName The name of the folder where all assets for this imported model is
+	 * stored.
 	 * @return
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
@@ -257,7 +256,8 @@ namespace
 	 *
 	 * @param RenderData The Render Data Barrier containing the mesh to store.
 	 * @param RestoredMeshes Static Mesh cache.
-	 * @param DirectoryName The name of the folder where all assets for the imported model is stored.
+	 * @param DirectoryName The name of the folder where all assets for the imported model is
+	 * stored.
 	 * @return The Static Mesh asset for the given Render Data.
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
@@ -778,7 +778,8 @@ UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire
 	return Component;
 }
 
-UAGX_CollisionGroupDisablerComponent* FAGX_SimObjectsImporterHelper::InstantiateCollisionGroupDisabler(
+UAGX_CollisionGroupDisablerComponent*
+FAGX_SimObjectsImporterHelper::InstantiateCollisionGroupDisabler(
 	AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs)
 {
 	UAGX_CollisionGroupDisablerComponent* Component =
@@ -1052,9 +1053,7 @@ namespace
 			DirectoryPath = BasePath + TEXT("_") + FString::FromInt(TryCount);
 			DirectoryName = ModelName + TEXT("_") + FString::FromInt(TryCount);
 		}
-		UE_LOG(
-			LogAGX, Display, TEXT("Importing model '%s' to '%s'."), *ModelName,
-			*DirectoryPath);
+		UE_LOG(LogAGX, Display, TEXT("Importing model '%s' to '%s'."), *ModelName, *DirectoryPath);
 		return DirectoryName;
 	}
 }

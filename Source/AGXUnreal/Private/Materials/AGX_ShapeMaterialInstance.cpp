@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Materials/AGX_ShapeMaterialInstance.h"
 
 // AGX Dynamics for Unreal includes.
@@ -388,8 +387,9 @@ void UAGX_ShapeMaterialInstance::CreateNative(UWorld* PlayingWorld)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Shape Material '%s' tried to get Simulation, but UAGX_Simulation::GetFrom returned "
-			"nullptr."),
+			TEXT("Shape Material '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				 "returned "
+				 "nullptr."),
 			*GetName());
 		return;
 	}

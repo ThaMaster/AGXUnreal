@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AGX_Environment.h"
 
 // AGX Dynamics for Unreal includes.
@@ -463,8 +462,7 @@ void FAGX_Environment::TryUnlockAgxDynamicsLicense()
 		return;
 	}
 
-	const FString AgxLicensePath =
-		FPaths::Combine(GetPluginLicenseDirPath(), FString("agx.lic"));
+	const FString AgxLicensePath = FPaths::Combine(GetPluginLicenseDirPath(), FString("agx.lic"));
 	if (!FPaths::FileExists(AgxLicensePath))
 	{
 		return;

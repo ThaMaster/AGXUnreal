@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Materials/AGX_ContactMaterialAssetFactory.h"
 
 #include "Materials/AGX_ContactMaterialAsset.h"

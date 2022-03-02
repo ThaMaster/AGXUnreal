@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Shapes/EmptyShapeBarrier.h"
 
 #include "AGXRefs.h"
@@ -35,7 +34,6 @@ bool FEmptyShapeBarrier::HasNative() const
 {
 	return NativeRef->NativeGeometry != nullptr;
 }
-
 
 void FEmptyShapeBarrier::AllocateNativeShape()
 {

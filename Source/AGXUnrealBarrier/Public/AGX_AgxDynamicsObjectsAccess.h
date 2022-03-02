@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 namespace agx
@@ -44,7 +43,6 @@ public:
 	static agx::RigidBody* GetFrom(const FRigidBodyBarrier& Barrier);
 	static agx::RigidBody* TryGetFrom(const FRigidBodyBarrier* Barrier);
 	static agx::RigidBody* TryGetFrom(const FRigidBodyBarrier& Barrier);
-
 
 	static agxSDK::Simulation* GetFrom(const FSimulationBarrier* Barrier);
 

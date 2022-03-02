@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Materials/AGX_ContactMaterialReductionMode.h"
 
 FAGX_ContactMaterialReductionMode::FAGX_ContactMaterialReductionMode()

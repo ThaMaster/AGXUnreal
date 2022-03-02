@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Constraints/Constraint2DOFBarrier.h"
 
 // AGX Dynamics for Unreal includes.
@@ -60,9 +59,8 @@ TUniquePtr<FElectricMotorControllerBarrier> FConstraint2DOFBarrier::GetElectricM
 	EAGX_Constraint2DOFFreeDOF Dof)
 {
 	return CreateControllerBarrier<FElectricMotorControllerBarrier>(
-		NativeRef, [Dof](agx::Constraint2DOF* Constraint) {
-			return Constraint->getElectricMotorController(Convert(Dof));
-		});
+		NativeRef, [Dof](agx::Constraint2DOF* Constraint)
+		{ return Constraint->getElectricMotorController(Convert(Dof)); });
 }
 
 TUniquePtr<FFrictionControllerBarrier> FConstraint2DOFBarrier::GetFrictionController(
@@ -70,9 +68,8 @@ TUniquePtr<FFrictionControllerBarrier> FConstraint2DOFBarrier::GetFrictionContro
 {
 	/// \todo Why not using GetOrCreateFrictionController here?
 	return CreateControllerBarrier<FFrictionControllerBarrier>(
-		NativeRef, [Dof](agx::Constraint2DOF* Constraint) {
-			return Constraint->getFrictionController(Convert(Dof));
-		});
+		NativeRef, [Dof](agx::Constraint2DOF* Constraint)
+		{ return Constraint->getFrictionController(Convert(Dof)); });
 }
 
 TUniquePtr<FLockControllerBarrier> FConstraint2DOFBarrier::GetLockController(
@@ -109,9 +106,8 @@ TUniquePtr<const FElectricMotorControllerBarrier>
 FConstraint2DOFBarrier::GetElectricMotorController(EAGX_Constraint2DOFFreeDOF Dof) const
 {
 	return CreateControllerBarrier<const FElectricMotorControllerBarrier>(
-		NativeRef, [Dof](agx::Constraint2DOF* Constraint) {
-			return Constraint->getElectricMotorController(Convert(Dof));
-		});
+		NativeRef, [Dof](agx::Constraint2DOF* Constraint)
+		{ return Constraint->getElectricMotorController(Convert(Dof)); });
 }
 
 namespace
@@ -142,9 +138,8 @@ TUniquePtr<const FFrictionControllerBarrier> FConstraint2DOFBarrier::GetFriction
 	EAGX_Constraint2DOFFreeDOF Dof) const
 {
 	return CreateControllerBarrier<const FFrictionControllerBarrier>(
-		NativeRef, [Dof](agx::Constraint2DOF* Constraint) {
-			return GetOrCreateFrictionController(Constraint, Convert(Dof));
-		});
+		NativeRef, [Dof](agx::Constraint2DOF* Constraint)
+		{ return GetOrCreateFrictionController(Constraint, Convert(Dof)); });
 }
 
 TUniquePtr<const FLockControllerBarrier> FConstraint2DOFBarrier::GetLockController(

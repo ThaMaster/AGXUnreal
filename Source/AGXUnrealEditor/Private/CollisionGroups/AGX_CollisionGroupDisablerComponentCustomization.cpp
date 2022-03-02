@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponentCustomization.h"
 
 // AGX Dynamics for Unreal includes.
@@ -57,7 +56,8 @@ namespace AGX_CollisionGroupDisablerComponentCustomization_helpers
 		for (UAGX_CollisionGroupDisablerComponent* Instance :
 			 FAGX_ObjectUtilities::GetArchetypeInstances(*CollisionGroupDisabler))
 		{
-			// Only write to the Archetype Instances if they are currently in sync with this template.
+			// Only write to the Archetype Instances if they are currently in sync with this
+			// template.
 			if (Instance->DisabledCollisionGroupPairs ==
 				CollisionGroupDisabler->DisabledCollisionGroupPairs)
 			{
@@ -248,34 +248,26 @@ void FAGX_CollisionGroupDisablerComponentCustomization::AddComboBox(
 {
 	//clang-format off
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
-	.NameContent()
-	[
-		SNew(STextBlock).Text(Name)
-	]
-	.ValueContent()
-	[
-		SNew(SComboBox<TSharedPtr<FName>>)
-		.ContentPadding(2)
-		.OptionsSource(&AvailableCollisionGroups)
-		.OnGenerateWidget_Lambda([=](TSharedPtr<FName> Item)
-		 {
-			// content for each item in combo box
-			return SNew(STextBlock)
-			.Text(FText::FromName(*Item))
-			.ToolTipText(FText::GetEmpty());
-		})
-		.OnSelectionChanged(
-			this, &FAGX_CollisionGroupDisablerComponentCustomization::OnComboBoxChanged,
-			CollisionGroupDisabler, SelectedGroup)
-		.Content() // header content showing selected item, even while combo box is closed.
-		[
-			SNew(STextBlock)
-			.Text_Lambda([SelectedGroup]()
-			{
-				return FText::FromName(*SelectedGroup);
-			})
-		]
-	];
+		.NameContent()[SNew(STextBlock).Text(Name)]
+		.ValueContent()
+			[SNew(SComboBox<TSharedPtr<FName>>)
+				 .ContentPadding(2)
+				 .OptionsSource(&AvailableCollisionGroups)
+				 .OnGenerateWidget_Lambda(
+					 [=](TSharedPtr<FName> Item)
+					 {
+						 // content for each item in combo box
+						 return SNew(STextBlock)
+							 .Text(FText::FromName(*Item))
+							 .ToolTipText(FText::GetEmpty());
+					 })
+				 .OnSelectionChanged(
+					 this, &FAGX_CollisionGroupDisablerComponentCustomization::OnComboBoxChanged,
+					 CollisionGroupDisabler, SelectedGroup)
+				 .Content() // header content showing selected item, even while combo box is closed.
+					 [SNew(STextBlock)
+						  .Text_Lambda([SelectedGroup]()
+									   { return FText::FromName(*SelectedGroup); })]];
 	//clang-format on
 }
 

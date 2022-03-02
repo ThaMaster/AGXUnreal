@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -17,7 +16,7 @@ struct AGXUNREAL_API FAGX_SimpleMeshData
 
 	// @todo [UE5] this can be made into an FVector2f to better match the UE5 API. Currently many
 	// conversions are done to work around this.
-	TArray<FVector2D> TexCoords; 
+	TArray<FVector2D> TexCoords;
 	TArray<FVector> Normals; // mandatory
 	TArray<FVector> Tangents;
 	TArray<uint32> Indices;

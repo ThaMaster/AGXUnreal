@@ -477,8 +477,8 @@ void UAGX_Simulation::InitPropertyDispatcher()
 	}
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bContactWarmstarting), [](ThisClass* This)
-		{ This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
+		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bContactWarmstarting),
+		[](ThisClass* This) { This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
 }
 
 #endif

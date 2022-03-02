@@ -336,9 +336,7 @@ inline agx::Vec3 Convert(const FVector& V)
 inline agx::Vec3 ConvertDistance(const FVector& V)
 {
 	return agx::Vec3(
-		ConvertDistanceToAGX(V.X),
-		ConvertDistanceToAGX(V.Y),
-		ConvertDistanceToAGX(V.Z));
+		ConvertDistanceToAGX(V.X), ConvertDistanceToAGX(V.Y), ConvertDistanceToAGX(V.Z));
 }
 
 inline agx::Vec3 ConvertVector(const FVector& V)
@@ -350,26 +348,21 @@ inline agx::Vec3 ConvertDisplacement(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3(
-		ConvertDistanceToAGX(V.X),
-		-ConvertDistanceToAGX(V.Y),
-		ConvertDistanceToAGX(V.Z));
+		ConvertDistanceToAGX(V.X), -ConvertDistanceToAGX(V.Y), ConvertDistanceToAGX(V.Z));
 }
 
 inline agx::Vec3f ConvertFloatVector(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
 	return agx::Vec3f(
-		ConvertDistanceToAGX(V.X),
-		-ConvertDistanceToAGX(V.Y),
-		ConvertDistanceToAGX(V.Z));
+		ConvertDistanceToAGX(V.X), -ConvertDistanceToAGX(V.Y), ConvertDistanceToAGX(V.Z));
 }
 
 inline agx::Vec3 ConvertAngularVelocity(const FVector& V)
 {
 	// See comment in the AGX-to-Unreal version of this function.
 	return agx::Vec3(
-		ConvertToAGX(FMath::DegreesToRadians(V.X)),
-		-ConvertToAGX(FMath::DegreesToRadians(V.Y)),
+		ConvertToAGX(FMath::DegreesToRadians(V.X)), -ConvertToAGX(FMath::DegreesToRadians(V.Y)),
 		-ConvertToAGX(FMath::DegreesToRadians(V.Z)));
 }
 
@@ -379,9 +372,7 @@ inline agx::Vec3 ConvertTorque(const FVector& V)
 	 * Following a similar logic as ConvertAngularVelocity for the axis directions, but no unit
 	 * conversion since we use Nm in both AGX Dynamics and Unreal Engine.
 	 */
-	return {
-		ConvertToAGX(V.X), -ConvertToAGX(V.Y),
-		-ConvertToAGX(V.Z)};
+	return {ConvertToAGX(V.X), -ConvertToAGX(V.Y), -ConvertToAGX(V.Z)};
 }
 
 // Four-dimensional vectors.
