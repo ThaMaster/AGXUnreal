@@ -52,8 +52,8 @@ void FWireBarrier::AllocateNative(float Radius, float ResolutionPerUnitLength)
 {
 	check(!HasNative());
 	PreNativeChanged();
-	agx::Real RadiusAGX = ConvertDistance(Radius);
-	agx::Real ResolutionPerUnitLengthAGX = ConvertDistanceInv(ResolutionPerUnitLength);
+	agx::Real RadiusAGX = ConvertDistanceToAGX(Radius);
+	agx::Real ResolutionPerUnitLengthAGX = ConvertDistanceInvToAGX(ResolutionPerUnitLength);
 	NativeRef->Native = new agxWire::Wire(RadiusAGX, ResolutionPerUnitLengthAGX);
 	PostNativeChanged();
 }
@@ -61,7 +61,7 @@ void FWireBarrier::AllocateNative(float Radius, float ResolutionPerUnitLength)
 void FWireBarrier::SetRadius(float Radius)
 {
 	check(HasNative());
-	const agx::Real RadiusAGX = ConvertDistanceToAgx(Radius);
+	const agx::Real RadiusAGX = ConvertDistanceToAGX(Radius);
 	NativeRef->Native->setRadius(RadiusAGX);
 }
 
@@ -69,14 +69,14 @@ float FWireBarrier::GetRadius() const
 {
 	check(HasNative());
 	const agx::Real RadiusAGX = NativeRef->Native->getRadius();
-	const float Radius = ConvertDistance(RadiusAGX);
+	const float Radius = ConvertDistanceToUnreal<float>(RadiusAGX);
 	return Radius;
 }
 
 void FWireBarrier::SetResolutionPerUnitLength(float InResolution)
 {
 	check(HasNative());
-	const agx::Real ResolutionAGX = ConvertDistanceInv(InResolution);
+	const agx::Real ResolutionAGX = ConvertDistanceInvToAGX(InResolution);
 	NativeRef->Native->setResolutionPerUnitLength(ResolutionAGX);
 }
 
@@ -84,7 +84,7 @@ float FWireBarrier::GetResolutionPerUnitLength() const
 {
 	check(HasNative());
 	const agx::Real ResolutionAGX = NativeRef->Native->getResolutionPerUnitLength();
-	const float Resolution = ConvertDistanceInv(ResolutionAGX);
+	const float Resolution = ConvertDistanceInvToUnreal<float>(ResolutionAGX);
 	return Resolution;
 }
 

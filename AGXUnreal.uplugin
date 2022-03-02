@@ -24,8 +24,7 @@
 				"Win64"
 			],
 			"BlacklistPlatforms": [
-				"IOS",
-				"Win32"
+				"IOS"
 			]
 		},
 		{
@@ -37,8 +36,7 @@
 				"Win64"
 			],
 			"BlacklistPlatforms": [
-				"IOS",
-				"Win32"
+				"IOS"
 			]
 		},
 		{
@@ -50,8 +48,7 @@
 				"Win64"
 			],
 			"BlacklistPlatforms": [
-				"IOS",
-				"Win32"
+				"IOS"
 			]
 		},
 		{
@@ -63,8 +60,7 @@
 				"Win64"
 			],
 			"BlacklistPlatforms": [
-				"IOS",
-				"Win32"
+				"IOS"
 			]
 		}
 	],

@@ -133,7 +133,7 @@ void UAGX_CollisionGroupDisablerComponent::UpdateAvailableCollisionGroupsFromWor
 	{
 		UAGX_ShapeComponent* Shape = *ObjectIt;
 
-		if (Shape->IsPendingKill())
+		if (IsValid(Shape))
 		{
 			continue;
 		}

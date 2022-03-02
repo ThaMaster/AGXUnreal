@@ -52,7 +52,7 @@ FCylinderShapeBarrier::~FCylinderShapeBarrier()
 void FCylinderShapeBarrier::SetHeight(double Height)
 {
 	check(HasNative());
-	NativeCylinder(this)->setHeight(ConvertDistanceToAgx(Height));
+	NativeCylinder(this)->setHeight(ConvertDistanceToAGX(Height));
 }
 
 double FCylinderShapeBarrier::GetHeight() const
@@ -64,7 +64,7 @@ double FCylinderShapeBarrier::GetHeight() const
 void FCylinderShapeBarrier::SetRadius(double Radius)
 {
 	check(HasNative());
-	NativeCylinder(this)->setRadius(ConvertDistanceToAgx(Radius));
+	NativeCylinder(this)->setRadius(ConvertDistanceToAGX(Radius));
 }
 
 namespace CylinderShapeBarrier_helpers

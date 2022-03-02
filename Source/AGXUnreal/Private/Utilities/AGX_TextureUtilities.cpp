@@ -8,16 +8,22 @@
 
 // Unreal Engine includes.
 #include "Engine/TextureRenderTarget2D.h"
+#include "Materials/Material.h"
+#include "Misc/EngineVersionComparison.h"
 #include "RHI.h"
 #include "RHICommandList.h"
-#include "Materials/Material.h"
 
 bool FAGX_TextureUtilities::UpdateRenderTextureRegions(
 	UTextureRenderTarget2D& RenderTarget, uint32 NumRegions, FUpdateTextureRegion2D* Regions,
 	uint32 SourcePitch, uint32 SourceBitsPerPixel, uint8* SourceData, bool bFreeData)
 {
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 	FTextureRenderTarget2DResource* Resource =
 		(FTextureRenderTarget2DResource*) (RenderTarget.Resource);
+#else
+	FTextureRenderTarget2DResource* Resource =
+		(FTextureRenderTarget2DResource*) (RenderTarget.GetResource());
+#endif
 	if (Resource == nullptr)
 	{
 		UE_LOG(LogAGX, Error, TEXT("TextureRenderTarget doesn't have a resource."));

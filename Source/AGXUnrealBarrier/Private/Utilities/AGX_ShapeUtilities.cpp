@@ -62,8 +62,8 @@ bool FAGX_ShapeUtilities::ComputeOrientedCylinder(
 	{
 		return false;
 	}
-	OutRadius = ConvertDistance(radiusHeightAGX.x());
-	OutHeight = ConvertDistance(radiusHeightAGX.y());
+	OutRadius = ConvertDistanceToUnreal<float>(radiusHeightAGX.x());
+	OutHeight = ConvertDistanceToUnreal<float>(radiusHeightAGX.y());
 	OutTransform = Convert(transformAGX);
 	return true;
 #endif
@@ -83,8 +83,8 @@ bool FAGX_ShapeUtilities::ComputeOrientedCapsule(
 	{
 		return false;
 	}
-	OutRadius = ConvertDistance(radiusHeightAGX.x());
-	OutHeight = ConvertDistance(radiusHeightAGX.y());
+	OutRadius = ConvertDistanceToUnreal<float>(radiusHeightAGX.x());
+	OutHeight = ConvertDistanceToUnreal<float>(radiusHeightAGX.y());
 	OutTransform = Convert(transformAGX);
 	return true;
 #endif

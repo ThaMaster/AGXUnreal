@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "AGX_SimpleMeshComponent.h"
 #include "RenderingThread.h"
 #include "RenderResource.h"
@@ -78,7 +77,12 @@ public:
 
 			VertexBuffers.PositionVertexBuffer.VertexPosition(VertexIndex) = VertexPosition;
 			VertexBuffers.ColorVertexBuffer.VertexColor(VertexIndex) = VertexColor;
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(VertexIndex, 0, VertexTexCoord);
+#else
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
+				VertexIndex, 0, {(float) VertexTexCoord.X, (float) VertexTexCoord.Y});
+#endif
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 				VertexIndex, TangentX, TangentY, TangentZ);
 
@@ -120,9 +124,9 @@ public:
 
 				if (HasTexCoords)
 				{
-					const FVector2D& TexCoord0 = MeshData.TexCoords[VertexIndex0];
-					const FVector2D& TexCoord1 = MeshData.TexCoords[VertexIndex1];
-					const FVector2D& TexCoord2 = MeshData.TexCoords[VertexIndex2];
+					const auto& TexCoord0 = MeshData.TexCoords[VertexIndex0];
+					const auto& TexCoord1 = MeshData.TexCoords[VertexIndex1];
+					const auto& TexCoord2 = MeshData.TexCoords[VertexIndex2];
 
 					const float U0toU1 = TexCoord1.X - TexCoord0.X;
 					const float U0toU2 = TexCoord2.X - TexCoord0.X;
@@ -159,24 +163,26 @@ public:
 
 		// Enqueue initialization of render resource
 		ENQUEUE_RENDER_COMMAND(FAGX_SimpleMeshSceneProxyVertexBuffersInit)
-		([this, LightMapIndex](FRHICommandListImmediate& RHICmdList) {
-			VertexBuffers.PositionVertexBuffer.InitResource();
-			VertexBuffers.StaticMeshVertexBuffer.InitResource();
-			VertexBuffers.ColorVertexBuffer.InitResource();
+		(
+			[this, LightMapIndex](FRHICommandListImmediate& RHICmdList)
+			{
+				VertexBuffers.PositionVertexBuffer.InitResource();
+				VertexBuffers.StaticMeshVertexBuffer.InitResource();
+				VertexBuffers.ColorVertexBuffer.InitResource();
 
-			FLocalVertexFactory::FDataType Data;
-			VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(&VertexFactory, Data);
-			VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(&VertexFactory, Data);
-			VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
-				&VertexFactory, Data);
-			VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
-				&VertexFactory, Data, LightMapIndex);
-			VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(&VertexFactory, Data);
-			VertexFactory.SetData(Data);
+				FLocalVertexFactory::FDataType Data;
+				VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(&VertexFactory, Data);
+				VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(&VertexFactory, Data);
+				VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
+					&VertexFactory, Data);
+				VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
+					&VertexFactory, Data, LightMapIndex);
+				VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(&VertexFactory, Data);
+				VertexFactory.SetData(Data);
 
-			VertexFactory.InitResource();
-			IndexBuffer.InitResource();
-		});
+				VertexFactory.InitResource();
+				IndexBuffer.InitResource();
+			});
 
 		// Grab material
 		Material = Component->GetMaterial(0);

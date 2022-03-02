@@ -71,7 +71,7 @@ namespace AGX_CollisionGroupDisablerComponentCustomization_helpers
 
 		if (DisabledPairsHandle->IsValidHandle())
 		{
-			DisabledPairsHandle->NotifyPostChange();
+			DisabledPairsHandle->NotifyPostChange(EPropertyChangeType::ArrayAdd);
 		}
 
 		return FReply::Handled();
@@ -121,7 +121,7 @@ namespace AGX_CollisionGroupDisablerComponentCustomization_helpers
 
 		if (DisabledPairsHandle->IsValidHandle())
 		{
-			DisabledPairsHandle->NotifyPostChange();
+			DisabledPairsHandle->NotifyPostChange(EPropertyChangeType::ArrayRemove);
 		}
 
 		return FReply::Handled();

@@ -38,5 +38,9 @@ public class AGXUnrealEditor : ModuleRules
 			"RenderCore","RHI", "Slate", "SlateCore", "SlateCore", "UnrealEd",
 			"SceneOutliner"
 		});
-    }
+
+#if UE_5_0_OR_LATER
+		PrivateDependencyModuleNames.Add("EditorFramework");
+#endif
+	}
 }

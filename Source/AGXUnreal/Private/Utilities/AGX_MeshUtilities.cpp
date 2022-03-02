@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Utilities/AGX_MeshUtilities.h"
 
 // AGX Dynamics for Unreal includes.
@@ -11,6 +10,7 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshActor.h"
 #include "Math/UnrealMathUtility.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Rendering/PositionVertexBuffer.h"
 #include "RenderingThread.h"
 #include "StaticMeshResources.h"
@@ -494,7 +494,12 @@ void AGX_MeshUtilities::MakeSphere(
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color;
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+#else
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
+				NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
+#endif
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 				NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -563,7 +568,8 @@ void AGX_MeshUtilities::MakeCylinder(
 	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
 	TArray<FVector2D>& TexCoords, const CylinderConstructionData& Data)
 {
-	auto LogConstructionError = [](const FString& Msg) {
+	auto LogConstructionError = [](const FString& Msg)
+	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("AGX_MeshUtilities::MakeCylinder(): Invalid CylinderConstructionData: %s."), *Msg);
@@ -700,7 +706,12 @@ void AGX_MeshUtilities::MakeCylinder(
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+#else
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
+				NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
+#endif
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 				NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -793,8 +804,11 @@ void AGX_MeshUtilities::MakeCylinder(
 		FDynamicMeshVertex MeshVertex;
 
 		MeshVertex.Position = Vertex - TopOffset;
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 		MeshVertex.TextureCoordinate[0] = TC;
-
+#else
+		MeshVertex.TextureCoordinate[0] = {(float) TC.X, (float) TC.Y};
+#endif
 		MeshVertex.SetTangents(-ZAxis, (-ZAxis) ^ Normal, Normal);
 
 		OutVerts.Add(MeshVertex); // Add bottom vertex
@@ -818,7 +832,11 @@ void AGX_MeshUtilities::MakeCylinder(
 		FDynamicMeshVertex MeshVertex;
 
 		MeshVertex.Position = Vertex + TopOffset;
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 		MeshVertex.TextureCoordinate[0] = TC;
+#else
+		MeshVertex.TextureCoordinate[0] = {(float) TC.X, (float) TC.Y};
+#endif
 
 		MeshVertex.SetTangents(-ZAxis, (-ZAxis) ^ Normal, Normal);
 
@@ -880,7 +898,8 @@ void AGX_MeshUtilities::MakeCapsule(
 	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
 	TArray<FVector2D>& TexCoords, const CapsuleConstructionData& Data)
 {
-	auto LogConstructionError = [](const FString& Msg) {
+	auto LogConstructionError = [](const FString& Msg)
+	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("AGX_MeshUtilities::MakeCapsule(): Invalid CapsuleConstructionData: %s."), *Msg);
@@ -1244,7 +1263,12 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+#else
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
+				NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
+#endif
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 				NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -1425,7 +1449,12 @@ void AGX_MeshUtilities::MakeBendableArrow(
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 			VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+#else
+			VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
+				NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
+#endif
 			VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 				NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -1598,7 +1627,12 @@ void AGX_MeshUtilities::MakeDiskArray(
 				// Fill actual buffers
 				VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
 				VertexBuffers.ColorVertexBuffer.VertexColor(NextFreeVertex) = Color.ToFColor(false);
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 				VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(NextFreeVertex, 0, TexCoord);
+#else
+				VertexBuffers.StaticMeshVertexBuffer.SetVertexUV(
+					NextFreeVertex, 0, {(float) TexCoord.X, (float) TexCoord.Y});
+#endif
 				VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 					NextFreeVertex, TangentX, TangentY, TangentZ);
 
@@ -1776,45 +1810,70 @@ namespace AGX_MeshUtilities_helpers
 		OutPositions.Reserve(NumPositions);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		([&](FRHICommandListImmediate& RHICmdList) {
-			// Copy vertex buffer.
-			auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
-			const uint32 NumPositionBytes = PositionRHI->GetSize();
-			FVector* PositionData = static_cast<FVector*>(
-				RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
-			for (uint32 I = 0; I < NumPositions; I++)
+		(
+			[&](FRHICommandListImmediate& RHICmdList)
 			{
-				OutPositions.Add(PositionData[I]);
-			}
-			RHIUnlockVertexBuffer(PositionRHI);
+				// Copy vertex buffer.
+				auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
+				const uint32 NumPositionBytes = PositionRHI->GetSize();
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+				FVector* PositionData = static_cast<FVector*>(
+					RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
+#else
+				FVector3f* PositionData = static_cast<FVector3f*>(
+					RHILockBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
+#endif
+				for (uint32 I = 0; I < NumPositions; I++)
+				{
+					OutPositions.Add(PositionData[I]);
+				}
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+				RHIUnlockVertexBuffer(PositionRHI);
+#else
+				RHIUnlockBuffer(PositionRHI);
+#endif
 
-			// Copy index buffer.
-			auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
-			if (IndexRHI->GetStride() == 2)
-			{
+				// Copy index buffer.
+				auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
+				if (IndexRHI->GetStride() == 2)
+				{
 				// Two byte index size.
-				uint16* IndexData = static_cast<uint16*>(
-					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-				for (uint32 i = 0; i < NumIndices; i++)
-				{
-					check(IndexData[i] < NumPositions);
-					OutIndices.Add(static_cast<uint32>(IndexData[i]));
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+					uint16* IndexData = static_cast<uint16*>(
+						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+#else
+					uint16* IndexData = static_cast<uint16*>(
+						RHILockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+#endif
+					for (uint32 i = 0; i < NumIndices; i++)
+					{
+						check(IndexData[i] < NumPositions);
+						OutIndices.Add(static_cast<uint32>(IndexData[i]));
+					}
 				}
-			}
-			else
-			{
-				// Four byte index size (stride must be either 2 or 4).
-				check(IndexRHI->GetStride() == 4);
-				uint32* IndexData = static_cast<uint32*>(
-					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-				for (uint32 i = 0; i < NumIndices; i++)
+				else
 				{
-					check(IndexData[i] < NumPositions);
-					OutIndices.Add(IndexData[i]);
+					// Four byte index size (stride must be either 2 or 4).
+					check(IndexRHI->GetStride() == 4);
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+					uint32* IndexData = static_cast<uint32*>(
+						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+#else
+					uint32* IndexData = static_cast<uint32*>(
+						RHILockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+#endif
+					for (uint32 i = 0; i < NumIndices; i++)
+					{
+						check(IndexData[i] < NumPositions);
+						OutIndices.Add(IndexData[i]);
+					}
 				}
-			}
-			RHIUnlockIndexBuffer(IndexRHI);
-		});
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+				RHIUnlockIndexBuffer(IndexRHI);
+#else
+				RHIUnlockBuffer(IndexRHI);
+#endif
+			});
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();
@@ -1887,40 +1946,65 @@ namespace AGX_MeshUtilities_helpers
 		RenderIndices.Reserve(NumIndices);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		([&](FRHICommandListImmediate& RHICmdList) {
-			// Copy position buffer.
-			FVector* PositionData = static_cast<FVector*>(
-				RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
-			for (uint32 i = 0; i < NumPositions; i++)
+		(
+			[&](FRHICommandListImmediate& RHICmdList)
 			{
-				RenderPositions.Add(PositionData[i]);
-			}
-			RHIUnlockVertexBuffer(PositionRhi);
+		// Copy position buffer.
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+				FVector* PositionData = static_cast<FVector*>(
+					RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+#else
+				FVector3f* PositionData = static_cast<FVector3f*>(
+					RHILockBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+#endif
+				for (uint32 i = 0; i < NumPositions; i++)
+				{
+					RenderPositions.Add(PositionData[i]);
+				}
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+				RHIUnlockVertexBuffer(PositionRhi);
+#else
+				RHIUnlockBuffer(PositionRhi);
+#endif
 
-			// Copy index buffer.
-			if (IndexRhi->GetStride() == 2)
-			{
+				// Copy index buffer.
+				if (IndexRhi->GetStride() == 2)
+				{
 				// Two byte index size.
-				uint16* IndexBufferData = static_cast<uint16*>(
-					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-				for (int32 i = 0; i < NumIndices; i++)
-				{
-					RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+					uint16* IndexBufferData = static_cast<uint16*>(
+						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+#else
+					uint16* IndexBufferData = static_cast<uint16*>(
+						RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+#endif
+					for (int32 i = 0; i < NumIndices; i++)
+					{
+						RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
+					}
 				}
-			}
-			else
-			{
-				// Four byte index size (stride must be either 2 or 4).
-				check(IndexRhi->GetStride() == 4);
-				uint32* IndexData = static_cast<uint32*>(
-					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-				for (int32 i = 0; i < NumIndices; i++)
+				else
 				{
-					RenderIndices.Add(IndexData[i]);
+					// Four byte index size (stride must be either 2 or 4).
+					check(IndexRhi->GetStride() == 4);
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+					uint32* IndexData = static_cast<uint32*>(
+						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+#else
+					uint32* IndexData = static_cast<uint32*>(
+						RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+#endif
+					for (int32 i = 0; i < NumIndices; i++)
+					{
+						RenderIndices.Add(IndexData[i]);
+					}
 				}
-			}
-			RHIUnlockIndexBuffer(IndexRhi);
-		});
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+				RHIUnlockIndexBuffer(IndexRhi);
+#else
+				RHIUnlockBuffer(IndexRhi);
+#endif
+			});
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();

@@ -143,7 +143,11 @@ private:
 	void OnGetAllowedClasses(TArray<const UClass*>& AllowedClasses);
 
 	/// Called to limit the set of Actors that can be selected as the rigid body owner.
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 	void OnGetActorFilters(TSharedPtr<SceneOutliner::FOutlinerFilters>& Filters);
+#else
+	void OnGetActorFilters(TSharedPtr<FSceneOutlinerFilters>& OutFilters);
+#endif
 
 	/// Called for each entry in the RigidBody combo box, to generate the list entries.
 	TSharedRef<SWidget> OnGetRigidBodyEntryWidget(TSharedPtr<FString> InComboString);

@@ -9,8 +9,9 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
-#include "Interface_CollisionDataProviderCore.h"
 #include "DynamicMeshBuilder.h"
+#include "Interface_CollisionDataProviderCore.h"
+
 
 class AStaticMeshActor;
 class FDynamicMeshIndexBuffer32;

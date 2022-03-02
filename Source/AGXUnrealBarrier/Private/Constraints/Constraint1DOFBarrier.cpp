@@ -87,9 +87,9 @@ double FConstraint1DOFBarrier::GetAngle() const
 	switch (DofType)
 	{
 		case agx::Angle::ROTATIONAL:
-			return ConvertAngle(NativeAngle);
+			return ConvertAngleToUnreal<double>(NativeAngle);
 		case agx::Angle::TRANSLATIONAL:
-			return ConvertDistance(NativeAngle);
+			return ConvertDistanceToUnreal<double>(NativeAngle);
 		default:
 			// Don't know the type, so pass the value unchanged to the caller.
 			return NativeAngle;

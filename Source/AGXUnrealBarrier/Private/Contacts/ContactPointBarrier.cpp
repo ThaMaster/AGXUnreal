@@ -52,7 +52,7 @@ FContactPointBarrier& FContactPointBarrier::operator=(const FContactPointBarrier
 float FContactPointBarrier::GetDepth() const
 {
 	check(HasNative());
-	return ConvertDistance(NativeEntity->Native.depth());
+	return ConvertDistanceToUnreal<float>(NativeEntity->Native.depth());
 }
 
 FVector FContactPointBarrier::GetLocation() const
@@ -112,7 +112,7 @@ FVector FContactPointBarrier::GetWitnessPoint(int32 Index) const
 float FContactPointBarrier::GetArea() const
 {
 	check(HasNative());
-	return ConvertDistance2(NativeEntity->Native.area());
+	return ConvertAreaToUnreal<float>(NativeEntity->Native.area());
 }
 
 bool FContactPointBarrier::IsEnabled() const

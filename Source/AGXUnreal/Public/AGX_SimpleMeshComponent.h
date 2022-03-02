@@ -14,7 +14,10 @@ class FPrimitiveSceneProxy;
 struct AGXUNREAL_API FAGX_SimpleMeshData
 {
 	TArray<FVector> Vertices; // mandatory
-	TArray<FVector2D> TexCoords;
+
+	// @todo [UE5] this can be made into an FVector2f to better match the UE5 API. Currently many
+	// conversions are done to work around this.
+	TArray<FVector2D> TexCoords; 
 	TArray<FVector> Normals; // mandatory
 	TArray<FVector> Tangents;
 	TArray<uint32> Indices;
@@ -22,7 +25,7 @@ struct AGXUNREAL_API FAGX_SimpleMeshData
 
 /** Component that allows you to specify custom triangle mesh geometry */
 UCLASS(
-	hidecategories = (Object, LOD, Physics, Collision), NotPlaceable, editinlinenew,
+	hidecategories = (Object, LOD, Physics, Collision), editinlinenew,
 	meta = (BlueprintSpawnableComponent), ClassGroup = Rendering)
 class AGXUNREAL_API UAGX_SimpleMeshComponent : public UMeshComponent
 {

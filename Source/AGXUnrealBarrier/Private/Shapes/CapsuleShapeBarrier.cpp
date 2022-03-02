@@ -52,7 +52,7 @@ FCapsuleShapeBarrier::~FCapsuleShapeBarrier()
 void FCapsuleShapeBarrier::SetHeight(double Height)
 {
 	check(HasNative());
-	NativeCapsule(this)->setHeight(ConvertDistanceToAgx(Height));
+	NativeCapsule(this)->setHeight(ConvertDistanceToAGX(Height));
 }
 
 double FCapsuleShapeBarrier::GetHeight() const
@@ -64,7 +64,7 @@ double FCapsuleShapeBarrier::GetHeight() const
 void FCapsuleShapeBarrier::SetRadius(double Radius)
 {
 	check(HasNative());
-	NativeCapsule(this)->setRadius(ConvertDistanceToAgx(Radius));
+	NativeCapsule(this)->setRadius(ConvertDistanceToAGX(Radius));
 }
 
 double FCapsuleShapeBarrier::GetRadius() const

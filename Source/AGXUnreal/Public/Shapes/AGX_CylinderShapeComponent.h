@@ -23,7 +23,7 @@ class AStaticMeshActor;
  * one can mark the cylinder as being either a Pulley or a Gypsy. This simulates a groove along
  * the Cylinder's perimeter that the wire can't slide off of.
  */
-UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Placeable, meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_CylinderShapeComponent final : public UAGX_ShapeComponent,
 														public AGX_AutoFitShape
 {

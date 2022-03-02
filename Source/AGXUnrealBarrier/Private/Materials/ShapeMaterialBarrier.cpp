@@ -125,8 +125,8 @@ void FShapeMaterialBarrier::SetMinMaxElasticRestLength(
 	check(HasNative());
 
 	NativeRef->Native->getBulkMaterial()->setMinMaxElasticRestLength(
-		ConvertDistanceToAgx<agx::Real>(MinElasticRestLength),
-		ConvertDistanceToAgx<agx::Real>(MaxElasticRestLength));
+		ConvertDistanceToAGX<agx::Real>(MinElasticRestLength),
+		ConvertDistanceToAGX<agx::Real>(MaxElasticRestLength));
 }
 
 double FShapeMaterialBarrier::GetMinElasticRestLength() const
@@ -185,7 +185,7 @@ void FShapeMaterialBarrier::SetAdhesion(double AdhesiveForce, double AdhesiveOve
 {
 	check(HasNative());
 	NativeRef->Native->getSurfaceMaterial()->setAdhesion(
-		AdhesiveForce, ConvertDistanceToAgx<agx::Real>(AdhesiveOverlap));
+		AdhesiveForce, ConvertDistanceToAGX<agx::Real>(AdhesiveOverlap));
 }
 
 double FShapeMaterialBarrier::GetAdhesiveForce() const

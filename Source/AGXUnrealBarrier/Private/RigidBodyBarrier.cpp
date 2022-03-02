@@ -63,8 +63,7 @@ FVector FRigidBodyBarrier::GetPosition() const
 {
 	check(HasNative());
 	agx::Vec3 PositionAGX = NativeRef->Native->getPosition();
-	FVector PositionUnreal = ConvertDisplacement(PositionAGX);
-	return PositionUnreal;
+	return ConvertDisplacement(PositionAGX);
 }
 
 void FRigidBodyBarrier::SetRotation(const FQuat& RotationUnreal)

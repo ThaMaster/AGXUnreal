@@ -15,6 +15,7 @@
 #include "Modules/ModuleManager.h"
 #include "PackageTools.h"
 #include "Misc/EngineVersionComparison.h"
+#include "UObject/SavePackage.h"
 
 // Naming convention:
 //   Name: dirt_1
@@ -57,7 +58,13 @@ namespace AGX_TerrainMaterialLibrary_helpers
 		Package->GetMetaData();
 
 		// Save the package to disk.
-		if (!UPackage::SavePackage(Package, Asset, RF_NoFlags, *PackageFilename))
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+		const bool bSaved = UPackage::SavePackage(Package, Asset, RF_NoFlags, *PackageFilename);
+#else
+		/// @todo [UE5] Really no save args here?
+		const bool bSaved = UPackage::SavePackage(Package, Asset, *PackageFilename, FSavePackageArgs());
+#endif
+		if (!bSaved)
 		{
 			UE_LOG(
 				LogAGX, Error,

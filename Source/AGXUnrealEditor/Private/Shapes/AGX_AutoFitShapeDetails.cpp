@@ -479,7 +479,7 @@ namespace AGX_AutoFitShapeDetals_helpers
 			{
 				if (Handle->IsValidHandle())
 				{
-					Handle->NotifyPostChange();
+					Handle->NotifyPostChange(EPropertyChangeType::ValueSet);
 				}
 			}
 		}
