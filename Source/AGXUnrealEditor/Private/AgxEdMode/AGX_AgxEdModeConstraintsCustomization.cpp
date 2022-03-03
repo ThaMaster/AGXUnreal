@@ -323,8 +323,7 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(
 	FSceneOutlinerModule& SceneOutlinerModule =
 		FModuleManager::LoadModuleChecked<FSceneOutlinerModule>("SceneOutliner");
 
-	FActorFilterPredicate ActorFilter = FActorFilterPredicate::CreateLambda(
-		[ContainsConstraint](const AActor* const Actor) { return ContainsConstraint(Actor); });
+	FActorFilterPredicate ActorFilter = FActorFilterPredicate::CreateLambda(ContainsConstraint);
 
 	FCustomSceneOutlinerDeleteDelegate DeleteAction =
 		FCustomSceneOutlinerDeleteDelegate::CreateLambda(
@@ -355,8 +354,7 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(
 
 	using FActorFilter = TSceneOutlinerPredicateFilter<FActorTreeItem>;
 	TSharedPtr<FActorFilter> ActorFilter = MakeShared<FActorFilter>(
-		FActorTreeItem::FFilterPredicate::CreateLambda([ContainsConstraint](const AActor* Actor)
-													   { return ContainsConstraint(Actor); }),
+		FActorTreeItem::FFilterPredicate::CreateLambda(ContainsConstraint),
 		FSceneOutlinerFilter::EDefaultBehaviour::Fail);
 
 	FCustomSceneOutlinerDeleteDelegate DeleteAction =
