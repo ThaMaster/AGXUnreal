@@ -5,10 +5,15 @@
 // AGX Dynamics for Unreal includes.
 #include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 #include "Constraints/AGX_ConstraintActor.h"
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_PropertyUtilities.h"
 
 // Unreal Engine includes.
+#if UE_VERSION_OLDER_THAN(5, 0, 0) == false
+#include "ActorMode.h"
+#include "ActorTreeItem.h"
+#endif
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
@@ -302,6 +307,16 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserCategory(
 void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(
 	IDetailCategoryBuilder& CategoryBuilder, UAGX_AgxEdModeConstraints* ConstraintsSubMode)
 {
+	auto ContainsConstraint = [](const AActor* Actor)
+	{
+		if (Actor == nullptr)
+		{
+			return false;
+		}
+
+		return Actor->FindComponentByClass<UAGX_ConstraintComponent>() != nullptr;
+	};
+
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 	using namespace SceneOutliner;
 
@@ -309,10 +324,7 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(
 		FModuleManager::LoadModuleChecked<FSceneOutlinerModule>("SceneOutliner");
 
 	FActorFilterPredicate ActorFilter = FActorFilterPredicate::CreateLambda(
-		[](const AActor* const Actor)
-		{
-			return Actor->IsA(AAGX_ConstraintActor::StaticClass()); // only show constraints
-		});
+		[ContainsConstraint](const AActor* const Actor) { return ContainsConstraint(Actor); });
 
 	FCustomSceneOutlinerDeleteDelegate DeleteAction =
 		FCustomSceneOutlinerDeleteDelegate::CreateLambda(
@@ -338,48 +350,38 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
 		.WholeRowContent()[SNew(SScrollBox) + SScrollBox::Slot().Padding(0)[SceneOutliner]];
 #else
-#if 0 // @todo[UE5], figure out how to properly do this in ue5 and then remove the # if 0.
-	// TSceneOutlinerPredicateFilter is no longer a thing in Unreal Engine 5.
-	// There may be hints to what to do instead in Engine/Source/Editor/SceneOutliner/Private/ActorBrowsingMode.cpp.
-	using namespace SceneOutliner;
-
-
 	FSceneOutlinerModule& SceneOutlinerModule =
 		FModuleManager::LoadModuleChecked<FSceneOutlinerModule>("SceneOutliner");
 
 	using FActorFilter = TSceneOutlinerPredicateFilter<FActorTreeItem>;
-	TSharedPtr<FActorFilter> ActorFilter =
-		MakeShared<FActorFilter>(
-			FActorTreeItem::FFilterPredicate::CreateStatic([](const AActor* Actor) {
-				return Actor->IsA(AAGX_ConstraintActor::StaticClass())}),
-			FSceneOutlinerFilter::EDefaultBehavior::Pass,
-			FActorTreeItem::FFilterPredicate::CreateLambda([](const AActor* Actor) {
-				return Actor->IsA(UAGX_ConstraintActor::StaticClass());}));
+	TSharedPtr<FActorFilter> ActorFilter = MakeShared<FActorFilter>(
+		FActorTreeItem::FFilterPredicate::CreateLambda([ContainsConstraint](const AActor* Actor)
+													   { return ContainsConstraint(Actor); }),
+		FSceneOutlinerFilter::EDefaultBehaviour::Fail);
 
 	FCustomSceneOutlinerDeleteDelegate DeleteAction =
 		FCustomSceneOutlinerDeleteDelegate::CreateLambda(
-			[](const TArray<TWeakObjectPtr<AActor>>& Actors) {}); // no delete
+			[](const TArray<TWeakPtr<ISceneOutlinerTreeItem>>& Items) {}); // no delete
 
-	FInitializationOptions Options;
-	Options.Mode = ESceneOutlinerMode::ActorBrowsing;
+	FSceneOutlinerInitializationOptions Options;
+	Options.ModeFactory = FCreateSceneOutlinerMode::CreateLambda(
+		[](SSceneOutliner* Outliner) { return new FActorMode(Outliner); });
 	Options.bShowHeaderRow = true;
 	Options.bShowParentTree = false;
 	Options.bShowSearchBox = false;
 	Options.bFocusSearchBoxWhenOpened = false;
 	Options.bShowTransient = true;
 	Options.bShowCreateNewFolder = false;
-	Options.ColumnMap.Add(FBuiltInColumnTypes::Label(), FColumnInfo(EColumnVisibility::Visible, 0));
+	Options.ColumnMap.Add(FSceneOutlinerBuiltInColumnTypes::Label(), FSceneOutlinerColumnInfo());
 	Options.ColumnMap.Add(
-		FBuiltInColumnTypes::ActorInfo(), FColumnInfo(EColumnVisibility::Visible, 10));
+		FSceneOutlinerBuiltInColumnTypes::ActorInfo(), FSceneOutlinerColumnInfo());
 	Options.CustomDelete = DeleteAction;
-	Options.Filters->AddFilterPredicate(ActorFilter);
+	Options.Filters->Add(ActorFilter);
 
-	TSharedRef<SWidget> SceneOutliner =
-		SceneOutlinerModule.CreateSceneOutliner(Options, FOnActorPicked());
+	TSharedRef<SWidget> SceneOutliner = SceneOutlinerModule.CreateActorBrowser(Options);
 
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
 		.WholeRowContent()[SNew(SScrollBox) + SScrollBox::Slot().Padding(0)[SceneOutliner]];
-#endif
 #endif
 }
 
