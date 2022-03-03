@@ -376,7 +376,7 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(
 	Options.CustomDelete = DeleteAction;
 	Options.Filters->Add(ActorFilter);
 
-	TSharedRef<SWidget> SceneOutliner = SceneOutlinerModule.CreateActorBrowser(Options);
+	TSharedRef<SWidget> SceneOutliner = SceneOutlinerModule.CreateSceneOutliner(Options);
 
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
 		.WholeRowContent()[SNew(SScrollBox) + SScrollBox::Slot().Padding(0)[SceneOutliner]];
