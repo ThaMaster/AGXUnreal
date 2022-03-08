@@ -558,11 +558,15 @@ public class AGXDynamicsLibrary : ModuleRules
 				"agxUtil",
 				"agxVehicle",
 				"agxWire",
-				Path.Combine("external", "GIMPACT"),
 				Path.Combine("external", "hedley"),
 				Path.Combine("external", "json"),
 				Path.Combine("external", "pystring")
 			};
+
+			if (InstalledAGXResources.GetAGXVersion().IsNewerOrEqualTo(2, 32, 0, 0))
+			{
+				HeaderFileDirs.Add(Path.Combine("external", "GIMPACT"));
+			}
 
 			// Single header files to include.
 			List<string> HeaderFiles = new List<string>
