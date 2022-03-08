@@ -194,15 +194,18 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("agxCable", LibSource.AGX);
 		RuntimeLibFiles.Add("agxModel", LibSource.AGX);
 		RuntimeLibFiles.Add("agxVehicle", LibSource.AGX);
-		RuntimeLibFiles.Add("vdbgrid", LibSource.AGX);
 		RuntimeLibFiles.Add("colamd", LibSource.AGX);
-		RuntimeLibFiles.Add("Half", LibSource.TerrainDependencies);
-		RuntimeLibFiles.Add("Iex-2_2", LibSource.TerrainDependencies);
-		RuntimeLibFiles.Add("Imath-2_2", LibSource.TerrainDependencies);
-		RuntimeLibFiles.Add("IlmImf-2_2", LibSource.TerrainDependencies);
-		RuntimeLibFiles.Add("IlmThread-2_2", LibSource.TerrainDependencies);
-		RuntimeLibFiles.Add("openvdb", LibSource.TerrainDependencies);
-		RuntimeLibFiles.Add("tbb", LibSource.TerrainDependencies);
+		if (TargetAGXVersion.IsOlderThan(2, 32, 0, 0))
+		{
+			RuntimeLibFiles.Add("vdbgrid", LibSource.AGX);
+			RuntimeLibFiles.Add("openvdb", LibSource.TerrainDependencies);
+			RuntimeLibFiles.Add("Half", LibSource.TerrainDependencies);
+			RuntimeLibFiles.Add("Iex-2_2", LibSource.TerrainDependencies);
+			RuntimeLibFiles.Add("Imath-2_2", LibSource.TerrainDependencies);
+			RuntimeLibFiles.Add("IlmImf-2_2", LibSource.TerrainDependencies);
+			RuntimeLibFiles.Add("IlmThread-2_2", LibSource.TerrainDependencies);
+			RuntimeLibFiles.Add("tbb", LibSource.TerrainDependencies);
+		}
 
 		// List of link-time libraries that we need. These will be added to the
 		// Unreal Engine PublicAdditionalLibraries list. See
