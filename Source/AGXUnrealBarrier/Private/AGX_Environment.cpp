@@ -83,20 +83,24 @@ void FAGX_Environment::LoadDynamicLibraries()
 	LibraryNameList.ParseIntoArray(AGXDynamicsDependencyFileNames, TEXT(" "), false);
 	const FString DependecyDir =
 		FPaths::Combine(AgxResourcesPath, FString("bin"), FString("Win64"));
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-	// vdbgrid must always be loaded to be found by agxTerrain during runtime.
-	AGXDynamicsDependencyFileNames.Add("vdbgrid.dll");
-#endif
+	if (!IsAGXDynamicsVersionNewerOrEqualTo(2, 32, 0, 0))
+	{
+		// vdbgrid must always be loaded to be found by agxTerrain during runtime.
+		AGXDynamicsDependencyFileNames.Add("vdbgrid.dll");
+	}
+
 #elif defined(__linux__)
 	const FString DependecyDir =
 		FPaths::Combine(AgxResourcesPath, FString("lib"), FString("Linux"));
 
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-	// vdbgrid must always be loaded to be found by agxTerrain during runtime.
-	// On Linux, we give GetDllHandle the full path, because otherwise it seems to look in the wrong
-	// place.
-	AGXDynamicsDependencyFileNames.Add(FPaths::Combine(DependecyDir, TEXT("libvdbgrid.so")));
-#endif
+	if (!IsAGXDynamicsVersionNewerOrEqualTo(2, 32, 0, 0))
+	{
+		// vdbgrid must always be loaded to be found by agxTerrain during runtime.
+		// On Linux, we give GetDllHandle the full path, because otherwise it seems to look in the
+		//  wrong place.
+		AGXDynamicsDependencyFileNames.Add(FPaths::Combine(DependecyDir, TEXT("libvdbgrid.so")));
+	}
+
 #else
 	// Unsupported platform.
 	static_assert(false);
