@@ -558,6 +558,7 @@ public class AGXDynamicsLibrary : ModuleRules
 				"agxUtil",
 				"agxVehicle",
 				"agxWire",
+				Path.Combine("external", "GIMPACT"),
 				Path.Combine("external", "hedley"),
 				Path.Combine("external", "json"),
 				Path.Combine("external", "pystring")
