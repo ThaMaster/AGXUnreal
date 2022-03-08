@@ -3,6 +3,7 @@
 #include "Terrain/AGX_Terrain.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
@@ -622,8 +623,8 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	const int32 NumVerticesX = NativeBarrier.GetGridSizeX();
 	const int32 NumVerticesY = NativeBarrier.GetGridSizeY();
 	const int32 NumPixels = NumVerticesX * NumVerticesY;
-	check(DisplacementData.Num() == NumPixels);
-	check(DisplacementMapRegions.Num() == 1);
+	AGX_CHECK(DisplacementData.Num() == NumPixels);
+	AGX_CHECK(DisplacementMapRegions.Num() == 1);
 
 	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
 	for (int32 PixelIndex = 0; PixelIndex < NumPixels; ++PixelIndex)
@@ -813,8 +814,8 @@ void AAGX_Terrain::UpdateParticlesMap()
 	TArray<float> Radii = NativeBarrier.GetParticleRadii();
 	TArray<FQuat> Rotations = NativeBarrier.GetParticleRotations();
 
-	check(Positions.Num() == Radii.Num());
-	check(Positions.Num() == Rotations.Num());
+	AGX_CHECK(Positions.Num() == Radii.Num());
+	AGX_CHECK(Positions.Num() == Rotations.Num());
 
 	int32 NumParticles = FMath::Min(Positions.Num(), MaxNumParticles);
 	ParticleSystemComponent->SetNiagaraVariableInt("User.TargetParticleCount", NumParticles);
