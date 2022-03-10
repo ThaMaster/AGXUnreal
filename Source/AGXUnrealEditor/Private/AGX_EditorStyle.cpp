@@ -11,6 +11,7 @@
 TSharedPtr<FSlateStyleSet> FAGX_EditorStyle::StyleInstance = nullptr;
 const FName FAGX_EditorStyle::AgxIcon("AgxIcon");
 const FName FAGX_EditorStyle::AgxIconSmall("AgxIcon.Small");
+const FName FAGX_EditorStyle::AgxIconTiny("AgxIcon.Tiny");
 const FName FAGX_EditorStyle::JointIcon("JointIcon");
 const FName FAGX_EditorStyle::JointIconSmall("JointIcon.Small");
 const FName FAGX_EditorStyle::FileIcon("FileIcon");
@@ -86,6 +87,7 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 
 	Style->Set(AgxIcon, new IMAGE_BRUSH("Icons/symbol_white_64x64", IconSize64));
 	Style->Set(AgxIconSmall, new IMAGE_BRUSH("Icons/symbol_white_32x32", IconSize32));
+	Style->Set(AgxIconTiny, new IMAGE_BRUSH("Icons/symbol_white_32x32", IconSize16));
 	Style->Set(JointIcon, new IMAGE_BRUSH("Icons/constraint_64x64", IconSize64));
 	Style->Set(JointIconSmall, new IMAGE_BRUSH("Icons/constraint_32x32", IconSize32));
 	Style->Set(FileIcon, new IMAGE_BRUSH("Icons/file_64x64", IconSize64));

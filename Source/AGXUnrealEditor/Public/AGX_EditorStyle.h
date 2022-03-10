@@ -12,6 +12,7 @@ class AGXUNREALEDITOR_API FAGX_EditorStyle
 public: // Names of common resources
 	static const FName AgxIcon;
 	static const FName AgxIconSmall;
+	static const FName AgxIconTiny;
 	static const FName JointIcon;
 	static const FName JointIconSmall;
 	static const FName FileIcon;
