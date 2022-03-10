@@ -413,7 +413,16 @@ void FAGXUnrealEditorModule::UnregisterModes()
 
 void FAGXUnrealEditorModule::RegisterPlacementCategory()
 {
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 	FPlacementCategoryInfo PlacementCategory(LOCTEXT("DisplayName", "AGX"), "AGX", TEXT("PMAGX"));
+#else
+	const FSlateIcon Icon(
+		FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIconTiny,
+		FAGX_EditorStyle::AgxIconTiny);
+
+	FPlacementCategoryInfo PlacementCategory(
+		LOCTEXT("DisplayName", "AGX"), Icon, "AGX", TEXT("PMAGX"));
+#endif
 	IPlacementModeModule::Get().RegisterPlacementCategory(PlacementCategory);
 
 	auto RegisterPlaceableItem = [&](UClass* Class)
