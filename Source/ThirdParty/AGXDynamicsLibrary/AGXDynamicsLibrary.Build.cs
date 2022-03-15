@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 
 using UnrealBuildTool;
 
@@ -784,7 +785,37 @@ public class AGXDynamicsLibrary : ModuleRules
 		// https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.getfiles?view=net-6.0&viewFallbackFrom=net-4.0
 		// says that 'searchPattern' uses wildcards (* and ?) and not regular
 		// expressions. Is '.' also a wildcard? If so, is it the same as '?'?
-		string[] VersionedLibraries = Directory.GetFiles(LibraryDirectory, "lib*\\.so\\.*");
+		Console.WriteLine("Patching ELFs in '{0}'.", LibraryDirectory);
+		Console.WriteLine("It contains the following files:");
+		RunProcess("ls", String.Format("-l {0}", LibraryDirectory));
+
+		// Here we need to build a list of library files in the given directory
+		// that has a version suffix. The following commented out code works
+		// when generating project files with 'GenerateProjectFiles.sh' but not
+		// when building with 'RunUAT.sh BuildPlugin'. Why?
+		//
+		// string[] VersionedLibraries = Directory.GetFiles(LibraryDirectory, "lib*\\.so\\.*");
+		//
+		// The error message is:
+		//
+		// System.IO.DirectoryNotFoundException: Could not find a part of the path '/media/s800/Algoryx/AGXUnreal/ManualPluginExport/HostProject/Plugins/AGXUnreal/Source/ThirdParty/agx/lib/Linux/lib*/.so'.
+		//
+		// There are some weird slashes going on there.
+		//
+		// The following is fallback-code that does the filtering manually using
+		// a regular expression.
+ 		List<string> VersionedLibraries = new List<string>();
+ 		string[] AllFiles = Directory.GetFiles(LibraryDirectory);
+ 		string Pattern = "lib.*\\.so\\..*"; // Match all libLIBNAME.so files that has a '.' after .so.
+ 		foreach (string FilePath in AllFiles)
+ 		{
+ 			string FileName = Path.GetFileName(FilePath);
+ 			if (Regex.Matches(FileName, Pattern, RegexOptions.IgnoreCase).Count > 0)
+ 			{
+ 				VersionedLibraries.Add(FileName);
+ 			}
+ 		}
+
 		foreach (string Library in VersionedLibraries)
 		{
 			File.Delete(Library);
