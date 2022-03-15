@@ -785,10 +785,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		// https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.getfiles?view=net-6.0&viewFallbackFrom=net-4.0
 		// says that 'searchPattern' uses wildcards (* and ?) and not regular
 		// expressions. Is '.' also a wildcard? If so, is it the same as '?'?
-		Console.WriteLine("Patching ELFs in '{0}'.", LibraryDirectory);
-		Console.WriteLine("It contains the following files:");
-		RunProcess("ls", String.Format("-l {0}", LibraryDirectory));
-
+		//
 		// Here we need to build a list of library files in the given directory
 		// that has a version suffix. The following commented out code works
 		// when generating project files with 'GenerateProjectFiles.sh' but not
