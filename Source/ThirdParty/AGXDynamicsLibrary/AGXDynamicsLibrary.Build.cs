@@ -37,10 +37,12 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	/// The various dependency sources we have. Each come with an include path,
 	/// a linker path and a runtime path. The include path contains the header
-	/// files (.h) needed to compile source files using the dependency. The
-	/// linker path contains libraries (.lib/.so) needed link applications and
-	/// libraries using the dependency. The runtime path contains other files
-	/// (.dll/.so/.agxEntity) needed to run applications using the dependency.
+	/// files (.h) needed to compile source files using the libraries provided
+	/// by the dependency source. The linker path contains libraries (.lib/.so)
+	/// needed link applications and libraries using libraries provided by the
+	/// dependency source. The runtime path contains other files
+	/// (.dll/.so/.agxEntity) needed to run applications using libraries
+	/// provided by the dependency source.
 	///
 	/// LibSourceInfo instances are responsible for keeping the LibSource ->
 	/// Paths associations.
@@ -81,7 +83,7 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	/// A carrier for the paths associated with a LibSource.
 	///
-	/// Instance of LibSourceInfo are help by AGXResourcesInfo in a
+	/// Instance of LibSourceInfo are held by AGXResourcesInfo in a
 	/// LibSource -> LibSourceInfo dictionary.
 	private class LibSourceInfo
 	{
@@ -160,7 +162,7 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		// This marks this module as an external library, which means that the
 		// library binary already exists. There are no source files in this
-		// module.
+		// module and Unreal Build Tool will not compile anything.
 		Type = ModuleType.External;
 
 		if (!IsAGXResourcesBundled() && !IsAGXSetupEnvCalled())
@@ -182,8 +184,9 @@ public class AGXDynamicsLibrary : ModuleRules
 		AGXVersion TargetAGXVersion =
 			IsAGXResourcesBundled() ? BundledAGXResources.GetAGXVersion() : InstalledAGXResources.GetAGXVersion();
 
-		// List of run-time libraries that we need. These will be added to the
-		// Unreal Engine RuntimeDependencies list. See
+		// List of run-time libraries from AGX Dynamics and its dependencies
+		// that we need. These will be added to the Unreal Engine
+		// RuntimeDependencies list. See
 		// https://docs.unrealengine.com/en-US/ProductionPipelines/BuildTools/UnrealBuildTool/ThirdPartyLibraries/index.html
 		Dictionary<string, LibSource> RuntimeLibFiles = new Dictionary<string, LibSource>();
 		RuntimeLibFiles.Add("agxPhysics", LibSource.AGX);
@@ -207,8 +210,9 @@ public class AGXDynamicsLibrary : ModuleRules
 			RuntimeLibFiles.Add("tbb", LibSource.TerrainDependencies);
 		}
 
-		// List of link-time libraries that we need. These will be added to the
-		// Unreal Engine PublicAdditionalLibraries list. See
+		// List of link-time libraries from AGX Dynamics and its dependencies
+		// that we need. These will be added to the Unreal Engine
+		// PublicAdditionalLibraries list. See
 		// https://docs.unrealengine.com/en-US/ProductionPipelines/BuildTools/UnrealBuildTool/ModuleFiles/index.html
 		Dictionary<string, LibSource> LinkLibFiles = new Dictionary<string, LibSource>();
 		LinkLibFiles.Add("agxPhysics", LibSource.AGX);
@@ -218,8 +222,9 @@ public class AGXDynamicsLibrary : ModuleRules
 		LinkLibFiles.Add("agxCable", LibSource.AGX);
 		LinkLibFiles.Add("agxModel", LibSource.AGX);
 
-		// List of the include directories that we need. These will be added to
-		// the Unreal Engine PublicIncludePaths.
+		// List of the include directories from aGX Dynamics and its
+		// dependenciesthat we need. These will be added to the Unreal Engine
+		// PublicIncludePaths.
 		List<LibSource> IncludePaths = new List<LibSource>();
 		IncludePaths.Add(LibSource.AGX);
 
@@ -288,7 +293,6 @@ public class AGXDynamicsLibrary : ModuleRules
 			DelayLoadLibraries.Add("agxTerrain", LibSource.AGX);
 			DelayLoadLibraries.Add("agxCable", LibSource.AGX);
 			DelayLoadLibraries.Add("agxModel", LibSource.AGX);
-
 			AddDelayLoadDependencies(DelayLoadLibraries);
 		}
 
@@ -373,10 +377,19 @@ public class AGXDynamicsLibrary : ModuleRules
 				CopyFile(FileToCopy, DestFilePath);
 			}
 		}
-
-		FixSymlinks(DestDir);
 	}
 
+	/// Unreal Build Tool writes incorrect RPATHs to Unreal Engine module
+	/// library files, which causes runtime linker errors at startup. This
+	/// function sets up a copy of the libraries to the Binaries directory.
+	/// The copy will happen not only when building the plugin, but also when
+	/// packaging a project so those will work as well.
+	///
+	/// This causes library file duplication over multiple directories, but as
+	/// long as the Unreal Build Tool bug remains I don't see how we can do it
+	/// any other way. For more information see internal GitLab issue 548 and
+	/// the corresponding Unreal Developer Network thread at
+	/// https://udn.unrealengine.com/s/question/0D54z00007HUlaJCAT/rpath-in-packaged-plugin-points-to-nonexisting-directory
 	private void AddRuntimeDependencyCopyToBinariesDirectory(string Name, LibSource Src, ReadOnlyTargetRules Target)
 	{
 		string Dir = BundledAGXResources.RuntimeLibraryDirectory(Src);
@@ -385,7 +398,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		// File name and/or extension may include search patterns such as '*' or
 		// '?'. Resolve all these.
 		string[] FilesToAdd = Directory.GetFiles(Dir, FileName);
-
 		if (FilesToAdd.Length == 0)
 		{
 			Console.Error.WriteLine("Error: File {0} did not match any file in {1}. The dependency " +
@@ -447,11 +459,16 @@ public class AGXDynamicsLibrary : ModuleRules
 
 	private string GetPluginRootPath()
 	{
+		// ModuelDirectory is the full path to
+		// AGXUnrealDev/Plugins/AGXUnreal/Source/ThirdParty/AGXDynamicsLibrary.
 		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", ".."));
 	}
 
-	/// Returns true if AGX Dynamics resources are currently bundled with the plugin.
-	/// Returns false otherwise.
+	/// Returns true if AGX Dynamics resources are currently bundled with the
+	/// plugin. Returns false otherwise.
+	///
+	/// This is not a comprehensive check, it will not detect if some files are
+	/// missing.
 	private bool IsAGXResourcesBundled()
 	{
 		return Directory.Exists(GetBundledAGXResourcesPath());
@@ -463,8 +480,8 @@ public class AGXDynamicsLibrary : ModuleRules
 	{
 		if (!IsAGXSetupEnvCalled())
 		{
-			Console.Error.WriteLine("Error: Could not bundle AGX Dynamics resources because no AGX Dynamics installation "
-				+ "was found. Please ensure that setup_env has been called.");
+			Console.Error.WriteLine("\n\nError: Could not bundle AGX Dynamics resources because no AGX Dynamics "
+				+ "installation was found. Please ensure that setup_env has been called.\n\n");
 			return;
 		}
 
@@ -628,7 +645,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			string PhysicsDirSource = Path.Combine(ComponentsDirSource, "agx", "Physics");
 			string PhysicsDirDest = Path.Combine(ComponentsDirDest, "agx", "Physics");
 
-			// The two .agxKernel files are not used and have given issues because of too long file paths on
+			// These two .agxKernel files are not used and have caused issues because of too long file paths on
 			// Windows since they are located in a very deep directory tree branch.
 			List<string> FilesToIgnore = new List<string>
 				{ "GenerateLinesFromJacobians.agxKernel", "RenderJacobians.agxTask" };
@@ -659,12 +676,10 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		BundledAGXResources.ParseAGXVersion();
 
-
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
-			FixSymlinks(BundledAGXResources.RuntimeLibraryDirectory(LibSource.AGX));
+			PatchElfs(BundledAGXResources.RuntimeLibraryDirectory(LibSource.AGX));
 		}
-
 
 		Console.WriteLine(
 			"\nAGX Dynamics resources bundled from {0} to {1}.",
@@ -736,99 +751,75 @@ public class AGXDynamicsLibrary : ModuleRules
 		return true;
 	}
 
-	private void FixSymlinks(string LibraryDirectory)
+	private bool RunProcess(string Executable, string Arguments)
 	{
-		// This function is still work-in-progress and contains a few
-		// alternatives with commends describing pros and cons of each.
+		var Config = new ProcessStartInfo(Executable, Arguments);
+		Config.CreateNoWindow = true;
+		Config.UseShellExecute = false;
+		Process RunningProcess = Process.Start(Config);
+		RunningProcess.WaitForExit();
+		return RunningProcess.ExitCode == 0;
+	}
 
-		// Replace the library symlinks with linker scripts doing INPUT on the
-		// linked-to file. Unreal Build Tool does not support symlinks and
-		// will ignore them, and a regular file copy will produce duplicates
-		// of all library files since the symlinks will be copied as the
-		// pointed-to file. This wasts disk space.
+	/// Unreal Build Tool does not allow symlinks, they are deliberately ignored.
+	/// On Linux AGX Dynamics is built following the common convention with
+	/// an actual library file with a version number suffix on the filename and
+	/// a symlink without the version suffix pointing to the actual library.
+	///
+	/// C#'s CopyFile copies the pointed-to files and not the symlink itself,
+	/// so after bundling we get duplicates of all library files.
+	///
+	/// To make AGX Dynamics Unreal Engine compatible we clear out all
+	/// versioning stuff, ending up with a single file per library.
+	private void PatchElfs(string LibraryDirectory)
+	{
+		// List from OldName to NewName.
+		var Renamings = new List<Tuple<String, String>>();
+
+		// Delete all the files with version suffix. The regular libLIBNAME.so
+		// files will remain and since CopyFile copies the pointed-to file for
+		// symlinks we will still have the actual library files.
 		//
-		// As an alternative to symlinks we can use linker scripts that include
-		// the pointed-to file.
-		string VersionSuffix = "." + BundledAGXResources.GetAGXVersion().ToString();
-		string[] BundledAGXLibraries = Directory.GetFiles(LibraryDirectory, "lib*.so" + VersionSuffix);
-		foreach (string Library in BundledAGXLibraries)
+		// It surprises me that we need to escape the '.'s.
+		// https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.getfiles?view=net-6.0&viewFallbackFrom=net-4.0
+		// says that 'searchPattern' uses wildcards (* and ?) and not regular
+		// expressions. Is '.' also a wildcard? If so, is it the same as '?'?
+		string[] VersionedLibraries = Directory.GetFiles(LibraryDirectory, "lib*\\.so\\.*");
+		foreach (string Library in VersionedLibraries)
 		{
-			if (Library.Contains("vdbgrid"))
-			{
-				// Unfortunately, linker scripts only work at link time. For the
-				// libraries we do dlopen on we must have an actual library and
-				// not a linker script. A symlink would be fine, but those don't
-				// survive Unreal Build Tool. In some cases we can patch the
-				// dlopen call to open the larget of the link instead, but for
-				// the following we cannot do that. The following list should
-				// match the Contains check above. By doing continue here we
-				// will copy the file twice.
-				//
-				// vdbgrid:
-				// The dlopen call is done by AGX Dynamics, not the plugin,
-				// and it has been hard-coded to open libvdbgrid.so.
-				continue;
-			}
+			File.Delete(Library);
+
 			string FileName = Path.GetFileName(Library);
-			string LinkName = FileName.Substring(0, FileName.Length - VersionSuffix.Length);
-			string LinkPath = Path.Combine(LibraryDirectory, LinkName);
-			string LinkTarget =  FileName;
-
-			// Delete the file that should be a linker script instead.
-			File.Delete(LinkPath);
-
-			// Create the linker script.
-			using (StreamWriter LinkFile = new StreamWriter(LinkPath))
-			{
-				LinkFile.WriteLine("INPUT ({0})", LinkTarget);
-			}
+			int SuffixIndex = FileName.LastIndexOf(".so");
+			string NewFileName = FileName.Substring(0, SuffixIndex + ".so".Length);
+			Renamings.Add(new Tuple<String, String>(FileName, NewFileName));
 		}
 
-		/// @fixme Sometimes Unreal Build Tool doesn't copy symlinks at all
-		/// when building with "RunUAT.sh BuildPlugin". We can still run
-		/// Blueprint projects without them, but C++ projects that contains
-		/// AGX Dynamics Barrier modules cannot link. For now we don't create
-		/// symlinks and let the file duplicates remain instead. Figure out
-		/// how to properly make symlinks survive through Unreal Build Tool.
-		// return;
+		// The libraries we actually need. These will be re-sonamed and have
+		// their NEEDED entries updated for the libraries that no longer exists.
+		string[] Libraries = Directory.GetFiles(LibraryDirectory, "lib*.so");
 
+		// Set an soname that is just the filename, no version part, on all
+		// remaining libraries.
+		foreach (string Library in Libraries)
+		{
+			string FileName = Path.GetFileName(Library);
+			RunProcess("patchelf", String.Format("--set-soname {0} {1}", FileName, Library));
+		}
 
-
-		// Linux libraries uses symlinks for version management. We have not
-		// been able to figure out how to have these symlinks survive the
-		// file copy done above, so here we simply replace the file
-		// duplicate with a symlink manually. It's a hack.
-		/// @todo Figure out how to copy a symlink.
-		//
-		// We would like to use System.IO.CreateSymbolicLink, assuming it
-		// does the right thing on Linux, but it isn't available on the .Net
-		// runtime used by Unreal Engine, so falling back to external
-		// process for now.
-		//
-		// A related problem is that Unreal Build Tool's RuntimeDependencies
-		// also doesn't understand symlinks so in some cases the symlink we
-		// create here get replaced by a full file later. Don't know what to do
-		// about that. Also, sometimes the symlinks are ignored which leads to
-		// missing files in the export directory.
-		//string VersionSuffix = "." + BundledAGXResources.GetAGXVersion().ToString();
-		//string[] BundledAGXLibraries = Directory.GetFiles(LibraryDirectory, "lib*.so" + VersionSuffix);
-		//foreach (string Library in BundledAGXLibraries)
-		//{
-		//	string FileName = Path.GetFileName(Library);
-		//	string LinkName = FileName.Substring(0, FileName.Length - VersionSuffix.Length);
-		//	string LinkPath = Path.Combine(LibraryDirectory, LinkName);
-		//	string LinkTarget = FileName;
-		//	string LinkArguments = String.Format("-s \"{0}\" \"{1}\"", LinkTarget, LinkPath);
-		//
-		//	// Delete the file that should be a symlink.
-		//	File.Delete(LinkPath);
-		//
-		//	// Create the symlink.
-		//	var LinkInfo = new ProcessStartInfo("ln", LinkArguments);
-		//	LinkInfo.CreateNoWindow = true;
-		//	LinkInfo.UseShellExecute = false;
-		//	Process.Start(LinkInfo).WaitForExit();
-		//}
+		// In each library, update the NEEDED entries for all dependencies we
+		// just re-sonamed.
+		foreach (string Library in Libraries)
+		{
+			foreach(Tuple<String, String> Renaming in Renamings)
+			{
+				// The following assume that nothing bad happens when trying to
+				// replace a NEEDED entry that doesn't exist in the library.
+				string OldName = Renaming.Item1;
+				string NewName = Renaming.Item2;
+				RunProcess("patchelf", String.Format("--replace-needed {0} {1} {2}", OldName, NewName, Library));
+			}
+		}
 	}
 
 	private void CleanBundledAGXDynamicsResources()
