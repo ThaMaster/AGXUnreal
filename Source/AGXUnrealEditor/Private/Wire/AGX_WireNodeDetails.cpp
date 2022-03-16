@@ -12,6 +12,7 @@
 // Unreal Engine includes.
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "Editor/UnrealEdEngine.h"
 #include "IDetailChildrenBuilder.h"
 #include "IDetailGroup.h"
 #include "Misc/Attribute.h"
@@ -202,7 +203,9 @@ void FAGX_WireNodeDetails::GenerateChildContent(IDetailChildrenBuilder& Children
 		[
 			SNew(STextBlock)
 			.Text(this, &FAGX_WireNodeDetails::OnGetRigidBodyLabel)
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 			.ColorAndOpacity(this, &FAGX_WireNodeDetails::OnGetRigidBodyNameColor)
+#endif
 		]
 	];
 
