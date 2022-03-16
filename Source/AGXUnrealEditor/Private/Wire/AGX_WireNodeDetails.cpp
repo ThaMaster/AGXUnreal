@@ -357,6 +357,16 @@ namespace AGX_WireNodeDetails_helpers
 		BodyNameComboBox.SetSelectedItem(RigidBodyNames[Index]);
 		return *RigidBodyNames[Index];
 	}
+
+	bool ContainsRigidBody(const AActor* Actor)
+	{
+		if (Actor == nullptr)
+		{
+			return false;
+		}
+
+		return Actor->FindComponentByClass<UAGX_RigidBodyComponent>() != nullptr;
+	}
 }
 
 // Begin selection getters.
@@ -651,7 +661,8 @@ void FAGX_WireNodeDetails::OnGetAllowedClasses(TArray<const UClass*>& AllowedCla
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 void FAGX_WireNodeDetails::OnGetActorFilters(TSharedPtr<SceneOutliner::FOutlinerFilters>& Filters)
 {
-	/// @todo What should we do here?
+	Filters->AddFilterPredicate(SceneOutliner::FActorFilterPredicate::CreateStatic(
+		AGX_WireNodeDetails_helpers::ContainsRigidBody));
 }
 #else
 void FAGX_WireNodeDetails::OnGetActorFilters(TSharedPtr<FSceneOutlinerFilters>& OutFilters)
