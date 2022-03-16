@@ -10,6 +10,10 @@
 #include "Wire/AGX_WireComponentVisualizer.h"
 
 // Unreal Engine includes.
+#if UE_VERSION_OLDER_THAN(5, 0, 0) == false
+#include "ActorTreeItem.h"
+#endif
+
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "Editor/UnrealEdEngine.h"
@@ -17,6 +21,8 @@
 #include "IDetailGroup.h"
 #include "Misc/Attribute.h"
 #include "PropertyCustomizationHelpers.h"
+#include "SceneOutlinerModule.h"
+#include "SceneOutlinerPublicTypes.h"
 #include "ScopedTransaction.h"
 #include "UnrealEdGlobals.h"
 #include "Widgets/Colors/SColorBlock.h"
@@ -667,10 +673,13 @@ void FAGX_WireNodeDetails::OnGetActorFilters(TSharedPtr<SceneOutliner::FOutliner
 #else
 void FAGX_WireNodeDetails::OnGetActorFilters(TSharedPtr<FSceneOutlinerFilters>& OutFilters)
 {
-	/// @todo [UE5] Compare with
-	/// void FPropertyEditor::OnGetActorFiltersForSceneOutliner( TSharedPtr<FSceneOutlinerFilters>&
-	/// OutFilters ) in
-	/// Engine/Source/Editor/PropertyEditor/Private/Presentation/PropertyEditor/PropertyEditor.cpp.
+	using FActorFilter = TSceneOutlinerPredicateFilter<FActorTreeItem>;
+	TSharedPtr<FActorFilter> ActorFilter = MakeShared<FActorFilter>(
+		FActorTreeItem::FFilterPredicate::CreateStatic(
+			AGX_WireNodeDetails_helpers::ContainsRigidBody),
+		FSceneOutlinerFilter::EDefaultBehaviour::Fail);
+
+	OutFilters->Add(ActorFilter);
 }
 #endif
 
