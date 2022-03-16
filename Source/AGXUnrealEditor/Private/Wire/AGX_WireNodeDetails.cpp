@@ -12,6 +12,7 @@
 // Unreal Engine includes.
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "Editor/UnrealEdEngine.h"
 #include "IDetailChildrenBuilder.h"
 #include "IDetailGroup.h"
 #include "Misc/Attribute.h"
