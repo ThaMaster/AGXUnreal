@@ -626,24 +626,16 @@ FText FAGX_WireNodeDetails::OnGetRigidBodyLabel() const
 
 FSlateColor FAGX_WireNodeDetails::OnGetRigidBodyNameColor() const
 {
-	// Here I would like to get the default text color so that the Rigid Body name looks just like
-	// it would if we hadn't had this callback in most cases. But I don't know how to do that, so
-	// defaulting to black for now.
-	const FLinearColor DefaultColor = FLinearColor::Black;
-	// The following are some of my attempts.
-	// FLinearColor DefaultColor = FSlateColor::UseForeground().GetColor(FWidgetStyle());
-	// FLinearColor DefaultColor = FCoreStyle::GetDefaultFont().Get()->GetColor(FWidgetStyle());
-
 	if (BodyNameComboBox->GetSelectedItem().IsValid() &&
 		BodyNameComboBox->GetSelectedItem() == RigidBodyNames[0])
 	{
 		// The first element of RigidBodyNames is the "unknown" marker. It is selected when the
-		// underlying node doesn't have a Rigid Body name, and when the name it does have doen't
+		// underlying node doesn't have a Rigid Body name, and when the name it does have doesn't
 		// correspond to any Rigid Body in the Rigid Body owning Actor.
 		return FSlateColor(FLinearColor::Red);
 	}
 
-	return FSlateColor(DefaultColor);
+	return FSlateColor::UseForeground();
 }
 
 FText FAGX_WireNodeDetails::OnGetRigidBodyOwnerLabel() const
