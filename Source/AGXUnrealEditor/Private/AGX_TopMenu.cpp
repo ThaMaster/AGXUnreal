@@ -3,6 +3,7 @@
 #include "AGX_TopMenu.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_EditorStyle.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
@@ -150,28 +151,44 @@ FAGX_TopMenu::~FAGX_TopMenu()
 
 /*virtual*/ void FAGX_TopMenu::FillTopMenu(FMenuBuilder& Builder)
 {
-	Builder.AddSubMenu(
-		LOCTEXT("FileMenuLabel", "File"),
-		LOCTEXT(
-			"FileMenuTooltip",
-			"Interoperability with external file formats, such AGX Dynamics files (.agx) "
-			"or URDF files (.urdf)."),
-		FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillFileMenu));
+	{
+		const FSlateIcon FileIcon(
+			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::FileIconSmall,
+			FAGX_EditorStyle::FileIconSmall);
+		Builder.AddSubMenu(
+			LOCTEXT("FileMenuLabel", "File"),
+			LOCTEXT(
+				"FileMenuTooltip",
+				"Interoperability with external file formats, such AGX Dynamics files (.agx) "
+				"or URDF files (.urdf)."),
+			FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillFileMenu), false, FileIcon);
+	}
 
 	Builder.AddMenuSeparator();
 
-	Builder.AddSubMenu(
-		LOCTEXT("ConstraintMenuLabel", "Constraints"),
-		LOCTEXT("ConstraintMenuTooltip", "Create a constraint."),
-		FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillConstraintMenu));
+	{
+		const FSlateIcon ConstraintIcon(
+			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::JointIconSmall,
+			FAGX_EditorStyle::JointIconSmall);
+		Builder.AddSubMenu(
+			LOCTEXT("ConstraintMenuLabel", "Constraints"),
+			LOCTEXT("ConstraintMenuTooltip", "Create a constraint."),
+			FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillConstraintMenu), false,
+			ConstraintIcon);
+	}
 
 	Builder.AddMenuSeparator();
 
-	Builder.AddMenuEntry(
-		LOCTEXT("AboutAgxDialogLabel", "About..."),
-		LOCTEXT("AboutAgxDialogToolTip", "Open the About AGX Window."), FSlateIcon(),
-		FExecuteAction::CreateRaw(this, &FAGX_TopMenu::OnOpenAboutDialogClicked), NAME_None,
-		EUserInterfaceActionType::Button);
+	{
+		const FSlateIcon AgxIcon(
+			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIconSmall,
+			FAGX_EditorStyle::AgxIconSmall);
+		Builder.AddMenuEntry(
+			LOCTEXT("AboutAgxDialogLabel", "About..."),
+			LOCTEXT("AboutAgxDialogToolTip", "Open the About AGX Window."), AgxIcon,
+			FExecuteAction::CreateRaw(this, &FAGX_TopMenu::OnOpenAboutDialogClicked), NAME_None,
+			EUserInterfaceActionType::Button);
+	}
 }
 
 void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
