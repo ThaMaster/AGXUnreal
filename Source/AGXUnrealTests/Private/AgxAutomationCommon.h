@@ -4,23 +4,14 @@
 
 // Unreal Engine includes.
 #include "Engine/EngineTypes.h"
+#include "Math/Vector.h"
+#include "Math/Rotator.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/EngineVersionComparison.h"
 
 class UWorld;
 
 struct FLinearColor;
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-struct FVector;
-struct FRotator;
-#else
-// Forward declaration not possible because FVector is a typedef of a specialization of a template
-// class in Unreal Engine 5. error: definition of type 'FVector' conflicts with typedef of the same
-// name
-// @todo [UE5] Is there some way to avoid including the entire headers?
-#include "Math/Vector.h"
-#include "Math/Rotator.h"
-#endif
 
 /**
  * A set of helper functions used by several Automation tests.
