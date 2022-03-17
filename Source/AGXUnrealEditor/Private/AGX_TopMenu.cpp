@@ -193,8 +193,8 @@ FAGX_TopMenu::~FAGX_TopMenu()
 
 	{
 		const FSlateIcon AgxIcon(
-			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIconTiny,
-			FAGX_EditorStyle::AgxIconTiny);
+			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIconSmall,
+			FAGX_EditorStyle::AgxIconSmall);
 		Builder.AddMenuEntry(
 			LOCTEXT("AboutAgxDialogLabel", "About..."),
 			LOCTEXT("AboutAgxDialogToolTip", "Open the About AGX Window."), AgxIcon,
