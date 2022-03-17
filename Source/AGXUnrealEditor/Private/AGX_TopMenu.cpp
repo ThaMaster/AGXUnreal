@@ -3,6 +3,7 @@
 #include "AGX_TopMenu.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_EditorStyle.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
@@ -150,28 +151,56 @@ FAGX_TopMenu::~FAGX_TopMenu()
 
 /*virtual*/ void FAGX_TopMenu::FillTopMenu(FMenuBuilder& Builder)
 {
-	Builder.AddSubMenu(
-		LOCTEXT("FileMenuLabel", "File"),
-		LOCTEXT(
-			"FileMenuTooltip",
-			"Interoperability with external file formats, such AGX Dynamics files (.agx) "
-			"or URDF files (.urdf)."),
-		FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillFileMenu));
+	{
+		const FSlateIcon FileIcon(
+			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::FileIconSmall,
+			FAGX_EditorStyle::FileIconSmall);
+		Builder.AddSubMenu(
+			LOCTEXT("FileMenuLabel", "File"),
+			LOCTEXT(
+				"FileMenuTooltip",
+				"Interoperability with external file formats, such AGX Dynamics files (.agx) "
+				"or URDF files (.urdf)."),
+			FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillFileMenu), false, FileIcon);
+	}
 
 	Builder.AddMenuSeparator();
 
-	Builder.AddSubMenu(
-		LOCTEXT("ConstraintMenuLabel", "Constraints"),
-		LOCTEXT("ConstraintMenuTooltip", "Create a constraint."),
-		FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillConstraintMenu));
+	{
+		const FSlateIcon ConstraintIcon(
+			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::JointIconSmall,
+			FAGX_EditorStyle::JointIconSmall);
+		Builder.AddSubMenu(
+			LOCTEXT("ConstraintMenuLabel", "Constraints"),
+			LOCTEXT("ConstraintMenuTooltip", "Create a constraint."),
+			FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillConstraintMenu), false,
+			ConstraintIcon);
+	}
 
 	Builder.AddMenuSeparator();
 
-	Builder.AddMenuEntry(
-		LOCTEXT("AboutAgxDialogLabel", "About..."),
-		LOCTEXT("AboutAgxDialogToolTip", "Open the About AGX Window."), FSlateIcon(),
-		FExecuteAction::CreateRaw(this, &FAGX_TopMenu::OnOpenAboutDialogClicked), NAME_None,
-		EUserInterfaceActionType::Button);
+	{
+		const FSlateIcon LicenseIcon(
+			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::LicenseKeyIcon,
+			FAGX_EditorStyle::LicenseKeyIcon);
+		Builder.AddMenuEntry(
+			LOCTEXT("LicenseMenuLabel", "License..."),
+			LOCTEXT("LicenseMenuTooltip", "Manage your AGX Dynamics for Unreal license."),
+			LicenseIcon, FExecuteAction::CreateRaw(this, &FAGX_TopMenu::OnOpenLicenseDialogClicked),
+			NAME_None, EUserInterfaceActionType::Button);
+	}
+	Builder.AddMenuSeparator();
+
+	{
+		const FSlateIcon AgxIcon(
+			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIconTiny,
+			FAGX_EditorStyle::AgxIconTiny);
+		Builder.AddMenuEntry(
+			LOCTEXT("AboutAgxDialogLabel", "About..."),
+			LOCTEXT("AboutAgxDialogToolTip", "Open the About AGX Window."), AgxIcon,
+			FExecuteAction::CreateRaw(this, &FAGX_TopMenu::OnOpenAboutDialogClicked), NAME_None,
+			EUserInterfaceActionType::Button);
+	}
 }
 
 void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
@@ -377,6 +406,19 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 	// clang-format on
 
 	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(Message, Title);
+}
+
+void FAGX_TopMenu::OnOpenLicenseDialogClicked()
+{
+	constexpr float WindowWidth = 400.f;
+	constexpr float WindowHeight = 600.f;
+
+	TSharedRef<SWindow> Window =
+		SNew(SWindow)
+			.ClientSize(FVector2D(WindowWidth, WindowHeight))
+			.Title(NSLOCTEXT("AGX", "AGXUnrealLicense", "AGX Dynamics for Unreal license"));
+
+	GEditor->EditorAddModalWindow(Window);
 }
 
 #undef LOCTEXT_NAMESPACE

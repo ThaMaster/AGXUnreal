@@ -34,6 +34,8 @@ private:
 	void OnCreateConstraintClicked(UClass* ConstraintClass);
 	void OnOpenAboutDialogClicked();
 
+	void OnOpenLicenseDialogClicked();
+
 	TSharedPtr<class FExtender> Extender;
 	TSharedPtr<const class FExtensionBase> UnrealMenuBarExtension;
 };
