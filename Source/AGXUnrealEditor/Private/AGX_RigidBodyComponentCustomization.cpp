@@ -4,7 +4,6 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Utilities/AGX_EditorUtilities.h"
-#include "AGX_LogCategory.h"
 
 // Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
