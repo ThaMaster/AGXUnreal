@@ -18,6 +18,7 @@
 #include "Utilities/AGX_EditorUtilities.h"
 #include "AGX_Environment.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Widgets/AGX_LicenseDialog.h"
 
 // Unreal Engine includes.
 #include "Framework/MultiBox/MultiBoxBuilder.h"
@@ -416,9 +417,15 @@ void FAGX_TopMenu::OnOpenLicenseDialogClicked()
 	TSharedRef<SWindow> Window =
 		SNew(SWindow)
 			.ClientSize(FVector2D(WindowWidth, WindowHeight))
+			.SupportsMinimize(false)
+			.SupportsMaximize(false)
+			.SizingRule(ESizingRule::FixedSize)
 			.Title(NSLOCTEXT("AGX", "AGXUnrealLicense", "AGX Dynamics for Unreal license"));
 
-	GEditor->EditorAddModalWindow(Window);
+	TSharedRef<SAGX_LicenseDialog> LicenseDialog = SNew(SAGX_LicenseDialog);
+	Window->SetContent(LicenseDialog);
+
+	FSlateApplication::Get().AddWindow(Window, true);
 }
 
 #undef LOCTEXT_NAMESPACE
