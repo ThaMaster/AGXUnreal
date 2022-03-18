@@ -10,4 +10,16 @@ public:
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
+
+private:
+	FText GetLicenseIdText() const;
+	void OnLicenseIdTextCommitted(const FText& NewText, ETextCommit::Type InTextCommit);
+
+	FText GetActivationCodeText() const;
+	void OnActivationCodeCommitted(const FText& NewText, ETextCommit::Type InTextCommit);
+
+	TSharedRef<SWidget> CreateLicenseServiceGui();
+
+	FString LicenseId = "";
+	FString ActivationCode = "";
 };
