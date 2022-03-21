@@ -103,6 +103,7 @@ FReply SAGX_LicenseDialog::OnActivateButtonClicked()
 			"License activation was unsuccessful. The Output Log may contain more information.");
 	}
 
+	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog("License activation was successful.");
 	// TODO: Refresh GUI with updated info here.
 
 	return FReply::Handled();
