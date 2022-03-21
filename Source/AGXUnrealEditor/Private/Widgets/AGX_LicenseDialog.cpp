@@ -2,16 +2,28 @@
 
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Environment.h"
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 
 // Unreal Engine includes.
 #include "Widgets/Input/SButton.h"
 #include "Widgets/ShapeWidget.h"
 #include "Widgets/Layout/SScrollBox.h"
 
+// Standard library includes.
+#include <algorithm>
 
 #define LOCTEXT_NAMESPACE "SAGX_LicenseDialog"
 
+namespace AGX_LicenseDialog_helpers
+{
+	bool containsOnlyIntegers(const FString& str)
+	{
+		return std::all_of(
+			str.begin(), str.end(), [](TCHAR C) { return TChar<TCHAR>::IsDigit(C); });
+	}
+}
 
 void SAGX_LicenseDialog::Construct(const FArguments& InArgs)
 {
@@ -61,6 +73,39 @@ void SAGX_LicenseDialog::OnActivationCodeCommitted(
 	const FText& NewText, ETextCommit::Type InTextCommit)
 {
 	ActivationCode = NewText.ToString();
+}
+
+FReply SAGX_LicenseDialog::OnActivateButtonClicked()
+{
+	using namespace AGX_LicenseDialog_helpers;
+	if (LicenseId.IsEmpty() || ActivationCode.IsEmpty())
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"License Id or Activation code was empty. Please enter a License Id and Activation "
+			"code.");
+		return FReply::Handled();
+	}
+
+	if (!containsOnlyIntegers(LicenseId))
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"License id may only contain integer values.");
+		return FReply::Handled();
+	}
+
+	const int32 Id = FCString::Atoi(*LicenseId);
+	const bool Result =
+		FAGX_Environment::GetInstance().ActivateAgxDynamicsServiceLicense(Id, ActivationCode);
+
+	if (!Result)
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"License activation was unsuccessful. The Output Log may contain more information.");
+	}
+
+	// TODO: Refresh GUI with updated info here.
+
+	return FReply::Handled();
 }
 
 TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseServiceGui()
@@ -132,12 +177,9 @@ TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseServiceGui()
 				[
 					SNew(SButton)
 					.Text(LOCTEXT("ActivateButtonText", "  Activate  "))
-					.OnClicked_Lambda(
-					[]()
-					{
-						UE_LOG(LogAGX, Log, TEXT("Activate was clicked."));
-						return FReply::Handled();
-					})
+					.ToolTipText(LOCTEXT("ActivateButtonTooltip",
+						"Activate AGX Dynamics service license given License id and Activation code."))
+					.OnClicked(this, &SAGX_LicenseDialog::OnActivateButtonClicked)
 				]
 			];
 	// clang-format on

@@ -432,6 +432,12 @@ FString FAGX_Environment::GetAGXDynamicsResourcesPath()
 	}
 }
 
+bool FAGX_Environment::ActivateAgxDynamicsServiceLicense(
+	int32 LicenseId, const FString& ActivationCode)
+{
+	return false;
+}
+
 bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
 {
 	agx::Runtime* AgxRuntime = agx::Runtime::instance();

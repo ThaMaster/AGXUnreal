@@ -18,6 +18,8 @@ private:
 	FText GetActivationCodeText() const;
 	void OnActivationCodeCommitted(const FText& NewText, ETextCommit::Type InTextCommit);
 
+	FReply OnActivateButtonClicked();
+
 	TSharedRef<SWidget> CreateLicenseServiceGui();
 
 	FString LicenseId = "";

@@ -53,6 +53,8 @@ public:
 
 	static FString GetAGXDynamicsResourcesPath();
 
+	bool ActivateAgxDynamicsServiceLicense(int32 LicenseId, const FString& ActivationCode);
+
 	FAGX_Environment(const FAGX_Environment&) = delete;
 	FAGX_Environment operator=(const FAGX_Environment&) = delete;
 
