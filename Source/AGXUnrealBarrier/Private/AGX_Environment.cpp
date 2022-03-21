@@ -455,7 +455,16 @@ FString FAGX_Environment::GetAGXDynamicsResourcesPath()
 bool FAGX_Environment::ActivateAgxDynamicsServiceLicense(
 	int32 LicenseId, const FString& ActivationCode)
 {
-	return false;
+	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	if (AgxRuntime == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
+		return false;
+	}
+	const FString LicenseDir = GetPluginLicenseDirPath();
+	AGX_Environment_helpers::CreateDirectoryIfNonExistent(LicenseDir);
+	return AgxRuntime->activateAgxLicense(
+		LicenseId, Convert(ActivationCode), Convert(FPaths::Combine(LicenseDir, FString("agx.lfx"))));
 }
 
 bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
@@ -463,6 +472,7 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
 	agx::Runtime* AgxRuntime = agx::Runtime::instance();
 	if (AgxRuntime == nullptr)
 	{
+		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
 		return false;
 	}
 
