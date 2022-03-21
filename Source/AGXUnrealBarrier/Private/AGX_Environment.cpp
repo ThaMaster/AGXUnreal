@@ -13,8 +13,8 @@
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
-#include "GenericPlatform/GenericPlatformFile.h"
 #include "GenericPlatform/GenericPlatformProcess.h"
+#include "HAL/PlatformFilemanager.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
