@@ -13,6 +13,7 @@
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
+#include "GenericPlatform/GenericPlatformFile.h"
 #include "GenericPlatform/GenericPlatformProcess.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/EngineVersionComparison.h"
@@ -37,6 +38,27 @@ struct FCurrentPlatformMisc : public FLinuxPlatformMisc
 // Unsupported platform.
 static_assert(false);
 #endif
+
+namespace AGX_Environment_helpers
+{
+	void CreateDirectoryIfNonExistent(const FString& Path)
+	{
+		if (FPaths::DirectoryExists(Path))
+		{
+			return;
+		}
+
+		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+		if (!PlatformFile.CreateDirectory(*Path))
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unable to create directory: '%s'. The Output Log may contain more "
+					 "information."),
+				*Path);
+		}
+	}
+}
 
 FAGX_Environment::FAGX_Environment()
 {
@@ -212,12 +234,10 @@ void FAGX_Environment::SetupAGXDynamicsEnvironment()
 		.pushbackPath(Convert(AgxCfgPath));
 
 	const FString AgxLicensePath = GetPluginLicenseDirPath();
-	if (FPaths::DirectoryExists(AgxLicensePath))
-	{
-		AGX_ENVIRONMENT()
-			.getFilePath(agxIO::Environment::RESOURCE_PATH)
-			.pushbackPath(Convert(AgxLicensePath));
-	}
+	AGX_Environment_helpers::CreateDirectoryIfNonExistent(AgxLicensePath);	
+	AGX_ENVIRONMENT()
+		.getFilePath(agxIO::Environment::RESOURCE_PATH)
+		.pushbackPath(Convert(AgxLicensePath));
 }
 
 FAGX_Environment& FAGX_Environment::GetInstance()
