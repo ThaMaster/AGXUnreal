@@ -424,8 +424,7 @@ void FAGX_TopMenu::OnOpenLicenseDialogClicked()
 
 	TSharedRef<SAGX_LicenseDialog> LicenseDialog = SNew(SAGX_LicenseDialog);
 	Window->SetContent(LicenseDialog);
-
-	FSlateApplication::Get().AddWindow(Window, true);
+	FSlateApplication::Get().AddModalWindow(Window, nullptr);
 }
 
 #undef LOCTEXT_NAMESPACE
