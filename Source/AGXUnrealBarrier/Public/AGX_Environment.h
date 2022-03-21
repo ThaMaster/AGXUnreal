@@ -14,7 +14,7 @@ public:
 	/*
 	 * Returns true if the AGX Dynamics environment has a valid license. Returns false otherwise. If
 	 * the AGX Dynamics environment does not have a valid license, an attempt to unlock is made
-	 * searching for a license file in the AGX Dynamics resources bundled with the plugin.
+	 * searching for a legacy license file in the AGX Dynamics resources bundled with the plugin.
 	 */
 	bool EnsureAgxDynamicsLicenseValid(FString* OutStatus = nullptr);
 
@@ -62,7 +62,7 @@ private:
 	void Init();
 	void SetupAGXDynamicsEnvironment();
 	void LoadDynamicLibraries();
-	void TryUnlockAgxDynamicsLicense();
+	void TryUnlockAgxDynamicsLegacyLicense();
 
 	TArray<void*> DynamicLibraryHandles;
 };

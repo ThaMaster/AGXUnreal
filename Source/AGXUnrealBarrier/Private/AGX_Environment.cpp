@@ -449,9 +449,9 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
 		return true;
 	}
 
-	// License is not valid. Attempt to unlock using a license file in the plugin's
+	// License is not valid. Attempt to unlock using a legacy license file (.agx) in the plugin's
 	// license directory that might have been put there recently by the user.
-	TryUnlockAgxDynamicsLicense();
+	TryUnlockAgxDynamicsLegacyLicense();
 
 	const bool LicenseValid = AgxRuntime->isValid();
 	if (OutStatus)
@@ -462,7 +462,7 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
 	return LicenseValid;
 }
 
-void FAGX_Environment::TryUnlockAgxDynamicsLicense()
+void FAGX_Environment::TryUnlockAgxDynamicsLegacyLicense()
 {
 	agx::Runtime* AgxRuntime = agx::Runtime::instance();
 	if (AgxRuntime == nullptr)
