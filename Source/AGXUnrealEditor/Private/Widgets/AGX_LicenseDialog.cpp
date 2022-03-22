@@ -51,31 +51,12 @@ namespace AGX_LicenseDialog_helpers
 
 		return Info;
 	}
-
-	TSharedRef<SWidget> CreateLicenseStatusTextBlock(bool LicenseValid)
-	{
-		FSlateColor Color;
-		FString Text;
-		if (LicenseValid)
-		{
-			Color = FSlateColor(FLinearColor::Green);
-			Text = "License: Valid";
-		}
-		else
-		{
-			Color = FSlateColor(FLinearColor::Red);
-			Text = "License: Invalid";
-		}
-
-		return SNew(STextBlock)
-			.Text(FText::FromString(Text))
-			.Font(CreateFont(10))
-			.ColorAndOpacity(Color);
-	}
 }
 
 void SAGX_LicenseDialog::Construct(const FArguments& InArgs)
 {
+	UpdateLicenseDialogData();
+
 	// clang-format off
 	ChildSlot
 	[
@@ -116,32 +97,52 @@ void SAGX_LicenseDialog::Construct(const FArguments& InArgs)
 	// clang-format on
 }
 
+void SAGX_LicenseDialog::UpdateLicenseDialogData()
+{
+	FString LicenseStatus;
+	const bool LicenseValid =
+		FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid(&LicenseStatus);
+
+	if (LicenseValid)
+	{
+		LicenseData.LicenseValidityTextColor = FSlateColor(FLinearColor::Green);
+		LicenseData.LicenseValidity = "License: Valid";
+	}
+	else
+	{
+		LicenseData.LicenseValidityTextColor = FSlateColor(FLinearColor::Red);
+		LicenseData.LicenseValidity = "License: Invalid";
+	}
+
+	LicenseData.LicenseInfo = AGX_LicenseDialog_helpers::CreateLicenseInfo(LicenseStatus);
+}
+
 FText SAGX_LicenseDialog::GetLicenseIdText() const
 {
-	return FText::FromString(LicenseId);
+	return FText::FromString(LicenseData.LicenseId);
 }
 
 void SAGX_LicenseDialog::OnLicenseIdTextCommitted(
 	const FText& NewText, ETextCommit::Type InTextCommit)
 {
-	LicenseId = NewText.ToString();
+	LicenseData.LicenseId = NewText.ToString();
 }
 
 FText SAGX_LicenseDialog::GetActivationCodeText() const
 {
-	return FText::FromString(ActivationCode);
+	return FText::FromString(LicenseData.ActivationCode);
 }
 
 void SAGX_LicenseDialog::OnActivationCodeCommitted(
 	const FText& NewText, ETextCommit::Type InTextCommit)
 {
-	ActivationCode = NewText.ToString();
+	LicenseData.ActivationCode = NewText.ToString();
 }
 
 FReply SAGX_LicenseDialog::OnActivateButtonClicked()
 {
 	using namespace AGX_LicenseDialog_helpers;
-	if (LicenseId.IsEmpty() || ActivationCode.IsEmpty())
+	if (LicenseData.LicenseId.IsEmpty() || LicenseData.ActivationCode.IsEmpty())
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 			"License Id or Activation code was empty. Please enter a License Id and Activation "
@@ -149,26 +150,26 @@ FReply SAGX_LicenseDialog::OnActivateButtonClicked()
 		return FReply::Handled();
 	}
 
-	if (!containsOnlyIntegers(LicenseId))
+	if (!containsOnlyIntegers(LicenseData.LicenseId))
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 			"License id may only contain integer values.");
 		return FReply::Handled();
 	}
 
-	const int32 Id = FCString::Atoi(*LicenseId);
-	const bool Result =
-		FAGX_Environment::GetInstance().ActivateAgxDynamicsServiceLicense(Id, ActivationCode);
+	const int32 Id = FCString::Atoi(*LicenseData.LicenseId);
+	const bool Result = FAGX_Environment::GetInstance().ActivateAgxDynamicsServiceLicense(
+		Id, LicenseData.ActivationCode);
+	UpdateLicenseDialogData();
 
 	if (!Result)
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 			"License activation was unsuccessful. The Output Log may contain more information.");
+		return FReply::Handled();
 	}
 
 	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog("License activation was successful.");
-	// TODO: Refresh GUI with updated info here.
-
 	return FReply::Handled();
 }
 
@@ -248,10 +249,6 @@ TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseInfoGui()
 {
 	using namespace AGX_LicenseDialog_helpers;
 
-	FString LicenseStatus;
-	const bool LicenseValid =
-		FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid(&LicenseStatus);
-
 	// clang-format off
 	return SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
@@ -270,17 +267,42 @@ TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseInfoGui()
 				+ SVerticalBox::Slot()
 				.AutoHeight()
 				[
-					CreateLicenseStatusTextBlock(LicenseValid)
+					CreateLicenseValidityTextBlock()
 				]
 				+ SVerticalBox::Slot()
 				.AutoHeight()
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString(CreateLicenseInfo(LicenseStatus)))
+					.Text(this, &SAGX_LicenseDialog::GetLicenseInfoText)
 					.Font(CreateFont(10))
 				]
 			];
 	// clang-format on
+}
+
+TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseValidityTextBlock()
+{
+	using namespace AGX_LicenseDialog_helpers;
+
+	return SNew(STextBlock)
+		.Text(this, &SAGX_LicenseDialog::GetLicenseValidityText)
+		.Font(CreateFont(10))
+		.ColorAndOpacity(this, &SAGX_LicenseDialog::GetLicenseValidityTextColor);
+}
+
+FText SAGX_LicenseDialog::GetLicenseValidityText() const
+{
+	return FText::FromString(LicenseData.LicenseValidity);
+}
+
+FSlateColor SAGX_LicenseDialog::GetLicenseValidityTextColor() const
+{
+	return LicenseData.LicenseValidityTextColor;
+}
+
+FText SAGX_LicenseDialog::GetLicenseInfoText() const
+{
+	return FText::FromString(LicenseData.LicenseInfo);
 }
 
 #undef LOCTEXT_NAMESPACE
