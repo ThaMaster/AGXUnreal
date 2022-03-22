@@ -411,15 +411,11 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 
 void FAGX_TopMenu::OnOpenLicenseDialogClicked()
 {
-	constexpr float WindowWidth = 400.f;
-	constexpr float WindowHeight = 600.f;
-
 	TSharedRef<SWindow> Window =
 		SNew(SWindow)
-			.ClientSize(FVector2D(WindowWidth, WindowHeight))
 			.SupportsMinimize(false)
 			.SupportsMaximize(false)
-			.SizingRule(ESizingRule::FixedSize)
+			.SizingRule(ESizingRule::Autosized)
 			.Title(NSLOCTEXT("AGX", "AGXUnrealLicense", "AGX Dynamics for Unreal license"));
 
 	TSharedRef<SAGX_LicenseDialog> LicenseDialog = SNew(SAGX_LicenseDialog);
