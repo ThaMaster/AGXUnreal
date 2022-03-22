@@ -23,6 +23,55 @@ namespace AGX_LicenseDialog_helpers
 		return std::all_of(
 			str.begin(), str.end(), [](TCHAR C) { return TChar<TCHAR>::IsDigit(C); });
 	}
+
+	FSlateFontInfo CreateFont(int Size)
+	{
+		FSlateFontInfo F = IPropertyTypeCustomizationUtils::GetRegularFont();
+		F.Size = Size;
+		return F;
+	};
+
+	FString CreateLicenseInfo(const FString& LicenseStatus)
+	{
+		FString Info("");
+
+		if (!LicenseStatus.IsEmpty())
+		{
+			Info.Append("Status: " + LicenseStatus + "\n");
+		}
+		
+		const TArray<FString> Keys {"User", "Contact", "EndDate"};
+		for (const auto& Key : Keys)
+		{
+			if (const auto Value = FAGX_Environment::GetInstance().GetAgxDynamicsLicenseValue(Key))
+			{
+				Info.Append(Key + ": " + Value.GetValue() + "\n");
+			}
+		}
+
+		return Info;
+	}
+
+	TSharedRef<SWidget> CreateLicenseStatusTextBlock(bool LicenseValid)
+	{
+		FSlateColor Color;
+		FString Text;
+		if (LicenseValid)
+		{
+			Color = FSlateColor(FLinearColor::Green);
+			Text = "License: Valid";
+		}
+		else
+		{
+			Color = FSlateColor(FLinearColor::Red);
+			Text = "License: Invalid";
+		}
+
+		return SNew(STextBlock)
+			.Text(FText::FromString(Text))
+			.Font(CreateFont(10))
+			.ColorAndOpacity(Color);
+	}
 }
 
 void SAGX_LicenseDialog::Construct(const FArguments& InArgs)
@@ -37,6 +86,20 @@ void SAGX_LicenseDialog::Construct(const FArguments& InArgs)
 		[
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
+			.Padding(FMargin(5.0f, 5.0f))
+			.AutoHeight()
+			[
+				SNew(SBorder)
+				.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
+				.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+				.Padding(FMargin(5.0f, 5.0f))
+				.Content()
+				[
+					CreateLicenseInfoGui()
+				]
+			]
+			+ SVerticalBox::Slot()
+			.Padding(FMargin(5.0f, 5.0f))
 			.AutoHeight()
 			[
 				SNew(SBorder)
@@ -47,7 +110,7 @@ void SAGX_LicenseDialog::Construct(const FArguments& InArgs)
 				[
 					CreateLicenseServiceGui()
 				]
-			]			
+			]	
 		]
 	];
 	// clang-format on
@@ -111,12 +174,7 @@ FReply SAGX_LicenseDialog::OnActivateButtonClicked()
 
 TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseServiceGui()
 {
-	auto CreateFont = [](int Size)
-	{ 
-		FSlateFontInfo F = IPropertyTypeCustomizationUtils::GetRegularFont();
-		F.Size = Size;
-		return F;
-	};
+	using namespace AGX_LicenseDialog_helpers;
 
 	// clang-format off
 	return SNew(SVerticalBox)
@@ -181,6 +239,45 @@ TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseServiceGui()
 					.ToolTipText(LOCTEXT("ActivateButtonTooltip",
 						"Activate AGX Dynamics service license given License id and Activation code."))
 					.OnClicked(this, &SAGX_LicenseDialog::OnActivateButtonClicked)
+				]
+			];
+	// clang-format on
+}
+
+TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseInfoGui()
+{
+	using namespace AGX_LicenseDialog_helpers;
+
+	FString LicenseStatus;
+	const bool LicenseValid =
+		FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid(&LicenseStatus);
+
+	// clang-format off
+	return SNew(SVerticalBox)
+			+ SVerticalBox::Slot()
+			.Padding(FMargin(50.0f, 10.0f, 10.f, 10.f))
+			.AutoHeight()
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("LicenseInfoText", "License information"))
+				.Font(CreateFont(16))
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(FMargin(5.f, 5.f))
+			[
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				[
+					CreateLicenseStatusTextBlock(LicenseValid)
+				]
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString(CreateLicenseInfo(LicenseStatus)))
+					.Font(CreateFont(10))
 				]
 			];
 	// clang-format on

@@ -2,7 +2,9 @@
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Misc/Optional.h"
 
 class AGXUNREALBARRIER_API FAGX_Environment
 {
@@ -54,6 +56,8 @@ public:
 	static FString GetAGXDynamicsResourcesPath();
 
 	bool ActivateAgxDynamicsServiceLicense(int32 LicenseId, const FString& ActivationCode);
+
+	TOptional<FString> GetAgxDynamicsLicenseValue(const FString& Key);
 
 	FAGX_Environment(const FAGX_Environment&) = delete;
 	FAGX_Environment operator=(const FAGX_Environment&) = delete;

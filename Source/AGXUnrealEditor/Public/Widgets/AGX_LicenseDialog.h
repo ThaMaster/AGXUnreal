@@ -21,6 +21,7 @@ private:
 	FReply OnActivateButtonClicked();
 
 	TSharedRef<SWidget> CreateLicenseServiceGui();
+	TSharedRef<SWidget> CreateLicenseInfoGui();
 
 	FString LicenseId = "";
 	FString ActivationCode = "";

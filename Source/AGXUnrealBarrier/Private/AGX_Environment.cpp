@@ -467,6 +467,24 @@ bool FAGX_Environment::ActivateAgxDynamicsServiceLicense(
 		LicenseId, Convert(ActivationCode), Convert(FPaths::Combine(LicenseDir, FString("agx.lfx"))));
 }
 
+
+TOptional<FString> FAGX_Environment::GetAgxDynamicsLicenseValue(const FString& Key)
+{
+	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	if (AgxRuntime == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
+		return "";
+	}
+
+	if (!AgxRuntime->hasKey(TCHAR_TO_UTF8(*Key)))
+	{
+		return "";	
+	}
+
+	return Convert(AgxRuntime->readValue(TCHAR_TO_UTF8(*Key)));
+}
+
 bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
 {
 	agx::Runtime* AgxRuntime = agx::Runtime::instance();
