@@ -59,6 +59,8 @@ public:
 
 	TOptional<FString> GetAgxDynamicsLicenseValue(const FString& Key);
 
+	TArray<FString> GetAgxDynamicsEnabledModules();
+
 	FAGX_Environment(const FAGX_Environment&) = delete;
 	FAGX_Environment operator=(const FAGX_Environment&) = delete;
 

@@ -38,5 +38,6 @@ private:
 		FString LicenseValidity;
 		FString LicenseInfo;
 		FSlateColor LicenseValidityTextColor;
+		TArray<TSharedPtr<FString>> EnabledModules;
 	} LicenseData;
 };

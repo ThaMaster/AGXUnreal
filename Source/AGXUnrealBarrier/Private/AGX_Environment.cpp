@@ -483,6 +483,24 @@ TOptional<FString> FAGX_Environment::GetAgxDynamicsLicenseValue(const FString& K
 	}
 
 	return Convert(AgxRuntime->readValue(TCHAR_TO_UTF8(*Key)));
+
+TArray<FString> FAGX_Environment::GetAgxDynamicsEnabledModules()
+{
+	TArray<FString> Modules;
+
+	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	if (AgxRuntime == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
+		return Modules;
+	}
+
+	for (const auto& Module : AgxRuntime->getEnabledModules())
+	{
+		Modules.Add(Convert(Module));
+	}
+
+	return Modules;
 }
 
 bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)

@@ -117,6 +117,22 @@ void SAGX_LicenseDialog::UpdateLicenseDialogData()
 	}
 
 	LicenseData.LicenseInfo = AGX_LicenseDialog_helpers::CreateLicenseInfo(LicenseStatus);
+
+	for (const FString& Module : FAGX_Environment::GetInstance().GetAgxDynamicsEnabledModules())
+	{
+		if (Module.Equals("AgX"))
+		{
+			continue;
+		}
+
+		const FString ModuleFormatted = [&Module]() 
+		{ 
+			FString S = Module;
+			return S.Replace(TEXT("AgX-"), TEXT("AGX-"), ESearchCase::CaseSensitive);
+		}();
+
+		LicenseData.EnabledModules.Add(MakeShareable(new FString(ModuleFormatted)));
+	}
 }
 
 FText SAGX_LicenseDialog::GetLicenseIdText() const
@@ -277,6 +293,22 @@ TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseInfoGui()
 					SNew(STextBlock)
 					.Text(this, &SAGX_LicenseDialog::GetLicenseInfoText)
 					.Font(CreateFont(10))
+				]
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				[
+					SNew(SComboBox<TSharedPtr<FString>>)							
+					.OptionsSource(&LicenseData.EnabledModules)
+					.OnGenerateWidget_Lambda([=](TSharedPtr<FString> Item)
+					{
+						return SNew(STextBlock)
+							.Text(FText::FromString(*Item));
+					})
+					.Content()
+					[
+						SNew(STextBlock)
+							.Text(FText::FromString("<Enabled Modules>"))
+					]
 				]
 			];
 	// clang-format on
