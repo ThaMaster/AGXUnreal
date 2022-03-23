@@ -474,12 +474,12 @@ TOptional<FString> FAGX_Environment::GetAgxDynamicsLicenseValue(const FString& K
 	if (AgxRuntime == nullptr)
 	{
 		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
-		return "";
+		return TOptional<FString>();
 	}
 
 	if (!AgxRuntime->hasKey(TCHAR_TO_UTF8(*Key)))
 	{
-		return "";	
+		return TOptional<FString>();	
 	}
 
 	return Convert(AgxRuntime->readValue(TCHAR_TO_UTF8(*Key)));
