@@ -40,16 +40,14 @@ namespace AGX_LicenseDialog_helpers
 			Info.Append("Status: " + LicenseStatus + "\n");
 		}
 
-		// @todo This is commented out due to an unexpected crash in GetAgxDynamicsLicenseValue. See
-		// internal issue #657.
-		/*const TArray<FString> Keys {"User", "Contact", "EndDate"};
+		const TArray<FString> Keys {"User", "Contact", "EndDate"};
 		for (const auto& Key : Keys)
 		{
 			if (const auto Value = FAGX_Environment::GetInstance().GetAgxDynamicsLicenseValue(Key))
 			{
 				Info.Append(Key + ": " + Value.GetValue() + "\n");
 			}
-		}*/
+		}
 
 		return Info;
 	}

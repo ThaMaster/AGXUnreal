@@ -479,10 +479,11 @@ TOptional<FString> FAGX_Environment::GetAgxDynamicsLicenseValue(const FString& K
 
 	if (!AgxRuntime->hasKey(TCHAR_TO_UTF8(*Key)))
 	{
-		return TOptional<FString>();	
+		return TOptional<FString>();
 	}
 
 	return Convert(AgxRuntime->readValue(TCHAR_TO_UTF8(*Key)));
+}
 
 TArray<FString> FAGX_Environment::GetAgxDynamicsEnabledModules()
 {
