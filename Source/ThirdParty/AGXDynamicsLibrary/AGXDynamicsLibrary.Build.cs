@@ -801,17 +801,49 @@ public class AGXDynamicsLibrary : ModuleRules
 		//
 		// The following is fallback-code that does the filtering manually using
 		// a regular expression.
- 		List<string> VersionedLibraries = new List<string>();
- 		string[] AllFiles = Directory.GetFiles(LibraryDirectory);
- 		string Pattern = "lib.*\\.so\\..*"; // Match all libLIBNAME.so files that has a '.' after .so.
- 		foreach (string FilePath in AllFiles)
- 		{
- 			string FileName = Path.GetFileName(FilePath);
- 			if (Regex.Matches(FileName, Pattern, RegexOptions.IgnoreCase).Count > 0)
- 			{
- 				VersionedLibraries.Add(FileName);
- 			}
- 		}
+ 		// List<string> VersionedLibraries = new List<string>();
+ 		// string[] AllFiles = Directory.GetFiles(LibraryDirectory);
+ 		// string Pattern = "lib.*\\.so\\..*"; // Match all libLIBNAME.so files that has a '.' after .so.
+ 		// foreach (string FilePath in AllFiles)
+ 		// {
+ 		// 	string FileName = Path.GetFileName(FilePath);
+ 		// 	if (Regex.Matches(FileName, Pattern, RegexOptions.IgnoreCase).Count > 0)
+ 		// 	{
+ 		// 		VersionedLibraries.Add(FileName);
+ 		// 	}
+ 		// }
+		//
+		// The regular expression approach didn't work out because the C#
+		// environment used by Unreal Engine 5.0 doesn't support regular
+		// expressions. See https://issues.unrealengine.com/issue/UE-143579.
+		//
+		// Until we move to 5.1 we'll have to do something more elaborate.
+		List<string> VersionedLibraries = new List<string>();
+		string[] AllFiles = Directory.GetFiles(LibraryDirectory);
+		foreach (string FilePath in AllFiles)
+		{
+			string FileName = Path.GetFileName(FilePath);
+			if (!FileName.StartsWith("lib"))
+			{
+				// Not a Linux library, ignore.
+				continue;
+			}
+			int DotSoStart = FileName.IndexOf(".so");
+			if (DotSoStart == -1)
+			{
+				// Not a Linux library, ignore.
+				continue;
+			}
+			if (FileName.EndsWith(".so"))
+			{
+				// Not a versioned filename, ignore.
+				continue;
+			}
+
+			// This is a file that starts with "lib" and has ".so" somewhere in the middle.
+			// Assuming it is a versioned library file name.
+			VersionedLibraries.Add(FilePath);
+		}
 
 		foreach (string Library in VersionedLibraries)
 		{
