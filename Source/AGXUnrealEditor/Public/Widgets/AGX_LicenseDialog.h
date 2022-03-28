@@ -25,7 +25,7 @@ private:
 	TSharedRef<SWidget> CreateLicenseServiceGui();
 	TSharedRef<SWidget> CreateLicenseInfoGui();
 
-	TSharedRef<SWidget> CreateLicenseValidityTextBlock();
+	TSharedRef<SWidget> CreateLicenseValidityTextBlock() const;
 	FText GetLicenseValidityText() const;
 	FSlateColor GetLicenseValidityTextColor() const;
 

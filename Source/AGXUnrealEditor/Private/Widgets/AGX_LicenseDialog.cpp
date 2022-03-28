@@ -116,6 +116,7 @@ void SAGX_LicenseDialog::UpdateLicenseDialogData()
 
 	LicenseData.LicenseInfo = AGX_LicenseDialog_helpers::CreateLicenseInfo(LicenseStatus);
 
+	LicenseData.EnabledModules.Empty();
 	for (const FString& Module : FAGX_Environment::GetInstance().GetAgxDynamicsEnabledModules())
 	{
 		if (Module.Equals("AgX"))
@@ -317,7 +318,7 @@ TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseInfoGui()
 	// clang-format on
 }
 
-TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseValidityTextBlock()
+TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseValidityTextBlock() const
 {
 	using namespace AGX_LicenseDialog_helpers;
 
