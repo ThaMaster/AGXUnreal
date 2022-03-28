@@ -13,4 +13,21 @@ public:
 
 	void Construct(const FArguments& InArgs);
 
+private:
+	TSharedRef<SWidget> CreateUserInputGui();
+
+	FText GetLicenseIdText() const;
+	void OnLicenseIdTextCommitted(const FText& NewText, ETextCommit::Type InTextCommit);
+
+	FText GetActivationCodeText() const;
+	void OnActivationCodeCommitted(const FText& NewText, ETextCommit::Type InTextCommit);
+
+	FReply OnActivateButtonClicked();
+
+	FText GetReferenceFilePathText() const;
+	FReply OnBrowseReferenceFileButtonClicked();
+
+	FString LicenseId;
+	FString ActivationCode;
+	FString ReferenceFilePath;
 };
