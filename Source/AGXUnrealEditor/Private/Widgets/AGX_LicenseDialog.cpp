@@ -178,6 +178,11 @@ FReply SAGX_LicenseDialog::OnActivateButtonClicked()
 		Id, LicenseData.ActivationCode);
 	UpdateLicenseDialogData();
 
+	// @todo Figure out how to update the EnabledModules combobox without calling Construct here.
+	// All other text fields are updated in the the GUI as expected thanks to having their values
+	// bound to a function. The ComboBox OptionSouce does not seem to behave that way.
+	Construct(FArguments());
+
 	if (!Result)
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
