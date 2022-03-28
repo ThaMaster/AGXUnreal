@@ -1076,7 +1076,7 @@ FString FAGX_EditorUtilities::SelectExistingFileDialog(
 			"nothing."));
 		return "";
 	}
-	return Filenames[0];
+	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*Filenames[0]);
 }
 
 FString FAGX_EditorUtilities::SelectExistingDirectoryDialog(
