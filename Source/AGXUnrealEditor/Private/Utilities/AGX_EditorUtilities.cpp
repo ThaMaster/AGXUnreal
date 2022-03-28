@@ -25,6 +25,7 @@
 // Unreal Engine includes.
 #include "AssetRegistryModule.h"
 #include "AssetToolsModule.h"
+#include "DesktopPlatformModule.h"
 #include "Editor.h"
 #include "EditorStyleSet.h"
 #include "Editor/EditorEngine.h"
@@ -1045,6 +1046,54 @@ bool FAGX_EditorUtilities::ApplyShapeMaterial(
 EVisibility FAGX_EditorUtilities::VisibleIf(bool bVisible)
 {
 	return bVisible ? EVisibility::Visible : EVisibility::Collapsed;
+}
+
+FString FAGX_EditorUtilities::SelectExistingFileDialog(
+	const FString& FileDescription, const FString& FileExtension)
+{
+	const FString DialogTitle = FString("Select an ") + FileDescription;
+	const FString FileTypes = FileDescription + FString("|*") + FileExtension;
+	// For a discussion on window handles see
+	// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html
+	TArray<FString> Filenames;
+	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
+		nullptr, DialogTitle, TEXT("DefaultPath"), TEXT("DefaultFile"), FileTypes,
+		EFileDialogFlags::None, Filenames);
+	if (!FileSelected || Filenames.Num() == 0)
+	{
+		UE_LOG(LogAGX, Log, TEXT("No %s file selected. Doing nothing."), *FileExtension);
+		return "";
+	}
+	if (Filenames.Num() > 1)
+	{
+		UE_LOG(
+			LogAGX, Log,
+			TEXT("Multiple files selected but only single file selection supported. Doing "
+				 "nothing."));
+		FAGX_EditorUtilities::ShowNotification(LOCTEXT(
+			"Multiple files",
+			"Multiple files selected but but only single file selection supported. Doing "
+			"nothing."));
+		return "";
+	}
+	return Filenames[0];
+}
+
+FString FAGX_EditorUtilities::SelectExistingDirectoryDialog(
+	const FString& DialogTitle, const FString& InStartDir, bool AllowNoneSelected)
+{
+	const FString StartDir = InStartDir.IsEmpty() ? FString("DefaultPath") : InStartDir;
+	FString DirectoryPath("");
+	bool DirectorySelected = FDesktopPlatformModule::Get()->OpenDirectoryDialog(
+		nullptr, DialogTitle, StartDir, DirectoryPath);
+
+	if (!AllowNoneSelected && (!DirectorySelected || DirectoryPath.IsEmpty()))
+	{
+		UE_LOG(LogAGX, Log, TEXT("No directory selected. Doing nothing."));
+		return "";
+	}
+
+	return DirectoryPath;
 }
 
 #undef LOCTEXT_NAMESPACE

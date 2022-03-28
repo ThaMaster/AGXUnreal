@@ -341,6 +341,12 @@ public:
 	 * Hidden).
 	 */
 	static EVisibility VisibleIf(bool bVisible);
+
+	static FString SelectExistingFileDialog(
+		const FString& FileDescription, const FString& FileExtension);
+
+	static FString SelectExistingDirectoryDialog(
+		const FString& DialogTitle, const FString& InStartDir = "", bool AllowNoneSelected = false);
 };
 
 template <typename T>

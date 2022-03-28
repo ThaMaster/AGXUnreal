@@ -33,57 +33,6 @@ UAGX_AgxEdModeFile* UAGX_AgxEdModeFile::GetInstance()
 
 namespace
 {
-	static const FString NONE_SELECTED("");
-
-	FString SelectExistingFile(const FString& FileDescription, const FString& FileExtension)
-	{
-		const FString DialogTitle = FString("Select an ") + FileDescription + FString(" to import");
-		const FString FileTypes = FileDescription + FString("|*") + FileExtension;
-		// For a discussion on window handles see
-		// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html
-		TArray<FString> Filenames;
-		bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
-			nullptr, DialogTitle, TEXT("DefaultPath"), TEXT("DefaultFile"), FileTypes,
-			EFileDialogFlags::None, Filenames);
-		if (!FileSelected || Filenames.Num() == 0)
-		{
-			UE_LOG(LogAGX, Log, TEXT("No %s file selected. Doing nothing."), *FileExtension);
-			return NONE_SELECTED;
-		}
-		if (Filenames.Num() > 1)
-		{
-			UE_LOG(
-				LogAGX, Log,
-				TEXT(
-					"Multiple files selected but we only support single file import for now. Doing "
-					"nothing."));
-			FAGX_EditorUtilities::ShowNotification(LOCTEXT(
-				"Multiple files",
-				"Multiple files selected but we only support single files for now. Doing "
-				"nothing."));
-			return NONE_SELECTED;
-		}
-		FString Filename = Filenames[0];
-		return Filename;
-	}
-
-	FString SelectExistingDirectory(
-		const FString& DialogTitle, const FString& InStartDir = "", bool AllowNoneSelected = false)
-	{
-		const FString StartDir = InStartDir.IsEmpty() ? FString("DefaultPath") : InStartDir;
-		FString DirectoryPath("");
-		bool DirectorySelected = FDesktopPlatformModule::Get()->OpenDirectoryDialog(
-			nullptr, DialogTitle, StartDir, DirectoryPath);
-
-		if (!AllowNoneSelected && (!DirectorySelected || DirectoryPath.IsEmpty()))
-		{
-			UE_LOG(LogAGX, Log, TEXT("No directory selected. Doing nothing."));
-			return NONE_SELECTED;
-		}
-
-		return DirectoryPath;
-	}
-
 	bool UrdfHasFilenameAttribute(const FString& FilePath)
 	{
 		FString Content;
@@ -99,8 +48,9 @@ namespace
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor()
 {
-	const FString Filename = SelectExistingFile("AGX Dynamics Archive", ".agx");
-	if (Filename == NONE_SELECTED)
+	const FString Filename =
+		FAGX_EditorUtilities::SelectExistingFileDialog("AGX Dynamics Archive", ".agx");
+	if (Filename.IsEmpty())
 	{
 		return;
 	}
@@ -109,8 +59,9 @@ void UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor()
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()
 {
-	const FString Filename = SelectExistingFile("AGX Dynamics Archive", ".agx");
-	if (Filename == NONE_SELECTED)
+	const FString Filename =
+		FAGX_EditorUtilities::SelectExistingFileDialog("AGX Dynamics Archive", ".agx");
+	if (Filename.IsEmpty())
 	{
 		return;
 	}
@@ -120,8 +71,9 @@ void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()
 
 void UAGX_AgxEdModeFile::ImportUrdfToBlueprint()
 {
-	const FString UrdfFilePath = SelectExistingFile("URDF file", ".urdf");
-	if (UrdfFilePath == NONE_SELECTED)
+	const FString UrdfFilePath =
+		FAGX_EditorUtilities::SelectExistingFileDialog("URDF file", ".urdf");
+	if (UrdfFilePath.IsEmpty())
 	{
 		return;
 	}
@@ -132,7 +84,8 @@ void UAGX_AgxEdModeFile::ImportUrdfToBlueprint()
 		{
 			const FString UrdfDir = FPaths::GetPath(UrdfFilePath);
 			const FString StartDir = FPaths::DirectoryExists(UrdfDir) ? UrdfDir : FString("");
-			return SelectExistingDirectory("Select URDF package directory", StartDir, true);
+			return FAGX_EditorUtilities::SelectExistingDirectoryDialog(
+				"Select URDF package directory", StartDir, true);
 		}
 		else
 		{
