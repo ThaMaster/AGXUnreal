@@ -19,6 +19,7 @@
 #include "AGX_Environment.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Widgets/AGX_LicenseDialog.h"
+#include "Widgets/AGX_GenerateRuntimeActivationDialog.h"
 
 // Unreal Engine includes.
 #include "Framework/MultiBox/MultiBoxBuilder.h"
@@ -184,11 +185,10 @@ FAGX_TopMenu::~FAGX_TopMenu()
 		const FSlateIcon LicenseIcon(
 			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::LicenseKeyIcon,
 			FAGX_EditorStyle::LicenseKeyIcon);
-		Builder.AddMenuEntry(
-			LOCTEXT("LicenseMenuLabel", "License..."),
+		Builder.AddSubMenu(
+			LOCTEXT("LicenseMenuLabel", "License"),
 			LOCTEXT("LicenseMenuTooltip", "Manage your AGX Dynamics for Unreal license."),
-			LicenseIcon, FExecuteAction::CreateRaw(this, &FAGX_TopMenu::OnOpenLicenseDialogClicked),
-			NAME_None, EUserInterfaceActionType::Button);
+			FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillLicenseMenu), false, LicenseIcon);
 	}
 	Builder.AddMenuSeparator();
 
@@ -309,6 +309,23 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 		[]() { UAGX_AgxEdModeFile::ExportAgxArchive(); });
 }
 
+void FAGX_TopMenu::FillLicenseMenu(FMenuBuilder& Builder)
+{
+	AddFileMenuEntry(
+		Builder, LOCTEXT("ActivateLicenseMenuLabel", "Activate service license..."),
+		LOCTEXT(
+			"ActivateLicenseMenuLabelToolTip",
+			"Activate your AGX Dynamics for Unreal service license."),
+		[&]() { FAGX_TopMenu::OnOpenLicenseActivationDialogClicked(); });
+
+	AddFileMenuEntry(
+		Builder, LOCTEXT("RuntimeActivationMenuLabel", "Generate runtime activation..."),
+		LOCTEXT(
+			"RuntimeActivationMenuLabelToolTip",
+			"Generate an AGX Dynamics for Unreal runtime activation file bound to an application."),
+		[&]() { FAGX_TopMenu::OnOpenGenerateRuntimeActivationDialogClicked(); });
+}
+
 void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 {
 	AActor* Actor1 = nullptr;
@@ -409,17 +426,33 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(Message, Title);
 }
 
-void FAGX_TopMenu::OnOpenLicenseDialogClicked()
+void FAGX_TopMenu::OnOpenLicenseActivationDialogClicked()
 {
 	TSharedRef<SWindow> Window =
 		SNew(SWindow)
 			.SupportsMinimize(false)
 			.SupportsMaximize(false)
 			.SizingRule(ESizingRule::Autosized)
-			.Title(NSLOCTEXT("AGX", "AGXUnrealLicense", "AGX Dynamics for Unreal license"));
+			.Title(
+				NSLOCTEXT("AGX", "AGXUnrealLicense", "Activate AGX Dynamics for Unreal license"));
 
 	TSharedRef<SAGX_LicenseDialog> LicenseDialog = SNew(SAGX_LicenseDialog);
 	Window->SetContent(LicenseDialog);
+	FSlateApplication::Get().AddModalWindow(Window, nullptr);
+}
+
+void FAGX_TopMenu::OnOpenGenerateRuntimeActivationDialogClicked()
+{
+	TSharedRef<SWindow> Window =
+		SNew(SWindow)
+			.SupportsMinimize(false)
+			.SupportsMaximize(false)
+			.SizingRule(ESizingRule::Autosized)
+			.Title(NSLOCTEXT("AGX", "AGXUnrealLicense", "Generate runtime activation"));
+
+	TSharedRef<SAGX_GenerateRuntimeActivationDialog> Dialog =
+		SNew(SAGX_GenerateRuntimeActivationDialog);
+	Window->SetContent(Dialog);
 	FSlateApplication::Get().AddModalWindow(Window, nullptr);
 }
 
