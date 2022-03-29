@@ -3,13 +3,10 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Environment.h"
-#include "AGX_LogCategory.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 
 // Unreal Engine includes.
 #include "Widgets/Input/SButton.h"
-#include "Widgets/ShapeWidget.h"
-#include "Widgets/Layout/SScrollBox.h"
 
 // Standard library includes.
 #include <algorithm>
