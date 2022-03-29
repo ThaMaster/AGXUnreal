@@ -80,7 +80,7 @@ TSharedRef<SWidget> SAGX_GenerateRuntimeActivationDialog::CreateUserInputGui()
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
-				.Padding(FMargin(0.f, 0.f, 10.f, 0.f))
+				.Padding(FMargin(0.f, 0.f, 11.f, 0.f))
 				[
 					SNew(STextBlock)
 					.Text(LOCTEXT("ActivationCodeText", "Activation code:"))
@@ -100,7 +100,7 @@ TSharedRef<SWidget> SAGX_GenerateRuntimeActivationDialog::CreateUserInputGui()
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
-				.Padding(FMargin(0.f, 0.f, 22.f, 0.f))
+				.Padding(FMargin(0.f, 0.f, 23.f, 0.f))
 				[
 					SNew(STextBlock)
 					.Text(LOCTEXT("ReferenceFilePathText", "Reference file:"))
@@ -127,6 +127,39 @@ TSharedRef<SWidget> SAGX_GenerateRuntimeActivationDialog::CreateUserInputGui()
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
+			.Padding(FMargin(5.f, 5.f))
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.Padding(FMargin(0.f, 0.f, 42.f, 0.f))
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("LicenseDirPathText", "License dir:"))
+					.ToolTipText(LOCTEXT("LicenseDirToolTip",
+						"Browse to the AGX Dynamics for Unreal license directory within the built application."))
+					.Font(CreateFont(10))
+				]
+				+ SHorizontalBox::Slot()
+				.Padding(FMargin(0.f, 0.f, 5.f, 0.f))
+				.AutoWidth()
+				[
+					SNew(SEditableTextBox)
+					.MinDesiredWidth(150.0f)
+					.Text(this, &SAGX_GenerateRuntimeActivationDialog::GetLicenseDirPathText)
+				]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				[
+					SNew(SButton)
+					.Text(LOCTEXT("BrowseButtonText2", "Browse..."))
+					.ToolTipText(LOCTEXT("BrowseButtonTooltip2",
+						"Browse to the AGX Dynamics for Unreal license directory within the built application."))
+					.OnClicked(this, &SAGX_GenerateRuntimeActivationDialog::OnBrowseLicenseDirButtonClicked)
+				]
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
 			.Padding(FMargin(5.0f, 5.0f))
 			[
 				SNew(SHorizontalBox)
@@ -138,7 +171,7 @@ TSharedRef<SWidget> SAGX_GenerateRuntimeActivationDialog::CreateUserInputGui()
 					.ToolTipText(LOCTEXT("GenerateButtonTooltip",
 						"Generate an AGX Dynamics runtime activation for the specified application "
 						"given License id and Activation code."))
-					.OnClicked(this, &SAGX_GenerateRuntimeActivationDialog::OnActivateButtonClicked)
+					.OnClicked(this, &SAGX_GenerateRuntimeActivationDialog::OnGenerateButtonClicked)
 				]
 			];
 	// clang-format on
@@ -166,7 +199,7 @@ void SAGX_GenerateRuntimeActivationDialog::OnActivationCodeCommitted(
 	ActivationCode = NewText.ToString();
 }
 
-FReply SAGX_GenerateRuntimeActivationDialog::OnActivateButtonClicked()
+FReply SAGX_GenerateRuntimeActivationDialog::OnGenerateButtonClicked()
 {
 	return FReply::Handled();
 }
@@ -180,6 +213,19 @@ FReply SAGX_GenerateRuntimeActivationDialog::OnBrowseReferenceFileButtonClicked(
 {
 	ReferenceFilePath = FAGX_EditorUtilities::SelectExistingFileDialog(
 		"Select reference file in built application", "");
+	return FReply::Handled();
+}
+
+FText SAGX_GenerateRuntimeActivationDialog::GetLicenseDirPathText() const
+{
+	return FText::FromString(LicenseDirPath);
+}
+
+FReply SAGX_GenerateRuntimeActivationDialog::OnBrowseLicenseDirButtonClicked()
+{
+	const FString StartDir = ReferenceFilePath.IsEmpty() ? "" : FPaths::GetPath(ReferenceFilePath);
+	LicenseDirPath = FAGX_EditorUtilities::SelectExistingDirectoryDialog(
+		"Select AGX Dynamics for Unreal license directory within the built application", StartDir);
 	return FReply::Handled();
 }
 

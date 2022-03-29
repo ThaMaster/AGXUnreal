@@ -22,12 +22,16 @@ private:
 	FText GetActivationCodeText() const;
 	void OnActivationCodeCommitted(const FText& NewText, ETextCommit::Type InTextCommit);
 
-	FReply OnActivateButtonClicked();
+	FReply OnGenerateButtonClicked();
 
 	FText GetReferenceFilePathText() const;
 	FReply OnBrowseReferenceFileButtonClicked();
 
+	FText GetLicenseDirPathText() const;
+	FReply OnBrowseLicenseDirButtonClicked();
+
 	FString LicenseId;
 	FString ActivationCode;
 	FString ReferenceFilePath;
+	FString LicenseDirPath;
 };
