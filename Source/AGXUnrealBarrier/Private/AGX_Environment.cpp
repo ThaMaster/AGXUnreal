@@ -620,8 +620,7 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(int32 LicenseId,
 		return TOptional<FString>();
 	}
 
-	const FString FinalOutputPath = FPaths::Combine(LicenseDir, "agx.rtlfx");
-	//IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	const FString FinalOutputPath = FPaths::Combine(LicenseDir, FString("agx.rtlfx"));
 
 	if (!FFileHelper::SaveStringToFile(Content, *FinalOutputPath))
 	{
