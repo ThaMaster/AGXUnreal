@@ -10,6 +10,7 @@
 #include "BeginAGXIncludes.h"
 #include <agx/Runtime.h>
 #include <agx/version.h>
+#include <agxUtil/agxUtil.h>
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
@@ -563,6 +564,75 @@ void FAGX_Environment::TryUnlockAgxDynamicsLegacyLicense()
 			TEXT("Successfully unlocked AGX Dynamics license using license file located at: %s"),
 			*AgxLicensePath);
 	}
+}
+
+TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(int32 LicenseId,
+	const FString& ActivationCode, const FString& ReferenceFilePath, const FString& LicenseDir)
+{
+	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	if (AgxRuntime == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
+		return TOptional<FString>();
+	}
+
+	if (!FPaths::DirectoryExists(LicenseDir))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Error during runtime activation generation. Directory %s does not exists."),
+			*LicenseDir);
+		return TOptional<FString>();
+	}
+
+	if (!FPaths::FileExists(ReferenceFilePath))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Error during runtime activation generation. File %s does not exists."),
+			*ReferenceFilePath);
+		return TOptional<FString>();
+	}
+
+	const FString ReferenceFileDirectory = FPaths::GetPath(ReferenceFilePath);
+
+	// The ReferenceFile must be inside a directory known to agxIO::Environment.
+	AGX_ENVIRONMENT()
+		.getFilePath(agxIO::Environment::RESOURCE_PATH)
+		.pushbackPath(Convert(ReferenceFileDirectory));
+
+	agx::String ContentAGX =
+		AgxRuntime->encryptRuntimeActivation(
+			LicenseId, Convert(ActivationCode), Convert(ReferenceFilePath));
+	const FString Content = Convert(ContentAGX);
+
+	// Must be called to avoid unplesent crash due to different allocators used by AGX Dynamics and
+	// Unreal Engine.
+	agxUtil::freeContainerMemory(ContentAGX);
+	AGX_ENVIRONMENT()
+		.getFilePath(agxIO::Environment::RESOURCE_PATH)
+		.removeFilePath(Convert(ReferenceFileDirectory));
+
+	if (Content.IsEmpty())
+	{
+		UE_LOG(LogAGX, Error,
+			TEXT("Unable to generate runtime activation. The Output Log may contain more information."));
+		return TOptional<FString>();
+	}
+
+	const FString FinalOutputPath = FPaths::Combine(LicenseDir, "agx.rtlfx");
+	//IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+
+	if (!FFileHelper::SaveStringToFile(Content, *FinalOutputPath))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to write to file %s. The Output Log may contain more "
+				 "information."), *FinalOutputPath);
+		return TOptional<FString>();
+	}
+
+	return FinalOutputPath;
 }
 
 #undef LOCTEXT_NAMESPACE

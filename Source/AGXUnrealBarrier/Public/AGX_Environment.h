@@ -61,6 +61,10 @@ public:
 
 	TArray<FString> GetAgxDynamicsEnabledModules();
 
+	// Returns (optional) path to the final written file on disk if successful.
+	TOptional<FString> GenerateRuntimeActivation(int32 LicenseId, const FString& ActivationCode,
+		const FString& ReferenceFilePath, const FString& LicenseDir);
+
 	FAGX_Environment(const FAGX_Environment&) = delete;
 	FAGX_Environment operator=(const FAGX_Environment&) = delete;
 

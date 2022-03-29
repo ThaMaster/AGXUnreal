@@ -1,7 +1,13 @@
 #include "Widgets/AGX_GenerateRuntimeActivationDialog.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Environment.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
+
+// Unreal Engine includes.
+#include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "SAGX_GenerateRuntimeActivationDialog"
 
@@ -60,7 +66,7 @@ TSharedRef<SWidget> SAGX_GenerateRuntimeActivationDialog::CreateUserInputGui()
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
-				.Padding(FMargin(0.f, 0.f, 45.f, 0.f))
+				.Padding(FMargin(0.f, 0.f, 55.f, 0.f))
 				[
 					SNew(STextBlock)
 					.Text(LOCTEXT("LicenseIdText", "License id:"))
@@ -80,7 +86,7 @@ TSharedRef<SWidget> SAGX_GenerateRuntimeActivationDialog::CreateUserInputGui()
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
-				.Padding(FMargin(0.f, 0.f, 11.f, 0.f))
+				.Padding(FMargin(0.f, 0.f, 21.f, 0.f))
 				[
 					SNew(STextBlock)
 					.Text(LOCTEXT("ActivationCodeText", "Activation code:"))
@@ -100,7 +106,7 @@ TSharedRef<SWidget> SAGX_GenerateRuntimeActivationDialog::CreateUserInputGui()
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
-				.Padding(FMargin(0.f, 0.f, 23.f, 0.f))
+				.Padding(FMargin(0.f, 0.f, 33.f, 0.f))
 				[
 					SNew(STextBlock)
 					.Text(LOCTEXT("ReferenceFilePathText", "Reference file:"))
@@ -132,10 +138,10 @@ TSharedRef<SWidget> SAGX_GenerateRuntimeActivationDialog::CreateUserInputGui()
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
-				.Padding(FMargin(0.f, 0.f, 42.f, 0.f))
+				.Padding(FMargin(0.f, 0.f, 13.f, 0.f))
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("LicenseDirPathText", "License dir:"))
+					.Text(LOCTEXT("LicenseDirPathText", "License directory:"))
 					.ToolTipText(LOCTEXT("LicenseDirToolTip",
 						"Browse to the AGX Dynamics for Unreal license directory within the built application."))
 					.Font(CreateFont(10))
@@ -201,6 +207,44 @@ void SAGX_GenerateRuntimeActivationDialog::OnActivationCodeCommitted(
 
 FReply SAGX_GenerateRuntimeActivationDialog::OnGenerateButtonClicked()
 {
+	if (LicenseId.IsEmpty() || ActivationCode.IsEmpty())
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"License Id or Activation code was empty. Please enter a License Id and Activation "
+			"code.");
+		return FReply::Handled();
+	}
+
+	if (ReferenceFilePath.IsEmpty() || LicenseDirPath.IsEmpty())
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Reference file or License directory was empty. Please select a Reference file and "
+			"License directory.");
+		return FReply::Handled();
+	}
+
+	if (!ContainsOnlyIntegers(LicenseId))
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"License id may only contain integer values.");
+		return FReply::Handled();
+	}
+
+	const int32 Id = FCString::Atoi(*LicenseId);
+	TOptional<FString> OutputFile = FAGX_Environment::GetInstance().GenerateRuntimeActivation(
+			Id, ActivationCode, ReferenceFilePath, LicenseDirPath);
+
+	if (!OutputFile.IsSet())
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"License activation was unsuccessful. The Output Log may contain more information.");
+		return FReply::Handled();
+	}
+
+	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(
+		"Runtime activation generation was successful. Resulting encrypted file written to: " +
+		OutputFile.GetValue());
+
 	return FReply::Handled();
 }
 
