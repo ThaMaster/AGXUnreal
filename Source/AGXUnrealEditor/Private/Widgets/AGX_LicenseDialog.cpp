@@ -4,23 +4,16 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Environment.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "Widgets/Input/SButton.h"
 
-// Standard library includes.
-#include <algorithm>
 
 #define LOCTEXT_NAMESPACE "SAGX_LicenseDialog"
 
 namespace AGX_LicenseDialog_helpers
 {
-	bool containsOnlyIntegers(const FString& str)
-	{
-		return std::all_of(
-			str.begin(), str.end(), [](TCHAR C) { return TChar<TCHAR>::IsDigit(C); });
-	}
-
 	FSlateFontInfo CreateFont(int Size)
 	{
 		FSlateFontInfo F = IPropertyTypeCustomizationUtils::GetRegularFont();
@@ -164,7 +157,7 @@ FReply SAGX_LicenseDialog::OnActivateButtonClicked()
 		return FReply::Handled();
 	}
 
-	if (!containsOnlyIntegers(LicenseData.LicenseId))
+	if (!ContainsOnlyIntegers(LicenseData.LicenseId))
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 			"License id may only contain integer values.");
