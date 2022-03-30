@@ -777,10 +777,17 @@ public class AGXDynamicsLibrary : ModuleRules
 		// List from OldName to NewName.
 		var Renamings = new List<Tuple<String, String>>();
 
-		// Delete all the files with version suffix. The regular libLIBNAME.so
-		// files will remain and since CopyFile copies the pointed-to file for
-		// symlinks we will still have the actual library files.
+		// The following identifies all the library files that include version
+		// information in the name, i.e. the files we want to remove. Delete all
+		// the files with version suffix. The regular libLIBNAME.so files will
+		// remain and since CopyFile copies the pointed-to file for symlinks we
+		// will still have the actual library files.
 		//
+		// Due to reasons there are currently three variants of this code, two of
+		// which are currently commented out. We hope to be able to keep only
+		// one of them eventually.
+
+
 		// It surprises me that we need to escape the '.'s.
 		// https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.getfiles?view=net-6.0&viewFallbackFrom=net-4.0
 		// says that 'searchPattern' uses wildcards (* and ?) and not regular
@@ -845,6 +852,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			VersionedLibraries.Add(FilePath);
 		}
 
+		// Delete all versioned files and setup rename rules for them.
 		foreach (string Library in VersionedLibraries)
 		{
 			File.Delete(Library);
