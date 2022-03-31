@@ -2,23 +2,25 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_UE4Compatibility.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Templates/SharedPointer.h"
 #include "UObject/ObjectMacros.h"
 #include "Components/MeshComponent.h"
+
 #include "AGX_SimpleMeshComponent.generated.h"
 
 class FPrimitiveSceneProxy;
 
 struct AGXUNREAL_API FAGX_SimpleMeshData
 {
-	TArray<FVector> Vertices; // mandatory
-
-	// @todo [UE5] this can be made into an FVector2f to better match the UE5 API. Currently many
-	// conversions are done to work around this.
-	TArray<FVector2D> TexCoords;
-	TArray<FVector> Normals; // mandatory
-	TArray<FVector> Tangents;
+	TArray<FVector3f> Vertices; // mandatory
+	TArray<FVector2f> TexCoords;
+	TArray<FVector3f> Normals; // mandatory
+	TArray<FVector3f> Tangents;
 	TArray<uint32> Indices;
 };
 
