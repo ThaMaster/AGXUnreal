@@ -154,7 +154,7 @@ void UAGX_BoxShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 {
 	AGX_MeshUtilities::MakeCube(
 		OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, OutMeshData.TexCoords,
-		HalfExtent);
+		ToMeshVector(HalfExtent));
 }
 
 #if WITH_EDITOR

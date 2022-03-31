@@ -48,7 +48,7 @@ namespace
 			const float ShaftRadius = TotalLength * ARROW_RADIUS_FACTOR;
 			const float ShaftLength =
 				(TotalLength - HeadLength) * 1.1f; // 10% overlap between shaft and head
-			const FVector ShaftCenter = FVector(0.5f * ShaftLength, 0, 0);
+			const FVector3f ShaftCenter(0.5f * ShaftLength, 0, 0);
 
 			TArray<FDynamicMeshVertex> OutVerts;
 			const uint32 NumConeSides {32u};
@@ -57,8 +57,9 @@ namespace
 				HeadAngle, HeadAngle, -HeadLength, TotalLength, NumConeSides, OutVerts,
 				IndexBuffer.Indices);
 			AGX_MeshUtilities::MakeCylinder(
-				ShaftCenter, FVector(0, 0, 1), FVector(0, 1, 0), FVector(1, 0, 0), ShaftRadius,
-				0.5f * ShaftLength, NumCylinderSides, OutVerts, IndexBuffer.Indices);
+				ShaftCenter, FVector3f(0.0f, 0.0f, 1.0f), FVector3f(0.0f, 1.0f, 0.0f),
+				FVector3f(1.0f, 0.0f, 0.0f), ShaftRadius, 0.5f * ShaftLength, NumCylinderSides,
+				OutVerts, IndexBuffer.Indices);
 
 			VertexBuffers.InitFromDynamicVertex(&VertexFactory, OutVerts);
 

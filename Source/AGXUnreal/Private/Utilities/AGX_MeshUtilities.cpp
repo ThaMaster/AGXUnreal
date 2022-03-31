@@ -49,8 +49,8 @@ namespace
 	};
 
 	void AppendCylindricalTube(
-		TArray<FVector>& Vertices, TArray<FVector>& Normals, TArray<uint32>& Indices,
-		TArray<FVector2D>& TexCoords, float Radius, float Height, uint32 CircleSegments,
+		TArray<FVector3f>& Vertices, TArray<FVector3f>& Normals, TArray<uint32>& Indices,
+		TArray<FVector2f>& TexCoords, float Radius, float Height, uint32 CircleSegments,
 		uint32 HeightSegments, const UvCoordinateScaler& UvScaler = {0.f, 1.f, 0.f, 1.f})
 	{
 		// Arrays may already have data, we only append triangle data in this function.
@@ -89,15 +89,15 @@ namespace
 				Y = RowHeight;
 				Z = Radius * FMath::Sin(ColumnAngle);
 
-				Vertices.Add(FVector(X, Y, Z));
-				Normals.Add(FVector(X * RadiusInv, 0.0f, Z * RadiusInv));
+				Vertices.Add(FVector3f(X, Y, Z));
+				Normals.Add(FVector3f(X * RadiusInv, 0.0f, Z * RadiusInv));
 
 				// Vertex texture coordinates (U, V) range between [0, 1].
 				U = UvScaler.ScaleU(
 					static_cast<float>(ColumnIndex) / static_cast<float>(CircleSegments));
 				V = UvScaler.ScaleV(
 					1.f - static_cast<float>(RowIndex) / static_cast<float>(HeightSegments));
-				TexCoords.Add(FVector2D(U, V));
+				TexCoords.Add(FVector2f(U, V));
 			}
 		}
 
@@ -134,8 +134,8 @@ namespace
 	}
 
 	void AppendDisk(
-		TArray<FVector>& Vertices, TArray<FVector>& Normals, TArray<uint32>& Indices,
-		TArray<FVector2D>& TexCoords, float Radius, uint32 CircleSegments, float Offset,
+		TArray<FVector3f>& Vertices, TArray<FVector3f>& Normals, TArray<uint32>& Indices,
+		TArray<FVector2f>& TexCoords, float Radius, uint32 CircleSegments, float Offset,
 		bool IsBottom)
 	{
 		// Arrays may already have data, we only append triangle data in this function.
@@ -154,7 +154,7 @@ namespace
 
 		const float SegmentSize = 2.0 * PI / CircleSegments;
 		const float RadiusInv = 1.0f / Radius;
-		const FVector Normal = IsBottom ? FVector(0.f, -1.f, 0.f) : FVector(0.f, 1.f, 0.f);
+		const FVector3f Normal = IsBottom ? FVector3f(0.f, -1.f, 0.f) : FVector3f(0.f, 1.f, 0.f);
 
 		// Vertex position and texture coordinates.
 		float X, Y, Z, U, V;
@@ -168,13 +168,13 @@ namespace
 			Y = Offset;
 			Z = Radius * FMath::Sin(ColumnAngle);
 
-			Vertices.Add(FVector(X, Y, Z));
+			Vertices.Add(FVector3f(X, Y, Z));
 			Normals.Add(Normal);
 
 			// Vertex texture coordinates (U, V) range between [0, 1].
 			U = static_cast<float>(1 - (X / (2 * Radius) + 0.5));
 			V = static_cast<float>(Z / (2 * Radius) + 0.5);
-			TexCoords.Add(FVector2D(U, V));
+			TexCoords.Add(FVector2f(U, V));
 		}
 
 		// Calculate and add triangle indices.
@@ -212,8 +212,8 @@ namespace
 	}
 
 	void AppendHalfSphere(
-		TArray<FVector>& Vertices, TArray<FVector>& Normals, TArray<uint32>& Indices,
-		TArray<FVector2D>& TexCoords, float Radius, float Offset, uint32 NumSegments,
+		TArray<FVector3f>& Vertices, TArray<FVector3f>& Normals, TArray<uint32>& Indices,
+		TArray<FVector2f>& TexCoords, float Radius, float Offset, uint32 NumSegments,
 		uint32 NumSlices, bool IsBottom, const UvCoordinateScaler& UvScaler = {0.f, 1.f, 0.f, 1.f},
 		bool AlongZ = true)
 	{
@@ -277,14 +277,14 @@ namespace
 					Z = SliceRadius * FMath::Sin(SegmentAngle);
 				}
 
-				Vertices.Add(FVector(X, Y, Z));
-				Normals.Add(FVector(X * RadiusInv, Y * RadiusInv, Z * RadiusInv));
+				Vertices.Add(FVector3f(X, Y, Z));
+				Normals.Add(FVector3f(X * RadiusInv, Y * RadiusInv, Z * RadiusInv));
 
 				// Vertex tex coord (u, v) range between [0, 1].
 				U = UvScaler.ScaleU(
 					static_cast<float>(SegmentIndex) / static_cast<float>(NumSegments));
 				V = UvScaler.ScaleV(static_cast<float>(SliceIndex) / static_cast<float>(NumSlices));
-				TexCoords.Add(FVector2D(U, V));
+				TexCoords.Add(FVector2f(U, V));
 			}
 		}
 
@@ -325,8 +325,8 @@ namespace
 }
 
 void AGX_MeshUtilities::MakeCube(
-	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
-	TArray<FVector2D>& TexCoords, const FVector& HalfSize)
+	TArray<FVector3f>& Positions, TArray<FVector3f>& Normals, TArray<uint32>& Indices,
+	TArray<FVector2f>& TexCoords, const FVector3f& HalfSize)
 {
 	// 8 Corners,
 	// 6 Quads,
@@ -336,24 +336,24 @@ void AGX_MeshUtilities::MakeCube(
 	// 24 Normals (6*4)
 
 	// clang-format off
-	static const TArray<FVector> StaticPositions =
+	static const TArray<FVector3f> StaticPositions =
 	{
-		FVector(-1.0, -1.0, 1.0),	FVector(1.0, -1.0, 1.0),	FVector(1.0, 1.0, 1.0),		FVector(-1.0, 1.0, 1.0),	// Up
-		FVector(1.0, 1.0, 1.0),		FVector(1.0, 1.0, -1.0),	FVector(1.0, -1.0, -1.0),	FVector(1.0, -1.0, 1.0),	// Forward
-		FVector(-1.0, -1.0, -1.0),	FVector(1.0, -1.0, -1.0),	FVector(1.0, 1.0, -1.0),	FVector(-1.0, 1.0, -1.0),	// Down
-		FVector(-1.0, -1.0, -1.0),	FVector(-1.0, -1.0, 1.0),	FVector(-1.0, 1.0, 1.0),	FVector(-1.0, 1.0, -1.0),	// Backward
-		FVector(1.0, 1.0, 1.0),		FVector(-1.0, 1.0, 1.0),	FVector(-1.0, 1.0, -1.0),	FVector(1.0, 1.0, -1.0),	// Right
-		FVector(-1.0, -1.0, -1.0),	FVector(1.0, -1.0, -1.0),	FVector(1.0, -1.0, 1.0),	FVector(-1.0, -1.0, 1.0)	// Left
+		FVector3f(-1.0, -1.0, 1.0),  FVector3f(1.0, -1.0, 1.0),  FVector3f(1.0, 1.0, 1.0),   FVector3f(-1.0, 1.0, 1.0),  // Up
+		FVector3f(1.0, 1.0, 1.0),    FVector3f(1.0, 1.0, -1.0),  FVector3f(1.0, -1.0, -1.0), FVector3f(1.0, -1.0, 1.0),  // Forward
+		FVector3f(-1.0, -1.0, -1.0), FVector3f(1.0, -1.0, -1.0), FVector3f(1.0, 1.0, -1.0),  FVector3f(-1.0, 1.0, -1.0), // Down
+		FVector3f(-1.0, -1.0, -1.0), FVector3f(-1.0, -1.0, 1.0), FVector3f(-1.0, 1.0, 1.0),  FVector3f(-1.0, 1.0, -1.0), // Backward
+		FVector3f(1.0, 1.0, 1.0),    FVector3f(-1.0, 1.0, 1.0),  FVector3f(-1.0, 1.0, -1.0), FVector3f(1.0, 1.0, -1.0),  // Right
+		FVector3f(-1.0, -1.0, -1.0), FVector3f(1.0, -1.0, -1.0), FVector3f(1.0, -1.0, 1.0),  FVector3f(-1.0, -1.0, 1.0)  // Left
 	};
 
-	static const TArray<FVector> StaticNormals =
+	static const TArray<FVector3f> StaticNormals =
 	{
-		FVector(0.0, 0.0, 1.0),		FVector(0.0, 0.0, 1.0),		FVector(0.0, 0.0, 1.0),		FVector(0.0, 0.0, 1.0),		// Up
-		FVector(1.0, 0.0, 0.0),		FVector(1.0, 0.0, 0.0),		FVector(1.0, 0.0, 0.0),		FVector(1.0, 0.0, 0.0),		// Forward
-		FVector(0.0, 0.0, -1.0),	FVector(0.0, 0.0, -1.0),	FVector(0.0, 0.0, -1.0),	FVector(0.0, 0.0, -1.0),	// Down
-		FVector(-1.0, 0.0, 0.0),	FVector(-1.0, 0.0, 0.0),	FVector(-1.0, 0.0, 0.0),	FVector(-1.0, 0.0, 0.0),	// Backward
-		FVector(0.0, 1.0, 0.0),		FVector(0.0, 1.0, 0.0),		FVector(0.0, 1.0, 0.0),		FVector(0.0, 1.0, 0.0),		// Right
-		FVector(0.0, -1.0, 0.0),	FVector(0.0, -1.0, 0.0),	FVector(0.0, -1.0, 0.0),	FVector(0.0, -1.0, 0.0)		// Left
+		FVector3f(0.0, 0.0, 1.0),  FVector3f(0.0, 0.0, 1.0),  FVector3f(0.0, 0.0, 1.0),  FVector3f(0.0, 0.0, 1.0),  // Up
+		FVector3f(1.0, 0.0, 0.0),  FVector3f(1.0, 0.0, 0.0),  FVector3f(1.0, 0.0, 0.0),  FVector3f(1.0, 0.0, 0.0),  // Forward
+		FVector3f(0.0, 0.0, -1.0), FVector3f(0.0, 0.0, -1.0), FVector3f(0.0, 0.0, -1.0), FVector3f(0.0, 0.0, -1.0), // Down
+		FVector3f(-1.0, 0.0, 0.0), FVector3f(-1.0, 0.0, 0.0), FVector3f(-1.0, 0.0, 0.0), FVector3f(-1.0, 0.0, 0.0), // Backward
+		FVector3f(0.0, 1.0, 0.0),  FVector3f(0.0, 1.0, 0.0),  FVector3f(0.0, 1.0, 0.0),  FVector3f(0.0, 1.0, 0.0),  // Right
+		FVector3f(0.0, -1.0, 0.0), FVector3f(0.0, -1.0, 0.0), FVector3f(0.0, -1.0, 0.0), FVector3f(0.0, -1.0, 0.0)  // Left
 	};
 
 	static const TArray<uint32> StaticIndices =
@@ -367,14 +367,14 @@ void AGX_MeshUtilities::MakeCube(
 	};
 
 	// This maps the texture the same way as an Unreal Cube.
-	static const TArray<FVector2D> StaticTexCoords =
+	static const TArray<FVector2f> StaticTexCoords =
 	{
-		FVector2D(0,0),		FVector2D(1,0),		FVector2D(1,1),		FVector2D(0,1), //Up
-		FVector2D(0,0),		FVector2D(0,1),		FVector2D(1,1),		FVector2D(1,0), //Forward
-		FVector2D(1,0),		FVector2D(0,0),		FVector2D(0,1),		FVector2D(1,1), //Down
-		FVector2D(0,1),		FVector2D(0,0),		FVector2D(1,0),		FVector2D(1,1), //Backward
-		FVector2D(1,0),		FVector2D(0,0),		FVector2D(0,1),		FVector2D(1,1), //Right
-		FVector2D(1,1),		FVector2D(0,1),		FVector2D(0,0),		FVector2D(1,0)  //Left
+		FVector2f(0,0),		FVector2f(1,0),		FVector2f(1,1),		FVector2f(0,1), //Up
+		FVector2f(0,0),		FVector2f(0,1),		FVector2f(1,1),		FVector2f(1,0), //Forward
+		FVector2f(1,0),		FVector2f(0,0),		FVector2f(0,1),		FVector2f(1,1), //Down
+		FVector2f(0,1),		FVector2f(0,0),		FVector2f(1,0),		FVector2f(1,1), //Backward
+		FVector2f(1,0),		FVector2f(0,0),		FVector2f(0,1),		FVector2f(1,1), //Right
+		FVector2f(1,1),		FVector2f(0,1),		FVector2f(0,0),		FVector2f(1,0)  //Left
 	};
 	// clang-format on
 
@@ -383,7 +383,7 @@ void AGX_MeshUtilities::MakeCube(
 	Indices = StaticIndices;
 	TexCoords = StaticTexCoords;
 
-	for (FVector& Position : Positions)
+	for (FVector3f& Position : Positions)
 	{
 		Position *= HalfSize;
 	}
@@ -412,8 +412,8 @@ void AGX_MeshUtilities::SphereConstructionData::AppendBufferSizes(
 }
 
 void AGX_MeshUtilities::MakeSphere(
-	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
-	TArray<FVector2D>& TexCoords, float Radius, uint32 NumSegments)
+	TArray<FVector3f>& Positions, TArray<FVector3f>& Normals, TArray<uint32>& Indices,
+	TArray<FVector2f>& TexCoords, float Radius, uint32 NumSegments)
 {
 	if (NumSegments < 4 || Radius < 1.0e-6)
 		return;
@@ -454,9 +454,9 @@ void AGX_MeshUtilities::MakeSphere(
 	const float StackStep = PI / Data.Stacks;
 	const float RadiusInv = 1.0f / Data.Radius;
 
-	FVector Position, TangentX, TangentY, TangentZ;
+	FVector3f Position, TangentX, TangentY, TangentZ;
 	FColor Color = FColor::White; /// \todo Make configurable!
-	FVector2D TexCoord;
+	FVector2f TexCoord;
 
 	float SectorAngle;
 	float StackAngle, StackRadius, StackHeight;
@@ -481,15 +481,15 @@ void AGX_MeshUtilities::MakeSphere(
 			Position.Z = StackHeight;
 
 			TangentZ =
-				FVector(Position.X * RadiusInv, Position.Y * RadiusInv, Position.Z * RadiusInv);
+				FVector3f(Position.X * RadiusInv, Position.Y * RadiusInv, Position.Z * RadiusInv);
 
 			// vertex tex coord (u, v) range between [0, 1]
 			TexCoord.X = (float) SectorIndex / Data.Sectors;
 			TexCoord.Y = (float) StackIndex / Data.Stacks;
 
 			/// \todo Compute correctly based on texcoords!
-			TangentX = FVector::ZeroVector;
-			TangentY = FVector::ZeroVector;
+			TangentX = FVector3f::ZeroVector;
+			TangentY = FVector3f::ZeroVector;
 
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
@@ -565,11 +565,10 @@ void AGX_MeshUtilities::CylinderConstructionData::AppendBufferSizes(
 }
 
 void AGX_MeshUtilities::MakeCylinder(
-	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
-	TArray<FVector2D>& TexCoords, const CylinderConstructionData& Data)
+	TArray<FVector3f>& Positions, TArray<FVector3f>& Normals, TArray<uint32>& Indices,
+	TArray<FVector2f>& TexCoords, const CylinderConstructionData& Data)
 {
-	auto LogConstructionError = [](const FString& Msg)
-	{
+	auto LogConstructionError = [](const FString& Msg) {
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("AGX_MeshUtilities::MakeCylinder(): Invalid CylinderConstructionData: %s."), *Msg);
@@ -648,9 +647,9 @@ void AGX_MeshUtilities::MakeCylinder(
 	const float SegmentSize = 2.0 * PI / Data.CircleSegments;
 	const float RadiusInv = 1.0f / Data.Radius;
 
-	FVector Position, TangentX, TangentY, TangentZ;
+	FVector3f Position, TangentX, TangentY, TangentZ;
 	FLinearColor Color; /// \todo Set vertex color to something.
-	FVector2D TexCoord;
+	FVector2f TexCoord;
 
 	// Generate vertex attributes.
 
@@ -689,19 +688,19 @@ void AGX_MeshUtilities::MakeCylinder(
 			switch (CapIndex)
 			{
 				case 0: // bottom cap
-					TangentZ = FVector(0.0f, 0.0f, -1.0f);
+					TangentZ = FVector3f(0.0f, 0.0f, -1.0f);
 					break;
 				case 1: // top cap
-					TangentZ = FVector(0.0f, 0.0f, 1.0f);
+					TangentZ = FVector3f(0.0f, 0.0f, 1.0f);
 					break;
 				default: // normal row
-					TangentZ = FVector(Position.X * RadiusInv, Position.Y * RadiusInv, 0.0f);
+					TangentZ = FVector3f(Position.X * RadiusInv, Position.Y * RadiusInv, 0.0f);
 					break;
 			}
 
 			/// \todo Compute correctly based on texcoords!
-			TangentX = FVector::ZeroVector;
-			TangentY = FVector::ZeroVector;
+			TangentX = FVector3f::ZeroVector;
+			TangentY = FVector3f::ZeroVector;
 
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
@@ -778,27 +777,27 @@ void AGX_MeshUtilities::MakeCylinder(
 }
 
 void AGX_MeshUtilities::MakeCylinder(
-	const FVector& Base, const FVector& XAxis, const FVector& YAxis, const FVector& ZAxis,
+	const FVector3f& Base, const FVector3f& XAxis, const FVector3f& YAxis, const FVector3f& ZAxis,
 	float Radius, float HalfHeight, uint32 Sides, TArray<FDynamicMeshVertex>& OutVerts,
 	TArray<uint32>& OutIndices)
 {
 	const float AngleDelta = 2.0f * PI / Sides;
-	FVector LastVertex = Base + XAxis * Radius;
+	FVector3f LastVertex = Base + XAxis * Radius;
 
-	FVector2D TC = FVector2D(0.0f, 0.0f);
+	FVector2f TC = FVector2f(0.0f, 0.0f);
 	float TCStep = 1.0f / Sides;
 
-	FVector TopOffset = HalfHeight * ZAxis;
+	FVector3f TopOffset = HalfHeight * ZAxis;
 
 	int32 BaseVertIndex = OutVerts.Num();
 
 	// Compute vertices for base circle.
 	for (uint32 SideIndex = 0; SideIndex < Sides; SideIndex++)
 	{
-		const FVector Vertex = Base + (XAxis * FMath::Cos(AngleDelta * (SideIndex + 1)) +
-									   YAxis * FMath::Sin(AngleDelta * (SideIndex + 1))) *
-										  Radius;
-		FVector Normal = Vertex - Base;
+		const FVector3f Vertex = Base + (XAxis * FMath::Cos(AngleDelta * (SideIndex + 1)) +
+										 YAxis * FMath::Sin(AngleDelta * (SideIndex + 1))) *
+											Radius;
+		FVector3f Normal = Vertex - Base;
 		Normal.Normalize();
 
 		FDynamicMeshVertex MeshVertex;
@@ -818,15 +817,15 @@ void AGX_MeshUtilities::MakeCylinder(
 	}
 
 	LastVertex = Base + XAxis * Radius;
-	TC = FVector2D(0.0f, 1.0f);
+	TC = FVector2f(0.0f, 1.0f);
 
 	// Compute vertices for the top circle
 	for (uint32 SideIndex = 0; SideIndex < Sides; SideIndex++)
 	{
-		const FVector Vertex = Base + (XAxis * FMath::Cos(AngleDelta * (SideIndex + 1)) +
-									   YAxis * FMath::Sin(AngleDelta * (SideIndex + 1))) *
-										  Radius;
-		FVector Normal = Vertex - Base;
+		const FVector3f Vertex = Base + (XAxis * FMath::Cos(AngleDelta * (SideIndex + 1)) +
+										 YAxis * FMath::Sin(AngleDelta * (SideIndex + 1))) *
+											Radius;
+		FVector3f Normal = Vertex - Base;
 		Normal.Normalize();
 
 		FDynamicMeshVertex MeshVertex;
@@ -895,11 +894,10 @@ AGX_MeshUtilities::CapsuleConstructionData::CapsuleConstructionData(
 }
 
 void AGX_MeshUtilities::MakeCapsule(
-	TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
-	TArray<FVector2D>& TexCoords, const CapsuleConstructionData& Data)
+	TArray<FVector3f>& Positions, TArray<FVector3f>& Normals, TArray<uint32>& Indices,
+	TArray<FVector2f>& TexCoords, const CapsuleConstructionData& Data)
 {
-	auto LogConstructionError = [](const FString& Msg)
-	{
+	auto LogConstructionError = [](const FString& Msg) {
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("AGX_MeshUtilities::MakeCapsule(): Invalid CapsuleConstructionData: %s."), *Msg);
@@ -967,7 +965,7 @@ namespace AGX_Cone_Helpers
 	/// @note This function can be completely replaced by the built in CalcConeVert located in
 	/// SceneManagement.h when Engine version 4.25 is no longer supported by the plugin. The
 	/// CalcConeVert can be accessed in Engine versions newer than 4.25.
-	FVector CalcConeVert(float Angle1, float Angle2, float AzimuthAngle)
+	FVector3f CalcConeVert(float Angle1, float Angle2, float AzimuthAngle)
 	{
 		float ang1 = FMath::Clamp<float>(Angle1, 0.01f, (float) PI - 0.01f);
 		float ang2 = FMath::Clamp<float>(Angle2, 0.01f, (float) PI - 0.01f);
@@ -996,7 +994,7 @@ namespace AGX_Cone_Helpers
 		alpha = r * cosPhi;
 		beta = r * sinPhi;
 
-		FVector ConeVert;
+		FVector3f ConeVert;
 
 		ConeVert.X = (1 - 2 * rSq);
 		ConeVert.Y = 2 * Sqr * alpha;
@@ -1010,36 +1008,36 @@ void AGX_MeshUtilities::MakeCone(
 	float Angle1, float Angle2, float Scale, float XOffset, uint32 NumSides,
 	TArray<FDynamicMeshVertex>& OutVerts, TArray<uint32>& OutIndices)
 {
-	TArray<FVector> ConeVerts;
+	TArray<FVector3f> ConeVerts;
 	ConeVerts.AddUninitialized(NumSides);
 
 	for (uint32 i = 0; i < NumSides; i++)
 	{
 		float Fraction = (float) i / (float) (NumSides);
 		float Azi = 2.f * PI * Fraction;
-		ConeVerts[i] =
-			(AGX_Cone_Helpers::CalcConeVert(Angle1, Angle2, Azi) * Scale) + FVector(XOffset, 0, 0);
+		ConeVerts[i] = (AGX_Cone_Helpers::CalcConeVert(Angle1, Angle2, Azi) * Scale) +
+					   FVector3f(XOffset, 0, 0);
 	}
 
 	for (uint32 i = 0; i < NumSides; i++)
 	{
 		// Normal of the current face
-		FVector TriTangentZ = ConeVerts[(i + 1) % NumSides] ^ ConeVerts[i]; // aka triangle normal
-		FVector TriTangentY = ConeVerts[i];
-		FVector TriTangentX = TriTangentZ ^ TriTangentY;
+		FVector3f TriTangentZ = ConeVerts[(i + 1) % NumSides] ^ ConeVerts[i]; // aka triangle normal
+		FVector3f TriTangentY = ConeVerts[i];
+		FVector3f TriTangentX = TriTangentZ ^ TriTangentY;
 
 		FDynamicMeshVertex V0, V1, V2;
 
-		V0.Position = FVector(0) + FVector(XOffset, 0, 0);
+		V0.Position = FVector3f(0) + FVector3f(XOffset, 0, 0);
 		V0.TextureCoordinate[0].X = 0.0f;
 		V0.TextureCoordinate[0].Y = (float) i / NumSides;
-		V0.SetTangents(TriTangentX, TriTangentY, FVector(-1, 0, 0));
+		V0.SetTangents(TriTangentX, TriTangentY, FVector3f(-1, 0, 0));
 		int32 I0 = OutVerts.Add(V0);
 
 		V1.Position = ConeVerts[i];
 		V1.TextureCoordinate[0].X = 1.0f;
 		V1.TextureCoordinate[0].Y = (float) i / NumSides;
-		FVector TriTangentZPrev =
+		FVector3f TriTangentZPrev =
 			ConeVerts[i] ^ ConeVerts[i == 0 ? NumSides - 1 : i - 1]; // Normal of the previous face
 																	 // connected to this face
 		V1.SetTangents(TriTangentX, TriTangentY, (TriTangentZPrev + TriTangentZ).GetSafeNormal());
@@ -1048,7 +1046,7 @@ void AGX_MeshUtilities::MakeCone(
 		V2.Position = ConeVerts[(i + 1) % NumSides];
 		V2.TextureCoordinate[0].X = 1.0f;
 		V2.TextureCoordinate[0].Y = (float) ((i + 1) % NumSides) / NumSides;
-		FVector TriTangentZNext =
+		FVector3f TriTangentZNext =
 			ConeVerts[(i + 2) % NumSides] ^
 			ConeVerts[(i + 1) % NumSides]; // Normal of the next face connected to this face
 		V2.SetTangents(TriTangentX, TriTangentY, (TriTangentZNext + TriTangentZ).GetSafeNormal());
@@ -1131,9 +1129,9 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 	// const float ConeRadiusOverHeight = Data.ConeRadius / Data.ConeHeight;
 	const float TotalHeight = Data.CylinderHeight + Data.ConeHeight;
 
-	FVector Position, TangentX, TangentY, TangentZ;
+	FVector3f Position, TangentX, TangentY, TangentZ;
 	FLinearColor Color; /// \todo Set vertex color to something.
-	FVector2D TexCoord;
+	FVector2f TexCoord;
 
 	// Generate vertex attributes.
 
@@ -1224,31 +1222,31 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 			switch (NormalIndex)
 			{
 				case 0: // bottom cap
-					TangentZ = FVector(0.0f, 0.0f, -1.0f);
+					TangentZ = FVector3f(0.0f, 0.0f, -1.0f);
 					break;
 				case 1: // cylinder shell
-					TangentZ = FVector(
+					TangentZ = FVector3f(
 						Position.X * CylinderRadiusInv, Position.Y * CylinderRadiusInv, 0.0f);
 					break;
 				case 2: // cone base
-					TangentZ = FVector(0.0f, 0.0f, -1.0f);
+					TangentZ = FVector3f(0.0f, 0.0f, -1.0f);
 					break;
 				case 3: // cone shell
 						/// \todo This normal is not perfect! Fix for fact that quads becomes
 						/// triangles on cone!
 #ifdef CONE_SINGULARITY
 					if (IsTopRow)
-						TangentZ = FVector(0.0f, 0.0f, 1.0f);
+						TangentZ = FVector3f(0.0f, 0.0f, 1.0f);
 					else
 #endif
-						TangentZ = FVector(
+						TangentZ = FVector3f(
 							FMath::Cos(ColumnAngle) * ConeFlankLengthOverHeight,
 							FMath::Sin(ColumnAngle) * ConeFlankLengthOverHeight,
 							ConeRadiusOverFlankLength);
 					break;
 					TangentZ.Normalize(); /// \todo Should not be needed. But normal is a bit too
 										  /// long without it. Investigate!
-					// TangentZ = FVector(Position.X * ConeRadiusInv * ConeHeightOverRadius,
+					// TangentZ = FVector3f(Position.X * ConeRadiusInv * ConeHeightOverRadius,
 					// Position.Y * ConeRadiusInv
 					// * ConeHeightOverRadius, ConeRadiusOverHeight); break;
 				default:
@@ -1257,8 +1255,8 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 			}
 
 			/// \todo Compute correctly based on texcoords!
-			TangentX = FVector::ZeroVector;
-			TangentY = FVector::ZeroVector;
+			TangentX = FVector3f::ZeroVector;
+			TangentY = FVector3f::ZeroVector;
 
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
@@ -1390,9 +1388,9 @@ void AGX_MeshUtilities::MakeBendableArrow(
 	const bool IsBending = Data.BendAngle > 1.0e-6;
 	const float BendRadius = IsBending ? TotalLength / Data.BendAngle : 0.0f;
 
-	FVector Position, TangentX, TangentY, TangentZ;
+	FVector3f Position, TangentX, TangentY, TangentZ;
 	FLinearColor Color; /// \todo Set vertex color to something.
-	FVector2D TexCoord;
+	FVector2f TexCoord;
 
 	// Generate vertex attributes.
 	for (uint32 RowIndex = 0; RowIndex < NumTotalRows; ++RowIndex)
@@ -1435,16 +1433,16 @@ void AGX_MeshUtilities::MakeBendableArrow(
 			// Vertex Normal, Tangent, and Binormal
 			if (IsBending)
 			{
-				TangentZ = FVector(Position.X / BendRadius, 0.0f, Position.Z / BendRadius);
+				TangentZ = FVector3f(Position.X / BendRadius, 0.0f, Position.Z / BendRadius);
 			}
 			else
 			{
-				TangentZ = FVector(-1.0f, 0.0f, 0.0f);
+				TangentZ = FVector3f(-1.0f, 0.0f, 0.0f);
 			}
 
 			/// \todo Compute correctly based on texcoords!
-			TangentX = FVector::ZeroVector;
-			TangentY = FVector::ZeroVector;
+			TangentX = FVector3f::ZeroVector;
+			TangentY = FVector3f::ZeroVector;
 
 			// Fill actual buffers
 			VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
@@ -1522,7 +1520,7 @@ void AGX_MeshUtilities::PrintMeshToLog(
 AGX_MeshUtilities::DiskArrayConstructionData::DiskArrayConstructionData(
 	float InRadius, uint32 InNumCircleSegments, float InSpacing, uint32 InDisks, bool bInTwoSided,
 	const FLinearColor InMiddleDiskColor, const FLinearColor InOuterDiskColor,
-	TArray<FTransform> InSpacingsOverride)
+	TArray<FTransform3f> InSpacingsOverride)
 	: Radius(InRadius)
 	, CircleSegments(InNumCircleSegments)
 	, Spacing(InSpacing)
@@ -1568,9 +1566,9 @@ void AGX_MeshUtilities::MakeDiskArray(
 	const float RadiusInv = 1.0f / Data.Radius;
 	const float TotalHeight = Data.Spacing * Data.Disks;
 
-	FVector Position, TangentX, TangentY, TangentZ;
+	FVector3f Position, TangentX, TangentY, TangentZ;
 	FLinearColor Color; /// \todo Set vertex color to something.
-	FVector2D TexCoord;
+	FVector2f TexCoord;
 
 	// Generate vertex attributes.
 	for (uint32 DiskIndex = 0; DiskIndex < Data.Disks; ++DiskIndex)
@@ -1603,11 +1601,11 @@ void AGX_MeshUtilities::MakeDiskArray(
 				switch (SideIndex)
 				{
 					case 0: // up side
-						TangentZ = FVector(0.0f, 0.0f, 1.0f);
+						TangentZ = FVector3f(0.0f, 0.0f, 1.0f);
 						break;
 					case 1: // down cap
 					default:
-						TangentZ = FVector(0.0f, 0.0f, -1.0f);
+						TangentZ = FVector3f(0.0f, 0.0f, -1.0f);
 						break;
 				}
 
@@ -1621,8 +1619,8 @@ void AGX_MeshUtilities::MakeDiskArray(
 				}
 
 				/// \todo Compute correctly based on texcoords!
-				TangentX = FVector::ZeroVector;
-				TangentY = FVector::ZeroVector;
+				TangentX = FVector3f::ZeroVector;
+				TangentY = FVector3f::ZeroVector;
 
 				// Fill actual buffers
 				VertexBuffers.PositionVertexBuffer.VertexPosition(NextFreeVertex) = Position;
@@ -1761,7 +1759,7 @@ namespace AGX_MeshUtilities_helpers
 	 * @param OutIndices Array to which the vertex indices are written.
 	 */
 	void CopyMeshBuffersGameThread(
-		const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions,
+		const FStaticMeshLODResources& Mesh, TArray<FVector3f>& OutPositions,
 		TArray<uint32>& OutIndices)
 	{
 		// Copy positions.
@@ -1800,7 +1798,7 @@ namespace AGX_MeshUtilities_helpers
 	 * @param OutIndices Array to which the vertex indices are written.
 	 */
 	void CopyMeshBuffersRenderThread(
-		const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions,
+		const FStaticMeshLODResources& Mesh, TArray<FVector3f>& OutPositions,
 		TArray<uint32>& OutIndices)
 	{
 		const uint32 NumIndices = static_cast<uint32>(Mesh.IndexBuffer.GetNumIndices());
@@ -1810,70 +1808,68 @@ namespace AGX_MeshUtilities_helpers
 		OutPositions.Reserve(NumPositions);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		(
-			[&](FRHICommandListImmediate& RHICmdList)
-			{
-				// Copy vertex buffer.
-				auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
-				const uint32 NumPositionBytes = PositionRHI->GetSize();
+		([&](FRHICommandListImmediate& RHICmdList) {
+			// Copy vertex buffer.
+			auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
+			const uint32 NumPositionBytes = PositionRHI->GetSize();
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-				FVector* PositionData = static_cast<FVector*>(
-					RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
+			FVector3f* PositionData = static_cast<FVector3f*>(
+				RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
 #else
-				FVector3f* PositionData = static_cast<FVector3f*>(
-					RHILockBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
+			FVector3f* PositionData = static_cast<FVector3f*>(
+				RHILockBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
 #endif
-				for (uint32 I = 0; I < NumPositions; I++)
-				{
-					OutPositions.Add(PositionData[I]);
-				}
+			for (uint32 I = 0; I < NumPositions; I++)
+			{
+				OutPositions.Add(PositionData[I]);
+			}
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-				RHIUnlockVertexBuffer(PositionRHI);
+			RHIUnlockVertexBuffer(PositionRHI);
 #else
-				RHIUnlockBuffer(PositionRHI);
+			RHIUnlockBuffer(PositionRHI);
 #endif
 
-				// Copy index buffer.
-				auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
-				if (IndexRHI->GetStride() == 2)
-				{
+			// Copy index buffer.
+			auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
+			if (IndexRHI->GetStride() == 2)
+			{
 				// Two byte index size.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-					uint16* IndexData = static_cast<uint16*>(
-						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+				uint16* IndexData = static_cast<uint16*>(
+					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 #else
-					uint16* IndexData = static_cast<uint16*>(
-						RHILockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+				uint16* IndexData = static_cast<uint16*>(
+					RHILockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 #endif
-					for (uint32 i = 0; i < NumIndices; i++)
-					{
-						check(IndexData[i] < NumPositions);
-						OutIndices.Add(static_cast<uint32>(IndexData[i]));
-					}
-				}
-				else
+				for (uint32 i = 0; i < NumIndices; i++)
 				{
-					// Four byte index size (stride must be either 2 or 4).
-					check(IndexRHI->GetStride() == 4);
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-					uint32* IndexData = static_cast<uint32*>(
-						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-#else
-					uint32* IndexData = static_cast<uint32*>(
-						RHILockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-#endif
-					for (uint32 i = 0; i < NumIndices; i++)
-					{
-						check(IndexData[i] < NumPositions);
-						OutIndices.Add(IndexData[i]);
-					}
+					check(IndexData[i] < NumPositions);
+					OutIndices.Add(static_cast<uint32>(IndexData[i]));
 				}
+			}
+			else
+			{
+				// Four byte index size (stride must be either 2 or 4).
+				check(IndexRHI->GetStride() == 4);
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-				RHIUnlockIndexBuffer(IndexRHI);
+				uint32* IndexData = static_cast<uint32*>(
+					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 #else
-				RHIUnlockBuffer(IndexRHI);
+				uint32* IndexData = static_cast<uint32*>(
+					RHILockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 #endif
-			});
+				for (uint32 i = 0; i < NumIndices; i++)
+				{
+					check(IndexData[i] < NumPositions);
+					OutIndices.Add(IndexData[i]);
+				}
+			}
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+			RHIUnlockIndexBuffer(IndexRHI);
+#else
+			RHIUnlockBuffer(IndexRHI);
+#endif
+		});
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();
@@ -1888,7 +1884,7 @@ namespace AGX_MeshUtilities_helpers
 	void CheckMeshBufferValidity(const FStaticMeshLODResources& Mesh)
 	{
 		// We trust the game thread version, so just call it.
-		TArray<FVector> GamePositions;
+		TArray<FVector3f> GamePositions;
 		TArray<uint32> GameIndices;
 		CopyMeshBuffersGameThread(Mesh, GamePositions, GameIndices);
 
@@ -1911,16 +1907,16 @@ namespace AGX_MeshUtilities_helpers
 
 		auto& PositionRhi = PositionBuffer.VertexBufferRHI;
 		uint32 PositionRhiSize = PositionRhi->GetSize();
-		uint32 PositionRhiCount = PositionRhiSize / sizeof(FVector);
+		uint32 PositionRhiCount = PositionRhiSize / sizeof(FVector3f);
 		if (PositionRhiCount != TrueNumPositions)
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT(
-					"Got wrong number of locations from PositionRhi->GetSize() / sizeof(FVector)."))
+				TEXT("Got wrong number of locations from PositionRhi->GetSize() / "
+					 "sizeof(FVector3f)."))
 		}
 
-		TArray<FVector> RenderPositions;
+		TArray<FVector3f> RenderPositions;
 		RenderPositions.Reserve(NumPositions);
 
 		auto& IndexBuffer = Mesh.IndexBuffer;
@@ -1946,65 +1942,63 @@ namespace AGX_MeshUtilities_helpers
 		RenderIndices.Reserve(NumIndices);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		(
-			[&](FRHICommandListImmediate& RHICmdList)
-			{
+		([&](FRHICommandListImmediate& RHICmdList) {
 		// Copy position buffer.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-				FVector* PositionData = static_cast<FVector*>(
-					RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+			FVector3f* PositionData = static_cast<FVector3f*>(
+				RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
 #else
-				FVector3f* PositionData = static_cast<FVector3f*>(
-					RHILockBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+			FVector3f* PositionData = static_cast<FVector3f*>(
+				RHILockBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
 #endif
-				for (uint32 i = 0; i < NumPositions; i++)
-				{
-					RenderPositions.Add(PositionData[i]);
-				}
+			for (uint32 i = 0; i < NumPositions; i++)
+			{
+				RenderPositions.Add(PositionData[i]);
+			}
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-				RHIUnlockVertexBuffer(PositionRhi);
+			RHIUnlockVertexBuffer(PositionRhi);
 #else
-				RHIUnlockBuffer(PositionRhi);
+			RHIUnlockBuffer(PositionRhi);
 #endif
 
-				// Copy index buffer.
-				if (IndexRhi->GetStride() == 2)
-				{
+			// Copy index buffer.
+			if (IndexRhi->GetStride() == 2)
+			{
 				// Two byte index size.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-					uint16* IndexBufferData = static_cast<uint16*>(
-						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+				uint16* IndexBufferData = static_cast<uint16*>(
+					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #else
-					uint16* IndexBufferData = static_cast<uint16*>(
-						RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+				uint16* IndexBufferData = static_cast<uint16*>(
+					RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #endif
-					for (int32 i = 0; i < NumIndices; i++)
-					{
-						RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
-					}
-				}
-				else
+				for (int32 i = 0; i < NumIndices; i++)
 				{
-					// Four byte index size (stride must be either 2 or 4).
-					check(IndexRhi->GetStride() == 4);
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-					uint32* IndexData = static_cast<uint32*>(
-						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-#else
-					uint32* IndexData = static_cast<uint32*>(
-						RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-#endif
-					for (int32 i = 0; i < NumIndices; i++)
-					{
-						RenderIndices.Add(IndexData[i]);
-					}
+					RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
 				}
+			}
+			else
+			{
+				// Four byte index size (stride must be either 2 or 4).
+				check(IndexRhi->GetStride() == 4);
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-				RHIUnlockIndexBuffer(IndexRhi);
+				uint32* IndexData = static_cast<uint32*>(
+					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #else
-				RHIUnlockBuffer(IndexRhi);
+				uint32* IndexData = static_cast<uint32*>(
+					RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #endif
-			});
+				for (int32 i = 0; i < NumIndices; i++)
+				{
+					RenderIndices.Add(IndexData[i]);
+				}
+			}
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+			RHIUnlockIndexBuffer(IndexRhi);
+#else
+			RHIUnlockBuffer(IndexRhi);
+#endif
+		});
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();
@@ -2036,7 +2030,7 @@ namespace AGX_MeshUtilities_helpers
 	}
 
 	void CopyMeshBuffers(
-		const FStaticMeshLODResources& Mesh, TArray<FVector>& OutPositions,
+		const FStaticMeshLODResources& Mesh, TArray<FVector3f>& OutPositions,
 		TArray<uint32>& OutIndices)
 	{
 #if WITH_EDITOR
@@ -2047,8 +2041,8 @@ namespace AGX_MeshUtilities_helpers
 	}
 
 	static int32 AddCollisionVertex(
-		const FVector& VertexPosition, const FTransform& Transform,
-		TArray<FVector>& CollisionVertices, TMap<FVector, int32>& MeshToCollisionVertexIndices)
+		const FVector3f& VertexPosition, const FTransform& Transform,
+		TArray<FVector>& CollisionVertices, TMap<FVector3f, int32>& MeshToCollisionVertexIndices)
 	{
 		if (int32* CollisionVertexIndexPtr = MeshToCollisionVertexIndices.Find(VertexPosition))
 		{
@@ -2059,7 +2053,7 @@ namespace AGX_MeshUtilities_helpers
 		{
 			// Copy position from mesh to collision data.
 			int CollisionVertexIndex =
-				CollisionVertices.Add(Transform.TransformPosition(VertexPosition));
+				CollisionVertices.Add(Transform.TransformPosition(FromMeshVector(VertexPosition)));
 
 			// Add collision index to map.
 			MeshToCollisionVertexIndices.Add(VertexPosition, CollisionVertexIndex);
@@ -2097,11 +2091,11 @@ bool AGX_MeshUtilities::GetStaticMeshCollisionData(
 		return false;
 
 	const FStaticMeshLODResources& Mesh = StaticMesh.GetLODForExport(LodIndex);
-	TMap<FVector, int32> MeshToCollisionVertexIndices;
+	TMap<FVector3f, int32> MeshToCollisionVertexIndices;
 
 	// Copy the Index and Vertex buffers from the mesh.
 	TArray<uint32> IndexBuffer;
-	TArray<FVector> VertexBuffer;
+	TArray<FVector3f> VertexBuffer;
 
 	// Depending on if the triangle data has been pinned to host memory or not, either directly copy
 	// from host memory with the current thread, assumed to be the game thread, or dispatch through

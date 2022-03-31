@@ -16,8 +16,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 namespace MeshGenerationTest_Helper
 {
 	bool ValidMeshDataSanityCheck(
-		const TArray<FVector>& Positions, const TArray<FVector>& Normals,
-		const TArray<uint32>& Indices, const TArray<FVector2D>& TexCoords)
+		const TArray<FVector3f>& Positions, const TArray<FVector3f>& Normals,
+		const TArray<uint32>& Indices, const TArray<FVector2f>& TexCoords)
 	{
 		if (Positions.Num() <= 0 || Normals.Num() <= 0 || Indices.Num() <= 0 ||
 			TexCoords.Num() <= 0)
@@ -34,7 +34,7 @@ namespace MeshGenerationTest_Helper
 		return true;
 	}
 
-	bool IsIndicesInBounds(const TArray<FVector>& Positions, const TArray<uint32>& Indices)
+	bool IsIndicesInBounds(const TArray<FVector3f>& Positions, const TArray<uint32>& Indices)
 	{
 		const uint32 MaxIndex = Positions.Num() - 1;
 		const uint32 MinIndex = 0;
@@ -51,8 +51,8 @@ namespace MeshGenerationTest_Helper
 	}
 
 	bool IsMeshDataValid(
-		const TArray<FVector>& Positions, const TArray<FVector>& Normals,
-		const TArray<uint32>& Indices, const TArray<FVector2D>& TexCoords)
+		const TArray<FVector3f>& Positions, const TArray<FVector3f>& Normals,
+		const TArray<uint32>& Indices, const TArray<FVector2f>& TexCoords)
 	{
 		if (!ValidMeshDataSanityCheck(Positions, Normals, Indices, TexCoords))
 		{
@@ -70,12 +70,12 @@ namespace MeshGenerationTest_Helper
 
 namespace
 {
-	bool BoxMeshGenerationTest(const FVector& HalfSize)
+	bool BoxMeshGenerationTest(const FVector3f& HalfSize)
 	{
-		TArray<FVector> Positions;
-		TArray<FVector> Normals;
+		TArray<FVector3f> Positions;
+		TArray<FVector3f> Normals;
 		TArray<uint32> Indices;
-		TArray<FVector2D> TexCoords;
+		TArray<FVector2f> TexCoords;
 
 		AGX_MeshUtilities::MakeCube(Positions, Normals, Indices, TexCoords, HalfSize);
 
@@ -84,10 +84,10 @@ namespace
 
 	bool SphereMeshGenerationTest(float Radius, uint32 NumSegments)
 	{
-		TArray<FVector> Positions;
-		TArray<FVector> Normals;
+		TArray<FVector3f> Positions;
+		TArray<FVector3f> Normals;
 		TArray<uint32> Indices;
-		TArray<FVector2D> TexCoords;
+		TArray<FVector2f> TexCoords;
 
 		AGX_MeshUtilities::MakeSphere(Positions, Normals, Indices, TexCoords, Radius, NumSegments);
 
@@ -97,10 +97,10 @@ namespace
 	bool CylindereMeshGenerationTest(
 		float Radius, float Height, uint32 NumCircleSegments, uint32 NumHeightSegments)
 	{
-		TArray<FVector> Positions;
-		TArray<FVector> Normals;
+		TArray<FVector3f> Positions;
+		TArray<FVector3f> Normals;
 		TArray<uint32> Indices;
-		TArray<FVector2D> TexCoords;
+		TArray<FVector2f> TexCoords;
 
 		AGX_MeshUtilities::MakeCylinder(
 			Positions, Normals, Indices, TexCoords,
@@ -113,10 +113,10 @@ namespace
 	bool CapsuleMeshGenerationTest(
 		float Radius, float Height, uint32 NumCircleSegments, uint32 NumHeightSegments)
 	{
-		TArray<FVector> Positions;
-		TArray<FVector> Normals;
+		TArray<FVector3f> Positions;
+		TArray<FVector3f> Normals;
 		TArray<uint32> Indices;
-		TArray<FVector2D> TexCoords;
+		TArray<FVector2f> TexCoords;
 
 		AGX_MeshUtilities::MakeCapsule(
 			Positions, Normals, Indices, TexCoords,
