@@ -381,7 +381,7 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 	{
 		// May do a double -> float conversion, depending on the UE_LARGE_WORLD_COORDINATES_DISABLED
 		// preprocessor macro.
-		RawMesh.VertexPositions[I] = TrimeshVertexPositions[I];
+		RawMesh.VertexPositions[I] = ToMeshVector(TrimeshVertexPositions[I]);
 	}
 #endif
 	RawMesh.WedgeIndices = Trimesh.GetVertexIndices();
@@ -408,7 +408,7 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarri
 
 		// Since we replicate the same normal for all vertices of a triangle we will get a
 		// flat-shaded mesh, should this mesh ever be used for rendering.
-		const FVector Normal = TriangleNormals[TIdx];
+		const FVector3f Normal = ToMeshVector(TriangleNormals[TIdx]);
 		RawMesh.WedgeTangentZ.Add(Normal);
 		RawMesh.WedgeTangentZ.Add(Normal);
 		RawMesh.WedgeTangentZ.Add(Normal);
@@ -512,7 +512,7 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromRenderData(const FRenderDataBarr
 	{
 		// May do a double -> float conversion, depending on the UE_LARGE_WORLD_COORDINATES_DISABLED
 		// preprocessor macro.
-		RawMesh.VertexPositions[I] = TrimeshVertexPositions[I];
+		RawMesh.VertexPositions[I] = ToMeshVector(TrimeshVertexPositions[I]);
 	}
 #endif
 	RawMesh.WedgeIndices = RenderData.GetIndices();
@@ -530,7 +530,7 @@ FRawMesh FAGX_EditorUtilities::CreateRawMeshFromRenderData(const FRenderDataBarr
 	for (int32 I = 0; I < NumIndices; ++I)
 	{
 		const int32 RenderI = RawMesh.WedgeIndices[I];
-		RawMesh.WedgeTangentZ.Add(RenderNormals[RenderI]);
+		RawMesh.WedgeTangentZ.Add(ToMeshVector(RenderNormals[RenderI]));
 		// Not all Render Data has texture coordinates.
 		if (RenderTexCoords.Num() > I)
 		{
@@ -878,8 +878,7 @@ void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
 
 	// Assigns to first available of OutActor1 and OutActor2, and returns whether
 	// at least one of them is afterwards still available for assignment.
-	auto AssignOutActors = [OutActor1, OutActor2](AActor* RigidBodyActor)
-	{
+	auto AssignOutActors = [OutActor1, OutActor2](AActor* RigidBodyActor) {
 		if (OutActor1 && *OutActor1 == nullptr)
 		{
 			*OutActor1 = RigidBodyActor;
