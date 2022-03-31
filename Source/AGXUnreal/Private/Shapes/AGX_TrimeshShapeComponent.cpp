@@ -152,7 +152,7 @@ bool UAGX_TrimeshShapeComponent::CanEditChange(
 #else
 	const FProperty* InProperty
 #endif
-) const
+	) const
 {
 	if (InProperty->GetFName() ==
 		GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceAsset))
