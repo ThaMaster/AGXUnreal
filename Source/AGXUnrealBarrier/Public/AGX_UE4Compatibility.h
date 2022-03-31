@@ -22,6 +22,10 @@ using FVector2f = FVector2D;
 using FVector2d = FVector2D;
 using FQuat4f = FQuat;
 using FQuat4d = FQuat;
+using FRotator3f = FRotator;
+using FRotator3d = FRotator;
+using FTransform3f = FTransform;
+using FTransform3d = FTransform;
 #endif
 
 inline FVector3f ToMeshVector(const FVector& V)
