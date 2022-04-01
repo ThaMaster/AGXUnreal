@@ -59,6 +59,24 @@ namespace AGX_Environment_helpers
 				*Path);
 		}
 	}
+
+	const FString& GetLegacyLicenseFileEnding()
+	{
+		static const FString s = ".lic";
+		return s;
+	}
+
+	const FString& GetServiceLicenseFileEnding()
+	{
+		static const FString s = ".lfx";
+		return s;
+	}
+
+	const FString& GetEncryptedRuntimeServiceLicenseFileEnding()
+	{
+		static const FString s = ".rtlfx";
+		return s;
+	}
 }
 
 FAGX_Environment::FAGX_Environment()
@@ -235,7 +253,7 @@ void FAGX_Environment::SetupAGXDynamicsEnvironment()
 		.pushbackPath(Convert(AgxCfgPath));
 
 	const FString AgxLicensePath = GetPluginLicenseDirPath();
-	AGX_Environment_helpers::CreateDirectoryIfNonExistent(AgxLicensePath);	
+	AGX_Environment_helpers::CreateDirectoryIfNonExistent(AgxLicensePath);
 	AGX_ENVIRONMENT()
 		.getFilePath(agxIO::Environment::RESOURCE_PATH)
 		.pushbackPath(Convert(AgxLicensePath));
@@ -456,6 +474,7 @@ FString FAGX_Environment::GetAGXDynamicsResourcesPath()
 bool FAGX_Environment::ActivateAgxDynamicsServiceLicense(
 	int32 LicenseId, const FString& ActivationCode)
 {
+	using namespace AGX_Environment_helpers;
 	agx::Runtime* AgxRuntime = agx::Runtime::instance();
 	if (AgxRuntime == nullptr)
 	{
@@ -465,9 +484,9 @@ bool FAGX_Environment::ActivateAgxDynamicsServiceLicense(
 	const FString LicenseDir = GetPluginLicenseDirPath();
 	AGX_Environment_helpers::CreateDirectoryIfNonExistent(LicenseDir);
 	return AgxRuntime->activateAgxLicense(
-		LicenseId, Convert(ActivationCode), Convert(FPaths::Combine(LicenseDir, FString("agx.lfx"))));
+		LicenseId, Convert(ActivationCode),
+		Convert(FPaths::Combine(LicenseDir, FString("agx") + GetServiceLicenseFileEnding())));
 }
-
 
 TOptional<FString> FAGX_Environment::GetAgxDynamicsLicenseValue(const FString& Key)
 {
@@ -525,7 +544,10 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
 
 	// License is not valid. Attempt to unlock using a legacy license file (.agx) in the plugin's
 	// license directory that might have been put there recently by the user.
-	TryUnlockAgxDynamicsLegacyLicense();
+	if (!TryUnlockAgxDynamicsLegacyLicense())
+	{
+		TryActivateEncryptedServiceLicense();
+	}
 
 	const bool LicenseValid = AgxRuntime->isValid();
 	if (OutStatus)
@@ -536,39 +558,96 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
 	return LicenseValid;
 }
 
-void FAGX_Environment::TryUnlockAgxDynamicsLegacyLicense()
+bool FAGX_Environment::TryUnlockAgxDynamicsLegacyLicense()
 {
+	using namespace AGX_Environment_helpers;
 	agx::Runtime* AgxRuntime = agx::Runtime::instance();
 	if (AgxRuntime == nullptr)
 	{
-		return;
+		return false;
 	}
 
-	const FString AgxLicensePath = FPaths::Combine(GetPluginLicenseDirPath(), FString("agx.lic"));
+	const FString AgxLicensePath =
+		FPaths::Combine(GetPluginLicenseDirPath(), FString("agx") + GetLegacyLicenseFileEnding());
 	if (!FPaths::FileExists(AgxLicensePath))
 	{
-		return;
+		return false;
 	}
 
 	FString License;
 	FFileHelper::LoadFileToString(License, *AgxLicensePath);
 	if (License.IsEmpty())
 	{
-		return;
+		return false;
 	}
 
-	if (AgxRuntime->unlock(Convert(License)))
+	if (!AgxRuntime->unlock(Convert(License)))
 	{
 		UE_LOG(
-			LogAGX, Log,
-			TEXT("Successfully unlocked AGX Dynamics license using license file located at: %s"),
+			LogAGX, Error,
+			TEXT("Could not unlock using legacy license '%s'. The Output Log may contain "
+				 "more information."),
 			*AgxLicensePath);
+		return false;
 	}
+
+	UE_LOG(
+		LogAGX, Log,
+		TEXT("Successfully unlocked AGX Dynamics license using legacy license file located at: %s"),
+		*AgxLicensePath);
+	return true;
 }
 
-TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(int32 LicenseId,
-	const FString& ActivationCode, const FString& ReferenceFilePath, const FString& LicenseDir)
+bool FAGX_Environment::TryActivateEncryptedServiceLicense()
 {
+	using namespace AGX_Environment_helpers;
+	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	if (AgxRuntime == nullptr)
+	{
+		return false;
+	}
+
+	const FString EncryptedServiceLicensePath = FPaths::Combine(
+		GetPluginLicenseDirPath(), FString("agx") + GetEncryptedRuntimeServiceLicenseFileEnding());
+	if (!FPaths::FileExists(EncryptedServiceLicensePath))
+	{
+		return false;
+	}
+
+	FString LicenseContent;
+	FFileHelper::LoadFileToString(LicenseContent, *EncryptedServiceLicensePath);
+
+	const FString LicenseDir = GetPluginLicenseDirPath();
+	const FString FinalOutputPath =
+		FPaths::Combine(LicenseDir, FString("agx") + GetServiceLicenseFileEnding());
+
+	if (!AgxRuntime->activateEncryptedRuntime(Convert(LicenseContent), Convert(FinalOutputPath)))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not activate encrypted service license '%s'. The Output Log may contain "
+				 "more information."),
+			*EncryptedServiceLicensePath);
+		return false;
+	}
+
+	// The activation was successful, delete the encrypted service license that was used to perform
+	// the activation.
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	PlatformFile.DeleteFile(*EncryptedServiceLicensePath);
+	
+	UE_LOG(
+		LogAGX, Log,
+		TEXT("Successfully activated encrypted service license using file located at: %s"),
+		*EncryptedServiceLicensePath);
+	return true;
+}
+
+TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(
+	int32 LicenseId, const FString& ActivationCode, const FString& ReferenceFilePath,
+	const FString& LicenseDir)
+{
+	using namespace AGX_Environment_helpers;
 	agx::Runtime* AgxRuntime = agx::Runtime::instance();
 	if (AgxRuntime == nullptr)
 	{
@@ -601,9 +680,8 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(int32 LicenseId,
 		.getFilePath(agxIO::Environment::RESOURCE_PATH)
 		.pushbackPath(Convert(ReferenceFileDirectory));
 
-	agx::String ContentAGX =
-		AgxRuntime->encryptRuntimeActivation(
-			LicenseId, Convert(ActivationCode), Convert(ReferenceFilePath));
+	agx::String ContentAGX = AgxRuntime->encryptRuntimeActivation(
+		LicenseId, Convert(ActivationCode), Convert(ReferenceFilePath));
 	const FString Content = Convert(ContentAGX);
 
 	// Must be called to avoid unplesent crash due to different allocators used by AGX Dynamics and
@@ -615,19 +693,23 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(int32 LicenseId,
 
 	if (Content.IsEmpty())
 	{
-		UE_LOG(LogAGX, Error,
-			TEXT("Unable to generate runtime activation. The Output Log may contain more information."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to generate runtime activation. The Output Log may contain more "
+				 "information."));
 		return TOptional<FString>();
 	}
 
-	const FString FinalOutputPath = FPaths::Combine(LicenseDir, FString("agx.rtlfx"));
+	const FString FinalOutputPath =
+		FPaths::Combine(LicenseDir, FString("agx") + GetEncryptedRuntimeServiceLicenseFileEnding());
 
 	if (!FFileHelper::SaveStringToFile(Content, *FinalOutputPath))
 	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Unable to write to file %s. The Output Log may contain more "
-				 "information."), *FinalOutputPath);
+				 "information."),
+			*FinalOutputPath);
 		return TOptional<FString>();
 	}
 

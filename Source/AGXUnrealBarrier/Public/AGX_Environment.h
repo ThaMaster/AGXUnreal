@@ -74,7 +74,8 @@ private:
 	void Init();
 	void SetupAGXDynamicsEnvironment();
 	void LoadDynamicLibraries();
-	void TryUnlockAgxDynamicsLegacyLicense();
+	bool TryUnlockAgxDynamicsLegacyLicense();
+	bool TryActivateEncryptedServiceLicense();
 
 	TArray<void*> DynamicLibraryHandles;
 };
