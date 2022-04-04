@@ -191,6 +191,17 @@ FReply SAGX_LicenseDialog::OnActivateButtonClicked()
 
 FReply SAGX_LicenseDialog::OnRefreshButtonClicked()
 {
+	if (!FAGX_Environment::IsAGXDynamicsVersionNewerOrEqualTo(2, 32, 0, 1))
+	{
+		const FString AGXVersion = FAGX_Environment::GetAGXDynamicsVersion();
+		FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(FString::Printf(
+			TEXT("Refreshing the service license requires AGX Dynamics version 2.32.0.1 or "
+				 "later. The current version is %s. The suggested work-around is to dectivate "
+				 "the license and then activating it again."),
+			*AGXVersion));
+		return FReply::Handled();
+	}
+
 	if (!FAGX_Environment::GetInstance().RefreshServiceLicense())
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
