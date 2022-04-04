@@ -767,11 +767,7 @@ bool FAGX_Environment::RefreshServiceLicense() const
 		return false;
 	}
 
-	agx::String PathAGX = Convert(ServiceLicenseFilePath); //"C:/Users/Admin/Desktop/tmp/agx.lfx";
-														   //// Convert(ServiceLicenseFilePath);
-	const bool res = AgxRuntime->loadLicenseFile(PathAGX, true);
-	//agxUtil::freeContainerMemory(PathAGX);
-	return res;
+	return AgxRuntime->loadLicenseFile(Convert(ServiceLicenseFilePath), true);
 }
 
 bool FAGX_Environment::DeactivateServiceLicense() const
