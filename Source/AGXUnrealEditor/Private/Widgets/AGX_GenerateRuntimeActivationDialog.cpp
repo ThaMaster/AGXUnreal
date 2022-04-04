@@ -49,6 +49,13 @@ TSharedRef<SWidget> SAGX_GenerateRuntimeActivationDialog::CreateUserInputGui()
 		return F;
 	};
 
+	static const FString InfoText =
+		"Generate an AGX Dynamics for Unreal runtime activation containing encrypted License id \n"
+		"and Activation code bound to a built application. The generated runtime activation file \n"
+		"(agx.rtlfx) will be replaced automatically by a hardware locked agx.lfx file once the \n"
+		"application is started, if a successful activation could be performed.\n\n"
+		" Internet access is required during the activation on the target hardware.\n\n";
+
 	// clang-format off
 	return SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
@@ -58,6 +65,14 @@ TSharedRef<SWidget> SAGX_GenerateRuntimeActivationDialog::CreateUserInputGui()
 				SNew(STextBlock)
 				.Text(LOCTEXT("GenerateRuntimeActivationText", "Generate runtime activation"))
 				.Font(CreateFont(16))
+			]
+			+ SVerticalBox::Slot()
+			.Padding(FMargin(5.f, 5.0f))
+			.AutoHeight()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(InfoText))
+				.Font(CreateFont(10))
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()

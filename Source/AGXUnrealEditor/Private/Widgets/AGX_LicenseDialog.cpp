@@ -1,6 +1,5 @@
 #include "Widgets/AGX_LicenseDialog.h"
 
-
 // AGX Dynamics for Unreal includes.
 #include "AGX_Environment.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -8,7 +7,6 @@
 
 // Unreal Engine includes.
 #include "Widgets/Input/SButton.h"
-
 
 #define LOCTEXT_NAMESPACE "SAGX_LicenseDialog"
 
@@ -114,14 +112,24 @@ void SAGX_LicenseDialog::UpdateLicenseDialogData()
 			continue;
 		}
 
-		const FString ModuleFormatted = [&Module]() 
-		{ 
+		const FString ModuleFormatted = [&Module]()
+		{
 			FString S = Module;
 			return S.Replace(TEXT("AgX-"), TEXT("AGX-"), ESearchCase::CaseSensitive);
 		}();
 
 		LicenseData.EnabledModules.Add(MakeShareable(new FString(ModuleFormatted)));
 	}
+
+	LicenseData.UsesServiceLicenseWithoutSetupEnv =
+		!FAGX_Environment::IsSetupEnvRun() &&
+		FAGX_Environment::GetInstance().IsLoadedLicenseOfServiceType();
+}
+
+void SAGX_LicenseDialog::RefreshGui()
+{
+	UpdateLicenseDialogData();
+	Construct(FArguments());
 }
 
 FText SAGX_LicenseDialog::GetLicenseIdText() const
@@ -167,12 +175,8 @@ FReply SAGX_LicenseDialog::OnActivateButtonClicked()
 	const int32 Id = FCString::Atoi(*LicenseData.LicenseId);
 	const bool Result = FAGX_Environment::GetInstance().ActivateAgxDynamicsServiceLicense(
 		Id, LicenseData.ActivationCode);
-	UpdateLicenseDialogData();
 
-	// @todo Figure out how to update the EnabledModules combobox without calling Construct here.
-	// All other text fields are updated in the the GUI as expected thanks to having their values
-	// bound to a function. The ComboBox OptionSouce does not seem to behave that way.
-	Construct(FArguments());
+	RefreshGui();
 
 	if (!Result)
 	{
@@ -182,6 +186,43 @@ FReply SAGX_LicenseDialog::OnActivateButtonClicked()
 	}
 
 	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog("License activation was successful.");
+	return FReply::Handled();
+}
+
+FReply SAGX_LicenseDialog::OnRefreshButtonClicked()
+{
+	if (!FAGX_Environment::GetInstance().RefreshServiceLicense())
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Refreshing service license was unsuccessful. The Output Log may contain more "
+			"information.");
+		return FReply::Handled();
+	}
+
+	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog("Refreshing service license completed.");
+	RefreshGui();
+	return FReply::Handled();
+}
+
+FReply SAGX_LicenseDialog::OnDeactivateButtonClicked()
+{
+	const static FString Info =
+		"This will deactivate the service license and completely remove "
+		"the license file (agx.flx). Are you sure you want to continue?";
+	if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) != EAppReturnType::Yes)
+	{
+		return FReply::Handled();
+	}
+
+	if (!FAGX_Environment::GetInstance().DeactivateServiceLicense())
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"License deactivation was unsuccessful. The Output Log may contain more information.");
+		return FReply::Handled();
+	}
+
+	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog("License deactivation was successful.");
+	RefreshGui();
 	return FReply::Handled();
 }
 
@@ -253,6 +294,12 @@ TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseServiceGui()
 						"Activate AGX Dynamics service license given License id and Activation code."))
 					.OnClicked(this, &SAGX_LicenseDialog::OnActivateButtonClicked)
 				]
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(FMargin(5.0f, 5.0f))
+			[
+				CreateRefreshAndDeactivateWidget()
 			];
 	// clang-format on
 }
@@ -305,6 +352,38 @@ TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseInfoGui()
 					]
 				]
 			];
+	// clang-format on
+}
+
+TSharedRef<SWidget> SAGX_LicenseDialog::CreateRefreshAndDeactivateWidget()
+{
+	if (!LicenseData.UsesServiceLicenseWithoutSetupEnv)
+	{
+		return SNew(SHorizontalBox);
+	}
+
+	// clang-format off
+	return SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("RefreshButtonText", "  Refresh  "))
+			.ToolTipText(LOCTEXT("RefreshButtonTooltip",
+				"Refresh AGX Dynamics service license from server."))
+			.OnClicked(this, &SAGX_LicenseDialog::OnRefreshButtonClicked)
+		]
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.Padding(FMargin(10.f, 0.f))
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("DeactivateButtonText", "  Deactivate  "))
+			.ToolTipText(LOCTEXT("DeactivateButtonTooltip",
+				"Deactivate active AGX Dynamics service license and remove the service license "
+				"file (agx.lfx) from this project."))
+			.OnClicked(this, &SAGX_LicenseDialog::OnDeactivateButtonClicked)
+		];
 	// clang-format on
 }
 

@@ -18,9 +18,9 @@ public:
 	 * the AGX Dynamics environment does not have a valid license, an attempt to unlock is made
 	 * searching for a legacy license file in the AGX Dynamics resources bundled with the plugin.
 	 */
-	bool EnsureAgxDynamicsLicenseValid(FString* OutStatus = nullptr);
+	bool EnsureAgxDynamicsLicenseValid(FString* OutStatus = nullptr) const;
 
-	bool EnsureEnvironmentSetup();
+	bool EnsureEnvironmentSetup() const;
 
 	static FString GetPluginPath();
 
@@ -57,13 +57,18 @@ public:
 
 	bool ActivateAgxDynamicsServiceLicense(int32 LicenseId, const FString& ActivationCode);
 
-	TOptional<FString> GetAgxDynamicsLicenseValue(const FString& Key);
+	TOptional<FString> GetAgxDynamicsLicenseValue(const FString& Key) const;
 
-	TArray<FString> GetAgxDynamicsEnabledModules();
+	TArray<FString> GetAgxDynamicsEnabledModules() const;
 
 	// Returns (optional) path to the final written file on disk if successful.
 	TOptional<FString> GenerateRuntimeActivation(int32 LicenseId, const FString& ActivationCode,
-		const FString& ReferenceFilePath, const FString& LicenseDir);
+		const FString& ReferenceFilePath, const FString& LicenseDir) const;
+
+	bool IsLoadedLicenseOfServiceType() const;
+
+	bool RefreshServiceLicense() const;
+	bool DeactivateServiceLicense() const;
 
 	FAGX_Environment(const FAGX_Environment&) = delete;
 	FAGX_Environment operator=(const FAGX_Environment&) = delete;
@@ -74,8 +79,8 @@ private:
 	void Init();
 	void SetupAGXDynamicsEnvironment();
 	void LoadDynamicLibraries();
-	bool TryUnlockAgxDynamicsLegacyLicense();
-	bool TryActivateEncryptedServiceLicense();
+	bool TryUnlockAgxDynamicsLegacyLicense() const;
+	bool TryActivateEncryptedServiceLicense() const;
 
 	TArray<void*> DynamicLibraryHandles;
 };

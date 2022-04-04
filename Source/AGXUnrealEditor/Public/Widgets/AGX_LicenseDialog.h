@@ -12,7 +12,7 @@ public:
 	void Construct(const FArguments& InArgs);
 
 private:
-	void UpdateLicenseDialogData();
+	void RefreshGui();
 
 	FText GetLicenseIdText() const;
 	void OnLicenseIdTextCommitted(const FText& NewText, ETextCommit::Type InTextCommit);
@@ -21,15 +21,20 @@ private:
 	void OnActivationCodeCommitted(const FText& NewText, ETextCommit::Type InTextCommit);
 
 	FReply OnActivateButtonClicked();
+	FReply OnRefreshButtonClicked();
+	FReply OnDeactivateButtonClicked();
 
 	TSharedRef<SWidget> CreateLicenseServiceGui();
 	TSharedRef<SWidget> CreateLicenseInfoGui();
+	TSharedRef<SWidget> CreateRefreshAndDeactivateWidget();
 
 	TSharedRef<SWidget> CreateLicenseValidityTextBlock() const;
 	FText GetLicenseValidityText() const;
 	FSlateColor GetLicenseValidityTextColor() const;
 
 	FText GetLicenseInfoText() const;
+
+	void UpdateLicenseDialogData();
 
 	struct LicenseDialogData
 	{
@@ -39,5 +44,6 @@ private:
 		FString LicenseInfo;
 		FSlateColor LicenseValidityTextColor;
 		TArray<TSharedPtr<FString>> EnabledModules;
+		bool UsesServiceLicenseWithoutSetupEnv = false;
 	} LicenseData;
 };
