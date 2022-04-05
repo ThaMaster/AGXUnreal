@@ -546,7 +546,10 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus) const
 	// license directory that might have been put there recently by the user.
 	if (!TryUnlockAgxDynamicsLegacyLicense())
 	{
+#if !WITH_EDITOR
+		// For built executables, try to find and activate runtime activation (.rtflx).
 		TryActivateEncryptedServiceLicense();
+#endif
 	}
 
 	const bool LicenseValid = AgxRuntime->isValid();
