@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_MeshWithTransform.h"
+#include "AGX_UE4Compatibility.h"
 #include "Shapes/AGX_ShapeEnums.h"
 
 // Unreal Engine includes.
@@ -26,8 +27,8 @@ class AGXUNREAL_API AGX_MeshUtilities
 {
 public:
 	static void MakeCube(
-		TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
-		TArray<FVector2D>& TexCoords, const FVector& HalfSize);
+		TArray<FVector3f>& Positions, TArray<FVector3f>& Normals, TArray<uint32>& Indices,
+		TArray<FVector2f>& TexCoords, const FVector3f& HalfSize);
 
 	/**
 	 * Used to define the geometry of a mesh sphere, and also to know the number of vertices and
@@ -52,8 +53,8 @@ public:
 
 	/// \todo Change to use SphereConstructionData as input.
 	static void MakeSphere(
-		TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
-		TArray<FVector2D>& TexCoords, float Radius, uint32 NumSegments);
+		TArray<FVector3f>& Positions, TArray<FVector3f>& Normals, TArray<uint32>& Indices,
+		TArray<FVector2f>& TexCoords, float Radius, uint32 NumSegments);
 
 	/**
 	 * Appends buffers with geometry data for a sphere, centered at origin.
@@ -105,8 +106,8 @@ public:
 	 * centered at origin.
 	 */
 	static void MakeCylinder(
-		TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
-		TArray<FVector2D>& TexCoords, const CylinderConstructionData& ConstructionData);
+		TArray<FVector3f>& Positions, TArray<FVector3f>& Normals, TArray<uint32>& Indices,
+		TArray<FVector2f>& TexCoords, const CylinderConstructionData& ConstructionData);
 
 	/**
 	 * Appends buffers with geometry data for a cylinder extending uniformly along the Z-Axis,
@@ -125,9 +126,9 @@ public:
 		const CylinderConstructionData& ConstructionData);
 
 	static void MakeCylinder(
-		const FVector& Base, const FVector& XAxis, const FVector& YAxis, const FVector& ZAxis,
-		float Radius, float HalfHeight, uint32 Sides, TArray<FDynamicMeshVertex>& OutVerts,
-		TArray<uint32>& OutIndices);
+		const FVector3f& Base, const FVector3f& XAxis, const FVector3f& YAxis,
+		const FVector3f& ZAxis, float Radius, float HalfHeight, uint32 Sides,
+		TArray<FDynamicMeshVertex>& OutVerts, TArray<uint32>& OutIndices);
 
 	/**
 	 * Used to define the geometry of a mesh capsule, and also to know the number of vertices and
@@ -150,8 +151,8 @@ public:
 	 * centered at origin.
 	 */
 	static void MakeCapsule(
-		TArray<FVector>& Positions, TArray<FVector>& Normals, TArray<uint32>& Indices,
-		TArray<FVector2D>& TexCoords, const CapsuleConstructionData& Data);
+		TArray<FVector3f>& Positions, TArray<FVector3f>& Normals, TArray<uint32>& Indices,
+		TArray<FVector2f>& TexCoords, const CapsuleConstructionData& Data);
 
 	static void MakeCone(
 		float Angle1, float Angle2, float Scale, float XOffset, uint32 NumSides,
@@ -269,8 +270,8 @@ public:
 		const bool bTwoSided;
 		const FLinearColor MiddleDiskColor;
 		const FLinearColor OuterDiskColor;
-		TArray<FTransform> SpacingsOverride; // optional, Spacing will be ignored if defined. Zero
-											 // or num Disks items.
+		TArray<FTransform3f> SpacingsOverride; // optional, Spacing will be ignored if defined. Zero
+											   // or num Disks items.
 
 		// Derived:
 		const uint32 SidesPerDisk;
@@ -282,7 +283,7 @@ public:
 		DiskArrayConstructionData(
 			float InRadius, uint32 InNumCircleSegments, float InSpacing, uint32 InDisks,
 			bool bInTwoSided, const FLinearColor InMiddleDiskColor,
-			const FLinearColor InOuterDiskColor, TArray<FTransform> InSpacingsOverride = {});
+			const FLinearColor InOuterDiskColor, TArray<FTransform3f> InSpacingsOverride = {});
 
 		void AppendBufferSizes(uint32& InOutNumVertices, uint32& InOutNumIndices) const;
 	};
@@ -304,6 +305,8 @@ public:
 	 * the source render mesh might need multiple vertices with same position but
 	 * different normals, texture coordinates, etc, while the collision mesh can
 	 * share vertices between triangles more aggressively.
+	 *
+	 * The vertex positions are given in double precision because that is what AGX Dynamics expects.
 	 */
 	static bool GetStaticMeshCollisionData(
 		const FAGX_MeshWithTransform& InMesh, const FTransform& RelativeTo,

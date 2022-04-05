@@ -1,6 +1,10 @@
 // Copyright 2022, Algoryx Simulation AB.
 
+// AGX Dynamics for Unreal includes.
 #include "AGX_SimpleMeshComponent.h"
+#include "AGX_UE4Compatibility.h"
+
+// Unreal Engine includes.
 #include "RenderingThread.h"
 #include "RenderResource.h"
 #include "PrimitiveViewRelevance.h"
@@ -65,15 +69,15 @@ public:
 		// Populate Vertex Buffer Resources
 		for (int32 VertexIndex = 0; VertexIndex < NumVertices; ++VertexIndex)
 		{
-			const FVector VertexPosition = MeshData.Vertices[VertexIndex];
-			const FVector2D VertexTexCoord =
-				HasTexCoords ? MeshData.TexCoords[VertexIndex] : FVector2D::ZeroVector;
+			const FVector3f VertexPosition = MeshData.Vertices[VertexIndex];
+			const FVector2f VertexTexCoord =
+				HasTexCoords ? MeshData.TexCoords[VertexIndex] : FVector2f::ZeroVector;
 
-			const FVector TangentX =
-				HasTangents ? MeshData.Tangents[VertexIndex] : FVector::ZeroVector;
-			const FVector TangentZ = MeshData.Normals[VertexIndex];
-			const FVector TangentY =
-				HasTangents ? (TangentZ ^ TangentX).GetSafeNormal() : FVector::ZeroVector;
+			const FVector3f TangentX =
+				HasTangents ? MeshData.Tangents[VertexIndex] : FVector3f::ZeroVector;
+			const FVector3f TangentZ = MeshData.Normals[VertexIndex];
+			const FVector3f TangentY =
+				HasTangents ? (TangentZ ^ TangentX).GetSafeNormal() : FVector3f::ZeroVector;
 
 			VertexBuffers.PositionVertexBuffer.VertexPosition(VertexIndex) = VertexPosition;
 			VertexBuffers.ColorVertexBuffer.VertexColor(VertexIndex) = VertexColor;
@@ -113,14 +117,14 @@ public:
 				const uint32& VertexIndex1 = IndexBuffer.Indices[TriangleIndex * 3 + 1];
 				const uint32& VertexIndex2 = IndexBuffer.Indices[TriangleIndex * 3 + 2];
 
-				const FVector& Position0 = MeshData.Vertices[VertexIndex0];
-				const FVector& Position1 = MeshData.Vertices[VertexIndex1];
-				const FVector& Position2 = MeshData.Vertices[VertexIndex2];
+				const FVector3f& Position0 = MeshData.Vertices[VertexIndex0];
+				const FVector3f& Position1 = MeshData.Vertices[VertexIndex1];
+				const FVector3f& Position2 = MeshData.Vertices[VertexIndex2];
 
-				const FVector P0toP1 = Position1 - Position0;
-				const FVector P0toP2 = Position2 - Position0;
+				const FVector3f P0toP1 = Position1 - Position0;
+				const FVector3f P0toP2 = Position2 - Position0;
 
-				FVector TriangleTangent;
+				FVector3f TriangleTangent;
 
 				if (HasTexCoords)
 				{
@@ -134,7 +138,7 @@ public:
 					const float V0toV1 = TexCoord1.Y - TexCoord0.Y;
 					const float V0toV2 = TexCoord2.Y - TexCoord0.Y;
 
-					TriangleTangent = FVector(
+					TriangleTangent = FVector3f(
 						V0toV2 * P0toP1.X - V0toV1 * P0toP2.X,
 						V0toV2 * P0toP1.Y - V0toV1 * P0toP2.Y,
 						V0toV2 * P0toP1.Z - V0toV1 * P0toP2.Z);
@@ -151,9 +155,10 @@ public:
 				{
 					const uint32& VertexIndex =
 						IndexBuffer.Indices[TriangleIndex * 3 + VertexIndexInTriangle];
-					const FVector& VertexNormal = MeshData.Normals[VertexIndex];
-					const FVector VertexBinormal = (VertexNormal ^ TriangleTangent).GetSafeNormal();
-					const FVector VertexTangent = (VertexBinormal ^ VertexNormal).GetSafeNormal();
+					const FVector3f& VertexNormal = MeshData.Normals[VertexIndex];
+					const FVector3f VertexBinormal =
+						(VertexNormal ^ TriangleTangent).GetSafeNormal();
+					const FVector3f VertexTangent = (VertexBinormal ^ VertexNormal).GetSafeNormal();
 
 					VertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(
 						VertexIndex, VertexTangent, VertexBinormal, VertexNormal);
@@ -163,26 +168,24 @@ public:
 
 		// Enqueue initialization of render resource
 		ENQUEUE_RENDER_COMMAND(FAGX_SimpleMeshSceneProxyVertexBuffersInit)
-		(
-			[this, LightMapIndex](FRHICommandListImmediate& RHICmdList)
-			{
-				VertexBuffers.PositionVertexBuffer.InitResource();
-				VertexBuffers.StaticMeshVertexBuffer.InitResource();
-				VertexBuffers.ColorVertexBuffer.InitResource();
+		([this, LightMapIndex](FRHICommandListImmediate& RHICmdList) {
+			VertexBuffers.PositionVertexBuffer.InitResource();
+			VertexBuffers.StaticMeshVertexBuffer.InitResource();
+			VertexBuffers.ColorVertexBuffer.InitResource();
 
-				FLocalVertexFactory::FDataType Data;
-				VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(&VertexFactory, Data);
-				VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(&VertexFactory, Data);
-				VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
-					&VertexFactory, Data);
-				VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
-					&VertexFactory, Data, LightMapIndex);
-				VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(&VertexFactory, Data);
-				VertexFactory.SetData(Data);
+			FLocalVertexFactory::FDataType Data;
+			VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(&VertexFactory, Data);
+			VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(&VertexFactory, Data);
+			VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
+				&VertexFactory, Data);
+			VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
+				&VertexFactory, Data, LightMapIndex);
+			VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(&VertexFactory, Data);
+			VertexFactory.SetData(Data);
 
-				VertexFactory.InitResource();
-				IndexBuffer.InitResource();
-			});
+			VertexFactory.InitResource();
+			IndexBuffer.InitResource();
+		});
 
 		// Grab material
 		Material = Component->GetMaterial(0);
@@ -380,7 +383,8 @@ FBoxSphereBounds UAGX_SimpleMeshComponent::CalcBounds(const FTransform& LocalToW
 	{
 		for (int32 Index = 0; Index < MeshData->Vertices.Num(); ++Index)
 		{
-			BoundingBox += LocalToWorld.TransformPosition(MeshData->Vertices[Index]);
+			FVector LocalPosition = FromMeshVector(MeshData->Vertices[Index]);
+			BoundingBox += LocalToWorld.TransformPosition(LocalPosition);
 		}
 	}
 
