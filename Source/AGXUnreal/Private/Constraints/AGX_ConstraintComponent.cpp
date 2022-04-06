@@ -136,13 +136,6 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	}
 }
 
-UAGX_ConstraintComponent::~UAGX_ConstraintComponent()
-{
-#if WITH_EDITOR
-	BodyAttachment1.OnDestroy(this);
-	BodyAttachment2.OnDestroy(this);
-#endif
-}
 
 void UAGX_ConstraintComponent::PostInitProperties()
 {
@@ -1011,16 +1004,11 @@ void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
 }
 
-void UAGX_ConstraintComponent::BeginDestroy()
-{
-	Super::BeginDestroy();
-	BodyAttachment1.OnDestroy(this);
-	BodyAttachment2.OnDestroy(this);
-}
+#endif
 
-void UAGX_ConstraintComponent::DestroyComponent(bool bPromoteChildren)
+void UAGX_ConstraintComponent::OnUnregister()
 {
-	Super::DestroyComponent(bPromoteChildren);
+#if WITH_EDITOR
 	if (DofGraphicsComponent1)
 	{
 		DofGraphicsComponent1->DestroyComponent();
@@ -1033,8 +1021,13 @@ void UAGX_ConstraintComponent::DestroyComponent(bool bPromoteChildren)
 	{
 		IconGraphicsComponent->DestroyComponent();
 	}
-}
+
+	BodyAttachment1.OnDestroy(this);
+	BodyAttachment2.OnDestroy(this);
 #endif
+
+	Super::OnUnregister();
+}
 
 void UAGX_ConstraintComponent::BeginPlay()
 {
