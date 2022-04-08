@@ -387,6 +387,8 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+
+	virtual void DestroyComponent(bool bPromoteChildren) override;
 #endif
 
 	// Called when deleted in editor, in game, if owning actor is deleted or when switching level.

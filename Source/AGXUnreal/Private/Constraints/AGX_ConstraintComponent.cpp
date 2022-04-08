@@ -1004,11 +1004,9 @@ void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
 }
 
-#endif
-
-void UAGX_ConstraintComponent::OnUnregister()
+void UAGX_ConstraintComponent::DestroyComponent(bool bPromoteChildren)
 {
-#if WITH_EDITOR
+	Super::DestroyComponent(bPromoteChildren);
 	if (DofGraphicsComponent1)
 	{
 		DofGraphicsComponent1->DestroyComponent();
@@ -1021,9 +1019,15 @@ void UAGX_ConstraintComponent::OnUnregister()
 	{
 		IconGraphicsComponent->DestroyComponent();
 	}
+}
 
-	BodyAttachment1.OnDestroy(this);
-	BodyAttachment2.OnDestroy(this);
+#endif
+
+void UAGX_ConstraintComponent::OnUnregister()
+{
+#if WITH_EDITOR
+	BodyAttachment1.UnregisterFromConstraintFrameComponent(this);
+	BodyAttachment2.UnregisterFromConstraintFrameComponent(this);
 #endif
 
 	Super::OnUnregister();
