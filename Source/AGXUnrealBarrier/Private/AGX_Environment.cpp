@@ -14,8 +14,13 @@
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
+#include "Misc/EngineVersionComparison.h"
 #include "GenericPlatform/GenericPlatformProcess.h"
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 #include "HAL/PlatformFilemanager.h"
+#else
+#include "HAL/PlatformFileManager.h"
+#endif
 #include "Interfaces/IPluginManager.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
@@ -638,7 +643,7 @@ bool FAGX_Environment::TryActivateEncryptedServiceLicense() const
 	// the activation.
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 	PlatformFile.DeleteFile(*EncryptedServiceLicensePath);
-	
+
 	UE_LOG(
 		LogAGX, Log,
 		TEXT("Successfully activated encrypted service license using file located at: %s"),
@@ -724,7 +729,6 @@ bool FAGX_Environment::IsLoadedLicenseOfServiceType() const
 	// Only service licenses has this key set. The legacy license key equivalence is "License".
 	return GetAgxDynamicsLicenseValue("InstallationID").IsSet();
 }
-
 
 bool FAGX_Environment::RefreshServiceLicense() const
 {
@@ -817,7 +821,7 @@ bool FAGX_Environment::DeactivateServiceLicense() const
 		return false;
 	}
 
-	if(!AgxRuntime->deactivateAgxLicense())
+	if (!AgxRuntime->deactivateAgxLicense())
 	{
 		return false;
 	}
