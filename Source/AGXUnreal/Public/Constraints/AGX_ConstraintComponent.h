@@ -41,7 +41,6 @@ protected:
 	UAGX_ConstraintComponent(const TArray<EDofFlag>& LockedDofsOrdered);
 
 public:
-	virtual ~UAGX_ConstraintComponent();
 
 	/**
 	 * The first Rigid Body bound by this constraint, and its Attachment Frame definition.
@@ -389,12 +388,11 @@ public:
 	virtual void PostEditChangeChainProperty(
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 
-	// When destroyed in Game.
-	virtual void BeginDestroy() override;
-
-	// When destroyed in Editor.
 	virtual void DestroyComponent(bool bPromoteChildren) override;
 #endif
+
+	// Called when deleted in editor, in game, if owning actor is deleted or when switching level.
+	virtual void OnUnregister() override;
 
 	virtual void Serialize(FArchive& Archive) override;
 

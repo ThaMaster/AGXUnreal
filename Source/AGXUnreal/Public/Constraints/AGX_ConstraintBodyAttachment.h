@@ -157,7 +157,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 */
 	void OnFrameDefiningComponentChanged(UAGX_ConstraintComponent* Parent);
 
-	void OnDestroy(UAGX_ConstraintComponent* Parent);
+	void UnregisterFromConstraintFrameComponent(UAGX_ConstraintComponent* Parent);
 #endif
 
 private:

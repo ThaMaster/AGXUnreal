@@ -164,7 +164,8 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningComponentChanged(
 	}
 }
 
-void FAGX_ConstraintBodyAttachment::OnDestroy(UAGX_ConstraintComponent* Parent)
+void FAGX_ConstraintBodyAttachment::UnregisterFromConstraintFrameComponent(
+	UAGX_ConstraintComponent* Parent)
 {
 	UAGX_ConstraintFrameComponent* ConstraintFrame =
 		Cast<UAGX_ConstraintFrameComponent>(FrameDefiningComponent.GetSceneComponent());
