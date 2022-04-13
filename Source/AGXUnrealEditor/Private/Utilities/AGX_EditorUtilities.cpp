@@ -879,7 +879,8 @@ void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
 
 	// Assigns to first available of OutActor1 and OutActor2, and returns whether
 	// at least one of them is afterwards still available for assignment.
-	auto AssignOutActors = [OutActor1, OutActor2](AActor* RigidBodyActor) {
+	auto AssignOutActors = [OutActor1, OutActor2](AActor* RigidBodyActor)
+	{
 		if (OutActor1 && *OutActor1 == nullptr)
 		{
 			*OutActor1 = RigidBodyActor;
@@ -1093,6 +1094,38 @@ FString FAGX_EditorUtilities::SelectExistingDirectoryDialog(
 	}
 
 	return DirectoryPath;
+}
+
+FString FAGX_EditorUtilities::SelectNewFileDialog(
+	const FString& DialogTitle, const FString& FileExtension, const FString& FileTypes,
+	const FString& DefaultFile, const FString& InStartDir)
+{
+	TArray<FString> Filenames;
+	bool FileSelected = FDesktopPlatformModule::Get()->SaveFileDialog(
+		nullptr, DialogTitle, InStartDir, DefaultFile, FileTypes, EFileDialogFlags::None,
+		Filenames);
+	if (!FileSelected || Filenames.Num() == 0)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("No file selected, doing nothing."));
+		return "";
+	}
+
+	if (Filenames.Num() > 1)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Multiple files selected but we only support selecting one. Doing nothing."));
+		return "";
+	}
+
+	const FString Filename = Filenames[0];
+	if (Filename.IsEmpty())
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Selected file has empty file name. Doing nothing."));
+		return "";
+	}
+
+	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*Filename);
 }
 
 #undef LOCTEXT_NAMESPACE
