@@ -37,6 +37,7 @@ private:
 	void OnOpenAboutDialogClicked();
 
 	void OnOpenLicenseActivationDialogClicked();
+	void OnOpenOfflineActivationDialogClicked();
 	void OnOpenGenerateRuntimeActivationDialogClicked();
 
 	TSharedPtr<class FExtender> Extender;
