@@ -687,7 +687,7 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(
 		LicenseId, Convert(ActivationCode), Convert(ReferenceFilePath));
 	const FString Content = Convert(ContentAGX);
 
-	// Must be called to avoid unplesent crash due to different allocators used by AGX Dynamics and
+	// Must be called to avoid unpleasant crash due to different allocators used by AGX Dynamics and
 	// Unreal Engine.
 	agxUtil::freeContainerMemory(ContentAGX);
 	AGX_ENVIRONMENT()
@@ -719,6 +719,48 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(
 	return FinalOutputPath;
 }
 
+TOptional<FString> FAGX_Environment::GenerateOfflineActivationRequest(
+	int32 LicenseId, const FString& ActivationCode, const FString& OutputFile) const
+{
+	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	if (AgxRuntime == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
+		return TOptional<FString>();
+	}
+
+	FString Content = "";
+	{
+		agx::String ContentAGX =
+			AgxRuntime->generateOfflineActivationRequest(LicenseId, Convert(ActivationCode));
+		Content = Convert(ContentAGX);
+
+		// Must be called to avoid unpleasant crash due to different allocators used by AGX Dynamics
+		// and Unreal Engine.
+		agxUtil::freeContainerMemory(ContentAGX);
+	}
+
+	if (Content.IsEmpty())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to generate offline activation request. The Output Log may contain more "
+				 "information."));
+		return TOptional<FString>();
+	}
+
+	if (!FFileHelper::SaveStringToFile(Content, *OutputFile))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to write to file %s. The Output Log may contain more "
+				 "information."),
+			*OutputFile);
+		return TOptional<FString>();
+	}
+
+	return OutputFile;
+}
 bool FAGX_Environment::IsLoadedLicenseOfServiceType() const
 {
 	// Only service licenses has this key set. The legacy license key equivalence is "License".

@@ -65,6 +65,9 @@ public:
 	TOptional<FString> GenerateRuntimeActivation(int32 LicenseId, const FString& ActivationCode,
 		const FString& ReferenceFilePath, const FString& LicenseDir) const;
 
+	// Returns (optional) path to the final written file on disk if successful.
+	TOptional<FString> GenerateOfflineActivationRequest(
+		int32 LicenseId, const FString& ActivationCode, const FString& OutputFile) const;
 	bool IsLoadedLicenseOfServiceType() const;
 
 	bool RefreshServiceLicense() const;
