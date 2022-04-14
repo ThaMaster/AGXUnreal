@@ -502,9 +502,10 @@ bool FAGX_Environment::ActivateAgxDynamicsServiceLicense(
 	}
 	const FString LicenseDir = GetPluginLicenseDirPath();
 	AGX_Environment_helpers::CreateDirectoryIfNonExistent(LicenseDir);
+	const FString OutputFilePath =
+		FPaths::Combine(LicenseDir, FString("agx") + GetServiceLicenseFileEnding());
 	return AgxRuntime->activateAgxLicense(
-		LicenseId, Convert(ActivationCode),
-		Convert(FPaths::Combine(LicenseDir, FString("agx") + GetServiceLicenseFileEnding())));
+		LicenseId, Convert(ActivationCode), Convert(OutputFilePath));
 }
 
 TOptional<FString> FAGX_Environment::GetAgxDynamicsLicenseValue(const FString& Key) const
