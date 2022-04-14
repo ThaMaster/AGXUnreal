@@ -761,6 +761,33 @@ TOptional<FString> FAGX_Environment::GenerateOfflineActivationRequest(
 
 	return OutputFile;
 }
+
+bool FAGX_Environment::ProcessOfflineActivationResponse(const FString& ResponseFilePath) const
+{
+	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	if (AgxRuntime == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
+		return false;
+	}
+
+	if (!FPaths::FileExists(ResponseFilePath))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("ProcessOfflineActivationResponse failed, file '%s' does not exist."),
+			*ResponseFilePath);
+		return false;
+	}
+
+	FString RequestContent;
+	FFileHelper::LoadFileToString(RequestContent, *ResponseFilePath);
+
+	//const bool ProcessResult = Agx
+
+	return true;
+}
+
 bool FAGX_Environment::IsLoadedLicenseOfServiceType() const
 {
 	// Only service licenses has this key set. The legacy license key equivalence is "License".
