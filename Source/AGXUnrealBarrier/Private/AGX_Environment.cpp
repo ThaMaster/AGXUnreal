@@ -517,12 +517,13 @@ TOptional<FString> FAGX_Environment::GetAgxDynamicsLicenseValue(const FString& K
 		return TOptional<FString>(); // Logging done in GetAgxRuntime.
 	}
 
-	if (!AgxRuntime->hasKey(TCHAR_TO_UTF8(*Key)))
+	const char* KeyCh = TCHAR_TO_UTF8(*Key);
+	if (!AgxRuntime->hasKey(KeyCh))
 	{
 		return TOptional<FString>();
 	}
 
-	return Convert(AgxRuntime->readValue(TCHAR_TO_UTF8(*Key)));
+	return Convert(AgxRuntime->readValue(KeyCh));
 }
 
 TArray<FString> FAGX_Environment::GetAgxDynamicsEnabledModules() const
