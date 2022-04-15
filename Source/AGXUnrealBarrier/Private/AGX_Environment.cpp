@@ -47,11 +47,12 @@ static_assert(false);
 
 namespace AGX_Environment_helpers
 {
-	void CreateDirectoryIfNonExistent(const FString& Path)
+	// Returns true if the directory could be created or already exists. Returns false otherwise.
+	bool CreateDirectoryIfNonExistent(const FString& Path)
 	{
 		if (FPaths::DirectoryExists(Path))
 		{
-			return;
+			return true;
 		}
 
 		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
@@ -62,7 +63,10 @@ namespace AGX_Environment_helpers
 				TEXT("Unable to create directory: '%s'. The Output Log may contain more "
 					 "information."),
 				*Path);
+			return false;
 		}
+
+		return true;
 	}
 
 	const FString& GetLegacyLicenseFileEnding()
@@ -91,7 +95,7 @@ namespace AGX_Environment_helpers
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Unexpected error: agx::Runtime::instance() returned nullptr. If this error "
-					"appears regularly, please contact the Algoryx support."));
+					 "appears regularly, please contact the Algoryx support."));
 			return nullptr;
 		}
 
@@ -273,10 +277,21 @@ void FAGX_Environment::SetupAGXDynamicsEnvironment()
 		.pushbackPath(Convert(AgxCfgPath));
 
 	const FString AgxLicensePath = GetPluginLicenseDirPath();
-	AGX_Environment_helpers::CreateDirectoryIfNonExistent(AgxLicensePath);
-	AGX_ENVIRONMENT()
-		.getFilePath(agxIO::Environment::RESOURCE_PATH)
-		.pushbackPath(Convert(AgxLicensePath));
+	if (AGX_Environment_helpers::CreateDirectoryIfNonExistent(AgxLicensePath))
+	{
+		AGX_ENVIRONMENT()
+			.getFilePath(agxIO::Environment::RESOURCE_PATH)
+			.pushbackPath(Convert(AgxLicensePath));
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to create license directory '%s' while setting up AGX Dynamics "
+				 "environment. License file detection may not work as expected. Try to create this "
+				 "directory manually."),
+			*AgxLicensePath);
+	}
 }
 
 FAGX_Environment& FAGX_Environment::GetInstance()
@@ -501,7 +516,11 @@ bool FAGX_Environment::ActivateAgxDynamicsServiceLicense(
 		return false; // Logging done in GetAgxRuntime.
 	}
 	const FString LicenseDir = GetPluginLicenseDirPath();
-	AGX_Environment_helpers::CreateDirectoryIfNonExistent(LicenseDir);
+	if (!AGX_Environment_helpers::CreateDirectoryIfNonExistent(LicenseDir))
+	{
+		return false;
+	}
+
 	const FString OutputFilePath =
 		FPaths::Combine(LicenseDir, FString("agx") + GetServiceLicenseFileEnding());
 	return AgxRuntime->activateAgxLicense(
@@ -529,7 +548,7 @@ TOptional<FString> FAGX_Environment::GetAgxDynamicsLicenseValue(const FString& K
 TArray<FString> FAGX_Environment::GetAgxDynamicsEnabledModules() const
 {
 	using namespace AGX_Environment_helpers;
-	TArray<FString> Modules;	
+	TArray<FString> Modules;
 	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
@@ -677,7 +696,11 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(
 		return TOptional<FString>(); // Logging done in GetAgxRuntime.
 	}
 
-	CreateDirectoryIfNonExistent(LicenseDir);
+	if (!CreateDirectoryIfNonExistent(LicenseDir))
+	{
+		return TOptional<FString>();
+	}
+
 	if (!FPaths::FileExists(ReferenceFilePath))
 	{
 		UE_LOG(
