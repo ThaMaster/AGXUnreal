@@ -756,11 +756,11 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(
 TOptional<FString> FAGX_Environment::GenerateOfflineActivationRequest(
 	int32 LicenseId, const FString& ActivationCode, const FString& OutputFile) const
 {
-	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	using namespace AGX_Environment_helpers;
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
-		return TOptional<FString>();
+		return TOptional<FString>(); // Logging done in GetAgxRuntime.
 	}
 
 	FString Content = "";
@@ -798,11 +798,11 @@ TOptional<FString> FAGX_Environment::GenerateOfflineActivationRequest(
 
 bool FAGX_Environment::ProcessOfflineActivationResponse(const FString& ResponseFilePath) const
 {
-	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	using namespace AGX_Environment_helpers;
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
-		return false;
+		return false; // Logging done in GetAgxRuntime.
 	}
 
 	if (!FPaths::FileExists(ResponseFilePath))
@@ -814,10 +814,37 @@ bool FAGX_Environment::ProcessOfflineActivationResponse(const FString& ResponseF
 		return false;
 	}
 
-	FString RequestContent;
-	FFileHelper::LoadFileToString(RequestContent, *ResponseFilePath);
+	FString ResponseContent;
+	FFileHelper::LoadFileToString(ResponseContent, *ResponseFilePath);
 
-	//const bool ProcessResult = Agx
+	if (!AgxRuntime->processOfflineActivationRequest(ResponseContent))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to process offline activation response in '%s'. "
+				"Please ensure the file is valid."),
+			*ResponseFilePath);
+		return false;
+	}
+
+	agx::String LicenseContentAgx = AgxRuntime->readEncryptedLicense();
+	const FString LicenseContent = Convert(LicenseContentAgx);
+
+	// Must be called to avoid unpleasant crash due to different allocators used by AGX Dynamics
+	// and Unreal Engine.
+	agxUtil::freeContainerMemory(LicenseContentAgx);
+
+	const FString OutputFile =
+		FPaths::Combine(GetPluginLicenseDirPath(), FString("agx") + GetServiceLicenseFileEnding());
+	if (!FFileHelper::SaveStringToFile(LicenseContent, *OutputFile))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to write to file %s. The Output Log may contain more "
+				 "information."),
+			*OutputFile);
+		return false;
+	}
 
 	return true;
 }
