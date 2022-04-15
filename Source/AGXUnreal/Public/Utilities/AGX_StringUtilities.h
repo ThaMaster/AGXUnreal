@@ -53,5 +53,5 @@ FORCEINLINE FString GetLabelSafe(const AActor* Actor)
 
 FORCEINLINE bool ContainsOnlyIntegers(const FString& str)
 {
-	return std::all_of(str.begin(), str.end(), [](TCHAR C) { return TChar<TCHAR>::IsDigit(C); });
+	return std::all_of(str.begin(), str.end(), TChar<TCHAR>::IsDigit);
 }

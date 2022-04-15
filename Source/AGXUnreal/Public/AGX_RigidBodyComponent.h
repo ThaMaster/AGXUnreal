@@ -43,7 +43,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetRotator(const FRotator& Rotator);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynmaics")
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FRotator GetRotator() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")

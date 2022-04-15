@@ -14,8 +14,13 @@
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
+#include "Misc/EngineVersionComparison.h"
 #include "GenericPlatform/GenericPlatformProcess.h"
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 #include "HAL/PlatformFilemanager.h"
+#else
+#include "HAL/PlatformFileManager.h"
+#endif
 #include "Interfaces/IPluginManager.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
@@ -42,11 +47,12 @@ static_assert(false);
 
 namespace AGX_Environment_helpers
 {
-	void CreateDirectoryIfNonExistent(const FString& Path)
+	// Returns true if the directory could be created or already exists. Returns false otherwise.
+	bool CreateDirectoryIfNonExistent(const FString& Path)
 	{
 		if (FPaths::DirectoryExists(Path))
 		{
-			return;
+			return true;
 		}
 
 		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
@@ -57,7 +63,10 @@ namespace AGX_Environment_helpers
 				TEXT("Unable to create directory: '%s'. The Output Log may contain more "
 					 "information."),
 				*Path);
+			return false;
 		}
+
+		return true;
 	}
 
 	const FString& GetLegacyLicenseFileEnding()
@@ -76,6 +85,21 @@ namespace AGX_Environment_helpers
 	{
 		static const FString s = ".rtlfx";
 		return s;
+	}
+
+	agx::Runtime* GetAgxRuntime()
+	{
+		agx::Runtime* AgxRuntime = agx::Runtime::instance();
+		if (AgxRuntime == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unexpected error: agx::Runtime::instance() returned nullptr. If this error "
+					 "appears regularly, please contact the Algoryx support."));
+			return nullptr;
+		}
+
+		return AgxRuntime;
 	}
 }
 
@@ -253,10 +277,21 @@ void FAGX_Environment::SetupAGXDynamicsEnvironment()
 		.pushbackPath(Convert(AgxCfgPath));
 
 	const FString AgxLicensePath = GetPluginLicenseDirPath();
-	AGX_Environment_helpers::CreateDirectoryIfNonExistent(AgxLicensePath);
-	AGX_ENVIRONMENT()
-		.getFilePath(agxIO::Environment::RESOURCE_PATH)
-		.pushbackPath(Convert(AgxLicensePath));
+	if (AGX_Environment_helpers::CreateDirectoryIfNonExistent(AgxLicensePath))
+	{
+		AGX_ENVIRONMENT()
+			.getFilePath(agxIO::Environment::RESOURCE_PATH)
+			.pushbackPath(Convert(AgxLicensePath));
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to create license directory '%s' while setting up AGX Dynamics "
+				 "environment. License file detection may not work as expected. Try to create this "
+				 "directory manually."),
+			*AgxLicensePath);
+	}
 }
 
 FAGX_Environment& FAGX_Environment::GetInstance()
@@ -475,45 +510,49 @@ bool FAGX_Environment::ActivateAgxDynamicsServiceLicense(
 	int32 LicenseId, const FString& ActivationCode)
 {
 	using namespace AGX_Environment_helpers;
-	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
-		return false;
+		return false; // Logging done in GetAgxRuntime.
 	}
 	const FString LicenseDir = GetPluginLicenseDirPath();
-	AGX_Environment_helpers::CreateDirectoryIfNonExistent(LicenseDir);
+	if (!AGX_Environment_helpers::CreateDirectoryIfNonExistent(LicenseDir))
+	{
+		return false;
+	}
+
+	const FString OutputFilePath =
+		FPaths::Combine(LicenseDir, FString("agx") + GetServiceLicenseFileEnding());
 	return AgxRuntime->activateAgxLicense(
-		LicenseId, Convert(ActivationCode),
-		Convert(FPaths::Combine(LicenseDir, FString("agx") + GetServiceLicenseFileEnding())));
+		LicenseId, Convert(ActivationCode), Convert(OutputFilePath));
 }
 
 TOptional<FString> FAGX_Environment::GetAgxDynamicsLicenseValue(const FString& Key) const
 {
-	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	using namespace AGX_Environment_helpers;
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
-		return TOptional<FString>();
+		return TOptional<FString>(); // Logging done in GetAgxRuntime.
 	}
 
-	if (!AgxRuntime->hasKey(TCHAR_TO_UTF8(*Key)))
+	const char* KeyCh = TCHAR_TO_UTF8(*Key);
+	if (!AgxRuntime->hasKey(KeyCh))
 	{
 		return TOptional<FString>();
 	}
 
-	return Convert(AgxRuntime->readValue(TCHAR_TO_UTF8(*Key)));
+	return Convert(AgxRuntime->readValue(KeyCh));
 }
 
 TArray<FString> FAGX_Environment::GetAgxDynamicsEnabledModules() const
 {
+	using namespace AGX_Environment_helpers;
 	TArray<FString> Modules;
-
-	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
-		return Modules;
+		return Modules; // Logging done in GetAgxRuntime.
 	}
 
 	for (const auto& Module : AgxRuntime->getEnabledModules())
@@ -526,11 +565,11 @@ TArray<FString> FAGX_Environment::GetAgxDynamicsEnabledModules() const
 
 bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus) const
 {
-	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	using namespace AGX_Environment_helpers;
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
-		return false;
+		return false; // Logging done in GetAgxRuntime.
 	}
 
 	if (AgxRuntime->isValid())
@@ -564,10 +603,10 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus) const
 bool FAGX_Environment::TryUnlockAgxDynamicsLegacyLicense() const
 {
 	using namespace AGX_Environment_helpers;
-	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
-		return false;
+		return false; // Logging done in GetAgxRuntime.
 	}
 
 	const FString AgxLicensePath =
@@ -604,14 +643,15 @@ bool FAGX_Environment::TryUnlockAgxDynamicsLegacyLicense() const
 bool FAGX_Environment::TryActivateEncryptedServiceLicense() const
 {
 	using namespace AGX_Environment_helpers;
-	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
-		return false;
+		return false; // Logging done in GetAgxRuntime.
 	}
 
-	const FString EncryptedServiceLicensePath = FPaths::Combine(
-		GetPluginLicenseDirPath(), FString("agx") + GetEncryptedRuntimeServiceLicenseFileEnding());
+	const FString LicenseDir = GetPluginLicenseDirPath();
+	const FString EncryptedServiceLicensePath =
+		FPaths::Combine(LicenseDir, FString("agx") + GetEncryptedRuntimeServiceLicenseFileEnding());
 	if (!FPaths::FileExists(EncryptedServiceLicensePath))
 	{
 		return false;
@@ -620,7 +660,6 @@ bool FAGX_Environment::TryActivateEncryptedServiceLicense() const
 	FString LicenseContent;
 	FFileHelper::LoadFileToString(LicenseContent, *EncryptedServiceLicensePath);
 
-	const FString LicenseDir = GetPluginLicenseDirPath();
 	const FString FinalOutputPath =
 		FPaths::Combine(LicenseDir, FString("agx") + GetServiceLicenseFileEnding());
 
@@ -638,7 +677,7 @@ bool FAGX_Environment::TryActivateEncryptedServiceLicense() const
 	// the activation.
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 	PlatformFile.DeleteFile(*EncryptedServiceLicensePath);
-	
+
 	UE_LOG(
 		LogAGX, Log,
 		TEXT("Successfully activated encrypted service license using file located at: %s"),
@@ -651,19 +690,14 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(
 	const FString& LicenseDir) const
 {
 	using namespace AGX_Environment_helpers;
-	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
-		return TOptional<FString>();
+		return TOptional<FString>(); // Logging done in GetAgxRuntime.
 	}
 
-	if (!FPaths::DirectoryExists(LicenseDir))
+	if (!CreateDirectoryIfNonExistent(LicenseDir))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Error during runtime activation generation. Directory %s does not exists."),
-			*LicenseDir);
 		return TOptional<FString>();
 	}
 
@@ -690,9 +724,9 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(
 	// Must be called to avoid unpleasant crash due to different allocators used by AGX Dynamics and
 	// Unreal Engine.
 	agxUtil::freeContainerMemory(ContentAGX);
-	AGX_ENVIRONMENT()
-		.getFilePath(agxIO::Environment::RESOURCE_PATH)
-		.removeFilePath(Convert(ReferenceFileDirectory));
+
+	// Restore the agxIO::Environment's list of RESOURCE_PATHs.
+	AGX_ENVIRONMENT().getFilePath(agxIO::Environment::RESOURCE_PATH).getFilePathList().pop_back();
 
 	if (Content.IsEmpty())
 	{
@@ -794,7 +828,6 @@ bool FAGX_Environment::IsLoadedLicenseOfServiceType() const
 	return GetAgxDynamicsLicenseValue("InstallationID").IsSet();
 }
 
-
 bool FAGX_Environment::RefreshServiceLicense() const
 {
 	using namespace AGX_Environment_helpers;
@@ -820,11 +853,10 @@ bool FAGX_Environment::RefreshServiceLicense() const
 		return false;
 	}
 
-	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
-		return false;
+		return false; // Logging done in GetAgxRuntime.
 	}
 
 	const FString LicenseDir = GetPluginLicenseDirPath();
@@ -867,11 +899,10 @@ bool FAGX_Environment::DeactivateServiceLicense() const
 		return false;
 	}
 
-	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Unexpected error: agx::Runtime::instance() returned nullptr."));
-		return false;
+		return false; // Logging done in GetAgxRuntime.
 	}
 
 	const FString LicenseDir = GetPluginLicenseDirPath();
@@ -886,7 +917,7 @@ bool FAGX_Environment::DeactivateServiceLicense() const
 		return false;
 	}
 
-	if(!AgxRuntime->deactivateAgxLicense())
+	if (!AgxRuntime->deactivateAgxLicense())
 	{
 		return false;
 	}

@@ -71,7 +71,6 @@ public:
 	/** \return The address of the currently owned native AGX Dynamics object, or 0. */
 	virtual uint64 GetNativeAddress() const = 0;
 
-	/// @todo Rename to SetNativeAddress, for symmetry with GetNativeAddress.
 	/**
 	 * Make this Native Owner the owner of the native AGX Dynamics object at the given address.
 	 *
