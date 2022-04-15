@@ -630,8 +630,9 @@ bool FAGX_Environment::TryActivateEncryptedServiceLicense() const
 		return false; // Logging done in GetAgxRuntime.
 	}
 
-	const FString EncryptedServiceLicensePath = FPaths::Combine(
-		GetPluginLicenseDirPath(), FString("agx") + GetEncryptedRuntimeServiceLicenseFileEnding());
+	const FString LicenseDir = GetPluginLicenseDirPath();
+	const FString EncryptedServiceLicensePath =
+		FPaths::Combine(LicenseDir, FString("agx") + GetEncryptedRuntimeServiceLicenseFileEnding());
 	if (!FPaths::FileExists(EncryptedServiceLicensePath))
 	{
 		return false;
@@ -640,7 +641,6 @@ bool FAGX_Environment::TryActivateEncryptedServiceLicense() const
 	FString LicenseContent;
 	FFileHelper::LoadFileToString(LicenseContent, *EncryptedServiceLicensePath);
 
-	const FString LicenseDir = GetPluginLicenseDirPath();
 	const FString FinalOutputPath =
 		FPaths::Combine(LicenseDir, FString("agx") + GetServiceLicenseFileEnding());
 
