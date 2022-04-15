@@ -67,7 +67,14 @@ public:
 
 	bool IsLoadedLicenseOfServiceType() const;
 
+	// Will attempt to refresh the service license against the license server. Returns true if the
+	// license could be refreshed, or did not need to be refreshed, false otherwise. The service
+	// license will be loaded after calling this function and it returns true.
 	bool RefreshServiceLicense() const;
+
+	// Deactivates the service license against the license server and deletes the service license
+	// from the AGXUnreal/license directory. Returns true if deactivation was successful, false
+	// otherwise.
 	bool DeactivateServiceLicense() const;
 
 	FAGX_Environment(const FAGX_Environment&) = delete;
