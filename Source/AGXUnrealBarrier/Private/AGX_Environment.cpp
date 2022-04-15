@@ -677,15 +677,7 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(
 		return TOptional<FString>(); // Logging done in GetAgxRuntime.
 	}
 
-	if (!FPaths::DirectoryExists(LicenseDir))
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Error during runtime activation generation. Directory %s does not exists."),
-			*LicenseDir);
-		return TOptional<FString>();
-	}
-
+	CreateDirectoryIfNonExistent(LicenseDir);
 	if (!FPaths::FileExists(ReferenceFilePath))
 	{
 		UE_LOG(
