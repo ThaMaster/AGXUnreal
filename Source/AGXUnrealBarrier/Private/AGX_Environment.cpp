@@ -706,12 +706,12 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(
 		LicenseId, Convert(ActivationCode), Convert(ReferenceFilePath));
 	const FString Content = Convert(ContentAGX);
 
-	// Must be called to avoid unplesent crash due to different allocators used by AGX Dynamics and
+	// Must be called to avoid unpleasant crash due to different allocators used by AGX Dynamics and
 	// Unreal Engine.
 	agxUtil::freeContainerMemory(ContentAGX);
-	AGX_ENVIRONMENT()
-		.getFilePath(agxIO::Environment::RESOURCE_PATH)
-		.removeFilePath(Convert(ReferenceFileDirectory));
+
+	// Restore the agxIO::Environment's list of RESOURCE_PATHs.
+	AGX_ENVIRONMENT().getFilePath(agxIO::Environment::RESOURCE_PATH).getFilePathList().pop_back();
 
 	if (Content.IsEmpty())
 	{
