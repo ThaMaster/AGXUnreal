@@ -32,7 +32,7 @@ void SAGX_OfflineActivationDialog::Construct(const FArguments& InArgs)
 				.Padding(FMargin(5.0f, 5.0f))
 				.Content()
 				[
-					CreateActicationRequestGui()
+					CreateActivationRequestGui()
 				]
 			]
 			+ SVerticalBox::Slot()
@@ -45,7 +45,7 @@ void SAGX_OfflineActivationDialog::Construct(const FArguments& InArgs)
 				.Padding(FMargin(5.0f, 5.0f))
 				.Content()
 				[
-					CreateActicationResponseGui()
+					CreateActivationResponseGui()
 				]
 			]	
 		]
@@ -63,7 +63,7 @@ namespace AGX_OfflineActivationDialog_helpers
 	};
 }
 
-TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActicationRequestGui()
+TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActivationRequestGui()
 {
 	using namespace AGX_OfflineActivationDialog_helpers;
 	// clang-format off
@@ -168,7 +168,7 @@ TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActicationRequestGui()
 	// clang-format on
 }
 
-TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActicationResponseGui()
+TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActivationResponseGui()
 {
 	using namespace AGX_OfflineActivationDialog_helpers;
 

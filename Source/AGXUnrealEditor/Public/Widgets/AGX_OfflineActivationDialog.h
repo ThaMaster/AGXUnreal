@@ -14,8 +14,8 @@ public:
 	void Construct(const FArguments& InArgs);
 
 private:
-	TSharedRef<SWidget> CreateActicationRequestGui();
-	TSharedRef<SWidget> CreateActicationResponseGui();
+	TSharedRef<SWidget> CreateActivationRequestGui();
+	TSharedRef<SWidget> CreateActivationResponseGui();
 
 	FText GetLicenseIdText() const;
 	void OnLicenseIdTextCommitted(const FText& NewText, ETextCommit::Type InTextCommit);
