@@ -184,7 +184,7 @@ TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActicationResponseGui()
 			.AutoHeight()
 			[
 				SNew(STextBlock)
-				.Text(LOCTEXT("ProcessOfflineResponseText", "Process offline activation response"))
+				.Text(LOCTEXT("ActivateOfflineResponseText", "Activate using offline activation response"))
 				.Font(CreateFont(12))
 			]
 			+ SVerticalBox::Slot()
