@@ -337,7 +337,7 @@ FReply SAGX_OfflineActivationDialog::OnActivateButtonClicked()
 		return FReply::Handled();
 	}
 
-	auto OutputFile =
+	const auto OutputFile =
 		FAGX_Environment::GetInstance().ProcessOfflineActivationResponse(ActivationResponsePath);
 	if(!OutputFile)
 	{
