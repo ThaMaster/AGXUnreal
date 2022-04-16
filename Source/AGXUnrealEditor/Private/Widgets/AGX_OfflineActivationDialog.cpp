@@ -66,10 +66,17 @@ namespace AGX_OfflineActivationDialog_helpers
 TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActicationRequestGui()
 {
 	using namespace AGX_OfflineActivationDialog_helpers;
-	static const FString InfoText =
-		"Placeholder text.";
-
 	// clang-format off
+	static const FString InfoText =
+		"Generate an offline activation request file. This file can\n"
+		"then be used to generate an offline activation response\n"
+		"on any other computer connected to the internet.\n\n"
+		"Lastly, the offline activation response file can be used\n"
+		"to activate the service license, and an hardware bound\n"
+		"license file will be created and stored on this computer.\n\n"
+		"More information regarding offline license activation can\n"
+		"be found in the AGX Dynamics for Unreal User Manual.\n";
+	
 	return SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
 			.Padding(FMargin(50.0f, 10.0f, 10.f, 10.f))
@@ -164,9 +171,13 @@ TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActicationRequestGui()
 TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActicationResponseGui()
 {
 	using namespace AGX_OfflineActivationDialog_helpers;
-	static const FString InfoText = "Placeholder text 2.";
 
 	// clang-format off
+	static const FString InfoText =
+		"Use an offline activation response to activate the service\n"
+		"license. Once completed, a license file (agx.lfx) that is\n"
+		"hardware bound to this computer will be created.\n";
+
 	return SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
 			.Padding(FMargin(50.0f, 10.0f, 10.f, 10.f))
