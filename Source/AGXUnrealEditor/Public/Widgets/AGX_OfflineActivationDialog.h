@@ -15,6 +15,7 @@ public:
 
 private:
 	TSharedRef<SWidget> CreateActicationRequestGui();
+	TSharedRef<SWidget> CreateActicationResponseGui();
 
 	FText GetLicenseIdText() const;
 	void OnLicenseIdTextCommitted(const FText& NewText, ETextCommit::Type InTextCommit);
@@ -24,6 +25,11 @@ private:
 
 	FReply OnGenerateActivationRequestButtonClicked();
 	FText GetActivationRequestPathText() const;
+
+	FReply OnBrowseResponseFileButtonClicked();
+	FText GetActivationResponsePathText() const;
+
+	FReply OnActivateButtonClicked();
 
 	FString LicenseId;
 	FString ActivationCode;

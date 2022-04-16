@@ -34,21 +34,38 @@ void SAGX_OfflineActivationDialog::Construct(const FArguments& InArgs)
 				[
 					CreateActicationRequestGui()
 				]
+			]
+			+ SVerticalBox::Slot()
+			.Padding(FMargin(5.0f, 5.0f))
+			.AutoHeight()
+			[
+				SNew(SBorder)
+				.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
+				.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+				.Padding(FMargin(5.0f, 5.0f))
+				.Content()
+				[
+					CreateActicationResponseGui()
+				]
 			]	
 		]
 	];
 	// clang-format on
 }
 
-TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActicationRequestGui()
+namespace AGX_OfflineActivationDialog_helpers
 {
-	auto CreateFont = [](int Size)
+	FSlateFontInfo CreateFont(int Size)
 	{
 		FSlateFontInfo F = IPropertyTypeCustomizationUtils::GetRegularFont();
 		F.Size = Size;
 		return F;
 	};
+}
 
+TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActicationRequestGui()
+{
+	using namespace AGX_OfflineActivationDialog_helpers;
 	static const FString InfoText =
 		"Placeholder text.";
 
@@ -144,6 +161,80 @@ TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActicationRequestGui()
 	// clang-format on
 }
 
+TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActicationResponseGui()
+{
+	using namespace AGX_OfflineActivationDialog_helpers;
+	static const FString InfoText = "Placeholder text 2.";
+
+	// clang-format off
+	return SNew(SVerticalBox)
+			+ SVerticalBox::Slot()
+			.Padding(FMargin(50.0f, 10.0f, 10.f, 10.f))
+			.AutoHeight()
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("ProcessOfflineResponseText", "Process offline activation response"))
+				.Font(CreateFont(12))
+			]
+			+ SVerticalBox::Slot()
+			.Padding(FMargin(5.f, 5.0f))
+			.AutoHeight()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(InfoText))
+				.Font(CreateFont(10))
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(FMargin(5.f, 5.f))
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.Padding(FMargin(0.f, 0.f, 33.f, 0.f))
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("ResponseFilePathText", "Response file:"))
+					.Font(CreateFont(10))
+				]
+				+ SHorizontalBox::Slot()
+				.Padding(FMargin(0.f, 0.f, 5.f, 0.f))
+				.AutoWidth()
+				[
+					SNew(SEditableTextBox)
+					.MinDesiredWidth(150.0f)
+					.Text(this, &SAGX_OfflineActivationDialog::GetActivationResponsePathText)
+				]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				[
+					SNew(SButton)
+					.Text(LOCTEXT("BrowseButtonText", "Browse..."))
+					.ToolTipText(LOCTEXT("BrowseButtonTooltip",
+						"Browse to an offline activation response file to be used for activating "
+						"the service license."))
+					.OnClicked(this, &SAGX_OfflineActivationDialog::OnBrowseResponseFileButtonClicked)
+				]
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(FMargin(5.0f, 5.0f))
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				[
+					SNew(SButton)
+					.Text(LOCTEXT("ActivateButtonText", "  Activate  "))
+					.ToolTipText(LOCTEXT("ActivateButtonTooltip",
+						"Activate service license given the selected offline activation response "
+						"file."))
+					.OnClicked(this, &SAGX_OfflineActivationDialog::OnActivateButtonClicked)
+				]
+			];
+	// clang-format on
+}
+
 FText SAGX_OfflineActivationDialog::GetLicenseIdText() const
 {
 	return FText::FromString(LicenseId);
@@ -212,6 +303,42 @@ FReply SAGX_OfflineActivationDialog::OnGenerateActivationRequestButtonClicked()
 FText SAGX_OfflineActivationDialog::GetActivationRequestPathText() const
 {
 	return FText::FromString(ActivationRequestPath);
+}
+
+FReply SAGX_OfflineActivationDialog::OnBrowseResponseFileButtonClicked()
+{
+	ActivationResponsePath = FAGX_EditorUtilities::SelectExistingFileDialog(
+		"Select offline activation response file", "");
+	return FReply::Handled();
+}
+
+FText SAGX_OfflineActivationDialog::GetActivationResponsePathText() const
+{
+	return FText::FromString(ActivationResponsePath);
+}
+
+FReply SAGX_OfflineActivationDialog::OnActivateButtonClicked()
+{
+	if (ActivationResponsePath.IsEmpty())
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Could not activate service license, no response file is selected.");
+		return FReply::Handled();
+	}
+
+	auto OutputFile =
+		FAGX_Environment::GetInstance().ProcessOfflineActivationResponse(ActivationResponsePath);
+	if(!OutputFile)
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Activating service license failed. The Output Log may contain more information.");
+		return FReply::Handled();
+	}
+
+	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(
+		"Activating service license was successful. The service license file is written to: "
+		+ OutputFile.GetValue());
+	return FReply::Handled();
 }
 
 
