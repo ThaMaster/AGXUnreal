@@ -796,13 +796,14 @@ TOptional<FString> FAGX_Environment::GenerateOfflineActivationRequest(
 	return OutputFile;
 }
 
-bool FAGX_Environment::ProcessOfflineActivationResponse(const FString& ResponseFilePath) const
+TOptional<FString> FAGX_Environment::ProcessOfflineActivationResponse(
+	const FString& ResponseFilePath) const
 {
 	using namespace AGX_Environment_helpers;
 	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
-		return false; // Logging done in GetAgxRuntime.
+		return TOptional<FString>(); // Logging done in GetAgxRuntime.
 	}
 
 	if (!FPaths::FileExists(ResponseFilePath))
@@ -811,20 +812,20 @@ bool FAGX_Environment::ProcessOfflineActivationResponse(const FString& ResponseF
 			LogAGX, Error,
 			TEXT("ProcessOfflineActivationResponse failed, file '%s' does not exist."),
 			*ResponseFilePath);
-		return false;
+		return TOptional<FString>();
 	}
 
 	FString ResponseContent;
 	FFileHelper::LoadFileToString(ResponseContent, *ResponseFilePath);
 
-	if (!AgxRuntime->processOfflineActivationRequest(ResponseContent))
+	if (!AgxRuntime->processOfflineActivationRequest(Convert(ResponseContent)))
 	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Unable to process offline activation response in '%s'. "
 				"Please ensure the file is valid."),
 			*ResponseFilePath);
-		return false;
+		return TOptional<FString>();
 	}
 
 	agx::String LicenseContentAgx = AgxRuntime->readEncryptedLicense();
@@ -843,10 +844,10 @@ bool FAGX_Environment::ProcessOfflineActivationResponse(const FString& ResponseF
 			TEXT("Unable to write to file %s. The Output Log may contain more "
 				 "information."),
 			*OutputFile);
-		return false;
+		return TOptional<FString>();
 	}
 
-	return true;
+	return OutputFile;
 }
 
 bool FAGX_Environment::IsLoadedLicenseOfServiceType() const
