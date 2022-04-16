@@ -817,23 +817,34 @@ TOptional<FString> FAGX_Environment::ProcessOfflineActivationResponse(
 
 	FString ResponseContent;
 	FFileHelper::LoadFileToString(ResponseContent, *ResponseFilePath);
-
 	if (!AgxRuntime->processOfflineActivationRequest(Convert(ResponseContent)))
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Unable to process offline activation response in '%s'. "
+			TEXT("Unable to process offline activation response using '%s'. "
 				"Please ensure the file is valid."),
 			*ResponseFilePath);
 		return TOptional<FString>();
 	}
 
-	agx::String LicenseContentAgx = AgxRuntime->readEncryptedLicense();
-	const FString LicenseContent = Convert(LicenseContentAgx);
+	FString LicenseContent = "";
+	{
+		agx::String LicenseContentAgx = AgxRuntime->readEncryptedLicense();
+		LicenseContent = Convert(LicenseContentAgx);
 
-	// Must be called to avoid unpleasant crash due to different allocators used by AGX Dynamics
-	// and Unreal Engine.
-	agxUtil::freeContainerMemory(LicenseContentAgx);
+		// Must be called to avoid unpleasant crash due to different allocators used by AGX Dynamics
+		// and Unreal Engine.
+		agxUtil::freeContainerMemory(LicenseContentAgx);
+	}
+
+	if (LicenseContent.IsEmpty())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to read license content from the AGX Dynamics runtime. Please ensure "
+			"that the offline acivation response file is valid."));
+		return TOptional<FString>();
+	}
 
 	const FString OutputFile =
 		FPaths::Combine(GetPluginLicenseDirPath(), FString("agx") + GetServiceLicenseFileEnding());
