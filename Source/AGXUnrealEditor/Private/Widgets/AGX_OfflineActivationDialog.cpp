@@ -333,7 +333,7 @@ FReply SAGX_OfflineActivationDialog::OnActivateButtonClicked()
 	if (ActivationResponsePath.IsEmpty())
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"Could not activate service license, no response file is selected.");
+			"Could not activate service license, no activation response file is selected.");
 		return FReply::Handled();
 	}
 
