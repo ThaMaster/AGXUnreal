@@ -67,10 +67,18 @@ FVector FMassPropertiesBarrier::GetPrincipalInertia() const
 
 namespace MassPropertiesBarrier_helpers
 {
-	void SetAutoGenerateFlag(agx::MassProperties& MassProperties, agx::Int32 Flag)
+	void SetAutoGenerateFlag(agx::MassProperties& MassProperties, agx::Int32 Flag, bool Enable)
 	{
 		agx::UInt32 Mask = MassProperties.getAutoGenerateMask();
-		Mask |= Flag;
+		if (Enable)
+		{
+			Mask |= Flag;
+		}
+		else
+		{
+			Mask &= ~Flag;
+		}
+		
 		MassProperties.setAutoGenerateMask(Mask);
 	}
 
@@ -85,7 +93,7 @@ void FMassPropertiesBarrier::SetAutoGenerateMass(bool bAuto)
 {
 	check(HasNative());
 	MassPropertiesBarrier_helpers::SetAutoGenerateFlag(
-		*NativePtr->Native, agx::MassProperties::MASS);
+		*NativePtr->Native, agx::MassProperties::MASS, bAuto);
 }
 
 bool FMassPropertiesBarrier::GetAutoGenerateMass() const
@@ -99,7 +107,7 @@ void FMassPropertiesBarrier::SetAutoGenerateCenterOfMassOffset(bool bAuto)
 {
 	check(HasNative());
 	MassPropertiesBarrier_helpers::SetAutoGenerateFlag(
-		*NativePtr->Native, agx::MassProperties::CM_OFFSET);
+		*NativePtr->Native, agx::MassProperties::CM_OFFSET, bAuto);
 }
 
 bool FMassPropertiesBarrier::GetAutoGenerateCenterOfMassOffset() const
@@ -113,7 +121,7 @@ void FMassPropertiesBarrier::SetAutoGeneratePrincipalInertia(bool bAuto)
 {
 	check(HasNative());
 	return MassPropertiesBarrier_helpers::SetAutoGenerateFlag(
-		*NativePtr->Native, agx::MassProperties::INERTIA);
+		*NativePtr->Native, agx::MassProperties::INERTIA, bAuto);
 }
 
 bool FMassPropertiesBarrier::GetAutoGeneratePrincipalInertia() const
