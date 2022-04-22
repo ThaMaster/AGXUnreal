@@ -176,8 +176,8 @@ namespace
 			return false;
 		}
 
-		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire, const FString& Description)
-		{
+		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire,
+							const FString& Description) {
 			if (Body == nullptr)
 			{
 				UE_LOG(
@@ -342,8 +342,7 @@ namespace
 	bool ReadCollisionGroups(
 		agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
-		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString
-		{
+		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString {
 			FString Str = Convert(Cg.name());
 
 			// If the CollisionGroup was stored as an Id (uint32), then it will contain no name
