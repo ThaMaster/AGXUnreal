@@ -392,6 +392,19 @@ namespace
 		return true;
 	}
 
+	bool ReadObserverFrames(agxSDK::Simulation& Simulation, const FString& Filename, FAGXSimObjectsInstantiator& Instantiator)
+	{
+		agx::ObserverFrameRefSetVector& ObserverFrames = Simulation.getObserverFrames();
+		for (const agx::ObserverFrameRef& ObserverFrame : ObserverFrames)
+		{
+			FString Name = Convert(ObserverFrame->getName());
+			FGuid BodyGuid = Convert(ObserverFrame->getRigidBody()->getUuid());
+			FTransform Transform = Convert(ObserverFrame->getLocalTransform());
+			Instantiator.InstantiateObserverFrame(Name, BodyGuid, Transform);
+		}
+		return true;
+	}
+
 	bool ReadAll(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FAGXSimObjectsInstantiator& Instantiator, FScopedSlowTask& ImportTask, float WorkLeft)
@@ -410,9 +423,10 @@ namespace
 		Result &= ReadRigidBodies(Simulation, Filename, Instantiator);
 
 		ImportTask.EnterProgressFrame(
-			0.8f * WorkLeft, FText::FromString("Importing bodiless Geometries"));
+			0.79f * WorkLeft, FText::FromString("Importing bodiless Geometries"));
 		Result &= ReadBodilessGeometries(Simulation, Filename, Instantiator);
 
+		// Constraints depend on Rigid Bodies, so those must be read before Constraints.
 		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Constraints"));
 		Result &= ReadConstraints(Simulation, Filename, Instantiator);
 
@@ -422,6 +436,10 @@ namespace
 
 		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Wires"));
 		Result &= ReadWires(Simulation, Filename, Instantiator);
+
+		// Observer Frames depend on Rigid Bodies, so those must be read before Observer Frames.
+		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Observer Frames"));
+		Result &= ReadObserverFrames(Simulation, Filename, Instantiator);
 
 		return Result;
 	}

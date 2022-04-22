@@ -38,6 +38,7 @@
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
 #include "Wire/AGX_WireComponent.h"
@@ -970,6 +971,40 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	Component->RegisterComponent();
 	Component->PostEditChange();
 	// May chose to store a table of all imported wires. If so, add this wire to the table here.
+	return Component;
+}
+
+USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
+	const FString& Name, const FGuid& BodyGuid, const FTransform& Transform, AActor& Owner)
+{
+	USceneComponent* Component = NewObject<USceneComponent>(&Owner, *Name);
+	if (Component == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("While importing from '%s': Could not create Scene Component for Observer Frame "
+				 "named %s in Actor %s, the Observer Frame is lost."),
+			*SourceFilePath, *Name, *Owner.GetName());
+		return nullptr;
+	}
+	Component->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Component);
+	Component->RegisterComponent();
+	UAGX_RigidBodyComponent* Body = RestoredBodies.FindRef(BodyGuid);
+	if (Body == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("While importing from '%s': Observer Frame %s is attached to a Rigid Body that "
+				 "has not been restored. Cannot create Unreal Engine representation. Tried to find "
+				 "Rigid Body with GUID %s."),
+			*SourceFilePath, *Name, *BodyGuid.ToString());
+		return nullptr;
+	}
+	const bool Attached = Component->AttachToComponent(
+		Body, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	Component->SetRelativeTransform(Transform);
+	check(Attached);
 	return Component;
 }
 

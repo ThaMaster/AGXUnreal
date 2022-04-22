@@ -163,6 +163,21 @@ public:
 
 	virtual void InstantiateWire(const FWireBarrier& Wire) = 0;
 
+	/**
+	 * We currently do not have full Observer Frame support in AGX Dynamics for Unreal, i.e. there
+	 * is no Observer Frame Component or Barrier. The coordinate frame defined by an Observer Frame
+	 * can still be useful, for example to act as attachment points for constraints, so for now we
+	 * instantiate a plain Scene Component for each imported Observer Frame.
+	 *
+	 * Replace all parameters with a FObserverFrameBarrier once we implement full Observer Frame
+	 * support.
+	 *
+	 * \param Name The name of the Observer Frame.
+	 * \param BodyGuid The GUID of the Rigid Body that the Observer Frame is attached to.
+	 * \param Transform The transformation of the Observer Frame relative to the Rigid Body.
+	 */
+	virtual void InstantiateObserverFrame(const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) = 0;
+
 	virtual ~FAGXSimObjectsInstantiator() = default;
 };
 
