@@ -977,6 +977,20 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
 	const FString& Name, const FGuid& BodyGuid, const FTransform& Transform, AActor& Owner)
 {
+	// Get the Rigid Body the imported Observer Frame should be attached to.
+	UAGX_RigidBodyComponent* Body = RestoredBodies.FindRef(BodyGuid);
+	if (Body == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("While importing from '%s': Observer Frame %s is attached to a Rigid Body that "
+				 "has not been restored. Cannot create Unreal Engine representation. Tried to find "
+				 "Rigid Body with GUID %s."),
+			*SourceFilePath, *Name, *BodyGuid.ToString());
+		return nullptr;
+	}
+
+	// Create a Scene Component to represent the Observer Frame.
 	USceneComponent* Component = NewObject<USceneComponent>(&Owner, *Name);
 	if (Component == nullptr)
 	{
@@ -990,21 +1004,14 @@ USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);
 	Component->RegisterComponent();
-	UAGX_RigidBodyComponent* Body = RestoredBodies.FindRef(BodyGuid);
-	if (Body == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("While importing from '%s': Observer Frame %s is attached to a Rigid Body that "
-				 "has not been restored. Cannot create Unreal Engine representation. Tried to find "
-				 "Rigid Body with GUID %s."),
-			*SourceFilePath, *Name, *BodyGuid.ToString());
-		return nullptr;
-	}
+
+	// Attach the Observer Frame Scene Component to the Rigid Body with the restored relative
+	// transformation.
 	const bool Attached = Component->AttachToComponent(
 		Body, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 	Component->SetRelativeTransform(Transform);
 	check(Attached);
+
 	return Component;
 }
 
