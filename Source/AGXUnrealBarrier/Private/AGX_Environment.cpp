@@ -721,7 +721,7 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(
 		LicenseId, Convert(ActivationCode), Convert(ReferenceFilePath));
 	const FString Content = Convert(ContentAGX);
 
-	// Must be called to avoid unpleasant crash due to different allocators used by AGX Dynamics and
+	// Must be called to avoid crash due to different allocators used by AGX Dynamics and
 	// Unreal Engine.
 	agxUtil::freeContainerMemory(ContentAGX);
 
@@ -769,7 +769,7 @@ TOptional<FString> FAGX_Environment::GenerateOfflineActivationRequest(
 			AgxRuntime->generateOfflineActivationRequest(LicenseId, Convert(ActivationCode));
 		Content = Convert(ContentAGX);
 
-		// Must be called to avoid unpleasant crash due to different allocators used by AGX Dynamics
+		// Must be called to avoid crash due to different allocators used by AGX Dynamics
 		// and Unreal Engine.
 		agxUtil::freeContainerMemory(ContentAGX);
 	}
@@ -832,7 +832,7 @@ TOptional<FString> FAGX_Environment::ProcessOfflineActivationResponse(
 		agx::String LicenseContentAgx = AgxRuntime->readEncryptedLicense();
 		LicenseContent = Convert(LicenseContentAgx);
 
-		// Must be called to avoid unpleasant crash due to different allocators used by AGX Dynamics
+		// Must be called to avoid crash due to different allocators used by AGX Dynamics
 		// and Unreal Engine.
 		agxUtil::freeContainerMemory(LicenseContentAgx);
 	}
