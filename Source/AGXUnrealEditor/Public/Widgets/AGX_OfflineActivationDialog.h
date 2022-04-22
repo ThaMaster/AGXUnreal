@@ -29,7 +29,7 @@ private:
 	FReply OnBrowseResponseFileButtonClicked();
 	FText GetActivationResponsePathText() const;
 
-	FReply OnActivateButtonClicked();
+	FReply OnGenerateLicenseButtonClicked();
 
 	FString LicenseId;
 	FString ActivationCode;

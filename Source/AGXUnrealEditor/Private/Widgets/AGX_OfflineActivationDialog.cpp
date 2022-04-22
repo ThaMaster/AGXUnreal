@@ -72,8 +72,8 @@ TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActivationRequestGui()
 		"then be used to generate an offline activation response\n"
 		"on any other computer connected to the internet.\n\n"
 		"Lastly, the offline activation response file can be used\n"
-		"to activate the service license, and an hardware bound\n"
-		"license file will be created and stored on this computer.\n\n"
+		"to generate a hardware bound service license file that\n"
+		"will be automatically created and stored on this computer.\n\n"
 		"More information regarding offline license activation can\n"
 		"be found in the AGX Dynamics for Unreal User Manual.\n";
 	
@@ -174,8 +174,8 @@ TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActivationResponseGui()
 
 	// clang-format off
 	static const FString InfoText =
-		"Use an offline activation response to activate the service\n"
-		"license. Once completed, a license file (agx.lfx) that is\n"
+		"Use an offline activation response to generate a service license\n"
+		"file. Once completed, a license file (agx.lfx) that is\n"
 		"hardware bound to this computer will be created.\n";
 
 	return SNew(SVerticalBox)
@@ -184,7 +184,7 @@ TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActivationResponseGui()
 			.AutoHeight()
 			[
 				SNew(STextBlock)
-				.Text(LOCTEXT("ActivateOfflineResponseText", "Activate using offline activation response"))
+				.Text(LOCTEXT("ActivateOfflineResponseText", "Process offline activation response"))
 				.Font(CreateFont(12))
 			]
 			+ SVerticalBox::Slot()
@@ -236,11 +236,11 @@ TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActivationResponseGui()
 				.AutoWidth()
 				[
 					SNew(SButton)
-					.Text(LOCTEXT("ActivateButtonText", "  Activate  "))
-					.ToolTipText(LOCTEXT("ActivateButtonTooltip",
-						"Activate service license given the selected offline activation response "
-						"file."))
-					.OnClicked(this, &SAGX_OfflineActivationDialog::OnActivateButtonClicked)
+					.Text(LOCTEXT("GenerateLicenseButtonText", "  Generate license  "))
+					.ToolTipText(LOCTEXT("GenerateLicenseButtonTooltip",
+						"Generate a hardware bound service license file given the selected "
+						"offline activation response file."))
+					.OnClicked(this, &SAGX_OfflineActivationDialog::OnGenerateLicenseButtonClicked)
 				]
 			];
 	// clang-format on
@@ -328,7 +328,7 @@ FText SAGX_OfflineActivationDialog::GetActivationResponsePathText() const
 	return FText::FromString(ActivationResponsePath);
 }
 
-FReply SAGX_OfflineActivationDialog::OnActivateButtonClicked()
+FReply SAGX_OfflineActivationDialog::OnGenerateLicenseButtonClicked()
 {
 	if (ActivationResponsePath.IsEmpty())
 	{
