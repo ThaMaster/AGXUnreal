@@ -169,7 +169,7 @@ public:
 	 * can still be useful, for example to act as attachment points for constraints, so for now we
 	 * instantiate a plain Scene Component for each imported Observer Frame.
 	 *
-	 * Replace all parameters with a FObserverFrameBarrier once we implement full Observer Frame
+	 * Replace all parameters with an FObserverFrameBarrier once we implement full Observer Frame
 	 * support.
 	 *
 	 * \param Name The name of the Observer Frame.
