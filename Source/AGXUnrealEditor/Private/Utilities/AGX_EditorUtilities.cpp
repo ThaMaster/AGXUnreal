@@ -1125,7 +1125,7 @@ FString FAGX_EditorUtilities::SelectNewFileDialog(
 		return "";
 	}
 
-	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*Filename);
+	return FPaths::ConvertRelativePathToFull(Filename);
 }
 
 #undef LOCTEXT_NAMESPACE
