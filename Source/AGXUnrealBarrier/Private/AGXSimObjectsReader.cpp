@@ -392,12 +392,12 @@ namespace
 	bool ReadObserverFrames(
 		agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
-		agx::ObserverFrameRefSetVector& ObserverFrames = Simulation.getObserverFrames();
+		const agx::ObserverFrameRefSetVector& ObserverFrames = Simulation.getObserverFrames();
 		for (const agx::ObserverFrameRef& ObserverFrame : ObserverFrames)
 		{
-			FString Name = Convert(ObserverFrame->getName());
-			FGuid BodyGuid = Convert(ObserverFrame->getRigidBody()->getUuid());
-			FTransform Transform = Convert(ObserverFrame->getLocalTransform());
+			const FString Name = Convert(ObserverFrame->getName());
+			const FGuid BodyGuid = Convert(ObserverFrame->getRigidBody()->getUuid());
+			const FTransform Transform = Convert(ObserverFrame->getLocalTransform());
 			Instantiator.InstantiateObserverFrame(Name, BodyGuid, Transform);
 		}
 		return true;
