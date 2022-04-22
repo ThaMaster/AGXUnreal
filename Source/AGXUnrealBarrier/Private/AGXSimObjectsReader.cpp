@@ -176,8 +176,8 @@ namespace
 			return false;
 		}
 
-		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire, const FString& Description)
-		{
+		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire,
+							const FString& Description) {
 			if (Body == nullptr)
 			{
 				UE_LOG(
@@ -342,8 +342,7 @@ namespace
 	bool ReadCollisionGroups(
 		agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
-		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString
-		{
+		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString {
 			FString Str = Convert(Cg.name());
 
 			// If the CollisionGroup was stored as an Id (uint32), then it will contain no name
@@ -373,9 +372,7 @@ namespace
 		return true;
 	}
 
-	bool ReadWires(
-		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXSimObjectsInstantiator& Instantiator)
+	bool ReadWires(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
 		agxWire::WirePtrVector Wires = agxWire::Wire::findAll(&Simulation);
 		for (agxWire::Wire* Wire : Wires)
@@ -389,6 +386,20 @@ namespace
 			Instantiator.InstantiateWire(Barrier);
 		}
 
+		return true;
+	}
+
+	bool ReadObserverFrames(
+		agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
+	{
+		const agx::ObserverFrameRefSetVector& ObserverFrames = Simulation.getObserverFrames();
+		for (const agx::ObserverFrameRef& ObserverFrame : ObserverFrames)
+		{
+			const FString Name = Convert(ObserverFrame->getName());
+			const FGuid BodyGuid = Convert(ObserverFrame->getRigidBody()->getUuid());
+			const FTransform Transform = Convert(ObserverFrame->getLocalTransform());
+			Instantiator.InstantiateObserverFrame(Name, BodyGuid, Transform);
+		}
 		return true;
 	}
 
@@ -410,9 +421,10 @@ namespace
 		Result &= ReadRigidBodies(Simulation, Filename, Instantiator);
 
 		ImportTask.EnterProgressFrame(
-			0.8f * WorkLeft, FText::FromString("Importing bodiless Geometries"));
+			0.79f * WorkLeft, FText::FromString("Importing bodiless Geometries"));
 		Result &= ReadBodilessGeometries(Simulation, Filename, Instantiator);
 
+		// Constraints depend on Rigid Bodies, so those must be read before Constraints.
 		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Constraints"));
 		Result &= ReadConstraints(Simulation, Filename, Instantiator);
 
@@ -421,7 +433,12 @@ namespace
 		Result &= ReadCollisionGroups(Simulation, Instantiator);
 
 		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Wires"));
-		Result &= ReadWires(Simulation, Filename, Instantiator);
+		Result &= ReadWires(Simulation, Instantiator);
+
+		// Observer Frames depend on Rigid Bodies, so those must be read before Observer Frames.
+		ImportTask.EnterProgressFrame(
+			0.01f * WorkLeft, FText::FromString("Importing Observer Frames"));
+		Result &= ReadObserverFrames(Simulation, Instantiator);
 
 		return Result;
 	}

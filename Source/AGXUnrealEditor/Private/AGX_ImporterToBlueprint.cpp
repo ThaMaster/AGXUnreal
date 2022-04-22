@@ -366,6 +366,11 @@ namespace
 			Helper.InstantiateWire(Barrier, BlueprintTemplate);
 		}
 
+		virtual void InstantiateObserverFrame(const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) override
+		{
+			Helper.InstantiateObserverFrame(Name, BodyGuid, Transform, BlueprintTemplate);
+		}
+
 		virtual ~FBlueprintInstantiator() = default;
 
 	private:

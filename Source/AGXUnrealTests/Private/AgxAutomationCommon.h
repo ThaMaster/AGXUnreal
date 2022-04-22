@@ -284,6 +284,11 @@ namespace AgxAutomationCommon
 		return FVector(Agx.X * AgxToUnreal, -Agx.Y * AgxToUnreal, Agx.Z * AgxToUnreal);
 	}
 
+	inline FVector AgxToUnrealVector(double X, double Y, double Z)
+	{
+		return AgxToUnrealVector(FVector(X, Y, Z));
+	}
+
 	inline FRotator AgxToUnrealEulerAngles(const FVector& Agx)
 	{
 		/// @todo Verify a third time that the order and signs are correct.
@@ -291,6 +296,11 @@ namespace AgxAutomationCommon
 			/*pitch*/ FMath::RadiansToDegrees(-Agx.Y),
 			/*yaw*/ FMath::RadiansToDegrees(-Agx.Z),
 			/*roll*/ FMath::RadiansToDegrees(Agx.X));
+	}
+
+	inline FRotator AgxToUnrealEulerAngles(double X, double Y, double Z)
+	{
+		return AgxToUnrealEulerAngles(FVector(X, Y, Z));
 	}
 
 	inline FVector AgxToUnrealAngularVelocity(const FVector& Agx)

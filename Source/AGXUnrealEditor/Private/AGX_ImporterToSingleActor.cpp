@@ -255,6 +255,11 @@ namespace
 			Helper.InstantiateWire(Barrier, Actor);
 		}
 
+		virtual void InstantiateObserverFrame(const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) override
+		{
+			Helper.InstantiateObserverFrame(Name, BodyGuid, Transform, Actor);
+		}
+
 	private:
 		FAGX_SimObjectsImporterHelper Helper;
 		UWorld& World;

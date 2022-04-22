@@ -34,6 +34,7 @@ class UAGX_WireComponent;
 
 // Unreal Engine classes.
 class AActor;
+class USceneComponent;
 class UMaterialInstanceConstant;
 class UStaticMesh;
 
@@ -94,6 +95,24 @@ public:
 		AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs);
 
 	UAGX_WireComponent* InstantiateWire(const FWireBarrier& Barrier, AActor& Owner);
+
+	/**
+	 * We currently do not have full Observer Frame support in AGX Dynamics for Unreal, i.e. there
+	 * is no Observer Frame Component or Barrier. The coordinate frame defined by an Observer Frame
+	 * can still be useful, for example to act as attachment points for constraints, so for now we
+	 * instantiate a plain Scene Component for each imported Observer Frame.
+	 *
+	 * Replace all parameters with a FObserverFrameBarrier once we implement full Observer Frame
+	 * support.
+	 *
+	 * \param Name The name of the Observer Frame.
+	 * \param BodyGuid The GUID of the Rigid Body that the Observer Frame is attached to.
+	 * \param Transform The transformation of the Observer Frame relative to the Rigid Body.
+	 * \param Owner The Actor in which the new Scene Component is to be created.
+	 * \return The Scene Component created at the location of the Observer Frame.
+	 */
+	USceneComponent* InstantiateObserverFrame(
+		const FString& Name, const FGuid& BodyGuid, const FTransform& Transform, AActor& Owner);
 
 	UAGX_RigidBodyComponent* GetBody(
 		const FRigidBodyBarrier& Barrier, bool LogErrorIfNotFound = true);
