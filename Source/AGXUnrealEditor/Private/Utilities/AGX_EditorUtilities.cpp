@@ -1115,6 +1115,10 @@ FString FAGX_EditorUtilities::SelectNewFileDialog(
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Multiple files selected but we only support selecting one. Doing nothing."));
+		ShowNotification(LOCTEXT(
+			"Multiple files",
+			"Multiple files selected but we only support single files for now. Doing "
+			"nothing."));
 		return "";
 	}
 
