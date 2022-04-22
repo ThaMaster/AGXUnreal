@@ -2453,6 +2453,137 @@ bool FClearContactMaterialsImportedCommand::Update()
 }
 
 //
+// Observer Frame test starts here.
+//
+
+class FArchiveImporterToSingleActor_ObserverFramesTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckObserverFramesImportedCommand, FArchiveImporterToSingleActor_ObserverFramesTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearObserverFramesImportedCommand, FArchiveImporterToSingleActor_ObserverFramesTest&, Test);
+
+class FArchiveImporterToSingleActor_ObserverFramesTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FArchiveImporterToSingleActor_ObserverFramesTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FArchiveImpoterToSingleActor_ObserverFramesTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.ObserverFrames"))
+	{
+	}
+
+public:
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("observer_frames_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckObserverFramesImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearObserverFramesImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FArchiveImporterToSingleActor_ObserverFramesTest
+		ArchiveImpoterterToSingleActor_ObserverFramesTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script TestScenes/observer_frames.agxPy.
+ */
+bool FCheckObserverFramesImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import ObserverFrames test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported Components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// 1 Default Scene Root, 4 groups each containing a Rigid Body, a Shape, and a Scene.
+	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), 13);
+
+	auto TestGroup = [this, &Components](
+						 int32 Id, const FVector& BodyLocation, const FVector& ObserverLocation) {
+		const FString BodyName = *FString::Printf(TEXT("Body_%d"), Id);
+		const FString GeometryName = *FString::Printf(TEXT("Geometry_%d"), Id);
+		const FString ObserverName = *FString::Printf(TEXT("Observer_%d"), Id);
+		UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(Components, *BodyName);
+		UAGX_BoxShapeComponent* Geometry =
+			GetByName<UAGX_BoxShapeComponent>(Components, *GeometryName);
+		USceneComponent* Observer = GetByName<USceneComponent>(Components, *ObserverName);
+
+		Test.TestNotNull(*BodyName, Body);
+		Test.TestNotNull(*GeometryName, Geometry);
+		Test.TestNotNull(*ObserverName, Observer);
+
+		USceneComponent* BodyAsComponent = static_cast<USceneComponent*>(Body);
+		Test.TestEqual(
+			*FString::Printf(TEXT("%s parent"), *GeometryName), Geometry->GetAttachParent(),
+			BodyAsComponent);
+		Test.TestEqual(
+			*FString::Printf(TEXT("%s parent"), *ObserverName), Observer->GetAttachParent(),
+			BodyAsComponent);
+
+		Test.TestEqual(
+			*FString::Printf(TEXT("%s location"), *BodyName), Body->GetRelativeLocation(),
+			BodyLocation);
+
+		Test.TestEqual(
+			*FString::Printf(TEXT("%s location"), *ObserverName), Observer->GetRelativeLocation(),
+			ObserverLocation);
+	};
+
+	TestGroup(1, AgxToUnrealVector(0.0, 0.0, 0.0), AgxToUnrealVector(0.0, 0.0, 0.0));
+	TestGroup(2, AgxToUnrealVector(1.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3));
+	TestGroup(3, AgxToUnrealVector(2.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3));
+
+	FRotator Rotation = AgxToUnrealEulerAngles(M_PI / 10, 0.0, 0.0);
+	FVector ObserverLocation = Rotation.RotateVector(AgxToUnrealVector(0.3, 0.3, 0.3));
+	TestGroup(4, AgxToUnrealVector(3.0, 0.0, 0.0), ObserverLocation);
+
+	// Tests/Test_ArchiveImport.umap
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearObserverFramesImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+	// This AGX Dynamics archive doesn't generate any assets when imported, so nothing to delete.
+
+	return true;
+}
+//
 // URDF link with meshes test starts here.
 //
 
