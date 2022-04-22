@@ -991,7 +991,7 @@ USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
 	}
 
 	// Create a Scene Component to represent the Observer Frame.
-	USceneComponent* Component = NewObject<USceneComponent>(&Owner, *Name);
+	USceneComponent* Component = NewObject<USceneComponent>(&Owner);
 	if (Component == nullptr)
 	{
 		UE_LOG(
@@ -1001,6 +1001,7 @@ USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
 			*SourceFilePath, *Name, *Owner.GetName());
 		return nullptr;
 	}
+	FAGX_ImportUtilities::Rename(*Component, Name);
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);
 	Component->RegisterComponent();
