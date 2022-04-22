@@ -6,6 +6,9 @@
 #include "CoreMinimal.h"
 #include "Misc/EngineVersionComparison.h"
 
+// Standard library includes.
+#include <algorithm>
+
 /// @todo Consider making these not FORCEINLINE, wrapped in a namespace, and move to .cpp.
 /// @note There may be native Unreal Engine versions of these. Use those instead, where available.
 
@@ -46,4 +49,9 @@ FORCEINLINE FString GetLabelSafe(const AActor* Actor)
 #else
 	return Actor->GetName();
 #endif
+}
+
+FORCEINLINE bool ContainsOnlyIntegers(const FString& str)
+{
+	return std::all_of(str.begin(), str.end(), TChar<TCHAR>::IsDigit);
 }

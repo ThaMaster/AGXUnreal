@@ -26,6 +26,8 @@ private:
 
 	void FillFileMenu(FMenuBuilder& Builder);
 
+	void FillLicenseMenu(FMenuBuilder& Builder);
+
 	template <typename Function>
 	void AddFileMenuEntry(
 		FMenuBuilder& Builder, const FText& Label, const FText& Tooltip,
@@ -33,6 +35,9 @@ private:
 
 	void OnCreateConstraintClicked(UClass* ConstraintClass);
 	void OnOpenAboutDialogClicked();
+
+	void OnOpenLicenseActivationDialogClicked();
+	void OnOpenGenerateRuntimeActivationDialogClicked();
 
 	TSharedPtr<class FExtender> Extender;
 	TSharedPtr<const class FExtensionBase> UnrealMenuBarExtension;

@@ -19,6 +19,7 @@ public: // Names of common resources
 	static const FName FileIconSmall;
 	static const FName TerrainIcon;
 	static const FName TerrainIconSmall;
+	static const FName LicenseKeyIcon;
 
 public:
 	static void Initialize();

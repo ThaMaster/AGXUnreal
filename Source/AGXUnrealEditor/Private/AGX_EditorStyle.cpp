@@ -18,6 +18,7 @@ const FName FAGX_EditorStyle::FileIcon("FileIcon");
 const FName FAGX_EditorStyle::FileIconSmall("FileIcon.Small");
 const FName FAGX_EditorStyle::TerrainIcon("TerrainIcon");
 const FName FAGX_EditorStyle::TerrainIconSmall("TerrainIcon.Small");
+const FName FAGX_EditorStyle::LicenseKeyIcon("LicenseKey");
 
 void FAGX_EditorStyle::Initialize()
 {
@@ -94,6 +95,7 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->Set(FileIconSmall, new IMAGE_BRUSH("Icons/file_32x32", IconSize32));
 	Style->Set(TerrainIcon, new IMAGE_BRUSH("Icons/Terrain_64x64", IconSize64));
 	Style->Set(TerrainIconSmall, new IMAGE_BRUSH("Icons/Terrain_32x32", IconSize32));
+	Style->Set(LicenseKeyIcon, new IMAGE_BRUSH("Icons/license_key_16x16", IconSize16));
 
 	// Component icons, visible in the Components list/hierarchy of an Actor and in the Add
 	// Component dialog / list. Bodies.

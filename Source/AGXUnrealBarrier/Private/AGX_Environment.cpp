@@ -10,10 +10,17 @@
 #include "BeginAGXIncludes.h"
 #include <agx/Runtime.h>
 #include <agx/version.h>
+#include <agxUtil/agxUtil.h>
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
+#include "Misc/EngineVersionComparison.h"
 #include "GenericPlatform/GenericPlatformProcess.h"
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+#include "HAL/PlatformFilemanager.h"
+#else
+#include "HAL/PlatformFileManager.h"
+#endif
 #include "Interfaces/IPluginManager.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
@@ -37,6 +44,64 @@ struct FCurrentPlatformMisc : public FLinuxPlatformMisc
 // Unsupported platform.
 static_assert(false);
 #endif
+
+namespace AGX_Environment_helpers
+{
+	// Returns true if the directory could be created or already exists. Returns false otherwise.
+	bool CreateDirectoryIfNonExistent(const FString& Path)
+	{
+		if (FPaths::DirectoryExists(Path))
+		{
+			return true;
+		}
+
+		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+		if (!PlatformFile.CreateDirectory(*Path))
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unable to create directory: '%s'. The Output Log may contain more "
+					 "information."),
+				*Path);
+			return false;
+		}
+
+		return true;
+	}
+
+	const FString& GetLegacyLicenseFileEnding()
+	{
+		static const FString s = ".lic";
+		return s;
+	}
+
+	const FString& GetServiceLicenseFileEnding()
+	{
+		static const FString s = ".lfx";
+		return s;
+	}
+
+	const FString& GetEncryptedRuntimeServiceLicenseFileEnding()
+	{
+		static const FString s = ".rtlfx";
+		return s;
+	}
+
+	agx::Runtime* GetAgxRuntime()
+	{
+		agx::Runtime* AgxRuntime = agx::Runtime::instance();
+		if (AgxRuntime == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unexpected error: agx::Runtime::instance() returned nullptr. "
+					 "Please contact the Algoryx support."));
+			return nullptr;
+		}
+
+		return AgxRuntime;
+	}
+}
 
 FAGX_Environment::FAGX_Environment()
 {
@@ -212,11 +277,20 @@ void FAGX_Environment::SetupAGXDynamicsEnvironment()
 		.pushbackPath(Convert(AgxCfgPath));
 
 	const FString AgxLicensePath = GetPluginLicenseDirPath();
-	if (FPaths::DirectoryExists(AgxLicensePath))
+	if (AGX_Environment_helpers::CreateDirectoryIfNonExistent(AgxLicensePath))
 	{
 		AGX_ENVIRONMENT()
 			.getFilePath(agxIO::Environment::RESOURCE_PATH)
 			.pushbackPath(Convert(AgxLicensePath));
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to create license directory '%s' while setting up AGX Dynamics "
+				 "environment. License file detection may not work as expected. Try to create this "
+				 "directory manually."),
+			*AgxLicensePath);
 	}
 }
 
@@ -226,7 +300,7 @@ FAGX_Environment& FAGX_Environment::GetInstance()
 	return Instance;
 }
 
-bool FAGX_Environment::EnsureEnvironmentSetup()
+bool FAGX_Environment::EnsureEnvironmentSetup() const
 {
 	// Environment setup is done from the constructor, i.e. at this point it has already been done.
 	return true;
@@ -432,12 +506,70 @@ FString FAGX_Environment::GetAGXDynamicsResourcesPath()
 	}
 }
 
-bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
+bool FAGX_Environment::ActivateAgxDynamicsServiceLicense(
+	int32 LicenseId, const FString& ActivationCode)
 {
-	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	using namespace AGX_Environment_helpers;
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
+		return false; // Logging done in GetAgxRuntime.
+	}
+	const FString LicenseDir = GetPluginLicenseDirPath();
+	if (!AGX_Environment_helpers::CreateDirectoryIfNonExistent(LicenseDir))
+	{
 		return false;
+	}
+
+	const FString OutputFilePath =
+		FPaths::Combine(LicenseDir, FString("agx") + GetServiceLicenseFileEnding());
+	return AgxRuntime->activateAgxLicense(
+		LicenseId, Convert(ActivationCode), Convert(OutputFilePath));
+}
+
+TOptional<FString> FAGX_Environment::GetAgxDynamicsLicenseValue(const FString& Key) const
+{
+	using namespace AGX_Environment_helpers;
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
+	if (AgxRuntime == nullptr)
+	{
+		return TOptional<FString>(); // Logging done in GetAgxRuntime.
+	}
+
+	const agx::String KeyAGX = Convert(Key);
+	if (!AgxRuntime->hasKey(KeyAGX.c_str()))
+	{
+		return TOptional<FString>();
+	}
+
+	return Convert(AgxRuntime->readValue(KeyAGX.c_str()));
+}
+
+TArray<FString> FAGX_Environment::GetAgxDynamicsEnabledModules() const
+{
+	using namespace AGX_Environment_helpers;
+	TArray<FString> Modules;
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
+	if (AgxRuntime == nullptr)
+	{
+		return Modules; // Logging done in GetAgxRuntime.
+	}
+
+	for (const auto& Module : AgxRuntime->getEnabledModules())
+	{
+		Modules.Add(Convert(Module));
+	}
+
+	return Modules;
+}
+
+bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus) const
+{
+	using namespace AGX_Environment_helpers;
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
+	if (AgxRuntime == nullptr)
+	{
+		return false; // Logging done in GetAgxRuntime.
 	}
 
 	if (AgxRuntime->isValid())
@@ -449,9 +581,15 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
 		return true;
 	}
 
-	// License is not valid. Attempt to unlock using a license file in the plugin's
+	// License is not valid. Attempt to unlock using a legacy license file (.agx) in the plugin's
 	// license directory that might have been put there recently by the user.
-	TryUnlockAgxDynamicsLicense();
+	if (!TryUnlockAgxDynamicsLegacyLicense())
+	{
+#if !WITH_EDITOR
+		// For built executables, try to find and activate runtime activation (.rtflx).
+		TryActivateEncryptedServiceLicense();
+#endif
+	}
 
 	const bool LicenseValid = AgxRuntime->isValid();
 	if (OutStatus)
@@ -462,34 +600,273 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus)
 	return LicenseValid;
 }
 
-void FAGX_Environment::TryUnlockAgxDynamicsLicense()
+bool FAGX_Environment::TryUnlockAgxDynamicsLegacyLicense() const
 {
-	agx::Runtime* AgxRuntime = agx::Runtime::instance();
+	using namespace AGX_Environment_helpers;
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
 	if (AgxRuntime == nullptr)
 	{
-		return;
+		return false; // Logging done in GetAgxRuntime.
 	}
 
-	const FString AgxLicensePath = FPaths::Combine(GetPluginLicenseDirPath(), FString("agx.lic"));
+	const FString AgxLicensePath =
+		FPaths::Combine(GetPluginLicenseDirPath(), FString("agx") + GetLegacyLicenseFileEnding());
 	if (!FPaths::FileExists(AgxLicensePath))
 	{
-		return;
+		return false;
 	}
 
 	FString License;
 	FFileHelper::LoadFileToString(License, *AgxLicensePath);
 	if (License.IsEmpty())
 	{
-		return;
+		return false;
 	}
 
-	if (AgxRuntime->unlock(Convert(License)))
+	if (!AgxRuntime->unlock(Convert(License)))
 	{
 		UE_LOG(
-			LogAGX, Log,
-			TEXT("Successfully unlocked AGX Dynamics license using license file located at: %s"),
+			LogAGX, Error,
+			TEXT("Could not unlock using legacy license '%s'. The Output Log may contain "
+				 "more information."),
 			*AgxLicensePath);
+		return false;
 	}
+
+	UE_LOG(
+		LogAGX, Log,
+		TEXT("Successfully unlocked AGX Dynamics license using legacy license file located at: %s"),
+		*AgxLicensePath);
+	return true;
+}
+
+bool FAGX_Environment::TryActivateEncryptedServiceLicense() const
+{
+	using namespace AGX_Environment_helpers;
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
+	if (AgxRuntime == nullptr)
+	{
+		return false; // Logging done in GetAgxRuntime.
+	}
+
+	const FString LicenseDir = GetPluginLicenseDirPath();
+	const FString EncryptedServiceLicensePath =
+		FPaths::Combine(LicenseDir, FString("agx") + GetEncryptedRuntimeServiceLicenseFileEnding());
+	if (!FPaths::FileExists(EncryptedServiceLicensePath))
+	{
+		return false;
+	}
+
+	FString LicenseContent;
+	FFileHelper::LoadFileToString(LicenseContent, *EncryptedServiceLicensePath);
+
+	const FString FinalOutputPath =
+		FPaths::Combine(LicenseDir, FString("agx") + GetServiceLicenseFileEnding());
+
+	if (!AgxRuntime->activateEncryptedRuntime(Convert(LicenseContent), Convert(FinalOutputPath)))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not activate encrypted service license '%s'. The Output Log may contain "
+				 "more information."),
+			*EncryptedServiceLicensePath);
+		return false;
+	}
+
+	// The activation was successful, delete the encrypted service license that was used to perform
+	// the activation.
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	PlatformFile.DeleteFile(*EncryptedServiceLicensePath);
+
+	UE_LOG(
+		LogAGX, Log,
+		TEXT("Successfully activated encrypted service license using file located at: %s"),
+		*EncryptedServiceLicensePath);
+	return true;
+}
+
+TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(
+	int32 LicenseId, const FString& ActivationCode, const FString& ReferenceFilePath,
+	const FString& LicenseDir) const
+{
+	using namespace AGX_Environment_helpers;
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
+	if (AgxRuntime == nullptr)
+	{
+		return TOptional<FString>(); // Logging done in GetAgxRuntime.
+	}
+
+	if (!CreateDirectoryIfNonExistent(LicenseDir))
+	{
+		return TOptional<FString>();
+	}
+
+	if (!FPaths::FileExists(ReferenceFilePath))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Error during runtime activation generation. File %s does not exists."),
+			*ReferenceFilePath);
+		return TOptional<FString>();
+	}
+
+	const FString ReferenceFileDirectory = FPaths::GetPath(ReferenceFilePath);
+
+	// The ReferenceFile must be inside a directory known to agxIO::Environment.
+	AGX_ENVIRONMENT()
+		.getFilePath(agxIO::Environment::RESOURCE_PATH)
+		.pushbackPath(Convert(ReferenceFileDirectory));
+
+	agx::String ContentAGX = AgxRuntime->encryptRuntimeActivation(
+		LicenseId, Convert(ActivationCode), Convert(ReferenceFilePath));
+	const FString Content = Convert(ContentAGX);
+
+	// Must be called to avoid unpleasant crash due to different allocators used by AGX Dynamics and
+	// Unreal Engine.
+	agxUtil::freeContainerMemory(ContentAGX);
+
+	// Restore the agxIO::Environment's list of RESOURCE_PATHs.
+	AGX_ENVIRONMENT().getFilePath(agxIO::Environment::RESOURCE_PATH).getFilePathList().pop_back();
+
+	if (Content.IsEmpty())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to generate runtime activation. The Output Log may contain more "
+				 "information."));
+		return TOptional<FString>();
+	}
+
+	const FString FinalOutputPath =
+		FPaths::Combine(LicenseDir, FString("agx") + GetEncryptedRuntimeServiceLicenseFileEnding());
+
+	if (!FFileHelper::SaveStringToFile(Content, *FinalOutputPath))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to write to file %s. The Output Log may contain more "
+				 "information."),
+			*FinalOutputPath);
+		return TOptional<FString>();
+	}
+
+	return FinalOutputPath;
+}
+
+bool FAGX_Environment::IsLoadedLicenseOfServiceType() const
+{
+	// Only service licenses has this key set. The legacy license key equivalence is "License".
+	return GetAgxDynamicsLicenseValue("InstallationID").IsSet();
+}
+
+bool FAGX_Environment::RefreshServiceLicense() const
+{
+	using namespace AGX_Environment_helpers;
+	if (!IsLoadedLicenseOfServiceType())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to refresh service license. The service license must be loaded."));
+		return false;
+	}
+
+	if (IsSetupEnvRun())
+	{
+		// If setup_env is used, we have no way of knowing the license file location on disk.
+		// This is because in that situation, the default AGXUnreal license directory will be
+		// unknown to AGX Dynamics, and AGX Dynamics is responsible for finding any license
+		// file it can, and it might be inside an installation of AGX Dynamics. So for now,
+		// refreshing a service license is only possible when running without setup_env, which
+		// is the "normal" use case anyway.
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot refresh service license with AGX Dynamics setup_env active."));
+		return false;
+	}
+
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
+	if (AgxRuntime == nullptr)
+	{
+		return false; // Logging done in GetAgxRuntime.
+	}
+
+	const FString LicenseDir = GetPluginLicenseDirPath();
+	const FString ServiceLicenseFilePath =
+		FPaths::Combine(LicenseDir, FString("agx") + GetServiceLicenseFileEnding());
+	if (!FPaths::FileExists(ServiceLicenseFilePath))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Error during refresh of service license. File %s does not exists."),
+			*ServiceLicenseFilePath);
+		return false;
+	}
+
+	return AgxRuntime->loadLicenseFile(Convert(ServiceLicenseFilePath), true);
+}
+
+bool FAGX_Environment::DeactivateServiceLicense() const
+{
+	using namespace AGX_Environment_helpers;
+	if (!IsLoadedLicenseOfServiceType())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to deactivate service license. The service license must be loaded."));
+		return false;
+	}
+
+	if (IsSetupEnvRun())
+	{
+		// If setup_env is used, we have no way of knowing the license file location on disk.
+		// This is because in that situation, the default AGXUnreal license directory will be
+		// unknown to AGX Dynamics, and AGX Dynamics is responsible for finding any license
+		// file it can, and it might be inside an installation of AGX Dynamics. So for now,
+		// deactivating a service license is only possible when running without setup_env, which
+		// is the "normal" use case anyway.
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Cannot deactivate service license with AGX Dynamics setup_env active."));
+		return false;
+	}
+
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
+	if (AgxRuntime == nullptr)
+	{
+		return false; // Logging done in GetAgxRuntime.
+	}
+
+	const FString LicenseDir = GetPluginLicenseDirPath();
+	const FString ServiceLicenseFilePath =
+		FPaths::Combine(LicenseDir, FString("agx") + GetServiceLicenseFileEnding());
+	if (!FPaths::FileExists(ServiceLicenseFilePath))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Error during deactivation of service license. File %s does not exists."),
+			*ServiceLicenseFilePath);
+		return false;
+	}
+
+	if (!AgxRuntime->deactivateAgxLicense())
+	{
+		return false;
+	}
+
+	// The deactivation was successful, delete the service license from disk.
+	// Note that we cannot (easily) be 100% sure the license file on disk is the license currently
+	// loaded by the AGX Dynamics Runtime. We do know that the currently loaded license is of
+	// service license type, and that setup_env has not been called, but still it is not 100%
+	// certain. For example, the user could in theory have replaced the license file on disk since
+	// the time that the editor was started, and in that case we will delete the wrong file.
+	// A possible check for this would be to store the License ID of the currently loaded license,
+	// load the license on disk, and then compare its License ID to the one originally loaded. That
+	// method of checking has its own side-effects and it was rejected as a solution for this case,
+	// so instead we assume that the license file is the correct one, which it will be in the
+	// normal case.
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	PlatformFile.DeleteFile(*ServiceLicenseFilePath);
+	return true;
 }
 
 #undef LOCTEXT_NAMESPACE
