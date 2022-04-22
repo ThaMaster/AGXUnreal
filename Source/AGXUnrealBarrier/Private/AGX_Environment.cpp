@@ -94,8 +94,8 @@ namespace AGX_Environment_helpers
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Unexpected error: agx::Runtime::instance() returned nullptr. If this error "
-					 "appears regularly, please contact the Algoryx support."));
+				TEXT("Unexpected error: agx::Runtime::instance() returned nullptr. "
+					 "Please contact the Algoryx support."));
 			return nullptr;
 		}
 
@@ -536,13 +536,13 @@ TOptional<FString> FAGX_Environment::GetAgxDynamicsLicenseValue(const FString& K
 		return TOptional<FString>(); // Logging done in GetAgxRuntime.
 	}
 
-	const char* KeyCh = TCHAR_TO_UTF8(*Key);
-	if (!AgxRuntime->hasKey(KeyCh))
+	const agx::String KeyAGX = Convert(Key);
+	if (!AgxRuntime->hasKey(KeyAGX.c_str()))
 	{
 		return TOptional<FString>();
 	}
 
-	return Convert(AgxRuntime->readValue(KeyCh));
+	return Convert(AgxRuntime->readValue(KeyAGX.c_str()));
 }
 
 TArray<FString> FAGX_Environment::GetAgxDynamicsEnabledModules() const
@@ -962,6 +962,16 @@ bool FAGX_Environment::DeactivateServiceLicense() const
 	}
 
 	// The deactivation was successful, delete the service license from disk.
+	// Note that we cannot (easily) be 100% sure the license file on disk is the license currently
+	// loaded by the AGX Dynamics Runtime. We do know that the currently loaded license is of
+	// service license type, and that setup_env has not been called, but still it is not 100%
+	// certain. For example, the user could in theory have replaced the license file on disk since
+	// the time that the editor was started, and in that case we will delete the wrong file.
+	// A possible check for this would be to store the License ID of the currently loaded license,
+	// load the license on disk, and then compare its License ID to the one originally loaded. That
+	// method of checking has its own side-effects and it was rejected as a solution for this case,
+	// so instead we assume that the license file is the correct one, which it will be in the
+	// normal case.
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 	PlatformFile.DeleteFile(*ServiceLicenseFilePath);
 	return true;
