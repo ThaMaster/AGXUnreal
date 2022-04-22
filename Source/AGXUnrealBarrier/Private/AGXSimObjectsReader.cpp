@@ -373,9 +373,7 @@ namespace
 		return true;
 	}
 
-	bool ReadWires(
-		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXSimObjectsInstantiator& Instantiator)
+	bool ReadWires(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
 		agxWire::WirePtrVector Wires = agxWire::Wire::findAll(&Simulation);
 		for (agxWire::Wire* Wire : Wires)
@@ -392,7 +390,8 @@ namespace
 		return true;
 	}
 
-	bool ReadObserverFrames(agxSDK::Simulation& Simulation, const FString& Filename, FAGXSimObjectsInstantiator& Instantiator)
+	bool ReadObserverFrames(
+		agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
 		agx::ObserverFrameRefSetVector& ObserverFrames = Simulation.getObserverFrames();
 		for (const agx::ObserverFrameRef& ObserverFrame : ObserverFrames)
@@ -435,11 +434,12 @@ namespace
 		Result &= ReadCollisionGroups(Simulation, Instantiator);
 
 		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Wires"));
-		Result &= ReadWires(Simulation, Filename, Instantiator);
+		Result &= ReadWires(Simulation, Instantiator);
 
 		// Observer Frames depend on Rigid Bodies, so those must be read before Observer Frames.
-		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Observer Frames"));
-		Result &= ReadObserverFrames(Simulation, Filename, Instantiator);
+		ImportTask.EnterProgressFrame(
+			0.01f * WorkLeft, FText::FromString("Importing Observer Frames"));
+		Result &= ReadObserverFrames(Simulation, Instantiator);
 
 		return Result;
 	}
