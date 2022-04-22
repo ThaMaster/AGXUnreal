@@ -94,8 +94,8 @@ namespace AGX_Environment_helpers
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Unexpected error: agx::Runtime::instance() returned nullptr. If this error "
-					 "appears regularly, please contact the Algoryx support."));
+				TEXT("Unexpected error: agx::Runtime::instance() returned nullptr. "
+					 "Please contact the Algoryx support."));
 			return nullptr;
 		}
 
