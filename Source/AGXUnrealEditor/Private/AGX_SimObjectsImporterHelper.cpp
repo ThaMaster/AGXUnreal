@@ -1006,12 +1006,24 @@ USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
 	Owner.AddInstanceComponent(Component);
 	Component->RegisterComponent();
 
+	// From now on any early out due to an error should call Component->DestroyComponent() before
+	// returning.
+
 	// Attach the Observer Frame Scene Component to the Rigid Body with the restored relative
 	// transformation.
-	const bool Attached = Component->AttachToComponent(
-		Body, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	if (!Component->AttachToComponent(
+			Body, FAttachmentTransformRules::SnapToTargetNotIncludingScale))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("While importing '%s': Could not attach Observer Frame %s to Rigid Body %s. The "
+				 "Observer Frame is not imported."),
+			*SourceFilePath, *Name, *Body->GetName());
+		Component->DestroyComponent();
+		return nullptr;
+	}
+
 	Component->SetRelativeTransform(Transform);
-	check(Attached);
 
 	return Component;
 }
