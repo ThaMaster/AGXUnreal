@@ -2553,7 +2553,7 @@ bool FCheckObserverFramesImportedCommand::Update()
 	TestGroup(2, AgxToUnrealVector(1.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3));
 	TestGroup(3, AgxToUnrealVector(2.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3));
 
-	FRotator Rotation = AgxToUnrealEulerAngles(M_PI / 10, 0.0, 0.0);
+	FRotator Rotation = AgxToUnrealEulerAngles(PI / 10, 0.0, 0.0);
 	FVector ObserverLocation = Rotation.RotateVector(AgxToUnrealVector(0.3, 0.3, 0.3));
 	TestGroup(4, AgxToUnrealVector(3.0, 0.0, 0.0), ObserverLocation);
 
