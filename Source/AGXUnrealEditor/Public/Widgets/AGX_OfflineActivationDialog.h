@@ -24,7 +24,6 @@ private:
 	void OnActivationCodeCommitted(const FText& NewText, ETextCommit::Type InTextCommit);
 
 	FReply OnGenerateActivationRequestButtonClicked();
-	FText GetActivationRequestPathText() const;
 
 	FReply OnBrowseResponseFileButtonClicked();
 	FText GetActivationResponsePathText() const;
@@ -33,6 +32,5 @@ private:
 
 	FString LicenseId;
 	FString ActivationCode;
-	FString ActivationRequestPath;
 	FString ActivationResponsePath;
 };

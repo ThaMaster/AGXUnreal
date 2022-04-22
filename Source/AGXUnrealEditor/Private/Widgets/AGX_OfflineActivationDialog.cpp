@@ -141,22 +141,6 @@ TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActivationRequestGui()
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
-				.Padding(FMargin(0.f, 0.f, 53.f, 0.f))
-				[
-					SNew(STextBlock)
-					.Text(LOCTEXT("RequestOutputFilePathText", "Output file:"))
-					.Font(CreateFont(10))
-				]
-				+ SHorizontalBox::Slot()
-				.Padding(FMargin(0.f, 0.f, 5.f, 0.f))
-				.AutoWidth()
-				[
-					SNew(SEditableTextBox)
-					.MinDesiredWidth(150.0f)
-					.Text(this, &SAGX_OfflineActivationDialog::GetActivationRequestPathText)
-				]
-				+ SHorizontalBox::Slot()
-				.AutoWidth()
 				[
 					SNew(SButton)
 					.Text(LOCTEXT("SelectButtonText", "Generate..."))
@@ -309,11 +293,6 @@ FReply SAGX_OfflineActivationDialog::OnGenerateActivationRequestButtonClicked()
 	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(
 		"Offline activation request saved to: " + Output.GetValue());
 	return FReply::Handled();
-}
-
-FText SAGX_OfflineActivationDialog::GetActivationRequestPathText() const
-{
-	return FText::FromString(ActivationRequestPath);
 }
 
 FReply SAGX_OfflineActivationDialog::OnBrowseResponseFileButtonClicked()
