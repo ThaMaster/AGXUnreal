@@ -68,6 +68,18 @@ public:
 		int32 LicenseId, const FString& ActivationCode, const FString& ReferenceFilePath,
 		const FString& LicenseDir) const;
 
+	/**
+	 * Returns (optional) path to the final written file on disk if successful.
+	 */
+	TOptional<FString> GenerateOfflineActivationRequest(
+		int32 LicenseId, const FString& ActivationCode, const FString& OutputFile) const;
+
+	/**
+	 * Writes a hardware bound service license to the AGXUnreal license directory if successful.
+	 * Returns optional file path to the final written service license file if successful.
+	 */
+	TOptional<FString> ProcessOfflineActivationResponse(const FString& ResponseFilePath) const;
+
 	bool IsLoadedLicenseOfServiceType() const;
 
 	/**

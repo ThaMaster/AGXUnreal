@@ -721,7 +721,7 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(
 		LicenseId, Convert(ActivationCode), Convert(ReferenceFilePath));
 	const FString Content = Convert(ContentAGX);
 
-	// Must be called to avoid unpleasant crash due to different allocators used by AGX Dynamics and
+	// Must be called to avoid crash due to different allocators used by AGX Dynamics and
 	// Unreal Engine.
 	agxUtil::freeContainerMemory(ContentAGX);
 
@@ -751,6 +751,114 @@ TOptional<FString> FAGX_Environment::GenerateRuntimeActivation(
 	}
 
 	return FinalOutputPath;
+}
+
+TOptional<FString> FAGX_Environment::GenerateOfflineActivationRequest(
+	int32 LicenseId, const FString& ActivationCode, const FString& OutputFile) const
+{
+	using namespace AGX_Environment_helpers;
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
+	if (AgxRuntime == nullptr)
+	{
+		return TOptional<FString>(); // Logging done in GetAgxRuntime.
+	}
+
+	FString Content = "";
+	{
+		agx::String ContentAGX =
+			AgxRuntime->generateOfflineActivationRequest(LicenseId, Convert(ActivationCode));
+		Content = Convert(ContentAGX);
+
+		// Must be called to avoid crash due to different allocators used by AGX Dynamics
+		// and Unreal Engine.
+		agxUtil::freeContainerMemory(ContentAGX);
+	}
+
+	if (Content.IsEmpty())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to generate offline activation request. The Output Log may contain more "
+				 "information."));
+		return TOptional<FString>();
+	}
+
+	if (!FFileHelper::SaveStringToFile(Content, *OutputFile))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to write to file %s. The Output Log may contain more "
+				 "information."),
+			*OutputFile);
+		return TOptional<FString>();
+	}
+
+	return OutputFile;
+}
+
+TOptional<FString> FAGX_Environment::ProcessOfflineActivationResponse(
+	const FString& ResponseFilePath) const
+{
+	using namespace AGX_Environment_helpers;
+	agx::Runtime* AgxRuntime = GetAgxRuntime();
+	if (AgxRuntime == nullptr)
+	{
+		return TOptional<FString>(); // Logging done in GetAgxRuntime.
+	}
+
+	if (!FPaths::FileExists(ResponseFilePath))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("ProcessOfflineActivationResponse failed, file '%s' does not exist."),
+			*ResponseFilePath);
+		return TOptional<FString>();
+	}
+
+	FString ResponseContent;
+	FFileHelper::LoadFileToString(ResponseContent, *ResponseFilePath);
+	if (!AgxRuntime->processOfflineActivationRequest(Convert(ResponseContent)))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to process offline activation response using '%s'. "
+				"Please ensure the file is valid."),
+			*ResponseFilePath);
+		return TOptional<FString>();
+	}
+
+	FString LicenseContent = "";
+	{
+		agx::String LicenseContentAgx = AgxRuntime->readEncryptedLicense();
+		LicenseContent = Convert(LicenseContentAgx);
+
+		// Must be called to avoid crash due to different allocators used by AGX Dynamics
+		// and Unreal Engine.
+		agxUtil::freeContainerMemory(LicenseContentAgx);
+	}
+
+	if (LicenseContent.IsEmpty())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to read license content from the AGX Dynamics runtime. Please ensure "
+			"that the offline acivation response file is valid."));
+		return TOptional<FString>();
+	}
+
+	const FString OutputFile =
+		FPaths::Combine(GetPluginLicenseDirPath(), FString("agx") + GetServiceLicenseFileEnding());
+	if (!FFileHelper::SaveStringToFile(LicenseContent, *OutputFile))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to write to file %s. The Output Log may contain more "
+				 "information."),
+			*OutputFile);
+		return TOptional<FString>();
+	}
+
+	return OutputFile;
 }
 
 bool FAGX_Environment::IsLoadedLicenseOfServiceType() const

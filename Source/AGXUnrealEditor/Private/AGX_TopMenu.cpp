@@ -18,8 +18,9 @@
 #include "Utilities/AGX_EditorUtilities.h"
 #include "AGX_Environment.h"
 #include "Utilities/AGX_NotificationUtilities.h"
-#include "Widgets/AGX_LicenseDialog.h"
 #include "Widgets/AGX_GenerateRuntimeActivationDialog.h"
+#include "Widgets/AGX_LicenseDialog.h"
+#include "Widgets/AGX_OfflineActivationDialog.h"
 
 // Unreal Engine includes.
 #include "Framework/MultiBox/MultiBoxBuilder.h"
@@ -319,6 +320,13 @@ void FAGX_TopMenu::FillLicenseMenu(FMenuBuilder& Builder)
 		[&]() { FAGX_TopMenu::OnOpenLicenseActivationDialogClicked(); });
 
 	AddFileMenuEntry(
+		Builder, LOCTEXT("OfflineActivationMenuLabel", "Offline service license activation..."),
+		LOCTEXT(
+			"OfflineActivationMenuLabelToolTip",
+			"Perform offline activation of a service license."),
+		[&]() { FAGX_TopMenu::OnOpenOfflineActivationDialogClicked(); });
+
+	AddFileMenuEntry(
 		Builder, LOCTEXT("RuntimeActivationMenuLabel", "Generate runtime activation..."),
 		LOCTEXT(
 			"RuntimeActivationMenuLabelToolTip",
@@ -438,6 +446,21 @@ void FAGX_TopMenu::OnOpenLicenseActivationDialogClicked()
 
 	TSharedRef<SAGX_LicenseDialog> LicenseDialog = SNew(SAGX_LicenseDialog);
 	Window->SetContent(LicenseDialog);
+	FSlateApplication::Get().AddModalWindow(Window, nullptr);
+}
+
+void FAGX_TopMenu::OnOpenOfflineActivationDialogClicked()
+{
+	TSharedRef<SWindow> Window =
+		SNew(SWindow)
+			.SupportsMinimize(false)
+			.SupportsMaximize(false)
+			.SizingRule(ESizingRule::Autosized)
+			.Title(NSLOCTEXT("AGX", "AGXUnrealLicense", "Offline activation of service license"));
+
+	TSharedRef<SAGX_OfflineActivationDialog> Dialog =
+		SNew(SAGX_OfflineActivationDialog);
+	Window->SetContent(Dialog);
 	FSlateApplication::Get().AddModalWindow(Window, nullptr);
 }
 

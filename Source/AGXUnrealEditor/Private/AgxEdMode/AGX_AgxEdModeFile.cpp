@@ -115,37 +115,12 @@ void UAGX_AgxEdModeFile::ExportAgxArchive()
 		return;
 	}
 
-	TArray<FString> Filenames;
-	bool FileSelected = FDesktopPlatformModule::Get()->SaveFileDialog(
-		nullptr, TEXT("Select an AGX Archive to export"), TEXT(""), TEXT("unreal.agx"),
-		TEXT("AGX Dynamics Archive|*.agx"), EFileDialogFlags::None, Filenames);
-	if (!FileSelected || Filenames.Num() == 0)
-	{
-		UE_LOG(LogAGX, Warning, TEXT("No .agx file selected, Doing nothing."));
-		return;
-	}
+	FString Filename = FAGX_EditorUtilities::SelectNewFileDialog(
+		"Select an AGX Archive to export", ".agx", "AGX Dynamics Archive|*.agx", "unreal.agx", "");
 
-	if (Filenames.Num() > 1)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Multiple files selected but we only support exporting to one. Doing nothing."));
-		FAGX_EditorUtilities::ShowNotification(LOCTEXT(
-			"Multiple .agx export",
-			"Multiple files selected but we only support exporting to one. Doing nothing."));
-		return;
-	}
-
-	FString Filename = Filenames[0];
 	if (Filename.IsEmpty())
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Cannot store AGX Dynamics archive to an empty file name. Doing nothing."));
-		FAGX_EditorUtilities::ShowNotification(LOCTEXT(
-			"Empty .agx name export",
-			"Cannot store AGX Dynamics archive to an empty file name. Doing nothing."));
-		return;
+		return; // Logging done in FAGX_EditorUtilities::SelectNewFileDialog().
 	}
 
 	FString Extension = FPaths::GetExtension(Filename);
