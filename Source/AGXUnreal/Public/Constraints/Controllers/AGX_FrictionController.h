@@ -151,7 +151,7 @@ class AGXUNREAL_API UAGX_ConstraintFrictionController_FL : public UBlueprintFunc
 	static void SetForceRange(
 		UPARAM(ref) FAGX_ConstraintFrictionController& Controller, float MinForce, float MaxForce)
 	{
-		Controller.SetForceRange(FFloatInterval(MinForce, MaxForce));
+		Controller.SetForceRange(MinForce, MaxForce);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

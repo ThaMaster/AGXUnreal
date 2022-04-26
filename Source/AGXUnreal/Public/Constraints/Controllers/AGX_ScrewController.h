@@ -127,7 +127,7 @@ class AGXUNREAL_API UAGX_ConstraintScrenController_FL : public UBlueprintFunctio
 	static void SetForceRange(
 		UPARAM(ref) FAGX_ConstraintScrewController& Controller, float MinForce, float MaxForce)
 	{
-		Controller.SetForceRange(FFloatInterval(MinForce, MaxForce));
+		Controller.SetForceRange(MinForce, MaxForce);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

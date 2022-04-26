@@ -133,7 +133,7 @@ class AGXUNREAL_API UAGX_ConstraintElectricMotorController_FL : public UBlueprin
 		UPARAM(ref) FAGX_ConstraintElectricMotorController& Controller, float MinForce,
 		float MaxForce)
 	{
-		Controller.SetForceRange(FFloatInterval(MinForce, MaxForce));
+		Controller.SetForceRange(MinForce, MaxForce);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

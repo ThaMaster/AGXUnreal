@@ -88,7 +88,7 @@ double FConstraintControllerBarrier::GetSpookDamping() const
 	return NativeRef->Native->getDamping();
 }
 
-void FConstraintControllerBarrier::SetForceRange(FFloatInterval ForceRange)
+void FConstraintControllerBarrier::SetForceRange(FAGX_RealInterval ForceRange)
 {
 	check(HasNative());
 	/// \todo Should the ForceRange be in N or Unreal-newtons? Unreal-newtons
@@ -98,11 +98,11 @@ void FConstraintControllerBarrier::SetForceRange(FFloatInterval ForceRange)
 	NativeRef->Native->setForceRange(ForceRangeAGX);
 }
 
-FFloatInterval FConstraintControllerBarrier::GetForceRange() const
+FAGX_RealInterval FConstraintControllerBarrier::GetForceRange() const
 {
 	check(HasNative());
 	const agx::RangeReal ForceRangeAGX = NativeRef->Native->getForceRange();
-	return ConvertFloat(ForceRangeAGX);
+	return Convert(ForceRangeAGX);
 }
 
 double FConstraintControllerBarrier::GetForce() const
@@ -299,33 +299,33 @@ FRangeControllerBarrier::FRangeControllerBarrier(std::unique_ptr<FConstraintCont
 	check(NativeRef->Native->is<agx::RangeController>());
 }
 
-void FRangeControllerBarrier::SetRangeTranslational(FFloatInterval Range)
+void FRangeControllerBarrier::SetRangeTranslational(FAGX_RealInterval Range)
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = ConvertDistance(Range);
 	GetController(*this)->setRange(RangeAGX);
 }
 
-FFloatInterval FRangeControllerBarrier::GetRangeTranslational() const
+FAGX_RealInterval FRangeControllerBarrier::GetRangeTranslational() const
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = GetController(*this)->getRange();
-	FFloatInterval RangeUnreal = ConvertDistanceFloat(RangeAGX);
+	FAGX_RealInterval RangeUnreal = ConvertDistance(RangeAGX);
 	return RangeUnreal;
 }
 
-void FRangeControllerBarrier::SetRangeRotational(FFloatInterval Range)
+void FRangeControllerBarrier::SetRangeRotational(FAGX_RealInterval Range)
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = ConvertAngle(Range);
 	GetController(*this)->setRange(RangeAGX);
 }
 
-FFloatInterval FRangeControllerBarrier::GetRangeRotational() const
+FAGX_RealInterval FRangeControllerBarrier::GetRangeRotational() const
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = GetController(*this)->getRange();
-	FFloatInterval RangeUnreal = ConvertAngleFloat(RangeAGX);
+	FAGX_RealInterval RangeUnreal = ConvertAngle(RangeAGX);
 	return RangeUnreal;
 }
 

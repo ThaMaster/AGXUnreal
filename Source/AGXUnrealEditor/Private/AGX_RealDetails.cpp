@@ -319,14 +319,36 @@ EVisibility FAGX_RealDetails::VisibleWhenNoSelectionOrInvalidHandle() const
 		StructHandle, [](int32 Num) { return Num == 0; });
 }
 
+// This function is passed as a callback to the Spin Box that is shown in the Details panel.
+// It is called every Unreal Editor frame as along as an FAGX_Real is visible.
 double FAGX_RealDetails::GetDoubleValue() const
 {
+	// A few hard-coded error-signaling values that should never be rendered, but we still want to
+	// give descriptive names and values that are at least uncommon in real-world data so that we
+	// have a chance of detecting if any of these cases ever do happen in a way that make the error
+	// codes be rendered in the GUI.
+	static constexpr double INVALID_HANDLE {-991000};
+	static constexpr double NO_OBJECT_SELECTED {-991001};
+	static constexpr double MULTIPLE_VALUES {-991002};
+	static constexpr double UNKNOWN_FAILURE {-991003};
+	static constexpr double UNKNOWN_STATUS {-991004};
+
 	if (!ValueHandle.IsValid() || !ValueHandle->IsValidHandle())
 	{
 		// The Spin Box will not be displayed while the handle is invalid, so it doesn't matter what
 		// we return here.
-		return -1.0;
+		return INVALID_HANDLE;
 	}
+
+	if (ValueHandle->GetNumPerObjectValues() == 0)
+	{
+		// This can happen for a frame or two when we are editing an instance of a Blueprint class
+		// in the Level Editor and thus triggering Blueprint Reconstruction. Not sure what to do in
+		// this case, but I don't expect this value to ever be rendered, or if it ever is, to
+		// quickly be replaced by an actual value from an actual object.
+		return NO_OBJECT_SELECTED;
+	}
+
 	double Value;
 	FPropertyAccess::Result Status = ValueHandle->GetValue(Value);
 	switch (Status)
@@ -334,23 +356,25 @@ double FAGX_RealDetails::GetDoubleValue() const
 		case FPropertyAccess::Success:
 			return Value;
 		case FPropertyAccess::MultipleValues:
-			// The Spin Box will not be displayed while there are multiple objects selected, so it
-			// doesn't matter what we return here.
-			return -2.0;
+			// The Spin Box will not be displayed while there are multiple objects selected, there
+			// is an Editable Text widget for this case, so it doesn't matter what we return here.
+			return MULTIPLE_VALUES;
 		case FPropertyAccess::Fail:
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Failed to read value for '%s', Details Panel may show incorrect data."),
+				TEXT("Details panel widget for AGX Real '%s' failed to read double value, Details "
+					 "panel may show incorrect data."),
 				*ValueHandle->GeneratePathToProperty());
-			return -3.0;
+			return UNKNOWN_FAILURE;
 		default:
-			// Should never get here.
+			// Should never get here, but we might if or when Epic Games add more literals to
+			// FPropertyAccess.
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Unknown property access status from IPropertyHandle::GetValue for '%s'. "
 					 "Details Panel may show incorrect data."),
 				*ValueHandle->GeneratePathToProperty());
-			return -4.0;
+			return UNKNOWN_STATUS;
 	}
 }
 
@@ -380,7 +404,7 @@ FText FAGX_RealDetails::GetTextValue() const
 		case FPropertyAccess::Fail:
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Failed to read value for '%s', Details Panel may show incorrect data."),
+				TEXT("Failed to read text value for '%s', Details Panel may show incorrect data."),
 				*ValueHandle->GeneratePathToProperty());
 			return LOCTEXT("CouldNotReadValue", "<could not read value>");
 		default:

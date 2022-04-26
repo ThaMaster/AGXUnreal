@@ -128,7 +128,7 @@ double FAGX_ConstraintController::GetSpookDamping() const
 	}
 }
 
-void FAGX_ConstraintController::SetForceRange(const FFloatInterval& InForceRange)
+void FAGX_ConstraintController::SetForceRange(const FAGX_RealInterval& InForceRange)
 {
 	if (HasNative())
 	{
@@ -137,7 +137,12 @@ void FAGX_ConstraintController::SetForceRange(const FFloatInterval& InForceRange
 	ForceRange = InForceRange;
 }
 
-FFloatInterval FAGX_ConstraintController::GetForceRange() const
+void FAGX_ConstraintController::SetForceRange(double MinForce, double MaxForce)
+{
+	SetForceRange(FAGX_RealInterval(MinForce, MaxForce));
+}
+
+FAGX_RealInterval FAGX_ConstraintController::GetForceRange() const
 {
 	if (HasNative())
 	{

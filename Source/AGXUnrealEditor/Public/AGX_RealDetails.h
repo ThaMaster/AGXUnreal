@@ -6,6 +6,11 @@
 #include "IPropertyTypeCustomization.h"
 #include "Layout/Visibility.h"
 
+/**
+ * A Property Type Customization that display and parse FAGX_Real Properties. It provides both
+ * scientific notation for very small and very large, in magnitude, values as well as support for
+ * infinity.
+ */
 class FAGX_RealDetails : public IPropertyTypeCustomization
 {
 public:

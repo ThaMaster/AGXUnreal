@@ -400,11 +400,11 @@ double UAGX_ConstraintComponent::GetSpookDamping(EGenericDofIndex Index) const
 
 void UAGX_ConstraintComponent::SetForceRange(EGenericDofIndex Index, float RangeMin, float RangeMax)
 {
-	SetForceRange(Index, FFloatInterval(RangeMin, RangeMax));
+	SetForceRange(Index, FAGX_RealInterval(RangeMin, RangeMax));
 }
 
 void UAGX_ConstraintComponent::SetForceRange(
-	EGenericDofIndex Index, const FFloatInterval& InForceRange)
+	EGenericDofIndex Index, const FAGX_RealInterval& InForceRange)
 {
 	SetOnBarrier(
 		*this, Index, TEXT("SetForceRange"),
@@ -423,7 +423,7 @@ float UAGX_ConstraintComponent::GetForceRangeMax(EGenericDofIndex Index) const
 	return GetForceRange(Index).Max;
 }
 
-FFloatInterval UAGX_ConstraintComponent::GetForceRange(EGenericDofIndex Index) const
+FAGX_RealInterval UAGX_ConstraintComponent::GetForceRange(EGenericDofIndex Index) const
 {
 	return GetFromBarrier(
 		*this, Index, TEXT("GetForceRange"), ForceRange[Index],

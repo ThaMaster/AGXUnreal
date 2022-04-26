@@ -3,6 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_RealInterval.h"
 #include "RigidBodyBarrier.h"
 
 // Unreal Engine includes.
@@ -69,7 +70,7 @@ public:
 
 	void SetForceRange(double Min, double Max, int32 Dof);
 	void GetForceRange(double* Min, double* Max, int32 Dof) const;
-	FFloatInterval GetForceRange(int32 Dof) const;
+	FAGX_RealInterval GetForceRange(int32 Dof) const;
 
 	void SetEnableComputeForces(bool bEnable);
 	bool GetEnableComputeForces() const;

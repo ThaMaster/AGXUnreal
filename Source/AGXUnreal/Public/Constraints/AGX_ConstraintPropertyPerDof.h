@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
+#include "AGX_RealInterval.h"
 #include "Constraints/AGX_ConstraintEnums.h"
 
 // Unreal Engine includes.
@@ -122,32 +123,32 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Translational_1_IsEditable"))
-	FFloatInterval Translational_1;
+	FAGX_RealInterval Translational_1;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Translational_2_IsEditable"))
-	FFloatInterval Translational_2;
+	FAGX_RealInterval Translational_2;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Translational_3_IsEditable"))
-	FFloatInterval Translational_3;
+	FAGX_RealInterval Translational_3;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Rotational_1_IsEditable"))
-	FFloatInterval Rotational_1;
+	FAGX_RealInterval Rotational_1;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Rotational_2_IsEditable"))
-	FFloatInterval Rotational_2;
+	FAGX_RealInterval Rotational_2;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Rotational_3_IsEditable"))
-	FFloatInterval Rotational_3;
+	FAGX_RealInterval Rotational_3;
 
 	FAGX_ConstraintRangePropertyPerDof(
 		float DefaultMinValue = 0.0f, float DefaultMaxValue = 0.0f,
@@ -167,24 +168,24 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 	{
 	}
 
-	FFloatInterval& operator[](int32 Index)
+	FAGX_RealInterval& operator[](int32 Index)
 	{
 		check(Index >= 0 && Index < 6);
 		return (&Translational_1)[Index];
 	}
 
-	FFloatInterval& operator[](EGenericDofIndex Index)
+	FAGX_RealInterval& operator[](EGenericDofIndex Index)
 	{
 		return operator[](static_cast<int32>(Index));
 	};
 
-	FFloatInterval operator[](int32 Index) const
+	FAGX_RealInterval operator[](int32 Index) const
 	{
 		check(Index >= 0 && Index < 6);
 		return (&Translational_1)[Index];
 	}
 
-	FFloatInterval operator[](EGenericDofIndex Index) const
+	FAGX_RealInterval operator[](EGenericDofIndex Index) const
 	{
 		return operator[](static_cast<int32>(Index));
 	};

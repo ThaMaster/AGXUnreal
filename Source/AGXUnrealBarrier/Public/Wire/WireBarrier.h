@@ -22,10 +22,10 @@ class FWireWinchBarrier;
  * that can't be named outside of the AGXUnrealBarrier module, and this header file is included in
  * other modules.
  *
- * We need to separate the Linux and Windows and Linux declarations because Linux must have the
- * visibility decorator here for the inherited member functions to be visible to users of
- * FWireBarrier, while Visual Studio explicitly forbids it and instead require that the visibility
- * decorator is on the actual instantiation in the .cpp file instead.
+ * We need to separate the Linux and Windows declarations because Linux must have the visibility
+ * decorator here for the inherited member functions to be visible to users of FWireBarrier, while
+ * Visual Studio explicitly forbids it and instead require that the visibility decorator is on the
+ * instantiation in the .cpp file instead.
  */
 #if PLATFORM_LINUX
 extern template class AGXUNREALBARRIER_API FNativeBarrier<FWireRef>;
