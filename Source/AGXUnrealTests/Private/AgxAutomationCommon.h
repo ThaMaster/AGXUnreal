@@ -14,7 +14,7 @@ class UWorld;
 struct FLinearColor;
 
 /**
- * A set of helper functions used by several Automation tests.
+ * A set of helper functions used by our Automation tests.
  */
 namespace AgxAutomationCommon
 {
@@ -157,8 +157,14 @@ namespace AgxAutomationCommon
 
 	inline bool IsAnyNullptr()
 	{
-		// Base case. The elements are or'd so false won't make the entre expression false.
+		// Base case. The elements are or'd so false won't make the entire expression false.
 		return false;
+	}
+
+	template <typename T, typename... Ts>
+	bool IsAnyNullptr(T* Head, Ts*... Tail)
+	{
+		return Head == nullptr || IsAnyNullptr(Tail...);
 	}
 
 	template <typename T>
@@ -171,12 +177,6 @@ namespace AgxAutomationCommon
 	T CentimeterToMeter(T Centimeter)
 	{
 		return Centimeter / T {100};
-	}
-
-	template <typename T, typename... Ts>
-	bool IsAnyNullptr(T* Head, Ts*... Tail)
-	{
-		return Head == nullptr || IsAnyNullptr(Tail...);
 	}
 
 	/**
@@ -204,9 +204,11 @@ namespace AgxAutomationCommon
 
 	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogWarningAgxCommand, FString, Message);
 	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogErrorAgxCommand, FString, Message);
-	DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(FTickUntilCommand, UWorld*&, World, float, Time);
-
-	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FWaitNTicks, int32, NumTicks);
+	DEFINE_LATENT_AUTOMATION_COMMAND(FWaitUntilPIEUpCommand);
+	DEFINE_LATENT_AUTOMATION_COMMAND(FWaitUntilPIEDownCommand);
+	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FWaitNTicksCommand, int32, NumTicks);
+	DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(FWaitUntilTimeCommand, UWorld*&, World, float, Time);
+	DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(FWaitUntilSimTime, float, Time, int32, MaxTicks);
 
 	/**
 	 * Latent Command that waits until a given number of seconds has passed in the given world.

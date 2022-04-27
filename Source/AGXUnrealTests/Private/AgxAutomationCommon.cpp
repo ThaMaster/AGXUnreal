@@ -4,10 +4,12 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_Simulation.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
+#include "Editor.h"
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"
 #include "HAL/FileManager.h"
@@ -292,8 +294,8 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 	for (const FString& Entry : DirectoryContents)
 	{
 		const FString Name = FPaths::GetCleanFilename(Entry);
-		if (!ExpectedFileAndDirectoryNames.ContainsByPredicate([&Name](const TCHAR* E)
-															   { return Name == E; }))
+		if (!ExpectedFileAndDirectoryNames.ContainsByPredicate(
+				[&Name](const TCHAR* E) { return Name == E; }))
 		{
 			UE_LOG(
 				LogAGX, Error,
@@ -372,24 +374,6 @@ TArray<FString> AgxAutomationCommon::GetReferencedStaticMeshAssets(
 	return Assets;
 }
 
-bool AgxAutomationCommon::FLogWarningAgxCommand::Update()
-{
-	UE_LOG(LogAGX, Warning, TEXT("%s"), *Message);
-	return true;
-}
-
-bool AgxAutomationCommon::FLogErrorAgxCommand::Update()
-{
-	UE_LOG(LogAGX, Error, TEXT("%s"), *Message);
-	return true;
-}
-
-bool AgxAutomationCommon::FWaitNTicks::Update()
-{
-	--NumTicks;
-	return NumTicks <= 0;
-}
-
 bool AgxAutomationCommon::FCheckWorldsCommand::Update()
 {
 	UWorld* TestWorld = AgxAutomationCommon::GetTestWorld();
@@ -402,9 +386,53 @@ bool AgxAutomationCommon::FCheckWorldsCommand::Update()
 	return true;
 }
 
-bool AgxAutomationCommon::FTickUntilCommand::Update()
+bool AgxAutomationCommon::FLogWarningAgxCommand::Update()
+{
+	UE_LOG(LogAGX, Warning, TEXT("%s"), *Message);
+	return true;
+}
+
+bool AgxAutomationCommon::FLogErrorAgxCommand::Update()
+{
+	UE_LOG(LogAGX, Error, TEXT("%s"), *Message);
+	return true;
+}
+
+bool AgxAutomationCommon::FWaitUntilPIEUpCommand::Update()
+{
+	UE_LOG(LogAGX, Warning, TEXT("Polling for PIE up."));
+	return GEditor->IsPlayingSessionInEditor();
+}
+
+bool AgxAutomationCommon::FWaitUntilPIEDownCommand::Update()
+{
+	UE_LOG(LogAGX, Warning, TEXT("Polling for PIE down."));
+	return !GEditor->IsPlayingSessionInEditor();
+}
+
+bool AgxAutomationCommon::FWaitNTicksCommand::Update()
+{
+	--NumTicks;
+	return NumTicks <= 0;
+}
+
+bool AgxAutomationCommon::FWaitUntilTimeCommand::Update()
 {
 	return World->GetTimeSeconds() >= Time;
+}
+
+bool AgxAutomationCommon::FWaitUntilSimTime::Update()
+{
+	--MaxTicks;
+	const UWorld* World = GEditor->GetPIEWorldContext()->World();
+	const UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(World);
+	const float CurrentTime = Simulation->GetTimeStamp();
+	const float UnrealTime = World->GetTimeSeconds();
+	UE_LOG(
+		LogAGX, Warning,
+		TEXT("Polling for Simulation time: %f/%f. Ticks remaining: %d. Unreal time: %f"),
+		CurrentTime, Time, MaxTicks, UnrealTime);
+	return CurrentTime >= Time || MaxTicks <= 0;
 }
 
 AgxAutomationCommon::FWaitWorldDuration::FWaitWorldDuration(UWorld*& InWorld, float InDuration)
@@ -417,6 +445,8 @@ bool AgxAutomationCommon::FWaitWorldDuration::Update()
 {
 	if (EndTime < 0.0f)
 	{
+		// EndTime is only ever negative after construction, so we get here only on the very first
+		// call to Update.
 		EndTime = World->GetTimeSeconds() + Duration;
 	}
 	return World->GetTimeSeconds() >= EndTime;

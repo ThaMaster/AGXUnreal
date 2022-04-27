@@ -204,7 +204,7 @@ protected:
 			FImportArchiveSingleActorCommand("empty_scene.agx", Contents, *this));
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckEmptySceneImportedCommand(Contents, *this));
 		ADD_LATENT_AUTOMATION_COMMAND(FClearEmptySceneImportedCommand(Contents));
-		ADD_LATENT_AUTOMATION_COMMAND(AgxAutomationCommon::FWaitNTicks(1));
+		ADD_LATENT_AUTOMATION_COMMAND(AgxAutomationCommon::FWaitNTicksCommand(1));
 
 		return true;
 	}
@@ -293,7 +293,7 @@ protected:
 		ADD_LATENT_AUTOMATION_COMMAND(FStoreResultingTimes(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSphereHasMoved(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearSingleSphereImportedCommand(Contents))
-		ADD_LATENT_AUTOMATION_COMMAND(FWaitNTicks(1))
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitNTicksCommand(1))
 
 		return true;
 	}
