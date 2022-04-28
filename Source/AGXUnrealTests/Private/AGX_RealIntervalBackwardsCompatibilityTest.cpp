@@ -35,52 +35,48 @@ DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 bool FCheckImportedRealIntervals::Update()
 {
 	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
-	UE_LOG(
-		LogAGX, Warning, TEXT("In check: World=0x%x"),
-		(void*) FAGX_EditorUtilities::GetCurrentWorld());
-
 	if (World == nullptr)
 	{
 		UE_LOG(LogAGX, Error, TEXT("FCheckImportedRealIntervals: Could not get world."));
 		return true;
 	}
 
+	// Find the Actor owning the Hinge.
 	TArray<AActor*> Actors;
 	UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), Actors);
-	UE_LOG(LogAGX, Error, TEXT("FCheckImportedRealIntervals: Found %d Actors."), Actors.Num());
 	AActor* HingeActor = nullptr;
 	for (AActor* Actor : Actors)
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("FCheckImportedRealIntervals:   - %s of type %s."),
-			*Actor->GetName(), *Actor->GetClass()->GetName());
-
 		if (Actor->GetName() == TEXT("HingeActor"))
 		{
 			if (HingeActor != nullptr)
 			{
-				UE_LOG(LogAGX, Error, TEXT("Found two Actors named 'HingeActor'. Something is wrong"));
+				Test.AddError(TEXT("Found two Actors named 'HingeActor'. Something is wrong"));
+				return true;
 			}
 			HingeActor = Actor;
 		}
 	}
-
 	if (HingeActor == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Did not find Hinge Actor."));
+		Test.AddError(TEXT("Did not find Hinge Actor."));
 		return true;
 	}
 
+	// Find the Hinge in the Actor.
 	TArray<UAGX_HingeConstraintComponent*> Hinges;
 	HingeActor->GetComponents(Hinges);
 	if (Hinges.Num() == 0)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Did not find any Hinge in Actor '%s'."), *HingeActor->GetName());
+		Test.AddError(
+			FString::Printf(TEXT("Did not find any Hinge in Actor '%s'."), *HingeActor->GetName()));
 		return true;
 	}
 	if (Hinges.Num() > 1)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Found too many Hinges in Actor '%s'. Found %d."), *HingeActor->GetName(), Hinges.Num());
+		Test.AddError(FString::Printf(
+			TEXT("Found too many Hinges in Actor '%s'. Found %d."), *HingeActor->GetName(),
+			Hinges.Num()));
 		return true;
 	}
 	UAGX_HingeConstraintComponent* Hinge = Hinges[0];
@@ -140,12 +136,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FRealIntervalBackwardsCompatibilityTest::RunTest(const FString& Parameters)
 {
-	UE_LOG(LogAGX, Warning, TEXT("\n\n\n\nRunning Real Interval Backwards Compatibility Test."));
 	static const FString MapPath {"/Game/Tests/BackwardsCompatibility/PreAGXRealInterval"};
 
-	UE_LOG(
-		LogAGX, Warning, TEXT("At start of test: World=0x%x"),
-		(void*) FAGX_EditorUtilities::GetCurrentWorld());
 	// Make sure no one accidentally replaced the map file containing FFloatIntervals with
 	// FAGX_RealIntervals instead.
 	CheckMapMD5Checksum(MapPath, TEXT("24ce44e3772c70a604f461a4276a5c74"), *this);
