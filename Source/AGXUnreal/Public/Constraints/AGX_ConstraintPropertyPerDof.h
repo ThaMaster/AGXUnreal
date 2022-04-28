@@ -71,6 +71,10 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 
 	double operator[](int32 Index) const
 	{
+		/// @todo I believe this is undefined behavior. Not legal to dereference
+		/// a pointer pointing outside of the object from which it was created.
+		/// The object in this case is Translational_1, and any index > 1 will
+		/// create a pointer pointer pointing outside of Translational_1.
 		check(Index >= 0 && Index < NumGenericDofs);
 		return (&Translational_1)[Index];
 	}
@@ -89,6 +93,47 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 	double& operator[](EGenericDofIndex Index)
 	{
 		return operator[](static_cast<int32>(Index));
+	}
+
+	void Set(EGenericDofIndex Index, double Value)
+	{
+		if (Index == EGenericDofIndex::AllDof)
+		{
+			SetAll(Value);
+		}
+		else
+		{
+			this->operator[](Index) = Value;
+		}
+	}
+
+	void SetAll(double Value)
+	{
+		if (Translational_1_IsEditable)
+		{
+			Translational_1 = Value;
+		}
+		if (Translational_2_IsEditable)
+		{
+			Translational_2 = Value;
+		}
+		if (Translational_3_IsEditable)
+		{
+			Translational_3 = Value;
+		}
+
+		if (Rotational_1_IsEditable)
+		{
+			Rotational_1 = Value;
+		}
+		if (Rotational_2_IsEditable)
+		{
+			Rotational_2 = Value;
+		}
+		if (Rotational_3_IsEditable)
+		{
+			Rotational_3 = Value;
+		}
 	}
 
 private:
@@ -177,6 +222,11 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 	FAGX_RealInterval& operator[](int32 Index)
 	{
 		check(Index >= 0 && Index < 6);
+
+		/// @todo I believe this is undefined behavior. Not legal to dereference
+		/// a pointer pointing outside of the object from which it was created.
+		/// The object in this case is Translational_1, and any index > 1 will
+		/// create a pointer pointer pointing outside of Translational_1.
 		return (&Translational_1)[Index];
 	}
 
@@ -195,6 +245,47 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 	{
 		return operator[](static_cast<int32>(Index));
 	};
+
+	void Set(EGenericDofIndex Index, FAGX_RealInterval Interval)
+	{
+		if (Index == EGenericDofIndex::AllDof)
+		{
+			SetAll(Interval);
+		}
+		else
+		{
+			this->operator[](Index) = Interval;
+		}
+	}
+
+	void SetAll(FAGX_RealInterval Interval)
+	{
+		if (Translational_1_IsEditable)
+		{
+			Translational_1 = Interval;
+		}
+		if (Translational_2_IsEditable)
+		{
+			Translational_2 = Interval;
+		}
+		if (Translational_3_IsEditable)
+		{
+			Translational_3 = Interval;
+		}
+
+		if (Rotational_1_IsEditable)
+		{
+			Rotational_1 = Interval;
+		}
+		if (Rotational_2_IsEditable)
+		{
+			Rotational_2 = Interval;
+		}
+		if (Rotational_3_IsEditable)
+		{
+			Rotational_3 = Interval;
+		}
+	}
 
 private:
 	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)

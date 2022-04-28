@@ -64,7 +64,7 @@ TMap<EGenericDofIndex, int32> BuildNativeDofIndexMap(const TArray<EDofFlag>& Loc
 		}
 	}
 
-	// General mappings:
+	// General mappings, -1 is the value of DOF::ALL_DOF in all AGX Dynamics constraints.
 	DofIndexMap.Add(EGenericDofIndex::AllDof, -1);
 
 	return DofIndexMap;
@@ -334,7 +334,7 @@ void UAGX_ConstraintComponent::SetCompliance(EGenericDofIndex Index, double InCo
 	SetOnBarrier(*this, Index, TEXT("SetCompliance"), [this, InCompliance](int32 NativeDof) {
 		NativeBarrier->SetCompliance(InCompliance, NativeDof);
 	});
-	Compliance[Index] = InCompliance;
+	Compliance.Set(Index, InCompliance);
 }
 
 float UAGX_ConstraintComponent::GetComplianceFloat(EGenericDofIndex Index) const
@@ -379,7 +379,7 @@ void UAGX_ConstraintComponent::SetSpookDamping(EGenericDofIndex Index, double In
 	SetOnBarrier(*this, Index, TEXT("SetSpookDamping"), [this, InSpookDamping](int32 NativeDof) {
 		NativeBarrier->SetSpookDamping(InSpookDamping, NativeDof);
 	});
-	SpookDamping[Index] = InSpookDamping;
+	SpookDamping.Set(Index, InSpookDamping);
 }
 
 float UAGX_ConstraintComponent::GetSpookDampingFloat(EGenericDofIndex Index) const
@@ -406,7 +406,7 @@ void UAGX_ConstraintComponent::SetForceRange(
 	SetOnBarrier(*this, Index, TEXT("SetForceRange"), [this, InForceRange](int32 NativeDof) {
 		NativeBarrier->SetForceRange(InForceRange.Min, InForceRange.Max, NativeDof);
 	});
-	ForceRange[Index] = InForceRange;
+	ForceRange.Set(Index, InForceRange);
 }
 
 double UAGX_ConstraintComponent::GetForceRangeMin(EGenericDofIndex Index) const
