@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AgxAutomationCommon.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 
@@ -14,6 +15,16 @@
 #include "Tests/AutomationEditorCommon.h"
 #include "GameFramework/Actor.h"
 
+// System includes.
+#include <limits>
+
+/*
+ * This is a unit test that ensures that we can restore Properties that used to be FFloatInterval
+ * but are now FAGX_RealInterval instead. For storage we use a level containin a Hinge on which
+ * we have set the force ranges for the different dimensions to various values.
+ */
+
+// Latent command that does the actual testing. Should be run after the level has been loaded.
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FCheckImportedRealIntervals, FAutomationTestBase&, Test);
 
@@ -70,8 +81,34 @@ bool FCheckImportedRealIntervals::Update()
 	}
 
 	UAGX_HingeConstraintComponent* Hinge = Hinges[0];
+
+	// Helper function that tests if a Range has the expected minimum and maximum values.
+	auto TestInterval = [this](
+							FAGX_RealInterval Actual, double ExpectedMin, double ExpectedMax,
+							const TCHAR* Name) {
+		AgxAutomationCommon::TestEqual(Test, TEXT("%s Min"), Actual.Min, ExpectedMin);
+		AgxAutomationCommon::TestEqual(Test, TEXT("%s Max"), Actual.Max, ExpectedMax);
+	};
+
+	// Test all the force ranges. The numbers should match what has been set in the level.
 	FAGX_ConstraintRangePropertyPerDof& ForceRanges = Hinge->ForceRange;
-	UE_LOG(LogAGX, Warning, TEXT("T1: (%f, %f)"), ForceRanges.Translational_1.Min, ForceRanges.Translational_1.Max);
+	TestInterval(ForceRanges.Translational_1, 0.0, 1.0, TEXT("Translational 1"));
+	TestInterval(ForceRanges.Translational_2, -10, 10, TEXT("Translational 2"));
+	TestInterval(ForceRanges.Translational_3, -1000000.0, 1000000000.0, TEXT("Translational 3"));
+
+	// Before FAGX_RealInterval was introduced we used FFloatInterval which does not support
+	// infinity. The default value for the force range was therefore TNumericLimits<float>::Max().
+	// With the introduction of FAGX_RealInterval the default force range was changed to
+	// +/- infinity. The test scene does not set the two rotational force ranges, so they get the
+	// new default value.
+	//
+	// Another thing we could test is to store infinity in the original level, but I don't have an
+	// easy way to create a hinge with infinite force range using FFloatInterval since Unreal Editor
+	// doesn't support that. Would need to either write C++ code just for that or create and import
+	// an AGX Dynamics archive.
+	double Infinity = std::numeric_limits<double>::infinity();
+	TestInterval(ForceRanges.Rotational_1, -Infinity, Infinity, TEXT("Rotational 1"));
+	TestInterval(ForceRanges.Rotational_2, -Infinity, Infinity, TEXT("Rotational 2"));
 	return true;
 }
 
