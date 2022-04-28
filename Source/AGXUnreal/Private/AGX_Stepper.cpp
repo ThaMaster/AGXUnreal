@@ -1,10 +1,13 @@
 // Copyright 2022, Algoryx Simulation AB.
 
+
+// AGX Dynamics for Unreal includes.
 #include "AGX_Stepper.h"
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
 #include "AGX_Environment.h"
 
+// Unreal Engine includes.
 #include "Engine/GameInstance.h"
 
 AAGX_Stepper::AAGX_Stepper()
