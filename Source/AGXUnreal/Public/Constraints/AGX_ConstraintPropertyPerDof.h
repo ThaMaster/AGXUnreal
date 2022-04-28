@@ -112,7 +112,7 @@ private:
 };
 
 /**
- * A struct for a property that has one float range component per DOF (Degree of Freedom).
+ * A struct for a property that has one double range component per DOF (Degree Of Freedom).
  * Order indexes of DOFs below should match the order in the enum EGenericDofIndex.
  */
 USTRUCT()
@@ -151,7 +151,7 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 	FAGX_RealInterval Rotational_3;
 
 	FAGX_ConstraintRangePropertyPerDof(
-		float DefaultMinValue = 0.0f, float DefaultMaxValue = 0.0f,
+		double DefaultMinValue = 0.0, double DefaultMaxValue = 0.0,
 		EDofFlag EditableDofs = EDofFlag::DOF_FLAG_ALL)
 		: Translational_1(DefaultMinValue, DefaultMaxValue)
 		, Translational_2(DefaultMinValue, DefaultMaxValue)
@@ -165,6 +165,12 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 		, Rotational_1_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagRotational1)
 		, Rotational_2_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagRotational2)
 		, Rotational_3_IsEditable((uint8) EditableDofs & (uint8) EDofFlag::DofFlagRotational3)
+	{
+	}
+
+	FAGX_ConstraintRangePropertyPerDof(
+		FAGX_RealInterval DefaultInterval, EDofFlag EditableDofs = EDofFlag::DOF_FLAG_ALL)
+		: FAGX_ConstraintRangePropertyPerDof(DefaultInterval.Min, DefaultInterval.Max, EditableDofs)
 	{
 	}
 

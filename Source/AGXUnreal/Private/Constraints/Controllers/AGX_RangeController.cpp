@@ -7,7 +7,7 @@
 
 FAGX_ConstraintRangeController::FAGX_ConstraintRangeController(bool bRotational)
 	: FAGX_ConstraintController(bRotational)
-	, Range(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
+	, Range(ConstraintConstants::DefaultForceRange())
 {
 }
 
