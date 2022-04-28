@@ -129,6 +129,21 @@ namespace AgxAutomationCommon
 		const FString& MapPath, const TCHAR* Expected, FAutomationTestBase& Test);
 
 	/**
+	 * Compare the MD5 checksum of the .uasset file proving drive storage for the asset at the given
+	 * path with the given expected MD5 checksum. Reports a test failure on mismatch.
+	 *
+	 * The expected MD5 checksum is typically found by running system 'md5sum' on the .uasset file
+	 * at the time of asset creation.
+	 *
+	 * \param MapPath Package path to an Asset, such as /Game/Tests/MyAsset.
+	 * \param Expected Expected MD5 checksum.
+	 * \param Test The currently running FAutomationTestBase, used for test failure reporting.
+	 * \return True if the MD5 checksums match, false if they differ.
+	 */
+	void CheckAssetMD5Checksum(
+		const FString& PackagePath, const TCHAR* Expected, FAutomationTestBase& Test);
+
+	/**
 	 * Delete all assets created when the given archive was imported.
 	 *
 	 * Will do a file system delete of the entire import directory.

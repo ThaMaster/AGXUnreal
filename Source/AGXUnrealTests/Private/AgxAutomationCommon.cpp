@@ -266,6 +266,23 @@ bool AgxAutomationCommon::CheckMapMD5Checksum(
 	return MD5Sum == Expected;
 }
 
+void AgxAutomationCommon::CheckAssetMD5Checksum(
+	const FString& PackagePath, const TCHAR* Expected, FAutomationTestBase& Test)
+{
+	const FString FilePath =
+		FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(
+			PackagePath, FPackageName::GetAssetPackageExtension()));
+	TArray<uint8> PackageBytes;
+	FFileHelper::LoadFileToArray(PackageBytes, *FilePath, FILEREAD_None);
+	// The documentation (and the code) for FFileHelper::LoadFileToArray says that it adds
+	// two bytes of padding to the TArray, but that appears to be a lie. Not doing -2 here
+	// and it seems to work. Not sure what's going on here.
+	// https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Misc/FFileHelper/LoadFileToArray/2/
+	FString MD5Sum = FMD5::HashBytes(PackageBytes.GetData(), PackageBytes.Num());
+	Test.TestEqual(
+		TEXT("The asset file should have the expected MD5 checksum."), MD5Sum, Expected);
+}
+
 bool AgxAutomationCommon::DeleteImportDirectory(
 	const TCHAR* ArchiveName, const TArray<const TCHAR*>& ExpectedFileAndDirectoryNames)
 {
