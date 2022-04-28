@@ -15,6 +15,9 @@
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 
+// System includes.
+#include <cmath>
+
 UWorld* AgxAutomationCommon::GetTestWorld()
 {
 	// Based on GetAnyGameWorld() in AutomationCommon.cpp.
@@ -77,6 +80,18 @@ UWorld* AgxAutomationCommon::GetTestWorld()
 	}
 	checkNoEntry();
 	return nullptr;
+}
+
+void AgxAutomationCommon::TestEqual(
+	FAutomationTestBase& Test, const TCHAR* What, double Actual, double Expected, double Tolerance)
+{
+	if (std::isinf(Actual) && std::isinf(Expected) &&
+		(std::signbit(Actual) != std::signbit(Expected)))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("Expected '%s' to be %f, but it was %f within tolerance %f."), What, Expected,
+			Actual, Tolerance));
+	}
 }
 
 void AgxAutomationCommon::TestEqual(

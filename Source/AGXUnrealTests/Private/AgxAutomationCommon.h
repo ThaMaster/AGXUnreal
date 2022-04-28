@@ -37,6 +37,12 @@ namespace AgxAutomationCommon
 			EAutomationTestFlags::ProductFilter | EAutomationTestFlags::EditorContext |
 			EAutomationTestFlags::ClientContext);
 
+	/// @todo Remove this TestEqual implementation for double once Unreal Engine's get support
+	/// for infinity.
+	void TestEqual(
+		FAutomationTestBase& Test, const TCHAR* What, double Actual, double Expected,
+		double Tolerance = KINDA_SMALL_NUMBER);
+
 	/// @todo Remove this TestEqual implementation for FVector4 once it's included in-engine.
 	/// @see Misc/AutomationTest.h
 	void TestEqual(
@@ -142,9 +148,9 @@ namespace AgxAutomationCommon
 	template <typename T>
 	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
 	{
-		UActorComponent** Match = Components.FindByPredicate(
-			[Name](UActorComponent* Component)
-			{ return Cast<T>(Component) && Component->GetName() == Name; });
+		UActorComponent** Match = Components.FindByPredicate([Name](UActorComponent* Component) {
+			return Cast<T>(Component) && Component->GetName() == Name;
+		});
 
 		return Match != nullptr ? Cast<T>(*Match) : nullptr;
 	}
@@ -207,7 +213,8 @@ namespace AgxAutomationCommon
 	DEFINE_LATENT_AUTOMATION_COMMAND(FWaitUntilPIEUpCommand);
 	DEFINE_LATENT_AUTOMATION_COMMAND(FWaitUntilPIEDownCommand);
 	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FWaitNTicksCommand, int32, NumTicks);
-	DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(FWaitUntilTimeCommand, UWorld*&, World, float, Time);
+	DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
+		FWaitUntilTimeCommand, UWorld*&, World, float, Time);
 	DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(FWaitUntilSimTime, float, Time, int32, MaxTicks);
 
 	/**
