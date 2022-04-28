@@ -12,6 +12,10 @@
 #include "Editor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/AutomationTest.h"
+#include "Misc/FileHelper.h"
+#include "Misc/PackageName.h"
+#include "Misc/Paths.h"
+#include "Misc/SecureHash.h"
 #include "Tests/AutomationEditorCommon.h"
 #include "GameFramework/Actor.h"
 
@@ -79,7 +83,6 @@ bool FCheckImportedRealIntervals::Update()
 		UE_LOG(LogAGX, Error, TEXT("Found too many Hinges in Actor '%s'. Found %d."), *HingeActor->GetName(), Hinges.Num());
 		return true;
 	}
-
 	UAGX_HingeConstraintComponent* Hinge = Hinges[0];
 
 	// Helper function that tests if a Range has the expected minimum and maximum values.
@@ -109,12 +112,27 @@ bool FCheckImportedRealIntervals::Update()
 	double Infinity = std::numeric_limits<double>::infinity();
 	TestInterval(ForceRanges.Rotational_1, -Infinity, Infinity, TEXT("Rotational 1"));
 	TestInterval(ForceRanges.Rotational_2, -Infinity, Infinity, TEXT("Rotational 2"));
+
 	return true;
+}
+
+void CheckMapMD5Checksum(const FString& MapPath, const TCHAR* Expected, FAutomationTestBase& Test)
+{
+	const FString FilePath = FPaths::ConvertRelativePathToFull(
+		FPackageName::LongPackageNameToFilename(MapPath, FPackageName::GetMapPackageExtension()));
+	TArray<uint8> PackageBytes;
+	FFileHelper::LoadFileToArray(PackageBytes, *FilePath, FILEREAD_None);
+	// The documentation (and the code) for FFileHelper::LoadFileToArray says that it adds
+	// two bytes of padding to the TArray, but that appears to be a lie. Not doing -2 here
+	// and it seems to work. Not sure what's going on here.
+	// https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Misc/FFileHelper/LoadFileToArray/2/
+	FString MD5Sum = FMD5::HashBytes(PackageBytes.GetData(), PackageBytes.Num());
+	Test.TestEqual(TEXT("Map file MD5 checksum."), MD5Sum, Expected);
 }
 
 /**
  * Unit test that ensures that we can open levels saved before we switched force ranges from
- * FFloatInterval to FAGX_RealInterval.
+ * using FFloatInterval to FAGX_RealInterval.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FRealIntervalBackwardsCompatibilityTest, "AGXUnreal.Editor.BackwardsCompatibility.RealInterval",
@@ -123,14 +141,19 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FRealIntervalBackwardsCompatibilityTest::RunTest(const FString& Parameters)
 {
 	UE_LOG(LogAGX, Warning, TEXT("\n\n\n\nRunning Real Interval Backwards Compatibility Test."));
+	static const FString MapPath {"/Game/Tests/BackwardsCompatibility/PreAGXRealInterval"};
 
 	UE_LOG(
 		LogAGX, Warning, TEXT("At start of test: World=0x%x"),
 		(void*) FAGX_EditorUtilities::GetCurrentWorld());
+	// Make sure no one accidentally replaced the map file containing FFloatIntervals with
+	// FAGX_RealIntervals instead.
+	CheckMapMD5Checksum(MapPath, TEXT("24ce44e3772c70a604f461a4276a5c74"), *this);
 
-	static const FString MapName {"/Game/Tests/BackwardsCompatibility/PreAGXRealInterval"};
-	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapName));
+	// Queue the latest commands.
+	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath));
 	ADD_LATENT_AUTOMATION_COMMAND(FCheckImportedRealIntervals(*this));
+
 	return true;
 }
 
