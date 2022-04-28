@@ -18,6 +18,7 @@
 #include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
 #include "Misc/Paths.h"
+#include "Misc/SecureHash.h"
 #include "Tests/AutomationCommon.h"
 #include "UObject/Package.h"
 #include "UObject/PackageFileSummary.h"
