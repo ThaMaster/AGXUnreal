@@ -165,11 +165,19 @@ public:
 
 	void SetForceRange(EGenericDofIndex Index, const FAGX_RealInterval& InForceRange);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
-	float GetForceRangeMin(EGenericDofIndex Index) const;
+	double GetForceRangeMin(EGenericDofIndex Index) const;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
-	float GetForceRangeMax(EGenericDofIndex Index) const;
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint Dynamics",
+		Meta = (DisplayName = "Get Force Range Min"))
+	float GetForceRangeMinFloat(EGenericDofIndex Index) const;
+
+	double GetForceRangeMax(EGenericDofIndex Index) const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint Dynamics",
+		Meta = (DisplayName = "Get Force Range Max"))
+	float GetForceRangeMaxFloat(EGenericDofIndex Index) const;
 
 	FAGX_RealInterval GetForceRange(EGenericDofIndex Index) const;
 
