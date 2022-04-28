@@ -12,10 +12,6 @@
 #include "Editor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/AutomationTest.h"
-#include "Misc/FileHelper.h"
-#include "Misc/PackageName.h"
-#include "Misc/Paths.h"
-#include "Misc/SecureHash.h"
 #include "Tests/AutomationEditorCommon.h"
 #include "GameFramework/Actor.h"
 
@@ -112,19 +108,7 @@ bool FCheckImportedRealIntervals::Update()
 	return true;
 }
 
-void CheckMapMD5Checksum(const FString& MapPath, const TCHAR* Expected, FAutomationTestBase& Test)
-{
-	const FString FilePath = FPaths::ConvertRelativePathToFull(
-		FPackageName::LongPackageNameToFilename(MapPath, FPackageName::GetMapPackageExtension()));
-	TArray<uint8> PackageBytes;
-	FFileHelper::LoadFileToArray(PackageBytes, *FilePath, FILEREAD_None);
-	// The documentation (and the code) for FFileHelper::LoadFileToArray says that it adds
-	// two bytes of padding to the TArray, but that appears to be a lie. Not doing -2 here
-	// and it seems to work. Not sure what's going on here.
-	// https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Misc/FFileHelper/LoadFileToArray/2/
-	FString MD5Sum = FMD5::HashBytes(PackageBytes.GetData(), PackageBytes.Num());
-	Test.TestEqual(TEXT("Map file MD5 checksum."), MD5Sum, Expected);
-}
+
 
 /**
  * Unit test that ensures that we can open levels saved before we switched force ranges from
@@ -140,7 +124,7 @@ bool FRealIntervalBackwardsCompatibilityTest::RunTest(const FString& Parameters)
 
 	// Make sure no one accidentally replaced the map file containing FFloatIntervals with
 	// FAGX_RealIntervals instead.
-	CheckMapMD5Checksum(MapPath, TEXT("24ce44e3772c70a604f461a4276a5c74"), *this);
+	AgxAutomationCommon::CheckMapMD5Checksum(MapPath, TEXT("24ce44e3772c70a604f461a4276a5c74"), *this);
 
 	// Queue the latest commands.
 	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath));

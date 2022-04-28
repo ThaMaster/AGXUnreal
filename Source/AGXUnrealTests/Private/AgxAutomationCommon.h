@@ -114,6 +114,21 @@ namespace AgxAutomationCommon
 	FString GetTestSceneDirPath(const FString& SubDir = "");
 
 	/**
+	 * Compare the MD5 checksum of the .umap file proving drive storage for the map at the given
+	 * path with the given expected MD5 checksum. Reports a test failure on mismatch.
+	 *
+	 * The expected MD5 checksum is typically found by running system 'md5sum' on the .umap file
+	 * at the time of map creation.
+	 *
+	 * \param MapPath Package path to a Map, such as /Game/Tests/MyMap.
+	 * \param Expected Expected MD5 checksum.
+	 * \param Test The currently running FAutomationTestBase, used for test failure reporting.
+	 * \return True if the MD5 checksums match, false if they differ.
+	 */
+	bool CheckMapMD5Checksum(
+		const FString& MapPath, const TCHAR* Expected, FAutomationTestBase& Test);
+
+	/**
 	 * Delete all assets created when the given archive was imported.
 	 *
 	 * Will do a file system delete of the entire import directory.
