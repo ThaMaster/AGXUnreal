@@ -12,7 +12,10 @@
 #include "AGX_RealInterval.generated.h"
 
 /**
- * AGX_RealInterval
+ * AGX_RealInterval mimics the Unreal Engine build-in FFloatInterval type, but
+ * uses FAGX_Real instead of float for the underlying type. This extends the
+ * floating point precision to 64-bit and provides support for scientific
+ * notation and infinity in Details panels.
  */
 USTRUCT(BlueprintType)
 struct AGXUNREALBARRIER_API FAGX_RealInterval
