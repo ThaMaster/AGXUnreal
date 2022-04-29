@@ -27,8 +27,6 @@
 #include "Wire/WireWinchBarrier.h"
 #include "Wire/WireWinchRef.h"
 
-#include "AGXRefs.h"
-
 namespace agx
 {
 	class RigidBody;
