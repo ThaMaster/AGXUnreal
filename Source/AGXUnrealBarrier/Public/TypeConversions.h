@@ -532,12 +532,11 @@ inline FString Convert(const agx::String& StringAGX)
 
 inline FString Convert(const agx::Name& NameAGX)
 {
-	// For some reason agx::Name seems to sometimes give runtime crashes when copied. Therefore,
-	// agx::Name.c_str() is used, and copying the type in general should be avoided. The underlying
-	// reason for this is not yet known.
-	//
-	// Is it because of different memory allocators in AGX Dynamics shared libraries and Unreal
-	// Engine shared libraries?
+	// Due to different memory allocators it is not safe to copy an agx::Name between AGX Dynamics
+	// and Unreal Engine shared libraries, or to move ownership of the underlying memory buffer. By
+	// passing the return value of c_str() to the FString constructor we create a copy of the
+	// characters within the Unreal Engine shared library that is owned by that shared library,
+	// and the AGX Dynamics agx::Name retain ownership of the old memory buffer.
 	return FString(NameAGX.c_str());
 }
 
