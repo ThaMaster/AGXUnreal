@@ -141,7 +141,7 @@ inline TU ConvertAngleToUnreal(agx::Real A)
 
 inline int32 Convert(agx::Int I)
 {
-	agx::Int MaxAllowed = static_cast<agx::Int>(std::numeric_limits<int32>::max());
+	static constexpr agx::Int MaxAllowed = static_cast<agx::Int>(std::numeric_limits<int32>::max());
 	if (I > MaxAllowed)
 	{
 		UE_LOG(
@@ -154,7 +154,8 @@ inline int32 Convert(agx::Int I)
 
 inline int32 Convert(std::size_t S)
 {
-	const std::size_t MaxAllowed = static_cast<std::size_t>(std::numeric_limits<int32>::max());
+	static constexpr std::size_t MaxAllowed =
+		static_cast<std::size_t>(std::numeric_limits<int32>::max());
 	if (S > MaxAllowed)
 	{
 		UE_LOG(
