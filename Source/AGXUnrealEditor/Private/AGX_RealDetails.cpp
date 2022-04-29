@@ -49,6 +49,15 @@ namespace AGX_RealDetails_helpers
 
 		static TOptional<double> StaticFromString(const FString& InString)
 		{
+			// Unfortunately, FCString::Atod cannot detect parse errors. It's return type is double,
+			// not TOptional<double>, and on error it returns 0.0, which is a common value in
+			// real-world data. Therefore Result.IsSet() will always evaluate to true. The result of
+			// that is when the users enters an invalid string the FAGX_Real will be set to 0.0.
+			//
+			// If we want to detect these error cases in order to restore/keep the old value then we
+			// either need to do input validation ourselves here or use another string-to-double
+			// conversion function. I tried with std::stod, which can report conversion errors, but
+			// it does it via exceptions and I'm not sure Unreal Engine like exceptions.
 			TOptional<double> Result = FCString::Atod(*InString);
 			if (!Result.IsSet())
 			{
@@ -73,8 +82,7 @@ namespace AGX_RealDetails_helpers
 
 		virtual bool IsCharacterValid(TCHAR InChar) const override
 		{
-			auto IsValidLocalizedCharacter = [InChar]() -> bool
-			{
+			auto IsValidLocalizedCharacter = [InChar]() -> bool {
 				const FDecimalNumberFormattingRules& NumberFormattingRules =
 					ExpressionParser::GetLocalizedNumberFormattingRules();
 				return InChar == NumberFormattingRules.GroupingSeparatorCharacter ||
@@ -82,7 +90,7 @@ namespace AGX_RealDetails_helpers
 					   Algo::Find(NumberFormattingRules.DigitCharacters, InChar) != 0;
 			};
 
-			static const FString ValidChars = TEXT("1234567890eE-+");
+			static const FString ValidChars = TEXT("1234567890eEiInNfF-+");
 			return InChar != 0 &&
 				   (ValidChars.GetCharArray().Contains(InChar) || IsValidLocalizedCharacter());
 		}
@@ -246,9 +254,9 @@ void FAGX_RealDetails::CustomizeHeader(
 			// The spin box is the main way the user interacts with an FAGX_Real in the Details Panel.
 			SNew(SSpinBox<double>)
 			.TypeInterface(MakeShareable(new AGX_RealDetails_helpers::FAGX_RealInterface))
-			.MinValue(std::numeric_limits<double>::lowest())
+			.MinValue(-std::numeric_limits<double>::infinity())
 			.MinSliderValue(SliderMin)
-			.MaxValue(std::numeric_limits<double>::max())
+			.MaxValue(std::numeric_limits<double>::infinity())
 			.MaxSliderValue(SliderMax)
 			.SliderExponent(SliderExponent)
 			.OnValueChanged(this, &FAGX_RealDetails::OnSpinChanged)
