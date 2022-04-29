@@ -341,9 +341,9 @@ inline FVector ConvertTorque(const agx::Vec3& V)
 	 * Following a similar logic as ConvertAngularVelocity for the axis directions, but no unit
 	 * conversion since we use Nm in both AGX Dynamics and Unreal Engine.
 	 */
-	return {
-		ConvertToUnreal<decltype(FVector::X)>(V.x()), -ConvertToUnreal<decltype(FVector::X)>(V.y()),
-		-ConvertToUnreal<decltype(FVector::X)>(V.z())};
+	return {ConvertToUnreal<decltype(FVector::X)>(V.x()),
+			-ConvertToUnreal<decltype(FVector::X)>(V.y()),
+			-ConvertToUnreal<decltype(FVector::X)>(V.z())};
 }
 
 //
@@ -453,14 +453,14 @@ inline FAGX_RealInterval Convert(const agx::RangeReal& R)
 
 inline FAGX_RealInterval ConvertDistance(const agx::RangeReal& R)
 {
-	return FAGX_RealInterval {
-		ConvertDistanceToUnreal<double>(R.lower()), ConvertDistanceToUnreal<double>(R.upper())};
+	return FAGX_RealInterval {ConvertDistanceToUnreal<double>(R.lower()),
+							  ConvertDistanceToUnreal<double>(R.upper())};
 }
 
 inline FAGX_RealInterval ConvertAngle(const agx::RangeReal& R)
 {
-	return FAGX_RealInterval {
-		ConvertAngleToUnreal<double>(R.lower()), ConvertAngleToUnreal<double>(R.upper())};
+	return FAGX_RealInterval {ConvertAngleToUnreal<double>(R.lower()),
+							  ConvertAngleToUnreal<double>(R.upper())};
 }
 
 //
