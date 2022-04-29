@@ -71,12 +71,24 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 
 	double operator[](int32 Index) const
 	{
-		/// @todo I believe this is undefined behavior. Not legal to dereference
-		/// a pointer pointing outside of the object from which it was created.
-		/// The object in this case is Translational_1, and any index > 1 will
-		/// create a pointer pointer pointing outside of Translational_1.
-		check(Index >= 0 && Index < NumGenericDofs);
-		return (&Translational_1)[Index];
+		switch (Index)
+		{
+			case 0:
+				return Translational_1;
+			case 1:
+				return Translational_2;
+			case 2:
+				return Translational_3;
+			case 3:
+				return Rotational_1;
+			case 4:
+				return Rotational_2;
+			case 5:
+				return Rotational_3;
+			default:
+				checkNoEntry();
+				return Translational_1; // Must return something, so arbitrarily pick a member.
+		}
 	}
 
 	double operator[](EGenericDofIndex Index) const
@@ -86,8 +98,24 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 
 	double& operator[](int32 Index)
 	{
-		check(Index >= 0 && Index < NumGenericDofs);
-		return (&Translational_1)[Index];
+		switch (Index)
+		{
+			case 0:
+				return Translational_1;
+			case 1:
+				return Translational_2;
+			case 2:
+				return Translational_3;
+			case 3:
+				return Rotational_1;
+			case 4:
+				return Rotational_2;
+			case 5:
+				return Rotational_3;
+			default:
+				checkNoEntry();
+				return Translational_1; // Must return something, so arbitrarily pick a member.
+		}
 	}
 
 	double& operator[](EGenericDofIndex Index)
@@ -221,13 +249,24 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 
 	FAGX_RealInterval& operator[](int32 Index)
 	{
-		check(Index >= 0 && Index < 6);
-
-		/// @todo I believe this is undefined behavior. Not legal to dereference
-		/// a pointer pointing outside of the object from which it was created.
-		/// The object in this case is Translational_1, and any index > 1 will
-		/// create a pointer pointer pointing outside of Translational_1.
-		return (&Translational_1)[Index];
+		switch (Index)
+		{
+			case 0:
+				return Translational_1;
+			case 1:
+				return Translational_2;
+			case 2:
+				return Translational_3;
+			case 3:
+				return Rotational_1;
+			case 4:
+				return Rotational_2;
+			case 5:
+				return Rotational_3;
+			default:
+				checkNoEntry();
+				return Translational_1; // Must return something, so arbitrarily pick a member.
+		}
 	}
 
 	FAGX_RealInterval& operator[](EGenericDofIndex Index)
@@ -237,8 +276,24 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 
 	FAGX_RealInterval operator[](int32 Index) const
 	{
-		check(Index >= 0 && Index < 6);
-		return (&Translational_1)[Index];
+		switch (Index)
+		{
+			case 0:
+				return Translational_1;
+			case 1:
+				return Translational_2;
+			case 2:
+				return Translational_3;
+			case 3:
+				return Rotational_1;
+			case 4:
+				return Rotational_2;
+			case 5:
+				return Rotational_3;
+			default:
+				checkNoEntry();
+				return Translational_1; // Must return something, so arbitrarily pick a member.
+		}
 	}
 
 	FAGX_RealInterval operator[](EGenericDofIndex Index) const
