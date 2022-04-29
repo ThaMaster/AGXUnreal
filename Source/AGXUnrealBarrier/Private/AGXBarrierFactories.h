@@ -54,6 +54,11 @@ namespace agxModel
 	class TwoBodyTire;
 }
 
+namespace agxTerrain
+{
+	class TerrainMaterial;
+}
+
 namespace agxWire
 {
 	class Wire;
