@@ -5,8 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "Utilities/DoubleInterval.h"
 
-#include "AGX_LogCategory.h"
-
 // Unreal Engine includes.
 #include "Math/Interval.h"
 
