@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_NativeOwner.h"
 #include "AGX_UpropertyDispatcher.h"
+#include "AGX_RealInterval.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
 #include "Constraints/AGX_ConstraintEnums.h"
 #include "Constraints/AGX_ConstraintPropertyPerDof.h"
@@ -41,7 +42,6 @@ protected:
 	UAGX_ConstraintComponent(const TArray<EDofFlag>& LockedDofsOrdered);
 
 public:
-
 	/**
 	 * The first Rigid Body bound by this constraint, and its Attachment Frame definition.
 	 * Rigid Body Actor must be set.
@@ -163,15 +163,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
 	void SetForceRange(EGenericDofIndex Index, float RangeMin, float RangeMax);
 
-	void SetForceRange(EGenericDofIndex Index, const FFloatInterval& InForceRange);
+	void SetForceRange(EGenericDofIndex Index, const FAGX_RealInterval& InForceRange);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
-	float GetForceRangeMin(EGenericDofIndex Index) const;
+	double GetForceRangeMin(EGenericDofIndex Index) const;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
-	float GetForceRangeMax(EGenericDofIndex Index) const;
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint Dynamics",
+		Meta = (DisplayName = "Get Force Range Min"))
+	float GetForceRangeMinFloat(EGenericDofIndex Index) const;
 
-	FFloatInterval GetForceRange(EGenericDofIndex Index) const;
+	double GetForceRangeMax(EGenericDofIndex Index) const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint Dynamics",
+		Meta = (DisplayName = "Get Force Range Max"))
+	float GetForceRangeMaxFloat(EGenericDofIndex Index) const;
+
+	FAGX_RealInterval GetForceRange(EGenericDofIndex Index) const;
 
 	/**
 	 * Enable or disable computation of the forces applied to the dynamic bodies in this constraint.

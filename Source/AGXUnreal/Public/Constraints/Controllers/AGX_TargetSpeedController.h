@@ -143,7 +143,7 @@ class AGXUNREAL_API UAGX_ConstraintTargetSpeedController_FL : public UBlueprintF
 		UPARAM(ref) FAGX_ConstraintTargetSpeedController& Controller, float MinForce,
 		float MaxForce)
 	{
-		Controller.SetForceRange(FFloatInterval(MinForce, MaxForce));
+		Controller.SetForceRange(MinForce, MaxForce);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

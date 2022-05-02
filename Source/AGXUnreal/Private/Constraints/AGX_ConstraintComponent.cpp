@@ -64,7 +64,7 @@ TMap<EGenericDofIndex, int32> BuildNativeDofIndexMap(const TArray<EDofFlag>& Loc
 		}
 	}
 
-	// General mappings:
+	// General mappings, -1 is the value of DOF::ALL_DOF in all AGX Dynamics constraints.
 	DofIndexMap.Add(EGenericDofIndex::AllDof, -1);
 
 	return DofIndexMap;
@@ -87,8 +87,7 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	, SpookDamping(
 		  ConstraintConstants::DefaultSpookDamping(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, ForceRange(
-		  ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax(),
-		  ConvertDofsArrayToBitmask(LockedDofsOrdered))
+		  ConstraintConstants::DefaultForceRange(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, LockedDofsBitmask(ConvertDofsArrayToBitmask(LockedDofsOrdered))
 	, LockedDofs(LockedDofsOrdered)
 	, NativeDofIndexMap(BuildNativeDofIndexMap(LockedDofsOrdered))
@@ -135,7 +134,6 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 		}
 	}
 }
-
 
 void UAGX_ConstraintComponent::PostInitProperties()
 {
@@ -333,11 +331,10 @@ void UAGX_ConstraintComponent::SetCompliance(EGenericDofIndex Index, float InCom
 
 void UAGX_ConstraintComponent::SetCompliance(EGenericDofIndex Index, double InCompliance)
 {
-	SetOnBarrier(
-		*this, Index, TEXT("SetCompliance"),
-		[this, InCompliance](int32 NativeDof)
-		{ NativeBarrier->SetCompliance(InCompliance, NativeDof); });
-	Compliance[Index] = InCompliance;
+	SetOnBarrier(*this, Index, TEXT("SetCompliance"), [this, InCompliance](int32 NativeDof) {
+		NativeBarrier->SetCompliance(InCompliance, NativeDof);
+	});
+	Compliance.Set(Index, InCompliance);
 }
 
 float UAGX_ConstraintComponent::GetComplianceFloat(EGenericDofIndex Index) const
@@ -379,11 +376,10 @@ void UAGX_ConstraintComponent::SetSpookDamping(EGenericDofIndex Index, float InS
 
 void UAGX_ConstraintComponent::SetSpookDamping(EGenericDofIndex Index, double InSpookDamping)
 {
-	SetOnBarrier(
-		*this, Index, TEXT("SetSpookDamping"),
-		[this, InSpookDamping](int32 NativeDof)
-		{ NativeBarrier->SetSpookDamping(InSpookDamping, NativeDof); });
-	SpookDamping[Index] = InSpookDamping;
+	SetOnBarrier(*this, Index, TEXT("SetSpookDamping"), [this, InSpookDamping](int32 NativeDof) {
+		NativeBarrier->SetSpookDamping(InSpookDamping, NativeDof);
+	});
+	SpookDamping.Set(Index, InSpookDamping);
 }
 
 float UAGX_ConstraintComponent::GetSpookDampingFloat(EGenericDofIndex Index) const
@@ -400,30 +396,40 @@ double UAGX_ConstraintComponent::GetSpookDamping(EGenericDofIndex Index) const
 
 void UAGX_ConstraintComponent::SetForceRange(EGenericDofIndex Index, float RangeMin, float RangeMax)
 {
-	SetForceRange(Index, FFloatInterval(RangeMin, RangeMax));
+	SetForceRange(
+		Index, FAGX_RealInterval(static_cast<double>(RangeMin), static_cast<double>(RangeMax)));
 }
 
 void UAGX_ConstraintComponent::SetForceRange(
-	EGenericDofIndex Index, const FFloatInterval& InForceRange)
+	EGenericDofIndex Index, const FAGX_RealInterval& InForceRange)
 {
-	SetOnBarrier(
-		*this, Index, TEXT("SetForceRange"),
-		[this, InForceRange](int32 NativeDof)
-		{ NativeBarrier->SetForceRange(InForceRange.Min, InForceRange.Max, NativeDof); });
-	ForceRange[Index] = InForceRange;
+	SetOnBarrier(*this, Index, TEXT("SetForceRange"), [this, InForceRange](int32 NativeDof) {
+		NativeBarrier->SetForceRange(InForceRange.Min, InForceRange.Max, NativeDof);
+	});
+	ForceRange.Set(Index, InForceRange);
 }
 
-float UAGX_ConstraintComponent::GetForceRangeMin(EGenericDofIndex Index) const
+double UAGX_ConstraintComponent::GetForceRangeMin(EGenericDofIndex Index) const
 {
 	return GetForceRange(Index).Min;
 }
 
-float UAGX_ConstraintComponent::GetForceRangeMax(EGenericDofIndex Index) const
+float UAGX_ConstraintComponent::GetForceRangeMinFloat(EGenericDofIndex Index) const
+{
+	return static_cast<float>(GetForceRangeMin(Index));
+}
+
+double UAGX_ConstraintComponent::GetForceRangeMax(EGenericDofIndex Index) const
 {
 	return GetForceRange(Index).Max;
 }
 
-FFloatInterval UAGX_ConstraintComponent::GetForceRange(EGenericDofIndex Index) const
+float UAGX_ConstraintComponent::GetForceRangeMaxFloat(EGenericDofIndex Index) const
+{
+	return static_cast<float>(GetForceRangeMax(Index));
+}
+
+FAGX_RealInterval UAGX_ConstraintComponent::GetForceRange(EGenericDofIndex Index) const
 {
 	return GetFromBarrier(
 		*this, Index, TEXT("GetForceRange"), ForceRange[Index],
@@ -516,7 +522,7 @@ void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
 	const static TArray<EGenericDofIndex> Dofs {
 		EGenericDofIndex::Translational1, EGenericDofIndex::Translational2,
 		EGenericDofIndex::Translational3, EGenericDofIndex::Rotational1,
-		EGenericDofIndex::Rotational2,	  EGenericDofIndex::Rotational3};
+		EGenericDofIndex::Rotational2,	EGenericDofIndex::Rotational3};
 
 	for (const auto& Dof : Dofs)
 	{
@@ -620,8 +626,7 @@ const FConstraintBarrier* UAGX_ConstraintComponent::GetNative() const
 
 bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString* OutMessage) const
 {
-	auto WriteMessage = [OutMessage](EDofFlag Dof, float Error)
-	{
+	auto WriteMessage = [OutMessage](EDofFlag Dof, float Error) {
 		if (OutMessage == nullptr)
 		{
 			return;
@@ -775,20 +780,23 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Rotational_1),
-		[](ThisClass* This)
-		{ This->SetForceRange(EGenericDofIndex::Rotational1, This->ForceRange.Rotational_1); });
+		[](ThisClass* This) {
+			This->SetForceRange(EGenericDofIndex::Rotational1, This->ForceRange.Rotational_1);
+		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Rotational_2),
-		[](ThisClass* This)
-		{ This->SetForceRange(EGenericDofIndex::Rotational2, This->ForceRange.Rotational_2); });
+		[](ThisClass* This) {
+			This->SetForceRange(EGenericDofIndex::Rotational2, This->ForceRange.Rotational_2);
+		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Rotational_3),
-		[](ThisClass* This)
-		{ This->SetForceRange(EGenericDofIndex::Rotational3, This->ForceRange.Rotational_3); });
+		[](ThisClass* This) {
+			This->SetForceRange(EGenericDofIndex::Rotational3, This->ForceRange.Rotational_3);
+		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, bComputeForces),
@@ -878,9 +886,7 @@ TStructOnScope<FActorComponentInstanceData> UAGX_ConstraintComponent::GetCompone
 	const
 {
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
-		this, this,
-		[](UActorComponent* Component)
-		{
+		this, this, [](UActorComponent* Component) {
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
@@ -973,17 +979,17 @@ namespace
 void UAGX_ConstraintComponent::UpdateNativeCompliance()
 {
 	UpdateNativePerDof(
-		HasNative(), NativeDofIndexMap,
-		[this](EGenericDofIndex GenericDof, int32 NativeDof)
-		{ NativeBarrier->SetCompliance(Compliance[GenericDof], NativeDof); });
+		HasNative(), NativeDofIndexMap, [this](EGenericDofIndex GenericDof, int32 NativeDof) {
+			NativeBarrier->SetCompliance(Compliance[GenericDof], NativeDof);
+		});
 }
 
 void UAGX_ConstraintComponent::UpdateNativeSpookDamping()
 {
 	UpdateNativePerDof(
-		HasNative(), NativeDofIndexMap,
-		[this](EGenericDofIndex GenericDof, int32 NativeDof)
-		{ NativeBarrier->SetSpookDamping(SpookDamping[GenericDof], NativeDof); });
+		HasNative(), NativeDofIndexMap, [this](EGenericDofIndex GenericDof, int32 NativeDof) {
+			NativeBarrier->SetSpookDamping(SpookDamping[GenericDof], NativeDof);
+		});
 }
 
 #undef TRY_SET_DOF_VAlUE

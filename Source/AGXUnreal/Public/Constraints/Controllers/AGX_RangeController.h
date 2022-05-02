@@ -3,6 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_RealInterval.h"
 #include "Constraints/AGX_ConstraintController.h"
 
 // Unreal Engine includes.
@@ -28,11 +29,13 @@ struct AGXUNREAL_API FAGX_ConstraintRangeController : public FAGX_ConstraintCont
 	 * else in Centimeters [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Range Controller", Meta = (EditCondition = "bEnable"))
-	FFloatInterval Range;
+	FAGX_RealInterval Range;
 
-	void SetRange(const FFloatInterval& InRange);
+	void SetRange(const FAGX_RealInterval& InRange);
 
-	FFloatInterval GetRange() const;
+	void SetRange(double RangeMin, double RangeMax);
+
+	FAGX_RealInterval GetRange() const;
 
 public:
 	FAGX_ConstraintRangeController() = default;
@@ -57,7 +60,7 @@ class AGXUNREAL_API UAGX_ConstraintRangeController_FL : public UBlueprintFunctio
 	static void SetRange(
 		UPARAM(ref) FAGX_ConstraintRangeController& Controller, float RangeMin, float RangeMax)
 	{
-		Controller.SetRange(FFloatInterval(RangeMin, RangeMax));
+		Controller.SetRange(RangeMin, RangeMax);
 	};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Range Controller")
@@ -136,7 +139,7 @@ class AGXUNREAL_API UAGX_ConstraintRangeController_FL : public UBlueprintFunctio
 	static void SetForceRange(
 		UPARAM(ref) FAGX_ConstraintRangeController& Controller, float MinForce, float MaxForce)
 	{
-		Controller.SetForceRange(FFloatInterval(MinForce, MaxForce));
+		Controller.SetForceRange(MinForce, MaxForce);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Controller")

@@ -14,7 +14,7 @@ class UWorld;
 struct FLinearColor;
 
 /**
- * A set of helper functions used by several Automation tests.
+ * A set of helper functions used by our Automation tests.
  */
 namespace AgxAutomationCommon
 {
@@ -36,6 +36,12 @@ namespace AgxAutomationCommon
 		static_cast<const EAutomationTestFlags::Type>(
 			EAutomationTestFlags::ProductFilter | EAutomationTestFlags::EditorContext |
 			EAutomationTestFlags::ClientContext);
+
+	/// @todo Remove this TestEqual implementation for double once Unreal Engine's get support
+	/// for infinity.
+	void TestEqual(
+		FAutomationTestBase& Test, const TCHAR* What, double Actual, double Expected,
+		double Tolerance = KINDA_SMALL_NUMBER);
 
 	/// @todo Remove this TestEqual implementation for FVector4 once it's included in-engine.
 	/// @see Misc/AutomationTest.h
@@ -108,6 +114,36 @@ namespace AgxAutomationCommon
 	FString GetTestSceneDirPath(const FString& SubDir = "");
 
 	/**
+	 * Compare the MD5 checksum of the .umap file proving drive storage for the map at the given
+	 * path with the given expected MD5 checksum. Reports a test failure on mismatch.
+	 *
+	 * The expected MD5 checksum is typically found by running system 'md5sum' on the .umap file
+	 * at the time of map creation.
+	 *
+	 * \param MapPath Package path to a Map, such as /Game/Tests/MyMap.
+	 * \param Expected Expected MD5 checksum.
+	 * \param Test The currently running FAutomationTestBase, used for test failure reporting.
+	 * \return True if the MD5 checksums match, false if they differ.
+	 */
+	bool CheckMapMD5Checksum(
+		const FString& MapPath, const TCHAR* Expected, FAutomationTestBase& Test);
+
+	/**
+	 * Compare the MD5 checksum of the .uasset file proving drive storage for the asset at the given
+	 * path with the given expected MD5 checksum. Reports a test failure on mismatch.
+	 *
+	 * The expected MD5 checksum is typically found by running system 'md5sum' on the .uasset file
+	 * at the time of asset creation.
+	 *
+	 * \param MapPath Package path to an Asset, such as /Game/Tests/MyAsset.
+	 * \param Expected Expected MD5 checksum.
+	 * \param Test The currently running FAutomationTestBase, used for test failure reporting.
+	 * \return True if the MD5 checksums match, false if they differ.
+	 */
+	void CheckAssetMD5Checksum(
+		const FString& PackagePath, const TCHAR* Expected, FAutomationTestBase& Test);
+
+	/**
 	 * Delete all assets created when the given archive was imported.
 	 *
 	 * Will do a file system delete of the entire import directory.
@@ -142,9 +178,9 @@ namespace AgxAutomationCommon
 	template <typename T>
 	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
 	{
-		UActorComponent** Match = Components.FindByPredicate(
-			[Name](UActorComponent* Component)
-			{ return Cast<T>(Component) && Component->GetName() == Name; });
+		UActorComponent** Match = Components.FindByPredicate([Name](UActorComponent* Component) {
+			return Cast<T>(Component) && Component->GetName() == Name;
+		});
 
 		return Match != nullptr ? Cast<T>(*Match) : nullptr;
 	}
@@ -157,8 +193,14 @@ namespace AgxAutomationCommon
 
 	inline bool IsAnyNullptr()
 	{
-		// Base case. The elements are or'd so false won't make the entre expression false.
+		// Base case. The elements are or'd so false won't make the entire expression false.
 		return false;
+	}
+
+	template <typename T, typename... Ts>
+	bool IsAnyNullptr(T* Head, Ts*... Tail)
+	{
+		return Head == nullptr || IsAnyNullptr(Tail...);
 	}
 
 	template <typename T>
@@ -171,12 +213,6 @@ namespace AgxAutomationCommon
 	T CentimeterToMeter(T Centimeter)
 	{
 		return Centimeter / T {100};
-	}
-
-	template <typename T, typename... Ts>
-	bool IsAnyNullptr(T* Head, Ts*... Tail)
-	{
-		return Head == nullptr || IsAnyNullptr(Tail...);
 	}
 
 	/**
@@ -204,9 +240,12 @@ namespace AgxAutomationCommon
 
 	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogWarningAgxCommand, FString, Message);
 	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLogErrorAgxCommand, FString, Message);
-	DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(FTickUntilCommand, UWorld*&, World, float, Time);
-
-	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FWaitNTicks, int32, NumTicks);
+	DEFINE_LATENT_AUTOMATION_COMMAND(FWaitUntilPIEUpCommand);
+	DEFINE_LATENT_AUTOMATION_COMMAND(FWaitUntilPIEDownCommand);
+	DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FWaitNTicksCommand, int32, NumTicks);
+	DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
+		FWaitUntilTimeCommand, UWorld*&, World, float, Time);
+	DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(FWaitUntilSimTime, float, Time, int32, MaxTicks);
 
 	/**
 	 * Latent Command that waits until a given number of seconds has passed in the given world.

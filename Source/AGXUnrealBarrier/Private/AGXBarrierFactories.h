@@ -27,8 +27,6 @@
 #include "Wire/WireWinchBarrier.h"
 #include "Wire/WireWinchRef.h"
 
-#include "AGXRefs.h"
-
 namespace agx
 {
 	class RigidBody;
@@ -54,6 +52,11 @@ namespace agxCollide
 namespace agxModel
 {
 	class TwoBodyTire;
+}
+
+namespace agxTerrain
+{
+	class TerrainMaterial;
 }
 
 namespace agxWire

@@ -7,7 +7,7 @@
 
 FAGX_ConstraintRangeController::FAGX_ConstraintRangeController(bool bRotational)
 	: FAGX_ConstraintController(bRotational)
-	, Range(ConstraintConstants::FloatRangeMin(), ConstraintConstants::FloatRangeMax())
+	, Range(ConstraintConstants::DefaultForceRange())
 {
 }
 
@@ -33,7 +33,7 @@ namespace
 	}
 }
 
-void FAGX_ConstraintRangeController::SetRange(const FFloatInterval& InRange)
+void FAGX_ConstraintRangeController::SetRange(const FAGX_RealInterval& InRange)
 {
 	if (HasNative())
 	{
@@ -49,7 +49,12 @@ void FAGX_ConstraintRangeController::SetRange(const FFloatInterval& InRange)
 	Range = InRange;
 }
 
-FFloatInterval FAGX_ConstraintRangeController::GetRange() const
+void FAGX_ConstraintRangeController::SetRange(double RangeMin, double RangeMax)
+{
+	SetRange(FAGX_RealInterval(RangeMin, RangeMax));
+}
+
+FAGX_RealInterval FAGX_ConstraintRangeController::GetRange() const
 {
 	if (HasNative())
 	{

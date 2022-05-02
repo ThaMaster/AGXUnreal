@@ -69,7 +69,7 @@ void FAGX_WireWinch::DisableMotor()
 	bMotorEnabled = false;
 	if (HasNative())
 	{
-		NativeBarrier.SetForceRange({0.0, 0.0});
+		NativeBarrier.SetForceRange(0.0, 0.0);
 	}
 }
 
@@ -101,7 +101,7 @@ double FAGX_WireWinch::GetTargetSpeed() const
 	return TargetSpeed;
 }
 
-void FAGX_WireWinch::SetMotorForceRange(const FAGX_DoubleInterval& InForceRange)
+void FAGX_WireWinch::SetMotorForceRange(const FAGX_RealInterval& InForceRange)
 {
 	MotorForceRange = InForceRange;
 	if (bMotorEnabled && HasNative())
@@ -112,26 +112,26 @@ void FAGX_WireWinch::SetMotorForceRange(const FAGX_DoubleInterval& InForceRange)
 
 void FAGX_WireWinch::SetMotorForceRange(double InMin, double InMax)
 {
-	SetMotorForceRange({InMin, InMax});
+	SetMotorForceRange(FAGX_RealInterval(InMin, InMax));
 }
 
 void FAGX_WireWinch::SetMotorForceRangeMin(double InMin)
 {
-	SetMotorForceRange({InMin, MotorForceRange.Max});
+	SetMotorForceRange(InMin, MotorForceRange.Max);
 }
 
 void FAGX_WireWinch::SetMotorForceRangeMax(double InMax)
 {
-	SetMotorForceRange({MotorForceRange.Min, InMax});
+	SetMotorForceRange(MotorForceRange.Min, InMax);
 }
 
-FAGX_DoubleInterval FAGX_WireWinch::GetMotorForceRange() const
+FAGX_RealInterval FAGX_WireWinch::GetMotorForceRange() const
 {
 	if (HasNative())
 	{
 		return NativeBarrier.GetForceRange();
 	}
-	return bMotorEnabled ? MotorForceRange : FAGX_DoubleInterval(0.0, 0.0);
+	return bMotorEnabled ? MotorForceRange : FAGX_RealInterval(0.0, 0.0);
 }
 
 double FAGX_WireWinch::GetMotorForceRangeMin() const
@@ -158,7 +158,7 @@ void FAGX_WireWinch::DisableBrake()
 	bBrakeEnabled = false;
 	if (HasNative())
 	{
-		NativeBarrier.SetBrakeForceRange({0.0, 0.0});
+		NativeBarrier.SetBrakeForceRange(0.0, 0.0);
 	}
 }
 
@@ -179,7 +179,7 @@ bool FAGX_WireWinch::IsBrakeEnabled() const
 	return bBrakeEnabled;
 }
 
-void FAGX_WireWinch::SetBrakeForceRange(const FAGX_DoubleInterval& InForceRange)
+void FAGX_WireWinch::SetBrakeForceRange(const FAGX_RealInterval& InForceRange)
 {
 	BrakeForceRange = InForceRange;
 	if (bBrakeEnabled && HasNative())
@@ -190,20 +190,20 @@ void FAGX_WireWinch::SetBrakeForceRange(const FAGX_DoubleInterval& InForceRange)
 
 void FAGX_WireWinch::SetBrakeForceRange(double InMin, double InMax)
 {
-	SetBrakeForceRange({InMin, InMax});
+	SetBrakeForceRange(FAGX_RealInterval(InMin, InMax));
 }
 
 void FAGX_WireWinch::SetBrakeForceRangeMin(double InMin)
 {
-	SetBrakeForceRange({InMin, BrakeForceRange.Max});
+	SetBrakeForceRange(InMin, BrakeForceRange.Max);
 }
 
 void FAGX_WireWinch::SetBrakeForceRangeMax(double InMax)
 {
-	SetBrakeForceRange({BrakeForceRange.Min, InMax});
+	SetBrakeForceRange(BrakeForceRange.Min, InMax);
 }
 
-FAGX_DoubleInterval FAGX_WireWinch::GetBrakeForceRange() const
+FAGX_RealInterval FAGX_WireWinch::GetBrakeForceRange() const
 {
 	if (HasNative())
 	{
@@ -370,7 +370,7 @@ void FAGX_WireWinch::WritePropertiesToNative()
 	}
 	else
 	{
-		NativeBarrier.SetForceRange({0.0, 0.0});
+		NativeBarrier.SetForceRange(0.0, 0.0);
 	}
 	if (bBrakeEnabled)
 	{
@@ -378,7 +378,7 @@ void FAGX_WireWinch::WritePropertiesToNative()
 	}
 	else
 	{
-		NativeBarrier.SetBrakeForceRange({0.0, 0.0});
+		NativeBarrier.SetBrakeForceRange(0.0, 0.0);
 	}
 }
 

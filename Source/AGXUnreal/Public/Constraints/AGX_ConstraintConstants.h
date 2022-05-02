@@ -2,6 +2,10 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_RealInterval.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 
 /**
@@ -34,12 +38,8 @@ public:
 		return 2.0 / 60.0;
 	}
 
-	static constexpr float FloatRangeMax()
+	static FAGX_RealInterval DefaultForceRange()
 	{
-		return TNumericLimits<float>::Max();
-	}
-	static constexpr float FloatRangeMin()
-	{
-		return TNumericLimits<float>::Lowest();
+		return FAGX_RealInterval(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
 	}
 };

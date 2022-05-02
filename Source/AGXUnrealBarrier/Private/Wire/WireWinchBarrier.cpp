@@ -8,7 +8,11 @@
 #include "Wire/WireWinchRef.h"
 #include "NativeBarrier.impl.h"
 
+#if PLATFORM_LINUX
+template class FNativeBarrier<FWireWinchRef>;
+#elif PLATFORM_WINDOWS
 template class AGXUNREALBARRIER_API FNativeBarrier<FWireWinchRef>;
+#endif
 
 FWireWinchBarrier::FWireWinchBarrier()
 	: Super()
@@ -110,27 +114,37 @@ bool FWireWinchBarrier::GetAutoFeed() const
 	return NativeRef->Native->getAutoFeed();
 }
 
-void FWireWinchBarrier::SetForceRange(const FAGX_DoubleInterval& InForceRange)
+void FWireWinchBarrier::SetForceRange(const FAGX_RealInterval& InForceRange)
 {
 	check(HasNative());
 	NativeRef->Native->setForceRange(Convert(InForceRange));
 }
 
+void FWireWinchBarrier::SetForceRange(double MinForce, double MaxForce)
+{
+	SetForceRange(FAGX_RealInterval(MinForce, MaxForce));
+}
+
 /// Maximum force to push or pull the wire.
-FAGX_DoubleInterval FWireWinchBarrier::GetForceRange() const
+FAGX_RealInterval FWireWinchBarrier::GetForceRange() const
 {
 	check(HasNative());
 	return Convert(NativeRef->Native->getForceRange());
 }
 
-void FWireWinchBarrier::SetBrakeForceRange(const FAGX_DoubleInterval& InBrakeForceRange)
+void FWireWinchBarrier::SetBrakeForceRange(const FAGX_RealInterval& InBrakeForceRange)
 {
 	check(HasNative());
 	NativeRef->Native->setBrakeForceRange(Convert(InBrakeForceRange));
 }
 
+void FWireWinchBarrier::SetBrakeForceRange(double MinForce, double MaxForce)
+{
+	SetBrakeForceRange(FAGX_RealInterval(MinForce, MaxForce));
+}
+
 /// The ability of the winch to slow down the wire when the brake is enabled.
-FAGX_DoubleInterval FWireWinchBarrier::GetBrakeForceRange() const
+FAGX_RealInterval FWireWinchBarrier::GetBrakeForceRange() const
 {
 	check(HasNative());
 	return Convert(NativeRef->Native->getBrakeForceRange());

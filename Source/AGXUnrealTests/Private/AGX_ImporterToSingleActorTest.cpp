@@ -204,7 +204,7 @@ protected:
 			FImportArchiveSingleActorCommand("empty_scene.agx", Contents, *this));
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckEmptySceneImportedCommand(Contents, *this));
 		ADD_LATENT_AUTOMATION_COMMAND(FClearEmptySceneImportedCommand(Contents));
-		ADD_LATENT_AUTOMATION_COMMAND(AgxAutomationCommon::FWaitNTicks(1));
+		ADD_LATENT_AUTOMATION_COMMAND(AgxAutomationCommon::FWaitNTicksCommand(1));
 
 		return true;
 	}
@@ -293,7 +293,7 @@ protected:
 		ADD_LATENT_AUTOMATION_COMMAND(FStoreResultingTimes(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSphereHasMoved(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearSingleSphereImportedCommand(Contents))
-		ADD_LATENT_AUTOMATION_COMMAND(FWaitNTicks(1))
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitNTicksCommand(1))
 
 		return true;
 	}
@@ -1926,25 +1926,25 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
 
 	// Force range.
 	Test.TestEqual(
-		TEXT("Translational 1 force range min"), Constraint->ForceRange.Translational_1.Min, 300.f);
+		TEXT("Translational 1 force range min"), Constraint->ForceRange.Translational_1.Min, 300.0);
 	Test.TestEqual(
-		TEXT("Translational 1 force range max"), Constraint->ForceRange.Translational_1.Max, 301.f);
+		TEXT("Translational 1 force range max"), Constraint->ForceRange.Translational_1.Max, 301.0);
 	Test.TestEqual(
-		TEXT("Translational 2 force range min"), Constraint->ForceRange.Translational_2.Min, 302.f);
+		TEXT("Translational 2 force range min"), Constraint->ForceRange.Translational_2.Min, 302.0);
 	Test.TestEqual(
-		TEXT("Translational 2 force range max"), Constraint->ForceRange.Translational_2.Max, 303.f);
+		TEXT("Translational 2 force range max"), Constraint->ForceRange.Translational_2.Max, 303.0);
 	Test.TestEqual(
-		TEXT("Translational 3 force range min"), Constraint->ForceRange.Translational_3.Min, 304.f);
+		TEXT("Translational 3 force range min"), Constraint->ForceRange.Translational_3.Min, 304.0);
 	Test.TestEqual(
-		TEXT("Translational 3 force range max"), Constraint->ForceRange.Translational_3.Max, 305.f);
+		TEXT("Translational 3 force range max"), Constraint->ForceRange.Translational_3.Max, 305.0);
 	Test.TestEqual(
-		TEXT("Rotational 1 force range min"), Constraint->ForceRange.Rotational_1.Min, 306.f);
+		TEXT("Rotational 1 force range min"), Constraint->ForceRange.Rotational_1.Min, 306.0);
 	Test.TestEqual(
-		TEXT("Rotational 1 force range min"), Constraint->ForceRange.Rotational_1.Max, 307.f);
+		TEXT("Rotational 1 force range min"), Constraint->ForceRange.Rotational_1.Max, 307.0);
 	Test.TestEqual(
-		TEXT("Rotational 2 force range min"), Constraint->ForceRange.Rotational_2.Min, 308.f);
+		TEXT("Rotational 2 force range min"), Constraint->ForceRange.Rotational_2.Min, 308.0);
 	Test.TestEqual(
-		TEXT("Rotational 2 force range min"), Constraint->ForceRange.Rotational_2.Max, 309.f);
+		TEXT("Rotational 2 force range min"), Constraint->ForceRange.Rotational_2.Max, 309.0);
 	// Rotational 3 is not supported for AGX::Hinge.
 
 	Test.TestEqual(TEXT("Solve type"), Constraint->SolveType, EAGX_SolveType::StDirectAndIterative);

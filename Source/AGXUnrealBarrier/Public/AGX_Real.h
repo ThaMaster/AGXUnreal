@@ -9,7 +9,7 @@
 #include "AGX_Real.generated.h"
 
 USTRUCT()
-struct AGXUNREAL_API FAGX_Real
+struct AGXUNREALBARRIER_API FAGX_Real
 {
 	GENERATED_BODY()
 
@@ -45,7 +45,7 @@ struct AGXUNREAL_API FAGX_Real
 	}
 
 	/// Called by Unreal Engine when de-serializing an FAGX_Real but some other type was found in
-	/// the archive. Doubles are read but all other types are rejected.
+	/// the archive. Floats and doubles are read but all other types are rejected.
 	bool SerializeFromMismatchedTag(struct FPropertyTag const& Tag, FStructuredArchive::FSlot Slot);
 };
 

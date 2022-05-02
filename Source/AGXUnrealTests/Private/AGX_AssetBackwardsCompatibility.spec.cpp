@@ -18,6 +18,7 @@
 #include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
 #include "Misc/Paths.h"
+#include "Misc/SecureHash.h"
 #include "Tests/AutomationCommon.h"
 #include "UObject/Package.h"
 #include "UObject/PackageFileSummary.h"
@@ -108,23 +109,6 @@ namespace RealInMaterialsBackwardsCompatibilitySpec_helpers
 #endif
 	}
 
-	void CheckAssetMD5Checksum(
-		const FString& PackagePath, const TCHAR* Expected, FAutomationTestBase& Test)
-	{
-		const FString FilePath =
-			FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(
-				PackagePath, FPackageName::GetAssetPackageExtension()));
-		TArray<uint8> PackageBytes;
-		FFileHelper::LoadFileToArray(PackageBytes, *FilePath, FILEREAD_None);
-		// The documentation (and the code) for FFileHelper::LoadFileToArray says that it adds
-		// two bytes of padding to the TArray, but that appears to be a lie. Not doing -2 here
-		// and it seems to work. Not sure what's going on here.
-		// https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Misc/FFileHelper/LoadFileToArray/2/
-		FString MD5Sum = FMD5::HashBytes(PackageBytes.GetData(), PackageBytes.Num());
-		Test.TestEqual(
-			TEXT("The asset file should have the expected MD5 checksum."), MD5Sum, Expected);
-	}
-
 	template <typename MaterialT>
 	MaterialT* LoadMaterialAsset(const FString& PackagePath, const FString& ObjectName)
 	{
@@ -165,7 +149,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 #if 0
 			CheckAssetAGXCustomVersion(PackagePath, *this);
 #else
-			CheckAssetMD5Checksum(PackagePath, TEXT("2113ad88f842ea8c583bd8b037b6007b"), *this);
+			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("2113ad88f842ea8c583bd8b037b6007b"), *this);
 #endif
 			UAGX_ShapeMaterialAsset* ShapeMaterial = LoadMaterialAsset<UAGX_ShapeMaterialAsset>(PackagePath, ObjectName);
 			TestEqual(
@@ -224,7 +208,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 #if 0
 			CheckAssetAGXCustomVersion(PackagePathh, *this);
 #else
-			CheckAssetMD5Checksum(PackagePath, TEXT("0e6c1159d5b5b0bd0dabdc311a2e361e"), *this);
+			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("0e6c1159d5b5b0bd0dabdc311a2e361e"), *this);
 #endif
 			UAGX_ContactMaterialAsset* ContactMaterial = LoadMaterialAsset<UAGX_ContactMaterialAsset>(PackagePath, ObjectName);
 			TestEqual(
@@ -267,7 +251,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 #if 0
 			CheckAssetAGXCustomVersion(PackagePathh, *this);
 #else
-			CheckAssetMD5Checksum(PackagePath, TEXT("13761b5e4237e63665da78201924246a"), *this);
+			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("13761b5e4237e63665da78201924246a"), *this);
 #endif
 			UAGX_TerrainMaterialAsset* TerrainMaterial = LoadMaterialAsset<UAGX_TerrainMaterialAsset>(PackagePath, ObjectName);
 			TestEqual(

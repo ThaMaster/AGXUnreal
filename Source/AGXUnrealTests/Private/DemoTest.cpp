@@ -1,25 +1,31 @@
 // Copyright 2022, Algoryx Simulation AB.
 
+#if WITH_DEV_AUTOMATION_TESTS
+
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
 #include "AgxAutomationCommon.h"
 
 // Unreal Engine includes.
-#include "Tests/AutomationCommon.h"
+#include "Editor.h"
 #include "Misc/AutomationTest.h"
+#include "Tests/AutomationCommon.h"
+#include "Tests/AutomationEditorCommon.h"
 
 /*
- * This file demonstrates how to use the Automation framework to write tests.
+ * This file demonstrates how to use the Automation framework to write unit tests.
  */
 
 /*
  * The IMPLEMENT_SIMPLE_AUTOMATION_TEST creates a new test class with the given class name, pretty
  * name, and flags.
  *
- * The class name is just the C++ name of the class. Should begin with F and end with Test.
+ * The class name is just the C++ name of the class. Should begin with F, end with Test, and
+ * describe what is being tested in between.
  *
  * The pretty name is the name that is shown to the user. It is hierarchical and '.'-separated. When
- * running tests we can chose to either specify a single test by giving the complete name, or run a
+ * running tests we can choose to either specify a single test by giving the complete name, or run a
  * group of tests by giving a subset of the name hierarchy. For example, giving
  * "AGXUnreal.Demo.SimpleTest" would run only this test, while "AGXUnreal.Demo" would run all tests
  * in that group, including "SimpleTest".
@@ -27,9 +33,9 @@
  * The flags specify during which circumstances the test should be run. It's split in three main
  * parts: Filter, Priority and Context. The filter part can be SmokeFilter, EngineFilter,
  * ProductFilter, PerfFilter, StressFilter, and NegativeFilter. The Priority part can be
- * CriticalPriority,HighPriority, MediumPriority, or LowPriority. The Context part can be
+ * CriticalPriority, HighPriority, MediumPriority, or LowPriority. The Context part can be
  * EditorContext, ClientContext, ServerContext, or CommandletContext. Multiple Filter and Context
- * flags can be or'ed together with the Priority flag. There are a few other flags as well I don't
+ * flags can be or'ed together with one Priority flag. There are a few other flags as well I don't
  * know much about yet.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -37,7 +43,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
 
 /*
- * The Simple Automation Test provide the RunTest function which is where we implement the test
+ * The Simple Automation Test provides the RunTest function which is where we implement the test
  * logic. It takes a single FString parameter which I believe is always the empty string.
  */
 bool FDemoSimpleTest::RunTest(const FString&)
@@ -65,7 +71,7 @@ bool FDemoSimpleTest::RunTest(const FString&)
  * A complex test is in many ways similar to a simple test. The difference is that the complex test
  * can be run many times with varying input. Here "input" refers to the parameter to RunTest. For
  * complex tests we implement one additional member function, GetTests, that lists the input that we
- * want to run the test for.
+ * want to run the test over.
  */
 IMPLEMENT_COMPLEX_AUTOMATION_TEST(
 	FDemoComplexTest, "AGXUnreal.Demo.ComplexTest",
@@ -75,7 +81,7 @@ void FDemoComplexTest::GetTests(
 	TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands) const
 {
 	/*
-	 * Here we hard-code two test inputs but we could just as well create then dynamically based on
+	 * Here we hard-code two test inputs, but we could just as well create them dynamically based on
 	 * files found on disk, through a loop, or whatever else we fancy. For each test we give it a
 	 * name and a command. The command becomes the parameter to RunTest. The name is appended to
 	 * the name hierarchy of the complex test. So in this example the "AGXUnreal.Demo.ComplexTest"
@@ -104,7 +110,7 @@ bool FDemoComplexTest::RunTest(const FString& Parameters)
  * The tests we run will be executed one after another in quick succession. Sometimes a test need
  * for some time to pass, or some event to finish, before it can continue. That is accomplished with
  * Latent Commands. A Latent Command is queued in RunTest but not executed until later. Also, a
- * Latent Command is not executed until all preceeding Latent Commands in the same test has
+ * Latent Command is not executed until all preceding Latent Commands in the same test has
  * finished. The Automation framework provides Latent Commands for loading maps, waiting for maps to
  * finish loading, to wait a fixed amount of time, and other useful actions. We can also create our
  * own Latent Commands.
@@ -123,6 +129,8 @@ DEFINE_LATENT_AUTOMATION_COMMAND(FWaitTenTicksCommand);
  */
 bool FWaitTenTicksCommand::Update()
 {
+	/// @note Using 'static' to hold state like this is not a good idea and a better way to do
+	/// this is demonstrated in the next example.
 	static int32 Counter = 0;
 	++Counter;
 	return Counter > 10;
@@ -148,11 +156,18 @@ bool FWaitTenTicksTest::RunTest(const FString&)
  * While the FWaitTenTicksCommand shown above kind of works, using static local variables for state
  * won't work when there multiple instances of the Latent Command created. We can create member
  * variables using the _PARAMETER form of the macro.
+ *
+ * Every other parameter after the class name is a type of a parameter, and every other after that
+ * is the variable name for that parameter. A member variable is created for each parameter with
+ * the same name, making the data accessible in the Update member function.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FWaitTicksCommand, int32, NumTicks);
 
 /*
- * The in implementation of Update we have read/write access to the variable.
+ * The in implementation of Update we have read/write access to the variable. Here we decrement
+ * the counter and return true, causing the same Latent Command to be called again the next tick,
+ * until the counter reaches zero. At that point we return true, signaling that this Latent Command
+ * has completed.
  */
 bool FWaitTicksCommand::Update()
 {
@@ -175,12 +190,12 @@ bool FWaitTwentyTicksTest::RunTest(const FString&)
 
 /*
  * A test implemented with Latent Commands cannot use the return value from RunTest to signal
- * success or failure since the actual testing hasn't yet been performed at that point. Instead
- * the instance of the test class can be passed to those Latent Commands that are able to perform
+ * success or failure since the actual testing hasn't yet been performed at that point. Instead,
+ * the Test class instance can be passed to those Latent Commands that are able to perform
  * the verification. To get access to the Test.+-function, take a reference to FAutomationTestBase.
  *
  * When writing Update member functions that do these kinds of tests it's important to remember that
- * a Latent Command's return value is whether or not the Latent Command is finished, not whether the
+ * a Latent Command's return value is whether the Latent Command is finished, not whether the
  * test passed or failed.
  *
  * A test will not stop at errors, the Latent Command will continue to have its Update member
@@ -198,6 +213,10 @@ bool FTestingLatentCommand::Update()
 }
 
 /*
+ * Multiple Latent Commands a chained one after the other by queuing them, in order, in RunTest.
+ * It is not, as far as I know, possible to run Latent Commands in parallel, or do other kinds of
+ * dependency graphs.
+ *
  * The following test will first wait 25 ticks and then test if 1 + 1 == 2.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -223,6 +242,7 @@ bool FTestInLatentCommandTest::RunTest(const FString&)
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FTestAbort, "AGXUnreal.Demo.ExpectErrorLog",
 	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter);
+
 bool FTestAbort::RunTest(const FString& Parameters)
 {
 	using namespace AgxAutomationCommon;
@@ -231,6 +251,129 @@ bool FTestAbort::RunTest(const FString& Parameters)
 	ADD_LATENT_AUTOMATION_COMMAND(FLogErrorAgxCommand(TEXT("At the error.")));
 	ADD_LATENT_AUTOMATION_COMMAND(FLogWarningAgxCommand(TEXT("After the error.")));
 	return true;
+}
+
+/*
+ * While many tests are self-contained in the sense that they create and verify their own state
+ * completely, some require interaction with the global Unreal Engine state. In particular, loading
+ * levels and stepping a simulation is somewhat complicated. Unreal Engine provides a few Latent
+ * Commands for such purposes and AgxAutomationCommon provides a few more.
+ *
+ * This test demonstrates how to simulate a falling Rigid Body for a short duration.
+ *
+ * It also demonstrates one way of passing state between Latent Commands by storing it in the Test.
+ * We need to declare the Test class manually, instead of using IMPLEMENT_SIMPLE_AUTOMATION_TEST,
+ * in order to include the state member variables. AgxAutomationCommon provide a helper class we
+ * can inherit from to cut down a bit on the boilerplate code required.
+ */
+
+struct FSimulateShortDurationState
+{
+	UAGX_RigidBodyComponent* RigidBody = nullptr;
+};
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FSpawnRigidBody, FSimulateShortDurationState&, State);
+
+bool FSpawnRigidBody::Update()
+{
+	if (!GEditor->IsPlayingSessionInEditor())
+	{
+		// We only want to create simulation objects during Play In Editor sessions, so that they
+		// are removed when we tear down the Play In Editor session so that no state leak between
+		// the tests.
+		//
+		// It is the responsibility of the test to ensure that a FStartPIECommand and a
+		// FWaitUntilPIEUpCommand has been scheduled before this Command. If no Play In Editor
+		// session is running then we don't create any Rigid Body and move immediately to the
+		// next Latent Command in the queue.
+		return true;
+	}
+
+	UE_LOG(LogAGX, Warning, TEXT("Creating Rigid Body"));
+	UWorld* World = GEditor->GetPIEWorldContext()->World();
+	AActor* NewActor = World->SpawnActor<AActor>(AActor::StaticClass());
+	if (NewActor == nullptr)
+	{
+		/// @todo Should we replace UE_LOG(, Error, ) with Test.TestNotNull or whatever it might be
+		/// called?
+		UE_LOG(LogAGX, Error, TEXT("Failed to spawn an empty actor."));
+		return true;
+	}
+
+	UAGX_RigidBodyComponent* Body = NewObject<UAGX_RigidBodyComponent>(NewActor, TEXT("Body"));
+	if (Body == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Failed to create a Rigid Body."));
+		return true;
+	}
+
+	NewActor->SetRootComponent(Body);
+	NewActor->AddInstanceComponent(Body);
+	Body->RegisterComponent();
+	State.RigidBody = Body;
+
+	return true;
+}
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FPrintBodyLocation, FSimulateShortDurationState&, State);
+
+bool FPrintBodyLocation::Update()
+{
+	UE_LOG(LogAGX, Warning, TEXT("Body location: %s"), *State.RigidBody->GetComponentLocation().ToString());
+	return true;
+}
+
+class FSimulateShortDurationTest final : public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FSimulateShortDurationTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FSimulateShortDurationTest"), TEXT("AGXUnreal.Demo.SimulateShortDuration"))
+	{
+	}
+
+protected:
+	bool RunTest(const FString& Parameters) override
+	{
+		using namespace AgxAutomationCommon;
+
+		UE_LOG(LogAGX, Warning, TEXT("\n\n\n\nRunning simulation step test."));
+
+		static const FString MapName {"/Game/Tests/Test_ArchiveImport.umap"};
+		ADD_LATENT_AUTOMATION_COMMAND(FLogWarningAgxCommand(TEXT("Test starting, loading map.")));
+		ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapName))
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FLogWarningAgxCommand(TEXT("Map loaded, starting Play In Editor session.")));
+		ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FLogWarningAgxCommand(TEXT("Waiting for Play In Editor session startup to complete.")));
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitUntilPIEUpCommand);
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FLogWarningAgxCommand(TEXT("Play In Editor session is up, creating Rigid Body.")));
+		ADD_LATENT_AUTOMATION_COMMAND(FSpawnRigidBody(State));
+		ADD_LATENT_AUTOMATION_COMMAND(FPrintBodyLocation(State));
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FLogWarningAgxCommand(TEXT("Rigid Body created, simulating until t=5s.")));
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitUntilSimTime(5.0f, 100));
+		ADD_LATENT_AUTOMATION_COMMAND(FPrintBodyLocation(State));
+		ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
+		ADD_LATENT_AUTOMATION_COMMAND(FLogWarningAgxCommand(TEXT("Play In Editor shutting down.")));
+		ADD_LATENT_AUTOMATION_COMMAND(FWaitUntilPIEDownCommand);
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FLogWarningAgxCommand(TEXT("Play In Editor down, test terminating.")));
+
+		return true;
+	}
+
+private:
+	FSimulateShortDurationState State;
+};
+
+namespace
+{
+	// Create an instance of the test so that it can register itself.
+	// That least that's what I assume why we do this. Not entirely sure that it is necessary.
+	FSimulateShortDurationTest SimulateShortDurationTest;
 }
 
 /// @todo Show state management with fully defined test and command classes, i.e., not using macros.
@@ -341,4 +484,7 @@ void FArchiveImporterToSingleAcgor_SingleSphereSpec::Define()
 		});
 	});
 }
+#endif
+
+// WITH_DEV_AUTOMATION_TESTS
 #endif

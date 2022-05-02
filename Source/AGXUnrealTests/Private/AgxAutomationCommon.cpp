@@ -4,14 +4,22 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_Simulation.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
+#include "Editor.h"
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"
 #include "HAL/FileManager.h"
+#include "Misc/FileHelper.h"
+#include "Misc/PackageName.h"
 #include "Misc/Paths.h"
+#include "Misc/SecureHash.h"
+
+// System includes.
+#include <cmath>
 
 UWorld* AgxAutomationCommon::GetTestWorld()
 {
@@ -75,6 +83,18 @@ UWorld* AgxAutomationCommon::GetTestWorld()
 	}
 	checkNoEntry();
 	return nullptr;
+}
+
+void AgxAutomationCommon::TestEqual(
+	FAutomationTestBase& Test, const TCHAR* What, double Actual, double Expected, double Tolerance)
+{
+	if (std::isinf(Actual) && std::isinf(Expected) &&
+		(std::signbit(Actual) != std::signbit(Expected)))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("Expected '%s' to be %f, but it was %f within tolerance %f."), What, Expected,
+			Actual, Tolerance));
+	}
 }
 
 void AgxAutomationCommon::TestEqual(
@@ -230,6 +250,39 @@ FString AgxAutomationCommon::GetTestSceneDirPath(const FString& SubDir)
 	}
 }
 
+bool AgxAutomationCommon::CheckMapMD5Checksum(
+	const FString& MapPath, const TCHAR* Expected, FAutomationTestBase& Test)
+{
+	const FString FilePath = FPaths::ConvertRelativePathToFull(
+		FPackageName::LongPackageNameToFilename(MapPath, FPackageName::GetMapPackageExtension()));
+	TArray<uint8> PackageBytes;
+	FFileHelper::LoadFileToArray(PackageBytes, *FilePath, FILEREAD_None);
+	// The documentation (and the code) for FFileHelper::LoadFileToArray says that it adds
+	// two bytes of padding to the TArray, but that appears to be a lie. Not doing -2 here
+	// and it seems to work. Not sure what's going on here.
+	// https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Misc/FFileHelper/LoadFileToArray/2/
+	FString MD5Sum = FMD5::HashBytes(PackageBytes.GetData(), PackageBytes.Num());
+	Test.TestEqual(TEXT("Map file MD5 checksum."), MD5Sum, Expected);
+	return MD5Sum == Expected;
+}
+
+void AgxAutomationCommon::CheckAssetMD5Checksum(
+	const FString& PackagePath, const TCHAR* Expected, FAutomationTestBase& Test)
+{
+	const FString FilePath =
+		FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(
+			PackagePath, FPackageName::GetAssetPackageExtension()));
+	TArray<uint8> PackageBytes;
+	FFileHelper::LoadFileToArray(PackageBytes, *FilePath, FILEREAD_None);
+	// The documentation (and the code) for FFileHelper::LoadFileToArray says that it adds
+	// two bytes of padding to the TArray, but that appears to be a lie. Not doing -2 here
+	// and it seems to work. Not sure what's going on here.
+	// https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Misc/FFileHelper/LoadFileToArray/2/
+	FString MD5Sum = FMD5::HashBytes(PackageBytes.GetData(), PackageBytes.Num());
+	Test.TestEqual(
+		TEXT("The asset file should have the expected MD5 checksum."), MD5Sum, Expected);
+}
+
 bool AgxAutomationCommon::DeleteImportDirectory(
 	const TCHAR* ArchiveName, const TArray<const TCHAR*>& ExpectedFileAndDirectoryNames)
 {
@@ -292,8 +345,8 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 	for (const FString& Entry : DirectoryContents)
 	{
 		const FString Name = FPaths::GetCleanFilename(Entry);
-		if (!ExpectedFileAndDirectoryNames.ContainsByPredicate([&Name](const TCHAR* E)
-															   { return Name == E; }))
+		if (!ExpectedFileAndDirectoryNames.ContainsByPredicate(
+				[&Name](const TCHAR* E) { return Name == E; }))
 		{
 			UE_LOG(
 				LogAGX, Error,
@@ -372,24 +425,6 @@ TArray<FString> AgxAutomationCommon::GetReferencedStaticMeshAssets(
 	return Assets;
 }
 
-bool AgxAutomationCommon::FLogWarningAgxCommand::Update()
-{
-	UE_LOG(LogAGX, Warning, TEXT("%s"), *Message);
-	return true;
-}
-
-bool AgxAutomationCommon::FLogErrorAgxCommand::Update()
-{
-	UE_LOG(LogAGX, Error, TEXT("%s"), *Message);
-	return true;
-}
-
-bool AgxAutomationCommon::FWaitNTicks::Update()
-{
-	--NumTicks;
-	return NumTicks <= 0;
-}
-
 bool AgxAutomationCommon::FCheckWorldsCommand::Update()
 {
 	UWorld* TestWorld = AgxAutomationCommon::GetTestWorld();
@@ -402,9 +437,53 @@ bool AgxAutomationCommon::FCheckWorldsCommand::Update()
 	return true;
 }
 
-bool AgxAutomationCommon::FTickUntilCommand::Update()
+bool AgxAutomationCommon::FLogWarningAgxCommand::Update()
+{
+	UE_LOG(LogAGX, Warning, TEXT("%s"), *Message);
+	return true;
+}
+
+bool AgxAutomationCommon::FLogErrorAgxCommand::Update()
+{
+	UE_LOG(LogAGX, Error, TEXT("%s"), *Message);
+	return true;
+}
+
+bool AgxAutomationCommon::FWaitUntilPIEUpCommand::Update()
+{
+	UE_LOG(LogAGX, Warning, TEXT("Polling for PIE up."));
+	return GEditor->IsPlayingSessionInEditor();
+}
+
+bool AgxAutomationCommon::FWaitUntilPIEDownCommand::Update()
+{
+	UE_LOG(LogAGX, Warning, TEXT("Polling for PIE down."));
+	return !GEditor->IsPlayingSessionInEditor();
+}
+
+bool AgxAutomationCommon::FWaitNTicksCommand::Update()
+{
+	--NumTicks;
+	return NumTicks <= 0;
+}
+
+bool AgxAutomationCommon::FWaitUntilTimeCommand::Update()
 {
 	return World->GetTimeSeconds() >= Time;
+}
+
+bool AgxAutomationCommon::FWaitUntilSimTime::Update()
+{
+	--MaxTicks;
+	const UWorld* World = GEditor->GetPIEWorldContext()->World();
+	const UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(World);
+	const float CurrentTime = Simulation->GetTimeStamp();
+	const float UnrealTime = World->GetTimeSeconds();
+	UE_LOG(
+		LogAGX, Warning,
+		TEXT("Polling for Simulation time: %f/%f. Ticks remaining: %d. Unreal time: %f"),
+		CurrentTime, Time, MaxTicks, UnrealTime);
+	return CurrentTime >= Time || MaxTicks <= 0;
 }
 
 AgxAutomationCommon::FWaitWorldDuration::FWaitWorldDuration(UWorld*& InWorld, float InDuration)
@@ -417,6 +496,8 @@ bool AgxAutomationCommon::FWaitWorldDuration::Update()
 {
 	if (EndTime < 0.0f)
 	{
+		// EndTime is only ever negative after construction, so we get here only on the very first
+		// call to Update.
 		EndTime = World->GetTimeSeconds() + Duration;
 	}
 	return World->GetTimeSeconds() >= EndTime;

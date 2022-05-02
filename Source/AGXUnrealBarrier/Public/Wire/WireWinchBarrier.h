@@ -3,12 +3,35 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_RealInterval.h"
 #include "NativeBarrier.h"
 #include "Utilities/DoubleInterval.h" /// @todo Use Unreal Engine double interval once they have it.
 
 class FRigidBodyBarrier;
 class FWireBarrier;
 struct FWireWinchRef;
+
+/*
+ * The goal here is to tell the compiler that there is a template instantiation of
+ * FNativeBarrier<FWireWinchRef> somewhere, without actually triggering an instantiation here and
+ * now. The instantiation is instead done explicitly in the .cpp file. We do this because
+ * FWireWinchRef is only declared, not defined, here in the header file since the type contains
+ * AGX Dynamics types that can't be named outside the AGXUnrealBarrier module, and this header file
+ * is included in other modules.
+ *
+ * We need to separate the Linux and Windows declarations because Linux must have the visibility
+ * decorator here for the inherited member functions to be visible to users of FWireWinchBarrier,
+ * while Visual Studio explicitly forbids it and instead require that the visibility decorator is on
+ * the instantiation in the .cpp file instead.
+ */
+#if PLATFORM_LINUX
+extern template class AGXUNREALBARRIER_API FNativeBarrier<FWireWinchRef>;
+#elif PLATFORM_WINDOWS
+extern template class FNativeBarrier<FWireWinchRef>;
+#else
+#pragma error("This platform is currently not supported.");
+#endif
+
 
 class AGXUNREALBARRIER_API FWireWinchBarrier : public FNativeBarrier<FWireWinchRef>
 {
@@ -45,46 +68,66 @@ public:
 	 */
 	FVector GetLocation() const;
 
-	/// Set the length of wire that is held inside the winch. This will create new wire, not move
-	/// free wire into the winch.
+	/*
+	 * Set the length of wire that is held inside the winch. This will create new wire, not move
+	 * free wire into the winch.
+	 */
 	void SetPulledInWireLength(double InPulledInLength);
 
-	/// The length of wire that the winch contains currently.
-	/// This will decrease during routing/initialization if Auto Feed is enabled.
+	/**
+	 * The length of wire that the winch contains currently.
+	 * This will decrease during routing/initialization if Auto Feed is enabled.
+	 */
 	double GetPulledInWireLength() const;
 
-	/// Decide if wire should be taken from the winch during routing, or if the routed wire is in
-	/// addition to the the initial pulled in length. Only used during initialization.
+
+	/**
+	 * Decide if wire should be taken from the winch during routing, or if the routed wire is in
+	 * addition to the the initial pulled in length. Only used during initialization.
+	 * @param bAutoFeed True to take from the winch, false to add wire in addition to the winch.
+	 */
 	void SetAutoFeed(bool bAutoFeed);
 
 	bool GetAutoFeed() const;
 
 	/// Maximum force to push or pull the wire.
-	FAGX_DoubleInterval GetForceRange() const;
+	FAGX_RealInterval GetForceRange() const;
 
-	/// Set the maximum forces that the winch may use to haul in or pay out wire.
-	/// The lower end of the range must be negative or zero and is the maximum force to haul in.
-	/// The upper end of the range must be positive or zero and is the maximum force to pay out.
-	void SetForceRange(const FAGX_DoubleInterval& InForceRange);
+	/**
+	 * Set the maximum forces that the winch may use to haul in or pay out wire.
+	 * The lower end of the range must be negative or zero and is the maximum force to haul in.
+	 * The upper end of the range must be positive or zero and is the maximum force to pay out.
+	 */
+	void SetForceRange(const FAGX_RealInterval& InForceRange);
+
+	void SetForceRange(double MinForce, double MaxForce);
 
 	/// The ability of the winch to slow down the wire when the brake is enabled.
-	FAGX_DoubleInterval GetBrakeForceRange() const;
+	FAGX_RealInterval GetBrakeForceRange() const;
 
-	void SetBrakeForceRange(const FAGX_DoubleInterval& InBrakeForceRange);
+	void SetBrakeForceRange(const FAGX_RealInterval& InBrakeForceRange);
 
-	/// The speed that the winch tries to haul in or pay out wire with.
-	/// Positive values is paying out.
-	/// Negative values is hauling in.
+	void SetBrakeForceRange(double MinForce, double MaxForce);
+
+	/**
+	 * The speed that the winch tries to haul in or pay out wire with.
+	 * Positive values is paying out.
+	 * Negative values is hauling in.
+	 */
 	double GetSpeed() const;
 
-	/// Set the speed that the winch tries to haul in or pay out wire with.
-	/// Positive values is paying out.
-	/// Negative values is hauling in.
+	/**
+	 * Set the speed that the winch tries to haul in or pay out wire with.
+	 * Positive values is paying out.
+	 * Negative values is hauling in.
+	 */
 	void SetSpeed(double InTargetSpeed);
 
-	/// The current speed of the winch motor.
-	/// Positive values is paying out.
-	/// Negative values is hauling in.
+	/**
+	 * The current speed of the winch motor.
+	 * Positive values is paying out.
+	 * Negative values is hauling in.
+	 */
 	double GetCurrentSpeed() const;
 
 	/// \return The force that the motor is currently applying.

@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
+#include "AGX_RealInterval.h"
 #include "Constraints/AGX_ConstraintEnums.h"
 
 // Unreal Engine includes.
@@ -70,8 +71,24 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 
 	double operator[](int32 Index) const
 	{
-		check(Index >= 0 && Index < NumGenericDofs);
-		return (&Translational_1)[Index];
+		switch (Index)
+		{
+			case 0:
+				return Translational_1;
+			case 1:
+				return Translational_2;
+			case 2:
+				return Translational_3;
+			case 3:
+				return Rotational_1;
+			case 4:
+				return Rotational_2;
+			case 5:
+				return Rotational_3;
+			default:
+				checkNoEntry();
+				return Translational_1; // Must return something, so arbitrarily pick a member.
+		}
 	}
 
 	double operator[](EGenericDofIndex Index) const
@@ -81,13 +98,70 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 
 	double& operator[](int32 Index)
 	{
-		check(Index >= 0 && Index < NumGenericDofs);
-		return (&Translational_1)[Index];
+		switch (Index)
+		{
+			case 0:
+				return Translational_1;
+			case 1:
+				return Translational_2;
+			case 2:
+				return Translational_3;
+			case 3:
+				return Rotational_1;
+			case 4:
+				return Rotational_2;
+			case 5:
+				return Rotational_3;
+			default:
+				checkNoEntry();
+				return Translational_1; // Must return something, so arbitrarily pick a member.
+		}
 	}
 
 	double& operator[](EGenericDofIndex Index)
 	{
 		return operator[](static_cast<int32>(Index));
+	}
+
+	void Set(EGenericDofIndex Index, double Value)
+	{
+		if (Index == EGenericDofIndex::AllDof)
+		{
+			SetAll(Value);
+		}
+		else
+		{
+			this->operator[](Index) = Value;
+		}
+	}
+
+	void SetAll(double Value)
+	{
+		if (Translational_1_IsEditable)
+		{
+			Translational_1 = Value;
+		}
+		if (Translational_2_IsEditable)
+		{
+			Translational_2 = Value;
+		}
+		if (Translational_3_IsEditable)
+		{
+			Translational_3 = Value;
+		}
+
+		if (Rotational_1_IsEditable)
+		{
+			Rotational_1 = Value;
+		}
+		if (Rotational_2_IsEditable)
+		{
+			Rotational_2 = Value;
+		}
+		if (Rotational_3_IsEditable)
+		{
+			Rotational_3 = Value;
+		}
 	}
 
 private:
@@ -111,7 +185,7 @@ private:
 };
 
 /**
- * A struct for a property that has one float range component per DOF (Degree of Freedom).
+ * A struct for a property that has one double range component per DOF (Degree Of Freedom).
  * Order indexes of DOFs below should match the order in the enum EGenericDofIndex.
  */
 USTRUCT()
@@ -122,35 +196,35 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Translational_1_IsEditable"))
-	FFloatInterval Translational_1;
+	FAGX_RealInterval Translational_1;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Translational_2_IsEditable"))
-	FFloatInterval Translational_2;
+	FAGX_RealInterval Translational_2;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Translational_3_IsEditable"))
-	FFloatInterval Translational_3;
+	FAGX_RealInterval Translational_3;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Rotational_1_IsEditable"))
-	FFloatInterval Rotational_1;
+	FAGX_RealInterval Rotational_1;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Rotational_2_IsEditable"))
-	FFloatInterval Rotational_2;
+	FAGX_RealInterval Rotational_2;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",
 		Meta = (EditCondition = "Rotational_3_IsEditable"))
-	FFloatInterval Rotational_3;
+	FAGX_RealInterval Rotational_3;
 
 	FAGX_ConstraintRangePropertyPerDof(
-		float DefaultMinValue = 0.0f, float DefaultMaxValue = 0.0f,
+		double DefaultMinValue = 0.0, double DefaultMaxValue = 0.0,
 		EDofFlag EditableDofs = EDofFlag::DOF_FLAG_ALL)
 		: Translational_1(DefaultMinValue, DefaultMaxValue)
 		, Translational_2(DefaultMinValue, DefaultMaxValue)
@@ -167,27 +241,106 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 	{
 	}
 
-	FFloatInterval& operator[](int32 Index)
+	FAGX_ConstraintRangePropertyPerDof(
+		FAGX_RealInterval DefaultInterval, EDofFlag EditableDofs = EDofFlag::DOF_FLAG_ALL)
+		: FAGX_ConstraintRangePropertyPerDof(DefaultInterval.Min, DefaultInterval.Max, EditableDofs)
 	{
-		check(Index >= 0 && Index < 6);
-		return (&Translational_1)[Index];
 	}
 
-	FFloatInterval& operator[](EGenericDofIndex Index)
+	FAGX_RealInterval& operator[](int32 Index)
+	{
+		switch (Index)
+		{
+			case 0:
+				return Translational_1;
+			case 1:
+				return Translational_2;
+			case 2:
+				return Translational_3;
+			case 3:
+				return Rotational_1;
+			case 4:
+				return Rotational_2;
+			case 5:
+				return Rotational_3;
+			default:
+				checkNoEntry();
+				return Translational_1; // Must return something, so arbitrarily pick a member.
+		}
+	}
+
+	FAGX_RealInterval& operator[](EGenericDofIndex Index)
 	{
 		return operator[](static_cast<int32>(Index));
 	};
 
-	FFloatInterval operator[](int32 Index) const
+	FAGX_RealInterval operator[](int32 Index) const
 	{
-		check(Index >= 0 && Index < 6);
-		return (&Translational_1)[Index];
+		switch (Index)
+		{
+			case 0:
+				return Translational_1;
+			case 1:
+				return Translational_2;
+			case 2:
+				return Translational_3;
+			case 3:
+				return Rotational_1;
+			case 4:
+				return Rotational_2;
+			case 5:
+				return Rotational_3;
+			default:
+				checkNoEntry();
+				return Translational_1; // Must return something, so arbitrarily pick a member.
+		}
 	}
 
-	FFloatInterval operator[](EGenericDofIndex Index) const
+	FAGX_RealInterval operator[](EGenericDofIndex Index) const
 	{
 		return operator[](static_cast<int32>(Index));
 	};
+
+	void Set(EGenericDofIndex Index, FAGX_RealInterval Interval)
+	{
+		if (Index == EGenericDofIndex::AllDof)
+		{
+			SetAll(Interval);
+		}
+		else
+		{
+			this->operator[](Index) = Interval;
+		}
+	}
+
+	void SetAll(FAGX_RealInterval Interval)
+	{
+		if (Translational_1_IsEditable)
+		{
+			Translational_1 = Interval;
+		}
+		if (Translational_2_IsEditable)
+		{
+			Translational_2 = Interval;
+		}
+		if (Translational_3_IsEditable)
+		{
+			Translational_3 = Interval;
+		}
+
+		if (Rotational_1_IsEditable)
+		{
+			Rotational_1 = Interval;
+		}
+		if (Rotational_2_IsEditable)
+		{
+			Rotational_2 = Interval;
+		}
+		if (Rotational_3_IsEditable)
+		{
+			Rotational_3 = Interval;
+		}
+	}
 
 private:
 	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)

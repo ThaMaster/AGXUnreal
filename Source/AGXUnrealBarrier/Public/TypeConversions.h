@@ -8,8 +8,9 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_MotionControl.h"
 #include "AGX_LogCategory.h"
-#include "Constraints/AGX_Constraint2DOFFreeDOF.h"
+#include "AGX_RealInterval.h"
 #include "RigidBodyBarrier.h"
+#include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/DoubleInterval.h"
 #include "Wire/AGX_WireEnums.h"
@@ -42,14 +43,15 @@
 
 // These functions assume that agx::Real and float are different types.
 // They also assume that agx::Real has higher (or equal) precision than float.
+// We support both float and double on the Unreal Engine side. Function name
+// suffixes are used where necessary to disambiguate between return types.
 //
 // Naming conventions:
-//
 //
 // Convert
 //
 // The default conversion function is named Convert. It is overloaded on the parameter type and
-// detects if it is an AGX Dynamics type of an Unreal Engine type. double is considered an AGX
+// detects if it is an AGX Dynamics type or an Unreal Engine type. double is considered an AGX
 // Dynamics type and float an Unreal Engine type. It converts to the other. The conversion is just a
 // cast, a plain Convert will never do any unit translations. It can do range checks, which when
 // failed will result in an error message being printed and the value truncated. Composite types,
@@ -61,7 +63,7 @@
 // Acts like Convert except that AGX Dynamics types are multiplied by 100 before being converted to
 // the corresponding Unreal Engine type, and Unreal Engine types are divided by 100 after being
 // converted to the AGX Dynamics type. The unit conversion is always performed using the AGX
-// Dynamics types.
+// Dynamics types because we assume that agx::Real is at least as precise as float.
 //
 //
 // ConvertAngle
@@ -84,16 +86,27 @@
 // conversion but where the default conversion would produce a double, or double composite type, but
 // we need a float, or a float composite.
 
-namespace
-{
-	template <typename T>
-	constexpr T AGX_TO_UNREAL_DISTANCE_FACTOR = T(100.0);
+template <typename T>
+constexpr T AGX_TO_UNREAL_DISTANCE_FACTOR = T(100.0);
 
-	template <typename T>
-	constexpr T UNREAL_TO_AGX_DISTANCE_FACTOR = T(0.01);
-}
+template <typename T>
+constexpr T UNREAL_TO_AGX_DISTANCE_FACTOR = T(0.01);
 
-// Scalars.
+//
+// Scalars. AGX Dynamics to Unreal Engine.
+//
+
+static_assert(
+	std::numeric_limits<agx::Real>::max() >= std::numeric_limits<float>::max(),
+	"Expecting agx::Real to hold all values that float can hold.");
+
+static_assert(
+	std::numeric_limits<agx::Int>::max() >= std::numeric_limits<int32>::max(),
+	"Expecting agx::Int to hold all positive values that int32 can hold.");
+
+static_assert(
+	std::numeric_limits<std::size_t>::max() >= std::numeric_limits<int32>::max(),
+	"Expecting std::size_t to hold all positive values that int32 can hold.");
 
 template <typename TU>
 inline TU ConvertToUnreal(agx::Real D)
@@ -126,6 +139,37 @@ inline TU ConvertAngleToUnreal(agx::Real A)
 	return static_cast<TU>(FMath::RadiansToDegrees(A));
 }
 
+inline int32 Convert(agx::Int I)
+{
+	static constexpr agx::Int MaxAllowed = static_cast<agx::Int>(std::numeric_limits<int32>::max());
+	if (I > MaxAllowed)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Too large agx::Int being converted to int32, value is truncated."));
+		I = MaxAllowed;
+	}
+	return static_cast<int32>(I);
+}
+
+inline int32 Convert(std::size_t S)
+{
+	static constexpr std::size_t MaxAllowed =
+		static_cast<std::size_t>(std::numeric_limits<int32>::max());
+	if (S > MaxAllowed)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Too large size_t being converted to int32, value is truncated."));
+		S = MaxAllowed;
+	}
+	return static_cast<int32>(S);
+}
+
+//
+// Scalars. Unreal Engine to AGX Dynamics.
+//
+
 template <typename TU>
 inline agx::Real ConvertToAGX(TU D)
 {
@@ -157,46 +201,14 @@ inline agx::Real ConvertAngleToAGX(TU A)
 	return FMath::DegreesToRadians(static_cast<agx::Real>(A));
 }
 
-static_assert(
-	std::numeric_limits<agx::Int>::max() >= std::numeric_limits<int32>::max(),
-	"Expecting agx::Int to hold all positive values that int32 can hold.");
-
-inline int32 Convert(agx::Int I)
-{
-	agx::Int MaxAllowed = static_cast<agx::Int>(std::numeric_limits<int32>::max());
-	if (I > MaxAllowed)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Too large agx::Int being converted to int32, value is truncated."));
-		I = MaxAllowed;
-	}
-	return static_cast<int32>(I);
-}
-
-static_assert(
-	std::numeric_limits<std::size_t>::max() >= std::numeric_limits<int32>::max(),
-	"Expecting std::size_t to hold all positive values that int32 can hold.");
-
-inline int32 Convert(std::size_t S)
-{
-	const std::size_t MaxAllowed = static_cast<std::size_t>(std::numeric_limits<int32>::max());
-	if (S > MaxAllowed)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Too large size_t being converted to int32, value is truncated."));
-		S = MaxAllowed;
-	}
-	return static_cast<int32>(S);
-}
-
 inline agx::Int Convert(int32 I)
 {
 	return static_cast<agx::Int>(I);
 }
 
-// Two-dimensional vectors.
+//
+// Two-dimensional vectors. AGX Dynamics to Unreal Engine.
+//
 
 inline FVector2D Convert(const agx::Vec2& V)
 {
@@ -215,6 +227,10 @@ inline FVector2D ConvertDistance(const agx::Vec2& V)
 // No ConvertVector for two-dimensional vectors because there is no handedness here, so it would be
 // identical to ConvertDistance.
 
+//
+// Two-dimensional vectors. Unreal Engine to AGX Dynamics.
+//
+
 inline agx::Vec2 Convert(const FVector2D& V)
 {
 	return agx::Vec2(ConvertToAGX(V.X), ConvertToAGX(V.Y));
@@ -225,11 +241,13 @@ inline agx::Vec2 ConvertDistance(const FVector2D& V)
 	return agx::Vec2(ConvertDistanceToAGX(V.X), ConvertDistanceToAGX(V.Y));
 }
 
-// Three-dimensional vectors.
+//
+// Three-dimensional vectors. AGX Dynamics to Unreal Engine.
+//
 
 /*
- * There are a few different cases here, characterized by whether or not we convert cm <> m and
- * whether or not we flip the Y axis, since Unreal Engine is left-handed and AGX Dynamics is
+ * There are a few different cases here, characterized by whether we convert cm <> m and
+ * whether we flip the Y axis, since Unreal Engine is left-handed and AGX Dynamics is
  * right-handed.
  *
  *             Convert cm <> m
@@ -323,10 +341,14 @@ inline FVector ConvertTorque(const agx::Vec3& V)
 	 * Following a similar logic as ConvertAngularVelocity for the axis directions, but no unit
 	 * conversion since we use Nm in both AGX Dynamics and Unreal Engine.
 	 */
-	return {
-		ConvertToUnreal<decltype(FVector::X)>(V.x()), -ConvertToUnreal<decltype(FVector::X)>(V.y()),
-		-ConvertToUnreal<decltype(FVector::X)>(V.z())};
+	return {ConvertToUnreal<decltype(FVector::X)>(V.x()),
+			-ConvertToUnreal<decltype(FVector::X)>(V.y()),
+			-ConvertToUnreal<decltype(FVector::X)>(V.z())};
 }
+
+//
+// Three-dimensional vectors. Unreal Engine to AGX Dynamics.
+//
 
 inline agx::Vec3 Convert(const FVector& V)
 {
@@ -375,7 +397,9 @@ inline agx::Vec3 ConvertTorque(const FVector& V)
 	return {ConvertToAGX(V.X), -ConvertToAGX(V.Y), -ConvertToAGX(V.Z)};
 }
 
-// Four-dimensional vectors.
+//
+// Four-dimensional vectors. AGX Dynamics to Unreal Engine.
+//
 
 inline FVector4 Convert(const agx::Vec4& V)
 {
@@ -395,6 +419,10 @@ inline FVector4 Convert(const agx::Vec4f& V)
 		ConvertToUnreal<decltype(FVector4::X)>(V.w()));
 }
 
+//
+// Four-dimensional vectors. Unreal Engine to AGX Dynamics.
+//
+
 inline agx::Vec4 Convert(const FVector4& V)
 {
 	return agx::Vec4(
@@ -407,75 +435,58 @@ inline agx::Vec4f ConvertFloat(const FVector4& V)
 	return agx::Vec4f((float) V.X, (float) V.Y, (float) V.Z, (float) V.W);
 }
 
-// Interval/Range.
+//
+// Interval/Range. AGX Dynamics to Unreal Engine.
+//
+// We've had some issues with the Interval classes built into Unreal Engine. Partly because they
+// were float-only in Unreal Engine 4 (not sure about 5 yet), party because Unreal Engine 4.27
+// crashes whenever an FFloatInterval Property containing infinity is displayed in a Details panel,
+// and partly because they don't support scientific notation in the Details panel.
+//
+// Because of these we introduced FAGX_DoubleInterval and then FAGX_RealInterval.
+//
 
-inline FAGX_DoubleInterval Convert(const agx::RangeReal& R)
+inline FAGX_RealInterval Convert(const agx::RangeReal& R)
 {
-	return FAGX_DoubleInterval {R.lower(), R.upper()};
+	return FAGX_RealInterval {R.lower(), R.upper()};
 }
 
-inline FFloatInterval ConvertFloat(const agx::RangeReal& R)
+inline FAGX_RealInterval ConvertDistance(const agx::RangeReal& R)
 {
-	return FFloatInterval(static_cast<float>(R.lower()), static_cast<float>(R.upper()));
+	return FAGX_RealInterval {ConvertDistanceToUnreal<double>(R.lower()),
+							  ConvertDistanceToUnreal<double>(R.upper())};
 }
 
-inline FAGX_DoubleInterval ConvertDistance(const agx::RangeReal& R)
+inline FAGX_RealInterval ConvertAngle(const agx::RangeReal& R)
 {
-	return FAGX_DoubleInterval {
-		ConvertDistanceToUnreal<double>(R.lower()), ConvertDistanceToUnreal<double>(R.upper())};
+	return FAGX_RealInterval {ConvertAngleToUnreal<double>(R.lower()),
+							  ConvertAngleToUnreal<double>(R.upper())};
 }
 
-inline FFloatInterval ConvertDistanceFloat(const agx::RangeReal& R)
-{
-	return FFloatInterval(
-		ConvertDistanceToUnreal<float>(R.lower()), ConvertDistanceToUnreal<float>(R.upper()));
-}
+//
+// Interval/Range. Unreal Engine to AGX Dynamics.
+//
 
-inline FAGX_DoubleInterval ConvertAngle(const agx::RangeReal& R)
-{
-	return FAGX_DoubleInterval {
-		ConvertAngleToUnreal<double>(R.lower()), ConvertAngleToUnreal<double>(R.upper())};
-}
-
-inline FFloatInterval ConvertAngleFloat(const agx::RangeReal& R)
-{
-	return FFloatInterval(
-		ConvertAngleToUnreal<float>(R.lower()), ConvertAngleToUnreal<float>(R.upper()));
-}
-
-inline agx::RangeReal Convert(const FFloatInterval& I)
-{
-	return agx::RangeReal(static_cast<agx::Real>(I.Min), static_cast<agx::Real>(I.Max));
-}
-
-inline agx::RangeReal Convert(const FAGX_DoubleInterval& I)
+inline agx::RangeReal Convert(const FAGX_RealInterval& I)
 {
 	return agx::RangeReal(I.Min, I.Max);
 }
 
-inline agx::RangeReal ConvertDistance(const FFloatInterval& I)
+inline agx::RangeReal ConvertDistance(const FAGX_RealInterval& I)
 {
-	return agx::RangeReal(ConvertDistanceToAGX<float>(I.Min), ConvertDistanceToAGX<float>(I.Max));
+	return agx::RangeReal(ConvertDistanceToAGX(I.Min), ConvertDistanceToAGX(I.Max));
 }
 
-inline agx::RangeReal ConvertDistance(const FAGX_DoubleInterval& I)
-{
-	return agx::RangeReal(ConvertDistanceToAGX<double>(I.Min), ConvertDistanceToAGX<double>(I.Max));
-}
-
-inline agx::RangeReal ConvertAngle(const FAGX_DoubleInterval& I)
+inline agx::RangeReal ConvertAngle(const FAGX_RealInterval& I)
 {
 	return agx::RangeReal(ConvertAngleToAGX(I.Min), ConvertAngleToAGX(I.Max));
 }
 
-inline agx::RangeReal ConvertAngle(const FFloatInterval& I)
-{
-	return agx::RangeReal(ConvertAngleToAGX<agx::Real>(I.Min), ConvertAngleToAGX<agx::Real>(I.Max));
-}
-
-// TwoVectors/Line.
+//
+// TwoVectors/Line. Unreal Engine to AGX Dynamics
 // TwoVectors may represent other things as well. If that's the case then we'll
 // need to do something else.
+//
 
 inline agx::Line Convert(const FTwoVectors& Vs)
 {
@@ -492,7 +503,9 @@ inline agx::Line ConvertDisplacement(const FTwoVectors& Vs)
 	return {ConvertDisplacement(Vs.v1), ConvertDisplacement(Vs.v2)};
 }
 
+//
 // Quaternions.
+//
 
 inline FQuat Convert(const agx::Quat& V)
 {
@@ -508,7 +521,9 @@ inline agx::Quat Convert(const FQuat& V)
 		ConvertToAGX<decltype(FQuat::X)>(V.Z), -ConvertToAGX<decltype(FQuat::X)>(V.W));
 }
 
+//
 // Text.
+//
 
 inline FString Convert(const agx::String& StringAGX)
 {
@@ -517,9 +532,11 @@ inline FString Convert(const agx::String& StringAGX)
 
 inline FString Convert(const agx::Name& NameAGX)
 {
-	// For some reason agx::Name seems to sometimes give runtime crashes when copied. Therefore,
-	// agx::Name.c_str() is used, and copying the type in general should be avoided. The underlying
-	// reason for this is not yet known.
+	// Due to different memory allocators it is not safe to copy an agx::Name between AGX Dynamics
+	// and Unreal Engine shared libraries, or to move ownership of the underlying memory buffer. By
+	// passing the return value of c_str() to the FString constructor we create a copy of the
+	// characters within the Unreal Engine shared library that is owned by that shared library,
+	// and the AGX Dynamics agx::Name retain ownership of the old memory buffer.
 	return FString(NameAGX.c_str());
 }
 
@@ -532,6 +549,10 @@ inline agx::Name Convert(const FName& NameUnreal)
 {
 	return agx::Name(TCHAR_TO_UTF8(*(NameUnreal.ToString())));
 }
+
+//
+// [GU]uid
+//
 
 inline FGuid Convert(const agx::Uuid& Uuid)
 {
@@ -557,7 +578,9 @@ inline agx::Uuid Convert(const FGuid& Guid)
 	return Uuid;
 }
 
+//
 // Enumerations.
+//
 
 inline agx::RigidBody::MotionControl Convert(EAGX_MotionControl V)
 {

@@ -6,6 +6,8 @@
 #include "Contacts/ShapeContactEntity.h"
 #include "Contacts/ContactPointEntity.h"
 
+#include "AGXRefs.h"
+
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/RigidBody.h>

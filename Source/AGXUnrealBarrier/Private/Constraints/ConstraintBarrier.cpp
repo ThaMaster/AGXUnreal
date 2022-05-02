@@ -148,12 +148,12 @@ void FConstraintBarrier::GetForceRange(double* Min, double* Max, int32 Dof) cons
 		*Max = Range.upper();
 }
 
-FFloatInterval FConstraintBarrier::GetForceRange(int32 Dof) const
+FAGX_RealInterval FConstraintBarrier::GetForceRange(int32 Dof) const
 {
 	check(HasNative());
 	agx::RangeReal Range = NativeRef->Native->getForceRange(Dof);
 
-	return FFloatInterval(static_cast<float>(Range.lower()), static_cast<float>(Range.upper()));
+	return FAGX_RealInterval(Range.lower(), Range.upper());
 }
 
 void FConstraintBarrier::SetEnableComputeForces(bool bEnable)

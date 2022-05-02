@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_RealInterval.h"
+
 // Unreal Engine includes.
 #include "Math/Interval.h"
 
@@ -31,8 +34,8 @@ public:
 	void SetSpookDamping(double SpookDamping);
 	double GetSpookDamping() const;
 
-	void SetForceRange(FFloatInterval ForceRange);
-	FFloatInterval GetForceRange() const;
+	void SetForceRange(FAGX_RealInterval ForceRange);
+	FAGX_RealInterval GetForceRange() const;
 
 	double GetForce() const;
 
@@ -92,11 +95,11 @@ class AGXUNREALBARRIER_API FRangeControllerBarrier : public FConstraintControlle
 public:
 	FRangeControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
 
-	void SetRangeTranslational(FFloatInterval Range);
-	FFloatInterval GetRangeTranslational() const;
+	void SetRangeTranslational(FAGX_RealInterval Range);
+	FAGX_RealInterval GetRangeTranslational() const;
 
-	void SetRangeRotational(FFloatInterval Range);
-	FFloatInterval GetRangeRotational() const;
+	void SetRangeRotational(FAGX_RealInterval Range);
+	FAGX_RealInterval GetRangeRotational() const;
 };
 
 class AGXUNREALBARRIER_API FScrewControllerBarrier : public FConstraintControllerBarrier

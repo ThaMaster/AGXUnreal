@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_NativeOwner.h"
-#include "Utilities/DoubleInterval.h"
+#include "AGX_RealInterval.h"
 #include "AGX_RigidBodyReference.h"
 #include "Wire/WireWinchBarrier.h"
 
@@ -128,7 +128,7 @@ public:
 	 * the motor is disabled the Native's motor force range is instead set to zero.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
-	FAGX_DoubleInterval MotorForceRange = {
+	FAGX_RealInterval MotorForceRange {
 		-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()};
 
 	/**
@@ -147,7 +147,7 @@ public:
 	 * It's important that the lower value is less than zero and the upper larger than zero.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
-	FAGX_DoubleInterval BrakeForceRange = {
+	FAGX_RealInterval BrakeForceRange {
 		-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()};
 };
 
@@ -204,12 +204,12 @@ public:
 	void SetTargetSpeed(double InTargetSpeed);
 	double GetTargetSpeed() const;
 
-	void SetMotorForceRange(const FAGX_DoubleInterval& InForceRange);
+	void SetMotorForceRange(const FAGX_RealInterval& InForceRange);
 	void SetMotorForceRange(double InMin, double InMax);
 	void SetMotorForceRangeMin(double InMin);
 	void SetMotorForceRangeMax(double InMax);
 
-	FAGX_DoubleInterval GetMotorForceRange() const;
+	FAGX_RealInterval GetMotorForceRange() const;
 	double GetMotorForceRangeMin() const;
 	double GetMotorForceRangeMax() const;
 
@@ -218,12 +218,12 @@ public:
 	void SetBrakeEnabled(bool bEnable);
 	bool IsBrakeEnabled() const;
 
-	void SetBrakeForceRange(const FAGX_DoubleInterval& InBrakeForceRange);
+	void SetBrakeForceRange(const FAGX_RealInterval& InBrakeForceRange);
 	void SetBrakeForceRange(double InMin, double InMax);
 	void SetBrakeForceRangeMin(double InMin);
 	void SetBrakeForceRangeMax(double InMax);
 
-	FAGX_DoubleInterval GetBrakeForceRange() const;
+	FAGX_RealInterval GetBrakeForceRange() const;
 	double GetBrakeForceRangeMin() const;
 	double GetBrakeForceRangeMax() const;
 
