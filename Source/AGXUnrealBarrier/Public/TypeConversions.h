@@ -95,6 +95,16 @@ constexpr T UNREAL_TO_AGX_DISTANCE_FACTOR = T(0.01);
 //
 // Scalars. AGX Dynamics to Unreal Engine.
 //
+// We provide untyped (not distance, angle, etc) scalar conversion functions
+// because the naive Unreal=float AGX=double isn't true since Unreal Engine 5.
+// 'float Convert(double)' and 'double Convert(float)' would be dangerous
+// because in some circumstances, when a double is passed from Unreal Engine to
+// AGX Dynamics, that could lead to a double -> float -> double round-trip
+// through implicit type conversions. We therefore provide templated
+// ConvertToUnreal and ConvertToAGX functions. The templating control the Unreal
+// type and the AGX type is always agx::Real. So for ConvertToAGX the parameter
+// is templated and for ConvertToUnreal the return value is templated.
+//
 
 static_assert(
 	std::numeric_limits<agx::Real>::max() >= std::numeric_limits<float>::max(),
