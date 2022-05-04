@@ -150,8 +150,33 @@ void UAGX_ConstraintComponent::PostInitProperties()
 	//
 	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
 	// but there will always be an outer chain. This worry may be unfounded.
-	BodyAttachment1.RigidBody.OwningActor = GetTypedOuter<AActor>();
-	BodyAttachment2.RigidBody.OwningActor = GetTypedOuter<AActor>();
+
+	AActor* Owner = GetTypedOuter<AActor>();
+	if (Owner)
+	{
+		if (Owner->IsChildActor())
+		{
+			// This is a workaround for the case where are part of a child Actor. If we are part
+			// of a Blueprint instance, then the ChildActor does not behave the same as a regular
+			// Blueprint instance Actor in that it will be destroyed shortly after this code runs.
+			// This means that the RigidBodyReference's OwningActor will be invalid or nullptr at
+			// the time of visualizing it, or even creating a native for it in some cases.
+			// Therefore, we set the OwningActor as the owner of the child Actor containing us, and
+			// combine this with 'bSearchChildActors' so that the RigidBodyReference will search
+			// among child Actors from the child Actor owner.
+			// This is a workaround, and better solutions may exists, though I have not found any.
+			BodyAttachment1.RigidBody.OwningActor = Owner->GetParentActor();
+			BodyAttachment2.RigidBody.OwningActor = Owner->GetParentActor();
+			BodyAttachment1.RigidBody.bSearchChildActors = true;
+			BodyAttachment2.RigidBody.bSearchChildActors = true;
+		}
+		else
+		{
+			BodyAttachment1.RigidBody.OwningActor = Owner;
+			BodyAttachment2.RigidBody.OwningActor = Owner;
+		}
+	}
+	
 	BodyAttachment1.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 	BodyAttachment2.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 
