@@ -162,7 +162,8 @@ void UAGX_Simulation::Add(UAGX_ShapeMaterialInstance& Shape)
 			LogAGX, Error,
 			TEXT("Tried to add Shape Material '%s' to Simulation but FSimulationBarrier::Add "
 				 "returned false. The Log category AGXDynamicsLog may contain more information "
-				 "about the failure."));
+				 "about the failure."),
+			*Shape.GetName());
 	}
 }
 
