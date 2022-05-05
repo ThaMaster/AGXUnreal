@@ -234,7 +234,8 @@ void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
 			LogAGX, Error,
 			TEXT("Tried to remove Shape Material '%s' from Simulation but "
 				 "FSimulationBarrier::Remove returned false. The Log category AGXDynamicsLog may "
-				 "contain more information about the failure."));
+				 "contain more information about the failure."),
+			*Shape.GetName());
 	}
 }
 
@@ -294,7 +295,8 @@ void UAGX_Simulation::Register(UAGX_ContactMaterialInstance& Material)
 				LogAGX, Error,
 				TEXT("Tried to add Contact Material '%s' to Simulation but FSimulationBarrier::Add "
 					 "returned false. The Log category AGXDynamicsLog may contain more information "
-					 "about the failure."));
+					 "about the failure."),
+				*Material.GetName());
 		}
 	}
 }
