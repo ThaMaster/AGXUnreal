@@ -84,7 +84,7 @@ public class AGXUnreal : ModuleRules
 			if (Line.Contains("\"EngineVersion\": "))
 			{
 				ToWrite = String.Format(
-					"\t\"EngineVersion\": \"{0}.{1}.0\"",
+					"\t\"EngineVersion\": \"{0}.{1}.0\",",
 					Version.MajorVersion, Version.MinorVersion);
 			}
 			else
