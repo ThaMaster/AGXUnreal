@@ -68,7 +68,6 @@ public class AGXUnreal : ModuleRules
 			return;
 		}
 
-		List<string> NewUPluginContents = new List<string>();
 		BuildVersion Version;
 		if (!BuildVersion.TryRead(BuildVersion.GetDefaultFileName(), out Version))
 		{
@@ -78,6 +77,7 @@ public class AGXUnreal : ModuleRules
 			return;
 		}
 
+		List<string> NewUPluginContents = new List<string>();
 		foreach (string Line in File.ReadLines(UPluginPath))
 		{
 			string ToWrite;
