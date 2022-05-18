@@ -21,7 +21,7 @@
  *
  * For properties directly on the UObject Member and Property will be the same.
  *
- * Not that for nesting deeper than two levels these doesn't directly correspond to the Member and
+ * Note that for nesting deeper than two levels these doesn't directly correspond to the Member and
  * Property parameters passed to PostEditPropertyChanged. They are the first and last properties of
  * a nesting chain while here we store the first and second properties.
  *
