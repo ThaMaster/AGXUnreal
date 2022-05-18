@@ -29,6 +29,11 @@
  * be "RangeController" and Property would be "Range". The same callback would be called for Min and
  * Max, the other member of Range.
  *
+ * The objects at the second level are typically small, such as vectors or ranges, so it is OK to
+ * update them in whole. Some restructure of the UpropertyDispatcher will be required if we want
+ * to use it for more granular callbacks. Most such cases can be handled directly in the Property
+ * Changed callback, without going throught this Property Dispatcher.
+ *
  * For immediate member structs that you want to handle with a single callback register a callback
  * on the Member name only and do not register any callback for the nested properties. This is
  * useful for Members that are e.g. a FVector where the (Member, Property) pair would be e.g.
