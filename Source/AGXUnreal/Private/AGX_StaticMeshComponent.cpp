@@ -6,7 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "AGX_NativeOwnerInstanceData.h"
-#include "AGX_UpropertyDispatcher.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
 #include "Materials/AGX_ShapeMaterialBase.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
@@ -229,7 +229,7 @@ void UAGX_StaticMeshComponent::OnCreatePhysicsState()
 void UAGX_StaticMeshComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
-	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
@@ -274,7 +274,7 @@ void UAGX_StaticMeshComponent::PostInitProperties()
 
 void UAGX_StaticMeshComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to

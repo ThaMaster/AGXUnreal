@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "AGX_UpropertyDispatcher.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ShapeUtilities.h"
 
@@ -252,7 +252,7 @@ void UAGX_CylinderShapeComponent::InitPropertyDispatcher()
 	// Cannot use the base class Property Dispatcher because there are name collisions for UProperty
 	// names, for example Radius is in both Sphere and Cylinder.
 
-	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
@@ -280,7 +280,7 @@ void UAGX_CylinderShapeComponent::PostEditChangeChainProperty(
 {
 	// Trigger Cylinder callbacks. Shape callbacks are handled by the base class through a separate
 	// Property Dispatcher instance.
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to

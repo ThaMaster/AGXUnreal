@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "AGX_UpropertyDispatcher.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ShapeUtilities.h"
 
@@ -223,7 +223,7 @@ void UAGX_CapsuleShapeComponent::PostInitProperties()
 
 	// Cannot use the UAGX_ShapeComponent Property Dispatcher because there are name collisions for
 	// Shape-specific UProperty names, for example Radius is in both Sphere and Cylinder.
-	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
@@ -241,7 +241,7 @@ void UAGX_CapsuleShapeComponent::PostInitProperties()
 void UAGX_CapsuleShapeComponent::PostEditChangeChainProperty(
 	struct FPropertyChangedChainEvent& Event)
 {
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event, this);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to

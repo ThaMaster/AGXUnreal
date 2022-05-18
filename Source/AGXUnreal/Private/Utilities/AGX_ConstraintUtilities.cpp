@@ -3,7 +3,7 @@
 #include "Utilities/AGX_ConstraintUtilities.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_UpropertyDispatcher.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
@@ -129,7 +129,7 @@ void FAGX_ConstraintUtilities::StoreTargetSpeedController(
 #if WITH_EDITOR
 
 void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+	FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 	FAGX_ConstraintController* Controller, const FName& Member)
 {
 	using ThisClass = UAGX_ConstraintComponent;
@@ -152,7 +152,7 @@ void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks(
 }
 
 void FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+	FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 	FAGX_ConstraintElectricMotorController* Controller, const FName& Member)
 {
 	AddControllerPropertyCallbacks(PropertyDispatcher, Controller, Member);
@@ -173,7 +173,7 @@ void FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks(
 }
 
 void FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+	FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 	FAGX_ConstraintFrictionController* Controller, const FName& Member)
 {
 	AddControllerPropertyCallbacks(PropertyDispatcher, Controller, Member);
@@ -195,7 +195,7 @@ void FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks(
 }
 
 void FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+	FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 	FAGX_ConstraintLockController* Controller, const FName& Member)
 {
 	AddControllerPropertyCallbacks(PropertyDispatcher, Controller, Member);
@@ -206,7 +206,7 @@ void FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks(
 }
 
 void FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+	FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 	FAGX_ConstraintRangeController* Controller, const FName& Member)
 {
 	AddControllerPropertyCallbacks(PropertyDispatcher, Controller, Member);
@@ -217,7 +217,7 @@ void FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
 }
 
 void FAGX_ConstraintUtilities::AddTargetSpeedControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+	FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 	FAGX_ConstraintTargetSpeedController* Controller, const FName& Member)
 {
 	AddControllerPropertyCallbacks(PropertyDispatcher, Controller, Member);
@@ -233,7 +233,7 @@ void FAGX_ConstraintUtilities::AddTargetSpeedControllerPropertyCallbacks(
 }
 
 void FAGX_ConstraintUtilities::AddScrewControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+	FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 	FAGX_ConstraintScrewController* Controller, const FName& Member)
 {
 	AddControllerPropertyCallbacks(PropertyDispatcher, Controller, Member);

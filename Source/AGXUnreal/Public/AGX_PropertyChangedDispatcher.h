@@ -79,12 +79,12 @@ inline uint32 GetTypeHash(const FAGX_NamePair& Pair)
  * passed to each callback.
  */
 template <typename T>
-struct FAGX_UpropertyDispatcher
+struct FAGX_PropertyChangedDispatcher
 {
 public:
 	using UpdatePropertyFunction = TFunction<void(T*)>;
 
-	static FAGX_UpropertyDispatcher<T>& Get();
+	static FAGX_PropertyChangedDispatcher<T>& Get();
 
 	/**
 	 * @return True if any callbacks has been registered with this dispatcher.
@@ -128,28 +128,28 @@ private:
 };
 
 template <typename T>
-FAGX_UpropertyDispatcher<T>& FAGX_UpropertyDispatcher<T>::Get()
+FAGX_PropertyChangedDispatcher<T>& FAGX_PropertyChangedDispatcher<T>::Get()
 {
-	static FAGX_UpropertyDispatcher<T> Instance;
+	static FAGX_PropertyChangedDispatcher<T> Instance;
 	return Instance;
 }
 
 template <typename T>
-void FAGX_UpropertyDispatcher<T>::Add(
+void FAGX_PropertyChangedDispatcher<T>::Add(
 	const FName& MemberAndProperty, UpdatePropertyFunction&& Function)
 {
 	Functions.Add(FAGX_NamePair {MemberAndProperty, MemberAndProperty}, std::move(Function));
 }
 
 template <typename T>
-void FAGX_UpropertyDispatcher<T>::Add(
+void FAGX_PropertyChangedDispatcher<T>::Add(
 	const FName& Member, const FName& Property, UpdatePropertyFunction&& Function)
 {
 	Functions.Add(FAGX_NamePair {Member, Property}, std::move(Function));
 }
 
 template <typename T>
-bool FAGX_UpropertyDispatcher<T>::Trigger(FPropertyChangedEvent& Event, T* Object)
+bool FAGX_PropertyChangedDispatcher<T>::Trigger(FPropertyChangedEvent& Event, T* Object)
 {
 	const FName Property = GetFNameSafe(Event.Property);
 	const FName Member = GetFNameSafe(Event.MemberProperty);
@@ -157,7 +157,7 @@ bool FAGX_UpropertyDispatcher<T>::Trigger(FPropertyChangedEvent& Event, T* Objec
 }
 
 template <typename T>
-bool FAGX_UpropertyDispatcher<T>::Trigger(struct FPropertyChangedChainEvent& Event, T* Object)
+bool FAGX_PropertyChangedDispatcher<T>::Trigger(struct FPropertyChangedChainEvent& Event, T* Object)
 {
 	if (Event.PropertyChain.Num() == 0)
 	{
@@ -174,7 +174,7 @@ bool FAGX_UpropertyDispatcher<T>::Trigger(struct FPropertyChangedChainEvent& Eve
 }
 
 template <typename T>
-bool FAGX_UpropertyDispatcher<T>::Trigger(const FName& Member, const FName& Property, T* Object)
+bool FAGX_PropertyChangedDispatcher<T>::Trigger(const FName& Member, const FName& Property, T* Object)
 {
 	UpdatePropertyFunction* Function = GetFunction(Member, Property);
 	if (Function == nullptr)
@@ -187,14 +187,14 @@ bool FAGX_UpropertyDispatcher<T>::Trigger(const FName& Member, const FName& Prop
 }
 
 template <typename T>
-bool FAGX_UpropertyDispatcher<T>::IsInitialized() const
+bool FAGX_PropertyChangedDispatcher<T>::IsInitialized() const
 {
 	return Functions.Num() != 0;
 }
 
 template <typename T>
-typename FAGX_UpropertyDispatcher<T>::UpdatePropertyFunction*
-FAGX_UpropertyDispatcher<T>::GetFunction(const FName& Member, const FName& Property)
+typename FAGX_PropertyChangedDispatcher<T>::UpdatePropertyFunction*
+FAGX_PropertyChangedDispatcher<T>::GetFunction(const FName& Member, const FName& Property)
 {
 	// First see if we  have a callback for this specific property.
 	UpdatePropertyFunction* Function = Functions.Find({Member, Property});

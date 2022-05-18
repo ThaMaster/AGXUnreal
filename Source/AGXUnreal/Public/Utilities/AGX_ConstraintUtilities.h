@@ -26,7 +26,7 @@ struct FAGX_ConstraintRangeController;
 struct FAGX_ConstraintTargetSpeedController;
 
 template <typename>
-struct FAGX_UpropertyDispatcher;
+struct FAGX_PropertyChangedDispatcher;
 
 class AGXUNREAL_API FAGX_ConstraintUtilities
 {
@@ -97,31 +97,31 @@ public:
 
 #if WITH_EDITOR
 	static void AddControllerPropertyCallbacks(
-		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 		FAGX_ConstraintController* Controller, const FName& Member);
 
 	static void AddElectricMotorControllerPropertyCallbacks(
-		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 		FAGX_ConstraintElectricMotorController* Controller, const FName& Member);
 
 	static void AddFrictionControllerPropertyCallbacks(
-		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 		FAGX_ConstraintFrictionController* Controller, const FName& Member);
 
 	static void AddLockControllerPropertyCallbacks(
-		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 		FAGX_ConstraintLockController* Controller, const FName& Member);
 
 	static void AddRangeControllerPropertyCallbacks(
-		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 		FAGX_ConstraintRangeController* Controller, const FName& Member);
 
 	static void AddTargetSpeedControllerPropertyCallbacks(
-		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 		FAGX_ConstraintTargetSpeedController* Controller, const FName& Member);
 
 	static void AddScrewControllerPropertyCallbacks(
-		FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
+		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
 		FAGX_ConstraintScrewController* ScrewController, const FName& Member);
 #endif
 

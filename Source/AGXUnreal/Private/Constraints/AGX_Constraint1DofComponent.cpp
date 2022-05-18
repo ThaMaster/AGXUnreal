@@ -6,7 +6,7 @@
 #include "AGX_Check.h"
 #include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
-#include "AGX_UpropertyDispatcher.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "Constraints/Controllers/AGX_LockController.h"
 #include "Constraints/Constraint1DOFBarrier.h"

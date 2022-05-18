@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_NativeOwner.h"
-#include "AGX_UpropertyDispatcher.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_RealInterval.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
 #include "Constraints/AGX_ConstraintEnums.h"
@@ -448,7 +448,7 @@ protected:
 #if WITH_EDITORONLY_DATA
 	// We cannot use the static (class shared) Property Dispatcher because our Constraint Controller
 	// callbacks store a pointer to the particular controller in the lambda capture.
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent> PropertyDispatcher;
+	FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent> PropertyDispatcher;
 #endif
 
 private:

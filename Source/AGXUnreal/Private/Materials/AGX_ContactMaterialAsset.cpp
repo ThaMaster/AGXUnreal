@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "AGX_UpropertyDispatcher.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
 
 // Unreal Engine includes.
@@ -38,17 +38,17 @@ void UAGX_ContactMaterialAsset::PostInitProperties()
 {
 	Super::PostInitProperties();
 
-	// All Contact Materials share the same FAGX_UpropertyDispatcher so DO NOT use any captures or
+	// All Contact Materials share the same FAGX_PropertyChangedDispatcher so DO NOT use any captures or
 	// anything from the current 'this' in the Dispatcher callback. Only use the passed parameter,
 	// which is a pointer to the object that was changed.
-	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
 	}
 
 	// These callbacks do not check the return value from GetInstance, it is the responsibility of
-	// PostEditChangeProperty to only call FAGX_UpropertyDispatcher::Trigger when an instance is
+	// PostEditChangeProperty to only call FAGX_PropertyChangedDispatcher::Trigger when an instance is
 	// available.
 
 	Dispatcher.Add(
@@ -193,7 +193,7 @@ void UAGX_ContactMaterialAsset::PostEditChangeProperty(FPropertyChangedEvent& Pr
 		return;
 	}
 
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
 }
 
 #endif

@@ -7,7 +7,7 @@
 #include "AGX_StaticMeshComponent.h"
 #include "AGX_Stepper.h"
 #include "AGX_LogCategory.h"
-#include "AGX_UpropertyDispatcher.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
@@ -464,14 +464,14 @@ void UAGX_Simulation::PostInitProperties()
 
 void UAGX_Simulation::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event, this);
 	Super::PostEditChangeChainProperty(Event);
 }
 
 void UAGX_Simulation::InitPropertyDispatcher()
 {
-	FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
-		FAGX_UpropertyDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (PropertyDispatcher.IsInitialized())
 	{
 		return;
