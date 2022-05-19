@@ -154,17 +154,17 @@ void UAGX_ConstraintComponent::PostInitProperties()
 	AActor* Owner = GetTypedOuter<AActor>();
 	if (Owner != nullptr && Owner->IsChildActor())
 	{
-		// This is a workaround for the case where we are part of a child Actor and a Blueprint.
-		// instance. If so, then the ChildActor does not behave the same as a regular
-		// Blueprint instance Actor; it will be destroyed shortly after this code runs.
+		// This is a workaround for the case where we are part of a Child Actor and a Blueprint
+		// instance. If so, then the Child Actor does not behave the same as a regular
+		// Blueprint Actor instance; it will be destroyed shortly after this code runs.
 		// This means that the RigidBodyReference's OwningActor will be invalid or nullptr at
 		// the time of visualizing this component, or even at the time when creating a native AGX
-		// Constraint in some cases. Therefore, we set the OwningActor as the owner of the child
+		// Constraint in some cases. Therefore, we set the OwningActor to the owner of the child
 		// Actor containing us, and combine this with 'bSearchChildActors' so that the
 		// RigidBodyReference will search among child Actors from the child Actor owner. This is a
 		// workaround, and better solutions may exists, though I have not found any.
 		// Limitations: name collisions for Rigid Bodies in the Child Actor and the owning Actor
-		// is not handled. Also, multiple Child Actor hierarchical chains are also not handled.
+		// is not handled. Also, Child Actor hierarchical chains are not handled.
 		BodyAttachment1.RigidBody.OwningActor = Owner->GetParentActor();
 		BodyAttachment2.RigidBody.OwningActor = Owner->GetParentActor();
 		BodyAttachment1.RigidBody.bSearchChildActors = true;
