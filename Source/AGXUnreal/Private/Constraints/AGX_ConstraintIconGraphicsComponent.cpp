@@ -430,7 +430,7 @@ private:
 					// GetRenderMatrix())
 
 					FMatrix ScreenScale = GetScreenSpaceScale(
-						0.2f, 30.0f, 100.0f, 100.0f, WorldMatrix.GetOrigin(), View);
+						0.2f, 30.0f, 60.0f, 100.0f, WorldMatrix.GetOrigin(), View);
 
 					/// todo ScreenScale does not seem to have effect in-game. Must have missed
 					/// something...
