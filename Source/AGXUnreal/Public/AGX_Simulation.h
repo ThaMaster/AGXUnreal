@@ -175,6 +175,13 @@ public: // Properties.
 	UPROPERTY(Config, EditAnywhere, Category = "Debug", meta = (EditCondition = "bRemoteDebugging"))
 	int16 RemoteDebuggingPort;
 
+	/** Maximum distance between the active Viewport camera and any AGX Constraint within which
+	 * the AGX Constraint graphical representation is scaled such that it's size is constant as
+	 * drawn on the screen.
+	 */
+	UPROPERTY(Config, EditAnywhere, Category = "Rendering", Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	float ConstraintVisualizationScalingDistanceMax = 400.f;
+
 public: // Member functions.
 	UFUNCTION(BlueprintCallable, Category = "Solver")
 	void SetEnableContactWarmstarting(bool bEnable);
