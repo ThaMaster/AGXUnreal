@@ -177,7 +177,7 @@ public: // Properties.
 
 	/** Maximum distance between the active Viewport camera and any AGX Constraint within which
 	 * the AGX Constraint graphical representation is scaled such that it's size is constant as
-	 * drawn on the screen.
+	 * drawn on the screen [cm].
 	 */
 	UPROPERTY(Config, EditAnywhere, Category = "Rendering", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float ConstraintVisualizationScalingDistanceMax = 400.f;
