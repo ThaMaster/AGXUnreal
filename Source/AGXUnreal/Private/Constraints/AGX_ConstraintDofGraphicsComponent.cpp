@@ -510,7 +510,7 @@ private:
 					// GetRenderMatrix())
 
 					FMatrix ScreenScale = GetScreenSpaceScale(
-						0.56f, 150.0f, 250.0f, 100.0f, WorldMatrix.GetOrigin(), View);
+						0.56f, 150.0f, 500.0f, 100.0f, WorldMatrix.GetOrigin(), View);
 
 					FMatrix EffectiveLocalToWorld =
 						Section->LocalTransform * ScreenScale * WorldMatrix;
