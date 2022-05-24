@@ -4,6 +4,7 @@
 #include "Constraints/AGX_ConstraintIconGraphicsComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Simulation.h"
 #include "AGX_UE4Compatibility.h"
 #include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_ConstraintComponent.h"
@@ -429,8 +430,15 @@ private:
 					// FMatrix WorldMatrix = FrameTransform1; // setting render matrix instead (see
 					// GetRenderMatrix())
 
+					const UAGX_Simulation* Simulation = GetDefault<UAGX_Simulation>();
+
+					// Note: the ScaleMax as calculated below is a bit arbitrary, but was chosen to match
+					// default behavior for the default ConstraintVisualizationScalingDistanceMax value.
+					// It will scaled linearly with it which turns out to work nicely.
+					const float ScaleMax = Simulation->ConstraintVisualizationScalingDistanceMax * 0.25f;
+
 					FMatrix ScreenScale = GetScreenSpaceScale(
-						0.2f, 30.0f, 60.0f, 100.0f, WorldMatrix.GetOrigin(), View);
+						0.2f, 30.0f, ScaleMax, 200.0f, WorldMatrix.GetOrigin(), View);
 
 					/// todo ScreenScale does not seem to have effect in-game. Must have missed
 					/// something...

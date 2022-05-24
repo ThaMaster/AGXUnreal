@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
@@ -62,7 +63,8 @@ namespace
 
 	float GetScreenToWorldFactorCapped(float FOV, float WorldDistance)
 	{
-		static constexpr float DistanceMax = 400.f;
+		const UAGX_Simulation* Simulation = GetDefault<UAGX_Simulation>();
+		const float DistanceMax = Simulation->ConstraintVisualizationScalingDistanceMax;
 		static constexpr float Hack = 0.5f; // because result seemed a bit off...
 		return Hack * 2.0f * std::min(WorldDistance, DistanceMax) * FMath::Atan(FOV / 2.0f);
 	}
