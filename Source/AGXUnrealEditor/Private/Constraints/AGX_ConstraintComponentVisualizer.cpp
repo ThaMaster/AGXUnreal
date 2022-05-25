@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
@@ -60,20 +61,22 @@ namespace
 			NormalizedCoordinates.X * ViewSize.X, NormalizedCoordinates.Y * ViewSize.Y);
 	}
 
-	float GetScreenToWorldFactor(float FOV, float WorldDistance)
+	float GetScreenToWorldFactorCapped(float FOV, float WorldDistance)
 	{
-		float Hack = 0.5f; // because result seemed a bit off...
-		return Hack * 2.0f * WorldDistance * FMath::Atan(FOV / 2.0f);
+		const UAGX_Simulation* Simulation = GetDefault<UAGX_Simulation>();
+		const float DistanceMax = Simulation->ConstraintVisualizationScalingDistanceMax;
+		static constexpr float Hack = 0.5f; // because result seemed a bit off...
+		return Hack * 2.0f * std::min(WorldDistance, DistanceMax) * FMath::Atan(FOV / 2.0f);
 	}
 
 	float GetWorldSizeFromScreenFactor(float ScreenFactor, float FOV, float WorldDistance)
 	{
-		return ScreenFactor * GetScreenToWorldFactor(FOV, WorldDistance);
+		return ScreenFactor * GetScreenToWorldFactorCapped(FOV, WorldDistance);
 	}
 
 	float GetScreenFactorFromWorldSize(float WorldSize, float FOV, float WorldDistance)
 	{
-		return WorldSize / GetScreenToWorldFactor(FOV, WorldDistance);
+		return WorldSize / GetScreenToWorldFactorCapped(FOV, WorldDistance);
 	}
 
 	FBox GetBoundingBox(UAGX_RigidBodyComponent* Body)
@@ -227,15 +230,16 @@ namespace
 
 		// Highlight Body with circle.
 		{
-			const float Distance = 40.0f;
-			const FVector Location =
-				GetConstantDistanceLocation(View, Body->GetComponentLocation(), Distance);
+			static constexpr float CIRCLE_SCALE {0.05f};
+			const float Distance =
+				FVector::Dist(Body->GetComponentLocation(), View->ViewLocation);
 			const float Radius = GetWorldSizeFromScreenFactor(
-				CircleScreenFactor, FMath::DegreesToRadians(View->FOV), Distance);
+				CIRCLE_SCALE, FMath::DegreesToRadians(View->FOV), Distance);
 
 			DrawCircle(
-				PDI, Location, View->GetViewRight(), View->GetViewUp(), Color, Radius, 32,
-				SDPG_Foreground, Thickness, /*DepthBias*/ 0.0f, /*bScreenSpace*/ true);
+				PDI, Attachment.GetGlobalFrameLocation(), View->GetViewRight(), View->GetViewUp(),
+				Color, Radius, 32, SDPG_Foreground, Thickness, /*DepthBias*/ 0.0f,
+				/*bScreenSpace*/ true);
 		}
 
 		// Draw frame attachment gizmo.
