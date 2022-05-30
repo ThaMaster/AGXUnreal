@@ -1296,7 +1296,7 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 
 void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to

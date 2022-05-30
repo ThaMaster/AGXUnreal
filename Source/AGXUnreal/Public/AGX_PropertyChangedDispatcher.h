@@ -84,6 +84,10 @@ struct FAGX_PropertyChangedDispatcher
 public:
 	using UpdatePropertyFunction = TFunction<void(T*)>;
 
+	/**
+	 * Get the Property Changed Dispatcher associated with the template type. Each type has its own
+	 * instance.
+	 */
 	static FAGX_PropertyChangedDispatcher<T>& Get();
 
 	/**
@@ -93,7 +97,13 @@ public:
 
 	/**
 	 * Add a callback for a direct member property. The case where Member and Property have the same
-	 * value.
+	 * value. In other words, when the member is a primitive type and not a struct, or when you
+	 * want the same callback for every member of the struct Property.
+	 *
+	 * The callback will be called while a Property Changed event is being processed, so it should
+	 * not modify the the object further. The intention is that the callback is used to update the
+	 * AGX Dynamics object, if any, in response to the change.
+	 *
 	 * @param MemberAndProperty The name of the property.
 	 * @param Function The function to call when the property is changed.
 	 */
@@ -102,25 +112,48 @@ public:
 	/**
 	 * Add a callback for a struct member property. Member should be the name of the struct that is
 	 * the outermost member and Property should be the name of the property within that struct.
+	 * There is currently no way to specify per-member callbacks for nesting deeper than a single
+	 * struct.
+	 *
+	 * The callback will be called while a Property Changed event is being processed, so it should
+	 * not modify the the object further. The intention is that the callback is used to update the
+	 * AGX Dynamics object, if any, in response to the change.
+	 *
 	 * @param Member The top-most member.
 	 * @param Property The member within the top-most member.
 	 * @param Function The function to call when the property is changed.
 	 */
 	void Add(const FName& Member, const FName& Property, UpdatePropertyFunction&& Function);
 
-	bool Trigger(FPropertyChangedEvent& Event, T* Object);
+	/**
+	 * Call the callback associated with the given event, if any, on all objects listed as edited by
+	 * the event.
+	 * \param Event The event to trigger callbacks for.
+	 */
+	void Trigger(FPropertyChangedEvent& Event);
 
-	bool Trigger(struct FPropertyChangedChainEvent& Event, T* Object);
+	/**
+	 * Call the callback associated with the given event, if any, on all objects listed as edited by
+	 * the event.
+	 * \param Event The event to trigger callbacks for.
+	 */
+	void Trigger(FPropertyChangedChainEvent& Event);
 
 	/**
 	 * Run the function associated with the property.
 	 * @param Member The name of the direct member that was changed.
 	 * @param Property The name of the nested property that was changed.
-	 * @param Object The object on which the member was changed. Is passed to the callback.
-	 * @return True if a function was run, false otherwise.
+	 * @param Event The event containing the objects that were modified. Each is passed to the
+	 * callback.
 	 */
-	bool Trigger(const FName& Member, const FName& Property, T* Object);
+	void Trigger(const FName& Member, const FName& Property, FPropertyChangedEvent& Event);
 
+	/**
+	 * Get the callback associated with the given (Member, Property) pair.
+	 * \param Member
+	 * \param Property
+	 * \return
+	 */
 	UpdatePropertyFunction* GetFunction(const FName& Member, const FName& Property);
 
 private:
@@ -149,41 +182,57 @@ void FAGX_PropertyChangedDispatcher<T>::Add(
 }
 
 template <typename T>
-bool FAGX_PropertyChangedDispatcher<T>::Trigger(FPropertyChangedEvent& Event, T* Object)
+void FAGX_PropertyChangedDispatcher<T>::Trigger(FPropertyChangedEvent& Event)
 {
 	const FName Property = GetFNameSafe(Event.Property);
 	const FName Member = GetFNameSafe(Event.MemberProperty);
-	return Trigger(Member, Property, Object);
+	Trigger(Member, Property, Event);
 }
 
 template <typename T>
-bool FAGX_PropertyChangedDispatcher<T>::Trigger(struct FPropertyChangedChainEvent& Event, T* Object)
+void FAGX_PropertyChangedDispatcher<T>::Trigger(struct FPropertyChangedChainEvent& Event)
 {
 	if (Event.PropertyChain.Num() == 0)
 	{
-		return false;
+		return;
 	}
+
+	// The name of the rest of the nodes doesn't matter, we set all elements at
+	// level two each time. These are small objects such as FVector or
+	// FFloatInterval. Some rewrite of Property Changed Dispatcher will be
+	// required to support more detailed nesting callbacks.
 	FEditPropertyChain::TDoubleLinkedListNode* Node = Event.PropertyChain.GetHead();
 	FName Member = Node->GetValue()->GetFName();
 	Node = Node->GetNextNode();
 	FName Property = Node != nullptr ? Node->GetValue()->GetFName() : Member;
-	// The name of the rest of the nodes doesn't matter, we set all elements at level two each
-	// time. These are small objects such as FVector or FFloatInterval. Some rewrite of
-	// FAGX_PropertyDispatcher will be required to support other types of nesting.
-	return Trigger(Member, Property, Object);
+	Trigger(Member, Property, Event);
 }
 
 template <typename T>
-bool FAGX_PropertyChangedDispatcher<T>::Trigger(const FName& Member, const FName& Property, T* Object)
+void FAGX_PropertyChangedDispatcher<T>::Trigger(
+	const FName& Member, const FName& Property, FPropertyChangedEvent& Event)
 {
 	UpdatePropertyFunction* Function = GetFunction(Member, Property);
 	if (Function == nullptr)
 	{
-		return false;
+		return;
 	}
 
-	(*Function)(Object);
-	return true;
+	for (int32 I = 0; I < Event.GetNumObjectsBeingEdited(); ++I)
+	{
+		// const_cast because there is no other way of getting the modified
+		// object. We get a const object because the developers at Epic Games
+		// really don't want us to modify the object while were still processing
+		// the previous change. This means that the callback MAY NOT EDIT the
+		// object passed to it, it may only update the native AGX Dynamics
+		// object. Or at least, it may not edit the Unreal Engine object in a
+		// way that is visible to Unreal Engine.
+		T* Object = Cast<T>(const_cast<UObject*>(Event.GetObjectBeingEdited(I)));
+		if (Object != nullptr)
+		{
+			(*Function)(Object);
+		}
+	}
 }
 
 template <typename T>

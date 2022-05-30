@@ -193,7 +193,7 @@ void UAGX_ContactMaterialAsset::PostEditChangeProperty(FPropertyChangedEvent& Pr
 		return;
 	}
 
-	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent);
 }
 
 #endif

@@ -280,7 +280,7 @@ void UAGX_CylinderShapeComponent::PostEditChangeChainProperty(
 {
 	// Trigger Cylinder callbacks. Shape callbacks are handled by the base class through a separate
 	// Property Dispatcher instance.
-	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to

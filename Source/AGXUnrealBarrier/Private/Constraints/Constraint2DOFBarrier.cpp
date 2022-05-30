@@ -24,7 +24,7 @@ FConstraint2DOFBarrier::~FConstraint2DOFBarrier()
 }
 
 // A collection of template specializations to fetch the AGX Dynamics controller constraint
-// from a AGX Dynamics Constraint2DOF. Each template specialization knows if getMotor1D, getRange1D,
+// from an AGX Dynamics Constraint2DOF. Each template specialization knows if getMotor1D, getRange1D,
 // or something else should be called for the particular Barrier type that the template is
 // specialized for.
 namespace

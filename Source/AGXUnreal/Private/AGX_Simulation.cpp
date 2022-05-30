@@ -464,7 +464,7 @@ void UAGX_Simulation::PostInitProperties()
 
 void UAGX_Simulation::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 	Super::PostEditChangeChainProperty(Event);
 }
 

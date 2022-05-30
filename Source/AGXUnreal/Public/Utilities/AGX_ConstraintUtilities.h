@@ -96,33 +96,47 @@ public:
 		EAGX_Constraint2DOFFreeDOF Dof);
 
 #if WITH_EDITOR
+	template <typename UConstraintClass, typename FControllerClass>
 	static void AddControllerPropertyCallbacks(
-		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-		FAGX_ConstraintController* Controller, const FName& Member);
+		FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+		TFunction<FControllerClass*(UConstraintClass*)> GetController,
+		const FName& Member);
 
+	template <typename UConstraintClass>
 	static void AddElectricMotorControllerPropertyCallbacks(
-		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-		FAGX_ConstraintElectricMotorController* Controller, const FName& Member);
+		FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+		TFunction<FAGX_ConstraintElectricMotorController*(UConstraintClass*)> GetController,
+		const FName& Member);
 
+	template <typename UConstraintClass>
 	static void AddFrictionControllerPropertyCallbacks(
-		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-		FAGX_ConstraintFrictionController* Controller, const FName& Member);
+		FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+		TFunction<FAGX_ConstraintFrictionController*(UConstraintClass*)> GetController,
+		const FName& Member);
 
+	template <typename UConstraintClass>
 	static void AddLockControllerPropertyCallbacks(
-		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-		FAGX_ConstraintLockController* Controller, const FName& Member);
+		FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+		TFunction<FAGX_ConstraintLockController*(UConstraintClass*)> GetController,
+		const FName& Member);
 
+	template <typename UConstraintClass>
 	static void AddRangeControllerPropertyCallbacks(
-		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-		FAGX_ConstraintRangeController* Controller, const FName& Member);
+		FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+		TFunction<FAGX_ConstraintRangeController*(UConstraintClass*)> GetController,
+		const FName& Member);
 
+	template <typename UConstraintClass>
 	static void AddTargetSpeedControllerPropertyCallbacks(
-		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-		FAGX_ConstraintTargetSpeedController* Controller, const FName& Member);
+		FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+		TFunction<FAGX_ConstraintTargetSpeedController*(UConstraintClass*)> GetController,
+		const FName& Member);
 
+	template <typename UConstraintClass>
 	static void AddScrewControllerPropertyCallbacks(
-		FAGX_PropertyChangedDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-		FAGX_ConstraintScrewController* ScrewController, const FName& Member);
+		FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+		TFunction<FAGX_ConstraintScrewController*(UConstraintClass*)> GetController,
+		const FName& Member);
 #endif
 
 	/**

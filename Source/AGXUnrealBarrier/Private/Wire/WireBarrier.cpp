@@ -19,6 +19,8 @@
 #include <agx/Material.h>
 #include "EndAGXIncludes.h"
 
+// Linux and Windows treat symbol visibility differently and require the _API macro to be in
+// different places for explicit template specializations.
 #if PLATFORM_LINUX
 template class FNativeBarrier<FWireRef>;
 #elif PLATFORM_WINDOWS
