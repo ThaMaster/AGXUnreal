@@ -6,7 +6,7 @@
 #include "AGX_Check.h"
 #include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
-#include "AGX_UpropertyDispatcher.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "Constraints/Controllers/AGX_LockController.h"
 #include "Constraints/Constraint1DOFBarrier.h"
@@ -52,29 +52,68 @@ void UAGX_Constraint1DofComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
 
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	// The compiler doesn't let me pass in a lambda directly to the
+	// Add.+PropertyCallbacks functions, so here I pre-create the callbacks with
+	// the exact type that the parameter has. I believe the problem is that
+	// templates doesn't consider inheritance when matching template type
+	// parameters, i.e. a template type T already matched to TBase* isn't
+	// compatible with a TDerived* template type parameter even if TDerived
+	// inherit from TBase.
+	//
+	// Example error message:
+	//
+	// Could not match 'TFunction<FAGX_ConstraintElectricMotorController *(type-parameter-0-0 *)>'
+	// against lambda.
+	//
+	// The assignments below are accepted, and I don't understand what the
+	// difference is.
+
+	TFunction<FAGX_ConstraintElectricMotorController*(ThisClass*)> GetElectricMotorController =
+		[](ThisClass* EditedObject) { return &EditedObject->ElectricMotorController; };
+
+	TFunction<FAGX_ConstraintFrictionController*(ThisClass*)> GetFrictionController =
+		[](ThisClass* EditedObject) { return &EditedObject->FrictionController; };
+
+	TFunction<FAGX_ConstraintLockController*(ThisClass*)> GetLockController =
+		[](ThisClass* EditedObject) { return &EditedObject->LockController; };
+
+	TFunction<FAGX_ConstraintRangeController*(ThisClass*)> GetRangeController =
+		[](ThisClass* EditedObject) { return &EditedObject->RangeController; };
+
+	TFunction<FAGX_ConstraintTargetSpeedController*(ThisClass*)> GetTargetSpeedController =
+		[](ThisClass* EditedObject) { return &EditedObject->TargetSpeedController; };
+
 	FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks(
-		PropertyDispatcher, &ElectricMotorController,
+		PropertyDispatcher, GetElectricMotorController,
 		GET_MEMBER_NAME_CHECKED(ThisClass, ElectricMotorController));
 
 	FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks(
-		PropertyDispatcher, &FrictionController,
+		PropertyDispatcher, GetFrictionController,
 		GET_MEMBER_NAME_CHECKED(ThisClass, FrictionController));
 
 	FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks(
-		PropertyDispatcher, &LockController, GET_MEMBER_NAME_CHECKED(ThisClass, LockController));
+		PropertyDispatcher, GetLockController, GET_MEMBER_NAME_CHECKED(ThisClass, LockController));
 
 	FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
-		PropertyDispatcher, &RangeController, GET_MEMBER_NAME_CHECKED(ThisClass, RangeController));
+		PropertyDispatcher, GetRangeController,
+		GET_MEMBER_NAME_CHECKED(ThisClass, RangeController));
 
 	FAGX_ConstraintUtilities::AddTargetSpeedControllerPropertyCallbacks(
-		PropertyDispatcher, &TargetSpeedController,
+		PropertyDispatcher, GetTargetSpeedController,
 		GET_MEMBER_NAME_CHECKED(ThisClass, TargetSpeedController));
 }
 
 void UAGX_Constraint1DofComponent::PostEditChangeChainProperty(
 	struct FPropertyChangedChainEvent& Event)
 {
-	PropertyDispatcher.Trigger(Event, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to

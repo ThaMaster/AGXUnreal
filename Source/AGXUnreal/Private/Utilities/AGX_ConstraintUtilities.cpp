@@ -3,7 +3,7 @@
 #include "Utilities/AGX_ConstraintUtilities.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_UpropertyDispatcher.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
@@ -128,120 +128,258 @@ void FAGX_ConstraintUtilities::StoreTargetSpeedController(
 
 #if WITH_EDITOR
 
-void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-	FAGX_ConstraintController* Controller, const FName& Member)
-{
-	using ThisClass = UAGX_ConstraintComponent;
+/*
+ * Helper functions for setting up Constraint Controller callbacks for Property
+ * Changed events. This used to be a set of small and simple functions, but an
+ * Unreal Engine bug related to editing multiple Components in an instance of a
+ * Blueprint during a Play In Editor session made the old approach impossible. A
+ * bug fix is planned for Unreal Engine 5.1 but until we are forced to use this
+ * long version. See internal issue 675, 689, and UDN question
+ * https://udn.unrealengine.com/s/case/5004z00001eEzehAAC/editing-multiple-components-in-a-blueprint-instance-only-calls-posteditchangechainproperty-on-one-of-them
+ *
+ * The bug is that PostEditChangeChainProperty isn't called on all modified
+ * objects, which causes some AGX Dynamics native objects to not be updated with
+ * the change. The result is that there is a mismatch between the Unreal Engine
+ * state and the AGX Dynamics state for some of the selected Components. The
+ * workaround is to update all selected objects every time any modification is
+ * detected. A consequence of this is that we cannot allow object-specific data
+ * in the callbacks, i.e. lambdas with captures are now forbidden. We used to
+ * capture the Constraint Controller to update in the lambda, but now we must
+ * pass a getter function instead, and we need lots of templating to handle all
+ * the various different types that may be passed.
+ *
+ * It is possible that this approach has become so complicated that a there is
+ * a simpler and better way to do it.
+ */
 
+template <typename UConstraintClass, typename FControllerClass>
+void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks(
+	FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+	TFunction<FControllerClass*(UConstraintClass*)> GetController, const FName& Member)
+{
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, bEnable),
-		[Controller](ThisClass*) { Controller->SetEnable(Controller->bEnable); });
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)->SetEnable(GetController(EditedObject)->bEnable);
+		});
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, Compliance),
-		[Controller](ThisClass*) { Controller->SetCompliance(Controller->Compliance); });
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)->SetCompliance(GetController(EditedObject)->Compliance);
+		});
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, SpookDamping),
-		[Controller](ThisClass*) { Controller->SetSpookDamping(Controller->SpookDamping); });
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)->SetSpookDamping(GetController(EditedObject)->SpookDamping);
+		});
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, ForceRange),
-		[Controller](ThisClass*) { Controller->SetForceRange(Controller->ForceRange); });
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)->SetForceRange(GetController(EditedObject)->ForceRange);
+		});
 }
 
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddControllerPropertyCallbacks<UAGX_Constraint1DofComponent, FAGX_ConstraintController>(
+	FAGX_PropertyChangedDispatcher<UAGX_Constraint1DofComponent>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintController*(UAGX_Constraint1DofComponent*)> GetController,
+	const FName& Member);
+
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddControllerPropertyCallbacks<UAGX_Constraint2DofComponent, FAGX_ConstraintController>(
+	FAGX_PropertyChangedDispatcher<UAGX_Constraint2DofComponent>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintController*(UAGX_Constraint2DofComponent*)> GetController,
+	const FName& Member);
+
+template <typename UConstraintClass>
 void FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-	FAGX_ConstraintElectricMotorController* Controller, const FName& Member)
+	FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintElectricMotorController*(UConstraintClass*)> GetController,
+	const FName& Member)
 {
-	AddControllerPropertyCallbacks(PropertyDispatcher, Controller, Member);
+	AddControllerPropertyCallbacks(PropertyDispatcher, GetController, Member);
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintElectricMotorController, Voltage),
-		[Controller](UAGX_ConstraintComponent*) { Controller->SetVoltage(Controller->Voltage); });
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)->SetVoltage(GetController(EditedObject)->Voltage);
+		});
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintElectricMotorController, ArmatureResistance),
-		[Controller](UAGX_ConstraintComponent*)
-		{ Controller->SetArmatureRestistance(Controller->ArmatureResistance); });
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)
+				->SetArmatureRestistance(GetController(EditedObject)->ArmatureResistance);
+		});
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintElectricMotorController, TorqueConstant),
-		[Controller](UAGX_ConstraintComponent*)
-		{ Controller->SetTorqueConstant(Controller->TorqueConstant); });
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)
+				->SetTorqueConstant(GetController(EditedObject)->TorqueConstant);
+		});
 }
 
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks<UAGX_Constraint1DofComponent>(
+	FAGX_PropertyChangedDispatcher<UAGX_Constraint1DofComponent>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintElectricMotorController*(UAGX_Constraint1DofComponent*)> GetController,
+	const FName& Member);
+
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks<UAGX_Constraint2DofComponent>(
+	FAGX_PropertyChangedDispatcher<UAGX_Constraint2DofComponent>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintElectricMotorController*(UAGX_Constraint2DofComponent*)> GetController,
+	const FName& Member);
+
+template <typename UConstraintClass>
 void FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-	FAGX_ConstraintFrictionController* Controller, const FName& Member)
+	FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintFrictionController*(UConstraintClass*)> GetController,
+	const FName& Member)
 {
-	AddControllerPropertyCallbacks(PropertyDispatcher, Controller, Member);
+	AddControllerPropertyCallbacks(PropertyDispatcher, GetController, Member);
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintFrictionController, FrictionCoefficient),
-		[Controller](UAGX_ConstraintComponent*)
-		{ Controller->SetFrictionCoefficient(Controller->FrictionCoefficient); });
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)
+				->SetFrictionCoefficient(GetController(EditedObject)->FrictionCoefficient);
+		});
 
 	PropertyDispatcher.Add(
 		Member,
 		GET_MEMBER_NAME_CHECKED(
 			FAGX_ConstraintFrictionController, bEnableNonLinearDirectSolveUpdate),
-		[Controller](UAGX_ConstraintComponent*)
-		{
-			Controller->SetEnableNonLinearDirectSolveUpdate(
-				Controller->bEnableNonLinearDirectSolveUpdate);
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)
+				->SetEnableNonLinearDirectSolveUpdate(
+					GetController(EditedObject)->bEnableNonLinearDirectSolveUpdate);
 		});
 }
 
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks<UAGX_Constraint1DofComponent>(
+	FAGX_PropertyChangedDispatcher<UAGX_Constraint1DofComponent>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintFrictionController*(UAGX_Constraint1DofComponent*)> GetController,
+	const FName& Member);
+
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks<UAGX_Constraint2DofComponent>(
+	FAGX_PropertyChangedDispatcher<UAGX_Constraint2DofComponent>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintFrictionController*(UAGX_Constraint2DofComponent*)> GetController,
+	const FName& Member);
+
+template <typename UConstraintClass>
 void FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-	FAGX_ConstraintLockController* Controller, const FName& Member)
+	FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintLockController*(UConstraintClass*)> GetController, const FName& Member)
 {
-	AddControllerPropertyCallbacks(PropertyDispatcher, Controller, Member);
+	AddControllerPropertyCallbacks(PropertyDispatcher, GetController, Member);
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintLockController, Position),
-		[Controller](UAGX_ConstraintComponent*) { Controller->SetPosition(Controller->Position); });
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)->SetPosition(GetController(EditedObject)->Position);
+		});
 }
 
-void FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-	FAGX_ConstraintRangeController* Controller, const FName& Member)
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks<UAGX_Constraint1DofComponent>(
+	FAGX_PropertyChangedDispatcher<UAGX_Constraint1DofComponent>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintLockController*(UAGX_Constraint1DofComponent*)> GetController,
+	const FName& Member);
+
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks<UAGX_Constraint2DofComponent>(
+	FAGX_PropertyChangedDispatcher<UAGX_Constraint2DofComponent>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintLockController*(UAGX_Constraint2DofComponent*)> GetController,
+	const FName& Member);
+
+template <typename UConstraintClass> void
+FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
+	FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintRangeController*(UConstraintClass*)> GetController,
+	const FName& Member)
 {
-	AddControllerPropertyCallbacks(PropertyDispatcher, Controller, Member);
+	AddControllerPropertyCallbacks(PropertyDispatcher, GetController, Member);
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangeController, Range),
-		[Controller](UAGX_ConstraintComponent*) { Controller->SetRange(Controller->Range); });
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)->SetRange(GetController(EditedObject)->Range);
+		});
 }
 
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks<UAGX_Constraint1DofComponent>(
+	FAGX_PropertyChangedDispatcher<UAGX_Constraint1DofComponent>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintRangeController*(UAGX_Constraint1DofComponent*)> GetController,
+	const FName& Member);
+
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks<UAGX_Constraint2DofComponent>(
+	FAGX_PropertyChangedDispatcher<UAGX_Constraint2DofComponent>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintRangeController*(UAGX_Constraint2DofComponent*)> GetController,
+	const FName& Member);
+
+template <typename UConstraintClass>
 void FAGX_ConstraintUtilities::AddTargetSpeedControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-	FAGX_ConstraintTargetSpeedController* Controller, const FName& Member)
+	FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintTargetSpeedController*(UConstraintClass*)> GetController,
+	const FName& Member)
 {
-	AddControllerPropertyCallbacks(PropertyDispatcher, Controller, Member);
+	AddControllerPropertyCallbacks(PropertyDispatcher, GetController, Member);
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintTargetSpeedController, Speed),
-		[Controller](UAGX_ConstraintComponent*) { Controller->SetSpeed(Controller->Speed); });
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)->SetSpeed(GetController(EditedObject)->Speed);
+		});
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintTargetSpeedController, bLockedAtZeroSpeed),
-		[Controller](UAGX_ConstraintComponent*)
-		{ Controller->SetLockedAtZeroSpeed(Controller->bLockedAtZeroSpeed); });
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)
+				->SetLockedAtZeroSpeed(GetController(EditedObject)->bLockedAtZeroSpeed);
+		});
 }
 
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddTargetSpeedControllerPropertyCallbacks<UAGX_Constraint1DofComponent>(
+	FAGX_PropertyChangedDispatcher<UAGX_Constraint1DofComponent>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintTargetSpeedController*(UAGX_Constraint1DofComponent*)> GetController,
+	const FName& Member);
+
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddTargetSpeedControllerPropertyCallbacks<UAGX_Constraint2DofComponent>(
+	FAGX_PropertyChangedDispatcher<UAGX_Constraint2DofComponent>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintTargetSpeedController*(UAGX_Constraint2DofComponent*)> GetController,
+	const FName& Member);
+
+template <typename UConstraintClass>
 void FAGX_ConstraintUtilities::AddScrewControllerPropertyCallbacks(
-	FAGX_UpropertyDispatcher<UAGX_ConstraintComponent>& PropertyDispatcher,
-	FAGX_ConstraintScrewController* Controller, const FName& Member)
+	FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintScrewController*(UConstraintClass*)> GetController,
+	const FName& Member)
 {
-	AddControllerPropertyCallbacks(PropertyDispatcher, Controller, Member);
+	AddControllerPropertyCallbacks(PropertyDispatcher, GetController, Member);
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintScrewController, Lead),
-		[Controller](UAGX_ConstraintComponent*) { Controller->SetLead(Controller->Lead); });
+		[GetController](UConstraintClass* EditedObject) {
+			GetController(EditedObject)->SetLead(GetController(EditedObject)->Lead);
+		});
 }
+
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddScrewControllerPropertyCallbacks<UAGX_Constraint2DofComponent>(
+	FAGX_PropertyChangedDispatcher<UAGX_Constraint2DofComponent>& PropertyDispatcher,
+	TFunction<FAGX_ConstraintScrewController*(UAGX_Constraint2DofComponent*)> GetController,
+	const FName& Member);
 
 #endif
 

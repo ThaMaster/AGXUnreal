@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
-#include "AGX_UpropertyDispatcher.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Contacts/AGX_ShapeContact.h"
@@ -144,7 +144,7 @@ void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& Property
 
 void UAGX_ShapeComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
@@ -166,8 +166,8 @@ void UAGX_ShapeComponent::PostInitProperties()
 	UpdateVisualMesh();
 
 #if WITH_EDITOR
-	FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
-		FAGX_UpropertyDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (PropertyDispatcher.IsInitialized())
 	{
 		return;

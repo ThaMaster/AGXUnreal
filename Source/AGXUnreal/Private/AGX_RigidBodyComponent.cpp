@@ -6,7 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_Simulation.h"
-#include "AGX_UpropertyDispatcher.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -47,7 +47,7 @@ void UAGX_RigidBodyComponent::PostInitProperties()
 
 void UAGX_RigidBodyComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
@@ -117,8 +117,8 @@ void UAGX_RigidBodyComponent::OnChildAttached(USceneComponent* Child)
 
 void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 {
-	FAGX_UpropertyDispatcher<ThisClass>& PropertyDispatcher =
-		FAGX_UpropertyDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (PropertyDispatcher.IsInitialized())
 	{
 		return;

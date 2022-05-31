@@ -764,6 +764,13 @@ namespace
 
 void UAGX_ConstraintComponent::InitPropertyDispatcher()
 {
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, bEnable),
 		[](ThisClass* This) { This->SetEnable(This->bEnable); });
@@ -896,7 +903,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 
 void UAGX_ConstraintComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	PropertyDispatcher.Trigger(Event, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to

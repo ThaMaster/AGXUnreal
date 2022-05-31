@@ -147,52 +147,111 @@ void UAGX_Constraint2DofComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
 
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	// The compiler doesn't let me pass in a lambda directly to the
+	// Add.+PropertyCallbacks functions, so here I pre-create the callbacks with
+	// the exact type that the parameter has. I believe the problem is that
+	// templates doesn't consider inheritance when matching template type
+	// parameters, i.e. a template type T already matched to TBase* isn't
+	// compatible with a TDerived* template type parameter even if TDerived
+	// inherit from TBase.
+	//
+	// Example error message:
+	//
+	// Could not match 'TFunction<FAGX_ConstraintElectricMotorController *(type-parameter-0-0 *)>'
+	// against lambda.
+	//
+	// The assignments below are accepted, and I don't understand what the
+	// difference is.
+
+	TFunction<FAGX_ConstraintElectricMotorController*(ThisClass*)> GetElectricMotorController1 =
+		[](ThisClass* EditedObject) { return &EditedObject->ElectricMotorController1; };
+
+	TFunction<FAGX_ConstraintElectricMotorController*(ThisClass*)> GetElectricMotorController2 =
+		[](ThisClass* EditedObject) { return &EditedObject->ElectricMotorController2; };
+
+	TFunction<FAGX_ConstraintFrictionController*(ThisClass*)> GetFrictionController1 =
+		[](ThisClass* EditedObject) { return &EditedObject->FrictionController1; };
+
+	TFunction<FAGX_ConstraintFrictionController*(ThisClass*)> GetFrictionController2 =
+		[](ThisClass* EditedObject) { return &EditedObject->FrictionController2; };
+
+	TFunction<FAGX_ConstraintLockController*(ThisClass*)> GetLockController1 =
+		[](ThisClass* EditedObject) { return &EditedObject->LockController1; };
+
+	TFunction<FAGX_ConstraintLockController*(ThisClass*)> GetLockController2 =
+		[](ThisClass* EditedObject) { return &EditedObject->LockController2; };
+
+	TFunction<FAGX_ConstraintRangeController*(ThisClass*)> GetRangeController1 =
+		[](ThisClass* EditedObject) { return &EditedObject->RangeController1; };
+
+	TFunction<FAGX_ConstraintRangeController*(ThisClass*)> GetRangeController2 =
+		[](ThisClass* EditedObject) { return &EditedObject->RangeController2; };
+
+	TFunction<FAGX_ConstraintTargetSpeedController*(ThisClass*)> GetTargetSpeedController1 =
+		[](ThisClass* EditedObject) { return &EditedObject->TargetSpeedController1; };
+
+	TFunction<FAGX_ConstraintTargetSpeedController*(ThisClass*)> GetTargetSpeedController2 =
+		[](ThisClass* EditedObject) { return &EditedObject->TargetSpeedController2; };
+
+	TFunction<FAGX_ConstraintScrewController*(ThisClass*)> GetScrewController =
+		[](ThisClass* EditedObject) { return &EditedObject->ScrewController; };
+
 	FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks(
-		PropertyDispatcher, &ElectricMotorController1,
+		PropertyDispatcher, GetElectricMotorController1,
 		GET_MEMBER_NAME_CHECKED(ThisClass, ElectricMotorController1));
 
 	FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks(
-		PropertyDispatcher, &ElectricMotorController2,
+		PropertyDispatcher, GetElectricMotorController2,
 		GET_MEMBER_NAME_CHECKED(ThisClass, ElectricMotorController2));
 
 	FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks(
-		PropertyDispatcher, &FrictionController1,
+		PropertyDispatcher, GetFrictionController1,
 		GET_MEMBER_NAME_CHECKED(ThisClass, FrictionController1));
 
 	FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks(
-		PropertyDispatcher, &FrictionController2,
+		PropertyDispatcher, GetFrictionController2,
 		GET_MEMBER_NAME_CHECKED(ThisClass, FrictionController2));
 
 	FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks(
-		PropertyDispatcher, &LockController1, GET_MEMBER_NAME_CHECKED(ThisClass, LockController1));
+		PropertyDispatcher, GetLockController1,
+		GET_MEMBER_NAME_CHECKED(ThisClass, LockController1));
 
 	FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks(
-		PropertyDispatcher, &LockController2, GET_MEMBER_NAME_CHECKED(ThisClass, LockController2));
+		PropertyDispatcher, GetLockController2,
+		GET_MEMBER_NAME_CHECKED(ThisClass, LockController2));
 
 	FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
-		PropertyDispatcher, &RangeController1,
+		PropertyDispatcher, GetRangeController1,
 		GET_MEMBER_NAME_CHECKED(ThisClass, RangeController1));
 
 	FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
-		PropertyDispatcher, &RangeController2,
+		PropertyDispatcher, GetRangeController2,
 		GET_MEMBER_NAME_CHECKED(ThisClass, RangeController2));
 
 	FAGX_ConstraintUtilities::AddTargetSpeedControllerPropertyCallbacks(
-		PropertyDispatcher, &TargetSpeedController1,
+		PropertyDispatcher, GetTargetSpeedController1,
 		GET_MEMBER_NAME_CHECKED(ThisClass, TargetSpeedController1));
 
 	FAGX_ConstraintUtilities::AddTargetSpeedControllerPropertyCallbacks(
-		PropertyDispatcher, &TargetSpeedController2,
+		PropertyDispatcher, GetTargetSpeedController2,
 		GET_MEMBER_NAME_CHECKED(ThisClass, TargetSpeedController2));
 
 	FAGX_ConstraintUtilities::AddScrewControllerPropertyCallbacks(
-		PropertyDispatcher, &ScrewController, GET_MEMBER_NAME_CHECKED(ThisClass, ScrewController));
+		PropertyDispatcher, GetScrewController,
+		GET_MEMBER_NAME_CHECKED(ThisClass, ScrewController));
 }
 
 void UAGX_Constraint2DofComponent::PostEditChangeChainProperty(
 	struct FPropertyChangedChainEvent& Event)
 {
-	PropertyDispatcher.Trigger(Event, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to

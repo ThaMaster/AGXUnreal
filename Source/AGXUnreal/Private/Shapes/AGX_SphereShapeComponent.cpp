@@ -3,7 +3,7 @@
 #include "Shapes/AGX_SphereShapeComponent.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_UpropertyDispatcher.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 UAGX_SphereShapeComponent::UAGX_SphereShapeComponent()
@@ -138,7 +138,7 @@ void UAGX_SphereShapeComponent::PostInitProperties()
 
 	// Cannot use the UAGX_ShapeComponent Property Dispatcher because there are name collisions for
 	// Shape-specific UProperty names, for example Radius is in both Sphere and Cylinder.
-	FAGX_UpropertyDispatcher<ThisClass>& Dispatcher = FAGX_UpropertyDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
@@ -152,7 +152,7 @@ void UAGX_SphereShapeComponent::PostInitProperties()
 void UAGX_SphereShapeComponent::PostEditChangeChainProperty(
 	struct FPropertyChangedChainEvent& Event)
 {
-	FAGX_UpropertyDispatcher<ThisClass>::Get().Trigger(Event, this);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
