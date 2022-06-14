@@ -84,16 +84,18 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	{
 		UAGX_ShapeMaterialInstance* MaterialInstance = static_cast<UAGX_ShapeMaterialInstance*>(
 			ShapeMaterial->GetOrCreateInstance(GetWorld()));
-		check(MaterialInstance);
-		UWorld* PlayingWorld = GetWorld();
-		if (MaterialInstance != ShapeMaterial && PlayingWorld && PlayingWorld->IsGameWorld())
+		if (MaterialInstance)
 		{
-			ShapeMaterial = MaterialInstance;
+			UWorld* PlayingWorld = GetWorld();
+			if (MaterialInstance != ShapeMaterial && PlayingWorld && PlayingWorld->IsGameWorld())
+			{
+				ShapeMaterial = MaterialInstance;
+			}
+			FShapeMaterialBarrier* MaterialBarrier =
+				MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
+			check(MaterialBarrier);
+			GetNative()->SetMaterial(*MaterialBarrier);
 		}
-		FShapeMaterialBarrier* MaterialBarrier =
-			MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
-		check(MaterialBarrier);
-		GetNative()->SetMaterial(*MaterialBarrier);
 	}
 
 	GetNative()->SetEnableCollisions(bCanCollide);
