@@ -39,7 +39,9 @@ void FMassPropertiesBarrier::SetMass(float MassUnreal)
 {
 	check(HasNative());
 	agx::Real MassAgx = ConvertToAGX(MassUnreal);
-	NativePtr->Native->setMass(MassAgx);
+	// Pass current auto-generate flag state because we do not want to accidentally change the mask.
+	bool bAutoGenerate = NativePtr->Native->getAutoGenerateMask() & agx::MassProperties::MASS;
+	NativePtr->Native->setMass(MassAgx, bAutoGenerate);
 }
 
 float FMassPropertiesBarrier::GetMass() const
@@ -54,7 +56,9 @@ void FMassPropertiesBarrier::SetPrincipalInertia(const FVector& InertiaUnreal)
 {
 	check(HasNative());
 	agx::Vec3 InertiaAgx = Convert(InertiaUnreal);
-	NativePtr->Native->setInertiaTensor(InertiaAgx);
+	// Pass current auto-generate flag state because we do not want to accidentally change the mask.
+	bool bAutoGenerate = NativePtr->Native->getAutoGenerateMask() & agx::MassProperties::INERTIA;
+	NativePtr->Native->setInertiaTensor(InertiaAgx, bAutoGenerate);
 }
 
 FVector FMassPropertiesBarrier::GetPrincipalInertia() const
@@ -67,10 +71,10 @@ FVector FMassPropertiesBarrier::GetPrincipalInertia() const
 
 namespace MassPropertiesBarrier_helpers
 {
-	void SetAutoGenerateFlag(agx::MassProperties& MassProperties, agx::Int32 Flag, bool Enable)
+	void SetAutoGenerateFlag(agx::MassProperties& MassProperties, agx::Int32 Flag, bool bEnable)
 	{
 		agx::UInt32 Mask = MassProperties.getAutoGenerateMask();
-		if (Enable)
+		if (bEnable)
 		{
 			Mask |= Flag;
 		}
@@ -78,7 +82,6 @@ namespace MassPropertiesBarrier_helpers
 		{
 			Mask &= ~Flag;
 		}
-		
 		MassProperties.setAutoGenerateMask(Mask);
 	}
 
