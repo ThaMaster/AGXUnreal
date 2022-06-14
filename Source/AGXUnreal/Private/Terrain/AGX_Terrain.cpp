@@ -15,6 +15,7 @@
 #include "Terrain/AGX_LandscapeSizeInfo.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
 #include "Utilities/AGX_HeightFieldUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
 
@@ -300,14 +301,29 @@ void AAGX_Terrain::InitializeNative()
 		return;
 	}
 
-	CreateNativeTerrain();
+	if (!CreateNativeTerrain())
+	{
+		return; // Logging done in CreateNativeTerrain.
+	}
+
 	CreateNativeShovels();
 	InitializeRendering();
 	CreateTerrainMaterial();
 }
 
-void AAGX_Terrain::CreateNativeTerrain()
+bool AAGX_Terrain::CreateNativeTerrain()
 {
+#if UE_VERSION_OLDER_THAN(5, 0, 0) == false
+	const bool IsOpenWorldLandscape = SourceLandscape->LandscapeComponents.Num() <= 0;
+	if (IsOpenWorldLandscape)
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Attempted to use AGX Terrain with an Open World Landscape. Open World Landscapes "
+			"are currently not supported. Please use a non Open World Level.");
+		return false;
+	}
+#endif
+
 	FHeightFieldShapeBarrier HeightField =
 		AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
 	NativeBarrier.AllocateNative(HeightField, MaxDepth);
@@ -331,7 +347,7 @@ void AAGX_Terrain::CreateNativeTerrain()
 			TEXT("Terrain '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
 				 "returned nullptr."),
 			*GetName(), *GetLabelSafe(GetOwner()));
-		return;
+		return false;
 	}
 
 	int32 NumIterations = Simulation->GetNumPpgsIterations();
@@ -353,6 +369,8 @@ void AAGX_Terrain::CreateNativeTerrain()
 		// I don't like it.
 		Simulation->NumPpgsIterations = Simulation->GetNative()->GetNumPpgsIterations();
 	}
+
+	return true;
 }
 
 void AAGX_Terrain::CreateNativeShovels()
@@ -785,6 +803,11 @@ bool AAGX_Terrain::InitializeParticlesMap()
 void AAGX_Terrain::UpdateParticlesMap()
 {
 	if (!ParticleSystemInitialized)
+	{
+		return;
+	}
+
+	if (!HasNative())
 	{
 		return;
 	}

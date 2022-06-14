@@ -227,6 +227,16 @@ void UAGX_HeightFieldShapeComponent::CreateNative()
 		return;
 	}
 
+#if UE_VERSION_OLDER_THAN(5, 0, 0) == false
+	const bool IsOpenWorldLandscape = SourceLandscape->LandscapeComponents.Num() <= 0;
+	if (IsOpenWorldLandscape)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Attempted to use AGX Terrain with an Open World Landscape. Open "
+			"World Landscapes are currently not supported. Please use a non Open World Level."));
+		return;
+	}
+#endif
+
 	NativeBarrier = AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
 	check(HasNative());
 	UpdateNativeProperties();
@@ -234,6 +244,8 @@ void UAGX_HeightFieldShapeComponent::CreateNative()
 
 void UAGX_HeightFieldShapeComponent::ReleaseNative()
 {
-	check(HasNative());
-	NativeBarrier.ReleaseNative();
+	if(HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
 }

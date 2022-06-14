@@ -276,7 +276,11 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 
 void UAGX_ShapeComponent::UpdateNativeGlobalTransform()
 {
-	check(HasNative());
+	if (!HasNative())
+	{
+		return;
+	}
+
 	FShapeBarrier* Shape = GetNative();
 	Shape->SetLocalPosition(GetComponentLocation());
 	Shape->SetLocalRotation(GetComponentQuat());
