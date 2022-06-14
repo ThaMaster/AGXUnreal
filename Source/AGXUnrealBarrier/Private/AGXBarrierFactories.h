@@ -76,7 +76,7 @@ namespace agxWire
  */
 namespace AGXBarrierFactories
 {
-	FRigidBodyBarrier CreateRigidBodyBarrier(agx::RigidBody* Body);
+	FRigidBodyBarrier AGXUNREALBARRIER_API CreateRigidBodyBarrier(agx::RigidBody* Body);
 
 	FEmptyShapeBarrier CreateEmptyShapeBarrier(agxCollide::Geometry* Geometry);
 
