@@ -2,35 +2,34 @@
 
 #include "AGX_AgxDynamicsObjectsAccess.h"
 
+
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "AGXRefs.h"
-#include "RigidBodyBarrier.h"
-#include "SimulationBarrier.h"
-#include "Shapes/ShapeBarrier.h"
 #include "Constraints/BallJointBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Constraints/DistanceJointBarrier.h"
 #include "Constraints/HingeBarrier.h"
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
-#include "AGX_LogCategory.h"
+#include "Materials/ShapeMaterialBarrier.h"
+#include "RigidBodyBarrier.h"
+#include "SimulationBarrier.h"
+#include "Shapes/ShapeBarrier.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
-
-#include <agx/RigidBody.h>
 #include <agx/BallJoint.h>
 #include <agx/CylindricalJoint.h>
 #include <agx/DistanceJoint.h>
 #include <agx/Hinge.h>
 #include <agx/LockJoint.h>
+#include <agx/Material.h>
 #include <agx/Prismatic.h>
-
-#include <agxSDK/Simulation.h>
-
+#include <agx/RigidBody.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
-
+#include <agxSDK/Simulation.h>
 #include "EndAGXIncludes.h"
 
 namespace AgxDynamicsObjectAccess_Helper
@@ -167,4 +166,9 @@ agx::LockJoint* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FLockJointBarrier* 
 agx::Prismatic* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FPrismaticBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFromAs<agx::Prismatic>(Barrier);
+}
+
+agx::Material* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FShapeMaterialBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFromAs<agx::Material>(Barrier);
 }
