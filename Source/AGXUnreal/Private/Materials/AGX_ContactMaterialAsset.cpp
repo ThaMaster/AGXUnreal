@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 
 // Unreal Engine includes.
 #include "Engine/World.h"
@@ -15,13 +16,15 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialAsset::GetInstance()
 	return Instance.Get();
 }
 
-UAGX_ContactMaterialInstance* UAGX_ContactMaterialAsset::GetOrCreateInstance(UWorld* PlayingWorld)
+UAGX_ContactMaterialInstance* UAGX_ContactMaterialAsset::GetOrCreateInstance(
+	UAGX_ContactMaterialRegistrarComponent* Registrar)
 {
 	UAGX_ContactMaterialInstance* InstancePtr = Instance.Get();
+	UWorld* PlayingWorld = Registrar->GetWorld();
 
 	if (!InstancePtr && PlayingWorld && PlayingWorld->IsGameWorld())
 	{
-		InstancePtr = UAGX_ContactMaterialInstance::CreateFromAsset(PlayingWorld, this);
+		InstancePtr = UAGX_ContactMaterialInstance::CreateFromAsset(Registrar, this);
 		Instance = InstancePtr;
 	}
 
@@ -99,6 +102,16 @@ void UAGX_ContactMaterialAsset::PostInitProperties()
 		[](ThisClass* Asset) { Asset->GetInstance()->SetFrictionModel(Asset->FrictionModel); });
 
 	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, NormalForceMagnitude),
+		[](ThisClass* Asset)
+		{ Asset->GetInstance()->SetNormalForceMagnitude(Asset->NormalForceMagnitude); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, bScaleNormalForceWithDepth),
+		[](ThisClass* Asset)
+		{ Asset->GetInstance()->SetScaleNormalForceWithDepth(Asset->bScaleNormalForceWithDepth); });
+
+	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, bSurfaceFrictionEnabled),
 		[](ThisClass* Asset)
 		{ Asset->GetInstance()->SetSurfaceFrictionEnabled(Asset->bSurfaceFrictionEnabled); });
@@ -158,6 +171,10 @@ void UAGX_ContactMaterialAsset::PostInitProperties()
 			Asset->GetInstance()->SetUseSecondarySurfaceViscosity(
 				Asset->bUseSecondarySurfaceViscosity);
 		});
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, PrimaryDirection),
+		[](ThisClass* Asset) { Asset->GetInstance()->SetPrimaryDirection(Asset->PrimaryDirection); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, Restitution),

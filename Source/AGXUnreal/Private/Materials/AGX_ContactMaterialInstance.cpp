@@ -4,19 +4,98 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Materials/AGX_MaterialBase.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/World.h"
+#include "EngineUtils.h"
+
+namespace
+{
+	AActor* FindActorByName(UWorld* World, const FName& ActorName)
+	{
+		check(World);
+		for (TActorIterator<AActor> It(World); It; ++It)
+		{
+			if (It->GetFName().IsEqual(ActorName, ENameCase::CaseSensitive))
+			{
+				return *It;
+			}
+		}
+		return nullptr;
+	}
+
+	/**
+	 * Finds and the component that should be used as oriented friction model Reference Frame,
+	 * given a component name, owning actor name (optional), and the
+	 * ContactMaterialRegistrarComponent that registers the contact material.
+	 *
+	 * If the actor name is is empty the component will be searched for in actor owning the
+	 * ContactMaterialRegistrarComponent.
+	 *
+	 * Currently the component must be a UAGX_RigidBodyComponent.
+	 */
+	UAGX_RigidBodyComponent* FindReferenceFrameComponent(
+		const FName& ComponentName, const FName& ActorName,
+		UAGX_ContactMaterialRegistrarComponent* Registrar)
+	{
+		check(Registrar);
+		check(Registrar->GetTypedOuter<AActor>());
+
+		if (ComponentName.IsNone())
+			return nullptr;
+
+		AActor* OwningActor = ActorName.IsNone()
+								  ? Registrar->GetTypedOuter<AActor>()
+								  : FindActorByName(Registrar->GetWorld(), ActorName);
+
+		if (OwningActor == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("FindReferenceFrame() failed to find reference frame component matching "
+					 "ComponentName: '%s', ActorName: '%s', Registrar: '%s' in '%s' because the "
+					 "owning actor could not be found."),
+				*ComponentName.ToString(), *ActorName.ToString(), *Registrar->GetName(),
+				*GetFNameSafe(Registrar->GetOwner()).ToString());
+			return nullptr;
+		}
+
+		TArray<UAGX_RigidBodyComponent*> Bodies;
+		OwningActor->GetComponents(Bodies);
+		UAGX_RigidBodyComponent** It =
+			Bodies.FindByPredicate([ComponentName](UAGX_RigidBodyComponent* Body) {
+				return Body->GetFName().IsEqual(ComponentName, ENameCase::CaseSensitive);
+			});
+		if (It == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("FindReferenceFrame() failed to find reference frame component matching "
+					 "ComponentName: '%s', ActorName: '%s', Registrar: '%s' in '%s' because the "
+					 "component could not be found inside the actor."),
+				*ComponentName.ToString(), *ActorName.ToString(), *Registrar->GetName(),
+				*GetFNameSafe(Registrar->GetOwner()).ToString());
+			return nullptr;
+		}
+		return *It;
+	}
+}
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::CreateFromAsset(
-	UWorld* PlayingWorld, UAGX_ContactMaterialAsset* Source)
+	UAGX_ContactMaterialRegistrarComponent* Registrar, UAGX_ContactMaterialAsset* Source)
 {
 	check(Source);
+	check(Registrar);
+
+	UWorld* PlayingWorld = Registrar->GetWorld();
 	check(PlayingWorld);
 	check(PlayingWorld->IsGameWorld());
 
@@ -31,7 +110,7 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::CreateFromAsset(
 	NewInstance->CopyFrom(Source);
 	NewInstance->SourceAsset = Source;
 
-	NewInstance->CreateNative(PlayingWorld);
+	NewInstance->CreateNative(Registrar);
 
 	return NewInstance;
 }
@@ -122,6 +201,43 @@ void UAGX_ContactMaterialInstance::SetFrictionModel(EAGX_FrictionModel InFrictio
 
 	/// @todo This static_cast is suspicious. Consider passing the enum a bit further.
 	NativeBarrier->SetFrictionModel(static_cast<int32>(FrictionModel));
+
+	// If friction model changes, re-set friction model dependent parameters.
+	if (FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction)
+	{
+		NativeBarrier->SetNormalForceMagnitude(NormalForceMagnitude);
+		NativeBarrier->SetEnableScaleNormalForceWithDepth(bScaleNormalForceWithDepth);
+	}
+	if (IsOrientedFrictionModel())
+	{
+		NativeBarrier->SetPrimaryDirection(PrimaryDirection);
+	}
+}
+
+void UAGX_ContactMaterialInstance::SetNormalForceMagnitude(float InNormalForceMagnitude)
+{
+	Super::SetNormalForceMagnitude(InNormalForceMagnitude);
+	if (!HasNative())
+	{
+		return;
+	}
+	if (FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction)
+	{
+		NativeBarrier->SetNormalForceMagnitude(InNormalForceMagnitude);
+	}
+}
+
+void UAGX_ContactMaterialInstance::SetScaleNormalForceWithDepth(bool bEnabled)
+{
+	Super::SetScaleNormalForceWithDepth(bEnabled);
+	if (!HasNative())
+	{
+		return;
+	}
+	if (FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction)
+	{
+		NativeBarrier->SetEnableScaleNormalForceWithDepth(bEnabled);
+	}
 }
 
 void UAGX_ContactMaterialInstance::SetSurfaceFrictionEnabled(bool bInSurfaceFrictionEnabled)
@@ -220,6 +336,19 @@ void UAGX_ContactMaterialInstance::SetUseSecondarySurfaceViscosity(
 	}
 }
 
+void UAGX_ContactMaterialInstance::SetPrimaryDirection(const FVector& InPrimaryDirection)
+{
+	Super::SetPrimaryDirection(InPrimaryDirection);
+	if (!HasNative())
+	{
+		return;
+	}
+	if (IsOrientedFrictionModel())
+	{
+		NativeBarrier->SetPrimaryDirection(InPrimaryDirection);
+	}
+}
+
 void UAGX_ContactMaterialInstance::SetRestitution(float InRestitution)
 {
 	Super::SetRestitution(InRestitution);
@@ -270,11 +399,12 @@ void UAGX_ContactMaterialInstance::SetAdhesiveOverlap(float InAdhesiveOverlap)
 	NativeBarrier->SetAdhesion(AdhesiveForce, AdhesiveOverlap);
 }
 
-FContactMaterialBarrier* UAGX_ContactMaterialInstance::GetOrCreateNative(UWorld* PlayingWorld)
+FContactMaterialBarrier* UAGX_ContactMaterialInstance::GetOrCreateNative(
+	UAGX_ContactMaterialRegistrarComponent* Registrar)
 {
 	if (!HasNative())
 	{
-		CreateNative(PlayingWorld);
+		CreateNative(Registrar);
 	}
 	return GetNative();
 }
@@ -296,17 +426,23 @@ bool UAGX_ContactMaterialInstance::HasNative() const
 	return NativeBarrier && NativeBarrier->HasNative();
 }
 
-void UAGX_ContactMaterialInstance::UpdateNativeProperties()
+void UAGX_ContactMaterialInstance::UpdateNativeProperties(
+	UAGX_ContactMaterialRegistrarComponent* Registrar)
 {
 	if (HasNative())
 	{
 		// Friction related properties
 		{
+			/// \note Setting Friction Model before Solve Type, NormalForceMagnitude,
 			/// \note Setting Friction Model before Solve Type, because Solve Type is part of the
 			/// Friction Model object.
 			NativeBarrier->SetFrictionModel(static_cast<uint32>(FrictionModel));
+			if (FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction)
+			{
+				NativeBarrier->SetNormalForceMagnitude(NormalForceMagnitude);
+				NativeBarrier->SetEnableScaleNormalForceWithDepth(bScaleNormalForceWithDepth);
+			}
 			NativeBarrier->SetSurfaceFrictionEnabled(bSurfaceFrictionEnabled);
-
 			NativeBarrier->SetFrictionCoefficient(
 				FrictionCoefficient, /*bPrimaryDir*/ true,
 				/*bSecondaryDir*/ !bUseSecondaryFrictionCoefficient);
@@ -323,6 +459,42 @@ void UAGX_ContactMaterialInstance::UpdateNativeProperties()
 			{
 				NativeBarrier->SetSurfaceViscosity(
 					SecondarySurfaceViscosity, /*bPrimaryDir*/ false, /*bSecondaryDir*/ true);
+			}
+			// Update properties exclusive to oriented friction models.
+			if (IsOrientedFrictionModel())
+			{
+				NativeBarrier->SetPrimaryDirection(PrimaryDirection);
+
+				// Set reference frame on native
+				UAGX_RigidBodyComponent* ReferenceFrameBody = FindReferenceFrameComponent(
+					OrientedFrictionReferenceFrameComponent, OrientedFrictionReferenceFrameActor,
+					Registrar);
+				if (!ReferenceFrameBody)
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("ContactMaterial '%s' has a oriented friction model but the component "
+							 "to "
+							 "use as Reference Frame could not be found. Oriented friction might "
+							 "not work "
+							 "as expected."),
+						*GetName());
+					NativeBarrier->SetOrientedFrictionModelReferenceFrame(nullptr);
+				}
+				else
+				{
+					UE_LOG(
+						LogAGX, Log,
+						TEXT("Reference Frame of ContactMaterial '%s' is being set to component "
+							 "'%s' in '%s'."),
+						*GetName(), *ReferenceFrameBody->GetName(),
+						*GetFNameSafe(ReferenceFrameBody->GetOwner()).ToString());
+					FRigidBodyBarrier* ReferenceFrameBodyBarrier =
+						ReferenceFrameBody->GetOrCreateNative();
+					check(ReferenceFrameBodyBarrier);
+					NativeBarrier->SetOrientedFrictionModelReferenceFrame(
+						ReferenceFrameBodyBarrier);
+				}
 			}
 		}
 
@@ -352,14 +524,16 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::GetInstance()
 }
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::GetOrCreateInstance(
-	UWorld* PlayingWorld)
+	UAGX_ContactMaterialRegistrarComponent* Registrar)
 {
 	return this;
 };
 
-void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
+void UAGX_ContactMaterialInstance::CreateNative(UAGX_ContactMaterialRegistrarComponent* Registrar)
 {
 	NativeBarrier.Reset(new FContactMaterialBarrier());
+
+	UWorld* PlayingWorld = Registrar->GetWorld();
 
 	/// \note AGX seems OK with referenced materials being null. Falls back on native default
 	/// material.
@@ -397,5 +571,7 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 		MaterialBarrier1, MaterialBarrier2); // materials can only be set on construction
 	check(HasNative());
 
-	UpdateNativeProperties();
+	// /todo Cache the Registrar as a ConactMaterialInstance member variable instead of
+	//       passing it around as argument?
+	UpdateNativeProperties(Registrar);
 }

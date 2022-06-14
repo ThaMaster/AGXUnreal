@@ -34,7 +34,7 @@ enum class EAGX_ContactSolver : uint8
 UENUM(BlueprintType)
 enum class EAGX_FrictionModel : uint8
 {
-	NotDefined,
+	NotDefined = 0,
 
 	/**
 	 * Box friction. Static bounds during solve. The friction box is aligned with the world axes.
@@ -42,7 +42,7 @@ enum class EAGX_FrictionModel : uint8
 	 * impact speed, mass, and gravity, or for continuous contacts equal to the the last normal
 	 * force.
 	 */
-	BoxFriction,
+	BoxFriction = 1,
 
 	/**
 	 * This model uses the current (i.e. correct) normal force received by the solver.
@@ -50,7 +50,7 @@ enum class EAGX_FrictionModel : uint8
 	 * It is computationally more expensive than the box friction model but with a more realistic
 	 * dry friction.
 	 */
-	ScaledBoxFriction,
+	ScaledBoxFriction = 2,
 
 	/**
 	 * This friction model is the default in AGX Dynamics.
@@ -66,5 +66,43 @@ enum class EAGX_FrictionModel : uint8
 	 * projected onto the friction cone, i.e., you will always get friction_force =
 	 * friction_coefficient * normal_force.
 	 */
-	IterativeProjectedConeFriction
+	IterativeProjectedConeFriction = 3,
+
+	/**
+	 * Box friction model with oriented friction box.
+	 */
+	OrientedBoxFriction = 4,
+
+	/**
+	 * Scale box friction model with oriented friction box.
+	 */
+	OrientedScaledBoxFriction = 5,
+
+	/**
+	 * Iterative projected cone friction model with oriented friction box.
+	 */
+	OrientedIterativeProjectedConeFriction = 6,
+
+	/**
+	 * Oriented box friction model that uses the same normal force magnitude for all contact points
+	 * associated to this friction model.
+	 *
+	 * This means that the size of the friction box always will be:
+	 *   Primary Direction   = (Primary) Friction Coefficient * Normal Force Magnitude
+	 *   Secondary Direction = Secondary Friction Coefficient * Normal Force Magnitude
+	 *
+	 * The given normal force can also be scaled with the contact point depth by setting
+	 * 'Scale Normal Force With Depth' to true.
+	 */
+	 OrientedConstantNormalForceBoxFriction = 7,
+
 };
+
+inline bool IsOrientedFrictionModel(EAGX_FrictionModel FrictionModel)
+{
+	return
+		FrictionModel == EAGX_FrictionModel::OrientedBoxFriction ||
+		FrictionModel == EAGX_FrictionModel::OrientedScaledBoxFriction ||
+		FrictionModel == EAGX_FrictionModel::OrientedIterativeProjectedConeFriction ||
+		FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction;
+}

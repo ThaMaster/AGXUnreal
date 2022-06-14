@@ -6,20 +6,22 @@
 #include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/ContactMaterialBarrier.h"
 
 // Unreal Engine includes.
 #include "Engine/World.h"
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialBase::GetOrCreateInstance(
-	UWorld* PlayingWorld, UAGX_ContactMaterialBase*& Property)
+	UAGX_ContactMaterialRegistrarComponent* Registrar, UAGX_ContactMaterialBase*& Property)
 {
+	UWorld* PlayingWorld = Registrar->GetWorld();
 	if (Property == nullptr || PlayingWorld == nullptr || !PlayingWorld->IsGameWorld())
 	{
 		return nullptr;
 	}
 
-	UAGX_ContactMaterialInstance* Instance = Property->GetOrCreateInstance(PlayingWorld);
+	UAGX_ContactMaterialInstance* Instance = Property->GetOrCreateInstance(Registrar);
 
 	if (Instance != Property)
 	{
@@ -46,6 +48,8 @@ void UAGX_ContactMaterialBase::CopyFrom(const FContactMaterialBarrier* Source)
 		MechanicsApproach.MaxElasticRestLength = Source->GetMaxElasticRestLength();
 
 		FrictionModel = static_cast<EAGX_FrictionModel>(Source->GetFrictionModel());
+		Source->GetNormalForceMagnitude(NormalForceMagnitude);
+		Source->GetEnableScaleNormalForceWithDepth(bScaleNormalForceWithDepth);
 		bSurfaceFrictionEnabled = Source->GetSurfaceFrictionEnabled();
 		FrictionCoefficient = Source->GetFrictionCoefficient(true, false);
 		SecondaryFrictionCoefficient = Source->GetFrictionCoefficient(false, true);
@@ -53,6 +57,11 @@ void UAGX_ContactMaterialBase::CopyFrom(const FContactMaterialBarrier* Source)
 		SurfaceViscosity = Source->GetSurfaceViscosity(true, false);
 		SecondarySurfaceViscosity = Source->GetSurfaceViscosity(false, true);
 		bUseSecondarySurfaceViscosity = SurfaceViscosity != SecondarySurfaceViscosity;
+		Source->GetPrimaryDirection(PrimaryDirection);
+		// \todo How to extract the reference frame properties below from imported .agx archive barrier?
+		OrientedFrictionReferenceFrameActor = FName();
+		OrientedFrictionReferenceFrameComponent = FName();
+
 		Restitution = Source->GetRestitution();
 		YoungsModulus = Source->GetYoungsModulus();
 		SpookDamping = Source->GetSpookDamping();
@@ -63,11 +72,11 @@ void UAGX_ContactMaterialBase::CopyFrom(const FContactMaterialBarrier* Source)
 
 UAGX_ContactMaterialBase::UAGX_ContactMaterialBase()
 	: ContactSolver(EAGX_ContactSolver::Split)
-	, ContactReduction()
-	, // defaults defined in struct's constructor
-	MechanicsApproach()
-	, // defaults defined in struct's constructor
-	FrictionModel(EAGX_FrictionModel::IterativeProjectedConeFriction)
+	, ContactReduction() // defaults defined in struct's constructor
+	, MechanicsApproach() // defaults defined in struct's constructor
+	, FrictionModel(EAGX_FrictionModel::IterativeProjectedConeFriction)
+	, NormalForceMagnitude(100.0)
+	, bScaleNormalForceWithDepth(false)
 	, bSurfaceFrictionEnabled(true)
 	, FrictionCoefficient(0.25 / (2 * 0.3))
 	, SecondaryFrictionCoefficient(0.25 / (2 * 0.3))
@@ -75,6 +84,9 @@ UAGX_ContactMaterialBase::UAGX_ContactMaterialBase()
 	, SurfaceViscosity(5.0E-9)
 	, SecondarySurfaceViscosity(5.0E-9)
 	, bUseSecondarySurfaceViscosity(false)
+	, PrimaryDirection(FVector::ForwardVector)
+	, OrientedFrictionReferenceFrameActor()
+	, OrientedFrictionReferenceFrameComponent()
 	, Restitution(0.5)
 	, YoungsModulus(2.0 / 5.0E-9)
 	, SpookDamping(4.5 / 60.0)
@@ -128,6 +140,16 @@ void UAGX_ContactMaterialBase::SetSurfaceFrictionEnabled(bool bInSurfaceFriction
 	bSurfaceFrictionEnabled = bInSurfaceFrictionEnabled;
 }
 
+void UAGX_ContactMaterialBase::SetNormalForceMagnitude(float InNormalForceMagnitude)
+{
+	NormalForceMagnitude = InNormalForceMagnitude;
+}
+
+void UAGX_ContactMaterialBase::SetScaleNormalForceWithDepth(bool bEnabled)
+{
+	bScaleNormalForceWithDepth = bEnabled;
+}
+
 void UAGX_ContactMaterialBase::SetFrictionCoefficient(float InFrictionCoefficient)
 {
 	FrictionCoefficient = static_cast<double>(InFrictionCoefficient);
@@ -157,6 +179,16 @@ void UAGX_ContactMaterialBase::SetSecondarySurfaceViscosity(float InSecondarySur
 void UAGX_ContactMaterialBase::SetUseSecondarySurfaceViscosity(bool bInUseSecondarySurfaceViscosity)
 {
 	bUseSecondarySurfaceViscosity = bInUseSecondarySurfaceViscosity;
+}
+
+void UAGX_ContactMaterialBase::SetPrimaryDirection(const FVector& InPrimaryDirection)
+{
+	PrimaryDirection = InPrimaryDirection;
+}
+
+bool UAGX_ContactMaterialBase::IsOrientedFrictionModel()
+{
+	return ::IsOrientedFrictionModel(FrictionModel);
 }
 
 void UAGX_ContactMaterialBase::SetRestitution(float InRestitution)
@@ -203,6 +235,8 @@ void UAGX_ContactMaterialBase::CopyFrom(const UAGX_ContactMaterialBase* Source)
 		COPY_MAT_PROPERTY(Source, MechanicsApproach);
 
 		COPY_MAT_PROPERTY(Source, FrictionModel);
+		COPY_MAT_PROPERTY(Source, NormalForceMagnitude);
+		COPY_MAT_PROPERTY(Source, bScaleNormalForceWithDepth);
 		COPY_MAT_PROPERTY(Source, bSurfaceFrictionEnabled);
 		COPY_MAT_PROPERTY(Source, FrictionCoefficient);
 		COPY_MAT_PROPERTY(Source, SecondaryFrictionCoefficient);
@@ -210,6 +244,9 @@ void UAGX_ContactMaterialBase::CopyFrom(const UAGX_ContactMaterialBase* Source)
 		COPY_MAT_PROPERTY(Source, SurfaceViscosity);
 		COPY_MAT_PROPERTY(Source, SecondarySurfaceViscosity);
 		COPY_MAT_PROPERTY(Source, bUseSecondarySurfaceViscosity);
+		COPY_MAT_PROPERTY(Source, PrimaryDirection);
+		COPY_MAT_PROPERTY(Source, OrientedFrictionReferenceFrameActor);
+		COPY_MAT_PROPERTY(Source, OrientedFrictionReferenceFrameComponent);
 
 		COPY_MAT_PROPERTY(Source, Restitution);
 		COPY_MAT_PROPERTY(Source, YoungsModulus);

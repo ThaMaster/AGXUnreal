@@ -8,8 +8,7 @@
 
 struct FContactMaterialRef;
 class FShapeMaterialBarrier;
-
-class FShapeMaterialBarrier;
+class FRigidBodyBarrier;
 
 /**
  * Acts as an interface to a native AGX Contact Material, and encapsulates it so that it is
@@ -37,6 +36,12 @@ public:
 	void SetFrictionModel(int32 FrictionModel);
 	int32 GetFrictionModel() const;
 
+	bool SetNormalForceMagnitude(double NormalForceMagnitude);
+	bool GetNormalForceMagnitude(double& NormalForceMagnitude) const;
+
+	bool SetEnableScaleNormalForceWithDepth(bool bEnabled);
+	bool GetEnableScaleNormalForceWithDepth(bool& bEnabled) const;
+
 	void SetRestitution(double Restitution);
 	double GetRestitution() const;
 
@@ -49,6 +54,11 @@ public:
 
 	void SetSurfaceViscosity(double Viscosity, bool bPrimaryDirection, bool bSecondaryDirection);
 	double GetSurfaceViscosity(bool bPrimaryDirection, bool bSecondaryDirection) const;
+
+	bool SetPrimaryDirection(const FVector& Direction);
+	bool GetPrimaryDirection(FVector& Direction) const;
+
+	bool SetOrientedFrictionModelReferenceFrame(FRigidBodyBarrier* RigidBody);
 
 	void SetAdhesion(double AdhesiveForce, double AdhesiveOverlap);
 	double GetAdhesiveForce() const;

@@ -4,9 +4,17 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
+#include "AGX_AgxDynamicsObjectsAccess.h"
 #include "AGXBarrierFactories.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "TypeConversions.h"
+
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agx/FrictionModel.h>
+#include <agx/OrientedFrictionModels.h>
+#include <agx/RigidBody.h>
+#include "EndAGXIncludes.h"
 
 #include <Misc/AssertionMacros.h>
 
@@ -20,6 +28,12 @@ namespace
 	agx::FrictionModelRef ConvertFrictionModelToAgx(int32 FrictionModelType)
 	{
 		// Input value refers to EAGX_FrictionModel in AGX_ContactMaterialEnums.h
+
+		// \note The oriented friction models have no public default constructor,
+		//       so just set temporary default values and depend on that they are overwritten
+		//       by subsequent setter calls.
+		static const agx::Vec3 DefaultPrimaryDir = agx::Vec3::X_AXIS();
+
 		switch (FrictionModelType)
 		{
 			case 0:
@@ -30,6 +44,16 @@ namespace
 				return new agx::ScaleBoxFrictionModel();
 			case 3:
 				return new agx::IterativeProjectedConeFriction();
+			case 4:
+				return new agx::OrientedBoxFrictionModel(nullptr, DefaultPrimaryDir);
+			case 5:
+				return new agx::OrientedScaleBoxFrictionModel(nullptr, DefaultPrimaryDir);
+			case 6:
+				return new agx::OrientedIterativeProjectedConeFrictionModel(
+					nullptr, DefaultPrimaryDir);
+			case 7:
+				return new agx::ConstantNormalForceOrientedBoxFrictionModel(
+					0, nullptr, DefaultPrimaryDir);
 			default:
 				check(!"ConvertFrictionModelToAgx received unsupported value");
 				return nullptr;
@@ -40,19 +64,37 @@ namespace
 	{
 		// Output value refers to EAGX_FrictionModel in AGX_ContactMaterialEnums.h
 
-		if (dynamic_cast<const agx::BoxFrictionModel*>(FrictionModel))
+		// \note Order below is important because some types below inherit from others.
+		//       Hierarchically deep types must be cast-tested before their ancestor types!
+		// \todo Consider using typeid() to compare exact types instead.
+
+		if (dynamic_cast<const agx::ConstantNormalForceOrientedBoxFrictionModel*>(FrictionModel))
 		{
-			return 1;
+			return 7;
+		}
+		if (dynamic_cast<const agx::OrientedIterativeProjectedConeFrictionModel*>(FrictionModel))
+		{
+			return 6;
+		}
+		else if (dynamic_cast<const agx::OrientedScaleBoxFrictionModel*>(FrictionModel))
+		{
+			return 5;
+		}
+		else if (dynamic_cast<const agx::OrientedBoxFrictionModel*>(FrictionModel))
+		{
+			return 4;
 		}
 		else if (dynamic_cast<const agx::IterativeProjectedConeFriction*>(FrictionModel))
 		{
-			// Since IterativeProjectedConeFriction inherits from ScaleBoxFrictionModel, we must try
-			// casting to IterativeProjectedConeFriction before ScaleBoxFrictionModel.
 			return 3;
 		}
 		else if (dynamic_cast<const agx::ScaleBoxFrictionModel*>(FrictionModel))
 		{
 			return 2;
+		}
+		else if (dynamic_cast<const agx::BoxFrictionModel*>(FrictionModel))
+		{
+			return 1;
 		}
 		else
 		{
@@ -216,6 +258,85 @@ int32 FContactMaterialBarrier::GetFrictionModel() const
 	return ConvertFrictionModelToUnreal(NativeRef->Native->getFrictionModel());
 }
 
+bool FContactMaterialBarrier::SetNormalForceMagnitude(double NormalForceMagnitude)
+{
+	check(HasNative());
+
+	if (auto* FrictionModel = dynamic_cast<agx::ConstantNormalForceOrientedBoxFrictionModel*>(
+			NativeRef->Native->getFrictionModel()))
+	{
+		FrictionModel->setNormalForceMagnitude(NormalForceMagnitude);
+		return true;
+	}
+	else
+	{
+		// \todo If FrictionModel is set AFTER this function call, we could cache the
+		// NormalForceMagnitude here and write it when FrictionModel changes to appropriate type.
+		// That would make the code less prone to problems caused by function call order.
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Failed to set NormalForceMagnitude on native ContactMaterial because its "
+				 "FrictionModel has not been set to ConstantNormalForceOrientedBoxFrictionModel."));
+		return false;
+	}
+}
+
+bool FContactMaterialBarrier::GetNormalForceMagnitude(double& NormalForceMagnitude) const
+{
+	check(HasNative());
+
+	if (auto* FrictionModel = dynamic_cast<agx::ConstantNormalForceOrientedBoxFrictionModel*>(
+			NativeRef->Native->getFrictionModel()))
+	{
+		NormalForceMagnitude = FrictionModel->getNormalForceMagnitude();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool FContactMaterialBarrier::SetEnableScaleNormalForceWithDepth(bool bEnabled)
+{
+	check(HasNative());
+
+	if (auto* FrictionModel = dynamic_cast<agx::ConstantNormalForceOrientedBoxFrictionModel*>(
+			NativeRef->Native->getFrictionModel()))
+	{
+		FrictionModel->setEnableScaleWithDepth(bEnabled);
+		return true;
+	}
+	else
+	{
+		// \todo If FrictionModel is set AFTER this function call, we could cache the
+		// NormalForceMagnitude here and write it when FrictionModel changes to appropriate type.
+		// That would make the code less prone to problems caused by function call order.
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Failed to set EnableScaleNormalForceWithDepth on native ContactMaterial because "
+				 "its "
+				 "FrictionModel has not been set to ConstantNormalForceOrientedBoxFrictionModel."));
+		return false;
+	}
+}
+
+bool FContactMaterialBarrier::GetEnableScaleNormalForceWithDepth(bool& bEnabled) const
+{
+	check(HasNative());
+
+	if (auto* FrictionModel = dynamic_cast<agx::ConstantNormalForceOrientedBoxFrictionModel*>(
+			NativeRef->Native->getFrictionModel()))
+	{
+		bEnabled = FrictionModel->getEnableScaleWithDepth();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 void FContactMaterialBarrier::SetRestitution(double Restitution)
 {
 	check(HasNative());
@@ -274,6 +395,136 @@ double FContactMaterialBarrier::GetSurfaceViscosity(
 	agx::ContactMaterial::FrictionDirection NativeDirection =
 		ConvertDirectionToAgx(bPrimaryDirection, bSecondaryDirection);
 	return NativeRef->Native->getSurfaceViscosity(NativeDirection);
+}
+
+bool FContactMaterialBarrier::SetPrimaryDirection(const FVector& Direction)
+{
+	check(HasNative());
+
+	agx::FrictionModel* FrictionModel = NativeRef->Native->getFrictionModel();
+	agx::Vec3 DirAGX = ConvertVector(Direction.GetSafeNormal());
+
+	// \todo Perhaps we can solve the if-else below in a more elegant way using templates or macros?
+
+	if (auto* OrientedBoxModel = dynamic_cast<agx::OrientedBoxFrictionModel*>(FrictionModel))
+	{
+		OrientedBoxModel->setPrimaryDirection(DirAGX);
+	}
+	else if (
+		auto* OrientedScaleBoxModel =
+			dynamic_cast<agx::OrientedScaleBoxFrictionModel*>(FrictionModel))
+	{
+		OrientedScaleBoxModel->setPrimaryDirection(DirAGX);
+	}
+	else if (
+		auto* OrientedConeModel =
+			dynamic_cast<agx::OrientedIterativeProjectedConeFrictionModel*>(FrictionModel))
+	{
+		OrientedConeModel->setPrimaryDirection(DirAGX);
+	}
+	else if (
+		auto* OrientedConstantNormalModel =
+			dynamic_cast<agx::ConstantNormalForceOrientedBoxFrictionModel*>(FrictionModel))
+	{
+		OrientedConstantNormalModel->setPrimaryDirection(DirAGX);
+	}
+	else
+	{
+		// \todo If FrictionModel is set AFTER this function call, we could cache the
+		// Direction vector here and write it when FrictionModel changes to appropriate type.
+		// That would make the code less prone to problems caused by function call order.
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Failed to set PrimaryDirection on native ContactMaterial because it has "
+				 "not been set to use an Oriented Friction Model."));
+		return false;
+	}
+	return true;
+}
+
+bool FContactMaterialBarrier::GetPrimaryDirection(FVector& Direction) const
+{
+	check(HasNative());
+
+	agx::FrictionModel* FrictionModel = NativeRef->Native->getFrictionModel();
+	agx::Vec3 DirAGX = agx::Vec3::X_AXIS();
+
+	// \todo Perhaps we can solve the if-else below in a more elegant way using templates or macros?
+
+	if (auto* OrientedBoxModel = dynamic_cast<agx::OrientedBoxFrictionModel*>(FrictionModel))
+	{
+		DirAGX = OrientedBoxModel->getPrimaryDirection();
+	}
+	else if (auto* OrientedScaleBoxModel = dynamic_cast<agx::OrientedScaleBoxFrictionModel*>(FrictionModel))
+	{
+		DirAGX = OrientedScaleBoxModel->getPrimaryDirection();
+	}
+	else if (
+		auto* OrientedConeModel =
+			dynamic_cast<agx::OrientedIterativeProjectedConeFrictionModel*>(FrictionModel))
+	{
+		DirAGX = OrientedConeModel->getPrimaryDirection();
+	}
+	else if (
+		auto* OrientedConstantNormalModel =
+			dynamic_cast<agx::ConstantNormalForceOrientedBoxFrictionModel*>(FrictionModel))
+	{
+		DirAGX = OrientedConstantNormalModel->getPrimaryDirection();
+	}
+	else
+	{
+		return false;
+	}
+	return true;
+}
+
+bool FContactMaterialBarrier::SetOrientedFrictionModelReferenceFrame(FRigidBodyBarrier* RigidBody)
+{
+	check(HasNative());
+
+	// \todo Let the user choose frames other than RigidBody, for example it would be convenient
+	//       to be able to use the frame of a Shape, or any UE Scene Component (could be passed to
+	//       this method as a rotation parameter relative to the parent Rigid Body, from which a
+	//       hidden AGX child frame could be generated and passed to setReferenceFrame below).
+
+	agx::FrictionModel* FrictionModel = NativeRef->Native->getFrictionModel();
+	agx::RigidBody* Body = FAGX_AgxDynamicsObjectsAccess::TryGetFrom(RigidBody);
+	agx::Frame* Frame = Body ? Body->getFrame() : nullptr;
+
+	// \todo Perhaps we can solve the if-else below in a more elegant way using templates or macros?
+
+	if (auto* OrientedBoxModel = dynamic_cast<agx::OrientedBoxFrictionModel*>(FrictionModel))
+	{
+		OrientedBoxModel->setReferenceFrame(Frame);
+	}
+	else if (auto* OrientedScaleBoxModel = dynamic_cast<agx::OrientedScaleBoxFrictionModel*>(FrictionModel))
+	{
+		OrientedScaleBoxModel->setReferenceFrame(Frame);
+	}
+	else if (
+		auto* OrientedConeModel =
+			dynamic_cast<agx::OrientedIterativeProjectedConeFrictionModel*>(FrictionModel))
+	{
+		OrientedConeModel->setReferenceFrame(Frame);
+	}
+	else if (
+		auto* OrientedConstantNormalModel =
+			dynamic_cast<agx::ConstantNormalForceOrientedBoxFrictionModel*>(FrictionModel))
+	{
+		OrientedConstantNormalModel->setReferenceFrame(Frame);
+	}
+	else
+	{
+		// \todo If FrictionModel is set AFTER this function call, we could cache the
+		// Direction vector here and write it when FrictionModel changes to appropriate type.
+		// That would make the code less prone to problems caused by function call order.
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Failed to set ReferenceFrame on native ContactMaterial because it has "
+				 "not been set to use an Oriented Friction Model."));
+		return false;
+	}
+	return true;
 }
 
 void FContactMaterialBarrier::SetAdhesion(double AdhesiveForce, double AdhesiveOverlap)

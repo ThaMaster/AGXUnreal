@@ -34,7 +34,8 @@ class AGXUNREAL_API UAGX_ContactMaterialAsset : public UAGX_ContactMaterialBase
 public:
 	// ~Begin UAGX_ContactMaterialBase interface.
 	virtual UAGX_ContactMaterialInstance* GetInstance() override;
-	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld) override;
+	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(
+		UAGX_ContactMaterialRegistrarComponent* Registrar) override;
 	// ~End UAGX_ContactMaterialBase interface.
 
 	// ~Begin UObject interface.

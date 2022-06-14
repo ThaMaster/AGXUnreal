@@ -25,20 +25,21 @@ class AGXUNREAL_API UAGX_ContactMaterialInstance : public UAGX_ContactMaterialBa
 
 public:
 	static UAGX_ContactMaterialInstance* CreateFromAsset(
-		UWorld* PlayingWorld, UAGX_ContactMaterialAsset* Source);
+		UAGX_ContactMaterialRegistrarComponent* Registrar, UAGX_ContactMaterialAsset* Source);
 
 public:
 	virtual ~UAGX_ContactMaterialInstance();
 
 	virtual UAGX_ContactMaterialAsset* GetAsset() override;
 
-	FContactMaterialBarrier* GetOrCreateNative(UWorld* PlayingWorld);
+	FContactMaterialBarrier* GetOrCreateNative(
+		UAGX_ContactMaterialRegistrarComponent* Registrar);
 
 	FContactMaterialBarrier* GetNative();
 
 	bool HasNative() const;
 
-	void UpdateNativeProperties();
+	void UpdateNativeProperties(UAGX_ContactMaterialRegistrarComponent* Registrar);
 
 	// ~Begin UAGX_ContactMaterialBase interface.
 	virtual void SetContactSolver(EAGX_ContactSolver InContactSolver) override;
@@ -48,6 +49,8 @@ public:
 	virtual void SetMinElasticRestLength(float InMinLength) override;
 	virtual void SetMaxElasticRestLength(float InMaxLength) override;
 	virtual void SetFrictionModel(EAGX_FrictionModel InFrictionModel) override;
+	virtual void SetNormalForceMagnitude(float InNormalForceMagnitude) override;
+	virtual void SetScaleNormalForceWithDepth(bool bEnabled) override;
 	virtual void SetSurfaceFrictionEnabled(bool bInSurfaceFrictionEnabled) override;
 	virtual void SetFrictionCoefficient(float InFrictionCoefficient) override;
 	virtual void SetSecondaryFrictionCoefficient(float InSecondaryFrictionCoefficient) override;
@@ -56,19 +59,21 @@ public:
 	virtual void SetSurfaceViscosity(float InSurfaceViscosity) override;
 	virtual void SetSecondarySurfaceViscosity(float InSecondarySurfaceViscosity) override;
 	virtual void SetUseSecondarySurfaceViscosity(bool bInUserSecondarySurfaceViscosity) override;
+	virtual void SetPrimaryDirection(const FVector& InPrimaryDirection) override;
 	virtual void SetRestitution(float Restitution) override;
 	virtual void SetSpookDamping(float SpookDamping) override;
 	virtual void SetYoungsModulus(float YoungsModulus) override;
 	virtual void SetAdhesiveForce(float AdhesiveForce) override;
 	virtual void SetAdhesiveOverlap(float AdhesiveOverlap) override;
 	virtual UAGX_ContactMaterialInstance* GetInstance() override;
-	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld) override;
+	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(
+		UAGX_ContactMaterialRegistrarComponent* Registrar) override;
 	// ~End UAGX_ContactMaterialBase interface.
 
 private:
 	// Creates the native AGX Contact Material. This function does not add the Native to the
 	// Simulation.
-	void CreateNative(UWorld* PlayingWorld);
+	void CreateNative(UAGX_ContactMaterialRegistrarComponent* Registrar);
 
 	/// \todo This member is probably not necessary.. Remove it?
 	TWeakObjectPtr<UAGX_ContactMaterialAsset> SourceAsset;

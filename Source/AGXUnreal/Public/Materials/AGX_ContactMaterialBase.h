@@ -6,6 +6,7 @@
 #include "AGX_Real.h"
 #include "Materials/AGX_ContactMaterialMechanicsApproach.h"
 #include "Materials/AGX_ContactMaterialReductionMode.h"
+#include "AGX_RigidBodyReference.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -15,6 +16,7 @@
 
 class UAGX_ContactMaterialAsset;
 class UAGX_ContactMaterialInstance;
+class UAGX_ContactMaterialRegistrarComponent;
 class FContactMaterialBarrier;
 class UAGX_MaterialBase;
 
@@ -122,6 +124,33 @@ public:
 	virtual void SetFrictionModel(EAGX_FrictionModel InFrictionModel);
 
 	/**
+	 * Constant normal force used by the friction model 'Constant Normal Force Box Friction'.
+	 */
+	UPROPERTY(
+		EditAnywhere, Category = "Friction",
+		Meta =
+			(EditCondition =
+				 "FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction"))
+	FAGX_Real NormalForceMagnitude;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetNormalForceMagnitude(float InNormalForceMagnitude);
+
+	/**
+	 * Whether the 'Normal Force Magnitude' should be scaled by contact point depth.
+	 * Only used by friction model 'Constant Normal Force Box Friction'.
+	 */
+	UPROPERTY(
+		EditAnywhere, Category = "Friction",
+		Meta =
+			(EditCondition =
+				 "FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction"))
+	bool bScaleNormalForceWithDepth;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetScaleNormalForceWithDepth(bool bEnabled);
+
+	/**
 	 * Whether surface friction should be calculated in the solver for this Contact Material.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Friction")
@@ -140,8 +169,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetFrictionCoefficient(float InFrictionCoefficient);
 
-	/*
+	/**
 	 * Friction in the secondary direction, if enabled.
+	 *
+	 * Only used by Oriented Friction Models.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Friction",
@@ -161,6 +192,8 @@ public:
 	 *
 	 * If disable, 'Friction Coefficient' represents all directions and 'Secondary Friction
 	 * Coefficient' is not used.
+	 *
+	 * Note that secondary direction friction coefficient is only used by Oriented Friction Models.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (InlineEditConditionToggle))
 	bool bUseSecondaryFrictionCoefficient;
@@ -182,6 +215,8 @@ public:
 
 	/**
 	 * Surface viscosity in the secondary direction, if enabled.
+	 *
+	 * Only used by Oriented Friction Models.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Friction",
@@ -200,6 +235,8 @@ public:
 	 *
 	 * If disable, 'Surface Viscosity' represents all directions and 'Secondary Surface Viscosity'
 	 * is not used.
+	 *
+	 * Note that secondary direction surface viscosity is only used by Oriented Friction Models.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Friction", Meta = (InlineEditConditionToggle))
 	bool bUseSecondarySurfaceViscosity;
@@ -207,6 +244,63 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetUseSecondarySurfaceViscosity(bool bInUseSecondarySurfaceViscosity);
 
+	// clang-format off
+	/**
+	 * Primary friction/viscosity direction relative to Reference Frame.
+	 * Secondary direction will be perpendicular to primary direction.
+	 *
+	 * Only used by Oriented Friction Models.
+	 */
+	UPROPERTY(
+		EditAnywhere, Category = "Friction",
+		Meta =
+			(EditCondition =
+			"FrictionModel == EAGX_FrictionModel::OrientedBoxFriction  || FrictionModel == EAGX_FrictionModel::OrientedScaledBoxFriction  || FrictionModel == EAGX_FrictionModel::OrientedIterativeProjectedConeFriction || FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction"))
+	FVector PrimaryDirection;
+	// clang-format on
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	virtual void SetPrimaryDirection(const FVector& InPrimaryDirection);
+
+	// clang-format off
+	/**
+	 * The name of the actor that contains the component to use as reference frame for a
+	 * Oriented Friction Model (component specified by the property
+	 * OrientedFrictionReferenceFrameComponent).
+	 *
+	 * If this name is left empty, the reference frame component is supposed to exist
+	 * in the same actor as the ContactMaterialRegistrarComponent that owns this contact material.
+	 */
+	UPROPERTY(
+		EditAnywhere, Category = "Friction",
+		Meta =
+			(EditCondition =
+				 "FrictionModel == EAGX_FrictionModel::OrientedBoxFriction  || FrictionModel == EAGX_FrictionModel::OrientedScaledBoxFriction  || FrictionModel == EAGX_FrictionModel::OrientedIterativeProjectedConeFriction || FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction"))
+	FName OrientedFrictionReferenceFrameActor;
+	// clang-format on
+
+	// clang-format off
+	/**
+	 * The component whose transform should be used as Reference Frame for a Oriented Friction
+	 * Model.
+	 *
+	 * The component must be a Rigid Body Component.
+	 *
+	 * The component must exist in the actor specified by the property
+	 * OrientedFrictionReferenceFrameActor, or if the actor is not specified the component is
+	 * supposed to exist in the same actor as the ContactMaterialRegistrarComponent that owns this
+	 * contact material.
+	 */
+	UPROPERTY(
+		EditAnywhere, Category = "Friction",
+		Meta =
+			(EditCondition =
+				 "FrictionModel == EAGX_FrictionModel::OrientedBoxFriction || FrictionModel == EAGX_FrictionModel::OrientedScaledBoxFriction || FrictionModel == EAGX_FrictionModel::OrientedIterativeProjectedConeFriction || FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction"))
+	FName OrientedFrictionReferenceFrameComponent;
+	// clang-format on
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	bool IsOrientedFrictionModel();
 	/**
 	 * Material restitution, i.e. how "bouncy" the normal collisions are.
 	 *
@@ -266,7 +360,7 @@ public:
 	 * PlayingWorld is not an in-game world.
 	 */
 	static UAGX_ContactMaterialInstance* GetOrCreateInstance(
-		UWorld* PlayingWorld, UAGX_ContactMaterialBase*& Property);
+		UAGX_ContactMaterialRegistrarComponent* Registrar, UAGX_ContactMaterialBase*& Property);
 
 	UAGX_ContactMaterialBase();
 
@@ -281,7 +375,8 @@ public:
 	 * lifetime of the GameInstance. If this is already a UAGX_ContactMaterialInstance it returns
 	 * itself. Returns null if not in-game (invalid call).
 	 */
-	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(UWorld* PlayingWorld)
+	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(
+		UAGX_ContactMaterialRegistrarComponent* Registrar)
 		PURE_VIRTUAL(UAGX_ContactMaterialBase::GetOrCreateInstance, return nullptr;);
 
 	/**
