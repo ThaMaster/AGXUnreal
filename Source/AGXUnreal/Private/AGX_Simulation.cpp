@@ -443,6 +443,8 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	{
 		NativeBarrier.EnableRemoteDebugging(RemoteDebuggingPort);
 	}
+
+	FAGX_Environment::GetInstance().SetNumThreads(std::max(0, NumThreads));
 }
 
 void UAGX_Simulation::Deinitialize()

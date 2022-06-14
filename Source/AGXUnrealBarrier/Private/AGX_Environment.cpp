@@ -426,6 +426,16 @@ void FAGX_Environment::SetEnvironmentVariableEntries(
 	FCurrentPlatformMisc::SetEnvironmentVar(*EnvVarName, *EnvVarVal);
 }
 
+void FAGX_Environment::SetNumThreads(uint32 NumThreads)
+{
+	UE_LOG(
+		LogAGX, Log,
+		TEXT("Setting number of AGX threads to %i (was previously %i)."),
+		NumThreads, agx::getNumThreads());
+
+	agx::setNumThreads(NumThreads);
+}
+
 bool FAGX_Environment::IsSetupEnvRun()
 {
 	const TArray<FString> AgxDepDirEntries =

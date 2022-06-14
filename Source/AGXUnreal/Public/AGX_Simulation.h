@@ -56,6 +56,14 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 	GENERATED_BODY()
 
 public: // Properties.
+
+	/**
+	 * Number of AGX threads. Default 1.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, BlueprintReadOnly, Category = "General")
+		int NumThreads = 1;
+
 	/**
 	 * Step length of the integrator [s].
 	 */
