@@ -35,6 +35,27 @@ namespace
 		const FString& AssetType, FInitAssetCallback InitAsset)
 	{
 		AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, FallbackName, AssetType);
+
+		// If the asset name ends with lots of numbers then Unreal believes that
+		// it is a counter starts looping trying to find the next available number,
+		// which fails if the number is larger than the largest int32. This hack
+		// twarts that by adding a useless character to the end of the name.
+		int32 NumEndingNumerics = 0;
+		for (int32 CharIndex = AssetName.Len() - 1; CharIndex >= 0; --CharIndex)
+		{
+			bool isNumeric = AssetName[CharIndex] >= TEXT('0') && AssetName[CharIndex] <= TEXT('9');
+			if (!isNumeric)
+				break;
+			NumEndingNumerics++;
+		}
+		if (NumEndingNumerics >= 10)
+		{
+			AssetName = AssetName + "c";
+			UE_LOG(
+				LogAGX, Warning, TEXT("Asset '%s' was appended with a 'c' to avoid Unreal name processing bug."),
+				*AssetName);
+		}
+
 		FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryName, AssetType);
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
