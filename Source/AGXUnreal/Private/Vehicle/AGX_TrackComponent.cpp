@@ -65,7 +65,7 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 		return nullptr;
 	}
 
-	bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
 	if (bIsPlaying)
 	{
 		return nullptr; // no preview while playing
