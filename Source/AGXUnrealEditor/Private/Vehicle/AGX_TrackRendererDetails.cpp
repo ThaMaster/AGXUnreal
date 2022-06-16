@@ -59,3 +59,4 @@ void FAGX_TrackRendererDetails::CustomizeDetails(IDetailLayoutBuilder& InDetailB
 			]
 		];
 }
+#undef LOCTEXT_NAMESPACE
