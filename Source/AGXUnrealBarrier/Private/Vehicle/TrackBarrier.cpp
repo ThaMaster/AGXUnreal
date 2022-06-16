@@ -1,4 +1,4 @@
-// Authored by VMC Motion Technologies, 2022.
+// Copyright 2022, Algoryx Simulation AB.
 
 
 #include "Vehicle/TrackBarrier.h"
