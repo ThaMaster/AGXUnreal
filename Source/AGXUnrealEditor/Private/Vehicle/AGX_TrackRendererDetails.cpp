@@ -28,35 +28,38 @@ void FAGX_TrackRendererDetails::CustomizeDetails(IDetailLayoutBuilder& InDetailB
 
 	TArray<TWeakObjectPtr<UObject>> Objects;
 	InDetailBuilder.GetObjectsBeingCustomized(Objects);
-	
+
+	// clang-format off
 	CategoryBuilder.AddCustomRow(FText()).WholeRowContent()
+	[
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
 		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot()
-			.AutoWidth()
-			[
-				SNew(SButton)
-				.Text(LOCTEXT("UpdatePreviewText", "Update Visual"))
-				.OnClicked_Lambda([Objects]()
+			SNew(SButton)
+			.Text(LOCTEXT("UpdatePreviewText", "Update Visual"))
+			.OnClicked_Lambda([Objects]()
+			{
+				for (const TWeakObjectPtr<UObject>& Object : Objects)
+				{
+					UAGX_TrackRenderer* Renderer = Cast<UAGX_TrackRenderer>(Object.Get());
+					if (IsValid(Renderer))
 					{
-						for (const TWeakObjectPtr<UObject>& Object : Objects)
+						if (UAGX_TrackComponent* Track = Renderer->FindTargetTrack())
 						{
-							UAGX_TrackRenderer* Renderer = Cast<UAGX_TrackRenderer>(Object.Get());
-							if (IsValid(Renderer))
-							{
-								if (UAGX_TrackComponent* Track = Renderer->FindTargetTrack())
-								{
-									// Mark Track Preview Data for update.
-									Track->RaiseTrackPreviewNeedsUpdate();
-								}
-								// Get updated Track Preview Data and synchronize renderer data.
-								Renderer->RebindToTrackPreviewNeedsUpdateEvent(false);
-								Renderer->SynchronizeVisuals();
-							}
+							// Mark Track Preview Data for update.
+							Track->RaiseTrackPreviewNeedsUpdate();
 						}
-						return FReply::Handled(); 
-					})
-			]
-		];
+						// Get updated Track Preview Data and synchronize renderer data.
+						Renderer->RebindToTrackPreviewNeedsUpdateEvent(false);
+						Renderer->SynchronizeVisuals();
+					}
+				}
+				return FReply::Handled();
+			})
+		]
+	];
+	// clang-format on
 }
+
 #undef LOCTEXT_NAMESPACE
