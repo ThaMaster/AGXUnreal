@@ -33,12 +33,13 @@ public:
 };
 
 /**
- * Given a set of wheels, automatically generates a continuous track with a given number of shoes (nodes).
+ * Given a set of wheels, automatically generates a continuous track with a given number of shoes
+ * (nodes).
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
-	class AGXUNREAL_API UAGX_TrackComponent : public USceneComponent, public IAGX_NativeOwner
+class AGXUNREAL_API UAGX_TrackComponent : public USceneComponent, public IAGX_NativeOwner
 {
 	GENERATED_BODY()
 
@@ -105,7 +106,8 @@ public:
 	/**
 	 * Center of mass offset [cm].
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Track",
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Track",
 		Meta = (EditCondition = "!bAutoGenerateCenterOfMassOffset"))
 	FVector NodeCenterOfMassOffset;
 
@@ -118,7 +120,8 @@ public:
 	/**
 	 * The three-component diagonal of the inertia tensor [kgm^2].
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Track",
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Track",
 		Meta = (EditCondition = "!bAutoGeneratePrincipalInertia"))
 	FVector NodePrincipalInertia;
 
@@ -182,13 +185,15 @@ public:
 	 * track preview rendering only when something has changed.
 	 */
 	DECLARE_EVENT_OneParam(FLayerViewModel, FTrackPreviewNeedsUpdateEvent, UAGX_TrackComponent*)
-	FTrackPreviewNeedsUpdateEvent& GetTrackPreviewNeedsUpdateEvent() { return TrackPreviewNeedsUpdateEvent; }
-
+		FTrackPreviewNeedsUpdateEvent& GetTrackPreviewNeedsUpdateEvent()
+	{
+		return TrackPreviewNeedsUpdateEvent;
+	}
 
 public:
-
 	/**
-	 * Returns a preview of the track node transforms and sizes. Should only be used when not playing.
+	 * Returns a preview of the track node transforms and sizes. Should only be used when not
+	 * playing.
 	 * @param bUpdateIfNecessary Update preview data if it has been flagged as dirty.
 	 * @param bForceUpdate Update preview data regardless of dirty flag.
 	 */
@@ -242,7 +247,6 @@ public:
 #endif
 
 private:
-
 #if WITH_EDITOR
 	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each
 	// and every UPROPERTY in PostEditChangeProperty and PostEditChangeChainProperty.
@@ -276,7 +280,6 @@ private:
 	void WritePropertiesToNative();
 
 private:
-
 	// The AGX Dynamics object only exists while simulating.
 	// Initialized in BeginPlay and released in EndPlay.
 	FTrackBarrier NativeBarrier;
@@ -287,14 +290,11 @@ private:
 	FTrackPreviewNeedsUpdateEvent TrackPreviewNeedsUpdateEvent;
 };
 
-
 /**
- * This stuct's only purpose is to inform UAGX_TrackComponent when a
- * Blueprint Actor Instance Reconstruction is complete, i.e. when
- * properties have been deserialized and instance data applied.
+ * This struct's only purpose is to inform UAGX_TrackComponent when a Blueprint Reconstruction is
+ * complete, i.e. when properties have been deserialized and instance data applied.
  *
- * It inherits FAGX_NativeOwnerInstanceData because UAGX_TrackComponent
- * is a native owner.
+ * It inherits FAGX_NativeOwnerInstanceData because UAGX_TrackComponent is a native owner.
  */
 USTRUCT()
 struct AGXUNREAL_API FAGX_TrackComponentInstanceData : public FAGX_NativeOwnerInstanceData
@@ -306,7 +306,7 @@ struct AGXUNREAL_API FAGX_TrackComponentInstanceData : public FAGX_NativeOwnerIn
 		const IAGX_NativeOwner* NativeOwner, const USceneComponent* SourceComponent,
 		TFunction<IAGX_NativeOwner*(UActorComponent*)> InDowncaster);
 
-	virtual ~FAGX_TrackComponentInstanceData() = default;
+	virtual ~FAGX_TrackComponentInstanceData() override = default;
 
 	virtual void ApplyToComponent(
 		UActorComponent* Component, const ECacheApplyPhase CacheApplyPhase) override;

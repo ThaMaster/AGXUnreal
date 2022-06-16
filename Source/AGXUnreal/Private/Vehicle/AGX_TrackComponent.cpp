@@ -83,7 +83,7 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 		// Create AGX barrier wheel descs.
 		TArray<FTrackBarrier::FTrackWheelDesc> WheelDescs;
 		WheelDescs.Reserve(Wheels.Num());
-		for(const auto& Wheel : Wheels)
+		for (const auto& Wheel : Wheels)
 		{
 			UAGX_RigidBodyComponent* Body = Wheel.RigidBody.GetRigidBody();
 			if (!Body)
@@ -103,16 +103,18 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 
 		// Let AGX generate track nodes preview data.
 		FTrackBarrier::GetPreviewData(
-			TrackPreview->NodeTransforms, TrackPreview->NodeHalfExtents,
-			NumberOfNodes, Width, Thickness, InitialDistanceTension, WheelDescs);
+			TrackPreview->NodeTransforms, TrackPreview->NodeHalfExtents, NumberOfNodes, Width,
+			Thickness, InitialDistanceTension, WheelDescs);
 
 		bTrackPreviewNeedsUpdate = false;
 
 #ifdef TRACK_COMPONENT_DETAILED_LOGGING
-		UE_LOG(LogAGX, Verbose,
-			TEXT("Generated Track Preview Data for '%s' (UID: %i) in '%s'. NodeCount = %i, WheelCount = %i."),
-			*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()),
-			TrackPreview->NodeTransforms.Num(), WheelDescs.Num());
+		UE_LOG(
+			LogAGX, Verbose,
+			TEXT("Generated Track Preview Data for '%s' (UID: %i) in '%s'. NodeCount = %i, "
+				 "WheelCount = %i."),
+			*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()), TrackPreview->NodeTransforms.Num(),
+			WheelDescs.Num());
 #endif
 	}
 
@@ -135,7 +137,8 @@ void UAGX_TrackComponent::RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlr
 	if (bShouldBroadcastEvent)
 	{
 #ifdef TRACK_COMPONENT_DETAILED_LOGGING
-		UE_LOG(LogAGX, Verbose,
+		UE_LOG(
+			LogAGX, Verbose,
 			TEXT("Track Preview Data of '%s' (UID: %i) in '%s' needs update. Broadcasting event."),
 			*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
@@ -163,9 +166,9 @@ FTrackBarrier* UAGX_TrackComponent::GetOrCreateNative()
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("A request for the AGX Dynamics instance for Track '%s' in '%s' was made "
-					"but we are in the middle of a Blueprint Reconstruction and the requested "
-					"instance has not yet been restored. The instance cannot be returned, which "
-					"may lead to incorrect scene configuration."));
+					 "but we are in the middle of a Blueprint Reconstruction and the requested "
+					 "instance has not yet been restored. The instance cannot be returned, which "
+					 "may lead to incorrect scene configuration."));
 			return nullptr;
 		}
 
@@ -324,7 +327,8 @@ void UAGX_TrackComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// something will keep the Track instance alive? Should we do explicit incref/decref
 		// on the Track in GetNativeAddress / SetNativeAddress?
 	}
-	else if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+	else if (
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
 	{
 		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
 		{
@@ -332,12 +336,14 @@ void UAGX_TrackComponent::EndPlay(const EEndPlayReason::Type Reason)
 			{
 				UE_LOG(
 					LogAGX, Error,
-					TEXT("Track '%s' in '%s' tried to get Simulation, but returned simulation has no native."),
+					TEXT("Track '%s' in '%s' tried to get Simulation, but returned simulation has "
+						 "no native."),
 					*GetName(), *GetNameSafe(GetOwner()));
 				return;
 			}
 
-			// \todo Want to use AAGX_Simulation::Remove, but there's no overload taking a TrackComponent
+			// \todo Want to use AAGX_Simulation::Remove, but there's no overload taking a
+			// TrackComponent
 			//       (or LinkedStructure or Assembly), so we use a work-around in the TrackBarrier.
 			const bool Result = GetNative()->RemoveFromSimulation(*Sim->GetNative());
 		}
@@ -358,9 +364,7 @@ TStructOnScope<FActorComponentInstanceData> UAGX_TrackComponent::GetComponentIns
 		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_TrackComponentInstanceData>(
-		this, this,
-		[](UActorComponent* Component)
-		{
+		this, this, [](UActorComponent* Component) {
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
@@ -372,8 +376,9 @@ void UAGX_TrackComponent::ApplyComponentInstanceData(
 #ifdef TRACK_COMPONENT_DETAILED_LOGGING
 	UE_LOG(
 		LogAGX, Log,
-		TEXT("UAGX_TrackComponent::ApplyComponentInstanceData() for '%s' (UID: %i) in '%s'. Phase = %i."),
-		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()), (int)CacheApplyPhase);
+		TEXT("UAGX_TrackComponent::ApplyComponentInstanceData() for '%s' (UID: %i) in '%s'. Phase "
+			 "= %i."),
+		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()), (int) CacheApplyPhase);
 #endif
 
 	if (CacheApplyPhase == ECacheApplyPhase::PostUserConstructionScript)
@@ -385,7 +390,8 @@ void UAGX_TrackComponent::ApplyComponentInstanceData(
 		// and SceneComponentReference is done for those additional wheels.
 		ResolveComponentReferenceOwningActors();
 
-		// Call this to re-register this reconstructed track component to UAGX_TrackInternalMergeProperties.
+		// Call this to re-register this reconstructed track component to
+		// UAGX_TrackInternalMergeProperties.
 		WriteInternalMergePropertiesToNative();
 
 		// Mark the Track Preview Data for update after all BP instance data has been deserialized.
@@ -405,8 +411,7 @@ void UAGX_TrackComponent::OnUpdateTransform(
 
 #ifdef TRACK_COMPONENT_DETAILED_LOGGING
 	UE_LOG(
-		LogAGX, Log,
-		TEXT("UAGX_TrackComponent::OnUpdateTransform() for '%s' (UID: %i) in '%s'."),
+		LogAGX, Log, TEXT("UAGX_TrackComponent::OnUpdateTransform() for '%s' (UID: %i) in '%s'."),
 		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
 	// \todo This event does not seem to be called when drag-moving an actor/component,
@@ -416,8 +421,8 @@ void UAGX_TrackComponent::OnUpdateTransform(
 	if (!bIsPlaying)
 	{
 		// \note Actually moving the TransformComponent does not itself means that track preview
-		//       needs update, but it's likely that this happened because the owning actor was moved,
-		//       which usually means that all wheels moved.
+		//       needs update, but it's likely that this happened because the owning actor was
+		//       moved, which usually means that all wheels moved.
 		if (bAutoUpdateTrackPreview)
 		{
 			constexpr bool bDoNotBroadcastIfAlreadyRaised = true;
@@ -474,7 +479,6 @@ void UAGX_TrackComponent::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TrackComponent, bAutoGeneratePrincipalInertia),
 		[](ThisClass* Self) { Self->WriteMassPropertiesToNative(); });
-
 }
 
 #endif
@@ -484,8 +488,8 @@ void UAGX_TrackComponent::ResolveComponentReferenceOwningActors()
 	// Make Track Wheels search for Rigid Body Components and Frame Defining Components
 	// in the same Actor as this Track Component is in, unless another owner has already
 	// been specified. This resolving of owning actors is typically necessary for Blueprint Actors
-	// because which their OwningActor properties needs to be null during editing of the default actor,
-	// and cannot be resolved to an the actual actor until the Blueprint Actor is actually
+	// because which their OwningActor properties needs to be null during editing of the default
+	// actor, and cannot be resolved to an the actual actor until the Blueprint Actor is actually
 	// added to a level.
 	for (FAGX_TrackWheel& Wheel : Wheels)
 	{
@@ -513,7 +517,7 @@ void UAGX_TrackComponent::CreateNative()
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Track '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
-				"returned a nullptr or a simulation without a native."),
+				 "returned a nullptr or a simulation without a native."),
 			*GetName(), *GetNameSafe(GetOwner()));
 		return;
 	}
@@ -530,7 +534,8 @@ void UAGX_TrackComponent::CreateNative()
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Track initialization for '%s' in '%s'' encountered a track wheel with a "
-					"Rigid Body Component or native that is null or invalid. The wheel will be ignored."),
+					 "Rigid Body Component or native that is null or invalid. The wheel will be "
+					 "ignored."),
 				*GetName(), *GetNameSafe(GetOwner()));
 			continue;
 		}
@@ -542,7 +547,8 @@ void UAGX_TrackComponent::CreateNative()
 		check(transformOK);
 
 		// Add native wheel to native Track.
-		NativeBarrier.AddTrackWheel(Wheel.Model, Wheel.Radius, *Body->GetOrCreateNative(), RelPos, RelRot,
+		NativeBarrier.AddTrackWheel(
+			Wheel.Model, Wheel.Radius, *Body->GetOrCreateNative(), RelPos, RelRot,
 			Wheel.bSplitSegments, Wheel.bMoveNodesToRotationPlane, Wheel.bMoveNodesToWheel);
 	}
 
@@ -558,7 +564,7 @@ void UAGX_TrackComponent::CreateNative()
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Failed to add '%s' in '%s' to Simulation. Add() returned false. "
-				"The Log category AGXDynamicsLog may contain more information about the failure."),
+				 "The Log category AGXDynamicsLog may contain more information about the failure."),
 			*GetName(), *GetNameSafe(GetOwner()));
 	}
 
@@ -578,8 +584,7 @@ void UAGX_TrackComponent::WriteShapeMaterialToNative()
 	if (ShapeMaterial)
 	{
 		UE_LOG(
-			LogAGX, Verbose,
-			TEXT("Track '%s' in '%s' is writing ShapeMaterial '%s' to native."),
+			LogAGX, Verbose, TEXT("Track '%s' in '%s' is writing ShapeMaterial '%s' to native."),
 			*GetName(), *GetNameSafe(GetOwner()), *ShapeMaterial->GetName());
 
 		// Create instance if necessary.
@@ -591,7 +596,8 @@ void UAGX_TrackComponent::WriteShapeMaterialToNative()
 		{
 			ShapeMaterial = MaterialInstance;
 		}
-		FShapeMaterialBarrier* MaterialBarrier = MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
+		FShapeMaterialBarrier* MaterialBarrier =
+			MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
 		check(MaterialBarrier);
 
 		// Assign native.
@@ -600,8 +606,7 @@ void UAGX_TrackComponent::WriteShapeMaterialToNative()
 	else
 	{
 		UE_LOG(
-			LogAGX, Verbose,
-			TEXT("Track '%s' in '%s' is clearing ShapeMaterial on native."),
+			LogAGX, Verbose, TEXT("Track '%s' in '%s' is clearing ShapeMaterial on native."),
 			*GetName(), *GetNameSafe(GetOwner()));
 
 		GetNative()->ClearMaterial();
@@ -616,13 +621,13 @@ void UAGX_TrackComponent::WriteTrackPropertiesToNative()
 	if (TrackProperties)
 	{
 		UE_LOG(
-			LogAGX, Verbose,
-			TEXT("Track '%s' in '%s' is writing TrackProperties '%s' to native."),
+			LogAGX, Verbose, TEXT("Track '%s' in '%s' is writing TrackProperties '%s' to native."),
 			*GetName(), *GetNameSafe(GetOwner()), *TrackProperties->GetName());
 
 		// Create instance if necessary.
-		UAGX_TrackPropertiesInstance* TrackPropertiesInstance = static_cast<UAGX_TrackPropertiesInstance*>(
-			TrackProperties->GetOrCreateInstance(GetWorld()));
+		UAGX_TrackPropertiesInstance* TrackPropertiesInstance =
+			static_cast<UAGX_TrackPropertiesInstance*>(
+				TrackProperties->GetOrCreateInstance(GetWorld()));
 		check(TrackPropertiesInstance);
 
 		// Replace asset reference with instance reference.
@@ -632,15 +637,15 @@ void UAGX_TrackComponent::WriteTrackPropertiesToNative()
 		}
 
 		// Assign native.
-		FTrackPropertiesBarrier* TrackPropertiesBarrier = TrackPropertiesInstance->GetOrCreateNative(GetWorld());
+		FTrackPropertiesBarrier* TrackPropertiesBarrier =
+			TrackPropertiesInstance->GetOrCreateNative(GetWorld());
 		check(TrackPropertiesBarrier);
 		GetNative()->SetProperties(*TrackPropertiesBarrier);
 	}
 	else
 	{
 		UE_LOG(
-			LogAGX, Verbose,
-			TEXT("Track '%s' in '%s' is clearing TrackProperties on native."),
+			LogAGX, Verbose, TEXT("Track '%s' in '%s' is clearing TrackProperties on native."),
 			*GetName(), *GetNameSafe(GetOwner()));
 
 		GetNative()->ClearProperties();
@@ -659,7 +664,7 @@ void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 
 	//// \todo Do this in a more performance friendly way. For example we could keep a reference
 	////       to the previous InternalMergeProperties, or unregister from within PreEditChange()?
-	//for (TObjectIterator<UAGX_TrackInternalMergePropertiesInstance> It; It; ++It)
+	// for (TObjectIterator<UAGX_TrackInternalMergePropertiesInstance> It; It; ++It)
 	//{
 	//	if (It->GetWorld() == GetWorld())
 	//	{
@@ -691,7 +696,8 @@ void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 	}
 	else
 	{
-		UE_LOG(LogAGX, Verbose,
+		UE_LOG(
+			LogAGX, Verbose,
 			TEXT("Track '%s' in '%s' is clearing TrackInternalMergeProperties on native."),
 			*GetName(), *GetNameSafe(GetOwner()));
 
@@ -764,12 +770,10 @@ void UAGX_TrackComponent::WriteMassPropertiesToNative()
 		UE_LOG(
 			LogAGX, Log,
 			TEXT("Updated mass properties on Track '%s' in '%s'. First track node "
-				"Mass = %f, CenterOfMass = %s, Principal Inertia = %s."),
-			*GetName(), *GetNameSafe(GetOwner()),
-			MassProperties.GetMass(),
+				 "Mass = %f, CenterOfMass = %s, Principal Inertia = %s."),
+			*GetName(), *GetNameSafe(GetOwner()), MassProperties.GetMass(),
 			*FirstBodyBarrier.GetCenterOfMassOffset().ToString(),
 			*MassProperties.GetPrincipalInertia().ToString());
-
 	}
 }
 
@@ -803,7 +807,7 @@ void UAGX_TrackComponent::WritePropertiesToNative()
 
 FAGX_TrackComponentInstanceData::FAGX_TrackComponentInstanceData(
 	const IAGX_NativeOwner* NativeOwner, const USceneComponent* SourceComponent,
-	TFunction<IAGX_NativeOwner * (UActorComponent*)> InDowncaster)
+	TFunction<IAGX_NativeOwner*(UActorComponent*)> InDowncaster)
 	: FAGX_NativeOwnerInstanceData(NativeOwner, SourceComponent, InDowncaster)
 {
 }
