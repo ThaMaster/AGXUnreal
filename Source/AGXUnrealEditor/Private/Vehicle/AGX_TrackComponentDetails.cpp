@@ -60,3 +60,4 @@ void FAGX_TrackComponentDetails::CustomizeDetails(IDetailLayoutBuilder& InDetail
 			]
 		];
 }
+#undef LOCTEXT_NAMESPACE
