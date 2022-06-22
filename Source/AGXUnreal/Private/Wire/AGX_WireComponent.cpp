@@ -1147,7 +1147,8 @@ FWireBarrier* UAGX_WireComponent::GetOrCreateNative()
 				TEXT("A request for the AGX Dynamics instance for Wire '%s' in '%s' was made but "
 					 "we are in the middle of a Blueprint Reconstruction and the requested instance"
 					 "has not yet been restored. The instance cannot be returned, which may lead to"
-					 "incorrect scene configuration."));
+					 "incorrect scene configuration."),
+				*GetName(), *GetLabelSafe(GetOwner()));
 			return nullptr;
 		}
 
