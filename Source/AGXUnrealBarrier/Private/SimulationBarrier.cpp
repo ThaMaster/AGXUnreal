@@ -189,7 +189,7 @@ void FSimulationBarrier::EnableRemoteDebugging(int16 Port)
 void FSimulationBarrier::SetEnableAmor(bool bEnable)
 {
 	check(HasNative());
-	//NativeRef->Native->getMergeSplitHandler()->setEnable(bEnable);
+	NativeRef->Native->getMergeSplitHandler()->setEnable(bEnable);
 }
 
 void FSimulationBarrier::SetTimeStep(float TimeStep)
