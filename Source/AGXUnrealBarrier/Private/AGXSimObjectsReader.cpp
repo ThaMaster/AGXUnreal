@@ -492,7 +492,7 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 	ImportTask.EnterProgressFrame(WorkRead, FText::FromString("Reading URDF file"));
 
 	agxSDK::AssemblyRef Model = agxModel::UrdfReader::read(
-		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);
+		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr);
 
 	if (Model == nullptr)
 	{
