@@ -22,7 +22,7 @@
 #include <agx/PointGravityField.h>
 #include <agx/Statistics.h>
 #include <agx/UniformGravityField.h>
-#include <agxSDK/MergeSplitHandler.h>
+//#include <agxSDK/MergeSplitHandler.h>
 #include <agxSDK/Simulation.h>
 #include "EndAGXIncludes.h"
 
@@ -189,7 +189,7 @@ void FSimulationBarrier::EnableRemoteDebugging(int16 Port)
 void FSimulationBarrier::SetEnableAmor(bool bEnable)
 {
 	check(HasNative());
-	NativeRef->Native->getMergeSplitHandler()->setEnable(bEnable);
+	//NativeRef->Native->getMergeSplitHandler()->setEnable(bEnable);
 }
 
 void FSimulationBarrier::SetTimeStep(float TimeStep)
