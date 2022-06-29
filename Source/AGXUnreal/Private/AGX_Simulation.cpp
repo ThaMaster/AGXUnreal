@@ -439,6 +439,8 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	SetGravity();
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
 
+	NativeBarrier.SetEnableAmor(bEnableAmor);
+
 	if (bRemoteDebugging)
 	{
 		NativeBarrier.EnableRemoteDebugging(RemoteDebuggingPort);

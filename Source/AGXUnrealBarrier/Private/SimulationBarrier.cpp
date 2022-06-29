@@ -19,10 +19,11 @@
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
-#include <agxSDK/Simulation.h>
+#include <agx/PointGravityField.h>
 #include <agx/Statistics.h>
 #include <agx/UniformGravityField.h>
-#include <agx/PointGravityField.h>
+#include <agxSDK/MergeSplitHandler.h>
+#include <agxSDK/Simulation.h>
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
@@ -183,6 +184,12 @@ void FSimulationBarrier::EnableRemoteDebugging(int16 Port)
 {
 	check(HasNative());
 	NativeRef->Native->setEnableRemoteDebugging(true, Port);
+}
+
+void FSimulationBarrier::SetEnableAmor(bool bEnable)
+{
+	check(HasNative());
+	NativeRef->Native->getMergeSplitHandler()->setEnable(bEnable);
 }
 
 void FSimulationBarrier::SetTimeStep(float TimeStep)
