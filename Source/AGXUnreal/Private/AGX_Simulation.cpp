@@ -398,6 +398,15 @@ int32 UAGX_Simulation::GetNumPpgsIterations()
 	return NumPpgsIterations;
 }
 
+void UAGX_Simulation::SetEnableAmor(bool bEnable)
+{
+	bEnableAmor = bEnable;
+	if (HasNative())
+	{
+		NativeBarrier.SetEnableAmor(bEnable);
+	}
+}
+
 void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
@@ -484,6 +493,10 @@ void UAGX_Simulation::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bContactWarmstarting),
 		[](ThisClass* This) { This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bEnableAmor),
+		[](ThisClass* This) { This->SetEnableAmor(This->bEnableAmor); });
 }
 
 #endif

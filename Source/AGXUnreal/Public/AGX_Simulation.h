@@ -201,6 +201,9 @@ public: // Member functions.
 	UFUNCTION(BlueprintCallable, Category = "Solver")
 	bool GetEnableContactWarmstarting() const;
 
+	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	void SetEnableAmor(bool bEnable);
+
 	/**
 	 * Set the number of solver resting iterations to use for the Parallel Projected Gauss-Seidel
 	 * (PPGS) solver. This value influences the accuracy and computation cost of e.g. terrain
