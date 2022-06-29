@@ -22,7 +22,7 @@
 #include <agx/PointGravityField.h>
 #include <agx/Statistics.h>
 #include <agx/UniformGravityField.h>
-//#include <agxSDK/MergeSplitHandler.h>
+#include <agxSDK/MergeSplitHandler.h>
 #include <agxSDK/Simulation.h>
 #include "EndAGXIncludes.h"
 
