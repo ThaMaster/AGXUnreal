@@ -141,12 +141,12 @@ public: // Properties.
 	bool bEnableStatistics = false;
 
 	/**
-	 * Set to true to enable AMOR (Merge Split Handler) in AGX Dynamics.
+	 * Enable or disable AMOR (Merge Split Handler) in AGX Dynamics.
 	 * Note that each RigidBody / Geometry / Wire / Constraint need to enable merge/split
 	 * individually for this setting to have an effect.
 	 */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "AMOR")
-	bool bEnableAmor = false;
+	bool bEnableAmor = true;
 
 #if WITH_EDITORONLY_DATA
 	/**
