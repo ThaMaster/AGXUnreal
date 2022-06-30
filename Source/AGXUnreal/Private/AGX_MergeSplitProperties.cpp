@@ -5,6 +5,9 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_RigidBodyComponent.h"
+#include "Constraints/AGX_ConstraintComponent.h"
+#include "Shapes/AGX_ShapeComponent.h"
+#include "Wire/AGX_WireComponent.h"
 
 
 template <typename T>
@@ -110,9 +113,27 @@ void FAGX_MergeSplitProperties::UpdateNativeProperties()
 // Explicit template instantiations.
 template AGXUNREAL_API void FAGX_MergeSplitProperties::OnBeginPlay<UAGX_RigidBodyComponent>(
 	UAGX_RigidBodyComponent&);
+template AGXUNREAL_API void FAGX_MergeSplitProperties::OnBeginPlay<UAGX_ConstraintComponent>(
+	UAGX_ConstraintComponent&);
+template AGXUNREAL_API void FAGX_MergeSplitProperties::OnBeginPlay<UAGX_ShapeComponent>(
+	UAGX_ShapeComponent&);
+template AGXUNREAL_API void FAGX_MergeSplitProperties::OnBeginPlay<UAGX_WireComponent>(
+	UAGX_WireComponent&);
 
 template AGXUNREAL_API void FAGX_MergeSplitProperties::OnPostEditChangeProperty<
 	UAGX_RigidBodyComponent>(UAGX_RigidBodyComponent&);
+template AGXUNREAL_API void FAGX_MergeSplitProperties::OnPostEditChangeProperty<
+	UAGX_ConstraintComponent>(UAGX_ConstraintComponent&);
+template AGXUNREAL_API void
+FAGX_MergeSplitProperties::OnPostEditChangeProperty<UAGX_ShapeComponent>(UAGX_ShapeComponent&);
+template AGXUNREAL_API void FAGX_MergeSplitProperties::OnPostEditChangeProperty<UAGX_WireComponent>(
+	UAGX_WireComponent&);
 
 template AGXUNREAL_API void FAGX_MergeSplitProperties::CreateNative<UAGX_RigidBodyComponent>(
 	UAGX_RigidBodyComponent&);
+template AGXUNREAL_API void FAGX_MergeSplitProperties::CreateNative<UAGX_ConstraintComponent>(
+	UAGX_ConstraintComponent&);
+template AGXUNREAL_API void FAGX_MergeSplitProperties::CreateNative<UAGX_ShapeComponent>(
+	UAGX_ShapeComponent&);
+template AGXUNREAL_API void FAGX_MergeSplitProperties::CreateNative<UAGX_WireComponent>(
+	UAGX_WireComponent&);
