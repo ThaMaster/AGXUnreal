@@ -40,10 +40,10 @@ public:
 	FAGX_MergeSplitProperties& operator=(const FAGX_MergeSplitProperties& Other);
 
 	UPROPERTY(EditAnywhere, Category = "AMOR")
-	bool bEnableMerge = true;
+	bool bEnableMerge = false;
 
 	UPROPERTY(EditAnywhere, Category = "AMOR")
-	bool bEnableSplit = true;
+	bool bEnableSplit = false;
 
 	void SetEnableMerge(bool bEnable);
 	bool GetEnableMerge() const;
