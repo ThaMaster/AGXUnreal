@@ -9,6 +9,7 @@
 #include <agx/Material.h>
 #include <agx/MassProperties.h>
 #include <agx/RigidBody.h>
+#include <agxSDK/MergeSplitHandler.h>
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
@@ -82,6 +83,17 @@ struct FMassPropertiesPtr
 
 	FMassPropertiesPtr() = default;
 	FMassPropertiesPtr(agx::MassProperties* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FMergeSplitPropertiesPtr
+{
+	agxSDK::MergeSplitProperties* Native = nullptr;
+
+	FMergeSplitPropertiesPtr() = default;
+	FMergeSplitPropertiesPtr(agxSDK::MergeSplitProperties* InNative)
 		: Native(InNative)
 	{
 	}
