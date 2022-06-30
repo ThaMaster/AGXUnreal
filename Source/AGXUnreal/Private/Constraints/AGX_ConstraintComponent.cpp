@@ -895,6 +895,10 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			ModifiedBodyAttachment->FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 		}
 	}
+	else if (Member == GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, MergeSplitProperties))
+	{
+		MergeSplitProperties.OnPostEditChangeProperty(*this);
+	}
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
@@ -913,6 +917,25 @@ void UAGX_ConstraintComponent::PostEditChangeChainProperty(FPropertyChangedChain
 }
 
 #endif
+
+void UAGX_ConstraintComponent::CreateMergeSplitProperties()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_ConstraintComponent::CreateMergeSplitProperties was called "
+				 "on Constraint '%s' that does not have a Native AGX Dynamics object. Only call this "
+				 "function "
+				 "during play."), *GetName());
+		return;
+	}
+
+	if (!MergeSplitProperties.HasNative())
+	{
+		MergeSplitProperties.CreateNative(*this);
+	}
+}
 
 TStructOnScope<FActorComponentInstanceData> UAGX_ConstraintComponent::GetComponentInstanceData()
 	const
@@ -1102,6 +1125,7 @@ void UAGX_ConstraintComponent::BeginPlay()
 		BodyAttachment2.FrameDefiningComponent.CacheCurrentSceneComponent();
 
 		CreateNative();
+		MergeSplitProperties.OnBeginPlay(*this);
 	}
 }
 
