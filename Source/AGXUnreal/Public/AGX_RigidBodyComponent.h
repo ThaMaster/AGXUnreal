@@ -3,9 +3,10 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_RigidBodyEnums.h"
+#include "AGX_MergeSplitProperties.h"
 #include "AGX_MotionControl.h"
 #include "AGX_NativeOwner.h"
+#include "AGX_RigidBodyEnums.h"
 #include "RigidBodyBarrier.h"
 
 // Unreal Engine includes.
@@ -209,6 +210,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_TransformTarget> TransformTarget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AMOR")
+	FAGX_MergeSplitProperties MergeSplitProperties;
+
+	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	void CreateMergeSplitProperties();
+
 	/**
 	 * Add an external force, given in the world coordinate frame, that will be affecting this body
 	 * in the next solve. The force will be applied at the center of mass.
@@ -303,6 +310,7 @@ public:
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 	// ~End UObject interface.
 

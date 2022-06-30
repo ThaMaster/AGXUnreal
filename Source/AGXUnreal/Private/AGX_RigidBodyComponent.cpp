@@ -55,6 +55,22 @@ void UAGX_RigidBodyComponent::PostEditChangeChainProperty(FPropertyChangedChainE
 	Super::PostEditChangeChainProperty(Event);
 }
 
+void UAGX_RigidBodyComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	const FName Member = GetFNameSafe(PropertyChangedEvent.MemberProperty);
+
+	if (Member == GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MergeSplitProperties))
+	{
+		MergeSplitProperties.OnPostEditChangeProperty(*this);
+	}
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+}
+
+
 void UAGX_RigidBodyComponent::PostEditComponentMove(bool bFinished)
 {
 	Super::PostEditComponentMove(bFinished);
@@ -273,6 +289,8 @@ void UAGX_RigidBodyComponent::BeginPlay()
 		// Data.
 		InitializeNative();
 		check(HasNative()); /// \todo Consider better error handling than 'check'.
+
+		MergeSplitProperties.OnBeginPlay(*this);
 	}
 }
 
@@ -322,6 +340,22 @@ void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 	if (HasNative())
 	{
 		NativeBarrier.ReleaseNative();
+	}
+}
+
+void UAGX_RigidBodyComponent::CreateMergeSplitProperties()
+{
+	if (!HasNative())
+	{
+		UE_LOG(LogAGX, Warning, TEXT("UAGX_RigidBodyComponent::CreateMergeSplitProperties was called "
+			"on a Rigid Body that does not have a Native AGX Dynamics object. Only call this function "
+			"during play."));
+		return;
+	}
+
+	if (!MergeSplitProperties.HasNative())
+	{
+		MergeSplitProperties.CreateNative(*this);
 	}
 }
 
