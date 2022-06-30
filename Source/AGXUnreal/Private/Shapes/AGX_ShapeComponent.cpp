@@ -19,6 +19,9 @@
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
 
+// Standard library includes.
+#include <tuple>
+
 // Sets default values for this component's properties
 UAGX_ShapeComponent::UAGX_ShapeComponent()
 {
@@ -138,6 +141,11 @@ void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& Property
 		UpdateVisualMesh();
 	}
 
+	if (MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, MergeSplitProperties))
+	{
+		MergeSplitProperties.OnPostEditChangeProperty(*this);
+	}
+
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
@@ -211,6 +219,8 @@ void UAGX_ShapeComponent::BeginPlay()
 		UpdateNativeGlobalTransform();
 	}
 
+	MergeSplitProperties.OnBeginPlay(*this);
+
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
 	{
@@ -274,6 +284,26 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 
 	/// \todo Should shape material be handled here? If so, how? We don't have access to the
 	/// <Guid, Object> restore tables from here.
+}
+
+void UAGX_ShapeComponent::CreateMergeSplitProperties()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_ShapeComponent::CreateMergeSplitProperties was called "
+				 "on Shape Component '%s' that does not have a Native AGX Dynamics object. Only call "
+				 "this function "
+				 "during play."),
+			*GetName());
+		return;
+	}
+
+	if (!MergeSplitProperties.HasNative())
+	{
+		MergeSplitProperties.CreateNative(*this);
+	}
 }
 
 void UAGX_ShapeComponent::UpdateNativeGlobalTransform()
