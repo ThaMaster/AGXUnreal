@@ -3,6 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_MergeSplitProperties.h"
 #include "AGX_RigidBodyReference.h"
 #include "AGX_WireRenderIterator.h"
 #include "Wire/AGX_WireEnums.h"
@@ -219,6 +220,12 @@ public:
 			 EditConditionHides,
 			 EditCondition = "BeginWinchType == EWireWinchOwnerType::WireWinch"))
 	FComponentReference BeginWinchComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AMOR")
+	FAGX_MergeSplitProperties MergeSplitProperties;
+
+	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	void CreateMergeSplitProperties();
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
 	bool HasBeginWinchComponent() const;
@@ -842,6 +849,7 @@ public:
 	virtual void PostInitProperties() override;
 #if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 	// ~End UObject interface.
 

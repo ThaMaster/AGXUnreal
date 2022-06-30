@@ -24,6 +24,9 @@
 #include "CoreGlobals.h"
 #include "Math/UnrealMathUtility.h"
 
+// Standard library includes.
+#include <tuple>
+
 #define LOCTEXT_NAMESPACE "UAGX_WireComponent"
 
 void FWireRoutingNode::SetBody(UAGX_RigidBodyComponent* Body)
@@ -1305,6 +1308,21 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 	Super::PostEditChangeChainProperty(Event);
 }
 
+void UAGX_WireComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	const FName Member = GetFNameSafe(PropertyChangedEvent.MemberProperty);
+
+	if (Member == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, MergeSplitProperties))
+	{
+		MergeSplitProperties.OnPostEditChangeProperty(*this);
+	}
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+}
+
 #endif
 
 void UAGX_WireComponent::BeginPlay()
@@ -1317,6 +1335,8 @@ void UAGX_WireComponent::BeginPlay()
 		// soon be assigned the native that the reconstructed Wire Component had, if any.
 		CreateNative();
 		check(HasNative()); /// @todo Consider better error handling than check.
+
+		MergeSplitProperties.OnBeginPlay(*this);
 	}
 }
 
@@ -1326,6 +1346,26 @@ void UAGX_WireComponent::TickComponent(
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	/// @todo Do we need to do anything here?
+}
+
+void UAGX_WireComponent::CreateMergeSplitProperties()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_WireComponent::CreateMergeSplitProperties was called "
+				 "on Wire '%s' that does not have a Native AGX Dynamics object. Only call "
+				 "this function "
+				 "during play."),
+			*GetName());
+		return;
+	}
+
+	if (!MergeSplitProperties.HasNative())
+	{
+		MergeSplitProperties.CreateNative(*this);
+	}
 }
 
 TStructOnScope<FActorComponentInstanceData> UAGX_WireComponent::GetComponentInstanceData() const
