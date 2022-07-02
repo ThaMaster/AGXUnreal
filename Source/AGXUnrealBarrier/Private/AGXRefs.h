@@ -10,6 +10,7 @@
 #include <agx/MassProperties.h>
 #include <agx/RigidBody.h>
 #include <agxSDK/MergeSplitHandler.h>
+#include <agxSDK/MergeSplitThresholds.h>
 #include <agxSDK/Simulation.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
@@ -98,6 +99,18 @@ struct FMergeSplitPropertiesPtr
 	{
 	}
 };
+
+struct FMergeSplitThresholdsRef
+{
+	agxSDK::MergeSplitThresholdsRef Native;
+
+	FMergeSplitThresholdsRef() = default;
+	FMergeSplitThresholdsRef(agxSDK::MergeSplitThresholds* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
 
 struct FConstraintRef
 {
