@@ -398,12 +398,12 @@ int32 UAGX_Simulation::GetNumPpgsIterations()
 	return NumPpgsIterations;
 }
 
-void UAGX_Simulation::SetEnableAmor(bool bEnable)
+void UAGX_Simulation::SetEnableAMOR(bool bEnable)
 {
-	bEnableAmor = bEnable;
+	bEnableAMOR = bEnable;
 	if (HasNative())
 	{
-		NativeBarrier.SetEnableAmor(bEnable);
+		NativeBarrier.SetEnableAMOR(bEnable);
 	}
 }
 
@@ -448,7 +448,7 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	SetGravity();
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
 
-	NativeBarrier.SetEnableAmor(bEnableAmor);
+	NativeBarrier.SetEnableAMOR(bEnableAMOR);
 
 	if (bRemoteDebugging)
 	{
@@ -495,8 +495,8 @@ void UAGX_Simulation::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bEnableAmor),
-		[](ThisClass* This) { This->SetEnableAmor(This->bEnableAmor); });
+		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bEnableAMOR),
+		[](ThisClass* This) { This->SetEnableAMOR(This->bEnableAMOR); });
 }
 
 #endif

@@ -186,7 +186,7 @@ void FSimulationBarrier::EnableRemoteDebugging(int16 Port)
 	NativeRef->Native->setEnableRemoteDebugging(true, Port);
 }
 
-void FSimulationBarrier::SetEnableAmor(bool bEnable)
+void FSimulationBarrier::SetEnableAMOR(bool bEnable)
 {
 	check(HasNative());
 	NativeRef->Native->getMergeSplitHandler()->setEnable(bEnable);

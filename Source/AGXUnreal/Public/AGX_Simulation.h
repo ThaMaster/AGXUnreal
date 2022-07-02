@@ -146,7 +146,7 @@ public: // Properties.
 	 * individually for this setting to have an effect.
 	 */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "AMOR")
-	bool bEnableAmor = true;
+	bool bEnableAMOR = true;
 
 #if WITH_EDITORONLY_DATA
 	/**
@@ -202,7 +202,7 @@ public: // Member functions.
 	bool GetEnableContactWarmstarting() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")
-	void SetEnableAmor(bool bEnable);
+	void SetEnableAMOR(bool bEnable);
 
 	/**
 	 * Set the number of solver resting iterations to use for the Parallel Projected Gauss-Seidel
