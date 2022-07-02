@@ -3,7 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "MergeSplitPropertiesBarrier.h"
+#include "AMOR/MergeSplitPropertiesBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"

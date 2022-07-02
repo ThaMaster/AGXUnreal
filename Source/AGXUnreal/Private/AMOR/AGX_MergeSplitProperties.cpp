@@ -1,6 +1,6 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-#include "AGX_MergeSplitProperties.h"
+#include "AMOR/AGX_MergeSplitProperties.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
