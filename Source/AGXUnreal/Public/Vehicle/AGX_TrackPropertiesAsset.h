@@ -1,4 +1,4 @@
-// Author: VMC Motion Technologies Co., Ltd.
+// Copyright 2022, Algoryx Simulation AB.
 
 #pragma once
 
@@ -31,5 +31,4 @@ private:
 	virtual UAGX_TrackPropertiesAsset* GetAsset() override;
 
 	TWeakObjectPtr<UAGX_TrackPropertiesInstance> Instance;
-
 };

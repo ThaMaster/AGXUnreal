@@ -1,5 +1,4 @@
-// Author: VMC Motion Technologies Co., Ltd.
-
+// Copyright 2022, Algoryx Simulation AB.
 
 #include "Vehicle/AGX_TrackRenderer.h"
 
