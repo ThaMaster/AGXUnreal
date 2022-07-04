@@ -266,6 +266,9 @@ void UAGX_TrackComponent::PostEditChangeProperty(FPropertyChangedEvent& Property
 	// \note We trigger dispatch both here and from PostEditChangeChainProperty, because
 	// for example when editing a mass property while playing on a BP Actor Instance the
 	// PostEditChangeChainProperty appears to be called too late in the reconstruction.
+	//
+	// \todo Check if this problem was "fixed" with merge request !583 - Call the Property Changed
+	// callback on all selected objects.
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent);
 
 	// Track Preview needs update if any of NumberOfNodes, Width, Thickness, or
@@ -293,7 +296,7 @@ void UAGX_TrackComponent::PostLoad()
 
 	// It seems that because the wheels array, that the component references lives in, are sometimes
 	// not yet populated in PostInitProperties(), which means we cannot resolve the owning actors at
-	// that time. Therefore, we try to resolve the owning actors from here too, when the wheels are
+	// that time. Therefore, we try to resolve the owning actors from here too, when the wheels
 	// should be populated and ready.
 	ResolveComponentReferenceOwningActors();
 
@@ -308,7 +311,8 @@ void UAGX_TrackComponent::BeginPlay()
 	{
 		// Do not create a native AGX Dynamics object if GIsReconstructingBlueprintInstances is set.
 		// That means that we're being created as part of a Blueprint Reconstruction and we will
-		// soon be assigned the native that the reconstructed Track Component had, if any.
+		// soon be assigned the native that the reconstructed Track Component had, if any, in
+		// ApplyComponentInstanceData.
 		CreateNative();
 		check(HasNative()); /// @todo Consider better error handling than check.
 	}
@@ -331,6 +335,8 @@ void UAGX_TrackComponent::EndPlay(const EEndPlayReason::Type Reason)
 	else if (
 		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
 	{
+		// This object is being destroyed / removed from a Play session that will continue without
+		// it, so there will be no global cleanup of everything, so we must cleanup after ourself.
 		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
 		{
 			if (!Sim->HasNative())
@@ -656,7 +662,9 @@ void UAGX_TrackComponent::WriteTrackPropertiesToNative()
 void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 {
 	if (!HasNative() || !GetWorld() || !GetWorld()->IsGameWorld())
+	{
 		return;
+	}
 
 	// \todo If InternalMergeProperties was switched out or set to None during Play, unregister this
 	//       track from the previously set InternalMergePropertiesInstance. It is not strictly
@@ -714,9 +722,11 @@ void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 void UAGX_TrackComponent::WriteMassPropertiesToNative()
 {
 	if (!HasNative() || !GetWorld() || !GetWorld()->IsGameWorld())
+	{
 		return;
+	}
 
-	int NumNodes = NativeBarrier.GetNumNodes();
+	const int NumNodes = NativeBarrier.GetNumNodes();
 	for (int i = 0; i < NumNodes; ++i)
 	{
 		FRigidBodyBarrier BodyBarrier = NativeBarrier.GetNodeBody(i);
@@ -753,7 +763,7 @@ void UAGX_TrackComponent::WriteMassPropertiesToNative()
 		FRigidBodyBarrier FirstBodyBarrier = NativeBarrier.GetNodeBody(0);
 		check(FirstBodyBarrier.HasNative());
 
-		FMassPropertiesBarrier& MassProperties = FirstBodyBarrier.GetMassProperties();
+		const FMassPropertiesBarrier& MassProperties = FirstBodyBarrier.GetMassProperties();
 
 		if (bAutoGenerateMass)
 		{

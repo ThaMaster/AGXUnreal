@@ -16,7 +16,7 @@ class FTrackBarrier;
 
 
 /**
- * Renderers all track nodes as instanced meshed using the same Static Mesh source.
+ * Renderers all track nodes as instanced meshes using the same Static Mesh source.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_TrackRenderer : public UHierarchicalInstancedStaticMeshComponent
@@ -43,7 +43,8 @@ public:
 		Meta = (EditCondition = "!bAutoScaleAndOffset"))
 	FVector Offset;
 
-	/** Whether to automatically compute the Scale and Offset necessary to fit the Static Mesh's
+	/**
+	 * Whether to automatically compute the Scale and Offset necessary to fit the Static Mesh's
 	 * local bounds (defined by Local Mesh Bounds Min/Max) to the physical track node box.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMesh)

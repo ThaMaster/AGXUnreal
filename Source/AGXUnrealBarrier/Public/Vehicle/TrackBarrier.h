@@ -23,7 +23,7 @@ struct FTrackRef;
 /**
  * Barrier between UAGX_TrackComponent and agxVehicle::Track. UAGX_TrackComponent holds an instance
  * of TrackBarrier and hidden behind the TrackBarrier is a agx::TrackRef. This allows
- * UAGX_TrackComponent to interact with agxVechile::Track without including agxVehicle/Track.h.
+ * UAGX_TrackComponent to interact with agxVehicle::Track without including agxVehicle/Track.h.
  *
  * This class handles all translation between Unreal Engine types and AGX Dynamics types, such as
  * back and forth between FVector and agx::Vec3.

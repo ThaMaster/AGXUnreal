@@ -16,7 +16,7 @@
 /**
  * A track wheel referenced by the Track Component. Specifies the wheel rigid body,
  * the wheel transform, and interaction characteristics against the track nodes.
-
+ *
  * Note that this object does not create any geometries, bodies, or joints on its own,
  * it merely acts a data connection between the already existing actual wheel Rigid Body
  * and the Track Component. In other words, it turns a body into a track wheel.
@@ -30,7 +30,6 @@ struct AGXUNREAL_API FAGX_TrackWheel
 	GENERATED_BODY()
 
 public:
-
 	/**
 	 *  The Rigid Body to which this wheel belongs.
 	 */
@@ -39,15 +38,16 @@ public:
 
 	/**
 	 * The optional Frame Defining Component makes it possible to use the transform of any Actor
-	 * or Component to define the frame of the Track Wheel. If set, RelativeLocation and RelativeRotation
-	 * are relative to the Frame Defining Component instead of to the Rigid Body Component.
+	 * or Component to define the frame of the Track Wheel. If set, RelativeLocation and
+	 * RelativeRotation are relative to the Frame Defining Component instead of to the Rigid Body
+	 * Component.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel",
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Track Wheel",
 		Meta = (EditCondition = "bUseFrameDefiningComponent"))
 	FAGX_SceneComponentReference FrameDefiningComponent;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel",
-		Meta = (InlineEditConditionToggle))
+	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel", Meta = (InlineEditConditionToggle))
 	bool bUseFrameDefiningComponent;
 
 	/**
@@ -104,11 +104,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel")
 	bool bMoveNodesToWheel;
 
-	// \note Not exposing the MERGE_NODES flag here because it seems to automatically be set internally
-	// by AgxDynamics dependent on Model, so it is redundant and therefore unnecessary to expose.
-	// User can just set track wheel model to sprocket or idler to get the merge-to-wheel behaviour.
+	// \note Not exposing the MERGE_NODES flag here because it seems to automatically be set
+	// internally by AgxDynamics dependent on Model, so it is redundant and therefore unnecessary to
+	// expose. User can just set track wheel model to sprocket or idler to get the merge-to-wheel
+	// behaviour.
 
 public:
-
 	bool GetTransformRelativeToBody(FVector& RelPosition, FQuat& RelRotation) const;
 };

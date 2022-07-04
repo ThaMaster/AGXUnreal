@@ -20,21 +20,23 @@ namespace
 	template <typename ObjClass>
 	static FORCEINLINE ObjClass* LoadObjFromPath(const FName& Path)
 	{
-		if (Path == NAME_None) return nullptr;
+		if (Path == NAME_None)
+			return nullptr;
 
 		return Cast<ObjClass>(StaticLoadObject(ObjClass::StaticClass(), nullptr, *Path.ToString()));
 	}
 
 	static FORCEINLINE UMaterial* LoadMaterialFromPath(const FName& Path)
 	{
-		if (Path == NAME_None) return nullptr;
+		if (Path == NAME_None)
+			return nullptr;
 
 		return LoadObjFromPath<UMaterial>(Path);
 	}
 
 	void DrawRigidBodyFrames(
-		TArray<FTrackBarrier::FVectorAndRotator> BodyTransforms,
-		const FSceneView* View, FPrimitiveDrawInterface* PDI)
+		TArray<FTrackBarrier::FVectorAndRotator> BodyTransforms, const FSceneView* View,
+		FPrimitiveDrawInterface* PDI)
 	{
 		for (const FTrackBarrier::FVectorAndRotator& Transform : BodyTransforms)
 		{
@@ -43,14 +45,13 @@ namespace
 			const auto& Rotation = std::get<1>(Transform);
 
 			// Draw x, y, z axes.
-			DrawCoordinateSystem(PDI,
-				Position, Rotation, 20.0f, 100, 1.3f);
+			DrawCoordinateSystem(PDI, Position, Rotation, 20.0f, 100, 1.3f);
 		}
 	}
 
 	void DrawHingeAxes(
-		TArray<FTrackBarrier::FVectorAndRotator> HingeTransforms,
-		const FSceneView* View, FPrimitiveDrawInterface* PDI)
+		TArray<FTrackBarrier::FVectorAndRotator> HingeTransforms, const FSceneView* View,
+		FPrimitiveDrawInterface* PDI)
 	{
 		// Unreal draws directional arrow along local X-axis, but AGX Dynamic's hinge axis
 		// is the local z-axis. Therefore we need to rotate -90 degrees around the local y-axis.
@@ -63,43 +64,44 @@ namespace
 			const auto& Rotation = std::get<1>(Transform);
 
 			// Draw arrow.
-			DrawDirectionalArrow(PDI,
-				XToZAxisRot * FRotationTranslationMatrix(Rotation, Position),
+			DrawDirectionalArrow(
+				PDI, XToZAxisRot * FRotationTranslationMatrix(Rotation, Position),
 				FLinearColor(1, 1, 1), 30.0f, 3.0f, 101, 0.8f);
 		}
 	}
 
 	void DrawMassCenters(
-		TArray<FVector> MassCenters, FMaterialRenderProxy*& MaterialProxy,
-		const FSceneView* View, FPrimitiveDrawInterface* PDI)
+		TArray<FVector> MassCenters, FMaterialRenderProxy*& MaterialProxy, const FSceneView* View,
+		FPrimitiveDrawInterface* PDI)
 	{
 		FLinearColor Color(1.0, 0.0, 1.0, 1.0f);
 
 #ifdef DRAW_SOLID_VISUALIZERS
 		// Create the material proxy if not yet created.
 		if (MaterialProxy == nullptr)
-			MaterialProxy = new FColoredMaterialRenderProxy(
-				GEngine->GeomMaterial->GetRenderProxy(), Color);
+			MaterialProxy =
+				new FColoredMaterialRenderProxy(GEngine->GeomMaterial->GetRenderProxy(), Color);
 #endif
 
 		for (const FVector& Position : MassCenters)
 		{
 #ifdef DRAW_SOLID_VISUALIZERS
 			// Draw solid sphere.
-			// \todo Is there an easier or better way to draw a solid sphere from a component visualizer?
-			DrawSphere(PDI,
-				Position, FRotator::ZeroRotator, FVector(3.0f), 4, 4, MaterialProxy, (uint8)102);
+			// \todo Is there an easier or better way to draw a solid sphere from a component
+			// visualizer?
+			DrawSphere(
+				PDI, Position, FRotator::ZeroRotator, FVector(3.0f), 4, 4, MaterialProxy,
+				(uint8) 102);
 #else
 			// Draw a thick-lined wire diamond that will appear as a solid world-space sized dot.
-			DrawWireDiamond(PDI, FTranslationMatrix(Position), 2.5f, Color, (uint8)102, 2.5f);
+			DrawWireDiamond(PDI, FTranslationMatrix(Position), 2.5f, Color, (uint8) 102, 2.5f);
 #endif
 		}
 	}
 
 	void DrawCollisionBoxes(
-		TArray<FTrackBarrier::FVectorRotatorRadii> CollisionBoxes,
-		bool bColorizeMergedBodies, TArray<FLinearColor> BodyColors,
-		FMaterialRenderProxy*& CommonMaterialProxy,
+		TArray<FTrackBarrier::FVectorRotatorRadii> CollisionBoxes, bool bColorizeMergedBodies,
+		TArray<FLinearColor> BodyColors, FMaterialRenderProxy*& CommonMaterialProxy,
 		TMap<FLinearColor, FMaterialRenderProxy*>& MaterialProxyPerBodyColor,
 		const FSceneView* View, FPrimitiveDrawInterface* PDI)
 	{
@@ -124,8 +126,10 @@ namespace
 				}
 				else
 				{
-					UE_LOG(LogAGX, Log,
-						TEXT("TrackComponentVisualizer is creating a collision box material proxy for color \"%s\"."),
+					UE_LOG(
+						LogAGX, Log,
+						TEXT("TrackComponentVisualizer is creating a collision box material proxy "
+							 "for color \"%s\"."),
 						*BoxColor.ToString());
 					BoxMaterialProxy = new FColoredMaterialRenderProxy(
 						GEngine->GeomMaterial->GetRenderProxy(), BoxColor);
@@ -137,8 +141,10 @@ namespace
 				// Common box color.
 				if (CommonMaterialProxy == nullptr)
 				{
-					UE_LOG(LogAGX, Log,
-						TEXT("TrackComponentVisualizer is creating a common collision box material proxy."));
+					UE_LOG(
+						LogAGX, Log,
+						TEXT("TrackComponentVisualizer is creating a common collision box material "
+							 "proxy."));
 					CommonMaterialProxy = new FColoredMaterialRenderProxy(
 						GEngine->GeomMaterial->GetRenderProxy(), FLinearColor(0, 0, 0, 0.3f));
 				}
@@ -146,15 +152,18 @@ namespace
 			}
 			check(BoxMaterialProxy);
 
-			// Draw transparent solid box. 
-			// \todo Is there an easier or better way to draw a solid transparent box from a component visualizer?
-			DrawBox(PDI,
-				FRotationTranslationMatrix(Rotation, Position), Radii, BoxMaterialProxy, SDPG_World);
+			// Draw transparent solid box.
+			// \todo Is there an easier or better way to draw a solid transparent box from a
+			// component visualizer?
+			DrawBox(
+				PDI, FRotationTranslationMatrix(Rotation, Position), Radii, BoxMaterialProxy,
+				SDPG_World);
 #endif
 
 			// Draw wire box.
 			FLinearColor LineColor = FLinearColor(0, 0, 0, 0.2f); // black
-			float LineThickness = 0.4f; // \warning Too thick lines cause box too look larger than actual size
+			// \warning Too thick lines cause box too look larger than actual size
+			float LineThickness = 0.4f;
 #ifndef DRAW_SOLID_VISUALIZERS
 			// Colorize the line, because there is no solid to show color.
 			if (bColorizeMergedBodies && i < BodyColors.Num())
@@ -163,9 +172,9 @@ namespace
 				LineThickness = 1.0f;
 			}
 #endif
-			DrawWireBox(PDI,
-				FRotationTranslationMatrix(Rotation, Position), FBox(-Radii, Radii),
-				LineColor, 103, LineThickness, 0, false);
+			DrawWireBox(
+				PDI, FRotationTranslationMatrix(Rotation, Position), FBox(-Radii, Radii), LineColor,
+				103, LineThickness, 0, false);
 			++i;
 		}
 	}
@@ -180,26 +189,27 @@ namespace
 		}
 
 		const float HalfDepth = 0.5f * Depth;
-		const int32 NumSides = FMath::GetMappedRangeValueClamped(
-			TRange<float>(10, 60), TRange<float>(16, 64), Radius);
-		
+		const int32 NumSides =
+			FMath::GetMappedRangeValueClamped(TRange<float>(10, 60), TRange<float>(16, 64), Radius);
+
 		// The rotation axis of an AGX Dynamics wheel is the y-axis (-Y in Unreal), but Unreal
 		// draws an wire cylinder extended along the z-axis. Therefore, rotate around the X-axis
 		// in order to align Z-axis with negative Y-axis (rotation done by swapping the axes below).
 
 		// Draw wheel cylinder.
 		DrawWireCylinder(
-			PDI, Position, Rotation.GetAxisX(), Rotation.GetAxisZ(), -Rotation.GetAxisY(),
-			Color, Radius, 0.5f * Depth, NumSides, SDPG_Foreground);
-		
+			PDI, Position, Rotation.GetAxisX(), Rotation.GetAxisZ(), -Rotation.GetAxisY(), Color,
+			Radius, 0.5f * Depth, NumSides, SDPG_Foreground);
+
 		// Unreal draws directional arrow along local X-axis, but AGX Dynamic's wheel axis is the
-		// local y-axis (-Y in Unreal). Therefore we need to rotate -90 degrees around the local z-axis.
+		// local y-axis (-Y in Unreal). Therefore we need to rotate -90 degrees around the local
+		// z-axis.
 		FQuat ArrowRotation = Rotation * FQuat(FVector::UpVector, -HALF_PI);
 
 		// Draw rotation axis.
-		DrawDirectionalArrow(PDI,
-			FQuatRotationTranslationMatrix(ArrowRotation, Position),
-			Color, 0.6f * Depth, /*ArrowSize*/ 4.0f, SDPG_Foreground, /*Thickness*/ 1.5f);
+		DrawDirectionalArrow(
+			PDI, FQuatRotationTranslationMatrix(ArrowRotation, Position), Color, 0.6f * Depth,
+			/*ArrowSize*/ 4.0f, SDPG_Foreground, /*Thickness*/ 1.5f);
 	}
 
 	void DrawTrackWheels(
@@ -237,11 +247,11 @@ namespace
 		{
 			// \todo Consider letting AGX_TrackComponent.cpp generate wheels preview data instead,
 			//       along with the TrackPreviewData.
-			
-			// \todo Currenly not detecting whether a Rigid Body Component or Frame Defining Component
-			//       has been moved, and marking Track Preview Data for update if so. In such scenario
-			//       the user currently has to manually update the preview data by clicking the
-			//       Update Preview button in the Details Panel of the Track Component.
+
+			// \todo Currently not detecting whether a Rigid Body Component or Frame Defining
+			// Component has been moved, and marking Track Preview Data for update if so. In such
+			// scenario the user currently has to manually update the preview data by clicking the
+			// Update Preview button in the Details Panel of the Track Component.
 
 			WheelTransforms->SetNum(TrackComponent->Wheels.Num(), /*bAllowShrinking*/ true);
 			int i = 0;
@@ -281,7 +291,8 @@ namespace
 					// Position
 					std::get<0>((*BodyTransforms)[i]) = Preview->NodeTransforms[i].GetLocation();
 					// Rotation
-					std::get<1>((*BodyTransforms)[i]) = Preview->NodeTransforms[i].GetRotation().Rotator();
+					std::get<1>((*BodyTransforms)[i]) =
+						Preview->NodeTransforms[i].GetRotation().Rotator();
 				}
 			}
 		}
@@ -303,12 +314,13 @@ namespace
 					FVector BodyFrameToBoxCenter =
 						Preview->NodeTransforms[i].GetRotation().GetAxisZ() *
 						Preview->NodeHalfExtents[i].Z;
-					
+
 					// Position
-					std::get<0>((*CollisionBoxes)[i]) = Preview->NodeTransforms[i].GetLocation() 
-						+ BodyFrameToBoxCenter;
+					std::get<0>((*CollisionBoxes)[i]) =
+						Preview->NodeTransforms[i].GetLocation() + BodyFrameToBoxCenter;
 					// Rotation
-					std::get<1>((*CollisionBoxes)[i]) = Preview->NodeTransforms[i].GetRotation().Rotator();
+					std::get<1>((*CollisionBoxes)[i]) =
+						Preview->NodeTransforms[i].GetRotation().Rotator();
 					// Half Size
 					std::get<2>((*CollisionBoxes)[i]) = Preview->NodeHalfExtents[i];
 				}
@@ -318,9 +330,8 @@ namespace
 }
 
 FAGX_TrackComponentVisualizer::FAGX_TrackComponentVisualizer()
-	:
-	MassCenterMaterialProxy(nullptr),
-	CollisionBoxMaterialProxy(nullptr)
+	: MassCenterMaterialProxy(nullptr)
+	, CollisionBoxMaterialProxy(nullptr)
 {
 	UE_LOG(LogTemp, Log, TEXT("FAGX_TrackComponentVisualizer::constructor()"));
 }
@@ -337,22 +348,24 @@ void FAGX_TrackComponentVisualizer::DrawVisualization(
 
 	// \todo It appears the same ComponentVisualizer is used for multiple UAGX_TrackComponents.
 	// We should probably adjust our cache management to reflect this!
-	// Though, in reality it is not THAT bad with current implementation, because the main purpose 
+	// Though, in reality it is not THAT bad with current implementation, because the main purpose
 	// of the cache is so avoid re-allocation of the container, not to remember its actual element
 	// values (which are always overwritten anyway). Because the size (node count) is usually the
-	// same for multiple tracks (i.e. left and right track) the cached container can be reused 
+	// same for multiple tracks (i.e. left and right track) the cached container can be reused
 	// without any re-allocation occuring.
 
 	if (!IsValid(TrackComponent) || !TrackComponent->bShowEditorDebugGraphics)
 		return;
 
 	// \todo Is there a better way to determine if we are in the BP Actor Editor?
-	bool bIsInBlueprintEditor = TrackComponent->GetOutermost()->GetName().Equals("/Engine/Transient");
+	bool bIsInBlueprintEditor =
+		TrackComponent->GetOutermost()->GetName().Equals("/Engine/Transient");
 
-	// By default DrawVisualization is called when the component's Actor is selected in the Level Editor
-	// or when the Component is selected in the BP Actor Editor. If there's many constraints etc in the
-	// same actor the Level Editor's viewport gets very messy. Therefore, with the following boolean we
-	// only draw the visualization if the component is selected in the Level Editor, not the actor.
+	// By default DrawVisualization is called when the component's Actor is selected in the Level
+	// Editor or when the Component is selected in the BP Actor Editor. If there's many constraints
+	// etc in the same actor the Level Editor's viewport gets very messy. Therefore, with the
+	// following boolean we only draw the visualization if the component is selected in the Level
+	// Editor, not the actor.
 	bool bDrawVisualizer = TrackComponent->IsSelectedInEditor() || bIsInBlueprintEditor;
 	if (!bDrawVisualizer)
 		return;
@@ -365,11 +378,11 @@ void FAGX_TrackComponentVisualizer::DrawVisualization(
 
 		const FTrackBarrier* TrackBarrier = TrackComponent->GetNative();
 		check(TrackBarrier);
-		
+
 		TrackBarrier->GetDebugData(
 			&BodyTransformsCache, &HingeTransformsCache, &MassCentersCache, &CollisionBoxesCache,
 			&BodyColorsCache, &WheelTransformsCache);
-			
+
 		// Draw rigid body frames.
 		DrawRigidBodyFrames(BodyTransformsCache, View, PDI);
 
@@ -380,7 +393,8 @@ void FAGX_TrackComponentVisualizer::DrawVisualization(
 		DrawMassCenters(MassCentersCache, MassCenterMaterialProxy, View, PDI);
 
 		// Draw collision boxes
-		DrawCollisionBoxes(CollisionBoxesCache, TrackComponent->bColorizeMergedBodies, BodyColorsCache,
+		DrawCollisionBoxes(
+			CollisionBoxesCache, TrackComponent->bColorizeMergedBodies, BodyColorsCache,
 			CollisionBoxMaterialProxy, CollisionBoxMaterialProxies, View, PDI);
 
 		// Draw track wheels.
@@ -391,19 +405,19 @@ void FAGX_TrackComponentVisualizer::DrawVisualization(
 		// Draw outside-game visualization using preview data.
 
 		// Get rendering data from Track Preview Data.
-		GetDebugDataFromTrackPreview(TrackComponent,
-			&BodyTransformsCache, &CollisionBoxesCache, &WheelTransformsCache);
+		GetDebugDataFromTrackPreview(
+			TrackComponent, &BodyTransformsCache, &CollisionBoxesCache, &WheelTransformsCache);
 
 		// Draw rigid body frames.
 		DrawRigidBodyFrames(BodyTransformsCache, View, PDI);
 
 		// Draw collision boxes
-		DrawCollisionBoxes(CollisionBoxesCache, TrackComponent->bColorizeMergedBodies, BodyColorsCache,
+		DrawCollisionBoxes(
+			CollisionBoxesCache, TrackComponent->bColorizeMergedBodies, BodyColorsCache,
 			CollisionBoxMaterialProxy, CollisionBoxMaterialProxies, View, PDI);
 
 		// Draw track wheels.
 		DrawTrackWheels(WheelTransformsCache, 0.6f * TrackComponent->Width, View, PDI);
-
 	}
 }
 
