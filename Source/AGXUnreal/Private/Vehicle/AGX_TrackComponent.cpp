@@ -94,7 +94,7 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 
 			// Create wheel data.
 			FTrackBarrier::FTrackWheelDesc Desc;
-			Desc.Model = Wheel.Model;
+			Desc.Model = static_cast<decltype(Desc.Model)>(Wheel.Model);
 			Desc.Radius = Wheel.Radius;
 			Desc.RigidBodyTransform = Body->GetComponentTransform();
 			Wheel.GetTransformRelativeToBody(Desc.RelativePosition, Desc.RelativeRotation);
@@ -548,7 +548,7 @@ void UAGX_TrackComponent::CreateNative()
 
 		// Add native wheel to native Track.
 		NativeBarrier.AddTrackWheel(
-			Wheel.Model, Wheel.Radius, *Body->GetOrCreateNative(), RelPos, RelRot,
+			static_cast<uint8>(Wheel.Model), Wheel.Radius, *Body->GetOrCreateNative(), RelPos, RelRot,
 			Wheel.bSplitSegments, Wheel.bMoveNodesToRotationPlane, Wheel.bMoveNodesToWheel);
 	}
 

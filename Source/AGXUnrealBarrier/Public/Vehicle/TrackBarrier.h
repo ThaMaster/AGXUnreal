@@ -31,10 +31,9 @@ struct FTrackRef;
 class AGXUNREALBARRIER_API FTrackBarrier
 {
 public:
-
 	struct FTrackWheelDesc
 	{
-		int32 Model;
+		uint8 Model;
 		double Radius;
 		FTransform RigidBodyTransform;
 		FVector RelativePosition;
@@ -50,7 +49,7 @@ public:
 	FTrackBarrier(FTrackBarrier&& Other);
 	~FTrackBarrier();
 
-	void AddTrackWheel(int32 Model, double Radius, const FRigidBodyBarrier& RigidBody,
+	void AddTrackWheel(uint8 Model, double Radius, const FRigidBodyBarrier& RigidBody,
 		const FVector& RelativePosition, const FQuat& RelativeRotation,
 		bool bSplitSegments, bool bMoveNodesToRotationPlane, bool bMoveNodesToWheel);
 

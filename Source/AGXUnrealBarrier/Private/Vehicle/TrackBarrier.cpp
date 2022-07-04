@@ -89,7 +89,7 @@ FTrackBarrier::~FTrackBarrier()
 	// not just the forward declaration, of FTrackRef.
 }
 
-void FTrackBarrier::AddTrackWheel(int32 Model, double Radius, const FRigidBodyBarrier& RigidBody,
+void FTrackBarrier::AddTrackWheel(uint8 Model, double Radius, const FRigidBodyBarrier& RigidBody,
 	const FVector& RelativePosition, const FQuat& RelativeRotation,
 	bool bSplitSegments, bool bMoveNodesToRotationPlane, bool bMoveNodesToWheel)
 {

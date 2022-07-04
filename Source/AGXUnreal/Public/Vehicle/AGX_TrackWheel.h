@@ -76,7 +76,7 @@ public:
 	 * simulating geared, non-slip, type of properties.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel")
-	TEnumAsByte<enum EAGX_TrackWheelModel> Model = EAGX_TrackWheelModel::TWM_ROLLER;
+	EAGX_TrackWheelModel Model = EAGX_TrackWheelModel::TWM_ROLLER;
 
 	/**
 	 * Wheels with this property will split segments, i.e., intermediate nodes that are merged.
