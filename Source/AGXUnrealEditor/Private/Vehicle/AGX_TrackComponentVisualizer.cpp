@@ -35,7 +35,7 @@ namespace
 	}
 
 	void DrawRigidBodyFrames(
-		TArray<FTrackBarrier::FVectorAndRotator> BodyTransforms, const FSceneView* View,
+		const TArray<FTrackBarrier::FVectorAndRotator>& BodyTransforms, const FSceneView* View,
 		FPrimitiveDrawInterface* PDI)
 	{
 		for (const FTrackBarrier::FVectorAndRotator& Transform : BodyTransforms)
@@ -50,7 +50,7 @@ namespace
 	}
 
 	void DrawHingeAxes(
-		TArray<FTrackBarrier::FVectorAndRotator> HingeTransforms, const FSceneView* View,
+		const TArray<FTrackBarrier::FVectorAndRotator>& HingeTransforms, const FSceneView* View,
 		FPrimitiveDrawInterface* PDI)
 	{
 		// Unreal draws directional arrow along local X-axis, but AGX Dynamic's hinge axis
@@ -71,7 +71,7 @@ namespace
 	}
 
 	void DrawMassCenters(
-		TArray<FVector> MassCenters, FMaterialRenderProxy*& MaterialProxy, const FSceneView* View,
+		const TArray<FVector>& MassCenters, FMaterialRenderProxy*& MaterialProxy, const FSceneView* View,
 		FPrimitiveDrawInterface* PDI)
 	{
 		FLinearColor Color(1.0, 0.0, 1.0, 1.0f);
@@ -100,8 +100,8 @@ namespace
 	}
 
 	void DrawCollisionBoxes(
-		TArray<FTrackBarrier::FVectorRotatorRadii> CollisionBoxes, bool bColorizeMergedBodies,
-		TArray<FLinearColor> BodyColors, FMaterialRenderProxy*& CommonMaterialProxy,
+		const TArray<FTrackBarrier::FVectorRotatorRadii>& CollisionBoxes, bool bColorizeMergedBodies,
+		const TArray<FLinearColor>& BodyColors, FMaterialRenderProxy*& CommonMaterialProxy,
 		TMap<FLinearColor, FMaterialRenderProxy*>& MaterialProxyPerBodyColor,
 		const FSceneView* View, FPrimitiveDrawInterface* PDI)
 	{
@@ -199,7 +199,7 @@ namespace
 		// Draw wheel cylinder.
 		DrawWireCylinder(
 			PDI, Position, Rotation.GetAxisX(), Rotation.GetAxisZ(), -Rotation.GetAxisY(), Color,
-			Radius, 0.5f * Depth, NumSides, SDPG_Foreground);
+			Radius, HalfDepth, NumSides, SDPG_Foreground);
 
 		// Unreal draws directional arrow along local X-axis, but AGX Dynamic's wheel axis is the
 		// local y-axis (-Y in Unreal). Therefore we need to rotate -90 degrees around the local
@@ -213,7 +213,7 @@ namespace
 	}
 
 	void DrawTrackWheels(
-		TArray<FTrackBarrier::FVectorQuatRadius> WheelTransforms, float WheelDepth,
+		const TArray<FTrackBarrier::FVectorQuatRadius>& WheelTransforms, float WheelDepth,
 		const FSceneView* View, FPrimitiveDrawInterface* PDI)
 	{
 		const FColor WheelColor(0, 255, 0); //(233, 0, 215); //(240, 230, 0);
@@ -333,12 +333,10 @@ FAGX_TrackComponentVisualizer::FAGX_TrackComponentVisualizer()
 	: MassCenterMaterialProxy(nullptr)
 	, CollisionBoxMaterialProxy(nullptr)
 {
-	UE_LOG(LogTemp, Log, TEXT("FAGX_TrackComponentVisualizer::constructor()"));
 }
 
 FAGX_TrackComponentVisualizer::~FAGX_TrackComponentVisualizer()
 {
-	UE_LOG(LogTemp, Log, TEXT("FAGX_TrackComponentVisualizer::destructor()"));
 }
 
 void FAGX_TrackComponentVisualizer::DrawVisualization(
@@ -355,7 +353,9 @@ void FAGX_TrackComponentVisualizer::DrawVisualization(
 	// without any re-allocation occuring.
 
 	if (!IsValid(TrackComponent) || !TrackComponent->bShowEditorDebugGraphics)
+	{
 		return;
+	}
 
 	// \todo Is there a better way to determine if we are in the BP Actor Editor?
 	bool bIsInBlueprintEditor =
@@ -368,13 +368,17 @@ void FAGX_TrackComponentVisualizer::DrawVisualization(
 	// Editor, not the actor.
 	bool bDrawVisualizer = TrackComponent->IsSelectedInEditor() || bIsInBlueprintEditor;
 	if (!bDrawVisualizer)
+	{
 		return;
+	}
 
 	if (TrackComponent->GetWorld() && TrackComponent->GetWorld()->IsGameWorld())
 	{
 		// Draw in-game visualization using AGX Dynamics native data.
 		if (!TrackComponent->HasNative())
+		{
 			return;
+		}
 
 		const FTrackBarrier* TrackBarrier = TrackComponent->GetNative();
 		check(TrackBarrier);
