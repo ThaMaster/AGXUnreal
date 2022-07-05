@@ -25,6 +25,7 @@ void FAGX_MergeSplitProperties::OnBeginPlay(T& Owner)
 	}
 }
 
+#if WITH_EDITOR
 template <typename T>
 void FAGX_MergeSplitProperties::OnPostEditChangeProperty(T& Owner)
 {
@@ -40,6 +41,7 @@ void FAGX_MergeSplitProperties::OnPostEditChangeProperty(T& Owner)
 		UpdateNativeProperties();
 	}
 }
+#endif
 
 template <typename T>
 void FAGX_MergeSplitProperties::CreateNative(T& Owner)
@@ -120,6 +122,7 @@ template AGXUNREAL_API void FAGX_MergeSplitProperties::OnBeginPlay<UAGX_ShapeCom
 template AGXUNREAL_API void FAGX_MergeSplitProperties::OnBeginPlay<UAGX_WireComponent>(
 	UAGX_WireComponent&);
 
+#if WITH_EDITOR
 template AGXUNREAL_API void FAGX_MergeSplitProperties::OnPostEditChangeProperty<
 	UAGX_RigidBodyComponent>(UAGX_RigidBodyComponent&);
 template AGXUNREAL_API void FAGX_MergeSplitProperties::OnPostEditChangeProperty<
@@ -128,6 +131,7 @@ template AGXUNREAL_API void
 FAGX_MergeSplitProperties::OnPostEditChangeProperty<UAGX_ShapeComponent>(UAGX_ShapeComponent&);
 template AGXUNREAL_API void FAGX_MergeSplitProperties::OnPostEditChangeProperty<UAGX_WireComponent>(
 	UAGX_WireComponent&);
+#endif
 
 template AGXUNREAL_API void FAGX_MergeSplitProperties::CreateNative<UAGX_RigidBodyComponent>(
 	UAGX_RigidBodyComponent&);

@@ -27,11 +27,13 @@ public:
 	template <typename T>
 	void OnBeginPlay(T& Owner);
 
+#if WITH_EDITOR
 	/**
 	 * Must be called by the owning object at PostEditChangeProperty.
 	 */
 	template <typename T>
 	void OnPostEditChangeProperty(T& Owner);
+#endif
 
 	template <typename T>
 	void CreateNative(T& Owner);
