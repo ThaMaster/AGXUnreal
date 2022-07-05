@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Vehicle/AGX_TrackRendererDetails.h"
 
 // AGX Dynamics for Unreal includes.
@@ -14,7 +13,6 @@
 #include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TrackRendererDetails"
-
 
 TSharedRef<IDetailCustomization> FAGX_TrackRendererDetails::MakeInstance()
 {

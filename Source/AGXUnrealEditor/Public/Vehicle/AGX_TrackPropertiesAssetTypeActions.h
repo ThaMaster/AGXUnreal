@@ -8,7 +8,7 @@
 
 
 /**
- * Asset Type Actions for UAGX_TrackPropertiesAsset, customizing its appearance in the Editor menues
+ * Asset Type Actions for UAGX_TrackPropertiesAsset, customizing its appearance in the Editor menus
  * and browsers.
  */
 class AGXUNREALEDITOR_API FAGX_TrackPropertiesAssetTypeActions : public FAssetTypeActions_Base

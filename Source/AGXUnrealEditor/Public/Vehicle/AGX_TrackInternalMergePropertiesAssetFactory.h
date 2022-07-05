@@ -7,8 +7,8 @@
 #include "AGX_TrackInternalMergePropertiesAssetFactory.generated.h"
 
 /**
- * Asset Factory for UAGX_TrackInternalMergePropertiesAsset, making it possible to create asset objects in the
- * Editor.
+ * Asset Factory for UAGX_TrackInternalMergePropertiesAsset, making it possible to create asset
+ * objects in the Editor.
  */
 UCLASS()
 class AGXUNREALEDITOR_API UAGX_TrackInternalMergePropertiesAssetFactory : public UFactory

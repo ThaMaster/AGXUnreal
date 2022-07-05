@@ -6,12 +6,12 @@
 #include "AssetTypeCategories.h"
 #include "AssetTypeActions_Base.h"
 
-
 /**
- * Asset Type Actions for UAGX_TrackInternalMergePropertiesAsset, customizing its appearance in the Editor menues
- * and browsers.
+ * Asset Type Actions for UAGX_TrackInternalMergePropertiesAsset, customizing its appearance in the
+ * Editor menus and browsers.
  */
-class AGXUNREALEDITOR_API FAGX_TrackInternalMergePropertiesAssetTypeActions : public FAssetTypeActions_Base
+class AGXUNREALEDITOR_API FAGX_TrackInternalMergePropertiesAssetTypeActions
+	: public FAssetTypeActions_Base
 {
 public:
 	FAGX_TrackInternalMergePropertiesAssetTypeActions(EAssetTypeCategories::Type InAssetCategory);
