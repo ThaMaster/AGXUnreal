@@ -46,11 +46,10 @@ class AGXUNREAL_API UAGX_TrackInternalMergePropertiesBase : public UObject
 	GENERATED_BODY()
 
 public:
-
 	/**
 	 * Whether to enable merging of internal nodes into segments in the track.
 	 */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "AGX Track Internal Merge Properties")
 	bool bMergeEnabled;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
@@ -59,7 +58,9 @@ public:
 	/**
 	 * Maximum number of consecutive nodes that may merge together into a segment.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bMergeEnabled", ClampMin = "1"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Track Internal Merge Properties",
+		Meta = (EditCondition = "bMergeEnabled", ClampMin = "1"))
 	uint32 NumNodesPerMergeSegment;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
@@ -68,7 +69,9 @@ public:
 	/**
 	 * Contact reduction level of merged nodes against other objects.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bMergeEnabled"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Track Internal Merge Properties",
+		Meta = (EditCondition = "bMergeEnabled"))
 	EAGX_MergedTrackNodeContactReduction ContactReduction;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
@@ -77,7 +80,9 @@ public:
 	/**
 	 * Whether to enable the usage of hinge lock to reach merge condition (angle close to zero).
 	 */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bMergeEnabled"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Track Internal Merge Properties",
+		Meta = (EditCondition = "bMergeEnabled"))
 	bool bLockToReachMergeConditionEnabled;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
@@ -86,9 +91,11 @@ public:
 	/**
 	 * Compliance of the hinge lock used to reach merge condition.
 	 */
-	UPROPERTY(EditAnywhere, Meta =
-		(EditCondition = "bMergeEnabled && bLockToReachMergeConditionEnabled",
-		ClampMin = "0.000000000000000001", ClampMax = "1.0"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Track Internal Merge Properties",
+		Meta =
+			(EditCondition = "bMergeEnabled && bLockToReachMergeConditionEnabled",
+			 ClampMin = "0.000000000000000001", ClampMax = "1.0"))
 	FAGX_Real LockToReachMergeConditionCompliance;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
@@ -98,9 +105,11 @@ public:
 	/**
 	 * Damping of the hinge lock used to reach merge condition.
 	 */
-	UPROPERTY(EditAnywhere, Meta =
-		(EditCondition = "bMergeEnabled && bLockToReachMergeConditionEnabled",
-		ClampMin = "0.0"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Track Internal Merge Properties",
+		Meta =
+			(EditCondition = "bMergeEnabled && bLockToReachMergeConditionEnabled",
+			 ClampMin = "0.0"))
 	FAGX_Real LockToReachMergeConditionDamping;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
@@ -112,7 +121,9 @@ public:
 	 *
 	 * I.e., when the angle between two nodes < maxAngleToMerge the nodes will merge.
 	 */
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "bMergeEnabled"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Track Internal Merge Properties",
+		Meta = (EditCondition = "bMergeEnabled"))
 	FAGX_Real MaxAngleMergeCondition;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
@@ -120,11 +131,10 @@ public:
 	virtual void SetMaxAngleMergeCondition(FAGX_Real MaxAngleToMerge);
 
 public:
-
 	/**
-	 * Invokes the member function GetOrCreateInstance() on TrackInternalMergeProperties pointed to by Property,
-	 * assigns the return value to Property, and then returns it. Returns null and does nothing if
-	 * PlayingWorld is not an in-game world.
+	 * Invokes the member function GetOrCreateInstance() on TrackInternalMergeProperties pointed to
+	 * by Property, assigns the return value to Property, and then returns it. Returns null and does
+	 * nothing if PlayingWorld is not an in-game world.
 	 */
 	static UAGX_TrackInternalMergePropertiesInstance* GetOrCreateInstance(
 		UWorld* PlayingWorld, UAGX_TrackInternalMergePropertiesBase*& Property);
@@ -139,21 +149,22 @@ public:
 	/**
 	 * If PlayingWorld is an in-game World and this TrackInternalMergeProperties is a
 	 * UAGX_TrackInternalMergePropertiesAsset, returns a UAGX_TrackInternalMergePropertiesInstance
-	 * representing the TrackInternalMergeProperties asset throughout the lifetime of the GameInstance.
-	 * If this is already a UAGX_TrackInternalMergePropertiesInstance it returns itself.
-	 * Returns null if not in-game (invalid call).
+	 * representing the TrackInternalMergeProperties asset throughout the lifetime of the
+	 * GameInstance. If this is already a UAGX_TrackInternalMergePropertiesInstance it returns
+	 * itself. Returns null if not in-game (invalid call).
 	 */
-	virtual UAGX_TrackInternalMergePropertiesInstance* GetOrCreateInstance(UWorld * PlayingWorld)
+	virtual UAGX_TrackInternalMergePropertiesInstance* GetOrCreateInstance(UWorld* PlayingWorld)
 		PURE_VIRTUAL(UAGX_TrackInternalMergePropertiesBase::GetOrCreateInstance, return nullptr;);
 
 	/**
-	 * If this TrackInternalMergeProperties is a UAGX_TrackInternalMergePropertiesInstance, returns the
-	 * UAGX_TrackInternalMergePropertiesAsset it was created from (if it still exists). Else returns null.
+	 * If this TrackInternalMergeProperties is a UAGX_TrackInternalMergePropertiesInstance, returns
+	 * the UAGX_TrackInternalMergePropertiesAsset it was created from (if it still exists). Else
+	 * returns null.
 	 */
 	virtual UAGX_TrackInternalMergePropertiesAsset* GetAsset()
 		PURE_VIRTUAL(UAGX_TrackInternalMergePropertiesBase::GetAsset, return nullptr;);
 
-	void CopyFrom(const UAGX_TrackInternalMergePropertiesBase * Source);
+	void CopyFrom(const UAGX_TrackInternalMergePropertiesBase* Source);
 
 #if WITH_EDITOR
 	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each
@@ -164,7 +175,7 @@ public:
 	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;
 #if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent) override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 	// ~End UObject interface.
 };
