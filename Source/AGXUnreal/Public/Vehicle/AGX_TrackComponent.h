@@ -48,6 +48,12 @@ public:
 	UAGX_TrackComponent();
 
 	/**
+	 * Whether the AGX Dynamics Tracks should be created or not. Cannot be changed while playing.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Track")
+	bool bEnabled;
+
+	/**
 	 * Number of nodes in the track.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
@@ -225,6 +231,7 @@ public:
 	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;
 #if WITH_EDITOR
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif

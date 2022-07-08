@@ -37,6 +37,7 @@ UAGX_TrackComponent::UAGX_TrackComponent()
 	bWantsOnUpdateTransform = true;
 
 	// Sets default values.
+	bEnabled = true;
 	NumberOfNodes = 20;
 	Width = 50.0f;
 	Thickness = 15.0f;
@@ -60,7 +61,7 @@ UAGX_TrackComponent::UAGX_TrackComponent()
 FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 	bool bUpdateIfNecessary, bool bForceUpdate) const
 {
-	if (IsBeingDestroyed())
+	if (IsBeingDestroyed() || !bEnabled)
 	{
 		return nullptr;
 	}
@@ -148,7 +149,7 @@ void UAGX_TrackComponent::RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlr
 
 FTrackBarrier* UAGX_TrackComponent::GetOrCreateNative()
 {
-	if (!HasNative())
+	if (!HasNative() && bEnabled)
 	{
 		if (GIsReconstructingBlueprintInstances)
 		{
@@ -237,6 +238,32 @@ void UAGX_TrackComponent::PostInitProperties()
 
 #if WITH_EDITOR
 
+bool UAGX_TrackComponent::CanEditChange(const FProperty* InProperty) const
+{
+	if (!Super::CanEditChange(InProperty) || InProperty == nullptr)
+	{
+		return false;
+	}
+
+	bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	if (bIsPlaying)
+	{
+		// List of names of properties that does not support editing after initialization.
+		static const TArray<FName> PropertiesNotEditableDuringPlay = {
+			GET_MEMBER_NAME_CHECKED(ThisClass, bEnabled),
+			GET_MEMBER_NAME_CHECKED(ThisClass, NumberOfNodes),
+			GET_MEMBER_NAME_CHECKED(ThisClass, Width),
+			GET_MEMBER_NAME_CHECKED(ThisClass, Thickness),
+			GET_MEMBER_NAME_CHECKED(ThisClass, InitialDistanceTension)};
+
+		if (PropertiesNotEditableDuringPlay.Contains(InProperty->GetFName()))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 void UAGX_TrackComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 #ifdef TRACK_COMPONENT_DETAILED_LOGGING
@@ -307,7 +334,7 @@ void UAGX_TrackComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!HasNative() && !GIsReconstructingBlueprintInstances)
+	if (!HasNative() && bEnabled && !GIsReconstructingBlueprintInstances)
 	{
 		// Do not create a native AGX Dynamics object if GIsReconstructingBlueprintInstances is set.
 		// That means that we're being created as part of a Blueprint Reconstruction and we will
@@ -517,6 +544,7 @@ void UAGX_TrackComponent::CreateNative()
 	check(!HasNative());
 	NativeBarrier.AllocateNative(NumberOfNodes, Width, Thickness, InitialDistanceTension);
 	check(HasNative()); /// \todo Consider better error handling than 'check'.
+	check(bEnabled);
 
 	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this);
 	if (!IsValid(Sim) || !Sim->HasNative())
@@ -555,8 +583,8 @@ void UAGX_TrackComponent::CreateNative()
 
 		// Add native wheel to native Track.
 		NativeBarrier.AddTrackWheel(
-			static_cast<uint8>(Wheel.Model), Wheel.Radius, *Body->GetOrCreateNative(), RelPos, RelRot,
-			Wheel.bSplitSegments, Wheel.bMoveNodesToRotationPlane, Wheel.bMoveNodesToWheel);
+			static_cast<uint8>(Wheel.Model), Wheel.Radius, *Body->GetOrCreateNative(), RelPos,
+			RelRot, Wheel.bSplitSegments, Wheel.bMoveNodesToRotationPlane, Wheel.bMoveNodesToWheel);
 	}
 
 	// Set TrackProperties BEFORE adding track to simulation (i.e. triggering track initialization),
@@ -683,11 +711,12 @@ void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 
 	if (InternalMergeProperties)
 	{
+#ifdef TRACK_COMPONENT_DETAILED_LOGGING
 		UE_LOG(
 			LogAGX, Verbose,
 			TEXT("Track '%s' in '%s' is writing TrackInternalMergeProperties '%s' to native."),
 			*GetName(), *GetNameSafe(GetOwner()), *InternalMergeProperties->GetName());
-
+#endif
 		// Create instance if necessary.
 		UAGX_TrackInternalMergePropertiesInstance* InternalMergePropertiesInstance =
 			static_cast<UAGX_TrackInternalMergePropertiesInstance*>(
@@ -705,10 +734,12 @@ void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 	}
 	else
 	{
+#ifdef TRACK_COMPONENT_DETAILED_LOGGING
 		UE_LOG(
 			LogAGX, Verbose,
 			TEXT("Track '%s' in '%s' is clearing TrackInternalMergeProperties on native."),
 			*GetName(), *GetNameSafe(GetOwner()));
+#endif
 
 		// \todo Want to call TrackInternalMergeProperties::resetToDefault(), but doing so gives
 		//       very strange dynamics behaviour. It seems merge is supposed to become disbled but
