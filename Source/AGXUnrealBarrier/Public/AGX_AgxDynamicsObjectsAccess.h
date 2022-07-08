@@ -27,6 +27,11 @@ namespace agxCollide
 	class Shape;
 }
 
+namespace agxTerrain
+{
+	class Terrain;
+}
+
 class FRigidBodyBarrier;
 class FSimulationBarrier;
 class FShapeBarrier;
@@ -38,6 +43,8 @@ class FHingeBarrier;
 class FLockJointBarrier;
 class FPrismaticBarrier;
 class FShapeMaterialBarrier;
+
+class FTerrainBarrier;
 
 class AGXUNREALBARRIER_API FAGX_AgxDynamicsObjectsAccess
 {
@@ -60,4 +67,6 @@ public:
 	static agx::Prismatic* GetFrom(const FPrismaticBarrier* Barrier);
 
 	static agx::Material* GetFrom(const FShapeMaterialBarrier* Barrier);
+
+	static agxTerrain::Terrain* GetFrom(const FTerrainBarrier* Barrier);
 };

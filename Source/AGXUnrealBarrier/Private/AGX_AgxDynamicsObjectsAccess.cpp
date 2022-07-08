@@ -16,6 +16,7 @@
 #include "RigidBodyBarrier.h"
 #include "SimulationBarrier.h"
 #include "Shapes/ShapeBarrier.h"
+#include "Terrain/TerrainBarrier.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -30,6 +31,7 @@
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
 #include <agxSDK/Simulation.h>
+#include <agxTerrain/Terrain.h>
 #include "EndAGXIncludes.h"
 
 namespace AgxDynamicsObjectAccess_Helper
@@ -172,3 +174,9 @@ agx::Material* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FShapeMaterialBarrie
 {
 	return AgxDynamicsObjectAccess_Helper::GetFromAs<agx::Material>(Barrier);
 }
+
+agxTerrain::Terrain* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FTerrainBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFrom<agxTerrain::Terrain>(Barrier);
+}
+
