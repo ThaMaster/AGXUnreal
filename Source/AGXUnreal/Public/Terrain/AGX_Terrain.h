@@ -196,7 +196,7 @@ public:
 
 private:
 	void InitializeNative();
-	void CreateNativeTerrain();
+	bool CreateNativeTerrain();
 	void CreateNativeShovels();
 	void CreateTerrainMaterial();
 

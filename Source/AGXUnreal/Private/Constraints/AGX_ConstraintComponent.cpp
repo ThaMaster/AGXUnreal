@@ -175,7 +175,7 @@ void UAGX_ConstraintComponent::PostInitProperties()
 		BodyAttachment1.RigidBody.OwningActor = Owner;
 		BodyAttachment2.RigidBody.OwningActor = Owner;
 	}
-	
+
 	BodyAttachment1.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 	BodyAttachment2.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 
@@ -620,7 +620,8 @@ FConstraintBarrier* UAGX_ConstraintComponent::GetOrCreateNative()
 				TEXT("A request for the AGX Dynamics instance for Constraint '%s' in '%s' was made "
 					 "but we are in the middle of a Blueprint Reconstruction and the requested "
 					 "instance has not yet been restored. The instance cannot be returned, which "
-					 "may lead to incorrect scene configuration."));
+					 "may lead to incorrect scene configuration."),
+				*GetName(), *GetLabelSafe(GetOwner()));
 			return nullptr;
 		}
 

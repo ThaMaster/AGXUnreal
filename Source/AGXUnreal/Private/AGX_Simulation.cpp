@@ -842,7 +842,10 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const AActor* Actor)
 	}
 
 	UGameInstance* GameInstance = Actor->GetGameInstance();
-	check(GameInstance);
+	if (!GameInstance)
+	{
+		return nullptr;
+	}
 
 	return GetFrom(GameInstance);
 }
@@ -858,7 +861,7 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const UWorld* World)
 	}
 	else
 	{
-		return GetMutableDefault<UAGX_Simulation>();
+		return nullptr;
 	}
 }
 
