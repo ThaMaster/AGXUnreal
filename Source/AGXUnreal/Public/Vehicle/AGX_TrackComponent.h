@@ -78,17 +78,17 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
 	UAGX_ShapeMaterialBase* ShapeMaterial;
 
-	/**
-	 * List of collision groups that the track nodes are part of.
-	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	TArray<FName> CollisionGroups;
-
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
 	UAGX_TrackPropertiesBase* TrackProperties;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
 	UAGX_TrackInternalMergePropertiesBase* InternalMergeProperties;
+
+	/**
+	 * List of collision groups that the track nodes are part of.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Track")
+	TArray<FName> CollisionGroups;
 
 	/**
 	 * The mass of the each track node Rigid Body [kg].
