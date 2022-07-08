@@ -13,6 +13,7 @@
 #include "Constraints/HingeBarrier.h"
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
+#include "Terrain/TerrainBarrier.h"
 #include "AGX_LogCategory.h"
 
 // AGX Dynamics includes.
@@ -30,6 +31,8 @@
 
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
+
+#include <agxTerrain/Terrain.h>
 
 #include "EndAGXIncludes.h"
 
@@ -167,4 +170,9 @@ agx::LockJoint* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FLockJointBarrier* 
 agx::Prismatic* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FPrismaticBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFromAs<agx::Prismatic>(Barrier);
+}
+
+agxTerrain::Terrain* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FTerrainBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFrom<agxTerrain::Terrain>(Barrier);
 }
