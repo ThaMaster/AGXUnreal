@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Vehicle/TrackBarrier.h"
 
 // AGX Unreal Barrier includes.
@@ -23,10 +22,10 @@
 #include <agxVehicle/TrackNodeOnInitializeCallback.h>
 #include "EndAGXIncludes.h"
 
-
-// \ todo The functions below are a copy of the ones with same in AgxDynamicsObjectAccess_Helper of the
-//        AgxUnrealBarrier module, because they are unreachable from this separate module. When merging this
-//        experimental module with the actual AgxUnrealBarrier module, remove the functions below.
+#if 1
+// \todo The functions below are a copy of the ones with same in AgxDynamicsObjectAccess_Helper of
+// the AgxUnrealBarrier module, because they are unreachable from this separate module. When merging
+// this experimental module with the actual AgxUnrealBarrier module, remove the functions below.
 namespace AgxDynamicsVehicleAccess_Helper
 {
 	template <typename BarrierType>
@@ -46,7 +45,7 @@ namespace AgxDynamicsVehicleAccess_Helper
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Could not get AGX Dynamics native object from barrier since one has not been "
-					"allocated."));
+					 "allocated."));
 			return false;
 		}
 
@@ -64,9 +63,10 @@ namespace AgxDynamicsVehicleAccess_Helper
 		return Barrier->GetNative()->Native.get();
 	}
 }
+#endif
 
 FTrackBarrier::FTrackBarrier()
-	: NativeRef{ new FTrackRef }
+	: NativeRef {new FTrackRef}
 {
 }
 
@@ -77,7 +77,7 @@ FTrackBarrier::FTrackBarrier(std::unique_ptr<FTrackRef> Native)
 }
 
 FTrackBarrier::FTrackBarrier(FTrackBarrier&& Other)
-	: NativeRef{ std::move(Other.NativeRef) }
+	: NativeRef {std::move(Other.NativeRef)}
 {
 	Other.NativeRef.reset(new FTrackRef);
 }
@@ -89,9 +89,10 @@ FTrackBarrier::~FTrackBarrier()
 	// not just the forward declaration, of FTrackRef.
 }
 
-void FTrackBarrier::AddTrackWheel(uint8 Model, double Radius, const FRigidBodyBarrier& RigidBody,
-	const FVector& RelativePosition, const FQuat& RelativeRotation,
-	bool bSplitSegments, bool bMoveNodesToRotationPlane, bool bMoveNodesToWheel)
+void FTrackBarrier::AddTrackWheel(
+	uint8 Model, double Radius, const FRigidBodyBarrier& RigidBody, const FVector& RelativePosition,
+	const FQuat& RelativeRotation, bool bSplitSegments, bool bMoveNodesToRotationPlane,
+	bool bMoveNodesToWheel)
 {
 	check(HasNative());
 	check(RigidBody.HasNative()); // \todo More gentle check and return false?
@@ -103,31 +104,32 @@ void FTrackBarrier::AddTrackWheel(uint8 Model, double Radius, const FRigidBodyBa
 	agx::AffineMatrix4x4 RelTransformAGX = ConvertMatrix(RelativePosition, RelativeRotation);
 
 	// Create AGX Dynamics TrackWheel
-	agxVehicle::TrackWheelRef WheelAGX = new agxVehicle::TrackWheel(ModelAGX, RadiusAGX, RigidBodyAGX, RelTransformAGX);
+	agxVehicle::TrackWheelRef WheelAGX =
+		new agxVehicle::TrackWheel(ModelAGX, RadiusAGX, RigidBodyAGX, RelTransformAGX);
 
 	// Set properties.
 	// \remark MERGE_NODES seems to be automatically set by AGX Dynamics depending on Model
 	//         (set to true for Sprocket and Idler). Not sure if there is any purpose for letting
 	//         the user override it, so ignoring it for now..
-	//WheelAGX->setEnableProperty(agxVehicle::TrackWheel::Property::MERGE_NODES, ...);
+	// WheelAGX->setEnableProperty(agxVehicle::TrackWheel::Property::MERGE_NODES, ...);
 	WheelAGX->setEnableProperty(agxVehicle::TrackWheel::Property::SPLIT_SEGMENTS, bSplitSegments);
-	WheelAGX->setEnableProperty(agxVehicle::TrackWheel::Property::MOVE_NODES_TO_ROTATION_PLANE, bMoveNodesToRotationPlane);
-	WheelAGX->setEnableProperty(agxVehicle::TrackWheel::Property::MOVE_NODES_TO_WHEEL, bMoveNodesToWheel);
+	WheelAGX->setEnableProperty(
+		agxVehicle::TrackWheel::Property::MOVE_NODES_TO_ROTATION_PLANE, bMoveNodesToRotationPlane);
+	WheelAGX->setEnableProperty(
+		agxVehicle::TrackWheel::Property::MOVE_NODES_TO_WHEEL, bMoveNodesToWheel);
 
 	// Add to Track
 	NativeRef->Native->add(WheelAGX);
 
 	UE_LOG(
-		LogAGX, Log, TEXT("Added wheel. RelativePosition = %s RelativeRotation = %s AGX x = %f y = %f z = %f "
-			"WheelPos = %s BodyPos = %s Model = %d Properties = %d"),
-		*RelativePosition.ToString(),
-		*RelativeRotation.ToString(),
-		RelTransformAGX.getTranslate().x(),
-		RelTransformAGX.getTranslate().y(),
+		LogAGX, Log,
+		TEXT("Added wheel. RelativePosition = %s RelativeRotation = %s AGX x = %f y = %f z = %f "
+			 "WheelPos = %s BodyPos = %s Model = %d Properties = %d"),
+		*RelativePosition.ToString(), *RelativeRotation.ToString(),
+		RelTransformAGX.getTranslate().x(), RelTransformAGX.getTranslate().y(),
 		RelTransformAGX.getTranslate().z(),
 		*ConvertDistance(WheelAGX->getCenterPosition()).ToString(),
-		*ConvertDistance(RigidBodyAGX->getPosition()).ToString(),
-		WheelAGX->getModel(),
+		*ConvertDistance(RigidBodyAGX->getPosition()).ToString(), WheelAGX->getModel(),
 		WheelAGX->getProperties().get());
 }
 
@@ -184,7 +186,8 @@ void FTrackBarrier::SetProperties(const FTrackPropertiesBarrier& Properties)
 	check(HasNative());
 	check(Properties.HasNative());
 	agxVehicle::TrackProperties* PropertiesAGX =
-		AgxDynamicsVehicleAccess_Helper::GetFrom<agxVehicle::TrackProperties>(&Properties);  // \todo Replace
+		AgxDynamicsVehicleAccess_Helper::GetFrom<agxVehicle::TrackProperties>(
+			&Properties); // \todo Replace
 	NativeRef->Native->setProperties(PropertiesAGX);
 }
 
@@ -192,7 +195,7 @@ FTrackPropertiesBarrier FTrackBarrier::GetProperties() const
 {
 	check(HasNative());
 	agxVehicle::TrackProperties* PropertiesAGX = NativeRef->Native->getProperties();
-	return { std::make_unique<FTrackPropertiesRef>(PropertiesAGX) }; // \ todo Replace
+	return {std::make_unique<FTrackPropertiesRef>(PropertiesAGX)}; // \ todo Replace
 }
 
 void FTrackBarrier::AddCollisionGroup(const FName& GroupName)
@@ -272,7 +275,7 @@ void FTrackBarrier::GetNodeTransforms(
 
 	agxVehicle::TrackNodeRange Nodes = NativeRef->Native->nodes();
 	int32 i = 0;
-	for(agxVehicle::TrackNodeIterator It = Nodes.begin(); It != Nodes.end(); ++It)
+	for (agxVehicle::TrackNodeIterator It = Nodes.begin(); It != Nodes.end(); ++It)
 	{
 		// \todo Could optimize this since we currently set the same passed-in scale on all nodes.
 		Transforms[i].SetScale3D(LocalScale);
@@ -344,7 +347,8 @@ void FTrackBarrier::GetDebugData(
 		if (HingeTransforms != nullptr)
 		{
 			agx::AffineMatrix4x4 HingeTransform =
-				Constraint->getAttachment(1)->getFrame()->getLocalMatrix() * Body->getFrame()->getMatrix();
+				Constraint->getAttachment(1)->getFrame()->getLocalMatrix() *
+				Body->getFrame()->getMatrix();
 
 			std::get<0>((*HingeTransforms)[i]) = ConvertDisplacement(HingeTransform.getTranslate());
 			std::get<1>((*HingeTransforms)[i]) = Convert(HingeTransform.getRotate()).Rotator();
@@ -355,14 +359,16 @@ void FTrackBarrier::GetDebugData(
 			(*MassCenters)[i] = ConvertDisplacement(Body->getCmPosition());
 		}
 
-		if(CollisionBoxes != nullptr)
+		if (CollisionBoxes != nullptr)
 		{
 			agxCollide::GeometryRefVector Geom = Body->getGeometries();
 			check(Geom.size() > 0);
 			if (auto* Box = dynamic_cast<agxCollide::Box*>(Geom[0].get()->getShape()))
 			{
-				std::get<0>((*CollisionBoxes)[i]) = ConvertDisplacement(Box->getTransform().getTranslate());
-				std::get<1>((*CollisionBoxes)[i]) = Convert(Box->getTransform().getRotate()).Rotator();
+				std::get<0>((*CollisionBoxes)[i]) =
+					ConvertDisplacement(Box->getTransform().getTranslate());
+				std::get<1>((*CollisionBoxes)[i]) =
+					Convert(Box->getTransform().getRotate()).Rotator();
 				std::get<2>((*CollisionBoxes)[i]) = ConvertDistance(Box->getHalfExtents());
 			}
 		}
@@ -415,14 +421,15 @@ void FTrackBarrier::GetDebugData(
 }
 
 void FTrackBarrier::GetPreviewData(
-	TArray<FTransform>& OutNodeTransforms, TArray<FVector>& OutNodeHalfExtents,
-	uint64 NumNodes, double Width, double Thickness, double InitialTensionDistance,
+	TArray<FTransform>& OutNodeTransforms, TArray<FVector>& OutNodeHalfExtents, uint64 NumNodes,
+	double Width, double Thickness, double InitialTensionDistance,
 	const TArray<FTrackBarrier::FTrackWheelDesc>& Wheels)
 {
 	using namespace agxVehicle;
 
 	// Create AGX TrackDesc.
-	TrackDesc Desc(NumNodes, ConvertDistanceToAGX<agx::Real>(Width),
+	TrackDesc Desc(
+		NumNodes, ConvertDistanceToAGX<agx::Real>(Width),
 		ConvertDistanceToAGX<agx::Real>(Thickness),
 		ConvertDistanceToAGX<agx::Real>(InitialTensionDistance));
 
@@ -438,8 +445,7 @@ void FTrackBarrier::GetPreviewData(
 				Convert(Wheel.RigidBodyTransform.GetRotation()),
 				ConvertDisplacement(Wheel.RigidBodyTransform.GetTranslation())),
 			agx::AffineMatrix4x4(
-				Convert(Wheel.RelativeRotation),
-				ConvertDisplacement(Wheel.RelativePosition)));
+				Convert(Wheel.RelativeRotation), ConvertDisplacement(Wheel.RelativePosition)));
 
 		WheelsVector.push_back(WheelDesc);
 	}
@@ -471,10 +477,12 @@ bool FTrackBarrier::InternalMergeProperties_GetEnableMerge() const
 	return NativeRef->Native->getInternalMergeProperties()->getEnableMerge();
 }
 
-void FTrackBarrier::InternalMergeProperties_SetNumNodesPerMergeSegment(uint32 NumNodesPerMergeSegment)
+void FTrackBarrier::InternalMergeProperties_SetNumNodesPerMergeSegment(
+	uint32 NumNodesPerMergeSegment)
 {
 	check(HasNative());
-	NativeRef->Native->getInternalMergeProperties()->setNumNodesPerMergeSegment(NumNodesPerMergeSegment);
+	NativeRef->Native->getInternalMergeProperties()->setNumNodesPerMergeSegment(
+		NumNodesPerMergeSegment);
 }
 
 uint32 FTrackBarrier::InternalMergeProperties_GetNumNodesPerMergeSegment() const
@@ -486,7 +494,8 @@ uint32 FTrackBarrier::InternalMergeProperties_GetNumNodesPerMergeSegment() const
 void FTrackBarrier::InternalMergeProperties_SetContactReduction(uint8 ContactReductionLevel)
 {
 	check(HasNative());
-	auto LevelAGX = static_cast<agxVehicle::TrackInternalMergeProperties::ContactReduction>(ContactReductionLevel);
+	auto LevelAGX = static_cast<agxVehicle::TrackInternalMergeProperties::ContactReduction>(
+		ContactReductionLevel);
 	NativeRef->Native->getInternalMergeProperties()->setContactReduction(LevelAGX);
 }
 
@@ -508,16 +517,19 @@ bool FTrackBarrier::InternalMergeProperties_GetEnableLockToReachMergeCondition()
 	return NativeRef->Native->getInternalMergeProperties()->getEnableLockToReachMergeCondition();
 }
 
-void FTrackBarrier::InternalMergeProperties_SetLockToReachMergeConditionCompliance(double Compliance)
+void FTrackBarrier::InternalMergeProperties_SetLockToReachMergeConditionCompliance(
+	double Compliance)
 {
 	check(HasNative());
-	NativeRef->Native->getInternalMergeProperties()->setLockToReachMergeConditionCompliance(Compliance);
+	NativeRef->Native->getInternalMergeProperties()->setLockToReachMergeConditionCompliance(
+		Compliance);
 }
 
 double FTrackBarrier::InternalMergeProperties_GetLockToReachMergeConditionCompliance() const
 {
 	check(HasNative());
-	return NativeRef->Native->getInternalMergeProperties()->getLockToReachMergeConditionCompliance();
+	return NativeRef->Native->getInternalMergeProperties()
+		->getLockToReachMergeConditionCompliance();
 }
 
 void FTrackBarrier::InternalMergeProperties_SetLockToReachMergeConditionDamping(double Damping)
@@ -542,7 +554,8 @@ void FTrackBarrier::InternalMergeProperties_SetMaxAngleMergeCondition(double Max
 double FTrackBarrier::InternalMergeProperties_GetMaxAngleMergeCondition() const
 {
 	check(HasNative());
-	agx::Real RadiansAGX = NativeRef->Native->getInternalMergeProperties()->getMaxAngleMergeCondition();
+	agx::Real RadiansAGX =
+		NativeRef->Native->getInternalMergeProperties()->getMaxAngleMergeCondition();
 	return ConvertAngleToUnreal<double>(RadiansAGX);
 }
 
@@ -563,13 +576,15 @@ const FTrackRef* FTrackBarrier::GetNative() const
 	return NativeRef.get();
 }
 
-void FTrackBarrier::AllocateNative(int32 NumberOfNodes, float Width, float Thickness, float InitialDistanceTension)
+void FTrackBarrier::AllocateNative(
+	int32 NumberOfNodes, float Width, float Thickness, float InitialDistanceTension)
 {
 	check(!HasNative());
 	agx::Real WidthAGX = ConvertDistanceToAGX<agx::Real>(Width);
 	agx::Real ThicknessAGX = ConvertDistanceToAGX<agx::Real>(Thickness);
 	agx::Real InitialDistanceTensionAGX = ConvertDistanceToAGX<agx::Real>(InitialDistanceTension);
-    NativeRef->Native = new agxVehicle::Track(NumberOfNodes, WidthAGX, ThicknessAGX, InitialDistanceTensionAGX);
+	NativeRef->Native =
+		new agxVehicle::Track(NumberOfNodes, WidthAGX, ThicknessAGX, InitialDistanceTensionAGX);
 }
 
 void FTrackBarrier::ReleaseNative()

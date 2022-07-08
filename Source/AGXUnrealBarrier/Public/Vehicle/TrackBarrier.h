@@ -49,9 +49,10 @@ public:
 	FTrackBarrier(FTrackBarrier&& Other);
 	~FTrackBarrier();
 
-	void AddTrackWheel(uint8 Model, double Radius, const FRigidBodyBarrier& RigidBody,
-		const FVector& RelativePosition, const FQuat& RelativeRotation,
-		bool bSplitSegments, bool bMoveNodesToRotationPlane, bool bMoveNodesToWheel);
+	void AddTrackWheel(
+		uint8 Model, double Radius, const FRigidBodyBarrier& RigidBody,
+		const FVector& RelativePosition, const FQuat& RelativeRotation, bool bSplitSegments,
+		bool bMoveNodesToRotationPlane, bool bMoveNodesToWheel);
 
 	bool AddToSimulation(FSimulationBarrier& Sim) const;
 	bool RemoveFromSimulation(FSimulationBarrier& Sim) const;
@@ -85,7 +86,8 @@ public:
 	 * location is offset by LocalOffset * Rotation. Used for track rendering while playing.
 	 */
 	void GetNodeTransforms(
-		TArray<FTransform>& Transforms, const FVector& LocalScale, const FVector& LocalOffset) const;
+		TArray<FTransform>& Transforms, const FVector& LocalScale,
+		const FVector& LocalOffset) const;
 
 	/**
 	 * Get debug data for all nodes. Used for track debug visualization while playing.
@@ -101,8 +103,8 @@ public:
 	 * of the track while not playing.
 	 */
 	static void GetPreviewData(
-		TArray<FTransform>& OutNodeTransforms, TArray<FVector>& OutNodeHalfExtents,
-		uint64 NumNodes, double Width, double Thickness, double InitialTensionDistance,
+		TArray<FTransform>& OutNodeTransforms, TArray<FVector>& OutNodeHalfExtents, uint64 NumNodes,
+		double Width, double Thickness, double InitialTensionDistance,
 		const TArray<FTrackWheelDesc>& Wheels);
 
 	// Internal Merge Properties.
@@ -134,7 +136,8 @@ public:
 	FTrackRef* GetNative();
 	const FTrackRef* GetNative() const;
 
-	void AllocateNative(int32 NumberOfNodes, float Width, float Thickness, float InitialDistanceTension);
+	void AllocateNative(
+		int32 NumberOfNodes, float Width, float Thickness, float InitialDistanceTension);
 	void ReleaseNative();
 
 	/// @return The address of the underlying AGX Dynamics object.
