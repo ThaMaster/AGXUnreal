@@ -71,8 +71,8 @@ namespace
 	}
 
 	void DrawMassCenters(
-		const TArray<FVector>& MassCenters, FMaterialRenderProxy*& MaterialProxy, const FSceneView* View,
-		FPrimitiveDrawInterface* PDI)
+		const TArray<FVector>& MassCenters, FMaterialRenderProxy*& MaterialProxy,
+		const FSceneView* View, FPrimitiveDrawInterface* PDI)
 	{
 		FLinearColor Color(1.0, 0.0, 1.0, 1.0f);
 
@@ -100,8 +100,9 @@ namespace
 	}
 
 	void DrawCollisionBoxes(
-		const TArray<FTrackBarrier::FVectorRotatorRadii>& CollisionBoxes, bool bColorizeMergedBodies,
-		const TArray<FLinearColor>& BodyColors, FMaterialRenderProxy*& CommonMaterialProxy,
+		const TArray<FTrackBarrier::FVectorRotatorRadii>& CollisionBoxes,
+		bool bColorizeMergedBodies, const TArray<FLinearColor>& BodyColors,
+		FMaterialRenderProxy*& CommonMaterialProxy,
 		TMap<FLinearColor, FMaterialRenderProxy*>& MaterialProxyPerBodyColor,
 		const FSceneView* View, FPrimitiveDrawInterface* PDI)
 	{
@@ -352,7 +353,8 @@ void FAGX_TrackComponentVisualizer::DrawVisualization(
 	// same for multiple tracks (i.e. left and right track) the cached container can be reused
 	// without any re-allocation occuring.
 
-	if (!IsValid(TrackComponent) || !TrackComponent->bShowEditorDebugGraphics)
+	if (!IsValid(TrackComponent) || !TrackComponent->bEnabled ||
+		!TrackComponent->bShowEditorDebugGraphics)
 	{
 		return;
 	}

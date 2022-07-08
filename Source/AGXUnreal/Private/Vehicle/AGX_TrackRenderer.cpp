@@ -318,7 +318,7 @@ void UAGX_TrackRenderer::SynchronizeVisuals()
 
 bool UAGX_TrackRenderer::ComputeNodeTransforms(TArray<FTransform>& OutTransforms, UAGX_TrackComponent* Track)
 {
-	if (!IsValid(Track))
+	if (!IsValid(Track) || !Track->bEnabled)
 		return false;
 
 	// Get node transforms either from the actual track when playing,
