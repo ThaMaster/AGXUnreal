@@ -31,6 +31,7 @@ private:
 	TArray<FTrackBarrier::FVectorRotatorRadii> CollisionBoxesCache;
 	TArray<FLinearColor> BodyColorsCache;
 	TArray<FTrackBarrier::FVectorQuatRadius> WheelTransformsCache;
+	TArray<FLinearColor> WheelColorsCache;
 
 	// \todo How to handle lifetimes of these material proxys? Crashes if we let a smart pointer
 	//       delete them from destructor.. Temporary proxys like this seems to usually be handled

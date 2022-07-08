@@ -93,7 +93,8 @@ public:
 	void GetDebugData(
 		TArray<FVectorAndRotator>* BodyTransforms, TArray<FVectorAndRotator>* HingeTransforms,
 		TArray<FVector>* MassCenters, TArray<FVectorRotatorRadii>* CollisionBoxes,
-		TArray<FLinearColor>* BodyColors, TArray<FVectorQuatRadius>* WheelTransforms) const;
+		TArray<FLinearColor>* BodyColors, TArray<FVectorQuatRadius>* WheelTransforms,
+		TArray<FLinearColor>* WheelColors) const;
 
 	/**
 	 * Get node transforms preview before creating the actual track. Use to render a preview

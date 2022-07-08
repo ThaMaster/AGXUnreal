@@ -182,7 +182,7 @@ namespace
 
 	void DrawTrackWheel(
 		const FVector& Position, const FQuat& Rotation, float Radius, float Depth,
-		const FSceneView* View, FPrimitiveDrawInterface* PDI, FColor Color)
+		FLinearColor Color, const FSceneView* View, FPrimitiveDrawInterface* PDI)
 	{
 		if (Radius <= 0.f)
 		{
@@ -214,19 +214,22 @@ namespace
 	}
 
 	void DrawTrackWheels(
-		const TArray<FTrackBarrier::FVectorQuatRadius>& WheelTransforms, float WheelDepth,
-		const FSceneView* View, FPrimitiveDrawInterface* PDI)
+		const TArray<FTrackBarrier::FVectorQuatRadius>& WheelTransforms,
+		TArray<FLinearColor>& WheelColors, float WheelDepth, const FSceneView* View,
+		FPrimitiveDrawInterface* PDI)
 	{
-		const FColor WheelColor(0, 255, 0); //(233, 0, 215); //(240, 230, 0);
-
-		for (const auto& Wheel : WheelTransforms)
+		for (int32 I = 0; I < WheelTransforms.Num(); ++I)
 		{
 			// Get position, rotation, radius.
+			const auto& Wheel = WheelTransforms[I];
 			const auto& Position = std::get<0>(Wheel);
 			const auto& Rotation = std::get<1>(Wheel);
 			const auto& Radius = std::get<2>(Wheel);
 
-			DrawTrackWheel(Position, Rotation, Radius, WheelDepth, View, PDI, WheelColor);
+			// Get color.
+			const auto& Color = WheelColors[I];
+
+			DrawTrackWheel(Position, Rotation, Radius, WheelDepth, Color, View, PDI);
 		}
 	}
 
@@ -238,25 +241,35 @@ namespace
 		const UAGX_TrackComponent* TrackComponent,
 		TArray<FTrackBarrier::FVectorAndRotator>* BodyTransforms,
 		TArray<FTrackBarrier::FVectorRotatorRadii>* CollisionBoxes,
-		TArray<FTrackBarrier::FVectorQuatRadius>* WheelTransforms)
+		TArray<FTrackBarrier::FVectorQuatRadius>* WheelTransforms,
+		TArray<FLinearColor>* WheelColors)
 	{
 		check(TrackComponent);
 
 		const FAGX_TrackPreviewData* Preview = TrackComponent->GetTrackPreview();
 
+		// \todo Consider letting AGX_TrackComponent.cpp generate wheels preview data instead,
+		//       along with the TrackPreviewData.
+
+		// \todo Currently not detecting whether a Rigid Body Component or Frame Defining
+		// Component has been moved, and marking Track Preview Data for update if so. In such
+		// scenario the user currently has to manually update the preview data by clicking the
+		// Update Preview button in the Details Panel of the Track Component.
+
 		if (WheelTransforms != nullptr)
 		{
-			// \todo Consider letting AGX_TrackComponent.cpp generate wheels preview data instead,
-			//       along with the TrackPreviewData.
+			WheelTransforms->SetNum(TrackComponent->Wheels.Num(), /*bAllowShrinking*/ false);
+		}
+		if (WheelColors != nullptr)
+		{
+			WheelColors->SetNum(TrackComponent->Wheels.Num(), false);
+		}
 
-			// \todo Currently not detecting whether a Rigid Body Component or Frame Defining
-			// Component has been moved, and marking Track Preview Data for update if so. In such
-			// scenario the user currently has to manually update the preview data by clicking the
-			// Update Preview button in the Details Panel of the Track Component.
+		for (int I = 0; I != TrackComponent->Wheels.Num(); ++I)
+		{
+			const FAGX_TrackWheel& Wheel = TrackComponent->Wheels[I];
 
-			WheelTransforms->SetNum(TrackComponent->Wheels.Num(), /*bAllowShrinking*/ true);
-			int i = 0;
-			for (const FAGX_TrackWheel& Wheel : TrackComponent->Wheels)
+			if (WheelTransforms != nullptr)
 			{
 				// \todo Can we cache rigid body even if not playing?
 				UAGX_RigidBodyComponent* RigidBody = Wheel.RigidBody.GetRigidBody();
@@ -269,11 +282,27 @@ namespace
 				FVector Pos = RigidBody->GetComponentTransform().TransformPositionNoScale(RelPos);
 				FQuat Rot = RigidBody->GetComponentTransform().TransformRotation(RelRot);
 
-				std::get<0>((*WheelTransforms)[i]) = Pos;
-				std::get<1>((*WheelTransforms)[i]) = Rot;
-				std::get<2>((*WheelTransforms)[i]) = Wheel.Radius;
+				std::get<0>((*WheelTransforms)[I]) = Pos;
+				std::get<1>((*WheelTransforms)[I]) = Rot;
+				std::get<2>((*WheelTransforms)[I]) = Wheel.Radius;
+			}
 
-				++i;
+			if (WheelColors != nullptr)
+			{
+				switch (Wheel.Model)
+				{
+					case EAGX_TrackWheelModel::TWM_SPROCKET:
+						(*WheelColors)[I] = FLinearColor::Red;
+						break;
+					case EAGX_TrackWheelModel::TWM_IDLER:
+						(*WheelColors)[I] = FLinearColor::Blue;
+						break;
+					case EAGX_TrackWheelModel::TWM_ROLLER:
+						(*WheelColors)[I] = FLinearColor::Green;
+						break;
+					default:
+						(*WheelColors)[I] = FLinearColor::White;
+				}
 			}
 		}
 
@@ -387,7 +416,7 @@ void FAGX_TrackComponentVisualizer::DrawVisualization(
 
 		TrackBarrier->GetDebugData(
 			&BodyTransformsCache, &HingeTransformsCache, &MassCentersCache, &CollisionBoxesCache,
-			&BodyColorsCache, &WheelTransformsCache);
+			&BodyColorsCache, &WheelTransformsCache, &WheelColorsCache);
 
 		// Draw rigid body frames.
 		DrawRigidBodyFrames(BodyTransformsCache, View, PDI);
@@ -404,7 +433,8 @@ void FAGX_TrackComponentVisualizer::DrawVisualization(
 			CollisionBoxMaterialProxy, CollisionBoxMaterialProxies, View, PDI);
 
 		// Draw track wheels.
-		DrawTrackWheels(WheelTransformsCache, 0.6f * TrackComponent->Width, View, PDI);
+		DrawTrackWheels(
+			WheelTransformsCache, WheelColorsCache, 0.6f * TrackComponent->Width, View, PDI);
 	}
 	else
 	{
@@ -412,7 +442,8 @@ void FAGX_TrackComponentVisualizer::DrawVisualization(
 
 		// Get rendering data from Track Preview Data.
 		GetDebugDataFromTrackPreview(
-			TrackComponent, &BodyTransformsCache, &CollisionBoxesCache, &WheelTransformsCache);
+			TrackComponent, &BodyTransformsCache, &CollisionBoxesCache, &WheelTransformsCache,
+			&WheelColorsCache);
 
 		// Draw rigid body frames.
 		DrawRigidBodyFrames(BodyTransformsCache, View, PDI);
@@ -423,7 +454,8 @@ void FAGX_TrackComponentVisualizer::DrawVisualization(
 			CollisionBoxMaterialProxy, CollisionBoxMaterialProxies, View, PDI);
 
 		// Draw track wheels.
-		DrawTrackWheels(WheelTransformsCache, 0.6f * TrackComponent->Width, View, PDI);
+		DrawTrackWheels(
+			WheelTransformsCache, WheelColorsCache, 0.6f * TrackComponent->Width, View, PDI);
 	}
 }
 

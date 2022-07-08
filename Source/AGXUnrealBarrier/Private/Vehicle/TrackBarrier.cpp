@@ -289,14 +289,16 @@ void FTrackBarrier::GetNodeTransforms(
 void FTrackBarrier::GetDebugData(
 	TArray<FVectorAndRotator>* BodyTransforms, TArray<FVectorAndRotator>* HingeTransforms,
 	TArray<FVector>* MassCenters, TArray<FVectorRotatorRadii>* CollisionBoxes,
-	TArray<FLinearColor>* BodyColors, TArray<FVectorQuatRadius>* WheelTransforms) const
+	TArray<FLinearColor>* BodyColors, TArray<FVectorQuatRadius>* WheelTransforms,
+	TArray<FLinearColor>* WheelColors) const
 {
 	check(HasNative());
 
-	agx::UInt NumNodes = NativeRef->Native->getNumNodes();
+	const agx::UInt NumNodes = NativeRef->Native->getNumNodes();
 
-	// Resize output arrays if necessary.
-	bool bAllowShrinking = true; // \todo Set to false to avoid potential deallocations?
+	// Resize output arrays if necessary. Disallow shrinking so that the same
+	// cache can be used both for large and small Tracks without reallocation.
+	constexpr bool bAllowShrinking = false;
 	if (BodyTransforms != nullptr)
 	{
 		BodyTransforms->SetNum(NumNodes, bAllowShrinking);
@@ -321,8 +323,12 @@ void FTrackBarrier::GetDebugData(
 	{
 		WheelTransforms->SetNum(NumNodes, bAllowShrinking);
 	}
+	if (WheelColors != nullptr)
+	{
+		WheelColors->SetNum(NumNodes, bAllowShrinking);
+	}
 
-	agxVehicle::TrackNodeRange Nodes = NativeRef->Native->nodes();
+	const agxVehicle::TrackNodeRange Nodes = NativeRef->Native->nodes();
 	int32 i = 0;
 	for (agxVehicle::TrackNodeIterator It = Nodes.begin(); It != Nodes.end(); ++It)
 	{
@@ -374,17 +380,37 @@ void FTrackBarrier::GetDebugData(
 		++i;
 	}
 
-	if (WheelTransforms != nullptr)
+	const auto& Wheels = NativeRef->Native->getWheels();
+	i = 0;
+	for (const auto& Wheel : Wheels)
 	{
-		const auto& Wheels = NativeRef->Native->getWheels();
-		i = 0;
-		for (const auto& Wheel : Wheels)
+		if (WheelTransforms != nullptr)
 		{
-			std::get<0>((*WheelTransforms)[i]) = ConvertDisplacement(Wheel->getTransform().getTranslate());
+			std::get<0>((*WheelTransforms)[i]) =
+				ConvertDisplacement(Wheel->getTransform().getTranslate());
 			std::get<1>((*WheelTransforms)[i]) = Convert(Wheel->getTransform().getRotate());
 			std::get<2>((*WheelTransforms)[i]) = ConvertDistanceToUnreal<float>(Wheel->getRadius());
-			++i;
 		}
+
+		if (WheelColors != nullptr)
+		{
+			switch (Wheel->getModel())
+			{
+				case agxVehicle::TrackWheel::SPROCKET:
+					(*WheelColors)[i] = FLinearColor::Red;
+					break;
+				case agxVehicle::TrackWheel::IDLER:
+					(*WheelColors)[i] = FLinearColor::Blue;
+					break;
+				case agxVehicle::TrackWheel::ROLLER:
+					(*WheelColors)[i] = FLinearColor::Green;
+					break;
+				default:
+					(*WheelColors)[i] = FLinearColor::White;
+			}
+		}
+
+		++i;
 	}
 }
 
