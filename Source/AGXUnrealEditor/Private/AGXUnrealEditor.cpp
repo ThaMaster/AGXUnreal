@@ -34,7 +34,9 @@
 #include "AgxEdMode/AGX_AgxEdModeFileCustomization.h"
 #include "AgxEdMode/AGX_AgxEdModeTerrain.h"
 #include "AgxEdMode/AGX_AgxEdModeTerrainCustomization.h"
+#include "AMOR/AGX_ConstraintMergeSplitThresholdsTypeActions.h"
 #include "AMOR/AGX_GeometryContactMergeSplitThresholdsTypeActions.h"
+#include "AMOR/AGX_WireMergeSplitThresholdsTypeActions.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerActor.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponentCustomization.h"
@@ -165,7 +167,12 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_TerrainMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_ConstraintMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_GeometryContactMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_WireMergeSplitThresholdsTypeActions(
+						AgxAssetCategoryBit)));
 }
 
 void FAGXUnrealEditorModule::UnregisterAssetTypeActions()
