@@ -3,7 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AMOR/AGX_MergeSplitProperties.h"
+#include "AMOR/AGX_ConstraintMergeSplitProperties.h"
 #include "AGX_NativeOwner.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_RealInterval.h"
@@ -70,7 +70,7 @@ public:
 	// during creation become read-only.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AMOR")
-	FAGX_MergeSplitProperties MergeSplitProperties;
+	FAGX_ConstraintMergeSplitProperties MergeSplitProperties;
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")
 	void CreateMergeSplitProperties();

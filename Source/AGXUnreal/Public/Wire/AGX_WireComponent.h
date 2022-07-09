@@ -3,7 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AMOR/AGX_MergeSplitProperties.h"
+#include "AMOR/AGX_WireMergeSplitProperties.h"
 #include "AGX_RigidBodyReference.h"
 #include "AGX_WireRenderIterator.h"
 #include "Wire/AGX_WireEnums.h"
@@ -222,7 +222,7 @@ public:
 	FComponentReference BeginWinchComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AMOR")
-	FAGX_MergeSplitProperties MergeSplitProperties;
+	FAGX_WireMergeSplitProperties MergeSplitProperties;
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")
 	void CreateMergeSplitProperties();

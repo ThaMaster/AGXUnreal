@@ -3,7 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AMOR/AGX_MergeSplitProperties.h"
+#include "AMOR/AGX_GeometryContactMergeSplitProperties.h"
 #include "AGX_NativeOwner.h"
 #include "AGX_SimpleMeshComponent.h"
 #include "Contacts/AGX_ShapeContact.h"
@@ -72,7 +72,7 @@ public:
 	bool bIsSensor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AMOR")
-	FAGX_MergeSplitProperties MergeSplitProperties;
+	FAGX_GeometryContactMergeSplitProperties MergeSplitProperties;
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")
 	void CreateMergeSplitProperties();
