@@ -1,6 +1,6 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-#include "AMOR/AGX_MergeSplitProperties.h"
+#include "AMOR/AGX_MergeSplitPropertiesBase.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
@@ -11,7 +11,7 @@
 
 
 template <typename T>
-void FAGX_MergeSplitProperties::OnBeginPlay(T& Owner)
+void FAGX_MergeSplitPropertiesBase::OnBeginPlay(T& Owner)
 {
 	AGX_CHECK(Owner.HasNative());
 	AGX_CHECK(!HasNative());
@@ -27,7 +27,7 @@ void FAGX_MergeSplitProperties::OnBeginPlay(T& Owner)
 
 #if WITH_EDITOR
 template <typename T>
-void FAGX_MergeSplitProperties::OnPostEditChangeProperty(T& Owner)
+void FAGX_MergeSplitPropertiesBase::OnPostEditChangeProperty(T& Owner)
 {
 	// If we have not yet allocated a native, and we are in Play, and EnableMerge or EnableSplit
 	// is true, then we should now allocate a Native.
@@ -44,7 +44,7 @@ void FAGX_MergeSplitProperties::OnPostEditChangeProperty(T& Owner)
 #endif
 
 template <typename T>
-void FAGX_MergeSplitProperties::CreateNative(T& Owner)
+void FAGX_MergeSplitPropertiesBase::CreateNative(T& Owner)
 {
 	AGX_CHECK(Owner.HasNative());
 	AGX_CHECK(!HasNative());
@@ -53,15 +53,15 @@ void FAGX_MergeSplitProperties::CreateNative(T& Owner)
 	UpdateNativeProperties();
 }
 
-FAGX_MergeSplitProperties& FAGX_MergeSplitProperties::operator=(
-	const FAGX_MergeSplitProperties& Other)
+FAGX_MergeSplitPropertiesBase& FAGX_MergeSplitPropertiesBase::operator=(
+	const FAGX_MergeSplitPropertiesBase& Other)
 {
 	bEnableMerge = Other.bEnableMerge;
 	bEnableSplit = Other.bEnableSplit;
 	return *this;
 }
 
-void FAGX_MergeSplitProperties::SetEnableMerge(bool bEnable)
+void FAGX_MergeSplitPropertiesBase::SetEnableMerge(bool bEnable)
 {
 	bEnableMerge = bEnable;
 	if (HasNative())
@@ -70,12 +70,12 @@ void FAGX_MergeSplitProperties::SetEnableMerge(bool bEnable)
 	}
 }
 
-bool FAGX_MergeSplitProperties::GetEnableMerge() const
+bool FAGX_MergeSplitPropertiesBase::GetEnableMerge() const
 {
 	return bEnableMerge;
 }
 
-void FAGX_MergeSplitProperties::SetEnableSplit(bool bEnable)
+void FAGX_MergeSplitPropertiesBase::SetEnableSplit(bool bEnable)
 {
 	bEnableSplit = bEnable;
 	if (HasNative())
@@ -84,28 +84,28 @@ void FAGX_MergeSplitProperties::SetEnableSplit(bool bEnable)
 	}
 }
 
-bool FAGX_MergeSplitProperties::GetEnableSplit() const
+bool FAGX_MergeSplitPropertiesBase::GetEnableSplit() const
 {
 	return bEnableSplit;
 }
 
-bool FAGX_MergeSplitProperties::HasNative() const
+bool FAGX_MergeSplitPropertiesBase::HasNative() const
 {
 	return NativeBarrier.HasNative();
 	return true;
 }
 
-const FMergeSplitPropertiesBarrier& FAGX_MergeSplitProperties::GetNative() const
+const FMergeSplitPropertiesBarrier& FAGX_MergeSplitPropertiesBase::GetNative() const
 {
 	return NativeBarrier;
 }
 
-FMergeSplitPropertiesBarrier& FAGX_MergeSplitProperties::GetNative()
+FMergeSplitPropertiesBarrier& FAGX_MergeSplitPropertiesBase::GetNative()
 {
 	return NativeBarrier;
 }
 
-void FAGX_MergeSplitProperties::UpdateNativeProperties()
+void FAGX_MergeSplitPropertiesBase::UpdateNativeProperties()
 {
 	AGX_CHECK(HasNative());
 	NativeBarrier.SetEnableMerge(bEnableMerge);
@@ -113,31 +113,31 @@ void FAGX_MergeSplitProperties::UpdateNativeProperties()
 }
 
 // Explicit template instantiations.
-template AGXUNREAL_API void FAGX_MergeSplitProperties::OnBeginPlay<UAGX_RigidBodyComponent>(
+template AGXUNREAL_API void FAGX_MergeSplitPropertiesBase::OnBeginPlay<UAGX_RigidBodyComponent>(
 	UAGX_RigidBodyComponent&);
-template AGXUNREAL_API void FAGX_MergeSplitProperties::OnBeginPlay<UAGX_ConstraintComponent>(
+template AGXUNREAL_API void FAGX_MergeSplitPropertiesBase::OnBeginPlay<UAGX_ConstraintComponent>(
 	UAGX_ConstraintComponent&);
-template AGXUNREAL_API void FAGX_MergeSplitProperties::OnBeginPlay<UAGX_ShapeComponent>(
+template AGXUNREAL_API void FAGX_MergeSplitPropertiesBase::OnBeginPlay<UAGX_ShapeComponent>(
 	UAGX_ShapeComponent&);
-template AGXUNREAL_API void FAGX_MergeSplitProperties::OnBeginPlay<UAGX_WireComponent>(
+template AGXUNREAL_API void FAGX_MergeSplitPropertiesBase::OnBeginPlay<UAGX_WireComponent>(
 	UAGX_WireComponent&);
 
 #if WITH_EDITOR
-template AGXUNREAL_API void FAGX_MergeSplitProperties::OnPostEditChangeProperty<
+template AGXUNREAL_API void FAGX_MergeSplitPropertiesBase::OnPostEditChangeProperty<
 	UAGX_RigidBodyComponent>(UAGX_RigidBodyComponent&);
-template AGXUNREAL_API void FAGX_MergeSplitProperties::OnPostEditChangeProperty<
+template AGXUNREAL_API void FAGX_MergeSplitPropertiesBase::OnPostEditChangeProperty<
 	UAGX_ConstraintComponent>(UAGX_ConstraintComponent&);
 template AGXUNREAL_API void
-FAGX_MergeSplitProperties::OnPostEditChangeProperty<UAGX_ShapeComponent>(UAGX_ShapeComponent&);
-template AGXUNREAL_API void FAGX_MergeSplitProperties::OnPostEditChangeProperty<UAGX_WireComponent>(
+FAGX_MergeSplitPropertiesBase::OnPostEditChangeProperty<UAGX_ShapeComponent>(UAGX_ShapeComponent&);
+template AGXUNREAL_API void FAGX_MergeSplitPropertiesBase::OnPostEditChangeProperty<UAGX_WireComponent>(
 	UAGX_WireComponent&);
 #endif
 
-template AGXUNREAL_API void FAGX_MergeSplitProperties::CreateNative<UAGX_RigidBodyComponent>(
+template AGXUNREAL_API void FAGX_MergeSplitPropertiesBase::CreateNative<UAGX_RigidBodyComponent>(
 	UAGX_RigidBodyComponent&);
-template AGXUNREAL_API void FAGX_MergeSplitProperties::CreateNative<UAGX_ConstraintComponent>(
+template AGXUNREAL_API void FAGX_MergeSplitPropertiesBase::CreateNative<UAGX_ConstraintComponent>(
 	UAGX_ConstraintComponent&);
-template AGXUNREAL_API void FAGX_MergeSplitProperties::CreateNative<UAGX_ShapeComponent>(
+template AGXUNREAL_API void FAGX_MergeSplitPropertiesBase::CreateNative<UAGX_ShapeComponent>(
 	UAGX_ShapeComponent&);
-template AGXUNREAL_API void FAGX_MergeSplitProperties::CreateNative<UAGX_WireComponent>(
+template AGXUNREAL_API void FAGX_MergeSplitPropertiesBase::CreateNative<UAGX_WireComponent>(
 	UAGX_WireComponent&);
