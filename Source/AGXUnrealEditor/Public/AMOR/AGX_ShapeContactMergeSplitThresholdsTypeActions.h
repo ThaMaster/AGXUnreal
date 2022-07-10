@@ -7,11 +7,11 @@
 #include "AssetTypeCategories.h"
 #include "CoreMinimal.h"
 
-class AGXUNREALEDITOR_API FAGX_GeometryContactMergeSplitThresholdsTypeActions
+class AGXUNREALEDITOR_API FAGX_ShapeContactMergeSplitThresholdsTypeActions
 	: public FAssetTypeActions_Base
 {
 public:
-	FAGX_GeometryContactMergeSplitThresholdsTypeActions(EAssetTypeCategories::Type InAssetCategory);
+	FAGX_ShapeContactMergeSplitThresholdsTypeActions(EAssetTypeCategories::Type InAssetCategory);
 
 	FText GetName() const override;
 

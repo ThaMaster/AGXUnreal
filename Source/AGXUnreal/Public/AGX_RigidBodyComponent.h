@@ -3,7 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AMOR/AGX_GeometryContactMergeSplitProperties.h"
+#include "AMOR/AGX_ShapeContactMergeSplitProperties.h"
 #include "AGX_MotionControl.h"
 #include "AGX_NativeOwner.h"
 #include "AGX_RigidBodyEnums.h"
@@ -211,7 +211,7 @@ public:
 	TEnumAsByte<enum EAGX_TransformTarget> TransformTarget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AMOR")
-	FAGX_GeometryContactMergeSplitProperties MergeSplitProperties;
+	FAGX_ShapeContactMergeSplitProperties MergeSplitProperties;
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")
 	void CreateMergeSplitProperties();

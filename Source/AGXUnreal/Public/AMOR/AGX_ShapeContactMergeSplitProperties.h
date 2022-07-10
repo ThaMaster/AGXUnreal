@@ -9,12 +9,12 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-#include "AGX_GeometryContactMergeSplitProperties.generated.h"
+#include "AGX_ShapeContactMergeSplitProperties.generated.h"
 
 class UAGX_RigidBodyComponent;
 
 USTRUCT(BlueprintType)
-struct AGXUNREAL_API FAGX_GeometryContactMergeSplitProperties
+struct AGXUNREAL_API FAGX_ShapeContactMergeSplitProperties
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -39,7 +39,7 @@ public:
 	void CreateNative(T& Owner);
 
 	//Todo add comment about why we doe this.
-	FAGX_GeometryContactMergeSplitProperties& operator=(const FAGX_GeometryContactMergeSplitProperties& Other);
+	FAGX_ShapeContactMergeSplitProperties& operator=(const FAGX_ShapeContactMergeSplitProperties& Other);
 
 	UPROPERTY(EditAnywhere, Category = "AMOR")
 	bool bEnableMerge = false;
@@ -64,7 +64,7 @@ private:
 };
 
 /**
- * This class acts as an API that exposes functions of FAGX_GeometryContactMergeSplitProperties in Blueprints.
+ * This class acts as an API that exposes functions of FAGX_ShapeContactMergeSplitProperties in Blueprints.
  */
 UCLASS()
 class AGXUNREAL_API UAGX_MergeSplitProperties_LF : public UBlueprintFunctionLibrary
@@ -72,13 +72,13 @@ class AGXUNREAL_API UAGX_MergeSplitProperties_LF : public UBlueprintFunctionLibr
 	GENERATED_BODY()
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")
-	static void SetEnableMerge(UPARAM(ref) FAGX_GeometryContactMergeSplitProperties& Properties, bool bEnable)
+	static void SetEnableMerge(UPARAM(ref) FAGX_ShapeContactMergeSplitProperties& Properties, bool bEnable)
 	{
 		if (!Properties.HasNative())
 		{
 			UE_LOG(
 				LogTemp, Warning, TEXT("Blueprint UFUNCTION SetEnableMerge was called on a "
-					"FAGX_GeometryContactMergeSplitProperties without a Native AGX Dynamics object. Remember to call "
+					"FAGX_ShapeContactMergeSplitProperties without a Native AGX Dynamics object. Remember to call "
 					"CreateMergeSplitProperties() on the owning object before calling this function."));
 		}
 
@@ -86,26 +86,26 @@ class AGXUNREAL_API UAGX_MergeSplitProperties_LF : public UBlueprintFunctionLibr
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")
-	static bool GetEnableMerge(UPARAM(ref) const FAGX_GeometryContactMergeSplitProperties& Properties)
+	static bool GetEnableMerge(UPARAM(ref) const FAGX_ShapeContactMergeSplitProperties& Properties)
 	{
 		return Properties.GetEnableMerge();
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")
-	static void SetEnableSplit(UPARAM(ref) FAGX_GeometryContactMergeSplitProperties& Properties, bool bEnable)
+	static void SetEnableSplit(UPARAM(ref) FAGX_ShapeContactMergeSplitProperties& Properties, bool bEnable)
 	{
 		if (!Properties.HasNative())
 		{
 			UE_LOG(
 				LogTemp, Warning, TEXT("Blueprint UFUNCTION SetEnableSplit was called on a "
-					"FAGX_GeometryContactMergeSplitProperties without a Native AGX Dynamics object. Remember to call "
+					"FAGX_ShapeContactMergeSplitProperties without a Native AGX Dynamics object. Remember to call "
 					"CreateMergeSplitProperties() on the owning object before calling this function."));
 		}
 		Properties.SetEnableSplit(bEnable);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")
-	static bool GetEnableSplit(UPARAM(ref) const FAGX_GeometryContactMergeSplitProperties& Properties)
+	static bool GetEnableSplit(UPARAM(ref) const FAGX_ShapeContactMergeSplitProperties& Properties)
 	{
 		return Properties.GetEnableSplit();
 	}

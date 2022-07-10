@@ -1,34 +1,34 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-#include "AMOR/GeometryContactMergeSplitThresholdsBarrier.h"
+#include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
 
 
-FGeometryContactMergeSplitThresholdsBarrier::FGeometryContactMergeSplitThresholdsBarrier()
+FShapeContactMergeSplitThresholdsBarrier::FShapeContactMergeSplitThresholdsBarrier()
 	: FMergeSplitThresholdsBarrier()
 {
 }
 
-FGeometryContactMergeSplitThresholdsBarrier::FGeometryContactMergeSplitThresholdsBarrier(
+FShapeContactMergeSplitThresholdsBarrier::FShapeContactMergeSplitThresholdsBarrier(
 	std::unique_ptr<FMergeSplitThresholdsRef> Native)
 	: FMergeSplitThresholdsBarrier(std::move(Native))
 {
 }
 
-FGeometryContactMergeSplitThresholdsBarrier::~FGeometryContactMergeSplitThresholdsBarrier()
+FShapeContactMergeSplitThresholdsBarrier::~FShapeContactMergeSplitThresholdsBarrier()
 {
 }
 
-void FGeometryContactMergeSplitThresholdsBarrier::AllocateNative()
+void FShapeContactMergeSplitThresholdsBarrier::AllocateNative()
 {
 	check(!HasNative());
 	NativeRef->Native = new agxSDK::GeometryContactMergeSplitThresholds();
 }
 
-namespace GeometryContactMergeSplitThresholds_helpers
+namespace ShapeContactMergeSplitThresholds_helpers
 {
 	agxSDK::GeometryContactMergeSplitThresholds* CastToGeometryContactThresholds(
 		agxSDK::MergeSplitThresholds* Thresholds, const FString& Operation)
@@ -40,7 +40,7 @@ namespace GeometryContactMergeSplitThresholds_helpers
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Operation %s failed, could not cast native MergeSplitThresholds to "
-					 "GeometryContactMergeSplitThresholds."), *Operation);
+					 "ShapeContactMergeSplitThresholds."), *Operation);
 		}
 
 		return GeomContThresholds;

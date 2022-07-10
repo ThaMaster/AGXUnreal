@@ -5,15 +5,15 @@
 #include "CoreMinimal.h"
 #include "Factories/Factory.h"
 
-#include "AGX_GeometryContactMergeSplitThresholdsAssetFactory.generated.h"
+#include "AGX_ShapeContactMergeSplitThresholdsAssetFactory.generated.h"
 
 UCLASS()
-class AGXUNREALEDITOR_API UAGX_GeometryContactMergeSplitThresholdsAssetFactory : public UFactory
+class AGXUNREALEDITOR_API UAGX_ShapeContactMergeSplitThresholdsAssetFactory : public UFactory
 {
 	GENERATED_BODY()
 
 public:
-	UAGX_GeometryContactMergeSplitThresholdsAssetFactory(const class FObjectInitializer& OBJ);
+	UAGX_ShapeContactMergeSplitThresholdsAssetFactory(const class FObjectInitializer& OBJ);
 
 protected:
 	virtual bool IsMacroFactory() const
