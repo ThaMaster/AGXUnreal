@@ -114,7 +114,7 @@ void FMergeSplitPropertiesBarrier::SetShapeContactMergeSplitThresholds(
 		check(Thresholds->HasNative());
 		agxSDK::GeometryContactMergeSplitThresholds* ThresholdsAGX =
 			dynamic_cast<agxSDK::GeometryContactMergeSplitThresholds*>(
-			Thresholds->GetNative()->Native);
+			Thresholds->GetNative()->Native.get());
 		check(ThresholdsAGX);
 		NativePtr->Native->setContactThresholds(ThresholdsAGX);
 	}
@@ -132,8 +132,7 @@ void FMergeSplitPropertiesBarrier::SetConstraintMergeSplitThresholds(
 	{
 		check(Thresholds->HasNative());
 		agxSDK::ConstraintMergeSplitThresholds* ThresholdsAGX =
-			dynamic_cast<agxSDK::ConstraintMergeSplitThresholds*>(
-			Thresholds->GetNative()->Native);
+			dynamic_cast<agxSDK::ConstraintMergeSplitThresholds*>(Thresholds->GetNative()->Native.get());
 		check(ThresholdsAGX);
 		NativePtr->Native->setConstraintThresholds(ThresholdsAGX);
 	}
@@ -151,8 +150,7 @@ void FMergeSplitPropertiesBarrier::SetWireMergeSplitThresholds(
 	{
 		check(Thresholds->HasNative());
 		agxSDK::WireMergeSplitThresholds* ThresholdsAGX =
-			dynamic_cast<agxSDK::WireMergeSplitThresholds*>(
-			Thresholds->GetNative()->Native);
+			dynamic_cast<agxSDK::WireMergeSplitThresholds*>(Thresholds->GetNative()->Native.get());
 		check(ThresholdsAGX);
 		NativePtr->Native->setWireThresholds(ThresholdsAGX);
 	}
