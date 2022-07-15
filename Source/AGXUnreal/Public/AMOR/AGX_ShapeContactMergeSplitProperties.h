@@ -3,6 +3,8 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AMOR/AGX_MergeSplitPropertiesBase.h"
+#include "AMOR/AGX_ShapeContactMergeSplitThresholdsBase.h"
 #include "AMOR/MergeSplitPropertiesBarrier.h"
 
 // Unreal Engine includes.
@@ -11,14 +13,17 @@
 
 #include "AGX_ShapeContactMergeSplitProperties.generated.h"
 
-class UAGX_RigidBodyComponent;
 
 USTRUCT(BlueprintType)
-struct AGXUNREAL_API FAGX_ShapeContactMergeSplitProperties
+struct AGXUNREAL_API FAGX_ShapeContactMergeSplitProperties : public FAGX_MergeSplitPropertiesBase
 {
 	GENERATED_USTRUCT_BODY()
 
 public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AMOR")
+	UAGX_ShapeContactMergeSplitThresholdsBase* Thresholds;
+
 
 	/**
 	* Must be called by the owning object at begin play (after the owning object has allocated a
@@ -41,33 +46,15 @@ public:
 	//Todo add comment about why we doe this.
 	FAGX_ShapeContactMergeSplitProperties& operator=(const FAGX_ShapeContactMergeSplitProperties& Other);
 
-	UPROPERTY(EditAnywhere, Category = "AMOR")
-	bool bEnableMerge = false;
-
-	UPROPERTY(EditAnywhere, Category = "AMOR")
-	bool bEnableSplit = false;
-
-	void SetEnableMerge(bool bEnable);
-	bool GetEnableMerge() const;
-
-	void SetEnableSplit(bool bEnable);
-	bool GetEnableSplit() const;
-
-	bool HasNative() const;
-	const FMergeSplitPropertiesBarrier& GetNative() const;
-	FMergeSplitPropertiesBarrier& GetNative();
-
 private:
 	void UpdateNativeProperties();
-
-	FMergeSplitPropertiesBarrier NativeBarrier;
 };
 
 /**
  * This class acts as an API that exposes functions of FAGX_ShapeContactMergeSplitProperties in Blueprints.
  */
 UCLASS()
-class AGXUNREAL_API UAGX_MergeSplitProperties_LF : public UBlueprintFunctionLibrary
+class AGXUNREAL_API UAGX_ShapeContactMergeSplitProperties_LF : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

@@ -20,8 +20,7 @@ void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay(T& Owner)
 	// Not having a native is a perfectly valid and regular thing for this class.
 	if (bEnableMerge || bEnableSplit)
 	{
-		NativeBarrier.AllocateNative(*Owner.GetNative());
-		UpdateNativeProperties();
+		CreateNative(Owner);
 	}
 }
 
@@ -33,12 +32,7 @@ void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty(T& Owner)
 	// is true, then we should now allocate a Native.
 	if (Owner.HasNative() && !HasNative() && (bEnableMerge || bEnableSplit))
 	{
-		NativeBarrier.AllocateNative(*Owner.GetNative());
-	}
-
-	if (HasNative())
-	{
-		UpdateNativeProperties();
+		CreateNative(Owner);
 	}
 }
 #endif
@@ -61,50 +55,6 @@ FAGX_ShapeContactMergeSplitProperties& FAGX_ShapeContactMergeSplitProperties::op
 	return *this;
 }
 
-void FAGX_ShapeContactMergeSplitProperties::SetEnableMerge(bool bEnable)
-{
-	bEnableMerge = bEnable;
-	if (HasNative())
-	{
-		NativeBarrier.SetEnableMerge(bEnable);
-	}
-}
-
-bool FAGX_ShapeContactMergeSplitProperties::GetEnableMerge() const
-{
-	return bEnableMerge;
-}
-
-void FAGX_ShapeContactMergeSplitProperties::SetEnableSplit(bool bEnable)
-{
-	bEnableSplit = bEnable;
-	if (HasNative())
-	{
-		NativeBarrier.SetEnableSplit(bEnable);
-	}
-}
-
-bool FAGX_ShapeContactMergeSplitProperties::GetEnableSplit() const
-{
-	return bEnableSplit;
-}
-
-bool FAGX_ShapeContactMergeSplitProperties::HasNative() const
-{
-	return NativeBarrier.HasNative();
-	return true;
-}
-
-const FMergeSplitPropertiesBarrier& FAGX_ShapeContactMergeSplitProperties::GetNative() const
-{
-	return NativeBarrier;
-}
-
-FMergeSplitPropertiesBarrier& FAGX_ShapeContactMergeSplitProperties::GetNative()
-{
-	return NativeBarrier;
-}
-
 void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties()
 {
 	AGX_CHECK(HasNative());
@@ -115,29 +65,17 @@ void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties()
 // Explicit template instantiations.
 template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay<UAGX_RigidBodyComponent>(
 	UAGX_RigidBodyComponent&);
-template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay<UAGX_ConstraintComponent>(
-	UAGX_ConstraintComponent&);
 template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay<UAGX_ShapeComponent>(
 	UAGX_ShapeComponent&);
-template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay<UAGX_WireComponent>(
-	UAGX_WireComponent&);
 
 #if WITH_EDITOR
 template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty<
 	UAGX_RigidBodyComponent>(UAGX_RigidBodyComponent&);
-template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty<
-	UAGX_ConstraintComponent>(UAGX_ConstraintComponent&);
 template AGXUNREAL_API void
 FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty<UAGX_ShapeComponent>(UAGX_ShapeComponent&);
-template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty<UAGX_WireComponent>(
-	UAGX_WireComponent&);
 #endif
 
 template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::CreateNative<UAGX_RigidBodyComponent>(
 	UAGX_RigidBodyComponent&);
-template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::CreateNative<UAGX_ConstraintComponent>(
-	UAGX_ConstraintComponent&);
 template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::CreateNative<UAGX_ShapeComponent>(
 	UAGX_ShapeComponent&);
-template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::CreateNative<UAGX_WireComponent>(
-	UAGX_WireComponent&);
