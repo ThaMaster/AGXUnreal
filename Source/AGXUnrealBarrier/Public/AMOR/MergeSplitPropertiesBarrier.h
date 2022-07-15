@@ -9,6 +9,7 @@
 #include <memory>
 
 struct FMergeSplitPropertiesPtr;
+class FMergeSplitThresholdsBarrier;
 
 class AGXUNREALBARRIER_API FMergeSplitPropertiesBarrier
 {
@@ -30,6 +31,10 @@ public:
 
 	void SetEnableSplit(bool bEnable);
 	bool GetEnableSplit() const;
+
+	void SetShapeContactMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
+	void SetConstraintMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
+	void SetWireMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
 
 private:
 	FMergeSplitPropertiesBarrier& operator=(const FMergeSplitPropertiesBarrier& Other) = delete;

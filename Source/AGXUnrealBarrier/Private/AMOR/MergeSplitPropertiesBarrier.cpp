@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
+#include "AMOR/MergeSplitThresholdsBarrier.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/ShapeBarrier.h"
@@ -98,6 +99,63 @@ bool FMergeSplitPropertiesBarrier::GetEnableSplit() const
 {
 	check(HasNative());
 	return NativePtr->Native->getEnableSplit();
+}
+
+void FMergeSplitPropertiesBarrier::SetShapeContactMergeSplitThresholds(
+	FMergeSplitThresholdsBarrier* Thresholds)
+{
+	if (Thresholds == nullptr)
+	{
+		// The default thresholds will be used.
+		NativePtr->Native->setContactThresholds(nullptr);
+	}
+	else
+	{
+		check(Thresholds->HasNative());
+		agxSDK::GeometryContactMergeSplitThresholds* ThresholdsAGX =
+			dynamic_cast<agxSDK::GeometryContactMergeSplitThresholds*>(
+			Thresholds->GetNative()->Native);
+		check(ThresholdsAGX);
+		NativePtr->Native->setContactThresholds(ThresholdsAGX);
+	}
+}
+
+void FMergeSplitPropertiesBarrier::SetConstraintMergeSplitThresholds(
+	FMergeSplitThresholdsBarrier* Thresholds)
+{
+	if (Thresholds == nullptr)
+	{
+		// The default thresholds will be used.
+		NativePtr->Native->setConstraintThresholds(nullptr);
+	}
+	else
+	{
+		check(Thresholds->HasNative());
+		agxSDK::ConstraintMergeSplitThresholds* ThresholdsAGX =
+			dynamic_cast<agxSDK::ConstraintMergeSplitThresholds*>(
+			Thresholds->GetNative()->Native);
+		check(ThresholdsAGX);
+		NativePtr->Native->setConstraintThresholds(ThresholdsAGX);
+	}
+}
+
+void FMergeSplitPropertiesBarrier::SetWireMergeSplitThresholds(
+	FMergeSplitThresholdsBarrier* Thresholds)
+{
+	if (Thresholds == nullptr)
+	{
+		// The default thresholds will be used.
+		NativePtr->Native->setWireThresholds(nullptr);
+	}
+	else
+	{
+		check(Thresholds->HasNative());
+		agxSDK::WireMergeSplitThresholds* ThresholdsAGX =
+			dynamic_cast<agxSDK::WireMergeSplitThresholds*>(
+			Thresholds->GetNative()->Native);
+		check(ThresholdsAGX);
+		NativePtr->Native->setWireThresholds(ThresholdsAGX);
+	}
 }
 
 // Explicit template instantiations.
