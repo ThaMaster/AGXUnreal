@@ -33,6 +33,11 @@ public:
 };
 
 /**
+ * Experimental
+ * This feature is experimental and may change in the next release. We do not
+ * guarantee backwards compatibility.
+ *
+ *
  * Given a set of wheels, automatically generates a continuous track with a given number of shoes
  * (nodes).
  */
