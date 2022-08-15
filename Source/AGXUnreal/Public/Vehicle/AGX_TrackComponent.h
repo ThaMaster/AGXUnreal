@@ -49,7 +49,6 @@ class AGXUNREAL_API UAGX_TrackComponent : public USceneComponent, public IAGX_Na
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
 	UAGX_TrackComponent();
 
 	/**
@@ -201,7 +200,6 @@ public:
 		return TrackPreviewNeedsUpdateEvent;
 	}
 
-public:
 	/**
 	 * Get the number of nodes in this track.
 	 *
@@ -266,6 +264,7 @@ public:
 	FAGX_TrackPreviewData* GetTrackPreview(
 		bool bUpdateIfNecessary = true, bool bForceUpdate = false) const;
 
+public:
 	/**
 	 * Call whenever a property etc that affects the track preview data has changed.
 	 * Will set bUpdateIfNecessary to true, and broadcast the TrackPreviewNeedsUpdateEvent
@@ -303,9 +302,9 @@ public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
-	//~ End UActorComponent Interface
 	void ApplyComponentInstanceData(
 		const FActorComponentInstanceData* Data, ECacheApplyPhase CacheApplyPhase);
+	//~ End UActorComponent Interface
 
 	// ~Begin USceneComponent interface.
 #if WITH_EDITOR
