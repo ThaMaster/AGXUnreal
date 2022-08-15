@@ -474,10 +474,8 @@ void UAGX_ContactMaterialInstance::UpdateNativeProperties(
 					UE_LOG(
 						LogAGX, Warning,
 						TEXT("ContactMaterial '%s' has a oriented friction model but the component "
-							 "to "
-							 "use as Reference Frame could not be found. Oriented friction might "
-							 "not work "
-							 "as expected."),
+							 "to use as Reference Frame could not be found. Oriented friction "
+							 "might not work as expected."),
 						*GetName());
 					NativeBarrier->SetOrientedFrictionModelReferenceFrame(nullptr);
 				}
