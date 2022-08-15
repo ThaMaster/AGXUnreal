@@ -219,6 +219,14 @@ public:
 	 */
 	void RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlreadyRaised = true);
 
+	/**
+	 * Get the transform of the center point of all track nodes. Scale is set to LocalScale and
+	 * location is offset by LocalOffset * Rotation. Used for track rendering while playing.
+	 */
+	void GetNodeTransforms(
+		TArray<FTransform>& OutTransforms, const FVector& LocalScale,
+		const FVector& LocalOffset) const;
+
 	/// Get the native AGX Dynamics representation of this track. Create it if necessary.
 	FTrackBarrier* GetOrCreateNative();
 

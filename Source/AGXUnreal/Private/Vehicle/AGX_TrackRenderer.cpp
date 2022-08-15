@@ -344,7 +344,7 @@ bool UAGX_TrackRenderer::ComputeNodeTransforms(TArray<FTransform>& OutTransforms
 			VisualOffset = Offset;
 		}
 
-		Track->GetNative()->GetNodeTransforms(OutTransforms, VisualScale, VisualOffset);
+		Track->GetNodeTransforms(OutTransforms, VisualScale, VisualOffset);
 	}
 	else
 	{

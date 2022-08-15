@@ -147,6 +147,18 @@ void UAGX_TrackComponent::RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlr
 	}
 }
 
+void UAGX_TrackComponent::GetNodeTransforms(
+	TArray<FTransform>& OutTransforms, const FVector& LocalScale,
+	const FVector& LocalOffset) const
+{
+	if (!HasNative())
+	{
+		return;
+	}
+
+	GetNative()->GetNodeTransforms(OutTransforms, LocalScale, LocalOffset);
+}
+
 FTrackBarrier* UAGX_TrackComponent::GetOrCreateNative()
 {
 	if (!HasNative() && bEnabled)
