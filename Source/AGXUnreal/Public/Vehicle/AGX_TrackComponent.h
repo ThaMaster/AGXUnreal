@@ -203,6 +203,28 @@ public:
 
 public:
 	/**
+	 * Get the sizes of all track nodes.
+	 *
+	 * Only valid to call during simulation after an AGX Dynamics Track has been created.
+	 *
+	 * This is the full size, not the half-extent, of each node.
+	 */
+	void GetNodeSizes(TArray<FVector>& OutNodeSizes) const;
+
+	/**
+	 * Get the size of a track node.
+	 *
+	 * If Index is out of bounds then the zero vector is returned.
+	 *
+	 * Only valid to call during simulation after an AGX Dynamics Track has been created.
+	 *
+	 * @param Index The index of the node to to get.
+	 * @return The size of the node, or the zero vector if index is out of bounds.
+	 * @see GetNumNodes
+	 */
+	FVector GetNodeSize(int32 Index) const;
+
+	/**
 	 * Returns a preview of the track node transforms and sizes. Should only be used when not
 	 * playing.
 	 * @param bUpdateIfNecessary Update preview data if it has been flagged as dirty.

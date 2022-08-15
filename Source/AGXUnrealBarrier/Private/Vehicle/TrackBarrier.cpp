@@ -253,6 +253,25 @@ FRigidBodyBarrier FTrackBarrier::GetNodeBody(int index) const
 	return AGXBarrierFactories::CreateRigidBodyBarrier(Body);
 }
 
+void FTrackBarrier::GetNodeSizes(TArray<FVector>& OutNodeSizes) const
+{
+	check(HasNative());
+	const agx::UInt NumNodes = NativeRef->Native->getNumNodes();
+	if (OutNodeSizes.Num() != NumNodes)
+	{
+		OutNodeSizes.SetNum(NumNodes);
+	}
+
+	agxVehicle::TrackNodeRange Nodes = NativeRef->Native->nodes();
+	int32 I = 0;
+	for (agxVehicle::TrackNode* Node : Nodes)
+	{
+		const agx::Vec3& HalfExtentAGX = Node->getHalfExtents();
+		const FVector SizeUnreal = ConvertDistance(2.0 * HalfExtentAGX);
+		OutNodeSizes[I] = SizeUnreal;
+	}
+}
+
 FVector FTrackBarrier::GetNodeSize(uint64 index) const
 {
 	check(HasNative());

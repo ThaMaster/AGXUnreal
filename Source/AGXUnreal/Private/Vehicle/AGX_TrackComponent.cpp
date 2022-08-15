@@ -159,6 +159,26 @@ void UAGX_TrackComponent::GetNodeTransforms(
 	GetNative()->GetNodeTransforms(OutTransforms, LocalScale, LocalOffset);
 }
 
+void UAGX_TrackComponent::GetNodeSizes(TArray<FVector>& OutNodeSizes) const
+{
+	if (!HasNative())
+	{
+		return;
+	}
+
+	GetNative()->GetNodeSizes(OutNodeSizes);
+}
+
+FVector UAGX_TrackComponent::GetNodeSize(int32 Index) const
+{
+	if (!HasNative())
+	{
+		return FVector::ZeroVector;
+	}
+
+	return GetNative()->GetNodeSize(Index);
+}
+
 FTrackBarrier* UAGX_TrackComponent::GetOrCreateNative()
 {
 	if (!HasNative() && bEnabled)

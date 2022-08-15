@@ -336,7 +336,7 @@ bool UAGX_TrackRenderer::ComputeNodeTransforms(TArray<FTransform>& OutTransforms
 		FVector VisualScale, VisualOffset;
 		if (bAutoScaleAndOffset)
 		{
-			ComputeVisualScaleAndOffset(VisualScale, VisualOffset, Track->GetNative()->GetNodeSize(0));
+			ComputeVisualScaleAndOffset(VisualScale, VisualOffset, Track->GetNodeSize(0));
 		}
 		else
 		{
