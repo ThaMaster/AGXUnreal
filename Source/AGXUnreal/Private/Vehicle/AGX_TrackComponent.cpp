@@ -147,6 +147,22 @@ void UAGX_TrackComponent::RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlr
 	}
 }
 
+int32 UAGX_TrackComponent::GetNumNodes() const
+{
+	if (HasNative())
+	{
+		return GetNative()->GetNumNodes();
+	}
+	else if (TrackPreview.IsValid())
+	{
+		return TrackPreview->NodeTransforms.Num();
+	}
+	else
+	{
+		return NumberOfNodes;
+	}
+}
+
 void UAGX_TrackComponent::GetNodeTransforms(
 	TArray<FTransform>& OutTransforms, const FVector& LocalScale,
 	const FVector& LocalOffset) const

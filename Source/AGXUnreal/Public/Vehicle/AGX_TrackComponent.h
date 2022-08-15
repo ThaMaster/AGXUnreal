@@ -203,6 +203,20 @@ public:
 
 public:
 	/**
+	 * Get the number of nodes in this track.
+	 *
+	 * This is the same as the number of simulated Rigid Bodies during Play, and the number of
+	 * preview nodes in the preview data during editing.
+	 *
+	 * During editing, i.e. not Play, this number is read from the Track Preview, if one is
+	 * available. If no Track Preview is available then the NumberOfNodes property is returned.
+	 * During Play, including Play In Editor, this will return the number of nodes created and
+	 * simulated by AGX Dynamics.
+	 *
+	 * @return The number track nodes.
+	 */
+	int32 GetNumNodes() const;
+	/**
 	 * Get the sizes of all track nodes.
 	 *
 	 * Only valid to call during simulation after an AGX Dynamics Track has been created.
