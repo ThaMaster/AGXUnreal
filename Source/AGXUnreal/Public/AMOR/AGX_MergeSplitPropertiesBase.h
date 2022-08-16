@@ -11,8 +11,6 @@
 
 #include "AGX_MergeSplitPropertiesBase.generated.h"
 
-class UAGX_RigidBodyComponent;
-
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_MergeSplitPropertiesBase
 {
