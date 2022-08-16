@@ -18,6 +18,8 @@ struct AGXUNREAL_API FAGX_MergeSplitPropertiesBase
 
 public:
 
+	virtual ~FAGX_MergeSplitPropertiesBase() = default;
+
 	//Todo add comment about why we doe this.
 	FAGX_MergeSplitPropertiesBase& operator=(const FAGX_MergeSplitPropertiesBase& Other);
 
