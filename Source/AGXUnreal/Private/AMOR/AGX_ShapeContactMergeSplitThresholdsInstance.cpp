@@ -60,6 +60,12 @@ UAGX_ShapeContactMergeSplitThresholdsInstance::CreateFromAsset(
 	return NewInstance;
 }
 
+void UAGX_ShapeContactMergeSplitThresholdsInstance::CopyProperties(
+	UAGX_ShapeContactMergeSplitThresholdsAsset& Source)
+{
+	// Todo: implement.
+}
+
 void UAGX_ShapeContactMergeSplitThresholdsInstance::UpdateNativeProperties()
 {
 	AGX_CHECK(HasNative());

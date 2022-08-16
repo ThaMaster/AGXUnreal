@@ -23,11 +23,11 @@ void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay(T& Owner)
 	if (bEnableMerge || bEnableSplit)
 	{
 		CreateNative(Owner);
-	}
 
-	if (Thresholds != nullptr)
-	{
-		SwapThresholdsAssetToInstance(Owner.GetWorld());
+		if (Thresholds != nullptr)
+		{
+			SwapThresholdsAssetToInstance(Owner.GetWorld());
+		}
 	}
 }
 
@@ -40,6 +40,11 @@ void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty(T& Owner)
 	if (Owner.HasNative() && !HasNative() && (bEnableMerge || bEnableSplit))
 	{
 		CreateNative(Owner);
+
+		if (Thresholds != nullptr)
+		{
+			SwapThresholdsAssetToInstance(Owner.GetWorld());
+		}
 	}
 }
 #endif
@@ -96,7 +101,7 @@ void FAGX_ShapeContactMergeSplitProperties::SwapThresholdsAssetToInstance(UWorld
 		ThresholdsInstance->GetOrCreateNative(PlayingWorld);
 	AGX_CHECK(Barrier);
 
-	NativeBarrier.SetConstraintMergeSplitThresholds(Barrier);
+	NativeBarrier.SetShapeContactMergeSplitThresholds(Barrier);
 }
 
 // Explicit template instantiations.
