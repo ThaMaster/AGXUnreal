@@ -48,6 +48,7 @@ public:
 
 private:
 	void UpdateNativeProperties();
+	void SwapThresholdsAssetToInstance();
 };
 
 /**

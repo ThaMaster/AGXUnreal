@@ -15,4 +15,8 @@ class AGXUNREAL_API UAGX_ShapeContactMergeSplitThresholdsBase
 
 public:
 	virtual ~UAGX_ShapeContactMergeSplitThresholdsBase() = default;
+
+	virtual UAGX_ShapeContactMergeSplitThresholdsBase* GetOrCreateInstance(UWorld* PlayingWorld)
+		PURE_VIRTUAL(UAGX_ShapeContactMergeSplitThresholdsBase::GetOrCreateInstance,
+					 return nullptr;);
 };

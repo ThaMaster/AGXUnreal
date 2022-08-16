@@ -3,11 +3,10 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ShapeContactMergeSplitThresholdsBase.h"
+#include "AMOR/AGX_ShapeContactMergeSplitThresholdsBase.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
-
 
 #include "AGX_ShapeContactMergeSplitThresholdsAsset.generated.h"
 
@@ -21,6 +20,8 @@ class AGXUNREAL_API UAGX_ShapeContactMergeSplitThresholdsAsset
 	GENERATED_BODY()
 
 public:
+	virtual UAGX_ShapeContactMergeSplitThresholdsBase* GetOrCreateInstance(
+		UWorld* PlayingWorld) override;
 
 private:
 	TWeakObjectPtr<UAGX_ShapeContactMergeSplitThresholdsInstance> Instance;

@@ -4,10 +4,15 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
+#include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AMOR/AGX_ShapeContactMergeSplitThresholdsInstance.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Wire/AGX_WireComponent.h"
+
+// Unreal Engine includes.
+#include "Engine/World.h"
 
 
 template <typename T>
@@ -60,6 +65,37 @@ void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties()
 	AGX_CHECK(HasNative());
 	NativeBarrier.SetEnableMerge(bEnableMerge);
 	NativeBarrier.SetEnableSplit(bEnableSplit);
+}
+
+void FAGX_ShapeContactMergeSplitProperties::SwapThresholdsAssetToInstance()
+{
+	if (Thresholds == nullptr)
+	{
+		return;
+	}
+
+	UAGX_ShapeContactMergeSplitThresholdsInstance* ThresholdsInstance =
+		static_cast<UAGX_ShapeContactMergeSplitThresholdsInstance*>(
+			Thresholds->GetOrCreateInstance(GetWorld()));
+	if (!ThresholdsInstance)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Unable to create a Merge Split Thresholds instance from the "
+		"given asset '%s'."), *Thresholds->GetName());
+		return;
+	}
+
+	const UWorld* PlayingWorld = GetWorld();
+	if (Thresholds != ThresholdsInstance && PlayingWorld && PlayingWorld->IsGameWorld())
+	{
+		// Perform the Asset to Instance swap.
+		Thresholds = ThresholdsInstance;
+	}
+	
+	FShapeContactMergeSplitThresholdsBarrier* Barrier =
+		ThresholdsInstance->GetOrCreateNative(PlayingWorld);
+	AGX_CHECK(Barrier);
+
+	NativeBarrier->SetConstraintMergeSplitThresholds(Barrier);
 }
 
 // Explicit template instantiations.
