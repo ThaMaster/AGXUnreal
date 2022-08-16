@@ -9,6 +9,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Engine/World.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "AGX_ShapeContactMergeSplitProperties.generated.h"
@@ -48,7 +49,7 @@ public:
 
 private:
 	void UpdateNativeProperties();
-	void SwapThresholdsAssetToInstance();
+	void SwapThresholdsAssetToInstance(UWorld* PlayingWorld);
 };
 
 /**
