@@ -95,5 +95,4 @@ class AGXUNREAL_API UAGX_WireMergeSplitProperties_LF : public UBlueprintFunction
 	{
 		return Properties.GetEnableSplit();
 	}
-
 };
