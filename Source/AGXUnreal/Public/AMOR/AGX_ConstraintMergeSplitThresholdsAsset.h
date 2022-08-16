@@ -21,6 +21,8 @@ class AGXUNREAL_API UAGX_ConstraintMergeSplitThresholdsAsset
 	GENERATED_BODY()
 
 public:
+	virtual UAGX_ConstraintMergeSplitThresholdsBase* GetOrCreateInstance(
+		UWorld* PlayingWorld) override;
 
 private:
 	TWeakObjectPtr<UAGX_ConstraintMergeSplitThresholdsInstance> Instance;

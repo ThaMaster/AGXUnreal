@@ -15,4 +15,8 @@ class AGXUNREAL_API UAGX_ConstraintMergeSplitThresholdsBase
 
 public:
 	virtual ~UAGX_ConstraintMergeSplitThresholdsBase() = default;
+
+	virtual UAGX_ConstraintMergeSplitThresholdsBase* GetOrCreateInstance(UWorld* PlayingWorld)
+		PURE_VIRTUAL(UAGX_ConstraintMergeSplitThresholdsBase::GetOrCreateInstance,
+					 return nullptr;);
 };

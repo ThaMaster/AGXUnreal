@@ -7,9 +7,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholdsInstance.h"
-#include "Constraints/AGX_ConstraintComponent.h"
 #include "Shapes/AGX_ShapeComponent.h"
-#include "Wire/AGX_WireComponent.h"
 
 
 template <typename T>
@@ -23,11 +21,6 @@ void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay(T& Owner)
 	if (bEnableMerge || bEnableSplit)
 	{
 		CreateNative(Owner);
-
-		if (Thresholds != nullptr)
-		{
-			SwapThresholdsAssetToInstance(Owner.GetWorld());
-		}
 	}
 }
 
@@ -40,11 +33,6 @@ void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty(T& Owner)
 	if (Owner.HasNative() && !HasNative() && (bEnableMerge || bEnableSplit))
 	{
 		CreateNative(Owner);
-
-		if (Thresholds != nullptr)
-		{
-			SwapThresholdsAssetToInstance(Owner.GetWorld());
-		}
 	}
 }
 #endif
@@ -56,7 +44,7 @@ void FAGX_ShapeContactMergeSplitProperties::CreateNative(T& Owner)
 	AGX_CHECK(!HasNative());
 	
 	NativeBarrier.AllocateNative(*Owner.GetNative());
-	UpdateNativeProperties();
+	UpdateNativeProperties(Owner);
 }
 
 FAGX_ShapeContactMergeSplitProperties& FAGX_ShapeContactMergeSplitProperties::operator=(
@@ -67,11 +55,17 @@ FAGX_ShapeContactMergeSplitProperties& FAGX_ShapeContactMergeSplitProperties::op
 	return *this;
 }
 
-void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties()
+template <typename T>
+void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties(T& Owner)
 {
 	AGX_CHECK(HasNative());
 	NativeBarrier.SetEnableMerge(bEnableMerge);
 	NativeBarrier.SetEnableSplit(bEnableSplit);
+
+	if (Thresholds != nullptr)
+	{
+		SwapThresholdsAssetToInstance(Owner.GetWorld());
+	}
 }
 
 void FAGX_ShapeContactMergeSplitProperties::SwapThresholdsAssetToInstance(UWorld* PlayingWorld)
@@ -121,3 +115,8 @@ template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::CreateNative<
 	UAGX_RigidBodyComponent&);
 template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::CreateNative<UAGX_ShapeComponent>(
 	UAGX_ShapeComponent&);
+
+template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties<
+	UAGX_RigidBodyComponent>(UAGX_RigidBodyComponent&);
+template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties<
+	UAGX_ShapeComponent>(UAGX_ShapeComponent&);

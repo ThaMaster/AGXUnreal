@@ -25,7 +25,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AMOR")
 	UAGX_ShapeContactMergeSplitThresholdsBase* Thresholds;
 
-
 	/**
 	* Must be called by the owning object at begin play (after the owning object has allocated a
 	* native AGX Dynamics object).
@@ -48,7 +47,10 @@ public:
 	FAGX_ShapeContactMergeSplitProperties& operator=(const FAGX_ShapeContactMergeSplitProperties& Other);
 
 private:
-	void UpdateNativeProperties();
+
+	template <typename T>
+	void UpdateNativeProperties(T& Owner);
+
 	void SwapThresholdsAssetToInstance(UWorld* PlayingWorld);
 };
 
@@ -98,5 +100,4 @@ class AGXUNREAL_API UAGX_ShapeContactMergeSplitProperties_LF : public UBlueprint
 	{
 		return Properties.GetEnableSplit();
 	}
-
 };

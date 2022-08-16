@@ -3,64 +3,50 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AMOR/AGX_MergeSplitPropertiesBase.h"
+#include "AMOR/AGX_ConstraintMergeSplitThresholdsBase.h"
 #include "AMOR/MergeSplitPropertiesBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Engine/World.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "AGX_ConstraintMergeSplitProperties.generated.h"
 
-class UAGX_RigidBodyComponent;
+class UAGX_ConstraintComponent;
 
 USTRUCT(BlueprintType)
-struct AGXUNREAL_API FAGX_ConstraintMergeSplitProperties
+struct AGXUNREAL_API FAGX_ConstraintMergeSplitProperties : public FAGX_MergeSplitPropertiesBase
 {
 	GENERATED_USTRUCT_BODY()
 
 public:
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AMOR")
+	UAGX_ConstraintMergeSplitThresholdsBase* Thresholds;
 
 	/**
 	* Must be called by the owning object at begin play (after the owning object has allocated a
 	* native AGX Dynamics object).
 	*/
-	template <typename T>
-	void OnBeginPlay(T& Owner);
+	void OnBeginPlay(UAGX_ConstraintComponent& Owner);
 
 #if WITH_EDITOR
 	/**
 	 * Must be called by the owning object at PostEditChangeProperty.
 	 */
-	template <typename T>
-	void OnPostEditChangeProperty(T& Owner);
+	void OnPostEditChangeProperty(UAGX_ConstraintComponent& Owner);
 #endif
 
-	template <typename T>
-	void CreateNative(T& Owner);
+	void CreateNative(UAGX_ConstraintComponent& Owner);
 
 	//Todo add comment about why we doe this.
 	FAGX_ConstraintMergeSplitProperties& operator=(const FAGX_ConstraintMergeSplitProperties& Other);
 
-	UPROPERTY(EditAnywhere, Category = "AMOR")
-	bool bEnableMerge = false;
-
-	UPROPERTY(EditAnywhere, Category = "AMOR")
-	bool bEnableSplit = false;
-
-	void SetEnableMerge(bool bEnable);
-	bool GetEnableMerge() const;
-
-	void SetEnableSplit(bool bEnable);
-	bool GetEnableSplit() const;
-
-	bool HasNative() const;
-	const FMergeSplitPropertiesBarrier& GetNative() const;
-	FMergeSplitPropertiesBarrier& GetNative();
-
 private:
-	void UpdateNativeProperties();
-
-	FMergeSplitPropertiesBarrier NativeBarrier;
+	void UpdateNativeProperties(UAGX_ConstraintComponent& Owner);
+	void SwapThresholdsAssetToInstance(UWorld* PlayingWorld);
 };
 
 /**
