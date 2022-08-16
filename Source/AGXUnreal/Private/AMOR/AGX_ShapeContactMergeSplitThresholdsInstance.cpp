@@ -43,19 +43,18 @@ UAGX_ShapeContactMergeSplitThresholdsInstance*
 UAGX_ShapeContactMergeSplitThresholdsInstance::CreateFromAsset(
 	UWorld* PlayingWorld, UAGX_ShapeContactMergeSplitThresholdsAsset& Source)
 {
-	AGX_CHECK(Source);
 	AGX_CHECK(PlayingWorld);
 	AGX_CHECK(PlayingWorld->IsGameWorld());
 
 	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
 	AGX_CHECK(Outer);
 
-	const FString InstanceName = Source->GetName() + "_Instance";
+	const FString InstanceName = Source.GetName() + "_Instance";
 	auto NewInstance = NewObject<UAGX_ShapeContactMergeSplitThresholdsInstance>(
 		Outer, UAGX_ShapeContactMergeSplitThresholdsInstance::StaticClass(), *InstanceName,
 		RF_Transient);
 
-	NewInstance->CopyShapeMaterialProperties(Source);
+	NewInstance->CopyProperties(Source);
 	NewInstance->CreateNative(PlayingWorld);
 
 	return NewInstance;
