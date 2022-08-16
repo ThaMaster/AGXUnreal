@@ -11,7 +11,7 @@ public:
 	FConstraintMergeSplitThresholdsBarrier();
 	FConstraintMergeSplitThresholdsBarrier(FConstraintMergeSplitThresholdsBarrier&& Other) = default;
 	FConstraintMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef> Native);
-	virtual ~FConstraintMergeSplitThresholdsBarrier();
+	~FConstraintMergeSplitThresholdsBarrier();
 
 	void AllocateNative();
 

@@ -11,7 +11,7 @@ public:
 	FWireMergeSplitThresholdsBarrier();
 	FWireMergeSplitThresholdsBarrier(FWireMergeSplitThresholdsBarrier&& Other) = default;
 	FWireMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef> Native);
-	virtual ~FWireMergeSplitThresholdsBarrier();
+	~FWireMergeSplitThresholdsBarrier();
 
 	void AllocateNative();
 

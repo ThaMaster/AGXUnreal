@@ -11,7 +11,7 @@ public:
 	FShapeContactMergeSplitThresholdsBarrier();
 	FShapeContactMergeSplitThresholdsBarrier(FShapeContactMergeSplitThresholdsBarrier&& Other) = default;
 	FShapeContactMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef> Native);
-	virtual ~FShapeContactMergeSplitThresholdsBarrier();
+	~FShapeContactMergeSplitThresholdsBarrier();
 
 	void AllocateNative();
 
