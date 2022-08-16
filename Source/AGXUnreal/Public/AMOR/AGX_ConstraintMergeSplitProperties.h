@@ -5,7 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_MergeSplitPropertiesBase.h"
 #include "AMOR/AGX_ConstraintMergeSplitThresholdsBase.h"
-#include "AMOR/MergeSplitPropertiesBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"

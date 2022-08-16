@@ -5,7 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_MergeSplitPropertiesBase.h"
 #include "AMOR/AGX_WireMergeSplitThresholdsBase.h"
-#include "AMOR/MergeSplitPropertiesBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -48,8 +47,6 @@ public:
 private:
 	void UpdateNativeProperties(UAGX_WireComponent& Owner);
 	void SwapThresholdsAssetToInstance(UWorld* PlayingWorld);
-
-	FMergeSplitPropertiesBarrier NativeBarrier;
 };
 
 /**
