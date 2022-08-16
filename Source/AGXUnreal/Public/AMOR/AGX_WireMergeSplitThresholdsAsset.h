@@ -8,7 +8,6 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
-
 #include "AGX_WireMergeSplitThresholdsAsset.generated.h"
 
 class UAGX_WireMergeSplitThresholdsInstance;
@@ -21,6 +20,8 @@ class AGXUNREAL_API UAGX_WireMergeSplitThresholdsAsset
 	GENERATED_BODY()
 
 public:
+	virtual UAGX_WireMergeSplitThresholdsBase* GetOrCreateInstance(
+		UWorld* PlayingWorld) override;
 
 private:
 	TWeakObjectPtr<UAGX_WireMergeSplitThresholdsInstance> Instance;

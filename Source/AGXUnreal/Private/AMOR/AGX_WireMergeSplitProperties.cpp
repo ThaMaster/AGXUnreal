@@ -4,14 +4,12 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
-#include "AGX_RigidBodyComponent.h"
-#include "Constraints/AGX_ConstraintComponent.h"
-#include "Shapes/AGX_ShapeComponent.h"
+#include "AGX_LogCategory.h"
+#include "AMOR/AGX_WireMergeSplitThresholdsInstance.h"
 #include "Wire/AGX_WireComponent.h"
 
 
-template <typename T>
-void FAGX_WireMergeSplitProperties::OnBeginPlay(T& Owner)
+void FAGX_WireMergeSplitProperties::OnBeginPlay(UAGX_WireComponent& Owner)
 {
 	AGX_CHECK(Owner.HasNative());
 	AGX_CHECK(!HasNative());
@@ -20,37 +18,29 @@ void FAGX_WireMergeSplitProperties::OnBeginPlay(T& Owner)
 	// Not having a native is a perfectly valid and regular thing for this class.
 	if (bEnableMerge || bEnableSplit)
 	{
-		NativeBarrier.AllocateNative(*Owner.GetNative());
-		UpdateNativeProperties();
+		CreateNative(Owner);
 	}
 }
 
 #if WITH_EDITOR
-template <typename T>
-void FAGX_WireMergeSplitProperties::OnPostEditChangeProperty(T& Owner)
+void FAGX_WireMergeSplitProperties::OnPostEditChangeProperty(UAGX_WireComponent& Owner)
 {
 	// If we have not yet allocated a native, and we are in Play, and EnableMerge or EnableSplit
 	// is true, then we should now allocate a Native.
 	if (Owner.HasNative() && !HasNative() && (bEnableMerge || bEnableSplit))
 	{
-		NativeBarrier.AllocateNative(*Owner.GetNative());
-	}
-
-	if (HasNative())
-	{
-		UpdateNativeProperties();
+		CreateNative(Owner);
 	}
 }
 #endif
 
-template <typename T>
-void FAGX_WireMergeSplitProperties::CreateNative(T& Owner)
+void FAGX_WireMergeSplitProperties::CreateNative(UAGX_WireComponent& Owner)
 {
 	AGX_CHECK(Owner.HasNative());
 	AGX_CHECK(!HasNative());
 	
 	NativeBarrier.AllocateNative(*Owner.GetNative());
-	UpdateNativeProperties();
+	UpdateNativeProperties(Owner);
 }
 
 FAGX_WireMergeSplitProperties& FAGX_WireMergeSplitProperties::operator=(
@@ -61,83 +51,57 @@ FAGX_WireMergeSplitProperties& FAGX_WireMergeSplitProperties::operator=(
 	return *this;
 }
 
-void FAGX_WireMergeSplitProperties::SetEnableMerge(bool bEnable)
-{
-	bEnableMerge = bEnable;
-	if (HasNative())
-	{
-		NativeBarrier.SetEnableMerge(bEnable);
-	}
-}
-
-bool FAGX_WireMergeSplitProperties::GetEnableMerge() const
-{
-	return bEnableMerge;
-}
-
-void FAGX_WireMergeSplitProperties::SetEnableSplit(bool bEnable)
-{
-	bEnableSplit = bEnable;
-	if (HasNative())
-	{
-		NativeBarrier.SetEnableSplit(bEnable);
-	}
-}
-
-bool FAGX_WireMergeSplitProperties::GetEnableSplit() const
-{
-	return bEnableSplit;
-}
-
-bool FAGX_WireMergeSplitProperties::HasNative() const
-{
-	return NativeBarrier.HasNative();
-	return true;
-}
-
-const FMergeSplitPropertiesBarrier& FAGX_WireMergeSplitProperties::GetNative() const
-{
-	return NativeBarrier;
-}
-
-FMergeSplitPropertiesBarrier& FAGX_WireMergeSplitProperties::GetNative()
-{
-	return NativeBarrier;
-}
-
-void FAGX_WireMergeSplitProperties::UpdateNativeProperties()
+void FAGX_WireMergeSplitProperties::UpdateNativeProperties(UAGX_WireComponent& Owner)
 {
 	AGX_CHECK(HasNative());
 	NativeBarrier.SetEnableMerge(bEnableMerge);
 	NativeBarrier.SetEnableSplit(bEnableSplit);
+
+	if (Thresholds != nullptr)
+	{
+		SwapThresholdsAssetToInstance(Owner.GetWorld());
+	}
+	else
+	{
+		NativeBarrier.SetWireMergeSplitThresholds(nullptr);
+	}
 }
 
-// Explicit template instantiations.
-template AGXUNREAL_API void FAGX_WireMergeSplitProperties::OnBeginPlay<UAGX_RigidBodyComponent>(
-	UAGX_RigidBodyComponent&);
-template AGXUNREAL_API void FAGX_WireMergeSplitProperties::OnBeginPlay<UAGX_ConstraintComponent>(
-	UAGX_ConstraintComponent&);
-template AGXUNREAL_API void FAGX_WireMergeSplitProperties::OnBeginPlay<UAGX_ShapeComponent>(
-	UAGX_ShapeComponent&);
-template AGXUNREAL_API void FAGX_WireMergeSplitProperties::OnBeginPlay<UAGX_WireComponent>(
-	UAGX_WireComponent&);
+void FAGX_WireMergeSplitProperties::SwapThresholdsAssetToInstance(UWorld* PlayingWorld)
+{
+	if (Thresholds == nullptr)
+	{
+		return;
+	}
 
-#if WITH_EDITOR
-template AGXUNREAL_API void FAGX_WireMergeSplitProperties::OnPostEditChangeProperty<
-	UAGX_RigidBodyComponent>(UAGX_RigidBodyComponent&);
-template AGXUNREAL_API void FAGX_WireMergeSplitProperties::OnPostEditChangeProperty<
-	UAGX_ConstraintComponent>(UAGX_ConstraintComponent&);
-template AGXUNREAL_API void
-FAGX_WireMergeSplitProperties::OnPostEditChangeProperty<UAGX_ShapeComponent>(UAGX_ShapeComponent&);
-template AGXUNREAL_API void FAGX_WireMergeSplitProperties::OnPostEditChangeProperty<UAGX_WireComponent>(
-	UAGX_WireComponent&);
-#endif
+	UAGX_WireMergeSplitThresholdsInstance* ThresholdsInstance =
+		static_cast<UAGX_WireMergeSplitThresholdsInstance*>(
+			Thresholds->GetOrCreateInstance(PlayingWorld));
+	if (!ThresholdsInstance)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unable to create a Merge Split Thresholds instance from the "
+				 "given asset '%s'."),
+			*Thresholds->GetName());
+		return;
+	}
 
-template AGXUNREAL_API void FAGX_WireMergeSplitProperties::CreateNative<UAGX_RigidBodyComponent>(
-	UAGX_RigidBodyComponent&);
-template AGXUNREAL_API void FAGX_WireMergeSplitProperties::CreateNative<UAGX_ConstraintComponent>(
-	UAGX_ConstraintComponent&);
-template AGXUNREAL_API void FAGX_WireMergeSplitProperties::CreateNative<UAGX_ShapeComponent>(
-	UAGX_ShapeComponent&);
-template AGXUNREAL_API void FAGX_WireMergeSplitProperties::CreateNative<UAGX_WireComponent>(
-	UAGX_WireComponent&);
+	if (Thresholds == ThresholdsInstance)
+	{
+		// The correct instance is already set.
+		return;
+	}
+
+	if (PlayingWorld && PlayingWorld->IsGameWorld())
+	{
+		// Perform the Asset to Instance swap.
+		Thresholds = ThresholdsInstance;
+	}
+
+	FWireMergeSplitThresholdsBarrier* Barrier =
+		ThresholdsInstance->GetOrCreateNative(PlayingWorld);
+	AGX_CHECK(Barrier);
+
+	NativeBarrier.SetWireMergeSplitThresholds(Barrier);
+}

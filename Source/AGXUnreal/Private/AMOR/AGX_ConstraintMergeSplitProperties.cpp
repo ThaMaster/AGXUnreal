@@ -61,6 +61,10 @@ void FAGX_ConstraintMergeSplitProperties::UpdateNativeProperties(UAGX_Constraint
 	{
 		SwapThresholdsAssetToInstance(Owner.GetWorld());
 	}
+	else
+	{
+		NativeBarrier.SetConstraintMergeSplitThresholds(nullptr);
+	}
 }
 
 void FAGX_ConstraintMergeSplitProperties::SwapThresholdsAssetToInstance(UWorld* PlayingWorld)
@@ -83,7 +87,13 @@ void FAGX_ConstraintMergeSplitProperties::SwapThresholdsAssetToInstance(UWorld* 
 		return;
 	}
 
-	if (Thresholds != ThresholdsInstance && PlayingWorld && PlayingWorld->IsGameWorld())
+	if (Thresholds == ThresholdsInstance)
+	{
+		// The correct instance is already set.
+		return;
+	}
+
+	if (PlayingWorld && PlayingWorld->IsGameWorld())
 	{
 		// Perform the Asset to Instance swap.
 		Thresholds = ThresholdsInstance;

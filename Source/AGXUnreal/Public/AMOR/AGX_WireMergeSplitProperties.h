@@ -3,62 +3,51 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AMOR/AGX_MergeSplitPropertiesBase.h"
+#include "AMOR/AGX_WireMergeSplitThresholdsBase.h"
 #include "AMOR/MergeSplitPropertiesBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Engine/World.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "AGX_WireMergeSplitProperties.generated.h"
 
-class UAGX_RigidBodyComponent;
+class UAGX_WireComponent;
+
 
 USTRUCT(BlueprintType)
-struct AGXUNREAL_API FAGX_WireMergeSplitProperties
+struct AGXUNREAL_API FAGX_WireMergeSplitProperties : public FAGX_MergeSplitPropertiesBase
 {
 	GENERATED_USTRUCT_BODY()
 
 public:
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AMOR")
+	UAGX_WireMergeSplitThresholdsBase* Thresholds;
+
 	/**
 	* Must be called by the owning object at begin play (after the owning object has allocated a
 	* native AGX Dynamics object).
 	*/
-	template <typename T>
-	void OnBeginPlay(T& Owner);
+	void OnBeginPlay(UAGX_WireComponent& Owner);
 
 #if WITH_EDITOR
 	/**
 	 * Must be called by the owning object at PostEditChangeProperty.
 	 */
-	template <typename T>
-	void OnPostEditChangeProperty(T& Owner);
+	void OnPostEditChangeProperty(UAGX_WireComponent& Owner);
 #endif
 
-	template <typename T>
-	void CreateNative(T& Owner);
+	void CreateNative(UAGX_WireComponent& Owner);
 
 	//Todo add comment about why we doe this.
 	FAGX_WireMergeSplitProperties& operator=(const FAGX_WireMergeSplitProperties& Other);
 
-	UPROPERTY(EditAnywhere, Category = "AMOR")
-	bool bEnableMerge = false;
-
-	UPROPERTY(EditAnywhere, Category = "AMOR")
-	bool bEnableSplit = false;
-
-	void SetEnableMerge(bool bEnable);
-	bool GetEnableMerge() const;
-
-	void SetEnableSplit(bool bEnable);
-	bool GetEnableSplit() const;
-
-	bool HasNative() const;
-	const FMergeSplitPropertiesBarrier& GetNative() const;
-	FMergeSplitPropertiesBarrier& GetNative();
-
 private:
-	void UpdateNativeProperties();
+	void UpdateNativeProperties(UAGX_WireComponent& Owner);
+	void SwapThresholdsAssetToInstance(UWorld* PlayingWorld);
 
 	FMergeSplitPropertiesBarrier NativeBarrier;
 };

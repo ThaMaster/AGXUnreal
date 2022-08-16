@@ -15,4 +15,8 @@ class AGXUNREAL_API UAGX_WireMergeSplitThresholdsBase
 
 public:
 	virtual ~UAGX_WireMergeSplitThresholdsBase() = default;
+
+	virtual UAGX_WireMergeSplitThresholdsBase* GetOrCreateInstance(UWorld* PlayingWorld)
+		PURE_VIRTUAL(UAGX_WireMergeSplitThresholdsBase::GetOrCreateInstance,
+					 return nullptr;);
 };

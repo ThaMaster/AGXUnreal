@@ -66,6 +66,10 @@ void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties(T& Owner)
 	{
 		SwapThresholdsAssetToInstance(Owner.GetWorld());
 	}
+	else
+	{
+		NativeBarrier.SetShapeContactMergeSplitThresholds(nullptr);
+	}
 }
 
 void FAGX_ShapeContactMergeSplitProperties::SwapThresholdsAssetToInstance(UWorld* PlayingWorld)
@@ -85,7 +89,13 @@ void FAGX_ShapeContactMergeSplitProperties::SwapThresholdsAssetToInstance(UWorld
 		return;
 	}
 
-	if (Thresholds != ThresholdsInstance && PlayingWorld && PlayingWorld->IsGameWorld())
+	if (Thresholds == ThresholdsInstance)
+	{
+		// The correct instance is already set.
+		return;
+	}
+
+	if (PlayingWorld && PlayingWorld->IsGameWorld())
 	{
 		// Perform the Asset to Instance swap.
 		Thresholds = ThresholdsInstance;
