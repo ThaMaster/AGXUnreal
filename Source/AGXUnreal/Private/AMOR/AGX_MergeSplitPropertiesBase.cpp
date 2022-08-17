@@ -42,7 +42,6 @@ bool FAGX_MergeSplitPropertiesBase::GetEnableSplit() const
 bool FAGX_MergeSplitPropertiesBase::HasNative() const
 {
 	return NativeBarrier.HasNative();
-	return true;
 }
 
 const FMergeSplitPropertiesBarrier& FAGX_MergeSplitPropertiesBase::GetNative() const
