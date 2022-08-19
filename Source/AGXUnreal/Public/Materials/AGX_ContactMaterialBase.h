@@ -365,7 +365,7 @@ public:
 	 * PlayingWorld is not an in-game world.
 	 */
 	static UAGX_ContactMaterialInstance* GetOrCreateInstance(
-		UAGX_ContactMaterialRegistrarComponent* Registrar, UAGX_ContactMaterialBase*& Property);
+		UAGX_ContactMaterialRegistrarComponent& Registrar, UAGX_ContactMaterialBase*& Property);
 
 	UAGX_ContactMaterialBase();
 
@@ -381,7 +381,7 @@ public:
 	 * itself. Returns null if not in-game (invalid call).
 	 */
 	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(
-		UAGX_ContactMaterialRegistrarComponent* Registrar)
+		UAGX_ContactMaterialRegistrarComponent& Registrar)
 		PURE_VIRTUAL(UAGX_ContactMaterialBase::GetOrCreateInstance, return nullptr;);
 
 	/**

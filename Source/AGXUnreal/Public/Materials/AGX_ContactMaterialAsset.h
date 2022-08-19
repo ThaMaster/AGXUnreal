@@ -35,7 +35,7 @@ public:
 	// ~Begin UAGX_ContactMaterialBase interface.
 	virtual UAGX_ContactMaterialInstance* GetInstance() override;
 	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(
-		UAGX_ContactMaterialRegistrarComponent* Registrar) override;
+		UAGX_ContactMaterialRegistrarComponent& Registrar) override;
 	// ~End UAGX_ContactMaterialBase interface.
 
 	// ~Begin UObject interface.

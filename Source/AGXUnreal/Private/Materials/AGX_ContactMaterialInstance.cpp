@@ -44,17 +44,16 @@ namespace AGX_ContactMaterialInstance_helpers
 	 */
 	UAGX_RigidBodyComponent* FindReferenceFrameComponent(
 		const FName& ComponentName, const FName& ActorName,
-		UAGX_ContactMaterialRegistrarComponent* Registrar)
+		UAGX_ContactMaterialRegistrarComponent& Registrar)
 	{
-		check(Registrar);
-		check(Registrar->GetTypedOuter<AActor>());
+		check(Registrar.GetTypedOuter<AActor>());
 
 		if (ComponentName.IsNone())
 			return nullptr;
 
 		AActor* OwningActor = ActorName.IsNone()
-								  ? Registrar->GetTypedOuter<AActor>()
-								  : FindActorByName(Registrar->GetWorld(), ActorName);
+								  ? Registrar.GetTypedOuter<AActor>()
+								  : FindActorByName(Registrar.GetWorld(), ActorName);
 
 		if (OwningActor == nullptr)
 		{
@@ -63,8 +62,8 @@ namespace AGX_ContactMaterialInstance_helpers
 				TEXT("FindReferenceFrame() failed to find reference frame component matching "
 					 "ComponentName: '%s', ActorName: '%s', Registrar: '%s' in '%s' because the "
 					 "owning actor could not be found."),
-				*ComponentName.ToString(), *ActorName.ToString(), *Registrar->GetName(),
-				*GetFNameSafe(Registrar->GetOwner()).ToString());
+				*ComponentName.ToString(), *ActorName.ToString(), *Registrar.GetName(),
+				*GetFNameSafe(Registrar.GetOwner()).ToString());
 			return nullptr;
 		}
 
@@ -81,8 +80,8 @@ namespace AGX_ContactMaterialInstance_helpers
 				TEXT("FindReferenceFrame() failed to find reference frame component matching "
 					 "ComponentName: '%s', ActorName: '%s', Registrar: '%s' in '%s' because the "
 					 "component could not be found inside the actor."),
-				*ComponentName.ToString(), *ActorName.ToString(), *Registrar->GetName(),
-				*GetFNameSafe(Registrar->GetOwner()).ToString());
+				*ComponentName.ToString(), *ActorName.ToString(), *Registrar.GetName(),
+				*GetFNameSafe(Registrar.GetOwner()).ToString());
 			return nullptr;
 		}
 		return *It;
@@ -90,25 +89,22 @@ namespace AGX_ContactMaterialInstance_helpers
 }
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::CreateFromAsset(
-	UAGX_ContactMaterialRegistrarComponent* Registrar, UAGX_ContactMaterialAsset* Source)
+	UAGX_ContactMaterialRegistrarComponent& Registrar, UAGX_ContactMaterialAsset& Source)
 {
-	check(Source);
-	check(Registrar);
-
-	UWorld* PlayingWorld = Registrar->GetWorld();
+	UWorld* PlayingWorld = Registrar.GetWorld();
 	check(PlayingWorld);
 	check(PlayingWorld->IsGameWorld());
 
 	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
 	check(Outer);
 
-	FString InstanceName = Source->GetName() + "_Instance";
+	FString InstanceName = Source.GetName() + "_Instance";
 
 	UAGX_ContactMaterialInstance* NewInstance = NewObject<UAGX_ContactMaterialInstance>(
 		Outer, UAGX_ContactMaterialInstance::StaticClass(), *InstanceName, RF_Transient);
 
-	NewInstance->CopyFrom(Source);
-	NewInstance->SourceAsset = Source;
+	NewInstance->CopyFrom(&Source);
+	NewInstance->SourceAsset = &Source;
 
 	NewInstance->CreateNative(Registrar);
 
@@ -400,7 +396,7 @@ void UAGX_ContactMaterialInstance::SetAdhesiveOverlap(float InAdhesiveOverlap)
 }
 
 FContactMaterialBarrier* UAGX_ContactMaterialInstance::GetOrCreateNative(
-	UAGX_ContactMaterialRegistrarComponent* Registrar)
+	UAGX_ContactMaterialRegistrarComponent& Registrar)
 {
 	if (!HasNative())
 	{
@@ -427,7 +423,7 @@ bool UAGX_ContactMaterialInstance::HasNative() const
 }
 
 void UAGX_ContactMaterialInstance::UpdateNativeProperties(
-	UAGX_ContactMaterialRegistrarComponent* Registrar)
+	UAGX_ContactMaterialRegistrarComponent& Registrar)
 {
 	if (HasNative())
 	{
@@ -522,16 +518,16 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::GetInstance()
 }
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::GetOrCreateInstance(
-	UAGX_ContactMaterialRegistrarComponent* Registrar)
+	UAGX_ContactMaterialRegistrarComponent& Registrar)
 {
 	return this;
 };
 
-void UAGX_ContactMaterialInstance::CreateNative(UAGX_ContactMaterialRegistrarComponent* Registrar)
+void UAGX_ContactMaterialInstance::CreateNative(UAGX_ContactMaterialRegistrarComponent& Registrar)
 {
 	NativeBarrier.Reset(new FContactMaterialBarrier());
 
-	UWorld* PlayingWorld = Registrar->GetWorld();
+	UWorld* PlayingWorld = Registrar.GetWorld();
 
 	/// \note AGX seems OK with referenced materials being null. Falls back on native default
 	/// material.

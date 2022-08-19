@@ -17,14 +17,14 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialAsset::GetInstance()
 }
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialAsset::GetOrCreateInstance(
-	UAGX_ContactMaterialRegistrarComponent* Registrar)
+	UAGX_ContactMaterialRegistrarComponent& Registrar)
 {
 	UAGX_ContactMaterialInstance* InstancePtr = Instance.Get();
-	UWorld* PlayingWorld = Registrar->GetWorld();
+	UWorld* PlayingWorld = Registrar.GetWorld();
 
-	if (!InstancePtr && PlayingWorld && PlayingWorld->IsGameWorld())
+	if (InstancePtr == nullptr && PlayingWorld && PlayingWorld->IsGameWorld())
 	{
-		InstancePtr = UAGX_ContactMaterialInstance::CreateFromAsset(Registrar, this);
+		InstancePtr = UAGX_ContactMaterialInstance::CreateFromAsset(Registrar, *this);
 		Instance = InstancePtr;
 	}
 

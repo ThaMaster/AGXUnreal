@@ -25,7 +25,7 @@ class AGXUNREAL_API UAGX_ContactMaterialInstance : public UAGX_ContactMaterialBa
 
 public:
 	static UAGX_ContactMaterialInstance* CreateFromAsset(
-		UAGX_ContactMaterialRegistrarComponent* Registrar, UAGX_ContactMaterialAsset* Source);
+		UAGX_ContactMaterialRegistrarComponent& Registrar, UAGX_ContactMaterialAsset& Source);
 
 public:
 	virtual ~UAGX_ContactMaterialInstance();
@@ -33,13 +33,13 @@ public:
 	virtual UAGX_ContactMaterialAsset* GetAsset() override;
 
 	FContactMaterialBarrier* GetOrCreateNative(
-		UAGX_ContactMaterialRegistrarComponent* Registrar);
+		UAGX_ContactMaterialRegistrarComponent& Registrar);
 
 	FContactMaterialBarrier* GetNative();
 
 	bool HasNative() const;
 
-	void UpdateNativeProperties(UAGX_ContactMaterialRegistrarComponent* Registrar);
+	void UpdateNativeProperties(UAGX_ContactMaterialRegistrarComponent& Registrar);
 
 	// ~Begin UAGX_ContactMaterialBase interface.
 	virtual void SetContactSolver(EAGX_ContactSolver InContactSolver) override;
@@ -67,13 +67,13 @@ public:
 	virtual void SetAdhesiveOverlap(float AdhesiveOverlap) override;
 	virtual UAGX_ContactMaterialInstance* GetInstance() override;
 	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(
-		UAGX_ContactMaterialRegistrarComponent* Registrar) override;
+		UAGX_ContactMaterialRegistrarComponent& Registrar) override;
 	// ~End UAGX_ContactMaterialBase interface.
 
 private:
 	// Creates the native AGX Contact Material. This function does not add the Native to the
 	// Simulation.
-	void CreateNative(UAGX_ContactMaterialRegistrarComponent* Registrar);
+	void CreateNative(UAGX_ContactMaterialRegistrarComponent& Registrar);
 
 	/// \todo This member is probably not necessary.. Remove it?
 	TWeakObjectPtr<UAGX_ContactMaterialAsset> SourceAsset;
