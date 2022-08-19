@@ -33,14 +33,14 @@ namespace AGX_ContactMaterialInstance_helpers
 	}
 
 	/**
-	 * Finds the component that should be used as the oriented friction model Reference Frame,
-	 * given a component name, owning actor name (optional), and the
-	 * ContactMaterialRegistrarComponent that registers the contact material.
+	 * Finds the Component that should be used as the oriented friction model Reference Frame,
+	 * given a Component name, owning Actor name (optional), and the
+	 * Contact Material Registrar Component that registers the contact material.
 	 *
-	 * If the actor name is is empty the component will be searched for in actor owning the
-	 * ContactMaterialRegistrarComponent.
+	 * If the actor name is empty the component will be searched for in the Actor owning the
+	 * Contact Material Registrar Component.
 	 *
-	 * Currently the component must be a UAGX_RigidBodyComponent.
+	 * Currently the component must be an UAGX_RigidBodyComponent.
 	 */
 	UAGX_RigidBodyComponent* FindReferenceFrameComponent(
 		const FName& ComponentName, const FName& ActorName,
