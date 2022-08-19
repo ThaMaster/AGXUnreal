@@ -41,18 +41,19 @@ void UAGX_ContactMaterialAsset::PostInitProperties()
 {
 	Super::PostInitProperties();
 
-	// All Contact Materials share the same FAGX_PropertyChangedDispatcher so DO NOT use any captures or
-	// anything from the current 'this' in the Dispatcher callback. Only use the passed parameter,
-	// which is a pointer to the object that was changed.
-	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	// All Contact Materials share the same FAGX_PropertyChangedDispatcher so DO NOT use any
+	// captures or anything from the current 'this' in the Dispatcher callback. Only use the passed
+	// parameter, which is a pointer to the object that was changed.
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
 	}
 
 	// These callbacks do not check the return value from GetInstance, it is the responsibility of
-	// PostEditChangeProperty to only call FAGX_PropertyChangedDispatcher::Trigger when an instance is
-	// available.
+	// PostEditChangeProperty to only call FAGX_PropertyChangedDispatcher::Trigger when an instance
+	// is available.
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, ContactSolver),
@@ -60,9 +61,9 @@ void UAGX_ContactMaterialAsset::PostInitProperties()
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, ContactReduction),
-		GET_MEMBER_NAME_CHECKED(FAGX_ContactMaterialReductionMode, Mode),
-		[](ThisClass* Asset)
-		{ Asset->GetInstance()->SetContactReductionMode(Asset->ContactReduction.Mode); });
+		GET_MEMBER_NAME_CHECKED(FAGX_ContactMaterialReductionMode, Mode), [](ThisClass* Asset) {
+			Asset->GetInstance()->SetContactReductionMode(Asset->ContactReduction.Mode);
+		});
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, ContactReduction),
@@ -75,8 +76,7 @@ void UAGX_ContactMaterialAsset::PostInitProperties()
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, MechanicsApproach),
 		GET_MEMBER_NAME_CHECKED(FAGX_ContactMaterialMechanicsApproach, bUseContactAreaApproach),
-		[](ThisClass* Asset)
-		{
+		[](ThisClass* Asset) {
 			Asset->GetInstance()->SetUseContactAreaApproach(
 				Asset->MechanicsApproach.bUseContactAreaApproach);
 		});
@@ -103,28 +103,31 @@ void UAGX_ContactMaterialAsset::PostInitProperties()
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, NormalForceMagnitude),
-		[](ThisClass* Asset)
-		{ Asset->GetInstance()->SetNormalForceMagnitude(Asset->NormalForceMagnitude); });
+		[](ThisClass* Asset) {
+			Asset->GetInstance()->SetNormalForceMagnitude(Asset->NormalForceMagnitude);
+		});
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, bScaleNormalForceWithDepth),
-		[](ThisClass* Asset)
-		{ Asset->GetInstance()->SetScaleNormalForceWithDepth(Asset->bScaleNormalForceWithDepth); });
+		[](ThisClass* Asset) {
+			Asset->GetInstance()->SetScaleNormalForceWithDepth(Asset->bScaleNormalForceWithDepth);
+		});
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, bSurfaceFrictionEnabled),
-		[](ThisClass* Asset)
-		{ Asset->GetInstance()->SetSurfaceFrictionEnabled(Asset->bSurfaceFrictionEnabled); });
+		[](ThisClass* Asset) {
+			Asset->GetInstance()->SetSurfaceFrictionEnabled(Asset->bSurfaceFrictionEnabled);
+		});
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, FrictionCoefficient),
-		[](ThisClass* Asset)
-		{ Asset->GetInstance()->SetFrictionCoefficient(Asset->FrictionCoefficient); });
+		[](ThisClass* Asset) {
+			Asset->GetInstance()->SetFrictionCoefficient(Asset->FrictionCoefficient);
+		});
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, SecondaryFrictionCoefficient),
-		[](ThisClass* Asset)
-		{
+		[](ThisClass* Asset) {
 			// When using InlineEditConditionToggle on the bool Unreal Editor triggers the value
 			// callback, instead of the bool callback, when toggling the bool. So we don't know
 			// which it is. Setting both.
@@ -136,8 +139,7 @@ void UAGX_ContactMaterialAsset::PostInitProperties()
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, bUseSecondaryFrictionCoefficient),
-		[](ThisClass* Asset)
-		{
+		[](ThisClass* Asset) {
 			// This is currently (Unreal Engine 4.25) never called because Unreal Engine calls the
 			// value callback when toggling the InlineEditConditionToggle. Leaving it here in case
 			// that's changed in later versions.
@@ -146,13 +148,13 @@ void UAGX_ContactMaterialAsset::PostInitProperties()
 		});
 
 	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, SurfaceViscosity), [](ThisClass* Asset)
-		{ Asset->GetInstance()->GetInstance()->SetSurfaceViscosity(Asset->SurfaceViscosity); });
+		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, SurfaceViscosity), [](ThisClass* Asset) {
+			Asset->GetInstance()->GetInstance()->SetSurfaceViscosity(Asset->SurfaceViscosity);
+		});
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, SecondarySurfaceViscosity),
-		[](ThisClass* Asset)
-		{
+		[](ThisClass* Asset) {
 			// When using InlineEditConditionToggle on the bool Unreal Editor triggers the value
 			// callback, instead of the bool callback, when toggling the bool. So we don't know
 			// which it is. Setting both.
@@ -163,8 +165,7 @@ void UAGX_ContactMaterialAsset::PostInitProperties()
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, bUseSecondarySurfaceViscosity),
-		[](ThisClass* Asset)
-		{
+		[](ThisClass* Asset) {
 			// This is currently (Unreal Engine 4.25) never called because Unreal Engine calls the
 			// value callback when toggling the InlineEditConditionToggle. Leaving it here in case
 			// that's changed in later versions.
@@ -173,8 +174,9 @@ void UAGX_ContactMaterialAsset::PostInitProperties()
 		});
 
 	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, PrimaryDirection),
-		[](ThisClass* Asset) { Asset->GetInstance()->SetPrimaryDirection(Asset->PrimaryDirection); });
+		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, PrimaryDirection), [](ThisClass* Asset) {
+			Asset->GetInstance()->SetPrimaryDirection(Asset->PrimaryDirection);
+		});
 
 	// Here we would like to detect and handle changes to the Oriented Friction Reference Frame,
 	// but that is currently not possible because to update the AGX Dynamics side we need to find
