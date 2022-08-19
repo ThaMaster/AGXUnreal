@@ -17,7 +17,7 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 
-namespace
+namespace AGX_ContactMaterialInstance_helpers
 {
 	AActor* FindActorByName(UWorld* World, const FName& ActorName)
 	{
@@ -466,9 +466,10 @@ void UAGX_ContactMaterialInstance::UpdateNativeProperties(
 				NativeBarrier->SetPrimaryDirection(PrimaryDirection);
 
 				// Set reference frame on native
-				UAGX_RigidBodyComponent* ReferenceFrameBody = FindReferenceFrameComponent(
-					OrientedFrictionReferenceFrameComponent, OrientedFrictionReferenceFrameActor,
-					Registrar);
+				UAGX_RigidBodyComponent* ReferenceFrameBody =
+					AGX_ContactMaterialInstance_helpers::FindReferenceFrameComponent(
+						OrientedFrictionReferenceFrameComponent,
+						OrientedFrictionReferenceFrameActor, Registrar);
 				if (!ReferenceFrameBody)
 				{
 					UE_LOG(
