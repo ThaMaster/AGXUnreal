@@ -33,7 +33,7 @@ namespace AGX_ContactMaterialInstance_helpers
 	}
 
 	/**
-	 * Finds and the component that should be used as oriented friction model Reference Frame,
+	 * Finds the component that should be used as the oriented friction model Reference Frame,
 	 * given a component name, owning actor name (optional), and the
 	 * ContactMaterialRegistrarComponent that registers the contact material.
 	 *
@@ -433,9 +433,8 @@ void UAGX_ContactMaterialInstance::UpdateNativeProperties(
 	{
 		// Friction related properties
 		{
-			/// \note Setting Friction Model before Solve Type, NormalForceMagnitude,
-			/// \note Setting Friction Model before Solve Type, because Solve Type is part of the
-			/// Friction Model object.
+			// Setting Friction Model before Solve Type, Normal Force Magnitude, and Scale With
+			// Depth because they are part of the Friction Model object.
 			NativeBarrier->SetFrictionModel(static_cast<uint32>(FrictionModel));
 			if (FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction)
 			{
