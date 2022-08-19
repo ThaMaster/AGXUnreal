@@ -176,6 +176,27 @@ void UAGX_ContactMaterialAsset::PostInitProperties()
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, PrimaryDirection),
 		[](ThisClass* Asset) { Asset->GetInstance()->SetPrimaryDirection(Asset->PrimaryDirection); });
 
+	// Here we would like to detect and handle changes to the Oriented Friction Reference Frame,
+	// but that is currently not possible because to update the AGX Dynamics side we need to find
+	// the Rigid Body Component, and to find the Rigid Body Component we need the Contact Material
+	// Registrar that was used to create the Contact Material Instance. We currently don't store
+	// that in the Contact Material Asset. See internal GitLab issue 707.
+#if 0
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, OrientedFrictionReferenceFrameComponent),
+		[](ThisClass* Asset) {
+			Asset->GetInstance()->SetOrientedFrictionReferenceFrameComponent(
+				Asset->OrientedFrictionReferenceFrameComponent, Registrar);
+		});
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, OrientedFrictionReferenceFrameActor),
+		[](ThisClass* Asset) {
+			Asset->GetInstance()->SetOrientedFrictionReferenceFrameActor(
+				Asset->OrientedFrictionReferenceFrameActor, Registrar);
+		});
+#endif
+
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ContactMaterialAsset, Restitution),
 		[](ThisClass* Asset) { Asset->GetInstance()->SetRestitution(Asset->Restitution); });
