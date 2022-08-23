@@ -53,7 +53,7 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 		}
 
 		// Create AGX barrier wheel descs.
-		TArray<FTrackBarrier::FTrackWheelDesc> WheelDescs;
+		TArray<FTrackBarrier::FTrackWheelDescription> WheelDescs;
 		WheelDescs.Reserve(Wheels.Num());
 		for (const auto& Wheel : Wheels)
 		{
@@ -65,7 +65,7 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 			Body->ConditionalUpdateComponentToWorld();
 
 			// Create wheel data.
-			FTrackBarrier::FTrackWheelDesc Desc;
+			FTrackBarrier::FTrackWheelDescription Desc;
 			Desc.Model = static_cast<decltype(Desc.Model)>(Wheel.Model);
 			Desc.Radius = Wheel.Radius;
 			Desc.RigidBodyTransform = Body->GetComponentTransform();

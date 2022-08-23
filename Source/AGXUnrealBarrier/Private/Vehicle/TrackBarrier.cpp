@@ -442,7 +442,7 @@ void FTrackBarrier::GetDebugData(
 void FTrackBarrier::GetPreviewData(
 	TArray<FTransform>& OutNodeTransforms, TArray<FVector>& OutNodeHalfExtents, uint64 NumNodes,
 	double Width, double Thickness, double InitialTensionDistance,
-	const TArray<FTrackBarrier::FTrackWheelDesc>& Wheels)
+	const TArray<FTrackBarrier::FTrackWheelDescription>& Wheels)
 {
 	using namespace agxVehicle;
 

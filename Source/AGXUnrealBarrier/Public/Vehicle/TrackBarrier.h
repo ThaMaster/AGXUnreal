@@ -31,7 +31,7 @@ struct FTrackRef;
 class AGXUNREALBARRIER_API FTrackBarrier
 {
 public:
-	struct FTrackWheelDesc
+	struct FTrackWheelDescription
 	{
 		uint8 Model;
 		double Radius;
@@ -107,7 +107,7 @@ public:
 	static void GetPreviewData(
 		TArray<FTransform>& OutNodeTransforms, TArray<FVector>& OutNodeHalfExtents, uint64 NumNodes,
 		double Width, double Thickness, double InitialTensionDistance,
-		const TArray<FTrackWheelDesc>& Wheels);
+		const TArray<FTrackWheelDescription>& Wheels);
 
 	// Internal Merge Properties.
 
