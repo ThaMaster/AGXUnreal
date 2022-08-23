@@ -6,8 +6,6 @@
 #include "AGX_NativeOwner.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "Vehicle/AGX_TrackWheel.h"
-
-// AGX Dynamics for Unreal barrier includes.
 #include "Vehicle/TrackBarrier.h"
 
 // Unreal Engine includes.
