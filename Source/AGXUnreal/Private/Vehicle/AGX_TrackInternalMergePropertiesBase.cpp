@@ -180,6 +180,15 @@ void UAGX_TrackInternalMergePropertiesBase::SetMergeEnabled(bool bEnabled)
 
 void UAGX_TrackInternalMergePropertiesBase::SetNumNodesPerMergeSegment(int InNumNodesPerMergeSegment)
 {
+	if (InNumNodesPerMergeSegment <= 0)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Attempt ot set negative or zero number of nodes per merge segment. Value clamped "
+				 "to 1."));
+		InNumNodesPerMergeSegment = 1;
+	}
+
 	NumNodesPerMergeSegment = InNumNodesPerMergeSegment;
 }
 
@@ -201,6 +210,16 @@ void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionComplian
 void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionCompliance(
 	double Compliance)
 {
+	if (Compliance < 0.0)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Attempt to set negative compliance on '%s'. Value clamped to 0.0."),
+			*GetFullName());
+
+		Compliance = 0.0;
+	}
+
 	LockToReachMergeConditionCompliance = Compliance;
 }
 
@@ -211,6 +230,14 @@ void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionDamping_
 
 void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionDamping(double Damping)
 {
+	if (Damping < 0.0)
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("Attempt to set negative damping on '%s'. Value clamped to 0.0."),
+			*GetFullName());
+		Damping = 0.0;
+	}
+
 	LockToReachMergeConditionDamping = Damping;
 }
 

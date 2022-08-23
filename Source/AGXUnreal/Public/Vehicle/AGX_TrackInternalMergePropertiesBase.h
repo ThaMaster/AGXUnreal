@@ -99,7 +99,7 @@ public:
 		EditAnywhere, Category = "AGX Track Internal Merge Properties",
 		Meta =
 			(EditCondition = "bMergeEnabled && bLockToReachMergeConditionEnabled",
-			 ClampMin = "0.000000000000000001", ClampMax = "1.0"))
+			 ClampMin = "0.0"))
 	FAGX_Real LockToReachMergeConditionCompliance;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
