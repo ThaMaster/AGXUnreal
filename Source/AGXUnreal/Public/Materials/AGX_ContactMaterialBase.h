@@ -273,6 +273,16 @@ public:
 	FVector PrimaryDirection;
 	// clang-format on
 
+	/**
+	 * Set the primary, or forward, direction of this Contact Material.
+	 *
+	 * For an oriented friction model this is the direction that uses the regular friction and
+	 * surface viscosity parameters. The secondary direction, a vector in the friction plane and
+	 * perpendicular to the primary direction, uses the secondary friction and surface viscosity,
+	 * if either or both of them are enabled.
+	 *
+	 * The primary direction is only used by the oriented friction models.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetPrimaryDirection(const FVector& InPrimaryDirection);
 
