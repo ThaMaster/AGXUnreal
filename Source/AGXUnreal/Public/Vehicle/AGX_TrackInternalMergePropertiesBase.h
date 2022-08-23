@@ -102,7 +102,9 @@ public:
 			 ClampMin = "0.0"))
 	FAGX_Real LockToReachMergeConditionCompliance;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Internal Merge Properties",
+		Meta = (DisplayName = "Set Lock To Reach Merge Condition Compliance"))
 	void SetLockToReachMergeConditionCompliance_AsFloat(float Compliance);
 
 	virtual void SetLockToReachMergeConditionCompliance(double Compliance);
@@ -117,7 +119,9 @@ public:
 			 ClampMin = "0.0"))
 	FAGX_Real LockToReachMergeConditionDamping;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Internal Merge Properties",
+		Meta = (DisplayName = "Set Lock To Reach Merge Condition Damping"))
 	void SetLockToReachMergeConditionDamping_AsFloat(float Damping);
 
 	virtual void SetLockToReachMergeConditionDamping(double Damping);
@@ -132,7 +136,9 @@ public:
 		Meta = (EditCondition = "bMergeEnabled"))
 	FAGX_Real MaxAngleMergeCondition;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Internal Merge Properties",
+		Meta = (DisplayName = "Set Max Angle Merge Condition"))
 	void SetMaxAngleMergeCondition_AsFloat(float MaxAngleToMerge);
 
 	virtual void SetMaxAngleMergeCondition(double MaxAngleToMerge);
