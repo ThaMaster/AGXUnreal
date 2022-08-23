@@ -156,18 +156,10 @@ void UAGX_TrackInternalMergePropertiesBase::PostInitProperties()
 
 void UAGX_TrackInternalMergePropertiesBase::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	UE_LOG(LogTemp, Log, TEXT("UAGX_TrackInternalMergePropertiesBase::PostEditChangeProperty"));
-
 	// UAGX_TrackPropertiesAsset is not a Component and will not be destroyed and recreated
 	// during RerunConstructionScript. It is therefore safe to call the base class
 	// implementation immediately.
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-
-	if (GetInstance() == nullptr)
-	{
-		// Nothing to do if there is no game/world instance to synchronize with.
-		return;
-	}
 
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(PropertyChangedEvent);
 }
