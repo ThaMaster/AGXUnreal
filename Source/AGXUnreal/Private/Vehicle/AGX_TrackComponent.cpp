@@ -8,8 +8,6 @@
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
-#include "Utilities/AGX_ObjectUtilities.h"
-#include "Utilities/AGX_StringUtilities.h"
 #include "Vehicle/AGX_TrackPropertiesInstance.h"
 #include "Vehicle/AGX_TrackInternalMergePropertiesInstance.h"
 
