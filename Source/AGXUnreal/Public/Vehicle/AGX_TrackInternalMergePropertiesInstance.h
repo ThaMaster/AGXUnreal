@@ -45,9 +45,9 @@ public:
 	virtual void SetNumNodesPerMergeSegment(int InNumNodesPerMergeSegment) override;
 	virtual void SetContactReduction(EAGX_MergedTrackNodeContactReduction InContactReduction) override;
 	virtual void SetLockToReachMergeConditionEnabled(bool bEnabled) override;
-	virtual void SetLockToReachMergeConditionCompliance(FAGX_Real Compliance) override;
-	virtual void SetLockToReachMergeConditionDamping(FAGX_Real Damping) override;
-	virtual void SetMaxAngleMergeCondition(FAGX_Real MaxAngleToMerge) override;
+	virtual void SetLockToReachMergeConditionCompliance(double Compliance) override;
+	virtual void SetLockToReachMergeConditionDamping(double Damping) override;
+	virtual void SetMaxAngleMergeCondition(double MaxAngleToMerge) override;
 	virtual UAGX_TrackInternalMergePropertiesInstance* GetInstance() override;
 	virtual UAGX_TrackInternalMergePropertiesInstance* GetOrCreateInstance(UWorld* PlayingWorld) override;
 	// ~End UAGX_TrackInternalMergePropertiesBase interface.

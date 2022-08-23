@@ -104,7 +104,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
 	void SetLockToReachMergeConditionCompliance_AsFloat(float Compliance);
-	virtual void SetLockToReachMergeConditionCompliance(FAGX_Real Compliance);
+
+	virtual void SetLockToReachMergeConditionCompliance(double Compliance);
 
 	/**
 	 * Damping of the hinge lock used to reach merge condition.
@@ -118,7 +119,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
 	void SetLockToReachMergeConditionDamping_AsFloat(float Damping);
-	virtual void SetLockToReachMergeConditionDamping(FAGX_Real Damping);
+
+	virtual void SetLockToReachMergeConditionDamping(double Damping);
 
 	/**
 	 * Maximum angle to trigger merge between nodes. [degrees]
@@ -132,7 +134,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
 	void SetMaxAngleMergeCondition_AsFloat(float MaxAngleToMerge);
-	virtual void SetMaxAngleMergeCondition(FAGX_Real MaxAngleToMerge);
+
+	virtual void SetMaxAngleMergeCondition(double MaxAngleToMerge);
 
 public:
 	/**

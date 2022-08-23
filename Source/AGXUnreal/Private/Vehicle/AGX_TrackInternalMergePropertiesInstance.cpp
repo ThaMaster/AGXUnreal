@@ -178,7 +178,7 @@ void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionEnab
 	}
 }
 
-void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionCompliance(FAGX_Real Compliance)
+void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionCompliance(double Compliance)
 {
 	Super::SetLockToReachMergeConditionCompliance(Compliance);
 
@@ -192,7 +192,7 @@ void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionComp
 	}
 }
 
-void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionDamping(FAGX_Real Damping)
+void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionDamping(double Damping)
 {
 	Super::SetLockToReachMergeConditionDamping(Damping);
 
@@ -206,7 +206,7 @@ void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionDamp
 	}
 }
 
-void UAGX_TrackInternalMergePropertiesInstance::SetMaxAngleMergeCondition(FAGX_Real MaxAngleToMerge)
+void UAGX_TrackInternalMergePropertiesInstance::SetMaxAngleMergeCondition(double MaxAngleToMerge)
 {
 	Super::SetMaxAngleMergeCondition(MaxAngleToMerge);
 
