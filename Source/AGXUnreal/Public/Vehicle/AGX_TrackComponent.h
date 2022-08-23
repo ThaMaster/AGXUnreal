@@ -31,12 +31,13 @@ public:
 
 /**
  * Experimental
- * This feature is experimental and may change in the next release. We do not
- * guarantee backwards compatibility.
+ * This feature is experimental and may change in the next release. We do not guarantee backwards
+ * compatibility.
  *
  *
- * Given a set of wheels, automatically generates a continuous track with a given number of shoes
- * (nodes).
+ * Given a set of wheels, automatically generates a continuous track with a given number of shoes,
+ * also called Track Nodes. Each generated shoe become a separately simulated Rigid Body within
+ * AGX Dynamics, connected together using constraints.
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
@@ -82,12 +83,25 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
 	float InitialDistanceTension = 0.01f;
 
+	/**
+	 * Define the bulk and surface properties of each generated shoe.
+	 *
+	 * It is recommended to also create a Contact Material between the selected Shape Material and
+	 * the Shape Materials set on the Shapes that the Track will drive on.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
 	UAGX_ShapeMaterialBase* ShapeMaterial;
 
+	/**
+	 * Additional properties defining the setup and behavior of the Track.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
 	UAGX_TrackPropertiesBase* TrackProperties;
 
+	/**
+	 * Properties controlling how the Rigid Bodies created for the Track shoes may be merged with
+	 * each other.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
 	UAGX_TrackInternalMergePropertiesBase* InternalMergeProperties;
 
@@ -224,7 +238,8 @@ public:
 	 *
 	 * @param OutTransform Array filled with one transform per node.
 	 * @param LocalScale All transforms' Scale is set to this value.
-	 * @param LocalOffset All transforms' Location is offset by this vector, rotated by each transforms' rotation.
+	 * @param LocalOffset All transforms' Location is offset by this vector, rotated by each
+	 * transforms' rotation.
 	 */
 	void GetNodeTransforms(
 		TArray<FTransform>& OutTransforms, const FVector& LocalScale,
