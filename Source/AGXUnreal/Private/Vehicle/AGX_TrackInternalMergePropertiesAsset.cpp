@@ -3,8 +3,6 @@
 #include "Vehicle/AGX_TrackInternalMergePropertiesAsset.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_LogCategory.h"
-#include "AGX_PropertyChangedDispatcher.h"
 #include "Vehicle/AGX_TrackInternalMergePropertiesInstance.h"
 
 // Unreal Engine includes.
