@@ -197,8 +197,8 @@ FTrackBarrier* UAGX_TrackComponent::GetOrCreateNative()
 
 		CreateNative();
 	}
-	check(HasNative()); /// \todo Consider better error handling than 'check'.
-	return &NativeBarrier;
+
+	return GetNative();
 }
 
 FTrackBarrier* UAGX_TrackComponent::GetNative()
@@ -528,11 +528,46 @@ void UAGX_TrackComponent::ResolveComponentReferenceOwningActors()
 
 void UAGX_TrackComponent::CreateNative()
 {
-	check(!GIsReconstructingBlueprintInstances);
-	check(!HasNative());
+	// Check preconditions.
+	if (HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("CreateNative called on Track Component '%s' in '%s' even though a Native already "
+				 "exists. Doing nothing"),
+			*GetName(), *GetNameSafe(GetOwner()));
+		return;
+	}
+	if (!bEnabled)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("CreateNative called on disabled Track Component '%s' in '%s'. Doing nothing."),
+			*GetName(), *GetNameSafe(GetOwner()));
+		return;
+	}
+	if (GIsReconstructingBlueprintInstances)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("CreateNative called on a Track Component while a Blueprint Reconstruction is in "
+				 "progress. This is not allowed because during Blueprint Reconstruction AGX "
+				 "Dynamic objects are stashed in an Actor Component Instance Data and will be "
+				 "reused in the new AGX Actor Components. The Track Component is '%s' in '%s'. "
+				 "Doing nothing."),
+			*GetName(), *GetNameSafe(GetOwner()));
+		return;
+	}
+
 	NativeBarrier.AllocateNative(NumberOfNodes, Width, Thickness, InitialDistanceTension);
-	check(HasNative()); /// \todo Consider better error handling than 'check'.
-	check(bEnabled);
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Track Component '%s' in '%s' could not allocate native AGX Dynamics instance."),
+			*GetName(), *GetNameSafe(GetOwner()));
+		return;
+	}
 
 	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this);
 	if (!IsValid(Sim) || !Sim->HasNative())
