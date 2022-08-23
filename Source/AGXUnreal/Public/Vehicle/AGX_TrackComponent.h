@@ -52,25 +52,25 @@ public:
 	 * Whether the AGX Dynamics Tracks should be created or not. Cannot be changed while playing.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	bool bEnabled;
+	bool bEnabled = true;
 
 	/**
 	 * Number of nodes in the track.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	int NumberOfNodes;
+	int NumberOfNodes = 20;
 
 	/**
 	 * Width of the track nodes [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	float Width;
+	float Width = 50.0f;
 
 	/**
 	 * Thickness of the track nodes [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	float Thickness;
+	float Thickness = 15.0f;
 
 	/**
 	 * Value (distance) of how much shorter each node should be which causes tension
@@ -80,7 +80,7 @@ public:
 	 * tension after the system has been created.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	float InitialDistanceTension;
+	float InitialDistanceTension = 0.01f;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
 	UAGX_ShapeMaterialBase* ShapeMaterial;
@@ -101,14 +101,14 @@ public:
 	 * The mass of the each track node Rigid Body [kg].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track", Meta = (EditCondition = "!bAutoGenerateMass"))
-	float NodeMass;
+	float NodeMass = 1.0f;
 
 	/**
 	 * Whether the track node mass should be computed automatically from the collision shape
 	 * volume and material density.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	bool bAutoGenerateMass;
+	bool bAutoGenerateMass = true;
 
 	/**
 	 * Center of mass offset [cm].
@@ -116,13 +116,13 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Track",
 		Meta = (EditCondition = "!bAutoGenerateCenterOfMassOffset"))
-	FVector NodeCenterOfMassOffset;
+	FVector NodeCenterOfMassOffset = FVector::ZeroVector;
 
 	/**
 	 * Whether the center of mass offset should be computed automatically.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	bool bAutoGenerateCenterOfMassOffset;
+	bool bAutoGenerateCenterOfMassOffset = true;
 
 	/**
 	 * The three-component diagonal of the inertia tensor [kgm^2].
@@ -130,13 +130,13 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Track",
 		Meta = (EditCondition = "!bAutoGeneratePrincipalInertia"))
-	FVector NodePrincipalInertia;
+	FVector NodePrincipalInertia = FVector::OneVector;
 
 	/**
 	 * Whether the principal inertia should be computed automatically.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	bool bAutoGeneratePrincipalInertia;
+	bool bAutoGeneratePrincipalInertia = true;
 
 	/**
 	 * An array of track wheels that are used to route the track and determine interaction
@@ -167,14 +167,14 @@ public:
 	 *
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Debug Visual")
-	bool bShowEditorDebugGraphics;
+	bool bShowEditorDebugGraphics = true;
 
 	/**
 	 * Whether the debug graphics should colorize the collision boxes based on merged states
 	 * (black means no merge).
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Debug Visual")
-	bool bColorizeMergedBodies;
+	bool bColorizeMergedBodies = false;
 
 	/**
 	 * Whether this component should try to update the Track Preview (debug rendering and actual
@@ -184,7 +184,7 @@ public:
 	 * or the 'Update Visuals' button from the Track Renderer's Detail Panel.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Debug Visual")
-	bool bAutoUpdateTrackPreview;
+	bool bAutoUpdateTrackPreview = true;
 
 	/**
 	 * Event that broadcasts whenever the outside-of-play Track Preview Data has changed.
@@ -348,7 +348,7 @@ private:
 	FTrackBarrier NativeBarrier;
 
 	mutable TSharedPtr<FAGX_TrackPreviewData> TrackPreview = nullptr;
-	mutable bool bTrackPreviewNeedsUpdate;
+	mutable bool bTrackPreviewNeedsUpdate = true;
 
 	FTrackPreviewNeedsUpdateEvent TrackPreviewNeedsUpdateEvent;
 };

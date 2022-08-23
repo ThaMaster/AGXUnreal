@@ -33,29 +33,7 @@
 UAGX_TrackComponent::UAGX_TrackComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
 	bWantsOnUpdateTransform = true;
-
-	// Sets default values.
-	bEnabled = true;
-	NumberOfNodes = 20;
-	Width = 50.0f;
-	Thickness = 15.0f;
-	InitialDistanceTension = 0.01f;
-
-	NodeMass = 1.0f;
-	NodeCenterOfMassOffset = FVector::ZeroVector;
-	NodePrincipalInertia = FVector::OneVector;
-
-	bAutoGenerateMass = true;
-	bAutoGenerateCenterOfMassOffset = true;
-	bAutoGeneratePrincipalInertia = true;
-
-	bShowEditorDebugGraphics = true;
-	bColorizeMergedBodies = false;
-	bAutoUpdateTrackPreview = true;
-
-	bTrackPreviewNeedsUpdate = true;
 }
 
 FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
