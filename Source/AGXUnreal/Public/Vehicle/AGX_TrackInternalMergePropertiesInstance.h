@@ -19,7 +19,6 @@ class UAGX_TrackInternalMergePropertiesAsset;
  *
  * Should only be created using the static function CreateFromAsset, which copyies data from its
  * sibling class UAGX_TrackInternalMergePropertiesAsset.
- *
  */
 UCLASS()
 class AGXUNREAL_API UAGX_TrackInternalMergePropertiesInstance : public UAGX_TrackInternalMergePropertiesBase

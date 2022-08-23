@@ -39,6 +39,10 @@ enum class EAGX_MergedTrackNodeContactReduction : uint8
  *
  * Does not own any AGX Native. Instead, it applies its data to the native Track of each
  * Track Component that uses this asset.
+ *
+ * Base class. Inherited by the -Asset subclass, which represents assets created in the Content
+ * Browser, and the -Instance subclass, which represents an instance of the asset and exists during
+ * a single Play session only.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable, abstract)
 class AGXUNREAL_API UAGX_TrackInternalMergePropertiesBase : public UObject
