@@ -818,14 +818,6 @@ void UAGX_TrackComponent::WriteMassPropertiesToNative()
 		{
 			NodePrincipalInertia = MassProperties.GetPrincipalInertia();
 		}
-
-		UE_LOG(
-			LogAGX, Log,
-			TEXT("Updated mass properties on Track '%s' in '%s'. First track node "
-				 "Mass = %f, CenterOfMass = %s, Principal Inertia = %s."),
-			*GetName(), *GetNameSafe(GetOwner()), MassProperties.GetMass(),
-			*FirstBodyBarrier.GetCenterOfMassOffset().ToString(),
-			*MassProperties.GetPrincipalInertia().ToString());
 	}
 }
 
