@@ -14,7 +14,8 @@
 // Unreal Engine includes.
 #include "Engine/World.h"
 
-UAGX_TrackInternalMergePropertiesInstance* UAGX_TrackInternalMergePropertiesBase::GetOrCreateInstance(
+UAGX_TrackInternalMergePropertiesInstance*
+UAGX_TrackInternalMergePropertiesBase::GetOrCreateInstance(
 	UWorld* PlayingWorld, UAGX_TrackInternalMergePropertiesBase*& Property)
 {
 	if (Property == nullptr || PlayingWorld == nullptr || !PlayingWorld->IsGameWorld())
@@ -22,7 +23,8 @@ UAGX_TrackInternalMergePropertiesInstance* UAGX_TrackInternalMergePropertiesBase
 		return nullptr;
 	}
 
-	UAGX_TrackInternalMergePropertiesInstance* Instance = Property->GetOrCreateInstance(PlayingWorld);
+	UAGX_TrackInternalMergePropertiesInstance* Instance =
+		Property->GetOrCreateInstance(PlayingWorld);
 
 	if (Instance != Property)
 	{
@@ -39,7 +41,8 @@ UAGX_TrackInternalMergePropertiesBase::UAGX_TrackInternalMergePropertiesBase()
 	, bLockToReachMergeConditionEnabled(true)
 	, LockToReachMergeConditionCompliance(1.0E-11)
 	, LockToReachMergeConditionDamping(3.0 / 60.0) // \todo Verify default value in AGX Dynamics!
-	, MaxAngleMergeCondition(FMath::RadiansToDegrees(1.0E-5)) // \todo Verify default value in AGX Dynamics!
+	, MaxAngleMergeCondition(
+		  FMath::RadiansToDegrees(1.0E-5)) // \todo Verify default value in AGX Dynamics!
 {
 	// See agxVehicle::TrackInternalMergeProperties for default values
 }
@@ -49,11 +52,12 @@ UAGX_TrackInternalMergePropertiesBase::~UAGX_TrackInternalMergePropertiesBase()
 }
 
 #define COPY_PROPERTY(Source, Name) \
-	{                                   \
-		Name = Source->Name;            \
+	{                               \
+		Name = Source->Name;        \
 	}
 
-void UAGX_TrackInternalMergePropertiesBase::CopyFrom(const UAGX_TrackInternalMergePropertiesBase* Source)
+void UAGX_TrackInternalMergePropertiesBase::CopyFrom(
+	const UAGX_TrackInternalMergePropertiesBase* Source)
 {
 	if (Source)
 	{
@@ -76,44 +80,36 @@ void UAGX_TrackInternalMergePropertiesBase::CopyFrom(const UAGX_TrackInternalMer
 
 void UAGX_TrackInternalMergePropertiesBase::InitPropertyDispatcher()
 {
-
-	// All Track Properties share the same FAGX_PropertyChangedDispatcher so DO NOT use any captures or
-	// anything from the current 'this' in the Dispatcher callback. Only use the passed parameter,
-	// which is a pointer to the object that was changed.
-	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	// All Track Properties share the same FAGX_PropertyChangedDispatcher so DO NOT use any captures
+	// or anything from the current 'this' in the Dispatcher callback. Only use the passed
+	// parameter, which is a pointer to the object that was changed.
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
 	}
 
 	// These callbacks do not check the return value from GetInstance, it is the responsibility of
-	// PostEditChangeProperty to only call FAGX_PropertyChangedDispatcher::Trigger when an instance is
-	// available.
+	// PostEditChangeProperty to only call FAGX_PropertyChangedDispatcher::Trigger when an instance
+	// is available.
+
+	Dispatcher.Add(GET_MEMBER_NAME_CHECKED(ThisClass, bMergeEnabled), [](ThisClass* Self) {
+		Self->SetMergeEnabled(Self->bMergeEnabled);
+		Self->GetInstance()->SetMergeEnabled(Self->bMergeEnabled);
+	});
 
 	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, bMergeEnabled),
-		[](ThisClass* Self) {
-			Self->GetInstance()->SetMergeEnabled(
-				Self->bMergeEnabled);
+		GET_MEMBER_NAME_CHECKED(ThisClass, NumNodesPerMergeSegment), [](ThisClass* Self) {
+			Self->GetInstance()->SetNumNodesPerMergeSegment(Self->NumNodesPerMergeSegment);
 		});
 
-	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, NumNodesPerMergeSegment),
-		[](ThisClass* Self) {
-			Self->GetInstance()->SetNumNodesPerMergeSegment(
-				Self->NumNodesPerMergeSegment);
-		});
+	Dispatcher.Add(GET_MEMBER_NAME_CHECKED(ThisClass, ContactReduction), [](ThisClass* Self) {
+		Self->GetInstance()->SetContactReduction(Self->ContactReduction);
+	});
 
 	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, ContactReduction),
-		[](ThisClass* Self) {
-			Self->GetInstance()->SetContactReduction(
-				Self->ContactReduction);
-		});
-
-	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, bLockToReachMergeConditionEnabled),
-		[](ThisClass* Self) {
+		GET_MEMBER_NAME_CHECKED(ThisClass, bLockToReachMergeConditionEnabled), [](ThisClass* Self) {
 			Self->GetInstance()->SetLockToReachMergeConditionEnabled(
 				Self->bLockToReachMergeConditionEnabled);
 		});
@@ -126,18 +122,14 @@ void UAGX_TrackInternalMergePropertiesBase::InitPropertyDispatcher()
 		});
 
 	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, LockToReachMergeConditionDamping),
-		[](ThisClass* Self) {
+		GET_MEMBER_NAME_CHECKED(ThisClass, LockToReachMergeConditionDamping), [](ThisClass* Self) {
 			Self->GetInstance()->SetLockToReachMergeConditionDamping(
 				Self->LockToReachMergeConditionDamping);
 		});
 
-	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, MaxAngleMergeCondition),
-		[](ThisClass* Self) {
-			Self->GetInstance()->SetMaxAngleMergeCondition(
-				Self->MaxAngleMergeCondition);
-		});
+	Dispatcher.Add(GET_MEMBER_NAME_CHECKED(ThisClass, MaxAngleMergeCondition), [](ThisClass* Self) {
+		Self->GetInstance()->SetMaxAngleMergeCondition(Self->MaxAngleMergeCondition);
+	});
 }
 
 #endif
@@ -151,10 +143,10 @@ void UAGX_TrackInternalMergePropertiesBase::PostInitProperties()
 #endif
 }
 
-
 #if WITH_EDITOR
 
-void UAGX_TrackInternalMergePropertiesBase::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+void UAGX_TrackInternalMergePropertiesBase::PostEditChangeProperty(
+	FPropertyChangedEvent& PropertyChangedEvent)
 {
 	// UAGX_TrackPropertiesAsset is not a Component and will not be destroyed and recreated
 	// during RerunConstructionScript. It is therefore safe to call the base class
@@ -170,7 +162,8 @@ void UAGX_TrackInternalMergePropertiesBase::SetMergeEnabled(bool bEnabled)
 	bMergeEnabled = bEnabled;
 }
 
-void UAGX_TrackInternalMergePropertiesBase::SetNumNodesPerMergeSegment(int InNumNodesPerMergeSegment)
+void UAGX_TrackInternalMergePropertiesBase::SetNumNodesPerMergeSegment(
+	int InNumNodesPerMergeSegment)
 {
 	if (InNumNodesPerMergeSegment <= 0)
 	{
@@ -184,7 +177,8 @@ void UAGX_TrackInternalMergePropertiesBase::SetNumNodesPerMergeSegment(int InNum
 	NumNodesPerMergeSegment = InNumNodesPerMergeSegment;
 }
 
-void UAGX_TrackInternalMergePropertiesBase::SetContactReduction(EAGX_MergedTrackNodeContactReduction InContactReduction)
+void UAGX_TrackInternalMergePropertiesBase::SetContactReduction(
+	EAGX_MergedTrackNodeContactReduction InContactReduction)
 {
 	ContactReduction = InContactReduction;
 }
@@ -194,7 +188,8 @@ void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionEnabled(
 	bLockToReachMergeConditionEnabled = bEnabled;
 }
 
-void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionCompliance_AsFloat(float Compliance)
+void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionCompliance_AsFloat(
+	float Compliance)
 {
 	SetLockToReachMergeConditionCompliance(static_cast<double>(Compliance));
 }
@@ -215,7 +210,8 @@ void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionComplian
 	LockToReachMergeConditionCompliance = Compliance;
 }
 
-void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionDamping_AsFloat(float Damping)
+void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionDamping_AsFloat(
+	float Damping)
 {
 	SetLockToReachMergeConditionDamping(static_cast<double>(Damping));
 }
