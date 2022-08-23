@@ -289,11 +289,11 @@ void FTrackBarrier::GetNodeTransforms(
 
 	// Resize output array if necessary.
 	agx::UInt NumNodes = NativeRef->Native->getNumNodes();
-	if (Transforms.Num() != NumNodes)
+	if (OutTransforms.Num() != NumNodes)
 	{
 		// Retain the container buffer so that the same transform cache can be reused for multiple
 		// tracks without reallocation every time.
-		Transforms.SetNum(NumNodes, /*bAllowShrinking*/ false);
+		OutTransforms.SetNum(NumNodes, /*bAllowShrinking*/ false);
 	}
 
 	agxVehicle::TrackNodeRange Nodes = NativeRef->Native->nodes();
