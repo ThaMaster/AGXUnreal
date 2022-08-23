@@ -10,8 +10,6 @@
 #include "Materials/AGX_ShapeMaterialInstance.h"
 #include "Vehicle/AGX_TrackPropertiesInstance.h"
 #include "Vehicle/AGX_TrackInternalMergePropertiesInstance.h"
-
-// AGX Dynamics for Unreal Barrier includes.
 #include "Materials/ShapeMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Vehicle/TrackPropertiesBarrier.h"
@@ -20,9 +18,7 @@
 #include "Engine/GameInstance.h"
 #include "CoreGlobals.h"
 #include "GameFramework/Actor.h"
-#include "Math/Rotator.h"
 #include "Math/Quat.h"
-#include "Misc/EngineVersionComparison.h"
 #include "Engine/Classes/Components/HierarchicalInstancedStaticMeshComponent.h"
 
 //#define TRACK_COMPONENT_DETAILED_LOGGING
