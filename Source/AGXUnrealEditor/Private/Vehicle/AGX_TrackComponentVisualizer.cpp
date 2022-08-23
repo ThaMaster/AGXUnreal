@@ -291,13 +291,13 @@ namespace
 			{
 				switch (Wheel.Model)
 				{
-					case EAGX_TrackWheelModel::TWM_SPROCKET:
+					case EAGX_TrackWheelModel::Sprocket:
 						(*WheelColors)[I] = FLinearColor::Red;
 						break;
-					case EAGX_TrackWheelModel::TWM_IDLER:
+					case EAGX_TrackWheelModel::Idler:
 						(*WheelColors)[I] = FLinearColor::Blue;
 						break;
-					case EAGX_TrackWheelModel::TWM_ROLLER:
+					case EAGX_TrackWheelModel::Roller:
 						(*WheelColors)[I] = FLinearColor::Green;
 						break;
 					default:
