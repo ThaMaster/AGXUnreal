@@ -15,7 +15,6 @@
 #include "AGX_TrackComponent.generated.h"
 
 class UAGX_ShapeMaterialBase;
-class UAGX_TrackWheelComponent;
 class UAGX_TrackPropertiesBase;
 class UAGX_TrackInternalMergePropertiesBase;
 
