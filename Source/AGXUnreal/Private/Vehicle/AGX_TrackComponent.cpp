@@ -144,7 +144,9 @@ void UAGX_TrackComponent::GetNodeTransforms(
 	else if (TrackPreview.IsValid())
 	{
 		const int32 NumNodes = TrackPreview->NodeTransforms.Num();
-		OutTransforms.SetNum(NumNodes);
+		// Retain the container buffer so that the same transform cache can be reused for multiple
+		// tracks without reallocation every time.
+		OutTransforms.SetNum(NumNodes, /*bAllowShrinking*/ false);
 		for (int32 I = 0; I < NumNodes; ++I)
 		{
 			const FTransform& Source = TrackPreview->NodeTransforms[I];
@@ -157,7 +159,9 @@ void UAGX_TrackComponent::GetNodeTransforms(
 	}
 	else
 	{
-		OutTransforms.SetNum(0);
+		// Retain the container buffer so that the same transform cache can be reused for multiple
+		// tracks without reallocation every time.
+		OutTransforms.SetNum(0, /*bAllowShrinking*/ false);
 	}
 }
 
