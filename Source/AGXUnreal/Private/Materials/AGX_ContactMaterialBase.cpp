@@ -186,7 +186,7 @@ void UAGX_ContactMaterialBase::SetPrimaryDirection(const FVector& InPrimaryDirec
 	PrimaryDirection = InPrimaryDirection;
 }
 
-bool UAGX_ContactMaterialBase::IsOrientedFrictionModel()
+bool UAGX_ContactMaterialBase::IsOrientedFrictionModel() const
 {
 	return ::IsOrientedFrictionModel(FrictionModel);
 }

@@ -324,7 +324,7 @@ public:
 	// clang-format on
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
-	bool IsOrientedFrictionModel();
+	bool IsOrientedFrictionModel() const;
 	/**
 	 * Material restitution, i.e. how "bouncy" the normal collisions are.
 	 *
