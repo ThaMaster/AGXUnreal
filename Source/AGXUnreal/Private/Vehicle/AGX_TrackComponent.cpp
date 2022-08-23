@@ -61,7 +61,7 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 			if (!Body)
 				continue;
 
-			// Make sure world the transform is up-to-date.
+			// Make sure the world transform is up-to-date.
 			Body->ConditionalUpdateComponentToWorld();
 
 			// Create wheel data.
