@@ -182,7 +182,11 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "Friction",
 		Meta =
-			(ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondaryFrictionCoefficient"))
+			(ClampMin = "0.0", UIMin = "0.0",
+			 // We would like to include a check for oriented friction model here, but Unreal
+			 // Engine 4.26 doesn't support that in combination with InlineEditConditionToggle on
+			 // bUseSecondarySurfaceViscosity.
+			 EditCondition = "bUseSecondaryFrictionCoefficient"))
 	FAGX_Real SecondaryFrictionCoefficient;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
@@ -225,7 +229,12 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Friction",
-		Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondarySurfaceViscosity"))
+		Meta =
+			(ClampMin = "0.0", UIMin = "0.0",
+			 // We would like to include a check for oriented friction model here, but Unreal
+			 // Engine 4.26 doesn't support that in combination with InlineEditConditionToggle on
+			 // bUseSecondarySurfaceViscosity.
+			 EditCondition = "bUseSecondarySurfaceViscosity"))
 	FAGX_Real SecondarySurfaceViscosity;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
