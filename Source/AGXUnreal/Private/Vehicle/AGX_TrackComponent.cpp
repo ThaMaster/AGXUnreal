@@ -85,7 +85,7 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 
 void UAGX_TrackComponent::RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlreadyRaised)
 {
-	bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
 	if (bIsPlaying)
 	{
 		return; // Track preview is only relevant when not playing.
@@ -266,7 +266,7 @@ bool UAGX_TrackComponent::CanEditChange(const FProperty* InProperty) const
 		return false;
 	}
 
-	bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
 	if (bIsPlaying)
 	{
 		// List of names of properties that does not support editing after initialization.
@@ -439,7 +439,7 @@ void UAGX_TrackComponent::OnUpdateTransform(
 	// \todo This event does not seem to be called when drag-moving an actor/component,
 	//       but not when writing values directly in the Detail Panel transform input fields.
 
-	bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
 	if (!bIsPlaying)
 	{
 		// \note Actually moving the TransformComponent does not itself means that track preview
