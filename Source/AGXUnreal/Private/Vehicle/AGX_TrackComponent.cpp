@@ -21,8 +21,6 @@
 #include "Math/Quat.h"
 #include "Engine/Classes/Components/HierarchicalInstancedStaticMeshComponent.h"
 
-//#define TRACK_COMPONENT_DETAILED_LOGGING
-
 UAGX_TrackComponent::UAGX_TrackComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -79,15 +77,6 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 			Thickness, InitialDistanceTension, WheelDescs);
 
 		bTrackPreviewNeedsUpdate = false;
-
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-		UE_LOG(
-			LogAGX, Verbose,
-			TEXT("Generated Track Preview Data for '%s' (UID: %i) in '%s'. NodeCount = %i, "
-				 "WheelCount = %i."),
-			*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()), TrackPreview->NodeTransforms.Num(),
-			WheelDescs.Num());
-#endif
 	}
 
 	check(TrackPreview.IsValid());
@@ -108,12 +97,6 @@ void UAGX_TrackComponent::RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlr
 
 	if (bShouldBroadcastEvent)
 	{
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-		UE_LOG(
-			LogAGX, Verbose,
-			TEXT("Track Preview Data of '%s' (UID: %i) in '%s' needs update. Broadcasting event."),
-			*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
-#endif
 		TrackPreviewNeedsUpdateEvent.Broadcast(this);
 	}
 }
@@ -304,13 +287,6 @@ bool UAGX_TrackComponent::CanEditChange(const FProperty* InProperty) const
 
 void UAGX_TrackComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("UAGX_TrackComponent::PostEditChangeChainProperty() for '%s' (UID: %i) in '%s'."),
-		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
-#endif
-
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
@@ -321,13 +297,6 @@ void UAGX_TrackComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent
 
 void UAGX_TrackComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("UAGX_TrackComponent::PostEditChangeProperty() for '%s' (UID: %i) in '%s'."),
-		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
-#endif
-
 	// \note We trigger dispatch both here and from PostEditChangeChainProperty, because
 	// for example when editing a mass property while playing on a BP Actor Instance the
 	// PostEditChangeChainProperty appears to be called too late in the reconstruction.
@@ -429,12 +398,6 @@ void UAGX_TrackComponent::EndPlay(const EEndPlayReason::Type Reason)
 
 TStructOnScope<FActorComponentInstanceData> UAGX_TrackComponent::GetComponentInstanceData() const
 {
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("UAGX_TrackComponent::GetComponentInstanceData() for '%s' (UID: %i) in '%s'."),
-		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
-#endif
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_TrackComponentInstanceData>(
 		this, this, [](UActorComponent* Component) {
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
@@ -445,14 +408,6 @@ TStructOnScope<FActorComponentInstanceData> UAGX_TrackComponent::GetComponentIns
 void UAGX_TrackComponent::ApplyComponentInstanceData(
 	const FActorComponentInstanceData* Data, ECacheApplyPhase CacheApplyPhase)
 {
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("UAGX_TrackComponent::ApplyComponentInstanceData() for '%s' (UID: %i) in '%s'. Phase "
-			 "= %i."),
-		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()), (int) CacheApplyPhase);
-#endif
-
 	if (CacheApplyPhase == ECacheApplyPhase::PostUserConstructionScript)
 	{
 		// In the case of BP Actor Instances, there can be wheels added to the instance
@@ -481,11 +436,6 @@ void UAGX_TrackComponent::OnUpdateTransform(
 {
 	Super::OnUpdateTransform(UpdateTransformFlags, Teleport);
 
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-	UE_LOG(
-		LogAGX, Log, TEXT("UAGX_TrackComponent::OnUpdateTransform() for '%s' (UID: %i) in '%s'."),
-		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
-#endif
 	// \todo This event does not seem to be called when drag-moving an actor/component,
 	//       but not when writing values directly in the Detail Panel transform input fields.
 
@@ -749,12 +699,6 @@ void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 
 	if (InternalMergeProperties)
 	{
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-		UE_LOG(
-			LogAGX, Verbose,
-			TEXT("Track '%s' in '%s' is writing TrackInternalMergeProperties '%s' to native."),
-			*GetName(), *GetNameSafe(GetOwner()), *InternalMergeProperties->GetName());
-#endif
 		// Create instance if necessary.
 		UAGX_TrackInternalMergePropertiesInstance* InternalMergePropertiesInstance =
 			static_cast<UAGX_TrackInternalMergePropertiesInstance*>(
@@ -772,13 +716,6 @@ void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 	}
 	else
 	{
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-		UE_LOG(
-			LogAGX, Verbose,
-			TEXT("Track '%s' in '%s' is clearing TrackInternalMergeProperties on native."),
-			*GetName(), *GetNameSafe(GetOwner()));
-#endif
-
 		// \todo Want to call TrackInternalMergeProperties::resetToDefault(), but doing so gives
 		//       very strange dynamics behaviour. It seems merge is supposed to become disbled but
 		//       it still remains enabled somehow.
