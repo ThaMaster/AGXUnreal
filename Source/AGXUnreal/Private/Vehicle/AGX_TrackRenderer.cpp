@@ -16,11 +16,13 @@
 
 namespace
 {
-	template<class T>
+	template <class T>
 	T* FindFirstParentComponentByClass(USceneComponent* CurrentComponent)
 	{
-		static_assert(TPointerIsConvertibleFromTo<T, const USceneComponent>::Value,
-			"'T' template parameter to FindFirstParentComponentByClass must be derived from USceneComponent");
+		static_assert(
+			TPointerIsConvertibleFromTo<T, const USceneComponent>::Value,
+			"'T' template parameter to FindFirstParentComponentByClass must be derived from "
+			"USceneComponent");
 
 		if (CurrentComponent == nullptr)
 		{
@@ -44,7 +46,7 @@ UAGX_TrackRenderer::UAGX_TrackRenderer()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// \todo We want to synchronize visuals AFTER the physics have stepped. Find correct group!
-	//PrimaryComponentTick.TickGroup = ??;
+	// PrimaryComponentTick.TickGroup = ??;
 
 	// Sets default values.
 	Scale = DEFAULT_VISUAL_SCALE;
@@ -59,7 +61,8 @@ UAGX_TrackRenderer::UAGX_TrackRenderer()
 	BodyInstance.SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void UAGX_TrackRenderer::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UAGX_TrackRenderer::TickComponent(
+	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -71,7 +74,8 @@ void UAGX_TrackRenderer::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 TStructOnScope<FActorComponentInstanceData> UAGX_TrackRenderer::GetComponentInstanceData() const
 {
 #ifdef TRACK_RENDERER_DETAILED_LOGGING
-	UE_LOG(LogAGX, Verbose,
+	UE_LOG(
+		LogAGX, Verbose,
 		TEXT("UAGX_TrackRenderer::GetComponentInstanceData() for '%s' (UID: %i) in '%s'."),
 		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
@@ -85,15 +89,17 @@ void UAGX_TrackRenderer::ApplyComponentInstanceData(
 	Super::ApplyComponentInstanceData(ComponentInstanceData);
 
 #ifdef TRACK_RENDERER_DETAILED_LOGGING
-	UE_LOG(LogAGX, Verbose,
-		TEXT("UAGX_TrackRenderer::ApplyComponentInstanceData() for '%s' (UID: %i) in '%s'. Phase unknown."),
+	UE_LOG(
+		LogAGX, Verbose,
+		TEXT("UAGX_TrackRenderer::ApplyComponentInstanceData() for '%s' (UID: %i) in '%s'. Phase "
+			 "unknown."),
 		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
 
 	// \note Actually only want to execute the code below for second phase, after properties have
-	//       been fully deserialized, but because we need to use the parent class' component instance
-	//       data we have no way ourselves to pass the CacheApplyPhase to this function.
-	//if (CacheApplyPhase == ECacheApplyPhase::PostUserConstructionScript)
+	//       been fully deserialized, but because we need to use the parent class' component
+	//       instance data we have no way ourselves to pass the CacheApplyPhase to this function.
+	// if (CacheApplyPhase == ECacheApplyPhase::PostUserConstructionScript)
 	{
 		bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
 		if (bIsPlaying)
@@ -104,8 +110,8 @@ void UAGX_TrackRenderer::ApplyComponentInstanceData(
 		}
 		else
 		{
-			// Rebind and synchronize after second phase of BP actor instance reconstruction, so that
-			// the visualization includes the property changes that caused the reconstruction.
+			// Rebind and synchronize after second phase of BP actor instance reconstruction, so
+			// that the visualization includes the property changes that caused the reconstruction.
 			RebindToTrackPreviewNeedsUpdateEvent();
 		}
 	}
@@ -121,7 +127,8 @@ void UAGX_TrackRenderer::PostInitProperties()
 void UAGX_TrackRenderer::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 #ifdef TRACK_RENDERER_DETAILED_LOGGING
-	UE_LOG(LogAGX, Verbose,
+	UE_LOG(
+		LogAGX, Verbose,
 		TEXT("UAGX_TrackRenderer::PostEditChangeProperty() for '%s' (UID: %i) in '%s'."),
 		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
@@ -146,8 +153,8 @@ void UAGX_TrackRenderer::PostLoad()
 	// Remove all instances in case they were saved during edit time.
 	if (GetInstanceCount() > 0)
 	{
-		UE_LOG(LogAGX, Verbose,
-			TEXT("'%s' in '%s' is removing %i instances during PostLoad()."),
+		UE_LOG(
+			LogAGX, Verbose, TEXT("'%s' in '%s' is removing %i instances during PostLoad()."),
 			*GetName(), *GetNameSafe(GetOwner()), GetInstanceCount());
 
 		ClearInstances();
@@ -167,9 +174,10 @@ void UAGX_TrackRenderer::OnAttachmentChanged()
 	Super::OnAttachmentChanged();
 
 #ifdef TRACK_RENDERER_DETAILED_LOGGING
-	UE_LOG(LogAGX, Verbose,
-		TEXT("UAGX_TrackRenderer::OnAttachmentChanged() for '%s' (UID: %i) in '%s'."),
-		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
+	UE_LOG(
+		LogAGX, Verbose,
+		TEXT("UAGX_TrackRenderer::OnAttachmentChanged() for '%s' (UID: %i) in '%s'."), *GetName(),
+		GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
 
 	bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
@@ -196,8 +204,8 @@ void UAGX_TrackRenderer::RebindToTrackPreviewNeedsUpdateEvent(bool bSynchronizeI
 	}
 
 #ifdef TRACK_RENDERER_DETAILED_LOGGING
-	UE_LOG(LogAGX, Verbose,
-		TEXT("'%s' (UID: %i) in '%s' is rebinding TrackPreviewNeedsUpdateEvent."),
+	UE_LOG(
+		LogAGX, Verbose, TEXT("'%s' (UID: %i) in '%s' is rebinding TrackPreviewNeedsUpdateEvent."),
 		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
 
@@ -215,21 +223,20 @@ void UAGX_TrackRenderer::RebindToTrackPreviewNeedsUpdateEvent(bool bSynchronizeI
 
 	if (UAGX_TrackComponent* Track = FindTargetTrack())
 	{
-
 #ifdef TRACK_RENDERER_DETAILED_LOGGING
-		UE_LOG(LogAGX, Verbose,
+		UE_LOG(
+			LogAGX, Verbose,
 			TEXT("'%s' (UID: %i) in '%s' is registering to TrackPreviewNeedsUpdateEvent "
-				"of '%s' (UID: %i) in '%s'"),
-			*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()),
-			*Track->GetName(), Track->GetUniqueID(), *GetNameSafe(Track->GetOwner()));
+				 "of '%s' (UID: %i) in '%s'"),
+			*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()), *Track->GetName(),
+			Track->GetUniqueID(), *GetNameSafe(Track->GetOwner()));
 #endif
 
 		// Bind to event in target track that lets us know when the Track Preview Data
 		// needs an update.
 		TWeakObjectPtr<ThisClass> SelfWeakPtr(this);
 		Track->GetTrackPreviewNeedsUpdateEvent().AddLambda(
-			[SelfWeakPtr](UAGX_TrackComponent* Source)
-			{
+			[SelfWeakPtr](UAGX_TrackComponent* Source) {
 				if (ThisClass* SelfPtr = SelfWeakPtr.Get())
 				{
 					// Make sure target track fired the event. Normally the if-condition shouldn't
@@ -279,11 +286,12 @@ void UAGX_TrackRenderer::SynchronizeVisuals()
 #ifdef TRACK_RENDERER_DETAILED_LOGGING
 	if (!IsValid(Track))
 	{
-		// \note This warning can happen during BP instance reconstruction when SynchronizeVisuals is
-		//       called prematurely (i.e. before all properties have been fully initialized both on the
-		//       the renderer and the track component), but is no problem if it is called again later
-		//       during the reconstruction when all properties have been fully deserialized.
-		UE_LOG(LogAGX, Warning,
+		// \note This warning can happen during BP instance reconstruction when SynchronizeVisuals
+		//       is called prematurely (i.e. before all properties have been fully initialized both
+		//       on the renderer and the track component), but is no problem if it is called again
+		//       later during the reconstruction when all properties have been fully deserialized.
+		UE_LOG(
+			LogAGX, Warning,
 			TEXT("'%s' (UID: %i) in '%s' is synchronizing visuals but no valid track was found."),
 			*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
 	}
@@ -316,7 +324,8 @@ void UAGX_TrackRenderer::SynchronizeVisuals()
 	}
 }
 
-bool UAGX_TrackRenderer::ComputeNodeTransforms(TArray<FTransform>& OutTransforms, UAGX_TrackComponent* Track)
+bool UAGX_TrackRenderer::ComputeNodeTransforms(
+	TArray<FTransform>& OutTransforms, UAGX_TrackComponent* Track)
 {
 	if (!IsValid(Track) || !Track->bEnabled)
 		return false;
@@ -393,14 +402,14 @@ bool UAGX_TrackRenderer::ComputeVisualScaleAndOffset(
 	FVector LocalMeshBoundsSize = LocalMeshBoundsMax - LocalMeshBoundsMin;
 	FVector LocalBoundsCenter = LocalMeshBoundsMin + LocalMeshBoundsSize * 0.5f;
 
-	if (FMath::IsNearlyZero(LocalMeshBoundsSize.X) ||
-		FMath::IsNearlyZero(LocalMeshBoundsSize.Y) ||
+	if (FMath::IsNearlyZero(LocalMeshBoundsSize.X) || FMath::IsNearlyZero(LocalMeshBoundsSize.Y) ||
 		FMath::IsNearlyZero(LocalMeshBoundsSize.Z))
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Failed to compute visual Scale and Offset for '%s' in '%s' because LocalMeshBoundsMax is too close "
-				"too LocalMeshBoundsMin."),
+			TEXT("Failed to compute visual Scale and Offset for '%s' in '%s' because "
+				 "LocalMeshBoundsMax is too close "
+				 "too LocalMeshBoundsMin."),
 			*GetName(), *GetNameSafe(GetOwner()));
 		OutVisualScale = DEFAULT_VISUAL_SCALE;
 		OutVisualOffset = DEFAULT_VISUAL_OFFSET;
@@ -408,7 +417,8 @@ bool UAGX_TrackRenderer::ComputeVisualScaleAndOffset(
 	}
 
 	OutVisualScale = PhysicsNodeSize / LocalMeshBoundsSize;
-	OutVisualOffset = -LocalBoundsCenter * Scale;  // times scale to convert offset to post-scale coordinates
+	OutVisualOffset =
+		-LocalBoundsCenter * Scale; // times scale to convert offset to post-scale coordinates
 	return true;
 }
 
