@@ -15,9 +15,9 @@ struct AGXUNREALBARRIER_API FAGX_Real
 
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	double Value = 0.0;
-	// To follow Unreal Engine convention, we may chose to not initialize Value and instead
+	// To follow Unreal Engine convention, we may choose to not initialize Value and instead
 	// provide a constructor taking an EForceInit and only do value initialization in that
-	// constructor.
+	// constructor. But I like my variables to be initialized.
 
 	FAGX_Real()
 	{
