@@ -283,7 +283,7 @@ FVector FTrackBarrier::GetNodeSize(uint64 index) const
 }
 
 void FTrackBarrier::GetNodeTransforms(
-	TArray<FTransform>& Transforms, const FVector& LocalScale, const FVector& LocalOffset) const
+	TArray<FTransform>& OutTransforms, const FVector& LocalScale, const FVector& LocalOffset) const
 {
 	check(HasNative());
 
@@ -301,12 +301,12 @@ void FTrackBarrier::GetNodeTransforms(
 	for (agxVehicle::TrackNodeIterator It = Nodes.begin(); It != Nodes.end(); ++It)
 	{
 		// \todo Could optimize this since we currently set the same passed-in scale on all nodes.
-		Transforms[i].SetScale3D(LocalScale);
+		OutTransforms[i].SetScale3D(LocalScale);
 
-		Transforms[i].SetRotation(Convert(It->getRigidBody()->getRotation()));
+		OutTransforms[i].SetRotation(Convert(It->getRigidBody()->getRotation()));
 
-		FVector WorldOffset = Transforms[i].GetRotation().RotateVector(LocalOffset);
-		Transforms[i].SetLocation(ConvertDisplacement(It->getCenterPosition()) + WorldOffset);
+		FVector WorldOffset = OutTransforms[i].GetRotation().RotateVector(LocalOffset);
+		OutTransforms[i].SetLocation(ConvertDisplacement(It->getCenterPosition()) + WorldOffset);
 
 		++i;
 	}

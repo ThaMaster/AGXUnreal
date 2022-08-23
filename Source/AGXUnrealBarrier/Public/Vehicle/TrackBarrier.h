@@ -88,7 +88,7 @@ public:
 	 * location is offset by LocalOffset * Rotation. Used for track rendering while playing.
 	 */
 	void GetNodeTransforms(
-		TArray<FTransform>& Transforms, const FVector& LocalScale,
+		TArray<FTransform>& OutTransforms, const FVector& LocalScale,
 		const FVector& LocalOffset) const;
 
 	/**
