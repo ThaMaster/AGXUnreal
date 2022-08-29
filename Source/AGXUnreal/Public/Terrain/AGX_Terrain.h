@@ -108,6 +108,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Terrain")
 	UAGX_TerrainMaterialBase* TerrainMaterial;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	void SetTerrainMaterial(UAGX_TerrainMaterialBase* InTerrainMaterial);
+
 	/**
 	 * A list of the rigid body actors that should be used as terrain shovels.
 	 *

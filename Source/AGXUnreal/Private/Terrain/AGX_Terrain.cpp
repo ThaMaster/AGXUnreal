@@ -58,6 +58,28 @@ AAGX_Terrain::AAGX_Terrain()
 	}
 }
 
+void AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterialBase* InTerrainMaterial)
+{
+	if (InTerrainMaterial == nullptr)
+	{
+		if (HasNative())
+		{
+			GetNative()->ClearMaterial();
+		}
+		TerrainMaterial = nullptr;
+		return;
+	}
+
+	TerrainMaterial = InTerrainMaterial;
+
+	if (!HasNative())
+	{
+		return;
+	}
+
+	CreateTerrainMaterial();
+}
+
 void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
 {
 	if (HasNative())
@@ -550,15 +572,6 @@ void AAGX_Terrain::CreateTerrainMaterial()
 		check(MaterialBarrier);
 
 		GetNative()->SetShapeMaterial(*MaterialBarrier);
-
-		// Swap properties
-		UWorld* PlayingWorld = GetWorld();
-
-		if (TerrainMaterialInstance != TerrainMaterial && PlayingWorld &&
-			PlayingWorld->IsGameWorld())
-		{
-			TerrainMaterial = TerrainMaterialInstance;
-		}
 	}
 }
 
