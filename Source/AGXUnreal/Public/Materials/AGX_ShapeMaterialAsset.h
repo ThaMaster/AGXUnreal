@@ -44,9 +44,55 @@ class AGXUNREAL_API UAGX_ShapeMaterialAsset : public UAGX_ShapeMaterialBase
 public:
 	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld) override;
 
+	// Bulk properties.
+	virtual void SetDensity(float InDensity) override;
+	virtual float GetDensity() const override;
+
+	virtual void SetYoungsModulus(float InYoungsModulus) override;
+	virtual float GetYoungsModulus() const override;
+
+	virtual void SetBulkViscosity(float InBulkViscosity) override;
+	virtual float GetBulkViscosity() const override;
+
+	virtual void SetSpookDamping(float InSpookDamping) override;
+	virtual float GetSpookDamping() const override;
+
+	virtual void SetMinMaxElasticRestLength(float InMin, float InMax) override;
+	virtual float GetMinElasticRestLength() const override;
+	virtual float GetMaxElasticRestLength() const override;
+
+	// Surface properties.
+	virtual void SetFrictionEnabled(bool Enabled) override;
+	virtual bool GetFrictionEnabled() const override;
+
+	virtual void SetRoughness(float Roughness) override;
+	virtual float GetRoughness() const override;
+
+	virtual void SetSurfaceViscosity(float Viscosity) override;
+	virtual float GetSurfaceViscosity() const override;
+
+	virtual void SetAdhesion(float AdhesiveForce, float AdhesiveOverlap) override;
+	virtual float GetAdhesiveForce() const override;
+	virtual float GetAdhesiveOverlap() const override;
+
+	// Wire properties.
+	virtual float GetYoungsModulusStretch() const;
+	virtual void SetYoungsModulusStretch(float InYoungsModulus);
+
+	virtual float GetYoungsModulusBend() const;
+	virtual void SetYoungsModulusBend(float InYoungsModulus);
+
+	virtual float GetSpookDampingStretch() const;
+	virtual void SetSpookDampingStretch(float InSpookDamping);
+
+	virtual float GetSpookDampingBend() const;
+	virtual void SetSpookDampingBend(float InSpookDamping);
+
 private:
 #if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	void InitPropertyDispatcher();
 
 	void SynchronizePropertyChangeWithInstance(
 		const FName& MemberPropertyName, const FName& PropertyName);

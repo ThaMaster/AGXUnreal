@@ -36,11 +36,14 @@ public:
 	 *
 	 * Bulk properties have impact on collision forces but also on Rigid Body mass.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
+	UPROPERTY(EditAnywhere, Category = "AGX Shape")
 	UAGX_ShapeMaterialBase* ShapeMaterial;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
-	bool SetShapeMaterial(UAGX_ShapeMaterialBase* InShapeMaterial);
+	UAGX_ShapeMaterialBase* SetShapeMaterial(UAGX_ShapeMaterialBase* InShapeMaterial);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	UAGX_ShapeMaterialBase* GetShapeMaterial();
 
 	/**
 	 * Toggle to enable or disable collision generation against this shape.
@@ -250,6 +253,8 @@ protected:
 	static void RemoveSensorMaterial(UMeshComponent& Mesh);
 
 private:
+	void UpdateNativeMaterial();
+
 	// UAGX_ShapeComponent does not own the Barrier object because it cannot
 	// name its type. It is instead owned by the typed subclass, such as
 	// UAGX_BoxShapeComponent. Access to it is provided using virtual Get
