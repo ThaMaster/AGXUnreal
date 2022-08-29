@@ -47,3 +47,123 @@ namespace ConstraintMergeSplitThresholds_helpers
 		return ConstraintThresholds;
 	}
 }
+
+void FConstraintMergeSplitThresholdsBarrier::SetMaxDesiredForceRangeDiff(
+	double InMaxDesiredForceRangeDiff)
+{
+	check(HasNative());
+	using namespace ConstraintMergeSplitThresholds_helpers;
+	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "SetMaxDesiredForceRangeDiff"))
+	{
+		Native->setMaxDesiredForceRangeDiff(InMaxDesiredForceRangeDiff);
+	}
+}
+
+double FConstraintMergeSplitThresholdsBarrier::GetMaxDesiredForceRangeDiff() const
+{
+	check(HasNative());
+	using namespace ConstraintMergeSplitThresholds_helpers;
+	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "GetMaxDesiredForceRangeDiff"))
+	{
+		return Native->getMaxDesiredForceRangeDiff();
+	}
+
+	// Error message printed above.
+	return 0.0;
+}
+
+void FConstraintMergeSplitThresholdsBarrier::SetMaxDesiredLockAngleDiff(
+	double InMaxDesiredLockAngleDiff)
+{
+	check(HasNative());
+	using namespace ConstraintMergeSplitThresholds_helpers;
+	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "SetMaxDesiredLockAngleDiff"))
+	{
+		Native->setMaxDesiredLockAngleDiff(InMaxDesiredLockAngleDiff);
+	}
+}
+
+double FConstraintMergeSplitThresholdsBarrier::GetMaxDesiredLockAngleDiff() const
+{
+	check(HasNative());
+	using namespace ConstraintMergeSplitThresholds_helpers;
+	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "GetMaxDesiredLockAngleDiff"))
+	{
+		return Native->getMaxDesiredLockAngleDiff();
+	}
+
+	// Error message printed above.
+	return 0.0;
+}
+
+void FConstraintMergeSplitThresholdsBarrier::SetMaxDesiredRangeAngleDiff(
+	double InMaxDesiredRangeAngleDiff)
+{
+	check(HasNative());
+	using namespace ConstraintMergeSplitThresholds_helpers;
+	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "SetMaxDesiredRangeAngleDiff"))
+	{
+		Native->setMaxDesiredRangeAngleDiff(InMaxDesiredRangeAngleDiff);
+	}
+}
+
+double FConstraintMergeSplitThresholdsBarrier::GetMaxDesiredRangeAngleDiff() const
+{
+	check(HasNative());
+	using namespace ConstraintMergeSplitThresholds_helpers;
+	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "GetMaxDesiredRangeAngleDiff"))
+	{
+		return Native->getMaxDesiredRangeAngleDiff();
+	}
+
+	// Error message printed above.
+	return 0.0;
+}
+
+void FConstraintMergeSplitThresholdsBarrier::SetMaxDesiredSpeedDiff(
+	double InMaxDesiredSpeedDiff)
+{
+	check(HasNative());
+	using namespace ConstraintMergeSplitThresholds_helpers;
+	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "SetMaxDesiredSpeedDiff"))
+	{
+		Native->setMaxDesiredSpeedDiff(InMaxDesiredSpeedDiff);
+	}
+}
+
+double FConstraintMergeSplitThresholdsBarrier::GetMaxDesiredSpeedDiff() const
+{
+	check(HasNative());
+	using namespace ConstraintMergeSplitThresholds_helpers;
+	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "GetMaxDesiredSpeedDiff"))
+	{
+		return Native->getMaxDesiredSpeedDiff();
+	}
+
+	// Error message printed above.
+	return 0.0;
+}
+
+void FConstraintMergeSplitThresholdsBarrier::SetMaxRelativeSpeed(
+	double InMaxRelativeSpeed)
+{
+	check(HasNative());
+	using namespace ConstraintMergeSplitThresholds_helpers;
+	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "SetMaxRelativeSpeed"))
+	{
+		Native->setMaxRelativeSpeed(InMaxRelativeSpeed);
+	}
+}
+
+double FConstraintMergeSplitThresholdsBarrier::GetMaxRelativeSpeed() const
+{
+	check(HasNative());
+	using namespace ConstraintMergeSplitThresholds_helpers;
+	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "GetMaxRelativeSpeed"))
+	{
+		return Native->getMaxRelativeSpeed();
+	}
+
+	// Error message printed above.
+	return 0.0;
+}

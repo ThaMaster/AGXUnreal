@@ -15,6 +15,21 @@ public:
 
 	void AllocateNative();
 
+	void SetMaxDesiredForceRangeDiff(double InMaxDesiredForceRangeDiff);
+	double GetMaxDesiredForceRangeDiff() const;
+
+	void SetMaxDesiredLockAngleDiff(double InMaxDesiredLockAngleDiff);
+	double GetMaxDesiredLockAngleDiff() const;
+
+	void SetMaxDesiredRangeAngleDiff(double InMaxDesiredRangeAngleDiff);
+	double GetMaxDesiredRangeAngleDiff() const;
+
+	void SetMaxDesiredSpeedDiff(double InMaxDesiredSpeedDiff);
+	double GetMaxDesiredSpeedDiff() const;
+
+	void SetMaxRelativeSpeed(double InMaxRelativeSpeed);
+	double GetMaxRelativeSpeed() const;
+
 private:
 	FConstraintMergeSplitThresholdsBarrier(const FConstraintMergeSplitThresholdsBarrier&) = delete;
 	void operator=(const FConstraintMergeSplitThresholdsBarrier&) = delete;

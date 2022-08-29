@@ -1125,7 +1125,10 @@ void UAGX_ConstraintComponent::BeginPlay()
 		BodyAttachment2.FrameDefiningComponent.CacheCurrentSceneComponent();
 
 		CreateNative();
-		MergeSplitProperties.OnBeginPlay(*this);
+		if (HasNative())
+		{
+			MergeSplitProperties.OnBeginPlay(*this);
+		}
 	}
 }
 

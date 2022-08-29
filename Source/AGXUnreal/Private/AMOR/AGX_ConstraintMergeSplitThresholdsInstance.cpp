@@ -34,7 +34,7 @@ UAGX_ConstraintMergeSplitThresholdsInstance::GetOrCreateNative(UWorld* PlayingWo
 	return NativeBarrier.Get();
 }
 
-bool UAGX_ConstraintMergeSplitThresholdsInstance::HasNative()
+bool UAGX_ConstraintMergeSplitThresholdsInstance::HasNative() const
 {
 	return NativeBarrier && NativeBarrier->HasNative();
 }
@@ -70,4 +70,109 @@ void UAGX_ConstraintMergeSplitThresholdsInstance::UpdateNativeProperties()
 {
 	AGX_CHECK(HasNative());
 	// TODO: implement.
+}
+
+void UAGX_ConstraintMergeSplitThresholdsInstance::SetMaxDesiredForceRangeDiff(
+	FAGX_Real InMaxDesiredForceRangeDiff)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetMaxDesiredForceRangeDiff(MaxDesiredForceRangeDiff);
+	}
+
+	MaxDesiredForceRangeDiff = InMaxDesiredForceRangeDiff;
+}
+
+FAGX_Real UAGX_ConstraintMergeSplitThresholdsInstance::GetMaxDesiredForceRangeDiff() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetMaxDesiredForceRangeDiff();
+	}
+
+	return MaxDesiredForceRangeDiff;
+}
+
+void UAGX_ConstraintMergeSplitThresholdsInstance::SetMaxDesiredLockAngleDiff(
+	FAGX_Real InMaxDesiredLockAngleDiff)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetMaxDesiredLockAngleDiff(MaxDesiredLockAngleDiff);
+	}
+
+	MaxDesiredLockAngleDiff = InMaxDesiredLockAngleDiff;
+}
+
+FAGX_Real UAGX_ConstraintMergeSplitThresholdsInstance::GetMaxDesiredLockAngleDiff() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetMaxDesiredLockAngleDiff();
+	}
+
+	return MaxDesiredLockAngleDiff;
+}
+
+void UAGX_ConstraintMergeSplitThresholdsInstance::SetMaxDesiredRangeAngleDiff(
+	FAGX_Real InMaxDesiredRangeAngleDiff)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetMaxDesiredRangeAngleDiff(MaxDesiredRangeAngleDiff);
+	}
+
+	MaxDesiredRangeAngleDiff = InMaxDesiredRangeAngleDiff;
+}
+
+FAGX_Real UAGX_ConstraintMergeSplitThresholdsInstance::GetMaxDesiredRangeAngleDiff() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetMaxDesiredRangeAngleDiff();
+	}
+
+	return MaxDesiredRangeAngleDiff;
+}
+
+void UAGX_ConstraintMergeSplitThresholdsInstance::SetMaxDesiredSpeedDiff(
+	FAGX_Real InMaxDesiredSpeedDiff)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetMaxDesiredSpeedDiff(MaxDesiredSpeedDiff);
+	}
+
+	MaxDesiredSpeedDiff = InMaxDesiredSpeedDiff;
+}
+
+FAGX_Real UAGX_ConstraintMergeSplitThresholdsInstance::GetMaxDesiredSpeedDiff() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetMaxDesiredSpeedDiff();
+	}
+
+	return MaxDesiredSpeedDiff;
+}
+
+void UAGX_ConstraintMergeSplitThresholdsInstance::SetMaxRelativeSpeed(
+	FAGX_Real InMaxRelativeSpeed)
+{
+	if (HasNative())
+	{
+		NativeBarrier->SetMaxRelativeSpeed(MaxRelativeSpeed);
+	}
+
+	MaxRelativeSpeed = InMaxRelativeSpeed;
+}
+
+FAGX_Real UAGX_ConstraintMergeSplitThresholdsInstance::GetMaxRelativeSpeed() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier->GetMaxRelativeSpeed();
+	}
+
+	return MaxRelativeSpeed;
 }
