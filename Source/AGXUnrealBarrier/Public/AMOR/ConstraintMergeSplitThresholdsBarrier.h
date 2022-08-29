@@ -13,7 +13,7 @@ public:
 	FConstraintMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef> Native);
 	~FConstraintMergeSplitThresholdsBarrier();
 
-	void AllocateNative();
+	void AllocateNative(bool bInIsRotational);
 
 	void SetMaxDesiredForceRangeDiff(double InMaxDesiredForceRangeDiff);
 	double GetMaxDesiredForceRangeDiff() const;
@@ -33,4 +33,6 @@ public:
 private:
 	FConstraintMergeSplitThresholdsBarrier(const FConstraintMergeSplitThresholdsBarrier&) = delete;
 	void operator=(const FConstraintMergeSplitThresholdsBarrier&) = delete;
+
+	bool bIsRotational = true;
 };

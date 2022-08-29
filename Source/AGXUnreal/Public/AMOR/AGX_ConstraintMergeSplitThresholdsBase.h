@@ -18,7 +18,8 @@ class AGXUNREAL_API UAGX_ConstraintMergeSplitThresholdsBase : public UObject
 public:
 	virtual ~UAGX_ConstraintMergeSplitThresholdsBase() = default;
 
-	virtual UAGX_ConstraintMergeSplitThresholdsBase* GetOrCreateInstance(UWorld* PlayingWorld)
+	virtual UAGX_ConstraintMergeSplitThresholdsBase* GetOrCreateInstance(
+		UWorld* PlayingWorld, bool bIsRotational)
 		PURE_VIRTUAL(UAGX_ConstraintMergeSplitThresholdsBase::GetOrCreateInstance,
 					 return nullptr;);
 
@@ -104,5 +105,4 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	float GetMaxRelativeSpeed_AsFloat() const;
 	virtual FAGX_Real GetMaxRelativeSpeed() const;
-
 };

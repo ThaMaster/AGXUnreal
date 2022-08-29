@@ -21,14 +21,15 @@ class AGXUNREAL_API UAGX_ConstraintMergeSplitThresholdsInstance
 
 public:
 	virtual UAGX_ConstraintMergeSplitThresholdsBase* GetOrCreateInstance(
-		UWorld* PlayingWorld) override;
+		UWorld* PlayingWorld, bool bIsRotational) override;
 
-	void CreateNative(UWorld* PlayingWorld);
+	void CreateNative(UWorld* PlayingWorld, bool bIsRotational);
 	bool HasNative() const;
-	FConstraintMergeSplitThresholdsBarrier* GetOrCreateNative(UWorld* PlayingWorld);
+	FConstraintMergeSplitThresholdsBarrier* GetOrCreateNative(
+		UWorld* PlayingWorld, bool bIsRotational);
 
 	static UAGX_ConstraintMergeSplitThresholdsInstance* CreateFromAsset(
-		UWorld* PlayingWorld, UAGX_ConstraintMergeSplitThresholdsAsset& Source);
+		UWorld* PlayingWorld, UAGX_ConstraintMergeSplitThresholdsAsset& Source, bool bIsRotational);
 
 	virtual void SetMaxDesiredForceRangeDiff(FAGX_Real InMaxDesiredForceRangeDiff) override;
 	virtual FAGX_Real GetMaxDesiredForceRangeDiff() const override;

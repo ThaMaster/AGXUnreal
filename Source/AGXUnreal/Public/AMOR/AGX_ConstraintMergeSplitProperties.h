@@ -45,7 +45,7 @@ public:
 
 private:
 	void UpdateNativeProperties(UAGX_ConstraintComponent& Owner);
-	void SwapThresholdsAssetToInstance(UWorld* PlayingWorld);
+	void UpdateNativeThresholds(UAGX_ConstraintComponent& Owner);
 };
 
 /**

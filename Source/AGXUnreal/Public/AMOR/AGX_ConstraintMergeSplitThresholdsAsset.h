@@ -20,7 +20,7 @@ class AGXUNREAL_API UAGX_ConstraintMergeSplitThresholdsAsset
 
 public:
 	virtual UAGX_ConstraintMergeSplitThresholdsBase* GetOrCreateInstance(
-		UWorld* PlayingWorld) override;
+		UWorld* PlayingWorld, bool bIsRotational) override;
 
 	virtual void SetMaxDesiredForceRangeDiff(FAGX_Real InMaxDesiredForceRangeDiff) override;
 	virtual FAGX_Real GetMaxDesiredForceRangeDiff() const override;

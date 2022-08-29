@@ -740,6 +740,12 @@ bool UAGX_ConstraintComponent::IsDofLocked(EDofFlag Dof) const
 	return static_cast<uint8>(LockedDofsBitmask) & static_cast<uint8>(Dof);
 }
 
+bool UAGX_ConstraintComponent::IsRotational() const
+{
+	return !IsDofLocked(EDofFlag::DofFlagRotational1) ||
+		   !IsDofLocked(EDofFlag::DofFlagRotational2) || !IsDofLocked(EDofFlag::DofFlagRotational3);
+}
+
 namespace
 {
 	FAGX_ConstraintBodyAttachment* SelectByName(

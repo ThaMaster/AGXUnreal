@@ -6,6 +6,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
+#include "TypeConversions.h"
 
 FConstraintMergeSplitThresholdsBarrier::FConstraintMergeSplitThresholdsBarrier()
 	: FMergeSplitThresholdsBarrier()
@@ -22,9 +23,10 @@ FConstraintMergeSplitThresholdsBarrier::~FConstraintMergeSplitThresholdsBarrier(
 {
 }
 
-void FConstraintMergeSplitThresholdsBarrier::AllocateNative()
+void FConstraintMergeSplitThresholdsBarrier::AllocateNative(bool bInIsRotational)
 {
 	check(!HasNative());
+	bIsRotational = bInIsRotational;
 	NativeRef->Native = new agxSDK::ConstraintMergeSplitThresholds();
 }
 
@@ -79,7 +81,9 @@ void FConstraintMergeSplitThresholdsBarrier::SetMaxDesiredLockAngleDiff(
 	using namespace ConstraintMergeSplitThresholds_helpers;
 	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "SetMaxDesiredLockAngleDiff"))
 	{
-		Native->setMaxDesiredLockAngleDiff(InMaxDesiredLockAngleDiff);
+		const agx::Real ValAGX = bIsRotational ? ConvertAngleToAGX(InMaxDesiredLockAngleDiff)
+											   : ConvertDistanceToAGX(InMaxDesiredLockAngleDiff);
+		Native->setMaxDesiredLockAngleDiff(ValAGX);
 	}
 }
 
@@ -89,7 +93,8 @@ double FConstraintMergeSplitThresholdsBarrier::GetMaxDesiredLockAngleDiff() cons
 	using namespace ConstraintMergeSplitThresholds_helpers;
 	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "GetMaxDesiredLockAngleDiff"))
 	{
-		return Native->getMaxDesiredLockAngleDiff();
+		const agx::Real ValAGX = Native->getMaxDesiredLockAngleDiff();
+		return bIsRotational ? ConvertAngleToUnreal<double>(ValAGX) : ConvertDistanceToUnreal<double>(ValAGX);
 	}
 
 	// Error message printed above.
@@ -103,7 +108,9 @@ void FConstraintMergeSplitThresholdsBarrier::SetMaxDesiredRangeAngleDiff(
 	using namespace ConstraintMergeSplitThresholds_helpers;
 	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "SetMaxDesiredRangeAngleDiff"))
 	{
-		Native->setMaxDesiredRangeAngleDiff(InMaxDesiredRangeAngleDiff);
+		const agx::Real ValAGX = bIsRotational ? ConvertAngleToAGX(InMaxDesiredRangeAngleDiff)
+											   : ConvertDistanceToAGX(InMaxDesiredRangeAngleDiff);
+		Native->setMaxDesiredRangeAngleDiff(ValAGX);
 	}
 }
 
@@ -113,7 +120,9 @@ double FConstraintMergeSplitThresholdsBarrier::GetMaxDesiredRangeAngleDiff() con
 	using namespace ConstraintMergeSplitThresholds_helpers;
 	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "GetMaxDesiredRangeAngleDiff"))
 	{
-		return Native->getMaxDesiredRangeAngleDiff();
+		const agx::Real ValAGX = Native->getMaxDesiredRangeAngleDiff();
+		return bIsRotational ? ConvertAngleToUnreal<double>(ValAGX)
+							 : ConvertDistanceToUnreal<double>(ValAGX);
 	}
 
 	// Error message printed above.
@@ -127,7 +136,9 @@ void FConstraintMergeSplitThresholdsBarrier::SetMaxDesiredSpeedDiff(
 	using namespace ConstraintMergeSplitThresholds_helpers;
 	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "SetMaxDesiredSpeedDiff"))
 	{
-		Native->setMaxDesiredSpeedDiff(InMaxDesiredSpeedDiff);
+		const agx::Real ValAGX = bIsRotational ? ConvertAngleToAGX(InMaxDesiredSpeedDiff)
+											   : ConvertDistanceToAGX(InMaxDesiredSpeedDiff);
+		Native->setMaxDesiredSpeedDiff(ValAGX);
 	}
 }
 
@@ -137,7 +148,9 @@ double FConstraintMergeSplitThresholdsBarrier::GetMaxDesiredSpeedDiff() const
 	using namespace ConstraintMergeSplitThresholds_helpers;
 	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "GetMaxDesiredSpeedDiff"))
 	{
-		return Native->getMaxDesiredSpeedDiff();
+		const agx::Real ValAGX = Native->getMaxDesiredSpeedDiff();
+		return bIsRotational ? ConvertAngleToUnreal<double>(ValAGX)
+							 : ConvertDistanceToUnreal<double>(ValAGX);
 	}
 
 	// Error message printed above.
@@ -151,7 +164,9 @@ void FConstraintMergeSplitThresholdsBarrier::SetMaxRelativeSpeed(
 	using namespace ConstraintMergeSplitThresholds_helpers;
 	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "SetMaxRelativeSpeed"))
 	{
-		Native->setMaxRelativeSpeed(InMaxRelativeSpeed);
+		const agx::Real ValAGX = bIsRotational ? ConvertAngleToAGX(InMaxRelativeSpeed)
+											   : ConvertDistanceToAGX(InMaxRelativeSpeed);
+		Native->setMaxRelativeSpeed(ValAGX);
 	}
 }
 
@@ -161,7 +176,9 @@ double FConstraintMergeSplitThresholdsBarrier::GetMaxRelativeSpeed() const
 	using namespace ConstraintMergeSplitThresholds_helpers;
 	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "GetMaxRelativeSpeed"))
 	{
-		return Native->getMaxRelativeSpeed();
+		const agx::Real ValAGX = Native->getMaxRelativeSpeed();
+		return bIsRotational ? ConvertAngleToUnreal<double>(ValAGX)
+							 : ConvertDistanceToUnreal<double>(ValAGX);
 	}
 
 	// Error message printed above.

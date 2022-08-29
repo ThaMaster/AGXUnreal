@@ -360,6 +360,8 @@ public:
 
 	bool IsDofLocked(EDofFlag Dof) const;
 
+	bool IsRotational() const;
+
 	// ~Begin IAGX_NativeOwner interface.
 	virtual bool HasNative() const override;
 	virtual uint64 GetNativeAddress() const override;

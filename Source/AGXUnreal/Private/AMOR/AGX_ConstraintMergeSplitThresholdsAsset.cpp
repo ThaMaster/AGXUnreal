@@ -7,14 +7,15 @@
 #include "AMOR/AGX_ConstraintMergeSplitThresholdsInstance.h"
 
 UAGX_ConstraintMergeSplitThresholdsBase*
-UAGX_ConstraintMergeSplitThresholdsAsset::GetOrCreateInstance(UWorld* PlayingWorld)
+UAGX_ConstraintMergeSplitThresholdsAsset::GetOrCreateInstance(
+	UWorld* PlayingWorld, bool bIsRotational)
 {
 	UAGX_ConstraintMergeSplitThresholdsInstance* InstancePtr = Instance.Get();
 
 	if (!InstancePtr && PlayingWorld && PlayingWorld->IsGameWorld())
 	{
 		InstancePtr =
-			UAGX_ConstraintMergeSplitThresholdsInstance::CreateFromAsset(PlayingWorld, *this);
+			UAGX_ConstraintMergeSplitThresholdsInstance::CreateFromAsset(PlayingWorld, *this, bIsRotational);
 		Instance = InstancePtr;
 	}
 

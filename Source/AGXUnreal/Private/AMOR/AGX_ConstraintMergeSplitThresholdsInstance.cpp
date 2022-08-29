@@ -8,27 +8,30 @@
 #include "AMOR/AGX_ConstraintMergeSplitThresholdsAsset.h"
 
 UAGX_ConstraintMergeSplitThresholdsBase*
-UAGX_ConstraintMergeSplitThresholdsInstance::GetOrCreateInstance(UWorld* PlayingWorld)
+UAGX_ConstraintMergeSplitThresholdsInstance::GetOrCreateInstance(
+	UWorld* PlayingWorld, bool)
 {
 	return this;
 }
 
-void UAGX_ConstraintMergeSplitThresholdsInstance::CreateNative(UWorld* PlayingWorld)
+void UAGX_ConstraintMergeSplitThresholdsInstance::CreateNative(
+	UWorld* PlayingWorld, bool bIsRotational)
 {
 	NativeBarrier.Reset(new FConstraintMergeSplitThresholdsBarrier());
 
-	NativeBarrier->AllocateNative();
+	NativeBarrier->AllocateNative(bIsRotational);
 	AGX_CHECK(HasNative());
 
 	UpdateNativeProperties();
 }
 
 FConstraintMergeSplitThresholdsBarrier*
-UAGX_ConstraintMergeSplitThresholdsInstance::GetOrCreateNative(UWorld* PlayingWorld)
+UAGX_ConstraintMergeSplitThresholdsInstance::GetOrCreateNative(
+	UWorld* PlayingWorld, bool bIsRotational)
 {
 	if (!HasNative())
 	{
-		CreateNative(PlayingWorld);
+		CreateNative(PlayingWorld, bIsRotational);
 	}
 
 	return NativeBarrier.Get();
@@ -41,7 +44,7 @@ bool UAGX_ConstraintMergeSplitThresholdsInstance::HasNative() const
 
 UAGX_ConstraintMergeSplitThresholdsInstance*
 UAGX_ConstraintMergeSplitThresholdsInstance::CreateFromAsset(
-	UWorld* PlayingWorld, UAGX_ConstraintMergeSplitThresholdsAsset& Source)
+	UWorld* PlayingWorld, UAGX_ConstraintMergeSplitThresholdsAsset& Source, bool bIsRotational)
 {
 	AGX_CHECK(PlayingWorld);
 	AGX_CHECK(PlayingWorld->IsGameWorld());
@@ -55,7 +58,7 @@ UAGX_ConstraintMergeSplitThresholdsInstance::CreateFromAsset(
 		RF_Transient);
 
 	NewInstance->CopyProperties(Source);
-	NewInstance->CreateNative(PlayingWorld);
+	NewInstance->CreateNative(PlayingWorld, bIsRotational);
 
 	return NewInstance;
 }

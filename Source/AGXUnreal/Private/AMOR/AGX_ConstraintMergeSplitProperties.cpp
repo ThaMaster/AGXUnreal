@@ -59,7 +59,7 @@ void FAGX_ConstraintMergeSplitProperties::UpdateNativeProperties(UAGX_Constraint
 
 	if (Thresholds != nullptr)
 	{
-		SwapThresholdsAssetToInstance(Owner.GetWorld());
+		UpdateNativeThresholds(Owner);
 	}
 	else
 	{
@@ -67,16 +67,17 @@ void FAGX_ConstraintMergeSplitProperties::UpdateNativeProperties(UAGX_Constraint
 	}
 }
 
-void FAGX_ConstraintMergeSplitProperties::SwapThresholdsAssetToInstance(UWorld* PlayingWorld)
+void FAGX_ConstraintMergeSplitProperties::UpdateNativeThresholds(UAGX_ConstraintComponent& Owner)
 {
 	if (Thresholds == nullptr)
 	{
 		return;
 	}
 
+	UWorld* PlayingWorld = Owner.GetWorld();
 	UAGX_ConstraintMergeSplitThresholdsInstance* ThresholdsInstance =
 		static_cast<UAGX_ConstraintMergeSplitThresholdsInstance*>(
-			Thresholds->GetOrCreateInstance(PlayingWorld));
+			Thresholds->GetOrCreateInstance(PlayingWorld, Owner.IsRotational()));
 	if (!ThresholdsInstance)
 	{
 		UE_LOG(
@@ -87,20 +88,8 @@ void FAGX_ConstraintMergeSplitProperties::SwapThresholdsAssetToInstance(UWorld* 
 		return;
 	}
 
-	if (Thresholds == ThresholdsInstance)
-	{
-		// The correct instance is already set.
-		return;
-	}
-
-	if (PlayingWorld && PlayingWorld->IsGameWorld())
-	{
-		// Perform the Asset to Instance swap.
-		Thresholds = ThresholdsInstance;
-	}
-
 	FConstraintMergeSplitThresholdsBarrier* Barrier =
-		ThresholdsInstance->GetOrCreateNative(PlayingWorld);
+		ThresholdsInstance->GetOrCreateNative(PlayingWorld, Owner.IsRotational());
 	AGX_CHECK(Barrier);
 
 	NativeBarrier.SetConstraintMergeSplitThresholds(Barrier);
