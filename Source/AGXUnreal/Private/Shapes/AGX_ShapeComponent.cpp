@@ -95,22 +95,31 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	}
 }
 
-void UAGX_ShapeComponent::UpdateNativeMaterial()
+bool UAGX_ShapeComponent::UpdateNativeMaterial()
 {
 	if (!ShapeMaterial)
 	{
-		return;
+		return true;
 	}
 
 	UAGX_ShapeMaterialInstance* MaterialInstance =
 		static_cast<UAGX_ShapeMaterialInstance*>(ShapeMaterial->GetOrCreateInstance(GetWorld()));
-	if (MaterialInstance)
+	if (MaterialInstance == nullptr)
 	{
-		FShapeMaterialBarrier* MaterialBarrier =
-			MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
-		check(MaterialBarrier);
-		GetNative()->SetMaterial(*MaterialBarrier);
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Could not create AGX Dynamics representation of Shape Material '%s' "
+				 "in Actor '%s'."),
+			*ShapeMaterial->GetName(), *GetLabelSafe(GetOwner()));
+
+		return false;
 	}
+
+	FShapeMaterialBarrier* MaterialBarrier =
+		MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
+	check(MaterialBarrier);
+	GetNative()->SetMaterial(*MaterialBarrier);
+	return true;
 }
 
 #if WITH_EDITOR
@@ -314,7 +323,7 @@ void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 	}
 }
 
-UAGX_ShapeMaterialBase* UAGX_ShapeComponent::SetShapeMaterial(
+bool UAGX_ShapeComponent::SetShapeMaterial(
 	UAGX_ShapeMaterialBase* InShapeMaterial)
 {
 	if (InShapeMaterial == nullptr)
@@ -324,31 +333,19 @@ UAGX_ShapeMaterialBase* UAGX_ShapeComponent::SetShapeMaterial(
 			GetNative()->ClearMaterial();
 		}
 		ShapeMaterial = nullptr;
-		return nullptr;
-	}
-
-	if (Cast<UAGX_ShapeMaterialAsset>(InShapeMaterial) == nullptr)
-	{
-		UE_LOG(LogAGX, Error, TEXT("Material passet to SetShapeMaterialAsset is not a "
-			"UAGX_ShapeMaterialAsset: '%s'"), *InShapeMaterial->GetName());
+		return true;
 	}
 
 	ShapeMaterial = InShapeMaterial;
 
 	if (!HasNative())
 	{
-		return ShapeMaterial;
+		return true;
 	}
 
 	// Ensure that an Instance has been created for the the Shape Material Asset and that it
 	// in turn gets a Native.
-	UpdateNativeMaterial();
-	return ShapeMaterial;
-}
-
-UAGX_ShapeMaterialBase* UAGX_ShapeComponent::GetShapeMaterial()
-{
-	return ShapeMaterial;
+	return UpdateNativeMaterial();
 }
 
 void UAGX_ShapeComponent::SetCanCollide(bool CanCollide)
