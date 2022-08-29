@@ -153,6 +153,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Wire")
 	UAGX_ShapeMaterialBase* ShapeMaterial;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	bool SetShapeMaterial(UAGX_ShapeMaterialBase* InShapeMaterial);
+
 	/*
 	 * Begin winch.
 	 */
@@ -865,6 +868,7 @@ private:
 #endif
 
 	void CreateNative();
+	bool UpdateNativeMaterial();
 
 private:
 	FWireBarrier NativeBarrier;

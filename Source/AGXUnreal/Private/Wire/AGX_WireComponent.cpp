@@ -24,6 +24,9 @@
 #include "CoreGlobals.h"
 #include "Math/UnrealMathUtility.h"
 
+// Standard library includes.
+#include <tuple>
+
 #define LOCTEXT_NAMESPACE "UAGX_WireComponent"
 
 void FWireRoutingNode::SetBody(UAGX_RigidBodyComponent* Body)
@@ -1545,6 +1548,28 @@ namespace AGX_WireComponent_helpers
 	}
 }
 
+bool UAGX_WireComponent::SetShapeMaterial(UAGX_ShapeMaterialBase* InShapeMaterial)
+{
+	if (InShapeMaterial == nullptr)
+	{
+		if (HasNative())
+		{
+			GetNative()->ClearMaterial();
+		}
+		ShapeMaterial = nullptr;
+		return true;
+	}
+
+	ShapeMaterial = InShapeMaterial;
+
+	if (!HasNative())
+	{
+		return true;
+	}
+
+	return UpdateNativeMaterial();
+}
+
 void UAGX_WireComponent::CreateNative()
 {
 	using namespace AGX_WireComponent_helpers;
@@ -1556,21 +1581,7 @@ void UAGX_WireComponent::CreateNative()
 	NativeBarrier.AllocateNative(Radius, ResolutionPerUnitLength);
 	check(HasNative()); /// @todo Consider better error handling than 'check'.
 
-	if (ShapeMaterial)
-	{
-		UWorld* World = GetWorld();
-		UAGX_ShapeMaterialInstance* MaterialInstance =
-			static_cast<UAGX_ShapeMaterialInstance*>(ShapeMaterial->GetOrCreateInstance(World));
-		check(MaterialInstance);
-		if (MaterialInstance != ShapeMaterial && World != nullptr && World->IsGameWorld())
-		{
-			ShapeMaterial = MaterialInstance;
-		}
-		FShapeMaterialBarrier* MaterialBarrier =
-			MaterialInstance->GetOrCreateShapeMaterialNative(World);
-		check(MaterialBarrier);
-		NativeBarrier.SetMaterial(*MaterialBarrier);
-	}
+	check(UpdateNativeMaterial());
 
 	NativeBarrier.SetLinearVelocityDamping(LinearVelocityDamping);
 
@@ -1702,6 +1713,32 @@ void UAGX_WireComponent::CreateNative()
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
 		}
 	}
+}
+
+bool UAGX_WireComponent::UpdateNativeMaterial()
+{
+	if (!HasNative())
+	{
+		UE_LOG(LogAGX, Error, TEXT("UpdateNativeMaterial called on Wire '%s' but it does not have a "
+			"native AGX Dynamics representation."), *GetName());
+		return false;
+	}
+
+	if (ShapeMaterial == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = GetWorld();
+	UAGX_ShapeMaterialInstance* MaterialInstance =
+		static_cast<UAGX_ShapeMaterialInstance*>(ShapeMaterial->GetOrCreateInstance(World));
+	check(MaterialInstance);
+	FShapeMaterialBarrier* MaterialBarrier =
+		MaterialInstance->GetOrCreateShapeMaterialNative(World);
+	check(MaterialBarrier);
+	NativeBarrier.SetMaterial(*MaterialBarrier);
+
+	return true;
 }
 
 #undef LOCTEXT_NAMESPACE
