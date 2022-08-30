@@ -23,7 +23,7 @@ struct AGXUNREAL_API FAGX_WireMergeSplitProperties : public FAGX_MergeSplitPrope
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AMOR")
+	UPROPERTY(EditAnywhere, Category = "AMOR")
 	UAGX_WireMergeSplitThresholdsBase* Thresholds;
 
 	/**
@@ -94,5 +94,12 @@ class AGXUNREAL_API UAGX_WireMergeSplitProperties_LF : public UBlueprintFunction
 	static bool GetEnableSplit(UPARAM(ref) const FAGX_WireMergeSplitProperties& Properties)
 	{
 		return Properties.GetEnableSplit();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	static UAGX_WireMergeSplitThresholdsBase* GetThresholds(
+		UPARAM(ref) const FAGX_WireMergeSplitProperties& Properties)
+	{
+		return Properties.Thresholds;
 	}
 };

@@ -21,7 +21,7 @@ struct AGXUNREAL_API FAGX_ShapeContactMergeSplitProperties : public FAGX_MergeSp
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AMOR")
+	UPROPERTY(EditAnywhere, Category = "AMOR")
 	UAGX_ShapeContactMergeSplitThresholdsBase* Thresholds;
 
 	/**
@@ -98,5 +98,12 @@ class AGXUNREAL_API UAGX_ShapeContactMergeSplitProperties_LF : public UBlueprint
 	static bool GetEnableSplit(UPARAM(ref) const FAGX_ShapeContactMergeSplitProperties& Properties)
 	{
 		return Properties.GetEnableSplit();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	static UAGX_ShapeContactMergeSplitThresholdsBase* GetThresholds(
+		UPARAM(ref) const FAGX_ShapeContactMergeSplitProperties& Properties)
+	{
+		return Properties.Thresholds;
 	}
 };

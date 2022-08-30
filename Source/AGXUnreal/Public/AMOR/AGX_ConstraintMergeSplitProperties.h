@@ -22,7 +22,7 @@ struct AGXUNREAL_API FAGX_ConstraintMergeSplitProperties : public FAGX_MergeSpli
 
 public:
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AMOR")
+	UPROPERTY(EditAnywhere, Category = "AMOR")
 	UAGX_ConstraintMergeSplitThresholdsBase* Thresholds;
 
 	/**
@@ -95,4 +95,10 @@ class AGXUNREAL_API UAGX_ConstraintMergeSplitProperties_LF : public UBlueprintFu
 		return Properties.GetEnableSplit();
 	}
 
+	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	static UAGX_ConstraintMergeSplitThresholdsBase* GetThresholds(
+		UPARAM(ref) const FAGX_ConstraintMergeSplitProperties& Properties)
+	{
+		return Properties.Thresholds;
+	}
 };
