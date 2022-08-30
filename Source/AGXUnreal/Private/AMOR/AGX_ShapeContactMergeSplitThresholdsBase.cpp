@@ -16,7 +16,7 @@ void UAGX_ShapeContactMergeSplitThresholdsBase::SetMaxImpactSpeed(
 
 float UAGX_ShapeContactMergeSplitThresholdsBase::GetMaxImpactSpeed_AsFloat() const
 {
-	return static_cast<float>(MaxImpactSpeed);
+	return static_cast<float>(GetMaxImpactSpeed());
 }
 
 FAGX_Real UAGX_ShapeContactMergeSplitThresholdsBase::GetMaxImpactSpeed() const
@@ -36,7 +36,7 @@ void UAGX_ShapeContactMergeSplitThresholdsBase::SetMaxRelativeNormalSpeed(FAGX_R
 
 float UAGX_ShapeContactMergeSplitThresholdsBase::GetMaxRelativeNormalSpeed_AsFloat() const
 {
-	return static_cast<float>(MaxRelativeNormalSpeed);
+	return static_cast<float>(GetMaxRelativeNormalSpeed());
 }
 
 FAGX_Real UAGX_ShapeContactMergeSplitThresholdsBase::GetMaxRelativeNormalSpeed() const
@@ -56,7 +56,7 @@ void UAGX_ShapeContactMergeSplitThresholdsBase::SetMaxRelativeTangentSpeed(FAGX_
 
 float UAGX_ShapeContactMergeSplitThresholdsBase::GetMaxRelativeTangentSpeed_AsFloat() const
 {
-	return static_cast<float>(MaxRelativeTangentSpeed);
+	return static_cast<float>(GetMaxRelativeTangentSpeed());
 }
 
 FAGX_Real UAGX_ShapeContactMergeSplitThresholdsBase::GetMaxRelativeTangentSpeed() const
@@ -76,7 +76,7 @@ void UAGX_ShapeContactMergeSplitThresholdsBase::SetMaxRollingSpeed(FAGX_Real InM
 
 float UAGX_ShapeContactMergeSplitThresholdsBase::GetMaxRollingSpeed_AsFloat() const
 {
-	return static_cast<float>(MaxRollingSpeed);
+	return static_cast<float>(GetMaxRollingSpeed());
 }
 
 FAGX_Real UAGX_ShapeContactMergeSplitThresholdsBase::GetMaxRollingSpeed() const
@@ -96,7 +96,7 @@ void UAGX_ShapeContactMergeSplitThresholdsBase::SetNormalAdhesion(FAGX_Real InNo
 
 float UAGX_ShapeContactMergeSplitThresholdsBase::GetNormalAdhesion_AsFloat() const
 {
-	return static_cast<float>(NormalAdhesion);
+	return static_cast<float>(GetNormalAdhesion());
 }
 
 FAGX_Real UAGX_ShapeContactMergeSplitThresholdsBase::GetNormalAdhesion() const
@@ -116,7 +116,7 @@ void UAGX_ShapeContactMergeSplitThresholdsBase::SetTangentialAdhesion(FAGX_Real 
 
 float UAGX_ShapeContactMergeSplitThresholdsBase::GetTangentialAdhesion_AsFloat() const
 {
-	return static_cast<float>(TangentialAdhesion);
+	return static_cast<float>(GetTangentialAdhesion());
 }
 
 FAGX_Real UAGX_ShapeContactMergeSplitThresholdsBase::GetTangentialAdhesion() const

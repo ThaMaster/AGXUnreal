@@ -16,7 +16,7 @@ void UAGX_WireMergeSplitThresholdsBase::SetForcePropagationDecayScale(
 
 float UAGX_WireMergeSplitThresholdsBase::GetForcePropagationDecayScale_AsFloat() const
 {
-	return static_cast<float>(ForcePropagationDecayScale);
+	return static_cast<float>(GetForcePropagationDecayScale());
 }
 
 FAGX_Real UAGX_WireMergeSplitThresholdsBase::GetForcePropagationDecayScale() const
@@ -38,7 +38,7 @@ void UAGX_WireMergeSplitThresholdsBase::SetMergeTensionScale(
 
 float UAGX_WireMergeSplitThresholdsBase::GetMergeTensionScale_AsFloat() const
 {
-	return static_cast<float>(MergeTensionScale);
+	return static_cast<float>(GetMergeTensionScale());
 }
 
 FAGX_Real UAGX_WireMergeSplitThresholdsBase::GetMergeTensionScale() const

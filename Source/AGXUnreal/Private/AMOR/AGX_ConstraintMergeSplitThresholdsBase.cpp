@@ -16,7 +16,7 @@ void UAGX_ConstraintMergeSplitThresholdsBase::SetMaxDesiredForceRangeDiff(
 
 float UAGX_ConstraintMergeSplitThresholdsBase::GetMaxDesiredForceRangeDiff_AsFloat() const
 {
-	return static_cast<float>(MaxDesiredForceRangeDiff);
+	return static_cast<float>(GetMaxDesiredForceRangeDiff());
 }
 
 FAGX_Real UAGX_ConstraintMergeSplitThresholdsBase::GetMaxDesiredForceRangeDiff() const
@@ -38,7 +38,7 @@ void UAGX_ConstraintMergeSplitThresholdsBase::SetMaxDesiredLockAngleDiff(
 
 float UAGX_ConstraintMergeSplitThresholdsBase::GetMaxDesiredLockAngleDiff_AsFloat() const
 {
-	return static_cast<float>(MaxDesiredLockAngleDiff);
+	return static_cast<float>(GetMaxDesiredLockAngleDiff());
 }
 
 FAGX_Real UAGX_ConstraintMergeSplitThresholdsBase::GetMaxDesiredLockAngleDiff() const
@@ -60,7 +60,7 @@ void UAGX_ConstraintMergeSplitThresholdsBase::SetMaxDesiredRangeAngleDiff(
 
 float UAGX_ConstraintMergeSplitThresholdsBase::GetMaxDesiredRangeAngleDiff_AsFloat() const
 {
-	return static_cast<float>(MaxDesiredRangeAngleDiff);
+	return static_cast<float>(GetMaxDesiredRangeAngleDiff());
 }
 
 FAGX_Real UAGX_ConstraintMergeSplitThresholdsBase::GetMaxDesiredRangeAngleDiff() const
@@ -82,7 +82,7 @@ void UAGX_ConstraintMergeSplitThresholdsBase::SetMaxDesiredSpeedDiff(
 
 float UAGX_ConstraintMergeSplitThresholdsBase::GetMaxDesiredSpeedDiff_AsFloat() const
 {
-	return static_cast<float>(MaxDesiredSpeedDiff);
+	return static_cast<float>(GetMaxDesiredSpeedDiff());
 }
 
 FAGX_Real UAGX_ConstraintMergeSplitThresholdsBase::GetMaxDesiredSpeedDiff() const
@@ -102,7 +102,7 @@ void UAGX_ConstraintMergeSplitThresholdsBase::SetMaxRelativeSpeed(FAGX_Real InMa
 
 float UAGX_ConstraintMergeSplitThresholdsBase::GetMaxRelativeSpeed_AsFloat() const
 {
-	return static_cast<float>(MaxRelativeSpeed);
+	return static_cast<float>(GetMaxRelativeSpeed());
 }
 
 FAGX_Real UAGX_ConstraintMergeSplitThresholdsBase::GetMaxRelativeSpeed() const
