@@ -210,7 +210,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_TransformTarget> TransformTarget;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AMOR")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AMOR")
 	FAGX_ShapeContactMergeSplitProperties MergeSplitProperties;
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")

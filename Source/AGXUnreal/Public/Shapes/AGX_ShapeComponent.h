@@ -71,7 +71,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Shape Contacts")
 	bool bIsSensor;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AMOR")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AMOR")
 	FAGX_ShapeContactMergeSplitProperties MergeSplitProperties;
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")
