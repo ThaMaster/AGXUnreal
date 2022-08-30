@@ -28,7 +28,7 @@ public:
 	 * may change without splitting the constrained objects [N].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
-	FAGX_Real MaxDesiredForceRangeDiff;
+	FAGX_Real MaxDesiredForceRangeDiff {0.1};
 
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	void SetMaxDesiredForceRangeDiff_AsFloat(float InMaxDesiredForceRangeDiff);
@@ -45,7 +45,7 @@ public:
 	 * For prismatic constraints, this is expressed in [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
-	FAGX_Real MaxDesiredLockAngleDiff;
+	FAGX_Real MaxDesiredLockAngleDiff {0.00001};
 
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	void SetMaxDesiredLockAngleDiff_AsFloat(float InMaxDesiredLockAngleDiff);
@@ -62,7 +62,7 @@ public:
 	 * For prismatic constraints, this is expressed in [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
-	FAGX_Real MaxDesiredRangeAngleDiff;
+	FAGX_Real MaxDesiredRangeAngleDiff {0.00001};
 
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	void SetMaxDesiredRangeAngleDiff_AsFloat(float InMaxDesiredRangeAngleDiff);
@@ -79,7 +79,7 @@ public:
 	 * For prismatic constraints, this is expressed in [cm/s].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
-	FAGX_Real MaxDesiredSpeedDiff;
+	FAGX_Real MaxDesiredSpeedDiff {0.00001};
 
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	void SetMaxDesiredSpeedDiff_AsFloat(float InMaxDesiredSpeedDiff);
@@ -96,7 +96,7 @@ public:
 	 * For prismatic constraints, this is expressed in [cm/s].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
-	FAGX_Real MaxRelativeSpeed;
+	FAGX_Real MaxRelativeSpeed {0.005};
 
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	void SetMaxRelativeSpeed_AsFloat(float InMaxRelativeSpeed);
