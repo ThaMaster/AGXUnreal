@@ -3,7 +3,9 @@
 #include "AMOR/AGX_ShapeContactMergeSplitThresholdsAsset.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_PropertyChangedDispatcher.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholdsInstance.h"
+
 
 UAGX_ShapeContactMergeSplitThresholdsBase*
 UAGX_ShapeContactMergeSplitThresholdsAsset::GetOrCreateInstance(UWorld* PlayingWorld)
@@ -19,6 +21,63 @@ UAGX_ShapeContactMergeSplitThresholdsAsset::GetOrCreateInstance(UWorld* PlayingW
 
 	return InstancePtr;
 }
+
+#if WITH_EDITOR
+void UAGX_ShapeContactMergeSplitThresholdsAsset::PostEditChangeChainProperty(
+	FPropertyChangedChainEvent& Event)
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
+	Super::PostEditChangeChainProperty(Event);
+}
+
+void UAGX_ShapeContactMergeSplitThresholdsAsset::PostInitProperties()
+{
+	Super::PostInitProperties();
+	InitPropertyDispatcher();
+}
+
+void UAGX_ShapeContactMergeSplitThresholdsAsset::InitPropertyDispatcher()
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeContactMergeSplitThresholdsBase, MaxImpactSpeed),
+		[](ThisClass* This) { This->SetMaxImpactSpeed(This->MaxImpactSpeed); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeContactMergeSplitThresholdsBase, MaxRelativeNormalSpeed),
+		[](ThisClass* This) { This->SetMaxRelativeNormalSpeed(This->MaxRelativeNormalSpeed); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeContactMergeSplitThresholdsBase, MaxRelativeTangentSpeed),
+		[](ThisClass* This) { This->SetMaxRelativeTangentSpeed(This->MaxRelativeTangentSpeed); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeContactMergeSplitThresholdsBase, MaxRollingSpeed),
+		[](ThisClass* This) { This->SetMaxRollingSpeed(This->MaxRollingSpeed); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeContactMergeSplitThresholdsBase, NormalAdhesion),
+		[](ThisClass* This) { This->SetNormalAdhesion(This->NormalAdhesion); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeContactMergeSplitThresholdsBase, TangentialAdhesion),
+		[](ThisClass* This) { This->SetTangentialAdhesion(This->TangentialAdhesion); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeContactMergeSplitThresholdsBase, bMaySplitInGravityField),
+		[](ThisClass* This) { This->SetMaySplitInGravityField(This->bMaySplitInGravityField); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeContactMergeSplitThresholdsBase, bSplitOnLogicalImpact),
+		[](ThisClass* This) { This->SetSplitOnLogicalImpact(This->bSplitOnLogicalImpact); });
+}
+#endif
 
 void UAGX_ShapeContactMergeSplitThresholdsAsset::SetMaxImpactSpeed(FAGX_Real InMaxImpactSpeed)
 {

@@ -48,5 +48,11 @@ public:
 	virtual bool GetSplitOnLogicalImpact() const override;
 
 private:
+#if WITH_EDITOR
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	void InitPropertyDispatcher();
+#endif
+
 	TWeakObjectPtr<UAGX_ShapeContactMergeSplitThresholdsInstance> Instance;
 };
