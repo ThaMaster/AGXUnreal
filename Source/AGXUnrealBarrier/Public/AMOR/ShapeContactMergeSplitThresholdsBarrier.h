@@ -15,6 +15,30 @@ public:
 
 	void AllocateNative();
 
+	void SetMaxImpactSpeed(double InMaxImpactSpeed);
+	double GetMaxImpactSpeed() const;
+
+	void SetMaxRelativeNormalSpeed(double InMaxRelativeNormalSpeed);
+	double GetMaxRelativeNormalSpeed() const;
+
+	void SetMaxRelativeTangentSpeed(double InMaxRelativeTangentSpeed);
+	double GetMaxRelativeTangentSpeed() const;
+
+	void SetMaxRollingSpeed(double InMaxRollingSpeed);
+	double GetMaxRollingSpeed() const;
+
+	void SetNormalAdhesion(double InNormalAdhesion);
+	double GetNormalAdhesion() const;
+
+	void SetTangentialAdhesion(double InTangentialAdhesion);
+	double GetTangentialAdhesion() const;
+
+	void SetMaySplitInGravityField(bool bMaySplitInGravityField);
+	bool GetMaySplitInGravityField() const;
+
+	void SetSplitOnLogicalImpact(bool bSplitOnLogicalImpact);
+	bool GetSplitOnLogicalImpact() const;
+
 private:
 	FShapeContactMergeSplitThresholdsBarrier(const FShapeContactMergeSplitThresholdsBarrier&) = delete;
 	void operator=(const FShapeContactMergeSplitThresholdsBarrier&) = delete;
