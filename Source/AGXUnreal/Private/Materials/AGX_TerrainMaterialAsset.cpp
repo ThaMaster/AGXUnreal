@@ -71,6 +71,16 @@ void UAGX_TerrainMaterialAsset::InitPropertyDispatcher()
 				static_cast<float>(This->Surface.AdhesiveOverlap));
 		});
 
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
+		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, AdhesiveOverlap),
+		[](ThisClass* This)
+		{
+			This->SetAdhesion(
+				static_cast<float>(This->Surface.AdhesiveForce),
+				static_cast<float>(This->Surface.AdhesiveOverlap));
+		});
+
 	// Bulk properties.
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterialBase, TerrainBulk),
