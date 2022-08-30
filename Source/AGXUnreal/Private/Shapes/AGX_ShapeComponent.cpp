@@ -21,9 +21,6 @@
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
 
-// Standard library includes.
-#include <tuple>
-
 // Sets default values for this component's properties
 UAGX_ShapeComponent::UAGX_ShapeComponent()
 {
