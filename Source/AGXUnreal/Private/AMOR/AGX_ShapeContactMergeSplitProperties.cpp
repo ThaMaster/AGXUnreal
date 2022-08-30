@@ -62,17 +62,10 @@ void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties(T& Owner)
 	NativeBarrier.SetEnableMerge(bEnableMerge);
 	NativeBarrier.SetEnableSplit(bEnableSplit);
 
-	if (Thresholds != nullptr)
-	{
-		SwapThresholdsAssetToInstance(Owner.GetWorld());
-	}
-	else
-	{
-		NativeBarrier.SetShapeContactMergeSplitThresholds(nullptr);
-	}
+	UpdateNativeThresholds(Owner.GetWorld());
 }
 
-void FAGX_ShapeContactMergeSplitProperties::SwapThresholdsAssetToInstance(UWorld* PlayingWorld)
+void FAGX_ShapeContactMergeSplitProperties::UpdateNativeThresholds(UWorld* PlayingWorld)
 {
 	if (Thresholds == nullptr)
 	{
@@ -87,18 +80,6 @@ void FAGX_ShapeContactMergeSplitProperties::SwapThresholdsAssetToInstance(UWorld
 		UE_LOG(LogAGX, Warning, TEXT("Unable to create a Merge Split Thresholds instance from the "
 		"given asset '%s'."), *Thresholds->GetName());
 		return;
-	}
-
-	if (Thresholds == ThresholdsInstance)
-	{
-		// The correct instance is already set.
-		return;
-	}
-
-	if (PlayingWorld && PlayingWorld->IsGameWorld())
-	{
-		// Perform the Asset to Instance swap.
-		Thresholds = ThresholdsInstance;
 	}
 	
 	FShapeContactMergeSplitThresholdsBarrier* Barrier =

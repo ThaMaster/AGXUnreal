@@ -50,7 +50,7 @@ private:
 	template <typename T>
 	void UpdateNativeProperties(T& Owner);
 
-	void SwapThresholdsAssetToInstance(UWorld* PlayingWorld);
+	void UpdateNativeThresholds(UWorld* PlayingWorld);
 };
 
 /**

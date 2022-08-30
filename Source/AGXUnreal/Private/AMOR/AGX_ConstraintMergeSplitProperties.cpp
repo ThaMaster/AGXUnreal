@@ -57,14 +57,7 @@ void FAGX_ConstraintMergeSplitProperties::UpdateNativeProperties(UAGX_Constraint
 	NativeBarrier.SetEnableMerge(bEnableMerge);
 	NativeBarrier.SetEnableSplit(bEnableSplit);
 
-	if (Thresholds != nullptr)
-	{
-		UpdateNativeThresholds(Owner);
-	}
-	else
-	{
-		NativeBarrier.SetConstraintMergeSplitThresholds(nullptr);
-	}
+	UpdateNativeThresholds(Owner);
 }
 
 void FAGX_ConstraintMergeSplitProperties::UpdateNativeThresholds(UAGX_ConstraintComponent& Owner)

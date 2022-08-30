@@ -57,7 +57,6 @@ void UAGX_WireMergeSplitThresholdsAsset::InitPropertyDispatcher()
 void UAGX_WireMergeSplitThresholdsAsset::SetForcePropagationDecayScale(
 	FAGX_Real InForcePropagationDecayScale)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Oooooooooooooj asset"));
 	if (Instance != nullptr)
 	{
 		Instance->SetForcePropagationDecayScale(InForcePropagationDecayScale);

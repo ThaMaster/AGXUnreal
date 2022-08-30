@@ -73,7 +73,6 @@ void UAGX_WireMergeSplitThresholdsInstance::UpdateNativeProperties()
 void UAGX_WireMergeSplitThresholdsInstance::SetForcePropagationDecayScale(
 	FAGX_Real InForcePropagationDecayScale)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Oooooooooooooj isntance"));
 	if (HasNative())
 	{
 		NativeBarrier->SetForcePropagationDecayScale(InForcePropagationDecayScale);

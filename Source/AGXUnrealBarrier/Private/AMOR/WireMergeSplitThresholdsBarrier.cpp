@@ -51,7 +51,6 @@ namespace WireMergeSplitThresholds_helpers
 void FWireMergeSplitThresholdsBarrier::SetForcePropagationDecayScale(
 	double InForcePropagationDecayScale)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Oooooooooooooj barrier"));
 	check(HasNative());
 	using namespace WireMergeSplitThresholds_helpers;
 	if (auto Native = CastToWireThresholds(NativeRef->Native, "SetForcePropagationDecayScale"))

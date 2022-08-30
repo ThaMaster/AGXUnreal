@@ -57,17 +57,10 @@ void FAGX_WireMergeSplitProperties::UpdateNativeProperties(UAGX_WireComponent& O
 	NativeBarrier.SetEnableMerge(bEnableMerge);
 	NativeBarrier.SetEnableSplit(bEnableSplit);
 
-	if (Thresholds != nullptr)
-	{
-		SwapThresholdsAssetToInstance(Owner.GetWorld());
-	}
-	else
-	{
-		NativeBarrier.SetWireMergeSplitThresholds(nullptr);
-	}
+	UpdateNativeThresholds(Owner.GetWorld());
 }
 
-void FAGX_WireMergeSplitProperties::SwapThresholdsAssetToInstance(UWorld* PlayingWorld)
+void FAGX_WireMergeSplitProperties::UpdateNativeThresholds(UWorld* PlayingWorld)
 {
 	if (Thresholds == nullptr)
 	{
@@ -85,18 +78,6 @@ void FAGX_WireMergeSplitProperties::SwapThresholdsAssetToInstance(UWorld* Playin
 				 "given asset '%s'."),
 			*Thresholds->GetName());
 		return;
-	}
-
-	if (Thresholds == ThresholdsInstance)
-	{
-		// The correct instance is already set.
-		return;
-	}
-
-	if (PlayingWorld && PlayingWorld->IsGameWorld())
-	{
-		// Perform the Asset to Instance swap.
-		Thresholds = ThresholdsInstance;
 	}
 
 	FWireMergeSplitThresholdsBarrier* Barrier =
