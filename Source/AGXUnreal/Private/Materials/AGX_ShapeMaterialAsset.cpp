@@ -230,11 +230,8 @@ float UAGX_ShapeMaterialAsset::GetSpookDamping() const
 	{
 		return Instance->GetSpookDamping();
 	}
-	else
-	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		return Bulk.SpookDamping;
-	}
+
+	return Bulk.SpookDamping;
 }
 
 void UAGX_ShapeMaterialAsset::SetMinMaxElasticRestLength(float InMin, float InMax)
