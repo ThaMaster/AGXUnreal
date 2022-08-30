@@ -3,11 +3,13 @@
 #include "AGX_Simulation.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Environment.h"
+#include "AGX_LogCategory.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_StaticMeshComponent.h"
 #include "AGX_Stepper.h"
-#include "AGX_LogCategory.h"
-#include "AGX_PropertyChangedDispatcher.h"
+#include "AMOR/AGX_ShapeContactMergeSplitThresholdsBase.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
@@ -17,7 +19,6 @@
 #include "Tires/AGX_TireComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
-#include "AGX_Environment.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_Stats.h"
 #include "Wire/AGX_WireComponent.h"
@@ -112,6 +113,17 @@ namespace AGX_Simulation_helpers
 					 "about the failure."),
 				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
 		}
+	}
+
+	template <typename T>
+	T* GetAssetFrom(const FSoftObjectPath& Path)
+	{
+		if (!Path.IsAsset())
+		{
+			return nullptr;
+		}
+
+		return LoadObject<T>(GetTransientPackage(), *Path.GetAssetPathString());
 	}
 }
 
@@ -447,8 +459,11 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 
 	SetGravity();
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
-
 	NativeBarrier.SetEnableAMOR(bEnableAMOR);
+
+#if WITH_EDITORONLY_DATA
+	SetGlobalNativeMergeSplitThresholds();
+#endif
 
 	if (bRemoteDebugging)
 	{
@@ -989,3 +1004,17 @@ void UAGX_Simulation::SetGravity()
 			break;
 	}
 }
+
+#if WITH_EDITORONLY_DATA
+void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
+{
+	using namespace AGX_Simulation_helpers;
+
+	if (auto SC = GetAssetFrom<UAGX_ShapeContactMergeSplitThresholdsBase>(
+			GlobalShapeContactMergeSplitThresholds))
+	{
+		// TODO (create native and add to simulation).
+	}
+
+}
+#endif

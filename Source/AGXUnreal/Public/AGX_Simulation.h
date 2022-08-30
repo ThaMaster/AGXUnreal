@@ -3,9 +3,9 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "SimulationBarrier.h"
-#include "Contacts/ShapeContactBarrier.h"
 #include "AGX_SimulationEnums.h"
+#include "Contacts/ShapeContactBarrier.h"
+#include "SimulationBarrier.h"
 
 // Unreal Engine includes.
 #include "Containers/Map.h"
@@ -141,12 +141,21 @@ public: // Properties.
 	bool bEnableStatistics = false;
 
 	/**
-	 * Enable or disable AMOR (Merge Split Handler) in AGX Dynamics.
+	 * Globally enable or disable AMOR (Merge Split Handler) in AGX Dynamics.
 	 * Note that each RigidBody / Geometry / Wire / Constraint need to enable merge/split
-	 * individually for this setting to have an effect.
+	 * individually for AMOR to be used for those.
 	 */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "AMOR")
 	bool bEnableAMOR = true;
+
+#if WITH_EDITORONLY_DATA
+	/** TODO add comment */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "AMOR",
+		meta = (AllowedClasses = "AGX_ShapeContactMergeSplitThresholdsBase"))
+	FSoftObjectPath GlobalShapeContactMergeSplitThresholds;
+#endif
+
 
 #if WITH_EDITORONLY_DATA
 	/**
@@ -350,6 +359,10 @@ private:
 	void EnsureValidLicense();
 
 	void SetGravity();
+
+#if WITH_EDITORONLY_DATA
+	void SetGlobalNativeMergeSplitThresholds();
+#endif
 
 private:
 	FSimulationBarrier NativeBarrier;
