@@ -90,14 +90,12 @@ FAGX_Real UAGX_ConstraintMergeSplitThresholdsBase::GetMaxDesiredSpeedDiff() cons
 	return MaxDesiredSpeedDiff;
 }
 
-void UAGX_ConstraintMergeSplitThresholdsBase::SetMaxRelativeSpeed_AsFloat(
-	float InMaxRelativeSpeed)
+void UAGX_ConstraintMergeSplitThresholdsBase::SetMaxRelativeSpeed_AsFloat(float InMaxRelativeSpeed)
 {
 	SetMaxRelativeSpeed(FAGX_Real(InMaxRelativeSpeed));
 }
 
-void UAGX_ConstraintMergeSplitThresholdsBase::SetMaxRelativeSpeed(
-	FAGX_Real InMaxRelativeSpeed)
+void UAGX_ConstraintMergeSplitThresholdsBase::SetMaxRelativeSpeed(FAGX_Real InMaxRelativeSpeed)
 {
 	MaxRelativeSpeed = InMaxRelativeSpeed;
 }

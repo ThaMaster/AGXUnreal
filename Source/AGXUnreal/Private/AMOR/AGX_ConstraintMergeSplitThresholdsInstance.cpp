@@ -8,8 +8,7 @@
 #include "AMOR/AGX_ConstraintMergeSplitThresholdsAsset.h"
 
 UAGX_ConstraintMergeSplitThresholdsBase*
-UAGX_ConstraintMergeSplitThresholdsInstance::GetOrCreateInstance(
-	UWorld* PlayingWorld, bool)
+UAGX_ConstraintMergeSplitThresholdsInstance::GetOrCreateInstance(UWorld* PlayingWorld, bool)
 {
 	return this;
 }
@@ -80,7 +79,7 @@ void UAGX_ConstraintMergeSplitThresholdsInstance::SetMaxDesiredForceRangeDiff(
 {
 	if (HasNative())
 	{
-		NativeBarrier->SetMaxDesiredForceRangeDiff(MaxDesiredForceRangeDiff);
+		NativeBarrier->SetMaxDesiredForceRangeDiff(InMaxDesiredForceRangeDiff);
 	}
 
 	MaxDesiredForceRangeDiff = InMaxDesiredForceRangeDiff;
@@ -101,7 +100,7 @@ void UAGX_ConstraintMergeSplitThresholdsInstance::SetMaxDesiredLockAngleDiff(
 {
 	if (HasNative())
 	{
-		NativeBarrier->SetMaxDesiredLockAngleDiff(MaxDesiredLockAngleDiff);
+		NativeBarrier->SetMaxDesiredLockAngleDiff(InMaxDesiredLockAngleDiff);
 	}
 
 	MaxDesiredLockAngleDiff = InMaxDesiredLockAngleDiff;
@@ -122,7 +121,7 @@ void UAGX_ConstraintMergeSplitThresholdsInstance::SetMaxDesiredRangeAngleDiff(
 {
 	if (HasNative())
 	{
-		NativeBarrier->SetMaxDesiredRangeAngleDiff(MaxDesiredRangeAngleDiff);
+		NativeBarrier->SetMaxDesiredRangeAngleDiff(InMaxDesiredRangeAngleDiff);
 	}
 
 	MaxDesiredRangeAngleDiff = InMaxDesiredRangeAngleDiff;
@@ -143,7 +142,7 @@ void UAGX_ConstraintMergeSplitThresholdsInstance::SetMaxDesiredSpeedDiff(
 {
 	if (HasNative())
 	{
-		NativeBarrier->SetMaxDesiredSpeedDiff(MaxDesiredSpeedDiff);
+		NativeBarrier->SetMaxDesiredSpeedDiff(InMaxDesiredSpeedDiff);
 	}
 
 	MaxDesiredSpeedDiff = InMaxDesiredSpeedDiff;
@@ -159,12 +158,11 @@ FAGX_Real UAGX_ConstraintMergeSplitThresholdsInstance::GetMaxDesiredSpeedDiff() 
 	return MaxDesiredSpeedDiff;
 }
 
-void UAGX_ConstraintMergeSplitThresholdsInstance::SetMaxRelativeSpeed(
-	FAGX_Real InMaxRelativeSpeed)
+void UAGX_ConstraintMergeSplitThresholdsInstance::SetMaxRelativeSpeed(FAGX_Real InMaxRelativeSpeed)
 {
 	if (HasNative())
 	{
-		NativeBarrier->SetMaxRelativeSpeed(MaxRelativeSpeed);
+		NativeBarrier->SetMaxRelativeSpeed(InMaxRelativeSpeed);
 	}
 
 	MaxRelativeSpeed = InMaxRelativeSpeed;

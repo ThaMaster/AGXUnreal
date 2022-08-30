@@ -14,8 +14,8 @@ UAGX_ConstraintMergeSplitThresholdsAsset::GetOrCreateInstance(
 
 	if (!InstancePtr && PlayingWorld && PlayingWorld->IsGameWorld())
 	{
-		InstancePtr =
-			UAGX_ConstraintMergeSplitThresholdsInstance::CreateFromAsset(PlayingWorld, *this, bIsRotational);
+		InstancePtr = UAGX_ConstraintMergeSplitThresholdsInstance::CreateFromAsset(
+			PlayingWorld, *this, bIsRotational);
 		Instance = InstancePtr;
 	}
 
@@ -72,7 +72,7 @@ void UAGX_ConstraintMergeSplitThresholdsAsset::SetMaxDesiredForceRangeDiff(
 {
 	if (Instance != nullptr)
 	{
-		Instance->SetMaxDesiredForceRangeDiff(MaxDesiredForceRangeDiff);
+		Instance->SetMaxDesiredForceRangeDiff(InMaxDesiredForceRangeDiff);
 	}
 	else
 	{
@@ -96,7 +96,7 @@ void UAGX_ConstraintMergeSplitThresholdsAsset::SetMaxDesiredLockAngleDiff(
 {
 	if (Instance != nullptr)
 	{
-		Instance->SetMaxDesiredLockAngleDiff(MaxDesiredLockAngleDiff);
+		Instance->SetMaxDesiredLockAngleDiff(InMaxDesiredLockAngleDiff);
 	}
 	else
 	{
@@ -120,7 +120,7 @@ void UAGX_ConstraintMergeSplitThresholdsAsset::SetMaxDesiredRangeAngleDiff(
 {
 	if (Instance != nullptr)
 	{
-		Instance->SetMaxDesiredRangeAngleDiff(MaxDesiredRangeAngleDiff);
+		Instance->SetMaxDesiredRangeAngleDiff(InMaxDesiredRangeAngleDiff);
 	}
 	else
 	{
@@ -144,7 +144,7 @@ void UAGX_ConstraintMergeSplitThresholdsAsset::SetMaxDesiredSpeedDiff(
 {
 	if (Instance != nullptr)
 	{
-		Instance->SetMaxDesiredSpeedDiff(MaxDesiredSpeedDiff);
+		Instance->SetMaxDesiredSpeedDiff(InMaxDesiredSpeedDiff);
 	}
 	else
 	{
@@ -163,12 +163,11 @@ FAGX_Real UAGX_ConstraintMergeSplitThresholdsAsset::GetMaxDesiredSpeedDiff() con
 	return MaxDesiredSpeedDiff;
 }
 
-void UAGX_ConstraintMergeSplitThresholdsAsset::SetMaxRelativeSpeed(
-	FAGX_Real InMaxRelativeSpeed)
+void UAGX_ConstraintMergeSplitThresholdsAsset::SetMaxRelativeSpeed(FAGX_Real InMaxRelativeSpeed)
 {
 	if (Instance != nullptr)
 	{
-		Instance->SetMaxRelativeSpeed(MaxRelativeSpeed);
+		Instance->SetMaxRelativeSpeed(InMaxRelativeSpeed);
 	}
 	else
 	{
