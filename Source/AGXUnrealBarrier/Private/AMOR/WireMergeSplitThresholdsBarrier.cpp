@@ -47,3 +47,52 @@ namespace WireMergeSplitThresholds_helpers
 		return WireThresholds;
 	}
 }
+
+void FWireMergeSplitThresholdsBarrier::SetForcePropagationDecayScale(
+	double InForcePropagationDecayScale)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Oooooooooooooj barrier"));
+	check(HasNative());
+	using namespace WireMergeSplitThresholds_helpers;
+	if (auto Native = CastToWireThresholds(NativeRef->Native, "SetForcePropagationDecayScale"))
+	{
+		Native->setForcePropagationDecayScale(InForcePropagationDecayScale);
+	}
+}
+
+double FWireMergeSplitThresholdsBarrier::GetForcePropagationDecayScale() const
+{
+	check(HasNative());
+	using namespace WireMergeSplitThresholds_helpers;
+	if (auto Native = CastToWireThresholds(NativeRef->Native, "GetForcePropagationDecayScale"))
+	{
+		return Native->getForcePropagationDecayScale();
+	}
+
+	// Error message printed above.
+	return 0.0;
+}
+
+void FWireMergeSplitThresholdsBarrier::SetMergeTensionScale(
+	double InMergeTensionScale)
+{
+	check(HasNative());
+	using namespace WireMergeSplitThresholds_helpers;
+	if (auto Native = CastToWireThresholds(NativeRef->Native, "SetMergeTensionScale"))
+	{
+		Native->setMergeTensionScale(InMergeTensionScale);
+	}
+}
+
+double FWireMergeSplitThresholdsBarrier::GetMergeTensionScale() const
+{
+	check(HasNative());
+	using namespace WireMergeSplitThresholds_helpers;
+	if (auto Native = CastToWireThresholds(NativeRef->Native, "GetMergeTensionScale"))
+	{
+		return Native->getMergeTensionScale();
+	}
+
+	// Error message printed above.
+	return 0.0;
+}

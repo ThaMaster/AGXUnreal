@@ -15,6 +15,12 @@ public:
 
 	void AllocateNative();
 
+	void SetForcePropagationDecayScale(double InForcePropagationDecayScale);
+	double GetForcePropagationDecayScale() const;
+
+	void SetMergeTensionScale(double InMergeTensionScale);
+	double GetMergeTensionScale() const;
+
 private:
 	FWireMergeSplitThresholdsBarrier(const FWireMergeSplitThresholdsBarrier&) = delete;
 	void operator=(const FWireMergeSplitThresholdsBarrier&) = delete;

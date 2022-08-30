@@ -23,6 +23,18 @@ public:
 	virtual UAGX_WireMergeSplitThresholdsBase* GetOrCreateInstance(
 		UWorld* PlayingWorld) override;
 
+	virtual void SetForcePropagationDecayScale(FAGX_Real InForcePropagationDecayScale) override;
+	virtual FAGX_Real GetForcePropagationDecayScale() const override;
+
+	virtual void SetMergeTensionScale(FAGX_Real InMergeTensionScale) override;
+	virtual FAGX_Real GetMergeTensionScale() const override;
+
 private:
+#if WITH_EDITOR
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	void InitPropertyDispatcher();
+#endif
+
 	TWeakObjectPtr<UAGX_WireMergeSplitThresholdsInstance> Instance;
 };

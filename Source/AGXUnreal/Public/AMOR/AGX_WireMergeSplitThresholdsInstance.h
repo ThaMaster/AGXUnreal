@@ -24,11 +24,17 @@ public:
 		UWorld* PlayingWorld) override;
 
 	void CreateNative(UWorld* PlayingWorld);
-	bool HasNative();
+	bool HasNative() const;
 	FWireMergeSplitThresholdsBarrier* GetOrCreateNative(UWorld* PlayingWorld);
 
 	static UAGX_WireMergeSplitThresholdsInstance* CreateFromAsset(
 		UWorld* PlayingWorld, UAGX_WireMergeSplitThresholdsAsset& Source);
+
+	virtual void SetForcePropagationDecayScale(FAGX_Real InForcePropagationDecayScale) override;
+	virtual FAGX_Real GetForcePropagationDecayScale() const override;
+
+	virtual void SetMergeTensionScale(FAGX_Real InMergeTensionScale) override;
+	virtual FAGX_Real GetMergeTensionScale() const override;
 
 private:
 	void CopyProperties(UAGX_WireMergeSplitThresholdsAsset& Source);
