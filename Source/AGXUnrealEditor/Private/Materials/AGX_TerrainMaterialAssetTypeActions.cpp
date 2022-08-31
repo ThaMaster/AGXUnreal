@@ -34,7 +34,7 @@ FText FAGX_TerrainMaterialAssetTypeActions::GetAssetDescription(const FAssetData
 
 UClass* FAGX_TerrainMaterialAssetTypeActions::GetSupportedClass() const
 {
-	return UAGX_TerrainMaterialAsset::StaticClass();
+	return UAGX_TerrainMaterial::StaticClass();
 }
 
 #undef LOCTEXT_NAMESPACE

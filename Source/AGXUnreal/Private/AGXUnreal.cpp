@@ -41,6 +41,15 @@ void FAGXUnrealModule::RegisterCoreRedirects()
 	Redirects.Emplace(
 		ECoreRedirectFlags::Type_Class, TEXT("AGX_ShapeMaterialInstance"), TEXT("AGX_ShapeMaterial"));
 
+	// Terrain materials.
+	//Redirects.Emplace(
+	//	ECoreRedirectFlags::Type_Class, TEXT("AGX_TerrainMaterialBase"), TEXT("AGX_TerrainMaterial"));
+	//Redirects.Emplace(
+	//	ECoreRedirectFlags::Type_Class, TEXT("AGX_TerrainMaterialAsset"), TEXT("AGX_TerrainMaterial"));
+	//Redirects.Emplace(
+	//	ECoreRedirectFlags::Type_Class, TEXT("AGX_TerrainMaterialInstance"),
+	//	TEXT("AGX_TerrainMaterial"));
+
 	FCoreRedirects::AddRedirectList(Redirects, TEXT("AGXUnreal"));
 	
 }

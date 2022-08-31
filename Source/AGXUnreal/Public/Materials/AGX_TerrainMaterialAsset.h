@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#include "Materials/AGX_TerrainMaterialBase.h"
+#include "Materials/AGX_TerrainMaterial.h"
 
 #include "AGX_TerrainMaterialAsset.generated.h"
 
@@ -14,7 +14,7 @@ class UAGX_TerrainMaterialInstance;
  * Defines the material for a terrain. Affects both surface and bulk properties.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable)
-class AGXUNREAL_API UAGX_TerrainMaterialAsset : public UAGX_TerrainMaterialBase
+class AGXUNREAL_API UAGX_TerrainMaterialAsset : public UAGX_TerrainMaterial
 {
 public:
 	/// \note Class comment above is used as tooltip in Content Browser etc, so trying to keep it

@@ -3,7 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "Materials/AGX_TerrainMaterialBase.h"
+#include "Materials/AGX_TerrainMaterial.h"
 #include "Materials/TerrainMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 
@@ -22,7 +22,7 @@ class UAGX_TerrainMaterialAsset;
  *
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Transient, NotPlaceable)
-class AGXUNREAL_API UAGX_TerrainMaterialInstance : public UAGX_TerrainMaterialBase
+class AGXUNREAL_API UAGX_TerrainMaterialInstance : public UAGX_TerrainMaterial
 {
 	GENERATED_BODY()
 

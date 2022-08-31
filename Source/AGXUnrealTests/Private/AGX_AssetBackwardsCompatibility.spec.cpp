@@ -6,7 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
 #include "Materials/AGX_ShapeMaterial.h"
-#include "Materials/AGX_TerrainMaterialAsset.h"
+#include "Materials/AGX_TerrainMaterial.h"
 
 // Unreal Engine includes.
 #include "AssetRegistryModule.h"
@@ -253,7 +253,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 #else
 			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("13761b5e4237e63665da78201924246a"), *this);
 #endif
-			UAGX_TerrainMaterialAsset* TerrainMaterial = LoadMaterialAsset<UAGX_TerrainMaterialAsset>(PackagePath, ObjectName);
+			UAGX_TerrainMaterial* TerrainMaterial = LoadMaterialAsset<UAGX_TerrainMaterial>(PackagePath, ObjectName);
 			TestEqual(
 				TEXT("The terrain material should have restored adhesion overlap factor"),
 				TerrainMaterial->TerrainBulk.AdhesionOverlapFactor, 0.000001);

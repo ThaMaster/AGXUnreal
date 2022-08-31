@@ -7,9 +7,9 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
-#include "Materials/AGX_TerrainMaterialInstance.h"
-#include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_MaterialBase.h"
+#include "Materials/AGX_ShapeMaterial.h"
+#include "Materials/AGX_TerrainMaterial.h"
 #include "Terrain/AGX_CuttingDirectionComponent.h"
 #include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "Terrain/AGX_LandscapeSizeInfo.h"
@@ -58,7 +58,7 @@ AAGX_Terrain::AAGX_Terrain()
 	}
 }
 
-void AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterialBase* InTerrainMaterial)
+void AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
 {
 	if (InTerrainMaterial == nullptr)
 	{
@@ -554,8 +554,8 @@ void AAGX_Terrain::CreateTerrainMaterial()
 		// counterpart and the latter is the native agx::Material counterpart.
 
 		// Set TerrainMaterial
-		UAGX_TerrainMaterialInstance* TerrainMaterialInstance =
-			static_cast<UAGX_TerrainMaterialInstance*>(
+		UAGX_TerrainMaterial* TerrainMaterialInstance =
+			static_cast<UAGX_TerrainMaterial*>(
 				TerrainMaterial->GetOrCreateInstance(GetWorld()));
 
 		check(TerrainMaterialInstance);

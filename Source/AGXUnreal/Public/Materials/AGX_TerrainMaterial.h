@@ -7,33 +7,34 @@
 #include "Materials/AGX_MaterialBase.h"
 #include "Materials/AGX_TerrainBulkProperties.h"
 #include "Materials/AGX_TerrainCompactionProperties.h"
+#include "Materials/ShapeMaterialBarrier.h"
+#include "Materials/TerrainMaterialBarrier.h"
 
-#include "AGX_TerrainMaterialBase.generated.h"
+#include "AGX_TerrainMaterial.generated.h"
 
-class FTerrainMaterialBarrier;
 
 /**
  * Defines the material for a terrain. Affects both surface and bulk properties.
  *
- * Terrain Materials are created by the user in-Editor by creating a UAGX_TerrainMaterialAsset.
+ * Terrain Materials are created by the user in-Editor by creating a UAGX_TerrainMaterial asset.
  * In-Editor they are treated as assets and can be referenced by either Terrains or Contact
  * Materials.
  *
- * When game begins playing, one UAGX_TerrainMaterialInstance will be created for each
- * UAGX_TerrainMaterialAsset that is referenced by an in-game Terrain or Contact Material. The
- * UAGX_TerrainMaterialInstance will create the actual native AGX terrain material. The in-game
- * Terrain or Contact Material that referenced the UAGX_TerrainMaterialAsset will swap its reference
+ * When game begins playing, one UAGX_TerrainMaterial instace will be created for each
+ * UAGX_TerrainMaterial asset that is referenced by an in-game Terrain or Contact Material. The
+ * UAGX_TerrainMaterial will create the actual native AGX terrain material. The in-game
+ * Terrain or Contact Material that referenced the UAGX_TerrainMaterial asset will swap its reference
  * to the in-game created instance instead. This means that ultimately only
- * UAGX_TerrainMaterialInstances will be referenced in-game. When play stops the in-Editor state
+ * UAGX_TerrainMaterials will be referenced in-game. When play stops the in-Editor state
  * will be returned.
  *
- * Note that this also means that UAGX_TerrainMaterialAsset that are not
+ * Note that this also means that UAGX_TerrainMaterial asset that are not
  * referenced by anything will be inactive.
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable,
 	AutoExpandCategories = ("Material Properties"))
-class AGXUNREAL_API UAGX_TerrainMaterialBase : public UAGX_MaterialBase
+class AGXUNREAL_API UAGX_TerrainMaterial : public UAGX_MaterialBase
 {
 public:
 	/**
@@ -43,6 +44,20 @@ public:
 	 */
 
 	GENERATED_BODY()
+
+	// Surface properties.
+	virtual void SetFrictionEnabled(bool Enabled) override;
+	virtual bool GetFrictionEnabled() const override;
+
+	virtual void SetRoughness(float Roughness) override;
+	virtual float GetRoughness() const override;
+
+	virtual void SetSurfaceViscosity(float Viscosity) override;
+	virtual float GetSurfaceViscosity() const override;
+
+	virtual void SetAdhesion(float AdhesiveForce, float AdhesiveOverlap) override;
+	virtual float GetAdhesiveForce() const override;
+	virtual float GetAdhesiveOverlap() const override;
 
 	// Bulk properties.
 	UPROPERTY(EditAnywhere, Category = "Material Properties")
@@ -156,6 +171,35 @@ public:
 
 	void CopyFrom(const FTerrainMaterialBarrier& Source);
 
-protected:
-	void CopyTerrainMaterialProperties(const UAGX_TerrainMaterialBase* Source);
+	FTerrainMaterialBarrier* GetOrCreateTerrainMaterialNative(UWorld* PlayingWorld);
+	virtual FShapeMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld) override;
+	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld) override;
+	static UAGX_TerrainMaterial* CreateFromAsset(
+		UWorld* PlayingWorld, UAGX_TerrainMaterial* Source);
+
+	void CopyTerrainMaterialProperties(const UAGX_TerrainMaterial* Source);
+
+private:
+#if WITH_EDITOR
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	void InitPropertyDispatcher();
+#endif
+
+	void CreateTerrainMaterialNative(UWorld* PlayingWorld);
+	void CreateShapeMaterialNative(UWorld* PlayingWorld);
+
+	bool HasTerrainMaterialNative() const;
+	bool HasShapeMaterialNative() const;
+
+	FTerrainMaterialBarrier* GetTerrainMaterialNative();
+	FShapeMaterialBarrier* GetShapeMaterialNative();
+
+	void UpdateTerrainMaterialNativeProperties();
+	void UpdateShapeMaterialNativeProperties();
+
+	TWeakObjectPtr<UAGX_TerrainMaterial> Asset;
+	TWeakObjectPtr<UAGX_TerrainMaterial> Instance;
+	TUniquePtr<FTerrainMaterialBarrier> TerrainMaterialNativeBarrier;
+	TUniquePtr<FShapeMaterialBarrier> ShapeMaterialNativeBarrier;
 };
