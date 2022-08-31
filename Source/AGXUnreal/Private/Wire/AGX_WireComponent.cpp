@@ -8,8 +8,7 @@
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGXUnrealBarrier.h"
-#include "Materials/AGX_ShapeMaterialAsset.h"
-#include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -1548,7 +1547,7 @@ namespace AGX_WireComponent_helpers
 	}
 }
 
-bool UAGX_WireComponent::SetShapeMaterial(UAGX_ShapeMaterialBase* InShapeMaterial)
+bool UAGX_WireComponent::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
 {
 	if (InShapeMaterial == nullptr)
 	{
@@ -1730,8 +1729,8 @@ bool UAGX_WireComponent::UpdateNativeMaterial()
 	}
 
 	UWorld* World = GetWorld();
-	UAGX_ShapeMaterialInstance* MaterialInstance =
-		static_cast<UAGX_ShapeMaterialInstance*>(ShapeMaterial->GetOrCreateInstance(World));
+	UAGX_ShapeMaterial* MaterialInstance =
+		static_cast<UAGX_ShapeMaterial*>(ShapeMaterial->GetOrCreateInstance(World));
 	check(MaterialInstance);
 	FShapeMaterialBarrier* MaterialBarrier =
 		MaterialInstance->GetOrCreateShapeMaterialNative(World);

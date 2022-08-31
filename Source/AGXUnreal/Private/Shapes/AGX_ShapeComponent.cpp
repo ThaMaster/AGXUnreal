@@ -9,9 +9,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Contacts/AGX_ShapeContact.h"
-#include "Materials/AGX_ShapeMaterialAsset.h"
-#include "Materials/AGX_ShapeMaterialBase.h"
-#include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -99,21 +97,17 @@ bool UAGX_ShapeComponent::UpdateNativeMaterial()
 		return true;
 	}
 
-	UAGX_ShapeMaterialInstance* MaterialInstance =
-		static_cast<UAGX_ShapeMaterialInstance*>(ShapeMaterial->GetOrCreateInstance(GetWorld()));
-	if (MaterialInstance == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Could not create AGX Dynamics representation of Shape Material '%s' "
-				 "in Actor '%s'."),
-			*ShapeMaterial->GetName(), *GetLabelSafe(GetOwner()));
+	UWorld* World = GetWorld();
+	UAGX_ShapeMaterial* Instance =
+		static_cast<UAGX_ShapeMaterial*>(ShapeMaterial->GetOrCreateInstance(World));
+	check(Instance);
 
-		return false;
+	if (ShapeMaterial != Instance)
+	{
+		ShapeMaterial = Instance;
 	}
 
-	FShapeMaterialBarrier* MaterialBarrier =
-		MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
+	FShapeMaterialBarrier* MaterialBarrier = Instance->GetOrCreateShapeMaterialNative(World);
 	check(MaterialBarrier);
 	GetNative()->SetMaterial(*MaterialBarrier);
 	return true;
@@ -321,7 +315,7 @@ void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 }
 
 bool UAGX_ShapeComponent::SetShapeMaterial(
-	UAGX_ShapeMaterialBase* InShapeMaterial)
+	UAGX_ShapeMaterial* InShapeMaterial)
 {
 	if (InShapeMaterial == nullptr)
 	{
@@ -333,15 +327,26 @@ bool UAGX_ShapeComponent::SetShapeMaterial(
 		return true;
 	}
 
-	ShapeMaterial = InShapeMaterial;
-
 	if (!HasNative())
 	{
+		// Not initialized yet, so simply assign the material we're given.
+		ShapeMaterial = InShapeMaterial;
 		return true;
 	}
 
-	// Ensure that an Instance has been created for the the Shape Material Asset and that it
-	// in turn gets a Native.
+	UAGX_ShapeMaterial* Instance =
+		static_cast<UAGX_ShapeMaterial*>(InShapeMaterial->GetOrCreateInstance(GetWorld()));
+	if (Instance == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Shape '%s', in Actor '%s', could not create Shape Material Instance for '%s'. "
+				 "Material not changed."),
+			*GetName(), *GetLabelSafe(GetOwner()), *InShapeMaterial->GetName());
+		return false;
+	}
+
+	ShapeMaterial = Instance;
 	return UpdateNativeMaterial();
 }
 

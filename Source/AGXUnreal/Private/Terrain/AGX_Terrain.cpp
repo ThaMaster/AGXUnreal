@@ -8,7 +8,7 @@
 #include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Materials/AGX_TerrainMaterialInstance.h"
-#include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_MaterialBase.h"
 #include "Terrain/AGX_CuttingDirectionComponent.h"
 #include "Terrain/AGX_CuttingEdgeComponent.h"
@@ -549,7 +549,7 @@ void AAGX_Terrain::CreateTerrainMaterial()
 
 	if (TerrainMaterial)
 	{
-		// Both an UAGX_TerrainMaterialInstance and a UAGX_ShapeMaterialInstance
+		// Both an UAGX_TerrainMaterial and a UAGX_ShapeMaterial
 		// are set for the terrain. The former is the native agxTerrain::TerrainMaterial
 		// counterpart and the latter is the native agx::Material counterpart.
 

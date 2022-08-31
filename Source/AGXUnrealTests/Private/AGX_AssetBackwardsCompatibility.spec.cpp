@@ -5,7 +5,7 @@
 #include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
-#include "Materials/AGX_ShapeMaterialAsset.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterialAsset.h"
 
 // Unreal Engine includes.
@@ -151,7 +151,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 #else
 			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("2113ad88f842ea8c583bd8b037b6007b"), *this);
 #endif
-			UAGX_ShapeMaterialAsset* ShapeMaterial = LoadMaterialAsset<UAGX_ShapeMaterialAsset>(PackagePath, ObjectName);
+			UAGX_ShapeMaterial* ShapeMaterial = LoadMaterialAsset<UAGX_ShapeMaterial>(PackagePath, ObjectName);
 			TestEqual(
 				TEXT("The shape material should have restored density"),
 				ShapeMaterial->Bulk.Density, 1100000.0);

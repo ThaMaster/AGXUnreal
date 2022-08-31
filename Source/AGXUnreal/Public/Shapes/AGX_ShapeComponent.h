@@ -17,7 +17,7 @@
 #include "AGX_ShapeComponent.generated.h"
 
 class UMaterial;
-class UAGX_ShapeMaterialBase;
+class UAGX_ShapeMaterial;
 
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Abstract, Meta = (BlueprintSpawnableComponent),
@@ -37,10 +37,10 @@ public:
 	 * Bulk properties have impact on collision forces but also on Rigid Body mass.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
-	UAGX_ShapeMaterialBase* ShapeMaterial;
+	UAGX_ShapeMaterial* ShapeMaterial;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
-	bool SetShapeMaterial(UAGX_ShapeMaterialBase* InShapeMaterial);
+	bool SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial);
 
 	/**
 	 * Toggle to enable or disable collision generation against this shape.

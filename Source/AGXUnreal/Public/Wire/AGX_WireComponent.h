@@ -16,7 +16,7 @@
 
 #include "AGX_WireComponent.generated.h"
 
-class UAGX_ShapeMaterialBase;
+class UAGX_ShapeMaterial;
 class UAGX_WireWinchComponent;
 
 /// @todo Move FWireRoutingNode to a separate source file pair.
@@ -151,10 +151,10 @@ public:
 	 * with Shapes in the world.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Wire")
-	UAGX_ShapeMaterialBase* ShapeMaterial;
+	UAGX_ShapeMaterial* ShapeMaterial;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
-	bool SetShapeMaterial(UAGX_ShapeMaterialBase* InShapeMaterial);
+	bool SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial);
 
 	/*
 	 * Begin winch.
