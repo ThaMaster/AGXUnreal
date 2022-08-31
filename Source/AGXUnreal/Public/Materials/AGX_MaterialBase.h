@@ -112,15 +112,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
 	virtual float GetAdhesiveOverlap() const;
 
+	/**
+	 * Copies all properties from an instance (if it exists) to the asset such that the data
+	 * written is saved permanently in the asset, even after Play.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Material")
+	virtual void CommitToAsset() PURE_VIRTUAL(UAGX_MaterialBase::CommitToAsset, );
+
 public:
 	virtual ~UAGX_MaterialBase();
 
 	/**
-	 * If PlayingWorld is an in-game World and this material is a UAGX_ShapeMaterialAsset or
-	 * UAGX_TerrainMaterialAsset, returns a UAGX_ShapeMaterialInstance or
-	 * UAGX_TerrainMaterialInstance representing the material asset throughout the lifetime of the
-	 * GameInstance. If this is already a UAGX_ShapeMaterialInstance or a
-	 * UAGX_TerrainMaterialInstance, it returns itself. Returns null if not in-game (invalid call).
+	 * If PlayingWorld is an in-game World and this material is a UAGX_ShapeMaterial or
+	 * UAGX_TerrainMaterial, returns an instance or representing the material asset throughout the
+	 * lifetime of the GameInstance. If this is already an instance or, it returns itself. Returns
+	 * null if not in-game (invalid call).
 	 */
 	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld)
 		PURE_VIRTUAL(UAGX_MaterialBase::GetOrCreateInstance, return nullptr;);
