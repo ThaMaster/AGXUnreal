@@ -2,7 +2,7 @@
 
 #include "Materials/AGX_TerrainMaterialAssetFactory.h"
 
-#include "Materials/AGX_TerrainMaterialAsset.h"
+#include "Materials/AGX_TerrainMaterial.h"
 
 UAGX_TerrainMaterialAssetFactory::UAGX_TerrainMaterialAssetFactory(
 	const class FObjectInitializer& OBJ)

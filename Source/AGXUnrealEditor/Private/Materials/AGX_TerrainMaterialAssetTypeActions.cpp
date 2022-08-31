@@ -2,7 +2,7 @@
 
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 
-#include "Materials/AGX_TerrainMaterialAsset.h"
+#include "Materials/AGX_TerrainMaterial.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TerrainMaterialAssetTypeActions"
 
