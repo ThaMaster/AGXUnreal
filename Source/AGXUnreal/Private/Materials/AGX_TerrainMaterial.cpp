@@ -3,6 +3,7 @@
 #include "Materials/AGX_TerrainMaterial.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
@@ -332,8 +333,12 @@ void UAGX_TerrainMaterial::CopyTerrainMaterialProperties(const UAGX_TerrainMater
 
 UAGX_MaterialBase* UAGX_TerrainMaterial::GetOrCreateInstance(UWorld* PlayingWorld)
 {
-	UAGX_TerrainMaterial* InstancePtr = Instance.Get();
+	if (IsInstance())
+	{
+		return this;
+	}
 
+	UAGX_TerrainMaterial* InstancePtr = Instance.Get();
 	if (!InstancePtr && PlayingWorld && PlayingWorld->IsGameWorld())
 	{
 		InstancePtr = UAGX_TerrainMaterial::CreateFromAsset(PlayingWorld, this);
@@ -523,6 +528,23 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 FTerrainMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateTerrainMaterialNative(
 	UWorld* PlayingWorld)
 {
+	if (IsAsset())
+	{
+		if (Instance == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("GetOrCreateTerrainMaterialNative was called on UAGX_TerrainMaterial '%s'"
+					 "who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called prior "
+					 "to calling this function."),
+				*GetName());
+			return nullptr;
+		}
+
+		return Instance->GetOrCreateShapeMaterialNative(PlayingWorld);
+	}
+
+	AGX_CHECK(IsInstance());
 	if (!HasTerrainMaterialNative())
 	{
 		CreateTerrainMaterialNative(PlayingWorld);
@@ -532,6 +554,23 @@ FTerrainMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateTerrainMaterialNative(
 
 FShapeMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
 {
+	if (IsAsset())
+	{
+		if (Instance == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("GetOrCreateShapeMaterialNative was called on UAGX_TerrainMaterial '%s'"
+					 "who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called prior "
+					 "to calling this function."),
+				*GetName());
+			return nullptr;
+		}
+
+		return Instance->GetOrCreateShapeMaterialNative(PlayingWorld);
+	}
+
+	AGX_CHECK(IsInstance());
 	if (!HasShapeMaterialNative())
 	{
 		CreateShapeMaterialNative(PlayingWorld);
@@ -544,6 +583,7 @@ UAGX_TerrainMaterial* UAGX_TerrainMaterial::CreateFromAsset(
 	UWorld* PlayingWorld, UAGX_TerrainMaterial* Source)
 {
 	check(Source);
+	check(Source->IsAsset());
 	check(PlayingWorld);
 	check(PlayingWorld->IsGameWorld());
 
@@ -552,14 +592,9 @@ UAGX_TerrainMaterial* UAGX_TerrainMaterial::CreateFromAsset(
 
 	FString InstanceName = Source->GetName() + "_Instance";
 
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("UAGX_TerrainMaterial::CreateFromAsset is creating an instance "
-			 "named \"%s\" (from asset  %s)."),
-		*InstanceName, *Source->GetName());
-
 	UAGX_TerrainMaterial* NewInstance = NewObject<UAGX_TerrainMaterial>(
 		Outer, UAGX_TerrainMaterial::StaticClass(), *InstanceName, RF_Transient);
+	NewInstance->Asset = Source;
 
 	// Copy the terrain material properties
 	NewInstance->CopyTerrainMaterialProperties(Source);
@@ -572,8 +607,22 @@ UAGX_TerrainMaterial* UAGX_TerrainMaterial::CreateFromAsset(
 
 void UAGX_TerrainMaterial::CreateTerrainMaterialNative(UWorld* PlayingWorld)
 {
-	TerrainMaterialNativeBarrier.Reset(new FTerrainMaterialBarrier());
+	if (IsAsset())
+	{
+		if (Instance == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("CreateTerrainMaterialNative was called on UAGX_TerrainMaterial '%s'"
+					 "who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called prior "
+					 "to calling this function."), *GetName());
+			return nullptr;
+		}
 
+		return Instance->GetOrCreateShapeMaterialNative(PlayingWorld);
+	}
+
+	TerrainMaterialNativeBarrier.Reset(new FTerrainMaterialBarrier());
 	TerrainMaterialNativeBarrier->AllocateNative(TCHAR_TO_UTF8(*GetName()));
 	check(HasTerrainMaterialNative());
 
@@ -582,8 +631,22 @@ void UAGX_TerrainMaterial::CreateTerrainMaterialNative(UWorld* PlayingWorld)
 
 void UAGX_TerrainMaterial::CreateShapeMaterialNative(UWorld* PlayingWorld)
 {
-	ShapeMaterialNativeBarrier.Reset(new FShapeMaterialBarrier());
+	if (IsAsset())
+	{
+		if (Instance == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("CreateShapeMaterialNative was called on UAGX_TerrainMaterial '%s' "
+					 "who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called prior "
+					 "to calling this function."), *GetName());
+			return nullptr;
+		}
 
+		return Instance->GetOrCreateShapeMaterialNative(PlayingWorld);
+	}
+
+	ShapeMaterialNativeBarrier.Reset(new FShapeMaterialBarrier());
 	ShapeMaterialNativeBarrier->AllocateNative(TCHAR_TO_UTF8(*GetName()));
 	check(HasShapeMaterialNative());
 
@@ -602,32 +665,19 @@ bool UAGX_TerrainMaterial::HasShapeMaterialNative() const
 
 FTerrainMaterialBarrier* UAGX_TerrainMaterial::GetTerrainMaterialNative()
 {
-	if (TerrainMaterialNativeBarrier)
-	{
-		return TerrainMaterialNativeBarrier.Get();
-	}
-	else
-	{
-		return nullptr;
-	}
+	return TerrainMaterialNativeBarrier.Get();
 }
 
 FShapeMaterialBarrier* UAGX_TerrainMaterial::GetShapeMaterialNative()
 {
-	if (ShapeMaterialNativeBarrier)
-	{
-		return ShapeMaterialNativeBarrier.Get();
-	}
-	else
-	{
-		return nullptr;
-	}
+	return ShapeMaterialNativeBarrier.Get();
 }
 
 void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()
 {
 	if (HasTerrainMaterialNative())
 	{
+		AGX_CHECK(IsInstance());
 		TerrainMaterialNativeBarrier->SetName(TCHAR_TO_UTF8(*GetName()));
 
 		// Set Bulk properties.
@@ -661,6 +711,7 @@ void UAGX_TerrainMaterial::UpdateShapeMaterialNativeProperties()
 {
 	if (HasShapeMaterialNative())
 	{
+		AGX_CHECK(IsInstance());
 		ShapeMaterialNativeBarrier->SetName(TCHAR_TO_UTF8(*GetName()));
 
 		ShapeMaterialNativeBarrier->SetDensity(Bulk.Density);
@@ -675,4 +726,16 @@ void UAGX_TerrainMaterial::UpdateShapeMaterialNativeProperties()
 		ShapeMaterialNativeBarrier->SetSurfaceViscosity(Surface.Viscosity);
 		ShapeMaterialNativeBarrier->SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
 	}
+}
+
+bool UAGX_TerrainMaterial::IsAsset() const
+{
+	return !IsInstance();
+}
+
+bool UAGX_TerrainMaterial::IsInstance() const
+{
+	// An instance of this class will always have a reference to it's corresponding Asset.
+	// An asset will never have this reference set.
+	return Asset != nullptr;
 }

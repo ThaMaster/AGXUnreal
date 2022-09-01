@@ -180,6 +180,9 @@ public:
 	void CopyTerrainMaterialProperties(const UAGX_TerrainMaterial* Source);
 
 private:
+	bool IsAsset() const;
+	bool IsInstance() const;
+
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;

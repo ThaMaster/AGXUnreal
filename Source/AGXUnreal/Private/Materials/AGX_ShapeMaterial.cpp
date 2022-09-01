@@ -545,9 +545,11 @@ FShapeMaterialBarrier* UAGX_ShapeMaterial::GetOrCreateShapeMaterialNative(
 	{
 		if (Instance == nullptr)
 		{
-			UE_LOG(LogAGX, Error, TEXT("GetOrCreateShapeMaterialNative was called on a UAGX_ShapeMaterial "
-				"who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called prior to calling "
-				"this function."));
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("GetOrCreateShapeMaterialNative was called on UAGX_ShapeMaterial '%s'"
+					 "who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called prior "
+					 "to calling this function."), *GetName());
 			return nullptr;
 		}
 
