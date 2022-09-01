@@ -74,42 +74,49 @@ void UAGX_TrackInternalMergePropertiesBase::InitPropertyDispatcher()
 	// PostEditChangeProperty to only call FAGX_PropertyChangedDispatcher::Trigger when an instance
 	// is available.
 
-	Dispatcher.Add(GET_MEMBER_NAME_CHECKED(ThisClass, bMergeEnabled), [](ThisClass* Self) {
-		Self->SetMergeEnabled(Self->bMergeEnabled);
-		Self->GetInstance()->SetMergeEnabled(Self->bMergeEnabled);
-	});
-
 	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, NumNodesPerMergeSegment), [](ThisClass* Self) {
-			Self->GetInstance()->SetNumNodesPerMergeSegment(Self->NumNodesPerMergeSegment);
+		GET_MEMBER_NAME_CHECKED(ThisClass, bMergeEnabled),
+		[](ThisClass* Self)
+		{
+			Self->SetMergeEnabled(Self->bMergeEnabled);
+			Self->GetInstance()->SetMergeEnabled(Self->bMergeEnabled);
 		});
 
-	Dispatcher.Add(GET_MEMBER_NAME_CHECKED(ThisClass, ContactReduction), [](ThisClass* Self) {
-		Self->GetInstance()->SetContactReduction(Self->ContactReduction);
-	});
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, NumNodesPerMergeSegment), [](ThisClass* Self)
+		{ Self->GetInstance()->SetNumNodesPerMergeSegment(Self->NumNodesPerMergeSegment); });
 
 	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, bLockToReachMergeConditionEnabled), [](ThisClass* Self) {
+		GET_MEMBER_NAME_CHECKED(ThisClass, ContactReduction),
+		[](ThisClass* Self) { Self->GetInstance()->SetContactReduction(Self->ContactReduction); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bLockToReachMergeConditionEnabled),
+		[](ThisClass* Self)
+		{
 			Self->GetInstance()->SetLockToReachMergeConditionEnabled(
 				Self->bLockToReachMergeConditionEnabled);
 		});
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, LockToReachMergeConditionCompliance),
-		[](ThisClass* Self) {
+		[](ThisClass* Self)
+		{
 			Self->GetInstance()->SetLockToReachMergeConditionCompliance(
 				Self->LockToReachMergeConditionCompliance);
 		});
 
 	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, LockToReachMergeConditionDamping), [](ThisClass* Self) {
+		GET_MEMBER_NAME_CHECKED(ThisClass, LockToReachMergeConditionDamping),
+		[](ThisClass* Self)
+		{
 			Self->GetInstance()->SetLockToReachMergeConditionDamping(
 				Self->LockToReachMergeConditionDamping);
 		});
 
-	Dispatcher.Add(GET_MEMBER_NAME_CHECKED(ThisClass, MaxAngleMergeCondition), [](ThisClass* Self) {
-		Self->GetInstance()->SetMaxAngleMergeCondition(Self->MaxAngleMergeCondition);
-	});
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, MaxAngleMergeCondition), [](ThisClass* Self)
+		{ Self->GetInstance()->SetMaxAngleMergeCondition(Self->MaxAngleMergeCondition); });
 }
 
 #endif
@@ -142,6 +149,11 @@ void UAGX_TrackInternalMergePropertiesBase::SetMergeEnabled(bool bEnabled)
 	bMergeEnabled = bEnabled;
 }
 
+bool UAGX_TrackInternalMergePropertiesBase::GetMergeEnabled() const
+{
+	return bMergeEnabled;
+}
+
 void UAGX_TrackInternalMergePropertiesBase::SetNumNodesPerMergeSegment(
 	int InNumNodesPerMergeSegment)
 {
@@ -157,10 +169,21 @@ void UAGX_TrackInternalMergePropertiesBase::SetNumNodesPerMergeSegment(
 	NumNodesPerMergeSegment = InNumNodesPerMergeSegment;
 }
 
+int32 UAGX_TrackInternalMergePropertiesBase::GetNumNodesPerMergeSegment() const
+{
+	return NumNodesPerMergeSegment;
+}
+
 void UAGX_TrackInternalMergePropertiesBase::SetContactReduction(
 	EAGX_MergedTrackNodeContactReduction InContactReduction)
 {
 	ContactReduction = InContactReduction;
+}
+
+EAGX_MergedTrackNodeContactReduction UAGX_TrackInternalMergePropertiesBase::GetContactReduction()
+	const
+{
+	return ContactReduction;
 }
 
 void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionEnabled(bool bEnabled)
@@ -168,11 +191,12 @@ void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionEnabled(
 	bLockToReachMergeConditionEnabled = bEnabled;
 }
 
-void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionCompliance_AsFloat(
-	float Compliance)
+bool UAGX_TrackInternalMergePropertiesBase::GetLockToReachMergeConditionEnabled() const
 {
-	SetLockToReachMergeConditionCompliance(static_cast<double>(Compliance));
+	return bLockToReachMergeConditionEnabled;
 }
+
+// Compliance.
 
 void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionCompliance(
 	double Compliance)
@@ -190,11 +214,23 @@ void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionComplian
 	LockToReachMergeConditionCompliance = Compliance;
 }
 
-void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionDamping_AsFloat(
-	float Damping)
+double UAGX_TrackInternalMergePropertiesBase::GetLockToReachMergeConditionCompliance() const
 {
-	SetLockToReachMergeConditionDamping(static_cast<double>(Damping));
+	return LockToReachMergeConditionCompliance;
 }
+
+void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionCompliance_BP(
+	float Compliance)
+{
+	SetLockToReachMergeConditionCompliance(static_cast<double>(Compliance));
+}
+
+float UAGX_TrackInternalMergePropertiesBase::GetLockToReachMergeConditionCompliance_BP() const
+{
+	return static_cast<float>(GetLockToReachMergeConditionCompliance());
+}
+
+// Damping.
 
 void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionDamping(double Damping)
 {
@@ -209,12 +245,48 @@ void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionDamping(
 	LockToReachMergeConditionDamping = Damping;
 }
 
-void UAGX_TrackInternalMergePropertiesBase::SetMaxAngleMergeCondition_AsFloat(float MaxAngleToMerge)
+double UAGX_TrackInternalMergePropertiesBase::GetLockToReachMergeConditionDamping() const
+{
+	return LockToReachMergeConditionDamping;
+}
+
+void UAGX_TrackInternalMergePropertiesBase::SetLockToReachMergeConditionDamping_BP(float Damping)
+{
+	SetLockToReachMergeConditionDamping(static_cast<double>(Damping));
+}
+
+float UAGX_TrackInternalMergePropertiesBase::GetLockToReachMergeConditionDamping_BP() const
+{
+	return static_cast<float>(GetLockToReachMergeConditionDamping());
+}
+
+// Max Angle.
+
+void UAGX_TrackInternalMergePropertiesBase::SetMaxAngleMergeCondition(double MaxAngleToMerge)
+{
+	if (MaxAngleToMerge < 0.0)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Attempt to set negative max angle merge condition on '%s'. Value clamped to 0.0"),
+			*GetFullName());
+		MaxAngleToMerge = 0.0;
+	}
+
+	MaxAngleMergeCondition = MaxAngleToMerge;
+}
+
+double UAGX_TrackInternalMergePropertiesBase::GetMaxAngleMergeCondition() const
+{
+	return MaxAngleMergeCondition;
+}
+
+void UAGX_TrackInternalMergePropertiesBase::SetMaxAngleMergeCondition_BP(float MaxAngleToMerge)
 {
 	SetMaxAngleMergeCondition(static_cast<double>(MaxAngleToMerge));
 }
 
-void UAGX_TrackInternalMergePropertiesBase::SetMaxAngleMergeCondition(double MaxAngleToMerge)
+float UAGX_TrackInternalMergePropertiesBase::GetMaxAngleMergeCondition_BP() const
 {
-	MaxAngleMergeCondition = MaxAngleToMerge;
+	return static_cast<float>(GetMaxAngleMergeCondition());
 }
