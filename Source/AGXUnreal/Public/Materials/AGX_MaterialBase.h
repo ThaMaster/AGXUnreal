@@ -86,31 +86,38 @@ public:
 	// Wire properties are Shape Material only, so they are in the Shape Material.
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual void SetFrictionEnabled(bool Enabled);
+	virtual void SetFrictionEnabled(bool Enabled)
+		PURE_VIRTUAL(UAGX_MaterialBase::SetFrictionEnabled, );
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual bool GetFrictionEnabled() const;
+	virtual bool GetFrictionEnabled() const
+		PURE_VIRTUAL(UAGX_MaterialBase::GetFrictionEnabled, return false;);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual void SetRoughness(float Roughness);
+	virtual void SetRoughness(float Roughness) PURE_VIRTUAL(UAGX_MaterialBase::SetRoughness, );
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual float GetRoughness() const;
+	virtual float GetRoughness() const PURE_VIRTUAL(UAGX_MaterialBase::GetRoughness, return 0.f;);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual void SetSurfaceViscosity(float Viscosity);
+	virtual void SetSurfaceViscosity(float Viscosity)
+		PURE_VIRTUAL(UAGX_MaterialBase::SetSurfaceViscosity, );
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual float GetSurfaceViscosity() const;
+	virtual float GetSurfaceViscosity() const
+		PURE_VIRTUAL(UAGX_MaterialBase::GetSurfaceViscosity, return 0.f;);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual void SetAdhesion(float AdhesiveForce, float AdhesiveOverlap);
+	virtual void SetAdhesion(float AdhesiveForce, float AdhesiveOverlap)
+		PURE_VIRTUAL(UAGX_MaterialBase::SetAdhesion, );
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual float GetAdhesiveForce() const;
+	virtual float GetAdhesiveForce() const
+		PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveForce, return 0.f;);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual float GetAdhesiveOverlap() const;
+	virtual float GetAdhesiveOverlap() const
+		PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveOverlap, return 0.f;);
 
 	/**
 	 * Copies all properties from an instance (if it exists) to the asset such that the data
@@ -120,7 +127,7 @@ public:
 	virtual void CommitToAsset() PURE_VIRTUAL(UAGX_MaterialBase::CommitToAsset, );
 
 public:
-	virtual ~UAGX_MaterialBase();
+	virtual ~UAGX_MaterialBase() = default;
 
 	/**
 	 * If PlayingWorld is an in-game World and this material is a UAGX_ShapeMaterial or
