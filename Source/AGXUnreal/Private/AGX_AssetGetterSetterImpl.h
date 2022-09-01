@@ -34,12 +34,14 @@
 	AGX_ASSET_SETTER_IMPL_INTERNAL(UpropertyName, InVar, SetFunc, HasNativeFunc, NativeName, /*no cast*/)
 
 #define AGX_ASSET_SETTER_F2D_IMPL(UpropertyName, InVar, SetFunc) \
-	static_assert(std::is_same<decltype(UpropertyName), FAGX_Real>::value, "UpropertyName must be of FAGX_Real type."); \
+	static_assert(std::is_same<decltype(UpropertyName), FAGX_Real>::value || \
+		std::is_same<decltype(UpropertyName), double>::value, "UpropertyName must be of FAGX_Real or double type."); \
 	static_assert(std::is_same<decltype(InVar), float>::value, "InVar must be of float type."); \
 	AGX_ASSET_SETTER_IMPL_INTERNAL(UpropertyName, InVar, SetFunc, HasNative, NativeBarrier, static_cast<double>)
 
 #define AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(UpropertyName, InVar, SetFunc, HasNativeFunc, NativeName) \
-	static_assert(std::is_same<decltype(UpropertyName), FAGX_Real>::value, "UpropertyName must be of FAGX_Real type."); \
+	static_assert(std::is_same<decltype(UpropertyName), FAGX_Real>::value || \
+		std::is_same<decltype(UpropertyName), double>::value, "UpropertyName must be of FAGX_Real or double type."); \
 	static_assert(std::is_same<decltype(InVar), float>::value, "InVar must be of float type."); \
 	AGX_ASSET_SETTER_IMPL_INTERNAL(UpropertyName, InVar, SetFunc, HasNativeFunc, NativeName, static_cast<double>)
 
