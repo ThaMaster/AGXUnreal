@@ -30,9 +30,9 @@ class FShapeMaterialBarrier;
  * creating clones of the edit mode assets for use during the duration of the play session. The
  * Instances are the only classes that has a native AGX Dynamics object associated with it.
  *
- * Subclasses are used to differentiate between the two types, with the Asset suffix being used for
- * editing mode objects and the Instance suffix being used for the play mode objects. The switch is
- * done in BeginPlay of the class that has the UPROPERTY. A short illustrative example:
+ * Both the instance and asset objects are of the same type, but the asset holds a reference to
+ * its instance (if one has been created) and the instance always holds a reference to the asset
+ * it was created from.
  *
  *	UCLASS()
  *	class UMyClass : public UObject
@@ -56,13 +56,10 @@ class FShapeMaterialBarrier;
  *			MyMaterial = Instance;
  *		}
  * 	}
- * There may be a bit more to it, depending on the type of material (see next paragraph) but
- * something like that.
  *
  * In addition to the Asset/Instance separation there are also multiple types of materials,
- * currently Shape and Terrain, each with their own Base, Asset, and Instance classes. What they all
- * have in common is that a contact material may be created between any pair of materials,
- * regardless of their types. Wires use Shape Material.
+ * currently Shape and Terrain. What they all have in common is that a contact material may
+*  be created between any pair of materials, regardless of their types. Wires use Shape Material.
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", abstract, AutoExpandCategories = ("Material Properties"))
@@ -120,8 +117,8 @@ public:
 		PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveOverlap, return 0.f;);
 
 	/**
-	 * Copies all properties from an instance (if it exists) to the asset such that the data
-	 * written is saved permanently in the asset, even after Play.
+	 * Copies all properties from an instance (if it exists) to the asset it was created from such
+	 * that the data written is saved permanently in the asset, even after Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Material")
 	virtual void CommitToAsset() PURE_VIRTUAL(UAGX_MaterialBase::CommitToAsset, );
@@ -144,7 +141,7 @@ public:
 protected:
 	void CopyShapeMaterialProperties(const UAGX_MaterialBase* Source);
 
-	// The AGX in these function names are due to name collisions with UE-functions otherwise.
+	// The AGX postfix in these function names are due to name collisions with UE-functions.
 	virtual bool IsAssetAGX() const PURE_VIRTUAL(UAGX_MaterialBase::IsAsset, return false;);
 	virtual bool IsInstanceAGX() const PURE_VIRTUAL(UAGX_MaterialBase::IsInstance, return false;);
 };

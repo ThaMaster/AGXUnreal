@@ -27,9 +27,6 @@
  * to the in-game created instance instead. This means that ultimately only
  * UAGX_TerrainMaterials will be referenced in-game. When play stops the in-Editor state
  * will be returned.
- *
- * Note that this also means that UAGX_TerrainMaterial asset that are not
- * referenced by anything will be inactive.
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable,
