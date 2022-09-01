@@ -144,13 +144,6 @@ public:
 	virtual void SetMaxAngleMergeCondition(double MaxAngleToMerge);
 
 public:
-	/**
-	 * Invokes the member function GetOrCreateInstance() on TrackInternalMergeProperties pointed to
-	 * by Property, assigns the return value to Property, and then returns it. Returns null and does
-	 * nothing if PlayingWorld is not an in-game world.
-	 */
-	static UAGX_TrackInternalMergePropertiesInstance* GetOrCreateInstance(
-		UWorld* PlayingWorld, UAGX_TrackInternalMergePropertiesBase*& Property);
 
 	UAGX_TrackInternalMergePropertiesBase();
 

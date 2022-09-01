@@ -14,26 +14,6 @@
 // Unreal Engine includes.
 #include "Engine/World.h"
 
-UAGX_TrackInternalMergePropertiesInstance*
-UAGX_TrackInternalMergePropertiesBase::GetOrCreateInstance(
-	UWorld* PlayingWorld, UAGX_TrackInternalMergePropertiesBase*& Property)
-{
-	if (Property == nullptr || PlayingWorld == nullptr || !PlayingWorld->IsGameWorld())
-	{
-		return nullptr;
-	}
-
-	UAGX_TrackInternalMergePropertiesInstance* Instance =
-		Property->GetOrCreateInstance(PlayingWorld);
-
-	if (Instance != Property)
-	{
-		Property = Instance;
-	}
-
-	return Instance;
-}
-
 UAGX_TrackInternalMergePropertiesBase::UAGX_TrackInternalMergePropertiesBase()
 	: bMergeEnabled(false)
 	, NumNodesPerMergeSegment(3)
