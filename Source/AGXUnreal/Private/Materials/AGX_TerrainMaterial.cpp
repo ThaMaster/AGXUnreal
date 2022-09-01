@@ -3,6 +3,7 @@
 #include "Materials/AGX_TerrainMaterial.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
@@ -12,17 +13,22 @@
 // Unreal Engine includes.
 #include "Engine/World.h"
 
-
 // Surface properties.
 void UAGX_TerrainMaterial::SetFrictionEnabled(bool Enabled)
 {
-	if (Instance != nullptr)
+	if (IsInstanceAGX())
 	{
-		Instance->SetFrictionEnabled(Enabled);
+		Surface.bFrictionEnabled = Enabled;
+		if (HasShapeMaterialNative())
+			ShapeMaterialNativeBarrier->SetFrictionEnabled(Enabled);
 	}
-	else
+	else // IsAssetAGX
 	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
+		if (Instance != nullptr)
+		{
+			Instance->SetFrictionEnabled(Enabled);
+			return;
+		}
 		Surface.bFrictionEnabled = Enabled;
 	}
 }
@@ -30,266 +36,314 @@ void UAGX_TerrainMaterial::SetFrictionEnabled(bool Enabled)
 bool UAGX_TerrainMaterial::GetFrictionEnabled() const
 {
 	if (Instance != nullptr)
-	{
 		return Instance->GetFrictionEnabled();
-	}
+	if (HasShapeMaterialNative())
+		return ShapeMaterialNativeBarrier->GetFrictionEnabled();
 
 	return Surface.bFrictionEnabled;
 }
 
 void UAGX_TerrainMaterial::SetRoughness(float Roughness)
 {
-	if (Instance != nullptr)
-	{
-		Instance->SetRoughness(Roughness);
-	}
-	else
-	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Surface.Roughness = Roughness;
-	}
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		Surface.Roughness, Roughness, SetRoughness, HasShapeMaterialNative,
+		ShapeMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetRoughness() const
 {
-	if (Instance != nullptr)
-	{
-		return Instance->GetRoughness();
-	}
-
-	return Surface.Roughness;
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		Surface.Roughness, GetRoughness, HasShapeMaterialNative, ShapeMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetSurfaceViscosity(float Viscosity)
 {
-	if (Instance != nullptr)
-	{
-		Instance->SetSurfaceViscosity(Viscosity);
-	}
-	else
-	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Surface.Viscosity = Viscosity;
-	}
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		Surface.Viscosity, Viscosity, SetSurfaceViscosity, HasShapeMaterialNative,
+		ShapeMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetSurfaceViscosity() const
 {
-	if (Instance != nullptr)
-	{
-		return Instance->GetSurfaceViscosity();
-	}
-
-	return Surface.Viscosity;
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		Surface.Viscosity, GetSurfaceViscosity, HasShapeMaterialNative, ShapeMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetAdhesion(float AdhesiveForce, float AdhesiveOverlap)
 {
-	if (Instance != nullptr)
+	if (IsInstanceAGX())
 	{
-		Instance->SetAdhesion(AdhesiveForce, AdhesiveOverlap);
+		Surface.AdhesiveForce = static_cast<double>(AdhesiveForce);
+		Surface.AdhesiveOverlap = static_cast<double>(AdhesiveOverlap);
+		if (HasShapeMaterialNative())
+		{
+			ShapeMaterialNativeBarrier->SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
+		}
 	}
-	else
+	else // IsAssetAGX
 	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Surface.AdhesiveForce = AdhesiveForce;
-		Surface.AdhesiveOverlap = AdhesiveOverlap;
+		if (Instance != nullptr)
+		{
+			Instance->SetAdhesion(AdhesiveForce, AdhesiveOverlap);
+			return;
+		}
+		Surface.AdhesiveForce = static_cast<double>(AdhesiveForce);
+		Surface.AdhesiveOverlap = static_cast<double>(AdhesiveOverlap);
 	}
 }
 
 float UAGX_TerrainMaterial::GetAdhesiveForce() const
 {
-	if (Instance != nullptr)
-	{
-		return Instance->GetAdhesiveForce();
-	}
-
-	return Surface.AdhesiveForce;
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		Surface.AdhesiveForce, GetAdhesiveForce, HasShapeMaterialNative,
+		ShapeMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetAdhesiveOverlap() const
 {
-	if (Instance != nullptr)
-	{
-		return Instance->GetAdhesiveOverlap();
-	}
-
-	return Surface.AdhesiveOverlap;
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		Surface.AdhesiveOverlap, GetAdhesiveOverlap, HasShapeMaterialNative,
+		ShapeMaterialNativeBarrier);
 }
 
 // Bulk properties.
 void UAGX_TerrainMaterial::SetAdhesionOverlapFactor(float AdhesionOverlapFactor)
 {
-	TerrainBulk.AdhesionOverlapFactor = static_cast<double>(AdhesionOverlapFactor);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.AdhesionOverlapFactor, AdhesionOverlapFactor, SetAdhesionOverlapFactor,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetAdhesionOverlapFactor() const
 {
-	return static_cast<float>(TerrainBulk.AdhesionOverlapFactor);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.AdhesionOverlapFactor, GetAdhesionOverlapFactor, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetCohesion(float Cohesion)
 {
-	TerrainBulk.Cohesion = static_cast<double>(Cohesion);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.Cohesion, Cohesion, SetCohesion, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetCohesion() const
 {
-	return static_cast<float>(TerrainBulk.Cohesion);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.Cohesion, GetCohesion, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetDensity(float Density)
 {
-	TerrainBulk.Density = static_cast<double>(Density);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.Density, Density, SetDensity, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetDensity() const
 {
-	return static_cast<float>(TerrainBulk.Density);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.Density, GetDensity, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetDilatancyAngle(float DilatancyAngle)
 {
-	TerrainBulk.DilatancyAngle = static_cast<double>(DilatancyAngle);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.DilatancyAngle, DilatancyAngle, SetDilatancyAngle, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetDilatancyAngle() const
 {
-	return static_cast<float>(TerrainBulk.DilatancyAngle);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.DilatancyAngle, GetDilatancyAngle, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetFrictionAngle(float FrictionAngle)
 {
-	TerrainBulk.FrictionAngle = static_cast<double>(FrictionAngle);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.FrictionAngle, FrictionAngle, SetFrictionAngle, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetFrictionAngle() const
 {
-	return static_cast<float>(TerrainBulk.FrictionAngle);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.FrictionAngle, GetFrictionAngle, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetMaxDensity(float MaxDensity)
 {
-	TerrainBulk.MaxDensity = static_cast<double>(MaxDensity);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.MaxDensity, MaxDensity, SetMaxDensity, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetMaxDensity() const
 {
-	return static_cast<float>(TerrainBulk.MaxDensity);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.MaxDensity, GetMaxDensity, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetPoissonsRatio(float PoissonsRatio)
 {
-	TerrainBulk.PoissonsRatio = static_cast<double>(PoissonsRatio);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.PoissonsRatio, PoissonsRatio, SetPoissonsRatio, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetPoissonsRatio() const
 {
-	return static_cast<float>(TerrainBulk.PoissonsRatio);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.PoissonsRatio, GetPoissonsRatio, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetSwellFactor(float SwellFactor)
 {
-	TerrainBulk.SwellFactor = static_cast<double>(SwellFactor);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.SwellFactor, SwellFactor, SetSwellFactor, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetSwellFactor() const
 {
-	return static_cast<float>(TerrainBulk.SwellFactor);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.SwellFactor, GetSwellFactor, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetYoungsModulus(float YoungsModulus)
 {
-	TerrainBulk.YoungsModulus = static_cast<double>(YoungsModulus);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.YoungsModulus, YoungsModulus, SetYoungsModulus, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetYoungsModulus() const
 {
-	return static_cast<float>(TerrainBulk.YoungsModulus);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainBulk.YoungsModulus, GetYoungsModulus, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 // Compaction properties.
 void UAGX_TerrainMaterial::SetAngleOfReposeCompactionRate(float AngleOfReposeCompactionRate)
 {
-	TerrainCompaction.AngleOfReposeCompactionRate =
-		static_cast<double>(AngleOfReposeCompactionRate);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.AngleOfReposeCompactionRate, AngleOfReposeCompactionRate,
+		SetAngleOfReposeCompactionRate, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetAngleOfReposeCompactionRate() const
 {
-	return static_cast<float>(TerrainCompaction.AngleOfReposeCompactionRate);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.AngleOfReposeCompactionRate, GetAngleOfReposeCompactionRate,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetBankStatePhi(float Phi0)
 {
-	TerrainCompaction.Phi0 = static_cast<double>(Phi0);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.Phi0, Phi0, SetBankStatePhi, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetBankStatePhi() const
 {
-	return static_cast<float>(TerrainCompaction.Phi0);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.Phi0, GetBankStatePhi, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetCompactionTimeRelaxationConstant(
 	float CompactionTimeRelaxationConstant)
 {
-	TerrainCompaction.CompactionTimeRelaxationConstant =
-		static_cast<double>(CompactionTimeRelaxationConstant);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.CompactionTimeRelaxationConstant, CompactionTimeRelaxationConstant,
+		SetCompactionTimeRelaxationConstant, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetCompactionTimeRelaxationConstant() const
 {
-	return static_cast<float>(TerrainCompaction.CompactionTimeRelaxationConstant);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.CompactionTimeRelaxationConstant, GetCompactionTimeRelaxationConstant,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetCompressionIndex(float CompressionIndex)
 {
-	TerrainCompaction.CompressionIndex = static_cast<double>(CompressionIndex);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.CompressionIndex, CompressionIndex, SetCompressionIndex,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetCompressionIndex() const
 {
-	return static_cast<float>(TerrainCompaction.CompressionIndex);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.CompressionIndex, GetCompressionIndex, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetHardeningConstantKe(float K_e)
 {
-	TerrainCompaction.K_e = static_cast<double>(K_e);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.K_e, K_e, SetHardeningConstantKe, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetHardeningConstantKe() const
 {
-	return static_cast<float>(TerrainCompaction.K_e);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.K_e, GetHardeningConstantKe, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetHardeningConstantNe(float N_e)
 {
-	TerrainCompaction.N_e = static_cast<double>(N_e);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.N_e, N_e, SetHardeningConstantNe, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetHardeningConstantNe() const
 {
-	return static_cast<float>(TerrainCompaction.N_e);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.N_e, GetHardeningConstantNe, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetPreconsolidationStress(float PreconsolidationStress)
 {
-	TerrainCompaction.PreconsolidationStress = static_cast<double>(PreconsolidationStress);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.PreconsolidationStress, PreconsolidationStress, SetPreconsolidationStress,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetPreconsolidationStress() const
 {
-	return static_cast<float>(TerrainCompaction.PreconsolidationStress);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.PreconsolidationStress, GetPreconsolidationStress,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::SetStressCutOffFraction(float StressCutOffFraction)
 {
-	TerrainCompaction.StressCutOffFraction = static_cast<double>(StressCutOffFraction);
+	AGX_ASSET_SETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.StressCutOffFraction, StressCutOffFraction, SetStressCutOffFraction,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetStressCutOffFraction() const
 {
-	return static_cast<float>(TerrainCompaction.StressCutOffFraction);
+	AGX_ASSET_GETTER_DUAL_NATIVE_F2D_IMPL(
+		TerrainCompaction.StressCutOffFraction, GetStressCutOffFraction, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
@@ -300,7 +354,7 @@ void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 	TerrainBulk.Density = Source.GetDensity();
 	TerrainBulk.DilatancyAngle = Source.GetDilatancyAngle();
 	TerrainBulk.FrictionAngle = Source.GetFrictionAngle();
-	TerrainBulk.MaxDensity = Source.GetMaximumDensity();
+	TerrainBulk.MaxDensity = Source.GetMaxDensity();
 	TerrainBulk.PoissonsRatio = Source.GetPoissonsRatio();
 	TerrainBulk.SwellFactor = Source.GetSwellFactor();
 	TerrainBulk.YoungsModulus = Source.GetYoungsModulus();
@@ -311,8 +365,8 @@ void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 	TerrainCompaction.CompactionTimeRelaxationConstant =
 		Source.GetCompactionTimeRelaxationConstant();
 	TerrainCompaction.CompressionIndex = Source.GetCompressionIndex();
-	TerrainCompaction.K_e = Source.GetHardeningConstantKE();
-	TerrainCompaction.N_e = Source.GetHardeningConstantNE();
+	TerrainCompaction.K_e = Source.GetHardeningConstantKe();
+	TerrainCompaction.N_e = Source.GetHardeningConstantNe();
 	TerrainCompaction.PreconsolidationStress = Source.GetPreconsolidationStress();
 	TerrainCompaction.StressCutOffFraction = Source.GetStressCutOffFraction();
 }
@@ -333,7 +387,7 @@ void UAGX_TerrainMaterial::CopyTerrainMaterialProperties(const UAGX_TerrainMater
 
 UAGX_MaterialBase* UAGX_TerrainMaterial::GetOrCreateInstance(UWorld* PlayingWorld)
 {
-	if (IsInstance())
+	if (IsInstanceAGX())
 	{
 		return this;
 	}
@@ -374,23 +428,30 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, bFrictionEnabled),
-		[](ThisClass* This) { This->SetFrictionEnabled(This->Surface.bFrictionEnabled); });
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Surface.bFrictionEnabled, SetFrictionEnabled) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, Roughness),
-		[](ThisClass* This) { This->SetRoughness(This->Surface.Roughness); });
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Surface.Roughness, SetRoughness) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, Viscosity),
-		[](ThisClass* This) { This->SetSurfaceViscosity(This->Surface.Viscosity); });
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Surface.Viscosity, SetSurfaceViscosity) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, AdhesiveForce),
 		[](ThisClass* This)
 		{
+			if (This->IsInstanceAGX())
+			{
+				This->Asset->Surface.AdhesiveForce = This->Surface.AdhesiveForce;
+			}
 			This->SetAdhesion(
 				static_cast<float>(This->Surface.AdhesiveForce),
 				static_cast<float>(This->Surface.AdhesiveOverlap));
@@ -401,6 +462,10 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, AdhesiveOverlap),
 		[](ThisClass* This)
 		{
+			if (This->IsInstanceAGX())
+			{
+				This->Asset->Surface.AdhesiveOverlap = This->Surface.AdhesiveOverlap;
+			}
 			This->SetAdhesion(
 				static_cast<float>(This->Surface.AdhesiveForce),
 				static_cast<float>(This->Surface.AdhesiveOverlap));
@@ -410,56 +475,59 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, AdhesionOverlapFactor),
-		[](ThisClass* This) {
-			This->SetAdhesionOverlapFactor(
-				static_cast<float>(This->TerrainBulk.AdhesionOverlapFactor));
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(
+				TerrainBulk.AdhesionOverlapFactor, SetAdhesionOverlapFactor)
 		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, Cohesion),
-		[](ThisClass* This) { This->SetCohesion(static_cast<float>(This->TerrainBulk.Cohesion)); });
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(TerrainBulk.Cohesion, SetCohesion) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, Density),
-		[](ThisClass* This) { This->SetDensity(static_cast<float>(This->TerrainBulk.Density)); });
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(TerrainBulk.Density, SetDensity) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, DilatancyAngle),
 		[](ThisClass* This)
-		{ This->SetDilatancyAngle(static_cast<float>(This->TerrainBulk.DilatancyAngle)); });
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(TerrainBulk.DilatancyAngle, SetDilatancyAngle) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, FrictionAngle),
 		[](ThisClass* This)
-		{ This->SetFrictionAngle(static_cast<float>(This->TerrainBulk.FrictionAngle)); });
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(TerrainBulk.FrictionAngle, SetFrictionAngle) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, MaxDensity),
 		[](ThisClass* This)
-		{ This->SetMaxDensity(static_cast<float>(This->TerrainBulk.MaxDensity)); });
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(TerrainBulk.MaxDensity, SetMaxDensity) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, PoissonsRatio),
 		[](ThisClass* This)
-		{ This->SetPoissonsRatio(static_cast<float>(This->TerrainBulk.PoissonsRatio)); });
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(TerrainBulk.PoissonsRatio, SetPoissonsRatio) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, SwellFactor),
 		[](ThisClass* This)
-		{ This->SetSwellFactor(static_cast<float>(This->TerrainBulk.SwellFactor)); });
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(TerrainBulk.SwellFactor, SetSwellFactor) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, YoungsModulus),
 		[](ThisClass* This)
-		{ This->SetYoungsModulus(static_cast<float>(This->TerrainBulk.YoungsModulus)); });
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(TerrainBulk.YoungsModulus, SetYoungsModulus) });
 
 	// Compaction properties.
 	PropertyDispatcher.Add(
@@ -467,51 +535,53 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, AngleOfReposeCompactionRate),
 		[](ThisClass* This)
 		{
-			This->SetAngleOfReposeCompactionRate(
-				static_cast<float>(This->TerrainCompaction.AngleOfReposeCompactionRate));
+			AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(
+				TerrainCompaction.AngleOfReposeCompactionRate, SetAngleOfReposeCompactionRate)
 		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainCompaction),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, Phi0),
 		[](ThisClass* This)
-		{ This->SetBankStatePhi(static_cast<float>(This->TerrainCompaction.Phi0)); });
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(TerrainCompaction.Phi0, SetBankStatePhi) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainCompaction),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, CompactionTimeRelaxationConstant),
 		[](ThisClass* This)
 		{
-			This->SetCompactionTimeRelaxationConstant(
-				static_cast<float>(This->TerrainCompaction.CompactionTimeRelaxationConstant));
+			AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(
+				TerrainCompaction.CompactionTimeRelaxationConstant,
+				SetCompactionTimeRelaxationConstant)
 		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainCompaction),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, CompressionIndex),
 		[](ThisClass* This) {
-			This->SetCompressionIndex(static_cast<float>(This->TerrainCompaction.CompressionIndex));
+			AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(
+				TerrainCompaction.CompressionIndex, SetCompressionIndex)
 		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainCompaction),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, K_e),
 		[](ThisClass* This)
-		{ This->SetHardeningConstantKe(static_cast<float>(This->TerrainCompaction.K_e)); });
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(TerrainCompaction.K_e, SetHardeningConstantKe) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainCompaction),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, N_e),
 		[](ThisClass* This)
-		{ This->SetHardeningConstantNe(static_cast<float>(This->TerrainCompaction.N_e)); });
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(TerrainCompaction.N_e, SetHardeningConstantNe) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainCompaction),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, PreconsolidationStress),
 		[](ThisClass* This)
 		{
-			This->SetPreconsolidationStress(
-				static_cast<float>(This->TerrainCompaction.PreconsolidationStress));
+			AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(
+				TerrainCompaction.PreconsolidationStress, SetPreconsolidationStress)
 		});
 
 	PropertyDispatcher.Add(
@@ -519,8 +589,8 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, StressCutOffFraction),
 		[](ThisClass* This)
 		{
-			This->SetStressCutOffFraction(
-				static_cast<float>(This->TerrainCompaction.StressCutOffFraction));
+			AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(
+				TerrainCompaction.StressCutOffFraction, SetStressCutOffFraction)
 		});
 }
 #endif
@@ -528,7 +598,7 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 FTerrainMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateTerrainMaterialNative(
 	UWorld* PlayingWorld)
 {
-	if (IsAsset())
+	if (IsAssetAGX())
 	{
 		if (Instance == nullptr)
 		{
@@ -541,10 +611,10 @@ FTerrainMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateTerrainMaterialNative(
 			return nullptr;
 		}
 
-		return Instance->GetOrCreateShapeMaterialNative(PlayingWorld);
+		return Instance->GetOrCreateTerrainMaterialNative(PlayingWorld);
 	}
 
-	AGX_CHECK(IsInstance());
+	AGX_CHECK(IsInstanceAGX());
 	if (!HasTerrainMaterialNative())
 	{
 		CreateTerrainMaterialNative(PlayingWorld);
@@ -554,7 +624,7 @@ FTerrainMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateTerrainMaterialNative(
 
 FShapeMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
 {
-	if (IsAsset())
+	if (IsAssetAGX())
 	{
 		if (Instance == nullptr)
 		{
@@ -570,7 +640,7 @@ FShapeMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateShapeMaterialNative(UWor
 		return Instance->GetOrCreateShapeMaterialNative(PlayingWorld);
 	}
 
-	AGX_CHECK(IsInstance());
+	AGX_CHECK(IsInstanceAGX());
 	if (!HasShapeMaterialNative())
 	{
 		CreateShapeMaterialNative(PlayingWorld);
@@ -578,12 +648,11 @@ FShapeMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateShapeMaterialNative(UWor
 	return GetShapeMaterialNative();
 }
 
-
 UAGX_TerrainMaterial* UAGX_TerrainMaterial::CreateFromAsset(
 	UWorld* PlayingWorld, UAGX_TerrainMaterial* Source)
 {
 	check(Source);
-	check(Source->IsAsset());
+	check(Source->IsAssetAGX());
 	check(PlayingWorld);
 	check(PlayingWorld->IsGameWorld());
 
@@ -607,7 +676,7 @@ UAGX_TerrainMaterial* UAGX_TerrainMaterial::CreateFromAsset(
 
 void UAGX_TerrainMaterial::CreateTerrainMaterialNative(UWorld* PlayingWorld)
 {
-	if (IsAsset())
+	if (IsAssetAGX())
 	{
 		if (Instance == nullptr)
 		{
@@ -615,13 +684,16 @@ void UAGX_TerrainMaterial::CreateTerrainMaterialNative(UWorld* PlayingWorld)
 				LogAGX, Error,
 				TEXT("CreateTerrainMaterialNative was called on UAGX_TerrainMaterial '%s'"
 					 "who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called prior "
-					 "to calling this function."), *GetName());
-			return nullptr;
+					 "to calling this function."),
+				*GetName());
+			return;
 		}
 
-		return Instance->GetOrCreateShapeMaterialNative(PlayingWorld);
+		Instance->CreateTerrainMaterialNative(PlayingWorld);
+		return;
 	}
 
+	AGX_CHECK(IsInstanceAGX());
 	TerrainMaterialNativeBarrier.Reset(new FTerrainMaterialBarrier());
 	TerrainMaterialNativeBarrier->AllocateNative(TCHAR_TO_UTF8(*GetName()));
 	check(HasTerrainMaterialNative());
@@ -631,7 +703,7 @@ void UAGX_TerrainMaterial::CreateTerrainMaterialNative(UWorld* PlayingWorld)
 
 void UAGX_TerrainMaterial::CreateShapeMaterialNative(UWorld* PlayingWorld)
 {
-	if (IsAsset())
+	if (IsAssetAGX())
 	{
 		if (Instance == nullptr)
 		{
@@ -639,13 +711,16 @@ void UAGX_TerrainMaterial::CreateShapeMaterialNative(UWorld* PlayingWorld)
 				LogAGX, Error,
 				TEXT("CreateShapeMaterialNative was called on UAGX_TerrainMaterial '%s' "
 					 "who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called prior "
-					 "to calling this function."), *GetName());
-			return nullptr;
+					 "to calling this function."),
+				*GetName());
+			return;
 		}
 
-		return Instance->GetOrCreateShapeMaterialNative(PlayingWorld);
+		Instance->CreateShapeMaterialNative(PlayingWorld);
+		return;
 	}
 
+	AGX_CHECK(IsInstanceAGX());
 	ShapeMaterialNativeBarrier.Reset(new FShapeMaterialBarrier());
 	ShapeMaterialNativeBarrier->AllocateNative(TCHAR_TO_UTF8(*GetName()));
 	check(HasShapeMaterialNative());
@@ -677,7 +752,7 @@ void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()
 {
 	if (HasTerrainMaterialNative())
 	{
-		AGX_CHECK(IsInstance());
+		AGX_CHECK(IsInstanceAGX());
 		TerrainMaterialNativeBarrier->SetName(TCHAR_TO_UTF8(*GetName()));
 
 		// Set Bulk properties.
@@ -686,7 +761,7 @@ void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()
 		TerrainMaterialNativeBarrier->SetDensity(TerrainBulk.Density);
 		TerrainMaterialNativeBarrier->SetDilatancyAngle(TerrainBulk.DilatancyAngle);
 		TerrainMaterialNativeBarrier->SetFrictionAngle(TerrainBulk.FrictionAngle);
-		TerrainMaterialNativeBarrier->SetMaximumDensity(TerrainBulk.MaxDensity);
+		TerrainMaterialNativeBarrier->SetMaxDensity(TerrainBulk.MaxDensity);
 		TerrainMaterialNativeBarrier->SetPoissonsRatio(TerrainBulk.PoissonsRatio);
 		TerrainMaterialNativeBarrier->SetSwellFactor(TerrainBulk.SwellFactor);
 		TerrainMaterialNativeBarrier->SetYoungsModulus(TerrainBulk.YoungsModulus);
@@ -698,8 +773,8 @@ void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()
 		TerrainMaterialNativeBarrier->SetCompactionTimeRelaxationConstant(
 			TerrainCompaction.CompactionTimeRelaxationConstant);
 		TerrainMaterialNativeBarrier->SetCompressionIndex(TerrainCompaction.CompressionIndex);
-		TerrainMaterialNativeBarrier->SetHardeningConstantKE(TerrainCompaction.K_e);
-		TerrainMaterialNativeBarrier->SetHardeningConstantNE(TerrainCompaction.N_e);
+		TerrainMaterialNativeBarrier->SetHardeningConstantKe(TerrainCompaction.K_e);
+		TerrainMaterialNativeBarrier->SetHardeningConstantNe(TerrainCompaction.N_e);
 		TerrainMaterialNativeBarrier->SetPreconsolidationStress(
 			TerrainCompaction.PreconsolidationStress);
 		TerrainMaterialNativeBarrier->SetStressCutOffFraction(
@@ -711,7 +786,7 @@ void UAGX_TerrainMaterial::UpdateShapeMaterialNativeProperties()
 {
 	if (HasShapeMaterialNative())
 	{
-		AGX_CHECK(IsInstance());
+		AGX_CHECK(IsInstanceAGX());
 		ShapeMaterialNativeBarrier->SetName(TCHAR_TO_UTF8(*GetName()));
 
 		ShapeMaterialNativeBarrier->SetDensity(Bulk.Density);
@@ -728,12 +803,12 @@ void UAGX_TerrainMaterial::UpdateShapeMaterialNativeProperties()
 	}
 }
 
-bool UAGX_TerrainMaterial::IsAsset() const
+bool UAGX_TerrainMaterial::IsAssetAGX() const
 {
-	return !IsInstance();
+	return !IsInstanceAGX();
 }
 
-bool UAGX_TerrainMaterial::IsInstance() const
+bool UAGX_TerrainMaterial::IsInstanceAGX() const
 {
 	// An instance of this class will always have a reference to it's corresponding Asset.
 	// An asset will never have this reference set.
