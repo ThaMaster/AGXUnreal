@@ -1563,9 +1563,11 @@ bool UAGX_WireComponent::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
 
 	if (!HasNative())
 	{
+		// Not in play, we are done.
 		return true;
 	}
 
+	// Responsible to create instance of non exists and do the asset/instance swap.
 	return UpdateNativeMaterial();
 }
 
@@ -1732,6 +1734,12 @@ bool UAGX_WireComponent::UpdateNativeMaterial()
 	UAGX_ShapeMaterial* MaterialInstance =
 		static_cast<UAGX_ShapeMaterial*>(ShapeMaterial->GetOrCreateInstance(World));
 	check(MaterialInstance);
+
+	if (ShapeMaterial != MaterialInstance)
+	{
+		ShapeMaterial = MaterialInstance;
+	}
+
 	FShapeMaterialBarrier* MaterialBarrier =
 		MaterialInstance->GetOrCreateShapeMaterialNative(World);
 	check(MaterialBarrier);

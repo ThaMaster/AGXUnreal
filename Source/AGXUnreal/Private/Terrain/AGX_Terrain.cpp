@@ -74,9 +74,11 @@ void AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
 
 	if (!HasNative())
 	{
+		// Not in play, we are done.
 		return;
 	}
 
+	// Responsible to create instance of non exists and do the asset/instance swap.
 	CreateTerrainMaterial();
 }
 
@@ -557,8 +559,12 @@ void AAGX_Terrain::CreateTerrainMaterial()
 		UAGX_TerrainMaterial* TerrainMaterialInstance =
 			static_cast<UAGX_TerrainMaterial*>(
 				TerrainMaterial->GetOrCreateInstance(GetWorld()));
-
 		check(TerrainMaterialInstance);
+
+		if (TerrainMaterial != TerrainMaterialInstance)
+		{
+			TerrainMaterial = TerrainMaterialInstance;
+		}
 
 		FTerrainMaterialBarrier* TerrainMaterialBarrier =
 			TerrainMaterialInstance->GetOrCreateTerrainMaterialNative(GetWorld());

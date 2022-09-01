@@ -114,7 +114,6 @@ bool UAGX_ShapeComponent::UpdateNativeMaterial()
 }
 
 #if WITH_EDITOR
-
 bool UAGX_ShapeComponent::DoesPropertyAffectVisualMesh(
 	const FName& PropertyName, const FName& MemberPropertyName) const
 {
@@ -327,26 +326,15 @@ bool UAGX_ShapeComponent::SetShapeMaterial(
 		return true;
 	}
 
+	ShapeMaterial = InShapeMaterial;
+
 	if (!HasNative())
 	{
-		// Not initialized yet, so simply assign the material we're given.
-		ShapeMaterial = InShapeMaterial;
+		// Not in play, we are done.		
 		return true;
 	}
 
-	UAGX_ShapeMaterial* Instance =
-		static_cast<UAGX_ShapeMaterial*>(InShapeMaterial->GetOrCreateInstance(GetWorld()));
-	if (Instance == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Shape '%s', in Actor '%s', could not create Shape Material Instance for '%s'. "
-				 "Material not changed."),
-			*GetName(), *GetLabelSafe(GetOwner()), *InShapeMaterial->GetName());
-		return false;
-	}
-
-	ShapeMaterial = Instance;
+	// Responsible to create instance of non exists and do the asset/instance swap.
 	return UpdateNativeMaterial();
 }
 
