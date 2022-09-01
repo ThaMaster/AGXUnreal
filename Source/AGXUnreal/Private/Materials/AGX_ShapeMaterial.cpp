@@ -3,6 +3,7 @@
 #include "Materials/AGX_ShapeMaterial.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
@@ -11,15 +12,16 @@
 // Unreal Engine includes.
 #include "Engine/World.h"
 
-
 namespace AGX_ShapeMaterial_helpers
 {
 	void LogBadUsage(
 		const FString& FunctionName, const FString& ActualInstanceOrAsset,
 		const FString& AttemptedInstanceOrAsset)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Function '%s' was called on an %s of class UAGX_ShapeMaterial "
-			"which is not allowed. This function may only be called on an %s of this class."),
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Function '%s' was called on an %s of class UAGX_ShapeMaterial "
+				 "which is not allowed. This function may only be called on an %s of this class."),
 			*FunctionName, *ActualInstanceOrAsset, *AttemptedInstanceOrAsset);
 	}
 }
@@ -50,26 +52,30 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, bFrictionEnabled),
-		[](ThisClass* This) { This->SetFrictionEnabled(This->Surface.bFrictionEnabled); });
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Surface.bFrictionEnabled, SetFrictionEnabled) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, Roughness),
-		[](ThisClass* This) {
-			if (This->IsInstance())
-				This->Asset->Surface.Roughness = This->Surface.Roughness;
-			This->SetRoughness(This->Surface.Roughness); });
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Surface.Roughness, SetRoughness) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, Viscosity),
-		[](ThisClass* This) { This->SetSurfaceViscosity(This->Surface.Viscosity); });
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Surface.Viscosity, SetSurfaceViscosity) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, AdhesiveForce),
 		[](ThisClass* This)
 		{
+			if (This->IsInstanceAGX())
+			{
+				This->Asset->Surface.AdhesiveForce = This->Surface.AdhesiveForce;
+			}
 			This->SetAdhesion(
 				static_cast<float>(This->Surface.AdhesiveForce),
 				static_cast<float>(This->Surface.AdhesiveOverlap));
@@ -80,6 +86,10 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, AdhesiveOverlap),
 		[](ThisClass* This)
 		{
+			if (This->IsInstanceAGX())
+			{
+				This->Asset->Surface.AdhesiveOverlap = This->Surface.AdhesiveOverlap;
+			}
 			This->SetAdhesion(
 				static_cast<float>(This->Surface.AdhesiveForce),
 				static_cast<float>(This->Surface.AdhesiveOverlap));
@@ -89,29 +99,29 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Bulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, Density),
-		[](ThisClass* This)
-		{
-			if (This->IsInstance())
-				This->Asset->Bulk.Density = This->Bulk.Density;
-			This->SetDensity(static_cast<float>(This->Bulk.Density));
-		});
+		[](ThisClass* This) { AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Bulk.Density, SetDensity) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Bulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, Viscosity),
-		[](ThisClass* This) { This->SetBulkViscosity(static_cast<float>(This->Bulk.Viscosity)); });
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Bulk.Viscosity, SetBulkViscosity) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Bulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, SpookDamping),
 		[](ThisClass* This)
-		{ This->SetSpookDamping(static_cast<float>(This->Bulk.SpookDamping)); });
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Bulk.SpookDamping, SetSpookDamping) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Bulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, MinElasticRestLength),
 		[](ThisClass* This)
 		{
+			if (This->IsInstanceAGX())
+			{
+				This->Asset->Bulk.MinElasticRestLength = This->Bulk.MinElasticRestLength;
+			}
 			This->SetMinMaxElasticRestLength(
 				static_cast<float>(This->Bulk.MinElasticRestLength),
 				static_cast<float>(This->Bulk.MaxElasticRestLength));
@@ -122,6 +132,10 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, MaxElasticRestLength),
 		[](ThisClass* This)
 		{
+			if (This->IsInstanceAGX())
+			{
+				This->Asset->Bulk.MaxElasticRestLength = This->Bulk.MaxElasticRestLength;
+			}
 			This->SetMinMaxElasticRestLength(
 				static_cast<float>(This->Bulk.MinElasticRestLength),
 				static_cast<float>(This->Bulk.MaxElasticRestLength));
@@ -131,349 +145,208 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Wire),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialWireProperties, YoungsModulusStretch),
-		[](ThisClass* This) { This->SetYoungsModulusStretch(This->Wire.YoungsModulusStretch); });
+		[](ThisClass* This) {
+			AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Wire.YoungsModulusStretch, SetYoungsModulusStretch)
+		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Wire),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialWireProperties, YoungsModulusBend),
-		[](ThisClass* This) { This->SetYoungsModulusBend(This->Wire.YoungsModulusBend); });
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Wire.YoungsModulusBend, SetYoungsModulusBend) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Wire),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialWireProperties, SpookDampingStretch),
-		[](ThisClass* This) { This->SetSpookDampingStretch(This->Wire.SpookDampingStretch); });
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Wire.SpookDampingStretch, SetSpookDampingStretch) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Wire),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialWireProperties, SpookDampingBend),
-		[](ThisClass* This) { This->SetSpookDampingBend(This->Wire.SpookDampingBend); });
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Wire.SpookDampingBend, SetSpookDampingBend) });
 }
 #endif
 
-void UAGX_ShapeMaterial::SetDensity(float InDensity)
-{
-	if (IsInstance())
-	{
-		Bulk.Density = InDensity;
-		if (HasNative())
-		{
-			NativeBarrier->SetDensity(static_cast<double>(InDensity));
-		}
-	}
-	else if (Instance != nullptr) // IsAsset
-	{
-		Instance->SetDensity(InDensity);
-	}
-}
-
-float UAGX_ShapeMaterial::GetDensity() const
-{
-	if (Instance != nullptr)
-	{
-		return Instance->GetDensity();
-	}
-
-	return Bulk.Density;
-}
-
-void UAGX_ShapeMaterial::SetYoungsModulus(float InYoungsModulus)
-{
-	if (Instance != nullptr)
-	{
-		Instance->SetYoungsModulus(InYoungsModulus);
-	}
-	else
-	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Bulk.YoungsModulus = InYoungsModulus;
-	}
-}
-
-float UAGX_ShapeMaterial::GetYoungsModulus() const
-{
-	if (Instance != nullptr)
-	{
-		return Instance->GetYoungsModulus();
-	}
-
-	return Bulk.YoungsModulus;
-}
-
-void UAGX_ShapeMaterial::SetBulkViscosity(float InBulkViscosity)
-{
-	if (Instance != nullptr)
-	{
-		Instance->SetBulkViscosity(InBulkViscosity);
-	}
-	else
-	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Bulk.Viscosity = InBulkViscosity;
-	}
-}
-
-float UAGX_ShapeMaterial::GetBulkViscosity() const
-{
-	if (Instance != nullptr)
-	{
-		return Instance->GetBulkViscosity();
-	}
-
-	return Bulk.Viscosity;
-}
-
-void UAGX_ShapeMaterial::SetSpookDamping(float InSpookDamping)
-{
-	if (Instance != nullptr)
-	{
-		Instance->SetSpookDamping(InSpookDamping);
-	}
-	else
-	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Bulk.SpookDamping = InSpookDamping;
-	}
-}
-
-float UAGX_ShapeMaterial::GetSpookDamping() const
-{
-	if (Instance != nullptr)
-	{
-		return Instance->GetSpookDamping();
-	}
-
-	return Bulk.SpookDamping;
-}
-
-void UAGX_ShapeMaterial::SetMinMaxElasticRestLength(float InMin, float InMax)
-{
-	if (Instance != nullptr)
-	{
-		Instance->SetMinMaxElasticRestLength(InMin, InMax);
-	}
-	else
-	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Bulk.MinElasticRestLength = InMin;
-		Bulk.MaxElasticRestLength = InMax;
-	}
-}
-
-float UAGX_ShapeMaterial::GetMinElasticRestLength() const
-{
-	if (Instance != nullptr)
-	{
-		return Instance->GetMinElasticRestLength();
-	}
-
-	return Bulk.MinElasticRestLength;
-}
-
-float UAGX_ShapeMaterial::GetMaxElasticRestLength() const
-{
-	if (Instance != nullptr)
-	{
-		return Instance->GetMaxElasticRestLength();
-	}
-
-	return Bulk.MaxElasticRestLength;
-}
-
+// Surface properties.
 void UAGX_ShapeMaterial::SetFrictionEnabled(bool Enabled)
 {
-	if (Instance != nullptr)
-	{
-		Instance->SetFrictionEnabled(Enabled);
-	}
-	else
-	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Surface.bFrictionEnabled = Enabled;
-	}
+	AGX_ASSET_SETTER_IMPL(Surface.bFrictionEnabled, Enabled, SetFrictionEnabled);
 }
 
 bool UAGX_ShapeMaterial::GetFrictionEnabled() const
 {
-	if (Instance != nullptr)
-	{
-		return Instance->GetFrictionEnabled();
-	}
-
-	return Surface.bFrictionEnabled;
+	AGX_ASSET_GETTER_IMPL(Surface.bFrictionEnabled, GetFrictionEnabled);
 }
 
 void UAGX_ShapeMaterial::SetRoughness(float InRoughness)
 {
-	if (IsInstance())
-	{
-		Surface.Roughness = InRoughness;
-		if (HasNative())
-			NativeBarrier->SetRoughness(static_cast<double>(InRoughness));
-	}
-	else // IsAsset
-	{
-		if (Instance != nullptr)
-		{
-			Instance->SetRoughness(InRoughness);
-			return;
-		}
-		Bulk.Density = InRoughness;
-	}
+	AGX_ASSET_SETTER_F2D_IMPL(Surface.Roughness, InRoughness, SetRoughness);
 }
 
 float UAGX_ShapeMaterial::GetRoughness() const
 {
-	if (Instance != nullptr)
-		return Instance->GetRoughness();
-	if (HasNative())
-		return static_cast<float>(NativeBarrier->GetRoughness());
-
-	return static_cast<float>(Surface.Roughness);
+	AGX_ASSET_GETTER_D2F_IMPL(Surface.Roughness, GetRoughness);
 }
 
 void UAGX_ShapeMaterial::SetSurfaceViscosity(float Viscosity)
 {
-	if (Instance != nullptr)
-	{
-		Instance->SetSurfaceViscosity(Viscosity);
-	}
-	else
-	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Surface.Viscosity = Viscosity;
-	}
+	AGX_ASSET_SETTER_F2D_IMPL(Surface.Viscosity, Viscosity, SetSurfaceViscosity);
 }
 
 float UAGX_ShapeMaterial::GetSurfaceViscosity() const
 {
-	if (Instance != nullptr)
-	{
-		return Instance->GetSurfaceViscosity();
-	}
-
-	return Surface.Viscosity;
+	AGX_ASSET_GETTER_D2F_IMPL(Surface.Viscosity, GetSurfaceViscosity);
 }
 
 void UAGX_ShapeMaterial::SetAdhesion(float AdhesiveForce, float AdhesiveOverlap)
 {
-	if (Instance != nullptr)
+	if (IsInstanceAGX())
 	{
-		Instance->SetAdhesion(AdhesiveForce, AdhesiveOverlap);
+		Surface.AdhesiveForce = static_cast<double>(AdhesiveForce);
+		Surface.AdhesiveOverlap = static_cast<double>(AdhesiveOverlap);
+		if (HasNative())
+		{
+			NativeBarrier->SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
+		}
 	}
-	else
+	else // IsAssetAGX
 	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Surface.AdhesiveForce = AdhesiveForce;
-		Surface.AdhesiveOverlap = AdhesiveOverlap;
+		if (Instance != nullptr)
+		{
+			Instance->SetAdhesion(AdhesiveForce, AdhesiveOverlap);
+			return;
+		}
+		Surface.AdhesiveForce = static_cast<double>(AdhesiveForce);
+		Surface.AdhesiveOverlap = static_cast<double>(AdhesiveOverlap);
 	}
 }
 
 float UAGX_ShapeMaterial::GetAdhesiveForce() const
 {
-	if (Instance != nullptr)
-	{
-		return Instance->GetAdhesiveForce();
-	}
-
-	return Surface.AdhesiveForce;
+	AGX_ASSET_GETTER_D2F_IMPL(Surface.AdhesiveForce, GetAdhesiveForce);
 }
 
 float UAGX_ShapeMaterial::GetAdhesiveOverlap() const
 {
-	if (Instance != nullptr)
-	{
-		return Instance->GetAdhesiveOverlap();
-	}
-
-	return Surface.AdhesiveOverlap;
+	AGX_ASSET_GETTER_D2F_IMPL(Surface.AdhesiveOverlap, GetAdhesiveOverlap);
 }
 
+// Bulk properties.
+void UAGX_ShapeMaterial::SetDensity(float InDensity)
+{
+	AGX_ASSET_SETTER_F2D_IMPL(Bulk.Density, InDensity, SetDensity);
+}
+
+float UAGX_ShapeMaterial::GetDensity() const
+{
+	AGX_ASSET_GETTER_D2F_IMPL(Bulk.Density, GetDensity);
+}
+
+void UAGX_ShapeMaterial::SetYoungsModulus(float InYoungsModulus)
+{
+	AGX_ASSET_SETTER_F2D_IMPL(Bulk.YoungsModulus, InYoungsModulus, SetYoungsModulus);
+}
+
+float UAGX_ShapeMaterial::GetYoungsModulus() const
+{
+	AGX_ASSET_GETTER_D2F_IMPL(Bulk.YoungsModulus, GetYoungsModulus);
+}
+
+void UAGX_ShapeMaterial::SetBulkViscosity(float InBulkViscosity)
+{
+	AGX_ASSET_SETTER_F2D_IMPL(Bulk.Viscosity, InBulkViscosity, SetBulkViscosity);
+}
+
+float UAGX_ShapeMaterial::GetBulkViscosity() const
+{
+	AGX_ASSET_GETTER_D2F_IMPL(Bulk.Viscosity, GetBulkViscosity);
+}
+
+void UAGX_ShapeMaterial::SetSpookDamping(float InSpookDamping)
+{
+	AGX_ASSET_SETTER_F2D_IMPL(Bulk.SpookDamping, InSpookDamping, SetSpookDamping);
+}
+
+float UAGX_ShapeMaterial::GetSpookDamping() const
+{
+	AGX_ASSET_GETTER_D2F_IMPL(Bulk.SpookDamping, GetSpookDamping);
+}
+
+void UAGX_ShapeMaterial::SetMinMaxElasticRestLength(float InMin, float InMax)
+{
+	if (IsInstanceAGX())
+	{
+		Bulk.MinElasticRestLength = static_cast<double>(InMin);
+		Bulk.MaxElasticRestLength = static_cast<double>(InMax);
+		if (HasNative())
+		{
+			NativeBarrier->SetMinMaxElasticRestLength(
+				Bulk.MinElasticRestLength, Bulk.MaxElasticRestLength);
+		}
+	}
+	else // IsAssetAGX
+	{
+		if (Instance != nullptr)
+		{
+			Instance->SetMinMaxElasticRestLength(InMin, InMax);
+			return;
+		}
+		Bulk.MinElasticRestLength = static_cast<double>(InMin);
+		Bulk.MaxElasticRestLength = static_cast<double>(InMax);
+	}
+}
+
+float UAGX_ShapeMaterial::GetMinElasticRestLength() const
+{
+	AGX_ASSET_GETTER_D2F_IMPL(Bulk.MinElasticRestLength, GetMinElasticRestLength);
+}
+
+float UAGX_ShapeMaterial::GetMaxElasticRestLength() const
+{
+	AGX_ASSET_GETTER_D2F_IMPL(Bulk.MaxElasticRestLength, GetMaxElasticRestLength);
+}
+
+// Wire properties.
 float UAGX_ShapeMaterial::GetYoungsModulusStretch() const
 {
-	if (Instance != nullptr)
-	{
-		return Instance->GetYoungsModulusStretch();
-	}
-	return Wire.YoungsModulusStretch;
+	AGX_ASSET_GETTER_D2F_IMPL(Wire.YoungsModulusStretch, GetYoungsModulusStretch);
 }
 
 void UAGX_ShapeMaterial::SetYoungsModulusStretch(float InYoungsModulus)
 {
-	if (Instance != nullptr)
-	{
-		Instance->SetYoungsModulusStretch(InYoungsModulus);
-	}
-	else
-	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Wire.YoungsModulusStretch = InYoungsModulus;
-	}
+	AGX_ASSET_SETTER_F2D_IMPL(Wire.YoungsModulusStretch, InYoungsModulus, SetYoungsModulusStretch);
 }
 
 float UAGX_ShapeMaterial::GetYoungsModulusBend() const
 {
-	if (Instance != nullptr)
-	{
-		return Instance->GetYoungsModulusBend();
-	}
-	return Wire.YoungsModulusBend;
+	AGX_ASSET_GETTER_D2F_IMPL(Wire.YoungsModulusBend, GetYoungsModulusBend);
 }
 
 void UAGX_ShapeMaterial::SetYoungsModulusBend(float InYoungsModulus)
 {
-	if (Instance != nullptr)
-	{
-		Instance->SetYoungsModulusBend(InYoungsModulus);
-	}
-	else
-	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Wire.YoungsModulusBend = InYoungsModulus;
-	}
+	AGX_ASSET_SETTER_F2D_IMPL(Wire.YoungsModulusBend, InYoungsModulus, SetYoungsModulusBend);
 }
 
 float UAGX_ShapeMaterial::GetSpookDampingStretch() const
 {
-	if (Instance != nullptr)
-	{
-		return Instance->GetSpookDampingStretch();
-	}
-	return Wire.SpookDampingStretch;
+	AGX_ASSET_GETTER_D2F_IMPL(Wire.SpookDampingStretch, GetSpookDampingStretch);
 }
 
 void UAGX_ShapeMaterial::SetSpookDampingStretch(float InSpookDamping)
 {
-	if (Instance != nullptr)
-	{
-		Instance->SetSpookDampingStretch(InSpookDamping);
-	}
-	else
-	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Wire.SpookDampingStretch = InSpookDamping;
-	}
+	AGX_ASSET_SETTER_F2D_IMPL(Wire.SpookDampingStretch, InSpookDamping, SetSpookDampingStretch);
 }
 
 float UAGX_ShapeMaterial::GetSpookDampingBend() const
 {
-	if (Instance != nullptr)
-	{
-		return Instance->GetSpookDampingBend();
-	}
-	return Wire.SpookDampingBend;
+	AGX_ASSET_GETTER_D2F_IMPL(Wire.SpookDampingBend, GetSpookDampingBend);
 }
 
 void UAGX_ShapeMaterial::SetSpookDampingBend(float InSpookDamping)
 {
-	if (Instance != nullptr)
-	{
-		Instance->SetSpookDampingBend(InSpookDamping);
-	}
-	else
-	{
-		// If no instance exist (we are not in Play), we allow writing directly to this asset.
-		Wire.SpookDampingBend = InSpookDamping;
-	}
+	AGX_ASSET_SETTER_F2D_IMPL(Wire.SpookDampingBend, InSpookDamping, SetSpookDampingBend);
 }
 
 void UAGX_ShapeMaterial::CopyFrom(const FShapeMaterialBarrier* Source)
@@ -501,7 +374,7 @@ void UAGX_ShapeMaterial::CopyFrom(const FShapeMaterialBarrier* Source)
 
 UAGX_MaterialBase* UAGX_ShapeMaterial::GetOrCreateInstance(UWorld* PlayingWorld)
 {
-	if (IsInstance())
+	if (IsInstanceAGX())
 	{
 		return this;
 	}
@@ -520,9 +393,9 @@ UAGX_ShapeMaterial* UAGX_ShapeMaterial::CreateInstanceFromAsset(
 	UWorld* PlayingWorld, UAGX_ShapeMaterial* Source)
 {
 	check(Source);
-	check(Source->IsAsset());
+	check(Source->IsAssetAGX());
 	check(PlayingWorld);
-	check(PlayingWorld->IsGameWorld());	
+	check(PlayingWorld->IsGameWorld());
 
 	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
 	check(Outer);
@@ -538,10 +411,9 @@ UAGX_ShapeMaterial* UAGX_ShapeMaterial::CreateInstanceFromAsset(
 	return NewInstance;
 }
 
-FShapeMaterialBarrier* UAGX_ShapeMaterial::GetOrCreateShapeMaterialNative(
-	UWorld* PlayingWorld)
+FShapeMaterialBarrier* UAGX_ShapeMaterial::GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
 {
-	if (IsAsset())
+	if (IsAssetAGX())
 	{
 		if (Instance == nullptr)
 		{
@@ -549,7 +421,8 @@ FShapeMaterialBarrier* UAGX_ShapeMaterial::GetOrCreateShapeMaterialNative(
 				LogAGX, Error,
 				TEXT("GetOrCreateShapeMaterialNative was called on UAGX_ShapeMaterial '%s'"
 					 "who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called prior "
-					 "to calling this function."), *GetName());
+					 "to calling this function."),
+				*GetName());
 			return nullptr;
 		}
 
@@ -565,11 +438,11 @@ FShapeMaterialBarrier* UAGX_ShapeMaterial::GetOrCreateShapeMaterialNative(
 
 void UAGX_ShapeMaterial::CommitToAsset()
 {
-	if (IsInstance())
+	if (IsInstanceAGX())
 	{
 		Asset->CopyFrom(this->GetNative());
 	}
-	else if (Instance != nullptr) // IsAsset
+	else if (Instance != nullptr) // IsAssetAGX
 	{
 		Instance->CommitToAsset();
 	}
@@ -577,14 +450,14 @@ void UAGX_ShapeMaterial::CommitToAsset()
 
 void UAGX_ShapeMaterial::CreateNative(UWorld* PlayingWorld)
 {
-	if (IsAsset())
+	if (IsAssetAGX())
 	{
 		if (Instance == nullptr)
 		{
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("CreateNative was called on a UAGX_ShapeMaterial who's instance is nullptr. "
-					"Ensure e.g. GetOrCreateInstance is called prior to calling this function."));
+					 "Ensure e.g. GetOrCreateInstance is called prior to calling this function."));
 			return;
 		}
 		return Instance->CreateNative(PlayingWorld);
@@ -614,7 +487,7 @@ FShapeMaterialBarrier* UAGX_ShapeMaterial::GetNative()
 {
 	if (Instance != nullptr)
 	{
-		AGX_CHECK(IsAsset());
+		AGX_CHECK(IsAssetAGX());
 		return Instance->GetNative();
 	}
 
@@ -625,7 +498,7 @@ bool UAGX_ShapeMaterial::HasNative() const
 {
 	if (Instance != nullptr)
 	{
-		AGX_CHECK(IsAsset());
+		AGX_CHECK(IsAssetAGX());
 		return Instance->HasNative();
 	}
 
@@ -636,7 +509,7 @@ void UAGX_ShapeMaterial::UpdateNativeProperties()
 {
 	if (HasNative())
 	{
-		AGX_CHECK(IsInstance());
+		AGX_CHECK(IsInstanceAGX());
 		NativeBarrier->SetName(TCHAR_TO_UTF8(*GetName()));
 
 		// Bulk properties.
@@ -661,14 +534,12 @@ void UAGX_ShapeMaterial::UpdateNativeProperties()
 	}
 }
 
-
-
-bool UAGX_ShapeMaterial::IsAsset() const
+bool UAGX_ShapeMaterial::IsAssetAGX() const
 {
-	return !IsInstance();
+	return !IsInstanceAGX();
 }
 
-bool UAGX_ShapeMaterial::IsInstance() const
+bool UAGX_ShapeMaterial::IsInstanceAGX() const
 {
 	// An instance of this class will always have a reference to it's corresponding Asset.
 	// An asset will never have this reference set.
@@ -677,7 +548,7 @@ bool UAGX_ShapeMaterial::IsInstance() const
 
 void UAGX_ShapeMaterial::LogBadUsage(const FString& FunctionName) const
 {
-	if (IsAsset())
+	if (IsAssetAGX())
 	{
 		AGX_ShapeMaterial_helpers::LogBadUsage(FunctionName, "asset", "instance");
 	}
