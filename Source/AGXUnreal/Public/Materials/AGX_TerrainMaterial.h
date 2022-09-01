@@ -180,8 +180,8 @@ public:
 	void CopyTerrainMaterialProperties(const UAGX_TerrainMaterial* Source);
 
 private:
-	bool IsAsset() const;
-	bool IsInstance() const;
+	bool IsAssetAGX() const override;
+	bool IsInstanceAGX() const override;
 
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;

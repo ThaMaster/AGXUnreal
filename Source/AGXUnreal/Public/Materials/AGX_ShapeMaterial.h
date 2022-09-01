@@ -125,9 +125,9 @@ public:
 	void UpdateNativeProperties();	
 
 private:
+	bool IsAssetAGX() const override;
+	bool IsInstanceAGX() const override;
 	void CreateNative(UWorld* PlayingWorld);
-	bool IsAsset() const;
-	bool IsInstance() const;
 
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;

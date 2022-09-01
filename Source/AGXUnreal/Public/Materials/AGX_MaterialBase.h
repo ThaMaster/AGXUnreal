@@ -143,4 +143,8 @@ public:
 
 protected:
 	void CopyShapeMaterialProperties(const UAGX_MaterialBase* Source);
+
+	// The AGX in these function names are due to name collisions with UE-functions otherwise.
+	virtual bool IsAssetAGX() const PURE_VIRTUAL(UAGX_MaterialBase::IsAsset, return false;);
+	virtual bool IsInstanceAGX() const PURE_VIRTUAL(UAGX_MaterialBase::IsInstance, return false;);
 };
