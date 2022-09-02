@@ -1549,16 +1549,6 @@ namespace AGX_WireComponent_helpers
 
 bool UAGX_WireComponent::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
 {
-	if (InShapeMaterial == nullptr)
-	{
-		if (HasNative())
-		{
-			GetNative()->ClearMaterial();
-		}
-		ShapeMaterial = nullptr;
-		return true;
-	}
-
 	ShapeMaterial = InShapeMaterial;
 
 	if (!HasNative())
@@ -1582,7 +1572,7 @@ void UAGX_WireComponent::CreateNative()
 	NativeBarrier.AllocateNative(Radius, ResolutionPerUnitLength);
 	check(HasNative()); /// @todo Consider better error handling than 'check'.
 
-	check(UpdateNativeMaterial());
+	UpdateNativeMaterial();
 
 	NativeBarrier.SetLinearVelocityDamping(LinearVelocityDamping);
 
@@ -1727,6 +1717,10 @@ bool UAGX_WireComponent::UpdateNativeMaterial()
 
 	if (ShapeMaterial == nullptr)
 	{
+		if (HasNative())
+		{
+			GetNative()->ClearMaterial();
+		}
 		return true;
 	}
 

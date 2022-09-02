@@ -60,16 +60,6 @@ AAGX_Terrain::AAGX_Terrain()
 
 void AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
 {
-	if (InTerrainMaterial == nullptr)
-	{
-		if (HasNative())
-		{
-			GetNative()->ClearMaterial();
-		}
-		TerrainMaterial = nullptr;
-		return;
-	}
-
 	TerrainMaterial = InTerrainMaterial;
 
 	if (!HasNative())

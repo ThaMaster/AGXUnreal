@@ -93,7 +93,7 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 bool UAGX_ShapeComponent::UpdateNativeMaterial()
 {
 	if (!HasNative())
-		return true;
+		return false;
 
 	if (!ShapeMaterial)
 	{
@@ -323,16 +323,6 @@ void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 bool UAGX_ShapeComponent::SetShapeMaterial(
 	UAGX_ShapeMaterial* InShapeMaterial)
 {
-	if (InShapeMaterial == nullptr)
-	{
-		if (HasNative())
-		{
-			GetNative()->ClearMaterial();
-		}
-		ShapeMaterial = nullptr;
-		return true;
-	}
-
 	ShapeMaterial = InShapeMaterial;
 
 	if (!HasNative())
