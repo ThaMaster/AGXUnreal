@@ -12,19 +12,6 @@
 // Unreal Engine includes.
 #include "Engine/World.h"
 
-namespace AGX_ShapeMaterial_helpers
-{
-	void LogBadUsage(
-		const FString& FunctionName, const FString& ActualInstanceOrAsset,
-		const FString& AttemptedInstanceOrAsset)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Function '%s' was called on an %s of class UAGX_ShapeMaterial "
-				 "which is not allowed. This function may only be called on an %s of this class."),
-			*FunctionName, *ActualInstanceOrAsset, *AttemptedInstanceOrAsset);
-	}
-}
 
 #if WITH_EDITOR
 void UAGX_ShapeMaterial::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
@@ -544,16 +531,4 @@ bool UAGX_ShapeMaterial::IsInstanceAGX() const
 	// An instance of this class will always have a reference to it's corresponding Asset.
 	// An asset will never have this reference set.
 	return Asset != nullptr;
-}
-
-void UAGX_ShapeMaterial::LogBadUsage(const FString& FunctionName) const
-{
-	if (IsAssetAGX())
-	{
-		AGX_ShapeMaterial_helpers::LogBadUsage(FunctionName, "asset", "instance");
-	}
-	else
-	{
-		AGX_ShapeMaterial_helpers::LogBadUsage(FunctionName, "instance", "asset");
-	}
 }

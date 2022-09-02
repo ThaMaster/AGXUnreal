@@ -142,8 +142,6 @@ private:
 	void WriteWirePropertyToInstance(const FName& PropertyName);
 #endif
 
-	void LogBadUsage(const FString& FunctionName) const;
-
 	TWeakObjectPtr<UAGX_ShapeMaterial> Asset;
 	TWeakObjectPtr<UAGX_ShapeMaterial> Instance;
 	TUniquePtr<FShapeMaterialBarrier> NativeBarrier;
