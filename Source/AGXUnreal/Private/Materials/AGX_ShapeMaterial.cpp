@@ -59,7 +59,7 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, AdhesiveForce),
 		[](ThisClass* This)
 		{
-			if (This->IsInstanceAGX())
+			if (This->IsInstance())
 			{
 				This->Asset->Surface.AdhesiveForce = This->Surface.AdhesiveForce;
 			}
@@ -73,7 +73,7 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, AdhesiveOverlap),
 		[](ThisClass* This)
 		{
-			if (This->IsInstanceAGX())
+			if (This->IsInstance())
 			{
 				This->Asset->Surface.AdhesiveOverlap = This->Surface.AdhesiveOverlap;
 			}
@@ -105,7 +105,7 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, MinElasticRestLength),
 		[](ThisClass* This)
 		{
-			if (This->IsInstanceAGX())
+			if (This->IsInstance())
 			{
 				This->Asset->Bulk.MinElasticRestLength = This->Bulk.MinElasticRestLength;
 			}
@@ -119,7 +119,7 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, MaxElasticRestLength),
 		[](ThisClass* This)
 		{
-			if (This->IsInstanceAGX())
+			if (This->IsInstance())
 			{
 				This->Asset->Bulk.MaxElasticRestLength = This->Bulk.MaxElasticRestLength;
 			}
@@ -189,7 +189,7 @@ float UAGX_ShapeMaterial::GetSurfaceViscosity() const
 
 void UAGX_ShapeMaterial::SetAdhesion(float AdhesiveForce, float AdhesiveOverlap)
 {
-	if (IsInstanceAGX())
+	if (IsInstance())
 	{
 		Surface.AdhesiveForce = static_cast<double>(AdhesiveForce);
 		Surface.AdhesiveOverlap = static_cast<double>(AdhesiveOverlap);
@@ -198,7 +198,7 @@ void UAGX_ShapeMaterial::SetAdhesion(float AdhesiveForce, float AdhesiveOverlap)
 			NativeBarrier->SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
 		}
 	}
-	else // IsAssetAGX
+	else // IsAsset
 	{
 		if (Instance != nullptr)
 		{
@@ -263,7 +263,7 @@ float UAGX_ShapeMaterial::GetSpookDamping() const
 
 void UAGX_ShapeMaterial::SetMinMaxElasticRestLength(float InMin, float InMax)
 {
-	if (IsInstanceAGX())
+	if (IsInstance())
 	{
 		Bulk.MinElasticRestLength = static_cast<double>(InMin);
 		Bulk.MaxElasticRestLength = static_cast<double>(InMax);
@@ -273,7 +273,7 @@ void UAGX_ShapeMaterial::SetMinMaxElasticRestLength(float InMin, float InMax)
 				Bulk.MinElasticRestLength, Bulk.MaxElasticRestLength);
 		}
 	}
-	else // IsAssetAGX
+	else // IsAsset
 	{
 		if (Instance != nullptr)
 		{
@@ -361,7 +361,7 @@ void UAGX_ShapeMaterial::CopyFrom(const FShapeMaterialBarrier* Source)
 
 UAGX_MaterialBase* UAGX_ShapeMaterial::GetOrCreateInstance(UWorld* PlayingWorld)
 {
-	if (IsInstanceAGX())
+	if (IsInstance())
 	{
 		return this;
 	}
@@ -380,7 +380,7 @@ UAGX_ShapeMaterial* UAGX_ShapeMaterial::CreateInstanceFromAsset(
 	UWorld* PlayingWorld, UAGX_ShapeMaterial* Source)
 {
 	check(Source);
-	check(Source->IsAssetAGX());
+	check(!Source->IsInstance());
 	check(PlayingWorld);
 	check(PlayingWorld->IsGameWorld());
 
@@ -400,7 +400,7 @@ UAGX_ShapeMaterial* UAGX_ShapeMaterial::CreateInstanceFromAsset(
 
 FShapeMaterialBarrier* UAGX_ShapeMaterial::GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
 {
-	if (IsAssetAGX())
+	if (!IsInstance())
 	{
 		if (Instance == nullptr)
 		{
@@ -425,11 +425,11 @@ FShapeMaterialBarrier* UAGX_ShapeMaterial::GetOrCreateShapeMaterialNative(UWorld
 
 void UAGX_ShapeMaterial::CommitToAsset()
 {
-	if (IsInstanceAGX())
+	if (IsInstance())
 	{
 		Asset->CopyFrom(this->GetNative());
 	}
-	else if (Instance != nullptr) // IsAssetAGX
+	else if (Instance != nullptr) // IsAsset
 	{
 		Instance->CommitToAsset();
 	}
@@ -437,7 +437,7 @@ void UAGX_ShapeMaterial::CommitToAsset()
 
 void UAGX_ShapeMaterial::CreateNative(UWorld* PlayingWorld)
 {
-	if (IsAssetAGX())
+	if (!IsInstance())
 	{
 		if (Instance == nullptr)
 		{
@@ -474,7 +474,7 @@ FShapeMaterialBarrier* UAGX_ShapeMaterial::GetNative()
 {
 	if (Instance != nullptr)
 	{
-		AGX_CHECK(IsAssetAGX());
+		AGX_CHECK(!IsInstance());
 		return Instance->GetNative();
 	}
 
@@ -485,7 +485,7 @@ bool UAGX_ShapeMaterial::HasNative() const
 {
 	if (Instance != nullptr)
 	{
-		AGX_CHECK(IsAssetAGX());
+		AGX_CHECK(!IsInstance());
 		return Instance->HasNative();
 	}
 
@@ -496,7 +496,7 @@ void UAGX_ShapeMaterial::UpdateNativeProperties()
 {
 	if (HasNative())
 	{
-		AGX_CHECK(IsInstanceAGX());
+		AGX_CHECK(IsInstance());
 		NativeBarrier->SetName(TCHAR_TO_UTF8(*GetName()));
 
 		// Bulk properties.
@@ -521,12 +521,7 @@ void UAGX_ShapeMaterial::UpdateNativeProperties()
 	}
 }
 
-bool UAGX_ShapeMaterial::IsAssetAGX() const
-{
-	return !IsInstanceAGX();
-}
-
-bool UAGX_ShapeMaterial::IsInstanceAGX() const
+bool UAGX_ShapeMaterial::IsInstance() const
 {
 	// An instance of this class will always have a reference to it's corresponding Asset.
 	// An asset will never have this reference set.

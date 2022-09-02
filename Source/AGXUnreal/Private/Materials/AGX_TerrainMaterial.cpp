@@ -16,13 +16,13 @@
 // Surface properties.
 void UAGX_TerrainMaterial::SetFrictionEnabled(bool Enabled)
 {
-	if (IsInstanceAGX())
+	if (IsInstance())
 	{
 		Surface.bFrictionEnabled = Enabled;
 		if (HasShapeMaterialNative())
 			ShapeMaterialNativeBarrier->SetFrictionEnabled(Enabled);
 	}
-	else // IsAssetAGX
+	else // IsAsset
 	{
 		if (Instance != nullptr)
 		{
@@ -71,7 +71,7 @@ float UAGX_TerrainMaterial::GetSurfaceViscosity() const
 
 void UAGX_TerrainMaterial::SetAdhesion(float AdhesiveForce, float AdhesiveOverlap)
 {
-	if (IsInstanceAGX())
+	if (IsInstance())
 	{
 		Surface.AdhesiveForce = static_cast<double>(AdhesiveForce);
 		Surface.AdhesiveOverlap = static_cast<double>(AdhesiveOverlap);
@@ -80,7 +80,7 @@ void UAGX_TerrainMaterial::SetAdhesion(float AdhesiveForce, float AdhesiveOverla
 			ShapeMaterialNativeBarrier->SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
 		}
 	}
-	else // IsAssetAGX
+	else // IsAsset
 	{
 		if (Instance != nullptr)
 		{
@@ -387,7 +387,7 @@ void UAGX_TerrainMaterial::CopyTerrainMaterialProperties(const UAGX_TerrainMater
 
 UAGX_MaterialBase* UAGX_TerrainMaterial::GetOrCreateInstance(UWorld* PlayingWorld)
 {
-	if (IsInstanceAGX())
+	if (IsInstance())
 	{
 		return this;
 	}
@@ -448,7 +448,7 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, AdhesiveForce),
 		[](ThisClass* This)
 		{
-			if (This->IsInstanceAGX())
+			if (This->IsInstance())
 			{
 				This->Asset->Surface.AdhesiveForce = This->Surface.AdhesiveForce;
 			}
@@ -462,7 +462,7 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, AdhesiveOverlap),
 		[](ThisClass* This)
 		{
-			if (This->IsInstanceAGX())
+			if (This->IsInstance())
 			{
 				This->Asset->Surface.AdhesiveOverlap = This->Surface.AdhesiveOverlap;
 			}
@@ -598,7 +598,7 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 FTerrainMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateTerrainMaterialNative(
 	UWorld* PlayingWorld)
 {
-	if (IsAssetAGX())
+	if (!IsInstance())
 	{
 		if (Instance == nullptr)
 		{
@@ -614,7 +614,7 @@ FTerrainMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateTerrainMaterialNative(
 		return Instance->GetOrCreateTerrainMaterialNative(PlayingWorld);
 	}
 
-	AGX_CHECK(IsInstanceAGX());
+	AGX_CHECK(IsInstance());
 	if (!HasTerrainMaterialNative())
 	{
 		CreateTerrainMaterialNative(PlayingWorld);
@@ -624,7 +624,7 @@ FTerrainMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateTerrainMaterialNative(
 
 FShapeMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
 {
-	if (IsAssetAGX())
+	if (!IsInstance())
 	{
 		if (Instance == nullptr)
 		{
@@ -640,7 +640,7 @@ FShapeMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateShapeMaterialNative(UWor
 		return Instance->GetOrCreateShapeMaterialNative(PlayingWorld);
 	}
 
-	AGX_CHECK(IsInstanceAGX());
+	AGX_CHECK(IsInstance());
 	if (!HasShapeMaterialNative())
 	{
 		CreateShapeMaterialNative(PlayingWorld);
@@ -652,7 +652,7 @@ UAGX_TerrainMaterial* UAGX_TerrainMaterial::CreateFromAsset(
 	UWorld* PlayingWorld, UAGX_TerrainMaterial* Source)
 {
 	check(Source);
-	check(Source->IsAssetAGX());
+	check(!Source->IsInstance());
 	check(PlayingWorld);
 	check(PlayingWorld->IsGameWorld());
 
@@ -676,7 +676,7 @@ UAGX_TerrainMaterial* UAGX_TerrainMaterial::CreateFromAsset(
 
 void UAGX_TerrainMaterial::CreateTerrainMaterialNative(UWorld* PlayingWorld)
 {
-	if (IsAssetAGX())
+	if (!IsInstance())
 	{
 		if (Instance == nullptr)
 		{
@@ -693,7 +693,7 @@ void UAGX_TerrainMaterial::CreateTerrainMaterialNative(UWorld* PlayingWorld)
 		return;
 	}
 
-	AGX_CHECK(IsInstanceAGX());
+	AGX_CHECK(IsInstance());
 	TerrainMaterialNativeBarrier.Reset(new FTerrainMaterialBarrier());
 	TerrainMaterialNativeBarrier->AllocateNative(TCHAR_TO_UTF8(*GetName()));
 	check(HasTerrainMaterialNative());
@@ -703,7 +703,7 @@ void UAGX_TerrainMaterial::CreateTerrainMaterialNative(UWorld* PlayingWorld)
 
 void UAGX_TerrainMaterial::CreateShapeMaterialNative(UWorld* PlayingWorld)
 {
-	if (IsAssetAGX())
+	if (!IsInstance())
 	{
 		if (Instance == nullptr)
 		{
@@ -720,7 +720,7 @@ void UAGX_TerrainMaterial::CreateShapeMaterialNative(UWorld* PlayingWorld)
 		return;
 	}
 
-	AGX_CHECK(IsInstanceAGX());
+	AGX_CHECK(IsInstance());
 	ShapeMaterialNativeBarrier.Reset(new FShapeMaterialBarrier());
 	ShapeMaterialNativeBarrier->AllocateNative(TCHAR_TO_UTF8(*GetName()));
 	check(HasShapeMaterialNative());
@@ -752,7 +752,7 @@ void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()
 {
 	if (HasTerrainMaterialNative())
 	{
-		AGX_CHECK(IsInstanceAGX());
+		AGX_CHECK(IsInstance());
 		TerrainMaterialNativeBarrier->SetName(TCHAR_TO_UTF8(*GetName()));
 
 		// Set Bulk properties.
@@ -786,7 +786,7 @@ void UAGX_TerrainMaterial::UpdateShapeMaterialNativeProperties()
 {
 	if (HasShapeMaterialNative())
 	{
-		AGX_CHECK(IsInstanceAGX());
+		AGX_CHECK(IsInstance());
 		ShapeMaterialNativeBarrier->SetName(TCHAR_TO_UTF8(*GetName()));
 
 		ShapeMaterialNativeBarrier->SetDensity(Bulk.Density);
@@ -803,12 +803,7 @@ void UAGX_TerrainMaterial::UpdateShapeMaterialNativeProperties()
 	}
 }
 
-bool UAGX_TerrainMaterial::IsAssetAGX() const
-{
-	return !IsInstanceAGX();
-}
-
-bool UAGX_TerrainMaterial::IsInstanceAGX() const
+bool UAGX_TerrainMaterial::IsInstance() const
 {
 	// An instance of this class will always have a reference to it's corresponding Asset.
 	// An asset will never have this reference set.

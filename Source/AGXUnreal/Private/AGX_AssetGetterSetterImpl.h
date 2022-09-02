@@ -8,7 +8,7 @@
 
 #define AGX_ASSET_SETTER_IMPL_INTERNAL(UpropertyName, InVar, SetFunc, HasNativeFunc, NativeName, PreSetCast) \
 { \
-	if (IsInstanceAGX()) \
+	if (IsInstance()) \
 	{ \
 		UpropertyName = PreSetCast(InVar); \
 		if (HasNativeFunc()) \
@@ -81,7 +81,7 @@
 
 #define AGX_ASSET_DISPATCHER_LAMBDA_BODY_INTERNAL(UpropertyName, SetFunc, PrePassCast) \
 { \
-	if (This->IsInstanceAGX()) \
+	if (This->IsInstance()) \
 	{ \
 		This->Asset->UpropertyName = This->UpropertyName; \
 	} \
