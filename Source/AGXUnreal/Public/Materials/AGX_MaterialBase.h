@@ -59,8 +59,30 @@ class FShapeMaterialBarrier;
  *
  * In addition to the Asset/Instance separation there are also multiple types of materials,
  * currently Shape and Terrain. What they all have in common is that a contact material may
-*  be created between any pair of materials, regardless of their types. Wires use Shape Material.
+ *  be created between any pair of materials, regardless of their types. Wires use Shape Material.
+ *
+ * Rules of UPROPERTY updates:
+ * 1. Updating a UPROPERTY of an Asset from the Details Panel
+ *	in Edit: [permanent property write in asset]
+ *	in Play: [permanent property write in asset AND permanent property write in instance AND
+ *		propagation to AGX Dynamics]
+ *
+ * 2. Updating a UPROPERTY of an Asset by calling UFUNCTION
+ *	in Edit: [permanent property write in asset]
+ *	in Play: [permanent property write in instance AND DO NOT update asset property AND
+ *		propagation to AGX Dynamics]
+ *
+ * 3. Updating a UPROPERTY of an Instance from the Details Panel
+ *	in Edit: [does not exists yet]
+ *	in Play: [permanent property write in asset AND permanent property write in instance AND
+ *		propagation to AGX Dynamics]
+ *
+ * 4. Updating a UPROPERTY of an Instance by calling UFUNCTION
+ *	in Edit: [does not exists yet]
+ *	in Play: [permanent property write in instance AND DO NOT update asset property AND
+ *		propagation to AGX Dynamics]
  */
+
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", abstract, AutoExpandCategories = ("Material Properties"))
 class AGXUNREAL_API UAGX_MaterialBase : public UObject
