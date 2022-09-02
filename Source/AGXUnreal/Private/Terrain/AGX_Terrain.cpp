@@ -79,7 +79,7 @@ void AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
 	}
 
 	// Responsible to create instance of non exists and do the asset/instance swap.
-	CreateTerrainMaterial();
+	UpdateNativeMaterial();
 }
 
 void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
@@ -332,7 +332,7 @@ void AAGX_Terrain::InitializeNative()
 
 	CreateNativeShovels();
 	InitializeRendering();
-	CreateTerrainMaterial();
+	UpdateNativeMaterial();
 }
 
 bool AAGX_Terrain::CreateNativeTerrain()
@@ -544,41 +544,43 @@ void AAGX_Terrain::InitializeRendering()
 	}
 }
 
-void AAGX_Terrain::CreateTerrainMaterial()
+void AAGX_Terrain::UpdateNativeMaterial()
 {
 	if (!HasNative())
 		return;
 
-	if (TerrainMaterial)
+	if (TerrainMaterial == nullptr)
 	{
-		// Both an UAGX_TerrainMaterial and a UAGX_ShapeMaterial
-		// are set for the terrain. The former is the native agxTerrain::TerrainMaterial
-		// counterpart and the latter is the native agx::Material counterpart.
-
-		// Set TerrainMaterial
-		UAGX_TerrainMaterial* TerrainMaterialInstance =
-			static_cast<UAGX_TerrainMaterial*>(
-				TerrainMaterial->GetOrCreateInstance(GetWorld()));
-		check(TerrainMaterialInstance);
-
-		if (TerrainMaterial != TerrainMaterialInstance)
+		if (HasNative())
 		{
-			TerrainMaterial = TerrainMaterialInstance;
+			GetNative()->ClearMaterial();
 		}
-
-		FTerrainMaterialBarrier* TerrainMaterialBarrier =
-			TerrainMaterialInstance->GetOrCreateTerrainMaterialNative(GetWorld());
-		check(TerrainMaterialBarrier);
-
-		GetNative()->SetTerrainMaterial(*TerrainMaterialBarrier);
-
-		// Set ShapeMaterial
-		FShapeMaterialBarrier* MaterialBarrier =
-			TerrainMaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
-		check(MaterialBarrier);
-
-		GetNative()->SetShapeMaterial(*MaterialBarrier);
+		return;
 	}
+
+	// Set TerrainMaterial
+	UAGX_TerrainMaterial* TerrainMaterialInstance =
+		static_cast<UAGX_TerrainMaterial*>(
+			TerrainMaterial->GetOrCreateInstance(GetWorld()));
+	check(TerrainMaterialInstance);
+
+	if (TerrainMaterial != TerrainMaterialInstance)
+	{
+		TerrainMaterial = TerrainMaterialInstance;
+	}
+
+	FTerrainMaterialBarrier* TerrainMaterialBarrier =
+		TerrainMaterialInstance->GetOrCreateTerrainMaterialNative(GetWorld());
+	check(TerrainMaterialBarrier);
+
+	GetNative()->SetTerrainMaterial(*TerrainMaterialBarrier);
+
+	// Set ShapeMaterial
+	FShapeMaterialBarrier* MaterialBarrier =
+		TerrainMaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
+	check(MaterialBarrier);
+
+	GetNative()->SetShapeMaterial(*MaterialBarrier);
 }
 
 void AAGX_Terrain::InitializeDisplacementMap()

@@ -201,7 +201,7 @@ private:
 	void InitializeNative();
 	bool CreateNativeTerrain();
 	void CreateNativeShovels();
-	void CreateTerrainMaterial();
+	void UpdateNativeMaterial();
 
 	void SetInitialTransform();
 	void InitializeRendering();

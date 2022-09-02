@@ -92,8 +92,15 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 
 bool UAGX_ShapeComponent::UpdateNativeMaterial()
 {
+	if (!HasNative())
+		return true;
+
 	if (!ShapeMaterial)
 	{
+		if (HasNative())
+		{
+			GetNative()->ClearMaterial();
+		}
 		return true;
 	}
 
