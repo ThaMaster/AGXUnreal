@@ -416,6 +416,7 @@ FShapeMaterialBarrier* UAGX_ShapeMaterial::GetOrCreateShapeMaterialNative(UWorld
 		return Instance->GetOrCreateShapeMaterialNative(PlayingWorld);
 	}
 
+	AGX_CHECK(IsInstance());
 	if (!HasNative())
 	{
 		CreateNative(PlayingWorld);
@@ -450,6 +451,7 @@ void UAGX_ShapeMaterial::CreateNative(UWorld* PlayingWorld)
 		return Instance->CreateNative(PlayingWorld);
 	}
 
+	AGX_CHECK(IsInstance());
 	NativeBarrier.Reset(new FShapeMaterialBarrier());
 	NativeBarrier->AllocateNative(TCHAR_TO_UTF8(*GetName()));
 	check(HasNative());
