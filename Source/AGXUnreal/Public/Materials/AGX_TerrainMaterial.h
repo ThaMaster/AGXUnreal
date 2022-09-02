@@ -176,8 +176,9 @@ public:
 
 	void CopyTerrainMaterialProperties(const UAGX_TerrainMaterial* Source);
 
-private:
 	bool IsInstance() const override;
+
+private:
 
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;

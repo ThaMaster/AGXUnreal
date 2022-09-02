@@ -165,9 +165,9 @@ public:
 	virtual FShapeMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
 		PURE_VIRTUAL(UAGX_MaterialBase::GetOrCreateShapeMaterialNative, return nullptr;);
 
-protected:
-	void CopyShapeMaterialProperties(const UAGX_MaterialBase* Source);
-
 	// Returns true if this is an instance. If it returns false, it can only be an asset.
 	virtual bool IsInstance() const PURE_VIRTUAL(UAGX_MaterialBase::IsInstance, return false;);
+
+protected:
+	void CopyShapeMaterialProperties(const UAGX_MaterialBase* Source);	
 };

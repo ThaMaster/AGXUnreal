@@ -124,8 +124,9 @@ public:
 	bool HasNative() const;
 	void UpdateNativeProperties();	
 
-private:
 	bool IsInstance() const override;
+
+private:	
 	void CreateNative(UWorld* PlayingWorld);
 
 #if WITH_EDITOR
