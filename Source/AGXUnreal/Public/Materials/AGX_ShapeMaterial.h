@@ -3,6 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Real.h"
 #include "Materials/AGX_MaterialBase.h"
 #include "Materials/ShapeMaterialBarrier.h"
 
@@ -34,81 +35,129 @@ class AGXUNREAL_API UAGX_ShapeMaterial : public UAGX_MaterialBase
 public:
 	// Surface properties.
 
-	virtual void SetFrictionEnabled(bool Enabled) override;
-	virtual bool GetFrictionEnabled() const override;
+	void SetFrictionEnabled(bool Enabled);
+	bool GetFrictionEnabled() const;
 
-	virtual void SetRoughness(float Roughness) override;
-	virtual float GetRoughness() const override;
+	virtual void SetRoughness_BP(float Roughness) override;
+	virtual float GetRoughness_BP() const override;
 
-	virtual void SetSurfaceViscosity(float Viscosity) override;
-	virtual float GetSurfaceViscosity() const override;
+	void SetRoughness(FAGX_Real Roughness);
+	FAGX_Real GetRoughness() const;
 
-	virtual void SetAdhesion(float AdhesiveForce, float AdhesiveOverlap) override;
-	virtual float GetAdhesiveForce() const override;
-	virtual float GetAdhesiveOverlap() const override;
+	virtual void SetSurfaceViscosity_BP(float Viscosity) override;
+	virtual float GetSurfaceViscosity_BP() const override;
+
+	void SetSurfaceViscosity(FAGX_Real Viscosity);
+	FAGX_Real GetSurfaceViscosity() const;
+
+	virtual void SetAdhesion_BP(float AdhesiveForce, float AdhesiveOverlap) override;
+	virtual float GetAdhesiveForce_BP() const override;
+	virtual float GetAdhesiveOverlap_BP() const override;
+
+	void SetAdhesion(FAGX_Real AdhesiveForce, FAGX_Real AdhesiveOverlap);
+	FAGX_Real GetAdhesiveForce() const;
+	FAGX_Real GetAdhesiveOverlap() const;
 
 
 	// Bulk properties.
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
-	void SetDensity(float InDensity);
+	void SetDensity_BP(float InDensity);
+
+	void SetDensity(FAGX_Real InDensity);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
-	float GetDensity() const;
+	float GetDensity_BP() const;
+
+	FAGX_Real GetDensity() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
-	void SetYoungsModulus(float InYoungsModulus);
+	void SetYoungsModulus_BP(float InYoungsModulus);
+
+	void SetYoungsModulus(FAGX_Real InYoungsModulus);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
-	float GetYoungsModulus() const;
+	float GetYoungsModulus_BP() const;
+
+	FAGX_Real GetYoungsModulus() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
-	void SetBulkViscosity(float InBulkViscosity);
+	void SetBulkViscosity_BP(float InBulkViscosity);
+
+	void SetBulkViscosity(FAGX_Real InBulkViscosity);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
-	float GetBulkViscosity() const;
+	float GetBulkViscosity_BP() const;
+
+	FAGX_Real GetBulkViscosity() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
-	void SetSpookDamping(float InSpookDamping);
+	void SetSpookDamping_BP(float InSpookDamping);
+
+	void SetSpookDamping(FAGX_Real InSpookDamping);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
-	float GetSpookDamping() const;
+	float GetSpookDamping_BP() const;
+
+	FAGX_Real GetSpookDamping() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
-	void SetMinMaxElasticRestLength(float InMin, float InMax);
+	void SetMinMaxElasticRestLength_BP(float InMin, float InMax);
+
+	void SetMinMaxElasticRestLength(FAGX_Real InMin, FAGX_Real InMax);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
-	float GetMinElasticRestLength() const;
+	float GetMinElasticRestLength_BP() const;
+
+	FAGX_Real GetMinElasticRestLength() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Bulk Properties")
-	float GetMaxElasticRestLength() const;
+	float GetMaxElasticRestLength_BP() const;
+
+	FAGX_Real GetMaxElasticRestLength() const;
 
 
 	// Wire properties.
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	float GetYoungsModulusStretch() const;
+	float GetYoungsModulusStretch_BP() const;
+
+	FAGX_Real GetYoungsModulusStretch() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	void SetYoungsModulusStretch(float InYoungsModulus);
+	void SetYoungsModulusStretch_BP(float InYoungsModulus);
+
+	void SetYoungsModulusStretch(FAGX_Real InYoungsModulus);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	float GetYoungsModulusBend() const;
+	float GetYoungsModulusBend_BP() const;
+
+	FAGX_Real GetYoungsModulusBend() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	void SetYoungsModulusBend(float InYoungsModulus);
+	void SetYoungsModulusBend_BP(float InYoungsModulus);
+
+	void SetYoungsModulusBend(FAGX_Real InYoungsModulus);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	float GetSpookDampingStretch() const;
+	float GetSpookDampingStretch_BP() const;
+
+	FAGX_Real GetSpookDampingStretch() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	void SetSpookDampingStretch(float InSpookDamping);
+	void SetSpookDampingStretch_BP(float InSpookDamping);
+
+	void SetSpookDampingStretch(FAGX_Real InSpookDamping);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	float GetSpookDampingBend() const;
+	float GetSpookDampingBend_BP() const;
+
+	FAGX_Real GetSpookDampingBend() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Wire Properties")
-	void SetSpookDampingBend(float InSpookDamping);
+	void SetSpookDampingBend_BP(float InSpookDamping);
+
+	void SetSpookDampingBend(FAGX_Real InSpookDamping);
 
 	virtual void CommitToAsset() override;
 

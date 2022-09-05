@@ -2,13 +2,17 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_Real.h"
 #include "Materials/AGX_MaterialBase.h"
 #include "Materials/AGX_TerrainBulkProperties.h"
 #include "Materials/AGX_TerrainCompactionProperties.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/TerrainMaterialBarrier.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
 
 #include "AGX_TerrainMaterial.generated.h"
 
@@ -43,128 +47,209 @@ public:
 	GENERATED_BODY()
 
 	// Surface properties.
-	virtual void SetFrictionEnabled(bool Enabled) override;
-	virtual bool GetFrictionEnabled() const override;
 
-	virtual void SetRoughness(float Roughness) override;
-	virtual float GetRoughness() const override;
+	void SetFrictionEnabled(bool Enabled);
+	bool GetFrictionEnabled() const;
 
-	virtual void SetSurfaceViscosity(float Viscosity) override;
-	virtual float GetSurfaceViscosity() const override;
+	virtual void SetRoughness_BP(float Roughness) override;
+	virtual float GetRoughness_BP() const override;
 
-	virtual void SetAdhesion(float AdhesiveForce, float AdhesiveOverlap) override;
-	virtual float GetAdhesiveForce() const override;
-	virtual float GetAdhesiveOverlap() const override;
+	void SetRoughness(FAGX_Real Roughness);
+	FAGX_Real GetRoughness() const;
+
+	virtual void SetSurfaceViscosity_BP(float Viscosity) override;
+	virtual float GetSurfaceViscosity_BP() const override;
+
+	void SetSurfaceViscosity(FAGX_Real Viscosity);
+	FAGX_Real GetSurfaceViscosity() const;
+
+	virtual void SetAdhesion_BP(float AdhesiveForce, float AdhesiveOverlap) override;
+	virtual float GetAdhesiveForce_BP() const override;
+	virtual float GetAdhesiveOverlap_BP() const override;
+
+	void SetAdhesion(FAGX_Real AdhesiveForce, FAGX_Real AdhesiveOverlap);
+	FAGX_Real GetAdhesiveForce() const;
+	FAGX_Real GetAdhesiveOverlap() const;
 
 	// Bulk properties.
+
 	UPROPERTY(EditAnywhere, Category = "Material Properties")
 	FAGX_TerrainBulkProperties TerrainBulk;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual void SetAdhesionOverlapFactor(float AdhesionOverlapFactor);
+	virtual void SetAdhesionOverlapFactor_BP(float AdhesionOverlapFactor);
+
+	virtual void SetAdhesionOverlapFactor(FAGX_Real AdhesionOverlapFactor);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual float GetAdhesionOverlapFactor() const;
+	virtual float GetAdhesionOverlapFactor_BP() const;
+
+	virtual FAGX_Real GetAdhesionOverlapFactor() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual void SetCohesion(float Cohesion);
+	virtual void SetCohesion_BP(float Cohesion);
+
+	virtual void SetCohesion(FAGX_Real Cohesion);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual float GetCohesion() const;
+	virtual float GetCohesion_BP() const;
+
+	virtual FAGX_Real GetCohesion() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual void SetDensity(float Density);
+	virtual void SetDensity_BP(float Density);
+
+	virtual void SetDensity(FAGX_Real Density);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual float GetDensity() const;
+	virtual float GetDensity_BP() const;
+
+	virtual FAGX_Real GetDensity() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual void SetDilatancyAngle(float DilatancyAngle);
+	virtual void SetDilatancyAngle_BP(float DilatancyAngle);
+
+	virtual void SetDilatancyAngle(FAGX_Real DilatancyAngle);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual float GetDilatancyAngle() const;
+	virtual float GetDilatancyAngle_BP() const;
+
+	virtual FAGX_Real GetDilatancyAngle() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual void SetFrictionAngle(float FrictionAngle);
+	virtual void SetFrictionAngle_BP(float FrictionAngle);
+
+	virtual void SetFrictionAngle(FAGX_Real FrictionAngle);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual float GetFrictionAngle() const;
+	virtual float GetFrictionAngle_BP() const;
+
+	virtual FAGX_Real GetFrictionAngle() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual void SetMaxDensity(float MaxDensity);
+	virtual void SetMaxDensity_BP(float MaxDensity);
+
+	virtual void SetMaxDensity(FAGX_Real MaxDensity);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual float GetMaxDensity() const;
+	virtual float GetMaxDensity_BP() const;
+
+	virtual FAGX_Real GetMaxDensity() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual void SetPoissonsRatio(float PoissonsRatio);
+	virtual void SetPoissonsRatio_BP(float PoissonsRatio);
+
+	virtual void SetPoissonsRatio(FAGX_Real PoissonsRatio);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual float GetPoissonsRatio() const;
+	virtual float GetPoissonsRatio_BP() const;
+
+	virtual FAGX_Real GetPoissonsRatio() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual void SetSwellFactor(float SwellFactor);
+	virtual void SetSwellFactor_BP(float SwellFactor);
+
+	virtual void SetSwellFactor(FAGX_Real SwellFactor);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual float GetSwellFactor() const;
+	virtual float GetSwellFactor_BP() const;
+
+	virtual FAGX_Real GetSwellFactor() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual void SetYoungsModulus(float YoungsModulus);
+	virtual void SetYoungsModulus_BP(float YoungsModulus);
+
+	virtual void SetYoungsModulus(FAGX_Real YoungsModulus);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Bulk")
-	virtual float GetYoungsModulus() const;
+	virtual float GetYoungsModulus_BP() const;
+
+	virtual FAGX_Real GetYoungsModulus() const;
 
 	// Compaction properties.
+
 	UPROPERTY(EditAnywhere, Category = "Material Properties")
 	FAGX_TerrainCompactionProperties TerrainCompaction;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual void SetAngleOfReposeCompactionRate(float AngleOfReposeCompactionRate);
+	virtual void SetAngleOfReposeCompactionRate_BP(float AngleOfReposeCompactionRate);
+
+	virtual void SetAngleOfReposeCompactionRate(FAGX_Real AngleOfReposeCompactionRate);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual float GetAngleOfReposeCompactionRate() const;
+	virtual float GetAngleOfReposeCompactionRate_BP() const;
+
+	virtual FAGX_Real GetAngleOfReposeCompactionRate() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual void SetBankStatePhi(float Phi0);
+	virtual void SetBankStatePhi_BP(float Phi0);
+
+	virtual void SetBankStatePhi(FAGX_Real Phi0);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual float GetBankStatePhi() const;
+	virtual float GetBankStatePhi_BP() const;
+
+	virtual FAGX_Real GetBankStatePhi() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual void SetCompactionTimeRelaxationConstant(float CompactionTimeRelaxationConstant);
+	virtual void SetCompactionTimeRelaxationConstant_BP(float CompactionTimeRelaxationConstant);
+
+	virtual void SetCompactionTimeRelaxationConstant(FAGX_Real CompactionTimeRelaxationConstant);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual float GetCompactionTimeRelaxationConstant() const;
+	virtual float GetCompactionTimeRelaxationConstant_BP() const;
+
+	virtual FAGX_Real GetCompactionTimeRelaxationConstant() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual void SetCompressionIndex(float CompressionIndex);
+	virtual void SetCompressionIndex_BP(float CompressionIndex);
+
+	virtual void SetCompressionIndex(FAGX_Real CompressionIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual float GetCompressionIndex() const;
+	virtual float GetCompressionIndex_BP() const;
+
+	virtual FAGX_Real GetCompressionIndex() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual void SetHardeningConstantKe(float K_e);
+	virtual void SetHardeningConstantKe_BP(float K_e);
+
+	virtual void SetHardeningConstantKe(FAGX_Real K_e);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual float GetHardeningConstantKe() const;
+	virtual float GetHardeningConstantKe_BP() const;
+
+	virtual FAGX_Real GetHardeningConstantKe() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual void SetHardeningConstantNe(float N_e);
+	virtual void SetHardeningConstantNe_BP(float N_e);
+
+	virtual void SetHardeningConstantNe(FAGX_Real N_e);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual float GetHardeningConstantNe() const;
+	virtual float GetHardeningConstantNe_BP() const;
+
+	virtual FAGX_Real GetHardeningConstantNe() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual void SetPreconsolidationStress(float PreconsolidationStress);
+	virtual void SetPreconsolidationStress_BP(float PreconsolidationStress);
+
+	virtual void SetPreconsolidationStress(FAGX_Real PreconsolidationStress);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual float GetPreconsolidationStress() const;
+	virtual float GetPreconsolidationStress_BP() const;
+
+	virtual FAGX_Real GetPreconsolidationStress() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual void SetStressCutOffFraction(float StressCutOffFraction);
+	virtual void SetStressCutOffFraction_BP(float StressCutOffFraction);
+
+	virtual void SetStressCutOffFraction(FAGX_Real StressCutOffFraction);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Compaction")
-	virtual float GetStressCutOffFraction() const;
+	virtual float GetStressCutOffFraction_BP() const;
+
+	virtual FAGX_Real GetStressCutOffFraction() const;
 
 	void CopyFrom(const FTerrainMaterialBarrier& Source);
 

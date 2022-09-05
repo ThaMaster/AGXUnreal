@@ -46,13 +46,13 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, Roughness),
 		[](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Surface.Roughness, SetRoughness) });
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Surface.Roughness, SetRoughness) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, Viscosity),
 		[](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Surface.Viscosity, SetSurfaceViscosity) });
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Surface.Viscosity, SetSurfaceViscosity) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
@@ -63,9 +63,7 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 			{
 				This->Asset->Surface.AdhesiveForce = This->Surface.AdhesiveForce;
 			}
-			This->SetAdhesion(
-				static_cast<float>(This->Surface.AdhesiveForce),
-				static_cast<float>(This->Surface.AdhesiveOverlap));
+			This->SetAdhesion(This->Surface.AdhesiveForce, This->Surface.AdhesiveOverlap);
 		});
 
 	PropertyDispatcher.Add(
@@ -77,28 +75,26 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 			{
 				This->Asset->Surface.AdhesiveOverlap = This->Surface.AdhesiveOverlap;
 			}
-			This->SetAdhesion(
-				static_cast<float>(This->Surface.AdhesiveForce),
-				static_cast<float>(This->Surface.AdhesiveOverlap));
+			This->SetAdhesion(This->Surface.AdhesiveForce, This->Surface.AdhesiveOverlap);
 		});
 
 	// Bulk properties.
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Bulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, Density),
-		[](ThisClass* This) { AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Bulk.Density, SetDensity) });
+		[](ThisClass* This) { AGX_ASSET_DISPATCHER_LAMBDA_BODY(Bulk.Density, SetDensity) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Bulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, Viscosity),
 		[](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Bulk.Viscosity, SetBulkViscosity) });
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Bulk.Viscosity, SetBulkViscosity) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Bulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, SpookDamping),
 		[](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Bulk.SpookDamping, SetSpookDamping) });
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Bulk.SpookDamping, SetSpookDamping) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Bulk),
@@ -109,9 +105,8 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 			{
 				This->Asset->Bulk.MinElasticRestLength = This->Bulk.MinElasticRestLength;
 			}
-			This->SetMinMaxElasticRestLength(
-				static_cast<float>(This->Bulk.MinElasticRestLength),
-				static_cast<float>(This->Bulk.MaxElasticRestLength));
+			This->SetMinMaxElasticRestLength(This->Bulk.MinElasticRestLength,
+				This->Bulk.MaxElasticRestLength);
 		});
 
 	PropertyDispatcher.Add(
@@ -123,9 +118,8 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 			{
 				This->Asset->Bulk.MaxElasticRestLength = This->Bulk.MaxElasticRestLength;
 			}
-			This->SetMinMaxElasticRestLength(
-				static_cast<float>(This->Bulk.MinElasticRestLength),
-				static_cast<float>(This->Bulk.MaxElasticRestLength));
+			This->SetMinMaxElasticRestLength(This->Bulk.MinElasticRestLength,
+				This->Bulk.MaxElasticRestLength);
 		});
 
 	// Wire properties.
@@ -133,26 +127,26 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Wire),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialWireProperties, YoungsModulusStretch),
 		[](ThisClass* This) {
-			AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Wire.YoungsModulusStretch, SetYoungsModulusStretch)
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(Wire.YoungsModulusStretch, SetYoungsModulusStretch)
 		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Wire),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialWireProperties, YoungsModulusBend),
 		[](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Wire.YoungsModulusBend, SetYoungsModulusBend) });
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Wire.YoungsModulusBend, SetYoungsModulusBend) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Wire),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialWireProperties, SpookDampingStretch),
 		[](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Wire.SpookDampingStretch, SetSpookDampingStretch) });
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Wire.SpookDampingStretch, SetSpookDampingStretch) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Wire),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialWireProperties, SpookDampingBend),
 		[](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_D2F_LAMBDA_BODY(Wire.SpookDampingBend, SetSpookDampingBend) });
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Wire.SpookDampingBend, SetSpookDampingBend) });
 }
 #endif
 
@@ -167,32 +161,57 @@ bool UAGX_ShapeMaterial::GetFrictionEnabled() const
 	AGX_ASSET_GETTER_IMPL(Surface.bFrictionEnabled, GetFrictionEnabled);
 }
 
-void UAGX_ShapeMaterial::SetRoughness(float InRoughness)
+void UAGX_ShapeMaterial::SetRoughness_BP(float InRoughness)
 {
-	AGX_ASSET_SETTER_F2D_IMPL(Surface.Roughness, InRoughness, SetRoughness);
+	SetRoughness(FAGX_Real(InRoughness));
 }
 
-float UAGX_ShapeMaterial::GetRoughness() const
+void UAGX_ShapeMaterial::SetRoughness(FAGX_Real InRoughness)
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Surface.Roughness, GetRoughness);
+	AGX_ASSET_SETTER_IMPL(Surface.Roughness, InRoughness, SetRoughness);
 }
 
-void UAGX_ShapeMaterial::SetSurfaceViscosity(float Viscosity)
+float UAGX_ShapeMaterial::GetRoughness_BP() const
 {
-	AGX_ASSET_SETTER_F2D_IMPL(Surface.Viscosity, Viscosity, SetSurfaceViscosity);
+	return static_cast<float>(GetRoughness());
 }
 
-float UAGX_ShapeMaterial::GetSurfaceViscosity() const
+FAGX_Real UAGX_ShapeMaterial::GetRoughness() const
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Surface.Viscosity, GetSurfaceViscosity);
+	AGX_ASSET_GETTER_IMPL(Surface.Roughness, GetRoughness);
 }
 
-void UAGX_ShapeMaterial::SetAdhesion(float AdhesiveForce, float AdhesiveOverlap)
+void UAGX_ShapeMaterial::SetSurfaceViscosity_BP(float Viscosity)
+{
+	SetSurfaceViscosity(FAGX_Real(Viscosity));
+}
+
+void UAGX_ShapeMaterial::SetSurfaceViscosity(FAGX_Real Viscosity)
+{
+	AGX_ASSET_SETTER_IMPL(Surface.Viscosity, Viscosity, SetSurfaceViscosity);
+}
+
+float UAGX_ShapeMaterial::GetSurfaceViscosity_BP() const
+{
+	return static_cast<float>(GetSurfaceViscosity());
+}
+
+FAGX_Real UAGX_ShapeMaterial::GetSurfaceViscosity() const
+{
+	AGX_ASSET_GETTER_IMPL(Surface.Viscosity, GetSurfaceViscosity);
+}
+
+void UAGX_ShapeMaterial::SetAdhesion_BP(float AdhesiveForce, float AdhesiveOverlap)
+{
+	SetAdhesion(FAGX_Real(AdhesiveForce), FAGX_Real(AdhesiveOverlap));
+}
+
+void UAGX_ShapeMaterial::SetAdhesion(FAGX_Real AdhesiveForce, FAGX_Real AdhesiveOverlap)
 {
 	if (IsInstance())
 	{
-		Surface.AdhesiveForce = static_cast<double>(AdhesiveForce);
-		Surface.AdhesiveOverlap = static_cast<double>(AdhesiveOverlap);
+		Surface.AdhesiveForce = AdhesiveForce;
+		Surface.AdhesiveOverlap = AdhesiveOverlap;
 		if (HasNative())
 		{
 			NativeBarrier->SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
@@ -205,68 +224,123 @@ void UAGX_ShapeMaterial::SetAdhesion(float AdhesiveForce, float AdhesiveOverlap)
 			Instance->SetAdhesion(AdhesiveForce, AdhesiveOverlap);
 			return;
 		}
-		Surface.AdhesiveForce = static_cast<double>(AdhesiveForce);
-		Surface.AdhesiveOverlap = static_cast<double>(AdhesiveOverlap);
+		Surface.AdhesiveForce = AdhesiveForce;
+		Surface.AdhesiveOverlap = AdhesiveOverlap;
 	}
 }
 
-float UAGX_ShapeMaterial::GetAdhesiveForce() const
+float UAGX_ShapeMaterial::GetAdhesiveForce_BP() const
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Surface.AdhesiveForce, GetAdhesiveForce);
+	return static_cast<float>(GetAdhesiveForce());
 }
 
-float UAGX_ShapeMaterial::GetAdhesiveOverlap() const
+FAGX_Real UAGX_ShapeMaterial::GetAdhesiveForce() const
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Surface.AdhesiveOverlap, GetAdhesiveOverlap);
+	AGX_ASSET_GETTER_IMPL(Surface.AdhesiveForce, GetAdhesiveForce);
+}
+
+float UAGX_ShapeMaterial::GetAdhesiveOverlap_BP() const
+{
+	return static_cast<float>(GetAdhesiveOverlap());
+}
+
+FAGX_Real UAGX_ShapeMaterial::GetAdhesiveOverlap() const
+{
+	AGX_ASSET_GETTER_IMPL(Surface.AdhesiveOverlap, GetAdhesiveOverlap);
 }
 
 // Bulk properties.
-void UAGX_ShapeMaterial::SetDensity(float InDensity)
+void UAGX_ShapeMaterial::SetDensity_BP(float InDensity)
 {
-	AGX_ASSET_SETTER_F2D_IMPL(Bulk.Density, InDensity, SetDensity);
+	SetDensity(FAGX_Real(InDensity));
 }
 
-float UAGX_ShapeMaterial::GetDensity() const
+void UAGX_ShapeMaterial::SetDensity(FAGX_Real InDensity)
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Bulk.Density, GetDensity);
+	AGX_ASSET_SETTER_IMPL(Bulk.Density, InDensity, SetDensity);
 }
 
-void UAGX_ShapeMaterial::SetYoungsModulus(float InYoungsModulus)
+FAGX_Real UAGX_ShapeMaterial::GetDensity() const
 {
-	AGX_ASSET_SETTER_F2D_IMPL(Bulk.YoungsModulus, InYoungsModulus, SetYoungsModulus);
+	AGX_ASSET_GETTER_IMPL(Bulk.Density, GetDensity);
 }
 
-float UAGX_ShapeMaterial::GetYoungsModulus() const
+float UAGX_ShapeMaterial::GetDensity_BP() const
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Bulk.YoungsModulus, GetYoungsModulus);
+	return static_cast<float>(GetDensity());
 }
 
-void UAGX_ShapeMaterial::SetBulkViscosity(float InBulkViscosity)
+void UAGX_ShapeMaterial::SetYoungsModulus(FAGX_Real InYoungsModulus)
 {
-	AGX_ASSET_SETTER_F2D_IMPL(Bulk.Viscosity, InBulkViscosity, SetBulkViscosity);
+	AGX_ASSET_SETTER_IMPL(Bulk.YoungsModulus, InYoungsModulus, SetYoungsModulus);
 }
 
-float UAGX_ShapeMaterial::GetBulkViscosity() const
+void UAGX_ShapeMaterial::SetYoungsModulus_BP(float InYoungsModulus)
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Bulk.Viscosity, GetBulkViscosity);
+	SetYoungsModulus(FAGX_Real(InYoungsModulus));
 }
 
-void UAGX_ShapeMaterial::SetSpookDamping(float InSpookDamping)
+FAGX_Real UAGX_ShapeMaterial::GetYoungsModulus() const
 {
-	AGX_ASSET_SETTER_F2D_IMPL(Bulk.SpookDamping, InSpookDamping, SetSpookDamping);
+	AGX_ASSET_GETTER_IMPL(Bulk.YoungsModulus, GetYoungsModulus);
 }
 
-float UAGX_ShapeMaterial::GetSpookDamping() const
+float UAGX_ShapeMaterial::GetYoungsModulus_BP() const
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Bulk.SpookDamping, GetSpookDamping);
+	return static_cast<float>(GetYoungsModulus());
 }
 
-void UAGX_ShapeMaterial::SetMinMaxElasticRestLength(float InMin, float InMax)
+void UAGX_ShapeMaterial::SetBulkViscosity_BP(float InBulkViscosity)
+{
+	SetBulkViscosity(InBulkViscosity);
+}
+
+void UAGX_ShapeMaterial::SetBulkViscosity(FAGX_Real InBulkViscosity)
+{
+	AGX_ASSET_SETTER_IMPL(Bulk.Viscosity, InBulkViscosity, SetBulkViscosity);
+}
+
+float UAGX_ShapeMaterial::GetBulkViscosity_BP() const
+{
+	return static_cast<float>(GetBulkViscosity());
+}
+
+FAGX_Real UAGX_ShapeMaterial::GetBulkViscosity() const
+{
+	AGX_ASSET_GETTER_IMPL(Bulk.Viscosity, GetBulkViscosity);
+}
+
+void UAGX_ShapeMaterial::SetSpookDamping_BP(float InSpookDamping)
+{
+	SetSpookDamping(FAGX_Real(InSpookDamping));
+}
+
+void UAGX_ShapeMaterial::SetSpookDamping(FAGX_Real InSpookDamping)
+{
+	AGX_ASSET_SETTER_IMPL(Bulk.SpookDamping, InSpookDamping, SetSpookDamping);
+}
+
+float UAGX_ShapeMaterial::GetSpookDamping_BP() const
+{
+	return static_cast<float>(GetSpookDamping());
+}
+
+FAGX_Real UAGX_ShapeMaterial::GetSpookDamping() const
+{
+	AGX_ASSET_GETTER_IMPL(Bulk.SpookDamping, GetSpookDamping);
+}
+
+void UAGX_ShapeMaterial::SetMinMaxElasticRestLength_BP(float InMin, float InMax)
+{
+	SetMinMaxElasticRestLength(FAGX_Real(InMin), FAGX_Real(InMax));
+}
+
+void UAGX_ShapeMaterial::SetMinMaxElasticRestLength(FAGX_Real InMin, FAGX_Real InMax)
 {
 	if (IsInstance())
 	{
-		Bulk.MinElasticRestLength = static_cast<double>(InMin);
-		Bulk.MaxElasticRestLength = static_cast<double>(InMax);
+		Bulk.MinElasticRestLength = InMin;
+		Bulk.MaxElasticRestLength = InMax;
 		if (HasNative())
 		{
 			NativeBarrier->SetMinMaxElasticRestLength(
@@ -280,60 +354,110 @@ void UAGX_ShapeMaterial::SetMinMaxElasticRestLength(float InMin, float InMax)
 			Instance->SetMinMaxElasticRestLength(InMin, InMax);
 			return;
 		}
-		Bulk.MinElasticRestLength = static_cast<double>(InMin);
-		Bulk.MaxElasticRestLength = static_cast<double>(InMax);
+		Bulk.MinElasticRestLength = InMin;
+		Bulk.MaxElasticRestLength = InMax;
 	}
 }
 
-float UAGX_ShapeMaterial::GetMinElasticRestLength() const
+float UAGX_ShapeMaterial::GetMinElasticRestLength_BP() const
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Bulk.MinElasticRestLength, GetMinElasticRestLength);
+	return static_cast<float>(GetMinElasticRestLength());
 }
 
-float UAGX_ShapeMaterial::GetMaxElasticRestLength() const
+FAGX_Real UAGX_ShapeMaterial::GetMinElasticRestLength() const
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Bulk.MaxElasticRestLength, GetMaxElasticRestLength);
+	AGX_ASSET_GETTER_IMPL(Bulk.MinElasticRestLength, GetMinElasticRestLength);
+}
+
+float UAGX_ShapeMaterial::GetMaxElasticRestLength_BP() const
+{
+	return static_cast<float>(GetMaxElasticRestLength());
+}
+
+FAGX_Real UAGX_ShapeMaterial::GetMaxElasticRestLength() const
+{
+	AGX_ASSET_GETTER_IMPL(Bulk.MaxElasticRestLength, GetMaxElasticRestLength);
 }
 
 // Wire properties.
-float UAGX_ShapeMaterial::GetYoungsModulusStretch() const
+float UAGX_ShapeMaterial::GetYoungsModulusStretch_BP() const
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Wire.YoungsModulusStretch, GetYoungsModulusStretch);
+	return static_cast<float>(GetYoungsModulusStretch());
 }
 
-void UAGX_ShapeMaterial::SetYoungsModulusStretch(float InYoungsModulus)
+FAGX_Real UAGX_ShapeMaterial::GetYoungsModulusStretch() const
 {
-	AGX_ASSET_SETTER_F2D_IMPL(Wire.YoungsModulusStretch, InYoungsModulus, SetYoungsModulusStretch);
+	AGX_ASSET_GETTER_IMPL(Wire.YoungsModulusStretch, GetYoungsModulusStretch);
 }
 
-float UAGX_ShapeMaterial::GetYoungsModulusBend() const
+void UAGX_ShapeMaterial::SetYoungsModulusStretch_BP(float InYoungsModulus)
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Wire.YoungsModulusBend, GetYoungsModulusBend);
+	SetYoungsModulusStretch(FAGX_Real(InYoungsModulus));
 }
 
-void UAGX_ShapeMaterial::SetYoungsModulusBend(float InYoungsModulus)
+void UAGX_ShapeMaterial::SetYoungsModulusStretch(FAGX_Real InYoungsModulus)
 {
-	AGX_ASSET_SETTER_F2D_IMPL(Wire.YoungsModulusBend, InYoungsModulus, SetYoungsModulusBend);
+	AGX_ASSET_SETTER_IMPL(Wire.YoungsModulusStretch, InYoungsModulus, SetYoungsModulusStretch);
 }
 
-float UAGX_ShapeMaterial::GetSpookDampingStretch() const
+float UAGX_ShapeMaterial::GetYoungsModulusBend_BP() const
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Wire.SpookDampingStretch, GetSpookDampingStretch);
+	return static_cast<float>(GetYoungsModulusBend());
 }
 
-void UAGX_ShapeMaterial::SetSpookDampingStretch(float InSpookDamping)
+FAGX_Real UAGX_ShapeMaterial::GetYoungsModulusBend() const
 {
-	AGX_ASSET_SETTER_F2D_IMPL(Wire.SpookDampingStretch, InSpookDamping, SetSpookDampingStretch);
+	AGX_ASSET_GETTER_IMPL(Wire.YoungsModulusBend, GetYoungsModulusBend);
 }
 
-float UAGX_ShapeMaterial::GetSpookDampingBend() const
+void UAGX_ShapeMaterial::SetYoungsModulusBend_BP(float InYoungsModulus)
 {
-	AGX_ASSET_GETTER_D2F_IMPL(Wire.SpookDampingBend, GetSpookDampingBend);
+	SetYoungsModulusBend(FAGX_Real(InYoungsModulus));
 }
 
-void UAGX_ShapeMaterial::SetSpookDampingBend(float InSpookDamping)
+void UAGX_ShapeMaterial::SetYoungsModulusBend(FAGX_Real InYoungsModulus)
 {
-	AGX_ASSET_SETTER_F2D_IMPL(Wire.SpookDampingBend, InSpookDamping, SetSpookDampingBend);
+	AGX_ASSET_SETTER_IMPL(Wire.YoungsModulusBend, InYoungsModulus, SetYoungsModulusBend);
+}
+
+float UAGX_ShapeMaterial::GetSpookDampingStretch_BP() const
+{
+	return static_cast<float>(GetSpookDampingStretch());
+}
+
+FAGX_Real UAGX_ShapeMaterial::GetSpookDampingStretch() const
+{
+	AGX_ASSET_GETTER_IMPL(Wire.SpookDampingStretch, GetSpookDampingStretch);
+}
+
+void UAGX_ShapeMaterial::SetSpookDampingStretch_BP(float InSpookDamping)
+{
+	SetSpookDampingStretch(FAGX_Real(InSpookDamping));
+}
+
+void UAGX_ShapeMaterial::SetSpookDampingStretch(FAGX_Real InSpookDamping)
+{
+	AGX_ASSET_SETTER_IMPL(Wire.SpookDampingStretch, InSpookDamping, SetSpookDampingStretch);
+}
+
+float UAGX_ShapeMaterial::GetSpookDampingBend_BP() const
+{
+	return static_cast<float>(GetSpookDampingBend());
+}
+
+FAGX_Real UAGX_ShapeMaterial::GetSpookDampingBend() const
+{
+	AGX_ASSET_GETTER_IMPL(Wire.SpookDampingBend, GetSpookDampingBend);
+}
+
+void UAGX_ShapeMaterial::SetSpookDampingBend_BP(float InSpookDamping)
+{
+	SetSpookDampingBend(FAGX_Real(InSpookDamping));
+}
+
+void UAGX_ShapeMaterial::SetSpookDampingBend(FAGX_Real InSpookDamping)
+{
+	AGX_ASSET_SETTER_IMPL(Wire.SpookDampingBend, InSpookDamping, SetSpookDampingBend);
 }
 
 void UAGX_ShapeMaterial::CopyFrom(const FShapeMaterialBarrier* Source)
