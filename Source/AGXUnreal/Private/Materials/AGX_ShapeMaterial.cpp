@@ -651,5 +651,12 @@ bool UAGX_ShapeMaterial::IsInstance() const
 {
 	// An instance of this class will always have a reference to it's corresponding Asset.
 	// An asset will never have this reference set.
-	return Asset != nullptr;
+	bool bIsInstance = Asset != nullptr;
+
+	// Internal testing the hypothesis that UObject::IsAsset is a valid inverse of this function.
+	// @todo Consider removing this function and instead use UObject::IsAsset, if the below check
+	// has never failed.
+	AGX_CHECK(bIsInstance != IsAsset());
+
+	return bIsInstance;
 }
