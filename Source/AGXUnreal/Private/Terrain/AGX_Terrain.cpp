@@ -58,18 +58,27 @@ AAGX_Terrain::AAGX_Terrain()
 	}
 }
 
-void AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
+bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
 {
+	UAGX_TerrainMaterial* TerrainMaterialOrig = TerrainMaterial;
 	TerrainMaterial = InTerrainMaterial;
 
 	if (!HasNative())
 	{
 		// Not in play, we are done.
-		return;
+		return true;
 	}
 
-	// Responsible to create instance of non exists and do the asset/instance swap.
-	UpdateNativeMaterial();
+	// UpdateNativeMaterial is responsible to create an instance if none exists and do the
+	// asset/instance swap.
+	if (!UpdateNativeMaterial())
+	{
+		// Something went wrong, restore original TerrainMaterial.
+		TerrainMaterial = TerrainMaterialOrig;
+		return false;
+	}
+
+	return true;
 }
 
 void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
@@ -322,7 +331,14 @@ void AAGX_Terrain::InitializeNative()
 
 	CreateNativeShovels();
 	InitializeRendering();
-	UpdateNativeMaterial();
+	
+	if (!UpdateNativeMaterial())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UpdateNativeMaterial returned false in AGX_Terrain. "
+				"Ensure the selected Terrain Material is valid."));
+	}
 }
 
 bool AAGX_Terrain::CreateNativeTerrain()
@@ -534,10 +550,10 @@ void AAGX_Terrain::InitializeRendering()
 	}
 }
 
-void AAGX_Terrain::UpdateNativeMaterial()
+bool AAGX_Terrain::UpdateNativeMaterial()
 {
 	if (!HasNative())
-		return;
+		return false;
 
 	if (TerrainMaterial == nullptr)
 	{
@@ -545,7 +561,7 @@ void AAGX_Terrain::UpdateNativeMaterial()
 		{
 			GetNative()->ClearMaterial();
 		}
-		return;
+		return true;
 	}
 
 	// Set TerrainMaterial
@@ -571,6 +587,7 @@ void AAGX_Terrain::UpdateNativeMaterial()
 	check(MaterialBarrier);
 
 	GetNative()->SetShapeMaterial(*MaterialBarrier);
+	return true;
 }
 
 void AAGX_Terrain::InitializeDisplacementMap()

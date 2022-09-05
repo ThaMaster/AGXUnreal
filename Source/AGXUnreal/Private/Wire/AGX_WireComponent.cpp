@@ -1549,6 +1549,7 @@ namespace AGX_WireComponent_helpers
 
 bool UAGX_WireComponent::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
 {
+	UAGX_ShapeMaterial* ShapeMaterialOrig = ShapeMaterial;
 	ShapeMaterial = InShapeMaterial;
 
 	if (!HasNative())
@@ -1557,8 +1558,16 @@ bool UAGX_WireComponent::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
 		return true;
 	}
 
-	// Responsible to create instance of non exists and do the asset/instance swap.
-	return UpdateNativeMaterial();
+	// UpdateNativeMaterial is responsible for creating an instance of none exists and do the
+	// asset/instance swap.
+	if (!UpdateNativeMaterial())
+	{
+		// Something went wrong, restore original ShapeMaterial.
+		ShapeMaterial = ShapeMaterialOrig;
+		return false;
+	}
+
+	return true;
 }
 
 void UAGX_WireComponent::CreateNative()
@@ -1572,7 +1581,13 @@ void UAGX_WireComponent::CreateNative()
 	NativeBarrier.AllocateNative(Radius, ResolutionPerUnitLength);
 	check(HasNative()); /// @todo Consider better error handling than 'check'.
 
-	UpdateNativeMaterial();
+	if (!UpdateNativeMaterial())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UpdateNativeMaterial returned false in AGX_WireComponent. "
+				 "Ensure the selected Shape Material is valid."));
+	}
 
 	NativeBarrier.SetLinearVelocityDamping(LinearVelocityDamping);
 

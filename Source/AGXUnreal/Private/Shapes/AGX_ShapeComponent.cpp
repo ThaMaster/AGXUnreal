@@ -80,7 +80,13 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	GetNative()->SetName(GetName());
 	GetNative()->SetIsSensor(bIsSensor, SensorType == EAGX_ShapeSensorType::ContactsSensor);
 
-	UpdateNativeMaterial();
+	if (!UpdateNativeMaterial())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UpdateNativeMaterial returned false in AGX_ShapeComponent. "
+				 "Ensure the selected Shape Material is valid."));
+	}
 
 	GetNative()->SetEnableCollisions(bCanCollide);
 
@@ -323,6 +329,7 @@ void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 bool UAGX_ShapeComponent::SetShapeMaterial(
 	UAGX_ShapeMaterial* InShapeMaterial)
 {
+	UAGX_ShapeMaterial* ShapeMaterialOrig = ShapeMaterial;
 	ShapeMaterial = InShapeMaterial;
 
 	if (!HasNative())
@@ -331,8 +338,16 @@ bool UAGX_ShapeComponent::SetShapeMaterial(
 		return true;
 	}
 
-	// Responsible to create instance of non exists and do the asset/instance swap.
-	return UpdateNativeMaterial();
+	// UpdateNativeMaterial is responsible to create an instance if none exists and do the
+	// asset/instance swap.
+	if(!UpdateNativeMaterial())
+	{
+		// Something went wrong, restore original ShapeMaterial.
+		ShapeMaterial = ShapeMaterialOrig;
+		return false;
+	}
+
+	return true;
 }
 
 void UAGX_ShapeComponent::SetCanCollide(bool CanCollide)

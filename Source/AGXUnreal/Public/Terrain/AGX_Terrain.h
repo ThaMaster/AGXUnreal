@@ -109,7 +109,7 @@ public:
 	UAGX_TerrainMaterial* TerrainMaterial;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
-	void SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial);
+	bool SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial);
 
 	/**
 	 * A list of the rigid body actors that should be used as terrain shovels.
@@ -201,7 +201,7 @@ private:
 	void InitializeNative();
 	bool CreateNativeTerrain();
 	void CreateNativeShovels();
-	void UpdateNativeMaterial();
+	bool UpdateNativeMaterial();
 
 	void SetInitialTransform();
 	void InitializeRendering();
