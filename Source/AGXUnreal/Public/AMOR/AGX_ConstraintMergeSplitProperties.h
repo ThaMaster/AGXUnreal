@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_MergeSplitPropertiesBase.h"
-#include "AMOR/AGX_ConstraintMergeSplitThresholdsBase.h"
+#include "AMOR/AGX_ConstraintMergeSplitThresholds.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -23,7 +23,7 @@ struct AGXUNREAL_API FAGX_ConstraintMergeSplitProperties : public FAGX_MergeSpli
 public:
 	
 	UPROPERTY(EditAnywhere, Category = "AMOR")
-	UAGX_ConstraintMergeSplitThresholdsBase* Thresholds;
+	UAGX_ConstraintMergeSplitThresholds* Thresholds;
 
 	/**
 	* Must be called by the owning object at begin play (after the owning object has allocated a
@@ -96,7 +96,7 @@ class AGXUNREAL_API UAGX_ConstraintMergeSplitProperties_LF : public UBlueprintFu
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")
-	static UAGX_ConstraintMergeSplitThresholdsBase* GetThresholds(
+	static UAGX_ConstraintMergeSplitThresholds* GetThresholds(
 		UPARAM(ref) const FAGX_ConstraintMergeSplitProperties& Properties)
 	{
 		return Properties.Thresholds;

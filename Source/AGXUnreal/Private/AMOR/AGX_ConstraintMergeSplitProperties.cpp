@@ -5,7 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
-#include "AMOR/AGX_ConstraintMergeSplitThresholdsInstance.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 
 
@@ -68,9 +67,8 @@ void FAGX_ConstraintMergeSplitProperties::UpdateNativeThresholds(UAGX_Constraint
 	}
 
 	UWorld* PlayingWorld = Owner.GetWorld();
-	UAGX_ConstraintMergeSplitThresholdsInstance* ThresholdsInstance =
-		static_cast<UAGX_ConstraintMergeSplitThresholdsInstance*>(
-			Thresholds->GetOrCreateInstance(PlayingWorld, Owner.IsRotational()));
+	UAGX_ConstraintMergeSplitThresholds* ThresholdsInstance =		
+			Thresholds->GetOrCreateInstance(PlayingWorld, Owner.IsRotational());
 	if (!ThresholdsInstance)
 	{
 		UE_LOG(

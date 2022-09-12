@@ -1,0 +1,305 @@
+// Copyright 2022, Algoryx Simulation AB.
+
+#include "AMOR/AGX_ConstraintMergeSplitThresholds.h"
+
+// AGX Dynamics for Unreal includes.
+#include "AGX_AssetGetterSetterImpl.h"
+#include "AGX_Check.h"
+#include "AGX_LogCategory.h"
+#include "AGX_PropertyChangedDispatcher.h"
+#include "AGX_Simulation.h"
+
+void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredForceRangeDiff_BP(
+	float InMaxDesiredForceRangeDiff)
+{
+	SetMaxDesiredForceRangeDiff(FAGX_Real(InMaxDesiredForceRangeDiff));
+}
+
+void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredForceRangeDiff(
+	FAGX_Real InMaxDesiredForceRangeDiff)
+{
+	AGX_ASSET_SETTER_IMPL(
+		MaxDesiredForceRangeDiff, InMaxDesiredForceRangeDiff, SetMaxDesiredForceRangeDiff);
+}
+
+float UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredForceRangeDiff_BP() const
+{
+	return static_cast<float>(GetMaxDesiredForceRangeDiff());
+}
+
+FAGX_Real UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredForceRangeDiff() const
+{
+	AGX_ASSET_GETTER_IMPL(MaxDesiredForceRangeDiff, GetMaxDesiredForceRangeDiff);
+}
+
+void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredLockAngleDiff_BP(
+	float InMaxDesiredLockAngleDiff)
+{
+	SetMaxDesiredLockAngleDiff(FAGX_Real(InMaxDesiredLockAngleDiff));
+}
+
+void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredLockAngleDiff(
+	FAGX_Real InMaxDesiredLockAngleDiff)
+{
+	AGX_ASSET_SETTER_IMPL(
+		MaxDesiredLockAngleDiff, InMaxDesiredLockAngleDiff, SetMaxDesiredLockAngleDiff);
+}
+
+float UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredLockAngleDiff_BP() const
+{
+	return static_cast<float>(GetMaxDesiredLockAngleDiff());
+}
+
+FAGX_Real UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredLockAngleDiff() const
+{
+	AGX_ASSET_GETTER_IMPL(MaxDesiredLockAngleDiff, GetMaxDesiredLockAngleDiff);
+}
+
+void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredRangeAngleDiff_BP(
+	float InMaxDesiredRangeAngleDiff)
+{
+	SetMaxDesiredRangeAngleDiff(FAGX_Real(InMaxDesiredRangeAngleDiff));
+}
+
+void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredRangeAngleDiff(
+	FAGX_Real InMaxDesiredRangeAngleDiff)
+{
+	AGX_ASSET_SETTER_IMPL(
+		MaxDesiredRangeAngleDiff, InMaxDesiredRangeAngleDiff, SetMaxDesiredRangeAngleDiff);
+}
+
+float UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredRangeAngleDiff_BP() const
+{
+	return static_cast<float>(GetMaxDesiredRangeAngleDiff());
+}
+
+FAGX_Real UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredRangeAngleDiff() const
+{
+	AGX_ASSET_GETTER_IMPL(MaxDesiredRangeAngleDiff, GetMaxDesiredRangeAngleDiff);
+}
+
+void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredSpeedDiff_BP(float InMaxDesiredSpeedDiff)
+{
+	SetMaxDesiredSpeedDiff(FAGX_Real(InMaxDesiredSpeedDiff));
+}
+
+void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredSpeedDiff(FAGX_Real InMaxDesiredSpeedDiff)
+{
+	AGX_ASSET_SETTER_IMPL(MaxDesiredSpeedDiff, InMaxDesiredSpeedDiff, SetMaxDesiredSpeedDiff);
+}
+
+float UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredSpeedDiff_BP() const
+{
+	return static_cast<float>(GetMaxDesiredSpeedDiff());
+}
+
+FAGX_Real UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredSpeedDiff() const
+{
+	AGX_ASSET_GETTER_IMPL(MaxDesiredSpeedDiff, GetMaxDesiredSpeedDiff);
+}
+
+void UAGX_ConstraintMergeSplitThresholds::SetMaxRelativeSpeed_BP(float InMaxRelativeSpeed)
+{
+	SetMaxRelativeSpeed(FAGX_Real(InMaxRelativeSpeed));
+}
+
+void UAGX_ConstraintMergeSplitThresholds::SetMaxRelativeSpeed(FAGX_Real InMaxRelativeSpeed)
+{
+	AGX_ASSET_SETTER_IMPL(MaxRelativeSpeed, InMaxRelativeSpeed, SetMaxRelativeSpeed);
+}
+
+float UAGX_ConstraintMergeSplitThresholds::GetMaxRelativeSpeed_BP() const
+{
+	return static_cast<float>(GetMaxRelativeSpeed());
+}
+
+FAGX_Real UAGX_ConstraintMergeSplitThresholds::GetMaxRelativeSpeed() const
+{
+	AGX_ASSET_GETTER_IMPL(MaxRelativeSpeed, GetMaxRelativeSpeed);
+}
+
+#if WITH_EDITOR
+void UAGX_ConstraintMergeSplitThresholds::PostEditChangeChainProperty(
+	FPropertyChangedChainEvent& Event)
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
+	Super::PostEditChangeChainProperty(Event);
+}
+
+void UAGX_ConstraintMergeSplitThresholds::PostInitProperties()
+{
+	Super::PostInitProperties();
+	InitPropertyDispatcher();
+}
+
+void UAGX_ConstraintMergeSplitThresholds::InitPropertyDispatcher()
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintMergeSplitThresholds, MaxDesiredForceRangeDiff),
+		[](ThisClass* This) {
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(MaxDesiredForceRangeDiff, SetMaxDesiredForceRangeDiff)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintMergeSplitThresholds, MaxDesiredLockAngleDiff),
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(MaxDesiredLockAngleDiff, SetMaxDesiredLockAngleDiff) });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintMergeSplitThresholds, MaxDesiredRangeAngleDiff),
+		[](ThisClass* This) {
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(MaxDesiredRangeAngleDiff, SetMaxDesiredRangeAngleDiff)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintMergeSplitThresholds, MaxDesiredSpeedDiff),
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(MaxDesiredSpeedDiff, SetMaxDesiredSpeedDiff) });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintMergeSplitThresholds, MaxRelativeSpeed),
+		[](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(MaxRelativeSpeed, SetMaxRelativeSpeed) });
+}
+#endif
+
+UAGX_ConstraintMergeSplitThresholds* UAGX_ConstraintMergeSplitThresholds::GetOrCreateInstance(
+	UWorld* PlayingWorld, bool bIsRotational)
+{
+	if (IsInstance())
+	{
+		return this;
+	}
+
+	UAGX_ConstraintMergeSplitThresholds* InstancePtr = Instance.Get();
+	if (!InstancePtr && PlayingWorld && PlayingWorld->IsGameWorld())
+	{
+		InstancePtr = UAGX_ConstraintMergeSplitThresholds::CreateFromAsset(
+			PlayingWorld, *this, bIsRotational);
+		Instance = InstancePtr;
+	}
+
+	return InstancePtr;
+}
+
+void UAGX_ConstraintMergeSplitThresholds::CreateNative(
+	UWorld* PlayingWorld, bool bIsRotational)
+{
+	if (!IsInstance())
+	{
+		if (Instance == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("CreateNative was called on UAGX_ConstraintMergeSplitThresholds "
+					 "'%s' who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called prior "
+					 "to calling this function."),
+				*GetName());
+			return;
+		}
+
+		Instance->CreateNative(PlayingWorld, bIsRotational);
+	}
+
+	AGX_CHECK(IsInstance());
+	NativeBarrier.Reset(new FConstraintMergeSplitThresholdsBarrier());
+	NativeBarrier->AllocateNative(bIsRotational);
+	AGX_CHECK(HasNative());
+
+	UpdateNativeProperties();
+}
+
+FConstraintMergeSplitThresholdsBarrier*
+UAGX_ConstraintMergeSplitThresholds::GetOrCreateNative(
+	UWorld* PlayingWorld, bool bIsRotational)
+{
+	if (!IsInstance())
+	{
+		if (Instance == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("GetOrCreateNative was called on UAGX_ConstraintMergeSplitThresholds '%s'"
+					 "who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called prior "
+					 "to calling this function."),
+				*GetName());
+			return nullptr;
+		}
+
+		return Instance->GetOrCreateNative(PlayingWorld, bIsRotational);
+	}
+
+	AGX_CHECK(IsInstance());
+	if (!HasNative())
+	{
+		CreateNative(PlayingWorld, bIsRotational);
+	}
+
+	return NativeBarrier.Get();
+}
+
+bool UAGX_ConstraintMergeSplitThresholds::HasNative() const
+{
+	if (Instance != nullptr)
+	{
+		AGX_CHECK(!IsInstance());
+		return Instance->HasNative();
+	}
+
+	return NativeBarrier && NativeBarrier->HasNative();
+}
+
+UAGX_ConstraintMergeSplitThresholds*
+UAGX_ConstraintMergeSplitThresholds::CreateFromAsset(
+	UWorld* PlayingWorld, UAGX_ConstraintMergeSplitThresholds& Source, bool bIsRotational)
+{
+	AGX_CHECK(PlayingWorld);
+	AGX_CHECK(PlayingWorld->IsGameWorld());
+	AGX_CHECK(!Source.IsInstance());
+
+	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
+	AGX_CHECK(Outer);
+
+	const FString InstanceName = Source.GetName() + "_Instance";
+	auto NewInstance = NewObject<UAGX_ConstraintMergeSplitThresholds>(
+		Outer, UAGX_ConstraintMergeSplitThresholds::StaticClass(), *InstanceName,
+		RF_Transient);
+
+	NewInstance->CopyProperties(Source);
+	NewInstance->CreateNative(PlayingWorld, bIsRotational);
+
+	return NewInstance;
+}
+
+bool UAGX_ConstraintMergeSplitThresholds::IsInstance() const
+{
+	// An instance of this class will always have a reference to it's corresponding Asset.
+	// An asset will never have this reference set.
+	const bool bIsInstance = Asset != nullptr;
+
+	// Internal testing the hypothesis that UObject::IsAsset is a valid inverse of this function.
+	// @todo Consider removing this function and instead use UObject::IsAsset, if the below check
+	// has never failed.
+	AGX_CHECK(bIsInstance != IsAsset());
+
+	return bIsInstance;
+}
+
+void UAGX_ConstraintMergeSplitThresholds::CopyProperties(
+	UAGX_ConstraintMergeSplitThresholds& Source)
+{
+	// Todo: implement.
+}
+
+void UAGX_ConstraintMergeSplitThresholds::UpdateNativeProperties()
+{
+	AGX_CHECK(HasNative());
+	// TODO: implement.
+}

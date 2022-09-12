@@ -3,7 +3,7 @@
 #include "AMOR/AGX_ConstraintMergeSplitThresholdsTypeActions.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AMOR/AGX_ConstraintMergeSplitThresholdsBase.h"
+#include "AMOR/AGX_ConstraintMergeSplitThresholds.h"
 
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintMergeSplitThresholdsTypeActions"
@@ -37,7 +37,7 @@ FText FAGX_ConstraintMergeSplitThresholdsTypeActions::GetAssetDescription(const 
 
 UClass* FAGX_ConstraintMergeSplitThresholdsTypeActions::GetSupportedClass() const
 {
-	return UAGX_ConstraintMergeSplitThresholdsBase::StaticClass();
+	return UAGX_ConstraintMergeSplitThresholds::StaticClass();
 }
 
 #undef LOCTEXT_NAMESPACE
