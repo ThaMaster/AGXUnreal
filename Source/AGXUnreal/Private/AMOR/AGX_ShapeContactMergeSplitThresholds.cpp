@@ -264,7 +264,7 @@ void UAGX_ShapeContactMergeSplitThresholds::CreateNative(UWorld* PlayingWorld)
 	NativeBarrier->AllocateNative();
 	AGX_CHECK(HasNative());
 
-	UpdateNativeProperties();
+	SetNativeProperties(*NativeBarrier);
 }
 
 FShapeContactMergeSplitThresholdsBarrier* UAGX_ShapeContactMergeSplitThresholds::GetOrCreateNative(
@@ -346,7 +346,8 @@ void UAGX_ShapeContactMergeSplitThresholds::CopyProperties(
 	// Todo: implement.
 }
 
-void UAGX_ShapeContactMergeSplitThresholds::UpdateNativeProperties()
+void UAGX_ShapeContactMergeSplitThresholds::SetNativeProperties(
+	FShapeContactMergeSplitThresholdsBarrier& Barrier)
 {
 	AGX_CHECK(HasNative());
 	// TODO: implement.

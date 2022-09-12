@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
+#include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"

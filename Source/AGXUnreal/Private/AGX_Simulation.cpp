@@ -1009,11 +1009,18 @@ void UAGX_Simulation::SetGravity()
 void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 {
 	using namespace AGX_Simulation_helpers;
+	if (!HasNative())
+	{
+		return;
+	}
 
 	if (auto SC = GetAssetFrom<UAGX_ShapeContactMergeSplitThresholds>(
 			GlobalShapeContactMergeSplitThresholds))
 	{
-		// TODO (create native and add to simulation).
+		FShapeContactMergeSplitThresholdsBarrier Thresholds =
+			NativeBarrier.GetGlobalContactTresholds();
+
+		SC->SetNativeProperties(Thresholds);
 	}
 
 }

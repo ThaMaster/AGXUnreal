@@ -154,6 +154,11 @@ public:
 
 	bool IsInstance() const;
 
+	/*
+	* Assigns the property values of this class to the passed barrier.
+	*/
+	void SetNativeProperties(FShapeContactMergeSplitThresholdsBarrier& Barrier);
+
 private:
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;
@@ -162,7 +167,6 @@ private:
 #endif
 
 	void CopyProperties(UAGX_ShapeContactMergeSplitThresholds& Source);
-	void UpdateNativeProperties();
 
 	TWeakObjectPtr<UAGX_ShapeContactMergeSplitThresholds> Asset;
 	TWeakObjectPtr<UAGX_ShapeContactMergeSplitThresholds> Instance;
