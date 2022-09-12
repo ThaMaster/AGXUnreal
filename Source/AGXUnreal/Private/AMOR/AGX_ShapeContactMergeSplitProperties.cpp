@@ -21,6 +21,7 @@ void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay(T& Owner)
 	if (bEnableMerge || bEnableSplit)
 	{
 		CreateNative(Owner);
+		UpdateNativeProperties(Owner);
 	}
 }
 
@@ -34,6 +35,11 @@ void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty(T& Owner)
 	{
 		CreateNative(Owner);
 	}
+
+	if (HasNative())
+	{
+		UpdateNativeProperties(Owner);
+	}
 }
 #endif
 
@@ -44,7 +50,6 @@ void FAGX_ShapeContactMergeSplitProperties::CreateNative(T& Owner)
 	AGX_CHECK(!HasNative());
 	
 	NativeBarrier.AllocateNative(*Owner.GetNative());
-	UpdateNativeProperties(Owner);
 }
 
 FAGX_ShapeContactMergeSplitProperties& FAGX_ShapeContactMergeSplitProperties::operator=(
@@ -67,8 +72,10 @@ void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties(T& Owner)
 
 void FAGX_ShapeContactMergeSplitProperties::UpdateNativeThresholds(UWorld* PlayingWorld)
 {
+	AGX_CHECK(HasNative());
 	if (Thresholds == nullptr)
 	{
+		NativeBarrier.SetShapeContactMergeSplitThresholds(nullptr);
 		return;
 	}
 

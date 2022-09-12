@@ -19,6 +19,7 @@ void FAGX_WireMergeSplitProperties::OnBeginPlay(UAGX_WireComponent& Owner)
 	if (bEnableMerge || bEnableSplit)
 	{
 		CreateNative(Owner);
+		UpdateNativeProperties(Owner);
 	}
 }
 
@@ -31,6 +32,11 @@ void FAGX_WireMergeSplitProperties::OnPostEditChangeProperty(UAGX_WireComponent&
 	{
 		CreateNative(Owner);
 	}
+
+	if (HasNative())
+	{
+		UpdateNativeProperties(Owner);
+	}
 }
 #endif
 
@@ -40,7 +46,6 @@ void FAGX_WireMergeSplitProperties::CreateNative(UAGX_WireComponent& Owner)
 	AGX_CHECK(!HasNative());
 	
 	NativeBarrier.AllocateNative(*Owner.GetNative());
-	UpdateNativeProperties(Owner);
 }
 
 FAGX_WireMergeSplitProperties& FAGX_WireMergeSplitProperties::operator=(
@@ -62,8 +67,10 @@ void FAGX_WireMergeSplitProperties::UpdateNativeProperties(UAGX_WireComponent& O
 
 void FAGX_WireMergeSplitProperties::UpdateNativeThresholds(UWorld* PlayingWorld)
 {
+	AGX_CHECK(HasNative());
 	if (Thresholds == nullptr)
 	{
+		NativeBarrier.SetWireMergeSplitThresholds(nullptr);
 		return;
 	}
 

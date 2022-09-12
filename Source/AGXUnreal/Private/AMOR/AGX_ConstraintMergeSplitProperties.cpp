@@ -18,6 +18,7 @@ void FAGX_ConstraintMergeSplitProperties::OnBeginPlay(UAGX_ConstraintComponent& 
 	if (bEnableMerge || bEnableSplit)
 	{
 		CreateNative(Owner);
+		UpdateNativeProperties(Owner);
 	}
 }
 
@@ -30,6 +31,11 @@ void FAGX_ConstraintMergeSplitProperties::OnPostEditChangeProperty(UAGX_Constrai
 	{
 		CreateNative(Owner);
 	}
+
+	if (HasNative())
+	{
+		UpdateNativeProperties(Owner);
+	}
 }
 #endif
 
@@ -39,7 +45,6 @@ void FAGX_ConstraintMergeSplitProperties::CreateNative(UAGX_ConstraintComponent&
 	AGX_CHECK(!HasNative());
 	
 	NativeBarrier.AllocateNative(*Owner.GetNative());
-	UpdateNativeProperties(Owner);
 }
 
 FAGX_ConstraintMergeSplitProperties& FAGX_ConstraintMergeSplitProperties::operator=(
@@ -61,8 +66,10 @@ void FAGX_ConstraintMergeSplitProperties::UpdateNativeProperties(UAGX_Constraint
 
 void FAGX_ConstraintMergeSplitProperties::UpdateNativeThresholds(UAGX_ConstraintComponent& Owner)
 {
+	AGX_CHECK(HasNative());
 	if (Thresholds == nullptr)
 	{
+		NativeBarrier.SetConstraintMergeSplitThresholds(nullptr);
 		return;
 	}
 
