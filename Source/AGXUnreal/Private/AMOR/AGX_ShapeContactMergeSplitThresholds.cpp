@@ -135,9 +135,11 @@ FAGX_Real UAGX_ShapeContactMergeSplitThresholds::GetTangentialAdhesion() const
 	AGX_ASSET_GETTER_IMPL(TangentialAdhesion, GetTangentialAdhesion);
 }
 
-void UAGX_ShapeContactMergeSplitThresholds::SetMaySplitInGravityField(bool bInMaySplitInGravityField)
+void UAGX_ShapeContactMergeSplitThresholds::SetMaySplitInGravityField(
+	bool bInMaySplitInGravityField)
 {
-	AGX_ASSET_SETTER_IMPL(bMaySplitInGravityField, bInMaySplitInGravityField, SetMaySplitInGravityField);
+	AGX_ASSET_SETTER_IMPL(
+		bMaySplitInGravityField, bInMaySplitInGravityField, SetMaySplitInGravityField);
 }
 
 bool UAGX_ShapeContactMergeSplitThresholds::GetMaySplitInGravityField() const
@@ -145,11 +147,9 @@ bool UAGX_ShapeContactMergeSplitThresholds::GetMaySplitInGravityField() const
 	AGX_ASSET_GETTER_IMPL(bMaySplitInGravityField, GetMaySplitInGravityField);
 }
 
-void UAGX_ShapeContactMergeSplitThresholds::SetSplitOnLogicalImpact(
-	bool bInSplitOnLogicalImpact)
+void UAGX_ShapeContactMergeSplitThresholds::SetSplitOnLogicalImpact(bool bInSplitOnLogicalImpact)
 {
-	AGX_ASSET_SETTER_IMPL(
-		bSplitOnLogicalImpact, bInSplitOnLogicalImpact, SetSplitOnLogicalImpact);
+	AGX_ASSET_SETTER_IMPL(bSplitOnLogicalImpact, bInSplitOnLogicalImpact, SetSplitOnLogicalImpact);
 }
 
 bool UAGX_ShapeContactMergeSplitThresholds::GetSplitOnLogicalImpact() const
@@ -233,8 +233,7 @@ UAGX_ShapeContactMergeSplitThresholds* UAGX_ShapeContactMergeSplitThresholds::Ge
 	UAGX_ShapeContactMergeSplitThresholds* InstancePtr = Instance.Get();
 	if (!InstancePtr && PlayingWorld && PlayingWorld->IsGameWorld())
 	{
-		InstancePtr = UAGX_ShapeContactMergeSplitThresholds::CreateFromAsset(
-			PlayingWorld, *this);
+		InstancePtr = UAGX_ShapeContactMergeSplitThresholds::CreateFromAsset(PlayingWorld, *this);
 		Instance = InstancePtr;
 	}
 

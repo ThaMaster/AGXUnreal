@@ -11,14 +11,12 @@
 
 #include "AGX_ConstraintMergeSplitThresholds.generated.h"
 
-
 UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable)
 class AGXUNREAL_API UAGX_ConstraintMergeSplitThresholds : public UObject
 {
 	GENERATED_BODY()
 
 public:
-
 	/**
 	 * Maximum difference the 'force range'/desired force range parameter in any controller
 	 * may change without splitting the constrained objects [N].
@@ -57,7 +55,7 @@ public:
 
 	/**
 	 * Maximum difference the 'position'/desired angle parameter in a range controller may
-	 * change without splitting the constrained objects. 
+	 * change without splitting the constrained objects.
 	 * For rotational constraints, this is expressed in [deg].
 	 * For prismatic constraints, this is expressed in [cm].
 	 */
@@ -76,7 +74,7 @@ public:
 
 	/**
 	 * Maximum difference the 'speed'/desired speed parameter in a motor controller may
-	 * change without splitting the constrained objects. 
+	 * change without splitting the constrained objects.
 	 * For rotational constraints, this is expressed in [deg/s].
 	 * For prismatic constraints, this is expressed in [cm/s].
 	 */
@@ -111,7 +109,6 @@ public:
 	float GetMaxRelativeSpeed_BP() const;
 
 	FAGX_Real GetMaxRelativeSpeed() const;
-
 
 	void CreateNative(UWorld* PlayingWorld, bool bIsRotational);
 	bool HasNative() const;

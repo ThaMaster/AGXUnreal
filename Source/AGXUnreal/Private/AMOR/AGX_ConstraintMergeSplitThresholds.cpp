@@ -189,8 +189,7 @@ UAGX_ConstraintMergeSplitThresholds* UAGX_ConstraintMergeSplitThresholds::GetOrC
 	return InstancePtr;
 }
 
-void UAGX_ConstraintMergeSplitThresholds::CreateNative(
-	UWorld* PlayingWorld, bool bIsRotational)
+void UAGX_ConstraintMergeSplitThresholds::CreateNative(UWorld* PlayingWorld, bool bIsRotational)
 {
 	if (!IsInstance())
 	{
@@ -199,7 +198,8 @@ void UAGX_ConstraintMergeSplitThresholds::CreateNative(
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("CreateNative was called on UAGX_ConstraintMergeSplitThresholds "
-					 "'%s' who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called prior "
+					 "'%s' who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called "
+					 "prior "
 					 "to calling this function."),
 				*GetName());
 			return;
@@ -216,8 +216,7 @@ void UAGX_ConstraintMergeSplitThresholds::CreateNative(
 	UpdateNativeProperties();
 }
 
-FConstraintMergeSplitThresholdsBarrier*
-UAGX_ConstraintMergeSplitThresholds::GetOrCreateNative(
+FConstraintMergeSplitThresholdsBarrier* UAGX_ConstraintMergeSplitThresholds::GetOrCreateNative(
 	UWorld* PlayingWorld, bool bIsRotational)
 {
 	if (!IsInstance())
@@ -256,8 +255,7 @@ bool UAGX_ConstraintMergeSplitThresholds::HasNative() const
 	return NativeBarrier && NativeBarrier->HasNative();
 }
 
-UAGX_ConstraintMergeSplitThresholds*
-UAGX_ConstraintMergeSplitThresholds::CreateFromAsset(
+UAGX_ConstraintMergeSplitThresholds* UAGX_ConstraintMergeSplitThresholds::CreateFromAsset(
 	UWorld* PlayingWorld, UAGX_ConstraintMergeSplitThresholds& Source, bool bIsRotational)
 {
 	AGX_CHECK(PlayingWorld);
@@ -269,8 +267,7 @@ UAGX_ConstraintMergeSplitThresholds::CreateFromAsset(
 
 	const FString InstanceName = Source.GetName() + "_Instance";
 	auto NewInstance = NewObject<UAGX_ConstraintMergeSplitThresholds>(
-		Outer, UAGX_ConstraintMergeSplitThresholds::StaticClass(), *InstanceName,
-		RF_Transient);
+		Outer, UAGX_ConstraintMergeSplitThresholds::StaticClass(), *InstanceName, RF_Transient);
 
 	NewInstance->CopyProperties(Source);
 	NewInstance->CreateNative(PlayingWorld, bIsRotational);
