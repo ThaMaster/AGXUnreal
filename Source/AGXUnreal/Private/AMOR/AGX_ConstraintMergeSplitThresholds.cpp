@@ -213,7 +213,7 @@ void UAGX_ConstraintMergeSplitThresholds::CreateNative(UWorld* PlayingWorld, boo
 	NativeBarrier->AllocateNative(bIsRotational);
 	AGX_CHECK(HasNative());
 
-	UpdateNativeProperties();
+	SetNativeProperties(*NativeBarrier);
 }
 
 FConstraintMergeSplitThresholdsBarrier* UAGX_ConstraintMergeSplitThresholds::GetOrCreateNative(
@@ -295,8 +295,8 @@ void UAGX_ConstraintMergeSplitThresholds::CopyProperties(
 	// Todo: implement.
 }
 
-void UAGX_ConstraintMergeSplitThresholds::UpdateNativeProperties()
+void UAGX_ConstraintMergeSplitThresholds::SetNativeProperties(
+	FConstraintMergeSplitThresholdsBarrier& Barrier)
 {
-	AGX_CHECK(HasNative());
 	// TODO: implement.
 }

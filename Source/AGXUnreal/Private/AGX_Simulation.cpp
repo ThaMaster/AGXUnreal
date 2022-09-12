@@ -9,7 +9,9 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_StaticMeshComponent.h"
 #include "AGX_Stepper.h"
+#include "AMOR/AGX_ConstraintMergeSplitThresholds.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
+#include "AMOR/AGX_WireMergeSplitThresholds.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
@@ -1018,10 +1020,27 @@ void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 			GlobalShapeContactMergeSplitThresholds))
 	{
 		FShapeContactMergeSplitThresholdsBarrier Thresholds =
-			NativeBarrier.GetGlobalContactTresholds();
+			NativeBarrier.GetGlobalShapeContactTresholds();
 
 		SC->SetNativeProperties(Thresholds);
 	}
 
+	if (auto SC = GetAssetFrom<UAGX_ConstraintMergeSplitThresholds>(
+			GlobalConstraintMergeSplitThresholds))
+	{
+		FConstraintMergeSplitThresholdsBarrier Thresholds =
+			NativeBarrier.GetGlobalConstraintTresholds();
+
+		SC->SetNativeProperties(Thresholds);
+	}
+
+	if (auto SC = GetAssetFrom<UAGX_WireMergeSplitThresholds>(
+			GlobalWireMergeSplitThresholds))
+	{
+		FWireMergeSplitThresholdsBarrier Thresholds =
+			NativeBarrier.GetGlobalWireTresholds();
+
+		SC->SetNativeProperties(Thresholds);
+	}
 }
 #endif

@@ -130,7 +130,7 @@ void UAGX_WireMergeSplitThresholds::CreateNative(UWorld* PlayingWorld)
 	NativeBarrier->AllocateNative();
 	AGX_CHECK(HasNative());
 
-	UpdateNativeProperties();
+	SetNativeProperties(*NativeBarrier);
 }
 
 FWireMergeSplitThresholdsBarrier* UAGX_WireMergeSplitThresholds::GetOrCreateNative(
@@ -211,8 +211,7 @@ void UAGX_WireMergeSplitThresholds::CopyProperties(UAGX_WireMergeSplitThresholds
 	// Todo: implement.
 }
 
-void UAGX_WireMergeSplitThresholds::UpdateNativeProperties()
+void UAGX_WireMergeSplitThresholds::SetNativeProperties(FWireMergeSplitThresholdsBarrier& Barrier)
 {
-	AGX_CHECK(HasNative());
 	// TODO: implement.
 }

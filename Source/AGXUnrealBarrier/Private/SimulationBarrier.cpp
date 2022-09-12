@@ -6,7 +6,6 @@
 #include "AGX_LogCategory.h"
 #include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
-#include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
@@ -512,9 +511,23 @@ void FSimulationBarrier::ReleaseNative()
 	NativeRef = nullptr;
 }
 
-FShapeContactMergeSplitThresholdsBarrier FSimulationBarrier::GetGlobalContactTresholds() const
+FShapeContactMergeSplitThresholdsBarrier FSimulationBarrier::GetGlobalShapeContactTresholds() const
 {
 	check(HasNative());
 	return FShapeContactMergeSplitThresholdsBarrier(std::make_unique<FMergeSplitThresholdsRef>(
+		NativeRef->Native->getMergeSplitHandler()->getGlobalContactThresholds()));
+}
+
+FConstraintMergeSplitThresholdsBarrier FSimulationBarrier::GetGlobalConstraintTresholds() const
+{
+	check(HasNative());
+	return FConstraintMergeSplitThresholdsBarrier(std::make_unique<FMergeSplitThresholdsRef>(
+		NativeRef->Native->getMergeSplitHandler()->getGlobalContactThresholds()));
+}
+
+FWireMergeSplitThresholdsBarrier FSimulationBarrier::GetGlobalWireTresholds() const
+{
+	check(HasNative());
+	return FWireMergeSplitThresholdsBarrier(std::make_unique<FMergeSplitThresholdsRef>(
 		NativeRef->Native->getMergeSplitHandler()->getGlobalContactThresholds()));
 }

@@ -349,6 +349,5 @@ void UAGX_ShapeContactMergeSplitThresholds::CopyProperties(
 void UAGX_ShapeContactMergeSplitThresholds::SetNativeProperties(
 	FShapeContactMergeSplitThresholdsBarrier& Barrier)
 {
-	AGX_CHECK(HasNative());
 	// TODO: implement.
 }

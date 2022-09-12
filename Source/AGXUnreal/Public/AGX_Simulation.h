@@ -154,6 +154,18 @@ public: // Properties.
 		Config, EditAnywhere, Category = "AMOR",
 		meta = (AllowedClasses = "AGX_ShapeContactMergeSplitThresholds"))
 	FSoftObjectPath GlobalShapeContactMergeSplitThresholds;
+
+	/** TODO add comment */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "AMOR",
+		meta = (AllowedClasses = "AGX_ConstraintMergeSplitThresholds"))
+	FSoftObjectPath GlobalConstraintMergeSplitThresholds;
+
+	/** TODO add comment */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "AMOR",
+		meta = (AllowedClasses = "AGX_WireMergeSplitThresholds"))
+	FSoftObjectPath GlobalWireMergeSplitThresholds;
 #endif
 
 

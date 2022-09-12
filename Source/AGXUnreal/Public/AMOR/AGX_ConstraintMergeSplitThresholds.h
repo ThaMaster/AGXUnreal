@@ -123,6 +123,11 @@ public:
 
 	bool IsInstance() const;
 
+	/*
+	 * Assigns the property values of this class to the passed barrier.
+	 */
+	void SetNativeProperties(FConstraintMergeSplitThresholdsBarrier& Barrier);
+
 private:
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;
@@ -131,7 +136,6 @@ private:
 #endif
 
 	void CopyProperties(UAGX_ConstraintMergeSplitThresholds& Source);
-	void UpdateNativeProperties();
 
 	TWeakObjectPtr<UAGX_ConstraintMergeSplitThresholds> Asset;
 	TWeakObjectPtr<UAGX_ConstraintMergeSplitThresholds> Instance;

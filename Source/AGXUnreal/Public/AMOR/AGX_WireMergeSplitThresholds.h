@@ -63,6 +63,11 @@ public:
 
 	bool IsInstance() const;
 
+	/*
+	 * Assigns the property values of this class to the passed barrier.
+	 */
+	void SetNativeProperties(FWireMergeSplitThresholdsBarrier& Barrier);
+
 private:
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;
@@ -71,7 +76,6 @@ private:
 #endif
 
 	void CopyProperties(UAGX_WireMergeSplitThresholds& Source);
-	void UpdateNativeProperties();
 
 	TWeakObjectPtr<UAGX_WireMergeSplitThresholds> Asset;
 	TWeakObjectPtr<UAGX_WireMergeSplitThresholds> Instance;
