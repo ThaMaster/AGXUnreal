@@ -510,3 +510,10 @@ void FSimulationBarrier::ReleaseNative()
 {
 	NativeRef = nullptr;
 }
+
+FShapeContactMergeSplitThresholdsBarrier FSimulationBarrier::GetGlobalContactTresholds() const
+{
+	check(HasNative());
+	return FShapeContactMergeSplitThresholdsBarrier(std::make_unique<FMergeSplitThresholdsRef>(
+		NativeRef->Native->getMergeSplitHandler()->getGlobalContactThresholds()));
+}
