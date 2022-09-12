@@ -6,7 +6,7 @@
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
-#include "AMOR/AGX_ShapeContactMergeSplitThresholdsInstance.h"
+#include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 #include "Shapes/AGX_ShapeComponent.h"
 
 
@@ -72,14 +72,18 @@ void FAGX_ShapeContactMergeSplitProperties::UpdateNativeThresholds(UWorld* Playi
 		return;
 	}
 
-	UAGX_ShapeContactMergeSplitThresholdsInstance* ThresholdsInstance =
-		static_cast<UAGX_ShapeContactMergeSplitThresholdsInstance*>(
-			Thresholds->GetOrCreateInstance(PlayingWorld));
+	UAGX_ShapeContactMergeSplitThresholds* ThresholdsInstance =		
+			Thresholds->GetOrCreateInstance(PlayingWorld);
 	if (!ThresholdsInstance)
 	{
 		UE_LOG(LogAGX, Warning, TEXT("Unable to create a Merge Split Thresholds instance from the "
 		"given asset '%s'."), *Thresholds->GetName());
 		return;
+	}
+
+	if (Thresholds != ThresholdsInstance)
+	{
+		Thresholds = ThresholdsInstance;
 	}
 	
 	FShapeContactMergeSplitThresholdsBarrier* Barrier =

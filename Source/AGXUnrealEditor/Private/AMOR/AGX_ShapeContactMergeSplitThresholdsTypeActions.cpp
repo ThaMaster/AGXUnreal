@@ -3,7 +3,7 @@
 #include "AMOR/AGX_ShapeContactMergeSplitThresholdsTypeActions.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AMOR/AGX_ShapeContactMergeSplitThresholdsBase.h"
+#include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 
 
 #define LOCTEXT_NAMESPACE "FAGX_ShapeContactMergeSplitThresholdsTypeActions"
@@ -37,7 +37,7 @@ FText FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetAssetDescription(cons
 
 UClass* FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetSupportedClass() const
 {
-	return UAGX_ShapeContactMergeSplitThresholdsBase::StaticClass();
+	return UAGX_ShapeContactMergeSplitThresholds::StaticClass();
 }
 
 #undef LOCTEXT_NAMESPACE

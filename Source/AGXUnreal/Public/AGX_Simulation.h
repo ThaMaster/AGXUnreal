@@ -152,7 +152,7 @@ public: // Properties.
 	/** TODO add comment */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "AMOR",
-		meta = (AllowedClasses = "AGX_ShapeContactMergeSplitThresholdsBase"))
+		meta = (AllowedClasses = "AGX_ShapeContactMergeSplitThresholds"))
 	FSoftObjectPath GlobalShapeContactMergeSplitThresholds;
 #endif
 

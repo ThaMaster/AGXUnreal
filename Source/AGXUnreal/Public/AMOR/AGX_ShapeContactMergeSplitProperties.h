@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_MergeSplitPropertiesBase.h"
-#include "AMOR/AGX_ShapeContactMergeSplitThresholdsBase.h"
+#include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -22,7 +22,7 @@ struct AGXUNREAL_API FAGX_ShapeContactMergeSplitProperties : public FAGX_MergeSp
 public:
 
 	UPROPERTY(EditAnywhere, Category = "AMOR")
-	UAGX_ShapeContactMergeSplitThresholdsBase* Thresholds;
+	UAGX_ShapeContactMergeSplitThresholds* Thresholds;
 
 	/**
 	* Must be called by the owning object at begin play (after the owning object has allocated a
@@ -101,7 +101,7 @@ class AGXUNREAL_API UAGX_ShapeContactMergeSplitProperties_LF : public UBlueprint
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")
-	static UAGX_ShapeContactMergeSplitThresholdsBase* GetThresholds(
+	static UAGX_ShapeContactMergeSplitThresholds* GetThresholds(
 		UPARAM(ref) const FAGX_ShapeContactMergeSplitProperties& Properties)
 	{
 		return Properties.Thresholds;

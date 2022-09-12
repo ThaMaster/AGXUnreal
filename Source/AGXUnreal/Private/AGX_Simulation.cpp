@@ -9,7 +9,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_StaticMeshComponent.h"
 #include "AGX_Stepper.h"
-#include "AMOR/AGX_ShapeContactMergeSplitThresholdsBase.h"
+#include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
 #include "Materials/AGX_ShapeMaterialInstance.h"
@@ -1010,7 +1010,7 @@ void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 {
 	using namespace AGX_Simulation_helpers;
 
-	if (auto SC = GetAssetFrom<UAGX_ShapeContactMergeSplitThresholdsBase>(
+	if (auto SC = GetAssetFrom<UAGX_ShapeContactMergeSplitThresholds>(
 			GlobalShapeContactMergeSplitThresholds))
 	{
 		// TODO (create native and add to simulation).

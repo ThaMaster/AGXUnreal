@@ -79,6 +79,11 @@ void FAGX_ConstraintMergeSplitProperties::UpdateNativeThresholds(UAGX_Constraint
 		return;
 	}
 
+	if (Thresholds != ThresholdsInstance)
+	{
+		Thresholds = ThresholdsInstance;
+	}
+
 	FConstraintMergeSplitThresholdsBarrier* Barrier =
 		ThresholdsInstance->GetOrCreateNative(PlayingWorld, Owner.IsRotational());
 	AGX_CHECK(Barrier);
