@@ -3,7 +3,7 @@
 #include "AMOR/AGX_WireMergeSplitThresholdsTypeActions.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AMOR/AGX_WireMergeSplitThresholdsBase.h"
+#include "AMOR/AGX_WireMergeSplitThresholds.h"
 
 
 #define LOCTEXT_NAMESPACE "FAGX_WireMergeSplitThresholdsTypeActions"
@@ -37,7 +37,7 @@ FText FAGX_WireMergeSplitThresholdsTypeActions::GetAssetDescription(const FAsset
 
 UClass* FAGX_WireMergeSplitThresholdsTypeActions::GetSupportedClass() const
 {
-	return UAGX_WireMergeSplitThresholdsBase::StaticClass();
+	return UAGX_WireMergeSplitThresholds::StaticClass();
 }
 
 #undef LOCTEXT_NAMESPACE

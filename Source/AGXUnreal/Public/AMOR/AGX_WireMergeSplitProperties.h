@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_MergeSplitPropertiesBase.h"
-#include "AMOR/AGX_WireMergeSplitThresholdsBase.h"
+#include "AMOR/AGX_WireMergeSplitThresholds.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -24,7 +24,7 @@ struct AGXUNREAL_API FAGX_WireMergeSplitProperties : public FAGX_MergeSplitPrope
 public:
 
 	UPROPERTY(EditAnywhere, Category = "AMOR")
-	UAGX_WireMergeSplitThresholdsBase* Thresholds;
+	UAGX_WireMergeSplitThresholds* Thresholds;
 
 	/**
 	* Must be called by the owning object at begin play (after the owning object has allocated a
@@ -97,7 +97,7 @@ class AGXUNREAL_API UAGX_WireMergeSplitProperties_LF : public UBlueprintFunction
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AMOR")
-	static UAGX_WireMergeSplitThresholdsBase* GetThresholds(
+	static UAGX_WireMergeSplitThresholds* GetThresholds(
 		UPARAM(ref) const FAGX_WireMergeSplitProperties& Properties)
 	{
 		return Properties.Thresholds;

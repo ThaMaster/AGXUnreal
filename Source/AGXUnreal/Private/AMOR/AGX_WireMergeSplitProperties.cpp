@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
-#include "AMOR/AGX_WireMergeSplitThresholdsInstance.h"
+#include "AMOR/AGX_WireMergeSplitThresholds.h"
 #include "Wire/AGX_WireComponent.h"
 
 
@@ -67,9 +67,8 @@ void FAGX_WireMergeSplitProperties::UpdateNativeThresholds(UWorld* PlayingWorld)
 		return;
 	}
 
-	UAGX_WireMergeSplitThresholdsInstance* ThresholdsInstance =
-		static_cast<UAGX_WireMergeSplitThresholdsInstance*>(
-			Thresholds->GetOrCreateInstance(PlayingWorld));
+	UAGX_WireMergeSplitThresholds* ThresholdsInstance =
+			Thresholds->GetOrCreateInstance(PlayingWorld);
 	if (!ThresholdsInstance)
 	{
 		UE_LOG(
@@ -78,6 +77,11 @@ void FAGX_WireMergeSplitProperties::UpdateNativeThresholds(UWorld* PlayingWorld)
 				 "given asset '%s'."),
 			*Thresholds->GetName());
 		return;
+	}
+
+	if (Thresholds != ThresholdsInstance)
+	{
+		Thresholds = ThresholdsInstance;
 	}
 
 	FWireMergeSplitThresholdsBarrier* Barrier =
