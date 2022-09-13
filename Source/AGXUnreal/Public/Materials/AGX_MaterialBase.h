@@ -112,37 +112,66 @@ public:
 	virtual bool GetFrictionEnabled() const
 		PURE_VIRTUAL(UAGX_MaterialBase::GetFrictionEnabled, return false;);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual void SetRoughness_BP(float Roughness) PURE_VIRTUAL(UAGX_MaterialBase::SetRoughness, );
+	virtual void SetRoughness(double Roughness) PURE_VIRTUAL(UAGX_MaterialBase::SetRoughness, );
+	virtual double GetRoughness() const PURE_VIRTUAL(UAGX_MaterialBase::GetRoughness, return 0.0;);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Set Roughness"))
+	virtual void SetRoughness_BP(float Roughness)
+		PURE_VIRTUAL(UAGX_MaterialBase::SetRoughness_BP, );
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Get Roughness"))
 	virtual float GetRoughness_BP() const
-		PURE_VIRTUAL(UAGX_MaterialBase::GetRoughness, return 0.f;);
+		PURE_VIRTUAL(UAGX_MaterialBase::GetRoughness_BP, return 0.f;);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual void SetSurfaceViscosity_BP(float Viscosity)
+	virtual void SetSurfaceViscosity(double Viscosity)
 		PURE_VIRTUAL(UAGX_MaterialBase::SetSurfaceViscosity, );
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	virtual double GetSurfaceViscosity() const PURE_VIRTUAL(UAGX_MaterialBase::GetSurfaceViscosity, return 0.0;);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Set Surface Viscosity"))
+	virtual void SetSurfaceViscosity_BP(float Viscosity)
+		PURE_VIRTUAL(UAGX_MaterialBase::SetSurfaceViscosity_BP, );
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Get Surface Viscosity"))
 	virtual float GetSurfaceViscosity_BP() const
-		PURE_VIRTUAL(UAGX_MaterialBase::GetSurfaceViscosity, return 0.f;);
+		PURE_VIRTUAL(UAGX_MaterialBase::GetSurfaceViscosity_BP, return 0.f;);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	virtual void SetAdhesion(double AdhesiveForce, double AdhesiveOverlap)
+		PURE_VIRTUAL(UAGX_MaterialBase::SetAdhesion, )
+
+	virtual double GetAdhesiveForce() const PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveForce, return 0.0;);
+	virtual double GetAdhesiveOverlap() const PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveOverlap, return 0.0;);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Set Adhesion"))
 	virtual void SetAdhesion_BP(float AdhesiveForce, float AdhesiveOverlap)
-		PURE_VIRTUAL(UAGX_MaterialBase::SetAdhesion, );
+		PURE_VIRTUAL(UAGX_MaterialBase::SetAdhesion_BP, );
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Get Adhesive Force"))
 	virtual float GetAdhesiveForce_BP() const
-		PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveForce, return 0.f;);
+		PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveForce_BP, return 0.f;);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Get Adhesive Overlap"))
 	virtual float GetAdhesiveOverlap_BP() const
-		PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveOverlap, return 0.f;);
+		PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveOverlap_BP, return 0.f;);
 
 	/**
 	 * Copies all properties (even properties set during Play) to the asset such
 	 * that the data is saved permanently in the asset, even after Play.
-	 * 
+	 *
 	 * If this function is called on an instance, the properties are copied
 	 * from the instance to the asset it was created from, permanently.
 	 * If this function is called on an asset, the properties are copied from
@@ -170,5 +199,5 @@ public:
 	virtual bool IsInstance() const PURE_VIRTUAL(UAGX_MaterialBase::IsInstance, return false;);
 
 protected:
-	void CopyShapeMaterialProperties(const UAGX_MaterialBase* Source);	
+	void CopyShapeMaterialProperties(const UAGX_MaterialBase* Source);
 };
