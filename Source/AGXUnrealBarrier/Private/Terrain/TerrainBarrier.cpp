@@ -161,6 +161,13 @@ void FTerrainBarrier::SetTerrainMaterial(const FTerrainMaterialBarrier& TerrainM
 	NativeRef->Native->setTerrainMaterial(TerrainMaterial.GetNative()->Native);
 }
 
+void FTerrainBarrier::ClearMaterial()
+{
+	check(HasNative());
+	NativeRef->Native->setTerrainMaterial(nullptr);
+	NativeRef->Native->setMaterial(nullptr);
+}
+
 int32 FTerrainBarrier::GetGridSizeX() const
 {
 	check(HasNative());

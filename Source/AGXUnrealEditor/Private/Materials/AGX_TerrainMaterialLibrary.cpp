@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "Materials/AGX_TerrainMaterialAsset.h"
+#include "Materials/AGX_TerrainMaterial.h"
 #include "Materials/TerrainMaterialLibraryBarrier.h"
 
 // Unreal Engine includes.
@@ -41,7 +41,7 @@ namespace AGX_TerrainMaterialLibrary_helpers
 		// Create the asset itself, reading data from the AGX Dynamics terrain material library.
 		FTerrainMaterialBarrier Material =
 			AGX_TerrainMaterialLibraryBarrier::LoadMaterialProfile(Name);
-		UAGX_TerrainMaterialAsset* Asset = NewObject<UAGX_TerrainMaterialAsset>(
+		UAGX_TerrainMaterial* Asset = NewObject<UAGX_TerrainMaterial>(
 			Package, FName(*AssetName), RF_Public | RF_Standalone);
 		Asset->CopyFrom(Material);
 

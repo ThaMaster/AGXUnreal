@@ -68,6 +68,7 @@ public:
 	double GetLinearVelocityDamping() const;
 
 	void SetMaterial(const FShapeMaterialBarrier& Material);
+	void ClearMaterial();
 
 	FShapeMaterialBarrier GetMaterial() const;
 

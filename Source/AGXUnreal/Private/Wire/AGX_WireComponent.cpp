@@ -8,8 +8,7 @@
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGXUnrealBarrier.h"
-#include "Materials/AGX_ShapeMaterialAsset.h"
-#include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -23,6 +22,9 @@
 #include "Components/BillboardComponent.h"
 #include "CoreGlobals.h"
 #include "Math/UnrealMathUtility.h"
+
+// Standard library includes.
+#include <tuple>
 
 #define LOCTEXT_NAMESPACE "UAGX_WireComponent"
 
@@ -1545,6 +1547,29 @@ namespace AGX_WireComponent_helpers
 	}
 }
 
+bool UAGX_WireComponent::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
+{
+	UAGX_ShapeMaterial* ShapeMaterialOrig = ShapeMaterial;
+	ShapeMaterial = InShapeMaterial;
+
+	if (!HasNative())
+	{
+		// Not in play, we are done.
+		return true;
+	}
+
+	// UpdateNativeMaterial is responsible for creating an instance of none exists and do the
+	// asset/instance swap.
+	if (!UpdateNativeMaterial())
+	{
+		// Something went wrong, restore original ShapeMaterial.
+		ShapeMaterial = ShapeMaterialOrig;
+		return false;
+	}
+
+	return true;
+}
+
 void UAGX_WireComponent::CreateNative()
 {
 	using namespace AGX_WireComponent_helpers;
@@ -1556,20 +1581,12 @@ void UAGX_WireComponent::CreateNative()
 	NativeBarrier.AllocateNative(Radius, ResolutionPerUnitLength);
 	check(HasNative()); /// @todo Consider better error handling than 'check'.
 
-	if (ShapeMaterial)
+	if (!UpdateNativeMaterial())
 	{
-		UWorld* World = GetWorld();
-		UAGX_ShapeMaterialInstance* MaterialInstance =
-			static_cast<UAGX_ShapeMaterialInstance*>(ShapeMaterial->GetOrCreateInstance(World));
-		check(MaterialInstance);
-		if (MaterialInstance != ShapeMaterial && World != nullptr && World->IsGameWorld())
-		{
-			ShapeMaterial = MaterialInstance;
-		}
-		FShapeMaterialBarrier* MaterialBarrier =
-			MaterialInstance->GetOrCreateShapeMaterialNative(World);
-		check(MaterialBarrier);
-		NativeBarrier.SetMaterial(*MaterialBarrier);
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UpdateNativeMaterial returned false in AGX_WireComponent. "
+				 "Ensure the selected Shape Material is valid."));
 	}
 
 	NativeBarrier.SetLinearVelocityDamping(LinearVelocityDamping);
@@ -1702,6 +1719,42 @@ void UAGX_WireComponent::CreateNative()
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
 		}
 	}
+}
+
+bool UAGX_WireComponent::UpdateNativeMaterial()
+{
+	if (!HasNative())
+	{
+		UE_LOG(LogAGX, Error, TEXT("UpdateNativeMaterial called on Wire '%s' but it does not have a "
+			"native AGX Dynamics representation."), *GetName());
+		return false;
+	}
+
+	if (ShapeMaterial == nullptr)
+	{
+		if (HasNative())
+		{
+			GetNative()->ClearMaterial();
+		}
+		return true;
+	}
+
+	UWorld* World = GetWorld();
+	UAGX_ShapeMaterial* MaterialInstance =
+		static_cast<UAGX_ShapeMaterial*>(ShapeMaterial->GetOrCreateInstance(World));
+	check(MaterialInstance);
+
+	if (ShapeMaterial != MaterialInstance)
+	{
+		ShapeMaterial = MaterialInstance;
+	}
+
+	FShapeMaterialBarrier* MaterialBarrier =
+		MaterialInstance->GetOrCreateShapeMaterialNative(World);
+	check(MaterialBarrier);
+	NativeBarrier.SetMaterial(*MaterialBarrier);
+
+	return true;
 }
 
 #undef LOCTEXT_NAMESPACE

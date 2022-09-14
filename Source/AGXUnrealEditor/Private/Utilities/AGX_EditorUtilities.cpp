@@ -18,7 +18,7 @@
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
 #include "Materials/ShapeMaterialBarrier.h"
-#include "Materials/AGX_ShapeMaterialAsset.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
 
@@ -651,7 +651,7 @@ FString FAGX_EditorUtilities::CreateShapeMaterialAsset(
 		Package->FullyLoad();
 #endif
 
-	UAGX_ShapeMaterialAsset* MaterialAsset = NewObject<UAGX_ShapeMaterialAsset>(
+	UAGX_ShapeMaterial* MaterialAsset = NewObject<UAGX_ShapeMaterial>(
 		Package, FName(*MaterialName), RF_Public | RF_Standalone);
 
 	// Copy material properties to the new material asset.
@@ -1030,8 +1030,8 @@ bool FAGX_EditorUtilities::ApplyShapeMaterial(
 	}
 
 	// Get the ShapeMaterialAsset.
-	UAGX_ShapeMaterialAsset* MaterialAsset =
-		GetAssetByPath<UAGX_ShapeMaterialAsset>(ShapeMaterialAsset);
+	UAGX_ShapeMaterial* MaterialAsset =
+		GetAssetByPath<UAGX_ShapeMaterial>(ShapeMaterialAsset);
 
 	if (!MaterialAsset)
 	{

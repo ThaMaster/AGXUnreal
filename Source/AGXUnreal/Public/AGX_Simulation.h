@@ -21,7 +21,7 @@ class UAGX_ConstraintComponent;
 class UAGX_ContactMaterialInstance;
 class UAGX_MaterialBase;
 class UAGX_RigidBodyComponent;
-class UAGX_ShapeMaterialInstance;
+class UAGX_ShapeMaterial;
 class UAGX_StaticMeshComponent;
 class UAGX_ShapeComponent;
 class UAGX_TireComponent;
@@ -247,7 +247,7 @@ public: // Member functions.
 	 */
 	void Add(UAGX_RigidBodyComponent& Body);
 	void Add(UAGX_ShapeComponent& Shape);
-	void Add(UAGX_ShapeMaterialInstance& Shape);
+	void Add(UAGX_ShapeMaterial& Shape);
 	void Add(UAGX_StaticMeshComponent& Body);
 	void Add(AAGX_Terrain& Terrain);
 	void Add(UAGX_TireComponent& Tire);
@@ -256,7 +256,7 @@ public: // Member functions.
 	void Remove(UAGX_ConstraintComponent& Constraint);
 	void Remove(UAGX_RigidBodyComponent& Body);
 	void Remove(UAGX_ShapeComponent& Shape);
-	void Remove(UAGX_ShapeMaterialInstance& Shape);
+	void Remove(UAGX_ShapeMaterial& Shape);
 	void Remove(UAGX_StaticMeshComponent& Body);
 	void Remove(AAGX_Terrain& Terrain);
 	void Remove(UAGX_TireComponent& Tire);

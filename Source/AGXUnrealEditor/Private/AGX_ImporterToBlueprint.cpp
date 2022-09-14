@@ -33,7 +33,7 @@
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
-#include "Materials/AGX_ShapeMaterialAsset.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
@@ -375,7 +375,7 @@ namespace
 
 	private:
 		using FBodyPair = std::pair<UAGX_RigidBodyComponent*, UAGX_RigidBodyComponent*>;
-		using FShapeMaterialPair = std::pair<UAGX_ShapeMaterialAsset*, UAGX_ShapeMaterialAsset*>;
+		using FShapeMaterialPair = std::pair<UAGX_ShapeMaterial*, UAGX_ShapeMaterial*>;
 
 	private:
 		FAGX_SimObjectsImporterHelper Helper;

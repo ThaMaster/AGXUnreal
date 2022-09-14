@@ -46,8 +46,8 @@ public:
 	void SetFrictionAngle(double FrictionAngle);
 	double GetFrictionAngle() const;
 
-	void SetMaximumDensity(double MaxDensity);
-	double GetMaximumDensity() const;
+	void SetMaxDensity(double MaxDensity);
+	double GetMaxDensity() const;
 
 	void SetPoissonsRatio(double PoissonsRatio);
 	double GetPoissonsRatio() const;
@@ -71,11 +71,11 @@ public:
 	void SetCompressionIndex(double CompressionIndex);
 	double GetCompressionIndex() const;
 
-	void SetHardeningConstantKE(double K_e);
-	double GetHardeningConstantKE() const;
+	void SetHardeningConstantKe(double K_e);
+	double GetHardeningConstantKe() const;
 
-	void SetHardeningConstantNE(double N_e);
-	double GetHardeningConstantNE() const;
+	void SetHardeningConstantNe(double N_e);
+	double GetHardeningConstantNe() const;
 
 	void SetPreconsolidationStress(double PreconsolidationStress);
 	double GetPreconsolidationStress() const;

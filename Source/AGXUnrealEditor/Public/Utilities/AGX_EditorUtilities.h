@@ -215,7 +215,7 @@ public:
 		AActor& Owner, USceneComponent& Outer, UStaticMesh& MeshAsset, bool bRegister);
 
 	/**
-	 * Creates a new UAGX_ShapeMaterialAsset for a shape material and returns the shape material
+	 * Creates a new UAGX_ShapeMaterial for a shape material and returns the shape material
 	 * asset path. Returns empty string if the asset could not be created.
 	 */
 	static FString CreateShapeMaterialAsset(

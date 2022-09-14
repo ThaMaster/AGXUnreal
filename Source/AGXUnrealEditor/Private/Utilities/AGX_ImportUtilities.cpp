@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
-#include "Materials/AGX_ShapeMaterialAsset.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
@@ -173,18 +173,18 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	return CreatedAsset;
 }
 
-UAGX_ShapeMaterialAsset* FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(
+UAGX_ShapeMaterial* FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(
 	const FShapeMaterialBarrier& Material, const FString& DirectoryName)
 {
-	auto InitAsset = [&](UAGX_ShapeMaterialAsset& Asset) { Asset.CopyFrom(&Material); };
-	UAGX_ShapeMaterialAsset* CreatedAsset = SaveImportedAsset<UAGX_ShapeMaterialAsset>(
+	auto InitAsset = [&](UAGX_ShapeMaterial& Asset) { Asset.CopyFrom(&Material); };
+	UAGX_ShapeMaterial* CreatedAsset = SaveImportedAsset<UAGX_ShapeMaterial>(
 		DirectoryName, Material.GetName(), TEXT(""), TEXT("ShapeMaterial"), InitAsset);
 	return CreatedAsset;
 }
 
 namespace
 {
-	FString GetName(UAGX_ShapeMaterialAsset* Material)
+	FString GetName(UAGX_ShapeMaterial* Material)
 	{
 		if (Material == nullptr)
 		{
@@ -218,8 +218,8 @@ namespace
 }
 
 UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
-	const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterialAsset* Material1,
-	UAGX_ShapeMaterialAsset* Material2, const FString& DirectoryName)
+	const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterial* Material1,
+	UAGX_ShapeMaterial* Material2, const FString& DirectoryName)
 {
 	const FString Name = TEXT("CM") + GetName(Material1) + GetName(Material2);
 
