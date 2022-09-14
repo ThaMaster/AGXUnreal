@@ -24,15 +24,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxDesiredForceRangeDiff {0.1};
 
-	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta = (DisplayName = "Set Max Desired Force Range Diff"))
 	void SetMaxDesiredForceRangeDiff_BP(float InMaxDesiredForceRangeDiff);
 
-	void SetMaxDesiredForceRangeDiff(FAGX_Real InMaxDesiredForceRangeDiff);
+	void SetMaxDesiredForceRangeDiff(double InMaxDesiredForceRangeDiff);
 
-	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta = (DisplayName = "Get Max Desired Force Range Diff"))
 	float GetMaxDesiredForceRangeDiff_BP() const;
 
-	FAGX_Real GetMaxDesiredForceRangeDiff() const;
+	double GetMaxDesiredForceRangeDiff() const;
 
 	/**
 	 * Maximum difference the 'position'/desired angle parameter in a lock controller may
@@ -43,15 +47,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxDesiredLockAngleDiff {0.00001};
 
-	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta = (DisplayName = "Set Max Desired Lock Angle Diff"))
 	void SetMaxDesiredLockAngleDiff_BP(float InMaxDesiredLockAngleDiff);
 
-	void SetMaxDesiredLockAngleDiff(FAGX_Real InMaxDesiredLockAngleDiff);
+	void SetMaxDesiredLockAngleDiff(double InMaxDesiredLockAngleDiff);
 
-	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta = (DisplayName = "Get Max Desired Lock Angle Diff"))
 	float GetMaxDesiredLockAngleDiff_BP() const;
 
-	FAGX_Real GetMaxDesiredLockAngleDiff() const;
+	double GetMaxDesiredLockAngleDiff() const;
 
 	/**
 	 * Maximum difference the 'position'/desired angle parameter in a range controller may
@@ -62,15 +70,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxDesiredRangeAngleDiff {0.00001};
 
-	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta = (DisplayName = "Set Max Desired Range Angle Diff"))
 	void SetMaxDesiredRangeAngleDiff_BP(float InMaxDesiredRangeAngleDiff);
 
-	void SetMaxDesiredRangeAngleDiff(FAGX_Real InMaxDesiredRangeAngleDiff);
+	void SetMaxDesiredRangeAngleDiff(double InMaxDesiredRangeAngleDiff);
 
-	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta = (DisplayName = "Get Max Desired Range Angle Diff"))
 	float GetMaxDesiredRangeAngleDiff_BP() const;
 
-	FAGX_Real GetMaxDesiredRangeAngleDiff() const;
+	double GetMaxDesiredRangeAngleDiff() const;
 
 	/**
 	 * Maximum difference the 'speed'/desired speed parameter in a motor controller may
@@ -81,15 +93,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxDesiredSpeedDiff {0.00001};
 
-	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta = (DisplayName = "SetMaxDesiredSpeedDiff"))
 	void SetMaxDesiredSpeedDiff_BP(float InMaxDesiredSpeedDiff);
 
-	void SetMaxDesiredSpeedDiff(FAGX_Real InMaxDesiredSpeedDiff);
+	void SetMaxDesiredSpeedDiff(double InMaxDesiredSpeedDiff);
 
-	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta = (DisplayName = "GetMaxDesiredSpeedDiff"))
 	float GetMaxDesiredSpeedDiff_BP() const;
 
-	FAGX_Real GetMaxDesiredSpeedDiff() const;
+	double GetMaxDesiredSpeedDiff() const;
 
 	/**
 	 * Maximum relative speed between the constrained objects for the system to be considered at
@@ -100,15 +116,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxRelativeSpeed {0.005};
 
-	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta = (DisplayName = "Set Max Relative Speed"))
 	void SetMaxRelativeSpeed_BP(float InMaxRelativeSpeed);
 
-	void SetMaxRelativeSpeed(FAGX_Real InMaxRelativeSpeed);
+	void SetMaxRelativeSpeed(double InMaxRelativeSpeed);
 
-	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta = (DisplayName = "Get Max Relative Speed"))
 	float GetMaxRelativeSpeed_BP() const;
 
-	FAGX_Real GetMaxRelativeSpeed() const;
+	double GetMaxRelativeSpeed() const;
 
 	void CreateNative(UWorld* PlayingWorld, bool bIsRotational);
 	bool HasNative() const;

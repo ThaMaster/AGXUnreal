@@ -27,13 +27,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Wire Merge Split Thresholds")
 	FAGX_Real ForcePropagationDecayScale {1.0};
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Wire Merge Split Thresholds",
+		Meta = (DisplayName = "Set Force Propagation Decay Scale"))
 	void SetForcePropagationDecayScale_BP(float InForcePropagationDecayScale);
-	virtual void SetForcePropagationDecayScale(FAGX_Real InForcePropagationDecayScale);
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Merge Split Thresholds")
+	void SetForcePropagationDecayScale(double InForcePropagationDecayScale);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Wire Merge Split Thresholds",
+		Meta = (DisplayName = "Get Force Propagation Decay Scale"))
 	float GetForcePropagationDecayScale_BP() const;
-	virtual FAGX_Real GetForcePropagationDecayScale() const;
+
+	double GetForcePropagationDecayScale() const;
 
 	/**
 	 * When a node is merged the tension is stored and monitored to perform split. This threshold
@@ -44,13 +50,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Wire Merge Split Thresholds")
 	FAGX_Real MergeTensionScale {1.0};
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Wire Merge Split Thresholds",
+		Meta = (DisplayName = "Set Merge Tension Scale"))
 	void SetMergeTensionScale_BP(float InMergeTensionScale);
-	virtual void SetMergeTensionScale(FAGX_Real InMergeTensionScale);
 
-	UFUNCTION(BlueprintCallable, Category = "Wire Merge Split Thresholds")
+	void SetMergeTensionScale(double InMergeTensionScale);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Wire Merge Split Thresholds",
+		Meta = (DisplayName = "Get Merge Tension Scale"))
 	float GetMergeTensionScale_BP() const;
-	virtual FAGX_Real GetMergeTensionScale() const;
+
+	double GetMergeTensionScale() const;
 
 	void CreateNative(UWorld* PlayingWorld);
 	bool HasNative() const;

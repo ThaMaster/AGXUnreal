@@ -12,11 +12,11 @@
 void UAGX_WireMergeSplitThresholds::SetForcePropagationDecayScale_BP(
 	float InForcePropagationDecayScale)
 {
-	SetForcePropagationDecayScale(FAGX_Real(InForcePropagationDecayScale));
+	SetForcePropagationDecayScale(static_cast<double>(InForcePropagationDecayScale));
 }
 
 void UAGX_WireMergeSplitThresholds::SetForcePropagationDecayScale(
-	FAGX_Real InForcePropagationDecayScale)
+	double InForcePropagationDecayScale)
 {
 	AGX_ASSET_SETTER_IMPL(
 		ForcePropagationDecayScale, InForcePropagationDecayScale, SetForcePropagationDecayScale);
@@ -27,17 +27,17 @@ float UAGX_WireMergeSplitThresholds::GetForcePropagationDecayScale_BP() const
 	return static_cast<float>(GetForcePropagationDecayScale());
 }
 
-FAGX_Real UAGX_WireMergeSplitThresholds::GetForcePropagationDecayScale() const
+double UAGX_WireMergeSplitThresholds::GetForcePropagationDecayScale() const
 {
 	AGX_ASSET_GETTER_IMPL(ForcePropagationDecayScale, GetForcePropagationDecayScale);
 }
 
 void UAGX_WireMergeSplitThresholds::SetMergeTensionScale_BP(float InMergeTensionScale)
 {
-	SetMergeTensionScale(FAGX_Real(InMergeTensionScale));
+	SetMergeTensionScale(static_cast<double>(InMergeTensionScale));
 }
 
-void UAGX_WireMergeSplitThresholds::SetMergeTensionScale(FAGX_Real InMergeTensionScale)
+void UAGX_WireMergeSplitThresholds::SetMergeTensionScale(double InMergeTensionScale)
 {
 	AGX_ASSET_SETTER_IMPL(MergeTensionScale, InMergeTensionScale, SetMergeTensionScale);
 }
@@ -47,7 +47,7 @@ float UAGX_WireMergeSplitThresholds::GetMergeTensionScale_BP() const
 	return static_cast<float>(GetMergeTensionScale());
 }
 
-FAGX_Real UAGX_WireMergeSplitThresholds::GetMergeTensionScale() const
+double UAGX_WireMergeSplitThresholds::GetMergeTensionScale() const
 {
 	AGX_ASSET_GETTER_IMPL(MergeTensionScale, GetMergeTensionScale);
 }

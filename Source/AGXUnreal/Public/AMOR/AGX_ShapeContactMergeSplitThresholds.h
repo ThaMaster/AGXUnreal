@@ -24,31 +24,41 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Shape Contact Merge Split Thresholds")
 	FAGX_Real MaxImpactSpeed {0.01};
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds",
+		Meta = (DisplayName = "Set Max Impact Speed"))
 	void SetMaxImpactSpeed_BP(float InMaxImpactSpeed);
 
-	void SetMaxImpactSpeed(FAGX_Real InMaxImpactSpeed);
+	void SetMaxImpactSpeed(double InMaxImpactSpeed);
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds",
+		Meta = (DisplayName = "Get Max Impact Speed"))
 	float GetMaxImpactSpeed_BP() const;
 
-	FAGX_Real GetMaxImpactSpeed() const;
+	double GetMaxImpactSpeed() const;
 
 	/**
 	 * Maximum speed along a contact normal for a contact to be considered resting [cm/s].
 	 */
-	UPROPERTY(EditAnywhere, Category = "Shape Contact Merge Split Thresholds")
+	UPROPERTY(
+		EditAnywhere, Category = "Shape Contact Merge Split Thresholds",
+		Meta = (DisplayName = "Set Force Propagation Decay Scale"))
 	FAGX_Real MaxRelativeNormalSpeed {0.01};
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds",
+		Meta = (DisplayName = "Set Max Relative Normal Speed"))
 	void SetMaxRelativeNormalSpeed_BP(float InMaxRelativeNormalSpeed);
 
-	void SetMaxRelativeNormalSpeed(FAGX_Real InMaxRelativeNormalSpeed);
+	void SetMaxRelativeNormalSpeed(double InMaxRelativeNormalSpeed);
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds",
+		Meta = (DisplayName = "Get Max Relative Normal Speed"))
 	float GetMaxRelativeNormalSpeed_BP() const;
 
-	FAGX_Real GetMaxRelativeNormalSpeed() const;
+	double GetMaxRelativeNormalSpeed() const;
 
 	/**
 	 * Maximum (sliding) speed along a contact tangent for a contact to be considered resting
@@ -57,15 +67,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Shape Contact Merge Split Thresholds")
 	FAGX_Real MaxRelativeTangentSpeed {0.01};
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds",
+		Meta = (DisplayName = "Set Max Relative Tangent Speed"))
 	void SetMaxRelativeTangentSpeed_BP(float InMaxRelativeTangentSpeed);
 
-	void SetMaxRelativeTangentSpeed(FAGX_Real InMaxRelativeTangentSpeed);
+	void SetMaxRelativeTangentSpeed(double InMaxRelativeTangentSpeed);
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds",
+		Meta = (DisplayName = "Get Max Relative Tangent Speed"))
 	float GetMaxRelativeTangentSpeed_BP() const;
 
-	FAGX_Real GetMaxRelativeTangentSpeed() const;
+	double GetMaxRelativeTangentSpeed() const;
 
 	/**
 	 * Maximum (rolling) speed for a contact to be considered resting [cm/s].
@@ -73,15 +87,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Shape Contact Merge Split Thresholds")
 	FAGX_Real MaxRollingSpeed {0.01};
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds",
+		Meta = (DisplayName = "Set Max Rolling Speed"))
 	void SetMaxRollingSpeed_BP(float InMaxRollingSpeed);
 
-	void SetMaxRollingSpeed(FAGX_Real InMaxRollingSpeed);
+	void SetMaxRollingSpeed(double InMaxRollingSpeed);
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds",
+		Meta = (DisplayName = "Get Max Rolling Speed"))
 	float GetMaxRollingSpeed_BP() const;
 
-	FAGX_Real GetMaxRollingSpeed() const;
+	double GetMaxRollingSpeed() const;
 
 	/**
 	 * Adhesive force in the normal directions preventing the object to split (if > 0) when the
@@ -90,15 +108,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Shape Contact Merge Split Thresholds")
 	FAGX_Real NormalAdhesion {0.0};
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds",
+		Meta = (DisplayName = "Set Normal Adhesion"))
 	void SetNormalAdhesion_BP(float InNormalAdhesion);
 
-	void SetNormalAdhesion(FAGX_Real InNormalAdhesion);
+	void SetNormalAdhesion(double InNormalAdhesion);
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds",
+		Meta = (DisplayName = "Get Normal Adhesion"))
 	float GetNormalAdhesion_BP() const;
 
-	FAGX_Real GetNormalAdhesion() const;
+	double GetNormalAdhesion() const;
 
 	/**
 	 * Adhesive force in the tangential directions preventing the object to split (if > 0) when the
@@ -107,15 +129,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Shape Contact Merge Split Thresholds")
 	FAGX_Real TangentialAdhesion {0.0};
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds",
+		Meta = (DisplayName = "Set Tangential Adhesion"))
 	void SetTangentialAdhesion_BP(float InTangentialAdhesion);
 
-	void SetTangentialAdhesion(FAGX_Real InTangentialAdhesion);
+	void SetTangentialAdhesion(double InTangentialAdhesion);
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds",
+		Meta = (DisplayName = "Get Tangential Adhesion"))
 	float GetTangentialAdhesion_BP() const;
 
-	FAGX_Real GetTangentialAdhesion() const;
+	double GetTangentialAdhesion() const;
 
 	/**
 	 * Check split given external forces for all objects merged (i.e., rb->getForce() the sum of
@@ -124,10 +150,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Shape Contact Merge Split Thresholds")
 	bool bMaySplitInGravityField {false};
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
 	void SetMaySplitInGravityField(bool bInMaySplitInGravityField);
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
 	bool GetMaySplitInGravityField() const;
 
 	/**
@@ -137,10 +165,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Shape Contact Merge Split Thresholds")
 	bool bSplitOnLogicalImpact {false};
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
 	void SetSplitOnLogicalImpact(bool bInSplitOnLogicalImpact);
 
-	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(
+		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
 	bool GetSplitOnLogicalImpact() const;
 
 	void CreateNative(UWorld* PlayingWorld);
