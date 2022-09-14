@@ -291,7 +291,7 @@ public:
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
-		Meta = (DisplayName = "SetPreconsolidation Stress"))
+		Meta = (DisplayName = "Set Preconsolidation Stress"))
 	virtual void SetPreconsolidationStress_BP(float PreconsolidationStress);
 
 	virtual void SetPreconsolidationStress(double PreconsolidationStress);

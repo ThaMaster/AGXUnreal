@@ -105,7 +105,7 @@ public:
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Material Bulk Properties",
-		Meta = (DisplayName = "Get Spook Damping"))
+		Meta = (DisplayName = "Set Spook Damping"))
 	void SetSpookDamping_BP(float InSpookDamping);
 
 	double GetSpookDamping() const;
@@ -170,7 +170,7 @@ public:
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Material Wire Properties",
-		Meta = (DisplayName = "Get Spool Damping Stretch"))
+		Meta = (DisplayName = "Get Spook Damping Stretch"))
 	float GetSpookDampingStretch_BP() const;
 
 	void SetSpookDampingStretch(double InSpookDamping);
