@@ -76,7 +76,7 @@ FMergeSplitPropertiesBarrier FMergeSplitPropertiesBarrier::CreateFrom(
 		return FMergeSplitPropertiesBarrier();
 	}
 
-	FMergeSplitPropertiesBarrier(std::make_unique<FMergeSplitPropertiesPtr>(Msp));
+	return FMergeSplitPropertiesBarrier(std::make_unique<FMergeSplitPropertiesPtr>(Msp));
 }
 
 template FMergeSplitPropertiesBarrier FMergeSplitPropertiesBarrier::CreateFrom<FRigidBodyBarrier>(
