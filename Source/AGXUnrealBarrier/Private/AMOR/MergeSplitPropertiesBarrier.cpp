@@ -98,7 +98,8 @@ void FMergeSplitPropertiesBarrier::AllocateNative(T& Owner)
 }
 
 template <>
-void FMergeSplitPropertiesBarrier::AllocateNative<FShapeBarrier>(FShapeBarrier& Owner)
+AGXUNREALBARRIER_API void FMergeSplitPropertiesBarrier::AllocateNative<FShapeBarrier>(
+	FShapeBarrier& Owner)
 {
 	check(!HasNative());
 	check(Owner.HasNative());
