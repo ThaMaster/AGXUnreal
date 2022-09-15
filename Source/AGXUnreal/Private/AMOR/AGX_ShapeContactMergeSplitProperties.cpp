@@ -100,10 +100,13 @@ void FAGX_ShapeContactMergeSplitProperties::UpdateNativeThresholds(UWorld* Playi
 	NativeBarrier.SetShapeContactMergeSplitThresholds(Barrier);
 }
 
-void FAGX_ShapeContactMergeSplitProperties::CopyFrom(const FMergeSplitPropertiesBarrier& Barrier)
+void FAGX_ShapeContactMergeSplitProperties::CopyFrom(
+	const FMergeSplitPropertiesBarrier& Barrier, UAGX_MergeSplitThresholdsBase* InThresholds)
 {
 	bEnableMerge = Barrier.GetEnableMerge();
 	bEnableSplit = Barrier.GetEnableSplit();
+
+	Thresholds = dynamic_cast<UAGX_ShapeContactMergeSplitThresholds*>(InThresholds);
 }
 
 // Explicit template instantiations.

@@ -458,7 +458,8 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	InitializeMotionControl();
 }
 
-void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
+void UAGX_RigidBodyComponent::CopyFrom(
+	const FRigidBodyBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds)
 {
 	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
 	Mass = MassProperties.GetMass();
@@ -496,7 +497,7 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 		*const_cast<FRigidBodyBarrier*>(&Barrier));
 	if (Msp.HasNative())
 	{
-		MergeSplitProperties.CopyFrom(Msp);
+		MergeSplitProperties.CopyFrom(Msp, Thresholds);
 	}
 }
 

@@ -19,6 +19,7 @@ class UAGX_CylinderShapeComponent;
 class UAGX_CapsuleShapeComponent;
 class UAGX_TrimeshShapeComponent;
 class UAGX_ShapeMaterialAsset;
+class UAGX_MergeSplitThresholdsBase;
 class UAGX_ContactMaterialAsset;
 class UAGX_HingeConstraintComponent;
 class UAGX_PrismaticConstraintComponent;
@@ -134,6 +135,7 @@ public:
 
 private:
 	TMap<FGuid, UStaticMesh*> RestoredMeshes;
+	TMap<FGuid, UAGX_MergeSplitThresholdsBase*> RestoredThresholds;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterialAsset*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;

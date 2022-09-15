@@ -11,6 +11,8 @@
 
 #include "AGX_MergeSplitPropertiesBase.generated.h"
 
+class UAGX_MergeSplitThresholdsBase;
+
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_MergeSplitPropertiesBase
 {
@@ -39,7 +41,8 @@ public:
 	const FMergeSplitPropertiesBarrier& GetNative() const;
 	FMergeSplitPropertiesBarrier& GetNative();
 
-	virtual void CopyFrom(const FMergeSplitPropertiesBarrier& Barrier)
+	virtual void CopyFrom(
+		const FMergeSplitPropertiesBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds)
 		PURE_VIRTUAL(FAGX_MergeSplitPropertiesBase::CopyFrom, );
 
 protected:

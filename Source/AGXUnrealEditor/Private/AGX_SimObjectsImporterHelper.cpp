@@ -63,7 +63,38 @@ namespace
 			LogAGX, Error, TEXT("Could not import '%s' '%s' from file '%s': %s."), ObjectType,
 			*Name, *FilePath, Message);
 	}
-};
+
+	UAGX_MergeSplitThresholdsBase* GetOrCreateMergeSplitThresholdsAsset(
+		const FMergeSplitThresholdsBarrier& Thresholds,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		const FString& DirectoryName)
+	{
+		const FGuid Guid = Thresholds.GetGuid();
+		const FString FallbackName = "AGX_MST_" + Guid.ToString();
+		if (!Guid.IsValid())
+		{
+			// The GUID is invalid, but try to create the asset anyway but without adding it to
+			// the RestoredThresholds Map.
+			return FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
+				Thresholds, DirectoryName, FallbackName);
+		}
+
+		if (UAGX_MergeSplitThresholdsBase* Asset = RestoredThresholds.FindRef(Guid))
+		{
+			// We have seen this before, use the one in the cache.
+			return Asset;
+		}
+
+		// This is a new merge split thresholds. Create the asset and add to the cache.
+		UAGX_MergeSplitThresholdsBase* Asset = FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
+			Thresholds, DirectoryName, FallbackName);
+		if (Asset != nullptr)
+		{
+			RestoredThresholds.Add(Guid, Asset);
+		}
+		return Asset;
+	}
+}
 
 UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 	const FRigidBodyBarrier& Barrier, AActor& Actor)
@@ -86,8 +117,14 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
 
 	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
+	if (MergeSplitThresholds.HasNative())
+	{
+		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, RestoredThresholds, DirectoryName);
+	}
 
-	Component->CopyFrom(Barrier);	
+	Component->CopyFrom(Barrier, ThresholdsAsset);	
 	Component->SetFlags(RF_Transactional);
 	Actor.AddInstanceComponent(Component);
 
@@ -448,37 +485,6 @@ namespace
 		{
 			SetDefaultRenderMaterial(VisualMesh, Component.bIsSensor);
 		}
-	}
-
-	UAGX_MergeSplitThresholdsBase* GetOrCreateMergeSplitThresholdsAsset(
-		const FMergeSplitThresholdsBarrier& Thresholds, const FString& FallbackName,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
-		const FString& DirectoryName)
-	{
-		const FGuid Guid = Thresholds.GetGuid();
-		if (!Guid.IsValid())
-		{
-			// The GUID is invalid, but try to create the asset anyway but without adding it to
-			// the RestoredThresholds Map.
-			return FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
-				Thresholds, DirectoryName, FallbackName);
-		}
-
-		if (UAGX_MergeSplitThresholdsBase* Asset = RestoredThresholds.FindRef(Guid))
-		{
-			// We have seen this before, use the one in the cache.
-			return Asset;
-		}
-
-		// This is a new merge split thresholds. Create the asset and add to the cache.
-		UAGX_MergeSplitThresholdsBase* Asset =
-			FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
-				Thresholds, DirectoryName, FallbackName);
-		if (Asset != nullptr)
-		{
-			RestoredThresholds.Add(Guid, Asset);
-		}
-		return Asset;
 	}
 
 	UAGX_ContactMaterialRegistrarComponent* GetOrCreateContactMaterialRegistrar(AActor& Owner)

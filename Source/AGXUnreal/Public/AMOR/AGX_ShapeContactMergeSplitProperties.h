@@ -42,7 +42,9 @@ public:
 	template <typename T>
 	void CreateNative(T& Owner);
 
-	virtual void CopyFrom(const FMergeSplitPropertiesBarrier& Barrier) override;
+	virtual void CopyFrom(
+		const FMergeSplitPropertiesBarrier& Barrier,
+		UAGX_MergeSplitThresholdsBase* InThresholds) override;
 
 	//Todo add comment about why we doe this.
 	FAGX_ShapeContactMergeSplitProperties& operator=(const FAGX_ShapeContactMergeSplitProperties& Other);
