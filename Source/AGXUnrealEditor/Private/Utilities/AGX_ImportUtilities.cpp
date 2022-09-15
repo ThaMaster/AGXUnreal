@@ -327,10 +327,12 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 
 UAGX_MergeSplitThresholdsBase* FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
 	const FMergeSplitThresholdsBarrier& Barrier, const FString& DirectoryName,
-	const FString& FallbackName)
+	const FString& Name)
 {
-	// todo: implement
-	return nullptr;
+	auto InitAsset = [&](UAGX_MergeSplitThresholdsBase& Asset) { Asset.CopyFrom(Barrier); };
+
+	return SaveImportedAsset<UAGX_MergeSplitThresholdsBase>(
+		DirectoryName, Name, "AGX_MSP_", TEXT("MergeSplitThresholds"), InitAsset);
 }
 
 void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)

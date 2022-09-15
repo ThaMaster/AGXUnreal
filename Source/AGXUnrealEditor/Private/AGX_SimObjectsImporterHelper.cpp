@@ -70,13 +70,13 @@ namespace
 		const FString& DirectoryName)
 	{
 		const FGuid Guid = Thresholds.GetGuid();
-		const FString FallbackName = "AGX_MST_" + Guid.ToString();
+		const FString AssetName = "AGX_MST_" + Guid.ToString();
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the asset anyway but without adding it to
 			// the RestoredThresholds Map.
 			return FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
-				Thresholds, DirectoryName, FallbackName);
+				Thresholds, DirectoryName, AssetName);
 		}
 
 		if (UAGX_MergeSplitThresholdsBase* Asset = RestoredThresholds.FindRef(Guid))
@@ -86,8 +86,8 @@ namespace
 		}
 
 		// This is a new merge split thresholds. Create the asset and add to the cache.
-		UAGX_MergeSplitThresholdsBase* Asset = FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
-			Thresholds, DirectoryName, FallbackName);
+		UAGX_MergeSplitThresholdsBase* Asset =
+			FAGX_ImportUtilities::SaveImportedMergeSplitAsset(Thresholds, DirectoryName, AssetName);
 		if (Asset != nullptr)
 		{
 			RestoredThresholds.Add(Guid, Asset);
@@ -124,7 +124,7 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 			MergeSplitThresholds, RestoredThresholds, DirectoryName);
 	}
 
-	Component->CopyFrom(Barrier, ThresholdsAsset);	
+	Component->CopyFrom(Barrier, ThresholdsAsset);
 	Component->SetFlags(RF_Transactional);
 	Actor.AddInstanceComponent(Component);
 
@@ -519,6 +519,15 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 			TEXT("Could not create new UAGX_SphereShapeComponent"));
 		return nullptr;
 	}
+
+	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom<FShapeBarrier>(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
+	if (MergeSplitThresholds.HasNative())
+	{
+		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, RestoredThresholds, DirectoryName);
+	}
+
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
@@ -537,6 +546,15 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 			TEXT("Could not create new UAGX_BoxShapeComponent"));
 		return nullptr;
 	}
+
+	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom<FShapeBarrier>(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
+	if (MergeSplitThresholds.HasNative())
+	{
+		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, RestoredThresholds, DirectoryName);
+	}
+
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
@@ -556,6 +574,15 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 			TEXT("Could not create new UAGX_CylinderShapeComponent"));
 		return nullptr;
 	}
+
+	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom<FShapeBarrier>(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
+	if (MergeSplitThresholds.HasNative())
+	{
+		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, RestoredThresholds, DirectoryName);
+	}
+
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
@@ -574,6 +601,15 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 			TEXT("Could not create new UAGX_CapsuleShapeComponent"));
 		return nullptr;
 	}
+
+	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom<FShapeBarrier>(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
+	if (MergeSplitThresholds.HasNative())
+	{
+		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, RestoredThresholds, DirectoryName);
+	}
+
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
@@ -634,6 +670,14 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	}
 	Component->RegisterComponent();
 
+	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom<FShapeBarrier>(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
+	if (MergeSplitThresholds.HasNative())
+	{
+		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, RestoredThresholds, DirectoryName);
+	}
+
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
@@ -679,7 +723,9 @@ namespace
 	template <typename UComponent, typename FBarrier>
 	UComponent* InstantiateConstraint(
 		const FBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
-		const TArray<FGuid>& IgnoreList)
+		const TArray<FGuid>& IgnoreList,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		const FString& DirectoryName)
 	{
 		if (IgnoreList.Contains(Barrier.GetGuid()))
 		{
@@ -707,6 +753,14 @@ namespace
 			return nullptr;
 		}
 
+		auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom<FConstraintBarrier>(Barrier);
+		UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
+		if (MergeSplitThresholds.HasNative())
+		{
+			ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
+				MergeSplitThresholds, RestoredThresholds, DirectoryName);
+		}
+
 		Component->CopyFrom(Barrier);
 		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 			Barrier, *Component, Bodies.first, Bodies.second);
@@ -721,17 +775,23 @@ namespace
 	template <typename UComponent>
 	UComponent* InstantiateConstraint1Dof(
 		const FConstraint1DOFBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
-		const TArray<FGuid>& IgnoreList)
+		const TArray<FGuid>& IgnoreList,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		const FString& DirectoryName)
 	{
-		return InstantiateConstraint<UComponent>(Barrier, Owner, Helper, IgnoreList);
+		return InstantiateConstraint<UComponent>(
+			Barrier, Owner, Helper, IgnoreList, RestoredThresholds, DirectoryName);
 	}
 
 	template <typename UConstraint>
 	UConstraint* InstantiateConstraint2Dof(
 		const FConstraint2DOFBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
-		const TArray<FGuid>& IgnoreList)
+		const TArray<FGuid>& IgnoreList,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		const FString& DirectoryName)
 	{
-		return InstantiateConstraint<UConstraint>(Barrier, Owner, Helper, IgnoreList);
+		return InstantiateConstraint<UConstraint>(
+			Barrier, Owner, Helper, IgnoreList, RestoredThresholds, DirectoryName);
 	}
 }
 
@@ -739,42 +799,42 @@ UAGX_HingeConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateHinge(
 	const FHingeBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_HingeConstraintComponent>(
-		Barrier, Owner, *this, ConstraintIgnoreList);
+		Barrier, Owner, *this, ConstraintIgnoreList, RestoredThresholds, DirectoryName);
 }
 
 UAGX_PrismaticConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiatePrismatic(
 	const FPrismaticBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_PrismaticConstraintComponent>(
-		Barrier, Owner, *this, ConstraintIgnoreList);
+		Barrier, Owner, *this, ConstraintIgnoreList, RestoredThresholds, DirectoryName);
 }
 
 UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallJoint(
 	const FBallJointBarrier& Barrier, AActor& Owner)
 {
 	return InstantiateConstraint<UAGX_BallConstraintComponent>(
-		Barrier, Owner, *this, ConstraintIgnoreList);
+		Barrier, Owner, *this, ConstraintIgnoreList, RestoredThresholds, DirectoryName);
 }
 
 UAGX_CylindricalConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateCylindricalJoint(
 	const FCylindricalJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint2Dof<UAGX_CylindricalConstraintComponent>(
-		Barrier, Owner, *this, ConstraintIgnoreList);
+		Barrier, Owner, *this, ConstraintIgnoreList, RestoredThresholds, DirectoryName);
 }
 
 UAGX_DistanceConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateDistanceJoint(
 	const FDistanceJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_DistanceConstraintComponent>(
-		Barrier, Owner, *this, ConstraintIgnoreList);
+		Barrier, Owner, *this, ConstraintIgnoreList, RestoredThresholds, DirectoryName);
 }
 
 UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockJoint(
 	const FLockJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint<UAGX_LockConstraintComponent>(
-		Barrier, Owner, *this, ConstraintIgnoreList);
+		Barrier, Owner, *this, ConstraintIgnoreList, RestoredThresholds, DirectoryName);
 }
 
 UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire(
@@ -853,6 +913,14 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	}
 
 	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
+
+	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
+	if (MergeSplitThresholds.HasNative())
+	{
+		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, RestoredThresholds, DirectoryName);
+	}
 
 	// Copy simple properties such as radius and segment length. More complicated properties, such
 	// as physical material, winches and route nodes, are handled below.

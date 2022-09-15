@@ -147,7 +147,7 @@ public:
 
 	static UAGX_MergeSplitThresholdsBase* SaveImportedMergeSplitAsset(
 		const FMergeSplitThresholdsBarrier& Barrier, const FString& DirectoryName,
-		const FString& FallbackName);
+		const FString& Name);
 
 	/**
 	 * Rename the object. Generates a fallback name if the given name can't be used.
