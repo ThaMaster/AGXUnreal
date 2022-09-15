@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AMOR/MergeSplitPropertiesBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
@@ -82,7 +83,17 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 		return nullptr;
 	}
 	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
-	Component->CopyFrom(Barrier);
+
+	const auto MspBarrier = FMergeSplitPropertiesBarrier::CreateFrom(Barrier);
+	if (MspBarrier.HasNative())
+	{
+		Component->CopyFrom(Barrier, MspBarrier);
+	}
+	else
+	{
+		Component->CopyFrom(Barrier, {});
+	}
+	
 	Component->SetFlags(RF_Transactional);
 	Actor.AddInstanceComponent(Component);
 

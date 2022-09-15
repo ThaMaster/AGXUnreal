@@ -7,6 +7,7 @@
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "AMOR/MergeSplitPropertiesBarrier.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -457,7 +458,8 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	InitializeMotionControl();
 }
 
-void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
+void UAGX_RigidBodyComponent::CopyFrom(
+	const FRigidBodyBarrier& Barrier, TOptional<FMergeSplitPropertiesBarrier> Msp)
 {
 	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
 	Mass = MassProperties.GetMass();

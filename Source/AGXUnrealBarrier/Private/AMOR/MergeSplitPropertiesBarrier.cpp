@@ -79,9 +79,12 @@ FMergeSplitPropertiesBarrier FMergeSplitPropertiesBarrier::CreateFrom(
 	return FMergeSplitPropertiesBarrier(std::make_unique<FMergeSplitPropertiesPtr>(Msp));
 }
 
-template FMergeSplitPropertiesBarrier FMergeSplitPropertiesBarrier::CreateFrom<FRigidBodyBarrier>(
+template AGXUNREALBARRIER_API FMergeSplitPropertiesBarrier
+FMergeSplitPropertiesBarrier::CreateFrom<FRigidBodyBarrier>(
 	FRigidBodyBarrier&);
-template FMergeSplitPropertiesBarrier FMergeSplitPropertiesBarrier::CreateFrom<FShapeBarrier>(
+
+template AGXUNREALBARRIER_API FMergeSplitPropertiesBarrier
+FMergeSplitPropertiesBarrier::CreateFrom<FShapeBarrier>(
 	FShapeBarrier&);
 
 bool FMergeSplitPropertiesBarrier::HasNative() const
