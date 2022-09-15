@@ -11,6 +11,7 @@
 #include "Shapes/ShapeBarrier.h"
 #include "TypeConversions.h"
 #include "Wire/WireBarrier.h"
+#include "Wire/WireRef.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -130,3 +131,15 @@ FMergeSplitThresholdsBarrier FMergeSplitThresholdsBarrier::CreateFrom(const T& B
 
 	return FMergeSplitThresholdsBarrier(std::make_unique<FMergeSplitThresholdsRef>(Mst));
 }
+
+template AGXUNREALBARRIER_API FMergeSplitThresholdsBarrier
+FMergeSplitThresholdsBarrier::CreateFrom<FRigidBodyBarrier>(const FRigidBodyBarrier&);
+
+template AGXUNREALBARRIER_API FMergeSplitThresholdsBarrier
+FMergeSplitThresholdsBarrier::CreateFrom<FShapeBarrier>(const FShapeBarrier&);
+
+template AGXUNREALBARRIER_API FMergeSplitThresholdsBarrier
+FMergeSplitThresholdsBarrier::CreateFrom<FConstraintBarrier>(const FConstraintBarrier&);
+
+template AGXUNREALBARRIER_API FMergeSplitThresholdsBarrier
+FMergeSplitThresholdsBarrier::CreateFrom<FWireBarrier>(const FWireBarrier&);
