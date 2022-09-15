@@ -7,7 +7,6 @@
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 
-
 FShapeContactMergeSplitThresholdsBarrier::FShapeContactMergeSplitThresholdsBarrier()
 	: FMergeSplitThresholdsBarrier()
 {
@@ -41,7 +40,8 @@ namespace ShapeContactMergeSplitThresholds_helpers
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Operation %s failed, could not cast native MergeSplitThresholds to "
-					 "ShapeContactMergeSplitThresholds."), *Operation);
+					 "ShapeContactMergeSplitThresholds."),
+				*Operation);
 		}
 
 		return GeomContThresholds;
@@ -71,11 +71,13 @@ double FShapeContactMergeSplitThresholdsBarrier::GetMaxImpactSpeed() const
 	return 0.0;
 }
 
-void FShapeContactMergeSplitThresholdsBarrier::SetMaxRelativeNormalSpeed(double InMaxRelativeNormalSpeed)
+void FShapeContactMergeSplitThresholdsBarrier::SetMaxRelativeNormalSpeed(
+	double InMaxRelativeNormalSpeed)
 {
 	check(HasNative());
 	using namespace ShapeContactMergeSplitThresholds_helpers;
-	if (auto Native = CastToGeometryContactThresholds(NativeRef->Native, "SetMaxRelativeNormalSpeed"))
+	if (auto Native =
+			CastToGeometryContactThresholds(NativeRef->Native, "SetMaxRelativeNormalSpeed"))
 	{
 		Native->setMaxRelativeNormalSpeed(ConvertDistanceToAGX(InMaxRelativeNormalSpeed));
 	}
@@ -85,7 +87,8 @@ double FShapeContactMergeSplitThresholdsBarrier::GetMaxRelativeNormalSpeed() con
 {
 	check(HasNative());
 	using namespace ShapeContactMergeSplitThresholds_helpers;
-	if (auto Native = CastToGeometryContactThresholds(NativeRef->Native, "GetMaxRelativeNormalSpeed"))
+	if (auto Native =
+			CastToGeometryContactThresholds(NativeRef->Native, "GetMaxRelativeNormalSpeed"))
 	{
 		return ConvertDistanceToUnreal<double>(Native->getMaxRelativeNormalSpeed());
 	}
@@ -94,11 +97,13 @@ double FShapeContactMergeSplitThresholdsBarrier::GetMaxRelativeNormalSpeed() con
 	return 0.0;
 }
 
-void FShapeContactMergeSplitThresholdsBarrier::SetMaxRelativeTangentSpeed(double InMaxRelativeTangentSpeed)
+void FShapeContactMergeSplitThresholdsBarrier::SetMaxRelativeTangentSpeed(
+	double InMaxRelativeTangentSpeed)
 {
 	check(HasNative());
 	using namespace ShapeContactMergeSplitThresholds_helpers;
-	if (auto Native = CastToGeometryContactThresholds(NativeRef->Native, "SetMaxRelativeTangentSpeed"))
+	if (auto Native =
+			CastToGeometryContactThresholds(NativeRef->Native, "SetMaxRelativeTangentSpeed"))
 	{
 		Native->setMaxRelativeTangentSpeed(ConvertDistanceToAGX(InMaxRelativeTangentSpeed));
 	}
@@ -108,7 +113,8 @@ double FShapeContactMergeSplitThresholdsBarrier::GetMaxRelativeTangentSpeed() co
 {
 	check(HasNative());
 	using namespace ShapeContactMergeSplitThresholds_helpers;
-	if (auto Native = CastToGeometryContactThresholds(NativeRef->Native, "GetMaxRelativeTangentSpeed"))
+	if (auto Native =
+			CastToGeometryContactThresholds(NativeRef->Native, "GetMaxRelativeTangentSpeed"))
 	{
 		return ConvertDistanceToUnreal<double>(Native->getMaxRelativeTangentSpeed());
 	}
@@ -186,11 +192,13 @@ double FShapeContactMergeSplitThresholdsBarrier::GetTangentialAdhesion() const
 	return 0.0;
 }
 
-void FShapeContactMergeSplitThresholdsBarrier::SetMaySplitInGravityField(bool bMaySplitInGravityField)
+void FShapeContactMergeSplitThresholdsBarrier::SetMaySplitInGravityField(
+	bool bMaySplitInGravityField)
 {
 	check(HasNative());
 	using namespace ShapeContactMergeSplitThresholds_helpers;
-	if (auto Native = CastToGeometryContactThresholds(NativeRef->Native, "SetMaySplitInGravityField"))
+	if (auto Native =
+			CastToGeometryContactThresholds(NativeRef->Native, "SetMaySplitInGravityField"))
 	{
 		Native->setMaySplitInGravityField(bMaySplitInGravityField);
 	}
@@ -200,7 +208,8 @@ bool FShapeContactMergeSplitThresholdsBarrier::GetMaySplitInGravityField() const
 {
 	check(HasNative());
 	using namespace ShapeContactMergeSplitThresholds_helpers;
-	if (auto Native = CastToGeometryContactThresholds(NativeRef->Native, "GetMaySplitInGravityField"))
+	if (auto Native =
+			CastToGeometryContactThresholds(NativeRef->Native, "GetMaySplitInGravityField"))
 	{
 		return Native->getMaySplitInGravityField();
 	}
@@ -213,8 +222,7 @@ void FShapeContactMergeSplitThresholdsBarrier::SetSplitOnLogicalImpact(bool bSpl
 {
 	check(HasNative());
 	using namespace ShapeContactMergeSplitThresholds_helpers;
-	if (auto Native =
-			CastToGeometryContactThresholds(NativeRef->Native, "SetSplitOnLogicalImpact"))
+	if (auto Native = CastToGeometryContactThresholds(NativeRef->Native, "SetSplitOnLogicalImpact"))
 	{
 		Native->setSplitOnLogicalImpact(bSplitOnLogicalImpact);
 	}
@@ -224,8 +232,7 @@ bool FShapeContactMergeSplitThresholdsBarrier::GetSplitOnLogicalImpact() const
 {
 	check(HasNative());
 	using namespace ShapeContactMergeSplitThresholds_helpers;
-	if (auto Native =
-			CastToGeometryContactThresholds(NativeRef->Native, "GetSplitOnLogicalImpact"))
+	if (auto Native = CastToGeometryContactThresholds(NativeRef->Native, "GetSplitOnLogicalImpact"))
 	{
 		return Native->getSplitOnLogicalImpact();
 	}

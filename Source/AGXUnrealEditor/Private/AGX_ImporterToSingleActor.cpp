@@ -255,7 +255,8 @@ namespace
 			Helper.InstantiateWire(Barrier, Actor);
 		}
 
-		virtual void InstantiateObserverFrame(const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) override
+		virtual void InstantiateObserverFrame(
+			const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) override
 		{
 			Helper.InstantiateObserverFrame(Name, BodyGuid, Transform, Actor);
 		}
