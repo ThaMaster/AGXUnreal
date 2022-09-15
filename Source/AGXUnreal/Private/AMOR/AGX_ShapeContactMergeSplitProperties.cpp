@@ -100,6 +100,12 @@ void FAGX_ShapeContactMergeSplitProperties::UpdateNativeThresholds(UWorld* Playi
 	NativeBarrier.SetShapeContactMergeSplitThresholds(Barrier);
 }
 
+void FAGX_ShapeContactMergeSplitProperties::CopyFrom(const FMergeSplitPropertiesBarrier& Barrier)
+{
+	bEnableMerge = Barrier.GetEnableMerge();
+	bEnableSplit = Barrier.GetEnableSplit();
+}
+
 // Explicit template instantiations.
 template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay<UAGX_RigidBodyComponent>(
 	UAGX_RigidBodyComponent&);

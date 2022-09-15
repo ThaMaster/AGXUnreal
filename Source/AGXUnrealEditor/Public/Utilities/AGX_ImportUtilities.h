@@ -9,9 +9,11 @@
 class FTrimeshShapeBarrier;
 class FRenderDataBarrier;
 class FShapeBarrier;
+class FMergeSplitThresholdsBarrier;
 class FShapeMaterialBarrier;
 class FContactMaterialBarrier;
 class UAGX_ContactMaterialAsset;
+class UAGX_MergeSplitThresholdsBase;
 class UAGX_ShapeMaterialAsset;
 struct FAGX_RenderMaterial;
 
@@ -142,6 +144,10 @@ public:
 	static UMaterialInterface* SaveImportedRenderMaterialAsset(
 		const FAGX_RenderMaterial& Imported, const FString& DirectoryName,
 		const FString& MaterialName);
+
+	static UAGX_MergeSplitThresholdsBase* SaveImportedMergeSplitAsset(
+		const FMergeSplitThresholdsBarrier& Barrier, const FString& DirectoryName,
+		const FString& FallbackName);
 
 	/**
 	 * Rename the object. Generates a fallback name if the given name can't be used.

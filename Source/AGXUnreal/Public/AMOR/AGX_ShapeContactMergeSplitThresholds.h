@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
+#include "AMOR/AGX_MergeSplitThresholdsBase.h"
 #include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
 
 // Unreal Engine includes.
@@ -12,7 +13,7 @@
 #include "AGX_ShapeContactMergeSplitThresholds.generated.h"
 
 UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable)
-class AGXUNREAL_API UAGX_ShapeContactMergeSplitThresholds : public UObject
+class AGXUNREAL_API UAGX_ShapeContactMergeSplitThresholds : public UAGX_MergeSplitThresholdsBase
 {
 	GENERATED_BODY()
 

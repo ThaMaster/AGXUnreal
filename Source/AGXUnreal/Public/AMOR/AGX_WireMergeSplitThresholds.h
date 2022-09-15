@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
+#include "AMOR/AGX_MergeSplitThresholdsBase.h"
 #include "AMOR/WireMergeSplitThresholdsBarrier.h"
 
 // Unreal Engine includes.
@@ -12,7 +13,7 @@
 #include "AGX_WireMergeSplitThresholds.generated.h"
 
 UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable)
-class AGXUNREAL_API UAGX_WireMergeSplitThresholds : public UObject
+class AGXUNREAL_API UAGX_WireMergeSplitThresholds : public UAGX_MergeSplitThresholdsBase
 {
 	GENERATED_BODY()
 

@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
 #include "AMOR/ConstraintMergeSplitThresholdsBarrier.h"
+#include "AMOR/AGX_MergeSplitThresholdsBase.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -12,7 +13,7 @@
 #include "AGX_ConstraintMergeSplitThresholds.generated.h"
 
 UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable)
-class AGXUNREAL_API UAGX_ConstraintMergeSplitThresholds : public UObject
+class AGXUNREAL_API UAGX_ConstraintMergeSplitThresholds : public UAGX_MergeSplitThresholdsBase
 {
 	GENERATED_BODY()
 

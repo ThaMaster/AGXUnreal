@@ -4,6 +4,8 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AMOR/AGX_MergeSplitThresholdsBase.h"
+#include "AMOR/MergeSplitThresholdsBarrier.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
 #include "Materials/ContactMaterialBarrier.h"
@@ -321,6 +323,14 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	}
 
 	return Material;
+}
+
+UAGX_MergeSplitThresholdsBase* FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
+	const FMergeSplitThresholdsBarrier& Barrier, const FString& DirectoryName,
+	const FString& FallbackName)
+{
+	// todo: implement
+	return nullptr;
 }
 
 void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)

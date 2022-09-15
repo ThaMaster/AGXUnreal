@@ -22,6 +22,11 @@ public:
 
 	void ReleaseNative();
 
+	FGuid GetGuid() const;
+
+	template <typename T>
+	static FMergeSplitThresholdsBarrier CreateFrom(const T& Barrier);
+
 private:
 	FMergeSplitThresholdsBarrier(const FMergeSplitThresholdsBarrier&) = delete;
 	void operator=(const FMergeSplitThresholdsBarrier&) = delete;

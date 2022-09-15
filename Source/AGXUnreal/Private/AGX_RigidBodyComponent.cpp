@@ -458,8 +458,7 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	InitializeMotionControl();
 }
 
-void UAGX_RigidBodyComponent::CopyFrom(
-	const FRigidBodyBarrier& Barrier, TOptional<FMergeSplitPropertiesBarrier> Msp)
+void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 {
 	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
 	Mass = MassProperties.GetMass();
@@ -492,6 +491,13 @@ void UAGX_RigidBodyComponent::CopyFrom(
 
 	/// \todo Should it always be SetWorld... here, or should we do SetRelative in some cases?
 	SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
+
+	const FMergeSplitPropertiesBarrier Msp = FMergeSplitPropertiesBarrier::CreateFrom(
+		*const_cast<FRigidBodyBarrier*>(&Barrier));
+	if (Msp.HasNative())
+	{
+		MergeSplitProperties.CopyFrom(Msp);
+	}
 }
 
 void UAGX_RigidBodyComponent::InitializeMotionControl()

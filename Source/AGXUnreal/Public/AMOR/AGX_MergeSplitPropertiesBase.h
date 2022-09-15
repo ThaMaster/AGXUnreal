@@ -39,6 +39,9 @@ public:
 	const FMergeSplitPropertiesBarrier& GetNative() const;
 	FMergeSplitPropertiesBarrier& GetNative();
 
+	virtual void CopyFrom(const FMergeSplitPropertiesBarrier& Barrier)
+		PURE_VIRTUAL(FAGX_MergeSplitPropertiesBase::CopyFrom, );
+
 protected:
 	FMergeSplitPropertiesBarrier NativeBarrier;
 };
