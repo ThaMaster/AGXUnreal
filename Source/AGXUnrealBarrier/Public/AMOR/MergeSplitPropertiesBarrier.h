@@ -26,6 +26,9 @@ public:
 	template <typename T>
 	void AllocateNative(T& Owner);
 
+	template <typename T>
+	static FMergeSplitPropertiesBarrier CreateFrom(T& Barrier);
+
 	void SetEnableMerge(bool bEnable);
 	bool GetEnableMerge() const;
 

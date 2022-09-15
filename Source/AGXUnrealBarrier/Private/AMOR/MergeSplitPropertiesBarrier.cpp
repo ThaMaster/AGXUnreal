@@ -3,6 +3,7 @@
 #include "AMOR/MergeSplitPropertiesBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
 #include "AMOR/MergeSplitThresholdsBarrier.h"
@@ -14,9 +15,10 @@
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
+#include <agx/RigidBody.h>
+#include "agxCollide/Geometry.h"
 #include <agxSDK/MergeSplitHandler.h>
 #include "EndAGXIncludes.h"
-
 
 FMergeSplitPropertiesBarrier::FMergeSplitPropertiesBarrier()
 	: NativePtr {new FMergeSplitPropertiesPtr}
@@ -43,6 +45,45 @@ FMergeSplitPropertiesBarrier::~FMergeSplitPropertiesBarrier()
 	// FMergeSplitPropertiesBarrier.
 }
 
+namespace MergeSplitProperties_helpers
+{
+	agx::RigidBody* GetFrom(FRigidBodyBarrier& Body)
+	{
+		AGX_CHECK(Body.HasNative());
+		return Body.GetNative()->Native;
+	}
+
+	agxCollide::Geometry* GetFrom(FShapeBarrier& Shape)
+	{
+		AGX_CHECK(Shape.HasNativeGeometry());
+		return Shape.GetNative()->NativeGeometry;
+	}
+}
+
+template <typename T>
+FMergeSplitPropertiesBarrier FMergeSplitPropertiesBarrier::CreateFrom(
+	T& Barrier)
+{
+	using namespace MergeSplitProperties_helpers;
+	if (!Barrier.HasNative())
+	{
+		return FMergeSplitPropertiesBarrier();
+	}
+
+	auto Msp = agxSDK::MergeSplitHandler::getProperties(GetFrom(Barrier));
+	if (Msp == nullptr)
+	{
+		return FMergeSplitPropertiesBarrier();
+	}
+
+	FMergeSplitPropertiesBarrier(std::make_unique<FMergeSplitThresholdsRef>(Msp));
+}
+
+template FMergeSplitPropertiesBarrier FMergeSplitPropertiesBarrier::CreateFrom<FRigidBodyBarrier>(
+	FRigidBodyBarrier&);
+template FMergeSplitPropertiesBarrier FMergeSplitPropertiesBarrier::CreateFrom<FShapeBarrier>(
+	FShapeBarrier&);
+
 bool FMergeSplitPropertiesBarrier::HasNative() const
 {
 	return NativePtr->Native != nullptr;
@@ -56,7 +97,7 @@ void FMergeSplitPropertiesBarrier::AllocateNative(T& Owner)
 	NativePtr->Native = agxSDK::MergeSplitHandler::getOrCreateProperties(Owner.GetNative()->Native);
 }
 
-template<>
+template <>
 void FMergeSplitPropertiesBarrier::AllocateNative<FShapeBarrier>(FShapeBarrier& Owner)
 {
 	check(!HasNative());
@@ -64,6 +105,13 @@ void FMergeSplitPropertiesBarrier::AllocateNative<FShapeBarrier>(FShapeBarrier& 
 	NativePtr->Native =
 		agxSDK::MergeSplitHandler::getOrCreateProperties(Owner.GetNative()->NativeGeometry);
 }
+
+template AGXUNREALBARRIER_API void FMergeSplitPropertiesBarrier::AllocateNative<FRigidBodyBarrier>(
+	FRigidBodyBarrier&);
+template AGXUNREALBARRIER_API void FMergeSplitPropertiesBarrier::AllocateNative<FConstraintBarrier>(
+	FConstraintBarrier&);
+template AGXUNREALBARRIER_API void FMergeSplitPropertiesBarrier::AllocateNative<FWireBarrier>(
+	FWireBarrier&);
 
 FMergeSplitPropertiesPtr* FMergeSplitPropertiesBarrier::GetNative()
 {
@@ -112,8 +160,7 @@ void FMergeSplitPropertiesBarrier::SetShapeContactMergeSplitThresholds(
 	else
 	{
 		check(Thresholds->HasNative());
-		auto ThresholdsAGX =
-			dynamic_cast<agxSDK::GeometryContactMergeSplitThresholds*>(
+		auto ThresholdsAGX = dynamic_cast<agxSDK::GeometryContactMergeSplitThresholds*>(
 			Thresholds->GetNative()->Native.get());
 		check(ThresholdsAGX);
 		NativePtr->Native->setContactThresholds(ThresholdsAGX);
@@ -131,8 +178,8 @@ void FMergeSplitPropertiesBarrier::SetConstraintMergeSplitThresholds(
 	else
 	{
 		check(Thresholds->HasNative());
-		auto ThresholdsAGX =
-			dynamic_cast<agxSDK::ConstraintMergeSplitThresholds*>(Thresholds->GetNative()->Native.get());
+		auto ThresholdsAGX = dynamic_cast<agxSDK::ConstraintMergeSplitThresholds*>(
+			Thresholds->GetNative()->Native.get());
 		check(ThresholdsAGX);
 		NativePtr->Native->setConstraintThresholds(ThresholdsAGX);
 	}
@@ -155,16 +202,3 @@ void FMergeSplitPropertiesBarrier::SetWireMergeSplitThresholds(
 		NativePtr->Native->setWireThresholds(ThresholdsAGX);
 	}
 }
-
-// Explicit template instantiations.
-template AGXUNREALBARRIER_API void FMergeSplitPropertiesBarrier::AllocateNative<FRigidBodyBarrier>(
-	FRigidBodyBarrier&);
-
-template AGXUNREALBARRIER_API void FMergeSplitPropertiesBarrier::AllocateNative<FConstraintBarrier>(
-	FConstraintBarrier&);
-
-template AGXUNREALBARRIER_API void FMergeSplitPropertiesBarrier::AllocateNative<FShapeBarrier>(
-	FShapeBarrier&);
-
-template AGXUNREALBARRIER_API void FMergeSplitPropertiesBarrier::AllocateNative<FWireBarrier>(
-	FWireBarrier&);
