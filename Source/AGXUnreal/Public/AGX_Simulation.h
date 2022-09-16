@@ -149,25 +149,33 @@ public: // Properties.
 	bool bEnableAMOR = true;
 
 #if WITH_EDITORONLY_DATA
-	/** TODO add comment */
+	/**
+	 * Changes the default AMOR Shape Contact Merge Split Thresholds for all Rigid Bodies
+	 * and Shapes that does not specify their own.
+	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "AMOR",
 		meta = (AllowedClasses = "AGX_ShapeContactMergeSplitThresholds"))
 	FSoftObjectPath GlobalShapeContactMergeSplitThresholds;
 
-	/** TODO add comment */
+	/**
+	 * Changes the default AMOR Constraint Merge Split Thresholds for all Constraints
+	 * that does not specify their own.
+	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "AMOR",
 		meta = (AllowedClasses = "AGX_ConstraintMergeSplitThresholds"))
 	FSoftObjectPath GlobalConstraintMergeSplitThresholds;
 
-	/** TODO add comment */
+	/**
+	 * Changes the default AMOR Wire Merge Split Thresholds for all Wires
+	 * that does not specify their own.
+	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "AMOR",
 		meta = (AllowedClasses = "AGX_WireMergeSplitThresholds"))
 	FSoftObjectPath GlobalWireMergeSplitThresholds;
 #endif
-
 
 #if WITH_EDITORONLY_DATA
 	/**
@@ -212,7 +220,8 @@ public: // Properties.
 	 * When moving the camera further away than this distance the on-screen size of the constraint
 	 * visualization will start to shrink along with the surrounding geometry.
 	 */
-	UPROPERTY(Config, EditAnywhere, Category = "Rendering", Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Rendering", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float ConstraintVisualizationScalingDistanceMax = 400.f;
 
 public: // Member functions.
