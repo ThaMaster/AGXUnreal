@@ -1102,11 +1102,19 @@ TArray<FVector> UAGX_WireComponent::GetRenderNodeLocations() const
 	return Result;
 }
 
-void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
+void UAGX_WireComponent::CopyFrom(
+	const FWireBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds)
 {
 	Radius = Barrier.GetRadius();
 	MinSegmentLength = 1.0f / Barrier.GetResolutionPerUnitLength();
 	LinearVelocityDamping = static_cast<float>(Barrier.GetLinearVelocityDamping());
+
+	const FMergeSplitPropertiesBarrier Msp =
+		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FWireBarrier*>(&Barrier));
+	if (Msp.HasNative())
+	{
+		MergeSplitProperties.CopyFrom(Msp, Thresholds);
+	}
 
 	// Physical material, winches, and route nodes not set here since this is a pure data copy. For
 	// AGX Dynamics archive import these are set by AGX_ArchiveImporterHelper.

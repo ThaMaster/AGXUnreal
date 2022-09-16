@@ -92,9 +92,10 @@ void UAGX_SphereShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetRadius(Radius * GetComponentScale().X);
 }
 
-void UAGX_SphereShapeComponent::CopyFrom(const FSphereShapeBarrier& Barrier)
+void UAGX_SphereShapeComponent::CopyFrom(
+	const FSphereShapeBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds)
 {
-	Super::CopyFrom(Barrier);
+	Super::CopyFrom(Barrier, Thresholds);
 	Radius = Barrier.GetRadius();
 }
 

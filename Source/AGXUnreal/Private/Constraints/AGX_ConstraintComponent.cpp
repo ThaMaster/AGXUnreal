@@ -538,7 +538,8 @@ bool UAGX_ConstraintComponent::GetLastLocalForceBody(
 	return NativeBarrier->GetLastLocalForce(Body->GetNative(), OutForce, OutTorque, bForceAtCm);
 }
 
-void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
+void UAGX_ConstraintComponent::CopyFrom(
+	const FConstraintBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds)
 {
 	bEnable = Barrier.GetEnable();
 	SolveType = static_cast<EAGX_SolveType>(Barrier.GetSolveType());
@@ -557,6 +558,13 @@ void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
 			SpookDamping[Dof] = Barrier.GetSpookDamping(NativeDof);
 			ForceRange[Dof] = Barrier.GetForceRange(NativeDof);
 		}
+	}
+
+	const FMergeSplitPropertiesBarrier Msp =
+		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FConstraintBarrier*>(&Barrier));
+	if (Msp.HasNative())
+	{
+		MergeSplitProperties.CopyFrom(Msp, Thresholds);
 	}
 }
 

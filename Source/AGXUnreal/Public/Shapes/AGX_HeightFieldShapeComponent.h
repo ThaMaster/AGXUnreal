@@ -45,7 +45,8 @@ public:
 	 *
 	 * @param Barrier The AGX Dynamics Height Field to copy from.
 	 */
-	void CopyFrom(const FHeightFieldShapeBarrier& Barrier);
+	void CopyFrom(
+		const FHeightFieldShapeBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds);
 
 	// ~Begin UObject interface.
 #if WITH_EDITOR

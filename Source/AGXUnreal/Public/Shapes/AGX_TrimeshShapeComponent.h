@@ -77,7 +77,7 @@ public:
 	 * Does copy properties inherited from UAGX_ShapeComponent.
 	 * @param Barrier The AGX Dynamics trimesh to copy from.
 	 */
-	void CopyFrom(const FTrimeshShapeBarrier& Barrier);
+	void CopyFrom(const FTrimeshShapeBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds);
 
 #if WITH_EDITOR
 	// ~Begin UObject interface.

@@ -144,9 +144,10 @@ bool UAGX_BoxShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vertices
 	return true;
 }
 
-void UAGX_BoxShapeComponent::CopyFrom(const FBoxShapeBarrier& Barrier)
+void UAGX_BoxShapeComponent::CopyFrom(
+	const FBoxShapeBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds)
 {
-	Super::CopyFrom(Barrier);
+	Super::CopyFrom(Barrier, Thresholds);
 	HalfExtent = Barrier.GetHalfExtents();
 }
 
