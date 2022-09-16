@@ -4,7 +4,9 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "AMOR/AGX_MergeSplitThresholdsBase.h"
+#include "AMOR/AGX_ConstraintMergeSplitThresholds.h"
+#include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
+#include "AMOR/AGX_WireMergeSplitThresholds.h"
 #include "AMOR/MergeSplitThresholdsBarrier.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
 #include "Materials/AGX_ShapeMaterialAsset.h"
@@ -326,13 +328,40 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 }
 
 UAGX_MergeSplitThresholdsBase* FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
-	const FMergeSplitThresholdsBarrier& Barrier, const FString& DirectoryName,
+	const FMergeSplitThresholdsBarrier& Barrier,
+	EAGX_AmorOwningType OwningType, const FString& DirectoryName,
 	const FString& Name)
 {
-	auto InitAsset = [&](UAGX_MergeSplitThresholdsBase& Asset) { Asset.CopyFrom(Barrier); };
+	switch (OwningType)
+	{
+		case EAGX_AmorOwningType::BodyOrShape:
+		{
+			auto InitAsset = [&](UAGX_ShapeContactMergeSplitThresholds& Asset)
+			{ Asset.CopyFrom(Barrier); };
 
-	return SaveImportedAsset<UAGX_MergeSplitThresholdsBase>(
-		DirectoryName, Name, "AGX_MSP_", TEXT("MergeSplitThresholds"), InitAsset);
+			return SaveImportedAsset<UAGX_ShapeContactMergeSplitThresholds>(
+				DirectoryName, Name, "AGX_MSP_", TEXT("MergeSplitThresholds"), InitAsset);
+		}
+		case EAGX_AmorOwningType::Constraint:
+		{
+			auto InitAsset = [&](UAGX_ConstraintMergeSplitThresholds& Asset)
+			{ Asset.CopyFrom(Barrier); };
+
+			return SaveImportedAsset<UAGX_ConstraintMergeSplitThresholds>(
+				DirectoryName, Name, "AGX_MSP_", TEXT("MergeSplitThresholds"), InitAsset);
+		}
+		case EAGX_AmorOwningType::Wire:
+		{
+			auto InitAsset = [&](UAGX_WireMergeSplitThresholds& Asset)
+			{ Asset.CopyFrom(Barrier); };
+
+			return SaveImportedAsset<UAGX_WireMergeSplitThresholds>(
+				DirectoryName, Name, "AGX_MSP_", TEXT("MergeSplitThresholds"), InitAsset);
+		}
+	}
+	
+	UE_LOG(LogAGX, Error, TEXT("Could not create Merge Split Thresholds asset '%s'"), *Name);
+	return nullptr;
 }
 
 void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)

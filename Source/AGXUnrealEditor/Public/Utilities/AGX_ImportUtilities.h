@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AMOR/AGX_AmorEnums.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Math/Color.h"
@@ -146,7 +149,8 @@ public:
 		const FString& MaterialName);
 
 	static UAGX_MergeSplitThresholdsBase* SaveImportedMergeSplitAsset(
-		const FMergeSplitThresholdsBarrier& Barrier, const FString& DirectoryName,
+		const FMergeSplitThresholdsBarrier& Barrier,
+		EAGX_AmorOwningType OwningType, const FString& DirectoryName,
 		const FString& Name);
 
 	/**
