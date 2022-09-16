@@ -5,6 +5,8 @@
 // AGX Dynamics for Unreal includes.
 #include "AMOR/MergeSplitThresholdsBarrier.h"
 
+class FWireBarrier;
+
 class AGXUNREALBARRIER_API FWireMergeSplitThresholdsBarrier : public FMergeSplitThresholdsBarrier
 {
 public:
@@ -20,6 +22,8 @@ public:
 
 	void SetMergeTensionScale(double InMergeTensionScale);
 	double GetMergeTensionScale() const;
+
+	static FWireMergeSplitThresholdsBarrier CreateFrom(const FWireBarrier& Barrier);
 
 private:
 	FWireMergeSplitThresholdsBarrier(const FWireMergeSplitThresholdsBarrier&) = delete;

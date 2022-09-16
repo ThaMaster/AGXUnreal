@@ -5,6 +5,13 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
+#include "Wire/WireBarrier.h"
+#include "Wire/WireRef.h"
+
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agxSDK/MergeSplitHandler.h>
+#include "EndAGXIncludes.h"
 
 
 FWireMergeSplitThresholdsBarrier::FWireMergeSplitThresholdsBarrier()
@@ -94,4 +101,27 @@ double FWireMergeSplitThresholdsBarrier::GetMergeTensionScale() const
 
 	// Error message printed above.
 	return 0.0;
+}
+
+FWireMergeSplitThresholdsBarrier FWireMergeSplitThresholdsBarrier::CreateFrom(
+	const FWireBarrier& Barrier)
+{
+	if (!Barrier.HasNative())
+	{
+		return FWireMergeSplitThresholdsBarrier();
+	}
+
+	const auto Msp = agxSDK::MergeSplitHandler::getProperties(Barrier.GetNative()->Native);
+	if (Msp == nullptr)
+	{
+		return FWireMergeSplitThresholdsBarrier();
+	}
+
+	auto Mst = Msp->getWireThresholds();
+	if (Mst == nullptr)
+	{
+		return FWireMergeSplitThresholdsBarrier();
+	}
+
+	return FWireMergeSplitThresholdsBarrier(std::make_unique<FMergeSplitThresholdsRef>(Mst));
 }

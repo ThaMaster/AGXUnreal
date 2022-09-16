@@ -3,9 +3,17 @@
 #include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
+#include "RigidBodyBarrier.h"
+#include "Shapes/ShapeBarrier.h"
 #include "TypeConversions.h"
+
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agxSDK/MergeSplitHandler.h>
+#include "EndAGXIncludes.h"
 
 FShapeContactMergeSplitThresholdsBarrier::FShapeContactMergeSplitThresholdsBarrier()
 	: FMergeSplitThresholdsBarrier()
@@ -45,6 +53,42 @@ namespace ShapeContactMergeSplitThresholds_helpers
 		}
 
 		return GeomContThresholds;
+	}
+
+	const agx::RigidBody* GetFrom(const FRigidBodyBarrier& Barrier)
+	{
+		AGX_CHECK(Barrier.HasNative());
+		return Barrier.GetNative()->Native;
+	}
+
+	const agxCollide::Geometry* GetFrom(const FShapeBarrier& Barrier)
+	{
+		AGX_CHECK(Barrier.HasNativeGeometry());
+		return Barrier.GetNative()->NativeGeometry;
+	}
+
+	template <typename BodyOrShape>
+	FShapeContactMergeSplitThresholdsBarrier CreateFrom(const BodyOrShape& Barrier)
+	{
+		if (!Barrier.HasNative())
+		{
+			return FShapeContactMergeSplitThresholdsBarrier();
+		}
+
+		const auto Msp = agxSDK::MergeSplitHandler::getProperties(GetFrom(Barrier));
+		if (Msp == nullptr)
+		{
+			return FShapeContactMergeSplitThresholdsBarrier();
+		}
+
+		auto Mst = Msp->getContactThresholds();
+		if (Mst == nullptr)
+		{
+			return FShapeContactMergeSplitThresholdsBarrier();
+		}
+
+		return FShapeContactMergeSplitThresholdsBarrier(
+			std::make_unique<FMergeSplitThresholdsRef>(Mst));
 	}
 }
 
@@ -239,4 +283,16 @@ bool FShapeContactMergeSplitThresholdsBarrier::GetSplitOnLogicalImpact() const
 
 	// Error message printed above.
 	return false;
+}
+
+FShapeContactMergeSplitThresholdsBarrier FShapeContactMergeSplitThresholdsBarrier::CreateFrom(
+	const FRigidBodyBarrier& Barrier)
+{
+	return ShapeContactMergeSplitThresholds_helpers::CreateFrom(Barrier);
+}
+
+FShapeContactMergeSplitThresholdsBarrier FShapeContactMergeSplitThresholdsBarrier::CreateFrom(
+	const FShapeBarrier& Barrier)
+{
+	return ShapeContactMergeSplitThresholds_helpers::CreateFrom(Barrier);
 }

@@ -6,7 +6,13 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
+#include "Constraints/ConstraintBarrier.h"
 #include "TypeConversions.h"
+
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agxSDK/MergeSplitHandler.h>
+#include "EndAGXIncludes.h"
 
 FConstraintMergeSplitThresholdsBarrier::FConstraintMergeSplitThresholdsBarrier()
 	: FMergeSplitThresholdsBarrier()
@@ -183,4 +189,28 @@ double FConstraintMergeSplitThresholdsBarrier::GetMaxRelativeSpeed() const
 
 	// Error message printed above.
 	return 0.0;
+}
+
+FConstraintMergeSplitThresholdsBarrier FConstraintMergeSplitThresholdsBarrier::CreateFrom(
+	const FConstraintBarrier& Barrier)
+{
+	if (!Barrier.HasNative())
+	{
+		return FConstraintMergeSplitThresholdsBarrier();
+	}
+
+	const auto Msp = agxSDK::MergeSplitHandler::getProperties(Barrier.GetNative()->Native);
+	if (Msp == nullptr)
+	{
+		return FConstraintMergeSplitThresholdsBarrier();
+	}
+
+	auto Mst = Msp->getConstraintThresholds();
+	if (Mst == nullptr)
+	{
+		return FConstraintMergeSplitThresholdsBarrier();
+	}
+
+	return FConstraintMergeSplitThresholdsBarrier(
+		std::make_unique<FMergeSplitThresholdsRef>(Mst));
 }

@@ -5,6 +5,9 @@
 // AGX Dynamics for Unreal includes.
 #include "AMOR/MergeSplitThresholdsBarrier.h"
 
+class FRigidBodyBarrier;
+class FShapeBarrier;
+
 class AGXUNREALBARRIER_API FShapeContactMergeSplitThresholdsBarrier : public FMergeSplitThresholdsBarrier
 {
 public:
@@ -38,6 +41,9 @@ public:
 
 	void SetSplitOnLogicalImpact(bool bSplitOnLogicalImpact);
 	bool GetSplitOnLogicalImpact() const;
+
+	static FShapeContactMergeSplitThresholdsBarrier CreateFrom(const FRigidBodyBarrier& Barrier);
+	static FShapeContactMergeSplitThresholdsBarrier CreateFrom(const FShapeBarrier& Barrier);
 
 private:
 	FShapeContactMergeSplitThresholdsBarrier(const FShapeContactMergeSplitThresholdsBarrier&) = delete;

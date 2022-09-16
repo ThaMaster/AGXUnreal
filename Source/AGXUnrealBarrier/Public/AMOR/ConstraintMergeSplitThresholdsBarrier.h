@@ -5,6 +5,8 @@
 // AGX Dynamics for Unreal includes.
 #include "AMOR/MergeSplitThresholdsBarrier.h"
 
+class FConstraintBarrier;
+
 class AGXUNREALBARRIER_API FConstraintMergeSplitThresholdsBarrier : public FMergeSplitThresholdsBarrier
 {
 public:
@@ -29,6 +31,8 @@ public:
 
 	void SetMaxRelativeSpeed(double InMaxRelativeSpeed);
 	double GetMaxRelativeSpeed() const;
+
+	static FConstraintMergeSplitThresholdsBarrier CreateFrom(const FConstraintBarrier& Barrier);
 
 private:
 	FConstraintMergeSplitThresholdsBarrier(const FConstraintMergeSplitThresholdsBarrier&) = delete;

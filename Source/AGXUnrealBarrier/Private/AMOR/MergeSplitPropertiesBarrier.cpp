@@ -15,9 +15,11 @@
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
+#include "agx/Constraint.h"
 #include <agx/RigidBody.h>
 #include "agxCollide/Geometry.h"
 #include <agxSDK/MergeSplitHandler.h>
+#include "agxWire/Wire.h"
 #include "EndAGXIncludes.h"
 
 FMergeSplitPropertiesBarrier::FMergeSplitPropertiesBarrier()
@@ -58,11 +60,22 @@ namespace MergeSplitProperties_helpers
 		AGX_CHECK(Shape.HasNativeGeometry());
 		return Shape.GetNative()->NativeGeometry;
 	}
+
+	agx::Constraint* GetFrom(FConstraintBarrier& Constraint)
+	{
+		AGX_CHECK(Constraint.HasNative());
+		return Constraint.GetNative()->Native;
+	}
+
+	agxWire::Wire* GetFrom(FWireBarrier& Wire)
+	{
+		AGX_CHECK(Wire.HasNative());
+		return Wire.GetNative()->Native;
+	}
 }
 
 template <typename T>
-FMergeSplitPropertiesBarrier FMergeSplitPropertiesBarrier::CreateFrom(
-	T& Barrier)
+FMergeSplitPropertiesBarrier FMergeSplitPropertiesBarrier::CreateFrom(T& Barrier)
 {
 	using namespace MergeSplitProperties_helpers;
 	if (!Barrier.HasNative())
@@ -80,12 +93,16 @@ FMergeSplitPropertiesBarrier FMergeSplitPropertiesBarrier::CreateFrom(
 }
 
 template AGXUNREALBARRIER_API FMergeSplitPropertiesBarrier
-FMergeSplitPropertiesBarrier::CreateFrom<FRigidBodyBarrier>(
-	FRigidBodyBarrier&);
+FMergeSplitPropertiesBarrier::CreateFrom<FRigidBodyBarrier>(FRigidBodyBarrier&);
 
 template AGXUNREALBARRIER_API FMergeSplitPropertiesBarrier
-FMergeSplitPropertiesBarrier::CreateFrom<FShapeBarrier>(
-	FShapeBarrier&);
+FMergeSplitPropertiesBarrier::CreateFrom<FShapeBarrier>(FShapeBarrier&);
+
+template AGXUNREALBARRIER_API FMergeSplitPropertiesBarrier
+FMergeSplitPropertiesBarrier::CreateFrom<FConstraintBarrier>(FConstraintBarrier&);
+
+template AGXUNREALBARRIER_API FMergeSplitPropertiesBarrier
+FMergeSplitPropertiesBarrier::CreateFrom<FWireBarrier>(FWireBarrier&);
 
 bool FMergeSplitPropertiesBarrier::HasNative() const
 {
