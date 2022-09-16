@@ -52,14 +52,6 @@ void FAGX_ShapeContactMergeSplitProperties::CreateNative(T& Owner)
 	NativeBarrier.AllocateNative(*Owner.GetNative());
 }
 
-FAGX_ShapeContactMergeSplitProperties& FAGX_ShapeContactMergeSplitProperties::operator=(
-	const FAGX_ShapeContactMergeSplitProperties& Other)
-{
-	bEnableMerge = Other.bEnableMerge;
-	bEnableSplit = Other.bEnableSplit;
-	return *this;
-}
-
 template <typename T>
 void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties(T& Owner)
 {

@@ -57,14 +57,6 @@ void FAGX_WireMergeSplitProperties::CopyFrom(
 	Thresholds = Cast<UAGX_WireMergeSplitThresholds>(InThresholds);
 }
 
-FAGX_WireMergeSplitProperties& FAGX_WireMergeSplitProperties::operator=(
-	const FAGX_WireMergeSplitProperties& Other)
-{
-	bEnableMerge = Other.bEnableMerge;
-	bEnableSplit = Other.bEnableSplit;
-	return *this;
-}
-
 void FAGX_WireMergeSplitProperties::UpdateNativeProperties(UAGX_WireComponent& Owner)
 {
 	AGX_CHECK(HasNative());

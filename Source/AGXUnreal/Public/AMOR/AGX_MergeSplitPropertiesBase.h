@@ -22,7 +22,7 @@ public:
 
 	virtual ~FAGX_MergeSplitPropertiesBase() = default;
 
-	//Todo add comment about why we doe this.
+	// We must provide operator = because the Unreal framework will attempt to invoke it.
 	FAGX_MergeSplitPropertiesBase& operator=(const FAGX_MergeSplitPropertiesBase& Other);
 
 	UPROPERTY(EditAnywhere, Category = "AMOR")

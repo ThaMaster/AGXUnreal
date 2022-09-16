@@ -268,7 +268,7 @@ UAGX_ConstraintMergeSplitThresholds* UAGX_ConstraintMergeSplitThresholds::Create
 	const FString InstanceName = Source.GetName() + "_Instance";
 	auto NewInstance = NewObject<UAGX_ConstraintMergeSplitThresholds>(
 		Outer, UAGX_ConstraintMergeSplitThresholds::StaticClass(), *InstanceName, RF_Transient);
-
+	NewInstance->Asset = &Source;
 	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative(PlayingWorld, bIsRotational);
 

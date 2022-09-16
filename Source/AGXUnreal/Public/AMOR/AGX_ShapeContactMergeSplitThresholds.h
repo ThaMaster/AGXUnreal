@@ -43,8 +43,7 @@ public:
 	 * Maximum speed along a contact normal for a contact to be considered resting [cm/s].
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "Shape Contact Merge Split Thresholds",
-		Meta = (DisplayName = "Set Force Propagation Decay Scale"))
+		EditAnywhere, Category = "Shape Contact Merge Split Thresholds")
 	FAGX_Real MaxRelativeNormalSpeed {0.01};
 
 	UFUNCTION(

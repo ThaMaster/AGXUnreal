@@ -56,14 +56,6 @@ void FAGX_ConstraintMergeSplitProperties::CopyFrom(
 	Thresholds = Cast<UAGX_ConstraintMergeSplitThresholds>(InThresholds);
 }
 
-FAGX_ConstraintMergeSplitProperties& FAGX_ConstraintMergeSplitProperties::operator=(
-	const FAGX_ConstraintMergeSplitProperties& Other)
-{
-	bEnableMerge = Other.bEnableMerge;
-	bEnableSplit = Other.bEnableSplit;
-	return *this;
-}
-
 void FAGX_ConstraintMergeSplitProperties::UpdateNativeProperties(UAGX_ConstraintComponent& Owner)
 {
 	AGX_CHECK(HasNative());

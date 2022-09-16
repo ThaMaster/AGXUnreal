@@ -44,9 +44,6 @@ public:
 		const FMergeSplitPropertiesBarrier& Barrier,
 		UAGX_MergeSplitThresholdsBase* InThresholds) override;
 
-	//Todo add comment about why we doe this.
-	FAGX_ConstraintMergeSplitProperties& operator=(const FAGX_ConstraintMergeSplitProperties& Other);
-
 private:
 	void UpdateNativeProperties(UAGX_ConstraintComponent& Owner);
 	void UpdateNativeThresholds(UAGX_ConstraintComponent& Owner);

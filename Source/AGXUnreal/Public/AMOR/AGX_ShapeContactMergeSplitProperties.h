@@ -46,9 +46,6 @@ public:
 		const FMergeSplitPropertiesBarrier& Barrier,
 		UAGX_MergeSplitThresholdsBase* InThresholds) override;
 
-	//Todo add comment about why we doe this.
-	FAGX_ShapeContactMergeSplitProperties& operator=(const FAGX_ShapeContactMergeSplitProperties& Other);
-
 private:
 
 	template <typename T>

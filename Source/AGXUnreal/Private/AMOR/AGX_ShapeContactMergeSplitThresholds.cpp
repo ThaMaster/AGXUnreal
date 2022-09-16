@@ -319,7 +319,7 @@ UAGX_ShapeContactMergeSplitThresholds* UAGX_ShapeContactMergeSplitThresholds::Cr
 	const FString InstanceName = Source.GetName() + "_Instance";
 	auto NewInstance = NewObject<UAGX_ShapeContactMergeSplitThresholds>(
 		Outer, UAGX_ShapeContactMergeSplitThresholds::StaticClass(), *InstanceName, RF_Transient);
-
+	NewInstance->Asset = &Source;
 	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative(PlayingWorld);
 

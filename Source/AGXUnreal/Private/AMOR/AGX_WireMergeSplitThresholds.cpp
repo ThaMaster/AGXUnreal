@@ -185,7 +185,7 @@ UAGX_WireMergeSplitThresholds* UAGX_WireMergeSplitThresholds::CreateFromAsset(
 	const FString InstanceName = Source.GetName() + "_Instance";
 	auto NewInstance = NewObject<UAGX_WireMergeSplitThresholds>(
 		Outer, UAGX_WireMergeSplitThresholds::StaticClass(), *InstanceName, RF_Transient);
-
+	NewInstance->Asset = &Source;
 	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative(PlayingWorld);
 
