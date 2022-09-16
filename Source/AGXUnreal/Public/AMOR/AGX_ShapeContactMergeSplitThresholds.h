@@ -185,6 +185,8 @@ public:
 
 	bool IsInstance() const;
 
+	void CopyFrom(const FMergeSplitThresholdsBarrier& Barrier);
+
 	/*
 	* Assigns the property values of this class to the passed barrier.
 	*/
@@ -197,7 +199,7 @@ private:
 	void InitPropertyDispatcher();
 #endif
 
-	void CopyProperties(UAGX_ShapeContactMergeSplitThresholds& Source);
+	void CopyFrom(const UAGX_ShapeContactMergeSplitThresholds& Source);
 
 	TWeakObjectPtr<UAGX_ShapeContactMergeSplitThresholds> Asset;
 	TWeakObjectPtr<UAGX_ShapeContactMergeSplitThresholds> Instance;

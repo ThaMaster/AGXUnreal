@@ -144,6 +144,8 @@ public:
 
 	bool IsInstance() const;
 
+	void CopyFrom(const FMergeSplitThresholdsBarrier& Barrier);
+
 	/*
 	 * Assigns the property values of this class to the passed barrier.
 	 */
@@ -156,7 +158,7 @@ private:
 	void InitPropertyDispatcher();
 #endif
 
-	void CopyProperties(UAGX_ConstraintMergeSplitThresholds& Source);
+	void CopyFrom(const UAGX_ConstraintMergeSplitThresholds& Source);
 
 	TWeakObjectPtr<UAGX_ConstraintMergeSplitThresholds> Asset;
 	TWeakObjectPtr<UAGX_ConstraintMergeSplitThresholds> Instance;

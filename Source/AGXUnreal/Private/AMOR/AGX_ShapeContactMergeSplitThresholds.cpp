@@ -320,7 +320,7 @@ UAGX_ShapeContactMergeSplitThresholds* UAGX_ShapeContactMergeSplitThresholds::Cr
 	auto NewInstance = NewObject<UAGX_ShapeContactMergeSplitThresholds>(
 		Outer, UAGX_ShapeContactMergeSplitThresholds::StaticClass(), *InstanceName, RF_Transient);
 
-	NewInstance->CopyProperties(Source);
+	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative(PlayingWorld);
 
 	return NewInstance;
@@ -340,14 +340,41 @@ bool UAGX_ShapeContactMergeSplitThresholds::IsInstance() const
 	return bIsInstance;
 }
 
-void UAGX_ShapeContactMergeSplitThresholds::CopyProperties(
-	UAGX_ShapeContactMergeSplitThresholds& Source)
+void UAGX_ShapeContactMergeSplitThresholds::CopyFrom(const FMergeSplitThresholdsBarrier& Barrier)
 {
-	// Todo: implement.
+	const auto SCBarrier = static_cast<const FShapeContactMergeSplitThresholdsBarrier*>(&Barrier);
+	MaxImpactSpeed = SCBarrier->GetMaxImpactSpeed();
+	MaxRelativeNormalSpeed = SCBarrier->GetMaxRelativeNormalSpeed();
+	MaxRelativeTangentSpeed = SCBarrier->GetMaxRelativeTangentSpeed();
+	MaxRollingSpeed = SCBarrier->GetMaxRollingSpeed();
+	NormalAdhesion = SCBarrier->GetNormalAdhesion();
+	TangentialAdhesion = SCBarrier->GetTangentialAdhesion();
+	bMaySplitInGravityField = SCBarrier->GetMaySplitInGravityField();
+	bSplitOnLogicalImpact = SCBarrier->GetSplitOnLogicalImpact();
+}
+
+void UAGX_ShapeContactMergeSplitThresholds::CopyFrom(
+	const UAGX_ShapeContactMergeSplitThresholds& Source)
+{
+	MaxImpactSpeed = Source.MaxImpactSpeed;
+	MaxRelativeNormalSpeed = Source.MaxRelativeNormalSpeed;
+	MaxRelativeTangentSpeed = Source.MaxRelativeTangentSpeed;
+	MaxRollingSpeed = Source.MaxRollingSpeed;
+	NormalAdhesion = Source.NormalAdhesion;
+	TangentialAdhesion = Source.TangentialAdhesion;
+	bMaySplitInGravityField = Source.bMaySplitInGravityField;
+	bSplitOnLogicalImpact = Source.bSplitOnLogicalImpact;
 }
 
 void UAGX_ShapeContactMergeSplitThresholds::SetNativeProperties(
 	FShapeContactMergeSplitThresholdsBarrier& Barrier)
 {
-	// TODO: implement.
+	Barrier.SetMaxImpactSpeed(MaxImpactSpeed);
+	Barrier.SetMaxRelativeNormalSpeed(MaxRelativeNormalSpeed);
+	Barrier.SetMaxRelativeTangentSpeed(MaxRelativeTangentSpeed);
+	Barrier.SetMaxRollingSpeed(MaxRollingSpeed);
+	Barrier.SetNormalAdhesion(NormalAdhesion);
+	Barrier.SetTangentialAdhesion(TangentialAdhesion);
+	Barrier.SetMaySplitInGravityField(bMaySplitInGravityField);
+	Barrier.SetSplitOnLogicalImpact(bSplitOnLogicalImpact);
 }

@@ -186,7 +186,7 @@ UAGX_WireMergeSplitThresholds* UAGX_WireMergeSplitThresholds::CreateFromAsset(
 	auto NewInstance = NewObject<UAGX_WireMergeSplitThresholds>(
 		Outer, UAGX_WireMergeSplitThresholds::StaticClass(), *InstanceName, RF_Transient);
 
-	NewInstance->CopyProperties(Source);
+	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative(PlayingWorld);
 
 	return NewInstance;
@@ -206,12 +206,22 @@ bool UAGX_WireMergeSplitThresholds::IsInstance() const
 	return bIsInstance;
 }
 
-void UAGX_WireMergeSplitThresholds::CopyProperties(UAGX_WireMergeSplitThresholds& Source)
+void UAGX_WireMergeSplitThresholds::CopyFrom(const FMergeSplitThresholdsBarrier& Barrier)
 {
-	// Todo: implement.
+	const FWireMergeSplitThresholdsBarrier* SCBarrier =
+		static_cast<const FWireMergeSplitThresholdsBarrier*>(&Barrier);
+	ForcePropagationDecayScale = SCBarrier->GetForcePropagationDecayScale();
+	MergeTensionScale = SCBarrier->GetMergeTensionScale();
+}
+
+void UAGX_WireMergeSplitThresholds::CopyFrom(const UAGX_WireMergeSplitThresholds& Source)
+{
+	ForcePropagationDecayScale = Source.ForcePropagationDecayScale;
+	MergeTensionScale = Source.MergeTensionScale;
 }
 
 void UAGX_WireMergeSplitThresholds::SetNativeProperties(FWireMergeSplitThresholdsBarrier& Barrier)
 {
-	// TODO: implement.
+	Barrier.SetForcePropagationDecayScale(ForcePropagationDecayScale);
+	Barrier.SetMergeTensionScale(MergeTensionScale);
 }

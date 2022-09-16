@@ -269,7 +269,7 @@ UAGX_ConstraintMergeSplitThresholds* UAGX_ConstraintMergeSplitThresholds::Create
 	auto NewInstance = NewObject<UAGX_ConstraintMergeSplitThresholds>(
 		Outer, UAGX_ConstraintMergeSplitThresholds::StaticClass(), *InstanceName, RF_Transient);
 
-	NewInstance->CopyProperties(Source);
+	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative(PlayingWorld, bIsRotational);
 
 	return NewInstance;
@@ -289,14 +289,32 @@ bool UAGX_ConstraintMergeSplitThresholds::IsInstance() const
 	return bIsInstance;
 }
 
-void UAGX_ConstraintMergeSplitThresholds::CopyProperties(
-	UAGX_ConstraintMergeSplitThresholds& Source)
+void UAGX_ConstraintMergeSplitThresholds::CopyFrom(const FMergeSplitThresholdsBarrier& Barrier)
 {
-	// Todo: implement.
+	const auto SCBarrier = static_cast<const FConstraintMergeSplitThresholdsBarrier*>(&Barrier);
+	MaxDesiredForceRangeDiff = SCBarrier->GetMaxDesiredForceRangeDiff();
+	MaxDesiredLockAngleDiff = SCBarrier->GetMaxDesiredLockAngleDiff();
+	MaxDesiredRangeAngleDiff = SCBarrier->GetMaxDesiredRangeAngleDiff();
+	MaxDesiredSpeedDiff = SCBarrier->GetMaxDesiredSpeedDiff();
+	MaxRelativeSpeed = SCBarrier->GetMaxRelativeSpeed();
+}
+
+void UAGX_ConstraintMergeSplitThresholds::CopyFrom(
+	const UAGX_ConstraintMergeSplitThresholds& Source)
+{
+	MaxDesiredForceRangeDiff = Source.MaxDesiredForceRangeDiff;
+	MaxDesiredLockAngleDiff = Source.MaxDesiredLockAngleDiff;
+	MaxDesiredRangeAngleDiff = Source.MaxDesiredRangeAngleDiff;
+	MaxDesiredSpeedDiff = Source.MaxDesiredSpeedDiff;
+	MaxRelativeSpeed = Source.MaxRelativeSpeed;
 }
 
 void UAGX_ConstraintMergeSplitThresholds::SetNativeProperties(
 	FConstraintMergeSplitThresholdsBarrier& Barrier)
 {
-	// TODO: implement.
+	Barrier.SetMaxDesiredForceRangeDiff(MaxDesiredForceRangeDiff);
+	Barrier.SetMaxDesiredLockAngleDiff(MaxDesiredLockAngleDiff);
+	Barrier.SetMaxDesiredRangeAngleDiff(MaxDesiredRangeAngleDiff);
+	Barrier.SetMaxDesiredSpeedDiff(MaxDesiredSpeedDiff);
+	Barrier.SetMaxRelativeSpeed(MaxRelativeSpeed);
 }

@@ -76,6 +76,8 @@ public:
 
 	bool IsInstance() const;
 
+	void CopyFrom(const FMergeSplitThresholdsBarrier& Barrier);
+
 	/*
 	 * Assigns the property values of this class to the passed barrier.
 	 */
@@ -88,7 +90,7 @@ private:
 	void InitPropertyDispatcher();
 #endif
 
-	void CopyProperties(UAGX_WireMergeSplitThresholds& Source);
+	void CopyFrom(const UAGX_WireMergeSplitThresholds& Source);
 
 	TWeakObjectPtr<UAGX_WireMergeSplitThresholds> Asset;
 	TWeakObjectPtr<UAGX_WireMergeSplitThresholds> Instance;
