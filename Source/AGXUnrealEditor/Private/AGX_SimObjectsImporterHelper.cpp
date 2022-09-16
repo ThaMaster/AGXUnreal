@@ -5,8 +5,10 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
-#include "AMOR/MergeSplitPropertiesBarrier.h"
-#include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
+#include "AMOR/AGX_AmorEnums.h"
+#include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
+#include "AMOR/ConstraintMergeSplitThresholdsBarrier.h"
+#include "AMOR/WireMergeSplitThresholdsBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
@@ -54,114 +56,6 @@
 #include "Misc/Paths.h"
 #include "UObject/UObjectGlobals.h"
 
-namespace
-{
-	void WriteImportErrorMessage(
-		const TCHAR* ObjectType, const FString& Name, const FString& FilePath, const TCHAR* Message)
-	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Could not import '%s' '%s' from file '%s': %s."), ObjectType,
-			*Name, *FilePath, Message);
-	}
-
-	UAGX_MergeSplitThresholdsBase* GetOrCreateMergeSplitThresholdsAsset(
-		const FMergeSplitThresholdsBarrier& Thresholds,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
-		const FString& DirectoryName)
-	{
-		const FGuid Guid = Thresholds.GetGuid();
-		const FString AssetName = "AGX_MST_" + Guid.ToString();
-		if (!Guid.IsValid())
-		{
-			// The GUID is invalid, but try to create the asset anyway but without adding it to
-			// the RestoredThresholds Map.
-			return FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
-				Thresholds, DirectoryName, AssetName);
-		}
-
-		if (UAGX_MergeSplitThresholdsBase* Asset = RestoredThresholds.FindRef(Guid))
-		{
-			// We have seen this before, use the one in the cache.
-			return Asset;
-		}
-
-		// This is a new merge split thresholds. Create the asset and add to the cache.
-		UAGX_MergeSplitThresholdsBase* Asset =
-			FAGX_ImportUtilities::SaveImportedMergeSplitAsset(Thresholds, DirectoryName, AssetName);
-		if (Asset != nullptr)
-		{
-			RestoredThresholds.Add(Guid, Asset);
-		}
-		return Asset;
-	}
-}
-
-UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
-	const FRigidBodyBarrier& Barrier, AActor& Actor)
-{
-	// Only instantiate body if it has not already been instantiated. It might have been
-	// instantiated already during import of e.g. Tire model.
-	if (GetBody(Barrier, false) != nullptr)
-	{
-		return nullptr;
-	}
-
-	UAGX_RigidBodyComponent* Component = NewObject<UAGX_RigidBodyComponent>(&Actor);
-	if (Component == nullptr)
-	{
-		WriteImportErrorMessage(
-			TEXT("AGX Dynamics RigidBody"), Barrier.GetName(), SourceFilePath,
-			TEXT("Could not create new AGX_RigidBodyComponent"));
-		return nullptr;
-	}
-	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
-
-	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom(Barrier);
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
-	if (MergeSplitThresholds.HasNative())
-	{
-		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
-			MergeSplitThresholds, RestoredThresholds, DirectoryName);
-	}
-
-	Component->CopyFrom(Barrier, ThresholdsAsset);
-	Component->SetFlags(RF_Transactional);
-	Actor.AddInstanceComponent(Component);
-
-	/// @todo What does this do, really? Are we required to call it? A side effect of this is that
-	/// BeginPlay is called, which in turn calls AllocateNative. Which means that an AGX Dynamics
-	/// RigidBody is created. I'm not sure if this is consistent with AGX_RigidBodyComponents
-	/// created with using the Editor's Add Component button for an Actor in the Level Viewport.
-	/// <investigating>
-	/// ActorComponent.cpp, RegisterComponentWithWorld, has the following code snippet, somewhat
-	/// simplified:
-	///
-	/// if (!InWorld->IsGameWorld())
-	/// {}
-	/// else if (MyOwner == nullptr)
-	/// {}
-	/// else
-	/// {
-	///    if (MyOwner->HasActorBegunPlay() && !bHasBegunPlay)
-	///    {
-	///        BeginPlay();
-	///     }
-	/// }
-	///
-	/// So, BeginPlay is only called if we don't have a Game world (have Editor world, for example)
-	/// and the owning Actor have had its BeginPlay called already.
-	///
-	/// This makes the Editor situation different from the Automation Test situation since the
-	/// Editor has an Editor world and Automation Tests run with a Game world. So creating an
-	/// AGX_RigidBodyComponent in the editor does not trigger BeginPlay, but creating an
-	/// AGX_RigidBody while importing an AGX Dynamics archive during an Automation Test does trigger
-	/// BeginPlay here. Not sure if this is a problem or not, but something to be aware of.
-	Component->RegisterComponent();
-
-	Component->PostEditChange();
-	RestoredBodies.Add(Barrier.GetGuid(), Component);
-	return Component;
-}
 
 namespace
 {
@@ -506,6 +400,87 @@ namespace
 		Component->RegisterComponent();
 		return Component;
 	}
+
+	void WriteImportErrorMessage(
+		const TCHAR* ObjectType, const FString& Name, const FString& FilePath, const TCHAR* Message)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("Could not import '%s' '%s' from file '%s': %s."), ObjectType,
+			*Name, *FilePath, Message);
+	}
+
+	UAGX_MergeSplitThresholdsBase* GetOrCreateMergeSplitThresholdsAsset(
+		const FMergeSplitThresholdsBarrier& Thresholds, EAGX_AmorOwningType OwningType,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		const FString& DirectoryName)
+	{
+		const FGuid Guid = Thresholds.GetGuid();
+		const FString AssetName = "AGX_MST_" + Guid.ToString();
+		if (!Guid.IsValid())
+		{
+			// The GUID is invalid, but try to create the asset anyway but without adding it to
+			// the RestoredThresholds Map.
+			return FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
+				Thresholds, OwningType, DirectoryName, AssetName);
+		}
+
+		if (UAGX_MergeSplitThresholdsBase* Asset = RestoredThresholds.FindRef(Guid))
+		{
+			// We have seen this before, use the one in the cache.
+			return Asset;
+		}
+
+		// This is a new merge split thresholds. Create the asset and add to the cache.
+		UAGX_MergeSplitThresholdsBase* Asset = FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
+			Thresholds, OwningType, DirectoryName, AssetName);
+		if (Asset != nullptr)
+		{
+			RestoredThresholds.Add(Guid, Asset);
+		}
+		return Asset;
+	}
+}
+
+UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
+	const FRigidBodyBarrier& Barrier, AActor& Actor)
+{
+	// Only instantiate body if it has not already been instantiated. It might have been
+	// instantiated already during import of e.g. Tire model.
+	if (GetBody(Barrier, false) != nullptr)
+	{
+		return nullptr;
+	}
+
+	UAGX_RigidBodyComponent* Component = NewObject<UAGX_RigidBodyComponent>(&Actor);
+	if (Component == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics RigidBody"), Barrier.GetName(), SourceFilePath,
+			TEXT("Could not create new AGX_RigidBodyComponent"));
+		return nullptr;
+	}
+	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
+
+	auto MergeSplitThresholds = FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = [&]() -> UAGX_MergeSplitThresholdsBase*
+	{
+		if (!MergeSplitThresholds.HasNative())
+		{
+			return nullptr;
+		}
+		return ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds,
+			DirectoryName);
+	}();
+
+	Component->CopyFrom(Barrier, ThresholdsAsset);
+	Component->SetFlags(RF_Transactional);
+	Actor.AddInstanceComponent(Component);
+	Component->RegisterComponent();
+
+	Component->PostEditChange();
+	RestoredBodies.Add(Barrier.GetGuid(), Component);
+	return Component;
 }
 
 UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
@@ -520,15 +495,20 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 		return nullptr;
 	}
 
-	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom<FShapeBarrier>(Barrier);
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
-	if (MergeSplitThresholds.HasNative())
+	auto MergeSplitThresholds =
+		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = [&]() -> UAGX_MergeSplitThresholdsBase*
 	{
-		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
-			MergeSplitThresholds, RestoredThresholds, DirectoryName);
-	}
+		if (!MergeSplitThresholds.HasNative())
+		{
+			return nullptr;
+		}
+		return ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds,
+			DirectoryName);
+	}();
 
-	Component->CopyFrom(Barrier);
+	Component->CopyFrom(Barrier, ThresholdsAsset);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
 		DirectoryName, *Component);
@@ -547,15 +527,20 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 		return nullptr;
 	}
 
-	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom<FShapeBarrier>(Barrier);
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
-	if (MergeSplitThresholds.HasNative())
+	auto MergeSplitThresholds =
+		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = [&]() -> UAGX_MergeSplitThresholdsBase*
 	{
-		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
-			MergeSplitThresholds, RestoredThresholds, DirectoryName);
-	}
+		if (!MergeSplitThresholds.HasNative())
+		{
+			return nullptr;
+		}
+		return ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds,
+			DirectoryName);
+	}();
 
-	Component->CopyFrom(Barrier);
+	Component->CopyFrom(Barrier, ThresholdsAsset);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
 		DirectoryName, *Component);
@@ -575,15 +560,20 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 		return nullptr;
 	}
 
-	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom<FShapeBarrier>(Barrier);
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
-	if (MergeSplitThresholds.HasNative())
+	auto MergeSplitThresholds =
+		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = [&]() -> UAGX_MergeSplitThresholdsBase*
 	{
-		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
-			MergeSplitThresholds, RestoredThresholds, DirectoryName);
-	}
+		if (!MergeSplitThresholds.HasNative())
+		{
+			return nullptr;
+		}
+		return ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds,
+			DirectoryName);
+	}();
 
-	Component->CopyFrom(Barrier);
+	Component->CopyFrom(Barrier, ThresholdsAsset);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
 		DirectoryName, *Component);
@@ -602,15 +592,20 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 		return nullptr;
 	}
 
-	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom<FShapeBarrier>(Barrier);
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
-	if (MergeSplitThresholds.HasNative())
+	auto MergeSplitThresholds =
+		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = [&]() -> UAGX_MergeSplitThresholdsBase*
 	{
-		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
-			MergeSplitThresholds, RestoredThresholds, DirectoryName);
-	}
+		if (!MergeSplitThresholds.HasNative())
+		{
+			return nullptr;
+		}
+		return ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds,
+			DirectoryName);
+	}();
 
-	Component->CopyFrom(Barrier);
+	Component->CopyFrom(Barrier, ThresholdsAsset);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
 		DirectoryName, *Component);
@@ -670,15 +665,20 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	}
 	Component->RegisterComponent();
 
-	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom<FShapeBarrier>(Barrier);
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
-	if (MergeSplitThresholds.HasNative())
+	auto MergeSplitThresholds =
+		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = [&]() -> UAGX_MergeSplitThresholdsBase*
 	{
-		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
-			MergeSplitThresholds, RestoredThresholds, DirectoryName);
-	}
+		if (!MergeSplitThresholds.HasNative())
+		{
+			return nullptr;
+		}
+		return ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds,
+			DirectoryName);
+	}();
 
-	Component->CopyFrom(Barrier);
+	Component->CopyFrom(Barrier, ThresholdsAsset);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
 		DirectoryName, *MeshComponent);
@@ -753,15 +753,20 @@ namespace
 			return nullptr;
 		}
 
-		auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom<FConstraintBarrier>(Barrier);
-		UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
-		if (MergeSplitThresholds.HasNative())
+		auto MergeSplitThresholds =
+			FConstraintMergeSplitThresholdsBarrier::CreateFrom(Barrier);
+		UAGX_MergeSplitThresholdsBase* ThresholdsAsset = [&]() -> UAGX_MergeSplitThresholdsBase*
 		{
-			ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
-				MergeSplitThresholds, RestoredThresholds, DirectoryName);
-		}
+			if (!MergeSplitThresholds.HasNative())
+			{
+				return nullptr;
+			}
+			return ::GetOrCreateMergeSplitThresholdsAsset(
+				MergeSplitThresholds, EAGX_AmorOwningType::Constraint, RestoredThresholds,
+				DirectoryName);
+		}();
 
-		Component->CopyFrom(Barrier);
+		Component->CopyFrom(Barrier, ThresholdsAsset);
 		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 			Barrier, *Component, Bodies.first, Bodies.second);
 		FAGX_ConstraintUtilities::CopyControllersFrom(*Component, Barrier);
@@ -914,17 +919,21 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 
 	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
 
-	auto MergeSplitThresholds = FMergeSplitThresholdsBarrier::CreateFrom(Barrier);
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = nullptr;
-	if (MergeSplitThresholds.HasNative())
+	auto MergeSplitThresholds = FWireMergeSplitThresholdsBarrier::CreateFrom(Barrier);
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = [&]() -> UAGX_MergeSplitThresholdsBase*
 	{
-		ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset(
-			MergeSplitThresholds, RestoredThresholds, DirectoryName);
-	}
+		if (!MergeSplitThresholds.HasNative())
+		{
+			return nullptr;
+		}
+		return ::GetOrCreateMergeSplitThresholdsAsset(
+			MergeSplitThresholds, EAGX_AmorOwningType::Wire, RestoredThresholds,
+			DirectoryName);
+	}();
 
 	// Copy simple properties such as radius and segment length. More complicated properties, such
 	// as physical material, winches and route nodes, are handled below.
-	Component->CopyFrom(Barrier);
+	Component->CopyFrom(Barrier, ThresholdsAsset);
 
 	// Find and assign the physical material asset.
 	FShapeMaterialBarrier NativeMaterial = Barrier.GetMaterial();
