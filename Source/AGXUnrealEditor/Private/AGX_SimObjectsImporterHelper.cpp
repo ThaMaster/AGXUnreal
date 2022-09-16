@@ -415,7 +415,22 @@ namespace
 		const FString& DirectoryName)
 	{
 		const FGuid Guid = Thresholds.GetGuid();
-		const FString AssetName = "AGX_MST_" + Guid.ToString();
+		const FString AssetName = [&]() -> FString
+		{ 
+			switch (OwningType)
+			{
+				case EAGX_AmorOwningType::BodyOrShape:
+					return "AGX_SMST_" + Guid.ToString();
+				case EAGX_AmorOwningType::Constraint:
+					return "AGX_CMST_" + Guid.ToString();
+				case EAGX_AmorOwningType::Wire:
+					return "AGX_WMST_" + Guid.ToString();
+			}
+
+			UE_LOG(LogAGX, Warning, TEXT("Unknown OwningType in GetOrCreateMergeSplitThresholdsAsset."));
+			return "AGX_MST_" + Guid.ToString(); 
+		}();
+
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the asset anyway but without adding it to
