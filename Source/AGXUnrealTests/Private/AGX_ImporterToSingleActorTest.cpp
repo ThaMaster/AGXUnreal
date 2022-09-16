@@ -15,6 +15,9 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "AgxAutomationCommon.h"
+#include "AMOR/AGX_ConstraintMergeSplitProperties.h"
+#include "AMOR/AGX_ShapeContactMergeSplitProperties.h"
+#include "AMOR/AGX_WireMergeSplitProperties.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterialBase.h"
@@ -2518,8 +2521,9 @@ bool FCheckObserverFramesImportedCommand::Update()
 	// 1 Default Scene Root, 4 groups each containing a Rigid Body, a Shape, and a Scene.
 	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), 13);
 
-	auto TestGroup = [this, &Components](
-						 int32 Id, const FVector& BodyLocation, const FVector& ObserverLocation) {
+	auto TestGroup =
+		[this, &Components](int32 Id, const FVector& BodyLocation, const FVector& ObserverLocation)
+	{
 		const FString BodyName = *FString::Printf(TEXT("Body_%d"), Id);
 		const FString GeometryName = *FString::Printf(TEXT("Geometry_%d"), Id);
 		const FString ObserverName = *FString::Printf(TEXT("Observer_%d"), Id);
@@ -2847,6 +2851,200 @@ bool FClearURDFLinksGeometriesConstraintsImportedCommand::Update()
 	{
 		World->DestroyActor(Test.Contents);
 	}
+
+	return true;
+}
+
+//
+// AMOR test starts here.
+//
+
+class FImporterToSingleActor_AmorTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckAmorImportedCommand, FImporterToSingleActor_AmorTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearAmorImportedCommand, FImporterToSingleActor_AmorTest&, Test);
+
+class FImporterToSingleActor_AmorTest final : public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FImporterToSingleActor_AmorTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FImporterToSingleActor_AmorTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.Amor"))
+	{
+	}
+
+public:
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("amor_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckAmorImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearAmorImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FImporterToSingleActor_AmorTest ImporterToSingleActor_AmorTest;
+}
+
+bool FCheckAmorImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import Amor test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components. The test for the number of components is a safety check.
+	// It should be updated whenever the test scene is changed.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 11);
+
+	UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(Components, TEXT("Body"));
+	Test.TestTrue("Body Enable Merge", Body->MergeSplitProperties.bEnableMerge);
+	Test.TestFalse("Body Enable Merge", Body->MergeSplitProperties.bEnableSplit);
+	Test.TestNotNull("Body Thresholds", Body->MergeSplitProperties.Thresholds);
+	Test.TestEqual(
+		"Body Thresholds MaxImpactSpeed",
+		(float) Body->MergeSplitProperties.Thresholds->MaxImpactSpeed, AgxToUnrealDistance(13.0));
+	Test.TestEqual(
+		"Body Thresholds MaxRelativeNormalSpeed",
+		(float) Body->MergeSplitProperties.Thresholds->MaxRelativeNormalSpeed,
+		AgxToUnrealDistance(14.0));
+	Test.TestEqual(
+		"Body Thresholds MaxRelativeTangentSpeed",
+		(float) Body->MergeSplitProperties.Thresholds->MaxRelativeTangentSpeed,
+		AgxToUnrealDistance(15.0));
+	Test.TestEqual(
+		"Body Thresholds MaxRollingSpeed",
+		(float) Body->MergeSplitProperties.Thresholds->MaxRollingSpeed, AgxToUnrealDistance(16.0));
+	Test.TestTrue(
+		"Body Thresholds MaySplitInGravityField",
+		Body->MergeSplitProperties.Thresholds->bMaySplitInGravityField);
+	Test.TestEqual(
+		"Body Thresholds NormalAdhesion", Body->MergeSplitProperties.Thresholds->NormalAdhesion,
+		17.0);
+	Test.TestFalse(
+		"Body Thresholds SplitOnLogicalImpact",
+		Body->MergeSplitProperties.Thresholds->bSplitOnLogicalImpact);
+	Test.TestEqual(
+		"Body Thresholds TangentialAdhesion",
+		Body->MergeSplitProperties.Thresholds->TangentialAdhesion, 18.0);
+
+	UAGX_ShapeComponent* Geometry =
+		GetByName<UAGX_ShapeComponent>(Components, TEXT("GeometrySharingThresholds"));
+	Test.TestTrue("Geometry Enable Merge", Geometry->MergeSplitProperties.bEnableMerge);
+	Test.TestTrue("Geometry Enable Merge", Geometry->MergeSplitProperties.bEnableSplit);
+	Test.TestNotNull("Geometry Thresholds", Geometry->MergeSplitProperties.Thresholds);
+	Test.TestEqual(
+		"Geometry share Thresholds", Geometry->MergeSplitProperties.Thresholds,
+		Body->MergeSplitProperties.Thresholds);
+
+#if AGX_TEST_WIRE_IMPORT
+	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(Components, TEXT("Wire"));
+	Test.TestFalse("Wire Enable Merge", Wire->MergeSplitProperties.bEnableMerge);
+	Test.TestTrue("Wire Enable Merge", Wire->MergeSplitProperties.bEnableSplit);
+	Test.TestNotNull("Wire Thresholds", Wire->MergeSplitProperties.Thresholds);
+	Test.TestEqual(
+		"Wire Thresholds ForcePropagationDecayScale",
+		Wire->MergeSplitProperties.Thresholds->ForcePropagationDecayScale, 1.1);
+	Test.TestEqual(
+		"Wire Thresholds ForcePropagationDecayScale",
+		Wire->MergeSplitProperties.Thresholds->MergeTensionScale, 1.2);
+
+	UAGX_WireComponent* WireNoThresholds =
+		GetByName<UAGX_WireComponent>(Components, TEXT("WireNoThresholds"));
+	Test.TestTrue(
+		"WireNoThresholds Enable Merge", WireNoThresholds->MergeSplitProperties.bEnableMerge);
+	Test.TestTrue(
+		"WireNoThresholds Enable Merge", WireNoThresholds->MergeSplitProperties.bEnableSplit);
+	Test.TestNull("WireNoThresholds Thresholds", WireNoThresholds->MergeSplitProperties.Thresholds);
+#endif
+
+	UAGX_ConstraintComponent* Constraint =
+		GetByName<UAGX_ConstraintComponent>(Components, TEXT("Hinge"));
+	Test.TestFalse("Constraint Enable Merge", Constraint->MergeSplitProperties.bEnableMerge);
+	Test.TestFalse("Constraint Enable Merge", Constraint->MergeSplitProperties.bEnableSplit);
+	Test.TestNotNull("Constraint Thresholds", Constraint->MergeSplitProperties.Thresholds);
+	Test.TestEqual(
+		"Constraint Thresholds MaxDesiredForceRangeDiff",
+		Constraint->MergeSplitProperties.Thresholds->MaxDesiredForceRangeDiff, 4.0);
+	Test.TestEqual(
+		"Constraint Thresholds MaxDesiredLockAngleDiff",
+		Constraint->MergeSplitProperties.Thresholds->MaxDesiredLockAngleDiff,
+		FMath::RadiansToDegrees(5.0));
+	Test.TestEqual(
+		"Constraint Thresholds MaxDesiredRangeAngleDiff",
+		Constraint->MergeSplitProperties.Thresholds->MaxDesiredRangeAngleDiff,
+		FMath::RadiansToDegrees(6.0));
+	Test.TestEqual(
+		"Constraint Thresholds MaxDesiredSpeedDiff",
+		Constraint->MergeSplitProperties.Thresholds->MaxDesiredSpeedDiff,
+		FMath::RadiansToDegrees(7.0));
+	Test.TestEqual(
+		"Constraint Thresholds MaxRelativeSpeed",
+		Constraint->MergeSplitProperties.Thresholds->MaxRelativeSpeed,
+		FMath::RadiansToDegrees(8.0));
+
+// Enable this to see the names of the components that was imported. Useful when adding new stuff
+// to the archive.
+#if 0
+	UE_LOG(LogAGX, Warning, TEXT("Imported the following components:"));
+	for (const UActorComponent* Component : Components)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("  %s"), *Component->GetName());
+	}
+#endif
+
+	return true;
+}
+
+bool FClearAmorImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
+	// Files that are created by the test and thus safe to remove. The GUID values may make this
+	// test cumbersome to update since they will change every time the AGX Dynamics archive is
+	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
+	// names to the render materials in the source .agxPy file.
+	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("MergeSplitThresholds"),
+		TEXT("ShapeMaterial"),
+		TEXT("AGX_CMST_C64D4AE3F8A8DED174B8BF2FAFA63F35.uasset"),
+		TEXT("AGX_SMST_C10D476D92C77854C0DD2264BA19078E.uasset"),
+		TEXT("AGX_WMST_A9744676B4550BAD5494C4DA89411C58.uasset"),
+		TEXT("defaultWireMaterial_40.uasset")};
+
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("amor_build"), ExpectedFiles);
 
 	return true;
 }
