@@ -17,7 +17,7 @@ class FShapeMaterialBarrier;
 class FContactMaterialBarrier;
 class UAGX_ContactMaterialAsset;
 class UAGX_MergeSplitThresholdsBase;
-class UAGX_ShapeMaterialAsset;
+class UAGX_ShapeMaterial;
 struct FAGX_RenderMaterial;
 
 class AActor;
@@ -108,12 +108,12 @@ public:
 		const FRenderDataBarrier& RenderData, const FString& DirectoryName);
 
 	/**
-	 * Store an imported AGX Dynamics Material as an UAGX_ShapeMaterialAsset.
+	 * Store an imported AGX Dynamics Material as an UAGX_ShapeMaterial.
 	 * @param Material The imported material to be saved.
 	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @return The created ShapeMaterialAsset.
 	 */
-	static UAGX_ShapeMaterialAsset* SaveImportedShapeMaterialAsset(
+	static UAGX_ShapeMaterial* SaveImportedShapeMaterialAsset(
 		const FShapeMaterialBarrier& Material, const FString& DirectoryName);
 
 	/**
@@ -125,8 +125,8 @@ public:
 	 * @return The created ContactMaterialAsset.
 	 */
 	static UAGX_ContactMaterialAsset* SaveImportedContactMaterialAsset(
-		const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterialAsset* Material1,
-		UAGX_ShapeMaterialAsset* Material2, const FString& DirectoryName);
+		const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterial* Material1,
+		UAGX_ShapeMaterial* Material2, const FString& DirectoryName);
 
 	/**
 	 * Save an FAGX_RenderMaterial read from and AGX Dynamics RenderData material as an Unreal

@@ -119,6 +119,12 @@ void FWireBarrier::SetMaterial(const FShapeMaterialBarrier& Material)
 	NativeRef->Native->setMaterial(Material.GetNative()->Native);
 }
 
+void FWireBarrier::ClearMaterial()
+{
+	check(HasNative());
+	NativeRef->Native->setMaterial(nullptr);
+}
+
 FShapeMaterialBarrier FWireBarrier::GetMaterial() const
 {
 	check(HasNative());

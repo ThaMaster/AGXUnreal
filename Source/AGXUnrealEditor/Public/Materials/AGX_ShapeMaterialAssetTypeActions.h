@@ -9,13 +9,13 @@
 #include "CoreMinimal.h"
 
 /**
- * Asset Type Actions for UAGX_ShapeMaterialAsset, customizing its appearance in the Editor menus
+ * Asset Type Actions for UAGX_ShapeMaterial, customizing its appearance in the Editor menus
  * and browsers.
  */
-class AGXUNREALEDITOR_API FAGX_ShapeMaterialAssetTypeActions : public FAssetTypeActions_Base
+class AGXUNREALEDITOR_API FAGX_ShapeMaterialTypeActions : public FAssetTypeActions_Base
 {
 public:
-	FAGX_ShapeMaterialAssetTypeActions(EAssetTypeCategories::Type InAssetCategory);
+	FAGX_ShapeMaterialTypeActions(EAssetTypeCategories::Type InAssetCategory);
 
 	FText GetName() const override;
 

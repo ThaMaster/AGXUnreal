@@ -156,13 +156,13 @@ double FTerrainMaterialBarrier::GetFrictionAngle() const
 	return FMath::RadiansToDegrees(FricAngRad);
 }
 
-void FTerrainMaterialBarrier::SetMaximumDensity(double MaxDensity)
+void FTerrainMaterialBarrier::SetMaxDensity(double MaxDensity)
 {
 	check(HasNative());
 	NativeRef->Native->getBulkProperties()->setMaximumDensity(MaxDensity);
 }
 
-double FTerrainMaterialBarrier::GetMaximumDensity() const
+double FTerrainMaterialBarrier::GetMaxDensity() const
 {
 	check(HasNative());
 	return NativeRef->Native->getBulkProperties()->getMaximumDensity();
@@ -255,25 +255,25 @@ double FTerrainMaterialBarrier::GetCompressionIndex() const
 	return NativeRef->Native->getCompactionProperties()->getCompressionIndex();
 }
 
-void FTerrainMaterialBarrier::SetHardeningConstantKE(double K_e)
+void FTerrainMaterialBarrier::SetHardeningConstantKe(double K_e)
 {
 	check(HasNative());
 	NativeRef->Native->getCompactionProperties()->setHardeningConstantKE(K_e);
 }
 
-double FTerrainMaterialBarrier::GetHardeningConstantKE() const
+double FTerrainMaterialBarrier::GetHardeningConstantKe() const
 {
 	check(HasNative());
 	return NativeRef->Native->getCompactionProperties()->getHardeningConstantKE();
 }
 
-void FTerrainMaterialBarrier::SetHardeningConstantNE(double N_e)
+void FTerrainMaterialBarrier::SetHardeningConstantNe(double N_e)
 {
 	check(HasNative());
 	NativeRef->Native->getCompactionProperties()->setHardeningConstantNE(N_e);
 }
 
-double FTerrainMaterialBarrier::GetHardeningConstantNE() const
+double FTerrainMaterialBarrier::GetHardeningConstantNe() const
 {
 	check(HasNative());
 	return NativeRef->Native->getCompactionProperties()->getHardeningConstantNE();

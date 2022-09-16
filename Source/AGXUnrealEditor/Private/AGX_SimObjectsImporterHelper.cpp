@@ -35,7 +35,7 @@
 #include "Shapes/RenderDataBarrier.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
-#include "Materials/AGX_ShapeMaterialAsset.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
@@ -318,7 +318,7 @@ namespace
 	 */
 	void FinalizeShape(
 		UAGX_ShapeComponent& Component, const FShapeBarrier& Barrier,
-		const TMap<FGuid, UAGX_ShapeMaterialAsset*>& RestoredShapeMaterials,
+		const TMap<FGuid, UAGX_ShapeMaterial*>& RestoredShapeMaterials,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials,
 		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName,
 		UMeshComponent& VisualMesh)
@@ -331,7 +331,7 @@ namespace
 		if (NativeMaterial.HasNative())
 		{
 			const FGuid Guid = NativeMaterial.GetGuid();
-			UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
+			UAGX_ShapeMaterial* Material = RestoredShapeMaterials.FindRef(Guid);
 			Component.ShapeMaterial = Material;
 		}
 
@@ -700,11 +700,11 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	return Component;
 }
 
-UAGX_ShapeMaterialAsset* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
+UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
 	/// \todo Do we need any special handling of the default material?
-	UAGX_ShapeMaterialAsset* Asset =
+	UAGX_ShapeMaterial* Asset =
 		FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(Barrier, DirectoryName);
 	RestoredShapeMaterials.Add(Barrier.GetGuid(), Asset);
 	return Asset;
@@ -955,7 +955,7 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	if (NativeMaterial.HasNative())
 	{
 		const FGuid Guid = NativeMaterial.GetGuid();
-		UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
+		UAGX_ShapeMaterial* Material = RestoredShapeMaterials.FindRef(Guid);
 		Component->ShapeMaterial = Material;
 	}
 
@@ -1196,7 +1196,7 @@ FAGX_SimObjectsImporterHelper::FBodyPair FAGX_SimObjectsImporterHelper::GetBodie
 	return {GetBody(Barrier.GetFirstBody()), GetBody(Barrier.GetSecondBody())};
 }
 
-UAGX_ShapeMaterialAsset* FAGX_SimObjectsImporterHelper::GetShapeMaterial(
+UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::GetShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
 	return RestoredShapeMaterials.FindRef(Barrier.GetGuid());

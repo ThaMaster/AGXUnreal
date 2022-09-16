@@ -7,9 +7,9 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
-#include "Materials/AGX_TerrainMaterialInstance.h"
-#include "Materials/AGX_ShapeMaterialInstance.h"
 #include "Materials/AGX_MaterialBase.h"
+#include "Materials/AGX_ShapeMaterial.h"
+#include "Materials/AGX_TerrainMaterial.h"
 #include "Terrain/AGX_CuttingDirectionComponent.h"
 #include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "Terrain/AGX_LandscapeSizeInfo.h"
@@ -56,6 +56,29 @@ AAGX_Terrain::AAGX_Terrain()
 
 		SetRootComponent(Root);
 	}
+}
+
+bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
+{
+	UAGX_TerrainMaterial* TerrainMaterialOrig = TerrainMaterial;
+	TerrainMaterial = InTerrainMaterial;
+
+	if (!HasNative())
+	{
+		// Not in play, we are done.
+		return true;
+	}
+
+	// UpdateNativeMaterial is responsible to create an instance if none exists and do the
+	// asset/instance swap.
+	if (!UpdateNativeMaterial())
+	{
+		// Something went wrong, restore original TerrainMaterial.
+		TerrainMaterial = TerrainMaterialOrig;
+		return false;
+	}
+
+	return true;
 }
 
 void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
@@ -308,7 +331,14 @@ void AAGX_Terrain::InitializeNative()
 
 	CreateNativeShovels();
 	InitializeRendering();
-	CreateTerrainMaterial();
+	
+	if (!UpdateNativeMaterial())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UpdateNativeMaterial returned false in AGX_Terrain. "
+				"Ensure the selected Terrain Material is valid."));
+	}
 }
 
 bool AAGX_Terrain::CreateNativeTerrain()
@@ -520,46 +550,44 @@ void AAGX_Terrain::InitializeRendering()
 	}
 }
 
-void AAGX_Terrain::CreateTerrainMaterial()
+bool AAGX_Terrain::UpdateNativeMaterial()
 {
 	if (!HasNative())
-		return;
+		return false;
 
-	if (TerrainMaterial)
+	if (TerrainMaterial == nullptr)
 	{
-		// Both an UAGX_TerrainMaterialInstance and a UAGX_ShapeMaterialInstance
-		// are set for the terrain. The former is the native agxTerrain::TerrainMaterial
-		// counterpart and the latter is the native agx::Material counterpart.
-
-		// Set TerrainMaterial
-		UAGX_TerrainMaterialInstance* TerrainMaterialInstance =
-			static_cast<UAGX_TerrainMaterialInstance*>(
-				TerrainMaterial->GetOrCreateInstance(GetWorld()));
-
-		check(TerrainMaterialInstance);
-
-		FTerrainMaterialBarrier* TerrainMaterialBarrier =
-			TerrainMaterialInstance->GetOrCreateTerrainMaterialNative(GetWorld());
-		check(TerrainMaterialBarrier);
-
-		GetNative()->SetTerrainMaterial(*TerrainMaterialBarrier);
-
-		// Set ShapeMaterial
-		FShapeMaterialBarrier* MaterialBarrier =
-			TerrainMaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
-		check(MaterialBarrier);
-
-		GetNative()->SetShapeMaterial(*MaterialBarrier);
-
-		// Swap properties
-		UWorld* PlayingWorld = GetWorld();
-
-		if (TerrainMaterialInstance != TerrainMaterial && PlayingWorld &&
-			PlayingWorld->IsGameWorld())
+		if (HasNative())
 		{
-			TerrainMaterial = TerrainMaterialInstance;
+			GetNative()->ClearMaterial();
 		}
+		return true;
 	}
+
+	// Set TerrainMaterial
+	UAGX_TerrainMaterial* TerrainMaterialInstance =
+		static_cast<UAGX_TerrainMaterial*>(
+			TerrainMaterial->GetOrCreateInstance(GetWorld()));
+	check(TerrainMaterialInstance);
+
+	if (TerrainMaterial != TerrainMaterialInstance)
+	{
+		TerrainMaterial = TerrainMaterialInstance;
+	}
+
+	FTerrainMaterialBarrier* TerrainMaterialBarrier =
+		TerrainMaterialInstance->GetOrCreateTerrainMaterialNative(GetWorld());
+	check(TerrainMaterialBarrier);
+
+	GetNative()->SetTerrainMaterial(*TerrainMaterialBarrier);
+
+	// Set ShapeMaterial
+	FShapeMaterialBarrier* MaterialBarrier =
+		TerrainMaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
+	check(MaterialBarrier);
+
+	GetNative()->SetShapeMaterial(*MaterialBarrier);
+	return true;
 }
 
 void AAGX_Terrain::InitializeDisplacementMap()

@@ -7,16 +7,16 @@
 #include "AGX_ShapeMaterialAssetFactory.generated.h"
 
 /**
- * Asset Factory for UAGX_ShapeMaterialAsset, making it possible to create asset objects in the
+ * Asset Factory for UAGX_ShapeMaterial, making it possible to create asset objects in the
  * Editor.
  */
 UCLASS()
-class AGXUNREALEDITOR_API UAGX_ShapeMaterialAssetFactory : public UFactory
+class AGXUNREALEDITOR_API UAGX_ShapeMaterialFactory : public UFactory
 {
 	GENERATED_BODY()
 
 public:
-	UAGX_ShapeMaterialAssetFactory(const class FObjectInitializer& OBJ);
+	UAGX_ShapeMaterialFactory(const class FObjectInitializer& OBJ);
 
 protected:
 	virtual bool IsMacroFactory() const
