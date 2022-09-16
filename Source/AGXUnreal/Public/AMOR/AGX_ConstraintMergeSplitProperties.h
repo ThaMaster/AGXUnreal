@@ -40,6 +40,10 @@ public:
 
 	void CreateNative(UAGX_ConstraintComponent& Owner);
 
+	virtual void CopyFrom(
+		const FMergeSplitPropertiesBarrier& Barrier,
+		UAGX_MergeSplitThresholdsBase* InThresholds) override;
+
 	//Todo add comment about why we doe this.
 	FAGX_ConstraintMergeSplitProperties& operator=(const FAGX_ConstraintMergeSplitProperties& Other);
 

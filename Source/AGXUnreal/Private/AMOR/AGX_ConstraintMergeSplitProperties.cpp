@@ -47,6 +47,15 @@ void FAGX_ConstraintMergeSplitProperties::CreateNative(UAGX_ConstraintComponent&
 	NativeBarrier.AllocateNative(*Owner.GetNative());
 }
 
+void FAGX_ConstraintMergeSplitProperties::CopyFrom(
+	const FMergeSplitPropertiesBarrier& Barrier, UAGX_MergeSplitThresholdsBase* InThresholds)
+{
+	bEnableMerge = Barrier.GetEnableMerge();
+	bEnableSplit = Barrier.GetEnableSplit();
+
+	Thresholds = Cast<UAGX_ConstraintMergeSplitThresholds>(InThresholds);
+}
+
 FAGX_ConstraintMergeSplitProperties& FAGX_ConstraintMergeSplitProperties::operator=(
 	const FAGX_ConstraintMergeSplitProperties& Other)
 {

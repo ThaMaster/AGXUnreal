@@ -48,6 +48,15 @@ void FAGX_WireMergeSplitProperties::CreateNative(UAGX_WireComponent& Owner)
 	NativeBarrier.AllocateNative(*Owner.GetNative());
 }
 
+void FAGX_WireMergeSplitProperties::CopyFrom(
+	const FMergeSplitPropertiesBarrier& Barrier, UAGX_MergeSplitThresholdsBase* InThresholds)
+{
+	bEnableMerge = Barrier.GetEnableMerge();
+	bEnableSplit = Barrier.GetEnableSplit();
+
+	Thresholds = Cast<UAGX_WireMergeSplitThresholds>(InThresholds);
+}
+
 FAGX_WireMergeSplitProperties& FAGX_WireMergeSplitProperties::operator=(
 	const FAGX_WireMergeSplitProperties& Other)
 {

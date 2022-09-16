@@ -106,7 +106,7 @@ void FAGX_ShapeContactMergeSplitProperties::CopyFrom(
 	bEnableMerge = Barrier.GetEnableMerge();
 	bEnableSplit = Barrier.GetEnableSplit();
 
-	Thresholds = dynamic_cast<UAGX_ShapeContactMergeSplitThresholds*>(InThresholds);
+	Thresholds = Cast<UAGX_ShapeContactMergeSplitThresholds>(InThresholds);
 }
 
 // Explicit template instantiations.
