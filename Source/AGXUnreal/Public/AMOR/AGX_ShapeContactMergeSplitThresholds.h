@@ -12,6 +12,10 @@
 
 #include "AGX_ShapeContactMergeSplitThresholds.generated.h"
 
+/*
+ * Defines the thresholds used by AMOR (merge split) for Rigid Bodies and Shapes, affecting under
+ * which conditions they will merge and split.
+ */
 UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable)
 class AGXUNREAL_API UAGX_ShapeContactMergeSplitThresholds : public UAGX_MergeSplitThresholdsBase
 {

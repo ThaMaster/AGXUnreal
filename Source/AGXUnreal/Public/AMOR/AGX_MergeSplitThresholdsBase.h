@@ -7,6 +7,7 @@
 
 class FMergeSplitThresholdsBarrier;
 
+
 UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract)
 class AGXUNREAL_API UAGX_MergeSplitThresholdsBase : public UObject
 {

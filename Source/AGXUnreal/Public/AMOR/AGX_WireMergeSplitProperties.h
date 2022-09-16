@@ -15,7 +15,9 @@
 
 class UAGX_WireComponent;
 
-
+/*
+ * Defines the AMOR (merge split) properties for Wires.
+ */
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_WireMergeSplitProperties : public FAGX_MergeSplitPropertiesBase
 {

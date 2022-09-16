@@ -14,6 +14,9 @@
 #include "AGX_ShapeContactMergeSplitProperties.generated.h"
 
 
+/*
+ * Defines the AMOR (merge split) properties for Rigid Bodies and Shapes.
+ */
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ShapeContactMergeSplitProperties : public FAGX_MergeSplitPropertiesBase
 {

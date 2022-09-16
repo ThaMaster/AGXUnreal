@@ -12,6 +12,10 @@
 
 #include "AGX_WireMergeSplitThresholds.generated.h"
 
+/*
+ * Defines the thresholds used by AMOR (merge split) for Wires, affecting under which
+ * conditions Wires will merge and split.
+ */
 UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable)
 class AGXUNREAL_API UAGX_WireMergeSplitThresholds : public UAGX_MergeSplitThresholdsBase
 {

@@ -12,6 +12,10 @@
 
 #include "AGX_ConstraintMergeSplitThresholds.generated.h"
 
+/*
+ * Defines the thresholds used by AMOR (merge split) for Constraints, affecting under which
+ * conditions Constraints will merge and split.
+ */
 UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable)
 class AGXUNREAL_API UAGX_ConstraintMergeSplitThresholds : public UAGX_MergeSplitThresholdsBase
 {

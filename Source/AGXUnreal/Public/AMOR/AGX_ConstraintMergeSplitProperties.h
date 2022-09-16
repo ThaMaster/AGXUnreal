@@ -15,6 +15,9 @@
 
 class UAGX_ConstraintComponent;
 
+/*
+ * Defines the AMOR (merge split) properties for Constraints.
+ */
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ConstraintMergeSplitProperties : public FAGX_MergeSplitPropertiesBase
 {
