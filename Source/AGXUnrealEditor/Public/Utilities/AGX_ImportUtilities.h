@@ -148,10 +148,18 @@ public:
 		const FAGX_RenderMaterial& Imported, const FString& DirectoryName,
 		const FString& MaterialName);
 
+	/**
+	 * Store an imported AGX Dynamics Merge Split Thresholds as an UAGX_MergeSplitThresholdsBase.
+	 * @param Barrier The imported merge split thresholds to be saved.
+	 * @param OwningType Indicates the type of the underlying AGX Dynamics object owning this
+	 * MergeSplitThresholds.
+	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param Name The name of the asset to be written.
+	 * @return The created MergeSplitThresholds asset.
+	 */
 	static UAGX_MergeSplitThresholdsBase* SaveImportedMergeSplitAsset(
-		const FMergeSplitThresholdsBarrier& Barrier,
-		EAGX_AmorOwningType OwningType, const FString& DirectoryName,
-		const FString& Name);
+		const FMergeSplitThresholdsBarrier& Barrier, EAGX_AmorOwningType OwningType,
+		const FString& DirectoryName, const FString& Name);
 
 	/**
 	 * Rename the object. Generates a fallback name if the given name can't be used.
