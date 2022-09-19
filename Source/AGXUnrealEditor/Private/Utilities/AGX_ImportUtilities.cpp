@@ -328,9 +328,8 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 }
 
 UAGX_MergeSplitThresholdsBase* FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
-	const FMergeSplitThresholdsBarrier& Barrier,
-	EAGX_AmorOwningType OwningType, const FString& DirectoryName,
-	const FString& Name)
+	const FMergeSplitThresholdsBarrier& Barrier, EAGX_AmorOwningType OwningType,
+	const FString& DirectoryName, const FString& Name)
 {
 	switch (OwningType)
 	{
@@ -352,14 +351,13 @@ UAGX_MergeSplitThresholdsBase* FAGX_ImportUtilities::SaveImportedMergeSplitAsset
 		}
 		case EAGX_AmorOwningType::Wire:
 		{
-			auto InitAsset = [&](UAGX_WireMergeSplitThresholds& Asset)
-			{ Asset.CopyFrom(Barrier); };
+			auto InitAsset = [&](UAGX_WireMergeSplitThresholds& Asset) { Asset.CopyFrom(Barrier); };
 
 			return SaveImportedAsset<UAGX_WireMergeSplitThresholds>(
 				DirectoryName, Name, "AGX_MSP_", TEXT("MergeSplitThresholds"), InitAsset);
 		}
 	}
-	
+
 	UE_LOG(LogAGX, Error, TEXT("Could not create Merge Split Thresholds asset '%s'"), *Name);
 	return nullptr;
 }
