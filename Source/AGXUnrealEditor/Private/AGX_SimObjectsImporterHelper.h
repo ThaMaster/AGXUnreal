@@ -26,6 +26,7 @@ class UAGX_BallConstraintComponent;
 class UAGX_CylindricalConstraintComponent;
 class UAGX_DistanceConstraintComponent;
 class UAGX_LockConstraintComponent;
+class UAGX_MergeSplitThresholdsBase;
 class FTwoBodyTireBarrier;
 class UAGX_TwoBodyTireComponent;
 class UAGX_CollisionGroupDisablerComponent;
