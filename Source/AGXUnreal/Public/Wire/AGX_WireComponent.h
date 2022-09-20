@@ -224,10 +224,10 @@ public:
 			 EditCondition = "BeginWinchType == EWireWinchOwnerType::WireWinch"))
 	FComponentReference BeginWinchComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AMOR")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
 	FAGX_WireMergeSplitProperties MergeSplitProperties;
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	void CreateMergeSplitProperties();
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")

@@ -69,10 +69,10 @@ public:
 	// allow the user to override that default from the Details Panel. Normally, Properties set
 	// during creation become read-only.
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AMOR")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
 	FAGX_ConstraintMergeSplitProperties MergeSplitProperties;
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	void CreateMergeSplitProperties();
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Attachment")

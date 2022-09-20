@@ -71,10 +71,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Shape Contacts")
 	bool bIsSensor;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AMOR")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
 	FAGX_ShapeContactMergeSplitProperties MergeSplitProperties;
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	void CreateMergeSplitProperties();
 
 	/**
