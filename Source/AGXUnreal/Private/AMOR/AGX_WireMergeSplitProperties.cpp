@@ -5,9 +5,31 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
+#include "AGX_Simulation.h"
 #include "AMOR/AGX_WireMergeSplitThresholds.h"
 #include "Wire/AGX_WireComponent.h"
 
+namespace AGX_WireMergeSplitProperties_helpers
+{
+	void CheckAmorEnabled()
+	{
+		const UAGX_Simulation* Simulation = GetDefault<UAGX_Simulation>();
+		if (Simulation == nullptr)
+		{
+			return;
+		}
+
+		if (!Simulation->bEnableAMOR)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("AMOR enabled on a Wire, but disabled globally. Enable "
+					 "AMOR in Project Settings > Plugins > AGX Dynamics for this change "
+					 "to have "
+					 "an effect."));
+		}
+	}
+}
 
 void FAGX_WireMergeSplitProperties::OnBeginPlay(UAGX_WireComponent& Owner)
 {
@@ -26,11 +48,16 @@ void FAGX_WireMergeSplitProperties::OnBeginPlay(UAGX_WireComponent& Owner)
 #if WITH_EDITOR
 void FAGX_WireMergeSplitProperties::OnPostEditChangeProperty(UAGX_WireComponent& Owner)
 {
-	// If we have not yet allocated a native, and we are in Play, and EnableMerge or EnableSplit
-	// is true, then we should now allocate a Native.
-	if (Owner.HasNative() && !HasNative() && (bEnableMerge || bEnableSplit))
+	if (bEnableMerge || bEnableSplit)
 	{
-		CreateNative(Owner);
+		AGX_WireMergeSplitProperties_helpers::CheckAmorEnabled();
+
+		// If we have not yet allocated a native, and we are in Play, and EnableMerge or EnableSplit
+		// is true, then we should now allocate a Native.
+		if (Owner.HasNative() && !HasNative())
+		{
+			CreateNative(Owner);
+		}
 	}
 
 	if (HasNative())

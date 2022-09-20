@@ -146,7 +146,7 @@ public: // Properties.
 	 * individually for AMOR to be used for those.
 	 */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "AMOR")
-	bool bEnableAMOR = true;
+	bool bEnableAMOR = false;
 
 #if WITH_EDITORONLY_DATA
 	/**

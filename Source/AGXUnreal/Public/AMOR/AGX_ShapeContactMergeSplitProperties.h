@@ -15,7 +15,8 @@
 
 
 /*
- * Defines the AMOR (merge split) properties for Rigid Bodies and Shapes.
+ * Defines the AMOR (merge split) properties for Rigid Bodies and Shapes. For this to take affect,
+ * AMOR has to be enabled globally in the AGX Dynamics for Unreal project settings.
  */
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ShapeContactMergeSplitProperties : public FAGX_MergeSplitPropertiesBase

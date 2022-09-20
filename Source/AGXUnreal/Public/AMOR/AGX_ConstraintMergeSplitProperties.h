@@ -16,7 +16,8 @@
 class UAGX_ConstraintComponent;
 
 /*
- * Defines the AMOR (merge split) properties for Constraints.
+ * Defines the AMOR (merge split) properties for Constraints. For this to take affect, AMOR has to
+ * be enabled globally in the AGX Dynamics for Unreal project settings.
  */
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ConstraintMergeSplitProperties : public FAGX_MergeSplitPropertiesBase

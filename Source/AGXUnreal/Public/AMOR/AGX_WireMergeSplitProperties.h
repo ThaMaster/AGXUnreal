@@ -16,7 +16,8 @@
 class UAGX_WireComponent;
 
 /*
- * Defines the AMOR (merge split) properties for Wires.
+ * Defines the AMOR (merge split) properties for Wires. For this to take affect, AMOR has to
+ * be enabled globally in the AGX Dynamics for Unreal project settings.
  */
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_WireMergeSplitProperties : public FAGX_MergeSplitPropertiesBase

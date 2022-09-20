@@ -6,9 +6,32 @@
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_Simulation.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 #include "Shapes/AGX_ShapeComponent.h"
 
+
+namespace AGX_ShapeContactMergeSplitProperties_helpers
+{
+	void CheckAmorEnabled()
+	{
+		const UAGX_Simulation* Simulation = GetDefault<UAGX_Simulation>();
+		if (Simulation == nullptr)
+		{
+			return;
+		}
+
+		if (!Simulation->bEnableAMOR)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("AMOR enabled on a Body or Shape, but disabled globally. Enable "
+					 "AMOR in Project Settings > Plugins > AGX Dynamics for this change "
+					 "to have "
+					 "an effect."));
+		}
+	}
+}
 
 template <typename T>
 void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay(T& Owner)
@@ -29,12 +52,17 @@ void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay(T& Owner)
 template <typename T>
 void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty(T& Owner)
 {
-	// If we have not yet allocated a native, and we are in Play, and EnableMerge or EnableSplit
-	// is true, then we should now allocate a Native.
-	if (Owner.HasNative() && !HasNative() && (bEnableMerge || bEnableSplit))
+	if (bEnableMerge || bEnableSplit)
 	{
-		CreateNative(Owner);
-	}
+		AGX_ShapeContactMergeSplitProperties_helpers::CheckAmorEnabled();
+
+		// If we have not yet allocated a native, and we are in Play, and EnableMerge or EnableSplit
+		// is true, then we should now allocate a Native.
+		if (Owner.HasNative() && !HasNative())
+		{
+			CreateNative(Owner);
+		}
+	}	
 
 	if (HasNative())
 	{
