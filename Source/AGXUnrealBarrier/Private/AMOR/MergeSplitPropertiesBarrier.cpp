@@ -84,7 +84,7 @@ namespace MergeSplitProperties_helpers
 		}
 
 		// Setting nullptr here is valid.
-		Barrier.NativePtr->Native =
+		Barrier.GetNative()->Native =
 			agxSDK::MergeSplitHandler::getProperties(GetFrom(NewOwner));
 	}
 }
