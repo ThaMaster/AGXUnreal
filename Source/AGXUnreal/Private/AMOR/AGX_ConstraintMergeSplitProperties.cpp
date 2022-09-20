@@ -82,6 +82,14 @@ void FAGX_ConstraintMergeSplitProperties::CopyFrom(
 	Thresholds = Cast<UAGX_ConstraintMergeSplitThresholds>(InThresholds);
 }
 
+void FAGX_ConstraintMergeSplitProperties::BindBarrierToOwner(FConstraintBarrier& NewOwner)
+{
+	if (NewOwner.HasNative())
+	{
+		NativeBarrier.BindToNewOwner(NewOwner);
+	}
+}
+
 void FAGX_ConstraintMergeSplitProperties::UpdateNativeProperties(UAGX_ConstraintComponent& Owner)
 {
 	AGX_CHECK(HasNative());

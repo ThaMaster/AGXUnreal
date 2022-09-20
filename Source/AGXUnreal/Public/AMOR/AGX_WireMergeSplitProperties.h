@@ -13,6 +13,7 @@
 
 #include "AGX_WireMergeSplitProperties.generated.h"
 
+class FWireBarrier;
 class UAGX_WireComponent;
 
 /*
@@ -25,14 +26,13 @@ struct AGXUNREAL_API FAGX_WireMergeSplitProperties : public FAGX_MergeSplitPrope
 	GENERATED_USTRUCT_BODY()
 
 public:
-
 	UPROPERTY(EditAnywhere, Category = "AMOR")
 	UAGX_WireMergeSplitThresholds* Thresholds;
 
 	/**
-	* Must be called by the owning object at begin play (after the owning object has allocated a
-	* native AGX Dynamics object).
-	*/
+	 * Must be called by the owning object at begin play (after the owning object has allocated a
+	 * native AGX Dynamics object).
+	 */
 	void OnBeginPlay(UAGX_WireComponent& Owner);
 
 #if WITH_EDITOR
@@ -47,6 +47,8 @@ public:
 	virtual void CopyFrom(
 		const FMergeSplitPropertiesBarrier& Barrier,
 		UAGX_MergeSplitThresholdsBase* InThresholds) override;
+
+	void BindBarrierToOwner(FWireBarrier& NewOwner);
 
 private:
 	void UpdateNativeProperties(UAGX_WireComponent& Owner);
@@ -67,9 +69,12 @@ class AGXUNREAL_API UAGX_WireMergeSplitProperties_LF : public UBlueprintFunction
 		if (!Properties.HasNative())
 		{
 			UE_LOG(
-				LogTemp, Warning, TEXT("Blueprint UFUNCTION SetEnableMerge was called on a "
-					"FAGX_WireMergeSplitProperties without a Native AGX Dynamics object. Remember to call "
-					"CreateMergeSplitProperties() on the owning object before calling this function."));
+				LogTemp, Warning,
+				TEXT("Blueprint UFUNCTION SetEnableMerge was called on a "
+					 "FAGX_WireMergeSplitProperties without a Native AGX Dynamics object. Remember "
+					 "to call "
+					 "CreateMergeSplitProperties() on the owning object before calling this "
+					 "function."));
 		}
 
 		Properties.SetEnableMerge(bEnable);
@@ -87,9 +92,12 @@ class AGXUNREAL_API UAGX_WireMergeSplitProperties_LF : public UBlueprintFunction
 		if (!Properties.HasNative())
 		{
 			UE_LOG(
-				LogTemp, Warning, TEXT("Blueprint UFUNCTION SetEnableSplit was called on a "
-					"FAGX_WireMergeSplitProperties without a Native AGX Dynamics object. Remember to call "
-					"CreateMergeSplitProperties() on the owning object before calling this function."));
+				LogTemp, Warning,
+				TEXT("Blueprint UFUNCTION SetEnableSplit was called on a "
+					 "FAGX_WireMergeSplitProperties without a Native AGX Dynamics object. Remember "
+					 "to call "
+					 "CreateMergeSplitProperties() on the owning object before calling this "
+					 "function."));
 		}
 		Properties.SetEnableSplit(bEnable);
 	}

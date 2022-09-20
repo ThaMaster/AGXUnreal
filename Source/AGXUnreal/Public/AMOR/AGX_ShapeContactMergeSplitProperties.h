@@ -13,6 +13,8 @@
 
 #include "AGX_ShapeContactMergeSplitProperties.generated.h"
 
+class FRigidBodyBarrier;
+class FShapeBarrier;
 
 /*
  * Defines the AMOR (merge split) properties for Rigid Bodies and Shapes. For this to take affect,
@@ -50,8 +52,10 @@ public:
 		const FMergeSplitPropertiesBarrier& Barrier,
 		UAGX_MergeSplitThresholdsBase* InThresholds) override;
 
-private:
+	void BindBarrierToOwner(FRigidBodyBarrier& NewOwner);
+	void BindBarrierToOwner(FShapeBarrier& NewOwner);
 
+private:
 	template <typename T>
 	void UpdateNativeProperties(T& Owner);
 

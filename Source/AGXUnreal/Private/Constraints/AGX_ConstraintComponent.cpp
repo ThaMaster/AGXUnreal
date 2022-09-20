@@ -604,6 +604,11 @@ void UAGX_ConstraintComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier->SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+
+	if (HasNative())
+	{
+		MergeSplitProperties.BindBarrierToOwner(*GetNative());
+	}
 }
 
 FConstraintBarrier* UAGX_ConstraintComponent::GetOrCreateNative()

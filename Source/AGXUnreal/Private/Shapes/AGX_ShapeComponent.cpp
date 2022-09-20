@@ -42,6 +42,11 @@ void UAGX_ShapeComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	GetNativeBarrier()->SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+
+	if (HasNative())
+	{
+		MergeSplitProperties.BindBarrierToOwner(*GetNative());
+	}	
 }
 
 TStructOnScope<FActorComponentInstanceData> UAGX_ShapeComponent::GetComponentInstanceData() const

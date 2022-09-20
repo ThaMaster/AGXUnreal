@@ -84,6 +84,14 @@ void FAGX_WireMergeSplitProperties::CopyFrom(
 	Thresholds = Cast<UAGX_WireMergeSplitThresholds>(InThresholds);
 }
 
+void FAGX_WireMergeSplitProperties::BindBarrierToOwner(FWireBarrier& NewOwner)
+{
+	if (NewOwner.HasNative())
+	{
+		NativeBarrier.BindToNewOwner(NewOwner);
+	}
+}
+
 void FAGX_WireMergeSplitProperties::UpdateNativeProperties(UAGX_WireComponent& Owner)
 {
 	AGX_CHECK(HasNative());

@@ -260,6 +260,11 @@ void UAGX_RigidBodyComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+
+	if (HasNative())
+	{
+		MergeSplitProperties.BindBarrierToOwner(*GetNative());
+	}
 }
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetNative()

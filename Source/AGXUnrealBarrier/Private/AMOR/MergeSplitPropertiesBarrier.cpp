@@ -72,6 +72,21 @@ namespace MergeSplitProperties_helpers
 		AGX_CHECK(Wire.HasNative());
 		return Wire.GetNative()->Native;
 	}
+
+	template <typename T>
+	void BindToNewOwner(FMergeSplitPropertiesBarrier& Barrier, T& NewOwner)
+	{
+		check(NewOwner.HasNative());
+		if (Barrier.HasNative())
+		{
+			// Release native.
+			Barrier.GetNative()->Native = nullptr;
+		}
+
+		// Setting nullptr here is valid.
+		Barrier.NativePtr->Native =
+			agxSDK::MergeSplitHandler::getProperties(GetFrom(NewOwner));
+	}
 }
 
 template <typename T>
@@ -222,4 +237,24 @@ void FMergeSplitPropertiesBarrier::SetWireMergeSplitThresholds(
 		check(ThresholdsAGX);
 		NativePtr->Native->setWireThresholds(ThresholdsAGX);
 	}
+}
+
+void FMergeSplitPropertiesBarrier::BindToNewOwner(FRigidBodyBarrier& NewOwner)
+{
+	MergeSplitProperties_helpers::BindToNewOwner<FRigidBodyBarrier>(*this, NewOwner);
+}
+
+void FMergeSplitPropertiesBarrier::BindToNewOwner(FShapeBarrier& NewOwner)
+{
+	MergeSplitProperties_helpers::BindToNewOwner<FShapeBarrier>(*this, NewOwner);
+}
+
+void FMergeSplitPropertiesBarrier::BindToNewOwner(FWireBarrier& NewOwner)
+{
+	MergeSplitProperties_helpers::BindToNewOwner<FWireBarrier>(*this, NewOwner);
+}
+
+void FMergeSplitPropertiesBarrier::BindToNewOwner(FConstraintBarrier& NewOwner)
+{
+	MergeSplitProperties_helpers::BindToNewOwner<FConstraintBarrier>(*this, NewOwner);
 }

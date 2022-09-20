@@ -129,6 +129,22 @@ void FAGX_ShapeContactMergeSplitProperties::CopyFrom(
 	Thresholds = Cast<UAGX_ShapeContactMergeSplitThresholds>(InThresholds);
 }
 
+void FAGX_ShapeContactMergeSplitProperties::BindBarrierToOwner(FRigidBodyBarrier& NewOwner)
+{
+	if (NewOwner.HasNative())
+	{
+		NativeBarrier.BindToNewOwner(NewOwner);
+	}
+}
+
+void FAGX_ShapeContactMergeSplitProperties::BindBarrierToOwner(FShapeBarrier& NewOwner)
+{
+	if (NewOwner.HasNative())
+	{
+		NativeBarrier.BindToNewOwner(NewOwner);
+	}
+}
+
 // Explicit template instantiations.
 template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay<UAGX_RigidBodyComponent>(
 	UAGX_RigidBodyComponent&);

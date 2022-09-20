@@ -13,6 +13,7 @@
 
 #include "AGX_ConstraintMergeSplitProperties.generated.h"
 
+class FConstraintBarrier;
 class UAGX_ConstraintComponent;
 
 /*
@@ -47,6 +48,8 @@ public:
 	virtual void CopyFrom(
 		const FMergeSplitPropertiesBarrier& Barrier,
 		UAGX_MergeSplitThresholdsBase* InThresholds) override;
+
+	void BindBarrierToOwner(FConstraintBarrier& NewOwner);
 
 private:
 	void UpdateNativeProperties(UAGX_ConstraintComponent& Owner);

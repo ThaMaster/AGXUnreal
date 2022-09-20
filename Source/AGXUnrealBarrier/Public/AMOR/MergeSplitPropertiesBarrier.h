@@ -8,8 +8,13 @@
 // Standard library includes
 #include <memory>
 
-struct FMergeSplitPropertiesPtr;
+class FConstraintBarrier;
 class FMergeSplitThresholdsBarrier;
+class FRigidBodyBarrier;
+class FShapeBarrier;
+class FWireBarrier;
+
+struct FMergeSplitPropertiesPtr;
 
 class AGXUNREALBARRIER_API FMergeSplitPropertiesBarrier
 {
@@ -38,6 +43,11 @@ public:
 	void SetShapeContactMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
 	void SetConstraintMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
 	void SetWireMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
+
+	void BindToNewOwner(FRigidBodyBarrier& NewOwner);
+	void BindToNewOwner(FShapeBarrier& NewOwner);
+	void BindToNewOwner(FConstraintBarrier& NewOwner);
+	void BindToNewOwner(FWireBarrier& NewOwner);
 
 private:
 	FMergeSplitPropertiesBarrier& operator=(const FMergeSplitPropertiesBarrier& Other) = delete;
