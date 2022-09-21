@@ -323,7 +323,24 @@ FShapeContactMergeSplitThresholdsBarrier* UAGX_ShapeContactMergeSplitThresholds:
 	}
 
 	AGX_CHECK(IsInstance());
-	return &NativeBarrier;
+	return HasNative() ? &NativeBarrier : nullptr;
+}
+
+const FShapeContactMergeSplitThresholdsBarrier* UAGX_ShapeContactMergeSplitThresholds::GetNative()
+	const
+{
+	if (!IsInstance())
+	{
+		if (Instance == nullptr)
+		{
+			return nullptr;
+		}
+
+		return Instance->GetNative();
+	}
+
+	AGX_CHECK(IsInstance());
+	return HasNative() ? &NativeBarrier : nullptr;
 }
 
 bool UAGX_ShapeContactMergeSplitThresholds::HasNative() const

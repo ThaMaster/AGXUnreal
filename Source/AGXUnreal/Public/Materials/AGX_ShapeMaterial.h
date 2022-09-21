@@ -205,6 +205,7 @@ public:
 	virtual FShapeMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld) override;
 
 	FShapeMaterialBarrier* GetNative();
+	const FShapeMaterialBarrier* GetNative() const;
 	bool HasNative() const;
 	void UpdateNativeProperties();
 

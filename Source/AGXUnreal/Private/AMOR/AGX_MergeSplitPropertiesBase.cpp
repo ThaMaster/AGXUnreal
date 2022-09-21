@@ -60,14 +60,14 @@ bool FAGX_MergeSplitPropertiesBase::HasNative() const
 	return NativeBarrier.HasNative();
 }
 
-const FMergeSplitPropertiesBarrier& FAGX_MergeSplitPropertiesBase::GetNative() const
+const FMergeSplitPropertiesBarrier* FAGX_MergeSplitPropertiesBase::GetNative() const
 {
-	return NativeBarrier;
+	return HasNative() ? &NativeBarrier : nullptr;
 }
 
-FMergeSplitPropertiesBarrier& FAGX_MergeSplitPropertiesBase::GetNative()
+FMergeSplitPropertiesBarrier* FAGX_MergeSplitPropertiesBase::GetNative()
 {
-	return NativeBarrier;
+	return HasNative() ? &NativeBarrier : nullptr;
 }
 
 void FAGX_MergeSplitPropertiesBase::CopyFrom(const FMergeSplitPropertiesBarrier& Barrier)

@@ -281,7 +281,12 @@ FContactMaterialBarrier* UAGX_ContactMaterialInstance::GetOrCreateNative(UWorld*
 
 FContactMaterialBarrier* UAGX_ContactMaterialInstance::GetNative()
 {
-	return &NativeBarrier;
+	return HasNative() ? &NativeBarrier : nullptr;
+}
+
+const FContactMaterialBarrier* UAGX_ContactMaterialInstance::GetNative() const
+{
+	return HasNative() ? &NativeBarrier : nullptr;
 }
 
 bool UAGX_ContactMaterialInstance::HasNative() const

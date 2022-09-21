@@ -969,12 +969,12 @@ bool UAGX_TerrainMaterial::HasShapeMaterialNative() const
 
 FTerrainMaterialBarrier* UAGX_TerrainMaterial::GetTerrainMaterialNative()
 {
-	return &TerrainMaterialNativeBarrier;
+	return HasTerrainMaterialNative() ? &TerrainMaterialNativeBarrier : nullptr;
 }
 
 FShapeMaterialBarrier* UAGX_TerrainMaterial::GetShapeMaterialNative()
 {
-	return &ShapeMaterialNativeBarrier;
+	return HasShapeMaterialNative() ? &ShapeMaterialNativeBarrier : nullptr;
 }
 
 void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()

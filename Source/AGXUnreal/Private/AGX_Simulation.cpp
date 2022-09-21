@@ -538,14 +538,20 @@ bool UAGX_Simulation::HasNative() const
 
 FSimulationBarrier* UAGX_Simulation::GetNative()
 {
-	check(NativeBarrier.HasNative()); // Invalid to call this function before starting game!
+	if (!HasNative())
+	{
+		return nullptr;
+	}
 
 	return &NativeBarrier;
 }
 
 const FSimulationBarrier* UAGX_Simulation::GetNative() const
 {
-	check(NativeBarrier.HasNative()); // Invalid to call this function before starting game!
+	if (!HasNative())
+	{
+		return nullptr;
+	}
 
 	return &NativeBarrier;
 }

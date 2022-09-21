@@ -73,6 +73,7 @@ public:
 	bool HasNative() const;
 	FWireMergeSplitThresholdsBarrier* GetOrCreateNative(UWorld* PlayingWorld);
 	FWireMergeSplitThresholdsBarrier* GetNative();
+	const FWireMergeSplitThresholdsBarrier* GetNative() const;
 
 	static UAGX_WireMergeSplitThresholds* CreateFromAsset(
 		UWorld* PlayingWorld, UAGX_WireMergeSplitThresholds& Source);

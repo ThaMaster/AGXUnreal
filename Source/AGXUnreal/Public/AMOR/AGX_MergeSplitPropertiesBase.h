@@ -38,8 +38,8 @@ public:
 	bool GetEnableSplit() const;
 
 	bool HasNative() const;
-	const FMergeSplitPropertiesBarrier& GetNative() const;
-	FMergeSplitPropertiesBarrier& GetNative();
+	const FMergeSplitPropertiesBarrier* GetNative() const;
+	FMergeSplitPropertiesBarrier* GetNative();
 
 	void CopyFrom(const FMergeSplitPropertiesBarrier& Barrier);
 

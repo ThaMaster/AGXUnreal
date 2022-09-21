@@ -181,6 +181,7 @@ public:
 	bool HasNative() const;
 	FShapeContactMergeSplitThresholdsBarrier* GetOrCreateNative(UWorld* PlayingWorld);
 	FShapeContactMergeSplitThresholdsBarrier* GetNative();
+	const FShapeContactMergeSplitThresholdsBarrier* GetNative() const;
 
 	static UAGX_ShapeContactMergeSplitThresholds* CreateFromAsset(
 		UWorld* PlayingWorld, UAGX_ShapeContactMergeSplitThresholds& Source);

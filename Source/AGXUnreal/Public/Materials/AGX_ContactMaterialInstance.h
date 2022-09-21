@@ -35,6 +35,7 @@ public:
 	FContactMaterialBarrier* GetOrCreateNative(UWorld* PlayingWorld);
 
 	FContactMaterialBarrier* GetNative();
+	const FContactMaterialBarrier* GetNative() const;
 
 	bool HasNative() const;
 

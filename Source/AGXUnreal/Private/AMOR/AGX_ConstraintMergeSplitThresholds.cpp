@@ -272,7 +272,23 @@ FConstraintMergeSplitThresholdsBarrier* UAGX_ConstraintMergeSplitThresholds::Get
 	}
 
 	AGX_CHECK(IsInstance());
-	return &NativeBarrier;
+	return HasNative() ? &NativeBarrier : nullptr;
+}
+
+const FConstraintMergeSplitThresholdsBarrier* UAGX_ConstraintMergeSplitThresholds::GetNative() const
+{
+	if (!IsInstance())
+	{
+		if (Instance == nullptr)
+		{
+			return nullptr;
+		}
+
+		return Instance->GetNative();
+	}
+
+	AGX_CHECK(IsInstance());
+	return HasNative() ? &NativeBarrier : nullptr;
 }
 
 bool UAGX_ConstraintMergeSplitThresholds::HasNative() const

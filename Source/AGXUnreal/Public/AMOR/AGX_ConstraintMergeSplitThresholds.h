@@ -140,6 +140,7 @@ public:
 	FConstraintMergeSplitThresholdsBarrier* GetOrCreateNative(
 		UWorld* PlayingWorld, bool bIsRotational);
 	FConstraintMergeSplitThresholdsBarrier* GetNative();
+	const FConstraintMergeSplitThresholdsBarrier* GetNative() const;
 
 	static UAGX_ConstraintMergeSplitThresholds* CreateFromAsset(
 		UWorld* PlayingWorld, UAGX_ConstraintMergeSplitThresholds& Source, bool bIsRotational);

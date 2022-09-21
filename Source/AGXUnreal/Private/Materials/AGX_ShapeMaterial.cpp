@@ -608,7 +608,18 @@ FShapeMaterialBarrier* UAGX_ShapeMaterial::GetNative()
 		return Instance->GetNative();
 	}
 
-	return &NativeBarrier;
+	return HasNative() ? &NativeBarrier : nullptr;
+}
+
+const FShapeMaterialBarrier* UAGX_ShapeMaterial::GetNative() const
+{
+	if (Instance != nullptr)
+	{
+		AGX_CHECK(!IsInstance());
+		return Instance->GetNative();
+	}
+
+	return HasNative() ? &NativeBarrier : nullptr;
 }
 
 bool UAGX_ShapeMaterial::HasNative() const
