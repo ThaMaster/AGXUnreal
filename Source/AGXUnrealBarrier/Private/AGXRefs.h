@@ -91,7 +91,7 @@ struct FMassPropertiesPtr
 
 struct FMergeSplitPropertiesPtr
 {
-	agxSDK::MergeSplitProperties* Native = nullptr;
+	agxSDK::MergeSplitPropertiesRef Native = nullptr;
 
 	FMergeSplitPropertiesPtr() = default;
 	FMergeSplitPropertiesPtr(agxSDK::MergeSplitProperties* InNative)

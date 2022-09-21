@@ -4,6 +4,8 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
+#include "AMOR/MergeSplitPropertiesBarrier.h"
+#include "AMOR/MergeSplitThresholdsBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "SimulationBarrier.h"
 #include "Shapes/ShapeBarrier.h"
@@ -14,6 +16,7 @@
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
 #include "Terrain/TerrainBarrier.h"
+#include "Wire/WireBarrier.h"
 #include "AGX_LogCategory.h"
 
 // AGX Dynamics includes.
@@ -27,12 +30,16 @@
 #include <agx/LockJoint.h>
 #include <agx/Prismatic.h>
 
+#include <agxSDK/MergeSplitProperties.h>
+#include <agxSDK/MergeSplitThresholds.h>
 #include <agxSDK/Simulation.h>
 
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
 
 #include <agxTerrain/Terrain.h>
+
+#include <agxWire/Wire.h>
 
 #include "EndAGXIncludes.h"
 
@@ -175,4 +182,21 @@ agx::Prismatic* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FPrismaticBarrier* 
 agxTerrain::Terrain* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FTerrainBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxTerrain::Terrain>(Barrier);
+}
+
+agxSDK::MergeSplitProperties* FAGX_AgxDynamicsObjectsAccess::GetFrom(
+	const FMergeSplitPropertiesBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFrom<agxSDK::MergeSplitProperties>(Barrier);
+}
+
+agxSDK::MergeSplitThresholds* FAGX_AgxDynamicsObjectsAccess::GetFrom(
+	const FMergeSplitThresholdsBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFrom<agxSDK::MergeSplitThresholds>(Barrier);
+}
+
+agxWire::Wire* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FWireBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFrom<agxWire::Wire>(Barrier);
 }
