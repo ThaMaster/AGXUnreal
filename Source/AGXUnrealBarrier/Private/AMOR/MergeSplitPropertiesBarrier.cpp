@@ -77,7 +77,7 @@ namespace MergeSplitProperties_helpers
 	void BindToNewOwner(FMergeSplitPropertiesBarrier& Barrier, T& NewOwner)
 	{
 		check(NewOwner.HasNative());
-		check(!HasNative());
+		check(!Barrier.HasNative());
 
 		// Setting nullptr here is valid.
 		Barrier.GetNative()->Native =
