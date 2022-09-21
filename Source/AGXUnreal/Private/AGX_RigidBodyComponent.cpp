@@ -354,9 +354,8 @@ void UAGX_RigidBodyComponent::CreateMergeSplitProperties()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("UAGX_RigidBodyComponent::CreateMergeSplitProperties was called "
-				 "on Rigid Body '%s' that does not have a Native AGX Dynamics object. Only call "
-				 "this function "
+			TEXT("UAGX_RigidBodyComponent::CreateMergeSplitProperties was called on Rigid Body "
+				 "'%s' that does not have a Native AGX Dynamics object. Only call this function "
 				 "during play."),
 			*GetName());
 		return;
