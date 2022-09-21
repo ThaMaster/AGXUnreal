@@ -187,7 +187,13 @@ agxTerrain::Terrain* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FTerrainBarrie
 agxSDK::MergeSplitProperties* FAGX_AgxDynamicsObjectsAccess::GetFrom(
 	const FMergeSplitPropertiesBarrier* Barrier)
 {
-	return AgxDynamicsObjectAccess_Helper::GetFrom<agxSDK::MergeSplitProperties>(Barrier);
+	using namespace AgxDynamicsObjectAccess_Helper;
+	if (!CheckAgxDynamicsObject(Barrier))
+	{
+		return nullptr;
+	}
+
+	return Barrier->GetNative()->Native;
 }
 
 agxSDK::MergeSplitThresholds* FAGX_AgxDynamicsObjectsAccess::GetFrom(
