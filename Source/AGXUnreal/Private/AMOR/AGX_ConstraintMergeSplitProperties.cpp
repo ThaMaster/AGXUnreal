@@ -5,31 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
-#include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintComponent.h"
-
-// Unreal Engine includes.
-#include "UObject/Class.h"
-
-namespace AGX_ConstraintMergeSplitProperties_helpers
-{
-	void CheckAmorEnabled()
-	{
-		const UAGX_Simulation* Simulation = GetDefault<UAGX_Simulation>();
-		if (Simulation == nullptr)
-		{
-			return;
-		}
-
-		if (!Simulation->bEnableAMOR)
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("AMOR enabled on a Constraint, but disabled globally. Enable AMOR in Project "
-					 "Settings > Plugins > AGX Dynamics for this change to have an effect."));
-		}
-	}
-}
 
 void FAGX_ConstraintMergeSplitProperties::OnBeginPlay(UAGX_ConstraintComponent& Owner)
 {
@@ -50,7 +26,7 @@ void FAGX_ConstraintMergeSplitProperties::OnPostEditChangeProperty(UAGX_Constrai
 {
 	if (bEnableMerge || bEnableSplit)
 	{
-		AGX_ConstraintMergeSplitProperties_helpers::CheckAmorEnabled();
+		LogWarningIfAmorDisabled("Constraint");
 		if (Owner.HasNative() && !HasNative())
 		{
 			// If we have not yet allocated a native, and we are in Play, and EnableMerge or
