@@ -28,6 +28,11 @@ void FAGX_MergeSplitPropertiesBase::SetEnableMerge(bool bEnable)
 
 bool FAGX_MergeSplitPropertiesBase::GetEnableMerge() const
 {
+	if (HasNative())
+	{
+		return NativeBarrier.GetEnableMerge();
+	}
+
 	return bEnableMerge;
 }
 
@@ -42,6 +47,11 @@ void FAGX_MergeSplitPropertiesBase::SetEnableSplit(bool bEnable)
 
 bool FAGX_MergeSplitPropertiesBase::GetEnableSplit() const
 {
+	if (HasNative())
+	{
+		return NativeBarrier.GetEnableSplit();
+	}
+
 	return bEnableSplit;
 }
 
