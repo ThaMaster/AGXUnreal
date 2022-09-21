@@ -27,10 +27,9 @@ namespace AGX_ShapeContactMergeSplitProperties_helpers
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("AMOR enabled on a Body or Shape, but disabled globally. Enable "
-					 "AMOR in Project Settings > Plugins > AGX Dynamics for this change "
-					 "to have "
-					 "an effect."));
+				TEXT("AMOR enabled on a Body or Shape, but disabled globally. Enable AMOR in "
+					 "Project Settings > Plugins > AGX Dynamics for this change to have an "
+					 "effect."));
 		}
 	}
 }

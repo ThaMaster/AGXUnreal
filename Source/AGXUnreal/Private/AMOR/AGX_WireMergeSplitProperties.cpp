@@ -26,10 +26,8 @@ namespace AGX_WireMergeSplitProperties_helpers
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("AMOR enabled on a Wire, but disabled globally. Enable "
-					 "AMOR in Project Settings > Plugins > AGX Dynamics for this change "
-					 "to have "
-					 "an effect."));
+				TEXT("AMOR enabled on a Wire, but disabled globally. Enable AMOR in Project "
+					 "Settings > Plugins > AGX Dynamics for this change to have an effect."));
 		}
 	}
 }
