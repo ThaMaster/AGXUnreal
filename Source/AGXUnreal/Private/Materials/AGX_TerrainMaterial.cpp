@@ -941,7 +941,7 @@ bool UAGX_TerrainMaterial::HasTerrainMaterialNative() const
 	{
 		if (Instance == nullptr)
 		{
-			return nullptr;
+			return false;
 		}
 
 		return Instance->HasTerrainMaterialNative();
@@ -957,7 +957,7 @@ bool UAGX_TerrainMaterial::HasShapeMaterialNative() const
 	{
 		if (Instance == nullptr)
 		{
-			return nullptr;
+			return false;
 		}
 
 		return Instance->HasShapeMaterialNative();
