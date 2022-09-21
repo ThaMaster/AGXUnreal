@@ -26,7 +26,7 @@ struct AGXUNREAL_API FAGX_WireMergeSplitProperties : public FAGX_MergeSplitPrope
 	GENERATED_USTRUCT_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, Category = "AMOR")
+	UPROPERTY(EditAnywhere, Category = "AGX AMOR")
 	UAGX_WireMergeSplitThresholds* Thresholds;
 
 	/**
@@ -63,7 +63,7 @@ class AGXUNREAL_API UAGX_WireMergeSplitProperties_LF : public UBlueprintFunction
 {
 	GENERATED_BODY()
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	static void SetEnableMerge(UPARAM(ref) FAGX_WireMergeSplitProperties& Properties, bool bEnable)
 	{
 		if (!Properties.HasNative())
@@ -80,13 +80,13 @@ class AGXUNREAL_API UAGX_WireMergeSplitProperties_LF : public UBlueprintFunction
 		Properties.SetEnableMerge(bEnable);
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	static bool GetEnableMerge(UPARAM(ref) const FAGX_WireMergeSplitProperties& Properties)
 	{
 		return Properties.GetEnableMerge();
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	static void SetEnableSplit(UPARAM(ref) FAGX_WireMergeSplitProperties& Properties, bool bEnable)
 	{
 		if (!Properties.HasNative())
@@ -102,13 +102,13 @@ class AGXUNREAL_API UAGX_WireMergeSplitProperties_LF : public UBlueprintFunction
 		Properties.SetEnableSplit(bEnable);
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	static bool GetEnableSplit(UPARAM(ref) const FAGX_WireMergeSplitProperties& Properties)
 	{
 		return Properties.GetEnableSplit();
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	static UAGX_WireMergeSplitThresholds* GetThresholds(
 		UPARAM(ref) const FAGX_WireMergeSplitProperties& Properties)
 	{

@@ -27,7 +27,7 @@ struct AGXUNREAL_API FAGX_ShapeContactMergeSplitProperties : public FAGX_MergeSp
 
 public:
 
-	UPROPERTY(EditAnywhere, Category = "AMOR")
+	UPROPERTY(EditAnywhere, Category = "AGX AMOR")
 	UAGX_ShapeContactMergeSplitThresholds* Thresholds;
 
 	/**
@@ -70,7 +70,7 @@ class AGXUNREAL_API UAGX_ShapeContactMergeSplitProperties_LF : public UBlueprint
 {
 	GENERATED_BODY()
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	static void SetEnableMerge(UPARAM(ref) FAGX_ShapeContactMergeSplitProperties& Properties, bool bEnable)
 	{
 		if (!Properties.HasNative())
@@ -84,13 +84,13 @@ class AGXUNREAL_API UAGX_ShapeContactMergeSplitProperties_LF : public UBlueprint
 		Properties.SetEnableMerge(bEnable);
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	static bool GetEnableMerge(UPARAM(ref) const FAGX_ShapeContactMergeSplitProperties& Properties)
 	{
 		return Properties.GetEnableMerge();
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	static void SetEnableSplit(UPARAM(ref) FAGX_ShapeContactMergeSplitProperties& Properties, bool bEnable)
 	{
 		if (!Properties.HasNative())
@@ -103,13 +103,13 @@ class AGXUNREAL_API UAGX_ShapeContactMergeSplitProperties_LF : public UBlueprint
 		Properties.SetEnableSplit(bEnable);
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	static bool GetEnableSplit(UPARAM(ref) const FAGX_ShapeContactMergeSplitProperties& Properties)
 	{
 		return Properties.GetEnableSplit();
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	static UAGX_ShapeContactMergeSplitThresholds* GetThresholds(
 		UPARAM(ref) const FAGX_ShapeContactMergeSplitProperties& Properties)
 	{

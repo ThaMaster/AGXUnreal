@@ -145,7 +145,7 @@ public: // Properties.
 	 * Note that each RigidBody / Geometry / Wire / Constraint need to enable merge/split
 	 * individually for AMOR to be used for those.
 	 */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "AMOR")
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
 	bool bEnableAMOR = false;
 
 #if WITH_EDITORONLY_DATA
@@ -154,7 +154,7 @@ public: // Properties.
 	 * and Shapes that does not specify their own.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "AMOR",
+		Config, EditAnywhere, Category = "AGX AMOR",
 		meta = (AllowedClasses = "AGX_ShapeContactMergeSplitThresholds"))
 	FSoftObjectPath GlobalShapeContactMergeSplitThresholds;
 
@@ -163,7 +163,7 @@ public: // Properties.
 	 * that does not specify their own.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "AMOR",
+		Config, EditAnywhere, Category = "AGX AMOR",
 		meta = (AllowedClasses = "AGX_ConstraintMergeSplitThresholds"))
 	FSoftObjectPath GlobalConstraintMergeSplitThresholds;
 
@@ -172,7 +172,7 @@ public: // Properties.
 	 * that does not specify their own.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "AMOR",
+		Config, EditAnywhere, Category = "AGX AMOR",
 		meta = (AllowedClasses = "AGX_WireMergeSplitThresholds"))
 	FSoftObjectPath GlobalWireMergeSplitThresholds;
 #endif
@@ -231,7 +231,7 @@ public: // Member functions.
 	UFUNCTION(BlueprintCallable, Category = "Solver")
 	bool GetEnableContactWarmstarting() const;
 
-	UFUNCTION(BlueprintCallable, Category = "AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	void SetEnableAMOR(bool bEnable);
 
 	/**
