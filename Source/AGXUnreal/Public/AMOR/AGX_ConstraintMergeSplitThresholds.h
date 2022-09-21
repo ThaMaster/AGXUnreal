@@ -100,14 +100,14 @@ public:
 
 	UFUNCTION(
 		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
-		Meta = (DisplayName = "SetMaxDesiredSpeedDiff"))
+		Meta = (DisplayName = "Set Max Desired Speed Diff"))
 	void SetMaxDesiredSpeedDiff_BP(float InMaxDesiredSpeedDiff);
 
 	void SetMaxDesiredSpeedDiff(double InMaxDesiredSpeedDiff);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
-		Meta = (DisplayName = "GetMaxDesiredSpeedDiff"))
+		Meta = (DisplayName = "Get MaxDesired Speed Diff"))
 	float GetMaxDesiredSpeedDiff_BP() const;
 
 	double GetMaxDesiredSpeedDiff() const;
