@@ -937,11 +937,33 @@ void UAGX_TerrainMaterial::CreateShapeMaterialNative(UWorld* PlayingWorld)
 
 bool UAGX_TerrainMaterial::HasTerrainMaterialNative() const
 {
+	if (!IsInstance())
+	{
+		if (Instance == nullptr)
+		{
+			return nullptr;
+		}
+
+		return Instance->HasTerrainMaterialNative();
+	}
+
+	AGX_CHECK(IsInstance());
 	return TerrainMaterialNativeBarrier.HasNative();
 }
 
 bool UAGX_TerrainMaterial::HasShapeMaterialNative() const
 {
+	if (!IsInstance())
+	{
+		if (Instance == nullptr)
+		{
+			return nullptr;
+		}
+
+		return Instance->HasShapeMaterialNative();
+	}
+
+	AGX_CHECK(IsInstance());
 	return ShapeMaterialNativeBarrier.HasNative();
 }
 
