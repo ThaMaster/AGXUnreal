@@ -77,11 +77,7 @@ namespace MergeSplitProperties_helpers
 	void BindToNewOwner(FMergeSplitPropertiesBarrier& Barrier, T& NewOwner)
 	{
 		check(NewOwner.HasNative());
-		if (Barrier.HasNative())
-		{
-			// Release native.
-			Barrier.GetNative()->Native = nullptr;
-		}
+		check(!HasNative());
 
 		// Setting nullptr here is valid.
 		Barrier.GetNative()->Native =
@@ -148,6 +144,12 @@ template AGXUNREALBARRIER_API void FMergeSplitPropertiesBarrier::AllocateNative<
 	FConstraintBarrier&);
 template AGXUNREALBARRIER_API void FMergeSplitPropertiesBarrier::AllocateNative<FWireBarrier>(
 	FWireBarrier&);
+
+void FMergeSplitPropertiesBarrier::ReleaseNative()
+{
+	check(HasNative());
+	NativePtr->Native = nullptr;
+}
 
 FMergeSplitPropertiesPtr* FMergeSplitPropertiesBarrier::GetNative()
 {

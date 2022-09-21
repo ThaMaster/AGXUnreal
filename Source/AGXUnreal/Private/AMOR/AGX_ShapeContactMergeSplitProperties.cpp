@@ -128,18 +128,32 @@ void FAGX_ShapeContactMergeSplitProperties::UpdateNativeThresholds()
 
 void FAGX_ShapeContactMergeSplitProperties::BindBarrierToOwner(FRigidBodyBarrier& NewOwner)
 {
-	if (NewOwner.HasNative())
+	if (!NewOwner.HasNative())
 	{
-		NativeBarrier.BindToNewOwner(NewOwner);
+		return;
 	}
+
+	if (NativeBarrier.HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
+
+	NativeBarrier.BindToNewOwner(NewOwner);
 }
 
 void FAGX_ShapeContactMergeSplitProperties::BindBarrierToOwner(FShapeBarrier& NewOwner)
 {
-	if (NewOwner.HasNative())
+	if (!NewOwner.HasNative())
 	{
-		NativeBarrier.BindToNewOwner(NewOwner);
+		return;
 	}
+
+	if (NativeBarrier.HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
+
+	NativeBarrier.BindToNewOwner(NewOwner);
 }
 
 UAGX_MergeSplitThresholdsBase* FAGX_ShapeContactMergeSplitProperties::GetThresholds()

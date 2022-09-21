@@ -31,6 +31,8 @@ public:
 	template <typename T>
 	void AllocateNative(T& Owner);
 
+	void ReleaseNative();
+
 	template <typename T>
 	static FMergeSplitPropertiesBarrier CreateFrom(T& Barrier);
 
@@ -44,6 +46,10 @@ public:
 	void SetConstraintMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
 	void SetWireMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
 
+	/*
+	* This Barrier may not have a Native at the time of calling BindToNewOwner.
+	* Ensure it is released prior.
+	*/
 	void BindToNewOwner(FRigidBodyBarrier& NewOwner);
 	void BindToNewOwner(FShapeBarrier& NewOwner);
 	void BindToNewOwner(FConstraintBarrier& NewOwner);

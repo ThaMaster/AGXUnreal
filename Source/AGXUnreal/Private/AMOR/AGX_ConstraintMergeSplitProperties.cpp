@@ -54,10 +54,17 @@ void FAGX_ConstraintMergeSplitProperties::CreateNative(UAGX_ConstraintComponent&
 
 void FAGX_ConstraintMergeSplitProperties::BindBarrierToOwner(FConstraintBarrier& NewOwner)
 {
-	if (NewOwner.HasNative())
+	if (!NewOwner.HasNative())
 	{
-		NativeBarrier.BindToNewOwner(NewOwner);
+		return;
 	}
+
+	if (NativeBarrier.HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
+
+	NativeBarrier.BindToNewOwner(NewOwner);
 }
 
 void FAGX_ConstraintMergeSplitProperties::UpdateNativeProperties()

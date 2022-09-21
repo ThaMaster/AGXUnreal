@@ -56,10 +56,17 @@ void FAGX_WireMergeSplitProperties::CreateNative(UAGX_WireComponent& Owner)
 
 void FAGX_WireMergeSplitProperties::BindBarrierToOwner(FWireBarrier& NewOwner)
 {
-	if (NewOwner.HasNative())
+	if (!NewOwner.HasNative())
 	{
-		NativeBarrier.BindToNewOwner(NewOwner);
+		return;
 	}
+
+	if (NativeBarrier.HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
+
+	NativeBarrier.BindToNewOwner(NewOwner);
 }
 
 void FAGX_WireMergeSplitProperties::UpdateNativeProperties()
