@@ -131,7 +131,7 @@ void UAGX_WireMergeSplitThresholds::CreateNative(UWorld* PlayingWorld)
 	NativeBarrier->AllocateNative();
 	AGX_CHECK(HasNative());
 
-	SetNativeProperties(*NativeBarrier);
+	SetNativeProperties();
 }
 
 FWireMergeSplitThresholdsBarrier* UAGX_WireMergeSplitThresholds::GetOrCreateNative(
@@ -221,8 +221,16 @@ void UAGX_WireMergeSplitThresholds::CopyFrom(const UAGX_WireMergeSplitThresholds
 	MergeTensionScale = Source.MergeTensionScale;
 }
 
-void UAGX_WireMergeSplitThresholds::SetNativeProperties(FWireMergeSplitThresholdsBarrier& Barrier)
+void UAGX_WireMergeSplitThresholds::CopyTo(FWireMergeSplitThresholdsBarrier& Barrier)
 {
 	Barrier.SetForcePropagationDecayScale(ForcePropagationDecayScale);
 	Barrier.SetMergeTensionScale(MergeTensionScale);
+}
+
+void UAGX_WireMergeSplitThresholds::SetNativeProperties()
+{
+	if (HasNative())
+	{
+		CopyTo(*NativeBarrier);
+	}
 }

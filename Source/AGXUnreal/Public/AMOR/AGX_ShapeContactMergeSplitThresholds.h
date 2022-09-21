@@ -193,7 +193,7 @@ public:
 	/*
 	* Assigns the property values of this class to the passed barrier.
 	*/
-	void SetNativeProperties(FShapeContactMergeSplitThresholdsBarrier& Barrier);
+	void CopyTo(FShapeContactMergeSplitThresholdsBarrier& Barrier);
 
 private:
 #if WITH_EDITOR
@@ -203,6 +203,7 @@ private:
 #endif
 
 	void CopyFrom(const UAGX_ShapeContactMergeSplitThresholds& Source);
+	void SetNativeProperties();
 
 	TWeakObjectPtr<UAGX_ShapeContactMergeSplitThresholds> Asset;
 	TWeakObjectPtr<UAGX_ShapeContactMergeSplitThresholds> Instance;

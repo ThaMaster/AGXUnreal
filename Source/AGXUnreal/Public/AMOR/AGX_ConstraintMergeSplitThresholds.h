@@ -153,7 +153,7 @@ public:
 	/*
 	 * Assigns the property values of this class to the passed barrier.
 	 */
-	void SetNativeProperties(FConstraintMergeSplitThresholdsBarrier& Barrier);
+	void CopyTo(FConstraintMergeSplitThresholdsBarrier& Barrier);
 
 private:
 #if WITH_EDITOR
@@ -162,6 +162,7 @@ private:
 	void InitPropertyDispatcher();
 #endif
 
+	void SetNativeProperties();
 	void CopyFrom(const UAGX_ConstraintMergeSplitThresholds& Source);
 
 	TWeakObjectPtr<UAGX_ConstraintMergeSplitThresholds> Asset;

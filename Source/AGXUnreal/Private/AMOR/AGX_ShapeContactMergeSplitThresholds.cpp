@@ -265,7 +265,7 @@ void UAGX_ShapeContactMergeSplitThresholds::CreateNative(UWorld* PlayingWorld)
 	NativeBarrier->AllocateNative();
 	AGX_CHECK(HasNative());
 
-	SetNativeProperties(*NativeBarrier);
+	SetNativeProperties();
 }
 
 FShapeContactMergeSplitThresholdsBarrier* UAGX_ShapeContactMergeSplitThresholds::GetOrCreateNative(
@@ -367,7 +367,7 @@ void UAGX_ShapeContactMergeSplitThresholds::CopyFrom(
 	bSplitOnLogicalImpact = Source.bSplitOnLogicalImpact;
 }
 
-void UAGX_ShapeContactMergeSplitThresholds::SetNativeProperties(
+void UAGX_ShapeContactMergeSplitThresholds::CopyTo(
 	FShapeContactMergeSplitThresholdsBarrier& Barrier)
 {
 	Barrier.SetMaxImpactSpeed(MaxImpactSpeed);
@@ -378,4 +378,12 @@ void UAGX_ShapeContactMergeSplitThresholds::SetNativeProperties(
 	Barrier.SetTangentialAdhesion(TangentialAdhesion);
 	Barrier.SetMaySplitInGravityField(bMaySplitInGravityField);
 	Barrier.SetSplitOnLogicalImpact(bSplitOnLogicalImpact);
+}
+
+void UAGX_ShapeContactMergeSplitThresholds::SetNativeProperties()
+{
+	if (HasNative())
+	{
+		CopyTo(*NativeBarrier);
+	}
 }

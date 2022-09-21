@@ -214,7 +214,7 @@ void UAGX_ConstraintMergeSplitThresholds::CreateNative(UWorld* PlayingWorld, boo
 	NativeBarrier->AllocateNative(bIsRotational);
 	AGX_CHECK(HasNative());
 
-	SetNativeProperties(*NativeBarrier);
+	SetNativeProperties();
 }
 
 FConstraintMergeSplitThresholdsBarrier* UAGX_ConstraintMergeSplitThresholds::GetOrCreateNative(
@@ -310,7 +310,7 @@ void UAGX_ConstraintMergeSplitThresholds::CopyFrom(
 	MaxRelativeSpeed = Source.MaxRelativeSpeed;
 }
 
-void UAGX_ConstraintMergeSplitThresholds::SetNativeProperties(
+void UAGX_ConstraintMergeSplitThresholds::CopyTo(
 	FConstraintMergeSplitThresholdsBarrier& Barrier)
 {
 	Barrier.SetMaxDesiredForceRangeDiff(MaxDesiredForceRangeDiff);
@@ -318,4 +318,12 @@ void UAGX_ConstraintMergeSplitThresholds::SetNativeProperties(
 	Barrier.SetMaxDesiredRangeAngleDiff(MaxDesiredRangeAngleDiff);
 	Barrier.SetMaxDesiredSpeedDiff(MaxDesiredSpeedDiff);
 	Barrier.SetMaxRelativeSpeed(MaxRelativeSpeed);
+}
+
+void UAGX_ConstraintMergeSplitThresholds::SetNativeProperties()
+{
+	if (HasNative())
+	{
+		CopyTo(*NativeBarrier);
+	}
 }

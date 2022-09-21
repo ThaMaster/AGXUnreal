@@ -85,7 +85,7 @@ public:
 	/*
 	 * Assigns the property values of this class to the passed barrier.
 	 */
-	void SetNativeProperties(FWireMergeSplitThresholdsBarrier& Barrier);
+	void CopyTo(FWireMergeSplitThresholdsBarrier& Barrier);
 
 private:
 #if WITH_EDITOR
@@ -95,6 +95,7 @@ private:
 #endif
 
 	void CopyFrom(const UAGX_WireMergeSplitThresholds& Source);
+	void SetNativeProperties();
 
 	TWeakObjectPtr<UAGX_WireMergeSplitThresholds> Asset;
 	TWeakObjectPtr<UAGX_WireMergeSplitThresholds> Instance;

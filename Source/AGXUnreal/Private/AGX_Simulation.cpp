@@ -1022,7 +1022,7 @@ void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 		FShapeContactMergeSplitThresholdsBarrier Thresholds =
 			NativeBarrier.GetGlobalShapeContactTresholds();
 
-		SC->SetNativeProperties(Thresholds);
+		SC->CopyTo(Thresholds);
 	}
 
 	if (auto SC = GetAssetFrom<UAGX_ConstraintMergeSplitThresholds>(
@@ -1031,7 +1031,7 @@ void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 		FConstraintMergeSplitThresholdsBarrier Thresholds =
 			NativeBarrier.GetGlobalConstraintTresholds();
 
-		SC->SetNativeProperties(Thresholds);
+		SC->CopyTo(Thresholds);
 	}
 
 	if (auto SC = GetAssetFrom<UAGX_WireMergeSplitThresholds>(
@@ -1040,7 +1040,7 @@ void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 		FWireMergeSplitThresholdsBarrier Thresholds =
 			NativeBarrier.GetGlobalWireTresholds();
 
-		SC->SetNativeProperties(Thresholds);
+		SC->CopyTo(Thresholds);
 	}
 }
 #endif
