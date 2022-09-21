@@ -65,14 +65,6 @@ class AGXUNREAL_API UAGX_ConstraintMergeSplitProperties_LF : public UBlueprintFu
 	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	static void SetEnableMerge(UPARAM(ref) FAGX_ConstraintMergeSplitProperties& Properties, bool bEnable)
 	{
-		if (!Properties.HasNative())
-		{
-			UE_LOG(
-				LogTemp, Warning, TEXT("Blueprint UFUNCTION SetEnableMerge was called on a "
-					"FAGX_ConstraintMergeSplitProperties without a Native AGX Dynamics object. Remember to call "
-					"CreateMergeSplitProperties() on the owning object before calling this function."));
-		}
-
 		Properties.SetEnableMerge(bEnable);
 	}
 
@@ -85,13 +77,6 @@ class AGXUNREAL_API UAGX_ConstraintMergeSplitProperties_LF : public UBlueprintFu
 	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	static void SetEnableSplit(UPARAM(ref) FAGX_ConstraintMergeSplitProperties& Properties, bool bEnable)
 	{
-		if (!Properties.HasNative())
-		{
-			UE_LOG(
-				LogTemp, Warning, TEXT("Blueprint UFUNCTION SetEnableSplit was called on a "
-					"FAGX_ConstraintMergeSplitProperties without a Native AGX Dynamics object. Remember to call "
-					"CreateMergeSplitProperties() on the owning object before calling this function."));
-		}
 		Properties.SetEnableSplit(bEnable);
 	}
 
