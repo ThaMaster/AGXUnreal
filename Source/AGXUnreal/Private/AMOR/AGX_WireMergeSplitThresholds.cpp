@@ -106,6 +106,16 @@ UAGX_WireMergeSplitThresholds* UAGX_WireMergeSplitThresholds::GetOrCreateInstanc
 	return InstancePtr;
 }
 
+UAGX_WireMergeSplitThresholds* UAGX_WireMergeSplitThresholds::GetInstance()
+{
+	if (IsInstance())
+	{
+		return this;
+	}
+
+	return Instance.Get();
+}
+
 void UAGX_WireMergeSplitThresholds::CreateNative(UWorld* PlayingWorld)
 {
 	if (!IsInstance())
@@ -163,6 +173,22 @@ FWireMergeSplitThresholdsBarrier* UAGX_WireMergeSplitThresholds::GetOrCreateNati
 		CreateNative(PlayingWorld);
 	}
 
+	return &NativeBarrier;
+}
+
+FWireMergeSplitThresholdsBarrier* UAGX_WireMergeSplitThresholds::GetNative()
+{
+	if (!IsInstance())
+	{
+		if (Instance == nullptr)
+		{
+			return nullptr;
+		}
+
+		return Instance->GetNative();
+	}
+
+	AGX_CHECK(IsInstance());
 	return &NativeBarrier;
 }
 

@@ -240,6 +240,16 @@ UAGX_ShapeContactMergeSplitThresholds* UAGX_ShapeContactMergeSplitThresholds::Ge
 	return InstancePtr;
 }
 
+UAGX_ShapeContactMergeSplitThresholds* UAGX_ShapeContactMergeSplitThresholds::GetInstance()
+{
+	if (IsInstance())
+	{
+		return this;
+	}
+
+	return Instance.Get();
+}
+
 void UAGX_ShapeContactMergeSplitThresholds::CreateNative(UWorld* PlayingWorld)
 {
 	if (!IsInstance())
@@ -297,6 +307,22 @@ FShapeContactMergeSplitThresholdsBarrier* UAGX_ShapeContactMergeSplitThresholds:
 		CreateNative(PlayingWorld);
 	}
 
+	return &NativeBarrier;
+}
+
+FShapeContactMergeSplitThresholdsBarrier* UAGX_ShapeContactMergeSplitThresholds::GetNative()
+{
+	if (!IsInstance())
+	{
+		if (Instance == nullptr)
+		{
+			return nullptr;
+		}
+
+		return Instance->GetNative();
+	}
+
+	AGX_CHECK(IsInstance());
 	return &NativeBarrier;
 }
 

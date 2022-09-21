@@ -139,12 +139,15 @@ public:
 	bool HasNative() const;
 	FConstraintMergeSplitThresholdsBarrier* GetOrCreateNative(
 		UWorld* PlayingWorld, bool bIsRotational);
+	FConstraintMergeSplitThresholdsBarrier* GetNative();
 
 	static UAGX_ConstraintMergeSplitThresholds* CreateFromAsset(
 		UWorld* PlayingWorld, UAGX_ConstraintMergeSplitThresholds& Source, bool bIsRotational);
 
 	UAGX_ConstraintMergeSplitThresholds* GetOrCreateInstance(
 		UWorld* PlayingWorld, bool bIsRotational);
+
+	UAGX_ConstraintMergeSplitThresholds* GetInstance();
 
 	bool IsInstance() const;
 

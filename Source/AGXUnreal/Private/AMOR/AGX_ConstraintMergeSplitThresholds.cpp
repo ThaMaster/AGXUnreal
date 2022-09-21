@@ -189,6 +189,16 @@ UAGX_ConstraintMergeSplitThresholds* UAGX_ConstraintMergeSplitThresholds::GetOrC
 	return InstancePtr;
 }
 
+UAGX_ConstraintMergeSplitThresholds* UAGX_ConstraintMergeSplitThresholds::GetInstance()
+{
+	if (IsInstance())
+	{
+		return this;
+	}
+
+	return Instance.Get();
+}
+
 void UAGX_ConstraintMergeSplitThresholds::CreateNative(UWorld* PlayingWorld, bool bIsRotational)
 {
 	if (!IsInstance())
@@ -246,6 +256,22 @@ FConstraintMergeSplitThresholdsBarrier* UAGX_ConstraintMergeSplitThresholds::Get
 		CreateNative(PlayingWorld, bIsRotational);
 	}
 
+	return &NativeBarrier;
+}
+
+FConstraintMergeSplitThresholdsBarrier* UAGX_ConstraintMergeSplitThresholds::GetNative()
+{
+	if (!IsInstance())
+	{
+		if (Instance == nullptr)
+		{
+			return nullptr;
+		}
+
+		return Instance->GetNative();
+	}
+
+	AGX_CHECK(IsInstance());
 	return &NativeBarrier;
 }
 

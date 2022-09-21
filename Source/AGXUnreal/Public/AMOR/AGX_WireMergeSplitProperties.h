@@ -49,8 +49,9 @@ public:
 	virtual UAGX_MergeSplitThresholdsBase* GetThresholds() override;
 
 private:
-	void UpdateNativeProperties(UAGX_WireComponent& Owner);
-	void UpdateNativeThresholds(UWorld* PlayingWorld);
+	void UpdateNativeProperties();
+	void CreateNativeThresholds(UWorld* PlayingWorld);
+	void UpdateNativeThresholds();
 };
 
 /**

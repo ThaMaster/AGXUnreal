@@ -19,7 +19,8 @@ void FAGX_WireMergeSplitProperties::OnBeginPlay(UAGX_WireComponent& Owner)
 	if (bEnableMerge || bEnableSplit)
 	{
 		CreateNative(Owner);
-		UpdateNativeProperties(Owner);
+		CreateNativeThresholds(Owner.GetWorld());
+		UpdateNativeProperties();
 	}
 }
 
@@ -34,12 +35,13 @@ void FAGX_WireMergeSplitProperties::OnPostEditChangeProperty(UAGX_WireComponent&
 			// If we have not yet allocated a native, and we are in Play, and EnableMerge or
 			// EnableSplit is true, then we should now allocate a Native.
 			CreateNative(Owner);
+			CreateNativeThresholds(Owner.GetWorld());
 		}
 	}
 
 	if (HasNative())
 	{
-		UpdateNativeProperties(Owner);
+		UpdateNativeProperties();
 	}
 }
 #endif
@@ -60,16 +62,45 @@ void FAGX_WireMergeSplitProperties::BindBarrierToOwner(FWireBarrier& NewOwner)
 	}
 }
 
-void FAGX_WireMergeSplitProperties::UpdateNativeProperties(UAGX_WireComponent& Owner)
+void FAGX_WireMergeSplitProperties::UpdateNativeProperties()
 {
 	AGX_CHECK(HasNative());
 	NativeBarrier.SetEnableMerge(bEnableMerge);
 	NativeBarrier.SetEnableSplit(bEnableSplit);
 
-	UpdateNativeThresholds(Owner.GetWorld());
+	UpdateNativeThresholds();
 }
 
-void FAGX_WireMergeSplitProperties::UpdateNativeThresholds(UWorld* PlayingWorld)
+void FAGX_WireMergeSplitProperties::CreateNativeThresholds(UWorld* PlayingWorld)
+{
+	if (Thresholds == nullptr)
+	{
+		return;
+	}
+
+	UAGX_WireMergeSplitThresholds* ThresholdsInstance =
+		Thresholds->GetOrCreateInstance(PlayingWorld);
+	if (ThresholdsInstance == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unable to create a Merge Split Thresholds instance from the "
+				 "asset '%s'."),
+			*Thresholds->GetName());
+		return;
+	}
+
+	if (!ThresholdsInstance->HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unable to create a Merge Split Thresholds Native from the "
+				 "instance '%s'."),
+			*ThresholdsInstance->GetName());
+	}
+}
+
+void FAGX_WireMergeSplitProperties::UpdateNativeThresholds()
 {
 	AGX_CHECK(HasNative());
 	if (Thresholds == nullptr)
@@ -78,14 +109,13 @@ void FAGX_WireMergeSplitProperties::UpdateNativeThresholds(UWorld* PlayingWorld)
 		return;
 	}
 
-	UAGX_WireMergeSplitThresholds* ThresholdsInstance =
-			Thresholds->GetOrCreateInstance(PlayingWorld);
-	if (!ThresholdsInstance)
+	UAGX_WireMergeSplitThresholds* ThresholdsInstance = Thresholds->GetInstance();
+	if (ThresholdsInstance == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Unable to create a Merge Split Thresholds instance from the "
-				 "given asset '%s'."),
+			TEXT("UpdateNativeThresholds called on Thresholds '%s' but it does not have an "
+				 "instance. Has CreateNativeThresholds been called?"),
 			*Thresholds->GetName());
 		return;
 	}
@@ -95,10 +125,8 @@ void FAGX_WireMergeSplitProperties::UpdateNativeThresholds(UWorld* PlayingWorld)
 		Thresholds = ThresholdsInstance;
 	}
 
-	FWireMergeSplitThresholdsBarrier* Barrier =
-		ThresholdsInstance->GetOrCreateNative(PlayingWorld);
+	FWireMergeSplitThresholdsBarrier* Barrier = ThresholdsInstance->GetNative();
 	AGX_CHECK(Barrier);
-
 	NativeBarrier.SetWireMergeSplitThresholds(Barrier);
 }
 

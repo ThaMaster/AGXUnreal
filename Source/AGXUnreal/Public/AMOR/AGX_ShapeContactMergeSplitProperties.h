@@ -54,10 +54,9 @@ public:
 	virtual UAGX_MergeSplitThresholdsBase* GetThresholds() override;
 
 private:
-	template <typename T>
-	void UpdateNativeProperties(T& Owner);
-
-	void UpdateNativeThresholds(UWorld* PlayingWorld);
+	void UpdateNativeProperties();
+	void CreateNativeThresholds(UWorld* PlayingWorld);
+	void UpdateNativeThresholds();
 };
 
 /**

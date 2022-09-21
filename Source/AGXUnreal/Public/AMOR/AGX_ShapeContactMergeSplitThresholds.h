@@ -180,11 +180,13 @@ public:
 	void CreateNative(UWorld* PlayingWorld);
 	bool HasNative() const;
 	FShapeContactMergeSplitThresholdsBarrier* GetOrCreateNative(UWorld* PlayingWorld);
+	FShapeContactMergeSplitThresholdsBarrier* GetNative();
 
 	static UAGX_ShapeContactMergeSplitThresholds* CreateFromAsset(
 		UWorld* PlayingWorld, UAGX_ShapeContactMergeSplitThresholds& Source);
 
 	UAGX_ShapeContactMergeSplitThresholds* GetOrCreateInstance(UWorld* PlayingWorld);
+	UAGX_ShapeContactMergeSplitThresholds* GetInstance();
 
 	bool IsInstance() const;
 

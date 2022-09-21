@@ -72,11 +72,13 @@ public:
 	void CreateNative(UWorld* PlayingWorld);
 	bool HasNative() const;
 	FWireMergeSplitThresholdsBarrier* GetOrCreateNative(UWorld* PlayingWorld);
+	FWireMergeSplitThresholdsBarrier* GetNative();
 
 	static UAGX_WireMergeSplitThresholds* CreateFromAsset(
 		UWorld* PlayingWorld, UAGX_WireMergeSplitThresholds& Source);
 
 	UAGX_WireMergeSplitThresholds* GetOrCreateInstance(UWorld* PlayingWorld);
+	UAGX_WireMergeSplitThresholds* GetInstance();
 
 	bool IsInstance() const;
 

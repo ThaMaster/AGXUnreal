@@ -17,7 +17,8 @@ void FAGX_ConstraintMergeSplitProperties::OnBeginPlay(UAGX_ConstraintComponent& 
 	if (bEnableMerge || bEnableSplit)
 	{
 		CreateNative(Owner);
-		UpdateNativeProperties(Owner);
+		CreateNativeThresholds(Owner);
+		UpdateNativeProperties();
 	}
 }
 
@@ -32,12 +33,13 @@ void FAGX_ConstraintMergeSplitProperties::OnPostEditChangeProperty(UAGX_Constrai
 			// If we have not yet allocated a native, and we are in Play, and EnableMerge or
 			// EnableSplit is true, then we should now allocate a Native.
 			CreateNative(Owner);
+			CreateNativeThresholds(Owner);
 		}
 	}
 
 	if (HasNative())
 	{
-		UpdateNativeProperties(Owner);
+		UpdateNativeProperties();
 	}
 }
 #endif
@@ -58,16 +60,46 @@ void FAGX_ConstraintMergeSplitProperties::BindBarrierToOwner(FConstraintBarrier&
 	}
 }
 
-void FAGX_ConstraintMergeSplitProperties::UpdateNativeProperties(UAGX_ConstraintComponent& Owner)
+void FAGX_ConstraintMergeSplitProperties::UpdateNativeProperties()
 {
 	AGX_CHECK(HasNative());
 	NativeBarrier.SetEnableMerge(bEnableMerge);
 	NativeBarrier.SetEnableSplit(bEnableSplit);
 
-	UpdateNativeThresholds(Owner);
+	UpdateNativeThresholds();
 }
 
-void FAGX_ConstraintMergeSplitProperties::UpdateNativeThresholds(UAGX_ConstraintComponent& Owner)
+void FAGX_ConstraintMergeSplitProperties::CreateNativeThresholds(UAGX_ConstraintComponent& Owner)
+{
+	if (Thresholds == nullptr)
+	{
+		return;
+	}
+
+	UWorld* PlayingWorld = Owner.GetWorld();
+	UAGX_ConstraintMergeSplitThresholds* ThresholdsInstance =
+		Thresholds->GetOrCreateInstance(PlayingWorld, Owner.IsRotational());
+	if (ThresholdsInstance == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unable to create a Merge Split Thresholds instance from the "
+				 "asset '%s'."),
+			*Thresholds->GetName());
+		return;
+	}
+
+	if (!ThresholdsInstance->HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unable to create a Merge Split Thresholds Native from the "
+				 "instance '%s'."),
+			*ThresholdsInstance->GetName());
+	}
+}
+
+void FAGX_ConstraintMergeSplitProperties::UpdateNativeThresholds()
 {
 	AGX_CHECK(HasNative());
 	if (Thresholds == nullptr)
@@ -76,15 +108,13 @@ void FAGX_ConstraintMergeSplitProperties::UpdateNativeThresholds(UAGX_Constraint
 		return;
 	}
 
-	UWorld* PlayingWorld = Owner.GetWorld();
-	UAGX_ConstraintMergeSplitThresholds* ThresholdsInstance =
-		Thresholds->GetOrCreateInstance(PlayingWorld, Owner.IsRotational());
-	if (!ThresholdsInstance)
+	UAGX_ConstraintMergeSplitThresholds* ThresholdsInstance = Thresholds->GetInstance();
+	if (ThresholdsInstance == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Unable to create a Merge Split Thresholds instance from the "
-				 "given asset '%s'."),
+			TEXT("UpdateNativeThresholds called on Thresholds '%s' but it does not have an "
+				 "instance. Has CreateNativeThresholds been called?"),
 			*Thresholds->GetName());
 		return;
 	}
@@ -94,10 +124,8 @@ void FAGX_ConstraintMergeSplitProperties::UpdateNativeThresholds(UAGX_Constraint
 		Thresholds = ThresholdsInstance;
 	}
 
-	FConstraintMergeSplitThresholdsBarrier* Barrier =
-		ThresholdsInstance->GetOrCreateNative(PlayingWorld, Owner.IsRotational());
+	FConstraintMergeSplitThresholdsBarrier* Barrier = ThresholdsInstance->GetNative();
 	AGX_CHECK(Barrier);
-
 	NativeBarrier.SetConstraintMergeSplitThresholds(Barrier);
 }
 

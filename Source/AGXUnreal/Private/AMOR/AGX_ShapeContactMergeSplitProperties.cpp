@@ -20,7 +20,8 @@ void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay(T& Owner)
 	if (bEnableMerge || bEnableSplit)
 	{
 		CreateNative(Owner);
-		UpdateNativeProperties(Owner);
+		CreateNativeThresholds(Owner.GetWorld());
+		UpdateNativeProperties();
 	}
 }
 
@@ -37,12 +38,13 @@ void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty(T& Owner)
 		if (Owner.HasNative() && !HasNative())
 		{
 			CreateNative(Owner);
+			CreateNativeThresholds(Owner.GetWorld());
 		}
 	}	
 
 	if (HasNative())
 	{
-		UpdateNativeProperties(Owner);
+		UpdateNativeProperties();
 	}
 }
 #endif
@@ -56,17 +58,45 @@ void FAGX_ShapeContactMergeSplitProperties::CreateNative(T& Owner)
 	NativeBarrier.AllocateNative(*Owner.GetNative());
 }
 
-template <typename T>
-void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties(T& Owner)
+void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties()
 {
 	AGX_CHECK(HasNative());
 	NativeBarrier.SetEnableMerge(bEnableMerge);
 	NativeBarrier.SetEnableSplit(bEnableSplit);
 
-	UpdateNativeThresholds(Owner.GetWorld());
+	UpdateNativeThresholds();
 }
 
-void FAGX_ShapeContactMergeSplitProperties::UpdateNativeThresholds(UWorld* PlayingWorld)
+void FAGX_ShapeContactMergeSplitProperties::CreateNativeThresholds(UWorld* PlayingWorld)
+{
+	if (Thresholds == nullptr)
+	{
+		return;
+	}
+
+	UAGX_ShapeContactMergeSplitThresholds* ThresholdsInstance =
+		Thresholds->GetOrCreateInstance(PlayingWorld);
+	if (ThresholdsInstance == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unable to create a Merge Split Thresholds instance from the "
+				 "asset '%s'."),
+			*Thresholds->GetName());
+		return;
+	}
+
+	if (!ThresholdsInstance->HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unable to create a Merge Split Thresholds Native from the "
+				 "instance '%s'."),
+			*ThresholdsInstance->GetName());
+	}
+}
+
+void FAGX_ShapeContactMergeSplitProperties::UpdateNativeThresholds()
 {
 	AGX_CHECK(HasNative());
 	if (Thresholds == nullptr)
@@ -75,12 +105,14 @@ void FAGX_ShapeContactMergeSplitProperties::UpdateNativeThresholds(UWorld* Playi
 		return;
 	}
 
-	UAGX_ShapeContactMergeSplitThresholds* ThresholdsInstance =		
-			Thresholds->GetOrCreateInstance(PlayingWorld);
-	if (!ThresholdsInstance)
+	UAGX_ShapeContactMergeSplitThresholds* ThresholdsInstance = Thresholds->GetInstance();
+	if (ThresholdsInstance == nullptr)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Unable to create a Merge Split Thresholds instance from the "
-		"given asset '%s'."), *Thresholds->GetName());
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UpdateNativeThresholds called on Thresholds '%s' but it does not have an "
+				 "instance. Has CreateNativeThresholds been called?"),
+			*Thresholds->GetName());
 		return;
 	}
 
@@ -88,11 +120,9 @@ void FAGX_ShapeContactMergeSplitProperties::UpdateNativeThresholds(UWorld* Playi
 	{
 		Thresholds = ThresholdsInstance;
 	}
-	
-	FShapeContactMergeSplitThresholdsBarrier* Barrier =
-		ThresholdsInstance->GetOrCreateNative(PlayingWorld);
-	AGX_CHECK(Barrier);
 
+	FShapeContactMergeSplitThresholdsBarrier* Barrier = ThresholdsInstance->GetNative();
+	AGX_CHECK(Barrier);
 	NativeBarrier.SetShapeContactMergeSplitThresholds(Barrier);
 }
 
@@ -134,8 +164,3 @@ template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::CreateNative<
 	UAGX_RigidBodyComponent&);
 template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::CreateNative<UAGX_ShapeComponent>(
 	UAGX_ShapeComponent&);
-
-template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties<
-	UAGX_RigidBodyComponent>(UAGX_RigidBodyComponent&);
-template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties<
-	UAGX_ShapeComponent>(UAGX_ShapeComponent&);
