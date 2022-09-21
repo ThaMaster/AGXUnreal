@@ -8,6 +8,9 @@
 #include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 
+// Unreal Engine includes.
+#include "UObject/Class.h"
+
 namespace AGX_ConstraintMergeSplitProperties_helpers
 {
 	void CheckAmorEnabled()

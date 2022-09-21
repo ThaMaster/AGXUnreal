@@ -9,6 +9,9 @@
 #include "AMOR/AGX_WireMergeSplitThresholds.h"
 #include "Wire/AGX_WireComponent.h"
 
+// Unreal Engine includes.
+#include "UObject/Class.h"
+
 namespace AGX_WireMergeSplitProperties_helpers
 {
 	void CheckAmorEnabled()

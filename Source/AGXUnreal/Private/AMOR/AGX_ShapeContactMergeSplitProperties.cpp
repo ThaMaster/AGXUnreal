@@ -10,6 +10,8 @@
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 #include "Shapes/AGX_ShapeComponent.h"
 
+// Unreal Engine includes.
+#include "UObject/Class.h"
 
 namespace AGX_ShapeContactMergeSplitProperties_helpers
 {
