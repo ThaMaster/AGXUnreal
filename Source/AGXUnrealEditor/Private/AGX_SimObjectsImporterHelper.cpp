@@ -56,7 +56,6 @@
 #include "Misc/Paths.h"
 #include "UObject/UObjectGlobals.h"
 
-
 namespace
 {
 	/**
@@ -321,8 +320,14 @@ namespace
 		const TMap<FGuid, UAGX_ShapeMaterial*>& RestoredShapeMaterials,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials,
 		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName,
-		UMeshComponent& VisualMesh)
+		UMeshComponent& VisualMesh, UAGX_MergeSplitThresholdsBase* ThresholdsAsset)
 	{
+		if (ThresholdsAsset != nullptr)
+		{
+			Component.MergeSplitProperties.Thresholds =
+				Cast<UAGX_ShapeContactMergeSplitThresholds>(ThresholdsAsset);
+		}
+
 		Component.UpdateVisualMesh();
 		Component.SetFlags(RF_Transactional);
 		FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
@@ -424,7 +429,7 @@ namespace
 
 		const FGuid Guid = Thresholds.GetGuid();
 		const FString AssetName = [&]() -> FString
-		{ 
+		{
 			switch (OwningType)
 			{
 				case EAGX_AmorOwningType::BodyOrShape:
@@ -435,8 +440,10 @@ namespace
 					return "AGX_WMST_" + Guid.ToString();
 			}
 
-			UE_LOG(LogAGX, Warning, TEXT("Unknown OwningType in GetOrCreateMergeSplitThresholdsAsset."));
-			return "AGX_MST_" + Guid.ToString(); 
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Unknown OwningType in GetOrCreateMergeSplitThresholdsAsset."));
+			return "AGX_MST_" + Guid.ToString();
 		}();
 
 		if (!Guid.IsValid())
@@ -483,12 +490,16 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 		return nullptr;
 	}
 	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
+	Component->CopyFrom(Barrier);
 
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
-		FRigidBodyBarrier, FShapeContactMergeSplitThresholdsBarrier>(
-		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
+	if (auto ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
+			FRigidBodyBarrier, FShapeContactMergeSplitThresholdsBarrier>(
+			Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName))
+	{
+		Component->MergeSplitProperties.Thresholds =
+			Cast<UAGX_ShapeContactMergeSplitThresholds>(ThresholdsAsset);
+	}
 
-	Component->CopyFrom(Barrier, ThresholdsAsset);
 	Component->SetFlags(RF_Transactional);
 	Actor.AddInstanceComponent(Component);
 	Component->RegisterComponent();
@@ -514,10 +525,10 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 		FSphereShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
 		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
 
-	Component->CopyFrom(Barrier, ThresholdsAsset);
+	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, ThresholdsAsset);
 	return Component;
 }
 
@@ -537,10 +548,10 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 		FBoxShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
 		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
 
-	Component->CopyFrom(Barrier, ThresholdsAsset);
+	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, ThresholdsAsset);
 	return Component;
 }
 
@@ -561,10 +572,10 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 		FCylinderShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
 		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
 
-	Component->CopyFrom(Barrier, ThresholdsAsset);
+	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, ThresholdsAsset);
 	return Component;
 }
 
@@ -584,10 +595,10 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 		FCapsuleShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
 		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
 
-	Component->CopyFrom(Barrier, ThresholdsAsset);
+	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, ThresholdsAsset);
 	return Component;
 }
 
@@ -648,10 +659,10 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 		FTrimeshShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
 		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
 
-	Component->CopyFrom(Barrier, ThresholdsAsset);
+	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *MeshComponent);
+		DirectoryName, *MeshComponent, ThresholdsAsset);
 	return Component;
 }
 
@@ -723,11 +734,16 @@ namespace
 			return nullptr;
 		}
 
-		UAGX_MergeSplitThresholdsBase* ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
-			FBarrier, FConstraintMergeSplitThresholdsBarrier>(
-			Barrier, EAGX_AmorOwningType::Constraint, RestoredThresholds, DirectoryName);
+		Component->CopyFrom(Barrier);
 
-		Component->CopyFrom(Barrier, ThresholdsAsset);
+		if (auto ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
+				FBarrier, FConstraintMergeSplitThresholdsBarrier>(
+				Barrier, EAGX_AmorOwningType::Constraint, RestoredThresholds, DirectoryName))
+		{
+			Component->MergeSplitProperties.Thresholds =
+				Cast<UAGX_ConstraintMergeSplitThresholds>(ThresholdsAsset);
+		}
+
 		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 			Barrier, *Component, Bodies.first, Bodies.second);
 		FAGX_ConstraintUtilities::CopyControllersFrom(*Component, Barrier);
@@ -880,13 +896,17 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 
 	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
 
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset =
-		::GetOrCreateMergeSplitThresholdsAsset<FWireBarrier, FWireMergeSplitThresholdsBarrier>(
-			Barrier, EAGX_AmorOwningType::Wire, RestoredThresholds, DirectoryName);
-
 	// Copy simple properties such as radius and segment length. More complicated properties, such
-	// as physical material, winches and route nodes, are handled below.
-	Component->CopyFrom(Barrier, ThresholdsAsset);
+	// as physical material, winches route nodes and Merge Split Thresholds, are handled below.
+	Component->CopyFrom(Barrier);
+
+	if (auto ThresholdsAsset =
+			::GetOrCreateMergeSplitThresholdsAsset<FWireBarrier, FWireMergeSplitThresholdsBarrier>(
+				Barrier, EAGX_AmorOwningType::Wire, RestoredThresholds, DirectoryName))
+	{
+		Component->MergeSplitProperties.Thresholds =
+			Cast<UAGX_WireMergeSplitThresholds>(ThresholdsAsset);
+	}
 
 	// Find and assign the physical material asset.
 	FShapeMaterialBarrier NativeMaterial = Barrier.GetMaterial();

@@ -322,7 +322,7 @@ public:
 	 *
 	 * @param Barrier The AGX Dynamics RigidBody to copy from.
 	 */
-	void CopyFrom(const FRigidBodyBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds);
+	void CopyFrom(const FRigidBodyBarrier& Barrier);
 
 	static TArray<UAGX_RigidBodyComponent*> GetFromActor(const AActor* Actor);
 	static UAGX_RigidBodyComponent* GetFirstFromActor(const AActor* Actor);

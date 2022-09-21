@@ -1101,8 +1101,7 @@ TArray<FVector> UAGX_WireComponent::GetRenderNodeLocations() const
 	return Result;
 }
 
-void UAGX_WireComponent::CopyFrom(
-	const FWireBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds)
+void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
 {
 	Radius = Barrier.GetRadius();
 	MinSegmentLength = 1.0f / Barrier.GetResolutionPerUnitLength();
@@ -1112,7 +1111,7 @@ void UAGX_WireComponent::CopyFrom(
 		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FWireBarrier*>(&Barrier));
 	if (Msp.HasNative())
 	{
-		MergeSplitProperties.CopyFrom(Msp, Thresholds);
+		MergeSplitProperties.CopyFrom(Msp);
 	}
 
 	// Physical material, winches, and route nodes not set here since this is a pure data copy. For
@@ -1206,7 +1205,8 @@ void UAGX_WireComponent::PostInitProperties()
 
 void UAGX_WireComponent::InitPropertyDispatcher()
 {
-	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
@@ -1775,8 +1775,11 @@ bool UAGX_WireComponent::UpdateNativeMaterial()
 {
 	if (!HasNative())
 	{
-		UE_LOG(LogAGX, Error, TEXT("UpdateNativeMaterial called on Wire '%s' but it does not have a "
-			"native AGX Dynamics representation."), *GetName());
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("UpdateNativeMaterial called on Wire '%s' but it does not have a "
+				 "native AGX Dynamics representation."),
+			*GetName());
 		return false;
 	}
 

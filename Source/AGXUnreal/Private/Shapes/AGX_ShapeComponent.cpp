@@ -287,8 +287,7 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 	}
 }
 
-void UAGX_ShapeComponent::CopyFrom(
-	const FShapeBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds)
+void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 {
 	bCanCollide = Barrier.GetEnableCollisions();
 	bIsSensor = Barrier.GetIsSensor();
@@ -311,7 +310,7 @@ void UAGX_ShapeComponent::CopyFrom(
 		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FShapeBarrier*>(&Barrier));
 	if (Msp.HasNative())
 	{
-		MergeSplitProperties.CopyFrom(Msp, Thresholds);
+		MergeSplitProperties.CopyFrom(Msp);
 	}
 
 	/// \todo Should shape material be handled here? If so, how? We don't have access to the

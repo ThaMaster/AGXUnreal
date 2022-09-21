@@ -79,11 +79,9 @@ void UAGX_TrimeshShapeComponent::UpdateNativeProperties()
 	UpdateNativeLocalTransform(NativeBarrier);
 }
 
-void UAGX_TrimeshShapeComponent::CopyFrom(
-	const FTrimeshShapeBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds)
+void UAGX_TrimeshShapeComponent::CopyFrom(const FTrimeshShapeBarrier& Barrier)
 {
-	/// \todo Where is all the triangle data copied?
-	Super::CopyFrom(Barrier, Thresholds);
+	Super::CopyFrom(Barrier);
 }
 
 void UAGX_TrimeshShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& /*OutMeshData*/)

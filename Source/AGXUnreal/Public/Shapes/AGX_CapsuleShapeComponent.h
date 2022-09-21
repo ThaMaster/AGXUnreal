@@ -78,7 +78,7 @@ public:
 	 * Will also copy properties inherited from UAGX_ShapeComponent.
 	 * @param Barrier The AGX Dynamics Capsule to copy from.
 	 */
-	void CopyFrom(const FCapsuleShapeBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds);
+	void CopyFrom(const FCapsuleShapeBarrier& Barrier);
 
 protected:
 	// ~Begin UAGX_ShapeComponent interface.

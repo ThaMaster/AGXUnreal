@@ -53,3 +53,9 @@ FMergeSplitPropertiesBarrier& FAGX_MergeSplitPropertiesBase::GetNative()
 {
 	return NativeBarrier;
 }
+
+void FAGX_MergeSplitPropertiesBase::CopyFrom(const FMergeSplitPropertiesBarrier& Barrier)
+{
+	bEnableMerge = Barrier.GetEnableMerge();
+	bEnableSplit = Barrier.GetEnableSplit();
+}

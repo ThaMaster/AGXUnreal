@@ -48,10 +48,6 @@ public:
 	template <typename T>
 	void CreateNative(T& Owner);
 
-	virtual void CopyFrom(
-		const FMergeSplitPropertiesBarrier& Barrier,
-		UAGX_MergeSplitThresholdsBase* InThresholds) override;
-
 	void BindBarrierToOwner(FRigidBodyBarrier& NewOwner);
 	void BindBarrierToOwner(FShapeBarrier& NewOwner);
 

@@ -53,7 +53,7 @@ public:
 	 *
 	 * @param Barrier The AGX Dynamics sphere to copy from.
 	 */
-	void CopyFrom(const FSphereShapeBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds);
+	void CopyFrom(const FSphereShapeBarrier& Barrier);
 
 protected:
 	// ~Begin UAGX_ShapeComponent interface.

@@ -109,7 +109,7 @@ public:
 	 * Will also copy properties inherited from UAGX_ShapeComponent.
 	 * @param Barrier The AGX Dynamics cylinder to copy from.
 	 */
-	void CopyFrom(const FCylinderShapeBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds);
+	void CopyFrom(const FCylinderShapeBarrier& Barrier);
 
 protected:
 	// ~Begin UAGX_ShapeComponent interface.

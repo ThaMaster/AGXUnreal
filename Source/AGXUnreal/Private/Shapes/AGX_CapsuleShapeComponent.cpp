@@ -170,10 +170,9 @@ void UAGX_CapsuleShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetRadius(Radius * GetComponentScale().X);
 }
 
-void UAGX_CapsuleShapeComponent::CopyFrom(
-	const FCapsuleShapeBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds)
+void UAGX_CapsuleShapeComponent::CopyFrom(const FCapsuleShapeBarrier& Barrier)
 {
-	Super::CopyFrom(Barrier, Thresholds);
+	Super::CopyFrom(Barrier);
 	Height = Barrier.GetHeight();
 	Radius = Barrier.GetRadius();
 }

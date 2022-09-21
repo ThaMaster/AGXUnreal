@@ -44,10 +44,6 @@ public:
 
 	void CreateNative(UAGX_WireComponent& Owner);
 
-	virtual void CopyFrom(
-		const FMergeSplitPropertiesBarrier& Barrier,
-		UAGX_MergeSplitThresholdsBase* InThresholds) override;
-
 	void BindBarrierToOwner(FWireBarrier& NewOwner);
 
 private:

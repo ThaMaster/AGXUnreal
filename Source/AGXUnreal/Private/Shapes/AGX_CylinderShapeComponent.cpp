@@ -191,10 +191,9 @@ void UAGX_CylinderShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetGypsyProperty(bGypsy);
 }
 
-void UAGX_CylinderShapeComponent::CopyFrom(
-	const FCylinderShapeBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds)
+void UAGX_CylinderShapeComponent::CopyFrom(const FCylinderShapeBarrier& Barrier)
 {
-	Super::CopyFrom(Barrier, Thresholds);
+	Super::CopyFrom(Barrier);
 	Height = Barrier.GetHeight();
 	Radius = Barrier.GetRadius();
 

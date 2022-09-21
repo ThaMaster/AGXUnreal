@@ -333,7 +333,7 @@ public:
 		const UAGX_RigidBodyComponent* Body, FVector& OutForce, FVector& OutTorque,
 		bool bForceAtCm = false) const;
 
-	void CopyFrom(const FConstraintBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds);
+	void CopyFrom(const FConstraintBarrier& Barrier);
 
 	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics1() const
 	{

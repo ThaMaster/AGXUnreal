@@ -822,7 +822,7 @@ public:
 	 * properties, such as winch setup and route nodes, must be handled elsewhere. During AGX
 	 * Dynamics archive import those are handled by Sim Objects Importer Helper.
 	 */
-	void CopyFrom(const FWireBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds);
+	void CopyFrom(const FWireBarrier& Barrier);
 
 	//~ Begin IAGX_NativeOwner interface.
 	/**

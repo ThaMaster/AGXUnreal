@@ -45,10 +45,6 @@ public:
 
 	void CreateNative(UAGX_ConstraintComponent& Owner);
 
-	virtual void CopyFrom(
-		const FMergeSplitPropertiesBarrier& Barrier,
-		UAGX_MergeSplitThresholdsBase* InThresholds) override;
-
 	void BindBarrierToOwner(FConstraintBarrier& NewOwner);
 
 private:

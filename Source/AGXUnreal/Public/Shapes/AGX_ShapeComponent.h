@@ -234,7 +234,7 @@ protected:
 	 * Called from each subclass' type-specific CopyFrom.
 	 * @param Barrier The AGX Dynamics shape to copy from.
 	 */
-	void CopyFrom(const FShapeBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds);
+	void CopyFrom(const FShapeBarrier& Barrier);
 
 	/**
 	 * Updates the local transform of the native geometry to match this component's

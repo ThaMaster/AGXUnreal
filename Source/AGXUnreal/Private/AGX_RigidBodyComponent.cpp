@@ -71,7 +71,6 @@ void UAGX_RigidBodyComponent::PostEditChangeProperty(FPropertyChangedEvent& Prop
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
 
-
 void UAGX_RigidBodyComponent::PostEditComponentMove(bool bFinished)
 {
 	Super::PostEditComponentMove(bFinished);
@@ -353,9 +352,13 @@ void UAGX_RigidBodyComponent::CreateMergeSplitProperties()
 {
 	if (!HasNative())
 	{
-		UE_LOG(LogAGX, Warning, TEXT("UAGX_RigidBodyComponent::CreateMergeSplitProperties was called "
-			"on Rigid Body '%s' that does not have a Native AGX Dynamics object. Only call this function "
-			"during play."), *GetName());
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_RigidBodyComponent::CreateMergeSplitProperties was called "
+				 "on Rigid Body '%s' that does not have a Native AGX Dynamics object. Only call "
+				 "this function "
+				 "during play."),
+			*GetName());
 		return;
 	}
 
@@ -463,8 +466,7 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	InitializeMotionControl();
 }
 
-void UAGX_RigidBodyComponent::CopyFrom(
-	const FRigidBodyBarrier& Barrier, UAGX_MergeSplitThresholdsBase* Thresholds)
+void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 {
 	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
 	Mass = MassProperties.GetMass();
@@ -498,11 +500,11 @@ void UAGX_RigidBodyComponent::CopyFrom(
 	/// \todo Should it always be SetWorld... here, or should we do SetRelative in some cases?
 	SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
 
-	const FMergeSplitPropertiesBarrier Msp = FMergeSplitPropertiesBarrier::CreateFrom(
-		*const_cast<FRigidBodyBarrier*>(&Barrier));
+	const FMergeSplitPropertiesBarrier Msp =
+		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FRigidBodyBarrier*>(&Barrier));
 	if (Msp.HasNative())
 	{
-		MergeSplitProperties.CopyFrom(Msp, Thresholds);
+		MergeSplitProperties.CopyFrom(Msp);
 	}
 }
 
