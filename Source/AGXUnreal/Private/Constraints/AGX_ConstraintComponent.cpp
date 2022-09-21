@@ -851,6 +851,10 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, bComputeForces),
 		[](ThisClass* This) { This->SetComputeForces(This->bComputeForces); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, MergeSplitProperties),
+		[](ThisClass* This) { This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
 }
 
 void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -912,10 +916,6 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 		{
 			ModifiedBodyAttachment->FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 		}
-	}
-	else if (Member == GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, MergeSplitProperties))
-	{
-		MergeSplitProperties.OnPostEditChangeProperty(*this);
 	}
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning

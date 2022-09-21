@@ -60,11 +60,6 @@ void UAGX_RigidBodyComponent::PostEditChangeProperty(FPropertyChangedEvent& Prop
 {
 	const FName Member = GetFNameSafe(PropertyChangedEvent.MemberProperty);
 
-	if (Member == GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MergeSplitProperties))
-	{
-		MergeSplitProperties.OnPostEditChangeProperty(*this);
-	}
-
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
@@ -201,6 +196,10 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MotionControl),
 		[](ThisClass* This) { This->SetMotionControl(This->MotionControl); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MergeSplitProperties), [](ThisClass* This)
+		{ This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
 
 /// @todo Enable once we get UAGX_RigidBodyComponent::SetTransformTarget.
 #if 0

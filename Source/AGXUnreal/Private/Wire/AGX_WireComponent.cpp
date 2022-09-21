@@ -1220,6 +1220,10 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, MinSegmentLength),
 		[](ThisClass* Wire) { Wire->SetMinSegmentLength(Wire->MinSegmentLength); });
 
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, MergeSplitProperties),
+		[](ThisClass* This) { This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
+
 	// Begin Winch.
 
 #if 0
@@ -1322,13 +1326,6 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 
 void UAGX_WireComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	const FName Member = GetFNameSafe(PropertyChangedEvent.MemberProperty);
-
-	if (Member == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, MergeSplitProperties))
-	{
-		MergeSplitProperties.OnPostEditChangeProperty(*this);
-	}
-
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.

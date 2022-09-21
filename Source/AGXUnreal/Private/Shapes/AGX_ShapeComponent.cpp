@@ -165,11 +165,6 @@ void UAGX_ShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& Property
 		UpdateVisualMesh();
 	}
 
-	if (MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_ShapeComponent, MergeSplitProperties))
-	{
-		MergeSplitProperties.OnPostEditChangeProperty(*this);
-	}
-
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
@@ -214,6 +209,10 @@ void UAGX_ShapeComponent::PostInitProperties()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, bIsSensor),
 		[](ThisClass* This) { This->SetIsSensor(This->bIsSensor); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, MergeSplitProperties),
+		[](ThisClass* This) { This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
 #endif
 }
 
