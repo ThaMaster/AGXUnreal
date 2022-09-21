@@ -123,6 +123,7 @@ void UAGX_WireMergeSplitThresholds::CreateNative(UWorld* PlayingWorld)
 		}
 
 		Instance->CreateNative(PlayingWorld);
+		return;
 	}
 
 	AGX_CHECK(IsInstance());

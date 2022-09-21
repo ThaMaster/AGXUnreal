@@ -206,6 +206,7 @@ void UAGX_ConstraintMergeSplitThresholds::CreateNative(UWorld* PlayingWorld, boo
 		}
 
 		Instance->CreateNative(PlayingWorld, bIsRotational);
+		return;
 	}
 
 	AGX_CHECK(IsInstance());

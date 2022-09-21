@@ -257,6 +257,7 @@ void UAGX_ShapeContactMergeSplitThresholds::CreateNative(UWorld* PlayingWorld)
 		}
 
 		Instance->CreateNative(PlayingWorld);
+		return;
 	}
 
 	AGX_CHECK(IsInstance());
