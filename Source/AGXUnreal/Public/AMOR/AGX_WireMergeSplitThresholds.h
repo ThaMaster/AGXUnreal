@@ -99,5 +99,5 @@ private:
 
 	TWeakObjectPtr<UAGX_WireMergeSplitThresholds> Asset;
 	TWeakObjectPtr<UAGX_WireMergeSplitThresholds> Instance;
-	TUniquePtr<FWireMergeSplitThresholdsBarrier> NativeBarrier;
+	FWireMergeSplitThresholdsBarrier NativeBarrier;
 };

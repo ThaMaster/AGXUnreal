@@ -20,7 +20,7 @@ void UAGX_TerrainMaterial::SetFrictionEnabled(bool Enabled)
 	{
 		Surface.bFrictionEnabled = Enabled;
 		if (HasShapeMaterialNative())
-			ShapeMaterialNativeBarrier->SetFrictionEnabled(Enabled);
+			ShapeMaterialNativeBarrier.SetFrictionEnabled(Enabled);
 	}
 	else // IsAsset
 	{
@@ -38,7 +38,7 @@ bool UAGX_TerrainMaterial::GetFrictionEnabled() const
 	if (Instance != nullptr)
 		return Instance->GetFrictionEnabled();
 	if (HasShapeMaterialNative())
-		return ShapeMaterialNativeBarrier->GetFrictionEnabled();
+		return ShapeMaterialNativeBarrier.GetFrictionEnabled();
 
 	return Surface.bFrictionEnabled;
 }
@@ -102,7 +102,7 @@ void UAGX_TerrainMaterial::SetAdhesion(double AdhesiveForce, double AdhesiveOver
 		Surface.AdhesiveOverlap = AdhesiveOverlap;
 		if (HasShapeMaterialNative())
 		{
-			ShapeMaterialNativeBarrier->SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
+			ShapeMaterialNativeBarrier.SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
 		}
 	}
 	else // IsAsset
@@ -893,8 +893,12 @@ void UAGX_TerrainMaterial::CreateTerrainMaterialNative(UWorld* PlayingWorld)
 	}
 
 	AGX_CHECK(IsInstance());
-	TerrainMaterialNativeBarrier.Reset(new FTerrainMaterialBarrier());
-	TerrainMaterialNativeBarrier->AllocateNative(TCHAR_TO_UTF8(*GetName()));
+	if (TerrainMaterialNativeBarrier.HasNative())
+	{
+		TerrainMaterialNativeBarrier.ReleaseNative();
+	}
+
+	TerrainMaterialNativeBarrier.AllocateNative(TCHAR_TO_UTF8(*GetName()));
 	check(HasTerrainMaterialNative());
 
 	UpdateTerrainMaterialNativeProperties();
@@ -920,8 +924,12 @@ void UAGX_TerrainMaterial::CreateShapeMaterialNative(UWorld* PlayingWorld)
 	}
 
 	AGX_CHECK(IsInstance());
-	ShapeMaterialNativeBarrier.Reset(new FShapeMaterialBarrier());
-	ShapeMaterialNativeBarrier->AllocateNative(TCHAR_TO_UTF8(*GetName()));
+	if (ShapeMaterialNativeBarrier.HasNative())
+	{
+		ShapeMaterialNativeBarrier.ReleaseNative();
+	}
+
+	ShapeMaterialNativeBarrier.AllocateNative(TCHAR_TO_UTF8(*GetName()));
 	check(HasShapeMaterialNative());
 
 	UpdateShapeMaterialNativeProperties();
@@ -929,22 +937,22 @@ void UAGX_TerrainMaterial::CreateShapeMaterialNative(UWorld* PlayingWorld)
 
 bool UAGX_TerrainMaterial::HasTerrainMaterialNative() const
 {
-	return TerrainMaterialNativeBarrier && TerrainMaterialNativeBarrier->HasNative();
+	return TerrainMaterialNativeBarrier.HasNative();
 }
 
 bool UAGX_TerrainMaterial::HasShapeMaterialNative() const
 {
-	return ShapeMaterialNativeBarrier && ShapeMaterialNativeBarrier->HasNative();
+	return ShapeMaterialNativeBarrier.HasNative();
 }
 
 FTerrainMaterialBarrier* UAGX_TerrainMaterial::GetTerrainMaterialNative()
 {
-	return TerrainMaterialNativeBarrier.Get();
+	return &TerrainMaterialNativeBarrier;
 }
 
 FShapeMaterialBarrier* UAGX_TerrainMaterial::GetShapeMaterialNative()
 {
-	return ShapeMaterialNativeBarrier.Get();
+	return &ShapeMaterialNativeBarrier;
 }
 
 void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()
@@ -952,31 +960,31 @@ void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()
 	if (HasTerrainMaterialNative())
 	{
 		AGX_CHECK(IsInstance());
-		TerrainMaterialNativeBarrier->SetName(TCHAR_TO_UTF8(*GetName()));
+		TerrainMaterialNativeBarrier.SetName(TCHAR_TO_UTF8(*GetName()));
 
 		// Set Bulk properties.
-		TerrainMaterialNativeBarrier->SetAdhesionOverlapFactor(TerrainBulk.AdhesionOverlapFactor);
-		TerrainMaterialNativeBarrier->SetCohesion(TerrainBulk.Cohesion);
-		TerrainMaterialNativeBarrier->SetDensity(TerrainBulk.Density);
-		TerrainMaterialNativeBarrier->SetDilatancyAngle(TerrainBulk.DilatancyAngle);
-		TerrainMaterialNativeBarrier->SetFrictionAngle(TerrainBulk.FrictionAngle);
-		TerrainMaterialNativeBarrier->SetMaxDensity(TerrainBulk.MaxDensity);
-		TerrainMaterialNativeBarrier->SetPoissonsRatio(TerrainBulk.PoissonsRatio);
-		TerrainMaterialNativeBarrier->SetSwellFactor(TerrainBulk.SwellFactor);
-		TerrainMaterialNativeBarrier->SetYoungsModulus(TerrainBulk.YoungsModulus);
+		TerrainMaterialNativeBarrier.SetAdhesionOverlapFactor(TerrainBulk.AdhesionOverlapFactor);
+		TerrainMaterialNativeBarrier.SetCohesion(TerrainBulk.Cohesion);
+		TerrainMaterialNativeBarrier.SetDensity(TerrainBulk.Density);
+		TerrainMaterialNativeBarrier.SetDilatancyAngle(TerrainBulk.DilatancyAngle);
+		TerrainMaterialNativeBarrier.SetFrictionAngle(TerrainBulk.FrictionAngle);
+		TerrainMaterialNativeBarrier.SetMaxDensity(TerrainBulk.MaxDensity);
+		TerrainMaterialNativeBarrier.SetPoissonsRatio(TerrainBulk.PoissonsRatio);
+		TerrainMaterialNativeBarrier.SetSwellFactor(TerrainBulk.SwellFactor);
+		TerrainMaterialNativeBarrier.SetYoungsModulus(TerrainBulk.YoungsModulus);
 
 		// Set Compaction properties.
-		TerrainMaterialNativeBarrier->SetAngleOfReposeCompactionRate(
+		TerrainMaterialNativeBarrier.SetAngleOfReposeCompactionRate(
 			TerrainCompaction.AngleOfReposeCompactionRate);
-		TerrainMaterialNativeBarrier->SetBankStatePhi(TerrainCompaction.Phi0);
-		TerrainMaterialNativeBarrier->SetCompactionTimeRelaxationConstant(
+		TerrainMaterialNativeBarrier.SetBankStatePhi(TerrainCompaction.Phi0);
+		TerrainMaterialNativeBarrier.SetCompactionTimeRelaxationConstant(
 			TerrainCompaction.CompactionTimeRelaxationConstant);
-		TerrainMaterialNativeBarrier->SetCompressionIndex(TerrainCompaction.CompressionIndex);
-		TerrainMaterialNativeBarrier->SetHardeningConstantKe(TerrainCompaction.K_e);
-		TerrainMaterialNativeBarrier->SetHardeningConstantNe(TerrainCompaction.N_e);
-		TerrainMaterialNativeBarrier->SetPreconsolidationStress(
+		TerrainMaterialNativeBarrier.SetCompressionIndex(TerrainCompaction.CompressionIndex);
+		TerrainMaterialNativeBarrier.SetHardeningConstantKe(TerrainCompaction.K_e);
+		TerrainMaterialNativeBarrier.SetHardeningConstantNe(TerrainCompaction.N_e);
+		TerrainMaterialNativeBarrier.SetPreconsolidationStress(
 			TerrainCompaction.PreconsolidationStress);
-		TerrainMaterialNativeBarrier->SetStressCutOffFraction(
+		TerrainMaterialNativeBarrier.SetStressCutOffFraction(
 			TerrainCompaction.StressCutOffFraction);
 	}
 }
@@ -986,19 +994,19 @@ void UAGX_TerrainMaterial::UpdateShapeMaterialNativeProperties()
 	if (HasShapeMaterialNative())
 	{
 		AGX_CHECK(IsInstance());
-		ShapeMaterialNativeBarrier->SetName(TCHAR_TO_UTF8(*GetName()));
+		ShapeMaterialNativeBarrier.SetName(TCHAR_TO_UTF8(*GetName()));
 
-		ShapeMaterialNativeBarrier->SetDensity(Bulk.Density);
-		ShapeMaterialNativeBarrier->SetYoungsModulus(Bulk.YoungsModulus);
-		ShapeMaterialNativeBarrier->SetBulkViscosity(Bulk.Viscosity);
-		ShapeMaterialNativeBarrier->SetSpookDamping(Bulk.SpookDamping);
-		ShapeMaterialNativeBarrier->SetMinMaxElasticRestLength(
+		ShapeMaterialNativeBarrier.SetDensity(Bulk.Density);
+		ShapeMaterialNativeBarrier.SetYoungsModulus(Bulk.YoungsModulus);
+		ShapeMaterialNativeBarrier.SetBulkViscosity(Bulk.Viscosity);
+		ShapeMaterialNativeBarrier.SetSpookDamping(Bulk.SpookDamping);
+		ShapeMaterialNativeBarrier.SetMinMaxElasticRestLength(
 			Bulk.MinElasticRestLength, Bulk.MaxElasticRestLength);
 
-		ShapeMaterialNativeBarrier->SetFrictionEnabled(Surface.bFrictionEnabled);
-		ShapeMaterialNativeBarrier->SetRoughness(Surface.Roughness);
-		ShapeMaterialNativeBarrier->SetSurfaceViscosity(Surface.Viscosity);
-		ShapeMaterialNativeBarrier->SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
+		ShapeMaterialNativeBarrier.SetFrictionEnabled(Surface.bFrictionEnabled);
+		ShapeMaterialNativeBarrier.SetRoughness(Surface.Roughness);
+		ShapeMaterialNativeBarrier.SetSurfaceViscosity(Surface.Viscosity);
+		ShapeMaterialNativeBarrier.SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
 	}
 }
 

@@ -228,5 +228,5 @@ private:
 
 	TWeakObjectPtr<UAGX_ShapeMaterial> Asset;
 	TWeakObjectPtr<UAGX_ShapeMaterial> Instance;
-	TUniquePtr<FShapeMaterialBarrier> NativeBarrier;
+	FShapeMaterialBarrier NativeBarrier;
 };

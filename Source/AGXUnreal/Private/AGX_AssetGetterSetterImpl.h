@@ -13,7 +13,7 @@
 		UpropertyName = InVar; \
 		if (HasNativeFunc()) \
 		{ \
-			NativeName->SetFunc(InVar); \
+			NativeName.SetFunc(InVar); \
 		} \
 	} \
 	else \
@@ -41,7 +41,7 @@
 	} \
 	if (HasNativeFunc()) \
 	{ \
-		return NativeName->GetFunc(); \
+		return NativeName.GetFunc(); \
 	} \
 	return UpropertyName; \
 }

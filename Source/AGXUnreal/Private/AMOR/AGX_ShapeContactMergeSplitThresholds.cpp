@@ -261,8 +261,12 @@ void UAGX_ShapeContactMergeSplitThresholds::CreateNative(UWorld* PlayingWorld)
 	}
 
 	AGX_CHECK(IsInstance());
-	NativeBarrier.Reset(new FShapeContactMergeSplitThresholdsBarrier());
-	NativeBarrier->AllocateNative();
+	if (NativeBarrier.HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
+
+	NativeBarrier.AllocateNative();
 	AGX_CHECK(HasNative());
 
 	SetNativeProperties();
@@ -293,7 +297,7 @@ FShapeContactMergeSplitThresholdsBarrier* UAGX_ShapeContactMergeSplitThresholds:
 		CreateNative(PlayingWorld);
 	}
 
-	return NativeBarrier.Get();
+	return &NativeBarrier;
 }
 
 bool UAGX_ShapeContactMergeSplitThresholds::HasNative() const
@@ -304,7 +308,7 @@ bool UAGX_ShapeContactMergeSplitThresholds::HasNative() const
 		return Instance->HasNative();
 	}
 
-	return NativeBarrier && NativeBarrier->HasNative();
+	return NativeBarrier.HasNative();
 }
 
 UAGX_ShapeContactMergeSplitThresholds* UAGX_ShapeContactMergeSplitThresholds::CreateFromAsset(
@@ -384,6 +388,6 @@ void UAGX_ShapeContactMergeSplitThresholds::SetNativeProperties()
 {
 	if (HasNative())
 	{
-		CopyTo(*NativeBarrier);
+		CopyTo(NativeBarrier);
 	}
 }

@@ -127,8 +127,12 @@ void UAGX_WireMergeSplitThresholds::CreateNative(UWorld* PlayingWorld)
 	}
 
 	AGX_CHECK(IsInstance());
-	NativeBarrier.Reset(new FWireMergeSplitThresholdsBarrier());
-	NativeBarrier->AllocateNative();
+	if (NativeBarrier.HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
+
+	NativeBarrier.AllocateNative();
 	AGX_CHECK(HasNative());
 
 	SetNativeProperties();
@@ -159,7 +163,7 @@ FWireMergeSplitThresholdsBarrier* UAGX_WireMergeSplitThresholds::GetOrCreateNati
 		CreateNative(PlayingWorld);
 	}
 
-	return NativeBarrier.Get();
+	return &NativeBarrier;
 }
 
 bool UAGX_WireMergeSplitThresholds::HasNative() const
@@ -170,7 +174,7 @@ bool UAGX_WireMergeSplitThresholds::HasNative() const
 		return Instance->HasNative();
 	}
 
-	return NativeBarrier && NativeBarrier->HasNative();
+	return NativeBarrier.HasNative();
 }
 
 UAGX_WireMergeSplitThresholds* UAGX_WireMergeSplitThresholds::CreateFromAsset(
@@ -231,6 +235,6 @@ void UAGX_WireMergeSplitThresholds::SetNativeProperties()
 {
 	if (HasNative())
 	{
-		CopyTo(*NativeBarrier);
+		CopyTo(NativeBarrier);
 	}
 }

@@ -207,5 +207,5 @@ private:
 
 	TWeakObjectPtr<UAGX_ShapeContactMergeSplitThresholds> Asset;
 	TWeakObjectPtr<UAGX_ShapeContactMergeSplitThresholds> Instance;
-	TUniquePtr<FShapeContactMergeSplitThresholdsBarrier> NativeBarrier;
+	FShapeContactMergeSplitThresholdsBarrier NativeBarrier;
 };

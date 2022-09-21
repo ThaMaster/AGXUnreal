@@ -73,5 +73,5 @@ private:
 	/// \todo This member is probably not necessary.. Remove it?
 	TWeakObjectPtr<UAGX_ContactMaterialAsset> SourceAsset;
 
-	TUniquePtr<FContactMaterialBarrier> NativeBarrier;
+	FContactMaterialBarrier NativeBarrier;
 };

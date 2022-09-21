@@ -54,7 +54,7 @@ void UAGX_ContactMaterialInstance::SetContactSolver(EAGX_ContactSolver InContact
 	}
 
 	/// @todo This static_cast is suspicious. Consider passing the enum a bit further.
-	NativeBarrier->SetFrictionSolveType(static_cast<int32>(ContactSolver));
+	NativeBarrier.SetFrictionSolveType(static_cast<int32>(ContactSolver));
 }
 
 void UAGX_ContactMaterialInstance::SetContactReductionMode(
@@ -67,7 +67,7 @@ void UAGX_ContactMaterialInstance::SetContactReductionMode(
 	}
 
 	/// @todo This static_cast is suspicious. Consider passing the enum a bit further.
-	NativeBarrier->SetContactReductionMode(static_cast<int32>(ContactReduction.Mode));
+	NativeBarrier.SetContactReductionMode(static_cast<int32>(ContactReduction.Mode));
 }
 
 void UAGX_ContactMaterialInstance::SetContactReductionBinResolution(uint8 InBinResolution)
@@ -77,7 +77,7 @@ void UAGX_ContactMaterialInstance::SetContactReductionBinResolution(uint8 InBinR
 	{
 		return;
 	}
-	NativeBarrier->SetContactReductionBinResolution(ContactReduction.BinResolution);
+	NativeBarrier.SetContactReductionBinResolution(ContactReduction.BinResolution);
 }
 
 void UAGX_ContactMaterialInstance::SetUseContactAreaApproach(bool bInUseContactAreaApproach)
@@ -87,7 +87,7 @@ void UAGX_ContactMaterialInstance::SetUseContactAreaApproach(bool bInUseContactA
 	{
 		return;
 	}
-	NativeBarrier->SetUseContactAreaApproach(MechanicsApproach.bUseContactAreaApproach);
+	NativeBarrier.SetUseContactAreaApproach(MechanicsApproach.bUseContactAreaApproach);
 }
 
 void UAGX_ContactMaterialInstance::SetMinElasticRestLength(float InMinLength)
@@ -97,7 +97,7 @@ void UAGX_ContactMaterialInstance::SetMinElasticRestLength(float InMinLength)
 	{
 		return;
 	}
-	NativeBarrier->SetMinMaxElasticRestLength(
+	NativeBarrier.SetMinMaxElasticRestLength(
 		MechanicsApproach.MinElasticRestLength, MechanicsApproach.MaxElasticRestLength);
 }
 
@@ -108,7 +108,7 @@ void UAGX_ContactMaterialInstance::SetMaxElasticRestLength(float InMaxLength)
 	{
 		return;
 	}
-	NativeBarrier->SetMinMaxElasticRestLength(
+	NativeBarrier.SetMinMaxElasticRestLength(
 		MechanicsApproach.MinElasticRestLength, MechanicsApproach.MaxElasticRestLength);
 }
 
@@ -121,7 +121,7 @@ void UAGX_ContactMaterialInstance::SetFrictionModel(EAGX_FrictionModel InFrictio
 	}
 
 	/// @todo This static_cast is suspicious. Consider passing the enum a bit further.
-	NativeBarrier->SetFrictionModel(static_cast<int32>(FrictionModel));
+	NativeBarrier.SetFrictionModel(static_cast<int32>(FrictionModel));
 }
 
 void UAGX_ContactMaterialInstance::SetSurfaceFrictionEnabled(bool bInSurfaceFrictionEnabled)
@@ -131,7 +131,7 @@ void UAGX_ContactMaterialInstance::SetSurfaceFrictionEnabled(bool bInSurfaceFric
 	{
 		return;
 	}
-	NativeBarrier->SetSurfaceFrictionEnabled(bSurfaceFrictionEnabled);
+	NativeBarrier.SetSurfaceFrictionEnabled(bSurfaceFrictionEnabled);
 }
 
 void UAGX_ContactMaterialInstance::SetFrictionCoefficient(float InFrictionCoefficient)
@@ -141,7 +141,7 @@ void UAGX_ContactMaterialInstance::SetFrictionCoefficient(float InFrictionCoeffi
 	{
 		return;
 	}
-	NativeBarrier->SetFrictionCoefficient(
+	NativeBarrier.SetFrictionCoefficient(
 		FrictionCoefficient, true, !bUseSecondaryFrictionCoefficient);
 }
 
@@ -155,7 +155,7 @@ void UAGX_ContactMaterialInstance::SetSecondaryFrictionCoefficient(
 	}
 	if (bUseSecondaryFrictionCoefficient)
 	{
-		NativeBarrier->SetFrictionCoefficient(SecondaryFrictionCoefficient, false, true);
+		NativeBarrier.SetFrictionCoefficient(SecondaryFrictionCoefficient, false, true);
 	}
 }
 
@@ -169,12 +169,12 @@ void UAGX_ContactMaterialInstance::SetUseSecondaryFrictionCoefficient(
 	}
 	if (bUseSecondaryFrictionCoefficient)
 	{
-		NativeBarrier->SetFrictionCoefficient(FrictionCoefficient, true, false);
-		NativeBarrier->SetFrictionCoefficient(SecondaryFrictionCoefficient, false, true);
+		NativeBarrier.SetFrictionCoefficient(FrictionCoefficient, true, false);
+		NativeBarrier.SetFrictionCoefficient(SecondaryFrictionCoefficient, false, true);
 	}
 	else
 	{
-		NativeBarrier->SetFrictionCoefficient(FrictionCoefficient, true, true);
+		NativeBarrier.SetFrictionCoefficient(FrictionCoefficient, true, true);
 	}
 }
 
@@ -185,7 +185,7 @@ void UAGX_ContactMaterialInstance::SetSurfaceViscosity(float InSurfaceViscosity)
 	{
 		return;
 	}
-	NativeBarrier->SetSurfaceViscosity(SurfaceViscosity, true, !bUseSecondarySurfaceViscosity);
+	NativeBarrier.SetSurfaceViscosity(SurfaceViscosity, true, !bUseSecondarySurfaceViscosity);
 }
 
 void UAGX_ContactMaterialInstance::SetSecondarySurfaceViscosity(float InSecondarySurfaceViscosity)
@@ -197,7 +197,7 @@ void UAGX_ContactMaterialInstance::SetSecondarySurfaceViscosity(float InSecondar
 	}
 	if (bUseSecondarySurfaceViscosity)
 	{
-		NativeBarrier->SetSurfaceViscosity(SecondarySurfaceViscosity, false, true);
+		NativeBarrier.SetSurfaceViscosity(SecondarySurfaceViscosity, false, true);
 	}
 }
 
@@ -211,12 +211,12 @@ void UAGX_ContactMaterialInstance::SetUseSecondarySurfaceViscosity(
 	}
 	if (bUseSecondarySurfaceViscosity)
 	{
-		NativeBarrier->SetSurfaceViscosity(SurfaceViscosity, true, false);
-		NativeBarrier->SetSurfaceViscosity(SecondarySurfaceViscosity, false, true);
+		NativeBarrier.SetSurfaceViscosity(SurfaceViscosity, true, false);
+		NativeBarrier.SetSurfaceViscosity(SecondarySurfaceViscosity, false, true);
 	}
 	else
 	{
-		NativeBarrier->SetSurfaceViscosity(SurfaceViscosity, true, true);
+		NativeBarrier.SetSurfaceViscosity(SurfaceViscosity, true, true);
 	}
 }
 
@@ -227,7 +227,7 @@ void UAGX_ContactMaterialInstance::SetRestitution(float InRestitution)
 	{
 		return;
 	}
-	NativeBarrier->SetRestitution(Restitution);
+	NativeBarrier.SetRestitution(Restitution);
 }
 
 void UAGX_ContactMaterialInstance::SetSpookDamping(float InSpookDamping)
@@ -237,7 +237,7 @@ void UAGX_ContactMaterialInstance::SetSpookDamping(float InSpookDamping)
 	{
 		return;
 	}
-	NativeBarrier->SetSpookDamping(SpookDamping);
+	NativeBarrier.SetSpookDamping(SpookDamping);
 }
 
 void UAGX_ContactMaterialInstance::SetYoungsModulus(float InYoungsModulus)
@@ -247,7 +247,7 @@ void UAGX_ContactMaterialInstance::SetYoungsModulus(float InYoungsModulus)
 	{
 		return;
 	}
-	NativeBarrier->SetYoungsModulus(YoungsModulus);
+	NativeBarrier.SetYoungsModulus(YoungsModulus);
 }
 
 void UAGX_ContactMaterialInstance::SetAdhesiveForce(float InAdhesiveForce)
@@ -257,7 +257,7 @@ void UAGX_ContactMaterialInstance::SetAdhesiveForce(float InAdhesiveForce)
 	{
 		return;
 	}
-	NativeBarrier->SetAdhesion(AdhesiveForce, AdhesiveOverlap);
+	NativeBarrier.SetAdhesion(AdhesiveForce, AdhesiveOverlap);
 }
 
 void UAGX_ContactMaterialInstance::SetAdhesiveOverlap(float InAdhesiveOverlap)
@@ -267,7 +267,7 @@ void UAGX_ContactMaterialInstance::SetAdhesiveOverlap(float InAdhesiveOverlap)
 	{
 		return;
 	}
-	NativeBarrier->SetAdhesion(AdhesiveForce, AdhesiveOverlap);
+	NativeBarrier.SetAdhesion(AdhesiveForce, AdhesiveOverlap);
 }
 
 FContactMaterialBarrier* UAGX_ContactMaterialInstance::GetOrCreateNative(UWorld* PlayingWorld)
@@ -281,19 +281,12 @@ FContactMaterialBarrier* UAGX_ContactMaterialInstance::GetOrCreateNative(UWorld*
 
 FContactMaterialBarrier* UAGX_ContactMaterialInstance::GetNative()
 {
-	if (NativeBarrier)
-	{
-		return NativeBarrier.Get();
-	}
-	else
-	{
-		return nullptr;
-	}
+	return &NativeBarrier;
 }
 
 bool UAGX_ContactMaterialInstance::HasNative() const
 {
-	return NativeBarrier && NativeBarrier->HasNative();
+	return NativeBarrier.HasNative();
 }
 
 void UAGX_ContactMaterialInstance::UpdateNativeProperties()
@@ -304,44 +297,44 @@ void UAGX_ContactMaterialInstance::UpdateNativeProperties()
 		{
 			/// \note Setting Friction Model before Solve Type, because Solve Type is part of the
 			/// Friction Model object.
-			NativeBarrier->SetFrictionModel(static_cast<uint32>(FrictionModel));
-			NativeBarrier->SetSurfaceFrictionEnabled(bSurfaceFrictionEnabled);
+			NativeBarrier.SetFrictionModel(static_cast<uint32>(FrictionModel));
+			NativeBarrier.SetSurfaceFrictionEnabled(bSurfaceFrictionEnabled);
 
-			NativeBarrier->SetFrictionCoefficient(
+			NativeBarrier.SetFrictionCoefficient(
 				FrictionCoefficient, /*bPrimaryDir*/ true,
 				/*bSecondaryDir*/ !bUseSecondaryFrictionCoefficient);
 			if (bUseSecondaryFrictionCoefficient)
 			{
-				NativeBarrier->SetFrictionCoefficient(
+				NativeBarrier.SetFrictionCoefficient(
 					SecondaryFrictionCoefficient, /*bPrimaryDir*/ false, /*bSecondaryDir*/ true);
 			}
 
-			NativeBarrier->SetSurfaceViscosity(
+			NativeBarrier.SetSurfaceViscosity(
 				SurfaceViscosity, /*bPrimaryDir*/ true,
 				/*bSecondaryDir*/ !bUseSecondarySurfaceViscosity);
 			if (bUseSecondarySurfaceViscosity)
 			{
-				NativeBarrier->SetSurfaceViscosity(
+				NativeBarrier.SetSurfaceViscosity(
 					SecondarySurfaceViscosity, /*bPrimaryDir*/ false, /*bSecondaryDir*/ true);
 			}
 		}
 
 		// Contact Processing related properties
 		{
-			NativeBarrier->SetFrictionSolveType(static_cast<uint32>(ContactSolver));
-			NativeBarrier->SetContactReductionMode(static_cast<int32>(ContactReduction.Mode));
-			NativeBarrier->SetContactReductionBinResolution(ContactReduction.BinResolution);
-			NativeBarrier->SetUseContactAreaApproach(MechanicsApproach.bUseContactAreaApproach);
-			NativeBarrier->SetMinMaxElasticRestLength(
+			NativeBarrier.SetFrictionSolveType(static_cast<uint32>(ContactSolver));
+			NativeBarrier.SetContactReductionMode(static_cast<int32>(ContactReduction.Mode));
+			NativeBarrier.SetContactReductionBinResolution(ContactReduction.BinResolution);
+			NativeBarrier.SetUseContactAreaApproach(MechanicsApproach.bUseContactAreaApproach);
+			NativeBarrier.SetMinMaxElasticRestLength(
 				MechanicsApproach.MinElasticRestLength, MechanicsApproach.MaxElasticRestLength);
 		}
 
 		// General properties
 		{
-			NativeBarrier->SetRestitution(Restitution);
-			NativeBarrier->SetYoungsModulus(YoungsModulus);
-			NativeBarrier->SetSpookDamping(SpookDamping);
-			NativeBarrier->SetAdhesion(AdhesiveForce, AdhesiveOverlap);
+			NativeBarrier.SetRestitution(Restitution);
+			NativeBarrier.SetYoungsModulus(YoungsModulus);
+			NativeBarrier.SetSpookDamping(SpookDamping);
+			NativeBarrier.SetAdhesion(AdhesiveForce, AdhesiveOverlap);
 		}
 	}
 }
@@ -359,7 +352,10 @@ UAGX_ContactMaterialInstance* UAGX_ContactMaterialInstance::GetOrCreateInstance(
 
 void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 {
-	NativeBarrier.Reset(new FContactMaterialBarrier());
+	if (NativeBarrier.HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
 
 	/// \note AGX seems OK with referenced materials being null. Falls back on native default
 	/// material.
@@ -393,7 +389,7 @@ void UAGX_ContactMaterialInstance::CreateNative(UWorld* PlayingWorld)
 			"using materials \"%s\" and \"%s\"."),
 		*GetName(), *GetNameSafe(MaterialInstance1), *GetNameSafe(MaterialInstance2));
 
-	NativeBarrier->AllocateNative(
+	NativeBarrier.AllocateNative(
 		MaterialBarrier1, MaterialBarrier2); // materials can only be set on construction
 	check(HasNative());
 

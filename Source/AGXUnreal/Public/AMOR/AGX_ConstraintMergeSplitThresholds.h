@@ -167,5 +167,5 @@ private:
 
 	TWeakObjectPtr<UAGX_ConstraintMergeSplitThresholds> Asset;
 	TWeakObjectPtr<UAGX_ConstraintMergeSplitThresholds> Instance;
-	TUniquePtr<FConstraintMergeSplitThresholdsBarrier> NativeBarrier;
+	FConstraintMergeSplitThresholdsBarrier NativeBarrier;
 };

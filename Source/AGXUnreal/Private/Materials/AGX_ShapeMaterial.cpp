@@ -214,7 +214,7 @@ void UAGX_ShapeMaterial::SetAdhesion(double AdhesiveForce, double AdhesiveOverla
 		Surface.AdhesiveOverlap = AdhesiveOverlap;
 		if (HasNative())
 		{
-			NativeBarrier->SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
+			NativeBarrier.SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
 		}
 	}
 	else // IsAsset
@@ -343,7 +343,7 @@ void UAGX_ShapeMaterial::SetMinMaxElasticRestLength(double InMin, double InMax)
 		Bulk.MaxElasticRestLength = InMax;
 		if (HasNative())
 		{
-			NativeBarrier->SetMinMaxElasticRestLength(
+			NativeBarrier.SetMinMaxElasticRestLength(
 				Bulk.MinElasticRestLength, Bulk.MaxElasticRestLength);
 		}
 	}
@@ -576,8 +576,12 @@ void UAGX_ShapeMaterial::CreateNative(UWorld* PlayingWorld)
 	}
 
 	AGX_CHECK(IsInstance());
-	NativeBarrier.Reset(new FShapeMaterialBarrier());
-	NativeBarrier->AllocateNative(TCHAR_TO_UTF8(*GetName()));
+	if (NativeBarrier.HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
+
+	NativeBarrier.AllocateNative(TCHAR_TO_UTF8(*GetName()));
 	check(HasNative());
 
 	UpdateNativeProperties();
@@ -604,7 +608,7 @@ FShapeMaterialBarrier* UAGX_ShapeMaterial::GetNative()
 		return Instance->GetNative();
 	}
 
-	return NativeBarrier.Get();
+	return &NativeBarrier;
 }
 
 bool UAGX_ShapeMaterial::HasNative() const
@@ -615,7 +619,7 @@ bool UAGX_ShapeMaterial::HasNative() const
 		return Instance->HasNative();
 	}
 
-	return NativeBarrier && NativeBarrier->HasNative();
+	return NativeBarrier.HasNative();
 }
 
 void UAGX_ShapeMaterial::UpdateNativeProperties()
@@ -623,27 +627,27 @@ void UAGX_ShapeMaterial::UpdateNativeProperties()
 	if (HasNative())
 	{
 		AGX_CHECK(IsInstance());
-		NativeBarrier->SetName(TCHAR_TO_UTF8(*GetName()));
+		NativeBarrier.SetName(TCHAR_TO_UTF8(*GetName()));
 
 		// Bulk properties.
-		NativeBarrier->SetDensity(Bulk.Density);
-		NativeBarrier->SetYoungsModulus(Bulk.YoungsModulus);
-		NativeBarrier->SetBulkViscosity(Bulk.Viscosity);
-		NativeBarrier->SetSpookDamping(Bulk.SpookDamping);
-		NativeBarrier->SetMinMaxElasticRestLength(
+		NativeBarrier.SetDensity(Bulk.Density);
+		NativeBarrier.SetYoungsModulus(Bulk.YoungsModulus);
+		NativeBarrier.SetBulkViscosity(Bulk.Viscosity);
+		NativeBarrier.SetSpookDamping(Bulk.SpookDamping);
+		NativeBarrier.SetMinMaxElasticRestLength(
 			Bulk.MinElasticRestLength, Bulk.MaxElasticRestLength);
 
 		// Surface properties.
-		NativeBarrier->SetFrictionEnabled(Surface.bFrictionEnabled);
-		NativeBarrier->SetRoughness(Surface.Roughness);
-		NativeBarrier->SetSurfaceViscosity(Surface.Viscosity);
-		NativeBarrier->SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
+		NativeBarrier.SetFrictionEnabled(Surface.bFrictionEnabled);
+		NativeBarrier.SetRoughness(Surface.Roughness);
+		NativeBarrier.SetSurfaceViscosity(Surface.Viscosity);
+		NativeBarrier.SetAdhesion(Surface.AdhesiveForce, Surface.AdhesiveOverlap);
 
 		// Wire properties.
-		NativeBarrier->SetYoungsModulusStretch(Wire.YoungsModulusStretch);
-		NativeBarrier->SetYoungsModulusBend(Wire.YoungsModulusBend);
-		NativeBarrier->SetSpookDampingStretch(Wire.SpookDampingStretch);
-		NativeBarrier->SetSpookDampingBend(Wire.SpookDampingBend);
+		NativeBarrier.SetYoungsModulusStretch(Wire.YoungsModulusStretch);
+		NativeBarrier.SetYoungsModulusBend(Wire.YoungsModulusBend);
+		NativeBarrier.SetSpookDampingStretch(Wire.SpookDampingStretch);
+		NativeBarrier.SetSpookDampingBend(Wire.SpookDampingBend);
 	}
 }
 
