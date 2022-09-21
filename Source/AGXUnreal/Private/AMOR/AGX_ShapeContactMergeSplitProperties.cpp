@@ -136,6 +136,11 @@ void FAGX_ShapeContactMergeSplitProperties::BindBarrierToOwner(FShapeBarrier& Ne
 	}
 }
 
+UAGX_MergeSplitThresholdsBase* FAGX_ShapeContactMergeSplitProperties::GetThresholds()
+{
+	return Thresholds;
+}
+
 // Explicit template instantiations.
 template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay<UAGX_RigidBodyComponent>(
 	UAGX_RigidBodyComponent&);

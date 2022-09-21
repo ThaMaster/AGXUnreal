@@ -51,6 +51,8 @@ public:
 	void BindBarrierToOwner(FRigidBodyBarrier& NewOwner);
 	void BindBarrierToOwner(FShapeBarrier& NewOwner);
 
+	virtual UAGX_MergeSplitThresholdsBase* GetThresholds() override;
+
 private:
 	template <typename T>
 	void UpdateNativeProperties(T& Owner);

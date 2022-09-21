@@ -124,3 +124,8 @@ void FAGX_WireMergeSplitProperties::UpdateNativeThresholds(UWorld* PlayingWorld)
 
 	NativeBarrier.SetWireMergeSplitThresholds(Barrier);
 }
+
+UAGX_MergeSplitThresholdsBase* FAGX_WireMergeSplitProperties::GetThresholds()
+{
+	return Thresholds;
+}

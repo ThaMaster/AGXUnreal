@@ -46,6 +46,8 @@ public:
 
 	void BindBarrierToOwner(FWireBarrier& NewOwner);
 
+	virtual UAGX_MergeSplitThresholdsBase* GetThresholds() override;
+
 private:
 	void UpdateNativeProperties(UAGX_WireComponent& Owner);
 	void UpdateNativeThresholds(UWorld* PlayingWorld);

@@ -123,3 +123,8 @@ void FAGX_ConstraintMergeSplitProperties::UpdateNativeThresholds(UAGX_Constraint
 
 	NativeBarrier.SetConstraintMergeSplitThresholds(Barrier);
 }
+
+UAGX_MergeSplitThresholdsBase* FAGX_ConstraintMergeSplitProperties::GetThresholds()
+{
+	return Thresholds;
+}

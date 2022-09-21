@@ -43,6 +43,9 @@ public:
 
 	void CopyFrom(const FMergeSplitPropertiesBarrier& Barrier);
 
+	virtual UAGX_MergeSplitThresholdsBase* GetThresholds()
+		PURE_VIRTUAL(UAGX_MergeSplitThresholdsBase::GetThresholds, return nullptr;);
+
 protected:
 	FMergeSplitPropertiesBarrier NativeBarrier;
 };

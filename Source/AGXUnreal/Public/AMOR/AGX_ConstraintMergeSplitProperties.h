@@ -47,6 +47,8 @@ public:
 
 	void BindBarrierToOwner(FConstraintBarrier& NewOwner);
 
+	virtual UAGX_MergeSplitThresholdsBase* GetThresholds() override;
+
 private:
 	void UpdateNativeProperties(UAGX_ConstraintComponent& Owner);
 	void UpdateNativeThresholds(UAGX_ConstraintComponent& Owner);
