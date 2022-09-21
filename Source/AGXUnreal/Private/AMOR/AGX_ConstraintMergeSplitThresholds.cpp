@@ -292,12 +292,12 @@ bool UAGX_ConstraintMergeSplitThresholds::IsInstance() const
 
 void UAGX_ConstraintMergeSplitThresholds::CopyFrom(const FMergeSplitThresholdsBarrier& Barrier)
 {
-	const auto SCBarrier = static_cast<const FConstraintMergeSplitThresholdsBarrier*>(&Barrier);
-	MaxDesiredForceRangeDiff = SCBarrier->GetMaxDesiredForceRangeDiff();
-	MaxDesiredLockAngleDiff = SCBarrier->GetMaxDesiredLockAngleDiff();
-	MaxDesiredRangeAngleDiff = SCBarrier->GetMaxDesiredRangeAngleDiff();
-	MaxDesiredSpeedDiff = SCBarrier->GetMaxDesiredSpeedDiff();
-	MaxRelativeSpeed = SCBarrier->GetMaxRelativeSpeed();
+	const auto MstBarrier = static_cast<const FConstraintMergeSplitThresholdsBarrier*>(&Barrier);
+	MaxDesiredForceRangeDiff = MstBarrier->GetMaxDesiredForceRangeDiff();
+	MaxDesiredLockAngleDiff = MstBarrier->GetMaxDesiredLockAngleDiff();
+	MaxDesiredRangeAngleDiff = MstBarrier->GetMaxDesiredRangeAngleDiff();
+	MaxDesiredSpeedDiff = MstBarrier->GetMaxDesiredSpeedDiff();
+	MaxRelativeSpeed = MstBarrier->GetMaxRelativeSpeed();
 }
 
 void UAGX_ConstraintMergeSplitThresholds::CopyFrom(

@@ -209,10 +209,10 @@ bool UAGX_WireMergeSplitThresholds::IsInstance() const
 
 void UAGX_WireMergeSplitThresholds::CopyFrom(const FMergeSplitThresholdsBarrier& Barrier)
 {
-	const FWireMergeSplitThresholdsBarrier* SCBarrier =
+	const FWireMergeSplitThresholdsBarrier* MstBarrier =
 		static_cast<const FWireMergeSplitThresholdsBarrier*>(&Barrier);
-	ForcePropagationDecayScale = SCBarrier->GetForcePropagationDecayScale();
-	MergeTensionScale = SCBarrier->GetMergeTensionScale();
+	ForcePropagationDecayScale = MstBarrier->GetForcePropagationDecayScale();
+	MergeTensionScale = MstBarrier->GetMergeTensionScale();
 }
 
 void UAGX_WireMergeSplitThresholds::CopyFrom(const UAGX_WireMergeSplitThresholds& Source)

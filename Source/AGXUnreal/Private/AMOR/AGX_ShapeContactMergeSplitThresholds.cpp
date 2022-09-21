@@ -343,15 +343,15 @@ bool UAGX_ShapeContactMergeSplitThresholds::IsInstance() const
 
 void UAGX_ShapeContactMergeSplitThresholds::CopyFrom(const FMergeSplitThresholdsBarrier& Barrier)
 {
-	const auto SCBarrier = static_cast<const FShapeContactMergeSplitThresholdsBarrier*>(&Barrier);
-	MaxImpactSpeed = SCBarrier->GetMaxImpactSpeed();
-	MaxRelativeNormalSpeed = SCBarrier->GetMaxRelativeNormalSpeed();
-	MaxRelativeTangentSpeed = SCBarrier->GetMaxRelativeTangentSpeed();
-	MaxRollingSpeed = SCBarrier->GetMaxRollingSpeed();
-	NormalAdhesion = SCBarrier->GetNormalAdhesion();
-	TangentialAdhesion = SCBarrier->GetTangentialAdhesion();
-	bMaySplitInGravityField = SCBarrier->GetMaySplitInGravityField();
-	bSplitOnLogicalImpact = SCBarrier->GetSplitOnLogicalImpact();
+	const auto MstBarrier = static_cast<const FShapeContactMergeSplitThresholdsBarrier*>(&Barrier);
+	MaxImpactSpeed = MstBarrier->GetMaxImpactSpeed();
+	MaxRelativeNormalSpeed = MstBarrier->GetMaxRelativeNormalSpeed();
+	MaxRelativeTangentSpeed = MstBarrier->GetMaxRelativeTangentSpeed();
+	MaxRollingSpeed = MstBarrier->GetMaxRollingSpeed();
+	NormalAdhesion = MstBarrier->GetNormalAdhesion();
+	TangentialAdhesion = MstBarrier->GetTangentialAdhesion();
+	bMaySplitInGravityField = MstBarrier->GetMaySplitInGravityField();
+	bSplitOnLogicalImpact = MstBarrier->GetSplitOnLogicalImpact();
 }
 
 void UAGX_ShapeContactMergeSplitThresholds::CopyFrom(
