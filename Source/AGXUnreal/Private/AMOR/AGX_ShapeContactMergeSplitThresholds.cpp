@@ -271,11 +271,6 @@ void UAGX_ShapeContactMergeSplitThresholds::CreateNative(UWorld* PlayingWorld)
 	}
 
 	AGX_CHECK(IsInstance());
-	if (NativeBarrier.HasNative())
-	{
-		NativeBarrier.ReleaseNative();
-	}
-
 	NativeBarrier.AllocateNative();
 	AGX_CHECK(HasNative());
 

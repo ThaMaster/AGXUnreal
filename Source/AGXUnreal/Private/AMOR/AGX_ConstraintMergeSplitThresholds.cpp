@@ -220,11 +220,6 @@ void UAGX_ConstraintMergeSplitThresholds::CreateNative(UWorld* PlayingWorld, boo
 	}
 
 	AGX_CHECK(IsInstance());
-	if (NativeBarrier.HasNative())
-	{
-		NativeBarrier.ReleaseNative();
-	}
-
 	NativeBarrier.AllocateNative(bIsRotational);
 	AGX_CHECK(HasNative());
 
