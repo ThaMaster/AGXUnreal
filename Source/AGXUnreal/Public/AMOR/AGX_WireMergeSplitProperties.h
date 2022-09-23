@@ -37,7 +37,8 @@ public:
 
 #if WITH_EDITOR
 	/**
-	 * Must be called by the owning object at PostEditChangeProperty.
+	 * Must be called by the owning object from PostEditChangeProperty or
+	 * PostEditChangeChainProperty.
 	 */
 	void OnPostEditChangeProperty(UAGX_WireComponent& Owner);
 #endif
