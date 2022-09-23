@@ -157,6 +157,11 @@ public:
 	UpdatePropertyFunction* GetFunction(const FName& Member, const FName& Property);
 
 private:
+	bool FunctionExists(const FName& Member, const FName& Property)
+	{
+		return GetFunction(Member, Property) != nullptr;
+	}
+
 	TMap<FAGX_NamePair, UpdatePropertyFunction> Functions;
 };
 
@@ -197,15 +202,23 @@ void FAGX_PropertyChangedDispatcher<T>::Trigger(struct FPropertyChangedChainEven
 		return;
 	}
 
-	// The name of the rest of the nodes doesn't matter, we set all elements at
-	// level two each time. These are small objects such as FVector or
-	// FFloatInterval. Some rewrite of Property Changed Dispatcher will be
-	// required to support more detailed nesting callbacks.
 	FEditPropertyChain::TDoubleLinkedListNode* Node = Event.PropertyChain.GetHead();
-	FName Member = Node->GetValue()->GetFName();
-	Node = Node->GetNextNode();
-	FName Property = Node != nullptr ? Node->GetValue()->GetFName() : Member;
-	Trigger(Member, Property, Event);
+
+	while (Node != nullptr)
+	{
+		const FName Member = Node->GetValue()->GetFName();
+		Node = Node->GetNextNode();
+		const FName Property = Node != nullptr ? Node->GetValue()->GetFName() : Member;
+
+		if (!FunctionExists(Member, Property))
+		{
+			// Continue trying to find match further down the Property Chain.
+			continue;
+		}
+
+		Trigger(Member, Property, Event);
+		break;
+	}	
 }
 
 template <typename T>
