@@ -15,6 +15,8 @@
 
 class FRigidBodyBarrier;
 class FShapeBarrier;
+class UAGX_RigidBodyComponent;
+class UAGX_ShapeComponent;
 
 /*
  * Defines the AMOR (merge split) properties for Rigid Bodies and Shapes. For this to take affect,
@@ -34,20 +36,20 @@ public:
 	* Must be called by the owning object at begin play (after the owning object has allocated a
 	* native AGX Dynamics object).
 	*/
-	template <typename T>
-	void OnBeginPlay(T& Owner);
+	void OnBeginPlay(UAGX_RigidBodyComponent& Owner);
+	void OnBeginPlay(UAGX_ShapeComponent& Owner);
 
 #if WITH_EDITOR
 	/**
 	 * Must be called by the owning object from PostEditChangeProperty or
 	 * PostEditChangeChainProperty.
 	 */
-	template <typename T>
-	void OnPostEditChangeProperty(T& Owner);
+	void OnPostEditChangeProperty(UAGX_RigidBodyComponent& Owner);
+	void OnPostEditChangeProperty(UAGX_ShapeComponent& Owner);
 #endif
 
-	template <typename T>
-	void CreateNative(T& Owner);
+	void CreateNative(UAGX_RigidBodyComponent& Owner);
+	void CreateNative(UAGX_ShapeComponent& Owner);
 
 	void BindBarrierToOwner(FRigidBodyBarrier& NewOwner);
 	void BindBarrierToOwner(FShapeBarrier& NewOwner);
@@ -58,6 +60,15 @@ private:
 	void UpdateNativeProperties();
 	void CreateNativeThresholds(UWorld* PlayingWorld);
 	void UpdateNativeThresholds();
+
+	template <typename T>
+	void OnBeginPlayInternal(T& Owner);
+
+	template <typename T>
+	void OnPostEditChangePropertyInternal(T& Owner);
+
+	template <typename T>
+	void CreateNativeInternal(T& Owner);
 };
 
 /**

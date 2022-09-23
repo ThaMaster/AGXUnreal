@@ -9,8 +9,9 @@
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 #include "Shapes/AGX_ShapeComponent.h"
 
+
 template <typename T>
-void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay(T& Owner)
+void FAGX_ShapeContactMergeSplitProperties::OnBeginPlayInternal(T& Owner)
 {
 	AGX_CHECK(Owner.HasNative());
 	AGX_CHECK(!HasNative());
@@ -25,9 +26,19 @@ void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay(T& Owner)
 	}
 }
 
+void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay(UAGX_RigidBodyComponent& Owner)
+{
+	OnBeginPlayInternal(Owner);
+}
+
+void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay(UAGX_ShapeComponent& Owner)
+{
+	OnBeginPlayInternal(Owner);
+}
+
 #if WITH_EDITOR
 template <typename T>
-void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty(T& Owner)
+void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangePropertyInternal(T& Owner)
 {
 	if (bEnableMerge || bEnableSplit)
 	{
@@ -47,15 +58,35 @@ void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty(T& Owner)
 		UpdateNativeProperties();
 	}
 }
+
+void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty(UAGX_RigidBodyComponent& Owner)
+{
+	OnPostEditChangePropertyInternal(Owner);
+}
+
+void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty(UAGX_ShapeComponent& Owner)
+{
+	OnPostEditChangePropertyInternal(Owner);
+}
 #endif
 
 template <typename T>
-void FAGX_ShapeContactMergeSplitProperties::CreateNative(T& Owner)
+void FAGX_ShapeContactMergeSplitProperties::CreateNativeInternal(T& Owner)
 {
 	AGX_CHECK(Owner.HasNative());
 	AGX_CHECK(!HasNative());
 	
 	NativeBarrier.AllocateNative(*Owner.GetNative());
+}
+
+void FAGX_ShapeContactMergeSplitProperties::CreateNative(UAGX_RigidBodyComponent& Owner)
+{
+	CreateNativeInternal(Owner);
+}
+
+void FAGX_ShapeContactMergeSplitProperties::CreateNative(UAGX_ShapeComponent& Owner)
+{
+	CreateNativeInternal(Owner);
 }
 
 void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties()
@@ -160,21 +191,3 @@ UAGX_MergeSplitThresholdsBase* FAGX_ShapeContactMergeSplitProperties::GetThresho
 {
 	return Thresholds;
 }
-
-// Explicit template instantiations.
-template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay<UAGX_RigidBodyComponent>(
-	UAGX_RigidBodyComponent&);
-template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::OnBeginPlay<UAGX_ShapeComponent>(
-	UAGX_ShapeComponent&);
-
-#if WITH_EDITOR
-template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty<
-	UAGX_RigidBodyComponent>(UAGX_RigidBodyComponent&);
-template AGXUNREAL_API void
-FAGX_ShapeContactMergeSplitProperties::OnPostEditChangeProperty<UAGX_ShapeComponent>(UAGX_ShapeComponent&);
-#endif
-
-template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::CreateNative<UAGX_RigidBodyComponent>(
-	UAGX_RigidBodyComponent&);
-template AGXUNREAL_API void FAGX_ShapeContactMergeSplitProperties::CreateNative<UAGX_ShapeComponent>(
-	UAGX_ShapeComponent&);
