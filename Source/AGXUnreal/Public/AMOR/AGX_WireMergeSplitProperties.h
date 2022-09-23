@@ -45,6 +45,16 @@ public:
 
 	void CreateNative(UAGX_WireComponent& Owner);
 
+		/*
+	 * This struct is typically a member (UPROPERTY) of its owner, which is a
+	 * UAGX_WireComponent.
+	 * The barrier of this struct has a Native which is a pointer to a AGX
+	 * Dynamics agxSDK::MergeSplitProperties. The owner of that pointer on the AGX Dynamics side is
+	 * the agxWire::Wire pointed to by the owning UAGX_WireComponent's barrier's native.
+	 *
+	 * This function will update this struct's native to point to the agxSDK::MergeSplitProperties
+	 * of the new Owner.
+	 */
 	void BindBarrierToOwner(FWireBarrier& NewOwner);
 
 	virtual UAGX_MergeSplitThresholdsBase* GetThresholds() override;
