@@ -161,12 +161,8 @@ void FAGX_ShapeContactMergeSplitProperties::BindBarrierToOwner(FRigidBodyBarrier
 {
 	if (!NewOwner.HasNative())
 	{
-		return;
-	}
-
-	if (NativeBarrier.HasNative())
-	{
 		NativeBarrier.ReleaseNative();
+		return;
 	}
 
 	NativeBarrier.BindToNewOwner(NewOwner);

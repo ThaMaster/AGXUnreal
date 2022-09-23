@@ -56,12 +56,8 @@ void FAGX_ConstraintMergeSplitProperties::BindBarrierToOwner(FConstraintBarrier&
 {
 	if (!NewOwner.HasNative())
 	{
-		return;
-	}
-
-	if (NativeBarrier.HasNative())
-	{
 		NativeBarrier.ReleaseNative();
+		return;
 	}
 
 	NativeBarrier.BindToNewOwner(NewOwner);

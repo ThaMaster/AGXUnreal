@@ -58,12 +58,8 @@ void FAGX_WireMergeSplitProperties::BindBarrierToOwner(FWireBarrier& NewOwner)
 {
 	if (!NewOwner.HasNative())
 	{
-		return;
-	}
-
-	if (NativeBarrier.HasNative())
-	{
 		NativeBarrier.ReleaseNative();
+		return;
 	}
 
 	NativeBarrier.BindToNewOwner(NewOwner);
