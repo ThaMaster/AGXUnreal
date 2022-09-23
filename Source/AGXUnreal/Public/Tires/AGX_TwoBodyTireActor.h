@@ -18,7 +18,7 @@ class UAGX_RigidBodyComponent;
  */
 UCLASS(
 	ClassGroup = "AGX", Blueprintable,
-	meta = (BlueprintSpawnableComponent, ToolTip = "Actor with an AGX_TwoBodyTireComponent."))
+	Meta = (BlueprintSpawnableComponent, ToolTip = "Actor with an AGX_TwoBodyTireComponent."))
 class AGXUNREAL_API AAGX_TwoBodyTireActor : public AActor
 {
 	GENERATED_BODY()

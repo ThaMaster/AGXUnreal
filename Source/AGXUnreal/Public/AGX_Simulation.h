@@ -97,7 +97,7 @@ public: // Properties.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "Solver",
-		meta =
+		Meta =
 			(ClampMin = 1, UIMin = 1, DisplayName = "Num PPGS Iterations",
 			 EditCondition = "bOverridePPGSIterations"))
 	int32 NumPpgsIterations = 25;
@@ -154,7 +154,7 @@ public: // Properties.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "AGX AMOR",
-		meta = (AllowedClasses = "AGX_ShapeContactMergeSplitThresholds"))
+		Meta = (AllowedClasses = "AGX_ShapeContactMergeSplitThresholds"))
 	FSoftObjectPath GlobalShapeContactMergeSplitThresholds;
 
 	/**
@@ -163,7 +163,7 @@ public: // Properties.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "AGX AMOR",
-		meta = (AllowedClasses = "AGX_ConstraintMergeSplitThresholds"))
+		Meta = (AllowedClasses = "AGX_ConstraintMergeSplitThresholds"))
 	FSoftObjectPath GlobalConstraintMergeSplitThresholds;
 
 	/**
@@ -172,7 +172,7 @@ public: // Properties.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "AGX AMOR",
-		meta = (AllowedClasses = "AGX_WireMergeSplitThresholds"))
+		Meta = (AllowedClasses = "AGX_WireMergeSplitThresholds"))
 	FSoftObjectPath GlobalWireMergeSplitThresholds;
 
 #if WITH_EDITORONLY_DATA
@@ -188,7 +188,7 @@ public: // Properties.
 	 * set.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Startup", meta = (EditCondition = "bExportInitialState"))
+		Config, EditAnywhere, Category = "Startup", Meta = (EditCondition = "bExportInitialState"))
 	FString ExportPath;
 #endif
 
@@ -207,7 +207,7 @@ public: // Properties.
 	uint8 bRemoteDebugging : 1;
 
 	/** Network port to use for remote debugging. */
-	UPROPERTY(Config, EditAnywhere, Category = "Debug", meta = (EditCondition = "bRemoteDebugging"))
+	UPROPERTY(Config, EditAnywhere, Category = "Debug", Meta = (EditCondition = "bRemoteDebugging"))
 	int16 RemoteDebuggingPort;
 
 	/**
