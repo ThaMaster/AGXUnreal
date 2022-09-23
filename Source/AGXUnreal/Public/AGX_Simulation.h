@@ -148,7 +148,6 @@ public: // Properties.
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
 	bool bEnableAMOR = false;
 
-#if WITH_EDITORONLY_DATA
 	/**
 	 * Changes the default AMOR Shape Contact Merge Split Thresholds for all Rigid Bodies
 	 * and Shapes that does not specify their own.
@@ -175,7 +174,6 @@ public: // Properties.
 		Config, EditAnywhere, Category = "AGX AMOR",
 		meta = (AllowedClasses = "AGX_WireMergeSplitThresholds"))
 	FSoftObjectPath GlobalWireMergeSplitThresholds;
-#endif
 
 #if WITH_EDITORONLY_DATA
 	/**
@@ -381,9 +379,7 @@ private:
 
 	void SetGravity();
 
-#if WITH_EDITORONLY_DATA
 	void SetGlobalNativeMergeSplitThresholds();
-#endif
 
 private:
 	FSimulationBarrier NativeBarrier;

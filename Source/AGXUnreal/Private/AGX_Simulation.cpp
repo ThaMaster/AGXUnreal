@@ -463,9 +463,7 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
 	NativeBarrier.SetEnableAMOR(bEnableAMOR);
 
-#if WITH_EDITORONLY_DATA
 	SetGlobalNativeMergeSplitThresholds();
-#endif
 
 	if (bRemoteDebugging)
 	{
@@ -1013,7 +1011,6 @@ void UAGX_Simulation::SetGravity()
 	}
 }
 
-#if WITH_EDITORONLY_DATA
 void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 {
 	using namespace AGX_Simulation_helpers;
@@ -1027,7 +1024,6 @@ void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 	{
 		FShapeContactMergeSplitThresholdsBarrier Thresholds =
 			NativeBarrier.GetGlobalShapeContactTresholds();
-
 		SC->CopyTo(Thresholds);
 	}
 
@@ -1036,7 +1032,6 @@ void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 	{
 		FConstraintMergeSplitThresholdsBarrier Thresholds =
 			NativeBarrier.GetGlobalConstraintTresholds();
-
 		SC->CopyTo(Thresholds);
 	}
 
@@ -1045,8 +1040,6 @@ void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 	{
 		FWireMergeSplitThresholdsBarrier Thresholds =
 			NativeBarrier.GetGlobalWireTresholds();
-
 		SC->CopyTo(Thresholds);
 	}
 }
-#endif
