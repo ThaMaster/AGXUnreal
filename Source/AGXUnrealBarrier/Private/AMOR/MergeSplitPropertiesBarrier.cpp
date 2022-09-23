@@ -15,11 +15,11 @@
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
-#include "agx/Constraint.h"
+#include <agx/Constraint.h>
 #include <agx/RigidBody.h>
-#include "agxCollide/Geometry.h"
+#include <agxCollide/Geometry.h>
 #include <agxSDK/MergeSplitHandler.h>
-#include "agxWire/Wire.h"
+#include <agxWire/Wire.h>
 #include "EndAGXIncludes.h"
 
 FMergeSplitPropertiesBarrier::FMergeSplitPropertiesBarrier()
