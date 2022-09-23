@@ -56,16 +56,6 @@ void UAGX_RigidBodyComponent::PostEditChangeChainProperty(FPropertyChangedChainE
 	Super::PostEditChangeChainProperty(Event);
 }
 
-void UAGX_RigidBodyComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	const FName Member = GetFNameSafe(PropertyChangedEvent.MemberProperty);
-
-	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
-	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
-	// apply all our changes before that so that they are carried over to the copy.
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-}
-
 void UAGX_RigidBodyComponent::PostEditComponentMove(bool bFinished)
 {
 	Super::PostEditComponentMove(bFinished);
