@@ -1076,6 +1076,19 @@ FAGX_SimObjectsImporterHelper::FShapeMaterialPair FAGX_SimObjectsImporterHelper:
 		GetShapeMaterial(ContactMaterial.GetMaterial2())};
 }
 
+void FAGX_SimObjectsImporterHelper::FinalizeImports()
+{
+	TArray<UStaticMesh*> ImportedMeshes;
+	for (auto KeyValue :RestoredMeshes)
+	{
+		ImportedMeshes.Add(KeyValue.Value);
+	}
+
+	// This step finalizez the imported meshes, and is done as a batch (multi-threaded) which
+	// greatly improves performance.
+	UStaticMesh::BatchBuild(ImportedMeshes, true);
+}
+
 namespace
 {
 	FString MakeModelName(FString SourceFilename)

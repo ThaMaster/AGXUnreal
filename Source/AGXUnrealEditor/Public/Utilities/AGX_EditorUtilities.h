@@ -183,7 +183,8 @@ public:
 	 * @return The filename of the saved file, or the empty string on error.
 	 */
 	static bool FinalizeAndSavePackage(
-		UPackage* Package, UObject* Asset, const FString& PackagePath, const FString& AssetName);
+		UPackage* Package, UObject* Asset, const FString& PackagePath, const FString& AssetName,
+		bool SkipPostEditChange = false);
 
 	/**
 	 * Create a new UStaticMesh asset from the given mesh data. The StaticMesh asset is saved to

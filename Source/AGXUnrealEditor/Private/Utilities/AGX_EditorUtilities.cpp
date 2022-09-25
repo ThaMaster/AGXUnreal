@@ -247,7 +247,8 @@ void FAGX_EditorUtilities::MakePackageAndAssetNameUnique(FString& PackageName, F
 }
 
 bool FAGX_EditorUtilities::FinalizeAndSavePackage(
-	UPackage* Package, UObject* Asset, const FString& PackagePath, const FString& AssetName)
+	UPackage* Package, UObject* Asset, const FString& PackagePath, const FString& AssetName,
+	bool SkipPostEditChange)
 {
 	/// \todo Can the PackagePath and AssetName be read from the Package and Asset? To reduce
 	/// the number of parameters and avoid passing mismatching arguments. When would we want
@@ -255,7 +256,12 @@ bool FAGX_EditorUtilities::FinalizeAndSavePackage(
 
 	FAssetRegistryModule::AssetCreated(Asset);
 	Asset->MarkPackageDirty();
-	Asset->PostEditChange();
+
+	if (!SkipPostEditChange)
+	{
+		Asset->PostEditChange();
+	}
+
 	Asset->AddToRoot();
 	Package->SetDirtyFlag(true);
 

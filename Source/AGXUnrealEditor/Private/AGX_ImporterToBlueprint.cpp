@@ -378,7 +378,7 @@ namespace
 		using FShapeMaterialPair = std::pair<UAGX_ShapeMaterial*, UAGX_ShapeMaterial*>;
 
 	private:
-		FAGX_SimObjectsImporterHelper Helper;
+		FAGX_SimObjectsImporterHelper& Helper;
 		AActor& BlueprintTemplate;
 	};
 
@@ -387,6 +387,11 @@ namespace
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
 		FSuccessOrError SuccessOrError =
 			FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, Instantiator);
+		if (SuccessOrError.Success)
+		{
+			Helper.FinalizeImports();
+		}
+
 		if (!SuccessOrError.Success)
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
@@ -407,6 +412,11 @@ namespace
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
 		FSuccessOrError SuccessOrError = FAGXSimObjectsReader::ReadUrdf(
 			HelperUrdf->SourceFilePath, HelperUrdf->UrdfPackagePath, Instantiator);
+		if (SuccessOrError.Success)
+		{
+			Helper.FinalizeImports();
+		}
+
 		if (!SuccessOrError.Success)
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(

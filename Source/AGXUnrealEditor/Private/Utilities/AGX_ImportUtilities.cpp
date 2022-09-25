@@ -32,7 +32,7 @@ namespace
 	template <typename UAsset, typename FInitAssetCallback>
 	UAsset* SaveImportedAsset(
 		const FString& DirectoryName, FString AssetName, const FString& FallbackName,
-		const FString& AssetType, FInitAssetCallback InitAsset)
+		const FString& AssetType, FInitAssetCallback InitAsset, bool SkipPostEditChange = false)
 	{
 		AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, FallbackName, AssetType);
 		FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryName, AssetType);
@@ -57,7 +57,8 @@ namespace
 			return nullptr;
 		}
 		InitAsset(*Asset);
-		if (!FAGX_EditorUtilities::FinalizeAndSavePackage(Package, Asset, PackagePath, AssetName))
+		if (!FAGX_EditorUtilities::FinalizeAndSavePackage(
+				Package, Asset, PackagePath, AssetName, SkipPostEditChange))
 		{
 			return nullptr;
 		}
@@ -145,6 +146,11 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	{
 		AGX_ImportUtilities_helpers::InitStaticMesh(
 			&FAGX_EditorUtilities::CreateRawMeshFromTrimesh, Trimesh, Asset, true);
+
+		for (int32 Index = 0; Index < Asset.GetNumSourceModels(); ++Index)
+		{
+			Asset.GetSourceModel(Index).StaticMeshOwner = &Asset;
+		}
 	};
 
 	FString TrimeshSourceName = Trimesh.GetSourceName();
@@ -154,7 +160,7 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	}
 
 	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
-		DirectoryName, TrimeshSourceName, FallbackName, TEXT("StaticMesh"), InitAsset);
+		DirectoryName, TrimeshSourceName, FallbackName, TEXT("StaticMesh"), InitAsset, true);
 	return CreatedAsset;
 }
 
@@ -164,12 +170,17 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	auto InitAsset = [&](UStaticMesh& Asset)
 	{
 		AGX_ImportUtilities_helpers::InitStaticMesh(
-			&FAGX_EditorUtilities::CreateRawMeshFromRenderData, RenderData, Asset, false);
+			&FAGX_EditorUtilities::CreateRawMeshFromRenderData, RenderData, Asset, true);
+
+		for (int32 Index = 0; Index < Asset.GetNumSourceModels(); ++Index)
+		{
+			Asset.GetSourceModel(Index).StaticMeshOwner = &Asset;
+		}
 	};
 
 	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
 		DirectoryName, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
-		TEXT("RenderMesh"), TEXT("RenderMesh"), InitAsset);
+		TEXT("RenderMesh"), TEXT("RenderMesh"), InitAsset, true);
 	return CreatedAsset;
 }
 

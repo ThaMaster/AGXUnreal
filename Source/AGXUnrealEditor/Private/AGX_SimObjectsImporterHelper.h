@@ -125,6 +125,11 @@ public:
 	using FShapeMaterialPair = std::pair<UAGX_ShapeMaterial*, UAGX_ShapeMaterial*>;
 	FShapeMaterialPair GetShapeMaterials(const FContactMaterialBarrier& ContactMaterial);
 
+	/*
+	 * Must be called at the end of an import.
+	 */
+	void FinalizeImports();
+
 	explicit FAGX_SimObjectsImporterHelper(const FString& InSourceFilePath);
 
 	const FString SourceFilePath;
