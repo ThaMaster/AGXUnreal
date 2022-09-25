@@ -371,6 +371,11 @@ namespace
 			Helper.InstantiateObserverFrame(Name, BodyGuid, Transform, BlueprintTemplate);
 		}
 
+		virtual void FinalizeImports() override
+		{
+			Helper.FinalizeImports();
+		}
+
 		virtual ~FBlueprintInstantiator() = default;
 
 	private:
@@ -387,10 +392,6 @@ namespace
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
 		FSuccessOrError SuccessOrError =
 			FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, Instantiator);
-		if (SuccessOrError.Success)
-		{
-			Helper.FinalizeImports();
-		}
 
 		if (!SuccessOrError.Success)
 		{
@@ -412,10 +413,6 @@ namespace
 		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
 		FSuccessOrError SuccessOrError = FAGXSimObjectsReader::ReadUrdf(
 			HelperUrdf->SourceFilePath, HelperUrdf->UrdfPackagePath, Instantiator);
-		if (SuccessOrError.Success)
-		{
-			Helper.FinalizeImports();
-		}
 
 		if (!SuccessOrError.Success)
 		{

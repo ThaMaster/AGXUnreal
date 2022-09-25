@@ -441,6 +441,7 @@ namespace
 			0.01f * WorkLeft, FText::FromString("Importing Observer Frames"));
 		Result &= ReadObserverFrames(Simulation, Instantiator);
 
+		Instantiator.FinalizeImports();
 		return Result;
 	}
 }
