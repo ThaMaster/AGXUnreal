@@ -22,6 +22,20 @@ class UMaterialInterface;
 class UMaterialInstanceConstant;
 class UStaticMesh;
 
+struct AssetToDiskData
+{
+	UPackage* Package = nullptr;
+	UObject* Asset = nullptr;
+	FString PackagePath;
+	FString AssetName;
+
+	bool IsValid() const
+	{
+		return Package != nullptr && Asset != nullptr && !PackagePath.IsEmpty() &&
+			   !AssetName.IsEmpty();
+	}
+};
+
 class FAGX_ImportUtilities
 {
 public:
@@ -79,27 +93,28 @@ public:
 	/// and/or asset name.
 
 	/**
-	 * Store the imported Trimesh as an UStaticMesh asset.
+	 * Sets up the imported Trimesh as an UStaticMesh asset, but does not write it to disk.
+	 * Instead returns a AssetToDiskData which in turn can be used to write the asset to disk.
 	 *
 	 * @param Trimesh The imported trimesh to be saved.
 	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @param FallbackName Name to give the asset in case the trimesh doesn't have a source
 	 * name.
-	 * @return The created UStaticMesh asset.
+	 * @return The AssetToDiskData containing all information needed to write the asset to disk.
 	 */
-	static UStaticMesh* SaveImportedStaticMeshAsset(
+	static AssetToDiskData SaveImportedStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName,
 		const FString& FallbackName);
 
 	/**
-	 * Store the imported Render Data Mesh as an UStaticMesh
-	 * asset.
+	 * Sets up the imported Render Data Mesha an UStaticMesh asset, but does not write it to disk.
+	 * Instead returns a AssetToDiskData which in turn can be used to write the asset to disk.
 	 *
 	 * @param RenderData The Render Data holding the render mesh to store.
 	 * @param DirectoryName The name of the directory where the assets are collected.
-	 * @return The create UStaticMesh asset.
+	 * @return The AssetToDiskData containing all information needed to write the asset to disk.
 	 */
-	static UStaticMesh* SaveImportedStaticMeshAsset(
+	static AssetToDiskData SaveImportedStaticMeshAsset(
 		const FRenderDataBarrier& RenderData, const FString& DirectoryName);
 
 	/**

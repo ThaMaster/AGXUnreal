@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGXSimObjectsReader.h"
 #include "AGX_ImportEnums.h"
+#include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.
 #include "Containers/Map.h"
@@ -138,7 +139,7 @@ public:
 	const FString DirectoryName;
 
 private:
-	TMap<FGuid, UStaticMesh*> RestoredMeshes;
+	TMap<FGuid, AssetToDiskData> RestoredMeshes;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterial*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;

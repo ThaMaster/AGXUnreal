@@ -37,7 +37,6 @@
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
-#include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
@@ -206,8 +205,7 @@ namespace
 	}
 
 	/**
-	 * Convert the given Trimesh to an Unreal Engine Static Mesh asset stored in the StaticMeshes
-	 * folder in the imported model's folder in the ImportedAGXModels folder.
+	 * Convert the given Trimesh to an Unreal Engine Static Mesh asset.
 	 *
 	 * The created meshes are cached on the Trimesh's Mesh Data GUID so asking for the same mesh
 	 * again will return the previously created Static Mesh asset.
@@ -219,9 +217,9 @@ namespace
 	 * stored.
 	 * @return
 	 */
-	UStaticMesh* GetOrCreateStaticMeshAsset(
+	AssetToDiskData GetOrCreateStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& FallbackName,
-		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName)
+		TMap<FGuid, AssetToDiskData>& RestoredMeshes, const FString& DirectoryName)
 	{
 		const FGuid Guid = Trimesh.GetMeshDataGuid();
 		if (!Guid.IsValid())
@@ -232,25 +230,24 @@ namespace
 				Trimesh, DirectoryName, FallbackName);
 		}
 
-		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
+		if (RestoredMeshes.Contains(Guid))
 		{
 			// We have seen this mesh before, use the one in the cache.
-			return Asset;
+			return RestoredMeshes[Guid];
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
-		UStaticMesh* Asset =
+		AssetToDiskData AtdData =
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryName, FallbackName);
-		if (Asset != nullptr)
+		if (AtdData.Asset != nullptr)
 		{
-			RestoredMeshes.Add(Guid, Asset);
+			RestoredMeshes.Add(Guid, AtdData);
 		}
-		return Asset;
+		return AtdData;
 	}
 
 	/**
-	 * Convert the given Render Data to an Unreal Engine Static Mesh asset stored in the
-	 * RenderMeshes folder in the imported model's folder in the ImportedAGXModels folder.
+	 * Convert the given Render Data to an Unreal Engine Static Mesh asset.
 	 *
 	 * The created meshes are cached on GUID so asking for the same Render Data mesh again will
 	 * return the previously created Static Mesh asset.
@@ -261,8 +258,8 @@ namespace
 	 * stored.
 	 * @return The Static Mesh asset for the given Render Data.
 	 */
-	UStaticMesh* GetOrCreateStaticMeshAsset(
-		const FRenderDataBarrier& RenderData, TMap<FGuid, UStaticMesh*>& RestoredMeshes,
+	AssetToDiskData GetOrCreateStaticMeshAsset(
+		const FRenderDataBarrier& RenderData, TMap<FGuid, AssetToDiskData>& RestoredMeshes,
 		const FString& DirectoryName)
 	{
 		const FGuid Guid = RenderData.GetGuid();
@@ -273,20 +270,20 @@ namespace
 			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
 		}
 
-		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
+		if (RestoredMeshes.Contains(Guid))
 		{
 			// We have seen this mesh before, use the one in the cache.
-			return Asset;
+			return RestoredMeshes[Guid];
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
-		UStaticMesh* Asset =
+		AssetToDiskData AtdData =
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
-		if (Asset != nullptr)
+		if (AtdData.Asset != nullptr)
 		{
-			RestoredMeshes.Add(Guid, Asset);
+			RestoredMeshes.Add(Guid, AtdData);
 		}
-		return Asset;
+		return AtdData;
 	}
 
 	/**
@@ -307,7 +304,7 @@ namespace
 	void ApplyRenderingData(
 		const FRenderDataBarrier& RenderData, const FTransform& RenderMeshTransform,
 		UAGX_ShapeComponent& Component, UMeshComponent& VisualMesh,
-		TMap<FGuid, UStaticMesh*>& RestoredMeshes,
+		TMap<FGuid, AssetToDiskData>& RestoredMeshes,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials, const FString& DirectoryName)
 	{
 		VisualMesh.SetVisibility(false);
@@ -316,8 +313,9 @@ namespace
 		UStaticMeshComponent* RenderDataComponent = nullptr;
 		if (RenderData.HasMesh())
 		{
-			UStaticMesh* RenderDataMeshAsset =
+			AssetToDiskData AtdData =
 				GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
+			UStaticMesh* RenderDataMeshAsset = Cast<UStaticMesh>(AtdData.Asset);
 			if (RenderDataMeshAsset != nullptr)
 			{
 				// The new Static Mesh Component must be a child of the Visual Mesh and not the
@@ -384,7 +382,7 @@ namespace
 		UAGX_ShapeComponent& Component, const FShapeBarrier& Barrier,
 		const TMap<FGuid, UAGX_ShapeMaterial*>& RestoredShapeMaterials,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials,
-		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName,
+		TMap<FGuid, AssetToDiskData>& RestoredMeshes, const FString& DirectoryName,
 		UMeshComponent& VisualMesh)
 	{
 		Component.UpdateVisualMesh();
@@ -553,8 +551,9 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	}
 	Component->MeshSourceLocation = EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 	const FString FallbackName = Body != nullptr ? Body->GetName() : Owner.GetName();
-	UStaticMesh* MeshAsset =
+	AssetToDiskData AtdData =
 		GetOrCreateStaticMeshAsset(Barrier, FallbackName, RestoredMeshes, DirectoryName);
+	UStaticMesh* MeshAsset = Cast<UStaticMesh>(AtdData.Asset);
 	if (MeshAsset == nullptr)
 	{
 		// No point in continuing further. Logging handled in GetOrCreateStaticMeshAsset.
@@ -1078,15 +1077,9 @@ FAGX_SimObjectsImporterHelper::FShapeMaterialPair FAGX_SimObjectsImporterHelper:
 
 void FAGX_SimObjectsImporterHelper::FinalizeImports()
 {
-	TArray<UStaticMesh*> ImportedMeshes;
-	for (auto KeyValue :RestoredMeshes)
-	{
-		ImportedMeshes.Add(KeyValue.Value);
-	}
-
-	// This step finalizez the imported meshes, and is done as a batch (multi-threaded) which
-	// greatly improves performance.
-	UStaticMesh::BatchBuild(ImportedMeshes, true);
+	TArray<AssetToDiskData> AtdDatum;
+	RestoredMeshes.GenerateValueArray(AtdDatum);
+	FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(AtdDatum);
 }
 
 namespace

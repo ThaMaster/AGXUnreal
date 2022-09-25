@@ -21,6 +21,7 @@
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
+#include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.
 #include "AssetRegistryModule.h"
@@ -246,34 +247,32 @@ void FAGX_EditorUtilities::MakePackageAndAssetNameUnique(FString& PackageName, F
 	AssetTools.CreateUniqueAssetName(PackageName, AssetName, PackageName, AssetName);
 }
 
-bool FAGX_EditorUtilities::FinalizeAndSavePackage(
-	UPackage* Package, UObject* Asset, const FString& PackagePath, const FString& AssetName,
-	bool SkipPostEditChange)
+bool FAGX_EditorUtilities::FinalizeAndSavePackage(AssetToDiskData& AtdData)
 {
 	/// \todo Can the PackagePath and AssetName be read from the Package and Asset? To reduce
 	/// the number of parameters and avoid passing mismatching arguments. When would we want
 	/// to custom PackagePath and AssetName?
 
-	FAssetRegistryModule::AssetCreated(Asset);
-	Asset->MarkPackageDirty();
-
-	if (!SkipPostEditChange)
+	if (!AtdData.IsValid())
 	{
-		Asset->PostEditChange();
+		return false;
 	}
 
-	Asset->AddToRoot();
-	Package->SetDirtyFlag(true);
+	FAssetRegistryModule::AssetCreated(AtdData.Asset);
+	AtdData.Asset->MarkPackageDirty();
+	AtdData.Asset->PostEditChange();
+	AtdData.Asset->AddToRoot();
+	AtdData.Package->SetDirtyFlag(true);
 
 	// Store our new package to disk.
 	const FString PackageFilename = FPackageName::LongPackageNameToFilename(
-		PackagePath, FPackageName::GetAssetPackageExtension());
+		AtdData.PackagePath, FPackageName::GetAssetPackageExtension());
 	if (PackageFilename.IsEmpty())
 	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Unreal Engine unable to provide a package filename for package path '%s'."),
-			*PackagePath);
+			*AtdData.PackagePath);
 		return false;
 	}
 
@@ -285,9 +284,10 @@ bool FAGX_EditorUtilities::FinalizeAndSavePackage(
 	//
 	// The error message sometimes printed while within UPackage::SavePackage called below is:
 	// Illegal call to StaticFindObjectFast() while serializing object data or garbage collecting!
-	Package->GetMetaData();
+	AtdData.Package->GetMetaData();
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-	bool bSaved = UPackage::SavePackage(Package, Asset, RF_NoFlags, *PackageFilename);
+	bool bSaved =
+		UPackage::SavePackage(AtdData.Package, AtdData.Asset, RF_NoFlags, *PackageFilename);
 #else
 	FSavePackageArgs SaveArgs;
 	// SaveArgs.TargetPlatform = ???; // I think we can leave this at the default: not cooking.
@@ -298,17 +298,114 @@ bool FAGX_EditorUtilities::FinalizeAndSavePackage(
 	// SaveArgs.bSlowTask = ???; // I think we can leave this at the default: true.
 	// SaveArgs.Error = ???; // I think we can leave this at the default: GError.
 	// SaveArgs.SavePAckageContext = ???; // I think we can leave this at the default: nullptr.
-	bool bSaved = UPackage::SavePackage(Package, Asset, *PackageFilename, SaveArgs);
+	bool bSaved =
+		UPackage::SavePackage(AtdData.Package, AtdData.Asset, *PackageFilename, AtdData.SaveArgs);
 #endif
 	if (!bSaved)
 	{
 		UE_LOG(
 			LogAGX, Error, TEXT("Unreal Engine unable to save package '%s' to file '%s'."),
-			*PackagePath, *PackageFilename);
+			*AtdData.PackagePath, *PackageFilename);
 		return false;
 	}
 
 	return true;
+}
+
+bool FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(
+	TArray<AssetToDiskData>& StaticMeshAssetDatum)
+{
+	TArray<UStaticMesh*> Meshes;
+	for (auto& AtdData : StaticMeshAssetDatum)
+	{
+		if (!AtdData.IsValid())
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Found invalid Mesh in FinalizeAndSaveStaticMeshPackages."
+					 "Mesh assets will not be written to disk."));
+			return false;
+		}
+
+		Meshes.Add(static_cast<UStaticMesh*>(AtdData.Asset));
+	}
+
+	bool EncounteredIssue = false;
+	for (auto& Mesh : Meshes)
+	{
+		FAssetRegistryModule::AssetCreated(Mesh);
+		Mesh->MarkPackageDirty();
+	}
+
+	// Here, we immitate what is normally done in StaticMesh::PostEditChangeProperty, but instead of
+	// doing the time consuming Build() that is called from within
+	// StaticMesh::PostEditChangeProperty, we do the Build() as a bulk command that utilizes
+	// muti-threading which speeds up the process a lot.
+	// PostEditChangeProperty part 1.
+	for (auto& Mesh : Meshes)
+	{
+		Mesh->EnforceLightmapRestrictions(/*bUseRenderData=*/false);
+		for (int32 Index = 0; Index < Mesh->GetNumSourceModels(); ++Index)
+		{
+			Mesh->GetSourceModel(Index).StaticMeshOwner = Mesh;
+		}
+	}
+
+	// Do the costly Build as a batch Build.
+	UStaticMesh::BatchBuild(Meshes);
+
+	// PostEditChangePart2
+	for (auto& Mesh : Meshes)
+	{
+		Mesh->UpdateUVChannelData(true);
+		for (UAssetUserData* Datum : *Mesh->GetAssetUserDataArray())
+		{
+			if (Datum != nullptr)
+			{
+				Datum->PostEditChangeOwner();
+			}
+		}
+		Mesh->OnMeshChanged.Broadcast();
+	}
+
+	for (auto& AtdData : StaticMeshAssetDatum)
+	{
+		AtdData.Asset->AddToRoot();
+		AtdData.Package->SetDirtyFlag(true);
+
+		// Store our new package to disk.
+		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
+			AtdData.PackagePath, FPackageName::GetAssetPackageExtension());
+		if (PackageFilename.IsEmpty())
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unreal Engine unable to provide a package filename for package path '%s'."),
+				*AtdData.PackagePath);
+			EncounteredIssue = true;
+			continue;
+		}
+
+		AtdData.Package->GetMetaData();
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+		bool bSaved =
+			UPackage::SavePackage(AtdData.Package, AtdData.Asset, RF_NoFlags, *PackageFilename);
+#else
+		FSavePackageArgs SaveArgs;
+		SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
+		bool bSaved = UPackage::SavePackage(
+			AtdData.Package, AtdData.Asset, *PackageFilename, AtdData.SaveArgs);
+#endif
+		if (!bSaved)
+		{
+			UE_LOG(
+				LogAGX, Error, TEXT("Unreal Engine unable to save package '%s' to file '%s'."),
+				*AtdData.PackagePath, *PackageFilename);
+			EncounteredIssue = true;
+		}
+	}
+
+	return !EncounteredIssue;
 }
 
 FRawMesh FAGX_EditorUtilities::CreateRawMeshFromTrimesh(const FTrimeshShapeBarrier& Trimesh)
@@ -657,13 +754,14 @@ FString FAGX_EditorUtilities::CreateShapeMaterialAsset(
 		Package->FullyLoad();
 #endif
 
-	UAGX_ShapeMaterial* MaterialAsset = NewObject<UAGX_ShapeMaterial>(
-		Package, FName(*MaterialName), RF_Public | RF_Standalone);
+	UAGX_ShapeMaterial* MaterialAsset =
+		NewObject<UAGX_ShapeMaterial>(Package, FName(*MaterialName), RF_Public | RF_Standalone);
 
 	// Copy material properties to the new material asset.
 	MaterialAsset->CopyFrom(&Material);
 
-	bool Saved = FinalizeAndSavePackage(Package, MaterialAsset, PackagePath, MaterialName);
+	AssetToDiskData AtdData {Package, MaterialAsset, PackagePath, MaterialName};
+	bool Saved = FinalizeAndSavePackage(AtdData);
 	if (!Saved)
 	{
 		// Return empty string if asset was not created properly.
@@ -1036,8 +1134,7 @@ bool FAGX_EditorUtilities::ApplyShapeMaterial(
 	}
 
 	// Get the ShapeMaterialAsset.
-	UAGX_ShapeMaterial* MaterialAsset =
-		GetAssetByPath<UAGX_ShapeMaterial>(ShapeMaterialAsset);
+	UAGX_ShapeMaterial* MaterialAsset = GetAssetByPath<UAGX_ShapeMaterial>(ShapeMaterialAsset);
 
 	if (!MaterialAsset)
 	{

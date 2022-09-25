@@ -30,9 +30,9 @@ namespace
 	/// \todo Determine if it's enough to return the created asset, or if we must pack it in a
 	/// struct together with the package path and/or asset name.
 	template <typename UAsset, typename FInitAssetCallback>
-	UAsset* SaveImportedAsset(
+	AssetToDiskData PrepareWriteAssetToDisk(
 		const FString& DirectoryName, FString AssetName, const FString& FallbackName,
-		const FString& AssetType, FInitAssetCallback InitAsset, bool SkipPostEditChange = false)
+		const FString& AssetType, FInitAssetCallback InitAsset)
 	{
 		AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, FallbackName, AssetType);
 		FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryName, AssetType);
@@ -54,15 +54,16 @@ namespace
 			UE_LOG(
 				LogAGX, Error, TEXT("Could not create asset '%s' from '%s'."), *AssetName,
 				*DirectoryName);
-			return nullptr;
+			return AssetToDiskData();
 		}
 		InitAsset(*Asset);
-		if (!FAGX_EditorUtilities::FinalizeAndSavePackage(
-				Package, Asset, PackagePath, AssetName, SkipPostEditChange))
-		{
-			return nullptr;
-		}
-		return Asset;
+
+		return AssetToDiskData {Package, Asset, PackagePath, AssetName};
+	}
+
+	bool WriteAssetToDisk(AssetToDiskData& AtdData)
+	{
+		return FAGX_EditorUtilities::FinalizeAndSavePackage(AtdData);
 	}
 }
 
@@ -139,18 +140,13 @@ namespace AGX_ImportUtilities_helpers
 	}
 }
 
-UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+AssetToDiskData FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName, const FString& FallbackName)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
 	{
 		AGX_ImportUtilities_helpers::InitStaticMesh(
 			&FAGX_EditorUtilities::CreateRawMeshFromTrimesh, Trimesh, Asset, true);
-
-		for (int32 Index = 0; Index < Asset.GetNumSourceModels(); ++Index)
-		{
-			Asset.GetSourceModel(Index).StaticMeshOwner = &Asset;
-		}
 	};
 
 	FString TrimeshSourceName = Trimesh.GetSourceName();
@@ -159,38 +155,35 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 		TrimeshSourceName = FPaths::GetBaseFilename(TrimeshSourceName);
 	}
 
-	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
-		DirectoryName, TrimeshSourceName, FallbackName, TEXT("StaticMesh"), InitAsset, true);
-	return CreatedAsset;
+	return PrepareWriteAssetToDisk<UStaticMesh>(
+		DirectoryName, TrimeshSourceName, FallbackName, TEXT("StaticMesh"), InitAsset);
 }
 
-UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+AssetToDiskData FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	const FRenderDataBarrier& RenderData, const FString& DirectoryName)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
 	{
 		AGX_ImportUtilities_helpers::InitStaticMesh(
 			&FAGX_EditorUtilities::CreateRawMeshFromRenderData, RenderData, Asset, true);
-
-		for (int32 Index = 0; Index < Asset.GetNumSourceModels(); ++Index)
-		{
-			Asset.GetSourceModel(Index).StaticMeshOwner = &Asset;
-		}
 	};
 
-	UStaticMesh* CreatedAsset = SaveImportedAsset<UStaticMesh>(
+	return PrepareWriteAssetToDisk<UStaticMesh>(
 		DirectoryName, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
-		TEXT("RenderMesh"), TEXT("RenderMesh"), InitAsset, true);
-	return CreatedAsset;
+		TEXT("RenderMesh"), TEXT("RenderMesh"), InitAsset);
 }
 
 UAGX_ShapeMaterial* FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(
 	const FShapeMaterialBarrier& Material, const FString& DirectoryName)
 {
 	auto InitAsset = [&](UAGX_ShapeMaterial& Asset) { Asset.CopyFrom(&Material); };
-	UAGX_ShapeMaterial* CreatedAsset = SaveImportedAsset<UAGX_ShapeMaterial>(
+	AssetToDiskData AtdData = PrepareWriteAssetToDisk<UAGX_ShapeMaterial>(
 		DirectoryName, Material.GetName(), TEXT(""), TEXT("ShapeMaterial"), InitAsset);
-	return CreatedAsset;
+	if (!WriteAssetToDisk(AtdData))
+	{
+		return nullptr;
+	}
+	return Cast<UAGX_ShapeMaterial>(AtdData.Asset);
 }
 
 namespace
@@ -241,10 +234,13 @@ UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsse
 		Asset.Material2 = Material2;
 	};
 
-	UAGX_ContactMaterialAsset* Asset = SaveImportedAsset<UAGX_ContactMaterialAsset>(
+	AssetToDiskData AtdData = PrepareWriteAssetToDisk<UAGX_ContactMaterialAsset>(
 		DirectoryName, Name, TEXT(""), TEXT("ContactMaterial"), InitAsset);
-
-	return Asset;
+	if (!WriteAssetToDisk(AtdData))
+	{
+		return nullptr;
+	}
+	return Cast<UAGX_ContactMaterialAsset>(AtdData.Asset);
 }
 
 UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
