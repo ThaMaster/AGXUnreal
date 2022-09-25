@@ -299,7 +299,7 @@ bool FAGX_EditorUtilities::FinalizeAndSavePackage(AssetToDiskData& AtdData)
 	// SaveArgs.Error = ???; // I think we can leave this at the default: GError.
 	// SaveArgs.SavePAckageContext = ???; // I think we can leave this at the default: nullptr.
 	bool bSaved =
-		UPackage::SavePackage(AtdData.Package, AtdData.Asset, *PackageFilename, AtdData.SaveArgs);
+		UPackage::SavePackage(AtdData.Package, AtdData.Asset, *PackageFilename, SaveArgs);
 #endif
 	if (!bSaved)
 	{
@@ -394,7 +394,7 @@ bool FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(
 		FSavePackageArgs SaveArgs;
 		SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
 		bool bSaved = UPackage::SavePackage(
-			AtdData.Package, AtdData.Asset, *PackageFilename, AtdData.SaveArgs);
+			AtdData.Package, AtdData.Asset, *PackageFilename, SaveArgs);
 #endif
 		if (!bSaved)
 		{
