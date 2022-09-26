@@ -28,13 +28,6 @@ struct AGXUNREALBARRIER_API FAGX_Real
 	{
 	}
 
-	// Marked explicit to disallow e.g. 'FAGX_Real MyVal = SomeFloat;' and enforce the more
-	// expressive FAGX_Real MyVal(SomeFloat) since we indeed perform a conversion here.
-	explicit FAGX_Real(float InValue)
-		: Value(static_cast<double>(InValue))
-	{
-	}
-
 	operator double() const
 	{
 		return Value;
