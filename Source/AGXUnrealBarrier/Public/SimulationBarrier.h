@@ -69,6 +69,7 @@ public:
 	void EnableRemoteDebugging(int16 Port);
 
 	void SetEnableAMOR(bool bEnable);
+	bool GetEnableAMOR();
 
 	void SetTimeStep(float TimeStep);
 	float GetTimeStep() const;

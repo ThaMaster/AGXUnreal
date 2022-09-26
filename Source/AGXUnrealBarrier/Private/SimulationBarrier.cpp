@@ -192,6 +192,12 @@ void FSimulationBarrier::SetEnableAMOR(bool bEnable)
 	NativeRef->Native->getMergeSplitHandler()->setEnable(bEnable);
 }
 
+bool FSimulationBarrier::GetEnableAMOR()
+{
+	check(HasNative());
+	return NativeRef->Native->getMergeSplitHandler()->getEnable();
+}
+
 void FSimulationBarrier::SetTimeStep(float TimeStep)
 {
 	check(HasNative());
