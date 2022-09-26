@@ -14,7 +14,7 @@ FMergeSplitThresholdsBarrier::FMergeSplitThresholdsBarrier()
 {
 }
 
-FMergeSplitThresholdsBarrier::FMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef>&& Native)
+FMergeSplitThresholdsBarrier::FMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef> Native)
 	: NativeRef(std::move(Native))
 {
 }
@@ -22,6 +22,7 @@ FMergeSplitThresholdsBarrier::FMergeSplitThresholdsBarrier(std::unique_ptr<FMerg
 FMergeSplitThresholdsBarrier::FMergeSplitThresholdsBarrier(FMergeSplitThresholdsBarrier&& Other)
 	: NativeRef(std::move(Other.NativeRef))
 {
+	Other.NativeRef = std::make_unique<FMergeSplitThresholdsRef>();
 }
 
 FMergeSplitThresholdsBarrier::~FMergeSplitThresholdsBarrier()

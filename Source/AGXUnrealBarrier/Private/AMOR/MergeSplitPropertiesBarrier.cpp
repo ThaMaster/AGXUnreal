@@ -79,8 +79,7 @@ namespace MergeSplitProperties_helpers
 		check(NewOwner.HasNative());
 
 		// Setting nullptr here is valid.
-		Barrier.GetNative()->Native =
-			agxSDK::MergeSplitHandler::getProperties(GetFrom(NewOwner));
+		Barrier.GetNative()->Native = agxSDK::MergeSplitHandler::getProperties(GetFrom(NewOwner));
 	}
 }
 
@@ -204,6 +203,18 @@ void FMergeSplitPropertiesBarrier::SetShapeContactMergeSplitThresholds(
 	}
 }
 
+FMergeSplitThresholdsBarrier FMergeSplitPropertiesBarrier::GetShapeContactMergeSplitThresholds()
+	const
+{
+	if (!HasNative() || NativePtr->Native->getContactThresholds() == nullptr)
+	{
+		return FMergeSplitThresholdsBarrier();
+	}
+
+	return FMergeSplitThresholdsBarrier(
+		std::make_unique<FMergeSplitThresholdsRef>(NativePtr->Native->getContactThresholds()));
+}
+
 void FMergeSplitPropertiesBarrier::SetConstraintMergeSplitThresholds(
 	FMergeSplitThresholdsBarrier* Thresholds)
 {
@@ -222,6 +233,17 @@ void FMergeSplitPropertiesBarrier::SetConstraintMergeSplitThresholds(
 	}
 }
 
+FMergeSplitThresholdsBarrier FMergeSplitPropertiesBarrier::GetConstraintMergeSplitThresholds() const
+{
+	if (!HasNative() || NativePtr->Native->getConstraintThresholds() == nullptr)
+	{
+		return FMergeSplitThresholdsBarrier();
+	}
+
+	return FMergeSplitThresholdsBarrier(
+		std::make_unique<FMergeSplitThresholdsRef>(NativePtr->Native->getConstraintThresholds()));
+}
+
 void FMergeSplitPropertiesBarrier::SetWireMergeSplitThresholds(
 	FMergeSplitThresholdsBarrier* Thresholds)
 {
@@ -238,6 +260,17 @@ void FMergeSplitPropertiesBarrier::SetWireMergeSplitThresholds(
 		check(ThresholdsAGX);
 		NativePtr->Native->setWireThresholds(ThresholdsAGX);
 	}
+}
+
+FMergeSplitThresholdsBarrier FMergeSplitPropertiesBarrier::GetWireMergeSplitThresholds() const
+{
+	if (!HasNative() || NativePtr->Native->getWireThresholds() == nullptr)
+	{
+		return FMergeSplitThresholdsBarrier();
+	}
+
+	return FMergeSplitThresholdsBarrier(
+		std::make_unique<FMergeSplitThresholdsRef>(NativePtr->Native->getWireThresholds()));
 }
 
 void FMergeSplitPropertiesBarrier::BindToNewOwner(FRigidBodyBarrier& NewOwner)

@@ -43,8 +43,13 @@ public:
 	bool GetEnableSplit() const;
 
 	void SetShapeContactMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
+	FMergeSplitThresholdsBarrier GetShapeContactMergeSplitThresholds() const;
+
 	void SetConstraintMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
+	FMergeSplitThresholdsBarrier GetConstraintMergeSplitThresholds() const;
+
 	void SetWireMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
+	FMergeSplitThresholdsBarrier GetWireMergeSplitThresholds() const;
 
 	/*
 	* This Barrier may not have a Native at the time of calling BindToNewOwner.
