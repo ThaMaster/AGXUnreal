@@ -421,6 +421,16 @@ void UAGX_Simulation::SetEnableAMOR(bool bEnable)
 	}
 }
 
+bool UAGX_Simulation::GetEnableAMOR()
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetEnableAMOR();
+	}
+
+	return bEnableAMOR;
+}
+
 void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);

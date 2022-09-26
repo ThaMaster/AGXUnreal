@@ -232,6 +232,9 @@ public: // Member functions.
 	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	void SetEnableAMOR(bool bEnable);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
+	bool GetEnableAMOR();
+
 	/**
 	 * Set the number of solver resting iterations to use for the Parallel Projected Gauss-Seidel
 	 * (PPGS) solver. This value influences the accuracy and computation cost of e.g. terrain
