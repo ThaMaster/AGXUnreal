@@ -358,7 +358,11 @@ UAGX_MergeSplitThresholdsBase* FAGX_ImportUtilities::SaveImportedMergeSplitAsset
 		}
 	}
 
-	UE_LOG(LogAGX, Error, TEXT("Could not create Merge Split Thresholds asset '%s'"), *Name);
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Could not create Merge Split Thresholds asset '%s' because the given owning type is "
+			 "unknown."),
+		*Name);
 	return nullptr;
 }
 
