@@ -117,10 +117,10 @@ public:
 	const FSimulationRef* GetNative() const;
 	void ReleaseNative();
 
-	/*
-	* Functions for creating a Merge Split Thresholds Barrier which can be modified to
-	* change the underlying global AGX Dynamics thresholds.
-	*/
+	/**
+	 * Functions for creating a Merge Split Thresholds Barrier which can be modified to
+	 * change the underlying global AGX Dynamics thresholds.
+	 */
 	FShapeContactMergeSplitThresholdsBarrier GetGlobalShapeContactTresholds() const;
 	FConstraintMergeSplitThresholdsBarrier GetGlobalConstraintTresholds() const;
 	FWireMergeSplitThresholdsBarrier GetGlobalWireTresholds() const;
