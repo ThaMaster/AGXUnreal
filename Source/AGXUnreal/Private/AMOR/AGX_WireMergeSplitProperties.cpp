@@ -6,6 +6,7 @@
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AMOR/AGX_WireMergeSplitThresholds.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 
 
@@ -29,7 +30,7 @@ void FAGX_WireMergeSplitProperties::OnPostEditChangeProperty(UAGX_WireComponent&
 {
 	if (bEnableMerge || bEnableSplit)
 	{
-		LogWarningIfAmorDisabled("Wire");
+		FAGX_NotificationUtilities::LogWarningIfAmorDisabled("Wire");
 		if (Owner.HasNative() && !HasNative())
 		{
 			// If we have not yet allocated a native, and we are in Play, and EnableMerge or

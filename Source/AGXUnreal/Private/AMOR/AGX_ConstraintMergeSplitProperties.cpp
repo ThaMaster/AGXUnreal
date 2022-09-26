@@ -6,6 +6,7 @@
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "Constraints/AGX_ConstraintComponent.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 
 void FAGX_ConstraintMergeSplitProperties::OnBeginPlay(UAGX_ConstraintComponent& Owner)
 {
@@ -27,7 +28,7 @@ void FAGX_ConstraintMergeSplitProperties::OnPostEditChangeProperty(UAGX_Constrai
 {
 	if (bEnableMerge || bEnableSplit)
 	{
-		LogWarningIfAmorDisabled("Constraint");
+		FAGX_NotificationUtilities::LogWarningIfAmorDisabled("Constraint");
 		if (Owner.HasNative() && !HasNative())
 		{
 			// If we have not yet allocated a native, and we are in Play, and EnableMerge or

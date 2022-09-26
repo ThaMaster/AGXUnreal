@@ -47,7 +47,5 @@ public:
 		PURE_VIRTUAL(UAGX_MergeSplitThresholdsBase::GetThresholds, return nullptr;);
 
 protected:
-	void LogWarningIfAmorDisabled(const FString& OwningType);
-
 	FMergeSplitPropertiesBarrier NativeBarrier;
 };

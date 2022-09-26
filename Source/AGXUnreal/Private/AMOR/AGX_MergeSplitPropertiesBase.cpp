@@ -4,7 +4,6 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "AGX_Simulation.h"
 
 // Unreal Engine includes.
 #include "UObject/Class.h"
@@ -74,22 +73,4 @@ void FAGX_MergeSplitPropertiesBase::CopyFrom(const FMergeSplitPropertiesBarrier&
 {
 	bEnableMerge = Barrier.GetEnableMerge();
 	bEnableSplit = Barrier.GetEnableSplit();
-}
-
-void FAGX_MergeSplitPropertiesBase::LogWarningIfAmorDisabled(const FString& OwningType)
-{
-	const UAGX_Simulation* Simulation = GetDefault<UAGX_Simulation>();
-	if (Simulation == nullptr)
-	{
-		return;
-	}
-
-	if (!Simulation->bEnableAMOR)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("AMOR enabled on a %s, but disabled globally. Enable AMOR in Project "
-				 "Settings > Plugins > AGX Dynamics for this change to have an effect."),
-			*OwningType);
-	}
 }

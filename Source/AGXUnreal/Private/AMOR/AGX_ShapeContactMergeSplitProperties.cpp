@@ -8,6 +8,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 #include "Shapes/AGX_ShapeComponent.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 
 
 template <typename T>
@@ -42,7 +43,7 @@ void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangePropertyInternal(T& 
 {
 	if (bEnableMerge || bEnableSplit)
 	{
-		LogWarningIfAmorDisabled("Body or Shape");
+		FAGX_NotificationUtilities::LogWarningIfAmorDisabled("Body or Shape");
 
 		// If we have not yet allocated a native, and we are in Play, and EnableMerge or EnableSplit
 		// is true, then we should now allocate a Native.
