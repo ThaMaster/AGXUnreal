@@ -339,7 +339,7 @@ UAGX_MergeSplitThresholdsBase* FAGX_ImportUtilities::SaveImportedMergeSplitAsset
 			{ Asset.CopyFrom(Barrier); };
 
 			return SaveImportedAsset<UAGX_ShapeContactMergeSplitThresholds>(
-				DirectoryName, Name, "AGX_MSP_", TEXT("MergeSplitThresholds"), InitAsset);
+				DirectoryName, Name, "AGX_SMST_", TEXT("MergeSplitThresholds"), InitAsset);
 		}
 		case EAGX_AmorOwningType::Constraint:
 		{
@@ -347,14 +347,14 @@ UAGX_MergeSplitThresholdsBase* FAGX_ImportUtilities::SaveImportedMergeSplitAsset
 			{ Asset.CopyFrom(Barrier); };
 
 			return SaveImportedAsset<UAGX_ConstraintMergeSplitThresholds>(
-				DirectoryName, Name, "AGX_MSP_", TEXT("MergeSplitThresholds"), InitAsset);
+				DirectoryName, Name, "AGX_CMST_", TEXT("MergeSplitThresholds"), InitAsset);
 		}
 		case EAGX_AmorOwningType::Wire:
 		{
 			auto InitAsset = [&](UAGX_WireMergeSplitThresholds& Asset) { Asset.CopyFrom(Barrier); };
 
 			return SaveImportedAsset<UAGX_WireMergeSplitThresholds>(
-				DirectoryName, Name, "AGX_MSP_", TEXT("MergeSplitThresholds"), InitAsset);
+				DirectoryName, Name, "AGX_WMST_", TEXT("MergeSplitThresholds"), InitAsset);
 		}
 	}
 
