@@ -167,12 +167,14 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_TerrainMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_ConstraintMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
+		AssetTools,
+		MakeShareable(new FAGX_ConstraintMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_ShapeContactMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
+		AssetTools,
+		MakeShareable(new FAGX_ShapeContactMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_WireMergeSplitThresholdsTypeActions(
-						AgxAssetCategoryBit)));
+		AssetTools,
+		MakeShareable(new FAGX_WireMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
 }
 
 void FAGXUnrealEditorModule::UnregisterAssetTypeActions()
