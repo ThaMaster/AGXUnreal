@@ -6,7 +6,6 @@
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
-#include "AMOR/MergeSplitThresholdsBarrier.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/ShapeBarrier.h"
@@ -186,7 +185,7 @@ bool FMergeSplitPropertiesBarrier::GetEnableSplit() const
 }
 
 void FMergeSplitPropertiesBarrier::SetShapeContactMergeSplitThresholds(
-	FMergeSplitThresholdsBarrier* Thresholds)
+	FShapeContactMergeSplitThresholdsBarrier* Thresholds)
 {
 	if (Thresholds == nullptr)
 	{
@@ -203,20 +202,20 @@ void FMergeSplitPropertiesBarrier::SetShapeContactMergeSplitThresholds(
 	}
 }
 
-FMergeSplitThresholdsBarrier FMergeSplitPropertiesBarrier::GetShapeContactMergeSplitThresholds()
-	const
+FShapeContactMergeSplitThresholdsBarrier
+FMergeSplitPropertiesBarrier::GetShapeContactMergeSplitThresholds() const
 {
 	if (!HasNative() || NativePtr->Native->getContactThresholds() == nullptr)
 	{
-		return FMergeSplitThresholdsBarrier();
+		return FShapeContactMergeSplitThresholdsBarrier();
 	}
 
-	return FMergeSplitThresholdsBarrier(
+	return FShapeContactMergeSplitThresholdsBarrier(
 		std::make_unique<FMergeSplitThresholdsRef>(NativePtr->Native->getContactThresholds()));
 }
 
 void FMergeSplitPropertiesBarrier::SetConstraintMergeSplitThresholds(
-	FMergeSplitThresholdsBarrier* Thresholds)
+	FConstraintMergeSplitThresholdsBarrier* Thresholds)
 {
 	if (Thresholds == nullptr)
 	{
@@ -233,19 +232,20 @@ void FMergeSplitPropertiesBarrier::SetConstraintMergeSplitThresholds(
 	}
 }
 
-FMergeSplitThresholdsBarrier FMergeSplitPropertiesBarrier::GetConstraintMergeSplitThresholds() const
+FConstraintMergeSplitThresholdsBarrier
+FMergeSplitPropertiesBarrier::GetConstraintMergeSplitThresholds() const
 {
 	if (!HasNative() || NativePtr->Native->getConstraintThresholds() == nullptr)
 	{
-		return FMergeSplitThresholdsBarrier();
+		return FConstraintMergeSplitThresholdsBarrier();
 	}
 
-	return FMergeSplitThresholdsBarrier(
+	return FConstraintMergeSplitThresholdsBarrier(
 		std::make_unique<FMergeSplitThresholdsRef>(NativePtr->Native->getConstraintThresholds()));
 }
 
 void FMergeSplitPropertiesBarrier::SetWireMergeSplitThresholds(
-	FMergeSplitThresholdsBarrier* Thresholds)
+	FWireMergeSplitThresholdsBarrier* Thresholds)
 {
 	if (Thresholds == nullptr)
 	{
@@ -262,14 +262,14 @@ void FMergeSplitPropertiesBarrier::SetWireMergeSplitThresholds(
 	}
 }
 
-FMergeSplitThresholdsBarrier FMergeSplitPropertiesBarrier::GetWireMergeSplitThresholds() const
+FWireMergeSplitThresholdsBarrier FMergeSplitPropertiesBarrier::GetWireMergeSplitThresholds() const
 {
 	if (!HasNative() || NativePtr->Native->getWireThresholds() == nullptr)
 	{
-		return FMergeSplitThresholdsBarrier();
+		return FWireMergeSplitThresholdsBarrier();
 	}
 
-	return FMergeSplitThresholdsBarrier(
+	return FWireMergeSplitThresholdsBarrier(
 		std::make_unique<FMergeSplitThresholdsRef>(NativePtr->Native->getWireThresholds()));
 }
 

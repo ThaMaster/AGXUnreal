@@ -2,6 +2,11 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AMOR/ConstraintMergeSplitThresholdsBarrier.h"
+#include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
+#include "AMOR/WireMergeSplitThresholdsBarrier.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
@@ -9,7 +14,6 @@
 #include <memory>
 
 class FConstraintBarrier;
-class FMergeSplitThresholdsBarrier;
 class FRigidBodyBarrier;
 class FShapeBarrier;
 class FWireBarrier;
@@ -42,19 +46,19 @@ public:
 	void SetEnableSplit(bool bEnable);
 	bool GetEnableSplit() const;
 
-	void SetShapeContactMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
-	FMergeSplitThresholdsBarrier GetShapeContactMergeSplitThresholds() const;
+	void SetShapeContactMergeSplitThresholds(FShapeContactMergeSplitThresholdsBarrier* Thresholds);
+	FShapeContactMergeSplitThresholdsBarrier GetShapeContactMergeSplitThresholds() const;
 
-	void SetConstraintMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
-	FMergeSplitThresholdsBarrier GetConstraintMergeSplitThresholds() const;
+	void SetConstraintMergeSplitThresholds(FConstraintMergeSplitThresholdsBarrier* Thresholds);
+	FConstraintMergeSplitThresholdsBarrier GetConstraintMergeSplitThresholds() const;
 
-	void SetWireMergeSplitThresholds(FMergeSplitThresholdsBarrier* Thresholds);
-	FMergeSplitThresholdsBarrier GetWireMergeSplitThresholds() const;
+	void SetWireMergeSplitThresholds(FWireMergeSplitThresholdsBarrier* Thresholds);
+	FWireMergeSplitThresholdsBarrier GetWireMergeSplitThresholds() const;
 
 	/*
-	* This Barrier may not have a Native at the time of calling BindToNewOwner.
-	* Ensure it is released prior.
-	*/
+	 * This Barrier may not have a Native at the time of calling BindToNewOwner.
+	 * Ensure it is released prior.
+	 */
 	void BindToNewOwner(FRigidBodyBarrier& NewOwner);
 	void BindToNewOwner(FShapeBarrier& NewOwner);
 	void BindToNewOwner(FConstraintBarrier& NewOwner);
