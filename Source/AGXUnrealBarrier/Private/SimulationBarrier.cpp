@@ -522,12 +522,12 @@ FConstraintMergeSplitThresholdsBarrier FSimulationBarrier::GetGlobalConstraintTr
 {
 	check(HasNative());
 	return FConstraintMergeSplitThresholdsBarrier(std::make_unique<FMergeSplitThresholdsRef>(
-		NativeRef->Native->getMergeSplitHandler()->getGlobalContactThresholds()));
+		NativeRef->Native->getMergeSplitHandler()->getGlobalConstraintThresholds()));
 }
 
 FWireMergeSplitThresholdsBarrier FSimulationBarrier::GetGlobalWireTresholds() const
 {
 	check(HasNative());
 	return FWireMergeSplitThresholdsBarrier(std::make_unique<FMergeSplitThresholdsRef>(
-		NativeRef->Native->getMergeSplitHandler()->getGlobalContactThresholds()));
+		NativeRef->Native->getMergeSplitHandler()->getGlobalWireThresholds()));
 }
