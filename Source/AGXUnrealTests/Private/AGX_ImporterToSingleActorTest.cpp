@@ -2910,7 +2910,12 @@ bool FCheckAmorImportedCommand::Update()
 	// It should be updated whenever the test scene is changed.
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
-	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 11);
+#if AGX_TEST_WIRE_IMPORT
+	const int32 ExpectedNumComponents = 11;
+#else
+	const int32 ExpectedNumComponents = 9;
+#endif
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), ExpectedNumComponents);
 
 	UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(Components, TEXT("Body"));
 	Test.TestTrue("Body Enable Merge", Body->MergeSplitProperties.bEnableMerge);
@@ -3037,12 +3042,14 @@ bool FClearAmorImportedCommand::Update()
 	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("MergeSplitThresholds"),
+#if AGX_TEST_WIRE_IMPORT
 		TEXT("ShapeMaterial"),
-		TEXT("AGX_CMST_C64D4AE3F8A8DED174B8BF2FAFA63F35.uasset"),
-		TEXT("AGX_SMST_C10D476D92C77854C0DD2264BA19078E.uasset"),
 		TEXT("AGX_WMST_A9744676B4550BAD5494C4DA89411C58.uasset"),
-		TEXT("defaultWireMaterial_40.uasset")};
+		TEXT("defaultWireMaterial_40.uasset"),
+#endif
+		TEXT("MergeSplitThresholds"),
+		TEXT("AGX_CMST_C64D4AE3F8A8DED174B8BF2FAFA63F35.uasset"),
+		TEXT("AGX_SMST_C10D476D92C77854C0DD2264BA19078E.uasset")};
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("amor_build"), ExpectedFiles);
 
