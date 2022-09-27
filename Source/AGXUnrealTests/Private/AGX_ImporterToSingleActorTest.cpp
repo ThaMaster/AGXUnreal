@@ -7,7 +7,15 @@
 // wire import test always fails. For now the test is disabled through this
 // preprocessor flag. See internal issue 495. Remove the preprocessor guards
 // once the GitLab CI runtime has an AGX Dynamics license.
+#if defined(_WIN64)
+#define AGX_TEST_WIRE_IMPORT 1
+#elif defined(__linux__)
+#include "Linux/LinuxPlatformMisc.h"
 #define AGX_TEST_WIRE_IMPORT 0
+#else
+// Unsupported platform.
+static_assert(false);
+#endif
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImporterToSingleActor.h"
@@ -75,6 +83,7 @@ bool FImportArchiveSingleActorCommand::Update()
 		Test.AddError(FString::Printf(TEXT("Did not find an archive named '%s'."), *ArchiveName));
 		return true;
 	}
+
 	Contents = AGX_ImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
@@ -2862,6 +2871,9 @@ bool FClearURDFLinksGeometriesConstraintsImportedCommand::Update()
 class FImporterToSingleActor_AmorTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FSupressAmorWireImportErrorCommand, FImporterToSingleActor_AmorTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FCheckAmorImportedCommand, FImporterToSingleActor_AmorTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
@@ -2884,6 +2896,7 @@ protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(FSupressAmorWireImportErrorCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(
 			FImportArchiveSingleActorCommand(TEXT("amor_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckAmorImportedCommand(*this))
@@ -2895,6 +2908,19 @@ protected:
 namespace
 {
 	FImporterToSingleActor_AmorTest ImporterToSingleActor_AmorTest;
+}
+
+bool FSupressAmorWireImportErrorCommand::Update()
+{
+	// The .agx file about to be imported contains Wires which will generate error printouts from
+	// AGX Dynamics when no AGX Dynamics license is available. Here, we suppress that error printout.
+#if !AGX_TEST_WIRE_IMPORT
+	Test.AddExpectedError(
+		TEXT("License for AgX-Wires not valid"), EAutomationExpectedErrorFlags::Contains, 0);
+	Test.AddError(TEXT("License for AgX-Wires not valid"));
+#endif
+
+	return true;
 }
 
 bool FCheckAmorImportedCommand::Update()
@@ -2911,8 +2937,12 @@ bool FCheckAmorImportedCommand::Update()
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
 #if AGX_TEST_WIRE_IMPORT
-	const int32 ExpectedNumComponents = 11;
+	// Two Rigid Bodies (2), one Shape (3), two Wires with one icon each (7), one Constraint with
+	// one icon and two Graphics Components (11), one Collision Group Disabler (12), one Default
+	// Scene Root (13).
+	const int32 ExpectedNumComponents = 13;
 #else
+	// Same as above minus two wires with one icon each.
 	const int32 ExpectedNumComponents = 9;
 #endif
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), ExpectedNumComponents);
@@ -3044,12 +3074,14 @@ bool FClearAmorImportedCommand::Update()
 	TArray<const TCHAR*> ExpectedFiles = {
 #if AGX_TEST_WIRE_IMPORT
 		TEXT("ShapeMaterial"),
-		TEXT("AGX_WMST_A9744676B4550BAD5494C4DA89411C58.uasset"),
+		TEXT("AGX_WMST_D7334DD013D1E4E7FB04E6ABA3AF5494.uasset"),
 		TEXT("defaultWireMaterial_40.uasset"),
+		TEXT("defaultWireMaterial_550.uasset"),
 #endif
 		TEXT("MergeSplitThresholds"),
-		TEXT("AGX_CMST_C64D4AE3F8A8DED174B8BF2FAFA63F35.uasset"),
-		TEXT("AGX_SMST_C10D476D92C77854C0DD2264BA19078E.uasset")};
+		TEXT("AGX_CMST_E17441363B61A7BC37C1A76C9E0EB9E4.uasset"),
+		TEXT("AGX_SMST_567B4C28966D80460D523D709EA031DF.uasset")
+	};
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("amor_build"), ExpectedFiles);
 
