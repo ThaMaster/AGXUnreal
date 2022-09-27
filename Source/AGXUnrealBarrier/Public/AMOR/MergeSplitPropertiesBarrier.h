@@ -24,7 +24,7 @@ class AGXUNREALBARRIER_API FMergeSplitPropertiesBarrier
 {
 public:
 	FMergeSplitPropertiesBarrier();
-	FMergeSplitPropertiesBarrier(std::unique_ptr<FMergeSplitPropertiesPtr> Native);
+	FMergeSplitPropertiesBarrier(std::unique_ptr<FMergeSplitPropertiesPtr>&& Native);
 	FMergeSplitPropertiesBarrier(FMergeSplitPropertiesBarrier&& Other) noexcept;
 	~FMergeSplitPropertiesBarrier();
 

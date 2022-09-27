@@ -12,7 +12,7 @@ class AGXUNREALBARRIER_API FMergeSplitThresholdsBarrier
 {
 public:
 	FMergeSplitThresholdsBarrier();
-	FMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef> Native);
+	FMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef>&& Native);
 	FMergeSplitThresholdsBarrier(FMergeSplitThresholdsBarrier&& Other);
 	virtual ~FMergeSplitThresholdsBarrier();
 

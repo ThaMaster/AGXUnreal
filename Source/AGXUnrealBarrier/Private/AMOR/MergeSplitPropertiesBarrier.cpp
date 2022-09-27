@@ -27,7 +27,7 @@ FMergeSplitPropertiesBarrier::FMergeSplitPropertiesBarrier()
 }
 
 FMergeSplitPropertiesBarrier::FMergeSplitPropertiesBarrier(
-	std::unique_ptr<FMergeSplitPropertiesPtr> Native)
+	std::unique_ptr<FMergeSplitPropertiesPtr>&& Native)
 	: NativePtr {std::move(Native)}
 {
 }

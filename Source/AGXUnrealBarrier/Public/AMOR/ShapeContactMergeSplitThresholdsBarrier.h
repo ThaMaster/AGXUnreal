@@ -13,7 +13,7 @@ class AGXUNREALBARRIER_API FShapeContactMergeSplitThresholdsBarrier : public FMe
 public:
 	FShapeContactMergeSplitThresholdsBarrier();
 	FShapeContactMergeSplitThresholdsBarrier(FShapeContactMergeSplitThresholdsBarrier&& Other) = default;
-	FShapeContactMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef> Native);
+	FShapeContactMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef>&& Native);
 	~FShapeContactMergeSplitThresholdsBarrier();
 
 	void AllocateNative();

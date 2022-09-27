@@ -12,7 +12,7 @@ class AGXUNREALBARRIER_API FConstraintMergeSplitThresholdsBarrier : public FMerg
 public:
 	FConstraintMergeSplitThresholdsBarrier();
 	FConstraintMergeSplitThresholdsBarrier(FConstraintMergeSplitThresholdsBarrier&& Other) = default;
-	FConstraintMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef> Native);
+	FConstraintMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef>&& Native);
 	~FConstraintMergeSplitThresholdsBarrier();
 
 	void AllocateNative(bool bInIsRotational);

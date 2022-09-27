@@ -20,7 +20,7 @@ FConstraintMergeSplitThresholdsBarrier::FConstraintMergeSplitThresholdsBarrier()
 }
 
 FConstraintMergeSplitThresholdsBarrier::FConstraintMergeSplitThresholdsBarrier(
-	std::unique_ptr<FMergeSplitThresholdsRef> Native)
+	std::unique_ptr<FMergeSplitThresholdsRef>&& Native)
 	: FMergeSplitThresholdsBarrier(std::move(Native))
 {
 }

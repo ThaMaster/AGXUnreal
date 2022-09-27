@@ -12,7 +12,7 @@ class AGXUNREALBARRIER_API FWireMergeSplitThresholdsBarrier : public FMergeSplit
 public:
 	FWireMergeSplitThresholdsBarrier();
 	FWireMergeSplitThresholdsBarrier(FWireMergeSplitThresholdsBarrier&& Other) = default;
-	FWireMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef> Native);
+	FWireMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef>&& Native);
 	~FWireMergeSplitThresholdsBarrier();
 
 	void AllocateNative();
