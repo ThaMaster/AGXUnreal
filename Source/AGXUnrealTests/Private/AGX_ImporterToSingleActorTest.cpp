@@ -3,10 +3,11 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
 // AGX Dynamics require the AGX-Wires license for wire import. Our GitLab CI
-// runtime environment currently doesn't have an AGX Dynamics license so the
-// wire import test always fails. For now the test is disabled through this
-// preprocessor flag. See internal issue 495. Remove the preprocessor guards
-// once the GitLab CI runtime has an AGX Dynamics license.
+// runtime environment on Linux currently doesn't have an AGX Dynamics license so the
+// wire import test always fails on that platform. Our GitLab CI runtime environment on Windows does
+// have a license. For now the test is disabled through this preprocessor flag for Linux but is
+// enabled on Windows. See internal issue 495. Remove the preprocessor guards once the Linux GitLab
+// CI runtime has an AGX Dynamics license.
 #if defined(_WIN64)
 #define AGX_TEST_WIRE_IMPORT 1
 #elif defined(__linux__)
