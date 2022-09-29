@@ -41,6 +41,7 @@
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "SimulationObjectCollection.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -56,9 +57,12 @@
 #include "GameFramework/Actor.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/ScopedSlowTask.h"
 #include "PackageTools.h"
 #include "UObject/Package.h"
 #include "UObject/SavePackage.h"
+
+#define LOCTEXT_NAMESPACE "AGX_ImporterToBlueprint"
 
 namespace
 {
@@ -366,7 +370,8 @@ namespace
 			Helper.InstantiateWire(Barrier, BlueprintTemplate);
 		}
 
-		virtual void InstantiateObserverFrame(const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) override
+		virtual void InstantiateObserverFrame(
+			const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) override
 		{
 			Helper.InstantiateObserverFrame(Name, BodyGuid, Transform, BlueprintTemplate);
 		}
@@ -382,42 +387,135 @@ namespace
 		AActor& BlueprintTemplate;
 	};
 
+	bool AddShapeMaterials(
+		const FSimulationObjectCollection& SimObjects, FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& ShapeMaterial : SimObjects.GetShapeMaterials())
+		{
+			Success &= Helper.InstantiateShapeMaterial(ShapeMaterial) != nullptr;
+		}
+
+		return Success;
+	}
+
+	bool AddContactMaterials(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& ContactMaterial : SimObjects.GetContactMaterials())
+		{
+			Success &= Helper.InstantiateContactMaterial(ContactMaterial, ImportedActor) != nullptr;
+		}
+
+		return Success;
+	}
+
+	bool AddTireModels(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& Tire : SimObjects.GetTwoBodyTires())
+		{
+			check(Tire.GetTireRigidBody().HasNative());
+			check(Tire.GetHubRigidBody().HasNative());
+			Helper.InstantiateTwoBodyTire(Tire, ImportedActor, true);
+		}
+
+		return Success;
+	}
+
+	bool AddBodilessShapes(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& Shape : SimObjects.GetSphereShapes())
+		{
+			Success &= Helper.InstantiateSphere(Shape, ImportedActor) != nullptr;
+		}
+
+		for (const auto& Shape : SimObjects.GetBoxShapes())
+		{
+			Success &= Helper.InstantiateBox(Shape, ImportedActor) != nullptr;
+		}
+
+		for (const auto& Shape : SimObjects.GetCylinderShapes())
+		{
+			Success &= Helper.InstantiateCylinder(Shape, ImportedActor) != nullptr;
+		}
+
+		for (const auto& Shape : SimObjects.GetCapsuleShapes())
+		{
+			Success &= Helper.InstantiateCapsule(Shape, ImportedActor) != nullptr;
+		}
+
+		for (const auto& Shape : SimObjects.GetTrimeshShapes())
+		{
+			Success &= Helper.InstantiateTrimesh(Shape, ImportedActor) != nullptr;
+		}
+
+		return Success;
+	}
+
+	bool AddAllComponents(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		const float WorkTot = 100.0f;
+		FScopedSlowTask ImportTask(WorkTot, LOCTEXT("ImportModel", "Importing model"), true);
+		bool Success = true;
+
+		ImportTask.EnterProgressFrame(0.01, FText::FromString("Reading Shape Materials"));
+		Success &= AddShapeMaterials(SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(0.01, FText::FromString("Reading Contact Materials"));
+		Success &= AddContactMaterials(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(0.18, FText::FromString("Reading bodiless Shapes"));
+		Success &= AddBodilessShapes(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(0.80, FText::FromString("Import complete"));
+		return Success;
+	}
+
 	bool AddComponentsFromAGXArchive(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
-		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
-		FSuccessOrError SuccessOrError =
-			FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, Instantiator);
-		if (!SuccessOrError.Success)
+		FSimulationObjectCollection SimObjects;
+		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, SimObjects) ||
+			!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-				SuccessOrError.Error, "Import AGX Dynamics archive to Blueprint");
+				"Some issues occurred during import. Log category LogAGX in the Console may "
+				"contain "
+				"more information.",
+				"Import AGX Dynamics archive to Blueprint");
+			return false;
 		}
-		else if (SuccessOrError.HasWarning)
-		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(
-				SuccessOrError.Warning, "Import AGX Dynamics archive to Blueprint");
-		}
-		return SuccessOrError.Success;
+
+		return true;
 	}
 
 	bool AddComponentsFromUrdf(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
 		FAGX_UrdfImporterHelper* HelperUrdf = static_cast<FAGX_UrdfImporterHelper*>(&Helper);
 
-		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
-		FSuccessOrError SuccessOrError = FAGXSimObjectsReader::ReadUrdf(
-			HelperUrdf->SourceFilePath, HelperUrdf->UrdfPackagePath, Instantiator);
-		if (!SuccessOrError.Success)
+		FSimulationObjectCollection SimObjects;
+		if (!FAGXSimObjectsReader::ReadUrdf(
+				HelperUrdf->SourceFilePath, HelperUrdf->UrdfPackagePath, SimObjects) ||
+			!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-				SuccessOrError.Error, "Import URDF model to Blueprint");
+				"Some issues occurred during import. Log category LogAGX in the Console may "
+				"contain "
+				"more information.",
+				"Import AGX Dynamics archive to Blueprint");
+			return false;
 		}
-		else if (SuccessOrError.HasWarning)
-		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(
-				SuccessOrError.Warning, "Import URDF model to Blueprint");
-		}
-		return SuccessOrError.Success;
+
+		return true;
 	}
 
 	AActor* CreateTemplate(FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType)
@@ -472,22 +570,17 @@ namespace
 		return RootActorContainer;
 	}
 
-	UBlueprint* CreateBlueprint(UPackage* Package, AActor* Template)
+	UBlueprint* CreateBlueprint(UPackage* Package, AActor* Template, bool OpenBlueprintEditor)
 	{
 		static constexpr bool ReplaceInWorld = false;
 		static constexpr bool KeepMobility = true;
-#if UE_VERSION_OLDER_THAN(4, 26, 0)
-		UBlueprint* Blueprint = FKismetEditorUtilities::CreateBlueprintFromActor(
-			Package->GetName(), Template, ReplaceInWorld, KeepMobility);
-#else
 		FKismetEditorUtilities::FCreateBlueprintFromActorParams Params;
 		Params.bReplaceActor = ReplaceInWorld;
 		Params.bKeepMobility = KeepMobility;
+		Params.bOpenBlueprint = OpenBlueprintEditor;
 
 		UBlueprint* Blueprint =
 			FKismetEditorUtilities::CreateBlueprintFromActor(Package->GetName(), Template, Params);
-#endif
-
 		check(Blueprint);
 		return Blueprint;
 	}
@@ -519,7 +612,9 @@ namespace
 #endif
 	}
 
-	UBlueprint* ImportToBlueprint(FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType)
+	UBlueprint* ImportToBlueprint(
+		FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType,
+		bool OpenBlueprintEditor = true)
 	{
 		PreCreationSetup();
 		FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
@@ -529,7 +624,7 @@ namespace
 		{
 			return nullptr;
 		}
-		UBlueprint* Blueprint = CreateBlueprint(Package, Template);
+		UBlueprint* Blueprint = CreateBlueprint(Package, Template, OpenBlueprintEditor);
 		PostCreationTeardown(Template, Package, Blueprint, BlueprintPackagePath);
 		return Blueprint;
 	}
@@ -547,3 +642,5 @@ UBlueprint* AGX_ImporterToBlueprint::ImportURDF(
 	FAGX_UrdfImporterHelper Helper(UrdfFilePath, UrdfPackagePath);
 	return ImportToBlueprint(Helper, EAGX_ImportType::Urdf);
 }
+
+#undef LOCTEXT_NAMESPACE
