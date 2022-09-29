@@ -106,7 +106,7 @@ namespace
 	bool IsRegularBody(agx::RigidBody& Body, const TArray<agx::RigidBody*>& NonFreeBodies)
 	{
 		return !Body.isPowerlineBody() && agxWire::Wire::getWire(&Body) == nullptr &&
-			   agxCable::Cable::getCableForBody(&Body) == nullptr && !NonFreeBodies.Contains(Body);
+			   agxCable::Cable::getCableForBody(&Body) == nullptr && !NonFreeBodies.Contains(&Body);
 	}
 
 	/**
