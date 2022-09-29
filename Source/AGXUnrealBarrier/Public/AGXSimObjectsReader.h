@@ -29,6 +29,8 @@ class FContactMaterialBarrier;
 class FTwoBodyTireBarrier;
 class FWireBarrier;
 
+struct FSimulationObjectCollection;
+
 /*
 The separation between the Unreal part and the AGX Dynamics part of the plugin
 makes reading .agx archives or URDF files a bit complicated. The reader consists
@@ -193,6 +195,8 @@ namespace FAGXSimObjectsReader
 	 */
 	AGXUNREALBARRIER_API FSuccessOrError
 	ReadAGXArchive(const FString& Filename, FAGXSimObjectsInstantiator& Instantiator);
+
+	AGXUNREALBARRIER_API void ReadAGXArchive(const FString& Filename, FSimulationObjectCollection& OutSimObjects);
 
 	/**
 	 * Read the URDF file pointed to by 'Filename' and for each

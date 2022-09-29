@@ -9,6 +9,7 @@
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
+#include "SimulationObjectCollection.h"
 #include "TypeConversions.h"
 
 // AGX Dynamics includes.
@@ -480,6 +481,11 @@ FSuccessOrError FAGXSimObjectsReader::ReadAGXArchive(
 	}
 
 	return FSuccessOrError(true);
+}
+
+void FAGXSimObjectsReader::ReadAGXArchive(
+	const FString& Filename, FSimulationObjectCollection& OutSimObjects)
+{
 }
 
 AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
