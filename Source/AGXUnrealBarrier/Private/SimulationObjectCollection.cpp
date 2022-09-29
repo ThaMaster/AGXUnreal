@@ -1,9 +1,17 @@
 
 #include "SimulationObjectCollection.h"
-
 #include "RigidBodyBarrier.h"
-#include "Constraints/ConstraintBarrier.h"
-#include "Shapes/ShapeBarrier.h"
+#include "Constraints/BallJointBarrier.h"
+#include "Constraints/CylindricalJointBarrier.h"
+#include "Constraints/DistanceJointBarrier.h"
+#include "Constraints/HingeBarrier.h"
+#include "Constraints/LockJointBarrier.h"
+#include "Constraints/PrismaticBarrier.h"
+#include "Shapes/BoxShapeBarrier.h"
+#include "Shapes/CylinderShapeBarrier.h"
+#include "Shapes/CapsuleShapeBarrier.h"
+#include "Shapes/SphereShapeBarrier.h"
+#include "Shapes/TrimeshShapeBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TireBarrier.h"
@@ -22,22 +30,115 @@ const TArray<FRigidBodyBarrier>& FSimulationObjectCollection::GetRigidBodies() c
 	return RigidBodies;
 }
 
-TArray<TUniquePtr<FShapeBarrier>>& FSimulationObjectCollection::GetShapes()
+TArray<FSphereShapeBarrier>& FSimulationObjectCollection::GetSphereShapes()
 {
-	return Shapes;
-}
-const TArray<TUniquePtr<FShapeBarrier>>& FSimulationObjectCollection::GetShapes() const
-{
-	return Shapes;
+	return SphereShapes;
 }
 
-TArray<TUniquePtr<FConstraintBarrier>>& FSimulationObjectCollection::GetConstraints()
+const TArray<FSphereShapeBarrier>& FSimulationObjectCollection::GetSphereShapes() const
 {
-	return Constraints;
+	return SphereShapes;
 }
-const TArray<TUniquePtr<FConstraintBarrier>>& FSimulationObjectCollection::GetConstraints() const
+
+TArray<FBoxShapeBarrier>& FSimulationObjectCollection::GetBoxShapes()
 {
-	return Constraints;
+	return BoxShapes;
+}
+
+const TArray<FBoxShapeBarrier>& FSimulationObjectCollection::GetBoxShapes() const
+{
+	return BoxShapes;
+}
+
+TArray<FCylinderShapeBarrier>& FSimulationObjectCollection::GetCylinderShapes()
+{
+	return CylinderShapes;
+}
+
+const TArray<FCylinderShapeBarrier>& FSimulationObjectCollection::GetCylinderShapes() const
+{
+	return CylinderShapes;
+}
+
+TArray<FCapsuleShapeBarrier>& FSimulationObjectCollection::GetCapsuleShapes()
+{
+	return CapsuleShapes;
+}
+
+const TArray<FCapsuleShapeBarrier>& FSimulationObjectCollection::GetCapsuleShapes() const
+{
+	return CapsuleShapes;
+}
+
+TArray<FTrimeshShapeBarrier>& FSimulationObjectCollection::GetTrimeshShapes()
+{
+	return TrimeshShapes;
+}
+
+const TArray<FTrimeshShapeBarrier>& FSimulationObjectCollection::GetTrimeshShapes() const
+{
+	return TrimeshShapes;
+}
+
+TArray<FHingeBarrier>& FSimulationObjectCollection::GetHingeConstraints()
+{
+	return HingeConstraints;
+}
+
+const TArray<FHingeBarrier>& FSimulationObjectCollection::GetHingeConstraints() const
+{
+	return HingeConstraints;
+}
+
+TArray<FPrismaticBarrier>& FSimulationObjectCollection::GetPrismaticConstraints()
+{
+	return PrismaticConstraints;
+}
+
+const TArray<FPrismaticBarrier>& FSimulationObjectCollection::GetPrismaticConstraints() const
+{
+	return PrismaticConstraints;
+}
+
+TArray<FBallJointBarrier>& FSimulationObjectCollection::GetBallConstraints()
+{
+	return BallConstraints;
+}
+
+const TArray<FBallJointBarrier>& FSimulationObjectCollection::GetBallConstraints() const
+{
+	return BallConstraints;
+}
+
+TArray<FCylindricalJointBarrier>& FSimulationObjectCollection::GetCylindricalConstraints()
+{
+	return CylindricalConstraints;
+}
+
+const TArray<FCylindricalJointBarrier>& FSimulationObjectCollection::GetCylindricalConstraints()
+	const
+{
+	return CylindricalConstraints;
+}
+
+TArray<FDistanceJointBarrier>& FSimulationObjectCollection::GetDistanceConstraints()
+{
+	return DistanceConstraints;
+}
+
+const TArray<FDistanceJointBarrier>& FSimulationObjectCollection::GetDistanceConstraints() const
+{
+	return DistanceConstraints;
+}
+
+TArray<FLockJointBarrier>& FSimulationObjectCollection::GetLockConstraints()
+{
+	return LockConstraints;
+}
+
+const TArray<FLockJointBarrier>& FSimulationObjectCollection::GetLockConstraints() const
+{
+	return LockConstraints;
 }
 
 TArray<FContactMaterialBarrier>& FSimulationObjectCollection::GetContactMaterials()

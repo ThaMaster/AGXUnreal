@@ -7,10 +7,25 @@
 // Unreal Engine includes.
 #include "Containers/Array.h"
 
+// Constraints.
+class FHingeBarrier;
+class FPrismaticBarrier;
+class FBallJointBarrier;
+class FCylindricalJointBarrier;
+class FDistanceJointBarrier;
+class FLockJointBarrier;
+
+// Shapes.
+class FSphereShapeBarrier;
+class FBoxShapeBarrier;
+class FCylinderShapeBarrier;
+class FCapsuleShapeBarrier;
+class FTrimeshShapeBarrier;
+
+// Others.
 class FRigidBodyBarrier;
 class FConstraintBarrier;
 class FContactMaterialBarrier;
-class FShapeBarrier;
 class FShapeMaterialBarrier;
 class FTireBarrier;
 
@@ -32,11 +47,38 @@ public:
 	TArray<FRigidBodyBarrier>& GetRigidBodies();
 	const TArray<FRigidBodyBarrier>& GetRigidBodies() const;
 
-	TArray<TUniquePtr<FShapeBarrier>>& GetShapes();
-	const TArray<TUniquePtr<FShapeBarrier>>& GetShapes() const;
+	TArray<FSphereShapeBarrier>& GetSphereShapes();
+	const TArray<FSphereShapeBarrier>& GetSphereShapes() const;
 
-	TArray<TUniquePtr<FConstraintBarrier>>& GetConstraints();
-	const TArray<TUniquePtr<FConstraintBarrier>>& GetConstraints() const;
+	TArray<FBoxShapeBarrier>& GetBoxShapes();
+	const TArray<FBoxShapeBarrier>& GetBoxShapes() const;
+
+	TArray<FCylinderShapeBarrier>& GetCylinderShapes();
+	const TArray<FCylinderShapeBarrier>& GetCylinderShapes() const;
+
+	TArray<FCapsuleShapeBarrier>& GetCapsuleShapes();
+	const TArray<FCapsuleShapeBarrier>& GetCapsuleShapes() const;
+
+	TArray<FTrimeshShapeBarrier>& GetTrimeshShapes();
+	const TArray<FTrimeshShapeBarrier>& GetTrimeshShapes() const;
+
+	TArray<FHingeBarrier>& GetHingeConstraints();
+	const TArray<FHingeBarrier>& GetHingeConstraints() const;
+
+	TArray<FPrismaticBarrier>& GetPrismaticConstraints();
+	const TArray<FPrismaticBarrier>& GetPrismaticConstraints() const;
+
+	TArray<FBallJointBarrier>& GetBallConstraints();
+	const TArray<FBallJointBarrier>& GetBallConstraints() const;
+
+	TArray<FCylindricalJointBarrier>& GetCylindricalConstraints();
+	const TArray<FCylindricalJointBarrier>& GetCylindricalConstraints() const;
+
+	TArray<FDistanceJointBarrier>& GetDistanceConstraints();
+	const TArray<FDistanceJointBarrier>& GetDistanceConstraints() const;
+
+	TArray<FLockJointBarrier>& GetLockConstraints();
+	const TArray<FLockJointBarrier>& GetLockConstraints() const;
 
 	TArray<FContactMaterialBarrier>& GetContactMaterials();
 	const TArray<FContactMaterialBarrier>& GetContactMaterials() const;
@@ -67,9 +109,20 @@ private:
 	TArray<FRigidBodyBarrier> RigidBodies;
 
 	// These are "free" Shapes only, i.e. not owned by a RigidBody.
-	TArray<TUniquePtr<FShapeBarrier>> Shapes;
+	TArray<FSphereShapeBarrier> SphereShapes;
+	TArray<FBoxShapeBarrier> BoxShapes;
+	TArray<FCylinderShapeBarrier> CylinderShapes;
+	TArray<FCapsuleShapeBarrier> CapsuleShapes;
+	TArray<FTrimeshShapeBarrier> TrimeshShapes;
 
-	TArray<TUniquePtr<FConstraintBarrier>> Constraints;
+	TArray<FHingeBarrier> HingeConstraints;
+	TArray<FPrismaticBarrier> PrismaticConstraints;
+	TArray<FBallJointBarrier> BallConstraints;
+	TArray<FCylindricalJointBarrier> CylindricalConstraints;
+	TArray<FDistanceJointBarrier> DistanceConstraints;
+	TArray<FLockJointBarrier> LockConstraints;
+
+
 	TArray<FContactMaterialBarrier> ContactMaterials;
 	TArray<std::pair<FString, FString>> DisabledCollisionGroups;
 	TArray<ObserverFrameData> ObserverFrames;
