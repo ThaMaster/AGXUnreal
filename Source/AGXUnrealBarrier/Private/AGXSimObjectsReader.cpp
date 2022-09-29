@@ -42,11 +42,6 @@
 #include <agxWire/Wire.h>
 #include "EndAGXIncludes.h"
 
-// Unreal Engine includes.
-#include "Misc/ScopedSlowTask.h"
-
-#define LOCTEXT_NAMESPACE "AGX_SIM_OBJECTS_READER"
-
 namespace
 {
 	void ReadShapes(
@@ -378,5 +373,3 @@ AGXUNREALBARRIER_API bool FAGXSimObjectsReader::ReadUrdf(
 
 	return true;
 }
-
-#undef LOCTEXT_NAMESPACE
