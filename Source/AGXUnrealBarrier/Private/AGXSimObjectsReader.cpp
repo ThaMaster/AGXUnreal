@@ -278,7 +278,7 @@ namespace
 		}
 	}
 
-	bool ReadWires(agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects)
+	void ReadWires(agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects)
 	{
 		agxWire::WirePtrVector Wires = agxWire::Wire::findAll(&Simulation);
 		OutSimObjects.GetWires().Reserve(Wires.size());
@@ -293,7 +293,7 @@ namespace
 		}
 	}
 
-	bool ReadObserverFrames(
+	void ReadObserverFrames(
 		agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects)
 	{
 		const agx::ObserverFrameRefSetVector& ObserverFrames = Simulation.getObserverFrames();
