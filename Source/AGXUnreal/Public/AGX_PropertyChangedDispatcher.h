@@ -206,6 +206,14 @@ void FAGX_PropertyChangedDispatcher<T>::Trigger(struct FPropertyChangedChainEven
 
 	while (Node != nullptr)
 	{
+		// The name of the rest of the nodes doesn't matter, we set all elements at level two each
+		// time. These are small objects such as FVector or FFloatInterval. Some rewrite of Property
+		// Changed Dispatcher will be required to support more detailed nesting callbacks.
+		// We search through the Event-chain until we find a match given Member/Property pair. One
+		// example where this is important is for our AGX Actor types, where the AGX Component might
+		// be edited from the Actor's root component in the Details Panel. In that case the event-chain
+		// head will NOT point to the Component, but rather the Actor from within the Component's 
+		// PostEditChangeChainProperty.
 		const FName Member = Node->GetValue()->GetFName();
 		Node = Node->GetNextNode();
 		const FName Property = Node != nullptr ? Node->GetValue()->GetFName() : Member;
