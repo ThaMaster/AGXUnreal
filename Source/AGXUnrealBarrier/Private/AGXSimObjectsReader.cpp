@@ -66,35 +66,34 @@ namespace
 				case agxCollide::Shape::BOX:
 				{
 					agxCollide::Box* Box {Shape->as<agxCollide::Box>()};
-					OutSimObjects.GetShapes().Add(
-						AGXBarrierFactories::CreateSphereShapeBarrier(Box));
+					OutSimObjects.GetShapes().Add(AGXBarrierFactories::CreateBoxShapeBarrier(Box));
 					break;
 				}
 				case agxCollide::Shape::CYLINDER:
 				{
 					agxCollide::Cylinder* Cylinder {Shape->as<agxCollide::Cylinder>()};
 					OutSimObjects.GetShapes().Add(
-						AGXBarrierFactories::CreateSphereShapeBarrier(Cylinder));
+						AGXBarrierFactories::CreateCylinderShapeBarrier(Cylinder));
 					break;
 				}
 				case agxCollide::Shape::CAPSULE:
 				{
 					agxCollide::Capsule* Capsule {Shape->as<agxCollide::Capsule>()};
 					OutSimObjects.GetShapes().Add(
-						AGXBarrierFactories::CreateSphereShapeBarrier(Capsule));
+						AGXBarrierFactories::CreateCapsuleShapeBarrier(Capsule));
 					break;
 				}
 				case agxCollide::Shape::TRIMESH:
 				{
 					agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
 					OutSimObjects.GetShapes().Add(
-						AGXBarrierFactories::CreateSphereShapeBarrier(Trimesh));
+						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh));
 					break;
 				}
 				case agxCollide::Shape::GROUP:
 				{
 					agxCollide::ShapeGroup* Group {Shape->as<agxCollide::ShapeGroup>()};
-					InstantiateShapes(Group->getChildren(), OutSimObjects);
+					ReadShapes(Group->getChildren(), OutSimObjects);
 					break;
 				}
 			}
@@ -131,7 +130,7 @@ namespace
 		for (auto& It : ContactMaterialsTable)
 		{
 			agx::ContactMaterial* ContMat = It.second.get();
-			OutSimObjects.ContactMaterials().Add(
+			OutSimObjects.GetContactMaterials().Add(
 				AGXBarrierFactories::CreateContactMaterialBarrier(ContMat));
 		}
 	}
@@ -181,7 +180,7 @@ namespace
 				continue;
 			}
 
-			OutSimObjects.Add(AGXBarrierFactories::CreateRigidBodyBarrier(Body));
+			OutSimObjects.GetRigidBodies().Add(AGXBarrierFactories::CreateRigidBodyBarrier(Body));
 		}
 	}
 
@@ -213,30 +212,34 @@ namespace
 		{
 			if (agx::Hinge* Hinge = Constraint->asSafe<agx::Hinge>())
 			{
-				OutSimObjects.Add(AGXBarrierFactories::CreateHingeBarrier(Hinge));
+				OutSimObjects.GetConstraints().Add(AGXBarrierFactories::CreateHingeBarrier(Hinge));
 			}
 			else if (agx::Prismatic* Prismatic = Constraint->asSafe<agx::Prismatic>())
 			{
-				OutSimObjects.Add(AGXBarrierFactories::CreatePrismaticBarrier(Prismatic));
+				OutSimObjects.GetConstraints().Add(
+					AGXBarrierFactories::CreatePrismaticBarrier(Prismatic));
 			}
 			else if (agx::BallJoint* BallJoint = Constraint->asSafe<agx::BallJoint>())
 			{
-				OutSimObjects.Add(AGXBarrierFactories::CreateBallJointBarrier(BallJoint));
+				OutSimObjects.GetConstraints().Add(
+					AGXBarrierFactories::CreateBallJointBarrier(BallJoint));
 			}
 			else if (
 				agx::CylindricalJoint* CylindricalJoint =
 					Constraint->asSafe<agx::CylindricalJoint>())
 			{
-				OutSimObjects.Add(
+				OutSimObjects.GetConstraints().Add(
 					AGXBarrierFactories::CreateCylindricalJointBarrier(CylindricalJoint));
 			}
 			else if (agx::DistanceJoint* DistanceJoint = Constraint->asSafe<agx::DistanceJoint>())
 			{
-				OutSimObjects.Add(AGXBarrierFactories::CreateDistanceJointBarrier(DistanceJoint));
+				OutSimObjects.GetConstraints().Add(
+					AGXBarrierFactories::CreateDistanceJointBarrier(DistanceJoint));
 			}
 			else if (agx::LockJoint* LockJoint = Constraint->asSafe<agx::LockJoint>())
 			{
-				OutSimObjects.Add(AGXBarrierFactories::CreateLockJointBarrier(LockJoint));
+				OutSimObjects.GetConstraints().Add(
+					AGXBarrierFactories::CreateLockJointBarrier(LockJoint));
 			}
 		}
 	}
@@ -342,12 +345,7 @@ bool FAGXSimObjectsReader::ReadAGXArchive(
 		return false;
 	}
 
-	if (::ReadAll(*Simulation, Filename, OutSimObjects) == false)
-	{
-		// Logging done in ReadAll().
-		return false;
-	}
-
+	::ReadAll(*Simulation, Filename, OutSimObjects);
 	return true;
 }
 
@@ -355,7 +353,6 @@ AGXUNREALBARRIER_API bool FAGXSimObjectsReader::ReadUrdf(
 	const FString& UrdfFilePath, const FString& UrdfPackagePath,
 	FSimulationObjectCollection& OutSimObjects)
 {
-	ImportTask.EnterProgressFrame(WorkRead, FText::FromString("Reading URDF file"));
 #if AGX_VERSION_GREATER_OR_EQUAL(2, 33, 0, 0)
 	agxSDK::AssemblyRef Model =
 		agxModel::UrdfReader::read(Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr);
@@ -376,12 +373,7 @@ AGXUNREALBARRIER_API bool FAGXSimObjectsReader::ReadUrdf(
 
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
 	Simulation->add(Model);
-
-	if (::ReadAll(*Simulation, UrdfFilePath, OutSimObjects) == false)
-	{
-		// Logging done in ReadAll().
-		return false;
-	}
+	::ReadAll(*Simulation, UrdfFilePath, OutSimObjects);
 
 	return true;
 }
