@@ -13,16 +13,6 @@ FSimulationObjectCollection::~FSimulationObjectCollection()
 {
 }
 
-void FSimulationObjectCollection::SetIsValid(bool InIsValid)
-{
-	IsValid = InIsValid;
-}
-
-bool FSimulationObjectCollection::GetIsValid()
-{
-	return IsValid;
-}
-
 TArray<FRigidBodyBarrier>& FSimulationObjectCollection::GetRigidBodies()
 {
 	return RigidBodies;
@@ -59,6 +49,27 @@ TArray<FContactMaterialBarrier>& FSimulationObjectCollection::GetContactMaterial
 const TArray<FContactMaterialBarrier>& FSimulationObjectCollection::GetContactMaterials() const
 {
 	return ContactMaterials;
+}
+
+TArray<std::pair<FString, FString>>& FSimulationObjectCollection::GetDisabledCollisionGroups()
+{
+	return DisabledCollisionGroups;
+}
+const TArray<std::pair<FString, FString>>& FSimulationObjectCollection::GetDisabledCollisionGroups()
+	const
+{
+	return DisabledCollisionGroups;
+}
+
+TArray<FSimulationObjectCollection::ObserverFrameData>&
+FSimulationObjectCollection::GetObserverFrames()
+{
+	return ObserverFrames;
+}
+const TArray<FSimulationObjectCollection::ObserverFrameData>&
+FSimulationObjectCollection::GetObserverFrames() const
+{
+	return ObserverFrames;
 }
 
 TArray<FShapeMaterialBarrier>& FSimulationObjectCollection::GetShapeMaterials()

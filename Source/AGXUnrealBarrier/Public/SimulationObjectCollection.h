@@ -14,7 +14,6 @@ class FShapeMaterialBarrier;
 class FTerrainBarrier;
 class FTireBarrier;
 
-
 struct AGXUNREALBARRIER_API FSimulationObjectCollection
 {
 public:
@@ -23,8 +22,12 @@ public:
 	FSimulationObjectCollection& operator=(FSimulationObjectCollection&&) = default;
 	~FSimulationObjectCollection();
 
-	void SetIsValid(bool InIsValid);
-	bool GetIsValid();
+	struct ObserverFrameData
+	{
+		FString Name;
+		FGuid BodyGuid;
+		FTransform Transform;
+	};
 
 	TArray<FRigidBodyBarrier>& GetRigidBodies();
 	const TArray<FRigidBodyBarrier>& GetRigidBodies() const;
@@ -37,6 +40,12 @@ public:
 
 	TArray<FContactMaterialBarrier>& GetContactMaterials();
 	const TArray<FContactMaterialBarrier>& GetContactMaterials() const;
+
+	TArray<std::pair<FString, FString>>& GetDisabledCollisionGroups();
+	const TArray<std::pair<FString, FString>>& GetDisabledCollisionGroups() const;
+
+	TArray<ObserverFrameData>& GetObserverFrames();
+	const TArray<ObserverFrameData>& GetObserverFrames() const;
 
 	TArray<FShapeMaterialBarrier>& GetShapeMaterials();
 	const TArray<FShapeMaterialBarrier>& GetShapeMaterials() const;
@@ -51,9 +60,6 @@ private:
 	FSimulationObjectCollection(const FSimulationObjectCollection&) = delete;
 	void operator=(const FSimulationObjectCollection&) = delete;
 
-	// Indicates whether all objects from the Simulation is referenced from this instance.
-	bool IsValid = false;
-
 	// The Simulation from which all other Simulation Objects collected from.
 	FSimulationBarrier Simulation;
 
@@ -65,6 +71,8 @@ private:
 
 	TArray<FConstraintBarrier> Constraints;
 	TArray<FContactMaterialBarrier> ContactMaterials;
+	TArray<std::pair<FString, FString>> DisabledCollisionGroups;
+	TArray<ObserverFrameData> ObserverFrames;
 	TArray<FShapeMaterialBarrier> ShapeMaterials;
 	TArray<FTireBarrier> Tires;
 	TArray<FWireBarrier> Wires;
