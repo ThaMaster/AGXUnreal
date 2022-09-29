@@ -23,20 +23,20 @@ const TArray<FRigidBodyBarrier>& FSimulationObjectCollection::GetRigidBodies() c
 	return RigidBodies;
 }
 
-TArray<FShapeBarrier>& FSimulationObjectCollection::GetShapes()
+TArray<TUniquePtr<FShapeBarrier>>& FSimulationObjectCollection::GetShapes()
 {
 	return Shapes;
 }
-const TArray<FShapeBarrier>& FSimulationObjectCollection::GetShapes() const
+const TArray<TUniquePtr<FShapeBarrier>>& FSimulationObjectCollection::GetShapes() const
 {
 	return Shapes;
 }
 
-TArray<FConstraintBarrier>& FSimulationObjectCollection::GetConstraints()
+TArray<TUniquePtr<FConstraintBarrier>>& FSimulationObjectCollection::GetConstraints()
 {
 	return Constraints;
 }
-const TArray<FConstraintBarrier>& FSimulationObjectCollection::GetConstraints() const
+const TArray<TUniquePtr<FConstraintBarrier>>& FSimulationObjectCollection::GetConstraints() const
 {
 	return Constraints;
 }

@@ -32,11 +32,11 @@ public:
 	TArray<FRigidBodyBarrier>& GetRigidBodies();
 	const TArray<FRigidBodyBarrier>& GetRigidBodies() const;
 
-	TArray<FShapeBarrier>& GetShapes();
-	const TArray<FShapeBarrier>& GetShapes() const;
+	TArray<TUniquePtr<FShapeBarrier>>& GetShapes();
+	const TArray<TUniquePtr<FShapeBarrier>>& GetShapes() const;
 
-	TArray<FConstraintBarrier>& GetConstraints();
-	const TArray<FConstraintBarrier>& GetConstraints() const;
+	TArray<TUniquePtr<FConstraintBarrier>>& GetConstraints();
+	const TArray<TUniquePtr<FConstraintBarrier>>& GetConstraints() const;
 
 	TArray<FContactMaterialBarrier>& GetContactMaterials();
 	const TArray<FContactMaterialBarrier>& GetContactMaterials() const;
@@ -67,9 +67,9 @@ private:
 	TArray<FRigidBodyBarrier> RigidBodies;
 
 	// These are "free" Shapes only, i.e. not owned by a RigidBody.
-	TArray<FShapeBarrier> Shapes;
+	TArray<TUniquePtr<FShapeBarrier>> Shapes;
 
-	TArray<FConstraintBarrier> Constraints;
+	TArray<TUniquePtr<FConstraintBarrier>> Constraints;
 	TArray<FContactMaterialBarrier> ContactMaterials;
 	TArray<std::pair<FString, FString>> DisabledCollisionGroups;
 	TArray<ObserverFrameData> ObserverFrames;
