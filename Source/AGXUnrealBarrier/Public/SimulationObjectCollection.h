@@ -11,8 +11,8 @@ class FConstraintBarrier;
 class FContactMaterialBarrier;
 class FShapeBarrier;
 class FShapeMaterialBarrier;
-class FTerrainBarrier;
 class FTireBarrier;
+class FWireBarrier;
 
 struct AGXUNREALBARRIER_API FSimulationObjectCollection
 {
