@@ -298,8 +298,7 @@ bool FAGX_EditorUtilities::FinalizeAndSavePackage(AssetToDiskData& AtdData)
 	// SaveArgs.bSlowTask = ???; // I think we can leave this at the default: true.
 	// SaveArgs.Error = ???; // I think we can leave this at the default: GError.
 	// SaveArgs.SavePAckageContext = ???; // I think we can leave this at the default: nullptr.
-	bool bSaved =
-		UPackage::SavePackage(AtdData.Package, AtdData.Asset, *PackageFilename, SaveArgs);
+	bool bSaved = UPackage::SavePackage(AtdData.Package, AtdData.Asset, *PackageFilename, SaveArgs);
 #endif
 	if (!bSaved)
 	{
@@ -337,39 +336,17 @@ bool FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(
 		Mesh->MarkPackageDirty();
 	}
 
-	// Here, we immitate what is normally done in StaticMesh::PostEditChangeProperty, but instead of
-	// doing the time consuming Build() that is called from within
-	// StaticMesh::PostEditChangeProperty, we do the Build() as a bulk command that utilizes
-	// muti-threading which speeds up the process a lot.
-	// PostEditChangeProperty part 1.
-	for (auto& Mesh : Meshes)
-	{
-		Mesh->EnforceLightmapRestrictions(/*bUseRenderData=*/false);
-		for (int32 Index = 0; Index < Mesh->GetNumSourceModels(); ++Index)
-		{
-			Mesh->GetSourceModel(Index).StaticMeshOwner = Mesh;
-		}
-	}
-
 	// Do the costly Build as a batch Build.
 	UStaticMesh::BatchBuild(Meshes);
 
-	// PostEditChangePart2
-	for (auto& Mesh : Meshes)
-	{
-		Mesh->UpdateUVChannelData(true);
-		for (UAssetUserData* Datum : *Mesh->GetAssetUserDataArray())
-		{
-			if (Datum != nullptr)
-			{
-				Datum->PostEditChangeOwner();
-			}
-		}
-		Mesh->OnMeshChanged.Broadcast();
-	}
-
 	for (auto& AtdData : StaticMeshAssetDatum)
 	{
+		// The below PostEditChange call is what normally takes a lot of time, since it internally
+		// calls Build() each time. But since we have already done the Build (in batch) above, it
+		// will not actually Build the asset again. So the PostEditChange call below will execute
+		// really fast and we get the benefit of still getting everything else done in
+		// PostEditChange.
+		AtdData.Asset->PostEditChange();
 		AtdData.Asset->AddToRoot();
 		AtdData.Package->SetDirtyFlag(true);
 
@@ -393,8 +370,8 @@ bool FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(
 #else
 		FSavePackageArgs SaveArgs;
 		SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-		bool bSaved = UPackage::SavePackage(
-			AtdData.Package, AtdData.Asset, *PackageFilename, SaveArgs);
+		bool bSaved =
+			UPackage::SavePackage(AtdData.Package, AtdData.Asset, *PackageFilename, SaveArgs);
 #endif
 		if (!bSaved)
 		{
