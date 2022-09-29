@@ -59,36 +59,36 @@ namespace
 				case agxCollide::Shape::SPHERE:
 				{
 					agxCollide::Sphere* Sphere {Shape->as<agxCollide::Sphere>()};
-					OutSimObjects.GetShapes().Add(MakeUnique<FSphereShapeBarrier>(
-						AGXBarrierFactories::CreateSphereShapeBarrier(Sphere)));
+					OutSimObjects.GetSphereShapes().Add(
+						AGXBarrierFactories::CreateSphereShapeBarrier(Sphere));
 					break;
 				}
 				case agxCollide::Shape::BOX:
 				{
 					agxCollide::Box* Box {Shape->as<agxCollide::Box>()};
-					OutSimObjects.GetShapes().Add(MakeUnique<FBoxShapeBarrier>(
-						AGXBarrierFactories::CreateBoxShapeBarrier(Box)));
+					OutSimObjects.GetBoxShapes().Add(
+						AGXBarrierFactories::CreateBoxShapeBarrier(Box));
 					break;
 				}
 				case agxCollide::Shape::CYLINDER:
 				{
 					agxCollide::Cylinder* Cylinder {Shape->as<agxCollide::Cylinder>()};
-					OutSimObjects.GetShapes().Add(MakeUnique<FCylinderShapeBarrier>(
-						AGXBarrierFactories::CreateCylinderShapeBarrier(Cylinder)));
+					OutSimObjects.GetCylinderShapes().Add(
+						AGXBarrierFactories::CreateCylinderShapeBarrier(Cylinder));
 					break;
 				}
 				case agxCollide::Shape::CAPSULE:
 				{
 					agxCollide::Capsule* Capsule {Shape->as<agxCollide::Capsule>()};
-					OutSimObjects.GetShapes().Add(MakeUnique<FCapsuleShapeBarrier>(
-						AGXBarrierFactories::CreateCapsuleShapeBarrier(Capsule)));
+					OutSimObjects.GetCapsuleShapes().Add(
+						AGXBarrierFactories::CreateCapsuleShapeBarrier(Capsule));
 					break;
 				}
 				case agxCollide::Shape::TRIMESH:
 				{
 					agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
-					OutSimObjects.GetShapes().Add(MakeUnique<FTrimeshShapeBarrier>(
-						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh)));
+					OutSimObjects.GetTrimeshShapes().Add(
+						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh));
 					break;
 				}
 				case agxCollide::Shape::GROUP:
@@ -208,40 +208,39 @@ namespace
 		FSimulationObjectCollection& OutSimObjects)
 	{
 		agx::ConstraintRefSetVector& Constraints = Simulation.getConstraints();
-		OutSimObjects.GetConstraints().Reserve(Constraints.size());
 		for (agx::ConstraintRef& Constraint : Constraints)
 		{
 			if (agx::Hinge* Hinge = Constraint->asSafe<agx::Hinge>())
 			{
-				OutSimObjects.GetConstraints().Add(
-					MakeUnique<FHingeBarrier>(AGXBarrierFactories::CreateHingeBarrier(Hinge)));
+				OutSimObjects.GetHingeConstraints().Add(
+					AGXBarrierFactories::CreateHingeBarrier(Hinge));
 			}
 			else if (agx::Prismatic* Prismatic = Constraint->asSafe<agx::Prismatic>())
 			{
-				OutSimObjects.GetConstraints().Add(MakeUnique<FPrismaticBarrier>(
-					AGXBarrierFactories::CreatePrismaticBarrier(Prismatic)));
+				OutSimObjects.GetPrismaticConstraints().Add(
+					AGXBarrierFactories::CreatePrismaticBarrier(Prismatic));
 			}
 			else if (agx::BallJoint* BallJoint = Constraint->asSafe<agx::BallJoint>())
 			{
-				OutSimObjects.GetConstraints().Add(MakeUnique<FBallJointBarrier>(
-					AGXBarrierFactories::CreateBallJointBarrier(BallJoint)));
+				OutSimObjects.GetBallConstraints().Add(
+					AGXBarrierFactories::CreateBallJointBarrier(BallJoint));
 			}
 			else if (
 				agx::CylindricalJoint* CylindricalJoint =
 					Constraint->asSafe<agx::CylindricalJoint>())
 			{
-				OutSimObjects.GetConstraints().Add(MakeUnique<FCylindricalJointBarrier>(
-					AGXBarrierFactories::CreateCylindricalJointBarrier(CylindricalJoint)));
+				OutSimObjects.GetCylindricalConstraints().Add(
+					AGXBarrierFactories::CreateCylindricalJointBarrier(CylindricalJoint));
 			}
 			else if (agx::DistanceJoint* DistanceJoint = Constraint->asSafe<agx::DistanceJoint>())
 			{
-				OutSimObjects.GetConstraints().Add(MakeUnique<FDistanceJointBarrier>(
-					AGXBarrierFactories::CreateDistanceJointBarrier(DistanceJoint)));
+				OutSimObjects.GetDistanceConstraints().Add(
+					AGXBarrierFactories::CreateDistanceJointBarrier(DistanceJoint));
 			}
 			else if (agx::LockJoint* LockJoint = Constraint->asSafe<agx::LockJoint>())
 			{
-				OutSimObjects.GetConstraints().Add(MakeUnique<FLockJointBarrier>(
-					AGXBarrierFactories::CreateLockJointBarrier(LockJoint)));
+				OutSimObjects.GetLockConstraints().Add(
+					AGXBarrierFactories::CreateLockJointBarrier(LockJoint));
 			}
 		}
 	}
