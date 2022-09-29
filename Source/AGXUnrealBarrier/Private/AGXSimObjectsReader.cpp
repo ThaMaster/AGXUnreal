@@ -145,7 +145,12 @@ namespace
 				continue;
 			}
 
-			OutSimObjects.GetTires().Add(AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
+			if (Tire->getTireRigidBody() == nullptr || Tire->getHubRigidBody() == nullptr)
+			{
+				continue;
+			}
+
+			OutSimObjects.GetTwoBodyTires().Add(AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
 
 			if (agx::RigidBody* Body = Tire->getTireRigidBody())
 			{

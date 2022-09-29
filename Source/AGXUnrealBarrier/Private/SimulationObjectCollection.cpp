@@ -10,7 +10,7 @@
 #include "Constraints/PrismaticBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Terrain/TerrainBarrier.h"
-#include "Tires/TireBarrier.h"
+#include "Tires/TwoBodyTireBarrier.h"
 
 FSimulationObjectCollection::~FSimulationObjectCollection()
 {
@@ -178,14 +178,14 @@ const TArray<FShapeMaterialBarrier>& FSimulationObjectCollection::GetShapeMateri
 	return ShapeMaterials;
 }
 
-TArray<FTireBarrier>& FSimulationObjectCollection::GetTires()
+TArray<FTwoBodyTireBarrier>& FSimulationObjectCollection::GetTwoBodyTires()
 {
-	return Tires;
+	return TwoBodyTires;
 }
 
-const TArray<FTireBarrier>& FSimulationObjectCollection::GetTires() const
+const TArray<FTwoBodyTireBarrier>& FSimulationObjectCollection::GetTwoBodyTires() const
 {
-	return Tires;
+	return TwoBodyTires;
 }
 
 TArray<FWireBarrier>& FSimulationObjectCollection::GetWires()

@@ -26,7 +26,7 @@ class FRigidBodyBarrier;
 class FConstraintBarrier;
 class FContactMaterialBarrier;
 class FShapeMaterialBarrier;
-class FTireBarrier;
+class FTwoBodyTireBarrier;
 
 struct AGXUNREALBARRIER_API FSimulationObjectCollection
 {
@@ -91,8 +91,8 @@ public:
 	TArray<FShapeMaterialBarrier>& GetShapeMaterials();
 	const TArray<FShapeMaterialBarrier>& GetShapeMaterials() const;
 
-	TArray<FTireBarrier>& GetTires();
-	const TArray<FTireBarrier>& GetTires() const;
+	TArray<FTwoBodyTireBarrier>& GetTwoBodyTires();
+	const TArray<FTwoBodyTireBarrier>& GetTwoBodyTires() const;
 
 	TArray<FWireBarrier>& GetWires();
 	const TArray<FWireBarrier>& GetWires() const;
@@ -126,6 +126,6 @@ private:
 	TArray<std::pair<FString, FString>> DisabledCollisionGroups;
 	TArray<ObserverFrameData> ObserverFrames;
 	TArray<FShapeMaterialBarrier> ShapeMaterials;
-	TArray<FTireBarrier> Tires;
+	TArray<FTwoBodyTireBarrier> TwoBodyTires;
 	TArray<FWireBarrier> Wires;
 };
