@@ -1,6 +1,12 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+// For some reason, these Shapes could not be forward declared without compiler error.
+#include "Shapes/BoxShapeBarrier.h"
+#include "Shapes/CylinderShapeBarrier.h"
+#include "Shapes/CapsuleShapeBarrier.h"
+#include "Shapes/SphereShapeBarrier.h"
+#include "Shapes/TrimeshShapeBarrier.h"
 #include "SimulationBarrier.h"
 #include "Wire/WireBarrier.h"
 
@@ -14,13 +20,6 @@ class FBallJointBarrier;
 class FCylindricalJointBarrier;
 class FDistanceJointBarrier;
 class FLockJointBarrier;
-
-// Shapes.
-class FSphereShapeBarrier;
-class FBoxShapeBarrier;
-class FCylinderShapeBarrier;
-class FCapsuleShapeBarrier;
-class FTrimeshShapeBarrier;
 
 // Others.
 class FRigidBodyBarrier;

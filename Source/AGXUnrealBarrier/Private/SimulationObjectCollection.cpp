@@ -1,5 +1,6 @@
 
 #include "SimulationObjectCollection.h"
+
 #include "RigidBodyBarrier.h"
 #include "Constraints/BallJointBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
@@ -7,11 +8,6 @@
 #include "Constraints/HingeBarrier.h"
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
-#include "Shapes/BoxShapeBarrier.h"
-#include "Shapes/CylinderShapeBarrier.h"
-#include "Shapes/CapsuleShapeBarrier.h"
-#include "Shapes/SphereShapeBarrier.h"
-#include "Shapes/TrimeshShapeBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TireBarrier.h"
