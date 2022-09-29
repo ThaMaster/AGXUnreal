@@ -7,7 +7,6 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TireBarrier.h"
-#include "Wire/WireBarrier.h"
 
 FSimulationObjectCollection::~FSimulationObjectCollection()
 {

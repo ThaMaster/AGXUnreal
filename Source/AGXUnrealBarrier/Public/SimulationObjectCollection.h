@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "SimulationBarrier.h"
+#include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
 #include "Containers/Array.h"
@@ -12,7 +13,6 @@ class FContactMaterialBarrier;
 class FShapeBarrier;
 class FShapeMaterialBarrier;
 class FTireBarrier;
-class FWireBarrier;
 
 struct AGXUNREALBARRIER_API FSimulationObjectCollection
 {
