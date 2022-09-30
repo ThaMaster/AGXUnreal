@@ -412,21 +412,6 @@ namespace
 		return Success;
 	}
 
-	bool AddTireModels(
-		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
-		FAGX_SimObjectsImporterHelper& Helper)
-	{
-		bool Success = true;
-		for (const auto& Tire : SimObjects.GetTwoBodyTires())
-		{
-			check(Tire.GetTireRigidBody().HasNative());
-			check(Tire.GetHubRigidBody().HasNative());
-			Helper.InstantiateTwoBodyTire(Tire, ImportedActor, true);
-		}
-
-		return Success;
-	}
-
 	bool AddBodilessShapes(
 		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
 		FAGX_SimObjectsImporterHelper& Helper)
@@ -462,11 +447,22 @@ namespace
 
 	bool AddRigidBodyAndAnyOwnedShape(
 		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
-		FAGX_SimObjectsImporterHelper& Helper)
+		FAGX_SimObjectsImporterHelper& Helper, FScopedSlowTask& ImportTask, float WorkAvalable)
 	{
+		const int32 NumBodies = SimObjects.GetRigidBodies().Num();
+		if (NumBodies == 0)
+		{
+			return true;
+		}
+
+		const float SingleBodyWork = WorkAvalable / static_cast<float>(NumBodies);
+		const FText TaskBaseText = ImportTask.GetCurrentMessage();
+
 		bool Success = true;
 		for (const FRigidBodyBarrier& Body : SimObjects.GetRigidBodies())
 		{
+			const FText TaskText = FText::FromString(TaskBaseText.ToString() + Body.GetName());
+			ImportTask.EnterProgressFrame(SingleBodyWork, TaskText);
 			Success &= Helper.InstantiateBody(Body, ImportedActor) != nullptr;
 
 			for (const auto& Sphere : Body.GetSphereShapes())
@@ -498,27 +494,134 @@ namespace
 		return Success;
 	}
 
+	bool AddTireModels(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& Tire : SimObjects.GetTwoBodyTires())
+		{
+			check(Tire.GetTireRigidBody().HasNative());
+			check(Tire.GetHubRigidBody().HasNative());
+			Helper.InstantiateTwoBodyTire(Tire, ImportedActor, true);
+		}
+
+		return Success;
+	}
+
+	bool AddConstraints(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& Constraint : SimObjects.GetHingeConstraints())
+		{
+			Success &= Helper.InstantiateHinge(Constraint, ImportedActor) != nullptr;
+		}
+
+		for (const auto& Constraint : SimObjects.GetPrismaticConstraints())
+		{
+			Success &= Helper.InstantiatePrismatic(Constraint, ImportedActor) != nullptr;
+		}
+
+		for (const auto& Constraint : SimObjects.GetBallConstraints())
+		{
+			Success &= Helper.InstantiateBallJoint(Constraint, ImportedActor) != nullptr;
+		}
+
+		for (const auto& Constraint : SimObjects.GetCylindricalConstraints())
+		{
+			Success &= Helper.InstantiateCylindricalJoint(Constraint, ImportedActor) != nullptr;
+		}
+
+		for (const auto& Constraint : SimObjects.GetDistanceConstraints())
+		{
+			Success &= Helper.InstantiateDistanceJoint(Constraint, ImportedActor) != nullptr;
+		}
+
+		for (const auto& Constraint : SimObjects.GetLockConstraints())
+		{
+			Success &= Helper.InstantiateLockJoint(Constraint, ImportedActor) != nullptr;
+		}
+
+		return Success;
+	}
+
+	bool AddDisabledCollisionGroups(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		return Helper.InstantiateCollisionGroupDisabler(
+				   ImportedActor, SimObjects.GetDisabledCollisionGroups()) != nullptr;
+	}
+
+	bool AddWires(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& Wire : SimObjects.GetWires())
+		{
+			Success &= Helper.InstantiateWire(Wire, ImportedActor) != nullptr;
+		}
+
+		return Success;
+	}
+
+	bool AddObserverFrames(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& ObserverFr : SimObjects.GetObserverFrames())
+		{
+			Success &= Helper.InstantiateObserverFrame(
+						   ObserverFr.Name, ObserverFr.BodyGuid, ObserverFr.Transform,
+						   ImportedActor) != nullptr;
+		}
+
+		return Success;
+	}
+
 	bool AddAllComponents(
 		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
 		FAGX_SimObjectsImporterHelper& Helper)
 	{
-		const float WorkTot = 100.0f;
-		FScopedSlowTask ImportTask(WorkTot, LOCTEXT("ImportModel", "Importing model"), true);
+		FScopedSlowTask ImportTask(100.f, LOCTEXT("ImportModel", "Importing model"), true);
+		ImportTask.MakeDialog();
 		bool Success = true;
 
-		ImportTask.EnterProgressFrame(0.01, FText::FromString("Reading Shape Materials"));
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Shape Materials"));
 		Success &= AddShapeMaterials(SimObjects, Helper);
 
-		ImportTask.EnterProgressFrame(0.01, FText::FromString("Reading Contact Materials"));
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Contact Materials"));
 		Success &= AddContactMaterials(ImportedActor, SimObjects, Helper);
 
-		ImportTask.EnterProgressFrame(0.18, FText::FromString("Reading Rigid Bodies and their Shapes"));
-		Success &= AddRigidBodyAndAnyOwnedShape(ImportedActor, SimObjects, Helper);
+		const float WorkImportBodies = 50.f;
+		ImportTask.EnterProgressFrame(
+			10.f, FText::FromString("Reading Rigid Body and its Shapes: "));
+		Success &= AddRigidBodyAndAnyOwnedShape(
+			ImportedActor, SimObjects, Helper, ImportTask, WorkImportBodies);
 
-		ImportTask.EnterProgressFrame(0.60, FText::FromString("Reading bodiless Shapes"));
+		ImportTask.EnterProgressFrame(50.f, FText::FromString("Reading bodiless Shapes"));
 		Success &= AddBodilessShapes(ImportedActor, SimObjects, Helper);
 
-		ImportTask.EnterProgressFrame(0.20, FText::FromString("Import complete"));
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Tire Models"));
+		Success &= AddTireModels(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Constraints"));
+		Success &= AddConstraints(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Disabled Collision Groups"));
+		Success &= AddDisabledCollisionGroups(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Wires"));
+		Success &= AddWires(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Observer Frames"));
+		Success &= AddObserverFrames(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Import complete"));
 		return Success;
 	}
 
