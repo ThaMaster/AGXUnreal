@@ -30,7 +30,7 @@ namespace
 	/// \todo Determine if it's enough to return the created asset, or if we must pack it in a
 	/// struct together with the package path and/or asset name.
 	template <typename UAsset, typename FInitAssetCallback>
-	AssetToDiskData PrepareWriteAssetToDisk(
+	FAssetToDiskInfo PrepareWriteAssetToDisk(
 		const FString& DirectoryName, FString AssetName, const FString& FallbackName,
 		const FString& AssetType, FInitAssetCallback InitAsset)
 	{
@@ -54,16 +54,16 @@ namespace
 			UE_LOG(
 				LogAGX, Error, TEXT("Could not create asset '%s' from '%s'."), *AssetName,
 				*DirectoryName);
-			return AssetToDiskData();
+			return FAssetToDiskInfo();
 		}
 		InitAsset(*Asset);
 
-		return AssetToDiskData {Package, Asset, PackagePath, AssetName};
+		return FAssetToDiskInfo {Package, Asset, PackagePath, AssetName};
 	}
 
-	bool WriteAssetToDisk(AssetToDiskData& AtdData)
+	bool WriteAssetToDisk(FAssetToDiskInfo& AtdInfo)
 	{
-		return FAGX_EditorUtilities::FinalizeAndSavePackage(AtdData);
+		return FAGX_EditorUtilities::FinalizeAndSavePackage(AtdInfo);
 	}
 }
 
@@ -140,7 +140,7 @@ namespace AGX_ImportUtilities_helpers
 	}
 }
 
-AssetToDiskData FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+FAssetToDiskInfo FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName, const FString& FallbackName)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
@@ -159,7 +159,7 @@ AssetToDiskData FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 		DirectoryName, TrimeshSourceName, FallbackName, TEXT("StaticMesh"), InitAsset);
 }
 
-AssetToDiskData FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+FAssetToDiskInfo FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	const FRenderDataBarrier& RenderData, const FString& DirectoryName)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
@@ -177,13 +177,13 @@ UAGX_ShapeMaterial* FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(
 	const FShapeMaterialBarrier& Material, const FString& DirectoryName)
 {
 	auto InitAsset = [&](UAGX_ShapeMaterial& Asset) { Asset.CopyFrom(&Material); };
-	AssetToDiskData AtdData = PrepareWriteAssetToDisk<UAGX_ShapeMaterial>(
+	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_ShapeMaterial>(
 		DirectoryName, Material.GetName(), TEXT(""), TEXT("ShapeMaterial"), InitAsset);
-	if (!WriteAssetToDisk(AtdData))
+	if (!WriteAssetToDisk(AtdInfo))
 	{
 		return nullptr;
 	}
-	return Cast<UAGX_ShapeMaterial>(AtdData.Asset);
+	return Cast<UAGX_ShapeMaterial>(AtdInfo.Asset);
 }
 
 namespace
@@ -234,13 +234,13 @@ UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsse
 		Asset.Material2 = Material2;
 	};
 
-	AssetToDiskData AtdData = PrepareWriteAssetToDisk<UAGX_ContactMaterialAsset>(
+	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_ContactMaterialAsset>(
 		DirectoryName, Name, TEXT(""), TEXT("ContactMaterial"), InitAsset);
-	if (!WriteAssetToDisk(AtdData))
+	if (!WriteAssetToDisk(AtdInfo))
 	{
 		return nullptr;
 	}
-	return Cast<UAGX_ContactMaterialAsset>(AtdData.Asset);
+	return Cast<UAGX_ContactMaterialAsset>(AtdInfo.Asset);
 }
 
 UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(

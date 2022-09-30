@@ -31,7 +31,7 @@ class UAGX_PrismaticConstraintComponent;
 // Other AGXUnreal classes.
 class FContactMaterialBarrier;
 class UAGX_RigidBodyComponent;
-struct AssetToDiskData;
+struct FAssetToDiskInfo;
 
 // Unreal Engine classes.
 class AActor;
@@ -177,17 +177,17 @@ public:
 
 	/**
 	 * Write the given asset to disk.
-	 * @param AtdData Data needed for writing the asset to disk.
+	 * @param AtdInfo Data needed for writing the asset to disk.
 	 * @return True if the Write was successful, false othersise.
 	 */
-	static bool FinalizeAndSavePackage(AssetToDiskData& AtdData);
+	static bool FinalizeAndSavePackage(FAssetToDiskInfo& AtdInfo);
 
 	/**
 	 * Write the given static mesh assets to disk in bulk, which utilizes multi-threaded mesh build.
-	 * @param StaticMeshAssetDatum Array of data needed for writing the assets to disk.
+	 * @param StaticMeshAssetInfos Array of data needed for writing the assets to disk.
 	 * @return True if all of the Writes was successful, false otherwise.
 	 */
-	static bool FinalizeAndSaveStaticMeshPackages(TArray<AssetToDiskData>& StaticMeshAssetDatum);
+	static bool FinalizeAndSaveStaticMeshPackages(TArray<FAssetToDiskInfo>& StaticMeshAssetInfos);
 
 	/**
 	 * Create a new UStaticMesh asset from the given mesh data. The StaticMesh asset is saved to

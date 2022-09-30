@@ -22,7 +22,7 @@ class UMaterialInterface;
 class UMaterialInstanceConstant;
 class UStaticMesh;
 
-struct AssetToDiskData
+struct FAssetToDiskInfo
 {
 	UPackage* Package = nullptr;
 	UObject* Asset = nullptr;
@@ -102,7 +102,7 @@ public:
 	 * name.
 	 * @return The AssetToDiskData containing all information needed to write the asset to disk.
 	 */
-	static AssetToDiskData SaveImportedStaticMeshAsset(
+	static FAssetToDiskInfo SaveImportedStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName,
 		const FString& FallbackName);
 
@@ -114,7 +114,7 @@ public:
 	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @return The AssetToDiskData containing all information needed to write the asset to disk.
 	 */
-	static AssetToDiskData SaveImportedStaticMeshAsset(
+	static FAssetToDiskInfo SaveImportedStaticMeshAsset(
 		const FRenderDataBarrier& RenderData, const FString& DirectoryName);
 
 	/**

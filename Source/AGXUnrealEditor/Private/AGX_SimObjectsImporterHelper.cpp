@@ -217,9 +217,9 @@ namespace
 	 * stored.
 	 * @return
 	 */
-	AssetToDiskData GetOrCreateStaticMeshAsset(
+	FAssetToDiskInfo GetOrCreateStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& FallbackName,
-		TMap<FGuid, AssetToDiskData>& RestoredMeshes, const FString& DirectoryName)
+		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes, const FString& DirectoryName)
 	{
 		const FGuid Guid = Trimesh.GetMeshDataGuid();
 		if (!Guid.IsValid())
@@ -237,13 +237,13 @@ namespace
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
-		AssetToDiskData AtdData =
+		FAssetToDiskInfo AtdInfo =
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryName, FallbackName);
-		if (AtdData.Asset != nullptr)
+		if (AtdInfo.Asset != nullptr)
 		{
-			RestoredMeshes.Add(Guid, AtdData);
+			RestoredMeshes.Add(Guid, AtdInfo);
 		}
-		return AtdData;
+		return AtdInfo;
 	}
 
 	/**
@@ -258,8 +258,8 @@ namespace
 	 * stored.
 	 * @return The Static Mesh asset for the given Render Data.
 	 */
-	AssetToDiskData GetOrCreateStaticMeshAsset(
-		const FRenderDataBarrier& RenderData, TMap<FGuid, AssetToDiskData>& RestoredMeshes,
+	FAssetToDiskInfo GetOrCreateStaticMeshAsset(
+		const FRenderDataBarrier& RenderData, TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes,
 		const FString& DirectoryName)
 	{
 		const FGuid Guid = RenderData.GetGuid();
@@ -277,13 +277,13 @@ namespace
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
-		AssetToDiskData AtdData =
+		FAssetToDiskInfo AtdInfo =
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
-		if (AtdData.Asset != nullptr)
+		if (AtdInfo.Asset != nullptr)
 		{
-			RestoredMeshes.Add(Guid, AtdData);
+			RestoredMeshes.Add(Guid, AtdInfo);
 		}
-		return AtdData;
+		return AtdInfo;
 	}
 
 	/**
@@ -304,7 +304,7 @@ namespace
 	void ApplyRenderingData(
 		const FRenderDataBarrier& RenderData, const FTransform& RenderMeshTransform,
 		UAGX_ShapeComponent& Component, UMeshComponent& VisualMesh,
-		TMap<FGuid, AssetToDiskData>& RestoredMeshes,
+		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials, const FString& DirectoryName)
 	{
 		VisualMesh.SetVisibility(false);
@@ -313,9 +313,9 @@ namespace
 		UStaticMeshComponent* RenderDataComponent = nullptr;
 		if (RenderData.HasMesh())
 		{
-			AssetToDiskData AtdData =
+			FAssetToDiskInfo AtdInfo =
 				GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
-			UStaticMesh* RenderDataMeshAsset = Cast<UStaticMesh>(AtdData.Asset);
+			UStaticMesh* RenderDataMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
 			if (RenderDataMeshAsset != nullptr)
 			{
 				// The new Static Mesh Component must be a child of the Visual Mesh and not the
@@ -382,7 +382,7 @@ namespace
 		UAGX_ShapeComponent& Component, const FShapeBarrier& Barrier,
 		const TMap<FGuid, UAGX_ShapeMaterial*>& RestoredShapeMaterials,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials,
-		TMap<FGuid, AssetToDiskData>& RestoredMeshes, const FString& DirectoryName,
+		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes, const FString& DirectoryName,
 		UMeshComponent& VisualMesh)
 	{
 		Component.UpdateVisualMesh();
@@ -551,9 +551,9 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	}
 	Component->MeshSourceLocation = EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 	const FString FallbackName = Body != nullptr ? Body->GetName() : Owner.GetName();
-	AssetToDiskData AtdData =
+	FAssetToDiskInfo AtdInfo =
 		GetOrCreateStaticMeshAsset(Barrier, FallbackName, RestoredMeshes, DirectoryName);
-	UStaticMesh* MeshAsset = Cast<UStaticMesh>(AtdData.Asset);
+	UStaticMesh* MeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
 	if (MeshAsset == nullptr)
 	{
 		// No point in continuing further. Logging handled in GetOrCreateStaticMeshAsset.
@@ -1077,9 +1077,9 @@ FAGX_SimObjectsImporterHelper::FShapeMaterialPair FAGX_SimObjectsImporterHelper:
 
 void FAGX_SimObjectsImporterHelper::FinalizeImports()
 {
-	TArray<AssetToDiskData> AtdDatum;
-	RestoredMeshes.GenerateValueArray(AtdDatum);
-	FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(AtdDatum);
+	TArray<FAssetToDiskInfo> AtdInfos;
+	RestoredMeshes.GenerateValueArray(AtdInfos);
+	FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(AtdInfos);
 }
 
 namespace
