@@ -10,7 +10,7 @@
 #define AGX_TEST_WIRE_IMPORT 0
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ImporterToSingleActor.h"
+#include "AGX_ImporterToBlueprint.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
@@ -56,7 +56,7 @@
  * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
-	FImportArchiveSingleActorCommand, FString, ArchiveName, AActor*&, Contents,
+	FImportArchiveSingleActorCommand, FString, ArchiveName, UBlueprint*&, Contents,
 	FAutomationTestBase&, Test);
 
 bool FImportArchiveSingleActorCommand::Update()
@@ -72,7 +72,7 @@ bool FImportArchiveSingleActorCommand::Update()
 		Test.AddError(FString::Printf(TEXT("Did not find an archive named '%s'."), *ArchiveName));
 		return true;
 	}
-	Contents = AGX_ImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
+	Contents = AGX_ImporterToBlueprint::ImportAGXArchive(ArchiveFilePath, false);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
 }
@@ -85,7 +85,7 @@ bool FImportArchiveSingleActorCommand::Update()
  * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_FOUR_PARAMETER(
-	FImportURDFSingleActorCommand, FString, FileName, FString, PackagePath, AActor*&, Contents,
+	FImportURDFSingleActorCommand, FString, FileName, FString, PackagePath, UBlueprint*&, Contents,
 	FAutomationTestBase&, Test);
 
 bool FImportURDFSingleActorCommand::Update()
@@ -101,7 +101,7 @@ bool FImportURDFSingleActorCommand::Update()
 		Test.AddError(FString::Printf(TEXT("Did not find an URDF file named '%s'."), *FileName));
 		return true;
 	}
-	Contents = AGX_ImporterToSingleActor::ImportURDF(UrdfFilePath, PackagePath);
+	Contents = AGX_ImporterToBlueprint::ImportURDF(UrdfFilePath, PackagePath, false);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
 }
@@ -116,28 +116,26 @@ bool FImportURDFSingleActorCommand::Update()
  * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
-	FCheckEmptySceneImportedCommand, AActor*&, Contents, FAutomationTestBase&, Test);
+	FCheckEmptySceneImportedCommand, UBlueprint*&, Contents, FAutomationTestBase&, Test);
 
 bool FCheckEmptySceneImportedCommand::Update()
 {
-	UWorld* World = AgxAutomationCommon::GetTestWorld();
+	using namespace AgxAutomationCommon;
+	UWorld* World = GetTestWorld();
 	if (World == nullptr || Contents == nullptr)
 	{
 		return true;
 	}
 
 	// The Actor's only component should be the root component.
-	TArray<UActorComponent*> Components;
-	Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = AgxAutomationCommon::GetTemplateComponents(*Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 1);
-	USceneComponent* SceneRoot =
-		AgxAutomationCommon::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	USceneComponent* SceneRoot = AgxAutomationCommon::GetByName<USceneComponent>(
+		Components, *ToTemplateComponentName("DefaultSceneRoot"));
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
 
 	// The Actor should have been created in the test world.
 	Test.TestEqual(TEXT("The actor should be in the test world."), Contents->GetWorld(), World);
-	Test.TestTrue(TEXT("The actor should be in the test world."), World->ContainsActor(Contents));
-
 	return true;
 }
 
@@ -146,7 +144,8 @@ bool FCheckEmptySceneImportedCommand::Update()
  * removal isn't done immediately by Unreal Engine so the first call to Update will return false
  * so that the removal is completed before the next Latent Command starts.
  */
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FClearEmptySceneImportedCommand, AActor*&, Contents);
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearEmptySceneImportedCommand, UBlueprint*&, Contents);
 bool FClearEmptySceneImportedCommand::Update()
 {
 	if (Contents == nullptr)
@@ -161,7 +160,7 @@ bool FClearEmptySceneImportedCommand::Update()
 	{
 		return true;
 	}
-	World->DestroyActor(Contents);
+
 	Contents = nullptr;
 
 	// Return false so the engine get a tick to do the actual removal.
@@ -210,7 +209,7 @@ protected:
 	}
 
 private:
-	AActor* Contents = nullptr;
+	UBlueprint* Contents = nullptr;
 };
 
 namespace
@@ -237,7 +236,7 @@ DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FCheckSphereHasMoved, FImporterToSingleActor_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearSingleSphereImportedCommand, AActor*&, Contents);
+	FClearSingleSphereImportedCommand, UBlueprint*&, Contents);
 
 class FImporterToSingleActor_SingleSphereTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
@@ -252,7 +251,7 @@ public:
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* SphereBody = nullptr;
 	FVector StartPosition;
 	FVector StartVelocity;
@@ -320,16 +319,16 @@ bool FCheckSingleSphereImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
 
 	// Get the components we know should be there.
-	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	USceneComponent* SceneRoot =
+		GetByName<USceneComponent>(Components, *ToTemplateComponentName("DefaultSceneRoot"));
 	UAGX_RigidBodyComponent* SphereBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("SphereBody"));
-	UAGX_SphereShapeComponent* SphereShape =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("SphereGeometry"));
+		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("SphereBody"));
+	UAGX_SphereShapeComponent* SphereShape = GetByName<UAGX_SphereShapeComponent>(
+		Components, *ToTemplateComponentName("SphereGeometry"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -349,7 +348,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	// Position.
 	{
-		FVector Actual = SphereBody->GetComponentLocation();
+		FVector Actual = GetTemplateComponentWorldLocation(SphereBody);
 		// The position, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(
 			1.00000000000000000000e+01f, 2.00000000000000000000e+01f, 3.00000000000000000000e+01f);
@@ -359,7 +358,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	// Rotation.
 	{
-		FRotator Actual = SphereBody->GetComponentRotation();
+		FRotator Actual = GetTemplateComponentWorldRotation(SphereBody);
 		// The rotation, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(
 			1.01770284974289526581e+00f, -2.65482457436691521302e-01f,
@@ -435,7 +434,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	// Publish the important bits to the rest of the test.
 	Test.SphereBody = SphereBody;
-	Test.StartPosition = SphereBody->GetComponentLocation();
+	Test.StartPosition = GetTemplateComponentWorldLocation(SphereBody);
 	Test.StartVelocity = SphereBody->Velocity;
 
 	return true;
@@ -467,7 +466,7 @@ bool FCheckSphereHasMoved::Update()
 		return true;
 	}
 
-	FVector EndPosition = Test.SphereBody->GetComponentLocation();
+	FVector EndPosition = GetTemplateComponentWorldLocation(Test.SphereBody);
 	FVector EndVelocity = Test.SphereBody->Velocity;
 	float Duration = Test.EndAgxTime - Test.StartAgxTime;
 
@@ -509,7 +508,6 @@ bool FClearSingleSphereImportedCommand::Update()
 	{
 		return true;
 	}
-	World->DestroyActor(Contents);
 	Contents = nullptr;
 	return true;
 }
@@ -538,7 +536,7 @@ public:
 	}
 
 public:
-	AActor* Contents = nullptr; // <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
@@ -566,24 +564,24 @@ bool FCheckMotionControlImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
 
 	// Get the components we know should be there.
-	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	USceneComponent* SceneRoot =
+		GetByName<USceneComponent>(Components, *ToTemplateComponentName("DefaultSceneRoot"));
 	UAGX_RigidBodyComponent* StaticBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("StaticBody"));
+		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("StaticBody"));
 	UAGX_SphereShapeComponent* StaticShape =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("StaticShape"));
+		GetByName<UAGX_SphereShapeComponent>(Components, *ToTemplateComponentName("StaticShape"));
 	UAGX_RigidBodyComponent* KinematicsBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("KinematicBody"));
-	UAGX_SphereShapeComponent* KinematicsShape =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("KinematicShape"));
+		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("KinematicBody"));
+	UAGX_SphereShapeComponent* KinematicsShape = GetByName<UAGX_SphereShapeComponent>(
+		Components, *ToTemplateComponentName("KinematicShape"));
 	UAGX_RigidBodyComponent* DynamicsBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("DynamicBody"));
+		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("DynamicBody"));
 	UAGX_SphereShapeComponent* DynamicsShape =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("DynamicShape"));
+		GetByName<UAGX_SphereShapeComponent>(Components, *ToTemplateComponentName("DynamicShape"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -633,15 +631,6 @@ bool FCheckMotionControlImportedCommand::Update()
 
 bool FClearMotionControlImportedCommand::Update()
 {
-	if (Test.Contents == nullptr)
-	{
-		return true;
-	}
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
 	return true;
 }
 
@@ -671,7 +660,7 @@ public:
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
 
 protected:
@@ -720,18 +709,18 @@ bool FCheckSimpleTrimeshImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
 
 	// Get the components we know should be there.
-	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	USceneComponent* SceneRoot =
+		GetByName<USceneComponent>(Components, *ToTemplateComponentName("DefaultSceneRoot"));
 	UAGX_RigidBodyComponent* TrimeshBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("TrimeshBody"));
-	UAGX_TrimeshShapeComponent* TrimeshShape =
-		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("TrimeshGeometry"));
+		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("TrimeshBody"));
+	UAGX_TrimeshShapeComponent* TrimeshShape = GetByName<UAGX_TrimeshShapeComponent>(
+		Components, *ToTemplateComponentName("TrimeshGeometry"));
 	UStaticMeshComponent* StaticMesh =
-		GetByName<UStaticMeshComponent>(Components, TEXT("simple_trimesh"));
+		GetByName<UStaticMeshComponent>(Components, *ToTemplateComponentName("simple_trimesh"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -777,7 +766,6 @@ bool FClearSimpleTrimeshImportedCommand::Update()
 	{
 		return true;
 	}
-	Test.World->DestroyActor(Test.Contents);
 
 #if defined(__linux__)
 	/// @todo Workaround for internal issue #213.
@@ -817,7 +805,7 @@ public:
 	}
 
 public:
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
@@ -942,8 +930,7 @@ bool FCheckRenderMaterialImportedCommand::Update()
 
 	// Get all the imported components. The test for the number of components is a safety check.
 	// It should be updated whenever the test scene is changed.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 16);
 
 // Enable this to see the names of the components that was imported. Useful when adding new stuff
@@ -966,24 +953,33 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	/// Geometry. So far the generated names have been consistent between runs, but I'm not sure if
 	/// we're guaranteed that. Especially if we run multiple tests in the same invocation of the
 	/// editor. The fix is to fetch objects based on UUID/GUID instead of names.
-	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
-	UAGX_RigidBodyComponent* Body =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("RenderMaterialBody"));
-	UAGX_SphereShapeComponent* Ambient = GetSphere(TEXT("AmbientGeometry"));
-	UAGX_SphereShapeComponent* Diffuse = GetSphere(TEXT("DiffuseGeometry"));
-	UAGX_SphereShapeComponent* Emissive = GetSphere(TEXT("EmissiveGeometry"));
-	UAGX_SphereShapeComponent* Shininess = GetSphere(TEXT("ShininessGeometry"));
-	UAGX_SphereShapeComponent* AmbientDiffuse = GetSphere(TEXT("AmbientDiffuseGeometry"));
-	UAGX_SphereShapeComponent* AmbientEmissive = GetSphere(TEXT("AmbientEmissiveGeometry"));
-	UAGX_SphereShapeComponent* DiffuseShininessLow = GetSphere(TEXT("DiffuseShininessLowGeometry"));
+	USceneComponent* SceneRoot =
+		GetByName<USceneComponent>(Components, *ToTemplateComponentName("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(
+		Components, *ToTemplateComponentName("RenderMaterialBody"));
+	UAGX_SphereShapeComponent* Ambient = GetSphere(*ToTemplateComponentName("AmbientGeometry"));
+	UAGX_SphereShapeComponent* Diffuse = GetSphere(*ToTemplateComponentName("DiffuseGeometry"));
+	UAGX_SphereShapeComponent* Emissive = GetSphere(*ToTemplateComponentName("EmissiveGeometry"));
+	UAGX_SphereShapeComponent* Shininess = GetSphere(*ToTemplateComponentName("ShininessGeometry"));
+	UAGX_SphereShapeComponent* AmbientDiffuse =
+		GetSphere(*ToTemplateComponentName("AmbientDiffuseGeometry"));
+	UAGX_SphereShapeComponent* AmbientEmissive =
+		GetSphere(*ToTemplateComponentName("AmbientEmissiveGeometry"));
+	UAGX_SphereShapeComponent* DiffuseShininessLow =
+		GetSphere(*ToTemplateComponentName("DiffuseShininessLowGeometry"));
 	UAGX_SphereShapeComponent* DiffuseShininessHigh =
-		GetSphere(TEXT("DiffuseShininessHighGeometry"));
-	UAGX_SphereShapeComponent* SharedSphere1 = GetSphere(TEXT("SharedGeometry"));
-	UAGX_SphereShapeComponent* SharedSphere2 = GetSphere(TEXT("SharedGeometry_10"));
-	UAGX_SphereShapeComponent* NameConflictSphere1 = GetSphere(TEXT("MaterialNameConflict"));
-	UAGX_SphereShapeComponent* NameConflictSphere2 = GetSphere(TEXT("MaterialNameConflict_13"));
-	UAGX_SphereShapeComponent* VisibleSphere = GetSphere(TEXT("VisibleSphere"));
-	UAGX_SphereShapeComponent* InvisibleSphere = GetSphere(TEXT("InvisibleSphere"));
+		GetSphere(*ToTemplateComponentName("DiffuseShininessHighGeometry"));
+	UAGX_SphereShapeComponent* SharedSphere1 =
+		GetSphere(*ToTemplateComponentName("SharedGeometry"));
+	UAGX_SphereShapeComponent* SharedSphere2 =
+		GetSphere(*ToTemplateComponentName("SharedGeometry_10"));
+	UAGX_SphereShapeComponent* NameConflictSphere1 =
+		GetSphere(*ToTemplateComponentName("MaterialNameConflict"));
+	UAGX_SphereShapeComponent* NameConflictSphere2 =
+		GetSphere(*ToTemplateComponentName("MaterialNameConflict_13"));
+	UAGX_SphereShapeComponent* VisibleSphere = GetSphere(*ToTemplateComponentName("VisibleSphere"));
+	UAGX_SphereShapeComponent* InvisibleSphere =
+		GetSphere(*ToTemplateComponentName("InvisibleSphere"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -1102,12 +1098,6 @@ bool FClearRenderMaterialImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 #if defined(__linux__)
 	/// @todo Workaround for internal issue #213.
 	Test.AddExpectedError(
@@ -1121,6 +1111,8 @@ bool FClearRenderMaterialImportedCommand::Update()
 	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("Blueprint"),
+		TEXT("BP_render_materials_build.uasset"),
 		TEXT("RenderMaterial"),
 		TEXT("RenderMaterial_0371489EAC6B66145E4DAEEFA9B4B6BC.uasset"),
 		TEXT("RenderMaterial_29524C99D524BAD2D65ED4EEA25BE374.uasset"),
@@ -1162,7 +1154,7 @@ public:
 	}
 
 public:
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
@@ -1191,8 +1183,7 @@ bool FCheckRenderDataImportedCommand::Update()
 		return true;
 	}
 
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 	// Root(1), Rigid Body(2), Shape(3), Static Mesh(4).
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
 
@@ -1206,10 +1197,10 @@ bool FCheckRenderDataImportedCommand::Update()
 	}
 #endif
 
-	UAGX_SphereShapeComponent* Sphere =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("Render Data Geometry"));
+	UAGX_SphereShapeComponent* Sphere = GetByName<UAGX_SphereShapeComponent>(
+		Components, *ToTemplateComponentName("Render Data Geometry"));
 	UStaticMeshComponent* Mesh = GetByName<UStaticMeshComponent>(
-		Components, TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764"));
+		Components, *ToTemplateComponentName("RenderMesh_F42A4C942C9E27E9B873D061BAF66764"));
 
 	Test.TestNotNull(TEXT("Sphere"), Sphere);
 	Test.TestNotNull(TEXT("Mesh"), Mesh);
@@ -1221,7 +1212,7 @@ bool FCheckRenderDataImportedCommand::Update()
 	}
 
 	Test.TestTrue(
-		TEXT("The mesh should be a child of the sphere"), Mesh->GetAttachParent() == Sphere);
+		TEXT("The mesh should be a child of the sphere"), GetTemplateComponentAttachParent(Mesh) == Sphere);
 
 	return true;
 }
@@ -1231,12 +1222,6 @@ bool FClearRenderDataImportedCommand::Update()
 	if (Test.Contents == nullptr)
 	{
 		return true;
-	}
-
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
 	}
 
 #if defined(__linux__)
@@ -1252,7 +1237,8 @@ bool FClearRenderDataImportedCommand::Update()
 	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("RenderMesh"), TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764.uasset")};
+		TEXT("Blueprint"), TEXT("BP_render_data_build.uasset"), TEXT("RenderMesh"),
+		TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764.uasset")};
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_data_build"), ExpectedFiles);
 
@@ -1285,7 +1271,7 @@ public:
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
 
 protected:
@@ -1322,8 +1308,8 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 18);
 
 	auto GetBox = [&Components](
@@ -1346,26 +1332,39 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 
 	TArray<UAGX_RigidBodyComponent*> RbArr;
 	TArray<UAGX_BoxShapeComponent*> BoxArr;
-	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
-	UAGX_RigidBodyComponent* rb_0_brown = GetBody(TEXT("rb_0_brown"), RbArr);
-	UAGX_BoxShapeComponent* geom_0_brown = GetBox(TEXT("geom_0_brown"), BoxArr);
-	UAGX_RigidBodyComponent* rb_left_1_brown = GetBody(TEXT("rb_left_1_brown"), RbArr);
-	UAGX_BoxShapeComponent* geom_left_1_brown = GetBox(TEXT("geom_left_1_brown"), BoxArr);
-	UAGX_RigidBodyComponent* rb_right_1_orange = GetBody(TEXT("rb_right_1_orange"), RbArr);
-	UAGX_BoxShapeComponent* geom_right_1_orange = GetBox(TEXT("geom_right_1_orange"), BoxArr);
-	UAGX_RigidBodyComponent* rb_left_2_orange = GetBody(TEXT("rb_left_2_orange"), RbArr);
-	UAGX_BoxShapeComponent* geom_left_2_orange = GetBox(TEXT("geom_left_2_orange"), BoxArr);
-	UAGX_RigidBodyComponent* rb_right_2_orange = GetBody(TEXT("rb_right_2_orange"), RbArr);
-	UAGX_BoxShapeComponent* geom_right_2_orange = GetBox(TEXT("geom_right_2_orange"), BoxArr);
-	UAGX_RigidBodyComponent* rb_left_3_brown = GetBody(TEXT("rb_left_3_brown"), RbArr);
-	UAGX_BoxShapeComponent* geom_left_3_brown = GetBox(TEXT("geom_left_3_brown"), BoxArr);
-	UAGX_RigidBodyComponent* rb_4_blue = GetBody(TEXT("rb_4_blue"), RbArr);
-	UAGX_BoxShapeComponent* geom_4_blue = GetBox(TEXT("geom_4_blue"), BoxArr);
-	UAGX_RigidBodyComponent* rb_left_5_blue = GetBody(TEXT("rb_left_5_blue"), RbArr);
-	UAGX_BoxShapeComponent* geom_left_5_blue = GetBox(TEXT("geom_left_5_blue"), BoxArr);
+	USceneComponent* SceneRoot =
+		GetByName<USceneComponent>(Components, *ToTemplateComponentName("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* rb_0_brown = GetBody(*ToTemplateComponentName("rb_0_brown"), RbArr);
+	UAGX_BoxShapeComponent* geom_0_brown = GetBox(*ToTemplateComponentName("geom_0_brown"), BoxArr);
+	UAGX_RigidBodyComponent* rb_left_1_brown =
+		GetBody(*ToTemplateComponentName("rb_left_1_brown"), RbArr);
+	UAGX_BoxShapeComponent* geom_left_1_brown =
+		GetBox(*ToTemplateComponentName("geom_left_1_brown"), BoxArr);
+	UAGX_RigidBodyComponent* rb_right_1_orange =
+		GetBody(*ToTemplateComponentName("rb_right_1_orange"), RbArr);
+	UAGX_BoxShapeComponent* geom_right_1_orange =
+		GetBox(*ToTemplateComponentName("geom_right_1_orange"), BoxArr);
+	UAGX_RigidBodyComponent* rb_left_2_orange =
+		GetBody(*ToTemplateComponentName("rb_left_2_orange"), RbArr);
+	UAGX_BoxShapeComponent* geom_left_2_orange =
+		GetBox(*ToTemplateComponentName("geom_left_2_orange"), BoxArr);
+	UAGX_RigidBodyComponent* rb_right_2_orange =
+		GetBody(*ToTemplateComponentName("rb_right_2_orange"), RbArr);
+	UAGX_BoxShapeComponent* geom_right_2_orange =
+		GetBox(*ToTemplateComponentName("geom_right_2_orange"), BoxArr);
+	UAGX_RigidBodyComponent* rb_left_3_brown =
+		GetBody(*ToTemplateComponentName("rb_left_3_brown"), RbArr);
+	UAGX_BoxShapeComponent* geom_left_3_brown =
+		GetBox(*ToTemplateComponentName("geom_left_3_brown"), BoxArr);
+	UAGX_RigidBodyComponent* rb_4_blue = GetBody(*ToTemplateComponentName("rb_4_blue"), RbArr);
+	UAGX_BoxShapeComponent* geom_4_blue = GetBox(*ToTemplateComponentName("geom_4_blue"), BoxArr);
+	UAGX_RigidBodyComponent* rb_left_5_blue =
+		GetBody(*ToTemplateComponentName("rb_left_5_blue"), RbArr);
+	UAGX_BoxShapeComponent* geom_left_5_blue =
+		GetBox(*ToTemplateComponentName("geom_left_5_blue"), BoxArr);
 	UAGX_CollisionGroupDisablerComponent* AGX_CollisionGroupDisabler =
 		GetByName<UAGX_CollisionGroupDisablerComponent>(
-			Components, TEXT("AGX_CollisionGroupDisabler"));
+			Components, *ToTemplateComponentName("AGX_CollisionGroupDisabler"));
 
 	Test.TestEqual(TEXT("Number of Rigid Bodies"), RbArr.Num(), 8);
 	Test.TestEqual(TEXT("Number of Box Shapes"), BoxArr.Num(), 8);
@@ -1445,17 +1444,6 @@ bool FCheckCollisionGroupsImportedCommand::Update()
  */
 bool FClearCollisionGroupsImportedCommand::Update()
 {
-	if (Test.Contents == nullptr)
-	{
-		return true;
-	}
-
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 	return true;
 }
 
@@ -1485,7 +1473,7 @@ public:
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
 
 protected:
@@ -1522,20 +1510,19 @@ bool FCheckGeometrySensorsImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 
 	// Three Rigid Bodies, three Geometries and one Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
 
 	UAGX_SphereShapeComponent* BoolSensor =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("boolSensor"));
+		GetByName<UAGX_SphereShapeComponent>(Components, *ToTemplateComponentName("boolSensor"));
 
-	UAGX_CylinderShapeComponent* ContactsSensor =
-		GetByName<UAGX_CylinderShapeComponent>(Components, TEXT("contactsSensor"));
+	UAGX_CylinderShapeComponent* ContactsSensor = GetByName<UAGX_CylinderShapeComponent>(
+		Components, *ToTemplateComponentName("contactsSensor"));
 
 	UAGX_BoxShapeComponent* NotASensor =
-		GetByName<UAGX_BoxShapeComponent>(Components, TEXT("notASensor"));
+		GetByName<UAGX_BoxShapeComponent>(Components, *ToTemplateComponentName("notASensor"));
 
 	Test.TestNotNull(TEXT("boolSensor"), BoolSensor);
 	Test.TestNotNull(TEXT("contactsSensor"), ContactsSensor);
@@ -1592,17 +1579,6 @@ bool FCheckGeometrySensorsImportedCommand::Update()
  */
 bool FClearGeometrySensorsImportedCommand::Update()
 {
-	if (Test.Contents == nullptr)
-	{
-		return true;
-	}
-
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 	return true;
 }
 
@@ -1632,7 +1608,7 @@ public:
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
@@ -1669,12 +1645,11 @@ bool FCheckWireImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 
-	// A Wire (1) and its icon (2), three Rigid Bodies (5), three Shapes (8), a Collision Group
-	// Disabler (9), and a Default Scene Root (10).
-	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 10);
+	// A Wire (1) three Rigid Bodies (4), three Shapes (7), a Collision Group
+	// Disabler (8), and a Default Scene Root (9).
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 9);
 	if (Components.Num() != 10)
 	{
 		UE_LOG(LogAGX, Warning, TEXT("Found the following components:"));
@@ -1796,12 +1771,6 @@ bool FClearWireImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 #if defined(__linux__)
 	/// @todo Workaround for internal issue #213.
 	Test.AddExpectedError(
@@ -1811,7 +1780,8 @@ bool FClearWireImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles {
-		TEXT("ShapeMaterial"), TEXT("defaultWireMaterial_57.uasset")};
+		TEXT("Blueprint"), TEXT("BP_wire_build.uasset"), TEXT("ShapeMaterial"),
+		TEXT("defaultWireMaterial_57.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("wire_build"), ExpectedFiles);
 
 	return true;
@@ -1846,7 +1816,7 @@ public:
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
 
 protected:
@@ -1885,15 +1855,13 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 
-	// Two Rigid Bodies, one Hinge constraint with two DofGraphicsComponent's and one
-	// DofGraphicsComponent and one Default Scene Root.
-	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
+	// Two Rigid Bodies, one Hinge constraint and one Default Scene Root.
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
 
 	UAGX_ConstraintComponent* Constraint =
-		GetByName<UAGX_ConstraintComponent>(Components, TEXT("constraint"));
+		GetByName<UAGX_ConstraintComponent>(Components, *ToTemplateComponentName("constraint"));
 
 	// Compliance.
 	Test.TestEqual(
@@ -1959,17 +1927,6 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
  */
 bool FClearConstraintDynamicParametersImportedCommand::Update()
 {
-	if (Test.Contents == nullptr)
-	{
-		return true;
-	}
-
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 	return true;
 }
 
@@ -2001,7 +1958,7 @@ public:
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
 
 protected:
@@ -2038,23 +1995,22 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 
 	// One Rigid Bodies, one Geometry and one Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
 
 	UAGX_RigidBodyComponent* SphereBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("SphereBody"));
+		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("SphereBody"));
 
 	// Name.
 	{
-		Test.TestEqual("Sphere name", SphereBody->GetFName(), FName(TEXT("SphereBody")));
+		Test.TestEqual("Sphere name", SphereBody->GetName(), ToTemplateComponentName("SphereBody"));
 	}
 
 	// Position.
 	{
-		FVector Actual = SphereBody->GetComponentLocation();
+		FVector Actual = GetTemplateComponentWorldLocation(SphereBody);
 		// The position, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(10.f, 20.f, 30.f);
 		FVector Expected = AgxToUnrealVector(ExpectedAgx);
@@ -2063,7 +2019,7 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 
 	// Rotation.
 	{
-		FRotator Actual = SphereBody->GetComponentRotation();
+		FRotator Actual = GetTemplateComponentWorldRotation(SphereBody);
 		// The rotation, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(0.1f, 0.2f, 0.3f);
 		FRotator Expected = AgxToUnrealEulerAngles(ExpectedAgx);
@@ -2138,12 +2094,6 @@ bool FClearRigidBodyPropertiesImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 	return true;
 }
 
@@ -2173,7 +2123,7 @@ public:
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
 
 protected:
@@ -2213,53 +2163,62 @@ bool FCheckSimpleGeometriesImportedCommand::Update()
 	{
 		Test.TestNotNull(TEXT("Component exists"), c);
 		const FVector ExpectedUnrealPos = AgxToUnrealVector(ExpectedAGXWorldPos);
-		Test.TestEqual(TEXT("Component position"), c->GetComponentLocation(), ExpectedUnrealPos);
+		Test.TestEqual(
+			TEXT("Component position"), GetTemplateComponentWorldLocation(c), ExpectedUnrealPos);
 	};
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 
 	// 5 Rigid Bodies, 10 Geometries, 2 Static Meshes and 1 Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 18);
 
 	testShape(
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("sphereGeometry")),
+		GetByName<UAGX_SphereShapeComponent>(
+			Components, *ToTemplateComponentName("sphereGeometry")),
 		FVector(0.f, 0.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_BoxShapeComponent>(Components, TEXT("boxGeometry")), FVector(2.f, 0.f, 0.f));
+		GetByName<UAGX_BoxShapeComponent>(Components, *ToTemplateComponentName("boxGeometry")),
+		FVector(2.f, 0.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_CylinderShapeComponent>(Components, TEXT("cylinderGeometry")),
+		GetByName<UAGX_CylinderShapeComponent>(
+			Components, *ToTemplateComponentName("cylinderGeometry")),
 		FVector(4.f, 0.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_CapsuleShapeComponent>(Components, TEXT("capsuleGeometry")),
+		GetByName<UAGX_CapsuleShapeComponent>(
+			Components, *ToTemplateComponentName("capsuleGeometry")),
 		FVector(6.f, 0.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("trimeshGeometry")),
+		GetByName<UAGX_TrimeshShapeComponent>(
+			Components, *ToTemplateComponentName("trimeshGeometry")),
 		FVector(8.f, 0.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("sphereGeometryFree")),
+		GetByName<UAGX_SphereShapeComponent>(
+			Components, *ToTemplateComponentName("sphereGeometryFree")),
 		FVector(0.f, 2.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_BoxShapeComponent>(Components, TEXT("boxGeometryFree")),
+		GetByName<UAGX_BoxShapeComponent>(Components, *ToTemplateComponentName("boxGeometryFree")),
 		FVector(2.f, 2.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_CylinderShapeComponent>(Components, TEXT("cylinderGeometryFree")),
+		GetByName<UAGX_CylinderShapeComponent>(
+			Components, *ToTemplateComponentName("cylinderGeometryFree")),
 		FVector(4.f, 2.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_CapsuleShapeComponent>(Components, TEXT("capsuleGeometryFree")),
+		GetByName<UAGX_CapsuleShapeComponent>(
+			Components, *ToTemplateComponentName("capsuleGeometryFree")),
 		FVector(6.f, 2.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("trimeshGeometryFree")),
+		GetByName<UAGX_TrimeshShapeComponent>(
+			Components, *ToTemplateComponentName("trimeshGeometryFree")),
 		FVector(8.f, 2.f, 0.f));
 
 	return true;
@@ -2276,12 +2235,6 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 #if defined(__linux__)
 	/// @todo Workaround for internal issue #213.
 	Test.AddExpectedError(
@@ -2291,7 +2244,8 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("StaticMesh"), TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
+		TEXT("Blueprint"), TEXT("BP_single_geometries_build.uasset"), TEXT("StaticMesh"),
+		TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("single_geometries_build"), ExpectedFiles);
 
 	return true;
@@ -2323,7 +2277,7 @@ public:
 	}
 
 public:
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
@@ -2360,15 +2314,14 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 
 	// 4 Rigid Bodies, 4 Geometries, 1 Contact Material Registrar and 1 Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 10);
 
 	UAGX_ContactMaterialRegistrarComponent* Registrar =
 		GetByName<UAGX_ContactMaterialRegistrarComponent>(
-			Components, TEXT("AGX_ContactMaterialRegistrar"));
+			Components, *ToTemplateComponentName("AGX_ContactMaterialRegistrar"));
 
 	Test.TestNotNull("Contact Material Registrar", Registrar);
 	Test.TestEqual("Num Contact Materials in Registrar", Registrar->ContactMaterials.Num(), 2);
@@ -2429,12 +2382,6 @@ bool FClearContactMaterialsImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 #if defined(__linux__)
 	/// @todo Workaround for internal issue #213.
 	Test.AddExpectedError(
@@ -2443,10 +2390,12 @@ bool FClearContactMaterialsImportedCommand::Update()
 	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
-	TArray<const TCHAR*> ExpectedFiles = {TEXT("ContactMaterial"),	 TEXT("CMMat1Mat2.uasset"),
-										  TEXT("CMMat3Mat4.uasset"), TEXT("ShapeMaterial"),
-										  TEXT("Mat1.uasset"),		 TEXT("Mat2.uasset"),
-										  TEXT("Mat3.uasset"),		 TEXT("Mat4.uasset")};
+	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("Blueprint"),		   TEXT("BP_contact_materials_build.uasset"),
+		TEXT("ContactMaterial"),   TEXT("CMMat1Mat2.uasset"),
+		TEXT("CMMat3Mat4.uasset"), TEXT("ShapeMaterial"),
+		TEXT("Mat1.uasset"),	   TEXT("Mat2.uasset"),
+		TEXT("Mat3.uasset"),	   TEXT("Mat4.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("contact_materials_build"), ExpectedFiles);
 
 	return true;
@@ -2476,7 +2425,7 @@ public:
 	}
 
 public:
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
@@ -2512,21 +2461,23 @@ bool FCheckObserverFramesImportedCommand::Update()
 	}
 
 	// Get all the imported Components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 
 	// 1 Default Scene Root, 4 groups each containing a Rigid Body, a Shape, and a Scene.
 	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), 13);
 
-	auto TestGroup = [this, &Components](
-						 int32 Id, const FVector& BodyLocation, const FVector& ObserverLocation) {
+	auto TestGroup =
+		[this, &Components](int32 Id, const FVector& BodyLocation, const FVector& ObserverLocation)
+	{
 		const FString BodyName = *FString::Printf(TEXT("Body_%d"), Id);
 		const FString GeometryName = *FString::Printf(TEXT("Geometry_%d"), Id);
 		const FString ObserverName = *FString::Printf(TEXT("Observer_%d"), Id);
-		UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(Components, *BodyName);
+		UAGX_RigidBodyComponent* Body =
+			GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName(BodyName));
 		UAGX_BoxShapeComponent* Geometry =
-			GetByName<UAGX_BoxShapeComponent>(Components, *GeometryName);
-		USceneComponent* Observer = GetByName<USceneComponent>(Components, *ObserverName);
+			GetByName<UAGX_BoxShapeComponent>(Components, *ToTemplateComponentName(GeometryName));
+		USceneComponent* Observer =
+			GetByName<USceneComponent>(Components, *ToTemplateComponentName(ObserverName));
 
 		Test.TestNotNull(*BodyName, Body);
 		Test.TestNotNull(*GeometryName, Geometry);
@@ -2534,10 +2485,12 @@ bool FCheckObserverFramesImportedCommand::Update()
 
 		USceneComponent* BodyAsComponent = static_cast<USceneComponent*>(Body);
 		Test.TestEqual(
-			*FString::Printf(TEXT("%s parent"), *GeometryName), Geometry->GetAttachParent(),
+			*FString::Printf(TEXT("%s parent"), *GeometryName),
+			GetTemplateComponentAttachParent(Geometry),
 			BodyAsComponent);
 		Test.TestEqual(
-			*FString::Printf(TEXT("%s parent"), *ObserverName), Observer->GetAttachParent(),
+			*FString::Printf(TEXT("%s parent"), *ObserverName),
+			GetTemplateComponentAttachParent(Observer),
 			BodyAsComponent);
 
 		Test.TestEqual(
@@ -2573,12 +2526,6 @@ bool FClearObserverFramesImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 	// This AGX Dynamics archive doesn't generate any assets when imported, so nothing to delete.
 
 	return true;
@@ -2609,7 +2556,7 @@ public:
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
@@ -2646,17 +2593,16 @@ bool FCheckURDFLinkWithMeshesImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 
 	// One DefaultSceneRoot, one Rigid Body, one Trimesh with a render mesh and a collision mesh
 	// and one Trimesh with only one collision mesh.
 	Test.TestEqual("Number of components", Components.Num(), 7);
 
-	UAGX_TrimeshShapeComponent* Urdfmeshvisual =
-		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("urdfmeshvisual"));
-	UAGX_TrimeshShapeComponent* Urdfmeshcollision =
-		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("urdfmeshcollision"));
+	UAGX_TrimeshShapeComponent* Urdfmeshvisual = GetByName<UAGX_TrimeshShapeComponent>(
+		Components, *ToTemplateComponentName("urdfmeshvisual"));
+	UAGX_TrimeshShapeComponent* Urdfmeshcollision = GetByName<UAGX_TrimeshShapeComponent>(
+		Components, *ToTemplateComponentName("urdfmeshcollision"));
 
 	Test.TestNotNull(TEXT("Urdfmeshvisual"), Urdfmeshvisual);
 	Test.TestNotNull(TEXT("Urdfmeshcollision"), Urdfmeshcollision);
@@ -2680,8 +2626,7 @@ bool FClearURDFLinkWithMeshesImportedCommand::Update()
 		return true;
 	}
 
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 	TArray<FString> Assets = GetReferencedStaticMeshAssets(Components);
 	if (Assets.Num() != 3)
 	{
@@ -2690,17 +2635,13 @@ bool FClearURDFLinkWithMeshesImportedCommand::Update()
 	}
 
 	TArray<const TCHAR*> FilesAndDirsToRemove;
+	FilesAndDirsToRemove.Add(TEXT("Blueprint"));
+	FilesAndDirsToRemove.Add(TEXT("BP_link_with_meshes.uasset"));
 	FilesAndDirsToRemove.Add(TEXT("RenderMesh"));
 	FilesAndDirsToRemove.Add(TEXT("StaticMesh"));
 	for (const FString& Asset : Assets)
 	{
 		FilesAndDirsToRemove.Add(*Asset);
-	}
-
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
 	}
 
 #if defined(__linux__)
@@ -2744,7 +2685,7 @@ public:
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
@@ -2782,21 +2723,19 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
 
-	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components and 2 Constraints with 3 Graphics
-	// components each.
-	Test.TestEqual("Number of components", Components.Num(), 17);
+	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components and 2 Constraints.
+	Test.TestEqual("Number of components", Components.Num(), 11);
 
 	UAGX_RigidBodyComponent* Boxlink =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("boxlink"));
+		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("boxlink"));
 	UAGX_RigidBodyComponent* Shperelink =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("spherelink"));
+		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("spherelink"));
 	UAGX_RigidBodyComponent* Cylinderlink =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("cylinderlink"));
+		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("cylinderlink"));
 	UAGX_RigidBodyComponent* Freefallinglink =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("freefallinglink"));
+		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("freefallinglink"));
 
 	Test.TestNotNull(TEXT("Boxlink"), Boxlink);
 	Test.TestNotNull(TEXT("Shperelink"), Shperelink);
@@ -2811,19 +2750,19 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 	}
 
 	Test.TestEqual(
-		TEXT("Boxlink position"), Boxlink->GetComponentLocation(),
+		TEXT("Boxlink position"), GetTemplateComponentWorldLocation(Boxlink),
 		AgxToUnrealVector({0.f, 0.f, 0.f}));
 
 	Test.TestEqual(
-		TEXT("Shperelink position"), Shperelink->GetComponentLocation(),
+		TEXT("Shperelink position"), GetTemplateComponentWorldLocation(Shperelink),
 		AgxToUnrealVector({1.f, 0.f, 0.f}));
 
 	Test.TestEqual(
-		TEXT("Cylinderlink position"), Cylinderlink->GetComponentLocation(),
+		TEXT("Cylinderlink position"), GetTemplateComponentWorldLocation(Cylinderlink),
 		AgxToUnrealVector({2.f, 0.f, 0.f}));
 
 	Test.TestEqual(
-		TEXT("Freefallinglink position"), Freefallinglink->GetComponentLocation(),
+		TEXT("Freefallinglink position"), GetTemplateComponentWorldLocation(Freefallinglink),
 		AgxToUnrealVector({0.f, 0.f, 0.f}));
 
 	return true;
@@ -2835,19 +2774,6 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
  */
 bool FClearURDFLinksGeometriesConstraintsImportedCommand::Update()
 {
-	using namespace AgxAutomationCommon;
-
-	if (Test.Contents == nullptr)
-	{
-		return true;
-	}
-
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 	return true;
 }
 

@@ -17,7 +17,8 @@ namespace AGX_ImporterToBlueprint
 	 * @param ArchivePath - The path to the AGX Dynamics archive to read.
 	 * @return An Actor Blueprint containing the read objects.
 	 */
-	AGXUNREALEDITOR_API UBlueprint* ImportAGXArchive(const FString& ArchivePath);
+	AGXUNREALEDITOR_API UBlueprint* ImportAGXArchive(
+		const FString& ArchivePath, bool OpenBlueprintEditor = true);
 
 	/**
 	 * Read simulation objects from the .urdf file pointed to by 'UrdfFilePath` and create an Actor
@@ -30,5 +31,6 @@ namespace AGX_ImporterToBlueprint
 	 * @return An Actor Blueprint containing the read objects.
 	 */
 	AGXUNREALEDITOR_API UBlueprint* ImportURDF(
-		const FString& UrdfFilePath, const FString& UrdfPackagePath = "");
+		const FString& UrdfFilePath, const FString& UrdfPackagePath = "",
+		bool OpenBlueprintEditor = true);
 }

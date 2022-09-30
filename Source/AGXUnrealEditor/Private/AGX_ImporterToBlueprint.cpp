@@ -322,8 +322,13 @@ namespace
 		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
 		FAGX_SimObjectsImporterHelper& Helper)
 	{
-		return Helper.InstantiateCollisionGroupDisabler(
-				   ImportedActor, SimObjects.GetDisabledCollisionGroups()) != nullptr;
+		const auto DisabledGroups = SimObjects.GetDisabledCollisionGroups();
+		if (DisabledGroups.Num() == 0)
+		{
+			return true;
+		}
+
+		return Helper.InstantiateCollisionGroupDisabler(ImportedActor, DisabledGroups) != nullptr;
 	}
 
 	bool AddWires(
@@ -374,7 +379,6 @@ namespace
 		Success &= AddRigidBodyAndAnyOwnedShape(
 			ImportedActor, SimObjects, Helper, ImportTask, WorkImportBodies);
 
-		ImportTask.EnterProgressFrame(50.f, FText::FromString("Reading bodiless Shapes"));
 		Success &= AddBodilessShapes(ImportedActor, SimObjects, Helper);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Tire Models"));
@@ -545,17 +549,18 @@ namespace
 	}
 }
 
-UBlueprint* AGX_ImporterToBlueprint::ImportAGXArchive(const FString& ArchivePath)
+UBlueprint* AGX_ImporterToBlueprint::ImportAGXArchive(
+	const FString& ArchivePath, bool OpenBlueprintEditor)
 {
 	FAGX_SimObjectsImporterHelper Helper(ArchivePath);
-	return ImportToBlueprint(Helper, EAGX_ImportType::Agx);
+	return ImportToBlueprint(Helper, EAGX_ImportType::Agx, OpenBlueprintEditor);
 }
 
 UBlueprint* AGX_ImporterToBlueprint::ImportURDF(
-	const FString& UrdfFilePath, const FString& UrdfPackagePath)
+	const FString& UrdfFilePath, const FString& UrdfPackagePath, bool OpenBlueprintEditor)
 {
 	FAGX_UrdfImporterHelper Helper(UrdfFilePath, UrdfPackagePath);
-	return ImportToBlueprint(Helper, EAGX_ImportType::Urdf);
+	return ImportToBlueprint(Helper, EAGX_ImportType::Urdf, OpenBlueprintEditor);
 }
 
 #undef LOCTEXT_NAMESPACE
