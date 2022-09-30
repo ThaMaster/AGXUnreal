@@ -41,7 +41,7 @@
 #include "Tests/AutomationCommon.h"
 
 /*
- * This file contains a set of tests for AGX_ImporterToSingleActor, which imports an AGX
+ * This file contains a set of tests for AGX_ImporterToBlueprint, which imports an AGX
  * Dynamics archive into the current world as a single Actor that contains ActorComponents for each
  * imported object.
  *
@@ -56,14 +56,14 @@
  * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
-	FImportArchiveSingleActorCommand, FString, ArchiveName, UBlueprint*&, Contents,
+	FImportArchiveBlueprintCommand, FString, ArchiveName, UBlueprint*&, Contents,
 	FAutomationTestBase&, Test);
 
-bool FImportArchiveSingleActorCommand::Update()
+bool FImportArchiveBlueprintCommand::Update()
 {
 	if (ArchiveName.IsEmpty())
 	{
-		Test.AddError(TEXT("FImportArchiveSingleActorCommand not given an archive to import."));
+		Test.AddError(TEXT("FImportArchiveBlueprintCommand not given an archive to import."));
 		return true;
 	}
 	FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(ArchiveName);
@@ -85,14 +85,14 @@ bool FImportArchiveSingleActorCommand::Update()
  * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_FOUR_PARAMETER(
-	FImportURDFSingleActorCommand, FString, FileName, FString, PackagePath, UBlueprint*&, Contents,
+	FImportURDFBlueprintCommand, FString, FileName, FString, PackagePath, UBlueprint*&, Contents,
 	FAutomationTestBase&, Test);
 
-bool FImportURDFSingleActorCommand::Update()
+bool FImportURDFBlueprintCommand::Update()
 {
 	if (FileName.IsEmpty())
 	{
-		Test.AddError(TEXT("FImportURDFSingleActorCommand not given a file to import."));
+		Test.AddError(TEXT("FImportURDFBlueprintCommand not given a file to import."));
 		return true;
 	}
 	FString UrdfFilePath = AgxAutomationCommon::GetTestScenePath(FileName);
@@ -171,13 +171,13 @@ bool FClearEmptySceneImportedCommand::Update()
  * Test that an empty AGX Dynamics archive can be imported, that the archive Actor root is created
  * as it should, and that it is added to the world.
  */
-class FImporterToSingleActor_EmptySceneTest final : public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_EmptySceneTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_EmptySceneTest()
+	FImporterToBlueprint_EmptySceneTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_EmptySceneTest"),
-			  TEXT("AGXUnreal.Game.ImporterToSingleActor.EmptyScene"))
+			  TEXT("FImporterToBlueprint_EmptySceneTest"),
+			  TEXT("AGXUnreal.Game.ImporterToBlueprint.EmptyScene"))
 	{
 	}
 
@@ -200,7 +200,7 @@ protected:
 #endif
 
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand("empty_scene.agx", Contents, *this));
+			FImportArchiveBlueprintCommand("empty_scene.agx", Contents, *this));
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckEmptySceneImportedCommand(Contents, *this));
 		ADD_LATENT_AUTOMATION_COMMAND(FClearEmptySceneImportedCommand(Contents));
 		ADD_LATENT_AUTOMATION_COMMAND(AgxAutomationCommon::FWaitNTicksCommand(1));
@@ -214,37 +214,37 @@ private:
 
 namespace
 {
-	FImporterToSingleActor_EmptySceneTest ImporterToSingleActor_EmptySceneTest;
+	FImporterToBlueprint_EmptySceneTest ImporterToBlueprint_EmptySceneTest;
 }
 
 //
 // SingleSphere test starts here.
 //
 
-class FImporterToSingleActor_SingleSphereTest;
+class FImporterToBlueprint_SingleSphereTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckSingleSphereImportedCommand, FImporterToSingleActor_SingleSphereTest&, Test);
+	FCheckSingleSphereImportedCommand, FImporterToBlueprint_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FStoreInitialTimes, FImporterToSingleActor_SingleSphereTest&, Test);
+	FStoreInitialTimes, FImporterToBlueprint_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FStoreResultingTimes, FImporterToSingleActor_SingleSphereTest&, Test);
+	FStoreResultingTimes, FImporterToBlueprint_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckSphereHasMoved, FImporterToSingleActor_SingleSphereTest&, Test);
+	FCheckSphereHasMoved, FImporterToBlueprint_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FClearSingleSphereImportedCommand, UBlueprint*&, Contents);
 
-class FImporterToSingleActor_SingleSphereTest final : public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_SingleSphereTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_SingleSphereTest()
+	FImporterToBlueprint_SingleSphereTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_SingleSphereTest"),
-			  TEXT("AGXUnreal.Game.ImporterToSingleActor.SingleSphere"))
+			  TEXT("FImporterToBlueprint_SingleSphereTest"),
+			  TEXT("AGXUnreal.Game.ImporterToBlueprint.SingleSphere"))
 	{
 	}
 
@@ -277,7 +277,7 @@ protected:
 			AddError(TEXT("Do not have a simulation, cannot test SingleSphere import."));
 		}
 
-		// See comment in FImporterToSingleActor_EmptySceneTest.
+		// See comment in FImporterToBlueprint_EmptySceneTest.
 		// In short, loading a map stops world ticking.
 #if 0
 		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
@@ -285,7 +285,7 @@ protected:
 #endif
 
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand("single_sphere_build.agx", Contents, *this))
+			FImportArchiveBlueprintCommand("single_sphere_build.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSingleSphereImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FStoreInitialTimes(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FWaitWorldDuration(World, 1.0f))
@@ -300,7 +300,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_SingleSphereTest ImporterToSingleActor_SingleSphereTest;
+	FImporterToBlueprint_SingleSphereTest ImporterToBlueprint_SingleSphereTest;
 }
 
 /*
@@ -516,22 +516,21 @@ bool FClearSingleSphereImportedCommand::Update()
 // MotionControl test starts here.
 //
 
-class FImporterToSingleActor_MotionControlTest;
+class FImporterToBlueprint_MotionControlTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckMotionControlImportedCommand, FImporterToSingleActor_MotionControlTest&, Test);
+	FCheckMotionControlImportedCommand, FImporterToBlueprint_MotionControlTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearMotionControlImportedCommand, FImporterToSingleActor_MotionControlTest&, Test);
+	FClearMotionControlImportedCommand, FImporterToBlueprint_MotionControlTest&, Test);
 
-class FImporterToSingleActor_MotionControlTest final
-	: public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_MotionControlTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_MotionControlTest()
+	FImporterToBlueprint_MotionControlTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_MotionControlTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.MotionControl"))
+			  TEXT("FImporterToBlueprint_MotionControlTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.MotionControl"))
 	{
 	}
 
@@ -542,7 +541,7 @@ protected:
 	virtual bool RunTest(const FString&) override
 	{
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand("motion_control_build.agx", Contents, *this))
+			FImportArchiveBlueprintCommand("motion_control_build.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckMotionControlImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearMotionControlImportedCommand(*this))
 		return true;
@@ -551,7 +550,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_MotionControlTest FImporterToSingleActor_MotionControlTest;
+	FImporterToBlueprint_MotionControlTest FImporterToBlueprint_MotionControlTest;
 }
 
 bool FCheckMotionControlImportedCommand::Update()
@@ -631,6 +630,14 @@ bool FCheckMotionControlImportedCommand::Update()
 
 bool FClearMotionControlImportedCommand::Update()
 {
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	TArray<const TCHAR*> ExpectedFiles {TEXT("Blueprint"), TEXT("BP_motion_control_build.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("motion_control_build"), ExpectedFiles);
+
 	return true;
 }
 
@@ -638,22 +645,21 @@ bool FClearMotionControlImportedCommand::Update()
 // SimpleTrimesh test starts here.
 //
 
-class FImporterToSingleActor_SimpleTrimeshTest;
+class FImporterToBlueprint_SimpleTrimeshTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckSimpleTrimeshImportedCommand, FImporterToSingleActor_SimpleTrimeshTest&, Test);
+	FCheckSimpleTrimeshImportedCommand, FImporterToBlueprint_SimpleTrimeshTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearSimpleTrimeshImportedCommand, FImporterToSingleActor_SimpleTrimeshTest&, Test);
+	FClearSimpleTrimeshImportedCommand, FImporterToBlueprint_SimpleTrimeshTest&, Test);
 
-class FImporterToSingleActor_SimpleTrimeshTest final
-	: public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_SimpleTrimeshTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_SimpleTrimeshTest()
+	FImporterToBlueprint_SimpleTrimeshTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_SimpleTrimeshTest"),
-			  TEXT("AGXUnreal.Game.ImporterToSingleActor.SimpleTrimesh"))
+			  TEXT("FImporterToBlueprint_SimpleTrimeshTest"),
+			  TEXT("AGXUnreal.Game.ImporterToBlueprint.SimpleTrimesh"))
 	{
 	}
 
@@ -672,7 +678,7 @@ protected:
 		World = AgxAutomationCommon::GetTestWorld();
 		Simulation = UAGX_Simulation::GetFrom(World);
 
-		// See comment in FImporterToSingleActor_EmptySceneTest.
+		// See comment in FImporterToBlueprint_EmptySceneTest.
 		// In short, loading a map stops world ticking.
 #if 0
 		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
@@ -680,7 +686,7 @@ protected:
 #endif
 
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand("simple_trimesh_build.agx", Contents, *this))
+			FImportArchiveBlueprintCommand("simple_trimesh_build.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSimpleTrimeshImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearSimpleTrimeshImportedCommand(*this))
 		return true;
@@ -689,7 +695,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_SimpleTrimeshTest ImporterToSingleActor_SimpleTrimeshTest;
+	FImporterToBlueprint_SimpleTrimeshTest ImporterToBlueprint_SimpleTrimeshTest;
 }
 
 /**
@@ -785,22 +791,21 @@ bool FClearSimpleTrimeshImportedCommand::Update()
 // RenderMaterial test starts here.
 //
 
-class FImporterToSingleActor_RenderMaterialTest;
+class FImporterToBlueprint_RenderMaterialTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckRenderMaterialImportedCommand, FImporterToSingleActor_RenderMaterialTest&, Test);
+	FCheckRenderMaterialImportedCommand, FImporterToBlueprint_RenderMaterialTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearRenderMaterialImportedCommand, FImporterToSingleActor_RenderMaterialTest&, Test);
+	FClearRenderMaterialImportedCommand, FImporterToBlueprint_RenderMaterialTest&, Test);
 
-class FImporterToSingleActor_RenderMaterialTest final
-	: public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_RenderMaterialTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_RenderMaterialTest()
+	FImporterToBlueprint_RenderMaterialTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_RenderMaterialTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.RenderMaterial"))
+			  TEXT("FImporterToBlueprint_RenderMaterialTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.RenderMaterial"))
 	{
 	}
 
@@ -812,7 +817,7 @@ protected:
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("render_materials_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("render_materials_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckRenderMaterialImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearRenderMaterialImportedCommand(*this))
 		return true;
@@ -821,7 +826,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_RenderMaterialTest ImporterToSingleActor_RenderMaterialTest;
+	FImporterToBlueprint_RenderMaterialTest ImporterToBlueprint_RenderMaterialTest;
 }
 
 namespace
@@ -1135,21 +1140,21 @@ bool FClearRenderMaterialImportedCommand::Update()
 // Render Data test starts here.
 //
 
-class FImporterToSingleActor_RenderDataTest;
+class FImporterToBlueprint_RenderDataTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckRenderDataImportedCommand, FImporterToSingleActor_RenderDataTest&, Test);
+	FCheckRenderDataImportedCommand, FImporterToBlueprint_RenderDataTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearRenderDataImportedCommand, FImporterToSingleActor_RenderDataTest&, Test);
+	FClearRenderDataImportedCommand, FImporterToBlueprint_RenderDataTest&, Test);
 
-class FImporterToSingleActor_RenderDataTest final : public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_RenderDataTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_RenderDataTest()
+	FImporterToBlueprint_RenderDataTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_RenderDataTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.RenderData"))
+			  TEXT("FImporterToBlueprint_RenderDataTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.RenderData"))
 	{
 	}
 
@@ -1161,7 +1166,7 @@ protected:
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("render_data_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("render_data_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckRenderDataImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearRenderDataImportedCommand(*this))
 		return true;
@@ -1170,7 +1175,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_RenderDataTest ImporterToSingleActor_RenderDataTest;
+	FImporterToBlueprint_RenderDataTest ImporterToBlueprint_RenderDataTest;
 }
 
 bool FCheckRenderDataImportedCommand::Update()
@@ -1212,7 +1217,8 @@ bool FCheckRenderDataImportedCommand::Update()
 	}
 
 	Test.TestTrue(
-		TEXT("The mesh should be a child of the sphere"), GetTemplateComponentAttachParent(Mesh) == Sphere);
+		TEXT("The mesh should be a child of the sphere"),
+		GetTemplateComponentAttachParent(Mesh) == Sphere);
 
 	return true;
 }
@@ -1249,22 +1255,22 @@ bool FClearRenderDataImportedCommand::Update()
 // CollisionGroups test starts here.
 //
 
-class FImporterToSingleActor_CollisionGroupsTest;
+class FImporterToBlueprint_CollisionGroupsTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckCollisionGroupsImportedCommand, FImporterToSingleActor_CollisionGroupsTest&, Test);
+	FCheckCollisionGroupsImportedCommand, FImporterToBlueprint_CollisionGroupsTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearCollisionGroupsImportedCommand, FImporterToSingleActor_CollisionGroupsTest&, Test);
+	FClearCollisionGroupsImportedCommand, FImporterToBlueprint_CollisionGroupsTest&, Test);
 
-class FImporterToSingleActor_CollisionGroupsTest final
+class FImporterToBlueprint_CollisionGroupsTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_CollisionGroupsTest()
+	FImporterToBlueprint_CollisionGroupsTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_CollisionGroupsTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.CollisionGroups"))
+			  TEXT("FImporterToBlueprint_CollisionGroupsTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.CollisionGroups"))
 	{
 	}
 
@@ -1279,7 +1285,7 @@ protected:
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("collision_groups_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("collision_groups_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckCollisionGroupsImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearCollisionGroupsImportedCommand(*this))
 		return true;
@@ -1288,7 +1294,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_CollisionGroupsTest ImporterToSingleActor_CollisionGroupsTest;
+	FImporterToBlueprint_CollisionGroupsTest ImporterToBlueprint_CollisionGroupsTest;
 }
 
 /**
@@ -1444,6 +1450,14 @@ bool FCheckCollisionGroupsImportedCommand::Update()
  */
 bool FClearCollisionGroupsImportedCommand::Update()
 {
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("Blueprint"), TEXT("BP_collision_groups_build.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("collision_groups_build"), ExpectedFiles);
 	return true;
 }
 
@@ -1451,22 +1465,22 @@ bool FClearCollisionGroupsImportedCommand::Update()
 // GeometrySensors test starts here.
 //
 
-class FImporterToSingleActor_GeometrySensorsTest;
+class FImporterToBlueprint_GeometrySensorsTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckGeometrySensorsImportedCommand, FImporterToSingleActor_GeometrySensorsTest&, Test);
+	FCheckGeometrySensorsImportedCommand, FImporterToBlueprint_GeometrySensorsTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearGeometrySensorsImportedCommand, FImporterToSingleActor_GeometrySensorsTest&, Test);
+	FClearGeometrySensorsImportedCommand, FImporterToBlueprint_GeometrySensorsTest&, Test);
 
-class FImporterToSingleActor_GeometrySensorsTest final
+class FImporterToBlueprint_GeometrySensorsTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_GeometrySensorsTest()
+	FImporterToBlueprint_GeometrySensorsTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_GeometrySensorsTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.GeometrySensors"))
+			  TEXT("FImporterToBlueprint_GeometrySensorsTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.GeometrySensors"))
 	{
 	}
 
@@ -1481,7 +1495,7 @@ protected:
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("geometry_sensors_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("geometry_sensors_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckGeometrySensorsImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearGeometrySensorsImportedCommand(*this))
 		return true;
@@ -1490,7 +1504,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_GeometrySensorsTest ImporterToSingleActor_GeometrySensorsTest;
+	FImporterToBlueprint_GeometrySensorsTest ImporterToBlueprint_GeometrySensorsTest;
 }
 
 /**
@@ -1579,6 +1593,15 @@ bool FCheckGeometrySensorsImportedCommand::Update()
  */
 bool FClearGeometrySensorsImportedCommand::Update()
 {
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("Blueprint"), TEXT("BP_geometry_sensors_build.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("geometry_sensors_build"), ExpectedFiles);
+
 	return true;
 }
 
@@ -1587,21 +1610,21 @@ bool FClearGeometrySensorsImportedCommand::Update()
 // Wire test starts here.
 //
 
-class FImporterToSingleActor_WireTest;
+class FImporterToBlueprint_WireTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckWireImportedCommand, FImporterToSingleActor_WireTest&, Test);
+	FCheckWireImportedCommand, FImporterToBlueprint_WireTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearWireImportedCommand, FImporterToSingleActor_WireTest&, Test);
+	FClearWireImportedCommand, FImporterToBlueprint_WireTest&, Test);
 
-class FImporterToSingleActor_WireTest final : public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_WireTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_WireTest()
+	FImporterToBlueprint_WireTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_WireTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.Wire"))
+			  TEXT("FImporterToBlueprint_WireTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.Wire"))
 	{
 	}
 
@@ -1615,7 +1638,7 @@ protected:
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("wire_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("wire_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckWireImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearWireImportedCommand(*this))
 		return true;
@@ -1624,7 +1647,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_WireTest ImporterToSingleActor_WireTest;
+	FImporterToBlueprint_WireTest ImporterToBlueprint_WireTest;
 }
 
 /**
@@ -1792,24 +1815,24 @@ bool FClearWireImportedCommand::Update()
 // Constraint Dynamic Parameters test starts here.
 //
 
-class FImporterToSingleActor_ConstraintDynamicParametersTest;
+class FImporterToBlueprint_ConstraintDynamicParametersTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FCheckConstraintDynamicParametersImportedCommand,
-	FImporterToSingleActor_ConstraintDynamicParametersTest&, Test);
+	FImporterToBlueprint_ConstraintDynamicParametersTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FClearConstraintDynamicParametersImportedCommand,
-	FImporterToSingleActor_ConstraintDynamicParametersTest&, Test);
+	FImporterToBlueprint_ConstraintDynamicParametersTest&, Test);
 
-class FImporterToSingleActor_ConstraintDynamicParametersTest final
+class FImporterToBlueprint_ConstraintDynamicParametersTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_ConstraintDynamicParametersTest()
+	FImporterToBlueprint_ConstraintDynamicParametersTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_ConstraintDynamicParametersTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.ConstraintDynamicParameters"))
+			  TEXT("FImporterToBlueprint_ConstraintDynamicParametersTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.ConstraintDynamicParameters"))
 	{
 	}
 
@@ -1823,7 +1846,7 @@ protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
-		ADD_LATENT_AUTOMATION_COMMAND(FImportArchiveSingleActorCommand(
+		ADD_LATENT_AUTOMATION_COMMAND(FImportArchiveBlueprintCommand(
 			TEXT("constraint_dynamic_parameters_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckConstraintDynamicParametersImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearConstraintDynamicParametersImportedCommand(*this))
@@ -1833,8 +1856,8 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_ConstraintDynamicParametersTest
-		ImporterToSingleActor_ConstraintDynamicParametersTest;
+	FImporterToBlueprint_ConstraintDynamicParametersTest
+		ImporterToBlueprint_ConstraintDynamicParametersTest;
 }
 
 /**
@@ -1927,6 +1950,16 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
  */
 bool FClearConstraintDynamicParametersImportedCommand::Update()
 {
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("Blueprint"), TEXT("BP_constraint_dynamic_parameters_build.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(
+		TEXT("constraint_dynamic_parameters_build"), ExpectedFiles);
+
 	return true;
 }
 
@@ -1934,24 +1967,22 @@ bool FClearConstraintDynamicParametersImportedCommand::Update()
 // Rigid Body properties test starts here.
 //
 
-class FImporterToSingleActor_RigidBodyPropertiesTest;
+class FImporterToBlueprint_RigidBodyPropertiesTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckRigidBodyPropertiesImportedCommand, FImporterToSingleActor_RigidBodyPropertiesTest&,
-	Test);
+	FCheckRigidBodyPropertiesImportedCommand, FImporterToBlueprint_RigidBodyPropertiesTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearRigidBodyPropertiesImportedCommand, FImporterToSingleActor_RigidBodyPropertiesTest&,
-	Test);
+	FClearRigidBodyPropertiesImportedCommand, FImporterToBlueprint_RigidBodyPropertiesTest&, Test);
 
-class FImporterToSingleActor_RigidBodyPropertiesTest final
+class FImporterToBlueprint_RigidBodyPropertiesTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_RigidBodyPropertiesTest()
+	FImporterToBlueprint_RigidBodyPropertiesTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_RigidBodyPropertiesTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.RigidBodyProperties"))
+			  TEXT("FImporterToBlueprint_RigidBodyPropertiesTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.RigidBodyProperties"))
 	{
 	}
 
@@ -1965,8 +1996,8 @@ protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
-		ADD_LATENT_AUTOMATION_COMMAND(FImportArchiveSingleActorCommand(
-			TEXT("rigidbody_properties_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveBlueprintCommand(TEXT("rigidbody_properties_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckRigidBodyPropertiesImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearRigidBodyPropertiesImportedCommand(*this))
 		return true;
@@ -1975,7 +2006,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_RigidBodyPropertiesTest ImporterToSingleActor_RigidBodyPropertiesTest;
+	FImporterToBlueprint_RigidBodyPropertiesTest ImporterToBlueprint_RigidBodyPropertiesTest;
 }
 
 /**
@@ -2094,6 +2125,10 @@ bool FClearRigidBodyPropertiesImportedCommand::Update()
 		return true;
 	}
 
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("Blueprint"), TEXT("BP_rigidbody_properties_build.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("rigidbody_properties_build"), ExpectedFiles);
+
 	return true;
 }
 
@@ -2101,22 +2136,22 @@ bool FClearRigidBodyPropertiesImportedCommand::Update()
 // Simple geometries test starts here.
 //
 
-class FImporterToSingleActor_SimpleGeometriesTest;
+class FImporterToBlueprint_SimpleGeometriesTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckSimpleGeometriesImportedCommand, FImporterToSingleActor_SimpleGeometriesTest&, Test);
+	FCheckSimpleGeometriesImportedCommand, FImporterToBlueprint_SimpleGeometriesTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearSimpleGeometriesImportedCommand, FImporterToSingleActor_SimpleGeometriesTest&, Test);
+	FClearSimpleGeometriesImportedCommand, FImporterToBlueprint_SimpleGeometriesTest&, Test);
 
-class FImporterToSingleActor_SimpleGeometriesTest final
+class FImporterToBlueprint_SimpleGeometriesTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_SimpleGeometriesTest()
+	FImporterToBlueprint_SimpleGeometriesTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_SimpleGeometriesTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.SimpleGeometries"))
+			  TEXT("FImporterToBlueprint_SimpleGeometriesTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.SimpleGeometries"))
 	{
 	}
 
@@ -2131,7 +2166,7 @@ protected:
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("single_geometries_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("single_geometries_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSimpleGeometriesImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearSimpleGeometriesImportedCommand(*this))
 		return true;
@@ -2140,7 +2175,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_SimpleGeometriesTest ImporterToSingleActor_SimpleGeometriesTest;
+	FImporterToBlueprint_SimpleGeometriesTest ImporterToBlueprint_SimpleGeometriesTest;
 }
 
 /**
@@ -2255,24 +2290,22 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 // Contact materials test starts here.
 //
 
-class FArchiveImporterToSingleActor_ContactMaterialsTest;
+class FArchiveImporterToBlueprint_ContactMaterialsTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckContactMaterialsImportedCommand, FArchiveImporterToSingleActor_ContactMaterialsTest&,
-	Test);
+	FCheckContactMaterialsImportedCommand, FArchiveImporterToBlueprint_ContactMaterialsTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearContactMaterialsImportedCommand, FArchiveImporterToSingleActor_ContactMaterialsTest&,
-	Test);
+	FClearContactMaterialsImportedCommand, FArchiveImporterToBlueprint_ContactMaterialsTest&, Test);
 
-class FArchiveImporterToSingleActor_ContactMaterialsTest final
+class FArchiveImporterToBlueprint_ContactMaterialsTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_ContactMaterialsTest()
+	FArchiveImporterToBlueprint_ContactMaterialsTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_ContactMaterialsTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.ContactMaterials"))
+			  TEXT("FArchiveImporterToBlueprint_ContactMaterialsTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.ContactMaterials"))
 	{
 	}
 
@@ -2284,7 +2317,7 @@ protected:
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("contact_materials_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("contact_materials_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckContactMaterialsImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearContactMaterialsImportedCommand(*this))
 		return true;
@@ -2293,8 +2326,8 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_ContactMaterialsTest
-		ArchiveImporterToSingleActor_ContactMaterialsTest;
+	FArchiveImporterToBlueprint_ContactMaterialsTest
+		ArchiveImporterToBlueprint_ContactMaterialsTest;
 }
 
 /**
@@ -2405,22 +2438,22 @@ bool FClearContactMaterialsImportedCommand::Update()
 // Observer Frame test starts here.
 //
 
-class FArchiveImporterToSingleActor_ObserverFramesTest;
+class FArchiveImporterToBlueprint_ObserverFramesTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckObserverFramesImportedCommand, FArchiveImporterToSingleActor_ObserverFramesTest&, Test);
+	FCheckObserverFramesImportedCommand, FArchiveImporterToBlueprint_ObserverFramesTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearObserverFramesImportedCommand, FArchiveImporterToSingleActor_ObserverFramesTest&, Test);
+	FClearObserverFramesImportedCommand, FArchiveImporterToBlueprint_ObserverFramesTest&, Test);
 
-class FArchiveImporterToSingleActor_ObserverFramesTest final
+class FArchiveImporterToBlueprint_ObserverFramesTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_ObserverFramesTest()
+	FArchiveImporterToBlueprint_ObserverFramesTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImpoterToSingleActor_ObserverFramesTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.ObserverFrames"))
+			  TEXT("FArchiveImpoterToBlueprint_ObserverFramesTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.ObserverFrames"))
 	{
 	}
 
@@ -2432,7 +2465,7 @@ protected:
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("observer_frames_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("observer_frames_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckObserverFramesImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearObserverFramesImportedCommand(*this))
 		return true;
@@ -2441,8 +2474,7 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_ObserverFramesTest
-		ArchiveImpoterterToSingleActor_ObserverFramesTest;
+	FArchiveImporterToBlueprint_ObserverFramesTest ArchiveImpoterterToBlueprint_ObserverFramesTest;
 }
 
 /**
@@ -2486,12 +2518,10 @@ bool FCheckObserverFramesImportedCommand::Update()
 		USceneComponent* BodyAsComponent = static_cast<USceneComponent*>(Body);
 		Test.TestEqual(
 			*FString::Printf(TEXT("%s parent"), *GeometryName),
-			GetTemplateComponentAttachParent(Geometry),
-			BodyAsComponent);
+			GetTemplateComponentAttachParent(Geometry), BodyAsComponent);
 		Test.TestEqual(
 			*FString::Printf(TEXT("%s parent"), *ObserverName),
-			GetTemplateComponentAttachParent(Observer),
-			BodyAsComponent);
+			GetTemplateComponentAttachParent(Observer), BodyAsComponent);
 
 		Test.TestEqual(
 			*FString::Printf(TEXT("%s location"), *BodyName), Body->GetRelativeLocation(),
@@ -2526,7 +2556,8 @@ bool FClearObserverFramesImportedCommand::Update()
 		return true;
 	}
 
-	// This AGX Dynamics archive doesn't generate any assets when imported, so nothing to delete.
+	TArray<const TCHAR*> ExpectedFiles {TEXT("Blueprint"), TEXT("BP_observer_frames_build.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("observer_frames_build"), ExpectedFiles);
 
 	return true;
 }
@@ -2534,22 +2565,22 @@ bool FClearObserverFramesImportedCommand::Update()
 // URDF link with meshes test starts here.
 //
 
-class FImporterToSingleActor_URDFLinkWithMeshesTest;
+class FImporterToBlueprint_URDFLinkWithMeshesTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckURDFLinkWithMeshesImportedCommand, FImporterToSingleActor_URDFLinkWithMeshesTest&, Test);
+	FCheckURDFLinkWithMeshesImportedCommand, FImporterToBlueprint_URDFLinkWithMeshesTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearURDFLinkWithMeshesImportedCommand, FImporterToSingleActor_URDFLinkWithMeshesTest&, Test);
+	FClearURDFLinkWithMeshesImportedCommand, FImporterToBlueprint_URDFLinkWithMeshesTest&, Test);
 
-class FImporterToSingleActor_URDFLinkWithMeshesTest final
+class FImporterToBlueprint_URDFLinkWithMeshesTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_URDFLinkWithMeshesTest()
+	FImporterToBlueprint_URDFLinkWithMeshesTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_URDFLinkWithMeshesTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.URDFLinkWithMeshes"))
+			  TEXT("FImporterToBlueprint_URDFLinkWithMeshesTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.URDFLinkWithMeshes"))
 	{
 	}
 
@@ -2562,7 +2593,7 @@ protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
-		ADD_LATENT_AUTOMATION_COMMAND(FImportURDFSingleActorCommand(
+		ADD_LATENT_AUTOMATION_COMMAND(FImportURDFBlueprintCommand(
 			TEXT("link_with_meshes.urdf"), AgxAutomationCommon::GetTestSceneDirPath(), Contents,
 			*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckURDFLinkWithMeshesImportedCommand(*this))
@@ -2573,7 +2604,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_URDFLinkWithMeshesTest ImporterToSingleActor_URDFLinkWithMeshesTest;
+	FImporterToBlueprint_URDFLinkWithMeshesTest ImporterToBlueprint_URDFLinkWithMeshesTest;
 }
 
 /**
@@ -2661,24 +2692,24 @@ bool FClearURDFLinkWithMeshesImportedCommand::Update()
 // URDF links geometries constraints test starts here.
 //
 
-class FImporterToSingleActor_URDFLinksGeometriesConstraintsTest;
+class FImporterToBlueprint_URDFLinksGeometriesConstraintsTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FCheckURDFLinksGeometriesConstraintsImportedCommand,
-	FImporterToSingleActor_URDFLinksGeometriesConstraintsTest&, Test);
+	FImporterToBlueprint_URDFLinksGeometriesConstraintsTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FClearURDFLinksGeometriesConstraintsImportedCommand,
-	FImporterToSingleActor_URDFLinksGeometriesConstraintsTest&, Test);
+	FImporterToBlueprint_URDFLinksGeometriesConstraintsTest&, Test);
 
-class FImporterToSingleActor_URDFLinksGeometriesConstraintsTest final
+class FImporterToBlueprint_URDFLinksGeometriesConstraintsTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_URDFLinksGeometriesConstraintsTest()
+	FImporterToBlueprint_URDFLinksGeometriesConstraintsTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_URDFLinksGeometriesConstraintsTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.URDFLinksGeometriesConstraints"))
+			  TEXT("FImporterToBlueprint_URDFLinksGeometriesConstraintsTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.URDFLinksGeometriesConstraints"))
 	{
 	}
 
@@ -2691,7 +2722,7 @@ protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
-		ADD_LATENT_AUTOMATION_COMMAND(FImportURDFSingleActorCommand(
+		ADD_LATENT_AUTOMATION_COMMAND(FImportURDFBlueprintCommand(
 			TEXT("links_geometries_constraints.urdf"), "", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckURDFLinksGeometriesConstraintsImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearURDFLinksGeometriesConstraintsImportedCommand(*this))
@@ -2701,8 +2732,8 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_URDFLinksGeometriesConstraintsTest
-		ImporterToSingleActor_URDFLinksGeometriesConstraintsTest;
+	FImporterToBlueprint_URDFLinksGeometriesConstraintsTest
+		ImporterToBlueprint_URDFLinksGeometriesConstraintsTest;
 }
 
 /**
@@ -2774,6 +2805,15 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
  */
 bool FClearURDFLinksGeometriesConstraintsImportedCommand::Update()
 {
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("Blueprint"), TEXT("BP_links_geometries_constraints.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("links_geometries_constraints"), ExpectedFiles);
+
 	return true;
 }
 
