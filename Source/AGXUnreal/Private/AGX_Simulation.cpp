@@ -31,6 +31,31 @@
 
 #include <algorithm>
 
+void UAGX_Simulation::SetNumThreads(int32 InNumThreads)
+{
+	if (NumThreads < 0)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("The number of threads cannot be negative."));
+		return;
+	}
+	
+	NumThreads = InNumThreads;
+	if (HasNative())
+	{
+		NativeBarrier.SetNumThreads(NumThreads);
+	}
+}
+
+int32 UAGX_Simulation::GetNumThreads() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetNumThreads();
+	}
+
+	return NumThreads;
+}
+
 FAGX_Statistics UAGX_Simulation::GetStatistics()
 {
 	check(HasNative());
@@ -481,8 +506,12 @@ void UAGX_Simulation::InitPropertyDispatcher()
 	}
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bContactWarmstarting),
+		GET_MEMBER_NAME_CHECKED(ThisClass, bContactWarmstarting),
 		[](ThisClass* This) { This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, NumThreads),
+		[](ThisClass* This) { This->SetNumThreads(This->NumThreads);});
 }
 
 #endif
