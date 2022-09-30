@@ -16,8 +16,13 @@
 
 struct FRigidBodyRef;
 
+class FBoxShapeBarrier;
+class FCapsuleShapeBarrier;
+class FCylinderShapeBarrier;
 class FMassPropertiesBarrier;
 class FShapeBarrier;
+class FSphereShapeBarrier;
+class FTrimeshShapeBarrier;
 
 /**
  * Barrier between UAGX_RigidBody and agx::RigidBody. UAGX_RigidBody holds an
@@ -96,6 +101,12 @@ public:
 	void SetNativeAddress(uintptr_t NativeAddress);
 
 	void ReleaseNative();
+
+	TArray<FSphereShapeBarrier> GetSphereShapes() const;
+	TArray<FBoxShapeBarrier> GetBoxShapes() const;
+	TArray<FCylinderShapeBarrier> GetCylinderShapes() const;
+	TArray<FCapsuleShapeBarrier> GetCapsuleShapes() const;
+	TArray<FTrimeshShapeBarrier> GetTrimeshShapes() const;
 
 private:
 	FRigidBodyBarrier(const FRigidBodyBarrier&) = delete;
