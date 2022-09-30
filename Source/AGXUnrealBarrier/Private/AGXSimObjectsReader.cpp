@@ -145,6 +145,15 @@ namespace
 				continue;
 			}
 
+			if (Tire->getHubRigidBody() == nullptr || Tire->getTireRigidBody() == nullptr)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Tire '%s' is missing Hub or Tire Rigid Body. It will not be imported."),
+					*Convert(Tire->getName()));
+				continue;
+			}
+
 			OutSimObjects.GetTwoBodyTires().Add(AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
 		}
 	}
