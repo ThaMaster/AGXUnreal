@@ -27,8 +27,6 @@
 
 namespace
 {
-	/// \todo Determine if it's enough to return the created asset, or if we must pack it in a
-	/// struct together with the package path and/or asset name.
 	template <typename UAsset, typename FInitAssetCallback>
 	FAssetToDiskInfo PrepareWriteAssetToDisk(
 		const FString& DirectoryName, FString AssetName, const FString& FallbackName,
