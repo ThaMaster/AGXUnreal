@@ -467,8 +467,9 @@ namespace
 }
 
 UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
-	const FSphereShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
+	const FSphereShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* BodyBarrier)
 {
+	UAGX_RigidBodyComponent* Body = BodyBarrier != nullptr ? GetBody(*BodyBarrier) : nullptr;
 	UAGX_SphereShapeComponent* Component = FAGX_EditorUtilities::CreateSphereShape(&Owner, Body);
 	if (Component == nullptr)
 	{
@@ -485,8 +486,9 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 }
 
 UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
-	const FBoxShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
+	const FBoxShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* BodyBarrier)
 {
+	UAGX_RigidBodyComponent* Body = BodyBarrier != nullptr ? GetBody(*BodyBarrier) : nullptr;
 	UAGX_BoxShapeComponent* Component = FAGX_EditorUtilities::CreateBoxShape(&Owner, Body);
 	if (Component == nullptr)
 	{
@@ -503,8 +505,9 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 }
 
 UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
-	const FCylinderShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
+	const FCylinderShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* BodyBarrier)
 {
+	UAGX_RigidBodyComponent* Body = BodyBarrier != nullptr ? GetBody(*BodyBarrier) : nullptr;
 	UAGX_CylinderShapeComponent* Component =
 		FAGX_EditorUtilities::CreateCylinderShape(&Owner, Body);
 	if (Component == nullptr)
@@ -522,8 +525,9 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 }
 
 UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
-	const FCapsuleShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
+	const FCapsuleShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* BodyBarrier)
 {
+	UAGX_RigidBodyComponent* Body = BodyBarrier != nullptr ? GetBody(*BodyBarrier) : nullptr;
 	UAGX_CapsuleShapeComponent* Component = FAGX_EditorUtilities::CreateCapsuleShape(&Owner, Body);
 	if (Component == nullptr)
 	{
@@ -540,8 +544,9 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 }
 
 UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
-	const FTrimeshShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
+	const FTrimeshShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* BodyBarrier)
 {
+	UAGX_RigidBodyComponent* Body = BodyBarrier != nullptr ? GetBody(*BodyBarrier) : nullptr;
 	UAGX_TrimeshShapeComponent* Component =
 		FAGX_EditorUtilities::CreateTrimeshShape(&Owner, Body, false);
 	if (Component == nullptr)

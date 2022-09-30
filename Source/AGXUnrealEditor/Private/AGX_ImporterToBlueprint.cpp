@@ -139,27 +139,27 @@ namespace
 
 		virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateSphere(Barrier, *Body.GetOwner(), &Body);
+			//Helper.InstantiateSphere(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateBox(Barrier, *Body.GetOwner(), &Body);
+			//Helper.InstantiateBox(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateCylinder(const FCylinderShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateCylinder(Barrier, *Body.GetOwner(), &Body);
+			//Helper.InstantiateCylinder(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateCapsule(const FCapsuleShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateCapsule(Barrier, *Body.GetOwner(), &Body);
+			//Helper.InstantiateCapsule(Barrier, *Body.GetOwner(), &Body);
 		}
 
 		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Barrier) override
 		{
-			Helper.InstantiateTrimesh(Barrier, *Body.GetOwner(), &Body);
+			//Helper.InstantiateTrimesh(Barrier, *Body.GetOwner(), &Body);
 		}
 
 	private:
@@ -460,6 +460,44 @@ namespace
 		return Success;
 	}
 
+	bool AddRigidBodyAndAnyOwnedShape(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const FRigidBodyBarrier& Body : SimObjects.GetRigidBodies())
+		{
+			Success &= Helper.InstantiateBody(Body, ImportedActor) != nullptr;
+
+			for (const auto& Sphere : Body.GetSphereShapes())
+			{
+				Success &= Helper.InstantiateSphere(Sphere, ImportedActor, &Body) != nullptr;
+			}
+
+			for (const auto& Box : Body.GetBoxShapes())
+			{
+				Success &= Helper.InstantiateBox(Box, ImportedActor, &Body) != nullptr;
+			}
+
+			for (const auto& Capsule : Body.GetCapsuleShapes())
+			{
+				Success &= Helper.InstantiateCapsule(Capsule, ImportedActor, &Body) != nullptr;
+			}
+
+			for (const auto& Cylinder : Body.GetCylinderShapes())
+			{
+				Success &= Helper.InstantiateCylinder(Cylinder, ImportedActor, &Body) != nullptr;
+			}
+
+			for (const auto& Trimesh : Body.GetTrimeshShapes())
+			{
+				Success &= Helper.InstantiateTrimesh(Trimesh, ImportedActor, &Body) != nullptr;
+			}
+		}
+
+		return Success;
+	}
+
 	bool AddAllComponents(
 		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
 		FAGX_SimObjectsImporterHelper& Helper)
@@ -474,10 +512,13 @@ namespace
 		ImportTask.EnterProgressFrame(0.01, FText::FromString("Reading Contact Materials"));
 		Success &= AddContactMaterials(ImportedActor, SimObjects, Helper);
 
-		ImportTask.EnterProgressFrame(0.18, FText::FromString("Reading bodiless Shapes"));
+		ImportTask.EnterProgressFrame(0.18, FText::FromString("Reading Rigid Bodies and their Shapes"));
+		Success &= AddRigidBodyAndAnyOwnedShape(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(0.60, FText::FromString("Reading bodiless Shapes"));
 		Success &= AddBodilessShapes(ImportedActor, SimObjects, Helper);
 
-		ImportTask.EnterProgressFrame(0.80, FText::FromString("Import complete"));
+		ImportTask.EnterProgressFrame(0.20, FText::FromString("Import complete"));
 		return Success;
 	}
 
