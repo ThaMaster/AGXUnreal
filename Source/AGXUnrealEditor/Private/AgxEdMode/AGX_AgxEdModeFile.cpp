@@ -3,7 +3,6 @@
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ImporterToSingleActor.h"
 #include "AGX_ImporterToBlueprint.h"
 #include "AGX_EditorStyle.h"
 #include "AGX_ArchiveExporter.h"
@@ -44,17 +43,6 @@ namespace
 
 		return Content.Contains("filename", ESearchCase::IgnoreCase);
 	}
-}
-
-void UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor()
-{
-	const FString Filename =
-		FAGX_EditorUtilities::SelectExistingFileDialog("AGX Dynamics Archive", ".agx");
-	if (Filename.IsEmpty())
-	{
-		return;
-	}
-	AGX_ImporterToSingleActor::ImportAGXArchive(Filename);
 }
 
 void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()

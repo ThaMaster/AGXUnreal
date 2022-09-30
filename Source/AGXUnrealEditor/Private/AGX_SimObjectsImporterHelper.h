@@ -3,7 +3,6 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGXSimObjectsReader.h"
 #include "AGX_ImportEnums.h"
 
 // Unreal Engine includes.
@@ -11,7 +10,17 @@
 #include "Misc/Guid.h"
 
 // AGXUnreal classes.
+class FBallJointBarrier;
+class FContactMaterialBarrier;
 class FConstraintBarrier;
+class FCylindricalJointBarrier;
+class FDistanceJointBarrier;
+class FHingeBarrier;
+class FLockJointBarrier;
+class FPrismaticBarrier;
+class FShapeMaterialBarrier;
+class FTwoBodyTireBarrier;
+class FWireBarrier;
 class UAGX_RigidBodyComponent;
 class UAGX_SphereShapeComponent;
 class UAGX_BoxShapeComponent;
@@ -26,7 +35,6 @@ class UAGX_BallConstraintComponent;
 class UAGX_CylindricalConstraintComponent;
 class UAGX_DistanceConstraintComponent;
 class UAGX_LockConstraintComponent;
-class FTwoBodyTireBarrier;
 class UAGX_TwoBodyTireComponent;
 class UAGX_CollisionGroupDisablerComponent;
 class UAGX_ContactMaterialRegistrarComponent;
@@ -142,31 +150,3 @@ private:
 	TArray<FGuid> ConstraintIgnoreList;
 };
 
-/// \todo Consider creating a FEditorBody inheriting from FAGXSimObjectBody that has a Body and a
-/// Helper and simply forwards each call to the helper.
-
-/**
- * A SimObjectBody that creates nothing. Used when the Unreal object couldn't be created.
- */
-class NopEditorBody final : public FAGXSimObjectBody
-{
-	virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
-	{
-	}
-
-	virtual void InstantiateBox(const FBoxShapeBarrier& Barrier) override
-	{
-	}
-
-	virtual void InstantiateCylinder(const FCylinderShapeBarrier& Barrier) override
-	{
-	}
-
-	virtual void InstantiateCapsule(const FCapsuleShapeBarrier& Barrier) override
-	{
-	}
-
-	virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Barrier) override
-	{
-	}
-};

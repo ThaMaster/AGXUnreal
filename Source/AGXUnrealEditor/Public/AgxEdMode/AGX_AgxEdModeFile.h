@@ -27,7 +27,6 @@ public:
 	virtual FSlateIcon GetIcon() const override;
 
 public:
-	static void ImportAgxArchiveToSingleActor();
 	static void ImportAgxArchiveToBlueprint();
 	static void ImportUrdfToBlueprint();
 	static void ExportAgxArchive();

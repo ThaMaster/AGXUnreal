@@ -128,264 +128,23 @@ namespace
 		return Package;
 	}
 
-	class FBlueprintBody final : public FAGXSimObjectBody
+	void ClearOwningActors(UAGX_ConstraintComponent* Constraint)
 	{
-	public:
-		FBlueprintBody(UAGX_RigidBodyComponent& InBody, FAGX_SimObjectsImporterHelper& InHelper)
-			: Body(InBody)
-			, Helper(InHelper)
+		if (Constraint == nullptr)
 		{
+			return;
 		}
 
-		virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
-		{
-			//Helper.InstantiateSphere(Barrier, *Body.GetOwner(), &Body);
-		}
-
-		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier) override
-		{
-			//Helper.InstantiateBox(Barrier, *Body.GetOwner(), &Body);
-		}
-
-		virtual void InstantiateCylinder(const FCylinderShapeBarrier& Barrier) override
-		{
-			//Helper.InstantiateCylinder(Barrier, *Body.GetOwner(), &Body);
-		}
-
-		virtual void InstantiateCapsule(const FCapsuleShapeBarrier& Barrier) override
-		{
-			//Helper.InstantiateCapsule(Barrier, *Body.GetOwner(), &Body);
-		}
-
-		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Barrier) override
-		{
-			//Helper.InstantiateTrimesh(Barrier, *Body.GetOwner(), &Body);
-		}
-
-	private:
-		UAGX_RigidBodyComponent& Body;
-		FAGX_SimObjectsImporterHelper& Helper;
-	};
-
-	class FBlueprintInstantiator final : public FAGXSimObjectsInstantiator
-	{
-	public:
-		FBlueprintInstantiator(AActor& InBlueprintTemplate, FAGX_SimObjectsImporterHelper& InHelper)
-			: Helper(InHelper)
-			, BlueprintTemplate(InBlueprintTemplate)
-		{
-		}
-
-		virtual FAGXSimObjectBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
-		{
-			UAGX_RigidBodyComponent* Component = Helper.InstantiateBody(Barrier, BlueprintTemplate);
-			if (Component == nullptr)
-			{
-				return new NopEditorBody();
-			}
-			// This is the attach part of the RootComponent strangeness. I would like to call
-			// AttachToComponent here, but I don't have a RootComponent. See comment in
-			// CreateTemplate.
-#if 0
-			Component->AttachToComponent(
-				BlueprintTemplate->GetRootComponent(),
-				FAttachmentTransformRules::KeepWorldTransform);
-#endif
-			return new FBlueprintBody(*Component, Helper);
-		}
-
-		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
-		{
-			UAGX_ConstraintComponent* Constraint =
-				Helper.InstantiateHinge(Barrier, BlueprintTemplate);
-			ClearOwningActors(Constraint);
-		}
-
-		virtual void InstantiatePrismatic(const FPrismaticBarrier& Barrier) override
-		{
-			UAGX_ConstraintComponent* Constraint =
-				Helper.InstantiatePrismatic(Barrier, BlueprintTemplate);
-			ClearOwningActors(Constraint);
-		}
-
-		virtual void InstantiateBallJoint(const FBallJointBarrier& Barrier) override
-		{
-			UAGX_ConstraintComponent* Constraint =
-				Helper.InstantiateBallJoint(Barrier, BlueprintTemplate);
-			ClearOwningActors(Constraint);
-		}
-
-		virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& Barrier) override
-		{
-			UAGX_ConstraintComponent* Constraint =
-				Helper.InstantiateCylindricalJoint(Barrier, BlueprintTemplate);
-			ClearOwningActors(Constraint);
-		}
-
-		virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& Barrier) override
-		{
-			UAGX_ConstraintComponent* Constraint =
-				Helper.InstantiateDistanceJoint(Barrier, BlueprintTemplate);
-			ClearOwningActors(Constraint);
-		}
-
-		virtual void InstantiateLockJoint(const FLockJointBarrier& Barrier) override
-		{
-			UAGX_ConstraintComponent* Constraint =
-				Helper.InstantiateLockJoint(Barrier, BlueprintTemplate);
-			ClearOwningActors(Constraint);
-		}
-
-		virtual void InstantiateSphere(
-			const FSphereShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
-		{
-			if (Body != nullptr)
-			{
-				Body->InstantiateSphere(Barrier);
-			}
-			else
-			{
-				Helper.InstantiateSphere(Barrier, BlueprintTemplate);
-			}
-		}
-
-		virtual void InstantiateBox(
-			const FBoxShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
-		{
-			if (Body != nullptr)
-			{
-				Body->InstantiateBox(Barrier);
-			}
-			else
-			{
-				Helper.InstantiateBox(Barrier, BlueprintTemplate);
-			}
-		}
-
-		virtual void InstantiateCylinder(
-			const FCylinderShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
-		{
-			if (Body != nullptr)
-			{
-				Body->InstantiateCylinder(Barrier);
-			}
-			else
-			{
-				Helper.InstantiateCylinder(Barrier, BlueprintTemplate);
-			}
-		}
-
-		virtual void InstantiateCapsule(
-			const FCapsuleShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
-		{
-			if (Body != nullptr)
-			{
-				Body->InstantiateCapsule(Barrier);
-			}
-			else
-			{
-				Helper.InstantiateCapsule(Barrier, BlueprintTemplate);
-			}
-		}
-
-		virtual void InstantiateTrimesh(
-			const FTrimeshShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
-		{
-			if (Body != nullptr)
-			{
-				Body->InstantiateTrimesh(Barrier);
-			}
-			else
-			{
-				Helper.InstantiateTrimesh(Barrier, BlueprintTemplate);
-			}
-		}
-
-		void ClearOwningActors(UAGX_ConstraintComponent* Constraint)
-		{
-			if (Constraint == nullptr)
-			{
-				return;
-			}
-
-			// By default the BodyAttachments are created with the OwningActor set to the owner of
-			// the RigidBodyComponents passed to CreateConstraintComponent. In this case the
-			// OwningActor points to the temporary template Actor from which the Blueprint is
-			// created. By setting them to nullptr instead we restore the constructor / Class
-			// Default Object value which won't be serialized and PostInitProperties in the final
-			// ConstraintComponent will set OwningActor to GetTypedOuter<AActor>() which is correct
-			// in the Blueprint case.
-			Constraint->BodyAttachment1.RigidBody.OwningActor = nullptr;
-			Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
-		}
-
-		virtual void DisabledCollisionGroups(
-			const TArray<std::pair<FString, FString>>& DisabledPairs) override
-		{
-			if (DisabledPairs.Num() == 0)
-			{
-				return;
-			}
-
-			Helper.InstantiateCollisionGroupDisabler(BlueprintTemplate, DisabledPairs);
-		}
-
-		virtual void InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier) override
-		{
-			Helper.InstantiateShapeMaterial(Barrier);
-		}
-
-		virtual void InstantiateContactMaterial(const FContactMaterialBarrier& Barrier) override
-		{
-			Helper.InstantiateContactMaterial(Barrier, BlueprintTemplate);
-		}
-
-		virtual FTwoBodyTireSimObjectBodies InstantiateTwoBodyTire(
-			const FTwoBodyTireBarrier& Barrier) override
-		{
-			// Instantiate the Tire and Hub Rigid Bodies. This adds them to the RestoredBodies TMap
-			// and can thus be found and used when the TwoBodyTire component is instantiated.
-			const FRigidBodyBarrier TireBody = Barrier.GetTireRigidBody();
-			const FRigidBodyBarrier HubBody = Barrier.GetHubRigidBody();
-			if (TireBody.HasNative() == false || HubBody.HasNative() == false)
-			{
-				UE_LOG(
-					LogAGX, Error,
-					TEXT("At lest one of the Rigid Bodies referenced by the TwoBodyTire %s did not "
-						 "have a native Rigid Body. The TwoBodyTire will not be instantiated."),
-					*Barrier.GetName());
-				return FTwoBodyTireSimObjectBodies(new NopEditorBody(), new NopEditorBody());
-			}
-
-			FTwoBodyTireSimObjectBodies TireBodies;
-			TireBodies.TireBodySimObject.reset(InstantiateBody(TireBody));
-			TireBodies.HubBodySimObject.reset(InstantiateBody(HubBody));
-
-			Helper.InstantiateTwoBodyTire(Barrier, BlueprintTemplate, true);
-			return TireBodies;
-		}
-
-		virtual void InstantiateWire(const FWireBarrier& Barrier) override
-		{
-			Helper.InstantiateWire(Barrier, BlueprintTemplate);
-		}
-
-		virtual void InstantiateObserverFrame(
-			const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) override
-		{
-			Helper.InstantiateObserverFrame(Name, BodyGuid, Transform, BlueprintTemplate);
-		}
-
-		virtual ~FBlueprintInstantiator() = default;
-
-	private:
-		using FBodyPair = std::pair<UAGX_RigidBodyComponent*, UAGX_RigidBodyComponent*>;
-		using FShapeMaterialPair = std::pair<UAGX_ShapeMaterial*, UAGX_ShapeMaterial*>;
-
-	private:
-		FAGX_SimObjectsImporterHelper Helper;
-		AActor& BlueprintTemplate;
-	};
+		// By default the BodyAttachments are created with the OwningActor set to the owner of
+		// the RigidBodyComponents passed to CreateConstraintComponent. In this case the
+		// OwningActor points to the temporary template Actor from which the Blueprint is
+		// created. By setting them to nullptr instead we restore the constructor / Class
+		// Default Object value which won't be serialized and PostInitProperties in the final
+		// ConstraintComponent will set OwningActor to GetTypedOuter<AActor>() which is correct
+		// in the Blueprint case.
+		Constraint->BodyAttachment1.RigidBody.OwningActor = nullptr;
+		Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
+	}
 
 	bool AddShapeMaterials(
 		const FSimulationObjectCollection& SimObjects, FAGX_SimObjectsImporterHelper& Helper)
@@ -516,32 +275,44 @@ namespace
 		bool Success = true;
 		for (const auto& Constraint : SimObjects.GetHingeConstraints())
 		{
-			Success &= Helper.InstantiateHinge(Constraint, ImportedActor) != nullptr;
+			auto Hinge = Helper.InstantiateHinge(Constraint, ImportedActor);
+			ClearOwningActors(Hinge);
+			Success &= Hinge != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetPrismaticConstraints())
 		{
-			Success &= Helper.InstantiatePrismatic(Constraint, ImportedActor) != nullptr;
+			auto Prismatic = Helper.InstantiatePrismatic(Constraint, ImportedActor);
+			ClearOwningActors(Prismatic);
+			Success &= Prismatic != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetBallConstraints())
 		{
-			Success &= Helper.InstantiateBallJoint(Constraint, ImportedActor) != nullptr;
+			auto BallConstraint= Helper.InstantiateBallJoint(Constraint, ImportedActor);
+			ClearOwningActors(BallConstraint);
+			Success &= BallConstraint != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetCylindricalConstraints())
 		{
-			Success &= Helper.InstantiateCylindricalJoint(Constraint, ImportedActor) != nullptr;
+			auto CylindricalConstraint = Helper.InstantiateCylindricalJoint(Constraint, ImportedActor);
+			ClearOwningActors(CylindricalConstraint);
+			Success &= CylindricalConstraint != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetDistanceConstraints())
 		{
-			Success &= Helper.InstantiateDistanceJoint(Constraint, ImportedActor) != nullptr;
+			auto DistanceConstraint = Helper.InstantiateDistanceJoint(Constraint, ImportedActor);
+			ClearOwningActors(DistanceConstraint);
+			Success &= DistanceConstraint != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetLockConstraints())
 		{
-			Success &= Helper.InstantiateLockJoint(Constraint, ImportedActor) != nullptr;
+			auto LockConstraint = Helper.InstantiateLockJoint(Constraint, ImportedActor);
+			ClearOwningActors(LockConstraint);
+			Success &= LockConstraint != nullptr;
 		}
 
 		return Success;
