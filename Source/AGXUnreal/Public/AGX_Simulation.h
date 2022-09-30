@@ -57,6 +57,13 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 
 public: // Properties.
 	/**
+	 * The number of threads AGX Dynamics will use during Play.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "AGX Dynamics", meta = (DisplayName = "Number of Threads"))
+	uint32 NumThreads = 1;
+
+	/**
 	 * Step length of the integrator [s].
 	 */
 	UPROPERTY(

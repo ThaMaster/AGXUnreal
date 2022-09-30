@@ -436,6 +436,7 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 		NumPpgsIterations = NativeBarrier.GetNumPpgsIterations();
 	}
 
+	NativeBarrier.SetNumThreads(NumThreads);
 	SetGravity();
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
 
