@@ -190,7 +190,8 @@ public: // Properties.
 	 * When moving the camera further away than this distance the on-screen size of the constraint
 	 * visualization will start to shrink along with the surrounding geometry.
 	 */
-	UPROPERTY(Config, EditAnywhere, Category = "Rendering", Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Rendering", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float ConstraintVisualizationScalingDistanceMax = 400.f;
 
 public: // Member functions.
