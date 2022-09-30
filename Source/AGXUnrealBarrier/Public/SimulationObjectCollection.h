@@ -104,9 +104,6 @@ private:
 	// The Simulation from which all other Simulation Objects collected from.
 	FSimulationBarrier Simulation;
 
-	// These are "free" RigidBodies only, i.e. not owned by PowerLine, Tire, Wire etc.
-	TArray<FRigidBodyBarrier> RigidBodies;
-
 	// These are "free" Shapes only, i.e. not owned by a RigidBody.
 	TArray<FSphereShapeBarrier> SphereShapes;
 	TArray<FBoxShapeBarrier> BoxShapes;
@@ -121,7 +118,7 @@ private:
 	TArray<FDistanceJointBarrier> DistanceConstraints;
 	TArray<FLockJointBarrier> LockConstraints;
 
-
+	TArray<FRigidBodyBarrier> RigidBodies;
 	TArray<FContactMaterialBarrier> ContactMaterials;
 	TArray<std::pair<FString, FString>> DisabledCollisionGroups;
 	TArray<ObserverFrameData> ObserverFrames;

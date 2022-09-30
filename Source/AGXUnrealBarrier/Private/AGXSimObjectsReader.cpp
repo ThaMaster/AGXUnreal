@@ -99,10 +99,10 @@ namespace
 
 namespace
 {
-	bool IsRegularBody(agx::RigidBody& Body, const TArray<agx::RigidBody*>& NonFreeBodies)
+	bool IsRegularBody(agx::RigidBody& Body)
 	{
 		return !Body.isPowerlineBody() && agxWire::Wire::getWire(&Body) == nullptr &&
-			   agxCable::Cable::getCableForBody(&Body) == nullptr && !NonFreeBodies.Contains(&Body);
+			   agxCable::Cable::getCableForBody(&Body) == nullptr;
 	}
 
 	/**
@@ -133,7 +133,7 @@ namespace
 
 	void ReadTireModels(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects, TArray<agx::RigidBody*>& NonFreeBodies)
+		FSimulationObjectCollection& OutSimObjects)
 	{
 		const agxSDK::AssemblyHash& Assemblies = Simulation.getAssemblies();
 
@@ -145,29 +145,13 @@ namespace
 				continue;
 			}
 
-			if (Tire->getTireRigidBody() == nullptr || Tire->getHubRigidBody() == nullptr)
-			{
-				continue;
-			}
-
 			OutSimObjects.GetTwoBodyTires().Add(AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
-
-			if (agx::RigidBody* Body = Tire->getTireRigidBody())
-			{
-				NonFreeBodies.Add(Body);
-			}
-
-			if (agx::RigidBody* Body = Tire->getHubRigidBody())
-			{
-				NonFreeBodies.Add(Body);
-			}
 		}
 	}
 
-	// The NonFreeBodies must be complete before calling this function for the filtering to work.
 	void ReadRigidBodies(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects, const TArray<agx::RigidBody*>& NonFreeBodies)
+		FSimulationObjectCollection& OutSimObjects)
 	{
 		agx::RigidBodyRefVector& Bodies {Simulation.getRigidBodies()};
 		for (agx::RigidBodyRef& Body : Bodies)
@@ -176,7 +160,7 @@ namespace
 			{
 				continue;
 			}
-			if (!IsRegularBody(*Body, NonFreeBodies))
+			if (!IsRegularBody(*Body))
 			{
 				continue;
 			}
@@ -310,19 +294,14 @@ namespace
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FSimulationObjectCollection& OutSimObjects)
 	{
-		TArray<agx::RigidBody*> NonFreeBodies;
-
 		ReadMaterials(Simulation, OutSimObjects);
-		ReadTireModels(Simulation, Filename, OutSimObjects, NonFreeBodies);
+		ReadTireModels(Simulation, Filename, OutSimObjects);
 		ReadBodilessGeometries(Simulation, Filename, OutSimObjects);
+		ReadRigidBodies(Simulation, Filename, OutSimObjects);
 		ReadConstraints(Simulation, Filename, OutSimObjects);
 		ReadCollisionGroups(Simulation, OutSimObjects);
 		ReadWires(Simulation, OutSimObjects);
 		ReadObserverFrames(Simulation, OutSimObjects);
-
-		// We read Rigid Bodies last so that the NonFreeBodies Array is complete.
-		// Any Body within that Array are ignored.
-		ReadRigidBodies(Simulation, Filename, OutSimObjects, NonFreeBodies);
 	}
 }
 
