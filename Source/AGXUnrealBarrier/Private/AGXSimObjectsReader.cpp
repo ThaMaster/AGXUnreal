@@ -133,7 +133,7 @@ namespace
 
 	void ReadTireModels(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects)
+		FSimulationObjectCollection& OutSimObjects, TArray<agx::Constraint*>& NonFreeConstraint)
 	{
 		const agxSDK::AssemblyHash& Assemblies = Simulation.getAssemblies();
 
@@ -154,7 +154,12 @@ namespace
 				continue;
 			}
 
-			OutSimObjects.GetTwoBodyTires().Add(AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
+			// Add the Tire owned Hinge to the list of non-free Constraints. These are used later to
+			// avoid duplicate imports of those Constraints.
+			NonFreeConstraint.Add(Tire->getHinge());
+
+			OutSimObjects.GetTwoBodyTires().Add(
+				AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
 		}
 	}
 
@@ -198,11 +203,23 @@ namespace
 
 	void ReadConstraints(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects)
+		FSimulationObjectCollection& OutSimObjects,
+		const TArray<agx::Constraint*>& NonFreeConstraint)
 	{
 		agx::ConstraintRefSetVector& Constraints = Simulation.getConstraints();
 		for (agx::ConstraintRef& Constraint : Constraints)
 		{
+			if (Constraint == nullptr)
+			{
+				continue;
+			}
+
+			if (NonFreeConstraint.Contains(Constraint.get()))
+			{
+				// This is a non-free constraint, and will be imported by the thing owning it.
+				continue;
+			}
+
 			if (agx::Hinge* Hinge = Constraint->asSafe<agx::Hinge>())
 			{
 				OutSimObjects.GetHingeConstraints().Add(
@@ -303,11 +320,13 @@ namespace
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FSimulationObjectCollection& OutSimObjects)
 	{
+		TArray<agx::Constraint*> NonFreeConstraints;
+
 		ReadMaterials(Simulation, OutSimObjects);
-		ReadTireModels(Simulation, Filename, OutSimObjects);
+		ReadTireModels(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadBodilessGeometries(Simulation, Filename, OutSimObjects);
 		ReadRigidBodies(Simulation, Filename, OutSimObjects);
-		ReadConstraints(Simulation, Filename, OutSimObjects);
+		ReadConstraints(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadCollisionGroups(Simulation, OutSimObjects);
 		ReadWires(Simulation, OutSimObjects);
 		ReadObserverFrames(Simulation, OutSimObjects);

@@ -111,6 +111,7 @@ private:
 	TArray<FCapsuleShapeBarrier> CapsuleShapes;
 	TArray<FTrimeshShapeBarrier> TrimeshShapes;
 
+	// These are "free" Constraints only, i.e. not owned by e.g. Two Body Tire or similar.
 	TArray<FHingeBarrier> HingeConstraints;
 	TArray<FPrismaticBarrier> PrismaticConstraints;
 	TArray<FBallJointBarrier> BallConstraints;

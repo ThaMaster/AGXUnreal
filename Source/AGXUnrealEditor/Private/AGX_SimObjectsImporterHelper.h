@@ -67,10 +67,12 @@ public:
 		const FRigidBodyBarrier* Body = nullptr);
 
 	UAGX_CapsuleShapeComponent* InstantiateCapsule(
-		const FCapsuleShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
+		const FCapsuleShapeBarrier& Barrier, AActor& Owner,
+		const FRigidBodyBarrier* Body = nullptr);
 
 	UAGX_TrimeshShapeComponent* InstantiateTrimesh(
-		const FTrimeshShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
+		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
+		const FRigidBodyBarrier* Body = nullptr);
 
 	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
@@ -143,10 +145,4 @@ private:
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterial*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
-
-	// List of Constraints that should not be imported the usual way, i.e. through the
-	// Instantiate<Constraint-type>() functions. These may be owned by higher level models such as
-	// e.g. TwoBodyTire and it is up to those models to handle import of their own Constraints.
-	TArray<FGuid> ConstraintIgnoreList;
 };
-
