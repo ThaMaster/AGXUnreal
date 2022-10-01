@@ -373,7 +373,7 @@ namespace
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Contact Materials"));
 		Success &= AddContactMaterials(ImportedActor, SimObjects, Helper);
 
-		const float WorkImportBodies = 50.f;
+		const float WorkImportBodies = 15.f;
 		ImportTask.EnterProgressFrame(
 			10.f, FText::FromString("Reading Rigid Body and its Shapes: "));
 		Success &= AddRigidBodyAndAnyOwnedShape(
@@ -396,7 +396,10 @@ namespace
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Observer Frames"));
 		Success &= AddObserverFrames(ImportedActor, SimObjects, Helper);
 
-		ImportTask.EnterProgressFrame(5.f, FText::FromString("Import complete"));
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Static Mesh Assets"));
+		Helper.FinalizeStaticMeshAssets();
+
+		ImportTask.EnterProgressFrame(35.f, FText::FromString("Import complete"));
 		return Success;
 	}
 

@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImportEnums.h"
+#include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.
 #include "Containers/Map.h"
@@ -133,6 +134,11 @@ public:
 	using FShapeMaterialPair = std::pair<UAGX_ShapeMaterial*, UAGX_ShapeMaterial*>;
 	FShapeMaterialPair GetShapeMaterials(const FContactMaterialBarrier& ContactMaterial);
 
+	/*
+	 * Must be called at the end of an import.
+	 */
+	void FinalizeStaticMeshAssets();
+
 	explicit FAGX_SimObjectsImporterHelper(const FString& InSourceFilePath);
 
 	const FString SourceFilePath;
@@ -141,7 +147,7 @@ public:
 	const FString DirectoryName;
 
 private:
-	TMap<FGuid, UStaticMesh*> RestoredMeshes;
+	TMap<FGuid, FAssetToDiskInfo> RestoredMeshes;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterial*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
