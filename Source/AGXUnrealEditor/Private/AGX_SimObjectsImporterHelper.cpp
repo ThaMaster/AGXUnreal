@@ -712,28 +712,28 @@ UAGX_PrismaticConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiatePri
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallJoint(
+UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallConstraint(
 	const FBallJointBarrier& Barrier, AActor& Owner)
 {
 	return InstantiateConstraint<UAGX_BallConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-UAGX_CylindricalConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateCylindricalJoint(
+UAGX_CylindricalConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateCylindricalConstraint(
 	const FCylindricalJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint2Dof<UAGX_CylindricalConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-UAGX_DistanceConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateDistanceJoint(
+UAGX_DistanceConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateDistanceConstraint(
 	const FDistanceJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_DistanceConstraintComponent>(
 		Barrier, Owner, *this, ConstraintIgnoreList);
 }
 
-UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockJoint(
+UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockConstraint(
 	const FLockJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint<UAGX_LockConstraintComponent>(

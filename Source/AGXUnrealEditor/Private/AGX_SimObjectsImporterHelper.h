@@ -82,16 +82,16 @@ public:
 	UAGX_PrismaticConstraintComponent* InstantiatePrismatic(
 		const FPrismaticBarrier& Barrier, AActor& Owner);
 
-	UAGX_BallConstraintComponent* InstantiateBallJoint(
+	UAGX_BallConstraintComponent* InstantiateBallConstraint(
 		const FBallJointBarrier& Barrier, AActor& Owner);
 
-	UAGX_CylindricalConstraintComponent* InstantiateCylindricalJoint(
+	UAGX_CylindricalConstraintComponent* InstantiateCylindricalConstraint(
 		const FCylindricalJointBarrier& Barrier, AActor& Owner);
 
-	UAGX_DistanceConstraintComponent* InstantiateDistanceJoint(
+	UAGX_DistanceConstraintComponent* InstantiateDistanceConstraint(
 		const FDistanceJointBarrier& Barrier, AActor& Owner);
 
-	UAGX_LockConstraintComponent* InstantiateLockJoint(
+	UAGX_LockConstraintComponent* InstantiateLockConstraint(
 		const FLockJointBarrier& Barrier, AActor& Owner);
 
 	UAGX_TwoBodyTireComponent* InstantiateTwoBodyTire(

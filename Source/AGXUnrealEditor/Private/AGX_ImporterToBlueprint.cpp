@@ -289,28 +289,28 @@ namespace
 
 		for (const auto& Constraint : SimObjects.GetBallConstraints())
 		{
-			auto BallConstraint= Helper.InstantiateBallJoint(Constraint, ImportedActor);
+			auto BallConstraint= Helper.InstantiateBallConstraint(Constraint, ImportedActor);
 			ClearOwningActors(BallConstraint);
 			Success &= BallConstraint != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetCylindricalConstraints())
 		{
-			auto CylindricalConstraint = Helper.InstantiateCylindricalJoint(Constraint, ImportedActor);
+			auto CylindricalConstraint = Helper.InstantiateCylindricalConstraint(Constraint, ImportedActor);
 			ClearOwningActors(CylindricalConstraint);
 			Success &= CylindricalConstraint != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetDistanceConstraints())
 		{
-			auto DistanceConstraint = Helper.InstantiateDistanceJoint(Constraint, ImportedActor);
+			auto DistanceConstraint = Helper.InstantiateDistanceConstraint(Constraint, ImportedActor);
 			ClearOwningActors(DistanceConstraint);
 			Success &= DistanceConstraint != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetLockConstraints())
 		{
-			auto LockConstraint = Helper.InstantiateLockJoint(Constraint, ImportedActor);
+			auto LockConstraint = Helper.InstantiateLockConstraint(Constraint, ImportedActor);
 			ClearOwningActors(LockConstraint);
 			Success &= LockConstraint != nullptr;
 		}
