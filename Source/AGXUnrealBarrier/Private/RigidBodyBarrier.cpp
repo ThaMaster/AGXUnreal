@@ -321,9 +321,9 @@ void FRigidBodyBarrier::ReleaseNative()
 
 namespace RigidBodyBarrier_helpers
 {
-
 	template <typename TShape, typename BarrierCreateFunc>
-	void CollectShapeOfType(const agxCollide::ShapeRefVector& Shapes, TArray<TShape>& OutShapes,
+	void CollectShapeOfType(
+		const agxCollide::ShapeRefVector& Shapes, TArray<TShape>& OutShapes,
 		agxCollide::Shape::Type ShapeType, BarrierCreateFunc CreateFunc)
 	{
 		for (const agxCollide::ShapeRef& Shape : Shapes)
