@@ -206,22 +206,11 @@ namespace
 
 	bool AddRigidBodyAndAnyOwnedShape(
 		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
-		FAGX_SimObjectsImporterHelper& Helper, FScopedSlowTask& ImportTask, float WorkAvalable)
+		FAGX_SimObjectsImporterHelper& Helper)
 	{
-		const int32 NumBodies = SimObjects.GetRigidBodies().Num();
-		if (NumBodies == 0)
-		{
-			return true;
-		}
-
-		const float SingleBodyWork = WorkAvalable / static_cast<float>(NumBodies);
-		const FText TaskBaseText = ImportTask.GetCurrentMessage();
-
 		bool Success = true;
 		for (const FRigidBodyBarrier& Body : SimObjects.GetRigidBodies())
 		{
-			const FText TaskText = FText::FromString(TaskBaseText.ToString() + Body.GetName());
-			ImportTask.EnterProgressFrame(SingleBodyWork, TaskText);
 			Success &= Helper.InstantiateBody(Body, ImportedActor) != nullptr;
 
 			for (const auto& Sphere : Body.GetSphereShapes())
@@ -373,12 +362,11 @@ namespace
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Contact Materials"));
 		Success &= AddContactMaterials(ImportedActor, SimObjects, Helper);
 
-		const float WorkImportBodies = 15.f;
 		ImportTask.EnterProgressFrame(
-			10.f, FText::FromString("Reading Rigid Body and its Shapes: "));
-		Success &= AddRigidBodyAndAnyOwnedShape(
-			ImportedActor, SimObjects, Helper, ImportTask, WorkImportBodies);
+			5.f, FText::FromString("Reading Rigid Bodies and their Shapes"));
+		Success &= AddRigidBodyAndAnyOwnedShape(ImportedActor, SimObjects, Helper);
 
+		ImportTask.EnterProgressFrame(15.f, FText::FromString("Reading Bodiless Shapes"));
 		Success &= AddBodilessShapes(ImportedActor, SimObjects, Helper);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Tire Models"));
@@ -399,7 +387,7 @@ namespace
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Static Mesh Assets"));
 		Helper.FinalizeStaticMeshAssets();
 
-		ImportTask.EnterProgressFrame(35.f, FText::FromString("Import complete"));
+		ImportTask.EnterProgressFrame(40.f, FText::FromString("Import complete"));
 		return Success;
 	}
 
