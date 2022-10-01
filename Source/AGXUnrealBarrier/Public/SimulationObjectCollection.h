@@ -32,8 +32,6 @@ struct AGXUNREALBARRIER_API FSimulationObjectCollection
 {
 public:
 	FSimulationObjectCollection() = default;
-	FSimulationObjectCollection(FSimulationObjectCollection&&) = default;
-	FSimulationObjectCollection& operator=(FSimulationObjectCollection&&) = default;
 	~FSimulationObjectCollection();
 
 	struct ObserverFrameData
