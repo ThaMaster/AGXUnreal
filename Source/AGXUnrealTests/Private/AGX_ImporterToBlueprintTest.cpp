@@ -25,6 +25,7 @@
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #if AGX_TEST_WIRE_IMPORT
@@ -128,10 +129,10 @@ bool FCheckEmptySceneImportedCommand::Update()
 	}
 
 	// The Actor's only component should be the root component.
-	TArray<UActorComponent*> Components = AgxAutomationCommon::GetTemplateComponents(*Contents);
+	TArray<UActorComponent*> Components = FAGX_BlueprintUtilities::GetTemplateComponents(Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 1);
 	USceneComponent* SceneRoot = AgxAutomationCommon::GetByName<USceneComponent>(
-		Components, *ToTemplateComponentName("DefaultSceneRoot"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DefaultSceneRoot"));
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
 
 	// The Actor should have been created in the test world.
@@ -319,16 +320,17 @@ bool FCheckSingleSphereImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
 
 	// Get the components we know should be there.
-	USceneComponent* SceneRoot =
-		GetByName<USceneComponent>(Components, *ToTemplateComponentName("DefaultSceneRoot"));
-	UAGX_RigidBodyComponent* SphereBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("SphereBody"));
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* SphereBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("SphereBody"));
 	UAGX_SphereShapeComponent* SphereShape = GetByName<UAGX_SphereShapeComponent>(
-		Components, *ToTemplateComponentName("SphereGeometry"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("SphereGeometry"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -348,7 +350,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	// Position.
 	{
-		FVector Actual = GetTemplateComponentWorldLocation(SphereBody);
+		FVector Actual = FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(SphereBody);
 		// The position, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(
 			1.00000000000000000000e+01f, 2.00000000000000000000e+01f, 3.00000000000000000000e+01f);
@@ -358,7 +360,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	// Rotation.
 	{
-		FRotator Actual = GetTemplateComponentWorldRotation(SphereBody);
+		FRotator Actual = FAGX_BlueprintUtilities::GetTemplateComponentWorldRotation(SphereBody);
 		// The rotation, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(
 			1.01770284974289526581e+00f, -2.65482457436691521302e-01f,
@@ -434,7 +436,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	// Publish the important bits to the rest of the test.
 	Test.SphereBody = SphereBody;
-	Test.StartPosition = GetTemplateComponentWorldLocation(SphereBody);
+	Test.StartPosition = FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(SphereBody);
 	Test.StartVelocity = SphereBody->Velocity;
 
 	return true;
@@ -466,7 +468,8 @@ bool FCheckSphereHasMoved::Update()
 		return true;
 	}
 
-	FVector EndPosition = GetTemplateComponentWorldLocation(Test.SphereBody);
+	FVector EndPosition =
+		FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(Test.SphereBody);
 	FVector EndVelocity = Test.SphereBody->Velocity;
 	float Duration = Test.EndAgxTime - Test.StartAgxTime;
 
@@ -563,24 +566,25 @@ bool FCheckMotionControlImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
 
 	// Get the components we know should be there.
-	USceneComponent* SceneRoot =
-		GetByName<USceneComponent>(Components, *ToTemplateComponentName("DefaultSceneRoot"));
-	UAGX_RigidBodyComponent* StaticBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("StaticBody"));
-	UAGX_SphereShapeComponent* StaticShape =
-		GetByName<UAGX_SphereShapeComponent>(Components, *ToTemplateComponentName("StaticShape"));
-	UAGX_RigidBodyComponent* KinematicsBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("KinematicBody"));
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* StaticBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("StaticBody"));
+	UAGX_SphereShapeComponent* StaticShape = GetByName<UAGX_SphereShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("StaticShape"));
+	UAGX_RigidBodyComponent* KinematicsBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("KinematicBody"));
 	UAGX_SphereShapeComponent* KinematicsShape = GetByName<UAGX_SphereShapeComponent>(
-		Components, *ToTemplateComponentName("KinematicShape"));
-	UAGX_RigidBodyComponent* DynamicsBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("DynamicBody"));
-	UAGX_SphereShapeComponent* DynamicsShape =
-		GetByName<UAGX_SphereShapeComponent>(Components, *ToTemplateComponentName("DynamicShape"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("KinematicShape"));
+	UAGX_RigidBodyComponent* DynamicsBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DynamicBody"));
+	UAGX_SphereShapeComponent* DynamicsShape = GetByName<UAGX_SphereShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DynamicShape"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -715,18 +719,19 @@ bool FCheckSimpleTrimeshImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
 
 	// Get the components we know should be there.
-	USceneComponent* SceneRoot =
-		GetByName<USceneComponent>(Components, *ToTemplateComponentName("DefaultSceneRoot"));
-	UAGX_RigidBodyComponent* TrimeshBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("TrimeshBody"));
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* TrimeshBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("TrimeshBody"));
 	UAGX_TrimeshShapeComponent* TrimeshShape = GetByName<UAGX_TrimeshShapeComponent>(
-		Components, *ToTemplateComponentName("TrimeshGeometry"));
-	UStaticMeshComponent* StaticMesh =
-		GetByName<UStaticMeshComponent>(Components, *ToTemplateComponentName("simple_trimesh"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("TrimeshGeometry"));
+	UStaticMeshComponent* StaticMesh = GetByName<UStaticMeshComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("simple_trimesh"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -935,7 +940,8 @@ bool FCheckRenderMaterialImportedCommand::Update()
 
 	// Get all the imported components. The test for the number of components is a safety check.
 	// It should be updated whenever the test scene is changed.
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 16);
 
 // Enable this to see the names of the components that was imported. Useful when adding new stuff
@@ -958,33 +964,38 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	/// Geometry. So far the generated names have been consistent between runs, but I'm not sure if
 	/// we're guaranteed that. Especially if we run multiple tests in the same invocation of the
 	/// editor. The fix is to fetch objects based on UUID/GUID instead of names.
-	USceneComponent* SceneRoot =
-		GetByName<USceneComponent>(Components, *ToTemplateComponentName("DefaultSceneRoot"));
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DefaultSceneRoot"));
 	UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(
-		Components, *ToTemplateComponentName("RenderMaterialBody"));
-	UAGX_SphereShapeComponent* Ambient = GetSphere(*ToTemplateComponentName("AmbientGeometry"));
-	UAGX_SphereShapeComponent* Diffuse = GetSphere(*ToTemplateComponentName("DiffuseGeometry"));
-	UAGX_SphereShapeComponent* Emissive = GetSphere(*ToTemplateComponentName("EmissiveGeometry"));
-	UAGX_SphereShapeComponent* Shininess = GetSphere(*ToTemplateComponentName("ShininessGeometry"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("RenderMaterialBody"));
+	UAGX_SphereShapeComponent* Ambient =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("AmbientGeometry"));
+	UAGX_SphereShapeComponent* Diffuse =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("DiffuseGeometry"));
+	UAGX_SphereShapeComponent* Emissive =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("EmissiveGeometry"));
+	UAGX_SphereShapeComponent* Shininess =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("ShininessGeometry"));
 	UAGX_SphereShapeComponent* AmbientDiffuse =
-		GetSphere(*ToTemplateComponentName("AmbientDiffuseGeometry"));
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("AmbientDiffuseGeometry"));
 	UAGX_SphereShapeComponent* AmbientEmissive =
-		GetSphere(*ToTemplateComponentName("AmbientEmissiveGeometry"));
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("AmbientEmissiveGeometry"));
 	UAGX_SphereShapeComponent* DiffuseShininessLow =
-		GetSphere(*ToTemplateComponentName("DiffuseShininessLowGeometry"));
-	UAGX_SphereShapeComponent* DiffuseShininessHigh =
-		GetSphere(*ToTemplateComponentName("DiffuseShininessHighGeometry"));
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("DiffuseShininessLowGeometry"));
+	UAGX_SphereShapeComponent* DiffuseShininessHigh = GetSphere(
+		*FAGX_BlueprintUtilities::ToTemplateComponentName("DiffuseShininessHighGeometry"));
 	UAGX_SphereShapeComponent* SharedSphere1 =
-		GetSphere(*ToTemplateComponentName("SharedGeometry"));
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("SharedGeometry"));
 	UAGX_SphereShapeComponent* SharedSphere2 =
-		GetSphere(*ToTemplateComponentName("SharedGeometry_10"));
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("SharedGeometry_10"));
 	UAGX_SphereShapeComponent* NameConflictSphere1 =
-		GetSphere(*ToTemplateComponentName("MaterialNameConflict"));
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("MaterialNameConflict"));
 	UAGX_SphereShapeComponent* NameConflictSphere2 =
-		GetSphere(*ToTemplateComponentName("MaterialNameConflict_13"));
-	UAGX_SphereShapeComponent* VisibleSphere = GetSphere(*ToTemplateComponentName("VisibleSphere"));
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("MaterialNameConflict_13"));
+	UAGX_SphereShapeComponent* VisibleSphere =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("VisibleSphere"));
 	UAGX_SphereShapeComponent* InvisibleSphere =
-		GetSphere(*ToTemplateComponentName("InvisibleSphere"));
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("InvisibleSphere"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -1188,7 +1199,8 @@ bool FCheckRenderDataImportedCommand::Update()
 		return true;
 	}
 
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	// Root(1), Rigid Body(2), Shape(3), Static Mesh(4).
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
 
@@ -1203,9 +1215,10 @@ bool FCheckRenderDataImportedCommand::Update()
 #endif
 
 	UAGX_SphereShapeComponent* Sphere = GetByName<UAGX_SphereShapeComponent>(
-		Components, *ToTemplateComponentName("Render Data Geometry"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Render Data Geometry"));
 	UStaticMeshComponent* Mesh = GetByName<UStaticMeshComponent>(
-		Components, *ToTemplateComponentName("RenderMesh_F42A4C942C9E27E9B873D061BAF66764"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(
+						"RenderMesh_F42A4C942C9E27E9B873D061BAF66764"));
 
 	Test.TestNotNull(TEXT("Sphere"), Sphere);
 	Test.TestNotNull(TEXT("Mesh"), Mesh);
@@ -1218,7 +1231,7 @@ bool FCheckRenderDataImportedCommand::Update()
 
 	Test.TestTrue(
 		TEXT("The mesh should be a child of the sphere"),
-		GetTemplateComponentAttachParent(Mesh) == Sphere);
+		FAGX_BlueprintUtilities::GetTemplateComponentAttachParent(Mesh) == Sphere);
 
 	return true;
 }
@@ -1314,8 +1327,9 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	UE_LOG(LogTemp, Warning, TEXT("DELETEME: Getting components..."));
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 18);
 
 	auto GetBox = [&Components](
@@ -1338,39 +1352,44 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 
 	TArray<UAGX_RigidBodyComponent*> RbArr;
 	TArray<UAGX_BoxShapeComponent*> BoxArr;
-	USceneComponent* SceneRoot =
-		GetByName<USceneComponent>(Components, *ToTemplateComponentName("DefaultSceneRoot"));
-	UAGX_RigidBodyComponent* rb_0_brown = GetBody(*ToTemplateComponentName("rb_0_brown"), RbArr);
-	UAGX_BoxShapeComponent* geom_0_brown = GetBox(*ToTemplateComponentName("geom_0_brown"), BoxArr);
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* rb_0_brown =
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_0_brown"), RbArr);
+	UAGX_BoxShapeComponent* geom_0_brown =
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_0_brown"), BoxArr);
 	UAGX_RigidBodyComponent* rb_left_1_brown =
-		GetBody(*ToTemplateComponentName("rb_left_1_brown"), RbArr);
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_left_1_brown"), RbArr);
 	UAGX_BoxShapeComponent* geom_left_1_brown =
-		GetBox(*ToTemplateComponentName("geom_left_1_brown"), BoxArr);
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_left_1_brown"), BoxArr);
 	UAGX_RigidBodyComponent* rb_right_1_orange =
-		GetBody(*ToTemplateComponentName("rb_right_1_orange"), RbArr);
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_right_1_orange"), RbArr);
 	UAGX_BoxShapeComponent* geom_right_1_orange =
-		GetBox(*ToTemplateComponentName("geom_right_1_orange"), BoxArr);
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_right_1_orange"), BoxArr);
 	UAGX_RigidBodyComponent* rb_left_2_orange =
-		GetBody(*ToTemplateComponentName("rb_left_2_orange"), RbArr);
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_left_2_orange"), RbArr);
 	UAGX_BoxShapeComponent* geom_left_2_orange =
-		GetBox(*ToTemplateComponentName("geom_left_2_orange"), BoxArr);
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_left_2_orange"), BoxArr);
 	UAGX_RigidBodyComponent* rb_right_2_orange =
-		GetBody(*ToTemplateComponentName("rb_right_2_orange"), RbArr);
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_right_2_orange"), RbArr);
 	UAGX_BoxShapeComponent* geom_right_2_orange =
-		GetBox(*ToTemplateComponentName("geom_right_2_orange"), BoxArr);
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_right_2_orange"), BoxArr);
 	UAGX_RigidBodyComponent* rb_left_3_brown =
-		GetBody(*ToTemplateComponentName("rb_left_3_brown"), RbArr);
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_left_3_brown"), RbArr);
 	UAGX_BoxShapeComponent* geom_left_3_brown =
-		GetBox(*ToTemplateComponentName("geom_left_3_brown"), BoxArr);
-	UAGX_RigidBodyComponent* rb_4_blue = GetBody(*ToTemplateComponentName("rb_4_blue"), RbArr);
-	UAGX_BoxShapeComponent* geom_4_blue = GetBox(*ToTemplateComponentName("geom_4_blue"), BoxArr);
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_left_3_brown"), BoxArr);
+	UAGX_RigidBodyComponent* rb_4_blue =
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_4_blue"), RbArr);
+	UAGX_BoxShapeComponent* geom_4_blue =
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_4_blue"), BoxArr);
 	UAGX_RigidBodyComponent* rb_left_5_blue =
-		GetBody(*ToTemplateComponentName("rb_left_5_blue"), RbArr);
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_left_5_blue"), RbArr);
 	UAGX_BoxShapeComponent* geom_left_5_blue =
-		GetBox(*ToTemplateComponentName("geom_left_5_blue"), BoxArr);
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_left_5_blue"), BoxArr);
 	UAGX_CollisionGroupDisablerComponent* AGX_CollisionGroupDisabler =
 		GetByName<UAGX_CollisionGroupDisablerComponent>(
-			Components, *ToTemplateComponentName("AGX_CollisionGroupDisabler"));
+			Components,
+			*FAGX_BlueprintUtilities::ToTemplateComponentName("AGX_CollisionGroupDisabler"));
 
 	Test.TestEqual(TEXT("Number of Rigid Bodies"), RbArr.Num(), 8);
 	Test.TestEqual(TEXT("Number of Box Shapes"), BoxArr.Num(), 8);
@@ -1524,19 +1543,20 @@ bool FCheckGeometrySensorsImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// Three Rigid Bodies, three Geometries and one Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
 
-	UAGX_SphereShapeComponent* BoolSensor =
-		GetByName<UAGX_SphereShapeComponent>(Components, *ToTemplateComponentName("boolSensor"));
+	UAGX_SphereShapeComponent* BoolSensor = GetByName<UAGX_SphereShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("boolSensor"));
 
 	UAGX_CylinderShapeComponent* ContactsSensor = GetByName<UAGX_CylinderShapeComponent>(
-		Components, *ToTemplateComponentName("contactsSensor"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("contactsSensor"));
 
-	UAGX_BoxShapeComponent* NotASensor =
-		GetByName<UAGX_BoxShapeComponent>(Components, *ToTemplateComponentName("notASensor"));
+	UAGX_BoxShapeComponent* NotASensor = GetByName<UAGX_BoxShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("notASensor"));
 
 	Test.TestNotNull(TEXT("boolSensor"), BoolSensor);
 	Test.TestNotNull(TEXT("contactsSensor"), ContactsSensor);
@@ -1668,7 +1688,8 @@ bool FCheckWireImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// A Wire (1) three Rigid Bodies (4), three Shapes (7), a Collision Group
 	// Disabler (8), and a Default Scene Root (9).
@@ -1878,13 +1899,14 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// Two Rigid Bodies, one Hinge constraint and one Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
 
-	UAGX_ConstraintComponent* Constraint =
-		GetByName<UAGX_ConstraintComponent>(Components, *ToTemplateComponentName("constraint"));
+	UAGX_ConstraintComponent* Constraint = GetByName<UAGX_ConstraintComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("constraint"));
 
 	// Compliance.
 	Test.TestEqual(
@@ -2026,22 +2048,25 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// One Rigid Bodies, one Geometry and one Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
 
-	UAGX_RigidBodyComponent* SphereBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("SphereBody"));
+	UAGX_RigidBodyComponent* SphereBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("SphereBody"));
 
 	// Name.
 	{
-		Test.TestEqual("Sphere name", SphereBody->GetName(), ToTemplateComponentName("SphereBody"));
+		Test.TestEqual(
+			"Sphere name", SphereBody->GetName(),
+			FAGX_BlueprintUtilities::ToTemplateComponentName("SphereBody"));
 	}
 
 	// Position.
 	{
-		FVector Actual = GetTemplateComponentWorldLocation(SphereBody);
+		FVector Actual = FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(SphereBody);
 		// The position, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(10.f, 20.f, 30.f);
 		FVector Expected = AgxToUnrealVector(ExpectedAgx);
@@ -2050,7 +2075,7 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 
 	// Rotation.
 	{
-		FRotator Actual = GetTemplateComponentWorldRotation(SphereBody);
+		FRotator Actual = FAGX_BlueprintUtilities::GetTemplateComponentWorldRotation(SphereBody);
 		// The rotation, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(0.1f, 0.2f, 0.3f);
 		FRotator Expected = AgxToUnrealEulerAngles(ExpectedAgx);
@@ -2199,61 +2224,65 @@ bool FCheckSimpleGeometriesImportedCommand::Update()
 		Test.TestNotNull(TEXT("Component exists"), c);
 		const FVector ExpectedUnrealPos = AgxToUnrealVector(ExpectedAGXWorldPos);
 		Test.TestEqual(
-			TEXT("Component position"), GetTemplateComponentWorldLocation(c), ExpectedUnrealPos);
+			TEXT("Component position"),
+			FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(c), ExpectedUnrealPos);
 	};
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// 5 Rigid Bodies, 10 Geometries, 2 Static Meshes and 1 Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 18);
 
 	testShape(
 		GetByName<UAGX_SphereShapeComponent>(
-			Components, *ToTemplateComponentName("sphereGeometry")),
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("sphereGeometry")),
 		FVector(0.f, 0.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_BoxShapeComponent>(Components, *ToTemplateComponentName("boxGeometry")),
+		GetByName<UAGX_BoxShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("boxGeometry")),
 		FVector(2.f, 0.f, 0.f));
 
 	testShape(
 		GetByName<UAGX_CylinderShapeComponent>(
-			Components, *ToTemplateComponentName("cylinderGeometry")),
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("cylinderGeometry")),
 		FVector(4.f, 0.f, 0.f));
 
 	testShape(
 		GetByName<UAGX_CapsuleShapeComponent>(
-			Components, *ToTemplateComponentName("capsuleGeometry")),
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("capsuleGeometry")),
 		FVector(6.f, 0.f, 0.f));
 
 	testShape(
 		GetByName<UAGX_TrimeshShapeComponent>(
-			Components, *ToTemplateComponentName("trimeshGeometry")),
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("trimeshGeometry")),
 		FVector(8.f, 0.f, 0.f));
 
 	testShape(
 		GetByName<UAGX_SphereShapeComponent>(
-			Components, *ToTemplateComponentName("sphereGeometryFree")),
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("sphereGeometryFree")),
 		FVector(0.f, 2.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_BoxShapeComponent>(Components, *ToTemplateComponentName("boxGeometryFree")),
+		GetByName<UAGX_BoxShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("boxGeometryFree")),
 		FVector(2.f, 2.f, 0.f));
 
 	testShape(
 		GetByName<UAGX_CylinderShapeComponent>(
-			Components, *ToTemplateComponentName("cylinderGeometryFree")),
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("cylinderGeometryFree")),
 		FVector(4.f, 2.f, 0.f));
 
 	testShape(
 		GetByName<UAGX_CapsuleShapeComponent>(
-			Components, *ToTemplateComponentName("capsuleGeometryFree")),
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("capsuleGeometryFree")),
 		FVector(6.f, 2.f, 0.f));
 
 	testShape(
 		GetByName<UAGX_TrimeshShapeComponent>(
-			Components, *ToTemplateComponentName("trimeshGeometryFree")),
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("trimeshGeometryFree")),
 		FVector(8.f, 2.f, 0.f));
 
 	return true;
@@ -2347,14 +2376,16 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// 4 Rigid Bodies, 4 Geometries, 1 Contact Material Registrar and 1 Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 10);
 
 	UAGX_ContactMaterialRegistrarComponent* Registrar =
 		GetByName<UAGX_ContactMaterialRegistrarComponent>(
-			Components, *ToTemplateComponentName("AGX_ContactMaterialRegistrar"));
+			Components,
+			*FAGX_BlueprintUtilities::ToTemplateComponentName("AGX_ContactMaterialRegistrar"));
 
 	Test.TestNotNull("Contact Material Registrar", Registrar);
 	Test.TestEqual("Num Contact Materials in Registrar", Registrar->ContactMaterials.Num(), 2);
@@ -2493,7 +2524,8 @@ bool FCheckObserverFramesImportedCommand::Update()
 	}
 
 	// Get all the imported Components.
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// 1 Default Scene Root, 4 groups each containing a Rigid Body, a Shape, and a Scene.
 	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), 13);
@@ -2504,12 +2536,12 @@ bool FCheckObserverFramesImportedCommand::Update()
 		const FString BodyName = *FString::Printf(TEXT("Body_%d"), Id);
 		const FString GeometryName = *FString::Printf(TEXT("Geometry_%d"), Id);
 		const FString ObserverName = *FString::Printf(TEXT("Observer_%d"), Id);
-		UAGX_RigidBodyComponent* Body =
-			GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName(BodyName));
-		UAGX_BoxShapeComponent* Geometry =
-			GetByName<UAGX_BoxShapeComponent>(Components, *ToTemplateComponentName(GeometryName));
-		USceneComponent* Observer =
-			GetByName<USceneComponent>(Components, *ToTemplateComponentName(ObserverName));
+		UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(BodyName));
+		UAGX_BoxShapeComponent* Geometry = GetByName<UAGX_BoxShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(GeometryName));
+		USceneComponent* Observer = GetByName<USceneComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(ObserverName));
 
 		Test.TestNotNull(*BodyName, Body);
 		Test.TestNotNull(*GeometryName, Geometry);
@@ -2518,10 +2550,14 @@ bool FCheckObserverFramesImportedCommand::Update()
 		USceneComponent* BodyAsComponent = static_cast<USceneComponent*>(Body);
 		Test.TestEqual(
 			*FString::Printf(TEXT("%s parent"), *GeometryName),
-			GetTemplateComponentAttachParent(Geometry), BodyAsComponent);
+			Cast<USceneComponent>(
+				FAGX_BlueprintUtilities::GetTemplateComponentAttachParent(Geometry)),
+			BodyAsComponent);
 		Test.TestEqual(
 			*FString::Printf(TEXT("%s parent"), *ObserverName),
-			GetTemplateComponentAttachParent(Observer), BodyAsComponent);
+			Cast<USceneComponent>(
+				FAGX_BlueprintUtilities::GetTemplateComponentAttachParent(Observer)),
+			BodyAsComponent);
 
 		Test.TestEqual(
 			*FString::Printf(TEXT("%s location"), *BodyName), Body->GetRelativeLocation(),
@@ -2624,16 +2660,17 @@ bool FCheckURDFLinkWithMeshesImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// One DefaultSceneRoot, one Rigid Body, one Trimesh with a render mesh and a collision mesh
 	// and one Trimesh with only one collision mesh.
 	Test.TestEqual("Number of components", Components.Num(), 7);
 
 	UAGX_TrimeshShapeComponent* Urdfmeshvisual = GetByName<UAGX_TrimeshShapeComponent>(
-		Components, *ToTemplateComponentName("urdfmeshvisual"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("urdfmeshvisual"));
 	UAGX_TrimeshShapeComponent* Urdfmeshcollision = GetByName<UAGX_TrimeshShapeComponent>(
-		Components, *ToTemplateComponentName("urdfmeshcollision"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("urdfmeshcollision"));
 
 	Test.TestNotNull(TEXT("Urdfmeshvisual"), Urdfmeshvisual);
 	Test.TestNotNull(TEXT("Urdfmeshcollision"), Urdfmeshcollision);
@@ -2657,7 +2694,8 @@ bool FClearURDFLinkWithMeshesImportedCommand::Update()
 		return true;
 	}
 
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	TArray<FString> Assets = GetReferencedStaticMeshAssets(Components);
 	if (Assets.Num() != 3)
 	{
@@ -2754,19 +2792,20 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components = GetTemplateComponents(*Test.Contents);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components and 2 Constraints.
 	Test.TestEqual("Number of components", Components.Num(), 11);
 
-	UAGX_RigidBodyComponent* Boxlink =
-		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("boxlink"));
-	UAGX_RigidBodyComponent* Shperelink =
-		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("spherelink"));
-	UAGX_RigidBodyComponent* Cylinderlink =
-		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("cylinderlink"));
-	UAGX_RigidBodyComponent* Freefallinglink =
-		GetByName<UAGX_RigidBodyComponent>(Components, *ToTemplateComponentName("freefallinglink"));
+	UAGX_RigidBodyComponent* Boxlink = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("boxlink"));
+	UAGX_RigidBodyComponent* Shperelink = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("spherelink"));
+	UAGX_RigidBodyComponent* Cylinderlink = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("cylinderlink"));
+	UAGX_RigidBodyComponent* Freefallinglink = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("freefallinglink"));
 
 	Test.TestNotNull(TEXT("Boxlink"), Boxlink);
 	Test.TestNotNull(TEXT("Shperelink"), Shperelink);
@@ -2781,19 +2820,23 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 	}
 
 	Test.TestEqual(
-		TEXT("Boxlink position"), GetTemplateComponentWorldLocation(Boxlink),
+		TEXT("Boxlink position"),
+		FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(Boxlink),
 		AgxToUnrealVector({0.f, 0.f, 0.f}));
 
 	Test.TestEqual(
-		TEXT("Shperelink position"), GetTemplateComponentWorldLocation(Shperelink),
+		TEXT("Shperelink position"),
+		FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(Shperelink),
 		AgxToUnrealVector({1.f, 0.f, 0.f}));
 
 	Test.TestEqual(
-		TEXT("Cylinderlink position"), GetTemplateComponentWorldLocation(Cylinderlink),
+		TEXT("Cylinderlink position"),
+		FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(Cylinderlink),
 		AgxToUnrealVector({2.f, 0.f, 0.f}));
 
 	Test.TestEqual(
-		TEXT("Freefallinglink position"), GetTemplateComponentWorldLocation(Freefallinglink),
+		TEXT("Freefallinglink position"),
+		FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(Freefallinglink),
 		AgxToUnrealVector({0.f, 0.f, 0.f}));
 
 	return true;

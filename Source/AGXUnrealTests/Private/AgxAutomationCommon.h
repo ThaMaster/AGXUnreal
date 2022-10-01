@@ -175,22 +175,6 @@ namespace AgxAutomationCommon
 	 */
 	TArray<FString> GetReferencedStaticMeshAssets(const TArray<UActorComponent*>& Components);
 
-	TArray<UActorComponent*> GetTemplateComponents(UBlueprint& Bp);
-
-	FString ToTemplateComponentName(const FString& RegularName);
-
-	// Location and Rotation for template Components are a bit special.
-	// Trying to get their world Transform the usual way, i.e. calling GetWorldTransform() will
-	// fail because a template Component does not necessarily have a parent Component even if the
-	// Node tree in the Blueprint says it does. Therefore these functions can be used to get
-	// the actual World Transforms. They will walk through the Blueprint Node chain and calculate
-	// the correct world Transform.
-	FTransform GetTemplateComponentWorldTransform(USceneComponent* TemplateComponent);
-	FVector GetTemplateComponentWorldLocation(USceneComponent* TemplateComponent);
-	FRotator GetTemplateComponentWorldRotation(USceneComponent* TemplateComponent);
-
-	USceneComponent* GetTemplateComponentAttachParent(USceneComponent* TemplateComponent);
-
 	template <typename T>
 	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
 	{

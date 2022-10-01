@@ -31,4 +31,34 @@ public:
 	static bool SetTemplateComponentWorldTransform(
 		USceneComponent* Component, const FTransform& Transform,
 		bool UpdateArchetypeInstances = true);
+
+	/*
+	 * Returns the location of a template component inside a Blueprint in relation to the root
+	 * component of that Blueprint. If the passed component is not inside a Blueprint, or is
+	 * nullptr, the identity FVector is returned.
+	 */
+	static FVector GetTemplateComponentWorldLocation(USceneComponent* Component);
+
+	/*
+	 * Returns the rotation of a template component inside a Blueprint in relation to the root
+	 * component of that Blueprint. If the passed component is not inside a Blueprint, or is
+	 * nullptr, the identity FRotator is returned.
+	 */
+	static FRotator GetTemplateComponentWorldRotation(USceneComponent* Component);
+
+	/*
+	 * Returns a list of all template components in a blueprint.
+	 */
+	static TArray<UActorComponent*> GetTemplateComponents(UBlueprint* Bp);
+	static TArray<UActorComponent*> GetTemplateComponents(UBlueprintGeneratedClass* Bp);
+
+	/*
+	 * Returns the default template component name given a regular name.
+	 */
+	static FString ToTemplateComponentName(const FString& RegularName);
+
+	/*
+	 * Returns the attach parent of a template component.
+	 */
+	static UActorComponent* GetTemplateComponentAttachParent(UActorComponent* Component);
 };

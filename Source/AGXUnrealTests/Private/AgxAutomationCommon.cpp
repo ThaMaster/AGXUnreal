@@ -6,7 +6,6 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
-#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
@@ -425,58 +424,6 @@ TArray<FString> AgxAutomationCommon::GetReferencedStaticMeshAssets(
 	}
 
 	return Assets;
-}
-
-TArray<UActorComponent*> AgxAutomationCommon::GetTemplateComponents(UBlueprint& Bp)
-{
-	TArray<UActorComponent*> Components;
-
-	for (USCS_Node* Node : Bp.SimpleConstructionScript->GetAllNodes())
-	{
-		if (UActorComponent* Component = Node->ComponentTemplate)
-		{
-			Components.Add(Component);
-		}
-	}
-
-	return Components;
-}
-
-FString AgxAutomationCommon::ToTemplateComponentName(const FString& RegularName)
-{
-	return RegularName + UActorComponent::ComponentTemplateNameSuffix;
-}
-
-FTransform GetTemplateComponentWorldTransform(USceneComponent* Component)
-{
-	return FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(Component);
-}
-
-FVector AgxAutomationCommon::GetTemplateComponentWorldLocation(USceneComponent* Component)
-{
-	return FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(Component).GetLocation();
-}
-
-FRotator AgxAutomationCommon::GetTemplateComponentWorldRotation(USceneComponent* Component)
-{
-	return FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(Component).Rotator();
-}
-
-USceneComponent* AgxAutomationCommon::GetTemplateComponentAttachParent(USceneComponent* Component)
-{
-	if (Component == nullptr)
-		return nullptr;
-
-	UBlueprintGeneratedClass* Blueprint = Cast<UBlueprintGeneratedClass>(Component->GetOuter());
-	if (Blueprint == nullptr)
-		return nullptr;
-
-	USCS_Node* ParentNode = Blueprint->SimpleConstructionScript->FindParentNode(
-		FAGX_BlueprintUtilities::GetSCSNodeFromComponent(Component));
-	if (ParentNode == nullptr)
-		return nullptr;
-
-	return Cast<USceneComponent>(ParentNode->ComponentTemplate);
 }
 
 bool AgxAutomationCommon::FCheckWorldsCommand::Update()

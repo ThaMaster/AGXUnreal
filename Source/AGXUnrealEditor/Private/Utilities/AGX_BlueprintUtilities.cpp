@@ -3,6 +3,7 @@
 #include "Utilities/AGX_BlueprintUtilities.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Components/ActorComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
 namespace AGX_BlueprintUtilities_helpers
@@ -14,6 +15,26 @@ namespace AGX_BlueprintUtilities_helpers
 			return nullptr;
 		}
 		return Cast<UBlueprintGeneratedClass>(Component->GetOuter());
+	}
+
+	template <typename T>
+	TArray<UActorComponent*> GetTemplateComponents(T* Bp)
+	{
+		TArray<UActorComponent*> Components;
+		if (Bp == nullptr)
+		{
+			return Components;
+		}
+
+		for (USCS_Node* Node : Bp->SimpleConstructionScript->GetAllNodes())
+		{
+			if (UActorComponent* Component = Node->ComponentTemplate)
+			{
+				Components.Add(Component);
+			}
+		}
+
+		return Components;
 	}
 }
 
@@ -168,4 +189,50 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 	}
 
 	return true;
+}
+
+TArray<UActorComponent*> FAGX_BlueprintUtilities::GetTemplateComponents(
+	UBlueprintGeneratedClass* Bp)
+{
+	return AGX_BlueprintUtilities_helpers::GetTemplateComponents(Bp);
+}
+
+TArray<UActorComponent*> FAGX_BlueprintUtilities::GetTemplateComponents(UBlueprint* Bp)
+{
+	return AGX_BlueprintUtilities_helpers::GetTemplateComponents(Bp);
+}
+
+FString FAGX_BlueprintUtilities::ToTemplateComponentName(const FString& RegularName)
+{
+	return RegularName + UActorComponent::ComponentTemplateNameSuffix;
+}
+
+FVector FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(USceneComponent* Component)
+{
+	return GetTemplateComponentWorldTransform(Component).GetLocation();
+}
+
+FRotator FAGX_BlueprintUtilities::GetTemplateComponentWorldRotation(USceneComponent* Component)
+{
+	return GetTemplateComponentWorldTransform(Component).Rotator();
+}
+
+UActorComponent* FAGX_BlueprintUtilities::GetTemplateComponentAttachParent(
+	UActorComponent* Component)
+{
+	using namespace AGX_BlueprintUtilities_helpers;
+
+	if (Component == nullptr)
+		return nullptr;
+
+	UBlueprintGeneratedClass* Blueprint = GetBlueprintGeneratedClass(Component);
+	if (Blueprint == nullptr)
+		return nullptr;
+
+	USCS_Node* ParentNode =
+		Blueprint->SimpleConstructionScript->FindParentNode(GetSCSNodeFromComponent(Component));
+	if (ParentNode == nullptr)
+		return nullptr;
+
+	return ParentNode->ComponentTemplate;
 }
