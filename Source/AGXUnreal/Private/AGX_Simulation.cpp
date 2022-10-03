@@ -38,11 +38,11 @@ void UAGX_Simulation::SetNumThreads(int32 InNumThreads)
 		UE_LOG(LogAGX, Warning, TEXT("The number of threads cannot be negative."));
 		return;
 	}
-	
+
 	NumThreads = InNumThreads;
 	if (HasNative())
 	{
-		NativeBarrier.SetNumThreads(NumThreads);
+		NativeBarrier.SetNumThreads(static_cast<uint32>(NumThreads));
 	}
 }
 
@@ -511,7 +511,7 @@ void UAGX_Simulation::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, NumThreads),
-		[](ThisClass* This) { This->SetNumThreads(This->NumThreads);});
+		[](ThisClass* This) { This->SetNumThreads(This->NumThreads); });
 }
 
 #endif

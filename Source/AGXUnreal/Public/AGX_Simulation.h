@@ -62,7 +62,7 @@ public: // Properties.
 	 * Set to 0 to use all hardware threads.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "AGX Dynamics", meta = (DisplayName = "Number of Threads"))
+		Config, EditAnywhere, Category = "AGX Dynamics", Meta = (DisplayName = "Number of Threads"))
 	int32 NumThreads = 1;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
