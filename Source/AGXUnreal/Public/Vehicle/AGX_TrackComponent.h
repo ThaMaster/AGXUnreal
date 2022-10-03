@@ -14,7 +14,7 @@
 
 #include "AGX_TrackComponent.generated.h"
 
-class UAGX_ShapeMaterialBase;
+class UAGX_ShapeMaterial;
 class UAGX_TrackPropertiesBase;
 class UAGX_TrackInternalMergePropertiesBase;
 
@@ -90,7 +90,7 @@ public:
 	 * the Shape Materials set on the Shapes that the Track will drive on.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	UAGX_ShapeMaterialBase* ShapeMaterial;
+	UAGX_ShapeMaterial* ShapeMaterial;
 
 	/**
 	 * Additional properties defining the setup and behavior of the Track.
@@ -339,7 +339,7 @@ private:
 	void CreateNative();
 
 	// Set ShapeMaterial assignment on native. Create native ShapeMaterial if not yet created.
-	void WriteShapeMaterialToNative();
+	void UpdateNativeMaterial();
 
 	// Set TrackProperties assignment on native. Create native TrackProperties if not yet created.
 	void WriteTrackPropertiesToNative();
@@ -355,7 +355,7 @@ private:
 	 * onto the native in runtime. Writes all properties to native, except for those only
 	 * used during initialization.
 	 */
-	void WritePropertiesToNative();
+	void UpdateNativeProperties();
 
 private:
 	// The AGX Dynamics object only exists while simulating.
