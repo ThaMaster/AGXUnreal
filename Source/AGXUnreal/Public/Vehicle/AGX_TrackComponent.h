@@ -231,12 +231,12 @@ public:
 	 *
 	 * Scale is set to LocalScale and location is offset by LocalOffset * Rotation.
 	 *
-	 * During editing the node transform are taken from the preview data. If no prevew data is
-	 * available then OutTransform is emptied. During Play, including Play-In-Editor, the node
+	 * During editing the node transforms are taken from the preview data. If no preview data is
+	 * available then OutTransforms is emptied. During Play, including Play-In-Editor, the node
 	 * transforms are read from the AGX Dynamics Track instance. Used for track rendering while
 	 * playing.
 	 *
-	 * @param OutTransform Array filled with one transform per node.
+	 * @param OutTransforms Array filled with one transform per node.
 	 * @param LocalScale All transforms' Scale is set to this value.
 	 * @param LocalOffset All transforms' Location is offset by this vector, rotated by each
 	 * transforms' rotation.
@@ -327,7 +327,7 @@ public:
 private:
 #if WITH_EDITOR
 	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each
-	// and every UPROPERTY in PostEditChangeProperty and PostEditChangeChainProperty.
+	// and every Property in PostEditChangeProperty and PostEditChangeChainProperty.
 	void InitPropertyDispatcher();
 #endif
 

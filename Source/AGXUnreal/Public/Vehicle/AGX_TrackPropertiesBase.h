@@ -275,7 +275,7 @@ public:
 
 #if WITH_EDITOR
 	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each
-	// and every UPROPERTY in PostEditChangeProperty and PostEditChangeChainProperty.
+	// and every Property in PostEditChangeProperty and PostEditChangeChainProperty.
 	virtual void InitPropertyDispatcher();
 #endif
 
