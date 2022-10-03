@@ -28,7 +28,7 @@ struct FAGX_Shape
 	bool bCanCollide = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics|Shapes")
-	class UAGX_ShapeMaterialBase* Material = nullptr;
+	class UAGX_ShapeMaterial* Material = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics|Shapes")
 	TArray<FName> CollisionGroups;

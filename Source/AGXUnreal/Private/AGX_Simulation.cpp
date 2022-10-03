@@ -10,7 +10,7 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
-#include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/ShapeBarrier.h"
 #include "Terrain/AGX_Terrain.h"
@@ -133,7 +133,7 @@ void UAGX_Simulation::Add(UAGX_ShapeComponent& Shape)
 	AGX_Simulation_helpers::Add(*this, Shape);
 }
 
-void UAGX_Simulation::Add(UAGX_ShapeMaterialInstance& Shape)
+void UAGX_Simulation::Add(UAGX_ShapeMaterial& Shape)
 {
 	EnsureStepperCreated();
 
@@ -206,7 +206,7 @@ void UAGX_Simulation::Remove(UAGX_ShapeComponent& Shape)
 	AGX_Simulation_helpers::Remove(*this, Shape);
 }
 
-void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
+void UAGX_Simulation::Remove(UAGX_ShapeMaterial& Shape)
 {
 	if (!HasNative())
 	{

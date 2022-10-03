@@ -30,9 +30,9 @@ class FShapeMaterialBarrier;
  * creating clones of the edit mode assets for use during the duration of the play session. The
  * Instances are the only classes that has a native AGX Dynamics object associated with it.
  *
- * Subclasses are used to differentiate between the two types, with the Asset suffix being used for
- * editing mode objects and the Instance suffix being used for the play mode objects. The switch is
- * done in BeginPlay of the class that has the UPROPERTY. A short illustrative example:
+ * Both the instance and asset objects are of the same type, but the asset holds a reference to
+ * its instance (if one has been created) and the instance always holds a reference to the asset
+ * it was created from.
  *
  *	UCLASS()
  *	class UMyClass : public UObject
@@ -56,14 +56,33 @@ class FShapeMaterialBarrier;
  *			MyMaterial = Instance;
  *		}
  * 	}
- * There may be a bit more to it, depending on the type of material (see next paragraph) but
- * something like that.
  *
  * In addition to the Asset/Instance separation there are also multiple types of materials,
- * currently Shape and Terrain, each with their own Base, Asset, and Instance classes. What they all
- * have in common is that a contact material may be created between any pair of materials,
- * regardless of their types. Wires use Shape Material.
+ * currently Shape and Terrain. What they all have in common is that a contact material may
+ *  be created between any pair of materials, regardless of their types. Wires use Shape Material.
+ *
+ * Rules of UPROPERTY updates:
+ * 1. Updating a UPROPERTY of an Asset from the Details Panel
+ *	in Edit: [permanent property write in asset]
+ *	in Play: [permanent property write in asset AND permanent property write in instance AND
+ *		propagation to AGX Dynamics]
+ *
+ * 2. Updating a UPROPERTY of an Asset by calling UFUNCTION
+ *	in Edit: [permanent property write in asset]
+ *	in Play: [permanent property write in instance AND DO NOT update asset property AND
+ *		propagation to AGX Dynamics]
+ *
+ * 3. Updating a UPROPERTY of an Instance from the Details Panel
+ *	in Edit: [does not exists yet]
+ *	in Play: [permanent property write in asset AND permanent property write in instance AND
+ *		propagation to AGX Dynamics]
+ *
+ * 4. Updating a UPROPERTY of an Instance by calling UFUNCTION
+ *	in Edit: [does not exists yet]
+ *	in Play: [permanent property write in instance AND DO NOT update asset property AND
+ *		propagation to AGX Dynamics]
  */
+
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", abstract, AutoExpandCategories = ("Material Properties"))
 class AGXUNREAL_API UAGX_MaterialBase : public UObject
@@ -86,47 +105,98 @@ public:
 	// Wire properties are Shape Material only, so they are in the Shape Material.
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual void SetFrictionEnabled(bool Enabled);
+	virtual void SetFrictionEnabled(bool Enabled)
+		PURE_VIRTUAL(UAGX_MaterialBase::SetFrictionEnabled, );
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual bool GetFrictionEnabled() const;
+	virtual bool GetFrictionEnabled() const
+		PURE_VIRTUAL(UAGX_MaterialBase::GetFrictionEnabled, return false;);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual void SetRoughness(float Roughness);
+	virtual void SetRoughness(double Roughness) PURE_VIRTUAL(UAGX_MaterialBase::SetRoughness, );
+	virtual double GetRoughness() const PURE_VIRTUAL(UAGX_MaterialBase::GetRoughness, return 0.0;);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual float GetRoughness() const;
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Set Roughness"))
+	virtual void SetRoughness_BP(float Roughness)
+		PURE_VIRTUAL(UAGX_MaterialBase::SetRoughness_BP, );
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual void SetSurfaceViscosity(float Viscosity);
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Get Roughness"))
+	virtual float GetRoughness_BP() const
+		PURE_VIRTUAL(UAGX_MaterialBase::GetRoughness_BP, return 0.f;);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual float GetSurfaceViscosity() const;
+	virtual void SetSurfaceViscosity(double Viscosity)
+		PURE_VIRTUAL(UAGX_MaterialBase::SetSurfaceViscosity, );
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual void SetAdhesion(float AdhesiveForce, float AdhesiveOverlap);
+	virtual double GetSurfaceViscosity() const PURE_VIRTUAL(UAGX_MaterialBase::GetSurfaceViscosity, return 0.0;);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual float GetAdhesiveForce() const;
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Set Surface Viscosity"))
+	virtual void SetSurfaceViscosity_BP(float Viscosity)
+		PURE_VIRTUAL(UAGX_MaterialBase::SetSurfaceViscosity_BP, );
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Material Surface Properties")
-	virtual float GetAdhesiveOverlap() const;
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Get Surface Viscosity"))
+	virtual float GetSurfaceViscosity_BP() const
+		PURE_VIRTUAL(UAGX_MaterialBase::GetSurfaceViscosity_BP, return 0.f;);
 
-public:
-	virtual ~UAGX_MaterialBase();
+	virtual void SetAdhesion(double AdhesiveForce, double AdhesiveOverlap)
+		PURE_VIRTUAL(UAGX_MaterialBase::SetAdhesion, )
+
+	virtual double GetAdhesiveForce() const PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveForce, return 0.0;);
+	virtual double GetAdhesiveOverlap() const PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveOverlap, return 0.0;);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Set Adhesion"))
+	virtual void SetAdhesion_BP(float AdhesiveForce, float AdhesiveOverlap)
+		PURE_VIRTUAL(UAGX_MaterialBase::SetAdhesion_BP, );
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Get Adhesive Force"))
+	virtual float GetAdhesiveForce_BP() const
+		PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveForce_BP, return 0.f;);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Material Surface Properties",
+		Meta = (DisplayName = "Get Adhesive Overlap"))
+	virtual float GetAdhesiveOverlap_BP() const
+		PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveOverlap_BP, return 0.f;);
 
 	/**
-	 * If PlayingWorld is an in-game World and this material is a UAGX_ShapeMaterialAsset or
-	 * UAGX_TerrainMaterialAsset, returns a UAGX_ShapeMaterialInstance or
-	 * UAGX_TerrainMaterialInstance representing the material asset throughout the lifetime of the
-	 * GameInstance. If this is already a UAGX_ShapeMaterialInstance or a
-	 * UAGX_TerrainMaterialInstance, it returns itself. Returns null if not in-game (invalid call).
+	 * Copies all properties (even properties set during Play) to the asset such
+	 * that the data is saved permanently in the asset, even after Play.
+	 *
+	 * If this function is called on an instance, the properties are copied
+	 * from the instance to the asset it was created from, permanently.
+	 * If this function is called on an asset, the properties are copied from
+	 * its instance (if it exists) to itself such that the data is saved permanently.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Material")
+	virtual void CommitToAsset() PURE_VIRTUAL(UAGX_MaterialBase::CommitToAsset, );
+
+public:
+	virtual ~UAGX_MaterialBase() = default;
+
+	/**
+	 * If PlayingWorld is an in-game World and this material is a UAGX_ShapeMaterial or
+	 * UAGX_TerrainMaterial, returns an instance or representing the material asset throughout the
+	 * lifetime of the GameInstance. If this is already an instance, it returns itself. Returns
+	 * null if not in-game (invalid call).
 	 */
 	virtual UAGX_MaterialBase* GetOrCreateInstance(UWorld* PlayingWorld)
 		PURE_VIRTUAL(UAGX_MaterialBase::GetOrCreateInstance, return nullptr;);
 
 	virtual FShapeMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld)
 		PURE_VIRTUAL(UAGX_MaterialBase::GetOrCreateShapeMaterialNative, return nullptr;);
+
+	// Returns true if this is an instance. If it returns false, it can only be an asset.
+	virtual bool IsInstance() const PURE_VIRTUAL(UAGX_MaterialBase::IsInstance, return false;);
 
 protected:
 	void CopyShapeMaterialProperties(const UAGX_MaterialBase* Source);

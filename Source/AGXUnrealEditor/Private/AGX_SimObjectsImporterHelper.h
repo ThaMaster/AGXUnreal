@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGXSimObjectsReader.h"
 #include "AGX_ImportEnums.h"
+#include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.
 #include "Containers/Map.h"
@@ -18,7 +19,7 @@ class UAGX_BoxShapeComponent;
 class UAGX_CylinderShapeComponent;
 class UAGX_CapsuleShapeComponent;
 class UAGX_TrimeshShapeComponent;
-class UAGX_ShapeMaterialAsset;
+class UAGX_ShapeMaterial;
 class UAGX_ContactMaterialAsset;
 class UAGX_HingeConstraintComponent;
 class UAGX_PrismaticConstraintComponent;
@@ -66,7 +67,7 @@ public:
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
 		UAGX_RigidBodyComponent* Body = nullptr);
 
-	UAGX_ShapeMaterialAsset* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
+	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
 	UAGX_ContactMaterialAsset* InstantiateContactMaterial(
 		const FContactMaterialBarrier& Barrier, AActor& Owner);
@@ -120,10 +121,15 @@ public:
 	using FBodyPair = std::pair<UAGX_RigidBodyComponent*, UAGX_RigidBodyComponent*>;
 	FBodyPair GetBodies(const FConstraintBarrier& Barrier);
 
-	UAGX_ShapeMaterialAsset* GetShapeMaterial(const FShapeMaterialBarrier& Barrier);
+	UAGX_ShapeMaterial* GetShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
-	using FShapeMaterialPair = std::pair<UAGX_ShapeMaterialAsset*, UAGX_ShapeMaterialAsset*>;
+	using FShapeMaterialPair = std::pair<UAGX_ShapeMaterial*, UAGX_ShapeMaterial*>;
 	FShapeMaterialPair GetShapeMaterials(const FContactMaterialBarrier& ContactMaterial);
+
+	/*
+	 * Must be called at the end of an import.
+	 */
+	void FinalizeImports();
 
 	explicit FAGX_SimObjectsImporterHelper(const FString& InSourceFilePath);
 
@@ -133,9 +139,9 @@ public:
 	const FString DirectoryName;
 
 private:
-	TMap<FGuid, UStaticMesh*> RestoredMeshes;
+	TMap<FGuid, FAssetToDiskInfo> RestoredMeshes;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
-	TMap<FGuid, UAGX_ShapeMaterialAsset*> RestoredShapeMaterials;
+	TMap<FGuid, UAGX_ShapeMaterial*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
 
 	// List of Constraints that should not be imported the usual way, i.e. through the

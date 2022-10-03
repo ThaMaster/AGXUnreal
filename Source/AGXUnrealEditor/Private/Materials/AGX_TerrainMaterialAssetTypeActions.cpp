@@ -2,7 +2,7 @@
 
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 
-#include "Materials/AGX_TerrainMaterialAsset.h"
+#include "Materials/AGX_TerrainMaterial.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TerrainMaterialAssetTypeActions"
 
@@ -34,7 +34,7 @@ FText FAGX_TerrainMaterialAssetTypeActions::GetAssetDescription(const FAssetData
 
 UClass* FAGX_TerrainMaterialAssetTypeActions::GetSupportedClass() const
 {
-	return UAGX_TerrainMaterialAsset::StaticClass();
+	return UAGX_TerrainMaterial::StaticClass();
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -29,7 +29,7 @@
 
 #include "AGX_Terrain.generated.h"
 
-class UAGX_TerrainMaterialBase;
+class UAGX_TerrainMaterial;
 class ALandscape;
 class UNiagaraComponent;
 class UNiagaraSystem;
@@ -106,7 +106,10 @@ public:
 
 	/** The physical bulk, compaction, particle and surface properties of the Terrain. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Terrain")
-	UAGX_TerrainMaterialBase* TerrainMaterial;
+	UAGX_TerrainMaterial* TerrainMaterial;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	bool SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial);
 
 	/**
 	 * A list of the rigid body actors that should be used as terrain shovels.
@@ -198,7 +201,7 @@ private:
 	void InitializeNative();
 	bool CreateNativeTerrain();
 	void CreateNativeShovels();
-	void CreateTerrainMaterial();
+	bool UpdateNativeMaterial();
 
 	void SetInitialTransform();
 	void InitializeRendering();

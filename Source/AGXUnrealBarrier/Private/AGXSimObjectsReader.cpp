@@ -24,6 +24,7 @@
 #include <agx/LockJoint.h>
 #include <agx/Prismatic.h>
 #include <agx/RigidBody.h>
+#include <agx/version.h>
 
 // In 2.28 including Cable.h causes a preprocessor macro named DEPRECATED to be defined. This
 // conflicts with a macro with the same name in Unreal. Undeffing the Unreal one.
@@ -440,6 +441,7 @@ namespace
 			0.01f * WorkLeft, FText::FromString("Importing Observer Frames"));
 		Result &= ReadObserverFrames(Simulation, Instantiator);
 
+		Instantiator.FinalizeImports();
 		return Result;
 	}
 }
@@ -490,9 +492,14 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 	FScopedSlowTask ImportTask(WorkTot, LOCTEXT("ReadUrdfFile", "Reading URDF file"), true);
 	ImportTask.MakeDialog();
 	ImportTask.EnterProgressFrame(WorkRead, FText::FromString("Reading URDF file"));
-
+#if AGX_VERSION_GREATER_OR_EQUAL(2, 33, 0, 0)
+	agxSDK::AssemblyRef Model = agxModel::UrdfReader::read(
+		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr);
+#else
 	agxSDK::AssemblyRef Model = agxModel::UrdfReader::read(
 		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);
+#endif // AGX_VERSION_GREATER_OR_EQUAL > 2.33
+
 
 	if (Model == nullptr)
 	{

@@ -167,7 +167,7 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_ShapeMaterialAssetTypeActions(AgxAssetCategoryBit)));
+		AssetTools, MakeShareable(new FAGX_ShapeMaterialTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_TerrainMaterialAssetTypeActions(AgxAssetCategoryBit)));
 
