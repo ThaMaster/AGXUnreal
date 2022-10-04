@@ -43,6 +43,7 @@
 #include "Utilities/AGX_TextureUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Vehicle/AGX_TrackComponent.h"
+#include "Vehicle/TrackWheelBarrier.h"
 
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
@@ -976,7 +977,7 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 }
 
 UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
-	const FTrackBarrier& Barrier, AActor& Owner)
+	const FTrackBarrier& Barrier, AActor& Owner, bool IsBlueprintOwner)
 {
 	UAGX_TrackComponent* Component = NewObject<UAGX_TrackComponent>(&Owner);
 	if (Component == nullptr)
@@ -994,6 +995,32 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 	// Copy simple properties such as number of nodes and width. More complicated properties, such
 	// as Wheels, TrackProperties asset etc, are handled below.
 	Component->CopyFrom(Barrier);
+
+	auto SetRigidBody = [&](UAGX_RigidBodyComponent* Body, FAGX_RigidBodyReference& BodyRef)
+	{
+		if (Body == nullptr)
+		{
+			WriteImportErrorMessage(
+				TEXT("AGX Dynamics Track"), Barrier.GetName(), SourceFilePath,
+				TEXT("Could not set Rigid Body"));
+			return;
+		}
+
+		BodyRef.BodyName = Body->GetFName();
+		if (!IsBlueprintOwner)
+		{
+			BodyRef.OwningActor = Body->GetOwner();
+		}
+	};
+
+	// Copy Wheels.
+	for (const FTrackWheelBarrier& WheelBarrier : Barrier.GetWheels())
+	{
+		FAGX_TrackWheel Wheel;
+		SetRigidBody(GetBody(WheelBarrier.GetRigidBody()), Wheel.RigidBody);
+		Wheel.bUseFrameDefiningComponent = false;
+		Component->Wheels.Add(Wheel);
+	}
 
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);

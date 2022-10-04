@@ -370,7 +370,7 @@ namespace
 		virtual void InstantiateTrack(
 			const FTrackBarrier& Barrier) override
 		{
-			Helper.InstantiateTrack(Barrier, BlueprintTemplate);
+			Helper.InstantiateTrack(Barrier, BlueprintTemplate, true);
 		}
 
 		virtual void InstantiateObserverFrame(const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) override

@@ -437,9 +437,6 @@ namespace
 		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Tire Models"));
 		Result &= ReadTireModels(Simulation, Filename, Instantiator);
 
-		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Tracks"));
-		Result &= ReadTracks(Simulation, Instantiator);
-
 		ImportTask.EnterProgressFrame(
 			0.15f * WorkLeft, FText::FromString("Importing Rigid Bodies and Geometries"));
 		Result &= ReadRigidBodies(Simulation, Filename, Instantiator);
@@ -447,6 +444,9 @@ namespace
 		ImportTask.EnterProgressFrame(
 			0.78f * WorkLeft, FText::FromString("Importing bodiless Geometries"));
 		Result &= ReadBodilessGeometries(Simulation, Filename, Instantiator);
+
+		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Tracks"));
+		Result &= ReadTracks(Simulation, Instantiator);
 
 		// Constraints depend on Rigid Bodies, so those must be read before Constraints.
 		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Constraints"));

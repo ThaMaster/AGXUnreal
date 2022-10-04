@@ -18,6 +18,7 @@ class FShapeMaterialBarrier;
 class FSimulationBarrier;
 class FTrackPropertiesBarrier;
 class FTrackInternalMergePropertiesBarrier;
+class FTrackWheelBarrier;
 struct FTrackRef;
 
 /**
@@ -70,6 +71,8 @@ public:
 	void AddCollisionGroup(const FName& GroupName);
 	void AddCollisionGroups(const TArray<FName>& GroupNames);
 	TArray<FName> GetCollisionGroups() const;
+
+	TArray<FTrackWheelBarrier> GetWheels() const;
 
 	int32 GetNumNodes() const;
 

@@ -258,7 +258,7 @@ namespace
 
 		virtual void InstantiateTrack(const FTrackBarrier& Barrier) override
 		{
-			Helper.InstantiateTrack(Barrier, Actor);
+			Helper.InstantiateTrack(Barrier, Actor, false);
 		}
 
 		virtual void InstantiateObserverFrame(

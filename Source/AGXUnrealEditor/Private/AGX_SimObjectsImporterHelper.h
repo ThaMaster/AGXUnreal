@@ -97,7 +97,8 @@ public:
 
 	UAGX_WireComponent* InstantiateWire(const FWireBarrier& Barrier, AActor& Owner);
 
-	UAGX_TrackComponent* InstantiateTrack(const FTrackBarrier& Barrier, AActor& Owner);
+	UAGX_TrackComponent* InstantiateTrack(
+		const FTrackBarrier& Barrier, AActor& Owner, bool IsBlueprintOwner);
 
 	/**
 	 * We currently do not have full Observer Frame support in AGX Dynamics for Unreal, i.e. there

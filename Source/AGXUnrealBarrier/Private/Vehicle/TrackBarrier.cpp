@@ -12,6 +12,8 @@
 #include "Vehicle/TrackPropertiesBarrier.h"
 #include "Vehicle/TrackPropertiesRef.h"
 #include "Vehicle/TrackRef.h"
+#include "Vehicle/TrackWheelBarrier.h"
+#include "Vehicle/TrackWheelRef.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -229,6 +231,23 @@ TArray<FName> FTrackBarrier::GetCollisionGroups() const
 		Result.Add(FName(*FString::FromInt(Id)));
 	}
 	return Result;
+}
+
+TArray<FTrackWheelBarrier> FTrackBarrier::GetWheels() const
+{
+	check(HasNative());
+	TArray<FTrackWheelBarrier> Wheels;
+
+	for (agxVehicle::TrackWheelRef Wheel : NativeRef->Native->getWheels())
+	{
+		if (Wheel == nullptr)
+		{
+			continue;
+		}
+		Wheels.Add(FTrackWheelBarrier(std::make_unique<FTrackWheelRef>(Wheel.get())));
+	}
+
+	return Wheels;
 }
 
 int32 FTrackBarrier::GetNumNodes() const
