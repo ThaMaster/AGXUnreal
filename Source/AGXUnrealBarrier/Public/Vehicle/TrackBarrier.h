@@ -63,6 +63,7 @@ public:
 
 	void ClearMaterial();
 	void SetMaterial(const FShapeMaterialBarrier& Material);
+	FShapeMaterialBarrier GetMaterial() const;
 
 	void ClearProperties();
 	void SetProperties(const FTrackPropertiesBarrier& Properties);

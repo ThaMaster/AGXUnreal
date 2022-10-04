@@ -177,6 +177,18 @@ void FTrackBarrier::SetMaterial(const FShapeMaterialBarrier& Material)
 	NativeRef->Native->setMaterial(FAGX_AgxDynamicsObjectsAccess::GetFrom(&Material));
 }
 
+FShapeMaterialBarrier FTrackBarrier::GetMaterial() const
+{
+	check(HasNative());
+	agx::Material* Material = NativeRef->Native->getMaterial();
+	if (Material == nullptr)
+	{
+		return FShapeMaterialBarrier();
+	}
+
+	return FShapeMaterialBarrier(std::make_unique<FMaterialRef>(Material));
+}
+
 void FTrackBarrier::ClearProperties()
 {
 	check(HasNative());

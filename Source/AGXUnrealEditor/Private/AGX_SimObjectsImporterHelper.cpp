@@ -996,6 +996,15 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 	// as Wheels, TrackProperties asset etc, are handled below.
 	Component->CopyFrom(Barrier);
 
+	// Apply Shape Material.
+	FShapeMaterialBarrier ShapeMaterial = Barrier.GetMaterial();
+	if (ShapeMaterial.HasNative())
+	{
+		const FGuid Guid = ShapeMaterial.GetGuid();
+		UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
+		Component->ShapeMaterial = Material;
+	}
+
 	auto SetRigidBody = [&](UAGX_RigidBodyComponent* Body, FAGX_RigidBodyReference& BodyRef)
 	{
 		if (Body == nullptr)
