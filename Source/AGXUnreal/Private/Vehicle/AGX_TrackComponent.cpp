@@ -150,9 +150,9 @@ void UAGX_TrackComponent::RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlr
 void UAGX_TrackComponent::CopyFrom(const FTrackBarrier& Barrier)
 {
 	NumberOfNodes = Barrier.GetNumNodes();
-	Width = Barrier.GetWidth();
-	Thickness = Barrier.GetThickness();
-	InitialDistanceTension = Barrier.GetInitialDistanceTension();
+	Width = static_cast<float>(Barrier.GetWidth());
+	Thickness = static_cast<float>(Barrier.GetThickness());
+	InitialDistanceTension = static_cast<float>(Barrier.GetInitialDistanceTension());
 }
 
 int32 UAGX_TrackComponent::GetNumNodes() const

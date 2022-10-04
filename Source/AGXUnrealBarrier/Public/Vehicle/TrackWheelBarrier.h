@@ -28,6 +28,16 @@ public:
 
 	FRigidBodyBarrier GetRigidBody() const;
 
+	double GetRadius() const;
+
+	uint8 GetModel() const;
+
+	bool GetSplitSegments() const;
+
+	bool GetMoveNodesToRotationPlane() const;
+
+	bool GetMoveNodesToWheel() const;
+
 
 private:
 	std::unique_ptr<FTrackWheelRef> NativeRef;

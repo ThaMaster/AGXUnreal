@@ -41,3 +41,36 @@ FRigidBodyBarrier FTrackWheelBarrier::GetRigidBody() const
 
 	return FRigidBodyBarrier(std::make_unique<FRigidBodyRef>(NativeRef->Native->getRigidBody()));
 }
+
+double FTrackWheelBarrier::GetRadius() const
+{
+	check(HasNative());
+	return NativeRef->Native->getRadius();
+}
+
+uint8 FTrackWheelBarrier::GetModel() const
+{
+	check(HasNative());
+	return static_cast<uint8>(NativeRef->Native->getModel());
+}
+
+bool FTrackWheelBarrier::GetSplitSegments() const
+{
+	check(HasNative());
+	return NativeRef->Native->getProperties().get() &
+		   static_cast<uint32>(agxVehicle::TrackWheel::SPLIT_SEGMENTS);
+}
+
+bool FTrackWheelBarrier::GetMoveNodesToRotationPlane() const
+{
+	check(HasNative());
+	return NativeRef->Native->getProperties().get() &
+		   static_cast<uint32>(agxVehicle::TrackWheel::MOVE_NODES_TO_ROTATION_PLANE);
+}
+
+bool FTrackWheelBarrier::GetMoveNodesToWheel() const
+{
+	check(HasNative());
+	return NativeRef->Native->getProperties().get() &
+		   static_cast<uint32>(agxVehicle::TrackWheel::MOVE_NODES_TO_WHEEL);
+}
