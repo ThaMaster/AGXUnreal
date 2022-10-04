@@ -147,6 +147,14 @@ void UAGX_TrackComponent::RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlr
 	}
 }
 
+void UAGX_TrackComponent::CopyFrom(const FTrackBarrier& Barrier)
+{
+	NumberOfNodes = Barrier.GetNumNodes();
+	Width = Barrier.GetWidth();
+	Thickness = Barrier.GetThickness();
+	InitialDistanceTension = Barrier.GetInitialDistanceTension();
+}
+
 int32 UAGX_TrackComponent::GetNumNodes() const
 {
 	if (HasNative())

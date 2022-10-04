@@ -73,6 +73,14 @@ public:
 
 	int32 GetNumNodes() const;
 
+	double GetWidth() const;
+
+	double GetThickness() const;
+
+	double GetInitialDistanceTension() const;
+
+	TArray<FGuid> GetInternalConstraintGuids() const;
+
 	FRigidBodyBarrier GetNodeBody(int index) const;
 
 	void GetNodeSizes(TArray<FVector>& OutNodeSizes) const;

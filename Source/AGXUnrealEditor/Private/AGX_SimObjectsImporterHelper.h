@@ -31,6 +31,7 @@ class UAGX_TwoBodyTireComponent;
 class UAGX_CollisionGroupDisablerComponent;
 class UAGX_ContactMaterialRegistrarComponent;
 class UAGX_WireComponent;
+class UAGX_TrackComponent;
 
 // Unreal Engine classes.
 class AActor;
@@ -95,6 +96,8 @@ public:
 		AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs);
 
 	UAGX_WireComponent* InstantiateWire(const FWireBarrier& Barrier, AActor& Owner);
+
+	UAGX_TrackComponent* InstantiateTrack(const FTrackBarrier& Barrier, AActor& Owner);
 
 	/**
 	 * We currently do not have full Observer Frame support in AGX Dynamics for Unreal, i.e. there

@@ -42,6 +42,7 @@
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
 #include "Wire/AGX_WireComponent.h"
+#include "Vehicle/AGX_TrackComponent.h"
 
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
@@ -971,6 +972,33 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	Component->RegisterComponent();
 	Component->PostEditChange();
 	// May chose to store a table of all imported wires. If so, add this wire to the table here.
+	return Component;
+}
+
+UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
+	const FTrackBarrier& Barrier, AActor& Owner)
+{
+	UAGX_TrackComponent* Component = NewObject<UAGX_TrackComponent>(&Owner);
+	if (Component == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Track"), Barrier.GetName(), SourceFilePath,
+			TEXT("Could not create new AGX_TrackComponent"));
+		return nullptr;
+	}
+
+	ConstraintIgnoreList.Append(Barrier.GetInternalConstraintGuids());
+
+	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
+
+	// Copy simple properties such as number of nodes and width. More complicated properties, such
+	// as Wheels, TrackProperties asset etc, are handled below.
+	Component->CopyFrom(Barrier);
+
+	Component->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Component);
+	Component->RegisterComponent();
+	Component->PostEditChange();
 	return Component;
 }
 

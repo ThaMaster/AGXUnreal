@@ -200,6 +200,14 @@ public:
 		return TrackPreviewNeedsUpdateEvent;
 	}
 
+	/*
+	 * Copy configuration from the given Barrier.
+	 * Only the basic properties, such as number of nodes and Width, are copied. More complicated
+	 * properties, such as Material, Wheels etc, must be handled elsewhere. During AGX
+	 * Dynamics archive import those are handled by Sim Objects Importer Helper.
+	 */
+	void CopyFrom(const FTrackBarrier& Barrier);
+
 	/**
 	 * Get the number of nodes in this track.
 	 *
@@ -227,7 +235,8 @@ public:
 	 *
 	 * @param OutTransform Array filled with one transform per node.
 	 * @param LocalScale All transforms' Scale is set to this value.
-	 * @param LocalOffset All transforms' Location is offset by this vector, rotated by each transforms' rotation.
+	 * @param LocalOffset All transforms' Location is offset by this vector, rotated by each
+	 * transforms' rotation.
 	 */
 	void GetNodeTransforms(
 		TArray<FTransform>& OutTransforms, const FVector& LocalScale,

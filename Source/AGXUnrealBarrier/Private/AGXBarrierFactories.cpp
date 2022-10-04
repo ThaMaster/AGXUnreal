@@ -7,6 +7,7 @@
 #include "Contacts/ContactPointEntity.h"
 
 #include "AGXRefs.h"
+#include "Vehicle/TrackRef.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -145,4 +146,9 @@ FWireNodeBarrier AGXBarrierFactories::CreateWireNodeBarrier(agxWire::Node* Node)
 FWireWinchBarrier AGXBarrierFactories::CreateWireWinchBarrier(agxWire::WireWinchController* Winch)
 {
 	return {std::make_unique<FWireWinchRef>(Winch)};
+}
+
+FTrackBarrier AGXBarrierFactories::CreateTrackBarrier(agxVehicle::Track* Track)
+{
+	return {std::make_unique<FTrackRef>(Track)};
 }

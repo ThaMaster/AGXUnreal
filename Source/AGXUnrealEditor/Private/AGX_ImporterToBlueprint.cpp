@@ -44,6 +44,7 @@
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Vehicle/AGX_TrackComponent.h"
 
 // Unreal Engine includes.
 #include "ActorFactories/ActorFactoryEmptyActor.h"
@@ -364,6 +365,12 @@ namespace
 		virtual void InstantiateWire(const FWireBarrier& Barrier) override
 		{
 			Helper.InstantiateWire(Barrier, BlueprintTemplate);
+		}
+
+		virtual void InstantiateTrack(
+			const FTrackBarrier& Barrier) override
+		{
+			Helper.InstantiateTrack(Barrier, BlueprintTemplate);
 		}
 
 		virtual void InstantiateObserverFrame(const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) override
