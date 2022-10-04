@@ -4,7 +4,9 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
+#include "TypeConversions.h"
 #include "Vehicle/TrackWheelRef.h"
+
 
 FTrackWheelBarrier::FTrackWheelBarrier()
 	: NativeRef {new FTrackWheelRef}
@@ -45,7 +47,7 @@ FRigidBodyBarrier FTrackWheelBarrier::GetRigidBody() const
 double FTrackWheelBarrier::GetRadius() const
 {
 	check(HasNative());
-	return NativeRef->Native->getRadius();
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getRadius());
 }
 
 uint8 FTrackWheelBarrier::GetModel() const

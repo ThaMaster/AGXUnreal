@@ -153,6 +153,23 @@ void UAGX_TrackComponent::CopyFrom(const FTrackBarrier& Barrier)
 	Width = static_cast<float>(Barrier.GetWidth());
 	Thickness = static_cast<float>(Barrier.GetThickness());
 	InitialDistanceTension = static_cast<float>(Barrier.GetInitialDistanceTension());
+	CollisionGroups = Barrier.GetCollisionGroups();
+
+	if (Barrier.GetNumNodes() > 0)
+	{
+		FRigidBodyBarrier FirstBodyBarrier = Barrier.GetNodeBody(0);
+		if (FirstBodyBarrier.HasNative())
+		{
+			const FMassPropertiesBarrier& MassProperties = FirstBodyBarrier.GetMassProperties();
+
+			bAutoGenerateMass = MassProperties.GetAutoGenerateMass();
+			bAutoGenerateCenterOfMassOffset = MassProperties.GetAutoGenerateCenterOfMassOffset();
+			bAutoGeneratePrincipalInertia = MassProperties.GetAutoGeneratePrincipalInertia();
+			NodeMass = MassProperties.GetMass();
+			NodeCenterOfMassOffset = FirstBodyBarrier.GetCenterOfMassOffset();
+			NodePrincipalInertia = MassProperties.GetPrincipalInertia();
+		}
+	}
 }
 
 int32 UAGX_TrackComponent::GetNumNodes() const
