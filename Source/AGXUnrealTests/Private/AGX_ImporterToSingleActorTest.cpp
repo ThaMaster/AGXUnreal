@@ -2,7 +2,7 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 
-// AGX Dynamics require the AGX-Wires license for wire and track import. Our GitLab CI
+// AGX Dynamics require a license for wire and track import. Our GitLab CI
 // runtime environment on Linux currently doesn't have an AGX Dynamics license so the
 // wire and track import test always fails on that platform. Our GitLab CI runtime environment on
 // Windows does have a license. For now the test is disabled through this preprocessor flag for
@@ -41,7 +41,7 @@ static_assert(false);
 #if AGX_TEST_TRACK_IMPORT
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/AGX_TrackInternalMergePropertiesBase.h"
-#include "Vehicle/AGX_TrackPropertiesBase.h"
+#include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/AGX_TrackWheel.h"
 #endif
 #if AGX_TEST_WIRE_IMPORT
@@ -2991,15 +2991,15 @@ bool FCheckTrackImportedCommand::Update()
 			"Hinge Damping Rotational X", Track->TrackProperties->HingeDampingRotational_X, 0.0333);
 		Test.TestEqual(
 			"Hinge Damping Rotational Y", Track->TrackProperties->HingeDampingRotational_Y, 0.0333);
-		Test.TestEqual("Hinge Range Enabled", Track->TrackProperties->bHingeRangeEnabled, true);
+		Test.TestEqual("Hinge Range Enabled", Track->TrackProperties->bEnableHingeRange, true);
 		Test.TestEqual("Hinge Range Min", Track->TrackProperties->HingeRange.Min, -120.0);
 		Test.TestEqual("Hinge Range Max", Track->TrackProperties->HingeRange.Max, 20.0);
 		Test.TestEqual(
 			"On Initialize Merge Nodes to Wheels Enabled",
-			Track->TrackProperties->bOnInitializeMergeNodesToWheelsEnabled, false);
+			Track->TrackProperties->bEnableOnInitializeMergeNodesToWheels, false);
 		Test.TestEqual(
 			"On Initialize Transform Nodes to Wheels Enabled",
-			Track->TrackProperties->bOnInitializeTransformNodesToWheelsEnabled, true);
+			Track->TrackProperties->bEnableOnInitializeTransformNodesToWheels, true);
 		Test.TestEqual(
 			"Transform Nodes to Wheels Overlap",
 			Track->TrackProperties->TransformNodesToWheelsOverlap, 0.1);
@@ -3055,21 +3055,21 @@ bool FCheckTrackImportedCommand::Update()
 			"Number of Roller Wheels",
 			Track->Wheels
 				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
-								   { return Wheel.Model == EAGX_TrackWheelModel::TWM_ROLLER; })
+								   { return Wheel.Model == EAGX_TrackWheelModel::Roller; })
 				.Num(),
 			10);
 		Test.TestEqual(
 			"Number of Sprocket Wheels",
 			Track->Wheels
 				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
-								   { return Wheel.Model == EAGX_TrackWheelModel::TWM_SPROCKET; })
+								   { return Wheel.Model == EAGX_TrackWheelModel::Sprocket; })
 				.Num(),
 			1);
 		Test.TestEqual(
 			"Number of Idler Wheels",
 			Track->Wheels
 				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
-								   { return Wheel.Model == EAGX_TrackWheelModel::TWM_IDLER; })
+								   { return Wheel.Model == EAGX_TrackWheelModel::Idler; })
 				.Num(),
 			1);
 		Test.TestEqual(

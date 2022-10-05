@@ -31,6 +31,7 @@ class UAGX_PrismaticConstraintComponent;
 // Other AGXUnreal classes.
 class FContactMaterialBarrier;
 class UAGX_RigidBodyComponent;
+struct FAssetToDiskInfo;
 
 // Unreal Engine classes.
 class AActor;
@@ -175,15 +176,18 @@ public:
 	static void MakePackageAndAssetNameUnique(FString& PackageName, FString& AssetName);
 
 	/**
-	 * Save the given package/asset pair to disk.
-	 * @param Package The package in which the asset will be saved..
-	 * @param Asset The asset to save.
-	 * @param PackagePath Asset path to the package. Often starting with "/Game/"
-	 * @param AssetName The ane of the asset to save.
-	 * @return The filename of the saved file, or the empty string on error.
+	 * Write the given asset to disk.
+	 * @param AtdInfo Data needed for writing the asset to disk.
+	 * @return True if the Write was successful, false othersise.
 	 */
-	static bool FinalizeAndSavePackage(
-		UPackage* Package, UObject* Asset, const FString& PackagePath, const FString& AssetName);
+	static bool FinalizeAndSavePackage(FAssetToDiskInfo& AtdInfo);
+
+	/**
+	 * Write the given static mesh assets to disk in bulk, which utilizes multi-threaded mesh build.
+	 * @param StaticMeshAssetInfos Array of data needed for writing the assets to disk.
+	 * @return True if all of the Writes was successful, false otherwise.
+	 */
+	static bool FinalizeAndSaveStaticMeshPackages(TArray<FAssetToDiskInfo>& StaticMeshAssetInfos);
 
 	/**
 	 * Create a new UStaticMesh asset from the given mesh data. The StaticMesh asset is saved to
@@ -215,7 +219,7 @@ public:
 		AActor& Owner, USceneComponent& Outer, UStaticMesh& MeshAsset, bool bRegister);
 
 	/**
-	 * Creates a new UAGX_ShapeMaterialAsset for a shape material and returns the shape material
+	 * Creates a new UAGX_ShapeMaterial for a shape material and returns the shape material
 	 * asset path. Returns empty string if the asset could not be created.
 	 */
 	static FString CreateShapeMaterialAsset(

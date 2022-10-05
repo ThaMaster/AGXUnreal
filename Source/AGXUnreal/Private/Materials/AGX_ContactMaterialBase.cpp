@@ -13,9 +13,9 @@
 #include "Engine/World.h"
 
 UAGX_ContactMaterialInstance* UAGX_ContactMaterialBase::GetOrCreateInstance(
-	UAGX_ContactMaterialRegistrarComponent* Registrar, UAGX_ContactMaterialBase*& Property)
+	UAGX_ContactMaterialRegistrarComponent& Registrar, UAGX_ContactMaterialBase*& Property)
 {
-	UWorld* PlayingWorld = Registrar->GetWorld();
+	UWorld* PlayingWorld = Registrar.GetWorld();
 	if (Property == nullptr || PlayingWorld == nullptr || !PlayingWorld->IsGameWorld())
 	{
 		return nullptr;
@@ -186,7 +186,7 @@ void UAGX_ContactMaterialBase::SetPrimaryDirection(const FVector& InPrimaryDirec
 	PrimaryDirection = InPrimaryDirection;
 }
 
-bool UAGX_ContactMaterialBase::IsOrientedFrictionModel()
+bool UAGX_ContactMaterialBase::IsOrientedFrictionModel() const
 {
 	return ::IsOrientedFrictionModel(FrictionModel);
 }

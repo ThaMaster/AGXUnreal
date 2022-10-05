@@ -2,39 +2,39 @@
 
 #include "Materials/AGX_ShapeMaterialAssetTypeActions.h"
 
-#include "Materials/AGX_ShapeMaterialAsset.h"
+#include "Materials/AGX_ShapeMaterial.h"
 
-#define LOCTEXT_NAMESPACE "FAGX_ShapeMaterialAssetTypeActions"
+#define LOCTEXT_NAMESPACE "FAGX_ShapeMaterialTypeActions"
 
-FAGX_ShapeMaterialAssetTypeActions::FAGX_ShapeMaterialAssetTypeActions(
+FAGX_ShapeMaterialTypeActions::FAGX_ShapeMaterialTypeActions(
 	EAssetTypeCategories::Type InAssetCategory)
 	: AssetCategory(InAssetCategory)
 {
 }
 
-FText FAGX_ShapeMaterialAssetTypeActions::GetName() const
+FText FAGX_ShapeMaterialTypeActions::GetName() const
 {
 	return LOCTEXT("AssetName", "AGX Shape Material");
 }
 
-uint32 FAGX_ShapeMaterialAssetTypeActions::GetCategories()
+uint32 FAGX_ShapeMaterialTypeActions::GetCategories()
 {
 	return AssetCategory;
 }
 
-FColor FAGX_ShapeMaterialAssetTypeActions::GetTypeColor() const
+FColor FAGX_ShapeMaterialTypeActions::GetTypeColor() const
 {
 	return FColor(255, 115, 0);
 }
 
-FText FAGX_ShapeMaterialAssetTypeActions::GetAssetDescription(const FAssetData& AssetData) const
+FText FAGX_ShapeMaterialTypeActions::GetAssetDescription(const FAssetData& AssetData) const
 {
 	return LOCTEXT("AssetDescription", "Defines bulk and surface properties of AGX Shapes.");
 }
 
-UClass* FAGX_ShapeMaterialAssetTypeActions::GetSupportedClass() const
+UClass* FAGX_ShapeMaterialTypeActions::GetSupportedClass() const
 {
-	return UAGX_ShapeMaterialAsset::StaticClass();
+	return UAGX_ShapeMaterial::StaticClass();
 }
 
 #undef LOCTEXT_NAMESPACE

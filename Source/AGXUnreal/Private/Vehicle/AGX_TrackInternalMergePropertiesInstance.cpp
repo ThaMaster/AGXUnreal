@@ -62,15 +62,6 @@ void UAGX_TrackInternalMergePropertiesInstance::UnregisterTargetTrack(UAGX_Track
 	TargetTracks.Remove(Track);
 }
 
-bool UAGX_TrackInternalMergePropertiesInstance::IsValidTarget(UAGX_TrackComponent* Track)
-{
-	return
-		IsValid(Track) &&
-		Track->HasNative() &&
-		Track->InternalMergeProperties != nullptr &&
-		Track->InternalMergeProperties->GetInstance() == this;
-}
-
 void UAGX_TrackInternalMergePropertiesInstance::UpdateNativePropertiesOnAllTargetTracks()
 {
 	for (TWeakObjectPtr<UAGX_TrackComponent>& Track : TargetTracks)
@@ -108,17 +99,6 @@ void UAGX_TrackInternalMergePropertiesInstance::UpdateNativePropertiesOnTrack(UA
 	TrackBarrier->InternalMergeProperties_SetLockToReachMergeConditionDamping(LockToReachMergeConditionDamping);
 	TrackBarrier->InternalMergeProperties_SetMaxAngleMergeCondition(MaxAngleMergeCondition);
 }
-
-UAGX_TrackInternalMergePropertiesInstance* UAGX_TrackInternalMergePropertiesInstance::GetInstance()
-{
-	return this;
-}
-
-UAGX_TrackInternalMergePropertiesInstance* UAGX_TrackInternalMergePropertiesInstance::GetOrCreateInstance(
-	UWorld* PlayingWorld)
-{
-	return this;
-};
 
 void UAGX_TrackInternalMergePropertiesInstance::SetMergeEnabled(bool bEnabled)
 {
@@ -178,7 +158,7 @@ void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionEnab
 	}
 }
 
-void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionCompliance(FAGX_Real Compliance)
+void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionCompliance(double Compliance)
 {
 	Super::SetLockToReachMergeConditionCompliance(Compliance);
 
@@ -192,7 +172,7 @@ void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionComp
 	}
 }
 
-void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionDamping(FAGX_Real Damping)
+void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionDamping(double Damping)
 {
 	Super::SetLockToReachMergeConditionDamping(Damping);
 
@@ -206,7 +186,7 @@ void UAGX_TrackInternalMergePropertiesInstance::SetLockToReachMergeConditionDamp
 	}
 }
 
-void UAGX_TrackInternalMergePropertiesInstance::SetMaxAngleMergeCondition(FAGX_Real MaxAngleToMerge)
+void UAGX_TrackInternalMergePropertiesInstance::SetMaxAngleMergeCondition(double MaxAngleToMerge)
 {
 	Super::SetMaxAngleMergeCondition(MaxAngleToMerge);
 
@@ -218,4 +198,24 @@ void UAGX_TrackInternalMergePropertiesInstance::SetMaxAngleMergeCondition(FAGX_R
 				this->MaxAngleMergeCondition);
 		}
 	}
+}
+
+UAGX_TrackInternalMergePropertiesInstance* UAGX_TrackInternalMergePropertiesInstance::GetInstance()
+{
+	return this;
+}
+
+UAGX_TrackInternalMergePropertiesInstance* UAGX_TrackInternalMergePropertiesInstance::GetOrCreateInstance(
+	UWorld* PlayingWorld)
+{
+	return this;
+}
+
+bool UAGX_TrackInternalMergePropertiesInstance::IsValidTarget(UAGX_TrackComponent* Track)
+{
+	return
+		IsValid(Track) &&
+		Track->HasNative() &&
+		Track->InternalMergeProperties != nullptr &&
+		Track->InternalMergeProperties->GetInstance() == this;
 }

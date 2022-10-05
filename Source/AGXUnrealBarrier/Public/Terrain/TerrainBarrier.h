@@ -51,6 +51,11 @@ public:
 	void SetShapeMaterial(const FShapeMaterialBarrier& Material);
 	void SetTerrainMaterial(const FTerrainMaterialBarrier& TerrainMaterial);
 
+	/**
+	 * Clears both the internal shape and terrain materials.
+	 */
+	void ClearMaterial();
+
 	int32 GetGridSizeX() const;
 	int32 GetGridSizeY() const;
 

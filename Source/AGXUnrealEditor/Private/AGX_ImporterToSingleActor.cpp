@@ -92,9 +92,9 @@ namespace
 	{
 	public:
 		SingleActorInstantiator(
-			UWorld& InWorld, AActor& InActor, USceneComponent& InRoot,
-			const FString& InArchiveFilePath)
-			: Helper(InArchiveFilePath)
+			UWorld& InWorld, FAGX_SimObjectsImporterHelper& InHelper, AActor& InActor,
+			USceneComponent& InRoot)
+			: Helper(InHelper)
 			, World(InWorld)
 			, Actor(InActor)
 			, Root(InRoot)
@@ -267,8 +267,13 @@ namespace
 			Helper.InstantiateObserverFrame(Name, BodyGuid, Transform, Actor);
 		}
 
+		virtual void FinalizeImports() override
+		{
+			Helper.FinalizeImports();
+		}
+
 	private:
-		FAGX_SimObjectsImporterHelper Helper;
+		FAGX_SimObjectsImporterHelper& Helper;
 		UWorld& World;
 		AActor& Actor;
 		USceneComponent& Root;
@@ -325,7 +330,8 @@ AActor* AGX_ImporterToSingleActor::ImportAGXArchive(const FString& ArchivePath)
 		return nullptr;
 	}
 
-	SingleActorInstantiator Instantiator(*Data.World, *Data.NewActor, *Data.NewRoot, ArchivePath);
+	FAGX_SimObjectsImporterHelper Helper(ArchivePath);
+	SingleActorInstantiator Instantiator(*Data.World, Helper, *Data.NewActor, *Data.NewRoot);
 	FAGXSimObjectsReader::ReadAGXArchive(ArchivePath, Instantiator);
 	return Data.NewActor;
 }
@@ -342,7 +348,8 @@ AActor* AGX_ImporterToSingleActor::ImportURDF(
 		return nullptr;
 	}
 
-	SingleActorInstantiator Instantiator(*Data.World, *Data.NewActor, *Data.NewRoot, UrdfFilePath);
+	FAGX_SimObjectsImporterHelper Helper(UrdfFilePath);
+	SingleActorInstantiator Instantiator(*Data.World, Helper, *Data.NewActor, *Data.NewRoot);
 	FAGXSimObjectsReader::ReadUrdf(UrdfFilePath, UrdfPackagePath, Instantiator);
 	return Data.NewActor;
 }

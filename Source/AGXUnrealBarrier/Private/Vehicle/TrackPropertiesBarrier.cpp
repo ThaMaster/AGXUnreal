@@ -1,6 +1,5 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Vehicle/TrackPropertiesBarrier.h"
 
 // AGX Dynamics for Unreal includes.
@@ -8,16 +7,21 @@
 #include "TypeConversions.h"
 
 // AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agx/Hinge.h>
+#include <agxVehicle/TrackProperties.h>
+#include "EndAGXIncludes.h"
+
+// Unreal Engine includes.
 #include <Misc/AssertionMacros.h>
 
-
 FTrackPropertiesBarrier::FTrackPropertiesBarrier()
-	: NativeRef{ new FTrackPropertiesRef }
+	: NativeRef {new FTrackPropertiesRef}
 {
 }
 
 FTrackPropertiesBarrier::FTrackPropertiesBarrier(FTrackPropertiesBarrier&& Other)
-	: NativeRef{ std::move(Other.NativeRef) }
+	: NativeRef {std::move(Other.NativeRef)}
 {
 }
 
@@ -67,6 +71,8 @@ FGuid FTrackPropertiesBarrier::GetGuid() const
 	return Guid;
 }
 
+// Hinge compliance.
+
 void FTrackPropertiesBarrier::SetHingeCompliance(double Compliance, int32 DOF)
 {
 	check(HasNative());
@@ -79,10 +85,40 @@ void FTrackPropertiesBarrier::SetHingeComplianceTranslational(double Compliance)
 	NativeRef->Native->setHingeComplianceTranslational(Compliance);
 }
 
+void FTrackPropertiesBarrier::SetHingeComplianceTranslationalX(double Compliance)
+{
+	check(HasNative());
+	NativeRef->Native->setHingeCompliance(Compliance, agx::Hinge::TRANSLATIONAL_1);
+}
+
+void FTrackPropertiesBarrier::SetHingeComplianceTranslationalY(double Compliance)
+{
+	check(HasNative());
+	NativeRef->Native->setHingeCompliance(Compliance, agx::Hinge::TRANSLATIONAL_2);
+}
+
+void FTrackPropertiesBarrier::SetHingeComplianceTranslationalZ(double Compliance)
+{
+	check(HasNative());
+	NativeRef->Native->setHingeCompliance(Compliance, agx::Hinge::TRANSLATIONAL_3);
+}
+
 void FTrackPropertiesBarrier::SetHingeComplianceRotational(double Compliance)
 {
 	check(HasNative());
 	NativeRef->Native->setHingeComplianceRotational(Compliance);
+}
+
+void FTrackPropertiesBarrier::SetHingeComplianceRotationalX(double Compliance)
+{
+	check(HasNative());
+	NativeRef->Native->setHingeCompliance(Compliance, agx::Hinge::ROTATIONAL_1);
+}
+
+void FTrackPropertiesBarrier::SetHingeComplianceRotationalY(double Compliance)
+{
+	check(HasNative());
+	NativeRef->Native->setHingeCompliance(Compliance, agx::Hinge::ROTATIONAL_2);
 }
 
 double FTrackPropertiesBarrier::GetHingeCompliance(int32 DOF) const
@@ -90,6 +126,8 @@ double FTrackPropertiesBarrier::GetHingeCompliance(int32 DOF) const
 	check(HasNative());
 	return NativeRef->Native->getHingeCompliance(static_cast<agx::Hinge::DOF>(DOF));
 }
+
+// Hinge Damping.
 
 void FTrackPropertiesBarrier::SetHingeDamping(double Damping, int32 DOF)
 {
@@ -103,10 +141,40 @@ void FTrackPropertiesBarrier::SetHingeDampingTranslational(double Damping)
 	NativeRef->Native->setHingeDampingTranslational(Damping);
 }
 
+void FTrackPropertiesBarrier::SetHingeDampingTranslationalX(double Damping)
+{
+	check(HasNative());
+	NativeRef->Native->setHingeDamping(Damping, agx::Hinge::TRANSLATIONAL_1);
+}
+
+void FTrackPropertiesBarrier::SetHingeDampingTranslationalY(double Damping)
+{
+	check(HasNative());
+	NativeRef->Native->setHingeDamping(Damping, agx::Hinge::TRANSLATIONAL_2);
+}
+
+void FTrackPropertiesBarrier::SetHingeDampingTranslationalZ(double Damping)
+{
+	check(HasNative());
+	NativeRef->Native->setHingeDamping(Damping, agx::Hinge::TRANSLATIONAL_3);
+}
+
 void FTrackPropertiesBarrier::SetHingeDampingRotational(double Damping)
 {
 	check(HasNative());
 	NativeRef->Native->setHingeDampingRotational(Damping);
+}
+
+void FTrackPropertiesBarrier::SetHingeDampingRotationalX(double Damping)
+{
+	check(HasNative());
+	NativeRef->Native->setHingeDamping(agx::Hinge::ROTATIONAL_1);
+}
+
+void FTrackPropertiesBarrier::SetHingeDampingRotationalY(double Damping)
+{
+	check(HasNative());
+	NativeRef->Native->setHingeDamping(agx::Hinge::ROTATIONAL_2);
 }
 
 double FTrackPropertiesBarrier::GetHingeDamping(int32 DOF) const
@@ -115,13 +183,15 @@ double FTrackPropertiesBarrier::GetHingeDamping(int32 DOF) const
 	return NativeRef->Native->getHingeDamping(static_cast<agx::Hinge::DOF>(DOF));
 }
 
-void FTrackPropertiesBarrier::SetEnableHingeRange(bool bEnable)
+// Hinge range.
+
+void FTrackPropertiesBarrier::SetHingeRangeEnabled(bool bEnable)
 {
 	check(HasNative());
 	NativeRef->Native->setEnableHingeRange(bEnable);
 }
 
-bool FTrackPropertiesBarrier::GetEnableHingeRange() const
+bool FTrackPropertiesBarrier::GetHingeRangeEnabled() const
 {
 	check(HasNative());
 	return NativeRef->Native->getEnableHingeRange();
@@ -142,25 +212,25 @@ FAGX_RealInterval FTrackPropertiesBarrier::GetHingeRangeRange() const
 	return RangeUnreal;
 }
 
-void FTrackPropertiesBarrier::SetEnableOnInitializeMergeNodesToWheels(bool bEnable)
+void FTrackPropertiesBarrier::SetOnInitializeMergeNodesToWheelsEnabled(bool bEnable)
 {
 	check(HasNative());
 	NativeRef->Native->setEnableOnInitializeMergeNodesToWheels(bEnable);
 }
 
-bool FTrackPropertiesBarrier::GetEnableOnInitializeMergeNodesToWheels() const
+bool FTrackPropertiesBarrier::GetOnInitializeMergeNodesToWheelsEnabled() const
 {
 	check(HasNative());
 	return NativeRef->Native->getEnableOnInitializeMergeNodesToWheels();
 }
 
-void FTrackPropertiesBarrier::SetEnableOnInitializeTransformNodesToWheels(bool bEnable)
+void FTrackPropertiesBarrier::SetOnInitializeTransformNodesToWheelsEnabled(bool bEnable)
 {
 	check(HasNative());
 	NativeRef->Native->setEnableOnInitializeTransformNodesToWheels(bEnable);
 }
 
-bool FTrackPropertiesBarrier::GetEnableOnInitializeTransformNodesToWheels() const
+bool FTrackPropertiesBarrier::GetOnInitializeTransformNodesToWheelsEnabled() const
 {
 	check(HasNative());
 	return NativeRef->Native->getEnableOnInitializeTransformNodesToWheels();

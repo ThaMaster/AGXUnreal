@@ -18,8 +18,8 @@
 UENUM(BlueprintType)
 enum class EAGX_TrackWheelModel : uint8
 {
-	TWM_SPROCKET UMETA(DisplayName = "Sprocket", ToolTip = "Geared driving wheel. Will merge track nodes to itself."),
-	TWM_IDLER UMETA(DisplayName = "Idler", ToolTip = "Geared non-powered wheel. Will merge track nodes to itself."),
-	TWM_ROLLER UMETA(DisplayName = "Roller", ToolTip = "Track return or road wheel.")
+	Sprocket UMETA(DisplayName = "Sprocket", ToolTip = "Geared driving wheel. Will merge track nodes to itself."),
+	Idler UMETA(DisplayName = "Idler", ToolTip = "Geared non-powered wheel. Will merge track nodes to itself."),
+	Roller UMETA(DisplayName = "Roller", ToolTip = "Track return or road wheel.")
 };
 // clang-format on

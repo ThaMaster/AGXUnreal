@@ -181,6 +181,11 @@ public:
 	 */
 	virtual void InstantiateObserverFrame(const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) = 0;
 
+	/*
+	 * Must be called at the end of an import.
+	 */
+	virtual void FinalizeImports() = 0;
+
 	virtual ~FAGXSimObjectsInstantiator() = default;
 };
 

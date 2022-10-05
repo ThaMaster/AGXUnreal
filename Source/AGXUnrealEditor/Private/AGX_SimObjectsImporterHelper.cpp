@@ -31,20 +31,19 @@
 #include "Shapes/RenderDataBarrier.h"
 #include "Materials/AGX_ContactMaterialAsset.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
-#include "Materials/AGX_ShapeMaterialAsset.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
-#include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/AGX_TrackInternalMergePropertiesAsset.h"
-#include "Vehicle/AGX_TrackPropertiesAsset.h"
+#include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/TrackPropertiesBarrier.h"
 #include "Vehicle/TrackWheelBarrier.h"
 
@@ -211,8 +210,7 @@ namespace
 	}
 
 	/**
-	 * Convert the given Trimesh to an Unreal Engine Static Mesh asset stored in the StaticMeshes
-	 * folder in the imported model's folder in the ImportedAGXModels folder.
+	 * Convert the given Trimesh to an Unreal Engine Static Mesh asset.
 	 *
 	 * The created meshes are cached on the Trimesh's Mesh Data GUID so asking for the same mesh
 	 * again will return the previously created Static Mesh asset.
@@ -224,9 +222,9 @@ namespace
 	 * stored.
 	 * @return
 	 */
-	UStaticMesh* GetOrCreateStaticMeshAsset(
+	FAssetToDiskInfo GetOrCreateStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& FallbackName,
-		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName)
+		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes, const FString& DirectoryName)
 	{
 		const FGuid Guid = Trimesh.GetMeshDataGuid();
 		if (!Guid.IsValid())
@@ -237,25 +235,24 @@ namespace
 				Trimesh, DirectoryName, FallbackName);
 		}
 
-		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
+		if (RestoredMeshes.Contains(Guid))
 		{
 			// We have seen this mesh before, use the one in the cache.
-			return Asset;
+			return RestoredMeshes[Guid];
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
-		UStaticMesh* Asset =
+		FAssetToDiskInfo AtdInfo =
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryName, FallbackName);
-		if (Asset != nullptr)
+		if (AtdInfo.Asset != nullptr)
 		{
-			RestoredMeshes.Add(Guid, Asset);
+			RestoredMeshes.Add(Guid, AtdInfo);
 		}
-		return Asset;
+		return AtdInfo;
 	}
 
 	/**
-	 * Convert the given Render Data to an Unreal Engine Static Mesh asset stored in the
-	 * RenderMeshes folder in the imported model's folder in the ImportedAGXModels folder.
+	 * Convert the given Render Data to an Unreal Engine Static Mesh asset.
 	 *
 	 * The created meshes are cached on GUID so asking for the same Render Data mesh again will
 	 * return the previously created Static Mesh asset.
@@ -266,8 +263,8 @@ namespace
 	 * stored.
 	 * @return The Static Mesh asset for the given Render Data.
 	 */
-	UStaticMesh* GetOrCreateStaticMeshAsset(
-		const FRenderDataBarrier& RenderData, TMap<FGuid, UStaticMesh*>& RestoredMeshes,
+	FAssetToDiskInfo GetOrCreateStaticMeshAsset(
+		const FRenderDataBarrier& RenderData, TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes,
 		const FString& DirectoryName)
 	{
 		const FGuid Guid = RenderData.GetGuid();
@@ -278,25 +275,25 @@ namespace
 			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
 		}
 
-		if (UStaticMesh* Asset = RestoredMeshes.FindRef(Guid))
+		if (RestoredMeshes.Contains(Guid))
 		{
 			// We have seen this mesh before, use the one in the cache.
-			return Asset;
+			return RestoredMeshes[Guid];
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
-		UStaticMesh* Asset =
+		FAssetToDiskInfo AtdInfo =
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
-		if (Asset != nullptr)
+		if (AtdInfo.Asset != nullptr)
 		{
-			RestoredMeshes.Add(Guid, Asset);
+			RestoredMeshes.Add(Guid, AtdInfo);
 		}
-		return Asset;
+		return AtdInfo;
 	}
 
-	UAGX_TrackPropertiesAsset* GetOrCreateTrackPropertiesAsset(
+	UAGX_TrackProperties* GetOrCreateTrackPropertiesAsset(
 		const FTrackPropertiesBarrier& Barrier,
-		const FString& Name, TMap<FGuid, UAGX_TrackPropertiesAsset*>& RestoredTrackProperties,
+		const FString& Name, TMap<FGuid, UAGX_TrackProperties*>& RestoredTrackProperties,
 		const FString& DirectoryName)
 	{
 		const FGuid Guid = Barrier.GetGuid();
@@ -308,14 +305,14 @@ namespace
 				Barrier, DirectoryName, Name);
 		}
 
-		if (UAGX_TrackPropertiesAsset* Asset = RestoredTrackProperties.FindRef(Guid))
+		if (UAGX_TrackProperties* Asset = RestoredTrackProperties.FindRef(Guid))
 		{
 			// We have seen this asset before, use the one in the cache.
 			return Asset;
 		}
 
 		// This is a new Track Properties. Create the asset and add to the cache.
-		UAGX_TrackPropertiesAsset* Asset =
+		UAGX_TrackProperties* Asset =
 			FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(Barrier, DirectoryName, Name);
 		if (Asset != nullptr)
 		{
@@ -342,7 +339,7 @@ namespace
 	void ApplyRenderingData(
 		const FRenderDataBarrier& RenderData, const FTransform& RenderMeshTransform,
 		UAGX_ShapeComponent& Component, UMeshComponent& VisualMesh,
-		TMap<FGuid, UStaticMesh*>& RestoredMeshes,
+		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials, const FString& DirectoryName)
 	{
 		VisualMesh.SetVisibility(false);
@@ -351,8 +348,9 @@ namespace
 		UStaticMeshComponent* RenderDataComponent = nullptr;
 		if (RenderData.HasMesh())
 		{
-			UStaticMesh* RenderDataMeshAsset =
+			FAssetToDiskInfo AtdInfo =
 				GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
+			UStaticMesh* RenderDataMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
 			if (RenderDataMeshAsset != nullptr)
 			{
 				// The new Static Mesh Component must be a child of the Visual Mesh and not the
@@ -417,9 +415,9 @@ namespace
 	 */
 	void FinalizeShape(
 		UAGX_ShapeComponent& Component, const FShapeBarrier& Barrier,
-		const TMap<FGuid, UAGX_ShapeMaterialAsset*>& RestoredShapeMaterials,
+		const TMap<FGuid, UAGX_ShapeMaterial*>& RestoredShapeMaterials,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials,
-		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName,
+		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes, const FString& DirectoryName,
 		UMeshComponent& VisualMesh)
 	{
 		Component.UpdateVisualMesh();
@@ -430,7 +428,7 @@ namespace
 		if (NativeMaterial.HasNative())
 		{
 			const FGuid Guid = NativeMaterial.GetGuid();
-			UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
+			UAGX_ShapeMaterial* Material = RestoredShapeMaterials.FindRef(Guid);
 			Component.ShapeMaterial = Material;
 		}
 
@@ -588,8 +586,9 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	}
 	Component->MeshSourceLocation = EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 	const FString FallbackName = Body != nullptr ? Body->GetName() : Owner.GetName();
-	UStaticMesh* MeshAsset =
+	FAssetToDiskInfo AtdInfo =
 		GetOrCreateStaticMeshAsset(Barrier, FallbackName, RestoredMeshes, DirectoryName);
+	UStaticMesh* MeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
 	if (MeshAsset == nullptr)
 	{
 		// No point in continuing further. Logging handled in GetOrCreateStaticMeshAsset.
@@ -634,11 +633,11 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	return Component;
 }
 
-UAGX_ShapeMaterialAsset* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
+UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
 	/// \todo Do we need any special handling of the default material?
-	UAGX_ShapeMaterialAsset* Asset =
+	UAGX_ShapeMaterial* Asset =
 		FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(Barrier, DirectoryName);
 	RestoredShapeMaterials.Add(Barrier.GetGuid(), Asset);
 	return Asset;
@@ -856,7 +855,7 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	if (NativeMaterial.HasNative())
 	{
 		const FGuid Guid = NativeMaterial.GetGuid();
-		UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
+		UAGX_ShapeMaterial* Material = RestoredShapeMaterials.FindRef(Guid);
 		Component->ShapeMaterial = Material;
 	}
 
@@ -1034,7 +1033,7 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 	if (ShapeMaterial.HasNative())
 	{
 		const FGuid Guid = ShapeMaterial.GetGuid();
-		UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
+		UAGX_ShapeMaterial* Material = RestoredShapeMaterials.FindRef(Guid);
 		Component->ShapeMaterial = Material;
 	}
 
@@ -1045,7 +1044,7 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 		const FString AssetName =
 			BarrierName.IsEmpty() ? FString("AGX_TP_Track") : FString("AGX_TP_") + BarrierName;
 
-		UAGX_TrackPropertiesAsset* TrackProperties = GetOrCreateTrackPropertiesAsset(
+		UAGX_TrackProperties* TrackProperties = GetOrCreateTrackPropertiesAsset(
 			Barrier.GetProperties(), AssetName, RestoredTrackProperties, DirectoryName);
 		if (TrackProperties == nullptr)
 		{
@@ -1199,7 +1198,7 @@ FAGX_SimObjectsImporterHelper::FBodyPair FAGX_SimObjectsImporterHelper::GetBodie
 	return {GetBody(Barrier.GetFirstBody()), GetBody(Barrier.GetSecondBody())};
 }
 
-UAGX_ShapeMaterialAsset* FAGX_SimObjectsImporterHelper::GetShapeMaterial(
+UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::GetShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
 	return RestoredShapeMaterials.FindRef(Barrier.GetGuid());
@@ -1211,6 +1210,13 @@ FAGX_SimObjectsImporterHelper::FShapeMaterialPair FAGX_SimObjectsImporterHelper:
 	return {
 		GetShapeMaterial(ContactMaterial.GetMaterial1()),
 		GetShapeMaterial(ContactMaterial.GetMaterial2())};
+}
+
+void FAGX_SimObjectsImporterHelper::FinalizeImports()
+{
+	TArray<FAssetToDiskInfo> AtdInfos;
+	RestoredMeshes.GenerateValueArray(AtdInfos);
+	FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(AtdInfos);
 }
 
 namespace

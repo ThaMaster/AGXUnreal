@@ -378,26 +378,30 @@ FVector FTrackBarrier::GetNodeSize(uint64 index) const
 }
 
 void FTrackBarrier::GetNodeTransforms(
-	TArray<FTransform>& Transforms, const FVector& LocalScale, const FVector& LocalOffset) const
+	TArray<FTransform>& OutTransforms, const FVector& LocalScale, const FVector& LocalOffset) const
 {
 	check(HasNative());
 
 	// Resize output array if necessary.
 	agx::UInt NumNodes = NativeRef->Native->getNumNodes();
-	if (Transforms.Num() != NumNodes)
-		Transforms.SetNum(NumNodes, /*bAllowShrinking*/ true);
+	if (OutTransforms.Num() != NumNodes)
+	{
+		// Retain the container buffer so that the same transform cache can be reused for multiple
+		// tracks without reallocation every time.
+		OutTransforms.SetNum(NumNodes, /*bAllowShrinking*/ false);
+	}
 
 	agxVehicle::TrackNodeRange Nodes = NativeRef->Native->nodes();
 	int32 i = 0;
 	for (agxVehicle::TrackNodeIterator It = Nodes.begin(); It != Nodes.end(); ++It)
 	{
 		// \todo Could optimize this since we currently set the same passed-in scale on all nodes.
-		Transforms[i].SetScale3D(LocalScale);
+		OutTransforms[i].SetScale3D(LocalScale);
 
-		Transforms[i].SetRotation(Convert(It->getRigidBody()->getRotation()));
+		OutTransforms[i].SetRotation(Convert(It->getRigidBody()->getRotation()));
 
-		FVector WorldOffset = Transforms[i].GetRotation().RotateVector(LocalOffset);
-		Transforms[i].SetLocation(ConvertDisplacement(It->getCenterPosition()) + WorldOffset);
+		FVector WorldOffset = OutTransforms[i].GetRotation().RotateVector(LocalOffset);
+		OutTransforms[i].SetLocation(ConvertDisplacement(It->getCenterPosition()) + WorldOffset);
 
 		++i;
 	}
@@ -537,7 +541,7 @@ void FTrackBarrier::GetDebugData(
 void FTrackBarrier::GetPreviewData(
 	TArray<FTransform>& OutNodeTransforms, TArray<FVector>& OutNodeHalfExtents, uint64 NumNodes,
 	double Width, double Thickness, double InitialTensionDistance,
-	const TArray<FTrackBarrier::FTrackWheelDesc>& Wheels)
+	const TArray<FTrackBarrier::FTrackWheelDescription>& Wheels)
 {
 	using namespace agxVehicle;
 

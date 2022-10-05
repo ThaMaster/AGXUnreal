@@ -12,6 +12,7 @@
 
 // Standard library includes.
 #include <memory>
+#include <tuple>
 
 struct FGeometryAndShapeRef;
 class FShapeMaterialBarrier;

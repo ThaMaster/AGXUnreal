@@ -124,7 +124,12 @@ public:
 	virtual void SetFrictionModel(EAGX_FrictionModel InFrictionModel);
 
 	/**
-	 * Constant normal force used by the friction model 'Constant Normal Force Box Friction'.
+	 * Constant normal force used by the friction model 'Constant Normal Force Box Friction'. [N]
+	 *
+	 * This should be set to an estimation of the force, in Newtons, by which the two colliding
+	 * objects are being pushed together. If the main contributor to this force is gravity then
+	 * this value should be set to the mass of the upper object and any additional load it is
+	 * carrying times the gravitational acceleration in m/s^2, i.e. around 9.8.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Friction",
@@ -177,7 +182,11 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "Friction",
 		Meta =
-			(ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondaryFrictionCoefficient"))
+			(ClampMin = "0.0", UIMin = "0.0",
+			 // We would like to include a check for oriented friction model here, but Unreal
+			 // Engine 4.26 doesn't support that in combination with InlineEditConditionToggle on
+			 // bUseSecondarySurfaceViscosity.
+			 EditCondition = "bUseSecondaryFrictionCoefficient"))
 	FAGX_Real SecondaryFrictionCoefficient;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
@@ -220,7 +229,12 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Friction",
-		Meta = (ClampMin = "0.0", UIMin = "0.0", EditCondition = "bUseSecondarySurfaceViscosity"))
+		Meta =
+			(ClampMin = "0.0", UIMin = "0.0",
+			 // We would like to include a check for oriented friction model here, but Unreal
+			 // Engine 4.26 doesn't support that in combination with InlineEditConditionToggle on
+			 // bUseSecondarySurfaceViscosity.
+			 EditCondition = "bUseSecondarySurfaceViscosity"))
 	FAGX_Real SecondarySurfaceViscosity;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
@@ -259,6 +273,16 @@ public:
 	FVector PrimaryDirection;
 	// clang-format on
 
+	/**
+	 * Set the primary, or forward, direction of this Contact Material.
+	 *
+	 * For an oriented friction model this is the direction that uses the regular friction and
+	 * surface viscosity parameters. The secondary direction, a vector in the friction plane and
+	 * perpendicular to the primary direction, uses the secondary friction and surface viscosity,
+	 * if either or both of them are enabled.
+	 *
+	 * The primary direction is only used by the oriented friction models.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetPrimaryDirection(const FVector& InPrimaryDirection);
 
@@ -300,7 +324,7 @@ public:
 	// clang-format on
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
-	bool IsOrientedFrictionModel();
+	bool IsOrientedFrictionModel() const;
 	/**
 	 * Material restitution, i.e. how "bouncy" the normal collisions are.
 	 *
@@ -360,7 +384,7 @@ public:
 	 * PlayingWorld is not an in-game world.
 	 */
 	static UAGX_ContactMaterialInstance* GetOrCreateInstance(
-		UAGX_ContactMaterialRegistrarComponent* Registrar, UAGX_ContactMaterialBase*& Property);
+		UAGX_ContactMaterialRegistrarComponent& Registrar, UAGX_ContactMaterialBase*& Property);
 
 	UAGX_ContactMaterialBase();
 
@@ -376,7 +400,7 @@ public:
 	 * itself. Returns null if not in-game (invalid call).
 	 */
 	virtual UAGX_ContactMaterialInstance* GetOrCreateInstance(
-		UAGX_ContactMaterialRegistrarComponent* Registrar)
+		UAGX_ContactMaterialRegistrarComponent& Registrar)
 		PURE_VIRTUAL(UAGX_ContactMaterialBase::GetOrCreateInstance, return nullptr;);
 
 	/**

@@ -7,9 +7,7 @@
 #include "AGX_Simulation.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_PropertyChangedDispatcher.h"
-#include "Materials/AGX_ShapeMaterialAsset.h"
-#include "Materials/AGX_ShapeMaterialBase.h"
-#include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engien includes.
@@ -310,7 +308,7 @@ namespace AGX_StaticMeshComponent_helpers
 	{
 		// No asset pointers should remain after a swap. If we fail to create an instance then we
 		// should fall back to the default material, with a warning.
-		UAGX_ShapeMaterialBase* Asset = Shape.Material;
+		UAGX_ShapeMaterial* Asset = Shape.Material;
 		Shape.Material = nullptr;
 
 		if (Asset == nullptr)
@@ -327,8 +325,8 @@ namespace AGX_StaticMeshComponent_helpers
 		}
 
 		FShapeMaterialBarrier* Barrier = nullptr;
-		UAGX_ShapeMaterialInstance* Instance =
-			Cast<UAGX_ShapeMaterialInstance>(Asset->GetOrCreateInstance(&World));
+		UAGX_ShapeMaterial* Instance =
+			Cast<UAGX_ShapeMaterial>(Asset->GetOrCreateInstance(&World));
 		if (Instance == nullptr)
 		{
 			/// \todo Better error message.

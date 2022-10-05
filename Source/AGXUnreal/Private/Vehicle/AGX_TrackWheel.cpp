@@ -62,14 +62,14 @@ EAGX_TrackWheelModel FAGX_TrackWheel::ToModel(uint8 Model)
 	switch (Model)
 	{
 		case 0:
-			return EAGX_TrackWheelModel::TWM_SPROCKET;
+			return EAGX_TrackWheelModel::Sprocket;
 		case 1:
-			return EAGX_TrackWheelModel::TWM_IDLER;
+			return EAGX_TrackWheelModel::Idler;
 		case 2:
-			return EAGX_TrackWheelModel::TWM_ROLLER;
+			return EAGX_TrackWheelModel::Roller;
 	}
 
 	UE_LOG(
 		LogAGX, Error, TEXT("Unknown model type: '%d' passed to FAGX_TrackWheel::ToModel."), Model);
-	return EAGX_TrackWheelModel::TWM_IDLER;
+	return EAGX_TrackWheelModel::Idler;
 }

@@ -6,8 +6,6 @@
 #include "AGX_NativeOwner.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "Vehicle/AGX_TrackWheel.h"
-
-// AGX Dynamics for Unreal barrier includes.
 #include "Vehicle/TrackBarrier.h"
 
 // Unreal Engine includes.
@@ -16,9 +14,8 @@
 
 #include "AGX_TrackComponent.generated.h"
 
-class UAGX_ShapeMaterialBase;
-class UAGX_TrackWheelComponent;
-class UAGX_TrackPropertiesBase;
+class UAGX_ShapeMaterial;
+class UAGX_TrackProperties;
 class UAGX_TrackInternalMergePropertiesBase;
 
 /**
@@ -34,12 +31,13 @@ public:
 
 /**
  * Experimental
- * This feature is experimental and may change in the next release. We do not
- * guarantee backwards compatibility.
+ * This feature is experimental and may change in the next release. We do not guarantee backwards
+ * compatibility.
  *
  *
- * Given a set of wheels, automatically generates a continuous track with a given number of shoes
- * (nodes).
+ * Given a set of wheels, automatically generates a continuous track with a given number of shoes,
+ * also called Track Nodes. Each generated shoe become a separately simulated Rigid Body within
+ * AGX Dynamics, connected together using constraints.
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
@@ -55,25 +53,25 @@ public:
 	 * Whether the AGX Dynamics Tracks should be created or not. Cannot be changed while playing.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	bool bEnabled;
+	bool bEnabled = true;
 
 	/**
 	 * Number of nodes in the track.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	int NumberOfNodes;
+	int NumberOfNodes = 20;
 
 	/**
 	 * Width of the track nodes [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	float Width;
+	float Width = 50.0f;
 
 	/**
 	 * Thickness of the track nodes [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	float Thickness;
+	float Thickness = 15.0f;
 
 	/**
 	 * Value (distance) of how much shorter each node should be which causes tension
@@ -83,14 +81,27 @@ public:
 	 * tension after the system has been created.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	float InitialDistanceTension;
+	float InitialDistanceTension = 0.01f;
 
+	/**
+	 * Define the bulk and surface properties of each generated shoe.
+	 *
+	 * It is recommended to also create a Contact Material between the selected Shape Material and
+	 * the Shape Materials set on the Shapes that the Track will drive on.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	UAGX_ShapeMaterialBase* ShapeMaterial;
+	UAGX_ShapeMaterial* ShapeMaterial;
 
+	/**
+	 * Additional properties defining the setup and behavior of the Track.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	UAGX_TrackPropertiesBase* TrackProperties;
+	UAGX_TrackProperties* TrackProperties;
 
+	/**
+	 * Properties controlling how the Rigid Bodies created for the Track shoes may be merged with
+	 * each other.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
 	UAGX_TrackInternalMergePropertiesBase* InternalMergeProperties;
 
@@ -104,14 +115,14 @@ public:
 	 * The mass of the each track node Rigid Body [kg].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track", Meta = (EditCondition = "!bAutoGenerateMass"))
-	float NodeMass;
+	float NodeMass = 1.0f;
 
 	/**
 	 * Whether the track node mass should be computed automatically from the collision shape
 	 * volume and material density.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	bool bAutoGenerateMass;
+	bool bAutoGenerateMass = true;
 
 	/**
 	 * Center of mass offset [cm].
@@ -119,13 +130,13 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Track",
 		Meta = (EditCondition = "!bAutoGenerateCenterOfMassOffset"))
-	FVector NodeCenterOfMassOffset;
+	FVector NodeCenterOfMassOffset = FVector::ZeroVector;
 
 	/**
 	 * Whether the center of mass offset should be computed automatically.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	bool bAutoGenerateCenterOfMassOffset;
+	bool bAutoGenerateCenterOfMassOffset = true;
 
 	/**
 	 * The three-component diagonal of the inertia tensor [kgm^2].
@@ -133,13 +144,13 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Track",
 		Meta = (EditCondition = "!bAutoGeneratePrincipalInertia"))
-	FVector NodePrincipalInertia;
+	FVector NodePrincipalInertia = FVector::OneVector;
 
 	/**
 	 * Whether the principal inertia should be computed automatically.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	bool bAutoGeneratePrincipalInertia;
+	bool bAutoGeneratePrincipalInertia = true;
 
 	/**
 	 * An array of track wheels that are used to route the track and determine interaction
@@ -170,14 +181,14 @@ public:
 	 *
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Debug Visual")
-	bool bShowEditorDebugGraphics;
+	bool bShowEditorDebugGraphics = true;
 
 	/**
 	 * Whether the debug graphics should colorize the collision boxes based on merged states
 	 * (black means no merge).
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Debug Visual")
-	bool bColorizeMergedBodies;
+	bool bColorizeMergedBodies = false;
 
 	/**
 	 * Whether this component should try to update the Track Preview (debug rendering and actual
@@ -187,7 +198,7 @@ public:
 	 * or the 'Update Visuals' button from the Track Renderer's Detail Panel.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Debug Visual")
-	bool bAutoUpdateTrackPreview;
+	bool bAutoUpdateTrackPreview = true;
 
 	/**
 	 * Event that broadcasts whenever the outside-of-play Track Preview Data has changed.
@@ -228,12 +239,12 @@ public:
 	 *
 	 * Scale is set to LocalScale and location is offset by LocalOffset * Rotation.
 	 *
-	 * During editing the node transform are taken from the preview data. If no prevew data is
-	 * available then OutTransform is emptied. During Play, including Play-In-Editor, the node
+	 * During editing the node transforms are taken from the preview data. If no preview data is
+	 * available then OutTransforms is emptied. During Play, including Play-In-Editor, the node
 	 * transforms are read from the AGX Dynamics Track instance. Used for track rendering while
 	 * playing.
 	 *
-	 * @param OutTransform Array filled with one transform per node.
+	 * @param OutTransforms Array filled with one transform per node.
 	 * @param LocalScale All transforms' Scale is set to this value.
 	 * @param LocalOffset All transforms' Location is offset by this vector, rotated by each
 	 * transforms' rotation.
@@ -324,7 +335,7 @@ public:
 private:
 #if WITH_EDITOR
 	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each
-	// and every UPROPERTY in PostEditChangeProperty and PostEditChangeChainProperty.
+	// and every Property in PostEditChangeProperty and PostEditChangeChainProperty.
 	void InitPropertyDispatcher();
 #endif
 
@@ -336,7 +347,7 @@ private:
 	void CreateNative();
 
 	// Set ShapeMaterial assignment on native. Create native ShapeMaterial if not yet created.
-	void WriteShapeMaterialToNative();
+	void UpdateNativeMaterial();
 
 	// Set TrackProperties assignment on native. Create native TrackProperties if not yet created.
 	void WriteTrackPropertiesToNative();
@@ -352,7 +363,7 @@ private:
 	 * onto the native in runtime. Writes all properties to native, except for those only
 	 * used during initialization.
 	 */
-	void WritePropertiesToNative();
+	void UpdateNativeProperties();
 
 private:
 	// The AGX Dynamics object only exists while simulating.
@@ -360,7 +371,7 @@ private:
 	FTrackBarrier NativeBarrier;
 
 	mutable TSharedPtr<FAGX_TrackPreviewData> TrackPreview = nullptr;
-	mutable bool bTrackPreviewNeedsUpdate;
+	mutable bool bTrackPreviewNeedsUpdate = true;
 
 	FTrackPreviewNeedsUpdateEvent TrackPreviewNeedsUpdateEvent;
 };

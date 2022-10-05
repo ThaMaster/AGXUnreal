@@ -32,7 +32,7 @@ struct FTrackRef;
 class AGXUNREALBARRIER_API FTrackBarrier
 {
 public:
-	struct FTrackWheelDesc
+	struct FTrackWheelDescription
 	{
 		uint8 Model;
 		double Radius;
@@ -100,7 +100,7 @@ public:
 	 * location is offset by LocalOffset * Rotation. Used for track rendering while playing.
 	 */
 	void GetNodeTransforms(
-		TArray<FTransform>& Transforms, const FVector& LocalScale,
+		TArray<FTransform>& OutTransforms, const FVector& LocalScale,
 		const FVector& LocalOffset) const;
 
 	/**
@@ -119,7 +119,7 @@ public:
 	static void GetPreviewData(
 		TArray<FTransform>& OutNodeTransforms, TArray<FVector>& OutNodeHalfExtents, uint64 NumNodes,
 		double Width, double Thickness, double InitialTensionDistance,
-		const TArray<FTrackWheelDesc>& Wheels);
+		const TArray<FTrackWheelDescription>& Wheels);
 
 	// Internal Merge Properties.
 

@@ -39,7 +39,16 @@ enum class EAGX_MergedTrackNodeContactReduction : uint8
  * Properties and thresholds for internal merging of nodes in AGX Track Component.
  *
  * Does not own any AGX Native. Instead, it applies its data to the native Track of each
- * Track Component that uses this asset.
+ * Track Component that uses this asset. This means that modifications done directly on a Track
+ * will overwrite the state set by a Track Internal Merge Properties but it will not override
+ * it, meaning that setting the property on the Track Internal Merge Properties again will overwrite
+ * the value set on the Track directly. Reading will always read the Track Internal Merge Properties
+ * value, which may be different from the Tracks' value(s) if it has been overwritten on a
+ * particular Track.
+ *
+ * Base class. Inherited by the -Asset subclass, which represents assets created in the Content
+ * Browser, and the -Instance subclass, which represents an instance of the asset and exists during
+ * a single Play session only.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable, abstract)
 class AGXUNREAL_API UAGX_TrackInternalMergePropertiesBase : public UObject
@@ -56,19 +65,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
 	virtual void SetMergeEnabled(bool bInEnabled);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
+	virtual bool GetMergeEnabled() const;
+
 	/**
-	 * Maximum number of consecutive nodes that may merge together into a segment.
+	 * Maximum number of consecutive nodes that may be merged together into a segment.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Track Internal Merge Properties",
 		Meta = (EditCondition = "bMergeEnabled", ClampMin = "1"))
-	uint32 NumNodesPerMergeSegment;
+	int32 NumNodesPerMergeSegment;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
-	virtual void SetNumNodesPerMergeSegment(int InNumNodesPerMergeSegment);
+	virtual void SetNumNodesPerMergeSegment(int32 InNumNodesPerMergeSegment);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
+	virtual int32 GetNumNodesPerMergeSegment() const;
 
 	/**
-	 * Contact reduction level of merged nodes against other objects.
+	 * Contact reduction level of merged nodes against other objects, such as ground.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Track Internal Merge Properties",
@@ -78,8 +93,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
 	virtual void SetContactReduction(EAGX_MergedTrackNodeContactReduction InContactReduction);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
+	virtual EAGX_MergedTrackNodeContactReduction GetContactReduction() const;
+
 	/**
-	 * Whether to enable the usage of hinge lock to reach merge condition (angle close to zero).
+	 * Whether to enable the usage of hinge lock to reach merge condition, i.e. angle close to zero.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Track Internal Merge Properties",
@@ -89,22 +107,35 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
 	virtual void SetLockToReachMergeConditionEnabled(bool bEnabled);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
+	virtual bool GetLockToReachMergeConditionEnabled() const;
+
 	/**
-	 * Compliance of the hinge lock used to reach merge condition.
+	 * Compliance of the hinge lock used to reach merge condition. [rad/Nm]
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Track Internal Merge Properties",
 		Meta =
 			(EditCondition = "bMergeEnabled && bLockToReachMergeConditionEnabled",
-			 ClampMin = "0.000000000000000001", ClampMax = "1.0"))
+			 ClampMin = "0.0"))
 	FAGX_Real LockToReachMergeConditionCompliance;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
-	void SetLockToReachMergeConditionCompliance_AsFloat(float Compliance);
-	virtual void SetLockToReachMergeConditionCompliance(FAGX_Real Compliance);
+	virtual double GetLockToReachMergeConditionCompliance() const;
+
+	virtual void SetLockToReachMergeConditionCompliance(double Compliance);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Internal Merge Properties",
+		Meta = (DisplayName = "Get Lock To Reach Merge Condition Compliance"))
+	float GetLockToReachMergeConditionCompliance_BP() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Internal Merge Properties",
+		Meta = (DisplayName = "Set Lock To Reach Merge Condition Compliance"))
+	virtual void SetLockToReachMergeConditionCompliance_BP(float Compliance);
 
 	/**
-	 * Damping of the hinge lock used to reach merge condition.
+	 * Damping of the hinge lock used to reach merge condition. [s]
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Track Internal Merge Properties",
@@ -113,9 +144,19 @@ public:
 			 ClampMin = "0.0"))
 	FAGX_Real LockToReachMergeConditionDamping;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
-	void SetLockToReachMergeConditionDamping_AsFloat(float Damping);
-	virtual void SetLockToReachMergeConditionDamping(FAGX_Real Damping);
+	virtual double GetLockToReachMergeConditionDamping() const;
+
+	virtual void SetLockToReachMergeConditionDamping(double Damping);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Internal Merge Properties",
+		Meta = (DislayName = "Get Lock To Reach Merge Condition Damping"))
+	virtual float GetLockToReachMergeConditionDamping_BP() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Internal Merge Properties",
+		Meta = (DisplayName = "Set Lock To Reach Merge Condition Damping"))
+	virtual void SetLockToReachMergeConditionDamping_BP(float Damping);
 
 	/**
 	 * Maximum angle to trigger merge between nodes. [degrees]
@@ -127,19 +168,21 @@ public:
 		Meta = (EditCondition = "bMergeEnabled"))
 	FAGX_Real MaxAngleMergeCondition;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
-	void SetMaxAngleMergeCondition_AsFloat(float MaxAngleToMerge);
-	virtual void SetMaxAngleMergeCondition(FAGX_Real MaxAngleToMerge);
+	virtual void SetMaxAngleMergeCondition(double MaxAngleToMerge);
+
+	virtual double GetMaxAngleMergeCondition() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Internal Merge Properties",
+		Meta = (DisplayName = "Get Max Angle Merge Condition"))
+	virtual float GetMaxAngleMergeCondition_BP() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Internal Merge Properties",
+		Meta = (DisplayName = "Set Max Angle Merge Condition"))
+	virtual void SetMaxAngleMergeCondition_BP(float MaxAngleToMerge);
 
 public:
-	/**
-	 * Invokes the member function GetOrCreateInstance() on TrackInternalMergeProperties pointed to
-	 * by Property, assigns the return value to Property, and then returns it. Returns null and does
-	 * nothing if PlayingWorld is not an in-game world.
-	 */
-	static UAGX_TrackInternalMergePropertiesInstance* GetOrCreateInstance(
-		UWorld* PlayingWorld, UAGX_TrackInternalMergePropertiesBase*& Property);
-
 	UAGX_TrackInternalMergePropertiesBase();
 
 	virtual ~UAGX_TrackInternalMergePropertiesBase();

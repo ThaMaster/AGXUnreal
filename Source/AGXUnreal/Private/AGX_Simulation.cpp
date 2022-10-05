@@ -10,7 +10,7 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterialInstance.h"
-#include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/ShapeBarrier.h"
 #include "Terrain/AGX_Terrain.h"
@@ -30,6 +30,31 @@
 #include "Misc/Paths.h"
 
 #include <algorithm>
+
+void UAGX_Simulation::SetNumThreads(int32 InNumThreads)
+{
+	if (NumThreads < 0)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("The number of threads cannot be negative."));
+		return;
+	}
+
+	NumThreads = InNumThreads;
+	if (HasNative())
+	{
+		NativeBarrier.SetNumThreads(static_cast<uint32>(NumThreads));
+	}
+}
+
+int32 UAGX_Simulation::GetNumThreads() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetNumThreads();
+	}
+
+	return NumThreads;
+}
 
 FAGX_Statistics UAGX_Simulation::GetStatistics()
 {
@@ -133,7 +158,7 @@ void UAGX_Simulation::Add(UAGX_ShapeComponent& Shape)
 	AGX_Simulation_helpers::Add(*this, Shape);
 }
 
-void UAGX_Simulation::Add(UAGX_ShapeMaterialInstance& Shape)
+void UAGX_Simulation::Add(UAGX_ShapeMaterial& Shape)
 {
 	EnsureStepperCreated();
 
@@ -206,7 +231,7 @@ void UAGX_Simulation::Remove(UAGX_ShapeComponent& Shape)
 	AGX_Simulation_helpers::Remove(*this, Shape);
 }
 
-void UAGX_Simulation::Remove(UAGX_ShapeMaterialInstance& Shape)
+void UAGX_Simulation::Remove(UAGX_ShapeMaterial& Shape)
 {
 	if (!HasNative())
 	{
@@ -436,6 +461,7 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 		NumPpgsIterations = NativeBarrier.GetNumPpgsIterations();
 	}
 
+	NativeBarrier.SetNumThreads(NumThreads);
 	SetGravity();
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
 
@@ -482,8 +508,12 @@ void UAGX_Simulation::InitPropertyDispatcher()
 	}
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bContactWarmstarting),
+		GET_MEMBER_NAME_CHECKED(ThisClass, bContactWarmstarting),
 		[](ThisClass* This) { This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, NumThreads),
+		[](ThisClass* This) { This->SetNumThreads(This->NumThreads); });
 }
 
 #endif

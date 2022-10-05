@@ -21,7 +21,7 @@ class UAGX_ConstraintComponent;
 class UAGX_ContactMaterialInstance;
 class UAGX_MaterialBase;
 class UAGX_RigidBodyComponent;
-class UAGX_ShapeMaterialInstance;
+class UAGX_ShapeMaterial;
 class UAGX_StaticMeshComponent;
 class UAGX_ShapeComponent;
 class UAGX_TireComponent;
@@ -58,12 +58,20 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 public: // Properties.
 
 	/**
-	 * Number of AGX threads. Default 1.
+	 * The number of threads AGX Dynamics will use during Play.
+	 *
+	 * Set to 0 to use all hardware threads.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, BlueprintReadOnly, Category = "General")
-		int NumThreads = 1;
+		Config, EditAnywhere, Category = "AGX Dynamics", Meta = (DisplayName = "Number of Threads"))
+	int32 NumThreads = 1;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetNumThreads(int32 InNumThreads);
+
+	UFUNCTION(BlueprintCallable, Category =  "AGX Dynamics")
+	int32 GetNumThreads() const;
+	
 	/**
 	 * Step length of the integrator [s].
 	 */
@@ -191,7 +199,8 @@ public: // Properties.
 	 * When moving the camera further away than this distance the on-screen size of the constraint
 	 * visualization will start to shrink along with the surrounding geometry.
 	 */
-	UPROPERTY(Config, EditAnywhere, Category = "Rendering", Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Rendering", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float ConstraintVisualizationScalingDistanceMax = 400.f;
 
 public: // Member functions.
@@ -255,7 +264,7 @@ public: // Member functions.
 	 */
 	void Add(UAGX_RigidBodyComponent& Body);
 	void Add(UAGX_ShapeComponent& Shape);
-	void Add(UAGX_ShapeMaterialInstance& Shape);
+	void Add(UAGX_ShapeMaterial& Shape);
 	void Add(UAGX_StaticMeshComponent& Body);
 	void Add(AAGX_Terrain& Terrain);
 	void Add(UAGX_TireComponent& Tire);
@@ -264,7 +273,7 @@ public: // Member functions.
 	void Remove(UAGX_ConstraintComponent& Constraint);
 	void Remove(UAGX_RigidBodyComponent& Body);
 	void Remove(UAGX_ShapeComponent& Shape);
-	void Remove(UAGX_ShapeMaterialInstance& Shape);
+	void Remove(UAGX_ShapeMaterial& Shape);
 	void Remove(UAGX_StaticMeshComponent& Body);
 	void Remove(AAGX_Terrain& Terrain);
 	void Remove(UAGX_TireComponent& Tire);

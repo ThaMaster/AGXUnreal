@@ -4,17 +4,12 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
-#include "Materials/AGX_ShapeMaterialInstance.h"
-#include "Utilities/AGX_ObjectUtilities.h"
-#include "Utilities/AGX_StringUtilities.h"
-#include "Vehicle/AGX_TrackPropertiesInstance.h"
+#include "Materials/AGX_ShapeMaterial.h"
+#include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/AGX_TrackInternalMergePropertiesInstance.h"
-
-// AGX Dynamics for Unreal Barrier includes.
 #include "Materials/ShapeMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Vehicle/TrackPropertiesBarrier.h"
@@ -23,39 +18,13 @@
 #include "Engine/GameInstance.h"
 #include "CoreGlobals.h"
 #include "GameFramework/Actor.h"
-#include "Math/Rotator.h"
 #include "Math/Quat.h"
-#include "Misc/EngineVersionComparison.h"
 #include "Engine/Classes/Components/HierarchicalInstancedStaticMeshComponent.h"
-
-//#define TRACK_COMPONENT_DETAILED_LOGGING
 
 UAGX_TrackComponent::UAGX_TrackComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
 	bWantsOnUpdateTransform = true;
-
-	// Sets default values.
-	bEnabled = true;
-	NumberOfNodes = 20;
-	Width = 50.0f;
-	Thickness = 15.0f;
-	InitialDistanceTension = 0.01f;
-
-	NodeMass = 1.0f;
-	NodeCenterOfMassOffset = FVector::ZeroVector;
-	NodePrincipalInertia = FVector::OneVector;
-
-	bAutoGenerateMass = true;
-	bAutoGenerateCenterOfMassOffset = true;
-	bAutoGeneratePrincipalInertia = true;
-
-	bShowEditorDebugGraphics = true;
-	bColorizeMergedBodies = false;
-	bAutoUpdateTrackPreview = true;
-
-	bTrackPreviewNeedsUpdate = true;
 }
 
 FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
@@ -82,7 +51,7 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 		}
 
 		// Create AGX barrier wheel descs.
-		TArray<FTrackBarrier::FTrackWheelDesc> WheelDescs;
+		TArray<FTrackBarrier::FTrackWheelDescription> WheelDescs;
 		WheelDescs.Reserve(Wheels.Num());
 		for (const auto& Wheel : Wheels)
 		{
@@ -90,11 +59,11 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 			if (!Body)
 				continue;
 
-			// Make sure world the transform is up-to-date.
+			// Make sure the world transform is up-to-date.
 			Body->ConditionalUpdateComponentToWorld();
 
 			// Create wheel data.
-			FTrackBarrier::FTrackWheelDesc Desc;
+			FTrackBarrier::FTrackWheelDescription Desc;
 			Desc.Model = static_cast<decltype(Desc.Model)>(Wheel.Model);
 			Desc.Radius = Wheel.Radius;
 			Desc.RigidBodyTransform = Body->GetComponentTransform();
@@ -108,15 +77,6 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 			Thickness, InitialDistanceTension, WheelDescs);
 
 		bTrackPreviewNeedsUpdate = false;
-
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-		UE_LOG(
-			LogAGX, Verbose,
-			TEXT("Generated Track Preview Data for '%s' (UID: %i) in '%s'. NodeCount = %i, "
-				 "WheelCount = %i."),
-			*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()), TrackPreview->NodeTransforms.Num(),
-			WheelDescs.Num());
-#endif
 	}
 
 	check(TrackPreview.IsValid());
@@ -125,7 +85,7 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 
 void UAGX_TrackComponent::RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlreadyRaised)
 {
-	bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
 	if (bIsPlaying)
 	{
 		return; // Track preview is only relevant when not playing.
@@ -137,12 +97,6 @@ void UAGX_TrackComponent::RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlr
 
 	if (bShouldBroadcastEvent)
 	{
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-		UE_LOG(
-			LogAGX, Verbose,
-			TEXT("Track Preview Data of '%s' (UID: %i) in '%s' needs update. Broadcasting event."),
-			*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
-#endif
 		TrackPreviewNeedsUpdateEvent.Broadcast(this);
 	}
 }
@@ -198,7 +152,9 @@ void UAGX_TrackComponent::GetNodeTransforms(
 	else if (TrackPreview.IsValid())
 	{
 		const int32 NumNodes = TrackPreview->NodeTransforms.Num();
-		OutTransforms.SetNum(NumNodes);
+		// Retain the container buffer so that the same transform cache can be reused for multiple
+		// tracks without reallocation every time.
+		OutTransforms.SetNum(NumNodes, /*bAllowShrinking*/ false);
 		for (int32 I = 0; I < NumNodes; ++I)
 		{
 			const FTransform& Source = TrackPreview->NodeTransforms[I];
@@ -211,7 +167,9 @@ void UAGX_TrackComponent::GetNodeTransforms(
 	}
 	else
 	{
-		OutTransforms.SetNum(0);
+		// Retain the container buffer so that the same transform cache can be reused for multiple
+		// tracks without reallocation every time.
+		OutTransforms.SetNum(0, /*bAllowShrinking*/ false);
 	}
 }
 
@@ -264,8 +222,8 @@ FTrackBarrier* UAGX_TrackComponent::GetOrCreateNative()
 
 		CreateNative();
 	}
-	check(HasNative()); /// \todo Consider better error handling than 'check'.
-	return &NativeBarrier;
+
+	return GetNative();
 }
 
 FTrackBarrier* UAGX_TrackComponent::GetNative()
@@ -333,7 +291,7 @@ bool UAGX_TrackComponent::CanEditChange(const FProperty* InProperty) const
 		return false;
 	}
 
-	bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
 	if (bIsPlaying)
 	{
 		// List of names of properties that does not support editing after initialization.
@@ -354,13 +312,6 @@ bool UAGX_TrackComponent::CanEditChange(const FProperty* InProperty) const
 
 void UAGX_TrackComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("UAGX_TrackComponent::PostEditChangeChainProperty() for '%s' (UID: %i) in '%s'."),
-		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
-#endif
-
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
@@ -371,13 +322,6 @@ void UAGX_TrackComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent
 
 void UAGX_TrackComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("UAGX_TrackComponent::PostEditChangeProperty() for '%s' (UID: %i) in '%s'."),
-		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
-#endif
-
 	// \note We trigger dispatch both here and from PostEditChangeChainProperty, because
 	// for example when editing a mass property while playing on a BP Actor Instance the
 	// PostEditChangeChainProperty appears to be called too late in the reconstruction.
@@ -479,14 +423,10 @@ void UAGX_TrackComponent::EndPlay(const EEndPlayReason::Type Reason)
 
 TStructOnScope<FActorComponentInstanceData> UAGX_TrackComponent::GetComponentInstanceData() const
 {
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("UAGX_TrackComponent::GetComponentInstanceData() for '%s' (UID: %i) in '%s'."),
-		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
-#endif
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_TrackComponentInstanceData>(
-		this, this, [](UActorComponent* Component) {
+		this, this,
+		[](UActorComponent* Component)
+		{
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
@@ -495,14 +435,6 @@ TStructOnScope<FActorComponentInstanceData> UAGX_TrackComponent::GetComponentIns
 void UAGX_TrackComponent::ApplyComponentInstanceData(
 	const FActorComponentInstanceData* Data, ECacheApplyPhase CacheApplyPhase)
 {
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("UAGX_TrackComponent::ApplyComponentInstanceData() for '%s' (UID: %i) in '%s'. Phase "
-			 "= %i."),
-		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()), (int) CacheApplyPhase);
-#endif
-
 	if (CacheApplyPhase == ECacheApplyPhase::PostUserConstructionScript)
 	{
 		// In the case of BP Actor Instances, there can be wheels added to the instance
@@ -531,15 +463,10 @@ void UAGX_TrackComponent::OnUpdateTransform(
 {
 	Super::OnUpdateTransform(UpdateTransformFlags, Teleport);
 
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-	UE_LOG(
-		LogAGX, Log, TEXT("UAGX_TrackComponent::OnUpdateTransform() for '%s' (UID: %i) in '%s'."),
-		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
-#endif
 	// \todo This event does not seem to be called when drag-moving an actor/component,
 	//       but not when writing values directly in the Detail Panel transform input fields.
 
-	bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
 	if (!bIsPlaying)
 	{
 		// \note Actually moving the TransformComponent does not itself means that track preview
@@ -566,7 +493,7 @@ void UAGX_TrackComponent::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TrackComponent, ShapeMaterial),
-		[](ThisClass* Self) { Self->WriteShapeMaterialToNative(); });
+		[](ThisClass* Self) { Self->UpdateNativeMaterial(); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TrackComponent, TrackProperties),
@@ -628,11 +555,46 @@ void UAGX_TrackComponent::ResolveComponentReferenceOwningActors()
 
 void UAGX_TrackComponent::CreateNative()
 {
-	check(!GIsReconstructingBlueprintInstances);
-	check(!HasNative());
+	// Check preconditions.
+	if (HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("CreateNative called on Track Component '%s' in '%s' even though a Native already "
+				 "exists. Doing nothing"),
+			*GetName(), *GetNameSafe(GetOwner()));
+		return;
+	}
+	if (!bEnabled)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("CreateNative called on disabled Track Component '%s' in '%s'. Doing nothing."),
+			*GetName(), *GetNameSafe(GetOwner()));
+		return;
+	}
+	if (GIsReconstructingBlueprintInstances)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("CreateNative called on a Track Component while a Blueprint Reconstruction is in "
+				 "progress. This is not allowed because during Blueprint Reconstruction AGX "
+				 "Dynamic objects are stashed in an Actor Component Instance Data and will be "
+				 "reused in the new AGX Actor Components. The Track Component is '%s' in '%s'. "
+				 "Doing nothing."),
+			*GetName(), *GetNameSafe(GetOwner()));
+		return;
+	}
+
 	NativeBarrier.AllocateNative(NumberOfNodes, Width, Thickness, InitialDistanceTension);
-	check(HasNative()); /// \todo Consider better error handling than 'check'.
-	check(bEnabled);
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Track Component '%s' in '%s' could not allocate native AGX Dynamics instance."),
+			*GetName(), *GetNameSafe(GetOwner()));
+		return;
+	}
 
 	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this);
 	if (!IsValid(Sim) || !Sim->HasNative())
@@ -691,7 +653,7 @@ void UAGX_TrackComponent::CreateNative()
 			*GetName(), *GetNameSafe(GetOwner()));
 	}
 
-	WritePropertiesToNative();
+	UpdateNativeProperties();
 
 	UE_LOG(
 		LogAGX, Verbose,
@@ -699,58 +661,49 @@ void UAGX_TrackComponent::CreateNative()
 		*GetName(), *GetNameSafe(GetOwner()), *NativeBarrier.GetNodeSize().ToString());
 }
 
-void UAGX_TrackComponent::WriteShapeMaterialToNative()
+void UAGX_TrackComponent::UpdateNativeMaterial()
 {
 	if (!HasNative() || !GetWorld() || !GetWorld()->IsGameWorld())
+	{
 		return;
-
-	if (ShapeMaterial)
-	{
-		UE_LOG(
-			LogAGX, Verbose, TEXT("Track '%s' in '%s' is writing ShapeMaterial '%s' to native."),
-			*GetName(), *GetNameSafe(GetOwner()), *ShapeMaterial->GetName());
-
-		// Create instance if necessary.
-		UAGX_ShapeMaterialInstance* MaterialInstance = static_cast<UAGX_ShapeMaterialInstance*>(
-			ShapeMaterial->GetOrCreateInstance(GetWorld()));
-		check(MaterialInstance);
-		// Replace asset reference with instance reference.
-		if (MaterialInstance != ShapeMaterial)
-		{
-			ShapeMaterial = MaterialInstance;
-		}
-		FShapeMaterialBarrier* MaterialBarrier =
-			MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
-		check(MaterialBarrier);
-
-		// Assign native.
-		GetNative()->SetMaterial(*MaterialBarrier);
 	}
-	else
-	{
-		UE_LOG(
-			LogAGX, Verbose, TEXT("Track '%s' in '%s' is clearing ShapeMaterial on native."),
-			*GetName(), *GetNameSafe(GetOwner()));
 
+	if (ShapeMaterial == nullptr)
+	{
 		GetNative()->ClearMaterial();
+		return;
 	}
+
+	// Create instance if necessary.
+	UAGX_ShapeMaterial* MaterialInstance =
+		static_cast<UAGX_ShapeMaterial*>(ShapeMaterial->GetOrCreateInstance(GetWorld()));
+	check(MaterialInstance);
+	// Replace asset reference with instance reference.
+	if (ShapeMaterial != MaterialInstance)
+	{
+		ShapeMaterial = MaterialInstance;
+	}
+
+	const FShapeMaterialBarrier* MaterialBarrier =
+		MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
+	check(MaterialBarrier);
+
+	// Assign native.
+	GetNative()->SetMaterial(*MaterialBarrier);
 }
 
 void UAGX_TrackComponent::WriteTrackPropertiesToNative()
 {
-	if (!HasNative() || !GetWorld() || !GetWorld()->IsGameWorld())
+	if (!HasNative() || GetWorld() == nullptr || !GetWorld()->IsGameWorld())
+	{
 		return;
+	}
 
 	if (TrackProperties)
 	{
-		UE_LOG(
-			LogAGX, Verbose, TEXT("Track '%s' in '%s' is writing TrackProperties '%s' to native."),
-			*GetName(), *GetNameSafe(GetOwner()), *TrackProperties->GetName());
-
 		// Create instance if necessary.
-		UAGX_TrackPropertiesInstance* TrackPropertiesInstance =
-			static_cast<UAGX_TrackPropertiesInstance*>(
-				TrackProperties->GetOrCreateInstance(GetWorld()));
+		UAGX_TrackProperties* TrackPropertiesInstance =
+			TrackProperties->GetOrCreateInstance(GetWorld());
 		check(TrackPropertiesInstance);
 
 		// Replace asset reference with instance reference.
@@ -760,17 +713,13 @@ void UAGX_TrackComponent::WriteTrackPropertiesToNative()
 		}
 
 		// Assign native.
-		FTrackPropertiesBarrier* TrackPropertiesBarrier =
-			TrackPropertiesInstance->GetOrCreateNative(GetWorld());
+		const FTrackPropertiesBarrier* TrackPropertiesBarrier =
+			TrackPropertiesInstance->GetOrCreateNative();
 		check(TrackPropertiesBarrier);
 		GetNative()->SetProperties(*TrackPropertiesBarrier);
 	}
 	else
 	{
-		UE_LOG(
-			LogAGX, Verbose, TEXT("Track '%s' in '%s' is clearing TrackProperties on native."),
-			*GetName(), *GetNameSafe(GetOwner()));
-
 		GetNative()->ClearProperties();
 	}
 }
@@ -799,12 +748,6 @@ void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 
 	if (InternalMergeProperties)
 	{
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-		UE_LOG(
-			LogAGX, Verbose,
-			TEXT("Track '%s' in '%s' is writing TrackInternalMergeProperties '%s' to native."),
-			*GetName(), *GetNameSafe(GetOwner()), *InternalMergeProperties->GetName());
-#endif
 		// Create instance if necessary.
 		UAGX_TrackInternalMergePropertiesInstance* InternalMergePropertiesInstance =
 			static_cast<UAGX_TrackInternalMergePropertiesInstance*>(
@@ -822,13 +765,6 @@ void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 	}
 	else
 	{
-#ifdef TRACK_COMPONENT_DETAILED_LOGGING
-		UE_LOG(
-			LogAGX, Verbose,
-			TEXT("Track '%s' in '%s' is clearing TrackInternalMergeProperties on native."),
-			*GetName(), *GetNameSafe(GetOwner()));
-#endif
-
 		// \todo Want to call TrackInternalMergeProperties::resetToDefault(), but doing so gives
 		//       very strange dynamics behaviour. It seems merge is supposed to become disbled but
 		//       it still remains enabled somehow.
@@ -896,18 +832,10 @@ void UAGX_TrackComponent::WriteMassPropertiesToNative()
 		{
 			NodePrincipalInertia = MassProperties.GetPrincipalInertia();
 		}
-
-		UE_LOG(
-			LogAGX, Log,
-			TEXT("Updated mass properties on Track '%s' in '%s'. First track node "
-				 "Mass = %f, CenterOfMass = %s, Principal Inertia = %s."),
-			*GetName(), *GetNameSafe(GetOwner()), MassProperties.GetMass(),
-			*FirstBodyBarrier.GetCenterOfMassOffset().ToString(),
-			*MassProperties.GetPrincipalInertia().ToString());
 	}
 }
 
-void UAGX_TrackComponent::WritePropertiesToNative()
+void UAGX_TrackComponent::UpdateNativeProperties()
 {
 	if (!HasNative())
 	{
@@ -917,7 +845,7 @@ void UAGX_TrackComponent::WritePropertiesToNative()
 	NativeBarrier.SetName(GetName());
 
 	// Set shape material on all native geometries.
-	WriteShapeMaterialToNative();
+	UpdateNativeMaterial();
 
 	// Set track properties.
 	WriteTrackPropertiesToNative();
