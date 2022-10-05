@@ -14,12 +14,11 @@
 // System includes.
 #include <memory>
 
-
 struct FTrackPropertiesRef;
 
 /**
- * Acts as an interface to a native AGX TrackProperties, and encapsulates it so that it is completely
- * hidden from code that includes this file.
+ * Acts as an interface to a native AGX TrackProperties, and encapsulates it so that it is
+ * completely hidden from code that includes this file.
  */
 class AGXUNREALBARRIER_API FTrackPropertiesBarrier
 {
@@ -42,27 +41,38 @@ public:
 
 	void SetHingeCompliance(double Compliance, int32 DOF);
 	void SetHingeComplianceTranslational(double Compliance);
+	void SetHingeComplianceTranslationalX(double Compliance);
+	void SetHingeComplianceTranslationalY(double Compliance);
+	void SetHingeComplianceTranslationalZ(double Compliance);
 	void SetHingeComplianceRotational(double Compliance);
+	void SetHingeComplianceRotationalX(double Compliance);
+	void SetHingeComplianceRotationalY(double Compliance);
+	void SetHingeComplianceRotationalZ(double Compliance);
 	double GetHingeCompliance(int32 DOF) const;
 
 	void SetHingeDamping(double Damping, int32 DOF);
 	void SetHingeDampingTranslational(double Damping);
+	void SetHingeDampingTranslationalX(double Damping);
+	void SetHingeDampingTranslationalY(double Damping);
+	void SetHingeDampingTranslationalZ(double Damping);
 	void SetHingeDampingRotational(double Damping);
+	void SetHingeDampingRotationalX(double Damping);
+	void SetHingeDampingRotationalY(double Damping);
 	double GetHingeDamping(int32 DOF) const;
 
-	void SetEnableHingeRange(bool bEnable);
-	bool GetEnableHingeRange() const;
+	void SetHingeRangeEnabled(bool bEnable);
+	bool GetHingeRangeEnabled() const;
 
 	void SetHingeRangeRange(FAGX_RealInterval MinMaxAngles);
 	FAGX_RealInterval GetHingeRangeRange() const;
 
 	// Merge/Split properties.
 
-	void SetEnableOnInitializeMergeNodesToWheels(bool bEnable);
-	bool GetEnableOnInitializeMergeNodesToWheels() const;
+	void SetOnInitializeMergeNodesToWheelsEnabled(bool bEnable);
+	bool GetOnInitializeMergeNodesToWheelsEnabled() const;
 
-	void SetEnableOnInitializeTransformNodesToWheels(bool bEnable);
-	bool GetEnableOnInitializeTransformNodesToWheels() const;
+	void SetOnInitializeTransformNodesToWheelsEnabled(bool bEnable);
+	bool GetOnInitializeTransformNodesToWheelsEnabled() const;
 
 	void SetTransformNodesToWheelsOverlap(double Overlap);
 	double GetTransformNodesToWheelsOverlap() const;
@@ -85,7 +95,6 @@ public:
 	double GetStabilizingHingeFrictionParameter() const;
 
 private:
-
 	FTrackPropertiesBarrier(const FTrackPropertiesBarrier&) = delete;
 	void operator=(const FTrackPropertiesBarrier&) = delete;
 

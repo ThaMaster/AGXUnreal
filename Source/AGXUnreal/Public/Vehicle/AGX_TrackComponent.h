@@ -15,7 +15,7 @@
 #include "AGX_TrackComponent.generated.h"
 
 class UAGX_ShapeMaterial;
-class UAGX_TrackPropertiesBase;
+class UAGX_TrackProperties;
 class UAGX_TrackInternalMergePropertiesBase;
 
 /**
@@ -96,7 +96,7 @@ public:
 	 * Additional properties defining the setup and behavior of the Track.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	UAGX_TrackPropertiesBase* TrackProperties;
+	UAGX_TrackProperties* TrackProperties;
 
 	/**
 	 * Properties controlling how the Rigid Bodies created for the Track shoes may be merged with

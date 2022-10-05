@@ -1,11 +1,9 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Vehicle/AGX_TrackPropertiesAssetTypeActions.h"
 
 // AGX Dynamics for Unreal includes.
-#include "Vehicle/AGX_TrackPropertiesAsset.h"
-
+#include "Vehicle/AGX_TrackProperties.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TrackPropertiesAssetTypeActions"
 
@@ -38,7 +36,7 @@ FText FAGX_TrackPropertiesAssetTypeActions::GetAssetDescription(const FAssetData
 
 UClass* FAGX_TrackPropertiesAssetTypeActions::GetSupportedClass() const
 {
-	return UAGX_TrackPropertiesAsset::StaticClass();
+	return UAGX_TrackProperties::StaticClass();
 }
 
 #undef LOCTEXT_NAMESPACE

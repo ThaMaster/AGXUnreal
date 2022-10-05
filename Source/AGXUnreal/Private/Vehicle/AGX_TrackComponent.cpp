@@ -8,7 +8,7 @@
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Materials/AGX_ShapeMaterial.h"
-#include "Vehicle/AGX_TrackPropertiesInstance.h"
+#include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/AGX_TrackInternalMergePropertiesInstance.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
@@ -399,7 +399,9 @@ void UAGX_TrackComponent::EndPlay(const EEndPlayReason::Type Reason)
 TStructOnScope<FActorComponentInstanceData> UAGX_TrackComponent::GetComponentInstanceData() const
 {
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_TrackComponentInstanceData>(
-		this, this, [](UActorComponent* Component) {
+		this, this,
+		[](UActorComponent* Component)
+		{
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
@@ -667,19 +669,16 @@ void UAGX_TrackComponent::UpdateNativeMaterial()
 
 void UAGX_TrackComponent::WriteTrackPropertiesToNative()
 {
-	if (!HasNative() || !GetWorld() || !GetWorld()->IsGameWorld())
+	if (!HasNative() || GetWorld() == nullptr || !GetWorld()->IsGameWorld())
+	{
 		return;
+	}
 
 	if (TrackProperties)
 	{
-		UE_LOG(
-			LogAGX, Verbose, TEXT("Track '%s' in '%s' is writing TrackProperties '%s' to native."),
-			*GetName(), *GetNameSafe(GetOwner()), *TrackProperties->GetName());
-
 		// Create instance if necessary.
-		UAGX_TrackPropertiesInstance* TrackPropertiesInstance =
-			static_cast<UAGX_TrackPropertiesInstance*>(
-				TrackProperties->GetOrCreateInstance(GetWorld()));
+		UAGX_TrackProperties* TrackPropertiesInstance =
+			TrackProperties->GetOrCreateInstance(GetWorld());
 		check(TrackPropertiesInstance);
 
 		// Replace asset reference with instance reference.
@@ -690,16 +689,12 @@ void UAGX_TrackComponent::WriteTrackPropertiesToNative()
 
 		// Assign native.
 		const FTrackPropertiesBarrier* TrackPropertiesBarrier =
-			TrackPropertiesInstance->GetOrCreateNative(GetWorld());
+			TrackPropertiesInstance->GetOrCreateNative();
 		check(TrackPropertiesBarrier);
 		GetNative()->SetProperties(*TrackPropertiesBarrier);
 	}
 	else
 	{
-		UE_LOG(
-			LogAGX, Verbose, TEXT("Track '%s' in '%s' is clearing TrackProperties on native."),
-			*GetName(), *GetNameSafe(GetOwner()));
-
 		GetNative()->ClearProperties();
 	}
 }
