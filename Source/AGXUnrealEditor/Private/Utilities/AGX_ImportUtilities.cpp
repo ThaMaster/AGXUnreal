@@ -12,6 +12,7 @@
 #include "Shapes/RenderDataBarrier.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Vehicle/AGX_TrackInternalMergePropertiesAsset.h"
+#include "Vehicle/AGX_TrackPropertiesAsset.h"
 #include "Vehicle/TrackBarrier.h"
 
 // Unreal Engine includes.
@@ -354,7 +355,18 @@ FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
 	{ Asset.CopyFrom(Barrier); };
 	UAGX_TrackInternalMergePropertiesAsset* CreatedAsset =
 		SaveImportedAsset<UAGX_TrackInternalMergePropertiesAsset>(
-		DirectoryName, Name, TEXT("AGX_TIMP_Track"), TEXT("TrackInternalMergeProperties"), InitAsset);
+		DirectoryName, Name, TEXT(""), TEXT("TrackInternalMergeProperties"), InitAsset);
+	return CreatedAsset;
+}
+
+UAGX_TrackPropertiesAsset* FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
+	const FTrackPropertiesBarrier& Barrier, const FString& DirectoryName, const FString& Name)
+{
+	auto InitAsset = [&](UAGX_TrackPropertiesAsset& Asset)
+	{ Asset.CopyFrom(Barrier); };
+	UAGX_TrackPropertiesAsset* CreatedAsset = SaveImportedAsset<UAGX_TrackPropertiesAsset>(
+		DirectoryName, Name, TEXT(""), TEXT("TrackProperties"),
+			InitAsset);
 	return CreatedAsset;
 }
 

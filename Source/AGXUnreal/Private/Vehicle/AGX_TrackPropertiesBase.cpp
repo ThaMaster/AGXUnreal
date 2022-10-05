@@ -113,6 +113,33 @@ void UAGX_TrackPropertiesBase::CopyFrom(const UAGX_TrackPropertiesBase* Source)
 	}
 }
 
+void UAGX_TrackPropertiesBase::CopyFrom(const FTrackPropertiesBarrier& Barrier)
+{
+	HingeComplianceTranslational_X = Barrier.GetHingeCompliance(0);
+	HingeComplianceTranslational_Y = Barrier.GetHingeCompliance(1);
+	HingeComplianceTranslational_Z = Barrier.GetHingeCompliance(2);
+	HingeComplianceRotational_X = Barrier.GetHingeCompliance(3);
+	HingeComplianceRotational_Y = Barrier.GetHingeCompliance(4);
+
+	HingeDampingTranslational_X = Barrier.GetHingeDamping(0);
+	HingeDampingTranslational_Y = Barrier.GetHingeDamping(1);
+	HingeDampingTranslational_Z = Barrier.GetHingeDamping(2);
+	HingeDampingRotational_X = Barrier.GetHingeDamping(3);
+	HingeDampingRotational_Y = Barrier.GetHingeDamping(4);
+
+	bHingeRangeEnabled = Barrier.GetEnableHingeRange();
+	HingeRange = Barrier.GetHingeRangeRange();
+	bOnInitializeMergeNodesToWheelsEnabled = Barrier.GetEnableOnInitializeMergeNodesToWheels();
+	bOnInitializeTransformNodesToWheelsEnabled =
+		Barrier.GetEnableOnInitializeTransformNodesToWheels();
+	TransformNodesToWheelsOverlap = Barrier.GetTransformNodesToWheelsOverlap();
+	NodesToWheelsMergeThreshold = Barrier.GetNodesToWheelsMergeThreshold();
+	NodesToWheelsSplitThreshold = Barrier.GetNodesToWheelsSplitThreshold();
+	NumNodesIncludedInAverageDirection = Barrier.GetNumNodesIncludedInAverageDirection();
+	MinStabilizingHingeNormalForce = Barrier.GetMinStabilizingHingeNormalForce();
+	StabilizingHingeFrictionParameter = Barrier.GetStabilizingHingeFrictionParameter();
+}
+
 #if WITH_EDITOR
 
 void UAGX_TrackPropertiesBase::InitPropertyDispatcher()

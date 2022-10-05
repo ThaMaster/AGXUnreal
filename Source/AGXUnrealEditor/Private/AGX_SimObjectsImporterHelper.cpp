@@ -44,6 +44,8 @@
 #include "Wire/AGX_WireComponent.h"
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/AGX_TrackInternalMergePropertiesAsset.h"
+#include "Vehicle/AGX_TrackPropertiesAsset.h"
+#include "Vehicle/TrackPropertiesBarrier.h"
 #include "Vehicle/TrackWheelBarrier.h"
 
 // Unreal Engine includes.
@@ -288,6 +290,36 @@ namespace
 		if (Asset != nullptr)
 		{
 			RestoredMeshes.Add(Guid, Asset);
+		}
+		return Asset;
+	}
+
+	UAGX_TrackPropertiesAsset* GetOrCreateTrackPropertiesAsset(
+		const FTrackPropertiesBarrier& Barrier,
+		const FString& Name, TMap<FGuid, UAGX_TrackPropertiesAsset*>& RestoredTrackProperties,
+		const FString& DirectoryName)
+	{
+		const FGuid Guid = Barrier.GetGuid();
+		if (!Guid.IsValid())
+		{
+			// The GUID is invalid, but try to create the asset anyway but without adding it to
+			// the RestoredTrackProperties cache.
+			return FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
+				Barrier, DirectoryName, Name);
+		}
+
+		if (UAGX_TrackPropertiesAsset* Asset = RestoredTrackProperties.FindRef(Guid))
+		{
+			// We have seen this asset before, use the one in the cache.
+			return Asset;
+		}
+
+		// This is a new Track Properties. Create the asset and add to the cache.
+		UAGX_TrackPropertiesAsset* Asset =
+			FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(Barrier, DirectoryName, Name);
+		if (Asset != nullptr)
+		{
+			RestoredTrackProperties.Add(Guid, Asset);
 		}
 		return Asset;
 	}
@@ -1006,10 +1038,38 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 		Component->ShapeMaterial = Material;
 	}
 
+	const FString BarrierName = Barrier.GetName();
+
+	// Apply Track Properties.
+	{
+		const FString AssetName =
+			BarrierName.IsEmpty() ? FString("AGX_TP_Track") : FString("AGX_TP_") + BarrierName;
+
+		UAGX_TrackPropertiesAsset* TrackProperties = GetOrCreateTrackPropertiesAsset(
+			Barrier.GetProperties(), AssetName, RestoredTrackProperties, DirectoryName);
+		if (TrackProperties == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unable to create an Asset for the Track Properties '%s' of Track '%s' during "
+					 "import."),
+				*AssetName, *Barrier.GetName());
+		}
+		else
+		{
+			Component->TrackProperties = TrackProperties;
+		}
+	}
+
 	// Apply Internal Merge Properties.
-	Component->InternalMergeProperties =
-		FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
-			Barrier, DirectoryName, FString("AGX_TIMP_") + Barrier.GetName());
+	{
+		const FString AssetName =
+			BarrierName.IsEmpty() ? FString("AGX_TIMP_Track") : FString("AGX_TIMP_") + BarrierName;
+
+		Component->InternalMergeProperties =
+			FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
+				Barrier, DirectoryName, AssetName);
+	}
 
 	auto SetRigidBody = [&](UAGX_RigidBodyComponent* Body, FAGX_RigidBodyReference& BodyRef)
 	{

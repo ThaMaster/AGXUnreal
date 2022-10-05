@@ -12,6 +12,7 @@
 
 #include "AGX_TrackPropertiesBase.generated.h"
 
+class FTrackPropertiesBarrier;
 class UAGX_TrackPropertiesAsset;
 class UAGX_TrackPropertiesInstance;
 
@@ -271,7 +272,7 @@ public:
 		PURE_VIRTUAL(UAGX_TrackPropertiesBase::GetAsset, return nullptr;);
 
 	void CopyFrom(const UAGX_TrackPropertiesBase * Source);
-	//void CopyFrom(const FTrackPropertiesBarrier * Source);
+	void CopyFrom(const FTrackPropertiesBarrier& Barrier);
 
 #if WITH_EDITOR
 	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each

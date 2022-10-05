@@ -32,6 +32,7 @@ class UAGX_CollisionGroupDisablerComponent;
 class UAGX_ContactMaterialRegistrarComponent;
 class UAGX_WireComponent;
 class UAGX_TrackComponent;
+class UAGX_TrackPropertiesAsset;
 
 // Unreal Engine classes.
 class AActor;
@@ -141,6 +142,7 @@ private:
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterialAsset*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
+	TMap<FGuid, UAGX_TrackPropertiesAsset*> RestoredTrackProperties;
 
 	// List of Constraints that should not be imported the usual way, i.e. through the
 	// Instantiate<Constraint-type>() functions. These may be owned by higher level models such as
