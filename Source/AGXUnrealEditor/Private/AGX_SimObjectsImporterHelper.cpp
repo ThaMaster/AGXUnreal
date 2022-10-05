@@ -43,6 +43,7 @@
 #include "Utilities/AGX_TextureUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Vehicle/AGX_TrackComponent.h"
+#include "Vehicle/AGX_TrackInternalMergePropertiesAsset.h"
 #include "Vehicle/TrackWheelBarrier.h"
 
 // Unreal Engine includes.
@@ -1004,6 +1005,11 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 		UAGX_ShapeMaterialAsset* Material = RestoredShapeMaterials.FindRef(Guid);
 		Component->ShapeMaterial = Material;
 	}
+
+	// Apply Internal Merge Properties.
+	Component->InternalMergeProperties =
+		FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
+			Barrier, DirectoryName, FString("AGX_TIMP_") + Barrier.GetName());
 
 	auto SetRigidBody = [&](UAGX_RigidBodyComponent* Body, FAGX_RigidBodyReference& BodyRef)
 	{

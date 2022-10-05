@@ -72,6 +72,19 @@ void UAGX_TrackInternalMergePropertiesBase::CopyFrom(const UAGX_TrackInternalMer
 
 #undef COPY_PROPERTY
 
+void UAGX_TrackInternalMergePropertiesBase::CopyFrom(const FTrackBarrier& Barrier)
+{
+	bMergeEnabled = Barrier.InternalMergeProperties_GetEnableMerge();
+	NumNodesPerMergeSegment = Barrier.InternalMergeProperties_GetNumNodesPerMergeSegment();
+	bLockToReachMergeConditionEnabled =
+		Barrier.InternalMergeProperties_GetEnableLockToReachMergeCondition();
+	LockToReachMergeConditionCompliance =
+		Barrier.InternalMergeProperties_GetLockToReachMergeConditionCompliance();
+	LockToReachMergeConditionDamping =
+		Barrier.InternalMergeProperties_GetLockToReachMergeConditionDamping();
+	MaxAngleMergeCondition = Barrier.InternalMergeProperties_GetMaxAngleMergeCondition();
+}
+
 #if WITH_EDITOR
 
 void UAGX_TrackInternalMergePropertiesBase::InitPropertyDispatcher()

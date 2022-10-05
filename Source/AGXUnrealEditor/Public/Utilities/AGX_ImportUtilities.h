@@ -10,9 +10,11 @@ class FTrimeshShapeBarrier;
 class FRenderDataBarrier;
 class FShapeBarrier;
 class FShapeMaterialBarrier;
+class FTrackBarrier;
 class FContactMaterialBarrier;
 class UAGX_ContactMaterialAsset;
 class UAGX_ShapeMaterialAsset;
+class UAGX_TrackInternalMergePropertiesAsset;
 struct FAGX_RenderMaterial;
 
 class AActor;
@@ -142,6 +144,15 @@ public:
 	static UMaterialInterface* SaveImportedRenderMaterialAsset(
 		const FAGX_RenderMaterial& Imported, const FString& DirectoryName,
 		const FString& MaterialName);
+
+	/**
+	 * Store an imported AGX Dynamics Track Internal Merge Property as an UAGX_TrackInternalMergePropertiesAsset.
+	 * @param Barrier The imported Track owning the Internal Merge Property.
+	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @return The created UAGX_TrackInternalMergePropertiesAsset.
+	 */
+	static UAGX_TrackInternalMergePropertiesAsset* SaveImportedTrackInternalMergePropertiesAsset(
+		const FTrackBarrier& Barrier, const FString& DirectoryName, const FString& Name);
 
 	/**
 	 * Rename the object. Generates a fallback name if the given name can't be used.
