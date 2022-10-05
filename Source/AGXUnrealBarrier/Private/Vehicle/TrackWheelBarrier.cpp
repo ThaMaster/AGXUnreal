@@ -76,3 +76,27 @@ bool FTrackWheelBarrier::GetMoveNodesToWheel() const
 	return NativeRef->Native->getProperties().get() &
 		   static_cast<uint32>(agxVehicle::TrackWheel::MOVE_NODES_TO_WHEEL);
 }
+
+FVector FTrackWheelBarrier::GetRelativeLocation() const
+{
+	check(HasNative());
+	agx::Frame* FrameAGX = NativeRef->Native->getLocalFrame();
+	if (FrameAGX == nullptr)
+	{
+		return FVector::ZeroVector;
+	}
+
+	return ConvertLocalFrame(FrameAGX).GetLocation();
+}
+
+FRotator FTrackWheelBarrier::GetRelativeRotation() const
+{
+	check(HasNative());
+	agx::Frame* FrameAGX = NativeRef->Native->getLocalFrame();
+	if (FrameAGX == nullptr)
+	{
+		return FRotator::ZeroRotator;
+	}
+
+	return ConvertLocalFrame(FrameAGX).Rotator();
+}

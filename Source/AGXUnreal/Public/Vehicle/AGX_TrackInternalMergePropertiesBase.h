@@ -144,6 +144,8 @@ public:
 
 	virtual ~UAGX_TrackInternalMergePropertiesBase();
 
+	static EAGX_MergedTrackNodeContactReduction ToContactReduction(uint8 ContactReduction);
+
 	virtual UAGX_TrackInternalMergePropertiesInstance* GetInstance()
 		PURE_VIRTUAL(UAGX_TrackInternalMergePropertiesBase::GetInstance, return nullptr;);
 

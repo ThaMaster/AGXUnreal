@@ -38,6 +38,9 @@ public:
 
 	bool GetMoveNodesToWheel() const;
 
+	FVector GetRelativeLocation() const;
+	FRotator GetRelativeRotation() const;
+
 
 private:
 	std::unique_ptr<FTrackWheelRef> NativeRef;

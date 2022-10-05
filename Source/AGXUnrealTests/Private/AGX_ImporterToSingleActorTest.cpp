@@ -2,12 +2,23 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 
-// AGX Dynamics require the AGX-Wires license for wire import. Our GitLab CI
-// runtime environment currently doesn't have an AGX Dynamics license so the
-// wire import test always fails. For now the test is disabled through this
-// preprocessor flag. See internal issue 495. Remove the preprocessor guards
-// once the GitLab CI runtime has an AGX Dynamics license.
+// AGX Dynamics require the AGX-Wires license for wire and track import. Our GitLab CI
+// runtime environment on Linux currently doesn't have an AGX Dynamics license so the
+// wire and track import test always fails on that platform. Our GitLab CI runtime environment on
+// Windows does have a license. For now the test is disabled through this preprocessor flag for
+// Linux but is enabled on Windows. See internal issue 495. Remove the preprocessor guards once the
+// Linux GitLab CI runtime has an AGX Dynamics license.
+#if defined(_WIN64)
+#define AGX_TEST_WIRE_IMPORT 1
+#define AGX_TEST_TRACK_IMPORT 1
+#elif defined(__linux__)
+#include "Linux/LinuxPlatformMisc.h"
 #define AGX_TEST_WIRE_IMPORT 0
+#define AGX_TEST_TRACK_IMPORT 0
+#else
+// Unsupported platform.
+static_assert(false);
+#endif
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImporterToSingleActor.h"
@@ -27,6 +38,12 @@
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#if AGX_TEST_TRACK_IMPORT
+#include "Vehicle/AGX_TrackComponent.h"
+#include "Vehicle/AGX_TrackInternalMergePropertiesBase.h"
+#include "Vehicle/AGX_TrackPropertiesBase.h"
+#include "Vehicle/AGX_TrackWheel.h"
+#endif
 #if AGX_TEST_WIRE_IMPORT
 #include "Wire/AGX_WireComponent.h"
 #endif
@@ -956,9 +973,8 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	}
 #endif
 
-	auto GetSphere = [&Components](const TCHAR* Name) -> UAGX_SphereShapeComponent* {
-		return GetByName<UAGX_SphereShapeComponent>(Components, Name);
-	};
+	auto GetSphere = [&Components](const TCHAR* Name) -> UAGX_SphereShapeComponent*
+	{ return GetByName<UAGX_SphereShapeComponent>(Components, Name); };
 
 	// Get the components we know should be there.
 	/// @todo Some of these get auto-generated names because of name conflicts. Happens every time a
@@ -2518,8 +2534,9 @@ bool FCheckObserverFramesImportedCommand::Update()
 	// 1 Default Scene Root, 4 groups each containing a Rigid Body, a Shape, and a Scene.
 	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), 13);
 
-	auto TestGroup = [this, &Components](
-						 int32 Id, const FVector& BodyLocation, const FVector& ObserverLocation) {
+	auto TestGroup =
+		[this, &Components](int32 Id, const FVector& BodyLocation, const FVector& ObserverLocation)
+	{
 		const FString BodyName = *FString::Printf(TEXT("Body_%d"), Id);
 		const FString GeometryName = *FString::Printf(TEXT("Geometry_%d"), Id);
 		const FString ObserverName = *FString::Printf(TEXT("Observer_%d"), Id);
@@ -2850,6 +2867,312 @@ bool FClearURDFLinksGeometriesConstraintsImportedCommand::Update()
 
 	return true;
 }
+#if AGX_TEST_TRACK_IMPORT
+//
+// Track test starts here.
+//
+
+class FImporterToSingleActor_TrackTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckTrackImportedCommand, FImporterToSingleActor_TrackTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearTrackImportedCommand, FImporterToSingleActor_TrackTest&, Test);
+
+class FImporterToSingleActor_TrackTest final : public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FImporterToSingleActor_TrackTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FImporterToSingleActor_TrackTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.Track"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("track_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckTrackImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearTrackImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FImporterToSingleActor_TrackTest ImporterToSingleActor_TrackTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script track.agxPy.
+ *
+ * @return True when the check is complete. Never returns false.
+ */
+bool FCheckTrackImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import Track test scene: No content created"));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// 24 Hinge Constraints with three Icons each (96), 25 Rigid Bodies (121), 20 Sphere Shapes
+	// (141), 24 Cylinder Shapes (165), 3 Box Shapes (168), a Collision Group Disabler (169), a
+	// Contact Material Registrar (170), a Default Scene Root (171), two Tracks (173).
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 173);
+	if (Components.Num() != 173)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Found the following components:"));
+		for (auto Component : Components)
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("  %s: %s"), *Component->GetName(),
+				*Component->GetClass()->GetName());
+		}
+	}
+
+	auto TestTrack = [&](UAGX_TrackComponent* Track)
+	{
+		Test.TestNotNull("Track Component", Track);
+		const FString TrackName = Track->GetName();
+		Test.TestEqual("Number Of Nodes", Track->NumberOfNodes, 120);
+		Test.TestEqual("Width", Track->Width, 35.f);
+		Test.TestEqual("Width", Track->Thickness, 2.5f);
+		//Test.TestEqual("Initial Distance Tension", Track->InitialDistanceTension, 0.1f); TODO: uncomment before merging!!!!!!!!!!!
+		Test.TestNotNull("Shape Material", Track->ShapeMaterial);
+
+		// Track Properties.
+		Test.TestNotNull("Track Properties", Track->TrackProperties);
+		Test.TestEqual(
+			"Track Properties Name", Track->TrackProperties->GetName(),
+			FString("AGX_TP_") + TrackName);
+		Test.TestEqual(
+			"Hinge Compliance Translational X",
+			Track->TrackProperties->HingeComplianceTranslational_X, 1e-10);
+		Test.TestEqual(
+			"Hinge Compliance Translational Y",
+			Track->TrackProperties->HingeComplianceTranslational_Y, 1e-10);
+		Test.TestEqual(
+			"Hinge Compliance Translational Z",
+			Track->TrackProperties->HingeComplianceTranslational_Z, 1e-10);
+		Test.TestEqual(
+			"Hinge Compliance Rotational X", Track->TrackProperties->HingeComplianceRotational_X,
+			1e-10);
+		Test.TestEqual(
+			"Hinge Compliance Rotational Y", Track->TrackProperties->HingeComplianceRotational_Y,
+			1e-10);
+		Test.TestEqual(
+			"Hinge Damping Translational X", Track->TrackProperties->HingeDampingTranslational_X,
+			0.0333);
+		Test.TestEqual(
+			"Hinge Damping Translational Y", Track->TrackProperties->HingeDampingTranslational_Y,
+			0.0333);
+		Test.TestEqual(
+			"Hinge Damping Translational Z", Track->TrackProperties->HingeDampingTranslational_Z,
+			0.0333);
+		Test.TestEqual(
+			"Hinge Damping Rotational X", Track->TrackProperties->HingeDampingRotational_X, 0.0333);
+		Test.TestEqual(
+			"Hinge Damping Rotational Y", Track->TrackProperties->HingeDampingRotational_Y, 0.0333);
+		Test.TestEqual("Hinge Range Enabled", Track->TrackProperties->bHingeRangeEnabled, true);
+		Test.TestEqual("Hinge Range Min", Track->TrackProperties->HingeRange.Min, -120.0);
+		Test.TestEqual("Hinge Range Max", Track->TrackProperties->HingeRange.Max, 20.0);
+		Test.TestEqual(
+			"On Initialize Merge Nodes to Wheels Enabled",
+			Track->TrackProperties->bOnInitializeMergeNodesToWheelsEnabled, false);
+		Test.TestEqual(
+			"On Initialize Transform Nodes to Wheels Enabled",
+			Track->TrackProperties->bOnInitializeTransformNodesToWheelsEnabled, true);
+		Test.TestEqual(
+			"Transform Nodes to Wheels Overlap",
+			Track->TrackProperties->TransformNodesToWheelsOverlap, 0.1);
+		Test.TestEqual(
+			"Nodes to Wheels Merge Threshold", Track->TrackProperties->NodesToWheelsMergeThreshold,
+			-0.1);
+		Test.TestEqual(
+			"Nodes to Wheels Split Threshold", Track->TrackProperties->NodesToWheelsSplitThreshold,
+			-0.15);
+		Test.TestEqual(
+			"Num Nodes Included in Average Direction",
+			Track->TrackProperties->NumNodesIncludedInAverageDirection, 5);
+		Test.TestEqual(
+			"Min Stabilizing Hinge Normal Force",
+			Track->TrackProperties->MinStabilizingHingeNormalForce, 100.0);
+		Test.TestEqual(
+			"Stabilizing Hinge Friction Parameter",
+			Track->TrackProperties->StabilizingHingeFrictionParameter, 0.005);
+
+		// Internal Merge Properties.
+		Test.TestNotNull("Internal Merge Properties", Track->InternalMergeProperties);
+		Test.TestEqual(
+			"Internal Merge Properties Name", Track->InternalMergeProperties->GetName(),
+			FString("AGX_TIMP_") + TrackName);
+		Test.TestEqual("Enable Merge", Track->InternalMergeProperties->bMergeEnabled, true);
+		Test.TestEqual(
+			"Num Nodes Per Merge Segment", Track->InternalMergeProperties->NumNodesPerMergeSegment,
+			3);
+		Test.TestEqual(
+			"Contact Reduction", Track->InternalMergeProperties->ContactReduction,
+			EAGX_MergedTrackNodeContactReduction::Moderate);
+		Test.TestEqual(
+			"Enable Lock to Reach Merge Condition",
+			Track->InternalMergeProperties->bLockToReachMergeConditionEnabled, true);
+		Test.TestEqual(
+			"Lock to Reach Merge Condition Compliance",
+			Track->InternalMergeProperties->LockToReachMergeConditionCompliance, 1e-11);
+		Test.TestEqual(
+			"Lock to Reach Merge Condition Damping",
+			Track->InternalMergeProperties->LockToReachMergeConditionDamping, 0.05);
+		Test.TestEqual(
+			"Max Angle Merge Condition", Track->InternalMergeProperties->MaxAngleMergeCondition,
+			FMath::RadiansToDegrees(0.00001));
+
+		// Wheels
+		Test.TestEqual("Number of Wheels", Track->Wheels.Num(), 12);
+		for (const FAGX_TrackWheel& Wheel : Track->Wheels)
+		{
+			Test.TestEqual("Rigid Body Name", Wheel.RigidBody.BodyName.IsNone(), false);
+		}
+
+		Test.TestEqual(
+			"Number of Roller Wheels",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.Model == EAGX_TrackWheelModel::TWM_ROLLER; })
+				.Num(),
+			10);
+		Test.TestEqual(
+			"Number of Sprocket Wheels",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.Model == EAGX_TrackWheelModel::TWM_SPROCKET; })
+				.Num(),
+			1);
+		Test.TestEqual(
+			"Number of Idler Wheels",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.Model == EAGX_TrackWheelModel::TWM_IDLER; })
+				.Num(),
+			1);
+		Test.TestEqual(
+			"Number of Wheels with Radius 30",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.Radius == 30.f; })
+				.Num(),
+			2);
+		Test.TestEqual(
+			"Number of Wheels with Radius 20",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.Radius == 20.f; })
+				.Num(),
+			2);
+		Test.TestEqual(
+			"Number of Wheels with Radius 15",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.Radius == 15.f; })
+				.Num(),
+			8);
+		Test.TestEqual(
+			"Number of Wheels with MOVE_NODES_TO_ROTATION_PLANE",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.bMoveNodesToRotationPlane; })
+				.Num(),
+			2);
+		Test.TestEqual(
+			"Number of Wheels with SPLIT_SEGMENTS",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.bSplitSegments; })
+				.Num(),
+			2);
+		Test.TestEqual(
+			"Number of Wheels with MOVE_NODES_TO_WHEELS",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.bMoveNodesToWheel; })
+				.Num(),
+			0);
+	};
+
+
+
+	UAGX_TrackComponent* TrackRight =
+		GetByName<UAGX_TrackComponent>(Components, TEXT("track_right"));
+	UAGX_TrackComponent* TrackLeft = GetByName<UAGX_TrackComponent>(Components, TEXT("track_left"));
+
+	TestTrack(TrackRight);
+	TestTrack(TrackLeft);
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ *
+ * @return True when the clearing is complete. Never returns false.
+ */
+bool FClearTrackImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("ContactMaterial"),
+		TEXT("CMtrackground.uasset"),
+		TEXT("CMtrackwheel.uasset"),
+		TEXT("ShapeMaterial"),
+		TEXT("ground.uasset"),
+		TEXT("track.uasset"),
+		TEXT("wheel.uasset"),
+		TEXT("TrackInternalMergeProperties"),
+		TEXT("AGX_TIMP_track_left.uasset"),
+		TEXT("AGX_TIMP_track_right.uasset"),
+		TEXT("TrackProperties"),
+		TEXT("AGX_TP_track_left.uasset"),
+		TEXT("AGX_TP_track_right.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("track_build"), ExpectedFiles);
+
+	return true;
+}
+#endif // AGX_TEST_TRACK_IMPORT
 
 // WITH_DEV_AUTOMATION_TESTS
 #endif
