@@ -364,7 +364,7 @@ public:
 	UAGX_TrackProperties* GetInstance();
 
 	/**
-	 * If PlayingWorld is an in-game World and this TrackProperties is a UAGX_TrackProperties,
+	 * If PlayingWorld is an in-game World and this TrackProperties is a UAGX_TrackPropertiesAsset,
 	 * returns a UAGX_TrackPropertiesInstance representing the TrackProperties asset throughout the
 	 * lifetime of the GameInstance. If this is already a UAGX_TrackPropertiesInstance it returns
 	 * itself. Returns null if not in-game (invalid call).
@@ -373,7 +373,7 @@ public:
 
 	/**
 	 * If this TrackProperties is a UAGX_TrackPropertiesInstance, returns the
-	 * UAGX_TrackProperties it was created from (if it still exists). Else returns null.
+	 * UAGX_TrackPropertiesAsset it was created from (if it still exists). Else returns null.
 	 */
 	UAGX_TrackProperties* GetAsset();
 

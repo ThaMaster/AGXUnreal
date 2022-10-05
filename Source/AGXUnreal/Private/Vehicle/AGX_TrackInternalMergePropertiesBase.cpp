@@ -170,7 +170,7 @@ void UAGX_TrackInternalMergePropertiesBase::PostInitProperties()
 void UAGX_TrackInternalMergePropertiesBase::PostEditChangeProperty(
 	FPropertyChangedEvent& PropertyChangedEvent)
 {
-	// UAGX_TrackProperties is not a Component and will not be destroyed and recreated
+	// UAGX_TrackPropertiesAsset is not a Component and will not be destroyed and recreated
 	// during RerunConstructionScript. It is therefore safe to call the base class
 	// implementation immediately.
 	Super::PostEditChangeProperty(PropertyChangedEvent);
