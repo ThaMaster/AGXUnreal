@@ -242,10 +242,12 @@ TArray<FName> FTrackBarrier::GetCollisionGroups() const
 
 TArray<FTrackWheelBarrier> FTrackBarrier::GetWheels() const
 {
-	check(HasNative());
+	check(HasNative());	
+	const auto& WheelsAGX = NativeRef->Native->getWheels();
 	TArray<FTrackWheelBarrier> Wheels;
+	Wheels.Reserve(WheelsAGX.size());
 
-	for (agxVehicle::TrackWheelRef Wheel : NativeRef->Native->getWheels())
+	for (agxVehicle::TrackWheelRef Wheel : WheelsAGX)
 	{
 		if (Wheel == nullptr)
 		{
