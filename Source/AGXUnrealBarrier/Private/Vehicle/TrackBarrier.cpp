@@ -318,8 +318,10 @@ double FTrackBarrier::GetInitialDistanceTension() const
 TArray<FGuid> FTrackBarrier::GetInternalConstraintGuids() const
 {
 	check(HasNative());
-	TArray<FGuid> ConstraintGuids;
 	const int32 NumNodes = GetNumNodes();
+	TArray<FGuid> ConstraintGuids;
+	ConstraintGuids.Reserve(NumNodes);
+
 	for (int i = 0; i < NumNodes; i++)
 	{
 		agxVehicle::TrackNode* Node = NativeRef->Native->getNode(i);
