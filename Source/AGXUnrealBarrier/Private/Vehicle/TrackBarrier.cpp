@@ -247,7 +247,7 @@ TArray<FTrackWheelBarrier> FTrackBarrier::GetWheels() const
 	TArray<FTrackWheelBarrier> Wheels;
 	Wheels.Reserve(WheelsAGX.size());
 
-	for (agxVehicle::TrackWheelRef& Wheel : WheelsAGX)
+	for (const agxVehicle::TrackWheelRef& Wheel : WheelsAGX)
 	{
 		if (Wheel == nullptr)
 		{
@@ -273,7 +273,7 @@ double FTrackBarrier::GetWidth() const
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("GetWidth was called on Track: '%s' that does not have a TrackRoute. The value "
-				 "returned will not be valid."));
+				 "returned will not be valid."), *GetName());
 		return -1.0;
 	}
 
@@ -289,7 +289,8 @@ double FTrackBarrier::GetThickness() const
 			LogAGX, Error,
 			TEXT(
 				"GetThickness was called on Track: '%s' that does not have a TrackRoute. The value "
-				"returned will not be valid."));
+				"returned will not be valid."),
+			*GetName());
 		return -1.0;
 	}
 
@@ -305,7 +306,8 @@ double FTrackBarrier::GetInitialDistanceTension() const
 			LogAGX, Error,
 			TEXT(
 				"GetInitialDistanceTension was called on Track: '%s' that does not have a TrackRoute. The value "
-				"returned will not be valid."));
+				 "returned will not be valid."),
+			*GetName());
 		return -1.0;
 	}
 
