@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
+#include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
 #include "Vehicle/TrackWheelRef.h"
 

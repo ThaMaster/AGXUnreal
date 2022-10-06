@@ -2,12 +2,10 @@
 
 #pragma once
 
-// AGX Dynamics for Unreal includes.
-#include "RigidBodyBarrier.h"
-
 // Standard library includes.
 #include <memory>
 
+class FRigidBodyBarrier;
 struct FTrackWheelRef;
 
 /*
