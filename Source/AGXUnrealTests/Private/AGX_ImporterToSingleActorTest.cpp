@@ -2785,9 +2785,9 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
 
-	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components and 2 Constraints with 3 Graphics
+	// 1 DefaultSceneRoot, 5 Rigid Bodies, 4 Shape Components and 2 Constraints with 3 Graphics
 	// components each.
-	Test.TestEqual("Number of components", Components.Num(), 17);
+	Test.TestEqual("Number of components", Components.Num(), 18);
 
 	UAGX_RigidBodyComponent* Boxlink =
 		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("boxlink"));
