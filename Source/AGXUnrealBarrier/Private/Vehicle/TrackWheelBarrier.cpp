@@ -60,22 +60,20 @@ uint8 FTrackWheelBarrier::GetModel() const
 bool FTrackWheelBarrier::GetSplitSegments() const
 {
 	check(HasNative());
-	return NativeRef->Native->getProperties().get() &
-		   static_cast<uint32>(agxVehicle::TrackWheel::SPLIT_SEGMENTS);
+	return NativeRef->Native->getProperties().Is(agxVehicle::TrackWheel::SPLIT_SEGMENTS);
 }
 
 bool FTrackWheelBarrier::GetMoveNodesToRotationPlane() const
 {
 	check(HasNative());
-	return NativeRef->Native->getProperties().get() &
-		   static_cast<uint32>(agxVehicle::TrackWheel::MOVE_NODES_TO_ROTATION_PLANE);
+	return NativeRef->Native->getProperties().Is(
+		agxVehicle::TrackWheel::MOVE_NODES_TO_ROTATION_PLANE);
 }
 
 bool FTrackWheelBarrier::GetMoveNodesToWheel() const
 {
 	check(HasNative());
-	return NativeRef->Native->getProperties().get() &
-		   static_cast<uint32>(agxVehicle::TrackWheel::MOVE_NODES_TO_WHEEL);
+	return NativeRef->Native->getProperties().Is(agxVehicle::TrackWheel::MOVE_NODES_TO_WHEEL);
 }
 
 FVector FTrackWheelBarrier::GetRelativeLocation() const
