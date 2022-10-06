@@ -247,7 +247,7 @@ TArray<FTrackWheelBarrier> FTrackBarrier::GetWheels() const
 	TArray<FTrackWheelBarrier> Wheels;
 	Wheels.Reserve(WheelsAGX.size());
 
-	for (agxVehicle::TrackWheelRef Wheel : WheelsAGX)
+	for (agxVehicle::TrackWheelRef& Wheel : WheelsAGX)
 	{
 		if (Wheel == nullptr)
 		{
