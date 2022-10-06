@@ -328,7 +328,6 @@ TArray<FGuid> FTrackBarrier::GetInternalConstraintGuids() const
 			continue;
 		}
 
-		
 		agx::Constraint* Constraint = Node->getConstraint();
 		if (Constraint == nullptr)
 		{
