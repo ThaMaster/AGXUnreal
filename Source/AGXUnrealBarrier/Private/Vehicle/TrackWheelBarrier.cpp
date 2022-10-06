@@ -85,7 +85,7 @@ FVector FTrackWheelBarrier::GetRelativeLocation() const
 		return FVector::ZeroVector;
 	}
 
-	return ConvertLocalFrame(FrameAGX).GetLocation();
+	return ConvertDisplacement(FrameAGX->getLocalTranslate());
 }
 
 FRotator FTrackWheelBarrier::GetRelativeRotation() const
@@ -97,5 +97,5 @@ FRotator FTrackWheelBarrier::GetRelativeRotation() const
 		return FRotator::ZeroRotator;
 	}
 
-	return ConvertLocalFrame(FrameAGX).Rotator();
+	return Convert(FrameAGX->getLocalRotate()).Rotator();
 }
