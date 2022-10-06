@@ -2954,7 +2954,7 @@ bool FCheckTrackImportedCommand::Update()
 		const FString TrackName = Track->GetName();
 		Test.TestEqual("Number Of Nodes", Track->NumberOfNodes, 120);
 		Test.TestEqual("Width", Track->Width, 35.f);
-		Test.TestEqual("Width", Track->Thickness, 2.5f);
+		Test.TestEqual("Thickness", Track->Thickness, 2.5f);
 		Test.TestEqual("Initial Distance Tension", Track->InitialDistanceTension, 0.1f);
 		Test.TestNotNull("Shape Material", Track->ShapeMaterial);
 
@@ -2965,33 +2965,33 @@ bool FCheckTrackImportedCommand::Update()
 			FString("AGX_TP_") + TrackName);
 		Test.TestEqual(
 			"Hinge Compliance Translational X",
-			Track->TrackProperties->HingeComplianceTranslational_X, 1e-10);
+			Track->TrackProperties->HingeComplianceTranslational_X, 2e-10);
 		Test.TestEqual(
 			"Hinge Compliance Translational Y",
-			Track->TrackProperties->HingeComplianceTranslational_Y, 1e-10);
+			Track->TrackProperties->HingeComplianceTranslational_Y, 3e-10);
 		Test.TestEqual(
 			"Hinge Compliance Translational Z",
-			Track->TrackProperties->HingeComplianceTranslational_Z, 1e-10);
+			Track->TrackProperties->HingeComplianceTranslational_Z, 4e-10);
 		Test.TestEqual(
 			"Hinge Compliance Rotational X", Track->TrackProperties->HingeComplianceRotational_X,
-			1e-10);
+			5e-10);
 		Test.TestEqual(
 			"Hinge Compliance Rotational Y", Track->TrackProperties->HingeComplianceRotational_Y,
-			1e-10);
+			6e-10);
 		Test.TestEqual(
 			"Hinge Damping Translational X", Track->TrackProperties->HingeDampingTranslational_X,
-			0.0333);
+			0.01);
 		Test.TestEqual(
 			"Hinge Damping Translational Y", Track->TrackProperties->HingeDampingTranslational_Y,
-			0.0333);
+			0.02);
 		Test.TestEqual(
 			"Hinge Damping Translational Z", Track->TrackProperties->HingeDampingTranslational_Z,
-			0.0333);
+			0.03);
 		Test.TestEqual(
-			"Hinge Damping Rotational X", Track->TrackProperties->HingeDampingRotational_X, 0.0333);
+			"Hinge Damping Rotational X", Track->TrackProperties->HingeDampingRotational_X, 0.04);
 		Test.TestEqual(
-			"Hinge Damping Rotational Y", Track->TrackProperties->HingeDampingRotational_Y, 0.0333);
-		Test.TestEqual("Hinge Range Enabled", Track->TrackProperties->bEnableHingeRange, true);
+			"Hinge Damping Rotational Y", Track->TrackProperties->HingeDampingRotational_Y, 0.05);
+		Test.TestEqual("Hinge Range Enabled", Track->TrackProperties->bEnableHingeRange, false);
 		Test.TestEqual("Hinge Range Min", Track->TrackProperties->HingeRange.Min, -120.0);
 		Test.TestEqual("Hinge Range Max", Track->TrackProperties->HingeRange.Max, 20.0);
 		Test.TestEqual(
@@ -3002,19 +3002,19 @@ bool FCheckTrackImportedCommand::Update()
 			Track->TrackProperties->bEnableOnInitializeTransformNodesToWheels, true);
 		Test.TestEqual(
 			"Transform Nodes to Wheels Overlap",
-			Track->TrackProperties->TransformNodesToWheelsOverlap, 0.1);
+			Track->TrackProperties->TransformNodesToWheelsOverlap, 0.2);
 		Test.TestEqual(
 			"Nodes to Wheels Merge Threshold", Track->TrackProperties->NodesToWheelsMergeThreshold,
-			-0.1);
+			-0.14);
 		Test.TestEqual(
 			"Nodes to Wheels Split Threshold", Track->TrackProperties->NodesToWheelsSplitThreshold,
-			-0.15);
+			-0.17);
 		Test.TestEqual(
 			"Num Nodes Included in Average Direction",
 			Track->TrackProperties->NumNodesIncludedInAverageDirection, 5);
 		Test.TestEqual(
 			"Min Stabilizing Hinge Normal Force",
-			Track->TrackProperties->MinStabilizingHingeNormalForce, 100.0);
+			Track->TrackProperties->MinStabilizingHingeNormalForce, 110.0);
 		Test.TestEqual(
 			"Stabilizing Hinge Friction Parameter",
 			Track->TrackProperties->StabilizingHingeFrictionParameter, 0.005);
