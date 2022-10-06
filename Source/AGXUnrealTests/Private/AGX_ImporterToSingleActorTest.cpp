@@ -2228,6 +2228,11 @@ bool FCheckSimpleGeometriesImportedCommand::Update()
 	auto testShape = [this](USceneComponent* c, const FVector& ExpectedAGXWorldPos)
 	{
 		Test.TestNotNull(TEXT("Component exists"), c);
+		if (c == nullptr)
+		{
+			return;
+		}
+
 		const FVector ExpectedUnrealPos = AgxToUnrealVector(ExpectedAGXWorldPos);
 		Test.TestEqual(TEXT("Component position"), c->GetComponentLocation(), ExpectedUnrealPos);
 	};
@@ -2387,13 +2392,31 @@ bool FCheckContactMaterialsImportedCommand::Update()
 			Components, TEXT("AGX_ContactMaterialRegistrar"));
 
 	Test.TestNotNull("Contact Material Registrar", Registrar);
+	if (Registrar == nullptr)
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
+		return true;
+	}
+
 	Test.TestEqual("Num Contact Materials in Registrar", Registrar->ContactMaterials.Num(), 2);
 
 	UAGX_ContactMaterialBase** Cm1 = Registrar->ContactMaterials.FindByPredicate(
 		[](UAGX_ContactMaterialBase* Cm) { return Cm->GetName() == "CMMat1Mat2"; });
 	Test.TestNotNull("Cm1", Cm1);
+	if (Cm1 == nullptr)
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
+		return true;
+	}
+
 	Test.TestNotNull("Cm1 Material1", (*Cm1)->Material1);
 	Test.TestNotNull("Cm1 Material2", (*Cm1)->Material2);
+	if (IsAnyNullptr((*Cm1)->Material1, (*Cm1)->Material2))
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
+		return true;
+	}
+
 	Test.TestEqual("Cm1 Material1 name", (*Cm1)->Material1->GetName(), "Mat1");
 	Test.TestEqual("Cm1 Material2 name", (*Cm1)->Material2->GetName(), "Mat2");
 	Test.TestEqual("Cm1 contact solver", (*Cm1)->ContactSolver, EAGX_ContactSolver::Iterative);
@@ -2414,8 +2437,20 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	UAGX_ContactMaterialBase** Cm2 = Registrar->ContactMaterials.FindByPredicate(
 		[](UAGX_ContactMaterialBase* Cm) { return Cm->GetName() == "CMMat3Mat4"; });
 	Test.TestNotNull("Cm2", Cm2);
+	if (Cm2 == nullptr)
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
+		return true;
+	}
+
 	Test.TestNotNull("Cm2 Material1", (*Cm2)->Material1);
 	Test.TestNotNull("Cm2 Material2", (*Cm2)->Material2);
+	if (IsAnyNullptr((*Cm2)->Material1, (*Cm2)->Material2))
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
+		return true;
+	}
+
 	Test.TestEqual("Cm2 Material1 name", (*Cm2)->Material1->GetName(), "Mat3");
 	Test.TestEqual("Cm2 Material2 name", (*Cm2)->Material2->GetName(), "Mat4");
 	Test.TestEqual("Cm2 contact solver", (*Cm2)->ContactSolver, EAGX_ContactSolver::Direct);
@@ -2548,6 +2583,10 @@ bool FCheckObserverFramesImportedCommand::Update()
 		Test.TestNotNull(*BodyName, Body);
 		Test.TestNotNull(*GeometryName, Geometry);
 		Test.TestNotNull(*ObserverName, Observer);
+		if (IsAnyNullptr(Body, Geometry, Observer))
+		{
+			return false;
+		}
 
 		USceneComponent* BodyAsComponent = static_cast<USceneComponent*>(Body);
 		Test.TestEqual(
@@ -2564,11 +2603,27 @@ bool FCheckObserverFramesImportedCommand::Update()
 		Test.TestEqual(
 			*FString::Printf(TEXT("%s location"), *ObserverName), Observer->GetRelativeLocation(),
 			ObserverLocation);
+
+		return true;
 	};
 
-	TestGroup(1, AgxToUnrealVector(0.0, 0.0, 0.0), AgxToUnrealVector(0.0, 0.0, 0.0));
-	TestGroup(2, AgxToUnrealVector(1.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3));
-	TestGroup(3, AgxToUnrealVector(2.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3));
+	if (!TestGroup(1, AgxToUnrealVector(0.0, 0.0, 0.0), AgxToUnrealVector(0.0, 0.0, 0.0)))
+	{
+		Test.AddError(TEXT("TestGroup id 1 returned false, cannot continue the test."));
+		return true;
+	}
+
+	if (!TestGroup(2, AgxToUnrealVector(1.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3)))
+	{
+		Test.AddError(TEXT("TestGroup id 2 returned false, cannot continue the test."));
+		return true;
+	}
+
+	if (!TestGroup(3, AgxToUnrealVector(2.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3)))
+	{
+		Test.AddError(TEXT("TestGroup id 3 returned false, cannot continue the test."));
+		return true;
+	}
 
 	FRotator Rotation = AgxToUnrealEulerAngles(PI / 10, 0.0, 0.0);
 	FVector ObserverLocation = Rotation.RotateVector(AgxToUnrealVector(0.3, 0.3, 0.3));
@@ -2677,6 +2732,11 @@ bool FCheckURDFLinkWithMeshesImportedCommand::Update()
 
 	Test.TestNotNull(TEXT("Urdfmeshvisual"), Urdfmeshvisual);
 	Test.TestNotNull(TEXT("Urdfmeshcollision"), Urdfmeshcollision);
+	if (IsAnyNullptr(Urdfmeshvisual, Urdfmeshcollision))
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
+		return true;
+	}
 
 	Test.TestFalse("Urdfmeshvisual collide", Urdfmeshvisual->bCanCollide);
 	Test.TestTrue("Urdfmeshcollision collide", Urdfmeshcollision->bCanCollide);
@@ -2948,9 +3008,13 @@ bool FCheckTrackImportedCommand::Update()
 		}
 	}
 
-	auto TestTrack = [&](UAGX_TrackComponent* Track)
+	auto TestTrack = [&](UAGX_TrackComponent* Track) -> bool
 	{
 		Test.TestNotNull("Track Component", Track);
+		if (Track == nullptr)
+		{
+			return false;
+		}
 		const FString TrackName = Track->GetName();
 		Test.TestEqual("Number Of Nodes", Track->NumberOfNodes, 120);
 		Test.TestEqual("Width", Track->Width, 35.f);
@@ -2960,6 +3024,11 @@ bool FCheckTrackImportedCommand::Update()
 
 		// Track Properties.
 		Test.TestNotNull("Track Properties", Track->TrackProperties);
+		if (Track->TrackProperties == nullptr)
+		{
+			return false;
+		}
+
 		Test.TestEqual(
 			"Track Properties Name", Track->TrackProperties->GetName(),
 			FString("AGX_TP_") + TrackName);
@@ -3021,6 +3090,11 @@ bool FCheckTrackImportedCommand::Update()
 
 		// Internal Merge Properties.
 		Test.TestNotNull("Internal Merge Properties", Track->InternalMergeProperties);
+		if (Track->InternalMergeProperties == nullptr)
+		{
+			return false;
+		}
+
 		Test.TestEqual(
 			"Internal Merge Properties Name", Track->InternalMergeProperties->GetName(),
 			FString("AGX_TIMP_") + TrackName);
@@ -3114,16 +3188,23 @@ bool FCheckTrackImportedCommand::Update()
 								   { return Wheel.bMoveNodesToWheel; })
 				.Num(),
 			0);
+
+		return true;
 	};
-
-
 
 	UAGX_TrackComponent* TrackRight =
 		GetByName<UAGX_TrackComponent>(Components, TEXT("track_right"));
 	UAGX_TrackComponent* TrackLeft = GetByName<UAGX_TrackComponent>(Components, TEXT("track_left"));
 
-	TestTrack(TrackRight);
-	TestTrack(TrackLeft);
+	if (!TestTrack(TrackRight))
+	{
+		Test.AddError(TEXT("TestTrack given TrackRight returned false."));
+	}
+
+	if (!TestTrack(TrackLeft))
+	{
+		Test.AddError(TEXT("TestTrack given TrackLeft returned false."));
+	}
 
 	return true;
 }
