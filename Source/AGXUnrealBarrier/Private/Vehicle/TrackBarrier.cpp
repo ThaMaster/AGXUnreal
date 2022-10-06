@@ -301,9 +301,19 @@ double FTrackBarrier::GetThickness() const
 
 double FTrackBarrier::GetInitialDistanceTension() const
 {
-	// todo: a agxVehicle::TrackRoute::getInitialDistanceTension() will be avaiable in 2.34.0. Use
-	// when it is released.
-	return 0.0;
+	check(HasNative());
+	if (NativeRef->Native->getRoute() == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT(
+				"GetInitialDistanceTension was called on Track: '%s' that does not have a TrackRoute. The value "
+				"returned will not be valid."));
+		return -1.0;
+	}
+
+	return ConvertDistanceToUnreal<double>(
+		NativeRef->Native->getRoute()->getInitialDistanceTension());
 }
 
 TArray<FGuid> FTrackBarrier::GetInternalConstraintGuids() const
