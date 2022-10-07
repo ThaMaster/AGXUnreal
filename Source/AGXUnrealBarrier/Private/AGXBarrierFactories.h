@@ -26,6 +26,7 @@
 #include "Wire/WireNodeRef.h"
 #include "Wire/WireWinchBarrier.h"
 #include "Wire/WireWinchRef.h"
+#include "Vehicle/TrackBarrier.h"
 
 namespace agx
 {
@@ -64,6 +65,11 @@ namespace agxWire
 	class Wire;
 	class Node;
 	class WireWinchController;
+}
+
+namespace agxVehicle
+{
+	class Track;
 }
 
 /**
@@ -119,4 +125,6 @@ namespace AGXBarrierFactories
 	FWireNodeBarrier CreateWireNodeBarrier(agxWire::Node* Node);
 
 	FWireWinchBarrier CreateWireWinchBarrier(agxWire::WireWinchController* Winch);
+
+	FTrackBarrier CreateTrackBarrier(agxVehicle::Track* Track);
 }

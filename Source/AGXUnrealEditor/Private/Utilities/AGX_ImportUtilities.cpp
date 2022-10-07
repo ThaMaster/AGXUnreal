@@ -11,6 +11,9 @@
 #include "Shapes/TrimeshShapeBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Vehicle/AGX_TrackInternalMergePropertiesAsset.h"
+#include "Vehicle/AGX_TrackProperties.h"
+#include "Vehicle/TrackBarrier.h"
 
 // Unreal Engine includes.
 #include "AssetToolsModule.h"
@@ -347,6 +350,37 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	}
 
 	return Material;
+}
+
+UAGX_TrackInternalMergePropertiesAsset*
+FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
+	const FTrackBarrier& Barrier, const FString& DirectoryName, const FString& Name)
+{
+	auto InitAsset = [&](UAGX_TrackInternalMergePropertiesAsset& Asset)
+	{ Asset.CopyFrom(Barrier); };
+
+	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_TrackInternalMergePropertiesAsset>(
+		DirectoryName, Name, TEXT(""), TEXT("TrackInternalMergeProperties"), InitAsset);
+	if (!WriteAssetToDisk(AtdInfo))
+	{
+		return nullptr;
+	}
+	return Cast<UAGX_TrackInternalMergePropertiesAsset>(AtdInfo.Asset);
+}
+
+UAGX_TrackProperties* FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
+	const FTrackPropertiesBarrier& Barrier, const FString& DirectoryName, const FString& Name)
+{
+	auto InitAsset = [&](UAGX_TrackProperties& Asset)
+	{ Asset.CopyFrom(Barrier); };
+
+	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_TrackProperties>(
+		DirectoryName, Name, TEXT(""), TEXT("TrackProperties"), InitAsset);
+	if (!WriteAssetToDisk(AtdInfo))
+	{
+		return nullptr;
+	}
+	return Cast<UAGX_TrackProperties>(AtdInfo.Asset);
 }
 
 void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)

@@ -12,6 +12,8 @@
 #include "Vehicle/TrackPropertiesBarrier.h"
 #include "Vehicle/TrackPropertiesRef.h"
 #include "Vehicle/TrackRef.h"
+#include "Vehicle/TrackWheelBarrier.h"
+#include "Vehicle/TrackWheelRef.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -175,6 +177,13 @@ void FTrackBarrier::SetMaterial(const FShapeMaterialBarrier& Material)
 	NativeRef->Native->setMaterial(FAGX_AgxDynamicsObjectsAccess::GetFrom(&Material));
 }
 
+FShapeMaterialBarrier FTrackBarrier::GetMaterial() const
+{
+	check(HasNative());
+	agx::Material* Material = NativeRef->Native->getMaterial();
+	return FShapeMaterialBarrier(std::make_unique<FMaterialRef>(Material));
+}
+
 void FTrackBarrier::ClearProperties()
 {
 	check(HasNative());
@@ -231,10 +240,106 @@ TArray<FName> FTrackBarrier::GetCollisionGroups() const
 	return Result;
 }
 
+TArray<FTrackWheelBarrier> FTrackBarrier::GetWheels() const
+{
+	check(HasNative());	
+	const auto& WheelsAGX = NativeRef->Native->getWheels();
+	TArray<FTrackWheelBarrier> Wheels;
+	Wheels.Reserve(WheelsAGX.size());
+
+	for (const agxVehicle::TrackWheelRef& Wheel : WheelsAGX)
+	{
+		if (Wheel == nullptr)
+		{
+			continue;
+		}
+		Wheels.Add(FTrackWheelBarrier(std::make_unique<FTrackWheelRef>(Wheel.get())));
+	}
+
+	return Wheels;
+}
+
 int32 FTrackBarrier::GetNumNodes() const
 {
 	check(HasNative());
 	return NativeRef->Native->getNumNodes();
+}
+
+double FTrackBarrier::GetWidth() const
+{
+	check(HasNative());
+	if (NativeRef->Native->getRoute() == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("GetWidth was called on Track: '%s' that does not have a TrackRoute. The value "
+				 "returned will not be valid."), *GetName());
+		return -1.0;
+	}
+
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getRoute()->getNodeWidth());
+}
+
+double FTrackBarrier::GetThickness() const
+{
+	check(HasNative());
+	if (NativeRef->Native->getRoute() == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT(
+				"GetThickness was called on Track: '%s' that does not have a TrackRoute. The value "
+				"returned will not be valid."),
+			*GetName());
+		return -1.0;
+	}
+
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getRoute()->getNodeThickness());
+}
+
+double FTrackBarrier::GetInitialDistanceTension() const
+{
+	check(HasNative());
+	if (NativeRef->Native->getRoute() == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT(
+				"GetInitialDistanceTension was called on Track: '%s' that does not have a TrackRoute. The value "
+				 "returned will not be valid."),
+			*GetName());
+		return -1.0;
+	}
+
+	return ConvertDistanceToUnreal<double>(
+		NativeRef->Native->getRoute()->getInitialDistanceTension());
+}
+
+TArray<FGuid> FTrackBarrier::GetInternalConstraintGuids() const
+{
+	check(HasNative());
+	const int32 NumNodes = GetNumNodes();
+	TArray<FGuid> ConstraintGuids;
+	ConstraintGuids.Reserve(NumNodes);
+
+	for (int i = 0; i < NumNodes; i++)
+	{
+		agxVehicle::TrackNode* Node = NativeRef->Native->getNode(i);
+		if (Node == nullptr)
+		{
+			continue;
+		}
+
+		agx::Constraint* Constraint = Node->getConstraint();
+		if (Constraint == nullptr)
+		{
+			continue;
+		}
+
+		ConstraintGuids.Add(Convert(Constraint->getUuid()));
+	}
+
+	return ConstraintGuids;
 }
 
 FRigidBodyBarrier FTrackBarrier::GetNodeBody(int index) const

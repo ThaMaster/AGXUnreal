@@ -56,6 +56,41 @@ void UAGX_TrackInternalMergePropertiesBase::CopyFrom(
 
 #undef COPY_PROPERTY
 
+EAGX_MergedTrackNodeContactReduction UAGX_TrackInternalMergePropertiesBase::ToContactReduction(
+	uint8 ContactReduction)
+{
+	switch (ContactReduction)
+	{
+		case 0:
+			return EAGX_MergedTrackNodeContactReduction::None;
+		case 1:
+			return EAGX_MergedTrackNodeContactReduction::Minimal;
+		case 2:
+			return EAGX_MergedTrackNodeContactReduction::Moderate;
+		case 3:
+			return EAGX_MergedTrackNodeContactReduction::Aggressive;
+	}
+
+	UE_LOG(
+		LogAGX, Error, TEXT("Unknown ContactReduction '%d' passed to ContactReductionFrom()."),
+		ContactReduction);
+	return EAGX_MergedTrackNodeContactReduction::None;
+}
+
+void UAGX_TrackInternalMergePropertiesBase::CopyFrom(const FTrackBarrier& Barrier)
+{
+	bMergeEnabled = Barrier.InternalMergeProperties_GetEnableMerge();
+	ContactReduction = ToContactReduction(Barrier.InternalMergeProperties_GetContactReduction());
+	NumNodesPerMergeSegment = Barrier.InternalMergeProperties_GetNumNodesPerMergeSegment();
+	bLockToReachMergeConditionEnabled =
+		Barrier.InternalMergeProperties_GetEnableLockToReachMergeCondition();
+	LockToReachMergeConditionCompliance =
+		Barrier.InternalMergeProperties_GetLockToReachMergeConditionCompliance();
+	LockToReachMergeConditionDamping =
+		Barrier.InternalMergeProperties_GetLockToReachMergeConditionDamping();
+	MaxAngleMergeCondition = Barrier.InternalMergeProperties_GetMaxAngleMergeCondition();
+}
+
 #if WITH_EDITOR
 
 void UAGX_TrackInternalMergePropertiesBase::InitPropertyDispatcher()

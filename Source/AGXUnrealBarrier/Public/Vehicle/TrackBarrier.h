@@ -18,6 +18,7 @@ class FShapeMaterialBarrier;
 class FSimulationBarrier;
 class FTrackPropertiesBarrier;
 class FTrackInternalMergePropertiesBarrier;
+class FTrackWheelBarrier;
 struct FTrackRef;
 
 /**
@@ -62,6 +63,7 @@ public:
 
 	void ClearMaterial();
 	void SetMaterial(const FShapeMaterialBarrier& Material);
+	FShapeMaterialBarrier GetMaterial() const;
 
 	void ClearProperties();
 	void SetProperties(const FTrackPropertiesBarrier& Properties);
@@ -71,7 +73,17 @@ public:
 	void AddCollisionGroups(const TArray<FName>& GroupNames);
 	TArray<FName> GetCollisionGroups() const;
 
+	TArray<FTrackWheelBarrier> GetWheels() const;
+
 	int32 GetNumNodes() const;
+
+	double GetWidth() const;
+
+	double GetThickness() const;
+
+	double GetInitialDistanceTension() const;
+
+	TArray<FGuid> GetInternalConstraintGuids() const;
 
 	FRigidBodyBarrier GetNodeBody(int index) const;
 

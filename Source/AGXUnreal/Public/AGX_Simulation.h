@@ -58,13 +58,6 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 public: // Properties.
 
 	/**
-	 * Number of AGX threads. Default 1.
-	 */
-	UPROPERTY(
-		Config, EditAnywhere, BlueprintReadOnly, Category = "General")
-		int NumThreads = 1;
-
-	/**
 	 * The number of threads AGX Dynamics will use during Play.
 	 *
 	 * Set to 0 to use all hardware threads.

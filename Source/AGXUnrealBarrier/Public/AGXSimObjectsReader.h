@@ -28,6 +28,7 @@ class FShapeMaterialBarrier;
 class FContactMaterialBarrier;
 class FTwoBodyTireBarrier;
 class FWireBarrier;
+class FTrackBarrier;
 
 /*
 The separation between the Unreal part and the AGX Dynamics part of the plugin
@@ -162,6 +163,8 @@ public:
 	virtual FTwoBodyTireSimObjectBodies InstantiateTwoBodyTire(const FTwoBodyTireBarrier& Tire) = 0;
 
 	virtual void InstantiateWire(const FWireBarrier& Wire) = 0;
+
+	virtual void InstantiateTrack(const FTrackBarrier& Track) = 0;
 
 	/**
 	 * We currently do not have full Observer Frame support in AGX Dynamics for Unreal, i.e. there

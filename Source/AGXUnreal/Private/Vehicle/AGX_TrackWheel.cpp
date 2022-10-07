@@ -1,12 +1,10 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-
 #include "Vehicle/AGX_TrackWheel.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
-
 
 bool FAGX_TrackWheel::GetTransformRelativeToBody(FVector& RelPosition, FQuat& RelRotation) const
 {
@@ -16,7 +14,7 @@ bool FAGX_TrackWheel::GetTransformRelativeToBody(FVector& RelPosition, FQuat& Re
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("FAGX_TrackWheel::GetTransformRelativeToBody() failed because the Rigid Body "
-				"is null or invalid."));
+				 "is null or invalid."));
 		RelPosition = FVector::ZeroVector;
 		RelRotation = FQuat::Identity;
 		return false;
@@ -30,10 +28,11 @@ bool FAGX_TrackWheel::GetTransformRelativeToBody(FVector& RelPosition, FQuat& Re
 		USceneComponent* FrameComponent = FrameDefiningComponent.GetSceneComponent();
 		if (!FrameComponent)
 		{
-			UE_LOG(LogAGX, Warning,
+			UE_LOG(
+				LogAGX, Warning,
 				TEXT("TrackWheel failed to find the Frame Defining Component '%s' in '%s'. "
-					"The properties RelativeLocation and RelativeRotation will be interpreted as "
-					"relative to the Rigid Body Component instead."),
+					 "The properties RelativeLocation and RelativeRotation will be interpreted as "
+					 "relative to the Rigid Body Component instead."),
 				*FrameDefiningComponent.SceneComponentName.ToString(),
 				*GetNameSafe(FrameDefiningComponent.GetOwningActor()));
 		}
@@ -45,12 +44,32 @@ bool FAGX_TrackWheel::GetTransformRelativeToBody(FVector& RelPosition, FQuat& Re
 
 			// Given the Frame Component and a Position and Rotation in its local coordinate system,
 			// compute the Frame Position and Rotation in the coordinate system of the body.
-			FVector WorldPosition = FrameComponent->GetComponentTransform().TransformPositionNoScale(RelPosition);
-			FQuat WorldRotation = FrameComponent->GetComponentTransform().TransformRotation(RelRotation);
-			RelPosition = Body->GetComponentTransform().InverseTransformPositionNoScale(WorldPosition);
+			FVector WorldPosition =
+				FrameComponent->GetComponentTransform().TransformPositionNoScale(RelPosition);
+			FQuat WorldRotation =
+				FrameComponent->GetComponentTransform().TransformRotation(RelRotation);
+			RelPosition =
+				Body->GetComponentTransform().InverseTransformPositionNoScale(WorldPosition);
 			RelRotation = Body->GetComponentTransform().InverseTransformRotation(WorldRotation);
 		}
 	}
 
 	return true;
+}
+
+EAGX_TrackWheelModel FAGX_TrackWheel::ToModel(uint8 Model)
+{
+	switch (Model)
+	{
+		case 0:
+			return EAGX_TrackWheelModel::Sprocket;
+		case 1:
+			return EAGX_TrackWheelModel::Idler;
+		case 2:
+			return EAGX_TrackWheelModel::Roller;
+	}
+
+	UE_LOG(
+		LogAGX, Error, TEXT("Unknown model type: '%d' passed to FAGX_TrackWheel::ToModel."), Model);
+	return EAGX_TrackWheelModel::Idler;
 }

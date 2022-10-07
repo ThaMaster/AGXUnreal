@@ -344,7 +344,7 @@ public:
 	void CommitToAsset();
 
 	void CopyFrom(const UAGX_TrackProperties* Source);
-	void CopyFrom(const FTrackPropertiesBarrier* Source);
+	void CopyFrom(const FTrackPropertiesBarrier& Source);
 
 	/**
 	 * Create the Play instance for the given Source Track Properties, which should be an asset.

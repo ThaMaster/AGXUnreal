@@ -109,6 +109,8 @@ public:
 	// expose. User can just set track wheel model to sprocket or idler to get the merge-to-wheel
 	// behaviour.
 
+	static EAGX_TrackWheelModel ToModel(uint8 Model);
+
 public:
 	bool GetTransformRelativeToBody(FVector& RelPosition, FQuat& RelRotation) const;
 };

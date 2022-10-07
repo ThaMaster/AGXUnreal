@@ -12,6 +12,7 @@
 
 #include "AGX_TrackInternalMergePropertiesBase.generated.h"
 
+class FTrackBarrier;
 class UAGX_TrackInternalMergePropertiesAsset;
 class UAGX_TrackInternalMergePropertiesInstance;
 
@@ -186,6 +187,8 @@ public:
 
 	virtual ~UAGX_TrackInternalMergePropertiesBase();
 
+	static EAGX_MergedTrackNodeContactReduction ToContactReduction(uint8 ContactReduction);
+
 	virtual UAGX_TrackInternalMergePropertiesInstance* GetInstance()
 		PURE_VIRTUAL(UAGX_TrackInternalMergePropertiesBase::GetInstance, return nullptr;);
 
@@ -208,6 +211,7 @@ public:
 		PURE_VIRTUAL(UAGX_TrackInternalMergePropertiesBase::GetAsset, return nullptr;);
 
 	void CopyFrom(const UAGX_TrackInternalMergePropertiesBase* Source);
+	void CopyFrom(const FTrackBarrier& Barrier);
 
 #if WITH_EDITOR
 	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each

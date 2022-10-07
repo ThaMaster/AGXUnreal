@@ -211,6 +211,14 @@ public:
 		return TrackPreviewNeedsUpdateEvent;
 	}
 
+	/*
+	 * Copy configuration from the given Barrier.
+	 * Only the basic properties, such as number of nodes and Width, are copied. More complicated
+	 * properties, such as Material, Wheels etc, must be handled elsewhere. During AGX
+	 * Dynamics archive import those are handled by Sim Objects Importer Helper.
+	 */
+	void CopyFrom(const FTrackBarrier& Barrier);
+
 	/**
 	 * Get the number of nodes in this track.
 	 *

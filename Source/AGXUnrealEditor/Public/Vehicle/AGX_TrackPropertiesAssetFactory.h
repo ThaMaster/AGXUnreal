@@ -7,16 +7,16 @@
 #include "AGX_TrackPropertiesAssetFactory.generated.h"
 
 /**
- * Asset Factory for UAGX_TrackPropertiesAsset, making it possible to create asset objects in the
+ * Asset Factory for UAGX_TrackProperties, making it possible to create asset objects in the
  * Editor.
  */
 UCLASS()
-class AGXUNREALEDITOR_API UAGX_TrackPropertiesAssetFactory : public UFactory
+class AGXUNREALEDITOR_API UAGX_TrackPropertiesFactory : public UFactory
 {
 	GENERATED_BODY()
 
 public:
-	UAGX_TrackPropertiesAssetFactory(const class FObjectInitializer& OBJ);
+	UAGX_TrackPropertiesFactory(const class FObjectInitializer& OBJ);
 
 protected:
 	virtual bool IsMacroFactory() const

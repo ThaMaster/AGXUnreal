@@ -41,6 +41,11 @@
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
 #include "Wire/AGX_WireComponent.h"
+#include "Vehicle/AGX_TrackComponent.h"
+#include "Vehicle/AGX_TrackInternalMergePropertiesAsset.h"
+#include "Vehicle/AGX_TrackProperties.h"
+#include "Vehicle/TrackPropertiesBarrier.h"
+#include "Vehicle/TrackWheelBarrier.h"
 
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
@@ -284,6 +289,36 @@ namespace
 			RestoredMeshes.Add(Guid, AtdInfo);
 		}
 		return AtdInfo;
+	}
+
+	UAGX_TrackProperties* GetOrCreateTrackPropertiesAsset(
+		const FTrackPropertiesBarrier& Barrier,
+		const FString& Name, TMap<FGuid, UAGX_TrackProperties*>& RestoredTrackProperties,
+		const FString& DirectoryName)
+	{
+		const FGuid Guid = Barrier.GetGuid();
+		if (!Guid.IsValid())
+		{
+			// The GUID is invalid, but try to create the asset anyway but without adding it to
+			// the RestoredTrackProperties cache.
+			return FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
+				Barrier, DirectoryName, Name);
+		}
+
+		if (UAGX_TrackProperties* Asset = RestoredTrackProperties.FindRef(Guid))
+		{
+			// We have seen this asset before, use the one in the cache.
+			return Asset;
+		}
+
+		// This is a new Track Properties. Create the asset and add to the cache.
+		UAGX_TrackProperties* Asset =
+			FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(Barrier, DirectoryName, Name);
+		if (Asset != nullptr)
+		{
+			RestoredTrackProperties.Add(Guid, Asset);
+		}
+		return Asset;
 	}
 
 	/**
@@ -970,6 +1005,108 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	Component->RegisterComponent();
 	Component->PostEditChange();
 	// May chose to store a table of all imported wires. If so, add this wire to the table here.
+	return Component;
+}
+
+UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
+	const FTrackBarrier& Barrier, AActor& Owner, bool IsBlueprintOwner)
+{
+	UAGX_TrackComponent* Component = NewObject<UAGX_TrackComponent>(&Owner);
+	if (Component == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Track"), Barrier.GetName(), SourceFilePath,
+			TEXT("Could not create new AGX_TrackComponent"));
+		return nullptr;
+	}
+
+	ConstraintIgnoreList.Append(Barrier.GetInternalConstraintGuids());
+
+	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
+
+	// Copy simple properties such as number of nodes and width. More complicated properties, such
+	// as Wheels, TrackProperties asset etc, are handled below.
+	Component->CopyFrom(Barrier);
+
+	// Apply Shape Material.
+	FShapeMaterialBarrier ShapeMaterial = Barrier.GetMaterial();
+	if (ShapeMaterial.HasNative())
+	{
+		const FGuid Guid = ShapeMaterial.GetGuid();
+		UAGX_ShapeMaterial* Material = RestoredShapeMaterials.FindRef(Guid);
+		Component->ShapeMaterial = Material;
+	}
+
+	const FString BarrierName = Barrier.GetName();
+
+	// Apply Track Properties.
+	{
+		const FString AssetName =
+			BarrierName.IsEmpty() ? FString("AGX_TP_Track") : FString("AGX_TP_") + BarrierName;
+
+		UAGX_TrackProperties* TrackProperties = GetOrCreateTrackPropertiesAsset(
+			Barrier.GetProperties(), AssetName, RestoredTrackProperties, DirectoryName);
+		if (TrackProperties == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unable to create an Asset for the Track Properties '%s' of Track '%s' during "
+					 "import."),
+				*AssetName, *Barrier.GetName());
+		}
+		else
+		{
+			Component->TrackProperties = TrackProperties;
+		}
+	}
+
+	// Apply Internal Merge Properties.
+	{
+		const FString AssetName =
+			BarrierName.IsEmpty() ? FString("AGX_TIMP_Track") : FString("AGX_TIMP_") + BarrierName;
+
+		Component->InternalMergeProperties =
+			FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
+				Barrier, DirectoryName, AssetName);
+	}
+
+	auto SetRigidBody = [&](UAGX_RigidBodyComponent* Body, FAGX_RigidBodyReference& BodyRef)
+	{
+		if (Body == nullptr)
+		{
+			WriteImportErrorMessage(
+				TEXT("AGX Dynamics Track"), Barrier.GetName(), SourceFilePath,
+				TEXT("Could not set Rigid Body"));
+			return;
+		}
+
+		BodyRef.BodyName = Body->GetFName();
+		if (!IsBlueprintOwner)
+		{
+			BodyRef.OwningActor = Body->GetOwner();
+		}
+	};
+
+	// Copy Wheels.
+	for (const FTrackWheelBarrier& WheelBarrier : Barrier.GetWheels())
+	{
+		FAGX_TrackWheel Wheel;
+		SetRigidBody(GetBody(WheelBarrier.GetRigidBody()), Wheel.RigidBody);
+		Wheel.bUseFrameDefiningComponent = false;
+		Wheel.RelativeLocation = WheelBarrier.GetRelativeLocation();
+		Wheel.RelativeRotation = WheelBarrier.GetRelativeRotation();
+		Wheel.Radius = static_cast<float>(WheelBarrier.GetRadius());
+		Wheel.Model = FAGX_TrackWheel::ToModel(WheelBarrier.GetModel());
+		Wheel.bSplitSegments = WheelBarrier.GetSplitSegments();
+		Wheel.bMoveNodesToRotationPlane = WheelBarrier.GetMoveNodesToRotationPlane();
+		Wheel.bMoveNodesToWheel = WheelBarrier.GetMoveNodesToWheel();
+		Component->Wheels.Add(Wheel);
+	}
+
+	Component->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Component);
+	Component->RegisterComponent();
+	Component->PostEditChange();
 	return Component;
 }
 

@@ -15,7 +15,7 @@
  * properties provide Blueprint-compatible setters and getter that operator on float instead.
  */
 UCLASS()
-class AGXUNREALBARRIER_API UAGX_Real_FL : public UBlueprintFunctionLibrary
+class AGXUNREAL_API UAGX_Real_FL : public UBlueprintFunctionLibrary
 {
 public:
 	GENERATED_BODY()

@@ -346,7 +346,10 @@ void UAGX_TrackProperties::CommitToAsset()
 {
 	if (IsInstance())
 	{
-		Asset->CopyFrom(GetNative());
+		if (HasNative())
+		{
+			Asset->CopyFrom(*GetNative());
+		}
 	}
 	else if (Instance != nullptr)
 	{
@@ -389,40 +392,35 @@ void UAGX_TrackProperties::CopyFrom(const UAGX_TrackProperties* Source)
 	StabilizingHingeFrictionParameter = Source->StabilizingHingeFrictionParameter;
 }
 
-void UAGX_TrackProperties::CopyFrom(const FTrackPropertiesBarrier* Source)
+void UAGX_TrackProperties::CopyFrom(const FTrackPropertiesBarrier& Source)
 {
-	if (Source == nullptr)
-	{
-		return;
-	}
+	HingeComplianceTranslational_X = Source.GetHingeCompliance(0);
+	HingeComplianceTranslational_Y = Source.GetHingeCompliance(1);
+	HingeComplianceTranslational_Z = Source.GetHingeCompliance(2);
 
-	HingeComplianceTranslational_X = Source->GetHingeCompliance(0);
-	HingeComplianceTranslational_Y = Source->GetHingeCompliance(1);
-	HingeComplianceTranslational_Z = Source->GetHingeCompliance(2);
+	HingeComplianceRotational_X = Source.GetHingeCompliance(3);
+	HingeComplianceRotational_Y = Source.GetHingeCompliance(4);
 
-	HingeComplianceRotational_X = Source->GetHingeCompliance(0);
-	HingeComplianceRotational_Y = Source->GetHingeCompliance(1);
+	HingeDampingTranslational_X = Source.GetHingeDamping(0);
+	HingeDampingTranslational_Y = Source.GetHingeDamping(1);
+	HingeDampingTranslational_Z = Source.GetHingeDamping(2);
 
-	HingeDampingTranslational_X = Source->GetHingeDamping(0);
-	HingeDampingTranslational_Y = Source->GetHingeDamping(1);
-	HingeDampingTranslational_Z = Source->GetHingeDamping(2);
+	HingeDampingRotational_X = Source.GetHingeDamping(3);
+	HingeDampingRotational_Y = Source.GetHingeDamping(4);
 
-	HingeDampingRotational_X = Source->GetHingeDamping(0);
-	HingeDampingRotational_Y = Source->GetHingeDamping(1);
-
-	bEnableHingeRange = Source->GetHingeRangeEnabled();
-	HingeRange = Source->GetHingeRangeRange();
-	bEnableOnInitializeMergeNodesToWheels = Source->GetOnInitializeMergeNodesToWheelsEnabled();
+	bEnableHingeRange = Source.GetHingeRangeEnabled();
+	HingeRange = Source.GetHingeRangeRange();
+	bEnableOnInitializeMergeNodesToWheels = Source.GetOnInitializeMergeNodesToWheelsEnabled();
 	bEnableOnInitializeTransformNodesToWheels =
-		Source->GetOnInitializeTransformNodesToWheelsEnabled();
-	TransformNodesToWheelsOverlap = Source->GetTransformNodesToWheelsOverlap();
+		Source.GetOnInitializeTransformNodesToWheelsEnabled();
+	TransformNodesToWheelsOverlap = Source.GetTransformNodesToWheelsOverlap();
 
-	NodesToWheelsMergeThreshold = Source->GetNodesToWheelsMergeThreshold();
-	NodesToWheelsSplitThreshold = Source->GetNodesToWheelsSplitThreshold();
-	NumNodesIncludedInAverageDirection = Source->GetNumNodesIncludedInAverageDirection();
+	NodesToWheelsMergeThreshold = Source.GetNodesToWheelsMergeThreshold();
+	NodesToWheelsSplitThreshold = Source.GetNodesToWheelsSplitThreshold();
+	NumNodesIncludedInAverageDirection = Source.GetNumNodesIncludedInAverageDirection();
 
-	MinStabilizingHingeNormalForce = Source->GetMinStabilizingHingeNormalForce();
-	StabilizingHingeFrictionParameter = Source->GetStabilizingHingeFrictionParameter();
+	MinStabilizingHingeNormalForce = Source.GetMinStabilizingHingeNormalForce();
+	StabilizingHingeFrictionParameter = Source.GetStabilizingHingeFrictionParameter();
 }
 
 UAGX_TrackProperties* UAGX_TrackProperties::CreateInstanceFromAsset(

@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Vehicle/AGX_TrackProperties.h"
 
-UAGX_TrackPropertiesAssetFactory::UAGX_TrackPropertiesAssetFactory(
+UAGX_TrackPropertiesFactory::UAGX_TrackPropertiesFactory(
 	const class FObjectInitializer& OBJ)
 	: Super(OBJ)
 {
@@ -14,7 +14,7 @@ UAGX_TrackPropertiesAssetFactory::UAGX_TrackPropertiesAssetFactory(
 	bCreateNew = true;
 }
 
-UObject* UAGX_TrackPropertiesAssetFactory::FactoryCreateNew(
+UObject* UAGX_TrackPropertiesFactory::FactoryCreateNew(
 	UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context,
 	FFeedbackContext* Warn)
 {
