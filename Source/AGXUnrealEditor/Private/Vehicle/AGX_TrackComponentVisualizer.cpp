@@ -367,6 +367,17 @@ FAGX_TrackComponentVisualizer::FAGX_TrackComponentVisualizer()
 
 FAGX_TrackComponentVisualizer::~FAGX_TrackComponentVisualizer()
 {
+	if (CollisionBoxMaterialProxy != nullptr)
+	{
+		delete CollisionBoxMaterialProxy;
+		CollisionBoxMaterialProxy = nullptr;
+	}
+
+	if (MassCenterMaterialProxy != nullptr)
+	{
+		delete MassCenterMaterialProxy;
+		MassCenterMaterialProxy = nullptr;
+	}
 }
 
 void FAGX_TrackComponentVisualizer::DrawVisualization(
