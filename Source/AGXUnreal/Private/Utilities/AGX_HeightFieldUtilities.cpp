@@ -16,6 +16,49 @@
 
 namespace AGX_HeightFieldUtilities_helpers
 {
+
+	std::tuple<FVector, FQuat> GetAGXTransformFrom(const ALandscape& Landscape, bool IsTerrain)
+	{
+		// An Unreal landscape has its origin in the bottom left corner.
+		// A AGX Dynamics Terrain (and Geometry having a Hight Field Shape) has their origin
+		// at the center.
+		const FAGX_LandscapeSizeInfo LandscapeSizeInfo(Landscape);
+		const float SideSizeX = LandscapeSizeInfo.NumQuadsSideX * LandscapeSizeInfo.QuadSideSizeX;
+		const float SideSizeY = LandscapeSizeInfo.NumQuadsSideY * LandscapeSizeInfo.QuadSideSizeY;
+
+		const FVector LandscapeToCenterOffsetLocal = [&]()
+		{
+			if (IsTerrain)
+			{
+				// For a AGX Dynamics Terrain; if there are an odd number of tiles in the
+				// x-direction, the origins x-coordinate is the same as the x-coordinate of the left
+				// edge of the center tile. If there are an odd number of tiles in the y-direction,
+				// the origins y-coordinate is the same as the y-coordinate of the top edge of the
+				// center tile.
+				const float TerrainTileCenterOffsetX = (LandscapeSizeInfo.NumQuadsSideX % 2 == 0)
+														   ? 0
+														   : LandscapeSizeInfo.QuadSideSizeX / 2;
+				const float TerrainTileCenterOffsetY = (LandscapeSizeInfo.NumQuadsSideY % 2 == 0)
+														   ? 0
+														   : -LandscapeSizeInfo.QuadSideSizeY / 2;
+				return FVector(
+					SideSizeX / 2.0f + TerrainTileCenterOffsetX,
+					SideSizeY / 2.0f + TerrainTileCenterOffsetY, 0);
+			}
+			else
+			{
+				return FVector(SideSizeX / 2.0f, SideSizeY / 2.0f, 0);
+			}
+		}();
+
+		// Transform the offset from landscape local coordinate system to the global coordinate
+		// system.
+		const FTransform LandscapeTransform = Landscape.GetTransform();
+		const FVector WorldLocation =
+			LandscapeTransform.TransformPositionNoScale(LandscapeToCenterOffsetLocal);
+		return std::make_tuple(WorldLocation, Landscape.GetActorQuat());
+	}
+
 	// Nudge point away from the edge of the landscape if the vertex lies at the edge.
 	// By setting ForceNudge = true the point will be nudged even if it does not lie at the
 	// landscape edge.
@@ -267,4 +310,16 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape&
 		SideSizeY, Heights);
 
 	return HeightField;
+}
+
+std::tuple<FVector, FQuat> AGX_HeightFieldUtilities::GetTerrainPositionAndRotationFrom(
+	const ALandscape& Landscape)
+{
+	return AGX_HeightFieldUtilities_helpers::GetAGXTransformFrom(Landscape, true);
+}
+
+std::tuple<FVector, FQuat> AGX_HeightFieldUtilities::GetHeightFieldPositionAndRotationFrom(
+	const ALandscape& Landscape)
+{
+	return AGX_HeightFieldUtilities_helpers::GetAGXTransformFrom(Landscape, false);
 }
