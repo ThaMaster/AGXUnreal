@@ -176,11 +176,27 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->Set(
 		"ClassIcon.AGX_WireWinchComponent", new IMAGE_BRUSH("Icons/wire_winch_32x32", IconSize16));
 
-	// Actor icons, visiable in the Place Actors panel.
-	/// @todo The intention was that these should set icons on the Place Actors entries. Doesn't
-	/// work.
+	// Actor icons, visible in the Place Actors panel. Currently only works with Unreal >= 5.0.
 	Style->Set(
-		"ClassIcon.AGX_RigidBodyActor", new IMAGE_BRUSH("Icons/rigid_body_64x64", IconSize16));
+		"ClassIcon.AGX_RigidBodyActor", new IMAGE_BRUSH("Icons/rigid_body_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_ContactMaterialRegistrarActor",
+		new IMAGE_BRUSH("Icons/contact_material_register_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_ConstraintFrameActor",
+		new IMAGE_BRUSH("Icons/constraint_frame_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_ConstraintActor", new IMAGE_BRUSH("Icons/constraint_32x32", IconSize16));
+	Style->Set("ClassIcon.AGX_Terrain", new IMAGE_BRUSH("Icons/terrain_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_CollisionGroupDisablerActor",
+		new IMAGE_BRUSH("Icons/collision_group_disable_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_TwoBodyTireActor",
+		new IMAGE_BRUSH("Icons/two_wheel_tire_32x32", IconSize16));
+	Style->Set("ClassIcon.AGX_WireActor", new IMAGE_BRUSH("Icons/wire_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_WireWinchActor", new IMAGE_BRUSH("Icons/wire_winch_32x32", IconSize16));
 
 	return Style;
 };
