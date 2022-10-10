@@ -73,7 +73,7 @@ private:
 
 	void OnSourceLandscapeChanged(UObject*, struct FPropertyChangedEvent&);
 
-	void RecenterActorOnLandscape();
+	void RecenterOnLandscape();
 
 private:
 	FHeightFieldShapeBarrier NativeBarrier;
