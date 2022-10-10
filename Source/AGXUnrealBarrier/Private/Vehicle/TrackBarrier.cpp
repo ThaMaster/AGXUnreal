@@ -2,10 +2,11 @@
 
 #include "Vehicle/TrackBarrier.h"
 
-// AGX Unreal Barrier includes.
+// AGX Dynamics for Unreal includes.
 #include "AGX_AgxDynamicsObjectsAccess.h"
 #include "AGX_LogCategory.h"
 #include "AGXBarrierFactories.h"
+#include "AGXRefs.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "SimulationBarrier.h"
 #include "TypeConversions.h"
@@ -242,7 +243,7 @@ TArray<FName> FTrackBarrier::GetCollisionGroups() const
 
 TArray<FTrackWheelBarrier> FTrackBarrier::GetWheels() const
 {
-	check(HasNative());	
+	check(HasNative());
 	const auto& WheelsAGX = NativeRef->Native->getWheels();
 	TArray<FTrackWheelBarrier> Wheels;
 	Wheels.Reserve(WheelsAGX.size());
