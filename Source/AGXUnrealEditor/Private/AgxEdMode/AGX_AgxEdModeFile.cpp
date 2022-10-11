@@ -9,6 +9,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Widgets/AGX_ImportDialog.h"
 
 // Unreal Engine includes.
 #include "Textures/SlateIcon.h"
@@ -45,18 +46,23 @@ namespace
 	}
 }
 
-void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()
+void UAGX_AgxEdModeFile::ImportToBlueprint()
 {
-	const FString Filename =
-		FAGX_EditorUtilities::SelectExistingFileDialog("AGX Dynamics Archive", ".agx");
-	if (Filename.IsEmpty())
-	{
-		return;
-	}
 
-	AGX_ImporterToBlueprint::ImportAGXArchive(Filename);
+	TSharedRef<SWindow> Window =
+		SNew(SWindow)
+			.SupportsMinimize(false)
+			.SupportsMaximize(false)
+			.SizingRule(ESizingRule::Autosized)
+			.Title(
+				NSLOCTEXT("AGX", "AGXUnrealImport", "Import AGX Dynamics archive or URDF"));
+
+	TSharedRef<SAGX_ImportDialog> ImportDialog = SNew(SAGX_ImportDialog);
+	Window->SetContent(ImportDialog);
+	FSlateApplication::Get().AddModalWindow(Window, nullptr);
 }
 
+#if 0 // todo: remove completely before merge!
 void UAGX_AgxEdModeFile::ImportUrdfToBlueprint()
 {
 	const FString UrdfFilePath =
@@ -83,6 +89,7 @@ void UAGX_AgxEdModeFile::ImportUrdfToBlueprint()
 
 	AGX_ImporterToBlueprint::ImportURDF(UrdfFilePath, UrdfPackagePath);
 }
+#endif
 
 void UAGX_AgxEdModeFile::ExportAgxArchive()
 {
