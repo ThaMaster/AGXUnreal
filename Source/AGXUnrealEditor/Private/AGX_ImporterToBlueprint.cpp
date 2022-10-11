@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImportEnums.h"
+#include "AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SimObjectsImporterHelper.h"
@@ -278,21 +279,23 @@ namespace
 
 		for (const auto& Constraint : SimObjects.GetBallConstraints())
 		{
-			auto BallConstraint= Helper.InstantiateBallConstraint(Constraint, ImportedActor);
+			auto BallConstraint = Helper.InstantiateBallConstraint(Constraint, ImportedActor);
 			ClearOwningActors(BallConstraint);
 			Success &= BallConstraint != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetCylindricalConstraints())
 		{
-			auto CylindricalConstraint = Helper.InstantiateCylindricalConstraint(Constraint, ImportedActor);
+			auto CylindricalConstraint =
+				Helper.InstantiateCylindricalConstraint(Constraint, ImportedActor);
 			ClearOwningActors(CylindricalConstraint);
 			Success &= CylindricalConstraint != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetDistanceConstraints())
 		{
-			auto DistanceConstraint = Helper.InstantiateDistanceConstraint(Constraint, ImportedActor);
+			auto DistanceConstraint =
+				Helper.InstantiateDistanceConstraint(Constraint, ImportedActor);
 			ClearOwningActors(DistanceConstraint);
 			Success &= DistanceConstraint != nullptr;
 		}
@@ -540,18 +543,22 @@ namespace
 	}
 }
 
-UBlueprint* AGX_ImporterToBlueprint::ImportAGXArchive(
-	const FString& ArchivePath, bool OpenBlueprintEditor)
+UBlueprint* AGX_ImporterToBlueprint::Import(const FAGX_ImportSettings& ImportSettings)
 {
-	FAGX_SimObjectsImporterHelper Helper(ArchivePath);
-	return ImportToBlueprint(Helper, EAGX_ImportType::Agx, OpenBlueprintEditor);
-}
+	if (ImportSettings.ImportType == EAGX_ImportType::Agx)
+	{
+		FAGX_SimObjectsImporterHelper Helper(ImportSettings.FilePath);
+		return ImportToBlueprint(
+			Helper, ImportSettings.ImportType, ImportSettings.OpenBlueprintEditorAfterImport);
+	}
+	else if (ImportSettings.ImportType == EAGX_ImportType::Urdf)
+	{
+		FAGX_UrdfImporterHelper Helper(ImportSettings.FilePath, ImportSettings.UrdfPackagePath);
+		return ImportToBlueprint(
+			Helper, ImportSettings.ImportType, ImportSettings.OpenBlueprintEditorAfterImport);
+	}
 
-UBlueprint* AGX_ImporterToBlueprint::ImportURDF(
-	const FString& UrdfFilePath, const FString& UrdfPackagePath, bool OpenBlueprintEditor)
-{
-	FAGX_UrdfImporterHelper Helper(UrdfFilePath, UrdfPackagePath);
-	return ImportToBlueprint(Helper, EAGX_ImportType::Urdf, OpenBlueprintEditor);
+	return nullptr;
 }
 
 #undef LOCTEXT_NAMESPACE
