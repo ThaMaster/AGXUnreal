@@ -31,21 +31,6 @@ UAGX_AgxEdModeFile* UAGX_AgxEdModeFile::GetInstance()
 	return FileTool;
 }
 
-namespace
-{
-	bool UrdfHasFilenameAttribute(const FString& FilePath)
-	{
-		FString Content;
-		if (!FFileHelper::LoadFileToString(Content, *FilePath))
-		{
-			UE_LOG(LogAGX, Warning, TEXT("Unable to read file '%s'"), *FilePath);
-			return false;
-		}
-
-		return Content.Contains("filename", ESearchCase::IgnoreCase);
-	}
-}
-
 void UAGX_AgxEdModeFile::ImportToBlueprint()
 {
 
@@ -61,35 +46,6 @@ void UAGX_AgxEdModeFile::ImportToBlueprint()
 	Window->SetContent(ImportDialog);
 	FSlateApplication::Get().AddModalWindow(Window, nullptr);
 }
-
-#if 0 // todo: remove completely before merge!
-void UAGX_AgxEdModeFile::ImportUrdfToBlueprint()
-{
-	const FString UrdfFilePath =
-		FAGX_EditorUtilities::SelectExistingFileDialog("URDF file", ".urdf");
-	if (UrdfFilePath.IsEmpty())
-	{
-		return;
-	}
-
-	const FString UrdfPackagePath = [&UrdfFilePath]()
-	{
-		if (UrdfHasFilenameAttribute(UrdfFilePath))
-		{
-			const FString UrdfDir = FPaths::GetPath(UrdfFilePath);
-			const FString StartDir = FPaths::DirectoryExists(UrdfDir) ? UrdfDir : FString("");
-			return FAGX_EditorUtilities::SelectExistingDirectoryDialog(
-				"Select URDF package directory", StartDir, true);
-		}
-		else
-		{
-			return FString();
-		}
-	}();
-
-	AGX_ImporterToBlueprint::ImportURDF(UrdfFilePath, UrdfPackagePath);
-}
-#endif
 
 void UAGX_AgxEdModeFile::ExportAgxArchive()
 {
