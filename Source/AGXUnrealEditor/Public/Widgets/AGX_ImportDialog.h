@@ -20,14 +20,26 @@ public:
 
 private:
 	TSharedRef<SWidget> CreateBrowseFileGui();
+	TSharedRef<SBorder> CreateSettingsGui();
+	TSharedRef<SBorder> CreateImportAGXFileGui();
+	TSharedRef<SBorder> CreateImportURDFFileGui();	
+	TSharedRef<SBorder> CreateImportButtonGui();
+	TSharedRef<SWidget> CreateCheckboxGui();	
 
 	FReply OnBrowseFileButtonClicked();
 	FText GetFilePathText() const;
 
+	FReply OnBrowseUrdfPackageButtonClicked();
+	FText GetUrdfPackagePathText() const;
+
 	FReply OnImportButtonClicked();
+
+	void OnIgnoreDisabledTrimeshCheckboxClicked(ECheckBoxState NewCheckedState);
+
+	void RefreshGui();
 
 	EAGX_ImportType ImportType = EAGX_ImportType::Invalid;
 	FString FilePath;
 	FString UrdfPackagePath;
-	bool SkipDisabledTrimesh = false;
+	bool IgnoreDisabledTrimesh = false;
 };
