@@ -303,8 +303,8 @@ void UAGX_ShapeComponent::UpdateNativeGlobalTransform()
 	}
 
 	FShapeBarrier* Shape = GetNative();
-	Shape->SetLocalPosition(GetComponentLocation());
-	Shape->SetLocalRotation(GetComponentQuat());
+	Shape->SetWorldPosition(GetComponentLocation());
+	Shape->SetWorldRotation(GetComponentQuat());
 }
 
 void UAGX_ShapeComponent::AddCollisionGroup(const FName& GroupName)
