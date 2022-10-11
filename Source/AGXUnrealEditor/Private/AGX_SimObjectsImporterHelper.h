@@ -139,9 +139,9 @@ public:
 	 */
 	void FinalizeStaticMeshAssets();
 
-	explicit FAGX_SimObjectsImporterHelper(const FString& InSourceFilePath);
+	explicit FAGX_SimObjectsImporterHelper(const FAGX_ImportSettings& InImportSettings);
 
-	const FString SourceFilePath;
+	const FAGX_ImportSettings ImportSettings;
 	const FString SourceFileName;
 	const FString ModelName;
 	const FString DirectoryName;

@@ -76,7 +76,7 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics RigidBody"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics RigidBody"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new AGX_RigidBodyComponent"));
 		return nullptr;
 	}
@@ -472,7 +472,7 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Sphere"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics Sphere"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new UAGX_SphereShapeComponent"));
 		return nullptr;
 	}
@@ -491,7 +491,7 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Box"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics Box"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new UAGX_BoxShapeComponent"));
 		return nullptr;
 	}
@@ -511,7 +511,7 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Cylinder"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics Cylinder"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new UAGX_CylinderShapeComponent"));
 		return nullptr;
 	}
@@ -530,7 +530,7 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Capsule"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics Capsule"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new UAGX_CapsuleShapeComponent"));
 		return nullptr;
 	}
@@ -550,7 +550,7 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Trimesh"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics Trimesh"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not instantiate a new Trimesh Shape Component."));
 		return nullptr;
 	}
@@ -650,7 +650,7 @@ namespace
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("Constraint '%s' imported from '%s' does not have a first body. Ignoring."),
-				*Barrier.GetName(), *Helper.SourceFilePath);
+				*Barrier.GetName(), *Helper.ImportSettings.FilePath);
 			return nullptr;
 		}
 
@@ -731,7 +731,7 @@ UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new AGX_TwoBodyTireComponent"));
 		return nullptr;
 	}
@@ -741,7 +741,7 @@ UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire
 		if (Body == nullptr)
 		{
 			WriteImportErrorMessage(
-				TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), SourceFilePath,
+				TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ImportSettings.FilePath,
 				TEXT("Could not set Rigid Body"));
 			return;
 		}
@@ -790,7 +790,7 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Wire"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics Wire"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new AGX_WireComponent"));
 		return nullptr;
 	}
@@ -971,7 +971,7 @@ USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
 			TEXT("While importing from '%s': Observer Frame %s is attached to a Rigid Body that "
 				 "has not been restored. Cannot create Unreal Engine representation. Tried to find "
 				 "Rigid Body with GUID %s."),
-			*SourceFilePath, *Name, *BodyGuid.ToString());
+			*ImportSettings.FilePath, *Name, *BodyGuid.ToString());
 		return nullptr;
 	}
 
@@ -983,7 +983,7 @@ USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
 			LogAGX, Error,
 			TEXT("While importing from '%s': Could not create Scene Component for Observer Frame "
 				 "named %s in Actor %s, the Observer Frame is lost."),
-			*SourceFilePath, *Name, *Owner.GetName());
+			*ImportSettings.FilePath, *Name, *Owner.GetName());
 		return nullptr;
 	}
 	FAGX_ImportUtilities::Rename(*Component, Name);
@@ -1003,7 +1003,7 @@ USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
 			LogAGX, Error,
 			TEXT("While importing '%s': Could not attach Observer Frame %s to Rigid Body %s. The "
 				 "Observer Frame is not imported."),
-			*SourceFilePath, *Name, *Body->GetName());
+			*ImportSettings.FilePath, *Name, *Body->GetName());
 		Component->DestroyComponent();
 		return nullptr;
 	}
@@ -1035,7 +1035,7 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::GetBody(
 			LogAGX, Error,
 			TEXT("While importing from '%s': A component references a body '%s', but that body "
 				 "hasn't been restored."),
-			*SourceFilePath, *Barrier.GetName());
+			*ImportSettings.FilePath, *Barrier.GetName());
 	}
 
 	return Component;
@@ -1105,9 +1105,9 @@ namespace
 	}
 }
 
-FAGX_SimObjectsImporterHelper::FAGX_SimObjectsImporterHelper(const FString& InSourceFilePath)
-	: SourceFilePath(InSourceFilePath)
-	, SourceFileName(FPaths::GetBaseFilename(InSourceFilePath))
+FAGX_SimObjectsImporterHelper::FAGX_SimObjectsImporterHelper(const FAGX_ImportSettings& InImportSettings)
+	: ImportSettings(InImportSettings)
+	, SourceFileName(FPaths::GetBaseFilename(InImportSettings.FilePath))
 	, ModelName(MakeModelName(SourceFileName))
 	, DirectoryName(MakeDirectoryName(ModelName))
 {

@@ -8,7 +8,6 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SimObjectsImporterHelper.h"
-#include "AGX_UrdfImporterHelper.h"
 #include "AGXSimObjectsReader.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
@@ -397,7 +396,7 @@ namespace
 	bool AddComponentsFromAGXArchive(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
 		FSimulationObjectCollection SimObjects;
-		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, SimObjects) ||
+		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.ImportSettings.FilePath, SimObjects) ||
 			!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
@@ -413,11 +412,9 @@ namespace
 
 	bool AddComponentsFromUrdf(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
-		FAGX_UrdfImporterHelper* HelperUrdf = static_cast<FAGX_UrdfImporterHelper*>(&Helper);
-
 		FSimulationObjectCollection SimObjects;
 		if (!FAGXSimObjectsReader::ReadUrdf(
-				HelperUrdf->SourceFilePath, HelperUrdf->UrdfPackagePath, SimObjects) ||
+				Helper.ImportSettings.FilePath, Helper.ImportSettings.UrdfPackagePath, SimObjects) ||
 			!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
@@ -545,20 +542,9 @@ namespace
 
 UBlueprint* AGX_ImporterToBlueprint::Import(const FAGX_ImportSettings& ImportSettings)
 {
-	if (ImportSettings.ImportType == EAGX_ImportType::Agx)
-	{
-		FAGX_SimObjectsImporterHelper Helper(ImportSettings.FilePath);
-		return ImportToBlueprint(
-			Helper, ImportSettings.ImportType, ImportSettings.OpenBlueprintEditorAfterImport);
-	}
-	else if (ImportSettings.ImportType == EAGX_ImportType::Urdf)
-	{
-		FAGX_UrdfImporterHelper Helper(ImportSettings.FilePath, ImportSettings.UrdfPackagePath);
-		return ImportToBlueprint(
-			Helper, ImportSettings.ImportType, ImportSettings.OpenBlueprintEditorAfterImport);
-	}
-
-	return nullptr;
+	FAGX_SimObjectsImporterHelper Helper(ImportSettings);
+	return ImportToBlueprint(
+		Helper, ImportSettings.ImportType, ImportSettings.OpenBlueprintEditorAfterImport);
 }
 
 #undef LOCTEXT_NAMESPACE
