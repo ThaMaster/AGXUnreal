@@ -1,7 +1,11 @@
 // Copyright 2022, Algoryx Simulation AB.
 
+/*
+ * Deprecated: see internal issue 739.
+ */
+
 /// \todo Reduce includes!
-#include "Constraints/AGX_ConstraintIconGraphicsComponent.h"
+#include "Deprecated/AGX_ConstraintIconGraphicsComponent.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Simulation.h"

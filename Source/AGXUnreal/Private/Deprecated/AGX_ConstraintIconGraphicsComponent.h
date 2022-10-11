@@ -1,5 +1,9 @@
 // Copyright 2022, Algoryx Simulation AB.
 
+/*
+ * Deprecated: see internal issue 739.
+ */
+
 #pragma once
 
 // Unreal Engine includes.
