@@ -286,6 +286,69 @@ namespace
 		return AtdInfo;
 	}
 
+	/*
+	 * Creates a RenderMaterial from a RenderDataBarrier if it has a material. Otherwise returns
+	 * the default RenderMaterial.
+	 */
+	UMaterialInterface* CreateRenderMaterialFromRenderDataOrDefault(
+		const FRenderDataBarrier& RenderDataBarrier, bool IsSensor, const FString& DirectoryName,
+		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials)
+	{
+		// Create the RenderMaterial (if any).
+		// Convert Render Data Material, if there is one. May fall back to the base import Material,
+		// and may also fail completely, leaving RenderDataMaterial being nullptr.
+		UMaterialInterface* RenderDataMaterial = nullptr;
+		if (RenderDataBarrier.HasMaterial() && GIsEditor)
+		{
+			RenderDataMaterial = GetOrCreateRenderMaterialInstance(
+				RenderDataBarrier.GetMaterial(), DirectoryName, RestoredRenderMaterials);
+		}
+		else
+		{
+			RenderDataMaterial = GetDefaultRenderMaterial(IsSensor);
+		}
+
+		return RenderDataMaterial;
+	}
+
+	/*
+	 * Creates a StaticMeshComponent, a StaticMeshAsset from a RenderDataBarrier.
+	 */
+	UStaticMeshComponent* CreateFromRenderData(
+		const FRenderDataBarrier& RenderDataBarrier, AActor& Owner, USceneComponent& AttachParent,
+		const FTransform& RelativeTransform, const FString& DirectoryName,
+		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes)
+	{
+		if (!RenderDataBarrier.HasNative() || !RenderDataBarrier.HasMesh())
+		{
+			return nullptr;
+		}
+
+		// Create the asset.
+		FAssetToDiskInfo AtdInfo =
+			GetOrCreateStaticMeshAsset(RenderDataBarrier, RestoredMeshes, DirectoryName);
+		UStaticMesh* RenderDataMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
+		if (RenderDataMeshAsset == nullptr)
+		{
+			// Logging done in GetOrCreateStaticMeshAsset.
+			return nullptr;
+		}
+
+		// Create the component.
+		UStaticMeshComponent* RenderDataComponent = FAGX_EditorUtilities::CreateStaticMeshComponent(
+			Owner, AttachParent, *RenderDataMeshAsset, true);
+		if (RenderDataComponent == nullptr)
+		{
+			// Logging done in CreateStaticMeshComponent.
+			return nullptr;
+		}
+
+		RenderDataComponent->SetVisibility(RenderDataBarrier.GetShouldRender());
+		RenderDataComponent->SetRelativeTransform(RelativeTransform);
+
+		return RenderDataComponent;
+	}
+
 	/**
 	 * Apply the Barrier's Render Data. This will disable visibility for VisualMesh and instead
 	 * create a Static Mesh Component from the triangles, if any, in the Render Data. If there are
@@ -295,64 +358,23 @@ namespace
 	 * Render Material and applied to both VisualMesh and the newly created Static Mesh Component,
 	 * if any. This makes it possible to hide the Render Data mesh and instead use the collision
 	 * data also for rendering.
-	 *
-	 * @param RenderData The AGX Dynamics representation of the Render Data.
-	 * @param RenderMeshTransform The local transform to give the render mesh Static Mesh Component.
-	 * @param Component The Shape Component that is being created.
-	 * @param VisualMesh The default Component used for visualization. Often the Shape itself.
 	 */
 	void ApplyRenderingData(
-		const FRenderDataBarrier& RenderData, const FTransform& RenderMeshTransform,
-		UAGX_ShapeComponent& Component, UMeshComponent& VisualMesh,
-		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes,
+		const FRenderDataBarrier& RenderData, const FTransform& RenderMeshTransform, bool IsSensor,
+		UMeshComponent& VisualMesh, TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials, const FString& DirectoryName)
 	{
 		VisualMesh.SetVisibility(false);
 
 		// Convert Render Data Mesh, if there is one.
-		UStaticMeshComponent* RenderDataComponent = nullptr;
-		if (RenderData.HasMesh())
-		{
-			FAssetToDiskInfo AtdInfo =
-				GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
-			UStaticMesh* RenderDataMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
-			if (RenderDataMeshAsset != nullptr)
-			{
-				// The new Static Mesh Component must be a child of the Visual Mesh and not the
-				// Shape Component because the Trimesh Shape Component assume that it only has a
-				// single child Static Mesh Component and will use the first one it finds to read
-				// collision triangles from. We do not want it to find the rendering mesh.
-				RenderDataComponent = FAGX_EditorUtilities::CreateStaticMeshComponent(
-					*Component.GetOwner(), VisualMesh, *RenderDataMeshAsset, true);
-				if (RenderDataComponent != nullptr)
-				{
-					RenderDataComponent->SetVisibility(RenderData.GetShouldRender());
-					RenderDataComponent->SetRelativeTransform(RenderMeshTransform);
-				}
-			}
-		}
+		UStaticMeshComponent* RenderDataComponent = CreateFromRenderData(
+			RenderData, *VisualMesh.GetOwner(), VisualMesh, RenderMeshTransform, DirectoryName,
+			RestoredMeshes);
 
 		// Convert Render Data Material, if there is one. May fall back to the base import Material,
 		// and may also fail completely, leaving RenderDataMaterial being nullptr.
-		UMaterialInterface* RenderDataMaterial = nullptr;
-		if (RenderData.HasMaterial() && GIsEditor)
-		{
-			RenderDataMaterial = GetOrCreateRenderMaterialInstance(
-				RenderData.GetMaterial(), DirectoryName, RestoredMaterials);
-		}
-		else
-		{
-			// Use base import material if the Render Data didn't have one. Also use the
-			// base when not in the Editor since creating new Materials is an Editor only
-			// operation.
-			//
-			// We are only allowed to create new assets, such as a MaterialInstance, when running
-			// within the Unreal Editor.
-			/// @todo This is not true. It seems we are allowed to create StaticMeshes. What's the
-			/// difference between a StaticMesh and a MaterialInstance? Is it because we create
-			/// Constant Material Instances?
-			RenderDataMaterial = GetDefaultRenderMaterial(Component.bIsSensor);
-		}
+		UMaterialInterface* RenderDataMaterial = CreateRenderMaterialFromRenderDataOrDefault(
+			RenderData, IsSensor, DirectoryName, RestoredMaterials);
 
 		// Apply the Material we got, either from the Render Data or the base one, to all the
 		// rendering meshes we have.
@@ -434,8 +456,8 @@ namespace
 			const FTransform ShapeTransform = Barrier.GetGeometryToShapeTransform();
 			const FTransform ShapeInvTransform = ShapeTransform.Inverse();
 			ApplyRenderingData(
-				Barrier.GetRenderData(), ShapeInvTransform, Component, VisualMesh, RestoredMeshes,
-				RestoredRenderMaterials, DirectoryName);
+				Barrier.GetRenderData(), ShapeInvTransform, Component.bIsSensor, VisualMesh,
+				RestoredMeshes, RestoredRenderMaterials, DirectoryName);
 		}
 		else
 		{
@@ -601,6 +623,64 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
 		DirectoryName, *MeshComponent);
 	return Component;
+}
+
+UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
+	const FTrimeshShapeBarrier& TrimeshBarrier, AActor& Owner, const FRigidBodyBarrier* Body)
+{
+	USceneComponent* AttachParent = [&]() -> USceneComponent*
+	{
+		if (Body != nullptr)
+		{
+			if (auto BodyComponent = GetBody(*Body))
+			{
+				return BodyComponent;
+			}
+		}
+
+		return Owner.GetRootComponent();
+	}();
+
+	FRenderDataBarrier RenderDataBarrier = TrimeshBarrier.GetRenderData();
+
+	if (!RenderDataBarrier.HasNative() || !RenderDataBarrier.HasMesh())
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Render Data"), TrimeshBarrier.GetName(), ImportSettings.FilePath,
+			TEXT("Got a RenderDataBarrier without a mesh."));
+		return nullptr;
+	}
+
+	FTransform RenderDataTransform = FTransform::Identity;
+	{
+		FVector TrimeshPosition;
+		FQuat TrimeshRotation;
+		std::tie(TrimeshPosition, TrimeshRotation) = TrimeshBarrier.GetLocalPositionAndRotation();
+		const FTransform TrimeshTransform(TrimeshRotation, TrimeshPosition);
+		const FTransform ShapeToGeometry = TrimeshBarrier.GetGeometryToShapeTransform().Inverse();
+		FTransform::Multiply(&RenderDataTransform, &ShapeToGeometry, &TrimeshTransform);
+	}	
+
+	UStaticMeshComponent* RenderDataComponent = CreateFromRenderData(
+		RenderDataBarrier, Owner, *AttachParent, RenderDataTransform, DirectoryName,
+		RestoredMeshes);
+
+	if (RenderDataComponent == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Render Data"), TrimeshBarrier.GetName(), ImportSettings.FilePath,
+			TEXT("Could not create a Static Mesh Component from given RenderDataBarrier."));
+		return nullptr;
+	}	
+
+	UMaterialInterface* RenderDataMaterial = CreateRenderMaterialFromRenderDataOrDefault(RenderDataBarrier, TrimeshBarrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
+
+	if (RenderDataMaterial != nullptr)
+	{
+		RenderDataComponent->SetMaterial(0, RenderDataMaterial);
+	}
+
+	return RenderDataComponent;
 }
 
 UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
@@ -1105,7 +1185,8 @@ namespace
 	}
 }
 
-FAGX_SimObjectsImporterHelper::FAGX_SimObjectsImporterHelper(const FAGX_ImportSettings& InImportSettings)
+FAGX_SimObjectsImporterHelper::FAGX_SimObjectsImporterHelper(
+	const FAGX_ImportSettings& InImportSettings)
 	: ImportSettings(InImportSettings)
 	, SourceFileName(FPaths::GetBaseFilename(InImportSettings.FilePath))
 	, ModelName(MakeModelName(SourceFileName))

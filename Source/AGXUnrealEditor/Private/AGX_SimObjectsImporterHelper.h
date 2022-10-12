@@ -75,6 +75,9 @@ public:
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
 		const FRigidBodyBarrier* Body = nullptr);
 
+	UStaticMeshComponent* InstantiateRenderData(
+		const FTrimeshShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
+
 	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
 	UAGX_ContactMaterialAsset* InstantiateContactMaterial(

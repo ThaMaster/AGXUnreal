@@ -41,6 +41,7 @@
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Shapes/RenderDataBarrier.h"
 #include "SimulationObjectCollection.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ImportUtilities.h"
@@ -198,7 +199,17 @@ namespace
 
 		for (const auto& Shape : SimObjects.GetTrimeshShapes())
 		{
-			Success &= Helper.InstantiateTrimesh(Shape, ImportedActor) != nullptr;
+			if (Helper.ImportSettings.IgnoreDisabledTrimeshes && !Shape.GetEnableCollisions())
+			{
+				if (Shape.HasRenderData())
+				{
+					Success &= Helper.InstantiateRenderData(Shape, ImportedActor) != nullptr;
+				}
+			}
+			else
+			{
+				Success &= Helper.InstantiateTrimesh(Shape, ImportedActor) != nullptr;
+			}
 		}
 
 		return Success;
@@ -235,7 +246,17 @@ namespace
 
 			for (const auto& Trimesh : Body.GetTrimeshShapes())
 			{
-				Success &= Helper.InstantiateTrimesh(Trimesh, ImportedActor, &Body) != nullptr;
+				if (Helper.ImportSettings.IgnoreDisabledTrimeshes && !Trimesh.GetEnableCollisions())
+				{
+					if (Trimesh.HasRenderData())
+					{
+						Success &= Helper.InstantiateRenderData(Trimesh, ImportedActor, &Body) != nullptr;
+					}
+				}
+				else
+				{
+					Success &= Helper.InstantiateTrimesh(Trimesh, ImportedActor, &Body) != nullptr;
+				}
 			}
 		}
 
@@ -414,7 +435,8 @@ namespace
 	{
 		FSimulationObjectCollection SimObjects;
 		if (!FAGXSimObjectsReader::ReadUrdf(
-				Helper.ImportSettings.FilePath, Helper.ImportSettings.UrdfPackagePath, SimObjects) ||
+				Helper.ImportSettings.FilePath, Helper.ImportSettings.UrdfPackagePath,
+				SimObjects) ||
 			!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(

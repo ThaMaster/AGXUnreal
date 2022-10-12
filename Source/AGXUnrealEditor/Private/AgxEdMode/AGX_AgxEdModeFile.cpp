@@ -33,7 +33,6 @@ UAGX_AgxEdModeFile* UAGX_AgxEdModeFile::GetInstance()
 
 void UAGX_AgxEdModeFile::ImportToBlueprint()
 {
-
 	TSharedRef<SWindow> Window =
 		SNew(SWindow)
 			.SupportsMinimize(false)
