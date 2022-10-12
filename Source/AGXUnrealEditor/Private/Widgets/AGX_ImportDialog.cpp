@@ -313,7 +313,7 @@ TSharedRef<SWidget> SAGX_ImportDialog::CreateCheckboxGui()
 			.Padding(FMargin(0.f, 0.f, 33.f, 0.f))
 			[
 				SNew(STextBlock)
-				.Text(LOCTEXT("IgnoreDisabledTrimeshText", "Ignore disabled trimeshes (recommended for large models)"))
+				.Text(LOCTEXT("IgnoreDisabledTrimeshText", "Ignore disabled Trimeshes (recommended for large models)"))
 				.Font(CreateFont(10))
 			]
 		];
