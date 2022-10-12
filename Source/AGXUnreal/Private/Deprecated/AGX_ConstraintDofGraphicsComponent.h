@@ -1,5 +1,10 @@
 // Copyright 2022, Algoryx Simulation AB.
 
+/*
+* Deprecated: see internal issue 739.
+*/
+
+
 #pragma once
 
 // AGX Dynamics for Unreal includes.
