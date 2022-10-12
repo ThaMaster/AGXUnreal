@@ -655,6 +655,14 @@ bool FClearMotionControlImportedCommand::Update()
 		return true;
 	}
 
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
 	TArray<const TCHAR*> ExpectedFiles {TEXT("Blueprint"), TEXT("BP_motion_control_build.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("motion_control_build"), ExpectedFiles);
 
@@ -1490,6 +1498,14 @@ bool FClearCollisionGroupsImportedCommand::Update()
 		return true;
 	}
 
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
 	TArray<const TCHAR*> ExpectedFiles {
 		TEXT("Blueprint"), TEXT("BP_collision_groups_build.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("collision_groups_build"), ExpectedFiles);
@@ -1633,6 +1649,14 @@ bool FClearGeometrySensorsImportedCommand::Update()
 	{
 		return true;
 	}
+
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
 	TArray<const TCHAR*> ExpectedFiles {
 		TEXT("Blueprint"), TEXT("BP_geometry_sensors_build.uasset")};
@@ -1993,6 +2017,14 @@ bool FClearConstraintDynamicParametersImportedCommand::Update()
 		return true;
 	}
 
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
 	TArray<const TCHAR*> ExpectedFiles {
 		TEXT("Blueprint"), TEXT("BP_constraint_dynamic_parameters_build.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(
@@ -2165,6 +2197,14 @@ bool FClearRigidBodyPropertiesImportedCommand::Update()
 	{
 		return true;
 	}
+
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
 	TArray<const TCHAR*> ExpectedFiles {
 		TEXT("Blueprint"), TEXT("BP_rigidbody_properties_build.uasset")};
@@ -2608,6 +2648,14 @@ bool FClearObserverFramesImportedCommand::Update()
 		return true;
 	}
 
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
 	TArray<const TCHAR*> ExpectedFiles {TEXT("Blueprint"), TEXT("BP_observer_frames_build.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("observer_frames_build"), ExpectedFiles);
 
@@ -2868,6 +2916,14 @@ bool FClearURDFLinksGeometriesConstraintsImportedCommand::Update()
 	{
 		return true;
 	}
+
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
 	TArray<const TCHAR*> ExpectedFiles {
 		TEXT("Blueprint"), TEXT("BP_links_geometries_constraints.uasset")};
