@@ -8,7 +8,6 @@
 #include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
-#include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
 
 // Unreal Engine includes.
 #include "CanvasItem.h"
@@ -340,21 +339,6 @@ void FAGX_ConstraintComponentVisualizer::DrawVisualization(
 		return;
 
 	DrawConstraint(Constraint, View, PDI);
-
-	if (UAGX_ConstraintDofGraphicsComponent* DofGraphics = Constraint->GetDofGraphics1())
-	{
-		/// Hack to force update of render transform, if for example the constraint uses a
-		/// constraint transform actor and it was moved without UAGX_ConstraintDofGraphicsComponent
-		/// knowing about it... \todo Might be a better way to do this?
-		DofGraphics->OnBecameSelected();
-	}
-	if (UAGX_ConstraintDofGraphicsComponent* DofGraphics = Constraint->GetDofGraphics2())
-	{
-		/// Hack to force update of render transform, if for example the constraint uses a
-		/// constraint transform actor and it was moved without UAGX_ConstraintDofGraphicsComponent
-		/// knowing about it... \todo Might be a better way to do this?
-		DofGraphics->OnBecameSelected();
-	}
 }
 
 void FAGX_ConstraintComponentVisualizer::DrawVisualizationHUD(
