@@ -30,7 +30,7 @@ void FAGX_AgxEdModeFileCustomization::CustomizeFileImporterCategory(
 
 	AddCustomButton(
 		CategoryBuilder,
-		LOCTEXT("CreateButtonTextImportBP", "Import AGX archive or URDF to a Blueprint..."),
+		LOCTEXT("CreateButtonTextImportBP", "Import model to Blueprint..."),
 		[&]()
 		{
 			UAGX_AgxEdModeFile::ImportToBlueprint();
