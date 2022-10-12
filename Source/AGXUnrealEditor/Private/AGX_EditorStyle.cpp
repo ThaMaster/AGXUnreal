@@ -176,7 +176,7 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->Set(
 		"ClassIcon.AGX_WireWinchComponent", new IMAGE_BRUSH("Icons/wire_winch_32x32", IconSize16));
 
-	// Actor icons, visible in the Place Actors panel. Currently only works with Unreal >= 5.0.
+	// Actor icons, visible in the Place Actors panel. Currently only works with UE >= 5.0.
 	Style->Set(
 		"ClassIcon.AGX_RigidBodyActor", new IMAGE_BRUSH("Icons/rigid_body_32x32", IconSize16));
 	Style->Set(
@@ -185,8 +185,24 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->Set(
 		"ClassIcon.AGX_ConstraintFrameActor",
 		new IMAGE_BRUSH("Icons/constraint_frame_32x32", IconSize16));
+
 	Style->Set(
 		"ClassIcon.AGX_ConstraintActor", new IMAGE_BRUSH("Icons/constraint_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_HingeConstraintActor", new IMAGE_BRUSH("Icons/hinge_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_LockConstraintActor",
+		new IMAGE_BRUSH("Icons/constraint_lock_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_PrismaticConstraintActor",
+		new IMAGE_BRUSH("Icons/constraint_prismatic_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_DistanceConstraintActor",
+		new IMAGE_BRUSH("Icons/constraint_distance_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_CylindricalConstraintActor",
+		new IMAGE_BRUSH("Icons/constraint_cylindrical_32x32", IconSize16));
+
 	Style->Set("ClassIcon.AGX_Terrain", new IMAGE_BRUSH("Icons/terrain_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_CollisionGroupDisablerActor",
