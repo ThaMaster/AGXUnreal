@@ -56,6 +56,11 @@ struct AGXUNREALBARRIER_API FAGX_Real
 		return Value;
 	}
 
+	double& GetValue()
+	{
+		return Value;
+	}
+
 	operator double() const
 	{
 		return Value;

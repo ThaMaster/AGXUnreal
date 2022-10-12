@@ -16,7 +16,7 @@
 
 class UAGX_ShapeMaterial;
 class UAGX_TrackProperties;
-class UAGX_TrackInternalMergePropertiesBase;
+class UAGX_TrackInternalMergeProperties;
 
 /**
  * Object holding track node transforms and sizes generated before the actual simulation
@@ -103,7 +103,7 @@ public:
 	 * each other.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track")
-	UAGX_TrackInternalMergePropertiesBase* InternalMergeProperties;
+	UAGX_TrackInternalMergeProperties* InternalMergeProperties;
 
 	/**
 	 * List of collision groups that the track nodes are part of.

@@ -9,7 +9,7 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Vehicle/AGX_TrackProperties.h"
-#include "Vehicle/AGX_TrackInternalMergePropertiesInstance.h"
+#include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Vehicle/TrackPropertiesBarrier.h"
@@ -19,7 +19,6 @@
 #include "CoreGlobals.h"
 #include "GameFramework/Actor.h"
 #include "Math/Quat.h"
-#include "Engine/Classes/Components/HierarchicalInstancedStaticMeshComponent.h"
 
 UAGX_TrackComponent::UAGX_TrackComponent()
 {
@@ -738,7 +737,7 @@ void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 
 	//// \todo Do this in a more performance friendly way. For example we could keep a reference
 	////       to the previous InternalMergeProperties, or unregister from within PreEditChange()?
-	// for (TObjectIterator<UAGX_TrackInternalMergePropertiesInstance> It; It; ++It)
+	// for (TObjectIterator<UAGX_TrackInternalMergeProperties> It; It; ++It)
 	//{
 	//	if (It->GetWorld() == GetWorld())
 	//	{
@@ -749,8 +748,8 @@ void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 	if (InternalMergeProperties)
 	{
 		// Create instance if necessary.
-		UAGX_TrackInternalMergePropertiesInstance* InternalMergePropertiesInstance =
-			static_cast<UAGX_TrackInternalMergePropertiesInstance*>(
+		UAGX_TrackInternalMergeProperties* InternalMergePropertiesInstance =
+			static_cast<UAGX_TrackInternalMergeProperties*>(
 				InternalMergeProperties->GetOrCreateInstance(GetWorld()));
 		check(InternalMergePropertiesInstance);
 
