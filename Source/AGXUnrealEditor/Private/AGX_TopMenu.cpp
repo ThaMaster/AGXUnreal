@@ -265,39 +265,14 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 
 void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 {
-	// For now the two to-level import entries are hidden. Usability tests have shown that having
-	// three options is too complicated for new users and we recommend using the to-Blueprint
-	// version. Find another way to present the options so that the confusion is reduced. Possibly
-	// using an import settings dialog. See internal issue 147.
-#if 0
-	// Import AGX Dynamics archive to in-level single actor menu item.
 	AddFileMenuEntry(
 		Builder,
 		LOCTEXT(
-			"FileMenuEntryLabelImportSingleActor",
-			"Import AGX Dynamics Archive to level as a single actor..."),
-		LOCTEXT(
-			"FileMenuEntryTooTipImportSingleActor",
-			"Import an AGX Dynamics Archive into the current level as a single actor"),
-		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToSingleActor(); });
-#endif
-
-	// Import AGX Dynamics archive to blueprint menu item.
-	AddFileMenuEntry(
-		Builder,
-		LOCTEXT(
-			"FileMEnuEntryLabelImportBluePrint", "Import AGX Dynamics Archive to a Blueprint..."),
+			"FileMEnuEntryLabelImportBluePrint", "Import model to Blueprint..."),
 		LOCTEXT(
 			"FileMenuEntryhTooltopImportBluePrint",
-			"Import an AGX Dynamics Archive to a Blueprint."),
-		[]() { UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint(); });
-
-	// Import URDF model to blueprint menu item.
-	AddFileMenuEntry(
-		Builder,
-		LOCTEXT("FileMEnuEntryLabelImportUrdfBluePrint", "Import URDF model to a Blueprint..."),
-		LOCTEXT("FileMenuEntryhTooltopImportUrdfBluePrint", "Import a URDF model to a Blueprint."),
-		[]() { UAGX_AgxEdModeFile::ImportUrdfToBlueprint(); });
+			"Import an AGX Dynamics archive or URDF to a Blueprint."),
+		[]() { UAGX_AgxEdModeFile::ImportToBlueprint(); });
 
 	// Export AGX Archive menu item
 	AddFileMenuEntry(

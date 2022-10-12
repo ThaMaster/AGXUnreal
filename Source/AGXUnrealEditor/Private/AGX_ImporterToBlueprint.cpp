@@ -4,10 +4,10 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImportEnums.h"
+#include "AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SimObjectsImporterHelper.h"
-#include "AGX_UrdfImporterHelper.h"
 #include "AGXSimObjectsReader.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
@@ -41,6 +41,7 @@
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Shapes/RenderDataBarrier.h"
 #include "SimulationObjectCollection.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ImportUtilities.h"
@@ -198,7 +199,17 @@ namespace
 
 		for (const auto& Shape : SimObjects.GetTrimeshShapes())
 		{
-			Success &= Helper.InstantiateTrimesh(Shape, ImportedActor) != nullptr;
+			if (Helper.ImportSettings.IgnoreDisabledTrimeshes && !Shape.GetEnableCollisions())
+			{
+				if (Shape.HasRenderData())
+				{
+					Success &= Helper.InstantiateRenderData(Shape, ImportedActor) != nullptr;
+				}
+			}
+			else
+			{
+				Success &= Helper.InstantiateTrimesh(Shape, ImportedActor) != nullptr;
+			}
 		}
 
 		return Success;
@@ -235,7 +246,17 @@ namespace
 
 			for (const auto& Trimesh : Body.GetTrimeshShapes())
 			{
-				Success &= Helper.InstantiateTrimesh(Trimesh, ImportedActor, &Body) != nullptr;
+				if (Helper.ImportSettings.IgnoreDisabledTrimeshes && !Trimesh.GetEnableCollisions())
+				{
+					if (Trimesh.HasRenderData())
+					{
+						Success &= Helper.InstantiateRenderData(Trimesh, ImportedActor, &Body) != nullptr;
+					}
+				}
+				else
+				{
+					Success &= Helper.InstantiateTrimesh(Trimesh, ImportedActor, &Body) != nullptr;
+				}
 			}
 		}
 
@@ -278,21 +299,23 @@ namespace
 
 		for (const auto& Constraint : SimObjects.GetBallConstraints())
 		{
-			auto BallConstraint= Helper.InstantiateBallConstraint(Constraint, ImportedActor);
+			auto BallConstraint = Helper.InstantiateBallConstraint(Constraint, ImportedActor);
 			ClearOwningActors(BallConstraint);
 			Success &= BallConstraint != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetCylindricalConstraints())
 		{
-			auto CylindricalConstraint = Helper.InstantiateCylindricalConstraint(Constraint, ImportedActor);
+			auto CylindricalConstraint =
+				Helper.InstantiateCylindricalConstraint(Constraint, ImportedActor);
 			ClearOwningActors(CylindricalConstraint);
 			Success &= CylindricalConstraint != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetDistanceConstraints())
 		{
-			auto DistanceConstraint = Helper.InstantiateDistanceConstraint(Constraint, ImportedActor);
+			auto DistanceConstraint =
+				Helper.InstantiateDistanceConstraint(Constraint, ImportedActor);
 			ClearOwningActors(DistanceConstraint);
 			Success &= DistanceConstraint != nullptr;
 		}
@@ -394,7 +417,7 @@ namespace
 	bool AddComponentsFromAGXArchive(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
 		FSimulationObjectCollection SimObjects;
-		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, SimObjects) ||
+		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.ImportSettings.FilePath, SimObjects) ||
 			!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
@@ -410,11 +433,10 @@ namespace
 
 	bool AddComponentsFromUrdf(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
-		FAGX_UrdfImporterHelper* HelperUrdf = static_cast<FAGX_UrdfImporterHelper*>(&Helper);
-
 		FSimulationObjectCollection SimObjects;
 		if (!FAGXSimObjectsReader::ReadUrdf(
-				HelperUrdf->SourceFilePath, HelperUrdf->UrdfPackagePath, SimObjects) ||
+				Helper.ImportSettings.FilePath, Helper.ImportSettings.UrdfPackagePath,
+				SimObjects) ||
 			!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
@@ -540,18 +562,11 @@ namespace
 	}
 }
 
-UBlueprint* AGX_ImporterToBlueprint::ImportAGXArchive(
-	const FString& ArchivePath, bool OpenBlueprintEditor)
+UBlueprint* AGX_ImporterToBlueprint::Import(const FAGX_ImportSettings& ImportSettings)
 {
-	FAGX_SimObjectsImporterHelper Helper(ArchivePath);
-	return ImportToBlueprint(Helper, EAGX_ImportType::Agx, OpenBlueprintEditor);
-}
-
-UBlueprint* AGX_ImporterToBlueprint::ImportURDF(
-	const FString& UrdfFilePath, const FString& UrdfPackagePath, bool OpenBlueprintEditor)
-{
-	FAGX_UrdfImporterHelper Helper(UrdfFilePath, UrdfPackagePath);
-	return ImportToBlueprint(Helper, EAGX_ImportType::Urdf, OpenBlueprintEditor);
+	FAGX_SimObjectsImporterHelper Helper(ImportSettings);
+	return ImportToBlueprint(
+		Helper, ImportSettings.ImportType, ImportSettings.OpenBlueprintEditorAfterImport);
 }
 
 #undef LOCTEXT_NAMESPACE

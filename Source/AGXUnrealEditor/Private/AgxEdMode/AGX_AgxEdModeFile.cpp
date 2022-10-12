@@ -9,6 +9,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Widgets/AGX_ImportDialog.h"
 
 // Unreal Engine includes.
 #include "Textures/SlateIcon.h"
@@ -30,58 +31,19 @@ UAGX_AgxEdModeFile* UAGX_AgxEdModeFile::GetInstance()
 	return FileTool;
 }
 
-namespace
+void UAGX_AgxEdModeFile::ImportToBlueprint()
 {
-	bool UrdfHasFilenameAttribute(const FString& FilePath)
-	{
-		FString Content;
-		if (!FFileHelper::LoadFileToString(Content, *FilePath))
-		{
-			UE_LOG(LogAGX, Warning, TEXT("Unable to read file '%s'"), *FilePath);
-			return false;
-		}
+	TSharedRef<SWindow> Window =
+		SNew(SWindow)
+			.SupportsMinimize(false)
+			.SupportsMaximize(false)
+			.SizingRule(ESizingRule::Autosized)
+			.Title(
+				NSLOCTEXT("AGX", "AGXUnrealImport", "Import AGX Dynamics archive or URDF"));
 
-		return Content.Contains("filename", ESearchCase::IgnoreCase);
-	}
-}
-
-void UAGX_AgxEdModeFile::ImportAgxArchiveToBlueprint()
-{
-	const FString Filename =
-		FAGX_EditorUtilities::SelectExistingFileDialog("AGX Dynamics Archive", ".agx");
-	if (Filename.IsEmpty())
-	{
-		return;
-	}
-
-	AGX_ImporterToBlueprint::ImportAGXArchive(Filename);
-}
-
-void UAGX_AgxEdModeFile::ImportUrdfToBlueprint()
-{
-	const FString UrdfFilePath =
-		FAGX_EditorUtilities::SelectExistingFileDialog("URDF file", ".urdf");
-	if (UrdfFilePath.IsEmpty())
-	{
-		return;
-	}
-
-	const FString UrdfPackagePath = [&UrdfFilePath]()
-	{
-		if (UrdfHasFilenameAttribute(UrdfFilePath))
-		{
-			const FString UrdfDir = FPaths::GetPath(UrdfFilePath);
-			const FString StartDir = FPaths::DirectoryExists(UrdfDir) ? UrdfDir : FString("");
-			return FAGX_EditorUtilities::SelectExistingDirectoryDialog(
-				"Select URDF package directory", StartDir, true);
-		}
-		else
-		{
-			return FString();
-		}
-	}();
-
-	AGX_ImporterToBlueprint::ImportURDF(UrdfFilePath, UrdfPackagePath);
+	TSharedRef<SAGX_ImportDialog> ImportDialog = SNew(SAGX_ImportDialog);
+	Window->SetContent(ImportDialog);
+	FSlateApplication::Get().AddModalWindow(Window, nullptr);
 }
 
 void UAGX_AgxEdModeFile::ExportAgxArchive()

@@ -11,6 +11,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImporterToBlueprint.h"
+#include "AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
@@ -73,7 +74,14 @@ bool FImportArchiveBlueprintCommand::Update()
 		Test.AddError(FString::Printf(TEXT("Did not find an archive named '%s'."), *ArchiveName));
 		return true;
 	}
-	Contents = AGX_ImporterToBlueprint::ImportAGXArchive(ArchiveFilePath, false);
+
+	FAGX_ImportSettings Settings;
+	Settings.FilePath = ArchiveFilePath;
+	Settings.IgnoreDisabledTrimeshes = false;
+	Settings.ImportType = EAGX_ImportType::Agx;
+	Settings.OpenBlueprintEditorAfterImport = false;
+
+	Contents = AGX_ImporterToBlueprint::Import(Settings);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
 }
@@ -102,7 +110,15 @@ bool FImportURDFBlueprintCommand::Update()
 		Test.AddError(FString::Printf(TEXT("Did not find an URDF file named '%s'."), *FileName));
 		return true;
 	}
-	Contents = AGX_ImporterToBlueprint::ImportURDF(UrdfFilePath, PackagePath, false);
+
+	FAGX_ImportSettings Settings;
+	Settings.FilePath = UrdfFilePath;
+	Settings.UrdfPackagePath = PackagePath;
+	Settings.IgnoreDisabledTrimeshes = false;
+	Settings.ImportType = EAGX_ImportType::Urdf;
+	Settings.OpenBlueprintEditorAfterImport = false;
+
+	Contents = AGX_ImporterToBlueprint::Import(Settings);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
 }

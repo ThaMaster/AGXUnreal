@@ -75,6 +75,9 @@ public:
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
 		const FRigidBodyBarrier* Body = nullptr);
 
+	UStaticMeshComponent* InstantiateRenderData(
+		const FTrimeshShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
+
 	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
 	UAGX_ContactMaterialAsset* InstantiateContactMaterial(
@@ -139,9 +142,9 @@ public:
 	 */
 	void FinalizeStaticMeshAssets();
 
-	explicit FAGX_SimObjectsImporterHelper(const FString& InSourceFilePath);
+	explicit FAGX_SimObjectsImporterHelper(const FAGX_ImportSettings& InImportSettings);
 
-	const FString SourceFilePath;
+	const FAGX_ImportSettings ImportSettings;
 	const FString SourceFileName;
 	const FString ModelName;
 	const FString DirectoryName;
