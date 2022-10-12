@@ -38,13 +38,7 @@ void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 				[
 					CreateBrowseFileGui()
 				]
-			]
-			+ SVerticalBox::Slot()
-			.AutoHeight()
-			.Padding(FMargin(5.0f, 5.0f))
-			[
-				CreateSettingsGui()
-			]
+			]			
 			+ SVerticalBox::Slot()
 			.Padding(FMargin(5.0f, 0.0f))
 			.AutoHeight()
@@ -56,6 +50,12 @@ void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 			.AutoHeight()
 			[
 				CreateImportURDFFileGui()
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(FMargin(5.0f, 5.0f))
+			[
+				CreateSettingsGui()
 			]
 			+ SVerticalBox::Slot()
 			.Padding(FMargin(5.0f, 5.0f))
