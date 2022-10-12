@@ -112,7 +112,7 @@ TSharedRef<SWidget> SAGX_ImportDialog::CreateBrowseFileGui()
 	// clang-format off
 return SNew(SVerticalBox)
 		+ SVerticalBox::Slot()
-		.Padding(FMargin(50.0f, 10.0f, 10.f, 10.f))
+		.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
 		.AutoHeight()
 		[
 			SNew(STextBlock)
@@ -200,7 +200,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateSettingsGui()
 		[
 			SNew(SVerticalBox)	
 			+ SVerticalBox::Slot()
-			.Padding(FMargin(50.0f, 10.0f, 10.f, 10.f))
+			.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
 			.AutoHeight()
 			[
 				SNew(STextBlock)
@@ -239,12 +239,12 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateImportURDFFileGui()
 	return SNew(SBorder)
 				.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
 				.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
-				.Padding(FMargin(10.0f, 5.0f))
+				.Padding(FMargin(5.0f, 5.0f))
 				.Content()
 				[
 					SNew(SVerticalBox)
 						+ SVerticalBox::Slot()
-						.Padding(FMargin(50.0f, 10.0f, 10.f, 10.f))
+						.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
 						.AutoHeight()
 						[
 							SNew(STextBlock)
