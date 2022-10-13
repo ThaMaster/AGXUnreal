@@ -244,13 +244,7 @@ UBlueprint* FAGX_BlueprintUtilities::GetOutermostParent(UBlueprint* Child)
 		return nullptr;
 	}
 
-	TArray<UBlueprintGeneratedClass*> Parents;
+	TArray<UBlueprint*> Parents;
 	UBlueprint::GetBlueprintHierarchyFromClass(Child->GeneratedClass, Parents);
-	UBlueprintGeneratedClass* Outermost = Parents.Last();
-	if (Outermost == nullptr || Outermost->SimpleConstructionScript == nullptr)
-	{
-		return nullptr;
-	}
-
-	return Outermost->SimpleConstructionScript->GetBlueprint();
+	return Parents.Last();
 }
