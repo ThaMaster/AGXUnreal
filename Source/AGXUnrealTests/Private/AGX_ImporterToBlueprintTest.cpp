@@ -44,17 +44,17 @@
 
 /*
  * This file contains a set of tests for AGX_ImporterToBlueprint, which imports an AGX
- * Dynamics archive into the current world as a single Actor that contains ActorComponents for each
+ * Dynamics archive into the current world as a Blueprint that contains ActorComponents for each
  * imported object.
  *
  * Search for "test starts here." within this file to find the start of each test case.
  */
 
 /**
- * Latent Command that imports an AGX Dynamics archive into a single actor. A pointer to the Actor
+ * Latent Command that imports an AGX Dynamics archive into a Blueprint. A pointer to the Blueprint
  * created to hold the imported objects is stored in the Contents parameter.
  * @param ArchiveName The AGX Dynamics archive to import.
- * @param Contents Pointer set to point to the Actor containing the imported objects.
+ * @param Contents Pointer set to point to the Blueprint containing the imported objects.
  * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
@@ -87,10 +87,10 @@ bool FImportArchiveBlueprintCommand::Update()
 }
 
 /**
- * Latent Command that imports an URDF model into a single actor. A pointer to the Actor
+ * Latent Command that imports an URDF model into a Blueprint. A pointer to the Blueprint
  * created to hold the imported objects is stored in the Contents parameter.
  * @param FileName The URDF file to import.
- * @param Contents Pointer set to point to the Actor containing the imported objects.
+ * @param Contents Pointer set to point to the Blueprint containing the imported objects.
  * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_FOUR_PARAMETER(
@@ -129,7 +129,7 @@ bool FImportURDFBlueprintCommand::Update()
 
 /**
  * Latent Command testing that the empty scene was imported correctly.
- * @param Contents The Actor that was created by the archive importer to hold the imported objects.
+ * @param Contents The Blueprint that was created by the archive importer to hold the imported objects.
  * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
@@ -144,15 +144,15 @@ bool FCheckEmptySceneImportedCommand::Update()
 		return true;
 	}
 
-	// The Actor's only component should be the root component.
+	// The Blueprint's only component should be the root component.
 	TArray<UActorComponent*> Components = FAGX_BlueprintUtilities::GetTemplateComponents(Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 1);
 	USceneComponent* SceneRoot = AgxAutomationCommon::GetByName<USceneComponent>(
 		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DefaultSceneRoot"));
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
 
-	// The Actor should have been created in the test world.
-	Test.TestEqual(TEXT("The actor should be in the test world."), Contents->GetWorld(), World);
+	// The Blueprint should have been created in the test world.
+	Test.TestEqual(TEXT("The Blueprint should be in the test world."), Contents->GetWorld(), World);
 	return true;
 }
 
@@ -185,7 +185,7 @@ bool FClearEmptySceneImportedCommand::Update()
 }
 
 /**
- * Test that an empty AGX Dynamics archive can be imported, that the archive Actor root is created
+ * Test that an empty AGX Dynamics archive can be imported, that the archive Blueprint root is created
  * as it should, and that it is added to the world.
  */
 class FImporterToBlueprint_EmptySceneTest final : public AgxAutomationCommon::FAgxAutomationTest
@@ -614,7 +614,7 @@ bool FCheckMotionControlImportedCommand::Update()
 		KinematicsBody == nullptr || KinematicsShape == nullptr || DynamicsBody == nullptr ||
 		DynamicsShape == nullptr)
 	{
-		Test.AddError("A required component wasn't found in the imported actor. Cannot continue");
+		Test.AddError("A required component wasn't found in the imported Blueprint. Cannot continue");
 		return true;
 	}
 
@@ -764,7 +764,7 @@ bool FCheckSimpleTrimeshImportedCommand::Update()
 	Test.TestNotNull(TEXT("StaticMesh"), StaticMesh);
 	if (TrimeshBody == nullptr || TrimeshShape == nullptr || StaticMesh == nullptr)
 	{
-		Test.AddError("A required component wasn't found in the imported actor. Cannot continue.");
+		Test.AddError("A required component wasn't found in the imported Blueprint. Cannot continue.");
 		return true;
 	}
 
