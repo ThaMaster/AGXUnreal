@@ -6,19 +6,22 @@
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
 
-class UAGX_CollisionGroupAdderComponent;
-
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
 
 /**
- * Defines the design of the Collision Group component in the Editor.
+ * Defines the design of the Re-Import Component in the Editor.
  */
-class AGXUNREALEDITOR_API FAGX_CollisionGroupAdderComponentCustomization
+class AGXUNREALEDITOR_API FAGX_ReImportComponentCustomization
 	: public IDetailCustomization
 {
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();
 
-	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
+	virtual void CustomizeDetails(IDetailLayoutBuilder& InDetailBuilder) override;
+
+private:
+	FReply OnReImportButtonClicked();
+
+	IDetailLayoutBuilder* DetailBuilder;
 };
