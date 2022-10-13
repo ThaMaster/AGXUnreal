@@ -413,8 +413,8 @@ namespace
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Observer Frames"));
 		Success &= AddObserverFrames(ImportedActor, SimObjects, Helper);
 
-		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Static Mesh Assets"));
-		Helper.FinalizeStaticMeshAssets();
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Import"));
+		Helper.FinalizeImport(ImportedActor);
 
 		ImportTask.EnterProgressFrame(40.f, FText::FromString("Import complete"));
 		return Success;
@@ -663,7 +663,13 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			return true;
 		}
 
-		return false;
+		FSimulationObjectCollection SimObjects;
+		if (!FAGXSimObjectsReader::ReadAGXArchive(SourceFilePath, SimObjects))
+		{
+			return false;
+		}
+
+		return true;
 	}
 }
 

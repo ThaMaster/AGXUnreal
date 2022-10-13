@@ -1141,8 +1141,20 @@ FAGX_SimObjectsImporterHelper::FShapeMaterialPair FAGX_SimObjectsImporterHelper:
 		GetShapeMaterial(ContactMaterial.GetMaterial2())};
 }
 
-void FAGX_SimObjectsImporterHelper::FinalizeStaticMeshAssets()
+void FAGX_SimObjectsImporterHelper::FinalizeImport(AActor& Actor)
 {
+	// Add the ReImport Component and write the relevant data to it.
+	UAGX_ReImportComponent* ReImportComponent = NewObject<UAGX_ReImportComponent>(&Actor);
+
+	ReImportComponent->FilePath = ImportSettings.FilePath;
+	
+	FAGX_ImportUtilities::Rename(*ReImportComponent, "AGX_ReImport");
+	ReImportComponent->SetFlags(RF_Transactional);
+	Actor.AddInstanceComponent(ReImportComponent);
+	ReImportComponent->RegisterComponent();
+	ReImportComponent->PostEditChange();
+
+	// Build mesh assets.
 	TArray<FAssetToDiskInfo> AtdInfos;
 	RestoredMeshes.GenerateValueArray(AtdInfos);
 	FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(AtdInfos);

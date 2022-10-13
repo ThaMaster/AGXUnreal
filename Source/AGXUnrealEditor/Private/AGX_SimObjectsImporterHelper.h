@@ -140,7 +140,7 @@ public:
 	/*
 	 * Must be called at the end of an import.
 	 */
-	void FinalizeStaticMeshAssets();
+	void FinalizeImport(AActor& Actor);
 
 	explicit FAGX_SimObjectsImporterHelper(const FAGX_ImportSettings& InImportSettings);
 
