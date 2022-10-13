@@ -72,13 +72,17 @@ namespace
 		GEditor->SelectNone(false, false);
 	}
 
-	FString CreateBlueprintPackagePath(FAGX_SimObjectsImporterHelper& Helper)
+	FString CreateBlueprintPackagePath(FAGX_SimObjectsImporterHelper& Helper, bool IsBase)
 	{
 		// Create directory for this import and a "Blueprints" directory inside of that.
 		/// \todo I think this is more complicated than it needs to be. What are all the pieces for?
+		const FString SubDirectory = IsBase ? "Blueprint" : "";
 		FString ParentPackagePath =
-			FAGX_ImportUtilities::CreatePackagePath(Helper.DirectoryName, TEXT("Blueprint"));
-		FString ParentAssetName = Helper.SourceFileName;
+			FAGX_ImportUtilities::CreatePackagePath(Helper.DirectoryName, SubDirectory);
+		FGuid BaseNameGuid = FGuid::NewGuid();
+		FString ParentAssetName =
+			IsBase ? BaseNameGuid.ToString() : Helper.SourceFileName;
+
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
 
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
@@ -95,7 +99,8 @@ namespace
 
 		// Create a known unique name for the Blueprint package, but don't create the actual
 		// package yet.
-		const FString BlueprintName = TEXT("BP_") + Helper.DirectoryName;
+		const FString BlueprintName =
+			IsBase ? "BP_Base_" + BaseNameGuid.ToString() : TEXT("BP_") + Helper.DirectoryName;
 		FString BasePackagePath = UPackageTools::SanitizePackageName(Path + "/" + BlueprintName);
 		FString PackagePath = BasePackagePath;
 
@@ -250,7 +255,8 @@ namespace
 				{
 					if (Trimesh.HasRenderData())
 					{
-						Success &= Helper.InstantiateRenderData(Trimesh, ImportedActor, &Body) != nullptr;
+						Success &=
+							Helper.InstantiateRenderData(Trimesh, ImportedActor, &Body) != nullptr;
 					}
 				}
 				else
@@ -502,14 +508,14 @@ namespace
 		return RootActorContainer;
 	}
 
-	UBlueprint* CreateBlueprint(UPackage* Package, AActor* Template, bool OpenBlueprintEditor)
+	UBlueprint* CreateBaseBlueprint(UPackage* Package, AActor* Template)
 	{
 		static constexpr bool ReplaceInWorld = false;
 		static constexpr bool KeepMobility = true;
 		FKismetEditorUtilities::FCreateBlueprintFromActorParams Params;
 		Params.bReplaceActor = ReplaceInWorld;
 		Params.bKeepMobility = KeepMobility;
-		Params.bOpenBlueprint = OpenBlueprintEditor;
+		Params.bOpenBlueprint = false;
 
 		UBlueprint* Blueprint =
 			FKismetEditorUtilities::CreateBlueprintFromActor(Package->GetName(), Template, Params);
@@ -520,7 +526,11 @@ namespace
 	void PostCreationTeardown(
 		AActor* Template, UPackage* Package, UBlueprint* Blueprint, const FString& PackagePath)
 	{
-		Template->Destroy();
+		if (Template != nullptr)
+		{
+			Template->Destroy();
+		}
+
 		GEngine->BroadcastLevelActorListChanged();
 
 		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
@@ -544,21 +554,68 @@ namespace
 #endif
 	}
 
-	UBlueprint* ImportToBlueprint(
-		FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType,
-		bool OpenBlueprintEditor = true)
+	UBlueprint* ImportToBaseBlueprint(
+		FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType)
 	{
 		PreCreationSetup();
-		FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
+		FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper, true);
 		UPackage* Package = GetPackage(BlueprintPackagePath);
 		AActor* Template = CreateTemplate(Helper, ImportType);
 		if (Template == nullptr)
 		{
 			return nullptr;
 		}
-		UBlueprint* Blueprint = CreateBlueprint(Package, Template, OpenBlueprintEditor);
+
+		UBlueprint* Blueprint = CreateBaseBlueprint(Package, Template);
 		PostCreationTeardown(Template, Package, Blueprint, BlueprintPackagePath);
 		return Blueprint;
+	}
+
+	UBlueprint* CreateChildBlueprint(
+		UBlueprint* BaseBlueprint, FAGX_SimObjectsImporterHelper& Helper)
+	{
+		if (BaseBlueprint == nullptr)
+		{
+			return nullptr;
+		}
+
+		PreCreationSetup();
+		FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper, false);
+		UPackage* Package = GetPackage(BlueprintPackagePath);		
+		const FString AssetName = FPaths::GetBaseFilename(Package->GetName());
+
+		UBlueprint* BlueprintChild = FKismetEditorUtilities::CreateBlueprint(
+			BaseBlueprint->GeneratedClass, Package, FName(AssetName),
+			EBlueprintType::BPTYPE_Normal, UBlueprint::StaticClass(),
+			UBlueprintGeneratedClass::StaticClass(), FName("AGXUnrealImport"));
+
+		PostCreationTeardown(nullptr, Package, BlueprintChild, BlueprintPackagePath);
+		return BlueprintChild;
+	}
+
+	UBlueprint* ImportToBlueprint(
+		FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType,
+		bool OpenBlueprintEditor = true)
+	{
+		// The result of the import is stored in the BlueprintBase which is placed in the
+		// 'Blueprint' directory in the context browser and should never be edited by the user. It
+		// is the "original". The BlueprintChild is what the user will interact directly with, and
+		// it is a child of the BlueprintBase. This way, we can ensure re-import works as intended.
+		UBlueprint* BlueprintBase = ImportToBaseBlueprint(Helper, ImportType);
+		if (BlueprintBase == nullptr)
+		{
+			return nullptr;
+		}
+
+		UBlueprint* BlueprintChild = CreateChildBlueprint(BlueprintBase, Helper);
+
+		if (BlueprintChild != nullptr && OpenBlueprintEditor)
+		{
+			GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(
+				BlueprintChild);
+		}
+
+		return BlueprintChild;
 	}
 }
 

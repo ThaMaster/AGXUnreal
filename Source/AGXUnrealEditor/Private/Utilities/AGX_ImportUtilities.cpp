@@ -69,7 +69,7 @@ FString FAGX_ImportUtilities::CreatePackagePath(FString FileName, FString AssetT
 {
 	FileName = FAGX_EditorUtilities::SanitizeName(FileName);
 	AssetType = FAGX_EditorUtilities::SanitizeName(AssetType);
-	if (FileName.IsEmpty() || AssetType.IsEmpty())
+	if (FileName.IsEmpty())
 	{
 		return FString();
 	}
