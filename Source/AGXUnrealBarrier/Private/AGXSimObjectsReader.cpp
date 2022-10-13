@@ -362,8 +362,10 @@ AGXUNREALBARRIER_API bool FAGXSimObjectsReader::ReadUrdf(
 	FSimulationObjectCollection& OutSimObjects)
 {
 #if AGX_VERSION_GREATER_OR_EQUAL(2, 33, 0, 0)
-	agxSDK::AssemblyRef Model =
-		agxModel::UrdfReader::read(Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr);
+	agxModel::UrdfReader::Settings UrdfSettings(
+		/*fixToWorld*/ false, /*disableLinkedBodies*/ false, /*mergeKinematicLinks*/ false);
+	agxSDK::AssemblyRef Model = agxModel::UrdfReader::read(
+		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, UrdfSettings);
 #else
 	agxSDK::AssemblyRef Model = agxModel::UrdfReader::read(
 		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);
