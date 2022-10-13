@@ -16,4 +16,7 @@ class AGXUNREAL_API UAGX_ReImportComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+
+	UPROPERTY(EditAnywhere, Category = "AGX Re-import Info")
+	FString FilePath;
 };

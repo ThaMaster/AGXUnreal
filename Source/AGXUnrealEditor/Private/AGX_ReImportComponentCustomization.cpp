@@ -3,6 +3,7 @@
 #include "AGX_ReImportComponentCustomization.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_ImporterToBlueprint.h"
 #include "AGX_ReImportComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
@@ -52,6 +53,7 @@ void FAGX_ReImportComponentCustomization::CustomizeDetails(
 	];
 	// clang-format on
 
+	InDetailBuilder.HideCategory(FName("AGX Re-import Info"));
 	InDetailBuilder.HideCategory(FName("Variable"));
 	InDetailBuilder.HideCategory(FName("Sockets"));
 	InDetailBuilder.HideCategory(FName("Tags"));
@@ -117,7 +119,10 @@ FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
 		return FReply::Handled();
 	}
 
-	return FReply::Handled();
+	AGX_ImporterToBlueprint::ReImport(*OutermostParent);
+
+	// Logging done in ReImport.
+	return FReply::Handled(); 
 }
 
 #undef LOCTEXT_NAMESPACE

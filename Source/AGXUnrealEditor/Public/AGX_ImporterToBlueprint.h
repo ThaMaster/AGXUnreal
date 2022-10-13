@@ -19,4 +19,9 @@ namespace AGX_ImporterToBlueprint
 	 * @return An Actor Blueprint containing the read objects.
 	 */
 	AGXUNREALEDITOR_API UBlueprint* Import(const FAGX_ImportSettings& ImportSettings);
+
+	/*
+	* @todo Add description.
+	*/
+	AGXUNREALEDITOR_API bool ReImport(UBlueprint& BaseBP);
 }

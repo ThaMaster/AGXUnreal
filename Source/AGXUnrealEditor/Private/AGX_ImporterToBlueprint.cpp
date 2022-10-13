@@ -44,6 +44,7 @@
 #include "Shapes/RenderDataBarrier.h"
 #include "SimulationObjectCollection.h"
 #include "Tires/TwoBodyTireBarrier.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 
@@ -80,8 +81,7 @@ namespace
 		FString ParentPackagePath =
 			FAGX_ImportUtilities::CreatePackagePath(Helper.DirectoryName, SubDirectory);
 		FGuid BaseNameGuid = FGuid::NewGuid();
-		FString ParentAssetName =
-			IsBase ? BaseNameGuid.ToString() : Helper.SourceFileName;
+		FString ParentAssetName = IsBase ? BaseNameGuid.ToString() : Helper.SourceFileName;
 
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
 
@@ -426,11 +426,6 @@ namespace
 		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.ImportSettings.FilePath, SimObjects) ||
 			!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-				"Some issues occurred during import. Log category LogAGX in the Console may "
-				"contain "
-				"more information.",
-				"Import AGX Dynamics archive to Blueprint");
 			return false;
 		}
 
@@ -445,11 +440,6 @@ namespace
 				SimObjects) ||
 			!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-				"Some issues occurred during import. Log category LogAGX in the Console may "
-				"contain "
-				"more information.",
-				"Import AGX Dynamics archive to Blueprint");
 			return false;
 		}
 
@@ -581,13 +571,13 @@ namespace
 
 		PreCreationSetup();
 		FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper, false);
-		UPackage* Package = GetPackage(BlueprintPackagePath);		
+		UPackage* Package = GetPackage(BlueprintPackagePath);
 		const FString AssetName = FPaths::GetBaseFilename(Package->GetName());
 
 		UBlueprint* BlueprintChild = FKismetEditorUtilities::CreateBlueprint(
-			BaseBlueprint->GeneratedClass, Package, FName(AssetName),
-			EBlueprintType::BPTYPE_Normal, UBlueprint::StaticClass(),
-			UBlueprintGeneratedClass::StaticClass(), FName("AGXUnrealImport"));
+			BaseBlueprint->GeneratedClass, Package, FName(AssetName), EBlueprintType::BPTYPE_Normal,
+			UBlueprint::StaticClass(), UBlueprintGeneratedClass::StaticClass(),
+			FName("AGXUnrealImport"));
 
 		PostCreationTeardown(nullptr, Package, BlueprintChild, BlueprintPackagePath);
 		return BlueprintChild;
@@ -622,8 +612,73 @@ namespace
 UBlueprint* AGX_ImporterToBlueprint::Import(const FAGX_ImportSettings& ImportSettings)
 {
 	FAGX_SimObjectsImporterHelper Helper(ImportSettings);
-	return ImportToBlueprint(
+	UBlueprint* Bp = ImportToBlueprint(
 		Helper, ImportSettings.ImportType, ImportSettings.OpenBlueprintEditorAfterImport);
+	if (Bp == nullptr)
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Some issues occurred during import. Log category LogAGX in the Console may "
+			"contain more information.",
+			"Import model to Blueprint");
+	}
+
+	return Bp;
+}
+
+namespace AGX_ImporterToBlueprint_reimport_helpers
+{
+	FString GetSourceFilePath(UBlueprint& BaseBP)
+	{
+		UAGX_ReImportComponent* ReImportComponent =
+			FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ReImportComponent>(&BaseBP);
+
+		// Attempt using the file path stored in the ReImportComponent.
+		FString FilePath = ReImportComponent != nullptr ? ReImportComponent->FilePath : "";
+		if (!FPaths::FileExists(FilePath))
+		{
+			// Attempt getting the file path from the user.
+			FilePath =
+				FAGX_EditorUtilities::SelectExistingFileDialog("AGX Dynamics archive", ".agx");
+		}
+
+		if (!FPaths::FileExists(FilePath))
+		{
+			return "";
+		}
+
+		return FilePath;
+	}
+
+	bool ReImport(UBlueprint& BaseBP)
+	{
+		const FString& SourceFilePath = GetSourceFilePath(BaseBP);
+		if (SourceFilePath.IsEmpty())
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Re-import: unable to get a valid source file containing the model."));
+
+			// Not getting a valid path will be due to the user pressing cancel when prompted for a file
+			// which is perfectly valid.
+			return true;
+		}
+
+		return false;
+	}
+}
+
+bool AGX_ImporterToBlueprint::ReImport(UBlueprint& BaseBP)
+{
+	if (!AGX_ImporterToBlueprint_reimport_helpers::ReImport(BaseBP))
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Some issues occurred during re-import. Log category LogAGX in the Console may "
+			"contain more information.",
+			"Re-import model to Blueprint");
+		return false;
+	}
+
+	return true;
 }
 
 #undef LOCTEXT_NAMESPACE

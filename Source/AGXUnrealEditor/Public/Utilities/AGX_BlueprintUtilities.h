@@ -4,6 +4,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Engine/Blueprint.h"
 #include "Engine/SCS_Node.h"
 
 /*
@@ -67,4 +68,26 @@ public:
 	 * exists. If Child is the outermost parent, the Child itself is returned.
 	 */
 	static UBlueprint* GetOutermostParent(UBlueprint* Child);
+
+	template <typename T>
+	static T* GetFirstComponentOfType(UBlueprint* Blueprint);
 };
+
+template <typename T>
+T* FAGX_BlueprintUtilities::GetFirstComponentOfType(UBlueprint* Blueprint)
+{
+	if (Blueprint == nullptr || Blueprint->SimpleConstructionScript == nullptr)
+	{
+		return nullptr;
+	}
+
+	for (auto Node : Blueprint->SimpleConstructionScript->GetAllNodes())
+	{
+		if (T* Component = Cast<T>(Node->ComponentTemplate))
+		{
+			return Component;
+		}
+	}
+
+	return nullptr;
+}
