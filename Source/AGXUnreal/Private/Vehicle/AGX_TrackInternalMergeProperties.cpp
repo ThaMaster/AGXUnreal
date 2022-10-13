@@ -145,7 +145,8 @@ void UAGX_TrackInternalMergeProperties::SetNumNodesPerMergeSegment(int32 InNumNo
 int32 UAGX_TrackInternalMergeProperties::GetNumNodesPerMergeSegment() const
 {
 	return AGX_TrackInternalMergeProperties_helpers::AssetGetter(
-		this, NumNodesPerMergeSegment, &UAGX_TrackInternalMergeProperties::GetNumNodesPerMergeSegment);
+		this, NumNodesPerMergeSegment,
+		&UAGX_TrackInternalMergeProperties::GetNumNodesPerMergeSegment);
 }
 
 void UAGX_TrackInternalMergeProperties::SetContactReduction(
@@ -153,7 +154,8 @@ void UAGX_TrackInternalMergeProperties::SetContactReduction(
 {
 	AGX_TrackInternalMergeProperties_helpers::AssetSetter(
 		this, ContactReduction, InContactReduction,
-		&FTrackBarrier::InternalMergeProperties_SetContactReduction, &UAGX_TrackInternalMergeProperties::SetContactReduction);
+		&FTrackBarrier::InternalMergeProperties_SetContactReduction,
+		&UAGX_TrackInternalMergeProperties::SetContactReduction);
 }
 
 EAGX_MergedTrackNodeContactReduction UAGX_TrackInternalMergeProperties::GetContactReduction() const
@@ -173,7 +175,8 @@ void UAGX_TrackInternalMergeProperties::SetLockToReachMergeConditionEnabled(bool
 bool UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionEnabled() const
 {
 	return AGX_TrackInternalMergeProperties_helpers::AssetGetter(
-		this, bEnableLockToReachMergeCondition, &UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionEnabled);
+		this, bEnableLockToReachMergeCondition,
+		&UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionEnabled);
 }
 
 void UAGX_TrackInternalMergeProperties::SetLockToReachMergeConditionCompliance(double Compliance)
@@ -187,7 +190,8 @@ void UAGX_TrackInternalMergeProperties::SetLockToReachMergeConditionCompliance(d
 double UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionCompliance() const
 {
 	return AGX_TrackInternalMergeProperties_helpers::AssetGetter(
-		this, LockToReachMergeConditionCompliance, &UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionCompliance);
+		this, LockToReachMergeConditionCompliance,
+		&UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionCompliance);
 }
 
 void UAGX_TrackInternalMergeProperties::SetLockToReachMergeConditionCompliance_BP(float Compliance)
@@ -211,7 +215,8 @@ void UAGX_TrackInternalMergeProperties::SetLockToReachMergeConditionDamping(doub
 double UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionDamping() const
 {
 	return AGX_TrackInternalMergeProperties_helpers::AssetGetter(
-		this, LockToReachMergeConditionDamping, &UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionDamping);
+		this, LockToReachMergeConditionDamping,
+		&UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionDamping);
 }
 
 void UAGX_TrackInternalMergeProperties::SetLockToReachMergeConditionDamping_BP(float Damping)
@@ -235,7 +240,8 @@ void UAGX_TrackInternalMergeProperties::SetMaxAngleMergeCondition(double MaxAngl
 double UAGX_TrackInternalMergeProperties::GetMaxAngleMergeCondition() const
 {
 	return AGX_TrackInternalMergeProperties_helpers::AssetGetter(
-		this, MaxAngleMergeCondition, &UAGX_TrackInternalMergeProperties::GetMaxAngleMergeCondition);
+		this, MaxAngleMergeCondition,
+		&UAGX_TrackInternalMergeProperties::GetMaxAngleMergeCondition);
 }
 
 void UAGX_TrackInternalMergeProperties::SetMaxAngleMergeCondition_BP(float MaxAngleToMerge)

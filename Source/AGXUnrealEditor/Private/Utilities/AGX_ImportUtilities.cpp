@@ -26,7 +26,6 @@
 #include "Misc/Paths.h"
 #include "RawMesh.h"
 #include "Kismet2/ComponentEditorUtils.h"
-#include "UObject/SavePackage.h"
 
 namespace
 {
@@ -53,7 +52,8 @@ namespace
 		{
 			AssetName = AssetName + "c";
 			UE_LOG(
-				LogAGX, Warning, TEXT("Asset '%s' was appended with a 'c' to avoid Unreal name processing bug."),
+				LogAGX, Warning,
+				TEXT("Asset '%s' was appended with a 'c' to avoid Unreal name processing bug."),
 				*AssetName);
 		}
 
@@ -370,8 +370,7 @@ FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
 UAGX_TrackProperties* FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
 	const FTrackPropertiesBarrier& Barrier, const FString& DirectoryName, const FString& Name)
 {
-	auto InitAsset = [&](UAGX_TrackProperties& Asset)
-	{ Asset.CopyFrom(Barrier); };
+	auto InitAsset = [&](UAGX_TrackProperties& Asset) { Asset.CopyFrom(Barrier); };
 
 	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_TrackProperties>(
 		DirectoryName, Name, TEXT(""), TEXT("TrackProperties"), InitAsset);
