@@ -61,4 +61,10 @@ public:
 	 * Returns the attach parent of a template component.
 	 */
 	static UActorComponent* GetTemplateComponentAttachParent(UActorComponent* Component);
+
+	/*
+	 * Walks up the Blueprint inheritance chain and returns the "root" or outermost parent if it
+	 * exists. If Child is the outermost parent, the Child itself is returned.
+	 */
+	static UBlueprint* GetOutermostParent(UBlueprint* Child);
 };

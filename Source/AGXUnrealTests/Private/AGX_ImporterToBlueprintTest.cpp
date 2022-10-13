@@ -81,7 +81,8 @@ bool FImportArchiveBlueprintCommand::Update()
 	Settings.ImportType = EAGX_ImportType::Agx;
 	Settings.OpenBlueprintEditorAfterImport = false;
 
-	Contents = AGX_ImporterToBlueprint::Import(Settings);
+	UBlueprint* ChildBlueprint = AGX_ImporterToBlueprint::Import(Settings);
+	Contents = FAGX_BlueprintUtilities::GetOutermostParent(ChildBlueprint);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
 }
@@ -118,7 +119,8 @@ bool FImportURDFBlueprintCommand::Update()
 	Settings.ImportType = EAGX_ImportType::Urdf;
 	Settings.OpenBlueprintEditorAfterImport = false;
 
-	Contents = AGX_ImporterToBlueprint::Import(Settings);
+	UBlueprint* ChildBlueprint = AGX_ImporterToBlueprint::Import(Settings);
+	Contents = FAGX_BlueprintUtilities::GetOutermostParent(ChildBlueprint);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
 }
@@ -129,7 +131,8 @@ bool FImportURDFBlueprintCommand::Update()
 
 /**
  * Latent Command testing that the empty scene was imported correctly.
- * @param Contents The Blueprint that was created by the archive importer to hold the imported objects.
+ * @param Contents The Blueprint that was created by the archive importer to hold the imported
+ * objects.
  * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
@@ -185,8 +188,8 @@ bool FClearEmptySceneImportedCommand::Update()
 }
 
 /**
- * Test that an empty AGX Dynamics archive can be imported, that the archive Blueprint root is created
- * as it should, and that it is added to the world.
+ * Test that an empty AGX Dynamics archive can be imported, that the archive Blueprint root is
+ * created as it should, and that it is added to the world.
  */
 class FImporterToBlueprint_EmptySceneTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
@@ -614,7 +617,8 @@ bool FCheckMotionControlImportedCommand::Update()
 		KinematicsBody == nullptr || KinematicsShape == nullptr || DynamicsBody == nullptr ||
 		DynamicsShape == nullptr)
 	{
-		Test.AddError("A required component wasn't found in the imported Blueprint. Cannot continue");
+		Test.AddError(
+			"A required component wasn't found in the imported Blueprint. Cannot continue");
 		return true;
 	}
 
@@ -664,6 +668,10 @@ bool FClearMotionControlImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles {TEXT("Blueprint"), TEXT("BP_motion_control_build.uasset")};
+
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("motion_control_build"), ExpectedFiles);
 
 	return true;
@@ -764,7 +772,8 @@ bool FCheckSimpleTrimeshImportedCommand::Update()
 	Test.TestNotNull(TEXT("StaticMesh"), StaticMesh);
 	if (TrimeshBody == nullptr || TrimeshShape == nullptr || StaticMesh == nullptr)
 	{
-		Test.AddError("A required component wasn't found in the imported Blueprint. Cannot continue.");
+		Test.AddError(
+			"A required component wasn't found in the imported Blueprint. Cannot continue.");
 		return true;
 	}
 
@@ -811,6 +820,10 @@ bool FClearSimpleTrimeshImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles = {TEXT("StaticMesh"), TEXT("simple_trimesh.uasset")};
+
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("simple_trimesh_build"), ExpectedFiles);
 
 	return true;
@@ -978,9 +991,8 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	}
 #endif
 
-	auto GetSphere = [&Components](const TCHAR* Name) -> UAGX_SphereShapeComponent* {
-		return GetByName<UAGX_SphereShapeComponent>(Components, Name);
-	};
+	auto GetSphere = [&Components](const TCHAR* Name) -> UAGX_SphereShapeComponent*
+	{ return GetByName<UAGX_SphereShapeComponent>(Components, Name); };
 
 	// Get the components we know should be there.
 	/// @todo Some of these get auto-generated names because of name conflicts. Happens every time a
@@ -1166,6 +1178,9 @@ bool FClearRenderMaterialImportedCommand::Update()
 		TEXT("RenderMaterial_D4164CD0F7CD4A1706FC2B7E85ACE0F0.uasset"),
 		TEXT("RenderMaterial_F41041270F6DCA5B49388F72978AFC64.uasset")};
 
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_materials_build"), ExpectedFiles);
 
 	return true;
@@ -1283,6 +1298,9 @@ bool FClearRenderDataImportedCommand::Update()
 		TEXT("Blueprint"), TEXT("BP_render_data_build.uasset"), TEXT("RenderMesh"),
 		TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764.uasset")};
 
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_data_build"), ExpectedFiles);
 
 	return true;
@@ -1351,7 +1369,6 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	UE_LOG(LogTemp, Warning, TEXT("DELETEME: Getting components..."));
 	TArray<UActorComponent*> Components =
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 18);
@@ -1508,6 +1525,10 @@ bool FClearCollisionGroupsImportedCommand::Update()
 
 	TArray<const TCHAR*> ExpectedFiles {
 		TEXT("Blueprint"), TEXT("BP_collision_groups_build.uasset")};
+
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("collision_groups_build"), ExpectedFiles);
 	return true;
 }
@@ -1660,6 +1681,10 @@ bool FClearGeometrySensorsImportedCommand::Update()
 
 	TArray<const TCHAR*> ExpectedFiles {
 		TEXT("Blueprint"), TEXT("BP_geometry_sensors_build.uasset")};
+
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("geometry_sensors_build"), ExpectedFiles);
 
 	return true;
@@ -1866,6 +1891,10 @@ bool FClearWireImportedCommand::Update()
 	TArray<const TCHAR*> ExpectedFiles {
 		TEXT("Blueprint"), TEXT("BP_wire_build.uasset"), TEXT("ShapeMaterial"),
 		TEXT("defaultWireMaterial_57.uasset")};
+
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("wire_build"), ExpectedFiles);
 
 	return true;
@@ -2027,6 +2056,10 @@ bool FClearConstraintDynamicParametersImportedCommand::Update()
 
 	TArray<const TCHAR*> ExpectedFiles {
 		TEXT("Blueprint"), TEXT("BP_constraint_dynamic_parameters_build.uasset")};
+
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
 	AgxAutomationCommon::DeleteImportDirectory(
 		TEXT("constraint_dynamic_parameters_build"), ExpectedFiles);
 
@@ -2208,6 +2241,10 @@ bool FClearRigidBodyPropertiesImportedCommand::Update()
 
 	TArray<const TCHAR*> ExpectedFiles {
 		TEXT("Blueprint"), TEXT("BP_rigidbody_properties_build.uasset")};
+
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("rigidbody_properties_build"), ExpectedFiles);
 
 	return true;
@@ -2366,6 +2403,10 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 	TArray<const TCHAR*> ExpectedFiles = {
 		TEXT("Blueprint"), TEXT("BP_single_geometries_build.uasset"), TEXT("StaticMesh"),
 		TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
+
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("single_geometries_build"), ExpectedFiles);
 
 	return true;
@@ -2516,6 +2557,10 @@ bool FClearContactMaterialsImportedCommand::Update()
 		TEXT("CMMat3Mat4.uasset"), TEXT("ShapeMaterial"),
 		TEXT("Mat1.uasset"),	   TEXT("Mat2.uasset"),
 		TEXT("Mat3.uasset"),	   TEXT("Mat4.uasset")};
+
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("contact_materials_build"), ExpectedFiles);
 
 	return true;
@@ -2657,6 +2702,10 @@ bool FClearObserverFramesImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles {TEXT("Blueprint"), TEXT("BP_observer_frames_build.uasset")};
+
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("observer_frames_build"), ExpectedFiles);
 
 	return true;
@@ -2776,6 +2825,9 @@ bool FClearURDFLinkWithMeshesImportedCommand::Update()
 	{
 		FilesAndDirsToRemove.Add(*Asset);
 	}
+
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	FilesAndDirsToRemove.Add(*BaseBlueprintName);
 
 #if defined(__linux__)
 	/// @todo Workaround for internal issue #213.
@@ -2927,6 +2979,10 @@ bool FClearURDFLinksGeometriesConstraintsImportedCommand::Update()
 
 	TArray<const TCHAR*> ExpectedFiles {
 		TEXT("Blueprint"), TEXT("BP_links_geometries_constraints.uasset")};
+
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("links_geometries_constraints"), ExpectedFiles);
 
 	return true;

@@ -236,3 +236,21 @@ UActorComponent* FAGX_BlueprintUtilities::GetTemplateComponentAttachParent(
 
 	return ParentNode->ComponentTemplate;
 }
+
+UBlueprint* FAGX_BlueprintUtilities::GetOutermostParent(UBlueprint* Child)
+{
+	if (Child == nullptr)
+	{
+		return nullptr;
+	}
+
+	TArray<UBlueprintGeneratedClass*> Parents;
+	UBlueprint::GetBlueprintHierarchyFromClass(Child->GeneratedClass, Parents);
+	UBlueprintGeneratedClass* Outermost = Parents.Last();
+	if (Outermost == nullptr || Outermost->SimpleConstructionScript == nullptr)
+	{
+		return nullptr;
+	}
+
+	return Outermost->SimpleConstructionScript->GetBlueprint();
+}
