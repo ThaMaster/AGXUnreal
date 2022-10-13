@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "NativeBarrier.h"
+#include "Vehicle/AGX_TrackEnums.h"
 
 // Unreal Engine includes.
 #include "Containers/UnrealString.h"
@@ -129,8 +130,8 @@ public:
 	void InternalMergeProperties_SetNumNodesPerMergeSegment(uint32 NumNodesPerMergeSegment);
 	uint32 InternalMergeProperties_GetNumNodesPerMergeSegment() const;
 
-	void InternalMergeProperties_SetContactReduction(uint8 ContactReductionLevel);
-	uint8 InternalMergeProperties_GetContactReduction() const;
+	void InternalMergeProperties_SetContactReduction(EAGX_MergedTrackNodeContactReduction);
+	EAGX_MergedTrackNodeContactReduction InternalMergeProperties_GetContactReduction() const;
 
 	void InternalMergeProperties_SetEnableLockToReachMergeCondition(bool bEnable);
 	bool InternalMergeProperties_GetEnableLockToReachMergeCondition() const;

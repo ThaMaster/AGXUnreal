@@ -620,18 +620,17 @@ uint32 FTrackBarrier::InternalMergeProperties_GetNumNodesPerMergeSegment() const
 	return NativeRef->Native->getInternalMergeProperties()->getNumNodesPerMergeSegment();
 }
 
-void FTrackBarrier::InternalMergeProperties_SetContactReduction(uint8 ContactReductionLevel)
+void FTrackBarrier::InternalMergeProperties_SetContactReduction(EAGX_MergedTrackNodeContactReduction ContactReductionLevel)
 {
 	check(HasNative());
-	auto LevelAGX = static_cast<agxVehicle::TrackInternalMergeProperties::ContactReduction>(
-		ContactReductionLevel);
+	agxVehicle::TrackInternalMergeProperties::ContactReduction LevelAGX = Convert(ContactReductionLevel);
 	NativeRef->Native->getInternalMergeProperties()->setContactReduction(LevelAGX);
 }
 
-uint8 FTrackBarrier::InternalMergeProperties_GetContactReduction() const
+EAGX_MergedTrackNodeContactReduction FTrackBarrier::InternalMergeProperties_GetContactReduction() const
 {
 	check(HasNative());
-	return NativeRef->Native->getInternalMergeProperties()->getContactReduction();
+	return Convert(NativeRef->Native->getInternalMergeProperties()->getContactReduction());
 }
 
 void FTrackBarrier::InternalMergeProperties_SetEnableLockToReachMergeCondition(bool bEnable)

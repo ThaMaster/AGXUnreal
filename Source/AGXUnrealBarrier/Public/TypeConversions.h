@@ -13,6 +13,7 @@
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/DoubleInterval.h"
+#include "Vehicle/AGX_TrackEnums.h"
 #include "Wire/AGX_WireEnums.h"
 
 // Unreal Engine includes.
@@ -35,6 +36,8 @@
 #include <agx/Vec2.h>
 #include <agx/Vec3.h>
 #include <agxModel/TwoBodyTire.h>
+#include <agxVehicle/TrackInternalMergeProperties.h>
+#include <agxVehicle/TrackWheel.h>
 #include <agxWire/Node.h>
 #include "EndAGXIncludes.h"
 
@@ -351,9 +354,12 @@ inline FVector ConvertTorque(const agx::Vec3& V)
 	 * Following a similar logic as ConvertAngularVelocity for the axis directions, but no unit
 	 * conversion since we use Nm in both AGX Dynamics and Unreal Engine.
 	 */
-	return {ConvertToUnreal<decltype(FVector::X)>(V.x()),
-			-ConvertToUnreal<decltype(FVector::X)>(V.y()),
-			-ConvertToUnreal<decltype(FVector::X)>(V.z())};
+	// clang-format off
+	return {
+		ConvertToUnreal<decltype(FVector::X)>(V.x()),
+		-ConvertToUnreal<decltype(FVector::Y)>(V.y()),
+		-ConvertToUnreal<decltype(FVector::Z)>(V.z())};
+	// clang-format on
 }
 
 //
@@ -463,14 +469,14 @@ inline FAGX_RealInterval Convert(const agx::RangeReal& R)
 
 inline FAGX_RealInterval ConvertDistance(const agx::RangeReal& R)
 {
-	return FAGX_RealInterval {ConvertDistanceToUnreal<double>(R.lower()),
-							  ConvertDistanceToUnreal<double>(R.upper())};
+	return FAGX_RealInterval {
+		ConvertDistanceToUnreal<double>(R.lower()), ConvertDistanceToUnreal<double>(R.upper())};
 }
 
 inline FAGX_RealInterval ConvertAngle(const agx::RangeReal& R)
 {
-	return FAGX_RealInterval {ConvertAngleToUnreal<double>(R.lower()),
-							  ConvertAngleToUnreal<double>(R.upper())};
+	return FAGX_RealInterval {
+		ConvertAngleToUnreal<double>(R.lower()), ConvertAngleToUnreal<double>(R.upper())};
 }
 
 //
@@ -532,6 +538,34 @@ inline agx::Quat Convert(const FQuat& V)
 }
 
 //
+// Transformations.
+//
+
+inline FTransform Convert(const agx::AffineMatrix4x4& T)
+{
+	const FVector Translation = ConvertDisplacement(T.getTranslate());
+	const FQuat Rotation = Convert(T.getRotate());
+	return FTransform(Rotation, Translation);
+}
+
+inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& FrameRotation)
+{
+	return new agx::Frame(
+		agx::AffineMatrix4x4(Convert(FrameRotation), ConvertDisplacement(FramePosition)));
+}
+
+inline FTransform ConvertLocalFrame(const agx::Frame* Frame)
+{
+	return FTransform(
+		Convert(Frame->getLocalRotate()), ConvertDisplacement(Frame->getLocalTranslate()));
+}
+
+inline agx::AffineMatrix4x4 ConvertMatrix(const FVector& FramePosition, const FQuat& FrameRotation)
+{
+	return agx::AffineMatrix4x4(Convert(FrameRotation), ConvertDisplacement(FramePosition));
+}
+
+//
 // Text.
 //
 
@@ -558,6 +592,31 @@ inline agx::String Convert(const FString& StringUnreal)
 inline agx::Name Convert(const FName& NameUnreal)
 {
 	return agx::Name(TCHAR_TO_UTF8(*(NameUnreal.ToString())));
+}
+
+inline uint32 StringTo32BitFnvHash(const FString& StringUnreal)
+{
+	TArray<TCHAR> Bytes = StringUnreal.GetCharArray();
+
+	if (Bytes.Last() == '\0')
+	{
+		Bytes.Pop();
+	}
+
+	uint32 Hash = 2166136261U;
+
+	/// \note Bytes is a collection of TCHAR, which is not a single byte, so the naming below is
+	/// misleading. Is this code supposed to work on single bytes?  Do we assume that every TCHAR
+	/// in the string has a 0 upper byte so that the fact that TCHAR is bigger doesn't matter?
+	/// Do we get the same result as other implementations of this algorithm that we want to be
+	/// compatible with, for example in AGX Dynamics for AGX Dynamics for Unity.
+	for (const auto& SingleByte : Bytes)
+	{
+		Hash ^= SingleByte;
+		Hash *= 16777619U;
+	}
+
+	return Hash;
 }
 
 //
@@ -589,7 +648,7 @@ inline agx::Uuid Convert(const FGuid& Guid)
 }
 
 //
-// Enumerations.
+// Enumerations, RigidBody.
 //
 
 inline agx::RigidBody::MotionControl Convert(EAGX_MotionControl V)
@@ -622,6 +681,10 @@ inline EAGX_MotionControl Convert(agx::RigidBody::MotionControl V)
 	return MC_KINEMATICS;
 }
 
+//
+// Enumerations, Constraint.
+//
+
 inline agx::Constraint2DOF::DOF Convert(EAGX_Constraint2DOFFreeDOF Dof)
 {
 	check(Dof == EAGX_Constraint2DOFFreeDOF::FIRST || Dof == EAGX_Constraint2DOFFreeDOF::SECOND);
@@ -630,62 +693,9 @@ inline agx::Constraint2DOF::DOF Convert(EAGX_Constraint2DOFFreeDOF Dof)
 													: agx::Constraint2DOF::SECOND;
 }
 
-inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type LogVerbosity)
-{
-	switch (LogVerbosity)
-	{
-		case ELogVerbosity::VeryVerbose:
-			return agx::Notify::NOTIFY_DEBUG;
-		case ELogVerbosity::Verbose:
-			return agx::Notify::NOTIFY_DEBUG;
-		case ELogVerbosity::Log:
-			return agx::Notify::NOTIFY_INFO;
-		case ELogVerbosity::Display:
-			return agx::Notify::NOTIFY_WARNING;
-		case ELogVerbosity::Warning:
-			return agx::Notify::NOTIFY_WARNING;
-		case ELogVerbosity::Error:
-			return agx::Notify::NOTIFY_ERROR;
-		case ELogVerbosity::Fatal:
-			return agx::Notify::NOTIFY_ERROR;
-		default:
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("ConvertLogLevelVerbosity: unknown verbosity level: %d. Verbosity level "
-					 "'NOTIFY_INFO' will be used instead."),
-				LogVerbosity);
-
-			// Use NOTIFY_INFO as default, if unknown log verbosity is given
-			return agx::Notify::NOTIFY_INFO;
-	}
-}
-
-inline ELogVerbosity::Type ConvertLogLevelVerbosity(agx::Notify::NotifyLevel Level)
-{
-	switch (Level)
-	{
-		case agx::Notify::NOTIFY_DEBUG:
-			return ELogVerbosity::VeryVerbose;
-		case agx::Notify::NOTIFY_INFO:
-			return ELogVerbosity::Verbose;
-		case agx::Notify::NOTIFY_WARNING:
-			return ELogVerbosity::Warning;
-		case agx::Notify::NOTIFY_ERROR:
-			return ELogVerbosity::Error;
-
-		// The following are not actual verbosity levels.
-		case agx::Notify::NOTIFY_CLEAR:
-		case agx::Notify::NOTIFY_END:
-		case agx::Notify::NOTIFY_LOGONLY:
-		case agx::Notify::NOTIFY_PUSH:
-			return ELogVerbosity::VeryVerbose;
-	}
-
-	UE_LOG(
-		LogAGX, Warning, TEXT("Unknown AGX Dynamics log verbosity %d. Defaulting to Warning."),
-		static_cast<int>(Level));
-	return ELogVerbosity::Warning;
-}
+//
+// Enumerations, Tire.
+//
 
 inline agxModel::TwoBodyTire::DeformationMode Convert(FTwoBodyTireBarrier::DeformationMode Mode)
 {
@@ -732,49 +742,97 @@ inline FTwoBodyTireBarrier::DeformationMode Convert(agxModel::TwoBodyTire::Defor
 	}
 }
 
-inline FTransform Convert(const agx::AffineMatrix4x4& T)
-{
-	const FVector Translation = ConvertDisplacement(T.getTranslate());
-	const FQuat Rotation = Convert(T.getRotate());
-	return FTransform(Rotation, Translation);
-}
+//
+// Enumerations, Track.
+//
 
-inline agx::FrameRef ConvertFrame(const FVector& FramePosition, const FQuat& FrameRotation)
+inline EAGX_TrackWheelModel Convert(agxVehicle::TrackWheel::Model Model)
 {
-	return new agx::Frame(
-		agx::AffineMatrix4x4(Convert(FrameRotation), ConvertDisplacement(FramePosition)));
-}
-
-inline FTransform ConvertLocalFrame(const agx::Frame* Frame)
-{
-	return FTransform(
-		Convert(Frame->getLocalRotate()), ConvertDisplacement(Frame->getLocalTranslate()));
-}
-
-inline agx::AffineMatrix4x4 ConvertMatrix(const FVector& FramePosition, const FQuat& FrameRotation)
-{
-	return agx::AffineMatrix4x4(Convert(FrameRotation), ConvertDisplacement(FramePosition));
-}
-
-inline uint32 StringTo32BitFnvHash(const FString& StringUnreal)
-{
-	TArray<TCHAR> Bytes = StringUnreal.GetCharArray();
-
-	if (Bytes.Last() == '\0')
+	switch (Model)
 	{
-		Bytes.Pop();
+		case agxVehicle::TrackWheel::IDLER:
+			return EAGX_TrackWheelModel::Idler;
+		case agxVehicle::TrackWheel::ROLLER:
+			return EAGX_TrackWheelModel::Idler;
+		case agxVehicle::TrackWheel::SPROCKET:
+			return EAGX_TrackWheelModel::Sprocket;
+		default:
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an unknown agxVehicle::TrackWheel::Model "
+					 "literal to an EAGX_TrackWheelModel."));
+			return EAGX_TrackWheelModel::Idler;
 	}
-
-	uint32 hash = 2166136261U;
-
-	for (auto& singleByte : Bytes)
-	{
-		hash ^= singleByte;
-		hash *= 16777619U;
-	}
-
-	return hash;
 }
+
+inline agxVehicle::TrackWheel::Model Convert(EAGX_TrackWheelModel Model)
+{
+	switch (Model)
+	{
+		case EAGX_TrackWheelModel::Idler:
+			return agxVehicle::TrackWheel::IDLER;
+		case EAGX_TrackWheelModel::Roller:
+			return agxVehicle::TrackWheel::ROLLER;
+		case EAGX_TrackWheelModel::Sprocket:
+			return agxVehicle::TrackWheel::SPROCKET;
+		default:
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an unknown EAGX_TrackWheelModel "
+					 "literal to an agxVehicle::TrackWheel::Model."));
+			return agxVehicle::TrackWheel::IDLER;
+	}
+}
+
+inline EAGX_MergedTrackNodeContactReduction Convert(
+	agxVehicle::TrackInternalMergeProperties::ContactReduction Resolution)
+{
+	switch (Resolution)
+	{
+		case agxVehicle::TrackInternalMergeProperties::NONE:
+			return EAGX_MergedTrackNodeContactReduction::None;
+		case agxVehicle::TrackInternalMergeProperties::MINIMAL:
+			return EAGX_MergedTrackNodeContactReduction::Minimal;
+		case agxVehicle::TrackInternalMergeProperties::MODERATE:
+			return EAGX_MergedTrackNodeContactReduction::Moderate;
+		case agxVehicle::TrackInternalMergeProperties::AGGRESSIVE:
+			return EAGX_MergedTrackNodeContactReduction::Aggressive;
+		default:
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an unknown "
+					 "agxVehicle::TrackInternalMergeProperties::ContactReduction "
+					 "literal to an EAGX_MergedTrackNodeContactReduction."));
+			return EAGX_MergedTrackNodeContactReduction::None;
+	}
+}
+
+inline agxVehicle::TrackInternalMergeProperties::ContactReduction Convert(
+	EAGX_MergedTrackNodeContactReduction Resolution)
+{
+	switch (Resolution)
+	{
+		case EAGX_MergedTrackNodeContactReduction::None:
+			return agxVehicle::TrackInternalMergeProperties::NONE;
+		case EAGX_MergedTrackNodeContactReduction::Minimal:
+			return agxVehicle::TrackInternalMergeProperties::MINIMAL;
+		case EAGX_MergedTrackNodeContactReduction::Moderate:
+			return agxVehicle::TrackInternalMergeProperties::MODERATE;
+		case EAGX_MergedTrackNodeContactReduction::Aggressive:
+			return agxVehicle::TrackInternalMergeProperties::AGGRESSIVE;
+		default:
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an unknown "
+					 "EAGX_MergedTrackNodeContactReduction"
+					 "literal to an agxVehicle::TrackInternalMergeProperties::ContactReduction."));
+			return agxVehicle::TrackInternalMergeProperties::NONE;
+	}
+}
+
+//
+// Enumerations, Wire.
+//
 
 inline EWireNodeType Convert(agxWire::Node::Type Type)
 {
@@ -845,4 +903,65 @@ inline agxWire::Node::Type ConvertNative(EWireNodeNativeType Type)
 {
 	// The values in EWireNodeNativeType must match those in agxWire::Node::Type.
 	return static_cast<agxWire::Node::Type>(Type);
+}
+
+//
+// Enumerations, Logging.
+//
+
+inline agx::Notify::NotifyLevel ConvertLogLevelVerbosity(ELogVerbosity::Type LogVerbosity)
+{
+	switch (LogVerbosity)
+	{
+		case ELogVerbosity::VeryVerbose:
+			return agx::Notify::NOTIFY_DEBUG;
+		case ELogVerbosity::Verbose:
+			return agx::Notify::NOTIFY_DEBUG;
+		case ELogVerbosity::Log:
+			return agx::Notify::NOTIFY_INFO;
+		case ELogVerbosity::Display:
+			return agx::Notify::NOTIFY_WARNING;
+		case ELogVerbosity::Warning:
+			return agx::Notify::NOTIFY_WARNING;
+		case ELogVerbosity::Error:
+			return agx::Notify::NOTIFY_ERROR;
+		case ELogVerbosity::Fatal:
+			return agx::Notify::NOTIFY_ERROR;
+		default:
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("ConvertLogLevelVerbosity: unknown verbosity level: %d. Verbosity level "
+					 "'NOTIFY_INFO' will be used instead."),
+				LogVerbosity);
+
+			// Use NOTIFY_INFO as default, if unknown log verbosity is given
+			return agx::Notify::NOTIFY_INFO;
+	}
+}
+
+inline ELogVerbosity::Type ConvertLogLevelVerbosity(agx::Notify::NotifyLevel Level)
+{
+	switch (Level)
+	{
+		case agx::Notify::NOTIFY_DEBUG:
+			return ELogVerbosity::VeryVerbose;
+		case agx::Notify::NOTIFY_INFO:
+			return ELogVerbosity::Verbose;
+		case agx::Notify::NOTIFY_WARNING:
+			return ELogVerbosity::Warning;
+		case agx::Notify::NOTIFY_ERROR:
+			return ELogVerbosity::Error;
+
+		// The following are not actual verbosity levels.
+		case agx::Notify::NOTIFY_CLEAR:
+		case agx::Notify::NOTIFY_END:
+		case agx::Notify::NOTIFY_LOGONLY:
+		case agx::Notify::NOTIFY_PUSH:
+			return ELogVerbosity::VeryVerbose;
+	}
+
+	UE_LOG(
+		LogAGX, Warning, TEXT("Unknown AGX Dynamics log verbosity %d. Defaulting to Warning."),
+		static_cast<int>(Level));
+	return ELogVerbosity::Warning;
 }

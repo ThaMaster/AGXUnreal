@@ -271,31 +271,6 @@ void UAGX_TrackInternalMergeProperties::CopyFrom(const UAGX_TrackInternalMergePr
 #undef COPY_PROPERTY
 }
 
-namespace AGX_TrackInternalMergeProperties_helpers
-{
-	/// Consider moving this to TypeConversions.h, if we have other enum conversion functions there.
-	inline EAGX_MergedTrackNodeContactReduction ToContactReduction(uint8 ContactReduction)
-	{
-		switch (ContactReduction)
-		{
-			case 0:
-				return EAGX_MergedTrackNodeContactReduction::None;
-			case 1:
-				return EAGX_MergedTrackNodeContactReduction::Minimal;
-			case 2:
-				return EAGX_MergedTrackNodeContactReduction::Moderate;
-			case 3:
-				return EAGX_MergedTrackNodeContactReduction::Aggressive;
-		}
-
-		UE_LOG(
-			LogAGX, Error, TEXT("Unknown ContactReduction '%d' passed to ContactReductionFrom()."),
-			ContactReduction);
-
-		return EAGX_MergedTrackNodeContactReduction::None;
-	}
-}
-
 void UAGX_TrackInternalMergeProperties::CopyFrom(const FTrackBarrier& Source)
 {
 	using namespace AGX_TrackInternalMergeProperties_helpers;
@@ -307,7 +282,7 @@ void UAGX_TrackInternalMergeProperties::CopyFrom(const FTrackBarrier& Source)
 	/// adding properties.
 	bEnableMerge = Source.InternalMergeProperties_GetEnableMerge();
 	COPY_PROPERTY(NumNodesPerMergeSegment);
-	ContactReduction = ToContactReduction(Source.InternalMergeProperties_GetContactReduction());
+	ContactReduction = Source.InternalMergeProperties_GetContactReduction();
 	bEnableLockToReachMergeCondition =
 		Source.InternalMergeProperties_GetEnableLockToReachMergeCondition();
 	COPY_PROPERTY(LockToReachMergeConditionCompliance);
@@ -460,7 +435,7 @@ void UAGX_TrackInternalMergeProperties::UpdateNativeProperties(UAGX_TrackCompone
 
 	TrackBarrier->InternalMergeProperties_SetEnableMerge(bEnableMerge);
 	TrackBarrier->InternalMergeProperties_SetNumNodesPerMergeSegment(NumNodesPerMergeSegment);
-	TrackBarrier->InternalMergeProperties_SetContactReduction(static_cast<uint8>(ContactReduction));
+	TrackBarrier->InternalMergeProperties_SetContactReduction(ContactReduction);
 	TrackBarrier->InternalMergeProperties_SetEnableLockToReachMergeCondition(
 		bEnableLockToReachMergeCondition);
 	TrackBarrier->InternalMergeProperties_SetLockToReachMergeConditionCompliance(

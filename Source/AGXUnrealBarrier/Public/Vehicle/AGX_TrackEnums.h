@@ -23,3 +23,22 @@ enum class EAGX_TrackWheelModel : uint8
 	Roller UMETA(DisplayName = "Roller", ToolTip = "Track return or road wheel.")
 };
 // clang-format on
+
+/**
+ * Contact reduction of merged nodes in contact with other objects such as ground.
+ */
+UENUM(BlueprintType)
+enum class EAGX_MergedTrackNodeContactReduction : uint8
+{
+	/** Contact reduction disabled. */
+	None,
+
+	/** Contact reduction enabled with bin resolution = 3. */
+	Minimal,
+
+	/** Contact reduction enabled with bin resolution = 2. */
+	Moderate,
+
+	/** Contact reduction enabled with bin resolution = 1. */
+	Aggressive
+};

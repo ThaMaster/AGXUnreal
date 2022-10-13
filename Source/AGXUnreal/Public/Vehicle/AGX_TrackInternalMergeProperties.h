@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
+#include "Vehicle/AGX_TrackEnums.h"
 
 // Unreal Engine include.s
 #include "UObject/Object.h"
@@ -12,26 +13,6 @@
 
 class UAGX_TrackComponent;
 class FTrackBarrier;
-
-/// @todo Consider moving this enum somewhere else, and reuse it in Contact Material.
-/**
- * Contact reduction of merged nodes in contact with other objects such as ground.
- */
-UENUM(BlueprintType)
-enum class EAGX_MergedTrackNodeContactReduction : uint8
-{
-	/** Contact reduction disabled. */
-	None,
-
-	/** Contact reduction enabled with bin resolution = 3. */
-	Minimal,
-
-	/** Contact reduction enabled with bin resolution = 2. */
-	Moderate,
-
-	/** Contact reduction enabled with bin resolution = 1. */
-	Aggressive
-};
 
 /**
  * Properties and thresholds for internal merging of nodes in AGX Track Component.
@@ -95,7 +76,8 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Track Internal Merge Properties",
 		Meta = (EditCondition = "bMergeEnabled"))
-	EAGX_MergedTrackNodeContactReduction ContactReduction {EAGX_MergedTrackNodeContactReduction::Minimal};
+	EAGX_MergedTrackNodeContactReduction ContactReduction {
+		EAGX_MergedTrackNodeContactReduction::Minimal};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Internal Merge Properties")
 	void SetContactReduction(EAGX_MergedTrackNodeContactReduction InContactReduction);
@@ -126,7 +108,6 @@ public:
 			(EditCondition = "bMergeEnabled && bLockToReachMergeConditionEnabled",
 			 ClampMin = "0.0"))
 	FAGX_Real LockToReachMergeConditionCompliance {1.0e-11};
-
 
 	void SetLockToReachMergeConditionCompliance(double Compliance);
 
@@ -213,7 +194,6 @@ public:
 
 	void RegisterTargetTrack(UAGX_TrackComponent* Track);
 	void UnregisterTargetTrack(UAGX_TrackComponent* Track);
-
 
 	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;

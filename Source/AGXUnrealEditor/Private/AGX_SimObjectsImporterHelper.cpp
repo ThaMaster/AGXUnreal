@@ -1096,7 +1096,7 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 		Wheel.RelativeLocation = WheelBarrier.GetRelativeLocation();
 		Wheel.RelativeRotation = WheelBarrier.GetRelativeRotation();
 		Wheel.Radius = static_cast<float>(WheelBarrier.GetRadius());
-		Wheel.Model = FAGX_TrackWheel::ToModel(WheelBarrier.GetModel());
+		Wheel.Model = WheelBarrier.GetModel();
 		Wheel.bSplitSegments = WheelBarrier.GetSplitSegments();
 		Wheel.bMoveNodesToRotationPlane = WheelBarrier.GetMoveNodesToRotationPlane();
 		Wheel.bMoveNodesToWheel = WheelBarrier.GetMoveNodesToWheel();

@@ -51,10 +51,10 @@ double FTrackWheelBarrier::GetRadius() const
 	return ConvertDistanceToUnreal<double>(NativeRef->Native->getRadius());
 }
 
-uint8 FTrackWheelBarrier::GetModel() const
+EAGX_TrackWheelModel FTrackWheelBarrier::GetModel() const
 {
 	check(HasNative());
-	return static_cast<uint8>(NativeRef->Native->getModel());
+	return Convert(NativeRef->Native->getModel());
 }
 
 bool FTrackWheelBarrier::GetSplitSegments() const

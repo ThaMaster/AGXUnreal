@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Vehicle/AGX_TrackEnums.h"
+
 // Standard library includes.
 #include <memory>
 
@@ -28,7 +31,7 @@ public:
 
 	double GetRadius() const;
 
-	uint8 GetModel() const;
+	EAGX_TrackWheelModel GetModel() const;
 
 	bool GetSplitSegments() const;
 
