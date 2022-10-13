@@ -170,7 +170,7 @@ public:
 	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @param Name The name to give to the new asset. A sequence number will be added in case of a
 	 * conflict.
-	 * @return The created UAGX_TrackInternalMergePropertiesAsset.
+	 * @return The created UAGX_TrackInternalMergeProperties asset.
 	 */
 	static UAGX_TrackInternalMergeProperties* SaveImportedTrackInternalMergePropertiesAsset(
 		const FTrackBarrier& Barrier, const FString& DirectoryName, const FString& Name);

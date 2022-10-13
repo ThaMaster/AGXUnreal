@@ -40,7 +40,7 @@ static_assert(false);
 #include "Utilities/AGX_ImportUtilities.h"
 #if AGX_TEST_TRACK_IMPORT
 #include "Vehicle/AGX_TrackComponent.h"
-#include "Vehicle/AGX_TrackInternalMergePropertiesBase.h"
+#include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/AGX_TrackWheel.h"
 #endif

@@ -42,7 +42,7 @@
 #include "Utilities/AGX_TextureUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Vehicle/AGX_TrackComponent.h"
-#include "Vehicle/AGX_TrackInternalMergePropertiesAsset.h"
+#include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/TrackPropertiesBarrier.h"
 #include "Vehicle/TrackWheelBarrier.h"
