@@ -2,12 +2,14 @@
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Factories/Factory.h"
+
 #include "AGX_TrackInternalMergePropertiesAssetFactory.generated.h"
 
 /**
- * Asset Factory for UAGX_TrackInternalMergePropertiesAsset, making it possible to create asset
+ * Asset Factory for UAGX_TrackInternalMergeProperties, making it possible to create asset
  * objects in the Editor.
  */
 UCLASS()

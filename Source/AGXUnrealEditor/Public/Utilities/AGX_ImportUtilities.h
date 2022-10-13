@@ -15,7 +15,7 @@ class FTrackPropertiesBarrier;
 class FContactMaterialBarrier;
 class UAGX_ContactMaterialAsset;
 class UAGX_ShapeMaterial;
-class UAGX_TrackInternalMergePropertiesAsset;
+class UAGX_TrackInternalMergeProperties;
 class UAGX_TrackProperties;
 struct FAGX_RenderMaterial;
 
@@ -164,14 +164,14 @@ public:
 
 	/**
 	 * Store an imported AGX Dynamics Track Internal Merge Property as an
-	 * UAGX_TrackInternalMergePropertiesAsset.
+	 * UAGX_TrackInternalMergeProperties asset on drive..
 	 * @param Barrier The imported Track owning the Internal Merge Property.
 	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @param Name The name to give to the new asset. A sequence number will be added in case of a
 	 * conflict.
 	 * @return The created UAGX_TrackInternalMergePropertiesAsset.
 	 */
-	static UAGX_TrackInternalMergePropertiesAsset* SaveImportedTrackInternalMergePropertiesAsset(
+	static UAGX_TrackInternalMergeProperties* SaveImportedTrackInternalMergePropertiesAsset(
 		const FTrackBarrier& Barrier, const FString& DirectoryName, const FString& Name);
 
 	/**

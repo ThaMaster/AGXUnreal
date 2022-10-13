@@ -3,7 +3,7 @@
 #include "Vehicle/AGX_TrackInternalMergePropertiesAssetTypeActions.h"
 
 // AGX Dynamics for Unreal includes.
-#include "Vehicle/AGX_TrackInternalMergePropertiesAsset.h"
+#include "Vehicle/AGX_TrackInternalMergeProperties.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TrackInternalMergePropertiesAssetTypeActions"
 
@@ -37,7 +37,7 @@ FText FAGX_TrackInternalMergePropertiesAssetTypeActions::GetAssetDescription(
 
 UClass* FAGX_TrackInternalMergePropertiesAssetTypeActions::GetSupportedClass() const
 {
-	return UAGX_TrackInternalMergePropertiesAsset::StaticClass();
+	return UAGX_TrackInternalMergeProperties::StaticClass();
 }
 
 #undef LOCTEXT_NAMESPACE
