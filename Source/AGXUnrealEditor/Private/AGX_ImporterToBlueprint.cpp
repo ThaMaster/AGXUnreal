@@ -655,11 +655,11 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		if (SourceFilePath.IsEmpty())
 		{
 			UE_LOG(
-				LogAGX, Warning,
+				LogAGX, Log,
 				TEXT("Re-import: unable to get a valid source file containing the model."));
 
-			// Not getting a valid path will be due to the user pressing cancel when prompted for a file
-			// which is perfectly valid.
+			// Not getting a valid path will be due to the user pressing cancel when prompted for a
+			// file which is perfectly valid.
 			return true;
 		}
 
@@ -683,6 +683,9 @@ bool AGX_ImporterToBlueprint::ReImport(UBlueprint& BaseBP)
 			"Re-import model to Blueprint");
 		return false;
 	}
+
+	// @todo Remember to update the FilePath in the base Blueprints ReImprot Component after
+	// re-import is done.
 
 	return true;
 }
