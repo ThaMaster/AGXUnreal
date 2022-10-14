@@ -8,6 +8,8 @@
 // Unreal Engine includes.
 #include "Widgets/SCompoundWidget.h"
 
+struct FAGX_ImportSettings;
+
 class SAGX_ImportDialog : public SCompoundWidget
 {
 public:
@@ -17,6 +19,14 @@ public:
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
+
+	void SetFilePath(const FString& InFilePath);
+	void SetFileTypes(const FString& InFileTypes);
+	void SetImportType(EAGX_ImportType InImportType);
+
+	void RefreshGui();
+
+	TOptional<FAGX_ImportSettings> ToImportSettings();
 
 private:
 	TSharedRef<SWidget> CreateBrowseFileGui();
@@ -36,8 +46,7 @@ private:
 
 	void OnIgnoreDisabledTrimeshCheckboxClicked(ECheckBoxState NewCheckedState);
 
-	void RefreshGui();
-
+	FString FileTypes = ".agx;*.urdf";
 	EAGX_ImportType ImportType = EAGX_ImportType::Invalid;
 	FString FilePath;
 	FString UrdfPackagePath;

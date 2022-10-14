@@ -106,6 +106,21 @@ namespace AGX_ReImportComponentCustomization_helpers
 
 		return OuterMostParent;
 	}
+
+	FString GetSourceFilePath(UBlueprint& BaseBP)
+	{
+		UAGX_ReImportComponent* ReImportComponent =
+			FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ReImportComponent>(&BaseBP);
+
+		// Attempt using the file path stored in the ReImportComponent.
+		FString FilePath = ReImportComponent != nullptr ? ReImportComponent->FilePath : "";
+		if (!FPaths::FileExists(FilePath))
+		{
+			return "";
+		}
+
+		return FilePath;
+	}
 }
 
 FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
@@ -119,7 +134,26 @@ FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
 		return FReply::Handled();
 	}
 
-	AGX_ImporterToBlueprint::ReImport(*OutermostParent);
+	// Open up the import settings Window to get user import settings.
+	TSharedRef<SWindow> Window =
+		SNew(SWindow)
+			.SupportsMinimize(false)
+			.SupportsMaximize(false)
+			.SizingRule(ESizingRule::Autosized)
+			.Title(NSLOCTEXT("AGX", "AGXUnrealReImport", "Re-import AGX Dynamics archive"));
+
+	const FString FilePath = GetSourceFilePath(*OutermostParent);
+	TSharedRef<SAGX_ImportDialog> ImportDialog = SNew(SAGX_ImportDialog);
+	ImportDialog->SetFilePath(FilePath);
+	ImportDialog->SetImportType(EAGX_ImportType::Agx);
+	ImportDialog->SetFileTypes(".agx");
+	ImportDialog->RefreshGui();
+	Window->SetContent(ImportDialog);
+	FSlateApplication::Get().AddModalWindow(Window, nullptr);
+	if (auto ImportSettings = ImportDialog->ToImportSettings())
+	{
+		AGX_ImporterToBlueprint::ReImport(*OutermostParent, *ImportSettings);
+	}
 
 	// Logging done in ReImport.
 	return FReply::Handled(); 

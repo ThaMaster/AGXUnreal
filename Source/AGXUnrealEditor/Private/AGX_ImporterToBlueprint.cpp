@@ -627,44 +627,10 @@ UBlueprint* AGX_ImporterToBlueprint::Import(const FAGX_ImportSettings& ImportSet
 
 namespace AGX_ImporterToBlueprint_reimport_helpers
 {
-	FString GetSourceFilePath(UBlueprint& BaseBP)
+	bool ReImport(UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings)
 	{
-		UAGX_ReImportComponent* ReImportComponent =
-			FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ReImportComponent>(&BaseBP);
-
-		// Attempt using the file path stored in the ReImportComponent.
-		FString FilePath = ReImportComponent != nullptr ? ReImportComponent->FilePath : "";
-		if (!FPaths::FileExists(FilePath))
-		{
-			// Attempt getting the file path from the user.
-			FilePath =
-				FAGX_EditorUtilities::SelectExistingFileDialog("AGX Dynamics archive", ".agx");
-		}
-
-		if (!FPaths::FileExists(FilePath))
-		{
-			return "";
-		}
-
-		return FilePath;
-	}
-
-	bool ReImport(UBlueprint& BaseBP)
-	{
-		const FString& SourceFilePath = GetSourceFilePath(BaseBP);
-		if (SourceFilePath.IsEmpty())
-		{
-			UE_LOG(
-				LogAGX, Log,
-				TEXT("Re-import: unable to get a valid source file containing the model."));
-
-			// Not getting a valid path will be due to the user pressing cancel when prompted for a
-			// file which is perfectly valid.
-			return true;
-		}
-
 		FSimulationObjectCollection SimObjects;
-		if (!FAGXSimObjectsReader::ReadAGXArchive(SourceFilePath, SimObjects))
+		if (!FAGXSimObjectsReader::ReadAGXArchive(ImportSettings.FilePath, SimObjects))
 		{
 			return false;
 		}
@@ -673,9 +639,10 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	}
 }
 
-bool AGX_ImporterToBlueprint::ReImport(UBlueprint& BaseBP)
+bool AGX_ImporterToBlueprint::ReImport(
+	UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings)
 {
-	if (!AGX_ImporterToBlueprint_reimport_helpers::ReImport(BaseBP))
+	if (!AGX_ImporterToBlueprint_reimport_helpers::ReImport(BaseBP, ImportSettings))
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 			"Some issues occurred during re-import. Log category LogAGX in the Console may "

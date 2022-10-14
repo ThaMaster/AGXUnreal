@@ -23,5 +23,6 @@ namespace AGX_ImporterToBlueprint
 	/*
 	* @todo Add description.
 	*/
-	AGXUNREALEDITOR_API bool ReImport(UBlueprint& BaseBP);
+	AGXUNREALEDITOR_API bool ReImport(
+		UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings);
 }

@@ -68,6 +68,39 @@ void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 	// clang-format on
 }
 
+void SAGX_ImportDialog::SetFilePath(const FString& InFilePath)
+{
+	FilePath = InFilePath;
+}
+
+void SAGX_ImportDialog::SetFileTypes(const FString& InFileTypes)
+{
+	FileTypes = InFileTypes;
+}
+
+void SAGX_ImportDialog::SetImportType(EAGX_ImportType InImportType)
+{
+	ImportType = InImportType;
+}
+
+TOptional<FAGX_ImportSettings> SAGX_ImportDialog::ToImportSettings()
+{
+	if (FilePath.IsEmpty())
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"A file must be selected before importing.");
+		return {};
+	}
+
+	FAGX_ImportSettings Settings;
+	Settings.FilePath = FilePath;
+	Settings.IgnoreDisabledTrimeshes = IgnoreDisabledTrimesh;
+	Settings.ImportType = ImportType;
+	Settings.OpenBlueprintEditorAfterImport = true;
+	Settings.UrdfPackagePath = UrdfPackagePath;
+	return Settings;
+}
+
 namespace AGX_ImportDialog_helpers
 {
 	FSlateFontInfo CreateFont(int Size)
@@ -116,7 +149,7 @@ return SNew(SVerticalBox)
 		.AutoHeight()
 		[
 			SNew(STextBlock)
-			.Text(LOCTEXT("BrowseFileText", "Select AGX Dynamics archive or URDF file"))
+			.Text(LOCTEXT("BrowseFileText", "Select file to import"))
 			.Font(CreateFont(12))
 		]
 		+ SVerticalBox::Slot()
@@ -146,7 +179,7 @@ return SNew(SVerticalBox)
 				SNew(SButton)
 				.Text(LOCTEXT("BrowseButtonText", "Browse..."))
 				.ToolTipText(LOCTEXT("BrowseButtonTooltip",
-					"Browse to an AGX Dynamics archive or URDF file to import."))
+					"Browse to file to import."))
 				.OnClicked(this, &SAGX_ImportDialog::OnBrowseFileButtonClicked)
 			]
 		];
@@ -322,8 +355,7 @@ TSharedRef<SWidget> SAGX_ImportDialog::CreateCheckboxGui()
 
 FReply SAGX_ImportDialog::OnBrowseFileButtonClicked()
 {
-	FilePath = FAGX_EditorUtilities::SelectExistingFileDialog(
-		"All files", ".agx;*.urdf");
+	FilePath = FAGX_EditorUtilities::SelectExistingFileDialog("All files", FileTypes);
 	ImportType = AGX_ImportDialog_helpers::GetFrom(FilePath);
 
 	RefreshGui();
@@ -360,25 +392,12 @@ FText SAGX_ImportDialog::GetUrdfPackagePathText() const
 
 FReply SAGX_ImportDialog::OnImportButtonClicked()
 {
-	if (FilePath.IsEmpty())
-	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"A AGX Dynamics archive or URDF file must be selected before importing.");
-		return FReply::Handled();
-	}
-
+	// We are done, close the Window containing this Widget. The user of this Widget should get
+	// the user's input via the ToImportSettings function when the Window has closed.
 	TSharedRef<SWindow> ParentWindow =
 		FSlateApplication::Get().FindWidgetWindow(AsShared()).ToSharedRef();
 	FSlateApplication::Get().RequestDestroyWindow(ParentWindow);
 
-	FAGX_ImportSettings Settings;
-	Settings.FilePath = FilePath;
-	Settings.IgnoreDisabledTrimeshes = IgnoreDisabledTrimesh;
-	Settings.ImportType = ImportType;
-	Settings.OpenBlueprintEditorAfterImport = true;
-	Settings.UrdfPackagePath = UrdfPackagePath;
-
-	AGX_ImporterToBlueprint::Import(Settings);
 	return FReply::Handled();
 }
 
