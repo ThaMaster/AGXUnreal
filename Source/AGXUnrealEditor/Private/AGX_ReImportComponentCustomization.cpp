@@ -47,7 +47,7 @@ void FAGX_ReImportComponentCustomization::CustomizeDetails(
 			.Text(LOCTEXT("ReImportButtonText", "Re-import"))
 			.ToolTipText(LOCTEXT(
 				"ReImportButtonTooltip",
-				"Re-imports the model and updates the Components to match the source file."))
+				"Re-imports the model and updates the Components and Assets to match the source file."))
 			.OnClicked(this, &FAGX_ReImportComponentCustomization::OnReImportButtonClicked)
 		]
 	];
@@ -152,6 +152,13 @@ FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
 	FSlateApplication::Get().AddModalWindow(Window, nullptr);
 	if (auto ImportSettings = ImportDialog->ToImportSettings())
 	{
+		const static FString Info = "Re-import may remove or overwrite existing data.\nContinue?";
+		if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) !=
+			EAppReturnType::Yes)
+		{
+			return FReply::Handled();
+		}
+
 		AGX_ImporterToBlueprint::ReImport(*OutermostParent, *ImportSettings);
 	}
 
