@@ -45,6 +45,7 @@ void UAGX_AgxEdModeFile::ImportToBlueprint()
 	TSharedRef<SAGX_ImportDialog> ImportDialog = SNew(SAGX_ImportDialog);
 	Window->SetContent(ImportDialog);
 	FSlateApplication::Get().AddModalWindow(Window, nullptr);
+
 	if (auto ImportSettings = ImportDialog->ToImportSettings())
 	{
 		AGX_ImporterToBlueprint::Import(*ImportSettings);

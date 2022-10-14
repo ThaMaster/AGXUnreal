@@ -150,6 +150,7 @@ FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
 	ImportDialog->RefreshGui();
 	Window->SetContent(ImportDialog);
 	FSlateApplication::Get().AddModalWindow(Window, nullptr);
+
 	if (auto ImportSettings = ImportDialog->ToImportSettings())
 	{
 		const static FString Info = "Re-import may remove or overwrite existing data.\nContinue?";
@@ -162,7 +163,7 @@ FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
 		AGX_ImporterToBlueprint::ReImport(*OutermostParent, *ImportSettings);
 	}
 
-	// Logging done in ReImport.
+	// Any logging is done in ReImport and ToImportSettings.
 	return FReply::Handled(); 
 }
 

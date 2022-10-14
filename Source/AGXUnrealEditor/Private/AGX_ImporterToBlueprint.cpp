@@ -204,7 +204,7 @@ namespace
 
 		for (const auto& Shape : SimObjects.GetTrimeshShapes())
 		{
-			if (Helper.ImportSettings.IgnoreDisabledTrimeshes && !Shape.GetEnableCollisions())
+			if (Helper.ImportSettings.bIgnoreDisabledTrimeshes && !Shape.GetEnableCollisions())
 			{
 				if (Shape.HasRenderData())
 				{
@@ -251,7 +251,7 @@ namespace
 
 			for (const auto& Trimesh : Body.GetTrimeshShapes())
 			{
-				if (Helper.ImportSettings.IgnoreDisabledTrimeshes && !Trimesh.GetEnableCollisions())
+				if (Helper.ImportSettings.bIgnoreDisabledTrimeshes && !Trimesh.GetEnableCollisions())
 				{
 					if (Trimesh.HasRenderData())
 					{
@@ -613,7 +613,7 @@ UBlueprint* AGX_ImporterToBlueprint::Import(const FAGX_ImportSettings& ImportSet
 {
 	FAGX_SimObjectsImporterHelper Helper(ImportSettings);
 	UBlueprint* Bp = ImportToBlueprint(
-		Helper, ImportSettings.ImportType, ImportSettings.OpenBlueprintEditorAfterImport);
+		Helper, ImportSettings.ImportType, ImportSettings.bOpenBlueprintEditorAfterImport);
 	if (Bp == nullptr)
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(

@@ -85,6 +85,12 @@ void SAGX_ImportDialog::SetImportType(EAGX_ImportType InImportType)
 
 TOptional<FAGX_ImportSettings> SAGX_ImportDialog::ToImportSettings()
 {
+	if (!bUserHasPressedImport)
+	{
+		// The Window containing this Widget was closed, the user never pressed Import.
+		return {};
+	}
+
 	if (FilePath.IsEmpty())
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
@@ -94,9 +100,9 @@ TOptional<FAGX_ImportSettings> SAGX_ImportDialog::ToImportSettings()
 
 	FAGX_ImportSettings Settings;
 	Settings.FilePath = FilePath;
-	Settings.IgnoreDisabledTrimeshes = IgnoreDisabledTrimesh;
+	Settings.bIgnoreDisabledTrimeshes = bIgnoreDisabledTrimesh;
 	Settings.ImportType = ImportType;
-	Settings.OpenBlueprintEditorAfterImport = true;
+	Settings.bOpenBlueprintEditorAfterImport = true;
 	Settings.UrdfPackagePath = UrdfPackagePath;
 	return Settings;
 }
@@ -392,6 +398,8 @@ FText SAGX_ImportDialog::GetUrdfPackagePathText() const
 
 FReply SAGX_ImportDialog::OnImportButtonClicked()
 {
+	bUserHasPressedImport = true;
+
 	// We are done, close the Window containing this Widget. The user of this Widget should get
 	// the user's input via the ToImportSettings function when the Window has closed.
 	TSharedRef<SWindow> ParentWindow =
@@ -403,7 +411,7 @@ FReply SAGX_ImportDialog::OnImportButtonClicked()
 
 void SAGX_ImportDialog::OnIgnoreDisabledTrimeshCheckboxClicked(ECheckBoxState NewCheckedState)
 {
-	IgnoreDisabledTrimesh = NewCheckedState == ECheckBoxState::Checked;
+	bIgnoreDisabledTrimesh = NewCheckedState == ECheckBoxState::Checked;
 }
 
 void SAGX_ImportDialog::RefreshGui()

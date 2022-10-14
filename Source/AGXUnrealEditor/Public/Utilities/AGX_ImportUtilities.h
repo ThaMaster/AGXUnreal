@@ -159,9 +159,9 @@ public:
 		const FString& MaterialName);
 
 	/**
-	 * Rename the object. Generates a fallback name if the given name can't be used.
+	 * Generate valid name for the object. Generates a fallback name if the given name can't be used.
 	 */
-	static void Rename(UObject& Object, const FString& Name);
+	static FString CreateName(UObject& Object, const FString& Name);
 
 	/**
 	 * Handles the case of renaming Actor Components, where an extra name validation occurs compared

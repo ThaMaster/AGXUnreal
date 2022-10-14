@@ -20,6 +20,11 @@ public:
 	static USCS_Node* GetSCSNodeFromComponent(UActorComponent* Component);
 
 	/*
+	* Check if the node name exists in the Blueprint.
+	*/
+	static bool NameExists(UBlueprint& Blueprint, const FString& Name);
+
+	/*
 	 * Returns the transform of a template component inside a Blueprint in relation to the root
 	 * component of that Blueprint. If the passed component is not inside a Blueprint, or is
 	 * nullptr, the identity FTransform is returned.
@@ -69,6 +74,20 @@ public:
 	 */
 	static UBlueprint* GetOutermostParent(UBlueprint* Child);
 
+	/*
+	* Retrurns the Blueprint that the template Component resides in.
+	*/
+	static UBlueprint* GetBlueprintFrom(const UActorComponent& Component);
+
+	/*
+	* Checks whether the component is a template Component.
+	*/
+	static bool IsTemplateComponent(const UActorComponent& Component);
+
+	/*
+	 * Searches through the node tree and returns the first Template Component matching the given
+	 * type.
+	 */
 	template <typename T>
 	static T* GetFirstComponentOfType(UBlueprint* Blueprint);
 };

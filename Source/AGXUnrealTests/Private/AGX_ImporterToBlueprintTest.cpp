@@ -77,9 +77,9 @@ bool FImportArchiveBlueprintCommand::Update()
 
 	FAGX_ImportSettings Settings;
 	Settings.FilePath = ArchiveFilePath;
-	Settings.IgnoreDisabledTrimeshes = false;
+	Settings.bIgnoreDisabledTrimeshes = false;
 	Settings.ImportType = EAGX_ImportType::Agx;
-	Settings.OpenBlueprintEditorAfterImport = false;
+	Settings.bOpenBlueprintEditorAfterImport = false;
 
 	UBlueprint* ChildBlueprint = AGX_ImporterToBlueprint::Import(Settings);
 	Contents = FAGX_BlueprintUtilities::GetOutermostParent(ChildBlueprint);
@@ -115,9 +115,9 @@ bool FImportURDFBlueprintCommand::Update()
 	FAGX_ImportSettings Settings;
 	Settings.FilePath = UrdfFilePath;
 	Settings.UrdfPackagePath = PackagePath;
-	Settings.IgnoreDisabledTrimeshes = false;
+	Settings.bIgnoreDisabledTrimeshes = false;
 	Settings.ImportType = EAGX_ImportType::Urdf;
-	Settings.OpenBlueprintEditorAfterImport = false;
+	Settings.bOpenBlueprintEditorAfterImport = false;
 
 	UBlueprint* ChildBlueprint = AGX_ImporterToBlueprint::Import(Settings);
 	Contents = FAGX_BlueprintUtilities::GetOutermostParent(ChildBlueprint);

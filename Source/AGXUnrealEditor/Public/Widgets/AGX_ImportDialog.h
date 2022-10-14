@@ -50,5 +50,6 @@ private:
 	EAGX_ImportType ImportType = EAGX_ImportType::Invalid;
 	FString FilePath;
 	FString UrdfPackagePath;
-	bool IgnoreDisabledTrimesh = false;
+	bool bIgnoreDisabledTrimesh = false;
+	bool bUserHasPressedImport = false;
 };

@@ -8,7 +8,7 @@
 
 namespace AGX_BlueprintUtilities_helpers
 {
-	UBlueprintGeneratedClass* GetBlueprintGeneratedClass(UActorComponent* Component)
+	UBlueprintGeneratedClass* GetBlueprintGeneratedClass(const UActorComponent* Component)
 	{
 		if (Component == nullptr)
 		{
@@ -61,6 +61,11 @@ USCS_Node* FAGX_BlueprintUtilities::GetSCSNodeFromComponent(UActorComponent* Com
 	}
 
 	return *ComponentNode;
+}
+
+bool NameExists(UBlueprint& Blueprint, const FString& Name)
+{
+	return Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name)) != nullptr;
 }
 
 FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(USceneComponent* Component)
@@ -237,6 +242,11 @@ UActorComponent* FAGX_BlueprintUtilities::GetTemplateComponentAttachParent(
 	return ParentNode->ComponentTemplate;
 }
 
+bool FAGX_BlueprintUtilities::IsTemplateComponent(const UActorComponent& Component)
+{
+	return Component.HasAnyFlags(RF_ArchetypeObject);
+}
+
 UBlueprint* FAGX_BlueprintUtilities::GetOutermostParent(UBlueprint* Child)
 {
 	if (Child == nullptr)
@@ -247,4 +257,10 @@ UBlueprint* FAGX_BlueprintUtilities::GetOutermostParent(UBlueprint* Child)
 	TArray<UBlueprint*> Parents;
 	UBlueprint::GetBlueprintHierarchyFromClass(Child->GeneratedClass, Parents);
 	return Parents.Last();
+}
+
+UBlueprint* FAGX_BlueprintUtilities::GetBlueprintFrom(const UActorComponent& Component)
+{
+	using namespace AGX_BlueprintUtilities_helpers;
+	return Cast<UBlueprint>(GetBlueprintGeneratedClass(&Component));
 }

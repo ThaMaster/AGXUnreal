@@ -22,6 +22,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/Paths.h"
 #include "RawMesh.h"
+#include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/ComponentEditorUtils.h"
 #include "UObject/SavePackage.h"
 
@@ -195,27 +196,70 @@ namespace
 		return Material->GetName();
 	}
 
+	// This is to some extent mimicking the behavior of
+	// FComponentEditorUtils::GenerateValidVariableName but works for TemplateComponents which have
+	// no owner Actor.
+	FString GenerateValidVariableNameTemplateComponent(UActorComponent& Component)
+	{
+		AGX_CHECK(FAGX_BlueprintUtilities::IsTemplateComponent(Component));
+		FString ComponentName =
+			FBlueprintEditorUtils::GetClassNameWithoutSuffix(Component.GetClass());
+
+		const FString SuffixToStrip(TEXT("Component"));
+		if (ComponentName.EndsWith(SuffixToStrip))
+		{
+			ComponentName.LeftInline(ComponentName.Len() - SuffixToStrip.Len(), false);
+		}
+
+		UBlueprint* Blueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(Component);
+		if (Blueprint == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Unable to get Bluprint from Component '%s'. The final name may not be "
+					 "correct."),
+				*Component.GetName());
+			return Component.GetName() + FGuid::NewGuid().ToString();
+		}
+
+		for (int i = 0; FAGX_BlueprintUtilities::NameExists(*Blueprint, ComponentName); i++)
+		{
+			ComponentName = FString::Printf(TEXT("%s%d"), *ComponentName, i);
+		}
+		return ComponentName;
+	}
+
 	/**
 	 * Checks whether the component name is valid, and if not, generates a valid name and sets it to
 	 * the component.
 	 */
-	void FinalizeComponentName(UActorComponent& Component)
+	FString GetFinalizedComponentName(UActorComponent& Component, const FString& WantedName)
 	{
-		if (Component.GetOwner() == nullptr)
+		if (Component.GetOwner() == nullptr &&
+			!FAGX_BlueprintUtilities::IsTemplateComponent(Component))
 		{
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("Could not find the owning actor of Actor Component: %s during name "
-					 "finalization."),
+					 "finalization. The Component might not get the wanted name."),
 				*Component.GetName());
-			return;
+			return FGuid::NewGuid().ToString();
 		}
 
-		if (!FComponentEditorUtils::IsValidVariableNameString(&Component, Component.GetName()))
+		if (!FComponentEditorUtils::IsValidVariableNameString(&Component, WantedName))
 		{
-			Component.Rename(*FComponentEditorUtils::GenerateValidVariableName(
-				Component.GetClass(), Component.GetOwner()));
+			if (FAGX_BlueprintUtilities::IsTemplateComponent(Component))
+			{
+				return GenerateValidVariableNameTemplateComponent(Component);
+			}
+			else
+			{
+				return FComponentEditorUtils::GenerateValidVariableName(
+					Component.GetClass(), Component.GetOwner());
+			}
 		}
+
+		return WantedName;
 	}
 }
 
@@ -328,16 +372,16 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	return Material;
 }
 
-void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)
+FString FAGX_ImportUtilities::CreateName(UObject& Object, const FString& Name)
 {
 	if (Name.IsEmpty())
 	{
 		// Not having an imported name means use whatever default name Unreal decided.
-		return;
+		return Name;
 	}
 	if (Object.Rename(*Name, nullptr, REN_Test))
 	{
-		Object.Rename(*Name, nullptr, REN_DontCreateRedirectors);
+		return Name;
 	}
 	else
 	{
@@ -345,14 +389,24 @@ void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)
 		UE_LOG(
 			LogAGX, Warning, TEXT("%s '%s' imported with name '%s' because of name conflict."),
 			*Object.GetClass()->GetName(), *Name, *NewName.ToString());
-		Object.Rename(*NewName.ToString(), nullptr, REN_DontCreateRedirectors);
+		return NewName.ToString();
 	}
 }
 
 void FAGX_ImportUtilities::Rename(UActorComponent& Component, const FString& Name)
 {
-	Rename(static_cast<UObject&>(Component), Name);
-	FinalizeComponentName(Component);
+	const FString ValidName = CreateName(static_cast<UObject&>(Component), Name);
+	const FString FinalName = GetFinalizedComponentName(Component, ValidName);
+
+	if (FAGX_BlueprintUtilities::IsTemplateComponent(Component))
+	{
+		FAGX_BlueprintUtilities::GetSCSNodeFromComponent(&Component)->SetVariableName(
+			FName(FinalName), true);
+	}
+	else
+	{
+		Component.Rename(*FinalName);
+	}
 }
 
 FLinearColor FAGX_ImportUtilities::SRGBToLinear(const FVector4& SRGB)

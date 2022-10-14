@@ -62,6 +62,14 @@ namespace
 	}
 };
 
+bool FAGX_SimObjectsImporterHelper::UpdateComponent(
+	const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component)
+{
+	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
+	Component.CopyFrom(Barrier);
+	return true;
+}
+
 UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 	const FRigidBodyBarrier& Barrier, AActor& Actor)
 {
@@ -80,8 +88,12 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 			TEXT("Could not create new AGX_RigidBodyComponent"));
 		return nullptr;
 	}
-	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
-	Component->CopyFrom(Barrier);
+
+	if (!UpdateComponent(Barrier, *Component))
+	{
+		return nullptr;
+	}
+
 	Component->SetFlags(RF_Transactional);
 	Actor.AddInstanceComponent(Component);
 
