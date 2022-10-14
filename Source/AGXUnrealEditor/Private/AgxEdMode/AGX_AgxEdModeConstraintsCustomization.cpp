@@ -371,10 +371,12 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateConstraintBrowserListView(
 	Options.bShowTransient = true;
 	Options.bShowCreateNewFolder = false;
 	Options.ColumnMap.Add(FSceneOutlinerBuiltInColumnTypes::Label(), FSceneOutlinerColumnInfo());
-	Options.ColumnMap[FSceneOutlinerBuiltInColumnTypes::Label()].ColumnLabel = FSceneOutlinerBuiltInColumnTypes::Label_Localized();
+	Options.ColumnMap[FSceneOutlinerBuiltInColumnTypes::Label()].ColumnLabel =
+		FSceneOutlinerBuiltInColumnTypes::Label_Localized();
 	Options.ColumnMap.Add(
 		FSceneOutlinerBuiltInColumnTypes::ActorInfo(), FSceneOutlinerColumnInfo());
-	Options.ColumnMap[FSceneOutlinerBuiltInColumnTypes::ActorInfo()].ColumnLabel = FSceneOutlinerBuiltInColumnTypes::ActorInfo_Localized();
+	Options.ColumnMap[FSceneOutlinerBuiltInColumnTypes::ActorInfo()].ColumnLabel =
+		FSceneOutlinerBuiltInColumnTypes::ActorInfo_Localized();
 	Options.CustomDelete = DeleteAction;
 	Options.Filters->Add(ActorFilter);
 
