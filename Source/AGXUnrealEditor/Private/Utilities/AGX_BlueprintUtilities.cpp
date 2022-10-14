@@ -63,7 +63,7 @@ USCS_Node* FAGX_BlueprintUtilities::GetSCSNodeFromComponent(UActorComponent* Com
 	return *ComponentNode;
 }
 
-bool NameExists(UBlueprint& Blueprint, const FString& Name)
+bool FAGX_BlueprintUtilities::NameExists(UBlueprint& Blueprint, const FString& Name)
 {
 	return Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name)) != nullptr;
 }
