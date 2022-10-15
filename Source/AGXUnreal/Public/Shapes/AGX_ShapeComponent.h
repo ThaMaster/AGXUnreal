@@ -175,6 +175,13 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	// ~End UActorComponent interface.
 
+	/*
+	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
+	FGuid ImportGuid;
+
 protected:
 	/**
 	 * Get a pointer to the actual member Barrier object. This will never return nullptr. The

@@ -3,6 +3,7 @@
 #include "AGXSimObjectsReader.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGXBarrierFactories.h"
 #include "RigidBodyBarrier.h"
@@ -179,7 +180,9 @@ namespace
 				continue;
 			}
 
-			OutSimObjects.GetRigidBodies().Add(AGXBarrierFactories::CreateRigidBodyBarrier(Body));
+			FGuid Guid = Convert(Body->getUuid());
+			AGX_CHECK(!OutSimObjects.GetRigidBodies().Contains(Guid));
+			OutSimObjects.GetRigidBodies().Add(Guid, AGXBarrierFactories::CreateRigidBodyBarrier(Body));
 		}
 	}
 

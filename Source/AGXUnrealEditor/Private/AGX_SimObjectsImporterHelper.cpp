@@ -39,6 +39,8 @@
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_PropertyUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 
@@ -66,7 +68,31 @@ bool FAGX_SimObjectsImporterHelper::UpdateComponent(
 	const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component)
 {
 	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
-	Component.CopyFrom(Barrier);
+	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
+
+	AGX_COPY_PROPERTY_FROM_BARRIER(ImportGuid, Barrier.GetGuid, Component)
+	AGX_COPY_PROPERTY_FROM_BARRIER(Mass, MassProperties.GetMass, Component)
+	AGX_COPY_PROPERTY_FROM_BARRIER(bAutoGenerateMass, MassProperties.GetAutoGenerateMass, Component)
+	AGX_COPY_PROPERTY_FROM_BARRIER(
+		bAutoGenerateCenterOfMassOffset, MassProperties.GetAutoGenerateCenterOfMassOffset, Component)
+	AGX_COPY_PROPERTY_FROM_BARRIER(
+		bAutoGeneratePrincipalInertia, MassProperties.GetAutoGeneratePrincipalInertia, Component)
+	AGX_COPY_PROPERTY_FROM_BARRIER(CenterOfMassOffset, Barrier.GetCenterOfMassOffset, Component)
+	AGX_COPY_PROPERTY_FROM_BARRIER(PrincipalInertia, MassProperties.GetPrincipalInertia, Component)
+	AGX_COPY_PROPERTY_FROM_BARRIER(Velocity, Barrier.GetVelocity, Component)
+	AGX_COPY_PROPERTY_FROM_BARRIER(AngularVelocity, Barrier.GetAngularVelocity, Component)
+	AGX_COPY_PROPERTY_FROM_BARRIER(MotionControl, Barrier.GetMotionControl, Component)
+	AGX_COPY_PROPERTY_FROM_BARRIER(bEnabled, Barrier.GetEnabled, Component)
+
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
+			&Component, FTransform(Barrier.GetRotation(), Barrier.GetPosition()), true);
+	}
+	else
+	{
+		Component.SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
+	}
 	return true;
 }
 

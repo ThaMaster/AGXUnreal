@@ -73,3 +73,20 @@ TStruct* FAGX_PropertyUtilities::GetStructFromHandle(
 
 	return PropertyHandle->GetProperty()->ContainerPtrToValuePtr<TStruct>(Owner);
 }
+
+// clang-format off
+#define AGX_COPY_PROPERTY_FROM_BARRIER(UpropertyName, BarrierGetFunc, Component) \
+{ \
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component)) \
+	{ \
+		for (auto* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component)) \
+		{ \
+			if (Instance->UpropertyName == Component.UpropertyName) \
+			{ \
+				Instance->UpropertyName = BarrierGetFunc(); \
+			} \
+		} \
+	} \
+	Component.UpropertyName = BarrierGetFunc(); \
+}
+// clang-format on

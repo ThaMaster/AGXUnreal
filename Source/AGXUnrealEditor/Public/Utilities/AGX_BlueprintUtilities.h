@@ -80,11 +80,6 @@ public:
 	static UBlueprint* GetBlueprintFrom(const UActorComponent& Component);
 
 	/*
-	* Checks whether the component is a template Component.
-	*/
-	static bool IsTemplateComponent(const UActorComponent& Component);
-
-	/*
 	 * Searches through the node tree and returns the first Template Component matching the given
 	 * type.
 	 */

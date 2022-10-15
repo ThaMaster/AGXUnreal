@@ -423,41 +423,6 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	InitializeMotionControl();
 }
 
-void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
-{
-	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
-	Mass = MassProperties.GetMass();
-
-	bAutoGenerateMass = MassProperties.GetAutoGenerateMass();
-	bAutoGenerateCenterOfMassOffset = MassProperties.GetAutoGenerateCenterOfMassOffset();
-	bAutoGeneratePrincipalInertia = MassProperties.GetAutoGeneratePrincipalInertia();
-	CenterOfMassOffset = Barrier.GetCenterOfMassOffset();
-	PrincipalInertia = MassProperties.GetPrincipalInertia();
-	Velocity = Barrier.GetVelocity();
-	AngularVelocity = Barrier.GetAngularVelocity();
-	MotionControl = Barrier.GetMotionControl();
-	bEnabled = Barrier.GetEnabled();
-
-// We want to do this, but it breaks the move widget in Unreal Editor. Static bodies within Actors
-// that have been imported from an AGX Dynamics archive does not move when the Actor is moved.
-// Figure out why and fix it.
-#if 0
-	switch (MotionControl)
-	{
-		case MC_DYNAMICS:
-		case MC_KINEMATICS:
-			SetMobility(EComponentMobility::Movable);
-			break;
-		case MC_STATIC:
-			SetMobility(EComponentMobility::Static);
-			break;
-	}
-#endif
-
-	/// \todo Should it always be SetWorld... here, or should we do SetRelative in some cases?
-	SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
-}
-
 void UAGX_RigidBodyComponent::InitializeMotionControl()
 {
 	NativeBarrier.SetMotionControl(MotionControl);

@@ -3,6 +3,7 @@
 #include "AGX_ImporterToBlueprint.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_ImportEnums.h"
 #include "AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
@@ -47,6 +48,8 @@
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_PropertyUtilities.h"
 
 // Unreal Engine includes.
 #include "ActorFactories/ActorFactoryEmptyActor.h"
@@ -225,8 +228,9 @@ namespace
 		FAGX_SimObjectsImporterHelper& Helper)
 	{
 		bool Success = true;
-		for (const FRigidBodyBarrier& Body : SimObjects.GetRigidBodies())
+		for (const auto& RigidBodyTuple : SimObjects.GetRigidBodies())
 		{
+			const FRigidBodyBarrier& Body = RigidBodyTuple.Value;
 			Success &= Helper.InstantiateBody(Body, ImportedActor) != nullptr;
 
 			for (const auto& Sphere : Body.GetSphereShapes())
@@ -251,7 +255,8 @@ namespace
 
 			for (const auto& Trimesh : Body.GetTrimeshShapes())
 			{
-				if (Helper.ImportSettings.bIgnoreDisabledTrimeshes && !Trimesh.GetEnableCollisions())
+				if (Helper.ImportSettings.bIgnoreDisabledTrimeshes &&
+					!Trimesh.GetEnableCollisions())
 				{
 					if (Trimesh.HasRenderData())
 					{
@@ -627,14 +632,141 @@ UBlueprint* AGX_ImporterToBlueprint::Import(const FAGX_ImportSettings& ImportSet
 
 namespace AGX_ImporterToBlueprint_reimport_helpers
 {
+	struct SCSNodeCollection
+	{
+		SCSNodeCollection(const UBlueprint& Bp)
+		{
+			if (Bp.SimpleConstructionScript == nullptr)
+			{
+				return;
+			}
+
+			TArray<USCS_Node*> Nodes = Bp.SimpleConstructionScript->GetAllNodes();
+			for (int i = 0; i < Nodes.Num(); i++)
+			{
+				USCS_Node* Node = Nodes[i];
+				if (Node == nullptr)
+				{
+					continue;
+				}
+
+				UActorComponent* Component = Node->ComponentTemplate;
+				if (Component == nullptr)
+				{
+					continue;
+				}
+
+				if (Component ==
+					Bp.SimpleConstructionScript->GetDefaultSceneRootNode()->ComponentTemplate)
+				{
+					AGX_CHECK(RootComponent == nullptr);
+					RootComponent = Node;
+				}
+				else if (auto Ri = Cast<UAGX_RigidBodyComponent>(Component))
+				{
+					AGX_CHECK(!RigidBodies.Contains(Ri->ImportGuid));
+					RigidBodies.Add(Ri->ImportGuid, Node);
+				}
+				else if (auto Sh = Cast<UAGX_ShapeComponent>(Component))
+				{
+					AGX_CHECK(!ShapeComponents.Contains(Sh->ImportGuid));
+					ShapeComponents.Add(Sh->ImportGuid, Node);
+				}
+				else if (auto Co = Cast<UAGX_ConstraintComponent>(Component))
+				{
+					AGX_CHECK(!ConstraintComponents.Contains(Co->ImportGuid));
+					ConstraintComponents.Add(Co->ImportGuid, Node);
+				}
+				else if (auto Re = Cast<UAGX_ReImportComponent>(Component))
+				{
+					AGX_CHECK(ReImportComponent == nullptr);
+					ReImportComponent = Node;
+				}
+				else
+				{
+					// We should never encounter a Component type that does not match any of the
+					// above.
+					UE_LOG(
+						LogAGX, Error, TEXT("Found Node: '%s' with unsupported type."),
+						*Node->GetName());
+					AGX_CHECK(false);
+				}
+			}
+		}
+
+		// The key is the AGX Dynamics object's UUID converted to an FGuid at the time of the
+		// previous import.
+		TMap<FGuid, USCS_Node*> RigidBodies;
+		TMap<FGuid, USCS_Node*> ShapeComponents;
+		TMap<FGuid, USCS_Node*> ConstraintComponents;
+		USCS_Node* ReImportComponent = nullptr;
+		USCS_Node* RootComponent = nullptr;
+		// @todo Append rest of the types here...
+	};
+
+	// Returns true if at least one Guid could be matched, false otherwise.
+	bool EnsureSameSource(
+		const SCSNodeCollection& SCSNodes, const FSimulationObjectCollection& SimulationObjects)
+	{
+		for (auto& NodeTuple : SCSNodes.RigidBodies)
+		{
+			if (SimulationObjects.GetRigidBodies().Contains(NodeTuple.Key))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// Removes Components that are not present in the new SimulationObjectCollection, meaning they
+	// were deleted from the source file since the previous import.
+	void RemoveDeletedComponents(
+		UBlueprint& BaseBP, const SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects)
+	{
+		for (auto& NodeTuple : SCSNodes.RigidBodies)
+		{
+			if (!SimulationObjects.GetRigidBodies().Contains(NodeTuple.Key))
+			{
+				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(NodeTuple.Value);
+			}
+		}
+	}
+
 	bool ReImport(UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings)
 	{
+		SCSNodeCollection SCSNodes(BaseBP);
 		FSimulationObjectCollection SimObjects;
 		if (!FAGXSimObjectsReader::ReadAGXArchive(ImportSettings.FilePath, SimObjects))
 		{
 			return false;
 		}
 
+		if (!EnsureSameSource(SCSNodes, SimObjects))
+		{
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+				"Could not match this Blueprint with the selected file. None of the Component "
+				"Guids matched. Please ensure the selected file corresponds to the content of this "
+				"Blueprint.");
+			return false;
+		}
+
+		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects);
+
+		// Update the source file path in the ReImport Component since it may have changed.
+		auto ReImportComponent =
+			FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ReImportComponent>(&BaseBP);
+		check(ReImportComponent);
+		ReImportComponent->FilePath = ImportSettings.FilePath;
+		for (UAGX_ReImportComponent* Instance :
+			 FAGX_ObjectUtilities::GetArchetypeInstances(*ReImportComponent))
+		{
+			Instance->FilePath = ImportSettings.FilePath;
+		}
+
+		// Re-import is completed, we end by Compiling the Blueprint.
+		FKismetEditorUtilities::CompileBlueprint(&BaseBP);
 		return true;
 	}
 }

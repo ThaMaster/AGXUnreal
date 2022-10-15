@@ -201,7 +201,7 @@ namespace
 	// no owner Actor.
 	FString GenerateValidVariableNameTemplateComponent(UActorComponent& Component)
 	{
-		AGX_CHECK(FAGX_BlueprintUtilities::IsTemplateComponent(Component));
+		AGX_CHECK(FAGX_ObjectUtilities::IsTemplateComponent(Component));
 		FString ComponentName =
 			FBlueprintEditorUtils::GetClassNameWithoutSuffix(Component.GetClass());
 
@@ -236,7 +236,7 @@ namespace
 	FString GetFinalizedComponentName(UActorComponent& Component, const FString& WantedName)
 	{
 		if (Component.GetOwner() == nullptr &&
-			!FAGX_BlueprintUtilities::IsTemplateComponent(Component))
+			!FAGX_ObjectUtilities::IsTemplateComponent(Component))
 		{
 			UE_LOG(
 				LogAGX, Warning,
@@ -248,7 +248,7 @@ namespace
 
 		if (!FComponentEditorUtils::IsValidVariableNameString(&Component, WantedName))
 		{
-			if (FAGX_BlueprintUtilities::IsTemplateComponent(Component))
+			if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 			{
 				return GenerateValidVariableNameTemplateComponent(Component);
 			}
@@ -398,7 +398,7 @@ void FAGX_ImportUtilities::Rename(UActorComponent& Component, const FString& Nam
 	const FString ValidName = CreateName(static_cast<UObject&>(Component), Name);
 	const FString FinalName = GetFinalizedComponentName(Component, ValidName);
 
-	if (FAGX_BlueprintUtilities::IsTemplateComponent(Component))
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
 		FAGX_BlueprintUtilities::GetSCSNodeFromComponent(&Component)->SetVariableName(
 			FName(FinalName), true);

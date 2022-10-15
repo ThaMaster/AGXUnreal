@@ -306,16 +306,6 @@ public:
 #endif
 	// ~End UObject interface.
 
-	/**
-	 * Copy direct rigid body properties from the barrier to this component.
-	 *
-	 * This includes things like mass, velocity, and motion control. Does not copy sub-component
-	 * data such as shapes or materials.
-	 *
-	 * @param Barrier The AGX Dynamics RigidBody to copy from.
-	 */
-	void CopyFrom(const FRigidBodyBarrier& Barrier);
-
 	static TArray<UAGX_RigidBodyComponent*> GetFromActor(const AActor* Actor);
 	static UAGX_RigidBodyComponent* GetFirstFromActor(const AActor* Actor);
 
@@ -341,7 +331,15 @@ public:
 	bool TransformRootComponentAllowed() const;
 #endif
 
+	/*
+	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
+	FGuid ImportGuid;
+
 private:
+
 #if WITH_EDITOR
 	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each
 	// and every UPROPERTY in PostEditChangeProperty and PostEditChangeChainProperty.

@@ -242,11 +242,6 @@ UActorComponent* FAGX_BlueprintUtilities::GetTemplateComponentAttachParent(
 	return ParentNode->ComponentTemplate;
 }
 
-bool FAGX_BlueprintUtilities::IsTemplateComponent(const UActorComponent& Component)
-{
-	return Component.HasAnyFlags(RF_ArchetypeObject);
-}
-
 UBlueprint* FAGX_BlueprintUtilities::GetOutermostParent(UBlueprint* Child)
 {
 	if (Child == nullptr)

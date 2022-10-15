@@ -16,12 +16,12 @@ FSimulationObjectCollection::~FSimulationObjectCollection()
 {
 }
 
-TArray<FRigidBodyBarrier>& FSimulationObjectCollection::GetRigidBodies()
+TMap<FGuid, FRigidBodyBarrier>& FSimulationObjectCollection::GetRigidBodies()
 {
 	return RigidBodies;
 }
 
-const TArray<FRigidBodyBarrier>& FSimulationObjectCollection::GetRigidBodies() const
+const TMap<FGuid, FRigidBodyBarrier>& FSimulationObjectCollection::GetRigidBodies() const
 {
 	return RigidBodies;
 }
