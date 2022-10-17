@@ -21,9 +21,11 @@
 		if (Instance != nullptr) \
 		{ \
 			Instance->SetFunc(InVar); \
-			return; \
 		} \
+		else \
+		{ \
 		PropertyName = InVar; \
+		} \
 	} \
 }
 

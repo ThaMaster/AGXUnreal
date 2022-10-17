@@ -5,9 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
-#include "Materials/AGX_ContactMaterialAsset.h"
-#include "Materials/AGX_ContactMaterialBase.h"
-#include "Materials/AGX_ContactMaterialInstance.h"
+#include "Materials/AGX_ContactMaterial.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_ContactMaterialRegistrarComponent"
 
@@ -17,7 +15,7 @@ UAGX_ContactMaterialRegistrarComponent::UAGX_ContactMaterialRegistrarComponent()
 }
 
 void UAGX_ContactMaterialRegistrarComponent::RemoveContactMaterial(
-	UAGX_ContactMaterialBase* ContactMaterial)
+	UAGX_ContactMaterial* ContactMaterial)
 {
 	if (ContactMaterial == nullptr)
 	{
@@ -28,7 +26,7 @@ void UAGX_ContactMaterialRegistrarComponent::RemoveContactMaterial(
 	if (World != nullptr && World->IsGameWorld())
 	{
 		// We assume that the ContactMaterials TArray is filled only with Instances (not Assets).
-		UAGX_ContactMaterialInstance* Instance = ContactMaterial->GetInstance();
+		UAGX_ContactMaterial* Instance = ContactMaterial->GetInstance();
 		if (Instance == nullptr)
 		{
 			return;
@@ -51,7 +49,7 @@ void UAGX_ContactMaterialRegistrarComponent::RemoveContactMaterial(
 }
 
 void UAGX_ContactMaterialRegistrarComponent::AddContactMaterial(
-	UAGX_ContactMaterialBase* ContactMaterial)
+	UAGX_ContactMaterial* ContactMaterial)
 {
 	if (ContactMaterial == nullptr)
 	{
@@ -62,8 +60,7 @@ void UAGX_ContactMaterialRegistrarComponent::AddContactMaterial(
 	if (World != nullptr && World->IsGameWorld())
 	{
 		// We assume that the ContactMaterials TArray is filled only with Instances (not Assets).
-		UAGX_ContactMaterialInstance* Instance =
-			UAGX_ContactMaterialBase::GetOrCreateInstance(*this, ContactMaterial);
+		UAGX_ContactMaterial* Instance = ContactMaterial->GetOrCreateInstance(*this);
 		if (Instance == nullptr)
 		{
 			return;
@@ -78,11 +75,12 @@ void UAGX_ContactMaterialRegistrarComponent::AddContactMaterial(
 	else
 	{
 		// We assume that the ContactMaterials TArray is filled only with Assets (not Instances).
-		if (ContactMaterial->GetAsset() == nullptr)
+		UAGX_ContactMaterial* Asset = ContactMaterial->GetAsset();
+		if (Asset == nullptr)
 		{
 			return;
 		}
-		ContactMaterials.Add(ContactMaterial->GetAsset());
+		ContactMaterials.Add(Asset);
 	}
 }
 
@@ -98,7 +96,7 @@ void UAGX_ContactMaterialRegistrarComponent::BeginPlay()
 	// Note: BeginPlay is called on Component copy as well if the Component is copied during play.
 
 	// Convert all contact material pointers to point to initialized contact material instances.
-	for (UAGX_ContactMaterialBase*& ContactMaterial : ContactMaterials)
+	for (UAGX_ContactMaterial*& ContactMaterial : ContactMaterials)
 	{
 		if (!ContactMaterial)
 		{
@@ -116,9 +114,7 @@ void UAGX_ContactMaterialRegistrarComponent::BeginPlay()
 			continue;
 		}
 
-		UAGX_ContactMaterialInstance* Instance =
-			UAGX_ContactMaterialBase::GetOrCreateInstance(*this, ContactMaterial);
-
+		UAGX_ContactMaterial* Instance = ContactMaterial->GetOrCreateInstance(*this);
 		if (Instance == nullptr)
 		{
 			UE_LOG(
@@ -170,14 +166,14 @@ void UAGX_ContactMaterialRegistrarComponent::ClearAll()
 {
 	if (GetWorld() && GetWorld()->IsGameWorld())
 	{
-		for (UAGX_ContactMaterialBase* ContactMaterial : ContactMaterials)
+		for (UAGX_ContactMaterial* ContactMaterial : ContactMaterials)
 		{
 			if (!ContactMaterial)
 			{
 				continue;
 			}
 
-			if (UAGX_ContactMaterialInstance* Instance = ContactMaterial->GetInstance())
+			if (UAGX_ContactMaterial* Instance = ContactMaterial->GetInstance())
 			{
 				if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(GetWorld()))
 				{

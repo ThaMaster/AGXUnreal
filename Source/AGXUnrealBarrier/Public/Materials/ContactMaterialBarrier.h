@@ -2,9 +2,11 @@
 
 #pragma once
 
-#include <memory>
+// AGX Dynamics for Unreal includes.
+#include "AGX_ContactMaterialEnums.h"
 
-#include "Containers/UnrealString.h"
+// Standard library includes.
+#include <memory>
 
 struct FContactMaterialRef;
 class FShapeMaterialBarrier;
@@ -30,11 +32,11 @@ public:
 		const FShapeMaterialBarrier* Material1, const FShapeMaterialBarrier* Material2);
 	void ReleaseNative();
 
-	void SetFrictionSolveType(int32 SolveType);
-	int32 GetFrictionSolveType() const;
+	void SetFrictionSolveType(EAGX_ContactSolver SolveType);
+	EAGX_ContactSolver GetFrictionSolveType() const;
 
-	void SetFrictionModel(int32 FrictionModel);
-	int32 GetFrictionModel() const;
+	void SetFrictionModel(EAGX_FrictionModel FrictionModel);
+	EAGX_FrictionModel GetFrictionModel() const;
 
 	bool SetNormalForceMagnitude(double NormalForceMagnitude);
 	bool GetNormalForceMagnitude(double& NormalForceMagnitude) const;
@@ -48,18 +50,35 @@ public:
 	void SetSurfaceFrictionEnabled(bool bEnabled);
 	bool GetSurfaceFrictionEnabled() const;
 
+	// Set both primary and secondary friction coefficient.
+	void SetFrictionCoefficient(double Coefficient);
+	void SetPrimaryFrictionCoefficient(double Coefficient);
+	void SetSecondaryFrictionCoefficient(double Coefficient);
 	void SetFrictionCoefficient(
 		double Coefficient, bool bPrimaryDirection, bool bSecondaryDirection);
-	double GetFrictionCoefficient(bool bPrimaryDirection, bool bSecondaryDirection) const;
 
+	double GetFrictionCoefficient() const;
+	double GetPrimaryFrictionCoefficient() const;
+	double GetSecondaryFrictionCoefficient() const;
+
+	// Set both primary and secondary surface Viscosity.
+	void SetSurfaceViscosity(double Viscosity);
+	void SetPrimarySurfaceViscosity(double Viscosity);
+	void SetSecondarySurfaceViscosity(double Viscosity);
 	void SetSurfaceViscosity(double Viscosity, bool bPrimaryDirection, bool bSecondaryDirection);
-	double GetSurfaceViscosity(bool bPrimaryDirection, bool bSecondaryDirection) const;
+
+	double GetSurfaceViscosity() const;
+	double GetPrimarySurfaceViscosity() const;
+	double GetSecondarySurfaceViscosity() const;
 
 	bool SetPrimaryDirection(const FVector& Direction);
 	bool GetPrimaryDirection(FVector& Direction) const;
 
 	bool SetOrientedFrictionModelReferenceFrame(FRigidBodyBarrier* RigidBody);
+	FString GetGetOrientedFrictionModelReferenceFrameBodyName() const;
 
+	void SetAdhesiveForce(double AdhesiveForce) const;
+	void SetAdhesiveOverlap(double AdhesiveOverlap) const;
 	void SetAdhesion(double AdhesiveForce, double AdhesiveOverlap);
 	double GetAdhesiveForce() const;
 	double GetAdhesiveOverlap() const;
@@ -70,12 +89,14 @@ public:
 	void SetSpookDamping(double SpookDamping);
 	double GetSpookDamping() const;
 
+	void SetMinElasticRestLength(double MinElasticRestLength);
+	void SetMaxElasticRestLength(double MaxElasticRestLength);
 	void SetMinMaxElasticRestLength(double MinElasticRestLength, double MaxElasticRestLength);
 	double GetMinElasticRestLength() const;
 	double GetMaxElasticRestLength() const;
 
-	void SetContactReductionMode(int32 ReductionMode);
-	int32 GetContactReductionMode() const;
+	void SetContactReductionMode(EAGX_ContactReductionMode ReductionMode);
+	EAGX_ContactReductionMode GetContactReductionMode() const;
 
 	void SetContactReductionBinResolution(uint8 BinResolution);
 	uint8 GetContactReductionBinResolution() const;

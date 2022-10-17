@@ -9,8 +9,9 @@
 #include "AGX_MotionControl.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RealInterval.h"
-#include "RigidBodyBarrier.h"
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
+#include "Materials/AGX_ContactMaterialEnums.h"
+#include "RigidBodyBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/DoubleInterval.h"
 #include "Vehicle/AGX_TrackEnums.h"
@@ -29,6 +30,7 @@
 // AGX Dynamics includes
 #include "BeginAGXIncludes.h"
 #include <agx/Constraint.h>
+#include <agx/FrictionModel.h>
 #include <agx/Line.h>
 #include <agx/Notify.h>
 #include <agx/RigidBody.h>
@@ -691,6 +693,97 @@ inline agx::Constraint2DOF::DOF Convert(EAGX_Constraint2DOFFreeDOF Dof)
 
 	return Dof == EAGX_Constraint2DOFFreeDOF::FIRST ? agx::Constraint2DOF::FIRST
 													: agx::Constraint2DOF::SECOND;
+}
+
+//
+// Enumerations, Materials.
+//
+
+inline agx::FrictionModel::SolveType Convert(EAGX_ContactSolver ContactSolver)
+{
+	switch (ContactSolver)
+	{
+		case EAGX_ContactSolver::Direct:
+			return agx::FrictionModel::SolveType::DIRECT;
+		case EAGX_ContactSolver::Iterative:
+			return agx::FrictionModel::SolveType::ITERATIVE;
+		case EAGX_ContactSolver::Split:
+			return agx::FrictionModel::SolveType::SPLIT;
+		case EAGX_ContactSolver::DirectAndIterative:
+			return agx::FrictionModel::SolveType::DIRECT_AND_ITERATIVE;
+		case EAGX_ContactSolver::NotDefined:
+			return agx::FrictionModel::SolveType::NOT_DEFINED;
+		default:
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an "
+					 "EAGX_ContactSolver literal with unknown value to "
+					 "an agxModel::FrictionModel::SolveType literal."));
+			return agx::FrictionModel::SolveType::NOT_DEFINED;
+	}
+}
+
+inline EAGX_ContactSolver Convert(agx::FrictionModel::SolveType SolveType)
+{
+	switch (SolveType)
+	{
+		case agx::FrictionModel::SolveType::DIRECT:
+			return EAGX_ContactSolver::Direct;
+		case agx::FrictionModel::SolveType::ITERATIVE:
+			return EAGX_ContactSolver::Iterative;
+		case agx::FrictionModel::SolveType::SPLIT:
+			return EAGX_ContactSolver::Split;
+		case agx::FrictionModel::SolveType::DIRECT_AND_ITERATIVE:
+			return EAGX_ContactSolver::DirectAndIterative;
+		case agx::FrictionModel::SolveType::NOT_DEFINED:
+			return EAGX_ContactSolver::NotDefined;
+		default:
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an "
+					 "EAGX_ContactSolver literal with unknown value to "
+					 "an agxModel::FrictionModel::SolveType literal."));
+			return EAGX_ContactSolver::NotDefined;
+	}
+}
+
+inline agx::ContactMaterial::ContactReductionMode Convert(EAGX_ContactReductionMode Mode)
+{
+	switch (Mode)
+	{
+		case EAGX_ContactReductionMode::None:
+			return agx::ContactMaterial::ContactReductionMode::REDUCE_NONE;
+		case EAGX_ContactReductionMode::Geometry:
+			return agx::ContactMaterial::ContactReductionMode::REDUCE_GEOMETRY;
+		case EAGX_ContactReductionMode::All:
+			return agx::ContactMaterial::ContactReductionMode::REDUCE_ALL;
+		default:
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an EAGX_ContactReductionMode literal "
+					 "with unknown value to an agx::ContactMaterial::ContactReductionMode."))
+			return agx::ContactMaterial::ContactReductionMode::REDUCE_NONE;
+	}
+}
+
+inline EAGX_ContactReductionMode Convert(agx::ContactMaterial::ContactReductionMode Mode)
+{
+	switch (Mode)
+	{
+		case agx::ContactMaterial::REDUCE_NONE:
+			return EAGX_ContactReductionMode::None;
+		case agx::ContactMaterial::ContactReductionMode::REDUCE_GEOMETRY:
+			return EAGX_ContactReductionMode::Geometry;
+		case agx::ContactMaterial::ContactReductionMode::REDUCE_ALL:
+			return EAGX_ContactReductionMode::All;
+		default:
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an "
+					 "agx::ContactMaterial::ContactReductionMode "
+					 "with unknown value to an EAGX_ContactReductionMode."));
+			return EAGX_ContactReductionMode::None;
+	}
 }
 
 //

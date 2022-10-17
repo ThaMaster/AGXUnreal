@@ -94,15 +94,35 @@ enum class EAGX_FrictionModel : uint8
 	 * The given normal force can also be scaled with the contact point depth by setting
 	 * 'Scale Normal Force With Depth' to true.
 	 */
-	 OrientedConstantNormalForceBoxFriction = 7,
+	OrientedConstantNormalForceBoxFriction = 7,
 
 };
 
+inline bool IsConstantNormalForceFrictionModel(EAGX_FrictionModel FrictionModel)
+{
+	return FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction;
+}
+
 inline bool IsOrientedFrictionModel(EAGX_FrictionModel FrictionModel)
 {
-	return
-		FrictionModel == EAGX_FrictionModel::OrientedBoxFriction ||
-		FrictionModel == EAGX_FrictionModel::OrientedScaledBoxFriction ||
-		FrictionModel == EAGX_FrictionModel::OrientedIterativeProjectedConeFriction ||
-		FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction;
+	return FrictionModel == EAGX_FrictionModel::OrientedBoxFriction ||
+		   FrictionModel == EAGX_FrictionModel::OrientedScaledBoxFriction ||
+		   FrictionModel == EAGX_FrictionModel::OrientedIterativeProjectedConeFriction ||
+		   FrictionModel == EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction;
 }
+
+/**
+ * Specifies to what extent contact reduction will be used.
+ */
+UENUM(BlueprintType)
+enum class EAGX_ContactReductionMode : uint8
+{
+	/** No contact reduction enabled. */
+	None,
+
+	/** Reduce contacts between geometries. */
+	Geometry,
+
+	/** Two step reduction: first between geometries, and then between rigid bodies. */
+	All
+};

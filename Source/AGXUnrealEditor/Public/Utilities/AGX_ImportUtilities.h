@@ -13,7 +13,7 @@ class FShapeMaterialBarrier;
 class FTrackBarrier;
 class FTrackPropertiesBarrier;
 class FContactMaterialBarrier;
-class UAGX_ContactMaterialAsset;
+class UAGX_ContactMaterial;
 class UAGX_ShapeMaterial;
 class UAGX_TrackInternalMergeProperties;
 class UAGX_TrackProperties;
@@ -139,7 +139,7 @@ public:
 	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @return The created ContactMaterialAsset.
 	 */
-	static UAGX_ContactMaterialAsset* SaveImportedContactMaterialAsset(
+	static UAGX_ContactMaterial* SaveImportedContactMaterialAsset(
 		const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterial* Material1,
 		UAGX_ShapeMaterial* Material2, const FString& DirectoryName);
 

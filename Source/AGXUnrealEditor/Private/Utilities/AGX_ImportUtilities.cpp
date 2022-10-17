@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "Materials/AGX_ContactMaterialAsset.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
@@ -243,26 +243,26 @@ namespace
 	}
 }
 
-UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
+UAGX_ContactMaterial* FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
 	const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterial* Material1,
 	UAGX_ShapeMaterial* Material2, const FString& DirectoryName)
 {
 	const FString Name = TEXT("CM") + GetName(Material1) + GetName(Material2);
 
-	auto InitAsset = [&](UAGX_ContactMaterialAsset& Asset)
+	auto InitAsset = [&](UAGX_ContactMaterial& Asset)
 	{
-		Asset.CopyFrom(&ContactMaterial);
+		Asset.CopyFrom(ContactMaterial);
 		Asset.Material1 = Material1;
 		Asset.Material2 = Material2;
 	};
 
-	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_ContactMaterialAsset>(
+	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_ContactMaterial>(
 		DirectoryName, Name, TEXT(""), TEXT("ContactMaterial"), InitAsset);
 	if (!WriteAssetToDisk(AtdInfo))
 	{
 		return nullptr;
 	}
-	return Cast<UAGX_ContactMaterialAsset>(AtdInfo.Asset);
+	return Cast<UAGX_ContactMaterial>(AtdInfo.Asset);
 }
 
 UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(

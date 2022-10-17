@@ -20,7 +20,7 @@ class UAGX_CylinderShapeComponent;
 class UAGX_CapsuleShapeComponent;
 class UAGX_TrimeshShapeComponent;
 class UAGX_ShapeMaterial;
-class UAGX_ContactMaterialAsset;
+class UAGX_ContactMaterial;
 class UAGX_HingeConstraintComponent;
 class UAGX_PrismaticConstraintComponent;
 class UAGX_BallConstraintComponent;
@@ -71,7 +71,7 @@ public:
 
 	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
-	UAGX_ContactMaterialAsset* InstantiateContactMaterial(
+	UAGX_ContactMaterial* InstantiateContactMaterial(
 		const FContactMaterialBarrier& Barrier, AActor& Owner);
 
 	UAGX_HingeConstraintComponent* InstantiateHinge(const FHingeBarrier& Barrier, AActor& Owner);

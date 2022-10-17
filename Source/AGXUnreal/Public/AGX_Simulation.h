@@ -18,7 +18,7 @@
 class AAGX_Stepper;
 class AAGX_Terrain;
 class UAGX_ConstraintComponent;
-class UAGX_ContactMaterialInstance;
+class UAGX_ContactMaterial;
 class UAGX_MaterialBase;
 class UAGX_RigidBodyComponent;
 class UAGX_ShapeMaterial;
@@ -71,7 +71,7 @@ public: // Properties.
 
 	UFUNCTION(BlueprintCallable, Category =  "AGX Dynamics")
 	int32 GetNumThreads() const;
-	
+
 	/**
 	 * Step length of the integrator [s].
 	 */
@@ -279,8 +279,8 @@ public: // Member functions.
 	void Remove(UAGX_TireComponent& Tire);
 	void Remove(UAGX_WireComponent& Wire);
 
-	void Register(UAGX_ContactMaterialInstance& Material);
-	void Unregister(UAGX_ContactMaterialInstance& Material);
+	void Register(UAGX_ContactMaterial& Material);
+	void Unregister(UAGX_ContactMaterial& Material);
 
 	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);
 
@@ -372,5 +372,5 @@ private:
 
 	// Record for keeping track of the number of times any Contact Material has been
 	// registered/unregistered. Value is incremented on Register() and decremented on Unregister().
-	TMap<UAGX_ContactMaterialInstance*, int32> ContactMaterials;
+	TMap<UAGX_ContactMaterial*, int32> ContactMaterials;
 };

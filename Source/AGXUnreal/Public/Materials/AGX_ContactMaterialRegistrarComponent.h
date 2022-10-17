@@ -9,8 +9,7 @@
 
 #include "AGX_ContactMaterialRegistrarComponent.generated.h"
 
-class UAGX_ContactMaterialBase;
-class UAGX_ContactMaterialInstance;
+class UAGX_ContactMaterial;
 
 /**
  * Defines which AGX Contact Materials should be used by the owning level.
@@ -29,13 +28,13 @@ public:
 	 * User defined AGX Contact Materials to use in this level.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Contact Material Registrar")
-	TArray<UAGX_ContactMaterialBase*> ContactMaterials;
+	TArray<UAGX_ContactMaterial*> ContactMaterials;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material Registrar")
-	void RemoveContactMaterial(UAGX_ContactMaterialBase* ContactMaterial);
+	void RemoveContactMaterial(UAGX_ContactMaterial* ContactMaterial);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material Registrar")
-	void AddContactMaterial(UAGX_ContactMaterialBase* ContactMaterial);
+	void AddContactMaterial(UAGX_ContactMaterial* ContactMaterial);
 
 	// ~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;

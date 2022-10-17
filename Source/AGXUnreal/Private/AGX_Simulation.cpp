@@ -9,7 +9,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Constraints/AGX_ConstraintComponent.h"
-#include "Materials/AGX_ContactMaterialInstance.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/ShapeBarrier.h"
@@ -284,7 +284,7 @@ void UAGX_Simulation::Remove(UAGX_WireComponent& Wire)
 	AGX_Simulation_helpers::Remove(*this, Wire);
 }
 
-void UAGX_Simulation::Register(UAGX_ContactMaterialInstance& Material)
+void UAGX_Simulation::Register(UAGX_ContactMaterial& Material)
 {
 	EnsureStepperCreated();
 
@@ -326,7 +326,7 @@ void UAGX_Simulation::Register(UAGX_ContactMaterialInstance& Material)
 	}
 }
 
-void UAGX_Simulation::Unregister(UAGX_ContactMaterialInstance& Material)
+void UAGX_Simulation::Unregister(UAGX_ContactMaterial& Material)
 {
 	if (!HasNative())
 	{

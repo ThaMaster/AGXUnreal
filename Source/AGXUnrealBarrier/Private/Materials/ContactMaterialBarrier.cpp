@@ -20,12 +20,7 @@
 
 namespace
 {
-	/// \note Doing conversion with integers instead of the Unreal enums to avoid having to define
-	/// the enums in the AGXUnrealBarrier module, and therefore also having to include
-	/// AGXUnrealBarrier files in AGXUnreal headers, which is good to avoid for future minimal
-	/// distribution to clients.
-
-	agx::FrictionModelRef ConvertFrictionModelToAgx(int32 FrictionModelType)
+	agx::FrictionModelRef ConvertFrictionModelToAgx(EAGX_FrictionModel FrictionModelType)
 	{
 		// Input value refers to EAGX_FrictionModel in AGX_ContactMaterialEnums.h
 
@@ -36,22 +31,22 @@ namespace
 
 		switch (FrictionModelType)
 		{
-			case 0:
+			case EAGX_FrictionModel::NotDefined:
 				return nullptr; // "not defined"
-			case 1:
+			case EAGX_FrictionModel::BoxFriction:
 				return new agx::BoxFrictionModel();
-			case 2:
+			case EAGX_FrictionModel::ScaledBoxFriction:
 				return new agx::ScaleBoxFrictionModel();
-			case 3:
+			case EAGX_FrictionModel::IterativeProjectedConeFriction:
 				return new agx::IterativeProjectedConeFriction();
-			case 4:
+			case EAGX_FrictionModel::OrientedBoxFriction:
 				return new agx::OrientedBoxFrictionModel(nullptr, DefaultPrimaryDir);
-			case 5:
+			case EAGX_FrictionModel::OrientedScaledBoxFriction:
 				return new agx::OrientedScaleBoxFrictionModel(nullptr, DefaultPrimaryDir);
-			case 6:
+			case EAGX_FrictionModel::OrientedIterativeProjectedConeFriction:
 				return new agx::OrientedIterativeProjectedConeFrictionModel(
 					nullptr, DefaultPrimaryDir);
-			case 7:
+			case EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction:
 				return new agx::ConstantNormalForceOrientedBoxFrictionModel(
 					0, nullptr, DefaultPrimaryDir);
 			default:
@@ -60,7 +55,7 @@ namespace
 		}
 	}
 
-	int32 ConvertFrictionModelToUnreal(const agx::FrictionModel* FrictionModel)
+	EAGX_FrictionModel ConvertFrictionModelToUnreal(const agx::FrictionModel* FrictionModel)
 	{
 		// Output value refers to EAGX_FrictionModel in AGX_ContactMaterialEnums.h
 
@@ -70,38 +65,39 @@ namespace
 
 		if (dynamic_cast<const agx::ConstantNormalForceOrientedBoxFrictionModel*>(FrictionModel))
 		{
-			return 7;
+			return EAGX_FrictionModel::OrientedConstantNormalForceBoxFriction;
 		}
 		if (dynamic_cast<const agx::OrientedIterativeProjectedConeFrictionModel*>(FrictionModel))
 		{
-			return 6;
+			return EAGX_FrictionModel::OrientedIterativeProjectedConeFriction;
 		}
 		else if (dynamic_cast<const agx::OrientedScaleBoxFrictionModel*>(FrictionModel))
 		{
-			return 5;
+			return EAGX_FrictionModel::OrientedScaledBoxFriction;
 		}
 		else if (dynamic_cast<const agx::OrientedBoxFrictionModel*>(FrictionModel))
 		{
-			return 4;
+			return EAGX_FrictionModel::OrientedBoxFriction;
 		}
 		else if (dynamic_cast<const agx::IterativeProjectedConeFriction*>(FrictionModel))
 		{
-			return 3;
+			return EAGX_FrictionModel::IterativeProjectedConeFriction;
 		}
 		else if (dynamic_cast<const agx::ScaleBoxFrictionModel*>(FrictionModel))
 		{
-			return 2;
+			return EAGX_FrictionModel::ScaledBoxFriction;
 		}
 		else if (dynamic_cast<const agx::BoxFrictionModel*>(FrictionModel))
 		{
-			return 1;
+			return EAGX_FrictionModel::BoxFriction;
 		}
 		else
 		{
-			return 0; // Zero for "not defined"
+			return EAGX_FrictionModel::NotDefined; // Zero for "not defined"
 		}
 	}
 
+#if 0
 	agx::FrictionModel::SolveType ConvertSolveTypeToAgx(int32 SolveType)
 	{
 		// Input refers to EAGX_ContactSolver in AGX_ContactMaterialEnums.h
@@ -113,7 +109,9 @@ namespace
 		// Output refers to EAGX_ContactSolver in AGX_ContactMaterialEnums.h
 		return static_cast<int32>(SolveType);
 	}
+#endif
 
+#if 0
 	agx::ContactMaterial::ContactReductionMode ConvertReductionModeToAgx(int32 ReductionMode)
 	{
 		// Input refers to EAGX_ContactReductionMode in AGX_ContactMaterialEnums.h
@@ -125,6 +123,7 @@ namespace
 		// Output refers to EAGX_ContactReductionMode in AGX_ContactMaterialEnums.h
 		return static_cast<int32>(ReductionMode);
 	}
+#endif
 
 	agx::ContactMaterial::FrictionDirection ConvertDirectionToAgx(
 		bool bPrimaryDirection, bool bSecondaryDirection)
@@ -203,7 +202,7 @@ void FContactMaterialBarrier::ReleaseNative()
 	NativeRef->Native = nullptr;
 }
 
-void FContactMaterialBarrier::SetFrictionSolveType(int32 SolveType)
+void FContactMaterialBarrier::SetFrictionSolveType(EAGX_ContactSolver SolveType)
 {
 	check(HasNative());
 
@@ -216,24 +215,24 @@ void FContactMaterialBarrier::SetFrictionSolveType(int32 SolveType)
 		NativeRef->Native->setFrictionModel(NativeFrictionModel);
 	}
 
-	NativeFrictionModel->setSolveType(ConvertSolveTypeToAgx(SolveType));
+	NativeFrictionModel->setSolveType(Convert(SolveType));
 }
 
-int32 FContactMaterialBarrier::GetFrictionSolveType() const
+EAGX_ContactSolver FContactMaterialBarrier::GetFrictionSolveType() const
 {
 	check(HasNative());
 
-	if (agx::FrictionModel* NativeFrictionModel = NativeRef->Native->getFrictionModel())
+	if (const agx::FrictionModel* NativeFrictionModel = NativeRef->Native->getFrictionModel())
 	{
-		return ConvertSolveTypeToUnreal(NativeFrictionModel->getSolveType());
+		return Convert(NativeFrictionModel->getSolveType());
 	}
 	else
 	{
-		return ConvertSolveTypeToUnreal(agx::FrictionModel::NOT_DEFINED);
+		return EAGX_ContactSolver::NotDefined;
 	}
 }
 
-void FContactMaterialBarrier::SetFrictionModel(int32 FrictionModel)
+void FContactMaterialBarrier::SetFrictionModel(EAGX_FrictionModel FrictionModel)
 {
 	check(HasNative());
 
@@ -251,7 +250,7 @@ void FContactMaterialBarrier::SetFrictionModel(int32 FrictionModel)
 	NativeRef->Native->setFrictionModel(NativeFrictionModel); // seems friction model can be null
 }
 
-int32 FContactMaterialBarrier::GetFrictionModel() const
+EAGX_FrictionModel FContactMaterialBarrier::GetFrictionModel() const
 {
 	check(HasNative());
 
@@ -361,40 +360,97 @@ bool FContactMaterialBarrier::GetSurfaceFrictionEnabled() const
 	return NativeRef->Native->getSurfaceFrictionEnabled();
 }
 
+void FContactMaterialBarrier::SetFrictionCoefficient(double Coefficient)
+{
+	check(HasNative());
+	NativeRef->Native->setFrictionCoefficient(
+		Coefficient, agx::ContactMaterial::BOTH_PRIMARY_AND_SECONDARY);
+}
+
+void FContactMaterialBarrier::SetPrimaryFrictionCoefficient(double Coefficient)
+{
+	check(HasNative());
+	NativeRef->Native->setFrictionCoefficient(Coefficient, agx::ContactMaterial::PRIMARY_DIRECTION);
+}
+
+void FContactMaterialBarrier::SetSecondaryFrictionCoefficient(double Coefficient)
+{
+	check(HasNative());
+	NativeRef->Native->setFrictionCoefficient(
+		Coefficient, agx::ContactMaterial::SECONDARY_DIRECTION);
+}
+
 void FContactMaterialBarrier::SetFrictionCoefficient(
 	double Coefficient, bool bPrimaryDirection, bool bSecondaryDirection)
 {
 	check(HasNative());
-	agx::ContactMaterial::FrictionDirection NativeDirection =
+	const agx::ContactMaterial::FrictionDirection NativeDirection =
 		ConvertDirectionToAgx(bPrimaryDirection, bSecondaryDirection);
 	NativeRef->Native->setFrictionCoefficient(Coefficient, NativeDirection);
 }
 
-double FContactMaterialBarrier::GetFrictionCoefficient(
-	bool bPrimaryDirection, bool bSecondaryDirection) const
+double FContactMaterialBarrier::GetFrictionCoefficient() const
 {
 	check(HasNative());
-	agx::ContactMaterial::FrictionDirection NativeDirection =
-		ConvertDirectionToAgx(bPrimaryDirection, bSecondaryDirection);
-	return NativeRef->Native->getFrictionCoefficient(NativeDirection);
+	return NativeRef->Native->getFrictionCoefficient();
+}
+
+double FContactMaterialBarrier::GetPrimaryFrictionCoefficient() const
+{
+	check(HasNative());
+	return NativeRef->Native->getFrictionCoefficient(agx::ContactMaterial::PRIMARY_DIRECTION);
+}
+
+double FContactMaterialBarrier::GetSecondaryFrictionCoefficient() const
+{
+	check(HasNative());
+	return NativeRef->Native->getFrictionCoefficient(agx::ContactMaterial::SECONDARY_DIRECTION);
+}
+
+void FContactMaterialBarrier::SetSurfaceViscosity(double Viscosity)
+{
+	check(HasNative());
+	NativeRef->Native->setSurfaceViscosity(
+		Viscosity, agx::ContactMaterial::BOTH_PRIMARY_AND_SECONDARY);
+}
+
+void FContactMaterialBarrier::SetPrimarySurfaceViscosity(double Viscosity)
+{
+	check(HasNative());
+	NativeRef->Native->setSurfaceViscosity(Viscosity, agx::ContactMaterial::PRIMARY_DIRECTION);
+}
+
+void FContactMaterialBarrier::SetSecondarySurfaceViscosity(double Viscosity)
+{
+	check(HasNative());
+	NativeRef->Native->setSurfaceViscosity(Viscosity, agx::ContactMaterial::SECONDARY_DIRECTION);
 }
 
 void FContactMaterialBarrier::SetSurfaceViscosity(
 	double Viscosity, bool bPrimaryDirection, bool bSecondaryDirection)
 {
 	check(HasNative());
-	agx::ContactMaterial::FrictionDirection NativeDirection =
+	const agx::ContactMaterial::FrictionDirection NativeDirection =
 		ConvertDirectionToAgx(bPrimaryDirection, bSecondaryDirection);
 	NativeRef->Native->setSurfaceViscosity(Viscosity, NativeDirection);
 }
 
-double FContactMaterialBarrier::GetSurfaceViscosity(
-	bool bPrimaryDirection, bool bSecondaryDirection) const
+double FContactMaterialBarrier::GetSurfaceViscosity() const
 {
 	check(HasNative());
-	agx::ContactMaterial::FrictionDirection NativeDirection =
-		ConvertDirectionToAgx(bPrimaryDirection, bSecondaryDirection);
-	return NativeRef->Native->getSurfaceViscosity(NativeDirection);
+	return NativeRef->Native->getSurfaceViscosity();
+}
+
+double FContactMaterialBarrier::GetPrimarySurfaceViscosity() const
+{
+	check(HasNative());
+	return NativeRef->Native->getSurfaceViscosity(agx::ContactMaterial::PRIMARY_DIRECTION);
+}
+
+double FContactMaterialBarrier::GetSecondarySurfaceViscosity() const
+{
+	check(HasNative());
+	return NativeRef->Native->getSurfaceViscosity(agx::ContactMaterial::SECONDARY_DIRECTION);
 }
 
 bool FContactMaterialBarrier::SetPrimaryDirection(const FVector& Direction)
@@ -455,7 +511,9 @@ bool FContactMaterialBarrier::GetPrimaryDirection(FVector& Direction) const
 	{
 		DirAGX = OrientedBoxModel->getPrimaryDirection();
 	}
-	else if (auto* OrientedScaleBoxModel = dynamic_cast<agx::OrientedScaleBoxFrictionModel*>(FrictionModel))
+	else if (
+		auto* OrientedScaleBoxModel =
+			dynamic_cast<agx::OrientedScaleBoxFrictionModel*>(FrictionModel))
 	{
 		DirAGX = OrientedScaleBoxModel->getPrimaryDirection();
 	}
@@ -497,7 +555,9 @@ bool FContactMaterialBarrier::SetOrientedFrictionModelReferenceFrame(FRigidBodyB
 	{
 		OrientedBoxModel->setReferenceFrame(Frame);
 	}
-	else if (auto* OrientedScaleBoxModel = dynamic_cast<agx::OrientedScaleBoxFrictionModel*>(FrictionModel))
+	else if (
+		auto* OrientedScaleBoxModel =
+			dynamic_cast<agx::OrientedScaleBoxFrictionModel*>(FrictionModel))
 	{
 		OrientedScaleBoxModel->setReferenceFrame(Frame);
 	}
@@ -525,6 +585,66 @@ bool FContactMaterialBarrier::SetOrientedFrictionModelReferenceFrame(FRigidBodyB
 		return false;
 	}
 	return true;
+}
+
+namespace ContactMaterialBarrier_helpers
+{
+	const agx::Frame* GetReferenceFrame(const agx::FrictionModel* FrictionModel)
+	{
+		if (auto* OrientedBoxModel =
+				dynamic_cast<const agx::OrientedBoxFrictionModel*>(FrictionModel))
+		{
+			return OrientedBoxModel->getReferenceFrame();
+		}
+		else if (
+			auto* OrientedScaleBoxModel =
+				dynamic_cast<const agx::OrientedScaleBoxFrictionModel*>(FrictionModel))
+		{
+			return OrientedScaleBoxModel->getReferenceFrame();
+		}
+		else if (
+			auto* OrientedConeModel =
+				dynamic_cast<const agx::OrientedIterativeProjectedConeFrictionModel*>(
+					FrictionModel))
+		{
+			return OrientedConeModel->getReferenceFrame();
+		}
+		else if (
+			auto* OrientedConstantNormalModel =
+				dynamic_cast<const agx::ConstantNormalForceOrientedBoxFrictionModel*>(
+					FrictionModel))
+		{
+			return OrientedConstantNormalModel->getReferenceFrame();
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
+}
+
+FString FContactMaterialBarrier::GetGetOrientedFrictionModelReferenceFrameBodyName() const
+{
+	using namespace ContactMaterialBarrier_helpers;
+	const agx::FrictionModel* FrictionModel = NativeRef->Native->getFrictionModel();
+	const agx::Frame* Frame = GetReferenceFrame(FrictionModel);
+	const agx::RigidBody* Body = Frame->getRigidBody();
+	return Body != nullptr ? Convert(Body->getName()) : FString();
+}
+
+void FContactMaterialBarrier::SetAdhesiveForce(double AdhesiveForce) const
+{
+	check(HasNative());
+	const double AdhesiveOverlap = NativeRef->Native->getAdhesiveOverlap();
+	NativeRef->Native->setAdhesion(AdhesiveForce, AdhesiveOverlap);
+}
+
+void FContactMaterialBarrier::SetAdhesiveOverlap(double AdhesiveOverlap) const
+{
+	check(HasNative());
+	const double AdhesiveForceAGX = NativeRef->Native->getAdhesion();
+	const agx::Real AdhesiveOverlapAGX = ConvertDistanceToAGX(AdhesiveOverlap);
+	NativeRef->Native->setAdhesion(AdhesiveForceAGX, AdhesiveOverlapAGX);
 }
 
 void FContactMaterialBarrier::SetAdhesion(double AdhesiveForce, double AdhesiveOverlap)
@@ -569,6 +689,21 @@ double FContactMaterialBarrier::GetSpookDamping() const
 	return NativeRef->Native->getDamping();
 }
 
+void FContactMaterialBarrier::SetMinElasticRestLength(double MinElasticRestLength)
+{
+	check(HasNative());
+	const agx::Real MinLengthAGX = ConvertDistanceToAGX(MinElasticRestLength);
+	const agx::Real MaxLengthAGX = NativeRef->Native->getMaxElasticRestLength();
+	NativeRef->Native->setMinMaxElasticRestLength(MinLengthAGX, MaxLengthAGX);
+}
+void FContactMaterialBarrier::SetMaxElasticRestLength(double MaxElasticRestLength)
+{
+	check(HasNative());
+	const agx::Real MinLengthAGX = NativeRef->Native->getMinElasticRestLength();
+	const agx::Real MaxLengthAGX = ConvertDistanceToAGX(MaxElasticRestLength);
+	NativeRef->Native->setMinMaxElasticRestLength(MinLengthAGX, MaxElasticRestLength);
+}
+
 void FContactMaterialBarrier::SetMinMaxElasticRestLength(
 	double MinElasticRestLength, double MaxElasticRestLength)
 {
@@ -591,20 +726,19 @@ double FContactMaterialBarrier::GetMaxElasticRestLength() const
 	return ConvertDistanceToUnreal<double>(NativeRef->Native->getMaxElasticRestLength());
 }
 
-void FContactMaterialBarrier::SetContactReductionMode(int32 ReductionMode)
+void FContactMaterialBarrier::SetContactReductionMode(EAGX_ContactReductionMode ReductionMode)
 {
 	check(HasNative());
-	agx::ContactMaterial::ContactReductionMode NativeMode =
-		ConvertReductionModeToAgx(ReductionMode);
-	NativeRef->Native->setContactReductionMode(NativeMode);
+	agx::ContactMaterial::ContactReductionMode ModeAGX = Convert(ReductionMode);
+	NativeRef->Native->setContactReductionMode(ModeAGX);
 }
 
-int32 FContactMaterialBarrier::GetContactReductionMode() const
+EAGX_ContactReductionMode FContactMaterialBarrier::GetContactReductionMode() const
 {
 	check(HasNative());
-	agx::ContactMaterial::ContactReductionMode NativeMode =
+	agx::ContactMaterial::ContactReductionMode ModeAGX =
 		NativeRef->Native->getContactReductionMode();
-	return ConvertReductionModeToUnreal(NativeMode);
+	return Convert(ModeAGX);
 }
 
 void FContactMaterialBarrier::SetContactReductionBinResolution(uint8 BinResolution)

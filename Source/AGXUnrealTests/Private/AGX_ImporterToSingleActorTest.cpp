@@ -28,7 +28,7 @@ static_assert(false);
 #include "AgxAutomationCommon.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_ConstraintComponent.h"
-#include "Materials/AGX_ContactMaterialBase.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_MaterialBase.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
@@ -2400,8 +2400,8 @@ bool FCheckContactMaterialsImportedCommand::Update()
 
 	Test.TestEqual("Num Contact Materials in Registrar", Registrar->ContactMaterials.Num(), 2);
 
-	UAGX_ContactMaterialBase** Cm1 = Registrar->ContactMaterials.FindByPredicate(
-		[](UAGX_ContactMaterialBase* Cm) { return Cm->GetName() == "CMMat1Mat2"; });
+	UAGX_ContactMaterial** Cm1 = Registrar->ContactMaterials.FindByPredicate(
+		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CMMat1Mat2"; });
 	Test.TestNotNull("Cm1", Cm1);
 	if (Cm1 == nullptr)
 	{
@@ -2434,8 +2434,8 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual(
 		"Cm1 adhesive overlap", (float) (*Cm1)->AdhesiveOverlap, AgxToUnrealDistance(0.16));
 
-	UAGX_ContactMaterialBase** Cm2 = Registrar->ContactMaterials.FindByPredicate(
-		[](UAGX_ContactMaterialBase* Cm) { return Cm->GetName() == "CMMat3Mat4"; });
+	UAGX_ContactMaterial** Cm2 = Registrar->ContactMaterials.FindByPredicate(
+		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CMMat3Mat4"; });
 	Test.TestNotNull("Cm2", Cm2);
 	if (Cm2 == nullptr)
 	{

@@ -4,7 +4,7 @@
 #include "AgxAutomationCommon.h"
 #include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
-#include "Materials/AGX_ContactMaterialAsset.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
 
@@ -210,7 +210,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 #else
 			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("0e6c1159d5b5b0bd0dabdc311a2e361e"), *this);
 #endif
-			UAGX_ContactMaterialAsset* ContactMaterial = LoadMaterialAsset<UAGX_ContactMaterialAsset>(PackagePath, ObjectName);
+			UAGX_ContactMaterial* ContactMaterial = LoadMaterialAsset<UAGX_ContactMaterial>(PackagePath, ObjectName);
 			TestEqual(
 				TEXT("The contact material should have restored friction coefficient"),
 				ContactMaterial->FrictionCoefficient, 1000000.0);

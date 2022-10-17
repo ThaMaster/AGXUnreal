@@ -29,7 +29,7 @@
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Shapes/RenderDataBarrier.h"
-#include "Materials/AGX_ContactMaterialAsset.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
@@ -643,11 +643,11 @@ UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	return Asset;
 }
 
-UAGX_ContactMaterialAsset* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
+UAGX_ContactMaterial* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
 	const FContactMaterialBarrier& Barrier, AActor& Owner)
 {
 	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
-	UAGX_ContactMaterialAsset* Asset = FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
+	UAGX_ContactMaterial* Asset = FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
 		Barrier, Materials.first, Materials.second, DirectoryName);
 
 	UAGX_ContactMaterialRegistrarComponent* CMRegistrar =
