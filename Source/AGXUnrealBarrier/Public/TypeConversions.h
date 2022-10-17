@@ -596,23 +596,17 @@ inline agx::Name Convert(const FName& NameUnreal)
 
 inline uint32 StringTo32BitFnvHash(const FString& StringUnreal)
 {
-	TArray<TCHAR> Bytes = StringUnreal.GetCharArray();
+	TArray<TCHAR> Chars = StringUnreal.GetCharArray();
 
-	if (Bytes.Last() == '\0')
+	if (Chars.Last() == '\0')
 	{
-		Bytes.Pop();
+		Chars.Pop();
 	}
 
 	uint32 Hash = 2166136261U;
-
-	/// \note Bytes is a collection of TCHAR, which is not a single byte, so the naming below is
-	/// misleading. Is this code supposed to work on single bytes?  Do we assume that every TCHAR
-	/// in the string has a 0 upper byte so that the fact that TCHAR is bigger doesn't matter?
-	/// Do we get the same result as other implementations of this algorithm that we want to be
-	/// compatible with, for example in AGX Dynamics for AGX Dynamics for Unity.
-	for (const auto& SingleByte : Bytes)
+	for (const auto& SingleChar : Chars)
 	{
-		Hash ^= SingleByte;
+		Hash ^= SingleChar;
 		Hash *= 16777619U;
 	}
 
