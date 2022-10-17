@@ -7,7 +7,7 @@
 #include "AGX_RealInterval.h"
 #include "Vehicle/TrackPropertiesBarrier.h"
 
-// Unreal Engine include.s
+// Unreal Engine includes.
 #include "UObject/Object.h"
 
 #include "AGX_TrackProperties.generated.h"

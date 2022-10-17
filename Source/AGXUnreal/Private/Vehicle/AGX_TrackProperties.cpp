@@ -6,9 +6,9 @@
 #include "AGX_Check.h"
 #include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_LogCategory.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
 
-#include "AGX_PropertyChangedDispatcher.h"
 
 // Compliance translational.
 
@@ -428,7 +428,7 @@ UAGX_TrackProperties* UAGX_TrackProperties::CreateInstanceFromAsset(
 {
 	check(Source);
 	check(!Source->IsInstance());
-	check(PlayingWorld);
+	check(PlayingWorld != nullptr);
 	check(PlayingWorld->IsGameWorld());
 
 	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
@@ -548,7 +548,7 @@ FTrackPropertiesBarrier* UAGX_TrackProperties::GetOrCreateNative()
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("GetOrCreateNative was called on UAGX_TrackProperties '%s' who's instance is "
-					 "nullptr. Ensure e.g. GetOrCreate Instance is called prior to calling this "
+					 "nullptr. Ensure e.g. GetOrCreateInstance is called prior to calling this "
 					 "function"),
 				*GetName());
 			return nullptr;

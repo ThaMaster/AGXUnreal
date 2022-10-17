@@ -3,6 +3,9 @@
 #pragma once
 
 // Unreal Engine includes.
+#include "AGX_Real.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
