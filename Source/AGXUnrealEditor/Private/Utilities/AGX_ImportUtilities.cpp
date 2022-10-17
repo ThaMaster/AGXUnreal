@@ -196,10 +196,33 @@ namespace
 		return Material->GetName();
 	}
 
+	FString GetUniqueNameForComponentTemplate(const UActorComponent& Component, const FString& WantedName)
+	{
+		AGX_CHECK(FAGX_ObjectUtilities::IsTemplateComponent(Component));
+		FString Name = WantedName;
+		int suffix = 1;
+		UBlueprint* Bp = FAGX_BlueprintUtilities::GetBlueprintFrom(Component);
+		if (Bp == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Unable to get Bluprint from Component '%s'. The final name may not be "
+					 "correct."),
+				*Component.GetName());
+			return Component.GetName() + FGuid::NewGuid().ToString();
+		}
+
+		while (Bp->SimpleConstructionScript->FindSCSNode(FName(Name)) != nullptr)
+		{
+			Name = FString::Printf(TEXT("%s%d"), *WantedName, suffix++);
+		}
+		return Name;
+	}
+
 	// This is to some extent mimicking the behavior of
 	// FComponentEditorUtils::GenerateValidVariableName but works for TemplateComponents which have
 	// no owner Actor.
-	FString GenerateValidVariableNameTemplateComponent(UActorComponent& Component)
+	FString GenerateValidVariableNameTemplateComponent(const UActorComponent& Component)
 	{
 		AGX_CHECK(FAGX_ObjectUtilities::IsTemplateComponent(Component));
 		FString ComponentName =
@@ -395,7 +418,18 @@ FString FAGX_ImportUtilities::CreateName(UObject& Object, const FString& Name)
 
 void FAGX_ImportUtilities::Rename(UActorComponent& Component, const FString& Name)
 {
-	const FString ValidName = CreateName(static_cast<UObject&>(Component), Name);
+	const FString ValidName = [&]()
+	{
+		if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+		{			
+			return GetUniqueNameForComponentTemplate(Component, Name);
+		}
+		else
+		{
+			return CreateName(static_cast<UObject&>(Component), Name);
+		}
+	}();
+	
 	const FString FinalName = GetFinalizedComponentName(Component, ValidName);
 
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))

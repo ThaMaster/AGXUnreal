@@ -632,6 +632,11 @@ UBlueprint* AGX_ImporterToBlueprint::Import(const FAGX_ImportSettings& ImportSet
 
 namespace AGX_ImporterToBlueprint_reimport_helpers
 {
+	FString GetUnsetImportNodeName()
+	{
+		return FString("AGX_Import_Unnamed_") + FGuid::NewGuid().ToString();
+	}
+
 	struct SCSNodeCollection
 	{
 		SCSNodeCollection(const UBlueprint& Bp)
@@ -665,22 +670,35 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 				else if (auto Ri = Cast<UAGX_RigidBodyComponent>(Component))
 				{
 					AGX_CHECK(!RigidBodies.Contains(Ri->ImportGuid));
-					RigidBodies.Add(Ri->ImportGuid, Node);
+					if (Ri->ImportGuid.IsValid())
+						RigidBodies.Add(Ri->ImportGuid, Node);
 				}
 				else if (auto Sh = Cast<UAGX_ShapeComponent>(Component))
 				{
 					AGX_CHECK(!ShapeComponents.Contains(Sh->ImportGuid));
-					ShapeComponents.Add(Sh->ImportGuid, Node);
+					if (Sh->ImportGuid.IsValid())
+						ShapeComponents.Add(Sh->ImportGuid, Node);
 				}
 				else if (auto Co = Cast<UAGX_ConstraintComponent>(Component))
 				{
 					AGX_CHECK(!ConstraintComponents.Contains(Co->ImportGuid));
-					ConstraintComponents.Add(Co->ImportGuid, Node);
+					if (Co->ImportGuid.IsValid())
+						ConstraintComponents.Add(Co->ImportGuid, Node);
 				}
 				else if (auto Re = Cast<UAGX_ReImportComponent>(Component))
 				{
 					AGX_CHECK(ReImportComponent == nullptr);
 					ReImportComponent = Node;
+				}
+				else if (auto St = Cast<UStaticMeshComponent>(Component))
+				{
+					AGX_CHECK(!StaticMeshComponents.Contains(Node));
+					StaticMeshComponents.Add(Node);
+				}
+				else if (auto Cor = Cast<UAGX_ContactMaterialRegistrarComponent>(Component))
+				{
+					AGX_CHECK(ContactMaterialRegistrarComponent == nullptr);
+					ContactMaterialRegistrarComponent = Node;
 				}
 				else
 				{
@@ -699,6 +717,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		TMap<FGuid, USCS_Node*> RigidBodies;
 		TMap<FGuid, USCS_Node*> ShapeComponents;
 		TMap<FGuid, USCS_Node*> ConstraintComponents;
+		TArray<USCS_Node*> StaticMeshComponents;
+		USCS_Node* ContactMaterialRegistrarComponent = nullptr;
 		USCS_Node* ReImportComponent = nullptr;
 		USCS_Node* RootComponent = nullptr;
 		// @todo Append rest of the types here...
@@ -719,18 +739,59 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		return false;
 	}
 
+	void AddOrUpdateAll(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects,
+		const FAGX_ImportSettings& ImportSettings)
+	{
+		FAGX_SimObjectsImporterHelper Helper(ImportSettings);
+
+		for (const auto& BarrierTuple : SimulationObjects.GetRigidBodies())
+		{
+			if (SCSNodes.RigidBodies.Contains(BarrierTuple.Key))
+			{
+				Helper.UpdateComponent(
+					BarrierTuple.Value,
+					*Cast<UAGX_RigidBodyComponent>(
+						SCSNodes.RigidBodies[BarrierTuple.Key]->ComponentTemplate));
+			}
+			else
+			{
+				// This object is new and does not exist in the Blueprint. Add it and then update
+				// it.
+				USCS_Node* NewNode = BaseBP.SimpleConstructionScript->CreateNode(
+					UAGX_RigidBodyComponent::StaticClass(), FName(GetUnsetImportNodeName()));
+				BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
+
+				Helper.UpdateComponent(
+					BarrierTuple.Value, *Cast<UAGX_RigidBodyComponent>(NewNode->ComponentTemplate));
+			}
+		}
+	}
+
 	// Removes Components that are not present in the new SimulationObjectCollection, meaning they
-	// were deleted from the source file since the previous import.
+	// were deleted from the source file since the previous import. The passed SCSNodes will also
+	// be kept up to date, i.e. elements removed from BaseBP will have their corresponding SCS Node
+	// removed from SCSNodes as well.
 	void RemoveDeletedComponents(
-		UBlueprint& BaseBP, const SCSNodeCollection& SCSNodes,
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects)
 	{
-		for (auto& NodeTuple : SCSNodes.RigidBodies)
+		for (auto It = SCSNodes.RigidBodies.CreateIterator(); It; ++It)
 		{
-			if (!SimulationObjects.GetRigidBodies().Contains(NodeTuple.Key))
+			if (!SimulationObjects.GetRigidBodies().Contains(It->Key))
 			{
-				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(NodeTuple.Value);
+				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
+				It.RemoveCurrent();
 			}
+		}
+	}
+
+	void SetUnnamedNameForAll(UBlueprint& BaseBP)
+	{
+		for (USCS_Node* Node : BaseBP.SimpleConstructionScript->GetAllNodes())
+		{
+			Node->SetVariableName(*GetUnsetImportNodeName());
 		}
 	}
 
@@ -746,13 +807,22 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		if (!EnsureSameSource(SCSNodes, SimObjects))
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-				"Could not match this Blueprint with the selected file. None of the Component "
-				"Guids matched. Please ensure the selected file corresponds to the content of this "
+				"Could not match this Blueprint with the selected file. None of the objects "
+				"of the selected file matched those of the original import. Please ensure the "
+				"selected file corresponds to the content of this "
 				"Blueprint.");
 			return false;
 		}
 
 		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects);
+
+		// This overwrites all Node names with temporary names.
+		// We do this since old to-be-removed or to-be-renamed Nodes may "block" the availability of
+		// a certain name (all Node names must be unique) that would otherwise be used for a new
+		// Component name. This would make the result of a ReImport non-deterministic in terms of
+		// Node naming.
+		SetUnnamedNameForAll(BaseBP);
+		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, ImportSettings);
 
 		// Update the source file path in the ReImport Component since it may have changed.
 		auto ReImportComponent =

@@ -64,7 +64,7 @@ namespace
 	}
 };
 
-bool FAGX_SimObjectsImporterHelper::UpdateComponent(
+void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component)
 {
 	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
@@ -93,7 +93,6 @@ bool FAGX_SimObjectsImporterHelper::UpdateComponent(
 	{
 		Component.SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
 	}
-	return true;
 }
 
 UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
@@ -115,11 +114,7 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 		return nullptr;
 	}
 
-	if (!UpdateComponent(Barrier, *Component))
-	{
-		return nullptr;
-	}
-
+	UpdateComponent(Barrier, *Component);
 	Component->SetFlags(RF_Transactional);
 	Actor.AddInstanceComponent(Component);
 

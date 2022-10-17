@@ -257,5 +257,11 @@ UBlueprint* FAGX_BlueprintUtilities::GetOutermostParent(UBlueprint* Child)
 UBlueprint* FAGX_BlueprintUtilities::GetBlueprintFrom(const UActorComponent& Component)
 {
 	using namespace AGX_BlueprintUtilities_helpers;
-	return Cast<UBlueprint>(GetBlueprintGeneratedClass(&Component));
+	UBlueprintGeneratedClass* Bpgc = GetBlueprintGeneratedClass(&Component);
+	if (Bpgc == nullptr || Bpgc->SimpleConstructionScript == nullptr)
+	{
+		return nullptr;
+	}
+
+	return Bpgc->SimpleConstructionScript->GetBlueprint();
 }
