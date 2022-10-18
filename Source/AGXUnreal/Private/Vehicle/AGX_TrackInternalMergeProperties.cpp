@@ -74,6 +74,11 @@ namespace AGX_TrackInternalMergeProperties_helpers
 			   Track->InternalMergeProperties->GetInstance() == This;
 	}
 
+	/*
+	 * This function should be functionally equivalent to the AGX_ASSET_SETTER_IMPL.+ macros in
+	 * AGX_AssetGetterSetterImpl.h, except for the more complicated relationship with the Native
+	 * that this asset type has.
+	 */
 	template <typename PropertyT, typename BarrierSetFuncT, typename ComponentSetFuncT>
 	void AssetSetter(
 		UAGX_TrackInternalMergeProperties* This, PropertyT& Property, PropertyT InValue,
@@ -95,9 +100,11 @@ namespace AGX_TrackInternalMergeProperties_helpers
 			if (This->GetInstance() != nullptr)
 			{
 				(This->GetInstance()->*ComponentSetFunc)(InValue);
-				return;
 			}
-			Property = InValue;
+			else
+			{
+				Property = InValue;
+			}
 		}
 	}
 

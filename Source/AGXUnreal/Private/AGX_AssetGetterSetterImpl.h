@@ -24,7 +24,7 @@
 		} \
 		else \
 		{ \
-		PropertyName = InVar; \
+			PropertyName = InVar; \
 		} \
 	} \
 }
