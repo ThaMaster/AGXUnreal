@@ -660,13 +660,13 @@ double FTrackBarrier::InternalMergeProperties_GetLockToReachMergeConditionCompli
 		->getLockToReachMergeConditionCompliance();
 }
 
-void FTrackBarrier::InternalMergeProperties_SetLockToReachMergeConditionDamping(double Damping)
+void FTrackBarrier::InternalMergeProperties_SetLockToReachMergeConditionSpookDamping(double Damping)
 {
 	check(HasNative());
 	NativeRef->Native->getInternalMergeProperties()->setLockToReachMergeConditionDamping(Damping);
 }
 
-double FTrackBarrier::InternalMergeProperties_GetLockToReachMergeConditionDamping() const
+double FTrackBarrier::InternalMergeProperties_GetLockToReachMergeConditionSpookDamping() const
 {
 	check(HasNative());
 	return NativeRef->Native->getInternalMergeProperties()->getLockToReachMergeConditionDamping();

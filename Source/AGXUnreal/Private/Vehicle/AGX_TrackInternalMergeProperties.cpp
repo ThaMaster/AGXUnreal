@@ -47,7 +47,7 @@ void UAGX_TrackInternalMergeProperties::InitPropertyDispatcher()
 	ADD_DISPATCH(ContactReduction, SetContactReduction);
 	ADD_DISPATCH(bEnableLockToReachMergeCondition, SetLockToReachMergeConditionEnabled);
 	ADD_DISPATCH(LockToReachMergeConditionCompliance, SetLockToReachMergeConditionCompliance);
-	ADD_DISPATCH(LockToReachMergeConditionDamping, SetLockToReachMergeConditionDamping);
+	ADD_DISPATCH(LockToReachMergeConditionSpookDamping, SetLockToReachMergeConditionSpookDamping);
 	ADD_DISPATCH(MaxAngleMergeCondition, SetMaxAngleMergeCondition);
 #undef ADD_DISPATCH
 }
@@ -204,29 +204,29 @@ float UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionCompliance_
 	return static_cast<float>(GetLockToReachMergeConditionCompliance());
 }
 
-void UAGX_TrackInternalMergeProperties::SetLockToReachMergeConditionDamping(double Damping)
+void UAGX_TrackInternalMergeProperties::SetLockToReachMergeConditionSpookDamping(double Damping)
 {
 	AGX_TrackInternalMergeProperties_helpers::AssetSetter(
-		this, LockToReachMergeConditionDamping.GetValue(), Damping,
-		&FTrackBarrier::InternalMergeProperties_SetLockToReachMergeConditionDamping,
-		&UAGX_TrackInternalMergeProperties::SetLockToReachMergeConditionDamping);
+		this, LockToReachMergeConditionSpookDamping.GetValue(), Damping,
+		&FTrackBarrier::InternalMergeProperties_SetLockToReachMergeConditionSpookDamping,
+		&UAGX_TrackInternalMergeProperties::SetLockToReachMergeConditionSpookDamping);
 }
 
-double UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionDamping() const
+double UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionSpookDamping() const
 {
 	return AGX_TrackInternalMergeProperties_helpers::AssetGetter(
-		this, LockToReachMergeConditionDamping,
-		&UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionDamping);
+		this, LockToReachMergeConditionSpookDamping,
+		&UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionSpookDamping);
 }
 
-void UAGX_TrackInternalMergeProperties::SetLockToReachMergeConditionDamping_BP(float Damping)
+void UAGX_TrackInternalMergeProperties::SetLockToReachMergeConditionSpookDamping_BP(float Damping)
 {
-	SetLockToReachMergeConditionDamping(static_cast<double>(Damping));
+	SetLockToReachMergeConditionSpookDamping(static_cast<double>(Damping));
 }
 
-float UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionDamping_BP() const
+float UAGX_TrackInternalMergeProperties::GetLockToReachMergeConditionSpookDamping_BP() const
 {
-	return static_cast<float>(GetLockToReachMergeConditionDamping());
+	return static_cast<float>(GetLockToReachMergeConditionSpookDamping());
 }
 
 void UAGX_TrackInternalMergeProperties::SetMaxAngleMergeCondition(double MaxAngleToMerge)
@@ -272,7 +272,7 @@ void UAGX_TrackInternalMergeProperties::CopyFrom(const UAGX_TrackInternalMergePr
 	COPY_PROPERTY(ContactReduction);
 	COPY_PROPERTY(bEnableLockToReachMergeCondition);
 	COPY_PROPERTY(LockToReachMergeConditionCompliance);
-	COPY_PROPERTY(LockToReachMergeConditionDamping);
+	COPY_PROPERTY(LockToReachMergeConditionSpookDamping);
 	COPY_PROPERTY(MaxAngleMergeCondition);
 #undef COPY_PROPERTY
 }
@@ -292,7 +292,7 @@ void UAGX_TrackInternalMergeProperties::CopyFrom(const FTrackBarrier& Source)
 	bEnableLockToReachMergeCondition =
 		Source.InternalMergeProperties_GetEnableLockToReachMergeCondition();
 	COPY_PROPERTY(LockToReachMergeConditionCompliance);
-	COPY_PROPERTY(LockToReachMergeConditionDamping);
+	COPY_PROPERTY(LockToReachMergeConditionSpookDamping);
 	COPY_PROPERTY(MaxAngleMergeCondition);
 #undef COPY_PROPERTY
 }
@@ -446,8 +446,8 @@ void UAGX_TrackInternalMergeProperties::UpdateNativeProperties(UAGX_TrackCompone
 		bEnableLockToReachMergeCondition);
 	TrackBarrier->InternalMergeProperties_SetLockToReachMergeConditionCompliance(
 		LockToReachMergeConditionCompliance);
-	TrackBarrier->InternalMergeProperties_SetLockToReachMergeConditionDamping(
-		LockToReachMergeConditionDamping);
+	TrackBarrier->InternalMergeProperties_SetLockToReachMergeConditionSpookDamping(
+		LockToReachMergeConditionSpookDamping);
 	TrackBarrier->InternalMergeProperties_SetMaxAngleMergeCondition(MaxAngleMergeCondition);
 }
 

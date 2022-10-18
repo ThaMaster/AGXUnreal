@@ -131,21 +131,21 @@ public:
 		Meta =
 			(EditCondition = "bMergeEnabled && bLockToReachMergeConditionEnabled",
 			 ClampMin = "0.0"))
-	FAGX_Real LockToReachMergeConditionDamping {3.0 / 60.0};
+	FAGX_Real LockToReachMergeConditionSpookDamping {3.0 / 60.0};
 
-	void SetLockToReachMergeConditionDamping(double Damping);
+	void SetLockToReachMergeConditionSpookDamping(double Damping);
 
-	double GetLockToReachMergeConditionDamping() const;
-
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Internal Merge Properties",
-		Meta = (DisplayName = "Set Lock To Reach Merge Condition Damping"))
-	void SetLockToReachMergeConditionDamping_BP(float Damping);
+	double GetLockToReachMergeConditionSpookDamping() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Track Internal Merge Properties",
-		Meta = (DislayName = "Get Lock To Reach Merge Condition Damping"))
-	float GetLockToReachMergeConditionDamping_BP() const;
+		Meta = (DisplayName = "Set Lock To Reach Merge Condition Spook Damping"))
+	void SetLockToReachMergeConditionSpookDamping_BP(float Damping);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Internal Merge Properties",
+		Meta = (DislayName = "Get Lock To Reach Merge Condition Spook Damping"))
+	float GetLockToReachMergeConditionSpookDamping_BP() const;
 
 	/**
 	 * Maximum angle to trigger merge between nodes. [degrees]
