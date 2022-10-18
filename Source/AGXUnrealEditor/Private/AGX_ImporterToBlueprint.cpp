@@ -228,9 +228,8 @@ namespace
 		FAGX_SimObjectsImporterHelper& Helper)
 	{
 		bool Success = true;
-		for (const auto& RigidBodyTuple : SimObjects.GetRigidBodies())
+		for (const auto& Body : SimObjects.GetRigidBodies())
 		{
-			const FRigidBodyBarrier& Body = RigidBodyTuple.Value;
 			Success &= Helper.InstantiateBody(Body, ImportedActor) != nullptr;
 
 			for (const auto& Sphere : Body.GetSphereShapes())
@@ -637,6 +636,99 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		return FString("AGX_Import_Unnamed_") + FGuid::NewGuid().ToString();
 	}
 
+	template <typename T>
+	TArray<FGuid> GetGuids(const TArray<T>& Barriers)
+	{
+		TArray<FGuid> Guids;
+		Guids.Reserve(Barriers.Num());
+		for (const auto& Barrier : Barriers)
+		{
+			Guids.Add(Barrier.GetGuid());
+		}
+
+		return Guids;
+	}
+
+	FGuid GetNearestShapeOrRigidBodyParent(USCS_Node* Node, const UBlueprint& Blueprint)
+	{
+		if (Blueprint.SimpleConstructionScript == nullptr)
+		{
+			return FGuid();
+		}
+
+		while (USCS_Node* Parent = Blueprint.SimpleConstructionScript->FindParentNode(Node))
+		{
+			if (auto Rb = Cast<UAGX_RigidBodyComponent>(Parent->ComponentTemplate))
+			{
+				return Rb->ImportGuid;
+			}
+			else if (auto Sh = Cast<UAGX_ShapeComponent>(Parent->ComponentTemplate))
+			{
+				return Sh->ImportGuid;
+			}
+
+			Node = Parent;
+		}
+
+		return FGuid();
+	}
+
+	// Returns the Guid of all Shapes in a FSimulationObjectCollection including those
+	// owned by a Rigid Body.
+	TArray<FGuid> GetAllShapeGuids(const FSimulationObjectCollection& SimulationObjects)
+	{
+		TArray<FGuid> Guids;
+
+		// Collect all Guids of Shapes owned by a Rigid Body.
+		for (const auto& Body : SimulationObjects.GetRigidBodies())
+		{
+			for (const auto& Shape : Body.GetSphereShapes())
+			{
+				Guids.Add(Shape.GetShapeGuid());
+			}
+			for (const auto& Shape : Body.GetBoxShapes())
+			{
+				Guids.Add(Shape.GetShapeGuid());
+			}
+			for (const auto& Shape : Body.GetCylinderShapes())
+			{
+				Guids.Add(Shape.GetShapeGuid());
+			}
+			for (const auto& Shape : Body.GetCapsuleShapes())
+			{
+				Guids.Add(Shape.GetShapeGuid());
+			}
+			for (const auto& Shape : Body.GetTrimeshShapes())
+			{
+				Guids.Add(Shape.GetShapeGuid());
+			}
+		}
+
+		// Collect all Guids of "free" Shapes, not owned by a Rigid Body.
+		for (const auto& Barrier : SimulationObjects.GetSphereShapes())
+		{
+			Guids.Add(Barrier.GetShapeGuid());
+		}
+		for (const auto& Barrier : SimulationObjects.GetBoxShapes())
+		{
+			Guids.Add(Barrier.GetShapeGuid());
+		}
+		for (const auto& Barrier : SimulationObjects.GetCylinderShapes())
+		{
+			Guids.Add(Barrier.GetShapeGuid());
+		}
+		for (const auto& Barrier : SimulationObjects.GetCapsuleShapes())
+		{
+			Guids.Add(Barrier.GetShapeGuid());
+		}
+		for (const auto& Barrier : SimulationObjects.GetTrimeshShapes())
+		{
+			Guids.Add(Barrier.GetShapeGuid());
+		}
+
+		return Guids;
+	}
+
 	struct SCSNodeCollection
 	{
 		SCSNodeCollection(const UBlueprint& Bp)
@@ -692,8 +784,9 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 				}
 				else if (auto St = Cast<UStaticMeshComponent>(Component))
 				{
-					AGX_CHECK(!StaticMeshComponents.Contains(Node));
-					StaticMeshComponents.Add(Node);
+					FGuid RigidBodyOrShapeParentGuid = GetNearestShapeOrRigidBodyParent(Node, Bp);
+					AGX_CHECK(!StaticMeshComponents.Contains(RigidBodyOrShapeParentGuid));
+					StaticMeshComponents.Add(RigidBodyOrShapeParentGuid, Node);
 				}
 				else if (auto Cor = Cast<UAGX_ContactMaterialRegistrarComponent>(Component))
 				{
@@ -717,7 +810,11 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		TMap<FGuid, USCS_Node*> RigidBodies;
 		TMap<FGuid, USCS_Node*> ShapeComponents;
 		TMap<FGuid, USCS_Node*> ConstraintComponents;
-		TArray<USCS_Node*> StaticMeshComponents;
+
+		// Key here is the closest parent of type Trimesh Shape Component or Rigid Body Component.
+		// We do this since a Static Mesh Component does not have an Import Guid.
+		TMap<FGuid, USCS_Node*> StaticMeshComponents;
+
 		USCS_Node* ContactMaterialRegistrarComponent = nullptr;
 		USCS_Node* ReImportComponent = nullptr;
 		USCS_Node* RootComponent = nullptr;
@@ -730,7 +827,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	{
 		for (auto& NodeTuple : SCSNodes.RigidBodies)
 		{
-			if (SimulationObjects.GetRigidBodies().Contains(NodeTuple.Key))
+			if (GetGuids(SimulationObjects.GetRigidBodies()).Contains(NodeTuple.Key))
 			{
 				return true;
 			}
@@ -746,14 +843,14 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	{
 		FAGX_SimObjectsImporterHelper Helper(ImportSettings);
 
-		for (const auto& BarrierTuple : SimulationObjects.GetRigidBodies())
+		for (const auto& Barrier : SimulationObjects.GetRigidBodies())
 		{
-			if (SCSNodes.RigidBodies.Contains(BarrierTuple.Key))
+			const FGuid Guid = Barrier.GetGuid();
+			if (SCSNodes.RigidBodies.Contains(Guid))
 			{
 				Helper.UpdateComponent(
-					BarrierTuple.Value,
-					*Cast<UAGX_RigidBodyComponent>(
-						SCSNodes.RigidBodies[BarrierTuple.Key]->ComponentTemplate));
+					Barrier,
+					*Cast<UAGX_RigidBodyComponent>(SCSNodes.RigidBodies[Guid]->ComponentTemplate));
 			}
 			else
 			{
@@ -764,7 +861,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 				BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
 
 				Helper.UpdateComponent(
-					BarrierTuple.Value, *Cast<UAGX_RigidBodyComponent>(NewNode->ComponentTemplate));
+					Barrier, *Cast<UAGX_RigidBodyComponent>(NewNode->ComponentTemplate));
 			}
 		}
 	}
@@ -779,7 +876,19 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	{
 		for (auto It = SCSNodes.RigidBodies.CreateIterator(); It; ++It)
 		{
-			if (!SimulationObjects.GetRigidBodies().Contains(It->Key))
+			if (!GetGuids(SimulationObjects.GetRigidBodies()).Contains(It->Key))
+			{
+				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
+				It.RemoveCurrent();
+			}
+		}
+
+		// todo : we should remove trimsh + static mesh component for collision triangles if ignore 
+		// Disabled trimesh is used in import settings!!! Must be done before merge.
+		for (auto It = SCSNodes.StaticMeshComponents.CreateIterator(); It; ++It)
+		{
+			if (!(GetGuids(SimulationObjects.GetRigidBodies()).Contains(It->Key) ||
+				  GetAllShapeGuids(SimulationObjects).Contains(It->Key)))
 			{
 				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
 				It.RemoveCurrent();

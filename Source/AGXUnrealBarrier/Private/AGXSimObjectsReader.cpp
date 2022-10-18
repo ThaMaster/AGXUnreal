@@ -180,9 +180,7 @@ namespace
 				continue;
 			}
 
-			FGuid Guid = Convert(Body->getUuid());
-			AGX_CHECK(!OutSimObjects.GetRigidBodies().Contains(Guid));
-			OutSimObjects.GetRigidBodies().Add(Guid, AGXBarrierFactories::CreateRigidBodyBarrier(Body));
+			OutSimObjects.GetRigidBodies().Add(AGXBarrierFactories::CreateRigidBodyBarrier(Body));
 		}
 	}
 

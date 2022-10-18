@@ -41,8 +41,8 @@ public:
 		FTransform Transform;
 	};
 
-	TMap<FGuid, FRigidBodyBarrier>& GetRigidBodies();
-	const TMap<FGuid, FRigidBodyBarrier>& GetRigidBodies() const;
+	TArray<FRigidBodyBarrier>& GetRigidBodies();
+	const TArray<FRigidBodyBarrier>& GetRigidBodies() const;
 
 	TArray<FSphereShapeBarrier>& GetSphereShapes();
 	const TArray<FSphereShapeBarrier>& GetSphereShapes() const;
@@ -117,7 +117,7 @@ private:
 	TArray<FDistanceJointBarrier> DistanceConstraints;
 	TArray<FLockJointBarrier> LockConstraints;
 
-	TMap<FGuid, FRigidBodyBarrier> RigidBodies;
+	TArray<FRigidBodyBarrier> RigidBodies;
 	TArray<FContactMaterialBarrier> ContactMaterials;
 	TArray<std::pair<FString, FString>> DisabledCollisionGroups;
 	TArray<ObserverFrameData> ObserverFrames;
