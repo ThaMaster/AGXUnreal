@@ -730,6 +730,8 @@ void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 		return;
 	}
 
+	const UWorld& World = *GetWorld();
+
 	// \todo If InternalMergeProperties was switched out or set to None during Play, unregister this
 	//       track from the previously set InternalMergePropertiesInstance. It is not strictly
 	//       required though because UAGX_TrackInternalMergeProperties checks if registered target
@@ -750,7 +752,7 @@ void UAGX_TrackComponent::WriteInternalMergePropertiesToNative()
 		// Create instance if necessary.
 		UAGX_TrackInternalMergeProperties* InternalMergePropertiesInstance =
 			static_cast<UAGX_TrackInternalMergeProperties*>(
-				InternalMergeProperties->GetOrCreateInstance(GetWorld()));
+				InternalMergeProperties->GetOrCreateInstance(World));
 		check(InternalMergePropertiesInstance);
 
 		// Replace asset reference with instance reference.

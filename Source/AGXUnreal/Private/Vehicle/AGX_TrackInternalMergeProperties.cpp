@@ -261,17 +261,12 @@ float UAGX_TrackInternalMergeProperties::GetMaxAngleMergeCondition_BP() const
 	return static_cast<float>(GetMaxAngleMergeCondition());
 }
 
-void UAGX_TrackInternalMergeProperties::CopyFrom(const UAGX_TrackInternalMergeProperties* Source)
+void UAGX_TrackInternalMergeProperties::CopyFrom(const UAGX_TrackInternalMergeProperties& Source)
 {
-	if (Source == nullptr)
-	{
-		return;
-	}
-
 #ifdef COPY_PROPERTY
 #error "COPY_PROPERTY already defined. Chose another name here."
 #endif
-#define COPY_PROPERTY(Name) Name = Source->Name
+#define COPY_PROPERTY(Name) Name = Source.Name
 	/// \todo Is there a way to make this in a more implicit way? Easy to forget these when
 	/// adding properties.
 	COPY_PROPERTY(bEnableMerge);
@@ -321,21 +316,19 @@ void UAGX_TrackInternalMergeProperties::CommitToAsset()
 }
 
 UAGX_TrackInternalMergeProperties* UAGX_TrackInternalMergeProperties::CreateInstanceFromAsset(
-	const UWorld* PlayingWorld, UAGX_TrackInternalMergeProperties* Source)
+	const UWorld& PlayingWorld, UAGX_TrackInternalMergeProperties& Source)
 {
-	check(Source);
-	check(!Source->IsInstance());
-	check(PlayingWorld);
-	check(PlayingWorld->IsGameWorld());
+	check(!Source.IsInstance());
+	check(PlayingWorld.IsGameWorld());
 
-	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
+	UObject* Outer = UAGX_Simulation::GetFrom(&PlayingWorld);
 	check(Outer);
 
-	const FString InstanceName = Source->GetName() + "_Instance";
+	const FString InstanceName = Source.GetName() + "_Instance";
 
 	UAGX_TrackInternalMergeProperties* NewInstance = NewObject<UAGX_TrackInternalMergeProperties>(
 		Outer, UAGX_TrackInternalMergeProperties::StaticClass(), *InstanceName, RF_Transient);
-	NewInstance->Asset = Source;
+	NewInstance->Asset = &Source;
 	NewInstance->CopyFrom(Source);
 
 	return NewInstance;
@@ -366,7 +359,7 @@ const UAGX_TrackInternalMergeProperties* UAGX_TrackInternalMergeProperties::GetI
 }
 
 UAGX_TrackInternalMergeProperties* UAGX_TrackInternalMergeProperties::GetOrCreateInstance(
-	const UWorld* PlayingWorld)
+	const UWorld& PlayingWorld)
 {
 	if (IsInstance())
 	{
@@ -375,10 +368,10 @@ UAGX_TrackInternalMergeProperties* UAGX_TrackInternalMergeProperties::GetOrCreat
 	else
 	{
 		UAGX_TrackInternalMergeProperties* InstancePtr = Instance.Get();
-		if (InstancePtr == nullptr && PlayingWorld && PlayingWorld->IsGameWorld())
+		if (InstancePtr == nullptr && PlayingWorld.IsGameWorld())
 		{
 			InstancePtr =
-				UAGX_TrackInternalMergeProperties::CreateInstanceFromAsset(PlayingWorld, this);
+				UAGX_TrackInternalMergeProperties::CreateInstanceFromAsset(PlayingWorld, *this);
 			Instance = InstancePtr;
 		}
 

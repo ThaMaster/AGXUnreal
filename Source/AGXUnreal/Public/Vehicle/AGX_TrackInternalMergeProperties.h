@@ -174,14 +174,14 @@ public:
 public:
 	UAGX_TrackInternalMergeProperties() = default;
 	void CommitToAsset();
-	void CopyFrom(const UAGX_TrackInternalMergeProperties* Source);
+	void CopyFrom(const UAGX_TrackInternalMergeProperties& Source);
 	void CopyFrom(const FTrackBarrier& Source);
 	static UAGX_TrackInternalMergeProperties* CreateInstanceFromAsset(
-		const UWorld* PlayingWorld, UAGX_TrackInternalMergeProperties* Source);
+		const UWorld& PlayingWorld, UAGX_TrackInternalMergeProperties& Source);
 
 	UAGX_TrackInternalMergeProperties* GetInstance();
 	const UAGX_TrackInternalMergeProperties* GetInstance() const;
-	UAGX_TrackInternalMergeProperties* GetOrCreateInstance(const UWorld* PlayingWorld);
+	UAGX_TrackInternalMergeProperties* GetOrCreateInstance(const UWorld& PlayingWorld);
 
 	UAGX_TrackInternalMergeProperties* GetAsset();
 	bool IsInstance() const;
