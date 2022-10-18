@@ -378,6 +378,12 @@ FAGX_TrackComponentVisualizer::~FAGX_TrackComponentVisualizer()
 		delete MassCenterMaterialProxy;
 		MassCenterMaterialProxy = nullptr;
 	}
+
+	for (auto& entry : CollisionBoxMaterialProxies)
+	{
+		delete entry.Value;
+		entry.Value = nullptr;
+	}
 }
 
 void FAGX_TrackComponentVisualizer::DrawVisualization(
