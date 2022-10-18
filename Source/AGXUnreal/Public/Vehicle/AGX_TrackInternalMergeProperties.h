@@ -173,7 +173,6 @@ public:
 
 public:
 	UAGX_TrackInternalMergeProperties() = default;
-	virtual ~UAGX_TrackInternalMergeProperties() = default;
 	void CommitToAsset();
 	void CopyFrom(const UAGX_TrackInternalMergeProperties* Source);
 	void CopyFrom(const FTrackBarrier& Source);
