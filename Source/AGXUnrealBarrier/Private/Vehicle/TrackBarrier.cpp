@@ -274,7 +274,8 @@ double FTrackBarrier::GetWidth() const
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("GetWidth was called on Track: '%s' that does not have a TrackRoute. The value "
-				 "returned will not be valid."), *GetName());
+				 "returned will not be valid."),
+			*GetName());
 		return -1.0;
 	}
 
@@ -305,9 +306,8 @@ double FTrackBarrier::GetInitialDistanceTension() const
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT(
-				"GetInitialDistanceTension was called on Track: '%s' that does not have a TrackRoute. The value "
-				 "returned will not be valid."),
+			TEXT("GetInitialDistanceTension was called on Track: '%s' that does not have a "
+				 "TrackRoute. The value returned will not be valid."),
 			*GetName());
 		return -1.0;
 	}
@@ -620,14 +620,17 @@ uint32 FTrackBarrier::InternalMergeProperties_GetNumNodesPerMergeSegment() const
 	return NativeRef->Native->getInternalMergeProperties()->getNumNodesPerMergeSegment();
 }
 
-void FTrackBarrier::InternalMergeProperties_SetContactReduction(EAGX_MergedTrackNodeContactReduction ContactReductionLevel)
+void FTrackBarrier::InternalMergeProperties_SetContactReduction(
+	EAGX_MergedTrackNodeContactReduction ContactReductionLevel)
 {
 	check(HasNative());
-	agxVehicle::TrackInternalMergeProperties::ContactReduction LevelAGX = Convert(ContactReductionLevel);
+	agxVehicle::TrackInternalMergeProperties::ContactReduction LevelAGX =
+		Convert(ContactReductionLevel);
 	NativeRef->Native->getInternalMergeProperties()->setContactReduction(LevelAGX);
 }
 
-EAGX_MergedTrackNodeContactReduction FTrackBarrier::InternalMergeProperties_GetContactReduction() const
+EAGX_MergedTrackNodeContactReduction FTrackBarrier::InternalMergeProperties_GetContactReduction()
+	const
 {
 	check(HasNative());
 	return Convert(NativeRef->Native->getInternalMergeProperties()->getContactReduction());

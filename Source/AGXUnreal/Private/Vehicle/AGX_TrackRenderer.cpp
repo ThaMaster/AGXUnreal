@@ -236,7 +236,8 @@ void UAGX_TrackRenderer::RebindToTrackPreviewNeedsUpdateEvent(bool bSynchronizeI
 		// needs an update.
 		TWeakObjectPtr<ThisClass> SelfWeakPtr(this);
 		Track->GetTrackPreviewNeedsUpdateEvent().AddLambda(
-			[SelfWeakPtr](UAGX_TrackComponent* Source) {
+			[SelfWeakPtr](UAGX_TrackComponent* Source)
+			{
 				if (ThisClass* SelfPtr = SelfWeakPtr.Get())
 				{
 					// Make sure target track fired the event. Normally the if-condition shouldn't

@@ -14,7 +14,6 @@
 class UAGX_TrackComponent;
 class FTrackBarrier;
 
-
 /**
  * Renderers all track nodes as instanced meshes using the same Static Mesh source.
  */
@@ -24,14 +23,14 @@ class AGXUNREAL_API UAGX_TrackRenderer : public UHierarchicalInstancedStaticMesh
 	GENERATED_BODY()
 
 public:
-
 	UAGX_TrackRenderer();
 
 	/**
 	 * Local Scale to apply to the Static Mesh before synchronizing its position and rotation
 	 * with a track node. Scale is relative to the original mesh size, not to the track node.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMesh,
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = StaticMesh,
 		Meta = (EditCondition = "!bAutoScaleAndOffset"))
 	FVector Scale;
 
@@ -39,7 +38,8 @@ public:
 	 * Local Translation to apply to the Static Mesh before synchronizing its position and
 	 * rotation with a track node. Applied after Scale.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMesh,
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = StaticMesh,
 		Meta = (EditCondition = "!bAutoScaleAndOffset"))
 	FVector Offset;
 
@@ -59,18 +59,24 @@ public:
 	 * appear outside of the physical track node, then set this value to not cover those parts,
 	 * i.e. a bit smaller than the local bounding box (spanning all vertices).
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMesh, Meta = (EditCondition = "bAutoScaleAndOffset"))
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = StaticMesh,
+		Meta = (EditCondition = "bAutoScaleAndOffset"))
 	FVector LocalMeshBoundsMax;
 
 	/**
 	 * The min-point of the axis-aligned local box volume which should be fitted to the
 	 * physical track node box when auto-computing mesh scale and offset.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMesh, Meta = (EditCondition = "bAutoScaleAndOffset"))
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = StaticMesh,
+		Meta = (EditCondition = "bAutoScaleAndOffset"))
 	FVector LocalMeshBoundsMin;
 
 	//~ Begin UActorComponent Interface
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(
+		float DeltaTime, ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction) override;
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	//~ End UActorComponent Interface
 
@@ -96,7 +102,6 @@ public:
 	void SynchronizeVisuals();
 
 private:
-
 	TArray<FTransform> NodeTransformsCache;
 
 	void SetInstanceCount(int32 Count);
@@ -105,5 +110,4 @@ private:
 
 	bool ComputeVisualScaleAndOffset(
 		FVector& OutVisualScale, FVector& OutVisualOffset, const FVector& PhysicsNodeSize) const;
-
 };

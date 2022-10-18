@@ -9,7 +9,6 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
 
-
 // Compliance translational.
 
 void UAGX_TrackProperties::SetHingeComplianceTranslational(double X, double Y, double Z)
