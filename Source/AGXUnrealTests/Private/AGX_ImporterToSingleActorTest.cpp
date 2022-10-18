@@ -3098,7 +3098,7 @@ bool FCheckTrackImportedCommand::Update()
 		Test.TestEqual(
 			"Internal Merge Properties Name", Track->InternalMergeProperties->GetName(),
 			FString("AGX_TIMP_") + TrackName);
-		Test.TestEqual("Enable Merge", Track->InternalMergeProperties->bMergeEnabled, true);
+		Test.TestEqual("Enable Merge", Track->InternalMergeProperties->bEnableMerge, true);
 		Test.TestEqual(
 			"Num Nodes Per Merge Segment", Track->InternalMergeProperties->NumNodesPerMergeSegment,
 			3);
@@ -3107,7 +3107,7 @@ bool FCheckTrackImportedCommand::Update()
 			EAGX_MergedTrackNodeContactReduction::Moderate);
 		Test.TestEqual(
 			"Enable Lock to Reach Merge Condition",
-			Track->InternalMergeProperties->bLockToReachMergeConditionEnabled, true);
+			Track->InternalMergeProperties->bEnableLockToReachMergeCondition, true);
 		Test.TestEqual(
 			"Lock to Reach Merge Condition Compliance",
 			Track->InternalMergeProperties->LockToReachMergeConditionCompliance, 1e-11);
