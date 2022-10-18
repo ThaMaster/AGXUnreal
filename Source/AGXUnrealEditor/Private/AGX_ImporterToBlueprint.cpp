@@ -418,6 +418,7 @@ namespace
 		Success &= AddObserverFrames(ImportedActor, SimObjects, Helper);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Import"));
+		Helper.InstantiateReImportComponent(ImportedActor);
 		Helper.FinalizeImport(ImportedActor);
 
 		ImportTask.EnterProgressFrame(40.f, FText::FromString("Import complete"));
@@ -864,6 +865,23 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 					Barrier, *Cast<UAGX_RigidBodyComponent>(NewNode->ComponentTemplate));
 			}
 		}
+
+		// Re-import Component.
+		{
+			if (SCSNodes.ReImportComponent == nullptr)
+			{
+				USCS_Node* NewNode = BaseBP.SimpleConstructionScript->CreateNode(
+					UAGX_ReImportComponent::StaticClass(), FName(GetUnsetImportNodeName()));
+				BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
+
+				Helper.UpdateComponent(*Cast<UAGX_ReImportComponent>(NewNode->ComponentTemplate));
+			}
+			else
+			{
+				Helper.UpdateComponent(
+					*Cast<UAGX_ReImportComponent>(SCSNodes.ReImportComponent->ComponentTemplate));
+			}
+		}
 	}
 
 	// Removes Components that are not present in the new SimulationObjectCollection, meaning they
@@ -883,7 +901,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			}
 		}
 
-		// todo : we should remove trimsh + static mesh component for collision triangles if ignore 
+		// todo : we should remove trimsh + static mesh component for collision triangles if ignore
 		// Disabled trimesh is used in import settings!!! Must be done before merge.
 		for (auto It = SCSNodes.StaticMeshComponents.CreateIterator(); It; ++It)
 		{
@@ -961,9 +979,6 @@ bool AGX_ImporterToBlueprint::ReImport(
 			"Re-import model to Blueprint");
 		return false;
 	}
-
-	// @todo Remember to update the FilePath in the base Blueprints ReImprot Component after
-	// re-import is done.
 
 	return true;
 }

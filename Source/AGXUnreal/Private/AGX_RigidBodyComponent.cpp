@@ -423,6 +423,49 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	InitializeMotionControl();
 }
 
+void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
+{
+	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
+
+	AGX_COPY_PROPERTY_FROM_BARRIER(ImportGuid, Barrier.GetGuid, *this)
+	AGX_COPY_PROPERTY_FROM_BARRIER(Mass, MassProperties.GetMass, *this)
+	AGX_COPY_PROPERTY_FROM_BARRIER(bAutoGenerateMass, MassProperties.GetAutoGenerateMass, *this)
+	AGX_COPY_PROPERTY_FROM_BARRIER(
+		bAutoGenerateCenterOfMassOffset, MassProperties.GetAutoGenerateCenterOfMassOffset, *this)
+	AGX_COPY_PROPERTY_FROM_BARRIER(
+		bAutoGeneratePrincipalInertia, MassProperties.GetAutoGeneratePrincipalInertia, *this)
+	AGX_COPY_PROPERTY_FROM_BARRIER(CenterOfMassOffset, Barrier.GetCenterOfMassOffset, *this)
+	AGX_COPY_PROPERTY_FROM_BARRIER(PrincipalInertia, MassProperties.GetPrincipalInertia, *this)
+	AGX_COPY_PROPERTY_FROM_BARRIER(Velocity, Barrier.GetVelocity, *this)
+	AGX_COPY_PROPERTY_FROM_BARRIER(AngularVelocity, Barrier.GetAngularVelocity, *this)
+	AGX_COPY_PROPERTY_FROM_BARRIER(MotionControl, Barrier.GetMotionControl, *this)
+	AGX_COPY_PROPERTY_FROM_BARRIER(bEnabled, Barrier.GetEnabled, *this)
+
+// We want to do this, but it breaks the move widget in Unreal Editor. Static bodies within Actors
+// that have been imported from an AGX Dynamics archive does not move when the Actor is moved.
+// Figure out why and fix it.
+#if 0
+	switch (MotionControl)
+	{
+		case MC_DYNAMICS:
+		case MC_KINEMATICS:
+			SetMobility(EComponentMobility::Movable);
+			break;
+		case MC_STATIC:
+			SetMobility(EComponentMobility::Static);
+			break;
+	}
+#endif
+
+	// Calling SetWorldLocationAndRotation on a template Component does not work since it does not
+	// have it's attachment parents setup yet. Instead,
+	// FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform should be used.
+	if (!FAGX_ObjectUtilities::IsTemplateComponent(*this))
+	{
+		SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
+	}
+}
+
 void UAGX_RigidBodyComponent::InitializeMotionControl()
 {
 	NativeBarrier.SetMotionControl(MotionControl);

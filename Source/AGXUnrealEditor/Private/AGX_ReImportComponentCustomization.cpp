@@ -21,8 +21,7 @@ TSharedRef<IDetailCustomization> FAGX_ReImportComponentCustomization::MakeInstan
 	return MakeShareable(new FAGX_ReImportComponentCustomization);
 }
 
-void FAGX_ReImportComponentCustomization::CustomizeDetails(
-	IDetailLayoutBuilder& InDetailBuilder)
+void FAGX_ReImportComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& InDetailBuilder)
 {
 	DetailBuilder = &InDetailBuilder;
 
@@ -106,21 +105,6 @@ namespace AGX_ReImportComponentCustomization_helpers
 
 		return OuterMostParent;
 	}
-
-	FString GetSourceFilePath(UBlueprint& BaseBP)
-	{
-		UAGX_ReImportComponent* ReImportComponent =
-			FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ReImportComponent>(&BaseBP);
-
-		// Attempt using the file path stored in the ReImportComponent.
-		FString FilePath = ReImportComponent != nullptr ? ReImportComponent->FilePath : "";
-		if (!FPaths::FileExists(FilePath))
-		{
-			return "";
-		}
-
-		return FilePath;
-	}
 }
 
 FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
@@ -142,9 +126,15 @@ FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
 			.SizingRule(ESizingRule::Autosized)
 			.Title(NSLOCTEXT("AGX", "AGXUnrealReImport", "Re-import AGX Dynamics archive"));
 
-	const FString FilePath = GetSourceFilePath(*OutermostParent);
+	UAGX_ReImportComponent* ReImportComponent =
+		FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ReImportComponent>(OutermostParent);
+	const FString FilePath = ReImportComponent != nullptr ? ReImportComponent->FilePath : "";
+	const bool IgnoreDisabledTrimeshes =
+		ReImportComponent != nullptr ? ReImportComponent->bIgnoreDisabledTrimeshes : false;
+
 	TSharedRef<SAGX_ImportDialog> ImportDialog = SNew(SAGX_ImportDialog);
 	ImportDialog->SetFilePath(FilePath);
+	ImportDialog->SetIgnoreDisabledTrimeshes(IgnoreDisabledTrimeshes);
 	ImportDialog->SetImportType(EAGX_ImportType::Agx);
 	ImportDialog->SetFileTypes(".agx");
 	ImportDialog->RefreshGui();
@@ -164,7 +154,7 @@ FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
 	}
 
 	// Any logging is done in ReImport and ToImportSettings.
-	return FReply::Handled(); 
+	return FReply::Handled();
 }
 
 #undef LOCTEXT_NAMESPACE

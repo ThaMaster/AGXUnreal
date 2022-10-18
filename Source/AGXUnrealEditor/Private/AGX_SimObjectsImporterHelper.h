@@ -110,6 +110,10 @@ public:
 
 	UAGX_WireComponent* InstantiateWire(const FWireBarrier& Barrier, AActor& Owner);
 
+	void UpdateComponent(UAGX_ReImportComponent& Component);
+
+	UAGX_ReImportComponent* InstantiateReImportComponent(AActor& Owner);
+
 	/**
 	 * We currently do not have full Observer Frame support in AGX Dynamics for Unreal, i.e. there
 	 * is no Observer Frame Component or Barrier. The coordinate frame defined by an Observer Frame

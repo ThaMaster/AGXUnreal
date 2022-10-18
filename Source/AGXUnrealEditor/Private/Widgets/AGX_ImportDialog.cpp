@@ -73,6 +73,11 @@ void SAGX_ImportDialog::SetFilePath(const FString& InFilePath)
 	FilePath = InFilePath;
 }
 
+void SAGX_ImportDialog::SetIgnoreDisabledTrimeshes(bool bInIgnoreDisabledTrimesh)
+{
+	bIgnoreDisabledTrimesh = bInIgnoreDisabledTrimesh;
+}
+
 void SAGX_ImportDialog::SetFileTypes(const FString& InFileTypes)
 {
 	FileTypes = InFileTypes;
@@ -346,6 +351,7 @@ TSharedRef<SWidget> SAGX_ImportDialog::CreateCheckboxGui()
 						"Any Trimesh that has collision disabled will be ignored. "
 						"Only its visual representation will be imported."))
 					.OnCheckStateChanged(this, &SAGX_ImportDialog::OnIgnoreDisabledTrimeshCheckboxClicked)
+					.IsChecked(bIgnoreDisabledTrimesh)
 			]
 			+ SHorizontalBox::Slot()
 			.AutoWidth()

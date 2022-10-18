@@ -21,6 +21,7 @@ public:
 	void Construct(const FArguments& InArgs);
 
 	void SetFilePath(const FString& InFilePath);
+	void SetIgnoreDisabledTrimeshes(bool bInIgnoreDisabledTrimesh);
 	void SetFileTypes(const FString& InFileTypes);
 	void SetImportType(EAGX_ImportType InImportType);
 

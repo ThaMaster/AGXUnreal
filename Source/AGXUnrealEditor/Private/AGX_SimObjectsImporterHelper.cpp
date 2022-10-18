@@ -40,7 +40,6 @@
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
-#include "Utilities/AGX_PropertyUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 
@@ -70,29 +69,14 @@ void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
 	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
 
-	AGX_COPY_PROPERTY_FROM_BARRIER(ImportGuid, Barrier.GetGuid, Component)
-	AGX_COPY_PROPERTY_FROM_BARRIER(Mass, MassProperties.GetMass, Component)
-	AGX_COPY_PROPERTY_FROM_BARRIER(bAutoGenerateMass, MassProperties.GetAutoGenerateMass, Component)
-	AGX_COPY_PROPERTY_FROM_BARRIER(
-		bAutoGenerateCenterOfMassOffset, MassProperties.GetAutoGenerateCenterOfMassOffset, Component)
-	AGX_COPY_PROPERTY_FROM_BARRIER(
-		bAutoGeneratePrincipalInertia, MassProperties.GetAutoGeneratePrincipalInertia, Component)
-	AGX_COPY_PROPERTY_FROM_BARRIER(CenterOfMassOffset, Barrier.GetCenterOfMassOffset, Component)
-	AGX_COPY_PROPERTY_FROM_BARRIER(PrincipalInertia, MassProperties.GetPrincipalInertia, Component)
-	AGX_COPY_PROPERTY_FROM_BARRIER(Velocity, Barrier.GetVelocity, Component)
-	AGX_COPY_PROPERTY_FROM_BARRIER(AngularVelocity, Barrier.GetAngularVelocity, Component)
-	AGX_COPY_PROPERTY_FROM_BARRIER(MotionControl, Barrier.GetMotionControl, Component)
-	AGX_COPY_PROPERTY_FROM_BARRIER(bEnabled, Barrier.GetEnabled, Component)
-
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
 		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 			&Component, FTransform(Barrier.GetRotation(), Barrier.GetPosition()), true);
 	}
-	else
-	{
-		Component.SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
-	}
+
+	AGX_CHECK(!RestoredBodies.Contains(Barrier.GetGuid()));
+	RestoredBodies.Add(Barrier.GetGuid(), &Component);
 }
 
 UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
@@ -149,7 +133,6 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 	Component->RegisterComponent();
 
 	Component->PostEditChange();
-	RestoredBodies.Add(Barrier.GetGuid(), Component);
 	return Component;
 }
 
@@ -692,7 +675,7 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 		const FTransform TrimeshTransform(TrimeshRotation, TrimeshPosition);
 		const FTransform ShapeToGeometry = TrimeshBarrier.GetGeometryToShapeTransform().Inverse();
 		FTransform::Multiply(&RenderDataTransform, &ShapeToGeometry, &TrimeshTransform);
-	}	
+	}
 
 	UStaticMeshComponent* RenderDataComponent = CreateFromRenderData(
 		RenderDataBarrier, Owner, *AttachParent, RenderDataTransform, DirectoryName,
@@ -704,9 +687,10 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 			TEXT("AGX Dynamics Render Data"), TrimeshBarrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create a Static Mesh Component from given RenderDataBarrier."));
 		return nullptr;
-	}	
+	}
 
-	UMaterialInterface* RenderDataMaterial = CreateRenderMaterialFromRenderDataOrDefault(RenderDataBarrier, TrimeshBarrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
+	UMaterialInterface* RenderDataMaterial = CreateRenderMaterialFromRenderDataOrDefault(
+		RenderDataBarrier, TrimeshBarrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
 
 	if (RenderDataMaterial != nullptr)
 	{
@@ -1072,6 +1056,30 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	return Component;
 }
 
+void FAGX_SimObjectsImporterHelper::UpdateComponent(UAGX_ReImportComponent& Component)
+{
+	Component.FilePath = ImportSettings.FilePath;
+	Component.bIgnoreDisabledTrimeshes = ImportSettings.bIgnoreDisabledTrimeshes;
+	FAGX_ImportUtilities::Rename(Component, "AGX_ReImport");
+}
+
+UAGX_ReImportComponent* FAGX_SimObjectsImporterHelper::InstantiateReImportComponent(AActor& Owner)
+{
+	UAGX_ReImportComponent* ReImportComponent = NewObject<UAGX_ReImportComponent>(&Owner);
+	if (ReImportComponent == nullptr)
+	{
+		return nullptr;
+	}
+
+	UpdateComponent(*ReImportComponent);
+	ReImportComponent->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(ReImportComponent);
+	ReImportComponent->RegisterComponent();
+	ReImportComponent->PostEditChange();
+
+	return ReImportComponent;
+}
+
 USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
 	const FString& Name, const FGuid& BodyGuid, const FTransform& Transform, AActor& Owner)
 {
@@ -1176,17 +1184,6 @@ FAGX_SimObjectsImporterHelper::FShapeMaterialPair FAGX_SimObjectsImporterHelper:
 
 void FAGX_SimObjectsImporterHelper::FinalizeImport(AActor& Actor)
 {
-	// Add the ReImport Component and write the relevant data to it.
-	UAGX_ReImportComponent* ReImportComponent = NewObject<UAGX_ReImportComponent>(&Actor);
-
-	ReImportComponent->FilePath = ImportSettings.FilePath;
-	
-	FAGX_ImportUtilities::Rename(*ReImportComponent, "AGX_ReImport");
-	ReImportComponent->SetFlags(RF_Transactional);
-	Actor.AddInstanceComponent(ReImportComponent);
-	ReImportComponent->RegisterComponent();
-	ReImportComponent->PostEditChange();
-
 	// Build mesh assets.
 	TArray<FAssetToDiskInfo> AtdInfos;
 	RestoredMeshes.GenerateValueArray(AtdInfos);

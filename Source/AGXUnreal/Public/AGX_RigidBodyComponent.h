@@ -306,6 +306,18 @@ public:
 #endif
 	// ~End UObject interface.
 
+	/**
+	 * Copy direct rigid body properties from the barrier to this component.
+	 *
+	 * This includes things like mass, velocity, and motion control. Does not copy sub-component
+	 * data such as shapes or materials.
+	 * Does not set transform if this is called on a Component template (e.g. when in a Blueprint).
+	 *
+	 * @param Barrier The AGX Dynamics RigidBody to copy from.
+	 */
+	void CopyFrom(const FRigidBodyBarrier& Barrier);
+
+
 	static TArray<UAGX_RigidBodyComponent*> GetFromActor(const AActor* Actor);
 	static UAGX_RigidBodyComponent* GetFirstFromActor(const AActor* Actor);
 

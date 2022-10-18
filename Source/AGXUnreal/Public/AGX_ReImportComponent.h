@@ -19,4 +19,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "AGX Re-import Info")
 	FString FilePath;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Re-import Info")
+	bool bIgnoreDisabledTrimeshes = false;
 };
