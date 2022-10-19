@@ -57,6 +57,21 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 
 public: // Properties.
 	/**
+	 * The number of threads AGX Dynamics will use during Play.
+	 *
+	 * Set to 0 to use all hardware threads.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "AGX Dynamics", Meta = (DisplayName = "Number of Threads"))
+	int32 NumThreads = 1;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetNumThreads(int32 InNumThreads);
+
+	UFUNCTION(BlueprintCallable, Category =  "AGX Dynamics")
+	int32 GetNumThreads() const;
+	
+	/**
 	 * Step length of the integrator [s].
 	 */
 	UPROPERTY(

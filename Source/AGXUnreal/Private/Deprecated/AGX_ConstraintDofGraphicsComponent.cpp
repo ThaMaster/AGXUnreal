@@ -1,6 +1,10 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-#include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
+/*
+ * Deprecated: see internal issue 739.
+ */
+
+#include "Deprecated/AGX_ConstraintDofGraphicsComponent.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"

@@ -74,6 +74,9 @@ public:
 	void SetTimeStep(float TimeStep);
 	float GetTimeStep() const;
 
+	static void SetNumThreads(uint32 NumThreads);
+	static uint32 GetNumThreads();
+
 	void SetEnableContactWarmstarting(bool bEnable);
 	bool GetEnableContactWarmstarting() const;
 

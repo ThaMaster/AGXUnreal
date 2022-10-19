@@ -20,8 +20,6 @@
 
 struct FAGX_ConstraintController;
 class FConstraintBarrier;
-class UAGX_ConstraintDofGraphicsComponent;
-class UAGX_ConstraintIconGraphicsComponent;
 
 /**
  * Component owned by every Constraint Actor so that component features can be used.
@@ -335,16 +333,6 @@ public:
 
 	void CopyFrom(const FConstraintBarrier& Barrier);
 
-	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics1() const
-	{
-		return DofGraphicsComponent1;
-	}
-
-	UAGX_ConstraintDofGraphicsComponent* GetDofGraphics2() const
-	{
-		return DofGraphicsComponent2;
-	}
-
 	/**
 	 * Returns true if for any of the locked DOFs both the global attachment frame transforms do no
 	 * match.
@@ -404,8 +392,6 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
-
-	virtual void DestroyComponent(bool bPromoteChildren) override;
 #endif
 
 	// Called when deleted in editor, in game, if owning actor is deleted or when switching level.
@@ -465,17 +451,6 @@ private:
 	// This list can change with each constraint type, and should exactly reflect
 	// the DOF enum in the native header for each constraint.
 	const TMap<EGenericDofIndex, int32> NativeDofIndexMap;
-
-	// It may not be possible to have these as sub-components. In that case we
-	// must move all functionality from them into this class.
-	UPROPERTY()
-	UAGX_ConstraintIconGraphicsComponent* IconGraphicsComponent;
-
-	UPROPERTY()
-	UAGX_ConstraintDofGraphicsComponent* DofGraphicsComponent1;
-
-	UPROPERTY()
-	UAGX_ConstraintDofGraphicsComponent* DofGraphicsComponent2;
 
 private: // Deprecated functionality.
 	/**

@@ -441,6 +441,7 @@ namespace
 			0.01f * WorkLeft, FText::FromString("Importing Observer Frames"));
 		Result &= ReadObserverFrames(Simulation, Instantiator);
 
+		Instantiator.FinalizeImports();
 		return Result;
 	}
 }
@@ -492,8 +493,10 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 	ImportTask.MakeDialog();
 	ImportTask.EnterProgressFrame(WorkRead, FText::FromString("Reading URDF file"));
 #if AGX_VERSION_GREATER_OR_EQUAL(2, 33, 0, 0)
+	agxModel::UrdfReader::Settings UrdfSettings(
+		/*fixToWorld*/ false, /*disableLinkedBodies*/ false, /*mergeKinematicLinks*/ false);
 	agxSDK::AssemblyRef Model = agxModel::UrdfReader::read(
-		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr);
+		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, UrdfSettings);
 #else
 	agxSDK::AssemblyRef Model = agxModel::UrdfReader::read(
 		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);

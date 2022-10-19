@@ -413,6 +413,16 @@ void FSimulationBarrier::SetTimeStamp(float TimeStamp)
 	NativeRef->Native->setTimeStamp(ConvertToAGX(TimeStamp));
 }
 
+void FSimulationBarrier::SetNumThreads(uint32 NumThreads)
+{
+	agx::setNumThreads(static_cast<size_t>(NumThreads));
+}
+
+uint32 FSimulationBarrier::GetNumThreads()
+{
+	return agx::getNumThreads();
+}
+
 void FSimulationBarrier::SetStatisticsEnabled(bool bEnabled)
 {
 	agx::Statistics::instance()->setEnable(bEnabled);
