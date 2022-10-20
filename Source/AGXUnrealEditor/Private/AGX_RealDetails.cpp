@@ -90,7 +90,7 @@ namespace AGX_RealDetails_helpers
 					   Algo::Find(NumberFormattingRules.DigitCharacters, InChar) != 0;
 			};
 
-			static const FString ValidChars = TEXT("1234567890eEiInNfF-+");
+			static const FString ValidChars = TEXT("1234567890eEiInNfF-+.");
 			return InChar != 0 &&
 				   (ValidChars.GetCharArray().Contains(InChar) || IsValidLocalizedCharacter());
 		}
