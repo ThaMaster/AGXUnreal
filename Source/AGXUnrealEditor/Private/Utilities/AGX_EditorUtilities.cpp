@@ -81,6 +81,59 @@ bool FAGX_EditorUtilities::SaveAsset(UObject& Asset)
 #endif
 }
 
+bool FAGX_EditorUtilities::RenameAsset(
+	UObject& Asset, const FString& WantedName, const FString& AssetType)
+{
+	if (WantedName.IsEmpty())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("RenameAsset called with Asset '%s' and WantedName was empty. The asset will not "
+				 "be renamed."),
+			*Asset.GetName());
+		return false;
+	}
+
+	UPackage* Package = Asset.GetPackage();
+	if (Package == nullptr || Package->GetPathName().IsEmpty())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT(
+				"RenameAsset called with Asset '%s' without a valid Package. The asset will not be "
+				"renamed."),
+			*Asset.GetName());
+		return false;
+	}
+
+	FString AssetNameNew = FAGX_ImportUtilities::CreateAssetName(WantedName, "", AssetType);
+	if (Asset.GetName().Equals(AssetNameNew))
+	{
+		return true;
+	}
+
+	FString PackagePathNew = *Asset.GetPackage()->GetPathName();
+	PackagePathNew.RemoveFromEnd(Asset.GetName(), ESearchCase::CaseSensitive);
+	FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePathNew, AssetNameNew);
+
+	const FString OldPath = Asset.GetPathName();
+
+	FAssetToolsModule& AssetToolsModule =
+		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools");
+	TArray<FAssetRenameData> AssetRenameData;
+	FAssetRenameData Ard;
+	Ard.Asset = &Asset;
+	Ard.NewPackagePath = FPackageName::GetLongPackagePath(PackagePathNew);
+	Ard.NewName = AssetNameNew;
+	AssetRenameData.Add(Ard);
+	AssetToolsModule.Get().RenameAssets(AssetRenameData);
+	FAssetRegistryModule::AssetRenamed(&Asset, OldPath);
+	Asset.MarkPackageDirty();
+	Asset.GetOuter()->MarkPackageDirty();
+
+	return true;
+}
+
 std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(
 	const FTransform& Transform, UWorld* World)
 {

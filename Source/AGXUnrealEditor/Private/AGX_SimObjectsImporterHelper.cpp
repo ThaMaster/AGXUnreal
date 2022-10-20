@@ -704,15 +704,15 @@ void FAGX_SimObjectsImporterHelper::UpdateAsset(
 	const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset)
 {
 	Asset.CopyFrom(&Barrier);
-
+	FAGX_EditorUtilities::RenameAsset(Asset, Barrier.GetName(), "ShapeMaterial");
 	FAGX_EditorUtilities::SaveAsset(Asset);
+
 	RestoredShapeMaterials.Add(Barrier.GetGuid(), &Asset); // todo ensure this is done only here.
 }
 
 UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
-	/// \todo Do we need any special handling of the default material?
 	UAGX_ShapeMaterial* Asset =
 		FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(Barrier, DirectoryName);
 	RestoredShapeMaterials.Add(Barrier.GetGuid(), Asset);
