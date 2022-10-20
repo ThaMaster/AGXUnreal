@@ -67,7 +67,7 @@ void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component)
 {
 	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
-	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
+	Component.CopyFrom(Barrier);
 
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
@@ -700,6 +700,15 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 	return RenderDataComponent;
 }
 
+void FAGX_SimObjectsImporterHelper::UpdateAsset(
+	const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset)
+{
+	Asset.CopyFrom(&Barrier);
+
+	FAGX_EditorUtilities::SaveAsset(Asset);
+	RestoredShapeMaterials.Add(Barrier.GetGuid(), &Asset); // todo ensure this is done only here.
+}
+
 UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
@@ -1058,6 +1067,12 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 
 void FAGX_SimObjectsImporterHelper::UpdateComponent(UAGX_ReImportComponent& Component)
 {
+	for (UAGX_ReImportComponent* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+	{
+		Instance->FilePath = ImportSettings.FilePath;
+		Instance->bIgnoreDisabledTrimeshes = ImportSettings.bIgnoreDisabledTrimeshes;
+	}
+
 	Component.FilePath = ImportSettings.FilePath;
 	Component.bIgnoreDisabledTrimeshes = ImportSettings.bIgnoreDisabledTrimeshes;
 	FAGX_ImportUtilities::Rename(Component, "AGX_ReImport");
@@ -1182,7 +1197,7 @@ FAGX_SimObjectsImporterHelper::FShapeMaterialPair FAGX_SimObjectsImporterHelper:
 		GetShapeMaterial(ContactMaterial.GetMaterial2())};
 }
 
-void FAGX_SimObjectsImporterHelper::FinalizeImport(AActor& Actor)
+void FAGX_SimObjectsImporterHelper::FinalizeImport()
 {
 	// Build mesh assets.
 	TArray<FAssetToDiskInfo> AtdInfos;
@@ -1194,7 +1209,8 @@ namespace
 {
 	FString MakeModelName(FString SourceFilename)
 	{
-		return FAGX_EditorUtilities::SanitizeName(SourceFilename, TEXT("ImportedAgxModel"));
+		return FAGX_EditorUtilities::SanitizeName(
+			SourceFilename, FAGX_ImportUtilities::GetImportRootDirectoryName());
 	}
 
 	FString MakeDirectoryName(const FString ModelName)
@@ -1231,7 +1247,14 @@ FAGX_SimObjectsImporterHelper::FAGX_SimObjectsImporterHelper(
 	const FAGX_ImportSettings& InImportSettings)
 	: ImportSettings(InImportSettings)
 	, SourceFileName(FPaths::GetBaseFilename(InImportSettings.FilePath))
-	, ModelName(MakeModelName(SourceFileName))
-	, DirectoryName(MakeDirectoryName(ModelName))
+	, DirectoryName(MakeDirectoryName(MakeModelName(SourceFileName)))
+{
+}
+
+FAGX_SimObjectsImporterHelper::FAGX_SimObjectsImporterHelper(
+	const FAGX_ImportSettings& InImportSettings, const FString& InDirectoryName)
+	: ImportSettings(InImportSettings)
+	, SourceFileName(FPaths::GetBaseFilename(InImportSettings.FilePath))
+	, DirectoryName(InDirectoryName)
 {
 }

@@ -50,6 +50,12 @@ class AGXUNREALEDITOR_API FAGX_EditorUtilities
 {
 public:
 	/**
+	 * Saves (or re-saves) an asset to disk. The asset must have a valid Package setup before
+	 * passing it to this function.
+	 */
+	static bool SaveAsset(UObject& Asset);
+
+	/**
 	 * Create a new Actor with an empty USceneComponent as its RootComponent.
 	 */
 	static std::tuple<AActor*, USceneComponent*> CreateEmptyActor(
@@ -355,6 +361,15 @@ public:
 	static FString SelectNewFileDialog(
 		const FString& DialogTitle, const FString& FileExtension, const FString& FileTypes,
 		const FString& DefaultFile = "", const FString& InStartDir = "");
+
+	/**
+	 * Find (and loads) all assets of the type specified by ClassName that resides in AssetDirPath.
+	 * Does not search recursively, so the AssetDirPath must be the directory which the Asset resides
+	 * in, for example "/Game/ImportedAGXModels/MyModel/ShapeMaterial".
+	 * Any returned asset is guaranteed not to be nullptr.
+	 */
+	template <typename T>
+	static TArray<T*> FindAssets(const FString& AssetDirPath);
 };
 
 template <typename T>
@@ -404,4 +419,27 @@ T* FAGX_EditorUtilities::GetSingleObjectBeingCustomized(
 		return Cast<T>(Objects[0].Get());
 	else
 		return nullptr;
+}
+
+template <typename T>
+TArray<T*> FAGX_EditorUtilities::FindAssets(const FString& AssetDirPath)
+{
+	TArray<T*> Assets;
+	FAssetRegistryModule& AssetRegistryModule =
+		FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+	TArray<FAssetData> AssetData;
+	FARFilter Filter;
+	Filter.ClassNames.Add(FName(T::StaticClass()->GetName()));
+	Filter.PackagePaths.Add(FName(AssetDirPath));
+	AssetRegistryModule.Get().GetAssets(Filter, AssetData);
+
+	for (const FAssetData& Data : AssetData)
+	{
+		if (T* Asset = Cast<T>(Data.GetAsset()))
+		{
+			Assets.Add(Asset);
+		}		
+	}
+
+	return Assets;
 }

@@ -419,7 +419,7 @@ namespace
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Import"));
 		Helper.InstantiateReImportComponent(ImportedActor);
-		Helper.FinalizeImport(ImportedActor);
+		Helper.FinalizeImport();
 
 		ImportTask.EnterProgressFrame(40.f, FText::FromString("Import complete"));
 		return Success;
@@ -638,7 +638,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	}
 
 	template <typename T>
-	TArray<FGuid> GetGuids(const TArray<T>& Barriers)
+	TArray<FGuid> GetGuidsFromBarriers(const TArray<T>& Barriers)
 	{
 		TArray<FGuid> Guids;
 		Guids.Reserve(Barriers.Num());
@@ -648,6 +648,20 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		}
 
 		return Guids;
+	}
+
+	template <typename T>
+	TMap<FGuid, T*> CreateGuidToComponentMap(const TArray<T*>& Components)
+	{
+		TMap<FGuid, T*> Map;
+		Map.Reserve(Components.Num());
+		for (T* Component : Components)
+		{
+			if (Component != nullptr)
+				Map.Add(Component->ImportGuid, Component);
+		}
+
+		return Map;
 	}
 
 	FGuid GetNearestShapeOrRigidBodyParent(USCS_Node* Node, const UBlueprint& Blueprint)
@@ -739,10 +753,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 				return;
 			}
 
-			TArray<USCS_Node*> Nodes = Bp.SimpleConstructionScript->GetAllNodes();
-			for (int i = 0; i < Nodes.Num(); i++)
+			for (USCS_Node* Node : Bp.SimpleConstructionScript->GetAllNodes())
 			{
-				USCS_Node* Node = Nodes[i];
 				if (Node == nullptr)
 				{
 					continue;
@@ -828,7 +840,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	{
 		for (auto& NodeTuple : SCSNodes.RigidBodies)
 		{
-			if (GetGuids(SimulationObjects.GetRigidBodies()).Contains(NodeTuple.Key))
+			if (GetGuidsFromBarriers(SimulationObjects.GetRigidBodies()).Contains(NodeTuple.Key))
 			{
 				return true;
 			}
@@ -837,13 +849,39 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		return false;
 	}
 
-	void AddOrUpdateAll(
-		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
-		const FSimulationObjectCollection& SimulationObjects,
-		const FAGX_ImportSettings& ImportSettings)
+	void AddOrUpdateShapeMaterials(
+		UBlueprint& BaseBP, const FSimulationObjectCollection& SimulationObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
 	{
-		FAGX_SimObjectsImporterHelper Helper(ImportSettings);
+		// Find all existing assets that might be of interest from the previous import.
+		const FString ShapeMaterialDirPath = FString::Printf(
+			TEXT("/Game/%s/%s/%s"), *FAGX_ImportUtilities::GetImportRootDirectoryName(),
+			*Helper.DirectoryName, *FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName());
+		TArray<UAGX_ShapeMaterial*> ExistingShapeMaterialAssets =
+			FAGX_EditorUtilities::FindAssets<UAGX_ShapeMaterial>(ShapeMaterialDirPath);
 
+		TMap<FGuid, UAGX_ShapeMaterial*> ExistingShapeMaterialsMap =
+			CreateGuidToComponentMap(ExistingShapeMaterialAssets);
+
+		for (const auto& Barrier : SimulationObjects.GetShapeMaterials())
+		{
+			const FGuid Guid = Barrier.GetGuid();
+			if (ExistingShapeMaterialsMap.Contains(Guid))
+			{
+				Helper.UpdateAsset(Barrier, *ExistingShapeMaterialsMap[Guid]);
+			}
+			else
+			{
+				Helper.InstantiateShapeMaterial(Barrier);
+			}
+		}
+	}
+
+	// todo: add and update any owned shape as well
+	void AddOrUpdateRigidBodies(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
+	{
 		for (const auto& Barrier : SimulationObjects.GetRigidBodies())
 		{
 			const FGuid Guid = Barrier.GetGuid();
@@ -865,23 +903,57 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 					Barrier, *Cast<UAGX_RigidBodyComponent>(NewNode->ComponentTemplate));
 			}
 		}
+	}
 
-		// Re-import Component.
+	void AddOrUpdateReImportComponent(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper)
+	{
+		if (SCSNodes.ReImportComponent == nullptr)
 		{
-			if (SCSNodes.ReImportComponent == nullptr)
-			{
-				USCS_Node* NewNode = BaseBP.SimpleConstructionScript->CreateNode(
-					UAGX_ReImportComponent::StaticClass(), FName(GetUnsetImportNodeName()));
-				BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
+			USCS_Node* NewNode = BaseBP.SimpleConstructionScript->CreateNode(
+				UAGX_ReImportComponent::StaticClass(), FName(GetUnsetImportNodeName()));
+			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
 
-				Helper.UpdateComponent(*Cast<UAGX_ReImportComponent>(NewNode->ComponentTemplate));
-			}
-			else
+			Helper.UpdateComponent(*Cast<UAGX_ReImportComponent>(NewNode->ComponentTemplate));
+		}
+		else
+		{
+			Helper.UpdateComponent(
+				*Cast<UAGX_ReImportComponent>(SCSNodes.ReImportComponent->ComponentTemplate));
+		}
+	}
+
+	FString GetModelDirectoryFromAsset(UObject* Asset)
+	{
+		if (Asset == nullptr)
+		{
+			return "";
+		}
+
+		TArray<FString> Splits;
+		Asset->GetPathName().ParseIntoArray(Splits, TEXT("/"));
+		for (int i = 0; i < Splits.Num(); i++)
+		{
+			if (Splits[i].Equals(FAGX_ImportUtilities::GetImportRootDirectoryName()))
 			{
-				Helper.UpdateComponent(
-					*Cast<UAGX_ReImportComponent>(SCSNodes.ReImportComponent->ComponentTemplate));
+				return i + 1 < Splits.Num() ? Splits[i + 1] : "";
 			}
 		}
+		return "";
+	}
+
+	void AddOrUpdateAll(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects,
+		const FAGX_ImportSettings& ImportSettings)
+	{
+		FAGX_SimObjectsImporterHelper Helper(ImportSettings, GetModelDirectoryFromAsset(&BaseBP));
+
+		AddOrUpdateShapeMaterials(BaseBP, SimulationObjects, Helper);
+		AddOrUpdateRigidBodies(BaseBP, SCSNodes, SimulationObjects, Helper);
+		AddOrUpdateReImportComponent(BaseBP, SCSNodes, Helper);
+
+		Helper.FinalizeImport();
 	}
 
 	// Removes Components that are not present in the new SimulationObjectCollection, meaning they
@@ -894,7 +966,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	{
 		for (auto It = SCSNodes.RigidBodies.CreateIterator(); It; ++It)
 		{
-			if (!GetGuids(SimulationObjects.GetRigidBodies()).Contains(It->Key))
+			if (!GetGuidsFromBarriers(SimulationObjects.GetRigidBodies()).Contains(It->Key))
 			{
 				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
 				It.RemoveCurrent();
@@ -905,7 +977,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		// Disabled trimesh is used in import settings!!! Must be done before merge.
 		for (auto It = SCSNodes.StaticMeshComponents.CreateIterator(); It; ++It)
 		{
-			if (!(GetGuids(SimulationObjects.GetRigidBodies()).Contains(It->Key) ||
+			if (!(GetGuidsFromBarriers(SimulationObjects.GetRigidBodies()).Contains(It->Key) ||
 				  GetAllShapeGuids(SimulationObjects).Contains(It->Key)))
 			{
 				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
@@ -951,19 +1023,12 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		SetUnnamedNameForAll(BaseBP);
 		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, ImportSettings);
 
-		// Update the source file path in the ReImport Component since it may have changed.
-		auto ReImportComponent =
-			FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ReImportComponent>(&BaseBP);
-		check(ReImportComponent);
-		ReImportComponent->FilePath = ImportSettings.FilePath;
-		for (UAGX_ReImportComponent* Instance :
-			 FAGX_ObjectUtilities::GetArchetypeInstances(*ReImportComponent))
-		{
-			Instance->FilePath = ImportSettings.FilePath;
-		}
-
-		// Re-import is completed, we end by Compiling the Blueprint.
+		// Re-import is completed, we end by compiling and saving the base Blueprint.
 		FKismetEditorUtilities::CompileBlueprint(&BaseBP);
+		FAGX_EditorUtilities::SaveAsset(BaseBP);
+		// @todo figure out how to save all child Blueprints also. GetArchetypeInstances does not
+		// work here, it's an empty array.
+
 		return true;
 	}
 }

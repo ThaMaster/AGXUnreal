@@ -7,6 +7,7 @@
 #include "AGX_Simulation.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.
 #include "Editor.h"
@@ -280,8 +281,7 @@ void AgxAutomationCommon::CheckAssetMD5Checksum(
 	// and it seems to work. Not sure what's going on here.
 	// https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Misc/FFileHelper/LoadFileToArray/2/
 	FString MD5Sum = FMD5::HashBytes(PackageBytes.GetData(), PackageBytes.Num());
-	Test.TestEqual(
-		TEXT("The asset file should have the expected MD5 checksum."), MD5Sum, Expected);
+	Test.TestEqual(TEXT("The asset file should have the expected MD5 checksum."), MD5Sum, Expected);
 }
 
 bool AgxAutomationCommon::DeleteImportDirectory(
@@ -299,7 +299,8 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 	// I'm just worried that the wrong directory may be deleted in some circumstances.
 
 	const FString Root = FPaths::ProjectContentDir();
-	const FString ImportsLocal = FPaths::Combine(TEXT("ImportedAGXModels"), ArchiveName);
+	const FString ImportsLocal =
+		FPaths::Combine(FAGX_ImportUtilities::GetImportRootDirectoryName(), ArchiveName);
 	const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
 	const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
 	if (ImportsFull == Root)
@@ -346,8 +347,8 @@ bool AgxAutomationCommon::DeleteImportDirectory(
 	for (const FString& Entry : DirectoryContents)
 	{
 		const FString Name = FPaths::GetCleanFilename(Entry);
-		if (!ExpectedFileAndDirectoryNames.ContainsByPredicate(
-				[&Name](const TCHAR* E) { return Name == E; }))
+		if (!ExpectedFileAndDirectoryNames.ContainsByPredicate([&Name](const TCHAR* E)
+															   { return Name == E; }))
 		{
 			UE_LOG(
 				LogAGX, Error,

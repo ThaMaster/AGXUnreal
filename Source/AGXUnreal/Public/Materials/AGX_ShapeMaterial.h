@@ -194,6 +194,13 @@ public:
 		Meta = (DisplayName = "Set Spook Damping Bend"))
 	void SetSpookDampingBend_BP(float InSpookDamping);
 
+	/*
+	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
+	FGuid ImportGuid;
+
 	virtual void CommitToAsset() override;
 
 	void CopyFrom(const FShapeMaterialBarrier* Source);

@@ -74,7 +74,7 @@ FString FAGX_ImportUtilities::CreatePackagePath(FString FileName, FString AssetT
 	{
 		return FString();
 	}
-	return FString::Printf(TEXT("/Game/ImportedAGXModels/%s/%s/"), *FileName, *AssetType);
+	return FString::Printf(TEXT("/Game/%s/%s/%s/"), *GetImportRootDirectoryName(), *FileName, *AssetType);
 }
 
 FString FAGX_ImportUtilities::CreatePackagePath(FString FileName)
@@ -84,7 +84,7 @@ FString FAGX_ImportUtilities::CreatePackagePath(FString FileName)
 	{
 		return FString();
 	}
-	return FString::Printf(TEXT("/Game/ImportedAGXModels/%s"), *FileName);
+	return FString::Printf(TEXT("/Game/%s/%s"), *GetImportRootDirectoryName(), *FileName);
 }
 
 FString FAGX_ImportUtilities::CreateAssetName(
@@ -177,7 +177,8 @@ UAGX_ShapeMaterial* FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(
 {
 	auto InitAsset = [&](UAGX_ShapeMaterial& Asset) { Asset.CopyFrom(&Material); };
 	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_ShapeMaterial>(
-		DirectoryName, Material.GetName(), TEXT(""), TEXT("ShapeMaterial"), InitAsset);
+		DirectoryName, Material.GetName(), TEXT(""), GetImportShapeMaterialDirectoryName(),
+		InitAsset);
 	if (!WriteAssetToDisk(AtdInfo))
 	{
 		return nullptr;
@@ -457,4 +458,14 @@ FVector4 FAGX_ImportUtilities::LinearToSRGB(const FLinearColor& Linear)
 	return FVector4(
 		static_cast<float>(SRGBBytes.R) / 255.0f, static_cast<float>(SRGBBytes.G) / 255.0f,
 		static_cast<float>(SRGBBytes.B) / 255.0f, static_cast<float>(SRGBBytes.A) / 255.0f);
+}
+
+FString FAGX_ImportUtilities::GetImportRootDirectoryName()
+{
+	return FString("ImportedAGXModels");
+}
+
+FString FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName()
+{
+	return FString("ShapeMaterial");
 }

@@ -36,7 +36,7 @@ struct FAssetToDiskInfo
 	}
 };
 
-class FAGX_ImportUtilities
+class AGXUNREALEDITOR_API FAGX_ImportUtilities
 {
 public:
 	/**
@@ -185,4 +185,7 @@ public:
 	 * @return
 	 */
 	static FVector4 LinearToSRGB(const FLinearColor& Linear);
+
+	static FString GetImportRootDirectoryName();
+	static FString GetImportShapeMaterialDirectoryName();
 };
