@@ -700,22 +700,30 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 	return RenderDataComponent;
 }
 
-void FAGX_SimObjectsImporterHelper::UpdateAsset(
+void FAGX_SimObjectsImporterHelper::UpdateAndSaveAsset(
 	const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset)
 {
 	Asset.CopyFrom(&Barrier);
 	FAGX_EditorUtilities::RenameAsset(Asset, Barrier.GetName(), "ShapeMaterial");
 	FAGX_EditorUtilities::SaveAsset(Asset);
 
-	RestoredShapeMaterials.Add(Barrier.GetGuid(), &Asset); // todo ensure this is done only here.
+	RestoredShapeMaterials.Add(Barrier.GetGuid(), &Asset);
 }
 
 UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
 	UAGX_ShapeMaterial* Asset =
-		FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(Barrier, DirectoryName);
-	RestoredShapeMaterials.Add(Barrier.GetGuid(), Asset);
+		FAGX_ImportUtilities::CreateShapeMaterialAsset(Barrier.GetName(), DirectoryName);
+	if (Asset == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Shape Material"), Barrier.GetName(), ImportSettings.FilePath,
+			TEXT("Could not create a Shape Material Asset from given ShapeMaterialBarrier."));
+		return nullptr;
+	}
+
+	UpdateAndSaveAsset(Barrier, *Asset);
 	return Asset;
 }
 

@@ -118,13 +118,11 @@ public:
 		const FRenderDataBarrier& RenderData, const FString& DirectoryName);
 
 	/**
-	 * Store an imported AGX Dynamics Material as an UAGX_ShapeMaterial.
-	 * @param Material The imported material to be saved.
-	 * @param DirectoryName The name of the directory where the assets are collected.
-	 * @return The created ShapeMaterialAsset.
+	 * Create a new and empty Shape Material asset.
+	 * Must be saved to disk by the caller.
 	 */
-	static UAGX_ShapeMaterial* SaveImportedShapeMaterialAsset(
-		const FShapeMaterialBarrier& Material, const FString& DirectoryName);
+	static UAGX_ShapeMaterial* CreateShapeMaterialAsset(
+		const FString& Name, const FString& DirectoryName);
 
 	/**
 	 * Store an imported AGX Dynamics ContactMaterial as an UAGX_ContactMaterialAsset.

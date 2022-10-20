@@ -868,7 +868,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			const FGuid Guid = Barrier.GetGuid();
 			if (ExistingShapeMaterialsMap.Contains(Guid))
 			{
-				Helper.UpdateAsset(Barrier, *ExistingShapeMaterialsMap[Guid]);
+				Helper.UpdateAndSaveAsset(Barrier, *ExistingShapeMaterialsMap[Guid]);
 			}
 			else
 			{

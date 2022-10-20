@@ -81,7 +81,7 @@ public:
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
 		const FRigidBodyBarrier* Body = nullptr);
 
-	void UpdateAsset(
+	void UpdateAndSaveAsset(
 		const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset);
 
 	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
