@@ -18,7 +18,6 @@ class FRigidBodyBarrier;
 class FShapeMaterialBarrier;
 class FSimulationBarrier;
 class FTrackPropertiesBarrier;
-class FTrackInternalMergePropertiesBarrier;
 class FTrackWheelBarrier;
 struct FTrackRef;
 
