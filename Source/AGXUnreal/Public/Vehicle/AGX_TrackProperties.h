@@ -101,20 +101,20 @@ public:
 	 * Spook damping of the hinges between track nodes, along the axis pointing vertically
 	 * out from the track node [s].
 	 */
-	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, Category = "Hinge Spook Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeSpookDampingTranslational_X = DefaultHingeSpookDamping;
 
 	/**
 	 * Spook damping of the hinges between track nodes, along the track direction [s].
 	 */
-	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, Category = "Hinge Spook Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeSpookDampingTranslational_Y = DefaultHingeSpookDamping;
 
 	/**
 	 * Spook damping of the hinges between track nodes, along the axis pointing sideways
 	 * (i.e. the rotation axis) [s].
 	 */
-	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, Category = "Hinge Spook Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeSpookDampingTranslational_Z = DefaultHingeSpookDamping;
 
 	void SetHingeSpookDampingTranslational(double DampingX, double DampingY, double DampingZ);
@@ -136,13 +136,13 @@ public:
 	 * Spook damping of the hinges between track nodes, around the axis pointing vertically
 	 * out from the track node [s].
 	 */
-	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, Category = "Hinge Spook Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeSpookDampingRotational_X = DefaultHingeSpookDamping;
 
 	/**
 	 * Spook damping of the hinges between track nodes, around the track direction [s].
 	 */
-	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, Category = "Hinge Spook Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeSpookDampingRotational_Y = DefaultHingeSpookDamping;
 
 	void SetHingeSpookDampingRotational(double DampingX, double DampingY);
