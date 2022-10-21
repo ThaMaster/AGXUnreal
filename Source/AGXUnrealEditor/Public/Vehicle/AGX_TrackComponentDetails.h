@@ -8,9 +8,6 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
-#include "Layout/Visibility.h"
-
-class UAGX_TrackComponent;
 
 class IDetailLayoutBuilder;
 
