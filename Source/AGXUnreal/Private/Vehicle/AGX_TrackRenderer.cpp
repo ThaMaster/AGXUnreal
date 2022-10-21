@@ -11,9 +11,6 @@
 
 //#define TRACK_RENDERER_DETAILED_LOGGING
 
-#define DEFAULT_VISUAL_SCALE FVector::OneVector
-#define DEFAULT_VISUAL_OFFSET FVector::ZeroVector
-
 namespace
 {
 	template <class T>
@@ -47,13 +44,6 @@ UAGX_TrackRenderer::UAGX_TrackRenderer()
 
 	// \todo We want to synchronize visuals AFTER the physics have stepped. Find correct group!
 	// PrimaryComponentTick.TickGroup = ??;
-
-	// Sets default values.
-	Scale = DEFAULT_VISUAL_SCALE;
-	Offset = DEFAULT_VISUAL_OFFSET;
-	bAutoScaleAndOffset = true;
-	LocalMeshBoundsMax = FVector::OneVector * 50.0f;
-	LocalMeshBoundsMin = -FVector::OneVector * 50.0f;
 
 	// Set default values in inherited classes.
 	// Make sure Unreal's default physics collision is disabled.
@@ -412,8 +402,8 @@ bool UAGX_TrackRenderer::ComputeVisualScaleAndOffset(
 				 "LocalMeshBoundsMax is too close "
 				 "too LocalMeshBoundsMin."),
 			*GetName(), *GetNameSafe(GetOwner()));
-		OutVisualScale = DEFAULT_VISUAL_SCALE;
-		OutVisualOffset = DEFAULT_VISUAL_OFFSET;
+		OutVisualScale = FVector::OneVector;
+		OutVisualOffset = FVector::ZeroVector;
 		return false;
 	}
 

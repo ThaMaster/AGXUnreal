@@ -31,7 +31,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = StaticMesh,
 		Meta = (EditCondition = "!bAutoScaleAndOffset"))
-	FVector Scale;
+	FVector Scale {FVector::OneVector};
 
 	/**
 	 * Local Translation to apply to the Static Mesh before synchronizing its position and
@@ -42,14 +42,14 @@ public:
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = StaticMesh,
 		Meta = (EditCondition = "!bAutoScaleAndOffset"))
-	FVector Offset;
+	FVector Offset {FVector::ZeroVector};
 
 	/**
 	 * Whether to automatically compute the Scale and Offset necessary to fit the Static Mesh's
 	 * local bounds (defined by Local Mesh Bounds Min/Max) to the physical track node box.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMesh)
-	bool bAutoScaleAndOffset;
+	bool bAutoScaleAndOffset {true};
 
 	/**
 	 * The max-point of the axis-aligned local box volume which should be fitted to the
@@ -63,7 +63,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = StaticMesh,
 		Meta = (EditCondition = "bAutoScaleAndOffset"))
-	FVector LocalMeshBoundsMax;
+	FVector LocalMeshBoundsMax {FVector::OneVector * 50.0f};
 
 	/**
 	 * The min-point of the axis-aligned local box volume which should be fitted to the
@@ -72,7 +72,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = StaticMesh,
 		Meta = (EditCondition = "bAutoScaleAndOffset"))
-	FVector LocalMeshBoundsMin;
+	FVector LocalMeshBoundsMin {-FVector::OneVector * 50.0f};
 
 	//~ Begin UActorComponent Interface
 	virtual void TickComponent(
