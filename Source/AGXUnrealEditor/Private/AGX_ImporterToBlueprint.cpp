@@ -87,13 +87,7 @@ namespace
 		FString ParentAssetName = IsBase ? BaseNameGuid.ToString() : Helper.SourceFileName;
 
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
-
-#if UE_VERSION_OLDER_THAN(4, 26, 0)
-		UPackage* ParentPackage = CreatePackage(nullptr, *ParentPackagePath);
-#else
 		UPackage* ParentPackage = CreatePackage(*ParentPackagePath);
-#endif
-
 		FString Path = FPaths::GetPath(ParentPackage->GetName());
 
 		UE_LOG(

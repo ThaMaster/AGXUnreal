@@ -325,7 +325,7 @@ FString FAGX_EditorUtilities::CreateAssetName(
 		return DefaultName;
 	}
 
-	return TEXT("ImportedAgxObject");
+	return TEXT("ImportedAGXObject");
 }
 
 void FAGX_EditorUtilities::MakePackageAndAssetNameUnique(FString& PackageName, FString& AssetName)

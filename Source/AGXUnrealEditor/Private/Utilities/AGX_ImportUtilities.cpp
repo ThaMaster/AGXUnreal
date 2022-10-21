@@ -60,36 +60,6 @@ namespace
 		return FAssetToDiskInfo {Package, Asset, PackagePath, AssetName};
 	}
 
-	template <typename UAsset>
-	UAsset* CreateAsset(
-		const FString& DirectoryName, FString AssetName, const FString& FallbackName,
-		const FString& AssetType)
-	{
-		AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, FallbackName, AssetType);
-		FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryName, AssetType);
-		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
-#if UE_VERSION_OLDER_THAN(4, 26, 0)
-		UPackage* Package = CreatePackage(nullptr, *PackagePath);
-#else
-		UPackage* Package = CreatePackage(*PackagePath);
-#endif
-
-#if 0
-		/// \todo Unclear if this is needed or not. Leaving it out for now but
-		/// test with it restored if there are problems.
-		Package->FullyLoad();
-#endif
-		UAsset* Asset = NewObject<UAsset>(Package, FName(*AssetName), RF_Public | RF_Standalone);
-		if (Asset == nullptr)
-		{
-			UE_LOG(
-				LogAGX, Error, TEXT("Could not create asset '%s' from '%s'."), *AssetName,
-				*DirectoryName);
-		}
-		
-		return Asset;
-	}
-
 	bool WriteAssetToDisk(FAssetToDiskInfo& AtdInfo)
 	{
 		return FAGX_EditorUtilities::FinalizeAndSavePackage(AtdInfo);
@@ -200,13 +170,6 @@ FAssetToDiskInfo FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	return PrepareWriteAssetToDisk<UStaticMesh>(
 		DirectoryName, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
 		TEXT("RenderMesh"), TEXT("RenderMesh"), InitAsset);
-}
-
-UAGX_ShapeMaterial* FAGX_ImportUtilities::CreateShapeMaterialAsset(
-	const FString& Name, const FString& DirectoryName)
-{
-	return CreateAsset<UAGX_ShapeMaterial>(
-		DirectoryName, Name, TEXT(""), GetImportShapeMaterialDirectoryName());
 }
 
 namespace

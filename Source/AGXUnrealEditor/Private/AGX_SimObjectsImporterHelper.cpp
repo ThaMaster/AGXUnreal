@@ -713,8 +713,9 @@ void FAGX_SimObjectsImporterHelper::UpdateAndSaveAsset(
 UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
-	UAGX_ShapeMaterial* Asset =
-		FAGX_ImportUtilities::CreateShapeMaterialAsset(Barrier.GetName(), DirectoryName);
+	UAGX_ShapeMaterial* Asset = FAGX_ImportUtilities::CreateAsset<UAGX_ShapeMaterial>(
+		DirectoryName, Barrier.GetName(),
+		FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName());
 	if (Asset == nullptr)
 	{
 		WriteImportErrorMessage(

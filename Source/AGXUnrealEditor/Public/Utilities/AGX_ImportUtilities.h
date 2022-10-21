@@ -118,13 +118,6 @@ public:
 		const FRenderDataBarrier& RenderData, const FString& DirectoryName);
 
 	/**
-	 * Create a new and empty Shape Material asset.
-	 * Must be saved to disk by the caller.
-	 */
-	static UAGX_ShapeMaterial* CreateShapeMaterialAsset(
-		const FString& Name, const FString& DirectoryName);
-
-	/**
 	 * Store an imported AGX Dynamics ContactMaterial as an UAGX_ContactMaterialAsset.
 	 * @param ContactMaterial The imported contact material to be saved.
 	 * @param Material1 The AGXUnreal ShapeMaterial for the first AGX Dynamics material.
@@ -157,7 +150,8 @@ public:
 		const FString& MaterialName);
 
 	/**
-	 * Generate valid name for the object. Generates a fallback name if the given name can't be used.
+	 * Generate valid name for the object. Generates a fallback name if the given name can't be
+	 * used.
 	 */
 	static FString CreateName(UObject& Object, const FString& Name);
 
@@ -186,4 +180,33 @@ public:
 
 	static FString GetImportRootDirectoryName();
 	static FString GetImportShapeMaterialDirectoryName();
+
+	/**
+	 * Create a new asset destined for the import directory. This functions will only create the
+	 * asset and setup it's Package, it will not actually save it to disk. That is the
+	 * responsibility of the caller.
+	 */
+	template <typename UAsset>
+	static UAsset* CreateAsset(
+		const FString& DirectoryName, FString AssetName, const FString& AssetType);
 };
+
+template <typename UAsset>
+UAsset* FAGX_ImportUtilities::CreateAsset(
+	const FString& DirectoryName, FString AssetName, const FString& AssetType)
+{
+	AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, "", AssetType);
+	FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryName, AssetType);
+	FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
+	UPackage* Package = CreatePackage(*PackagePath);
+
+	UAsset* Asset = NewObject<UAsset>(Package, FName(*AssetName), RF_Public | RF_Standalone);
+	if (Asset == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("Could not create asset '%s' from '%s'."), *AssetName,
+			*DirectoryName);
+	}
+
+	return Asset;
+}
