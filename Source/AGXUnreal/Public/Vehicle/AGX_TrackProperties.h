@@ -340,6 +340,11 @@ public:
 	UAGX_TrackProperties() = default;
 	virtual ~UAGX_TrackProperties() = default;
 
+	/**
+	 * Copy Property values from the native AGX Dynamics instance to the Track Properties asset
+	 * the instance was created from. That may be this UAGX_TrackProperties, if IsAsset returns
+	 * true, or the UAGX_TrackProperties that this was created from, if IsInstance returns true.
+	 */
 	void CommitToAsset();
 
 	void CopyFrom(const UAGX_TrackProperties* Source);
