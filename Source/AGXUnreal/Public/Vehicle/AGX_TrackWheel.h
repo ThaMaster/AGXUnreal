@@ -52,14 +52,15 @@ public:
 
 	/**
 	 * Wheel location relative to the Rigid Body,
-	 * or to the FrameDefiningComponent if bUseFrameDefiningComponent is true.
+	 * or to the FrameDefiningComponent if bUseFrameDefiningComponent is true [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel")
 	FVector RelativeLocation;
 
 	/**
 	 * Wheel rotation relative to the Rigid Body,
-	 * or to the FrameDefiningComponent if bUseFrameDefiningComponent is true.
+	 * or to the FrameDefiningComponent if bUseFrameDefiningComponent is true [degrees].
+	 *
 	 * The Y-Axis becomes the rotation-axis, and the Z-axis becomes the up-axis.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel")
