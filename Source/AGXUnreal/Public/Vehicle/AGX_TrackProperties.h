@@ -27,30 +27,29 @@ class AGXUNREAL_API UAGX_TrackProperties : public UObject
 public:
 	/**
 	 * Compliance of the hinges between track nodes, along the axis pointing vertically
-	 * out from the track node.
+	 * out from the track node. [m/N]
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Hinge Compliance",
-		Meta = (ClampMin = "0.000000000000000001", ClampMax = "1.0"))
+		Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeComplianceTranslational_X = DefaultHingeCompliance;
 
 	/**
-	 * Compliance of the hinges between track nodes, along the track direction.
+	 * Compliance of the hinges between track nodes, along the track direction. [m/N]
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Hinge Compliance",
-		Meta = (ClampMin = "0.000000000000000001", ClampMax = "1.0"))
+		Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeComplianceTranslational_Y = DefaultHingeCompliance;
 
 	/**
 	 * Compliance of the hinges between track nodes, along the axis pointing sideways
-	 * (i.e. the rotation axis).
+	 * (i.e. the rotation axis). [m/N]
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Hinge Compliance",
 		Meta =
-			(DisplayName = "SetHingeComplianceTranslational", ClampMin = "0.000000000000000001",
-			 ClampMax = "1.0"))
+			(DisplayName = "SetHingeComplianceTranslational", ClampMin = "0.0"))
 	FAGX_Real HingeComplianceTranslational_Z = DefaultHingeCompliance;
 
 	void SetHingeComplianceTranslational(
@@ -78,19 +77,19 @@ public:
 
 	/**
 	 * Compliance of the hinges between track nodes, around the axis pointing vertically
-	 * out from the track node.
+	 * out from the track node. [rad/Nm]
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Hinge Compliance",
-		Meta = (ClampMin = "0.000000000000000001", ClampMax = "1.0"))
+		Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeComplianceRotational_X = DefaultHingeCompliance;
 
 	/**
-	 * Compliance of the hinges between track nodes, around the track direction.
+	 * Compliance of the hinges between track nodes, around the track direction. [rad/Nm]
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Hinge Compliance",
-		Meta = (ClampMin = "0.000000000000000001", ClampMax = "1.0"))
+		Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeComplianceRotational_Y = DefaultHingeCompliance;
 
 	void SetHingeComplianceRotational(double ComplianceX, double ComplianceY);
@@ -109,20 +108,20 @@ public:
 
 	/**
 	 * Damping of the hinges between track nodes, along the axis pointing vertically
-	 * out from the track node.
+	 * out from the track node. [s]
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeDampingTranslational_X = DefaultHingeDamping;
 
 	/**
-	 * Damping of the hinges between track nodes, along the track direction.
+	 * Damping of the hinges between track nodes, along the track direction. [s]
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeDampingTranslational_Y = DefaultHingeDamping;
 
 	/**
 	 * Damping of the hinges between track nodes, along the axis pointing sideways
-	 * (i.e. the rotation axis).
+	 * (i.e. the rotation axis). [s]
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeDampingTranslational_Z = DefaultHingeDamping;
@@ -144,13 +143,13 @@ public:
 
 	/**
 	 * Damping of the hinges between track nodes, around the axis pointing vertically
-	 * out from the track node.
+	 * out from the track node. [s]
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeDampingRotational_X = DefaultHingeDamping;
 
 	/**
-	 * Damping of the hinges between track nodes, around the track direction.
+	 * Damping of the hinges between track nodes, around the track direction. [s]
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeDampingRotational_Y = DefaultHingeDamping;
@@ -303,7 +302,7 @@ public:
 
 	/**
 	 * Minimum value of the normal force (the hinge force along the track) used in
-	 * "internal" friction calculations.
+	 * "internal" friction calculations. [N]
 	 *
 	 * I.e., when the track is compressed, this value is used with the friction coefficient
 	 * as a minimum stabilizing compliance. If this value is negative there will be
