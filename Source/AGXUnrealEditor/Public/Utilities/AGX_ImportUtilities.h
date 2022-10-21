@@ -118,18 +118,6 @@ public:
 		const FRenderDataBarrier& RenderData, const FString& DirectoryName);
 
 	/**
-	 * Store an imported AGX Dynamics ContactMaterial as an UAGX_ContactMaterialAsset.
-	 * @param ContactMaterial The imported contact material to be saved.
-	 * @param Material1 The AGXUnreal ShapeMaterial for the first AGX Dynamics material.
-	 * @param Material2 The AGXUnreal ShapeMaterial for the second AGX Dynamics material.
-	 * @param DirectoryName The name of the directory where the assets are collected.
-	 * @return The created ContactMaterialAsset.
-	 */
-	static UAGX_ContactMaterialAsset* SaveImportedContactMaterialAsset(
-		const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterial* Material1,
-		UAGX_ShapeMaterial* Material2, const FString& DirectoryName);
-
-	/**
 	 * Save an FAGX_RenderMaterial read from and AGX Dynamics RenderData material as an Unreal
 	 * Engine Material Instance. The Material Instance will be inheriting from the base import
 	 * material M_ImportedBase that is shipped as an asset with the AGX Dynamics for Unreal plugin.
@@ -180,6 +168,7 @@ public:
 
 	static FString GetImportRootDirectoryName();
 	static FString GetImportShapeMaterialDirectoryName();
+	static FString GetImportContactMaterialDirectoryName();
 
 	/**
 	 * Create a new asset destined for the import directory. This functions will only create the

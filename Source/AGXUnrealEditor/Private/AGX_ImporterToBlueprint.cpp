@@ -37,6 +37,7 @@
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
@@ -165,10 +166,19 @@ namespace
 		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
 		FAGX_SimObjectsImporterHelper& Helper)
 	{
+		UAGX_ContactMaterialRegistrarComponent* CMRegistrar =
+			SimObjects.GetContactMaterials().Num() > 0
+				? Helper.InstantiateContactMaterialRegistrar(ImportedActor)
+				: nullptr;
+		if (CMRegistrar == nullptr)
+		{
+			return false;
+		}
+
 		bool Success = true;
 		for (const auto& ContactMaterial : SimObjects.GetContactMaterials())
 		{
-			Success &= Helper.InstantiateContactMaterial(ContactMaterial, ImportedActor) != nullptr;
+			Success &= Helper.InstantiateContactMaterial(ContactMaterial, *CMRegistrar) != nullptr;
 		}
 
 		return Success;
@@ -871,6 +881,63 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		}
 	}
 
+	UAGX_ContactMaterialRegistrarComponent* GetOrCreateContactMaterialRegistrarComponent(
+		UBlueprint& BaseBP)
+	{
+		auto CMRegistrar = FAGX_BlueprintUtilities::GetFirstComponentOfType<
+			UAGX_ContactMaterialRegistrarComponent>(&BaseBP);
+		if (CMRegistrar == nullptr)
+		{
+			USCS_Node* NewNode = BaseBP.SimpleConstructionScript->CreateNode(
+				UAGX_ContactMaterialRegistrarComponent::StaticClass(),
+				FName(GetUnsetImportNodeName()));
+			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
+			CMRegistrar = Cast<UAGX_ContactMaterialRegistrarComponent>(NewNode->ComponentTemplate);
+		}
+
+		if (USCS_Node* Node = FAGX_BlueprintUtilities::GetSCSNodeFromComponent(CMRegistrar))
+		{
+			Node->SetVariableName(TEXT("AGX_ContactMaterialRegistrar"));
+		}
+
+		return CMRegistrar;
+	}
+
+	void AddOrUpdateContactMaterials(
+		UBlueprint& BaseBP, const FSimulationObjectCollection& SimulationObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		if (SimulationObjects.GetContactMaterials().Num() == 0)
+		{
+			return;
+		}
+
+		auto CMRegistrar = GetOrCreateContactMaterialRegistrarComponent(BaseBP);
+
+		// Find all existing assets that might be of interest from the previous import.
+		const FString ContactMaterialDirPath = FString::Printf(
+			TEXT("/Game/%s/%s/%s"), *FAGX_ImportUtilities::GetImportRootDirectoryName(),
+			*Helper.DirectoryName, *FAGX_ImportUtilities::GetImportContactMaterialDirectoryName());
+		TArray<UAGX_ContactMaterialAsset*> ExistingContactMaterialAssets =
+			FAGX_EditorUtilities::FindAssets<UAGX_ContactMaterialAsset>(ContactMaterialDirPath);
+
+		TMap<FGuid, UAGX_ContactMaterialAsset*> ExistingContactMaterialsMap =
+			CreateGuidToComponentMap(ExistingContactMaterialAssets);
+
+		for (const auto& Barrier : SimulationObjects.GetContactMaterials())
+		{
+			const FGuid Guid = Barrier.GetGuid();
+			if (ExistingContactMaterialsMap.Contains(Guid))
+			{
+				Helper.UpdateAndSaveAsset(Barrier, *ExistingContactMaterialsMap[Guid], *CMRegistrar);
+			}
+			else
+			{
+				Helper.InstantiateContactMaterial(Barrier, *CMRegistrar);
+			}
+		}
+	}
+
 	// todo: add and update any owned shape as well
 	void AddOrUpdateRigidBodies(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
@@ -944,6 +1011,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		FAGX_SimObjectsImporterHelper Helper(ImportSettings, GetModelDirectoryFromAsset(&BaseBP));
 
 		AddOrUpdateShapeMaterials(BaseBP, SimulationObjects, Helper);
+		AddOrUpdateContactMaterials(BaseBP, SimulationObjects, Helper);
 		AddOrUpdateRigidBodies(BaseBP, SCSNodes, SimulationObjects, Helper);
 		AddOrUpdateReImportComponent(BaseBP, SCSNodes, Helper);
 
@@ -958,6 +1026,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects)
 	{
+		// Rigid Bodies.
 		for (auto It = SCSNodes.RigidBodies.CreateIterator(); It; ++It)
 		{
 			if (!GetGuidsFromBarriers(SimulationObjects.GetRigidBodies()).Contains(It->Key))
@@ -1017,11 +1086,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		SetUnnamedNameForAll(BaseBP);
 		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, ImportSettings);
 
-		// Re-import is completed, we end by compiling and saving the base Blueprint.
-		FKismetEditorUtilities::CompileBlueprint(&BaseBP);
-		FAGX_EditorUtilities::SaveAsset(BaseBP);
-		// @todo figure out how to save all child Blueprints also. GetArchetypeInstances does not
-		// work here, it's an empty array.
+		// Re-import is completed, we end by compiling and saving the Blueprint and any children.
+		FAGX_BlueprintUtilities::SaveAndCompile(BaseBP, true);
 
 		return true;
 	}

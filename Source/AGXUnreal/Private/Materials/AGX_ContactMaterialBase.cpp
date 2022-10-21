@@ -58,6 +58,8 @@ void UAGX_ContactMaterialBase::CopyFrom(const FContactMaterialBarrier* Source)
 		SpookDamping = Source->GetSpookDamping();
 		AdhesiveForce = Source->GetAdhesiveForce();
 		AdhesiveOverlap = Source->GetAdhesiveOverlap();
+
+		ImportGuid = Source->GetGuid();
 	}
 }
 

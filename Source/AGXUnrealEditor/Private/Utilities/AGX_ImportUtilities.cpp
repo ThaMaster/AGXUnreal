@@ -174,15 +174,6 @@ FAssetToDiskInfo FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 
 namespace
 {
-	FString GetName(UAGX_ShapeMaterial* Material)
-	{
-		if (Material == nullptr)
-		{
-			return TEXT("Default");
-		}
-		return Material->GetName();
-	}
-
 	FString GetUniqueNameForComponentTemplate(const UActorComponent& Component, const FString& WantedName)
 	{
 		AGX_CHECK(FAGX_ObjectUtilities::IsTemplateComponent(Component));
@@ -271,28 +262,6 @@ namespace
 
 		return WantedName;
 	}
-}
-
-UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
-	const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterial* Material1,
-	UAGX_ShapeMaterial* Material2, const FString& DirectoryName)
-{
-	const FString Name = TEXT("CM") + GetName(Material1) + GetName(Material2);
-
-	auto InitAsset = [&](UAGX_ContactMaterialAsset& Asset)
-	{
-		Asset.CopyFrom(&ContactMaterial);
-		Asset.Material1 = Material1;
-		Asset.Material2 = Material2;
-	};
-
-	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_ContactMaterialAsset>(
-		DirectoryName, Name, TEXT(""), TEXT("ContactMaterial"), InitAsset);
-	if (!WriteAssetToDisk(AtdInfo))
-	{
-		return nullptr;
-	}
-	return Cast<UAGX_ContactMaterialAsset>(AtdInfo.Asset);
 }
 
 UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
@@ -454,4 +423,9 @@ FString FAGX_ImportUtilities::GetImportRootDirectoryName()
 FString FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName()
 {
 	return FString("ShapeMaterial");
+}
+
+FString FAGX_ImportUtilities::GetImportContactMaterialDirectoryName()
+{
+	return FString("ContactMaterial");
 }

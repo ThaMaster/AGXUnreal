@@ -408,3 +408,10 @@ FShapeMaterialBarrier FContactMaterialBarrier::GetMaterial2() const
 	check(HasNative());
 	return ::GetMaterial(*NativeRef, 2);
 }
+
+FGuid FContactMaterialBarrier::GetGuid() const
+{
+	check(HasNative());
+	FGuid Guid = Convert(NativeRef->Native->getUuid());
+	return Guid;
+}

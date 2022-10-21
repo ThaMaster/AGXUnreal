@@ -138,6 +138,15 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 
 namespace
 {
+	FString GetName(UAGX_ShapeMaterial* Material)
+	{
+		if (Material == nullptr)
+		{
+			return TEXT("Default");
+		}
+		return Material->GetName();
+	}
+
 	/**
 	 * Convert an AGX Dynamics Render Material to an Unreal Engine Render Material and store it
 	 * as an asset in the given directory. Will cache and reuse Render Materials if the same one
@@ -480,26 +489,6 @@ namespace
 			SetDefaultRenderMaterial(VisualMesh, Component.bIsSensor);
 		}
 	}
-
-	UAGX_ContactMaterialRegistrarComponent* GetOrCreateContactMaterialRegistrar(AActor& Owner)
-	{
-		UAGX_ContactMaterialRegistrarComponent* Component =
-			Owner.FindComponentByClass<UAGX_ContactMaterialRegistrarComponent>();
-
-		if (Component != nullptr)
-		{
-			return Component;
-		}
-
-		// No UAGX_ContactMaterialRegistrarComponent exists in Owner. Create and add one.
-		Component = NewObject<UAGX_ContactMaterialRegistrarComponent>(
-			&Owner, TEXT("AGX_ContactMaterialRegistrar"));
-
-		Component->SetFlags(RF_Transactional);
-		Owner.AddInstanceComponent(Component);
-		Component->RegisterComponent();
-		return Component;
-	}
 }
 
 UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
@@ -728,27 +717,60 @@ UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	return Asset;
 }
 
-UAGX_ContactMaterialAsset* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
-	const FContactMaterialBarrier& Barrier, AActor& Owner)
+void FAGX_SimObjectsImporterHelper::UpdateAndSaveAsset(
+	const FContactMaterialBarrier& Barrier, UAGX_ContactMaterialAsset& Asset,
+	UAGX_ContactMaterialRegistrarComponent& CMRegistrar)
 {
 	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
-	UAGX_ContactMaterialAsset* Asset = FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
-		Barrier, Materials.first, Materials.second, DirectoryName);
+	Asset.CopyFrom(&Barrier);
+	Asset.Material1 = Materials.first;
+	Asset.Material2 = Materials.second;
 
-	UAGX_ContactMaterialRegistrarComponent* CMRegistrar =
-		GetOrCreateContactMaterialRegistrar(Owner);
-	if (CMRegistrar == nullptr)
+	const FString Name = TEXT("CM_") + GetName(Materials.first) + GetName(Materials.second);
+	FAGX_EditorUtilities::RenameAsset(Asset, Name, "ContactMaterial");
+	FAGX_EditorUtilities::SaveAsset(Asset);
+
+	CMRegistrar.ContactMaterials.AddUnique(&Asset);
+	if (FAGX_ObjectUtilities::IsTemplateComponent(CMRegistrar))
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Contact Material Registrar could not be added to '%s' during import."),
-			*Owner.GetName());
-		return Asset;
+		for (UAGX_ContactMaterialRegistrarComponent* Instance :
+			 FAGX_ObjectUtilities::GetArchetypeInstances(CMRegistrar))
+		{
+			Instance->ContactMaterials.AddUnique(&Asset);
+		}
+	}
+}
+
+UAGX_ContactMaterialAsset* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
+	const FContactMaterialBarrier& Barrier, UAGX_ContactMaterialRegistrarComponent& CMRegistrar)
+{
+	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
+	const FString Name = TEXT("CM_") + GetName(Materials.first) + GetName(Materials.second);
+	UAGX_ContactMaterialAsset* Asset = FAGX_ImportUtilities::CreateAsset<UAGX_ContactMaterialAsset>(
+		DirectoryName, Name, FAGX_ImportUtilities::GetImportContactMaterialDirectoryName());
+	if (Asset == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Contact Material"), Name, ImportSettings.FilePath,
+			TEXT("Could not create a Contact Material Asset from given ContactMaterialBarrier."));
+		return nullptr;
 	}
 
-	CMRegistrar->ContactMaterials.Add(Asset);
-
+	UpdateAndSaveAsset(Barrier, *Asset, CMRegistrar);
 	return Asset;
+}
+
+UAGX_ContactMaterialRegistrarComponent*
+FAGX_SimObjectsImporterHelper::InstantiateContactMaterialRegistrar(AActor& Owner)
+{
+	UAGX_ContactMaterialRegistrarComponent* Component =
+		NewObject<UAGX_ContactMaterialRegistrarComponent>(
+			&Owner, TEXT("AGX_ContactMaterialRegistrar"));
+
+	Component->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Component);
+	Component->RegisterComponent();
+	return Component;
 }
 
 namespace

@@ -86,8 +86,16 @@ public:
 
 	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
+	// This function also adds the Asset to the passed Contact Material Registrar, if not yet added.
+	void UpdateAndSaveAsset(
+		const FContactMaterialBarrier& Barrier, UAGX_ContactMaterialAsset& Asset,
+		UAGX_ContactMaterialRegistrarComponent& CMRegistrar);
+
+	// This function also adds the new Contact Material to the Contact Material Registrar.
 	UAGX_ContactMaterialAsset* InstantiateContactMaterial(
-		const FContactMaterialBarrier& Barrier, AActor& Owner);
+		const FContactMaterialBarrier& Barrier, UAGX_ContactMaterialRegistrarComponent& CMRegistrar);
+
+	UAGX_ContactMaterialRegistrarComponent* InstantiateContactMaterialRegistrar(AActor& Owner);
 
 	UAGX_HingeConstraintComponent* InstantiateHinge(const FHingeBarrier& Barrier, AActor& Owner);
 

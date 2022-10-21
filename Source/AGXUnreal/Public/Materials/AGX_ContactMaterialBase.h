@@ -69,6 +69,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Contacts Processing")
 	EAGX_ContactSolver ContactSolver;
 
+	/*
+	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
+	FGuid ImportGuid;
+
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	virtual void SetContactSolver(EAGX_ContactSolver InContactSolver);
 
