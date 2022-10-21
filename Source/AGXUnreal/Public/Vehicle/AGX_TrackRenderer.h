@@ -12,7 +12,6 @@
 #include "AGX_TrackRenderer.generated.h"
 
 class UAGX_TrackComponent;
-class FTrackBarrier;
 
 /**
  * Renderers all track nodes as instanced meshes using the same Static Mesh source.
