@@ -107,66 +107,66 @@ public:
 	void GetHingeComplianceRotational_BP(float& X, float& Y);
 
 	/**
-	 * Damping of the hinges between track nodes, along the axis pointing vertically
+	 * Spook damping of the hinges between track nodes, along the axis pointing vertically
 	 * out from the track node. [s]
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
-	FAGX_Real HingeDampingTranslational_X = DefaultHingeDamping;
+	FAGX_Real HingeSpookDampingTranslational_X = DefaultHingeSpookDamping;
 
 	/**
-	 * Damping of the hinges between track nodes, along the track direction. [s]
+	 * Spook damping of the hinges between track nodes, along the track direction. [s]
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
-	FAGX_Real HingeDampingTranslational_Y = DefaultHingeDamping;
+	FAGX_Real HingeSpookDampingTranslational_Y = DefaultHingeSpookDamping;
 
 	/**
-	 * Damping of the hinges between track nodes, along the axis pointing sideways
+	 * Spook damping of the hinges between track nodes, along the axis pointing sideways
 	 * (i.e. the rotation axis). [s]
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
-	FAGX_Real HingeDampingTranslational_Z = DefaultHingeDamping;
+	FAGX_Real HingeSpookDampingTranslational_Z = DefaultHingeSpookDamping;
 
-	void SetHingeDampingTranslational(double DampingX, double DampingY, double DampingZ);
-	void SetHingeDampingTranslationalX(double Damping);
-	void SetHingeDampingTranslationalY(double Damping);
-	void SetHingeDampingTranslationalZ(double Damping);
-
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta = (DisplayName = "Set Hinge Damping Translational"))
-	void SetHingeDampingTranslational_BP(float DampingX, float DampingY, float DampingZ);
+	void SetHingeSpookDampingTranslational(double DampingX, double DampingY, double DampingZ);
+	void SetHingeSpookDampingTranslationalX(double Damping);
+	void SetHingeSpookDampingTranslationalY(double Damping);
+	void SetHingeSpookDampingTranslationalZ(double Damping);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Track Properties",
-		Meta = (DisplayName = "Get Hinge Damping Translational"))
-	void GetHingeDampingTranslational_BP(float& DampingX, float& DampingY, float& DampingZ);
+		Meta = (DisplayName = "Set Hinge Spook Damping Translational"))
+	void SetHingeSpookDampingTranslational_BP(float DampingX, float DampingY, float DampingZ);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta = (DisplayName = "Get Hinge Spook Damping Translational"))
+	void GetHingeSpookDampingTranslational_BP(float& DampingX, float& DampingY, float& DampingZ);
 
 	/**
-	 * Damping of the hinges between track nodes, around the axis pointing vertically
+	 * Spook damping of the hinges between track nodes, around the axis pointing vertically
 	 * out from the track node. [s]
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
-	FAGX_Real HingeDampingRotational_X = DefaultHingeDamping;
+	FAGX_Real HingeSpookDampingRotational_X = DefaultHingeSpookDamping;
 
 	/**
-	 * Damping of the hinges between track nodes, around the track direction. [s]
+	 * Spook damping of the hinges between track nodes, around the track direction. [s]
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
-	FAGX_Real HingeDampingRotational_Y = DefaultHingeDamping;
+	FAGX_Real HingeSpookDampingRotational_Y = DefaultHingeSpookDamping;
 
-	void SetHingeDampingRotational(double DampingX, double DampingY);
-	void SetHingeDampingRotationalX(double Damping);
-	void SetHingeDampingRotationalY(double Damping);
-
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta = (DisplayName = "Set Hinge Damping Rotational"))
-	void SetHingeDampingRotational_BP(float X, float Y);
+	void SetHingeSpookDampingRotational(double DampingX, double DampingY);
+	void SetHingeSpookDampingRotationalX(double Damping);
+	void SetHingeSpookDampingRotationalY(double Damping);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Track Properties",
-		Meta = (DisplayName = "Get Hinge Damping Rotational"))
-	void GetHingeDampingRotational_BP(float& X, float& Y);
+		Meta = (DisplayName = "Set Hinge Spook Damping Rotational"))
+	void SetHingeSpookDampingRotational_BP(float X, float Y);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta = (DisplayName = "Get Hinge Spook Damping Rotational"))
+	void GetHingeSpookDampingRotational_BP(float& X, float& Y);
 
 	/**
 	 * Whether to enable the range in the hinges between the track nodes
@@ -401,7 +401,7 @@ private:
 
 private:
 	static constexpr double DefaultHingeCompliance = 1.0E-10;
-	static constexpr double DefaultHingeDamping = 2.0 / 60.0;
+	static constexpr double DefaultHingeSpookDamping = 2.0 / 60.0;
 
 private:
 	TWeakObjectPtr<UAGX_TrackProperties> Asset;

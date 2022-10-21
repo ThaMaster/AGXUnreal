@@ -104,79 +104,79 @@ void UAGX_TrackProperties::GetHingeComplianceRotational_BP(float& X, float& Y)
 
 // Damping translational.
 
-void UAGX_TrackProperties::SetHingeDampingTranslational(
+void UAGX_TrackProperties::SetHingeSpookDampingTranslational(
 	double DampingX, double DampingY, double DampingZ)
 {
-	SetHingeDampingTranslationalX(DampingX);
-	SetHingeDampingTranslationalY(DampingY);
-	SetHingeDampingTranslationalZ(DampingZ);
+	SetHingeSpookDampingTranslationalX(DampingX);
+	SetHingeSpookDampingTranslationalY(DampingY);
+	SetHingeSpookDampingTranslationalZ(DampingZ);
 }
 
-void UAGX_TrackProperties::SetHingeDampingTranslationalX(double Damping)
+void UAGX_TrackProperties::SetHingeSpookDampingTranslationalX(double Damping)
 {
 	AGX_ASSET_SETTER_IMPL_VALUE(
-		HingeDampingTranslational_X, Damping, SetHingeDampingTranslationalX);
+		HingeSpookDampingTranslational_X, Damping, SetHingeSpookDampingTranslationalX);
 }
 
-void UAGX_TrackProperties::SetHingeDampingTranslationalY(double Damping)
+void UAGX_TrackProperties::SetHingeSpookDampingTranslationalY(double Damping)
 {
 	AGX_ASSET_SETTER_IMPL_VALUE(
-		HingeDampingTranslational_Y, Damping, SetHingeDampingTranslationalY);
+		HingeSpookDampingTranslational_Y, Damping, SetHingeSpookDampingTranslationalY);
 }
 
-void UAGX_TrackProperties::SetHingeDampingTranslationalZ(double Damping)
+void UAGX_TrackProperties::SetHingeSpookDampingTranslationalZ(double Damping)
 {
 	AGX_ASSET_SETTER_IMPL_VALUE(
-		HingeDampingTranslational_Z, Damping, SetHingeDampingTranslationalZ);
+		HingeSpookDampingTranslational_Z, Damping, SetHingeSpookDampingTranslationalZ);
 }
 
-void UAGX_TrackProperties::SetHingeDampingTranslational_BP(
+void UAGX_TrackProperties::SetHingeSpookDampingTranslational_BP(
 	float DampingX, float DampingY, float DampingZ)
 {
-	SetHingeDampingTranslational(
+	SetHingeSpookDampingTranslational(
 		static_cast<double>(DampingX), static_cast<double>(DampingY),
 		static_cast<double>(DampingZ));
 }
 
-void UAGX_TrackProperties::GetHingeDampingTranslational_BP(
+void UAGX_TrackProperties::GetHingeSpookDampingTranslational_BP(
 	float& DampingX, float& DampingY, float& DampingZ)
 {
 	/// @todo When we have them, call the getter functions instead of reading directly from the
 	/// Property.
-	DampingX = static_cast<float>(HingeDampingTranslational_X);
-	DampingY = static_cast<float>(HingeDampingTranslational_Y);
-	DampingZ = static_cast<float>(HingeDampingTranslational_Z);
+	DampingX = static_cast<float>(HingeSpookDampingTranslational_X);
+	DampingY = static_cast<float>(HingeSpookDampingTranslational_Y);
+	DampingZ = static_cast<float>(HingeSpookDampingTranslational_Z);
 }
 
 // Damping rotational.
 
-void UAGX_TrackProperties::SetHingeDampingRotational(double DampingX, double DampingY)
+void UAGX_TrackProperties::SetHingeSpookDampingRotational(double DampingX, double DampingY)
 {
-	SetHingeDampingRotationalX(DampingX);
-	SetHingeDampingRotationalY(DampingY);
+	SetHingeSpookDampingRotationalX(DampingX);
+	SetHingeSpookDampingRotationalY(DampingY);
 }
 
-void UAGX_TrackProperties::SetHingeDampingRotationalX(double Damping)
+void UAGX_TrackProperties::SetHingeSpookDampingRotationalX(double Damping)
 {
-	AGX_ASSET_SETTER_IMPL_VALUE(HingeDampingRotational_X, Damping, SetHingeDampingRotationalX);
+	AGX_ASSET_SETTER_IMPL_VALUE(HingeSpookDampingRotational_X, Damping, SetHingeSpookDampingRotationalX);
 }
 
-void UAGX_TrackProperties::SetHingeDampingRotationalY(double Damping)
+void UAGX_TrackProperties::SetHingeSpookDampingRotationalY(double Damping)
 {
-	AGX_ASSET_SETTER_IMPL_VALUE(HingeDampingRotational_Y, Damping, SetHingeDampingRotationalY);
+	AGX_ASSET_SETTER_IMPL_VALUE(HingeSpookDampingRotational_Y, Damping, SetHingeSpookDampingRotationalY);
 }
 
-void UAGX_TrackProperties::SetHingeDampingRotational_BP(float X, float Y)
+void UAGX_TrackProperties::SetHingeSpookDampingRotational_BP(float X, float Y)
 {
-	SetHingeDampingRotational(static_cast<double>(X), static_cast<double>(Y));
+	SetHingeSpookDampingRotational(static_cast<double>(X), static_cast<double>(Y));
 }
 
-void UAGX_TrackProperties::GetHingeDampingRotational_BP(float& X, float& Y)
+void UAGX_TrackProperties::GetHingeSpookDampingRotational_BP(float& X, float& Y)
 {
 	/// @todo When we have them, call the getter functions instead of reading directly from the
 	/// Property.
-	X = static_cast<double>(HingeDampingRotational_X);
-	Y = static_cast<double>(HingeDampingRotational_Y);
+	X = static_cast<double>(HingeSpookDampingRotational_X);
+	Y = static_cast<double>(HingeSpookDampingRotational_Y);
 }
 
 // Hinge range.
@@ -370,12 +370,12 @@ void UAGX_TrackProperties::CopyFrom(const UAGX_TrackProperties* Source)
 	HingeComplianceRotational_X = Source->HingeComplianceRotational_X;
 	HingeComplianceRotational_Y = Source->HingeComplianceRotational_Y;
 
-	HingeDampingTranslational_X = Source->HingeDampingTranslational_X;
-	HingeDampingTranslational_Y = Source->HingeDampingTranslational_Y;
-	HingeDampingTranslational_Z = Source->HingeDampingTranslational_Z;
+	HingeSpookDampingTranslational_X = Source->HingeSpookDampingTranslational_X;
+	HingeSpookDampingTranslational_Y = Source->HingeSpookDampingTranslational_Y;
+	HingeSpookDampingTranslational_Z = Source->HingeSpookDampingTranslational_Z;
 
-	HingeDampingRotational_X = Source->HingeDampingRotational_X;
-	HingeDampingRotational_Y = Source->HingeDampingRotational_Y;
+	HingeSpookDampingRotational_X = Source->HingeSpookDampingRotational_X;
+	HingeSpookDampingRotational_Y = Source->HingeSpookDampingRotational_Y;
 
 	bEnableHingeRange = Source->bEnableHingeRange;
 	HingeRange = Source->HingeRange;
@@ -400,12 +400,12 @@ void UAGX_TrackProperties::CopyFrom(const FTrackPropertiesBarrier& Source)
 	HingeComplianceRotational_X = Source.GetHingeCompliance(3);
 	HingeComplianceRotational_Y = Source.GetHingeCompliance(4);
 
-	HingeDampingTranslational_X = Source.GetHingeDamping(0);
-	HingeDampingTranslational_Y = Source.GetHingeDamping(1);
-	HingeDampingTranslational_Z = Source.GetHingeDamping(2);
+	HingeSpookDampingTranslational_X = Source.GetHingeSpookDamping(0);
+	HingeSpookDampingTranslational_Y = Source.GetHingeSpookDamping(1);
+	HingeSpookDampingTranslational_Z = Source.GetHingeSpookDamping(2);
 
-	HingeDampingRotational_X = Source.GetHingeDamping(3);
-	HingeDampingRotational_Y = Source.GetHingeDamping(4);
+	HingeSpookDampingRotational_X = Source.GetHingeSpookDamping(3);
+	HingeSpookDampingRotational_Y = Source.GetHingeSpookDamping(4);
 
 	bEnableHingeRange = Source.GetHingeRangeEnabled();
 	HingeRange = Source.GetHingeRangeRange();
@@ -569,11 +569,11 @@ void UAGX_TrackProperties::UpdateNativeProperties()
 	NativeBarrier.SetHingeComplianceTranslationalZ(HingeComplianceTranslational_Z);
 	NativeBarrier.SetHingeComplianceRotationalX(HingeComplianceRotational_X);
 	NativeBarrier.SetHingeComplianceRotationalY(HingeComplianceRotational_Y);
-	NativeBarrier.SetHingeDampingTranslationalX(HingeDampingTranslational_X);
-	NativeBarrier.SetHingeDampingTranslationalY(HingeDampingTranslational_Y);
-	NativeBarrier.SetHingeDampingTranslationalZ(HingeDampingTranslational_Z);
-	NativeBarrier.SetHingeDampingRotationalX(HingeDampingRotational_X);
-	NativeBarrier.SetHingeDampingRotationalY(HingeDampingRotational_Y);
+	NativeBarrier.SetHingeSpookDampingTranslationalX(HingeSpookDampingTranslational_X);
+	NativeBarrier.SetHingeSpookDampingTranslationalY(HingeSpookDampingTranslational_Y);
+	NativeBarrier.SetHingeSpookDampingTranslationalZ(HingeSpookDampingTranslational_Z);
+	NativeBarrier.SetHingeSpookDampingRotationalX(HingeSpookDampingRotational_X);
+	NativeBarrier.SetHingeSpookDampingRotationalY(HingeSpookDampingRotational_Y);
 	NativeBarrier.SetHingeRangeEnabled(bEnableHingeRange);
 	NativeBarrier.SetHingeRangeRange(HingeRange);
 
@@ -652,29 +652,29 @@ void UAGX_TrackProperties::InitPropertyDispatcher()
 				HingeComplianceRotational_Y, SetHingeComplianceRotationalY)
 		});
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, HingeDampingTranslational_X),
+		GET_MEMBER_NAME_CHECKED(ThisClass, HingeSpookDampingTranslational_X),
 		[](ThisClass* This) {
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
-				HingeDampingTranslational_X, SetHingeDampingTranslationalX)
+				HingeSpookDampingTranslational_X, SetHingeSpookDampingTranslationalX)
 		});
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, HingeDampingTranslational_Y),
+		GET_MEMBER_NAME_CHECKED(ThisClass, HingeSpookDampingTranslational_Y),
 		[](ThisClass* This) {
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
-				HingeDampingTranslational_Y, SetHingeDampingTranslationalY)
+				HingeSpookDampingTranslational_Y, SetHingeSpookDampingTranslationalY)
 		});
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, HingeDampingTranslational_Z),
+		GET_MEMBER_NAME_CHECKED(ThisClass, HingeSpookDampingTranslational_Z),
 		[](ThisClass* This) {
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
-				HingeDampingTranslational_Z, SetHingeDampingTranslationalZ)
+				HingeSpookDampingTranslational_Z, SetHingeSpookDampingTranslationalZ)
 		});
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, HingeDampingRotational_X), [](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(HingeDampingRotational_X, SetHingeDampingRotationalX) });
+		GET_MEMBER_NAME_CHECKED(ThisClass, HingeSpookDampingRotational_X), [](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(HingeSpookDampingRotational_X, SetHingeSpookDampingRotationalX) });
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, HingeDampingRotational_Y), [](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(HingeDampingRotational_Y, SetHingeDampingRotationalY) });
+		GET_MEMBER_NAME_CHECKED(ThisClass, HingeSpookDampingRotational_Y), [](ThisClass* This)
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(HingeSpookDampingRotational_Y, SetHingeSpookDampingRotationalY) });
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, bEnableHingeRange), [](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(bEnableHingeRange, SetHingeRangeEnabled) });

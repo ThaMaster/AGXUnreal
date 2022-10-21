@@ -50,15 +50,15 @@ public:
 	void SetHingeComplianceRotationalZ(double Compliance);
 	double GetHingeCompliance(int32 DOF) const;
 
-	void SetHingeDamping(double Damping, int32 DOF);
-	void SetHingeDampingTranslational(double Damping);
-	void SetHingeDampingTranslationalX(double Damping);
-	void SetHingeDampingTranslationalY(double Damping);
-	void SetHingeDampingTranslationalZ(double Damping);
-	void SetHingeDampingRotational(double Damping);
-	void SetHingeDampingRotationalX(double Damping);
-	void SetHingeDampingRotationalY(double Damping);
-	double GetHingeDamping(int32 DOF) const;
+	void SetHingeSpookDamping(double Damping, int32 DOF);
+	void SetHingeSpookDampingTranslational(double Damping);
+	void SetHingeSpookDampingTranslationalX(double Damping);
+	void SetHingeSpookDampingTranslationalY(double Damping);
+	void SetHingeSpookDampingTranslationalZ(double Damping);
+	void SetHingeSpookDampingRotational(double Damping);
+	void SetHingeSpookDampingRotationalX(double Damping);
+	void SetHingeSpookDampingRotationalY(double Damping);
+	double GetHingeSpookDamping(int32 DOF) const;
 
 	void SetHingeRangeEnabled(bool bEnable);
 	bool GetHingeRangeEnabled() const;
