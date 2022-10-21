@@ -422,7 +422,7 @@ void UAGX_TrackInternalMergeProperties::UpdateNativeProperties(UAGX_TrackCompone
 		return;
 	}
 
-	/// \note Be aware that this method is probably be called from
+	/// \note Be aware that this method will probably be called from
 	/// UAGX_TrackComponent::CreateNative(), which means that the native is potentially under
 	/// construction and that it is therefore a bit sensitive to exactly where from within that
 	/// function that this function is called.
