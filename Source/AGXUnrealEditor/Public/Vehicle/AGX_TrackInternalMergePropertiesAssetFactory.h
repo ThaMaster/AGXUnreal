@@ -20,14 +20,13 @@ class AGXUNREALEDITOR_API UAGX_TrackInternalMergePropertiesAssetFactory : public
 public:
 	UAGX_TrackInternalMergePropertiesAssetFactory(const class FObjectInitializer& OBJ);
 
+	virtual UObject* FactoryCreateNew(
+		UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context,
+		FFeedbackContext* Warn) override;
+
 protected:
 	virtual bool IsMacroFactory() const
 	{
 		return false;
 	}
-
-public:
-	virtual UObject* FactoryCreateNew(
-		UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context,
-		FFeedbackContext* Warn) override;
 };

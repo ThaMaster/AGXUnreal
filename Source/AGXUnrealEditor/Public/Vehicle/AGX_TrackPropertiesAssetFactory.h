@@ -18,14 +18,13 @@ class AGXUNREALEDITOR_API UAGX_TrackPropertiesFactory : public UFactory
 public:
 	UAGX_TrackPropertiesFactory(const class FObjectInitializer& OBJ);
 
+	virtual UObject* FactoryCreateNew(
+		UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context,
+		FFeedbackContext* Warn) override;
+
 protected:
 	virtual bool IsMacroFactory() const
 	{
 		return false;
 	}
-
-public:
-	virtual UObject* FactoryCreateNew(
-		UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context,
-		FFeedbackContext* Warn) override;
 };
