@@ -2,15 +2,9 @@
 
 #pragma once
 
-// AGX Dynamics for Unreal includes.
-#include "Vehicle/AGX_TrackRenderer.h"
-
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
-#include "Layout/Visibility.h"
-
-class UAGX_TrackRenderer;
 
 class IDetailLayoutBuilder;
 

@@ -74,6 +74,7 @@
 #include "Vehicle/AGX_TrackComponentDetails.h"
 #include "Vehicle/AGX_TrackComponentVisualizer.h"
 #include "Vehicle/AGX_TrackPropertiesAssetTypeActions.h"
+#include "Vehicle/AGX_TrackRenderer.h"
 #include "Vehicle/AGX_TrackRendererDetails.h"
 #include "Vehicle/AGX_TrackInternalMergePropertiesAssetTypeActions.h"
 #include "Wire/AGX_WireActor.h"
