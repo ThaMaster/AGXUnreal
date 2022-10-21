@@ -162,7 +162,7 @@ public:
 	 * This should be set to an estimation of the force, in Newtons, by which the two colliding
 	 * objects are being pushed together. If the main contributor to this force is gravity then
 	 * this value should be set to the mass of the upper object and any additional load it is
-	 * carrying times the gravitational acceleration in m/s^2, i.e. around 9.8.
+	 * carrying times the gravitational acceleration in m/s^2.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Friction",
