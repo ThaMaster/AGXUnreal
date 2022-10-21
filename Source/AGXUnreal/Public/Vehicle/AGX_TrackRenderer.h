@@ -35,7 +35,9 @@ public:
 
 	/**
 	 * Local Translation to apply to the Static Mesh before synchronizing its position and
-	 * rotation with a track node. Applied after Scale.
+	 * rotation with a track node [cm].
+	 *
+	 * Applied after Scale.
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = StaticMesh,
