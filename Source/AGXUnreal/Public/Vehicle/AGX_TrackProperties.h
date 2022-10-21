@@ -27,7 +27,7 @@ class AGXUNREAL_API UAGX_TrackProperties : public UObject
 public:
 	/**
 	 * Compliance of the hinges between track nodes, along the axis pointing vertically
-	 * out from the track node. [m/N]
+	 * out from the track node [m/N].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Hinge Compliance",
@@ -35,7 +35,7 @@ public:
 	FAGX_Real HingeComplianceTranslational_X = DefaultHingeCompliance;
 
 	/**
-	 * Compliance of the hinges between track nodes, along the track direction. [m/N]
+	 * Compliance of the hinges between track nodes, along the track direction [m/N].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Hinge Compliance",
@@ -44,7 +44,7 @@ public:
 
 	/**
 	 * Compliance of the hinges between track nodes, along the axis pointing sideways
-	 * (i.e. the rotation axis). [m/N]
+	 * (i.e. the rotation axis) [m/N].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Hinge Compliance",
@@ -77,7 +77,7 @@ public:
 
 	/**
 	 * Compliance of the hinges between track nodes, around the axis pointing vertically
-	 * out from the track node. [rad/Nm]
+	 * out from the track node [rad/Nm].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Hinge Compliance",
@@ -85,7 +85,7 @@ public:
 	FAGX_Real HingeComplianceRotational_X = DefaultHingeCompliance;
 
 	/**
-	 * Compliance of the hinges between track nodes, around the track direction. [rad/Nm]
+	 * Compliance of the hinges between track nodes, around the track direction [rad/Nm].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Hinge Compliance",
@@ -108,20 +108,20 @@ public:
 
 	/**
 	 * Spook damping of the hinges between track nodes, along the axis pointing vertically
-	 * out from the track node. [s]
+	 * out from the track node [s].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeSpookDampingTranslational_X = DefaultHingeSpookDamping;
 
 	/**
-	 * Spook damping of the hinges between track nodes, along the track direction. [s]
+	 * Spook damping of the hinges between track nodes, along the track direction [s].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeSpookDampingTranslational_Y = DefaultHingeSpookDamping;
 
 	/**
 	 * Spook damping of the hinges between track nodes, along the axis pointing sideways
-	 * (i.e. the rotation axis). [s]
+	 * (i.e. the rotation axis) [s].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeSpookDampingTranslational_Z = DefaultHingeSpookDamping;
@@ -143,13 +143,13 @@ public:
 
 	/**
 	 * Spook damping of the hinges between track nodes, around the axis pointing vertically
-	 * out from the track node. [s]
+	 * out from the track node [s].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeSpookDampingRotational_X = DefaultHingeSpookDamping;
 
 	/**
-	 * Spook damping of the hinges between track nodes, around the track direction. [s]
+	 * Spook damping of the hinges between track nodes, around the track direction [s].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Damping", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeSpookDampingRotational_Y = DefaultHingeSpookDamping;
@@ -182,7 +182,7 @@ public:
 	bool GetHingeRangeEnabled() const;
 
 	/**
-	 * Range used if the hinge range between the nodes is enabled. [degrees]
+	 * Range used if the hinge range between the nodes is enabled [degrees].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Range", Meta = (EditCondition = "bEnableHingeRange"))
 	FAGX_RealInterval HingeRange {-120, 20};
@@ -230,7 +230,7 @@ public:
 	bool GetOnInitializeTransformNodesToWheelsEnabled() const;
 
 	/**
-	 * When the nodes are transformed to the wheels, this is the final target overlap. [cm]
+	 * When the nodes are transformed to the wheels, this is the final target overlap [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Merge/Split Properties")
 	FAGX_Real TransformNodesToWheelsOverlap = 0.1;
@@ -302,7 +302,7 @@ public:
 
 	/**
 	 * Minimum value of the normal force (the hinge force along the track) used in
-	 * "internal" friction calculations. [N]
+	 * "internal" friction calculations [N].
 	 *
 	 * I.e., when the track is compressed, this value is used with the friction coefficient
 	 * as a minimum stabilizing compliance. If this value is negative there will be

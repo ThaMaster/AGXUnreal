@@ -100,7 +100,7 @@ public:
 	bool GetLockToReachMergeConditionEnabled() const;
 
 	/**
-	 * Compliance of the hinge lock used to reach merge condition. [rad/Nm]
+	 * Compliance of the hinge lock used to reach merge condition [rad/Nm].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Track Internal Merge Properties",
@@ -124,7 +124,7 @@ public:
 	float GetLockToReachMergeConditionCompliance_BP() const;
 
 	/**
-	 * Damping of the hinge lock used to reach merge condition. [s]
+	 * Damping of the hinge lock used to reach merge condition [s].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Track Internal Merge Properties",
@@ -148,7 +148,7 @@ public:
 	float GetLockToReachMergeConditionSpookDamping_BP() const;
 
 	/**
-	 * Maximum angle to trigger merge between nodes. [degrees]
+	 * Maximum angle to trigger merge between nodes [degrees].
 	 *
 	 * I.e., when the angle between two nodes < maxAngleMergeCondition the nodes will merge.
 	 */

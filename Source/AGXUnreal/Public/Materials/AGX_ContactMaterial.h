@@ -158,7 +158,7 @@ public:
 	EAGX_FrictionModel GetFrictionModel() const;
 
 	/**
-	 * Constant normal force used by the friction model 'Constant Normal Force Box Friction'. [N]
+	 * Constant normal force used by the friction model 'Constant Normal Force Box Friction' [N].
 	 *
 	 * This should be set to an estimation of the force, in Newtons, by which the two colliding
 	 * objects are being pushed together. If the main contributor to this force is gravity then
