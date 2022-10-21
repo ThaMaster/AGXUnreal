@@ -113,7 +113,7 @@ void FAGX_ImportUtilities::MakePackageAndAssetNameUnique(FString& PackageName, F
 	if (AssetName != WantedAssetName)
 	{
 		UE_LOG(
-			LogAGX, Warning, TEXT("Asset '%s' imported with name '%s' because of name conflict."),
+			LogAGX, Log, TEXT("Asset '%s' imported with name '%s' because of name conflict."),
 			*WantedAssetName, *AssetName);
 	}
 }
