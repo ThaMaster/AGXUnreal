@@ -45,7 +45,10 @@ namespace
 			const auto& Rotation = std::get<1>(Transform);
 
 			// Draw x, y, z axes.
-			DrawCoordinateSystem(PDI, Position, Rotation, 20.0f, 100, 1.3f);
+			const float Scale {20.0f};
+			const uint8 DepthPriority {100};
+			const float Thickness {1.3F};
+			DrawCoordinateSystem(PDI, Position, Rotation, Scale, DepthPriority, Thickness);
 		}
 	}
 
@@ -64,9 +67,13 @@ namespace
 			const auto& Rotation = std::get<1>(Transform);
 
 			// Draw arrow.
+			const float Length {30.0f};
+			const float ArrowSize {3.0f};
+			const uint8 DepthPriority {101};
+			const float Thickness {0.8f};
 			DrawDirectionalArrow(
 				PDI, XToZAxisRot * FRotationTranslationMatrix(Rotation, Position),
-				FLinearColor(1, 1, 1), 30.0f, 3.0f, 101, 0.8f);
+				FLinearColor::White, Length, ArrowSize, DepthPriority, Thickness);
 		}
 	}
 
@@ -74,13 +81,15 @@ namespace
 		const TArray<FVector>& MassCenters, FMaterialRenderProxy*& MaterialProxy,
 		const FSceneView* View, FPrimitiveDrawInterface* PDI)
 	{
-		FLinearColor Color(1.0, 0.0, 1.0, 1.0f);
+		FLinearColor Magenta(1.0, 0.0, 1.0);
 
 #ifdef DRAW_SOLID_VISUALIZERS
 		// Create the material proxy if not yet created.
 		if (MaterialProxy == nullptr)
+		{
 			MaterialProxy =
-				new FColoredMaterialRenderProxy(GEngine->GeomMaterial->GetRenderProxy(), Color);
+				new FColoredMaterialRenderProxy(GEngine->GeomMaterial->GetRenderProxy(), Magenta);
+		}
 #endif
 
 		for (const FVector& Position : MassCenters)
@@ -89,12 +98,20 @@ namespace
 			// Draw solid sphere.
 			// \todo Is there an easier or better way to draw a solid sphere from a component
 			// visualizer?
+			const FVector Radii(3.0f);
+			const int32 NumSides {4};
+			const int32 NumRings {4};
+			const uint8 DepthPriority {102};
 			DrawSphere(
-				PDI, Position, FRotator::ZeroRotator, FVector(3.0f), 4, 4, MaterialProxy,
-				(uint8) 102);
+				PDI, Position, FRotator::ZeroRotator, Radii, NumSides, NumRings, MaterialProxy,
+				DepthPriority);
 #else
 			// Draw a thick-lined wire diamond that will appear as a solid world-space sized dot.
-			DrawWireDiamond(PDI, FTranslationMatrix(Position), 2.5f, Color, (uint8) 102, 2.5f);
+			const float Size {2.5f};
+			const uint8 DepthPriority {102};
+			const float Thickness {2.5f};
+			DrawWireDiamond(
+				PDI, FTranslationMatrix(Position), Size, Magenta, DepthPriority, Thickness);
 #endif
 		}
 	}
@@ -146,8 +163,9 @@ namespace
 						LogAGX, Log,
 						TEXT("TrackComponentVisualizer is creating a common collision box material "
 							 "proxy."));
+					const FLinearColor TransparentGray(0, 0, 0, 0.3f);
 					CommonMaterialProxy = new FColoredMaterialRenderProxy(
-						GEngine->GeomMaterial->GetRenderProxy(), FLinearColor(0, 0, 0, 0.3f));
+						GEngine->GeomMaterial->GetRenderProxy(), TransparentGray);
 				}
 				BoxMaterialProxy = CommonMaterialProxy;
 			}
@@ -406,7 +424,7 @@ void FAGX_TrackComponentVisualizer::DrawVisualization(
 	}
 
 	// \todo Is there a better way to determine if we are in the BP Actor Editor?
-	bool bIsInBlueprintEditor =
+	const bool bIsInBlueprintEditor =
 		TrackComponent->GetOutermost()->GetName().Equals("/Engine/Transient");
 
 	// By default DrawVisualization is called when the component's Actor is selected in the Level
@@ -414,7 +432,7 @@ void FAGX_TrackComponentVisualizer::DrawVisualization(
 	// etc in the same actor the Level Editor's viewport gets very messy. Therefore, with the
 	// following boolean we only draw the visualization if the component is selected in the Level
 	// Editor, not the actor.
-	bool bDrawVisualizer = TrackComponent->IsSelectedInEditor() || bIsInBlueprintEditor;
+	const bool bDrawVisualizer = TrackComponent->IsSelectedInEditor() || bIsInBlueprintEditor;
 	if (!bDrawVisualizer)
 	{
 		return;
