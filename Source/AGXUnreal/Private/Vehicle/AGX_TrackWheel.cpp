@@ -44,9 +44,9 @@ bool FAGX_TrackWheel::GetTransformRelativeToBody(FVector& RelPosition, FQuat& Re
 
 			// Given the Frame Component and a Position and Rotation in its local coordinate system,
 			// compute the Frame Position and Rotation in the coordinate system of the body.
-			FVector WorldPosition =
+			const FVector WorldPosition =
 				FrameComponent->GetComponentTransform().TransformPositionNoScale(RelPosition);
-			FQuat WorldRotation =
+			const FQuat WorldRotation =
 				FrameComponent->GetComponentTransform().TransformRotation(RelRotation);
 			RelPosition =
 				Body->GetComponentTransform().InverseTransformPositionNoScale(WorldPosition);
