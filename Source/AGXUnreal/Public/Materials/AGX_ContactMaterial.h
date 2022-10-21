@@ -42,8 +42,7 @@ class UAGX_MaterialBase;
  * created.
  */
 UCLASS(
-	ClassGroup = "AGX", Category = "AGX", BlueprintType,
-	AutoCollapseCategories = ("Hinge Compliance", "Hinge Damping"))
+	ClassGroup = "AGX", Category = "AGX", BlueprintType)
 class AGXUNREAL_API UAGX_ContactMaterial : public UObject
 {
 	GENERATED_BODY()
