@@ -360,8 +360,8 @@ bool UAGX_TrackRenderer::ComputeNodeTransforms(
 		}
 		check(Preview->NodeTransforms.Num() == Preview->NodeHalfExtents.Num());
 
-		FVector PhysicsNodeSize = 2 * Preview->NodeHalfExtents[0];
-		FVector BodyFrameToNodeCenter = FVector(0, 0, 0.5f * PhysicsNodeSize.Z);
+		const FVector PhysicsNodeSize = 2 * Preview->NodeHalfExtents[0];
+		const FVector BodyFrameToNodeCenter = FVector(0, 0, 0.5f * PhysicsNodeSize.Z);
 		FVector VisualScale, VisualOffset;
 		if (bAutoScaleAndOffset)
 		{
@@ -376,7 +376,7 @@ bool UAGX_TrackRenderer::ComputeNodeTransforms(
 		OutTransforms.SetNum(Preview->NodeTransforms.Num(), /*bAllowShrinking*/ true);
 		for (int i = 0; i < Preview->NodeTransforms.Num(); ++i)
 		{
-			FVector WorldOffset = Preview->NodeTransforms[i].GetRotation().RotateVector(
+			const FVector WorldOffset = Preview->NodeTransforms[i].GetRotation().RotateVector(
 				VisualOffset + BodyFrameToNodeCenter);
 
 			OutTransforms[i].SetScale3D(VisualScale);
@@ -390,8 +390,8 @@ bool UAGX_TrackRenderer::ComputeNodeTransforms(
 bool UAGX_TrackRenderer::ComputeVisualScaleAndOffset(
 	FVector& OutVisualScale, FVector& OutVisualOffset, const FVector& PhysicsNodeSize) const
 {
-	FVector LocalMeshBoundsSize = LocalMeshBoundsMax - LocalMeshBoundsMin;
-	FVector LocalBoundsCenter = LocalMeshBoundsMin + LocalMeshBoundsSize * 0.5f;
+	const FVector LocalMeshBoundsSize = LocalMeshBoundsMax - LocalMeshBoundsMin;
+	const FVector LocalBoundsCenter = LocalMeshBoundsMin + LocalMeshBoundsSize * 0.5f;
 
 	if (FMath::IsNearlyZero(LocalMeshBoundsSize.X) || FMath::IsNearlyZero(LocalMeshBoundsSize.Y) ||
 		FMath::IsNearlyZero(LocalMeshBoundsSize.Z))
