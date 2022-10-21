@@ -29,17 +29,13 @@ public:
 	 * Compliance of the hinges between track nodes, along the axis pointing vertically
 	 * out from the track node [m/N].
 	 */
-	UPROPERTY(
-		EditAnywhere, Category = "Hinge Compliance",
-		Meta = (ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, Category = "Hinge Compliance", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeComplianceTranslational_X = DefaultHingeCompliance;
 
 	/**
 	 * Compliance of the hinges between track nodes, along the track direction [m/N].
 	 */
-	UPROPERTY(
-		EditAnywhere, Category = "Hinge Compliance",
-		Meta = (ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, Category = "Hinge Compliance", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeComplianceTranslational_Y = DefaultHingeCompliance;
 
 	/**
@@ -48,8 +44,7 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "Hinge Compliance",
-		Meta =
-			(DisplayName = "SetHingeComplianceTranslational", ClampMin = "0.0"))
+		Meta = (DisplayName = "SetHingeComplianceTranslational", ClampMin = "0.0"))
 	FAGX_Real HingeComplianceTranslational_Z = DefaultHingeCompliance;
 
 	void SetHingeComplianceTranslational(
@@ -79,17 +74,13 @@ public:
 	 * Compliance of the hinges between track nodes, around the axis pointing vertically
 	 * out from the track node [rad/Nm].
 	 */
-	UPROPERTY(
-		EditAnywhere, Category = "Hinge Compliance",
-		Meta = (ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, Category = "Hinge Compliance", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeComplianceRotational_X = DefaultHingeCompliance;
 
 	/**
 	 * Compliance of the hinges between track nodes, around the track direction [rad/Nm].
 	 */
-	UPROPERTY(
-		EditAnywhere, Category = "Hinge Compliance",
-		Meta = (ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, Category = "Hinge Compliance", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeComplianceRotational_Y = DefaultHingeCompliance;
 
 	void SetHingeComplianceRotational(double ComplianceX, double ComplianceY);
