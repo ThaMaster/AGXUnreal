@@ -91,7 +91,7 @@ void UAGX_TrackRenderer::ApplyComponentInstanceData(
 	//       instance data we have no way ourselves to pass the CacheApplyPhase to this function.
 	// if (CacheApplyPhase == ECacheApplyPhase::PostUserConstructionScript)
 	{
-		bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+		const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
 		if (bIsPlaying)
 		{
 			// In case the game is paused, update the render data here, so we can see visual changes
@@ -150,7 +150,7 @@ void UAGX_TrackRenderer::PostLoad()
 		ClearInstances();
 	}
 
-	bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
 	if (!bIsPlaying)
 	{
 		// Bind to TrackPreviewNeedsUpdateEvent of the target track so that we know
@@ -170,7 +170,7 @@ void UAGX_TrackRenderer::OnAttachmentChanged()
 		GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
 
-	bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
 	if (!bIsPlaying)
 	{
 		// Target track might have changed, so rebind to the TrackPreviewNeedsUpdateEvent
@@ -186,7 +186,7 @@ void UAGX_TrackRenderer::RebindToTrackPreviewNeedsUpdateEvent(bool bSynchronizeI
 		return;
 	}
 
-	bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
 	if (bIsPlaying)
 	{
 		// Track preview only relevant when not playing.
@@ -323,7 +323,7 @@ bool UAGX_TrackRenderer::ComputeNodeTransforms(
 
 	// Get node transforms either from the actual track when playing,
 	// or from a generated preview if not playing.
-	bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
 	if (bIsPlaying)
 	{
 		// Get mesh instance transforms from the native.
