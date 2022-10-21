@@ -772,9 +772,13 @@ void UAGX_RigidBodyComponent::SetMass(float InMass)
 	if (HasNative())
 	{
 		NativeBarrier.GetMassProperties().SetMass(InMass);
-		// \todo Should probably trigger and UpdateMassProperties here if
-		// bAutoGeneratePrincipalInertia is true, because the auto generated
-		// inertia tensor is dependent on the mass.
+		if (bAutoGeneratePrincipalInertia)
+		{
+			// Principal inertia depend on the mass, so changing the mass on the native may have
+			// changed the principal inertia as well. Read it back from the native so that the
+			// Unreal Engine representation is kept in sync.
+			PrincipalInertia = NativeBarrier.GetMassProperties().GetPrincipalInertia();
+		}
 	}
 	Mass = InMass;
 }
