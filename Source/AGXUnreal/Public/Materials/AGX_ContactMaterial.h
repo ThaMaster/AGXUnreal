@@ -533,11 +533,12 @@ public:
 		Meta = (DisplayName = "Get Adhesive Overlap"))
 	float GetAdhesiveOverlap_BP() const;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
+	void CommitToAsset();
+
 public:
 	UAGX_ContactMaterial() = default;
 	virtual ~UAGX_ContactMaterial() = default;
-
-	void CommitToAsset();
 
 	void CopyFrom(const UAGX_ContactMaterial* Source);
 	void CopyFrom(const FContactMaterialBarrier& Source);
