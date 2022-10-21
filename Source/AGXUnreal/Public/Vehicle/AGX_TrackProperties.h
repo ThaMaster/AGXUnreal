@@ -19,7 +19,7 @@
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", BlueprintType,
-	AutoCollapseCategories = ("Hinge Compliance", "Hinge Damping"))
+	AutoCollapseCategories = ("Hinge Compliance", "Hinge Spook Damping"))
 class AGXUNREAL_API UAGX_TrackProperties : public UObject
 {
 	GENERATED_BODY()
