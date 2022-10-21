@@ -246,7 +246,7 @@ public:
 			(ClampMin = "0.0", UIMin = "0.0",
 			 // We would like to include a check for oriented friction model here, but Unreal
 			 // Engine 4.26 doesn't support that in combination with InlineEditConditionToggle on
-			 // bUseSecondarySurfaceViscosity.
+			 // bUseSecondaryFrictionCoefficient.
 			 EditCondition = "bUseSecondaryFrictionCoefficient"))
 	FAGX_Real SecondaryFrictionCoefficient {0.25 / (2 * 0.3)};
 
