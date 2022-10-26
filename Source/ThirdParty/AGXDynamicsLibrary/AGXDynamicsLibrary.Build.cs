@@ -222,6 +222,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		LinkLibFiles.Add("agxTerrain", LibSource.AGX);
 		LinkLibFiles.Add("agxCable", LibSource.AGX);
 		LinkLibFiles.Add("agxModel", LibSource.AGX);
+		LinkLibFiles.Add("agxVehicle", LibSource.AGX);
 
 		// List of the include directories from aGX Dynamics and its
 		// dependenciesthat we need. These will be added to the Unreal Engine
@@ -294,6 +295,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			DelayLoadLibraries.Add("agxTerrain", LibSource.AGX);
 			DelayLoadLibraries.Add("agxCable", LibSource.AGX);
 			DelayLoadLibraries.Add("agxModel", LibSource.AGX);
+			DelayLoadLibraries.Add("agxVehicle", LibSource.AGX);
 			AddDelayLoadDependencies(DelayLoadLibraries);
 		}
 

@@ -18,8 +18,8 @@
 namespace
 {
 	constexpr float DEFAULT_SCREEN_SIZE {0.0025f};
-	constexpr float ARROW_RADIUS_FACTOR {0.03f};
-	constexpr float ARROW_HEAD_FACTOR {0.2f};
+	constexpr float ARROW_RADIUS_FACTOR {0.005f};
+	constexpr float ARROW_HEAD_FACTOR {0.1f};
 	constexpr float ARROW_HEAD_ANGLE {20.f};
 
 	/**
@@ -47,7 +47,7 @@ namespace
 			const float HeadLength = TotalLength * ARROW_HEAD_FACTOR;
 			const float ShaftRadius = TotalLength * ARROW_RADIUS_FACTOR;
 			const float ShaftLength =
-				(TotalLength - HeadLength) * 1.1f; // 10% overlap between shaft and head
+				(TotalLength - HeadLength * 0.8f); // 0.8 instead of 1.0 for a little overlap with head
 			const FVector3f ShaftCenter(0.5f * ShaftLength, 0, 0);
 
 			TArray<FDynamicMeshVertex> OutVerts;

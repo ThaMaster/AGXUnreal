@@ -10,8 +10,6 @@
 
 void FAGXUnrealModule::StartupModule()
 {
-	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealModule::StartupModule()"));
-
 	RegisterCoreRedirects();
 	FAGX_RuntimeStyle::Initialize();
 	FAGX_RuntimeStyle::ReloadTextures();
@@ -19,8 +17,6 @@ void FAGXUnrealModule::StartupModule()
 
 void FAGXUnrealModule::ShutdownModule()
 {
-	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealModule::ShutdownModule()"));
-
 	FAGX_RuntimeStyle::Shutdown();
 }
 

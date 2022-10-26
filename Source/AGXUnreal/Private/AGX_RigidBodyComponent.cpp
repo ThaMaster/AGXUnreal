@@ -128,21 +128,21 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 	// when moving the Component using the Widget in the Level Viewport. They are instead handled in
 	// PostEditComponentMove. The local transformations, however, the ones at the top of the Details
 	// Panel, are properties and do end up here.
-	PropertyDispatcher.Add(
-		this->GetRelativeLocationPropertyName(),
-		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+	PropertyDispatcher.Add(this->GetRelativeLocationPropertyName(), [](ThisClass* This) {
+		This->TryWriteTransformToNative();
+	});
 
-	PropertyDispatcher.Add(
-		this->GetRelativeRotationPropertyName(),
-		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+	PropertyDispatcher.Add(this->GetRelativeRotationPropertyName(), [](ThisClass* This) {
+		This->TryWriteTransformToNative();
+	});
 
-	PropertyDispatcher.Add(
-		this->GetAbsoluteLocationPropertyName(),
-		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+	PropertyDispatcher.Add(this->GetAbsoluteLocationPropertyName(), [](ThisClass* This) {
+		This->TryWriteTransformToNative();
+	});
 
-	PropertyDispatcher.Add(
-		this->GetAbsoluteRotationPropertyName(),
-		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+	PropertyDispatcher.Add(this->GetAbsoluteRotationPropertyName(), [](ThisClass* This) {
+		This->TryWriteTransformToNative();
+	});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bEnabled),
@@ -162,8 +162,9 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGenerateCenterOfMassOffset),
-		[](ThisClass* This)
-		{ This->SetAutoGenerateCenterOfMassOffset(This->bAutoGenerateCenterOfMassOffset); });
+		[](ThisClass* This) {
+			This->SetAutoGenerateCenterOfMassOffset(This->bAutoGenerateCenterOfMassOffset);
+		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, PrincipalInertia),
@@ -171,8 +172,9 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGeneratePrincipalInertia),
-		[](ThisClass* This)
-		{ This->SetAutoGeneratePrincipalInertia(This->bAutoGeneratePrincipalInertia); });
+		[](ThisClass* This) {
+			This->SetAutoGeneratePrincipalInertia(This->bAutoGeneratePrincipalInertia);
+		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Velocity),
@@ -416,6 +418,8 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 		MassProperties.SetPrincipalInertia(PrincipalInertia);
 	}
 
+	NativeBarrier.UpdateMassProperties(); // make sure mass properties are really updated
+
 	NativeBarrier.SetVelocity(Velocity);
 	NativeBarrier.SetAngularVelocity(AngularVelocity);
 	NativeBarrier.SetName(GetName());
@@ -494,15 +498,13 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 	const FVector NewLocation = NativeBarrier.GetPosition();
 	const FQuat NewRotation = NativeBarrier.GetRotation();
 
-	auto TransformSelf = [this, &NewLocation, &NewRotation]()
-	{
+	auto TransformSelf = [this, &NewLocation, &NewRotation]() {
 		const FVector OldLocation = GetComponentLocation();
 		const FVector LocationDelta = NewLocation - OldLocation;
 		MoveComponent(LocationDelta, NewRotation, false);
 	};
 
-	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor)
-	{
+	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor) {
 		// Where Ancestor is relative to RigidBodyComponent, i.e., how the AGX Dynamics
 		// transformation should be changed in order to be applicable to Ancestor.
 		const FTransform AncestorRelativeToBody =
@@ -523,9 +525,8 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 		Ancestor.SetWorldTransform(NewTransform);
 	};
 
-	auto TryTransformAncestor =
-		[this, &NewLocation, &NewRotation, &TransformAncestor](USceneComponent* Ancestor)
-	{
+	auto TryTransformAncestor = [this, &NewLocation, &NewRotation,
+								 &TransformAncestor](USceneComponent* Ancestor) {
 		if (Ancestor == nullptr)
 		{
 			UE_LOG(
@@ -575,7 +576,7 @@ bool UAGX_RigidBodyComponent::CanEditChange(
 #else
 	const FProperty* InProperty
 #endif
-) const
+	) const
 {
 // This code was used when we had a bool property for the transform target and it used to enable
 // or disable the checkbox in the Details Panel. Now that we have a drop-down list instead doing
@@ -637,9 +638,7 @@ TStructOnScope<FActorComponentInstanceData> UAGX_RigidBodyComponent::GetComponen
 	const
 {
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
-		this, this,
-		[](UActorComponent* Component)
-		{
+		this, this, [](UActorComponent* Component) {
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
@@ -773,6 +772,13 @@ void UAGX_RigidBodyComponent::SetMass(float InMass)
 	if (HasNative())
 	{
 		NativeBarrier.GetMassProperties().SetMass(InMass);
+		if (bAutoGeneratePrincipalInertia)
+		{
+			// Principal inertia depend on the mass, so changing the mass on the native may have
+			// changed the principal inertia as well. Read it back from the native so that the
+			// Unreal Engine representation is kept in sync.
+			PrincipalInertia = NativeBarrier.GetMassProperties().GetPrincipalInertia();
+		}
 	}
 	Mass = InMass;
 }
@@ -794,6 +800,7 @@ void UAGX_RigidBodyComponent::SetAutoGenerateMass(bool bInAuto)
 	if (HasNative())
 	{
 		NativeBarrier.GetMassProperties().SetAutoGenerateMass(bInAuto);
+		NativeBarrier.UpdateMassProperties(); // trigger an update of mass properties
 	}
 	bAutoGenerateMass = bInAuto;
 }
@@ -836,6 +843,7 @@ void UAGX_RigidBodyComponent::SetAutoGenerateCenterOfMassOffset(bool bInAuto)
 	if (HasNative())
 	{
 		NativeBarrier.GetMassProperties().SetAutoGenerateCenterOfMassOffset(bInAuto);
+		NativeBarrier.UpdateMassProperties(); // trigger an update of mass properties
 	}
 	bAutoGenerateCenterOfMassOffset = bInAuto;
 }
@@ -885,6 +893,7 @@ void UAGX_RigidBodyComponent::SetAutoGeneratePrincipalInertia(bool bInAuto)
 	if (HasNative())
 	{
 		NativeBarrier.GetMassProperties().SetAutoGeneratePrincipalInertia(bInAuto);
+		NativeBarrier.UpdateMassProperties(); // trigger an update of mass properties
 	}
 	bAutoGeneratePrincipalInertia = bInAuto;
 }

@@ -43,6 +43,8 @@ public:
 	static void SetEnvironmentVariableEntries(
 		const FString& EnvVarName, const TArray<FString>& Entries);
 
+	void SetNumThreads(uint32 NumThreads);
+
 	static bool IsSetupEnvRun();
 
 	static FString GetAGXDynamicsVersion();

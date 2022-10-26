@@ -4,13 +4,16 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "Materials/AGX_ContactMaterialAsset.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Vehicle/AGX_TrackInternalMergeProperties.h"
+#include "Vehicle/AGX_TrackProperties.h"
+#include "Vehicle/TrackBarrier.h"
 
 // Unreal Engine includes.
 #include "AssetToolsModule.h"
@@ -23,7 +26,6 @@
 #include "Misc/Paths.h"
 #include "RawMesh.h"
 #include "Kismet2/ComponentEditorUtils.h"
-#include "UObject/SavePackage.h"
 
 namespace
 {
@@ -33,6 +35,28 @@ namespace
 		const FString& AssetType, FInitAssetCallback InitAsset)
 	{
 		AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, FallbackName, AssetType);
+
+		// If the asset name ends with lots of numbers then Unreal believes that
+		// it is a counter starts looping trying to find the next available number,
+		// which fails if the number is larger than the largest int32. This hack
+		// twarts that by adding a useless character to the end of the name.
+		int32 NumEndingNumerics = 0;
+		for (int32 CharIndex = AssetName.Len() - 1; CharIndex >= 0; --CharIndex)
+		{
+			bool isNumeric = AssetName[CharIndex] >= TEXT('0') && AssetName[CharIndex] <= TEXT('9');
+			if (!isNumeric)
+				break;
+			NumEndingNumerics++;
+		}
+		if (NumEndingNumerics >= 10)
+		{
+			AssetName = AssetName + "c";
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Asset '%s' was appended with a 'c' to avoid Unreal name processing bug."),
+				*AssetName);
+		}
+
 		FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryName, AssetType);
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
@@ -219,26 +243,26 @@ namespace
 	}
 }
 
-UAGX_ContactMaterialAsset* FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
+UAGX_ContactMaterial* FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
 	const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterial* Material1,
 	UAGX_ShapeMaterial* Material2, const FString& DirectoryName)
 {
 	const FString Name = TEXT("CM") + GetName(Material1) + GetName(Material2);
 
-	auto InitAsset = [&](UAGX_ContactMaterialAsset& Asset)
+	auto InitAsset = [&](UAGX_ContactMaterial& Asset)
 	{
-		Asset.CopyFrom(&ContactMaterial);
+		Asset.CopyFrom(ContactMaterial);
 		Asset.Material1 = Material1;
 		Asset.Material2 = Material2;
 	};
 
-	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_ContactMaterialAsset>(
+	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_ContactMaterial>(
 		DirectoryName, Name, TEXT(""), TEXT("ContactMaterial"), InitAsset);
 	if (!WriteAssetToDisk(AtdInfo))
 	{
 		return nullptr;
 	}
-	return Cast<UAGX_ContactMaterialAsset>(AtdInfo.Asset);
+	return Cast<UAGX_ContactMaterial>(AtdInfo.Asset);
 }
 
 UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
@@ -326,6 +350,35 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	}
 
 	return Material;
+}
+
+UAGX_TrackInternalMergeProperties*
+FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
+	const FTrackBarrier& Barrier, const FString& DirectoryName, const FString& Name)
+{
+	auto InitAsset = [&](UAGX_TrackInternalMergeProperties& Asset) { Asset.CopyFrom(Barrier); };
+
+	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_TrackInternalMergeProperties>(
+		DirectoryName, Name, TEXT(""), TEXT("TrackInternalMergeProperties"), InitAsset);
+	if (!WriteAssetToDisk(AtdInfo))
+	{
+		return nullptr;
+	}
+	return Cast<UAGX_TrackInternalMergeProperties>(AtdInfo.Asset);
+}
+
+UAGX_TrackProperties* FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
+	const FTrackPropertiesBarrier& Barrier, const FString& DirectoryName, const FString& Name)
+{
+	auto InitAsset = [&](UAGX_TrackProperties& Asset) { Asset.CopyFrom(Barrier); };
+
+	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_TrackProperties>(
+		DirectoryName, Name, TEXT(""), TEXT("TrackProperties"), InitAsset);
+	if (!WriteAssetToDisk(AtdInfo))
+	{
+		return nullptr;
+	}
+	return Cast<UAGX_TrackProperties>(AtdInfo.Asset);
 }
 
 void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)

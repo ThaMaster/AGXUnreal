@@ -36,6 +36,7 @@
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Wire/AGX_WireComponent.h"
+#include "Vehicle/AGX_TrackComponent.h"
 
 // Unreal Engine includes.
 #include "GameFramework/Actor.h"
@@ -255,7 +256,13 @@ namespace
 			Helper.InstantiateWire(Barrier, Actor);
 		}
 
-		virtual void InstantiateObserverFrame(const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) override
+		virtual void InstantiateTrack(const FTrackBarrier& Barrier) override
+		{
+			Helper.InstantiateTrack(Barrier, Actor, false);
+		}
+
+		virtual void InstantiateObserverFrame(
+			const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) override
 		{
 			Helper.InstantiateObserverFrame(Name, BodyGuid, Transform, Actor);
 		}
