@@ -818,7 +818,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		// The key is the AGX Dynamics object's UUID converted to an FGuid at the time of the
 		// previous import.
 		TMap<FGuid, USCS_Node*> RigidBodies;
-		TMap<FGuid, USCS_Node*> ShapeComponents;
+		TMap<FGuid, USCS_Node*> ShapeComponents; // Including Shapes owned by Rigid Bodies.
 		TMap<FGuid, USCS_Node*> ConstraintComponents;
 
 		// Key here is the Guid of the owning Shape Component's Native.
@@ -1031,6 +1031,22 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		}
 	}
 
+	void RemoveDeletedShapes(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects)
+	{
+		TArray<FGuid> ShapeGuids;
+		GetCollisionEnabledForAllShapes(SimulationObjects).GenerateKeyArray(ShapeGuids);
+		for (auto It = SCSNodes.ShapeComponents.CreateIterator(); It; ++It)
+		{
+			if (!ShapeGuids.Contains(It->Key))
+			{
+				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
+				It.RemoveCurrent();
+			}
+		}
+	}
+
 	void RemoveDeletedStaticMeshes(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects,
@@ -1116,6 +1132,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		const FAGX_ImportSettings& ImportSettings)
 	{
 		RemoveDeletedStaticMeshes(BaseBP, SCSNodes, SimulationObjects, ImportSettings);
+		RemoveDeletedShapes(BaseBP, SCSNodes, SimulationObjects);
 		RemoveDeletedRigidBodies(BaseBP, SCSNodes, SimulationObjects);
 	}
 
