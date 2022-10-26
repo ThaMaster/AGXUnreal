@@ -3046,18 +3046,20 @@ bool FCheckTrackImportedCommand::Update()
 			"Hinge Compliance Rotational Y", Track->TrackProperties->HingeComplianceRotational_Y,
 			6e-10);
 		Test.TestEqual(
-			"Hinge Damping Translational X", Track->TrackProperties->HingeDampingTranslational_X,
-			0.01);
+			"Hinge Damping Translational X",
+			Track->TrackProperties->HingeSpookDampingTranslational_X, 0.01);
 		Test.TestEqual(
-			"Hinge Damping Translational Y", Track->TrackProperties->HingeDampingTranslational_Y,
-			0.02);
+			"Hinge Damping Translational Y",
+			Track->TrackProperties->HingeSpookDampingTranslational_Y, 0.02);
 		Test.TestEqual(
-			"Hinge Damping Translational Z", Track->TrackProperties->HingeDampingTranslational_Z,
-			0.03);
+			"Hinge Damping Translational Z",
+			Track->TrackProperties->HingeSpookDampingTranslational_Z, 0.03);
 		Test.TestEqual(
-			"Hinge Damping Rotational X", Track->TrackProperties->HingeDampingRotational_X, 0.04);
+			"Hinge Damping Rotational X", Track->TrackProperties->HingeSpookDampingRotational_X,
+			0.04);
 		Test.TestEqual(
-			"Hinge Damping Rotational Y", Track->TrackProperties->HingeDampingRotational_Y, 0.05);
+			"Hinge Damping Rotational Y", Track->TrackProperties->HingeSpookDampingRotational_Y,
+			0.05);
 		Test.TestEqual("Hinge Range Enabled", Track->TrackProperties->bEnableHingeRange, false);
 		Test.TestEqual("Hinge Range Min", Track->TrackProperties->HingeRange.Min, -120.0);
 		Test.TestEqual("Hinge Range Max", Track->TrackProperties->HingeRange.Max, 20.0);
