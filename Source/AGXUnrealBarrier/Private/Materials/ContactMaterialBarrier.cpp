@@ -623,7 +623,7 @@ namespace ContactMaterialBarrier_helpers
 	}
 }
 
-FString FContactMaterialBarrier::GetGetOrientedFrictionModelReferenceFrameBodyName() const
+FString FContactMaterialBarrier::GetOrientedFrictionModelReferenceFrameBodyName() const
 {
 	using namespace ContactMaterialBarrier_helpers;
 	const agx::FrictionModel* FrictionModel = NativeRef->Native->getFrictionModel();

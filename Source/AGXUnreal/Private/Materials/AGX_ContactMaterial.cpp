@@ -754,7 +754,7 @@ void UAGX_ContactMaterial::CopyFrom(const FContactMaterialBarrier& Source)
 
 	OrientedFrictionReferenceFrameActor = FName();
 	OrientedFrictionReferenceFrameComponent =
-		FName(Source.GetGetOrientedFrictionModelReferenceFrameBodyName());
+		FName(Source.GetOrientedFrictionModelReferenceFrameBodyName());
 
 	COPY_PROPERTY(Restitution);
 	COPY_PROPERTY(YoungsModulus);

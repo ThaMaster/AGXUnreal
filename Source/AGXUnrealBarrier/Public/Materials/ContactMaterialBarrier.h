@@ -75,7 +75,7 @@ public:
 	bool GetPrimaryDirection(FVector& Direction) const;
 
 	bool SetOrientedFrictionModelReferenceFrame(FRigidBodyBarrier* RigidBody);
-	FString GetGetOrientedFrictionModelReferenceFrameBodyName() const;
+	FString GetOrientedFrictionModelReferenceFrameBodyName() const;
 
 	void SetAdhesiveForce(double AdhesiveForce) const;
 	void SetAdhesiveOverlap(double AdhesiveOverlap) const;
