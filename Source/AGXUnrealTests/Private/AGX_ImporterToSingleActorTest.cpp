@@ -1904,9 +1904,8 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
 
-	// Two Rigid Bodies, one Hinge constraint with two DofGraphicsComponent's and one
-	// DofGraphicsComponent and one Default Scene Root.
-	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
+	// Two Rigid Bodies, one Hinge constraint and one Default Scene Root.
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
 
 	UAGX_ConstraintComponent* Constraint =
 		GetByName<UAGX_ConstraintComponent>(Components, TEXT("constraint"));
@@ -2862,9 +2861,8 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
 
-	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components and 2 Constraints with 3 Graphics
-	// components each.
-	Test.TestEqual("Number of components", Components.Num(), 17);
+	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components and 2 Constraints.
+	Test.TestEqual("Number of components", Components.Num(), 11);
 
 	UAGX_RigidBodyComponent* Boxlink =
 		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("boxlink"));

@@ -2,11 +2,20 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
 #include "Shapes/HeightFieldShapeBarrier.h"
+
+// Standard library includes.
+#include <tuple>
 
 class ALandscape;
 
 namespace AGX_HeightFieldUtilities
 {
 	AGXUNREAL_API FHeightFieldShapeBarrier CreateHeightField(ALandscape& Landscape);
+
+	AGXUNREAL_API std::tuple<FVector, FQuat> GetTerrainPositionAndRotationFrom(const ALandscape& Landscape);
+
+	AGXUNREAL_API std::tuple<FVector, FQuat> GetHeightFieldPositionAndRotationFrom(
+		const ALandscape& Landscape);
 }

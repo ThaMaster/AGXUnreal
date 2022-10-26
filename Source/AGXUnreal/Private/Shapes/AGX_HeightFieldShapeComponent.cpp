@@ -17,11 +17,10 @@ UAGX_HeightFieldShapeComponent::UAGX_HeightFieldShapeComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 #if WITH_EDITOR
-	// HeightFields are tightly coupled to a source landscape. The Actor owning
-	// this HeightField should always be positioned so that heights in the
-	// height field align with heights in the source landscape. This sets up a
-	// callback so that we can position the owning actor when the source
-	// landscape is moved.
+	// HeightFields are tightly coupled to a source landscape. This component should always be
+	// positioned so that heights in the height field align with heights in the source landscape.
+	// This sets up a callback so that we can position this component when the source landscape is
+	// moved.
 	//
 	/// \todo This setup will call the callback for changes in ALL properties on
 	/// ALL objects. That seems a bit wasteful. Find a way to bind narrower.
@@ -102,7 +101,7 @@ void UAGX_HeightFieldShapeComponent::UpdateNativeProperties()
 
 	Super::UpdateNativeProperties();
 
-	UpdateNativeLocalTransform(NativeBarrier);
+	UpdateNativeGlobalTransform();
 
 	/// \todo What is the height field equivalent of this?
 	// NativeBarrier.SetHalfExtents(HalfExtent * GetComponentScale());
@@ -155,7 +154,7 @@ void UAGX_HeightFieldShapeComponent::PostEditChangeChainProperty(
 		return;
 	}
 
-	RecenterActorOnLandscape();
+	RecenterOnLandscape();
 }
 #endif
 
@@ -173,34 +172,26 @@ void UAGX_HeightFieldShapeComponent::OnSourceLandscapeChanged(
 	{
 		return;
 	}
-	if (PropertyChangedEvent.Property->GetFName() != TEXT("RelativeLocation"))
+	if (PropertyChangedEvent.Property->GetFName() != GetRelativeLocationPropertyName() &&
+		PropertyChangedEvent.Property->GetFName() != GetRelativeRotationPropertyName())
 	{
 		return;
 	}
 
-	RecenterActorOnLandscape();
+	RecenterOnLandscape();
 }
 #endif
 
-void UAGX_HeightFieldShapeComponent::RecenterActorOnLandscape()
+void UAGX_HeightFieldShapeComponent::RecenterOnLandscape()
 {
+	// This function places this component at the center of the Landscape such that it aligns
+	// correctly for the Native Geometry holding the Height Field.
 	check(SourceLandscape != nullptr);
 
-	// Assumes that the Landscape is rectangular and uniform, and that the actor
-	// location is in the lower left corner of the component grid, i.e., that
-	// components are laid out along positive X and Y.
-	//
-	// AGX Dynamics height fields have their model origin at the center of the
-	// height field.
-	FAGX_LandscapeSizeInfo LandscapeSizeInfo(*SourceLandscape);
-
-	const float SideSizeX = LandscapeSizeInfo.NumQuadsSideX * LandscapeSizeInfo.QuadSideSizeX;
-	const float SideSizeY = LandscapeSizeInfo.NumQuadsSideY * LandscapeSizeInfo.QuadSideSizeY;
-
-	const FVector Location = SourceLandscape->GetActorLocation();
-	const FVector Middle = Location + FVector(SideSizeX / 2.0f, SideSizeY / 2.0f, Location.Z);
-	GetOwner()->SetActorLocation(Middle);
-	MarkRenderStateDirty(); /// \todo Not sure if this is actually required or not.
+	std::tuple<FVector, FQuat> PosRot =
+		AGX_HeightFieldUtilities::GetHeightFieldPositionAndRotationFrom(*SourceLandscape);
+	SetWorldLocation(std::get<0>(PosRot));
+	SetWorldRotation(std::get<1>(PosRot));
 }
 
 #if WITH_EDITOR
@@ -231,8 +222,11 @@ void UAGX_HeightFieldShapeComponent::CreateNative()
 	const bool IsOpenWorldLandscape = SourceLandscape->LandscapeComponents.Num() <= 0;
 	if (IsOpenWorldLandscape)
 	{
-		UE_LOG(LogAGX, Error, TEXT("Attempted to use AGX Terrain with an Open World Landscape. Open "
-			"World Landscapes are currently not supported. Please use a non Open World Level."));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Attempted to use AGX Terrain with an Open World Landscape. Open "
+				 "World Landscapes are currently not supported. Please use a non Open World "
+				 "Level."));
 		return;
 	}
 #endif
@@ -244,7 +238,7 @@ void UAGX_HeightFieldShapeComponent::CreateNative()
 
 void UAGX_HeightFieldShapeComponent::ReleaseNative()
 {
-	if(HasNative())
+	if (HasNative())
 	{
 		NativeBarrier.ReleaseNative();
 	}

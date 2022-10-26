@@ -12,7 +12,7 @@ struct FAGX_LandscapeSizeInfo
 {
 	GENERATED_USTRUCT_BODY()
 	FAGX_LandscapeSizeInfo() = default;
-	FAGX_LandscapeSizeInfo(ALandscape& Landscape);
+	FAGX_LandscapeSizeInfo(const ALandscape& Landscape);
 
 	int32 NumComponents;
 	int32 NumQuadsPerComponentSide;
