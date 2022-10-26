@@ -3332,13 +3332,12 @@ bool FCheckAmorImportedCommand::Update()
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
 #if AGX_TEST_WIRE_IMPORT
-	// Two Rigid Bodies (2), one Shape (3), two Wires with one icon each (7), one Constraint with
-	// one icon and two Graphics Components (11), one Collision Group Disabler (12), one Default
-	// Scene Root (13).
-	const int32 ExpectedNumComponents = 13;
+	// Two Rigid Bodies (2), one Shape (3), two Wires with one icon each (7), one Constraint (8),
+	// one Collision Group Disabler (9), one Default Scene Root (10).
+	const int32 ExpectedNumComponents = 10;
 #else
 	// Same as above minus two wires with one icon each.
-	const int32 ExpectedNumComponents = 9;
+	const int32 ExpectedNumComponents = 6;
 #endif
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), ExpectedNumComponents);
 
