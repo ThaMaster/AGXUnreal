@@ -370,6 +370,8 @@ private:
 	// Initialized in BeginPlay and released in EndPlay.
 	FTrackBarrier NativeBarrier;
 
+	mutable bool MayAttemptTrackPreview = false;
+
 	mutable TSharedPtr<FAGX_TrackPreviewData> TrackPreview = nullptr;
 	mutable bool bTrackPreviewNeedsUpdate = true;
 

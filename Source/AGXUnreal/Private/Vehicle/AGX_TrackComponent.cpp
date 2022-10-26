@@ -3,6 +3,7 @@
 #include "Vehicle/AGX_TrackComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Environment.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
@@ -29,6 +30,18 @@ UAGX_TrackComponent::UAGX_TrackComponent()
 FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 	bool bUpdateIfNecessary, bool bForceUpdate) const
 {
+	// Avoid getting Track Preview if no valid license is available since this will spam license
+	// errors in the log.
+	if (!MayAttemptTrackPreview)
+	{
+		MayAttemptTrackPreview = FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid();
+	}
+
+	if (!MayAttemptTrackPreview)
+	{
+		return nullptr;
+	}
+
 	if (IsBeingDestroyed() || !bEnabled)
 	{
 		return nullptr;
