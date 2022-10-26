@@ -20,7 +20,7 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
-#include "Materials/AGX_ContactMaterialAsset.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.

@@ -12,6 +12,8 @@ namespace agx
 	class Hinge;
 	class LockJoint;
 	class Prismatic;
+
+	class Material;
 }
 
 namespace agxSDK
@@ -47,6 +49,7 @@ class FDistanceJointBarrier;
 class FHingeBarrier;
 class FLockJointBarrier;
 class FPrismaticBarrier;
+class FShapeMaterialBarrier;
 
 class FTerrainBarrier;
 
@@ -74,6 +77,8 @@ public:
 	static agx::Hinge* GetFrom(const FHingeBarrier* Barrier);
 	static agx::LockJoint* GetFrom(const FLockJointBarrier* Barrier);
 	static agx::Prismatic* GetFrom(const FPrismaticBarrier* Barrier);
+
+	static agx::Material* GetFrom(const FShapeMaterialBarrier* Barrier);
 
 	static agxTerrain::Terrain* GetFrom(const FTerrainBarrier* Barrier);
 

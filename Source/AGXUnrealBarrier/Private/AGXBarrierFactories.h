@@ -26,6 +26,7 @@
 #include "Wire/WireNodeRef.h"
 #include "Wire/WireWinchBarrier.h"
 #include "Wire/WireWinchRef.h"
+#include "Vehicle/TrackBarrier.h"
 
 namespace agx
 {
@@ -66,6 +67,11 @@ namespace agxWire
 	class WireWinchController;
 }
 
+namespace agxVehicle
+{
+	class Track;
+}
+
 /**
  * These factory functions are required because it's not possible to create a Barrier constructor
  * that takes the AGX Dynamics type as a parameter because we may not use AGX Dynamics types in
@@ -76,7 +82,7 @@ namespace agxWire
  */
 namespace AGXBarrierFactories
 {
-	FRigidBodyBarrier CreateRigidBodyBarrier(agx::RigidBody* Body);
+	FRigidBodyBarrier AGXUNREALBARRIER_API CreateRigidBodyBarrier(agx::RigidBody* Body);
 
 	FEmptyShapeBarrier CreateEmptyShapeBarrier(agxCollide::Geometry* Geometry);
 
@@ -119,4 +125,6 @@ namespace AGXBarrierFactories
 	FWireNodeBarrier CreateWireNodeBarrier(agxWire::Node* Node);
 
 	FWireWinchBarrier CreateWireWinchBarrier(agxWire::WireWinchController* Winch);
+
+	FTrackBarrier CreateTrackBarrier(agxVehicle::Track* Track);
 }

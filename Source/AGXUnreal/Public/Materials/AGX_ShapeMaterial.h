@@ -219,9 +219,6 @@ private:
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 	void InitPropertyDispatcher();
 
-	void SynchronizePropertyChangeWithInstance(
-		const FName& MemberPropertyName, const FName& PropertyName);
-
 	void WriteSurfacePropertyToInstance(const FName& PropertyName);
 	void WriteBulkPropertyToInstance(const FName& PropertyName);
 	void WriteWirePropertyToInstance(const FName& PropertyName);

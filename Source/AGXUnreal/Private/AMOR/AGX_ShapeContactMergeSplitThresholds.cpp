@@ -16,7 +16,7 @@ void UAGX_ShapeContactMergeSplitThresholds::SetMaxImpactSpeed_BP(float InMaxImpa
 
 void UAGX_ShapeContactMergeSplitThresholds::SetMaxImpactSpeed(double InMaxImpactSpeed)
 {
-	AGX_ASSET_SETTER_IMPL(MaxImpactSpeed, InMaxImpactSpeed, SetMaxImpactSpeed);
+	AGX_ASSET_SETTER_IMPL_VALUE(MaxImpactSpeed, InMaxImpactSpeed, SetMaxImpactSpeed);
 }
 
 float UAGX_ShapeContactMergeSplitThresholds::GetMaxImpactSpeed_BP() const
@@ -26,7 +26,7 @@ float UAGX_ShapeContactMergeSplitThresholds::GetMaxImpactSpeed_BP() const
 
 double UAGX_ShapeContactMergeSplitThresholds::GetMaxImpactSpeed() const
 {
-	AGX_ASSET_GETTER_IMPL(MaxImpactSpeed, GetMaxImpactSpeed);
+	AGX_ASSET_GETTER_IMPL_VALUE(MaxImpactSpeed, GetMaxImpactSpeed);
 }
 
 void UAGX_ShapeContactMergeSplitThresholds::SetMaxRelativeNormalSpeed_BP(
@@ -38,7 +38,7 @@ void UAGX_ShapeContactMergeSplitThresholds::SetMaxRelativeNormalSpeed_BP(
 void UAGX_ShapeContactMergeSplitThresholds::SetMaxRelativeNormalSpeed(
 	double InMaxRelativeNormalSpeed)
 {
-	AGX_ASSET_SETTER_IMPL(
+	AGX_ASSET_SETTER_IMPL_VALUE(
 		MaxRelativeNormalSpeed, InMaxRelativeNormalSpeed, SetMaxRelativeNormalSpeed);
 }
 
@@ -49,7 +49,7 @@ float UAGX_ShapeContactMergeSplitThresholds::GetMaxRelativeNormalSpeed_BP() cons
 
 double UAGX_ShapeContactMergeSplitThresholds::GetMaxRelativeNormalSpeed() const
 {
-	AGX_ASSET_GETTER_IMPL(MaxRelativeNormalSpeed, GetMaxRelativeNormalSpeed);
+	AGX_ASSET_GETTER_IMPL_VALUE(MaxRelativeNormalSpeed, GetMaxRelativeNormalSpeed);
 }
 
 void UAGX_ShapeContactMergeSplitThresholds::SetMaxRelativeTangentSpeed_BP(
@@ -61,7 +61,7 @@ void UAGX_ShapeContactMergeSplitThresholds::SetMaxRelativeTangentSpeed_BP(
 void UAGX_ShapeContactMergeSplitThresholds::SetMaxRelativeTangentSpeed(
 	double InMaxRelativeTangentSpeed)
 {
-	AGX_ASSET_SETTER_IMPL(
+	AGX_ASSET_SETTER_IMPL_VALUE(
 		MaxRelativeTangentSpeed, InMaxRelativeTangentSpeed, SetMaxRelativeTangentSpeed);
 }
 
@@ -72,7 +72,7 @@ float UAGX_ShapeContactMergeSplitThresholds::GetMaxRelativeTangentSpeed_BP() con
 
 double UAGX_ShapeContactMergeSplitThresholds::GetMaxRelativeTangentSpeed() const
 {
-	AGX_ASSET_GETTER_IMPL(MaxRelativeTangentSpeed, GetMaxRelativeTangentSpeed);
+	AGX_ASSET_GETTER_IMPL_VALUE(MaxRelativeTangentSpeed, GetMaxRelativeTangentSpeed);
 }
 
 void UAGX_ShapeContactMergeSplitThresholds::SetMaxRollingSpeed_BP(float InMaxRollingSpeed)
@@ -82,7 +82,7 @@ void UAGX_ShapeContactMergeSplitThresholds::SetMaxRollingSpeed_BP(float InMaxRol
 
 void UAGX_ShapeContactMergeSplitThresholds::SetMaxRollingSpeed(double InMaxRollingSpeed)
 {
-	AGX_ASSET_SETTER_IMPL(MaxRollingSpeed, InMaxRollingSpeed, SetMaxRollingSpeed);
+	AGX_ASSET_SETTER_IMPL_VALUE(MaxRollingSpeed, InMaxRollingSpeed, SetMaxRollingSpeed);
 }
 
 float UAGX_ShapeContactMergeSplitThresholds::GetMaxRollingSpeed_BP() const
@@ -92,7 +92,7 @@ float UAGX_ShapeContactMergeSplitThresholds::GetMaxRollingSpeed_BP() const
 
 double UAGX_ShapeContactMergeSplitThresholds::GetMaxRollingSpeed() const
 {
-	AGX_ASSET_GETTER_IMPL(MaxRollingSpeed, GetMaxRollingSpeed);
+	AGX_ASSET_GETTER_IMPL_VALUE(MaxRollingSpeed, GetMaxRollingSpeed);
 }
 
 void UAGX_ShapeContactMergeSplitThresholds::SetNormalAdhesion_BP(float InNormalAdhesion)
@@ -102,7 +102,7 @@ void UAGX_ShapeContactMergeSplitThresholds::SetNormalAdhesion_BP(float InNormalA
 
 void UAGX_ShapeContactMergeSplitThresholds::SetNormalAdhesion(double InNormalAdhesion)
 {
-	AGX_ASSET_SETTER_IMPL(NormalAdhesion, InNormalAdhesion, SetNormalAdhesion);
+	AGX_ASSET_SETTER_IMPL_VALUE(NormalAdhesion, InNormalAdhesion, SetNormalAdhesion);
 }
 
 float UAGX_ShapeContactMergeSplitThresholds::GetNormalAdhesion_BP() const
@@ -112,7 +112,7 @@ float UAGX_ShapeContactMergeSplitThresholds::GetNormalAdhesion_BP() const
 
 double UAGX_ShapeContactMergeSplitThresholds::GetNormalAdhesion() const
 {
-	AGX_ASSET_GETTER_IMPL(NormalAdhesion, GetNormalAdhesion);
+	AGX_ASSET_GETTER_IMPL_VALUE(NormalAdhesion, GetNormalAdhesion);
 }
 
 void UAGX_ShapeContactMergeSplitThresholds::SetTangentialAdhesion_BP(float InTangentialAdhesion)
@@ -122,7 +122,7 @@ void UAGX_ShapeContactMergeSplitThresholds::SetTangentialAdhesion_BP(float InTan
 
 void UAGX_ShapeContactMergeSplitThresholds::SetTangentialAdhesion(double InTangentialAdhesion)
 {
-	AGX_ASSET_SETTER_IMPL(TangentialAdhesion, InTangentialAdhesion, SetTangentialAdhesion);
+	AGX_ASSET_SETTER_IMPL_VALUE(TangentialAdhesion, InTangentialAdhesion, SetTangentialAdhesion);
 }
 
 float UAGX_ShapeContactMergeSplitThresholds::GetTangentialAdhesion_BP() const
@@ -132,29 +132,29 @@ float UAGX_ShapeContactMergeSplitThresholds::GetTangentialAdhesion_BP() const
 
 double UAGX_ShapeContactMergeSplitThresholds::GetTangentialAdhesion() const
 {
-	AGX_ASSET_GETTER_IMPL(TangentialAdhesion, GetTangentialAdhesion);
+	AGX_ASSET_GETTER_IMPL_VALUE(TangentialAdhesion, GetTangentialAdhesion);
 }
 
 void UAGX_ShapeContactMergeSplitThresholds::SetMaySplitInGravityField(
 	bool bInMaySplitInGravityField)
 {
-	AGX_ASSET_SETTER_IMPL(
+	AGX_ASSET_SETTER_IMPL_VALUE(
 		bMaySplitInGravityField, bInMaySplitInGravityField, SetMaySplitInGravityField);
 }
 
 bool UAGX_ShapeContactMergeSplitThresholds::GetMaySplitInGravityField() const
 {
-	AGX_ASSET_GETTER_IMPL(bMaySplitInGravityField, GetMaySplitInGravityField);
+	AGX_ASSET_GETTER_IMPL_VALUE(bMaySplitInGravityField, GetMaySplitInGravityField);
 }
 
 void UAGX_ShapeContactMergeSplitThresholds::SetSplitOnLogicalImpact(bool bInSplitOnLogicalImpact)
 {
-	AGX_ASSET_SETTER_IMPL(bSplitOnLogicalImpact, bInSplitOnLogicalImpact, SetSplitOnLogicalImpact);
+	AGX_ASSET_SETTER_IMPL_VALUE(bSplitOnLogicalImpact, bInSplitOnLogicalImpact, SetSplitOnLogicalImpact);
 }
 
 bool UAGX_ShapeContactMergeSplitThresholds::GetSplitOnLogicalImpact() const
 {
-	AGX_ASSET_GETTER_IMPL(bSplitOnLogicalImpact, GetSplitOnLogicalImpact);
+	AGX_ASSET_GETTER_IMPL_VALUE(bSplitOnLogicalImpact, GetSplitOnLogicalImpact);
 }
 
 #if WITH_EDITOR

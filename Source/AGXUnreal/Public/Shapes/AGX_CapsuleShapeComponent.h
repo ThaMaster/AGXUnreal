@@ -24,7 +24,7 @@ public:
 	UAGX_CapsuleShapeComponent();
 
 	/**
-	 * The distance from the centers of the capsule's half-spheres at each end. [cm].
+	 * The distance from the centers of the capsule's half-spheres at each end [cm].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	float Height;

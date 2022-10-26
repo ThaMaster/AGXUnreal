@@ -50,7 +50,7 @@ void UAGX_TerrainMaterial::SetRoughness_BP(float Roughness)
 
 void UAGX_TerrainMaterial::SetRoughness(double Roughness)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		Surface.Roughness, Roughness, SetRoughness, HasShapeMaterialNative,
 		ShapeMaterialNativeBarrier);
 }
@@ -62,7 +62,7 @@ float UAGX_TerrainMaterial::GetRoughness_BP() const
 
 double UAGX_TerrainMaterial::GetRoughness() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		Surface.Roughness, GetRoughness, HasShapeMaterialNative, ShapeMaterialNativeBarrier);
 }
 
@@ -73,7 +73,7 @@ void UAGX_TerrainMaterial::SetSurfaceViscosity_BP(float Viscosity)
 
 void UAGX_TerrainMaterial::SetSurfaceViscosity(double Viscosity)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		Surface.Viscosity, Viscosity, SetSurfaceViscosity, HasShapeMaterialNative,
 		ShapeMaterialNativeBarrier);
 }
@@ -85,7 +85,7 @@ float UAGX_TerrainMaterial::GetSurfaceViscosity_BP() const
 
 double UAGX_TerrainMaterial::GetSurfaceViscosity() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		Surface.Viscosity, GetSurfaceViscosity, HasShapeMaterialNative, ShapeMaterialNativeBarrier);
 }
 
@@ -124,7 +124,7 @@ float UAGX_TerrainMaterial::GetAdhesiveForce_BP() const
 
 double UAGX_TerrainMaterial::GetAdhesiveForce() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		Surface.AdhesiveForce, GetAdhesiveForce, HasShapeMaterialNative,
 		ShapeMaterialNativeBarrier);
 }
@@ -136,7 +136,7 @@ float UAGX_TerrainMaterial::GetAdhesiveOverlap_BP() const
 
 double UAGX_TerrainMaterial::GetAdhesiveOverlap() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		Surface.AdhesiveOverlap, GetAdhesiveOverlap, HasShapeMaterialNative,
 		ShapeMaterialNativeBarrier);
 }
@@ -149,7 +149,7 @@ void UAGX_TerrainMaterial::SetAdhesionOverlapFactor_BP(float AdhesionOverlapFact
 
 void UAGX_TerrainMaterial::SetAdhesionOverlapFactor(double AdhesionOverlapFactor)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.AdhesionOverlapFactor, AdhesionOverlapFactor, SetAdhesionOverlapFactor,
 		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
@@ -161,7 +161,7 @@ float UAGX_TerrainMaterial::GetAdhesionOverlapFactor_BP() const
 
 double UAGX_TerrainMaterial::GetAdhesionOverlapFactor() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.AdhesionOverlapFactor, GetAdhesionOverlapFactor, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -173,7 +173,7 @@ void UAGX_TerrainMaterial::SetCohesion_BP(float Cohesion)
 
 void UAGX_TerrainMaterial::SetCohesion(double Cohesion)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.Cohesion, Cohesion, SetCohesion, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -185,7 +185,7 @@ float UAGX_TerrainMaterial::GetCohesion_BP() const
 
 double UAGX_TerrainMaterial::GetCohesion() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.Cohesion, GetCohesion, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
@@ -196,7 +196,7 @@ void UAGX_TerrainMaterial::SetDensity_BP(float Density)
 
 void UAGX_TerrainMaterial::SetDensity(double Density)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.Density, Density, SetDensity, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -208,7 +208,7 @@ float UAGX_TerrainMaterial::GetDensity_BP() const
 
 double UAGX_TerrainMaterial::GetDensity() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.Density, GetDensity, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
@@ -219,7 +219,7 @@ void UAGX_TerrainMaterial::SetDilatancyAngle_BP(float DilatancyAngle)
 
 void UAGX_TerrainMaterial::SetDilatancyAngle(double DilatancyAngle)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.DilatancyAngle, DilatancyAngle, SetDilatancyAngle, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -231,7 +231,7 @@ float UAGX_TerrainMaterial::GetDilatancyAngle_BP() const
 
 double UAGX_TerrainMaterial::GetDilatancyAngle() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.DilatancyAngle, GetDilatancyAngle, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -243,7 +243,7 @@ void UAGX_TerrainMaterial::SetFrictionAngle_BP(float FrictionAngle)
 
 void UAGX_TerrainMaterial::SetFrictionAngle(double FrictionAngle)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.FrictionAngle, FrictionAngle, SetFrictionAngle, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -255,7 +255,7 @@ float UAGX_TerrainMaterial::GetFrictionAngle_BP() const
 
 double UAGX_TerrainMaterial::GetFrictionAngle() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.FrictionAngle, GetFrictionAngle, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -267,7 +267,7 @@ void UAGX_TerrainMaterial::SetMaxDensity_BP(float MaxDensity)
 
 void UAGX_TerrainMaterial::SetMaxDensity(double MaxDensity)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.MaxDensity, MaxDensity, SetMaxDensity, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -279,7 +279,7 @@ float UAGX_TerrainMaterial::GetMaxDensity_BP() const
 
 double UAGX_TerrainMaterial::GetMaxDensity() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.MaxDensity, GetMaxDensity, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -291,7 +291,7 @@ void UAGX_TerrainMaterial::SetPoissonsRatio_BP(float PoissonsRatio)
 
 void UAGX_TerrainMaterial::SetPoissonsRatio(double PoissonsRatio)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.PoissonsRatio, PoissonsRatio, SetPoissonsRatio, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -303,7 +303,7 @@ float UAGX_TerrainMaterial::GetPoissonsRatio_BP() const
 
 double UAGX_TerrainMaterial::GetPoissonsRatio() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.PoissonsRatio, GetPoissonsRatio, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -315,7 +315,7 @@ void UAGX_TerrainMaterial::SetSwellFactor_BP(float SwellFactor)
 
 void UAGX_TerrainMaterial::SetSwellFactor(double SwellFactor)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.SwellFactor, SwellFactor, SetSwellFactor, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -327,7 +327,7 @@ float UAGX_TerrainMaterial::GetSwellFactor_BP() const
 
 double UAGX_TerrainMaterial::GetSwellFactor() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.SwellFactor, GetSwellFactor, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -339,7 +339,7 @@ void UAGX_TerrainMaterial::SetYoungsModulus_BP(float YoungsModulus)
 
 void UAGX_TerrainMaterial::SetYoungsModulus(double YoungsModulus)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.YoungsModulus, YoungsModulus, SetYoungsModulus, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -351,7 +351,7 @@ float UAGX_TerrainMaterial::GetYoungsModulus_BP() const
 
 double UAGX_TerrainMaterial::GetYoungsModulus() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainBulk.YoungsModulus, GetYoungsModulus, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -364,7 +364,7 @@ void UAGX_TerrainMaterial::SetAngleOfReposeCompactionRate_BP(float AngleOfRepose
 
 void UAGX_TerrainMaterial::SetAngleOfReposeCompactionRate(double AngleOfReposeCompactionRate)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.AngleOfReposeCompactionRate, AngleOfReposeCompactionRate,
 		SetAngleOfReposeCompactionRate, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
@@ -376,7 +376,7 @@ float UAGX_TerrainMaterial::GetAngleOfReposeCompactionRate_BP() const
 
 double UAGX_TerrainMaterial::GetAngleOfReposeCompactionRate() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.AngleOfReposeCompactionRate, GetAngleOfReposeCompactionRate,
 		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
@@ -388,7 +388,7 @@ void UAGX_TerrainMaterial::SetBankStatePhi_BP(float Phi0)
 
 void UAGX_TerrainMaterial::SetBankStatePhi(double Phi0)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.Phi0, Phi0, SetBankStatePhi, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -400,7 +400,7 @@ float UAGX_TerrainMaterial::GetBankStatePhi_BP() const
 
 double UAGX_TerrainMaterial::GetBankStatePhi() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.Phi0, GetBankStatePhi, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -414,7 +414,7 @@ void UAGX_TerrainMaterial::SetCompactionTimeRelaxationConstant_BP(
 void UAGX_TerrainMaterial::SetCompactionTimeRelaxationConstant(
 	double CompactionTimeRelaxationConstant)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.CompactionTimeRelaxationConstant, CompactionTimeRelaxationConstant,
 		SetCompactionTimeRelaxationConstant, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
@@ -427,7 +427,7 @@ float UAGX_TerrainMaterial::GetCompactionTimeRelaxationConstant_BP() const
 
 double UAGX_TerrainMaterial::GetCompactionTimeRelaxationConstant() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.CompactionTimeRelaxationConstant, GetCompactionTimeRelaxationConstant,
 		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
@@ -439,7 +439,7 @@ void UAGX_TerrainMaterial::SetCompressionIndex_BP(float CompressionIndex)
 
 void UAGX_TerrainMaterial::SetCompressionIndex(double CompressionIndex)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.CompressionIndex, CompressionIndex, SetCompressionIndex,
 		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
@@ -451,7 +451,7 @@ float UAGX_TerrainMaterial::GetCompressionIndex_BP() const
 
 double UAGX_TerrainMaterial::GetCompressionIndex() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.CompressionIndex, GetCompressionIndex, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -463,7 +463,7 @@ void UAGX_TerrainMaterial::SetHardeningConstantKe_BP(float K_e)
 
 void UAGX_TerrainMaterial::SetHardeningConstantKe(double K_e)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.K_e, K_e, SetHardeningConstantKe, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -475,7 +475,7 @@ float UAGX_TerrainMaterial::GetHardeningConstantKe_BP() const
 
 double UAGX_TerrainMaterial::GetHardeningConstantKe() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.K_e, GetHardeningConstantKe, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -487,7 +487,7 @@ void UAGX_TerrainMaterial::SetHardeningConstantNe_BP(float N_e)
 
 void UAGX_TerrainMaterial::SetHardeningConstantNe(double N_e)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.N_e, N_e, SetHardeningConstantNe, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -499,7 +499,7 @@ float UAGX_TerrainMaterial::GetHardeningConstantNe_BP() const
 
 double UAGX_TerrainMaterial::GetHardeningConstantNe() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.N_e, GetHardeningConstantNe, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
@@ -511,7 +511,7 @@ void UAGX_TerrainMaterial::SetPreconsolidationStress_BP(float PreconsolidationSt
 
 void UAGX_TerrainMaterial::SetPreconsolidationStress(double PreconsolidationStress)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.PreconsolidationStress, PreconsolidationStress, SetPreconsolidationStress,
 		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
@@ -523,7 +523,7 @@ float UAGX_TerrainMaterial::GetPreconsolidationStress_BP() const
 
 double UAGX_TerrainMaterial::GetPreconsolidationStress() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.PreconsolidationStress, GetPreconsolidationStress,
 		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
@@ -535,7 +535,7 @@ void UAGX_TerrainMaterial::SetStressCutOffFraction_BP(float StressCutOffFraction
 
 void UAGX_TerrainMaterial::SetStressCutOffFraction(double StressCutOffFraction)
 {
-	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.StressCutOffFraction, StressCutOffFraction, SetStressCutOffFraction,
 		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
@@ -547,7 +547,7 @@ float UAGX_TerrainMaterial::GetStressCutOffFraction_BP() const
 
 double UAGX_TerrainMaterial::GetStressCutOffFraction() const
 {
-	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
 		TerrainCompaction.StressCutOffFraction, GetStressCutOffFraction, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }

@@ -18,7 +18,7 @@ void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredForceRangeDiff_BP(
 void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredForceRangeDiff(
 	double InMaxDesiredForceRangeDiff)
 {
-	AGX_ASSET_SETTER_IMPL(
+	AGX_ASSET_SETTER_IMPL_VALUE(
 		MaxDesiredForceRangeDiff, InMaxDesiredForceRangeDiff, SetMaxDesiredForceRangeDiff);
 }
 
@@ -29,7 +29,7 @@ float UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredForceRangeDiff_BP() cons
 
 double UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredForceRangeDiff() const
 {
-	AGX_ASSET_GETTER_IMPL(MaxDesiredForceRangeDiff, GetMaxDesiredForceRangeDiff);
+	AGX_ASSET_GETTER_IMPL_VALUE(MaxDesiredForceRangeDiff, GetMaxDesiredForceRangeDiff);
 }
 
 void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredLockAngleDiff_BP(
@@ -41,7 +41,7 @@ void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredLockAngleDiff_BP(
 void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredLockAngleDiff(
 	double InMaxDesiredLockAngleDiff)
 {
-	AGX_ASSET_SETTER_IMPL(
+	AGX_ASSET_SETTER_IMPL_VALUE(
 		MaxDesiredLockAngleDiff, InMaxDesiredLockAngleDiff, SetMaxDesiredLockAngleDiff);
 }
 
@@ -52,7 +52,7 @@ float UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredLockAngleDiff_BP() const
 
 double UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredLockAngleDiff() const
 {
-	AGX_ASSET_GETTER_IMPL(MaxDesiredLockAngleDiff, GetMaxDesiredLockAngleDiff);
+	AGX_ASSET_GETTER_IMPL_VALUE(MaxDesiredLockAngleDiff, GetMaxDesiredLockAngleDiff);
 }
 
 void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredRangeAngleDiff_BP(
@@ -64,7 +64,7 @@ void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredRangeAngleDiff_BP(
 void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredRangeAngleDiff(
 	double InMaxDesiredRangeAngleDiff)
 {
-	AGX_ASSET_SETTER_IMPL(
+	AGX_ASSET_SETTER_IMPL_VALUE(
 		MaxDesiredRangeAngleDiff, InMaxDesiredRangeAngleDiff, SetMaxDesiredRangeAngleDiff);
 }
 
@@ -75,7 +75,7 @@ float UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredRangeAngleDiff_BP() cons
 
 double UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredRangeAngleDiff() const
 {
-	AGX_ASSET_GETTER_IMPL(MaxDesiredRangeAngleDiff, GetMaxDesiredRangeAngleDiff);
+	AGX_ASSET_GETTER_IMPL_VALUE(MaxDesiredRangeAngleDiff, GetMaxDesiredRangeAngleDiff);
 }
 
 void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredSpeedDiff_BP(float InMaxDesiredSpeedDiff)
@@ -85,7 +85,7 @@ void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredSpeedDiff_BP(float InMaxD
 
 void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredSpeedDiff(double InMaxDesiredSpeedDiff)
 {
-	AGX_ASSET_SETTER_IMPL(MaxDesiredSpeedDiff, InMaxDesiredSpeedDiff, SetMaxDesiredSpeedDiff);
+	AGX_ASSET_SETTER_IMPL_VALUE(MaxDesiredSpeedDiff, InMaxDesiredSpeedDiff, SetMaxDesiredSpeedDiff);
 }
 
 float UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredSpeedDiff_BP() const
@@ -95,7 +95,7 @@ float UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredSpeedDiff_BP() const
 
 double UAGX_ConstraintMergeSplitThresholds::GetMaxDesiredSpeedDiff() const
 {
-	AGX_ASSET_GETTER_IMPL(MaxDesiredSpeedDiff, GetMaxDesiredSpeedDiff);
+	AGX_ASSET_GETTER_IMPL_VALUE(MaxDesiredSpeedDiff, GetMaxDesiredSpeedDiff);
 }
 
 void UAGX_ConstraintMergeSplitThresholds::SetMaxRelativeSpeed_BP(float InMaxRelativeSpeed)
@@ -105,7 +105,7 @@ void UAGX_ConstraintMergeSplitThresholds::SetMaxRelativeSpeed_BP(float InMaxRela
 
 void UAGX_ConstraintMergeSplitThresholds::SetMaxRelativeSpeed(double InMaxRelativeSpeed)
 {
-	AGX_ASSET_SETTER_IMPL(MaxRelativeSpeed, InMaxRelativeSpeed, SetMaxRelativeSpeed);
+	AGX_ASSET_SETTER_IMPL_VALUE(MaxRelativeSpeed, InMaxRelativeSpeed, SetMaxRelativeSpeed);
 }
 
 float UAGX_ConstraintMergeSplitThresholds::GetMaxRelativeSpeed_BP() const
@@ -115,7 +115,7 @@ float UAGX_ConstraintMergeSplitThresholds::GetMaxRelativeSpeed_BP() const
 
 double UAGX_ConstraintMergeSplitThresholds::GetMaxRelativeSpeed() const
 {
-	AGX_ASSET_GETTER_IMPL(MaxRelativeSpeed, GetMaxRelativeSpeed);
+	AGX_ASSET_GETTER_IMPL_VALUE(MaxRelativeSpeed, GetMaxRelativeSpeed);
 }
 
 #if WITH_EDITOR

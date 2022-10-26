@@ -14,10 +14,14 @@ class FRenderDataBarrier;
 class FShapeBarrier;
 class FMergeSplitThresholdsBarrier;
 class FShapeMaterialBarrier;
+class FTrackBarrier;
+class FTrackPropertiesBarrier;
 class FContactMaterialBarrier;
-class UAGX_ContactMaterialAsset;
+class UAGX_ContactMaterial;
 class UAGX_MergeSplitThresholdsBase;
 class UAGX_ShapeMaterial;
+class UAGX_TrackInternalMergeProperties;
+class UAGX_TrackProperties;
 struct FAGX_RenderMaterial;
 
 class AActor;
@@ -72,7 +76,8 @@ public:
 	 * returned unchanged. Even though the name returned will be valid, it may not be unique and may
 	 * therefore not be the final asset name.
 	 * @param NativeName The name of the restored object.
-	 * @param FileName The name of the source file from which the asset was read.
+	 * @param FallbackName Name to use if NativeName is unusable for some reason, for example is
+	 * empty.
 	 * @param AssetType The type of the asset.
 	 * @return A safe name for the asset.
 	 */
@@ -112,7 +117,7 @@ public:
 		const FString& FallbackName);
 
 	/**
-	 * Sets up the imported Render Data Mesha an UStaticMesh asset, but does not write it to disk.
+	 * Sets up the imported Render Data Mesh as an UStaticMesh asset, but does not write it to disk.
 	 * Instead returns a AssetToDiskData which in turn can be used to write the asset to disk.
 	 *
 	 * @param RenderData The Render Data holding the render mesh to store.
@@ -139,7 +144,7 @@ public:
 	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @return The created ContactMaterialAsset.
 	 */
-	static UAGX_ContactMaterialAsset* SaveImportedContactMaterialAsset(
+	static UAGX_ContactMaterial* SaveImportedContactMaterialAsset(
 		const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterial* Material1,
 		UAGX_ShapeMaterial* Material2, const FString& DirectoryName);
 
@@ -175,6 +180,29 @@ public:
 	static UAGX_MergeSplitThresholdsBase* SaveImportedMergeSplitAsset(
 		const FMergeSplitThresholdsBarrier& Barrier, EAGX_AmorOwningType OwningType,
 		const FString& DirectoryName, const FString& Name);
+
+	/**
+	 * Store an imported AGX Dynamics Track Internal Merge Property as an
+	 * UAGX_TrackInternalMergeProperties asset on drive..
+	 * @param Barrier The imported Track owning the Internal Merge Property.
+	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param Name The name to give to the new asset. A sequence number will be added in case of a
+	 * conflict.
+	 * @return The created UAGX_TrackInternalMergeProperties asset.
+	 */
+	static UAGX_TrackInternalMergeProperties* SaveImportedTrackInternalMergePropertiesAsset(
+		const FTrackBarrier& Barrier, const FString& DirectoryName, const FString& Name);
+
+	/**
+	 * Store an imported AGX Dynamics Track Property as an UAGX_TrackProperties.
+	 * @param Barrier The imported Track referencing the Track Property.
+	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param Name The name to give to the new asset. A sequence number will be added in case of a
+	 * conflict.
+	 * @return The created UAGX_TrackProperties.
+	 */
+	static UAGX_TrackProperties* SaveImportedTrackPropertiesAsset(
+		const FTrackPropertiesBarrier& Barrier, const FString& DirectoryName, const FString& Name);
 
 	/**
 	 * Rename the object. Generates a fallback name if the given name can't be used.

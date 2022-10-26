@@ -416,6 +416,12 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 		return;
 	}
 
+	// Do not show constraint visualizers while playing. (they are not up-to-date anyway)
+	if (Constraint->GetWorld()->IsGameWorld())
+	{
+		return;
+	}
+
 	const bool Violated = Constraint->AreFramesInViolatedState(KINDA_SMALL_NUMBER);
 
 	UAGX_RigidBodyComponent* Body1 = Constraint->BodyAttachment1.GetRigidBody();
@@ -424,22 +430,34 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	const FColor HighlightColor(243, 139, 0);
 	const float HighlightThickness(1.0f);
 
-	if (Body1 != nullptr)
+	// \todo Is there a better way to determine if we are in the BP Actor Editor?
+	bool bIsInBlueprintEditor = Constraint->GetOutermost()->GetName().Equals("/Engine/Transient");
+
+	// By default DrawVisualization is called when the component's Actor is selected in the Level Editor
+	// or when the Component is selected in the BP Actor Editor. If there's many constraints etc in the
+	// same actor the Level Editor's viewport gets very messy. Therefore, with the following boolean we
+	// only draw the visualization if the component is selected in the Level Editor, not the actor.
+	bool bShowConnections = Constraint->IsSelectedInEditor() || bIsInBlueprintEditor;
+
+	if (bShowConnections)
 	{
-		float CircleScreenFactor = 0.08f;
-		RenderBodyMarker(
-			Constraint->BodyAttachment1, Body1, CircleScreenFactor, HighlightColor,
-			HighlightThickness, View, PDI);
-	}
-	if (Body2 != nullptr)
-	{
-		float CircleScreenFactor = 0.05f;
-		FColor Color = FColor(
-			HighlightColor.R * 0.6f, HighlightColor.G * 0.6f, HighlightColor.B * 0.6f,
-			HighlightColor.A);
-		RenderBodyMarker(
-			Constraint->BodyAttachment2, Body2, CircleScreenFactor, Color, HighlightThickness, View,
-			PDI);
+		if (Body1 != nullptr)
+		{
+			float CircleScreenFactor = 0.08f;
+			RenderBodyMarker(
+				Constraint->BodyAttachment1, Body1, CircleScreenFactor, HighlightColor,
+				HighlightThickness, View, PDI);
+		}
+		if (Body2 != nullptr)
+		{
+			float CircleScreenFactor = 0.05f;
+			FColor Color = FColor(
+				HighlightColor.R * 0.6f, HighlightColor.G * 0.6f, HighlightColor.B * 0.6f,
+				HighlightColor.A);
+			RenderBodyMarker(
+				Constraint->BodyAttachment2, Body2, CircleScreenFactor, Color, HighlightThickness, View,
+				PDI);
+		}
 	}
 
 	PDI->SetHitProxy(new HConstraintHitProxy(Constraint));
@@ -454,38 +472,41 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	const FVector LocationAttach2 = GetConstantDistanceLocation(
 		View, Constraint->BodyAttachment2.GetGlobalFrameLocation(), Distance);
 
-	if (Body1 != nullptr)
+	if (bShowConnections)
 	{
-		const FVector LocationBody1 =
-			GetConstantDistanceLocation(View, Body1->GetComponentLocation(), Distance);
+		if (Body1 != nullptr)
+		{
+			const FVector LocationBody1 =
+				GetConstantDistanceLocation(View, Body1->GetComponentLocation(), Distance);
 
-		// Draw line between body1 and attachment frame 1.
-		DrawDashedLine(
-			PDI, LocationBody1, LocationAttach1, HighlightColor, HighlightThickness,
-			SDPG_Foreground,
-			/*DepthBias*/ 0.0f);
-	}
+			// Draw line between body1 and attachment frame 1.
+			DrawDashedLine(
+				PDI, LocationBody1, LocationAttach1, HighlightColor, HighlightThickness,
+				SDPG_Foreground,
+				/*DepthBias*/ 0.0f);
+		}
 
-	if (Body2 != nullptr)
-	{
-		const FVector LocationBody2 =
-			GetConstantDistanceLocation(View, Body2->GetComponentLocation(), Distance);
+		if (Body2 != nullptr)
+		{
+			const FVector LocationBody2 =
+				GetConstantDistanceLocation(View, Body2->GetComponentLocation(), Distance);
 
-		// Draw line between body2 and attachment frame 2.
-		DrawDashedLine(
-			PDI, LocationBody2, LocationAttach2, HighlightColor, HighlightThickness,
-			SDPG_Foreground,
-			/*DepthBias*/ 0.0f);
-	}
+			// Draw line between body2 and attachment frame 2.
+			DrawDashedLine(
+				PDI, LocationBody2, LocationAttach2, HighlightColor, HighlightThickness,
+				SDPG_Foreground,
+				/*DepthBias*/ 0.0f);
+		}
 
-	if (Violated)
-	{
-		// Draw red line between attachment frame 1 and attachment frame 2 if the constraint is
-		// violated.
-		DrawDashedLine(
-			PDI, LocationAttach1, LocationAttach2, ColorViolated, HighlightThickness,
-			SDPG_Foreground,
-			/*DepthBias*/ 0.0f);
+		if (Violated)
+		{
+			// Draw red line between attachment frame 1 and attachment frame 2 if the constraint is
+			// violated.
+			DrawDashedLine(
+				PDI, LocationAttach1, LocationAttach2, ColorViolated, HighlightThickness,
+				SDPG_Foreground,
+				/*DepthBias*/ 0.0f);
+		}
 	}
 }
 

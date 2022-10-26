@@ -34,8 +34,6 @@ FAGX_TopMenu::FAGX_TopMenu()
 	: Extender(nullptr)
 	, UnrealMenuBarExtension(nullptr)
 {
-	UE_LOG(LogAGX, Log, TEXT("FAGX_TopMenu::FAGX_TopMenu()"));
-
 	// Get Prerequisites.
 
 	FLevelEditorModule& LevelEditorModule =
@@ -62,8 +60,6 @@ FAGX_TopMenu::FAGX_TopMenu()
 
 FAGX_TopMenu::~FAGX_TopMenu()
 {
-	UE_LOG(LogAGX, Log, TEXT("FAGX_TopMenu::~FAGX_TopMenu()"));
-
 	// Get prerequisites.
 
 	FLevelEditorModule& LevelEditorModule =
@@ -132,15 +128,11 @@ FAGX_TopMenu::~FAGX_TopMenu()
 	FNewMenuDelegate NewMenuDelegate = FNewMenuDelegate::CreateLambda(
 		[](FMenuBuilder& Builder)
 		{
-			UE_LOG(LogAGX, Log, TEXT("NewMenuDelegate"));
-
 			if (FAGXUnrealEditorModule* AGXUnrealEditorModule =
 					FModuleManager::GetModulePtr<FAGXUnrealEditorModule>("AGXUnrealEditor"))
 			{
 				if (TSharedPtr<FAGX_TopMenu> AgxTopMenu = AGXUnrealEditorModule->GetAgxTopMenu())
 				{
-					UE_LOG(LogAGX, Log, TEXT("&AgxTopMenu = %p"), AgxTopMenu.Get());
-
 					AgxTopMenu->FillTopMenu(Builder);
 				}
 			}

@@ -3,17 +3,17 @@
 #pragma once
 #include <type_traits>
 
-
 // clang-format off
 
-#define AGX_ASSET_SETTER_IMPL_INTERNAL(UpropertyName, InVar, SetFunc, HasNativeFunc, NativeName) \
+#define AGX_ASSET_SETTER_IMPL_INTERNAL( \
+	PropertyName, InVar, SetFunc, HasNativeFunc, NativeName, BarrierMemberAccess) \
 { \
 	if (IsInstance()) \
 	{ \
-		UpropertyName = InVar; \
+		PropertyName = InVar; \
 		if (HasNativeFunc()) \
 		{ \
-			NativeName.SetFunc(InVar); \
+			NativeName BarrierMemberAccess SetFunc(InVar); \
 		} \
 	} \
 	else \
@@ -21,19 +21,30 @@
 		if (Instance != nullptr) \
 		{ \
 			Instance->SetFunc(InVar); \
-			return; \
 		} \
-		UpropertyName = InVar; \
+		else \
+		{ \
+			PropertyName = InVar; \
+		} \
 	} \
 }
 
-#define AGX_ASSET_SETTER_IMPL(UpropertyName, InVar, SetFunc) \
-	AGX_ASSET_SETTER_IMPL_INTERNAL(UpropertyName, InVar, SetFunc, HasNative, NativeBarrier)
+#define AGX_ASSET_SETTER_IMPL_POINTER(PropertyName, InVar, SetFunc) \
+	AGX_ASSET_SETTER_IMPL_INTERNAL(PropertyName, InVar, SetFunc, HasNative, NativeBarrier, ->)
 
-#define AGX_ASSET_SETTER_DUAL_NATIVE_IMPL(UpropertyName, InVar, SetFunc, HasNativeFunc, NativeName) \
-	AGX_ASSET_SETTER_IMPL_INTERNAL(UpropertyName, InVar, SetFunc, HasNativeFunc, NativeName)
+#define AGX_ASSET_SETTER_IMPL_VALUE(PropertyName, InVar, SetFunc) \
+	AGX_ASSET_SETTER_IMPL_INTERNAL(PropertyName, InVar, SetFunc, HasNative, NativeBarrier, .)
 
-#define AGX_ASSET_GETTER_IMPL_INTERNAL(UpropertyName, GetFunc, HasNativeFunc, NativeName) \
+#define AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_POINTER(PropertyName, InVar, SetFunc, HasNativeFunc, NativeName) \
+	AGX_ASSET_SETTER_IMPL_INTERNAL(PropertyName, InVar, SetFunc, HasNativeFunc, NativeName, ->)
+
+#define AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(PropertyName, InVar, SetFunc, HasNativeFunc, NativeName) \
+	AGX_ASSET_SETTER_IMPL_INTERNAL(PropertyName, InVar, SetFunc, HasNativeFunc, NativeName, .)
+
+
+
+#define AGX_ASSET_GETTER_IMPL_INTERNAL( \
+	PropertyName, GetFunc, HasNativeFunc, NativeName, BarrierMemberAccess) \
 { \
 	if (Instance != nullptr) \
 	{ \
@@ -41,26 +52,31 @@
 	} \
 	if (HasNativeFunc()) \
 	{ \
-		return NativeName.GetFunc(); \
+		return NativeName BarrierMemberAccess GetFunc(); \
 	} \
-	return UpropertyName; \
+	return PropertyName; \
 }
 
-#define AGX_ASSET_GETTER_IMPL(UpropertyName, GetFunc) \
-	AGX_ASSET_GETTER_IMPL_INTERNAL(UpropertyName, GetFunc, HasNative, NativeBarrier)
+#define AGX_ASSET_GETTER_IMPL_POINTER(PropertyName, GetFunc) \
+	AGX_ASSET_GETTER_IMPL_INTERNAL(PropertyName, GetFunc, HasNative, NativeBarrier, ->)
 
-#define AGX_ASSET_GETTER_DUAL_NATIVE_IMPL(UpropertyName, GetFunc, HasNativeFunc, NativeName) \
-	AGX_ASSET_GETTER_IMPL_INTERNAL(UpropertyName, GetFunc, HasNativeFunc, NativeName)
+#define AGX_ASSET_GETTER_IMPL_VALUE(PropertyName, GetFunc) \
+	AGX_ASSET_GETTER_IMPL_INTERNAL(PropertyName, GetFunc, HasNative, NativeBarrier, .)
+
+#define AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_POINTER(PropertyName, GetFunc, HasNativeFunc, NativeName) \
+	AGX_ASSET_GETTER_IMPL_INTERNAL(PropertyName, GetFunc, HasNativeFunc, NativeName, ->)
+
+#define AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(PropertyName, GetFunc, HasNativeFunc, NativeName) \
+	AGX_ASSET_GETTER_IMPL_INTERNAL(PropertyName, GetFunc, HasNativeFunc, NativeName, .)
 
 
-
-#define AGX_ASSET_DISPATCHER_LAMBDA_BODY(UpropertyName, SetFunc) \
+#define AGX_ASSET_DISPATCHER_LAMBDA_BODY(PropertyName, SetFunc) \
 { \
 	if (This->IsInstance()) \
 	{ \
-		This->Asset->UpropertyName = This->UpropertyName; \
+		This->Asset->PropertyName = This->PropertyName; \
 	} \
-	This->SetFunc(This->UpropertyName); \
+	This->SetFunc(This->PropertyName); \
 }
 
 // clang-format on
