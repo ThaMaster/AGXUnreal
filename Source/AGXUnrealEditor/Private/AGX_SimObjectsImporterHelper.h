@@ -27,6 +27,7 @@ class UAGX_BallConstraintComponent;
 class UAGX_CylindricalConstraintComponent;
 class UAGX_DistanceConstraintComponent;
 class UAGX_LockConstraintComponent;
+class UAGX_MergeSplitThresholdsBase;
 class FTwoBodyTireBarrier;
 class UAGX_TwoBodyTireComponent;
 class UAGX_CollisionGroupDisablerComponent;
@@ -145,6 +146,7 @@ public:
 
 private:
 	TMap<FGuid, FAssetToDiskInfo> RestoredMeshes;
+	TMap<FGuid, UAGX_MergeSplitThresholdsBase*> RestoredThresholds;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterial*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;

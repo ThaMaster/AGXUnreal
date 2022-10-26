@@ -350,6 +350,6 @@ private:
 
 	TWeakObjectPtr<UAGX_TerrainMaterial> Asset;
 	TWeakObjectPtr<UAGX_TerrainMaterial> Instance;
-	TUniquePtr<FTerrainMaterialBarrier> TerrainMaterialNativeBarrier;
-	TUniquePtr<FShapeMaterialBarrier> ShapeMaterialNativeBarrier;
+	FTerrainMaterialBarrier TerrainMaterialNativeBarrier;
+	FShapeMaterialBarrier ShapeMaterialNativeBarrier;
 };

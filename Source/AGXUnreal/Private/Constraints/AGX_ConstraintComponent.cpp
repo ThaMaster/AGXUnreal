@@ -517,6 +517,13 @@ void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
 			ForceRange[Dof] = Barrier.GetForceRange(NativeDof);
 		}
 	}
+
+	const FMergeSplitPropertiesBarrier Msp =
+		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FConstraintBarrier*>(&Barrier));
+	if (Msp.HasNative())
+	{
+		MergeSplitProperties.CopyFrom(Msp);
+	}
 }
 
 void UAGX_ConstraintComponent::SetSolveType(EAGX_SolveType InSolveType)
@@ -555,6 +562,11 @@ void UAGX_ConstraintComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier->SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+
+	if (HasNative())
+	{
+		MergeSplitProperties.BindBarrierToOwner(*GetNative());
+	}
 }
 
 FConstraintBarrier* UAGX_ConstraintComponent::GetOrCreateNative()
@@ -699,6 +711,12 @@ bool UAGX_ConstraintComponent::IsDofLocked(EDofFlag Dof) const
 	return static_cast<uint8>(LockedDofsBitmask) & static_cast<uint8>(Dof);
 }
 
+bool UAGX_ConstraintComponent::IsRotational() const
+{
+	return !IsDofLocked(EDofFlag::DofFlagRotational1) ||
+		   !IsDofLocked(EDofFlag::DofFlagRotational2) || !IsDofLocked(EDofFlag::DofFlagRotational3);
+}
+
 namespace
 {
 	FAGX_ConstraintBodyAttachment* SelectByName(
@@ -792,6 +810,10 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, bComputeForces),
 		[](ThisClass* This) { This->SetComputeForces(This->bComputeForces); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, MergeSplitProperties),
+		[](ThisClass* This) { This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
 }
 
 void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -872,6 +894,25 @@ void UAGX_ConstraintComponent::PostEditChangeChainProperty(FPropertyChangedChain
 }
 
 #endif
+
+void UAGX_ConstraintComponent::CreateMergeSplitProperties()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_ConstraintComponent::CreateMergeSplitProperties was called "
+				 "on Constraint '%s' that does not have a Native AGX Dynamics object. Only call this "
+				 "function "
+				 "during play."), *GetName());
+		return;
+	}
+
+	if (!MergeSplitProperties.HasNative())
+	{
+		MergeSplitProperties.CreateNative(*this);
+	}
+}
 
 TStructOnScope<FActorComponentInstanceData> UAGX_ConstraintComponent::GetComponentInstanceData()
 	const
@@ -1044,6 +1085,10 @@ void UAGX_ConstraintComponent::BeginPlay()
 		BodyAttachment2.FrameDefiningComponent.CacheCurrentSceneComponent();
 
 		CreateNative();
+		if (HasNative())
+		{
+			MergeSplitProperties.OnBeginPlay(*this);
+		}
 	}
 }
 

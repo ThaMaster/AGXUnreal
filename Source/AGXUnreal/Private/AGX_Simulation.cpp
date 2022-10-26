@@ -3,11 +3,15 @@
 #include "AGX_Simulation.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Environment.h"
+#include "AGX_LogCategory.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_StaticMeshComponent.h"
 #include "AGX_Stepper.h"
-#include "AGX_LogCategory.h"
-#include "AGX_PropertyChangedDispatcher.h"
+#include "AMOR/AGX_ConstraintMergeSplitThresholds.h"
+#include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
+#include "AMOR/AGX_WireMergeSplitThresholds.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
@@ -17,7 +21,6 @@
 #include "Tires/AGX_TireComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
-#include "AGX_Environment.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_Stats.h"
 #include "Wire/AGX_WireComponent.h"
@@ -137,6 +140,17 @@ namespace AGX_Simulation_helpers
 					 "about the failure."),
 				*ActorOrComponent.GetName(), *GetLabelSafe(ActorOrComponent.GetOwner()));
 		}
+	}
+
+	template <typename T>
+	T* GetAssetFrom(const FSoftObjectPath& Path)
+	{
+		if (!Path.IsAsset())
+		{
+			return nullptr;
+		}
+
+		return LoadObject<T>(GetTransientPackage(), *Path.GetAssetPathString());
 	}
 }
 
@@ -423,6 +437,25 @@ int32 UAGX_Simulation::GetNumPpgsIterations()
 	return NumPpgsIterations;
 }
 
+void UAGX_Simulation::SetEnableAMOR(bool bEnable)
+{
+	bEnableAMOR = bEnable;
+	if (HasNative())
+	{
+		NativeBarrier.SetEnableAMOR(bEnable);
+	}
+}
+
+bool UAGX_Simulation::GetEnableAMOR()
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetEnableAMOR();
+	}
+
+	return bEnableAMOR;
+}
+
 void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
@@ -464,6 +497,9 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	NativeBarrier.SetNumThreads(NumThreads);
 	SetGravity();
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
+	NativeBarrier.SetEnableAMOR(bEnableAMOR);
+
+	SetGlobalNativeMergeSplitThresholds();
 
 	if (bRemoteDebugging)
 	{
@@ -512,6 +548,10 @@ void UAGX_Simulation::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
 
 	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bEnableAMOR),
+		[](ThisClass* This) { This->SetEnableAMOR(This->bEnableAMOR); });
+		
+	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, NumThreads),
 		[](ThisClass* This) { This->SetNumThreads(This->NumThreads); });
 }
@@ -538,14 +578,20 @@ bool UAGX_Simulation::HasNative() const
 
 FSimulationBarrier* UAGX_Simulation::GetNative()
 {
-	check(NativeBarrier.HasNative()); // Invalid to call this function before starting game!
+	if (!HasNative())
+	{
+		return nullptr;
+	}
 
 	return &NativeBarrier;
 }
 
 const FSimulationBarrier* UAGX_Simulation::GetNative() const
 {
-	check(NativeBarrier.HasNative()); // Invalid to call this function before starting game!
+	if (!HasNative())
+	{
+		return nullptr;
+	}
 
 	return &NativeBarrier;
 }
@@ -1004,5 +1050,38 @@ void UAGX_Simulation::SetGravity()
 		default:
 			UE_LOG(LogAGX, Error, TEXT("SetGravity failed, unknown GravityModel."));
 			break;
+	}
+}
+
+void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
+{
+	using namespace AGX_Simulation_helpers;
+	if (!HasNative())
+	{
+		return;
+	}
+
+	if (auto SC = GetAssetFrom<UAGX_ShapeContactMergeSplitThresholds>(
+			GlobalShapeContactMergeSplitThresholds))
+	{
+		FShapeContactMergeSplitThresholdsBarrier Thresholds =
+			NativeBarrier.GetGlobalShapeContactTresholds();
+		SC->CopyTo(Thresholds);
+	}
+
+	if (auto SC = GetAssetFrom<UAGX_ConstraintMergeSplitThresholds>(
+			GlobalConstraintMergeSplitThresholds))
+	{
+		FConstraintMergeSplitThresholdsBarrier Thresholds =
+			NativeBarrier.GetGlobalConstraintTresholds();
+		SC->CopyTo(Thresholds);
+	}
+
+	if (auto SC = GetAssetFrom<UAGX_WireMergeSplitThresholds>(
+			GlobalWireMergeSplitThresholds))
+	{
+		FWireMergeSplitThresholdsBarrier Thresholds =
+			NativeBarrier.GetGlobalWireTresholds();
+		SC->CopyTo(Thresholds);
 	}
 }

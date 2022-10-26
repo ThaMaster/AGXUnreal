@@ -17,7 +17,7 @@ class AStaticMeshActor;
 /**
  *
  */
-UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_BoxShapeComponent final : public UAGX_ShapeComponent,
 												   public AGX_AutoFitShape
 {

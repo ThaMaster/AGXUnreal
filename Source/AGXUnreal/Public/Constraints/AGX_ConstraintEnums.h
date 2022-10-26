@@ -73,7 +73,7 @@ static constexpr int32 NumGenericDofs = (int32) EGenericDofIndex::NumDofs;
 /**
  * Flags used to be able to identify DOFs and combine them into a bitmask.
  */
-UENUM(meta = (Bitflags))
+UENUM(Meta = (Bitflags))
 enum class EDofFlag : uint8
 {
 	DOF_FLAG_ALL = 0x3F UMETA(DisplayName = "All"),

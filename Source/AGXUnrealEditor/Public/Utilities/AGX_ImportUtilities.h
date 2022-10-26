@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AMOR/AGX_AmorEnums.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Math/Color.h"
@@ -9,11 +12,13 @@
 class FTrimeshShapeBarrier;
 class FRenderDataBarrier;
 class FShapeBarrier;
+class FMergeSplitThresholdsBarrier;
 class FShapeMaterialBarrier;
 class FTrackBarrier;
 class FTrackPropertiesBarrier;
 class FContactMaterialBarrier;
 class UAGX_ContactMaterial;
+class UAGX_MergeSplitThresholdsBase;
 class UAGX_ShapeMaterial;
 class UAGX_TrackInternalMergeProperties;
 class UAGX_TrackProperties;
@@ -162,6 +167,19 @@ public:
 	static UMaterialInterface* SaveImportedRenderMaterialAsset(
 		const FAGX_RenderMaterial& Imported, const FString& DirectoryName,
 		const FString& MaterialName);
+
+	/**
+	 * Store an imported AGX Dynamics Merge Split Thresholds as an UAGX_MergeSplitThresholdsBase.
+	 * @param Barrier The imported merge split thresholds to be saved.
+	 * @param OwningType Indicates the type of the underlying AGX Dynamics object owning this
+	 * MergeSplitThresholds.
+	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param Name The name of the asset to be written.
+	 * @return The created MergeSplitThresholds asset.
+	 */
+	static UAGX_MergeSplitThresholdsBase* SaveImportedMergeSplitAsset(
+		const FMergeSplitThresholdsBarrier& Barrier, EAGX_AmorOwningType OwningType,
+		const FString& DirectoryName, const FString& Name);
 
 	/**
 	 * Store an imported AGX Dynamics Track Internal Merge Property as an

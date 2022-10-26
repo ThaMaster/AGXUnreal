@@ -3,6 +3,9 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AMOR/ConstraintMergeSplitThresholdsBarrier.h"
+#include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
+#include "AMOR/WireMergeSplitThresholdsBarrier.h"
 #include "Utilities/AGX_Statistics.h"
 #include "Contacts/ShapeContactBarrier.h"
 
@@ -65,6 +68,9 @@ public:
 
 	void EnableRemoteDebugging(int16 Port);
 
+	void SetEnableAMOR(bool bEnable);
+	bool GetEnableAMOR();
+
 	void SetTimeStep(float TimeStep);
 	float GetTimeStep() const;
 
@@ -114,6 +120,14 @@ public:
 	FSimulationRef* GetNative();
 	const FSimulationRef* GetNative() const;
 	void ReleaseNative();
+
+	/**
+	 * Functions for creating a Merge Split Thresholds Barrier which can be modified to
+	 * change the underlying global AGX Dynamics thresholds.
+	 */
+	FShapeContactMergeSplitThresholdsBarrier GetGlobalShapeContactTresholds() const;
+	FConstraintMergeSplitThresholdsBarrier GetGlobalConstraintTresholds() const;
+	FWireMergeSplitThresholdsBarrier GetGlobalWireTresholds() const;
 
 private:
 	FSimulationBarrier(const FSimulationBarrier&) = delete;

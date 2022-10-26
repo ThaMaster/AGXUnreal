@@ -3,9 +3,9 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "SimulationBarrier.h"
-#include "Contacts/ShapeContactBarrier.h"
 #include "AGX_SimulationEnums.h"
+#include "Contacts/ShapeContactBarrier.h"
+#include "SimulationBarrier.h"
 
 // Unreal Engine includes.
 #include "Containers/Map.h"
@@ -113,7 +113,7 @@ public: // Properties.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "Solver",
-		meta =
+		Meta =
 			(ClampMin = 1, UIMin = 1, DisplayName = "Num PPGS Iterations",
 			 EditCondition = "bOverridePPGSIterations"))
 	int32 NumPpgsIterations = 25;
@@ -156,6 +156,41 @@ public: // Properties.
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Statistics")
 	bool bEnableStatistics = false;
 
+	/**
+	 * Globally enable or disable AMOR (Merge Split Handler) in AGX Dynamics.
+	 * Note that each RigidBody / Geometry / Wire / Constraint need to enable merge/split
+	 * individually for AMOR to be used for those.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
+	bool bEnableAMOR = false;
+
+	/**
+	 * Changes the default AMOR Shape Contact Merge Split Thresholds for all Rigid Bodies
+	 * and Shapes that does not specify their own.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "AGX AMOR",
+		Meta = (AllowedClasses = "AGX_ShapeContactMergeSplitThresholds"))
+	FSoftObjectPath GlobalShapeContactMergeSplitThresholds;
+
+	/**
+	 * Changes the default AMOR Constraint Merge Split Thresholds for all Constraints
+	 * that does not specify their own.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "AGX AMOR",
+		Meta = (AllowedClasses = "AGX_ConstraintMergeSplitThresholds"))
+	FSoftObjectPath GlobalConstraintMergeSplitThresholds;
+
+	/**
+	 * Changes the default AMOR Wire Merge Split Thresholds for all Wires
+	 * that does not specify their own.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "AGX AMOR",
+		Meta = (AllowedClasses = "AGX_WireMergeSplitThresholds"))
+	FSoftObjectPath GlobalWireMergeSplitThresholds;
+
 #if WITH_EDITORONLY_DATA
 	/**
 	 * Set to true to write an AGX Dynamics for Unreal archive of the initial state.
@@ -169,7 +204,7 @@ public: // Properties.
 	 * set.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Startup", meta = (EditCondition = "bExportInitialState"))
+		Config, EditAnywhere, Category = "Startup", Meta = (EditCondition = "bExportInitialState"))
 	FString ExportPath;
 #endif
 
@@ -188,7 +223,7 @@ public: // Properties.
 	uint8 bRemoteDebugging : 1;
 
 	/** Network port to use for remote debugging. */
-	UPROPERTY(Config, EditAnywhere, Category = "Debug", meta = (EditCondition = "bRemoteDebugging"))
+	UPROPERTY(Config, EditAnywhere, Category = "Debug", Meta = (EditCondition = "bRemoteDebugging"))
 	int16 RemoteDebuggingPort;
 
 	/**
@@ -209,6 +244,12 @@ public: // Member functions.
 
 	UFUNCTION(BlueprintCallable, Category = "Solver")
 	bool GetEnableContactWarmstarting() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
+	void SetEnableAMOR(bool bEnable);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
+	bool GetEnableAMOR();
 
 	/**
 	 * Set the number of solver resting iterations to use for the Parallel Projected Gauss-Seidel
@@ -356,6 +397,8 @@ private:
 	void EnsureValidLicense();
 
 	void SetGravity();
+
+	void SetGlobalNativeMergeSplitThresholds();
 
 private:
 	FSimulationBarrier NativeBarrier;

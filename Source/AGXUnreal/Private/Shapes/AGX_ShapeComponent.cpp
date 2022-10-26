@@ -19,6 +19,9 @@
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
 
+// Standard library includes.
+#include <tuple>
+
 // Sets default values for this component's properties
 UAGX_ShapeComponent::UAGX_ShapeComponent()
 {
@@ -39,6 +42,11 @@ void UAGX_ShapeComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	GetNativeBarrier()->SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+
+	if (HasNative())
+	{
+		MergeSplitProperties.BindBarrierToOwner(*GetNative());
+	}	
 }
 
 TStructOnScope<FActorComponentInstanceData> UAGX_ShapeComponent::GetComponentInstanceData() const
@@ -201,6 +209,10 @@ void UAGX_ShapeComponent::PostInitProperties()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, bIsSensor),
 		[](ThisClass* This) { This->SetIsSensor(This->bIsSensor); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, MergeSplitProperties),
+		[](ThisClass* This) { This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
 #endif
 }
 
@@ -229,6 +241,8 @@ void UAGX_ShapeComponent::BeginPlay()
 		// its world transform. Push the entire Unreal world transform down into the native shape.
 		UpdateNativeGlobalTransform();
 	}
+
+	MergeSplitProperties.OnBeginPlay(*this);
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
@@ -291,8 +305,35 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 		AddCollisionGroup(Group);
 	}
 
+	const FMergeSplitPropertiesBarrier Msp =
+		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FShapeBarrier*>(&Barrier));
+	if (Msp.HasNative())
+	{
+		MergeSplitProperties.CopyFrom(Msp);
+	}
+
 	/// \todo Should shape material be handled here? If so, how? We don't have access to the
 	/// <Guid, Object> restore tables from here.
+}
+
+void UAGX_ShapeComponent::CreateMergeSplitProperties()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_ShapeComponent::CreateMergeSplitProperties was called "
+				 "on Shape Component '%s' that does not have a Native AGX Dynamics object. Only call "
+				 "this function "
+				 "during play."),
+			*GetName());
+		return;
+	}
+
+	if (!MergeSplitProperties.HasNative())
+	{
+		MergeSplitProperties.CreateNative(*this);
+	}
 }
 
 void UAGX_ShapeComponent::UpdateNativeGlobalTransform()

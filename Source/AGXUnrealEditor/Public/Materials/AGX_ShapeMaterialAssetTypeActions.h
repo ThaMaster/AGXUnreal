@@ -2,9 +2,11 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "AssetTypeCategories.h"
+
+// Unreal Engine includes.
 #include "AssetTypeActions_Base.h"
+#include "AssetTypeCategories.h"
+#include "CoreMinimal.h"
 
 /**
  * Asset Type Actions for UAGX_ShapeMaterial, customizing its appearance in the Editor menus

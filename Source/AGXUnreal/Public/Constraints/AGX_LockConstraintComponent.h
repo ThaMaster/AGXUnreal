@@ -15,7 +15,7 @@ class FLockJointBarrier;
 /**
  * Locks all degrees of freedom.
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_LockConstraintComponent : public UAGX_ConstraintComponent
 {
 	GENERATED_BODY()

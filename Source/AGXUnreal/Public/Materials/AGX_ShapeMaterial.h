@@ -205,6 +205,7 @@ public:
 	virtual FShapeMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld) override;
 
 	FShapeMaterialBarrier* GetNative();
+	const FShapeMaterialBarrier* GetNative() const;
 	bool HasNative() const;
 	void UpdateNativeProperties();
 
@@ -225,5 +226,5 @@ private:
 
 	TWeakObjectPtr<UAGX_ShapeMaterial> Asset;
 	TWeakObjectPtr<UAGX_ShapeMaterial> Instance;
-	TUniquePtr<FShapeMaterialBarrier> NativeBarrier;
+	FShapeMaterialBarrier NativeBarrier;
 };

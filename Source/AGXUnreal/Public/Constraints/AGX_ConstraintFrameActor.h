@@ -22,7 +22,7 @@ class UAGX_ConstraintFrameComponent;
  *
  */
 UCLASS(
-	ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent),
+	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	hidecategories = (Cooking, Collision, Input, LOD, Rendering, Replication))
 class AGXUNREAL_API AAGX_ConstraintFrameActor : public AActor
 {

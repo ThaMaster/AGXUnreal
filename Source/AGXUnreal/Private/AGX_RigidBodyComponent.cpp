@@ -7,6 +7,7 @@
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "AMOR/MergeSplitPropertiesBarrier.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -188,6 +189,10 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MotionControl),
 		[](ThisClass* This) { This->SetMotionControl(This->MotionControl); });
 
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MergeSplitProperties), [](ThisClass* This)
+		{ This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
+
 /// @todo Enable once we get UAGX_RigidBodyComponent::SetTransformTarget.
 #if 0
 	PropertyDispatcher.Add(
@@ -245,6 +250,11 @@ void UAGX_RigidBodyComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+
+	if (HasNative())
+	{
+		MergeSplitProperties.BindBarrierToOwner(*GetNative());
+	}
 }
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetNative()
@@ -275,6 +285,8 @@ void UAGX_RigidBodyComponent::BeginPlay()
 		// Data.
 		InitializeNative();
 		check(HasNative()); /// \todo Consider better error handling than 'check'.
+
+		MergeSplitProperties.OnBeginPlay(*this);
 	}
 }
 
@@ -324,6 +336,25 @@ void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 	if (HasNative())
 	{
 		NativeBarrier.ReleaseNative();
+	}
+}
+
+void UAGX_RigidBodyComponent::CreateMergeSplitProperties()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_RigidBodyComponent::CreateMergeSplitProperties was called on Rigid Body "
+				 "'%s' that does not have a Native AGX Dynamics object. Only call this function "
+				 "during play."),
+			*GetName());
+		return;
+	}
+
+	if (!MergeSplitProperties.HasNative())
+	{
+		MergeSplitProperties.CreateNative(*this);
 	}
 }
 
@@ -460,6 +491,13 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 
 	/// \todo Should it always be SetWorld... here, or should we do SetRelative in some cases?
 	SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
+
+	const FMergeSplitPropertiesBarrier Msp =
+		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FRigidBodyBarrier*>(&Barrier));
+	if (Msp.HasNative())
+	{
+		MergeSplitProperties.CopyFrom(Msp);
+	}
 }
 
 void UAGX_RigidBodyComponent::InitializeMotionControl()
