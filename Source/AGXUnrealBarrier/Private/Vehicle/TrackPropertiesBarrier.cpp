@@ -274,6 +274,11 @@ void FTrackPropertiesBarrier::SetHingeRangeRange(FAGX_RealInterval MinMaxAngles)
 	NativeRef->Native->setHingeRangeRange(RangeAGX.lower(), RangeAGX.upper());
 }
 
+void FTrackPropertiesBarrier::SetHingeRange(FAGX_RealInterval MinMaxAngles)
+{
+	return SetHingeRangeRange(MinMaxAngles);
+}
+
 FAGX_RealInterval FTrackPropertiesBarrier::GetHingeRangeRange() const
 {
 	check(HasNative());
@@ -281,6 +286,12 @@ FAGX_RealInterval FTrackPropertiesBarrier::GetHingeRangeRange() const
 	const FAGX_RealInterval RangeUnreal = ConvertAngle(RangeAGX);
 	return RangeUnreal;
 }
+
+FAGX_RealInterval FTrackPropertiesBarrier::GetHingeRange() const
+{
+	return GetHingeRangeRange();
+}
+
 
 void FTrackPropertiesBarrier::SetOnInitializeMergeNodesToWheelsEnabled(bool bEnable)
 {

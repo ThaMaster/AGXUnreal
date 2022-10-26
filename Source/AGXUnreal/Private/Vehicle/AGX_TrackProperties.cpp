@@ -103,7 +103,6 @@ double UAGX_TrackProperties::GetHingeComplianceRotationalY() const
 	AGX_ASSET_GETTER_IMPL_VALUE(HingeComplianceRotational_Y, GetHingeComplianceRotationalY);
 }
 
-
 void UAGX_TrackProperties::GetHingeComplianceRotational_BP(float& X, float& Y)
 {
 	X = GetHingeComplianceRotationalX();
@@ -163,7 +162,6 @@ double UAGX_TrackProperties::GetHingeSpookDampingTranslationalZ() const
 	AGX_ASSET_GETTER_IMPL_VALUE(HingeSpookDampingTranslational_Z, GetHingeSpookDampingTranslationalZ);
 }
 
-
 void UAGX_TrackProperties::GetHingeSpookDampingTranslational_BP(
 	float& DampingX, float& DampingY, float& DampingZ)
 {
@@ -207,7 +205,6 @@ double UAGX_TrackProperties::GetHingeSpookDampingRotationalY() const
 	AGX_ASSET_GETTER_IMPL_VALUE(HingeSpookDampingRotational_Y, GetHingeSpookDampingRotationalY);
 }
 
-
 void UAGX_TrackProperties::GetHingeSpookDampingRotational_BP(float& X, float& Y)
 {
 	X = GetHingeSpookDampingRotationalX();
@@ -228,27 +225,39 @@ bool UAGX_TrackProperties::GetHingeRangeEnabled() const
 	AGX_ASSET_GETTER_IMPL_VALUE(bEnableHingeRange, GetHingeRangeEnabled);
 }
 
-void UAGX_TrackProperties::SetHingeRangeRange(FAGX_RealInterval InHingeRange)
+void UAGX_TrackProperties::SetHingeRange(FAGX_RealInterval InHingeRange)
 {
-	AGX_ASSET_SETTER_IMPL_VALUE(HingeRange, InHingeRange, SetHingeRangeRange);
+	AGX_ASSET_SETTER_IMPL_VALUE(HingeRange, InHingeRange, SetHingeRange);
 }
 
-void UAGX_TrackProperties::SetHingeRangeRange(double Min, double Max)
+void UAGX_TrackProperties::SetHingeRange(double Min, double Max)
 {
 	const FAGX_RealInterval Range(Min, Max);
-	AGX_ASSET_SETTER_IMPL_VALUE(HingeRange, Range, SetHingeRangeRange);
+	AGX_ASSET_SETTER_IMPL_VALUE(HingeRange, Range, SetHingeRange);
 }
 
-void UAGX_TrackProperties::SetHingeRangeRange_BP(float Min, float Max)
+void UAGX_TrackProperties::SetHingeRange_BP(float Min, float Max)
 {
-	SetHingeRangeRange(static_cast<double>(Min), static_cast<double>(Max));
+	SetHingeRange(static_cast<double>(Min), static_cast<double>(Max));
 }
 
-void UAGX_TrackProperties::GetHingeRangeRange_BP(float& Min, float& Max) const
+FAGX_RealInterval UAGX_TrackProperties::GetHingeRange() const
 {
-	FAGX_RealInterval Range = NativeBarrier.GetHingeRangeRange();
+	AGX_ASSET_GETTER_IMPL_VALUE(HingeRange, GetHingeRange);
+}
+
+void UAGX_TrackProperties::GetHingeRange(double& Min, double& Max) const
+{
+	FAGX_RealInterval Range = GetHingeRange();
 	Min = Range.Min;
 	Max = Range.Max;
+}
+
+void UAGX_TrackProperties::GetHingeRange_BP(float& Min, float& Max) const
+{
+	FAGX_RealInterval Range = GetHingeRange();
+	Min = static_cast<float>(Range.Min);
+	Max = static_cast<float>(Range.Max);
 }
 
 //
@@ -719,7 +728,7 @@ void UAGX_TrackProperties::InitPropertyDispatcher()
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(bEnableHingeRange, SetHingeRangeEnabled) });
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, HingeRange),
-		[](ThisClass* This) { AGX_ASSET_DISPATCHER_LAMBDA_BODY(HingeRange, SetHingeRangeRange) });
+		[](ThisClass* This) { AGX_ASSET_DISPATCHER_LAMBDA_BODY(HingeRange, SetHingeRange) });
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, bEnableOnInitializeMergeNodesToWheels),
 		[](ThisClass* This)

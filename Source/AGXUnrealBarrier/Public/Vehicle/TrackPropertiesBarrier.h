@@ -75,7 +75,10 @@ public:
 	bool GetHingeRangeEnabled() const;
 
 	void SetHingeRangeRange(FAGX_RealInterval MinMaxAngles);
+	void SetHingeRange(FAGX_RealInterval MinMaxAngles);
+
 	FAGX_RealInterval GetHingeRangeRange() const;
+	FAGX_RealInterval GetHingeRange() const;
 
 	// Merge/Split properties.
 

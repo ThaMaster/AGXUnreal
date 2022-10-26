@@ -185,19 +185,21 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Hinge Range", Meta = (EditCondition = "bEnableHingeRange"))
 	FAGX_RealInterval HingeRange {-120, 20};
 
-	void SetHingeRangeRange(FAGX_RealInterval InHingeRange);
-
-	void SetHingeRangeRange(double Min, double Max);
+	void SetHingeRange(FAGX_RealInterval InHingeRange);
+	void SetHingeRange(double Min, double Max);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Track Properties",
 		Meta = (DisplayName = "Set Hinge Range"))
-	void SetHingeRangeRange_BP(float Min, float Max);
+	void SetHingeRange_BP(float Min, float Max);
+
+	FAGX_RealInterval GetHingeRange() const;
+	void GetHingeRange(double& Min, double& Max) const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Track Properties",
 		Meta = (DisplayName = "Get Hinge Range"))
-	void GetHingeRangeRange_BP(float& Min, float& Max) const;
+	void GetHingeRange_BP(float& Min, float& Max) const;
 
 	/**
 	 * When the track has been initialized some nodes are in contact with the wheels.
