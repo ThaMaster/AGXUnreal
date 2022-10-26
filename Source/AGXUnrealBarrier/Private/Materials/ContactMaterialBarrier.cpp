@@ -619,10 +619,13 @@ namespace ContactMaterialBarrier_helpers
 
 FString FContactMaterialBarrier::GetOrientedFrictionModelReferenceFrameBodyName() const
 {
+	// The Contact Material may not actually have an oriented friction model at all, in which
+	// case the empty string is returned.
 	using namespace ContactMaterialBarrier_helpers;
+	check(HasNative());
 	const agx::FrictionModel* FrictionModel = NativeRef->Native->getFrictionModel();
 	const agx::Frame* Frame = GetReferenceFrame(FrictionModel);
-	const agx::RigidBody* Body = Frame->getRigidBody();
+	const agx::RigidBody* Body = Frame != nullptr ? Frame->getRigidBody() : nullptr;
 	return Body != nullptr ? Convert(Body->getName()) : FString();
 }
 
