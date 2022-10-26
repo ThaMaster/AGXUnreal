@@ -8,8 +8,8 @@
 // this preprocessor flag for Linux and Windows. See internal issue 495. Remove the preprocessor
 // guards once the Linux and/or Windows GitLab CI runtime has an AGX Dynamics license.
 #if defined(_WIN64)
-#define AGX_TEST_WIRE_IMPORT 1
-#define AGX_TEST_TRACK_IMPORT 1
+#define AGX_TEST_WIRE_IMPORT 0
+#define AGX_TEST_TRACK_IMPORT 0
 #elif defined(__linux__)
 #include "Linux/LinuxPlatformMisc.h"
 #define AGX_TEST_WIRE_IMPORT 0
