@@ -291,6 +291,8 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 		AddCollisionGroup(Group);
 	}
 
+	ImportGuid = Barrier.GetShapeGuid();
+
 	/// \todo Should shape material be handled here? If so, how? We don't have access to the
 	/// <Guid, Object> restore tables from here.
 }

@@ -384,7 +384,7 @@ namespace
 	 * if any. This makes it possible to hide the Render Data mesh and instead use the collision
 	 * data also for rendering.
 	 */
-	void ApplyRenderingData(
+	UStaticMeshComponent* ApplyRenderingData(
 		const FRenderDataBarrier& RenderData, const FTransform& RenderMeshTransform, bool IsSensor,
 		UMeshComponent& VisualMesh, TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials, const FString& DirectoryName)
@@ -411,6 +411,8 @@ namespace
 				RenderDataComponent->SetMaterial(0, RenderDataMaterial);
 			}
 		}
+
+		return RenderDataComponent;
 	}
 
 	/**
@@ -430,7 +432,8 @@ namespace
 		const TMap<FGuid, UAGX_ShapeMaterial*>& RestoredShapeMaterials,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials,
 		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes, const FString& DirectoryName,
-		UMeshComponent& VisualMesh)
+		UMeshComponent& VisualMesh,
+		TMap<FGuid, UStaticMeshComponent*>& RestoredStaticMeshComponents)
 	{
 		Component.UpdateVisualMesh();
 		Component.SetFlags(RF_Transactional);
@@ -480,9 +483,13 @@ namespace
 			//                                   transformation.
 			const FTransform ShapeTransform = Barrier.GetGeometryToShapeTransform();
 			const FTransform ShapeInvTransform = ShapeTransform.Inverse();
-			ApplyRenderingData(
+			UStaticMeshComponent* RDStaticMeshComponent = ApplyRenderingData(
 				Barrier.GetRenderData(), ShapeInvTransform, Component.bIsSensor, VisualMesh,
 				RestoredMeshes, RestoredRenderMaterials, DirectoryName);
+			if (RDStaticMeshComponent != nullptr)
+			{
+				RestoredStaticMeshComponents.Add(Barrier.GetShapeGuid(), RDStaticMeshComponent);
+			}
 		}
 		else
 		{
@@ -506,7 +513,7 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, RestoredStaticMeshComponents);
 	return Component;
 }
 
@@ -525,7 +532,7 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, RestoredStaticMeshComponents);
 	return Component;
 }
 
@@ -545,7 +552,7 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, RestoredStaticMeshComponents);
 	return Component;
 }
 
@@ -564,7 +571,7 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, RestoredStaticMeshComponents);
 	return Component;
 }
 
@@ -611,6 +618,7 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	if (MeshComponent != nullptr)
 	{
 		FAGX_ImportUtilities::Rename(*MeshComponent, *MeshName);
+		RestoredStaticMeshComponents.Add(Barrier.GetShapeGuid(), MeshComponent);
 	}
 
 	// Both components must be created and attached before they are registered because BeginPlay
@@ -626,7 +634,7 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *MeshComponent);
+		DirectoryName, *MeshComponent, RestoredStaticMeshComponents);
 	return Component;
 }
 
@@ -677,6 +685,8 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 			TEXT("Could not create a Static Mesh Component from given RenderDataBarrier."));
 		return nullptr;
 	}
+
+	RestoredStaticMeshComponents.Add(TrimeshBarrier.GetShapeGuid(), RenderDataComponent);
 
 	UMaterialInterface* RenderDataMaterial = CreateRenderMaterialFromRenderDataOrDefault(
 		RenderDataBarrier, TrimeshBarrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
@@ -1098,14 +1108,29 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 
 void FAGX_SimObjectsImporterHelper::UpdateComponent(UAGX_ReImportComponent& Component)
 {
+	auto UpdateReImportComponent = [this](UAGX_ReImportComponent* C)
+	{
+		if (C == nullptr)
+		{
+			return;
+		}
+
+		C->FilePath = ImportSettings.FilePath;
+		C->bIgnoreDisabledTrimeshes = ImportSettings.bIgnoreDisabledTrimeshes;
+		C->StaticMeshComponentToOwningShape.Empty();
+		for (const auto& RestoredSMCTuple : RestoredStaticMeshComponents)
+		{
+			C->StaticMeshComponentToOwningShape.Add(
+				RestoredSMCTuple.Value->GetName(), RestoredSMCTuple.Key);
+		}
+	};
+
 	for (UAGX_ReImportComponent* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 	{
-		Instance->FilePath = ImportSettings.FilePath;
-		Instance->bIgnoreDisabledTrimeshes = ImportSettings.bIgnoreDisabledTrimeshes;
+		UpdateReImportComponent(Instance);
 	}
 
-	Component.FilePath = ImportSettings.FilePath;
-	Component.bIgnoreDisabledTrimeshes = ImportSettings.bIgnoreDisabledTrimeshes;
+	UpdateReImportComponent(&Component);
 	FAGX_ImportUtilities::Rename(Component, "AGX_ReImport");
 }
 

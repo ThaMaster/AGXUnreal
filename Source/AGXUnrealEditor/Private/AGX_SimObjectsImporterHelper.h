@@ -170,6 +170,7 @@ public:
 
 private:
 	TMap<FGuid, FAssetToDiskInfo> RestoredMeshes;
+	TMap<FGuid, UStaticMeshComponent*> RestoredStaticMeshComponents;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterial*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
