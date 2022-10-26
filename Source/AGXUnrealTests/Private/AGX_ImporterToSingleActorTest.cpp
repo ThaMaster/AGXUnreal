@@ -3,11 +3,10 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
 // AGX Dynamics require a license for wire and track import. Our GitLab CI
-// runtime environment on Linux currently doesn't have an AGX Dynamics license so the
-// wire and track import test always fails on that platform. Our GitLab CI runtime environment on
-// Windows does have a license. For now the test is disabled through this preprocessor flag for
-// Linux but is enabled on Windows. See internal issue 495. Remove the preprocessor guards once the
-// Linux GitLab CI runtime has an AGX Dynamics license.
+// runtime environment on Linux and Windows currently doesn't have an AGX Dynamics license so the
+// wire and track import test always fails on those platforms. For now the test is disabled through
+// this preprocessor flag for Linux and Windows. See internal issue 495. Remove the preprocessor
+// guards once the Linux and/or Windows GitLab CI runtime has an AGX Dynamics license.
 #if defined(_WIN64)
 #define AGX_TEST_WIRE_IMPORT 1
 #define AGX_TEST_TRACK_IMPORT 1
@@ -2991,10 +2990,10 @@ bool FCheckTrackImportedCommand::Update()
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
 
-	// 24 Hinge Constraints with three Icons each (96), 25 Rigid Bodies (121), 20 Sphere Shapes
-	// (141), 24 Cylinder Shapes (165), 3 Box Shapes (168), a Collision Group Disabler (169), a
-	// Contact Material Registrar (170), a Default Scene Root (171), two Tracks (173).
-	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 173);
+	// 24 Hinge Constraints (24), 25 Rigid Bodies (49), 20 Sphere Shapes
+	// (69), 24 Cylinder Shapes (93), 3 Box Shapes (96), a Collision Group Disabler (97), a
+	// Contact Material Registrar (98), a Default Scene Root (99), two Tracks (101).
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 101);
 	if (Components.Num() != 173)
 	{
 		UE_LOG(LogAGX, Warning, TEXT("Found the following components:"));

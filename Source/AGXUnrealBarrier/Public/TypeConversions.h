@@ -840,7 +840,7 @@ inline EAGX_TrackWheelModel Convert(agxVehicle::TrackWheel::Model Model)
 		case agxVehicle::TrackWheel::IDLER:
 			return EAGX_TrackWheelModel::Idler;
 		case agxVehicle::TrackWheel::ROLLER:
-			return EAGX_TrackWheelModel::Idler;
+			return EAGX_TrackWheelModel::Roller;
 		case agxVehicle::TrackWheel::SPROCKET:
 			return EAGX_TrackWheelModel::Sprocket;
 		default:
