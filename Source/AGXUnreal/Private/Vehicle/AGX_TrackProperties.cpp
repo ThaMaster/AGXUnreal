@@ -149,17 +149,20 @@ void UAGX_TrackProperties::SetHingeSpookDampingTranslational_BP(
 
 double UAGX_TrackProperties::GetHingeSpookDampingTranslationalX() const
 {
-	AGX_ASSET_GETTER_IMPL_VALUE(HingeSpookDampingTranslational_X, GetHingeSpookDampingTranslationalX);
+	AGX_ASSET_GETTER_IMPL_VALUE(
+		HingeSpookDampingTranslational_X, GetHingeSpookDampingTranslationalX);
 }
 
 double UAGX_TrackProperties::GetHingeSpookDampingTranslationalY() const
 {
-	AGX_ASSET_GETTER_IMPL_VALUE(HingeSpookDampingTranslational_Y, GetHingeSpookDampingTranslationalY);
+	AGX_ASSET_GETTER_IMPL_VALUE(
+		HingeSpookDampingTranslational_Y, GetHingeSpookDampingTranslationalY);
 }
 
 double UAGX_TrackProperties::GetHingeSpookDampingTranslationalZ() const
 {
-	AGX_ASSET_GETTER_IMPL_VALUE(HingeSpookDampingTranslational_Z, GetHingeSpookDampingTranslationalZ);
+	AGX_ASSET_GETTER_IMPL_VALUE(
+		HingeSpookDampingTranslational_Z, GetHingeSpookDampingTranslationalZ);
 }
 
 void UAGX_TrackProperties::GetHingeSpookDampingTranslational_BP(
@@ -182,12 +185,14 @@ void UAGX_TrackProperties::SetHingeSpookDampingRotational(double DampingX, doubl
 
 void UAGX_TrackProperties::SetHingeSpookDampingRotationalX(double Damping)
 {
-	AGX_ASSET_SETTER_IMPL_VALUE(HingeSpookDampingRotational_X, Damping, SetHingeSpookDampingRotationalX);
+	AGX_ASSET_SETTER_IMPL_VALUE(
+		HingeSpookDampingRotational_X, Damping, SetHingeSpookDampingRotationalX);
 }
 
 void UAGX_TrackProperties::SetHingeSpookDampingRotationalY(double Damping)
 {
-	AGX_ASSET_SETTER_IMPL_VALUE(HingeSpookDampingRotational_Y, Damping, SetHingeSpookDampingRotationalY);
+	AGX_ASSET_SETTER_IMPL_VALUE(
+		HingeSpookDampingRotational_Y, Damping, SetHingeSpookDampingRotationalY);
 }
 
 void UAGX_TrackProperties::SetHingeSpookDampingRotational_BP(float X, float Y)
@@ -701,28 +706,39 @@ void UAGX_TrackProperties::InitPropertyDispatcher()
 		});
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, HingeSpookDampingTranslational_X),
-		[](ThisClass* This) {
+		[](ThisClass* This)
+		{
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
 				HingeSpookDampingTranslational_X, SetHingeSpookDampingTranslationalX)
 		});
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, HingeSpookDampingTranslational_Y),
-		[](ThisClass* This) {
+		[](ThisClass* This)
+		{
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
 				HingeSpookDampingTranslational_Y, SetHingeSpookDampingTranslationalY)
 		});
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, HingeSpookDampingTranslational_Z),
-		[](ThisClass* This) {
+		[](ThisClass* This)
+		{
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
 				HingeSpookDampingTranslational_Z, SetHingeSpookDampingTranslationalZ)
 		});
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, HingeSpookDampingRotational_X), [](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(HingeSpookDampingRotational_X, SetHingeSpookDampingRotationalX) });
+		GET_MEMBER_NAME_CHECKED(ThisClass, HingeSpookDampingRotational_X),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				HingeSpookDampingRotational_X, SetHingeSpookDampingRotationalX)
+		});
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, HingeSpookDampingRotational_Y), [](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(HingeSpookDampingRotational_Y, SetHingeSpookDampingRotationalY) });
+		GET_MEMBER_NAME_CHECKED(ThisClass, HingeSpookDampingRotational_Y),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				HingeSpookDampingRotational_Y, SetHingeSpookDampingRotationalY)
+		});
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, bEnableHingeRange), [](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(bEnableHingeRange, SetHingeRangeEnabled) });
