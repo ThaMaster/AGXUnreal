@@ -144,11 +144,6 @@ namespace
 				}
 				else
 				{
-					UE_LOG(
-						LogAGX, Log,
-						TEXT("TrackComponentVisualizer is creating a collision box material proxy "
-							 "for color \"%s\"."),
-						*BoxColor.ToString());
 					BoxMaterialProxy = new FColoredMaterialRenderProxy(
 						GEngine->GeomMaterial->GetRenderProxy(), BoxColor);
 					MaterialProxyPerBodyColor.Add(BoxColor, BoxMaterialProxy);
@@ -159,10 +154,6 @@ namespace
 				// Common box color.
 				if (CommonMaterialProxy == nullptr)
 				{
-					UE_LOG(
-						LogAGX, Log,
-						TEXT("TrackComponentVisualizer is creating a common collision box material "
-							 "proxy."));
 					const FLinearColor TransparentGray(0, 0, 0, 0.3f);
 					CommonMaterialProxy = new FColoredMaterialRenderProxy(
 						GEngine->GeomMaterial->GetRenderProxy(), TransparentGray);

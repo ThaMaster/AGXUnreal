@@ -653,11 +653,6 @@ void UAGX_TrackComponent::CreateNative()
 	}
 
 	UpdateNativeProperties();
-
-	UE_LOG(
-		LogAGX, Verbose,
-		TEXT("Track '%s' in '%s' native was initialized successfully. Track Node Size = %s."),
-		*GetName(), *GetNameSafe(GetOwner()), *NativeBarrier.GetNodeSize().ToString());
 }
 
 void UAGX_TrackComponent::UpdateNativeMaterial()

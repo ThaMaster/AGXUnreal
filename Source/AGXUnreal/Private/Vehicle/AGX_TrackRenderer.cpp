@@ -143,10 +143,6 @@ void UAGX_TrackRenderer::PostLoad()
 	// Remove all instances in case they were saved during edit time.
 	if (GetInstanceCount() > 0)
 	{
-		UE_LOG(
-			LogAGX, Verbose, TEXT("'%s' in '%s' is removing %i instances during PostLoad()."),
-			*GetName(), *GetNameSafe(GetOwner()), GetInstanceCount());
-
 		ClearInstances();
 	}
 
@@ -350,13 +346,11 @@ bool UAGX_TrackRenderer::ComputeNodeTransforms(
 	else
 	{
 		// Get mesh instance transforms from preview data.
-
 		FAGX_TrackPreviewData* Preview = Track->GetTrackPreview(
 			/*bUpdateIfNecessary*/ true, /*bForceUpdate*/ false);
 
 		if (!Preview || Preview->NodeTransforms.Num() <= 0)
 		{
-			UE_LOG(LogAGX, Error, TEXT("Failed to generate Track Preview Data."));
 			return false;
 		}
 		check(Preview->NodeTransforms.Num() == Preview->NodeHalfExtents.Num());

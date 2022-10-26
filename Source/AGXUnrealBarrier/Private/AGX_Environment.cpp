@@ -428,10 +428,14 @@ void FAGX_Environment::SetEnvironmentVariableEntries(
 
 void FAGX_Environment::SetNumThreads(uint32 NumThreads)
 {
+	if (NumThreads == agx::getNumThreads())
+	{
+		return;
+	}
+
 	UE_LOG(
-		LogAGX, Log,
-		TEXT("Setting number of AGX threads to %i (was previously %i)."),
-		NumThreads, agx::getNumThreads());
+		LogAGX, Log, TEXT("Setting number of AGX threads to %i (was previously %i)."), NumThreads,
+		agx::getNumThreads());
 
 	agx::setNumThreads(NumThreads);
 }

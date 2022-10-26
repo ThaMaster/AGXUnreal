@@ -123,17 +123,6 @@ void FTrackBarrier::AddTrackWheel(
 
 	// Add to Track
 	NativeRef->Native->add(WheelAGX);
-
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("Added wheel. RelativePosition = %s RelativeRotation = %s AGX x = %f y = %f z = %f "
-			 "WheelPos = %s BodyPos = %s Model = %d Properties = %d"),
-		*RelativePosition.ToString(), *RelativeRotation.ToString(),
-		RelTransformAGX.getTranslate().x(), RelTransformAGX.getTranslate().y(),
-		RelTransformAGX.getTranslate().z(),
-		*ConvertDistance(WheelAGX->getCenterPosition()).ToString(),
-		*ConvertDistance(RigidBodyAGX->getPosition()).ToString(), WheelAGX->getModel(),
-		WheelAGX->getProperties().get());
 }
 
 bool FTrackBarrier::AddToSimulation(FSimulationBarrier& Sim) const
