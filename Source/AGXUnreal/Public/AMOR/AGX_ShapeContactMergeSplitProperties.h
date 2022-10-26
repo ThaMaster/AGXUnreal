@@ -30,7 +30,7 @@ struct AGXUNREAL_API FAGX_ShapeContactMergeSplitProperties : public FAGX_MergeSp
 public:
 
 	UPROPERTY(EditAnywhere, Category = "AGX AMOR")
-	UAGX_ShapeContactMergeSplitThresholds* Thresholds;
+	UAGX_ShapeContactMergeSplitThresholds* Thresholds = nullptr;
 
 	/**
 	* Must be called by the owning object at begin play (after the owning object has allocated a

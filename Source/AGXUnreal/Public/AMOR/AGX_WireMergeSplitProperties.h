@@ -27,7 +27,7 @@ struct AGXUNREAL_API FAGX_WireMergeSplitProperties : public FAGX_MergeSplitPrope
 
 public:
 	UPROPERTY(EditAnywhere, Category = "AGX AMOR")
-	UAGX_WireMergeSplitThresholds* Thresholds;
+	UAGX_WireMergeSplitThresholds* Thresholds = nullptr;
 
 	/**
 	 * Must be called by the owning object at begin play (after the owning object has allocated a

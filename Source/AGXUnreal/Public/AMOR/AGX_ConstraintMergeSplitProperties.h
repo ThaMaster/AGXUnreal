@@ -28,7 +28,7 @@ struct AGXUNREAL_API FAGX_ConstraintMergeSplitProperties : public FAGX_MergeSpli
 public:
 	
 	UPROPERTY(EditAnywhere, Category = "AGX AMOR")
-	UAGX_ConstraintMergeSplitThresholds* Thresholds;
+	UAGX_ConstraintMergeSplitThresholds* Thresholds = nullptr;
 
 	/**
 	* Must be called by the owning object at begin play (after the owning object has allocated a
