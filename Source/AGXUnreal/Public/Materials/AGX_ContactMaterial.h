@@ -571,11 +571,16 @@ public:
 		const UAGX_ContactMaterialRegistrarComponent& Registrar);
 
 	/**
-	 * If this Contact Material is a UAGX_ContactMaterialInstance, returns the
-	 * UAGX_ContactMaterial it was created from (if it still exists). Else returns null.
+	 * If this Contact Material is an instance created from an asset, then the UAGX_ContactMaterial
+	 * asset it was created from is returned, if it still exists. If called on an asset then it
+	 * returns itself.
 	 */
 	UAGX_ContactMaterial* GetAsset();
 
+	/**
+	 * Return true if this UAGX_ContactMaterial is an instance in a game world created from an asset
+	 * Return false	if this UAGX_ContactMaterial is an asset.
+	 */
 	bool IsInstance() const;
 
 	bool HasNative() const;
