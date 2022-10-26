@@ -668,57 +668,58 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		return Map;
 	}
 
-	// Returns the all Shapes in a FSimulationObjectCollection including those
-	// owned by a Rigid Body.
-	TMap<FGuid, const FShapeBarrier*> GetAllShapes(const FSimulationObjectCollection& SimulationObjects)
+	// Returns the Collision Enabled status for all Shapes in a FSimulationObjectCollection
+	// including those owned by a Rigid Body.
+	TMap<FGuid, bool> GetCollisionEnabledForAllShapes(
+		const FSimulationObjectCollection& SimulationObjects)
 	{
-		TMap<FGuid, const FShapeBarrier*> Shapes;
+		TMap<FGuid, bool> Shapes;
 
 		// Collect all Guids of Shapes owned by a Rigid Body.
 		for (const auto& Body : SimulationObjects.GetRigidBodies())
 		{
 			for (const auto& Shape : Body.GetSphereShapes())
 			{
-				Shapes.Add(Shape.GetShapeGuid(), &Shape);
+				Shapes.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 			}
 			for (const auto& Shape : Body.GetBoxShapes())
 			{
-				Shapes.Add(Shape.GetShapeGuid(), &Shape);
+				Shapes.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 			}
 			for (const auto& Shape : Body.GetCylinderShapes())
 			{
-				Shapes.Add(Shape.GetShapeGuid(), &Shape);
+				Shapes.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 			}
 			for (const auto& Shape : Body.GetCapsuleShapes())
 			{
-				Shapes.Add(Shape.GetShapeGuid(), &Shape);
+				Shapes.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 			}
 			for (const auto& Shape : Body.GetTrimeshShapes())
 			{
-				Shapes.Add(Shape.GetShapeGuid(), &Shape);
+				Shapes.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 			}
 		}
 
 		// Collect all Guids of "free" Shapes, not owned by a Rigid Body.
 		for (const auto& Barrier : SimulationObjects.GetSphereShapes())
 		{
-			Shapes.Add(Barrier.GetShapeGuid(), &Barrier);
+			Shapes.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 		}
 		for (const auto& Barrier : SimulationObjects.GetBoxShapes())
 		{
-			Shapes.Add(Barrier.GetShapeGuid(), &Barrier);
+			Shapes.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 		}
 		for (const auto& Barrier : SimulationObjects.GetCylinderShapes())
 		{
-			Shapes.Add(Barrier.GetShapeGuid(), &Barrier);
+			Shapes.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 		}
 		for (const auto& Barrier : SimulationObjects.GetCapsuleShapes())
 		{
-			Shapes.Add(Barrier.GetShapeGuid(), &Barrier);
+			Shapes.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 		}
 		for (const auto& Barrier : SimulationObjects.GetTrimeshShapes())
 		{
-			Shapes.Add(Barrier.GetShapeGuid(), &Barrier);
+			Shapes.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 		}
 
 		return Shapes;
@@ -776,11 +777,19 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 					ReImportComponent = Node;
 					for (const auto& SMCTuple : Re->StaticMeshComponentToOwningShape)
 					{
-						if (USCS_Node* StaticMeshComponent =
+						if (USCS_Node* StaticMeshComponentNode =
 								Bp.SimpleConstructionScript->FindSCSNode(FName(SMCTuple.Key)))
 						{
-							if (SMCTuple.Value.IsValid())
-								StaticMeshComponents.Add(SMCTuple.Value, StaticMeshComponent);
+							const FGuid OwningShapeGuid = SMCTuple.Value;
+							if (!OwningShapeGuid.IsValid())
+							{
+								continue;
+							}
+							if (!StaticMeshComponents.Contains(OwningShapeGuid))
+							{
+								StaticMeshComponents.Add(OwningShapeGuid, TArray<USCS_Node*>());
+							}
+							StaticMeshComponents[OwningShapeGuid].Add(StaticMeshComponentNode);
 						}
 					}
 				}
@@ -814,7 +823,9 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 
 		// Key here is the Guid of the owning Shape Component's Native.
 		// We do this since a Static Mesh Component does not have an Import Guid.
-		TMap<FGuid, USCS_Node*> StaticMeshComponents;
+		// There may be several Static Mesh Components per Guid, for example for Trimeshes with
+		// RenderData.
+		TMap<FGuid, TArray<USCS_Node*>> StaticMeshComponents;
 
 		USCS_Node* ContactMaterialRegistrarComponent = nullptr;
 		USCS_Node* ReImportComponent = nullptr;
@@ -1026,44 +1037,73 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		const FAGX_ImportSettings& ImportSettings)
 	{
 		TArray<FGuid> ShapeGuids;
-		const TMap<FGuid, const FShapeBarrier*> ShapesBarriers = GetAllShapes(SimulationObjects);
-		ShapesBarriers.GenerateKeyArray(ShapeGuids);
+		const TMap<FGuid, bool> ShapesBarriersCollisionEnabledStatus =
+			GetCollisionEnabledForAllShapes(SimulationObjects);
+		ShapesBarriersCollisionEnabledStatus.GenerateKeyArray(ShapeGuids);
 
 		for (auto It = SCSNodes.StaticMeshComponents.CreateIterator(); It; ++It)
 		{
 			if (!ShapeGuids.Contains(It->Key))
 			{
-				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
+				for (USCS_Node* StaticMeshComponentNode : It->Value)
+				{
+					BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(
+						StaticMeshComponentNode);
+				}
 				It.RemoveCurrent();
 			}
 			else
 			{
-				// A Static Mesh Component attached directly under a AGX Trimesh Component should be
-				// removed if the following conditions are true:
-				// 1. The import setting 'bIgnoreDisabledTrimeshes' is used during this re-import.
-				// 2. The AGX Trimesh that is being re-imported has collision disabled.
-				// 3. The immediate attach parent is a AGX Trimesh Component (if not, it could be
-				// a Render Data Static Mesh Component which should not be removed).
-				if (!ImportSettings.bIgnoreDisabledTrimeshes)
+				for (int i = 0; i < It->Value.Num(); i++)
 				{
-					continue;
-				}
+					USCS_Node* StaticMeshComponentNode = It->Value[i];
 
-				if (ShapesBarriers[It->Key]->GetEnableCollisions())
-				{
-					continue;
-				}
+					// A Static Mesh Component should be removed even if it's owning Shape exists in
+					// SimulationObjects if the following conditions are true:
+					// 1. The owning Shape is a Trimesh.
+					// 2. The import setting 'bIgnoreDisabledTrimeshes' is used during this
+					// re-import.
+					// 3. The AGX Trimesh that is being re-imported has collision disabled.
+					// 4. The immediate attach parent is a AGX Trimesh Component (if not, it could
+					// be a Render Data Static Mesh Component which should not be removed).
+					if (!ImportSettings.bIgnoreDisabledTrimeshes)
+					{
+						continue;
+					}
 
-				if (Cast<UAGX_TrimeshShapeComponent>(
-					BaseBP.SimpleConstructionScript->FindParentNode(It->Value)) == nullptr)
-				{
-					continue;
-				}
+					if (ShapesBarriersCollisionEnabledStatus[It->Key])
+					{
+						continue;
+					}
 
-				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
-				It.RemoveCurrent();
+					USCS_Node* ParentNode =
+						BaseBP.SimpleConstructionScript->FindParentNode(StaticMeshComponentNode);
+					if (ParentNode == nullptr ||
+						Cast<UAGX_TrimeshShapeComponent>(ParentNode->ComponentTemplate) == nullptr)
+					{
+						continue;
+					}
+
+					BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(
+						StaticMeshComponentNode);
+					It->Value.Remove(StaticMeshComponentNode);
+					if (It->Value.Num() == 0)
+						It.RemoveCurrent();
+
+					// We will only every have a single Static Mesh Component immediately attached
+					// to a Trimesh Shape Component, so we can stop here. Continuing would even be
+					// dangerous since any Render Data Static Mesh Component previously attached to
+					// the now removed Static Mesh Component will now be attached to the Trimesh
+					// since it has been promoted, and it could be falsely removed during the
+					// following iteration of this loop.
+					break;
+				}
 			}
 		}
+
+		// @todo We should remove the Static Mesh Assets pointed to by the removed Static Mesh
+		// Components above. Do this when we figure out how to safely remove assets and resolve any
+		// references to it.
 	}
 
 	// Removes Components that are not present in the new SimulationObjectCollection, meaning they

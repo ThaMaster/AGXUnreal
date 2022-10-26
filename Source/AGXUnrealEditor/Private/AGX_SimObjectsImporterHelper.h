@@ -81,8 +81,7 @@ public:
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
 		const FRigidBodyBarrier* Body = nullptr);
 
-	void UpdateAndSaveAsset(
-		const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset);
+	void UpdateAndSaveAsset(const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset);
 
 	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
@@ -93,7 +92,8 @@ public:
 
 	// This function also adds the new Contact Material to the Contact Material Registrar.
 	UAGX_ContactMaterialAsset* InstantiateContactMaterial(
-		const FContactMaterialBarrier& Barrier, UAGX_ContactMaterialRegistrarComponent& CMRegistrar);
+		const FContactMaterialBarrier& Barrier,
+		UAGX_ContactMaterialRegistrarComponent& CMRegistrar);
 
 	UAGX_ContactMaterialRegistrarComponent* InstantiateContactMaterialRegistrar(AActor& Owner);
 
@@ -170,8 +170,11 @@ public:
 
 private:
 	TMap<FGuid, FAssetToDiskInfo> RestoredMeshes;
-	TMap<FGuid, UStaticMeshComponent*> RestoredStaticMeshComponents;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterial*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
+
+	// The key is the Guid of the owning Shape. Since multiple Static Mesh Components may be created
+	// from a single Shape (e.g. a Trimesh with RenderData), the value is an array.
+	TMap<FGuid, TArray<UStaticMeshComponent*>> RestoredStaticMeshComponents;
 };

@@ -433,7 +433,7 @@ namespace
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials,
 		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes, const FString& DirectoryName,
 		UMeshComponent& VisualMesh,
-		TMap<FGuid, UStaticMeshComponent*>& RestoredStaticMeshComponents)
+		TMap<FGuid, TArray<UStaticMeshComponent*>>& RestoredStaticMeshComponents)
 	{
 		Component.UpdateVisualMesh();
 		Component.SetFlags(RF_Transactional);
@@ -488,7 +488,12 @@ namespace
 				RestoredMeshes, RestoredRenderMaterials, DirectoryName);
 			if (RDStaticMeshComponent != nullptr)
 			{
-				RestoredStaticMeshComponents.Add(Barrier.GetShapeGuid(), RDStaticMeshComponent);
+				const FGuid ShapeBarrierGuid = Barrier.GetShapeGuid();
+				if (!RestoredStaticMeshComponents.Contains(ShapeBarrierGuid))
+				{
+					RestoredStaticMeshComponents.Add(ShapeBarrierGuid, TArray<UStaticMeshComponent*>());
+				}
+				RestoredStaticMeshComponents[ShapeBarrierGuid].Add(RDStaticMeshComponent);
 			}
 		}
 		else
@@ -618,7 +623,12 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	if (MeshComponent != nullptr)
 	{
 		FAGX_ImportUtilities::Rename(*MeshComponent, *MeshName);
-		RestoredStaticMeshComponents.Add(Barrier.GetShapeGuid(), MeshComponent);
+		const FGuid ShapeBarrierGuid = Barrier.GetShapeGuid();
+		if (!RestoredStaticMeshComponents.Contains(ShapeBarrierGuid))
+		{
+			RestoredStaticMeshComponents.Add(ShapeBarrierGuid, TArray<UStaticMeshComponent*>());
+		}
+		RestoredStaticMeshComponents[ShapeBarrierGuid].Add(MeshComponent);
 	}
 
 	// Both components must be created and attached before they are registered because BeginPlay
@@ -686,7 +696,12 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 		return nullptr;
 	}
 
-	RestoredStaticMeshComponents.Add(TrimeshBarrier.GetShapeGuid(), RenderDataComponent);
+	const FGuid ShapeBarrierGuid = TrimeshBarrier.GetShapeGuid();
+	if (!RestoredStaticMeshComponents.Contains(ShapeBarrierGuid))
+	{
+		RestoredStaticMeshComponents.Add(ShapeBarrierGuid, TArray<UStaticMeshComponent*>());
+	}
+	RestoredStaticMeshComponents[ShapeBarrierGuid].Add(RenderDataComponent);
 
 	UMaterialInterface* RenderDataMaterial = CreateRenderMaterialFromRenderDataOrDefault(
 		RenderDataBarrier, TrimeshBarrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
@@ -1120,8 +1135,11 @@ void FAGX_SimObjectsImporterHelper::UpdateComponent(UAGX_ReImportComponent& Comp
 		C->StaticMeshComponentToOwningShape.Empty();
 		for (const auto& RestoredSMCTuple : RestoredStaticMeshComponents)
 		{
-			C->StaticMeshComponentToOwningShape.Add(
-				RestoredSMCTuple.Value->GetName(), RestoredSMCTuple.Key);
+			for (UStaticMeshComponent* SMC : RestoredSMCTuple.Value)
+			{
+				C->StaticMeshComponentToOwningShape.Add(
+					SMC->GetName(), RestoredSMCTuple.Key);
+			}			
 		}
 	};
 
