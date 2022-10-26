@@ -594,6 +594,7 @@ namespace ContactMaterialBarrier_helpers
 		if (auto* OrientedBoxModel =
 				dynamic_cast<const agx::OrientedBoxFrictionModel*>(FrictionModel))
 		{
+			// ConstantNormalForceOrientedBoxFrictionModel will also take this branch.
 			return OrientedBoxModel->getReferenceFrame();
 		}
 		else if (
@@ -608,13 +609,6 @@ namespace ContactMaterialBarrier_helpers
 					FrictionModel))
 		{
 			return OrientedConeModel->getReferenceFrame();
-		}
-		else if (
-			auto* OrientedConstantNormalModel =
-				dynamic_cast<const agx::ConstantNormalForceOrientedBoxFrictionModel*>(
-					FrictionModel))
-		{
-			return OrientedConstantNormalModel->getReferenceFrame();
 		}
 		else
 		{
