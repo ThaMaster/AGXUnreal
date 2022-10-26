@@ -394,8 +394,8 @@ bool UAGX_TrackRenderer::ComputeVisualScaleAndOffset(
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Failed to compute visual Scale and Offset for '%s' in '%s' because "
-				 "LocalMeshBoundsMax is too close "
-				 "too LocalMeshBoundsMin."),
+				 "LocalMeshBoundsMax is too close too LocalMeshBoundsMin. Render mesh will use "
+				 "identity transformation."),
 			*GetName(), *GetNameSafe(GetOwner()));
 		OutVisualScale = FVector::OneVector;
 		OutVisualOffset = FVector::ZeroVector;
