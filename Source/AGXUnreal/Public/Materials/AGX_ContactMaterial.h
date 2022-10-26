@@ -41,8 +41,7 @@ class UAGX_MaterialBase;
  * Note also that it is not allowed to replace the Materials properties after instance has been
  * created.
  */
-UCLASS(
-	ClassGroup = "AGX", Category = "AGX", BlueprintType)
+UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType)
 class AGXUNREAL_API UAGX_ContactMaterial : public UObject
 {
 	GENERATED_BODY()
@@ -544,16 +543,16 @@ public:
 	void CopyFrom(const FContactMaterialBarrier& Source);
 
 	/**
-	 * Create the Play instance for the given Source Track Properties, which should be an asset.
+	 * Create the Play instance for the given Source Contact Material, which should be an asset.
 	 * The AGX Dynamics Native will be created immediately.
 	 */
 	static UAGX_ContactMaterial* CreateInstanceFromAsset(
 		const UAGX_ContactMaterialRegistrarComponent& Registrar, UAGX_ContactMaterial* Source);
 
 	/**
-	 * Get the instance, i.e. Play version, of this Track Properties.
+	 * Get the instance, i.e. Play version, of this Contact Material.
 	 *
-	 * For an asset Track Properties GetInstance will return nullptr if we are not currently in Play
+	 * For an asset Contact Material GetInstance will return nullptr if we are not currently in Play
 	 * or if an instance has not been created with GetOrCreateInstance yet.
 	 *
 	 * For an instance GetInstance will always return itself.
@@ -561,16 +560,18 @@ public:
 	UAGX_ContactMaterial* GetInstance();
 
 	/**
-	 * If PlayingWorld is an in-game World and this TrackProperties is a UAGX_ContactMaterial,
-	 * returns a UAGX_ContactMaterialInstance representing the TrackProperties asset throughout the
-	 * lifetime of the GameInstance. If this is already a UAGX_ContactMaterialInstance it returns
-	 * itself. Returns null if not in-game (invalid call).
+	 * If the World Registrar is part of an in-game World and this Contact Material is an
+	 * asset that don't yet have an associated Contact Material instance, then a new
+	 * UAGX_ContactMaterial instance that represents the asset for the lifetime of the GameInstance
+	 * is created and returned. If an instance has already been created for the asset then that
+	 * instance is returned. If called on an instance the the instance itself is returned. Returns
+	 * nullptr if the world that the given Registrar is part of isn't a game world.
 	 */
 	UAGX_ContactMaterial* GetOrCreateInstance(
 		const UAGX_ContactMaterialRegistrarComponent& Registrar);
 
 	/**
-	 * If this TrackProperties is a UAGX_ContactMaterialInstance, returns the
+	 * If this Contact Material is a UAGX_ContactMaterialInstance, returns the
 	 * UAGX_ContactMaterial it was created from (if it still exists). Else returns null.
 	 */
 	UAGX_ContactMaterial* GetAsset();
