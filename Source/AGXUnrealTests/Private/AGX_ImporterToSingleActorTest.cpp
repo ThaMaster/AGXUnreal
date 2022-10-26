@@ -3113,7 +3113,7 @@ bool FCheckTrackImportedCommand::Update()
 			Track->InternalMergeProperties->LockToReachMergeConditionCompliance, 1e-11);
 		Test.TestEqual(
 			"Lock to Reach Merge Condition Damping",
-			Track->InternalMergeProperties->LockToReachMergeConditionDamping, 0.05);
+			Track->InternalMergeProperties->LockToReachMergeConditionSpookDamping, 0.05);
 		Test.TestEqual(
 			"Max Angle Merge Condition", Track->InternalMergeProperties->MaxAngleMergeCondition,
 			FMath::RadiansToDegrees(0.00001));
