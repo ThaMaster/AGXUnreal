@@ -58,12 +58,9 @@ public:
 		Meta = (DisplayName = "Set Hinge Compliance Translational"))
 	void SetHingeComplianceTranslational_BP(float X, float Y, float Z);
 
-/// @todo Getter functions still work-in-progress.
-#if 0
 	double GetHingeComplianceTranslationalX() const;
 	double GetHingeComplianceTranslationalY() const;
 	double GetHingeComplianceTranslationalZ() const;
-#endif
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Track Properties",
@@ -91,6 +88,9 @@ public:
 		BlueprintCallable, Category = "AGX Track Properties",
 		Meta = (DisplayName = "Set Hinge Compliance Rotational"))
 	void SetHingeComplianceRotational_BP(float X, float Y);
+
+	double GetHingeComplianceRotationalX() const;
+	double GetHingeComplianceRotationalY() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Track Properties",
@@ -127,6 +127,10 @@ public:
 		Meta = (DisplayName = "Set Hinge Spook Damping Translational"))
 	void SetHingeSpookDampingTranslational_BP(float DampingX, float DampingY, float DampingZ);
 
+	double GetHingeSpookDampingTranslationalX() const;
+	double GetHingeSpookDampingTranslationalY() const;
+	double GetHingeSpookDampingTranslationalZ() const;
+
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Track Properties",
 		Meta = (DisplayName = "Get Hinge Spook Damping Translational"))
@@ -153,6 +157,9 @@ public:
 		BlueprintCallable, Category = "AGX Track Properties",
 		Meta = (DisplayName = "Set Hinge Spook Damping Rotational"))
 	void SetHingeSpookDampingRotational_BP(float X, float Y);
+
+	double GetHingeSpookDampingRotationalX() const;
+	double GetHingeSpookDampingRotationalY() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Track Properties",

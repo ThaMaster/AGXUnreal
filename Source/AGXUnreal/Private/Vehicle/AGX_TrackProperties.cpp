@@ -9,7 +9,9 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
 
+//
 // Compliance translational.
+//
 
 void UAGX_TrackProperties::SetHingeComplianceTranslational(double X, double Y, double Z)
 {
@@ -42,8 +44,6 @@ void UAGX_TrackProperties::SetHingeComplianceTranslational_BP(float X, float Y, 
 		static_cast<double>(X), static_cast<double>(Y), static_cast<double>(Z));
 }
 
-/// @todo Getter functions still work-in-progress.
-#if 0
 double UAGX_TrackProperties::GetHingeComplianceTranslationalX() const
 {
 	AGX_ASSET_GETTER_IMPL_VALUE(HingeComplianceTranslational_X, GetHingeComplianceTranslationalX);
@@ -58,18 +58,17 @@ double UAGX_TrackProperties::GetHingeComplianceTranslationalZ() const
 {
 	AGX_ASSET_GETTER_IMPL_VALUE(HingeComplianceTranslational_Z, GetHingeComplianceTranslationalZ);
 }
-#endif
 
 void UAGX_TrackProperties::GetHingeComplianceTranslational_BP(float& X, float& Y, float& Z)
 {
-	/// @todo When we have them, call the getter functions instead of reading directly from the
-	/// Property.
-	X = static_cast<float>(HingeComplianceTranslational_X);
-	Y = static_cast<float>(HingeComplianceTranslational_Y);
-	Z = static_cast<float>(HingeComplianceTranslational_Z);
+	X = GetHingeComplianceTranslationalX();
+	Y = GetHingeComplianceTranslationalY();
+	Z = GetHingeComplianceTranslationalZ();
 }
 
+//
 // Compliance rotational.
+//
 
 void UAGX_TrackProperties::SetHingeComplianceRotational(double ComplianceX, double ComplianceY)
 {
@@ -94,15 +93,26 @@ void UAGX_TrackProperties::SetHingeComplianceRotational_BP(float X, float Y)
 	SetHingeComplianceRotational(static_cast<double>(X), static_cast<double>(Y));
 }
 
-void UAGX_TrackProperties::GetHingeComplianceRotational_BP(float& X, float& Y)
+double UAGX_TrackProperties::GetHingeComplianceRotationalX() const
 {
-	/// @todo When we have them, call the getter functions instead of reading directly from the
-	/// Property.
-	X = static_cast<float>(HingeComplianceRotational_X);
-	Y = static_cast<float>(HingeComplianceRotational_Y);
+	AGX_ASSET_GETTER_IMPL_VALUE(HingeComplianceRotational_X, GetHingeComplianceRotationalX);
 }
 
+double UAGX_TrackProperties::GetHingeComplianceRotationalY() const
+{
+	AGX_ASSET_GETTER_IMPL_VALUE(HingeComplianceRotational_Y, GetHingeComplianceRotationalY);
+}
+
+
+void UAGX_TrackProperties::GetHingeComplianceRotational_BP(float& X, float& Y)
+{
+	X = GetHingeComplianceRotationalX();
+	Y = GetHingeComplianceRotationalY();
+}
+
+//
 // Damping translational.
+//
 
 void UAGX_TrackProperties::SetHingeSpookDampingTranslational(
 	double DampingX, double DampingY, double DampingZ)
@@ -138,17 +148,33 @@ void UAGX_TrackProperties::SetHingeSpookDampingTranslational_BP(
 		static_cast<double>(DampingZ));
 }
 
+double UAGX_TrackProperties::GetHingeSpookDampingTranslationalX() const
+{
+	AGX_ASSET_GETTER_IMPL_VALUE(HingeSpookDampingTranslational_X, GetHingeSpookDampingTranslationalX);
+}
+
+double UAGX_TrackProperties::GetHingeSpookDampingTranslationalY() const
+{
+	AGX_ASSET_GETTER_IMPL_VALUE(HingeSpookDampingTranslational_Y, GetHingeSpookDampingTranslationalY);
+}
+
+double UAGX_TrackProperties::GetHingeSpookDampingTranslationalZ() const
+{
+	AGX_ASSET_GETTER_IMPL_VALUE(HingeSpookDampingTranslational_Z, GetHingeSpookDampingTranslationalZ);
+}
+
+
 void UAGX_TrackProperties::GetHingeSpookDampingTranslational_BP(
 	float& DampingX, float& DampingY, float& DampingZ)
 {
-	/// @todo When we have them, call the getter functions instead of reading directly from the
-	/// Property.
-	DampingX = static_cast<float>(HingeSpookDampingTranslational_X);
-	DampingY = static_cast<float>(HingeSpookDampingTranslational_Y);
-	DampingZ = static_cast<float>(HingeSpookDampingTranslational_Z);
+	DampingX = GetHingeSpookDampingTranslationalX();
+	DampingY = GetHingeSpookDampingTranslationalY();
+	DampingZ = GetHingeSpookDampingTranslationalZ();
 }
 
+//
 // Damping rotational.
+//
 
 void UAGX_TrackProperties::SetHingeSpookDampingRotational(double DampingX, double DampingY)
 {
@@ -171,15 +197,26 @@ void UAGX_TrackProperties::SetHingeSpookDampingRotational_BP(float X, float Y)
 	SetHingeSpookDampingRotational(static_cast<double>(X), static_cast<double>(Y));
 }
 
-void UAGX_TrackProperties::GetHingeSpookDampingRotational_BP(float& X, float& Y)
+double UAGX_TrackProperties::GetHingeSpookDampingRotationalX() const
 {
-	/// @todo When we have them, call the getter functions instead of reading directly from the
-	/// Property.
-	X = static_cast<double>(HingeSpookDampingRotational_X);
-	Y = static_cast<double>(HingeSpookDampingRotational_Y);
+	AGX_ASSET_GETTER_IMPL_VALUE(HingeSpookDampingRotational_X, GetHingeSpookDampingRotationalX);
 }
 
+double UAGX_TrackProperties::GetHingeSpookDampingRotationalY() const
+{
+	AGX_ASSET_GETTER_IMPL_VALUE(HingeSpookDampingRotational_Y, GetHingeSpookDampingRotationalY);
+}
+
+
+void UAGX_TrackProperties::GetHingeSpookDampingRotational_BP(float& X, float& Y)
+{
+	X = GetHingeSpookDampingRotationalX();
+	Y = GetHingeSpookDampingRotationalY();
+}
+
+//
 // Hinge range.
+//
 
 void UAGX_TrackProperties::SetHingeRangeEnabled(bool bEnable)
 {
@@ -214,7 +251,9 @@ void UAGX_TrackProperties::GetHingeRangeRange_BP(float& Min, float& Max) const
 	Max = Range.Max;
 }
 
+//
 // Merge nodes to wheels.
+//
 
 void UAGX_TrackProperties::SetOnInitializeMergeNodesToWheelsEnabled(bool bEnable)
 {

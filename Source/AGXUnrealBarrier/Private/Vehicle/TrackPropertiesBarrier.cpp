@@ -71,7 +71,9 @@ FGuid FTrackPropertiesBarrier::GetGuid() const
 	return Guid;
 }
 
-// Hinge compliance.
+//
+// Hinge compliance. Set.
+//
 
 void FTrackPropertiesBarrier::SetHingeCompliance(double Compliance, int32 DOF)
 {
@@ -121,13 +123,47 @@ void FTrackPropertiesBarrier::SetHingeComplianceRotationalY(double Compliance)
 	NativeRef->Native->setHingeCompliance(Compliance, agx::Hinge::ROTATIONAL_2);
 }
 
+//
+// Hinge compliance. Get.
+//
+
 double FTrackPropertiesBarrier::GetHingeCompliance(int32 DOF) const
 {
 	check(HasNative());
 	return NativeRef->Native->getHingeCompliance(static_cast<agx::Hinge::DOF>(DOF));
 }
 
-// Hinge Damping.
+double FTrackPropertiesBarrier::GetHingeComplianceTranslationalX() const
+{
+	check(HasNative());
+	return NativeRef->Native->getHingeCompliance(agx::Hinge::TRANSLATIONAL_1);
+}
+
+double FTrackPropertiesBarrier::GetHingeComplianceTranslationalY() const
+{
+	check(HasNative());
+	return NativeRef->Native->getHingeCompliance(agx::Hinge::TRANSLATIONAL_2);
+}
+
+double FTrackPropertiesBarrier::GetHingeComplianceTranslationalZ() const
+{
+	check(HasNative());
+	return NativeRef->Native->getHingeCompliance(agx::Hinge::TRANSLATIONAL_3);
+}
+
+double FTrackPropertiesBarrier::GetHingeComplianceRotationalX() const
+{
+	check(HasNative());
+	return NativeRef->Native->getHingeCompliance(agx::Hinge::ROTATIONAL_1);
+}
+
+double FTrackPropertiesBarrier::GetHingeComplianceRotationalY() const
+{
+	check(HasNative());
+	return NativeRef->Native->getHingeCompliance(agx::Hinge::ROTATIONAL_2);
+}
+
+// Hinge spook damping. Set
 
 void FTrackPropertiesBarrier::SetHingeSpookDamping(double Damping, int32 DOF)
 {
@@ -177,11 +213,45 @@ void FTrackPropertiesBarrier::SetHingeSpookDampingRotationalY(double Damping)
 	NativeRef->Native->setHingeDamping(agx::Hinge::ROTATIONAL_2);
 }
 
+//
+// Hinge spook damping. Get.
+
 double FTrackPropertiesBarrier::GetHingeSpookDamping(int32 DOF) const
 {
 	check(HasNative());
 	return NativeRef->Native->getHingeDamping(static_cast<agx::Hinge::DOF>(DOF));
 }
+
+double FTrackPropertiesBarrier::GetHingeSpookDampingTranslationalX() const
+{
+	check(HasNative());
+	return NativeRef->Native->getHingeDamping(agx::Hinge::TRANSLATIONAL_1);
+}
+
+double FTrackPropertiesBarrier::GetHingeSpookDampingTranslationalY() const
+{
+	check(HasNative());
+	return NativeRef->Native->getHingeDamping(agx::Hinge::TRANSLATIONAL_2);
+}
+
+double FTrackPropertiesBarrier::GetHingeSpookDampingTranslationalZ() const
+{
+	check(HasNative());
+	return NativeRef->Native->getHingeDamping(agx::Hinge::TRANSLATIONAL_3);
+}
+
+double FTrackPropertiesBarrier::GetHingeSpookDampingRotationalX() const
+{
+	check(HasNative());
+	return NativeRef->Native->getHingeDamping(agx::Hinge::ROTATIONAL_1);
+}
+
+double FTrackPropertiesBarrier::GetHingeSpookDampingRotationalY() const
+{
+	check(HasNative());
+	return NativeRef->Native->getHingeDamping(agx::Hinge::ROTATIONAL_2);
+}
+
 
 // Hinge range.
 
