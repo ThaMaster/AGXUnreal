@@ -46,6 +46,13 @@ namespace agxTerrain
 	class TerrainMaterial;
 }
 
+namespace agxVehicle
+{
+	class Track;
+	class TrackProperties;
+	class TrackWheel;
+}
+
 namespace agxWire
 {
 	class Node;
@@ -85,6 +92,12 @@ class FSimulationBarrier;
 class FShovelBarrier;
 class FTerrainBarrier;
 class FTerrainMaterialBarrier;
+
+// Namespace agxVehicle.
+class FTrackBarrier;
+class FTrackPropertiesBarrier;
+class FTrackWheelBarrier;
+
 
 // Namespace agxWire
 class FWireBarrier;
@@ -130,13 +143,16 @@ public:
 	static agxSDK::Simulation* GetFrom(const FSimulationBarrier* Barrier);
 
 	// Namespace agxTerrain.
-
 	static agxTerrain::Shovel* GetFrom(const FShovelBarrier* Barrier);
 	static agxTerrain::Terrain* GetFrom(const FTerrainBarrier* Barrier);
 	static agxTerrain::TerrainMaterial* GetFrom(const FTerrainMaterialBarrier* Barrier);
 
-	// Namespace agxWire.
+	// Namespace agxVehicle.
+	static agxVehicle::Track* GetFrom(const FTrackBarrier* Barrier);
+	static agxVehicle::TrackProperties* GetFrom(const FTrackPropertiesBarrier* Barrier);
+	static agxVehicle::TrackWheel* GetFrom(const FTrackWheelBarrier* Barrier);
 
+	// Namespace agxWire.
 	static agxWire::Node* GetFrom(const FWireNodeBarrier* Barrier);
 	static agxWire::Wire* GetFrom(const FWireBarrier* Barrier);
 	static agxWire::WireWinchController* GetFrom(const FWireWinchBarrier* Barrier);

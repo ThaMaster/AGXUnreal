@@ -33,11 +33,6 @@ FTrackWheelBarrier::~FTrackWheelBarrier()
 	// not just the forward declaration, of FTrackWheelRef.
 }
 
-bool FTrackWheelBarrier::HasNative() const
-{
-	return NativeRef != nullptr && NativeRef->Native != nullptr;
-}
-
 FRigidBodyBarrier FTrackWheelBarrier::GetRigidBody() const
 {
 	check(HasNative());
@@ -98,4 +93,27 @@ FRotator FTrackWheelBarrier::GetRelativeRotation() const
 	}
 
 	return Convert(FrameAGX->getLocalRotate()).Rotator();
+}
+
+bool FTrackWheelBarrier::HasNative() const
+{
+	return NativeRef != nullptr && NativeRef->Native != nullptr;
+}
+
+FTrackWheelRef* FTrackWheelBarrier::GetNative()
+{
+	if (!HasNative())
+	{
+		return nullptr;
+	}
+	return NativeRef.get();
+}
+
+const FTrackWheelRef* FTrackWheelBarrier::GetNative() const
+{
+	if (!HasNative())
+	{
+		return nullptr;
+	}
+	return NativeRef.get();
 }

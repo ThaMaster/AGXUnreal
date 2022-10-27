@@ -26,6 +26,12 @@
 #include "Terrain/ShovelBarrier.h"
 #include "Tires/TireBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
+#include "Vehicle/TrackBarrier.h"
+#include "Vehicle/TrackRef.h"
+#include "Vehicle/TrackPropertiesBarrier.h"
+#include "Vehicle/TrackPropertiesRef.h"
+#include "Vehicle/TrackWheelBarrier.h"
+#include "Vehicle/TrackWheelRef.h"
 #include "Wire/WireBarrier.h"
 #include "Wire/WireNodeBarrier.h"
 #include "Wire/WireWinchBarrier.h"
@@ -349,6 +355,23 @@ agxTerrain::Shovel* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FShovelBarrier*
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxTerrain::Shovel>(Barrier);
 }
+
+// Namespace agxVehicle.
+agxVehicle::Track* GetFrom(const FTrackBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFrom<agxVehicle::Track>(Barrier);
+}
+
+agxVehicle::TrackProperties* GetFrom(const FTrackPropertiesBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFrom<agxVehicle::TrackProperties>(Barrier);
+}
+
+agxVehicle::TrackWheel* GetFrom(const FTrackWheelBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFrom<agxVehicle::TrackWheel>(Barrier);
+}
+
 
 // Namespace agxWire.
 

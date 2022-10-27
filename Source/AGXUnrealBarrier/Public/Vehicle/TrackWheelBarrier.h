@@ -25,8 +25,6 @@ public:
 	FTrackWheelBarrier(FTrackWheelBarrier&& Other);
 	~FTrackWheelBarrier();
 
-	bool HasNative() const;
-
 	FRigidBodyBarrier GetRigidBody() const;
 
 	double GetRadius() const;
@@ -42,6 +40,10 @@ public:
 	FVector GetRelativeLocation() const;
 	FRotator GetRelativeRotation() const;
 
+	// Native Handling.
+	bool HasNative() const;
+	FTrackWheelRef* GetNative();
+	const FTrackWheelRef* GetNative() const;
 
 private:
 	std::unique_ptr<FTrackWheelRef> NativeRef;
