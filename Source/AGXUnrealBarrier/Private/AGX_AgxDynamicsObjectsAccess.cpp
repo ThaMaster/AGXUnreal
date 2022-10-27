@@ -2,7 +2,6 @@
 
 #include "AGX_AgxDynamicsObjectsAccess.h"
 
-
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
@@ -28,6 +27,11 @@
 #include "Tires/TireBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Wire/WireBarrier.h"
+#include "Wire/WireNodeBarrier.h"
+#include "Wire/WireWinchBarrier.h"
+#include "Wire/WireRef.h"
+#include "Wire/WireNodeRef.h"
+#include "Wire/WireWinchRef.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -52,6 +56,8 @@
 #include <agxWire/Wire.h>
 #include <agxWire/Node.h>
 #include "EndAGXIncludes.h"
+#include "Shapes/RenderDataBarrier.h"
+#include "Shapes/RenderDataRef.h"
 
 namespace AgxDynamicsObjectAccess_Helper
 {
@@ -79,6 +85,9 @@ namespace AgxDynamicsObjectAccess_Helper
 		return true;
 	}
 
+	/**
+	 * Base implementation for Barrier types that hold an agx::ref_ptr to the AGX Dynamics object.
+	 */
 	template <typename AgxType, typename BarrierType>
 	AgxType* GetFrom(const BarrierType* Barrier)
 	{
@@ -90,6 +99,7 @@ namespace AgxDynamicsObjectAccess_Helper
 		return Barrier->GetNative()->Native.get();
 	}
 
+	/// agxCollide::GeometryContact is an entity type that is held by-value in the Barrier.
 	template <>
 	agxCollide::GeometryContact* GetFrom(const FShapeContactBarrier* Barrier)
 	{
@@ -98,24 +108,29 @@ namespace AgxDynamicsObjectAccess_Helper
 		return const_cast<agxCollide::GeometryContact*>(&Barrier->GetNative()->Native);
 	}
 
+	/// agxCollide::ContactPoint is an entity type hat is held by-value in the Barrier.
 	template <>
 	agxCollide::ContactPoint* GetFrom(const FContactPointBarrier* Barrier)
 	{
 		return const_cast<agxCollide::ContactPoint*>(&Barrier->GetNative()->Native);
 	}
 
+	/// agx::MassProperties is not a stand-alone object but owned by RigidBody. It does not inherit
+	/// from agx::Referenced. The Barrier therefore holds a raw pointer to it.
 	template <>
 	agx::MassProperties* GetFrom(const FMassPropertiesBarrier* Barrier)
 	{
 		return Barrier->GetNative()->Native;
 	}
 
+	/// Convenience overload that takes a reference instead of a pointer. Calls the pointer version.
 	template <typename AgxType, typename BarrierType>
 	AgxType* GetFrom(const BarrierType& Barrier)
 	{
 		return GetFrom<AgxType>(&Barrier);
 	}
 
+	/// Variant of GetFrom that allows a nullptr or a Barrier without a Native to be passed.
 	template <typename AgxType, typename BarrierType>
 	AgxType* TryGetFrom(const BarrierType* Barrier)
 	{
@@ -127,12 +142,15 @@ namespace AgxDynamicsObjectAccess_Helper
 		return Barrier->GetNative()->Native.get();
 	}
 
+	/// Variant of GetFrom that allows a Barrier without a Native to be passed.
 	template <typename AgxType, typename BarrierType>
 	AgxType* TryGetFrom(const BarrierType& Barrier)
 	{
 		return TryGetFrom<AgxType>(&Barrier);
 	}
 
+	/// Variant of GetFrom where the type to get is different from the type held by the barrier.
+	/// The type to return must inherit from the type the barrier holds.
 	template <typename AgxType, typename BarrierType>
 	AgxType* GetFromAs(const BarrierType* Barrier)
 	{
@@ -144,11 +162,11 @@ namespace AgxDynamicsObjectAccess_Helper
 		return Barrier->GetNative()->Native->template as<AgxType>();
 	}
 
-	// Template specialization for Two Body Tire because our Barrier store a Tire, not a Two Body
-	// Tire, since the native is owned by the FTireBarrier base class of FTwoBodyTire. We can't use
-	// the regular GetFromAs because Tire inherits from Assembly which inherits virtually from
-	// Referenced and static_cast cannot be used with virtual inheritance, which
-	// agx::Referenced::as<T>, used by the base function template GetFromAs, 
+	/// Template specialization for Two Body Tire because our Barrier store a Tire, not a Two Body
+	/// Tire, since the native is owned by the FTireBarrier base class of FTwoBodyTire. We can't use
+	/// the regular GetFromAs because Tire inherits from Assembly which inherits virtually from
+	/// Referenced and static_cast cannot be used with virtual inheritance, which
+	/// agx::Referenced::as<T>, used by the base function template GetFromAs,
 	template <>
 	agxModel::TwoBodyTire* GetFromAs(const FTwoBodyTireBarrier* Barrier)
 	{
@@ -244,6 +262,17 @@ agxCollide::Geometry* FAGX_AgxDynamicsObjectsAccess::GetGeometryFrom(const FShap
 	return Barrier->GetNative()->NativeGeometry.get();
 }
 
+const agxCollide::RenderData* FAGX_AgxDynamicsObjectsAccess::GetFrom(
+	const FRenderDataBarrier* Barrier)
+{
+	if (!AgxDynamicsObjectAccess_Helper::CheckAgxDynamicsObject<FRenderDataBarrier>(Barrier))
+	{
+		return nullptr;
+	}
+
+	return Barrier->GetNative()->Native.get();
+}
+
 agxCollide::Shape* FAGX_AgxDynamicsObjectsAccess::GetShapeFrom(const FShapeBarrier* Barrier)
 {
 	if (!AgxDynamicsObjectAccess_Helper::CheckAgxDynamicsObject<FShapeBarrier>(Barrier))
@@ -323,7 +352,17 @@ agxTerrain::Shovel* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FShovelBarrier*
 
 // Namespace agxWire.
 
+agxWire::Node* GetFrom(const FWireNodeBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFrom<agxWire::Node>(Barrier);
+}
+
 agxWire::Wire* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FWireBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxWire::Wire>(Barrier);
+}
+
+agxWire::WireWinchController* GetFrom(const FWireWinchBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFrom<agxWire::WireWinchController>(Barrier);
 }

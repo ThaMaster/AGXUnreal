@@ -4,20 +4,32 @@
 
 namespace agx
 {
-	class RigidBody;
-	class MassProperties;
-
-	class Constraint;
-
 	class BallJoint;
+	class Constraint;
+	class ContactMaterial;
 	class CylindricalJoint;
 	class DistanceJoint;
 	class Hinge;
 	class LockJoint;
-	class Prismatic;
-
+	class MassProperties;
 	class Material;
-	class ContactMaterial;
+	class Prismatic;
+	class RigidBody;
+}
+
+namespace agxCollide
+{
+	class ContactPoint;
+	class Geometry;
+	class GeometryContact;
+	class RenderData;
+	class Shape;
+}
+
+namespace agxModel
+{
+	class Tire;
+	class TwoBodyTire;
 }
 
 namespace agxSDK
@@ -27,137 +39,105 @@ namespace agxSDK
 	class Simulation;
 }
 
-namespace agxCollide
-{
-	class Geometry;
-	class Shape;
-	class RenderData;
-	class GeometryContact;
-	class ContactPoint;
-}
-
-namespace agxModel
-{
-	class Tire;
-	class TwoBodyTire;
-};
-
-namespace agxSDK
-{
-	class Simulation;
-}
-
 namespace agxTerrain
 {
+	class Shovel;
 	class Terrain;
 	class TerrainMaterial;
-	class Shovel;
 }
 
 namespace agxWire
 {
-	class Wire;
-	class WireWinch;
 	class Node;
-}
-
-namespace agxWire
-{
 	class Wire;
+	class WireWinchController;
 }
 
-class FRigidBodyBarrier;
-class FMassPropertiesBarrier;
-
-class FConstraintBarrier;
-
+// Namespace agx.
 class FBallJointBarrier;
+class FConstraintBarrier;
+class FContactMaterialBarrier;
 class FCylindricalJointBarrier;
 class FDistanceJointBarrier;
 class FHingeBarrier;
 class FLockJointBarrier;
+class FMassPropertiesBarrier;
 class FPrismaticBarrier;
+class FRigidBodyBarrier;
 class FShapeMaterialBarrier;
 
-class FShapeMaterialBarrier;
-class FContactMaterialBarrier;
-
-class FShapeBarrier;
-class FRenderDataBarrier;
-class FShapeContactBarrier;
+// Namespace agxCollide.
 class FContactPointBarrier;
+class FRenderDataBarrier;
+class FShapeBarrier;
+class FShapeContactBarrier;
 
+// Namespace agxModel.
 class FTireBarrier;
 class FTwoBodyTireBarrier;
 
-class FSimulationBarrier;
-
-class FTerrainBarrier;
-class FTerrainMaterialBarrier;
-class FShovelBarrier;
-
-class FWireBarrier;
-class FWireWinchBarrier;
-class FWireNodeBarrier;
-
+// Namespace agxSDK.
 class FMergeSplitPropertiesBarrier;
 class FMergeSplitThresholdsBarrier;
+class FSimulationBarrier;
 
+// Namespace agxTerrain.
+class FShovelBarrier;
+class FTerrainBarrier;
+class FTerrainMaterialBarrier;
+
+// Namespace agxWire
 class FWireBarrier;
+class FWireNodeBarrier;
+class FWireWinchBarrier;
+
 
 class AGXUNREALBARRIER_API FAGX_AgxDynamicsObjectsAccess
 {
 public:
 
 	// Namespace agx.
-
-	static agx::RigidBody* GetFrom(const FRigidBodyBarrier* Barrier);
-	static agx::RigidBody* GetFrom(const FRigidBodyBarrier& Barrier);
-	static agx::RigidBody* TryGetFrom(const FRigidBodyBarrier* Barrier);
-	static agx::RigidBody* TryGetFrom(const FRigidBodyBarrier& Barrier);
-
-	static agx::MassProperties* GetFrom(const FMassPropertiesBarrier* Barrier);
-
-	static agx::Constraint* GetFrom(const FConstraintBarrier* Barrier);
-
 	static agx::BallJoint* GetFrom(const FBallJointBarrier* Barrier);
+	static agx::Constraint* GetFrom(const FConstraintBarrier* Barrier);
+	static agx::ContactMaterial* GetFrom(const FContactMaterialBarrier* Barrier);
 	static agx::CylindricalJoint* GetFrom(const FCylindricalJointBarrier* Barrier);
 	static agx::DistanceJoint* GetFrom(const FDistanceJointBarrier* Barrier);
 	static agx::Hinge* GetFrom(const FHingeBarrier* Barrier);
 	static agx::LockJoint* GetFrom(const FLockJointBarrier* Barrier);
-	static agx::Prismatic* GetFrom(const FPrismaticBarrier* Barrier);
-
+	static agx::MassProperties* GetFrom(const FMassPropertiesBarrier* Barrier);
 	static agx::Material* GetFrom(const FShapeMaterialBarrier* Barrier);
-	static agx::ContactMaterial* GetFrom(const FContactMaterialBarrier* Barrier);
+	static agx::Prismatic* GetFrom(const FPrismaticBarrier* Barrier);
+	static agx::RigidBody* GetFrom(const FRigidBodyBarrier& Barrier);
+	static agx::RigidBody* GetFrom(const FRigidBodyBarrier* Barrier);
+	static agx::RigidBody* TryGetFrom(const FRigidBodyBarrier& Barrier);
+	static agx::RigidBody* TryGetFrom(const FRigidBodyBarrier* Barrier);
+
 
 	// Namespace agxCollide.
-
-	static agxCollide::Geometry* GetGeometryFrom(const FShapeBarrier* Barrier);
-	static agxCollide::Shape* GetShapeFrom(const FShapeBarrier* Barrier);
-	static agxCollide::RenderData* GetFrom(const FRenderDataBarrier* Barrier);
-	static agxCollide::GeometryContact* GetFrom(const FShapeContactBarrier* Barrier);
 	static agxCollide::ContactPoint* GetFrom(const FContactPointBarrier* Barrier);
+	static agxCollide::Geometry* GetGeometryFrom(const FShapeBarrier* Barrier);
+	static agxCollide::GeometryContact* GetFrom(const FShapeContactBarrier* Barrier);
+	static const agxCollide::RenderData* GetFrom(const FRenderDataBarrier* Barrier);
+	static agxCollide::Shape* GetShapeFrom(const FShapeBarrier* Barrier);
 
 	// Namespace agxModel.
-
 	static agxModel::Tire* GetFrom(const FTireBarrier* Barrier);
 	static agxModel::TwoBodyTire* GetFrom(const FTwoBodyTireBarrier* Barrier);
 
 	// Namespace agxSDK.
-
-	static agxSDK::Simulation* GetFrom(const FSimulationBarrier* Barrier);
 	static agxSDK::MergeSplitProperties* GetFrom(const FMergeSplitPropertiesBarrier* Barrier);
 	static agxSDK::MergeSplitThresholds* GetFrom(const FMergeSplitThresholdsBarrier* Barrier);
+	static agxSDK::Simulation* GetFrom(const FSimulationBarrier* Barrier);
 
 	// Namespace agxTerrain.
 
+	static agxTerrain::Shovel* GetFrom(const FShovelBarrier* Barrier);
 	static agxTerrain::Terrain* GetFrom(const FTerrainBarrier* Barrier);
 	static agxTerrain::TerrainMaterial* GetFrom(const FTerrainMaterialBarrier* Barrier);
-	static agxTerrain::Shovel* GetFrom(const FShovelBarrier* Barrier);
 
 	// Namespace agxWire.
 
-	static agxWire::Wire* GetFrom(const FWireBarrier* Barrier);
-	static agxWire::WireWinch* GetFrom(const FWireWinchBarrier* Barrier);
 	static agxWire::Node* GetFrom(const FWireNodeBarrier* Barrier);
+	static agxWire::Wire* GetFrom(const FWireBarrier* Barrier);
+	static agxWire::WireWinchController* GetFrom(const FWireWinchBarrier* Barrier);
 };
