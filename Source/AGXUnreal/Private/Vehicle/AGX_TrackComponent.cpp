@@ -35,12 +35,11 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 	if (!MayAttemptTrackPreview)
 	{
 		MayAttemptTrackPreview = FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid();
-	}
-
-	if (!MayAttemptTrackPreview)
-	{
-		return nullptr;
-	}
+		if (!MayAttemptTrackPreview)
+		{
+			return nullptr;
+		}
+	}	
 
 	if (IsBeingDestroyed() || !bEnabled)
 	{
